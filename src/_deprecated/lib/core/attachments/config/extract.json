@@ -1,0 +1,37 @@
+{
+	"version": 101,
+
+	"fileKinds": {
+		"none": {
+			"ndx": 0
+		},
+		"other": {
+			"ndx": 1,
+			"extractors": ["coreFileInfo"]
+		},
+		"pdf": {
+			"ndx": 2,
+			"extractors": ["coreFileInfo", "pdfToText"]
+		},
+		"photo": {
+			"ndx": 3,
+			"extractors": ["coreFileInfo", "exif", "imageOCR"]
+		},
+		"picture": {
+			"ndx": 4,
+			"extractors": ["coreFileInfo", "imageOCR"]
+		},
+		"txt": {
+			"ndx": 5,
+			"extractors": ["coreFileInfo"]
+		},
+		"word": {
+			"ndx": 6,
+			"extractors": ["coreFileInfo"]
+		},
+		"excel": {
+			"ndx": 7,
+			"extractors": ["coreFileInfo"]
+		}
+	}
+}

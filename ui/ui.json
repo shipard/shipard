@@ -1,0 +1,18 @@
+{
+	"clients": {
+		"OldDesktop": {
+			"title": "Old UI for desktop"
+		}
+	},
+	"icons": {
+		"fa5": {
+			"title": "FA5"
+		},
+		"bsi": {
+			"title": "Bootstrap Icons"
+		},
+		"mdi": {
+			"title": "Material Design Icons"
+		}
+	}
+}

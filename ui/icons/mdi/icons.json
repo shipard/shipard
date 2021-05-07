@@ -1,0 +1,8 @@
+{
+	"fullName": "Material Design Icons",
+	"shortName": "MDI",
+	"scPath": "icons/mdi",
+	"type": 1,
+	"cssBaseClass": "mdi",
+	"styleLink": "icons/mdi/mdi.css"
+}

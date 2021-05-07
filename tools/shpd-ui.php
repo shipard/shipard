@@ -1,0 +1,372 @@
+#!/usr/bin/env php
+<?php
+
+if (!defined ('__SHPD_ROOT_DIR__'))
+{
+	$parts = explode('/', __DIR__);
+	array_pop($parts);
+	define('__SHPD_ROOT_DIR__', '/'.implode('/', $parts).'/');
+}
+
+define ("__APP_DIR__", getcwd());
+
+
+
+require_once __SHPD_ROOT_DIR__ . '/src/boot.php';
+
+use Shipard\Utils\Utils;
+
+
+use \E10\CLI\Application;
+use \E10\DataModel, \e10\json;
+
+function parseArgs($argv)
+{
+	// http://pwfisher.com/nucleus/index.php?itemid=45
+		array_shift ($argv);
+		$out = array();
+		foreach ($argv as $arg){
+				if (substr($arg,0,2) == '--'){
+						$eqPos = strpos($arg,'=');
+						if ($eqPos === false){
+								$key = substr($arg,2);
+								$out[$key] = isset($out[$key]) ? $out[$key] : true;
+						} else {
+								$key = substr($arg,2,$eqPos-2);
+								$out[$key] = substr($arg,$eqPos+1);
+						}
+				} else if (substr($arg,0,1) == '-'){
+						if (substr($arg,2,1) == '='){
+								$key = substr($arg,1,1);
+								$out[$key] = substr($arg,3);
+						} else {
+								$chars = str_split(substr($arg,1));
+								foreach ($chars as $char){
+										$key = $char;
+										$out[$key] = isset($out[$key]) ? $out[$key] : true;
+								}
+						}
+				} else {
+						$out[] = $arg;
+				}
+		}
+		return $out;
+}
+
+/** Remove spaces and comments from JavaScript code
+ * @param string code with commands terminated by semicolon
+ * @return string shrinked code
+ * @link http://vrana.github.io/JsShrink/
+ * @author Jakub Vrana, http://www.vrana.cz/
+ * @copyright 2012 Jakub Vrana
+ * @license http://www.apache.org/licenses/LICENSE-2.0 Apache License, Version 2.0
+ * @license http://www.gnu.org/licenses/gpl-2.0.html GNU General Public License, version 2 (one or other)
+ */
+function jsShrink($input) {
+	return preg_replace_callback('(
+        (?:
+            (^|[-+\([{}=,:;!%^&*|?~]|/(?![/*])|return|throw) # context before regexp
+            (?:\s|//[^\n]*+\n|/\*(?:[^*]|\*(?!/))*+\*/)* # optional space
+            (/(?![/*])(?:\\\\[^\n]|[^[\n/\\\\]|\[(?:\\\\[^\n]|[^]])++)+/) # regexp
+            |(^
+                |\'(?:\\\\.|[^\n\'\\\\])*\'
+                |"(?:\\\\.|[^\n"\\\\])*"
+                |([0-9A-Za-z_$]+)
+                |([-+]+)
+                |.
+            )
+        )(?:\s|//[^\n]*+\n|/\*(?:[^*]|\*(?!/))*+\*/)* # optional space
+    )sx', 'jsShrinkCallback', "$input\n");
+}
+
+function jsShrinkCallback($match) {
+	static $last = '';
+	$match += array_fill(1, 5, null); // avoid E_NOTICE
+	list(, $context, $regexp, $result, $word, $operator) = $match;
+	if ($word != '') {
+		$result = ($last == 'word' ? "\n" : ($last == 'return' ? " " : "")) . $result;
+		$last = ($word == 'return' || $word == 'throw' || $word == 'break' ? 'return' : 'word');
+	} elseif ($operator) {
+		$result = ($last == $operator[0] ? "\n" : "") . $result;
+		$last = $operator[0];
+	} else {
+		if ($regexp) {
+			$result = $context . ($context == '/' ? "\n" : "") . $regexp;
+		}
+		$last = '';
+	}
+	return $result;
+}
+
+function html2rgb ($color)
+{
+	if ($color[0] == '#')
+		$color = substr($color, 1);
+
+	if (strlen($color) == 6)
+		list ($r, $g, $b) = array ($color[0].$color[1], $color[2].$color[3], $color[4].$color[5]);
+	elseif (strlen($color) == 3)
+		list ($r, $g, $b) = array ($color[0].$color[0], $color[1].$color[1], $color[2].$color[2]);
+	else
+		return false;
+
+	$r = hexdec($r); $g = hexdec($g); $b = hexdec($b);
+
+	return array($r, $g, $b);
+}
+
+
+function copy_r ($path, $dest, $useSymlinks = false)
+{
+	if (is_dir ($path))
+	{
+		@mkdir ($dest);
+		$objects = scandir($path);
+		if (sizeof ($objects) > 0)
+		{
+			foreach( $objects as $file )
+			{
+				if( $file == "." || $file == ".." )
+						continue;
+				if (is_dir ($path.DIRECTORY_SEPARATOR.$file))
+				{
+					copy_r ($path.DIRECTORY_SEPARATOR.$file, $dest.DIRECTORY_SEPARATOR.$file, $useSymlinks);
+				}
+				else
+				{
+					if ($useSymlinks)
+						symlink ($path.DIRECTORY_SEPARATOR.$file, $dest.DIRECTORY_SEPARATOR.$file);
+					else
+						copy ($path.DIRECTORY_SEPARATOR.$file, $dest.DIRECTORY_SEPARATOR.$file);
+				}
+			}
+		}
+		return true;
+	}
+	elseif (is_file ($path))
+	{
+		if ($useSymlinks)
+			return symlink ($path, $dest);
+		return copy ($path, $dest);
+	}
+	else
+	{
+		return false;
+	}
+}
+
+
+class ShpdUIApp
+{
+	var $arguments;
+
+	var $allTemplates = [];
+	var $allLooks = [];
+
+	public function __construct ()
+	{
+	}
+
+	public function arg ($name)
+	{
+		if (isset ($this->arguments [$name]))
+			return $this->arguments [$name];
+
+		return FALSE;
+	}
+
+	public function command ($idx = 0)
+	{
+		if (isset ($this->arguments [$idx]))
+			return $this->arguments [$idx];
+
+		return "";
+	}
+
+	public function err ($msg)
+	{
+		echo $msg . "\r\n";
+		return FALSE;
+	}
+
+	public function loadCfgFile ($fileName)
+	{
+		if (is_file ($fileName))
+		{
+			$cfgString = file_get_contents ($fileName);
+			if (!$cfgString)
+				return $this->err ("read file failed: $fileName");
+			$cfg = json_decode ($cfgString, true);
+			if (!$cfg)
+				return $this->err ("parsing file failed: $fileName");
+			return $cfg;
+		}
+		return $this->err ("file not found: $fileName");
+	}
+
+	public function msg ($msg)
+	{
+		echo '* ' . $msg . "\r\n";
+	}
+
+	public function createAppThemes ()
+	{
+		$uiDefs = $this->loadCfgFile('ui/ui.json');
+		if (!$uiDefs)
+			return $this->msg("ERROR: file `ui/ui.json` not found...");
+
+		$destFolder = 'www-root/.ui/';
+		if (!is_dir($destFolder))
+			mkdir ($destFolder);
+		
+		forEach ($uiDefs['clients'] as $uiTypeId => $uiDef)
+		{
+			echo "* {$uiTypeId}\n";
+
+			$destFolder = 'www-root/.ui/'.$uiTypeId.'/';
+			if (!is_dir($destFolder))
+				mkdir ($destFolder);
+			$destFolder .= 'themes/';
+			if (!is_dir($destFolder))
+				mkdir ($destFolder);
+
+				// -- themes
+			echo "  - themes:\n";
+			$themes = $this->loadCfgFile('ui/clients/'.$uiTypeId.'/themes.json');
+			foreach ($themes as $themeId => $themeDef)
+			{
+				echo "    > {$themeId}\n";
+				$themePath = 'ui/clients/' . $uiTypeId . '/themes/' . $themeId;
+
+				$themeDestFolder = getcwd().'/'.$destFolder . $themeId.'/';
+				if (!is_dir($themeDestFolder))
+					mkdir ($themeDestFolder);
+	
+				$theme = $this->loadCfgFile('ui/clients/'.$uiTypeId.'/themes/'. $themeId . '/theme.json');
+				$themeShortList[$themeId] = $theme['name'];
+				$themeFullList[$themeId] = $theme;
+
+				$destCssFileName = $themeDestFolder.'style.css';
+				//echo ("      - cd $themePath && lessc -x style.less > {$destCssFileName}\n");
+				passthru ("cd $themePath && lessc -x style.less > $destCssFileName");
+
+				$sha384 = hash_file('sha384', $destCssFileName);
+				$md5 = md5_file($destCssFileName);
+		
+				$themeFullList[$themeId]['integrity'] = ['sha384' => $sha384, 'md5' => $md5];
+			}
+		}
+
+		// -- SAVE
+		file_put_contents ($destFolder.'/themesList.json', utils::json_lint (json_encode ($themeShortList)));
+		file_put_contents ($destFolder.'/themes.json', utils::json_lint (json_encode ($themeFullList)));
+
+		return TRUE;		
+	}
+	
+
+	public function js ()
+	{
+		$uiDefs = $this->loadCfgFile('ui/ui.json');
+		if (!$uiDefs)
+			return $this->msg("ERROR: file `ui/ui.json` not found...");
+
+		$destFolder = 'www-root/.ui/';
+		if (!is_dir($destFolder))
+			mkdir ($destFolder);
+		
+		forEach ($uiDefs['clients'] as $uiTypeId => $uiDef)
+		{
+			echo "* {$uiTypeId}\n";
+
+			$destFolder = 'www-root/.ui/'.$uiTypeId.'/';
+			if (!is_dir($destFolder))
+				mkdir ($destFolder);
+			$destFolder .= 'js/';
+			if (!is_dir($destFolder))
+				mkdir ($destFolder);
+
+			$srcDir = 'ui/clients/' . $uiTypeId . '/js/';
+
+			$this->createJavascript(getcwd().'/'.$srcDir, getcwd().'/'.$destFolder);
+		}
+
+		return TRUE;
+	}
+
+	public function createJavascript ($srcDir, $dstDir)
+	{
+		$pkg = utils::loadCfgFile($srcDir.'package.json');
+		if (!$pkg)
+			return $this->err("Package file '".$srcDir.'package.json'."' not found.");
+
+		$filesData = [];
+
+		$finalFileString = '';
+		forEach ($pkg['srcFiles'] as $file)
+		{
+			$oneFileStr = file_get_contents($srcDir.$file['fileName']);
+			if (isset ($file['minify']) && !$file['minify'])
+				$finalFileString .= $oneFileStr;
+			else
+			{
+				$shrinkedScript = jsShrink($oneFileStr);
+				$finalFileString .= $shrinkedScript;
+			}
+		}
+
+		$finalFileName = $dstDir.'client.js';
+		file_put_contents($finalFileName, $finalFileString);
+
+		$sha384 = hash_file('sha384', $finalFileName);
+		$filesData = [
+			'client.js' => 'sha384-'.$sha384
+		];
+		file_put_contents($srcDir.'files.json', json_encode($filesData));
+	}
+
+	public function createSystemIcons()
+	{
+		$im = new \Shipard\CLI\Server\IconsManager($this);
+		$im->createSystemIcons();
+		return TRUE;
+	}
+
+	public function run ($argv)
+	{
+		$this->modulesPath = '/var/www/e10-modules/';
+		$this->e10ServerPath = '/var/www/e10-modules/e10/server';
+
+		$this->arguments = parseArgs($argv);
+
+		if (count ($this->arguments) == 0)
+			return $this->help ();
+
+		switch ($this->command ())
+		{
+			case	"app-themes":		return $this->createAppThemes ();
+			case	"app-js":				return $this->js();
+			case	"app-icons":		return $this->createSystemIcons();
+		}
+
+		echo ("unknown command...\n");
+
+		return FALSE;
+	}
+
+	function help ()
+	{
+		echo
+			"usage: shpd-ui command arguments\r\n\r\n" .
+			"commands:\r\n" .
+			"   app-themes: build app-themes\r\n" .
+			"   app-js: build javascript files\r\n" .
+			"\r\n";
+
+		return true;
+	}
+}
+
+
+$app = new ShpdUIApp ();
+$app->run ($argv);

@@ -1,0 +1,12 @@
+[Unit]
+Description=e10 log server
+After=network.target auditd.service
+
+[Service]
+PIDFile=/var/run/e10-log-server.pid
+ExecStart=/usr/lib/e10/devel/e10-server/e10/server/etc/services/e10-log-server.sh
+Type=forking
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,12 @@
+[Unit]
+Description=e10 periodic services
+After=network.target auditd.service
+
+[Service]
+PIDFile=/var/run/e10-services.pid
+ExecStart=/var/www/e10-server/e10/server/etc/services/e10-services.sh
+Type=forking
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,15 @@
+<div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f5f5f5; padding: 1ex;">
+
+<h3 style='padding-top: 0px; margin-top: 0px;'>{{data.userName}} / {{cfgItem.options.core.ownerShortName}}</h3>
+<p>Toto je seznam nepřečtených oznámení, <a href="{{data.intranetUrl}}">která byste měli zkontrolovat</a>.</p>
+
+{{#report.data.notifications}}
+	<div style='border: 1px solid #ddd; border-radius: 2px; background-color: white; margin-bottom: 1ex; padding: 1ex;'>
+		<div style='font-size:111%; font-weight: bold;'>{{subject}}</div>
+		{{#personName}}<em>{{personName}}</em> / {{/personName}}
+		{{#ntfTypeName}}{{ntfTypeName}} - {{/ntfTypeName}}{{dateTime}}
+		<br/>
+	</div>
+{{/report.data.notifications}}
+
+</div>

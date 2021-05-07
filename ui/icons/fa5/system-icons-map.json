@@ -1,0 +1,50 @@
+[
+    {
+        "t": 0,
+        "v": "fa-plus-circle"
+    },
+    {
+        "t": 0,
+        "v": "fa-calendar"
+    },
+    {
+        "t": 0,
+        "v": "fa-times-circle"
+    },
+    {
+        "t": 0,
+        "v": "fa-files-o"
+    },
+    {
+        "t": 0,
+        "v": "fa-building"
+    },
+    {
+        "t": 0,
+        "v": "fa-home"
+    },
+    {
+        "t": 0,
+        "v": "fa-power-off"
+    },
+    {
+        "t": 0,
+        "v": "fa-bell"
+    },
+    {
+        "t": 0,
+        "v": "fa-pencil-square-o"
+    },
+    {
+        "t": 0,
+        "v": "fa-print"
+    },
+    {
+        "t": 0,
+        "v": "fa-download"
+    },
+    {
+        "t": 0,
+        "v": "fa-user"
+    }
+]

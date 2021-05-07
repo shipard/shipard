@@ -1,0 +1,98 @@
+{
+	"actionAdd": {
+		"fa5": "fa-plus-circle",
+		"fa5pro": "fa-plus-circle",
+		"bsi": "test1",
+		"mdi": "test2"
+	},	
+	"actionCalendar": {
+		"fa5": "fa-calendar",
+		"fa5pro": "fa-calendar",
+		"bsi": "",
+		"mdi": ""
+	},	
+	"actionClose": {
+		"fa5": "fa-times-circle",
+		"fa5pro": "fa-times-circle",
+		"bsi": "",
+		"mdi": ""
+	},	
+	"actionCopy": {
+		"fa5": "fa-files-o",
+		"fa5pro": "fa-files-o",
+		"bsi": "",
+		"mdi": ""
+	},	
+	"actionDatabaseName": {
+		"fa5": "fa-building",
+		"fa5pro": "fa-building",
+		"bsi": "",
+		"mdi": ""
+	},	
+	"actionHomePage": {
+		"fa5": "fa-home",
+		"fa5pro": "fa-home",
+		"bsi": "",
+		"mdi": ""
+	},	
+	"actionLogout": {
+		"fa5": "fa-power-off",
+		"fa5pro": "fa-power-off",
+		"bsi": "bi-power",
+		"mdi": "power"
+	},	
+	"actionNotifications": {
+		"fa5": "fa-bell",
+		"fa5pro": "fa-bell-o",
+		"bsi": "",
+		"mdi": ""
+	},	
+	"actionOpen": {
+		"fa5": "fa-pencil-square-o",
+		"fa5pro": "fa-pencil-square-o",
+		"bsi": "",
+		"mdi": ""
+	},	
+	"actionPrint": {
+		"fa5": "fa-print",
+		"fa5pro": "fa-print",
+		"bsi": "",
+		"mdi": ""
+	},	
+	"actionSave": {
+		"fa5": "fa-download",
+		"fa5pro": "fa-download",
+		"bsi": "",
+		"mdi": ""
+	},	
+	"actionUser": {
+		"fa5": "fa-user",
+		"fa5pro": "fa-user",
+		"bsi": "",
+		"mdi": ""
+	},
+	"iconReports":{
+		"fa5":"fa-chart-bar",
+		"fa5pro":"fa-chart-bar",
+		"bsi":"bi-file-earmark-bar-graph",
+		"mdi":"assessment"
+	},
+	"iconHistory":{
+		"fa5": "fa-history",
+		"fa5pro": "fa-history",
+		"bsi": "bi-clock-history",
+		"mdi": "history"
+	},
+	"iconSettings":{
+		"fa5": "fa-tools",
+		"fa5pro": "fa-tools",
+		"bsi": "bi-tools",
+		"mdi": "construction"
+	},
+	"iconOther":{
+		"fa5": "fa-ellipsis-v",
+		"fa5pro": "fa-ellipsis-v",
+		"bsi": "bi-three-dots-vertical",
+		"mdi": "more_vert"
+	}
+}

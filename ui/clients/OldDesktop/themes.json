@@ -1,0 +1,13 @@
+{
+	"default":{"ndx":0, "name":"Obyčejné", "system": 1, "statusColor":  "#333"},
+	"carbon-fibre":{"ndx":0, "name":"Uhlíkové vlákno", "system": 1, "statusColor":  "#222"},
+	"elegant":{"ndx":0, "name":"Elegantní", "system": 1, "statusColor":  "#333"},
+	"elegant-1969":{"ndx":0, "name":"1969", "system": 1, "statusColor":  "#434"},
+	"elegant-raptors":{"ndx":0, "name":"Raptoři", "system": 1, "statusColor":  "#00508A"},
+	"metro":{"ndx":0, "name":"Metro", "system": 1, "statusColor":  "#00508A"},
+	"rainbow6":{"ndx":0, "name":"Diethylamid kyseliny lysergové", "system": 1, "statusColor":  "#840b2a"},
+	"shipard":{"ndx":0, "name":"Shipard", "system": 1, "statusColor":  "#333"},
+	"shipard1":{"ndx":0, "name":"Shipard 1", "system": 1, "statusColor":  "#00508A"},
+	"md-default":{"ndx":0, "name":"MD Default", "system": 1, "statusColor":  "#00508A"},
+	"lime":{"ndx":0, "name":"Zelená", "system": 1, "statusColor":  "#00508A"}
+}

@@ -1,0 +1,8 @@
+{
+	"fullName": "Font Awesome 5",
+	"shortName": "FA 5",
+	"scPath": "icons/fa/5",
+	"type": 0,
+	"cssBaseClass": "fas ",
+	"styleLink": "icons/fa/5/css/all.min.css"
+}

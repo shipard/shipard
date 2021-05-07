@@ -1,0 +1,76 @@
+
+
+div.e10-tl {
+	/*border: 1px solid rgba(0, 0, 0, .1);*/
+
+	>div.title {
+		padding: 0.6ex;
+		border-bottom: 1px solid rgba(0,0,0,.2);
+		border-top: 1px solid rgba(0,0,0,.2);
+		display: inline-block;
+		width: 100%;
+	}
+
+	>div>span {
+		padding: 2px 6px;
+	}
+
+	div.e10-tl-doc, div.e10-tl-row {
+		width: 100%;
+		border-bottom: 1px solid rgba(0, 0, 0, .1);
+		> div {
+			padding: .8ex;
+		}
+		> div.e10-comment {
+			padding-left: 1.5em;
+			padding-top: 0;
+			font-size: 90%;
+		}
+		> div.e10-tl-subrow {
+			border-top: 1px solid rgba(0,0,0,.25);
+		}
+		&.e10-tl-row-composed > div.header {
+			background-color: #f0f0f0;
+		}
+	}
+
+	>div.body {
+		background-color: #fafafa;
+		> div.e10-tl-row.tl-header {
+			background-color: #e5e5e5;
+			border-bottom: 1px solid rgba(0, 0, 0, .15);
+		}
+	}
+	>div.tl-header.year {
+		font-size: 122%;
+		border-bottom: 1px solid rgba(0,0,0,.3);
+	}
+	>div.tl-header.month {
+		font-size: 111%;
+	}
+
+	div.e10-tl-doc:hover {
+		background-color: @viewerHoveredRowBackground;
+		>div.e10-ds-block {
+			background-color: rgba(0,0,0,.15);
+		}
+	}
+}
+
+div.e10-tt {
+	display: flex;
+	flex-flow: row wrap;
+
+	div.title {
+		padding: 1ex;
+		width: 100%;
+		z-index: 200;
+		flex: 0 0 100%;
+	}
+
+	div.e10-tl-doc {
+		flex-basis: ~"calc(33.33333% - 1ex - 1px)";
+		margin: .5ex;
+		border: 1px solid gray;
+	}
+}

@@ -1,0 +1,24 @@
+{
+	"dstFileName": "client.js",
+	"srcFiles": [
+		{"fileName": "e10-core.js"},
+		{"fileName": "e10-server.js"},
+		{"fileName": "widgets/e10-widgets.js"},
+		{"fileName": "widgets/e10-widgets-vs.js"},
+		{"fileName": "widgets/e10-widgets-lans.js"},
+		{"fileName": "widgets/e10-widgets-macLan.js"},
+		{"fileName": "widgets/e10-widgets-macVs.js"},
+		{"fileName": "e10.js"},
+		{"fileName": "e10-inputs.js"},
+		{"fileName": "e10-sumTables.js"},
+		{"fileName": "e10-gmaps-loader.js"},
+		{"fileName": "3rd/jquery-ui.js", "minify": 0},
+		{"fileName": "3rd/jquery-ui-i18n.js", "minify": 0},
+		{"fileName": "3rd/bootstrap.js", "minify": 0},
+		{"fileName": "3rd/pnotify.js"},
+		{"fileName": "3rd/chosen.js", "minify": 0},
+		{"fileName": "3rd/float-thead.js", "minify": 0},
+		{"fileName": "e10-browser-desktop.js"},
+		{"fileName": "events/events.js"}
+	]
+}

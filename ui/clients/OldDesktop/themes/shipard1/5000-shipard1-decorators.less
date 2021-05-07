@@ -1,0 +1,78 @@
+//div.e10-appNormal div#mainBrowserTopBar {background-color: #0072c6;}
+
+
+//div#mainBrowserLeftMenu {background-color: #222;}
+
+div.e10-mv-lr {border: none;}
+div.e10-mainViewer>div.e10-sv-body {border: none;}
+body.body-client-browser div.e10-mv-ld {border: none;}
+
+
+button.btn-large, button.btn {  .border-radius(0px); }
+
+ul.df2-viewer-menu>li {padding-top: .4ex;}
+div.e10-wdb {
+	border: none;
+}
+
+ul.df2-detail-menu {
+	margin-right: 0;
+}
+
+ul.df2-viewer-menu {
+	margin-left: 0;
+}
+
+
+div.e10-wf-tabs {
+	ul.e10-wf-tabs {
+
+		> li.tab.active {
+			background-color: @appMenuFocusedItemBackground;
+		}
+		> li.tab:hover {
+			color: #222;
+		}
+		> li.tab.active:hover {
+			color: white;
+		}
+	}
+}
+
+div.e10-param-list {
+	ul {
+		>li>div.title:hover {
+			background-color: #c0c0c0;
+		}
+		>li>div.title.active, >li>div.title.active:hover {
+			background-color: @appRightMenuActiveIconBackground; color: @appMenuTextColor;
+		}
+	}
+}
+
+div.e10-sv-right {
+	div.e10-param-list ul {
+		>li>div.title:hover {
+			background-color: #c0c0c0;
+		}
+		>li>div.title.active, >li>div.title.active:hover {
+			background-color: @appRightMenuActiveIconBackground; color: @appMenuTextColor;
+		}
+	}
+
+}
+
+body.e10-appMainWidgetMode {
+	div.e10-wf-tabs {
+		background-color: #00508A;
+	}
+	div#mainBrowserRightBar {
+		background-color: #00508A;
+	}
+	#e10-nc-button {
+		height: 2.7em;
+		padding: 1ex 1.5ex;
+		width: 100%;
+		background-color: #00508A;
+	}
+}

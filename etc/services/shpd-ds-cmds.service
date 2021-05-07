@@ -1,0 +1,12 @@
+[Unit]
+Description=Shipard data sources commands ver 0.4
+After=network.target auditd.service
+
+[Service]
+PIDFile=/run/shpd-ds-cmds.pid
+ExecStart=/usr/lib/shipard/etc/services/shpd-ds-cmds.sh
+Type=forking
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
