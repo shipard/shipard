@@ -1,0 +1,82 @@
+{
+	"name": "Výkaz zisku a ztráty ve zkráceném rozsahu v.2016",
+	"pattern": {
+		"tables": [
+			{
+				"tableId": "VÝKAZ ZISKU A ZTRÁTY", "disableZeros": 1, "sheetTitle": "VÝKAZ ZISKU A ZTRÁTY",
+				"columns": [
+					{"title": "A", "class": "center"},
+					{"title": "D"},
+					{"title": "E", "class": "center"},
+					{"title": "F", "shortName": "BÚO", "autoEval": 1, "class": "number", "format": "money"},
+					{"title": "G", "shortName": "MÚO", "autoEval": 1, "class": "number", "format": "money"}
+				],
+				"rowInfo": {"shortName": {"cols": [2]}, "fullName": {"cols": [1]}},
+				"header": [
+					[{"value": "Označení", "class": "center"}, {"value": "Text", "class": "center"},{"value": "Řádek", "class": "center"}, {"value": "Skutečnost v ÚO", "colspan": 2, "class": "center"}],
+					["", "", "", {"value": "běžném", "class": "center"}, {"value": "minulém", "class": "center"}],
+					[{"value": "a", "class": "center"}, {"value": "b", "class": "center"}, {"value": "c", "class": "center"}, {"value": "1", "class": "center"}, {"value": "2", "class": "center"}]
+				],
+				"cellClasses": {
+					"1": {"row": "e10-bg-t1"},
+					"2": {"row": "e10-bg-t1"},
+					"3": {"row": "e10-bg-t2"},
+					"4": {"row": "e10-bg-t2"},
+					"5": {"row": "e10-bg-t2"},
+					"6": {"row": "e10-bg-t2"},
+					"7": {"row": "e10-bg-t2"},
+					"8": {"row": "e10-bg-t1"},
+					"9": {"row": "e10-bg-t2"},
+					"10": {"row": "e10-bg-t4"},
+					"11": {"row": "e10-bg-t1"},
+					"12": {"row": "e10-bg-t2"},
+					"13": {"row": "e10-bg-t1"},
+					"14": {"row": "e10-bg-t2"},
+					"15": {"row": "e10-bg-t1"},
+					"16": {"row": "e10-bg-t2"},
+					"17": {"row": "e10-bg-t2"},
+					"18": {"row": "e10-bg-t1"},
+					"19": {"row": "e10-bg-t2"},
+					"20": {"row": "e10-bg-t4"},
+					"21": {"row": "e10-bg-t4"},
+					"22": {"row": "e10-bg-t2"},
+					"23": {"row": "e10-bg-t4"},
+					"24": {"row": "e10-bg-t2"},
+					"25": {"row": "e10-bg-t4"},
+					"26": {"row": "e10-bg-t5"}
+				},
+				"rows": [
+					["I.",	"Tržby z prodeje výrobků a služeb",                           	"01", "=[{SUM;full!:F1}]",                      						"=[{SUM;full!:G1}]"],
+					["II.",	"Tržby za prodej zboží",   						                        	"02", "=[{SUM;full!:F2}]",			                    				"=[{SUM;full!:G2}]"],
+					["A.",	"Výkonová spotřeba", 										                      	"03", "=[{SUM;full!:F3}]",																	"=[{SUM;full!:G3}]"],
+					["B.",	"Změna stavu zásob vlastní činnosti (±)",		                  	"04", "=[{SUM;full!:F7}]",   	      												"=[{SUM;full!:G7}]"],
+					["C.",	"Aktivace (-)",														                  		"05", "=[{SUM;full!:F8}]",   	      												"=[{SUM;full!:G8}]"],
+					["D.",	"Osobní náklady", 											                      	"06", "=[{SUM;full!:F9}]",																	"=[{SUM;full!:G9}]"],
+					["E.",	"Úpravy hodnot v provozní oblasti", 											    	"07", "=[{SUM;full!:F14}]",				        									"=[{SUM;full!:G14}]"],
+					["III.","Ostatní provozní výnosy", 										                	"08", "=[{SUM;full!:F20}]",																	"=[{SUM;full!:G20}]"],
+					["F.",	"Ostatní provozní náklady", 										              	"09", "=[{SUM;full!:F24}]",																	"=[{SUM;full!:G24}]"],
+					["✹",   "Provozní výsledek hospodaření (±)", 		                      	"10", "=[{SUM;D1;D2;-D3;-D4;-D5;-D6;-D7;D8;-D9}]",					"=[{SUM;E1;E2;-E3;-E4;-E5;-E6;-E7;E8;-E9}]"],
+					["IV.", "Výnosy z dlouhodobého finančního majetku - podíly", 				  	"11", "=[{SUM;full!:F31}]",	             										"=[{SUM;full!:G31}]"],
+					["G.",  "Náklady vynaložené na prodané podíly", 		                  	"12", "=[{SUM;full!:F34}]",                  	      				"=[{SUM;full!:G34}]"],
+					["V.",  "Výnosy z ostatního dlouhodobého finančního majetku", 					"13", "=[{SUM;full!:F35}]",             										"=[{SUM;full!:G35}]"],
+					["H.",	"Náklady související s ostatním dlouhodobým finančním majetkem","14", "=[{SUM;full!:F38}]",  																"=[{SUM;full!:G38}]"],
+					["VI.", "Výnosové úroky a podobné výnosy", 				                    	"15", "=[{SUM;full!:F39}]",																	"=[{SUM;full!:G39}]"],
+					["I.",  "Úpravy hodnot a rezervy ve finanční oblasti", 		    	        "16", "=[{SUM;full!:F42}]",            	      							"=[{SUM;full!:G42}]"],
+					["J.",	"Nákladové úroky a podobné náklady", 										      	"17", "=[{SUM;full!:F43}]", 																"=[{SUM;full!:G43}]"],
+					["VII.","Ostatní finanční výnosy", 								      					  		"18", "=[{SUM;full!:F46}]",																	"=[{SUM;full!:G46}]"],
+					["K.",  "Ostatní finanční náklady", 								      				  		"19", "=[{SUM;full!:F47}]",																	"=[{SUM;full!:G47}]"],
+					["✹",   "Finanční výsledek hospodaření (±)", 		                      	"20", "=[{SUM;D11;-D12;D13;-D14;D15;-D16;-D17;D18;-D19}]",	"=[{SUM;D11;-E12;E13;-E14;E15;-E16;-E17;E18;-E19}]"],
+					["✹✹",  "Výsledek hospodaření před zdaněním (±)",   		              	"21", "=[{SUM;D10;D20}]",           												"=[{SUM;E10;E20}]"],
+					["L.",	"Daň z příjmů", 										                       		  "22", "=[{SUM;full!:F50}]",																	"=[{SUM;full!:G50}]"],
+					["✹✹",  "Výsledek hospodaření po zdanění (±)",	                  	    "23", "=[{SUM;D21;-D22}]",        													"=[{SUM;E21;-E22}]"],
+					["M.",  "Převod podílu na výsledku hospodaření společníkům (±)", 				"24", "=[{SUM;full!:F54}]",   															"=[{SUM;full!:G54}]"],
+					["✹✹✹", "Výsledek hospodaření za účetní období (±)",	              	  "25", "=[{SUM;D23;-D24}]", 																	"=[{SUM;E23;-E24}]"],
+					["✹",   "Čistý obrat za účetní období = I. + II. + III. + IV. + V. + VI. + VII.",
+																																									"26", "=[{SUM;D1;D2;D8;D11;D13;D15;D18}]",									"=[{SUM;E1;E2;E8;E11;E13;E15;E18}]"]
+				]
+			}
+		]
+	}
+}
+
+

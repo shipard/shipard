@@ -1,0 +1,29 @@
+{
+	"id": "e10.base.templates", "sql": "e10_base_templates", "name": "Šablony", "icon": "x-template",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "name", "name": "Název šablony", "type": "string", "len": 120},
+		{"id": "type", "name": "Typ šablony", "type": "enumInt",
+			"enumValues": {"0": "Web", "1": "Doklad", "2": "Report", "3": "Spreadsheet"}},
+
+		{"id": "templateCode", "name": "Kód šablony", "type": "memo"},
+
+		{"id": "sn", "name": "SN", "type": "string", "len": 35},
+		{"id": "replaceId", "name": "Nahrazuje", "type": "string", "len": 70},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.templates.docStates"},
+	"views": {
+		"default": {"id": "default", "class": "e10.base.ViewTemplates", "detail": "e10.base.ViewDetailTemplate"},
+		"web": {"id": "web", "class": "e10.base.ViewTemplatesWeb", "detail": "e10.base.ViewDetailTemplate"},
+		"webCombo": {"id": "webCombo", "class": "e10.base.ViewTemplatesWebCombo"}
+	},
+	"forms": [
+		{"id": "default", "class": "e10.base.FormTemplate"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"},
+	"order": [{"column": "ndx", "order": "ASC"}]
+}

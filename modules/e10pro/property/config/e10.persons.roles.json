@@ -1,0 +1,30 @@
+{
+  "property": {
+		"name": "Správce majetku",
+		"roles": ["user"],
+		"viewers": {
+			"e10pro.property.property": {"default": 2, "debs": 2},
+			"e10pro.property.operations": {"default": 2, "e10pro.property.ViewOperations": 2},
+			"e10pro.property.types": {"default": 2},
+			"e10pro.property.groups": {"default": 2},
+			"e10pro.property.deps": {"default": 1},
+			"e10.base.places": {"property": 1}
+		},
+		"reports": {
+			"e10pro.property.ReportPropertyList": 2,
+			"e10pro.property.libs.reports.PropertyInventoryingReport": 2
+		}
+	},
+	"acc": {
+		"viewers": {
+			"e10pro.property.property": {"default": 2, "debs": 2},
+			"e10pro.property.operations": {"default": 2, "e10pro.property.ViewOperations": 2},
+			"e10pro.property.deps": {"default": 2}
+		},
+    "reports": {
+			"e10pro.property.ReportDepreciations": 2,
+		  "e10pro.property.ReportAccounting": 2,
+	    "e10pro.property.ReportNonDeps": 2
+	  }
+	}
+}

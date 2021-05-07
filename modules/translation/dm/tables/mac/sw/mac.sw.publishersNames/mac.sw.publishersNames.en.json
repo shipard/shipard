@@ -1,0 +1,19 @@
+{
+    "table": {
+        "name": "Publishers names"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "rowOrder": {
+            "name": "Row order"
+        },
+        "publisher": {
+            "name": "Publisher"
+        },
+        "name": {
+            "name": "Name"
+        }
+    }
+}

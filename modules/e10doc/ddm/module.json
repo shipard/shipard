@@ -1,0 +1,11 @@
+{
+	"id": "e10doc.ddm",
+	"name": "Documents Data Mining",
+	"tables": ["formats", "formatsItems"],
+
+	"config": [
+		{"id": "+appOptions", "file": "e10.appOptions.json"},
+		{"id": "+e10.persons.roles", "name": "Role uživatelů", "file": "e10.persons.roles.json"},
+		{"id": "+e10doc.ddm.formatItemsTypes", "file": "formatItemsTypes.json"}
+	]
+}

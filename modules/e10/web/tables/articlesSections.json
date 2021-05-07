@@ -1,0 +1,33 @@
+{
+	"id": "e10.web.articlesSections", "sql": "e10_web_articlesSections", "name": "Sekce článků", "icon": "icon-folder",
+	"columns": [
+		{"id": "ndx", "name": "ndx", "type": "int_ai"},
+		{"id": "fullName", "name": "Úplný název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
+		{"id": "title", "name": "Titulek", "type": "string", "len": 80},
+
+		{"id": "order", "name": "Pořadí", "type": "int"},
+		{"id": "icon", "name": "Ikona", "type": "string", "len": 50},
+
+		{"id": "addGallery", "name": "Přidávat automaticky fotogalerii", "type": "logical"},
+		{"id": "addDownload", "name": "Přidávat automaticky download", "type": "logical"},
+		{"id": "showDate", "name": "Zobrazovat datum publikace", "type": "logical"},
+		{"id": "showAuthor", "name": "Zobrazovat autora", "type": "logical"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+
+	],
+	"views": [
+		{"id": "default", "class": "e10.web.ViewArticlesSections", "detail": "e10.web.ViewDetailArticleSection", "help": "web/4540"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10.web.FormArticleSection", "help": "web/4540"}
+	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"options": ["configSource"],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.web.servers.docStates"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

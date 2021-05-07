@@ -1,0 +1,11 @@
+[
+	{"name": "Pohledávky", "class": "e10doc.balance.reportBalanceReceivables", "icon": "icon-arrow-circle-up", "group": "e10doc-balance", "order": 1000},
+	{"name": "Závazky", "class": "e10doc.balance.reportBalanceObligations", "icon": "icon-arrow-circle-down", "group": "e10doc-balance", "order": 2000},
+	{"name": "Přijaté zálohy", "class": "e10doc.balance.reportBalanceDepositReceived", "icon": "icon-arrow-circle-o-down", "group": "e10doc-balance", "order": 3000},
+  {"name": "Poskytnuté zálohy", "class": "e10doc.balance.reportBalanceAdvance", "icon": "icon-arrow-circle-o-up", "group": "e10doc-balance", "order": 3500},
+  {"name": "Peníze na cestě", "icon": "icon-money", "class": "e10doc.balance.reportBalanceCashInTransit", "group": "e10doc-balance", "order": 4100},
+
+	{"name": "Upomínky", "class": "e10doc.balance.ReportRequestsForPayment", "icon": "icon-exclamation-circle", "group": "e10doc-balance", "order": 9000000},
+	{"name": "Zápočty", "class": "e10doc.balance.reportBalanceOffsetting", "icon": "icon-exchange", "group": "e10doc-balance", "order": 9100000},
+	{"name": "Deník", "class": "e10doc.balance.reportBalanceJournal", "icon": "icon-list-alt", "group": "e10doc-balance", "order": 9999999}
+]

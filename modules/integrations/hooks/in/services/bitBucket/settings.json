@@ -1,0 +1,17 @@
+{
+	"name": "BitBucket",
+	"fields": {
+		"columns": [
+			{"id": "usePeriodLogs", "name": "Vytvářet automatické logy", "type": "enumString", "len": 1,
+				"enumValues": {
+					"N": "Ne",
+					"W": "Týdenní",
+					"M": "Měsíční"
+				}
+			},
+			{"id": "periodLogsSection", "name": "Sekce pro automatické logy", "type": "int", "reference": "wkf.base.sections"},
+			{"id": "periodLogsAuthor", "name": "Autor automatických logů", "type": "int", "reference": "e10.persons.persons"},
+			{"id": "ignoredCommitBranches", "name": "Ignorovat commity z větví", "type": "string", "len": "80"}
+		]
+	}
+}

@@ -1,0 +1,164 @@
+{
+	"depGroups": {
+		"": {"fullName": ""},
+
+		"A1": {
+			"id": "1", "fullName": "Odpisová skupina 1", "shortName": "Odpisová skupina 1",
+			"taxDepsTaxCI": "kc_dppb1"
+		},
+		"A110": {
+			"id": "1 (+10%)", "fullName": "Odpisová skupina 1 (zvýšený odpis prvního roku +10%)", "shortName": "Odp. sk. 1 (první odpis +10%)",
+			"taxDepsTaxCI": "kc_dppb1"
+		},
+		"A115": {
+			"id": "1 (+15%)", "fullName": "Odpisová skupina 1 (zvýšený odpis prvního roku +15%)", "shortName": "Odp. sk. 1 (první odpis +15%)",
+			"taxDepsTaxCI": "kc_dppb1"
+		},
+		"A120": {
+			"id": "1 (+20%)", "fullName": "Odpisová skupina 1 (zvýšený odpis prvního roku +20%)", "shortName": "Odp. sk. 1 (první odpis +20%)",
+			"taxDepsTaxCI": "kc_dppb1"
+		},
+		"A2": {
+			"id": "2", "fullName": "Odpisová skupina 2", "shortName": "Odpisová skupina 2",
+			"taxDepsTaxCI": "kc_dppb2"
+		},
+		"A210": {
+			"id": "2 (+10%)", "fullName": "Odpisová skupina 2 (zvýšený odpis prvního roku +10%)", "shortName": "Odp. sk. 2 (první odpis +10%)",
+			"taxDepsTaxCI": "kc_dppb2"
+		},
+		"A215": {
+			"id": "2 (+15%)", "fullName": "Odpisová skupina 2 (zvýšený odpis prvního roku +15%)", "shortName": "Odp. sk. 2 (první odpis +15%)",
+			"taxDepsTaxCI": "kc_dppb2"
+		},
+		"A220": {
+			"id": "2 (+20%)", "fullName": "Odpisová skupina 2 (zvýšený odpis prvního rokus +20%)", "shortName": "Odp. sk. 2 (první odpis +20%)",
+			"taxDepsTaxCI": "kc_dppb2"
+		},
+		"A3": {
+			"id": "3", "fullName": "Odpisová skupina 3", "shortName": "Odpisová skupina 3",
+			"taxDepsTaxCI": "kc_dppb3"
+		},
+		"A310": {
+			"id": "3 (+10%)", "fullName": "Odpisová skupina 3 (zvýšený odpis prvního roku +10%)", "shortName": "Odp. sk. 3 (první odpis +10%)",
+			"taxDepsTaxCI": "kc_dppb3"
+		},
+		"A315": {
+			"id": "3 (+15%)", "fullName": "Odpisová skupina 3 (zvýšený odpis prvního roku +15%)", "shortName": "Odp. sk. 3 (první odpis +15%)",
+			"taxDepsTaxCI": "kc_dppb3"
+		},
+		"A320": {
+			"id": "3 (+20%)", "fullName": "Odpisová skupina 3 (zvýšený odpis prvního roku +20%)", "shortName": "Odp. sk. 3 (první odpis +20%)",
+			"taxDepsTaxCI": "kc_dppb3"
+		},
+		"A4": {
+			"id": "4", "fullName": "Odpisová skupina 4", "shortName": "Odpisová skupina 4",
+			"taxDepsTaxCI": "kc_dppb4"
+		},
+		"A5": {
+			"id": "5", "fullName": "Odpisová skupina 5", "shortName": "Odpisová skupina 5",
+			"taxDepsTaxCI": "kc_dppb5"
+		},
+		"A6": {
+			"id": "6", "fullName": "Odpisová skupina 6", "shortName": "Odpisová skupina 6",
+			"taxDepsTaxCI": "kc_dpp_b_6odsk"
+		},
+
+		"X": {
+			"id": "X", "fullName": "Odpisová skupina X", "shortName": "Odpisová skupina X"
+		},
+
+		"AI1": {
+			"id": "0A", "fullName": "NIM - Software", "shortName": "NIM - Software", "intangible" : 1,
+			"taxDepsTaxCI": "kc_dpp_b_6odsk"
+		},
+		"AI2": {
+			"id": "0B ", "fullName": "NIM - Audiovizuální díla", "shortName": "NIM - Audiovizuální díla", "intangible" : 1,
+			"taxDepsTaxCI": "kc_dpp_b_6odsk"
+		},
+		"AI3": {
+			"id": "0C", "fullName": "NIM - Nehmotné výsledky výzkumu a vývoje", "shortName": "NIM - Nehmotné výsledky výzkumu a vývoje", "intangible" : 1,
+			"taxDepsTaxCI": "kc_dpp_b_6odsk"
+		},
+		"AI4": {
+			"id": "0D", "fullName": "NIM - Zřizovací výdaje", "shortName": "NIM - Zřizovací výdaje", "intangible" : 1
+		},
+		"AI5": {
+			"id": "0E", "fullName": "NIM - Ostatní nehmotný majetek", "shortName": "NIM - Ostatní nehmotný majetek", "intangible" : 1,
+			"taxDepsTaxCI": "kc_dpp_b_6odsk"
+		}
+	},
+	"depTypes": {
+		"": {"fullName": ""},
+		"AR": {"fullName": "Rovnoměrný"},
+		"AZ": {"fullName": "Zrychlený"},
+		"AN": {"fullName": "Neodepisovaný"}
+	},
+	"amortizationPeriod": [
+		{"code": "A1", "from": "0000-00-00", "to": "2004-12-31", "value": 4, "cr1": 14.2, "crn": 28.6, "cri": 25.0, "cz1": 4, "czn": 5, "czi": 4},
+		{"code": "A1", "from": "2005-01-01", "to": "0000-00-00", "value": 3, "cr1": 20.0, "crn": 40.0, "cri": 33.3, "cz1": 3, "czn": 4, "czi": 3},
+
+		{"code": "A110", "from": "2005-01-01", "to": "0000-00-00", "value": 3, "cr1": 30.0, "crn": 35.0, "cri": 33.3, "cz1": 0, "czn": 0, "czi": 0},
+		{"code": "A115", "from": "2005-01-01", "to": "0000-00-00", "value": 3, "cr1": 35.0, "crn": 32.5, "cri": 33.3, "cz1": 0, "czn": 0, "czi": 0},
+		{"code": "A120", "from": "2005-01-01", "to": "0000-00-00", "value": 3, "cr1": 40.0, "crn": 30.0, "cri": 33.3, "cz1": 0, "czn": 0, "czi": 0},
+
+		{"code": "A2", "from": "0000-00-00", "to": "1998-12-31", "value": 8, "cr1": 6.2, "crn": 13.4, "cri": 12.5, "cz1": 8, "czn": 9, "czi": 8},
+		{"code": "A2", "from": "1999-01-01", "to": "2004-12-31", "value": 6, "cr1": 8.5, "crn": 18.3, "cri": 16.7, "cz1": 6, "czn": 7, "czi": 6},
+		{"code": "A2", "from": "2005-01-01", "to": "0000-00-00", "value": 5, "cr1": 11.0, "crn": 22.25, "cri": 20.0, "cz1": 5, "czn": 6, "czi": 5},
+
+		{"code": "A210", "from": "2005-01-01", "to": "0000-00-00", "value": 5, "cr1": 21.0, "crn": 19.75, "cri": 20.0, "cz1": 0, "czn": 0, "czi": 0},
+		{"code": "A215", "from": "2005-01-01", "to": "0000-00-00", "value": 5, "cr1": 26.0, "crn": 18.5, "cri": 20.0, "cz1": 0, "czn": 0, "czi": 0},
+		{"code": "A220", "from": "2005-01-01", "to": "0000-00-00", "value": 5, "cr1": 31.0, "crn": 17.25, "cri": 20.0, "cz1": 0, "czn": 0, "czi": 0},
+
+		{"code": "A3", "from": "0000-00-00", "to": "1998-12-31", "value": 15, "cr1": 3.4, "crn": 6.9, "cri": 6.7, "cz1": 15, "czn": 16, "czi": 15},
+		{"code": "A3", "from": "1999-01-01", "to": "2004-12-31", "value": 12, "cr1": 4.3, "crn": 8.7, "cri": 8.4, "cz1": 12, "czn": 13, "czi": 12},
+		{"code": "A3", "from": "2005-01-01", "to": "0000-00-00", "value": 10, "cr1": 5.5, "crn": 10.5, "cri": 10.0, "cz1": 10, "czn": 11, "czi": 10},
+
+		{"code": "A310", "from": "2005-01-01", "to": "0000-00-00", "value": 10, "cr1": 15.4, "crn": 9.4, "cri": 10.0, "cz1": 0, "czn": 0, "czi": 0},
+		{"code": "A315", "from": "2005-01-01", "to": "0000-00-00", "value": 10, "cr1": 19.0, "crn": 9.0, "cri": 10.0, "cz1": 0, "czn": 0, "czi": 0},
+		{"code": "A320", "from": "2005-01-01", "to": "0000-00-00", "value": 10, "cr1": 24.4, "crn": 8.4, "cri": 10.0, "cz1": 0, "czn": 0, "czi": 0},
+
+		{"code": "A4", "from": "0000-00-00", "to": "1998-12-31", "value": 30, "cr1": 1.4, "crn": 3.4, "cri": 3.4, "cz1": 30, "czn": 31, "czi": 30},
+		{"code": "A4", "from": "1999-01-01", "to": "0000-00-00", "value": 20, "cr1": 2.15, "crn": 5.15, "cri": 5.0, "cz1": 20, "czn": 21, "czi": 20},
+
+		{"code": "A5", "from": "0000-00-00", "to": "1994-12-31", "value": 50, "cr1": 1.0, "crn": 2.0, "cri": 2.0, "cz1": 50, "czn": 51, "czi": 50},
+		{"code": "A5", "from": "1995-01-01", "to": "1998-12-31", "value": 45, "cr1": 1.0, "crn": 2.25, "cri": 2.25, "cz1": 45, "czn": 46, "czi": 45},
+		{"code": "A5", "from": "1999-01-01", "to": "0000-00-00", "value": 30, "cr1": 1.4, "crn": 3.4, "cri": 3.4, "cz1": 30, "czn": 31, "czi": 30},
+
+		{"code": "A6", "from": "2004-01-01", "to": "0000-00-00", "value": 50, "cr1": 1.02, "crn": 2.02, "cri": 2.0, "cz1": 50, "czn": 51, "czi": 50},
+
+		{"code": "AI1", "from": "2005-01-01", "to": "0000-00-00", "depLength" : 36, "depLengthUnit": "M", "depLengthEnhanced" : 18},
+		{"code": "AI2", "from": "2005-01-01", "to": "0000-00-00", "depLength" : 18, "depLengthUnit": "M", "depLengthEnhanced" : 9},
+		{"code": "AI3", "from": "2005-01-01", "to": "0000-00-00", "depLength" : 36, "depLengthUnit": "M", "depLengthEnhanced" : 18},
+		{"code": "AI4", "from": "2005-01-01", "to": "0000-00-00", "depLength" : 60, "depLengthUnit": "M", "depLengthEnhanced" : 0},
+		{"code": "AI5", "from": "2005-01-01", "to": "0000-00-00", "depLength" : 72, "depLengthUnit": "M", "depLengthEnhanced" : 36},
+
+		{"code": "X", "from": "0000-00-00", "to": "0000-00-00"}
+	],
+
+	"accDepTypes": {
+		"AS": {
+			"fullName": "Stejný jako daňový odpis"
+		},
+		"AC": {
+			"fullName": "Časový odpis"
+		},
+		"AV": {
+			"fullName": "Výkonový odpis"
+		},
+		"AM": {
+			"fullName": "Manuální zadání"
+		},
+
+		"AR": {
+			"fullName": "Rovnoměrný - STARÉ"
+		},
+		"AZ": {
+			"fullName": "Zrychlený - STARÉ"
+		},
+		"AN": {
+			"fullName": "Neodepisovaný"
+		},
+
+		"": {"fullName": " -- nenastaveno --"}
+	}
+}

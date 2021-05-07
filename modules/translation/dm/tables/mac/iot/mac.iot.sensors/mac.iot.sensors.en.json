@@ -1,0 +1,58 @@
+{
+    "table": {
+        "name": "Sensors"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "uid": {
+            "name": "UID"
+        },
+        "valueSource": {
+            "name": "Value source"
+        },
+        "srcIOPort": {
+            "name": "Device"
+        },
+        "srcDataSource": {
+            "name": "Data source"
+        },
+        "srcDataSourceQuantityId": {
+            "name": "Quantity ID in data source"
+        },
+        "srcDataSourceValuesIds": {
+            "name": "Value(s) ID"
+        },
+        "quantityType": {
+            "name": "Value kind"
+        },
+        "fullName": {
+            "name": "Full name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "idName": {
+            "name": "ID"
+        },
+        "sensorBadgeLabel": {
+            "name": "Default label - name/left"
+        },
+        "sensorBadgeUnits": {
+            "name": "Default label - unit/right"
+        },
+        "flagLogin": {
+            "name": "Enable login"
+        },
+        "flagKbd": {
+            "name": "Keyboard emulation"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

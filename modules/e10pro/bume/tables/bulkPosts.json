@@ -1,0 +1,17 @@
+{
+	"id": "e10pro.bume.bulkPosts", "sql": "e10pro_wkf_bulkPosts", "name": "Odeslaná hromadná pošta", "icon": "icon-paper-plane-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "bulkMail", "name": "Zpráva", "type": "int", "reference": "e10pro.bume.bulkEmails"},
+		{"id": "email", "name": "E-mail", "type": "string", "len": 64},
+		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "sent", "name": "Odesláno", "type": "logical"},
+		{"id": "sentDate", "name": "Datum odeslání", "type": "timestamp"}
+	],
+	"views": [
+		{
+			"id": "default", "class": "e10pro.bume.ViewBulkPosts"
+		}
+	],
+	"options": ["systemTable"]
+}

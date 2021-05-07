@@ -1,0 +1,10 @@
+{
+	"id": "e10.calendar",
+	"name": "Calendar",
+	"tables": ["days"],
+	"config": [
+		{"id": "+e10.calendar.daysTypes", "file": "e10.calendar.daysTypes.json"},
+		{"id": "+e10.appOptions.groups", "file": "e10.appOptionsGroups.json"},
+		{"id": "+appOptions", "file": "e10.appOptions.json"}
+	]
+}

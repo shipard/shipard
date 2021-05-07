@@ -1,0 +1,28 @@
+{
+	"name": "Vlastní jmění, fondy, výsledek hospodaření, rezervy, dlouhodobé úvěry a půjčky, závěrkové a podrozvahové účty",
+	"datasets": [
+		{
+			"table": "e10doc.debs.accounts",
+			"name": "Třída 9 - vlastní jmění, fondy, výsledek hospodaření, rezervy, dlouhodobé úvěry a půjčky, závěrkové a podrozvahové účty",
+			"defaultValues": {"accGroup": 0, "accMethod": "debs", "docState": 4000, "docStateMain": 2},
+			"data": [
+				{"rec": {"id":"901100","fullName":"Základní jmění","shortName":"Základní jmění","accountKind":1}},
+				{"rec": {"id":"911100","fullName":"Fondy","shortName":"Fondy","accountKind":1}},
+				{"rec": {"id":"921100","fullName":"Oceňovací rozdíly z přecenění majetku a závazků","shortName":"Oceňovací rozdíly z přecenění majetku a závazků","accountKind":1}},
+				{"rec": {"id":"931100","fullName":"Výsledek hospodaření ve schvalovacím řízení","shortName":"Výsledek hospodaření ve schvalovacím řízení","accountKind":1}},
+				{"rec": {"id":"932100","fullName":"Nerozdělený zisk, neuhrazená ztráta minulých let","shortName":"Neroz. zisk, neuhr. zráta minulých let","accountKind":1}},
+				{"rec": {"id":"941100","fullName":"Rezervy","shortName":"Rezervy","accountKind":1}},
+				{"rec": {"id":"951100","fullName":"Dlouhodobé bankovní úvěry","shortName":"Dlouhodobé bankovní úvěry","accountKind":1}},
+				{"rec": {"id":"953100","fullName":"Vydané dluhopisy","shortName":"Vydané dluhopisy","accountKind":1}},
+				{"rec": {"id":"954100","fullName":"Závazky z pronájmu","shortName":"Závazky z pronájmu","accountKind":1}},
+				{"rec": {"id":"955100","fullName":"Dlouhodobé přijaté zálohy","shortName":"Dlouhodobé přijaté zálohy","accountKind":1}},
+				{"rec": {"id":"958100","fullName":"Dlouhodobé směnky k úhradě","shortName":"Dlouhodobé směnky k úhradě","accountKind":1}},
+				{"rec": {"id":"959100","fullName":"Ostatní dlouhodobé závazky","shortName":"Ostatní dlouhodobé závazky","accountKind":1}},
+
+				{"rec": {"id":"961100","fullName":"Počáteční účet rozvažný","shortName":"Počáteční účet rozvažný","accountKind":4}},
+				{"rec": {"id":"962100","fullName":"Konečný účet rozvažný","shortName":"Konečný účet rozvažný","accountKind":9}},
+				{"rec": {"id":"963100","fullName":"Účet zisků a ztrát","shortName":"Účet zisků a ztrát","accountKind":9}}
+			]
+		}
+	]
+}

@@ -1,0 +1,67 @@
+{
+    "table": {
+        "name": "Sensors"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "uid": {
+            "name": "UID"
+        },
+        "sensorType": {
+            "name": "Sensor type"
+        },
+        "quantityType": {
+            "name": "Quantity type"
+        },
+        "fullName": {
+            "name": "Full name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "idName": {
+            "name": "ID"
+        },
+        "sensorBadgeLabel": {
+            "name": "Default label - name/left"
+        },
+        "sensorBadgeUnits": {
+            "name": "Default label - unit/right"
+        },
+        "srcDataSource": {
+            "name": "Data source"
+        },
+        "srcDataSourceQuantityId": {
+            "name": "Quantity ID in data source"
+        },
+        "srcDataSourceValuesIds": {
+            "name": "Value(s) ID"
+        },
+        "iotBoxDevice": {
+            "name": "IoT device"
+        },
+        "gpioPin": {
+            "name": "GPIO pin"
+        },
+        "camera": {
+            "name": "Camera"
+        },
+        "attachedTo": {
+            "name": "Attached to"
+        },
+        "attachedGate": {
+            "name": "Gateway"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "iotBoxInterface": {
+            "name": "Interface"
+        }
+    }
+}

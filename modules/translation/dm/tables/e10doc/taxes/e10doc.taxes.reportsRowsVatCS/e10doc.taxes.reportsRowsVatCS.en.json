@@ -1,0 +1,72 @@
+{
+    "table": {
+        "name": "Rows of VAT control reports"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "report": {
+            "name": "Report"
+        },
+        "filing": {
+            "name": "Filing"
+        },
+        "rowKind": {
+            "name": "Row kind"
+        },
+        "reverseChargeCode": {
+            "name": "Reverse charge code"
+        },
+        "vatModeCode": {
+            "name": "Mode of amount code"
+        },
+        "dateTax": {
+            "name": "Time of supply",
+            "label": "Time of supply"
+        },
+        "dateTaxDuty": {
+            "name": "Date of duty to admit tax",
+            "label": "Date of duty to admit tax"
+        },
+        "vatId": {
+            "name": "VAT identification number"
+        },
+        "base1": {
+            "name": "Tax base Base rate"
+        },
+        "tax1": {
+            "name": "Tax amount Base rate"
+        },
+        "total1": {
+            "name": "Total amount Base rate"
+        },
+        "base2": {
+            "name": "Tax base First reduced rate"
+        },
+        "tax2": {
+            "name": "Tax amount First reduced rate"
+        },
+        "total2": {
+            "name": "Total amount First reduced rate"
+        },
+        "base3": {
+            "name": "Tax base Second reduced rate"
+        },
+        "tax3": {
+            "name": "Tax amount Second reduced rate"
+        },
+        "total3": {
+            "name": "Total amount Second reduced rate"
+        },
+        "document": {
+            "name": "Document"
+        },
+        "docNumber": {
+            "name": "Document number"
+        },
+        "docId": {
+            "name": "Document registration number"
+        }
+    }
+}

@@ -1,0 +1,190 @@
+// Core variables and mixins
+@import "../../../wwwlibs/bootstrap33/less/variables.less";
+//@import "variables.less";
+@import "../../../wwwlibs/bootstrap33/less/mixins.less";
+
+// Reset
+@import "../../../wwwlibs/bootstrap33/less/normalize.less";
+//@import "../../../wwwlibs/bootstrap33/less/print.less";
+
+// Core CSS
+@import "../../../wwwlibs/bootstrap33/less/scaffolding.less";
+@import "../../../wwwlibs/bootstrap33/less/type.less";
+@import "../../../wwwlibs/bootstrap33/less/code.less";
+@import "../../../wwwlibs/bootstrap33/less/grid.less";
+//@import "../../../wwwlibs/bootstrap33/less/tables.less";
+@import "../../../wwwlibs/bootstrap33/less/forms.less";
+@import "../../../wwwlibs/bootstrap33/less/buttons.less";
+
+// Components
+@import "../../../wwwlibs/bootstrap33/less/component-animations.less";
+
+@import "../../../wwwlibs/Font-Awesome42/less/font-awesome.less";
+
+//@import "../../../wwwlibs/bootstrap33/less/dropdowns.less";
+@import "../../../wwwlibs/bootstrap33/less/button-groups.less";
+@import "../../../wwwlibs/bootstrap33/less/input-groups.less";
+@import "../../../wwwlibs/bootstrap33/less/navs.less";
+@import "../../../wwwlibs/bootstrap33/less/navbar.less";
+//@import "../../../wwwlibs/bootstrap33/less/breadcrumbs.less";
+//@import "../../../wwwlibs/bootstrap33/less/pagination.less";
+//@import "../../../wwwlibs/bootstrap33/less/pager.less";
+//@import "../../../wwwlibs/bootstrap33/less/labels.less";
+//@import "../../../wwwlibs/bootstrap33/less/badges.less";
+//@import "../../../wwwlibs/bootstrap33/less/jumbotron.less";
+//@import "../../../wwwlibs/bootstrap33/less/thumbnails.less";
+@import "../../../wwwlibs/bootstrap33/less/alerts.less";
+//@import "../../../wwwlibs/bootstrap33/less/progress-bars.less";
+@import "../../../wwwlibs/bootstrap33/less/media.less";
+@import "../../../wwwlibs/bootstrap33/less/list-group.less";
+@import "../../../wwwlibs/bootstrap33/less/panels.less";
+//@import "../../../wwwlibs/bootstrap33/less/wells.less";
+//@import "../../../wwwlibs/bootstrap33/less/close.less";
+
+// Components w/ JavaScript
+//@import "../../../wwwlibs/bootstrap33/less/modals.less";
+//@import "../../../wwwlibs/bootstrap33/less/tooltip.less";
+//@import "../../../wwwlibs/bootstrap33/less/popovers.less";
+//@import "../../../wwwlibs/bootstrap33/less/carousel.less";
+
+// Utility classes
+@import "../../../wwwlibs/bootstrap33/less/utilities.less";
+@import "../../../wwwlibs/bootstrap33/less/responsive-utilities.less";
+
+
+body {height:100%; overflow-x: hidden;}
+
+div.e10-sp-header {
+  box-shadow: 0 3px 10px rgba(0,0,0,.23),0 3px 10px rgba(0,0,0,.16);
+  color: rgba(255,255,255,.84);
+  a, a:visited, a:active {color: rgba(255,255,255,.84);}
+  padding-bottom: 4px;
+}
+
+div.e10-sp-footer {
+  color: rgba(255,255,255,.84);
+  a, a:visited, a:active {color: rgba(255,255,255,.75); text-decoration: underline; }
+  padding: .5ex 4px;
+  opacity: .75;
+}
+
+div.e10-sp-dayInfo {
+  div.e10-sp-dayInfo-left {
+    padding-bottom: 6ex;
+    padding-left: 4em;
+    .e10-sp-today-date {
+      font-size: 250%;
+    }
+  }
+  div.e10-sp-dayInfo-right {
+    padding-bottom: 6ex;
+    padding-right: 4em;
+    text-align: right;
+  }
+
+  color: floralwhite; text-shadow: 1px 1px 3px rgba(0,0,0,.9);
+  a, a:visited {color: floralwhite;}
+}
+
+
+div.e10-sp-content {
+  box-shadow: 0 3px 10px rgba(0,0,0,.23),0 3px 10px rgba(0,0,0,.16);
+  border-radius: 2px;
+  background-color: @well-bg;
+  opacity: .95;
+  text-align: center;
+}
+
+div.e10-sp-background {
+  background-color: #eee;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width:100%;
+  height: 100%;
+  z-index: -1;
+}
+
+.e10-sp-title1 {
+  font-size: 20px;
+  font-weight: 200;
+}
+
+a.e10-sp-title1:hover {text-decoration: none;}
+
+.e10-sp-title2 {
+  font-weight: normal;
+}
+
+.e10-sp-title2+.e10-sp-title2 {padding-left: 1ex;}
+
+.navbar-default {
+  .e10-sp-title1, .e10-sp-title2, .e10-sp-title2>a {
+    color: @navbar-default-brand-color;
+    &:hover,
+    &:focus {
+      color: @navbar-default-brand-hover-color;
+      background-color: @navbar-default-brand-hover-bg;
+    }
+  }
+}
+
+.navbar-inverse {
+  opacity: .9;
+  .e10-sp-title1, .e10-sp-title2, .e10-sp-title2>a {
+    color: @navbar-inverse-brand-color;
+
+    &:hover,
+    &:focus {
+      color: @navbar-inverse-brand-hover-color;
+      background-color: @navbar-inverse-brand-hover-bg;
+    }
+  }
+  .e10-sp-title1 {color: white;}
+  .e10-sp-title2 {opacity: .9;}
+}
+
+
+ul.e10-sp-userslist {
+  text-align: left;
+  >li {
+    cursor: pointer;
+  }
+  >li:hover {
+    background-color: @list-group-hover-bg;
+  }
+}
+
+.e10-sp-centered-block {
+  position: relative;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+
+#e10-sp-desktop {
+  height: 100%;
+  -webkit-transform-style: preserve-3d;
+  -moz-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+
+}
+
+.col-sm-offset-2>a {display: none;}
+
+#e10-sp-news-content {
+  div.item {
+		border: 1px solid #111;
+		background-color: rgba(200,200,200,.9);
+		margin: 1ex 0;
+		padding: 0 1ex;
+		border-radius: 4px;
+		color: #333;
+  }
+  h3 {
+    font-size: 120%;
+		margin: 1ex 0;
+
+  }
+}

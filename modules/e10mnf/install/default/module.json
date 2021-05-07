@@ -1,0 +1,10 @@
+{
+	"id": "e10mnf.install.default",
+	"name": "Instalační balíček Výroba",
+	"modules": ["e10mnf/core"],
+	"config": [
+		{"id": "+appSkeleton", "file": "appSkeleton.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+		{"id": "+reports", "file": "reports.json"}
+	]
+}

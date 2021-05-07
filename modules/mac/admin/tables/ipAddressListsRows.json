@@ -1,0 +1,13 @@
+{
+	"id": "mac.admin.ipAddressListsRows", "sql": "mac_admin_ipAddressListsRows", "name": "Řádky seznamu IP adres",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "addressList", "name": "Seznam adres", "type": "int", "reference": "mac.admin.ipAddressLists"},
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+
+		{"id": "address", "name": "Adresa", "type": "int", "reference": "mac.admin.ipAddress"}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.admin.FormIPAddressListsRow"}
+	]
+}

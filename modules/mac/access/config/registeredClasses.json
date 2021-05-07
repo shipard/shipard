@@ -1,0 +1,6 @@
+{
+	"objectsCalls": {
+		"mac-access-gate-check": {"classId": "mac.access.libs.AccessGateCheck"},
+		"mac-access-key-test": {"classId": "mac.access.libs.AccessKeyTest"}
+	}
+}

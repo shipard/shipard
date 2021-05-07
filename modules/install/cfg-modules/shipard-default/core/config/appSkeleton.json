@@ -1,0 +1,15 @@
+{
+	"panels": [
+		{"url": "/intranet", "zone": "sec", "objectType": "redirect", "redirect": "*"},
+		{"url": "/app", "zone": "sec", "objectType": "redirect", "redirect": "*"},
+		{"url": "/app/", "zone": "sec", "objectType": "redirect", "redirect": "*"},
+		{"url": "/www", "zone": "sec", "objectType": "redirect", "redirect": "/www/"},
+		{"urlRegExp": "/^\\/www\\/(.*)$/", "objectType": "function", "function": "e10.web.createWebPageSec", "zone": "sec", "order": 200000},
+		{"urlRegExp": "/^./", "objectType": "function", "function": "e10.web.checkWebPage", "allow": "all", "order": 99999999}
+	],
+	"userManagement" : {
+		"authenticator": "e10.persons.Authenticator",
+		"enableLoginRemember": 1,
+		"enableLoginAutocomplete": 1
+	}
+}

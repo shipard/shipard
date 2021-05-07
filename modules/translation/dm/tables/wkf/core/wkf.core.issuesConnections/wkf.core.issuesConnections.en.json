@@ -1,0 +1,22 @@
+{
+    "table": {
+        "name": "Issues connections"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "connectionType": {
+            "name": "Connection type"
+        },
+        "issue": {
+            "name": "Issue"
+        },
+        "connectedIssue": {
+            "name": "Connected Issue"
+        },
+        "rowOrder": {
+            "name": "Order"
+        }
+    }
+}

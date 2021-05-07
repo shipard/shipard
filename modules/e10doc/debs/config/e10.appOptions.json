@@ -1,0 +1,10 @@
+{
+	"spdAccounts": {
+		"name": "Účty ve výkazech", "order": 500000, "group": "codebase",
+		"icon": "icon-table",
+		"type": "viewer",
+		"table": "e10doc.debs.spdAccounts",
+		"viewer": "default"
+	}
+}
+

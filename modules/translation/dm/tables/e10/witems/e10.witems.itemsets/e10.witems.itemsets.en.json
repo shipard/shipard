@@ -1,0 +1,29 @@
+{
+    "table": {
+        "name": "Sets of items"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "itemOwner": {
+            "name": "Item parent"
+        },
+        "item": {
+            "name": "Item"
+        },
+        "quantity": {
+            "name": "Quantity",
+            "label": "Quantity"
+        },
+        "setItemType": {
+            "name": "Type"
+        },
+        "validFrom": {
+            "name": "Valid from"
+        },
+        "validTo": {
+            "name": "Valid to"
+        }
+    }
+}

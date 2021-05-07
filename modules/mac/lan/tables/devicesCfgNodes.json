@@ -1,0 +1,23 @@
+{
+	"id": "mac.lan.devicesCfgNodes", "sql": "mac_lan_devicesCfgNodes", "name": "Konfigurace Shipard Nodes",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "device", "name": "Zařízení", "type": "int", "reference": "mac.lan.devices"},
+
+		{"id": "runningData", "name": "Data aktivní konfigurace", "type": "memo"},
+		{"id": "runningDataVer", "name": "Verze dat aktivní konfigurace", "type": "string", "len": 40, "options": ["ascii"]},
+		{"id": "runningTimestamp", "name": "Datum a čas aplikace aktivní konfigurace", "type": "timestamp"},
+
+		{"id": "newData", "name": "Nová data nastavení pro aktivní konfiguraci", "type": "memo"},
+		{"id": "newDataVer", "name": "Verze nových dat pro aktivní konfiguraci", "type": "string", "len": 40, "options": ["ascii"]},
+		{"id": "newTimestamp", "name": "Datum a čas nových dat pro aktivní konfiguraci", "type": "timestamp"},
+
+		{"id": "liveData", "name": "Stávající data nastavení", "type": "memo"},
+		{"id": "liveDataVer", "name": "Verze konfiguračních dat", "type": "string", "len": 40, "options": ["ascii"]},
+		{"id": "liveTimestamp", "name": "Datum a čas aplikace nastavení", "type": "timestamp"},
+
+		{"id": "changed", "name": "Změna", "type": "logical"},
+		{"id": "applyNewData", "name": "Aplikovat nová data", "type": "logical"}
+	],
+	"options": ["systemTable"]
+}

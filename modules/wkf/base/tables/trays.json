@@ -1,0 +1,39 @@
+{
+	"id": "wkf.base.trays", "sql": "wkf_base_trays", "name": "Přihrádky na přílohy", "icon": "icon-folder-open-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "fullName", "name": "Název", "type": "string", "len": 100},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 60},
+
+		{"id": "order", "name": "Pořadí", "type": "int"},
+		{"id": "icon", "name": "Ikona", "type": "string", "len": 50},
+
+		{"id": "shipardEmailId", "name": "ID pro došlé emaily Shipard", "type": "string", "len": 48},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"},
+		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": {
+		"default": {
+			"id": "default", "class": "wkf.base.ViewTrays",
+			"details": {
+				"default": {"title": "Obsah", "icon": "icon-file", "type": "detail", "class": "wkf.base.ViewDetailTray", "order": 1000}
+			}
+		}
+	},
+	"forms": [
+		{"id": "default", "class": "wkf.base.FormTray"}
+	],
+	"options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"documentCard": "wkf.base.DocumentCardTray",
+	"ndx": 1248
+}
+
+

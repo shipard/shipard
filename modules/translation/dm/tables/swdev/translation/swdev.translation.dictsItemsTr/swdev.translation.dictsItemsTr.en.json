@@ -1,0 +1,25 @@
+{
+    "table": {
+        "name": "Translated dictionary items"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "dictItem": {
+            "name": "Dictionary item"
+        },
+        "lang": {
+            "name": "Language"
+        },
+        "text": {
+            "name": "Text"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

@@ -1,0 +1,29 @@
+{
+	"id": "e10pro.canteen.menuRecipientsDefs", "sql": "e10pro_canteen_menuRecipientsDefs", "name": "Definice strávníků", "icon": "icon-share",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "fullName", "name": "Úplný název", "type": "string", "len": 120},
+		{"id": "canteen", "name": "Jídelna", "type": "int", "reference": "e10pro.canteen.canteens"},
+
+		{"id": "recipientType", "name": "Druh", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "Konkrétní osoba", "1": "Na základě vztahu", "2": "Štítek na osobě"}},
+
+		{"id": "categoryType", "name": "Vztah", "type": "enumInt",
+			"enumValues": {"1": "Zaměstnanec", "4": "Externí spolupracovník"}},
+		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "categoryPerson", "name": "Vztah k", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "personLabel", "name": "Štítek", "type": "int", "reference": "e10.base.clsfitems"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "e10pro.canteen.ViewMenuRecipientsDefs", "help": "prirucka/4706"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.canteen.FormMenuRecipientDef", "help": "prirucka/4706"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

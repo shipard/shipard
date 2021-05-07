@@ -1,0 +1,55 @@
+{
+    "table": {
+        "name": "Addresses"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "tableid": {
+            "name": "Table"
+        },
+        "recid": {
+            "name": "Row"
+        },
+        "type": {
+            "name": "Address type"
+        },
+        "specification": {
+            "name": "Specification"
+        },
+        "street": {
+            "name": "Street"
+        },
+        "city": {
+            "name": "City"
+        },
+        "zipcode": {
+            "name": "Postal code"
+        },
+        "country": {
+            "name": "Country"
+        },
+        "lat": {
+            "name": "Latitude"
+        },
+        "lon": {
+            "name": "Longitude"
+        },
+        "locState": {
+            "name": "State of geotagging"
+        },
+        "locTime": {
+            "name": "Timestamp of geotagging"
+        },
+        "locHash": {
+            "name": "Hash"
+        },
+        "syncNdx": {
+            "name": "syncNdx"
+        },
+        "syncSrc": {
+            "name": "syncSrc"
+        }
+    }
+}

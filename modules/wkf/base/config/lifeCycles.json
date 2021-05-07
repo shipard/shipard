@@ -1,0 +1,8 @@
+{
+	"0": {"name": "Nové"},
+	"10": {"name": "Probíhá"},
+	"20": {"name": "Pozastaveno"},
+	"40": {"name": "Opuštěno"},
+	"60": {"name": "Hotovo"},
+	"90": {"name": "Odloženo"}
+}

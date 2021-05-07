@@ -1,0 +1,26 @@
+{
+	"main": {
+		"panels": {
+			"macAccess": {
+				"name": "Přístupy", "icon": "icon-key", "order": 560000,
+				"fullsize": 1,
+				"rows": {
+					"main": {"order": 10000}
+				},
+				"enabledCfgItem": "options.macAccess.useAccessManagement"
+			}
+		}
+	},
+	"main_new": {
+		"panels": {
+			"macAccess": {
+				"name": "Přístupy", "icon": "icon-key", "order": 560000,
+				"fullsize": 1,
+				"rows": {
+					"main": {"order": 10000}
+				},
+				"enabledCfgItem": "options.macAccess.useAccessManagement"
+			}
+		}
+	}
+}

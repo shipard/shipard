@@ -1,0 +1,37 @@
+{
+    "table": {
+        "name": "Issue Statuses"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "section": {
+            "name": "Section"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "icon": {
+            "name": "Icon"
+        },
+        "lifeCycle": {
+            "name": "Phase"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "statusKind": {
+            "name": "Kind"
+        }
+    }
+}

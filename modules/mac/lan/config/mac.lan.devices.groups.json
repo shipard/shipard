@@ -1,0 +1,45 @@
+{
+	"0": {
+		"name": "Vše", "icon": ""
+	},
+	"10": {
+		"name": "Aktivní prvky", "icon": "icon-sitemap", "devicesKinds": [8, 9, 20]
+	},
+	"12": {
+		"name": "WiFi AP", "icon": "x-router", "devicesKinds": [15]
+	},
+	"20": {
+		"name": "Servery", "icon": "icon-server", "devicesKinds": [7, 70]
+	},
+	"22": {
+		"name": "NAS", "icon": "icon-hdd-o", "devicesKinds": [11]
+	},
+	"25": {
+		"name": "IoT", "icon": "icon-plug", "devicesKinds": [75]
+	},
+	"30": {
+		"name": "Tiskárny", "icon": "icon-print", "devicesKinds": [3]
+	},
+	"40": {
+		"name": "Kamery", "icon": "icon-video-camera", "devicesKinds": [10]
+	},
+	"45": {
+		"name": "Terminály", "icon": "icon-calculator", "devicesKinds": [40]
+	},
+	"50": {
+		"name": "Počítače", "icon": "icon-laptop", "devicesKinds": [1, 2]
+	},
+	"60": {
+		"name": "Multimedia", "icon": "icon-television", "devicesKinds": [6]
+	},
+	"65": {
+		"name": "Tablety a telefony", "icon": "icon-phone", "devicesKinds": [4, 5]
+	},
+	"81": {
+		"name": "UPS", "icon": "icon-battery-three-quarters", "devicesKinds": [30]
+	},
+
+	"99": {
+		"name": "Ostatní", "icon": "icon-dot-circle-o", "devicesKinds": [99]
+	}
+}

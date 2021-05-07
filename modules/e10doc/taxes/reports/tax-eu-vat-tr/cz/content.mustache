@@ -1,0 +1,335 @@
+<div class="newPage"></div>
+<div class='e10-tax-report'>
+
+<h3>C. ODDÍL - daň z přidané hodnoty</h3>
+<table class="tableSection small">
+    <tr>
+        <td colspan="14" class="l b">I. Zdanitelná plnění</td>
+        <td colspan="1" class="c b">ř.</td>
+        <td colspan="9" class="c b">Základ daně</td>
+        <td colspan="9" class="c b">Daň na výstupu</td>
+    </tr>
+
+    <tr>
+        <td colspan="12" class="l" rowspan="2">Dodání zboží nebo poskytnutí služby s místem<br>plnění v tuzemsku (např. §13,§14,§8)</td>
+        <td colspan="2" class="c">základní</td>
+        <td colspan="1" class="c">1</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row1.base}}</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row1.tax}}</td>
+    </tr>
+    <tr>
+        <td colspan="2" class="c">snížená</td>
+        <td colspan="1" class="c">2</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row2.base}}</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row2.tax}}</td>
+    </tr>
+
+    <tr>
+        <td colspan="12" class="l" rowspan="2">Pořízení zboží z jiného členského státu<br> (§16; §17 odst.6 písm.e); §19 odst.3)</td>
+        <td colspan="2" class="c">základní</td>
+        <td colspan="1" class="c">3</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row3.base}}</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row3.tax}}</td>
+    </tr>
+    <tr>
+        <td colspan="2" class="c">snížená</td>
+        <td colspan="1" class="c">4</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row4.base}}</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row4.tax}}</td>
+    </tr>
+
+    <tr>
+        <td colspan="12" class="l" rowspan="2">Přijetí služby s místem plnění podle §9 odst. 1<br>od osoby registrované k dani v jiném členském státě</td>
+        <td colspan="2" class="c">základní</td>
+        <td colspan="1" class="c">5</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row5.base}}</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row5.tax}}</td>
+    </tr>
+    <tr>
+        <td colspan="2" class="c">snížená</td>
+        <td colspan="1" class="c">6</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row6.base}}</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row6.tax}}</td>
+    </tr>
+
+    <tr>
+        <td colspan="12" class="l" rowspan="2">Dovoz zboží (§23 odst.3–5)</td>
+        <td colspan="2" class="c">základní</td>
+        <td colspan="1" class="c">7</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row7.base}}</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row7.tax}}</td>
+    </tr>
+    <tr>
+        <td colspan="2" class="c">snížená</td>
+        <td colspan="1" class="c">8</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row8.base}}</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row8.tax}}</td>
+    </tr>
+
+    <tr>
+        <td colspan="14" class="l" colspan="2">Pořízení nového dopravního prostředku (§19 odst.4)</td>
+        <td colspan="1" class="c">9</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row9.base}}</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row9.tax}}</td>
+    </tr>
+
+    <tr>
+        <td colspan="12" class="l" rowspan="2">Režim přenesení daňové povinnosti (§92a) – odběratel<br>zboží nebo příjemce služeb</td>
+        <td colspan="2" class="c">základní</td>
+        <td colspan="1" class="c">10</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row10.base}}</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row10.tax}}</td>
+    </tr>
+    <tr>
+        <td colspan="2" class="c">snížená</td>
+        <td colspan="1" class="c">11</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row11.base}}</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row11.tax}}</td>
+    </tr>
+
+    <tr>
+        <td colspan="12" class="l" rowspan="2">Ostatní zdanitelná plnění, u kterých je povinen přiznat<br>daň plátce při jejich přijetí (§108)</td>
+        <td colspan="2" class="c">základní</td>
+        <td colspan="1" class="c">12</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row12.base}}</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row12.tax}}</td>
+    </tr>
+    <tr>
+        <td colspan="2" class="c">snížená</td>
+        <td colspan="1" class="c">13</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row13.base}}</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row13.tax}}</td>
+    </tr>
+
+
+    <tr>
+        <td colspan="24" class="l b">II. Ostatní plnění a plnění s místem plnění mimo tuzemsko s nárokem na odpočet daně</td>
+        <td colspan="9" class="c b">Hodnota</td>
+    </tr>
+
+    <tr>
+        <td colspan="23" class="l">Dodání zboží do jiného členského státu (§64)</td>
+        <td colspan="1" class="c">20</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row20.base}}</td>
+    </tr>
+    <tr>
+        <td colspan="23" class="l">Poskytnutí služeb s místem plnění v jiném členském státě vymezených v §102 odst.1 písm.d) a odst.2</td>
+        <td colspan="1" class="c">21</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row21.base}}</td>
+    </tr>
+    <tr>
+        <td colspan="23" class="l">Vývoz zboží (§66)</td>
+        <td colspan="1" class="c">22</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row22.base}}</td>
+    </tr>
+    <tr>
+        <td colspan="23" class="l">Dodání nového dopr. prostředku osobě neregistrované k dani v jiném členském státě (§19 odst.4)</td>
+        <td colspan="1" class="c">23</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row23.base}}</td>
+    </tr>
+    <tr>
+        <td colspan="23" class="l">Zasílání zboží do jiného členského státu (§8)</td>
+        <td colspan="1" class="c">24</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row24.base}}</td>
+    </tr>
+    <tr>
+        <td colspan="23" class="l">Režim přenesení daňové povinnosti (§92a) – dodavatel zboží nebo poskytovatel služeb</td>
+        <td colspan="1" class="c">25</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row25.base}}</td>
+    </tr>
+    <tr>
+        <td colspan="23" class="l">Ostatní uskutečněná plnění s nárokem na odpočet daně (např. §24a,§67,§68,§69,§70,§89,§90,§92)</td>
+        <td colspan="1" class="c">26</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row26.base}}</td>
+    </tr>
+
+
+    <tr>
+        <td colspan="33" class="l b">III. Doplňující údaje</td>
+    </tr>
+
+    <tr>
+        <td colspan="20" class="l" rowspan="2">Zjednodušený postup při dodání zboží formou třístranného obchodu (§17) prostřední osobou</td>
+        <td colspan="6" class="c">Pořízení zboží</td>
+        <td colspan="1" class="c">30</td>
+        <td colspan="6" class="r">{{data.rowsPrint.row30.base}}</td>
+    </tr>
+    <tr>
+        <td colspan="6" class="c">Dodání zboží</td>
+        <td colspan="1" class="c">31</td>
+        <td colspan="6" class="r">{{data.rowsPrint.row31.base}}</td>
+    </tr>
+
+    <tr>
+        <td colspan="26" class="l">Dovoz zboží osvobozený podle §71g</td>
+        <td colspan="1" class="c">32</td>
+        <td colspan="6" class="r">{{data.rowsPrint.row32.base}}</td>
+    </tr>
+
+    <tr>
+        <td colspan="20" class="l" rowspan="2">Oprava výše daně u pohledávek za dlužníky v insolvenčním řízení (§44)</td>
+        <td colspan="6" class="c">Věřitel</td>
+        <td colspan="1" class="c">33</td>
+        <td colspan="6" class="r">{{data.rowsPrint.row33.base}}</td>
+    </tr>
+    <tr>
+        <td colspan="6" class="c">Dlužník</td>
+        <td colspan="1" class="c">34</td>
+        <td colspan="6" class="r">{{data.rowsPrint.row34.base}}</td>
+    </tr>
+
+
+    <tr>
+        <td colspan="15" class="l b">IV. Nárok na odpočet daně</td>
+        <td colspan="6" class="c b">Základ daně</td>
+        <td colspan="6" class="c b">V plné výši</td>
+        <td colspan="6" class="c b">Krácený odpočet</td>
+    </tr>
+
+    <tr>
+        <td colspan="12" class="l" rowspan="2">Z přijatých zdanitelných plnění od plátců</td>
+        <td colspan="2" class="c">základní</td>
+        <td colspan="1" class="c">40</td>
+        <td colspan="6" class="r">{{data.rowsPrint.row40.base}}</td>
+        <td colspan="6" class="r">{{data.rowsPrint.row40.tax}}</td>
+        <td colspan="6" class="r"></td>
+    </tr>
+    <tr>
+        <td colspan="2" class="c">snížená</td>
+        <td colspan="1" class="c">41</td>
+        <td colspan="6" class="r">{{data.rowsPrint.row41.base}}</td>
+        <td colspan="6" class="r">{{data.rowsPrint.row41.tax}}</td>
+        <td colspan="6" class="r"></td>
+    </tr>
+
+    <tr>
+        <td colspan="14" class="l">Při dovozu zboží, kdy je správcem daně celní úřadů</td>
+        <td colspan="1" class="c">42</td>
+        <td colspan="6" class="r">{{data.rowsPrint.row42.base}}</td>
+        <td colspan="6" class="r">{{data.rowsPrint.row42.tax}}</td>
+        <td colspan="6" class="r"></td>
+    </tr>
+
+    <tr>
+        <td colspan="12" class="l" rowspan="2">Ze zdanitelných plnění vykázaných na ř. 3 až 13</td>
+        <td colspan="2" class="c">základní</td>
+        <td colspan="1" class="c">43</td>
+        <td colspan="6" class="r">{{data.rowsPrint.row43.base}}</td>
+        <td colspan="6" class="r">{{data.rowsPrint.row43.tax}}</td>
+        <td colspan="6" class="r"></td>
+    </tr>
+    <tr>
+        <td colspan="2" class="c">snížená</td>
+        <td colspan="1" class="c">44</td>
+        <td colspan="6" class="r">{{data.rowsPrint.row44.base}}</td>
+        <td colspan="6" class="r">{{data.rowsPrint.row44.tax}}</td>
+        <td colspan="6" class="r"></td>
+    </tr>
+
+    <tr>
+        <td colspan="14" class="l">Korekce odpočtů daně podle §75 odst.4,§77,§79 až §79c</td>
+        <td colspan="1" class="c">45</td>
+        <td colspan="6" class="r"></td>
+        <td colspan="6" class="r">{{data.rowsPrint.row45.tax}}</td>
+        <td colspan="6" class="r"></td>
+    </tr>
+    <tr>
+        <td colspan="14" class="l">Odpočet daně celkem (40 + 41 + 42 + 43 + 44 + 45) </td>
+        <td colspan="1" class="c">46</td>
+        <td colspan="6" class="r"></td>
+        <td colspan="6" class="r">{{data.rowsPrint.row46.tax}}</td>
+        <td colspan="6" class="r"></td>
+    </tr>
+    <tr>
+        <td colspan="14" class="l">Hodnota poříz. majetku vymezeného v §4 odst.3 písm.d) a e)</td>
+        <td colspan="1" class="c">47</td>
+        <td colspan="6" class="r">{{data.rowsPrint.row47.base}}</td>
+        <td colspan="6" class="r">{{data.rowsPrint.row47.tax}}</td>
+        <td colspan="6" class="r"></td>
+    </tr>
+
+
+    <tr>
+        <td colspan="33" class="l b">V. Krácení nároku na odpočet daně</td>
+    </tr>
+    <tr>
+        <td colspan="14" class="l">Plnění osvobozená od daně bez nároku na odpočet daně</td>
+        <td colspan="1" class="c">50</td>
+        <td colspan="8" class="r">{{data.rowsPrint.row50.base}}</td>
+        <td colspan="10" class="r"></td>
+    </tr>
+
+    <tr>
+        <td colspan="14" class="l" rowspan="2">Hodnota plnění nezapočítávaných do výpočtu koeficientu (§76 odst.4)</td>
+        <td colspan="1" class="c" rowspan="2">51</td>
+        <td colspan="8" class="c">S nárokem na odpočet</td>
+        <td colspan="10" class="c">Bez nároku na odpočet</td>
+    </tr>
+    <tr>
+        <td colspan="8" class="r">&nbsp;</td>
+        <td colspan="10" class="r">&nbsp;</td>
+    </tr>
+
+    <tr>
+        <td colspan="14" class="l">Část odpočtu daně v krácené výši</td>
+        <td colspan="1" class="c">52</td>
+        <td colspan="5" class="l">Koeficient (%)</td>
+        <td colspan="3" class="r"></td>
+        <td colspan="4" class="l">Odpočet</td>
+        <td colspan="6" class="r"></td>
+    </tr>
+    <tr>
+        <td colspan="14" class="l">Vypořádání odpočtu daně (§76 odst.7 až 10)</td>
+        <td colspan="1" class="c">53</td>
+        <td colspan="5" class="l">Vypoř. koef. (%)</td>
+        <td colspan="3" class="r"></td>
+        <td colspan="4" class="l">Změna odpočtu</td>
+        <td colspan="6" class="r"></td>
+    </tr>
+
+
+    <tr>
+        <td colspan="33" class="l b">VI. Výpočet daňové povinnosti</td>
+    </tr>
+    <tr>
+        <td colspan="23" class="l">Úprava odpočtu daně (§78 až §78d)</td>
+        <td colspan="1" class="c">60</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row60.tax}}</td>
+    </tr>
+    <tr>
+        <td colspan="23" class="l">Vrácení daně (§84)</td>
+        <td colspan="1" class="c">61</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row61.tax}}</td>
+    </tr>
+    <tr>
+        <td colspan="23" class="l">Daň na výstupu (1+2+3+4+5+6+7+8+9+10+11+12+13–61+daň dle §108 odst.1 písm.i)</td>
+        <td colspan="1" class="c">62</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row62.tax}}</td>
+    </tr>
+    <tr>
+        <td colspan="23" class="l">Odpočet daně (46 V plné výši + 52 Odpočet + 53 Změna odpočtu + 60)</td>
+        <td colspan="1" class="c">63</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row63.tax}}</td>
+    </tr>
+    <tr>
+        <td colspan="23" class="l">Vlastní daňová povinnost (62–63)</td>
+        <td colspan="1" class="c">64</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row64.tax}}</td>
+    </tr>
+    <tr>
+        <td colspan="23" class="l">Nadměrný odpočet (63–62)</td>
+        <td colspan="1" class="c">65</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row65.tax}}</td>
+    </tr>
+    <tr>
+        <td colspan="23" class="l">Rozdíl oproti poslední známé dani při podání dodatečného daňového přiznání (62–63)</td>
+        <td colspan="1" class="c">66</td>
+        <td colspan="9" class="r">{{data.rowsPrint.row66.tax}}</td>
+    </tr>
+
+</table>
+
+<div class="pageNumber">2</div>
+</div>
+
+

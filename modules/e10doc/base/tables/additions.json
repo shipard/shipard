@@ -1,0 +1,29 @@
+{
+	"id": "e10doc.base.additions", "sql": "e10doc_base_additions", "name": "Dodatky dokladů", "icon": "icon-sticky-note-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "additionType", "name": "Typ dodatku", "type": "enumInt", "len": 2, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.additionsTypes", "cfgValue": "ndx", "cfgText": "shortName"}},
+
+
+		{"id": "identifier", "name": "Kód", "type": "string", "len": 60},
+		{"id": "rowMark", "name": "Značka", "type": "string", "len": 3},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"views": [
+		{"id": "default", "class": "e10doc.base.ViewAdditions", "help": "prirucka/4752"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.base.FormAddition", "help": "prirucka/4752"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "identifier"}
+}

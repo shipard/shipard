@@ -1,0 +1,8 @@
+{
+	"periods": {
+		"title": "Období", "order": 10000
+	},
+	"docs": {
+		"title": "Doklady", "order": 50000
+	}
+}

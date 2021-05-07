@@ -1,0 +1,4 @@
+[
+	{"name": "Výsledky zakázek", "class": "e10mnf.reports.analysis.WorkOrdersAnalysisReport", "icon": "icon-file-o", "group": "e10mnf-reports"},
+	{"name": "Odprac. hodiny", "class": "e10mnf.core.libs.WorkedHoursReport", "icon": "icon-clock-o", "group": "e10mnf-reports"}
+]

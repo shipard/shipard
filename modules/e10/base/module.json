@@ -1,0 +1,32 @@
+{
+  "id": "e10.base",
+  "name": "Base",
+  "tables": ["attachments", "attachmentsMetaData", "properties", "clsfgroups", "clsfitems", "clsf", "places",
+						 "propdefs", "propdefsenum", "propgroups", "doclinks", "authLog", "docslog", "timeline",
+						 "templates", "subtemplates", "templatesLooks", "ipaddr", "notifications", "tasks", "docsmodes",
+             "devices",
+	           "nomencTypes", "nomencItems", "nomenc", "statsCounters", "geoTags", "usersSummary",
+	           "docDataFiles"
+  ],
+  "config": [
+    {"id": "+appSkeleton", "name": "Konfigurace serveru", "file": "appSkeleton.panel.srvcfg.json"},
+		{"id": "e10.base.defaultDocStatesArchive", "file": "/e10/base/config/e10.defaultDocStatesArchive.json"},
+    {"id": "+e10.base", "file": "e10.base.countries.json"},
+    {"id": "+e10.base.clsfGroups", "name": "Skupiny zatřídění", "file": "e10.base.clsfGroups.json"},
+	  {"id": "e10.base.docDataFiles.docStates", "name": "Stavy definic vlastností", "file": "e10.base.docDataFiles.docStates.json"},
+		{"id": "e10.base.properties.docStates", "name": "Stavy definic vlastností", "file": "e10.base.properties.docStates.json"},
+		{"id": "e10.base.propgroups.docStates", "name": "Stavy skupin vlastností", "file": "e10.base.propgroups.docStates.json"},
+		{"id": "e10.base.tasks.docStates", "file": "e10.base.tasks.docStates.json"},
+		{"id": "e10.base.templates.docStates", "name": "Stavy šablon", "file": "e10.base.templates.docStates.json"},
+		{"id": "e10.base.subtemplates.docStates", "name": "Stavy podšablon", "file": "e10.base.subtemplates.docStates.json"},
+		{"id": "+appOptions", "name": "Nastavení", "file": "e10.appOptions.json"},
+	  {"id": "+e10.appOptions.groups", "file": "e10.appOptionsGroups.json"},
+    {"id": "+e10.base.doclinks", "name": "Vazby dokumentů", "file": "e10.base.docLinks.json"},
+    {"id": "+e10.global.viewerDetails", "name": "Detaily prohlížeče", "file": "e10.base.viewerDetails.json"},
+	  {"id": "e10.base.authLog.events", "file": "e10.base.authLogEvents.json"},
+		{"id": "+e10.persons.lastUse", "file": "e10.persons.lastUse.json"},
+		{"id": "+e10.att.fileKinds", "file": "e10.base.attFileKinds.json"},
+		{"id": "+e10.att.metaDataTypes", "file": "e10.base.attMetaDataTypes.json"},
+		{"id": "+e10.base.placeTypes", "file": "e10.base.placeTypes.json"}
+	]
+}

@@ -1,0 +1,25 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+	<title>Přiznání DPH {{data.head.docNumber}}</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<link rel="stylesheet" href="file://{{templateRoot}}style.css" type="text/css"/>
+</head>
+<body>
+
+{{{&cz/cz-tax-vat-return-pdf}}}
+{{#data.showTaxVatReturnReverseChargeIn}}
+	<div class="newPage"></div>
+	{{{&cz/cz-tax-vat-return-reverse-charge-in-pdf}}}
+{{/data.showTaxVatReturnReverseChargeIn}}
+{{#data.showTaxVatReturnReverseChargeOut}}
+	<div class="newPage"></div>
+	{{{&cz/cz-tax-vat-return-reverse-charge-out-pdf}}}
+{{/data.showTaxVatReturnReverseChargeOut}}
+{{#data.showTaxVatReturnIntraCommunity}}
+	<div class="newPage"></div>
+	{{{&cz/cz-tax-vat-return-intra-community-pdf}}}
+{{/data.showTaxVatReturnIntraCommunity}}
+
+</body>
+</html>

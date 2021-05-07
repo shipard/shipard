@@ -1,0 +1,34 @@
+{
+	"id": "terminals.ros.rosRegs", "sql": "terminals_ros_rosRegs", "name": "Registrace k EET", "icon": "icon-microchip",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "rosType", "name": "Typ", "type": "enumString", "len": 5, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "terminals.ros.types", "cfgValue": "", "cfgText": "name"}},
+		{"id": "rosMode", "name": "Mód provozu", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "terminals.ros.modes", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "title", "name": "Název", "type": "string", "len": 80},
+		{"id": "vatIdPrimary", "name": "DIČ", "type": "string", "len": 14},
+		{"id": "placeId", "name": "ID Provozovny", "type": "string", "len": 6},
+		{"id": "certPassword", "name": "Heslo pro certifikát", "type": "string", "len": 80},
+
+		{"id": "certPath", "name": "Cesta pro certifikát", "type": "string", "len": 80},
+		{"id": "certFileName", "name": "Jméno souboru pro certifikát", "type": "string", "len": 80},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "terminals.ros.ViewRosRegs"}
+	],
+	"forms": [
+		{"id": "default", "class": "terminals.ros.FormRosReg"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "title"}
+}

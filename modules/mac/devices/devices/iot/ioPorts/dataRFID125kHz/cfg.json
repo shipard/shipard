@@ -1,0 +1,15 @@
+{
+	"name": "RFID 125 kHz",
+	"title": "RFID 125 kHz",
+	"useValueKind": 1,
+	"fields": {
+		"columns": [
+			{
+				"id": "pinRX", "name": "Pin RX (vstup)", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["in", "hwInt"]}
+			},
+			{
+				"id": "pinTX", "name": "Pin TX (výstup)", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["out", "hwInt"]}
+			}
+		]
+	}
+}

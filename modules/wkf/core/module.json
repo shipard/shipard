@@ -1,0 +1,20 @@
+{
+  "id": "wkf.core",
+  "name": "workflow - core",
+  "tables": [
+		"comments", "issues", "issuesConnections", "filters", "headlines"
+	],
+	"modules": ["wkf/base", "wkf/docs", "wkf/reports", "integrations/ntf"],
+  "config": [
+		{"id": "+appOptions", "file": "appOptions.json"},
+		{"id": "+e10.base.clsfGroups", "file": "clsfGroups.json"},
+		{"id": "+e10.base.doclinks", "file": "doclinks.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+		{"id": "wkf.comments.docStates.default", "file": "wkf.comments.docStates.default.json"},
+		{"id": "wkf.issues.docStates.default", "file": "wkf.issues.docStates.default.json"},
+		{"id": "wkf.issues.connections.types", "file": "issuesConnectionsTypes.json"},
+		{"id": "+widgets", "file": "widgets.json"},
+		{"id": "wkf.filters.queryTypes", "file": "filtersQueryTypes.json"},
+	  {"id": "+dsStats", "file": "dsStats.json"}
+  ]
+}

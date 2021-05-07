@@ -1,0 +1,23 @@
+{
+	"id": "e10.share.sharesitems", "sql": "e10_share_sharesitems", "name": "Položky Sdílení", "icon": "icon-share-alt",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "share", "name": "share", "type": "int"},
+		{"id": "folder", "name": "share", "type": "int"},
+
+		{"id": "t1", "name": "Název 1", "type": "string", "len": 120},
+		{"id": "t2", "name": "Název 2", "type": "string", "len": 120},
+		{"id": "i1", "name": "Info 1", "type": "string", "len": 80},
+		{"id": "i2", "name": "Info 2", "type": "string", "len": 80},
+
+		{"id": "shareItemType", "name": "Typ", "type": "enumInt",
+			"enumValues": {"0": "document", "1": "report"}},
+
+		{"id": "tableId", "name": "Tabulka", "type": "string", "len": 48},
+		{"id": "recId", "name": "Řádek", "type": "int"},
+
+		{"id": "id", "name": "ID", "type": "string", "len": 80},
+		{"id": "cntAttachments", "name": "Počet příloh", "type": "int"}
+	],
+	"options": ["systemTable"]
+}

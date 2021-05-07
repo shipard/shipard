@@ -1,0 +1,22 @@
+{
+    "table": {
+        "name": "Document labeling"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "clsfItem": {
+            "name": "Label"
+        },
+        "group": {
+            "name": "Group"
+        },
+        "tableid": {
+            "name": "Table"
+        },
+        "recid": {
+            "name": "Row"
+        }
+    }
+}

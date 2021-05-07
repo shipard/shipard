@@ -1,0 +1,6 @@
+{
+	"e10doc-docs-buy": {
+		"name": "Nákupní doklady",
+		"classId": "e10doc.buy.PersonLastUseDocsBuy"
+	}
+}

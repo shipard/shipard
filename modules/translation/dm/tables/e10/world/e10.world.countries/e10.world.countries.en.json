@@ -1,0 +1,46 @@
+{
+    "table": {
+        "name": "Countries"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "id": {
+            "name": "id"
+        },
+        "cca2": {
+            "name": "A2 country code"
+        },
+        "cca3": {
+            "name": "A3 country code"
+        },
+        "ccn3": {
+            "name": "N3 country code"
+        },
+        "nameCommon": {
+            "name": "Common name"
+        },
+        "nameOfficial": {
+            "name": "Official name"
+        },
+        "flag": {
+            "name": "Flag"
+        },
+        "independent": {
+            "name": "Independence"
+        },
+        "tlds": {
+            "name": "Domains"
+        },
+        "callingCodes": {
+            "name": "Calling codes"
+        },
+        "validFrom": {
+            "name": "Valid from"
+        },
+        "validTo": {
+            "name": "Valid until"
+        }
+    }
+}

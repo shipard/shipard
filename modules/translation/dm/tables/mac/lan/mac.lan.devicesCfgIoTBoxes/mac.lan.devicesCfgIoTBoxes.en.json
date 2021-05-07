@@ -1,0 +1,55 @@
+{
+    "table": {
+        "name": "IoT Boxes Configuration"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "device": {
+            "name": "Device"
+        },
+        "runningData": {
+            "name": "Active configuration data"
+        },
+        "runningDataVer": {
+            "name": "Data version of active configuration"
+        },
+        "runningTimestamp": {
+            "name": "Timestamp of application of active configuration"
+        },
+        "newData": {
+            "name": "New setting data for active configuration"
+        },
+        "newDataVer": {
+            "name": "New data version for active configuration"
+        },
+        "newTimestamp": {
+            "name": "New data for active configuration timestamp"
+        },
+        "liveData": {
+            "name": "Current data settings"
+        },
+        "liveDataVer": {
+            "name": "Version of configuration data"
+        },
+        "liveTimestamp": {
+            "name": "Timestamp of application of settings"
+        },
+        "changed": {
+            "name": "Change"
+        },
+        "applyNewData": {
+            "name": "Apply new data"
+        },
+        "iotBoxCfgData": {
+            "name": "Configuration data"
+        },
+        "iotBoxCfgDataVer": {
+            "name": "Version"
+        },
+        "iotBoxCfgDataTimestamp": {
+            "name": "Timestamp"
+        }
+    }
+}

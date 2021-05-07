@@ -1,0 +1,4 @@
+{
+	"z_workflow": {"title": "Zápisník", "icon": "icon-clipboard", "type": "viewer",
+		"class": "wkf.core.viewers.WkfDiaryDetail", "order":  2100000}
+}

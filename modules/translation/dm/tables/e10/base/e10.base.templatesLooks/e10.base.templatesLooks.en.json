@@ -1,0 +1,37 @@
+{
+    "table": {
+        "name": "Looks of templates"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "template": {
+            "name": "Template"
+        },
+        "templateId": {
+            "name": "Template"
+        },
+        "templateType": {
+            "name": "Type of template"
+        },
+        "lookId": {
+            "name": "ID"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "lookParams": {
+            "name": "Parameters of template"
+        },
+        "lookStyleExt": {
+            "name": "Extension of styles"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

@@ -1,0 +1,22 @@
+{
+    "table": {
+        "name": "Documents relations to workflow sections"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "docType": {
+            "name": "Documnet type"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

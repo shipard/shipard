@@ -1,0 +1,23 @@
+[
+  {
+    "table": "e10doc.core.heads",
+    "views": [
+      {"id": "stockinst", "class": "e10doc.stockInitStates.libs.ViewStockInitStates", 
+				"details": {
+					"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10doc.stockInitStates.libs.ViewDetailStockInitState"},
+					"rows": {"title": "Řádky", "icon": "icon-file", "type": "detail", "class": "e10doc.stockInitStates.libs.ViewDetailStockInitStateRows"}
+				},
+			 "addWizard": {"class": "e10doc.stockInitStates.libs.AddWizard"}
+			}
+    ],
+    "forms": [
+      {"id": "stockinst", "class": "e10doc.stockInitStates.libs.FormStockInitState"}
+    ]
+  },
+  {
+    "table": "e10doc.core.rows",
+    "forms": [
+      {"id": "stockinst", "class": "e10doc.stockInitStates.libs.FormStockInitStateRow"}
+    ]
+  }
+]

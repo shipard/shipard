@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Contracts"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "dataProcessor": {
+            "name": "Processor"
+        },
+        "validFrom": {
+            "name": "Valid from"
+        },
+        "validTo": {
+            "name": "Valid until"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

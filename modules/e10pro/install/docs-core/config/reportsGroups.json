@@ -1,0 +1,17 @@
+{
+	"e10docs": {
+		"title": "Doklady", "icon": "icon-file-text-o", "order": 100000
+	},
+	"e10pro-property": {
+		"title": "Majetek", "icon": "icon-institution", "order": 50000
+	},
+	"e10-checks": {
+		"title": "Kontroly", "icon": "icon-exclamation-triangle", "order": 400000
+	},
+	"e10pro-terminal": {
+		"title": "Prodejna", "icon": "icon-file-o", "order": 1900
+	},
+	"e10pro-other": {
+		"title": "Ostatní", "icon": "icon-file-o", "order": 800000
+	}
+}

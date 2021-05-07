@@ -1,0 +1,25 @@
+{
+	"7000": {
+		"name": "Neuhrazené výkupy", "shortName": "NeuhrVýk", "icon": "e10-docs-purchase", "shortcut": "NeuhV", "id": "7000",  "side": "c", "docTypes": ["purchase", "cash", "cmnbkp"], "debsAccountMask": "325",
+		"content": [
+			{"docType": "purchase", "src": "head", "paymentMethod": 6, "itemId": "7000_{person}_{symbol1}_{symbol2}_{heads.currency}"},
+			{"docType": "cash", "src": "row", "operation": "1040002", "itemId": "7000_{rows.person}_{rows.symbol1}_{rows.symbol2}_{heads.currency}"},
+			{"docType": "cmnbkp", "src": "row", "operation": "1099998", "checkItemBalance": 1, "moneySide": "cr",
+				"side": 0, "itemId": "7000_{rows.person}_{rows.symbol1}_{rows.symbol2}_{heads.currency}"},
+			{"docType": "cmnbkp", "src": "row", "operation": "1099998", "checkItemBalance": 1, "moneySide": "dr",
+				"side": 1, "itemId": "7000_{rows.person}_{rows.symbol1}_{rows.symbol2}_{heads.currency}"}
+		]
+	},
+	"7100": {
+		"name": "Nevyfakturované výkupy", "shortName": "NevyfVýk", "icon": "icon-unlink", "shortcut": "NevfV", "id": "7100",  "side": "c", "docTypes": ["purchase", "invni", "cmnbkp"], "debsAccountMask": "325",
+		"content": [
+			{"docType": "purchase", "src": "head", "paymentMethod": 4, "itemId": "7100_{person}_{symbol1}_{symbol2}_{heads.currency}"},
+			{"docType": "invni", "src": "row", "operation": "1040003", "personSide": 0,
+				"itemId": "7100_{heads.person}_{rows.symbol1}_{rows.symbol2}_{heads.currency}"},
+			{"docType": "cmnbkp", "src": "row", "operation": "1099998", "checkItemBalance": 1, "moneySide": "cr",
+				"side": 0, "itemId": "7100_{rows.person}_{rows.symbol1}_{rows.symbol2}_{heads.currency}"},
+			{"docType": "cmnbkp", "src": "row", "operation": "1099998", "checkItemBalance": 1, "moneySide": "dr",
+				"side": 1, "itemId": "7100_{rows.person}_{rows.symbol1}_{rows.symbol2}_{heads.currency}"}
+		]
+	}
+}

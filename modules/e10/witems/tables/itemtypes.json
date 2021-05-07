@@ -1,0 +1,33 @@
+{
+  "id": "e10.witems.itemtypes", "sql": "e10_witems_itemtypes", "name": "Typy položek", "icon": "icon-hand-o-up",
+  "columns": [
+    {"id": "ndx", "name": "ndx", "type": "int_ai"},
+    {"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
+    {"id": "id", "name": "ID", "type": "string", "len": 15},
+		{"id": "icon", "name": "Ikona", "type": "string", "len": 30},
+    {"id": "type", "name": "Typ položky", "type": "enumInt",
+			"enumValues": {"0": "Služba", "1": "Zásoba", "2": "Účetní položka", "3": "Ostatní"}},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+  "lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+  ],
+  "views": [
+    {"id": "default", "class": "e10.witems.ViewItemTypes", "detail": "e10.witems.ViewDetailItemTypes", "help": "prirucka/4345"},
+		{"id": "combo", "class": "e10.witems.ViewItemTypesCombo"}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10.witems.FormItemTypes", "help": "prirucka/4345"}
+  ],
+	"options": ["configSource"],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.witems.itemtypes.docStates"},
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+  "order": [{"column": "fullName", "order": "ASC"}],
+  "fullText": ["fullName", "description"]
+}

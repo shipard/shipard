@@ -1,0 +1,11 @@
+{
+  "id": "e10settings.base",
+  "name": "Extended app settings",
+  "tables": [],
+	"modules": ["e10/base"],
+  "tables": ["cfgs"],
+  "config": [
+    {"id": "+appSkeleton", "file": "appSkeleton.json"},
+	  {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"}
+  ]
+}

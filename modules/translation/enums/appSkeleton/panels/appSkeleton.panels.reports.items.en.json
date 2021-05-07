@@ -1,0 +1,26 @@
+{
+    "documents": {
+        "t1": "Documents"
+    },
+    "other": {
+        "t1": "Other"
+    },
+    "buy": {
+        "t1": "Purchase"
+    },
+    "stocks": {
+        "t1": "Stock"
+    },
+    "finance": {
+        "t1": "Finance"
+    },
+    "sales": {
+        "t1": "Sale"
+    },
+    "balance": {
+        "t1": "Balance"
+    },
+    "tests": {
+        "t1": "Tests"
+    }
+}

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="cs" style="height:100%;">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>{{page.pageTitle}}</title>
+    <link href="{{dsRoot}}/www-root/app-templates/system/style.css?v=7" rel="stylesheet">
+</head>
+
+{{#page.url_user_login}}
+    {{{@thisWorkplace;searchUsers:1}}}
+{{/page.url_user_login}}
+
+<body style="">
+<div class="navbar navbar-inverse navbar-fixed-top" role="navigation" id="e10-sp-header">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class='e10-sp-title1' href="{{urlRoot}}">{{cfgItem.options.core.ownerFullName}}</a><br>
+            {{#cfgItem.options.core.ownerEmail}}
+                <span class='e10-sp-title2'><i class="fa fa-envelope"></i> <a href="mailto:{{cfgItem.options.core.ownerEmail}}">{{cfgItem.options.core.ownerEmail}}</a></span>
+            {{/cfgItem.options.core.ownerEmail}}
+            {{#cfgItem.options.core.ownerPhone}}
+                <span class='e10-sp-title2'><i class="fa fa-phone"></i> {{cfgItem.options.core.ownerPhone}}</span>
+            {{/cfgItem.options.core.ownerPhone}}
+        </div>
+        <div id="navbar" class="collapse navbar-collapse navbar-header-collapse">
+            <ul class="nav navbar-nav pull-right">
+                <li {{#page.url_user_login}}class='active'{{/page.url_user_login}}><a href="{{@urlUser;type:login}}"><span><i class="fa fa-sign-in"></i> {{@tr;id:e10.base.system.DictSystem.diLoginPage_Menu_Login}}</span></a></li>
+                <li {{#page.url_user_lost-password}}class='active'{{/page.url_user_lost-password}}><a href="{{@urlUser;type:lostPassword}}"><span><i class="fa fa-lock"></i> {{@tr;id:e10.base.system.DictSystem.diLoginPage_Menu_LostPassword}}</span></a></li>
+
+								{{#systemLanguages}}
+										<li{{#active}} class="active"{{/active}}><a href="{{@urlUser;type:setLanguage}}/{{id}}"><span>{{f}} {{sc}}{{#beta}}<sup style="padding:0 1px; margin-left: 2px;background-color: #c4c4c4;color: #111; border-radius: 2px;">beta</sup>{{/beta}}</span></a></li>
+								{{/systemLanguages}}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid" style="height: 100%;">
+    <div id="e10-sp-desktop" class="row">
+        <div id="e10-sp-content" class="col-md-4 col-md-offset-3 col-sm-6 col-sm-offset-3 e10-sp-content e10-sp-centered-block col-xs-10 col-xs-offset-1">
+            <h2>{{page.title}}</h2>
+            {{{pageText}}}
+
+            {{#data.thisWorkplace.loginUsers}}
+                <ul class="list-group e10-sp-userslist" style="text-align: left;">
+                    {{#data.thisWorkplace.loginUsersList}}
+                        <li class="list-group-item" data-login="{{login}}"><i class="fa fa-user"></i> <b>{{firstName}}</b> {{lastName}}</li>
+                    {{/data.thisWorkplace.loginUsersList}}
+                </ul>
+            {{/data.thisWorkplace.loginUsers}}
+        </div>
+
+        {{#page.url_user_login}}
+            {{^data.thisWorkplace.loginUsers}}
+                <div id="e10-sp-news" class="col-md-3 col-md-offset-2 e10-sp-centered-block" style="display: none; background-color: rgba(0,0,0,.50); height: 100%; max-height: 100vh;">
+                    <div id="e10-sp-news-content" class='news' style="overflow-y: auto; "></div>
+                </div>
+            {{/data.thisWorkplace.loginUsers}}
+        {{/page.url_user_login}}
+
+                </div>
+
+    <div class="row" style="position: absolute; width:100%; bottom: 0px;" id="e10-sp-footer">
+        <div class="row e10-sp-dayInfo hidden-xs">
+            <div id="e10-sp-dayInfo" class="col-md-6 col-sm-6 e10-sp-dayInfo-left">
+            </div>
+            <div id="e10-sp-podInfo" class="col-md-6 col-sm-6 e10-sp-dayInfo-right">
+            </div>
+        </div>
+        <div class="row e10-sp-footer" style="background-color: #111; ">
+            <div class="col-md-6 col-sm-6" >
+                <div>
+                    <span class='e10-sp-title2'><b>{{@tr;id:e10.base.system.DictSystem.diCore_TechnicalSupport}}:</b> <a href="{{cfgItem.dsi.supportUrl}}" target="new">{{cfgItem.dsi.supportName}}</a></span><br>
+                    <span class='e10-sp-title2'><i class="fa fa-phone"></i> {{cfgItem.dsi.supportPhone}}</span>
+                    <span class='e10-sp-title2'><i class="fa fa-envelope"></i> <a href="mailto:{{cfgItem.dsi.supportEmail}}">{{cfgItem.dsi.supportEmail}}</a></span>
+                </div>
+            </div>
+            <div class="col-md-6 col-sm-6 text-right hidden-xs" style="background-color: #111; ">
+                <span class='e10-sp-title2'>powered by <a href="https://shipard.cz" target="new">shipard.cz</a></span>
+                <br><small title="{{data.thisDeviceId}}">{{@tr;id:e10.base.system.DictSystem.diCore_Version}} {{cfgItem.serverInfo.e10version}}.{{cfgItem.serverInfo.e10commit}}{{#cfgItem.serverInfo.e10channelName}}#{{cfgItem.serverInfo.e10channelName}}{{/cfgItem.serverInfo.e10channelName}}&nbsp;</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="//cdn.shipard.com/jquery/jquery-2.0.1.min.js"></script>
+<script src="{{dsRoot}}/www-root/sc/bs/3.3/js/bootstrap.min.js"></script>
+
+<script>
+    var loginScreenUrl = '{{cfgItem.authServerUrl}}/feed/loginScreen/test';
+
+    if (window.location.hash !== '')
+    {
+        if (window.location.hash.lastIndexOf('#date:', 0) === 0)
+        {
+            loginScreenUrl += "?date="+window.location.hash.substr(6);
+        }
+    }
+
+    var jqxhr = $.getJSON (loginScreenUrl, function(data) {
+        var podCode = '';
+        if (1)
+        {
+            podCode += '<div class="e10-sp-background" style="';
+            podCode += "background-image: url('" + data.object.backgroundPicture + "');";
+            podCode += 'background-size: cover; background-position: center center;"></div>';
+            $('body').append (podCode);
+        }
+        else
+        {
+            podCode += '<div class="e10-sp-background" style="max-height: 95%; max-width: 90%; position:absolute; height: 80%; z-index: -1; transform: translateX(-50%) translateY(-50%); left: 50%;top: 50%;height: 80%;">';
+            podCode += '<img src="' + data.object.backgroundPicture + '" style="max-height:100%; height:100%; border: 1px solid rgba(0,0,0,.6);box-shadow: 1px 1px 4px rgba(0,0,0,.25);">';
+            podCode += '</div>';
+            $('#e10-sp-desktop').append (podCode);
+        }
+
+        var dayInfo = "";
+        dayInfo += '<div class="e10-sp-today-date">' + data.object.dayInfo.date + '</div>';
+
+        if (data.object.dayInfo.nameday !== undefined)
+        {
+            dayInfo += '<div><small>svátek má</small> ';
+
+            var l = data.object.dayInfo.nameday.length;
+            for (var i = 0; i < l; i++)
+            {
+                dayInfo += data.object.dayInfo.nameday[i].title;
+
+                if (i == (l - 2))
+                    dayInfo += ' a ';
+                else
+                if (i < (l - 1))
+                    dayInfo += ', ';
+            }
+
+            dayInfo += '</div>';
+        }
+        if (data.object.dayInfo.holiday !== undefined)
+        {
+            for (var i = 0; i < data.object.dayInfo.holiday.length; i++)
+                dayInfo += '<div>' + data.object.dayInfo.holiday[i].title +'</div>';
+        }
+        $('#e10-sp-dayInfo').html (dayInfo);
+
+        var podInfo = "";
+        if (data.object.podTitle !== undefined)
+        {
+            podInfo += '<a href="' + data.object.podUrl +'" target="new">' + data.object.podTitle + '</a>' + ' <sup><i class="fa fa-external-link"></i></sup>';
+            if (data.object.podYears !== undefined)
+                podInfo += '<br>' + data.object.podYears;
+
+            $('#e10-sp-podInfo').html (podInfo);
+        }
+
+        if (data.object.news && data.object.news !== '')
+        {
+            var boxNews = $('#e10-sp-news');
+            if (boxNews.length) {
+                boxNews.css({
+                    "padding-top": ($('#e10-sp-header').height()) + 'px',
+                    "padding-bottom": ($('#e10-sp-footer').height()) + 'px'
+                });
+                $('#e10-sp-news-content').height($('body').innerHeight() - $('#e10-sp-footer').height()).html(data.object.news);
+                boxNews.show();
+            }
+        }
+    });
+
+
+        {{#data.thisWorkplace.loginUsers}}
+        $('#login').attr('autocomplete', 'off');
+        $('#password').attr('autocomplete', 'off');
+        $("#e10-lf").attr('autocomplete', 'off');
+        $('#login').val('');
+
+        $("body").on ('click', "ul.e10-sp-userslist>li", function(event) {
+            event.stopPropagation();
+            event.preventDefault();
+            $('#login').val($(this).attr ('data-login'));
+            $('#password').val('').focus();
+        });
+        {{/data.thisWorkplace.loginUsers}}
+
+
+        {{#page.url_user_login}}
+            {{#cfgItem.autoLoginUser}}$('#login').val('{{cfgItem.autoLoginUser}}');{{/cfgItem.autoLoginUser}}
+            {{#cfgItem.autoLoginPassword}}$('#password').val('{{cfgItem.autoLoginPassword}}');{{/cfgItem.autoLoginPassword}}
+        {{/page.url_user_login}}
+</script>
+
+
+</body>
+</html>
+

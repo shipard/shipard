@@ -1,0 +1,10 @@
+[
+	{
+		"class": "mac.access.libs.WidgetAccess",
+		"dashboard": "main", "panel": "macAccess", "order": 700000, "row": "main", "width": 12, "type": "fullsize"
+	},
+	{
+		"class": "mac.access.libs.WidgetAccess",
+		"dashboard": "main_new", "panel": "macAccess", "order": 700000, "row": "main", "width": 12, "type": "fullsize"
+	}
+]

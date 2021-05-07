@@ -1,0 +1,71 @@
+{
+	"none": {
+		"fn": "---"
+	},
+	"ap-aruba": {
+		"dk": 15, "fn": "Aruba", "cfg": "ap/ap-aruba", "sgClassId": "mac.lan.libs.cfgScripts.Aruba"
+	},
+	"camera-common": {
+		"dk": 10, "fn": "Obecná IP kamera", "cfg": "cameras/camera-common"
+	},
+	"switch-edgecore": {
+		"dk": 9, "fn": "EdgeCore", "cfg": "switch/switch-edgecore", "sgClassId": "mac.lan.libs.cfgScripts.EdgeCore"
+	},
+	"switch-mikrotik-crs1-crs2": {
+		"dk": 9, "fn": "Mikrotik CRS1xx/CRS2xx", "cfg": "switch/switch-mikrotik-crs1-crs2", "sgClassId": "mac.lan.libs.cfgScripts.Mikrotik_switch_crs1_crs2"
+	},
+	"switch-mikrotik-crs3": {
+		"dk": 9, "fn": "Mikrotik CRS3xx", "cfg": "switch/switch-mikrotik-crs3", "sgClassId": "mac.lan.libs.cfgScripts.Mikrotik_switch_crs3"
+	},
+	"switch-passive": {
+		"dk": 9, "fn": "Pasivní switch bez managementu", "cfg": "switch/switch-passive", "sgClassId": "mac.lan.libs.cfgScripts.Passive"
+	},
+	"router-mikrotik": {
+		"dk": 8, "fn": "Mikrotik", "cfg": "router/router-mikrotik", "sgClassId": "mac.lan.libs.cfgScripts.Mikrotik_router"
+	},
+	"server-linux": {
+		"dk": 7, "fn": "Linux", "cfg": "server/server-linux"
+	},
+	"server-windows": {
+		"dk": 7, "fn": "Windows", "cfg": "server/server-windows"
+	},
+	"nas-synology": {
+		"dk": 11, "fn": "Synology", "cfg": "nas/nas-synology"
+	},
+	"ups-apc": {
+		"dk": 30, "fn": "APC", "cfg": "ups/ups-apc"
+	},
+	"ups-nut": {
+		"dk": 30, "fn": "NUT", "cfg": "ups/ups-nut"
+	},
+	"shipardNode-common": {
+		"dk": 70, "fn": "Shipard Node", "cfg": "shipardNode/shipardNode-common"
+	},
+	"sib-ub-oli-esp32-poe": {
+		"dk": 75, "fn": "Olimex ESP32-POE", "cfg": "iot/sib-ub-oli-esp32-poe", "useIOPorts": 1
+	},
+	"sib-ub-oli-esp32-gw-rev-f": {
+		"dk": 75, "fn": "Olimex ESP32-GATEWAY Rev. F", "cfg": "iot/sib-ub-oli-esp32-gw-rev-f", "useIOPorts": 1
+	},
+	"sib-ub-oli-esp32-gw-rev-c": {
+		"dk": 75, "fn": "Olimex ESP32-GATEWAY Rev. A - E", "cfg": "iot/sib-ub-oli-esp32-gw-rev-c", "useIOPorts": 1
+	},
+	"sib-ub-oli-esp32-evb": {
+		"dk": 75, "fn": "Olimex ESP32-EVB", "cfg": "iot/sib-ub-oli-esp32-evb", "useIOPorts": 1
+	},
+	"sib-ub-esp32-wifi-generic": {
+		"dk": 75, "fn": "ESP 32 WiFi Generic", "cfg": "iot/sib-ub-oli-esp32-gw-rev-c", "useIOPorts": 1
+	},
+	"sib-rs232gw-p1": {
+		"dk": 75, "fn": "RS232 Gateway - 1 port", "cfg": "iot/sib-rs232gw-p1"
+	},
+	"sib-rs232gw-p2": {
+		"dk": 75, "fn": "RS232 Gateway - 2 porty", "cfg": "iot/sib-rs232gw-p2"
+	},
+	"sib-cominfo-dual-line-p1": {
+		"dk": 75, "fn": "RFID čtečka Cominfo Dual Line", "cfg": "iot/sib-cominfo-dual-line-p1"
+	},
+	"sib-rfid-access-key-tester": {
+		"dk": 75, "fn": "Shipard IoT Box - RFID Tester", "cfg": "iot/sib-rfid-access-key-tester"
+	}
+}

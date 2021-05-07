@@ -1,0 +1,32 @@
+{
+    "users": {
+        "t1": "Users"
+    },
+    "options": {
+        "t1": "Settings"
+    },
+    "info": {
+        "t1": "Info"
+    },
+    "labels": {
+        "t1": "Labels"
+    },
+    "templates": {
+        "t1": "Templates"
+    },
+    "history": {
+        "t1": "History"
+    },
+    "nomenclature": {
+        "t1": "Nomeclature"
+    },
+    "tasks": {
+        "t1": "Tasks"
+    },
+    "authLog": {
+        "t1": "Login informations"
+    },
+    "usersRequests": {
+        "t1": "Registrations"
+    }
+}

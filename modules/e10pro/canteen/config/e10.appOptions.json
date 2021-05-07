@@ -1,0 +1,34 @@
+{
+	"canteenCanteens": {
+		"name": "Jídelny", "order": 110000, "group": "canteen", "icon": "icon-cutlery",
+		"type": "viewer", "table": "e10pro.canteen.canteens", "viewer": "default"
+	},
+	"canteenMenus": {
+		"name": "Jídelní lístky", "order": 120000, "group": "canteen", "icon": "icon-file-text-o",
+		"type": "viewer", "table": "e10pro.canteen.menus", "viewer": "default"
+	},
+	"canteenPersonsOptions": {
+		"name": "Nastavení strávníků", "order": 120300, "group": "canteen", "icon": "icon-user-circle",
+		"type": "viewer", "table": "e10pro.canteen.personsOptions", "viewer": "default"
+	},
+	"canteenMenuFoods": {
+		"name": "Jídla na lístku", "order": 120500, "group": "canteen", "icon": "icon-bars",
+		"type": "viewer", "table": "e10pro.canteen.menuFoods", "viewer": "default"
+	},
+	"canteenPriceList": {
+		"name": "Cena jídel", "order": 120700, "group": "canteen", "icon": "icon-money",
+		"type": "viewer", "table": "e10pro.canteen.priceList", "viewer": "default"
+	},
+	"canteenFoodOrders": {
+		"name": "Objednaná jídla", "order": 120800, "group": "canteen", "icon": "icon-check-circle",
+		"type": "viewer", "table": "e10pro.canteen.foodOrders", "viewer": "default"
+	},
+	"canteenMenuRecipientsDefs": {
+		"name": "Rozesílání menu", "order": 121000, "group": "canteen", "icon": "icon-share",
+		"type": "viewer", "table": "e10pro.canteen.menuRecipientsDefs", "viewer": "default"
+	},
+	"canteenMenuRecipientsPersons": {
+		"name": "Menu k rozeslání", "order": 122000, "group": "canteen", "icon": "icon-paper-plane",
+		"type": "viewer", "table": "e10pro.canteen.menuRecipientsPersons", "viewer": "default"
+	}
+}

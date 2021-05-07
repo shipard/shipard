@@ -1,0 +1,28 @@
+[
+  {
+    "table": "e10doc.core.heads",
+    "views": {
+			"invoicesIn": {
+				"id": "invoicesIn", "class": "e10doc.invoicesIn.libs.ViewInvoicesIn", "help": "prirucka/4861",
+				"details": {
+					"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10doc.invoicesIn.libs.ViewDetailInvoiceIn", "order": 1000}
+				}
+			}
+		},
+    "forms": [
+      {"id": "invoicesIn", "class": "e10doc.invoicesIn.libs.FormInvoiceIn", "help": "prirucka/4436"}
+    ],
+		"reports": [
+			{
+				"id": "invin", "name": "Faktura", "class": "e10doc.invoicesIn.libs.InvoiceInReport",
+				"queryCol": "docType", "queryColValues": ["invni"]
+			}
+		]
+  },
+  {
+    "table": "e10doc.core.rows",
+    "forms": [
+      {"id": "invoicesIn", "class": "e10doc.invoicesIn.libs.FormInvoiceInRow"}
+    ]
+  }
+]

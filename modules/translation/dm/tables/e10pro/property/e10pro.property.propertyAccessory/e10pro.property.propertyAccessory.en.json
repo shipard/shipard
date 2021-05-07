@@ -1,0 +1,16 @@
+{
+    "table": {
+        "name": "Property accessories"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "property": {
+            "name": "Property"
+        },
+        "linkedProperty": {
+            "name": "Accessories"
+        }
+    }
+}

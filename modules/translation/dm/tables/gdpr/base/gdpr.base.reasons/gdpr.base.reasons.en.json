@@ -1,0 +1,25 @@
+{
+    "table": {
+        "name": "Reasons"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "legalReason": {
+            "name": "Legal reason"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

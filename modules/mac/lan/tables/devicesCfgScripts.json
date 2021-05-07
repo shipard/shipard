@@ -1,0 +1,46 @@
+{
+	"id": "mac.lan.devicesCfgScripts", "sql": "mac_lan_devicesCfgScripts", "name": "Konfigurační skripty zařízení",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "device", "name": "Zařízení", "type": "int", "reference": "mac.lan.devices"},
+
+		{"id": "cfgRequestState", "name": "Stav požadavku", "type": "enumInt",
+			"enumValues": {
+				"0": "Neznámý stav zařízení",
+				"1": "Odeslat na server",
+				"2": "Odesláno na server",
+				"3": "Přijato serverem",
+				"4": "Probíhá nastavení",
+				"5": "Hotovo"
+			}
+		},
+
+		{"id": "cfgLastRequestResult", "name": "Výsledek posledního požadavku", "type": "enumInt",
+			"enumValues": {
+				"0": "Neznámý",
+				"1": "Úspěch",
+				"2": "Chyba"
+			}
+		},
+		{"id": "cfgLastRequestResultLog", "name": "Výsledek posledního požadavku - log", "type": "memo"},
+		{"id": "cfgLastRequestResultTimestamp", "name": "Datum a čas posledního stavu požadavku", "type": "timestamp"},
+
+		{"id": "runningText", "name": "Skript aktivní konfigurace - text", "type": "memo"},
+		{"id": "runningData", "name": "Data aktivní konfigurace", "type": "memo"},
+		{"id": "runningVer", "name": "Verze aktivní konfigurace", "type": "string", "len": 40, "options": ["ascii"]},
+		{"id": "runningTimestamp", "name": "Datum a čas aktualizace aktivní konfigurace", "type": "timestamp"},
+
+		{"id": "newText", "name": "Nová konfigurace - text", "type": "memo"},
+		{"id": "newData", "name": "Nová konfigurace - data", "type": "memo"},
+		{"id": "newVer", "name": "Nový skript - verze", "type": "string", "len": 40, "options": ["ascii"]},
+		{"id": "newTimestamp", "name": "Nová konfigurace - datum a čas", "type": "timestamp"},
+
+		{"id": "liveText", "name": "Stávající skript - text", "type": "memo"},
+		{"id": "liveData", "name": "Stávající skript - data", "type": "memo"},
+		{"id": "liveVer", "name": "stávající skript - verze", "type": "string", "len": 40, "options": ["ascii"]},
+		{"id": "liveTimestamp", "name": "Stávající skript - datum a čas", "type": "timestamp"},
+
+		{"id": "changed", "name": "Změna", "type": "logical"}
+	],
+	"options": ["systemTable"]
+}

@@ -1,0 +1,365 @@
+{
+    "e10WorldCountries": {
+        "name": "Countries"
+    },
+    "e10WorldCurrencies": {
+        "name": "Currencies"
+    },
+    "e10WorldLanguages": {
+        "name": "Languages"
+    },
+    "places": {
+        "name": "Places"
+    },
+    "ipaddr": {
+        "name": "IP addresses"
+    },
+    "devices": {
+        "name": "Devices"
+    },
+    "servers": {
+        "name": "Web servers"
+    },
+    "webScripts": {
+        "name": "Web scripts"
+    },
+    "wuKeys": {
+        "name": "Keys"
+    },
+    "webcomm": {
+        "name": "Web and communication"
+    },
+    "wkfMaps": {
+        "name": "Maps"
+    },
+    "wkfProjects": {
+        "name": "Projects"
+    },
+    "workflow": {
+        "name": "Workflow"
+    },
+    "witemsUnits": {
+        "name": "Units"
+    },
+    "kbWikies": {
+        "name": "Wiki"
+    },
+    "kbWikiSections": {
+        "name": "Wiki sections"
+    },
+    "wkfn": {
+        "name": "Workflow"
+    },
+    "wkfnSections": {
+        "name": "Sections"
+    },
+    "wkfnIssuesStatuses": {
+        "name": "Statuses"
+    },
+    "wkfnProjects": {
+        "name": "Projects"
+    },
+    "notifyChannels": {
+        "name": "Notification channels"
+    },
+    "centres": {
+        "name": "Centres"
+    },
+    "warehouses": {
+        "name": "Warehouses"
+    },
+    "property": {
+        "name": "Property"
+    },
+    "swdevDocumentation": {
+        "name": "Documentation"
+    },
+    "swDevDicts": {
+        "name": "Dictionaries"
+    },
+    "swDevTranslators": {
+        "name": "Translators"
+    },
+    "hosting": {
+        "name": "Hosting"
+    },
+    "integrationsTasks": {
+        "name": "Tasks"
+    },
+    "integrationsServices": {
+        "name": "Services"
+    },
+    "gdprRetentionPeriods": {
+        "name": "Retention periods"
+    },
+    "macSensors": {
+        "name": "Sensors"
+    },
+    "accessLevels": {
+        "name": "Access levels"
+    },
+    "accessGates": {
+        "name": "Gates"
+    },
+    "tags": {
+        "name": "Access keys"
+    },
+    "macZones": {
+        "name": "Zones"
+    },
+    "macIPAddress": {
+        "name": "IP addresses"
+    },
+    "fiscalyears": {
+        "name": "Fiscal period"
+    },
+    "e10Printers": {
+        "name": "Printers"
+    },
+    "macIPAddressLists": {
+        "name": "Lists of IP addresses"
+    },
+    "e10Cameras": {
+        "name": "Cameras"
+    },
+    "e10LocalServers": {
+        "name": "Local servers"
+    },
+    "e10Sensors": {
+        "name": "Sensors"
+    },
+    "core": {
+        "name": "Default settings"
+    },
+    "propdefs": {
+        "name": "Properties definitions"
+    },
+    "propgroups": {
+        "name": "Properties groups"
+    },
+    "urlDecorations": {
+        "name": "Websites decorations"
+    },
+    "witemsTypes": {
+        "name": "Item types"
+    },
+    "wkfMessagesKinds": {
+        "name": "Message kinds"
+    },
+    "wkfProjectsGroups": {
+        "name": "Projects groups"
+    },
+    "articlesSections": {
+        "name": "Articles sections"
+    },
+    "wkfProjectsFolders": {
+        "name": "Projects folders"
+    },
+    "witemsCategories": {
+        "name": "Items categories"
+    },
+    "witemsBrands": {
+        "name": "Items brands"
+    },
+    "wkfnTargets": {
+        "name": "Targets"
+    },
+    "wkfnFilters": {
+        "name": "Issues filters"
+    },
+    "wkfnIssuesKinds": {
+        "name": "Issues kinds"
+    },
+    "wkfnTrays": {
+        "name": "Attachment trays"
+    },
+    "wkfnExtNotifications": {
+        "name": "External notifications"
+    },
+    "transports": {
+        "name": "Way of transport"
+    },
+    "taxregistrations": {
+        "name": "Tax registration"
+    },
+    "workOrderKinds": {
+        "name": "Work order kinds"
+    },
+    "workOrderGroups": {
+        "name": "Work order groups"
+    },
+    "contractsDocNumbers": {
+        "name": "Numerical series of work orders"
+    },
+    "docnumbers": {
+        "name": "Numerical series of documents"
+    },
+    "wkfWorksRecsKinds": {
+        "name": "Work record kinds"
+    },
+    "wkfWorksRecsNumbers": {
+        "name": "Numerical series of work records"
+    },
+    "e10PayTerminals": {
+        "name": "Payment terminals"
+    },
+    "dockinds": {
+        "name": "Document kinds"
+    },
+    "taxperiods": {
+        "name": "VAT periods"
+    },
+    "docsAdditions": {
+        "name": "Document additions"
+    },
+    "docsAdditionsTypes": {
+        "name": "Types of document additions"
+    },
+    "accGroups": {
+        "name": "Accounting groups"
+    },
+    "propertyTypes": {
+        "name": "Property types"
+    },
+    "e10RosRegs": {
+        "name": "ROS registration"
+    },
+    "macDeviceTypes": {
+        "name": "Device types"
+    },
+    "propertyGroups": {
+        "name": "Property groups"
+    },
+    "e10Workplaces": {
+        "name": "Workplaces"
+    },
+    "integrationsInHooks": {
+        "name": "Incoming Webhooks"
+    },
+    "integrationsInData": {
+        "name": "Incoming Webhooks Data"
+    },
+    "swDevLanguages": {
+        "name": "Translated languages"
+    },
+    "gdprPersonalDataTypes": {
+        "name": "Types of personal data"
+    },
+    "macControls": {
+        "name": "Controls"
+    },
+    "e10PersonsGroups": {
+        "name": "Person groups"
+    },
+    "e10PersonsCategories": {
+        "name": "Person categories"
+    },
+    "e10PersonsRelations": {
+        "name": "Person relations"
+    },
+    "e10doc-buy": {
+        "name": "Purchase"
+    },
+    "e10doc-sale": {
+        "name": "Sale"
+    },
+    "reportsTexts": {
+        "name": "Document texts"
+    },
+    "cashboxes": {
+        "name": "Cashboxes"
+    },
+    "macLAN": {
+        "name": "Computer network"
+    },
+    "macAccess": {
+        "name": "Access to building/area"
+    },
+    "tagsAssignments": {
+        "name": "Assignments of Access keys"
+    },
+    "accessPersons": {
+        "name": "Person Access"
+    },
+    "docsWkfSectionsRelations": {
+        "name": "Document relations to workflow sections"
+    },
+    "e10doc-finance": {
+        "name": "Finance"
+    },
+    "docsRowsSettings": {
+        "name": "Setting of document rows"
+    },
+    "gdprDataSets": {
+        "name": "Recorded data files"
+    },
+    "gdprDataProcessors": {
+        "name": "Data processors"
+    },
+    "downloadFiles": {
+        "name": "Files download"
+    },
+    "shares": {
+        "name": "Sharing"
+    },
+    "e10doc-commerce": {
+        "name": "Work orders and Commerce"
+    },
+    "gdprStoragePlaces": {
+        "name": "Storage places"
+    },
+    "vdsDefs": {
+        "name": "Extension data structures"
+    },
+    "notifyDelivery": {
+        "name": "Delivered external notifications"
+    },
+    "bankaccounts": {
+        "name": "Own bank connection"
+    },
+    "experimental": {
+        "name": "Laboratory"
+    },
+    "spdAccounts": {
+        "name": "Accounts in statements"
+    },
+    "gdprReasons": {
+        "name": "Reasons for processing"
+    },
+    "wkfnDocsFolders": {
+        "name": "Project folders"
+    },
+    "wkfnDocsKinds": {
+        "name": "Document kinds"
+    },
+    "wkfnTargetsKinds": {
+        "name": "Target kinds"
+    },
+    "wkfnIssuesStatusesKinds": {
+        "name": "Statuse kinds"
+    },
+    "wkfnBoards": {
+        "name": "Issues Overview"
+    },
+    "kbAnnotsKinds": {
+        "name": "Annotation kinds"
+    },
+    "wikies": {
+        "name": "Wiki documentations"
+    },
+    "bookingTypes": {
+        "name": "Reservation kinds"
+    },
+    "witemsRelatedKinds": {
+        "name": "Kinds of Related items"
+    },
+    "contractsKinds": {
+        "name": "Contracts kinds"
+    },
+    "e10doc-stock": {
+        "name": "Stock"
+    },
+    "calendarDays": {
+        "name": "Calendar days"
+    }
+}

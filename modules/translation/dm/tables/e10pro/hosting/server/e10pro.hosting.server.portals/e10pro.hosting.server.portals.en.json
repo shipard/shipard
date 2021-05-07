@@ -1,0 +1,61 @@
+{
+    "table": {
+        "name": "Portals"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "domain": {
+            "name": "Domain name"
+        },
+        "emailDomain": {
+            "name": "Domain for e-mails"
+        },
+        "portalType": {
+            "name": "Portal type"
+        },
+        "portalTitle": {
+            "name": "Title"
+        },
+        "supportEmail": {
+            "name": "Client support e-mail"
+        },
+        "supportPhone": {
+            "name": "Support phone number"
+        },
+        "supportWeb": {
+            "name": "Support web"
+        },
+        "cssStyle": {
+            "name": "Style"
+        },
+        "logoPortal": {
+            "name": "Portal logo"
+        },
+        "logoIcon": {
+            "name": "Logo - browser icon"
+        },
+        "logoIconPortalHome": {
+            "name": "Logo - left top corner icon"
+        },
+        "logoFooter": {
+            "name": "Logo - footer"
+        },
+        "loginTabTitle": {
+            "name": "Login tab title"
+        },
+        "gid": {
+            "name": "GID"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

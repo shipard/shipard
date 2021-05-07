@@ -1,0 +1,16 @@
+{
+	"e10pro.property.types": {
+		"e10pro-property-types-propgroups": {"linkid": "e10pro-property-types-propgroups", "name": "Skupiny vlastností", "icon": "chevron-left",
+			"sources": [
+				{"table": "e10.base.propgroups"}
+			]
+		}
+	},
+	"e10pro.property.groups": {
+		"e10pro-property-groups-proptypes": {"linkid": "e10pro-property-groups-proptypes", "name": "Začlenit typy majetku", "icon": "icon-object-group",
+			"sources": [
+				{"table": "e10pro.property.types"}
+			]
+		}
+	}
+}

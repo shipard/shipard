@@ -1,0 +1,53 @@
+{
+	"CZ2015": {
+		"fullName": "--> 2015", "shortName": "2015",
+		"validFrom": "0000-00-00", "validTo": "2015-12-31",
+		"variants": {
+			"full": {
+				"name": "Plný rozsah",
+				"reportTitle": "Výkaz zisku a ztráty",
+				"spreadsheetId": "pkgs.accounting.debs.spdStatementFull-cz-2015"
+			},
+			"short": {
+				"name": "Zkrácený rozsah",
+				"reportTitle": "Výkaz zisku a ztráty ve zkráceném rozsahu",
+				"spreadsheetId": "pkgs.accounting.debs.spdStatementShort-cz-2015",
+				"fullSpreadsheetId": "pkgs.accounting.debs.spdStatementFull-cz-2015"
+			}
+		}
+	},
+	"CZ2016": {
+		"fullName": "2016 - 2017", "shortName": "2016",
+		"validFrom": "2016-01-01", "validTo": "2017-12-31",
+		"variants": {
+			"full": {
+				"name": "Plný rozsah",
+				"reportTitle": "Výkaz zisku a ztráty",
+				"spreadsheetId": "install.country-modules.debs.cz.spdStatementFull-cz-2016"
+			},
+			"short": {
+				"name": "Zkrácený rozsah",
+				"reportTitle": "Výkaz zisku a ztráty ve zkráceném rozsahu",
+				"spreadsheetId": "install.country-modules.debs.cz.spdStatementShort-cz-2016",
+				"fullSpreadsheetId": "install.country-modules.debs.cz.spdStatementFull-cz-2016"
+			}
+		}
+	},
+	"CZ2018": {
+		"fullName": "2018 -->", "shortName": "2018",
+		"validFrom": "2018-01-01", "validTo": "0000-00-00",
+		"variants": {
+			"full": {
+				"name": "Plný rozsah",
+				"reportTitle": "Výkaz zisku a ztráty",
+				"spreadsheetId": "install.country-modules.debs.cz.spdStatementFull-cz-2018"
+			},
+			"short": {
+				"name": "Zkrácený rozsah",
+				"reportTitle": "Výkaz zisku a ztráty ve zkráceném rozsahu",
+				"spreadsheetId": "install.country-modules.debs.cz.spdStatementShort-cz-2018",
+				"fullSpreadsheetId": "install.country-modules.debs.cz.spdStatementFull-cz-2018"
+			}
+		}
+	}
+}

@@ -1,0 +1,10 @@
+{
+	"mac.sw.sw": {
+		"mac-sw-swCats": {
+			"linkid": "mac-sw-swCats", "name": "Kategorie SW", "icon": "icon-folder",
+			"sources": [
+				{"id": "cats", "viewer": "default", "table": "mac.sw.categories"}
+			]
+		}
+	}
+}

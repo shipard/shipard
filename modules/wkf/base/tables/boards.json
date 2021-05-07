@@ -1,0 +1,35 @@
+{
+	"id": "wkf.base.boards", "sql": "wkf_base_boards", "name": "Přehledy Zpráv", "icon": "icon-window-maximize",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "fullName", "name": "Název", "type": "string", "len": 100},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 60},
+
+		{"id": "order", "name": "Pořadí", "type": "int"},
+		{"id": "icon", "name": "Ikona", "type": "string", "len": 50},
+
+		{"id": "boardMainKind", "name": "Druh pohledu", "type": "enumInt",
+			"enumValues": {"0": "sloupce"}, "options": ["saveOnChange"]},
+		{"id": "columnsView", "name": "Sloupce", "type": "enumInt",
+			"enumValues": {"0": "ne", "1": "Cíle", "2":  "Projekty"}, "options": ["saveOnChange"]},
+
+		{"id": "addToMainDashboard", "name": "Vložit do hlavního dashboardu", "type": "enumInt",
+			"enumValues": {"0": "ne", "1": "Jen ikonu", "2":  "Včetně názvu"}},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": {
+		"default": {"id": "default", "class": "wkf.base.ViewBoards", "help": "prirucka/4904"}
+	},
+	"forms": [
+		{"id": "default", "class": "wkf.base.FormBoard", "help": "prirucka/4904"}
+	],
+	"options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

@@ -1,0 +1,34 @@
+{
+    "table": {
+        "name": "Places"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "placeType": {
+            "name": "Place type"
+        },
+        "placeParent": {
+            "name": "Parent place"
+        },
+        "shortcutId": {
+            "name": "Short ID"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

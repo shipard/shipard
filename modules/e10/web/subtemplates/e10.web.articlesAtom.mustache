@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+	<title>{{page.pageTitle}}</title>
+	<subtitle>{{cfgItem.options.core.ownerFullName}}</subtitle>
+	<link href="{{page.feedUrl}}" rel="self"/>
+	<link href="{{page.articlesUrl}}"/>
+	<updated>{{page.feedDateUpdated}}</updated>
+	<author>
+		<name>{{cfgItem.options.core.ownerShortName}}</name>
+		<email>{{cfgItem.options.core.ownerEmail}}</email>
+	</author>
+	<id>urn:uuid:{{page.checkSum}}</id>
+	{{#page.articles}}
+		<entry>
+			<title>{{title}}</title>
+			<link href="{{url}}"/>
+			<id>urn:uuid:{{checkSum}}</id>
+			<updated>{{datePubISO}}</updated>
+			<content>{{textHtmlEncoded}}</content>
+		</entry>
+	{{/page.articles}}
+</feed>
+
+
+

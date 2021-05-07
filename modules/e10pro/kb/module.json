@@ -1,0 +1,16 @@
+{
+  "id": "e10pro.kb",
+  "name": "Knowledge Base",
+  "tables": ["wikies", "sections", "texts", "textsRendered", "annotsKinds", "annots"],
+  "modules": ["e10/base"],
+  "config": [
+    {"id": "+appOptions", "file": "e10.appOptions.json"},
+	  {"id": "+e10.appOptions.groups", "file": "e10.appOptionsGroups.json"},
+	  {"id": "+e10.persons.roles", "name": "Role uživatelů", "file": "e10pro.kb.roles.json"},
+		{"id": "+registeredFunctions", "name": "Registrované funkce", "file": "registeredFunctions.json"},
+		{"id": "e10pro.kb.texts.docStates", "name": "Stavy textů", "file": "e10pro.kb.texts.docStates.json"},
+		{"id": "+e10pro.kb.wiki.pageTypes", "file": "wikiPageTypes.json"},
+    {"id": "+e10.base.doclinks", "file": "kb.doclinks.json"},
+    {"id": "+e10.base.clsfGroups", "file": "e10pro.kb.clsfGroups.json"}
+  ]
+}

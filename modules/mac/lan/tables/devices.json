@@ -1,0 +1,99 @@
+{
+  "id": "mac.lan.devices", "sql": "mac_lan_devices", "name": "Zařízení v síti",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "lan", "name": "Síť", "type": "int", "reference": "mac.lan.lans"},
+
+    {"id": "fullName", "name": "Úplný název", "type": "string", "len": 120},
+    {"id": "id", "name": "Zkrácený název/ID", "type": "string", "len": 40},
+		{"id": "evNumber", "name": "Evidenční číslo", "type": "string", "len": 30},
+		{"id": "uid", "name": "Unikátní ID", "type": "string", "len": 32, "options": ["ascii"]},
+
+    {"id": "deviceType", "name": "Typ zařízení", "type": "int", "reference": "mac.lan.deviceTypes", "options": ["saveOnChange"]},
+    {"id": "deviceKind", "name": "Druh zařízení", "type": "enumInt",
+      "enumCfg": {"cfgItem": "mac.lan.devices.kinds", "cfgValue": "", "cfgText": "name"}},
+    {"id": "deviceTypeName", "name": "Typové označení", "type": "string", "len": 80},
+
+    {"id": "place", "name": "Místo", "type": "int", "reference": "e10.base.places"},
+    {"id": "placeDesc", "name": "Upřesnění místa", "type": "string", "len": 80},
+    {"id": "rack", "name": "Rack", "type": "int", "reference": "mac.lan.racks"},
+
+    {"id": "property", "name": "Majetek", "type": "int", "reference": "e10pro.property.property", "module": "e10pro.property"},
+
+		{"id": "disableSNMP", "name": "Vypnout sledování SNMP", "type": "logical"},
+		{"id": "disableInstalledSW", "name": "Vypnout sledování nainstalovaných aplikací", "type": "logical"},
+    {"id": "alerts", "name": "Hlásit výpadky", "type": "enumInt",
+      "enumValues": {"0": "Automaticky", "1": "Ano",  "2": "Ne"}},
+		{"id": "hideFromDR", "name": "Nezobrazovat v racku v dashboardu", "type": "logical"},
+
+		{"id": "macDeviceType", "name": "Upřesnění typu", "type": "enumString", "len": 30, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.devices.types", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "macDeviceCfg", "name": "Nastavení MAC zařízení", "type": "subColumns"},
+		{"id": "localServer", "name": "Místní server", "type": "int", "reference": "mac.lan.devices", "comboViewer": "shipardNodes"},
+
+		{"id": "macDataSource", "name": "Zdroj dat pro monitoring", "type": "int", "reference": "mac.data.sources"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+    {"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+  "lists": [
+    {"id": "ifaces", "class": "e10.base.ListRows", "name": "Síťové adresy zařízení", "table": "mac.lan.devicesIfaces", "queryColumn": "device", "orderColumn": "rowOrder"},
+    {"id": "ports", "class": "e10.base.ListRows", "name": "Porty zařízení", "table": "mac.lan.devicesPorts", "queryColumn": "device", "orderColumn": "rowOrder"},
+		{"id": "ioPorts", "class": "e10.base.ListRows", "name": "IO Porty", "table": "mac.lan.devicesIOPorts", "queryColumn": "device", "orderColumn": "rowOrder"},
+		{"id": "sensorsShow", "class": "e10.base.ListRows", "name": "Zobrazované senzory", "table": "mac.lan.devicesSensorsShow", "queryColumn": "device", "orderColumn": "rowOrder"},
+    {"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"}
+  ],
+  "views": [
+    {
+      "id": "default", "class": "mac.lan.ViewDevices"
+    },
+    {
+      "id": "all", "class": "mac.lan.ViewDevicesAll",
+      "details": {
+        "default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewDetailDeviceDetail"},
+        "sw": {"title": "SW", "icon": "icon-hourglass-half", "type": "detail", "class": "mac.lan.ViewDetailDeviceDetailSw"},
+        "info": {"title": "Info", "icon": "icon-info", "type": "detail", "class": "mac.lan.ViewDetailDeviceDetailInfo"},
+        "cfgScripts": {"title": "Nastavení", "icon": "icon-wrench", "type": "detail", "class": "mac.lan.ViewDetailDeviceDetailCfgScripts"}
+      },
+			"tools": [
+				{"class": "mac.lan.libs.LanControlSetToReloadRunningConfWizard", "icon": "icon-refresh", "text": "Znovu načíst aktuální stav všech zařízení"}
+			]
+    },
+    {
+      "id": "cameras", "class": "mac.lan.ViewDevicesCameras"
+    },
+		{
+			"id": "iot", "class": "mac.lan.ViewDevicesIoT"
+		},
+    {
+      "id": "routers", "class": "mac.lan.ViewDevicesRouters"
+    },
+    {
+      "id": "shipardNodes", "class": "mac.lan.ViewDevicesShipardNodes"
+    },
+		{
+			"id": "servers", "class": "mac.lan.ViewDevicesServers"
+		},
+    {
+      "id": "wifiAPs", "class": "mac.lan.ViewDevicesWiFiAPs"
+    }
+  ],
+  "forms": [
+    {"id": "default", "class": "mac.lan.FormDevice"}
+  ],
+	"reports": [
+		{
+			"id": "labelDevice", "name": "Nálepka", "class": "mac.lan.libs.ReportDeviceLabelDevice",
+			"directPrint": 1, "printerClass": "labels"
+		},
+		{
+			"id": "labelCable", "name": "Kabel", "class": "mac.lan.libs.ReportDeviceLabelCable",
+			"directPrint": 1, "printerClass": "labels"
+		}
+	],
+	"options": ["disableCopyRecords"],
+  "addWizard": {"class": "mac.lan.AddDeviceWizard", "text":  "Přidat"},
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+  "states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "mac.lan.devices.docStates"},
+  "documentCard": "mac.lan.DocumentCardDevice"
+}

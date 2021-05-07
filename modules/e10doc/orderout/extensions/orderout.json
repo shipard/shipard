@@ -1,0 +1,23 @@
+[
+	{
+		"table": "e10doc.core.heads",
+		"views": [
+			{"id": "orderOut", "class": "e10doc.orderout.View", "detail": "e10doc.orderout.ViewDetail"}
+		],
+		"forms": [
+			{"id": "orderOut", "class": "e10doc.orderout.Form"}
+		],
+		"reports": [
+			{
+				"id": "orderout", "name": "Objednávka", "class": "e10doc.orderout.Report",
+				"queryCol": "docType", "queryColValues": ["orderout"], "email": 1
+			}
+		]
+	},
+	{
+		"table": "e10doc.core.rows",
+		"forms": [
+			{"id": "orderOut", "class": "e10doc.orderout.FormRows"}
+		]
+	}
+]

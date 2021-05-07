@@ -1,0 +1,9 @@
+{
+	"e10pro.meters.groups": {
+		"e10pro-meters-groups-meters": {"linkid": "e10pro-meters-groups-meters", "name": "Měřiče", "icon": "chevron-left",
+			"sources": [
+				{"table": "e10pro.meters.meters"}
+			]
+		}
+	}
+}

@@ -1,0 +1,118 @@
+{
+    "table": {
+        "name": "Work orders"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "dbCounter": {
+            "name": "Numerical series"
+        },
+        "dbCounterNdx": {
+            "name": "Sequence number"
+        },
+        "dbCounterYear": {
+            "name": "Year"
+        },
+        "docNumber": {
+            "name": "Order number"
+        },
+        "docKind": {
+            "name": "Order kind"
+        },
+        "title": {
+            "name": "Document text"
+        },
+        "owner": {
+            "name": "Issuer"
+        },
+        "customer": {
+            "name": "Customer"
+        },
+        "author": {
+            "name": "Author"
+        },
+        "dateIssue": {
+            "name": "Issue date"
+        },
+        "dateContract": {
+            "name": "Contract date"
+        },
+        "dateBegin": {
+            "name": "Start date"
+        },
+        "dateDeadlineRequested": {
+            "name": "Requested deadline"
+        },
+        "dateDeadlineConfirmed": {
+            "name": "Confirmed deadline"
+        },
+        "dateClosed": {
+            "name": "Closing date"
+        },
+        "centre": {
+            "name": "Centre"
+        },
+        "project": {
+            "name": "Project"
+        },
+        "currency": {
+            "name": "Currency"
+        },
+        "homeCurrency": {
+            "name": "Home currency"
+        },
+        "exchangeRate": {
+            "name": "Exchange rate"
+        },
+        "dateExchRate": {
+            "name": "Exchange rate date"
+        },
+        "sumPrice": {
+            "name": "Total price"
+        },
+        "sumPriceHc": {
+            "name": "Total price [HC]"
+        },
+        "price": {
+            "name": "Price"
+        },
+        "priceHc": {
+            "name": "Price [HC]"
+        },
+        "refId1": {
+            "name": "Order's internal number"
+        },
+        "refId2": {
+            "name": "Order / CC"
+        },
+        "intTitle": {
+            "name": "Document's internal text"
+        },
+        "description": {
+            "name": "Work order description"
+        },
+        "retentionGuarantees": {
+            "name": "Retention guarantees"
+        },
+        "rgAmount": {
+            "name": "Amount of retention guarantees"
+        },
+        "rgAmountHc": {
+            "name": "Amount of retention guarantees [HC]"
+        },
+        "rgPercent": {
+            "name": "Retention guarantees percentage"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "wkfProject": {
+            "name": "Project"
+        }
+    }
+}

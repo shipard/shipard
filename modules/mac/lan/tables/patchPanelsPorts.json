@@ -1,0 +1,35 @@
+{
+	"id": "mac.lan.patchPanelsPorts", "sql": "mac_lan_patchPanelsPorts", "name": "Porty patch panelů",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "patchPanel", "name": "Patch panel", "type": "int", "reference": "mac.lan.patchPanels"},
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+
+		{"id": "portNumber", "name": "Číslo portu", "label": "Číslo", "type": "int"},
+		{"id": "portId", "name": "ID portu", "label": "id", "type": "string", "len": 20},
+		{"id": "fullName", "name": "Název portu", "type": "string", "len": 140},
+		{"id": "note", "name": "Poznámka", "type": "string", "len": 100},
+
+		{"id": "cableTerm", "name": "Kabel ukončen v", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.lan.patchPanels.cableTerm", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "cableTermWallSocket", "name": "Zásuvka", "type": "int", "reference": "mac.lan.wallSockets"},
+
+		{"id": "cableTermPatchPanel", "name": "Path panel", "type": "int", "reference": "mac.lan.patchPanels", "comboViewer": "default", "options": ["saveOnChange"]},
+		{"id": "cableTermPatchPanelPort", "name": "Port patch panelu", "type": "int", "reference": "mac.lan.patchPanelsPorts", "options": ["saveOnChange"]},
+		{"id": "cableTermDevice", "name": "Zařízení", "type": "int", "reference": "mac.lan.devices", "comboViewer": "default", "options": ["saveOnChange"]},
+		{"id": "cableTermDevicePort", "name": "Port zařízení", "type": "int", "reference": "mac.lan.devicesPorts", "options": ["saveOnChange"]}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.lan.FormPatchPanelPort"}
+	],
+	"views": [
+		{"id": "default", "class": "mac.lan.ViewPatchPanelsPorts"},
+		{"id": "formList", "class": "mac.lan.ViewPatchPanelsPortsFormList", "type": "form",
+			"details": {
+				"default": {"title": "Přehled", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewPatchPanelPortFormListDetail"}
+			}
+		}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "portId"},
+	"options": ["systemTable"]
+}

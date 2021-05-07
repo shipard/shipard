@@ -1,0 +1,21 @@
+{
+	"id": "mac.access.personsAccess", "sql": "mac_access_personsAccess", "name": "Přístup Osob", "icon": "icon-user",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "accessLevels", "class": "e10.base.ListRows", "name": "Úrovně přístupu", "table": "mac.access.personsAccessLevels", "queryColumn": "personAccess", "orderColumn": "rowOrder"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "mac.access.ViewPersonsAccess", "detail": "mac.access.ViewDetailPersonsAccess"}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.access.FormPersonAccess"}
+	]
+}

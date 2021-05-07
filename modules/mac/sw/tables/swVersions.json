@@ -1,0 +1,31 @@
+{
+	"id": "mac.sw.swVersions", "sql": "mac_sw_swVersions", "name": "Verze software", "icon": "icon-hashtag",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+		{"id": "sw", "name": "Software", "type": "int", "reference": "mac.sw.sw"},
+		{"id": "suid", "name": "ID", "type": "string", "len": 10, "options": ["ascii"]},
+
+		{"id": "versionNumber", "name": "Číslo verze", "type": "string", "len": 80, "options": ["saveOnChange"]},
+		{"id": "versionName", "name": "Název verze", "type": "string", "len": 80},
+		{"id": "versionNameShort", "name": "Zkrácený název verze", "type": "string", "len": 40},
+		{"id": "lifeCycle", "name": "Stav", "type": "enumInt",
+			"enumCfg": {"cfgItem": "mac.swcore.lifeCycle", "cfgValue": "", "cfgText": "sn"}},
+		{"id": "dateRelease", "name": "Datum zveřejnění", "type": "date"},
+		{"id": "dateEndSupport", "name": "Datum ukončení podpory", "type": "date"},
+		{"id": "dateObsolete", "name": "Datum, od kdy bude verze zastaralá", "type": "date"},
+
+		{"id": "versionOrderId", "name": "ID pořadí verze", "type": "string", "len": 100}
+	],
+	"views": [
+		{
+			"id": "default", "class": "mac.sw.ViewSWVersions", "type": "form",
+			"details": {
+				"default": {"title": "Přehled", "icon": "x-content", "type": "detail", "class": "mac.sw.ViewDetailSWVersion"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.sw.FormSWVersion"}
+	]
+}

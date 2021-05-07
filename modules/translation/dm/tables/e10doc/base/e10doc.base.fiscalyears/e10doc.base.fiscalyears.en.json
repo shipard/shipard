@@ -1,0 +1,40 @@
+{
+    "table": {
+        "name": "Fiscal period"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "mark": {
+            "name": "Mark for documents numbers"
+        },
+        "start": {
+            "name": "Beginning of the period"
+        },
+        "end": {
+            "name": "End of the period"
+        },
+        "currency": {
+            "name": "Currency"
+        },
+        "accMethod": {
+            "name": "Accountting method"
+        },
+        "stockAccMethod": {
+            "name": "Stocks accounting"
+        },
+        "propertyDepsMethod": {
+            "name": "Depreciation of assets"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

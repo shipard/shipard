@@ -1,0 +1,43 @@
+{
+    "table": {
+        "name": "Certificates"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "host": {
+            "name": "Host name"
+        },
+        "hostAscii": {
+            "name": "Host name in ASCII"
+        },
+        "anotherHosts": {
+            "name": "Another host names"
+        },
+        "anotherHostsAscii": {
+            "name": "Another host names in ASCII"
+        },
+        "fileId": {
+            "name": "ID"
+        },
+        "domain": {
+            "name": "Domain"
+        },
+        "provider": {
+            "name": "Provider"
+        },
+        "dataSource": {
+            "name": "Data source"
+        },
+        "dateExpire": {
+            "name": "Expiration date"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

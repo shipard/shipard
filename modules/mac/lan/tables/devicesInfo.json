@@ -1,0 +1,18 @@
+{
+	"id": "mac.lan.devicesInfo", "sql": "mac_lan_devicesInfo", "name": "Informace o zařízení",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "device", "name": "Zařízení", "type": "int", "reference": "mac.lan.devices"},
+
+		{"id": "dateCreate", "name": "Datum vytvoření", "type": "timestamp"},
+		{"id": "dateUpdate", "name": "Datum aktualizace", "type": "timestamp"},
+
+		{"id": "infoType", "name": "Typ informací", "type": "enumString", "len": 20,
+			"enumCfg": {"cfgItem": "mac.lan.deviceInfoTypes", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "checked", "name": "Zkontrolováno", "type": "logical"},
+
+		{"id": "data", "name": "Data", "type": "memo"}
+	],
+	"options": ["systemTable"]
+}

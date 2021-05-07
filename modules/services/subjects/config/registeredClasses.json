@@ -1,0 +1,13 @@
+{
+	"feed": {
+		"subject-info": {
+			"classId": "services.subjects.SubjectInfoFeed"
+		},
+		"sources-package": {
+			"classId": "services.subjects.SourcesPackageFeed"
+		},
+		"sources-cfg": {
+			"classId": "services.subjects.SourcesCfgFeed"
+		}
+	}
+}

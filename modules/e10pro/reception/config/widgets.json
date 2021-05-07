@@ -1,0 +1,43 @@
+[
+	{
+		"name": "welcome", "class": "e10pro.wkf.widgetDashboardTitle", "icon": "icon-user", "align": "left",
+		"dashboard": "reception", "panel": "main", "order": 100, "row": "title", "width": 12, "type": "infoTitle"
+	},
+	{
+		"name": "Rezervace", "class": "lib.wkf.BookingWidget", "icon": "icon-book",
+		"dashboard": "main", "panel": "reception-booking", "order": 400000, "row": "main", "width": 12, "type": "fullsize"
+	},
+	{
+		"name": "Rezervace", "class": "lib.wkf.BookingWidget", "icon": "icon-book",
+		"dashboard": "reception", "panel": "booking", "order": 1000, "row": "main", "width": 12, "type": "fullsize"
+	},
+	{
+		"name": "Měření", "class": "e10pro.meters.MetersWidget", "icon": "icon-cogs",
+		"dashboard": "main", "panel": "reception-meters", "order": 700000, "row": "main", "width": 12, "type": "fullsize"
+	},
+	{
+		"name": "Měření", "class": "e10pro.meters.MetersWidget", "icon": "icon-cogs",
+		"dashboard": "reception", "panel": "meters", "order": 1000, "row": "main", "width": 12, "type": "fullsize"
+	},
+	{
+		"name": "Pohledávky", "class": "e10doc.balance.widgetBalanceReceivables", "icon": "icon-arrow-circle-up",
+		"dashboard": "main", "panel": "reception-receivables", "order": 400000, "row": "docViewers", "width": 12, "type": "reportViewer"
+	},
+	{
+		"name": "Pohledávky", "class": "e10doc.balance.widgetBalanceReceivables", "icon": "icon-arrow-circle-up",
+		"dashboard": "reception", "panel": "main", "order": 1000, "row": "docViewers", "width": 12, "type": "reportViewer"
+	},
+	{
+		"name": "Nástěnka", "class": "e10pro.wkf.widgetDashboardBBoard", "icon": "e10pro-wkf-bboard",
+		"dashboard": "reception", "panel": "bboard", "order": 1000, "row": "main", "width": 6, "type": "docViewer"
+	},
+	{
+		"name": "Kalendář", "class": "e10pro.wkf.widgetDashboardCalendarBig", "icon": "icon-calendar",
+		"dashboard": "reception", "panel": "calendar", "order": 1000, "row": "main", "width": 12, "type": "fullsize"
+	},
+
+	{
+		"name": "Pohledávky", "class": "e10doc.balance.widgetBalanceReceivables", "icon": "icon-arrow-circle-up",
+		"dashboard": "main_new", "panel": "reception-receivables", "order": 400000, "row": "docViewers", "width": 12, "type": "reportViewer"
+	}
+]

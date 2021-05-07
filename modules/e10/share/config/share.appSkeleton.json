@@ -1,0 +1,14 @@
+{
+	"panels": {
+		"share": {
+			"urlRegExp": "/^\\/share\\/(.+)$/", "objectType": "function", "function": "e10.share.createShare",
+			"zone": "sec", "allow": "all", "order": 100000
+		},
+		"srvcfg": {
+			"smallItems": [
+				{"#": "shares", "t1": "Sdílení", "object": "viewer", "table": "e10.share.shares", "viewer": "default",
+					"icon": "icon-share-alt", "order": 910000, "enabledCfgItem": "options.shares.useShares"}
+			]
+		}
+	}
+}

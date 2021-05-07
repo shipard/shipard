@@ -1,0 +1,31 @@
+{
+	"id": "e10.persons.relations", "sql": "e10_persons_relations", "name": "Vztahy Osob", "icon": "icon-compress",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "parentPerson", "name": "Mateřská osoba", "type": "int", "reference": "e10.persons.persons"},
+
+		{"id": "category", "name": "Kategorie", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10.persons.categories.categories", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+
+		{"id": "source", "name": "Zdroj", "label": "Směr", "type": "enumInt",
+			"enumValues": {"0": "Ruční zadání", "1": "Automatická detekce"}},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "e10.persons.ViewRelations", "help": "prirucka/4933",
+			"details": {
+				"default": {"title": "Náhled", "icon": "x-content", "type": "detail", "class": "e10.persons.ViewDetailRelation"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10.persons.FormRelation", "help": "prirucka/4933"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

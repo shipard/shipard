@@ -1,0 +1,290 @@
+@font-face {
+		font-family: 'appIcons';
+		src: url('file:///var/www/e10-modules/e10/server/icons/glyphish/appIcons.svg') format('svg');
+		font-weight: normal;
+		font-style: normal;
+}
+@font-face {
+		font-family: 'FontAwesome';
+		src: url('file://{{fsRoot}}/e10-modules/wwwlibs/Font-Awesome44/fonts/fontawesome-webfont.svg') format('svg');
+		font-weight: normal;
+		font-style: normal;
+}
+
+
+body {font-size: 11pt; font-family: Arial, Helvetica, sans-serif;}
+
+.label {text-align: left !important; padding-right: 1ex; white-space: pre;}
+.number {text-align: right !important; padding-left: 1ex; white-space: pre;}
+.nowrap {white-space: pre;}
+.pull-right {float: right; text-align: right; padding-right: 3pt;}
+
+.break:before {display: block; content:"";}
+.clear {clear: both;}
+.block {display: block;}
+
+.subtitle {font-size: 122%; font-weight: normal; padding: .4ex;}
+.subtitle:not(:first-child) {padding-top: 1em;}
+
+.h1 {font-size: 133%;}
+.h2 {font-size: 122%; padding: 2px;}
+
+.pageBreakAfter {page-break-after: always;}
+.pageBreakBefore {page-break-before: always;}
+
+span.documentNumber {float: right;}
+
+.subtitle {margin-bottom: 4pt; font-size: 122%;}
+.subtitle:not(:first-child) {
+		padding-top: 1em;
+}
+.suf {padding-left: .4em; font-size: 80%; font-weight: normal;}
+.pre {color: #333; font-size: 85%; padding-right: 1ex;}
+span.e10-prefix-left {display: block; text-align: right;}
+span.e10-prefix-left>.pre {float: left;}
+td.e10-suffix-block>.suf {display: block; font-weight: normal; font-size: 75%; padding-left: 0;}
+.center  {text-align: center !important;}
+
+table.rows {width: 100%; border-collapse: collapse; line-height: 1.2; font-size: 10pt;}
+table.rows th {padding: 3pt; border: .75pt solid black; background-color: #eee; }
+table.rows tr { }
+table.rows tr td {padding: 3pt; border: .75pt solid black; vertical-align: baseline;}
+table.rows tr.subtotal td {font-weight: bold;}
+table.rows tfoot>tr>td {font-weight: bold; padding: 3pt; border: .75pt solid black; background-color: #eee;}
+
+table.rowsSmall {width: 100%; border-collapse: collapse; line-height: 1.1; font-size: 8.5pt; }
+table.rowsSmall th {text-align: left; padding: 2pt; border: .75pt solid black; background-color: #eee;}
+table.rowsSmall tr { }
+table.rowsSmall tr td {padding: 2pt; border: .75pt solid black; vertical-align: baseline;}
+table.rowsSmall tr.subtotal td {font-weight: bold;}
+table.rowsSmall tfoot>tr>td {font-weight: bold; padding: 2pt; border: .75pt solid black; background-color: #eee;}
+
+div.e10-reportHeader {
+		width: 100%; display: inline-block;
+		border-bottom: .85pt solid black;
+		margin-bottom: 1ex;
+}
+div.e10-reportHeader span.info {display: inline-block; float: left;}
+div.e10-reportHeader span.title {font-weight: bold; font-size: 16pt; display: inline-block;line-height: 140%;}
+div.e10-reportHeader span.owner {text-align: right; float: right; font-style: italic; font-size: 9pt; line-height: 120%;}
+div.e10-reportHeader span.owner>span {white-space:pre;}
+ol.e10-reportNotes, p.e10-reportNotes {font-size: 90%; line-height: 1.4em; margin-top: 1em;}
+ol.e10-reportNotes {padding: 0px; margin: 0px; margin-left: 1.8em; margin-top: 1em; }
+
+div.reportTextHeader {font-size: 90%; padding-bottom: 2pt;}
+div#reportTextFooter {font-size: 90%; padding-bottom: 2pt; text-align: right;}
+div.latestNews{font-size: 40%; }
+
+div.news {
+		background-color: #CCCCCC;
+		text-align: center;
+		border: 1pt solid rgba(0, 0, 0, 0.4);
+		border-radius: 5px;
+		padding: 3pt;
+		margin: 3pt 0 10pt 0;
+}
+
+div.news>p {padding: 0; margin: 2pt;}
+
+
+table.default {width: 100%; border-collapse: collapse; border: none; }
+.default td {border: .85pt solid #B0B0B0; padding: .6ex;}
+
+table.default thead tr:last-child {border-bottom: 2px solid #888 !important; }
+table.default thead tr th {text-align: left; border: 1px solid #909090; padding: .6ex !important; background-color: #EEE !important;}
+table.default thead tr th.number {text-align: right;}
+
+table.default tr {}
+table.default tr.hdr {background-color: #E0E0E0 !important;}
+table.default tr.sum {font-weight: bold; border-top: 2px solid #888; background-color: #EEE !important; page-break-inside:avoid;}
+table.default tr.subtotal {background-color: #E0E0E0 !important; font-weight: bold;}
+table.default tr.sumtotal {font-weight: bold; border: 2px solid #000; page-break-inside:avoid;}
+table.default tr.subheader td {font-weight: bold; font-size: 122%;}
+table.default tr.separator td {border: none;}
+table.default tr td.number {white-space: pre;}
+table.default a {text-decoration: none; color: #000;}
+
+table.default tr.e10-error td {background-color: #ff4040 !important; color: white !important; font-weight: bold;}
+table.default tr.e10-warning1 td {background-color: #fff0f0 !important;}
+table.default tr.e10-warning2 td {background-color: #ffe0e0 !important;}
+table.default tr.e10-warning3 td {background-color: #ffb0b0 !important;}
+table.default td.e10-row-play {background-color: #cfc !important;;}
+table.default td.e10-row-stop {background-color: #fcc !important;;}
+table.default td.e10-row-pause {background-color: #ffcb6b !important;;}
+
+td.e10-icon, th.e10-icon {width: 2em; text-align: center !important;}
+
+table.fullWidth {width: 100%;}
+.width10 {width: 10%;}
+.width15 {width: 15%;}
+.width20 {width: 20%;}
+.width25 {width: 25%;}
+.width30 {width: 30%;}
+.width35 {width: 35%;}
+.width40 {width: 40%;}
+.width45 {width: 45%;}
+.width50 {width: 50%;}
+.width55 {width: 55%;}
+.width60 {width: 60%;}
+.width65 {width: 65%;}
+.width70 {width: 70%;}
+.width75 {width: 75%;}
+.width80 {width: 80%;}
+.width85 {width: 85%;}
+.width90 {width: 90%;}
+.width95 {width: 95%;}
+
+.width10em {width: 10em;}
+
+table.e10-print-small {
+		font-size: 9pt;
+}
+table.e10-print-small td {padding: .3ex .5ex;}
+
+table.e10-print-12pt {
+		font-size: 12pt;
+}
+
+
+table.properties {
+		border-collapse: collapse !important;
+		border: 1px solid black;
+		font-size: 8.5pt;
+}
+
+table.properties td {padding: 2pt; vertical-align: top; }
+table.properties td:nth-child(2n-1) {
+		text-align: right;
+		font-weight: bold;
+		padding-right: 6px;
+}
+table.properties tr + tr {border-top: 1px solid black; }
+table.properties tr.header > td {font-weight: bold; font-size: 110%; text-align: left; border-bottom: 1px solid black;}
+table.properties * + tr.header > td {padding-top: 1ex;}
+
+td.e10-off {
+		font-style: italic;
+		background-color: #F5F5F5 !important;
+}
+
+
+.e10-off {color: #777 !important;}
+.e10-small {color: #555; font-size: 85%;}
+.e10-bold {font-weight: 600;}
+.e10-em {font-style: italic;}
+
+/*univerzální css*/
+
+table#head {padding-left: 20pt; clear: both; width: 100%; border-collapse: collapse; margin-bottom: 3pt; border: 1pt solid rgba(0, 0, 0, 0.3); border-radius: 5px; border-style: hidden; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);}
+table#head tr >td {line-height: 1.3; vertical-align: top; }
+table#head tr >td.supplier { width: 50%; vertical-align: top;}
+
+table.head {clear: both; width: 100%; border-collapse: collapse; margin-bottom: 3pt; margin-top: 6pt;
+		font-size: 10pt; border: 1pt solid rgba(0, 0, 0, 0.3); border-radius: 5px; border-style: hidden; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);}
+table.head tr>td {line-height: 1.3; vertical-align: top; padding-bottom: 3pt; }
+table.head tr>td.title {font-weight: bold;font-size: 13pt;}
+
+td.accountUnit {padding: 4pt; border-right: 1pt solid rgba(0, 0, 0, 0.2); width: 50%;}
+td.partner {padding: 4pt; width: 50%;}
+span.title {font-size: 12pt; margin-bottom: 2pt;}
+
+tr.dates {border-top: 1pt solid rgba(0, 0, 0, 0.2);}
+
+td.supplier {border-right:1pt solid rgba(0, 0, 0, 0.3); padding-left: 5pt; padding-right: 9pt;}
+td.customer{padding-left: 5pt;}
+
+span.hdr {display: block; font-weight: bold; padding-top: 3pt; margin-bottom: 3pt; color: #000000; border-bottom: 1pt solid rgba(0, 0, 0, 0.3);
+		padding-left: -6pt;  font-size: 14pt;}
+div.hdr {font-weight: bold; padding-top: 3pt; margin-bottom: 3pt; color: #000000; border-bottom: 1pt solid rgba(0, 0, 0, 0.3);
+		padding-left: -6pt;  font-size: 14pt;}
+span.dates{display: block; font-weight: bold; padding-top: 3pt; margin-bottom: 3pt; color: #000000; border-bottom: 1pt solid rgba(0, 0, 0, 0.3);
+		padding-left: -6pt;  font-size: 12pt;}
+
+span.title {display: block; font-weight: bold;  }
+span.address {margin-bottom: 12pt !important; display: block;}
+
+/*eet*/
+table.rosInfo, table#documentDetails {width: 100%; }
+table#documentDetails td.label {vertical-align: bottom;}
+table#documentDetails td.value {text-align: right;vertical-align: bottom;}
+
+table.rosInfo {font-size: 8pt; margin-bottom: 8pt; border: 1pt solid rgba(0, 0, 0, 0.4); border-radius: 5px; border-style: hidden; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);}
+table.rosInfo tr {text-align: right;}
+/**/
+
+/*řádky faktury*/
+table#rows {width: 100%; border-collapse: collapse; line-height: 1.4; border: 1pt solid rgba(0, 0, 0, 0.2); margin-top: 10pt; text-align: left;}
+table#rows th {padding-left: 6pt; border-left: 1pt solid rgba(0, 0, 0, 0.4); padding-right: 3pt;}
+table#rows tr {border-bottom: 1pt solid rgba(0, 0, 0, 0.4); }
+table#rows tr td {padding-left: 6pt; border-left: 1pt solid rgba(0, 0, 0, 0.4); padding-right: 3pt;}
+table#rows tr.subtotal td {font-weight: bold;}
+
+table#rows tr>th:first-child, table#rows tr>td:first-child {border-left: none;}
+table#rows tr:last-child td:first-child {
+		border-bottom-left-radius: 10px;
+}
+table#rows tr:last-child td:last-child {border-bottom-right-radius: 10px;}
+
+table#rows thead th.itemID {text-align: right;} /*pro sloupec kód položky*/
+table#rows td.itemID {text-align: right;}
+/**/
+
+div#spayd {position: relative; display: inline-block; width: 35mm; height: 35mm; float: left;text-align: center; border: .8pt solid black;}
+div#spayd img {width: 100%;}
+
+/*shrnutí*/
+#sum {text-align: right !important;}
+#sum span {display: inline-block;}
+#sum span table {font-size: 9pt; border: .8pt solid #999; border-collapse: collapse; border: 1pt solid rgba(0, 0, 0, 0.2);}
+#sum span table tr td {border: .8pt solid #999; padding: 3pt;}
+#sum span table thead tr th {border: .8pt solid #999; padding: 3pt; text-align: left;}
+/**/
+
+div.pay {font-size: 16pt; font-weight: bold; padding-top: 18pt; text-align: right;}
+
+/*pro podpisy (razítko, podpis)*/
+div#sign {text-align: right; width: 165mm; padding-top: 2cm; position: relative;
+		background-repeat: no-repeat; background-size: contain;
+}
+div#sign span.signImg {display: inline-block; width: 80mm;height: 30mm; text-align: center;
+}
+div#sign span.signImg img {max-width: 80mm; max-height: 30mm;}
+div#sign span.logoImg {position: absolute; right: 0mm; text-align: center; width: 80mm;}
+div#sign span.name {display: inline-block; width: 80mm; text-align: center; border-top: 1pt solid #5B7F8C; padding-top: 2pt;}
+/**/
+
+/*konec univerzálního css*/
+
+
+
+/*faktura vydaná a vydaná zálohová*/
+table.paymentInfo {width: 100%; padding-top: 2pt; padding-bottom: 30pt;}
+td.taxInfo {text-align: right;}
+table.paymentInfo div.foreignCurrency {padding-top: 3pt;}
+
+/*zápočet*/
+table#head2 {clear: both; width: 100%; border-collapse: collapse; margin-bottom: 18pt; text-align:justify; margin-top: 5pt;}
+table#head3 {clear: both; width: 100%; border-collapse: collapse; margin-bottom: 18pt; text-align:justify; margin-top: -10pt;}
+
+table#rows2 {width: 100%; border-collapse: collapse; line-height: 1.4;}
+table#rows2:not(:last-child) {margin-bottom: 10pt;}
+table#rows2 th {text-align: left; padding-left: 6pt; padding-right: 6pt; font-size: 12pt; padding-bottom: 3pt;}
+table#rows2 td {border: 1pt solid #5B7F8C; padding-left: 6pt; padding-right: 6pt;}
+
+table#sign2 {text-align: center; width: 100%; padding-top: 3.5cm; background-repeat: no-repeat; background-size: contain;}
+table#sign2 td.name {width: 50%; text-align: center;  vertical-align: top; padding: 10pt;}
+table#sign2 td.name div {border-top: 1pt solid #5B7F8C; padding-top: 3pt;}
+
+td.accountingDate {padding: 4pt;}
+td.DUZP {padding: 4pt;}
+
+/*kontace*/
+table.signs {width: 100%; margin-top: 36pt; font-size: 10pt;}
+table.signs tr td {width: 33.3333%; text-align: center; padding: 12pt; vertical-align: top;}
+table.signs tr td span {border-top: .8pt solid black; display: block; padding: 3pt;}
+
+td.partner {border-bottom: .8pt solid rgba(0, 0, 0, 0.2);}
+h3 {margin-bottom: 3pt;}
+
+/*pokladní lístek*/
+#sum {margin-top: 5pt;}

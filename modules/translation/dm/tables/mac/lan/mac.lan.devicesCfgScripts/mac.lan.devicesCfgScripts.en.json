@@ -1,0 +1,64 @@
+{
+    "table": {
+        "name": "Device configuration scripts"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "device": {
+            "name": "Device"
+        },
+        "cfgRequestState": {
+            "name": "Request state"
+        },
+        "cfgLastRequestResult": {
+            "name": "Last request result"
+        },
+        "cfgLastRequestResultLog": {
+            "name": "Last request result - log"
+        },
+        "cfgLastRequestResultTimestamp": {
+            "name": "Date and time of last request result"
+        },
+        "runningText": {
+            "name": "Active configuration script - text"
+        },
+        "runningData": {
+            "name": "Active configuration data"
+        },
+        "runningVer": {
+            "name": "Active configuration version"
+        },
+        "runningTimestamp": {
+            "name": "Date and time of active configuration update"
+        },
+        "newText": {
+            "name": "New configuration - text"
+        },
+        "newData": {
+            "name": "New configuration - data"
+        },
+        "newVer": {
+            "name": "New script - version"
+        },
+        "newTimestamp": {
+            "name": "New configuration - date and time"
+        },
+        "liveText": {
+            "name": "Existing script - ttext"
+        },
+        "liveData": {
+            "name": "Existing scrip - data"
+        },
+        "liveVer": {
+            "name": "Existing scrip - version"
+        },
+        "liveTimestamp": {
+            "name": "Existing scrip - data and time"
+        },
+        "changed": {
+            "name": "Change"
+        }
+    }
+}

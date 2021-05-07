@@ -1,0 +1,77 @@
+{
+    "1": {
+        "name": "Work station",
+        "pluralName": "Work stations"
+    },
+    "2": {
+        "name": "Notebook",
+        "pluralName": "Notebooks"
+    },
+    "3": {
+        "name": "Printer",
+        "pluralName": "Printers"
+    },
+    "5": {
+        "name": "Telephone",
+        "pluralName": "Telephones"
+    },
+    "6": {
+        "name": "TV",
+        "pluralName": "TVs"
+    },
+    "7": {
+        "name": "Server",
+        "pluralName": "Servers"
+    },
+    "8": {
+        "name": "Router",
+        "pluralName": "Routers"
+    },
+    "9": {
+        "name": "Switch",
+        "pluralName": "Switches"
+    },
+    "10": {
+        "name": "Camera",
+        "pluralName": "Cameras"
+    },
+    "70": {
+        "name": "Shipard Node Server",
+        "pluralName": "Shipard Node Servers"
+    },
+    "75": {
+        "name": "Shipard IoT Box",
+        "pluralName": "Shipard IoT Boxes"
+    },
+    "40": {
+        "name": "Terminal",
+        "pluralName": "Terminals"
+    },
+    "99": {
+        "name": "Other",
+        "pluralName": "Others"
+    },
+    "11": {
+        "name": "NAS",
+        "pluralName": "NAS"
+    },
+    "30": {
+        "name": "UPS",
+        "pluralName": "UPS"
+    },
+    "0": {
+        "name": "---"
+    },
+    "15": {
+        "name": "WiFi Access point",
+        "pluralName": "WiFi Access points"
+    },
+    "4": {
+        "name": "Tablet",
+        "pluralName": "Tablets"
+    },
+    "20": {
+        "name": "Media converter",
+        "pluralName": "Media converters"
+    }
+}

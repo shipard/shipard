@@ -1,0 +1,174 @@
+--- width: 32 characters
+--- hlavička
+{{{@write;cmd:nl}}}
+{{{@write;cmd:nl}}}
+
+
+{{{@write;var:data.owner.fullName;width:32;align:center}}}
+{{{@write;cmd:nl}}}
+
+{{{@write;var:data.owner.address.street;width:32;align:center}}}
+{{{@write;cmd:nl}}}
+
+{{{@write;var:data.owner.address.city;width:32;align:center}}}
+{{{@write;cmd:nl}}}
+
+{{#data.owner_identifiers}}
+	{{{@write;var:name}}}{{{@write;cmd:dp}}}{{{@write;cmd:sp}}}{{{@write;var:value}}}
+	{{{@write;cmd:sp}}}
+{{/data.owner_identifiers}}
+{{{@write;cmd:nl}}}
+
+{{^data.head.taxPayer}}
+	{{{@write;text:neplátce DPH;width:32;align:center}}}
+	{{{@write;cmd:nl}}}
+{{/data.head.taxPayer}}
+
+{{{@write;var:cfgItem.options.core.ownerLegalRegInfo;width:32;align:center}}}
+{{{@write;cmd:nl}}}
+
+{{{@write;cmd:nl}}}
+
+{{{@write;text:────────────────────────────────;width:32;align:center}}}
+{{{@write;cmd:nl}}}
+
+{{#data.head.taxPayer}}
+	{{{@write;text:Daňový dok. ev.č.}}}
+	{{{@write;var:data.head.docNumber;width:15;align:right}}}
+	{{{@write;cmd:nl}}}
+	{{{@write;text:Datum usk. zd. plnění}}
+	{{{@write;var:data.head.dateIssue;width:11;align:right}}}
+	{{{@write;cmd:nl}}}
+{{/data.head.taxPayer}}
+
+{{^data.head.taxPayer}}
+	{{{@write;text:Doklad ev.č.}}}
+	{{{@write;var:data.head.docNumber;width:20;align:right}}}
+	{{{@write;cmd:nl}}}
+	{{{@write;text:Datum vystavení}}
+	{{{@write;var:data.head.dateIssue;width:17;align:right}}}
+	{{{@write;cmd:nl}}}
+{{/data.head.taxPayer}}
+
+{{{@write;text:Způsob úhrady}}}
+{{{@write;var:data.head.print.paymentMethod;width:19;align:right}}}
+{{{@write;cmd:nl}}}
+
+{{#data.flags.rosCZ}}
+	{{{@write;text:EET}}}
+	{{{@write;var:data.ros.type;width:29;align:right}}}
+	{{{@write;cmd:nl}}}
+
+	{{{@write;text:Datum/čas tr}}}
+	{{{@write;var:data.ros.datePay;width:20;align:right}}}
+	{{{@write;cmd:nl}}}
+
+	{{{@write;var:data.ros.placeId1Txt;width:16;align:left}}}
+	{{{@write;var:data.ros.placeId2Txt;width:16;align:right}}}
+	{{{@write;cmd:nl}}}
+
+	{{{@write;cmd:condensedOn}}}
+
+	{{#data.ros.fik}}
+		{{{@write;text:FIK}}}{{{@write;cmd:dp}}}
+		{{{@write;cmd:nl}}}
+		{{{@write;var:data.ros.fik}}}
+		{{{@write;cmd:nl}}}
+	{{/data.ros.fik}}
+
+	{{^data.ros.fik}}
+		{{{@write;text:PKP}}}{{{@write;cmd:dp}}}{{{@write;cmd:sp}}}
+		{{{@write;var:data.ros.pkp;}}}
+		{{{@write;cmd:nl}}}
+	{{/data.ros.fik}}
+
+
+	{{{@write;text:BKP}}}{{{@write;cmd:dp}}}
+	{{{@write;cmd:nl}}}
+	{{{@write;var:data.ros.bkp}}}
+	{{{@write;cmd:nl}}}
+
+	{{{@write;cmd:condensedOff}}}
+{{/data.flags.rosCZ}}
+
+{{{@write;cmd:nl}}}
+
+
+--- řádky
+
+{{#data.rows}}
+	{{{@write;var:text}}}
+	{{{@write;cmd:nl}}}
+	{{#data.head.taxPayer}}
+		{{{@write;text:DPH;width:4;align:left}}}
+		{{{@write;var:taxPercents;width:2;align:right}}}
+		{{{@write;text:%;width:2;align:left}}}
+	{{/data.head.taxPayer}}
+	{{{@write;var:priceItem;width:7;align:right}}}
+	{{{@write;var:quantity;width:4;align:right}}}
+	{{{@write;var:print.unit;width:4;align:left}}}
+	{{{@write;var:print.priceAll;width:9;align:right}}}
+	{{{@write;cmd:nl}}}
+{{/data.rows}}
+
+--- patička
+
+{{{@write;text:────────────────────────────────;width:32;align:center}}}
+{{{@write;cmd:nl}}}
+
+{{#data.head.taxPayer}}
+	{{{@write;text:DPH;width:4;align:right}}}
+	{{{@write;text:Základ;width:10;align:right}}}
+	{{{@write;text:Daň;width:8;align:right}}}
+	{{{@write;text:Celkem;width:10;align:right}}}
+	{{{@write;cmd:nl}}}
+
+	{{#data.taxes}}
+		{{{@write;var:taxPercents;width:3;align:right}}}
+		{{{@write;text:%;width:1}}}
+		{{{@write;var:print.sumBase;width:10;align:right}}}
+		{{{@write;var:print.sumTax;width:8;align:right}}}
+		{{{@write;var:print.sumTotal;width:10;align:right}}}
+		{{{@write;cmd:nl}}}
+	{{/data.taxes}}
+
+	{{{@write;text:SUMA;width:4;align:right}}}
+	{{{@write;var:data.head.print.sumBase;width:10;align:right}}}
+	{{{@write;var:data.head.print.sumTax;width:8;align:right}}}
+	{{{@write;var:data.head.print.sumTotal;width:10;align:right}}}
+	{{{@write;cmd:nl}}}
+{{/data.head.taxPayer}}
+
+{{{@write;text:────────────────────────────────;width:32;align:center}}}
+{{{@write;cmd:nl}}}
+
+{{{@write;text:Celkem k úhradě;width:18;align:left}}}
+{{{@write;var:data.head.print.toPay;width:11;align:right}}}
+{{{@write;text:Kč;width:3;align:right}}}
+{{{@write;cmd:nl}}}
+
+{{{@write;text:────────────────────────────────;width:32;align:center}}}
+{{{@write;cmd:nl}}}
+
+
+
+{{#data.owner_contacts}}
+	{{{@write;var:name;width:8;align:left}}}{{{@write;var:value;width:24;align:right}}}
+	{{{@write;cmd:nl}}}
+{{/data.owner_contacts}}
+
+{{{@write;text:DĚKUJEME VÁM A PŘEJEME HEZKÝ DEN;width:32;align:center}}}
+{{{@write;cmd:nl}}}
+
+{{{@write;text:────────────────────────────────;width:32;align:center}}}
+{{{@write;cmd:nl}}}
+
+{{{@write;cmd:nl}}}
+{{{@write;cmd:nl}}}
+
+{{{@write;cmd:nl}}}
+{{{@write;cmd:nl}}}
+{{{@write;cmd:nl}}}
+{{{@write;cmd:nl}}}
+{{{@write;cmd:nl}}}
+

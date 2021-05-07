@@ -1,0 +1,9 @@
+{
+  "id": "integrations.base",
+  "name": "integrations - base",
+  "tables": [],
+	"modules": ["e10/base"],
+  "config": [
+		{"id": "+e10.appOptions.groups", "file": "appOptionsGroups.json"}
+  ]
+}

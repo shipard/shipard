@@ -1,0 +1,22 @@
+{
+    "table": {
+        "name": "Sensors shown on racks"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "rack": {
+            "name": "Rack"
+        },
+        "rowOrder": {
+            "name": "Row order"
+        },
+        "sensor": {
+            "name": "Sensor"
+        },
+        "sensorLabel": {
+            "name": "Label"
+        }
+    }
+}

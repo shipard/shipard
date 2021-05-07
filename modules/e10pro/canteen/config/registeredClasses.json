@@ -1,0 +1,13 @@
+{
+	"webAction": {
+		"e10pro-canteen-foodOrder": {
+			"classId": "e10pro.canteen.WebActionFoodOrder"
+		},
+		"e10-pro-canteen-take-order": {
+			"classId": "e10pro.canteen.WebActionTakeOrder"
+		},
+		"e10-pro-canteen-check-queue": {
+			"classId": "e10pro.canteen.WebActionCheckQueue"
+		}
+	}
+}

@@ -1,0 +1,13 @@
+{
+	"id": "wkf.base.docMarks", "sql": "wkf_base_docMarks", "name": "Značky dokumentů ve workflow", "icon": "icon-star-half",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "user", "name": "Uživatel", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "table", "name": "Tabulka", "type": "short"},
+		{"id": "rec", "name": "Záznam", "type": "int"},
+		{"id": "mark", "name": "Značka", "type": "short"},
+		{"id": "state", "name": "Stav", "type": "short"}
+	],
+	"options": ["systemTable"],
+	"ndx": 0
+}

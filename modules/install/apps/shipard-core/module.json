@@ -1,0 +1,10 @@
+{
+	"id": "install.apps.shipard-core",
+	"name": "Prázdná aplikace",
+	"modules": [
+		"install/cfg-modules/shipard-default/minimal",
+		"wkf/core", "e10pro/kb"
+	],
+	"config": [
+	]
+}

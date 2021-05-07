@@ -1,0 +1,25 @@
+{
+    "table": {
+        "name": "Types of nomenclature"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Full name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

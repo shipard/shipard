@@ -1,0 +1,25 @@
+{
+    "table": {
+        "name": "Notification channels"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "channelType": {
+            "name": "Channel type"
+        },
+        "channelCfg": {
+            "name": "Settings"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

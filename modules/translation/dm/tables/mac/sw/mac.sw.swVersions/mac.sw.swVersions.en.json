@@ -1,0 +1,43 @@
+{
+    "table": {
+        "name": "Software versions"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "rowOrder": {
+            "name": "Row order"
+        },
+        "sw": {
+            "name": "Software"
+        },
+        "versionNumber": {
+            "name": "Version number"
+        },
+        "suid": {
+            "name": "ID"
+        },
+        "versionName": {
+            "name": "Version name"
+        },
+        "versionNameShort": {
+            "name": "Version short name"
+        },
+        "lifeCycle": {
+            "name": "State"
+        },
+        "dateRelease": {
+            "name": "Release date"
+        },
+        "dateEndSupport": {
+            "name": "Date of end of support"
+        },
+        "dateObsolete": {
+            "name": "Date from which the version will be outdated"
+        },
+        "versionOrderId": {
+            "name": "ID of version order"
+        }
+    }
+}

@@ -1,0 +1,6 @@
+[
+  {
+    "table": "e10.persons.persons",
+		"reports": [{"id": "custreg", "name": "Registrační list", "class": "e10pro.custreg.RegistrationListReport", "email": 1}]
+	}
+]

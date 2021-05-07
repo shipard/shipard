@@ -1,0 +1,37 @@
+{
+    "table": {
+        "name": "Kinds of Related items"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "useAsVariantItem": {
+            "name": "Item variation"
+        },
+        "icon": {
+            "name": "Icon"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "syncNdx": {
+            "name": "syncNdx"
+        },
+        "syncSrc": {
+            "name": "syncSrc"
+        }
+    }
+}

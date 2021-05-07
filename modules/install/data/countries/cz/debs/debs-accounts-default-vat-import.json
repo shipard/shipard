@@ -1,0 +1,21 @@
+{
+	"name": "Účty pro DPH - zahraničí / dovoz zboží",
+	"datasets": [
+		{
+			"table": "e10doc.debs.accounts",
+			"checkModule": "pkgs.accounting.debs",
+			"name": "Účty pro DPH",
+			"defaultValues": {"accGroup": 0, "accMethod": "debs", "docState": 4000, "docStateMain": 2},
+			"data": [
+				{"rec": {"id":"343405","fullName":"Daň z přidané hodnoty (výstup - základní sazba - zboží DOVOZ)","shortName":"DPH (výstup - základní - zboží DOVOZ)","accountKind":1}},
+				{"rec": {"id":"343406","fullName":"Daň z přidané hodnoty (výstup - snížená sazba - zboží DOVOZ)","shortName":"DPH (výstup - snížená - zboží DOVOZ)","accountKind":1}},
+				{"rec": {"id":"343460","fullName":"Daň z přidané hodnoty (výstup - první snížená sazba - zboží DOVOZ)","shortName":"DPH (výstup - první snížená - zboží DOVOZ)","accountKind":1}},
+				{"rec": {"id":"343461","fullName":"Daň z přidané hodnoty (výstup - druhá snížená sazba - zboží DOVOZ)","shortName":"DPH (výstup - druhá snížená - zboží DOVOZ)","accountKind":1}},
+				{"rec": {"id":"343415","fullName":"Daň z přidané hodnoty (vstup - základní sazba - zboží DOVOZ)","shortName":"DPH (vstup - základní - zboží DOVOZ)","accountKind":1}},
+				{"rec": {"id":"343416","fullName":"Daň z přidané hodnoty (vstup - snížená sazba - zboží DOVOZ)","shortName":"DPH (vstup - snížená - zboží DOVOZ)","accountKind":1}},
+				{"rec": {"id":"343490","fullName":"Daň z přidané hodnoty (vstup - první snížená sazba - zboží DOVOZ)","shortName":"DPH (vstup - první snížená - zboží DOVOZ)","accountKind":1}},
+				{"rec": {"id":"343491","fullName":"Daň z přidané hodnoty (vstup - druhá snížená sazba - zboží DOVOZ)","shortName":"DPH (vstup - druhá snížená - zboží DOVOZ)","accountKind":1}}
+			]
+		}
+	]
+}

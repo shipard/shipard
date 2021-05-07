@@ -1,0 +1,63 @@
+{
+	"id": "e10mnf.core.workRecs", "sql": "e10mnf_core_workRecs", "name": "Pracovní záznamy", "icon": "icon-paw",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "dbCounter", "name": "Číselná řada", "type": "int"},
+		{"id": "dbCounterNdx", "name": "Pořadové číslo", "type": "int"},
+		{"id": "dbCounterYear", "name": "Rok", "type": "int"},
+		{"id": "docNumber", "name": "Číslo záznamu", "type": "string", "len": 20},
+
+		{"id": "docType", "name": "Typ záznamu", "type": "enumInt", "len": 2, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10mnf.workRecs.wrTypes", "cfgValue": "", "cfgText": "name"}},
+		{"id": "docKind", "name": "Druh", "type": "enumInt", "len": 2,
+			"enumCfg": {"cfgItem": "e10mnf.workRecs.wrKinds", "cfgValue": "", "cfgText": "sn"}},
+
+		{"id": "subject", "name": "Předmět", "type": "string", "len": 120},
+		{"id": "text", "name": "Text", "type": "memo"},
+		{"id": "note1", "name": "Odkud", "type": "string", "len": 90},
+		{"id": "note2", "name": "Kam", "type": "string", "len": 90},
+
+		{"id": "customer", "name": "Odběratel", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "money", "name": "Částka", "type": "money"},
+		{"id": "currency", "name": "Měna", "type": "enumString", "len": 3,
+			"enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
+
+		{"id": "workOrder", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
+
+		{"id": "author", "name": "Autor", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "dateWork", "name": "Datum", "type": "date"},
+
+		{"id": "dateBegin", "name": "Datum/čas od", "type": "timestamp"},
+		{"id": "dateEnd", "name": "Datum/čas do", "type": "timestamp"},
+
+		{"id": "beginDate", "name": "Datum od", "type": "date"},
+		{"id": "beginTime", "name": "Čas od", "type": "time"},
+		{"id": "beginDateTime", "name": "Datum/čas od", "type": "timestamp"},
+		{"id": "endDate", "name": "Datum do", "type": "date"},
+		{"id": "endTime", "name": "Čas do", "type": "time"},
+		{"id": "endDateTime", "name": "Datum/čas do", "type": "timestamp"},
+
+		{"id": "timeLen", "name": "Celkový čas", "type": "timeLen"},
+		{"id": "timeLenHours", "name": "Celkový čas v hodinách", "type": "number", "dec": 2},
+
+		{"id": "person", "name": "Pracovník", "type": "int", "reference": "e10.persons.persons"},
+
+		{"id": "dateCreate", "name": "Datum vzniku", "type": "timestamp"},
+		{"id": "source", "name": "Zdroj", "type": "enumInt",
+			"enumValues": {"0": "Ručně", "2": "API"}},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "rows", "class": "e10.base.ListRows", "name": "Řádky", "table": "e10mnf.core.workRecsRows", "queryColumn": "workRec", "orderColumn": "rowOrder"},
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10mnf.core.workRecs.docStates"},
+	"views": [
+		{"id": "default", "class": "e10mnf.core.ViewWorkRecs", "detail": "e10mnf.core.ViewDetailWorkRec"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10mnf.core.FormWorkRec"}
+	]
+}

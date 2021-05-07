@@ -1,0 +1,34 @@
+{
+	"name": "Zásoby",
+	"datasets": [
+		{
+			"table": "e10doc.debs.accounts",
+			"name": "Třída 1 - zásoby",
+			"defaultValues": {"accGroup": 0, "accMethod": "debs", "docState": 4000, "docStateMain": 2},
+			"data": [
+				{"rec": {"id":"111100","fullName":"Pořízení materiálu","shortName":"Pořízení materiálu","accountKind":0}},
+				{"rec": {"id":"112100","fullName":"Materiál na skladě","shortName":"Materiál na skladě","accountKind":0}},
+				{"rec": {"id":"119100","fullName":"Materiál na cestě","shortName":"Materiál na cestě","accountKind":0}},
+				{"rec": {"id":"121100","fullName":"Nedokončená výroba","shortName":"Nedokončená výroba","accountKind":0}},
+				{"rec": {"id":"122100","fullName":"Polotovary vlastní výroby","shortName":"Polotovary vlastní výroby","accountKind":0}},
+				{"rec": {"id":"123100","fullName":"Výrobky","shortName":"Výrobky","accountKind":0}},
+				{"rec": {"id":"124100","fullName":"Mladá a ostatní zvířata a jejich skupiny","shortName":"Mladá a ostatní zvířata a jejich skupiny","accountKind":0}},
+				{"rec": {"id":"131100","fullName":"Pořízení zboží","shortName":"Pořízení zboží","accountKind":0}},
+				{"rec": {"id":"132100","fullName":"Zboží na skladě a v prodejnách","shortName":"Zboží na skladě a v prodejnách","accountKind":0}},
+				{"rec": {"id":"139100","fullName":"Zboží na cestě","shortName":"Zboží na cestě","accountKind":0}},
+				{"rec": {"id":"151100","fullName":"Poskytnuté zálohy na materiál","shortName":"Poskytnuté zálohy na materiál","accountKind":0}},
+				{"rec": {"id":"152100","fullName":"Poskytnuté zálohy na zvířata","shortName":"Poskytnuté zálohy na zvířata","accountKind":0}},
+				{"rec": {"id":"153100","fullName":"Poskytnuté zálohy na zboží","shortName":"Poskytnuté zálohy na zboží","accountKind":0}},
+				{"rec": {"id":"191100","fullName":"Opravná položka k materiálu","shortName":"OP k materiálu","accountKind":0}},
+				{"rec": {"id":"192100","fullName":"Opravná položka k nedokončené výrobě","shortName":"OP k NV","accountKind":0}},
+				{"rec": {"id":"193100","fullName":"Opravná položka k polotovarům vlastní výroby","shortName":"OP k polotovarům vlastní výroby","accountKind":0}},
+				{"rec": {"id":"194100","fullName":"Opravná položka k výrobkům","shortName":"OP k výrobkům","accountKind":0}},
+				{"rec": {"id":"195100","fullName":"Opravná položka ke zvířatům","shortName":"OP ke zvířatům","accountKind":0}},
+				{"rec": {"id":"196100","fullName":"Opravná položka ke zboží","shortName":"OP ke zboží","accountKind":0}},
+				{"rec": {"id":"197100","fullName":"Opravná položka k zálohám na materiál","shortName":"OP k zálohám na materiál","accountKind":0}},
+				{"rec": {"id":"198100","fullName":"Opravná položka k zálohám na zboží","shortName":"OP k zálohám na zboží","accountKind":0}},
+				{"rec": {"id":"199100","fullName":"Opravná položka k zálohám na zvířata","shortName":"OP k zálohám na zvířata","accountKind":0}}
+			]
+		}
+	]
+}

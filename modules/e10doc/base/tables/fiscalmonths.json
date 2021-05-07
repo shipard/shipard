@@ -1,0 +1,24 @@
+{
+  "id": "e10doc.base.fiscalmonths", "sql": "e10doc_base_fiscalmonths", "name": "Fiskální období - měsíční",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "fiscalYear", "name": "Fiskální rok", "type": "int"},
+    
+    {"id": "fiscalType", "name": "Typ", "type": "enumInt", 
+			"enumValues": {"0": "běžné", "1": "otevření", "2": "uzavření"}},
+    
+    {"id": "calendarYear", "name": "Kalendářní rok", "type": "int"},
+    {"id": "calendarMonth", "name": "Kalendářní měsíc", "type": "int"},
+
+		{"id": "localOrder", "name": "Pořadí", "type": "int"},
+    {"id": "globalOrder", "name": "Globální pořadí", "type": "int"},
+ 
+    {"id": "start", "name": "Od", "type": "date"},
+    {"id": "end", "name": "Do", "type": "date"}
+  ],
+	"options": ["systemTable"],
+  "forms": [
+    {"id": "default", "class": "e10doc.base.FormFiscalMonths"}
+  ]
+  
+}

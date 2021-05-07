@@ -1,0 +1,22 @@
+{
+    "table": {
+        "name": "Admins"
+    },
+    "columns": {
+        "ndx": {
+            "name": "ndx"
+        },
+        "login": {
+            "name": "Login"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

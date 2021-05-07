@@ -1,0 +1,30 @@
+{
+	"id": "mac.lan.unknowns", "sql": "mac_lan_unknowns", "name": "Neznámé", "icon": "icon-frown-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "lan", "name": "Síť", "type": "int", "reference": "mac.lan.lans"},
+
+		{"id": "ip", "name": "IP", "type": "string", "len": 40},
+		{"id": "mac", "name": "MAC", "type": "string", "len": 20},
+		{"id": "info", "name": "Informace", "type": "memo"},
+
+		{"id": "dateCreate", "name": "Datum vzniku", "type": "timestamp"},
+		{"id": "dateTouch", "name": "Datum poslední aktivity", "type": "timestamp"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "mac.lan.ViewUnknowns",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewDetailUnknown"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.lan.FormUnknown"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "mac.lan.unknowns.docStates"}
+}

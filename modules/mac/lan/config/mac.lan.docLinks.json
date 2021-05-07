@@ -1,0 +1,70 @@
+{
+	"mac.lan.swLicenses": {
+		"mac-lan-licenses-users": {
+			"linkid": "mac-lan-licenses-users", "name": "Uživatelé", "icon": "icon-user",
+			"sources": [
+				{"table": "e10.persons.persons"}
+			]
+		},
+		"mac-lan-licenses-devices": {
+			"linkid": "mac-lan-licenses-devices", "name": "Počítače", "icon": "icon-laptop",
+			"sources": [
+				{"table": "mac.lan.devices", "viewer": "all"}
+			]
+		}
+	},
+	"mac.lan.devicesPorts": {
+		"mac-lan-devicePorts-vlans": {
+			"linkid": "mac-lan-devicePorts-vlans", "name": "VLANy", "icon": "icon-road",
+			"sources": [
+				{"table": "mac.lan.vlans", "viewer": "default"}
+			]
+		},
+		"mac-lan-devicePorts-bridgePorts": {
+			"linkid": "mac-lan-devicePorts-bridgePorts", "name": "Porty bridge", "icon": "icon-plug",
+			"sources": [
+				{"table": "mac.lan.devicesPorts", "viewer": "default"}
+			]
+		}
+	},
+	"mac.lan.vlans": {
+		"mac-lan-vlans-groups": {
+			"linkid": "mac-lan-vlans-groups", "name": "Skupiny", "icon": "icon-clone",
+			"queryCol": "isGroup", "queryColValue": 0,
+			"sources": [
+				{"table": "mac.lan.vlans", "viewer": "comboGroups"}
+			]
+		},
+		"mac-lan-vlans-incoming": {
+			"linkid": "mac-lan-vlans-incoming", "name": "Povolené VLANy", "icon": "icon-check-square-o",
+			"queryCol": "isGroup", "queryColValue": 0,
+			"sources": [
+				{"table": "mac.lan.vlans", "viewer": "default"}
+			]
+		}
+	},
+	"mac.lan.wlans": {
+		"mac-wlans-disabled-ap": {
+			"linkid": "mac-wlans-disabled-ap", "name": "Zakázané přístupové body", "icon": "icon-times",
+			"queryCol": "onAPs", "queryColValue": 0,
+			"sources": [
+				{"table": "mac.lan.devices", "viewer": "wifiAPs"}
+			]
+		},
+		"mac-wlans-enabled-ap": {
+			"linkid": "mac-wlans-enabled-ap", "name": "Povolené přístupové body", "icon": "icon-check",
+			"queryCol": "onAPs", "queryColValue": 1,
+			"sources": [
+				{"table": "mac.lan.devices", "viewer": "wifiAPs"}
+			]
+		}
+	},
+	"mac.lan.lans": {
+		"mac-lans-wifi-mng-vlans": {
+			"linkid": "mac-lans-wifi-mng-vlans", "name": "VLANy pro management WiFi", "icon": "icon-square-o",
+			"sources": [
+				{"table": "mac.lan.vlans", "viewer": "comboVlans"}
+			]
+		}
+	}
+}

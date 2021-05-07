@@ -1,0 +1,21 @@
+{
+  "id": "mac.access",
+  "name": "Monitoring And Control - Access Control",
+  "tables": [
+		"tags", "tagsAssignments", "gates", "gatesSchedule",
+		"levels", "levelsCfg", "personsAccess", "personsAccessLevels", "log"
+	],
+  "modules": ["mac/base"],
+
+  "config": [
+    {"id": "+appOptions", "file": "e10.appOptions.json"},
+    {"id": "+mac.access.tagTypes", "file": "accessTagsTypes.json"},
+		{"id": "+mac.access.assignTypes", "file": "assignTagsTypes.json"},
+		{"id": "+mac.access.gateTypes", "file": "gateTypes.json"},
+		{"id": "+mac.access.gatesScheduleStates", "file": "gatesScheduleStates.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+		{"id": "+widgets", "file": "widgets.json"},
+		{"id": "+dashboards", "file": "dashboards.json"},
+		{"id": "+registeredClasses", "file": "registeredClasses.json"}
+	]
+}

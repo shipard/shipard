@@ -1,0 +1,31 @@
+{
+	"id": "e10.persons.contacts", "sql": "e10_persons_contacts", "name": "Kontakty", "icon": "icon-id-card-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "tableNdx","name": "Tabulka", "type": "short"},
+		{"id": "recNdx", "name": "Vlastník", "type": "int"},
+
+		{"id": "name", "name": "Jméno", "type": "string", "len": 110},
+		{"id": "role", "name": "Funkce", "type": "string", "len": 70},
+
+		{"id": "email", "name": "E-mail", "type": "string", "len": 80},
+		{"id": "phone", "name": "Telefon", "type": "string", "len": 80},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": {
+		"default": {
+			"id": "default", "class": "e10.persons.libs.viewers.ContactsDefault"
+		},
+		"form": {
+			"id": "form", "class": "e10.persons.libs.viewers.ContactsForm"
+		}
+	},
+	"forms": [
+		{"id": "default", "class": "e10.persons.FormContact"}
+	],
+	"options": ["systemTable"],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"}
+}

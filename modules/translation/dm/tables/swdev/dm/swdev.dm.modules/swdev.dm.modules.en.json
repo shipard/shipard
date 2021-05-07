@@ -1,0 +1,25 @@
+{
+    "table": {
+        "name": "Modules"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "id": {
+            "name": "id"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "srcLanguage": {
+            "name": "Source language"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

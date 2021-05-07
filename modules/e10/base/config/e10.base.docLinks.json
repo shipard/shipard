@@ -1,0 +1,9 @@
+{
+	"e10.base.propgroups": {
+		"e10-base-propgoups-props": {"linkid": "e10-base-propgoups-props", "name": "Vlastnosti", "icon": "chevron-left",
+			"sources": [
+				{"table": "e10.base.propdefs"}
+			]
+		}
+	}
+}

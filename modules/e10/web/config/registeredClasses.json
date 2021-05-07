@@ -1,0 +1,7 @@
+{
+	"webAction": {
+		"e10-web-data-view": {
+			"classId": "e10.web.WebActionDataView"
+		}
+	}
+}

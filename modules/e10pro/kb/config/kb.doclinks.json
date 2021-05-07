@@ -1,0 +1,34 @@
+{
+	"e10pro.kb.wikies": {
+		"e10pro-kb-wikies-admins": {
+			"linkid": "e10pro-kb-wikies-admins", "name": "Správci", "icon": "icon-wrench",
+			"sources": [
+				{"id": "users", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			]
+		},
+		"e10pro-kb-wikies-users": {
+			"linkid": "e10pro-kb-wikies-users", "name": "Uživatelé", "icon": "icon-user",
+			"sources": [
+				{"id": "users", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			]
+		}
+	},
+
+	"e10pro.kb.sections": {
+		"e10pro-kb-sections-admins": {"linkid": "e10pro-kb-sections-admins", "name": "Správci sekce", "icon": "icon-wrench",
+			"sources": [
+				{"id": "persons", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			]
+		},
+		"e10pro-kb-sections-authors": {"linkid": "e10pro-kb-sections-authors", "name": "Autoři", "icon": "icon-pencil-square",
+			"sources": [
+				{"id": "persons", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			]
+		},
+		"e10pro-kb-sections-readers": {"linkid": "e10pro-kb-sections-readers", "name": "Čtenáři", "icon": "icon-eye",
+			"sources": [
+				{"id": "persons", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			]
+		}
+	}
+}

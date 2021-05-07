@@ -1,0 +1,8 @@
+{
+	"1000": {
+		"fn": "ISDoc - elektronická faktura",
+		"sn": "ISDoc e-faktura",
+		"icon": "e10-docs-invoices-in",
+		"classId": "e10doc.ddf.isdoc.libs.ISDoc"
+	}
+}

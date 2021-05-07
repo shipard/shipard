@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "SW Applications"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "id": {
+            "name": "Application ID"
+        },
+        "type": {
+            "name": "Application type"
+        },
+        "license": {
+            "name": "License"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

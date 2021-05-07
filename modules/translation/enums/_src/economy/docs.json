@@ -1,0 +1,30 @@
+{
+	"e10.docs.paymentMethods": {
+		"name":  "Způsoby úhrady", "key":  "", "values":  {"title": "Název"}
+	},
+	"e10.docs.roundMethods": {
+		"name":  "Způsoby zaokrouhlení", "key":  "", "values":  {"title":  "Název"}
+	},
+	"e10.docs.taxRoundMethods": {
+		"name":  "Způsoby zaokrouhlení DPH", "key":  "", "values":  {"title":  "Název"}
+	},
+	"e10.docs.types": {
+		"name": "Druhy dokladů", "key": "",
+		"values": {
+			"fullName":  "Úplný název",
+			"shortName":  "Zkrácený název",
+			"pluralName": "Množné číslo" ,
+			"shortcut": "Zkratka"
+		}
+	},
+	"e10.docs.operations": {
+		"name":  "Pohyby", "key":  "", "values":  {"title":  "Název"}
+	},
+	"e10.balance": {
+		"name":  "Saldokonta", "key":  "", "values":  {
+			"name":  "Úplný název",
+			"shortName":  "Zkrácený název",
+			"shortcut": "Zkratka"
+		}
+	}
+}

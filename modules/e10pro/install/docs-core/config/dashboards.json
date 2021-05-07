@@ -1,0 +1,7 @@
+{
+	"mobile": {
+		"company": [
+			{"class": "lib.dashboards.CompanyOverviewWidget"}
+		]
+	}
+}

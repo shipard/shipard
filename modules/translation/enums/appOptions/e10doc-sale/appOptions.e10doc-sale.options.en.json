@@ -1,0 +1,77 @@
+{
+    "salePricesType": {
+        "cfgName": "Sale prices are"
+    },
+    "automaticRoundOnSale": {
+        "cfgName": "Automatic rounding"
+    },
+    "dueDays": {
+        "cfgName": "Number of due days"
+    },
+    "myBankAccount": {
+        "cfgName": "Bank connection"
+    },
+    "useProformaOut": {
+        "cfgName": "Use Outgoing pro forma invoices"
+    },
+    "useContractSale": {
+        "cfgName": "Use Contracts of sale"
+    },
+    "roundInvoice": {
+        "cfgName": "Rounding of outgoing invoices"
+    },
+    "roundCashRegister": {
+        "cfgName": "Rounding of cash registers"
+    },
+    "author": {
+        "cfgName": "Author of automatically generated documents"
+    },
+    "usrText1Label": {
+        "cfgName": "Name of user text 1"
+    },
+    "usrText1UseInvno": {
+        "cfgName": "Use User text 1 on OI"
+    },
+    "witemsSalePricesType": {
+        "cfgName": "Set sale price on items"
+    },
+    "cashregItemComboCats": {
+        "cfgName": "Item categories for cash registers"
+    },
+    "cashregItemDefaultComboCat": {
+        "cfgName": "Default item category for cash registers"
+    },
+    "cashRegSalePricesType": {
+        "cfgName": "Sale prices in cash registers are"
+    },
+    "cashregItemComboByTypes": {
+        "cfgName": "Filter items in Cash registers by types"
+    },
+    "cashregItemComboSearch": {
+        "cfgName": "Enable text search for items in Cash registers"
+    },
+    "cashregMobileItemComboSearch": {
+        "cfgName": "In mobile cash register allow text search for items"
+    },
+    "cashregMobileDisablePaymentCards": {
+        "cfgName": "In mobile cash register disable payment by card"
+    },
+    "cashregMobileEnablePaymentButtons": {
+        "cfgName": "In mobile cash register enable buttons for payment"
+    },
+    "cashregItemOtherTaxRate1": {
+        "cfgName": "Item 'Other sale' base rate"
+    },
+    "cashregItemOtherTaxRate2": {
+        "cfgName": "Item 'Other sale' reduced rate"
+    },
+    "cashregItemOtherTaxRate3": {
+        "cfgName": "Item 'Other sale' second reduced rate"
+    },
+    "disableCashreg": {
+        "cfgName": "Disable Cast registers and retail cash register"
+    },
+    "useDeliveryNotes": {
+        "cfgName": "Use Delivery notes"
+    }
+}

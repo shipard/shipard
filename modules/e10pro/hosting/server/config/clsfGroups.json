@@ -1,0 +1,4 @@
+{
+	"hostingDomainsTags": {"name": "Domény", "label": "Štítky", "icon": "icon-globe", "tables": ["e10pro.hosting.server.domains"]},
+	"hostingCertsTags": {"name": "Certifikáty", "label": "Štítky", "icon": "icon-certificate", "tables": ["e10pro.hosting.server.certs"]}
+}

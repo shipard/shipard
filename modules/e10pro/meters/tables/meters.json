@@ -1,0 +1,26 @@
+{
+	"id": "e10pro.meters.meters", "sql": "e10pro_meters_meters", "name": "Měřiče", "icon": "icon-cogs",
+	"columns": [
+		{"id": "ndx", "name": "ndx", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
+		{"id": "id", "name": "ID", "type": "string", "len": 15},
+
+		{"id": "unit", "name": "Jednotka", "type": "enumString", "len": 8,
+			"enumCfg": {"cfgItem": "e10.witems.units", "cfgValue": "", "cfgText": "text"}},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"views": [
+		{"id": "default", "class": "e10pro.meters.ViewMeters", "detail": "e10pro.meters.ViewMeter"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.meters.FormMeter"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

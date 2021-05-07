@@ -1,0 +1,5 @@
+{
+	"name": "E10Pro",
+	"modules": ["e10pro/hosting/server", "e10pro/property", "e10pro/staff", "e10pro/templates",
+							"e10pro/wkf", "e10pro/zus", "e10pro/kb"]
+}

@@ -1,0 +1,10 @@
+[
+	{
+		"id": "tests.e10.terminals.Ros", "class": "lib.tests.TestReports",
+		"name": "Problémy s EET",
+		"notify": "e10-support-shipard", "systemSection": 58,
+		"reports": [
+			{"class": "terminals.ros.ReportTest", "cycles": ["lastYear"]}
+		]
+	}
+]

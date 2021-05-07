@@ -1,0 +1,13 @@
+{
+  "id": "e10.persons.personsgroups", "sql": "e10_persons_personsgroups", "name": "Osoby ve skupině",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "group", "name": "Skupina", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10.persons.groups", "cfgValue": "id", "cfgText": "name"}},
+    {"id": "person", "name": "Osoba", "type": "int"}
+  ],
+	"options": ["systemTable"],
+	"indexes": [
+		{"id": "s1", "columns": ["group", "person"]}
+	]
+}

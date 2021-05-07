@@ -1,0 +1,6 @@
+{
+	"bookingTypes": {
+		"name": "Druhy rezervací", "order": 230000, "group": "building", "icon": "icon-bookmark-o",
+		"type": "viewer", "table": "e10pro.booking.types", "viewer": "default"
+	}
+}

@@ -1,0 +1,35 @@
+{
+	"name": "Demonstrační data Malá firma",
+	"appOptions": {
+		"core": {
+			"ownerFullName": "Naše firma, s.r.o.",
+			"ownerShortName": "Naše firma",
+			"ownerDomicile": "cz",
+			"ownerEmail": "demo@shipard.org",
+			"ownerPhone": "+420 774 020 522",
+			"ownerWeb": "shipard.org",
+			"ownerBankAccount": "2700740850/2010",
+			"ownerLegalRegInfo": "Registrace u rejstříkového soudu v Praze, značka XX54DFS/HG6",
+			"ownerVATID": "CZ63478714",
+			"ownerPerson": 3,
+
+			"firstFiscalYearMonth": 1,
+			"vatPeriod": 1
+		},
+		"e10doc-sale": {
+			"roundInvoice": 1,
+			"roundCashRegister": 1
+		}
+	},
+	"includes": [
+		"install/demo/data/cz/persons",
+		"install/demo/data/cz/items-store"
+	],
+	"___datasets": [
+		{
+		"commands": [
+			{"command": "lib.docs.PersonsGroupsSetter.setGroups"}
+		]
+		}
+	]
+}

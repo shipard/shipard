@@ -1,0 +1,14 @@
+{
+	"0": {
+		"fn": "Automaticky; nové verze se samy přidávají"
+	},
+	"1": {
+		"fn": "Ruční správa verzí"
+	},
+	"2": {
+		"fn": "Verze je pouze v názvu a je spravována ručně"
+	},
+	"3": {
+		"fn": "Vypnuto - tento SW vůbec nemá verze"
+	}
+}

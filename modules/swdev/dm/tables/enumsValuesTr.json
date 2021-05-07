@@ -1,0 +1,19 @@
+{
+	"id": "swdev.dm.enumsValuesTr", "sql": "swdev_dm_enumsValuesTr", "name": "Přeložené texty hodnot Enumů", "icon": "icon-list-ol",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "enum", "name": "Enum", "type": "int", "reference": "swdev.dm.enums"},
+		{"id": "enumValue", "name": "Položka enumu", "type": "int", "reference": "swdev.dm.enumsValues"},
+		{"id": "lang", "name": "Jazyk", "type": "int", "reference": "swdev.translation.languages"},
+
+		{"id": "text", "name": "Text", "type": "string", "len": 180},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"forms": [
+		{"id": "default", "class": "swdev.dm.FormEnumValueTr"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "text"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "swdev.dm.trTextsDocStates"}
+}

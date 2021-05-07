@@ -1,0 +1,32 @@
+{
+    "0": {
+        "title": "Hundredths"
+    },
+    "1": {
+        "title": "Integers"
+    },
+    "2": {
+        "title": "Integers up"
+    },
+    "3": {
+        "title": "Integers down"
+    },
+    "4": {
+        "title": "Tenths"
+    },
+    "7": {
+        "title": "Halves"
+    },
+    "5": {
+        "title": "Tenths up"
+    },
+    "6": {
+        "title": "Tenths down"
+    },
+    "8": {
+        "title": "Halves down"
+    },
+    "9": {
+        "title": "Halves up"
+    }
+}

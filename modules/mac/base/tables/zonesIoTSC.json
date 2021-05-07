@@ -1,0 +1,19 @@
+{
+	"id": "mac.base.zonesIoTSC", "sql": "mac_base_zonesIoTSC", "name": "Senzory a ovládací prvky v zónach", "icon": "icon-thermometer",
+	"columns": [
+		{"id": "ndx", "name": "ndx", "type": "int_ai"},
+		{"id": "zone", "name": "Zóna", "type": "int", "reference": "mac.base.zones"},
+
+		{"id": "rowType", "name": "Druh", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.base.zonesIotSCRowTypes", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "iotSensor", "name": "Senzor", "type": "int", "reference": "mac.iot.sensors"},
+		{"id": "iotControl", "name": "ovládací prvek", "type": "int", "reference": "mac.iot.controls"},
+
+		{"id": "rowOrder", "name": "Pořadí", "type": "int"}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.base.FormZoneIoTSC"}
+	],
+	"options": ["systemTable"]
+}

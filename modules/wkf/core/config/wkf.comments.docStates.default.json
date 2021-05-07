@@ -1,0 +1,18 @@
+{
+	"1000": {
+		"stateName": "Nově rozpracováno", "actionName": "Uložit rozpracované", "logName": "koncept komentáře",
+		"stateStyle": "concept",  "mainState": 0, "goto": [4000, 9800]
+	},
+	"4000": {
+		"stateName": "Zveřejněno", "actionName": "Zveřejnit", "logName": "nový komentář", "notify": 1,
+		"stateStyle": "done",  "mainState": 2, "readOnly": 1, "goto": [8000, 9800]
+	},
+	"8000": {
+		"stateName": "V opravě", "actionName": "Opravit", "logName": "editace komentáře",
+		"stateStyle": "edit",  "mainState": 0, "goto": [4000, 9800]
+	},
+	"9800": {
+		"stateName": "Smazáno", "actionName": "Smazat", "logName": "smazání komentáře",
+		"stateStyle": "delete",  "mainState": 4, "readOnly": 1, "goto": [8000]
+	}
+}

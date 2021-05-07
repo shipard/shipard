@@ -1,0 +1,24 @@
+{
+	"id": "swdev.hw.fwVersions", "sql": "swdev_hw_fwVersions", "name": "Verze Firmware", "icon": "icon-hashtag",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fw", "name": "Firmware", "type": "int", "reference": "swdev.hw.fw"},
+		{"id": "version", "name": "Verze", "type": "string", "len": 40},
+		{"id": "releaseDate", "name": "Datum zveřejnění", "type": "date"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "swdev.hw.ViewFWVersions",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.hw.ViewDetailFWVersion"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "swdev.hw.FormFWVersion"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "version"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

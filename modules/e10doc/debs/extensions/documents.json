@@ -1,0 +1,56 @@
+[
+	{
+		"table": "e10doc.core.heads",
+		"columns": [
+			{"id": "docStateAcc", "name": "Stav zaúčtování", "type": "enumInt",
+				"enumValues": {"0": "Neúčetní doklad", "1": "Zaúčtováno", "9": "Doklad nelze zaúčtovat"}}
+		],
+		"views": {
+			"invoicesIn": {
+				"details": {
+						"accounting": {"title": "Účtování", "icon": "x-stamp", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
+				}
+			},
+			"invoicesOut": {
+				"details": {
+					"accounting": {"title": "Účtování", "icon": "x-stamp", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
+				}
+			},
+			"bank": {
+				"details": {
+					"accounting": {"title": "Účtování", "icon": "x-stamp", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
+				}
+			},
+			"cash": {
+				"details": {
+					"accounting": {"title": "Účtování", "icon": "x-stamp", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
+				}
+			},
+			"cmnbkp": {"id": "cmnbkp",
+				"details": {
+					"accounting": {"title": "Účtování", "icon": "x-stamp", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
+				}
+			},
+			"cmnbkpocp": {"id": "cmnbkpocp",
+				"details": {
+					"accounting": {"title": "Účtování", "icon": "x-stamp", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
+				}
+			}
+		},
+		"docActions": {
+			"import-docRows-debs": {
+				"action": "wizard", "class": "e10doc.debs.libs.ImportDocRowsDebsWizard", "title": "Import", "icon": "icon-download",
+				"queryCols": {
+					"docType": "cmnbkp"
+				}
+			}
+		}
+	},
+	{
+		"table": "e10doc.core.rows",
+		"columns": [
+			{"id": "debsAccountId", "name": "Účet", "type": "string", "len": 12,
+				"comboViewer": "combo", "comboTable": "e10doc.debs.accounts"}
+		]
+	}
+]

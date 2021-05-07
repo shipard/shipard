@@ -1,0 +1,79 @@
+{
+    "table": {
+        "name": "Own bank connection"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "bank": {
+            "name": "Bank"
+        },
+        "bankAccount": {
+            "name": "Account number"
+        },
+        "iban": {
+            "name": "IBAN"
+        },
+        "swift": {
+            "name": "SWIFT"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "ebankingId": {
+            "name": "E-banking ID"
+        },
+        "currency": {
+            "name": "Currency"
+        },
+        "exclFromDashboard": {
+            "name": "Exclude from dashboard"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "downloadStatements": {
+            "name": "Automatic download of statements"
+        },
+        "uploadStatements": {
+            "name": "Automatic remittance of payment orders"
+        },
+        "downloadTransactions": {
+            "name": "Automatic download of account transactions"
+        },
+        "apiToken": {
+            "name": "API token"
+        },
+        "apiTokenUploads": {
+            "name": "API token - orders remittance"
+        },
+        "apiTokenTransactions": {
+            "name": "API token - transactions download"
+        },
+        "useDownloadStatementBegin": {
+            "name": "Set the beginning of statements download"
+        },
+        "downloadStatementBeginDate": {
+            "name": "Starting date of statement"
+        },
+        "downloadStatementBeginNumber": {
+            "name": "Initial statement number"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "debsAccountId": {
+            "name": "Account"
+        }
+    }
+}

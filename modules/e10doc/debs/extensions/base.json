@@ -1,0 +1,16 @@
+[
+	{
+		"table": "e10doc.base.bankaccounts",
+		"columns": [
+			{"id": "debsAccountId", "name": "Účet", "type": "string", "len": 12,
+				"comboViewer": "combo", "comboTable": "e10doc.debs.accounts"}
+		]
+	},
+	{
+		"table": "e10doc.base.cashboxes",
+		"columns": [
+			{"id": "debsAccountId", "name": "Účet", "type": "string", "len": 12,
+				"comboViewer": "combo", "comboTable": "e10doc.debs.accounts"}
+		]
+	}
+]

@@ -1,0 +1,22 @@
+{
+    "table": {
+        "name": "MAC addresses"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "mac": {
+            "name": "MAC address"
+        },
+        "created": {
+            "name": "Created"
+        },
+        "updated": {
+            "name": "Updated"
+        },
+        "ports": {
+            "name": "Ports"
+        }
+    }
+}

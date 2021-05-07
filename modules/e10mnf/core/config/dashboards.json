@@ -1,0 +1,16 @@
+{
+	"srvcfg": {
+		"disableTopToolbar": 1,
+		"panels": {
+			"workOrders": {
+				"name": "Zakázky",
+				"icon": "icon-industry",
+				"order": 7000,
+				"fullsize": 1,
+				"rows": {
+					"info": {"order": 10000, "align": "right"}
+				}
+			}
+		}
+	}
+}

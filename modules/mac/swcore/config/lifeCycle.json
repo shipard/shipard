@@ -1,0 +1,27 @@
+{
+	"0": {
+		"fn": "Neznámé",
+		"sn": "Neznámé",
+		"icon": "icon-question-circle"
+	},
+	"1": {
+		"fn": "Aktivní",
+		"sn": "Aktivní",
+		"icon": "icon-thumbs-up"
+	},
+	"2": {
+		"fn": "Zastaralé",
+		"sn": "Zastaralé",
+		"icon": "icon-thumbs-down"
+	},
+	"4": {
+		"fn": "Ukončené",
+		"sn": "Ukončené",
+		"icon": "icon-exclamation-triangle"
+	},
+	"5": {
+		"fn": "Předběžné",
+		"sn": "Předběžné",
+		"icon": "icon-level-up"
+	}
+}

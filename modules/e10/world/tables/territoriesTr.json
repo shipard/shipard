@@ -1,0 +1,11 @@
+{
+	"id": "e10.world.territoriesTr", "sql": "e10_world_territoriesTr", "name": "Oblasti - Lokalizace", "icon": "icon-map",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "territory", "name": "Oblast", "type": "int", "reference": "e10.world.territories"},
+		{"id": "language", "name": "Jazyk", "type": "int", "reference": "e10.world.languages"},
+		{"id": "name", "name": "Název", "type": "string", "len": 120}
+	],
+	"options": ["systemTable"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"}
+}

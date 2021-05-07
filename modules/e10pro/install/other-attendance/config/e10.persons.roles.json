@@ -1,0 +1,14 @@
+{
+	"atndncadm": {
+		"name": "Správce docházky",
+		"viewers": {
+			"e10.persons.keys": {"attendance": 2},
+			"e10pro.attendance.timeclock": {"default": 2},
+			"e10pro.attendance.list": {"default": 2},
+			"e10pro.attendance.shifts": {"default": 2}
+		},
+		"reports": {
+			"tests.e10pro.attendance.reportBadAttendance": 2
+		}
+	}
+}

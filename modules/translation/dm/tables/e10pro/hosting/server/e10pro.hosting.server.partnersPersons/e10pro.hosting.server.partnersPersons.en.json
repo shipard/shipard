@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Persons of Partners"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "person": {
+            "name": "Person"
+        },
+        "partner": {
+            "name": "Partner"
+        },
+        "isAdmin": {
+            "name": "Admin of partner"
+        },
+        "isSupport": {
+            "name": "Technical client support"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

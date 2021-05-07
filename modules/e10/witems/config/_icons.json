@@ -1,0 +1,20 @@
+{
+    "tables/e10.witems.items":{
+        "fa5":"fa-shopping-bag",
+        "fa5pro":"fa-shopping-bag",
+        "bsi":"bi-bag-fill",
+        "mdi":"shopping-bag"
+    },
+    "tables/e10.witems.itemcategories":{
+        "fa5":"fa-gifts",
+        "fa5pro":"fa-bags-shopping",
+        "bsi":"bi-bag-plus",
+        "mdi":"add_shopping_cart"
+    },
+    "tables/e10.witems.brands":{
+        "fa5":"fa-copyright",
+        "fa5pro":"fa-copyright",
+        "bsi":"bi-heart-fill",
+        "mdi":"copyright"
+    }
+}

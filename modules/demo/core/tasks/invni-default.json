@@ -1,0 +1,6 @@
+{
+	"name": "Faktura přijatá běžná",
+	"class": "demo.documents.libs.Invni",
+	"person": {"demo": [2, 4]},
+	"item": {"type": "it-accitem", "useFor": 1}
+}

@@ -1,0 +1,12 @@
+{
+  "id": "e10mnf.base",
+  "name": "Číselníky Výroby",
+  "tables": ["dockinds", "docnumbers", "workOrdersGroups", "workRecsKinds", "workRecsNumbers"],
+  "config": [
+    {"id": "+e10.appOptions.groups", "file": "e10.appOptionsGroups.json"},
+	  {"id": "+appOptions", "file": "e10.appOptions.json"},
+    {"id": "+e10.base.doclinks", "name": "Vazby dokumentů", "file": "doclinks.json"},
+    {"id": "+e10mnf.workRecs.wrTypes", "file": "wrTypes.json"},
+    {"id": "+e10mnf.workOrders.woDetailParts", "file": "woDetailParts.json"}
+  ]
+}

@@ -1,0 +1,112 @@
+{
+    "table": {
+        "name": "Items"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "id": {
+            "name": "Item code"
+        },
+        "itemType": {
+            "name": "Item type"
+        },
+        "itemKind": {
+            "name": "Item kind"
+        },
+        "type": {
+            "name": "Type"
+        },
+        "defaultUnit": {
+            "name": "Unit"
+        },
+        "priceBuy": {
+            "name": "Purchase price"
+        },
+        "priceSell": {
+            "name": "Selling price"
+        },
+        "priceSellBase": {
+            "name": "Selling price EXCLUDING vat"
+        },
+        "priceSellTotal": {
+            "name": "Selling price INCLUDING vat"
+        },
+        "vatRate": {
+            "name": "VAT rate"
+        },
+        "brand": {
+            "name": "Brand"
+        },
+        "warranty": {
+            "name": "Warranty"
+        },
+        "niceUrl": {
+            "name": "Nice URL"
+        },
+        "useFor": {
+            "name": "Use for"
+        },
+        "useBalance": {
+            "name": "Balance"
+        },
+        "askQCashRegister": {
+            "name": "Ask for quantity in cash register"
+        },
+        "askPCashRegister": {
+            "name": "Ask for price in cash register"
+        },
+        "orderCashRegister": {
+            "name": "Cash register order"
+        },
+        "groupCashRegister": {
+            "name": "Cash register group"
+        },
+        "isSet": {
+            "name": "Is set of items"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "debsAccountId": {
+            "name": "Account"
+        },
+        "debsGroup": {
+            "name": "Accounting group"
+        },
+        "debsAccount": {
+            "name": "Account"
+        },
+        "successorItem": {
+            "name": "Replacing item"
+        },
+        "successorDate": {
+            "name": "Replace from"
+        },
+        "itemKind2": {
+            "name": "Item kind from set of items"
+        },
+        "validFrom": {
+            "name": "Valid from"
+        },
+        "validTo": {
+            "name": "Valid to"
+        },
+        "syncNdx": {
+            "name": "syncNdx"
+        },
+        "syncSrc": {
+            "name": "syncSrc"
+        }
+    }
+}

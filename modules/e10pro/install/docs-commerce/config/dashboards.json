@@ -1,0 +1,20 @@
+{
+	"commerce": {
+		"name": "Obchod",
+		"disableTopToolbar": 1,
+		"panels": {
+			"workOrders": {
+				"name": "Přehled",
+				"icon": "icon-bell-o",
+				"order": 1201,
+				"fullsize": 1,
+				"rows": {
+					"main": {"order": 10000, "class": "full"}
+				}
+			},
+			"maps": {
+				"creatorClass": "lib.wkf.MapsDashboardPanelsCreator", "order": 1800
+			}
+		}
+	}
+}

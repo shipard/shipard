@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "Geographic tags"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "tagType": {
+            "name": "Tag type"
+        },
+        "srcTable": {
+            "name": "Table"
+        },
+        "srcRec": {
+            "name": "Record"
+        },
+        "dstTable": {
+            "name": "Table"
+        },
+        "dstRec": {
+            "name": "Record"
+        },
+        "locHash": {
+            "name": "Hash"
+        },
+        "locAddress": {
+            "name": "Address"
+        }
+    }
+}

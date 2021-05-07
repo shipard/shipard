@@ -1,0 +1,21 @@
+{
+	"dockinds": [
+		{"fullName": "Přiznání DPH", "activity": "taxVatReturn"},
+		{"fullName": "Kurzové rozdíly", "activity": "balExchRateDiff"},
+		{"fullName": "Zápočet", "activity": "balSetOff"},
+		{"fullName": "Počáteční stavy saldokonta", "activity": "ocpBalInSt"},
+		{"fullName": "Otevření období", "activity": "ocpOpen"},
+		{"fullName": "Uzavření období", "activity": "ocpClose"}
+	],
+	"docnumbers": [
+		{"docKeyId": "1", "fullName": "Saldokonto", "shortName": "Saldo", "useDocKinds": 2, "activitiesGroup": "bal", "oldndx": 600010},
+		{"docKeyId": "2", "fullName": "Zaúčtování mezd", "shortName": "Mzdy", "oldndx": 600020},
+		{"docKeyId": "3", "fullName": "Majetek", "shortName": "Majetek", "oldndx": 600030},
+		{"docKeyId": "5", "fullName": "Daně", "shortName": "Daně", "useDocKinds": 2, "activitiesGroup": "tax", "oldndx": 600050},
+		{"docKeyId": "8", "fullName": "Ostatní", "shortName": "Ostatní", "oldndx": 600980},
+		{"docKeyId": "9", "fullName": "Otevření účetního období", "shortName": "Otevření období",
+			"useDocKinds": 2, "activitiesGroup": "ocp", "oldndx": 600990},
+		{"docKeyId": "X", "fullName": "Uzavření účetního období", "shortName": "Uzavření období", "order": 10000,
+			"useDocKinds": 2, "activitiesGroup": "clp"}
+	]
+}

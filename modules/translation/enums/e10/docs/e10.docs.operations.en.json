@@ -1,0 +1,116 @@
+{
+    "1050001": {
+        "title": "Purchase of inventory"
+    },
+    "1050900": {
+        "title": "Other"
+    },
+    "1060900": {
+        "title": "Other"
+    },
+    "1099998": {
+        "title": "Book entry"
+    },
+    "1090051": {
+        "title": "Technical evaluation of property"
+    },
+    "1090052": {
+        "title": "Purchase of registered property"
+    },
+    "1090060": {
+        "title": "Sale of property"
+    },
+    "1090072": {
+        "title": "Depreciation of property"
+    },
+    "1090073": {
+        "title": "Technical evaluation of property"
+    },
+    "1099999": {
+        "title": "Accounting entry"
+    },
+    "1010102": {
+        "title": "Purchase of inventory"
+    },
+    "1010001": {
+        "title": "Sale of services"
+    },
+    "1010002": {
+        "title": "Sale of inventory"
+    },
+    "1020102": {
+        "title": "Payment of outgoing pro forma invoice"
+    },
+    "1060001": {
+        "title": "Sale of inventory"
+    },
+    "1020103": {
+        "title": "Received deposit"
+    },
+    "1010104": {
+        "title": "Taxation of received deposit"
+    },
+    "1010103": {
+        "title": "Provided deposit"
+    },
+    "1020104": {
+        "title": "Taxation of provided deposit"
+    },
+    "1030011": {
+        "title": "Income from money transfer"
+    },
+    "1030012": {
+        "title": "Expenditure for money transfer"
+    },
+    "1030101": {
+        "title": "Payment order"
+    },
+    "1030102": {
+        "title": "Collection order"
+    },
+    "1050800": {
+        "title": "Receipt of inventory"
+    },
+    "1010101": {
+        "title": "Deduction of received deposit"
+    },
+    "1020101": {
+        "title": "Deduction of provided deposit"
+    },
+    "1030002": {
+        "title": "Payment of obligation"
+    },
+    "1090012": {
+        "title": "Exchange difference of obligation"
+    },
+    "1090050": {
+        "title": "Acquisition of fixed assets"
+    },
+    "1080003": {
+        "title": "Collective invoicing"
+    },
+    "1090071": {
+        "title": "Elimination of property"
+    },
+    "1030001": {
+        "title": "Payment of receivable"
+    },
+    "1090011": {
+        "title": "Exchange difference of receivable"
+    },
+    "1090001": {
+        "title": "Inclusion of receivable"
+    },
+    "1090002": {
+        "title": "Inclusion of obligation"
+    },
+    "1090070": {
+        "title": "Classification of property"
+    },
+    "1010099": {
+        "title": "Sale of inventory without recording"
+    },
+    "1010199": {
+        "title": "Purchase of inventory without recording"
+    }
+}

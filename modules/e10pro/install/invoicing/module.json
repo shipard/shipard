@@ -1,0 +1,8 @@
+{
+  "id": "e10pro.install.start",
+  "name": "Fakturace",
+  "modules": ["e10pro/base", "e10/witems", "e10pro/install/docs-core", "e10doc/invoicesOut"],
+  "config": [
+    {"id": "+appSkeleton", "name": "Kostra aplikace", "file": "start.appSkeleton.json"}
+  ]
+}

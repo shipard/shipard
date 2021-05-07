@@ -1,0 +1,10 @@
+{
+	"feed": {
+		"sw-info": {
+			"classId": "services.sw.libs.SWInfoFeed"
+		},
+		"sw-get": {
+			"classId": "services.sw.libs.SWGetFeed"
+		}
+	}
+}

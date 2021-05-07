@@ -1,0 +1,69 @@
+{
+    "table": {
+        "name": "Kinds of contracts"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "docType": {
+            "name": "Document type"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "period": {
+            "name": "Payment period",
+            "label": "Period"
+        },
+        "invoicingDay": {
+            "name": "Invoicing"
+        },
+        "taxCalc": {
+            "name": "Tax calculation"
+        },
+        "title": {
+            "name": "Document description"
+        },
+        "currency": {
+            "name": "Currency"
+        },
+        "invNote": {
+            "name": "Invoice note"
+        },
+        "paymentMethod": {
+            "name": "Payment method"
+        },
+        "dueDays": {
+            "name": "Due",
+            "label": "Due days"
+        },
+        "centre": {
+            "name": "Centre"
+        },
+        "wkfProject": {
+            "name": "Project"
+        },
+        "workOrder": {
+            "name": "Work order"
+        },
+        "icon": {
+            "name": "Icon"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "useBatchCreating": {
+            "name": "Use batch creation of contracts"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

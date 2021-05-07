@@ -1,0 +1,49 @@
+{
+    "table": {
+        "name": "Printers"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "printerType": {
+            "name": "Printer type"
+        },
+        "receiptsPrinterType": {
+            "name": "Printer type"
+        },
+        "posPrinterDriver": {
+            "name": "Controller"
+        },
+        "printMethod": {
+            "name": "Printing method"
+        },
+        "printEmail": {
+            "name": "E-mail for printing"
+        },
+        "printURL": {
+            "name": "HTTP printing URL"
+        },
+        "networkQueueId": {
+            "name": "Server print queue ID"
+        },
+        "printerAddress": {
+            "name": "Printer IP address"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

@@ -1,0 +1,32 @@
+{
+	"id": "e10.base.tasks", "sql": "e10_base_tasks", "name": "Systémové úlohy", "icon": "icon-cogs",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "title", "name": "Název", "type": "string", "len": 120},
+
+		{"id": "classId", "name": "Druh úlohy", "type": "string", "len": 80},
+		{"id": "tableId", "name": "Tabulka dokumentu", "type": "string", "len": 48},
+		{"id": "recId", "name": "Řádek dokumentu", "type": "int"},
+		{"id": "params", "name": "Parametry", "type": "memo"},
+
+		{"id": "timeCreate", "name": "Čas vytvoření", "type": "timestamp"},
+		{"id": "timeBegin", "name": "Čas zahájení", "type": "timestamp"},
+		{"id": "timeEnd", "name": "Čas ukončení", "type": "timestamp"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "e10.base.ViewTasks",
+			"details": {
+				"default": {"title": "Přehled", "icon": "x-dashboard", "type": "detail", "class": "e10.base.ViewDetailTask"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10.base.FormTask"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.tasks.docStates"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "title"}
+}

@@ -1,0 +1,8 @@
+{
+	"0": {
+		"name": "Osoba", "icon": "icon-person"
+	},
+	"1": {
+		"name": "Místo", "icon": "icon-map-marker"
+	}
+}

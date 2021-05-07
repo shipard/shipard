@@ -1,0 +1,12 @@
+{
+	"e10.persons.groups": {
+		"e10-persons-groups-propgroups": {
+			"linkid": "e10-persons-groups-propgroups",
+			"name": "Skupiny vlastností",
+			"icon": "chevron-left",
+			"sources": [
+				{"table": "e10.base.propgroups"}
+			]
+		}
+	}
+}

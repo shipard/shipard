@@ -1,0 +1,46 @@
+{
+	"name": "RS232 Gateway",
+	"title": "RS232 Gateway",
+	"gpioLayout": "oli-esp32-poe",
+	"fields": {
+		"groups": [
+			{"id":  "l1", "title":  "Sériová linka"}
+		],
+		"columns": [
+			{
+				"id": "serial1Enabled", "group":  "l1", "name": "Port 1 je povolen", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			},
+			{
+				"id": "serial1Speed", "group":  "l1", "name": "Rychlost portu", "type": "enumInt",
+				"enumCfg": {"cfgItem": "mac.devices.serialLineSpeed", "cfgValue": "", "cfgText": "name"}, "readOnly": {"serial1Enabled": "0"}
+			},
+			{
+				"id": "serial1Mode", "group":  "l1", "name": "Nastavení portu", "type": "enumInt",
+				"enumCfg": {"cfgItem": "mac.devices.serialLineMode", "cfgValue": "", "cfgText": "name"}, "readOnly": {"serial1Enabled": "0"}
+			},
+			{
+				"id": "serial1ValueKind", "group":  "l1", "name": "Druh hodnoty", "type": "int", "reference": "mac.iot.valuesKinds"
+			},
+			{
+				"id": "serial1PortId", "group":  "l1", "name": "ID portu 1", "label": "ID portu", "type": "string", "len": 30, "readOnly": {"serial1Enabled": "0"}
+			},
+			{
+				"id": "serial1FullName", "group":  "l1", "name": "Název portu 1", "label": "Název", "type": "string", "len": 140, "readOnly": {"serial1Enabled": "0"}
+			}
+		]
+	},
+	"fixedIOPorts": [
+		{
+			"type": "dataSerial",
+			"portId": "serial1",
+
+			"pinRX": "uext-5",
+			"pinTX": "uext-3",
+
+			"_dpUid": 1,
+			"_cfgColumns": {"serial1Speed": "speed", "serial1Mode": "mode"},
+			"_rowColumns": {"serial1PortId": "portId", "serial1FullName": "fullName", "serial1ValueKind": "valueKind"},
+			"_portDisabled": {"serial1Enabled": 0}
+		}
+	]
+}

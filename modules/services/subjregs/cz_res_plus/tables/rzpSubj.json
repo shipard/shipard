@@ -1,0 +1,26 @@
+{
+	"id": "services.subjregs.cz_res_plus.rzpSubj", "sql": "services_subjregs_cz_res_plus_rzpSubj", "name": "RZP Subjekty", "icon": "icon-building-o",
+	"columns": [
+		{"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "ico", "name": "IČ", "type": "string", "len": 8, "options": ["ascii"]},
+		{"id": "nazev", "name": "Název", "type": "string", "len": 250},
+		{"id": "ulice", "name": "Ulice", "type": "string", "len": 70},
+		{"id": "obec", "name": "Obec", "type": "string", "len": 40},
+		{"id": "psc", "name": "PSČ", "type": "string", "len": 5, "options": ["ascii"]}
+	],
+	"views": {
+		"default": {
+			"id": "default", "class": "services.subjregs.cz_res_plus.ViewRzpSubj",
+			"details": {
+				"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "order":  0, "class": "services.subjregs.cz_res_plus.ViewDetailRzpSubj"}
+			}
+		}
+	},
+	"forms": [
+		{"id": "default", "class": "services.subjregs.cz_res_plus.FormRzpSubj"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "nazev"},
+	"indexes": [
+		{"id": "s1", "columns": ["ico"]}
+	]
+}

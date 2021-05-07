@@ -1,0 +1,20 @@
+{
+	"0": {
+		"fn": "Ne"
+	},
+	"1": {
+		"fn": "Součást OS nebo HW"
+	},
+	"2": {
+		"fn": "Open Source Software"
+	},
+	"3": {
+		"fn": "Volné užití"
+	},
+	"4": {
+		"fn": "Omezená funkčnost"
+	},
+	"5": {
+		"fn": "Zkušební lhůta"
+	}
+}

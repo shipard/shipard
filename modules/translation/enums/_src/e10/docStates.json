@@ -1,0 +1,11 @@
+{
+	"e10.base.defaultDocStatesArchive": {
+		"name":  "Výchozí stavy dokumentů", "key":  "", "values":  {"stateName": "Název", "actionName":  "Název akce / tlačítko"}
+	},
+	"e10doc.core.heads.docStates.cashreg": {
+		"name":  "Stavy dokumentů: pokladní lístek", "key":  "", "values":  {"stateName": "Název", "actionName":  "Název akce / tlačítko"}
+	},
+	"e10doc.core.heads.docStates.bankorder": {
+		"name":  "Stavy dokumentů: příkaz k úhradě", "key":  "", "values":  {"stateName": "Název", "actionName":  "Název akce / tlačítko"}
+	}
+}

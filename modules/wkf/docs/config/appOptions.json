@@ -1,0 +1,10 @@
+{
+	"wkfnDocsFolders": {
+		"name": "Složky dokumentů", "order": 191000, "group": "workflow", "icon": "icon-folder",
+		"type": "viewer", "table": "wkf.docs.folders", "viewer": "default"
+	},
+	"wkfnDocsKinds": {
+		"name": "Druhy dokumentů", "order": 192000, "group": "workflow", "icon": "icon-file-o",
+		"type": "viewer", "table": "wkf.docs.docsKinds", "viewer": "default"
+	}
+}

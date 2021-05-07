@@ -1,0 +1,13 @@
+{
+  "id": "terminals.base",
+  "name": "Base terminal support",
+	"modules": ["e10/base"],
+  "tables": ["workplaces", "printers", "servers", "sensors", "cameras"],
+  "config": [
+    {"id": "+appOptions", "file": "e10.appOptions.json"},
+    {"id": "+e10.base.doclinks", "file": "e10.terminals.docLinks.json"},
+	  {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+    {"id": "+registeredClasses", "file": "registeredClasses.json"},
+		{"id": "+terminals.postPrinterDrivers", "file": "posPrinterDrivers.json"}
+  ]
+}

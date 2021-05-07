@@ -1,0 +1,23 @@
+{
+    "srvcfg": {
+        "name": "Database information"
+    },
+    "macControl": {
+        "name": "IoT"
+    },
+    "maclan": {
+        "name": "Computer network"
+    },
+    "webPanel": {
+        "name": "Web editing"
+    },
+    "commerce": {
+        "name": "Commerce"
+    },
+    "shipard-app": {
+        "name": "shipard.app"
+    },
+    "macAccess": {
+        "name": "IoT"
+    }
+}

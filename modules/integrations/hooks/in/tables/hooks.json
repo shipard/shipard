@@ -1,0 +1,29 @@
+{
+	"id": "integrations.hooks.in.hooks", "sql": "integrations_hooks_in_hooks", "name": "Příchozí Webhooks", "icon": "icon-cloud-download",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "fullName", "name": "Název", "type": "string", "len": 100},
+		{"id": "hookType", "name": "Typ", "type":  "enumString", "len": 30, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "integration.hooks.in.types", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "urlPart1", "name": "První část URL", "type": "string", "len": 40, "options": ["ascii"]},
+		{"id": "urlPart2", "name": "Druhá část URL", "type": "string", "len": 40, "options": ["ascii"]},
+
+		{"id": "runAsUser", "name": "Spustit pod uživatelem", "type": "int", "reference": "e10.persons.persons", "comboViewer": "users"},
+
+		{"id": "hookSettings", "name": "Nastavení", "type": "subColumns"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": {
+		"default": {"id": "default", "class": "integrations.hooks.in.ViewHooks"}
+	},
+	"forms": [
+		{"id": "default", "class": "integrations.hooks.in.FormHook"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"ndx": 0
+}

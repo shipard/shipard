@@ -1,0 +1,12 @@
+{
+	"mergeRecords": {
+		"e10-witems-items": ["e10doc.core.mergeItems"],
+		"e10-persons-persons": ["lib.persons.MergePersons"]
+	},
+	"personInfo": [
+		{"classId": "e10doc.core.PersonInfo"}
+	],
+	"projectInfo": [
+		{"classId": "e10doc.core.ProjectInfo"}
+	]
+}

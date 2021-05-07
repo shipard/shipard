@@ -1,0 +1,14 @@
+{
+	"items": {
+		"lib.cacheItems.CashStates": {
+			"onStartup": 1
+		}
+	},
+	"invalidate": {
+		"e10doc.core.heads": {
+			"cash": [
+				"lib.cacheItems.CashStates"
+			]
+		}
+	}
+}

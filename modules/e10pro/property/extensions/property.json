@@ -1,0 +1,22 @@
+[
+	{
+		"table": "e10.base.places",
+		"views": {
+			"property": {
+				"id": "property", "class": "e10pro.property.libs.ViewPropertyPlaces",
+				"details": {
+					"timeclock": {"title": "Majetek", "icon": "icon-list", "type": "detail", "class": "e10pro.property.ViewDetailPropertyPlace"}
+				}
+			}
+		},
+		"reports": [
+			{"id": "placeProperty", "name": "Inventář", "class": "e10pro.property.ReportPlaceProperty"}
+		]
+	},
+	{
+		"table": "e10doc.debs.journal",
+		"indexes": [
+			{"id": "property", "columns": ["property"]}
+		]
+	}
+]

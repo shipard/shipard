@@ -1,0 +1,14 @@
+{
+	"e10WorldCountries": {
+		"name": "Země", "order": 8452000, "group": "e10World", "icon": "icon-flag",
+		"type": "viewer", "table": "e10.world.countries", "viewer": "default"
+	},
+	"e10WorldCurrencies": {
+		"name": "Měny", "order": 8452100, "group": "e10World", "icon": "icon-money",
+		"type": "viewer", "table": "e10.world.currencies", "viewer": "default"
+	},
+	"e10WorldLanguages": {
+		"name": "Jazyky", "order": 8452200, "group": "e10World", "icon": "icon-language",
+		"type": "viewer", "table": "e10.world.languages", "viewer": "default"
+	}
+}

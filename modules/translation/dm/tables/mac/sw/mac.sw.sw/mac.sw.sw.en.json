@@ -1,0 +1,55 @@
+{
+    "table": {
+        "name": "Software"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "swClass": {
+            "name": "Software class"
+        },
+        "osFamily": {
+            "name": "Operating system"
+        },
+        "osEdition": {
+            "name": "Edition of operation system"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "suid": {
+            "name": "ID"
+        },
+        "lifeCycle": {
+            "name": "State"
+        },
+        "publisher": {
+            "name": "Publisher"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "useFree": {
+            "name": "Free use"
+        },
+        "licenseType": {
+            "name": "License type"
+        },
+        "external": {
+            "name": "id"
+        },
+        "infoData": {
+            "name": "id"
+        },
+        "swVersionsMode": {
+            "name": "Versions mode"
+        },
+        "ignoreIDs": {
+            "name": "Ignore ID"
+        }
+    }
+}

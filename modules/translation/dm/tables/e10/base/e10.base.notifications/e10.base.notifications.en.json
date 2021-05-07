@@ -1,0 +1,58 @@
+{
+    "table": {
+        "name": "Notifications"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "subject": {
+            "name": "Subject"
+        },
+        "text": {
+            "name": "Description"
+        },
+        "personDest": {
+            "name": "Recipient"
+        },
+        "personSrc": {
+            "name": "Sender"
+        },
+        "tableId": {
+            "name": "Table"
+        },
+        "recId": {
+            "name": "Record"
+        },
+        "recIdMain": {
+            "name": "Main record"
+        },
+        "icon": {
+            "name": "Icon"
+        },
+        "objectType": {
+            "name": "Object type"
+        },
+        "objectClass": {
+            "name": "Object class"
+        },
+        "silent": {
+            "name": "Silent notification"
+        },
+        "created": {
+            "name": "Creation timestamp"
+        },
+        "notified": {
+            "name": "Notification timestamp"
+        },
+        "state": {
+            "name": "State"
+        },
+        "ntfType": {
+            "name": "Notification type"
+        },
+        "ntfTypeName": {
+            "name": "Description of notification type"
+        }
+    }
+}

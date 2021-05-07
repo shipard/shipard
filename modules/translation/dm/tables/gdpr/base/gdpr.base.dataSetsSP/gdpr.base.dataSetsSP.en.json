@@ -1,0 +1,25 @@
+{
+    "table": {
+        "name": "Storage location of data file"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "dataSet": {
+            "name": "Data file"
+        },
+        "storagePlace": {
+            "name": "Storage location"
+        },
+        "validFrom": {
+            "name": "Valid from"
+        },
+        "validTo": {
+            "name": "Valid until"
+        },
+        "rowOrder": {
+            "name": "Order"
+        }
+    }
+}

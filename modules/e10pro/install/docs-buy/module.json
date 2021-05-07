@@ -1,0 +1,15 @@
+{
+  "id": "e10pro.install.docs-buy",
+  "name": "Nákup",
+  "config": [
+    {"id": "+appSkeleton", "name": "Kostra aplikace", "file": "docs-buy.appSkeleton.json"},
+    {"id": "+e10.persons.roles", "name": "Role uživatelů", "file": "e10.persons.roles.json"},
+		{"id": "+appOptions", "name": "Nastavení aplikace", "file": "e10.appOptions.json"},
+		{"id": "+reportsGroups", "file": "reportsGroups.json"},
+	  {"id": "+help.index", "file": "help.json"}
+  ],
+  "modules": [
+	  "e10pro/install/docs-core", "e10doc/invoicesIn", "e10doc/cash", "e10doc/buy",
+	  "e10pro/reports/buy", "e10buy/orders"
+  ]
+}

@@ -1,0 +1,47 @@
+{
+	"id": "e10pro.property.depreciation", "sql": "e10pro_property_depreciation", "name": "Odpisy majetku", "icon": "icon-chevron-circle-down",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "property", "name": "Majetek", "type": "int", "reference": "e10pro.property.property"},
+
+		{"id": "dateAccounting", "name": "Účetní datum", "type": "date"},
+
+		{"id": "rowType", "name": "Typ řádku", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"1": "Zařazení", "2": "Technické zhodnocení",
+											"4": "Snížení hodnoty", "99": "Odpis",
+											"110": "Přerušení daňových odpisů", "111": "Pokračování daňových odpisů",
+											"112": "Přerušení účetních odpisů", "113": "Pokračování účetních odpisů",
+											"119": "Účetně odepsat", "120": "Vyřazení"}},
+
+		{"id": "amount", "name": "Částka", "type": "money"},
+		{"id": "currency", "name": "Měna", "type": "enumString", "len": 3, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
+
+		{"id": "accInitState", "name": "Účetní počáteční stav", "type": "money"},
+		{"id": "accDepreciation", "name": "Účetní odpis", "type": "money"},
+		{"id": "accCorrection", "name": "účetní korekce", "type": "money"},
+		{"id": "accUsedDepreciation", "name": "Uplatněný účetní odpis", "type": "money"},
+		{"id": "accBalance", "name": "Účetní zůstatek", "type": "money"},
+
+		{"id": "depreciationGroup", "name": "Odpisová skupina", "type": "enumString", "len": 10,
+			"enumCfg": {"cfgItem": "e10pro.property.depGroups", "cfgValue": "", "cfgText": "shortName"}},
+		{"id": "taxInitState", "name": "Daňový počáteční stav", "type": "money"},
+		{"id": "taxDepreciation", "name": "Daňový odpis", "type": "money"},
+		{"id": "taxCorrection", "name": "Daňová korekce", "type": "money"},
+		{"id": "taxUsedDepreciation", "name": "Uplatněný daňový odpis", "type": "money"},
+		{"id": "taxBalance", "name": "Daňový zůstatek", "type": "money"},
+
+		{"id": "text", "name": "Text", "type": "string", "len": 220},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10pro.propertyDepreciation.docStates"},
+	"views": [
+		{"id": "default", "class": "e10pro.property.ViewDepreciation"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.property.FormDepreciation"}
+	],
+	"addWizard": {"class": "e10pro.property.AddDeprecationsWizard"}
+}

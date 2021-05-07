@@ -1,0 +1,16 @@
+{
+	"name": "Synology",
+	"title": "Synology",
+	"fields": {
+		"columns": [
+
+		]
+	},
+	"snmpTemplateRealtime": "mac/devices/devices/nas/nas-synology-netdata-snmp.mustache",
+	"dashboards": {
+		"realtime-summary": {
+			"title": "Přehled",
+			"template": "mac/devices/devices/nas/nas-synology-netdata-dashboard-overview.mustache"
+		}
+	}
+}

@@ -1,0 +1,33 @@
+{
+	"id": "e10pro.reception.foreignersAccPlaces", "sql": "e10pro_reception_foreignersAccPlaces", "name": "Místa ubytovaání cizinců", "icon": "icon-home",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Jméno", "type": "string", "len": 100},
+		{"id": "idub", "name": "IDUB", "type": "string", "len": 14},
+		{"id": "shortcut", "name": "Zkratka", "type": "string", "len": 5},
+		{"id": "provider", "name": "Ubytovatel", "type": "string", "len": 35},
+		{"id": "contact", "name": "Kontakt", "type": "string", "len": 50},
+		{"id": "county", "name": "Okres", "type": "string", "len": 32},
+		{"id": "city", "name": "Obec", "type": "string", "len": 48},
+		{"id": "cityPart", "name": "Část obce", "type": "string", "len": 48},
+		{"id": "street", "name": "Ulice", "type": "string", "len": 48},
+		{"id": "streetNumber1", "name": "Číslo domovní", "type": "string", "len": 5},
+		{"id": "streetNumber2", "name": "Číslo orientační", "type": "string", "len": 4},
+		{"id": "zipCode", "name": "PSČ", "type": "string", "len": 5},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "e10pro.reception.ViewForeignersAccPlaces",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "e10pro.reception.ViewDetailForeignersAccPlace"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.reception.FormForeignerAccPlace"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

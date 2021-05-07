@@ -1,0 +1,8 @@
+{
+  "id": "e10pro.base",
+  "name": "Základ aplikace",
+  "modules": ["e10/install", "e10/persons", "e10/base", "e10/calendar", "e10/web", "e10pro/wkf"],
+  "config": [
+    {"id": "+appSkeleton", "name": "Kostra aplikace", "file": "base.appSkeleton.json"}
+  ]
+}

@@ -1,0 +1,17 @@
+{
+	"id": "e10.world",
+	"name": "Worl Definition Data",
+	"tables": [
+		"languages", "currencies", "territories",
+		"countries", "countryCurrencies", "countryLanguages", "countryTerritories",
+		"currenciesTr", "languagesTr", "countriesTr"
+	],
+	"config": [
+		{"id": "+e10.world.territoriesTypes", "file": "territoriesTypes.json"},
+		{"id": "+e10.appOptions.groups", "file": "e10.appOptionsGroups.json"},
+		{"id": "+appOptions", "file": "e10.appOptions.json"},
+		{"id": "+world.data", "file": "data.countries.json"},
+		{"id": "+world.data", "file": "data.currencies.json"},
+		{"id": "+world.data", "file": "data.languages.json"}
+	]
+}

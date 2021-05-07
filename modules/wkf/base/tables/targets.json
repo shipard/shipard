@@ -1,0 +1,25 @@
+{
+	"id": "wkf.base.targets", "sql": "wkf_base_targets", "name": "Cíle", "icon": "icon-flag-checkered",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "targetKind", "name": "Druh cíle", "type": "int", "reference": "wkf.base.targetsKinds"},
+
+		{"id": "fullName", "name": "Název", "type": "string", "len": 100},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 60},
+		{"id": "order", "name": "Pořadí", "type": "int"},
+		{"id": "icon", "name": "Ikona", "type": "string", "len": 50},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": {
+		"default": {"id": "default", "class": "wkf.base.ViewTargets", "help": "prirucka/4900"}
+	},
+	"forms": [
+		{"id": "default", "class": "wkf.base.FormTarget", "help": "prirucka/4900"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"ndx": 1245
+}

@@ -1,0 +1,22 @@
+{
+    "table": {
+        "name": "Support kinds"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "forumLevel": {
+            "name": "Access to support forum"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

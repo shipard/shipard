@@ -1,0 +1,21 @@
+{
+	"id": "swdev.world.territoriesTr", "sql": "swdev_world_territoriesTr", "name": "Oblasti - Lokalizace", "icon": "icon-map",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "territory", "name": "Oblast", "type": "int", "reference": "swdev.world.territories"},
+		{"id": "language", "name": "Jazyk", "type": "int", "reference": "swdev.world.languages"},
+		{"id": "name", "name": "Název", "type": "string", "len": 120},
+		{"id": "urlWikipedia", "name": "URL na Wikipedii", "type": "string", "len": 120},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "swdev.world.ViewTerritoriesTr"}
+	],
+	"forms": [
+		{"id": "default", "class": "swdev.world.FormTerritoryTr"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

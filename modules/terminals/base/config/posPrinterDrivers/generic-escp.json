@@ -1,0 +1,24 @@
+{
+	"name": "Generic POS ESC/P printer",
+
+
+	"commands": {
+		"reset": [27, 64],
+
+		"boldOn": [27, 69, 128],
+		"boldOff": [27, 69, 0],
+
+		"condensedOn": [27, 33, 7],
+		"condensedOff": [27, 33, 0],
+
+		"twiceOn": [29, 33, 17],
+		"twiceOff": [29, 33, 0],
+
+		"cutPaper": [29, 86, 65, 5],
+		"openCashDrawer": [27, 112, 48, 55, 121],
+
+		"cp852": [28, 46, 27, 116, 18]
+	}
+}
+
+

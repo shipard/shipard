@@ -1,0 +1,58 @@
+{
+    "table": {
+        "name": "Property depreciation"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "property": {
+            "name": "Property"
+        },
+        "dateAccounting": {
+            "name": "Accounting date"
+        },
+        "periodBegin": {
+            "name": "Start of the period"
+        },
+        "periodEnd": {
+            "name": "End of the period"
+        },
+        "depsPart": {
+            "name": "Depreciation type"
+        },
+        "rowType": {
+            "name": "Row type"
+        },
+        "amount": {
+            "name": "Amount"
+        },
+        "currency": {
+            "name": "Currency"
+        },
+        "initState": {
+            "name": "Initial state"
+        },
+        "depreciation": {
+            "name": "Depreciation"
+        },
+        "correction": {
+            "name": "Correction"
+        },
+        "usedDepreciation": {
+            "name": "Used deprication"
+        },
+        "balance": {
+            "name": "Balance"
+        },
+        "text": {
+            "name": "Text"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

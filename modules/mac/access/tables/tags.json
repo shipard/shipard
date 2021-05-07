@@ -1,0 +1,28 @@
+{
+	"id": "mac.access.tags", "sql": "mac_access_tags", "name": "Přístupové klíče", "icon": "icon-key",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "tagType", "name": "Druh klíče", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.access.tagTypes", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "id", "name": "ID", "type": "string", "len": 40},
+		{"id": "keyValue", "name": "Klíč", "type": "string", "len": 40, "options": ["saveOnChange"]},
+		{"id": "keyHash", "name": "Klíč", "type": "string", "len": 40, "options": ["ascii"]},
+
+		{"id": "ownTag", "name": "Vlastní čip (patřící uživateli čipu)", "type": "logical"},
+
+		{"id": "note", "name": "Poznámka", "type": "string", "len": 60},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "mac.access.ViewTags", "detail": "mac.access.ViewDetailTag"}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.access.FormTag"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "keyValue"}
+}

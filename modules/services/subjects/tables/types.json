@@ -1,0 +1,24 @@
+{
+	"id": "services.subjects.types", "sql": "services_subjects_types", "name": "Typy subjektů", "icon": "icon-list",
+	"columns": [
+		{"id": "ndx", "name": "ndx", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
+		{"id": "id", "name": "ID", "type": "string", "len": 15},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"options": ["configSource"],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"views": [
+		{"id": "default", "class": "services.subjects.ViewTypes", "detail": "services.subjects.ViewDetailType"}
+	],
+	"forms": [
+		{"id": "default", "class": "services.subjects.FormType"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

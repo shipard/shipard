@@ -1,0 +1,25 @@
+{
+    "table": {
+        "name": "Services"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "serviceType": {
+            "name": "Service type"
+        },
+        "authKey": {
+            "name": "Login key"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

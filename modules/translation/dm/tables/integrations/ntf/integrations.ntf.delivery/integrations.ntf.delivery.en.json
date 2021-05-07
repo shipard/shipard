@@ -1,0 +1,61 @@
+{
+    "table": {
+        "name": "Notifications delivery"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "channel": {
+            "name": "Notification channel"
+        },
+        "subject": {
+            "name": "Subject"
+        },
+        "ntfSource": {
+            "name": "Notification source"
+        },
+        "payload": {
+            "name": "Payload"
+        },
+        "sourceTableNdx": {
+            "name": "Source table of record"
+        },
+        "sourceRecNdx": {
+            "name": "Source record"
+        },
+        "sourceCfgNdx": {
+            "name": "Source settings"
+        },
+        "levelCurrent": {
+            "name": "Current level of escalation"
+        },
+        "levelMax": {
+            "name": "Maximum level of escalation"
+        },
+        "repeatCurrent": {
+            "name": "Current number of repetitions"
+        },
+        "repeatMax": {
+            "name": "Maximum level of repetitions"
+        },
+        "dtCreated": {
+            "name": "Timestamp of origin"
+        },
+        "dtDelivery": {
+            "name": "Timestamp of delivery"
+        },
+        "dtNextTry": {
+            "name": "Timestamp of next delivery attempt"
+        },
+        "doDelivery": {
+            "name": "Deliver"
+        },
+        "failedCounter": {
+            "name": "Number of failed delivery attempts"
+        },
+        "lastStatus": {
+            "name": "Result of last dispatch"
+        }
+    }
+}

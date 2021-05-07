@@ -1,0 +1,37 @@
+{
+    "table": {
+        "name": "Numerical series of Work records"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "tabName": {
+            "name": "Tab name"
+        },
+        "docKeyId": {
+            "name": "Code for record number"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "useDocKinds": {
+            "name": "Use types of work records"
+        },
+        "docKind": {
+            "name": "Type of work record"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

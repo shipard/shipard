@@ -1,0 +1,22 @@
+{
+	"id": "services.subjects.subjectsCounters", "sql": "services_subjects_subjectsCounters", "name": "Statistiky subjektů",
+	"columns": [
+		{"id": "branch", "name": "Činnost", "type": "enumInt", "len": 2,
+			"enumCfg": {"cfgItem": "services.subjects.branches.branches", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "activity", "name": "Činnost", "type": "enumInt", "len": 2,
+			"enumCfg": {"cfgItem": "services.subjects.activities", "cfgValue": "", "cfgText": "sn"}},
+		{"id": "commodity", "name": "Komodita", "type": "enumInt", "len": 2,
+			"enumCfg": {"cfgItem": "services.subjects.commodities", "cfgValue": "", "cfgText": "sn"}},
+		{"id": "size", "name": "Velikost", "type": "enumInt",
+			"enumCfg": {"cfgItem": "services.subjects.sizes", "cfgValue": "", "cfgText": "sn"}},
+		{"id": "kind", "name": "Druh", "type": "enumInt",
+			"enumCfg": {"cfgItem": "services.subjects.kinds", "cfgValue": "", "cfgText": "sn"}},
+		{"id": "region1", "name": "Kraj", "type": "enumInt",
+			"enumCfg": {"cfgItem": "nomenc.cz-nuts-3", "cfgValue": "", "cfgText": "sn"}},
+		{"id": "region2", "name": "Okres", "type": "enumInt", "len": 2,
+			"enumCfg": {"cfgItem": "nomenc.cz-nuts-4", "cfgValue": "", "cfgText": "sn"}},
+
+		{"id": "cnt", "name": "Počet", "type": "int"}
+	],
+	"options": ["systemTable"]
+}

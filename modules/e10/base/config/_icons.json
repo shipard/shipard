@@ -1,0 +1,26 @@
+{
+	"tables/e10.base.places": {
+		"fa5": "fa-map-marker-alt",
+		"fa5pro": "fa-map-marker-alt",
+		"bsi": "bi-geo-alt-fill",
+		"mdi": "place"
+	},
+	"e10.base.clsfgroups":{
+		"fa5": "fa-tags",
+		"fa5pro": "fa-tags",
+		"bsi": "bi-tags-fill",
+		"mdi": "local-offer"
+	},
+	"e10.base.nomencTypes":{
+		"fa5": "fa-list-ol",
+		"fa5pro": "fa-list-ol",
+		"bsi": "bi-list-ol",
+		"mdi": "format_list_numbered"
+	},
+	"e10.base.tasks":{
+		"fa5": "fa-cogs",
+		"fa5pro": "fa-cogs",
+		"bsi": "bi-gear",
+		"mdi": "settings"
+	}
+}

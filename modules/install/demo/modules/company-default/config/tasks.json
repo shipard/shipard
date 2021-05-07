@@ -1,0 +1,57 @@
+{
+	"year-open": {
+		"type": "year-open", "cntRequests": {"min": 1, "max": 1},
+		"monthOfYear": 1, "dayOfMonth": 1
+	},
+
+	"invno-default": {
+		"type": "invno-default", "cntRequests": {"min": 0, "max": 5}, "author": {"id": ["d1", "d3", "d4"]},
+		"dayOfWeek": [1, 2, 3, 4, 5],
+		"cntRows": {"min": 1, "max": 4}
+	},
+	"invni-default": {
+		"type": "invni-default", "cntRequests": {"min": 0, "max": 2}, "cntRows": {"min": 1, "max": 2}, "author": {"id": ["d1", "d2", "d4"]}
+	},
+	"inbox-document": {
+		"type": "inbox-document", "cntRequests": {"min": 3, "max": 10},
+		"dayOfWeek": [1, 2, 3, 4, 5]
+	},
+
+	"cashreg-default": {
+		"type": "cashreg-default", "cntRequests": {"min": 10, "max": 25},
+		"cntRows": {"min": 1, "max": 4}
+	},
+
+	"bank-default": {
+		"type": "bank-default", "cntRequests": {"min": 0, "max": 1},
+		"dayOfWeek": [1, 2, 3, 4, 5]
+	},
+
+	"invni-office": {
+		"type": "invni-default", "cntRequests": {"min": 1, "max": 1},
+		"person": {"id": "dx130"},
+		"title": "Pronájem kanceláře",
+		"dayOfMonth": 7,
+		"rows": [
+			{"item": {"id": "518205"}}
+		]
+	},
+	"invni-phones": {
+		"type": "invni-default", "cntRequests": {"min": 1, "max": 1},
+		"person": {"id": "dx129"},
+		"title": "Mobilní volání",
+		"dayOfMonth": 18,
+		"rows": [
+			{"item": {"id": "518201"}, "priceItem": 775}
+		]
+	},
+	"invni-internet": {
+		"type": "invni-default", "cntRequests": {"min": 1, "max": 1},
+		"person": {"id": "dx128"},
+		"title": "Připojení k internetu",
+		"dayOfMonth": 28,
+		"rows": [
+			{"item": {"id": "518202"}, "priceItem": 1267}
+		]
+	}
+}

@@ -1,0 +1,22 @@
+{
+    "table": {
+        "name": "Data for name translations of tables"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "table": {
+            "name": "Table"
+        },
+        "lang": {
+            "name": "Language"
+        },
+        "data": {
+            "name": "Data"
+        },
+        "checksum": {
+            "name": "Checksum"
+        }
+    }
+}

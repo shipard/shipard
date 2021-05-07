@@ -1,0 +1,41 @@
+{
+	"id": "mac.lan.devicesIfaces", "sql": "mac_lan_devicesIfaces", "name": "Síťová rozhraní zařízení",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+		{"id": "device", "name": "Zařízení", "type": "int", "reference": "mac.lan.devices"},
+
+		{"id": "devicePort", "name": "Port", "type": "enumInt", "len": 4, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": ""}},
+
+		{"id": "id", "name": "ID", "type": "string", "len": 20},
+
+
+		{"id": "addrType", "name": "Přiřazení adresy", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.lan.ifacesAddrTypes", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "ip", "name": "IP", "type": "string", "len": 40},
+		{"id": "ipAddressSuffix", "name": ".IP", "type": "string", "len": 40, "comboTable": "mac.lan.devicesIfaces", "comboViewer": "mac.lan.ViewerSidebarAddresses"},
+		{"id": "addressGateway", "name": "Adresa brány", "type": "string", "len": 40},
+		{"id": "priority", "name": "Priorita", "type": "int"},
+
+		{"id": "range", "name": "Rozsah adres", "type": "enumInt", "len": 4, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.lan.addrRanges", "cfgValue": "", "cfgText": "id"}},
+
+		{"id": "mac", "name": "MAC", "type": "string", "len": 20},
+		{"id": "dnsname", "name": "Název", "label": "DNS jméno", "type": "string", "len": 60},
+		{"id": "note", "name": "Poznámka", "label": "pozn.", "type": "string", "len": 100}
+	],
+	"views": [
+		{
+			"id": "formList", "class": "mac.lan.ViewDevicesIfacesFormList", "type": "form",
+			"details": {
+				"default": {"title": "Přehled", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewDevicesIfacesFormListDetail"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.lan.FormDeviceIface"}
+	],
+	"options": ["systemTable"]
+}

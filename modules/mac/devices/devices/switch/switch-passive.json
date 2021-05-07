@@ -1,0 +1,16 @@
+{
+	"name": "Pasivní switch",
+	"title": "Pasivní switch",
+	"fields": {
+		"columns": [
+			{"id": "disableSNMP", "name": "Vypnout SNMP sledování", "type": "logical"}
+		]
+	},
+	"snmpTemplateRealtime": "mac/devices/devices/switch/switch-edgecore-netdata-snmp.mustache",
+	"dashboards": {
+		"realtime-summary": {
+			"title": "Přehled",
+			"template": "mac/devices/devices/switch/switch-edgecore-netdata-dashboard-overview.mustache"
+		}
+	}
+}

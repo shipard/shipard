@@ -1,0 +1,17 @@
+{
+    "accessKeys": {
+        "t1": "Access keys"
+    },
+    "accessPersons": {
+        "t1": "Person Access"
+    },
+    "accessLevels": {
+        "t1": "Access levels"
+    },
+    "tagsAssignments": {
+        "t1": "Keys assignment"
+    },
+    "macZones": {
+        "t1": "Zones"
+    }
+}

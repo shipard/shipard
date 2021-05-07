@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "Subtemplates"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "template": {
+            "name": "Template"
+        },
+        "name": {
+            "name": "Subtemplate name"
+        },
+        "fileName": {
+            "name": "File name"
+        },
+        "type": {
+            "name": "Type"
+        },
+        "code": {
+            "name": "Template code"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

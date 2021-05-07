@@ -1,0 +1,40 @@
+{
+    "table": {
+        "name": "Numerical series of orders"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "tabName": {
+            "name": "Tab name"
+        },
+        "docKeyId": {
+            "name": "Code for work order number"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "useDocKinds": {
+            "name": "Use document kinds"
+        },
+        "docKind": {
+            "name": "Work order kind"
+        },
+        "invoicesInViewer": {
+            "name": "Show invoices in browser"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

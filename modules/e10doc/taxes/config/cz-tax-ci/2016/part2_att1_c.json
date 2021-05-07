@@ -1,0 +1,145 @@
+{
+	"name": "C. Odpis pohledávek zahrnovaný do výdajů (nákladů) k dosažení, zajištění a udržení příjmů a zákonné rezervy a zákonné opravné položky vytvářené podle zákona č. 593/1992 Sb., o rezervách pro zjištění základu daně z příjmů, ve znění pozdějších předpisů (dále jen zákon o rezervách)",
+	"title": "C. Odpis pohledávek zahrnovaný do výdajů (nákladů) k dosažení, zajištění a udržení příjmů a zákonné rezervy a zákonné opravné položky vytvářené podle zákona č. 593/1992 Sb., o rezervách pro zjištění základu daně z příjmů, ve znění pozdějších předpisů (dále jen zákon o rezervách)",
+
+	"fields": {
+		"columns": [
+			{"id": "kc_dpp_c3", "type": "long", "name": "Opravné položky k pohledávkám za dlužníky v insolvenčním řízení vytvořené podle § 8 zákona o rezervách v daném období, za které se podává daňové přiznání"},
+			{"id": "kc_dpp_c4", "type": "long", "name": "Stav zákonných opravných položek k pohledávkám za dlužníky v insolvenčním řízení (§ 8 zákona o rezervách) ke konci období, za které se podává daňové přiznání"},
+			{"id": "kc_dpp_c5", "type": "long", "src": "balanceSheet.C_0_57_7", "name": "Stav nepromlčených pohledávek splatných po 31. prosinci 1994, k nimž lze tvořit zákonné opravné položky (§ 8a zákona o rezervách) ke konci období, za které se podává daňové přiznání"},
+			{"id": "kc_dpp_c6", "type": "long", "name": "Opravné položky k nepromlčeným pohledávkám vytvořené podle § 8a zákona o rezervách v daném období, za které se podává daňové přiznání"},
+			{"id": "kc_dpp_c7", "type": "long", "src": "=-generalLedger.totals.391.endState", "name": "Stav zákonných opravných položek k nepromlčeným pohledávkám splatným po 31. prosinci 1994 (§ 8a zákona o rezervách) ke konci období, za které se podává daňové přiznání"},
+			{"id": "kc_op8b", "type": "long", "name": "Opravné položky k pohledávkám z titulu ručení za celní dluh vytvořené podle § 8b zákona o rezervách v daném období, za které se podává daňové přiznání"},
+			{"id": "kc_sop8b", "type": "long", "name": "Stav zákonných opravných položek k pohledávkám z titulu ručení za celní dluh (§ 8b zákona o rezervách) ke konci období, za které se podává daňové přiznání"},
+			{"id": "kc_op8c", "type": "long", "name": "Opravné položky k nepromlčeným pohledávkám, vytvořené podle § 8c zákona o rezervách v daném období, za které se podává daňové přiznání"},
+			{"id": "kc_sop8c", "type": "long", "name": "Stav zákonných opravných položek k nepromlčeným pohledávkám vytvořených podle § 8c zákona o rezervách ke konci období, za které se podává daňové přiznání"},
+			{"id": "kc_dpp_c8", "type": "long", "name": "Úhrn hodnot pohledávek nebo pořizovacích cen pohledávek nabytých postoupením, uplatněných v daném zdaňovacím období, za které se podává daňové přiznání jako výdaj (náklad) na dosažení, zajištění a udržení příjmů podle § 24 odst. 2 písm. y) zákona"},
+
+			{"id": "kc_dpp_c9", "type": "long", "name": "Průměrný stav rozvahové hodnoty nepromlčených pohledávek z úvěrů podle § 5 odst. 2 písm. a) zákona o rezervách"},
+			{"id": "kc_dpp_c10", "type": "long", "name": "Opravné položky k nepromlčeným pohledávkám z úvěrů, vytvořené podle § 5 odst. 2 písm. a) zákona o rezervách za dané zdaňovací období"},
+			{"id": "kc_dpp_c11", "type": "long", "name": "Stav zákonných opravných položek k nepromlčeným pohledávkám z úvěrů (§ 5 odst. 2 písm. a) zákona o rezervách) ke konci zdaňovacího období"},
+			{"id": "kc_dpp_c12", "type": "long", "name": "Průměrný stav poskytnutých bankovních záruk za úvěry podle § 5 odst. 2 písm. b) zákona o rezervách"},
+			{"id": "kc_dpp_c13", "type": "long", "name": "Rezervy na poskytnuté bankovní záruky za úvěry, vytvořené podle § 5 odst. 2 písm. b) zákona o rezervách za dané zdaňovací období"},
+			{"id": "kc_dpp_c14", "type": "long", "name": "Stav zákonných rezerv na poskytnuté bankovní záruky za úvěry (§ 5 odst. 2 písm. b) zákona o rezervách) ke konci zdaňovacího období"},
+
+			{"id": "kc_dpp_c_5a1", "type": "long", "name": "Průměrný stav rozvahové hodnoty nepromlčených pohledávek z úvěrů poskytnutých fyzickým osobám na základě smlouvy o úvěru, bez příslušenství, v ocenění nesníženém o opravné položky již vytvořené (§ 5a odst. 3 zákona o rezervách)"},
+			{"id": "kc_dpp_c_5a2", "type": "long", "name": "Výše základního kapitálu k poslednímu dni zdaňovacího období (§ 5a odst. 4 zákona o rezervách)"},
+			{"id": "kc_dpp_c_5a3", "type": "long", "name": "Opravné položky k nepromlčeným pohledávkám z úvěrů poskytnutých fyzickým osobám na základě smlouvy o úvěru, vytvořené podle § 5a odst. 4 zákona o rezervách za dané zdaňovací období"},
+			{"id": "kc_dpp_c_5a4", "type": "long", "name": "Stav zákonných opravných položek k nepromlčeným pohledávkám z úvěrů poskytnutých fyzickým osobám na základě smlouvy o úvěru (§ 5a odst. 4 zákona o rezervách) ke konci zdaňovacího období"},
+
+			{"id": "kc_dpp_c16", "type": "long", "name": "Rezervy v pojišťovnictví vytvořené podle § 6 zákona o rezervách v daném období, za které se podává daňové přiznání"},
+			{"id": "kc_dpp_c17", "type": "long", "name": "Stav rezerv v pojišťovnictví (§ 6 zákona o rezervách) ke konci období, za které se podává daňové přiznání"},
+
+			{"id": "kc_dpp_c18", "type": "long", "name": "Rezerva na opravy hmotného majetku vytvořená podle § 7 zákona o rezervách v daném zdaňovacím období"},
+			{"id": "kc_dpp_c19", "type": "long", "name": "Stav rezerv na opravy hmotného majetku (§ 7 zákona o rezervách) ke konci zdaňovacího období"},
+
+			{"id": "kc_dpp_c20", "type": "long", "name": "Rezerva na pěstební činnost vytvořená podle § 9 zákona o rezervách v daném období, za které se podává daňové přiznání"},
+			{"id": "kc_dpp_c21", "type": "long", "name": "Stav rezervy na pěstební činnost (§ 9 zákona o rezervách) ke konci období, za které se podává daňové přiznání"},
+			{"id": "kc_dpp_c22", "type": "long", "name": "Ostatní rezervy vytvořené podle § 10 zákona o rezervách v daném zdaňovacím období"},
+
+			{"id": "kc_dpp_c30", "type": "long", "name": "Rezerva na nakládání s elektroodpadem ze solárních panelů vytvořená podle § 11a až 11c zákona o rezervách v daném období, za které se podává daňové přiznání"},
+			{"id": "kc_dpp_c31", "type": "long", "name": "Stav rezervy na nakládání s elektroodpadem ze solárních panelů (§ 11a až 11c zákona o rezervách) ke konci období, za které se podává daňové přiznání"}
+		],
+
+		"layout": [
+			{
+				"table": {
+					"title": "a) Odpis neuhrazených pohledávek zahrnovaný do daňových výdajů (nákladů) a zákonné opravné položky k pohledávkám, mimo bankovních opravných položek podle § 5 zákona o rezervách – vyplňují všichni poplatníci",
+					"cols": {"rn": " číslo řádku", "text": "popis", "value": " hodnota"},
+					"header": [{"rn": "Řád.", "text": "Název položky", "value": "Částka"}],
+					"rows": [
+						{"rn": "1", "text": "(neobsazeno)", "value": "x"},
+						{"rn": "2", "text": "(neobsazeno)", "value": "x"},
+						{"rn": "3", "text": {"scLabel": "kc_dpp_c3"}, "value": {"scInput": "kc_dpp_c3"}},
+						{"rn": "4", "text": {"scLabel": "kc_dpp_c4"}, "value": {"scInput": "kc_dpp_c4"}},
+						{"rn": "5", "text": {"scLabel": "kc_dpp_c5"}, "value": {"scInput": "kc_dpp_c5"}},
+						{"rn": "6", "text": {"scLabel": "kc_dpp_c6"}, "value": {"scInput": "kc_dpp_c6"}},
+						{"rn": "7", "text": {"scLabel": "kc_dpp_c7"}, "value": {"scInput": "kc_dpp_c7"}},
+						{"rn": "8", "text": {"scLabel": "kc_op8b"}, "value": {"scInput": "kc_op8b"}},
+						{"rn": "9", "text": {"scLabel": "kc_sop8b"}, "value": {"scInput": "kc_sop8b"}},
+						{"rn": "10", "text": {"scLabel": "kc_op8c"}, "value": {"scInput": "kc_op8c"}},
+						{"rn": "11", "text": {"scLabel": "kc_sop8c"}, "value": {"scInput": "kc_sop8c"}},
+						{"rn": "12", "text": {"scLabel": "kc_dpp_c8"}, "value": {"scInput": "kc_dpp_c8"}}
+					]
+				}
+			},
+			{
+				"table": {
+					"title": "b) Bankovní rezervy a opravné položky podle § 5 zákona o rezervách – vyplňují pouze banky",
+					"cols": {"rn": " číslo řádku", "text": "popis", "value": " hodnota"},
+					"header": [{"rn": "Řád.", "text": "Název položky", "value": "Částka"}],
+					"rows": [
+						{"rn": "13", "text": {"scLabel": "kc_dpp_c9"}, "value": {"scInput": "kc_dpp_c9"}},
+						{"rn": "14", "text": {"scLabel": "kc_dpp_c10"}, "value": {"scInput": "kc_dpp_c10"}},
+						{"rn": "15", "text": {"scLabel": "kc_dpp_c11"}, "value": {"scInput": "kc_dpp_c11"}},
+						{"rn": "16", "text": {"scLabel": "kc_dpp_c12"}, "value": {"scInput": "kc_dpp_c12"}},
+						{"rn": "17", "text": {"scLabel": "kc_dpp_c13"}, "value": {"scInput": "kc_dpp_c13"}},
+						{"rn": "18", "text": {"scLabel": "kc_dpp_c14"}, "value": {"scInput": "kc_dpp_c14"}}
+					]
+				}
+			},
+			{
+				"table": {
+					"title": "c) Opravné položky podle § 5a zákona o rezervách – vyplňují pouze spořitelní a úvěrní družstva a ostatní finanční instituce",
+					"cols": {"rn": " číslo řádku", "text": "popis", "value": " hodnota"},
+					"header": [{"rn": "Řád.", "text": "Název položky", "value": "Částka"}],
+					"rows": [
+						{"rn": "19", "text": {"scLabel": "kc_dpp_c_5a1"}, "value": {"scInput": "kc_dpp_c_5a1"}},
+						{"rn": "20", "text": {"scLabel": "kc_dpp_c_5a2"}, "value": {"scInput": "kc_dpp_c_5a2"}},
+						{"rn": "21", "text": {"scLabel": "kc_dpp_c_5a3"}, "value": {"scInput": "kc_dpp_c_5a3"}},
+						{"rn": "22", "text": {"scLabel": "kc_dpp_c_5a4"}, "value": {"scInput": "kc_dpp_c_5a4"}}
+					]
+				}
+			},
+			{
+				"table": {
+					"title": "d) Rezervy v pojišťovnictví – vyplňují pouze pojišťovny",
+					"cols": {"rn": " číslo řádku", "text": "popis", "value": " hodnota"},
+					"header": [{"rn": "Řád.", "text": "Název položky", "value": "Částka"}],
+					"rows": [
+						{"rn": "23", "text": {"scLabel": "kc_dpp_c16"}, "value": {"scInput": "kc_dpp_c16"}},
+						{"rn": "24", "text": {"scLabel": "kc_dpp_c17"}, "value": {"scInput": "kc_dpp_c17"}}
+					]
+				}
+			},
+			{
+				"table": {
+					"title": "e) Rezerva na opravy hmotného majetku – vyplňují všichni poplatníci",
+					"cols": {"rn": " číslo řádku", "text": "popis", "value": " hodnota"},
+					"header": [{"rn": "Řád.", "text": "Název položky", "value": "Částka"}],
+					"rows": [
+						{"rn": "25", "text": {"scLabel": "kc_dpp_c18"}, "value": {"scInput": "kc_dpp_c18"}},
+						{"rn": "26", "text": {"scLabel": "kc_dpp_c19"}, "value": {"scInput": "kc_dpp_c19"}}
+					]
+				}
+			},
+			{
+				"table": {
+					"title": "f) Ostatní zákonné rezervy – vyplňují pouze poplatníci oprávnění k jejich tvorbě a použití",
+					"cols": {"rn": " číslo řádku", "text": "popis", "value": " hodnota"},
+					"header": [{"rn": "Řád.", "text": "Název položky", "value": "Částka"}],
+					"rows": [
+						{"rn": "27", "text": {"scLabel": "kc_dpp_c20"}, "value": {"scInput": "kc_dpp_c20"}},
+						{"rn": "28", "text": {"scLabel": "kc_dpp_c21"}, "value": {"scInput": "kc_dpp_c21"}},
+						{"rn": "29", "text": {"scLabel": "kc_dpp_c22"}, "value": {"scInput": "kc_dpp_c22"}}
+					]
+				}
+			},
+			{
+				"table": {
+					"title": "g) Rezerva na nakládání s elektroodpadem ze solárních panelů – vyplňují pouze poplatníci oprávněni k její tvorbě a použití",
+					"cols": {"rn": " číslo řádku", "text": "popis", "value": " hodnota"},
+					"header": [{"rn": "Řád.", "text": "Název položky", "value": "Částka"}],
+					"rows": [
+						{"rn": "30", "text": {"scLabel": "kc_dpp_c30"}, "value": {"scInput": "kc_dpp_c30"}},
+						{"rn": "31", "text": {"scLabel": "kc_dpp_c31"}, "value": {"scInput": "kc_dpp_c31"}}
+					]
+				}
+			}
+		]
+	}
+}
+
+
+
+

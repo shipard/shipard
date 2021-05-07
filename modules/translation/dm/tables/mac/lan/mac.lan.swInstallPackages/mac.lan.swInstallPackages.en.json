@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "SW install packages"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "app": {
+            "name": "Part of application"
+        },
+        "id": {
+            "name": "Package ID"
+        },
+        "pkgNames": {
+            "name": "Package names"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

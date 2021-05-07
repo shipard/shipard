@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Counters"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "device": {
+            "name": "Device"
+        },
+        "dateId": {
+            "name": "Date"
+        },
+        "counterKind": {
+            "name": "Counter type"
+        },
+        "counterTimeStamp": {
+            "name": "Last update timestamp"
+        },
+        "value": {
+            "name": "Value"
+        },
+        "amount": {
+            "name": "Amount"
+        }
+    }
+}

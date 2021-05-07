@@ -1,0 +1,11 @@
+{
+	"id": "swdev.dm.enumsTrData", "sql": "swdev_dm_enumsTrData", "name": "Data pro lokalizaci enumů", "icon": "icon-language",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "enum", "name": "Enum", "type": "int", "reference": "swdev.dm.enums"},
+		{"id": "lang", "name": "Jazyk", "type": "int", "reference": "swdev.translation.languages"},
+		{"id": "data", "name": "Data", "type": "memo"},
+		{"id": "checksum", "name": "Kontrolní součet", "type": "string", "len":  40, "options": ["ascii"]}
+	],
+	"options": ["systemTable"]
+}

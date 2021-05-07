@@ -1,0 +1,25 @@
+{
+  "web": {
+		"name": "Správce webu",
+		"roles": ["user"],
+		"viewers": {
+			"e10.web.pages": {"default": 2},
+			"e10.web.articles": {"default": 2},
+			"e10.web.articlesSections": {"default": 2},
+			"e10pro.wkf.documents": {"gallery": 2},
+			"e10.web.news": {"default": 2},
+			"e10.web.servers": {"default": 2},
+			"e10.web.urldecorations": {"default": 2},
+			"e10.base.templates": {"web": 2, "webCombo": 1},
+			"e10.base.templatesLooks": {"default": 2, "web": 1, "webCombo": 1},
+			"e10.web.blocks": {"default": 2},
+			"e10.web.blocksItems": {"default": 2},
+			"e10.web.scripts": {"default": 2},
+			"e10.web.wuKeys": {"default": 2}
+		},
+		"widgets": {
+			"lib.web.WebWidgetPreview": 2,
+			"lib.web.WebWidgetPages": 2
+		}
+	}
+}

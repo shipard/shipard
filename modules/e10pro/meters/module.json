@@ -1,0 +1,13 @@
+{
+  "id": "e10pro.meters",
+  "name": "Měřiče",
+  "tables": ["meters", "groups", "values"],
+	"modules": ["e10/base", "e10/persons"],
+  "config": [
+    {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+		{"id": "+appOptions", "file": "e10.appOptions.json"},
+		{"id": "+e10.base.doclinks", "file": "e10.meters.docLinks.json"},
+	  {"id": "+dashboards", "file": "dashboards.json"},
+	  {"id": "+widgets", "file": "widgets.json"}
+  ]
+}

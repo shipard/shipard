@@ -1,0 +1,23 @@
+{
+	"node-lan-monitoring": {
+		"fn": "LAN monitoring",
+		"ndx": 1,
+		"timeouts": {
+			"0": 0, "1": 0, "2": 15, "3": 0
+		}
+	},
+	"agent-installed-sw": {
+		"fn": "Instalovaný SW",
+		"ndx": 2,
+		"timeouts": {
+			"0": 0, "1": 160, "2": 400, "3": 14400
+		}
+	},
+	"ping-pong": {
+		"fn": "PingPong",
+		"ndx": 3,
+		"timeouts": {
+			"0": 0, "1": 10, "2": 15, "3": 0
+		}
+	}
+}

@@ -1,0 +1,29 @@
+{
+  "id": "e10doc.base.taxperiods", "sql": "e10doc_base_taxperiods", "name": "Daňová období",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "id", "name": "ID", "type": "string", "len": 10},
+	  {"id": "vatReg", "name": "Registrace DPH", "type": "enumInt",
+		  "enumCfg": {"cfgItem": "e10doc.base.taxRegs.vat", "cfgValue": "ndx", "cfgText": "taxId"}},
+    {"id": "periodType", "name": "Typ", "type": "enumInt",
+			"enumValues": {"0": "řádné", "1": "opravné", "2": "dodatečné"}},
+    {"id": "start", "name": "Od", "type": "date"},
+    {"id": "end", "name": "Do", "type": "date"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+  "views": [
+    {"id": "default", "class": "e10doc.base.ViewTaxPeriods", "help":  "prirucka/4881"}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10doc.base.FormTaxPeriods", "help":  "prirucka/4881"}
+  ],
+	"options": ["configSource"],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10doc.base.taxperiods.docStates"},
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"addWizard": {"class": "lib.cfg.AddVatPeriodWizard"},
+  "order": [{"column": "fullName"}],
+  "fullText": ["fullName"]
+}

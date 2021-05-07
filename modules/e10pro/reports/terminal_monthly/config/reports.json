@@ -1,0 +1,4 @@
+[
+	{"name": "Měsíční přehled", "class": "e10pro.reports.terminal_monthly.reportMonthly", "group": "e10pro-terminal"},
+	{"name": "Měsíční přehled", "class": "e10pro.reports.terminal_monthly.reportMonthly", "icon": "icon-check-circle", "group": "e10doc-sale"}
+]

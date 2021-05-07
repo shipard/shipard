@@ -1,0 +1,36 @@
+{
+	"id": "swdev.dm.columns", "sql": "swdev_dm_columns", "name": "Sloupce", "icon": "icon-columns",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "table", "name": "Tabulka", "type": "int", "reference": "swdev.dm.tables"},
+		{"id": "id", "name": "id", "type": "string", "len": 80},
+		{"id": "name", "name": "Název", "type": "string", "len": 120},
+		{"id": "label", "name": "Titulek", "type": "string", "len": 70},
+
+		{"id": "jsonDef", "name": "Definice", "type": "memo"},
+
+		{"id": "colTypeId", "name": "ID typu sloupce", "type": "string", "len": 30},
+		{"id": "colTypeReferenceId", "name": "ID Reference", "type": "string", "len": 50},
+		{"id": "colTypeEnumId", "name": "ID Enumu", "type": "string", "len": 150},
+		{"id": "colTypeLen", "name": "Délka", "type": "int"},
+		{"id": "colTypeDec", "name": "Počet desetinných míst", "label":  "Poč. des. míst", "type": "int"},
+
+		{"id": "dmWikiPage", "name": "Wiki stránka", "type": "int", "reference": "e10pro.kb.texts"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "swdev.dm.ViewColumns",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.dm.ViewDetailColumn"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "swdev.dm.FormColumn"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"ndx": 1301
+}

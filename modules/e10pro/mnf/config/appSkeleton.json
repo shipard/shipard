@@ -1,0 +1,9 @@
+{
+	"panels": {
+		"docs-stock": {
+			"items": [
+				{"t1": "Výroba", "object": "viewer", "table": "e10doc.core.heads", "viewer": "mnf", "icon": "x-factory", "order": 300000}
+			]
+		}
+	}
+}

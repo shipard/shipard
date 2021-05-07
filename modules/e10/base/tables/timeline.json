@@ -1,0 +1,37 @@
+{
+  "id": "e10.base.timeline", "sql": "e10_base_timeline", "name": "Timeline", "icon": "x-storm",
+  "columns": [
+    {"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
+
+    {"id": "docType", "name": "Druh dokladu", "type": "enumString", "len": 14,
+	    "enumCfg": {"cfgItem": "e10.base.timeline.types", "cfgValue": "", "cfgText": "fullName"}},
+		{"id": "docState", "name": "Stav dokumentu", "type": "int"},
+
+    {"id": "title", "name": "Titulek", "type": "string", "len": 80},
+    {"id": "subtitle", "name": "Titulek", "type": "string", "len": 120},
+    {"id": "data", "name": "Data události", "type": "memo"},
+    {"id": "side", "name": "Strana", "type": "string", "len": 3},
+		
+    {"id": "tableid", "name": "Tabulka", "type": "string", "len": 48},
+    {"id": "recid", "name": "Řádek", "type": "int"},
+    {"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+    {"id": "document", "name": "Doklad", "type": "int", "reference": "e10doc.core.heads"},
+    {"id": "money", "name": "Peníze", "type": "money"},
+		{"id": "currency", "name": "Měna", "type": "enumString", "len": 3,
+			"enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
+		{"id": "sumid", "name": "Řádek", "type": "string", "len": 5},
+		{"id": "enableCopy", "name": "Povolit kopírování", "type": "logical"},
+
+    {"id": "date", "name": "Datum", "type": "date"}
+  ],
+  "views": [
+    {"id": "all", "class": "e10.base.ViewTimelineAll", "detail": "e10.base.ViewDetailTimeline"}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10.base.FormTimeline"}
+  ],
+  "order": [{"column": "ndx", "order": "ASC"}],
+	"indexes": [
+		{"id": "s1", "columns": ["tableid", "recid"]}
+	]
+}

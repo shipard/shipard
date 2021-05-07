@@ -1,0 +1,29 @@
+{
+    "tables": {
+        "t1": "Tables"
+    },
+    "dicts": {
+        "t1": "Dictionary"
+    },
+    "enums": {
+        "t1": "Enums"
+    },
+    "columns": {
+        "t1": "Columns"
+    },
+    "viewers": {
+        "t1": "Viewers"
+    },
+    "modules": {
+        "t1": "Modules"
+    },
+    "texts": {
+        "t1": "Texts"
+    },
+    "enumsValues": {
+        "t1": "Enums values"
+    },
+    "terms": {
+        "t1": "Terms"
+    }
+}

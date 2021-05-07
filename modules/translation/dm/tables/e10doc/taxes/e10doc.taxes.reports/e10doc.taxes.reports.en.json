@@ -1,0 +1,58 @@
+{
+    "table": {
+        "name": "Tax returns and reports"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "reportType": {
+            "name": "Type"
+        },
+        "title": {
+            "name": "Document description"
+        },
+        "owner": {
+            "name": "Issuer"
+        },
+        "author": {
+            "name": "Author"
+        },
+        "dateIssue": {
+            "name": "Issue date"
+        },
+        "datePeriodBegin": {
+            "name": "Beginning of a period"
+        },
+        "datePeriodEnd": {
+            "name": "End of a period"
+        },
+        "taxReg": {
+            "name": "Tax registration"
+        },
+        "taxPeriod": {
+            "name": "Tax period"
+        },
+        "accPeriod": {
+            "name": "Accounting period"
+        },
+        "accMonth": {
+            "name": "Accounting month"
+        },
+        "homeCurrency": {
+            "name": "Home currrency"
+        },
+        "headerInfo": {
+            "name": "Header"
+        },
+        "params": {
+            "name": "Parameters"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

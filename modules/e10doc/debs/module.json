@@ -1,0 +1,14 @@
+{
+  "id": "e10doc.debs",
+  "name": "Double-entry bookkeeping system",
+  "tables": ["accounts", "journal", "groups", "spdAccounts"],
+  "extensions": ["base", "documents", "witems"],
+  "config": [
+	  {"id": "+appOptions", "file": "e10.appOptions.json"},
+		{"id": "e10doc.debs.accounts.docStates", "name": "Stavy účtů", "file": "e10doc.debs.accounts.docStates.json"},
+		{"id": "e10doc.debs.groups.docStates", "name": "Stavy účtů", "file": "e10doc.debs.groups.docStates.json"},
+    {"id": "+e10.docs.operations", "name": "Pohyby", "file": "e10.docs.operations.json"},
+		{"id": "+e10.persons.lastUse", "file": "e10.persons.lastUse.json"},
+		{"id": "+e10.base.doclinks", "file": "docLinks.json"}
+  ]
+}

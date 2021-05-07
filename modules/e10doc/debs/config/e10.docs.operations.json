@@ -1,0 +1,51 @@
+{
+  "1090050": {"title": "Pořízení dlouhodobého majetku", "docDir": 1, "itemType": 1,
+    "docTypes": {
+      "invni" : {"order": 70000},
+      "cash" : {"order": 700000}
+    }
+  },
+  "1090051": {"title": "Technické zhodnocení majetku", "docDir": 1, "itemType": 1,
+    "docTypes": {
+      "invni" : {"order": 71000},
+      "cash" : {"order": 701000}
+    }
+  },
+  "1090052": {"title": "Nákup evidovaného majetku", "docDir": 1, "itemType": 1,
+    "docTypes": {
+      "invni" : {"order": 72000},
+      "cash" : {"order": 702000}
+    }
+  },
+  "1090060": {"title": "Prodej majetku", "docDir": 2, "itemType": 3,
+    "docTypes": {
+      "invno" : {"order": 80000},
+      "invpo": {"order": 80000},
+      "cash" : {"order": 80000},
+      "cashreg" : {"order": 80000}
+    }
+  },
+  "1090070": {
+    "title": "Zařazení majetku", "docTypes": ["cmnbkp"], "activities": ["prpActivate"], "order": 700000,
+    "setTaxBase": "priceItem", "setDebit": "priceItem", "setCredit": "priceItem"
+  },
+  "1090071": {
+    "title": "Vyřazení majetku", "docTypes": ["cmnbkp"], "activities": ["prpDiscard"], "order": 700001,
+    "setTaxBase": "priceItem", "setDebit": "priceItem", "setCredit": "priceItem"
+  },
+  "1090072": {
+    "title": "Odpis majetku", "docTypes": ["cmnbkp"], "activities": ["prpDeps"], "order": 700002,
+    "setTaxBase": "priceItem", "setDebit": "priceItem", "setCredit": "priceItem"
+  },
+  "1090073": {
+    "title": "Technické zhodnocení majetku", "docTypes": ["cmnbkp"], "activities": ["prpIncrease"], "order": 700003,
+    "setTaxBase": "priceItem", "setDebit": "priceItem", "setCredit": "priceItem"
+  },
+  "1099999": {"title": "Účetní zápis", "docTypes": ["bank", "cmnbkp"], "docDir": 0, "order": 999999, "forceAccount": 1}
+}
+
+
+
+
+
+

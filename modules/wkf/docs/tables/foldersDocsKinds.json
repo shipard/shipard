@@ -1,0 +1,13 @@
+{
+	"id": "wkf.docs.foldersDocsKinds", "sql": "wkf_docs_foldersDocsKinds", "name": "Druhy dokumentů ve složkách", "icon": "icon-flash",
+	"columns": [
+		{"id": "ndx", "name": "ndx", "type": "int_ai"},
+		{"id": "folder", "name": "Sekce", "type": "int", "reference": "wkf.docs.folders"},
+		{"id": "docKind", "name": "Druh dokumentu", "type": "int", "reference": "wkf.docs.docsKinds"},
+		{"id": "rowOrder", "name": "Pořadí", "type": "int"}
+	],
+	"forms": [
+		{"id": "default", "class": "wkf.docs.FormFolderDocKind"}
+	],
+	"options": ["systemTable"]
+}

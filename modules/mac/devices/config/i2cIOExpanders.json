@@ -1,0 +1,65 @@
+{
+	"0": {
+		"name":  "PCF8575 (16 pinů)",
+		"pins": [
+			{"id": "P00", "hwnr": 0, "flags": ["d"]},
+			{"id": "P01", "hwnr": 1, "flags": ["d"]},
+			{"id": "P02", "hwnr": 2, "flags": ["d"]},
+			{"id": "P03", "hwnr": 3, "flags": ["d"]},
+			{"id": "P04", "hwnr": 4, "flags": ["d"]},
+			{"id": "P05", "hwnr": 5, "flags": ["d"]},
+			{"id": "P06", "hwnr": 6, "flags": ["d"]},
+			{"id": "P07", "hwnr": 7, "flags": ["d"]},
+
+			{"id": "P10", "hwnr": 8, "flags": ["d"]},
+			{"id": "P11", "hwnr": 9, "flags": ["d"]},
+			{"id": "P12", "hwnr": 10, "flags": ["d"]},
+			{"id": "P13", "hwnr": 11, "flags": ["d"]},
+			{"id": "P14", "hwnr": 12, "flags": ["d"]},
+			{"id": "P15", "hwnr": 13, "flags": ["d"]},
+			{"id": "P16", "hwnr": 14, "flags": ["d"]},
+			{"id": "P17", "hwnr": 15, "flags": ["d"]}
+		]
+	},
+	"1": {
+		"name":  "MCP23017 (16 pinů)",
+		"pins": [
+			{"id": "A0", "hwnr": 0, "flags": ["d"]},
+			{"id": "A1", "hwnr": 1, "flags": ["d"]},
+			{"id": "A2", "hwnr": 2, "flags": ["d"]},
+			{"id": "A3", "hwnr": 3, "flags": ["d"]},
+			{"id": "A4", "hwnr": 4, "flags": ["d"]},
+			{"id": "A5", "hwnr": 5, "flags": ["d"]},
+			{"id": "A6", "hwnr": 6, "flags": ["d"]},
+			{"id": "A7", "hwnr": 7, "flags": ["d"]},
+
+			{"id": "B0", "hwnr": 8, "flags": ["d"]},
+			{"id": "B1", "hwnr": 9, "flags": ["d"]},
+			{"id": "B2", "hwnr": 10, "flags": ["d"]},
+			{"id": "B3", "hwnr": 11, "flags": ["d"]},
+			{"id": "B4", "hwnr": 12, "flags": ["d"]},
+			{"id": "B5", "hwnr": 13, "flags": ["d"]},
+			{"id": "B6", "hwnr": 14, "flags": ["d"]},
+			{"id": "B7", "hwnr": 15, "flags": ["d"]}
+		]
+	},
+	"2": {
+		"name":  "Olimex MOD-IO",
+		"pins": [
+			{"id": "REL1", "hwnr": 0, "flags": ["d", "out"]},
+			{"id": "REL2", "hwnr": 1, "flags": ["d", "out"]},
+			{"id": "REL3", "hwnr": 2, "flags": ["d", "out"]},
+			{"id": "REL4", "hwnr": 3, "flags": ["d", "out"]},
+
+			{"id": "IN1", "hwnr": 4, "flags": ["d", "in"]},
+			{"id": "IN2", "hwnr": 5, "flags": ["d", "in"]},
+			{"id": "IN3", "hwnr": 6, "flags": ["d", "in"]},
+			{"id": "IN4", "hwnr": 7, "flags": ["d", "in"]},
+
+			{"id": "A1", "hwnr": 8, "flags": ["a", "in"]},
+			{"id": "A2", "hwnr": 9, "flags": ["a", "in"]},
+			{"id": "A3", "hwnr": 10, "flags": ["a", "in"]},
+			{"id": "A4", "hwnr": 11, "flags": ["a", "in"]}
+		]
+	}
+}

@@ -1,0 +1,12 @@
+{
+  "id": "mac.data",
+  "name": "Monitoring And Control - Data",
+  "tables": ["sources"],
+  "modules": ["mac/base"],
+
+  "config": [
+		{"id": "+mac.data.sourcesTypes", "file": "mac.data.sourcesTypes.json"},
+		{"id": "+mac.data.quantityTypes", "file": "mac.data.quantityTypes.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"}
+  ]
+}

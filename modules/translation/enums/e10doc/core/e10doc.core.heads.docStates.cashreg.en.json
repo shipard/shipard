@@ -1,0 +1,34 @@
+{
+    "1201": {
+        "stateName": "To pay in cash",
+        "actionName": "Cash"
+    },
+    "1202": {
+        "stateName": "To pay by card",
+        "actionName": "Card"
+    },
+    "1203": {
+        "actionName": "Invoice",
+        "stateName": "Collective document"
+    },
+    "4000": {
+        "stateName": "Done",
+        "actionName": "Conclude"
+    },
+    "4100": {
+        "actionName": "Cancel",
+        "stateName": "Canceled"
+    },
+    "8000": {
+        "stateName": "In editing",
+        "actionName": "Edit"
+    },
+    "1000": {
+        "actionName": "Edit",
+        "stateName": "Document in editing"
+    },
+    "9800": {
+        "actionName": "Delete",
+        "stateName": "Deleted"
+    }
+}

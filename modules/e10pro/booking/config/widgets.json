@@ -1,0 +1,6 @@
+[
+	{
+		"name": "Rezervace", "class": "lib.wkf.BookingWidget", "icon": "icon-book",
+		"dashboard": "main_new", "panel": "reception-booking", "order": 1000, "row": "main", "width": 12, "type": "fullsize"
+	}
+]

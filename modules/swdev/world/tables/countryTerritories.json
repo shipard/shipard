@@ -1,0 +1,18 @@
+{
+	"id": "swdev.world.countryTerritories", "sql": "swdev_world_countryTerritories", "name": "Oblasti zemí", "icon": "icon-map",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "country", "name": "Země", "type": "int", "reference": "swdev.world.countries"},
+		{"id": "territory", "name": "Oblast", "type": "int", "reference": "swdev.world.territories"},
+		{"id": "rowOrder", "name": "Pořadí", "type": "int"},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné od", "type": "date"}
+	],
+	"views": [
+	],
+	"forms": [
+		{"id": "default", "class": "swdev.world.FormCountryTerritory"}
+	],
+	"options": ["systemTable"]
+}

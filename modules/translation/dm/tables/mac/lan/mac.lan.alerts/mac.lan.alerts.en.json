@@ -1,0 +1,25 @@
+{
+    "table": {
+        "name": "Alerts"
+    },
+    "columns": {
+        "ndx": {
+            "name": "ndx"
+        },
+        "alertType": {
+            "name": "Alert type"
+        },
+        "alertSubtype": {
+            "name": "Alert specification"
+        },
+        "alertScope": {
+            "name": "Alert scope"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

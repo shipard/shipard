@@ -1,0 +1,18 @@
+{
+  "id": "e10.base.doclinks", "sql": "e10_base_doclinks", "name": "Vazby dokumentů",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+
+    {"id": "linkId", "name": "Vazba", "type": "string", "len": 40, "options": ["ascii"]},
+
+    {"id": "srcTableId", "name": "Zdrojová tabulka", "type": "string", "len": 48, "options": ["ascii"]},
+    {"id": "srcRecId", "name": "Zdrojový řádek", "type": "int"},
+    {"id": "dstTableId", "name": "Cílová tabulka", "type": "string", "len": 48, "options": ["ascii"]},
+    {"id": "dstRecId", "name": "Cílový řádek", "type": "int"}
+  ],
+	"options": ["systemTable"],
+	"indexes": [
+		{"id": "s1", "columns": ["srcTableId", "srcRecId"]},
+		{"id": "s2", "columns": ["dstTableId", "dstRecId", "linkId"]}
+	]
+}

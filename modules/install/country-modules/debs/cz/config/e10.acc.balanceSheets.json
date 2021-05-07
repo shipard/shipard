@@ -1,0 +1,73 @@
+{
+	"CZ2015": {
+		"fullName": "--> 2015", "shortName": "2015",
+		"validFrom": "0000-00-00", "validTo": "2015-12-31",
+		"variants": {
+			"full": {
+				"name": "Plný rozsah",
+				"reportTitle": "Rozvaha v úplném rozsahu",
+				"spreadsheetId": "install.country-modules.debs.cz.spdBalanceSheetFull-cz-2015",
+				"statementSpreadsheetId": "install.country-modules.debs.cz.spdStatementFull-cz-2015"
+			},
+			"short": {
+				"name": "Zkrácený rozsah",
+				"reportTitle": "Rozvaha ve zkráceném rozsahu",
+				"spreadsheetId": "install.country-modules.debs.cz.spdBalanceSheetShort-cz-2015",
+				"fullSpreadsheetId": "install.country-modules.debs.cz.spdBalanceSheetFull-cz-2015",
+				"statementSpreadsheetId": "install.country-modules.debs.cz.spdStatementFull-cz-2015"
+			}
+		}
+	},
+	"CZ2016": {
+		"fullName": "2016 - 2017", "shortName": "2016",
+		"validFrom": "2016-01-01", "validTo": "2017-12-31",
+		"variants": {
+			"full": {
+				"name": "Plný rozsah",
+				"reportTitle": "Rozvaha v úplném rozsahu",
+				"spreadsheetId": "install.country-modules.debs.cz.spdBalanceSheetFull-cz-2016",
+				"statementSpreadsheetId": "install.country-modules.debs.cz.spdStatementFull-cz-2016"
+			},
+			"short-mini": {
+				"name": "Zkrácený rozsah mini",
+				"reportTitle": "Rozvaha ve zkráceném rozsahu mini",
+				"spreadsheetId": "install.country-modules.debs.cz.spdBalanceSheetShort-cz-2016-mini",
+				"fullSpreadsheetId": "install.country-modules.debs.cz.spdBalanceSheetFull-cz-2016",
+				"statementSpreadsheetId": "install.country-modules.debs.cz.spdStatementFull-cz-2016"
+			},
+			"short-micro": {
+				"name": "Zkrácený rozsah mikro",
+				"reportTitle": "Rozvaha ve zkráceném rozsahu mikro",
+				"spreadsheetId": "install.country-modules.debs.cz.spdBalanceSheetShort-cz-2016-micro",
+				"fullSpreadsheetId": "install.country-modules.debs.cz.spdBalanceSheetFull-cz-2016",
+				"statementSpreadsheetId": "install.country-modules.debs.cz.spdStatementFull-cz-2016"
+			}
+		}
+	},
+	"CZ2018": {
+		"fullName": "2018 -->", "shortName": "2018",
+		"validFrom": "2018-01-01", "validTo": "0000-00-00",
+		"variants": {
+			"full": {
+				"name": "Plný rozsah",
+				"reportTitle": "Rozvaha v úplném rozsahu",
+				"spreadsheetId": "install.country-modules.debs.cz.spdBalanceSheetFull-cz-2018",
+				"statementSpreadsheetId": "install.country-modules.debs.cz.spdStatementFull-cz-2018"
+			},
+			"short-mini": {
+				"name": "Zkrácený rozsah mini",
+				"reportTitle": "Rozvaha ve zkráceném rozsahu mini",
+				"spreadsheetId": "install.country-modules.debs.cz.spdBalanceSheetShort-cz-2018-mini",
+				"fullSpreadsheetId": "install.country-modules.debs.cz.spdBalanceSheetFull-cz-2018",
+				"statementSpreadsheetId": "install.country-modules.debs.cz.spdStatementFull-cz-2018"
+			},
+			"short-micro": {
+				"name": "Zkrácený rozsah mikro",
+				"reportTitle": "Rozvaha ve zkráceném rozsahu mikro",
+				"spreadsheetId": "install.country-modules.debs.cz.spdBalanceSheetShort-cz-2018-micro",
+				"fullSpreadsheetId": "install.country-modules.debs.cz.spdBalanceSheetFull-cz-2018",
+				"statementSpreadsheetId": "install.country-modules.debs.cz.spdStatementFull-cz-2018"
+			}
+		}
+	}
+}

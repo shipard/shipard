@@ -1,0 +1,8 @@
+{
+	"notes": {
+		"name": "Poznámka",
+		"id": "notes",
+		"properties": ["note-ext"]
+	}
+}
+

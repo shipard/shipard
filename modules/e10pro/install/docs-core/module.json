@@ -1,0 +1,27 @@
+{
+  "id": "e10pro.install.docs-core",
+  "name": "Podpůrný modul pro dokladové evidence",
+  "config": [
+    {"id": "+appSkeleton", "name": "Kostra aplikace", "file": "docs-core.appSkeleton.json"},
+	  {"id": "+dashboards", "file": "dashboards.json"},
+    {"id": "+e10.docs.types", "file": "e10.docs.types.json"},
+    {"id": "e10doc.contracts.types", "name": "Druhy smluv", "file": "e10doc.contracts.types.json"},
+    {"id": "+e10.docs.paymentMethods", "name": "Způsoby úhrady", "file": "e10.docs.paymentMethods.json"},
+    {"id": "e10.docs.roundMethods", "name": "Způsoby zaokrouhlení", "file": "e10.docs.roundMethods.json"},
+    {"id": "e10.docs.taxRoundMethods", "name": "Způsoby zaokrouhlení daně", "file": "e10.docs.taxRoundMethods.json"},
+    {"id": "e10.options", "name": "Nastavení", "file": "e10.options.json"},
+		{"id": "+appOptions", "name": "Nastavení aplikace", "file": "e10.appOptions.json"},
+		{"id": "+e10.base.timeline.types", "name": "Nastavení typů v timeline", "file": "e10.docs.timeline.types.json"},
+		{"id": "+e10.persons.roles", "name": "Role uživatelů", "file": "e10.persons.roles.json"},
+	  {"id": "+e10.persons.systemGroups", "file": "e10.persons.groups.json"},
+		{"id": "+reportsGroups", "file": "reportsGroups.json"},
+	  {"id": "+reports", "file": "reports.json"},
+		{"id": "+tests", "file": "tests.json"}
+	],
+  "modules": [
+		"e10/persons", "e10/witems", "e10/base", "e10/web", "e10doc/core", "e10doc/base",
+		"e10pro/reports/witems", "e10pro/reports/persons", "e10pro/reports/projects", "e10doc/helpers",
+		"e10sync/parts/persons", "e10sync/parts/base", "e10sync/parts/witems",
+		"e10doc/ddf/isdoc"
+	]
+}

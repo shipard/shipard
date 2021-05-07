@@ -1,0 +1,17 @@
+{
+	"id": "demo.core.tasks", "sql": "demo_core_tasks", "name": "Generování demonstračních dat", "icon": "icon-cogs",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "taskId", "name": "Druh úlohy", "type": "string", "len": 48, "options": ["ascii"]},
+
+		{"id": "date", "name": "Datum", "type": "date"},
+		{"id": "hourStart", "name": "Hodina zahájení", "type": "int"},
+		{"id": "hourStop", "name": "Hodina ukončení", "type": "int"},
+
+		{"id": "cntRequests", "name": "Počet požadavků", "type": "int"},
+		{"id": "cntDone", "name": "Hotovo", "type": "int"}
+	],
+	"options": ["systemTable"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "taskId"}
+}

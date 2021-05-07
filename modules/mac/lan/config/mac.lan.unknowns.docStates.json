@@ -1,0 +1,18 @@
+{
+	"1000": {
+		"stateName": "Nový problém", "actionName": "Uložit rozpracované", "logName": "nové neznámé zařízení",
+		"stateStyle": "concept", "mainState": 0, "mainState": 0, "goto": [1200, 4000, 9800]
+	},
+	"1200": {
+		"stateName": "K řešení", "actionName": "K řešení", "logName": "k řešení", "notify": 2,
+		"stateStyle": "confirmed", "mainState": 1, "readOnly": 1, "goto": [4000, 9800]
+	},
+	"4000": {
+		"stateName": "Vyřešeno", "actionName": "Vyřešeno", "logName": "problém je vyřešen", "notify": 3,
+		"stateStyle": "done",  "mainState": 2, "readOnly": 1, "goto": [8000, 9800]
+	},
+	"9800": {
+		"stateName": "Smazáno", "actionName": "Smazat", "logName": "smazání problému", "notify": 4,
+		"stateStyle": "delete",  "mainState": 4, "readOnly": 1, "goto": [1200]
+	}
+}

@@ -1,0 +1,19 @@
+{
+	"120101": {"name": "Piliny a/nebo třísky železných kovů", "group": "metal"},
+	"120103":	{"name": "Piliny a/nebo třísky neželezných kovů", "group": "metal"},
+	"160118":	{"name": "Neželezné kovy", "group": "metal"},
+	"160214":	{"name": "Vyřazená zařízení neuvedená pod čísly 16 02 09 až 16 02 13", "group": "other"},
+	"170101":	{"name": "Beton", "group": "other"},
+	"170401":	{"name": "Měď, bronz, mosaz", "group": "metal"},
+	"170404":	{"name": "Zinek", "group": "metal"},
+	"170405":	{"name": "Železo a/nebo ocel", "group": "metal"},
+	"170406":	{"name": "Cín", "group": "metal"},
+	"170407":	{"name": "Směs kovů", "group": "metal"},
+	"170411":	{"name": "Kabely neuvedené pod 17 04 10", "group": "metal"},
+	"200101":	{"name": "Papír a/nebo lepenka", "group": "paper"},
+	"170402":	{"name": "Hliník", "group": "metal"},
+	"170403":	{"name": "Olovo", "group": "metal"},
+	"200140":	{"name": "Kovy", "group": "metal"},
+	"740400":	{"name": "Odpad, šrot měděný", "group": "metal"},
+	"160801":	{"name": "Upotřebené katalyzátory obsahující zlato, stříbro, rhenium, rhodium, paladium, iridium nebo platinu (kromě odpadu uvedeného pod číslem 16 08 07)", "group": "other"}
+}

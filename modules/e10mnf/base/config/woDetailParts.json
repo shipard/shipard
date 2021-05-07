@@ -1,0 +1,14 @@
+{
+	"0": {"name" : "Nic"},
+
+	"10": {"name" : "Obratová předvaha - pouze náklady/výnosy"},
+	"11": {"name" : "Obratová předvaha - kompletní"},
+	"12": {"name" : "Obratová předvaha - pouze náklady/výnosy včetně vnitro"},
+
+	"20": {"name" : "Odpracované hodiny- po měsících"},
+
+	"30": {"name" : "Rozbor zakázky"},
+
+	"100": {"name" : "Řádky zakázky"},
+	"110": {"name" : "Přílohy"}
+}

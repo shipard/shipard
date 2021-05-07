@@ -1,0 +1,17 @@
+{
+	"id": "e10pro.canteen.personsOptionsFoods", "sql": "e10pro_canteen_personsOptionsFoods", "name": "Nastavená jídla", "icon": "icon-cutlery",
+	"columns": [
+		{"id": "ndx", "name": "ndx", "type": "int_ai"},
+
+		{"id": "personOptions", "name": "Nastavení strávníka", "type": "int", "reference": "e10pro.canteen.personsOptions"},
+		{"id": "name", "name": "Název", "type": "string", "len": 20},
+		{"id": "taking", "name": "Odebrání jídla", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10pro.canteen.foodTakings", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "rowOrder", "name": "Pořadí", "type": "int"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.canteen.FormPersonOptionsFood"}
+	],
+	"options": ["systemTable"]
+}

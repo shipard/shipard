@@ -1,0 +1,11 @@
+{
+	"id": "swdev.dm.tablesTrData", "sql": "swdev_dm_tablesTrData", "name": "Data pro lokalizaci tabulek", "icon": "icon-language",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "table", "name": "Tabulka", "type": "int", "reference": "swdev.dm.tables"},
+		{"id": "lang", "name": "Jazyk", "type": "int", "reference": "swdev.translation.languages"},
+		{"id": "data", "name": "Data", "type": "memo"},
+		{"id": "checksum", "name": "Kontrolní součet", "type": "string", "len":  40, "options": ["ascii"]}
+	],
+	"options": ["systemTable"]
+}

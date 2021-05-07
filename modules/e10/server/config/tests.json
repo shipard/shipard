@@ -1,0 +1,7 @@
+[
+	{
+		"id": "tests.e10.system.UsersRights", "class": "lib.tests.UsersRights",
+		"name": "Kontrola uživatelských práv",
+		"notify": "e10-support-shipard", "systemSection": 161
+	}
+]

@@ -1,0 +1,12 @@
+{
+  "id": "e10doc.balance",
+  "name": "Saldo",
+	"tables": ["journal"],
+	"extensions": ["balance"],
+  "config": [
+    {"id": "+reports", "name": "Výstupy", "file": "reports.json"},
+    {"id": "+e10.balance", "name": "Saldo", "file": "balance.json"},
+		{"id": "+e10.base.doclinks", "file": "docLinks.json"}
+  ],
+  "modules": ["e10pro/install/docs-core"]
+}

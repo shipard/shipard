@@ -1,0 +1,11 @@
+{
+	"0": {
+		"name": "Ostrý provoz", "sc": "ok", "icon": "icon-tick", "lc": "label-success"
+	},
+	"1": {
+		"name": "Testovací provoz - záznamy se neukládají", "sc": "test" ,"icon": "icon-question", "lc": "label-info"
+	},
+	"2": {
+		"name": "Demo - komunikace probíhá s testovacím prostředím EET", "sc": "demo", "icon": "icon-exclamation-triangle", "lc": "label-danger"
+	}
+}

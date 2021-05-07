@@ -1,0 +1,16 @@
+{
+  "id": "e10.server",
+  "name": "Server",
+  "config": [
+    {"id": "+appSkeleton", "name": "Konfigurace serveru", "file": "appSkeleton.panel.srvcfg.json"},
+		{"id": "+appOptions", "name": "Nastavení aplikace", "file": "e10.appOptions.json"},
+		{"id": "+appOptions", "name": "Laboratoř", "file": "e10.appOptions.experimental.json"},
+		{"id": "+dashboards", "file": "dashboards.json"},
+		{"id": "+widgets", "file": "widgets.json"},
+	  {"id": "+tests", "file": "tests.json"},
+
+		{"id": "+e10settings.themes.desktop", "file": "oldDesktopThemes.json"},
+		{"id": "+e10settings.themes.icons", "file": "uiIconsShort.json"},
+		{"id": "+ui.app.icons.types", "file": "uiIcons.json"}
+  ]
+}

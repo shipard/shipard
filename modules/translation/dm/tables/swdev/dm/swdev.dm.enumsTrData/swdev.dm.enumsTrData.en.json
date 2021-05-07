@@ -1,0 +1,22 @@
+{
+    "table": {
+        "name": "Data for enums lokalization"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "enum": {
+            "name": "Enum"
+        },
+        "lang": {
+            "name": "Language"
+        },
+        "data": {
+            "name": "Data"
+        },
+        "checksum": {
+            "name": "Checksum"
+        }
+    }
+}

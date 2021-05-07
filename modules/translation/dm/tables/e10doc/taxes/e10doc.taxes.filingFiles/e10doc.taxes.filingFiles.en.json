@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Files of tax return filings and reports"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "report": {
+            "name": "Report"
+        },
+        "reportType": {
+            "name": "Type"
+        },
+        "filing": {
+            "name": "Filing"
+        },
+        "fileType": {
+            "name": "File type"
+        },
+        "title": {
+            "name": "Title"
+        },
+        "attachment": {
+            "name": "Attachment"
+        }
+    }
+}

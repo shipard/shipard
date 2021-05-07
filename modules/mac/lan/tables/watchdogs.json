@@ -1,0 +1,31 @@
+{
+	"id": "mac.lan.watchdogs", "sql": "mac_lan_watchdogs", "name": "Watchdogs", "icon": "icon-heartbeat",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "watchdog", "name": "Watchdog", "type": "enumString", "len": 32,
+			"enumCfg": {"cfgItem": "mac.lan.watchdogs", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "time1", "name": "Okamžik 1", "type": "timestamp"},
+		{"id": "time2", "name": "Okamžik 2", "type": "timestamp"},
+		{"id": "time3", "name": "Okamžik 3", "type": "timestamp"},
+
+		{"id": "data1", "name": "Data 1", "type": "string", "len": 80},
+		{"id": "data2", "name": "Data 2", "type": "string", "len": 80},
+		{"id": "data3", "name": "Data 3", "type": "string", "len": 80},
+
+		{"id": "counter", "name": "Počitadlo", "type": "long"},
+
+		{"id": "device", "name": "Zařízení", "type": "int", "reference": "mac.lan.devices"}
+	],
+	"views": [
+		{"id": "default", "class": "mac.lan.ViewWatchdogs",
+			"details": {
+				"preview": {"title": "Náhled", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewDetailWatchdog"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.lan.FormWatchdog"}
+	]
+}

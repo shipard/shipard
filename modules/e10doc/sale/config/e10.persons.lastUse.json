@@ -1,0 +1,6 @@
+{
+	"e10doc-docs-sale": {
+		"name": "Prodejní doklady",
+		"classId": "e10doc.sale.PersonLastUseDocsSale"
+	}
+}

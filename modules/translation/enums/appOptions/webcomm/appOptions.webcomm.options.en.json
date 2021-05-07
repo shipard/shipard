@@ -1,0 +1,17 @@
+{
+    "useArticles": {
+        "cfgName": "Use Articles"
+    },
+    "useNewsletters": {
+        "cfgName": "Use Newsletters"
+    },
+    "contactFormNotifyEmail": {
+        "cfgName": "E-mail for Contact form"
+    },
+    "useNews": {
+        "cfgName": "Use Events"
+    },
+    "unsubscribeNewsletterURL": {
+        "cfgName": "Address to unsubscribe newsletter"
+    }
+}

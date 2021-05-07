@@ -1,0 +1,46 @@
+[
+  {
+    "table": "e10doc.core.heads",
+		"columns": [
+			{"id": "weightIn", "name": "Hmotnost příjezd", "label": "Hm. příjezd", "type": "number", "dec": 1},
+			{"id": "weightOut", "name": "Hmotnost odjezd", "label": "Hm. odjezd", "type": "number", "dec": 1},
+			{"id": "weighingMachine", "name": "Zváženo na váze", "type": "int"}
+		],
+    "views": {
+      "purchase": {
+				"id": "purchase", "class": "e10doc.purchase.ViewPurchaseDocs",
+				"details": {
+					"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10doc.purchase.ViewDetailPurchaseDocs", "order": 1000},
+					"accounting": {"title": "Účtování", "icon": "x-stamp", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
+				}
+			},
+			"invoicesIn": {
+				"panels": [
+					{"id": "purchases", "title": "Výkupy", "type": "viewer", "table": "e10.persons.persons", "class": "e10pro.purchase.InvoicePurchaseDisposal"}
+				]
+			}
+		},
+    "forms": [
+      {"id": "purchase", "class": "e10doc.purchase.FormPurchaseDocs"}
+    ],
+		"reports": [
+			{
+				"id": "purchase", "name": "Výkupní lístek", "class": "e10doc.purchase.PurchaseReport",
+				"printerClass": "default", "queryCol": "docType", "queryColValues": ["purchase"], "email": 1
+			},
+			{
+				"id": "purchasepos", "name": "Účtenka", "class": "e10doc.purchase.PurchaseReportPos",
+				"directPrint": 1, "printerClass": "pos", "queryCol": "docType", "queryColValues": ["purchase"]
+			}
+		],
+	  "indexes": [
+		  {"id": "purchase_s1", "columns": ["docType", "docState", "activateTimeFirst"]}
+	  ]
+	},
+  {
+    "table": "e10doc.core.rows",
+    "forms": [
+      {"id": "purchase", "class": "e10doc.purchase.FormPurchaseDocsRows"}
+    ]
+  }
+]

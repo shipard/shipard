@@ -1,0 +1,80 @@
+{
+	"id": "e10doc.helpers.rowsSettings", "sql": "e10doc_helpers_rowsSettings", "name": "Nastavení řádků dokladů", "icon": "icon-wrench",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "settingsType", "name": "Typ nastavení", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.rowsSettingsTypes", "cfgValue": "", "cfgText": "name"}},
+		{"id": "name", "name": "Název", "type": "string", "len": 80},
+
+		{"id": "qryHeadPerson", "name": "Osoba na hlavičce", "type": "int", "label": "Osoba", "reference": "e10.persons.persons"},
+		{"id": "qryRowDirType", "name": "Směr pohybu peněz", "label": "Směr", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "nezáleží", "1": "příjem", "2": "výdej"}},
+		{"id": "qryMyBankAccountType", "name": "Vlastní bankovní spojení", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.queryTypes.reference", "cfgValue": "", "cfgText": "name"}},
+		{"id": "myBankAccount", "name": "Vlastní bankovní spojení", "type": "int", "reference": "e10doc.base.bankaccounts"},
+		{"id": "qryRowBankAccountType", "name": "Bankovní účet", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.queryTypes.string", "cfgValue": "", "cfgText": "name"}},
+		{"id": "qryRowBankAccountValue", "name": "Bankovní účet", "label": "Č. účtu", "type": "string", "len": 80},
+		{"id": "qryOperationType", "name": "Podmínka na Pohyb", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.queryTypes.enum", "cfgValue": "", "cfgText": "name"}},
+		{"id": "qryOperationValue", "name": "Pohyb", "type": "enumInt", "len": 4,
+			"enumCfg": {"cfgItem": "e10.docs.operations", "cfgValue": "", "cfgText": "title"}},
+		{"id": "qryRowSymbol1Type", "name": "Podmínka na VS", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.queryTypes.string", "cfgValue": "", "cfgText": "name"}},
+		{"id": "qryRowSymbol1Value", "name": "Variabilní symbol", "label": "VS", "type": "string", "len": 20},
+		{"id": "qryRowSymbol2Type", "name": "Podmínka na SS", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.queryTypes.string", "cfgValue": "", "cfgText": "name"}},
+		{"id": "qryRowSymbol2Value", "name": "Specifický symbol", "label": "SS", "type": "string", "len": 20},
+		{"id": "qryRowSymbol3Type", "name": "Podmínka na KS", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.queryTypes.string", "cfgValue": "", "cfgText": "name"}},
+		{"id": "qryRowSymbol3Value", "name": "Konstantní symbol", "label": "KS", "type": "string", "len": 10},
+		{"id": "qryRowTextType", "name": "Text řádku", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.queryTypes.string", "cfgValue": "", "cfgText": "name"}},
+		{"id": "qryRowTextValue", "name": "Text řádku", "type": "string", "len": 120},
+
+
+
+		{"id": "valRowPersonType", "name": "Nastavit Osobu na", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.setValueTypes.reference", "cfgValue": "", "cfgText": "name"}},
+		{"id": "valRowPersonValue", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "valRowOperationType", "name": "Nastavit Pohyb na", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.setValueTypes.enum", "cfgValue": "", "cfgText": "name"}},
+		{"id": "valRowOperationValue", "name": "Pohyb", "type": "enumInt", "len": 4,
+			"enumCfg": {"cfgItem": "e10.docs.operations", "cfgValue": "", "cfgText": "title"}},
+		{"id": "valRowTextType", "name": "Nastavit Text řádku na", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.setValueTypes.string", "cfgValue": "", "cfgText": "name"}},
+		{"id": "valRowTextValue", "name": "Text", "type": "string", "len": 220},
+		{"id": "valRowSymbol1Type", "name": "Nastavit VS řádku na", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.setValueTypes.string", "cfgValue": "", "cfgText": "name"}},
+		{"id": "valRowSymbol1Value", "name": "VS", "type": "string", "len": 120},
+		{"id": "valRowSymbol2Type", "name": "Nastavit SS řádku na", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.setValueTypes.string", "cfgValue": "", "cfgText": "name"}},
+		{"id": "valRowSymbol2Value", "name": "SS", "type": "string", "len": 120},
+		{"id": "valRowSymbol3Type", "name": "Nastavit KS řádku na", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.setValueTypes.string", "cfgValue": "", "cfgText": "name"}},
+		{"id": "valRowSymbol3Value", "name": "KS", "type": "string", "len": 120},
+		{"id": "valRowItemType", "name": "Nastavit Položku na", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.setValueTypes.reference", "cfgValue": "", "cfgText": "name"}},
+		{"id": "valRowItemValue", "name": "Položka", "type": "int", "reference": "e10.witems.items", "comboViewer": "combo"},
+		{"id": "valRowCentreType", "name": "Nastavit Středisko na", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.setValueTypes.reference", "cfgValue": "", "cfgText": "name"}},
+		{"id": "valRowCentreValue", "name": "Středisko", "type": "int", "reference": "e10doc.base.centres"},
+		{"id": "valRowWorkOrderType", "name": "Nastavit Zakázku na", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.setValueTypes.reference", "cfgValue": "", "cfgText": "name"}},
+		{"id": "valRowWorkOrderValue", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "e10doc.helpers.ViewRowsSettings"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.helpers.FormRowSettings"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"}
+}

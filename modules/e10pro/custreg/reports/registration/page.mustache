@@ -1,0 +1,37 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+    <title>test</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="file://{{templateRoot}}style.css" type="text/css"/>
+</head>
+<body>
+
+<div id='top'>
+    <span class='documentName'>{{cfgItem.options.core.ownerShortName}}</span>
+    <span class='documentNumber'>Registrační formulář #{{data.head.id}}</span>
+</div>
+
+<table class='regFields'>
+    <tr><td>Příjmení</td><td>{{data.head.lastName}}</td></tr>
+    <tr><td>Jméno</td><td>{{data.head.firstName}}</td></tr>
+    <tr><td>Datum narození</td><td>{{data.properties.birthdate.0}}</td></tr>
+    <tr><td>Číslo OP</td><td>{{data.properties.idcn.0}}</td></tr>
+    <tr><td>Ulice</td><td>{{data.address.street}}</td></tr>
+    <tr><td>Obec</td><td>{{data.address.city}}</td></tr>
+    <tr><td>PSČ</td><td>{{data.address.zipcode}}</td></tr>
+    <tr><td>E-mail</td><td>{{data.properties.email.0}}</td></tr>
+    <tr><td>Mobil</td><td>{{data.properties.phone.0}}</td></tr>
+    <tr><td>Číslo účtu</td><td>{{data.properties.bankaccount.0}}</td></tr>
+</table>
+
+<table class='signs'>
+    <tr>
+        <td></td>
+        <td>____________________________________________<br>podpis</td>
+    </tr>
+</table>
+
+</body>
+</html>
+

@@ -1,0 +1,16 @@
+{
+    "table": {
+        "name": "Persons in group"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "group": {
+            "name": "Group"
+        },
+        "person": {
+            "name": "Person"
+        }
+    }
+}

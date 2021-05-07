@@ -1,0 +1,12 @@
+{
+	"e10doc.contracts.core.kinds": {
+		"e10doc-contractKinds-pg": {
+			"linkid": "e10doc-contractKinds-pg",
+			"name": "Pro skupiny Osob",
+			"icon": "icon-chevron-left",
+			"sources": [
+				{"id": "persons", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			]
+		}
+	}
+}

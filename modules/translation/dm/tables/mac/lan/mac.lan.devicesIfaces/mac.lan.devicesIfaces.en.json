@@ -1,0 +1,51 @@
+{
+    "table": {
+        "name": "Network interface of devices"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "rowOrder": {
+            "name": "Row order"
+        },
+        "device": {
+            "name": "Device"
+        },
+        "devicePort": {
+            "name": "Port"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "addrType": {
+            "name": "Address assignment"
+        },
+        "ip": {
+            "name": "IP"
+        },
+        "ipAddressSuffix": {
+            "name": ".IP"
+        },
+        "addressGateway": {
+            "name": "Gateway adress"
+        },
+        "priority": {
+            "name": "Priority"
+        },
+        "range": {
+            "name": "Addresses range"
+        },
+        "mac": {
+            "name": "MAC"
+        },
+        "dnsname": {
+            "name": "Name",
+            "label": "DNS name"
+        },
+        "note": {
+            "name": "Note",
+            "label": "Note"
+        }
+    }
+}

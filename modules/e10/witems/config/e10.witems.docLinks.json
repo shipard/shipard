@@ -1,0 +1,38 @@
+{
+	"e10.witems.itemtypes": {
+		"e10-witems-itemtypes-propgroups": {"linkid": "e10-witems-itemtypes-propgroups", "name": "Skupiny vlastností", "icon": "chevron-left",
+			"sources": [
+				{"table": "e10.base.propgroups"}
+			]
+		},
+		"e10-persons-groups-itemtypes-sale": {"linkid": "e10-persons-groups-itemtypes-sale", "name": "Při prodeji zařadit Osobu do skupin", "icon": "e10-docs-invoices-out",
+			"sources": [
+				{"table": "e10.persons.groups"}
+			]
+		},
+		"e10-persons-groups-itemtypes-buy": {"linkid": "e10-persons-groups-itemtypes-buy", "name": "Při nákupu zařadit Osobu do skupin", "icon": "e10-docs-invoices-in",
+			"sources": [
+				{"table": "e10.persons.groups"}
+			]
+		}
+	},
+	"e10.witems.brands": {
+		"e10-persons-groups-brands-sale": {"linkid": "e10-persons-groups-brands-sale", "name": "Při prodeji zařadit Osobu do skupin", "icon": "e10-docs-invoices-out",
+			"sources": [
+				{"table": "e10.persons.groups"}
+			]
+		},
+		"e10-persons-groups-brands-buy": {"linkid": "e10-persons-groups-brands-buy", "name": "Při nákupu zařadit Osobu do skupin", "icon": "e10-docs-invoices-in",
+			"sources": [
+				{"table": "e10.persons.groups"}
+			]
+		}
+	},
+	"e10.witems.items": {
+		"e10-witems-items-categories": {"linkid": "e10-witems-items-categories", "name": "Kategorie", "icon": "chevron-left",
+			"sources": [
+				{"table": "e10.witems.itemcategories"}
+			]
+		}
+	}
+}

@@ -1,0 +1,68 @@
+{
+	"dataSerial": {
+		"name": "Sériová linka", "cfgPath": "ioPorts/dataSerial", "sensor": 1
+	},
+	"dataOneWire": {
+		"name": "1-Wire", "cfgPath": "ioPorts/dataOneWire"
+	},
+	"dataWiegand": {
+		"name": "Wiegand", "cfgPath": "ioPorts/dataWiegand", "sensor": 1
+	},
+	"dataRFIDPN532": {
+		"name": "RFID PN532", "cfgPath": "ioPorts/dataRFIDPN532", "sensor": 1
+	},
+	"dataRFID125kHz": {
+		"name": "RFID 125 kHz", "cfgPath": "ioPorts/dataRFID125kHz", "sensor": 1
+	},
+	"dataGSM": {
+		"name": "GSM modul", "cfgPath": "ioPorts/dataGSM", "sensor": 1
+	},
+	"controlBinary": {
+		"name": "Ovladač Zapnuto / Vypnuto", "cfgPath": "ioPorts/controlBinary"
+	},
+	"controlLevel": {
+		"name": "Ovladač úrovně", "cfgPath": "ioPorts/controlLevel"
+	},
+	"controlLedStrip": {
+		"name": "LED pásek", "cfgPath": "ioPorts/controlLedStrip"
+	},
+	"controlHBridge": {
+		"name": "H můstek", "cfgPath": "ioPorts/controlHBridge"
+	},
+
+	"inputBinary": {
+		"name": "Čidlo Zapnuto / Vypnuto", "cfgPath": "ioPorts/inputBinary", "sensor": 1
+	},
+	"inputAnalog": {
+		"name": "Čidlo - Analogová hodnota", "cfgPath": "ioPorts/inputAnalog", "sensor": 1
+	},
+	"inputCounter": {
+		"name": "Počitadlo impulsů", "cfgPath": "ioPorts/inputCounter", "sensor": 1
+	},
+
+	"meteoDHT": {
+		"name": "Meteo čidlo DHT22", "cfgPath": "ioPorts/meteoDHT", "sensor": 1
+	},
+	"meteoBME280": {
+		"name": "Meteo čidlo BME280", "cfgPath": "ioPorts/meteoBME280", "sensor": 1
+	},
+	"meteoBH1750": {
+		"name": "Měřič osvětlení BH1750", "cfgPath": "ioPorts/meteoBH1750", "sensor": 1
+	},
+
+	"sensorDistanceUS": {
+		"name": "Měřič vzdálenosti (ultrazvukový)", "cfgPath": "ioPorts/sensorDistanceUS", "sensor": 1
+	},
+
+	"displayNextion": {
+		"name": "Displej Nextion", "cfgPath": "ioPorts/displayNextion"
+	},
+
+	"busI2C": {
+		"name": "Sběrnice I2C", "cfgPath": "ioPorts/busI2C"
+	},
+
+	"gpioExpanderI2C": {
+		"name": "GPIO expander I2C", "cfgPath": "ioPorts/gpioExpanderI2C"
+	}
+}

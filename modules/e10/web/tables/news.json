@@ -1,0 +1,30 @@
+{
+  "id": "e10.web.news", "sql": "e10_web_news", "name": "Oznámení", "icon": "icon-bullhorn",
+  "columns": [
+    {"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "title", "sql": "title", "name": "Název", "type": "string", "len": 120},
+    {"id": "date_from", "sql": "date_from", "name": "Datum platnosti od", "type": "date"},
+    {"id": "date_to", "sql": "date_to", "name": "Datum platnosti do", "type": "date"},
+    {"id": "url", "sql": "url", "name": "Odkaz", "type": "string", "len": 100},
+    {"id": "text", "sql": "text", "name": "Text", "type": "memo"},
+    {"id": "to_paper_docs", "sql": "to_paper_docs", "name": "Tisknout na doklady", "type": "logical"},
+    {"id": "to_top", "sql": "to_top", "name": "Nahoru", "type": "logical"},
+    {"id": "order", "sql": "order", "name": "Pořadí", "type": "int"},
+    {"id": "perex", "sql": "perex", "name": "Perex", "type": "memo"},
+    {"id": "perexIllustration", "name": "Ilustrační obrázek", "type": "int", "reference": "e10.base.attachments", "comboViewer": "images"},
+    {"id": "textPaperDoc", "sql": "text_paper_doc", "name": "Text pro doklad", "type": "memo"},
+
+    {"id": "docState", "name": "Stav", "type": "int"},
+    {"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+  "states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+  "views": [
+    {"id": "default", "class": "e10.web.ViewNews", "detail": "e10.web.ViewDetailNews"}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10.web.FormNews"}
+  ],
+  "order": [{"column": "title", "order": "ASC"}],
+  "fullText": ["title", "text"],
+  "autocomplete": {"row": "$title"}
+}

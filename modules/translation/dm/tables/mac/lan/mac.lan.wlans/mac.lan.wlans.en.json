@@ -1,0 +1,37 @@
+{
+    "table": {
+        "name": "WiFi networks"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "id": {
+            "name": "Short name"
+        },
+        "ssid": {
+            "name": "SSID"
+        },
+        "lan": {
+            "name": "Network"
+        },
+        "vlan": {
+            "name": "VLAN"
+        },
+        "onAPs": {
+            "name": "Access points"
+        },
+        "wpaPassphrase": {
+            "name": "WPA password"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

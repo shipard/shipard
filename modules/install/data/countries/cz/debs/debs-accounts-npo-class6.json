@@ -1,0 +1,49 @@
+{
+	"name": "Výnosy",
+	"datasets": [
+		{
+			"table": "e10doc.debs.accounts",
+			"name": "Třída 6 - výnosy",
+			"defaultValues": {"accGroup": 0, "accMethod": "debs", "docState": 4000, "docStateMain": 2},
+			"data": [
+				{"rec": {"id":"601100","fullName":"Tržby za vlastní výrobky","shortName":"Tržby za vlastní výrobky","accountKind":3,"resultsType":1}},
+				{"rec": {"id":"602100","fullName":"Tržby z prodeje služeb","shortName":"Tržby z prodeje služeb","accountKind":3,"resultsType":1}},
+				{"rec": {"id":"604100","fullName":"Tržby za zboží","shortName":"Tržby za zboží","accountKind":3,"resultsType":1}},
+				{"rec": {"id":"611100","fullName":"Změna stavu nedokončené výroby","shortName":"Změna stavu nedokončené výroby","accountKind":3,"resultsType":1}},
+				{"rec": {"id":"612100","fullName":"Změna stavu polotovarů","shortName":"Změna stavu polotovarů","accountKind":3,"resultsType":1}},
+				{"rec": {"id":"613100","fullName":"Změna stavu výrobků","shortName":"Změna stavu výrobků","accountKind":3,"resultsType":1}},
+				{"rec": {"id":"614100","fullName":"Změna stavu zvířat","shortName":"Změna stavu zvířat","accountKind":3,"resultsType":1}},
+				{"rec": {"id":"621100","fullName":"Aktivace materiálu a zboží","shortName":"Aktivace materiálu a zboží","accountKind":3,"resultsType":1}},
+				{"rec": {"id":"622100","fullName":"Aktivace vnitropodnikových služeb","shortName":"Aktivace vnitropodnikových služeb","accountKind":3,"resultsType":1}},
+				{"rec": {"id":"623100","fullName":"Aktivace dlouhodobého nehmotného majetku","shortName":"Aktivace dlouhodobého nehmotného majetku","accountKind":3,"resultsType":1}},
+				{"rec": {"id":"624100","fullName":"Aktivace dlouhodobého hmotného majetku","shortName":"Aktivace dlouhodobého hmotného majetku","accountKind":3,"resultsType":1}},
+				{"rec": {"id":"641100","fullName":"Smluvní pokuty a úroky z prodlení","shortName":"Smluvní pokuty a úroky z prodlení","accountKind":3,"resultsType":1}},
+				{"rec": {"id":"642100","fullName":"Ostatní pokuty a penále","shortName":"Ostatní pokuty a penále","accountKind":3,"resultsType":1}},
+				{"rec": {"id":"643100","fullName":"Platby za odepsané pohledávky","shortName":"Platby za odepsané pohledávky","accountKind":3,"resultsType":1}},
+				{"rec": {"id":"644100","fullName":"Úroky","shortName":"Úroky","accountKind":3,"resultsType":2}},
+				{"rec": {"id":"645100","fullName":"Kurzové zisky","shortName":"Kurzové zisky","accountKind":3,"resultsType":2}},
+				{"rec": {"id":"648100","fullName":"Zúčtování fondů","shortName":"Zúčtování fondů","accountKind":3,"resultsType":2}},
+				{"rec": {"id":"649100","fullName":"Jiné ostatní výnosy","shortName":"Jiné ostatní výnosy","accountKind":3,"resultsType":1}},
+				{"rec": {"id":"652100","fullName":"Tržby z prodeje dlouhodobého nehmotného a hmotného majetku","shortName":"Tržby z prodeje DNM a HM","accountKind":3,"resultsType":1}},
+				{"rec": {"id":"653100","fullName":"Tržby z prodeje cenných papírů a podílů","shortName":"Tržby z prodeje CP a podílů","accountKind":3,"resultsType":2}},
+				{"rec": {"id":"654100","fullName":"Tržby z prodeje materiálu","shortName":"Tržby z prodeje materiálu","accountKind":3,"resultsType":1}},
+				{"rec": {"id":"655100","fullName":"Výnosy z krátkodobého finančního majetku","shortName":"Výnosy z krátkodobého FM","accountKind":3,"resultsType":2}},
+				{"rec": {"id":"656100","fullName":"Zúčtování rezerv","shortName":"Zúčtování rezer","accountKind":3,"resultsType":2}},
+				{"rec": {"id":"657100","fullName":"Výnosy z dlouhodobého finančního majetku","shortName":"Výnosy z dlouhodobého FM","accountKind":3,"resultsType":2}},
+				{"rec": {"id":"659100","fullName":"Zúčtování opravných položek","shortName":"Zúčtování opr. položek","accountKind":3,"resultsType":2}},
+				{"rec": {"id":"681100","fullName":"Přijaté příspěvky zúčtované mezi organizačními složkami","shortName":"Přij. příspěvky zúčt. mezi org. složkami","accountKind":3,"resultsType":1}},
+				{"rec": {"id":"682100","fullName":"Přijaté dary","shortName":"Přijaté dary","accountKind":3,"resultsType":1}},
+				{"rec": {"id":"684100","fullName":"Přijaté členské příspěvky","shortName":"Přijaté členské příspěvky","accountKind":3,"resultsType":1}},
+				{"rec": {"id":"691100","fullName":"Provozní dotace","shortName":"Provozní dotace","accountKind":3,"resultsType":1}}
+			]
+		},
+		{
+			"table": "e10.witems.items",
+			"name": "Výnosové účtopoložky",
+			"defaultValues": {"type":"it-accitem","itemType":"@it-accitem","itemKind":2,"docState":4000,"docStateMain":2},
+			"data": [
+				{"rec": {"fullName":"Úrok přijatý","shortName":"Úrok přijatý","debsAccountId":"662100","id":"662100","useFor":100}}
+			]
+		}
+	]
+}

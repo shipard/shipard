@@ -1,0 +1,4 @@
+[
+	{"name": "Denní přehled", "class": "e10pro.reports.terminal_daily.reportDaily", "group": "e10pro-terminal"},
+	{"name": "Denní přehled", "class": "e10pro.reports.terminal_daily.reportDaily", "icon": "icon-check-circle", "group": "e10doc-sale"}
+]

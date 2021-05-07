@@ -1,0 +1,23 @@
+{
+  "id": "e10pro.purchase",
+  "name": "Purchase",
+	"modules": [
+		"e10doc/purchase", "e10doc/cashRegister", "e10pro/reports/terminal_daily", "e10pro/reports/terminal_monthly",
+		"e10pro/reports/pricelist", "e10pro/reports/purchases", "e10pro/custreg"
+	],
+	"extensions": ["persons"],
+  "config": [
+    {"id": "+appSkeleton", "name": "Rozšíření menu aplikace", "file": "purchase.appSkeleton.json"},
+	  {"id": "+e10.dashboardInfo", "file": "dashboardInfo.json"},
+		{"id": "+e10.docs.types", "file": "e10.docs.types.json"},
+		{"id": "+wkf.messageKind", "file": "wkf.messageKind.json"},
+    {"id": "+e10.persons.roles", "name": "Role uživatelů", "file": "purchase.roles.json"},
+    {"id": "+reports", "name": "Výstupy", "file": "reports.json"},
+		{"id": "e10doc.core.heads.docStates.purchase", "name": "Stavy dokladů", "file": "e10doc.core.heads.docStates.purchase.json"},
+		{"id": "+appOptions", "name": "Nastavení aplikace", "file": "e10.appOptions.json"},
+		{"id": "+e10.balance", "name": "Saldo", "file": "balance.json"},
+		{"id": "+e10.docs.operations", "name": "Pohyby", "file": "e10.docs.operations.json"},
+		{"id": "+registeredClasses", "file": "registeredClasses.json"},
+	  {"id": "+appCache", "file": "appCache.json"}
+ ]
+}

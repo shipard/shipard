@@ -1,0 +1,22 @@
+[
+	{"id": "cz.kb-mb-csv", "name": "Komerční banka / Moje banka / Transakční historie CSV",
+		"checkRegExp": "/^MojeBanka, export transakcni historie./"},
+	{"id": "cz.kb-mb-csv", "name": "Komerční banka / Moje banka / Transakční historie CSV",
+		"checkRegExp": "/^\"MojeBanka, export transakcni historie\"./"},
+	{"id": "cz.rb-email", "name": "Raiffeisenbank / Výpis emailem", "srcCharset": "CP1250",
+		"checkRegExp": "/(\\s+)Raiffeisenbank a\\.s\\.(\\s+)Bank/"},
+	{"id": "cz.gpc", "name": "GPC", "srcCharset": "CP1250",
+		"checkRegExp": "/^074(.+)\\s075(.+)/", "checkRegExp2": "/^074(.+)\\s/"},
+	{"id": "cz.cspor-xml", "name": "Česká spořitelna / XML", "srcCharset": "CP1250",
+		"checkRegExp": "/<exportStatements>(\\s+)<exportStatement>/"},
+	{"id": "cz.cspor-csv", "name": "Česká spořitelna / CSV", "srcCharset": "CP1250",
+		"checkRegExp": "/(.+)Datum splatnosti\\\";(.+)Datum odpisu\\\";/"},
+	{"id": "cz.csob-slk", "name": "ČSOB / SLK", "srcCharset": "CP1250",
+		"checkRegExp": "/(.+);N;K\\\"Pohyby na(.+)/"},
+	{"id": "cz.mt940", "name": "MT940 / STA",
+		"checkRegExp": "/^\\{1:F(.+)/"},
+	{"id": "cz.cba-xml", "name": "ČBA / XML",
+		"checkRegExp": "/<BkToCstmrStmt>/"},
+	{"id": "cz.csob-xml", "name": "ČSOB / XML",
+		"checkRegExp": "/<FINSTA>/"}
+]

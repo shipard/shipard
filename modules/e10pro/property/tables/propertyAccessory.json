@@ -1,0 +1,12 @@
+{
+	"id": "e10pro.property.propertyAccessory", "sql": "e10pro_property_propertyAccessory", "name": "Příslušenství majetku",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "property", "name": "Majetek", "type": "int", "reference": "e10pro.property.property"},
+		{"id": "linkedProperty", "name": "Příslušenství", "type": "int", "reference": "e10pro.property.property"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.property.FormPropertyAccessory"}
+	],
+	"options": ["systemTable"]
+}

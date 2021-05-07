@@ -1,0 +1,24 @@
+{
+  "cntn": {
+		"name": "Jídelny",
+		"viewers": {
+			"e10pro.canteen.canteens": {"default": 2},
+			"e10pro.canteen.canteensAddFoods": {"default": 2},
+			"e10pro.canteen.menus": {"default": 2},
+			"e10pro.canteen.menuFoods": {"default": 2, "comboFood": 2, "comboSoup": 2, "comboOrder": 2},
+			"e10pro.canteen.menuRecipientsDefs": {"default": 2},
+			"e10pro.canteen.priceList": {"default": 2},
+			"e10pro.canteen.menuRecipientsPersons": {"default": 2},
+			"e10pro.canteen.foodOrders": {"default": 2},
+			"e10pro.canteen.personsOptions": {"default": 2}
+		},
+		"widgets": {
+			"e10pro.canteen.WidgetCanteen": 2
+		},
+		"reports": {
+			"e10pro.canteen.reports.Monthly": 2,
+			"e10pro.canteen.reports.Daily": 2,
+			"e10pro.canteen.reports.Persons": 2
+		}
+	}
+}

@@ -1,0 +1,67 @@
+{{#data.gallery.style}}
+	{{#data.gallery.style-single}}
+		{{#data.gallery.rows}}
+			<div class="row col-md-offset-1">
+				{{#images}}
+					<div class="col-sm-10 col-md-10 col-lg-10" title="{{name}}">
+						{{#original}}
+							<a class="thumbnail" href="{{dsRoot}}/att/{{fileName}}" target="new">
+								<img src="{{dsRoot}}/imgs/-w1200/att/{{fileName}}" class="img-responsive" title="{{name}}"/>
+							</a>
+						{{/original}}
+						{{^original}}
+						<a class="thumbnail gallery" href="{{dsRoot}}/imgs/-w1980/att/{{fileName}}">
+							<img src="{{dsRoot}}/imgs/-w1200/att/{{fileName}}" class="img-responsive" title="{{name}}"/>
+						</a>
+						{{/original}}
+					</div>
+				{{/images}}
+			</div>
+		{{/data.gallery.rows}}
+	{{/data.gallery.style-single}}
+	{{^data.gallery.style-single}}
+		{{#data.gallery.rows}}
+			{{#images}}
+					<span class="thumb thumb-{{data.gallery.style}}">
+            <img src="{{dsRoot}}/imgs/-w1200/att/{{fileName}}"{{#data.gallery.imgcss}} style='{{data.gallery.imgcss}}'{{/data.gallery.imgcss}} title="{{name}}"/>
+					</span>
+			{{/images}}
+		{{/data.gallery.rows}}
+	{{/data.gallery.style-single}}
+{{/data.gallery.style}}
+
+{{^data.gallery.style}}
+	{{#data.gallery.rows}}
+		<div class="row {{#cnt5}}col-md-offset-1{{/cnt5}}">
+		{{#images}}
+			{{#cnt6}}<div class="col-sm-2 col-md-2 col-lg-2" title="{{name}}">{{/cnt6}}
+			{{#cnt5}}<div class="col-sm-2 col-md-2 col-lg-2" title="{{name}}">{{/cnt5}}
+			{{#cnt4}}<div class="col-sm-3 col-md-3 col-lg-3" title="{{name}}">{{/cnt4}}
+			{{#cnt3}}<div class="col-sm-4 col-md-4 col-lg-4" title="{{name}}">{{/cnt3}}
+			{{#cnt2}}<div class="col-sm-6 col-md-6 col-lg-6" title="{{name}}">{{/cnt2}}
+			{{#cnt1}}<div class="col-sm-12 col-md-12 col-lg-12" title="{{name}}">{{/cnt1}}
+				{{#original}}
+					<a class="thumbnail" href="{{dsRoot}}/att/{{fileName}}" target="new">
+						<img src="{{dsRoot}}/imgs/-w1200/att/{{fileName}}" class="img-responsive"/>
+					</a>
+				{{/original}}
+				{{^original}}
+					<a class="thumbnail gallery" href="{{dsRoot}}/imgs/-w1980/att/{{fileName}}">
+						<img src="{{dsRoot}}/imgs/-w1200/att/{{fileName}}" class="img-responsive"/>
+					</a>
+				{{/original}}
+			</div>
+		{{/images}}
+		</div>
+	{{/data.gallery.rows}}
+{{/data.gallery.style}}
+
+	<script>
+		$(document).ready(function() {
+			$('.gallery').magnificPopup({
+				type:'image',
+				image: {titleSrc: 'title'},
+				gallery: {enabled: true, tCounter: '<span class="mfp-counter">%curr%&nbsp;z&nbsp;%total%</span>'}
+			});
+		});
+	</script>

@@ -1,0 +1,18 @@
+[
+  {
+    "table": "e10.witems.items",
+		"columns": [
+			{"id": "debsAccountId", "name": "Účet", "type": "string", "len": 12,
+				"comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+			{"id": "debsGroup", "name": "Účetní skupina", "type": "enumInt",
+				"enumCfg": {"cfgItem": "e10debs.groups", "cfgValue": "ndx", "cfgText": "fullName"}}
+		],
+    "views": {
+			"default": {
+				"details": {
+						"journal": {"title": "Pohyby", "icon": "x-basket", "type": "detail", "class": "e10doc.core.ViewDetailItemsJournal", "order": 6000}
+				}
+			}
+		}
+  }
+]

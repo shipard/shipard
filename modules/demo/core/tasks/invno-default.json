@@ -1,0 +1,6 @@
+{
+	"name": "Faktura vydaná běžná",
+	"class": "demo.documents.libs.Invno",
+	"person": {"demo": [3, 4]},
+	"item": {"type": "it-service"}
+}

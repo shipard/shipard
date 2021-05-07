@@ -1,0 +1,18 @@
+{
+	"id": "e10doc.taxes",
+	"name": "Daně",
+	"tables": ["reports", "reportsParts", "reportsData", "filings", "filingFiles", "reportsRowsVatReturn", "reportsRowsVatCS", "reportsRowsVatRS"],
+	"config": [
+		{"id": "+reports", "name": "Výstupy", "file": "reports.json"},
+		{"id": "e10doc.taxes.reportTypes", "file": "e10doc.taxes.reportTypes.json"},
+		{"id": "e10doc.taxes.filings.docStates", "file": "e10doc.taxes.filings.docStates.json"},
+		{"id": "e10doc.taxes.vatReports.docStates", "file": "e10doc.taxes.vatReports.docStates.json"},
+
+		{"id": "+e10.base.properties", "file": "e10doc.taxes.properties.common.json"},
+		{"id": "+e10doc.taxes.reportProperties", "file": "e10.taxes.reportProperties.cz.json"},
+
+		{"id": "+e10", "file": "e10doc.taxes.properties.vatcs.json"},
+		{"id": "+appOptions", "file": "e10.appOptions.json"}
+	],
+	"modules": ["e10pro/install/docs-core"]
+}

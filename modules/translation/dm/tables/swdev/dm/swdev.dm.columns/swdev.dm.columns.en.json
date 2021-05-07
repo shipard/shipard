@@ -1,0 +1,47 @@
+{
+    "table": {
+        "name": "Columns"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "table": {
+            "name": "Table"
+        },
+        "id": {
+            "name": "id"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "label": {
+            "name": "Label"
+        },
+        "colTypeId": {
+            "name": "Column type ID"
+        },
+        "colTypeReferenceId": {
+            "name": "Reference ID"
+        },
+        "colTypeLen": {
+            "name": "Lenght"
+        },
+        "colTypeDec": {
+            "name": "Number of decimal places",
+            "label": "Number of dec. places"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "colTypeEnumId": {
+            "name": "Enum ID"
+        },
+        "dmWikiPage": {
+            "name": "Wiki page"
+        }
+    }
+}

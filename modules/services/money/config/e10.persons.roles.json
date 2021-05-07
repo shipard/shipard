@@ -1,0 +1,7 @@
+{
+	"admin": {
+		"viewers": {
+			"services.money.exchangeRatesLists": {"default": 2}
+		}
+	}
+}

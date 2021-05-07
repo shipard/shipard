@@ -1,0 +1,44 @@
+{
+	"id": "e10pro.property.deps", "sql": "e10pro_property_deps", "name": "Odpisy majetku", "icon": "icon-chevron-circle-down",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "property", "name": "Majetek", "type": "int", "reference": "e10pro.property.property"},
+
+		{"id": "dateAccounting", "name": "Účetní datum", "type": "date"},
+		{"id": "periodBegin", "name": "Období od", "type": "date"},
+		{"id": "periodEnd", "name": "Období do", "type": "date"},
+
+		{"id": "depsPart", "name": "Druh odpisu", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "Pohyb", "1": "Daňový odpis", "2": "Účetní odpis"}
+		},
+		{"id": "rowType", "name": "Typ řádku", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {
+				"1": "Zařazení", "2": "Technické zhodnocení",
+				"4": "Snížení hodnoty", "99": "Odpis",
+				"110": "Přerušení odpisů",
+				"120": "Vyřazení"}
+		},
+
+		{"id": "amount", "name": "Částka", "type": "money"},
+		{"id": "currency", "name": "Měna", "type": "enumString", "len": 3, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
+
+		{"id": "initState", "name": "Počáteční stav", "type": "money"},
+		{"id": "depreciation", "name": "Odpis", "type": "money"},
+		{"id": "correction", "name": "Korekce", "type": "money"},
+		{"id": "usedDepreciation", "name": "Uplatněný odpis", "type": "money"},
+		{"id": "balance", "name": "Zůstatek", "type": "money"},
+
+		{"id": "text", "name": "Text", "type": "string", "len": 220},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "e10pro.property.ViewDeps"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.property.FormDep"}
+	]
+}

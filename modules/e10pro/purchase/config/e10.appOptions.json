@@ -1,0 +1,21 @@
+{
+	"e10doc-buy": {
+		"options":
+			[
+				{"cfgKey": "myBankAccountPurchases", "cfgName": "Bankovní spojení pro Výkupy (převodem)", "reference": "e10doc.base.bankaccounts"},
+				{"cfgKey": "myBankAccountPurchasesCheque", "cfgName": "Bankovní spojení pro Výkupy (šekem)", "reference": "e10doc.base.bankaccounts"},
+				{"cfgKey": "purchBankOrders", "cfgName": "Generovat převodní příkazy pro Výkupy",
+					"options": {"0": "ne", "1": "1x denně", "2": "2x denně", "3": "každou hodinu"}},
+				{"cfgKey": "purchUploadBankOrders", "cfgName": "Automaticky odesílat příkazy do banky",
+					"options": {"0": "ne", "1": "ano"}},
+				{"cfgKey": "roundPurchase", "cfgName": "Zaokrouhlení výkupů v hotovosti",
+					"options": {"1": "na koruny aritmeticky", "2": "na koruny nahoru", "3": "na koruny dolů", "0": "na haléře"}},
+				{"cfgKey": "purchItemComboByTypes", "cfgName": "U Výkupů filtrovat položky podle typů",
+					"options": {"0": "ne", "1": "ano"}},
+				{"cfgKey": "purchItemComboSearch", "cfgName": "U Výkupů povolit textové hledání položek",
+					"options": {"0": "ne", "1": "ano"}},
+				{"cfgKey": "purchItemComboCats", "cfgName": "Kategorie položek pro výkup", "reference": "e10.witems.itemcategories"},
+				{"cfgKey": "purchItemDefaultComboCat", "cfgName": "Výchozí kategorie položek pro výkup", "reference": "e10.witems.itemcategories"}
+			]
+	}
+}

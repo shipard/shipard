@@ -1,0 +1,82 @@
+{
+    "table": {
+        "name": "Chart of accounts"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "id": {
+            "name": "Account number"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "accGroup": {
+            "name": "Group of accounts"
+        },
+        "g1": {
+            "name": "Class"
+        },
+        "g2": {
+            "name": "Group"
+        },
+        "g3": {
+            "name": "Synthetic"
+        },
+        "accMethod": {
+            "name": "Accounting method"
+        },
+        "accountKind": {
+            "name": "Account type"
+        },
+        "costsType": {
+            "name": "Cost type"
+        },
+        "nontax": {
+            "name": "Non-tax"
+        },
+        "excludeFromReports": {
+            "name": "Exclude from reports"
+        },
+        "resultsType": {
+            "name": "Result type"
+        },
+        "toBalance": {
+            "name": "Use in balance"
+        },
+        "accItem": {
+            "name": "Accounting entry"
+        },
+        "useFor": {
+            "name": "Use for"
+        },
+        "useBalance": {
+            "name": "Ledger"
+        },
+        "validFrom": {
+            "name": "Valid from"
+        },
+        "validTo": {
+            "name": "Valid until"
+        },
+        "note": {
+            "name": "Description"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "syncNdx": {
+            "name": "syncNdx"
+        },
+        "syncSrc": {
+            "name": "syncSrc"
+        }
+    }
+}

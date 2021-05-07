@@ -1,0 +1,7 @@
+{
+	"id": "e10doc.ddf.isdoc",
+	"name": "ISDoc",
+	"config": [
+		{"id": "+e10.ddf.formats", "file": "ddf.json"}
+	]
+}

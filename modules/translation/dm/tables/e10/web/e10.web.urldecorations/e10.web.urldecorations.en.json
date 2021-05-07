@@ -1,0 +1,52 @@
+{
+    "table": {
+        "name": "Websites decorations"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "title": {
+            "name": "Title"
+        },
+        "url": {
+            "name": "Url"
+        },
+        "decorationType": {
+            "name": "Type"
+        },
+        "useOnThisUrl": {
+            "name": "Use on this url"
+        },
+        "useOnSubUrls": {
+            "name": "Use on sub urls"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "text": {
+            "name": "Text"
+        },
+        "useAsSubtemplate": {
+            "name": "Use as template"
+        },
+        "parentUrl": {
+            "name": "Parent url"
+        },
+        "treeLevel": {
+            "name": "Height of tree"
+        },
+        "treeId": {
+            "name": "Tree path ID"
+        },
+        "server": {
+            "name": "Server"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

@@ -1,0 +1,47 @@
+{
+    "ownerFullName": {
+        "cfgName": "Name"
+    },
+    "ownerShortName": {
+        "cfgName": "Short name"
+    },
+    "ownerDomicile": {
+        "cfgName": "State"
+    },
+    "ownerWeb": {
+        "cfgName": "Web"
+    },
+    "ownerLegalRegInfo": {
+        "cfgName": "Registration in CR/TLO"
+    },
+    "defaultAccountType": {
+        "cfgName": "Account type for new users"
+    },
+    "firstFiscalYearMonth": {
+        "cfgName": "First month of fiscal year"
+    },
+    "vatPeriod": {
+        "cfgName": "VAT period"
+    },
+    "useCentres": {
+        "cfgName": "Use centres"
+    },
+    "useProjects": {
+        "cfgName": "Track projects"
+    },
+    "ownerPhone": {
+        "cfgName": "Contact phone"
+    },
+    "ownerEmail": {
+        "cfgName": "Contact e-mail"
+    },
+    "ownerBankAccount": {
+        "cfgName": "Account number in bank"
+    },
+    "ownerVATID": {
+        "cfgName": "VAT identification number"
+    },
+    "ownerPerson": {
+        "cfgName": "Own Person"
+    }
+}

@@ -1,0 +1,29 @@
+{
+	"id": "e10.world.countries", "sql": "e10_world_countries", "name": "Země", "icon": "icon-flag",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "id", "name": "id", "type": "string", "len": 10},
+		{"id": "cca2", "name": "Kód země A2", "type": "string", "len": 2},
+		{"id": "cca3", "name": "Kód země A3", "type": "string", "len": 3},
+		{"id": "ccn3", "name": "Kód země N3", "type": "int"},
+		{"id": "nameCommon", "name": "Název běžný", "type": "string", "len": 180},
+		{"id": "nameOfficial", "name": "Název oficiální", "type": "string", "len": 180},
+		{"id": "flag", "name": "Vlajka", "type": "string", "len": 6},
+		{"id": "independent", "name": "Nezávislost", "type": "logical"},
+		{"id": "tlds", "name": "Domény", "type": "string", "len": 90},
+		{"id": "callingCodes", "name": "Telefonní předvolby", "type": "string", "len": 20},
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"}
+	],
+	"views": [
+		{
+			"id": "default", "class": "e10.world.ViewCountries",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "e10.world.ViewDetailCountry"}
+			}
+		}
+	],
+	"options": ["systemTable"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "nameCommon"},
+	"documentCard": "e10.world.DocumentCardCountry"
+}

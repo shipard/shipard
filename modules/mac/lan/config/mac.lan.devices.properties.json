@@ -1,0 +1,35 @@
+{
+	"types": {
+		"1": {
+			"name": "Název zařízení"
+		},
+		"2": {
+			"name": "Popis zařízení"
+		},
+		"3": {
+			"name": "Nainstalovaný software"
+		},
+
+		"100": {
+			"name": "Operační systém"
+		},
+		"101": {
+			"name": "Verze operačního systému"
+		}
+	},
+	"values": {
+		"100": {
+			"win": {"name": "Windows"},
+			"osx": {"name": "OS X"},
+			"linux": {"name": "Linux"}
+		},
+		"101": {
+			"wxp": {"name": "XP", "sc": "WinXP", "icon": "icon-windows"},
+			"w7": {"name": "7", "sc": "Win7", "icon": "icon-windows"},
+			"w8": {"name": "8", "sc": "Win8", "icon": "icon-windows"},
+			"w81": {"name": "8.1", "sc": "Win8.1", "icon": "icon-windows"},
+			"w10": {"name": "10", "sc": "Win10", "icon": "icon-windows"}
+		}
+	}
+}
+

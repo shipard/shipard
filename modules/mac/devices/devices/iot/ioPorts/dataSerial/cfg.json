@@ -1,0 +1,23 @@
+{
+	"name": "Sériová linka",
+	"title": "Sériová linka",
+	"useValueKind": 1,
+	"fields": {
+		"columns": [
+			{
+				"id": "speed", "name": "Rychlost portu", "type": "enumInt",
+				"enumCfg": {"cfgItem": "mac.devices.serialLineSpeed", "cfgValue": "", "cfgText": "name"}
+			},
+			{
+				"id": "mode", "name": "Nastavení portu", "type": "enumInt",
+				"enumCfg": {"cfgItem": "mac.devices.serialLineMode", "cfgValue": "", "cfgText": "name"}
+			},
+			{
+				"id": "pinRX", "name": "Pin RX (vstup)", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["in", "hwInt"]}
+			},
+			{
+				"id": "pinTX", "name": "Pin TX (výstup)", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["out", "hwInt"]}
+			}
+		]
+	}
+}

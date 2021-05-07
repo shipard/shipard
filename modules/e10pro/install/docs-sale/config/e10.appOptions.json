@@ -1,0 +1,38 @@
+{
+	"e10doc-sale": {
+		"name": "Prodej", "order": 12000, "group": "core", "help": "prirucka/117",
+		"icon": "e10-docs-invoices-out",
+		"type": "cfgFile",
+		"options":
+			[
+				{"cfgKey": "salePricesType", "cfgName": "Prodejní ceny jsou",
+					"options": {"1": "bez DPH", "2": "včetně DPH"}},
+				{"cfgKey": "automaticRoundOnSale", "cfgName": "Automatické zaokrouhlování",
+					"options": {"0": "Ne", "1": "Na základě způsobu úhrady"}},
+				{"cfgKey": "roundInvoice", "cfgName": "Zaokrouhlení faktur vydaných",
+					"options": {"1": "na koruny", "0": "na haléře"}},
+				{"cfgKey": "roundCashRegister", "cfgName": "Zaokrouhlení prodejek",
+					"options": {"1": "na koruny", "0": "na haléře"}},
+				{"cfgKey": "dueDays", "cfgName": "Počet dnů splatnosti", "placeholder": "14"},
+				{"cfgKey": "myBankAccount", "cfgName": "Bankovní spojení", "reference": "e10doc.base.bankaccounts"},
+				{"cfgKey": "author", "cfgName": "Autor automaticky generovaných dokladů", "reference": "e10.persons.persons"},
+				{"cfgKey": "useProformaOut", "cfgName": "Používat Vydané zálohové faktury",
+					"options": {"0": "ne", "1": "ano"}},
+				{"cfgKey": "useContractSale", "cfgName": "Používat Prodejní smlouvy",
+					"options": {"0": "ne", "1": "ano"}},
+				{"cfgKey": "useDeliveryNotes", "cfgName": "Používat Dodací listy",
+					"options": {"0": "ne", "1": "ano"}},
+				{"cfgKey": "usrText1Label", "cfgName": "Název uživ. textu 1", "placeholder": ""},
+				{"cfgKey": "usrText1UseInvno", "cfgName": "Používat Uživ. text 1 na VF",
+					"options": {"0": "ne", "1": "ano"}}
+			]
+	},
+	"contractsDocNumbers": {
+		"name": "Číselné řady smluv", "order": 56000, "group": "docs", "icon": "icon-play-circle",
+		"type": "viewer", "table": "e10doc.contracts.core.docNumbers", "viewer": "default"
+	},
+	"contractsKinds": {
+		"name": "Druhy smluv", "order": 57000, "group": "docs", "icon": "icon-cogs",
+		"type": "viewer", "table": "e10doc.contracts.core.kinds", "viewer": "default"
+	}
+}

@@ -1,0 +1,10 @@
+{
+	"e10doc-buy": {
+		"name": "Nákup", "order": 12000, "group": "core",
+		"icon": "e10-docs-invoices-in",
+		"type": "cfgFile",
+		"options":
+			[
+			]
+	}
+}

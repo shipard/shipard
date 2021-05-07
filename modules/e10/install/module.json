@@ -1,0 +1,7 @@
+{
+  "id": "e10.install",
+  "name": "Install Packages",
+  "tables": ["modules", "packages"],
+  "config": [
+  ]
+}

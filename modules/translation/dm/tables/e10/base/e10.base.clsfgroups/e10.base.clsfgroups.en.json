@@ -1,0 +1,13 @@
+{
+    "table": {
+        "name": "Sorting groups"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        }
+    }
+}

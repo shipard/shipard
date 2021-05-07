@@ -1,0 +1,26 @@
+{
+	"id": "e10pro.canteen.priceList", "sql": "e10pro_canteen_priceList", "name": "Ceník jídel", "icon": "icon-money",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "canteen", "name": "Jídelna", "type": "int", "reference": "e10pro.canteen.canteens", "options": ["saveOnChange"]},
+		{"id": "foodKind", "name": "Druh jídla", "type": "enumInt", "len": 4, "options": ["saveOnChange"],
+			"enumValues": {"0": "Hlavní jídlo"}},
+
+		{"id": "priceEmp", "name": "Zvýhodněná cena (zaměstnanci)", "type": "money"},
+		{"id": "priceExt", "name": "Plná cena (externisté)", "type": "money"},
+
+		{"id": "validFrom", "name": "Platnost od", "type": "date"},
+		{"id": "validTo", "name": "Platnost od", "type": "date"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "e10pro.canteen.ViewPriceList", "help": "prirucka/4704"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.canteen.FormPriceList", "help": "prirucka/4704"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

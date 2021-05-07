@@ -1,0 +1,12 @@
+{
+  "store": {
+		"widgets": {
+			"terminals.store.WidgetCashBox": 2
+		}
+	},
+	"admin": {
+		"viewers": {
+			"terminals.store.payTerminals": {"default": 2}
+		}
+	}
+}

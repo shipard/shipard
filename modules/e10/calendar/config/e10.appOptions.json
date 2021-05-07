@@ -1,0 +1,10 @@
+{
+	"calendarDays": {
+		"name": "Dny v kalendáři", "order": 600000, "group": "periods",
+		"icon": "icon-calendar",
+		"type": "viewer",
+		"table": "e10.calendar.days",
+		"viewer": "default"
+	}
+}
+

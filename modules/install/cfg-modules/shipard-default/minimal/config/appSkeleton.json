@@ -1,0 +1,47 @@
+{
+	"panels": {
+		"agendy": {
+			"url": "/app/dashboard", "zone": "sec", "objectType": "panel", "name": "", "icon": "system/actionHomePage", "order": 1000,
+			"items": {
+				"start": {
+					"t1": "Start", "object": "widget", "class": "e10.widgetDashboard", "subclass": "main_new", "icon": "icon-dot-circle-o",
+					"order": 5800, "ntfBadgeId": "ntf-badge-wkf-start"
+				},
+				"reports": {
+					"t1": "Přehledy", "object": "subMenu", "class": "Shipard.Report.WidgetReports", "icon": "system/iconReports",
+					"order": 5900,
+					"subMenu": {
+						"items": {
+							"allReports": {"creatorClass": "lib.cfg.ReportsSubMenuCreator"}
+						}
+					}
+				},
+				"persons": {"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "default", "order": 100000},
+				"bulEmails": {
+					"t1": "Hromadná pošta", "object": "viewer", "table": "e10pro.bume.bulkEmails", "viewer": "default",
+					"icon": "icon-envelope-open", "order": 400000, "enabledCfgItem": "options.experimental.bulkEmails"
+				}
+			}
+		},
+		"appOverview": {
+			"url": "/app/overview", "objectType": "panel", "zone": "sec", "name": "Přehledy", "order": 999999,
+			"disableAppMenu" : 1, "disableLeftMenu": 1, "hidden": 1,
+			"items": [
+				{"t1": "Přehled", "object": "widget", "class": "e10.widgetDashboard",
+					"subclass": "main", "icon": "icon-dashboard", "order": 5000}
+			]
+		},
+		"wikiAppPageR": {"urlRegExp": "/^\\/app\\/wiki\\-[0-9]+$/", "zone": "sec", "objectType": "redirect", "redirect": "", "order": 100},
+		"wikiAppPage": {"urlRegExp": "/^\\/app\\/wiki\\-[0-9]+\\/(.*)$/", "objectType": "function", "function": "e10.web.createWebPageWiki", "zone": "sec", "order": 100}
+	},
+	"mobileui": {
+		"start": {
+			"items": {
+				"persons": {
+					"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "default", "icon": "icon-users",
+					"order": 100000
+				}
+			}
+		}
+	}
+}

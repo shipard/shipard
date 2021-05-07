@@ -1,0 +1,37 @@
+{
+    "table": {
+        "name": "Values kinds"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "valueType": {
+            "name": "Value type"
+        },
+        "fullName": {
+            "name": "Full name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "topicType": {
+            "name": "MQTT topic"
+        },
+        "topicPattern": {
+            "name": "Structure of MQTT topic"
+        },
+        "icon": {
+            "name": "Icon"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

@@ -1,0 +1,9 @@
+{
+	"fields": {
+		"columns": [
+			{"id": "homeServer", "name": "Server", "type": "string", "len": 60, "placeholder":  "shipard.online"},
+			{"id": "roomID", "name": "Interní ID místnosti", "type": "string", "len": 40, "placeholder": "!abcf...fhdg:shipard.online"},
+			{"id": "accessToken", "name": "Přístupový token", "type": "memo"}
+		]
+	}
+}

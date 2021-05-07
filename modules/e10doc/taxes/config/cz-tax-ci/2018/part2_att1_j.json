@@ -1,0 +1,105 @@
+{
+	"name": "J. Rozdělení některých položek v případě komanditní společnosti 4)",
+	"title": "J. Rozdělení některých položek v případě komanditní společnosti 4)",
+
+	"fields": {
+		"columns": [
+			{"id": "pr1j_sl_2_r1", "type": "long", "name": "Částka připadající na komplementáře"},
+			{"id": "pr1j_sl_3_r1", "type": "long", "name": "Částka připadající na komandisty"},
+			{"id": "pr1j_sl_4_r1", "type": "long", "name": "Částka za komanditní společnost jako celek (sl. 2 + 3)"},
+
+			{"id": "pr1j_sl_2_r2", "type": "long", "name": "Částka připadající na komplementáře"},
+			{"id": "pr1j_sl_3_r2", "type": "long", "name": "Částka připadající na komandisty"},
+			{"id": "pr1j_sl_4_r2", "type": "long", "name": "Částka za komanditní společnost jako celek (sl. 2 + 3)"},
+
+			{"id": "pr1j_sl_2_r3", "type": "long", "name": "Částka připadající na komplementáře"},
+			{"id": "pr1j_sl_3_r3", "type": "long", "name": "Částka připadající na komandisty"},
+			{"id": "pr1j_sl_4_r3", "type": "long", "name": "Částka za komanditní společnost jako celek (sl. 2 + 3)"},
+
+			{"id": "pr1j_sl_2_r4", "type": "long", "name": "Částka připadající na komplementáře"},
+			{"id": "pr1j_sl_3_r4", "type": "long", "name": "Částka připadající na komandisty"},
+			{"id": "pr1j_sl_4_r4", "type": "long", "name": "Částka za komanditní společnost jako celek (sl. 2 + 3)"},
+
+			{"id": "pr1j_sl_2_r5", "type": "long", "name": "Částka připadající na komplementáře"},
+			{"id": "pr1j_sl_3_r5", "type": "long", "name": "Částka připadající na komandisty"},
+			{"id": "pr1j_sl_4_r5", "type": "long", "name": "Částka za komanditní společnost jako celek (sl. 2 + 3)"},
+
+			{"id": "pr1j_sl_2_r6", "type": "long", "name": "Částka připadající na komplementáře"},
+			{"id": "pr1j_sl_3_r6", "type": "long", "name": "Částka připadající na komandisty"},
+			{"id": "pr1j_sl_4_r6", "type": "long", "name": "Částka za komanditní společnost jako celek (sl. 2 + 3)"},
+
+			{"id": "pr1j_sl_2_r7", "type": "long", "name": "Částka připadající na komplementáře"},
+			{"id": "pr1j_sl_3_r7", "type": "long", "name": "Částka připadající na komandisty"},
+			{"id": "pr1j_sl_4_r7", "type": "long", "name": "Částka za komanditní společnost jako celek (sl. 2 + 3)"},
+
+			{"id": "pr1j_sl_2_r9", "type": "long", "name": "Částka připadající na komplementáře"},
+			{"id": "pr1j_sl_3_r9", "type": "long", "name": "Částka připadající na komandisty"},
+			{"id": "pr1j_sl_4_r9", "type": "long", "name": "Částka za komanditní společnost jako celek (sl. 2 + 3)"}
+		],
+
+		"layout": [
+			{
+				"table": {
+					"header": [
+						{
+							"c0": "Řádek",
+							"c1": "Název položky a číslo řádku II. oddílu, případně číslo řádku vyznačené tabulky přílohy č. 1 II. oddílu, s nimiž souvisí částka ze sloupce 2 nebo 3 této tabulky",
+							"c2": "Částka připadající na komplementáře",
+							"c3": "Částka připadající na komanditisty",
+							"c4": "Částka za komanditní společnost jako celek (sl. 2 + 3)",
+							"_options": {
+								"cellClasses": {"c1": "center", "c2": "center", "c3": "center", "c4": "center"}
+							}
+						},
+						{
+							"c0": "0", "c1": "1", "c2": "2", "c3": "3", "c4": "4", "c5": "5",
+							"_options": {
+								"cellClasses": { "c0": "center", "c1": "center", "c2": "center", "c3": "center", "c4": "center"}
+							}
+						}
+					],
+					"cols": {
+						"c0": " Řádek", "c1": "Název", "c2": " Částka", "c3": " Částka", "c4": " Částka"
+					},
+					"rows": [
+						{
+							"c0": "1", "c1": "Základ daně nebo daňová ztráta z ř. 200 (ř. 201)",
+							"c2": {"scInput": "pr1j_sl_2_r1"}, "c3": {"scInput": "pr1j_sl_3_r1"}, "c4": {"scInput": "pr1j_sl_4_r1"}
+						},
+						{
+							"c0": "2", "c1": "Úhrn vyňatých příjmů (základů daně a daňových ztrát) podléhajících zdanění v zahraničí (ř. 210)",
+							"c2": {"scInput": "pr1j_sl_2_r2"}, "c3": {"scInput": "pr1j_sl_3_r2"}, "c4": {"scInput": "pr1j_sl_4_r2"}
+						},
+						{
+							"c0": "3", "c1": "Nárok na odečet podle § 34 odst. 4 a § 34f až § 34h zákona (příslušný řádek sl. 2 tabulky F/c)",
+							"c2": {"scInput": "pr1j_sl_2_r3"}, "c3": {"scInput": "pr1j_sl_3_r3"}, "c4": {"scInput": "pr1j_sl_4_r3"}
+						},
+						{
+							"c0": "4", "c1": "Nárok na odečet podle § 34 odst. 4 a § 34a až § 34e zákona (příslušný řádek sl. 2 tabulky F/b)",
+							"c2": {"scInput": "pr1j_sl_2_r4"}, "c3": {"scInput": "pr1j_sl_3_r4"}, "c4": {"scInput": "pr1j_sl_4_r4"}
+						},
+						{
+							"c0": "5", "c1": "Hodnota bezúplatných plnění poskytnutých na účely vymezené v § 20 odst. 8 zákona (ř. 1 tabulky G)",
+							"c2": {"scInput": "pr1j_sl_2_r5"}, "c3": {"scInput": "pr1j_sl_3_r5"}, "c4": {"scInput": "pr1j_sl_4_r5"}
+						},
+						{
+							"c0": "6", "c1": "Ze ř. 5 hodnota bezúplatných plnění ve výši uplatněných slev na dílčím odvodu z loterií a jiných podobných her",
+							"c2": {"scInput": "pr1j_sl_2_r6"}, "c3": {"scInput": "pr1j_sl_3_r6"}, "c4": {"scInput": "pr1j_sl_4_r6"}
+						},
+						{
+							"c0": "7", "c1": "Celkový nárok na slevy na dani podle § 35 odst. 1 zákona (ř. 4 tabulky H)",
+							"c2": {"scInput": "pr1j_sl_2_r7"}, "c3": {"scInput": "pr1j_sl_3_r7"}, "c4": {"scInput": "pr1j_sl_4_r7"}
+						},
+						{
+							"c0": "8", "c1": "(neobsazeno)"
+						},
+						{
+							"c0": "9", "c1": "Úhrn daně zaplacené v zahraničí, kterou lze započíst metodou úplného a prostého zápočtu (ř. 4 tabulky I)",
+							"c2": {"scInput": "pr1j_sl_2_r9"}, "c3": {"scInput": "pr1j_sl_3_r9"}, "c4": {"scInput": "pr1j_sl_4_r9"}
+						}
+					]
+				}
+			}
+		]
+	}
+}

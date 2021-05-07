@@ -1,0 +1,27 @@
+[
+  {
+    "table": "e10doc.core.heads",
+    "views": {
+      "bank": {
+				"id": "bank", "class": "e10doc.bank.libs.ViewBankDocs", "help": "prirucka/76",
+				"addWizard": {"class": "e10doc.bank.libs.AddWizard"},
+				"details": {
+					"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10doc.bank.libs.ViewDetailBankDoc"}
+				},
+				"tools": [
+					{"class": "lib.tools.viewer.bank.ConfirmNewWizard", "icon": "icon-star", "text": "Potvrdit nové výpisy"},
+					{"class": "lib.tools.viewer.bank.CloseConfirmedWizard", "icon": "icon-check-circle", "text": "Uzavřít potvrzené výpisy"}
+				]
+			}
+		},
+    "forms": [
+      {"id": "bank", "class": "e10doc.bank.libs.FormBankDoc", "help": "prirucka/76"}
+    ]
+  },
+  {
+    "table": "e10doc.core.rows",
+    "forms": [
+      {"id": "bank", "class": "e10doc.bank.libs.FormBankDocRow"}
+    ]
+  }
+]

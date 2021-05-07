@@ -1,0 +1,8 @@
+{
+	"generic-escp": {
+		"name": "Výchozí ovladač - běžné POS tiskárny", "driver": "terminals/base/config/posPrinterDrivers/generic-escp.json"
+	},
+	"brother-ql": {
+		"name": "Brother QL tiskárny štítků", "driver": "terminals/base/config/posPrinterDrivers/brother-ql.json"
+	}
+}

@@ -1,0 +1,13 @@
+{
+  "id": "integrations.hooks.in",
+  "name": "integrations - incoming web hooks",
+  "tables": [
+		"hooks", "data"
+	],
+	"modules": ["integrations/base"],
+  "config": [
+		{"id": "+appOptions", "file": "appOptions.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+		{"id": "+integration.hooks.in.types", "file": "hooksTypes.json"}
+  ]
+}

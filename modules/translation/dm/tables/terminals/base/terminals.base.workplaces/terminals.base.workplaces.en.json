@@ -1,0 +1,49 @@
+{
+    "table": {
+        "name": "Workplaces"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "cashBox": {
+            "name": "Cashbox"
+        },
+        "centre": {
+            "name": "Centre"
+        },
+        "printerDefault": {
+            "name": "Default printer"
+        },
+        "printerPOS": {
+            "name": "Printer for receipts"
+        },
+        "printerLabels": {
+            "name": "Printer for labels"
+        },
+        "cameraStartDocument": {
+            "name": "Starting camera"
+        },
+        "cameraEndDocument": {
+            "name": "Ending camera"
+        },
+        "allowedFrom": {
+            "name": "Allowed from IP addresses"
+        },
+        "useTerminal": {
+            "name": "Use Terminal"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

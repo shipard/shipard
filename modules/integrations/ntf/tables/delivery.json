@@ -1,0 +1,38 @@
+{
+	"id": "integrations.ntf.delivery", "sql": "integrations_ntf_delivery", "name": "Doručování notifikací", "icon": "icon-truck",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "channel", "name": "Notifikační kanál", "type": "int", "reference":  "integrations.ntf.channels"},
+		{"id": "subject", "name": "Předmět", "type": "string", "len": 200},
+
+		{"id": "ntfSource", "name": "Zdroj notifikace", "type": "enumInt",
+			"enumValues": {"0": "Issue"}},
+
+		{"id": "payload", "name": "Data pro doručení", "type": "memo"},
+
+		{"id": "sourceTableNdx", "name": "Zdrojová tabulka záznamu", "type": "short"},
+		{"id": "sourceRecNdx", "name": "Zdrojový záznam", "type": "int"},
+		{"id": "sourceCfgNdx", "name": "Zdrojové nastavení", "type": "int"},
+
+		{"id": "levelCurrent", "name": "Současná úroveň eskalace", "type": "short"},
+		{"id": "levelMax", "name": "Současná úroveň eskalace", "type": "short"},
+
+		{"id": "repeatCurrent", "name": "Současné počet opakování", "type": "short"},
+		{"id": "repeatMax", "name": "Maximální počet opakování", "type": "short"},
+
+		{"id": "dtCreated","name": "Okamžik vytvoření", "type": "timestamp"},
+		{"id": "dtDelivery","name": "Okamžik doručení", "type": "timestamp"},
+		{"id": "dtNextTry","name": "Okamžik dalšího pokusu o doručení", "type": "timestamp"},
+
+		{"id": "doDelivery", "name": "Doručit", "type": "short"},
+		{"id": "failedCounter", "name": "Počet selhání doručení", "type": "int"},
+		{"id": "lastStatus", "name": "Výsledek posledního odeslání", "type": "memo"}
+	],
+	"options": ["systemTable"],
+	"forms": [
+		{"id": "default", "class": "integrations.ntf.FormDelivery"}
+	],
+	"views": [
+		{"id": "default", "class": "integrations.ntf.ViewDelivery"}
+	]
+}

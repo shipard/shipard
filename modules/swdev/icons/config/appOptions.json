@@ -1,0 +1,10 @@
+{
+	"swdevDocumentation": {
+		"options":
+		[
+			{"cfgKey": "wikiPageIconsMain", "cfgName": "Hlavní Wiki stránka pro Ikony", "reference": "e10pro.kb.texts"},
+			{"cfgKey": "wikiPageIconsApp", "cfgName": "Wiki stránka pro aplikační Ikony", "reference": "e10pro.kb.texts"}
+		]
+	}
+}
+

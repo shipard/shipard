@@ -1,0 +1,138 @@
+{
+	"Objednávka přijatá": {
+		"de": "Bestellung",
+		"en": "Order"
+	},
+	"číslo": {
+		"de": "Nr.",
+		"en": "No."
+	},
+	"Dodavatel": {
+		"de": "Lieferant",
+		"en": "Supplier"
+	},
+	"Odběratel": {
+		"de": "Kunde",
+		"en": "Customer"
+	},
+	"IČ": {
+		"de": "Steuer-Nr",
+		"en": "Reg. No."
+	},
+	"DIČ": {
+		"de": "USt-IdNr.",
+		"en": "VAT No."
+	},
+	"Banka": {
+		"de": "Bank",
+		"en": "Bank"
+	},
+	"Bankovní spojení": {
+		"de": "Konto Nr.",
+		"en": "Account No."
+	},
+	"Způsob úhrady": {
+		"de": "Zahlungsart",
+		"en": "Payment Method"
+	},
+	"Variabilní symbol": {
+		"de": "Zahlungsreferenz",
+		"en": "Payment ID"
+	},
+	"Specifický symbol": {
+		"de": "",
+		"en": ""
+	},
+	"Datum vystavení": {
+		"de": "Ausstellungsdatum",
+		"en": "Date of issue"
+	},
+	"Datum u.zd.plnění": {
+		"de": "Datum der steuerbaren Leistung",
+		"en": "Delivery date"
+	},
+	"Datum splatnosti": {
+		"de": "Fälligkeitsdatum",
+		"en": "Payment date"
+	},
+	"Položka": {
+		"de": "Artikel",
+		"en": "Item"
+	},
+	"Množství": {
+		"de": "Menge",
+		"en": "Quantity"
+	},
+	"Jed.": {
+		"de": "Einheit",
+		"en": "Unit"
+	},
+	"Cena/jed.": {
+		"de": "Einzelpreis",
+		"en": "Unit Price"
+	},
+	"Cena celkem": {
+		"de": "Gesamtpreis",
+		"en": "Total Price"
+	},
+	"Celkem k úhradě": {
+		"de": "Rechnungsbetrag",
+		"en": "Total to be paid"
+	},
+	"Vystavil": {
+		"de": "Ausgestellt von",
+		"en": "Issued by"
+	},
+	"Převodním příkazem": {
+		"de": "Zahlungsauftrag",
+		"en": "Bank transfer"
+	},
+	"Základ": {
+		"de": "Basis",
+		"en": "Tax Base"
+	},
+	"Daň": {
+		"de": "MWSt.",
+		"en": "Tax"
+	},
+	"Celkem": {
+		"de": "Gesamt",
+		"en": "Total"
+	},
+	"DPH": {
+		"de": "MWSt.",
+		"en": "VAT"
+	},
+	"Zaokrouhlení": {
+		"de": "Abrundung",
+		"en": "Rounding"
+	},
+	"Datumy a platební údaje": {
+		"de": "Zahlungsbedingungen",
+		"en": "Payment conditions"
+	},
+	"Účtované období": {
+		"de": "Rechnungszeitraum",
+		"en": "Period"
+	},
+	"Sazba": {
+		"de": "Satz",
+		"en": "Rate"
+	},
+	"EU/Služby": {
+		"de": "EU/Dienstleistungen",
+		"en": "EU/Services"
+	},
+	"EU/Zboží": {
+		"de": "EU/Ware",
+		"en": "EU/wares"
+	},
+	"NS": {
+		"de": "NS",
+		"en": "SP"
+	},
+	"slovo": {
+		"de": "wort",
+		"en": "word"
+	}
+}

@@ -1,0 +1,8 @@
+[
+	{"name": "Stavy položek", "class": "e10doc.inventory.reportInventoryStates", "icon": "e10-witems-items", "group": "e10doc-inventory", "order": 1000},
+	{"name": "Rekapitulace skladu", "class": "e10doc.inventory.reportInventoryWarehouse", "icon": "icon-check-square", "group": "e10doc-inventory", "order": 2000},
+	{"name": "Mínusy", "class": "e10doc.inventory.reportInventoryMinus", "icon": "icon-minus-square", "group": "e10doc-inventory", "order": 90100},
+	{"name": "Problémy", "class": "e10doc.inventory.reportInventoryTroubles", "icon": "icon-exclamation-triangle", "group": "e10doc-inventory", "order": 90200},
+	{"name": "Chyby", "class": "e10doc.inventory.reportInventoryErrors", "icon": "icon-exclamation-circle", "group": "e10doc-inventory", "order": 90300},
+	{"name": "Příjemky bez faktury", "class": "e10doc.inventory.reportBalanceStockInInvoice", "icon": "e10-docs-stock-in", "group": "e10doc-balance", "order": 5000}
+]

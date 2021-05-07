@@ -1,0 +1,23 @@
+[
+  {
+    "table": "e10doc.core.heads",
+    "views": [
+      {"id": "proformaOut", "class": "e10doc.proformaout.View", "detail": "e10doc.proformaout.ViewDetail", "help": "prirucka/4863"}
+    ],
+    "forms": [
+      {"id": "proformaOut", "class": "e10doc.proformaout.Form", "help": "prirucka/4476"}
+    ],
+		"reports": [
+			{
+				"id": "proformaout", "name": "Faktura", "class": "e10doc.proformaout.Report",
+				"queryCol": "docType", "queryColValues": ["invpo"], "email": 1
+			}
+		]
+  },
+  {
+    "table": "e10doc.core.rows",
+    "forms": [
+      {"id": "proformaOut", "class": "e10doc.proformaout.FormRows"}
+    ]
+  }
+]

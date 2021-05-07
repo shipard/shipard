@@ -1,0 +1,10 @@
+{
+	"1": {
+		"id": "textContent",
+		"name": "Textový obsah", "tabLabel": "Text", "icon": "icon-file-text-o"
+	},
+	"2": {
+		"id": "exif",
+		"name": "EXIF", "tabLabel": "EXIF", "icon": "icon-camera"
+	}
+}

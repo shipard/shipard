@@ -1,0 +1,60 @@
+{
+	"panels": {
+		"agendy": {
+			"items": {
+				"reports": {
+					"subMenu": {
+						"items": {
+							"company": {
+								"t1": "Firma", "object": "widget", "class": "e10.widgetDashboard", "subclass": "wkfFirstReport", "icon": "icon-building",
+								"order": 1000
+							}
+						}
+					}
+				}
+			}
+		},
+		"docs": {
+			"smallItems": [
+				{"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "default", "icon": "e10-persons-persons", "order": 100000},
+				{"t1": "Položky", "object": "viewer", "table": "e10.witems.items", "viewer": "default", "icon": "e10-witems-items", "order": 200000}
+			]
+		},
+		"reports": {
+			"url": "/app/reports", "objectType": "panel", "zone": "sec", "name": "Přehledy", "order": 680000,
+			"items": {
+				"other": {"t1": "Ostatní", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10pro-other", "icon": "icon-file-text-o", "order": 999000},
+				"tests": {"t1": "Kontroly", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10-checks", "icon": "icon-exclamation-triangle", "order": 999999}
+			}
+		}
+	},
+	"mobileui": {
+		"records": {
+			"groups": {
+				"other": {
+					"name": "Ostatní", "order": 700000,
+					"items": {
+						"witems": {
+							"t1": "Položky", "object": "viewer", "table": "e10.witems.items", "viewer": "default", "icon": "e10-witems-items", "order": 100000
+						}
+					}
+				}
+			}
+		},
+		"company": {
+			"name": "Firma",
+			"type": "menu",
+			"role": "bsass",
+			"groups": {
+				"companyOverview": {
+					"order": 300,
+					"items": {
+						"dashboard": {
+							"t1": "Přehled", "object": "dashboard", "dashboard": "company", "icon": "icon-dashboard", "order": 100
+						}
+					}
+				}
+			}
+		}
+	}
+}

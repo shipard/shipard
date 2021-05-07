@@ -1,0 +1,7 @@
+{
+	"id": "e10sync.export",
+	"name": "Export pro Synchronizaci",
+	"tables": [],
+	"extensions": ["core"],
+	"modules": []
+}

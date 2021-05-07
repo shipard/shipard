@@ -1,0 +1,76 @@
+{
+    "table": {
+        "name": "Network devices"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "lan": {
+            "name": "Network"
+        },
+        "fullName": {
+            "name": "Full name"
+        },
+        "id": {
+            "name": "Short name/ID"
+        },
+        "evNumber": {
+            "name": "Registration number"
+        },
+        "deviceType": {
+            "name": "Device type"
+        },
+        "deviceKind": {
+            "name": "Device kind"
+        },
+        "deviceTypeName": {
+            "name": "Type name"
+        },
+        "place": {
+            "name": "Place"
+        },
+        "placeDesc": {
+            "name": "Place specification"
+        },
+        "rack": {
+            "name": "Rack"
+        },
+        "property": {
+            "name": "Property"
+        },
+        "disableSNMP": {
+            "name": "Disable SNMP monitoring"
+        },
+        "disableInstalledSW": {
+            "name": "Disable installed application monitoring"
+        },
+        "alerts": {
+            "name": "Alert outages"
+        },
+        "hideFromDR": {
+            "name": "Hide from dashboard rack"
+        },
+        "macDeviceType": {
+            "name": "Type specification"
+        },
+        "macDeviceCfg": {
+            "name": "MAC device setting"
+        },
+        "localServer": {
+            "name": "Local server"
+        },
+        "macDataSource": {
+            "name": "Data source for monitoring"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "uid": {
+            "name": "Unique ID"
+        }
+    }
+}

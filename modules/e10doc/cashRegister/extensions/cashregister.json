@@ -1,0 +1,36 @@
+[
+  {
+    "table": "e10doc.core.heads",
+		"columns": [
+			{"id": "cashIn", "name": "Přijatá hotovost", "type": "money"},
+			{"id": "cashOut", "name": "Vrácená hotovost", "type": "money"}
+		],
+    "views": {
+      "cashregister": {
+        "id": "cashregister", "class": "e10doc.cashRegister.libs.ViewCashRegisterDocs", "help": "prirucka/4444",
+         "details": {
+           "detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10doc.cashRegister.libs.ViewDetailCashRegisterDoc", "order": 1000},
+					 "accounting": {"title": "Účtování", "icon": "x-stamp", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
+         }
+      },
+      "cashregisterall": {
+        "id": "cashregisterall", "class": "e10doc.cashRegister.libs.ViewCashRegisterDocsAll", "help": "prirucka/4444",
+         "details": {
+           "detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10doc.cashRegister.libs.ViewDetailCashRegisterDoc", "order": 1000},
+					 "accounting": {"title": "Účtování", "icon": "x-stamp", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
+         }
+      }
+    },
+    "forms": [
+      {"id": "cashregister", "class": "e10doc.cashRegister.libs.FormCashRegisterDoc", "help": "prirucka/4445"}
+    ],
+		"reports": [{"id": "bill", "name": "Účtenka", "class": "e10doc.cashRegister.libs.BillReport",
+									"directPrint": 1, "printerClass": "pos", "queryCol": "docType", "queryColValue": "cashreg"}]
+  },
+  {
+    "table": "e10doc.core.rows",
+    "forms": [
+      {"id": "cashregister", "class": "e10doc.cashRegister.libs.FormCashRegisterDocRow"}
+    ]
+  }
+]

@@ -1,0 +1,7 @@
+{
+	"admin": {
+		"viewers": {
+			"services.persons.persons": {"default": 2}
+		}
+	}
+}

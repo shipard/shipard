@@ -1,0 +1,10 @@
+{
+	"40": {"title": "Předání do užívání", "sign": -1, "propertyKinds": [0, 2], "columns": ["person", "centre", "placeTo"]},
+	"41": {"title": "Vrácení z užívání", "sign": 1, "propertyKinds": [0, 2], "columns": ["person", "centre", "placeTo"]},
+
+	"50": {"title": "Zápůjčka", "sign": -1, "propertyKinds": [0], "columns": ["person", "centre", "placeTo"]},
+	"51": {"title": "Vrácení zápůjčky", "sign": 1, "propertyKinds": [0], "columns": ["person", "centre", "placeTo"]},
+
+	"70": {"title": "Výdej", "type": 1, "sign": -1, "propertyKinds": [1], "columns": ["person", "quantity", "placeFrom", "placeTo"]},
+	"71": {"title": "Příjem", "type": 1, "sign": 1, "propertyKinds": [1], "columns": ["person", "quantity", "placeFrom", "placeTo"]}
+}

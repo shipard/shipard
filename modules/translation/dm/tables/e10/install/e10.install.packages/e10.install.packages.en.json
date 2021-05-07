@@ -1,0 +1,19 @@
+{
+    "table": {
+        "name": "Installation packages"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "packageId": {
+            "name": "Package"
+        },
+        "packageVersion": {
+            "name": "Version"
+        },
+        "packageCheckSum": {
+            "name": "Checksum"
+        }
+    }
+}

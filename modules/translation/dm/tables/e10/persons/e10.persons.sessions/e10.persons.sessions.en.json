@@ -1,0 +1,16 @@
+{
+    "table": {
+        "name": "Sessions"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "person": {
+            "name": "Person"
+        },
+        "created": {
+            "name": "Created"
+        }
+    }
+}

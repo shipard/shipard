@@ -1,0 +1,6 @@
+{
+	"e10-base-userAuth": {
+		"name": "Poslední přihlášení",
+		"classId": "e10.base.PersonLastUseUserAuth"
+	}
+}

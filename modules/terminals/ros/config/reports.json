@@ -1,0 +1,3 @@
+[
+	{"name": "Kontrola EET", "class": "terminals.ros.ReportTest", "group": "e10-checks"}
+]

@@ -1,0 +1,56 @@
+{
+	"id": "wkf.core.filters", "sql": "wkf_core_filters", "name": "Filtry zpráv", "icon": "icon-filter",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "fullName", "name": "Název", "type": "string", "len": 100},
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+		{"id": "qrySubjectType", "name": "Předmět zprávy", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "wkf.filters.queryTypes.string", "cfgValue": "", "cfgText": "name"}},
+		{"id": "qrySubjectValue", "name": "Předmět", "type": "string", "len": 120},
+
+		{"id": "qryEmailFromType", "name": "E-mail OD", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "wkf.filters.queryTypes.string", "cfgValue": "", "cfgText": "name"}},
+		{"id": "qryEmailFromValue", "name": "E-mail OD", "type": "string", "len": 120},
+
+		{"id": "qryEmailToType", "name": "E-mail PRO", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "wkf.filters.queryTypes.string", "cfgValue": "", "cfgText": "name"}},
+		{"id": "qryEmailToValue", "name": "E-mail PRO", "type": "string", "len": 120},
+
+		{"id": "qryTextType", "name": "Text zprávy", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "wkf.filters.queryTypes.string", "cfgValue": "", "cfgText": "name"}},
+		{"id": "qryTextValue", "name": "Text zprávy", "type": "string", "len": 120},
+
+		{"id": "qrySectionType", "name": "Sekce", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "wkf.filters.queryTypes.reference", "cfgValue": "", "cfgText": "name"}},
+		{"id": "qrySectionValue", "name": "Sekce", "type": "int", "reference":  "wkf.base.sections"},
+
+		{"id": "actionSetSection", "name": "Nastavit sekci", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "actionSetSectionValue", "name": "Sekce", "type": "int", "reference":  "wkf.base.sections"},
+		{"id": "actionSetIssueKind", "name": "Nastavit druh zprávy", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "actionSetIssueKindValue", "name": "Druh zprávy", "type": "int", "reference":  "wkf.base.issuesKinds"},
+		{"id": "actionSetPriority", "name": "Nastavit důležitost", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "actionSetPriorityValue", "name": "Důležitost", "type": "enumInt",
+			"enumValues": {"10": "Běžná", "5": "Vysoká", "15": "Nízká"}},
+		{"id": "actionSetDocState", "name": "Nastavit stav", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "actionSetDocStateValue", "name": "Stav", "type": "enumInt", "len": 4,
+			"enumCfg": {"cfgItem": "wkf.issues.docStates.default", "cfgValue": "", "cfgText": "stateName"}},
+
+		{"id": "stopAfterApply", "name": "Po aplikaci filtru ukončit další zpracování", "type": "logical"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": {
+		"default": {"id": "default", "class": "wkf.core.ViewFilters", "help": "prirucka/4762"}
+	},
+	"forms": [
+		{"id": "default", "class": "wkf.core.FormFilter", "help": "prirucka/4762"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

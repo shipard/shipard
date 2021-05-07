@@ -1,0 +1,11 @@
+{
+	"0": {
+		"name": "Uživatelský komentář", "icon": "icon-keyboard"
+	},
+	"1": {
+		"name": "Workflow změna issue", "icon": "icon-pencil"
+	},
+	"2": {
+		"name": "Aktualizace výstrahy", "icon": "icon-exclamation-triangle"
+	}
+}

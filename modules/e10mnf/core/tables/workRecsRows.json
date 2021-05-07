@@ -1,0 +1,33 @@
+{
+	"id": "e10mnf.core.workRecsRows", "sql": "e10mnf_core_workRecsRows", "name": "Řádky pracovních záznamů", "icon": "icon-hand",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+		{"id": "workRec", "name": "id", "type": "int"},
+
+		{"id": "subject", "name": "Předmět", "type": "string", "len": 120},
+
+		{"id": "money", "name": "Částka", "type": "money"},
+
+		{"id": "workOrder", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
+
+		{"id": "dateBegin", "name": "Datum/čas od", "type": "timestamp"},
+		{"id": "dateEnd", "name": "Datum/čas do", "type": "timestamp"},
+
+		{"id": "beginDate", "name": "Datum od", "type": "date"},
+		{"id": "beginTime", "name": "Čas od", "type": "time"},
+		{"id": "beginDateTime", "name": "Datum/čas od", "type": "timestamp"},
+		{"id": "endDate", "name": "Datum od", "type": "date"},
+		{"id": "endTime", "name": "Čas od", "type": "time"},
+		{"id": "endDateTime", "name": "Datum/čas od", "type": "timestamp"},
+
+		{"id": "timeLen", "name": "Celkový čas", "type": "timeLen"},
+		{"id": "timeLenHours", "name": "Celkový čas v hodinách", "type": "number", "dec": 2},
+
+		{"id": "person", "name": "Pracovník", "type": "int", "reference": "e10.persons.persons"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10mnf.core.FormWorkRecRow"}
+	],
+	"options": ["systemTable"]
+}

@@ -1,0 +1,24 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+	<title>test</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="file://{{fsRoot}}/e10-modules/wwwlibs/Font-Awesome44/less/font-awesome.css">
+	<link rel="stylesheet" href="file://{{templateRoot}}style.css" type="text/css"/>
+</head>
+<body>
+	{{{stdReportHeader}}}
+    <table class='fullWidth'>
+        <tr>
+            <td style='vertical-align: top;'>
+                {{{@renderTable;dataItem:data.properties.propsCore;tableClass:rowsSmall}}}
+                {{{@renderContent;dataItem:data.properties.propsExtended;tableClass:rowsSmall}}}
+            </td>
+        </tr>
+    </table>
+    <br/>
+    <h3>Vývoj hodnoty</h3>
+	{{{@renderTable;dataItem:data.properties.deps;tableClass:rowsSmall}}}
+</body>
+</html>
+

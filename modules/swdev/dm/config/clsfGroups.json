@@ -1,0 +1,10 @@
+{
+	"swDevDMTables": {
+		"name": "Tabulky datového modelu", "label": "Štítky", "icon": "icon-table",
+		"tables": ["swdev.dm.tables"]
+	},
+	"swDevDMTerms": {
+		"name": "Pojmy datového modelu", "label": "Štítky", "icon": "icon-hashtag",
+		"tables": ["swdev.dm.terms"]
+	}
+}

@@ -1,0 +1,9 @@
+{
+	"id": "e10doc.ros",
+	"name": "Evidence tržeb",
+	"tables": ["journal"],
+	"config": [
+	],
+	"modules": ["e10pro/install/docs-core"]
+}
+

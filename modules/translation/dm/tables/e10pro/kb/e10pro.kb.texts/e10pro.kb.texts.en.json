@@ -1,0 +1,79 @@
+{
+    "table": {
+        "name": "Texts"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "mainType": {
+            "name": "Main type"
+        },
+        "thisType": {
+            "name": "Page type"
+        },
+        "title": {
+            "name": "Title"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "text": {
+            "name": "Text"
+        },
+        "perex": {
+            "name": "Perex"
+        },
+        "author": {
+            "name": "Author"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "project": {
+            "name": "Project"
+        },
+        "section": {
+            "name": "Section"
+        },
+        "oldSection": {
+            "name": "Section"
+        },
+        "ownerText": {
+            "name": "Parent text"
+        },
+        "mainOwnerText": {
+            "name": "Root text"
+        },
+        "treeLevel": {
+            "name": "Height of tree"
+        },
+        "treeId": {
+            "name": "Tree path ID"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "subTitle": {
+            "name": "Name"
+        },
+        "icon": {
+            "name": "Icon"
+        },
+        "pageType": {
+            "name": "Page type"
+        },
+        "srcTableNdx": {
+            "name": "Table"
+        },
+        "srcRecNdx": {
+            "name": "Record"
+        },
+        "srcLanguage": {
+            "name": "Language"
+        }
+    }
+}

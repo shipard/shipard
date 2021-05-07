@@ -1,0 +1,5 @@
+{
+	"name": "ESP32 WiFi Generic",
+	"title": "ESP32 WiFi Generic",
+	"gpioLayout": "esp32-generic"
+}

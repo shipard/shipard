@@ -1,0 +1,35 @@
+{{#data.user.roles.bacstgm}}
+
+<div class="text-center">
+	<a href="nastaveni-cipu"><button class="btn btn-lg btn-primary">Nastavení čipu</button></a>
+
+	<hr/>
+
+	{{#data.scenarios}}
+		<button class="btn btn-lg btn-success">{{title}}</button>
+	{{/data.scenarios}}
+</div>
+
+{{/data.user.roles.bacstgm}}
+
+{{^data.user.roles.bacstgm}}
+	<h1>Kontrola čipu</h1>
+	{{#data.tagInfo.assignedToPerson}}
+		<h3>{{data.tagInfo.currentAssignment.personFullName}}</h3>
+
+		{{#data.tagInfo.otherKeys}}
+			<i class="{{@icon;dataItem:keyIcon}}"></i> {{key}}
+			<br>
+		{{/data.tagInfo.otherKeys}}
+
+		{{#data.tagInfo.personContacts.0}}
+			<h4>Kontaktní údaje na Vás:</h4>
+			{{#data.tagInfo.personContacts}}
+				<i class="{{@icon;dataItem:icon}}"></i> {{text}} <br>
+			{{/data.tagInfo.personContacts}}
+		{{/data.tagInfo.personContacts.0}}
+	{{/data.tagInfo.assignedToPerson}}
+{{/data.user.roles.bacstgm}}
+
+
+

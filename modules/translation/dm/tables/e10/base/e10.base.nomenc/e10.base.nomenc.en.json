@@ -1,0 +1,24 @@
+{
+    "table": {
+        "name": "Nomenclature"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "nomencType": {
+            "name": "Type of nomenclature",
+            "label": "Type"
+        },
+        "nomencItem": {
+            "name": "Nomenclature item",
+            "label": "Value"
+        },
+        "tableId": {
+            "name": "Table"
+        },
+        "recId": {
+            "name": "Row"
+        }
+    }
+}

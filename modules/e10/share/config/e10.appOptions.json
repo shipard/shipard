@@ -1,0 +1,13 @@
+{
+	"shares": {
+		"name": "Sdílení", "order": 16000, "group": "system",
+		"icon": "icon-share-alt",
+		"type": "cfgFile",
+		"options":
+		[
+			{"cfgKey": "useShares", "cfgName": "Používat Sdílení",
+				"options": {"0": "ne", "1": "ano"}}
+		]
+	}
+}
+

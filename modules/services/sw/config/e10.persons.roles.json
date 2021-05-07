@@ -1,0 +1,19 @@
+{
+  "svcsw": {
+		"name": "Software",
+		"viewers": {
+			"mac.sw.sw": {"default": 2},
+			"mac.sw.swVersions": {"default": 2},
+			"mac.sw.swNames": {"default": 2},
+			"mac.sw.swIds": {"default": 2},
+
+			"mac.sw.publishers": {"default": 2},
+			"mac.sw.publishersNames": {"default": 2},
+
+			"mac.sw.categories": {"default": 2},
+
+			"services.sw.swQueue": {"default": 2}
+
+		}
+	}
+}

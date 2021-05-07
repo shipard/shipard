@@ -1,0 +1,25 @@
+{
+	"id": "e10pro.canteen.menus", "sql": "e10pro_canteen_menus", "name": "Jídelní lístky", "icon": "icon-file-text-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Polévka", "type": "string", "len": 80, "comboViewer": "comboSoup", "comboTable": "e10pro.canteen.menuFoods"},
+		{"id": "canteen", "name": "Jídelna", "type": "int", "reference": "e10pro.canteen.canteens"},
+		{"id": "dateFrom", "name": "Datum od", "type": "date"},
+		{"id": "dateTo", "name": "Datum do", "type": "date"},
+		{"id": "dateId", "name": "Týden", "type": "string", "len": 10, "options": ["ascii"]},
+
+		{"id": "orderState", "name": "Stav objednávání", "type": "enumInt",
+			"enumValues": {"0": "otevřená", "1": "výběr jiného jídla", "2": "uzavřená"}},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "e10pro.canteen.ViewMenus", "help": "prirucka/4701"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.canteen.FormMenu", "help": "prirucka/4701"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10pro.canteen.menus.docStates"}
+}

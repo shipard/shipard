@@ -1,0 +1,16 @@
+{
+	"main": {
+		"panels": {
+			"canteens": {
+				"creatorClass": "e10pro.canteen.CanteenDashboardPanelsCreator", "order": 1800
+			}
+		}
+	},
+	"main_new": {
+		"panels": {
+			"canteens": {
+				"creatorClass": "e10pro.canteen.CanteenDashboardPanelsCreator", "order": 1800
+			}
+		}
+	}
+}

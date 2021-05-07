@@ -1,0 +1,20 @@
+{
+	"id": "mac.admin.admins", "sql": "mac_admin_admins", "name": "Správci", "icon": "icon-user-secret",
+	"columns": [
+		{"id": "ndx", "name": "ndx", "type": "int_ai"},
+
+		{"id": "login", "name": "Login", "type": "string", "len": 25},
+		{"id": "name", "name": "Jméno", "type": "string", "len": 80},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "mac.admin.ViewAdmins", "detail": "mac.admin.ViewDetailAdmin"}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.admin.FormAdmin"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"}
+}

@@ -1,0 +1,7 @@
+{
+	"other": {"name": "Ostatní"},
+	"room": {"name": "Místnost"},
+	"floor": {"name": "Patro"},
+	"building": {"name": "Budova"},
+	"lcloffc": {"name": "Pobočka"}
+}

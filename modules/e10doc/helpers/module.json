@@ -1,0 +1,14 @@
+{
+  "id": "e10doc.helpers",
+  "name": "Pomocné aparáty k dokladům",
+  "tables": [
+		"rowsSettings", "wkfSectionsRelations"
+  ],
+  "config": [
+		{"id": "+appOptions", "file": "e10.appOptions.json"},
+		{"id": "+e10.base.doclinks", "file": "docLinks.json"},
+	  {"id": "+e10doc.helpers.rowsSettingsTypes", "file": "rowsSettingsTypes.json"},
+		{"id": "+e10doc.helpers.queryTypes", "file": "queryTypes.json"},
+		{"id": "+e10doc.helpers.setValueTypes", "file": "setValueTypes.json"}
+  ]
+}

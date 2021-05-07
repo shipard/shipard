@@ -1,0 +1,54 @@
+{
+	"name": "Náklady",
+	"datasets": [
+		{
+			"table": "e10doc.debs.accounts",
+			"name": "Třída 5 - náklady",
+			"defaultValues": {"accGroup": 0, "accMethod": "debs", "docState": 4000, "docStateMain": 2},
+			"data": [
+				{"rec": {"id":"501100","fullName":"Spotřeba materiálu","shortName":"Spotřeba materiálu","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"502100","fullName":"Spotřeba energie","shortName":"Spotřeba energie","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"503100","fullName":"Spotřeba ostatních neskladovatelných dodávek","shortName":"Spotřeba ostatních neskladovatelných dodávek","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"504100","fullName":"Prodané zboží","shortName":"Prodané zboží","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"511100","fullName":"Opravy a udržování","shortName":"Opravy a udržování","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"512100","fullName":"Cestovné","shortName":"Cestovné","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"513100","fullName":"Náklady na reprezentaci","shortName":"Náklady na reprezentaci","accountKind":2,"nontax":1,"resultsType":1}},
+				{"rec": {"id":"518100","fullName":"Ostatní služby","shortName":"Ostatní služby","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"521100","fullName":"Mzdové náklady","shortName":"Mzdové náklady","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"524100","fullName":"Zákonné sociální pojištění","shortName":"Zákonné sociální pojištění","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"525100","fullName":"Ostatní sociální pojištění","shortName":"Ostatní sociální pojištění","accountKind":2,"nontax":1,"resultsType":1}},
+				{"rec": {"id":"527100","fullName":"Zákonné sociální náklady","shortName":"Zákonné sociální náklady","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"528100","fullName":"Ostatní sociální náklady","shortName":"Ostatní sociální náklady","accountKind":2,"nontax":1,"resultsType":1}},
+				{"rec": {"id":"531100","fullName":"Daň silniční","shortName":"Daň silniční","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"532100","fullName":"Daň z nemovitostí","shortName":"Daň z nemovitostí","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"538100","fullName":"Ostatní daně a poplatky","shortName":"Ostatní daně a poplatky","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"541100","fullName":"Smluvní pokuty a úroky z prodlení","shortName":"Smluvní pokuty a úroky z prodlení","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"542100","fullName":"Ostatní pokuty a penále","shortName":"Ostatní pokuty a penále","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"543100","fullName":"Odpis nedobytné pohledávky","shortName":"Odpis nedobytné pohledávky","accountKind":2,"nontax":1,"resultsType":1}},
+				{"rec": {"id":"544100","fullName":"Úroky","shortName":"Úroky","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"545100","fullName":"Kurzové ztráty","shortName":"Kurzové ztráty","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"546100","fullName":"Poskytnuté dary","shortName":"Poskytnuté dary","accountKind":2,"nontax":1,"resultsType":1}},
+				{"rec": {"id":"548100","fullName":"Manka a škody","shortName":"Manka a škody","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"549100","fullName":"Jiné ostatní náklady","shortName":"Jiné ostatní náklady","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"551100","fullName":"Odpisy dlouhodobého nehmotného a hmotného majetku","shortName":"Odpisy DNM a DHM","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"552100","fullName":"Zůstatková cena prodaného nehmotného a hmotného majetku","shortName":"Zůstatková cena prodaného NM a HM","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"553100","fullName":"Prodané cenní papíry a podíly","shortName":"Prodané cenní papíry a podíly","accountKind":2,"resultsType":2}},
+				{"rec": {"id":"554100","fullName":"Prodaný materiál","shortName":"Prodaný materiál","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"556100","fullName":"Tvorba rezerv","shortName":"Tvorba rezerv","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"559100","fullName":"Tvorba opravných položek","shortName":"Tvorba opravných položek","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"581100","fullName":"Poskytnuté příspěvky zúčtované mezi organizačními složkami","shortName":"Posk. příspěvky zúčt. mezi org. složkami","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"582100","fullName":"Poskytnuté členské příspěvky","shortName":"Poskytnuté členské příspěvky","accountKind":2,"resultsType":1}},
+				{"rec": {"id":"591100","fullName":"Daň z příjmů","shortName":"Daň z příjmů","accountKind":2,"nontax":1}},
+				{"rec": {"id":"595100","fullName":"Dodatečné odvody daně z příjmů","shortName":"Dodatečné odvody daně z příjmů","accountKind":2,"nontax":1}}
+			]
+		},
+		{
+			"table": "e10.witems.items",
+			"name": "Nákladové účtopoložky",
+			"defaultValues": {"type":"it-accitem","itemType":"@it-accitem","itemKind":2,"docState":4000, "docStateMain":2},
+			"data": [
+				{"rec": {"fullName":"Úrok zaplacený","shortName":"Úrok zaplacený","debsAccountId":"562100","id":"562100","useFor":100}}
+			]
+		}
+	]
+}

@@ -1,0 +1,62 @@
+{
+	"0": {
+		"fullName": "Ostatní",
+		"shortName": "Ostatní",
+		"id": "other", "topicType": 1,
+		"coreType": "none",
+		"icon": "icon-question-circle-o"
+	},
+	"1": {
+		"fullName": "Dveře",
+		"shortName": "Dveře",
+		"id": "doors",
+		"coreType": "gate",
+		"icon": "icon-home",
+		"actions": {
+			"open-once": {
+				"fn": "Otevřít"
+			},
+			"open-once-in": {
+				"fn": "Otevřít - příchod"
+			},
+			"open-once-out": {
+				"fn": "Otevřít - odchod"
+			}
+		}
+	},
+	"2": {
+		"fullName": "Brána / závora",
+		"shortName": "Brána / závora",
+		"id": "gate",
+		"coreType": "gate",
+		"icon": "icon-car",
+		"actions": {
+			"open-once": {
+				"fn": "Otevřít"
+			},
+			"open-once-in": {
+				"fn": "Otevřít - příjezd"
+			},
+			"open-once-out": {
+				"fn": "Otevřít - odjezd"
+			},
+			"open-stay": {
+				"fn": "Otevřít na pořád"
+			}
+		}
+	},
+	"3": {
+		"fullName": "Světla",
+		"shortName": "Světla",
+		"id": "lights",
+		"coreType": "lights",
+		"icon": "icon-lightbulb-o"
+	},
+	"4": {
+		"fullName": "Turniket",
+		"shortName": "Turniket",
+		"id": "turnstile",
+		"coreType": "turnstile",
+		"icon": "icon-arrows-v"
+	}
+}

@@ -1,0 +1,50 @@
+{
+  "id": "e10doc.base.bankaccounts", "sql": "e10doc_base_bankaccounts", "name": "Vlastní bankovní spojení", "icon": "icon-institution",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "fullName", "name": "Název", "type": "string", "len": 120},
+    {"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 40},
+    {"id": "bank", "name": "Banka", "type": "int", "reference": "e10.persons.persons"},
+    {"id": "bankAccount", "name": "Číslo účtu", "type": "string", "len": 40},
+    {"id": "iban", "name": "IBAN", "type": "string", "len": 35},
+    {"id": "swift", "name": "SWIFT", "type": "string", "len": 30},
+		{"id": "id", "name": "ID", "type": "string", "len": 10},
+    {"id": "ebankingId", "name": "ID pro ebanking", "type": "string", "len": 80},
+    {"id": "currency", "name": "Měna", "type": "enumString", "len": 3, 
+	    "enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
+		{"id": "exclFromDashboard", "name": "Nedávat do Přehledu", "type": "logical"},
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+		{"id": "downloadStatements", "name": "Automatické stahování výpisů", "type": "enumString", "len": 20,
+			"enumCfg": {"cfgItem": "ebanking.downloads", "cfgValue": "", "cfgText": "title"}},
+		{"id": "uploadStatements", "name": "Automatické odesílání příkazů k úhradě", "type": "enumString", "len": 20,
+			"enumCfg": {"cfgItem": "ebanking.uploads", "cfgValue": "", "cfgText": "title"}},
+		{"id": "downloadTransactions", "name": "Automatické stahování pohybů na účtu", "type": "enumString", "len": 20,
+			"enumCfg": {"cfgItem": "ebanking.transactions", "cfgValue": "", "cfgText": "title"}},
+
+		{"id": "apiToken", "name": "Klíč pro API", "type": "string", "len": 80},
+		{"id": "apiTokenUploads", "name": "Klíč pro API - odesílání příkazů", "type": "string", "len": 80},
+		{"id": "apiTokenTransactions", "name": "Klíč pro API - stahování pohybů", "type": "string", "len": 80},
+
+		{"id": "useDownloadStatementBegin", "name": "Nastavit počátek stahování výpisů", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "downloadStatementBeginDate", "name": "Počáteční datum výpisu", "type": "date"},
+		{"id": "downloadStatementBeginNumber", "name": "Počáteční číslo výpisu", "type": "int"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+  "views": [
+    {"id": "default", "class": "e10doc.base.ViewBankAccounts", "help": "prirucka/119"}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10doc.base.FormBankAccounts", "help": "prirucka/119"}
+  ],
+	"options": ["configSource"],
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+  "order": [{"column": "fullName"}],
+  "fullText": ["fullName"]
+}

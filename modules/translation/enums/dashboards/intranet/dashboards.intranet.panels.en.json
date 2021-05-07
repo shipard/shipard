@@ -1,0 +1,8 @@
+{
+    "web": {
+        "name": "Web"
+    },
+    "dashboard": {
+        "name": "Overview"
+    }
+}

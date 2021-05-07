@@ -1,0 +1,17 @@
+{
+	"id": "swdev.dm",
+	"name": "Data Model",
+	"tables": [
+		"modules", "tables", "columns", "viewers", "dmTrTexts", "tablesTrData",
+		"enums", "enumsValues", "enumsValuesTr", "enumsTrData", "terms"
+	],
+	"modules": ["e10pro/install/start"],
+	"config": [
+		{"id": "+registeredFunctions", "file": "registeredFunctions.json"},
+		{"id": "+appOptions", "file": "appOptions.json"},
+		{"id": "+e10pro.kb.wiki.pageTypes", "file": "wikiPageTypes.json"},
+		{"id": "+e10.base.doclinks", "file": "doclinks.json"},
+		{"id": "swdev.dm.trTextsDocStates", "file": "swdev.dm.trTextsDocStates.json"},
+		{"id": "+e10.base.clsfGroups", "file": "clsfGroups.json"}
+	]
+}

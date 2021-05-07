@@ -1,0 +1,13 @@
+[
+	{
+		"table": "e10pro.wkf.projects",  "module": "e10pro.wkf",
+		"reportsTMP": [{"id": "summary", "name": "Přehled", "class": "e10pro.reports.projects.ProjectSummaryReport"}],
+		"views": {
+			"full": {
+				"details": {
+					"summary": {"title": "Rozbor", "icon": "icon-search-plus", "type": "detail", "class": "e10pro.reports.projects.ViewDetailProjectSummary", "order": 6000}
+				}
+			}
+		}
+	}
+]

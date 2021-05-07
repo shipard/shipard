@@ -1,0 +1,4 @@
+{
+	"webParts": {"name": "Členění článků webu", "icon": "e10-web-parts", "tables": ["e10.web.pages"]},
+	"webSections": {"name": "Rubriky článků webu", "icon": "e10-web-sections", "tables": ["e10.web.pages"]}
+}

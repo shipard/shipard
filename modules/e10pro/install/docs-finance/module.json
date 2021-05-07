@@ -1,0 +1,19 @@
+{
+  "id": "e10pro.install.docs-finance",
+  "name": "Finance",
+  "config": [
+    {"id": "+appSkeleton", "name": "Kostra aplikace", "file": "docs-finance.appSkeleton.json"},
+    {"id": "+e10.persons.roles", "name": "Role uživatelů", "file": "e10.persons.roles.json"},
+    {"id": "+appOptions", "file": "e10.appOptions.json"},
+	  {"id": "+appCache", "file": "appCache.json"},
+		{"id": "+dashboards", "file": "dashboards.json"},
+		{"id": "+reportsGroups", "file": "reportsGroups.json"},
+		{"id": "+widgets", "file": "widgets.json"},
+		{"id": "+help.index", "file": "help.json"}
+  ],
+  "modules": ["e10pro/install/docs-core", "e10pro/install/docs-cash",
+              "e10doc/bank", "e10doc/bankorder",
+              "e10doc/cmnbkp", "e10doc/taxes",
+							"e10doc/finance",
+							"e10pro/reports/finance_expenses"]
+}

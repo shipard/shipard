@@ -1,0 +1,21 @@
+{
+  "id": "e10pro.property",
+  "name": "Majetek",
+  "tables": ["types", "groups", "property", "propertyAccessory", "operations", "deps", "states"],
+	"modules": ["e10/base", "e10/persons"],
+	"extensions": ["property"],
+  "config": [
+    {"id": "+appSkeleton", "name": "Rozšíření menu aplikace", "file": "property.appSkeleton.json"},
+    {"id": "+e10.persons.roles", "name": "Role uživatelů", "file": "e10.persons.roles.json"},
+		{"id": "+appOptions", "file": "e10.appOptions.json"},
+		{"id": "+e10.appOptions.groups", "file": "e10.appOptionsGroups.json"},
+		{"id": "+e10.base.doclinks", "file": "e10.property.docLinks.json"},
+		{"id": "e10pro.property.docStates", "name": "Stavy osob", "file": "e10pro.property.docStates.json"},
+		{"id": "+e10pro.propertyDepreciation.docStates", "file": "e10pro.propertyDepreciation.docStates.json"},
+		{"id": "+e10pro.propertyOperations.docStates", "file": "e10pro.propertyOperations.docStates.json"},
+		{"id": "+e10pro.property.operations", "file": "e10pro.property.operations.json"},
+	  {"id": "+e10pro.property.categories", "file": "e10pro.property.categories.json"},
+		{"id": "+e10.base.clsfGroups", "file": "e10.property.clsfGroups.json"},
+		{"id": "+reports", "file": "reports.json"}
+  ]
+}

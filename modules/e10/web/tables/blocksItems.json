@@ -1,0 +1,28 @@
+{
+	"id": "e10.web.blocksItems", "sql": "e10_web_blocksItems", "name": "Položky Bloků", "icon": "icon-square-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "block", "name": "Blok", "type": "int", "reference": "e10.web.blocks"},
+		{"id": "id", "name": "ID", "type": "string", "len": 40},
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+		{"id": "title", "name": "Název", "type": "string", "len": 120},
+		{"id": "text", "name": "Text", "type": "memo"},
+		{"id": "picture", "name": "Obrázek", "type": "int", "reference": "e10.base.attachments", "comboViewer": "images"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "properties", "class": "e10.base.ListProperties", "name": "Vlastnosti",
+			"srcCfgKeyColumn": "block", "propertiesCfgList": "e10web.blocks.properties"}
+	],
+	"views": [
+		{"id": "default", "class": "e10.web.ViewBlocksItems"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10.web.FormBlockItem"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

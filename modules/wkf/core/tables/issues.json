@@ -1,0 +1,80 @@
+{
+	"id": "wkf.core.issues", "sql": "wkf_core_issues", "name": "Zprávy",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "issueId", "name": "ID", "type": "string", "len": 20, "options": ["ascii"]},
+		{"id": "issueType", "name": "Typ", "type": "enumInt",
+			"enumCfg": {"cfgItem": "wkf.issues.types", "cfgValue": "", "cfgText": "name"}},
+		{"id": "issueKind", "name": "Druh", "type": "enumInt", "len": 2, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "wkf.issues.kinds", "cfgValue": "", "cfgText": "sn"}},
+
+		{"id": "subject", "name": "Předmět", "type": "string", "len": 100},
+		{"id": "text", "name": "Text", "type": "memo"},
+		{"id": "body", "name": "Tělo zprávy", "type": "memo"},
+
+		{"id": "section", "name": "Sekce", "type": "int", "reference": "wkf.base.sections"},
+		{"id": "target", "name": "Cíl", "type": "int", "reference": "wkf.base.targets"},
+		{"id": "status", "name": "Status", "type": "enumInt", "len": 2,
+			"enumCfg": {"cfgItem": "wkf.issues.statuses.all", "cfgValue": "", "cfgText": "sn"}},
+
+		{"id": "source", "name": "Zdroj", "type": "enumInt",
+			"enumValues": {"0": "Ručně", "1": "E-mail", "2": "API", "3": "Test aplikace"}},
+
+		{"id": "data", "name": "Data", "type": "subColumns"},
+
+		{"id": "author", "name": "Autor", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "dateDeadline", "name": "Termín", "type": "date"},
+		{"id": "dateIncoming", "name": "Datum přijetí", "type": "date"},
+		{"id": "dateCreate", "name": "Datum vzniku", "type": "timestamp"},
+		{"id": "dateTouch", "name": "Datum poslední aktivity", "type": "timestamp"},
+
+		{"id": "priority", "name": "Důležitost", "type": "enumInt",
+			"enumValues": {"10": "Běžná", "5": "Vysoká", "15": "Nízká"}},
+		{"id": "onTop", "name": "Přišpendlit nahoru", "type": "enumInt",
+			"enumValues": {"0": "Ne", "5": "Ano", "7": "Včetně textu"}},
+		{"id": "disableComments", "name": "Zakázat komentáře", "type": "logical"},
+		{"id": "activateCnt", "name": "Počet aktivací", "type": "int"},
+
+		{"id": "linkId", "name": "Spojovací Id", "type": "string", "len": 40},
+		{"id": "systemInfo", "name": "Systémové informace", "type": "memo"},
+
+		{"id": "tableNdx", "name": "Tabulka", "type": "short"},
+		{"id": "recNdx", "name": "Záznam", "type": "int"},
+
+		{"id": "displayOrder", "name": "Pořadí pro zobrazení", "type": "long"},
+
+		{"id": "structVersion", "name": "Verze struktury", "type": "enumInt",
+			"enumValues": {"0": "0", "1": "1"}},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "connections", "class": "e10.base.ListRows", "name": "Propojené zprávy", "table": "wkf.core.issuesConnections", "queryColumn": "issue", "orderColumn": "rowOrder"},
+		{"id": "doclinksPersons", "class": "e10.base.ListDocLinks", "name": "Vazby na Osoby"},
+		{"id": "doclinksAssignment", "class": "e10.base.ListDocLinks", "name": "Ostatní vazby"},
+		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "wkf.issues.docStates.default"},
+	"views": [
+		{"id": "default", "class": "wkf.core.viewers.IssuesClassic", "detail": "wkf.core.viewers.ViewDetailIssue"}
+	],
+	"forms": [
+		{"id": "default", "class": "wkf.core.forms.IssueCore"},
+		{"id": "default2", "class": "wkf.core.forms.IssueCore2"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "subject"},
+	"indexes": [
+		{"id": "o1", "columns": ["displayOrder"]},
+		{"id": "o2", "columns": ["section", "displayOrder"]},
+		{"id": "s1", "columns": ["tableNdx", "recNdx"]},
+
+		{"id": "dashb1", "columns": ["section", "onTop"]},
+		{"id": "dashb2", "columns": ["section", "onTop", "priority"]},
+		{"id": "dashb3", "columns": ["section", "docStateMain", "author"]},
+		{"id": "dashb4", "columns": ["section", "docState", "docStateMain", "author"]}
+	],
+	"options": ["notifications"],
+	"ndx": 1241
+}

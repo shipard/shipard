@@ -1,0 +1,28 @@
+{
+	"panels": {
+		"e10mnf": {
+			"url": "/app/mnf", "objectType": "panel", "zone": "sec", "name": "Výroba", "order": 333000,
+			"items": [
+				{"t1": "Zakázky", "object": "viewer", "table": "e10mnf.core.workOrders", "viewer": "default", "icon": "icon-industry", "order": 200000},
+				{"t1": "Objednávky", "object": "viewer", "table": "e10doc.core.heads", "viewer": "orderOut", "icon": "icon-shopping-cart", "order": 300000},
+				{"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10mnf-reports", "icon": "system/iconReports", "order": 700000}
+			],
+			"smallItems": [
+				{"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "default", "icon": "e10-persons-persons", "order": 100000},
+				{"t1": "Položky", "object": "viewer", "table": "e10.witems.items", "viewer": "default", "icon": "e10-witems-items", "order": 200000}
+			]
+		}
+	},
+	"mobileui": {
+		"records": {
+			"groups": {
+				"e10mnf": {
+					"name": "Výroba", "order": 300000,
+					"items": {
+						"contracts": {"t1": "Zakázky", "object": "viewer", "table": "e10mnf.core.workOrders", "viewer": "default", "icon": "icon-industry", "order": 200000}
+					}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,7 @@
+{
+	"cfg": [
+		{"mask": "e10.persons", "title": "Osoby"},
+		{"mask": "e10.persons.roles", "title": "Role uživatelů"},
+		{"mask": "e10.persons.roles.*.name", "title": "Název role"}
+	]
+}

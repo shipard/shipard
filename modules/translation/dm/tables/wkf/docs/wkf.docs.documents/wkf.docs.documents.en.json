@@ -1,0 +1,52 @@
+{
+    "table": {
+        "name": "Documents"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "documentId": {
+            "name": "ID"
+        },
+        "folder": {
+            "name": "Folder"
+        },
+        "documentKind": {
+            "name": "Kind"
+        },
+        "title": {
+            "name": "Title"
+        },
+        "validFrom": {
+            "name": "Valid from"
+        },
+        "validTo": {
+            "name": "Valid to"
+        },
+        "text": {
+            "name": "Note"
+        },
+        "author": {
+            "name": "Author"
+        },
+        "dateCreate": {
+            "name": "Date of creation"
+        },
+        "dateTouch": {
+            "name": "Date of last activity"
+        },
+        "activateCnt": {
+            "name": "Number of activations"
+        },
+        "data": {
+            "name": "Data"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

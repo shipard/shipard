@@ -1,0 +1,73 @@
+{
+    "table": {
+        "name": "SW information for processing"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "title": {
+            "name": "Name"
+        },
+        "device": {
+            "name": "Device"
+        },
+        "deviceUid": {
+            "name": "Unique device ID"
+        },
+        "osInfo": {
+            "name": "System information"
+        },
+        "osUserId": {
+            "name": "User ID"
+        },
+        "osFamily": {
+            "name": "Operating system"
+        },
+        "dataOriginal": {
+            "name": "Original data"
+        },
+        "checksumOriginal": {
+            "name": "Checksum of original data"
+        },
+        "dataSanitized": {
+            "name": "Structured data"
+        },
+        "checksumSanitized": {
+            "name": "Checksum of structured data"
+        },
+        "dateCreate": {
+            "name": "Creation timestamp"
+        },
+        "ipAddress": {
+            "name": "IP adress"
+        },
+        "dateSameAsOriginal": {
+            "name": "Timestamp of update by same values"
+        },
+        "cntSameAsOriginal": {
+            "name": "Count of update by same values"
+        },
+        "ipAddressSameAsOriginal": {
+            "name": "IP adress"
+        },
+        "swSUID": {
+            "name": "Software ID"
+        },
+        "swNdx": {
+            "name": "Software"
+        },
+        "swVersionSUID": {
+            "name": "SW version ID"
+        },
+        "swVersionNdx": {
+            "name": "Software version"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

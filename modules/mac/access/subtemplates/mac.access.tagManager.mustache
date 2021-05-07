@@ -1,0 +1,140 @@
+{{#data.user.roles.bacstgm}}
+
+	<form class='form-horizontal' method='GET' action="">
+		<input name="managedTagId" class="e10-mqtt-submit-form" id="e10-main-mqtt-input" placeholder="Přiložte čip, který chcete nastavit" style="width: 80%;">
+	</form>
+
+	<h3>{{data.tagInfo.statusTitle}}</h3>
+
+	{{#data.tagInfo.notExist}}
+		<a href="{{urlRoot}}/nastaveni-cipu?managedTagId={{data.managedTagId}}&action=add"><button class="btn btn-large btn-primary">Přidat do evidence</button></a>
+		<a href="{{urlRoot}}/"><button class="btn btn-large btn-secondary">Zpět</button></a>
+	{{/data.tagInfo.notExist}}
+
+	{{#data.tagInfo.assignedToPerson}}
+		<h4>{{data.tagInfo.currentAssignment.personFullName}}</h4>
+		{{#data.tagInfo.currentAssignment.validFrom}}{{data.tagInfo.currentAssignment.validFrom}}{{/data.tagInfo.currentAssignment.validFrom}}
+
+		<button class="btn btn-large btn-danger" data-toggle="modal" data-target="#exampleModal" data-action="unassignFromPerson" data-assign-ndx="{{data.tagInfo.currentAssignment.personNdx}}" data-assign-title="{{data.tagInfo.currentAssignment.personFullName}}">Odebrat!</button>
+
+		{{#data.tagInfo.otherKeys}}
+			<i class="{{@icon;dataItem:keyIcon}}"></i> {{key}}
+			<br>
+		{{/data.tagInfo.otherKeys}}
+
+		{{#data.tagInfo.personContacts.0}}
+			<h4>Kontaktní údaje:</h4>
+			{{#data.tagInfo.personContacts}}
+				<i class="{{@icon;dataItem:icon}}"></i> {{text}} <br>
+			{{/data.tagInfo.personContacts}}
+		{{/data.tagInfo.personContacts.0}}
+	{{/data.tagInfo.assignedToPerson}}
+
+	{{#data.tagInfo.assignedToPlace}}
+		<h4>{{data.tagInfo.currentAssignment.placeFullName}}</h4>
+		{{#data.tagInfo.currentAssignment.validFrom}}{{data.tagInfo.currentAssignment.validFrom}}{{/data.tagInfo.currentAssignment.validFrom}}
+		<button class="btn btn-large btn-danger" data-toggle="modal" data-target="#exampleModal" data-action="unassignFromPlace" data-assign-ndx="{{data.tagInfo.currentAssignment.placeNdx}}" data-assign-title="{{data.tagInfo.currentAssignment.placeFullName}}">Odebrat!</button>
+	{{/data.tagInfo.assignedToPlace}}
+
+	{{#data.tagInfo.unassigned}}
+		<div class="row">
+			<div class="col-3">
+				<div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+					{{#data.assignPlaces}}
+						<a class="nav-link{{#active}} active{{/active}}" id="assign-place-{{id}}-tab" data-toggle="tab" href="#assign-place-{{id}}" role="tab" aria-controls="{{id}}" aria-selected="true"><i class="fa fa-map-marker"></i> {{title}}</a>
+					{{/data.assignPlaces}}
+					{{#data.assignPersons}}
+						<a class="nav-link{{#active}} active{{/active}}" id="assign-place-{{id}}-tab" data-toggle="tab" href="#assign-place-{{id}}" role="tab" aria-controls="{{id}}" aria-selected="true"><i class="fa fa-user"></i> {{title}}</a>
+					{{/data.assignPersons}}
+				</div>
+			</div>
+
+			<div class="col-9">
+				<div class="tab-content" id="v-pills-tabContent">
+				{{#data.assignPlaces}}
+					<div class="tab-pane fade{{#active}} show active{{/active}}" id="assign-place-{{id}}" role="tabpanel" aria-labelledby="nav-home-tab">
+						<div class="container-fluid">
+							<div class="row">
+						{{#places}}
+							{{#separator}}
+								<div class="col-12">{{separator}}</div>
+							{{/separator}}
+							<div class="col py-1"><button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#exampleModal" data-action="assignToPlace" data-assign-ndx="{{ndx}}" data-assign-title="{{fullTitle}}" style="width: 100%; white-space: pre;">{{title}}</button></div>
+						{{/places}}
+							</div>
+						</div>
+					</div>
+				{{/data.assignPlaces}}
+				{{#data.assignPersons}}
+					<div class="tab-pane fade{{#active}} show active{{/active}}" id="assign-place-{{id}}" role="tabpanel" aria-labelledby="nav-home-tab">
+						<div class="container-fluid">
+							<div class="row">
+								{{#places}}
+									{{#separator}}
+										<div class="col-12">{{separator}}</div>
+									{{/separator}}
+									<div class="col-12 col-sm-6 col-md-4 col-lg-3 py-1"><button class="btn btn-primary btn-lg w-100 text-left" data-toggle="modal" data-target="#exampleModal" data-action="assignToPerson" data-assign-ndx="{{ndx}}" data-assign-title="{{fullTitle}}">{{title}}</button></div>
+								{{/places}}
+							</div>
+						</div>
+					</div>
+				{{/data.assignPersons}}
+				</div>
+			</div>
+		</div>
+	{{/data.tagInfo.unassigned}}
+
+	<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">Opravdu přiřadit klíč?</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<form method="GET" action="{{urlRoot}}/nastaveni-cipu">
+					<div class="modal-body">
+						<div class="form-group">
+							<span class="actionTitle">Přiřadit k:</span><span class="actionSubject" style="font-weight: bold;"></span>
+							<input type="hidden" name="managedTagId" value="{{data.managedTagId}}"/>
+							<input type="hidden" name="action"/>
+							<input type="hidden" name="assignNdx"/>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary btn-lg" data-dismiss="modal">Zrušit</button>
+						<button type="submit" class="btn btn-primary btn-lg">Přiřadit</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+		$('#exampleModal').on('show.bs.modal', function (event) {
+			var button = $(event.relatedTarget);
+			var recipient = button.data('whatever');
+			var action = button.data('action');
+			var assignNdx = button.data('assign-ndx');
+			var assignTitle = button.data('assign-title');
+			var modal = $(this);
+			if (action === 'unassignFromPerson' || action === 'unassignFromPlace') {
+				modal.find('h5.modal-title').text('Opravdu odebrat?');
+				modal.find('.modal-body>div.form-group>span.actionTitle').text('Odebrat od'+': ');
+				modal.find('.modal-footer button[type=submit]').text('Odebrat');
+			}
+			modal.find('.modal-body>div.form-group>span.actionSubject').text(assignTitle);
+			modal.find('.modal-body input[name=action]').val(action);
+			modal.find('.modal-body input[name=assignNdx]').val(assignNdx);
+		});
+	</script>
+
+{{/data.user.roles.bacstgm}}
+
+{{^data.user.roles.bacstgm}}
+	Přístup zamítnut
+{{/data.user.roles.bacstgm}}
+
+
+

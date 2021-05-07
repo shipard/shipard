@@ -1,0 +1,40 @@
+{
+	"name": "Kapitálové účty a dlouhodobé závazky",
+	"datasets": [
+		{
+			"table": "e10doc.debs.accounts",
+			"name": "Třída 4 - kapitálové účty a dlouhodobé závazky",
+			"defaultValues": {"accGroup": 0, "accMethod": "debs", "docState": 4000, "docStateMain": 2},
+			"data": [
+				{"rec": {"id":"411100","fullName":"Základní kapitál","shortName":"Základní kapitál","accountKind":1}},
+				{"rec": {"id":"412100","fullName":"Emisní ažio","shortName":"Emisní ažio","accountKind":1}},
+				{"rec": {"id":"413100","fullName":"Ostatní kapitálové fondy","shortName":"Ostatní kapitálové fondy","accountKind":1}},
+				{"rec": {"id":"414100","fullName":"Oceňovací rozdíly z přecenění majetku a závazků","shortName":"Oceňovací rozdíly z přecenění majetku a závazků","accountKind":1}},
+				{"rec": {"id":"417100","fullName":"Rozdíly z přeměn společností","shortName":"Rozdíly z přeměn společností","accountKind":1}},
+				{"rec": {"id":"418100","fullName":"Oceňovací rozdíly z přecenění při přeměnách společností","shortName":"Oceňovací rozdíly z přecenění při přeměnách společností","accountKind":1}},
+				{"rec": {"id":"419100","fullName":"Změny základního kapitálu","shortName":"Změny základního kapitálu","accountKind":1}},
+				{"rec": {"id":"421100","fullName":"Zákonný rezervní fond","shortName":"Zákonný rezervní fond","accountKind":1}},
+				{"rec": {"id":"422100","fullName":"Nedělitelný fond","shortName":"Nedělitelný fond","accountKind":1}},
+				{"rec": {"id":"423100","fullName":"Statutární fondy","shortName":"Statutární fondy","accountKind":1}},
+				{"rec": {"id":"427100","fullName":"Ostatní fondy","shortName":"Ostatní fondy","accountKind":1}},
+				{"rec": {"id":"428100","fullName":"Nerozdělený zisk minulých let","shortName":"Nerozdělený zisk minulých let","accountKind":1}},
+				{"rec": {"id":"429100","fullName":"Neuhrazená ztráta minulých let","shortName":"Neuhrazená ztráta minulých let","accountKind":1}},
+				{"rec": {"id":"431100","fullName":"Výsledek hospodaření ve schvalovacím řízení","shortName":"Výsledek hospodaření ve schvalovacím řízení","accountKind":1}},
+				{"rec": {"id":"451100","fullName":"Rezervy podle zvláštních právních předpisů","shortName":"Rezervy podle zvláštních právních předpisů","accountKind":1}},
+				{"rec": {"id":"452100","fullName":"Rezerva na důchody a podobné závazky","shortName":"Rezerva na důchody a podobné závazky","accountKind":1}},
+				{"rec": {"id":"453100","fullName":"Rezerva na daň z příjmů","shortName":"Rezerva na daň z příjmů","accountKind":1}},
+				{"rec": {"id":"459100","fullName":"Ostatní rezervy","shortName":"Ostatní rezervy","accountKind":1}},
+				{"rec": {"id":"461100","fullName":"Bankovní úvěry","shortName":"Bankovní úvěry","accountKind":1}},
+				{"rec": {"id":"471100","fullName":"Dlouhodobé závazky (ovládající a řídící osoba)","shortName":"Dlouhodobé závazky (ovládající a řídící osoba)","accountKind":1,"toBalance":1}},
+				{"rec": {"id":"472100","fullName":"Dlouhodobé závazky (podstatný vliv)","shortName":"Dlouhodobé závazky (podstatný vliv)","accountKind":1,"toBalance":1}},
+				{"rec": {"id":"473100","fullName":"Emitované dluhopisy","shortName":"Emitované dluhopisy","accountKind":1}},
+				{"rec": {"id":"474100","fullName":"Závazky z pronájmu","shortName":"Závazky z pronájmu","accountKind":1,"toBalance":1}},
+				{"rec": {"id":"475100","fullName":"Dlouhodobé přijaté zálohy","shortName":"Dlouhodobé přijaté zálohy","accountKind":1,"toBalance":1}},
+				{"rec": {"id":"478100","fullName":"Dlouhodobé směnky k úhradě","shortName":"Dlouhodobé směnky k úhradě","accountKind":1,"toBalance":1}},
+				{"rec": {"id":"479100","fullName":"Jiné dlouhodobé závazky","shortName":"Jiné dlouhodobé závazky","accountKind":1,"toBalance":1}},
+				{"rec": {"id":"481100","fullName":"Odložený daňový závazek a pohledávka","shortName":"Odložený daňový závazek a pohledávka","accountKind":1}},
+				{"rec": {"id":"491100","fullName":"Účet individuálního podnikatele","shortName":"Účet individuálního podnikatele","accountKind":1}}
+			]
+		}
+	]
+}

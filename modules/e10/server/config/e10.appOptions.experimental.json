@@ -1,0 +1,42 @@
+{
+	"experimental": {
+		"name": "Laboratoř", "order": 9999000, "group": "core",
+		"icon": "x-lab",
+		"type": "cfgFile",
+		"options":
+			[
+				{"cfgKey": "appTheme", "cfgName": "Téma aplikace", "cfgItem": "e10settings.themes.desktop"},
+				{"cfgKey": "iconsTheme", "cfgName": "Ikony", "cfgItem": "e10settings.themes.icons"},
+				{"cfgKey": "mobileuiTheme", "cfgName": "Vzhled mobilního rozhraní",
+					"options": {
+						"md-bluegray": "Modrošedá",
+						"md-indigo": "Indigo",
+						"md-lime": "Limetka",
+						"md-pink": "Růžová",
+						"md-teal": "Modrozelená"
+					}
+				},
+				{"cfgKey": "dateInputStyle", "cfgName": "Způsob zadávání datumů",
+					"options": {
+						"a": "Automaticky",
+						"n": "Nativní input prohlížeče",
+						"o": "Staré chování Shipard",
+						"s": "Nové chování Shipard"
+					}
+				},
+				{"cfgKey": "testNewIcons", "cfgName": "Testovat nové ikony",
+					"options": {
+						"0": "Ne",
+						"1": "Ano"
+					}
+				},
+				{"cfgKey": "testNewPdfRender", "cfgName": "Testovat nové vytváření PDF souborů",
+					"options": {
+						"0": "Ne",
+						"1": "Ano"
+					}
+				}
+			]
+	}
+}
+

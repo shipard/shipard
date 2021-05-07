@@ -1,0 +1,55 @@
+{
+	"id": "mac.sw.sw", "sql": "mac_sw_sw", "name": "Software", "icon": "icon-hourglass-half",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "swClass", "name": "Třída software", "type": "enumInt", "len": 2, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.swcore.swClass", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "osFamily", "name": "Operační systém", "type": "enumInt", "len": 2, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.swcore.osFamily", "cfgValue": "", "cfgText": "sn"}},
+		{"id": "osEdition", "name": "Edice operačního systému", "type": "enumInt", "len": 2,
+			"enumCfg": {"cfgItem": "mac.swcore.osEdition", "cfgValue": "", "cfgText": "sn"}},
+
+		{"id": "useFree", "name": "Volné použití", "type": "enumInt",
+			"enumCfg": {"cfgItem": "mac.swcore.swUseFree", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "licenseType", "name": "Forma licence", "type": "enumInt",
+			"enumCfg": {"cfgItem": "mac.swcore.swLicenceType", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "fullName", "name": "Název", "type": "string", "len":  140},
+		{"id": "suid", "name": "ID", "type": "string", "len": 6, "options": ["ascii"]},
+		{"id": "lifeCycle", "name": "Stav", "type": "enumInt",
+			"enumCfg": {"cfgItem": "mac.swcore.lifeCycle", "cfgValue": "", "cfgText": "sn"}},
+		{"id": "publisher", "name": "Vydavatel", "type": "int", "reference": "mac.sw.publishers"},
+
+		{"id": "external", "name": "id", "type": "logical"},
+		{"id": "infoData", "name": "id", "type": "memo"},
+		{"id": "swVersionsMode", "name": "Práce s verzemi", "type": "enumInt",
+			"enumCfg": {"cfgItem": "mac.swcore.swVersionsMode", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "ignoreIDs", "name": "Ignorovat ID", "type": "logical"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "versions", "class": "e10.base.ListRows", "name": "Verze", "table": "mac.sw.swVersions", "queryColumn": "sw"},
+		{"id": "names", "class": "e10.base.ListRows", "name": "Názvy", "table": "mac.sw.swNames", "queryColumn": "sw", "orderColumn": "rowOrder"},
+		{"id": "ids", "class": "e10.base.ListRows", "name": "ID", "table": "mac.sw.swIds", "queryColumn": "sw", "orderColumn": "rowOrder"},
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "mac.sw.ViewSW",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "mac.sw.ViewDetailSW"},
+				"annotations": {"title": "Odkazy", "icon": "icon-external-link", "type": "detail", "class": "mac.sw.ViewDetailSWAnnotations", "order": 99000}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.sw.FormSW"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"ndx": 1352
+}

@@ -1,0 +1,274 @@
+<div class="separator"></div>
+
+<table style="width: 100%">
+	<tr><td><h3>A. ODDÍL</h3></td><td style="text-align: right;"><h3>Vytištěno aplikací SHIPARD</h3></td></tr>
+</table>
+
+<table style="width: 100%">
+	<tr>
+		<td style="width: 45%; vertical-align: top;">
+			<table class="formSection">
+				<tr class="grid">
+					<td class="grid4"></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+				</tr>
+
+				<tr><td class="first" colspan="33">
+					Finančnímu úřadu pro / Specializovanému finančnímu úřadu
+				</td></tr>
+				<tr><td class="input" colspan="33">
+					{{data.taxVatReturn.e10-CZ-VR.e10-CZ-VR-FUtext}}
+				</td></tr>
+				<tr><td colspan="33">
+					Územní pracoviště v, ve, pro
+				</td></tr>
+				<tr><td class="input" colspan="33">
+					{{data.taxVatReturn.e10-CZ-VR.e10-CZ-VR-pracFUtext}}
+				</td></tr>
+				<tr><td colspan="33">Daňové identifikační číslo</td></tr>
+				<tr><td class="input" colspan="28">{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-DIC}}</td><td colspan="5"></td></tr>
+				<tr><td colspan="33">&nbsp;</td></tr>
+				<tr>
+					<td class="input c" colspan="8">dodavatel</td><td class="input c" colspan="2"></td>
+					<td>&nbsp;</td>
+					<td class="input c" colspan="9">odběratel</td><td class="input c" colspan="2">X</td>
+					<td>&nbsp;</td>
+					<td colspan="8"></td><td colspan="2"></td>
+				</tr>
+			</table>
+		</td>
+
+		<td style="width: 10%;">
+		</td>
+
+		<td style="width: 45%; vertical-align: top;">
+			<div style="width: 100%; height: 120pt; position: relative;">
+				<div style="width: 100%; font-size: 7pt; text-align: center; position: absolute; bottom: 0;">
+				</div>
+			</div>
+		</td>
+	</tr>
+	<tr><td>&nbsp;</td></tr>
+</table>
+
+<div style="width: 100%; text-align: center;"><h2 style="margin: 2pt 0 0 0;">VÝPIS Z EVIDENCE</h2></div>
+<div style="width: 100%; text-align: center;"><h3>pro účely daně z přidané hodnoty podle § 92a zákona o DPH</h3></div>
+
+<table class="formSection">
+	<tr class="grid">
+		<td class="grid4"></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+	</tr>
+
+	<tr>
+		<td class="r" colspan="11">za zdaňovací období: měsíc</td>
+		<td class="input c" colspan="4">
+			{{#data.taxVatReturn.taxPeriod.month}}
+				{{data.taxVatReturn.taxPeriod.month}}
+			{{/data.taxVatReturn.taxPeriod.month}}
+		</td>
+		<td class="r" colspan="3">čtvrtletí</td>
+		<td class="input c" colspan="4">
+			{{#data.taxVatReturn.taxPeriod.quarter}}
+				{{data.taxVatReturn.taxPeriod.quarter}}
+			{{/data.taxVatReturn.taxPeriod.quarter}}
+		</td>
+		<td class="r" colspan="3">rok</td>
+		<td class="input c" colspan="4">{{data.taxVatReturn.taxPeriod.year}}</td>
+		<td colspan="4"></td>
+	</tr>
+	<tr>
+		<td class="r" colspan="11">za období od</td>
+		<td class="input c" colspan="4">
+			{{#data.taxVatReturn.taxPeriod.period.start}}
+				{{data.taxVatReturn.taxPeriod.period.start}}
+			{{/data.taxVatReturn.taxPeriod.period.start}}
+		</td>
+		<td class="r" colspan="3">do</td>
+		<td class="input c" colspan="4">
+			{{#data.taxVatReturn.taxPeriod.period.end}}
+				{{data.taxVatReturn.taxPeriod.period.end}}
+			{{/data.taxVatReturn.taxPeriod.period.end}}
+		</td>
+		<td colspan="14"></td>
+	</tr>
+	<tr>
+		<td class="r" colspan="11">Celková částka základů daně</td>
+		<td class="input r" colspan="9">{{data.taxVatReturn.reverseChargeIn.totalBase}}</td>
+		<td colspan="13"></td>
+	</tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr>
+		<td colspan="33">Právnická osoba: Název právnické osoby</td>
+	</tr>
+	<tr>
+		<td class="input" colspan="33">{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-nazevOsoby}}</td>
+	</tr>
+	<tr>
+		<td colspan="18">Fyzická osoba: Příjmení</td>
+		<td colspan="10">Jméno</td>
+		<td colspan="5">Titul</td>
+	</tr>
+	<tr>
+		<td class="input" colspan="18">{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-prijmeni}}</td>
+		<td class="input" colspan="10">{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-jmeno}}</td>
+		<td class="input" colspan="5">{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-titul}}</td>
+	</tr>
+	<tr>
+		<td colspan="33">Sídlo právnické / fyzické osoby nebo adresa místa pobytu fyzické osoby:</td>
+	</tr>
+	<tr>
+		<td colspan="15">a) obec</td>
+		<td colspan="5">b) PSČ</td>
+		<td colspan="13">c) telefon</td>
+	</tr>
+	<tr>
+		<td class="input" colspan="15">{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-mesto}}</td>
+		<td class="input" colspan="5">{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-PSC}}</td>
+		<td class="input" colspan="13">{{data.taxVatReturn.e10-CZ-VR-kontakt.e10-CZ-VR-telefon}}</td>
+	</tr>
+	<tr>
+		<td colspan="25">d) ulice (nebo část obce)</td>
+		<td colspan="8">e) číslo popisné / orientační</td>
+	</tr>
+	<tr>
+		<td class="input" colspan="25">{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-ulice}}</td>
+		<td class="input" colspan="8">{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-cisPopis}} {{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-cisOrient}}</td>
+	</tr>
+	<tr>
+		<td colspan="18">e) e-mail</td>
+		<td colspan="15">g) stát</td>
+	</tr>
+	<tr>
+		<td class="input" colspan="18">{{data.taxVatReturn.e10-CZ-VR-kontakt.e10-CZ-VR-email}}</td>
+		<td class="input" colspan="15">{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-stattext}}</td>
+	</tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr><td>&nbsp;</td></tr>
+	<tr><td>&nbsp;</td></tr>
+
+</table>
+
+<table class="formSection"><tr><td><div style="background-color: black; height: 2pt;"></div></td></tr></table>
+<div class="separator"></div>
+<div class="separator"></div>
+
+<h3>B. ODDÍL</h3>
+<div style="text-align: center; font-weight: bold; font-size: 8pt;">&nbsp;</div>
+
+<table class="bigFrame"><tr><td>
+	<table class="formSection">
+		<tr class="grid">
+			<td class="grid4"></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+		</tr>
+		<tr>
+			<td colspan=7>Údaje o zástupci:</td>
+			<td colspan=4>Kód zástupce:</td>
+			<td colspan=22></td>
+		</tr>
+		<tr>
+			<td colspan="7"></td>
+			<td class="input" colspan="4">{{#data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-typZastupce}}{{data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-kodZastupce}}{{/data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-typZastupce}}</td>
+			<td colspan="22"></td>
+		</tr>
+		<tr>
+			<td colspan=33>Jméno(-a) a příjmení / Název právnické osoby</td>
+		</tr>
+		<tr>
+			<td class="input" colspan="33">
+				{{#data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-typZastupce}}
+					{{data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-jmeno}} {{data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-prijmeni}} / {{data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-nazevOsoby}}
+				{{/data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-typZastupce}}
+			</td>
+		</tr>
+		<tr>
+			<td colspan=33>Datum narození / Evidenční číslo osvědčení daňového poradce / IČ právnické osoby</td>
+		</tr>
+		<tr>
+			<td class="input" colspan="33">
+				{{#data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-typZastupce}}
+					{{data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-datumNarozeni}} / {{data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-evidCislo}} / {{data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-IC}}
+				{{/data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-typZastupce}}
+			</td>
+		</tr>
+		<tr>
+			<td colspan=33>Fyzická osoba oprávněná k podpisu (je-li daňový subjekt či zástupce právnickou osobou),<br/>s uvedením vztahu k právnické osobě (např. jednatel, pověřený pracovník apod.)</td>
+		</tr>
+		<tr>
+			<td colspan=33>Jméno(-a) a příjmení / Vztah k právnické osobě</td>
+		</tr>
+		<tr>
+			<td class="input" colspan="33">{{data.taxVatReturn.e10-CZ-VR-opr.e10-CZ-VR-jmeno}} {{data.taxVatReturn.e10-CZ-VR-opr.e10-CZ-VR-prijmeni}} / {{data.taxVatReturn.e10-CZ-VR-opr.e10-CZ-VR-vztah}}</td>
+		</tr>
+	</table>
+</td></tr></table>
+
+<div class="separator"></div>
+
+<table class="bigFrame"><tr><td>
+	<table class="formSection">
+		<tr class="grid">
+			<td class="grid4"></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+		</tr>
+		<tr><td>&nbsp;</td></tr>
+		<tr>
+			<td colspan="7">Datum</td>
+			<td colspan="26"></td>
+		</tr>
+		<tr>
+			<td class="input c" colspan="7">{{data.head.dateIssue}}</td>
+			<td colspan="26" rowspan="4" style="height: 30pt;"></td>
+		</tr>
+		<tr><td></td></tr>
+		<tr><td></td></tr>
+		<tr><td></td></tr>
+	</table>
+</td></tr></table>
+
+<table class="formSection">
+	<tr class="grid">
+		<td class="grid4"></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+	</tr>
+	<tr>
+		<td colspan="4">Sestavil</td>
+		<td class="input" colspan="18">{{data.taxVatReturn.e10-CZ-VR-sest.e10-CZ-VR-prijmeni}} {{data.taxVatReturn.e10-CZ-VR-sest.e10-CZ-VR-jmeno}}</td>
+		<td class="r" colspan="3">Telefon</td>
+		<td class="input" colspan="8">{{data.taxVatReturn.e10-CZ-VR-sest.e10-CZ-VR-telefon}}</td>
+	</tr>
+</table>
+
+<div class="pageNumber">1</div>
+
+
+{{#data.taxVatReturn.reverseChargeIn.pages}}
+
+	<div class="newPage"></div>
+	<table style="width: 100%;">
+		<tr><td style="text-align: right; font-size: 9pt;">Pořadové číslo stránky / Celkový počet stran</td><td style="text-align: center; border: 1pt solid #aaaaaa; padding: 1pt; font-size: 9pt; height: 9pt;">{{pageNumber}} / {{cntPages}}</td></tr>
+	</table>
+
+	<table class="tableSection">
+		<tr>
+			<td class="c b">Číslo<br/>řádku</td>
+			<td class="c b">DIČ<br/>dodavatele/odběratele</td>
+			<td class="c b">Kód předmětu plnění</td>
+			<td class="c b">Datum usk.<br/> zd. plnění</td>
+			<td class="r b">Základ daně</td>
+			<td class="r b">Rozsah plnění</td>
+		</tr>
+		{{#data}}
+			<tr>
+				<td class="c">{{lineNumber}}</td>
+				<td class="c">{{pvin}}</td>
+				<td class="c">{{code}}</td>
+				<td class="c">{{dateTax}}</td>
+				<td class="r">{{base}}</td>
+				{{#amount}}
+					<td class="r">{{amount}} {{unit}}</td>
+				{{/amount}}
+				{{^amount}}
+					<td class="r">&nbsp;</td>
+				{{/amount}}
+			</tr>
+		{{/data}}
+	</table>
+
+{{/data.taxVatReturn.reverseChargeIn.pages}}

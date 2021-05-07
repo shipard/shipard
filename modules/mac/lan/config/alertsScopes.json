@@ -1,0 +1,30 @@
+{
+	"0": {
+		"fn": "Jiné / neznámé",
+		"id": "unknown"
+	},
+	"1": {
+		"fn": "Aktivní prvky sítě",
+		"id": "lan"
+	},
+	"2": {
+		"fn": "Servery",
+		"id": "srv"
+	},
+	"3": {
+		"fn": "Počítače",
+		"id": "pc"
+	},
+	"4": {
+		"fn": "Kamery",
+		"id": "cams"
+	},
+	"5": {
+		"fn": "Terminály",
+		"id": "trm"
+	},
+	"6": {
+		"fn": "IoT",
+		"id": "iot"
+	}
+}

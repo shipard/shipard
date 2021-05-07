@@ -1,0 +1,25 @@
+{
+    "table": {
+        "name": "Attached files data"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "attachment": {
+            "name": "Attachment"
+        },
+        "metaDataType": {
+            "name": "Data type"
+        },
+        "data": {
+            "name": "Data"
+        },
+        "metaDataVersion": {
+            "name": "Version"
+        },
+        "created": {
+            "name": "Creation timestamp"
+        }
+    }
+}

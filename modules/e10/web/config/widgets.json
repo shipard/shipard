@@ -1,0 +1,6 @@
+[
+	{
+		"class": "lib.web.WebWidgetPreview", "dashboard": "webPanel", "panel": "preview", "order": 1001, "row": "main", "width": 12,
+		"type": "wkfWall"
+	}
+]

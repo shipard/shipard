@@ -1,0 +1,3 @@
+{
+	"person.custreg": {"name": "Registrace zákazníka", "types": ["outbox"]}
+}

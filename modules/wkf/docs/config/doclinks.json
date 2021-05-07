@@ -1,0 +1,24 @@
+{
+	"wkf.docs.folders": {
+		"wkf-doc-folders-members": {
+			"linkid": "wkf-doc-folders-members", "name": "Členové složky", "icon": "icon-user",
+			"sources": [
+				{"id": "persons", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			]
+		},
+		"wkf-doc-folders-admins": {
+			"linkid": "wkf-doc-folders-admins", "name": "Správci složky", "icon": "icon-user-secret",
+			"sources": [
+				{"id": "persons", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			]
+		}
+	},
+	"wkf.docs.documents": {
+		"wkf-docs-participants": {
+			"linkid": "wkf-docs-participants", "name": "Účastníci", "icon": "icon-users",
+			"sources": [
+				{"table": "e10.persons.persons"}
+			]
+		}
+	}
+}

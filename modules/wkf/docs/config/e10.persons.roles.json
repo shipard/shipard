@@ -1,0 +1,16 @@
+{
+	"user": {
+		"viewers": {
+			"wkf.docs.documents": {"default": 2}
+		},
+		"widgets": {
+			"wkf.docs.widgets.Dashboard": 2
+		}
+	},
+	"admin": {
+		"viewers": {
+			"wkf.docs.docsKinds": {"default": 2},
+			"wkf.docs.folders": {"default": 2}
+		}
+	}
+}

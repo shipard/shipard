@@ -1,0 +1,40 @@
+{
+    "table": {
+        "name": "Item sorting"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "group": {
+            "name": "Type"
+        },
+        "id": {
+            "name": "Shortcut"
+        },
+        "colorbg": {
+            "name": "Color"
+        },
+        "colorfg": {
+            "name": "Text color"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "syncNdx": {
+            "name": "syncNdx"
+        },
+        "syncSrc": {
+            "name": "syncSrc"
+        }
+    }
+}

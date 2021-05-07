@@ -1,0 +1,9 @@
+{
+  "id": "e10doc.cmnbkp",
+  "name": "CmnBkp",
+	"tables": ["taxrows"],
+  "extensions": ["cmnbkp"],
+  "config": [
+    {"id": "+e10.docs.systemSettings.cmnbkp", "file": "e10.docs.dbCounters.json"}
+	]
+}

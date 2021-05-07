@@ -1,0 +1,68 @@
+{
+    "appTheme": {
+        "cfgName": "Application theme"
+    },
+    "testMaps": {
+        "cfgName": "Test Maps"
+    },
+    "prepareNewWorkflow": {
+        "cfgName": "Preparation of new Workflow"
+    },
+    "testCommerce": {
+        "cfgName": "Test Work orders and Commerce"
+    },
+    "testDashboardWorkOrders": {
+        "cfgName": "Test overview Work orders"
+    },
+    "testNewPersonDetail": {
+        "cfgName": "Test new Person detail"
+    },
+    "testNewWebEdit": {
+        "cfgName": "Test new way of web editing"
+    },
+    "useNewWorkflow": {
+        "cfgName": "Use new Workflow - DANGEROUS"
+    },
+    "witemsNewCombo": {
+        "cfgName": "New selection of items in document rows"
+    },
+    "testTrays": {
+        "cfgName": "Test attachment trays"
+    },
+    "testDocRowsSettings": {
+        "cfgName": "Test Settings of document rows"
+    },
+    "testTaxReportCI": {
+        "cfgName": "Test version of Corporate tax report"
+    },
+    "testNewInventory": {
+        "cfgName": "Test new Inventory"
+    },
+    "bulkEmails": {
+        "cfgName": "Test Bulk e-mails"
+    },
+    "mobileuiTheme": {
+        "cfgName": "Mobile interface style"
+    },
+    "dateInputStyle": {
+        "cfgName": "Data input style"
+    },
+    "testNewIcons": {
+        "cfgName": "Test new icons"
+    },
+    "testNewAppMenu": {
+        "cfgName": "Test new application menu"
+    },
+    "testNewDocRowsEdit": {
+        "cfgName": "Test new editing of document rows"
+    },
+    "testNewPdfRender": {
+        "cfgName": "Test new creating of PDF files"
+    },
+    "testNewWebsockets": {
+        "cfgName": "Test new Websockets"
+    },
+    "witemsNewViewer": {
+        "cfgName": "New tree viewer of items"
+    }
+}

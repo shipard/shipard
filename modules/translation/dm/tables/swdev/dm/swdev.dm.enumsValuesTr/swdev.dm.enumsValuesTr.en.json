@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Translated texts of Enum values"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "enum": {
+            "name": "Enum"
+        },
+        "enumValue": {
+            "name": "Enum item"
+        },
+        "lang": {
+            "name": "Language"
+        },
+        "text": {
+            "name": "Text"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

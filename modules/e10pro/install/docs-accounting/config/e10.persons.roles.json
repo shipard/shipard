@@ -1,0 +1,38 @@
+{
+  "acc": {
+		"roles": ["finance"],
+		"viewers": {
+			"e10doc.debs.journal": {"default": 2},
+			"e10doc.debs.accounts": {"default": 2, "combo": 2},
+			"e10doc.debs.groups": {"default": 2},
+			"e10doc.debs.spdAccounts": {"default": 2}
+		},
+		"documents": {
+			"e10doc.core.heads":	[
+				{"docType": "cmnbkp", "_access": 2, "_name": "Účetní doklady"}
+			]
+		},
+		"reports": {
+			"e10doc.balance.reportBalanceReceivables": 2, "e10doc.balance.reportBalanceObligations": 2,
+			"e10doc.balance.reportBalanceDepositReceived": 2, "e10doc.balance.reportBalanceAdvance": 2,
+			"e10doc.balance.reportBalanceCashInTransit": 2, "e10doc.balance.reportBalanceJournal": 2,
+			"e10doc.balance.reportBalanceOffsetting": 2, "e10doc.balance.ReportRequestsForPayment": 2,
+			"e10pro.reports.tests.debs.ReportBadAccounting": 2,
+			"e10pro.reports.tests.items.ReportBadItems": 2
+		}
+	},
+	"bsass": {
+		"roles": ["user"],
+		"viewers": {
+			"e10doc.debs.journal": {"default": 1}
+		},
+		"reports": {
+			"e10doc.balance.reportBalanceReceivables": 2, "e10doc.balance.reportBalanceObligations": 2,
+			"e10doc.balance.reportBalanceDepositReceived": 2, "e10doc.balance.reportBalanceAdvance": 2,
+			"e10doc.balance.reportBalanceCashInTransit": 2
+		}
+	},
+	"all": {
+		"roles": ["acc"]
+	}
+}

@@ -1,0 +1,15 @@
+[
+	{
+		"table": "mac.sw.sw",
+		"views": {
+			"swlan":
+			{
+				"id": "swlan", "class": "mac.swlan.libs.ViewSW",
+				"details":
+				{
+					"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "mac.swlan.libs.ViewDetailSW"}
+				}
+			}
+		}
+	}
+]

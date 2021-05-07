@@ -1,0 +1,78 @@
+{
+	"1000": {
+		"stateName": "Rozpracovaný doklad", "actionName": "Opravit",
+		"stateStyle": "concept",  "mainState": 0, "goto": [1200, 1206, 1203, 1202, 1204, 1201, 1001, 9800],
+		"enableScan": 0
+	},
+	"1001": {
+		"stateName": "Odložený výkup", "actionName": "Odložit",
+		"stateStyle": "halfdone",  "mainState": 1, "goto": [1200, 1206, 1203, 1202, 1204, 1201, 9800],
+		"enableScan": 0
+	},
+
+	"1200": {
+		"stateName": "Připraveno k úhradě bankou", "actionName": "Bankou", "stateStyle": "confirmed", "mainState": 1,
+		"enablePrint": 1, "goto": [4000, 1000],
+		"queryCols": {"personType": 1},
+		"setColumns": {"paymentMethod": 0}, "printAfterConfirmState": 4000
+	},
+
+	"1205": {
+		"stateName": "Připraveno k úhradě šekem", "actionName": "Šekem", "stateStyle": "confirmed", "mainState": 1,
+		"enablePrint": 1, "enableScan": 1, "goto": [4000, 1000],
+		"queryCols": {"personType": 1},
+		"setColumns": {"paymentMethod": 9}, "printAfterConfirmState": 4000
+	},
+
+	"1206": {
+		"stateName": "Připraveno k úhradě složenkou", "actionName": "Pošt. p.", "stateStyle": "confirmed", "mainState": 1,
+		"enablePrint": 1, "goto": [4000, 1000],
+		"queryCols": {"personType": 1},
+		"setColumns": {"paymentMethod": 10}, "printAfterConfirmState": 4000
+	},
+
+	"1203": {
+		"stateName": "Úhrada fakturou", "actionName": "Fakturou", "stateStyle": "confirmed", "mainState": 1, "goto": [4000, 1000],
+		"enablePrint": 1, "setColumns": {"paymentMethod": 4, "roundMethod": 0},
+		"queryCols": {"personType": "2"},
+		"printAfterConfirmState": 4000
+	},
+
+	"1201": {
+		"stateName": "Probíhá úhrada v hotovosti", "actionName": "Hotově", "stateStyle": "confirmed", "mainState": 1,
+		"goto": [4000, 1000],
+		"queryCols": {"personType": [1, 2]},
+		"setColumns": {"paymentMethod": 1}, "printAfterConfirmState": 4000
+	},
+
+	"1202": {
+		"stateName": "Sběrný lístek", "actionName": "Sběrný lístek", "stateStyle": "confirmed", "mainState": 1, "goto": [4000, 1000],
+		"queryCols": {"personType": [1, 2]},
+		"setColumns": {"paymentMethod": 6, "roundMethod": 0}, "printAfterConfirmState": 4000
+	},
+
+	"1204": {
+		"stateName": "Likvidační protokol", "actionName": "L.P.", "stateStyle": "confirmed", "mainState": 1, "goto": [4000, 1000],
+		"queryCols": {"personType": [1, 2]},
+		"enablePrint": 1, "setColumns": {"paymentMethod": 8, "roundMethod": 0}, "printAfterConfirmState": 4000
+	},
+
+	"4000": {
+		"stateName": "Hotovo", "actionName": "Uzavřít", "stateStyle": "done",  "mainState": 2, "readOnly": 1,
+		"enablePrint": 1, "enableScan": 0, "focus": 1, "goto": [8000],
+		"printAfterConfirm": [
+			{
+				"id": "purchase", "class": "e10doc.purchase.PurchaseReport", "title": "Výkupní lístek A4",
+				"print": 1, "email": 1, "ask": 1, "copies": 1
+			},
+			{
+				"id": "purchasepos", "class": "e10doc.purchase.PurchaseReportPos", "title": "Výkupní lístek - účtenka",
+				"print": 1, "ask": 1, "copies": 1
+			}
+		]
+	},
+
+	"4100": {"stateName": "Stornováno", "actionName": "Stornovat", "stateStyle": "cancel",  "mainState": 2, "readOnly": 1, "goto": [8000]},
+	"8000": {"stateName": "V opravě", "actionName": "Opravit", "stateStyle": "edit",  "mainState": 0, "goto": [4000, 4100]},
+	"9800": {"stateName": "Smazáno", "actionName": "Smazat", "stateStyle": "delete",  "mainState": 4, "readOnly": 1, "goto": [8000]}
+}

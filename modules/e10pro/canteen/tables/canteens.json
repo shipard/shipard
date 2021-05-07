@@ -1,0 +1,73 @@
+{
+	"id": "e10pro.canteen.canteens", "sql": "e10pro_canteen_canteens", "name": "Jídelny", "icon": "icon-cutlery",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "fullName", "name": "Úplný název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
+		{"id": "title", "name": "Titulek", "type": "string", "len": 80},
+
+		{"id": "lunchMenuCookingType", "name": "Vaří se", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "Všechna jídla", "1": "Jen některá jídla"}},
+		{"id": "lunchMenuFoodCount", "name": "Počet nabízených jídel v obědovém menu", "type": "int"},
+		{"id": "lunchCookFoodCount", "name": "Počet vařených jídel v obědovém menu", "type": "int"},
+		{"id": "lunchMenuSoup", "name": "Polévka v obědovém menu", "type": "enumInt",
+			"enumValues": {"0": "stejná", "1": "v každém jídle jiná", "2": "bez polévky"}},
+
+		{"id": "order", "name": "Pořadí", "type": "int"},
+		{"id": "icon", "name": "Ikona", "type": "string", "len": 50},
+
+		{"id": "mainFoodTitle", "name": "Název hlavního jídla", "type": "string", "placeholder":  "Oběd", "len": 80},
+
+		{"id": "webServer", "name": "Web pro objednávání", "type": "int", "reference": "e10.web.servers"},
+		{"id": "dateWorkingFrom", "name": "Datum zahájení provozu", "type": "date"},
+		{"id": "supplierEmail", "name": "Email dodavatele jídla", "type": "string", "len": 120},
+		{"id": "sendSupplierOrderTime", "name": "Čas odesílání objedávky dodavateli", "type": "time"},
+
+		{"id": "closeOrdersDay", "name": "Den ukončení objednávání", "type": "enumInt",
+			"enumValues": {"0": "dnešek", "1": "včerejšek", "2": "předvčerejšek"}},
+		{"id": "closeOrdersTime", "name": "Čas ukončení objednávání", "label": "Čas", "type": "time"},
+		{"id": "closeOrdersSkipWeekends", "name": "Přeskakovat víkendy", "type": "logical"},
+
+		{"id": "closeSelectCookingFoodsDay", "name": "Den ukončení výběru vařených jídel", "type": "enumInt",
+			"enumValues": {"0": "pondělí", "1": "úterý", "2": "středa", "3": "čtvrtek", "4": "pátek"}},
+		{"id": "closeSelectCookingFoodsTime", "name": "Čas ukončení výběru vařených jídel", "label": "Čas", "type": "time"},
+
+		{"id": "forceSelectCookingFoodsDay", "name": "Den uzavření výběru vařených jídel", "type": "enumInt",
+			"enumValues": {"0": "pondělí", "1": "úterý", "2": "středa", "3": "čtvrtek", "4": "pátek"}},
+		{"id": "forceSelectCookingFoodsTime", "name": "Čas uzavření výběru vařených jídel", "label": "Čas", "type": "time"},
+
+		{"id": "autoOrderFoods", "name": "Automaticky objednávat první jídlo", "type": "logical"},
+		{"id": "sendingEmailsDisabled", "name": "Neodesílat emaily s jídelním lístkem", "type": "logical"},
+
+		{"id": "invoicingEnabled", "name": "Zapnout fakturaci jídel", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "itemMainFood", "name": "Položka pro hlavní jídlo", "type": "int", "reference": "e10.witems.items"},
+		{"id": "dstDocKind", "name": "Vystavený Druh dokladu", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10.docs.kinds", "cfgValue": "ndx", "cfgText": "fullName"}},
+		{"id": "dueDays", "name": "Splatnost", "label": "Dny splatnosti", "type": "int"},
+		{"id": "invoiceAuthor", "name": "Fakturu vystavil", "type": "int", "reference": "e10.persons.persons"},
+
+		{"id": "dstDocState", "name": "Stav vystavené faktury", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.dstDocStates", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "dstDocAutoSend", "name": "Automaticky odesílat vystavené doklady", "type": "logical"},
+
+		{"id": "timeoutLogoutTakeTerminal", "name": "Doba automatického odhlášení při vyzvednutí jídla [sec]", "type": "int"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "addFoods", "class": "e10.base.ListRows", "name": "Doplňková jídla", "table": "e10pro.canteen.canteensAddFoods", "queryColumn": "canteen", "orderColumn": "rowOrder"},
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+
+	"views": [
+		{"id": "default", "class": "e10pro.canteen.ViewCanteens", "help": "prirucka/4699"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.canteen.FormCanteen", "help": "prirucka/4699"}
+	],
+	"options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

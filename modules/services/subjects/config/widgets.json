@@ -1,0 +1,17 @@
+[
+	{
+		"name": "Zdroje", "class": "services.subjects.SourcesWidget", "icon": "icon-eye",
+		"dashboard": "subjects", "panel": "sources", "order": 1000, "row": "main", "width": 12, "type": "viewer"
+	},
+
+	{
+		"name": "Subjekty", "class": "services.subjects.SourcesWidget",
+		"dashboard": "main", "panel": "service-subjects", "order": 1000, "row": "main", "width": 12, "type": "viewer"
+	},
+
+
+	{
+		"name": "Zdroje", "class": "services.subjects.SourcesWidget", "icon": "icon-eye",
+		"dashboard": "crm", "panel": "sources", "order": 1000, "row": "main", "width": 12, "type": "viewer"
+	}
+]

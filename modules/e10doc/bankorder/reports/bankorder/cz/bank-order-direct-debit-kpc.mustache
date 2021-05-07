@@ -1,0 +1,16 @@
+{{{@write;binMode:1}}}
+{{{@write;codePage:CP1250}}}
+
+{{@setParams;directDebit:1}}
+{{{&cz/bank-order-part1-kpc}}}
+{{{&cz/bank-order-part2-kpc}}}
+{{#data.pages}}
+	{{#directDebit}}
+		{{{&cz/bank-order-part3-kpc}}}
+		{{#rows}}
+			{{{&cz/bank-order-part4-kpc}}}
+		{{/rows}}
+		{{{&cz/bank-order-part5-kpc}}}
+	{{/directDebit}}
+{{/data.pages}}
+{{{&cz/bank-order-part6-kpc}}}

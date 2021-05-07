@@ -1,0 +1,16 @@
+{
+	"reference": {
+		"0": {"name" : "Nezáleží"},
+		"1": {"name" : "Je"}
+	},
+	"enum": {
+		"0": {"name" : "Nezáleží"},
+		"1": {"name" : "Je"}
+	},
+	"string": {
+		"0": {"name" : "Nezáleží"},
+		"1": {"name" : "Je"},
+		"2": {"name" : "Začíná"},
+		"3": {"name" : "Obsahuje"}
+	}
+}

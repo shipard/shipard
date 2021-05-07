@@ -1,0 +1,236 @@
+{
+	"territoryTypes": {
+		"c": {"name": "Světadíly"},
+		"g": {"name": "Území"},
+		"e": {"name": "Ekonomicko-politická uskupení"}
+	},
+	"territories": {
+		"c-af": {
+			"name": "Afrika", "engName": "Africa", "type": "c",
+			"countries": []
+		},
+		"c-as": {
+			"name": "Asie", "engName": "Asia", "type": "c",
+			"countries": ["cn", "kw", "ru", "in", "jp"]
+		},
+		"c-au": {
+			"name": "Austrálie", "engName": "Australia", "type": "c",
+			"countries": []
+		},
+		"c-eu": {
+			"name": "Evropa", "engName": "Europe", "type": "c",
+			"countries": ["at", "be", "bg", "ch", "cz", "de", "dk", "ee", "es", "fi", "fr", "gb", "hu", "ie", "it", "pl", "pt", "ro", "ru", "se", "si", "sk"]
+		},
+		"c-sa": {
+			"name": "Jižní Amerika", "engName": "South America", "type": "c",
+			"countries": ["br"]
+		},
+		"c-na": {
+			"name": "Severní Amerika", "engName": "North America", "type": "c",
+			"countries": ["us", "ca"]
+		},
+
+		"e-eu": {
+			"name": "Evropská unie", "engName": "European Union", "type": "e",
+			"countries": ["at", "be", "bg", "cz", "de", "dk", "ee", "es", "fi", "fr", "gb", "hu", "ie", "it", "nl", "pl", "pt", "ro", "se", "si", "sk"]
+		},
+		"e-v4": {
+			"name": "Visegrádská skupina", "shortName": "Visegrád", "engName": "Visegrád Group", "type": "e",
+			"countries": ["cz", "hu", "pl", "sk"]
+		},
+
+		"g-emea": {
+			"name": "Evropa, Střední Východ a Afrika", "shortName": "EMEA", "engName": "Europe, the Middle East and Africa", "type": "e",
+			"countries": ["at", "be", "bg", "cz", "de", "dk", "ee", "es", "fi", "fr", "gb", "hu", "ie", "it", "nl", "pl", "pt", "ro", "se", "si", "sk"]
+		}
+	},
+	"currencies": {
+		"czk": {"shortcut": "CZK", "name": "Česká koruna", "symbol": "Kč", "sympos": "a"},
+		"usd": {"shortcut": "USD", "name": "Americký dolar", "symbol": "$", "sympos": "b"},
+		"eur": {"shortcut": "EUR", "name": "Euro", "symbol": "€", "sympos": "b"},
+		"gbp": {"shortcut": "GBP", "name": "Libra šterlinků", "symbol": "£", "sympos": "b"},
+		"chf": {"shortcut": "CHF", "name": "Švýcarský frank", "symbol": "Fr.", "sympos": "a"},
+		"cny": {"shortcut": "CNY", "name": "Čínský jüan", "symbol": "¥", "sympos": "b"},
+		"cad": {"shortcut": "CAD", "name": "Kanadský dolar", "symbol": "C$", "sympos": "b"},
+
+		"bgn": {"shortcut": "BGN", "name": "Bulharský lev", "symbol": "lev", "sympos": "a"},
+		"brl": {"shortcut": "BRL", "name": "Brazilský real", "symbol": "R$", "sympos": "a"},
+		"dkk": {"shortcut": "DKK", "name": "Dánská koruna", "symbol": "kr.", "sympos": "a"},
+		"hrk": {"shortcut": "HRK", "name": "Kuna", "symbol": "kn.", "sympos": "a"},
+		"huf": {"shortcut": "HUF", "name": "Maďarský forint", "symbol": "Ft", "sympos": "a"},
+		"pln": {"shortcut": "PLN", "name": "Polský złoty", "symbol": "zł", "sympos": "a"},
+		"ron": {"shortcut": "RON", "name": "Rumunské leu", "symbol": "lei", "sympos": "a"},
+		"sek": {"shortcut": "SEK", "name": "Švédská koruna", "symbol": "kr", "sympos": "a"},
+
+		"kwd": {"shortcut": "KWD", "name": "Kuvajtský dinár", "symbol": "K.D.", "sympos": "a"},
+		"rub": {"shortcut": "RUB", "name": "Ruský rubl", "symbol": "₽", "sympos": "a"},
+		"try": {"shortcut": "TRY", "name": "Turecká lira", "symbol": "₺", "sympos": "a"},
+		"inr": {"shortcut": "INR", "name": "Indická rupie", "symbol": "iR", "sympos": "a"},
+		"jpy": {"shortcut": "JPY", "name": "Japonský jen", "symbol": "¥", "sympos": "a"}
+	},
+	"countries": {
+		"cz": {
+			"engName": "Czech Republic", "name": "Česká republika", "origName": "Česká republika",
+			"sc2": "CZ", "sc3": "CZE", "scn": 203, "lang": "cs", "curr": "czk"
+		},
+
+		"at": {
+			"engName": "Austria", "name": "Rakousko", "origName": "Österreich",
+			"sc2": "AT", "sc3": "AUT", "scn": 40, "lang": "de", "curr": "eur"
+		},
+		"be": {
+			"engName": "Belgium", "name": "Belgie", "fullName": "Belgické královsví", "origName": "België",
+			"sc2": "BE", "sc3": "BEL", "scn": 56, "lang": ["nl", "fr", "de"], "curr": "eur"
+		},
+		"bg": {
+			"engName": "Bulgaria", "name": "Bulharsko", "fullName": "Bulharská republika", "origName": "България",
+			"sc2": "BG", "sc3": "BGR", "scn": 100, "lang": ["bg"], "curr": "bgn"
+		},
+		"br": {
+			"engName": "Brazil", "name": "Brazílie", "fullName": "Brazilská federativní republika", "origName": "República Federativa do Brasil",
+			"sc2": "BR", "sc3": "BRA", "scn": 76, "lang": "pt", "curr": "brl"
+		},
+		"ca": {
+			"engName": "Canada", "name": "Kanada", "origName": "Canada",
+			"sc2": "CA", "sc3": "CAN", "scn": 124, "lang": ["en", "fr"], "curr": "can"
+		},
+		"ch": {
+			"engName": "Swiss Confederation", "name": "Švýcarsko", "origName": "Schweiz",
+			"sc2": "CH", "sc3": "CHE", "scn": 756, "lang": ["de"], "curr": "eur"
+		},
+		"cn": {
+			"engName": "People's Republic of China", "name": "Čína", "fullName": "Čínská lidová republika", "origName": "中华人民共和国",
+			"sc2": "CN", "sc3": "CHN", "scn": 156, "lang": ["zh"], "curr": "cny"
+		},
+		"de": {
+			"engName": "Germany", "name": "Německo", "fullName": "Spolková republika Německo", "origName": "Deutschland",
+			"sc2": "DE", "sc3": "DEU", "scn": 276, "lang": "de", "curr": "eur"
+		},
+		"dk": {
+			"engName": "Denmark", "name": "Dánsko", "fullName": "Dánské královsví", "origName": "Kongeriget Danmark",
+			"sc2": "DK", "sc3": "DNK", "scn": 208, "lang": ["da"], "curr": "dkk"
+		},
+		"es": {
+			"engName": "Spain", "name": "Španělsko", "fullName": "Španělské království", "origName": "Reino de España",
+			"sc2": "ES", "sc3": "ESP", "scn": 724, "lang": "es", "curr": "eur"
+		},
+		"ee": {
+			"engName": "Estonia", "name": "Estonsko", "fullName": "Estonská republika", "origName": "Eesti Vabariik",
+			"sc2": "EE", "sc3": "EST", "scn": 233, "lang": "et", "curr": "eur"
+		},
+		"fi": {
+			"engName": "Finland", "name": "Finsko", "fullName": "Finská republika", "origName": "Suomen Tasavalta",
+			"sc2": "FI", "sc3": "FIN", "scn": 246, "lang": ["fi", "sv"], "curr": "eur"
+		},
+		"fr": {
+			"engName": "France", "name": "Francie", "fullName": "Francouzská republika", "origName": "République française",
+			"sc2": "FR", "sc3": "FRA", "scn": 250, "lang": "fr", "curr": "eur"
+		},
+		"gb": {
+			"engName": "United Kingdom", "name": "Spojené království", "fullName": "Spojené království Velké Británie a Severního Irska", "origName": "United Kingdom",
+			"sc2": "GB", "sc3": "GBR", "scn": 826, "lang": "en", "curr": "gbp"
+		},
+		"hr": {
+			"engName": "Croatia", "name": "Chorvatsko", "fullName": "Chorvatská republika", "origName": "Hrvatska",
+			"sc2": "HR", "sc3": "HRV", "scn": 191, "lang": "hr", "curr": "hrk"
+		},
+		"hu": {
+			"engName": "Hungary", "name": "Maďarsko", "fullName": "Maďarská republika", "origName": "Magyarország",
+			"sc2": "HU", "sc3": "HUN", "scn": 348, "lang": "hu", "curr": "huf"
+		},
+		"ie": {
+			"engName": "Republic of Ireland", "name": "Irsko", "fullName": "Irská republika", "origName": "Poblacht na hÉireann",
+			"sc2": "IE", "sc3": "IRL", "scn": 372, "lang": ["en", "ga"], "curr": "eur"
+		},
+		"in": {
+			"engName": "India", "name": "Indie", "fullName": "Indická republika", "origName": "Bhárat ganarádžja",
+			"sc2": "IN", "sc3": "IND", "scn": 356, "lang": ["hi", "en"], "curr": "inr"
+		},
+		"jp": {
+			"engName": "Japan", "name": "Japonsko", "fullName": "Japonsko", "origName": "日本国",
+			"sc2": "JP", "sc3": "JPN", "scn": 392, "lang": ["ja"], "curr": "jpy"
+		},
+		"it": {
+			"engName": "Italy", "name": "Itálie", "fullName": "Italská republika", "origName": "Italia",
+			"sc2": "IT", "sc3": "ITA", "scn": 380, "lang": "it", "curr": "eur"
+		},
+		"kw": {
+			"engName": "Kuwait", "name": "Kuvajt", "fullName": "Stát Kuvajt", "origName": "Dawlat al Kuwayt",
+			"sc2": "KW", "sc3": "KWT", "scn": 414, "lang": ["ar", "en"], "curr": "kwd"
+		},
+		"nl": {
+			"engName": "Netherlands", "name": "Nizozemsko", "fullName": "Nizozemské království", "origName": "Nederland",
+			"sc2": "NL", "sc3": "NLD", "scn": 528, "lang": "nl", "curr": "eur"
+		},
+		"pl": {
+			"engName": "Poland", "name": "Polsko", "fullName": "Polská republika", "origName": "Rzeczpospolita Polska",
+			"sc2": "PL", "sc3": "POL", "scn": 616, "lang": "pl", "curr": "pln"
+		},
+		"pt": {
+			"engName": "Portugal", "name": "Portugalsko", "fullName": "Porugalská republika", "origName": "Portugal",
+			"sc2": "PT", "sc3": "PRT", "scn": 620, "lang": "pt", "curr": "eur"
+		},
+		"ro": {
+			"engName": "Romania", "name": "Rumunsko", "origName": "România",
+			"sc2": "RO", "sc3": "ROU", "scn": 642, "lang": "ro", "curr": "ron"
+		},
+		"ru": {
+			"engName": "Russia", "name": "Rusko", "fullName": "Ruská federace", "origName": "Российская Федерация",
+			"sc2": "RU", "sc3": "RUS", "scn": 643, "lang": "ru", "curr": "RUB"
+		},
+		"se": {
+			"engName": "Sweden", "name": "Švédsko", "fullName": "Švédské království", "origName": "Konungariket Sverige",
+			"sc2": "SE", "sc3": "SWE", "scn": 752, "lang": "sv", "curr": "sek"
+		},
+		"si": {
+			"engName": "Slovenia", "name": "Slovinsko", "origName": "Republika Slovenija",
+			"sc2": "SI", "sc3": "SLO", "scn": 705, "lang": "sl", "curr": "eur"
+		},
+		"sk": {
+			"engName": "Slovakia", "name": "Slovensko", "fullName": "Slovenská republika", "origName": "Slovensko",
+			"sc2": "SK", "sc3": "SVK", "scn": 703, "lang": "sk", "curr": "eur"
+		},
+		"tr": {
+			"engName": "Turkey", "name": "Turecko", "fullName": "Turecká republika", "origName": "Türkiye Cumhuriyeti",
+			"sc2": "TR", "sc3": "TUR", "scn": 792, "lang": "tr", "curr": "try"
+		},
+		"us": {
+			"engName": "United States of America", "name": "Spojené státy","fullName": "Spojené státy americké", "origName": "United States of America",
+			"sc2": "US", "sc3": "USA", "scn": 840, "lang": "en", "curr": "usd"
+		},
+
+		"--": {
+			"engName": "---", "name": "---", "origName": "---",
+			"sc2": "--", "sc3": "---", "scn": 0, "lang": "--", "curr": "---"
+		}
+	},
+	"languages": {
+		"": {"name": "", "nameInt": ""},
+
+		"ar": {"name": "Arabština", "nameInt": "Arabic"},
+		"cs": {"name": "Čeština", "nameInt": "Czech"},
+		"de": {"name": "Němčina", "nameInt": "German"},
+		"de_AT": {"name": "Němčina (Rakousko)", "nameInt": "German (Austria)", "derivedFrom": "de"},
+		"de_CH": {"name": "Němčina (Švýcarsko)", "nameInt": "German (Swiss)", "derivedFrom": "de"},
+		"en": {"name": "Angličtina", "nameInt": "English"},
+		"en_AU": {"name": "Angličtina (Austrálie)", "nameInt": "English (Australia)", "derivedFrom": "en"},
+		"en_GB": {"name": "Angličtina (Velká Británie)", "nameInt": "English (United Kingdom)", "derivedFrom": "en"},
+		"en_US": {"name": "Angličtina (Spojené státy)", "nameInt": "English (United States)", "derivedFrom": "en"},
+		"es": {"name": "Španělština", "nameInt": "Spanish"},
+		"et": {"name": "Estonština", "nameInt": "Estonian"},
+		"fr": {"name": "Francouzština", "nameInt": "French"},
+		"hi": {"name": "Hindština", "nameInt": "Hindi"},
+		"hu": {"name": "Maďarština", "nameInt": "Hungarian"},
+		"it": {"name": "Italština", "nameInt": "Italian"},
+		"ja": {"name": "Japonština", "nameInt": "Japanese"},
+		"nl": {"name": "Nizozemština", "nameInt": "Dutch"},
+		"pl": {"name": "Polština", "nameInt": "Polish"},
+		"pt": {"name": "Portugalština", "nameInt": "Portuguese"},
+		"ro": {"name": "Rumunština", "nameInt": "Romanian"},
+		"ru": {"name": "Ruština", "nameInt": "Russian"},
+		"sl": {"name": "Slovinština", "nameInt": "Slovene"},
+		"sk": {"name": "Slovenština", "nameInt": "Slovak"},
+		"sv": {"name": "Švédština", "nameInt": "Swedish"},
+		"tr": {"name": "Turečtina", "nameInt": "Turkish"}
+	}
+}

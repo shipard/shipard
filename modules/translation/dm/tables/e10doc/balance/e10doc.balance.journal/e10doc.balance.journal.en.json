@@ -1,0 +1,86 @@
+{
+    "table": {
+        "name": "Ledger"
+    },
+    "columns": {
+        "pairId": {
+            "name": "Pairing symbol"
+        },
+        "type": {
+            "name": "Balance"
+        },
+        "side": {
+            "name": "Side"
+        },
+        "currency": {
+            "name": "Currency"
+        },
+        "homeCurrency": {
+            "name": "Home currency"
+        },
+        "unit": {
+            "name": "Unit"
+        },
+        "amount": {
+            "name": "Amount"
+        },
+        "amountHc": {
+            "name": "Amount in home currency"
+        },
+        "amountQ": {
+            "name": "Amount"
+        },
+        "request": {
+            "name": "To pay"
+        },
+        "requestHc": {
+            "name": "To pay in home currency"
+        },
+        "requestQ": {
+            "name": "Amount to pay"
+        },
+        "payment": {
+            "name": "Payment"
+        },
+        "paymentHc": {
+            "name": "Payment in home currency"
+        },
+        "paymentQ": {
+            "name": "Quantity payment"
+        },
+        "symbol1": {
+            "name": "Variable symbol"
+        },
+        "symbol2": {
+            "name": "Specific symbol"
+        },
+        "symbol3": {
+            "name": "Constant symbol"
+        },
+        "bankAccount": {
+            "name": "Bank account",
+            "label": "Account number"
+        },
+        "date": {
+            "name": "Date"
+        },
+        "fiscalYear": {
+            "name": "Year"
+        },
+        "docLine": {
+            "name": "Document row"
+        },
+        "docHead": {
+            "name": "Document header"
+        },
+        "person": {
+            "name": "Person"
+        },
+        "item": {
+            "name": "Item"
+        },
+        "debsAccountId": {
+            "name": "Account"
+        }
+    }
+}

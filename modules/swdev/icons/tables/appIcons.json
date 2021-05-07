@@ -1,0 +1,30 @@
+{
+	"id": "swdev.icons.appIcons", "sql": "swdev_icons_appIcons", "name": "Ikony aplikace", "icon": "icon-square-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "appIconGroup", "name": "Skupina", "type": "int", "reference": "swdev.icons.appIconsGroups"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 120},
+		{"id": "id", "name": "ID", "type": "string", "len": 60},
+
+		{"id": "dmWikiPage", "name": "Wiki stránka", "type": "int", "reference": "e10pro.kb.texts"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"}
+	],
+	"views": [
+		{"id": "default", "class": "swdev.icons.ViewAppIcons",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.icons.ViewDetailAppIcon"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "swdev.icons.FormAppIcon"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

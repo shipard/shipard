@@ -1,0 +1,9 @@
+{
+  "id": "e10doc.purchase",
+  "name": "Purchase",
+  "extensions": ["purchase"],
+	"config": [
+		{"id": "+wkf.issues.systemKinds", "file": "wkf.issues.systemKinds.json"},
+		{"id": "+e10.base.doclinks", "file": "docLinks.json"}
+	]
+}

@@ -1,0 +1,10 @@
+{
+	"id": "e10doc.base.statsPersonDocType", "sql": "e10doc_base_statsPersonDocType", "name": "Statistika osob/druhů dokladů",
+	"columns": [
+		{"id": "docType", "name": "Typ dokladu", "type": "enumString", "len": 10,
+			"enumCfg": {"cfgItem": "e10.docs.types", "cfgValue": "", "cfgText": "fullName"}},
+		{"id": "cnt", "name": "Počet", "type": "int"},
+		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"}
+	],
+	"options": ["systemTable"]
+}

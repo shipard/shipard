@@ -1,0 +1,16 @@
+{
+	"name": "Switch EdgeCore",
+	"title": "Switch EdgeCore",
+	"fields": {
+		"columns": [
+			{"id": "userLogin", "name": "Uživatel", "type": "string", "len": 30}
+		]
+	},
+	"snmpTemplateRealtime": "mac/devices/devices/switch/switch-edgecore-netdata-snmp.mustache",
+	"dashboards": {
+		"realtime-summary": {
+			"title": "Přehled",
+			"template": "mac/devices/devices/switch/switch-edgecore-netdata-dashboard-overview.mustache"
+		}
+	}
+}

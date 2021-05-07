@@ -1,0 +1,40 @@
+{
+    "table": {
+        "name": "System tasks"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "title": {
+            "name": "Name"
+        },
+        "classId": {
+            "name": "Type of task"
+        },
+        "tableId": {
+            "name": "Document table"
+        },
+        "recId": {
+            "name": "Document row"
+        },
+        "params": {
+            "name": "Parameters"
+        },
+        "timeCreate": {
+            "name": "Time of creation"
+        },
+        "timeBegin": {
+            "name": "Start time"
+        },
+        "timeEnd": {
+            "name": "End time"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

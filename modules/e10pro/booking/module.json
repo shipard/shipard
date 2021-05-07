@@ -1,0 +1,14 @@
+{
+  "id": "e10pro.booking",
+  "name": "booking",
+	"modules": ["e10/base", "e10/persons"],
+	"extensions": ["booking"],
+	"tables": ["types", "bookings"],
+	"config": [
+		{"id": "+e10.appOptions.groups", "file": "appOptionsGroups.json"},
+		{"id": "+appOptions", "file": "e10.appOptions.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+		{"id": "+dashboards", "file": "dashboards.json"},
+		{"id": "+widgets", "file": "widgets.json"}
+	]
+}

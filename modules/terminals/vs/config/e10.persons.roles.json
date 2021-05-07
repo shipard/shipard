@@ -1,0 +1,8 @@
+{
+  "vs": {
+	  "name": "Video dohled",
+		"widgets": {
+			"terminals.vs.WidgetLive": 2
+		}
+	}
+}

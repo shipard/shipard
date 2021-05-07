@@ -1,0 +1,14 @@
+{
+	"0": {
+		"name":  "neznámý"
+	},
+	"1": {
+		"name":  "NetData Shipard"
+	},
+	"2": {
+		"name":  "MQTT Shipard"
+	},
+	"3": {
+		"name":  "InfluxDB"
+	}
+}

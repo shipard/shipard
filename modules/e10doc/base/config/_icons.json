@@ -1,0 +1,8 @@
+{
+    "tables/e10doc.base.transports":{
+        "fa5":"fa-truck-moving",
+        "fa5pro":"fa-truck-moving",
+        "bsi":"bi-truck",
+        "mdi":"local_shipping"
+    }
+}

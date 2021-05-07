@@ -1,0 +1,66 @@
+{
+	"main": {
+		"disableTopToolbar": 1,
+		"panels": {
+			"news": {
+				"name": "Přehled",
+				"icon": "icon-bell-o",
+				"order": 1201,
+				"fullsize": 1,
+				"rows": {
+					"main": {"order": 10000, "class": "full"}
+				}
+			}
+		}
+	},
+	"main_new": {
+		"disableTopToolbar": 1,
+		"panels": {
+			"news": {
+				"name": "K řešení",
+				"icon": "icon-check-circle-o",
+				"order": 1201,
+				"fullsize": 1,
+				"rows": {
+					"main": {"order": 10000, "class": "full"}
+				}
+			},
+			"wikies": {
+				"creatorClass": "e10pro.kb.WikiDashboardPanelsCreator", "order": 1800
+			},
+			"maps": {
+				"creatorClass": "lib.wkf.MapsDashboardPanelsCreator", "order": 1800
+			},
+			"trays": {
+				"name": "Přihrádky",
+				"icon": "icon-folder-open-o",
+				"order": 4201,
+				"fullsize": 1,
+				"rows": {
+					"main": {"order": 10000, "class": "full"}
+				}
+			},
+			"documents": {
+				"name": "Dokumenty",
+				"icon": "icon-archive",
+				"order": 1810,
+				"fullsize": 1,
+				"rows": {"main": {"order": 10000, "class": "full"}}
+			},
+			"headlines": {
+				"name": "Novinky",
+				"icon": "icon-star",
+				"order": 2010,
+				"fullsize": 1,
+				"rows": {"main": {"order": 10000, "class": "full"}}
+			},
+			"helpdesk": {
+				"name": "Podpora",
+				"icon": "icon-life-ring",
+				"order": 800100,
+				"fullsize": 1,
+				"rows": {"main": {"order": 10000, "class": "full"}}
+			}
+		}
+	}
+}

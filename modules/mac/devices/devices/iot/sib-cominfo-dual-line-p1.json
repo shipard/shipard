@@ -1,0 +1,71 @@
+{
+	"name": "Cominfo Dual Line RFID reader",
+	"title": "Cominfo Dual Line RFID reader",
+	"gpioLayout": "oli-esp32-poe",
+
+	"fields": {
+		"groups": [
+			{"id":  "rfid", "title":  "RFID"},
+			{"id":  "relay", "title":  "Relé"}
+		],
+		"columns": [
+			{
+				"id": "rfidValueKind", "group":  "rfid", "name": "Druh načítané hodnoty", "type": "int", "reference": "mac.iot.valuesKinds"
+			},
+			{
+				"id": "rfidFullName", "group":  "rfid", "name": "Název RDID portu", "label": "Název", "type": "string", "len": 140
+			},
+			{
+				"id": "relayEnabled", "group":  "relay", "name": "Relé je povoleno", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			},
+			{
+				"id": "relayFullName", "group":  "relay", "name": "Název relé", "label": "Název", "type": "string", "len": 140, "readOnly": {"relayEnabled": "0"}
+			}
+		]
+	},
+
+	"fixedIOPorts": [
+		{
+			"type": "dataWiegand",
+			"portId": "rfid",
+			"pinD0": "ext1-9",
+			"pinD1": "ext1-10",
+
+			"_dpUid": 4,
+			"_rowColumns": {"rfidFullName": "fullName", "rfidValueKind": "valueKind"}
+		},
+		{
+			"type": "controlBinary",
+			"portId": "ledRed",
+			"pin": "ext2-5",
+			"reverse": 1,
+
+			"_dpUid": 5
+		},
+		{
+			"type": "controlBinary",
+			"portId": "ledGreen",
+			"pin": "ext2-6",
+			"reverse": 1,
+
+			"_dpUid": 6
+		},
+		{
+			"type": "controlBinary",
+			"portId": "buzzer",
+			"pin": "ext2-7",
+			"reverse": 1,
+
+			"_dpUid": 7
+		},
+		{
+			"type": "controlBinary",
+			"portId": "relay",
+			"pin": "ext2-8",
+
+			"_dpUid": 8,
+			"_rowColumns": {"relayFullName": "fullName"},
+			"_portDisabled": {"relayEnabled": 0}
+		}
+	]
+}

@@ -1,0 +1,38 @@
+{
+    "bank": {
+        "t1": "Bank"
+    },
+    "cash": {
+        "t1": "Cash register"
+    },
+    "bankOrders": {
+        "t1": "Bank orders"
+    },
+    "accDocs": {
+        "t1": "Accouting documents"
+    },
+    "reports": {
+        "t1": "Reports"
+    },
+    "openClosePeriods": {
+        "t1": "Opening / closing of accounting periods"
+    },
+    "taxes": {
+        "t1": "Taxes"
+    },
+    "others": {
+        "t1": "Other"
+    },
+    "settings": {
+        "t1": "Settings"
+    },
+    "accJournal": {
+        "t1": "Accounting journal"
+    },
+    "balance": {
+        "t1": "Balance"
+    },
+    "accounts": {
+        "t1": "List of accounts"
+    }
+}

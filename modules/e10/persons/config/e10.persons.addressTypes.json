@@ -1,0 +1,8 @@
+{
+	"0": {"name": "", "icon":  "icon-question"},
+	"1": {"name": "Sídlo", "icon": "icon-building"},
+	"2": {"name": "Pobočka", "icon": "icon-home"},
+	"3": {"name": "Korespondenční adresa", "icon": "icon-envelope-o"},
+	"4": {"name": "Doručovací adresa", "icon": "icon-paper-plane-o"},
+	"99": {"name": "Provozovna", "icon": "icon-shopping-cart"}
+}

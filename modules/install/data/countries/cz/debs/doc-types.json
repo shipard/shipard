@@ -1,0 +1,35 @@
+{
+	"name": "Druhy účetních dokladů a číselné řady",
+	"datasets": [
+		{
+			"table": "e10doc.base.dockinds",
+			"name": "Druhy dokladů",
+			"defaultValues": {"docState": 4000, "docStateMain": 2},
+			"data": [
+				{"rec": {"fullName":"Kurzové rozdíly","shortName":"Kurzové rozdíly","docType":"cmnbkp","debsAccountId":"","activity":"balExchRateDiff"}},
+				{"rec": {"fullName":"Zápočet","shortName":"Zápočet","docType":"cmnbkp","debsAccountId":"","activity":"balSetOff"}},
+				{"rec": {"fullName":"Počáteční stavy saldokonta","shortName":"Počáteční stavy saldokonta","docType":"cmnbkp","debsAccountId":"","activity":"ocpBalInSt"}},
+				{"rec": {"fullName":"Otevření období","shortName":"Otevření období","docType":"cmnbkp","debsAccountId":"","activity":"ocpOpen"}},
+				{"rec": {"fullName":"Uzavření období","shortName":"Uzavření období","docType":"cmnbkp","debsAccountId":"","activity":"ocpClose"}},
+				{"rec": {"fullName":"Zařazení majetku","shortName":"Zařazení majetku","docType":"cmnbkp","debsAccountId":"","activity":"prpActivate"}},
+				{"rec": {"fullName":"Vyřazení majetku","shortName":"Vyřazení majetku","docType":"cmnbkp","debsAccountId":"","activity":"prpDiscard"}},
+				{"rec": {"fullName":"Odpisy majetku","shortName":"Odpisy majetku","docType":"cmnbkp","debsAccountId":"","activity":"prpDeps"}},
+				{"rec": {"fullName":"Ostatní majetkové operace","shortName":"Ostatní majetkové operace","docType":"cmnbkp","debsAccountId":"","activity":"prpOther"}},
+				{"rec": {"fullName":"Technické zhodnocení majetku","shortName":"Technické zhodnocení majetku","docType":"cmnbkp","debsAccountId":"","activity":"prpIncrease"}}
+			]
+		},
+		{
+			"table": "e10doc.base.docnumbers",
+			"name": "Číselné řady",
+			"defaultValues": {"docState": 4000, "docStateMain": 2},
+			"data": [
+				{"rec": {"fullName":"Saldokonto","shortName":"Saldo","docType":"cmnbkp","docKeyId":"1","useDocKinds":2,"docKind":0,"activitiesGroup":"bal"}},
+				{"rec": {"fullName":"Zaúčtování mezd","shortName":"Mzdy","docType":"cmnbkp","docKeyId":"2","useDocKinds":0,"docKind":0,"activitiesGroup":""}},
+				{"rec": {"fullName":"Majetek","shortName":"Majetek","docType":"cmnbkp","docKeyId":"3","useDocKinds":2,"docKind":0,"activitiesGroup":"prp"}},
+				{"rec": {"fullName":"Daně","shortName":"Daně","docType":"cmnbkp","docKeyId":"5","useDocKinds":2,"docKind":0,"activitiesGroup":"tax"}},
+				{"rec": {"fullName":"Ostatní","shortName":"Ostatní","docType":"cmnbkp","docKeyId":"8","useDocKinds":0,"docKind":0,"activitiesGroup":""}},
+				{"rec": {"fullName":"Otevření / uzavření účetního období","shortName":"Otevření / uzavření období","docType":"cmnbkp","docKeyId":"9","useDocKinds":2,"docKind":0,"activitiesGroup":"ocp"}}
+			]
+		}
+	]
+}

@@ -1,0 +1,7 @@
+{
+	"feed": {
+		"exchange-rates-list": {
+			"classId": "services.money.libs.ExchangeRateListsFeed"
+		}
+	}
+}

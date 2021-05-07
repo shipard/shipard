@@ -1,0 +1,99 @@
+{
+	"gate-accessCode-in": {
+		"fullName": "Přístupový kód - Příchod",
+		"type": "ioPort",
+		"role": "value",
+		"dir": "in",
+		"ioPortValuesTypes": [1]
+	},
+	"gate-vehicleDetect-in": {
+		"fullName": "Detekce RZ vozidla - Příjezd",
+		"type": "camera",
+		"role": "value",
+		"dir": "in"
+	},
+	"gate-openSwitch-in": {
+		"fullName": "Relé pro otevření - Příchod",
+		"type": "ioPort",
+		"role": "open",
+		"dir": "in",
+		"ioPortTypes": ["controlBinary"]
+	},
+	"gate-accessCode-out": {
+		"fullName": "Přístupový kód - Odchod",
+		"type": "ioPort",
+		"role": "value",
+		"dir": "out",
+		"ioPortValuesTypes": [1]
+	},
+	"gate-openSwitch-out": {
+		"fullName": "Relé pro otevření - Odchod",
+		"type": "ioPort",
+		"role": "open",
+		"dir": "out",
+		"ioPortTypes": ["controlBinary"]
+	},
+	"gate-openSwitch": {
+		"fullName": "Relé pro otevření",
+		"type": "ioPort",
+		"role": "open",
+		"dir": "both",
+		"ioPortTypes": ["controlBinary"]
+	},
+	"gate-success-in": {
+		"fullName": "Kontrolka OK - Příchod",
+		"type": "ioPort",
+		"role": "signal-success",
+		"dir": "in",
+		"ioPortTypes": ["controlBinary"]
+	},
+	"gate-success-out": {
+		"fullName": "Kontrolka OK - Odchod",
+		"type": "ioPort",
+		"role": "signal-success",
+		"dir": "in",
+		"ioPortTypes": ["controlBinary"]
+	},
+	"gate-success": {
+		"fullName": "Kontrolka OK",
+		"type": "ioPort",
+		"role": "signal-success",
+		"dir": "both",
+		"ioPortTypes": ["controlBinary"]
+	},
+	"gate-fail-in": {
+		"fullName": "Kontrolka Chyba kódu - Příchod",
+		"type": "ioPort",
+		"role": "signal-fail",
+		"dir": "in",
+		"ioPortTypes": ["controlBinary"]
+	},
+	"gate-fail-out": {
+		"fullName": "Kontrolka Chyba kódu - Odchod",
+		"type": "ioPort",
+		"role": "signal-fail",
+		"dir": "in",
+		"ioPortTypes": ["controlBinary"]
+	},
+	"gate-fail": {
+		"fullName": "Kontrolka Chyba kódu",
+		"type": "ioPort",
+		"role": "signal-fail",
+		"dir": "both",
+		"ioPortTypes": ["controlBinary"]
+	},
+	"gate-status-leds": {
+		"fullName": "Indikátor stavu",
+		"type": "ioPort",
+		"role": "signal-status",
+		"dir": "both",
+		"ioPortTypes": ["controlLedStrip"]
+	},
+	"gate-motion-detect-in": {
+		"fullName": "Pohybové čidlo - Příchod",
+		"type": "ioPort",
+		"role": "value",
+		"dir": "in",
+		"ioPortTypes": ["inputBinary"]
+	}
+}

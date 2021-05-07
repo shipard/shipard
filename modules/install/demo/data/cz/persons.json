@@ -1,0 +1,253 @@
+{
+	"name": "Osoby",
+	"datasets": [
+		{
+			"table": "e10.persons.persons",
+			"name": "Osoby",
+			"defaultValues": {"docState": 4000, "docStateMain": 2, "demo": 1},
+			"data": [
+				{
+					"rec": {"#":"pShipard", "fullName":"Shipard s.r.o.","company": 1, "demo": 0},
+					"address": [{"street": "nám. T.G.Masaryka 1281", "city": "Zlín", "zipcode": "76001"}],
+					"properties": [{"value": "info@shipard.com", "group": "contacts",  "property": "email"},
+						{"value": "774 020 522", "group": "contacts",  "property": "phone"},
+						{"value": "CZ63478714", "group": "ids", "property": "taxid"},
+						{"value": "63478714", "group": "ids", "property": "oid"}]
+				},
+				{
+					"rec": {"#":"pTaxOffice", "fullName":"Finanční úřad","company": 1},
+					"address": [{"street": "U potoka 101", "city": "Praha", "zipcode": "12000"}],
+					"properties": [{"value": "podatelna@fu.cz", "group": "contacts",  "property": "email"},
+						{"value": "601 234 363", "group": "contacts",  "property": "phone"},
+						{"value": "CZ00000001", "group": "ids", "property": "taxid"},
+						{"value": "00000001", "group": "ids", "property": "oid"}]
+				},
+				{
+					"rec": {"#":"pHealthInsurance", "fullName":"Zdravotní pojišťovna","company": 1},
+					"address": [{"street": "U řeky 434", "city": "Praha", "zipcode": "12000"}],
+					"properties": [{"value": "podatelna@zp.cz", "group": "contacts",  "property": "email"},
+						{"value": "601 335 533", "group": "contacts",  "property": "phone"},
+						{"value": "CZ00000002", "group": "ids", "property": "taxid"},
+						{"value": "00000002", "group": "ids", "property": "oid"}]
+				},
+				{
+					"rec": {"#":"pSocialInsurance", "fullName":"Správa sociálního zabezpečení","company": 1},
+					"address": [{"street": "U jezera 522", "city": "Praha", "zipcode": "12000"}],
+					"properties": [{"value": "podatelna@ssz.cz", "group": "contacts",  "property": "email"},
+						{"value": "601 987 777", "group": "contacts",  "property": "phone"},
+						{"value": "CZ00000003", "group": "ids", "property": "taxid"},
+						{"value": "00000003", "group": "ids", "property": "oid"}]
+				},
+				{
+					"rec": {"#":"pCommercialInsurance", "fullName":"Komerční pojišťovna, a.s.","company": 1},
+					"address": [{"street": "Středová 1", "city": "Praha", "zipcode": "12000"}],
+					"properties": [{"value": "podatelna@ssz.cz", "group": "contacts",  "property": "email"},
+						{"value": "601 111 111", "group": "contacts",  "property": "phone"},
+						{"value": "123321222", "group": "ids", "property": "oid"}]
+				},
+				{
+					"rec": {"fullName":"Lorien s.r.o.","company": 1, "id": "dx130"},
+					"address": [{"street": "Modrá 54", "city": "Liberec", "zipcode": "46005"}],
+					"properties": [{"value": "info@lorien.org", "group": "contacts",  "property": "email"},
+						{"value": "901 101 560", "group": "contacts",  "property": "phone"},
+						{"value": "CZ99302293", "group": "ids", "property": "taxid"},
+						{"value": "99302293", "group": "ids", "property": "oid"}]
+				},
+				{
+					"rec": {"#":"p2", "fullName":"Gelient a.s.","company": 1, "demo": 3},
+					"address": [{"street": "Květinková 333", "city": "Praha", "zipcode": "11150"}],
+					"properties": [{"value": "kontakt@gelient.info", "group": "contacts",  "property": "email"},
+						{"value": "602 407 704", "group": "contacts",  "property": "phone"},
+						{"value": "CZ83487399", "group": "ids", "property": "taxid"},
+						{"value": "83487399", "group": "ids", "property": "oid"}]
+				},
+				{
+					"rec": {"#":"p3", "fullName":"Tripelino s.r.o.","company": 1, "demo": 3},
+					"address": [{"street": "U koleje 12", "city": "Zlín", "zipcode": "76001"}],
+					"properties": [{"value": "tripelino@tripelino.cz", "group": "contacts",  "property": "email"},
+						{"value": "601 123 543", "group": "contacts",  "property": "phone"},
+						{"value": "CZ02569276", "group": "ids", "property": "taxid"},
+						{"value": "02569276", "group": "ids", "property": "oid"}]
+				},
+				{
+					"rec": {"#":"p4", "fullName":"Maxhub, spol. s r. o.","company": 1, "demo": 2},
+					"address": [{"street": "Česká 323", "city": "Olomouc", "zipcode": "77900"}],
+					"properties": [{"value": "hub@muxhub.com", "group": "contacts",  "property": "email"},
+						{"value": "603 212 500", "group": "contacts",  "property": "phone"},
+						{"value": "CZ11180222", "group": "ids", "property": "taxid"},
+						{"value": "11180222", "group": "ids", "property": "oid"}]
+				},
+				{
+					"rec": {"#":"p5", "fullName":"Rile a.s.","company": 1, "demo": 3},
+					"address": [{"street": "Trnitá 1", "city": "Brno", "zipcode": "61300"}],
+					"properties": [{"value": "rile@rile.com", "group": "contacts",  "property": "email"},
+						{"value": "607 398 999", "group": "contacts",  "property": "phone"},
+						{"value": "CZ92004387", "group": "ids", "property": "taxid"},
+						{"value": "92004387", "group": "ids", "property": "oid"}]
+				},
+				{
+					"rec": {"#":"p6", "fullName":"Delwy s.r.o.","company": 1, "demo": 3},
+					"address": [{"street": "Kouty 4789", "city": "Brno", "zipcode": "62300"}],
+					"properties": [{"value": "info@delwy.com", "group": "contacts",  "property": "email"},
+						{"value": "522 133 311", "group": "contacts",  "property": "phone"},
+						{"value": "CZ13331100", "group": "ids", "property": "taxid"},
+						{"value": "13331100", "group": "ids", "property": "oid"}]
+				},
+				{
+					"rec": {"#":"p7", "fullName":"Tivelient spol. s r. o.","company": 1, "demo": 3},
+					"address": [{"street": "Nám. práce 32", "city": "Ostrava", "zipcode": "70300"}],
+					"properties": [{"value": "info@trivelient.org", "group": "contacts",  "property": "email"},
+						{"value": "601 678 999", "group": "contacts",  "property": "phone"},
+						{"value": "CZ89013329", "group": "ids", "property": "taxid"},
+						{"value": "89013329", "group": "ids", "property": "oid"}]
+				},
+				{
+					"rec": {"#":"p8", "fullName":"Beltax a.s.","company": 1, "id": "dx128"},
+					"address": [{"street": "Jana Palacha 45", "city": "Ostrava", "zipcode": "70300"}],
+					"properties": [{"value": "kontakt@beltax.cz", "group": "contacts",  "property": "email"},
+						{"value": "777 299 992", "group": "contacts",  "property": "phone"},
+						{"value": "CZ45771109", "group": "ids", "property": "taxid"},
+						{"value": "45771109", "group": "ids", "property": "oid"}]
+				},
+				{
+					"rec": {"fullName":"PhoneX, a.s.","company": 1, "id": "dx129"},
+					"address": [{"street": "Příčná 1345", "city": "Praha", "zipcode": "11000"}],
+					"properties": [{"value": "info@phonex.cz", "group": "contacts",  "property": "email"},
+						{"value": "888 123 456", "group": "contacts",  "property": "phone"},
+						{"value": "CZ876548976", "group": "ids", "property": "taxid"},
+						{"value": "876548976", "group": "ids", "property": "oid"}]
+				},
+				{
+					"rec": {"#":"p9", "fullName":"Golijax s.r.o.","company": 1},
+					"address": [{"street": "Podlesí II 5634", "city": "Hradec Králové", "zipcode": "50001"}],
+					"properties": [{"value": "golijax@golijax.net", "group": "contacts",  "property": "email"},
+						{"value": "602 899 123", "group": "contacts",  "property": "phone"},
+						{"value": "CZ34021002", "group": "ids", "property": "taxid"},
+						{"value": "4021002", "group": "ids", "property": "oid"}]
+				},
+				{
+					"rec": {"#":"p10", "fullName":"Zimooki a.s.","company": 1},
+					"address": [{"street": "Sadová  8833", "city": "Praha", "zipcode": "12000"}],
+					"properties": [{"value": "info@zimooki.eu", "group": "contacts",  "property": "email"},
+						{"value": "221 492 011", "group": "contacts",  "property": "phone"},
+						{"value": "CZ80816777", "group": "ids", "property": "taxid"},
+						{"value": "80816777", "group": "ids", "property": "oid"}]
+				},
+				{
+					"rec": {"#":"p11", "fullName":"Naše Banka, a.s.","company": 1},
+					"address": [{"street": "Foustkova 973", "city": "Praha", "zipcode": "12000"}],
+					"properties": [{"value": "kontakt@nase-banka.cz", "group": "contacts",  "property": "email"},
+						{"value": "801 111 111", "group": "contacts",  "property": "phone"}]
+				},
+				{
+					"rec": {"#":"p12", "firstName":"Jana","lastName":"Pavlíčková"},
+					"address": [{"street": "Anglická 83", "city": "Zlín", "zipcode": "76001"}],
+					"properties": [{"value": "pvalickova.j@email.cz", "group": "contacts",  "property": "email"},
+						{"value": "601 123 333", "group": "contacts",  "property": "phone"}]
+				},
+				{
+					"rec": {"#":"p13", "firstName":"Čestmír","lastName":"Tvrďa"},
+					"address": [{"street": "Italská 8733", "city": "Brno", "zipcode": "61200"}],
+					"properties": [{"value": "tvrda@gmail.com", "group": "contacts",  "property": "email"},
+						{"value": "603 829 066", "group": "contacts",  "property": "phone"}]
+				},
+				{
+					"rec": {"#":"p14", "firstName":"Jan","lastName":"Drahokoupil"},
+					"address": [{"street": "Polská 2", "city": "Praha", "zipcode": "12010"}],
+					"properties": [{"value": "jan.drah@seznam.net", "group": "contacts",  "property": "email"},
+						{"value": "236 011 733", "group": "contacts",  "property": "phone"}]
+				},
+				{
+					"rec": {"#":"p15", "firstName":"Eliška","lastName":"Divoká", "demo": 3},
+					"address": [{"street": "Glinkova 223", "city": "Hradec Králové", "zipcode": "50001"}],
+					"properties": [{"value": "eliska@divoka.cz", "group": "contacts",  "property": "email"},
+						{"value": "601 999 278", "group": "contacts",  "property": "phone"}]
+				},
+				{
+					"rec": {"#":"p16", "firstName":"Stan","lastName":"Horowski"},
+					"address": [{"street": "Gabriely Preissové 2a", "city": "Olomouc", "zipcode": "77900"}],
+					"properties": [{"value": "stan012@email.org", "group": "contacts",  "property": "email"},
+						{"value": "602 253 099", "group": "contacts",  "property": "phone"}]
+				},
+				{
+					"rec": {"#":"p17", "firstName":"Karel","lastName":"Rychlý"},
+					"address": [{"street": "Hasičská 1299", "city": "Liberec", "zipcode": "46004"}],
+					"properties": [{"value": "karel.rychly@gmail.cz", "group": "contacts",  "property": "email"},
+						{"value": "432 922 490", "group": "contacts",  "property": "phone"}]
+				},
+				{
+					"rec": {"#":"p18", "firstName":"Mojmír","lastName":"Slovák", "demo": 3},
+					"address": [{"street": "Havránkova 522", "city": "Brno", "zipcode": "61200"}],
+					"properties": [{"value": "slovak@slovak.sk", "group": "contacts",  "property": "email"},
+						{"value": "782 033 432", "group": "contacts",  "property": "phone"}]
+				},
+				{
+					"rec": {"#":"p19", "firstName":"Veronika","lastName":"Skřivánková"},
+					"address": [{"street": "Heršpická 727", "city": "Brno", "zipcode": "61200"}],
+					"properties": [{"value": "skriv.ver@email.com", "group": "contacts",  "property": "email"},
+						{"value": "602 892 882", "group": "contacts",  "property": "phone"}]
+				},
+				{
+					"rec": {"#":"p20", "firstName":"Marcela","lastName":"Velikovská"},
+					"address": [{"street": "Hochmanova 44", "city": "Liberec", "zipcode": "46001"}],
+					"properties": [{"value": "marcela.velikovska222@gmail.net", "group": "contacts",  "property": "email"},
+						{"value": "601 730 288", "group": "contacts",  "property": "phone"}]
+				},
+				{
+					"rec": {"#":"p21", "firstName":"Ludmila","lastName":"Knoflíčková", "demo": 3},
+					"address": [{"street": "Horácké náměstí 1", "city": "Brno", "zipcode": "61200"}],
+					"properties": [{"value": "ludmila.kn@email.net", "group": "contacts",  "property": "email"},
+						{"value": "601 922 309", "group": "contacts",  "property": "phone"}]
+				},
+				{
+					"rec": {"#":"p22", "firstName":"Petr","lastName":"Čuřík"},
+					"address": [{"street": "Hřebíčková 888", "city": "Hradec Králové", "zipcode": "50001"}],
+					"properties": [{"value": "petr.curik@gmail.net", "group": "contacts",  "property": "email"},
+						{"value": "893 011 682", "group": "contacts",  "property": "phone"}]
+				},
+				{
+					"rec": {"#":"p23", "firstName":"Otakar","lastName":"Kryšpín"},
+					"address": [{"street": "Irkutská 432", "city": "Olomouc", "zipcode": "77901"}],
+					"properties": [{"value": "ota.k@seznam.net", "group": "contacts",  "property": "email"},
+						{"value": "922 078 321", "group": "contacts",  "property": "phone"}]
+				},
+				{
+					"rec": {"#":"p24", "firstName":"Jiří","lastName":"Hrbáček"},
+					"address": [{"street": "Jasmínová 677", "city": "Ostrava", "zipcode": "70300"}],
+					"properties": [{"value": "hrbacek@info.org", "group": "contacts",  "property": "email"},
+						{"value": "278 277 679", "group": "contacts",  "property": "phone"}]
+				},
+				{
+					"rec": {"#":"p25", "firstName":"Natálie","lastName":"Lukaštíková"},
+					"address": [{"street": "Jilemnického 21", "city": "Ostrava", "zipcode": "70306"}],
+					"properties": [{"value": "natalie.luk@gmail.info", "group": "contacts",  "property": "email"},
+						{"value": "777 872 992", "group": "contacts",  "property": "phone"}]
+				},
+				{
+					"rec": {"#":"p26", "firstName":"Lenka","lastName":"Kučíková"},
+					"address": [{"street": "Jugoslávská 923", "city": "Brno", "zipcode": "61200"}],
+					"properties": [{"value": "kucikova@kucikova.net", "group": "contacts",  "property": "email"},
+						{"value": "502 009 007", "group": "contacts",  "property": "phone"}]
+				},
+				{
+					"rec": {"#":"p27", "firstName":"Kateřina","lastName":"Mojžíšová"},
+					"address": [{"street": "Jungmannova 5", "city": "Ostrava", "zipcode": "70310"}],
+					"properties": [{"value": "katerina@mojzisova.email", "group": "contacts",  "property": "email"},
+						{"value": "601 892 419", "group": "contacts",  "property": "phone"}]
+				},
+				{
+					"rec": {"#":"p28", "firstName":"Cyril","lastName":"Petrovský"},
+					"address": [{"street": "Kárníkova 34", "city": "Hradec Králové", "zipcode": "50001"}],
+					"properties": [{"value": "cyril-petrovsky@email.net", "group": "contacts",  "property": "email"},
+						{"value": "601 620 260", "group": "contacts",  "property": "phone"}]
+				},
+				{
+					"rec": {"#":"p29", "firstName":"Hynek","lastName":"Klinkovský"},
+					"address": [{"street": "Karpatská 921", "city": "Olomouc", "zipcode": "77905"}],
+					"properties": [{"value": "klink.hyn@email.info", "group": "contacts",  "property": "email"},
+						{"value": "601 929 010", "group": "contacts",  "property": "phone"}]
+				}
+			]
+		}
+	]
+}

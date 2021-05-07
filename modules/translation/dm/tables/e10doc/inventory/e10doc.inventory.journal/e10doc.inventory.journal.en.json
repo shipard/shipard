@@ -1,0 +1,46 @@
+{
+    "table": {
+        "name": "Warehouse movements"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "moveType": {
+            "name": "Movement type"
+        },
+        "moveTypeOrder": {
+            "name": "Movement type"
+        },
+        "warehouse": {
+            "name": "Warehouse"
+        },
+        "item": {
+            "name": "Item"
+        },
+        "unit": {
+            "name": "Unit"
+        },
+        "quantity": {
+            "name": "Quantity"
+        },
+        "price": {
+            "name": "Price"
+        },
+        "date": {
+            "name": "Date"
+        },
+        "fiscalYear": {
+            "name": "Fiscal year"
+        },
+        "docRow": {
+            "name": "Document row"
+        },
+        "docHead": {
+            "name": "Document header"
+        },
+        "docRowOwner": {
+            "name": "Parent document row"
+        }
+    }
+}

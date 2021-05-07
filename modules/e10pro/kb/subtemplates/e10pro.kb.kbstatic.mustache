@@ -1,0 +1,80 @@
+{{@setParams;myLayout:1}}
+
+<div class="container" style=''>
+	<div class="row">
+		<div class="col-lg-3 col-md-3">
+			<ul class='e10-book-content'>
+				{{#page.bookContent}}
+					<li{{#active}} class='active'{{/active}}><a href='{{url}}' style='padding-left: {{treeLevel}}em;'>
+						{{title}}
+					</a></li>
+				{{/page.bookContent}}
+			</ul>
+		</div>
+		<div class="col-lg-9 col-md-9 e10-kb-text" id="affix">
+			{{#page.textHasBreadcrumbs}}
+				<ol class="breadcrumb" xmlns:v="http://rdf.data-vocabulary.org/#">
+					{{#page.breadcrumbs}}
+						<li typeof="v:Breadcrumb"><a href="{{url}}" rel="v:url" property="v:title">{{title}}</a></li>
+					{{/page.breadcrumbs}}
+				</ol>
+			{{/page.textHasBreadcrumbs}}
+
+			<h2>
+				{{page.kbTitle}}
+				{{#page.mainPageButtonEdit}}
+					<span class='pull-right'>
+						<button class='btn btn-primary e10-document-trigger' {{{page.mainPageButtonParams}}}><i class="fa fa-edit"></i> Otevřít</button>
+					</span>
+				{{/page.mainPageButtonEdit}}
+			</h2>
+
+			{{{page.kbText}}}
+
+			{{#page.contentToPage}}
+				{{#page.bookContent}}
+					<div class='text-content-row' style='padding-left: {{{treeLevel}}}ex;'>
+						<a href='{{{url}}}'>{{title}}</a>
+						<button data-addparams="__thisType=99&__ownerText={{ownerText}}&__addAfter={{treeId}}" class="e10-document-trigger" data-action="new" data-table="e10pro.kb.texts" title="Přidat další stránku"><i class="fa fa-plus-circle"></i></button>
+						<button data-addparams="__thisType=99&__ownerText={{ndx}}&__addInto={{treeId}}" class="e10-document-trigger" data-action="new" data-table="e10pro.kb.texts" title="Přidat vnořenou stránku"><i class="fa fa-rotate-90 fa-level-down"></i></button>
+					</div>
+				{{/page.bookContent}}
+			{{/page.contentToPage}}
+
+			{{#page.pageContent.0}}
+				<hr/>
+			{{/page.pageContent.0}}
+			{{#page.pageContent}}
+				<div class='text-content-row' style='padding-left: {{{treeLevel}}}ex;'>
+					<a href='{{{url}}}'>{{title}}</a>
+					<button data-addparams="__thisType=99&__ownerText={{ownerText}}&__addAfter={{treeId}}" class="e10-document-trigger" data-action="new" data-table="e10pro.kb.texts" title="Přidat další stránku"><i class="fa fa-plus-circle"></i></button>
+					<button data-addparams="__thisType=99&__ownerText={{ndx}}&__addInto={{treeId}}" class="e10-document-trigger" data-action="new" data-table="e10pro.kb.texts" title="Přidat vnořenou stránku"><i class="fa fa-rotate-90 fa-level-down"></i></button>
+				</div>
+			{{/page.pageContent}}
+
+			<ul class="nav nav-pills nav-justified e10-book-bottomNav">
+				<li>
+					{{#page.pageNavPrev.ndx}}
+						<a href='{{page.pageNavPrev.url}}' rel='prev'><i class='fa fa-list fa-chevron-left'></i><br/>{{page.pageNavPrev.title}}</a>
+					{{/page.pageNavPrev.ndx}}
+				</li>
+
+				<li>
+					{{#page.pageNavUp.ndx}}
+						<a href='{{page.pageNavUp.url}}'><i class='fa fa-list fa-chevron-up'></i><br/>{{page.pageNavUp.title}}</a>
+					{{/page.pageNavUp.ndx}}
+				</li>
+
+				<li>
+					{{#page.pageNavNext.ndx}}
+						<a href='{{page.pageNavNext.url}}' rel='next'><i class='fa fa-list fa-chevron-right'></i><br/>{{page.pageNavNext.title}}</a>
+					{{/page.pageNavNext.ndx}}
+				</li>
+			</ul>
+		</div>
+	</div>
+</div>
+
+
+<script src="{{dsRoot}}/e10-modules/wwwlibs/highlight.js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>

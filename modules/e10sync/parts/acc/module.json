@@ -1,0 +1,7 @@
+{
+	"id": "e10sync.parts.acc",
+	"name": "Synchronizace číselníků účtování",
+	"tables": [],
+	"extensions": ["core"],
+	"modules": []
+}

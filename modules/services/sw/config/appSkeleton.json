@@ -1,0 +1,12 @@
+{
+	"panels": {
+		"services-sw": {"url": "/app/servicesSw", "zone": "sec", "objectType": "panel", "name": "SW", "order": 96100000, "cntBigIcons": 5,
+			"items": {
+				"sw": {"t1": "Software", "object": "viewer", "table": "mac.sw.sw", "viewer": "swsrv", "icon": "icon-hourglass-half", "order": 10000},
+				"swQueue": {"t1": "Zpracovat", "object": "viewer", "table": "services.sw.swQueue", "viewer": "default", "icon": "icon-question-circle", "order": 12000},
+				"publishers": {"t1": "Vydavatelé", "object": "viewer", "table": "mac.sw.publishers", "viewer": "default", "icon": "icon-building", "order": 15000, "beforeSeparator":  1},
+				"categories": {"t1": "Kategorie", "object": "viewer", "table": "mac.sw.categories", "viewer": "default", "icon": "icon-folder", "order": 16000}
+			}
+		}
+	}
+}

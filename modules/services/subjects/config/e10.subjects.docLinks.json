@@ -1,0 +1,16 @@
+{
+	"services.subjects.types": {
+		"services-subjects-types-propgroups": {"linkid": "services-subjects-types-propgroups", "name": "Skupiny vlastností", "icon": "chevron-left",
+			"sources": [
+				{"table": "e10.base.propgroups"}
+			]
+		}
+	},
+	"services.subjects.branchesParts": {
+		"services-subjects-bparts-nace": {"linkid": "services-subjects-bparts-nace", "name": "NACE", "icon": "icon-list",
+			"sources": [
+				{"table": "e10.base.nomencItems", "viewer": "services.subjects.ViewerNomencItemsNACE"}
+			]
+		}
+	}
+}

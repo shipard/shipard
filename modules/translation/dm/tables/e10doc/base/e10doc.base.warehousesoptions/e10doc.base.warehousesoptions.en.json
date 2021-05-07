@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Set-ups of warehouses"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "warehouse": {
+            "name": "Warehouse"
+        },
+        "fiscalYear": {
+            "name": "Fiscal period"
+        },
+        "calcPrices": {
+            "name": "Stock price"
+        },
+        "debsAccInvAcquisition": {
+            "name": "Stock acquisition account"
+        },
+        "debsAccInvInStore": {
+            "name": "Warehouse stock account"
+        },
+        "debsAccInvInTransit": {
+            "name": "Account of stock in transit"
+        }
+    }
+}

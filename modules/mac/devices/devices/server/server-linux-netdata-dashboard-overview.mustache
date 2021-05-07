@@ -1,0 +1,60 @@
+{{{netdataPageBegin}}}
+
+<div class="netdata-chart-row" style="height: 17vh;">
+	<div class="netdata-container-easypiechart" style="margin-right: 10px; width: 9%;" data-netdata="system.swap" data-dimensions="used" data-append-options="percentage"
+			 data-chart-library="easypiechart" data-title="Used Swap" data-units="%" data-easypiechart-max-value="100" data-width="9%" data-before="0" data-after="-540" data-points="540" data-colors="#DD4400" role="application">
+	</div>
+
+	<div class="netdata-container-easypiechart" style="margin-right: 10px; width: 11%;" data-netdata="system.io" data-dimensions="in"
+			 data-chart-library="easypiechart" data-title="Disk Read" data-width="11%" data-before="0" data-after="-540" data-points="540" data-common-units="system.io.mainhead" role="application">
+	</div>
+
+	<div class="netdata-container-easypiechart" style="margin-right: 10px; width: 11%;" data-netdata="system.io" data-dimensions="out"
+			 data-chart-library="easypiechart" data-title="Disk Write" data-width="11%" data-before="0" data-after="-540" data-points="540" data-common-units="system.io.mainhead" role="application">
+	</div>
+
+	<div class="netdata-container-gauge" style="margin-right: 10px; width: 20%;" data-netdata="system.cpu"
+			 data-chart-library="gauge" data-title="CPU" data-units="%" data-gauge-max-value="100" data-width="20%" data-after="-540" data-points="540" data-colors="#22AA99" role="application">
+	</div>
+
+	<div class="netdata-container-easypiechart" style="margin-right: 10px; width: 11%;" data-netdata="system.net" data-dimensions="received"
+			 data-chart-library="easypiechart" data-title="Net Inbound" data-width="11%" data-before="0" data-after="-540" data-points="540" data-common-units="system.net.mainhead" role="application">
+	</div>
+
+	<div class="netdata-container-easypiechart" style="margin-right: 10px; width: 11%;" data-netdata="system.net" data-dimensions="sent"
+			 data-chart-library="easypiechart" data-title="Net Outbound" data-width="11%" data-before="0" data-after="-540" data-points="540" data-common-units="system.net.mainhead" role="application">
+	</div>
+
+	<div class="netdata-container-easypiechart" style="margin-right: 10px; width: 9%;" data-netdata="system.ram" data-dimensions="used|buffers|active|wired"
+			 data-append-options="percentage" data-chart-library="easypiechart" data-title="Used RAM" data-units="%" data-easypiechart-max-value="100" data-width="9%" data-after="-540" data-points="540" data-colors="#EE9911" role="application">
+	</div>
+</div>
+
+
+<div class="row netdata-chart-row">
+	<div class="col-sm-6">
+		<h2 style="text-align: center; padding-top: 1rem;">Load</h2>
+		<div class="netdata-container-with-legend" id="chart_system_load" data-netdata="system.load" data-width="100%" data-height="10vh"
+				 data-dygraph-valuerange="[null, null]" data-before="0" data-after="-480" data-id="x3_system_load"
+				 data-colors="" data-decimal-digits="-1" role="application" style="width: 100%; height: 126px; will-change: transform;">
+		</div>
+	</div>
+
+	<div class="col-sm-6">
+		<h2 style="text-align: center; padding-top: 1rem;">RAM</h2>
+		<div class="netdata-container-with-legend" id="chart_system_ram" data-netdata="system.ram" data-width="100%" data-height="10vh"
+				 data-dygraph-valuerange="[null, null]" data-before="0" data-after="-480" data-id="x3_system_ram" data-colors=""
+				 data-decimal-digits="-1" role="application" style="width: 100%; height: 180px; will-change: transform;">
+		</div>
+	</div>
+</div>
+
+
+<h2 style="text-align: center; padding-top: 1rem;">Applications</h2>
+<div class="netdata-container-with-legend" id="chart_apps_cpu" data-netdata="apps.cpu" data-width="100%" data-height="30vh"
+		 data-dygraph-valuerange="[null, null]" data-before="0" data-after="-480" data-id="x3_apps_cpu" data-colors=""
+		 data-decimal-digits="-1" role="application" style="width: 100%; height: 360px;">
+</div>
+
+{{{netdataPageEnd}}}
+

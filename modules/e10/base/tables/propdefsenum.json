@@ -1,0 +1,17 @@
+{
+  "id": "e10.base.propdefsenum", "sql": "e10_base_propdefsenum", "name": "Výčet hodnot vlastností",
+  "columns": [
+    {"id": "ndx", "name": "ndx", "type": "int_ai"},
+		{"id": "property", "name": "Vlastnost", "type": "int"},
+    {"id": "fullName", "name": "Název", "type": "string", "len": 120},
+    {"id": "id", "name": "ID", "type": "string", "len": 64}
+  ],
+	"options": ["systemTable"],
+  "views": [
+    {"id": "default", "class": "e10.base.ViewPropDefsEnum", "detail": "e10.base.ViewDetailPropDefs"}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10.base.FormPropDefsEnum"}
+  ],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

@@ -1,0 +1,41 @@
+{
+    "2000": {
+        "name": "Obligations",
+        "shortName": "Oblig",
+        "shortcut": "Obl"
+    },
+    "3000": {
+        "name": "Received deposits",
+        "shortName": "RecDep",
+        "shortcut": "RDep"
+    },
+    "3500": {
+        "name": "Provided deposits",
+        "shortName": "ProvDep",
+        "shortcut": "PDep"
+    },
+    "0": {
+        "name": "---",
+        "shortcut": "---"
+    },
+    "8100": {
+        "name": "Collective invoicing",
+        "shortName": "CollInvo",
+        "shortcut": "CInvo"
+    },
+    "5000": {
+        "name": "Receiving records without invoice",
+        "shortName": "RecRecWI",
+        "shortcut": "RRecWI"
+    },
+    "4100": {
+        "name": "Money on the way",
+        "shortName": "MonOTW",
+        "shortcut": "MOTW"
+    },
+    "1000": {
+        "name": "Receivables",
+        "shortName": "Rcvbl",
+        "shortcut": "Rcv"
+    }
+}

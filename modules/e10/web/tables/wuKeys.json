@@ -1,0 +1,22 @@
+{
+	"id": "e10.web.wuKeys", "sql": "e10_web_wuKeys", "name": "Klíče uživatelů webu", "icon": "icon-id-badge",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "webServer", "name": "Webový server", "type": "int", "reference": "e10.web.servers"},
+		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "keyType", "name": "Typ klíče", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"1": "URL hash"}},
+		{"id": "keyValue", "name": "Klíč", "type": "string", "len": 80, "options": ["ascii"]},
+		{"id": "created", "sql": "created", "name": "Okamžik vytvoření", "type": "timestamp"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "e10.web.ViewWuKeys", "help": "web/4541"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10.web.FormWuKey", "help": "web/4541"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

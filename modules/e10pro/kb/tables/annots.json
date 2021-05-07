@@ -1,0 +1,39 @@
+{
+	"id": "e10pro.kb.annots", "sql": "e10pro_kb_annots", "name": "Anotace", "icon": "icon-external-link",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "annotKind", "name": "Druh", "type": "int", "reference": "e10pro.kb.annotsKinds", "options": ["saveOnChange"]},
+
+		{"id": "title", "name": "Název", "type": "string", "len": 120},
+		{"id": "perex", "name": "Perex", "type": "memo"},
+		{"id": "url", "name": "Webová adresa", "type": "string", "len":  240},
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+		{"id": "docTableNdx", "name": "Tabulka", "type": "short"},
+		{"id": "docRecNdx", "name": "Záznam", "type": "int"},
+
+		{"id": "srcLanguage", "name": "Jazyk", "type": "int", "reference": "e10.world.languages"},
+		{"id": "linkLanguage", "name": "Jazyk", "type": "int", "reference": "e10.world.languages"},
+		{"id": "linkCountry", "name": "Země", "type": "int", "reference": "e10.world.countries"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"}
+	],
+	"views": [
+		{
+			"id": "default", "class": "e10pro.kb.ViewAnnots",
+			"details": {
+				"text": {"title": "Text", "icon": "x-content", "type": "detail", "class": "e10pro.kb.ViewDetailAnnot"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.kb.FormAnnot"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "title"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

@@ -1,0 +1,43 @@
+{
+	"50": {
+		"fullName": "Účtárna", "shortName": "Účtárna", "order": 50000, "icon": "icon-calculator",
+		"topSection": 0
+	},
+	"51": {
+		"fullName": "Účtárna - doklady", "shortName": "Doklady", "order": 1000, "icon": "icon-file-text-o",
+		"shipardEmailId": "uctarna",
+		"topSection": 50, "dik": [2, 51, 52, 53, 54, 60, 61, 62], "orderBy": 4
+	},
+	"52": {
+		"fullName": "Účtárna - mzdy", "shortName": "Mzdy", "order": 2000, "icon": "icon-money",
+		"shipardEmailId": "mzdy",
+		"topSection": 50, "dik": [2, 51, 52, 53, 54, 60, 61, 62, 1], "orderBy": 4
+	},
+	"53": {
+		"fullName": "Účtárna - majetek", "shortName": "Majetek", "order": 3000, "icon": "icon-cube",
+		"shipardEmailId": "majetek",
+		"topSection": 50, "dik": [2, 51, 52, 53, 54, 60, 61, 62, 1], "orderBy": 4
+	},
+	"54": {
+		"fullName": "Účtárna - banka", "shortName": "Banka", "order": 1500, "icon": "icon-institution",
+		"shipardEmailId": "banka",
+		"topSection": 50, "dik": [52], "orderBy": 4
+	},
+	"55": {
+		"fullName": "Účtárna - pokladna", "shortName": "Pokladna", "order": 1400, "icon": "e10-docs-cash",
+		"shipardEmailId": "pokladna",
+		"topSection": 50, "dik": [55], "orderBy": 4
+	},
+	"58": {
+		"fullName": "Účtárna - výstrahy", "shortName": "Výstrahy", "order": 6000, "icon": "icon-exclamation-circle",
+		"topSection": 50, "enabledIssueKinds": 9
+	},
+	"59": {
+		"fullName": "Účtárna - ostatní", "shortName": "Ostatní", "order": 6500, "icon": "icon-th",
+		"topSection": 50, "dik": [2, 51, 52, 53, 54, 60, 61, 62, 1]
+	},
+	"121": {
+		"fullName": "Účtárna - odeslaná pošta", "shortName": "Odesláno", "order": 7000, "icon": "icon-send",
+		"topSection": 50, "dik": [4, 121, 122, 123]
+	}
+}

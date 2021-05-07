@@ -1,0 +1,31 @@
+{
+	"types": {
+		"0": {"name": "---"},
+		"1": {"name": "Ovladače a utility"},
+		"2": {"name": "Kancelářský balík"},
+		"3": {"name": "CAD/CAM/CAE"},
+		"4": {"name": "Webový prohlížeč"},
+		"5": {"name": "Emailový klient"},
+		"6": {"name": "ERP"},
+		"7": {"name": "Databáze"},
+		"8": {"name": "Antivir"},
+		"9": {"name": "Rozšíření a doplňky OS"},
+		"10": {"name": "Práce s dokumenty"},
+		"11": {"name": "Práce se soubory"},
+		"12": {"name": "Fotografie"},
+		"13": {"name": "Grafika"},
+		"14": {"name": "Video"},
+		"15": {"name": "Hry"},
+
+		"100": {"name": "Ostatní"}
+	},
+	"licenses": {
+		"0": {"name": "---"},
+		"1": {"name": "free: oss/cc/freeware"},
+		"2": {"name": "free: eula/oem/..."},
+		"3": {"name": "komerční"},
+		"4": {"name": "shareware"},
+		"5": {"name": "plovoucí"},
+		"100": {"name": "jiné"}
+	}
+}

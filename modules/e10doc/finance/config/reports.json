@@ -1,0 +1,4 @@
+[
+	{"name": "DPH XXX", "class": "e10doc.finance.reportVAT", "icon": "icon-shield","group": "e10doc-finance", "order": 90000},
+	{"name": "Transakce", "class": "e10doc.finance.ReportTransactions", "icon": "icon-money", "group": "e10doc-balance", "order": 90000000}
+]

@@ -1,0 +1,81 @@
+{
+  "id": "e10pro.hosting.server.datasources", "sql": "e10pro_hosting_server_datasources", "name": "Zdroje dat", "icon": "icon-database",
+  "columns": [
+    {"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "name", "name": "Název", "type": "string", "len": 120},
+	  {"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 40},
+
+		{"id": "gid", "name": "GID", "type": "long"},
+		{"id": "gidstr", "name": "GID", "type": "string", "len": 20},
+
+		{"id": "server", "name": "Server", "type": "int", "reference": "e10pro.hosting.server.servers"},
+		{"id": "owner", "name": "Majitel", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "admin", "name": "Technický správce", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "payer", "name": "Plátce", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "partner", "name": "Partner", "type": "int", "reference": "e10pro.hosting.server.partners"},
+		{"id": "supportKind", "name": "Úroveň podpory", "type": "int", "reference": "e10pro.hosting.server.supportsKinds"},
+	  {"id": "supportSection", "name": "Sekce podpory", "type": "int", "reference": "wkf.base.sections"},
+
+		{"id": "urlWeb", "name": "URL webu", "type": "string", "len": 80},
+		{"id": "urlApp", "name": "URL aplikace", "type": "string", "len": 80},
+	  {"id": "urlApp2", "name": "Zastaralé URL aplikace", "type": "string", "len": 80},
+		{"id": "domain", "name": "Doména NEPOUŽÍVAT", "type": "string", "len": 80},
+	  {"id": "dsId1", "name": "ID zdroje dat", "type": "string", "len": 40, "options": ["ascii"]},
+	  {"id": "dsId2", "name": "Zastaralé ID zdroje dat", "type": "string", "len": 40, "options": ["ascii"]},
+		{"id": "dsId1DomainRec", "name": "Záznam v DNS", "type": "int", "reference": "e10pro.hosting.server.domainsRecords"},
+		{"id": "installModule", "name": "Instalační modul", "type": "int", "reference": "e10pro.hosting.server.modules"},
+		{"id": "dateStart", "sql": "dateStart", "name": "Datum zahájení", "type": "date"},
+	  {"id": "dateTrialEnd", "name": "Konec zkušební lhůty", "type": "date"},
+	  {"id": "appWarning", "name": "Upozornění", "type": "enumInt",
+		  "enumValues": {
+			  "0": "Žádné",
+			  "1": "Neuhrazeno - Upozornění", "2": "Neuhrazeno - Poslední šance",
+			  "4": "Zkušební lhůta - Upozornění", "3": "Zkušební lhůta - Poslední šance"
+		  }
+	  },
+		{"id": "created", "sql": "created", "name": "Vytvořeno", "type": "timestamp"},
+		{"id": "lastLogin", "name": "Poslední přihlášení", "type": "timestamp"},
+		{"id": "dsType", "name": "Typ", "type": "enumInt",
+			"enumValues": {"0": "Ostrý zdroj dat", "1": "Zkušební zdroj dat", "2": "Demo", "3": "Interní", "4": "Ostatní"}},
+		{"id": "condition", "name": "Stav", "type": "enumInt",
+			"enumValues": {"0": "Zkušební lhůta", "1": "Ostrý provoz", "3": "Expirováno", "4": "Pozastaveno", "5": "Restart"}},
+
+		{"id": "pricePlanKind", "name": "Druh tarifu", "type": "enumInt",
+			"enumValues": {"0": "Firma", "1": "Spolek", "2": "Rodina"}},
+		{"id": "invoicingTo", "name": "Fakturovat", "type": "enumInt",
+			"enumValues": {"0": "Partner", "1": "Koncový zákazník", "2": "Smlouva", "3": "Nefakturuje se"}},
+
+	  {"id": "imageUrl", "name": "URL obrázku", "type": "string", "len": 160},
+	  {"id": "dsIconServerUrl", "name": "Ikona - URL serveru", "type": "string", "len": 60},
+	  {"id": "dsIconFileName", "name": "Ikona - jméno souboru", "type": "string", "len": 120},
+
+	  {"id": "inProgress", "name": "Zdroj se zakládá", "type": "int"},
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+  "views": [
+    {"id": "default", "class": "e10pro.hosting.server.ViewDatasources",
+			"details": {
+				"default": {"title": "Přehled", "icon": "x-dashboard", "type": "detail", "class": "e10pro.hosting.server.ViewDetailDatasources"},
+				"users": {"title": "Uživatelé", "icon": "x-user", "type": "detail", "class": "e10pro.hosting.server.ViewDetailDataSourceUsers"}
+			}
+		},
+		{"id": "dashboard", "class": "e10pro.hosting.client.libs.DataSourcesDashboardViewer2",
+			"details": {
+				"default": {"title": "Přehled", "icon": "x-dashboard", "type": "detail", "class": "e10pro.hosting.client.libs.DataSourcesDashboardViewerDetail"}
+			}
+		}
+  ],
+	"options": ["timelineSource"],
+  "forms": [
+    {"id": "default", "class": "e10pro.hosting.server.FormDatasource"},
+		{"id": "show", "class": "e10pro.hosting.server.FormDatasourceShow"}
+  ],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10pro.hosting.server.datasources.docStates"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"},
+  "order": [{"column": "name", "order": "ASC"}],
+  "fullText": ["name", "dsid"],
+	"indexes": [
+		{"id": "s1", "columns": ["gid"]}
+	]
+}

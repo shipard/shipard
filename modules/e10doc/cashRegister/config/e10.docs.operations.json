@@ -1,0 +1,8 @@
+{
+	"1080003": {
+		"title": "Sběrná fakturace", "docDir": 2, "paymentSymbols": 1, "paymentBalance": 8100,
+		"docTypes": {
+			"invno" : {"order": 65000}
+		}
+	}
+}

@@ -1,0 +1,22 @@
+{
+	"id": "swdev.world.currenciesTr", "sql": "swdev_world_currenciesTr", "name": "Měny - Lokalizace", "icon": "icon-money",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "currency", "name": "Měna", "type": "int", "reference": "swdev.world.currencies"},
+		{"id": "language", "name": "Jazyk", "type": "int", "reference": "swdev.world.languages"},
+		{"id": "name", "name": "Název", "type": "string", "len": 120},
+		{"id": "namePlural", "name": "Název mn. č.", "type": "string", "len": 120},
+		{"id": "urlWikipedia", "name": "URL na Wikipedii", "type": "string", "len": 120},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "swdev.world.ViewCurrenciesTr"}
+	],
+	"forms": [
+		{"id": "default", "class": "swdev.world.FormCurrencyTr"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

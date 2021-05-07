@@ -1,0 +1,103 @@
+{
+    "table": {
+        "name": "Work records"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "dbCounter": {
+            "name": "Numerical series"
+        },
+        "dbCounterNdx": {
+            "name": "Sequence number"
+        },
+        "dbCounterYear": {
+            "name": "Year"
+        },
+        "docNumber": {
+            "name": "Document number"
+        },
+        "docType": {
+            "name": "Document type"
+        },
+        "docKind": {
+            "name": "Kind"
+        },
+        "subject": {
+            "name": "Subject"
+        },
+        "text": {
+            "name": "Text"
+        },
+        "note1": {
+            "name": "From"
+        },
+        "note2": {
+            "name": "Where"
+        },
+        "customer": {
+            "name": "Customer"
+        },
+        "money": {
+            "name": "Amount"
+        },
+        "currency": {
+            "name": "Currency"
+        },
+        "workOrder": {
+            "name": "Work order"
+        },
+        "author": {
+            "name": "Author"
+        },
+        "dateWork": {
+            "name": "Date"
+        },
+        "dateBegin": {
+            "name": "Start date/time"
+        },
+        "dateEnd": {
+            "name": "End date/time"
+        },
+        "beginDate": {
+            "name": "Start date"
+        },
+        "beginTime": {
+            "name": "Start time"
+        },
+        "beginDateTime": {
+            "name": "Start date/time"
+        },
+        "endDate": {
+            "name": "End date"
+        },
+        "endTime": {
+            "name": "End time"
+        },
+        "endDateTime": {
+            "name": "End date/time"
+        },
+        "timeLen": {
+            "name": "Total time"
+        },
+        "timeLenHours": {
+            "name": "Total time in hours"
+        },
+        "person": {
+            "name": "Worker"
+        },
+        "dateCreate": {
+            "name": "Date of origin"
+        },
+        "source": {
+            "name": "Source"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

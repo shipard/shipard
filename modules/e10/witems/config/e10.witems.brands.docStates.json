@@ -1,0 +1,8 @@
+{
+	"1000": {"stateName": "Nově rozpracováno", "actionName": "Uložit rozpracované", "mainState": 0, "stateStyle": "concept",  "mainState": 0, "goto": [4000, 9800]},
+	"4000": {"stateName": "V pořádku", "actionName": "V pořádku", "stateStyle": "done",  "mainState": 2, "readOnly": 1, "goto": [8000, 9000, 9800]},
+	"8000": {"stateName": "V opravě", "actionName": "Opravit", "stateStyle": "edit",  "mainState": 0, "goto": [4000, 9000, 9800]},
+	"9000": {"stateName": "V archívu", "actionName": "Archivovat", "stateStyle": "archive",  "mainState": 5, "readOnly": 1, "goto": [8000]},
+	"9800": {"stateName": "Smazáno", "actionName": "Smazat", "stateStyle": "delete",  "mainState": 4, "readOnly": 1, "goto": [8000]}
+}
+

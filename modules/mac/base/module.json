@@ -1,0 +1,14 @@
+{
+  "id": "mac.base",
+  "name": "Monitoring And Control - Base",
+  "tables": ["zones", "zonesCameras", "zonesIoTSC"],
+  "modules": ["e10/base"],
+
+  "config": [
+    {"id": "+e10.appOptions.groups", "file": "e10.appOptionsGroups.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+    {"id": "+e10.base.doclinks", "file": "mac.base.doclinks.json"},
+	  {"id": "+mac.base.workingDaysSchedule", "file": "mac.base.workingDaysSchedule.json"},
+	  {"id": "+mac.base.zonesIotSCRowTypes", "file": "zonesIotSCRowTypes.json"}
+  ]
+}

@@ -1,0 +1,15 @@
+{
+	"name": "Výchozí účtová osnova a rozvrh",
+	"includes": [
+		"install/data/countries/cz/debs/debs-accounts-default-groups",
+		"install/data/countries/cz/debs/debs-accounts-default-vat",
+		"install/data/countries/cz/debs/debs-accounts-default-class0",
+		"install/data/countries/cz/debs/debs-accounts-default-class1",
+		"install/data/countries/cz/debs/debs-accounts-default-class2",
+		"install/data/countries/cz/debs/debs-accounts-default-class3",
+		"install/data/countries/cz/debs/debs-accounts-default-class4",
+		"install/data/countries/cz/debs/debs-accounts-default-class5",
+		"install/data/countries/cz/debs/debs-accounts-default-class6",
+		"install/data/countries/cz/debs/debs-accounts-default-class7"
+	]
+}

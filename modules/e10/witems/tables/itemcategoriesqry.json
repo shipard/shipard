@@ -1,0 +1,17 @@
+{
+  "id": "e10.witems.itemcategoriesqry", "sql": "e10_witems_itemcategoriesqry", "name": "Podmínky pro kategorie položek",
+  "columns": [
+    {"id": "ndx", "name": "ndx", "type": "int_ai"},
+    {"id": "itemcategory", "name": "Kategorie položky", "type": "int"},
+    {"id": "queryType", "name": "Typ podmínky", "type": "enumInt",
+			"enumValues": {"0": "Vlastnost", "1": "Typ položky"}},
+    {"id": "property", "name": "Vlastnost", "type": "int", "reference": "e10.base.propdefs", "comboViewer": "combo"},
+		{"id": "valueEnum", "name": "Hodnota", "type": "int", "reference": "e10.base.propdefsenum"},
+		{"id": "valueString", "name": "Hodnota", "type": "string", "len": 40, "comboTable": "e10.base.properties", "comboViewer": "combo"},
+		{"id": "valueItemType", "name": "Typ položky", "type": "int", "reference": "e10.witems.itemtypes", "comboViewer": "combo"}
+  ],
+	"options": ["systemTable"],
+	"forms": [
+    {"id": "default", "class": "e10.witems.FormItemCategoriesQry"}
+  ]
+}

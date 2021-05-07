@@ -1,0 +1,33 @@
+{
+	"panels": {
+		"subjects": {
+			"url": "/app/subjects", "objectType": "panel", "zone": "sec", "name": "Subjekty", "order": 120000, "cntBigIcons": 6,
+			"items": [
+				{"#": "dashboard", "t1": "Přehled", "object": "widget", "class": "e10.widgetDashboard", "subclass": "subjects", "icon": "icon-dashboard", "order": 99000},
+				{"t1": "Subjekty", "object": "viewer", "table": "services.subjects.subjects", "viewer": "default", "icon": "icon-building", "order": 100000},
+				{"t1": "Staré osoby", "object": "viewer", "table": "services.persons.persons", "viewer": "default", "icon": "e10-persons-persons", "order": 990000}
+			],
+			"smallItems": [
+				{"t1": "Obory", "object": "viewer", "table": "services.subjects.branches", "viewer": "default", "icon": "icon-circle-o-notch", "order": 990000},
+				{"t1": "Druhy", "object": "viewer", "table": "services.subjects.kinds", "viewer": "default", "icon": "icon-folder-open-o", "order": 998000},
+				{"t1": "Velikosti", "object": "viewer", "table": "services.subjects.sizes", "viewer": "default", "icon": "icon-expand", "order": 999000},
+				{"t1": "Činnosti", "object": "viewer", "table": "services.subjects.activities", "viewer": "default", "icon": "icon-spoon", "order": 993000},
+				{"t1": "Komodity", "object": "viewer", "table": "services.subjects.commodities", "viewer": "default", "icon": "icon-shopping-basket", "order": 994000}
+			]
+		},
+		"cz_res_plus": {
+			"url": "/app/resp", "objectType": "panel", "zone": "sec", "name": "RES+", "order": 180000,
+			"items": [
+				{"t1": "RES", "object": "viewer", "table": "services.subjregs.cz_res_plus.res", "viewer": "default", "icon": "icon-building", "order": 100000},
+				{"t1": "RZP Subjekty", "object": "viewer", "table": "services.subjregs.cz_res_plus.rzpSubj", "viewer": "default", "icon": "icon-building-o", "order": 150000},
+				{"t1": "RZP Provozovny", "object": "viewer", "table": "services.subjregs.cz_res_plus.rzpProvoz", "viewer": "default", "icon": "icon-industry", "order": 170000}
+			]
+		},
+		"money": {
+			"url": "/app/money", "objectType": "panel", "zone": "sec", "name": "Peníze", "order": 190000,
+			"items": [
+				{"t1": "Kurzy", "object": "viewer", "table": "services.money.exchangeRatesLists", "viewer": "default", "icon": "icon-usd", "order": 100000}
+			]
+		}
+	}
+}

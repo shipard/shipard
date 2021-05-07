@@ -1,0 +1,27 @@
+{
+	"property": {
+		"name": "Majetek", "order": 1000, "group": "property", "icon": "icon-institution",
+		"type": "cfgFile",
+		"options":
+		[
+			{"cfgKey": "usePropertyExpenses", "cfgName": "Sledovat náklady na majetek",
+				"options": {"0": "Ne", "1": "Ano"}
+			}
+		]
+	},
+	"propertyTypes": {
+		"name": "Typy majetku", "order": 31000, "group": "property",
+		"icon": "icon-list",
+		"type": "viewer",
+		"table": "e10pro.property.types",
+		"viewer": "default"
+	},
+	"propertyGroups": {
+		"name": "Skupiny majetku", "order": 31200, "group": "property",
+		"icon": "icon-object-group",
+		"type": "viewer",
+		"table": "e10pro.property.groups",
+		"viewer": "default"
+	}
+}
+

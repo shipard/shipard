@@ -1,0 +1,16 @@
+{
+	"id": "mac.lan.deviceTypesPorts", "sql": "mac_lan_deviceTypesPorts", "name": "Porty typů síťových zařízení",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "deviceType", "name": "Typ zařízení", "type": "int", "reference": "mac.lan.deviceTypes"},
+		{"id": "portKind", "name": "Druh portu", "type": "enumInt",
+			"enumCfg": {"cfgItem": "mac.lan.ports.kinds", "cfgValue": "", "cfgText": "name"}},
+		{"id": "portsCount", "name": "Počet portů", "type": "int"},
+		{"id": "portIdMask", "name": "ID portu", "type": "string", "len": 20},
+		{"id": "note", "name": "Poznámka", "type": "string", "len": 100}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.lan.FormDeviceTypePort"}
+	],
+	"options": ["systemTable"]
+}

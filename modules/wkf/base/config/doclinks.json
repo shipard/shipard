@@ -1,0 +1,40 @@
+{
+	"wkf.base.sections": {
+		"wkf-sections-members": {
+			"linkid": "wkf-sections-members", "name": "Členové sekce", "icon": "icon-user",
+			"sources": [
+				{"id": "persons", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			]
+		},
+		"wkf-sections-admins": {
+			"linkid": "wkf-sections-admins", "name": "Správci sekce", "icon": "icon-user-secret",
+			"sources": [
+				{"id": "persons", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			]
+		}
+	},
+
+	"wkf.base.trays": {
+		"wkf-trays-members": {
+			"linkid": "wkf-trays-members", "name": "Členové přihrádky", "icon": "icon-user",
+			"sources": [
+				{"id": "persons", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			]
+		},
+		"wkf-trays-admins": {
+			"linkid": "wkf-trays-admins", "name": "Správci přihrádky", "icon": "icon-user-secret",
+			"sources": [
+				{"id": "persons", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			]
+		}
+	},
+
+	"wkf.base.extNotifications": {
+		"wkf-ext-ntf-sections": {
+			"linkid": "wkf-ext-ntf-sections", "name": "Sekce", "icon": "icon-columns",
+			"sources": [
+				{"id": "sections", "viewer": "default", "table": "wkf.base.sections"}
+			]
+		}
+	}
+}

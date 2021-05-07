@@ -1,0 +1,12 @@
+{
+	"stock": {
+		"viewers": {
+			"e10doc.core.heads": {"mnf": 2}
+		},
+		"documents": {
+			"e10doc.core.heads":	[
+				{"docType": "mnf", "_access": 2, "_name": "Výroba"}
+			]
+		}
+	}
+}

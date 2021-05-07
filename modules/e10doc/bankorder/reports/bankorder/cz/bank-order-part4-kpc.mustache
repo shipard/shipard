@@ -1,0 +1,21 @@
+--- 4. Položka
+
+{{{@write;var:prefixBankAccount;align:right;paddingChar:0;width:6;maxLen:6}}}
+{{{@write;text:-}}}
+{{{@write;var:numberBankAccount;align:right;paddingChar:0;width:10;maxLen:10}}}
+{{{@write;text: ;width:1}}}
+{{{@write;var:priceForExport;maxLen:15}}}
+{{{@write;text: ;width:1}}}
+{{{@write;var:symbol1;align:right;paddingChar:0;width:10;maxLen:10}}}
+{{{@write;text: ;width:1}}}
+{{{@write;var:bankCode;align:right;paddingChar:0;width:4;maxLen:4}}}
+{{{@write;var:symbol3;align:right;paddingChar:0;width:4;maxLen:4}}}
+{{{@write;text: ;width:1}}}
+{{#symbol2}}{{{@write;var:symbol2;align:right;maxLen:10}}}{{/symbol2}}
+{{^symbol2}}{{{@write;var:data.export.blankABOSymbol2;width:1}}}{{/symbol2}}
+{{#text}}
+	{{{@write;text: ;width:1}}}
+	{{{@write;text:AV}}}{{{@write;cmd:dp}}}
+	{{{@write;var:text;maxLen:35;ascii:1}}}
+{{/text}}
+{{{@write;cmd:nl}}}

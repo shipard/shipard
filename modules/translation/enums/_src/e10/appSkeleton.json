@@ -1,0 +1,41 @@
+{
+	"appSkeleton.panels": {
+		"name":  "Menu aplikace", "key":  "", "values":  {"name": "Text pro menu"},
+		"subItems": {
+			"items": {
+				"name": "Položky menu aplikace", "key": "",
+				"values": {
+					"t1": "Text pod ikonou"
+				},
+				"enabled": [
+					"appSkeleton.panels.maclan.items",
+					"appSkeleton.panels.accounting.items",
+					"appSkeleton.panels.buy.items",
+					"appSkeleton.panels.docs.items",
+					"appSkeleton.panels.docs-finance.items",
+					"appSkeleton.panels.docs-stock.items",
+					"appSkeleton.panels.sale.items",
+					"appSkeleton.panels.property.items",
+					"appSkeleton.panels.reports.items",
+					"appSkeleton.panels.web.items",
+					"appSkeleton.panels.srvcfg.items",
+
+					"appSkeleton.panels.swdev-dm.items",
+					"appSkeleton.panels.swdev-world.items"
+				]
+			}
+		}
+	},
+	"appSkeleton.panels.maclan.items.settingsLAN.subMenu.items": {
+		"name": "Menu aplikace / IT / Nastavení sítě" , "key": "" , "values": {"t1": "Text pro menu"}
+	},
+	"appSkeleton.panels.maclan.items.settingsIoT.subMenu.items": {
+		"name": "Menu aplikace / IT / Nastavení IoT" , "key": "" , "values": {"t1": "Text pro menu"}
+	},
+	"appSkeleton.panels.maclan.items.building.subMenu.items": {
+		"name": "Menu aplikace / IT / Nastavení Budova" , "key": "" , "values": {"t1": "Text pro menu"}
+	},
+	"appSkeleton.panels.maclan.items.settingsSW.subMenu.items": {
+		"name": "Menu aplikace / IT / Nastavení SW" , "key": "" , "values": {"t1": "Text pro menu"}
+	}
+}

@@ -1,0 +1,46 @@
+{
+    "table": {
+        "name": "Controls"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "uid": {
+            "name": "UID"
+        },
+        "controlType": {
+            "name": "Control type"
+        },
+        "controlKind": {
+            "name": "Control kind"
+        },
+        "fullName": {
+            "name": "Full name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "idName": {
+            "name": "ID"
+        },
+        "macLanDevice": {
+            "name": "Device"
+        },
+        "gpioPin": {
+            "name": "GPIO pin"
+        },
+        "attachedTo": {
+            "name": "Attached to"
+        },
+        "attachedGate": {
+            "name": "Gate"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

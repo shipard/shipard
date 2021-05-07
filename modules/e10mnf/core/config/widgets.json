@@ -1,0 +1,6 @@
+[
+	{
+		"class": "lib.cfg.WidgetSystemInfoCore", "align": "left",
+		"dashboard": "srvcfg", "panel": "workOrders", "order": 30000, "row": "info", "type": "systemInfo"
+	}
+]

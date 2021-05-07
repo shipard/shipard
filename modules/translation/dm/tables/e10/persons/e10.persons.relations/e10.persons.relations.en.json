@@ -1,0 +1,35 @@
+{
+    "table": {
+        "name": "Persons relationships"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "person": {
+            "name": "Person"
+        },
+        "parentPerson": {
+            "name": "Parent person"
+        },
+        "category": {
+            "name": "Category"
+        },
+        "validFrom": {
+            "name": "Valid from"
+        },
+        "validTo": {
+            "name": "Valid until"
+        },
+        "source": {
+            "name": "Source",
+            "label": "Relationship direction"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

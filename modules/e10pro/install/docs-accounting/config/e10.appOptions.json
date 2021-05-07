@@ -1,0 +1,10 @@
+{
+	"accGroups": {
+		"name": "Účetní skupiny", "order": 18000, "group": "codebase",
+		"icon": "x-cog",
+		"type": "viewer",
+		"table": "e10doc.debs.groups",
+		"viewer": "default"
+	}
+}
+

@@ -1,0 +1,7 @@
+{
+	"admin": {
+		"viewers": {
+			"vds.base.defs": {"default": 2}
+		}
+	}
+}

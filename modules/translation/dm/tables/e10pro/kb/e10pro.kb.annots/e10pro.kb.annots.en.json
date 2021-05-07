@@ -1,0 +1,46 @@
+{
+    "table": {
+        "name": "Annotations"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "annotKind": {
+            "name": "Kind"
+        },
+        "title": {
+            "name": "Name"
+        },
+        "perex": {
+            "name": "Perex"
+        },
+        "url": {
+            "name": "Web address"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "docTableNdx": {
+            "name": "Table"
+        },
+        "docRecNdx": {
+            "name": "Record"
+        },
+        "srcLanguage": {
+            "name": "Language"
+        },
+        "linkLanguage": {
+            "name": "Language"
+        },
+        "linkCountry": {
+            "name": "Country"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

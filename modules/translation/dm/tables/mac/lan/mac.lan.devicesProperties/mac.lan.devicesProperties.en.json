@@ -1,0 +1,58 @@
+{
+    "table": {
+        "name": "Device properties"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "device": {
+            "name": "Device"
+        },
+        "property": {
+            "name": "Property"
+        },
+        "source": {
+            "name": "Source"
+        },
+        "i1": {
+            "name": "Numerical value 1"
+        },
+        "i2": {
+            "name": "Numerical value 2"
+        },
+        "i3": {
+            "name": "Numerical value 3"
+        },
+        "i4": {
+            "name": "Numerical value 4"
+        },
+        "s1": {
+            "name": "Text value 1"
+        },
+        "key1": {
+            "name": "Key 1"
+        },
+        "key2": {
+            "name": "Key 2"
+        },
+        "dateCreate": {
+            "name": "Date of origin"
+        },
+        "dateUpdate": {
+            "name": "Update date"
+        },
+        "dateCheck": {
+            "name": "Check date"
+        },
+        "valueId": {
+            "name": "ID"
+        },
+        "deleted": {
+            "name": "Uninstalled"
+        },
+        "dateUninstall": {
+            "name": "Date of uninstallation"
+        }
+    }
+}

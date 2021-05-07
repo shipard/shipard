@@ -1,0 +1,11 @@
+{
+	"id": "swdev.translation.dictsTrData", "sql": "swdev_translation_dictsTrData", "name": "Data slovníků", "icon": "icon-book",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "dict", "name": "Slovník", "type": "int", "reference": "swdev.translation.dicts"},
+		{"id": "lang", "name": "Jazyk", "type": "int", "reference": "swdev.translation.languages"},
+		{"id": "data", "name": "Data", "type": "memo"},
+		{"id": "checksum", "name": "Kontrolní součet", "type": "string", "len":  40, "options": ["ascii"]}
+	],
+	"options": ["systemTable"]
+}

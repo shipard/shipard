@@ -1,0 +1,22 @@
+{
+	"id": "mac.lan.racksSensorsShow", "sql": "mac_lan_racksSensorsShow", "name": "Senzory zobrazované u racků",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "rack", "name": "Rack", "type": "int", "reference": "mac.lan.racks"},
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+
+		{"id": "sensor", "name": "Senzor", "type": "int", "reference": "mac.data.sensors"},
+		{"id": "sensorLabel", "name": "Titulek", "type": "string", "len": "50"}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.lan.FormRackSensorShow"}
+	],
+	"views": [
+		{"id": "default", "class": "mac.lan.ViewRacksSensorsShow"},
+		{"id": "formList", "class": "mac.lan.ViewRacksSensorsShowFormList", "type": "form",
+			"details": {
+				"default": {"title": "Přehled", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewRacksSensorsShowListDetail"}
+			}
+		}
+	]
+}

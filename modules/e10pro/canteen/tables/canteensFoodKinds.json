@@ -1,0 +1,22 @@
+{
+	"id": "e10pro.canteen.canteensFoodKinds", "sql": "e10pro_canteen_canteensFoodKinds", "name": "Druhy jídel", "icon": "icon-cutlery",
+	"columns": [
+		{"id": "ndx", "name": "ndx", "type": "int_ai"},
+
+		{"id": "canteen", "name": "Jídelna", "type": "int", "reference": "e10pro.canteen.canteens"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 80},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 40},
+
+		{"id": "cntFoods", "name": "Počet jídel", "label": "Poč. jídel", "type": "int"},
+		{"id": "useSoup", "name": "Polévka", "type": "logical"},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+
+		{"id": "rowOrder", "name": "Pořadí", "type": "int"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.canteen.FormCanteenFoodKind"}
+	],
+	"options": ["systemTable"]
+}

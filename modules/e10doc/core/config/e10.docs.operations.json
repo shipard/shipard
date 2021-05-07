@@ -1,0 +1,168 @@
+{
+    "1010001": {"title": "Prodej služeb", "docDir": 2, "itemType": 0,
+            "docTypes": {
+                "invno": {"order": 10000},
+								"invpo": {"order": 10000},
+                "cash": {"order": 10000},
+                "cashreg": {"order": 10000}
+            }
+    },
+    "1010002": {"title": "Prodej zásob", "docDir": 2, "itemType": 1,
+            "docTypes": {
+                "invno" : {"order": 20000},
+								"invpo": {"order": 20000},
+                "cash" : {"order": 20000},
+                "cashreg" : {"order": 20000}
+            }
+    },
+    "1010099": {"title": "Prodej zásob bez evidence", "docDir": 2, "itemType": 3,
+      "docTypes": {
+        "invno" : {"order": 30000},
+        "invpo": {"order": 30000},
+        "cash" : {"order": 30000},
+        "cashreg" : {"order": 30000}
+      }
+    },
+    "1010102": {"title": "Nákup zásob", "docDir": 1, "itemType": 1, "invDirection": 1,
+            "docTypes": {
+                "invni" : {"order": 20000},
+                "cash" : {"order": 200000}
+            }
+    },
+    "1010199": {"title": "Nákup zásob bez evidence", "docDir": 1, "itemType": 3,
+      "docTypes": {
+        "invni" : {"order": 20000},
+        "cash" : {"order": 200000},
+        "purchase" : {"order": 200000}
+      }
+    },
+		"1020102": {"title": "Úhrada vydané zál. faktury", "docDir": 2, "paymentSymbols": 1, "paymentBalance": 1000,
+			"docTypes": {
+				"cash" : {"order": 30000},
+				"bank" : {"order": 40000}
+			}
+		},
+    "1020103": {"title": "Přijatá záloha", "docDir": 2, "paymentSymbols": 1,
+            "docTypes": {
+                "cash" : {"order": 40000},
+                "bank" : {"order": 50000}
+            }
+    },
+    "1010101": {"title": "Odpočet přijaté zálohy", "docDir": 2, "itemType": 2, "paymentSymbols": 1, "paymentBalance": 3000, "costOff": 1,
+            "docTypes": {
+                "invno" : {"order": 30000},
+                "cash" : {"order": 50000},
+                "cashreg" : {"order": 990000}
+            }
+    },
+		"1010104": {"title": "Zdanění přijaté zálohy", "docDir": 2, "itemType": 2,
+			"docTypes": {
+				"invno" : {"order": 40000}
+			}
+		},
+    "1010103": {"title": "Poskytnutá záloha", "docDir": 1, "paymentSymbols": 1,
+            "docTypes": {
+                "cash" : {"order": 320000},
+                "bank" : {"order": 51000}
+            }
+    },
+    "1020101": {"title": "Odpočet poskytnuté zálohy", "docDir": 1, "itemType": 2, "paymentSymbols": 1, "paymentBalance": 3500, "costOff": 1,
+            "docTypes": {
+                "invni" : {"order": 50000},
+                "cash" : {"order": 330000}
+            }
+    },
+		"1020104": {"title": "Zdanění poskytnuté zálohy", "docDir": 1, "itemType": 2,
+			"docTypes": {
+				"invni" : {"order": 60000}
+			}
+		},
+    "1030001": {"title": "Úhrada pohledávky", "docDir": 2, "paymentSymbols": 1, "paymentBalance": 1000,
+            "docTypes": {
+                "bank" : {"order": 10000},
+                "cash" : {"order": 40000}
+            }
+    },
+    "1030002": {"title": "Úhrada závazku", "docDir": 1, "paymentSymbols": 1, "paymentBalance": 2000,
+            "docTypes": {
+                "bank" : {"order": 11000},
+                "cash" : {"order": 310000}
+            }
+    },
+    "1030011": {"title": "Příjem z převodu peněz", "docDir": 2, "paymentSymbols": 1, "paymentBalance": 4100,
+            "docTypes": {
+                "bank" : {"order": 30000},
+                "cash" : {"order": 30000}
+            }
+    },
+    "1030012": {"title": "Výdej pro převod peněz", "docDir": 1, "paymentSymbols": 1, "paymentBalance": 4100,
+            "docTypes": {
+                "bank" : {"order": 31000},
+                "cash" : {"order": 300000}
+            }
+    },
+    "1030101": {"title": "Příkaz k úhradě", "paymentSymbols": 1, "paymentBalance": 2000,
+      "docTypes": {
+        "bankorder" : {"order": 1000}
+      }
+    },
+    "1030102": {"title": "Příkaz k inkasu", "paymentSymbols": 1, "paymentBalance": 1000,
+      "docTypes": {
+        "bankorder" : {"order": 2000}
+      }
+    },
+    "1050001": {"title": "Nákup zásob", "itemType": 1,
+            "docTypes": {
+                "stockin" : {"order": 10000}
+            }
+    },
+    "1050800": {"title": "Příjem zásob", "itemType": 1,
+      "docTypes": []
+    },
+    "1050900": {"title": "Ostatní", "itemType": 1,
+            "docTypes": {
+                "stockin" : {"order": 20000}
+            }
+    },
+    "1060001": {"title": "Prodej zásob", "itemType": 1,
+            "docTypes": {
+                "stockout" : {"order": 10000}
+            }
+    },
+    "1060900": {"title": "Ostatní", "itemType": 1,
+            "docTypes": {
+                "stockout" : {"order": 20000}
+            }
+    },
+    "1090001": {"title": "Zápočet pohledávky", "paymentSymbols": 1, "paymentBalance": 1000,
+            "docTypes": {
+                "cmnbkp" : {"order": 20000}
+            }
+    },
+    "1090002": {"title": "Zápočet závazku", "paymentSymbols": 1, "paymentBalance": 2000,
+            "docTypes": {
+                "cmnbkp" : {"order": 21000}
+            }
+    },
+		"1090011": {"title": "Kurz. rozdíl pohledávky", "currencyMode": "forBalance", "paymentSymbols": 1, "paymentBalance": 1000,
+			"docTypes": {
+				"cmnbkp" : {"order": 22000}
+			}
+		},
+		"1090012": {"title": "Kurz. rozdíl závazku", "currencyMode": "forBalance", "paymentSymbols": 1, "paymentBalance": 2000,
+			"docTypes": {
+				"cmnbkp" : {"order": 23000}
+			}
+		},
+    "1099998": {"title": "Účetní položka", "docDir": 0, "itemType": 2,
+        "docTypes": {
+                "invno": {"order": 900000},
+                "invni": {"order": 10000},
+                "cash": {"order": 100000},
+                "cashreg": {"order": 900000},
+                "bank": {"order": 20000},
+                "purchase": {"order": 20000},
+                "cmnbkp": {"order": 10000}
+            }
+    }
+}

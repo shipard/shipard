@@ -1,0 +1,14 @@
+{
+  "id": "mac.sw",
+  "name": "Software",
+  "tables": [
+    "sw", "swVersions", "swNames", "swIds",
+    "publishers", "publishersNames",
+	  "categories"
+  ],
+	"modules": ["mac/swcore"],
+  "config": [
+    {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+	  {"id": "+e10.base.doclinks", "file": "doclinks.json"}
+  ]
+}

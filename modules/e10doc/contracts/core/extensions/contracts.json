@@ -1,0 +1,9 @@
+[
+	{
+		"table": "e10doc.core.heads",
+		"columns": [
+			{"id": "contract", "name": "Smlouva", "type": "int", "reference": "e10doc.contracts.core.heads",
+				"comboViewer": "sale", "comboTable": "e10doc.contracts.core.heads"}
+		]
+	}
+]

@@ -1,0 +1,23 @@
+{
+	"e10Workplaces": {
+		"name": "Pracoviště", "order": 850000, "group": "system", "icon": "icon-sun-o",
+		"type": "viewer", "table": "terminals.base.workplaces", "viewer": "default"
+	},
+	"e10Printers": {
+		"name": "Tiskárny", "order": 855000, "group": "system", "icon": "icon-print",
+		"type": "viewer", "table": "terminals.base.printers", "viewer": "default"
+	},
+	"e10LocalServers": {
+		"name": "Místní servery", "order": 890000, "group": "system", "icon": "icon-server",
+		"type": "viewer", "table": "terminals.base.servers", "viewer": "default"
+	},
+	"e10Sensors": {
+		"name": "Sensory", "order": 895000, "group": "system", "icon": "icon-stethoscope",
+		"type": "viewer", "table": "terminals.base.sensors", "viewer": "default"
+	},
+	"e10Cameras": {
+		"name": "Kamery", "order": 896000, "group": "system", "icon": "icon-video-camera",
+		"type": "viewer", "table": "terminals.base.cameras", "viewer": "default"
+	}
+}
+

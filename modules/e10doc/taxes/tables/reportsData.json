@@ -1,0 +1,12 @@
+{
+	"id": "e10doc.taxes.reportsData", "sql": "e10doc_taxes_reportsData", "name": "Podklady pro daňová přiznání",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "report", "name": "Přehled", "type": "int"},
+		{"id": "filing", "name": "Podání", "type": "int"},
+
+		{"id": "data", "name": "Data", "type": "memo"}
+	],
+	"options": ["systemTable"],
+	"ndx": 1104
+}

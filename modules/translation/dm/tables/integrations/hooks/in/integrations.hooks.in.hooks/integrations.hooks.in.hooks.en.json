@@ -1,0 +1,34 @@
+{
+    "table": {
+        "name": "Incoming Webhooks"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "hookType": {
+            "name": "Type"
+        },
+        "urlPart1": {
+            "name": "URL - part 1"
+        },
+        "urlPart2": {
+            "name": "URL - part 2"
+        },
+        "runAsUser": {
+            "name": "Run as user"
+        },
+        "hookSettings": {
+            "name": "Settings"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

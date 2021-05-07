@@ -1,0 +1,11 @@
+{
+  "id": "e10doc.bankorder",
+  "name": "Bank Orders",
+  "extensions": ["bankorder"],
+	"config": [
+		{"id": "e10doc.core.heads.docStates.bankorder", "file": "e10doc.core.heads.docStates.bankorder.json"}
+	]
+
+
+
+}

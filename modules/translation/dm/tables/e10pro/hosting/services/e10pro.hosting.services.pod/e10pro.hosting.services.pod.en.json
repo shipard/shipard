@@ -1,0 +1,40 @@
+{
+    "table": {
+        "name": "Images of the day"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "day": {
+            "name": "Day"
+        },
+        "month": {
+            "name": "Month"
+        },
+        "year": {
+            "name": "Year"
+        },
+        "title": {
+            "name": "Title"
+        },
+        "url": {
+            "name": "Link"
+        },
+        "anniversaryDate": {
+            "name": "Anniversary date"
+        },
+        "priority": {
+            "name": "Priority"
+        },
+        "picture": {
+            "name": "Image"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

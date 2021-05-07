@@ -1,0 +1,43 @@
+{
+    "table": {
+        "name": "Currencies"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "id": {
+            "name": "id"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "namePlural": {
+            "name": "Name in plural"
+        },
+        "symbol": {
+            "name": "Symbol"
+        },
+        "symbolNative": {
+            "name": "Native symbol"
+        },
+        "decimals": {
+            "name": "Number of decimals"
+        },
+        "urlWikipedia": {
+            "name": "Wikipedia URL"
+        },
+        "validFrom": {
+            "name": "Valid from"
+        },
+        "validTo": {
+            "name": "Valid until"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

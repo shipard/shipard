@@ -1,0 +1,12 @@
+{
+	"buyOrdersDocNumbers": {
+		"name": "Číselné řady objednávek", "order": 2300000, "group": "buy",
+		"icon": "icon-play-circle",
+		"type": "viewer", "table": "e10buy.orders.docNumbers", "viewer": "default"
+	},
+	"buyOrdersDocKinds": {
+		"name": "Druhy objednávek", "order": 2310000, "group": "buy",
+		"icon": "icon-flag-o",
+		"type": "viewer", "table": "e10buy.orders.docKinds", "viewer": "default"
+	}
+}

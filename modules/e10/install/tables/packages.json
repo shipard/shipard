@@ -1,0 +1,11 @@
+{
+	"id": "e10.install.packages", "sql": "e10_install_packages", "name": "Instalační balíčky", "icon": "icon-puzzle-piece",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "packageId", "name": "Balíček", "type": "string", "len": 80, "options": ["ascii"]},
+		{"id": "packageVersion", "name": "Verze", "type": "string", "len": 10, "options": ["ascii"]},
+		{"id": "packageCheckSum", "name": "Kontrolní součet", "type": "string", "len": 40, "options": ["ascii"]}
+	],
+	"options": ["systemTable"]
+}

@@ -1,0 +1,68 @@
+{
+    "dashboard-control": {
+        "t1": "IoT"
+    },
+    "swApplications": {
+        "t1": "Applications"
+    },
+    "swLicenses": {
+        "t1": "Licences"
+    },
+    "vlans": {
+        "t1": "VLANs"
+    },
+    "swInstallPackages": {
+        "t1": "Install packages"
+    },
+    "dataSources": {
+        "t1": "Data sources"
+    },
+    "reports": {
+        "t1": "Reports"
+    },
+    "racks": {
+        "t1": "Racks"
+    },
+    "networks": {
+        "t1": "Networks"
+    },
+    "dashboard-lans": {
+        "t1": "Network"
+    },
+    "devices": {
+        "t1": "Network devices"
+    },
+    "unknownPackages": {
+        "t1": "Unknown packages"
+    },
+    "macs": {
+        "t1": "MAC addresses"
+    },
+    "ranges": {
+        "t1": "Addresses ranges"
+    },
+    "wlans": {
+        "t1": "WiFi networks"
+    },
+    "macsOnPorts": {
+        "t1": "MAC addresses on device ports"
+    },
+    "wallSockets": {
+        "t1": "Sockets"
+    },
+    "dashboard-access": {
+        "t1": "Building"
+    },
+    "settingsLAN": {
+        "t1": "LAN settings"
+    },
+    "settingsIoT": {
+        "t1": "IoT settings"
+    },
+    "building": {
+        "t1": "Building Settings"
+    },
+    "settingsSW": {
+        "t1": "SW settings"
+    }
+}

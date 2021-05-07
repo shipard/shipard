@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "Tax return filings and reports"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "report": {
+            "name": "Report"
+        },
+        "reportType": {
+            "name": "Type"
+        },
+        "title": {
+            "name": "Document description"
+        },
+        "dateIssue": {
+            "name": "Issue date"
+        },
+        "dateFilling": {
+            "name": "Filing date"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

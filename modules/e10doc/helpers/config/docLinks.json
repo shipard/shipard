@@ -1,0 +1,10 @@
+{
+	"e10doc.helpers.wkfSectionsRelations": {
+		"e10docs-wkfSectionsRelations": {
+			"linkid": "e10docs-wkfSectionsRelations", "name": "Sekce workflow", "icon": "icon-columns",
+			"sources": [
+				{"table": "wkf.base.sections", "viewer": "wkf.base.ViewSections"}
+			]
+		}
+	}
+}

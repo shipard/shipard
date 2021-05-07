@@ -1,0 +1,22 @@
+{
+    "table": {
+        "name": "Folders of Sharing"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "share": {
+            "name": "share"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "cntItems": {
+            "name": "Number of items"
+        }
+    }
+}

@@ -1,0 +1,40 @@
+{
+    "table": {
+        "name": "OI Ports of Devices"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "rowOrder": {
+            "name": "Row order"
+        },
+        "device": {
+            "name": "Device"
+        },
+        "dpUid": {
+            "name": "dpUid"
+        },
+        "portType": {
+            "name": "Port type"
+        },
+        "portId": {
+            "name": "Port ID"
+        },
+        "portCfg": {
+            "name": "Port configuration"
+        },
+        "valueKind": {
+            "name": "Value kind"
+        },
+        "fullName": {
+            "name": "Port name"
+        },
+        "note": {
+            "name": "Note"
+        },
+        "disabled": {
+            "name": "Disabled"
+        }
+    }
+}

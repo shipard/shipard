@@ -1,0 +1,18 @@
+{
+	"none" : {
+		"name": "Nic", "icon": "icon-file"
+	},
+	"issues-default" : {
+		"name": "Zprávy", "icon": "icon-file"
+	},
+	"bitBucket" : {
+		"name": "BitBucket", "icon": "icon-file",
+		"baseDir": "integrations/hooks/in/services/bitBucket",
+		"classId": "integrations.hooks.in.services.bitBucket.BitBucket"
+	},
+	"wooCommerce" : {
+		"name": "Woo Commerce", "icon": "icon-file",
+		"baseDir": "integrations/hooks/in/services/wooCommerce",
+		"classId": "integrations.hooks.in.services.wooCommerce.WooCommerce"
+	}
+}

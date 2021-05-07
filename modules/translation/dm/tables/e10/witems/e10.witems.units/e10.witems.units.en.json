@@ -1,0 +1,22 @@
+{
+    "table": {
+        "name": "Units"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "shortcut": {
+            "name": "Shortcut"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

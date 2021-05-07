@@ -1,0 +1,49 @@
+{
+    "table": {
+        "name": "Access log"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "created": {
+            "name": "Date and time"
+        },
+        "state": {
+            "name": "State"
+        },
+        "mainKeyType": {
+            "name": "Key type"
+        },
+        "tagType": {
+            "name": "Key kind"
+        },
+        "keyDevice": {
+            "name": "Device"
+        },
+        "gate": {
+            "name": "Gate"
+        },
+        "personAccess": {
+            "name": "Person"
+        },
+        "person": {
+            "name": "Person"
+        },
+        "keyValue": {
+            "name": "Key"
+        },
+        "tag": {
+            "name": "Tag"
+        },
+        "msg": {
+            "name": "Message"
+        },
+        "tagAssignType": {
+            "name": "Assigned to"
+        },
+        "place": {
+            "name": "Place"
+        }
+    }
+}

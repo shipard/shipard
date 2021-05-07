@@ -1,0 +1,69 @@
+{
+	"id": "e10mnf.base.dockinds", "sql": "e10mnf_base_dockinds", "name": "Druhy zakázek", "icon": "icon-flag-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 40},
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+		{"id": "workOrderType", "name": "Druh zakázky", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "Běžná", "1": "Režijní"}},
+		{"id": "disableRows", "name": "Nepoužívat řádky zákazky", "type": "logical"},
+		{"id": "priceOnHead", "name": "Zadávat cenu na hlavičce", "type": "logical"},
+		{"id": "useDescription", "name": "Použít textový popis zakázky", "type": "logical"},
+
+		{"id": "useDateIssue", "name": "Používat Datum vystavení", "type": "logical"},
+		{"id": "labelDateIssue", "name": "Popisek", "type": "string", "len": 40},
+
+		{"id": "useDateContract", "name": "Používat Datum podepsání smlouvy", "type": "logical"},
+		{"id": "labelDateContract", "name": "Popisek", "type": "string", "len": 40},
+
+		{"id": "useDateBegin", "name": "Používat Datum zahájení", "type": "logical"},
+		{"id": "labelDateBegin", "name": "Popisek", "type": "string", "len": 40},
+
+		{"id": "useDateDeadlineRequested", "name": "Používat Požadovaný termín", "type": "logical"},
+		{"id": "labelDateDeadlineRequested", "name": "Popisek", "type": "string", "len": 40},
+
+		{"id": "useDateDeadlineConfirmed", "name": "Používat Potvrzený termín", "type": "logical"},
+		{"id": "labelDateDeadlineConfirmed", "name": "Popisek", "type": "string", "len": 40},
+
+		{"id": "useRefId1", "name": "Používat Interní číslo zakázky", "type": "logical"},
+		{"id": "labelRefId1", "name": "Popisek", "type": "string", "len": 40},
+
+		{"id": "useRefId2", "name": "Používat Číslo objednávky / HS", "type": "logical"},
+		{"id": "labelRefId2", "name": "Popisek", "type": "string", "len": 40},
+
+		{"id": "useIntTitle", "name": "Používat Interní název zakázky", "type": "logical"},
+		{"id": "useRetentionGuarantees", "name": "Používat Zádržné", "type": "logical"},
+
+		{"id": "useAddress", "name": "Zadávat adresy", "type": "enumInt",
+			"enumValues": {"0": "Ne", "1": "Ano"}},
+		{"id": "invoicesInDetail", "name": "Zobrazovat faktury v detailu", "type": "enumInt",
+			"enumValues": {"1": "Jen celkovou částku", "2": "Seznam faktur", "0": "Ne"}},
+
+		{"id": "useDetailMainSettings", "name": "Vlastní nastavení detailu prohlížeče", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "detailMainPart1", "name": "Obsah detailu zakázky - pozice 1", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10mnf.workOrders.woDetailParts", "cfgValue": "", "cfgText": "name"}},
+		{"id": "detailMainPart2", "name": "Obsah detailu zakázky - pozice 2", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10mnf.workOrders.woDetailParts", "cfgValue": "", "cfgText": "name"}},
+		{"id": "detailMainPart3", "name": "Obsah detailu zakázky - pozice 3", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10mnf.workOrders.woDetailParts", "cfgValue": "", "cfgText": "name"}},
+		{"id": "detailMainPart4", "name": "Obsah detailu zakázky - pozice 4", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10mnf.workOrders.woDetailParts", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"views": [
+		{"id": "default", "class": "e10mnf.base.ViewDocKinds", "help": "prirucka/4865"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10mnf.base.FormDocKind", "help": "prirucka/4865"}
+	],
+	"options": ["configSource"],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{page.pageTitle}}</title>
+	<link href="{{templateRoot}}/style.css" rel="stylesheet">
+	<script src="//cdn.shipard.com/jquery/jquery-1.11.0.min.js"></script>
+	<script src="{{dsRoot}}/e10-modules/wwwlibs/bootstrap3/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="{{dsRoot}}/e10-modules/wwwlibs/magnific-popup/jquery.magnific-popup.min.js"></script>
+
+	<!--[if lt IE 9]>
+	<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+	<script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+	<![endif]-->
+</head>
+
+<body>
+
+<div class="container">
+	<div class="navbar navbar-default" role="navigation">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="fa fa-bars"></span>
+					<span class="fa fa-bars"></span>
+					<span class="fa fa-bars"></span>
+				</button>
+				<a class="navbar-brand" href="{{urlRoot}}">{{cfgItem.options.core.ownerShortName}}</a>
+			</div>
+			<div class="navbar-collapse collapse">
+				{{{@pageMenu;menuMode:full;menuClass:nav navbar-nav;menuClassSub:bootstrap-dropdown}}}
+			</div>
+		</div>
+	</div>
+
+	<h1>{{page.title}}</h1>
+	{{{pageText}}}
+
+	<div class="footer">
+		<p>
+			&copy; {{cfgItem.options.core.ownerFullName}} 2014
+			{{#cfgItem.options.core.ownerEmail}}
+				&bull; <a href="mailto:{{cfgItem.options.core.ownerEmail}}">{{cfgItem.options.core.ownerEmail}}</a>
+			{{/cfgItem.options.core.ownerEmail}}
+		</p>
+	</div>
+</div>
+
+
+</body>
+</html>
+

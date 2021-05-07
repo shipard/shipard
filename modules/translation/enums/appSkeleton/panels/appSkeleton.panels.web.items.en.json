@@ -1,0 +1,26 @@
+{
+    "articles": {
+        "t1": "Articles"
+    },
+    "web": {
+        "t1": "Web"
+    },
+    "pages": {
+        "t1": "Pages"
+    },
+    "decorations": {
+        "t1": "Decorations"
+    },
+    "templates": {
+        "t1": "Templates"
+    },
+    "events": {
+        "t1": "Events"
+    },
+    "looks": {
+        "t1": "Looks"
+    },
+    "blocks": {
+        "t1": "Blocks"
+    }
+}

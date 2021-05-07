@@ -1,0 +1,17 @@
+{
+    "trays": {
+        "name": "Trays"
+    },
+    "documents": {
+        "name": "Documents"
+    },
+    "macAccess": {
+        "name": "Accesses"
+    },
+    "news": {
+        "name": "To Do"
+    },
+    "reception-booking": {
+        "name": "Reservations"
+    }
+}

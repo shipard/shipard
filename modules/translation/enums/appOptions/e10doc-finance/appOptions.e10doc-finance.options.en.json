@@ -1,0 +1,8 @@
+{
+    "useBankOrders": {
+        "cfgName": "Use Transfer orders"
+    },
+    "dateValidFrom_CZ_VAT_2019_4": {
+        "cfgName": "Expiration date of amendment VAT 4/2019"
+    }
+}

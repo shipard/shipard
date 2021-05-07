@@ -1,0 +1,15 @@
+{
+	"id": "mac.iot.topics", "sql": "mac_iot_topics", "name": "Témata zpráv", "icon": "icon-comment-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "topicType", "name": "Typ tématu", "type": "enumInt",
+			"enumCfg": {"cfgItem": "mac.iot.topics.types", "cfgValue": "", "cfgText": "fullName"}},
+
+		{"id": "iotBoxDevice", "name": "Zařízení", "type": "int", "reference": "mac.lan.devices"},
+		{"id": "ioPort", "name": "IO port", "type": "int", "reference": "mac.lan.devicesIOPorts"},
+
+		{"id": "topic", "name": "Topic", "type": "string", "len": 240}
+	],
+	"options": ["systemTable"]
+}

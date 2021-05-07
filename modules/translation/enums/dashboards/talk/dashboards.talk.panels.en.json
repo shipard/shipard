@@ -1,0 +1,11 @@
+{
+    "web": {
+        "name": "Web"
+    },
+    "dashboard": {
+        "name": "Overview"
+    },
+    "dataSources": {
+        "name": "Database"
+    }
+}

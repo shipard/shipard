@@ -1,0 +1,13 @@
+{
+  "id": "e10pro.install.start",
+  "name": "Základní balíček",
+  "modules": ["e10pro/base", "e10/witems", "e10pro/digests/core", "e10pro/install/other-kb", "wkf/core"],
+  "config": [
+    {"id": "+appSkeleton", "name": "Kostra aplikace", "file": "start.appSkeleton.json"},
+		{"id": "+e10.persons.roles", "name": "Role uživatelů", "file": "e10.persons.roles.json"},
+		{"id": "+e10.persons.connectionTypes", "file": "e10.persons.connectionTypes.json"},
+		{"id": "+dashboards", "file": "dashboards.json"},
+	  {"id": "+e10.persons.systemGroups", "file": "e10.persons.groups.json"},
+	  {"id": "+help.index", "file": "help.json"}
+  ]
+}

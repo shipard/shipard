@@ -1,0 +1,17 @@
+{
+	"0": {
+		"fn": "Nepřipojeno"
+	},
+	"1": {
+		"fn": "Zásuvka"
+	},
+	"2": {
+		"fn": "Patch panel"
+	},
+	"3": {
+		"fn": "Prvek sítě"
+	},
+	"9": {
+		"fn": "Ostatní"
+	}
+}

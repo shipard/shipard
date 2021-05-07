@@ -1,0 +1,34 @@
+{
+	"kbWikies": {
+		"name": "Wiki", "order": 155000, "group": "wikies",
+		"icon": "icon-book",
+		"type": "viewer",
+		"table": "e10pro.kb.wikies",
+		"viewer": "default"
+	},
+	"kbWikiSections": {
+		"name": "Wiki sekce", "order": 156000, "group": "wikies",
+		"icon": "icon-list-alt",
+		"type": "viewer",
+		"table": "e10pro.kb.sections",
+		"viewer": "default"
+	},
+	"kbAnnotsKinds": {
+		"name": "Druhy anotací", "order": 170000, "group": "wikies",
+		"icon": "icon-list-alt",
+		"type": "viewer",
+		"table": "e10pro.kb.annotsKinds",
+		"viewer": "default"
+	},
+	"wikies": {
+		"name": "Wiki dokumentace", "order": 100, "group": "wikies",
+		"icon": "icon-file-text",
+		"type": "cfgFile",
+		"options":
+		[
+			{"cfgKey": "useWiki", "cfgName": "Používat wiki dokumentaci",
+				"options": {"0": "Ne", "1": "Nahoře", "2": "Vpravo" }
+			}
+		]
+	}
+}

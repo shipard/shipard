@@ -1,0 +1,7 @@
+[
+	{"name": "Přehled", "class": "e10pro.property.ReportPropertyList", "icon": "icon-file-o", "group": "e10pro-property"},
+	{"name": "Odpisy", "class": "e10pro.property.ReportDepreciations", "icon": "icon-sort-amount-desc", "group": "e10pro-property"},
+	{"name": "Neodepisovaný majetek", "class": "e10pro.property.ReportNonDeps", "icon": "icon-bars", "group": "e10pro-property"},
+	{"name": "Inventarizace", "class": "e10pro.property.libs.reports.PropertyInventoryingReport", "icon": "icon-check-square", "group": "e10pro-property"},
+	{"name": "Účtování", "class": "e10pro.property.ReportAccounting", "icon": "x-stamp", "group": "e10pro-property"}
+]

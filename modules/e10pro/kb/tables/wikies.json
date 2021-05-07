@@ -1,0 +1,33 @@
+{
+	"id": "e10pro.kb.wikies", "sql": "e10pro_kb_wikies", "name": "Wiki", "icon": "icon-book",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "fullName", "name": "Úplný název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
+		{"id": "title", "name": "Titulek", "type": "string", "len": 80},
+
+		{"id": "order", "name": "Pořadí", "type": "int"},
+		{"id": "publicRead", "name": "Veřejná wiki", "type": "logical"},
+
+		{"id": "icon", "name": "Ikona", "type": "string", "len": 50},
+		{"id": "dashboardPlace", "name": "Zařadit do Přehledu", "type": "enumInt",
+			"enumValues": {"0": "Ne", "1": "Nahoru", "9": "Vpravo"}},
+		{"id": "pageFooter", "name": "Patička stránek", "type": "memo"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"views": [
+		{"id": "default", "class": "e10pro.kb.ViewWikies", "help": "web/4627"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.kb.FormWiki", "help": "web/4627"}
+	],
+	"options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

@@ -1,0 +1,22 @@
+{
+    "table": {
+        "name": "Territories and groupings"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "id": {
+            "name": "id"
+        },
+        "territoryType": {
+            "name": "Territory type"
+        },
+        "flag": {
+            "name": "Flag"
+        }
+    }
+}

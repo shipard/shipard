@@ -1,0 +1,5 @@
+{
+	"objectsCalls": {
+		"iot-upload-sensors-data": {"classId": "mac.iot.libs.IoTSensorsDataReceiver"}
+	}
+}

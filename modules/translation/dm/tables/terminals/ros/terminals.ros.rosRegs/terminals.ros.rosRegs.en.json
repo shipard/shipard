@@ -1,0 +1,46 @@
+{
+    "table": {
+        "name": "ROS registration"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "rosType": {
+            "name": "Type"
+        },
+        "title": {
+            "name": "Title"
+        },
+        "vatIdPrimary": {
+            "name": "VAT identification number"
+        },
+        "placeId": {
+            "name": "Place of business ID"
+        },
+        "certPassword": {
+            "name": "Certificate password"
+        },
+        "certPath": {
+            "name": "Certificate path"
+        },
+        "certFileName": {
+            "name": "File name for certificate"
+        },
+        "validFrom": {
+            "name": "Valid from"
+        },
+        "validTo": {
+            "name": "Valid until"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "rosMode": {
+            "name": "Operation mode"
+        }
+    }
+}

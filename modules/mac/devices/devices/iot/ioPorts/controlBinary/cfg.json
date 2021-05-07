@@ -1,0 +1,14 @@
+{
+	"name": "Ovladač Zapnuto / Vypnuto",
+	"title": "Ovladač Zapnuto / Vypnuto",
+	"fields": {
+		"columns": [
+			{
+				"id": "pin", "name": "Pin", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["out"]}
+			},
+			{
+				"id": "reverse", "name": "Obrácená logika (ON = LOW, OFF = HIGH)", "type": "logical"
+			}
+		]
+	}
+}

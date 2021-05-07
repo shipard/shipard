@@ -1,0 +1,37 @@
+{
+  "id": "e10doc.core.taxes", "sql": "e10doc_core_taxes", "name": "Daně dokladů",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "document", "name": "Doklad", "type": "int"},
+
+    {"id": "dateTax", "name": "Datum uskutečnění zdanitelného plnění", "label": "DUZP", "type": "date"},
+    {"id": "taxPeriod", "name": "Daňové období", "type": "int", "reference": "e10doc.base.taxperiods"},
+    {"id": "dateTaxDuty", "name": "Datum povinnosti přiznat daň", "label": "DPPD", "type": "date"},
+
+    {"id": "sumPrice", "name": "Cena", "type": "money"},
+    {"id": "sumBase", "name": "Základ daně", "label": "Základ", "type": "money"},
+    {"id": "sumTax", "name": "Daň celkem", "label": "Daň", "type": "money"},
+    {"id": "sumTotal", "name": "Celkem včetně daně", "type": "money"},
+
+    {"id": "sumPriceHc", "name": "Cena [MD]", "type": "money"},
+    {"id": "sumBaseHc", "name": "Základ daně [MD]", "type": "money"},
+    {"id": "sumTaxHc", "name": "Daň celkem [MD]", "type": "money"},
+    {"id": "sumTotalHc", "name": "Celkem včetně daně [MD]", "type": "money"},
+
+    {"id": "quantity", "name": "Množství", "type": "number", "dec": 3},
+    {"id": "weight", "name": "Hmotnost", "type": "number", "dec": 3},
+
+    {"id": "taxCode", "name": "Typ daně", "type": "enumString", "len": 7,
+	    "enumCfg": {"cfgItem": "e10.base.taxCodes", "cfgValue": "", "cfgText": "name", "cfgPrint": "print"}},
+    {"id": "taxRate", "name": "Sazba daně", "type": "enumInt",
+	    "enumCfg": {"cfgItem": "e10.base.taxRates", "cfgValue": "", "cfgText": ""}},
+    {"id": "taxPercents", "name": "Procento daně", "label": "%", "type": "number", "dec": 2}
+  ],
+	"options": ["systemTable"],
+	"forms": [
+		{"id": "default", "class": "e10doc.core.FormTaxesRow"}
+	],
+	"indexes": [
+		{"id": "document", "columns": ["document"]}
+	]
+}

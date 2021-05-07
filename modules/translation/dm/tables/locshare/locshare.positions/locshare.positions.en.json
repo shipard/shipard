@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Users locations"
+    },
+    "columns": {
+        "user": {
+            "name": "id"
+        },
+        "lat": {
+            "name": "Latitude"
+        },
+        "lon": {
+            "name": "Longitude"
+        },
+        "alt": {
+            "name": "Altitude"
+        },
+        "acc": {
+            "name": "Accuracy"
+        },
+        "time": {
+            "name": "Time"
+        },
+        "address": {
+            "name": "Address"
+        }
+    }
+}

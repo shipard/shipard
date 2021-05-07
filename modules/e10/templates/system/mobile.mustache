@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="cs" style="height:100%;">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+
+    <meta name='mobile-web-app-capable' content='yes'>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <meta name="robots" content="noindex, nofollow">
+    <title>{{page.pageTitle}}</title>
+    {{#cfgItem.options.experimental.mobileuiTheme}}
+        <link href="{{dsRoot}}/e10-modules/.cfg/mobile/{{cfgItem.options.experimental.mobileuiTheme}}/style.css?v={{cfgItem.cfgID}}" rel="stylesheet">
+    {{/cfgItem.options.experimental.mobileuiTheme}}
+    {{^cfgItem.options.experimental.mobileuiTheme}}
+        <link href="{{dsRoot}}/e10-modules/.cfg/mobile/md-teal/style.css?v={{cfgItem.cfgID}}" rel="stylesheet">
+    {{/cfgItem.options.experimental.mobileuiTheme}}
+
+    <style>
+        .col-xs-10>input {height: 30px; font-size: 16px;}
+        form {text-align: center;}
+        .form-group {padding: 4px; display: inline-block;width: 100%;}
+        #e10-page-header {
+            position: inherit;
+            display: inline-block;
+        }
+        body {margin-top: 0px;}
+
+        .footer {
+            text-align: center; font-size: 14px; padding-top: 40px;
+        }
+
+        div.footer > div {padding-top: 10px; padding-bottom: 10px; border-top: 1px solid #ccc;}
+
+
+        .col-sm-2 {
+            width: 20%;
+            display: inline-block;
+            float: left;
+            text-align: right;
+            padding-top: 10px;
+        }
+
+        .col-xs-10 {
+            width: 80%;
+            display: inline-block;
+            float: left;
+            text-align: left;
+            padding: 4px;
+            padding-left: 10px;
+        }
+
+        .col-sm-offset-2 {padding-top: 4px; padding-bottom: 8px;display: block;}
+
+        .col-sm-offset-2>a {display: none;}
+        .col-sm-offset-2>div>input {margin: 8px; font-size: 20px;}
+
+        </style>
+</head>
+
+<body style="">
+
+<div id='e10-page-header' class='e10mui pageHeader'>
+    <span class='lmb' data-path='#start'><i class='fa fa-sign-in'></i></span>
+    <div class='pageTitle'><h1>{{cfgItem.options.core.ownerShortName}}</h1><h2>{{page.title}}</h2></div>
+</div>
+
+{{{pageText}}}
+
+<div class="footer" style="">
+
+
+<div>
+{{#cfgItem.options.core.ownerEmail}}
+    <span class='e10-sp-title2'><i class="fa fa-envelope"></i> <a href="mailto:{{cfgItem.options.core.ownerEmail}}">{{cfgItem.options.core.ownerEmail}}</a></span>
+{{/cfgItem.options.core.ownerEmail}}
+{{#cfgItem.options.core.ownerPhone}}
+    <span class='e10-sp-title2'><i class="fa fa-phone"></i> {{cfgItem.options.core.ownerPhone}}</span>
+{{/cfgItem.options.core.ownerPhone}}
+</div>
+
+
+<div>
+    <span class='e10-sp-title2'><b>Technická podpora:</b> <a href="{{cfgItem.dsi.supportUrl}}" target="new">{{cfgItem.dsi.supportName}}</a></span><br>
+    <span class='e10-sp-title2'><i class="fa fa-phone"></i> {{cfgItem.dsi.supportPhone}}</span>
+    <span class='e10-sp-title2'><i class="fa fa-envelope"></i> <a href="mailto:{{cfgItem.dsi.supportEmail}}">{{cfgItem.dsi.supportEmail}}</a></span>
+</div>
+
+<div>
+<span class='e10-sp-title2'>powered by <a href="https://shipard.cz" target="new">shipard.cz</a></span>
+<br><small>verze {{cfgItem.serverInfo.e10version}}.{{cfgItem.serverInfo.e10commit}}{{#cfgItem.serverInfo.e10channelName}}#{{cfgItem.serverInfo.e10channelName}}{{/cfgItem.serverInfo.e10channelName}}</small>
+</div>
+<div>
+    <i class='fa fa-th e10-small'></i>
+</div>
+
+</div>
+
+{{#page.url_user_login}}
+    <script src="//cdn.shipard.com/jquery/jquery-2.0.1.min.js"></script>
+    <script>
+        {{#cfgItem.autoLoginUser}}$('#login').val('{{cfgItem.autoLoginUser}}');{{/cfgItem.autoLoginUser}}
+        {{#cfgItem.autoLoginPassword}}$('#password').val('{{cfgItem.autoLoginPassword}}');{{/cfgItem.autoLoginPassword}}
+    </script>
+{{/page.url_user_login}}
+
+
+</body>
+</html>
+

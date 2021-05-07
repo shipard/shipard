@@ -1,0 +1,24 @@
+{
+  "id": "wkf.base",
+  "name": "workflow - base",
+  "tables": [
+		"issuesKinds", "issuesStatusesKinds", "issuesStatuses", "targetsKinds", "targets", "sections", "sectionsIssuesKinds", "trays", "projects",
+		"docMarks", "extNotifications", "boards"
+	],
+	"modules": ["e10/base", "e10/persons", "vds/base", "e10pro/bume"],
+  "config": [
+	  {"id": "+appOptions", "file": "appOptions.json"},
+		{"id": "+docMarks", "file": "docMarks.json"},
+	  {"id": "+e10.appOptions.groups", "file": "appOptionsGroups.json"},
+    {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+		{"id": "+wkf.issues.types", "file": "issues.types.json"},
+		{"id": "+wkf.issues.commentsTypes", "file": "issues.commentsTypes.json"},
+		{"id": "+wkf.issues.systemKinds", "file": "issues.systemKinds.json"},
+		{"id": "+wkf.issues.lifeCycles", "file": "lifeCycles.json"},
+		{"id": "+wkf.systemSections.types", "file": "systemSectionsTypes.json"},
+		{"id": "+e10.base.doclinks", "file": "doclinks.json"},
+		{"id": "+wkf.issuesKinds.AskEnum", "file": "issuesKinds.askEnum.json"},
+		{"id": "+wkf.issuesKinds.AskEnumUsers", "file": "issuesKinds.askEnumUsers.json"},
+		{"id": "+wkf.sections.orderBy", "file": "sectionOrderBy.json"}
+	]
+}

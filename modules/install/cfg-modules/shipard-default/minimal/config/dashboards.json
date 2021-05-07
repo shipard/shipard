@@ -1,0 +1,49 @@
+{
+	"main_new": {
+		"disableTopToolbar": 1,
+		"panels": {
+			"news": {
+				"name": "K řešení",
+				"icon": "icon-check-circle-o",
+				"order": 1201,
+				"fullsize": 1,
+				"rows": {
+					"main": {"order": 10000, "class": "full"}
+				}
+			},
+			"documents": {
+				"name": "Dokumenty",
+				"icon": "icon-archive",
+				"order": 1810,
+				"fullsize": 1,
+				"rows": {"main": {"order": 10000, "class": "full"}}
+			},
+			"headlines": {
+				"name": "Novinky",
+				"icon": "icon-star",
+				"order": 2010,
+				"fullsize": 1,
+				"rows": {"main": {"order": 10000, "class": "full"}}
+			},
+			"trays": {
+				"name": "Přihrádky",
+				"icon": "icon-folder-open-o",
+				"order": 4201,
+				"fullsize": 1,
+				"rows": {
+					"main": {"order": 10000, "class": "full"}
+				}
+			},
+			"wikies": {
+				"creatorClass": "e10pro.kb.WikiDashboardPanelsCreator", "order": 1800
+			},
+			"helpdesk": {
+				"name": "Podpora",
+				"icon": "icon-life-ring",
+				"order": 800100,
+				"fullsize": 1,
+				"rows": {"main": {"order": 10000, "class": "full"}}
+			}
+		}
+	}
+}

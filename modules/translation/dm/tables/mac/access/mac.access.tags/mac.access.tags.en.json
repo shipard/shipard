@@ -1,0 +1,34 @@
+{
+    "table": {
+        "name": "Access keys"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "tagType": {
+            "name": "Key type"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "keyValue": {
+            "name": "Key"
+        },
+        "keyHash": {
+            "name": "Key"
+        },
+        "ownTag": {
+            "name": "Own tag (belongs to tag owner)"
+        },
+        "note": {
+            "name": "Note"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

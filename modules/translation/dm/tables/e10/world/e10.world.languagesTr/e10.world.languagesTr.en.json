@@ -1,0 +1,19 @@
+{
+    "table": {
+        "name": "Languages - names translations"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "languageSrc": {
+            "name": "Source language"
+        },
+        "languageDst": {
+            "name": "Target language"
+        },
+        "name": {
+            "name": "Name"
+        }
+    }
+}

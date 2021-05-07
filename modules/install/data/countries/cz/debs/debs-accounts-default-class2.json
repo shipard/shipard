@@ -1,0 +1,29 @@
+{
+	"name": "Finanční účty",
+	"datasets": [
+		{
+			"table": "e10doc.debs.accounts",
+			"name": "Třída 2 - finanční účty",
+			"defaultValues": {"accGroup": 0, "accMethod": "debs", "docState": 4000, "docStateMain": 2},
+			"data": [
+				{"rec": {"id":"211100","fullName":"Pokladna","shortName":"Pokladna","accountKind":0}},
+				{"rec": {"id":"213100","fullName":"Ceniny","shortName":"Ceniny","accountKind":0}},
+				{"rec": {"id":"221100","fullName":"Bankovní účet","shortName":"Bankovní účet","accountKind":0}},
+				{"rec": {"id":"231100","fullName":"Bankovní úvěr","shortName":"Bankovní úvěr","accountKind":1}},
+				{"rec": {"id":"232100","fullName":"Eskontní úvěr","shortName":"Eskontní úvěr","accountKind":1}},
+				{"rec": {"id":"241100","fullName":"Emitované krátkodobé dluhopisy","shortName":"Emitované krátkodobé dluhopisy","accountKind":1}},
+				{"rec": {"id":"249100","fullName":"Ostatní krátkodobé finanční výpomoci","shortName":"Ostatní krátkodobé finanční výpomoci","accountKind":1}},
+				{"rec": {"id":"251100","fullName":"Registrované majetkové cenné papíry k obchodování","shortName":"Registrované majetkové CP k obchodování","accountKind":0}},
+				{"rec": {"id":"252100","fullName":"Vlastní akcie a vlastní obchodní podíly","shortName":"Vlastní akcie a vlastní obchodní podíly","accountKind":1}},
+				{"rec": {"id":"253100","fullName":"Registrované dluhové cenné papíry k obchodování","shortName":"Registrované dluhové CP k obchodování","accountKind":0}},
+				{"rec": {"id":"255100","fullName":"Vlastní dluhopisy","shortName":"Vlastní dluhopisy","accountKind":1}},
+				{"rec": {"id":"256100","fullName":"Dluhové cenné papíry se splatností do 1 roku držené do splatnosti","shortName":"Dluhové CP se splat. do 1 roku držené do splat.","accountKind":0}},
+				{"rec": {"id":"257100","fullName":"Ostatní cenné papíry k obchodování","shortName":"Ostatní CP k obchodování","accountKind":0}},
+				{"rec": {"id":"258100","fullName":"Krátkodobý finanční majetek","shortName":"Krátkodobý FM","accountKind":0}},
+				{"rec": {"id":"259100","fullName":"Pořizování krátkodobého finančního majetku","shortName":"Pořizování krátkodobého FM","accountKind":0}},
+				{"rec": {"id":"261100","fullName":"Peníze na cestě","shortName":"Peníze na cestě","accountKind":0,"toBalance":1}},
+				{"rec": {"id":"291100","fullName":"Opravná položka ke krátkodobému finančnímu majetku","shortName":"FP ke krátkodobému FM","accountKind":0}}
+			]
+		}
+	]
+}

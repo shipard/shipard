@@ -1,0 +1,12 @@
+{
+  "id": "e10doc.contracts.core",
+  "name": "Smlouvy prodejní",
+  "tables": ["heads", "rows", "kinds", "kindsRows", "docNumbers"],
+	"extensions": ["contracts"],
+  "config": [
+		{"id": "e10doc.contractsale.docStates", "file": "e10doc.contractsale.docStates.json"},
+	  {"id": "e10doc.contracts.dstDocTypes", "file": "dstDocTypes.json"},
+		{"id": "+e10.base.doclinks", "file": "docLinks.json"},
+	  {"id": "+e10.base.clsfGroups", "file": "clsfGroups.json"}
+  ]
+}

@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "Country language"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "country": {
+            "name": "Country"
+        },
+        "language": {
+            "name": "Language"
+        },
+        "nameCommon": {
+            "name": "Common name"
+        },
+        "nameOfficial": {
+            "name": "Official name"
+        },
+        "rowOrder": {
+            "name": "Order"
+        },
+        "validFrom": {
+            "name": "Valid from"
+        },
+        "validTo": {
+            "name": "Valid until"
+        }
+    }
+}

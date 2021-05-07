@@ -1,0 +1,53 @@
+{
+	"id": "mac.lan",
+	"name": "Počítačové sítě",
+	"tables": [
+		"deviceTypes", "deviceTypesPorts",
+		"racks", "racksSensorsShow", "wallSockets", "patchPanels", "patchPanelsPorts",
+		"vlans", "wlans", "macs", "macsOnPorts",
+		"lans", "lansAddrRanges",
+		"devices", "devicesPorts", "devicesIOPorts", "devicesIfaces", "devicesInfo", "devicesProperties", "devicesSensorsShow",
+		"devicesCfgNodes", "devicesCfgScripts", "devicesCfgIotBoxes",
+		"unknowns", "counters",
+		"swInstallPackages", "swApplications", "swLicenses",
+		"ipAddress", "ipAddressLists", "ipAddressListsRows",
+		"alerts", "alertsDevices", "watchdogs"
+	],
+	"modules": [
+		"mac/admin", "mac/data", "mac/devices", "terminals/base",
+		"mac/iot", "mac/vs", "mac/access", "mac/sw", "mac/swlan"
+	],
+	"config": [
+		{"id": "+alerts", "file": "alerts.json"},
+		{"id": "+appSkeleton", "file": "appSkeleton.json"},
+		{"id": "+appOptions", "file": "e10.appOptions.json"},
+		{"id": "+e10.persons.roles", "file": "mac.lan.roles.json"},
+		{"id": "+e10.persons.systemGroups", "file": "e10.persons.groups.json"},
+		{"id": "mac.lan.unknowns.docStates", "file": "mac.lan.unknowns.docStates.json"},
+		{"id": "+mac.lan.watchdogs", "file": "watchdogs.json"},
+		{"id": "+mac.lan.alerts.dashboardGroups", "file": "mac.lan.alerts.dashboardGroups.json"},
+		{"id": "mac.lan.devices.kinds", "file": "mac.lan.devices.kinds.json"},
+		{"id": "mac.lan.devices.groups", "file": "mac.lan.devices.groups.json"},
+		{"id": "mac.lan.devices.groupsDashboard", "file": "mac.lan.devices.groupsDashboard.json"},
+		{"id": "mac.lan.devices.properties", "file": "mac.lan.devices.properties.json"},
+		{"id": "mac.lan.devices.docStates", "file": "mac.lan.devices.docStates.json"},
+		{"id": "mac.lan.sw.applications", "file": "mac.lan.sw.applications.json"},
+		{"id": "mac.lan.ports.kinds", "file": "mac.lan.ports.kinds.json"},
+		{"id": "mac.lan.ports.roles", "file": "mac.lan.ports.roles.json"},
+		{"id": "mac.lan.ifacesAddrTypes", "file": "mac.lan.ifacesAddrTypes.json"},
+		{"id": "mac.lan.deviceInfoTypes", "file": "mac.lan.deviceInfoTypes.json"},
+		{"id": "mac.lan.patchPanels.kinds", "file": "mac.lan.patchPanels.kinds.json"},
+		{"id": "mac.lan.patchPanels.cableTerm", "file": "mac.lan.patchPanels.cableTerm.json"},
+		{"id": "+mac.devices.io.ports.types", "file": "mac.devices.io.ports.types.json"},
+		{"id": "+registeredClasses", "file": "registeredClasses.json"},
+		{"id": "+e10.base.clsfGroups", "file": "mac.lan.clsfGroups.json"},
+		{"id": "+widgets", "file": "widgets.json"},
+		{"id": "+dashboards", "file": "dashboards.json"},
+		{"id": "+reportsGroups", "file": "reportsGroups.json"},
+		{"id": "+reports", "name": "Výstupy", "file": "reports.json"},
+		{"id": "+e10.base.doclinks", "file": "mac.lan.docLinks.json"},
+		{"id": "+wkf.systemSections.types", "file": "wkf.systemSectionsTypes.json"},
+		{"id": "+mac.lan.alerts.types", "file": "alertsTypes.json"},
+		{"id": "+mac.lan.alerts.scopes", "file": "alertsScopes.json"}
+	]
+}

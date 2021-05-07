@@ -1,0 +1,37 @@
+{
+    "table": {
+        "name": "Localized texts of data model"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "textType": {
+            "name": "Text type"
+        },
+        "lang": {
+            "name": "Language"
+        },
+        "isSource": {
+            "name": "Is source text"
+        },
+        "srcText": {
+            "name": "Source text"
+        },
+        "text": {
+            "name": "Text"
+        },
+        "table": {
+            "name": "Table"
+        },
+        "column": {
+            "name": "Column"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

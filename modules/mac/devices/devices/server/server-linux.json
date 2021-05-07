@@ -1,0 +1,15 @@
+{
+	"name": "Server Linux",
+	"title": "Linux",
+	"fields": {
+		"columns": [
+
+		]
+	},
+	"dashboards": {
+		"realtime-summary": {
+			"title": "Přehled",
+			"template": "mac/devices/devices/server/server-linux-netdata-dashboard-overview.mustache"
+		}
+	}
+}

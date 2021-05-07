@@ -1,0 +1,12 @@
+{
+	"id": "e10.world.countriesTr", "sql": "e10_world_countriesTr", "name": "Země - Lokalizace", "icon": "icon-flag",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "country", "name": "Země", "type": "int", "reference": "e10.world.countries"},
+		{"id": "language", "name": "Jazyk", "type": "int", "reference": "e10.world.languages"},
+		{"id": "nameCommon", "name": "Název běžný", "type": "string", "len": 180},
+		{"id": "nameOfficial", "name": "Název oficiální", "type": "string", "len": 180}
+	],
+	"options": ["systemTable"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "nameCommon"}
+}

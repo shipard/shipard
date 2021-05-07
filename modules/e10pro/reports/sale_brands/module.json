@@ -1,0 +1,7 @@
+{
+	"id": "e10pro.reports.sale_brands",
+	"name": "Sales by brands",
+	"config": [
+		{"id": "+reports", "file": "reports.json"}
+	]
+}

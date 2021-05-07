@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Stocktaking"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "docNumber": {
+            "name": "Registration number"
+        },
+        "subject": {
+            "name": "Subject"
+        },
+        "dateCheck": {
+            "name": "Date"
+        },
+        "warehouse": {
+            "name": "Warehouse"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

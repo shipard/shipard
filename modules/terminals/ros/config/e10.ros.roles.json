@@ -1,0 +1,10 @@
+{
+  "admin": {
+	  "viewers": {
+		  "terminals.ros.rosRegs": {"default": 2}
+	  },
+	  "reports": {
+		  "terminals.ros.ReportTest": 2
+	  }
+	}
+}

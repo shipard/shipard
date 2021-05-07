@@ -1,0 +1,18 @@
+{
+	"id": "services.subjects.subjectsBranches", "sql": "services_subjects_subjectsBranches", "name": "Obory jednotlivých subjektů",
+	"columns": [
+		{"id": "ndx", "name": "ndx", "type": "int_ai"},
+		{"id": "subject", "name": "Subjekt", "type": "int", "reference": "services.subjects.subjects"},
+		{"id": "branch", "name": "Činnost", "type": "int", "reference": "services.subjects.branches"},
+		{"id": "activity", "name": "Činnost", "type": "int", "reference": "services.subjects.activities"},
+		{"id": "commodity", "name": "Komodita", "type": "int", "reference": "services.subjects.commodities"}
+	],
+	"options": ["systemTable"],
+	"forms": [
+		{"id": "default", "class": "services.subjects.FormSubjectBranch"}
+	],
+	"indexes": [
+		{"id": "s1", "columns": ["activity", "subject"]},
+		{"id": "s2", "columns": ["commodity", "subject"]}
+	]
+}

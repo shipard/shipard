@@ -1,0 +1,43 @@
+{
+    "table": {
+        "name": "Statistics of data sources"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "datasource": {
+            "name": "Data source"
+        },
+        "dateUpdate": {
+            "name": "Update timestamp"
+        },
+        "usageDb": {
+            "name": "Database size"
+        },
+        "usageFiles": {
+            "name": "Files size"
+        },
+        "usageTotal": {
+            "name": "Total size"
+        },
+        "cntDocuments12m": {
+            "name": "Number of documents in 12 months"
+        },
+        "cntDocumentsAll": {
+            "name": "Total number of documents"
+        },
+        "cntUsersAll1m": {
+            "name": "Number of users in the last month"
+        },
+        "cntUsersActive1m": {
+            "name": "Number of active users in the last month"
+        },
+        "cntUsersDocs1m": {
+            "name": "Number of users that added document in the last month"
+        },
+        "data": {
+            "name": "Data"
+        }
+    }
+}

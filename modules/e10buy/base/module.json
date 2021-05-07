@@ -1,0 +1,8 @@
+{
+  "id": "e10buy.base",
+  "name": "Nákup",
+  "tables": [],
+  "config": [
+    {"id": "+e10.appOptions.groups", "file": "e10.appOptionsGroups.json"}
+  ]
+}

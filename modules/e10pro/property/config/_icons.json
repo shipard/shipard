@@ -1,0 +1,44 @@
+{
+	"tables/e10pro.property.property": {
+		"fa5": "fa-university",
+		"fa5pro": "fa-sort-amount-desc",
+		"bsi": "bi-people-fill",
+		"mdi": "group"
+	},
+	"tables/e10pro.property.property-deps": {
+		"fa5": "fa-chevron-circle-down",
+		"fa5pro": "fa-chevron-circle-down",
+		"bsi": "bi-arrow-down-circle-fill",
+		"mdi": "arrow_circle_down"
+	},
+	"tables/e10pro.property.depreciation": {
+		"fa5": "fa-chevron-circle-down",
+		"fa5pro": "fa-chevron-circle-down",
+		"bsi": "bi-arrow-down-circle-fill",
+		"mdi": "arrow_circle_down"
+	},
+	"tables/e10pro.property.deps": {
+		"fa5": "fa-chevron-circle-down",
+		"fa5pro": "fa-chevron-circle-down",
+		"bsi": "bi-arrow-down-circle-fill",
+		"mdi": "arrow_circle_down"
+	},
+	"tables/e10pro.property.groups": {
+		"fa5": "fa-object-group",
+		"fa5pro": "fa-object-group",
+		"bsi": "bi-collection-fill",
+		"mdi": "devices"
+	},
+	"tables/e10pro.property.operations": {
+		"fa5": "fa-random",
+		"fa5pro": "fa-random",
+		"bsi": "bi-random",
+		"mdi": "shuffle"
+	},
+	"tables/e10pro.property.types": {
+		"fa5": "fa-list",
+		"fa5pro": "fa-list",
+		"bsi": "bi-list-ul",
+		"mdi": "list"
+	}
+}

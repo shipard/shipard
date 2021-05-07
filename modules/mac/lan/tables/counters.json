@@ -1,0 +1,14 @@
+{
+	"id": "mac.lan.counters", "sql": "mac_lan_counters", "name": "Počitadla",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "device", "name": "Zařízení", "type": "int", "reference": "mac.lan.devices"},
+		{"id": "dateId", "name": "Datum", "type": "string", "len": 11, "options": ["ascii"]},
+		{"id": "counterKind", "name": "Druh počitadla", "type": "string", "len": 20, "options": ["ascii"]},
+		{"id": "counterTimeStamp", "name": "Okamžik poslední aktualizace", "type": "string", "len": 20, "options": ["ascii"]},
+
+		{"id": "value", "name": "Hodnota", "type": "long"},
+		{"id": "amount", "name": "Množství", "type": "long"}
+	],
+	"options": ["systemTable"]
+}

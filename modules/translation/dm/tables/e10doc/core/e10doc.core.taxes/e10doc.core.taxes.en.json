@@ -1,0 +1,66 @@
+{
+    "table": {
+        "name": "Taxes of documents"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "document": {
+            "name": "Document"
+        },
+        "dateTax": {
+            "name": "Time of supply",
+            "label": "Time of supply"
+        },
+        "taxPeriod": {
+            "name": "Tax period"
+        },
+        "dateTaxDuty": {
+            "name": "Date of duty to admit tax",
+            "label": "Date of duty to admit tax"
+        },
+        "sumPrice": {
+            "name": "Price"
+        },
+        "sumBase": {
+            "name": "Tax base",
+            "label": "Base"
+        },
+        "sumTax": {
+            "name": "Total tax",
+            "label": "Tax"
+        },
+        "sumTotal": {
+            "name": "Total sum including tax"
+        },
+        "sumPriceHc": {
+            "name": "Price [HC]"
+        },
+        "sumBaseHc": {
+            "name": "Tax base [HC]"
+        },
+        "sumTaxHc": {
+            "name": "Total tax [HC]"
+        },
+        "sumTotalHc": {
+            "name": "Total sum including tax [HC]"
+        },
+        "quantity": {
+            "name": "Quantity"
+        },
+        "weight": {
+            "name": "Weight"
+        },
+        "taxCode": {
+            "name": "Tax code"
+        },
+        "taxRate": {
+            "name": "Tax rate"
+        },
+        "taxPercents": {
+            "name": "Tax percentage",
+            "label": "%"
+        }
+    }
+}

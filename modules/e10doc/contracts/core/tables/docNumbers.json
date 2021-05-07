@@ -1,0 +1,30 @@
+{
+	"id": "e10doc.contracts.core.docNumbers", "sql": "e10doc_contracts_core_docNumbers", "name": "Číselné řady smluv", "icon": "icon-play-circle",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 40},
+		{"id": "tabName", "name": "Titulek záložky prohlížeče", "type": "string", "len": 40},
+		{"id": "docKeyId", "name": "Kód pro číslo smlouvy", "type": "string", "len": 5},
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+		{"id": "useDocKinds", "name": "Používat druhy smluv", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "Ne", "1": "Nastavit konkrétní druh", "2": "Nechat uživatele vybrat"}},
+		{"id": "docKind", "name": "Druh smlouvy", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10doc.contracts.kinds", "cfgValue": "ndx", "cfgText": "fn"}},
+
+		{"id": "docNumberFormula", "name": "Složení čísla smlouvy", "type": "string", "len": 12},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "e10doc.contracts.core.ViewDocNumbers"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.contracts.core.FormDocNumber"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

@@ -1,0 +1,23 @@
+{
+	"1" : {
+		"fullName": "IotBox / IO port",
+		"pattern": "sensors/{{iotBoxId}}/{{ioPortId}}"
+	},
+	"2" : {
+		"fullName": "ID věci / ID portu",
+		"pattern": "sensors/{{thingId}}/{{ioPortId}}"
+	},
+	"3" : {
+		"fullName": "Typ hodnoty / ID senzoru",
+		"pattern": "sensors/{{valueKindId}}/{{sensorId}}"
+	},
+	"4" : {
+		"fullName": "Typ hodnoty / Místo / ID senzoru",
+		"pattern": "sensors/{{valueKindId}}/{{placeId}}/{{sensorId}}"
+	},
+
+	"0" : {
+		"fullName": "Vlastní nastavení",
+		"pattern": ""
+	}
+}

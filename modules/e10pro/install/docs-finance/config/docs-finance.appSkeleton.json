@@ -1,0 +1,74 @@
+{
+	"panels": {
+		"accounting": {
+			"url": "/app/accounting", "objectType": "panel", "zone": "sec", "name": "Účtárna", "order": 400000,
+			"items": {
+				"balance": {"t1": "Saldo", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-balance", "icon": "iconBalance", "order": 100000},
+				"bank": {"t1": "Banka", "object": "viewer", "table": "e10doc.core.heads", "viewer": "bank", "icon": "docType/bank", "order": 200000},
+				"cash": {"t1": "Pokladna", "object": "viewer", "table": "e10doc.core.heads", "viewer": "cash", "icon": "docType/cash", "order": 300000},
+				"accDocs": {"t1": "Účetní doklady", "object": "viewer", "table": "e10doc.core.heads", "viewer": "cmnbkp", "icon": "docType/accDocs", "order": 400000},
+				"bankOrders": {"t1": "Příkazy", "object": "viewer", "table": "e10doc.core.heads", "viewer": "bankorder", "icon": "docType/bankOrders",
+					"enabledCfgItem": "options.e10doc-finance.useBankOrders", "order": 500000},
+				"reports": {"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-finance", "icon": "system/iconReports", "order": 800000},
+
+				"openClosePeriods": {"t1": "Otevření / Uzavření účetních období", "object": "viewer", "table": "e10doc.core.heads", "viewer": "cmnbkpocp", "icon": "docType/openClosePeriods", "order": 2000000},
+				"taxes": {"t1": "Daně", "object": "viewer", "table": "e10doc.taxes.reports", "viewer": "default", "icon": "docType/taxes", "order": 2100000},
+
+				"others": {
+					"t1": "Ostatní", "object": "subMenu", "icon": "system/iconOther",
+					"order": 9800000,
+					"subMenu": {
+						"items": {
+							"moneyRates": {"t1": "Kurzy měn", "object": "viewer", "table": "e10doc.base.exchangeRatesLists", "viewer": "default", "icon": "icon-usd", "order": 2200000}
+						}
+					}
+				},
+				"settings": {
+					"t1": "Nastavení", "object": "subMenu", "icon": "system/iconSettings",
+					"order": 9900000,
+					"subMenu": {
+						"items": {
+							"cashBoxes": {"t1": "Pokladny", "object": "viewer", "table": "e10doc.base.cashboxes", "viewer": "default", "icon": "icon-money", "order": 100000},
+							"bankAccounts": {"t1": "Bankovní účty", "object": "viewer", "table": "e10doc.base.bankaccounts", "viewer": "default", "icon": "icon-institution", "order": 200000},
+							"centres": {"t1": "Střediska", "object": "viewer", "table": "e10doc.base.centres", "viewer": "default", "icon": "icon-bullseye", "order": 300000}
+						}
+					}
+				}
+			}
+		},
+		"reports": {
+			"items": {
+				"finance": {"t1": "Finance", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-finance", "icon": "icon-money", "order": 500000},
+				"balance": {"t1": "Saldo", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-balance", "icon": "icon-star-o", "order": 400000}
+			}
+		}
+	},
+	"mobileui": {
+		"records": {
+			"groups": {
+				"finance": {
+					"name": "Finance", "order": 300000,
+					"items": {
+						"bank": {"t1": "Banka", "object": "viewer", "table": "e10doc.core.heads", "viewer": "bank", "icon": "e10-docs-bank", "order": 200000},
+						"bankorder": {"t1": "Příkazy", "object": "viewer", "table": "e10doc.core.heads", "viewer": "bankorder", "icon": "icon-share-square",
+													"enabledCfgItem": "options.e10doc-finance.useBankOrders", "order": 500000},
+						"acccmnbkp": {"t1": "Účetní doklady", "object": "viewer", "table": "e10doc.core.heads", "viewer": "cmnbkp",
+													"icon": "icon-file-text", "order": 400000}
+					}
+				}
+			}
+		},
+		"reports": {
+			"name": "Přehledy", "order": "200000", "type": "menu",
+			"groups": {
+				"balance": {
+					"name": "Saldokonto", "order": 200000,
+					"items": {
+						"receivables": {"t1": "Pohledávky", "object": "report", "class": "e10doc.balance.reportBalanceReceivables", "icon": "icon-arrow-circle-up", "order": 100000},
+						"obligations": {"t1": "Závazky", "object": "report", "class": "e10doc.balance.reportBalanceObligations", "icon": "icon-arrow-circle-down", "order": 200000}
+					}
+				}
+			}
+		}
+	}
+}

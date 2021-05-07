@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "SW Categories"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "icon": {
+            "name": "Icon"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "suid": {
+            "name": "ID"
+        }
+    }
+}

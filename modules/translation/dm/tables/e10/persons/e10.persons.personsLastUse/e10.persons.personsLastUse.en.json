@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Last use of Persons"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "person": {
+            "name": "Person"
+        },
+        "firstUseDate": {
+            "name": "Date of first use"
+        },
+        "lastUseDate": {
+            "name": "Date of last use"
+        },
+        "lastUseType": {
+            "name": "Type of last use"
+        },
+        "lastUseRole": {
+            "name": "Role"
+        },
+        "updated": {
+            "name": "Last update"
+        }
+    }
+}

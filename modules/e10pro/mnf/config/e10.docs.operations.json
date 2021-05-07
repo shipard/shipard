@@ -1,0 +1,12 @@
+{
+	"1060701": {"title": "Příjem z výroby", "docDir": 1, "itemType": 1, "invDirection": 1,
+		"docTypes": {
+			"mnf" : {"order": 20000}
+		}
+	},
+	"1060702": {"title": "Výdej na výrobu", "docDir": 1, "itemType": 1, "invDirection": -1,
+		"docTypes": {
+			"mnf" : {"order": 10000}
+		}
+	}
+}

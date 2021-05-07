@@ -1,0 +1,97 @@
+{
+    "table": {
+        "name": "Web servers"
+    },
+    "columns": {
+        "ndx": {
+            "name": "ndx"
+        },
+        "fullName": {
+            "name": "Full name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "title": {
+            "name": "Title"
+        },
+        "domain": {
+            "name": "Domain"
+        },
+        "domainsRedirectHere": {
+            "name": "Domains for redirecting here"
+        },
+        "urlBegin": {
+            "name": "Beginning of url"
+        },
+        "templateNdx": {
+            "name": "Template"
+        },
+        "template": {
+            "name": "Template ID"
+        },
+        "templateLookNdx": {
+            "name": "Look"
+        },
+        "templateLook": {
+            "name": "Template ID"
+        },
+        "templateStylePath": {
+            "name": "Path to CSS template"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "serverMode": {
+            "name": "Function of server"
+        },
+        "wiki": {
+            "name": "Wiki"
+        },
+        "homePageFunction": {
+            "name": "Function of home page"
+        },
+        "gaid": {
+            "name": "Google Analytics ID"
+        },
+        "authType": {
+            "name": "Login method"
+        },
+        "loginRequired": {
+            "name": "Require login"
+        },
+        "authTypePassword": {
+            "name": "Allow login by password"
+        },
+        "authTypeUrlHash": {
+            "name": "Allow login by key in url"
+        },
+        "authTypeKeyId": {
+            "name": "Allow login by key"
+        },
+        "excludeFromDashboard": {
+            "name": "Exclude from dashboard"
+        },
+        "iconCore": {
+            "name": "Website icon (browser tab)"
+        },
+        "iconApp": {
+            "name": "Application icon (on desktop)"
+        },
+        "iconAppIos": {
+            "name": "Application icon on iOS"
+        },
+        "templateParams": {
+            "name": "Template parameters"
+        },
+        "iconUrl": {
+            "name": "Icon URL"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

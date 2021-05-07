@@ -1,0 +1,37 @@
+{
+    "table": {
+        "name": "Users summary"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "user": {
+            "name": "User"
+        },
+        "dataSource": {
+            "name": "Data source"
+        },
+        "summaryType": {
+            "name": "Summary type"
+        },
+        "cnt": {
+            "name": "Number"
+        },
+        "cntUnread": {
+            "name": "Number of unread"
+        },
+        "cntTodo": {
+            "name": "Number of unsolved"
+        },
+        "data": {
+            "name": "Data"
+        },
+        "checksum": {
+            "name": "Checksum"
+        },
+        "updated": {
+            "name": "Update timestamp"
+        }
+    }
+}

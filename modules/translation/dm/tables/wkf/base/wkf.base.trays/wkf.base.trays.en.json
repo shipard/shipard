@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "Attachment trays"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "icon": {
+            "name": "Icon"
+        },
+        "shipardEmailId": {
+            "name": "ID for received Shipard e-mails"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

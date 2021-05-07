@@ -1,0 +1,41 @@
+{
+	"id": "e10.base.nomencItems", "sql": "e10_base_nomencItems", "name": "Položky nomenklatury",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Úplný název", "type": "string", "len": 160},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 140},
+		{"id": "itemId", "name": "Zkratka", "type": "string", "len": 40},
+
+		{"id": "nomencType", "name": "Typ", "type": "int", "reference": "e10.base.nomencTypes"},
+
+		{"id": "order", "name": "Pořadí", "type": "string", "len": 40},
+		{"id": "level", "name": "Úroveň", "type": "int"},
+		{"id": "ownerItem", "name": "Nadřazená položka", "type": "int", "reference": "e10.base.nomencItems", "comboViewer": "combo"},
+		{"id": "id", "name": "id", "type": "string", "len": 80},
+
+		{"id": "enumIntNdx", "name": "Index pro enumInt", "type": "int"},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "e10.base.ViewNomencItems",
+			"details": {
+				"default": {"title": "Přehled", "icon": "x-tag", "type": "detail", "class": "e10.base.ViewDetailNomencItem"}
+			}
+		},
+		{"id": "combo", "class": "e10.base.ViewNomencItemsCombo",
+			"details": {
+				"default": {"title": "Přehled", "icon": "x-tag", "type": "detail", "class": "e10.base.ViewDetailNomencItem"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10.base.FormNomencItem"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

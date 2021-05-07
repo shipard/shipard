@@ -1,0 +1,36 @@
+{
+  "id": "e10doc.base.fiscalyears", "sql": "e10doc_base_fiscalyears", "name": "Fiskální období", "icon": "icon-calendar",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "fullName", "name": "Název", "type": "string", "len": 40},
+		{"id": "mark", "name": "Značka pro čísla dokladů", "type": "string", "len": 2},
+    {"id": "start", "name": "Začátek období", "type": "date"},
+    {"id": "end", "name": "Konec období", "type": "date"},
+		{"id": "currency", "name": "Měna", "type": "enumString", "len": 3,
+			"enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
+		{"id": "accMethod", "name": "Způsob účtování", "type": "enumString", "len": 12, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.acc.methods", "cfgValue": "", "cfgText": "title"}},
+		{"id": "stockAccMethod", "name": "Účtování zásob", "type": "enumString", "len": "10",
+			"enumValues": {"stockB": "Účtování metodou B (přímo do nákladů)", "stockA": "Účtování metodou A", "stockOff": "Zásoby se neúčtují"}},
+		{"id": "propertyDepsMethod", "name": "Odpisy majetku", "type": "enumString", "len": "12",
+			"enumValues": {"propDepsY": "Ročně", "propDepsM": "Měsíčně", "propDepsH": "Manuálně", "propDepsOff": "Majetek se neodepisuje"}},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+  "lists": [
+    {"id": "rows", "class": "e10.base.ListRows", "name": "Měsíční období", "table": "e10doc.base.fiscalmonths", "queryColumn": "fiscalYear"}
+  ],
+  "views": [
+    {"id": "default", "class": "e10doc.base.ViewFiscalYears", "help":  "prirucka/4879"}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10doc.base.FormFiscalYears", "help":  "prirucka/4879"}
+  ],
+	"options": ["configSource"],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10doc.base.taxperiods.docStates"},
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"addWizard": {"class": "lib.cfg.AddFiscalYearWizard"},
+  "order": [{"column": "start"}],
+  "fullText": ["fullName", "id"]
+}

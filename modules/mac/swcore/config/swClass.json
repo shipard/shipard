@@ -1,0 +1,51 @@
+{
+	"0": {
+		"fn": "Ostatní / neznámé / jiné",
+		"sn": "Ostatní",
+		"icon": "icon-exclamation-triangle",
+		"infoOrder": 80
+	},
+	"1": {
+		"fn": "Operační systém",
+		"sn": "OS",
+		"icon": "icon-floppy-o",
+		"askOSInfo": 1,
+		"infoOrder": 1
+	},
+	"10": {
+		"fn": "Rozšíření OS: drivery, utility apod.",
+		"sn": "Drivery / utility OS",
+		"icon": "icon-cogs",
+		"infoOrder": 1000
+	},
+	"11": {
+		"fn": "Sdílené knihovny pro aplikace",
+		"sn": "Knihovny pro aplikace",
+		"icon": "icon-book",
+		"infoOrder": 900
+	},
+	"20": {
+		"fn": "Serverová služba",
+		"sn": "Server",
+		"icon": "icon-server",
+		"infoOrder": 100
+	},
+	"40": {
+		"fn": "Webový prohlížeč",
+		"sn": "Webový prohlížeč",
+		"icon": "icon-globe",
+		"infoOrder": 10
+	},
+	"41": {
+		"fn": "PWA (webová aplikace)",
+		"sn": "PWA",
+		"icon": "icon-hand-pointer-o",
+		"infoOrder": 50
+	},
+	"99": {
+		"fn": "Aplikace",
+		"sn": "Aplikace",
+		"icon": "icon-mouse-pointer",
+		"infoOrder": 20
+	}
+}

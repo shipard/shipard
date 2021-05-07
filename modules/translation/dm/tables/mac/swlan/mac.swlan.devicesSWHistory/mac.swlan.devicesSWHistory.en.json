@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "SW history on devices"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "device": {
+            "name": "Device"
+        },
+        "sw": {
+            "name": "Software"
+        },
+        "swVersion": {
+            "name": "Software version"
+        },
+        "dateBegin": {
+            "name": "Creation timestamp"
+        },
+        "dateEnd": {
+            "name": "Expiration timestamp"
+        },
+        "active": {
+            "name": "Installed"
+        }
+    }
+}

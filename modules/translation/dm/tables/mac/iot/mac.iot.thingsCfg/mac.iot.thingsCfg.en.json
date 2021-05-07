@@ -1,0 +1,22 @@
+{
+    "table": {
+        "name": "IoT things configuration"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "thing": {
+            "name": "IoT thing"
+        },
+        "thingCfgData": {
+            "name": "Configuration data"
+        },
+        "thingCfgDataVer": {
+            "name": "Version"
+        },
+        "thingCfgDataTimestamp": {
+            "name": "Timestamp"
+        }
+    }
+}

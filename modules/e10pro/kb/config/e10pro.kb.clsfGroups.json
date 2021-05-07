@@ -1,0 +1,3 @@
+{
+	"kbTextsTags": {"name": "Texty", "label": "Štítky", "icon": "icon-file-text-o", "tables": ["e10pro.kb.texts"]}
+}

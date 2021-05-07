@@ -1,0 +1,9 @@
+{
+	"id": "install.cfg-modules.shipard-default.core",
+	"name": "Základ aplikace",
+	"modules": ["e10/install", "e10/persons", "e10/base", "e10/calendar", "e10/web"],
+	"config": [
+		{"id": "+appSkeleton", "file": "appSkeleton.json"},
+		{"id": "+e10.global.viewerDetails", "file": "wkf.viewerDetails.json"}
+	]
+}

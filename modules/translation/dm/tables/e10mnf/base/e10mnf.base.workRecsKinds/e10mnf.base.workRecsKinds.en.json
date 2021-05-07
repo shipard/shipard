@@ -1,0 +1,67 @@
+{
+    "table": {
+        "name": "Kinds of work records"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "docType": {
+            "name": "Record type"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "icon": {
+            "name": "Icon"
+        },
+        "useRows": {
+            "name": "Use rows"
+        },
+        "askDateTimeOnHead": {
+            "name": "Assign time in header"
+        },
+        "askDateTimeOnRows": {
+            "name": "Assign time on rows"
+        },
+        "askPerson": {
+            "name": "Assing Person"
+        },
+        "askProject": {
+            "name": "Assign project"
+        },
+        "askWorkOrder": {
+            "name": "Assign work order"
+        },
+        "askItem": {
+            "name": "Assign item"
+        },
+        "askPrice": {
+            "name": "Assign price"
+        },
+        "askSubject": {
+            "name": "Assign subject"
+        },
+        "askNote": {
+            "name": "Assign note"
+        },
+        "enableStartStop": {
+            "name": "Enable start/stop"
+        },
+        "defaultSubject": {
+            "name": "Default subject"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

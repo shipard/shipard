@@ -1,0 +1,41 @@
+<div class="row">
+	<nav class="col-sm-3 col-md-3 d-none d-md-block d-sm-none d-md-none e10-sidebar-left">
+	</nav>
+
+	<main class="col-sm-12 ml-md-auto col-md-9" role="main">
+		<div class="row">
+			<form style="width: 100%;">
+				<div class="form-group" style="padding: 0.5rem 1rem; ">
+					<input type="search" name="q" class="form-control" placeholder="Zadejte hledaný text a stiskněte ⏎..." autofocus value="{{data.page.queryText}}">
+				</div>
+			</form>
+		</div>
+
+		<div class="pageText">
+			<div class="e10-wiki-page-body">
+			{{#data.page.foundedPages}}
+				<hr>
+				<h5><a href="{{id}}">{{title}}</a></h5>
+				{{{content}}}
+			{{/data.page.foundedPages}}
+			</div>
+		</div>
+	</main>
+</div>
+
+<div class="pt-5 pb-5 text-center" style="color: #999;">
+	<br><br>
+	<hr>
+	<br><br>
+	<img style='height: 4rem; padding: 1rem; max-width: 80%;' src="{{templateRoot}}/files/shipard/logo-color-web.svg">
+	<br>
+	<small>
+		verze {{cfgItem.serverInfo.e10version}}.{{cfgItem.serverInfo.e10commit}}.{{#mobileMode}}m{{/mobileMode}}{{^mobileMode}}d{{/mobileMode}}.<span class='hidden-sm-up'>xs</span><span class='hidden-md-up hidden-xs-down'>sm</span><span class='hidden-lg-up hidden-sm-down'>md</span><span class='hidden-xl-up hidden-md-down'>lg</span><span class='hidden-lg-down'>xl</span>{{#cfgItem.develMode}}.dev{{/cfgItem.develMode}}
+	</small>
+	<br>
+	<small>
+		Copyright &copy; <a href="https://shipard.cz">Shipard s.r.o.</a> |
+		<i class="fa fa-phone"></i> <a href="tel:+420774020522">+420 774 020 522</a> | 
+		<i class="fa fa-envelope-o"></i> <a href="mailto:info@shipard.cz">info@shipard.cz</a>
+	</small>
+</div>

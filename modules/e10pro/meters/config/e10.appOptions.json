@@ -1,0 +1,11 @@
+{
+	"metersMeters": {
+		"name": "Měřiče", "order": 310000, "group": "building", "icon": "icon-cogs",
+		"type": "viewer", "table": "e10pro.meters.meters", "viewer": "default"
+	},
+	"metersGroups": {
+		"name": "Skupiny měřičů", "order": 310100, "group": "building", "icon": "icon-cog",
+		"type": "viewer", "table": "e10pro.meters.groups", "viewer": "default"
+	}
+}
+

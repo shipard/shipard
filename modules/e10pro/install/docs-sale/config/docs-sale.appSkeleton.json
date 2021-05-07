@@ -1,0 +1,73 @@
+{
+	"panels": {
+		"sale": {"url": "/app/sale", "objectType": "panel", "zone": "sec", "name": "Prodej", "order": 300100,
+			"items": {
+				"invoicesOut": {"t1": "Fakturace", "object": "viewer", "table": "e10doc.core.heads", "viewer": "invoicesOut",
+					"icon": "docType/invoicesOut", "order": 100000},
+				"proformaOut": {"t1": "Zálohové faktury", "object": "viewer", "table": "e10doc.core.heads", "viewer": "proformaOut",
+					"icon": "docType/proFormaOut", "enabledCfgItem": "options.e10doc-sale.useProformaOut", "order": 150000},
+				"contractSale": {"t1": "Smlouvy prodejní", "object": "viewer", "table": "e10doc.contracts.core.heads", "viewer": "sale",
+					"icon": "docType/contractSale", "enabledCfgItem": "options.e10doc-sale.useContractSale", "order": 400000},
+				"workOrders": {"t1": "Zakázky", "object": "viewer", "table": "e10mnf.core.workOrders", "viewer": "default", "icon": "docType/workOrders",
+					"enabledCfgItem": "options.e10doc-commerce.useWorkOrders", "order": 405000},
+				"ordersIn": {"t1": "Přijaté objednávky", "object": "viewer", "table": "e10doc.core.heads", "viewer": "orderIn", "icon": "docType/ordersIn",
+					"enabledCfgItem": "options.e10doc-commerce.useOrdersIn", "order": 410000},
+				"deliveryNote": {"t1": "Dodací listy", "object": "viewer", "table": "e10doc.core.heads", "viewer": "deliveryNote",
+					"icon": "docType/deliveryNote", "enabledCfgItem": "options.e10doc-sale.useDeliveryNotes" ,"order": 420000},
+				"reports": {"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10docs",
+					"icon": "system/iconReports", "order": 800000},
+
+				"persons": {"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "default", "order": 900000},
+
+				"witems": {"t1": "Položky", "object": "viewer", "table": "e10.witems.items",
+					"viewer": "default", "order": 910000, "disabledCfgItem": "options.experimental.witemsNewViewer"},
+				"witems2": {"t1": "Položky", "object": "viewer", "table": "e10.witems.items",
+					"viewer": "byCategories", "icon": "e10-witems-items", "order": 910000, "enabledCfgItem": "options.experimental.witemsNewViewer"},
+
+				"witemsCategories": {"t1": "Kategorie", "object": "viewer", "table": "e10.witems.itemcategories", "viewer": "editor", "order": 920000},
+
+				"settings": {
+					"t1": "Nastavení", "object": "subMenu", "icon": "system/iconSettings",
+					"order": 9900000,
+					"subMenu": {
+						"items": {
+							"witemsCategories": {"t1": "Kategorie pol.", "object": "viewer", "table": "e10.witems.itemcategories", "viewer": "default", "icon": "tables/e10.witems.itemcategories", "order": 100000},
+							"witemsBrands": {"t1": "Značky výrobků", "object": "viewer", "table": "e10.witems.brands", "viewer": "default", "icon": "tables/e10.witems.brands", "order": 200000},
+							"transports": {"t1": "Způsoby dopravy", "object": "viewer", "table": "e10doc.base.transports", "viewer": "default", "icon": "tables/e10doc.base.transports", "order": 300000}
+						}
+					}
+				}
+			}
+		},
+		"reports": {
+			"items": {
+				"sales": {"t1": "Prodej", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-sale", "icon": "icon-thumbs-o-up", "order": 100000},
+				"documents": {"t1": "Doklady", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10docs", "icon": "icon-folder-open-o", "order": 876000}
+			}
+		}
+	},
+	"mobileui": {
+		"records": {
+			"name": "Evidence", "order": 300000, "type": "menu",
+			"groups": {
+				"docs": {
+					"name": "Doklady", "order": 100000,
+					"items": {
+						"invoices-out": {
+							"t1": "Fakturace", "object": "viewer", "table": "e10doc.core.heads", "viewer": "invoicesOut",
+							"icon": "e10-docs-invoices-out", "order": 100000
+						},
+						"proforma-out": {
+							"t1": "Zálohové faktury", "object": "viewer", "table": "e10doc.core.heads", "viewer": "proformaOut",
+							"icon": "icon-arrow-circle-o-up", "enabledCfgItem": "options.e10doc-sale.useProformaOut", "order": 150000
+						},
+						"contracts-sale": {
+							"t1": "Smlouvy prodejní", "object": "viewer", "table": "e10doc.contracts.core.heads", "viewer": "sale",
+							"icon": "icon-thumbs-up", "enabledCfgItem": "options.e10doc-sale.useContractSale", "order": 400000
+						}
+					}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,19 @@
+{
+    "table": {
+        "name": "Software ID"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "rowOrder": {
+            "name": "Row order"
+        },
+        "sw": {
+            "name": "Software"
+        },
+        "id": {
+            "name": "ID"
+        }
+    }
+}

@@ -1,0 +1,23 @@
+{
+	"CZ2015": {
+		"fullName": "--> 2015", "shortName": "2015", "reportTitle": "Výkaz Cash Flow",
+		"validFrom": "0000-00-00", "validTo": "2015-12-31",
+		"spreadsheetId": "install.country-modules.debs.cz.spdCashFlow-cz-2015",
+		"balanceSheetSpreadsheetId": "install.country-modules.debs.cz.spdBalanceSheetFull-cz-2015",
+		"statementSpreadsheetId": "install.country-modules.debs.cz.spdStatementFull-cz-2015"
+	},
+	"CZ2016": {
+		"fullName": "2016 - 2017", "shortName": "2016", "reportTitle": "Výkaz Cash Flow",
+		"validFrom": "2016-01-01", "validTo": "2017-12-31",
+		"spreadsheetId": "install.country-modules.debs.cz.spdCashFlow-cz-2016",
+		"balanceSheetSpreadsheetId": "install.country-modules.debs.cz.spdBalanceSheetFull-cz-2016",
+		"statementSpreadsheetId": "install.country-modules.debs.cz.spdStatementFull-cz-2016"
+	},
+	"CZ2018": {
+		"fullName": "2018 -->", "shortName": "2018", "reportTitle": "Výkaz Cash Flow",
+		"validFrom": "2018-01-01", "validTo": "0000-00-00",
+		"spreadsheetId": "install.country-modules.debs.cz.spdCashFlow-cz-2018",
+		"balanceSheetSpreadsheetId": "install.country-modules.debs.cz.spdBalanceSheetFull-cz-2018",
+		"statementSpreadsheetId": "install.country-modules.debs.cz.spdStatementFull-cz-2018"
+	}
+}

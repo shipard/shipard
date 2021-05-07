@@ -1,0 +1,13 @@
+{{{@write;binMode:1}}}
+{{{@write;cmd:reset}}}
+{{{@write;codePage:CP852}}}
+
+{{{@write;cmd:cp852}}}
+
+{{{@write;cmd:nl}}}
+{{{@write;cmd:nl}}}
+
+
+{{#data.printerTypeThin}}{{{&pageThin}}}{{/data.printerTypeThin}}
+{{^data.printerTypeThin}}{{{&pageNormal}}}{{/data.printerTypeThin}}
+

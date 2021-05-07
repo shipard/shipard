@@ -1,0 +1,34 @@
+{
+	"id": "e10pro.property.types", "sql": "e10pro_property_types", "name": "Typy majetku", "icon": "icon-list",
+	"columns": [
+		{"id": "ndx", "name": "ndx", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
+		{"id": "id", "name": "ID", "type": "string", "len": 15},
+
+		{"id": "propertyKind", "name": "Druh majetku", "type": "enumInt",
+			"enumValues": {"99": "Nenastavovat", "0": "Jednotlivá věc", "1": "Množstevní karta", "2": "Soubor předmětů"}
+		},
+
+		{"id": "debsAccountIdProperty", "name": "Účet zařazeného majetku", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+		{"id": "debsAccountIdInclusion", "name": "Účet pořízení majetku", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+		{"id": "debsAccountIdEnhancement", "name": "Účet technického zhodnocení", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+		{"id": "debsAccountIdDepDebit", "name": "Odpisy MD", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+		{"id": "debsAccountIdDepCredit", "name": "Odpisy DAL", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"options": ["configSource"],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"views": [
+		{"id": "default", "class": "e10pro.property.ViewTypes", "detail": "e10pro.property.ViewDetailType", "help":  "prirucka/4874"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.property.FormType", "help":  "prirucka/4874"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

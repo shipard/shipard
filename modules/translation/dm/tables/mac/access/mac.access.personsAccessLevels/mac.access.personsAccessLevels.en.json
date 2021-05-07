@@ -1,0 +1,25 @@
+{
+    "table": {
+        "name": "Persons Access levels"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "rowOrder": {
+            "name": "Row order"
+        },
+        "personAccess": {
+            "name": "Person"
+        },
+        "accessLevel": {
+            "name": "Access level"
+        },
+        "validFrom": {
+            "name": "Valid from"
+        },
+        "validTo": {
+            "name": "Valid until"
+        }
+    }
+}

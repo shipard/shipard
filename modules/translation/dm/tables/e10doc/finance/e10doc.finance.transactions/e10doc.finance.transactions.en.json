@@ -1,0 +1,50 @@
+{
+    "table": {
+        "name": "Payment transactions"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "bankTransId": {
+            "name": "id"
+        },
+        "type": {
+            "name": "Type"
+        },
+        "amount": {
+            "name": "Amount"
+        },
+        "currency": {
+            "name": "Currency"
+        },
+        "closingBalance": {
+            "name": "Closing balance"
+        },
+        "symbol1": {
+            "name": "Variable symbol"
+        },
+        "symbol2": {
+            "name": "Specific symbol"
+        },
+        "symbol3": {
+            "name": "Constant symbol"
+        },
+        "note": {
+            "name": "Note"
+        },
+        "bankAccount": {
+            "name": "From bank account",
+            "label": "Account number"
+        },
+        "myBankAccount": {
+            "name": "Own bank connection"
+        },
+        "date": {
+            "name": "Date"
+        },
+        "dateTime": {
+            "name": "Date and time"
+        }
+    }
+}

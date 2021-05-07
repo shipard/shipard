@@ -1,0 +1,5 @@
+[
+	{"name": "Město", "class": "e10pro.reports.waste_cz.ReportWasteMunicipal", "group": "e10pro-other"},
+	{"name": "Odpady", "class": "e10pro.reports.waste_cz.ReportWasteState", "group": "e10pro-other"},
+	{"name": "Osoby", "class": "e10pro.reports.waste_cz.ReportWasteByPersons", "group": "e10pro-other"}
+]

@@ -1,0 +1,93 @@
+{
+	"name": "Výkaz zisku a ztráty v plném rozsahu v.2015",
+	"pattern": {
+		"tables": [
+			{
+				"tableId": "VÝKAZ ZISKU A ZTRÁTY", "disableZeros": 1, "fixedHeader": 1, "sheetTitle": "VÝKAZ ZISKU A ZTRÁTY",
+				"columns": [
+					{"title": "A", "format": "tabString", "class": "center"},
+					{"title": "B"},
+					{"title": "C", "class": "center"},
+					{"title": "D", "shortName": "BÚO", "autoEval": 1, "class": "number", "format": "money"},
+					{"title": "E", "shortName": "MÚO", "autoEval": 1, "class": "number", "format": "money"}
+				],
+				"rowInfo": {"shortName": {"cols": [2]}, "fullName": {"cols": [1]}},
+				"header": [
+					[{"value": "Označení", "class": "center"}, {"value": "TEXT", "class": "center"}, {"value": "Řádek", "class": "center"}, {"value": "Skutečnost v ÚO", "colspan": 2, "class": "center"}],
+					["", "", "", {"value": "běžném", "class": "center"}, {"value": "minulém", "class": "center"}],
+					[{"value": "a", "class": "center"}, {"value": "b", "class": "center"}, {"value": "c", "class": "center"}, {"value": "1", "class": "center"}, {"value": "2", "class": "center"}]
+				],
+				"rows": [
+					["I.",        "Tržby za prodej zboží",                                       "01", "604",                           "=[{SUM;prev!:D1}]"],
+					["A.",        "Náklady vynaložené na prodané zboží",                         "02", "-504",                          "=[{SUM;prev!:D2}]"],
+					["+",         "Obchodní marže",                                              "03", "=[{SUM;D1;-D2}]",               "=[{SUM;E1;-E2}]"],
+					["II.",       "Výkony",                                                      "04", "=[{SUM;D5;D6;D7}]",             "=[{SUM;E5;E6;E7}]"],
+					["II.\t1.",   "Tržby za prodej vlastních výrobků a služeb",                  "05", "601 602",                       "=[{SUM;prev!:D5}]"],
+					["II.\t2.",   "Změna stavu zásob vlastní činnosti",                          "06", "611 612 613 614",               "=[{SUM;prev!:D6}]"],
+					["II.\t3.",   "Aktivace",                                                    "07", "621 622 623 624",               "=[{SUM;prev!:D7}]"],
+					["B.",        "Výkonová spotřeba",                                           "08", "=[{SUM;D9;D10}]",               "=[{SUM;E9;E10}]"],
+					["B.\t1.",    "Spotřeba materiálu a energie",                                "09", "-501 -502 -503",                "=[{SUM;prev!:D9}]"],
+					["B.\t2.",    "Služby",                                                      "10", "-511 -512 -513 -518",           "=[{SUM;prev!:D10}]"],
+					["+",         "Přidaná hodnota",                                             "11", "=[{SUM;D3;D4;-D8}]",            "=[{SUM;E3;E4;-E8}]"],
+					["C.",        "Osobní náklady",                                              "12", "=[{SUM;D13;D14;D15;D16}]",      "=[{SUM;E13;E14;E15;E16}]"],
+					["C.\t1.",    "Mzdové náklady",                                              "13", "-521 -522",                     "=[{SUM;prev!:D13}]"],
+					["C.\t2.",    "Odměny členům orgánů společnosti a družstva",                 "14", "-523",                          "=[{SUM;prev!:D14}]"],
+					["C.\t3.",    "Náklady na sociální zabezpečení a zdravotní pojištění",       "15", "-524 -525 -526",                "=[{SUM;prev!:D15}]"],
+					["C.\t4.",    "Sociální náklady",                                            "16", "-527 -528",                     "=[{SUM;prev!:D16}]"],
+					["D.",        "Daně a poplatky",                                             "17", "-531 -532 -538",                "=[{SUM;prev!:D17}]"],
+					["E.",        "Odpisy dlouhodobého nehmotného a hmotného majetku",           "18", "-551 -557",                     "=[{SUM;prev!:D18}]"],
+					["III.",      "Tržby z prodeje dlouhodobého majetku a materiálu",            "19", "=[{SUM;D20;D21}]",              "=[{SUM;E20;E21}]"],
+					["III.\t1.",  "Tržby z prodeje dlouhodobého majetku",                        "20", "641",                           "=[{SUM;prev!:D20}]"],
+					["III.\t2.",  "Tržby z prodeje materiálu",                                   "21", "642",                           "=[{SUM;prev!:D21}]"],
+					["F.",        "Zůstatková cena prodaného dlouhodobého majetku a materiálu",  "22", "=[{SUM;D23;D24}]",              "=[{SUM;E23;E24}]"],
+					["F.\t1.",    "Zůstatková cena prodaného dlouhodobého majetku",              "23", "-541",                          "=[{SUM;prev!:D23}]"],
+					["F.\t2.",    "Prodaný materiál",                                            "24", "-542",                          "=[{SUM;prev!:D24}]"],
+					["G.",        "Změna stavu rezerv a opravných položek v provozní oblasti a komplexních nákladů příštích období",
+                                                                                       "25", "-552 -554 -555 -558 -559",      "=[{SUM;prev!:D25}]"],
+					["IV.",       "Ostatní provozní výnosy",                                     "26", "633 644 646 647 648",           "=[{SUM;prev!:D26}]"],
+					["H.",        "Ostatní provozní náklady",                                    "27", "-543 -544 -545 -546 -547 -548 -549 -583 -585 -586 -587",
+																																																															"=[{SUM;prev!:D27}]"],
+					["V.",        "Převod provozních výnosů",                                    "28", "697",                           "=[{SUM;prev!:D28}]"],
+					["I.",        "Převod provozních nákladů",                                   "29", "-597",                          "=[{SUM;prev!:D29}]"],
+					["*",         "Provozní výsledek hospodaření",                               "30", "=[{SUM;D11;-D12;-D17;-D18;D19;-D22;-D25;D26;-D27;D28;-D29}]",
+                                                                                                                              "=[{SUM;E11;-E12;-E17;-E18;E19;-E22;-E25;E26;-E27;E28;-E29}]"],
+					["VI.",       "Tržby z prodeje cenných papírů a podílů",                     "31", "661",                           "=[{SUM;prev!:D31}]"],
+					["J.",        "Prodané cenné papíry a podíly",                               "32", "-561",                          "=[{SUM;prev!:D32}]"],
+					["VII.",      "Výnosy z dlouhodobého finančního majetku",                    "33", "=[{SUM;D34;D35;D36}]",          "=[{SUM;E34;E35;E36}]"],
+					["VII.\t1.",  "Výnosy z podílů v ovládaných osobách a v účetních jednotkách pod podstatným vlivem",
+                                                                                       "34", "665",                           "=[{SUM;prev!:D34}]"],
+					["VII.\t2.",  "Výnosy z ostatních dlouhodobých cenných papírů a podílů",     "35", "",                              "=[{SUM;prev!:D35}]"],
+					["VII.\t3.",  "Výnosy z ostatního dlouhodobého finančního majetku",          "36", "",                              "=[{SUM;prev!:D36}]"],
+					["VIII.",     "Výnosy z krátkodobého finančního majetku",                    "37", "666",                           "=[{SUM;prev!:D37}]"],
+					["K.",        "Náklady z finančního majetku",                                "38", "-566",                          "=[{SUM;prev!:D38}]"],
+					["IX.",       "Výnosy z přecenění cenných papírů a derivátů",                "39", "664 667",                       "=[{SUM;prev!:D39}]"],
+					["L.",        "Náklady z přecenění cenných papírů a derivátů",               "40", "-564 -567",                     "=[{SUM;prev!:D40}]"],
+					["M.",        "Změna stavu rezerv a opravných položek ve finanční oblasti",  "41", "-574 -579",                     "=[{SUM;prev!:D41}]"],
+					["X.",        "Výnosové úroky",                                              "42", "662",                           "=[{SUM;prev!:D42}]"],
+					["N.",        "Nákladové úroky",                                             "43", "-562",                          "=[{SUM;prev!:D43}]"],
+					["XI.",       "Ostatní finanční výnosy",                                     "44", "663 668",                       "=[{SUM;prev!:D44}]"],
+					["O.",        "Ostatní finanční náklady",                                    "45", "-563 -568 -569",                "=[{SUM;prev!:D45}]"],
+					["XII.",      "Převod finančních výnosů",                                    "46", "698",                           "=[{SUM;prev!:D46}]"],
+					["P.",        "Převod finančních nákladů",                                   "47", "-598",                          "=[{SUM;prev!:D47}]"],
+					["*",         "Finanční výsledek hospodaření",                               "48", "=[{SUM;D31;-D32;D33;D37;-D38;D39;-D40;-D41;D42;-D43;D44;-D45;D46;-D47}]",
+                                                                                                                              "=[{SUM;E31;-E32;E33;E37;-E38;E39;-E40;-E41;E42;-E43;E44;-E45;E46;-E47}]"],
+					["Q.",        "Daň z příjmů za běžnou činnost",                              "49", "=[{SUM;D50;D51}]",              "=[{SUM;E50;E51}]"],
+					["Q.\t1.",    "- splatná",                                                   "50", "-591 -595 -599",                "=[{SUM;prev!:D50}]"],
+					["Q.\t2.",    "- odložená",                                                  "51", "-592",                          "=[{SUM;prev!:D51}]"],
+					["**",        "Výsledek hospodaření za běžnou činnost",                      "52", "=[{SUM;D30;D48;-D49}]",         "=[{SUM;E30;E48;-E49}]"],
+					["XIII.",     "Mimořádné výnosy",                                            "53", "681 688",                       "=[{SUM;prev!:D53}]"],
+					["R.",        "Mimořádné náklady",                                           "54", "-581 -582 -584 -588 -589",      "=[{SUM;prev!:D54}]"],
+					["S.",        "Daň z příjmů z mimořádné činnosti",                           "55", "=[{SUM;D56;D57}]",              "=[{SUM;E56;E57}]"],
+					["S.\t1.",    "- splatná",                                                   "56", "-593",                          "=[{SUM;prev!:D56}]"],
+					["S.\t2.",    "- odložená",                                                  "57", "-594",                          "=[{SUM;prev!:D57}]"],
+					["*",         "Mimořádný výsledek hospodaření",                              "58", "=[{SUM;D53;-D54;-D55}]",        "=[{SUM;E53;-E54;-E55}]"],
+					["T.",        "Převod podílu na výsledku hospodaření společníkům (+/-)",     "59", "-596",                          "=[{SUM;prev!:D59}]"],
+					["***",       "Výsledek hospodaření za účetní období",                       "60", "=[{SUM;D52;D58;-D59}]",         "=[{SUM;E52;E58;-E59}]"],
+					["****",      "Výsledek hospodaření před zdaněním",                          "61", "=[{SUM;D30;D48;D53;-D54}]",     "=[{SUM;E30;E48;E53;-E54}]"]
+				]
+			}
+		]
+	}
+}
+
+

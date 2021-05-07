@@ -1,0 +1,123 @@
+{
+	"admin": {
+		"name": "Správce",
+		"roles": ["pwuser"],
+
+		"viewers": {
+			"_TblAppOptions": {"default": 2},
+			"e10.persons.persons": {"users": 2},
+			"e10.persons.groups": {"default": 2},
+			"e10.persons.categories": {"default": 2},
+			"e10.persons.relations": {"default": 2},
+
+			"e10.base.templates": {"default": 2},
+			"e10.base.templatesLooks": {"default": 2, "web": 2, "webCombo": 1},
+			"e10.base.subtemplates": {"default": 2, "e10.base.ViewSubTemplates": 2},
+			"e10.base.ipaddr": {"default": 2},
+			"e10.base.clsfitems": {"default": 2, "e10.base.ViewClsfItems": 2},
+			"e10.base.clsfgroups": {"default": 2},
+			"e10.base.places": {"default": 2},
+
+			"e10.base.propdefs": {"default": 2},
+			"e10.base.propgroups": {"default": 2},
+			"e10.base.tasks": {"default": 2},
+
+			"e10.base.devices": {"default": 2},
+
+			"e10.calendar.days": {"default": 2},
+
+			"e10.witems.itemtypes": {"default": 2},
+			"e10.witems.itemcategories": {"default": 2, "editor": 2},
+			"e10.witems.items": {"inCategory": 2},
+
+			"e10pro.wkf.boardLists": {"default": 2},
+
+			"e10.base.docslog": {"all": 2},
+			"e10.base.timeline": {"all": 2},
+			"e10.persons.keys": {"default": 2},
+			"e10.persons.requests": {"default": 2},
+
+			"e10.base.nomencTypes": {"default": 2},
+			"e10.base.nomencItems": {"default": 2, "combo": 2},
+
+			"e10.witems.units": {"default": 2},
+
+			"e10.base.authLog": {"default": 2}
+		},
+		"widgets": {
+			"locshare.client.widgetDashboardMap": 2, "lib.cfg.WidgetSystemInfoCore": 2, "lib.cfg.WidgetDatabaseSettings": 2
+		}
+	},
+	"guest": {
+		"name": "Host",
+		"all": 0
+	},
+	"user": {
+		"name": "Uživatel",
+		"viewers": {
+			"e10.base.propdefs": {"combo": 1},
+			"e10.base.docslog": {"doc": 1}
+		},
+		"widgets": {
+			"e10pro.wkf.widgetDashboardTitle": 2,
+			"e10pro.wkf.widgetDashboardBBoard": 2, "e10pro.wkf.widgetDashboardCalendarBig": 2,
+			"lib.wkf.DocumentsWallWidget": 2,
+			"lib.wkf.WidgetIntranet": 2,
+			"lib.wkf.WidgetMap": 2,
+			"lib.wkf.WidgetDocuments": 2,
+			"lib.wkf.WidgetForum": 2,
+			"wkf.core.widgets.Dashboard": 2
+		}
+	},
+	"pwuser": {
+		"name": "Zodpovědný uživatel",
+		"roles": ["user"],
+		"viewers": {
+			"e10.persons.persons": {"default": 2},
+			"e10.persons.relations": {"default": 2},
+			"e10.witems.items": {"default": 2, "combo": 2, "byCategories": 2},
+			"e10.witems.brands": {"default": 2},
+			"e10.witems.relatedKinds": {"default": 2},
+			"e10.witems.itemtypes": {"combo": 1}
+		}
+	},
+	"root": {
+		"name": "Správce databáze",
+		"all": 2
+	},
+	"all": {
+		"name": "Vše",
+		"roles": ["pwuser"],
+		"all": 2,
+		"documents": {"*": [{"_access": 2}]}
+	},
+	"hdus": {
+		"name": "Přístup k helpdesku",
+		"widgets": {
+			"lib.wkf.WidgetHelpDesk": 2
+		}
+	},
+	"hdue": {
+		"name": "Přístup k rozšířenému helpdesku",
+		"widgets": {
+			"lib.wkf.WidgetHelpDesk": 2
+		}
+	},
+	"admusr": {
+		"name": "Správce uživatelů",
+		"roles": ["pwuser"],
+		"viewers": {
+			"e10.persons.persons": {"users": 2},
+			"e10.base.authLog": {"default": 2}
+		}
+	},
+	"cfg": {
+		"name": "Nastavení",
+		"roles": [
+			"pwuser"
+		],
+		"viewers": {
+			"_TblAppOptions": {"default": 2}
+		}
+	}
+}

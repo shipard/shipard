@@ -1,0 +1,34 @@
+{
+	"id": "e10pro.hosting.server.domains", "sql": "e10pro_hosting_server_domains", "name": "Domény", "icon": "icon-globe",
+	"columns": [
+		{"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "domain", "name": "Doména", "type": "string", "len": 64},
+		{"id": "domainAscii", "name": "Doména v ascii", "type": "string", "len": 128},
+
+		{"id": "domainAccount", "name": "Doménový účet - registrátor", "type": "int", "reference": "e10pro.hosting.server.domainsAccounts"},
+		{"id": "domainAccountDNS", "name": "Doménový účet - správa DNS", "type": "int", "reference": "e10pro.hosting.server.domainsAccounts"},
+		{"id": "owner", "name": "Majitel", "type": "int", "reference": "e10.persons.persons"},
+
+		{"id": "dateExpire", "name": "Datum exspirace", "type": "date"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"}
+	],
+	"views": [
+		{"id": "default", "class": "e10pro.hosting.server.ViewDomains",
+			"details": {
+				"default": {"title": "Přehled", "icon": "icon-file", "type": "detail", "class": "e10pro.hosting.server.ViewDetailDomain"},
+				"records": {"title": "Záznamy", "icon": "icon-list-ul", "type": "detail", "class": "e10pro.hosting.server.ViewDetailDomainRecords"},
+				"api": {"title": "gcloud", "icon": "icon-google", "type": "detail", "class": "e10pro.hosting.server.ViewDetailDomainAPI"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.hosting.server.FormDomain"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "domain"}
+}

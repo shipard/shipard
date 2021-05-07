@@ -1,0 +1,19 @@
+{
+    "table": {
+        "name": "Statistic of persons/items/documents types"
+    },
+    "columns": {
+        "docType": {
+            "name": "Document type"
+        },
+        "cnt": {
+            "name": "Quantity"
+        },
+        "person": {
+            "name": "Person"
+        },
+        "item": {
+            "name": "Item"
+        }
+    }
+}

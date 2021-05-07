@@ -1,0 +1,16 @@
+{
+	"id": "pkgs.install.apps.shipard-mac",
+	"name": "Dohled a řízení technologií",
+	"modules": [
+		"pkgs/install/apps/shipard-core",
+
+		"mac/lan"
+	],
+
+	"config": [
+	],
+
+	"dataPackages": [
+		"pkgs/data/mac/codebase"
+	]
+}

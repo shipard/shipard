@@ -1,0 +1,26 @@
+{
+	"0": {
+		"name": "Souvisí",
+		"oppositeName": "Souvisí"
+	},
+	"1": {
+		"name": "Řeší",
+		"oppositeName": "Čeká na"
+	},
+	"2": {
+		"name": "Podobné",
+		"oppositeName": "Podobné"
+	},
+	"3": {
+		"name": "Duplicitní",
+		"oppositeName": "Duplicitní"
+	},
+	"4": {
+		"name": "Závisí na",
+		"oppositeName": "Blokuje"
+	},
+	"5": {
+		"name": "Diskuze k tématu",
+		"oppositeName": "Diskuze o"
+	}
+}

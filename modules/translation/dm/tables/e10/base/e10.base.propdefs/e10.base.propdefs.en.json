@@ -1,0 +1,43 @@
+{
+    "table": {
+        "name": "Definition of properties"
+    },
+    "columns": {
+        "ndx": {
+            "name": "ndx"
+        },
+        "shortName": {
+            "name": "Name"
+        },
+        "fullName": {
+            "name": "Full name"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "multipleValues": {
+            "name": "Allow multiple values"
+        },
+        "enableNote": {
+            "name": "Allow note"
+        },
+        "optionaly": {
+            "name": "Optional property"
+        },
+        "type": {
+            "name": "Value type"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "syncNdx": {
+            "name": "syncNdx"
+        },
+        "syncSrc": {
+            "name": "syncSrc"
+        }
+    }
+}

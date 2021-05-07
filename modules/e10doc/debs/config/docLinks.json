@@ -1,0 +1,14 @@
+{
+	"e10doc.debs.groups": {
+		"e10-persons-groups-debsgroups-sale": {"linkid": "e10-persons-groups-debsgroups-sale", "name": "Při prodeji zařadit Osobu do skupin", "icon": "e10-docs-invoices-out",
+			"sources": [
+				{"table": "e10.persons.groups"}
+			]
+		},
+		"e10-persons-groups-debsgroups-buy": {"linkid": "e10-persons-groups-debsgroups-buy", "name": "Při nákupu zařadit Osobu do skupin", "icon": "e10-docs-invoices-in",
+			"sources": [
+				{"table": "e10.persons.groups"}
+			]
+		}
+	}
+}

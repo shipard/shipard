@@ -1,0 +1,12 @@
+{
+  "id": "e10doc.finance",
+  "name": "Finance",
+	"tables": ["transactions"],
+  "config": [
+    {"id": "+reports", "name": "Výstupy", "file": "reports.json"},
+		{"id": "+ebanking", "file": "ebanking.json"},
+    {"id": "+registeredClasses", "file": "registeredClasses.json"}
+  ],
+  "modules": ["e10pro/install/docs-core", "e10doc/balance"]
+}
+

@@ -1,0 +1,20 @@
+{
+    "sw": {
+        "t1": "Software"
+    },
+    "infoQueue": {
+        "t1": "For processing"
+    },
+    "publishers": {
+        "t1": "Publishers"
+    },
+    "categories": {
+        "t1": "Categories"
+    },
+    "swApplications": {
+        "t1": "Applications"
+    },
+    "swLicenses": {
+        "t1": "Licenses"
+    }
+}

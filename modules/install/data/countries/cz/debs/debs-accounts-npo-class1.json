@@ -1,0 +1,22 @@
+{
+	"name": "Zásoby",
+	"datasets": [
+		{
+			"table": "e10doc.debs.accounts",
+			"name": "Třída 1 - zásoby",
+			"defaultValues": {"accGroup": 0, "accMethod": "debs", "docState": 4000, "docStateMain": 2},
+			"data": [
+				{"rec": {"id":"111100","fullName":"Pořízovaný materiál","shortName":"Pořízovaný materiál","accountKind":0}},
+				{"rec": {"id":"112100","fullName":"Materiál na skladě","shortName":"Materiál na skladě","accountKind":0}},
+				{"rec": {"id":"119100","fullName":"Materiál na cestě","shortName":"Materiál na cestě","accountKind":0}},
+				{"rec": {"id":"121100","fullName":"Nedokončená výroba","shortName":"Nedokončená výroba","accountKind":0}},
+				{"rec": {"id":"122100","fullName":"Polotovary vlastní výroby","shortName":"Polotovary vlastní výroby","accountKind":0}},
+				{"rec": {"id":"123100","fullName":"Výrobky","shortName":"Výrobky","accountKind":0}},
+				{"rec": {"id":"124100","fullName":"Zvířata","shortName":"Zvířata","accountKind":0}},
+				{"rec": {"id":"131100","fullName":"Pořízované zboží","shortName":"Pořízované zboží","accountKind":0}},
+				{"rec": {"id":"132100","fullName":"Zboží na skladě a v prodejnách","shortName":"Zboží na skladě a v prodejnách","accountKind":0}},
+				{"rec": {"id":"139100","fullName":"Zboží na cestě","shortName":"Zboží na cestě","accountKind":0}}
+			]
+		}
+	]
+}

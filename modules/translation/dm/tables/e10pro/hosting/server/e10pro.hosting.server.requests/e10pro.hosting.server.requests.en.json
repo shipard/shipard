@@ -1,0 +1,46 @@
+{
+    "table": {
+        "name": "Requests for new data sources"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "title": {
+            "name": "Title"
+        },
+        "ip": {
+            "name": "IP address"
+        },
+        "dsid": {
+            "name": "ID"
+        },
+        "email": {
+            "name": "E-mail"
+        },
+        "module": {
+            "name": "Module"
+        },
+        "application": {
+            "name": "Application"
+        },
+        "server": {
+            "name": "Server"
+        },
+        "documentRoot": {
+            "name": "Root directory"
+        },
+        "state": {
+            "name": "State"
+        },
+        "created": {
+            "name": "Created"
+        },
+        "key1": {
+            "name": "Key"
+        },
+        "requestData": {
+            "name": "Request data"
+        }
+    }
+}

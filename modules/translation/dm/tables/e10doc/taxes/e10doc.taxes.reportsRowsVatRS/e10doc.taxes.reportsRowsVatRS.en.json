@@ -1,0 +1,41 @@
+{
+    "table": {
+        "name": "VAT summary report rows"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "report": {
+            "name": "Report"
+        },
+        "filing": {
+            "name": "Filing"
+        },
+        "dateTax": {
+            "name": "Time of supply",
+            "label": "Time of supply"
+        },
+        "vatId": {
+            "name": "VAT identification number"
+        },
+        "base": {
+            "name": "Tax base"
+        },
+        "taxCode": {
+            "name": "Tax type"
+        },
+        "taxRate": {
+            "name": "Tax rate"
+        },
+        "taxDir": {
+            "name": "Tax direction"
+        },
+        "document": {
+            "name": "Document"
+        },
+        "docNumber": {
+            "name": "Document number"
+        }
+    }
+}

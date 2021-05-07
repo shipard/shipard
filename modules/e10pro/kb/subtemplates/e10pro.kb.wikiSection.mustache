@@ -1,0 +1,65 @@
+<div class="row">
+	<nav class="col-sm-3 col-md-3 d-none d-md-block d-sm-none d-md-none e10-sidebar-left">
+		<ul class="e10-content-list mt-3">
+			{{#data.sections}}
+				<li  class="{{#active}}active{{/active}}">
+					<a href="{{id}}">{{#icon}}<i class="{{@icon;dataItem:icon}}"></i> {{/icon}}{{title}}</a>
+				</li>
+			{{/data.sections}}
+		</ul>
+	</nav>
+
+	<main class="col-sm-12 ml-md-auto col-md-9" role="main">
+		<div id="e10-wiki-header" class="e10-wiki-header">
+
+	    <span class="pull-right text-sm-right">
+				<span class="d-none d-md-block">
+			    {{#data.page.buttons}}
+				    <button class="{{#actionClass}}{{actionClass}}{{/actionClass}}{{^actionClass}}e10-document-trigger{{/actionClass}} btn btn-primary btn-sm"{{#attr}} data-{{k}}="{{v}}"{{/attr}} title="{{text}}">
+							<i class="{{@icon;dataItem:icon}}"></i>
+				    </button>
+			    {{/data.page.buttons}}
+				</span>
+		    {{#data.page.tags}}<span class="tag z-depth-0" style="{{css}}">{{text}}</span> {{/data.page.tags}}
+	    </span>
+
+			<h2>{{data.page.title}}</h2>
+			<ul class="breadcrumb">
+				{{#data.page.breadcrumbs}}
+					<li class="breadcrumb-item{{#active}} active{{/active}}">
+						{{^active}}<a href="{{url}}">{{#icon}}<i class="{{@icon;dataItem:icon}}"></i>{{/icon}} {{title}}</a>{{/active}}
+						{{#active}}<span>{{title}}</span>{{/active}}
+					</li>
+				{{/data.page.breadcrumbs}}
+			</ul>
+		</div>
+
+		<div class="pageText">
+			<ul class="e10-angle-list">
+				{{#data.page.content}}
+        	<li><a{{#docStateAlert}} class="e10-ds-block {{docStateClass}}"{{/docStateAlert}} href="{{id}}">{{title}}</a></li>
+					{{#items.0}}
+						<ol>
+							{{#items}}
+              	<li><a{{#docStateAlert}} class="e10-ds-block {{docStateClass}}"{{/docStateAlert}} href="{{id}}">{{title}}</a></li>
+							{{/items}}
+						</ol>
+					{{/items.0}}
+				{{/data.page.content}}
+			</ul>
+		</div>
+
+		{{^page.pageModeWiki}}
+			<div class="pt-5 pb-5 text-center" style="color: #999;">
+				{{#data.page.sectionPageFooter}}{{{data.page.sectionPageFooter}}}{{/data.page.sectionPageFooter}}
+				{{^data.page.sectionPageFooter}}<br><br>* * *<br><br>{{/data.page.sectionPageFooter}}
+			</div>
+		{{/page.pageModeWiki}}
+	</main>
+</div>
+
+
+
+
+
+

@@ -1,0 +1,81 @@
+{
+	"name": "Rozvaha ve zkráceném rozsahu v. 2015",
+	"pattern": {
+		"tables": [
+			{
+				"tableId": "AKTIVA", "disableZeros": 1, "fixedHeader": 1, "sheetTitle": "AKTIVA",
+				"columns": [
+					{"title": "A", "format": "tabString"},
+					{"title": "B"},
+					{"title": "C", "class": "center"},
+					{"title": "D", "shortName": "BRU", "autoEval": 1, "class": "number", "format": "money"},
+					{"title": "E", "shortName": "NET", "autoEval": 1, "class": "number", "format": "money"},
+					{"title": "F", "shortName": "KOR", "autoEval": 1, "class": "number", "format": "money"},
+					{"title": "G", "shortName": "MÚON", "autoEval": 1, "class": "number", "format": "money"}
+				],
+				"rowInfo": {"shortName": {"cols": [2]}, "fullName": {"cols": [1]}},
+				"header": [
+					[{"value": "Označení", "class": "center"}, {"value": "AKTIVA", "class": "center"}, {"value": "Řádek", "class": "center"}, {"value": "Běžné účetní období", "colspan": 3, "class": "center"}, "", "",  {"value": "Minulé ÚO", "class": "center"}],
+					["", "", "", {"value": "Brutto", "class": "center"}, {"value": "Korekce", "class": "center"}, {"value": "Netto", "class": "center"}, {"value": "Netto", "class": "center"}],
+					[{"value": "a", "class": "center"}, {"value": "b", "class": "center"}, {"value": "c", "class": "center"}, {"value": "1", "class": "center"}, {"value": "2", "class": "center"}, {"value": "3", "class": "center"}, {"value": "4", "class": "center"}]
+				],
+				"rows": [
+					["",        "AKTIVA CELKEM",                          "001", "=[{SUM;D2;D3;D7;D12}]",       "=[{SUM;E2;E3;E7;E12}]",      "=[{SUM;F2;F3;F7;F12}]",      "=[{SUM;G2;G3;G7;G12}]"],
+
+					["A.",      "Pohledávky za upsaný základní kapitál",  "002", "=[{SUM;full!AKTIVA:D2}]",     "=[{SUM;full!AKTIVA:E2}]",    "=[{SUM;D2;-E2}]",            "=[{SUM;full!AKTIVA:G2}]"],
+
+					["B.",      "Dlouhodobý majetek",                 		"003", "=[{SUM;D4;D5;D6}]",           "=[{SUM;E4;E5;E6}]",          "=[{SUM;F4;F5;F6}]",          "=[{SUM;G4;G5;G6}]"],
+					["B.I.",    "Dlouhodobý nehmotný majetek",  					"004", "=[{SUM;full!AKTIVA:D4}]",     "=[{SUM;full!AKTIVA:E4}]",		"=[{SUM;D4;-E4}]",            "=[{SUM;full!AKTIVA:G4}]"],
+					["B.II.",   "Dlouhodobý hmotný majetek",  						"005", "=[{SUM;full!AKTIVA:D13}]",    "=[{SUM;full!AKTIVA:E13}]",		"=[{SUM;D5;-E5}]",            "=[{SUM;full!AKTIVA:G13}]"],
+					["B.III.",  "Dlouhodobý finanční majetek",  					"006", "=[{SUM;full!AKTIVA:D23}]",    "=[{SUM;full!AKTIVA:E23}]",		"=[{SUM;D6;-E6}]",            "=[{SUM;full!AKTIVA:G23}]"],
+
+					["C.",      "Oběžná aktiva",                          "007", "=[{SUM;D8;D9;D10;D11}]",      "=[{SUM;E8;E9;E10;E11}]",     "=[{SUM;F8;F9;F10;F11}]",     "=[{SUM;G8;G9;G10;G11}]"],
+					["C.I.",    "Zásoby",                               	"008", "=[{SUM;full!AKTIVA:D32}]",		"=[{SUM;full!AKTIVA:E32}]",		"=[{SUM;D8;-E8}]",            "=[{SUM;full!AKTIVA:G32}]"],
+					["C.II.",   "Dlouhodobé pohledávky",              		"009", "=[{SUM;full!AKTIVA:D39}]",		"=[{SUM;full!AKTIVA:E39}]",   "=[{SUM;D9;-E9}]",            "=[{SUM;full!AKTIVA:G39}]"],
+					["C.III.",  "Krátkodobé pohledávky",                	"010", "=[{SUM;full!AKTIVA:D48}]",		"=[{SUM;full!AKTIVA:E48}]",   "=[{SUM;D10;-E10}]",          "=[{SUM;full!AKTIVA:G48}]"],
+					["C.IV.",   "Krátkodobý finanční majetek",  					"011", "=[{SUM;full!AKTIVA:D58}]",    "=[{SUM;full!AKTIVA:E58}]",   "=[{SUM;D11;-E11}]",          "=[{SUM;full!AKTIVA:G58}]"],
+
+					["D.I.",    "Časové rozlišení",                     	"012", "=[{SUM;full!AKTIVA:D63}]",		"=[{SUM;full!AKTIVA:E63}]",   "=[{SUM;D12;-E12}]",          "=[{SUM;full!AKTIVA:G63}]"]
+				]
+			},
+			{
+				"tableId": "PASIVA", "disableZeros": 1, "newPage": 1, "fixedHeader": 1, "sheetTitle": "PASIVA",
+				"columns": [
+					{"title": "A", "format": "tabString"},
+					{"title": "B"},
+					{"title": "C", "class": "center"},
+					{"title": "D", "shortName": "BÚO", "autoEval": 1, "class": "number", "format": "money"},
+					{"title": "E", "shortName": "MÚO", "autoEval": 1, "class": "number", "format": "money"}
+				],
+				"rowInfo": {"shortName": {"cols": [2]}, "fullName": {"cols": [1]}},
+				"header": [
+					[{"value": "Označení", "class": "center"}, {"value": "PASIVA", "class": "center"}, {"value": "Řádek", "class": "center"}, {"value": "Běžné účetní období", "class": "center"}, {"value": "Minulé ÚO", "class": "center"}],
+					[{"value": "a", "class": "center"}, {"value": "b", "class": "center"}, {"value": "c", "class": "center"}, {"value": "5", "class": "center"}, {"value": "6", "class": "center"}]
+				],
+				"firstRowNumber": 13,
+				"rows": [
+					["",        "PASIVA CELKEM",                          "013", "=[{SUM;D14;D20;D25}]",          			"=[{SUM;E14;E20;E25}]"],
+
+					["A.",      "Vlastní kapitál",                        "014", "=[{SUM;D15;D16;D17;D18;D19}]",  			"=[{SUM;E15;E16;E17;E18;E19}]"],
+					["A.I.",    "Základní kapitál",                       "015", "=[{SUM;full!PASIVA:D69}]",      			"=[{SUM;full!PASIVA:E69}]"],
+					["A.II.",   "Kapitálové fondy",                     	"016", "=[{SUM;full!PASIVA:D73}]", 						"=[{SUM;full!PASIVA:E73}]"],
+					["A.III.",  "Rezervní fondy, nedělitelný fond a ostatní fondy ze zisku",
+                                                                "017", "=[{SUM;full!PASIVA:D80}]",      			"=[{SUM;full!PASIVA:E80}]"],
+					["A.IV.",   "Výsledek hospodaření minulých let",  		"018", "=[{SUM;full!PASIVA:D83}]",      			"=[{SUM;full!PASIVA:E83}]"],
+					["A.V.",    "Výsledek hospodaření běžného účetního období (+/-) [řádek *** výkazu zisku a ztráty]",
+                                                                "019", "=[{SUM;full!PASIVA:D87}]",						"=[{SUM;full!PASIVA:E87}]"],
+
+					["B.",      "Cizí zdroje",                         		"020", "=[{SUM;D21;D22;D23;D24}]",      			"=[{SUM;E21;E22;E23;E24}]"],
+					["B.I.",    "Rezervy",                            		"021", "=[{SUM;full!PASIVA:D89}]",            "=[{SUM;full!PASIVA:E89}]"],
+					["B.II.",   "Dlouhodobé závazky",         						"022", "=[{SUM;full!PASIVA:D94}]",						"=[{SUM;full!PASIVA:E94}]"],
+					["B.III.",  "Krátkodobé závazky",             				"023", "=[{SUM;full!PASIVA:D105}]",						"=[{SUM;full!PASIVA:E105}]"],
+					["B.IV.",   "Bankovní úvěry a výpomoci",        			"024", "=[{SUM;full!PASIVA:D117}]",     			"=[{SUM;full!PASIVA:E117}]"],
+
+					["C.I.",    "Časové rozlišení",                     	"025", "=[{SUM;full!PASIVA:D121}]",           "=[{SUM;full!PASIVA:E121}]"]
+				]
+			}
+		]
+	}
+}
+
+

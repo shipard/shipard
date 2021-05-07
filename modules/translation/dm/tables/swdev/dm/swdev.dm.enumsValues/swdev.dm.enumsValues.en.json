@@ -1,0 +1,34 @@
+{
+    "table": {
+        "name": "Enums Values"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "enum": {
+            "name": "Enum"
+        },
+        "value": {
+            "name": "value"
+        },
+        "columnId": {
+            "name": "columnId"
+        },
+        "text": {
+            "name": "Text"
+        },
+        "data": {
+            "name": "Data"
+        },
+        "srcLanguage": {
+            "name": "Source language"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

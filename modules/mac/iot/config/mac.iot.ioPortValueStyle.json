@@ -1,0 +1,17 @@
+{
+	"0": {
+		"fn": "Senzor - průběžné nebo pravidelné čtení hodnoty (teplota, tlak, ...)",
+		"sn": "Senzor",
+		"topicPattern": "sensors/{{valueClass}}/{{iotBoxId}}/{{ioPortId}}"
+	},
+	"1": {
+		"fn": "Detektor - upozornění na hodnotu (např. pohybová čidla)",
+		"sn": "Detektor",
+		"topicPattern": "detectors/{{valueClass}}/{{iotBoxId}}/{{ioPortId}}"
+	},
+	"2": {
+		"fn": "Čtečka - ruční načítání hodnoty  (RFID čtečka, čtečka 2D / QR kódů...)",
+		"sn": "Čtečka",
+		"topicPattern": "readers/{{iotBoxId}}/{{ioPortId}}"
+	}
+}

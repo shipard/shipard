@@ -1,0 +1,7 @@
+{
+	"0": {"shortName": "Evidovaný", "fullName": "Evidovaný majetek"},
+	"1": {"shortName": "Hmotný dlouhodobý", "fullName": "Hmotný dlouhodobý majetek"},
+	"2": {"shortName": "Nehmotný dlouhodobý", "fullName": "Nehmotný dlouhodobý majetek"},
+	"3": {"shortName": "Neodepisovaný dlouhodobý", "fullName": "Neodepisovaný dlouhodobý majetek"},
+	"4": {"shortName": "Leasing", "fullName": "Leasing"}
+}

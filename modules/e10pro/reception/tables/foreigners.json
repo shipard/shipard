@@ -1,0 +1,64 @@
+{
+	"id": "e10pro.reception.foreigners", "sql": "e10pro_reception_foreigners", "name": "Evidence cizinců", "icon": "icon-id-card-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "firstName", "name": "Jméno", "type": "string", "len": 60},
+		{"id": "lastName", "name": "Příjmení", "type": "string", "len": 80},
+		{"id": "country", "sql": "country", "name": "Země", "type": "enumString", "len": 2,
+			"enumCfg": {"cfgItem": "e10.base.countries", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "dateBegin", "name": "Datum od", "type": "date"},
+		{"id": "dateEnd", "name": "Datum do", "type": "date"},
+
+		{"id": "birthdayDay", "name": "Den narození", "type": "int"},
+		{"id": "birthdayMonth", "name": "Měsíc narození", "label": "Měsíc", "type": "int"},
+		{"id": "birthdayYear", "name": "Rok narození", "label": "Rok", "type": "int"},
+
+		{"id": "identityId", "name": "Číslo dokladu", "type": "string", "len": 30},
+		{"id": "visa", "name": "Číslo víza", "type": "string", "len": 15},
+
+		{"id": "residence", "name": "Bydliště", "type": "string", "len": 128},
+		{"id": "note", "name": "Poznámka", "type": "string", "len": 250},
+
+		{"id": "accPlace", "name": "Místo ubytování", "type": "int", "reference": "e10pro.reception.foreignersAccPlaces"},
+
+		{"id": "stayPurpose", "name": "Účel pobytu", "type": "enumString", "len": 2,
+			"enumValues": {
+				"10": "Turistika",
+				"11": "Studium (školení, stáž)",
+				"00": "Zdravotní",
+				"01": "Obchodní",
+				"02": "Kulturní",
+				"03": "Návštěva rodiny nebo přátel",
+				"04": "Pozvání",
+				"05": "Oficiální (politický)",
+				"06": "Podnikání – OSVČ",
+				"07": "Sportovní",
+				"12": "Tranzit (průjezd)",
+				"13": "Letištní tranzit (letištní průjezd)",
+				"27": "Zaměstnání",
+				"93": "ADS vízum udělované občanu číny",
+				"99": "Ostatní / jiné"
+			}
+		},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "e10pro.reception.ViewForeigners",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "e10pro.reception.ViewDetailForeigner"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.reception.FormForeigner"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "lastName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}
+
+
+

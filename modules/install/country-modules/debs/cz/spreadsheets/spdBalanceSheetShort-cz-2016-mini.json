@@ -1,0 +1,111 @@
+{
+	"name": "Rozvaha ve zkráceném rozsahu v.2016",
+	"pattern": {
+		"tables": [
+			{
+				"tableId": "ROZVAHA", "disableZeros": 1, "sheetTitle": "ROZVAHA",
+				"columns": [
+					{"title": "A", "class": "e10-border-off-right center"},
+					{"title": "B", "class": "e10-border-off-left e10-border-off-right center"},
+					{"title": "C", "class": "e10-border-off-left"},
+					{"title": "D"},
+					{"title": "E", "class": "center"},
+					{"title": "F", "shortName": "B", "autoEval": 1, "class": "number", "format": "money"},
+					{"title": "G", "shortName": "K", "autoEval": 1, "class": "number", "format": "money"},
+					{"title": "H", "shortName": "N", "autoEval": 1, "class": "number", "format": "money"},
+					{"title": "I", "shortName": "M", "autoEval": 1, "class": "number", "format": "money"}
+				],
+				"rowInfo": {"shortName": {"cols": [4]}, "fullName": {"cols": [3]}},
+				"cellClasses": {
+					"1": {"row": "e10-bg-t9", "A": "e10-bg-t9"},
+					"2": {"row": "e10-bg-t9"},
+					"3": {"row": "e10-bg-t9"},
+					"4": {"row": "e10-bg-t7"},
+					"5": {"row": "e10-bg-t2"},
+					"6": {"row": "e10-bg-t3"},
+					"7": {"A": "e10-bg-t3"},
+					"8": {"A": "e10-bg-t3"},
+					"9": {"A": "e10-bg-t3"},
+					"10": {"row": "e10-bg-t2"},
+					"11": {"A": "e10-bg-t2"},
+					"12": {"A": "e10-bg-t2", "row": "e10-bg-t5"},
+					"13": {"A": "e10-bg-t2", "B": "e10-bg-t5"},
+					"14": {"A": "e10-bg-t2", "B": "e10-bg-t5"},
+					"15": {"A": "e10-bg-t2"},
+					"16": {"A": "e10-bg-t2"},
+					"17": {"row": "e10-bg-t3"},
+
+					"18": {"row": "separator"},
+
+					"19": {"row": "e10-bg-t9"},
+					"20": {"row": "e10-bg-t9"},
+					"21": {"row": "e10-bg-t7"},
+					"22": {"row": "e10-bg-t2"},
+					"23": {"A": "e10-bg-t2"},
+					"24": {"A": "e10-bg-t2"},
+					"25": {"A": "e10-bg-t2"},
+					"26": {"A": "e10-bg-t2"},
+					"27": {"A": "e10-bg-t2"},
+					"28": {"A": "e10-bg-t2"},
+					"29": {"row": "e10-bg-t8"},
+					"30": {"row": "e10-bg-t3"},
+					"31": {"row": "e10-bg-t2"},
+					"32": {"A": "e10-bg-t2"},
+					"33": {"A": "e10-bg-t2"},
+					"34": {"row": "e10-bg-t3"}
+				},
+				"rows": [
+					[{"value": "Označení", "class": "center"}, "", "", {"value": "AKTIVA", "class": "center"}, {"value": "Řádek", "class": "center"}, {"value": "Běžné účetní období", "colspan": 3, "class": "center"}, "", "",  {"value": "Minulé ÚO", "class": "center"}],
+					["", "", "", "", "", {"value": "Brutto", "class": "center"}, {"value": "Korekce", "class": "center"}, {"value": "Netto", "class": "center"}, {"value": "Netto", "class": "center"}],
+					[{"value": "a", "class": "center"}, "", "", {"value": "b", "class": "center"}, {"value": "c", "class": "center"}, {"value": "1", "class": "center"}, {"value": "2", "class": "center"}, {"value": "3", "class": "center"}, {"value": "4", "class": "center"}],
+
+					["",	"",		"",		"AKTIVA CELKEM",                                          "001", "=[{SUM;F5;F6;F10;F17}]",    "=[{SUM;G5;G6;G10;G17}]",     "=[{SUM;H5;H6;H10;H17}]", 	"=[{SUM;I5;I6;I10;I17}]"],
+
+					["A.","",		"",		"Pohledávky za upsaný základní kapitál",  								"002", "=[{SUM;full!AKTIVA:G2}]",   "=[{SUM;full!AKTIVA:H2}]",    "=[{SUM;F2;-G2}]",					"=[{SUM;full!AKTIVA:J2}]"],
+
+					["B.","",		"", 	"Dlouhodobý majetek",                                     "003", "=[{SUM;F7;F8;F9}]", 	      "=[{SUM;G7;G8;G9}]", 		      "=[{SUM;H7;H8;H9}]",  			"=[{SUM;I7;I8;I9}]"],
+					["B.","I.",	"", 	"Dlouhodobý nehmotný majetek", 														"004", "=[{SUM;full!AKTIVA:G4}]",   "=[{SUM;full!AKTIVA:H4}]", 		"=[{SUM;F7;-G7}]",    			"=[{SUM;full!AKTIVA:J4}]"],
+					["B.","II.","",		"Dlouhodobý hmotný majetek",                							"005", "=[{SUM;full!AKTIVA:G14}]",  "=[{SUM;full!AKTIVA:H14}]", 	"=[{SUM;F8;-G8}]",    			"=[{SUM;full!AKTIVA:J14}]"],
+					["B.","III.","",	"Dlouhodobý finanční majetek",   			             				"006", "=[{SUM;full!AKTIVA:G28}]",  "=[{SUM;full!AKTIVA:H28}]",  	"=[{SUM;F9;-G9}]",   				"=[{SUM;full!AKTIVA:J28}]"],
+
+
+					["C.","",		"",		"Oběžná aktiva",                       										"007", "=[{SUM;F11;F12;F15;F16}]",	"=[{SUM;G11;G12;G15;G16}]", 	"=[{SUM;H11;H12;H15;H16}]",	"=[{SUM;I11;I12;I15;I16}]"],
+					["C.","I.",	"",		"Zásoby",  		             																"008", "=[{SUM;full!AKTIVA:G38}]",	"=[{SUM;full!AKTIVA:H38}]",		"=[{SUM;F11;-G11}]",        "=[{SUM;full!AKTIVA:J38}]"],
+					["C.","II.","",		"Pohledávky",  		                         								"009", "=[{SUM;F13;F14}]",          "=[{SUM;G13;G14}]",           "=[{SUM;H13;H14}]",		      "=[{SUM;I13;I14}]"],
+					["C.","II.","1.",	"Dlouhodobé pohledávky",            											"010", "=[{SUM;full!AKTIVA:G47}]",	"=[{SUM;full!AKTIVA:H47}]", 	"=[{SUM;F13;-G13}]",      	"=[{SUM;full!AKTIVA:J47}]"],
+					["C.","II.","2.", "Krátkodobé pohledávky",                 									"011", "=[{SUM;full!AKTIVA:G57}]",	"=[{SUM;full!AKTIVA:H57}]", 	"=[{SUM;F14;-G14}]",      	"=[{SUM;full!AKTIVA:J57}]"],
+					["C.","III.","",	"Krátkodobý finanční majetek",             								"012", "=[{SUM;full!AKTIVA:G68}]",  "=[{SUM;full!AKTIVA:H68}]", 	"=[{SUM;F15;-G15}]",      	"=[{SUM;full!AKTIVA:J68}]"],
+					["C.","IV.","",		"Peněžní prostředky",  	                    							"013", "=[{SUM;full!AKTIVA:G71}]",  "=[{SUM;full!AKTIVA:H71}]", 	"=[{SUM;F16;-G16}]",      	"=[{SUM;full!AKTIVA:J71}]"],
+
+					["D.","",		"",		"Časové rozlišení aktiv",              	  								"014", "=[{SUM;full!AKTIVA:G74}]", 	"=[{SUM;full!AKTIVA:H74}]", 	"=[{SUM;F17;-G17}]",      	"=[{SUM;full!AKTIVA:J74}]"],
+
+					[{"value": "", "colspan": 9}],
+					[{"value": "Označení", "class": "center"}, "", "", {"value": "PASIVA", "class": "center"},{"value": "Řádek", "class": "center"}, {"value": "Běžné účetní období", "colspan": 3, "class": "center"}, "", "",  {"value": "Minulé ÚO", "class": "center"}],
+					[{"value": "a", "class": "center"}, "", "", {"value": "b", "class": "center"}, {"value": "c", "class": "center"}, {"value": "", "colspan": 2}, "", {"value": "5", "class": "center"}, {"value": "6", "class": "center"}],
+
+					["",		"",			"", "PASIVA CELKEM",                           							"015", {"value": "", "colspan": 2},	"",		"=[{SUM;H22;H29;H34}]",								"=[{SUM;I22;I29;I34}]"],
+
+					["A.",	"",			"", "Vlastní kapitál",                              				"016", {"value": "", "colspan": 2},	"",		"=[{SUM;H23;H24;H25;H26;H27;H28}]",		"=[{SUM;I23;I24;I25;I26;I27;I28}]"],
+					["A.",	"I.",		"", "Základní kapitál",                											"017", {"value": "", "colspan": 2},	"",		"=[{SUM;full!PASIVA:F80}]",           "=[{SUM;full!PASIVA:G80}]"],
+					["A.",	"II.",	"", "Ážio a kapitálové fondy",           										"018", {"value": "", "colspan": 2},	"",		"=[{SUM;full!PASIVA:F84}]",       		"=[{SUM;full!PASIVA:G84}]"],
+					["A.",	"III.",	"", "Fondy ze zisku",    		                                "019", {"value": "", "colspan": 2},	"",		"=[{SUM;full!PASIVA:F92}]",           "=[{SUM;full!PASIVA:G92}]"],
+					["A.",	"IV.",	"", "Výsledek hospodaření minulých let (±)", 	          		"020", {"value": "", "colspan": 2},	"",		"=[{SUM;full!PASIVA:F95}]",           "=[{SUM;full!PASIVA:G95}]"],
+					["A.",	"V.",		"", "Výsledek hospodaření běžného účetního období (±)",			"021", {"value": "", "colspan": 2},	"",		"=[{SUM;full!PASIVA:F99}]",     			"=[{SUM;full!PASIVA:G99}]"],
+					["A.",	"VI.",	"", "Rozhodnuto o zálohové výplatě podílu na zisku (-)",    "022", {"value": "", "colspan": 2},	"",		"=[{SUM;full!PASIVA:F100}]", 			    "=[{SUM;full!PASIVA:G100}]"],
+
+					["B.", "+",	"C.", 	"Cizí zdroje",              		                        "023", {"value": "", "colspan": 2},	"",		"=[{SUM;H30;H31}]",	                  "=[{SUM;I30;I31}]"],
+
+					["B.",	"",			"", "Rezervy",               																"024", {"value": "", "colspan": 2},	"",		"=[{SUM;full!PASIVA:F102}]",          "=[{SUM;full!PASIVA:G102}]"],
+
+					["C.",	"",			"", "Závazky",                                           		"025", {"value": "", "colspan": 2},	"",		"=[{SUM;H32;H33}]",	                  "=[{SUM;I32;I33}]"],
+					["C.",	"I.",		"", "Dlouhodobé závazky",                 									"026", {"value": "", "colspan": 2},	"",		"=[{SUM;full!PASIVA:F108}]",					"=[{SUM;full!PASIVA:G108}]"],
+					["C.",	"II.",	"", "Krátkodobé závazky",  	                								"027", {"value": "", "colspan": 2},	"",		"=[{SUM;full!PASIVA:F123}]",					"=[{SUM;full!PASIVA:G123}]"],
+
+					["D.",	"",	 		"", "Časové rozlišení pasiv",                								"028", {"value": "", "colspan": 2},	"",		"=[{SUM;full!PASIVA:F141}]",          "=[{SUM;full!PASIVA:G141}]"]
+				]
+			}
+		]
+	}
+}
+
+

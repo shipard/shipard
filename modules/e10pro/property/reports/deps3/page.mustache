@@ -1,0 +1,21 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+	<title>test</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="file://{{fsRoot}}/e10-modules/wwwlibs/Font-Awesome44/less/font-awesome.css">
+	<link rel="stylesheet" href="file://{{templateRoot}}style.css" type="text/css"/>
+</head>
+<body>
+	{{{stdReportHeader}}}
+
+    {{{@renderTable;dataItem:data.properties.propsCore;tableClass:rowsSmall}}}
+
+    {{{@renderContent;dataItem:data.properties.propsExtended;tableClass:rowsSmall}}}
+    <br>
+    {{{@renderTable;dataItem:data.properties.depsInfo;tableClass:rowsSmall}}}
+    <div class='subtitle'>Daňové odpisy</div>
+	{{{@renderTable;dataItem:data.properties.depsOverview;tableClass:rowsSmall}}}
+</body>
+</html>
+

@@ -1,0 +1,66 @@
+{
+    "table": {
+        "name": "Contracts"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "docType": {
+            "name": "Document type"
+        },
+        "contractNumber": {
+            "name": "Contract number"
+        },
+        "start": {
+            "name": "Valid from"
+        },
+        "end": {
+            "name": "Valid until"
+        },
+        "person": {
+            "name": "Purchaser"
+        },
+        "period": {
+            "name": "Payment period",
+            "label": "Period"
+        },
+        "invoicingDay": {
+            "name": "Invoicing"
+        },
+        "taxCalc": {
+            "name": "Tax calculation"
+        },
+        "title": {
+            "name": "Document description"
+        },
+        "currency": {
+            "name": "Currency"
+        },
+        "invNote": {
+            "name": "Invoice note"
+        },
+        "paymentMethod": {
+            "name": "Payment method"
+        },
+        "dueDays": {
+            "name": "Due",
+            "label": "Due days"
+        },
+        "centre": {
+            "name": "Centre"
+        },
+        "project": {
+            "name": "Project"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "wkfProject": {
+            "name": "Project"
+        }
+    }
+}

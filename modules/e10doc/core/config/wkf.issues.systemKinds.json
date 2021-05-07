@@ -1,0 +1,52 @@
+{
+	"51": {
+		"fullName": "Přijatá faktura", "shortName": "Přijatá faktura", "icon": "e10-docs-invoices-in", "order": 105100, "issueType": 1,
+		"askKind": 1, "askPersons":1, "askDeadline": 1, "askDateIncoming": 1
+	},
+	"52": {
+		"fullName": "Bankovní výpis", "shortName": "Banka", "icon": "e10-docs-bank", "order": 105200, "issueType": 1,
+		"askKind": 1, "askPersons":1, "askDeadline": 1, "askDateIncoming": 1
+	},
+	"53": {
+		"fullName": "Zápočet", "shortName": "Zápočet", "icon": "icon-arrows-v", "order": 105300, "issueType": 1,
+		"askKind": 1, "askPersons":1, "askDeadline": 1, "askDateIncoming": 1
+	},
+	"54": {
+		"fullName": "Upomínka", "shortName": "Upomínka", "icon": "icon-exclamation", "order": 105400, "issueType": 1,
+		"askKind": 1, "askPersons":1, "askDeadline": 1, "askDateIncoming": 1
+	},
+	"55": {
+		"fullName": "Pokladní lístek", "shortName": "Pokladna", "icon": "e10-docs-cash", "order": 105150, "issueType": 1,
+		"askKind": 1, "askPersons":1, "askDeadline": 1, "askDateIncoming": 1
+	},
+
+	"60": {
+		"fullName": "Smlouva", "shortName": "Smlouva", "icon": "icon-handshake-o", "order": 106100, "issueType": 1,
+		"askKind": 1, "askPersons":1, "askDeadline": 2, "askDateIncoming": 1
+	},
+
+	"61": {
+		"fullName": "Poptávka přijatá", "shortName": "Poptávka", "icon": "icon-question-circle-o", "order": 106200, "issueType": 1,
+		"askKind": 1, "askPersons":1, "askDeadline": 2, "askDateIncoming": 1
+	},
+	"62": {
+		"fullName": "Objednávka přijatá", "shortName": "Objednávka", "icon": "icon-caret-square-o-down", "order": 106300, "issueType": 1,
+		"askKind": 1, "askPersons":1, "askDeadline": 2, "askDateIncoming": 1
+	},
+
+	"121": {
+		"fullName": "Vydaná faktura", "shortName": "Vydaná faktura", "icon": "e10-docs-invoices-out",
+		"order": 125100, "issueType": 3,
+		"askKind": 2, "askPersons":1, "askDeadline": 2, "askDateIncoming": 2
+	},
+	"122": {
+		"fullName": "Odeslaný zápočet", "shortName": "Zápočet", "icon": "icon-arrows-v",
+		"order": 125200, "issueType": 3,
+		"askKind": 2, "askPersons":1, "askDeadline": 2, "askDateIncoming": 2
+	},
+	"123": {
+		"fullName": "Odeslaná upomínka", "shortName": "Upomínka", "icon": "icon-exclamation",
+		"order": 125300, "issueType": 3,
+		"askKind": 2, "askPersons":1, "askDeadline": 2, "askDateIncoming": 2
+	}
+}

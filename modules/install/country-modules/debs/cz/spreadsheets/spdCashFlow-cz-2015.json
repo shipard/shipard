@@ -1,0 +1,63 @@
+{
+	"name": "Výkaz Cash Flow",
+	"pattern": {
+		"tables": [
+			{
+				"tableId": "Přehled o peněžních tocích", "disableZeros": 1, "sheetTitle": "CASH-FLOW",
+				"columns": [
+					{"title": "A", "class": "e10-border-off-right center"},
+					{"title": "B", "class": "e10-border-off-left center"},
+					{"title": "C"},
+					{"title": "D", "shortName": "ᑕᑐ", "autoEval": 1, "class": "number", "format": "money"}
+				],
+				"rowInfo": {"shortName": {"cols": [0, 1]}, "fullName": {"cols": [2]}},
+				"rows": [
+					["P.", "", "Stav peněžních prostředků a peněžních ekvivalentů na začátku účetního období",																															"=[{SUM;balanceSheet!AKTIVA:G58}]"],
+					[{"colspan": 4}],
+					[{"class": "e10-border-off-right"}, {"class": "e10-border-off-right e10-border-off-left"}, {"value": "Peněžní toky z hlavní výdělečné činnosti (provozní činnost)", "class": "e10-border-off-right e10-border-off-left"}, {"class": "e10-border-off-left"}],
+					["Z.", "", "Účetní zisk nebo ztráta před zdaněním", 																																																		"=[{SUM;statement!:D61}]"],
+					["A. 1.", "", "Úpravy o nepeněžní operace", 																																																						"=[{SUM;D6;D7;D8;D9;D10;D11}]"],
+					["A. 1.", "1.", "Odpisy stálých aktiv a umořování opravné položky k nabytému majetku",																																	"=[{SUM;statement!:D18}]"],
+					["A. 1.", "2.", "Změna stavu opravných položek, rezerv", 																																																"=[{SUM;balanceSheet!PASIVA:D89;balanceSheet!PASIVA:-E89}]"],
+					["A. 1.", "3.", "Zisk z prodeje stálých aktiv", 																																																				"=[{SUM;statement!:-D20;statement!:D23}]"],
+					["A. 1.", "4.", "Výnosy z podílů na zisku", 																																																						"=[{SUM;statement!:-D33}]"],
+					["A. 1.", "5.", "Vyúčtované nákladové úroky s výjimkou úroků zahrnovaných do ocenění dlouhodobého majetku a vyúčtované výnosové úroky", 								"=[{SUM;statement!:D43;statement!:-D42}]"],
+					["A. 1.", "6.", "Případné úpravy o ostatní nepeněžní operace", 																																													""],
+					["A.", "✹", "Čistý peněžní tok z provozní činnosti před zdaněním a změnami pracovního kapitálu",																												"=[{SUM;D4;D5}]"],
+					["A. 2.", "", "Změny stavu nepěněžních složek pracovního kapitálu", 																																										"=[{SUM;D14;D15;D16;D17}]"],
+					["A. 2.", "1.", "Změna stavu pohledávek z provozní činnosti, přechodných účtů aktiv", 																																	"=[{SUM;balanceSheet!AKTIVA:G39;balanceSheet!AKTIVA:G48;balanceSheet!AKTIVA:-F39;balanceSheet!AKTIVA:-F48;balanceSheet!AKTIVA:G63;balanceSheet!AKTIVA:-F63}]"],
+					["A. 2.", "2.", "Změna stavu krátkodobých závazků z provozní činnosti, přechodných účtů pasiv", 																												"=[{SUM;balanceSheet!PASIVA:D105;balanceSheet!PASIVA:-E105;balanceSheet!PASIVA:D121;balanceSheet!PASIVA:-E121}]"],
+					["A. 2.", "3.", "Změna stavu zásob", 																																																										"=[{SUM;balanceSheet!AKTIVA:G32;balanceSheet!AKTIVA:-F32}]"],
+					["A. 2.", "4.", "Změna stavu krátkodobého finančního majetku nespadajícího do peněžních prostř. a ekvivalentů", 																				""],
+					["A.", "✹✹", "Čistý peněžní tok z provozní činnosti před zdaněním", 																																										"=[{SUM;D12;D13}]"],
+					["A. 3.", "", "Vyplacené úroky s vyjímkou úroků zahrnovaných do ocenění dlouhodobého majetku", 																													"=[{SUM;statement!:-D43}]"],
+					["A. 4.", "", "Přijaté úroky", 																																																													"=[{SUM;statement!:D42}]"],
+					["A. 5.", "", "Zaplacená daň z příjmů a doměrky daně za minulá období", 																																								"=[{SUM;statement!:-D49;statement!:-D55}]"],
+					["A. 6.", "", "Přijaté podíly na zisku", 																																																								"=[{SUM;statement!:D33}]"],
+					["A.", "✹✹✹", "Čistý peněžní tok z provozní činnosti", 																																																	"=[{SUM;D18;D19;D20;D21;D22}]"],
+					[{"colspan": 4}],
+					[{"class": "e10-border-off-right"}, {"class": "e10-border-off-right e10-border-off-left"}, {"value": "Peněžní toky z investiční činnosti", "class": "e10-border-off-right e10-border-off-left"}, {"class": "e10-border-off-left"}],
+					["B. 1.", "", "Výdaje spojené s nabytím stálých aktiv",																																																	"=[{SUM;balanceSheet!AKTIVA:G3;balanceSheet!AKTIVA:-F3;statement!:-D18}]"],
+					["B. 2.", "", "Příjmy z prodeje stálých aktiv",																																																					"=[{SUM;statement!:D20;statement!:-D23}]"],
+					["B. 3.", "", "Zápůjčky a úvěry spřízněným osobám",																																																			""],
+					["B.", "✹✹✹", "Čistý peněžní tok vztahující se k investiční činnosti",																																									"=[{SUM;D26;D27;D28}]"],
+					[{"colspan": 4}],
+					[{"class": "e10-border-off-right"}, {"class": "e10-border-off-right e10-border-off-left"}, {"value": "Peněžní toky z finančních činností", "class": "e10-border-off-right e10-border-off-left"}, {"class": "e10-border-off-left"}],
+					["C. 1.", "", "Dopady změn dlouhodobých,resp. krátkodobých závazků",																																										"=[{SUM;balanceSheet!PASIVA:D94;balanceSheet!PASIVA:D117;balanceSheet!PASIVA:-E94;balanceSheet!PASIVA:-E117}]"],
+					["C. 2.", "", "Dopady změn vlastního kapitálu na peněžní prostředky a ekvivalenty",																																			"=[{SUM;D34;D35;D36;D37;D38;D39}]"],
+					["C. 2.", "1.", "Zvýšení peněžních prostředků z důvodů zvýšení základního kapitálu, ážia a fondů ze zisku",																							""],
+					["C. 2.", "2.", "Vyplacení podílů na vlastním jmění společníkům",																																												"=[{SUM;statement!:-D59;balanceSheet!PASIVA:D83;balanceSheet!PASIVA:-E83}]"],
+					["C. 2.", "3.", "Další vklady peněžních prostředků společníků a akcionářů",																																							""],
+					["C. 2.", "4.", "Úhrada ztráty společníky",																																																							""],
+					["C. 2.", "5.", "Přímé platby na vrub fondů",																																																						"=[{SUM;balanceSheet!PASIVA:D73;balanceSheet!PASIVA:D80;balanceSheet!PASIVA:-E73;balanceSheet!PASIVA:-E80}]"],
+					["C. 2.", "6.", "Vyplacené podíly na zisku včetně zaplacené daně",																																											""],
+					["C.", "✹✹✹", "Čistý peněžní tok vztahující se k finanční činnosti",																																										"=[{SUM;D32;D33}]"],
+					[{"colspan": 4}],
+					["F.", "", "Čisté zvýšení resp. snížení peněžních prostředků",																																													"=[{SUM;D23;D29;D40}]"],
+					[{"colspan": 4}],
+					["R.", "", "Stav peněžních prostředků a peněžních ekvivalentů na konci účetního období",																																"=[{SUM;D1;D42}]"]
+				]
+			}
+		]
+	}
+}

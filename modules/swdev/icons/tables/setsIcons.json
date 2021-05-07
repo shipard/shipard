@@ -1,0 +1,33 @@
+{
+	"id": "swdev.icons.setsIcons", "sql": "swdev_icons_setsIcons", "name": "Ikony v Sadě ikon", "icon": "icon-file-image-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "iconsSet", "name": "Sada", "type": "int", "reference": "swdev.icons.sets"},
+		{"id": "name", "name": "Název", "type": "string", "len": 120},
+		{"id": "id", "name": "id", "type": "string", "len": 80},
+
+		{"id": "dmWikiPage", "name": "Wiki stránka", "type": "int", "reference": "e10pro.kb.texts"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"}
+	],
+	"views": [
+		{"id": "default", "class": "swdev.icons.ViewSetsIcons",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.icons.ViewDetailSetIcon"}
+			}
+		},
+		{
+			"id": "combo", "class": "swdev.icons.ViewSetsIconsCombo"
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "swdev.icons.FormSetIcon"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"documentCard": "swdev.icons.dc.SetsIcon"
+}

@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Viewers"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "table": {
+            "name": "Table"
+        },
+        "id": {
+            "name": "id"
+        },
+        "classId": {
+            "name": "classId"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

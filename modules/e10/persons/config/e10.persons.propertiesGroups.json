@@ -1,0 +1,12 @@
+{
+	"ids": {
+		"name": "Identifikační údaje",
+		"id": "ids",
+		"properties": ["oid", "taxid", "pid", "birthdate", "idcn", "officialName", "shortName"]
+	},
+	"contacts": {
+		"name": "Kontaktní údaje",
+		"id": "contacts",
+		"properties": ["email", "phone", "skype", "web", "govDataBox"]
+	}
+}

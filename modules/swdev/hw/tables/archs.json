@@ -1,0 +1,24 @@
+{
+	"id": "swdev.hw.archs", "sql": "swdev_hw_archs", "name": "Architektury HW", "icon": "icon-microchip",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 70},
+		{"id": "id", "name": "id", "type": "string", "len": 80},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "swdev.hw.ViewArchs",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.hw.ViewDetailArch"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "swdev.hw.FormArch"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

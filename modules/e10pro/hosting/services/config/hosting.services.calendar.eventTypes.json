@@ -1,0 +1,4 @@
+{
+	"1": {"id": "nameday", "name": "Jmeniny", "icon": "icon-user"},
+	"2": {"id": "holiday", "name": "Svátek", "icon": "icon-flag"}
+}

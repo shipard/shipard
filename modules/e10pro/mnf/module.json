@@ -1,0 +1,12 @@
+{
+	"id": "e10pro.mnt",
+	"name": "Manufacturing",
+	"modules": ["e10doc/mnf"],
+	"config": [
+		{"id": "+appSkeleton", "name": "Rozšíření menu aplikace", "file": "appSkeleton.json"},
+		{"id": "+e10.docs.types", "file": "e10.docs.types.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+		{"id": "e10doc.core.heads.docStates.mnf", "name": "Stavy dokladů", "file": "e10doc.core.heads.docStates.mnf.json"},
+		{"id": "+e10.docs.operations", "name": "Pohyby", "file": "e10.docs.operations.json"}
+	]
+}

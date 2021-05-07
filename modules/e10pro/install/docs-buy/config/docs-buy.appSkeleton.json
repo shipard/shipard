@@ -1,0 +1,55 @@
+{
+	"panels": {
+		"buy": {"url": "/app/buy", "objectType": "panel", "zone": "sec", "name": "Nákup", "order": 300000, 
+			"items": {
+				"invni": {"t1": "Faktury přijaté", "object": "viewer", "table": "e10doc.core.heads", "viewer": "invoicesIn",
+					"icon": "docType/invoicesIn", "order": 200000},
+				"ordersOut": {"t1": "Vydané objednávky", "object": "viewer", "table": "e10buy.orders.orders", "viewer": "default", "icon": "icon-shopping-basket",
+					"enabledCfgItem": "options.e10doc-commerce.useOrdersOut", "order": 220000},
+				"cashBox": {"t1": "Pokladna", "object": "viewer", "table": "e10doc.core.heads", "viewer": "cash",
+					"icon": "docType/cashRegister", "order": 250000},
+
+				"persons": {"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "default", "order": 900000},
+				"witems": {"t1": "Položky", "object": "viewer", "table": "e10.witems.items",
+					"viewer": "default", "order": 910000, "disabledCfgItem": "options.experimental.witemsNewViewer"},
+				"witems2": {"t1": "Položky", "object": "viewer", "table": "e10.witems.items",
+					"viewer": "byCategories", "icon": "e10-witems-items", "order": 910000, "enabledCfgItem": "options.experimental.witemsNewViewer"},
+
+				"settings": {
+					"t1": "Nastavení", "object": "subMenu", "icon": "system/iconSettings",
+					"order": 9900000,
+					"subMenu": {
+						"items": {
+							"witemsCategories": {"t1": "Kategorie pol.", "object": "viewer", "table": "e10.witems.itemcategories", "viewer": "default", "icon": "icon-tree", "order": 100000},
+							"witemsBrands": {"t1": "Značky výrobků", "object": "viewer", "table": "e10.witems.brands", "viewer": "default", "icon": "icon-heart-o", "order": 200000},
+							"transports": {"t1": "Způsoby dopravy", "object": "viewer", "table": "e10doc.base.transports", "viewer": "default", "icon": "icon-truck", "order": 300000},
+							"wkPlaces": {"t1": "Skladovací místa", "object": "viewer", "table": "e10doc.base.whPlaces", "viewer": "tree", "icon": "icon-inbox", "enabledCfgItem": "options.e10doc-stock.useWHPlaces", "order": 400000}
+						}
+					}
+				}
+
+			},
+			"smallItems": [
+			]
+		},
+		"reports": {
+			"items": {
+				"buy": {"t1": "Nákup", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-buy", "icon": "icon-shopping-cart", "order": 200000}
+			}
+		}
+	},
+	"mobileui": {
+		"records": {
+			"groups": {
+				"docs": {
+					"items": {
+						"invoicesin": {
+							"t1": "Faktury přijaté", "object": "viewer", "table": "e10doc.core.heads", "viewer": "invoicesIn",
+							"icon": "e10-docs-invoices-in", "order": 200000
+						}
+					}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,30 @@
+{
+  "id": "mac.iot",
+  "name": "Monitoring And Control - IoT",
+  "tables": [
+	  "valuesKinds", "thingsKinds", "things", "thingsItems", "thingsCfg", "topics", "sensors", "sensorsValues",
+	  "controls", "scPlacements",
+	  "scenarios", "scenariosSchedule", "scenariosActions",
+		"users"
+  ],
+  "modules": ["mac/base"],
+
+  "config": [
+	  {"id": "+mac.iot.ioPortValueStyle", "file": "mac.iot.ioPortValueStyle.json"},
+	  {"id": "+mac.iot.ioPortTopicStyle", "file": "mac.iot.ioPortTopicStyle.json"},
+	  {"id": "+mac.iot.values.types", "file": "mac.iot.values.types.json"},
+	  {"id": "+mac.iot.things.types", "file": "mac.iot.things.types.json"},
+	  {"id": "+mac.iot.topics.types", "file": "mac.iot.topics.types.json"},
+	  {"id": "+mac.iot.things.itemsTypes", "file": "mac.iot.things.itemsTypes.json"},
+	  {"id": "+mac.iot.topicTypes", "file": "mac.iot.topicTypes.json"},
+	  {"id": "+mac.iot.sensorKbdEmulation", "file": "mac.iot.sensorKbdEmulation.json"},
+	  {"id": "+mac.iot.controlTargetsTypes", "file": "mac.iot.controlTargetsTypes.json"},
+	  {"id": "+mac.iot.scPlacements.targets", "file": "mac.iot.scPlacements.targets.json"},
+	  {"id": "+mac.iot.scPlacements.mainMenu", "file": "mac.iot.scPlacements.mainMenu.json"},
+	  {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+	  {"id": "+mac.iot.scenarios.actionsTypes", "file": "mac.iot.scenarios.actionsTypes.json"},
+		{"id": "+mac.iot.usersTypes", "file": "mac.iot.usersTypes.json"},
+	  {"id": "+e10.base.doclinks", "file": "mac.iot.doclinks.json"},
+	  {"id": "+registeredClasses", "file": "registeredClasses.json"}
+  ]
+}

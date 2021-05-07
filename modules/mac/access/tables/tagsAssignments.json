@@ -1,0 +1,33 @@
+{
+	"id": "mac.access.tagsAssignments", "sql": "mac_access_tagsAssignments", "name": "Přiřazení Přístupových klíčů", "icon": "icon-unlock-alt",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "tag", "name": "Klíč", "type": "int", "reference": "mac.access.tags", "options": ["saveOnChange"]},
+		{"id": "assignType", "name": "Přiřazeno k", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.access.assignTypes", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "place", "name": "Místo", "type": "int", "reference": "e10.base.places"},
+
+		{"id": "validFrom", "name": "Platné od", "type": "timestamp"},
+		{"id": "validTo", "name": "Platné do", "type": "timestamp"},
+
+		{"id": "useCautionMoney", "name": "Vyžadovat kauci", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "cautionMoneyAmount", "name": "Částka kauce", "type": "money"},
+		{"id": "cautionMoneyPayer", "name": "Plátce kauce", "type": "int", "reference": "e10.persons.persons", "options": ["saveOnChange"]},
+
+		{"id": "docCautionMoneyPay", "name": "Doklad o zaplacení kauce", "type": "int", "reference": "e10doc.core.heads", "comboViewer": "cashregister", "module": "e10doc.base"},
+		{"id": "docCautionMoneyRefund", "name": "Doklad o vrácení kauce", "type": "int", "reference": "e10doc.core.heads", "comboViewer": "cash", "module": "e10doc.base"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "mac.access.ViewTagsAssignments", "detail": "mac.access.ViewDetailTagAssignment"}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.access.FormTagAssignment"}
+	]
+}

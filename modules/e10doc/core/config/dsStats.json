@@ -1,0 +1,14 @@
+{
+	"counts": {
+		"docs": {
+			"cntId": "e10-docs", "subTypeCol": "s2", "subTypeCfgPath": "e10.docs.types", "subTypeCfgTitle": "pluralName",
+			"title": "Doklady", "icon": "icon-file-text-o",
+			"subTypesCalcGroups": {"cashreg": "cashreg", "purchase": "purchase", "-": "docs"}
+		}
+	},
+	"calcGroups": {
+		"cashreg": {"title": "Prodejky"},
+		"purchase": {"title": "Výkupy"},
+		"docs": {"title": "Doklady"}
+	}
+}

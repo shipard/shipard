@@ -1,0 +1,26 @@
+{
+	"id": "e10.persons.personsValidity", "sql": "e10_persons_personsValidity", "name": "Správnost Osob",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "person", "name": "Osoba", "type": "int"},
+		{"id": "valid", "name": "V pořádku", "type": "enumInt",
+			"enumValues": {"0": "Nezkontrolováno", "1": "Ano", "2": "Ne"}},
+		{"id": "validVat", "name": "Stav DPH", "type": "enumInt",
+			"enumValues": {"0": "Nezkontrolováno", "1": "Ano", "2": "Ne"}},
+		{"id": "validOid", "name": "Stav IČ", "type": "enumInt",
+			"enumValues": {"0": "Nezkontrolováno", "1": "Ano", "2": "Ne"}},
+		{"id": "validAddress", "name": "Stav adres", "type": "enumInt",
+			"enumValues": {"0": "Nezkontrolováno", "1": "Ano", "2": "Ne"}},
+		{"id": "taxPayer", "name": "Plátce DPH", "type": "logical"},
+
+		{"id": "revalidate", "name": "Znovu ověřit", "type": "logical"},
+
+		{"id": "created", "name": "Vytvořeno", "type": "timestamp"},
+		{"id": "updated", "name": "Poslední kontrola", "type": "timestamp"},
+		{"id": "msg", "name": "Zpráva", "type": "memo"}
+	],
+	"options": ["systemTable"],
+	"indexes": [
+		{"id": "s1", "columns": ["person"]}
+	]
+}

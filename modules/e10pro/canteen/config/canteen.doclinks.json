@@ -1,0 +1,38 @@
+{
+	"e10pro.canteen.canteens": {
+		"e10pro-canteens-admins": {
+			"linkid": "e10pro-canteens-admins", "name": "Správci", "icon": "icon-wrench",
+			"sources": [
+				{"id": "users", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			]
+		},
+		"e10pro-canteens-users": {
+			"linkid": "e10pro-canteens-users", "name": "Uživatelé", "icon": "icon-user",
+			"sources": [
+				{"id": "users", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			]
+		},
+		"e10pro-canteens-optimize-payers": {
+			"linkid": "e10pro-canteens-optimize-payers", "name": "Firmy, pro které optimalizovat plátce", "icon": "icon-building",
+			"sources": [
+				{"id": "default", "viewer": "default", "table": "e10.persons.persons"}
+			]
+		}
+	},
+	"e10pro.canteen.personsOptions": {
+		"e10pro-canteens-payers": {
+			"linkid": "e10pro-canteens-payers", "name": "Plátci", "icon": "icon-money",
+			"sources": [
+				{"id": "payers", "viewer": "default", "table": "e10.persons.persons"}
+			]
+		}
+	},
+	"e10pro.canteen.canteensAddFoods": {
+		"canteensAddFoods-persons-labels": {
+			"linkid": "canteensAddFoods-persons-labels", "name": "Štítky povolených osob", "icon": "icon-user",
+			"sources": [
+				{"id": "personsLabels", "viewer": "default", "table": "e10.base.clsfitems"}
+			]
+		}
+	}
+}

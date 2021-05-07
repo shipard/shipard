@@ -1,0 +1,9 @@
+{
+	"id": "services.subjregs.cz_res_plus",
+	"name": "RES+",
+	"modules": ["e10/base"],
+	"tables": ["res", "rzpProvoz", "rzpSubj"],
+	"config": [
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"}
+	]
+}

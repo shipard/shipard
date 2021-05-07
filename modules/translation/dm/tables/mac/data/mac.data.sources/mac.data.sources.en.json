@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Data sources"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "sourceType": {
+            "name": "Data source type"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "url": {
+            "name": "URL"
+        },
+        "server": {
+            "name": "Server"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

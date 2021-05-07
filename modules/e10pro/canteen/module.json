@@ -1,0 +1,26 @@
+{
+	"id": "e10pro.canteen",
+	"name": "Jídelny",
+	"tables": [
+		"canteens", "canteensAddFoods", "menus", "menuFoods", "menuRecipientsDefs", "menuRecipientsPersons", "foodOrders",
+		"personsOptions", "personsOptionsFoods", "priceList"
+	],
+	"modules": ["e10/base"],
+	"config": [
+		{"id": "+dashboards", "file": "dashboards.json"},
+		{"id": "+e10.persons.roles", "name": "Role uživatelů", "file": "e10pro.canteen.roles.json"},
+		{"id": "+e10.base.doclinks", "file": "canteen.doclinks.json"},
+		{"id": "+e10.appOptions.groups", "file": "appOptionsGroups.json"},
+		{"id": "+reportsGroups", "file": "reportsGroups.json"},
+		{"id": "+appOptions", "file": "e10.appOptions.json"},
+		{"id": "e10pro.canteen.menus.docStates", "file": "menus.docStates.json"},
+		{"id": "e10pro.canteen.menuFoods.docStates", "file": "menuFoods.docStates.json"},
+		{"id": "e10pro.canteen.foodOrders.docStates", "file": "foodOrders.docStates.json"},
+		{"id": "e10pro.canteen.foodTakings", "file": "foodTakings.json"},
+		{"id": "e10pro.canteen.additionalFoodTypes", "file": "additionalFoodTypes.json"},
+		{"id": "e10pro.canteen.additionalFoodOrderStates", "file": "additionalFoodOrderStates.json"},
+		{"id": "+registeredClasses", "file": "registeredClasses.json"},
+		{"id": "+reports", "file": "reports.json"},
+		{"id": "+appSkeleton", "file": "appSkeleton.json"}
+	]
+}

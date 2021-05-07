@@ -1,0 +1,41 @@
+{
+    "invoicesOut": {
+        "t1": "Invoicing"
+    },
+    "proformaOut": {
+        "t1": "Pro forma invoices"
+    },
+    "workOrders": {
+        "t1": "Work orders"
+    },
+    "ordersIn": {
+        "t1": "Accepted orders"
+    },
+    "reports": {
+        "t1": "Reports"
+    },
+    "persons": {
+        "t1": "Persons"
+    },
+    "witems": {
+        "t1": "Items"
+    },
+    "witemsCategories": {
+        "t1": "Categories"
+    },
+    "settings": {
+        "t1": "Settings"
+    },
+    "cashReg": {
+        "t1": "Cash registers"
+    },
+    "contractSale": {
+        "t1": "Sale contracts"
+    },
+    "deliveryNote": {
+        "t1": "Delivery notes"
+    },
+    "witems2": {
+        "t1": "Items"
+    }
+}

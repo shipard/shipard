@@ -1,0 +1,13 @@
+{
+  "id": "e10pro.reception",
+  "name": "Recepce",
+  "tables": ["foreignersAccPlaces", "foreigners", "foreignersPoliceFiles"],
+	"modules": ["e10pro/store", "e10pro/booking"],
+  "config": [
+		{"id": "+appOptions", "file": "e10.appOptions.json"},
+		{"id": "+appSkeleton", "file": "appSkeleton.json"},
+		{"id": "+e10.persons.roles", "file": "reception.roles.json"},
+		{"id": "+dashboards", "file": "dashboards.json"},
+		{"id": "+widgets", "file": "widgets.json"}
+	]
+}

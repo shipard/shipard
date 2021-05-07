@@ -1,0 +1,13 @@
+{
+	"id": "e10pro.kb.textsRendered", "sql": "e10pro_kb_textsRendered", "name": "Hotové texty wiki stránek", "icon": "icon-file-text",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "wikiPage", "name": "Wiki stránka", "type": "int", "reference": "e10pro.kb.texts"},
+		{"id": "dstLanguage", "name": "Jazyk", "type": "int", "reference": "e10.world.languages"},
+		{"id": "title", "name": "Název", "type": "string", "len": 120},
+		{"id": "text", "name": "Text", "type": "memo"},
+		{"id": "perex", "name": "Perex", "type": "memo"},
+		{"id": "subTitle", "name": "Název", "type": "string", "len": 100}
+	],
+	"options": ["systemTable"]
+}

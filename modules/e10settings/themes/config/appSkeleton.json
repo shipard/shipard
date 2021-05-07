@@ -1,0 +1,9 @@
+{
+	"panels": {
+		"srvcfg": {
+			"smallItems": [
+				{"t1": "Témata aplikace", "object": "viewer", "table": "e10settings.themes.appThemes", "viewer": "default", "icon": "icon-paint-brush", "order": 999991}
+			]
+		}
+	}
+}

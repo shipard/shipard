@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Tasks"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "service": {
+            "name": "Service"
+        },
+        "taskType": {
+            "name": "Task type"
+        },
+        "dstTray": {
+            "name": "Tray"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

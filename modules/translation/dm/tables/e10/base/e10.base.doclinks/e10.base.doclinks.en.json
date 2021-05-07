@@ -1,0 +1,25 @@
+{
+    "table": {
+        "name": "Documents links"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "linkId": {
+            "name": "Link"
+        },
+        "srcTableId": {
+            "name": "Source table"
+        },
+        "srcRecId": {
+            "name": "Source row"
+        },
+        "dstTableId": {
+            "name": "Target table"
+        },
+        "dstRecId": {
+            "name": "Target row"
+        }
+    }
+}

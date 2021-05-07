@@ -1,0 +1,55 @@
+{
+	"swdev": {
+		"name": "Vývoj SW",
+		"roles": ["pwuser"],
+		"viewers": {
+			"swdev.dm.modules": {"default": 2},
+			"swdev.dm.tables": {"default": 2},
+			"swdev.dm.columns": {"default": 2},
+			"swdev.dm.viewers": {"default": 2},
+			"swdev.dm.enums": {"default": 2},
+			"swdev.dm.enumsValues": {"default": 2},
+			"swdev.dm.enumsValuesTr": {"default": 2},
+			"swdev.dm.terms": {"default": 2},
+
+			"swdev.dm.dmTrTexts": {"default": 2},
+
+			"swdev.world.countries": {"default": 2},
+			"swdev.world.countriesTr": {"default": 2},
+			"swdev.world.currencies": {"default": 2},
+			"swdev.world.currenciesTr": {"default": 2},
+			"swdev.world.languages": {"default": 2},
+			"swdev.world.languagesTr": {"default": 2},
+
+			"swdev.world.territories": {"default": 2},
+			"swdev.world.territoriesTr": {"default": 2},
+
+			"swdev.translation.dicts": {"default": 2},
+			"swdev.translation.dictsItems": {"default": 2},
+
+			"swdev.icons.sets": {"default": 2},
+			"swdev.icons.setsIcons": {"default": 2, "combo": 2},
+			"swdev.icons.setsVariants": {"default": 2},
+			"swdev.icons.appIcons": {"default": 2},
+			"swdev.icons.appIconsGroups": {"default": 2},
+			"swdev.icons.appIconsMapping": {"default": 2},
+
+			"swdev.hw.archs": {"default": 2},
+			"swdev.hw.devices": {"default": 2},
+			"swdev.hw.devicesKinds": {"default": 2},
+			"swdev.hw.devicesSeries": {"default": 2},
+			"swdev.hw.fw": {"default": 2},
+			"swdev.hw.fwVersions": {"default": 2},
+			"swdev.hw.vendors": {"default": 2}
+		},
+		"reports": {
+			"swdev.world.libs.CfgReport": 2
+		}
+	},
+	"admin": {
+		"viewers": {
+			"swdev.translation.languages": {"default": 2},
+			"swdev.translation.translators": {"default": 2}
+		}
+	}
+}

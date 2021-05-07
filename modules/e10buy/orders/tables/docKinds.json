@@ -1,0 +1,30 @@
+{
+	"id": "e10buy.orders.docKinds", "sql": "e10buy_orders_docKinds", "name": "Druhy objednávek", "icon": "icon-flag-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 40},
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+		{"id": "orderType", "name": "Druh objednávky", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "Běžná", "1": "Průběžná"}},
+		{"id": "disableRows", "name": "Nepoužívat řádky objednávky", "type": "logical"},
+		{"id": "priceOnHead", "name": "Zadávat cenu na hlavičce", "type": "logical"},
+		{"id": "useDescription", "name": "Použít textový popis objednávky", "type": "logical"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"views": [
+		{"id": "default", "class": "e10buy.orders.ViewDocKinds", "help": "prirucka/4907"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10buy.orders.FormDocKind", "help": "prirucka/4907"}
+	],
+	"options": ["configSource"],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

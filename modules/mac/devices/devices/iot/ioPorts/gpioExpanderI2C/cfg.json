@@ -1,0 +1,22 @@
+{
+	"name": "PIN OUT Expandér I2C",
+	"title": "PIN OUT Expandér I2C",
+	"fields": {
+		"columns": [
+			{
+				"id": "i2cBusPortId", "name": "I2C sběrnice", "type": "enumString", "len": 30, "enumCfgFlags": {"type": "ioPortId"}
+			},
+			{
+				"id": "address", "name": "Adresa (hex)", "type": "string", "len": 2, "placeholder": "20"
+			},
+			{
+				"id": "expType", "name": "Typ expandéru", "type": "enumInt",
+				"enumCfg": {"cfgItem": "mac.devices.i2cIOExpanders", "cfgValue": "", "cfgText": "name"}
+			},
+			{
+				"id": "dir", "name": "Směr", "type": "enumInt",
+				"enumCfg": {"cfgItem": "mac.devices.expanderDir", "cfgValue": "", "cfgText": "name"}
+			}
+		]
+	}
+}

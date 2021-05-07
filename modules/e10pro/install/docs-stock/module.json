@@ -1,0 +1,18 @@
+{
+  "id": "e10pro.install.docs-stock",
+  "name": "Zásoby",
+  "config": [
+    {"id": "+appSkeleton", "name": "Kostra aplikace", "file": "docs-stock.appSkeleton.json"},
+		{"id": "+e10.docs.types", "file": "e10.docs.types.json"},
+		{"id": "+e10.persons.roles", "name": "Role uživatelů", "file": "e10.persons.roles.json"},
+		{"id": "+reportsGroups", "file": "reportsGroups.json"},
+		{"id": "+appOptions", "file": "e10.appOptions.json"},
+    {"id": "+e10.balance", "name": "Saldo", "file": "balance.json"},
+	  {"id": "+tests", "file": "tests.json"}
+  ],
+  "modules": [
+		"e10pro/install/docs-core",
+    "e10doc/stockIn", "e10doc/stockInitStates", "e10doc/stockOut", "e10doc/inventory",
+		"e10pro/reports/buy", "e10pro/reports/sale_brands", "e10pro/reports/inventory"
+	]
+}

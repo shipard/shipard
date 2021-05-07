@@ -1,0 +1,17 @@
+[
+  {
+    "table": "e10doc.core.heads",
+    "views": [
+      {"id": "proformain", "class": "e10doc.proformain.ViewProformaInDocs", "detail": "e10doc.proformain.ViewDetailProformaInDocs"}
+    ],
+    "forms": [
+      {"id": "proformain", "class": "e10doc.proformain.FormProformaInDocs"}
+    ]
+  },
+  {
+    "table": "e10doc.core.rows",
+    "forms": [
+      {"id": "proformain", "class": "e10doc.proformain.FormProformaInDocsRows"}
+    ]
+  }
+]

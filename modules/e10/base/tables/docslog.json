@@ -1,0 +1,44 @@
+{
+  "id": "e10.base.docslog", "sql": "e10_base_docslog", "name": "Log dokumentů",
+  "columns": [
+    {"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
+
+    {"id": "eventType", "name": "Typ události", "type": "enumInt",
+	    "enumValues": {"0": "Změna stavu dokumentu", "1": "tisk", "2": "přístup do systému", "3": "Systémová kontrola"}},
+	  {"id": "eventResult", "name": "Výsledek události", "type": "enumInt",
+		  "enumValues": {"0": "Info", "1": "úspěch", "2": "varování", "3": "chyba"}},
+    {"id": "eventTitle", "name": "Název události", "type": "string", "len": 180},
+	  {"id": "eventSubtitle", "name": "Popis události", "type": "string", "len": 130},
+    {"id": "eventData", "name": "Data události", "type": "memo"},
+		
+    {"id": "tableid", "sql": "tableid", "name": "Tabulka", "type": "string", "len": 48, "options": ["ascii"]},
+    {"id": "recid", "sql": "recid", "name": "Řádek", "type": "int"},
+		{"id": "recidOwner", "name": "Řádek vlastníka", "type": "int"},
+    {"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docID", "name": "ID dokumentu", "type": "string", "len": 25},
+		{"id": "docType", "name": "Druh dokumentu", "type": "string", "len": 10},
+		{"id": "docTypeName", "name": "Název druhu dokumentu", "type": "string", "len": 30},
+		{"id": "project", "name": "Projekt", "type": "int"},
+
+    {"id": "user", "name": "Uživatel", "type": "int", "reference": "e10.persons.persons"},
+    {"id": "ipaddress", "name": "IP adresa", "type": "string", "len": 45},
+		{"id": "ipaddressndx", "name": "IP adresa", "type": "int", "reference": "e10.base.ipaddr"},
+    {"id": "deviceId", "name": "Zařízení", "type": "string", "len": 40, "options": ["ascii"]},
+		{"id": "last", "name": "Poslední událost?", "type": "logical"},
+
+    {"id": "created", "sql": "created", "name": "Okamžik vytvoření", "type": "timestamp"}
+  ],
+  "views": [
+    {"id": "all", "class": "e10.base.ViewDocsLogAll", "detail": "e10.base.ViewDetailDocsLog"},
+    {"id": "doc", "class": "e10.base.ViewDocsLogDoc"}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10.base.FormDocsLog"}
+  ],
+  "order": [{"column": "ndx", "order": "ASC"}],
+	"indexes": [
+		{"id": "oneDocView", "columns": ["tableid", "recid"]},
+		{"id": "tableId", "columns": ["tableid"]},
+    {"id": "last2", "columns": ["last"]}
+	]
+}

@@ -1,0 +1,93 @@
+{
+	"main": {
+		"panels": {
+			"reception-booking": {
+				"name": "Rezervace",
+				"icon": "icon-book",
+				"fullsize": 1,
+				"order": 10000,
+				"rows": {
+					"main": {"order": 10000}
+				}
+			},
+			"reception-receivables": {
+				"name": "Pohledávky",
+				"icon": "icon-arrow-circle-up",
+				"order": 200000,
+				"rows": {
+					"title": {"order": 1, "class": "full"},
+					"docViewers": {"order": 20000, "align": "right"}
+				}
+			},
+			"reception-meters": {
+				"checkModule": "e10pro.meters",
+				"name": "Měřiče", "icon": "icon-cogs", "order": 300000,
+				"fullsize": 1,
+				"rows": {
+					"main": {"order": 10000}
+				}
+			}
+		}
+	},
+	"reception": {
+		"disableTopToolbar": 1,
+		"panels": {
+			"main": {
+				"name": "Pohledávky",
+				"icon": "icon-arrow-circle-up",
+				"order": 1000,
+				"rows": {
+					"title": {"order": 1, "class": "full"},
+					"docViewers": {"order": 20000, "align": "right"}
+				}
+			},
+			"booking": {
+				"name": "Rezervace",
+				"icon": "icon-book",
+				"fullsize": 1,
+				"order": 2000,
+				"rows": {
+					"main": {"order": 10000}
+				}
+			},
+			"meters": {
+				"checkModule": "e10pro.meters",
+				"name": "Měřiče", "icon": "icon-cogs", "order": 2300,
+				"fullsize": 1,
+				"rows": {
+					"main": {"order": 10000}
+				}
+			},
+			"bboard": {
+				"name": "Nástěnka",
+				"icon": "e10pro-wkf-bboard",
+				"order": 3000,
+				"rows": {
+					"main": {"order": 10000, "align": "left"}
+				}
+			},
+			"calendar": {
+				"name": "Kalendář",
+				"icon": "icon-calendar",
+				"fullsize": 1,
+				"order": 4000,
+				"rows": {
+					"main": {"order": 10000}
+				}
+			}
+		}
+	},
+	"main_new": {
+		"panels": {
+			"reception-receivables": {
+				"name": "Pohledávky",
+				"icon": "icon-arrow-circle-up",
+				"order": 200000,
+				"rows": {
+					"title": {"order": 1, "class": "full"},
+					"docViewers": {"order": 20000, "align": "right"}
+				}
+			}
+		}
+	}
+}

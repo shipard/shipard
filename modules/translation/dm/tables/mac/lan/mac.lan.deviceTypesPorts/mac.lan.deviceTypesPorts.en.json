@@ -1,0 +1,25 @@
+{
+    "table": {
+        "name": "Port types of network devices"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "deviceType": {
+            "name": "Device type"
+        },
+        "portKind": {
+            "name": "Port kind"
+        },
+        "portsCount": {
+            "name": "Number of ports"
+        },
+        "portIdMask": {
+            "name": "Port ID"
+        },
+        "note": {
+            "name": "Note"
+        }
+    }
+}

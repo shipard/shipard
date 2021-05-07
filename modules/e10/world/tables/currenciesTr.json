@@ -1,0 +1,15 @@
+{
+	"id": "e10.world.currenciesTr", "sql": "e10_world_currenciesTr", "name": "Měny - Lokalizace", "icon": "icon-money",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "currency", "name": "Měna", "type": "int", "reference": "e10.world.currencies"},
+		{"id": "language", "name": "Jazyk", "type": "int", "reference": "e10.world.languages"},
+		{"id": "name", "name": "Název", "type": "string", "len": 120},
+		{"id": "namePlural", "name": "Název mn. č.", "type": "string", "len": 120}
+	],
+	"views": [
+		{"id": "default", "class": "e10.world.ViewCurrenciesTr"}
+	],
+	"options": ["systemTable"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"}
+}

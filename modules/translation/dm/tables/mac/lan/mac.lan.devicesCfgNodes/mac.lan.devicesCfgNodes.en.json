@@ -1,0 +1,46 @@
+{
+    "table": {
+        "name": "Shipard Nodes Configuration"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "device": {
+            "name": "Device"
+        },
+        "runningData": {
+            "name": "Active configuration data"
+        },
+        "runningDataVer": {
+            "name": "Data version of active configuration"
+        },
+        "runningTimestamp": {
+            "name": "Timestamp of active configuration application"
+        },
+        "newData": {
+            "name": "New setting data for active configuration"
+        },
+        "newDataVer": {
+            "name": "New data version for active configuration"
+        },
+        "newTimestamp": {
+            "name": "New data for active configuration timestamp"
+        },
+        "liveData": {
+            "name": "Live configuration data"
+        },
+        "liveDataVer": {
+            "name": "Version of configuration data"
+        },
+        "liveTimestamp": {
+            "name": "Timestamp of configuration application"
+        },
+        "changed": {
+            "name": "Change"
+        },
+        "applyNewData": {
+            "name": "Apply new data"
+        }
+    }
+}

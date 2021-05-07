@@ -1,0 +1,16 @@
+{
+	"mac.base.zones": {
+		"mac-zones-admins": {
+			"linkid": "mac-zones-admins", "name": "Správci", "icon": "icon-wrench",
+			"sources": [
+				{"id": "users", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			]
+		},
+		"mac-zones-users-cameras": {
+			"linkid": "mac-zones-users-cameras", "name": "Kamery", "icon": "icon-user",
+			"sources": [
+				{"id": "users", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			]
+		}
+	}
+}

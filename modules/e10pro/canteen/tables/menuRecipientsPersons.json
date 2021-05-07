@@ -1,0 +1,20 @@
+{
+	"id": "e10pro.canteen.menuRecipientsPersons", "sql": "e10pro_canteen_menuRecipientsPersons", "name": "Menu k rozeslání", "icon": "icon-paper-plane",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "dateId", "name": "ID", "type": "string", "len": 10, "options": ["ascii"]},
+
+		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "email", "name": "E-mail", "type": "string", "len": 64},
+		{"id": "canteen", "name": "Jídelna", "type": "int", "reference": "e10pro.canteen.canteens"},
+		{"id": "menu", "name": "Jídelní lístek", "type": "int", "reference": "e10pro.canteen.menus"},
+
+		{"id": "disableSend", "name": "Neodesílat", "type": "logical"},
+		{"id": "sent", "name": "Odesláno", "type": "logical"},
+		{"id": "sentDate", "name": "Datum odeslání", "type": "timestamp"}
+	],
+	"views": [
+		{"id": "default", "class": "e10pro.canteen.ViewMenuRecipientsPersons", "help": "prirucka/4707"}
+	]
+}

@@ -1,0 +1,4 @@
+{
+	"1000": {"stateName": "Nezaúčtováno", "actionName": "Odúčtovat", "mainState": 0, "stateStyle": "delete", "readOnly": 1, "mainState": 0, "goto": [4000]},
+	"4000": {"stateName": "Zaúčtovat", "actionName": "Zaúčtovat", "stateStyle": "done",  "mainState": 2, "readOnly": 1, "goto": [1000]}
+}

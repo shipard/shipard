@@ -1,0 +1,103 @@
+{
+    "table": {
+        "name": "Data sources"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "gid": {
+            "name": "GID"
+        },
+        "gidstr": {
+            "name": "GID"
+        },
+        "server": {
+            "name": "Server"
+        },
+        "owner": {
+            "name": "Owner"
+        },
+        "admin": {
+            "name": "Admin"
+        },
+        "payer": {
+            "name": "Payer"
+        },
+        "partner": {
+            "name": "Partner"
+        },
+        "supportKind": {
+            "name": "Level of support"
+        },
+        "urlWeb": {
+            "name": "Web URL"
+        },
+        "urlApp": {
+            "name": "Application URL"
+        },
+        "urlApp2": {
+            "name": "Old application URL"
+        },
+        "domain": {
+            "name": "Domain DO NOT USE"
+        },
+        "dsId1": {
+            "name": "Data source ID"
+        },
+        "dsId2": {
+            "name": "Old data source ID"
+        },
+        "dsId1DomainRec": {
+            "name": "DNS record"
+        },
+        "installModule": {
+            "name": "Installation module"
+        },
+        "dateStart": {
+            "name": "Start date"
+        },
+        "dateTrialEnd": {
+            "name": "End of trial period"
+        },
+        "appWarning": {
+            "name": "Warning"
+        },
+        "created": {
+            "name": "Created"
+        },
+        "lastLogin": {
+            "name": "Last login"
+        },
+        "dsType": {
+            "name": "Type"
+        },
+        "condition": {
+            "name": "State"
+        },
+        "imageUrl": {
+            "name": "Image URL"
+        },
+        "dsIconServerUrl": {
+            "name": "Icon - server URL"
+        },
+        "dsIconFileName": {
+            "name": "Icon - file name"
+        },
+        "inProgress": {
+            "name": "Source in progress"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

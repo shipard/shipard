@@ -1,0 +1,32 @@
+{
+  "id": "e10.base.propdefs", "sql": "e10_base_propdefs", "name": "Definice vlastností",
+  "columns": [
+    {"id": "ndx", "name": "ndx", "type": "int_ai"},
+    {"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
+    {"id": "fullName", "name": "Název", "type": "string", "len": 120},
+    {"id": "id", "name": "ID", "type": "string", "len": 24},
+    {"id": "multipleValues", "name": "Povolit více hodnot", "type": "logical"},
+	  {"id": "enableNote", "name": "Povolit poznámku", "type": "logical"},
+	  {"id": "optionaly", "name": "Volitelná vlastnost", "type": "logical"},
+    {"id": "type", "name": "Typ hodnoty", "type": "enumString", "len": 10,
+			"enumValues": {"enum": "výčet hodnot", "text": "text", "memo": "dlouhý text" , "date": "datum"}},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+  "lists": [
+    {"id": "rows", "class": "e10.base.ListRows", "name": "Hodnoty", "table": "e10.base.propdefsenum", "queryColumn": "property"}
+  ],
+  "views": [
+    {"id": "default", "class": "e10.base.ViewPropDefs", "detail": "e10.base.ViewDetailPropDefs", "help": "prirucka/4754"},
+		{"id": "combo", "class": "e10.base.ViewPropDefsCombo"}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10.base.FormPropDefs", "help": "prirucka/4754"}
+  ],
+	"options": ["configSource"],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.properties.docStates"},
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+  "order": [{"column": "fullName", "order": "ASC"}],
+  "fullText": ["fullName", "description"]
+}

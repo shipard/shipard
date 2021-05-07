@@ -1,0 +1,68 @@
+{
+	"name": "Brother QL label printers",
+
+	"htmlFormatCodes": {
+		"<huge>": "fontSizeHuge", "</huge>": "fontSizeNormal",
+		"<h1>": "fontSizeH1", "</h1>": "fontSizeNormal",
+		"<h2>": "fontSizeH2", "</h2>": "fontSizeNormal",
+		"<h3>": "fontSizeH3", "</h3>": "fontSizeNormal",
+		"<h4>": "fontSizeH4", "</h4>": "fontSizeNormal",
+		"<h5>": "fontSizeH5", "</h5>": "fontSizeNormal",
+		"<small>": "fontSizeSmall", "</small>": "fontSizeNormal",
+		"<tiny>": "fontSizeSmall", "</tiny>": "fontSizeNormal",
+		"<colorRed>": "colorRed", "</colorRed>": "colorBlack",
+		"<b>": "boldOn", "</b>": "boldOff",
+		"<i>": "italicOn", "</i>": "italicOff",
+		"<condensed>": "condensedOn", "</condensed>": "condensedOff",
+		"<twice>": "twiceOn", "</twice>": "twiceOff"
+	},
+
+	"commands": {
+		"reset": [27, 105, 97, 48, 27, 64,
+			27, 107, 9,
+			27, 105, 87, 1,
+			27, 88, 0, 42, 0
+		],
+
+		"landscapeOn": [27, 105, 76, 1],
+		"landscapeOff": [27, 105, 76, 0],
+
+		"fontSizeHuge": 	[27, 88, 0, 150, 0],
+		"fontSizeH1": 		[27, 88, 0, 100, 0],
+		"fontSizeH2": 		[27, 88, 0, 92, 0],
+		"fontSizeH3": 		[27, 88, 0, 75, 0],
+		"fontSizeH4": 		[27, 88, 0, 58, 0],
+		"fontSizeH5": 		[27, 88, 0, 50, 0],
+		"fontSizeSmall": 	[27, 88, 0, 38, 0],
+		"fontSizeTiny": [27, 88, 0, 33, 0],
+		"fontSizeNormal": [27, 88, 0, 42, 0],
+
+		"alignLeft": [27, 97, 0],
+		"alignCenter": [27, 97, 1],
+		"alignRight": [27, 97, 2],
+		"alignNone": [27, 97, 3],
+
+		"colorBlack": [27, 105, 87, 1],
+		"colorRed": [27, 105, 87, 1],
+
+		"boldOn": [27, 69],
+		"boldOff": [27, 70],
+
+		"italicOn": [27, 52],
+		"italicOff": [27, 53],
+
+		"condensedOn": [27, 33, 7],
+		"condensedOff": [27, 33, 0],
+
+		"twiceOn": [27, "W"],
+		"twiceOff": [20],
+
+		"cutPaper": [27, 105, 67, 1, 12],
+		"openCashDrawer": null,
+
+		"cp852": [
+			27, 82, 64,
+			27, 116, 1
+		]
+	}
+}

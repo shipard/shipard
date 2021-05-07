@@ -1,0 +1,61 @@
+{
+    "table": {
+        "name": "Documents numerical series"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "tabName": {
+            "name": "Tab name"
+        },
+        "docType": {
+            "name": "Document type"
+        },
+        "docKeyId": {
+            "name": "Code for document number"
+        },
+        "useDocKinds": {
+            "name": "Use document kinds"
+        },
+        "docKind": {
+            "name": "Document kind"
+        },
+        "activitiesGroup": {
+            "name": "Activities group"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "emailSender": {
+            "name": "E-mail sender"
+        },
+        "emailFromAddress": {
+            "name": "Sender e-mail"
+        },
+        "emailFromName": {
+            "name": "Sender name"
+        },
+        "firstNumberSet": {
+            "name": "Set number of first document"
+        },
+        "firstNumber": {
+            "name": "Number of first document"
+        },
+        "firstNumberFiscalPeriod": {
+            "name": "Fiscal period for first document"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

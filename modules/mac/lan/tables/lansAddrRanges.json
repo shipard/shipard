@@ -1,0 +1,36 @@
+{
+	"id": "mac.lan.lansAddrRanges", "sql": "mac_lan_lansAddrRanges", "name": "Rozsahy adres sítí", "icon": "icon-arrows-h",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "id", "name": "ID", "placeholder": "192.168.1", "type": "string", "len": 60},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 80},
+		{"id": "shortName", "name": "Zkrácený název", "placeholder": "192.168.1.0", "type": "string", "len": 80},
+		{"id": "range", "name": "Rozsah", "placeholder": "192.168.1.0/24", "type": "string", "len": 60},
+		{"id": "addressPrefix", "name": "Začátek adresy", "placeholder": "192.168.1.", "type": "string", "len": 50},
+		{"id": "addressGateway", "name": "Adresa brány", "placeholder": "192.168.1.1", "type": "string", "len": 40},
+		{"id": "lan", "name": "Síť", "type": "int", "reference": "mac.lan.lans"},
+		{"id": "vlan", "name": "VLAN", "type": "int", "reference": "mac.lan.vlans"},
+		{"id": "dhcpServerId", "name": "ID DHCP serveru", "type": "string", "len": 40},
+		{"id": "dhcpPoolBegin", "name": "Začátek DPCP rozsahu", "type": "int"},
+		{"id": "dhcpPoolEnd", "name": "Konec DPCP rozsahu", "type": "int"},
+		{"id": "nextPool", "name": "Navazující rozsah", "type": "int", "reference": "mac.lan.lansAddrRanges"},
+		{"id": "serverMonitoring", "name": "Monitorovací server", "type": "int", "reference": "mac.lan.devices", "comboViewer": "shipardNodes"},
+		{"id": "note", "name": "Poznámka", "type": "string", "len": 100},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "mac.lan.ViewLansAddrRanges",
+			"details": {
+				"preview": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewDetailLansAddrRange"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.lan.FormLanAddrRange"}
+	],
+	"options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "range"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

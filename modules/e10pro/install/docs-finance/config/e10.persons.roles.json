@@ -1,0 +1,68 @@
+{
+  "finance": {
+		"roles": ["sale", "buy"],
+		"viewers": {
+			"e10doc.core.heads": {"bank": 2, "bankorder": 2, "cash": 2, "cmnbkp": 2},
+			"e10doc.taxes.reports": {"default": 2},
+			"e10.persons.persons": {"defaulters": 2}
+		},
+		"documents": {
+			"e10doc.core.heads": [
+				{"docType": ["bank", "bankorder", "cash"], "_access": 2, "_name": "Banka a Pokladna"},
+				{"docType": "cmnbkp", "activity": ["balSetOff", "ocpBalInSt"], "_access": 2, "_name": "Zápočty a Počáteční stavy saldokonta"}
+			]
+		},
+		"reports": {
+			"e10doc.finance.reportVAT": 1,
+			"e10doc.balance.reportBalanceReceivables": 1, "e10doc.balance.reportBalanceObligations": 1,
+			"e10doc.balance.reportBalanceDepositReceived": 1, "e10doc.balance.reportBalanceAdvance": 1,
+			"e10doc.balance.reportBalanceCashInTransit": 1, "e10doc.balance.reportBalanceJournal": 2,
+			"e10doc.balance.ReportRequestsForPayment": 2,
+			"e10doc.finance.reportCashBook": 2, "e10pro.reports.finance_expenses.reportExpenses": 2,
+			"e10doc.finance.ReportTransactions": 2,
+			"e10doc.taxes.VatCS.VatCSReportAll": 2,
+			"e10doc.taxes.VatRS.VatRSReport": 2,
+			"e10doc.taxes.VatReturn.VatReturnReport": 2
+		}
+	},
+
+	"scrtr": {
+		"viewers": {
+			"e10doc.core.heads": {"cash": 2}
+		},
+		"documents": {
+			"e10doc.core.heads": [
+				{"docType": ["cash"], "_access": 2, "_name": "Pokladna"},
+				{"docType": "cmnbkp", "activity": ["balSetOff", "ocpBalInSt"], "_access": 1, "_name": "Zápočty a Počáteční stavy saldokonta"}
+			]
+		},
+		"reports": {
+			"e10doc.balance.reportBalanceReceivables": 1, "e10doc.balance.reportBalanceObligations": 1,
+			"e10doc.balance.reportBalanceDepositReceived": 1, "e10doc.balance.reportBalanceAdvance": 1,
+			"e10doc.balance.reportBalanceCashInTransit": 1,
+			"e10doc.finance.reportCashBook": 2
+		}
+	},
+	"bsass": {
+		"viewers": {
+			"e10doc.core.heads": {"bank": 1, "cash": 1, "cmnbkp": 1}
+		},
+		"reports": {
+			"e10doc.finance.reportVAT": 1,
+			"e10doc.balance.reportBalanceReceivables": 1, "e10doc.balance.reportBalanceObligations": 1,
+			"e10doc.balance.reportBalanceDepositReceived": 1, "e10doc.balance.reportBalanceAdvance": 1,
+			"e10doc.balance.reportBalanceCashInTransit": 1, "e10doc.balance.reportBalanceJournal": 2,
+			"e10doc.finance.reportCashBook": 2, "e10pro.reports.finance_expenses.reportExpenses": 2
+		}
+	},
+	"acc": {
+		"viewers": {
+			"e10doc.core.heads": {"cmnbkpocp": 2},
+			"e10doc.base.exchangeRatesLists": {"default": 2}
+		}
+	},
+	"all": {
+		"roles": ["finance"]
+	}
+}
+

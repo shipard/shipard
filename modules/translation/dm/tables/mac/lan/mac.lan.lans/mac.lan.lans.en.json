@@ -1,0 +1,67 @@
+{
+    "table": {
+        "name": "Computer networks"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "owner": {
+            "name": "Owner"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "mainServerLanControl": {
+            "name": "Main server for network management"
+        },
+        "mainServerCameras": {
+            "name": "Main server for cameras"
+        },
+        "mainServerIoT": {
+            "name": "Main server for IoT"
+        },
+        "mainRouter": {
+            "name": "Main router"
+        },
+        "vlanManagement": {
+            "name": "VLAN for active member management"
+        },
+        "vlanAdmins": {
+            "name": "Network administrator's VLAN"
+        },
+        "defaultMacDataSource": {
+            "name": "Default data source for monitoring"
+        },
+        "lanMonDashboardsUrl": {
+            "name": "URL of monitoring dashboards"
+        },
+        "alertsDeliveryTarget": {
+            "name": "Alerts deliver to"
+        },
+        "rackLabelText": {
+            "name": "Rack label text"
+        },
+        "wiki": {
+            "name": "Wiki"
+        },
+        "wikiSection": {
+            "name": "Wiki section"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "robotUser": {
+            "name": "User - robot for communication with database"
+        }
+    }
+}

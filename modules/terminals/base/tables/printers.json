@@ -1,0 +1,45 @@
+{
+	"id": "terminals.base.printers", "sql": "terminals_base_printers", "name": "Tiskárny", "icon": "icon-print",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
+		{"id": "id", "name": "ID", "type": "string", "len": 20},
+
+		{"id": "printerType", "name": "Typ tiskárny", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "Běžná tiskárna", "1": "Tiskárna účtenek", "2": "Tiskárna štítků/nálepek"}},
+
+		{"id": "receiptsPrinterType", "name": "Druh tiskárny", "type": "enumString", "len": 12,
+			"enumValues": {"normal": "Klasická (78mm)", "thin": "Úzká (55mm)"}},
+
+		{"id": "posPrinterDriver", "name": "Ovladač", "type": "enumString", "len": 30,
+			"enumCfg": {"cfgItem": "terminals.postPrinterDrivers", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "printMethod", "name": "Způsob tisku", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {
+				"5": "Přímý tisk (IP adresa)",
+
+				"0": "HTTP - veřejná adresa",
+
+				"1": "HTTP - lokální adresa",
+				"2": "E-mail"
+			}
+		},
+		{"id": "printEmail", "name": "E-mail pro tisk", "type": "string", "len": 80},
+		{"id": "printURL", "name": "URL pro HTTP tisk", "type": "string", "len": 120},
+		{"id": "networkQueueId", "name": "ID tiskové fronty na serveru", "type": "string", "len": 50},
+		{"id": "printerAddress", "name": "IP Adresa tiskárny", "type": "string", "len": 80},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": {
+		"default": {"id": "default", "class": "terminals.base.ViewPrinters", "help": "prirucka/4719"}
+	},
+	"forms": [
+		{"id": "default", "class": "terminals.base.FormPrinter", "help": "prirucka/4719"}
+	],
+	"options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

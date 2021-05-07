@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Recorded data files"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "reason": {
+            "name": "Reason for record-keeping"
+        },
+        "retentionPeriod": {
+            "name": "Retention period"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

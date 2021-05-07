@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Requirements for items caterories"
+    },
+    "columns": {
+        "ndx": {
+            "name": "ndx"
+        },
+        "itemcategory": {
+            "name": "Item category"
+        },
+        "queryType": {
+            "name": "Type of requirement"
+        },
+        "property": {
+            "name": "Property"
+        },
+        "valueEnum": {
+            "name": "Value"
+        },
+        "valueString": {
+            "name": "Value"
+        },
+        "valueItemType": {
+            "name": "Item type"
+        }
+    }
+}

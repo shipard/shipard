@@ -1,0 +1,23 @@
+{
+	"id": "e10pro.property.groups", "sql": "e10pro_property_groups", "name": "Skupiny majetku", "icon": "icon-object-group",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 100},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 60},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"views": [
+		{"id": "default", "class": "e10pro.property.ViewGroups", "detail": "e10pro.property.ViewDetailGroup", "help":  "prirucka/4875"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.property.FormGroup", "help":  "prirucka/4875"}
+	],
+	"options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

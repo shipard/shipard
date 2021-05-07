@@ -1,0 +1,19 @@
+{
+    "table": {
+        "name": "Types of personal data in data file"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "dataSet": {
+            "name": "Data file"
+        },
+        "personalDataType": {
+            "name": "Personal data type"
+        },
+        "rowOrder": {
+            "name": "Order"
+        }
+    }
+}

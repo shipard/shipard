@@ -1,0 +1,8 @@
+{
+	"e10doc-sale": {
+		"options": [
+			{"cfgKey": "witemsSalePricesType", "cfgName": "Na položkách zadávat prodejní cenu",
+				"options": {"0": "s DPH i bez DPH", "1": "včetně DPH", "2": "bez DPH"}}
+		]
+	}
+}

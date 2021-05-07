@@ -1,0 +1,136 @@
+{
+	"base": {
+		"propertiesGroups": {
+			"e10-CZ-TR-zakladni": {
+				"name": "Základní údaje", "id": "e10-CZ-TR-zakladni",
+				"properties": [
+					"e10-CZ-TR-FU", "e10-CZ-TR-pracFU"
+				]
+			},
+			"e10-CZ-TR-subjekt": {
+				"name": "Informace o subjektu",
+				"id": "e10-CZ-TR-subjekt",
+				"properties": [
+					"e10-CZ-TR-typSubjektu", "e10-CZ-TR-typPlatce", "e10-CZ-TR-jmenoPrOsoby", "e10-CZ-TR-prijmeni", "e10-CZ-TR-jmeno", "e10-CZ-TR-titul",
+					"e10-CZ-TR-ulice", "e10-CZ-TR-cisPopis", "e10-CZ-TR-cisOrient", "e10-CZ-TR-mesto", "e10-CZ-TR-PSC", "e10-CZ-TR-stat",
+					"e10-CZ-TR-KOKEC"
+				]
+			},
+			"e10-CZ-TR-kontakt": {
+				"name": "Kontaktní informace", "id": "e10-CZ-TR-kontakt",
+				"properties": ["e10-CZ-TR-telefon", "e10-CZ-TR-email", "e10-CZ-TR-datSchranka"]
+			},
+			"e10-CZ-TR-podOsoba": {
+				"name": "Údaje o podepisující osobě", "id": "e10-CZ-TR-podOsoba",
+				"properties": [
+					"e10-CZ-TR-typPodOsoba", "e10-CZ-TR-kodPodOsoba",
+					"e10-CZ-TR-nazevPrOsoby", "e10-CZ-TR-ICPrOsoby",
+					"e10-CZ-TR-prijmeni", "e10-CZ-TR-jmeno", "e10-CZ-TR-datumNar",
+					"e10-CZ-TR-evidCislo"
+				]
+			},
+			"e10-CZ-TR-oprOsoba": {
+				"name": "Oprávněná osoba", "id": "e10-CZ-TR-oprOsoba",
+				"properties": ["e10-CZ-TR-prijmeni", "e10-CZ-TR-jmeno", "e10-CZ-TR-vztah"]
+			},
+			"e10-CZ-TR-sestavil": {
+				"name": "Sestavil", "id": "e10-CZ-TR-sestavil",
+				"properties": ["e10-CZ-TR-prijmeni", "e10-CZ-TR-jmeno", "e10-CZ-TR-telefon"]
+			},
+
+			"e10-EU-VTR-podani": {
+				"name": "Podání", "id": "e10-EU-VTR-podani",
+				"properties": [
+					"e10-EU-VTR-druhHlaseni", "e10-EU-VTR-denDuvDodPri"
+				]
+			},
+
+			"e10-CZ-VCS-podani": {
+				"name": "Podání", "id": "e10-CZ-VCS-podani",
+				"properties": [
+					"e10-CZ-VCS-druhHlaseni", "e10-CZ-VCS-denDuvNaslPod", "e10-CZ-VCS-cisJednVyzvy", "e10-CZ-VCS-rychOdpNaVyz"
+				]
+			},
+
+			"e10-EU-VRS-podani": {
+				"name": "Podání", "id": "e10-EU-VRS-podani",
+				"properties": [
+					"e10-EU-VRS-druhHlaseni"
+				]
+			}
+		}
+	},
+	"taxReturns": {
+		"properties-report": {
+			"eu-vat-tr": {
+				"e10-CZ-TR-zakladni": [
+					"e10-CZ-TR-FU", "e10-CZ-TR-pracFU"
+				],
+				"e10-CZ-TR-subjekt": [
+					"e10-CZ-TR-typSubjektu", "e10-CZ-TR-typPlatce", "e10-CZ-TR-jmenoPrOsoby", "e10-CZ-TR-prijmeni", "e10-CZ-TR-jmeno", "e10-CZ-TR-titul",
+					"e10-CZ-TR-ulice", "e10-CZ-TR-cisPopis", "e10-CZ-TR-cisOrient", "e10-CZ-TR-mesto", "e10-CZ-TR-PSC", "e10-CZ-TR-stat",
+					"e10-CZ-TR-KOKEC"
+				],
+				"e10-CZ-TR-kontakt": ["e10-CZ-TR-telefon", "e10-CZ-TR-email", "e10-CZ-TR-datSchranka"],
+				"e10-CZ-TR-podOsoba": [
+					"e10-CZ-TR-typPodOsoba", "e10-CZ-TR-kodPodOsoba",
+					"e10-CZ-TR-nazevPrOsoby", "e10-CZ-TR-ICPrOsoby",
+					"e10-CZ-TR-prijmeni", "e10-CZ-TR-jmeno", "e10-CZ-TR-datumNar",
+					"e10-CZ-TR-evidCislo"
+				],
+				"e10-CZ-TR-oprOsoba": ["e10-CZ-TR-prijmeni", "e10-CZ-TR-jmeno", "e10-CZ-TR-vztah"],
+				"e10-CZ-TR-sestavil": ["e10-CZ-TR-prijmeni", "e10-CZ-TR-jmeno", "e10-CZ-TR-telefon"]
+			},
+
+			"cz-vat-cs": {
+				"e10-CZ-TR-zakladni": [
+					"e10-CZ-TR-FU", "e10-CZ-TR-pracFU"
+				],
+				"e10-CZ-TR-subjekt": [
+					"e10-CZ-TR-typSubjektu", "e10-CZ-TR-jmenoPrOsoby", "e10-CZ-TR-prijmeni", "e10-CZ-TR-jmeno", "e10-CZ-TR-titul",
+					"e10-CZ-TR-ulice", "e10-CZ-TR-cisPopis", "e10-CZ-TR-cisOrient", "e10-CZ-TR-mesto", "e10-CZ-TR-PSC", "e10-CZ-TR-stat"
+				],
+				"e10-CZ-TR-kontakt": ["e10-CZ-TR-telefon", "e10-CZ-TR-email", "e10-CZ-TR-datSchranka"],
+				"e10-CZ-TR-podOsoba": [
+					"e10-CZ-TR-typPodOsoba", "e10-CZ-TR-kodPodOsoba",
+					"e10-CZ-TR-nazevPrOsoby", "e10-CZ-TR-ICPrOsoby",
+					"e10-CZ-TR-prijmeni", "e10-CZ-TR-jmeno", "e10-CZ-TR-datumNar",
+					"e10-CZ-TR-evidCislo"
+				],
+				"e10-CZ-TR-oprOsoba": ["e10-CZ-TR-prijmeni", "e10-CZ-TR-jmeno", "e10-CZ-TR-vztah"],
+				"e10-CZ-TR-sestavil": ["e10-CZ-TR-prijmeni", "e10-CZ-TR-jmeno", "e10-CZ-TR-telefon"]
+			},
+
+			"eu-vat-rs": {
+				"e10-CZ-TR-zakladni": [
+					"e10-CZ-TR-FU", "e10-CZ-TR-pracFU"
+				],
+				"e10-CZ-TR-subjekt": [
+					"e10-CZ-TR-typSubjektu", "e10-CZ-TR-jmenoPrOsoby", "e10-CZ-TR-prijmeni", "e10-CZ-TR-jmeno", "e10-CZ-TR-titul",
+					"e10-CZ-TR-ulice", "e10-CZ-TR-cisPopis", "e10-CZ-TR-cisOrient", "e10-CZ-TR-mesto", "e10-CZ-TR-PSC", "e10-CZ-TR-stat"
+				],
+				"e10-CZ-TR-kontakt": ["e10-CZ-TR-telefon", "e10-CZ-TR-email", "e10-CZ-TR-datSchranka"],
+				"e10-CZ-TR-podOsoba": [
+					"e10-CZ-TR-typPodOsoba", "e10-CZ-TR-kodPodOsoba",
+					"e10-CZ-TR-nazevPrOsoby", "e10-CZ-TR-ICPrOsoby",
+					"e10-CZ-TR-prijmeni", "e10-CZ-TR-jmeno", "e10-CZ-TR-datumNar",
+					"e10-CZ-TR-evidCislo"
+				],
+				"e10-CZ-TR-oprOsoba": ["e10-CZ-TR-prijmeni", "e10-CZ-TR-jmeno", "e10-CZ-TR-vztah"],
+				"e10-CZ-TR-sestavil": ["e10-CZ-TR-prijmeni", "e10-CZ-TR-jmeno", "e10-CZ-TR-telefon"]
+			}
+		},
+
+		"properties-filing": {
+			"cz-vat-cs": {
+				"e10-CZ-VCS-podani": ["e10-CZ-VCS-druhHlaseni", "e10-CZ-VCS-denDuvNaslPod", "e10-CZ-VCS-cisJednVyzvy", "e10-CZ-VCS-rychOdpNaVyz"]
+			},
+			"eu-vat-rs": {
+				"e10-EU-VRS-podani": ["e10-EU-VRS-druhHlaseni"]
+			},
+			"eu-vat-tr": {
+				"e10-EU-VTR-podani": ["e10-EU-VTR-druhHlaseni", "e10-EU-VTR-denDuvDodPri"]
+			}
+		}
+	}
+}

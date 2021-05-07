@@ -1,0 +1,13 @@
+{
+  "id": "e10doc.inventory",
+  "name": "Zásoby",
+	"tables": ["journal", "checkheads", "checkrows"],
+	"extensions": ["inventory"],
+  "config": [
+    {"id": "+reports", "name": "Výstupy", "file": "reports.json"},
+		{"id": "e10doc.inventory.checkHeads.docStates", "file": "e10doc.inventory.checkHeads.docStates.json"},
+		{"id": "+registeredClasses", "file": "registeredClasses.json"},
+		{"id": "+appOptions", "name": "Nastavení", "file": "e10.appOptions.json"}
+  ],
+  "modules": ["e10pro/install/docs-core"]
+}

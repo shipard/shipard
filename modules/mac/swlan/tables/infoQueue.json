@@ -1,0 +1,49 @@
+{
+	"id": "mac.swlan.infoQueue", "sql": "mac_swlan_infoQueue", "name": "SW informace ke zpracování", "icon": "icon-file-text-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "title", "name": "Název", "type": "string", "len":  90},
+		{"id": "device", "name": "Zařízení", "type": "int", "reference": "mac.lan.devices"},
+		{"id": "deviceUid", "name": "Unikátní ID zařízení", "type": "string", "len": 32, "options": ["ascii"]},
+
+		{"id": "osInfo", "name": "Informace o systému", "type": "logical"},
+		{"id": "osUserId", "name": "ID uživatele", "type": "string", "len":  60},
+
+		{"id": "osFamily", "name": "Operační systém", "type": "enumInt", "len": 2,
+			"enumCfg": {"cfgItem": "mac.swcore.osFamily", "cfgValue": "", "cfgText": "sn"}},
+
+		{"id": "dataOriginal", "name": "Originální data", "type": "memo"},
+		{"id": "checksumOriginal", "name": "Kontrolní součet originálních dat", "type": "string", "len":  40, "options": ["ascii"]},
+
+		{"id": "dataSanitized", "name": "Strukturovaná data", "type": "memo"},
+		{"id": "checksumSanitized", "name": "Kontrolní součet strukturovaných dat", "type": "string", "len":  40, "options": ["ascii"]},
+
+		{"id": "dateCreate", "name": "Datum a čas vzniku", "type": "timestamp"},
+		{"id": "ipAddress", "name": "IP adresa", "type": "string", "len": 45, "options": ["ascii"]},
+
+		{"id": "dateSameAsOriginal", "name": "Datum a čas aktualizace stejnými hodnotami", "type": "timestamp"},
+		{"id": "cntSameAsOriginal", "name": "Počet aktualizací stejnými hodnotami", "type": "int"},
+		{"id": "ipAddressSameAsOriginal", "name": "IP adresa", "type": "string", "len": 45, "options": ["ascii"]},
+
+		{"id": "swSUID", "name": "ID software", "type": "string", "len": 6, "options": ["ascii"]},
+		{"id": "swNdx", "name": "Software", "type": "int", "reference": "mac.sw.sw"},
+
+		{"id": "swVersionSUID", "name": "ID verze SW", "type": "string", "len": 10, "options": ["ascii"]},
+		{"id": "swVersionNdx", "name": "verze software", "type": "int", "reference": "mac.sw.swVersions"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "mac.swlan.infoQueue.docStates"},
+	"views": [
+		{"id": "default", "class": "mac.swlan.ViewInfoQueue",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "mac.swlan.ViewDetailInfoQueue"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.swlan.FormInfoQueue"}
+	]
+}

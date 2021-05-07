@@ -1,0 +1,69 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+    <title>test</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="file://{{templateRoot}}style.css" type="text/css"/>
+
+    <style>
+        #rows {
+            font-size: 9pt;
+        }
+
+        table.properties {
+            font-size: 10pt;
+            padding: 6pt;
+
+        }
+
+        table.properties tr td:nth-child(3) {padding-left: 22pt;}
+    </style>
+
+</head>
+<body>
+
+<div id='top'>
+    <span class='documentName'>Inventura zásob - Protokol</span>
+    <span class='documentNumber'>{{@dict;číslo}}: {{data.head.docNumber}}</span>
+</div>
+
+<table class="properties">
+    <tr>
+        <td>Datum inventury:</td><td>{{data.head.dateCheck}}</td>
+        <td>Sklad:</td><td>{{data.warehouse.fullName}}</td>
+    </tr>
+    <tr>
+        <td></td><td></td>
+        <td>Poznámka:</td><td>{{data.head.subject}}</td>
+    </tr>
+    <tr>
+    </tr>
+</table>
+
+
+<table id='rows'>
+    <thead>
+    <tr>
+        <th class='number'>{{@dict;ř.}}</th>
+        <th class='number'>{{@dict;Položka}}</th>
+        <th>{{@dict;Název}}</th>
+        <th class='number'>{{@dict;Zjištěný stav}}</th>
+        <th>{{@dict;Jed.}}</th>
+    </tr>
+    </thead>
+    {{#data.rowsAll}}
+    <tr>
+        <td class='number'>{{rownum}}.</td>
+        <td class='number'>{{itemid}}</td>
+        <td>{{itemFullName}}</td>
+        <td class='number'>{{checkQuantity}}</td>
+        <td>{{@dict;dataItem:unit}}</td>
+    </tr>
+    {{/data.rowsAll}}
+</table>
+
+<div id='footer'></div>
+
+</body>
+</html>
+

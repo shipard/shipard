@@ -1,0 +1,25 @@
+{
+    "table": {
+        "name": "Workflow document labels"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "user": {
+            "name": "User"
+        },
+        "table": {
+            "name": "Table"
+        },
+        "rec": {
+            "name": "Record"
+        },
+        "mark": {
+            "name": "Mark"
+        },
+        "state": {
+            "name": "State"
+        }
+    }
+}

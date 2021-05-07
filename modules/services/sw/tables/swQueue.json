@@ -1,0 +1,30 @@
+{
+	"id": "services.sw.swQueue", "sql": "services_sw_swQueue", "name": "SW informace ke zpracování", "icon": "icon-file-text-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "title", "name": "Název", "type": "string", "len":  90},
+
+		{"id": "data", "name": "Data", "type": "memo"},
+		{"id": "checksum", "name": "Kontrolní součet dat", "type": "string", "len":  40, "options": ["ascii"]},
+
+		{"id": "dateCreate", "name": "Datum a čas vzniku", "type": "timestamp"},
+
+		{"id": "dateSameAsOriginal", "name": "Datum a čas aktualizace stejnými hodnotami", "type": "timestamp"},
+		{"id": "cntSameAsOriginal", "name": "Počet aktualizací stejnými hodnotami", "type": "int"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "services.sw.ViewSWQueue",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "services.sw.ViewDetailSWQueue"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "services.sw.FormSWQueue"}
+	]
+}

@@ -1,0 +1,7 @@
+{
+	"id": "e10pro.helpdesk",
+	"name": "helpDesk",
+	"modules": ["e10pro/wkf"],
+	"config": [
+	]
+}

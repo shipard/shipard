@@ -1,0 +1,34 @@
+{
+    "table": {
+        "name": "Tables"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "id": {
+            "name": "id"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "sql": {
+            "name": "SQL name"
+        },
+        "srcLanguage": {
+            "name": "Source language"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "icon": {
+            "name": "Icon"
+        },
+        "dmWikiPage": {
+            "name": "Wiki page"
+        }
+    }
+}

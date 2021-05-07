@@ -1,0 +1,9 @@
+{
+	"id": "mac.lan.alertsDevices", "sql": "mac_lan_alertsDevices", "name": "Výstrahy - zařízení", "icon": "icon-exclamation-triangle",
+	"columns": [
+		{"id": "ndx", "name": "ndx", "type": "int_ai"},
+		{"id": "alert", "name": "Výstraha", "type": "int", "reference":  "mac.lan.alerts"},
+		{"id": "device", "name": "Zařízení", "type": "int", "reference":  "mac.lan.devices"}
+	],
+	"options": ["systemTable"]
+}

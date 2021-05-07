@@ -1,0 +1,43 @@
+{
+    "table": {
+        "name": "Servers"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "fqdn": {
+            "name": "Domain name"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "gid": {
+            "name": "GID"
+        },
+        "serverType": {
+            "name": "Server type"
+        },
+        "creatingDataSources": {
+            "name": "Create data sources"
+        },
+        "ipaddress": {
+            "name": "IP address"
+        },
+        "owner": {
+            "name": "Owner"
+        },
+        "customer": {
+            "name": "Customer"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

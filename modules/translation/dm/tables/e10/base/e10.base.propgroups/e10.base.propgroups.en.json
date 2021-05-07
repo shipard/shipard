@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "Property groups"
+    },
+    "columns": {
+        "ndx": {
+            "name": "ndx"
+        },
+        "shortName": {
+            "name": "Name"
+        },
+        "fullName": {
+            "name": "Full name"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main statee"
+        },
+        "syncNdx": {
+            "name": "syncNdx"
+        },
+        "syncSrc": {
+            "name": "syncSrc"
+        }
+    }
+}

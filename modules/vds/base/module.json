@@ -1,0 +1,13 @@
+{
+  "id": "vds.base",
+  "name": "Virtual Data Structures",
+  "tables": [
+		"defs"
+	],
+	"modules": [],
+  "config": [
+		{"id": "+vds.systemTypes", "file": "vds.systemTypes.json"},
+	  {"id": "+appOptions", "file": "appOptions.json"},
+    {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"}
+	]
+}

@@ -1,0 +1,35 @@
+{
+	"id": "swdev.dm.terms", "sql": "swdev_dm_terms", "name": "Pojmy", "icon": "icon-hashtag",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Pojem", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkratka", "type": "string", "len": 80},
+		{"id": "text", "name": "Nastavení", "type": "memo"},
+
+		{"id": "srcLanguage", "name": "Zdrojový jazyk", "type": "int", "reference": "swdev.translation.languages"},
+
+		{"id": "dmWikiPage", "name": "Wiki stránka", "type": "int", "reference": "e10pro.kb.texts"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"},
+		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"}
+	],
+	"views": [
+		{"id": "default", "class": "swdev.dm.ViewTerms",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.dm.ViewDetailTerm"},
+				"trData": {"title": "trData", "icon": "icon-language", "type": "detail", "class": "swdev.dm.ViewDetailTermTrData"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "swdev.dm.FormTerm"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"documentCard": "swdev.dm.DocumentCardTerm",
+	"ndx": 1324
+}

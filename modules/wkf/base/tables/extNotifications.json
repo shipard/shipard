@@ -1,0 +1,29 @@
+{
+	"id": "wkf.base.extNotifications", "sql": "wkf_base_extNotifications", "name": "Externí notifikace", "icon": "icon-external-link-square",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "fullName", "name": "Název", "type": "string", "len": 100},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 60},
+
+		{"id": "minPriority", "name": "Min. důležitost", "type": "enumInt",
+			"enumValues": {"0": "-- všechny zprávy --", "5": "Vysoká", "10": "Běžná", "15": "Nízká"}},
+
+		{"id": "l1Channel", "name": "Notifikační kanál", "type": "int", "reference": "integrations.ntf.channels"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"views": {
+		"default": {"id": "default", "class": "wkf.base.ViewExtNotifications", "help":  "prirucka/4889"}
+	},
+	"forms": [
+		{"id": "default", "class": "wkf.base.FormExtNotification", "help":  "prirucka/4889"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"ndx": 0
+}

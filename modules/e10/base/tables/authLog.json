@@ -1,0 +1,26 @@
+{
+	"id": "e10.base.authLog", "sql": "e10_base_authLog", "name": "Log přístupů",
+	"columns": [
+		{"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "eventType", "name": "Typ události", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10.base.authLog.events", "cfgText": "name"}},
+
+		{"id": "user", "name": "Uživatel", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "ipaddress", "name": "IP adresa", "type": "string", "len": 45, "options": ["ascii"]},
+		{"id": "ipaddressndx", "name": "IP adresa", "type": "int", "reference": "e10.base.ipaddr"},
+		{"id": "deviceId", "name": "Zařízení", "type": "string", "len": 40, "options": ["ascii"]},
+
+		{"id": "login", "name": "Identita", "type": "string", "len": 70},
+		{"id": "session", "name": "session", "type": "string", "len": 40, "options": ["ascii"]},
+		{"id": "dsGid", "name": "Zdroj dat", "type": "long"},
+
+		{"id": "created", "sql": "created", "name": "Okamžik vytvoření", "type": "timestamp"}
+	],
+	"views": [
+		{"id": "default", "class": "e10.base.ViewAuthLog", "detail": "e10.base.ViewDetailAuthLog"}
+	],
+	"indexes": [
+		{"id": "s1", "columns": ["login"]}
+	]
+}

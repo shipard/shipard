@@ -1,0 +1,5 @@
+{
+    "createNewDatabaseAllowed": {
+        "cfgName": "Users allowed to create databases"
+    }
+}

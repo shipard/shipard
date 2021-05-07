@@ -1,0 +1,7 @@
+{
+	"id": "demo.documents",
+	"name": "Podpora demonstračních dat - doklady",
+	"modules": ["demo/core"],
+	"config": [
+	]
+}

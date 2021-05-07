@@ -1,0 +1,16 @@
+{
+	"id": "services.money.exchangeRatesValues", "sql": "services_money_exchangeRatesValues", "name": "Kurzy měn", "icon": "icon-money",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "list", "name": "Kurovní lístek", "type": "int", "reference": "services.money.exchangeRatesLists"},
+		{"id": "currency", "name": "Měna", "type": "int", "reference": "e10.world.currencies"},
+		{"id": "cntUnits", "name": "Počet jednotek", "type": "int"},
+		{"id": "exchangeRate", "name": "Kurz", "type": "number", "dec": 5},
+		{"id": "exchangeRateOneUnit", "name": "Kurz přepočtený na 1 jednotku", "label": "Kurz/1", "type": "number", "dec": 7}
+	],
+	"options": ["systemTable"],
+	"forms": [
+		{"id": "default", "class": "services.money.FormExchangeRatesValue"}
+	]
+}

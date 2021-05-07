@@ -1,0 +1,16 @@
+{
+	"srvcfg": {
+		"disableTopToolbar": 1,
+		"panels": {
+			"docs": {
+				"name": "Doklady",
+				"icon": "icon-file-text-o",
+				"order": 5000,
+				"fullsize": 1,
+				"rows": {
+					"info": {"order": 10000, "align": "right"}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,34 @@
+{
+	"id": "e10pro.canteen.canteensAddFoods", "sql": "e10pro_canteen_canteensAddFoods", "name": "Doplňková jídla", "icon": "icon-circle-o",
+	"columns": [
+		{"id": "ndx", "name": "ndx", "type": "int_ai"},
+
+		{"id": "canteen", "name": "Jídelna", "type": "int", "reference": "e10pro.canteen.canteens"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 80},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 40},
+
+		{"id": "addFoodType", "name": "Druh", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10pro.canteen.additionalFoodTypes", "cfgValue": "", "cfgText": "name"}},
+		{"id": "addFoodOptional", "name": "Jídlo je volitelné", "type": "logical"},
+		{"id": "addFoodOrder", "name": "Pořadí", "type": "int"},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+
+		{"id": "rowOrder", "name": "Pořadí", "type": "int"}
+	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"views": [
+		{
+			"id": "default", "class": "e10pro.canteen.ViewCanteenAddFoods", "type": "form",
+			"details": {
+				"default": {"title": "Přehled", "icon": "x-content", "type": "detail", "class": "e10pro.canteen.ViewDetailAddFood"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.canteen.FormCanteenAddFood"}
+	]
+}

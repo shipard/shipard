@@ -1,0 +1,43 @@
+{
+    "table": {
+        "name": "Types of items"
+    },
+    "columns": {
+        "ndx": {
+            "name": "ndx"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "icon": {
+            "name": "Icon"
+        },
+        "type": {
+            "name": "Item type"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "validFrom": {
+            "name": "Valid from"
+        },
+        "validTo": {
+            "name": "Valid to"
+        },
+        "syncNdx": {
+            "name": "syncNdx"
+        },
+        "syncSrc": {
+            "name": "syncSrc"
+        }
+    }
+}

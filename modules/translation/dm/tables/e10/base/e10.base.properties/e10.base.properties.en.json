@@ -1,0 +1,43 @@
+{
+    "table": {
+        "name": "Properties of documents"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "property": {
+            "name": "Property"
+        },
+        "group": {
+            "name": "Group"
+        },
+        "subtype": {
+            "name": "Subtype"
+        },
+        "tableid": {
+            "name": "Table"
+        },
+        "recid": {
+            "name": "Row"
+        },
+        "valueString": {
+            "name": "Value - text"
+        },
+        "valueNum": {
+            "name": "Value - number"
+        },
+        "valueMemo": {
+            "name": "Value - long text"
+        },
+        "valueDate": {
+            "name": "Value - date"
+        },
+        "note": {
+            "name": "Note"
+        },
+        "created": {
+            "name": "Creation timestamp"
+        }
+    }
+}

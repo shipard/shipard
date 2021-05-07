@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Web session"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "webServer": {
+            "name": "Web server"
+        },
+        "person": {
+            "name": "Person"
+        },
+        "loginType": {
+            "name": "Type"
+        },
+        "loginKeyValue": {
+            "name": "Key"
+        },
+        "created": {
+            "name": "Created"
+        },
+        "loginTag": {
+            "name": "Tag"
+        }
+    }
+}

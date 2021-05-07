@@ -1,0 +1,64 @@
+{
+    "table": {
+        "name": "Sections"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "icon": {
+            "name": "Icon"
+        },
+        "shipardEmailId": {
+            "name": "ID for received Shipard e-mails"
+        },
+        "parentSection": {
+            "name": "Parent section"
+        },
+        "treeId": {
+            "name": "Tree ID"
+        },
+        "systemSectionType": {
+            "name": "System section"
+        },
+        "subSectionRightsType": {
+            "name": "Access permissions"
+        },
+        "useTargets": {
+            "name": "Use Targets"
+        },
+        "useStatuses": {
+            "name": "Use Statuses"
+        },
+        "enabledIssueKinds": {
+            "name": "Enabled issue kinds"
+        },
+        "newIssuesAllowed": {
+            "name": "New issue can add"
+        },
+        "topic": {
+            "name": "Topic"
+        },
+        "analyzeAttachments": {
+            "name": "Analyze attachments"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "orderBy": {
+            "name": "Order of issues"
+        }
+    }
+}

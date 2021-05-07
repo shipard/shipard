@@ -1,0 +1,26 @@
+{
+    "things": {
+        "t1": "IoT Elements"
+    },
+    "scenarios": {
+        "t1": "Scenarios"
+    },
+    "sensors": {
+        "t1": "Sensors"
+    },
+    "controls": {
+        "t1": "Controls"
+    },
+    "scPlacements": {
+        "t1": "Placements"
+    },
+    "valuesKinds": {
+        "t1": "Value kinds"
+    },
+    "thingsKinds": {
+        "t1": "Element kinds"
+    },
+    "users": {
+        "t1": "Users"
+    }
+}

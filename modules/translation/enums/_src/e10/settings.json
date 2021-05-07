@@ -1,0 +1,20 @@
+{
+	"e10.appOptions.groups": {
+		"name":  "Skupiny nastavení", "key":  "", "values":  {"title": "Název"}
+	},
+	"appOptions": {
+		"name":  "Položky nastavení aplikace", "key":  "", "values":  {"name": "Název"},
+		"subItems": {
+			"options": {
+				"name": "Hodnoty nastavení aplikace", "key": "cfgKey",
+				"values": {
+					"cfgName": "Název"
+				}
+			}
+		}
+	}
+}
+
+
+
+

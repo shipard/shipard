@@ -1,0 +1,24 @@
+[
+	{
+		"table": "e10.base.propdefs",
+		"columns": [
+			{"id": "syncNdx", "name": "syncNdx", "type": "int"},
+			{"id": "syncSrc", "name": "syncSrc", "type": "int"}
+		]
+	},
+	{
+		"table": "e10.base.propgroups",
+		"columns": [
+			{"id": "syncNdx", "name": "syncNdx", "type": "int"},
+			{"id": "syncSrc", "name": "syncSrc", "type": "int"}
+		]
+	},
+
+	{
+		"table": "e10.base.clsfitems",
+		"columns": [
+			{"id": "syncNdx", "name": "syncNdx", "type": "int"},
+			{"id": "syncSrc", "name": "syncSrc", "type": "int"}
+		]
+	}
+]

@@ -1,0 +1,31 @@
+{
+	"name": "H. Rozčlenění celkového nároku na slevy na dani (§ 35 odst. 1 a § 35a nebo § 35b zákona), který lze uplatnit na ř. 300 5)",
+	"title": "H. Rozčlenění celkového nároku na slevy na dani (§ 35 odst. 1 a § 35a nebo § 35b zákona), který lze uplatnit na ř. 300 5)",
+
+	"fields": {
+		"columns": [
+			{"id": "kc_dpp_f1", "type": "long", "name": "Sleva podle § 35 odst. 1 písm. a) zákona"},
+			{"id": "kc_dpp_f2", "type": "long", "name": "Sleva podle § 35 odst. 1 písm. b) zákona"},
+			{"id": "kc_dpp_f4", "type": "long", "name": "Úhrn slev podle § 35 odst. 1 zákona (ř.1 + 2)"},
+			{"id": "kc_dpp_h1_35ab", "type": "long", "name": "Sleva podle § 35a nebo 35b zákona"}
+		],
+
+		"layout": [
+			{
+				"table": {
+					"cols": {"rn": " číslo řádku", "text": "popis", "value": " hodnota"},
+					"header": [
+						{"rn": "Řád.", "text": "Název položky", "value": "Částka"}
+					],
+					"rows": [
+						{"rn": "1", "text": {"scLabel": "kc_dpp_f1"}, "value": {"scInput": "kc_dpp_f1"}},
+						{"rn": "2", "text": {"scLabel": "kc_dpp_f2"}, "value": {"scInput": "kc_dpp_f2"}},
+						{"rn": "3", "text": "(neobsazeno)", "value": ""},
+						{"rn": "4", "text": {"scLabel": "kc_dpp_f4"}, "value": {"scInput": "kc_dpp_f4"}},
+						{"rn": "5", "text": {"scLabel": "kc_dpp_h1_35ab"}, "value": {"scInput": "kc_dpp_h1_35ab"}}
+					]
+				}
+			}
+		]
+	}
+}

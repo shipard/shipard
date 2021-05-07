@@ -1,0 +1,10 @@
+[
+	{
+		"id": "tests.e10.items.BadItems", "class": "lib.tests.TestReports",
+		"name": "Problémy s položkami",
+		"notify": "e10doc-accounting", "systemSection": 58,
+		"reports": [
+			{"class": "e10pro.reports.tests.items.ReportBadItems", "cycles": ["prevMonth", "thisMonth"]}
+		]
+	}
+]

@@ -1,0 +1,7 @@
+{
+	"experimental": {
+		"options": [
+			{"cfgKey": "testTaxReportCI", "cfgName": "Testovací verze DPPO", "options": {"0": "Ne","1": "Ano"}}
+		]
+	}
+}

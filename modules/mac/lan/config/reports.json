@@ -1,0 +1,4 @@
+[
+	{"name": "SW licence", "class": "mac.lan.ReportSWLicenses", "icon": "icon-certificate", "group": "mac-lan", "order": 1000},
+	{"name": "Shipard Agent", "class": "mac.lan.libs.ReportShipardAgentInstall", "icon": "icon-user-secret", "group": "mac-lan", "order": 100000}
+]

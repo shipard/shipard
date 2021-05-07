@@ -1,0 +1,43 @@
+{
+    "table": {
+        "name": "Calendar"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "day": {
+            "name": "Day"
+        },
+        "month": {
+            "name": "Month"
+        },
+        "yearFrom": {
+            "name": "Year from"
+        },
+        "yearTo": {
+            "name": "Year to"
+        },
+        "country": {
+            "name": "Country"
+        },
+        "type": {
+            "name": "Type"
+        },
+        "nonWorkingDay": {
+            "name": "Non-working day"
+        },
+        "title": {
+            "name": "Title"
+        },
+        "url": {
+            "name": "Link"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

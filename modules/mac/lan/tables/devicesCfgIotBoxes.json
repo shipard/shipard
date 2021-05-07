@@ -1,0 +1,12 @@
+{
+	"id": "mac.lan.devicesCfgIoTBoxes", "sql": "mac_lan_devicesCfgIoTBoxes", "name": "Konfigurace IoT Boxů",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "device", "name": "Zařízení", "type": "int", "reference": "mac.lan.devices"},
+
+		{"id": "iotBoxCfgData", "name": "Data nastavení", "type": "memo"},
+		{"id": "iotBoxCfgDataVer", "name": "Verze", "type": "string", "len": 40, "options": ["ascii"]},
+		{"id": "iotBoxCfgDataTimestamp", "name": "Datum a čas", "type": "timestamp"}
+	],
+	"options": ["systemTable"]
+}

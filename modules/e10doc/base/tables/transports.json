@@ -1,0 +1,24 @@
+{
+	"id": "e10doc.base.transports", "sql": "e10doc_base_transports", "name": "Způsoby dopravy", "icon": "icon-truck",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 40},
+		{"id": "id", "name": "ID", "type": "string", "len": 20},
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+		{"id": "personBalance", "name": "Osoba pro saldokonto", "type": "int", "reference": "e10.persons.persons"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "e10doc.base.ViewTransports", "detail": "e10doc.base.ViewDetailTransport", "help": "prirucka/4455"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.base.FormTransport", "help": "prirucka/4455"}
+	],
+	"options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

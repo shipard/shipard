@@ -1,0 +1,6 @@
+{
+    "sale": {"fullName": "Smlouva prodejní", "shortName": "Prodejní smlouva",
+	      "shortcut": "FVB", "classId": "sale", "docIdCode": "1",
+        "icon": "e10-docs-invoices-out", 
+				"docNumber": "%D%y%C%4"}
+}

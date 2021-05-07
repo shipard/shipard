@@ -1,0 +1,7 @@
+{
+	"kb-user-page": {
+		"name": "Uživatelská stránka",
+		"classId": "e10pro.kb.libs.SystemPageEngine",
+		"pageContent": 1
+	}
+}

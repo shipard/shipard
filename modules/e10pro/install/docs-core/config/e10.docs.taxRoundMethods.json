@@ -1,0 +1,22 @@
+{
+	"0": {
+		"title": "Na haléře",
+		"type": 0,
+		"precision": 2
+	},
+	"1": {
+		"title": "Na desetihaléře nahoru",
+		"type": 1,
+		"precision": 1
+	},
+	"2": {
+		"title": "Na desetihaléře dolů",
+		"type": -1,
+		"precision": 1
+	},
+	"3": {
+		"title": "Na desetihaléře",
+		"type": 0,
+		"precision": 1
+	}
+}

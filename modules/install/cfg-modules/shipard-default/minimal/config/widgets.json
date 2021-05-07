@@ -1,0 +1,6 @@
+[
+	{
+		"class": "lib.wkf.WidgetHelpDesk", "dashboard": "main_new", "panel": "helpdesk", "order": 1001, "row": "main", "width": 12,
+		"type": "wkfWall e10-widget-iframe"
+	}
+]

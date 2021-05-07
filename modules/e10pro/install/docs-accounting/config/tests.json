@@ -1,0 +1,18 @@
+[
+	{
+		"id": "tests.e10.debs.BadAccounting", "class": "lib.tests.TestReports",
+		"name": "Chybné účtování",
+		"notify": "e10doc-accounting", "systemSection": 58,
+		"reports": [
+			{"class": "e10pro.reports.tests.debs.ReportBadAccounting", "cycles": ["prevMonth", "thisMonth"]}
+		]
+	},
+	{
+		"id": "tests.e10.debs.OpenStates", "class": "lib.tests.TestReports",
+		"name": "Návaznosti počátečních stavů",
+		"notify": "e10doc-accounting", "systemSection": 58,
+		"reports": [
+			{"class": "e10doc.debs.libs.reports.CheckOpenStates", "cycles": ["all"]}
+		]
+	}
+]

@@ -1,0 +1,9 @@
+{
+	"panels": {
+		"reports": {
+			"items": [
+				{"t1": "Jídelna", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10pro-canteen", "icon": "icon-cutlery", "order": 600000}
+			]
+		}
+	}
+}

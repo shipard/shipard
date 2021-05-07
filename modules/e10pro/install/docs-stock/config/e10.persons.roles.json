@@ -1,0 +1,46 @@
+{
+	"stock": {
+		"name": "Zásoby",
+		"roles": ["pwuser"],
+		"viewers": {
+			"e10doc.core.heads": {"stockin": 2, "stockout": 2, "stockinst": 2},
+			"e10doc.inventory.checkHeads": {"default": 2},
+			"e10doc.inventory.checkRows": {"default": 2},
+			"e10.witems.items": {"inventory": 2}
+		},
+		"documents": {
+			"e10doc.core.heads":	[
+				{"docType": ["stockin", "stockinst", "stockout"], "_access": 2, "_name": "Příjemky, Výdejky a Počáteční stavy zásob"}
+			]
+		},
+		"reports": {
+			"e10doc.inventory.reportInventoryStates": 2, "e10doc.inventory.reportInventoryWarehouse": 2,
+			"e10doc.inventory.reportInventoryMinus": 2, "e10doc.inventory.reportInventoryTroubles": 2,
+			"e10doc.inventory.reportInventoryErrors": 2, "e10pro.reports.buy.ReportBrands": 2,
+			"e10pro.reports.sale_brands.reportBrands": 2, "e10doc.inventory.reportBalanceStockInInvoice": 2,
+			"e10pro.reports.inventory.reportSale": 2,
+			"e10pro.reports.inventory.reportBuy": 2
+		}
+	},
+	"acc": {
+		"reports": {
+			"e10doc.inventory.reportBalanceStockInInvoice": 2
+		}
+	},
+	"buy": {
+		"reports": {
+			"e10doc.inventory.reportBalanceStockInInvoice": 2
+		}
+	},
+	"bsass": {
+		"viewers": {
+			"e10doc.core.heads": {"stockin": 1, "stockout": 1, "stockinst": 1},
+			"e10doc.inventory.checkHeads": {"default": 1}
+		},
+		"documents": {
+			"e10doc.core.heads":	[
+				{"docType": ["stockin", "stockinst", "stockout"], "_access": 1, "_name": "Příjemky, Výdejky a Počáteční stavy zásob"}
+			]
+		}
+	}
+}

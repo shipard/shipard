@@ -1,0 +1,19 @@
+{
+    "table": {
+        "name": "Cameras in zones"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "zone": {
+            "name": "Zone"
+        },
+        "camera": {
+            "name": "Camera"
+        },
+        "rowOrder": {
+            "name": "Order"
+        }
+    }
+}

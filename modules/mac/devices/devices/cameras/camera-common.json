@@ -1,0 +1,11 @@
+{
+	"name": "Kamera",
+	"title": "kamera",
+	"fields": {
+		"columns": [
+			{"id": "streamURL", "name": "URL pro stream", "type": "string", "len": 120},
+			{"id": "picturesFolder", "name": "Složka s živými obrázky", "type": "string", "len": 30},
+			{"id": "enableVehicleDetect", "name": "Povolit detekci vozidel (SPZ)", "type": "logical"}
+		]
+	}
+}

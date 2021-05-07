@@ -1,0 +1,39 @@
+{
+	"units":
+	{
+		"none": {"text": "", "shortcut": ""},
+		"pcs":	{"text": "Kus", "shortcut": "ks"},
+
+		"hr":		{"text": "Hodina", "shortcut": "hod"},
+		"hr_2":	{"text": "Půlhodina", "shortcut": "30min"},
+		"hr_4":	{"text": "Čtvrthodina", "shortcut": "15min"},
+		"day":	{"text": "Den", "shortcut": "den"},
+		"mnth":	{"text": "Měsíc", "shortcut": "měs"},
+		"year":	{"text": "Rok", "shortcut": "rok"},
+
+		"m":		{"text": "Metr", "shortcut": "m"},
+		"km":		{"text": "Kilometr", "shortcut": "km"},
+
+		"m2":		{"text": "Metr čtvereční", "shortcut": "m2"},
+
+		"m3":		{"text": "Metr krychlový", "shortcut": "m3"},
+		"l":		{"text": "Litr", "shortcut": "l"},
+
+		"kg":		{"text": "Kilogram", "shortcut": "kg", "kind": "weight", "coef": 1},
+		"g":		{"text": "Gram", "shortcut": "g", "kind": "weight", "coef": 0.001},
+		"t":		{"text": "Tuna", "shortcut": "t", "kind": "weight", "coef": 1000},
+
+		"kwh":	{"text": "Kilowathodina", "shortcut": "kWh"},
+
+		"gj":		{"text": "Gigajoule", "shortcut": "GJ"},
+
+		"stdpage":	{"text": "Normostrana", "shortcut": "NS"},
+		"word":			{"text": "slovo", "shortcut": "slovo"},
+
+		"dgrcls":		{"text": "°C", "shortcut": "°C"}
+	},
+	"unitKinds":
+	{
+		"weight": {"name": "Hmotnost", "unit": "kg"}
+	}
+}

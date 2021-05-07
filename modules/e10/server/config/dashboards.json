@@ -1,0 +1,26 @@
+{
+	"srvcfg": {
+		"name": "Informace o databázi",
+		"disableTopToolbar": 1,
+		"panels": {
+			"main": {
+				"name": "Přehled",
+				"icon": "icon-eye",
+				"order": 1000,
+				"fullsize": 1,
+				"rows": {
+					"info": {"order": 10000, "align": "right"}
+				}
+			},
+			"calc": {
+				"name": "Kalkulace",
+				"icon": "icon-calculator",
+				"order": 100000,
+				"fullsize": 1,
+				"rows": {
+					"info": {"order": 10000, "align": "right"}
+				}
+			}
+		}
+	}
+}

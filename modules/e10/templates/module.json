@@ -1,0 +1,5 @@
+{
+  "id": "e10.templates",
+  "name": "Core Web Templates",
+	"templates": ["basic"]
+}

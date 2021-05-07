@@ -1,0 +1,40 @@
+{
+	"id": "e10pro.booking.bookings", "sql": "e10pro_booking_bookings", "name": "Rezervace", "icon": "icon-book",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "subject", "name": "Předmět", "type": "string", "len": 100},
+		{"id": "note", "name": "Poznámka", "type": "memo"},
+
+		{"id": "phone", "name": "Telefon", "type": "string", "len": 64},
+		{"id": "email", "name": "E-mail", "type": "string", "len": 64},
+
+		{"id": "price", "name": "Cena", "type": "money"},
+		{"id": "currency", "name": "Měna", "type": "enumString", "len": 3,
+			"enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
+
+		{"id": "place", "name": "Místo", "type": "int", "reference": "e10.base.places"},
+		{"id": "bookingType", "name": "Druh rezervace", "type": "enumString", "len": 10,
+			"enumCfg": {"cfgItem": "e10pro.bookingTypes", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "author", "name": "Autor", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "dateBegin", "name": "Datum/čas od", "type": "date"},
+		{"id": "dateEnd", "name": "Datum/čas do", "label": "Do", "type": "date"},
+		{"id": "cntParts", "name": "Množství", "type": "enumInt"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "e10pro.booking.ViewBookings", "detail": "e10pro.booking.ViewDetailBooking"},
+		{"id": "agenda", "class": "e10pro.booking.ViewBookingAgenda", "detail": "e10pro.booking.ViewDetailBooking"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.booking.FormBooking"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "subject"}
+}

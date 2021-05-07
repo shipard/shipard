@@ -1,0 +1,13 @@
+{
+  "id": "wkf.docs",
+  "name": "workflow - documents",
+  "tables": [
+		"docsKinds", "folders", "foldersDocsKinds", "documents"
+	],
+	"modules": ["wkf/base"],
+	"config": [
+		{"id": "+appOptions", "file": "appOptions.json"},
+		{"id": "+e10.base.doclinks", "file": "doclinks.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"}
+	]
+}

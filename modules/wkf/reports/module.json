@@ -1,0 +1,11 @@
+{
+  "id": "wkf.reports",
+  "name": "workflow - reports",
+  "tables": [
+
+	],
+	"modules": ["wkf/base"],
+  "config": [
+		{"id": "+dashboards", "file": "dashboards.json"}
+	]
+}

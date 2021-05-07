@@ -1,0 +1,12 @@
+{
+	"pwuser": {
+		"reports": {
+			"e10pro.reports.persons.reportContacts": 2
+		}
+	},
+	"admin": {
+		"reports": {
+			"e10pro.reports.persons.reportDuplicities": 2
+		}
+	}
+}

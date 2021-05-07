@@ -1,0 +1,23 @@
+{
+	"name": "K. Vybrané ukazatele hospodaření",
+	"title": "K. Vybrané ukazatele hospodaření",
+
+	"fields": {
+		"columns": [
+			{"id": "kc_dpp_i1", "type": "long", "src": "statement.C_0_55_5", "name": "Roční úhrn čistého obratu"},
+			{"id": "poc_zam", "type": "long", "name": "Průměrný přepočtený počet zaměstnanců, zaokrouhlený na celé číslo"}
+		],
+
+		"layout": [
+			{
+				"table": {
+					"cols": {"c0": " Řádek", "c1": "Název položky", "c2": "Měrná jednotka", "c3": " Částka"},
+					"rows": [
+						{"c0": "1", "c1": {"scLabel": "kc_dpp_i1"}, "c2": "Kč", "c3": {"scInput": "kc_dpp_i1"}},
+						{"c0": "2", "c1": {"scLabel": "poc_zam"}, "c2": "osoby", "c3": {"scInput": "poc_zam"}}
+					]
+				}
+			}
+		]
+	}
+}

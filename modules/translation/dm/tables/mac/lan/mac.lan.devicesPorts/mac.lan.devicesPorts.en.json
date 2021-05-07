@@ -1,0 +1,54 @@
+{
+    "table": {
+        "name": "Ports of network devices"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "rowOrder": {
+            "name": "Row order"
+        },
+        "device": {
+            "name": "Device"
+        },
+        "portKind": {
+            "name": "Type of port"
+        },
+        "portNumber": {
+            "name": "Port number",
+            "label": "Number"
+        },
+        "portId": {
+            "name": "Port ID",
+            "label": "id"
+        },
+        "note": {
+            "name": "Note"
+        },
+        "fullName": {
+            "name": "Port name"
+        },
+        "portRole": {
+            "name": "Port role"
+        },
+        "vlan": {
+            "name": "VLAN"
+        },
+        "mac": {
+            "name": "MAC"
+        },
+        "connectedTo": {
+            "name": "Connected to"
+        },
+        "connectedToWallSocket": {
+            "name": "Socket"
+        },
+        "connectedToDevice": {
+            "name": "Device"
+        },
+        "connectedToPort": {
+            "name": "Port"
+        }
+    }
+}

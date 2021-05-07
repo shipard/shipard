@@ -1,0 +1,14 @@
+{
+	"swdevDocumentation": {
+		"name": "Dokumentace", "order": 1000, "group": "swdev",
+		"icon": "icon-book",
+		"type": "cfgFile",
+		"options":
+		[
+			{"cfgKey": "wikiPageTables", "cfgName": "Wiki stránka pro Tabulky", "reference": "e10pro.kb.texts"},
+			{"cfgKey": "wikiPageTerms", "cfgName": "Wiki stránka pro Pojmy", "reference": "e10pro.kb.texts"},
+			{"cfgKey": "wikiPageEnums", "cfgName": "Wiki stránka pro Enumy", "reference": "e10pro.kb.texts"}
+		]
+	}
+}
+

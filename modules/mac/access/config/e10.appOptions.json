@@ -1,0 +1,20 @@
+{
+	"macAccess": {
+		"name": "Přístup do budovy/areálu", "order": 100, "group": "mac",
+		"icon": "icon-building-o",
+		"type": "cfgFile",
+		"options":
+		[
+			{"cfgKey": "useAccessManagement", "cfgName": "Používat správu přístupů",
+				"options": {"0": "Ne", "1": "Ano"}},
+			{"cfgKey": "useTagsCautionMoney", "cfgName": "Vyžadovat kauci za přístupové čipy",
+				"options": {"0": "Ne", "1": "Ano"}},
+			{"cfgKey": "tagsCautionMoneyAmount", "cfgName": "Částka kauce"},
+			{"cfgKey": "cautionMoneyDocsMode", "cfgName": "Způsob správy dokladů za kauce",
+				"options": {"0": "Nespravovat", "1": "Automaticky", "2": "Ručně"}},
+			{"cfgKey": "useAssignTagsToRooms", "cfgName": "Povolit přiřazování čipů k pokojům",
+				"options": {"0": "Ne", "1": "Ano"}}
+		]
+	}
+}
+

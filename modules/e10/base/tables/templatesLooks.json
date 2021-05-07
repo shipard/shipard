@@ -1,0 +1,50 @@
+{
+	"id": "e10.base.templatesLooks", "sql": "e10_base_templatesLooks", "name": "Vzhledy šablon", "icon": "icon-file-image-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "template", "name": "Šablona", "type": "int", "reference": "e10.base.templates", "comboViewer": "webCombo", "options": ["saveOnChange"]},
+		{"id": "templateId", "name": "Šablona", "type": "string", "len": 60},
+		{"id": "templateType", "name": "Typ šablony", "type": "enumInt",
+			"enumValues": {"0": "Web", "1": "Doklad", "2": "Report", "3": "Spreadsheet"}},
+
+		{"id": "lookId", "name": "ID", "type": "string", "len": 32},
+
+		{"id": "name", "name": "Název", "type": "string", "len": 120},
+
+		{"id": "lookParams", "name": "Parametry šablony", "type": "subColumns"},
+
+		{"id": "lookStyleExt", "name": "Rozšíření stylů", "type": "memo"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": {
+		"default": {
+			"id": "default",
+			"class": "e10.base.ViewTemplatesLooks",
+			"details": {
+				"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10.base.ViewDetailTemplateLook"},
+				"data": {"title": "Data", "icon": "icon-code", "type": "detail", "class": "e10.base.ViewDetailTemplateLookData"}
+			}
+		},
+		"web": {
+			"id": "web",
+			"class": "e10.base.ViewTemplatesLooksWeb",
+			"details": {
+				"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10.base.ViewDetailTemplateLook"},
+				"data": {"title": "Data", "icon": "icon-code", "type": "detail", "class": "e10.base.ViewDetailTemplateLookData"}
+			}
+		},
+		"webCombo": {
+			"id": "webCombo",
+			"class": "e10.base.ViewTemplatesLooksWebCombo"
+		}
+	},
+	"forms": [
+		{"id": "default", "class": "e10.base.FormTemplateLook"}
+	],
+	"order": [{"column": "ndx", "order": "ASC"}],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"}
+}

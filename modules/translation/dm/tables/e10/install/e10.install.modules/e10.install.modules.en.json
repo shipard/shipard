@@ -1,0 +1,19 @@
+{
+    "table": {
+        "name": "Installed modules"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "moduleId": {
+            "name": "Module"
+        },
+        "moduleVersion": {
+            "name": "Version"
+        },
+        "moduleCheckSum": {
+            "name": "Checksum"
+        }
+    }
+}

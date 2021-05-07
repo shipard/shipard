@@ -1,0 +1,19 @@
+{{{netdataPageBegin}}}
+
+{{#data.device.ports}}
+	{{#physical}}
+		<div style="background-color: #3b3b3b; color: white; display: inline-block; width: 100%; border-bottom: 1px solid rgba(0,0,0,.25); padding: .5em 1em;">
+			<span class="label label-primary">#{{num}}: {{portId}}</span> &nbsp; &nbsp; {{{@composeTextLine;dataItem:connectedTo}}}
+		</div>
+
+		<div data-netdata='maclan_{{data.device.recData.lan}}_D{{deviceNdx}}.bandwidth_port{{num}}'
+				 data-dimensions-xxx='user' data-chart-library='dygraph' data-width='100%' data-points='10' data-before='0'
+				 data-after='-300' data-height='10em' data-colors='#FF5555'>
+		</div>
+
+	{{/physical}}
+
+{{/data.device.ports}}
+
+{{{netdataPageEnd}}}
+

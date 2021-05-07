@@ -1,0 +1,46 @@
+{
+    "table": {
+        "name": "Texts on documents"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "note": {
+            "name": "Note"
+        },
+        "docType": {
+            "name": "Document type"
+        },
+        "docDbCounter": {
+            "name": "Numerical series"
+        },
+        "cashBox": {
+            "name": "Cash box"
+        },
+        "docKind": {
+            "name": "Document kind"
+        },
+        "reportMode": {
+            "name": "Report type"
+        },
+        "place": {
+            "name": "Text placement"
+        },
+        "text": {
+            "name": "Text"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "systemOrder": {
+            "name": "System order"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

@@ -1,0 +1,220 @@
+{
+	"name": "Rozvaha v plném rozsahu v.2015",
+	"pattern": {
+		"tables": [
+			{
+				"tableId": "AKTIVA", "disableZeros": 1, "fixedHeader": 1, "sheetTitle": "AKTIVA",
+				"columns": [
+					{"title": "A", "format": "tabString"},
+					{"title": "B"},
+					{"title": "C", "class": "center"},
+					{"title": "D", "shortName": "BRU", "autoEval": 1, "class": "number", "format": "money"},
+					{"title": "E", "shortName": "KOR", "autoEval": 1, "class": "number", "format": "money"},
+					{"title": "F", "shortName": "NET", "autoEval": 1, "class": "number", "format": "money"},
+					{"title": "G", "shortName": "MUON", "autoEval": 1, "class": "number", "format": "money"}
+				],
+				"rowInfo": {"shortName": {"cols": [2]}, "fullName": {"cols": [1]}},
+				"header": [
+					[{"value": "Označení", "class": "center"}, {"value": "AKTIVA", "class": "center"}, {"value": "Řádek", "class": "center"}, {"value": "Běžné účetní období", "colspan": 3, "class": "center"}, "", "",  {"value": "Minulé ÚO", "class": "center"}],
+					["", "", "", {"value": "Brutto", "class": "center"}, {"value": "Korekce", "class": "center"}, {"value": "Netto", "class": "center"}, {"value": "Netto", "class": "center"}],
+					[{"value": "a", "class": "center"}, {"value": "b", "class": "center"}, {"value": "c", "class": "center"}, {"value": "1", "class": "center"}, {"value": "2", "class": "center"}, {"value": "3", "class": "center"}, {"value": "4", "class": "center"}]
+				],
+				"rows": [
+					["", "AKTIVA CELKEM",                                      				"001", "=[{SUM;D2;D3;D31;D63}]",                        "=[{SUM;E2;E3;E31;E63}]",                       "=[{SUM;F2;F3;F31;F63}]",                       "=[{SUM;G2;G3;G31;G63}]"],
+
+					["A.", "Pohledávky za upsaný základní kapitál",  									"002", "353",                                           "",                                             "=[{SUM;D2;-E2}]",                              "=[{SUM;prev!AKTIVA:F2}]"],
+
+					["B.", "Dlouhodobý majetek",                 											"003", "=[{SUM;D4;D13;D23}]",                           "=[{SUM;E4;E13;E23}]",                          "=[{SUM;F4;F13;F23}]",                          "=[{SUM;G4;G13;G23}]"],
+
+					["B. I.", "Dlouhodobý nehmotný majetek", 													"004", "=[{SUM;D5;D6;D7;D8;D9;D10;D11;D12}]",           "=[{SUM;E5;E6;E7;E8;E9;E10;E11;E12}]",          "=[{SUM;F5;F6;F7;F8;F9;F10;F11;F12}]",          "=[{SUM;G5;G6;G7;G8;G9;G10;G11;G12}]"],
+
+					["B. I.\t1.", "Zřizovací výdaje", 																"005", "011",                                           "-071",                                         "=[{SUM;D5;-E5}]",                              "=[{SUM;prev!AKTIVA:F5}]"],
+					["\t2.", "Nehmotné výsledky výzkumu a vývoje", 										"006", "012",                                           "-072",                                         "=[{SUM;D6;-E6}]",                              "=[{SUM;prev!AKTIVA:F6}]"],
+					["\t3.", "Software", 																							"007", "013",                                           "-073 -091",                                    "=[{SUM;D7;-E7}]",                              "=[{SUM;prev!AKTIVA:F7}]"],
+					["\t4.", "Ocenitelná práva", 																			"008", "014",                                           "-074",                                         "=[{SUM;D8;-E8}]",                              "=[{SUM;prev!AKTIVA:F8}]"],
+					["\t5.", "Goodwill", 																							"009", "015",                                           "-075",                                         "=[{SUM;D9;-E9}]",                              "=[{SUM;prev!AKTIVA:F9}]"],
+					["\t6.", "Jiný dlouhodobý nehmotný majetek", 											"010", "019", 				                                  "-076 -079",                                    "=[{SUM;D10;-E10}]",                            "=[{SUM;prev!AKTIVA:F10}]"],
+					["\t7.", "Nedokončený dlouhodobý nehmotný majetek", 							"011", "041",                                           "-093",                                         "=[{SUM;D11;-E11}]",                            "=[{SUM;prev!AKTIVA:F11}]"],
+					["\t8.", "Poskytnuté zálohy na dlouhodobý nehmotný majetek",			"012", "051",                                           "",                                             "=[{SUM;D12;-E12}]",                            "=[{SUM;prev!AKTIVA:F12}]"],
+
+					["B. II.", "Dlouhodobý hmotný majetek",                						"013", "=[{SUM;D14;D15;D16;D17;D18;D19;D20;D21;D22}]",  "=[{SUM;E14;E15;E16;E17;E18;E19;E20;E21;E22}]", "=[{SUM;F14;F15;F16;F17;F18;F19;F20;F21;F22}]", "=[{SUM;G14;G15;G16;G17;G18;G19;G20;G21;G22}]"],
+
+					["B. II.\t1.", "Pozemky", 																				"014", "031",                                           "",                                             "=[{SUM;D14;-E14}]",                            "=[{SUM;prev!AKTIVA:F14}]"],
+					["\t2.", "Stavby", 																								"015", "021",                                           "-081",                                         "=[{SUM;D15;-E15}]",                            "=[{SUM;prev!AKTIVA:F15}]"],
+					["\t3.", "Samostatné movité věci a soubory movitých věcí",				"016", "022",                                           "-082 -092",                                    "=[{SUM;D16;-E16}]",                            "=[{SUM;prev!AKTIVA:F16}]"],
+					["\t4.", "Pěstitelské celky trvalých porostů", 										"017", "025",                                           "-085",                                         "=[{SUM;D17;-E17}]",                            "=[{SUM;prev!AKTIVA:F17}]"],
+					["\t5.", "Dospělá zvířata a jejich skupiny", 											"018", "026",                                           "-086",                                         "=[{SUM;D18;-E18}]",                            "=[{SUM;prev!AKTIVA:F18}]"],
+					["\t6.", "Jiný dlouhodobý hmotný majetek", 												"019", "029 032",                                       "-089",                                         "=[{SUM;D19;-E19}]",                            "=[{SUM;prev!AKTIVA:F19}]"],
+					["\t7.", "Nedokončený dlouhodobý hmotný majetek", 								"020", "042",                                           "-094",                                         "=[{SUM;D20;-E20}]",                            "=[{SUM;prev!AKTIVA:F20}]"],
+					["\t8.", "Poskytnuté zálohy na dlouhodobý hmotný majetek",				"021", "052",                                           "-095",                                         "=[{SUM;D21;-E21}]",                            "=[{SUM;prev!AKTIVA:F21}]"],
+					["\t9.", "Oceňovací rozdíl k nabytému majetku", 									"022", "097",                                           "-098",                                         "=[{SUM;D22;-E22}]",                            "=[{SUM;prev!AKTIVA:F22}]"],
+
+					["B. III.", "Dlouhodobý finanční majetek",                				"023", "=[{SUM;D24;D25;D26;D27;D28;D29;D30}]",          "=[{SUM;E24;E25;E26;E27;E28;E29;E30}]",         "=[{SUM;F24;F25;F26;F27;F28;F29;F30}]",         "=[{SUM;G24;G25;G26;G27;G28;G29;G30}]"],
+
+					["B. III.\t1.", "Podíly – ovládaná osoba",												"024", "061",                                           "",                                             "=[{SUM;D24;-E24}]",                            "=[{SUM;prev!AKTIVA:F24}]"],
+					["\t2.", "Podíly v účetních jednotkách pod podstatným vlivem",		"025", "062",                                           "",                                             "=[{SUM;D25;-E25}]",                            "=[{SUM;prev!AKTIVA:F25}]"],
+					["\t3.", "Ostatní dlouhodobé cenné papíry a podíly", 							"026", "063 065",                                       "",                                             "=[{SUM;D26;-E26}]",                            "=[{SUM;prev!AKTIVA:F26}]"],
+					["\t4.", "Půjčky a úvěry – ovládaná nebo ovládající osoba, podstatný vliv",
+																																						"027", "066",                                           "",                                             "=[{SUM;D27;-E27}]",                            "=[{SUM;prev!AKTIVA:F27}]"],
+					["\t5.", "Jiný dlouhodobý finanční majetek", 											"028", "067 069", 		                                  "",                                             "=[{SUM;D28;-E28}]",                            "=[{SUM;prev!AKTIVA:F28}]"],
+					["\t6.", "Pořizovaný dlouhodobý finanční majetek", 								"029", "043",                                           "",                                             "=[{SUM;D29;-E29}]",                            "=[{SUM;prev!AKTIVA:F29}]"],
+					["\t7.", "Poskytnuté zálohy na dlouhodobý finanční majetek",			"030", "053",                                           "",                                             "=[{SUM;D30;-E30}]",                            "=[{SUM;prev!AKTIVA:F30}]"],
+
+					["C.", "Oběžná aktiva",                        										"031", "=[{SUM;D32;D39;D48;D58}]",                      "=[{SUM;E32;E39;E48;E58}]",                     "=[{SUM;F32;F39;F48;F58}]",                     "=[{SUM;G32;G39;G48;G58}]"],
+
+					["C. I.", "Zásoby",               																"032", "=[{SUM;D33;D34;D35;D36;D37;D38}]",              "=[{SUM;E33;E34;E35;E36;E37;E38}]",             "=[{SUM;F33;F34;F35;F36;F37;F38}]",             "=[{SUM;G33;G34;G35;G36;G37;G38}]"],
+
+					["C. I.\t1.", "Materiál", 																				"033", "111 112 119",                                   "-191",                                         "=[{SUM;D33;-E33}]",                            "=[{SUM;prev!AKTIVA:F33}]"],
+					["\t2.", "Nedokončená výroba a polotovary", 											"034", "121 122",                                       "-192 -193",                                    "=[{SUM;D34;-E34}]",                            "=[{SUM;prev!AKTIVA:F34}]"],
+					["\t3.", "Výrobky", 																							"035", "123",                                           "-194",                                         "=[{SUM;D35;-E35}]",                            "=[{SUM;prev!AKTIVA:F35}]"],
+					["\t4.", "Mladá a ostatní zvířata a jejich skupiny", 							"036", "124",                                           "-195",                                         "=[{SUM;D36;-E36}]",                            "=[{SUM;prev!AKTIVA:F36}]"],
+					["\t5.", "Zboží", 																								"037", "131 132 139",                                   "-196",                                         "=[{SUM;D37;-E37}]",                            "=[{SUM;prev!AKTIVA:F37}]"],
+					["\t6.", "Poskytnuté zálohy na zásoby", 													"038", "151 152 153",                                   "-197 -198 -199",                               "=[{SUM;D38;-E38}]",                            "=[{SUM;prev!AKTIVA:F38}]"],
+
+					["C. II.", "Dlouhodobé pohledávky",                								"039", "=[{SUM;D40;D41;D42;D43;D44;D45;D46;D47}]",      "=[{SUM;E40;E41;E42;E43;E44;E45;E46;E47}]",     "=[{SUM;F40;F41;F42;F43;F44;F45;F46;F47}]",     "=[{SUM;G40;G41;G42;G43;G44;G45;G46;G47}]"],
+
+					["C. II.\t1.", "Pohledávky z obchodních vztahů", 									"040", "",                                              "",                                             "=[{SUM;D40;-E40}]",                            "=[{SUM;prev!AKTIVA:F40}]"],
+					["\t2.", "Pohledávky – ovládaná nebo ovládající osoba",						"041", "",                                              "",                                             "=[{SUM;D41;-E41}]",                            "=[{SUM;prev!AKTIVA:F41}]"],
+					["\t3.", "Pohledávky – podstatný vliv", 													"042", "",                                              "",                                             "=[{SUM;D42;-E42}]",                            "=[{SUM;prev!AKTIVA:F42}]"],
+					["\t4.", "Pohledávky za společníky, členy družstva a za účastníky sdružení",
+																																						"043", "",                                              "",                                             "=[{SUM;D43;-E43}]",                            "=[{SUM;prev!AKTIVA:F43}]"],
+					["\t5.", "Dlouhodobé poskytnuté zálohy", 													"044", "",                                              "",                                             "=[{SUM;D44;-E44}]",                            "=[{SUM;prev!AKTIVA:F44}]"],
+					["\t6.", "Dohadné účty aktivní", 																	"045", "",                                              "",                                             "=[{SUM;D45;-E45}]",                            "=[{SUM;prev!AKTIVA:F45}]"],
+					["\t7.", "Jiné pohledávky", 																			"046", "",                                              "",                                             "=[{SUM;D46;-E46}]",                            "=[{SUM;prev!AKTIVA:F46}]"],
+					["\t8.", "Odložená daňová pohledávka", 														"047", "",                                              "",                                             "=[{SUM;D47;-E47}]",                            "=[{SUM;prev!AKTIVA:F47}]"],
+
+					["C. III.", "Krátkodobé pohledávky",               								"048", "=[{SUM;D49;D50;D51;D52;D53;D54;D55;D56;D57}]",  "=[{SUM;E49;E50;E51;E52;E53;E54;E55;E56;E57}]", "=[{SUM;F49;F50;F51;F52;F53;F54;F55;F56;F57}]", "=[{SUM;G49;G50;G51;G52;G53;G54;G55;G56;G57}]"],
+
+					["C. III.\t1.", "Pohledávky z obchodních vztahů", 								"049", "311 313 315",                                   "-391",                                         "=[{SUM;D49;-E49}]",                            "=[{SUM;prev!AKTIVA:F49}]"],
+					["\t2.", "Pohledávky – ovládaná nebo ovládající osoba",						"050", "351",                                           "",                                             "=[{SUM;D50;-E50}]",                            "=[{SUM;prev!AKTIVA:F50}]"],
+					["\t3.", "Pohledávky – podstatný vliv", 													"051", "352",                                           "",                                             "=[{SUM;D51;-E51}]",                            "=[{SUM;prev!AKTIVA:F51}]"],
+					["\t4.", "Pohledávky za společníky, členy družstva a za účastníky sdružení",
+																																						"052", "354 355 358 398",                               "",                                             "=[{SUM;D52;-E52}]",                            "=[{SUM;prev!AKTIVA:F52}]"],
+					["\t5.", "Sociální zabezpečení a zdravotní pojištění",
+																																						"053", "a336",                                          "",                                             "=[{SUM;D53;-E53}]",                            "=[{SUM;prev!AKTIVA:F53}]"],
+					["\t6.", "Stát – daňové pohledávky", 															"054", "a341 a342 a343 a344 a345",                      "",                                             "=[{SUM;D54;-E54}]",                            "=[{SUM;prev!AKTIVA:F54}]"],
+					["\t7.", "Krátkodobé poskytnuté zálohy", 													"055", "314",                                           "",                                             "=[{SUM;D55;-E55}]",                            "=[{SUM;prev!AKTIVA:F55}]"],
+					["\t8.", "Dohadné účty aktivní", 																	"056", "388",                                           "",                                             "=[{SUM;D56;-E56}]",                            "=[{SUM;prev!AKTIVA:F56}]"],
+					["\t9.", "Jiné pohledávky", 																			"057", "335 371 373 374 375 376 378",                   "",                                             "=[{SUM;D57;-E57}]",                            "=[{SUM;prev!AKTIVA:F57}]"],
+
+					["C. IV.", "Krátkodobý finanční majetek",             						"058", "=[{SUM;D59;D60;D61;D62}]",                      "=[{SUM;E59;E60;E61;E62}]",                     "=[{SUM;F59;F60;F61;F62}]",                     "=[{SUM;G59;G60;G61;G62}]"],
+
+					["C. IV.\t1.", "Peníze", 																					"059", "211 213 261",                                   "",                                             "=[{SUM;D59;-E59}]",                            "=[{SUM;prev!AKTIVA:F59}]"],
+					["\t2.", "Účty v bankách", 																				"060", "a221",                                          "",                                             "=[{SUM;D60;-E60}]",                            "=[{SUM;prev!AKTIVA:F60}]"],
+					["\t3.", "Krátkodobé cenné papíry a podíly", 											"061", "251 253 256 257",  			                        "-291",                                         "=[{SUM;D61;-E61}]",                            "=[{SUM;prev!AKTIVA:F61}]"],
+					["\t4.", "Pořizovaný krátkodobý finanční majetek", 								"062", "259",                                           "",                                             "=[{SUM;D62;-E62}]",                            "=[{SUM;prev!AKTIVA:F62}]"],
+
+					["D. I.", "Časové rozlišení",                											"063", "=[{SUM;D64;D65;D66}]",                          "=[{SUM;E64;E65;E66}]",                         "=[{SUM;F64;F65;F66}]",                         "=[{SUM;G64;G65;G66}]"],
+
+					["D. I.\t1.", "Náklady příštích období", 													"064", "381",                                           "",                                             "=[{SUM;D64;-E64}]",                            "=[{SUM;prev!AKTIVA:F64}]"],
+					["\t2.", "Komplexní náklady příštích období", 										"065", "382",                                           "",                                             "=[{SUM;D65;-E65}]",                            "=[{SUM;prev!AKTIVA:F65}]"],
+					["\t3.", "Příjmy příštích období",																"066", "385",                                           "",                                             "=[{SUM;D66;-E66}]",                            "=[{SUM;prev!AKTIVA:F66}]"]
+				]
+			},
+			{
+				"tableId": "PASIVA", "disableZeros": 1, "newPage": 1, "fixedHeader": 1, "sheetTitle": "PASIVA",
+				"columns": [
+					{"title": "A", "format": "tabString"},
+					{"title": "B"},
+					{"title": "C", "class": "center"},
+					{"title": "D", "shortName": "BÚO", "autoEval": 1, "class": "number", "format": "money"},
+					{"title": "E", "shortName": "MÚO", "autoEval": 1, "class": "number", "format": "money"}
+				],
+				"rowInfo": {"shortName": {"cols": [2]}, "fullName": {"cols": [1]}},
+				"header": [
+					[{"value": "Označení", "class": "center"}, {"value": "PASIVA", "class": "center"}, {"value": "Řádek", "class": "center"}, {"value": "Běžné účetní období", "class": "center"}, {"value": "Minulé ÚO", "class": "center"}],
+					[{"value": "a", "class": "center"}, {"value": "b", "class": "center"}, {"value": "c", "class": "center"}, {"value": "5", "class": "center"}, {"value": "6", "class": "center"}]
+				],
+				"firstRowNumber": 67,
+				"rows": [
+					["", "PASIVA CELKEM",                           									"067", "=[{SUM;D68;D88;D121}]",                                 "=[{SUM;E68;E88;E121}]"],
+
+					["A.", "Vlastní kapitál",                              						"068", "=[{SUM;D69;D73;D80;D83;D87}]",                          "=[{SUM;E69;E73;E80;E83;E87}]"],
+
+					["A. I.", "Základní kapitál",                											"069", "=[{SUM;D70;D71;D72}]",                                  "=[{SUM;E70;E71;E72}]"],
+
+					["A. I.\t1.", "Základní kapitál", 																"070", "-411 -491",                                             "=[{SUM;prev!PASIVA:D70}]"],
+					["\t2.", "Vlastní akcie a vlastní obchodní podíly (-)",						"071", "-252",                                                  "=[{SUM;prev!PASIVA:D71}]"],
+					["\t3.", "Změny základního kapitálu", 														"072", "-419",                                                  "=[{SUM;prev!PASIVA:D72}]"],
+
+					["A. II.", "Kapitálové fondy",               											"073", "=[{SUM;D74;D75;D76;D77;D78;D79}]",                      "=[{SUM;E74;E75;E76;E77;E78;E79}]"],
+
+					["A. II.\t1.", "Emisní ážio", 																		"074", "-412",                                                  "=[{SUM;prev!PASIVA:D74}]"],
+					["\t2.", "Ostatní kapitálové fondy", 															"075", "-413",                                                  "=[{SUM;prev!PASIVA:D75}]"],
+					["\t3.", "Oceňovací rozdíly z přecenění majetku a závazků",				"076", "-414",                                                  "=[{SUM;prev!PASIVA:D76}]"],
+					["\t4.", "Oceňovací rozdíly z přecenění při přeměnách",						"077", "-418",                                                  "=[{SUM;prev!PASIVA:D77}]"],
+					["\t5.", "Rozdíly z přeměn společností", 													"078", "-417",                                                  "=[{SUM;prev!PASIVA:D78}]"],
+					["\t6.", "Rozdíly z ocenění při přeměnách společností",						"079", "-416", 			                                            "=[{SUM;prev!PASIVA:D79}]"],
+
+					["A. III.", "Rezervní fondy, nedělitelný fond a ostatní fondy ze zisku",
+																																						"080", "=[{SUM;D81;D82}]",                                      "=[{SUM;E81;E82}]"],
+
+					["A. III.\t1.", "Zákonný rezervní fond / Nedělitelný fond", 			"081", "-421 -422",                                             "=[{SUM;prev!PASIVA:D81}]"],
+					["\t2.", "Statutární a ostatní fondy", 														"082", "-423 -427",                                             "=[{SUM;prev!PASIVA:D82}]"],
+
+					["A. IV.", "Výsledek hospodaření minulých let",                		"083", "=[{SUM;D84;D85;D86}]",                                  "=[{SUM;E84;E85;E86}]"],
+
+					["A. IV.\t1.", "Nerozdělený zisk minulých let", 									"084", "-428",                                                  "=[{SUM;prev!PASIVA:D84}]"],
+					["\t2.", "Neuhrazená ztráta minulých let", 												"085", "-429",                                                  "=[{SUM;prev!PASIVA:D85}]"],
+					["\t3.", "Jiný výsledek hospodaření minulých let", 								"086", "-426 -431",                                             "=[{SUM;prev!PASIVA:D86}]"],
+
+					["A. V.", "Výsledek hospodaření běžného účetního období (+/-) [řádek *** výkazu zisku a ztráty]",
+																																						"087", "=[{SUM;statement!:D60}]",     																				"=[{SUM;prev!PASIVA:D87}]"],
+
+					["B.", "Cizí zdroje",                                     				"088", "=[{SUM;D89;D94;D105;D117}]",                            "=[{SUM;E89;E94;E105;E117}]"],
+
+					["B. I.", "Rezervy",               																"089", "=[{SUM;D90;D91;D92;D93}]",                              "=[{SUM;E90;E91;E92;E93}]"],
+
+					["B. I.\t1.", "Rezervy podle zvláštních právních předpisů", 			"090", "-451",                                                  "=[{SUM;prev!PASIVA:D90}]"],
+					["\t2.", "Rezerva na důchody a podobné závazky", 									"091", "",                                                      "=[{SUM;prev!PASIVA:D91}]"],
+					["\t3.", "Rezerva na daň z příjmů", 															"092", "-453",                                                  "=[{SUM;prev!PASIVA:D92}]"],
+					["\t4.", "Ostatní rezervy", 																			"093", "-459",                                                  "=[{SUM;prev!PASIVA:D93}]"],
+
+					["B. II.", "Dlouhodobé závazky",                 									"094", "=[{SUM;D95;D96;D97;D98;D99;D100;D101;D102;D103;D104}]", "=[{SUM;E95;E96;E97;E98;E99;E100;E101;E102;E103;E104}]"],
+
+					["B. II.\t1.", "Závazky z obchodních vztahů", 										"095", "-478",                                                  "=[{SUM;prev!PASIVA:D95}]"],
+					["\t2.", "Závazky – ovládaná nebo ovládající osoba", 							"096", "",                                                      "=[{SUM;prev!PASIVA:D96}]"],
+					["\t3.", "Závazky – podstatný vliv", 															"097", "",                                                      "=[{SUM;prev!PASIVA:D97}]"],
+					["\t4.", "Závazky ke společníkům, členům družstva a k účastníkům sdružení",
+																																						"098", "",                                                      "=[{SUM;prev!PASIVA:D98}]"],
+					["\t5.", "Dlouhodobé přijaté zálohy", 														"099", "-475",                                                  "=[{SUM;prev!PASIVA:D99}]"],
+					["\t6.", "Vydané dluhopisy", 																			"100", "-473 -255",                                             "=[{SUM;prev!PASIVA:D100}]"],
+					["\t7.", "Dlouhodobé směnky k úhradě", 														"101", "",                                                      "=[{SUM;prev!PASIVA:D101}]"],
+					["\t8.", "Dohadné účty pasivní", 																	"102", "",                                                      "=[{SUM;prev!PASIVA:D102}]"],
+					["\t9.", "Jiné závazky", 																					"103", "-479",                                                  "=[{SUM;prev!PASIVA:D103}]"],
+					["\t10.", "Odložený daňový závazek", 															"104", "-481",                                                  "=[{SUM;prev!PASIVA:D104}]"],
+
+					["B. III.", "Krátkodobé závazky",                  								"105", "=[{SUM;D106;D107;D108;D109;D110;D111;D112;D113;D114;D115;D116}]",
+                                                                                                                                            "=[{SUM;E106;E107;E108;E109;E110;E111;E112;E113;E114;E115;E116}]"],
+
+					["B. III.\t1.", "Závazky z obchodních vztahů", 										"106", "-321 -322 -325",                                        "=[{SUM;prev!PASIVA:D106}]"],
+					["\t2.", "Závazky – ovládaná nebo ovládající osoba", 							"107", "-361 -471",                                             "=[{SUM;prev!PASIVA:D107}]"],
+					["\t3.", "Závazky – podstatný vliv", 															"108", "-362 -472",                                             "=[{SUM;prev!PASIVA:D108]"],
+					["\t4.", "Závazky ke společníkům, členům družstva a k účastníkům sdružení",
+																																						"109", "-364 -365 -366 -367 -368",                              "=[{SUM;prev!PASIVA:D109}]"],
+					["\t5.", "Závazky k zaměstnancům", 																"110", "-331 -333",                                             "=[{SUM;prev!PASIVA:D110}]"],
+					["\t6.", "Závazky ze sociálního zabezpečení a zdravotního pojištění",
+																																						"111", "-p336",                                                 "=[{SUM;prev!PASIVA:D111}]"],
+					["\t7.", "Stát – daňové závazky a dotace", 												"112", "-p341 -p342 -p343 -p344 -p345 -346 -347",               "=[{SUM;prev!PASIVA:D112}]"],
+					["\t8.", "Krátkodobé přijaté zálohy", 														"113", "-324",                                                  "=[{SUM;prev!PASIVA:D113}]"],
+					["\t9.", "Vydané dluhopisy", 																			"114", "-241",                                                  "=[{SUM;prev!PASIVA:D114}]"],
+					["\t10.", "Dohadné účty pasivní", 																"115", "-389",                                                  "=[{SUM;prev!PASIVA:D115}]"],
+					["\t11.", "Jiné závazky", 																				"116", "-372 -373 -377 -379 -474",                              "=[{SUM;prev!PASIVA:D116}]"],
+
+					["B. IV.", "Bankovní úvěry a výpomoci",                  					"117", "=[{SUM;D118;D119;D120}]",                               "=[{SUM;E118;E119;E120}]"],
+
+					["B. IV.\t1.", "Bankovní úvěry dlouhodobé", 											"118", "-461",                                                  "=[{SUM;prev!PASIVA:D118}]"],
+					["\t2.", "Krátkodobé bankovní úvěry", 														"119", "-p221 -231 -232",                                       "=[{SUM;prev!PASIVA:D119}]"],
+					["\t3.", "Krátkodobé finanční výpomoci", 													"120", "-249",                                                  "=[{SUM;prev!PASIVA:D120}]"],
+
+					["C. I.", "Časové rozlišení",                											"121", "=[{SUM;D122;D123}]",                                    "=[{SUM;E122;E123}]"],
+
+					["C. I.\t1.", "Výdaje příštích období", 													"122", "-383",                                                  "=[{SUM;prev!PASIVA:D122}]"],
+					["\t2.", "Výnosy příštích období", 																"123", "-384",                                                  "=[{SUM;prev!PASIVA:D123}]"]
+				]
+			}
+		]
+	}
+}
+
+

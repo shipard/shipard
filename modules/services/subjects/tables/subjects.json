@@ -1,0 +1,70 @@
+{
+	"id": "services.subjects.subjects", "sql": "services_subjects_subjects", "name": "Subjekty", "icon": "icon-building",
+	"columns": [
+		{"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "subjectType", "name": "Typ subjektu", "type": "int", "reference": "services.subjects.types", "options": ["saveOnChange"]},
+		{"id": "company", "sql": "company", "name": "Společnost", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "complicatedName", "name": "Zadat úplné jméno", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "beforeName", "sql": "beforeName", "name": "Před jménem", "label": "titul", "type": "string", "len": 20},
+		{"id": "firstName", "sql": "firstName", "name": "Jméno", "type": "string", "len": 60},
+		{"id": "middleName", "sql": "middleName", "name": "Druhé jméno", "label": "prostřední jm.", "type": "string", "len": 60},
+		{"id": "lastName", "sql": "lastName", "name": "Příjmení", "type": "string", "len": 80},
+		{"id": "afterName", "sql": "afterName", "name": "Za jménem", "label": "titul", "type": "string", "len": 20},
+		{"id": "id", "name": "Kód osoby", "type": "string", "len": 12},
+		{"id": "gender", "name": "Pohlaví", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10.persons.gender", "cfgValue": "", "cfgText": ""}},
+		{"id": "fullName", "sql": "fullName", "name": "Název", "type": "string", "len": 140},
+
+		{"id": "country", "sql": "country", "name": "Země", "type": "enumString", "len": 2,
+			"enumCfg": {"cfgItem": "e10.base.countries", "cfgValue": "", "cfgText": "name"}},
+		{"id": "region1", "name": "Kraj", "type": "enumInt",
+			"enumCfg": {"cfgItem": "nomenc.cz-nuts-3", "cfgValue": "", "cfgText": "sn"}},
+		{"id": "region2", "name": "Okres", "type": "enumInt", "len": 2,
+			"enumCfg": {"cfgItem": "nomenc.cz-nuts-4", "cfgValue": "", "cfgText": "sn"}},
+		{"id": "size", "name": "Velikost", "type": "enumInt",
+			"enumCfg": {"cfgItem": "services.subjects.sizes", "cfgValue": "", "cfgText": "sn"}},
+		{"id": "kind", "name": "Druh", "type": "enumInt",
+			"enumCfg": {"cfgItem": "services.subjects.kinds", "cfgValue": "", "cfgText": "sn"}},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+
+		{"id": "revalidate", "name": "Ověřit platnost", "type": "enumInt",
+			"enumValues": {"0": "Ne", "10": "Co nejdříve", "20": "Ano", "90": "Časem"}},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "address", "class": "e10.persons.ListAddress", "name": "Adresy"},
+		{"id": "properties", "class": "e10.base.ListProperties", "name": "Vlastnosti",
+			"srcCfgKeyColumn": "subjectType", "propertiesCfgList": "services.subjects.properties"},
+		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"},
+		{"id": "nomenclature", "class": "lib.nomenclature.ListNomenclature", "name": "Nomenklatura", "table": "e10.base.nomenc", "queryColumn": "recId"},
+		{"id": "branches", "class": "e10.base.ListRows", "name": "Obory", "table": "services.subjects.subjectsBranches", "queryColumn": "subject"}
+	],
+	"views": {
+		"default": {
+			"id": "default", "class": "services.subjects.ViewSubjects",
+			"details": {
+				"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "order":  0, "class": "services.subjects.ViewDetailSubject"}
+			}
+		},
+		"sources": {
+			"id": "sources", "class": "services.subjects.ViewSubjectsSources",
+			"details": {
+				"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "order":  0, "class": "services.subjects.ViewDetailSubject"}
+			}
+		}
+	},
+	"forms": [
+		{"id": "default", "class": "services.subjects.FormSubject"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "services.subjects.docStates"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"documentCard": "services.subjects.DocumentCardSubject",
+	"indexes": [
+		{"id": "i8", "columns": ["docStateMain", "fullName", "region1", "region2", "kind", "size"]},
+		{"id": "fts", "fullText": 1, "columns": ["fullName"]}
+	]
+}

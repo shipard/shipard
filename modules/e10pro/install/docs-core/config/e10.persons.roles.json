@@ -1,0 +1,55 @@
+{
+	"acc": {
+		"name": "Účetnictví",
+		"viewers": {
+			"e10doc.taxes.reports": {"default": 2},
+			"e10doc.taxes.filings": {"default": 2}
+		},
+		"reports": {
+			"e10doc.taxes.VatCS.VatCSReportAll": 2,
+			"e10doc.taxes.VatRS.VatRSReport": 2,
+			"e10doc.taxes.VatReturn.VatReturnReport": 2
+		}
+	},
+	"finance": {
+		"name": "Finance"
+	},
+	"admin": {
+		"viewers": {
+			"e10doc.base.fiscalyears": {"default": 2},
+			"e10doc.base.taxperiods": {"default": 2},
+			"e10doc.base.dockinds": {"default": 2},
+			"e10doc.base.docnumbers": {"default": 2},
+			"e10doc.base.warehouses": {"default": 2},
+			"e10doc.base.whPlaces": {"default": 2, "tree":  2},
+			"e10doc.base.centres": {"default": 2},
+			"e10doc.base.bankaccounts": {"default": 2},
+			"e10doc.base.cashboxes": {"default": 2},
+			"e10doc.base.transports": {"default": 2},
+			"e10doc.base.taxRegs": {"default": 2},
+			"e10doc.base.additionsTypes": {"default": 2},
+			"e10doc.base.additions": {"default": 2},
+			"e10doc.base.reportsTexts": {"default": 2},
+			"e10doc.helpers.rowsSettings": {"default": 2},
+			"e10doc.helpers.wkfSectionsRelations": {"default": 2}
+		},
+		"reports": {
+			"e10pro.reports.tests.docs.ReportBadFiscalPeriod": 2,
+			"e10pro.reports.tests.docs.ReportExchangeRates": 2
+		}
+	},
+	"audit": {
+		"name": "Auditor",
+		"all": 1
+	},
+	"bsass": {
+		"name": "Společník",
+		"roles": ["user"],
+		"all": 0,
+		"widgets": {
+			"lib.dashboards.CompanyOverviewWidget": 2
+		}
+	}
+}
+
+

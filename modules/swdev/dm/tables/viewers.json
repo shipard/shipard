@@ -1,0 +1,25 @@
+{
+	"id": "swdev.dm.viewers", "sql": "swdev_dm_viewers", "name": "Prohlížeče", "icon": "icon-window-restore",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "table", "name": "Tabulka", "type": "int", "reference": "swdev.dm.tables"},
+		{"id": "id", "name": "id", "type": "string", "len": 80},
+		{"id": "classId", "name": "classId", "type": "string", "len": 100},
+		{"id": "name", "name": "Název", "type": "string", "len": 120},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "swdev.dm.ViewViewers",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.dm.ViewDetailViewer"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "swdev.dm.FormViewer"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "classId"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

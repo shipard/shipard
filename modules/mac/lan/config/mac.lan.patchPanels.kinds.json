@@ -1,0 +1,30 @@
+{
+	"1": {
+		"fn": "Ethernet RJ45 24 portů",
+		"sn": "ETH 24",
+		"id": "eth24",
+		"portType": "rj45",
+		"portsCount": 24
+	},
+	"2": {
+		"fn": "Optika 24 SC portů",
+		"sn": "Optika 24 SC",
+		"id": "fo24",
+		"portType": "fo",
+		"portsCount": 24
+	},
+	"3": {
+		"fn": "Optika 12 x 2 = 24 SC portů",
+		"sn": "Optika 12 x 2",
+		"id": "fo12x2",
+		"portType": "fo",
+		"portsCount": 12
+	},
+	"4": {
+		"fn": "Optika 10 SC portů",
+		"sn": "Optika 10 SC",
+		"id": "fo10",
+		"portType": "fo",
+		"portsCount": 10
+	}
+}

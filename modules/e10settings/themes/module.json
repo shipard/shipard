@@ -1,0 +1,10 @@
+{
+  "id": "e10settings.themes",
+  "name": "App themes",
+	"modules": ["e10/base"],
+  "tables": ["appThemes"],
+  "config": [
+    {"id": "+appSkeleton", "file": "appSkeleton.json"},
+	  {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"}
+  ]
+}

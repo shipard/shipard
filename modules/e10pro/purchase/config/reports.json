@@ -1,0 +1,4 @@
+[
+	{"name": "Neuhrazené výkupy", "class": "e10pro.purchase.reportBalancePurchasesCash", "icon": "e10-docs-purchase", "group": "e10doc-balance", "order": 7000},
+	{"name": "Nevyfakturované výkupy", "class": "e10pro.purchase.reportBalancePurchasesInvoice", "icon": "icon-unlink", "group": "e10doc-balance", "order": 7100}
+]

@@ -1,0 +1,17 @@
+{
+    "useWorkOrders": {
+        "cfgName": "Use Work orders"
+    },
+    "useOrdersIn": {
+        "cfgName": "Use Accepted orders"
+    },
+    "usePanelCommerce": {
+        "cfgName": "Use panel Commerce"
+    },
+    "useWorkOrdersOnPanelCommerce": {
+        "cfgName": "Statements of work in panel Commerce"
+    },
+    "useOrdersOut": {
+        "cfgName": "Use Issued orders"
+    }
+}

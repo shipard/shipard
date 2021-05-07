@@ -1,0 +1,14 @@
+{
+	"id": "e10pro.install.docs-cash",
+	"name": "Pokladna",
+	"config": [
+		{"id": "+appSkeleton", "file": "docs-cash.appSkeleton.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+		{"id": "+appCache", "file": "appCache.json"}
+	],
+	"modules": [
+		"e10pro/install/docs-core",
+		"e10doc/cash",
+		"e10doc/taxes"
+	]
+}

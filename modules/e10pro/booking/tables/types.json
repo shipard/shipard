@@ -1,0 +1,23 @@
+{
+	"id": "e10pro.booking.types", "sql": "e10pro_booking_types", "name": "Druhy rezervací", "icon": "icon-bookmark-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 40},
+		{"id": "order", "name": "Pořadí", "type": "int"},
+		{"id": "useCapacity", "name": "Sledovat kapacitu", "type": "logical"},
+		{"id": "assignTags", "name": "Přířazovat přístupové čipy", "type": "logical"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "e10pro.booking.ViewTypes"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.booking.FormType"}
+	],
+	"options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

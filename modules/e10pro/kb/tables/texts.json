@@ -1,0 +1,56 @@
+{
+  "id": "e10pro.kb.texts", "sql": "e10pro_kb_texts", "name": "Texty", "icon": "icon-file-text",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "mainType", "name": "Hlavní typ", "type": "enumInt",
+			"enumValues": {"0": "Postupy", "1": "Wiki", "2": "Knihy"}},
+		{"id": "thisType", "name": "Typ stránky", "type": "enumInt",
+			"enumValues": {"0": "Postupy", "1": "Wiki", "2": "Knihy", "99": "Stránka"}},
+
+    {"id": "title", "name": "Název", "type": "string", "len": 120},
+		{"id": "subTitle", "name": "Doplňující název", "type": "string", "len": 100},
+    {"id": "id", "name": "ID", "type": "string", "len": 140},
+    {"id": "text", "name": "Text", "type": "memo", "comboClass": "lib.web.WebTextSidebarWiki"},
+    {"id": "perex", "name": "Perex", "type": "memo"},
+		{"id": "icon", "name": "Ikona", "type": "string", "len": 50},
+
+		{"id": "author", "name": "Autor", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "order", "name": "Pořadí", "type": "int"},
+		{"id": "project", "name": "Projekt", "type": "int", "reference": "e10pro.wkf.projects"},
+	  {"id": "section", "name": "Sekce", "type": "int", "reference": "e10pro.kb.sections", "options": ["saveOnChange"]},
+
+		{"id": "pageType", "name": "Typ stránky", "type": "enumString", "len": 24, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10pro.kb.wiki.pageTypes", "cfgValue": "", "cfgText": "name"}},
+		{"id": "srcTableNdx", "name": "Tabulka", "type": "short"},
+		{"id": "srcRecNdx", "name": "Záznam", "type": "int"},
+
+		{"id": "srcLanguage", "name": "Jazyk", "type": "int", "reference": "e10.world.languages"},
+
+    {"id": "ownerText", "name": "Nadřazený text", "type": "int", "reference": "e10pro.kb.texts", "options": ["saveOnChange"]},
+		{"id": "mainOwnerText", "name": "Kořenový text", "type": "int", "reference": "e10pro.kb.texts"},
+		{"id": "treeLevel", "name": "Úroveň zanoření", "type": "int"},
+		{"id": "treeId", "name": "ID větve stromu", "type": "string", "len": 60},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+  "lists": [
+		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"}
+  ],
+  "views": [
+		{
+			"id": "default", "class": "e10pro.kb.ViewTexts",
+			"details": {
+				"preview": {"title": "Náhled", "icon": "x-content", "type": "detail", "class": "e10pro.kb.ViewDetailTextPreview"},
+				"text": {"title": "Text", "icon": "x-content", "type": "detail", "class": "e10pro.kb.ViewDetailText"}
+			}
+		}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10pro.kb.FormText"}
+  ],
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "title"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10pro.kb.texts.docStates"},
+	"ndx": 1074
+}

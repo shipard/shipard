@@ -1,0 +1,23 @@
+{
+    "table": {
+        "name": "Persons connections"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "person": {
+            "name": "People"
+        },
+        "connectedPerson": {
+            "name": "Connected person"
+        },
+        "note": {
+            "name": "Note",
+            "label": "✎"
+        },
+        "connectionType": {
+            "name": "Connection"
+        }
+    }
+}

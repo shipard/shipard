@@ -1,0 +1,48 @@
+{{{@write;binMode:1}}}
+{{{@write;cmd:reset}}}
+
+{{{@write;codePage:CP1250}}}
+{{{@write;cmd:cp852}}}
+
+
+
+{{#data.devices}}
+
+	{{{@write;cmd:reset}}}
+	{{{@write;cmd:colorRed}}}
+	{{{@write;cmd:colorRed}}}
+
+	{{#flags.fontSizeH1}}{{{@write;cmd:fontSizeH1}}}{{/flags.fontSizeH1}}
+	{{#flags.fontSizeH2}}{{{@write;cmd:fontSizeH2}}}{{/flags.fontSizeH2}}
+	{{#flags.fontSizeH3}}{{{@write;cmd:fontSizeH3}}}{{/flags.fontSizeH3}}
+	{{#flags.fontSizeH4}}{{{@write;cmd:fontSizeH4}}}{{/flags.fontSizeH4}}
+
+	{{{@write;cmd:boldOn}}}
+		{{{@write;var:id}}}
+		{{{@write;cmd:nl}}}
+	{{{@write;cmd:boldOff}}}
+
+	{{{@write;cmd:fontSizeNormal}}}
+	{{{@write;cmd:colorBlack}}}
+
+
+	{{{@write;cmd:boldOn}}}{{{@write;cmd:fontSizeH5}}}
+			{{#flags.evNumber}}
+				{{{@write;var:evNumber}}}
+				{{{@write;text: ;width:1;align:right}}}
+			{{/flags.evNumber}}
+			{{{@write;cmd:fontSizeSmall}}}
+			{{{@write;text:#}}}{{{@write;var:ndx}}}
+	{{{@write;cmd:fontSizeNormal}}}{{{@write;cmd:boldOff}}}
+	{{{@write;cmd:nl}}}
+
+	{{{@write;cmd:fontSizeTiny}}}
+		{{{@write;cmd:alignRight}}}
+			{{{@write;text:powered by shipard}}}
+		{{{@write;cmd:alignNone}}}
+	{{{@write;cmd:fontSizeNormal}}}
+
+	{{{@write;cmd:cutPaper}}}
+
+{{/data.devices}}
+

@@ -1,0 +1,9 @@
+{
+	"admin": {
+		"viewers": {
+			"services.subjregs.cz_res_plus.res": {"default": 2},
+			"services.subjregs.cz_res_plus.rzpProvoz": {"default": 2},
+			"services.subjregs.cz_res_plus.rzpSubj": {"default": 2}
+		}
+	}
+}

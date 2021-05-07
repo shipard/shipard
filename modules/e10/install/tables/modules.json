@@ -1,0 +1,11 @@
+{
+	"id": "e10.install.modules", "sql": "e10_install_modules", "name": "Instalované moduly", "icon": "icon-puzzle-piece",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "moduleId", "name": "Modul", "type": "string", "len": 80, "options": ["ascii"]},
+		{"id": "moduleVersion", "name": "Verze", "type": "string", "len": 10, "options": ["ascii"]},
+		{"id": "moduleCheckSum", "name": "Kontrolní součet", "type": "string", "len": 40, "options": ["ascii"]}
+	],
+	"options": ["systemTable"]
+}

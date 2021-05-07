@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Finished texts from wiki pages"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "wikiPage": {
+            "name": "Wiki page"
+        },
+        "dstLanguage": {
+            "name": "Language"
+        },
+        "title": {
+            "name": "Title"
+        },
+        "text": {
+            "name": "Text"
+        },
+        "perex": {
+            "name": "Perex"
+        },
+        "subTitle": {
+            "name": "Title"
+        }
+    }
+}

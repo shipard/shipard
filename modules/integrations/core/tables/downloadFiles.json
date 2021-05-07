@@ -1,0 +1,39 @@
+{
+	"id": "integrations.core.downloadFiles", "sql": "integrations_core_downloadFiles", "name": "Stahování souborů", "icon": "icon-file",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "service", "name": "Služba", "type": "int", "reference": "integrations.core.services"},
+		{"id": "task", "name": "Úloha", "type": "int", "reference": "integrations.core.tasks"},
+
+		{"id": "fileId", "name": "ID souboru", "type": "string", "len": 100},
+		{"id": "fileName", "name": "Název souboru", "type": "string", "len": 220},
+		{"id": "fileSize", "name": "Délka souboru", "type": "long"},
+		{"id": "fileKind", "name": "Druh souboru", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10.att.fileKinds", "cfgValue": "", "cfgText": "name"}},
+		{"id": "fileCreatedDateTime", "name": "Datum a čas vytvoření souboru", "type": "timestamp"},
+
+		{"id": "userEmail", "name": "E-mail uživatele", "type": "string", "len": 100},
+		{"id": "user", "name": "Uživatel", "type": "int", "reference": "e10.persons.persons"},
+
+		{"id": "lat", "name": "Zeměpisná šířka", "type": "number", "dec": 9},
+		{"id": "lon", "name": "Zeměpisná délka", "type": "number", "dec": 9},
+		{"id": "locState", "name": "Stav získání GPS souřadnic", "type": "enumInt",
+			"enumValues": {"0": "Zatím nezjištěno", "1": "Souřadnice jsou známé", "2": "Souřadnice nejsou dostupné"}},
+
+		{"id": "i1", "name": "Informace 1", "type": "int"},
+		{"id": "i2", "name": "Informace 2", "type": "int"},
+		{"id": "i3", "name": "Informace 3", "type": "int"},
+
+		{"id": "downloadState", "name": "Stav stahování", "type": "enumInt",
+			"enumValues": {"0": "Zatím nestaženo", "1": "Probíhá stahování", "2": "Staženo", "9": "Stažení zakázáno"}}
+	],
+	"views": {
+		"default": {"id": "default", "class": "integrations.core.ViewDownloadFiles"}
+	},
+	"forms": [
+		{"id": "default", "class": "integrations.core.FormDownloadFile"}
+	],
+	"ndx": 0
+}
+

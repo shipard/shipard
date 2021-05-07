@@ -1,0 +1,24 @@
+[
+	{
+		"name": "Start", "class": "wkf.core.widgets.Dashboard",
+		"dashboard": "main_new", "panel": "news", "order": 1001, "row": "main", "width": 12, "type": "wkfWall"
+	},
+	{
+		"name": "Přihrádky", "class": "wkf.core.widgets.DashboardTrays",  "enabledCfgItem": "options.experimental.testTrays",
+		"dashboard": "main_new", "panel": "trays", "order": 2001, "row": "main", "width": 12, "type": "wkfWall"
+	},
+	{
+		"class": "wkf.docs.widgets.Dashboard", "dashboard": "main_new", "panel": "documents",
+		"order": 3001, "row": "main", "width": 12, "type": "wkfWall"
+	},
+
+	{
+		"class": "wkf.core.widgets.Headlines", "dashboard": "main_new", "panel": "headlines",
+		"order": 3101, "row": "main", "width": 12, "type": "wkfWall", "enabledCfgItem": "options.wkfn.useHeadlines"
+	},
+
+	{
+		"name": "Database Info", "class": "lib.cfg.WidgetSystemInfoCore", "icon": "icon-database", "align": "left",
+		"dashboard": "srvcfg", "panel": "issues", "order": 30000, "row": "info", "type": "systemInfo"
+	}
+]

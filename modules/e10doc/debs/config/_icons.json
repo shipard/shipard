@@ -1,0 +1,14 @@
+{
+    "tables/e10doc.debs.journal":{
+        "fa5":"fa-list",
+        "fa5pro":"fa-list",
+        "bsi":"bi-list-ul",
+        "mdi":"list-ul"
+    },
+    "tables/e10doc.debs.accounts":{
+        "fa5":"fa-th-large",
+        "fa5pro":"fa-th-large",
+        "bsi":"bi-table",
+        "mdi":"table_chart"
+    }
+}

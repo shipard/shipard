@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "System modules"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "type": {
+            "name": "Type"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "private": {
+            "name": "Private"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

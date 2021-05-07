@@ -1,0 +1,83 @@
+{{xmlMode}}<?xml version="1.0" encoding="UTF-8"?>
+
+<Pisemnost nazevSW="Shipard" verzeSW="2014.1.0">
+
+	<DPHEVD verzePis="01.02">
+
+		<VetaD
+			k_uladis="DPH"
+			dokument="EVD"
+			typ_vypisu="D"
+{{#data.taxVatReturn.taxPeriod.month}}
+			mesic="{{data.taxVatReturn.taxPeriod.month}}"
+			rok="{{data.taxVatReturn.taxPeriod.year}}"
+{{/data.taxVatReturn.taxPeriod.month}}
+{{#data.taxVatReturn.taxPeriod.quarter}}
+			ctvrt="{{data.taxVatReturn.taxPeriod.quarter}}"
+			rok="{{data.taxVatReturn.taxPeriod.year}}"
+{{/data.taxVatReturn.taxPeriod.quarter}}
+{{#data.taxVatReturn.taxPeriod.period.start}}
+			zdobd_od="{{data.taxVatReturn.taxPeriod.period.start}}"
+{{/data.taxVatReturn.taxPeriod.period.start}}
+{{#data.taxVatReturn.taxPeriod.period.end}}
+			zdobd_do="{{data.taxVatReturn.taxPeriod.period.end}}"
+{{/data.taxVatReturn.taxPeriod.period.end}}
+			d_poddp="{{data.head.dateIssue}}"
+		/>
+
+		<VetaP
+			c_ufo="{{data.taxVatReturn.e10-CZ-VR.e10-CZ-VR-FU}}"
+			c_pracufo="{{data.taxVatReturn.e10-CZ-VR.e10-CZ-VR-pracFU}}"
+			typ_ds="{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-typSubjektu}}"
+			dic="{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-DICbezKoduStatu}}"
+			zkrobchjm="{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-nazevOsoby}}"
+			jmeno="{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-jmeno}}"
+			prijmeni="{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-prijemni}}"
+			titul="{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-titul}}"
+			ulice="{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-ulice}}"
+			c_pop="{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-cisPopis}}"
+			c_orient="{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-cisOrient}}"
+			naz_obce="{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-mesto}}"
+			psc="{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-PSC}}"
+			stat="{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-stattext}}"
+			opr_jmeno="{{data.taxVatReturn.e10-CZ-VR-opr.e10-CZ-VR-jmeno}}"
+			opr_prijmeni="{{data.taxVatReturn.e10-CZ-VR-opr.e10-CZ-VR-prijmeni}}"
+			opr_postaveni="{{data.taxVatReturn.e10-CZ-VR-opr.e10-CZ-VR-vztah}}"
+			c_telef="{{data.taxVatReturn.e10-CZ-VR-kontakt.e10-CZ-VR-telefon}}"
+			email="{{data.taxVatReturn.e10-CZ-VR-kontakt.e10-CZ-VR-email}}"
+			sest_jmeno="{{data.taxVatReturn.e10-CZ-VR-sest.e10-CZ-VR-jmeno}}"
+			sest_prijmeni="{{data.taxVatReturn.e10-CZ-VR-sest.e10-CZ-VR-prijmeni}}"
+			sest_telef="{{data.taxVatReturn.e10-CZ-VR-sest.e10-CZ-VR-telefon}}"
+{{#data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-typZastupce}}
+			zast_ev_cislo="{{data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-evidCislo}}"
+			zast_dat_nar="{{data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-datumNarozeni}}"
+			zast_ic="{{data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-IC}}"
+			zast_jmeno="{{data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-jmeno}}"
+			zast_kod="{{data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-kodZastupce}}"
+			zast_nazev="{{data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-nazevOsoby}}"
+			zast_prijmeni="{{data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-prijmeni}}"
+			zast_typ="{{data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-typZastupce}}"
+{{/data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-typZastupce}}
+		/>
+
+{{#data.taxVatReturn.reverseChargeOut.pages}}
+{{#data}}
+{{#base}}
+		<VetaE
+			c_radku="{{xmlLineNumber}}"
+			dic_dod="{{shortpvin}}"
+			kod_pred_pl="{{code}}"
+			d_uskut_pl="{{dateTax}}"
+			zakl_dane="{{base}}"
+{{#amount}}
+			roz_pl="{{amount}}"
+			roz_pl_j="{{unitText}}"
+{{/amount}}
+		/>
+{{/base}}
+{{/data}}
+{{/data.taxVatReturn.reverseChargeOut.pages}}
+
+	</DPHEVD>
+
+</Pisemnost>

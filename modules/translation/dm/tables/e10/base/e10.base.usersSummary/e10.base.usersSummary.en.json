@@ -1,0 +1,34 @@
+{
+    "table": {
+        "name": "Users summary"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "summaryType": {
+            "name": "Summary type"
+        },
+        "user": {
+            "name": "User"
+        },
+        "cnt": {
+            "name": "Number"
+        },
+        "data": {
+            "name": "Data"
+        },
+        "checksum": {
+            "name": "Checksum"
+        },
+        "updated": {
+            "name": "Update timestamp"
+        },
+        "sent": {
+            "name": "Sent"
+        },
+        "used": {
+            "name": "Used"
+        }
+    }
+}

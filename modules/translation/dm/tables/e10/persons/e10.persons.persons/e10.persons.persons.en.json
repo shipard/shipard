@@ -1,0 +1,85 @@
+{
+    "table": {
+        "name": "Persons"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "company": {
+            "name": "Company"
+        },
+        "complicatedName": {
+            "name": "Fill full name"
+        },
+        "beforeName": {
+            "name": "Title before name",
+            "label": "Title"
+        },
+        "firstName": {
+            "name": "First name"
+        },
+        "middleName": {
+            "name": "Middle name",
+            "label": "Middle name"
+        },
+        "lastName": {
+            "name": "Surname"
+        },
+        "afterName": {
+            "name": "Title after name",
+            "label": "Title"
+        },
+        "id": {
+            "name": "Person code"
+        },
+        "personalId": {
+            "name": "Personal number"
+        },
+        "gender": {
+            "name": "Gender"
+        },
+        "language": {
+            "name": "Language"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "lastUseDate": {
+            "name": "Date of last use"
+        },
+        "accountType": {
+            "name": "Account type"
+        },
+        "accountState": {
+            "name": "Account status"
+        },
+        "personType": {
+            "name": "Person type"
+        },
+        "login": {
+            "name": "E-mail for login"
+        },
+        "loginHash": {
+            "name": "Checksum of login e-mail"
+        },
+        "gid": {
+            "name": "Global ID"
+        },
+        "roles": {
+            "name": "Role"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "syncNdx": {
+            "name": "syncNdx"
+        },
+        "syncSrc": {
+            "name": "syncSrc"
+        }
+    }
+}

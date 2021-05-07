@@ -1,0 +1,19 @@
+{
+	"id": "e10.persons.personsLastUse", "sql": "e10_persons_personsLastUse", "name": "Poslední použití Osob",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "person", "name": "Osoba", "type": "int"},
+
+		{"id": "firstUseDate", "name": "Datum prvního použití", "type": "date"},
+		{"id": "lastUseDate", "name": "Datum posledního použití", "type": "date"},
+		{"id": "lastUseType", "name": "Typ posledního použití", "type": "enumString", "len": 32,
+			"enumCfg": {"cfgItem": "e10.persons.lastUse", "cfgValue": "", "cfgText": "name"}},
+		{"id": "lastUseRole", "name": "Role", "type": "int"},
+
+		{"id": "updated", "name": "Poslední kontrola", "type": "timestamp"}
+	],
+	"options": ["systemTable"],
+	"indexes": [
+		{"id": "s1", "columns": ["person"]}
+	]
+}

@@ -1,0 +1,16 @@
+{
+	"id": "wkf.core.issuesConnections", "sql": "wkf_core_issuesConnections", "name": "Propojení zpráv", "icon": "icon-link",
+	"columns": [
+		{"id": "ndx", "name": "ndx", "type": "int_ai"},
+		{"id": "connectionType", "name": "Typ propojení", "type": "enumInt",
+			"enumCfg": {"cfgItem": "wkf.issues.connections.types", "cfgValue": "", "cfgText": "name"}},
+		{"id": "issue", "name": "Zpráva", "type": "int", "reference": "wkf.core.issues"},
+		{"id": "connectedIssue", "name": "Propojená Zpráva", "type": "int", "reference": "wkf.core.issues"},
+		{"id": "rowOrder", "name": "Pořadí", "type": "int"}
+	],
+	"forms": [
+		{"id": "default", "class": "wkf.core.FormIssueConnection"}
+	],
+	"options": ["systemTable"],
+	"ndx": 1242
+}

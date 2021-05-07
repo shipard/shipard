@@ -1,0 +1,5 @@
+{
+	"name": "Olimex ESP32-EVB",
+	"title": "Olimex ESP32-EVB",
+	"gpioLayout": "oli-esp32-evb"
+}

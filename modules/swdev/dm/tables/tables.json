@@ -1,0 +1,35 @@
+{
+	"id": "swdev.dm.tables", "sql": "swdev_dm_tables", "name": "Tabulky", "icon": "icon-table",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "id", "name": "id", "type": "string", "len": 80},
+		{"id": "name", "name": "Název", "type": "string", "len": 120},
+		{"id": "sql", "name": "SQL název", "type": "string", "len": 60},
+		{"id": "icon", "name": "Ikona", "type": "string", "len": 50},
+
+		{"id": "srcLanguage", "name": "Zdrojový jazyk", "type": "int", "reference": "swdev.translation.languages"},
+		{"id": "dmWikiPage", "name": "Wiki stránka", "type": "int", "reference": "e10pro.kb.texts"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"}
+	],
+	"views": [
+		{"id": "default", "class": "swdev.dm.ViewTables",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.dm.ViewDetailTable"},
+				"doc": {"title": "Popis", "icon": "icon-book", "type": "detail", "class": "swdev.dm.ViewDetailTableDoc"},
+				"trData": {"title": "trData", "icon": "icon-language", "type": "detail", "class": "swdev.dm.ViewDetailTableTrData"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "swdev.dm.FormTable"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"documentCard": "swdev.dm.DocumentCardTable",
+	"ndx": 1188
+}

@@ -1,0 +1,36 @@
+{
+	"id": "e10pro.bume.bulkEmails", "sql": "e10pro_wkf_bulkEmails", "name": "Hromadná pošta", "icon": "icon-envelope-open",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "subject", "name": "Předmět zprávy", "type": "string", "len": 120},
+		{"id": "text", "name": "Text", "type": "memo"},
+
+		{"id": "senderEmail", "name": "Odesílatel", "type": "enumString", "len": 60,
+			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": ""}},
+
+		{"id": "author", "name": "Autor", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "dateCreate", "name": "Datum vzniku", "type": "timestamp"},
+		{"id": "sendingState", "name": "Stav odesílání", "type": "enumInt",
+			"enumValues": {"0": "Rozpracováno", "1": "Připravuje se seznam příjemců",  "2": "Připraveno k rozeslání", "3": "Rozesílá se", "4": "Rozesláno"}},
+		{"id": "dateReadyToSend", "name": "Začít rozesílat v", "type": "timestamp"},
+		{"id": "dateSent", "name": "Datum odeslání", "type": "timestamp"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10pro.bume.bulkEmails.docStates"},
+	"lists": [
+		{"id": "rows", "class": "e10.base.ListRows", "name": "Adresáti", "table": "e10pro.bume.bulkRecipients", "queryColumn": "bulkMail"}
+	],
+	"views": [
+		{"id": "default", "class": "e10pro.bume.ViewBulkEmails", "help": "prirucka/4898",
+			"details": {
+				"default": {"title": "Náhled", "icon": "icon-eye", "type": "detail", "class": "e10pro.bume.ViewDetailBulkEmail", "order": 1000},
+				"posts": {"title": "Příjemci", "icon": "icon-at", "type": "detail", "class": "e10pro.bume.ViewDetailBulkEmailPosts", "order": 2000}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.bume.FormBulkEmail", "help": "prirucka/4898"}
+	]
+}

@@ -1,0 +1,64 @@
+{
+	"100": {
+		"name": "Workflow Notifikace Sekcí", "type": "check",
+		"storeTable": "wkf.base.docMarks",
+		"tables": ["wkf.base.sections", "wkf.core.issues"],
+		"states": {
+			"0": {
+				"name": "Žádná upozornění", "icon": "icon-bell-slash-o", "classOn": "e10-state-off",
+				"n": 1, "p": 4
+			},
+			"1": {
+				"name": "Všechna upozornění", "icon": "icon-bell", "classOn": "e10-state-on",
+				"n": 2, "p": 0
+			},
+			"2": {
+				"name": "Všecha upozornění potichu", "icon": "icon-bell-o", "classOn": "e10-state-on",
+				"n": 3, "p": 1
+			},
+			"3": {
+				"name": "Jen důležité", "icon": "icon-exclamation-circle", "classOn": "e10-state-on",
+				"n": 4, "p": 2, "st": ["ss", "ts"]
+			},
+			"4": {
+				"name": "Jen moje", "icon": "icon-user-circle-o", "classOn": "e10-state-on",
+				"n": 0, "p": 3, "st": ["ss", "ts"]
+			}
+		}
+	},
+	"101": {
+		"name": "Workflow Notifikace Issues", "type": "check",
+		"storeTable": "wkf.base.docMarks",
+		"tables": ["wkf.core.issues"],
+		"states": {
+			"0": {
+				"name": "Nic", "icon": "icon-star-o", "classOn": "e10-state-off",
+				"n": 1, "p": 6
+			},
+			"1": {
+				"name": "Hvězdička", "icon": "icon-star", "classOn": "e10-success",
+				"n": 2, "p": 0
+			},
+			"2": {
+				"name": "Puntík", "icon": "icon-circle", "classOn": "e10-me",
+				"n": 3, "p": 1
+			},
+			"3": {
+				"name": "Kritické", "icon": "icon-bolt", "classOn": "e10-error",
+				"n": 4, "p": 2
+			},
+			"4": {
+				"name": "Hoří", "icon": "icon-fire", "classOn": "e10-error",
+				"n": 5, "p": 3
+			},
+			"5": {
+				"name": "Ano", "icon": "icon-thumbs-o-up", "classOn": "e10-me",
+				"n": 6, "p": 4
+			},
+			"6": {
+				"name": "Ne", "icon": "icon-thumbs-o-down", "classOn": "e10-state-off",
+				"n": 0, "p": 5
+			}
+		}
+	}
+}

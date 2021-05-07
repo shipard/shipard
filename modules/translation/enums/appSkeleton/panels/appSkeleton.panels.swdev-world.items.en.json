@@ -1,0 +1,17 @@
+{
+    "countries": {
+        "t1": "Countries"
+    },
+    "currencies": {
+        "t1": "Currencies"
+    },
+    "langs": {
+        "t1": "Languages"
+    },
+    "terr": {
+        "t1": "Territories"
+    },
+    "reports": {
+        "t1": "Reports"
+    }
+}

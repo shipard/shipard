@@ -1,0 +1,11 @@
+{
+	"id": "e10.world.languagesTr", "sql": "e10_world_languagesTr", "name": "Jazyky - Lokalizace", "icon": "icon-language",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "languageSrc", "name": "Zdrojový jazyk", "type": "int", "reference": "e10.world.languages"},
+		{"id": "languageDst", "name": "Cílový jazyk", "type": "int", "reference": "e10.world.languages"},
+		{"id": "name", "name": "Název", "type": "string", "len": 180}
+	],
+	"options": ["systemTable"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"}
+}

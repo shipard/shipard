@@ -1,0 +1,114 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+	<title>Výdejka {{data.head.docNumber}}</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<style>
+			{{#data.owner.logo.logo-nadpis.filename}}
+			#supplier-address-hdr {
+				background-image: url("file://{{appDir}}/att/{{data.owner.logo.logo-nadpis.path}}{{data.owner.logo.logo-nadpis.filename}}");
+				background-position: bottom right;
+				background-size: auto 60%;
+				background-repeat: no-repeat;
+			}
+			{{/data.owner.logo.logo-nadpis.filename}}
+			{{#data.owner.logo.logo-vpravo.filename}}
+			#supplier-address-box {
+				background-image: url("file://{{appDir}}/att/{{data.owner.logo.logo-vpravo.path}}{{data.owner.logo.logo-vpravo.filename}}");
+				background-position: top right;
+				background-size: auto 80%;
+				background-repeat: no-repeat;
+			}
+			{{/data.owner.logo.logo-vpravo.filename}}
+			{{#data.owner.logo.logo-vlevo.filename}}
+			#supplier-address-box {
+				background-image: url("file://{{appDir}}/att/{{data.owner.logo.logo-vlevo.path}}{{data.owner.logo.logo-vlevo.filename}}");
+				background-position: top left;
+				background-size: 5em;
+				background-repeat: no-repeat;
+
+				padding-left: 6em;
+			}
+			{{/data.owner.logo.logo-vlevo.filename}}
+	</style>
+	<link rel="stylesheet" href="file://{{fsRoot}}/e10-modules/wwwlibs/Font-Awesome44/less/font-awesome.css">
+	<link rel="stylesheet" href="file://{{templateRoot}}style.css" type="text/css"/>
+</head>
+<body>
+
+<table id='head'>
+	<tr>
+		<td class='supplier'>
+			<div class='hdr'>Odběratel:<small class='pull-right'>#{{data.person.id}}</small></div>
+			{{#data.reportTexts.supplierAndContacts}}{{{data.reportTexts.supplierAndContacts}}}{{/data.reportTexts.supplierAndContacts}}
+			{{^data.reportTexts.supplierAndContacts}}
+				<span class='address' id="supplier-address-box">
+						{{#data.reportTexts.supplier}}{{{data.reportTexts.supplier}}}{{/data.reportTexts.supplier}}
+					{{^data.reportTexts.supplier}}
+						<span class='title'>{{data.person.fullName}}</span>
+						{{data.person.address.street}}<br/>
+						{{data.person.address.city}} {{data.person.address.zipcode}}<br/>
+					{{/data.reportTexts.supplier}}
+					</span>
+				{{#data.reportTexts.contacts}}{{{data.reportTexts.contacts}}}{{/data.reportTexts.contacts}}
+			{{/data.reportTexts.supplierAndContacts}}
+		</td>
+
+		<td class='customer'>
+			<span class='hdr'>Datumy a platební údaje:</span>
+			<table id='documentDetails'>
+				<tr>
+					<td class='label'>Variabilní symbol:</td><td class='value'><b>{{data.head.docNumber}}</b></td>
+				</tr>
+				<tr>
+					<td class='label'>Datum vystavení:</td><td class='value'>{{data.head.dateIssue}}</td>
+				</tr>
+				<tr>
+					<td class='label'>Účetní datum:</td><td class='value'>{{data.head.dateAccounting}}</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
+
+{{#data.reportTexts.subHeader}}<div class='reportTextHeader'>{{{data.reportTexts.subHeader}}}</div>{{/data.reportTexts.subHeader}}
+
+<table id='rows'>
+	<thead>
+	<tr>
+		<th class='number'>ID</th>
+		<th>Položka</th>
+		<th class='number'>Množství</th>
+		<th>Jednotka</th>
+	</tr>
+	</thead>
+	{{#data.invrows}}
+		<tr>
+			<td class='number'>{{itemID}}</td>
+			<td>{{text}}</td>
+			<td class='number'>{{quantity}}</td>
+			<td>{{@dict;dataItem:print.unit}}</td>
+		</tr>
+	{{/data.invrows}}
+</table>
+
+<div id='sign'>
+		<span class='logoImg'>
+			<img style='max-width:80mm;max-height:30mm;' src='file://{{appDir}}/reports/logo-razitko.svg'/>
+		</span>
+	<span class='signImg'>
+		{{#data.author.signature.filename}}
+			<img src='file://{{appDir}}/att/{{data.author.signature.path}}{{data.author.signature.filename}}'/>
+		{{/data.author.signature.filename}}
+	</span>
+	<br/>
+	<span class='name'>{{@dict;Vystavil}}: {{data.author.fullName}}</span>
+</div>
+
+<div class='reportTextFooter'>
+	{{#data.reportTexts.subFooter}}{{{data.reportTexts.subFooter}}}{{/data.reportTexts.subFooter}}
+</div>
+
+</body>
+</html>
+

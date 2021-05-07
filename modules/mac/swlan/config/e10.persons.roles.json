@@ -1,0 +1,8 @@
+{
+  "maclan": {
+		"viewers": {
+			"mac.swlan.infoQueue": {"default": 2},
+			"mac.sw.sw": {"swlan":  2}
+		}
+	}
+}

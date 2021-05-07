@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Dictionary items"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "dict": {
+            "name": "Dictionary"
+        },
+        "identifier": {
+            "name": "Identifier"
+        },
+        "text": {
+            "name": "Text"
+        },
+        "description": {
+            "name": "Description"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

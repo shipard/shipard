@@ -1,0 +1,18 @@
+{
+	"id": "e10mnf.core",
+	"name": "Výroba",
+	"tables": [
+		"workOrders", "workOrdersRows", "workRecs", "workRecsRows"
+	],
+	"extensions": ["mnf"],
+	"modules": ["e10doc/buy", "e10mnf/base", "e10doc/orderout"],
+	"config": [
+		{"id": "e10mnf.core.workOrders.docStates.default", "file": "e10mnf.core.workOrders.docStates.default.json"},
+		{"id": "+e10.base.doclinks", "name": "Vazby dokumentů", "file": "doclinks.json"},
+		{"id": "+dsStats", "file": "dsStats.json"},
+		{"id": "+e10.base.clsfGroups", "file": "clsfGroups.json"},
+		{"id": "+e10mnf.core.workRecs.docStates", "file": "worksRecs.docStates.json"},
+		{"id": "+dashboards", "file": "dashboards.json"},
+		{"id": "+widgets", "file": "widgets.json"}
+	]
+}

@@ -1,0 +1,113 @@
+{
+  "id": "e10pro.property.property", "sql": "e10pro_property_property", "name": "Majetek", "icon": "icon-sort-amount-desc",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "propertyType", "name": "Typ majetku", "type": "int", "reference": "e10pro.property.types", "options": ["saveOnChange"]},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
+		{"id": "propertyId", "name": "Inventární číslo", "type": "string", "len": 30},
+
+	  {"id": "propertyCategory", "name": "Druh majetku", "type": "enumInt", "options": ["saveOnChange"],
+		  "enumCfg": {"cfgItem": "e10pro.property.categories", "cfgValue": "", "cfgText": "shortName"}},
+		{"id": "propertyKind", "name": "Sledovat množství", "type": "enumInt",
+			"enumValues": {"0": "Jednotlivá věc", "1": "Množstevní karta", "2": "Soubor předmětů"}
+		},
+
+		{"id": "useVehicleLogbook", "name": "Vést knihu jízd", "type": "enumInt",
+			"enumValues": {"0": "Ne", "1": "V kilometrech", "2": "V motohodinách"}
+		},
+
+		{"id": "useDepreciation", "name": "Odepisovaný majetek", "type": "logical", "options": ["saveOnChange"]},
+	  {"id": "intangibleProperty", "name": "Nehmotný majetek", "type": "logical", "options": ["saveOnChange"]},
+
+		{"id": "depreciationGroup", "name": "Odpisová skupina", "type": "enumString", "len": 10, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10pro.property.depGroups", "cfgValue": "", "cfgText": "shortName"}},
+		{"id": "depreciationType", "name": "Způsob daňového odpisu", "type": "enumString", "len": 10,
+			"enumCfg": {"cfgItem": "e10pro.property.depTypes", "cfgValue": "", "cfgText": "fullName"}},
+		{"id": "accDepType", "name": "Způsob účetního odpisu", "type": "enumString", "len": 10, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10pro.property.accDepTypes", "cfgValue": "", "cfgText": "fullName"}},
+		{"id": "accDepLength", "name": "Délka účetního odpisu", "type": "number", "dec": 3},
+		{"id": "accDepLengthUnit", "name": "Jednotka délky účetního odpisu", "label": "", "type": "enumString", "len": 8,
+			"enumValues": {"Y": "Rok", "M": "Měsíc"}
+		},
+	  {"id": "taxDepLength", "name": "Délka daňového odpisu v rocích", "type": "int"},
+	  {"id": "debsGroup", "name": "Účetní skupina", "type": "enumInt",
+		  "enumCfg": {"cfgItem": "e10debs.groups", "cfgValue": "ndx", "cfgText": "fullName"}},
+
+		{"id": "foreign", "name": "Cizí majetek", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "owner", "name": "Vlastník", "type": "int", "reference": "e10.persons.persons"},
+
+    {"id": "dateStart", "name": "Datum pořízení", "type": "date"},
+		{"id": "dateEnd", "name": "Datum vyřazení", "type": "date"},
+	  {"id": "priceIn", "name": "Pořizovací cena", "label": "Cena", "type": "money"},
+
+		{"id": "note", "name": "Poznámka", "type": "memo"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10pro.property.docStates"},
+	"lists": [
+		{
+			"id": "accessory", "class": "e10.base.ListRows", "name": "Příslušenství",
+			"table": "e10pro.property.propertyAccessory", "queryColumn": "property"
+		},
+		{"id": "properties", "class": "e10.base.ListProperties", "name": "Vlastnosti",
+			"srcCfgKeyColumn": "propertyType", "propertiesCfgList": "e10pro.property.properties"},
+		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"}
+	],
+	"views": [
+		{"id": "default", "class": "e10pro.property.ViewProperty", "help": "prirucka/4504",
+			"details": {
+				"default": {"title": "Přehled", "icon": "icon-file", "type": "detail", "class": "e10pro.property.ViewDetailProperty", "order": 1000},
+				"depsTax": {"title": "Daňové odpisy", "icon": "icon-sort-amount-desc", "type": "detail", "class": "e10pro.property.ViewDetailPropertyDepsTax", "order": 6100},
+				"depsAcc": {"title": "Účetní odpisy", "icon": "icon-sort-amount-desc", "type": "detail", "class": "e10pro.property.ViewDetailPropertyDepsAcc", "order": 6200},
+				"nonDeps": {"title": "Vývoj hodnoty", "icon": "icon-bars", "type": "detail", "class": "e10pro.property.ViewDetailPropertyNonDeps", "order": 6250},
+				"dt": {"title": "Odložená daň", "icon": "icon-shield", "type": "detail", "class": "e10pro.property.ViewDetailPropertyDeferredTax", "order": 6300},
+				"operations": {"title": "Pohyby", "icon": "icon-random", "type": "detail", "class": "e10pro.property.ViewDetailPropertyOperations", "order": 8000},
+				"accounting": {"title": "Účtování", "icon": "x-stamp", "type": "detail", "class": "e10pro.property.ViewDetailPropertyAccounting", "order": 9000}
+			}
+		},
+		{"id": "debs", "class": "e10pro.property.ViewProperty", "help": "prirucka/4504",
+			"details": {
+				"debs": {"title": "Přehled", "icon": "icon-file", "type": "detail", "class": "e10pro.property.ViewDetailProperty", "order": 1000},
+				"depsTax": {"title": "Daňové odpisy", "icon": "icon-sort-amount-desc", "type": "detail", "class": "e10pro.property.ViewDetailPropertyDepsTax", "order": 6100},
+				"depsAcc": {"title": "Účetní odpisy", "icon": "icon-sort-amount-desc", "type": "detail", "class": "e10pro.property.ViewDetailPropertyDepsAcc", "order": 6200},
+				"nonDeps": {"title": "Vývoj hodnoty", "icon": "icon-bars", "type": "detail", "class": "e10pro.property.ViewDetailPropertyNonDeps", "order": 6250},
+				"dt": {"title": "Odložená daň", "icon": "icon-shield", "type": "detail", "class": "e10pro.property.ViewDetailPropertyDeferredTax", "order": 6300},
+				"operations": {"title": "Pohyby", "icon": "icon-random", "type": "detail", "class": "e10pro.property.ViewDetailPropertyOperations", "order": 8000},
+				"accounting": {"title": "Účtování", "icon": "x-stamp", "type": "detail", "class": "e10pro.property.ViewDetailPropertyAccounting", "order": 9000}
+			}
+		}
+	],
+  "forms": [
+    {"id": "default", "class": "e10pro.property.FormProperty", "help": "prirucka/4505"}
+  ],
+	"reports": [
+		{"id": "cardProperty", "name": "Karta", "class": "e10pro.property.ReportPropertyCard", "dropdown": 1},
+		{
+			"id": "propertyDeps", "name": "Odpisy 1", "class": "e10pro.property.ReportPropertyDeps",
+			"queryCol": "propertyCategory", "queryColValues": [1, 2]
+		},
+		{
+			"id": "propertyDeps2", "name": "Odpisy 2", "class": "e10pro.property.ReportPropertyDeps2",
+			"queryCol": "propertyCategory", "queryColValues": [1, 2]
+		},
+		{
+			"id": "propertyDeps3", "name": "Odpisy 3", "class": "e10pro.property.ReportPropertyDeps3",
+			"queryCol": "propertyCategory", "queryColValues": [1, 2]
+		},
+		{
+			"id": "propertyNonDepsCard", "name": "Karta", "class": "e10pro.property.ReportPropertyCardNonDeps",
+			"queryCol": "propertyCategory", "queryColValues": [3]
+		}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"documentCard": "e10pro.property.DocumentCardProperty",
+	"indexes": [
+		{"id": "s1", "columns": ["propertyType"]},
+		{"id": "s2", "columns": ["docStateMain", "fullName", "propertyId"]}
+	],
+	"ndx": 1131
+}
+

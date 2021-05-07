@@ -1,0 +1,16 @@
+{
+	"hosting": {
+		"name": "Hosting", "order": 12100, "group": "core",
+		"icon": "icon-database",
+		"type": "cfgFile",
+		"options":
+		[
+			{"cfgKey": "createNewDatabaseAllowed", "cfgName": "Uživatelé mohou zakládat databáze",
+				"options": {
+					"0": "Ne",
+					"1": "Ano"
+				}
+			}
+		]
+	}
+}

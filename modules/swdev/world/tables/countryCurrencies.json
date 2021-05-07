@@ -1,0 +1,18 @@
+{
+	"id": "swdev.world.countryCurrencies", "sql": "swdev_world_countryCurrencies", "name": "Měny zemí", "icon": "icon-money",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "country", "name": "Země", "type": "int", "reference": "swdev.world.countries"},
+		{"id": "currency", "name": "Měna", "type": "int", "reference": "swdev.world.currencies"},
+		{"id": "rowOrder", "name": "Pořadí", "type": "int"},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné od", "type": "date"}
+	],
+	"views": [
+	],
+	"forms": [
+		{"id": "default", "class": "swdev.world.FormCountryCurrency"}
+	],
+	"options": ["systemTable"]
+}

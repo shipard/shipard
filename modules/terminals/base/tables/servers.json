@@ -1,0 +1,28 @@
+{
+	"id": "terminals.base.servers", "sql": "terminals_base_servers", "name": "Místní servery", "icon": "icon-server",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "name", "name": "Název", "type": "string", "len": 80},
+		{"id": "id", "name": "ID", "type": "string", "len": 10},
+
+		{"id": "serverFQDN", "name": "Doménové jméno serveru", "type": "string", "len": 80},
+		{"id": "serverPort", "name": "Port", "type": "int"},
+		{"id": "allowedFrom", "name": "Povoleno z IP adres", "type": "string", "len": 200},
+		{"id": "camerasURL", "name": "URL pro kamery", "type": "string", "len": 120},
+
+		{"id": "cfgData", "name": "Konfigurační data", "type": "memo"},
+		{"id": "cfgDataVer", "name": "Verze konfiguračních dat", "type": "string", "len": 32},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": {
+		"default": {"id": "default", "class": "terminals.base.ViewServers"}
+	},
+	"forms": [
+		{"id": "default", "class": "terminals.base.FormServer"}
+	],
+	"options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"}
+}

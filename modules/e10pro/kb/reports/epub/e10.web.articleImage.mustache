@@ -1,0 +1,42 @@
+{{#data.gallery.style}}
+	{{#data.gallery.style-single}}
+		{{#data.gallery.rows}}
+			<div>
+				{{#images}}
+					<div class="image">
+							<img src="{{urlServer}}/att/{{fileName}}"/>
+							<small>{{name}}</small>
+					</div>
+				{{/images}}
+			</div>
+		{{/data.gallery.rows}}
+	{{/data.gallery.style-single}}
+	{{^data.gallery.style-single}}
+		{{#data.gallery.rows}}
+			{{#images}}
+				<span class="thumb thumb-{{data.gallery.style}}">
+						<img src="{{urlServer}}/imgs/-w1200/att/{{fileName}}" {{#data.gallery.imgcss}}style='{{data.gallery.imgcss}}'{{/data.gallery.imgcss}}/>
+						<br/><small>{{name}}</small>
+				</span>
+			{{/images}}
+		{{/data.gallery.rows}}
+	{{/data.gallery.style-single}}
+{{/data.gallery.style}}
+
+{{^data.gallery.style}}
+	{{#data.gallery.rows}}
+		<div class="row">
+		{{#images}}
+			{{#cnt6}}<div class="wc2">{{/cnt6}}
+			{{#cnt5}}<div class="wc2">{{/cnt5}}
+			{{#cnt4}}<div class="wc3">{{/cnt4}}
+			{{#cnt3}}<div class="wc4">{{/cnt3}}
+			{{#cnt2}}<div class="wc6">{{/cnt2}}
+			{{#cnt1}}<div class="wc12">{{/cnt1}}
+					<img src="{{urlServer}}/imgs/-w1980/att/{{fileName}}"/>
+					<small>{{name}}</small>
+			</div>
+		{{/images}}
+		</div>
+	{{/data.gallery.rows}}
+{{/data.gallery.style}}

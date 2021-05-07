@@ -1,0 +1,40 @@
+[
+	{
+		"table": "e10.witems.items",
+		"views": {
+			"inventory": {
+				"id": "inventory", "class": "e10doc.inventory.ViewItems",
+				"details": {
+					"default": {"title": "Přehled", "icon": "icon-file", "type": "detail", "class": "e10.witems.ViewDetailItems", "order": 1000},
+					"inventory": {"title": "Zásoby", "icon": "icon-cubes", "type": "detail", "class": "e10doc.inventory.ViewDetailItemsInventory", "order": 5800},
+					"journal": {"title": "Pohyby", "icon": "x-basket", "type": "detail", "class": "e10doc.core.ViewDetailItemsJournal", "order": 6000},
+					"using": {"title": "Použití", "icon": "icon-binoculars", "type": "detail", "class": "e10.witems.ViewDetailUsing", "order": 8000}
+				}
+			},
+			"default": {
+				"details": {
+					"inventory": {"title": "Zásoby", "icon": "icon-cubes", "type": "detail", "class": "e10doc.inventory.ViewDetailItemsInventory", "order": 5800}
+				}
+			},
+			"byCategories": {
+				"details": {
+					"inventory": {"title": "Zásoby", "icon": "icon-cubes", "type": "detail", "class": "e10doc.inventory.ViewDetailItemsInventory", "order": 5800},
+					"journal": {"title": "Pohyby", "icon": "x-basket", "type": "detail", "class": "e10doc.core.ViewDetailItemsJournal", "order": 6000}
+				}
+			}
+		}
+	},
+	{
+		"table": "e10doc.core.heads",
+		"views": {
+			"invoicesIn": {
+				"panels": [
+					{"id": "stockin", "title": "Příjemky", "type": "viewer", "table": "e10.persons.persons", "class": "e10doc.inventory.InvoiceStockinDisposal"}
+				]
+			}
+		},
+		"indexes": [
+			{"id": "inventory_s1", "columns": ["docType", "warehouse", "docStateMain", "docNumber"]}
+		]
+	}
+]

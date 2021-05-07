@@ -1,0 +1,11 @@
+{
+	"feed": {
+		"validate-person": {
+			"classId": "services.persons.PersonValidator"
+		}
+	},
+	"services-person-registers": {
+		"eu-vat": {"classId": "services.persons.PersonsRegisterEUVIES"},
+		"cz-ares": {"classId": "services.persons.PersonsRegisterCZARES"}
+	}
+}

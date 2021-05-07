@@ -1,0 +1,14 @@
+{
+	"id": "e10.web.wuSessions", "sql": "e10_web_wuSessions", "name": "Sezení webu",
+	"columns": [
+		{"id": "ndx", "sql": "ndx", "name": "id", "type": "string", "len": 40, "options": ["ascii"]},
+		{"id": "webServer", "name": "Webový server", "type": "int", "reference": "e10.web.servers"},
+		{"id": "person", "sql": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "loginType", "name": "Typ", "type": "enumInt",
+			"enumValues": {"0": "Výchozí",  "1": "Příhlášení heslem", "2": "Příhlášení URL klíčem", "3": "Přihlášení kódem"}},
+		{"id": "loginKeyValue", "name": "Klíč", "type": "string", "len": 80, "options": ["ascii"]},
+		{"id": "loginTag", "name": "Tag", "type": "int"},
+		{"id": "created", "name": "Vytvořeno", "type": "timestamp"}
+	],
+	"options": ["systemTable"]
+}

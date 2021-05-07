@@ -1,0 +1,6 @@
+{
+  "id": "e10doc.contracts.sale",
+  "name": "Sales Contracts",
+  "extensions": ["sale"],
+	"modules": ["e10doc/contracts/core"]
+}

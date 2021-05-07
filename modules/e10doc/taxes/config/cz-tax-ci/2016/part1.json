@@ -1,0 +1,135 @@
+{
+	"name": "I. ODDÍL – údaje o poplatníkovi",
+	"title": "I. ODDÍL – údaje o poplatníkovi a přiznání",
+	"reportParams": ["uv_rozsah", "uv_rozsah_rozv", "uv_rozsah_vzz", "uv_vyhl", "spoj_zahr"],
+	"fields": {
+		"columns": [
+			{"id": "c_ufo_cil", "group": "fu", "name": "Finanční úřad pro", "type": "enumString", "len": 5,
+				"enumCfg": {"cfgItem": "e10doc.taxes.reportProperties.czFU", "cfgValue": "", "cfgText": "fullName"}},
+			{"id": "c_pracufo", "group": "fu", "name": "Pracoviště finančního úřadu", "type": "enumString", "len": 8,
+				"enumCfg": {"cfgItem": "e10doc.taxes.reportProperties.czPracFU", "cfgValue": "", "cfgText": "fullName"}},
+
+			{"id": "zkrobchjm", "group": "subjekt", "name": "Název poplatníka", "type": "string", "len": 255},
+			{"id": "ulice", "group": "subjekt", "name": "Ulice", "type": "string", "len": 38},
+			{"id": "c_pop", "group": "subjekt", "name": "Číslo popisné", "type": "string", "len": 6},
+			{"id": "c_orient", "group": "subjekt", "name": "Číslo orientační", "type": "string", "len": 4},
+			{"id": "naz_obce", "group": "subjekt", "name": "Obec", "type": "string", "len": 48},
+			{"id": "psc", "group": "subjekt", "name": "PSČ", "type": "string", "len": 10},
+			{"id": "k_stat", "group": "subjekt", "name": "Stát", "type": "enumString", "len": 2,
+				"enumCfg": {"cfgItem": "e10.base.countries", "cfgValue": "", "cfgText": "name"}},
+
+			{"id": "dic", "name": "DIČ", "type": "string", "len": 12},
+			{"id": "c_nace", "group": "subjekt", "name": "Kód hlavní činnosti(NACE)", "type": "string", "len": 6},
+
+			{"id": "zast_typ", "group": "podepOsob", "name": "Typ podepisující osoby", "type": "enumString", "len": 1, "options": ["saveOnChange"],
+				"enumValues": {"": "", "P": "Právnická", "F": "Fyzická"}},
+			{"id": "zast_kod", "group": "podepOsob", "name": "Kód podepisující osoby", "type": "enumString", "len": 2, "disabled": {"zast_typ": ""},
+				"enumCfg": {"cfgItem": "e10doc.taxes.reportProperties.czTRKodPodOsoba", "cfgValue": "", "cfgText": "fullName"}},
+			{"id": "zast_nazev", "group": "podepOsob", "name": "Název právnické osoby", "type": "string", "len": 255, "enabled": {"zast_typ": "P"}},
+			{"id": "zast_jmeno", "group": "podepOsob", "name": "Jméno", "type": "string", "len": 20, "enabled": {"zast_typ": "F"}},
+			{"id": "zast_prijmeni", "group": "podepOsob", "name": "Příjmení", "type": "string", "len": 36, "enabled": {"zast_typ": "F"}},
+			{"id": "zast_ic", "group": "podepOsob", "name": "IČ právnické osoby", "type": "string", "len": 10, "enabled": {"zast_typ": "P"}},
+			{"id": "zast_dat_nar", "group": "podepOsob", "type": "date", "name": "Datum narození podepisující osoby", "enabled": {"zast_typ": "F"}},
+			{"id": "zast_ev_cislo", "group": "podepOsob", "name": "Evidenční číslo osvědčení daňového poradce", "type": "string", "len": 36, "enabled": {"zast_typ": "F"}},
+
+			{"id": "opr_jmeno", "group": "oprOsob", "name": "Jméno oprávněné osoby", "type": "string", "len": 20},
+			{"id": "opr_prijmeni", "group": "oprOsob", "name": "Příjmení oprávněné osoby", "type": "string", "len": 36},
+			{"id": "opr_postaveni", "group": "oprOsob", "name": "Vztah k právnické osobě", "type": "string", "len": 40},
+			{"id": "c_telef", "group": "oprOsob", "name": "Telefon", "type": "string", "len": 14},
+
+			{"id": "zdobd_od", "name": "Počátek zdaňovacího období", "type": "date"},
+			{"id": "zdobd_do", "name": "Konec zdaňovacího období", "type": "date"},
+
+			{"id": "audit", "group": "dp", "type": "logical", "name": "Zákonná povinnost ověření účetní závěrky auditorem"},
+			{"id": "dan_por", "group": "dp", "type": "logical", "name": "Přiznání zpracoval a předložil daňový poradce", "options": ["saveOnChange"]},
+
+			{"id": "dapdpp_forma", "group": "dp", "name": "Forma daňového přiznání", "type": "enumString", "len": 1,
+				"enumValues": {"B": "Řádné", "O": "Řádné - opravné", "D": "Dodatečné", "E": "Dodatečné - opravné"}},
+			{"id": "typ_dapdpp", "group": "dp", "name": "Typ daňového přiznání", "type": "enumString", "len": 1,
+				"enumValues": {
+					"A": "A. za zdaňovací období",
+					"B": "B. při vstupu do likvidace",
+					"C": "C. v průběhu likvidace",
+					"D": "D. za uplynulou část zdaň. obd. předcházející dni zániku při zrušení bez likvidace",
+					"G": "G. při ukončení činnosti v rámci privatizace v případě stanoveném zvl. zák.",
+					"H": "H. za období předch. dni zpracování návrhu na použití likv. zůstatku",
+					"J": "J. za období předch. rozhodnému dni fúze nebo převodu jmění na společníka...",
+					"K": "K. za období předcházející dni zápisu změny právní formy...",
+					"L": "L. za období předcházející změně zdaň. období z kal. roku na hosp. rok nebo naopak",
+					"M": "M. za období počínající dnem vzniku poplatníka",
+					"O": "O. za období předcházející dni přemístění sídla evr. spol. zapsané do OR z území ČR",
+					"P": "P. ke dni nabytí účinnosti rozhodnutí o úpadku",
+					"R": "R. v průběhu insolvenčního řízení,",
+					"T": "T. ke dni předložení konečné zprávy"
+				}
+			},
+
+			{"id": "typ_popldpp", "group": "dp", "name": "Typ poplatníka", "type": "enumString", "len": 1,
+				"enumValues": {
+					"1": "1. ostatní",
+					"0": "0. nositel příslibu investiční pobídky ve formě slevy (2015: uplatňující slevu) na dani podle § 35b zákona",
+					"9": "9. nositel příslibu investiční pobídky ve formě slevy (2015: uplatňující slevu) na dani podle § 35a zákona",
+					"8": "8. nositel příslibu investiční pobídky v daňové oblasti podle usnesení vlády",
+					"7": "7. poplatník, který byl po část zdaňovacího období základním investičním fondem (§ 20a zákona)",
+					"6": "6. instituce penzijního pojištění nebo penzijní společnost, vč. fondů penz. spol. (§ 17 odst. 1 písm. e) zák.)",
+					"5": "5. investiční společnost, vč. obhospodařovaných podílových fondů",
+					"4": "4. investiční fond podle zákona upravujícího inv. spol. a inv. fondy vyjma podílových fondů",
+					"3": "3. veřejně prospěšný poplatník (§ 17a zákona)",
+					"2": "2. daňový nerezident (§ 17 odst. 4 zákona)"
+				}
+			},
+
+			{"id": "uv_vyhl", "group": "dp", "name": "Vyhláška č.", "type": "enumString", "len": 3,
+				"enumValues": {
+					"500": "500 - podnikatelé, podvojné účetnictví",
+					"501": "501 - banky a jiné finanční instituce",
+					"502": "502 - pojišťovny",
+					"503": "503 - zdravotní pojišťovny",
+					"504": "504 - neziskové organizace, podvojné účetnictví",
+					"507": "507 - jednoduché účetnictví (do 2015, § 38a zákona č. 563/1991 Sb.)",
+					"325": "325 - jednoduché účetnictví (od 2016 - náhrada 507)",
+					"410": "410 - jednoduché účetnictví"
+				}
+			},
+
+			{"id": "spoj_zahr", "group": "dp", "name": "Transakce uskutečněné se spojenými osobami", "type": "enumString", "len": 1,
+				"enumValues": {
+					"N": "žádné uskutečněné transakce se spojenou osobou",
+					"T": "transakce uskutečněné s tuzemskou spojenou osobou",
+					"Z": "transakce uskutečněné se zahraniční spojenou osobou",
+					"A": "transakce uskutečněné s tuzemskou i zahraniční spojenou osobou"
+				}
+			},
+
+			{"id": "typ_zo", "group": "dp", "name": "Zdaňovací období podle § 21a písm.", "type": "enumString", "len": 1,
+				"enumValues": {
+					"A": "Kalendářní rok",
+					"B": "Hospodářský rok",
+					"C": "Období od rozhodného dne fúze nebo rozdělení korporace nebo převodu jmění do konce kalendářního roku nebo hosp. roku, ve kterém se přeměna nebo převod jmění staly účinnými",
+					"D": "Účetní období, pokud je toto účetní období delší než 12 měsíců."
+				}
+			},
+
+			{"id": "uc_zav", "name": "Účetní závěrka přiložena", "type": "enumString", "len": 1,
+				"enumValues": {"A": "Ano", "N": "Ne"}},
+			{"id": "uv_rozsah", "group": "dp", "name": "Rozsah údajů účetních výkazů", "type": "enumString", "len": 1,
+				"enumValues": {"P": "Plný", "Z": "Zkrácený pro malé ÚJ", "M": "Zkrácený pro mikro ÚJ"}},
+			{"id": "uv_rozsah_rozv", "group": "dp", "name": "Rozsah údajů účetních výkazů - Rozvaha", "type": "enumString", "len": 1,
+				"enumValues": {"P": "Plný", "Z": "Zkrácený - Malé ÚJ", "M": "Zkrácený - Mikro ÚJ"}},
+			{"id": "uv_rozsah_vzz", "group": "dp", "name": "Rozsah údajů účetních výkazů - Výsledovka", "type": "enumString", "len": 1,
+				"enumValues": {"P": "Plný", "Z": "Zkrácený"}}
+
+
+		],
+		"groups": [
+			{"id": "fu", "titleHidden": "Finanční úřad"},
+			{"id": "subjekt", "title": "Informace o subjektu"},
+			{"id": "podepOsob", "title": "Údaje o podepisující osobě"},
+			{"id": "oprOsob", "title": "Údaje o oprávněné osobě"},
+			{"id": "dp", "title": "Daňové přiznání"}
+		]
+
+	}
+
+
+}

@@ -1,0 +1,83 @@
+{{{netdataPageBegin}}}
+
+<div class="netdata-chart-row">
+	<div style="width: 50%; text-align: center; float: left; padding-top: 1em; padding-right:1em;">
+		<div data-netdata="nut_{{data.device.recData.id}}.load"
+				 data-dimensions="load"
+				 data-chart-library="gauge"
+				 data-gauge-max-value="100"
+				 data-width="150px"
+				 data-after="-7200"
+				 data-points="60"
+				 data-title="UPS load"
+				 data-units="%"
+		></div>
+		<p/>
+		<div data-netdata="nut_{{data.device.recData.id}}.load"
+				 data-dimensions="load"
+				 data-chart-library="dygraph"
+				 data-dygraph-theme-xxx="sparkline"
+				 data-width="100%"
+				 data-height="50px"
+				 data-after="-7200"
+				 data-points="60"
+				 data-title=""
+		></div>
+	</div>
+
+
+	<div style="width: 50%; text-align: center; float: left; padding-top: 1em; padding-left:1em;">
+		<div data-netdata="nut_{{data.device.recData.id}}.charge"
+				 data-dimensions="charge"
+				 data-chart-library="gauge"
+				 data-gauge-max-value="100"
+				 data-width="150px"
+				 data-after="-7200"
+				 data-points="60"
+				 data-title="UPS charge"
+				 data-units="%"
+		></div>
+		<p/>
+		<div data-netdata="nut_{{data.device.recData.id}}.charge"
+				 data-dimensions="charge"
+				 data-chart-library="dygraph"
+				 data-dygraph-theme-xxxx="sparkline"
+				 data-width="100%"
+				 data-height="50px"
+				 data-after="-7200"
+				 data-points="60"
+				 data-title=""
+		></div>
+	</div>
+</div>
+
+
+<h2 style="text-align: center; margin-top: 1em;">UPS Time</h2>
+<div class="netdata-container-with-legend" id="nut_{{data.device.recData.id}}__runtime" data-netdata="nut_{{data.device.recData.id}}.runtime" data-width="100%" data-height="40px"
+		 data-dygraph-valuerange="[null, null]" data-before="0" data-after="-480" data-id="nut_{{data.device.recData.id}}__runtime" data-colors="" data-title=""
+		 role="application">
+</div>
+
+
+<div class="row netdata-chart-row">
+	<div class="col-sm-6">
+		<h2 style="text-align: center; padding-top: 1rem;">Battery Voltage</h2>
+		<div class="cccc-netdata-container-with-legend" id="nut_{{data.device.recData.id}}__battery_voltage" data-netdata="nut_{{data.device.recData.id}}.battery_voltage" data-width="100%" data-height="40px"
+				 data-dygraph-valuerange="[null, null]" data-before="0" data-after="-480" data-id="nut_{{data.device.recData.id}}__battery_voltage" data-colors=""  data-title=""
+				 role="application">
+		</div>
+	</div>
+
+	<div class="col-sm-6">
+		<h2 style="text-align: center; padding-top: 1rem;">Input Voltage</h2>
+		<div class="cccc-netdata-container-with-legend" id="nut_{{data.device.recData.id}}__input_voltage" data-netdata="nut_{{data.device.recData.id}}.input_voltage" data-width="100%" data-height="40px"
+				 data-dygraph-valuerange="[null, null]" data-before="0" data-after="-480" data-id="nut_{{data.device.recData.id}}__input_voltage" data-colors=""  data-title=""
+				 role="application">
+		</div>
+	</div>
+</div>
+
+
+
+{{{netdataPageEnd}}}
+

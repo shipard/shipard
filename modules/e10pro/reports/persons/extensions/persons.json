@@ -1,0 +1,12 @@
+[
+	{
+		"table": "e10.persons.persons",
+		"views": {
+			"default": {
+				"details": {
+					"summary": {"title": "Rozbor", "icon": "icon-search-plus", "type": "detail", "class": "e10pro.reports.persons.ViewDetailPersonSummary", "order": 6000}
+				}
+			}
+		}
+	}
+]

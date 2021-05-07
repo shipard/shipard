@@ -1,0 +1,17 @@
+{
+	"id": "e10pro.property.states", "sql": "e10pro_property_states", "name": "Stavy majetku",
+	"columns": [
+		{"id": "property", "name": "Majetek", "type": "int"},
+
+		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "centre", "name": "Středisko", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10doc.centres", "cfgValue": "ndx", "cfgText": "shortName"}},
+		{"id": "place", "name": "Místo", "type": "int", "reference": "e10.base.places"},
+		{"id": "quantity", "name": "Množství", "type": "int"}
+	],
+	"options": ["systemTable"],
+	"indexes": [
+		{"id": "s1", "columns": ["property"]},
+		{"id": "s2", "columns": ["person"]}
+	]
+}

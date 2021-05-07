@@ -1,0 +1,52 @@
+{
+    "table": {
+        "name": "Accounting groups"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "groupKind": {
+            "name": "Group kind"
+        },
+        "analytics": {
+            "name": "Analytics"
+        },
+        "note": {
+            "name": "Description"
+        },
+        "debsAccPropIdProperty": {
+            "name": "Classified property account"
+        },
+        "debsAccPropIdInclusion": {
+            "name": "Property acquisition account"
+        },
+        "debsAccPropIdEnhancement": {
+            "name": "Technical evaluation account"
+        },
+        "debsAccPropIdDepDebit": {
+            "name": "Depreciation account Debit"
+        },
+        "debsAccPropIdDepCredit": {
+            "name": "Depreciation account Credit"
+        },
+        "debsAccPropIdBuy": {
+            "name": "Account for property purchase"
+        },
+        "debsAccPropIdSale": {
+            "name": "Account for property sale"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

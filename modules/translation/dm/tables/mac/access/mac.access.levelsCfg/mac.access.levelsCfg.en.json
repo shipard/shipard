@@ -1,0 +1,64 @@
+{
+    "table": {
+        "name": "Access levels setting"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "rowOrder": {
+            "name": "Row order"
+        },
+        "accessLevel": {
+            "name": "Access level"
+        },
+        "gate": {
+            "name": "Gate"
+        },
+        "enableTagType1": {
+            "name": "Enable access via RFID tag"
+        },
+        "enableTagType2": {
+            "name": "Enable access via phone number"
+        },
+        "enableTagType3": {
+            "name": "Enable access via VRP of vehicle"
+        },
+        "enableDOW1": {
+            "name": "Monday"
+        },
+        "enableDOW2": {
+            "name": "Tuesday"
+        },
+        "enableDOW3": {
+            "name": "Wednesday"
+        },
+        "enableDOW4": {
+            "name": "Thursday"
+        },
+        "enableDOW5": {
+            "name": "Friday"
+        },
+        "enableDOW6": {
+            "name": "Saturday"
+        },
+        "enableDOW7": {
+            "name": "Sunday"
+        },
+        "enabledTimeFrom": {
+            "name": "Start time"
+        },
+        "enabledTimeTo": {
+            "name": "End time"
+        },
+        "enabledTimeFromMin": {
+            "name": "Start time - minutes"
+        },
+        "enabledTimeToMin": {
+            "name": "End time - minutes"
+        },
+        "note": {
+            "name": "Note"
+        }
+    }
+}

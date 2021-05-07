@@ -1,0 +1,28 @@
+[
+  {
+    "table": "e10doc.core.heads",
+    "views": [
+      {"id": "stockin", "class": "e10doc.stockIn.libs.ViewStockInDocs",
+        "details": {
+          "detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10doc.stockIn.libs.ViewDetailStockIn", "order": 1000},
+          "accounting": {"title": "Účtování", "icon": "x-stamp", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
+        }
+      }
+    ],
+    "forms": [
+      {"id": "stockin", "class": "e10doc.stockIn.libs.FormStockIn"}
+    ],
+		"reports": [
+      {
+        "id": "stockin", "name": "Příjemka", "class": "e10doc.stockIn.libs.StockInReport",
+				"queryCol": "docType", "queryColValue": "stockin", "email": 1
+      }
+    ]
+  },
+  {
+    "table": "e10doc.core.rows",
+    "forms": [
+      {"id": "stockin", "class": "e10doc.stockIn.libs.FormStockInRow"}
+    ]
+  }
+]

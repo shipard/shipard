@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "Documents additions"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "additionType": {
+            "name": "Addition type"
+        },
+        "identifier": {
+            "name": "Code"
+        },
+        "rowMark": {
+            "name": "Mark"
+        },
+        "validFrom": {
+            "name": "Valid from"
+        },
+        "validTo": {
+            "name": "Valid until"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

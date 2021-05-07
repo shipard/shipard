@@ -1,0 +1,20 @@
+{
+	"id": "e10.base.geoTags", "sql": "e10_base_geoTags", "name": "Geografické značky",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "tagType", "name": "Typ značky", "type": "enumInt",
+			"enumValues": {"0": "Ostatní"}},
+
+		{"id": "srcTable", "name": "Tabulka", "type": "short"},
+		{"id": "srcRec", "name": "Záznam", "type": "int"},
+		{"id": "dstTable", "name": "Tabulka", "type": "short"},
+		{"id": "dstRec", "name": "Záznam", "type": "int"},
+
+		{"id": "locHash", "name": "Hash adresy", "type": "string", "len": 32, "options": ["ascii"]},
+		{"id": "locAddress", "name": "Adresa", "type": "int", "reference": ""}
+	],
+	"options": ["systemTable"],
+	"indexes": [
+		{"id": "s1", "columns": ["srcTable", "srcRec"]}
+	]
+}

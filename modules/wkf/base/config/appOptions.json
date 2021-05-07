@@ -1,0 +1,49 @@
+{
+	"wkfnIssuesKinds": {
+		"name": "Druhy zpráv", "order": 181000, "group": "workflow", "icon": "icon-flash",
+		"type": "viewer", "table": "wkf.base.issuesKinds", "viewer": "default"
+	},
+	"wkfnSections": {
+		"name": "Sekce", "order": 185000, "group": "workflow", "icon": "icon-columns",
+		"type": "viewer", "table": "wkf.base.sections", "viewer": "default"
+	},
+	"wkfnTrays": {
+		"name": "Přihrádky na přílohy", "order": 187000, "group": "workflow", "icon": "icon-folder-open-o",
+		"type": "viewer", "table": "wkf.base.trays", "viewer": "default", "enabledCfgItem": "options.experimental.testTrays"
+	},
+	"wkfnProjects": {
+		"name": "Projekty", "order": 185000, "group": "workflow", "icon": "icon-lightbulb-o",
+		"type": "viewer", "table": "wkf.base.projects", "viewer": "default"
+	},
+	"wkfnBoards": {
+		"name": "Přehledy Zpráv", "order": 186000, "group": "workflow", "icon": "icon-window-maximize",
+		"type": "viewer", "table": "wkf.base.boards", "viewer": "default"
+	},
+	"wkfnTargets": {
+		"name": "Cíle", "order": 187000, "group": "workflow", "icon": "icon-flag-checkered",
+		"type": "viewer", "table": "wkf.base.targets", "viewer": "default"
+	},
+	"wkfnTargetsKinds": {
+		"name": "Druhy cílů", "order": 187200, "group": "workflow", "icon": "icon-flag-o",
+		"type": "viewer", "table": "wkf.base.targetsKinds", "viewer": "default"
+	},
+	"wkfnIssuesStatuses": {
+		"name": "Statusy", "order": 186000, "group": "workflow", "icon": "icon-tasks",
+		"type": "viewer", "table": "wkf.base.issuesStatuses", "viewer": "default"
+	},
+	"wkfnIssuesStatusesKinds": {
+		"name": "Druhy statusů", "order": 186100, "group": "workflow", "icon": "icon-cogs",
+		"type": "viewer", "table": "wkf.base.issuesStatusesKinds", "viewer": "default"
+	},
+	"wkfnExtNotifications": {
+		"name": "Externí notifikace", "order": 188000, "group": "workflow", "icon": "icon-external-link-square",
+		"type": "viewer", "table": "wkf.base.extNotifications", "viewer": "default"
+	},
+
+	"experimental": {
+		"options": [
+			{"cfgKey": "testTrays", "cfgName": "Testovat přihrádky na přílohy", "options": {"0": "Ne","1": "Ano"}},
+			{"cfgKey": "testWkfViewerInDashboard", "cfgName": "Testovat prohlížeč v dashboardu", "options": {"0": "Ne","1": "Ano"}}
+		]
+	}
+}

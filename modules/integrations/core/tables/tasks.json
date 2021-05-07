@@ -1,0 +1,27 @@
+{
+	"id": "integrations.core.tasks", "sql": "integrations_core_tasks", "name": "Úlohy", "icon": "icon-cogs",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "fullName", "name": "Název", "type": "string", "len": 100},
+		{"id": "service", "name": "Služba", "type": "int", "reference": "integrations.core.services"},
+
+		{"id": "taskType", "name": "Typ úlohy", "type":  "enumString", "len": 30, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "integration.tasks.types", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "dstTray", "name": "Přihrádka", "type": "int", "reference": "wkf.base.trays"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": {
+		"default": {"id": "default", "class": "integrations.core.ViewTasks"}
+	},
+	"forms": [
+		{"id": "default", "class": "integrations.core.FormTask"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"ndx": 0
+}
+

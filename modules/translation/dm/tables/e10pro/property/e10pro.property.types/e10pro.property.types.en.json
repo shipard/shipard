@@ -1,0 +1,43 @@
+{
+    "table": {
+        "name": "Property types"
+    },
+    "columns": {
+        "ndx": {
+            "name": "ndx"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "propertyKind": {
+            "name": "Property kind"
+        },
+        "debsAccountIdProperty": {
+            "name": "Classified property account"
+        },
+        "debsAccountIdInclusion": {
+            "name": "Property purchase account"
+        },
+        "debsAccountIdEnhancement": {
+            "name": "Technical evaluation account"
+        },
+        "debsAccountIdDepDebit": {
+            "name": "Deprications Dr"
+        },
+        "debsAccountIdDepCredit": {
+            "name": "Deprications Cr"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

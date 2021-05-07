@@ -1,0 +1,5 @@
+{
+	"1": {"name": "ipv4 DHCP fix", "sc": "F"},
+	"0": {"name": "ipv4 ručně", "sc": "M"},
+	"2": {"name": "ipv4 DHCP klient", "sc": "C"}
+}

@@ -1,0 +1,10 @@
+{
+	"macu": {
+		"name": "Monitoring And Control",
+		"roles": ["user"],
+		"viewers": {
+			"mac.base.accessTags": {"default": 2},
+			"mac.base.zones": {"default": 2}
+		}
+	}
+}

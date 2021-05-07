@@ -1,0 +1,92 @@
+{
+    "cash": {
+        "shortName": "Cash register",
+        "fullName": "Cash voucher",
+        "pluralName": "Cash vouchers",
+        "shortcut": "CashVouch"
+    },
+    "bank": {
+        "shortName": "Bank",
+        "fullName": "Bank statement",
+        "pluralName": "Bank statements",
+        "shortcut": "BnkSttmnt"
+    },
+    "invno": {
+        "shortName": "Outgoing invoice",
+        "pluralName": "Outgoing invoices",
+        "fullName": "Outgoing invoice",
+        "shortcut": "OInvo"
+    },
+    "invni": {
+        "shortName": "Invoice in",
+        "pluralName": "Invoices in",
+        "fullName": "Invoice in",
+        "shortcut": "InvoIn"
+    },
+    "cmnbkp": {
+        "fullName": "Accounting document",
+        "shortName": "Acc. document",
+        "pluralName": "Accounting documents",
+        "shortcut": "AccountDoc"
+    },
+    "orderin": {
+        "shortName": "Order",
+        "fullName": "Accepted order",
+        "pluralName": "Accepted orders",
+        "shortcut": "AcceptOrd"
+    },
+    "orderout": {
+        "shortName": "Order",
+        "fullName": "Issued order",
+        "pluralName": "Issued orders",
+        "shortcut": "IssuesOrd"
+    },
+    "stockinst": {
+        "fullName": "Initial stock level",
+        "shortName": "Initial level",
+        "pluralName": "Initial stock levels",
+        "shortcut": "InStockLvl"
+    },
+    "bankorder": {
+        "fullName": "Payment order",
+        "shortName": "Order",
+        "pluralName": "Payment orders",
+        "shortcut": "PayOrder"
+    },
+    "stockin": {
+        "fullName": "Receiving record",
+        "shortName": "Record",
+        "pluralName": "Receiving records",
+        "shortcut": "RecRecrd"
+    },
+    "stockout": {
+        "fullName": "Stock release note",
+        "shortName": "Release note",
+        "pluralName": "Stock release notes",
+        "shortcut": "StockRelNote"
+    },
+    "invpo": {
+        "shortName": "Outgoing invoice",
+        "fullName": "Outgoing pro forma invoice",
+        "pluralName": "Outgoing pro forma invoices",
+        "shortcut": "OPFInvo"
+    },
+    "prfmin": {
+        "fullName": "Incoming pro forma invoice",
+        "shortName": "Incoming invoice",
+        "pluralName": "Incoming pro forma invoices",
+        "shortcut": "IPFInvo"
+    },
+    "cashreg": {
+        "fullName": "Receipt",
+        "shortName": "Receipt",
+        "pluralName": "Receipts",
+        "shortcut": "Rec"
+    },
+    "dlvrnote": {
+        "fullName": "Delivery note",
+        "shortName": "Delivery note",
+        "pluralName": "Delivery notes",
+        "shortcut": "DelNote"
+    }
+}

@@ -1,0 +1,53 @@
+{
+	"id": "e10doc.taxes.reports", "sql": "e10doc_taxes_reports", "name": "Daňová přiznání a přehledy", "icon": "icon-shield",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "reportType", "name": "Typ", "type": "enumString", "len": 10,
+			"enumCfg": {"cfgItem": "e10doc.taxes.reportTypes", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "title", "name": "Text dokladu", "type": "string", "len": 120},
+
+		{"id": "owner", "name": "Vlastní adresa", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "author", "name": "Vystavil", "type": "int", "reference": "e10.persons.persons"},
+
+		{"id": "dateIssue", "name": "Datum vystavení", "type": "date"},
+		{"id": "datePeriodBegin", "name": "Začátek období", "type": "date"},
+		{"id": "datePeriodEnd", "name": "Konec období", "type": "date"},
+
+		{"id": "taxReg", "name": "Registrace k dani", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10doc.base.taxRegs.vat", "cfgValue": "ndx", "cfgText": "taxId"}},
+		{"id": "taxPeriod", "name": "Daňové období", "type": "int", "reference": "e10doc.base.taxperiods"},
+		{"id": "accPeriod", "name": "Účetní období", "type": "int", "reference": "e10doc.base.fiscalyears"},
+		{"id": "accMonth", "name": "Účetní měsíc", "type": "int", "reference": "e10doc.base.fiscalmonths"},
+
+		{"id": "homeCurrency", "name": "Měna domácí", "type": "enumString", "len": 3,
+			"enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
+
+		{"id": "headerInfo", "name": "Hlavička", "type": "subColumns"},
+		{"id": "params", "name": "Parametry", "type": "memo"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "properties", "class": "e10.base.ListProperties", "name": "Vlastnosti",
+			"srcCfgKeyColumn": "reportType", "propertiesCfgList": "e10.taxReturns.properties-report"}
+	],
+	"views": [
+		{
+			"id": "default", "class": "e10doc.taxes.ViewReports",
+			"details": {
+				"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "order":  0, "class": "e10doc.taxes.ViewDetailReport"},
+				"preview": {"title": "Náhled", "icon": "icon-eye", "type": "detail", "order":  1000, "class": "e10doc.taxes.ViewDetailReportPreview"},
+				"errors": {"title": "Problémy", "icon": "icon-exclamation-triangle", "type": "detail", "order":  2000, "class": "e10doc.taxes.ViewDetailReportErrors"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.taxes.FormReport"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "title"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10doc.taxes.vatReports.docStates"},
+	"ndx": 1102
+}

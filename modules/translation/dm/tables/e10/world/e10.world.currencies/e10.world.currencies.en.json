@@ -1,0 +1,34 @@
+{
+    "table": {
+        "name": "Currencies"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "id": {
+            "name": "id"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "namePlural": {
+            "name": "Plural name"
+        },
+        "symbol": {
+            "name": "Symbol"
+        },
+        "symbolNative": {
+            "name": "Native symbol"
+        },
+        "decimals": {
+            "name": "Number of decimal places"
+        },
+        "validFrom": {
+            "name": "Valid from"
+        },
+        "validTo": {
+            "name": "Valid until"
+        }
+    }
+}

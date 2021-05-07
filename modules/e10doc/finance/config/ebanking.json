@@ -1,0 +1,29 @@
+{
+	"downloads": {
+		"none": {"title": "Ne"},
+		"fio-api": {
+				"title": "FIO API", "availability": ["CZ2010"], "class": "lib.ebanking.download.DownloadStatementsFio"
+		},
+		"rb-inbox-text": {
+			"title": "RB výpis z Došlé pošty (.ZIP)", "availability": ["CZ5500"], "class": "lib.ebanking.download.DownloadStatementsRBEmailTxt", "inbox": 1
+		},
+		"csob-inbox-xml": {
+			"title": "XML výpis z Došlé pošty", "availability": ["CZ0300"], "class": "lib.ebanking.download.DownloadStatementsCSOBEmailXml", "inbox": 1
+		}
+	},
+	"uploads": {
+		"none": {"title": "Ne"},
+		"fio-api": {
+			"title": "FIO API", "availability": ["CZ2010"], "class": "lib.ebanking.upload.UploadOrdersFio"
+		}
+	},
+	"transactions": {
+		"none": {"title": "Ne"},
+		"fio-api": {
+			"title": "FIO API", "availability": ["CZ2010"], "class": "lib.ebanking.transactions.DownloadBankTransactionsFio"
+		},
+		"era-api": {
+			"title": "Informační emaily Era Svět", "availability": ["CZO300"], "class": "lib.ebanking.transactions.DownloadBankTransactionsEra"
+		}
+	}
+}

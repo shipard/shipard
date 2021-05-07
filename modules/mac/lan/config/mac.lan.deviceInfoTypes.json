@@ -1,0 +1,7 @@
+{
+	"sw": {"name": "Software", "icon": "icon-file-archive-o"},
+	"storages": {"name": "Úložiště", "icon": "icon-folder-open-o"},
+	"system": {"name": "Informace o systému", "icon": "icon-microchip"},
+	"counters": {"name": "Počitadla", "icon": "icon-spinner"},
+	"drives": {"name": "Disky", "icon": "icon-hdd-o"}
+}

@@ -1,0 +1,41 @@
+{
+	"panels": {
+		"e10com": {
+			"url": "/app/commerce", "objectType": "panel", "zone": "sec", "name": "Obchod",
+			"enabledCfgItem": "options.e10doc-commerce.usePanelCommerce", "order": 280000,
+			"items": [
+				{
+					"t1": "Přehled", "object": "widget", "class": "e10.widgetDashboard", "subclass": "commerce", "icon": "icon-dashboard", "order": 5000,
+					"enabledCfgItem": "options.experimental.testDashboardWorkOrders"
+				},
+				{"t1": "Zakázky", "object": "viewer", "table": "e10mnf.core.workOrders", "viewer": "default", "icon": "icon-industry",
+					"enabledCfgItem": "options.e10doc-commerce.useWorkOrders", "order": 200000},
+				{"t1": "Přijaté objednávky", "object": "viewer", "table": "e10doc.core.heads", "viewer": "orderIn", "icon": "icon-cart-arrow-down",
+					"enabledCfgItem": "options.e10doc-commerce.useOrdersIn", "order": 300000},
+				{"t1": "Vydané objednávky", "object": "viewer", "table": "e10buy.orders.orders", "viewer": "default", "icon": "icon-shopping-basket",
+					"enabledCfgItem": "options.e10doc-commerce.useOrdersOut", "order": 400000},
+				{"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10mnf-reports", "icon": "system/iconReports", "order": 700000}
+			],
+			"smallItems": [
+				{"t1": "Výkazy práce", "object": "viewer", "table": "e10mnf.core.workRecs", "viewer": "default",  "icon": "icon-paw",
+					"enabledCfgItem": "options.e10doc-commerce.useWorkOrdersOnPanelCommerce", "order": 70000
+				},
+				{"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "default", "icon": "e10-persons-persons", "order": 100000},
+				{"t1": "Položky", "object": "viewer", "table": "e10.witems.items", "viewer": "default", "icon": "e10-witems-items", "order": 200000}
+			]
+		}
+	},
+	"mobileui": {
+		"records": {
+			"groups": {
+				"e10mnf": {
+					"name": "Výroba", "order": 300000,
+					"items": {
+						"contracts": {"t1": "Zakázky", "object": "viewer", "table": "e10mnf.core.workOrders", "viewer": "default", "icon": "icon-industry",
+							"enabledCfgItem": "options.e10doc-commerce.useWorkOrders", "order": 200000}
+					}
+				}
+			}
+		}
+	}
+}

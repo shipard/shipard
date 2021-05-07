@@ -1,0 +1,40 @@
+{
+    "table": {
+        "name": "Wiki"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Full name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "title": {
+            "name": "Title"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "publicRead": {
+            "name": "Public Wiki"
+        },
+        "icon": {
+            "name": "Icon"
+        },
+        "dashboardPlace": {
+            "name": "Place in Dashboard"
+        },
+        "pageFooter": {
+            "name": "Pages footer"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Portal pages"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "portal": {
+            "name": "Portal"
+        },
+        "rowOrder": {
+            "name": "Row order"
+        },
+        "pageType": {
+            "name": "Page type"
+        },
+        "title": {
+            "name": "Title"
+        },
+        "url": {
+            "name": "URL"
+        },
+        "logoIcon": {
+            "name": "Logo - icon"
+        }
+    }
+}

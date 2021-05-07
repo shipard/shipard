@@ -1,0 +1,12 @@
+{
+	"counts": {
+		"issues": {
+			"cntId": "wkf-issues", "subTypeCol": "s2", "subTypeCfgPath": "wkf.issues.kinds", "subTypeCfgTitle": "fn",
+			"title": "Zprávy", "icon": "icon-comments-o",
+			"subTypesCalcGroups": {"-": "issues"}, "newWorkflow": 1
+		}
+	},
+	"calcGroups": {
+		"issues": {"title": "Zprávy a úkoly"}
+	}
+}

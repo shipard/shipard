@@ -1,0 +1,14 @@
+{
+    "propertyDeps": {
+        "t1": "Depreciations"
+    },
+    "places": {
+        "t1": "Places"
+    },
+    "reports": {
+        "t1": "Reports"
+    },
+    "propertyAll": {
+        "t1": "Records"
+    }
+}

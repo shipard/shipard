@@ -1,0 +1,34 @@
+{
+	"id": "e10doc.taxes.reportsRowsVatCS", "sql": "e10doc_taxes_reportsRowsVatCS", "name": "Řádky kontrolního hlášení DPH",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "report", "name": "Přehled", "type": "int"},
+		{"id": "filing", "name": "Podání", "type": "int"},
+
+		{"id": "rowKind", "name": "Druh řádku", "type": "string", "len": 20},
+		{"id": "reverseChargeCode", "name": "Kód PDP", "type": "int"},
+		{"id": "vatModeCode", "name": "Kód režimu plnění", "type": "int"},
+
+		{"id": "dateTax", "name": "Datum uskutečnění zdanitelného plnění", "label": "DUZP", "type": "date"},
+		{"id": "dateTaxDuty", "name": "Datum povinnosti přiznat daň", "label": "DPPD", "type": "date"},
+		{"id": "vatId", "name": "DIČ", "type": "string", "len": 20},
+
+		{"id": "base1", "name": "Základ daně Základní sazba", "type": "money"},
+		{"id": "tax1", "name": "Částka daně Základní sazba", "type": "money"},
+		{"id": "total1", "name": "Částka celkem Základní sazba", "type": "money"},
+
+		{"id": "base2", "name": "Základ daně První snížená sazba", "type": "money"},
+		{"id": "tax2", "name": "Částka daně První snížená sazba", "type": "money"},
+		{"id": "total2", "name": "Částka celkem První snížená sazba", "type": "money"},
+
+		{"id": "base3", "name": "Základ daně Druhá snížená sazba", "type": "money"},
+		{"id": "tax3", "name": "Částka daně Druhá snížená sazba", "type": "money"},
+		{"id": "total3", "name": "Částka celkem Druhá snížená sazba", "type": "money"},
+
+		{"id": "document", "name": "Doklad", "type": "int", "reference": "e10doc.core.heads"},
+		{"id": "docNumber", "name": "Číslo dokladu", "type": "string", "len": 20},
+		{"id": "docId", "name": "Ev. číslo dokladu", "type": "string", "len": 40}
+	],
+	"options": ["systemTable"],
+	"ndx": 1108
+}

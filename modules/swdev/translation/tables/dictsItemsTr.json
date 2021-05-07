@@ -1,0 +1,19 @@
+{
+	"id": "swdev.translation.dictsItemsTr", "sql": "swdev_translation_dictsItemsTr", "name": "Přeložené položky slovníků", "icon": "icon-list",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "dictItem", "name": "Položka slovníku", "type": "int", "reference": "swdev.translation.dictsItems"},
+		{"id": "lang", "name": "Jazyk", "type": "int", "reference": "swdev.translation.languages"},
+
+		{"id": "text", "name": "Text", "type": "memo"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"forms": [
+		{"id": "default", "class": "swdev.translation.FormDictItemTr"}
+	],
+	"options": ["systemTable"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "text"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "swdev.dm.trTextsDocStates"}
+}

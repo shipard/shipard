@@ -1,0 +1,9 @@
+[
+	{
+		"table": "e10.persons.persons",
+		"columns": [
+			{"id": "demo", "name": "Demo", "type": "enumInt",
+				"enumValues": {"0": "ne", "1": "ano"}}
+		]
+	}
+]

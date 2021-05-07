@@ -1,0 +1,22 @@
+{
+	"swdev-dm-table": {
+		"name": "Tabulka datového modelu",
+		"classId": "swdev.dm.libs.WikiSystemPageTable",
+		"pageContent": 0, "disabled": 0
+	},
+	"swdev-dm-column": {
+		"name": "Sloupec tabulky datového modelu",
+		"classId": "swdev.dm.libs.WikiSystemPageTableColumn",
+		"pageContent": 0, "disabled": 0
+	},
+	"swdev-dm-term": {
+		"name": "Pojem z datového modelu",
+		"classId": "swdev.dm.libs.WikiSystemPageTerm",
+		"pageContent": 0
+	},
+	"swdev-dm-enum": {
+		"name": "Konfigurační data aplikace",
+		"classId": "swdev.dm.libs.WikiSystemPageEnum",
+		"pageContent": 0
+	}
+}

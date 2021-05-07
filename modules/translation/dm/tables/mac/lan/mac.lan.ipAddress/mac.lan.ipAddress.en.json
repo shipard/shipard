@@ -1,0 +1,25 @@
+{
+    "table": {
+        "name": "IP addresses"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "hostName": {
+            "name": "Name or IP address"
+        },
+        "ipAddress": {
+            "name": "IP address"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

@@ -1,0 +1,7 @@
+{
+	"experimental": {
+		"options": [
+			{"cfgKey": "bulkEmails", "cfgName": "Testovat Hromadné emaily", "options": {"0": "Ne","1": "Ano"}}
+		]
+	}
+}

@@ -1,0 +1,19 @@
+{
+	"id": "e10.base.docDataFiles", "sql": "e10_base_docDataFiles", "name": "Datové soubory dokumentů",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "ddfId", "name": "Datový formát", "type": "int"},
+		{"id": "srcAttachment", "name": "Příloha", "type": "int", "reference":  "e10.base.attachments"},
+		{"id": "srcData", "name": "Zdrojová data", "type": "memo"},
+		{"id": "impData", "name": "Importovaná data", "type": "memo"},
+		{"id": "visualization", "name": "Vizualizovaná data", "type": "memo"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10.base.FormDocDataFile"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.docDataFiles.docStates"},
+	"options": ["systemTable"]
+}

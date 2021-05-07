@@ -1,0 +1,112 @@
+{
+    "table": {
+        "name": "Journal"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "document": {
+            "name": "Document"
+        },
+        "docType": {
+            "name": "Document type"
+        },
+        "docNumber": {
+            "name": "Document number"
+        },
+        "dateAccounting": {
+            "name": "Accounting date"
+        },
+        "fiscalYear": {
+            "name": "Fiscal year"
+        },
+        "fiscalMonth": {
+            "name": "Fiscal month"
+        },
+        "fiscalType": {
+            "name": "Type"
+        },
+        "text": {
+            "name": "Text"
+        },
+        "accMethod": {
+            "name": "Accounting method"
+        },
+        "cashBookId": {
+            "name": "Cashbook ID"
+        },
+        "balance": {
+            "name": "Ledger"
+        },
+        "accRing": {
+            "name": "Accounting ring"
+        },
+        "accountDrR": {
+            "name": "Account Dr R"
+        },
+        "accountDrId": {
+            "name": "Account Dr"
+        },
+        "accountCrR": {
+            "name": "Account Cr R"
+        },
+        "accountCrId": {
+            "name": "Account Cr"
+        },
+        "account": {
+            "name": "Account R"
+        },
+        "accountId": {
+            "name": "Account"
+        },
+        "currency": {
+            "name": "Currency"
+        },
+        "money": {
+            "name": "Amount"
+        },
+        "moneyDr": {
+            "name": "Amount Dr"
+        },
+        "moneyCr": {
+            "name": "Amount Cr"
+        },
+        "currencyDoc": {
+            "name": "Document currency"
+        },
+        "moneyDoc": {
+            "name": "Amount in document currency"
+        },
+        "person": {
+            "name": "Person"
+        },
+        "symbol1": {
+            "name": "Variable symbol",
+            "label": "VS"
+        },
+        "symbol2": {
+            "name": "Specific symbol",
+            "label": "SS"
+        },
+        "symbol3": {
+            "name": "Constant symbol",
+            "label": "CS"
+        },
+        "centre": {
+            "name": "Centre"
+        },
+        "project": {
+            "name": "Project"
+        },
+        "workOrder": {
+            "name": "Work order"
+        },
+        "property": {
+            "name": "Property"
+        },
+        "side": {
+            "name": "Side"
+        }
+    }
+}

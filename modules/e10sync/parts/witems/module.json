@@ -1,0 +1,7 @@
+{
+	"id": "e10sync.parts.witems",
+	"name": "Synchronizace Položek",
+	"tables": [],
+	"extensions": ["core"],
+	"modules": []
+}

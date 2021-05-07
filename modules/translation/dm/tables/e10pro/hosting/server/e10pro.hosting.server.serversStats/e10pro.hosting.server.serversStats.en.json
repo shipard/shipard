@@ -1,0 +1,25 @@
+{
+    "table": {
+        "name": "Statistics of servers"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "server": {
+            "name": "Server"
+        },
+        "dateUpdate": {
+            "name": "Update timestamp"
+        },
+        "diskTotalSpace": {
+            "name": "Disk capacity"
+        },
+        "diskFreeSpace": {
+            "name": "Free disk space"
+        },
+        "diskUsedSpace": {
+            "name": "Used disk space"
+        }
+    }
+}

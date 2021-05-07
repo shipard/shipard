@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "Domain accounts"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "registrar": {
+            "name": "Registrar"
+        },
+        "owner": {
+            "name": "Owner"
+        },
+        "authLogin": {
+            "name": "Login name"
+        },
+        "authPassword": {
+            "name": "Password"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

@@ -1,0 +1,12 @@
+{
+	"id": "swdev.install",
+	"name": "Software Development",
+	"tables": [],
+	"modules": ["swdev/dm", "swdev/world", "swdev/translation", "swdev/icons", "swdev/hw"],
+	"config": [
+		{"id": "+appSkeleton", "file": "appSkeleton.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+		{"id": "+appOptions", "file": "e10.appOptions.json"},
+		{"id": "+e10.appOptions.groups", "file": "appOptionsGroups.json"}
+	]
+}

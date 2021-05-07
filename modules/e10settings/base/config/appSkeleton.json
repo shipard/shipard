@@ -1,0 +1,9 @@
+{
+	"panels": {
+		"srvcfg": {
+			"smallItems": [
+				{"t1": "Konfigurace aplikace", "object": "viewer", "table": "e10settings.base.cfgs", "viewer": "default", "icon": "icon-terminal", "order": 999990}
+			]
+		}
+	}
+}

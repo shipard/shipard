@@ -1,0 +1,42 @@
+{
+    "table": {
+        "name": "Lines of contracts"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "contract": {
+            "name": "Contract"
+        },
+        "item": {
+            "name": "Item"
+        },
+        "text": {
+            "name": "Text"
+        },
+        "quantity": {
+            "name": "Quantity",
+            "label": "QTY"
+        },
+        "unit": {
+            "name": "Unit"
+        },
+        "priceItem": {
+            "name": "Unit price",
+            "label": "Price/unit"
+        },
+        "priceAll": {
+            "name": "Total price"
+        },
+        "centre": {
+            "name": "Centre"
+        },
+        "start": {
+            "name": "Valid from"
+        },
+        "end": {
+            "name": "Valid until"
+        }
+    }
+}

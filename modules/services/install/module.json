@@ -1,0 +1,9 @@
+{
+  "id": "services.install",
+  "name": "Services install package",
+	"modules": ["services/persons", "services/money", "services/subjects", "services/subjregs/cz_res_plus"],
+  "tables": [],
+  "config": [
+	  {"id": "+appSkeleton", "file": "appSkeleton.json"}
+  ]
+}

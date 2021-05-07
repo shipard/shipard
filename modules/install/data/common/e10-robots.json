@@ -1,0 +1,19 @@
+{
+	"name": "Roboti",
+	"datasets": [
+		{
+			"table": "e10.persons.persons",
+			"name": "Osoby",
+			"defaultValues": {"docState": 4000, "docStateMain": 2},
+			"data": [
+				{
+					"rec": {"fullName": "John R. Shipard", "complicatedName": 0, "personType": 3, "roles": "user"},
+					"properties": [
+						{"value": "support@shipard.com", "group": "contacts",  "property": "email"},
+						{"value": "+420 728 418 544", "group": "contacts",  "property": "phone"}
+					]
+				}
+			]
+		}
+	]
+}

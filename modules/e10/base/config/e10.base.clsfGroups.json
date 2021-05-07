@@ -1,0 +1,5 @@
+{
+	"places": {"name": "Místa", "icon": "x-place"},
+	"others": {"name": "Různé", "icon": "x-tag"},
+	"attTags": {"name": "Přílohy", "label": "Štítky", "icon": "icon-paperclip", "tables": ["e10.base.attachments"]}
+}

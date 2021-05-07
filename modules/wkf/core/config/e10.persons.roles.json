@@ -1,0 +1,20 @@
+{
+	"user": {
+		"viewers": {
+			"wkf.core.comments": {"default": 2},
+			"wkf.core.issues": {"default": 2},
+			"wkf.core.headlines": {"default": 2}
+		},
+		"widgets": {
+			"wkf.core.widgets.DashboardForum": 2,
+			"wkf.core.widgets.DashboardTrays": 2,
+			"wkf.core.widgets.Headlines": 2,
+			"lib.wkf.WidgetHelpDeskDocumentation": 2
+		}
+	},
+	"admin": {
+		"viewers": {
+			"wkf.core.filters": {"default": 2}
+		}
+	}
+}

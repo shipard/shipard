@@ -1,0 +1,89 @@
+{
+  "id": "e10.witems.items", "sql": "e10_witems_items", "name": "Položky", "icon": "e10-witems-items",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
+		{"id": "id", "name": "Kód položky", "type": "string", "len": 25},
+		{"id": "itemType", "name": "Typ položky", "type": "int", "reference": "e10.witems.itemtypes"},
+		{"id": "itemKind", "name": "Druh položky", "type": "enumInt",
+			"enumValues": {"0": "Služba", "1": "Zásoba", "2": "Účetní položka", "3": "Ostatní"}},
+		{"id": "itemKind2", "name": "Druh položky ze sady", "type": "enumInt",
+			"enumValues": {"0": "Služba", "1": "Zásoba", "2": "Účetní položka", "3": "Ostatní"}},
+    {"id": "type", "name": "Typ", "type": "enumString", "len": 15, "options": ["saveOnChange"],
+	    "enumCfg": {"cfgItem": "e10.witems.types", "cfgValue": "", "cfgText": ".text"}},
+		{"id": "defaultUnit", "name": "Jednotka", "type": "enumString", "len": 8,
+			"enumCfg": {"cfgItem": "e10.witems.units", "cfgValue": "", "cfgText": "text"}},
+    {"id": "priceBuy", "name": "Nákupní cena", "type": "money"},
+    {"id": "priceSell", "name": "Prodejní cena", "type": "money"},
+		{"id": "priceSellBase", "name": "Prodejní cena BEZ dph", "type": "money"},
+		{"id": "priceSellTotal", "name": "Prodejní cena VČETNĚ dph", "type": "money"},
+    {"id": "vatRate", "name": "Sazba daně", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10.base.taxRates", "cfgValue": "", "cfgText": ""}},
+    {"id": "brand", "name": "Značka", "type": "int", "reference": "e10.witems.brands"},
+    {"id": "warranty", "name": "Záruka", "type": "int"},
+    {"id": "niceUrl", "name": "Hezké URL", "type": "string", "len": 120},
+		{"id": "useFor", "name": "Používat pro", "type": "enumInt",
+			"enumValues": {"0": "vše", "2": "Prodej", "1": "Nákup", "100": "Bankovní výpisy", "101": "Účetní doklady"}},
+		{"id": "useBalance", "name": "Saldokonto", "type": "enumInt", "len": 4,
+			"enumCfg": {"cfgItem": "e10.balance", "cfgValue": "", "cfgText": "name"}},
+	  {"id": "askQCashRegister", "name": "Ptát se na množství při prodeji přes kasu", "type": "enumInt",
+		  "enumCfg": {"cfgItem": "e10.witems.askQuantity", "cfgValue": "", "cfgText": "name"}},
+	  {"id": "askPCashRegister", "name": "Ptát se na cenu při prodeji přes kasu", "type": "enumInt",
+		  "enumCfg": {"cfgItem": "e10.witems.askQuantity", "cfgValue": "", "cfgText": "name"}},
+	  {"id": "orderCashRegister", "name": "Pořadí v kase", "type": "int"},
+	  {"id": "groupCashRegister", "name": "Skupina v kase", "type": "string", "len": 50},
+
+	  {"id": "isSet", "name": "Jedná se o sadu položek", "type": "logical", "options": ["saveOnChange"]},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+		{"id": "successorItem", "name": "Nahrazující položka", "type": "int", "reference": "e10.witems.items"},
+		{"id": "successorDate", "name": "Nahrazovat od data", "type": "date"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+  "lists": [
+    {"id": "properties", "class": "e10.base.ListProperties", "name": "Vlastnosti",
+			"srcCfgKeyColumn": "type", "propertiesCfgList": "e10.witems.properties"},
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"},
+		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"},
+	  {"id": "set", "class": "e10.base.ListRows", "name": "Položky sady", "table": "e10.witems.itemsets", "queryColumn": "itemOwner"},
+		{"id": "suppliers", "class": "e10.base.ListRows", "name": "Položky sady", "table": "e10.witems.itemSuppliers", "queryColumn": "item", "orderColumn": "rowOrder"},
+		{"id": "related", "class": "e10.base.ListRows", "name": "Související položky", "table": "e10.witems.itemRelated", "queryColumn": "srcItem", "orderColumn": "rowOrder"}
+  ],
+  "views": {
+    "default": {"id": "default", "class": "e10.witems.ViewItems", "help": "prirucka/4847",
+			"details": {
+				"default": {"title": "Přehled", "icon": "x-dashboard", "type": "detail", "class": "e10.witems.ViewDetailItems", "order": 1000},
+				"using": {"title": "Použití", "icon": "icon-binoculars", "type": "detail", "class": "e10.witems.ViewDetailUsing", "order": 8000}
+			}
+		},
+	  "combo": {"id": "combo", "class": "e10.witems.ViewItemsCombo"},
+	  "inCategory": {"id": "inCategory", "class": "e10.witems.ItemsInCategoryViewer",
+		  "details": {
+			  "default": {"title": "Přehled", "icon": "x-dashboard", "type": "detail", "class": "e10.witems.ViewDetailItems", "order": 1000}
+		  }
+	  },
+		"byCategories": {"id": "byCategories", "class": "e10.witems.libs.ViewerItemsByCategories", "help": "prirucka/4847",
+			"details": {
+				"default": {"title": "Přehled", "icon": "x-dashboard", "type": "detail", "class": "e10.witems.ViewDetailItems", "order": 1000},
+				"using": {"title": "Použití", "icon": "icon-binoculars", "type": "detail", "class": "e10.witems.ViewDetailUsing", "order": 8000},
+				"annotations": {"title": "Odkazy", "icon": "icon-external-link", "type": "detail", "class": "e10.witems.ViewDetailAnnotations", "order": 99000}
+			}
+		}
+	},
+  "forms": [
+    {"id": "default", "class": "e10.witems.FormItems", "help": "prirucka/4290"}
+  ],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.witems.docStates"},
+	"documentCard": "e10.witems.dc.Item",
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+  "order": [{"column": "name", "order": "ASC"}],
+	"indexes": [
+		{"id": "fullName", "columns": ["fullName"]},
+		{"id": "s1", "columns": ["docStateMain","fullName", "shortName"]}
+	],
+	"ndx": 1065
+}

@@ -1,0 +1,9 @@
+{
+	"id": "e10pro.reports.persons",
+	"name": "Some Persons Reports",
+	"extensions": ["persons"],
+	"config": [
+		{"id": "+reports", "file": "reports.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"}
+	]
+}

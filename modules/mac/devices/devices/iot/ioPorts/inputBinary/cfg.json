@@ -1,0 +1,15 @@
+{
+	"name": "Čidlo Zapnuto / Vypnuto",
+	"title": "Čidlo Zapnuto / Vypnuto",
+	"useValueKind": 1,
+	"fields": {
+		"columns": [
+			{
+				"id": "pin", "name": "Pin", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["in"]}
+			},
+			{
+				"id": "timeout", "name": "Minimální délka trvání hodnoty (timeout) [ms]", "type": "int"
+			}
+		]
+	}
+}

@@ -1,0 +1,29 @@
+{
+    "table": {
+        "name": "IoT things"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "thingKind": {
+            "name": "Thing kind",
+            "label": "Kind"
+        },
+        "fullName": {
+            "name": "Full name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

@@ -1,0 +1,15 @@
+{
+  "id": "terminals.store",
+  "name": "Store",
+  "tables": ["payTerminals"],
+	"modules": [
+    "terminals/base", "terminals/ros", "e10doc/cashRegister", "e10doc/ros",
+    "e10pro/reports/terminal_daily", "e10pro/reports/terminal_monthly"
+  ],
+  "config": [
+    {"id": "+appOptions", "file": "e10.appOptions.json"},
+    {"id": "+appSkeleton", "file": "appSkeleton.json"},
+    {"id": "+e10.base.doclinks", "file": "docLinks.json"},
+    {"id": "+e10.persons.roles", "file": "e10.store.roles.json"}
+  ]
+}

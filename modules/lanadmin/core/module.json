@@ -1,0 +1,13 @@
+{
+  "id": "lanadmin.core",
+  "name": "LanAdmin - Base",
+  "tables": ["dataSources"],
+  "modules": ["e10/base", "mac/admin"],
+
+  "config": [
+	  {"id": "+appSkeleton", "file": "appSkeleton.json"},
+	  {"id": "+dashboards", "file": "dashboards.json"},
+	  {"id": "+widgets", "file": "widgets.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"}
+  ]
+}

@@ -1,0 +1,17 @@
+{
+    "messages": {
+        "name": "Messages"
+    },
+    "workOrders": {
+        "name": "Work orders"
+    },
+    "docs": {
+        "name": "Documents"
+    },
+    "calc": {
+        "name": "Calculation"
+    },
+    "main": {
+        "name": "Overview"
+    }
+}

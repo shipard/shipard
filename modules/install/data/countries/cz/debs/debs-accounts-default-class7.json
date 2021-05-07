@@ -1,0 +1,15 @@
+{
+	"name": "Závěrkové a podrozvahové účty",
+	"datasets": [
+		{
+			"table": "e10doc.debs.accounts",
+			"name": "Třída 7 - závěrkové a podrozvahové účty",
+			"defaultValues": {"accGroup": 0, "accMethod": "debs", "docState": 4000, "docStateMain": 2},
+			"data": [
+				{"rec": {"id":"701100","fullName":"Počáteční účet rozvažný","shortName":"Počáteční účet rozvažný","accountKind":4}},
+				{"rec": {"id":"702100","fullName":"Konečný účet rozvažný","shortName":"Konečný účet rozvažný","accountKind":9}},
+				{"rec": {"id":"710100","fullName":"Účet zisků a ztrát","shortName":"Účet zisků a ztrát","accountKind":9}}
+			]
+		}
+	]
+}

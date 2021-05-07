@@ -1,0 +1,65 @@
+{
+    "table": {
+        "name": "Tax return rows"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "document": {
+            "name": "Tax return document"
+        },
+        "kindItem": {
+            "name": "Item kind"
+        },
+        "base": {
+            "name": "Tax base"
+        },
+        "tax": {
+            "name": "Tax amount"
+        },
+        "total": {
+            "name": "Total amount"
+        },
+        "taxCode": {
+            "name": "Tax code"
+        },
+        "row": {
+            "name": "Tax row"
+        },
+        "accountId": {
+            "name": "Account"
+        },
+        "dir": {
+            "name": "Direction"
+        },
+        "docNumber": {
+            "name": "Document number"
+        },
+        "docType": {
+            "name": "Document type"
+        },
+        "dateTax": {
+            "name": "Time of supply",
+            "label": "Time of supply"
+        },
+        "countryCode": {
+            "name": "Country code"
+        },
+        "pvin": {
+            "name": "VAT identification number"
+        },
+        "shortpvin": {
+            "name": "Short VAT id. number"
+        },
+        "code": {
+            "name": "Amount code"
+        },
+        "amount": {
+            "name": "Quantity"
+        },
+        "unit": {
+            "name": "Unit"
+        }
+    }
+}

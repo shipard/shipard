@@ -1,0 +1,3 @@
+{
+	"bankaccount": {"name": "Číslo účtu", "type": "text", "icon": "x-bank", "icontxt": "$", "multi": 1, "note": 1}
+}

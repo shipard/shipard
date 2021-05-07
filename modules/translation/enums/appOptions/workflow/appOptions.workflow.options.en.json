@@ -1,0 +1,17 @@
+{
+    "useDocuments": {
+        "cfgName": "Use documents"
+    },
+    "useProjectsFolders": {
+        "cfgName": "Use project folders"
+    },
+    "useWiki": {
+        "cfgName": "Use wiki documentation"
+    },
+    "useProjectsParts": {
+        "cfgName": "Use project phases"
+    },
+    "sendDailyDigest": {
+        "cfgName": "Send daily digest"
+    }
+}

@@ -1,0 +1,19 @@
+{
+    "table": {
+        "name": "Issue kinds in sections"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "section": {
+            "name": "Section"
+        },
+        "issueKind": {
+            "name": "Issue kind"
+        },
+        "rowOrder": {
+            "name": "Order"
+        }
+    }
+}

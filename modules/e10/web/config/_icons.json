@@ -1,0 +1,21 @@
+{
+    "e10.web.articles":{
+        "fa5":"fa-newspaper",
+        "fa5pro":"fa-newspaper",
+        "bsi":"bi-newspaper",
+        "mdi":"article"
+    },
+    "e10.web.articlesSections":{
+        "fa5":"fa-folder",
+        "fa5pro":"fa-folders",
+        "bsi":"bi-folder",
+        "mdi":"folder"
+    },
+    "e10.web.blocks":{
+        "fa5":"fa-puzzle-piece",
+        "fa5pro":"fa-puzzle-piece",
+        "bsi":"bi-puzzle",
+        "mdi":"extension"
+    }
+
+}

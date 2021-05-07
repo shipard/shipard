@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "Element kinds"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "thingType": {
+            "name": "Element type"
+        },
+        "fullName": {
+            "name": "Full name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "icon": {
+            "name": "Icon"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

@@ -1,0 +1,27 @@
+{
+	"id": "services.subjects.branchesParts", "sql": "services_subjects_branchesParts", "name": "Členění Oborů subjektů", "icon": "icon-circle-thin",
+	"columns": [
+		{"id": "ndx", "name": "ndx", "type": "int_ai"},
+		{"id": "branch", "name": "Obor", "type": "int", "reference": "services.subjects.branches"},
+
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "keywords", "name": "Klíčová slova", "type": "string", "len": 120},
+
+		{"id": "activity", "name": "Činnost", "type": "int", "reference": "services.subjects.activities"},
+		{"id": "commodity", "name": "Komodita", "type": "int", "reference": "services.subjects.commodities"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "services.subjects.ViewBranchesParts", "detail": "services.subjects.ViewDetailBranchPart"}
+	],
+	"forms": [
+		{"id": "default", "class": "services.subjects.FormBranchPart"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

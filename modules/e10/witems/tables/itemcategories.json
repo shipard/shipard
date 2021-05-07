@@ -1,0 +1,42 @@
+{
+  "id": "e10.witems.itemcategories", "sql": "e10_witems_itemcategories", "name": "Kategorie položek", "icon": "icon-tree",
+  "columns": [
+    {"id": "ndx", "name": "ndx", "type": "int_ai"},
+    {"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
+    {"id": "id", "name": "ID", "type": "string", "len": 50},
+		{"id": "icon", "name": "Ikona", "type": "string", "len": 30},
+    {"id": "order", "name": "Pořadí", "type": "int"},
+
+    {"id": "sortItems", "name": "Výchozí řazení položek", "type": "enumString", "len": 10,
+      "enumCfg": {"cfgItem": "e10.witems.categorySortItems", "cfgValue": "", "cfgText": "name"}},
+
+    {"id": "askQCashRegister", "name": "Ptát se na množství při prodeji přes kasu", "type": "enumInt",
+      "enumCfg": {"cfgItem": "e10.witems.askQuantity", "cfgValue": "", "cfgText": "name"}},
+	  {"id": "askPCashRegister", "name": "Ptát se na cenu při prodeji přes kasu", "type": "enumInt",
+		  "enumCfg": {"cfgItem": "e10.witems.askQuantity", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "owner", "name": "Nadřazená kategorie", "type": "int", "reference": "e10.witems.itemcategories"},
+
+		{"id": "treeLevel", "name": "Úroveň zanoření", "type": "int"},
+		{"id": "treeId", "name": "ID větve stromu", "type": "string", "len": 40},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+  "lists": [
+    {"id": "rows", "class": "e10.base.ListRows", "name": "Podmínky", "table": "e10.witems.itemcategoriesqry", "queryColumn": "itemcategory"}
+  ],
+  "views": [
+    {"id": "default", "class": "e10.witems.ViewItemCategories", "detail": "e10.witems.ViewDetailItemCategories", "help": "prirucka/4871"},
+		{"id": "editor", "class": "e10.witems.ViewItemCategoriesEditor", "detail": "e10.witems.ViewDetailItemCategory"}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10.witems.FormItemCategories", "help": "prirucka/4871"}
+  ],
+	"options": ["configSource"],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.witems.itemcategories.docStates"},
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+  "order": [{"column": "fullName", "order": "ASC"}],
+  "fullText": ["fullName", "description"]
+}

@@ -1,0 +1,40 @@
+{
+    "table": {
+        "name": "Partners"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "owner": {
+            "name": "Owner"
+        },
+        "webUrl": {
+            "name": "Web"
+        },
+        "supportEmail": {
+            "name": "Support e-mail"
+        },
+        "supportPhone": {
+            "name": "Support phone number"
+        },
+        "portal": {
+            "name": "Portal"
+        },
+        "logoPartner": {
+            "name": "Logo"
+        },
+        "logoIcon": {
+            "name": "Logo - icon"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

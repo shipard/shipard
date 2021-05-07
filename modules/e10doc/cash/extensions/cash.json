@@ -1,0 +1,32 @@
+[
+  {
+    "table": "e10doc.core.heads",
+    "views": {
+      "cash": {
+				"id": "cash", "class": "e10doc.cash.libs.ViewCashDocs", "help": "prirucka/4483",
+				"details": {
+					"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10doc.cash.libs.ViewDetailCashDoc"}
+				}
+			}
+		},
+    "forms": [
+      {"id": "cash", "class": "e10doc.cash.libs.FormCashDoc", "help": "prirucka/4484"}
+    ],
+		"reports": [
+      {
+	      "id": "cash", "name": "Pokladní lístek", "class": "e10doc.cash.libs.CashReport",
+	      "queryCol": "docType", "queryColValue": "cash"
+      },
+			{
+				"id": "cashpos", "name": "Účtenka", "class": "e10doc.cash.libs.CashReportPos", "directPrint": 1, "printerClass": "pos",
+				"queryCol": "docType", "queryColValue": "cash"
+			}
+    ]
+  },
+  {
+    "table": "e10doc.core.rows",
+    "forms": [
+      {"id": "cash", "class": "e10doc.cash.libs.FormCashDocRow"}
+    ]
+  }
+]

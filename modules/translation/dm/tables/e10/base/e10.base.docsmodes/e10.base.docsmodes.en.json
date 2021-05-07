@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "Document modes"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "tableId": {
+            "name": "Table"
+        },
+        "recId": {
+            "name": "Row"
+        },
+        "mode": {
+            "name": "Mode"
+        },
+        "user": {
+            "name": "User"
+        },
+        "key1": {
+            "name": "Key 1"
+        },
+        "key2": {
+            "name": "Key 2"
+        },
+        "created": {
+            "name": "Creation timestamp"
+        }
+    }
+}

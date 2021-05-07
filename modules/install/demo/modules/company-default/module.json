@@ -1,0 +1,13 @@
+{
+	"id": "install.demo.modules.company-default",
+	"name": "Company demo data source",
+	"modules": [
+		"demo/documents"
+	],
+	"config": [
+		{"id": "+demo.tasks", "file": "tasks.json"}
+	],
+	"data": [
+		"pkgs/data/cz/demo/company-default/all"
+	]
+}

@@ -1,0 +1,35 @@
+{
+	"id": "swdev.dm.enums", "sql": "swdev_dm_enums", "name": "Enumy", "icon": "icon-th-list",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "id", "name": "id", "type": "string", "len": 150},
+		{"id": "name", "name": "Název", "type": "string", "len": 180},
+		{"id": "config", "name": "Nastavení", "type": "memo"},
+
+		{"id": "srcLanguage", "name": "Zdrojový jazyk", "type": "int", "reference": "swdev.translation.languages"},
+
+		{"id": "dmWikiPage", "name": "Wiki stránka", "type": "int", "reference": "e10pro.kb.texts"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"}
+	],
+	"views": [
+		{"id": "default", "class": "swdev.dm.ViewEnums",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.dm.ViewDetailEnum"},
+				"doc": {"title": "Popis", "icon": "icon-book", "type": "detail", "class": "swdev.dm.ViewDetailEnumDoc"},
+				"trData": {"title": "trData", "icon": "icon-language", "type": "detail", "class": "swdev.dm.ViewDetailEnumTrData"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "swdev.dm.FormEnum"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"documentCard": "swdev.dm.DocumentCardEnum",
+	"ndx": 1320
+}

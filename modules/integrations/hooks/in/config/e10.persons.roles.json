@@ -1,0 +1,8 @@
+{
+	"admin": {
+		"viewers": {
+			"integrations.hooks.in.hooks": {"default": 2},
+			"integrations.hooks.in.data": {"default": 2}
+		}
+	}
+}

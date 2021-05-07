@@ -1,0 +1,38 @@
+{
+	"id": "mac.iot.scenariosSchedule", "sql": "mac_iot_scenariosSchedule", "name": "Časový rozvrh scénářů", "icon": "icon-clock-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+		{"id": "scenario", "name": "Scénář", "type": "int", "reference": "mac.iot.scenarios"},
+
+
+		{"id": "DOW1", "name": "Pondělí", "type": "logical"},
+		{"id": "DOW2", "name": "Útery", "type": "logical"},
+		{"id": "DOW3", "name": "Středa", "type": "logical"},
+		{"id": "DOW4", "name": "Čtvrtek", "type": "logical"},
+		{"id": "DOW5", "name": "Pátek", "type": "logical"},
+		{"id": "DOW6", "name": "Sobota", "type": "logical"},
+		{"id": "DOW7", "name": "Neděle", "type": "logical"},
+
+		{"id": "workingDays", "name": "Dny pracovního klidu", "type": "enumInt",
+			"enumCfg": {"cfgItem": "mac.base.workingDaysSchedule", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "timeFrom", "name": "Čas od", "type": "time"},
+		{"id": "timeTo", "name": "Čas do", "type": "time"},
+		{"id": "timeFromMin", "name": "Čas od", "type": "int"},
+		{"id": "timeToMin", "name": "Čas do", "type": "int"},
+
+		{"id": "note", "name": "Pozn.", "type": "string", "len": 140}
+	],
+	"views": [
+		{
+			"id": "default", "class": "mac.iot.ViewScenariosSchedule", "type": "form",
+			"details": {
+				"default": {"title": "Přehled", "icon": "x-content", "type": "detail", "class": "mac.iot.ViewDetailScenarioSchedule"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.iot.FormScenarioSchedule"}
+	]
+}

@@ -1,0 +1,9 @@
+[
+	{
+		"table": "e10doc.debs.accounts",
+		"columns": [
+			{"id": "syncNdx", "name": "syncNdx", "type": "int"},
+			{"id": "syncSrc", "name": "syncSrc", "type": "int"}
+		]
+	}
+]

@@ -1,0 +1,132 @@
+{
+    "table": {
+        "name": "Setting of documents rows"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "settingsType": {
+            "name": "Type of setting"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "qryRowDirType": {
+            "name": "Money direction",
+            "label": "Direction"
+        },
+        "qryMyBankAccountType": {
+            "name": "Own bank connection"
+        },
+        "myBankAccount": {
+            "name": "Own bank connection"
+        },
+        "qryRowBankAccountType": {
+            "name": "Bank account"
+        },
+        "qryRowBankAccountValue": {
+            "name": "Bank account",
+            "label": "Account number"
+        },
+        "qryOperationType": {
+            "name": "Condition for Operation"
+        },
+        "qryOperationValue": {
+            "name": "Operation"
+        },
+        "qryRowSymbol1Type": {
+            "name": "Condition for VS"
+        },
+        "qryRowSymbol1Value": {
+            "name": "Variable symbol",
+            "label": "VS"
+        },
+        "qryRowSymbol2Type": {
+            "name": "Condition for SS"
+        },
+        "qryRowSymbol2Value": {
+            "name": "Specific symbol",
+            "label": "SS"
+        },
+        "qryRowSymbol3Type": {
+            "name": "Condition for CS"
+        },
+        "qryRowSymbol3Value": {
+            "name": "Constant symbol",
+            "label": "CS"
+        },
+        "qryRowTextType": {
+            "name": "Row text"
+        },
+        "qryRowTextValue": {
+            "name": "Row text"
+        },
+        "valRowPersonType": {
+            "name": "Set Person to"
+        },
+        "valRowPersonValue": {
+            "name": "Person"
+        },
+        "valRowOperationType": {
+            "name": "Set Operation to"
+        },
+        "valRowOperationValue": {
+            "name": "Operation"
+        },
+        "valRowTextType": {
+            "name": "Set Row text to"
+        },
+        "valRowTextValue": {
+            "name": "Text"
+        },
+        "valRowSymbol1Type": {
+            "name": "SET row VS to"
+        },
+        "valRowSymbol1Value": {
+            "name": "VS"
+        },
+        "valRowSymbol2Type": {
+            "name": "Set row SS to"
+        },
+        "valRowSymbol2Value": {
+            "name": "SS"
+        },
+        "valRowSymbol3Type": {
+            "name": "Set row CS to"
+        },
+        "valRowSymbol3Value": {
+            "name": "CS"
+        },
+        "valRowItemType": {
+            "name": "Set Item to"
+        },
+        "valRowItemValue": {
+            "name": "Item"
+        },
+        "valRowCentreType": {
+            "name": "Set Centre to"
+        },
+        "valRowCentreValue": {
+            "name": "Centre"
+        },
+        "valRowWorkOrderType": {
+            "name": "Set Order to"
+        },
+        "valRowWorkOrderValue": {
+            "name": "Work order"
+        },
+        "validFrom": {
+            "name": "Valid from"
+        },
+        "validTo": {
+            "name": "Valid until"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

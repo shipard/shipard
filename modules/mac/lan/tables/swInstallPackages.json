@@ -1,0 +1,28 @@
+{
+	"id": "mac.lan.swInstallPackages", "sql": "mac_lan_swInstallPackages", "name": "Instalační balíčky SW", "icon": "icon-file-archive-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 90},
+
+		{"id": "app", "name": "Součást aplikace", "type": "int", "reference": "mac.lan.swApplications"},
+
+		{"id": "id", "name": "ID balíčku", "type": "string", "len": 32},
+		{"id": "pkgNames", "name": "Názvy balíčku", "type": "memo"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "mac.lan.ViewSwInstallPackages",
+			"details": {
+				"default": {"title": "Přehled", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewDetailSwInstallPackage"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.lan.FormSwInstallPackage"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

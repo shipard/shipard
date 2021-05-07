@@ -1,0 +1,1 @@
+a:5:{s:13:"useWorkOrders";a:1:{s:7:"cfgName";s:15:"Use Work orders";}s:11:"useOrdersIn";a:1:{s:7:"cfgName";s:19:"Use Accepted orders";}s:16:"usePanelCommerce";a:1:{s:7:"cfgName";s:18:"Use panel Commerce";}s:28:"useWorkOrdersOnPanelCommerce";a:1:{s:7:"cfgName";s:36:"Statements of work in panel Commerce";}s:12:"useOrdersOut";a:1:{s:7:"cfgName";s:17:"Use Issued orders";}}

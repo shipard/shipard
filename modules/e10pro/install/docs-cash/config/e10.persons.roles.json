@@ -1,0 +1,17 @@
+{
+  "cash": {
+		"name": "Pokladna",
+		"roles": ["sale"],
+		"viewers": {
+			"e10doc.core.heads": {"cash": 2}
+		},
+		"documents": {
+			"e10doc.core.heads": [
+				{"docType": ["cash"], "_access": 2, "_name": "Pokladna"}
+			]
+		},
+		"reports": {
+			"e10doc.finance.reportCashBook": 2
+		}
+	}
+}

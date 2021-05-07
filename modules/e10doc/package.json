@@ -1,0 +1,4 @@
+{
+	"name": "E10Doc",
+	"modules": ["e10doc/balance"]
+}

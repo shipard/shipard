@@ -1,0 +1,12 @@
+{{#page.articles}}
+	<h2><a href="{{url}}">{{title}}</a></h2>
+	{{{text}}}
+{{/page.articles}}
+
+{{#page.article}}
+	{{{content}}}
+	{{{text}}}
+{{/page.article}}
+
+<script src="{{dsRoot}}/e10-modules/wwwlibs/highlight.js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>

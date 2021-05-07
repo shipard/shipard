@@ -1,0 +1,5 @@
+{
+  "id": "e10doc.stockIn",
+  "name": "StockIn",
+  "extensions": ["stockin"]
+}

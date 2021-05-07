@@ -1,0 +1,20 @@
+{
+	"stockin": {
+		"fullName": "Příjemka zásob", "shortName": "Příjemka", "icon": "e10-docs-stock-in", "pluralName": "Příjemky zásob",
+		"shortcut": "PŘÍ", "classId": "stockin", "docIdCode": "41", "docDir": 1, "taxDir": 0,
+		"tradeDir": 5, "useTax": 1, "timeline": "in", "timelineSum": "stck",
+		"docNumber": "%D%W%y%5", "invDirection": 1, "acc": 1, "stockAccMethod": "stockA"
+	},
+	"stockinst": {"fullName": "Počáteční stav zásob", "shortName": "Počáteční stav", "pluralName": "Počátení stavy zásob",
+		"shortcut": "PSZ", "classId": "stockinst", "docIdCode": "44", "docDir": 1, "taxDir": 0,
+		"icon": "e10-docs-stock-inst", "tradeDir": 0, "useTax": 1,
+		"docNumber": "%D%W%y%5", "invDirection": 1,
+		"detailStyle": "none"
+	},
+	"stockout": {
+		"fullName": "Výdejka zásob", "shortName": "Výdejka", "icon": "e10-docs-stock-out", "pluralName": "Výdejky zásob",
+		"shortcut": "VÝD", "classId": "stockout", "docIdCode": "42", "docDir": 2, "taxDir": 0,
+		"tradeDir": 0, "useTax": 0, "timeline": "out", "timelineSum": "stck",
+		"docNumber": "%D%W%y%5", "invDirection": -1, "acc": 1, "stockAccMethod": "stockA"
+	}
+}

@@ -1,0 +1,54 @@
+{
+	"id": "wkf.base.issuesKinds", "sql": "wkf_base_issuesKinds", "name": "Druhy Zpráv", "icon": "icon-flash",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "fullName", "name": "Název", "type": "string", "len": 100},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 60},
+
+		{"id": "issueType", "name": "Typ", "type": "enumInt",
+			"enumCfg": {"cfgItem": "wkf.issues.types", "cfgValue": "", "cfgText": "name"}},
+		{"id": "systemKind", "name": "Systémový druh", "type": "enumInt",
+			"enumCfg": {"cfgItem": "wkf.issues.systemKinds", "cfgValue": "", "cfgText": "fullName"}},
+
+		{"id": "order", "name": "Pořadí", "type": "int"},
+		{"id": "icon", "name": "Ikona", "type": "string", "len": 50},
+
+		{"id": "askWorkOrder", "name": "Zadávat zakázku", "type": "enumInt",
+			"enumCfg": {"cfgItem": "wkf.issuesKinds.AskEnum", "cfgValue": "", "cfgText": "name"}},
+		{"id": "askPersons", "name": "Zadávat osoby", "type": "enumInt",
+			"enumCfg": {"cfgItem": "wkf.issuesKinds.AskEnum", "cfgValue": "", "cfgText": "name"}},
+		{"id": "askPersonsUsers", "name": "Uživatelé, co mohou zadávat osoby", "label": "Uživatelé", "type": "enumInt",
+			"enumCfg": {"cfgItem": "wkf.issuesKinds.AskEnumUsers", "cfgValue": "", "cfgText": "name"}},
+		{"id": "askKind", "name": "Zadávat druh", "type": "enumInt",
+			"enumCfg": {"cfgItem": "wkf.issuesKinds.AskEnum", "cfgValue": "", "cfgText": "name"}},
+		{"id": "askDeadline", "name": "Zadávat termín", "type": "enumInt",
+			"enumCfg": {"cfgItem": "wkf.issuesKinds.AskEnum", "cfgValue": "", "cfgText": "name"}},
+		{"id": "askDeadlineUsers", "name": "Uživatelé, co mohou zadávat termín", "label": "Uživatelé", "type": "enumInt",
+			"enumCfg": {"cfgItem": "wkf.issuesKinds.AskEnumUsers", "cfgValue": "", "cfgText": "name"}},
+		{"id": "askDateIncoming", "name": "Zadávat datum přijetí", "type": "enumInt",
+			"enumCfg": {"cfgItem": "wkf.issuesKinds.AskEnum", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "enableConnectedIssues", "name": "Povolit propojení zpráv", "type": "logical"},
+		{"id": "enableProjects", "name": "Používat Projekty", "type": "logical"},
+		{"id": "enableTargets", "name": "Používat Cíle", "type": "logical"},
+
+		{"id": "analyzeAttachments", "name": "Analyzovat přílohy", "type": "enumInt",
+			"enumValues": {"0": "Výchozí nastavení (ne)", "1": "Podle sekce", "9":  "Ne", "10": "Ihned", "11": "Co nejdříve", "12": "Časem"}},
+
+		{"id": "vds", "name": "Rozšíření struktury", "type": "int", "reference":  "vds.base.defs"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": {
+		"default": {"id": "default", "class": "wkf.base.ViewIssuesKinds", "help": "prirucka/4190"}
+	},
+	"forms": [
+		{"id": "default", "class": "wkf.base.FormIssueKind", "help": "prirucka/4190"}
+	],
+	"options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"ndx": 1243
+}

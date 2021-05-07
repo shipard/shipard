@@ -1,0 +1,37 @@
+{
+	"id": "e10doc.debs.groups", "sql": "e10doc_debs_groups", "name": "Účetní skupiny", "icon": "icon-folder-open-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 180},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 100},
+		{"id": "groupKind", "name": "Druh skupiny", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "Položky nákupu a prodeje", "1": "Dlouhodobý majetek", "2": "Evidovaný majetek"}
+		},
+
+		{"id": "analytics", "name": "Analytika", "type": "string", "len": 20},
+		{"id": "note", "name": "Popis", "type": "memo"},
+
+		{"id": "debsAccPropIdProperty", "name": "Účet zařazeného majetku", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+		{"id": "debsAccPropIdInclusion", "name": "Účet pořízení majetku", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+		{"id": "debsAccPropIdEnhancement", "name": "Účet technického zhodnocení", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+		{"id": "debsAccPropIdDepDebit", "name": "Účet odpisů MD", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+		{"id": "debsAccPropIdDepCredit", "name": "Účet odpisů DAL", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+		{"id": "debsAccPropIdBuy", "name": "Účet pro nákup majetku", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+		{"id": "debsAccPropIdSale", "name": "Účet pro prodej majetku", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"views": [
+		{"id": "default", "class": "e10doc.debs.ViewGroups", "detail": "e10doc.debs.ViewDetailGroup"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.debs.FormGroup"}
+	],
+	"options": ["configSource"],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10doc.debs.groups.docStates"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

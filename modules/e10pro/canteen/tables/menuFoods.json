@@ -1,0 +1,48 @@
+{
+	"id": "e10pro.canteen.menuFoods", "sql": "e10pro_canteen_menuFoods", "name": "Jídla na jídelním lístku", "icon": "icon-bars",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "soupName", "name": "Polévka", "type": "string", "len": 80, "comboViewer": "comboSoup", "comboTable": "e10pro.canteen.menuFoods"},
+		{"id": "foodName", "name": "Název jídla", "type": "string", "len": 120, "comboViewer": "comboFood", "comboTable": "e10pro.canteen.menuFoods"},
+
+		{"id": "canteen", "name": "Jídelna", "type": "int", "reference": "e10pro.canteen.canteens"},
+		{"id": "foodKind", "name": "Druh jídla", "type": "int", "reference": "e10pro.canteen.canteensFoodKinds"},
+		{"id": "menu", "name": "Jídelní lístek", "type": "int", "reference": "e10pro.canteen.menus"},
+		{"id": "date", "name": "Datum", "type": "date"},
+		{"id": "foodIndex", "name": "Pořadové číslo", "type": "int"},
+
+		{"id": "allergen1", "name": "1. Lepek", "type": "logical"},
+		{"id": "allergen2", "name": "2. Korýši", "type": "logical"},
+		{"id": "allergen3", "name": "3. Vejce", "type": "logical"},
+		{"id": "allergen4", "name": "4. Ryby", "type": "logical"},
+		{"id": "allergen5", "name": "5. Arašídy", "type": "logical"},
+		{"id": "allergen6", "name": "6. Sója", "type": "logical"},
+		{"id": "allergen7", "name": "7. Mléko", "type": "logical"},
+		{"id": "allergen8", "name": "8. Skořápkové plody", "type": "logical"},
+		{"id": "allergen9", "name": "9. Celer", "type": "logical"},
+		{"id": "allergen10", "name": "10. Horčice", "type": "logical"},
+		{"id": "allergen11", "name": "11. Sezam", "type": "logical"},
+		{"id": "allergen12", "name": "12. Oxid siřičitý a siřičitany", "type": "logical"},
+		{"id": "allergen13", "name": "13. Vlčí bob", "type": "logical"},
+		{"id": "allergen14", "name": "14. Měkkýši", "type": "logical"},
+
+		{"id": "addFoods", "name": "Doplňková jídla", "type": "subColumns"},
+
+		{"id": "notCooking", "name": "Nevaří se", "type": "logical"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "e10pro.canteen.ViewMenuFoods", "help": "prirucka/4703"},
+		{"id": "comboFood", "class": "e10pro.canteen.ViewerMenuComboFood"},
+		{"id": "comboSoup", "class": "e10pro.canteen.ViewerMenuComboSoup"},
+		{"id": "comboOrder", "class": "e10pro.canteen.ViewMenuFoodsComboOrder"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.canteen.FormMenuFood", "help": "prirucka/4703"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "foodName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10pro.canteen.menuFoods.docStates"}
+}

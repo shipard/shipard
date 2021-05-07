@@ -1,0 +1,37 @@
+{
+    "table": {
+        "name": "Sharing"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "shareType": {
+            "name": "Type"
+        },
+        "classId": {
+            "name": "Kind of sharing"
+        },
+        "tableId": {
+            "name": "Table"
+        },
+        "recId": {
+            "name": "Row"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "dateCreate": {
+            "name": "Date of creation"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

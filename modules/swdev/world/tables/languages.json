@@ -1,0 +1,31 @@
+{
+	"id": "swdev.world.languages", "sql": "swdev_world_languages", "name": "Jazyky", "icon": "icon-language",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "id", "name": "id", "type": "string", "len": 10},
+		{"id": "name", "name": "Název", "type": "string", "len": 180},
+		{"id": "alpha2", "name": "ISO 639-1 Alpha-2 ID", "type": "string", "len": 2},
+		{"id": "alpha3b", "name": "ISO 639-2 Alpha-3 bibliographic ID", "type": "string", "len": 3},
+		{"id": "alpha3t", "name": "ISO 639-2 Alpha-3 terminology ID", "type": "string", "len": 3},
+		{"id": "urlWikipedia", "name": "URL na Wikipedii", "type": "string", "len": 120},
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "swdev.world.ViewLanguages",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.world.ViewDetailLanguage"},
+				"tr": {"title": "Překlad", "icon": "icon-language", "type": "detail", "class": "swdev.world.ViewDetailLanguageTr"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "swdev.world.FormLanguage"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"documentCard": "swdev.world.DocumentCardLanguage"
+}

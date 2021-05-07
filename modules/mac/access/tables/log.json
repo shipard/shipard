@@ -1,0 +1,30 @@
+{
+	"id": "mac.access.log", "sql": "mac_access_log", "name": "Log přístupů", "icon": "icon-eye",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "created", "name": "Datum a čas", "type": "timestamp"},
+		{"id": "state", "name": "Stav", "type": "enumInt",
+			"enumValues": {"0": "OK", "1": "Přístup odepřen", "2": "varování"}, "3": "error", "4":  "bad request"},
+		{"id": "mainKeyType", "name": "Typ klíče", "type": "enumInt",
+			"enumValues": {"0": "Tag", "1": "Vstupenka", "2": "Ovládací prvek"}},
+		{"id": "tagType", "name": "Druh klíče", "type": "enumInt",
+			"enumCfg": {"cfgItem": "mac.access.tagTypes", "cfgValue": "", "cfgText": "name"}},
+		{"id": "keyDevice", "name": "Zařízení", "type": "int", "reference": "mac.lan.devices"},
+		{"id": "gate", "name": "Brána/dveře", "type": "int", "reference": "mac.iot.things"},
+		{"id": "tagAssignType", "name": "Přiřazeno k", "type": "enumInt",
+			"enumCfg": {"cfgItem": "mac.access.assignTypes", "cfgValue": "", "cfgText": "name"}},
+		{"id": "personAccess", "name": "Osoba", "type": "int", "reference": "mac.access.personsAccess"},
+		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "place", "name": "Místo", "type": "int", "reference": "e10.base.places"},
+		{"id": "keyValue", "name": "Klíč", "type": "string", "len": 40},
+		{"id": "iotControl", "name": "Ovládací prvek", "type": "int", "reference": "mac.iot.controls"},
+		{"id": "tag", "name": "Tag", "type": "int", "reference": "mac.access.tags"},
+		{"id": "msg", "name": "Zpráva", "type": "memo"}
+	],
+	"views": [
+		{"id": "default", "class": "mac.access.ViewLog", "detail": "mac.access.ViewDetailLog"}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.access.FormLog"}
+	]
+}

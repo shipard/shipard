@@ -1,0 +1,101 @@
+{
+	"name": "Typ majetku Vozidlo",
+	"datasets": [
+		{
+			"table": "e10pro.property.types",
+			"name": "Vozidlo",
+			"defaultValues": {"docState": 4000, "docStateMain": 2},
+			"checkExistence": {"qryColumns": ["id"]},
+			"data": [
+				{"rec": {"#": "ppt-vehicle", "fullName":"Vozidlo","shortName":"Vozidlo","id":"e10-ppt-vehicle","propertyKind":0}}
+			]
+		},
+		{
+			"table": "e10.base.propdefs",
+			"name": "Definice vlastností",
+			"defaultValues": {"docState": 4000, "docStateMain": 2},
+			"checkExistence": {"qryColumns": ["id"]},
+			"data": [
+				{"rec": {"#": "e10-ppt-vehicle-lp","fullName":"Registrační značka vozidla","shortName":"Registrační značka","id":"e10-ppt-vehicle-lp", "type":"text"}},
+				{"rec": {"#": "e10-ppt-vehicle-vin","fullName":"VIN","shortName":"VIN","id":"e10-ppt-vehicle-vin", "type":"text"}},
+
+				{"rec": {"#": "e10-ppt-vehicle-tp-kind","fullName":"Druh vozidla","shortName":"Druh","id":"e10-ppt-vehicle-kind","type":"enum"}},
+				{"rec": {"#": "e10-ppt-vehicle-tp-fuel","fullName":"Palivo","shortName":"Palivo","id":"e10-ppt-vehicle-fuel","type":"enum"}},
+				{"rec": {"#": "e10-ppt-vehicle-tp-engdispl","fullName":"Zdvihový objem motoru [cm3]","shortName":"Objem motoru [cm3]","id":"e10-ppt-vehicle-engdispl","type":"text"}},
+				{"rec": {"#": "e10-ppt-vehicle-tp-engpower","fullName":"Výkon motoru [kW]","shortName":"Výkon [kW]","id":"e10-ppt-vehicle-engpower","type":"text"}},
+				{"rec": {"#": "e10-ppt-vehicle-tp-consump","fullName":"Spotřeba [l]","shortName":"Spotřeba [l]","id":"e10-ppt-vehicle-consump","type":"text"}}
+			]
+		},
+		{
+			"table": "e10.base.propdefsenum",
+			"name": "Hodnoty jednotlivých výčtových vlastností",
+			"checkExistence": {"qryColumns": ["property", "id"]},
+			"data": [
+				{"rec": {"property":"#e10-ppt-vehicle-tp-kind","fullName":"Osobní automobil","id":"car"}},
+				{"rec": {"property":"#e10-ppt-vehicle-tp-kind","fullName":"Užitkový automobil","id":"van"}},
+				{"rec": {"property":"#e10-ppt-vehicle-tp-kind","fullName":"Nákladní automobil","id":"truck"}},
+				{"rec": {"property":"#e10-ppt-vehicle-tp-kind","fullName":"Přívěs","id":"trailer"}},
+				{"rec": {"property":"#e10-ppt-vehicle-tp-kind","fullName":"Návěs","id":"semitrailer"}},
+
+				{"rec": {"property":"#e10-ppt-vehicle-tp-fuel","fullName":"Benzín","id":"petrol"}},
+				{"rec": {"property":"#e10-ppt-vehicle-tp-fuel","fullName":"Nafta","id":"diesel"}},
+				{"rec": {"property":"#e10-ppt-vehicle-tp-fuel","fullName":"LPG","id":"LPG"}}
+			]
+		},
+		{
+			"table": "e10.base.propgroups",
+			"name": "Skupiny vlastností typu majetku Vozidlo",
+			"defaultValues": {"docState": 4000, "docStateMain": 2},
+			"checkExistence": {"qryColumns": ["id"]},
+			"data": [
+				{"rec": {"#": "e10-ppt-vehicle-ids", "fullName":"Identifikační údaje vozidla","id":"e10-ppt-vehicle-ids","shortName":"Identifikace"}},
+				{"rec": {"#": "e10-ppt-vehicle-tp", "fullName":"Technické údaje","id":"e10-ppt-vehicle-tp","shortName":"Technické údaje"}}
+			]
+		},
+		{
+			"table": "e10.base.doclinks",
+			"defaultValues": {"linkId":"e10-base-propgoups-props", "srcTableId":"e10.base.propgroups", "dstTableId":"e10.base.propdefs"},
+			"name": "Propojení skupin a vlastností",
+			"checkExistence": {"qryColumns": ["srcRecId", "dstRecId", "linkId"]},
+			"data": [
+				{"rec": {"srcRecId":"#e10-ppt-vehicle-ids","dstRecId":"#e10-ppt-vehicle-lp"}},
+				{"rec": {"srcRecId":"#e10-ppt-vehicle-ids","dstRecId":"#e10-ppt-vehicle-vin"}},
+
+				{"rec": {"srcRecId":"#e10-ppt-vehicle-tp","dstRecId":"#e10-ppt-vehicle-tp-kind"}},
+				{"rec": {"srcRecId":"#e10-ppt-vehicle-tp","dstRecId":"#e10-ppt-vehicle-tp-fuel"}},
+				{"rec": {"srcRecId":"#e10-ppt-vehicle-tp","dstRecId":"#e10-ppt-vehicle-tp-engdispl"}},
+				{"rec": {"srcRecId":"#e10-ppt-vehicle-tp","dstRecId":"#e10-ppt-vehicle-tp-engpower"}},
+				{"rec": {"srcRecId":"#e10-ppt-vehicle-tp","dstRecId":"#e10-ppt-vehicle-tp-consump"}}
+			]
+		},
+		{
+			"table": "e10.base.doclinks",
+			"defaultValues": {"linkId":"e10pro-property-types-propgroups", "srcTableId":"e10pro.property.types", "dstTableId":"e10.base.propgroups"},
+			"name": "Propojení Typu majektu a vlastností",
+			"checkExistence": {"qryColumns": ["srcRecId", "dstRecId", "linkId"]},
+			"data": [
+				{"rec": {"srcRecId":"#ppt-vehicle","dstRecId":"#e10-ppt-props-common"}},
+				{"rec": {"srcRecId":"#ppt-vehicle","dstRecId":"#e10-ppt-vehicle-ids"}},
+				{"rec": {"srcRecId":"#ppt-vehicle","dstRecId":"#e10-ppt-vehicle-tp"}}
+			]
+		},
+		{
+			"table": "e10pro.property.groups",
+			"name": "Skupiny majetku",
+			"defaultValues": {"docState": 4000, "docStateMain": 2},
+			"checkExistence": {"qryColumns": ["fullName"]},
+			"data": [
+				{"rec": {"#": "ppt-groups-vehicles", "fullName":"Auta","shortName":"Auta"}}
+			]
+		},
+		{
+			"table": "e10.base.doclinks",
+			"defaultValues": {"linkId":"e10pro-property-groups-proptypes", "srcTableId":"e10pro.property.groups", "dstTableId":"e10pro.property.types"},
+			"name": "Propojení Skupin majektu a Typů majetku",
+			"checkExistence": {"qryColumns": ["srcRecId", "dstRecId", "linkId"]},
+			"data": [
+				{"rec": {"srcRecId":"#ppt-groups-vehicles","dstRecId":"#ppt-vehicle"}}
+			]
+		}
+	]
+}

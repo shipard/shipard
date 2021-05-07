@@ -1,0 +1,29 @@
+{{@setParams;myLayout:1}}
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-2 col-md-2">
+            <ul class="nav nav-stacked">
+                <li>
+                    <a href='#' class="btn btn-success e10-document-trigger" data-action="new" data-table="e10pro.kb.texts" data-addparams="__mainType=1"><i class="fa fa-plus-circle"></i> Nová stránka</a>
+                </li>
+                <li>
+                    <a href='#' class="btn btn-primary e10-document-trigger" data-action="edit" data-table="e10pro.kb.texts" data-pk="{{page.ndx}}"><i class="fa fa-edit"></i> Upravit stránku</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="col-lg-10 col-md-10">
+            {{#page.article}}
+            <div style='border: 1px solid rgba(0,0,0,.1);border-radius: 4px; background-color: #F9F9F9; padding: 2ex;'>
+                {{{text}}}
+            </div>
+            {{/page.article}}
+        </div>
+    </div>
+</div>
+
+
+
+
+

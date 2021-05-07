@@ -1,0 +1,74 @@
+{
+	"wkf.core.issues": {
+		"wkf-issues-to": {
+			"linkid": "wkf-issues-to", "name": "Pro", "icon": "icon-chevron-right",
+			"queryCol": "issueType", "queryColValue": 3,
+			"sources": [{"table": "e10.persons.persons"}],
+			"listId": "doclinksPersons"
+		},
+		"wkf-issues-from": {
+			"linkid": "wkf-issues-from", "name": "Od", "icon": "icon-chevron-left",
+			"queryCol": "issueType", "queryColValue": 1,
+			"sources": [{"table": "e10.persons.persons"}],
+			"listId": "doclinksPersons"
+		},
+		"wkf-issues-assigned": {
+			"linkid": "wkf-issues-assigned", "name": "Přiřazeno", "icon": "icon-bolt",
+			"queryCol": "issueType", "queryColValue": 0,
+			"sources": [
+				{"id": "persons", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			],
+			"listId": "doclinksPersons"
+		},
+		"wkf-issues-notify": {
+			"linkid": "wkf-issues-notify", "name": "Na vědomí", "icon": "icon-share",
+			"sources": [
+				{"id": "persons", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			],
+			"listId": "doclinksPersons"
+		},
+		"wkf-issues-projects": {
+			"linkid": "wkf-issues-projects", "name": "Projekty", "icon": "icon-lightbulb-o",
+			"sources": [
+				{"id": "projects", "table": "wkf.base.projects", "viewer": "default"}
+			],
+			"listId": "doclinksAssignment"
+		},
+		"wkf-issues-targets": {
+			"linkid": "wkf-issues-targets", "name": "Cíle", "icon": "icon-flag-checkered",
+			"sources": [
+				{"id": "targets", "table": "wkf.base.targets", "viewer": "default"}
+			],
+			"listId": "doclinksAssignment"
+		}
+	},
+	"wkf.core.filters": {
+		"wkf-filters-add-from": {
+			"linkid": "wkf-filters-add-from", "name": "Od", "icon": "icon-chevron-left",
+			"sources": [{"table": "e10.persons.persons"}]
+		},
+		"wkf-filters-add-to": {
+			"linkid": "wkf-filters-add-to", "name": "Pro", "icon": "icon-chevron-right",
+			"sources": [{"table": "e10.persons.persons"}]
+		},
+		"wkf-filters-add-notify": {
+			"linkid": "wkf-filters-add-notify", "name": "Na vědomí", "icon": "icon-share",
+			"sources": [
+				{"id": "persons", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			]
+		},
+		"wkf-filters-add-assigned": {
+			"linkid": "wkf-filters-add-assigned", "name": "Přiřazeno", "icon": "icon-bolt",
+			"sources": [
+				{"id": "persons", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			]
+		}
+	},
+	"e10.base.clsfitems": {
+		"clsfItems-limit-wkf-sections": {
+			"linkid": "clsfItems-limit-wkf-sections", "name": "Omezit na sekce", "icon": "icon-columns",
+			"queryCol": "group", "queryColValue": "wkfIssuesTags",
+			"sources": [{"table": "wkf.base.sections"}]
+		}
+	}
+}

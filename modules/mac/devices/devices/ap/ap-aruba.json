@@ -1,0 +1,12 @@
+{
+	"name": "Aruba",
+	"title": "Aruba",
+	"fields": {
+		"columns": [
+			{"id": "userLogin", "name": "Uživatel", "type": "string", "len": 30},
+			{"id": "userPassword", "name": "Heslo", "type": "string", "len": 40},
+			{"id": "apRole", "name": "Role", "type": "enumInt",
+				"enumValues": {"0": "Přístupový bod", "1": "Ovladač přístupových bodů"}}
+		]
+	}
+}

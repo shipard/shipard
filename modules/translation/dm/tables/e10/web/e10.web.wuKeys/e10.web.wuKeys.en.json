@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "Website user keys"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "webServer": {
+            "name": "Web server"
+        },
+        "person": {
+            "name": "Person"
+        },
+        "keyType": {
+            "name": "Key type"
+        },
+        "keyValue": {
+            "name": "Key"
+        },
+        "created": {
+            "name": "Creation timestamp"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

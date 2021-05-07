@@ -1,0 +1,32 @@
+[
+	{
+		"table": "e10doc.core.heads",
+		"columns": [
+			{"id": "mnfType", "name": "Typ výroby", "type": "enumInt",
+				"enumValues": {"0": "Montáž", "1": "Demontáž"}}
+		],
+		"views": {
+			"mnf": {
+				"id": "mnf", "class": "e10doc.mnf.ViewMnfDocs",
+				"details": {
+					"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10doc.mnf.ViewDetailMnfDocs", "order": 1000}
+				}
+			}
+		},
+		"forms": [
+			{"id": "mnf", "class": "e10doc.mnf.FormMnfDocs"}
+		]
+	},
+	{
+		"table": "e10doc.core.rows",
+		"forms": [
+			{"id": "mnf", "class": "e10doc.mnf.FormMnfDocsRows"}
+		]
+	},
+	{
+		"table": "e10.witems.items",
+		"columns": [
+			{"id": "mnfEnableAssembling", "name": "Položku lze vyrábět", "type": "logical", "options": ["saveOnChange"]}
+		]
+	}
+]

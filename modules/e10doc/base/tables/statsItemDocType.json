@@ -1,0 +1,13 @@
+{
+	"id": "e10doc.base.statsItemDocType", "sql": "e10doc_base_statsItemDocType", "name": "Statistika položek/druhů dokladů",
+	"columns": [
+		{"id": "docType", "name": "Typ dokladu", "type": "enumString", "len": 10,
+			"enumCfg": {"cfgItem": "e10.docs.types", "cfgValue": "", "cfgText": "fullName"}},
+		{"id": "cnt", "name": "Počet", "type": "int"},
+		{"id": "item", "name": "Položka", "type": "int", "reference": "e10.witems.items"}
+	],
+	"options": ["systemTable"],
+	"indexes": [
+		{"id": "s1", "columns": ["docType", "item"]}
+	]
+}

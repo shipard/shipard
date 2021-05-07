@@ -1,0 +1,5 @@
+{
+  "id": "e10doc.invoicesOut",
+  "name": "InvoicesOut",
+  "extensions": ["invoicesout"]
+}

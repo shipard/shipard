@@ -1,0 +1,16 @@
+{
+    "table": {
+        "name": "Alerts - devices"
+    },
+    "columns": {
+        "ndx": {
+            "name": "ndx"
+        },
+        "alert": {
+            "name": "Alert"
+        },
+        "device": {
+            "name": "Device"
+        }
+    }
+}

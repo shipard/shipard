@@ -1,0 +1,14 @@
+{
+  "id": "e10pro.install.docs-commerce",
+  "name": "Obchod",
+  "config": [
+    {"id": "+appSkeleton", "file": "appSkeleton.json"},
+    {"id": "+appOptions", "file": "e10.appOptions.json"},
+    {"id": "+reports", "file": "reports.json"},
+    {"id": "+dashboards", "file": "dashboards.json"},
+    {"id": "+widgets", "file": "widgets.json"},
+    {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+    {"id": "+reportsGroups", "file": "reportsGroups.json"}
+  ],
+  "modules": ["e10pro/install/docs-core", "e10mnf/core"]
+}

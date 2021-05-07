@@ -1,0 +1,123 @@
+{{^page.itemContent}}
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>{{page.pageTitle}}</title>
+    <link href="{{templateRoot}}/style.css" rel="stylesheet">
+</head>
+
+<body>
+<nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">{{cfgItem.options.core.ownerFullName}}</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a id="pt">{{page.title}}</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    {{#page.hasFolders}}
+    <div class="row">
+        <div class="col-sm-12">
+            <ul class="nav nav-tabs" style="margin: 10px 0px;">
+                {{#page.folders}}
+                    <li role="presentation" {{#active}} class="active"{{/active}}><a href="{{url}}">{{name}} <span class="badge">{{cntItems}}</span></a></li>
+                {{/page.folders}}
+            </ul>
+        </div>
+    </div>
+    {{/page.hasFolders}}
+
+    <div class="row" id="dashboard">
+        <div class="col-md-4 sidebar" style="overflow-y: auto;">
+            <div class="list-group" id="share-items">
+                {{#page.items}}
+                    <div class="list-group-item share-item"  data-item='{{ndx}}'>
+                        <b>{{t1}}</b>{{#i1}}<small class='pull-right'>{{i1}}</small>{{/i1}}
+                        <br><small>{{t2}}&nbsp;</small>{{#i2}}<small class='pull-right'>{{i2}}</small>{{/i2}}
+                    </div>
+                {{/page.items}}
+            </div>
+        </div>
+        <div class="col-md-8 main" style="overflow-y: auto;">
+            <div id="itemcontent">
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script type="text/javascript">var httpApiRootPath = '{{urlRoot}}'; var httpServerRootPath = '{{urlServer}}';</script>
+    <script src="//cdn.shipard.com/jquery/jquery-2.0.1.min.js"></script>
+    <script src="{{dsRoot}}/e10-modules/wwwlibs/bootstrap3/js/bootstrap.min.js"></script>
+    <script src="{{dsRoot}}/e10-modules/e10/server/js/e10web.js"></script>
+
+    <script>
+        var maxHeight = $(window).height();
+        var hh = maxHeight - $('#dashboard').position().top - 10;
+        $('#dashboard').height(hh);
+        $('#dashboard>div').height(hh);
+
+        var shareUrl = '{{page.shareUrl}}';
+
+        $("body").on (CLICK_EVENT, "div.share-item", function(event) {
+            event.stopPropagation();
+            event.preventDefault();
+            clickShareItem ($(this));
+        });
+
+        if (window.location.hash != '')
+            setShareItem (window.location.hash.substr(1));
+
+        function clickShareItem (item)
+        {
+            var itemId = item.attr ('data-item');
+            setShareItem (itemId);
+        }
+
+        function setShareItem (itemId)
+        {
+            if (itemId == '')
+                return;
+            $('#share-items').find('div.active').removeClass ('active');
+            $("#share-items>div[data-item='"+itemId+"']").addClass ('active');
+
+            window.location.hash = '#'+itemId;
+
+            var urlPath = shareUrl + itemId;
+            $('#itemcontent').html("");
+            $.get (urlPath, function( data ) {
+                $('#itemcontent').html(data);
+            });
+        }
+
+        function locationHashChanged()
+        {
+            setShareItem (window.location.hash.substr(1));
+        }
+        window.onhashchange = locationHashChanged;
+    </script>
+</body>
+</html>
+{{/page.itemContent}}
+{{#page.itemContent}}
+    {{#page.files.images}}
+        <a href="{{dsRoot}}/att/{{path}}{{filename}}" class="thumbnail" target="new">
+            <img src="{{dsRoot}}/imgs/-w1200/-h2400/att/{{path}}{{filename}}">
+        </a>
+    {{/page.files.images}}
+{{/page.itemContent}}
+

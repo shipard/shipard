@@ -1,0 +1,83 @@
+{
+    "table": {
+        "name": "Property"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "propertyType": {
+            "name": "Property type"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "propertyId": {
+            "name": "Inventory number"
+        },
+        "propertyCategory": {
+            "name": "Property category"
+        },
+        "propertyKind": {
+            "name": "Track quantity"
+        },
+        "useVehicleLogbook": {
+            "name": "Use vehicle logbook"
+        },
+        "useDepreciation": {
+            "name": "Depreciated property"
+        },
+        "intangibleProperty": {
+            "name": "Intangible property"
+        },
+        "depreciationGroup": {
+            "name": "Depreciation group"
+        },
+        "depreciationType": {
+            "name": "Tax depreciation method"
+        },
+        "accDepType": {
+            "name": "Accounting deprecation method"
+        },
+        "accDepLength": {
+            "name": "Accounting deprecation lenght"
+        },
+        "accDepLengthUnit": {
+            "name": "Length unit of accounting depreciation"
+        },
+        "taxDepLength": {
+            "name": "Tax depreciation length in years"
+        },
+        "debsGroup": {
+            "name": "Accounting group"
+        },
+        "foreign": {
+            "name": "Leased property"
+        },
+        "owner": {
+            "name": "Owner"
+        },
+        "dateStart": {
+            "name": "Date of acquisition"
+        },
+        "dateEnd": {
+            "name": "Date of discard"
+        },
+        "priceIn": {
+            "name": "Purchase price",
+            "label": "Price"
+        },
+        "note": {
+            "name": "Note"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

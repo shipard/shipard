@@ -1,0 +1,79 @@
+{
+    "table": {
+        "name": "Issues filters"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "qrySubjectType": {
+            "name": "Issue subject"
+        },
+        "qrySubjectValue": {
+            "name": "Subject"
+        },
+        "qryEmailFromType": {
+            "name": "E-mail FROM"
+        },
+        "qryEmailFromValue": {
+            "name": "E-mail FROM"
+        },
+        "qryEmailToType": {
+            "name": "E-mail FOR"
+        },
+        "qryEmailToValue": {
+            "name": "E-mail FOR"
+        },
+        "qryTextType": {
+            "name": "Issue text"
+        },
+        "qryTextValue": {
+            "name": "Issue text"
+        },
+        "qrySectionType": {
+            "name": "Section"
+        },
+        "qrySectionValue": {
+            "name": "Section"
+        },
+        "actionSetSection": {
+            "name": "Set section"
+        },
+        "actionSetSectionValue": {
+            "name": "Section"
+        },
+        "actionSetIssueKind": {
+            "name": "Set issue kind"
+        },
+        "actionSetIssueKindValue": {
+            "name": "Issue kind"
+        },
+        "actionSetPriority": {
+            "name": "Set priority"
+        },
+        "actionSetPriorityValue": {
+            "name": "Priority"
+        },
+        "actionSetDocState": {
+            "name": "Set state"
+        },
+        "actionSetDocStateValue": {
+            "name": "State"
+        },
+        "stopAfterApply": {
+            "name": "After filter application end processing"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

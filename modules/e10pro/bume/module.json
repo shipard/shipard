@@ -1,0 +1,14 @@
+{
+	"id": "e10pro.bume",
+	"name": "Bulk Messaging",
+	"tables": [
+		"bulkEmails", "bulkRecipients", "bulkPosts"
+	],
+	"modules": ["e10/base"],
+	"config": [
+		{"id": "+appOptions", "file": "e10.appOptions.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+		{"id": "+e10pro.bume.bulkEmails.docStates", "file": "wkf.bulkEmails.docStates.json"},
+		{"id": "+e10.persons.virtualGroups", "file": "e10.persons.virtualGroups.json"}
+	]
+}

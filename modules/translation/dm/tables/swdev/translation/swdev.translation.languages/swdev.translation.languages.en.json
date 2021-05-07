@@ -1,0 +1,34 @@
+{
+    "table": {
+        "name": "Translated languages"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "code": {
+            "name": "Code"
+        },
+        "language": {
+            "name": "Language"
+        },
+        "flag": {
+            "name": "Flag"
+        },
+        "useWorld": {
+            "name": "Data World"
+        },
+        "useUI": {
+            "name": "User interface"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

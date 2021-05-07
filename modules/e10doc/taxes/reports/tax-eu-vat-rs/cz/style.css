@@ -1,0 +1,74 @@
+@import url("../../../../core/reports/formreport.css");
+
+html {background-color: #c0fdbf;}
+body {padding: 1cm !important; margin: 0 !important;}
+
+table.formSection {width: 100%; margin: 0; padding: 0; border-collapse: collapse; table-layout: fixed; clear: both;}
+table.formSection td {padding-top: 1pt; font-size: 7.5pt; width: 3.3333333333%; vertical-align: middle;}
+table.formSection td.input>span {
+    border: 1pt solid black;
+    padding: 1pt;
+    font-size: 8pt;
+    min-height: 10pt;
+    width: 100%;
+    background-color: white;
+    display: block;
+    font-family: "Courier" !important;
+}
+table.formSection td.input>span>span.flag {
+    width: 2em;
+    float: right;
+    text-align: center;
+    border-left: 1pt solid black;
+}
+
+table.formSection td.c {text-align: center;}
+table.formSection td.l {text-align: left;}
+table.formSection td.r {text-align: right; padding-right: 3pt;}
+
+div.bigFrame {border: 1px solid black; padding: 6pt; margin: 0;}
+
+
+
+
+
+
+table.tableSection {width: 100%; background-color: white; border-collapse: collapse; }
+table.tableSection td {padding: 2pt 1pt; background-color: white; font-size: 7pt; height: 9pt; border: 1px solid black;}
+table.tableSection thead {background-color: #f5f5f5; }
+table.tableSection th {
+    border: 1px solid black;
+    padding: 2pt 1pt;
+    font-size: 7pt;
+    font-weight: normal;
+}
+
+table.tableSection td.c {text-align: center; font-size: 7pt;}
+table.tableSection td.l {text-align: left; font-size: 7pt;}
+table.tableSection td.r {text-align: right; padding-right: 3pt;}
+table.tableSection td.b {font-weight: bold; background-color: #cccccc;}
+
+div.separator {padding-bottom: 3pt;}
+div.newPage {page-break-before: always; padding-bottom: 2pt; padding-top: 1cm;}
+div.pageNumber {text-align: center; font-size: 8pt; padding-top: 10pt;}
+
+
+div.title1 {
+    text-align: center;
+    font-weight: bold;
+    font-size: 18pt;
+    letter-spacing: 4pt;
+    padding: 6pt;
+}
+
+div.title2 {
+    text-align: center;
+    font-size: 12pt;
+}
+
+div.subTitle {
+    text-align: center; font-weight: bold; font-size: 7.5pt;
+    padding: 6pt 0;
+}
+
+div.e10-tax-report {height: 267mm !important; width: 100%; display: inline-block;}

@@ -1,0 +1,38 @@
+{
+	"id": "swdev.dm.dmTrTexts", "sql": "swdev_dm_dmTrTexts", "name": "Lokalizované texty datového modelu", "icon": "icon-font",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "textType", "name": "Typ textu", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {
+				"0": "Název tabulky",
+				"1": "Název sloupce tabulky",
+				"2": "Titulek sloupce tabulky"
+			}
+		},
+
+		{"id": "lang", "name": "Jazyk", "type": "int", "reference": "swdev.translation.languages"},
+		{"id": "isSource", "name": "Jde o zdrojový text", "type": "logical"},
+		{"id": "srcText", "name": "Zdrojový text", "type": "int", "reference": "swdev.dm.dmTrTexts"},
+
+		{"id": "text", "name": "Text", "type": "string", "len": 180},
+
+		{"id": "table", "name": "Tabulka", "type": "int", "reference": "swdev.dm.tables"},
+		{"id": "column", "name": "Sloupec", "type": "int", "reference": "swdev.dm.columns"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "swdev.dm.ViewDMTrTexts",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.dm.ViewDetailDMTrText"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "swdev.dm.FormDMTrText"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "text"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "swdev.dm.trTextsDocStates"}
+}

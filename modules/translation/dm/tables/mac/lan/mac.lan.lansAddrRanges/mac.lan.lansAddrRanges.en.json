@@ -1,0 +1,58 @@
+{
+    "table": {
+        "name": "Ranges of network addresses"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "range": {
+            "name": "Range"
+        },
+        "addressPrefix": {
+            "name": "Beginning of address"
+        },
+        "addressGateway": {
+            "name": "Gateway address"
+        },
+        "lan": {
+            "name": "Network"
+        },
+        "vlan": {
+            "name": "VLAN"
+        },
+        "dhcpServerId": {
+            "name": "DHCP server ID"
+        },
+        "dhcpPoolBegin": {
+            "name": "DHCP pool beginning"
+        },
+        "dhcpPoolEnd": {
+            "name": "DHCP pool end"
+        },
+        "nextPool": {
+            "name": "Next pool"
+        },
+        "serverMonitoring": {
+            "name": "Server for monitoring"
+        },
+        "note": {
+            "name": "Note"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

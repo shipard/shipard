@@ -1,0 +1,37 @@
+{
+    "table": {
+        "name": "Access log"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "eventType": {
+            "name": "Event type"
+        },
+        "user": {
+            "name": "User"
+        },
+        "ipaddress": {
+            "name": "IP address"
+        },
+        "ipaddressndx": {
+            "name": "IP address"
+        },
+        "deviceId": {
+            "name": "Device"
+        },
+        "login": {
+            "name": "Login"
+        },
+        "session": {
+            "name": "Session"
+        },
+        "dsGid": {
+            "name": "Data source"
+        },
+        "created": {
+            "name": "Creation timestamp"
+        }
+    }
+}

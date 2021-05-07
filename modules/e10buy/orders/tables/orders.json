@@ -1,0 +1,77 @@
+{
+	"id": "e10buy.orders.orders", "sql": "e10buy_orders_orders", "name": "Objednávky vydané", "icon": "icon-shopping-basket",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "dbCounter", "name": "Číselná řada", "type": "int"},
+		{"id": "dbCounterNdx", "name": "Pořadové číslo", "type": "int"},
+		{"id": "dbCounterYear", "name": "Rok", "type": "int"},
+		{"id": "docNumber", "name": "Číslo objednávky", "type": "string", "len": 30},
+		{"id": "docKind", "name": "Druh objednávky", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10buy.orders.kinds", "cfgValue": "ndx", "cfgText": "fullName"}},
+		{"id": "title", "name": "Shrnutí objednávky", "type": "string", "len": 120},
+
+		{"id": "owner", "name": "Vlastní osoba", "type": "int", "reference": "e10.persons.persons"},
+
+		{"id": "supplier", "name": "Dodavatel", "type": "int", "reference": "e10.persons.persons", "options": ["saveOnChange"]},
+		{"id": "supplierAddr", "name": "Pobočka", "type": "int", "reference": "e10.persons.address",  "comboViewer": "personsCombo", "options": ["saveOnChange"]},
+
+		{"id": "author", "name": "Vystavil", "type": "int", "reference": "e10.persons.persons"},
+
+		{"id": "dateIssue", "name": "Datum vystavení", "type": "date"},
+
+		{"id": "deliveryDateRequested", "name": "Požadovaný termín dodání", "type": "date"},
+		{"id": "deliveryDateConfirmed", "name": "Potvrzený termín dodání", "type": "date"},
+		{"id": "deliveryRequestNote", "name": "Poznámka k doručení", "type": "string", "len": 180},
+		{"id": "deliveryAddr", "name": "Adresa doručení", "type": "int", "reference": "e10.persons.address",  "comboViewer": "personsCombo"},
+
+		{"id": "transport", "name": "Způsob dopravy", "type": "int", "reference": "e10doc.base.transports"},
+		{"id": "transportNote", "name": "Upřesnění dopravy", "type": "string", "len": 180},
+
+
+		{"id": "dateClosed", "name": "Datum uzavření", "type": "date"},
+
+		{"id": "workOrder", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
+		{"id": "centre", "name": "Středisko", "type": "int", "reference": "e10doc.base.centres"},
+		{"id": "wkfProject", "name": "Projekt", "type": "int", "reference": "wkf.base.projects", "module": "wkf.base"},
+
+		{"id": "currency", "name": "Měna", "type": "enumString", "len": 3, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
+		{"id": "homeCurrency", "name": "Měna domácí", "type": "enumString", "len": 3,
+			"enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
+		{"id": "exchangeRate", "name": "Kurz", "type": "number", "dec": 5},
+		{"id": "dateExchRate", "name": "Datum kurzu", "type": "date"},
+
+		{"id": "sumPrice", "name": "Cena celkem", "type": "money"},
+		{"id": "sumPriceHc", "name": "Cena celkem [MD]", "type": "money"},
+		{"id": "price", "name": "Cena", "type": "money"},
+		{"id": "priceHc", "name": "Cena [MD]", "type": "money"},
+
+		{"id": "intTitle", "name": "Interní text dokladu", "type": "string", "len": 120},
+		{"id": "description", "name": "Popis objednávky", "type": "memo"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "rows", "class": "e10.base.ListRows", "name": "Řádky", "table": "e10buy.orders.ordersRows", "queryColumn": "order", "orderColumn": "rowOrder"},
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"},
+		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"}
+	],
+	"views": [
+		{"id": "default", "class": "e10buy.orders.ViewOrders",
+			"details": {
+				"default": {"title": "Přehled", "icon": "icon-file", "type": "detail", "class": "e10buy.orders.ViewDetailOrder", "order": 1000}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10buy.orders.FormOrder"},
+		{"id": "show", "class": "e10buy.orders.OrderShow"}
+	],
+	"reports": [
+		{"id": "buyOrder", "name": "Objednávka", "class": "e10buy.orders.libs.reports.Order"}
+	],
+	"documentCard": "e10buy.orders.Order",
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "title"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10buy.orders.docStates.default"}
+}

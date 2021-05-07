@@ -1,0 +1,14 @@
+{
+	"e10mnf.base.workOrdersGroups": {
+		"e10mnf-workRecsGroups-docKinds": {"linkid": "e10mnf-workRecsGroups-docKinds", "name": "Druhy zakázek", "icon": "icon-flag-o",
+			"sources": [
+				{"id": "docKinds", "viewer": "default", "table": "e10mnf.base.dockinds"}
+			]
+		},
+		"e10mnf-workRecsGroups-docNumbers": {"linkid": "e10mnf-workRecsGroups-docNumbers", "name": "Číselné řady zakázek", "icon": "icon-play-circle",
+			"sources": [
+				{"id": "docKinds", "viewer": "default", "table": "e10mnf.base.docnumbers"}
+			]
+		}
+	}
+}

@@ -1,0 +1,11 @@
+{
+  "id": "e10doc.buy",
+  "name": "Nákup",
+  "config": [
+    {"id": "+reports", "name": "Výstupy", "file": "reports.json"},
+    {"id": "+e10.persons.lastUse", "file": "e10.persons.lastUse.json"},
+    {"id": "+registeredClasses", "file": "registeredClasses.json"}
+  ],
+  "modules": ["e10pro/install/docs-core"]
+}
+

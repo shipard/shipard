@@ -1,0 +1,20 @@
+{
+	"id": "mac.lan.macs", "sql": "mac_lan_macs", "name": "MAC adresy", "icon":  "icon-cube",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "mac", "name": "MAC adresa", "type": "string", "len": 20, "options": ["ascii"]},
+		{"id": "created", "name": "Vytvořeno", "type": "timestamp"},
+		{"id": "updated", "name": "Změněno", "type": "timestamp"},
+		{"id": "ports", "name": "Porty", "type": "memo"}
+	],
+	"views": [
+		{"id": "default", "class": "mac.lan.ViewMacs",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewDetailMac"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.lan.FormMac"}
+	]
+}

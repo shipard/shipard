@@ -1,0 +1,30 @@
+{
+	"0": {
+		"fn": "Jiné / neznámé"
+	},
+
+	"10": {
+		"fn": "Ztráta komunikace",
+		"objectClass": "mac.lan.libs.alerts.WatchdogTimeout",
+		"severity": "error",
+		"severityTitle": "Chyby",
+		"severityIcon": "icon-exclamation-triangle"
+	},
+	"11": {
+		"fn": "watchdog missing"
+	},
+
+	"20": {
+		"fn": "Upgrade OS",
+		"objectClass": "mac.lan.libs.alerts.UpgradeOS",
+		"severity": "warning",
+		"severityTitle": "Upozornění",
+		"severityIcon": "icon-exclamation-circle"
+	},
+	"21": {
+		"fn": "Zastaralý software",
+		"severity": "info",
+		"severityTitle": "Info",
+		"severityIcon": "icon-info-circle"
+	}
+}

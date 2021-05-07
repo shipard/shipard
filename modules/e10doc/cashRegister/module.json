@@ -1,0 +1,11 @@
+{
+  "id": "e10doc.cashRegister",
+  "name": "Cash register",
+  "extensions": ["cashregister"],
+	"config": [
+		{"id": "+appOptions", "name": "Nastavení aplikace", "file": "e10.appOptions.json"},
+		{"id": "+e10.docs.types", "file": "e10.docs.types.json"},
+		{"id": "+e10.docs.operations", "file": "e10.docs.operations.json"},
+		{"id": "+registeredClasses", "file": "registeredClasses.json"}
+	]
+}

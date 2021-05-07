@@ -1,0 +1,61 @@
+{
+	"panels": {
+		"swdev-dm": {"url": "/app/swDevDM", "zone": "sec", "objectType": "panel", "name": "Datový model", "order": 94000000, "cntBigIcons": 5,
+			"items": {
+				"tables": {"t1": "Tabulky", "object": "viewer", "table": "swdev.dm.tables", "viewer": "default", "icon": "icon-table", "order": 100000},
+				"dicts": {"t1": "Slovník", "object": "viewer", "table": "swdev.translation.dictsItems", "viewer": "default", "icon": "icon-book", "order": 110000},
+				"enums": {"t1": "Enumy", "object": "viewer", "table": "swdev.dm.enums", "viewer": "default", "icon": "icon-th-list", "order": 115000},
+				"terms": {"t1": "Pojmy", "object": "viewer", "table": "swdev.dm.terms", "viewer": "default", "icon": "icon-hashtag", "order": 116000},
+
+				"icons": {
+					"t1": "Ikony", "object": "subMenu", "icon": "icon-picture-o",
+					"order": 120000,
+					"subMenu": {
+						"items": {
+							"appIcons": {"t1": "Ikony aplikace", "object": "viewer", "table": "swdev.icons.appIcons", "viewer": "default", "icon": "icon-square-o", "order": 7000},
+							"appIconsGroups": {"t1": "Skupiny ikon", "object": "viewer", "table": "swdev.icons.appIconsGroups", "viewer": "default", "icon": "icon-clone", "order": 7100},
+
+							"setsIcons": {"t1": "Ikony v sadách", "object": "viewer", "table": "swdev.icons.setsIcons", "viewer": "default", "icon": "icon-file-image-o", "order": 8000},
+							"sets": {"t1": "Sady ikon", "object": "viewer", "table": "swdev.icons.sets", "viewer": "default", "icon": "icon-th", "order": 8100},
+							"setsVariants": {"t1": "Varianty sad", "object": "viewer", "table": "swdev.icons.setsVariants", "viewer": "default", "icon": "icon-th-list", "order": 8200}
+						}
+					}
+				},
+
+				"columns": {"t1": "Sloupce", "object": "viewer", "table": "swdev.dm.columns", "viewer": "default", "icon": "icon-columns", "order": 120000},
+				"viewers": {"t1": "Prohlížeče", "object": "viewer", "table": "swdev.dm.viewers", "viewer": "default", "icon": "icon-window-restore", "order": 130000},
+				"modules": {"t1": "Moduly", "object": "viewer", "table": "swdev.dm.modules", "viewer": "default", "icon": "icon-puzzle-piece", "order": 200000},
+				"texts": {"t1": "Texty", "object": "viewer", "table": "swdev.dm.dmTrTexts", "viewer": "default", "icon": "icon-font", "order": 390000},
+				"enumsValues": {"t1": "Hodnoty enumů", "object": "viewer", "table": "swdev.dm.enumsValues", "viewer": "default", "icon": "icon-list-ol", "order": 395000}
+			}
+		},
+		"swdev-world": {"url": "/app/SwDevWorld", "zone": "sec", "objectType": "panel", "name": "Svět", "order": 95000000,
+			"items": {
+				"countries": {"t1": "Země", "object": "viewer", "table": "swdev.world.countries", "viewer": "default",  "icon": "icon-flag", "order": 100000},
+				"currencies": {"t1": "Měny", "object": "viewer", "table": "swdev.world.currencies", "viewer": "default",  "icon": "icon-money", "order": 500000},
+				"langs": {"t1": "Jazyky", "object": "viewer", "table": "swdev.world.languages", "viewer": "default",  "icon": "icon-language", "order": 600000},
+				"terr": {"t1": "Oblasti", "object": "viewer", "table": "swdev.world.territories", "viewer": "default",  "icon": "icon-map", "order": 700000},
+				"reports": {"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "swdev-world", "icon": "icon-code", "order": 990000}
+			}
+		},
+		"swdev-hw": {"url": "/app/SwDevHW", "zone": "sec", "objectType": "panel", "name": "HW", "order": 97000000,
+			"items": {
+				"items": {"t1": "Položky", "object": "viewer", "table": "e10.witems.items", "viewer": "byCategories", "icon": "e10-witems-items", "order": 2},
+				"fw": {"t1": "Firmware", "object": "viewer", "table": "swdev.hw.fw", "viewer": "default",  "icon": "icon-file-archive-o", "order": 140000},
+				"fwVersions": {"t1": "Verze FW", "object": "viewer", "table": "swdev.hw.fwVersions", "viewer": "default",  "icon": "icon-hashtag", "order": 150000},
+
+				"icons": {
+					"t1": "Nastavení", "object": "subMenu", "icon": "icon-wrench",
+					"order": 980000,
+					"subMenu": {
+						"items": {
+							"brands": {"t1": "Značky", "object": "viewer", "table": "e10.witems.brands", "viewer": "default", "icon": "icon-heart-o", "order": 100000},
+							"itemTypes": {"t1": "Typy položek", "object": "viewer", "table": "e10.witems.itemtypes", "viewer": "default", "icon": "icon-hand-o-up", "order": 200000},
+							"categories": {"t1": "Kategorie", "object": "viewer", "table": "e10.witems.itemcategories", "viewer": "default", "icon": "icon-folder-o", "order": 300000}
+						}
+					}
+				}
+			}
+		}
+	}
+}

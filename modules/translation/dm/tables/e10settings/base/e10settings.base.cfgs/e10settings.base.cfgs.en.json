@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Application configuration"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "title": {
+            "name": "Title"
+        },
+        "code": {
+            "name": "Code"
+        },
+        "valid": {
+            "name": "Valid"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

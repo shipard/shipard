@@ -1,0 +1,31 @@
+{
+  "id": "e10.base.clsfitems", "sql": "e10_base_clsfitems", "name": "Položky zatřídění",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "fullName", "name": "Název", "type": "string", "len": 120},
+    {"id": "group", "name": "Typ", "type": "enumString", "len": 20,
+	    "enumCfg": {"cfgItem": "e10.base.clsf", "cfgValue": "", "cfgText": "name"}},
+		{"id": "id", "name": "Zkratka", "type": "string", "len": 40},
+    {"id": "colorbg", "name": "Barva", "type": "string", "len": 7, "subtype": "color"},
+    {"id": "colorfg", "name": "Barva písma", "type": "string", "len": 7, "subtype": "color"},
+
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"views": [
+    {"id": "default", "class": "e10.base.ViewClsfItems", "detail": "e10.base.ViewDetailClsfItems", "help": "prirucka/4544"}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10.base.FormClsfItems", "help": "prirucka/4544"}
+  ],
+	"options": ["configSource"],
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+  "order": [{"column": "fullName"}],
+  "fullText": ["fullName"]
+}

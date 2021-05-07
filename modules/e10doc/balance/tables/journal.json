@@ -1,0 +1,55 @@
+{
+  "id": "e10doc.balance.journal", "sql": "e10doc_balance_journal", "name": "Saldokonto",
+  "columns": [
+ 		{"id": "pairId", "name": "Párovací symbol", "type": "string", "len": 64},
+ 		{"id": "type", "name": "Saldo", "type": "int"},
+		{"id": "side", "name": "Strana", "type": "int"},
+
+		{"id": "currency", "name": "Měna", "type": "enumString", "len": 3,
+			"enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
+		{"id": "homeCurrency", "name": "Měna domácí", "type": "enumString", "len": 3,
+			"enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
+		{"id": "unit", "name": "Jednotka", "type": "enumString", "len": 8,
+			"enumCfg": {"cfgItem": "e10.witems.units", "cfgValue": "", "cfgText": "shortcut"}},
+
+		{"id": "amount", "name": "Částka", "type": "money"},
+		{"id": "amountHc", "name": "Částka v domácí měně", "type": "money"},
+		{"id": "amountQ", "name": "Množství", "type": "number", "dec": 3},
+
+		{"id": "request", "name": "Předpis", "type": "money"},
+		{"id": "requestHc", "name": "Předpis v domácí měně", "type": "money"},
+		{"id": "requestQ", "name": "Předpis množství", "type": "number", "dec": 3},
+
+		{"id": "payment", "name": "Úhrada", "type": "money"},
+		{"id": "paymentHc", "name": "Úhrada v domácí měně", "type": "money"},
+		{"id": "paymentQ", "name": "Úhrada množství", "type": "number", "dec": 3},
+
+		{"id": "symbol1", "name": "Variabilní symbol", "type": "string", "len": 20},
+		{"id": "symbol2", "name": "Specifický symbol", "type": "string", "len": 20},
+		{"id": "symbol3", "name": "Konstantní symbol", "type": "string", "len": 10},
+		{"id": "bankAccount", "name": "Bankovní účet", "label": "Č. účtu", "type": "string", "len": 40},
+
+		{"id": "date", "name": "Datum", "type": "date"},
+		{"id": "fiscalYear", "name": "Rok", "type": "int", "reference": "e10doc.base.fiscalyears"},
+		{"id": "docLine", "name": "Řádek dokladu", "type": "int"},
+		{"id": "docHead", "name": "Hlavička dokladu", "type": "int"},
+		{"id": "person", "name": "Osoba", "type": "int"},
+		{"id": "item", "name": "Položka", "type": "int"},
+		{"id": "debsAccountId", "name": "Účet", "type": "string", "len": 12}
+  ],
+	"options": ["systemTable"],
+	"views": {
+		"default": {"id": "default", "class": "e10doc.balance.ViewJournalAll"},
+		"combo": {"id": "combo", "class": "e10doc.balance.ViewJournalCombo"}
+	},
+	"indexes": [
+		{"id": "pairId", "columns": ["pairId"]},
+		{"id": "fiscalYear", "columns": ["fiscalYear"]},
+		{"id": "type", "columns": ["type"]},
+		{"id": "date", "columns": ["date"]},
+		{"id": "amounts", "columns": ["amount", "request", "payment"]},
+		{"id": "ptfy", "columns": ["person", "type", "fiscalYear"]},
+		{"id": "symbols", "columns": ["symbol1", "symbol2"]},
+		{"id": "docHead", "columns": ["docHead"]}
+	]
+}

@@ -1,0 +1,10 @@
+{
+  "id": "e10pro.custreg",
+  "name": "Registrace zákazníků",
+  "tables": ["registrations"],
+  "extensions": ["custreg"],
+  "config": [
+    {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+		{"id": "+wkf.messageKind", "file": "wkf.messageKind.json"}
+  ]
+}

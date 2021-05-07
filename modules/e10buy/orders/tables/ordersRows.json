@@ -1,0 +1,34 @@
+{
+	"id": "e10buy.orders.ordersRows", "sql": "e10buy_orders_ordersRows", "name": "Řádky objednávek vydaných",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "order", "name": "Objednávka", "type": "int"},
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+
+		{"id": "item", "name": "Položka", "type": "int", "reference": "e10.witems.items", "comboViewer": "combo", "options": ["saveOnChange"]},
+		{"id": "itemType", "name": "Typ položky", "type": "enumString", "len": 15,
+			"enumCfg": {"cfgItem": "e10.witems.types", "cfgValue": "", "cfgText": ".text"}},
+		{"id": "itemIsSet", "name": "Položka je sada", "type": "enumInt",
+			"enumValues": {"0": "ne", "1": "ano, nutno doplnit do dokladu", "2": "ano, nutno přepočítat", "99": "ano, hotovo"}},
+		{"id": "text", "name": "Text", "type": "string", "len": 220},
+
+		{"id": "quantity", "name": "Množství", "label": "Množ.", "type": "number", "dec": 3, "options": ["saveOnChange"]},
+		{"id": "unit", "name": "Jednotka", "type": "enumString", "len": 8,
+			"enumCfg": {"cfgItem": "e10.witems.units", "cfgValue": "", "cfgText": "shortcut"}},
+		{"id": "priceSource", "name": "Zdroj ceny", "type": "enumInt",
+			"enumValues": {"0": "cena za položku", "1": "cena celkem"}},
+
+		{"id": "priceItem", "name": "Jednotková cena", "label": "Cena/jed", "type": "number", "dec": 4, "options": ["saveOnChange"]},
+		{"id": "priceItemHc", "name": "Jednotková cena [MD]", "type": "number", "dec": 4},
+		{"id": "priceAll", "name": "Cena celkem", "type": "number", "dec": 4, "options": ["saveOnChange"]},
+		{"id": "priceAllHc", "name": "Cena celkem [MD]", "type": "number", "dec": 4, "options": ["saveOnChange"]}
+	],
+	"forms": [
+		{"id": "default", "class": "e10buy.orders.FormRow"}
+	],
+	"options": ["systemTable"],
+	"indexes": [
+		{"id": "item", "columns": ["item"]},
+		{"id": "s1", "columns": ["order", "text"]}
+	]
+}

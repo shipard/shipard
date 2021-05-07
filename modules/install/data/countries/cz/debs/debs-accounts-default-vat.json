@@ -1,0 +1,71 @@
+{
+	"name": "Účty pro DPH",
+	"datasets": [
+		{
+			"table": "e10doc.debs.accounts",
+			"name": "Účty pro DPH",
+			"defaultValues": {"accGroup": 0, "accMethod": "debs", "docState": 4000, "docStateMain": 2},
+			"data": [
+				{"rec": {"id":"343110","fullName":"Daň z přidané hodnoty (vstup - základní sazba)","shortName":"DPH (vstup - základní)","accountKind":1}},
+				{"rec": {"id":"343111","fullName":"Daň z přidané hodnoty (vstup - snížená sazba)","shortName":"DPH (vstup - snížená)","accountKind":1}},
+				{"rec": {"id":"343115","fullName":"Daň z přidané hodnoty (vstup - základní sazba - PDP4)","shortName":"DPH (vstup - základní - PDP4)","accountKind":1}},
+				{"rec": {"id":"343116","fullName":"Daň z přidané hodnoty (vstup - snížená sazba - PDP4)","shortName":"DPH (vstup - snížená - PDP4)","accountKind":1}},
+				{"rec": {"id":"343117","fullName":"Daň z přidané hodnoty (vstup - základní sazba - PDP5)","shortName":"DPH (vstup - základní - PDP5)","accountKind":1}},
+				{"rec": {"id":"343118","fullName":"Daň z přidané hodnoty (vstup - základní krácená sazba)","shortName":"DPH (vstup - základní krácená)","accountKind":1}},
+				{"rec": {"id":"343119","fullName":"Daň z přidané hodnoty (vstup - snížená krácená sazba)","shortName":"DPH (vstup - snížená krácená)","accountKind":1}},
+				{"rec": {"id":"343120","fullName":"Daň z přidané hodnoty (výstup - základní sazba)","shortName":"DPH (výstup - základní)","accountKind":1}},
+				{"rec": {"id":"343121","fullName":"Daň z přidané hodnoty (výstup - snížená sazba)","shortName":"DPH (výstup - snížená)","accountKind":1}},
+				{"rec": {"id":"343150","fullName":"Daň z přidané hodnoty (výstup - základní sazba - PDP4)","shortName":"DPH (výstup - základní - PDP4)","accountKind":1}},
+				{"rec": {"id":"343151","fullName":"Daň z přidané hodnoty (výstup - snížená sazba - PDP4)","shortName":"DPH (výstup - snížená - PDP4)","accountKind":1}},
+				{"rec": {"id":"343152","fullName":"Daň z přidané hodnoty (výstup - základní sazba - PDP5)","shortName":"DPH (výstup - základní - PDP5)","accountKind":1}},
+				{"rec": {"id":"343203","fullName":"Daň z přidané hodnoty (výstup - základní sazba - PDP)","shortName":"DPH (výstup - základní - PDP)","accountKind":1}},
+				{"rec": {"id":"343204","fullName":"Daň z přidané hodnoty (výstup - snížená sazba - PDP)","shortName":"DPH (výstup - snížená - PDP)","accountKind":1}},
+				{"rec": {"id":"343205","fullName":"Daň z přidané hodnoty (výstup - základní sazba - zboží EU)","shortName":"DPH (výstup - základní - zboží EU)","accountKind":1}},
+				{"rec": {"id":"343206","fullName":"Daň z přidané hodnoty (výstup - snížená sazba - zboží EU)","shortName":"DPH (výstup - snížená - zboží EU)","accountKind":1}},
+				{"rec": {"id":"343207","fullName":"Daň z přidané hodnoty (výstup - základní sazba - služby EU)","shortName":"DPH (výstup - základní - služby EU)","accountKind":1}},
+				{"rec": {"id":"343208","fullName":"Daň z přidané hodnoty (výstup - snížená sazba - služby EU)","shortName":"DPH (výstup - snížená - služby EU)","accountKind":1}},
+				{"rec": {"id":"343215","fullName":"Daň z přidané hodnoty (vstup - základní sazba - zboží EU)","shortName":"DPH (vstup - základní - zboží EU)","accountKind":1}},
+				{"rec": {"id":"343216","fullName":"Daň z přidané hodnoty (vstup - snížená sazba - zboží EU)","shortName":"DPH (vstup - snížená - zboží EU)","accountKind":1}},
+				{"rec": {"id":"343217","fullName":"Daň z přidané hodnoty (vstup - základní sazba - služby EU)","shortName":"DPH (vstup - základní - služby EU)","accountKind":1}},
+				{"rec": {"id":"343218","fullName":"Daň z přidané hodnoty (vstup - snížená sazba - služby EU)","shortName":"DPH (vstup - snížená - služby EU)","accountKind":1}},
+				{"rec": {"id":"343801","fullName":"Odvod DPH","shortName":"Odvod DPH","accountKind":1,"toBalance":1}},
+				{"rec": {"id":"343802","fullName":"Odpočet DPH","shortName":"Odpočet DPH","accountKind":1,"toBalance":1}},
+
+				{"rec": {"id":"343301","fullName":"Daň z přidané hodnoty (vstup - první snížená sazba)","shortName":"DPH (vstup - první snížená)","accountKind":1}},
+				{"rec": {"id":"343302","fullName":"Daň z přidané hodnoty (vstup - druhá snížená sazba)","shortName":"DPH (vstup - druhá snížená)","accountKind":1}},
+				{"rec": {"id":"343310","fullName":"Daň z přidané hodnoty (výstup - první snížená sazba)","shortName":"DPH (výstup - první snížená)","accountKind":1}},
+				{"rec": {"id":"343311","fullName":"Daň z přidané hodnoty (výstup - druhá snížená sazba)","shortName":"DPH (výstup - druhá snížená)","accountKind":1}},
+				{"rec": {"id":"343340","fullName":"Daň z přidané hodnoty (vstup - první snížená sazba - PDP4)","shortName":"DPH (vstup - první snížená - PDP4)","accountKind":1}},
+				{"rec": {"id":"343341","fullName":"Daň z přidané hodnoty (vstup - první snížená krácená sazba)","shortName":"DPH (vstup - první snížená krácená)","accountKind":1}},
+				{"rec": {"id":"343342","fullName":"Daň z přidané hodnoty (vstup - druhá snížená krácená sazba)","shortName":"DPH (vstup - druhá snížená krácená)","accountKind":1}},
+				{"rec": {"id":"343350","fullName":"Daň z přidané hodnoty (výstup - první snížená sazba - PDP4)","shortName":"DPH (výstup - první snížená - PDP4)","accountKind":1}},
+				{"rec": {"id":"343360","fullName":"Daň z přidané hodnoty (výstup - první snížená sazba - zboží EU)","shortName":"DPH (výstup - první snížená - zboží EU)","accountKind":1}},
+				{"rec": {"id":"343361","fullName":"Daň z přidané hodnoty (výstup - druhá snížená sazba - zboží EU)","shortName":"DPH (výstup - druhá snížená - zboží EU)","accountKind":1}},
+				{"rec": {"id":"343362","fullName":"Daň z přidané hodnoty (výstup - první snížená sazba - služby EU)","shortName":"DPH (výstup - první snížená - služby EU)","accountKind":1}},
+				{"rec": {"id":"343363","fullName":"Daň z přidané hodnoty (výstup - druhá snížená sazba - služby EU)","shortName":"DPH (výstup - druhá snížená - služby EU)","accountKind":1}},
+				{"rec": {"id":"343390","fullName":"Daň z přidané hodnoty (vstup - první snížená sazba - zboží EU)","shortName":"DPH (vstup - první snížená - zboží EU)","accountKind":1}},
+				{"rec": {"id":"343391","fullName":"Daň z přidané hodnoty (vstup - druhá snížená sazba - zboží EU)","shortName":"DPH (vstup - druhá snížená - zboží EU)","accountKind":1}},
+				{"rec": {"id":"343392","fullName":"Daň z přidané hodnoty (vstup - první snížená sazba - služby EU)","shortName":"DPH (vstup - první snížená - služby EU)","accountKind":1}},
+				{"rec": {"id":"343393","fullName":"Daň z přidané hodnoty (vstup - druhá snížená sazba - služby EU)","shortName":"DPH (vstup - druhá snížená - služby EU)","accountKind":1}},
+
+				{"rec": {"id":"343405","fullName":"Daň z přidané hodnoty (výstup - základní sazba - zboží DOVOZ)","shortName":"DPH (výstup - základní - zboží DOVOZ)","accountKind":1}},
+				{"rec": {"id":"343406","fullName":"Daň z přidané hodnoty (výstup - snížená sazba - zboží DOVOZ)","shortName":"DPH (výstup - snížená - zboží DOVOZ)","accountKind":1}},
+				{"rec": {"id":"343460","fullName":"Daň z přidané hodnoty (výstup - první snížená sazba - zboží DOVOZ)","shortName":"DPH (výstup - první snížená - zboží DOVOZ)","accountKind":1}},
+				{"rec": {"id":"343461","fullName":"Daň z přidané hodnoty (výstup - druhá snížená sazba - zboží DOVOZ)","shortName":"DPH (výstup - druhá snížená - zboží DOVOZ)","accountKind":1}},
+				{"rec": {"id":"343415","fullName":"Daň z přidané hodnoty (vstup - základní sazba - zboží DOVOZ)","shortName":"DPH (vstup - základní - zboží DOVOZ)","accountKind":1}},
+				{"rec": {"id":"343416","fullName":"Daň z přidané hodnoty (vstup - snížená sazba - zboží DOVOZ)","shortName":"DPH (vstup - snížená - zboží DOVOZ)","accountKind":1}},
+				{"rec": {"id":"343490","fullName":"Daň z přidané hodnoty (vstup - první snížená sazba - zboží DOVOZ)","shortName":"DPH (vstup - první snížená - zboží DOVOZ)","accountKind":1}},
+				{"rec": {"id":"343491","fullName":"Daň z přidané hodnoty (vstup - druhá snížená sazba - zboží DOVOZ)","shortName":"DPH (vstup - druhá snížená - zboží DOVOZ)","accountKind":1}}
+			]
+		},
+		{
+			"table": "e10.witems.items",
+			"name": "Saldokontní účtopoložky DPH",
+			"defaultValues": {"type":"it-accitem","itemType":"@it-accitem","itemKind":2,"docState":4000,"docStateMain":2},
+			"data": [
+				{"rec": {"fullName":"Odvod DPH","shortName":"Odvod DPH","debsAccountId":"343801","id":"odvod-dph","useFor":101,"useBalance":2000}},
+				{"rec": {"fullName":"Odpočet DPH","shortName":"Odpočet DPH","debsAccountId":"343802","id":"odpocet-dph","useFor":101,"useBalance":1000}}
+			]
+		}
+	]
+}

@@ -1,0 +1,30 @@
+{
+	"id": "mac.iot.scPlacements", "sql": "mac_iot_scPlacements", "name": "Zařazení senzorů a ovládácích prvků do aplikace", "icon": "icon-hand-pointer-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "placementTo", "name": "Přiřadit k", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.iot.scPlacements.targets", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "workplace", "name": "Pracoviště", "type": "int", "reference": "terminals.base.workplaces"},
+
+		{"id": "fullName", "name": "Úplný název", "type": "string", "len": 120},
+
+		{"id": "mainMenu", "name": "Do hlavního menu", "type": "enumInt",
+			"enumCfg": {"cfgItem": "mac.iot.scPlacements.mainMenu", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "mac.iot.ViewSCPlacements", "detail": "mac.iot.ViewDetailSCPlacement"}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.iot.FormSCPlacement"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

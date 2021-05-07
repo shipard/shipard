@@ -1,0 +1,106 @@
+@import url("../../../core/reports/formreport.css");
+
+* {margin: 0pt; padding: 0pt;
+}
+
+body {font-family: Arial, sans-serif; }
+
+h1 {font-size: 26pt; font-weight: bold; line-height: 125%;text-transform:uppercase;}
+h2 {font-size: 18pt; font-weight: normal; line-height: 114%;text-transform:uppercase;}
+h3 {font-size: 12pt; font-weight: normal;}
+
+div.vkp-vykup-header-hlavni {padding-left: 60pt; padding-right: 30pt;}
+
+
+table.vkp-vykup-header {width: 100%; margin-top: 20pt; }
+td.vkp-vykup-docheader {text-align: right;}
+
+/* qr */
+td.vkp-vykup-qr {text-align: left; vertical-align: top;}
+td.vkp-vykup-qr img { border: 1pt solid black; width: 65pt; height: 65pt;}
+
+table.vkp-vykup-odbdod {width: 100%; /*height: 100pt;*/ font-size: 10pt;
+    border-top: 2pt solid black;
+}
+td.vkp-vykup-odb {width: 55%; padding-left: 12pt; padding-top: 36pt; margin-right: 12pt; padding-bottom: 5pt; line-height: 110%;
+
+
+
+}
+td.vkp-vykup-dod {width: 45%; padding-top: 5pt; padding-bottom: 5pt; vertical-align: top; line-height: 110%;}
+
+
+table.vkp-vykup-radky {width: 100%; border-collapse: collapse;  border-bottom: 2pt solid black;}
+
+
+/*table.vkp-vykup-radky td {border: .6pt solid red;} table.vkp-vykup-radky th {border: .6pt solid red;}*/
+
+tr.vkp-vykup-radky1 th {border-top: 2pt solid black; font-size: 11pt; font-weight: normal;}
+th.vkp-vykup-radky-cislo {width: 20pt !important; text-align: left;}
+th.vkp-vykup-radky-nazev {text-align: left; width: 60%;}
+th.vkp-vykup-radky-cenajed {text-align: right;width: 70pt !important;}
+th.vkp-vykup-radky-mnozstvi {text-align: right;width: 70pt !important;}
+th.vkp-vykup-radky-cenacelkem {text-align: right;width: 70pt !important;}
+
+th.vkp-vykup-radky-kod {text-align: left; width: 40pt !important;}
+th.vkp-vykup-radky-hspoz {text-align: left; width: 40pt !important;}
+th.vkp-vykup-radky-cislomat {text-align: left;}
+th.vkp-vykup-radky-mnozstvi-kg {text-align: right;}
+th.vkp-vykup-radky-cena-kc {text-align: right;}
+
+tr.vkp-vykup-radky2 th {font-size: 9pt; font-weight: normal;}
+
+tr.vkp-vykup-radky1.small {font-size: 9pt;}
+tr.vkp-vykup-radky2.small {font-size: 7pt;}
+tr.vkp-vykup-radky1.big {font-size: 11pt;}
+tr.vkp-vykup-radky2.big {font-size: 9pt;}
+
+tr.vkp-vykup-radky1 td {border-top: .7pt solid black;}
+
+
+td.vkp-vykup-radky-cislo {width: 20pt !important; text-align: left;}
+td.vkp-vykup-radky-nazev {font-weight: bold; }
+td.vkp-vykup-radky-cenajed {width: 70pt !important; text-align: right;}
+td.vkp-vykup-radky-mnozstvi {width: 70pt !important; text-align: right;}
+td.vkp-vykup-radky-cenacelkem {width: 70pt !important; font-weight: bold; text-align: right;white-space:pre;}
+
+td.vkp-vykup-radky-kod {width: 40pt !important; }
+td.vkp-vykup-radky-hspoz {width: 40pt !important; }
+td.vkp-vykup-radky-cislomat {}
+
+
+
+/* CELKEM */
+table.vkp-vykup-celkem {width: 100%;   }
+td.vkp-vykup-celkem-cena {text-align: right; font-size: 18pt; font-weight: bold; padding-top: 0pt;}
+td.vkp-vykup-celkem-info {text-align: left; font-size: 10pt; vertical-align: bottom;}
+
+div.vkp-vykup-cena-a-zaok {text-align: right; font-size: 7pt;}
+
+/* PODPISY */
+
+table.vkp-vykup-podpis {width: 100%; height: 110pt; margin-top: 12pt; border-collapse: collapse;  }
+td.vkp-vykup-podpis-odb {vertical-align: bottom; padding-right: 10pt;text-align: center;}
+td.vkp-vykup-podpis-odb div {border-top: .8pt solid black; display: block; font-size: 9pt; padding-top: 2pt;}
+td.vkp-vykup-podpis-odb img {width: 155pt;}
+td.vkp-vykup-podpis-dod {border: 3pt solid black; width: 45%; padding-left: 5pt; padding-right: 5pt; padding-top: 5pt; margin-bottom: 0pt;}
+div.vkp-vykup-podpis-dod-prevzal {height: 95pt; font-size: 10pt;}
+div.vkp-vykup-podpis-dod-podpis {border-top: 2pt dotted black; font-size: 9pt; text-align: center;}
+td.vkp-vykup-podpis-dod-sipka {font-size: 88pt; font-weight: bold; width: 30pt; vertical-align: bottom;}
+td.vkp-vykup-podpis-dod-vlevo {width: 60pt;}
+
+/* reklama */
+div.vkp-vykup-reklama {margin-left: 60pt; margin-right: 30pt; border-top: 2pt solid black; margin-top: 6pt; padding-top: 9pt; padding-bottom: 6pt;}
+table.vkp-vykup-novinky {width: 100%; border-collapse: collapse; }
+table.vkp-vykup-novinky td {vertical-align: top; }
+table.vkp-vykup-novinky td.txt {font-size: 8pt; vertical-align: top; width: 50%; padding-left: 3pt; padding-right: 6pt; padding-top: 6pt;}
+table.vkp-vykup-novinky h2 {font-size: 14pt; }
+table.vkp-vykup-novinky td.txt ul {padding-left: 1.3em; }
+table.vkp-vykup-novinky td.txt p {padding-bottom: .3em; }
+table.vkp-vykup-novinky td.txt p img {display: none;}
+table.vkp-vykup-novinky td.vk-novinky-icon {font-size: 33pt; padding-top: 0pt !important; margin-top: 0pt !important; font-weight: bold;}
+
+/* patička */
+
+div.vkp-paticka {font-size: 8.5pt; margin-left: 60pt; margin-right: 30pt; text-align: center; padding-top: 8pt;}
+

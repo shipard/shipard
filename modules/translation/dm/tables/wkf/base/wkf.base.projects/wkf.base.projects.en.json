@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Projects"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "icon": {
+            "name": "Icon"
+        }
+    }
+}

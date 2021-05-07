@@ -1,0 +1,10 @@
+{
+	"swDevSetsIcons": {
+		"name": "Ikony", "label": "Štítky", "icon": "icon-hashtag",
+		"tables": ["swdev.icons.setsIcons"]
+	},
+	"swDevAppIcons": {
+		"name": "Ikony Aplikace", "label": "Štítky", "icon": "icon-picture-o",
+		"tables": ["swdev.icons.appIcons"]
+	}
+}

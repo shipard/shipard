@@ -1,0 +1,40 @@
+{
+	"name": "Obecné vlastnosti Majetku",
+	"datasets": [
+		{
+			"table": "e10.base.propdefs",
+			"name": "Definice vlastností",
+			"defaultValues": {"docState": 4000, "docStateMain": 2},
+			"checkExistence": {"qryColumns": ["id"]},
+			"data": [
+				{"rec": {"#": "e10-ppt-cmn-modelName","fullName":"Typové označení","shortName":"Typové označení","id":"e10-ppt-cmn-modelName", "type":"text", "multipleValues": 1, "enableNote": 1}},
+				{"rec": {"#": "e10-ppt-cmn-docIn","fullName":"Doklad pořízení","shortName":"Doklad pořízení","id":"e10-ppt-cmn-docIn", "type":"text", "multipleValues": 1, "enableNote": 1}},
+				{"rec": {"#": "e10-ppt-cmn-docOut","fullName":"Doklad vyřazení","shortName":"Doklad vyřazení","id":"e10-ppt-cmn-docOut", "type":"text", "multipleValues": 1, "enableNote": 1, "optionaly": 1}},
+				{"rec": {"#": "e10-ppt-cmn-supplier","fullName":"Dodavatel","shortName":"Dodavatel","id":"e10-ppt-cmn-supplier", "type":"text", "multipleValues": 1, "enableNote": 1, "optionaly": 1}},
+				{"rec": {"#": "e10-ppt-cmn-yearOfMan","fullName":"Rok výroby","shortName":"Rok výroby","id":"e10-ppt-cmn-yearOfMan", "type":"text", "multipleValues": 1, "enableNote": 1, "optionaly": 1}}
+			]
+		},
+		{
+			"table": "e10.base.propgroups",
+			"name": "Skupiny vlastností majetku",
+			"defaultValues": {"docState": 4000, "docStateMain": 2},
+			"checkExistence": {"qryColumns": ["id"]},
+			"data": [
+				{"rec": {"#": "e10-ppt-props-common", "fullName":"Obecné","id":"e10-ppt-props-common","shortName":"Obecné"}}
+			]
+		},
+		{
+			"table": "e10.base.doclinks",
+			"defaultValues": {"linkId":"e10-base-propgoups-props", "srcTableId":"e10.base.propgroups", "dstTableId":"e10.base.propdefs"},
+			"name": "Propojení skupin a vlastností",
+			"checkExistence": {"qryColumns": ["srcRecId", "dstRecId", "linkId"]},
+			"data": [
+				{"rec": {"srcRecId":"#e10-ppt-props-common","dstRecId":"#e10-ppt-cmn-modelName"}},
+				{"rec": {"srcRecId":"#e10-ppt-props-common","dstRecId":"#e10-ppt-cmn-docIn"}},
+				{"rec": {"srcRecId":"#e10-ppt-props-common","dstRecId":"#e10-ppt-cmn-docOut"}},
+				{"rec": {"srcRecId":"#e10-ppt-props-common","dstRecId":"#e10-ppt-cmn-supplier"}},
+				{"rec": {"srcRecId":"#e10-ppt-props-common","dstRecId":"#e10-ppt-cmn-yearOfMan"}}
+			]
+		}
+	]
+}

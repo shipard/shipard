@@ -1,0 +1,15 @@
+{
+  "id": "mac.swcore",
+  "name": "Software Core",
+  "tables": [],
+	"modules": [],
+  "config": [
+    {"id": "mac.swcore.osFamily", "file": "osFamily.json"},
+    {"id": "mac.swcore.osEdition", "file": "osEdition.json"},
+    {"id": "mac.swcore.swClass", "file": "swClass.json"},
+    {"id": "mac.swcore.swUseFree", "file": "swUseFree.json"},
+    {"id": "mac.swcore.swLicenceType", "file": "swLicenceType.json"},
+	  {"id": "mac.swcore.swVersionsMode", "file": "swVersionsMode.json"},
+    {"id": "mac.swcore.lifeCycle", "file": "lifeCycle.json"}
+  ]
+}

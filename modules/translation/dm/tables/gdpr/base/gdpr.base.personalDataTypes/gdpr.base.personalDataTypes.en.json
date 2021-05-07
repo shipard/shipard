@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Types of personal data"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "systemType": {
+            "name": "Data type"
+        },
+        "sensitive": {
+            "name": "Sensitive data"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

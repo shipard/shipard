@@ -1,0 +1,21 @@
+{
+	"id": "mac.sw.swIds", "sql": "mac_sw_swIds", "name": "ID software", "icon": "icon-crosshairs",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+		{"id": "sw", "name": "Software", "type": "int", "reference": "mac.sw.sw"},
+
+		{"id": "id", "name": "ID", "type": "string", "len": 80}
+	],
+	"views": [
+		{
+			"id": "default", "class": "mac.sw.ViewSWIds", "type": "form",
+			"details": {
+				"default": {"title": "Přehled", "icon": "x-content", "type": "detail", "class": "mac.sw.ViewDetailSWId"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.sw.FormSWId"}
+	]
+}

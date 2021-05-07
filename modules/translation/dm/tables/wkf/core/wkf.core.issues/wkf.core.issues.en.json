@@ -1,0 +1,88 @@
+{
+    "table": {
+        "name": "Issues"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "issueId": {
+            "name": "ID"
+        },
+        "issueType": {
+            "name": "Type"
+        },
+        "issueKind": {
+            "name": "Kind"
+        },
+        "subject": {
+            "name": "Subject"
+        },
+        "text": {
+            "name": "Text"
+        },
+        "section": {
+            "name": "Section"
+        },
+        "target": {
+            "name": "Target"
+        },
+        "status": {
+            "name": "Status"
+        },
+        "source": {
+            "name": "Source"
+        },
+        "data": {
+            "name": "Data"
+        },
+        "author": {
+            "name": "Author"
+        },
+        "dateDeadline": {
+            "name": "Deadline"
+        },
+        "dateIncoming": {
+            "name": "Incoming date"
+        },
+        "dateCreate": {
+            "name": "Date of origin"
+        },
+        "dateTouch": {
+            "name": "Date of last activity"
+        },
+        "priority": {
+            "name": "Priority"
+        },
+        "onTop": {
+            "name": "Pin to the top"
+        },
+        "disableComments": {
+            "name": "Disable comments"
+        },
+        "activateCnt": {
+            "name": "Number of activations"
+        },
+        "linkId": {
+            "name": "Link ID"
+        },
+        "systemInfo": {
+            "name": "System informations"
+        },
+        "tableNdx": {
+            "name": "Table"
+        },
+        "recNdx": {
+            "name": "Record"
+        },
+        "displayOrder": {
+            "name": "Order for display"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

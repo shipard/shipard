@@ -1,0 +1,11 @@
+{
+	"160": {
+		"fullName": "IT", "shortName": "IT", "order": 220000, "icon": "icon-sitemap",
+		"topSection": 0
+	},
+	"169": {
+		"fullName": "Problémy se sítí", "shortName": "Problémy sítě", "order": 50000 ,"icon": "icon-exclamation-triangle",
+		"shipardEmailId": "lan-alerts", "enabledIssueKinds": 9,
+		"topSection": 160
+	}
+}

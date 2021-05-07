@@ -1,0 +1,11 @@
+{
+  "id": "mac.swlan",
+  "name": "Software on LAN",
+  "tables": ["infoQueue", "devicesSW", "devicesSWHistory"],
+	"modules": ["mac/swcore", "mac/base"],
+  "extensions": ["sw"],
+  "config": [
+    {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+    {"id": "mac.swlan.infoQueue.docStates", "file": "mac.swlan.infoQueue.docStates.json"}
+  ]
+}

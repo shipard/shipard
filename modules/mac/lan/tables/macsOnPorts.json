@@ -1,0 +1,22 @@
+{
+	"id": "mac.lan.macsOnPorts", "sql": "mac_lan_macsOnPorts", "name": "MAC adresy na portech zařízení", "icon":  "icon-cubes",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "device", "name": "Zařízení", "type": "int", "reference": "mac.lan.devices"},
+		{"id": "portNumber", "name": "Číslo portu", "label": "Číslo", "type": "int"},
+
+		{"id": "created", "name": "Vytvořeno", "type": "timestamp"},
+		{"id": "updated", "name": "Změněno", "type": "timestamp"},
+		{"id": "macs", "name": "MAC adresy", "type": "memo"}
+	],
+	"views": [
+		{"id": "default", "class": "mac.lan.ViewMacsOnPorts",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewDetailMacOnPorts"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.lan.FormMacOnPort"}
+	]
+}

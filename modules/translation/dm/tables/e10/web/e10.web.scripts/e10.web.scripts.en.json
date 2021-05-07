@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Web script"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "id": {
+            "name": "Identifier"
+        },
+        "gid": {
+            "name": "Global ID"
+        },
+        "code": {
+            "name": "Code"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

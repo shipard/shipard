@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "User data sources"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "user": {
+            "name": "User"
+        },
+        "datasource": {
+            "name": "Data source"
+        },
+        "udsOptions": {
+            "name": "User settings"
+        },
+        "created": {
+            "name": "First login"
+        },
+        "lastLogin": {
+            "name": "Last login"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

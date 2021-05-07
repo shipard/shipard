@@ -1,0 +1,26 @@
+{
+  "id": "e10doc.inventory.journal", "sql": "e10doc_inventory_journal", "name": "Pohyby na skladě",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "moveType", "name": "Typ pohybu", "type": "int"},
+		{"id": "moveTypeOrder", "name": "Typ pohybu", "type": "int"},
+		{"id": "warehouse", "name": "Sklad", "type": "int"},
+		{"id": "item", "name": "Položka", "type": "int"},
+		{"id": "unit", "name": "Jednotka", "type": "enumString", "len": 8,
+			"enumCfg": {"cfgItem": "e10.witems.units", "cfgValue": "", "cfgText": "shortcut"}},
+    {"id": "quantity", "name": "Množství", "type": "number", "dec": 4},
+		{"id": "price", "name": "Cena", "type": "money"},
+		{"id": "date", "name": "Datum", "type": "date"},
+		{"id": "fiscalYear", "name": "Rok", "type": "int"},
+		
+    {"id": "docRow", "name": "Řádek dokladu", "type": "int"},
+    {"id": "docHead", "name": "Hlavička dokladu", "type": "int"},
+		{"id": "docRowOwner", "name": "Nadřazený řádek dokladu", "type": "int"}
+  ],
+	"options": ["systemTable"],
+	"indexes": [
+		{"id": "ich1", "columns": ["item", "quantity", "price"]},
+		{"id": "ich2", "columns": ["docHead", "docRow"]},
+		{"id": "ich3", "columns": ["item", "fiscalYear"]}
+	]
+}

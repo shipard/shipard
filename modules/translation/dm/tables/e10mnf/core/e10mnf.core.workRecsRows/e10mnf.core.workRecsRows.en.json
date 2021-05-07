@@ -1,0 +1,55 @@
+{
+    "table": {
+        "name": "Rows of work records"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "rowOrder": {
+            "name": "Row order"
+        },
+        "workRec": {
+            "name": "id"
+        },
+        "subject": {
+            "name": "Subject"
+        },
+        "money": {
+            "name": "Amount"
+        },
+        "workOrder": {
+            "name": "Work order"
+        },
+        "dateBegin": {
+            "name": "Start date/time"
+        },
+        "dateEnd": {
+            "name": "End date/time"
+        },
+        "beginDate": {
+            "name": "Start date"
+        },
+        "beginTime": {
+            "name": "Start time"
+        },
+        "beginDateTime": {
+            "name": "Start date/time"
+        },
+        "endDate": {
+            "name": "End date"
+        },
+        "endTime": {
+            "name": "End time"
+        },
+        "endDateTime": {
+            "name": "End date/time"
+        },
+        "timeLen": {
+            "name": "Total time"
+        },
+        "timeLenHours": {
+            "name": "Total time in hours"
+        }
+    }
+}

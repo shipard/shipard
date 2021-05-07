@@ -1,0 +1,23 @@
+{
+    "ordersOut": {
+        "t1": "Issued orders"
+    },
+    "persons": {
+        "t1": "Persons"
+    },
+    "witems": {
+        "t1": "Items"
+    },
+    "settings": {
+        "t1": "Settings"
+    },
+    "cashBox": {
+        "t1": "Cashbox"
+    },
+    "invni": {
+        "t1": "Invoices in"
+    },
+    "witems2": {
+        "t1": "Items"
+    }
+}

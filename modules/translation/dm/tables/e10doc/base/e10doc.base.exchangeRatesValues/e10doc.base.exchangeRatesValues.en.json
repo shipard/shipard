@@ -1,0 +1,26 @@
+{
+    "table": {
+        "name": "Currency rates"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "list": {
+            "name": "Exchange rate"
+        },
+        "currency": {
+            "name": "Currency"
+        },
+        "cntUnits": {
+            "name": "Number of units"
+        },
+        "exchangeRate": {
+            "name": "Rate"
+        },
+        "exchangeRateOneUnit": {
+            "name": "Rate recalculated to 1 unit",
+            "label": "Rate/1"
+        }
+    }
+}

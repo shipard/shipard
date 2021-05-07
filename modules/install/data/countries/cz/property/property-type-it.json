@@ -1,0 +1,207 @@
+{
+	"name": "Typy majetku pro evidenci IT",
+	"datasets": [
+		{
+			"table": "e10pro.property.types",
+			"name": "Eveidence IT",
+			"defaultValues": {"docState": 4000, "docStateMain": 2, "propertyKind":0},
+			"checkExistence": {"qryColumns": ["id"]},
+			"data": [
+				{"rec": {"#": "ppt-it-pc", "fullName":"Osobní počítač (PC)","shortName":"PC","id":"ppt-it-pc"}},
+				{"rec": {"#": "ppt-it-ntb", "fullName":"Notebook","shortName":"Notebook","id":"ppt-it-ntb"}},
+				{"rec": {"#": "ppt-it-mon", "fullName":"Monitor","shortName":"Monitor","id":"ppt-it-mon"}},
+				{"rec": {"#": "ppt-it-printer", "fullName":"Tiskárna","shortName":"Tiskárna","id":"ppt-it-printer"}},
+				{"rec": {"#": "ppt-it-phone", "fullName":"Telefon","shortName":"Telefon","id":"ppt-it-phone"}},
+				{"rec": {"#": "ppt-it-tablet", "fullName":"Tablet","shortName":"Tablet","id":"ppt-it-tablet"}},
+				{"rec": {"#": "ppt-it-net", "fullName":"Síťový prvek","shortName":"Síťový prvek","id":"ppt-it-net"}}
+			]
+		},
+		{
+			"table": "e10.base.propdefs",
+			"name": "Definice vlastností",
+			"defaultValues": {"docState": 4000, "docStateMain": 2},
+			"checkExistence": {"qryColumns": ["id"]},
+			"data": [
+				{"rec": {"#": "e10-ppt-it-all-os","fullName":"Operační systém","shortName":"OS","id":"e10-ppt-it-all-os","type":"enum"}},
+				{"rec": {"#": "e10-ppt-it-mobile-os","fullName":"Operační systém","shortName":"OS","id":"e10-ppt-it-mobile-os","type":"enum"}},
+				{"rec": {"#": "e10-ppt-it-all-ram","fullName":"Paměť RAM","shortName":"RAM","id":"e10-ppt-it-all-ram","type":"enum"}},
+				{"rec": {"#": "e10-ppt-it-screen-size","fullName":"Velikost obrazovky","shortName":"Velikost obrazovky","id":"e10-ppt-it-screen-size","type":"enum"}},
+				{"rec": {"#": "e10-ppt-it-screen-res","fullName":"Rozlišení obrazovky","shortName":"Rozlišení obrazovky","id":"e10-ppt-it-screen-res","type":"enum"}},
+				{"rec": {"#": "e10-ppt-it-printer-type","fullName":"Typ tiskárny","shortName":"Typ","id":"e10-ppt-it-printer-type","type":"enum"}},
+				{"rec": {"#": "e10-ppt-it-printer-kind","fullName":"Druh tiskárny","shortName":"Typ","id":"e10-ppt-it-printer-kind","type":"enum"}},
+				{"rec": {"#": "e10-ppt-it-printer-psize","fullName":"Formát papíru","shortName":"Formát papíru","id":"e10-ppt-it-printer-psize","type":"enum"}},
+				{"rec": {"#": "e10-ppt-it-net-type","fullName":"Typ síťového prvku","shortName":"Typ","id":"e10-ppt-it-net-type","type":"enum"}}
+			]
+		},
+		{
+			"table": "e10.base.propdefsenum",
+			"name": "Hodnoty jednotlivých výčtových vlastností",
+			"checkExistence": {"qryColumns": ["property", "id"]},
+			"data": [
+				{"rec": {"property":"#e10-ppt-it-all-os","fullName":"Windows","id":"win"}},
+				{"rec": {"property":"#e10-ppt-it-all-os","fullName":"macOS","id":"macos"}},
+				{"rec": {"property":"#e10-ppt-it-all-os","fullName":"chromeOS","id":"chromeos"}},
+				{"rec": {"property":"#e10-ppt-it-all-os","fullName":"Android","id":"android"}},
+				{"rec": {"property":"#e10-ppt-it-all-os","fullName":"Linux","id":"linux"}},
+
+				{"rec": {"property":"#e10-ppt-it-mobile-os","fullName":"Android","id":"android"}},
+				{"rec": {"property":"#e10-ppt-it-mobile-os","fullName":"iOS","id":"ios"}},
+				{"rec": {"property":"#e10-ppt-it-mobile-os","fullName":"Windows","id":"win"}},
+				{"rec": {"property":"#e10-ppt-it-mobile-os","fullName":"Jiný","id":"other"}},
+				{"rec": {"property":"#e10-ppt-it-mobile-os","fullName":"Žádný","id":"none"}},
+
+				{"rec": {"property":"#e10-ppt-it-all-ram","fullName":"1 GB","id":"ram1GB"}},
+				{"rec": {"property":"#e10-ppt-it-all-ram","fullName":"2 GB","id":"ram2GB"}},
+				{"rec": {"property":"#e10-ppt-it-all-ram","fullName":"3 GB","id":"ram3GB"}},
+				{"rec": {"property":"#e10-ppt-it-all-ram","fullName":"4 GB","id":"ram4GB"}},
+				{"rec": {"property":"#e10-ppt-it-all-ram","fullName":"6 GB","id":"ram6GB"}},
+				{"rec": {"property":"#e10-ppt-it-all-ram","fullName":"8 GB","id":"ram8GB"}},
+				{"rec": {"property":"#e10-ppt-it-all-ram","fullName":"12 GB","id":"ram12GB"}},
+				{"rec": {"property":"#e10-ppt-it-all-ram","fullName":"16 GB","id":"ram16GB"}},
+				{"rec": {"property":"#e10-ppt-it-all-ram","fullName":"24 GB","id":"ram24GB"}},
+				{"rec": {"property":"#e10-ppt-it-all-ram","fullName":"32 GB","id":"ram32GB"}},
+
+				{"rec": {"property":"#e10-ppt-it-screen-size","fullName":"11\"","id":"screen-size11"}},
+				{"rec": {"property":"#e10-ppt-it-screen-size","fullName":"12\"","id":"screen-size12"}},
+				{"rec": {"property":"#e10-ppt-it-screen-size","fullName":"13\"","id":"screen-size13"}},
+				{"rec": {"property":"#e10-ppt-it-screen-size","fullName":"14\"","id":"screen-size14"}},
+				{"rec": {"property":"#e10-ppt-it-screen-size","fullName":"15\"","id":"screen-size15"}},
+				{"rec": {"property":"#e10-ppt-it-screen-size","fullName":"16\"","id":"screen-size16"}},
+				{"rec": {"property":"#e10-ppt-it-screen-size","fullName":"17\"","id":"screen-size17"}},
+				{"rec": {"property":"#e10-ppt-it-screen-size","fullName":"18\"","id":"screen-size18"}},
+				{"rec": {"property":"#e10-ppt-it-screen-size","fullName":"19\"","id":"screen-size19"}},
+				{"rec": {"property":"#e10-ppt-it-screen-size","fullName":"20\"","id":"screen-size20"}},
+				{"rec": {"property":"#e10-ppt-it-screen-size","fullName":"21\"","id":"screen-size21"}},
+				{"rec": {"property":"#e10-ppt-it-screen-size","fullName":"22\"","id":"screen-size22"}},
+				{"rec": {"property":"#e10-ppt-it-screen-size","fullName":"23\"","id":"screen-size23"}},
+				{"rec": {"property":"#e10-ppt-it-screen-size","fullName":"24\"","id":"screen-size24"}},
+				{"rec": {"property":"#e10-ppt-it-screen-size","fullName":"27\"","id":"screen-size27"}},
+
+				{"rec": {"property":"#e10-ppt-it-screen-res","fullName":"1024 x 768","id":"screen-res-1024x768"}},
+				{"rec": {"property":"#e10-ppt-it-screen-res","fullName":"1366 x 768","id":"screen-res-1366x768"}},
+				{"rec": {"property":"#e10-ppt-it-screen-res","fullName":"1920 x 1080","id":"screen-res-1920x1080"}},
+				{"rec": {"property":"#e10-ppt-it-screen-res","fullName":"1920 x 1200","id":"screen-res-1920x1200"}},
+				{"rec": {"property":"#e10-ppt-it-screen-res","fullName":"1680 x 1050","id":"screen-res-1680x1050"}},
+				{"rec": {"property":"#e10-ppt-it-screen-res","fullName":"1600 x 900","id":"screen-res-1600x900"}},
+				{"rec": {"property":"#e10-ppt-it-screen-res","fullName":"1440 x 900","id":"screen-res-1440x900"}},
+				{"rec": {"property":"#e10-ppt-it-screen-res","fullName":"1280 x 1024","id":"screen-res-1280x1024"}},
+				{"rec": {"property":"#e10-ppt-it-screen-res","fullName":"3200 x 1800","id":"screen-res-3200x1800"}},
+
+				{"rec": {"property":"#e10-ppt-it-printer-type","fullName":"Laserová","id":"pk-laser"}},
+				{"rec": {"property":"#e10-ppt-it-printer-type","fullName":"Inkoustová","id":"pk-ink"}},
+				{"rec": {"property":"#e10-ppt-it-printer-type","fullName":"Jiná","id":"pk-other"}},
+
+				{"rec": {"property":"#e10-ppt-it-printer-kind","fullName":"Barevná","id":"pt-color"}},
+				{"rec": {"property":"#e10-ppt-it-printer-kind","fullName":"Černobílá","id":"pt-bw"}},
+
+				{"rec": {"property":"#e10-ppt-it-printer-psize","fullName":"A4","id":"pps-a4"}},
+				{"rec": {"property":"#e10-ppt-it-printer-psize","fullName":"A3","id":"pps-a3"}},
+				{"rec": {"property":"#e10-ppt-it-printer-psize","fullName":"A2","id":"pps-a2"}},
+				{"rec": {"property":"#e10-ppt-it-printer-psize","fullName":"A1","id":"pps-a1"}},
+				{"rec": {"property":"#e10-ppt-it-printer-psize","fullName":"A0","id":"pps-a0"}},
+				{"rec": {"property":"#e10-ppt-it-printer-psize","fullName":"Ostatní","id":"pps-other"}},
+
+				{"rec": {"property":"#e10-ppt-it-net-type","fullName":"Switch","id":"nt-switch"}},
+				{"rec": {"property":"#e10-ppt-it-net-type","fullName":"Router","id":"nt-router"}},
+				{"rec": {"property":"#e10-ppt-it-net-type","fullName":"Ostatní","id":"nt-other"}}
+			]
+		},
+		{
+			"table": "e10.base.propgroups",
+			"name": "Skupiny vlastností typů majetku IT",
+			"defaultValues": {"docState": 4000, "docStateMain": 2},
+			"checkExistence": {"qryColumns": ["id"]},
+			"data": [
+				{"rec": {"#": "e10-ppt-it-pc", "id":"e10-ppt-it-pc", "fullName":"Parametry", "shortName":"Parametry"}},
+				{"rec": {"#": "e10-ppt-it-ntb", "id":"e10-ppt-it-ntb", "fullName":"Parametry", "shortName":"Parametry"}},
+				{"rec": {"#": "e10-ppt-it-mon", "id":"e10-ppt-it-mon", "fullName":"Parametry", "shortName":"Parametry"}},
+				{"rec": {"#": "e10-ppt-it-printer", "id":"e10-ppt-it-printer", "fullName":"Parametry", "shortName":"Parametry"}},
+				{"rec": {"#": "e10-ppt-it-phone", "id":"e10-ppt-it-phone", "fullName":"Parametry", "shortName":"Parametry"}},
+				{"rec": {"#": "e10-ppt-it-tablet", "id":"e10-ppt-it-tables", "fullName":"Parametry", "shortName":"Parametry"}},
+				{"rec": {"#": "e10-ppt-it-net", "id":"e10-ppt-it-net", "fullName":"Parametry", "shortName":"Parametry"}}
+			]
+		},
+		{
+			"table": "e10.base.doclinks",
+			"defaultValues": {"linkId":"e10-base-propgoups-props", "srcTableId":"e10.base.propgroups", "dstTableId":"e10.base.propdefs"},
+			"name": "Propojení skupin a vlastností",
+			"checkExistence": {"qryColumns": ["srcRecId", "dstRecId", "linkId"]},
+			"data": [
+				{"rec": {"srcRecId":"#e10-ppt-it-pc","dstRecId":"#e10-ppt-it-all-os"}},
+				{"rec": {"srcRecId":"#e10-ppt-it-pc","dstRecId":"#e10-ppt-it-all-ram"}},
+				{"rec": {"srcRecId":"#e10-ppt-it-pc","dstRecId":"#e10-ppt-it-screen-size"}},
+				{"rec": {"srcRecId":"#e10-ppt-it-pc","dstRecId":"#e10-ppt-it-screen-res"}},
+
+				{"rec": {"srcRecId":"#e10-ppt-it-ntb","dstRecId":"#e10-ppt-it-all-os"}},
+				{"rec": {"srcRecId":"#e10-ppt-it-ntb","dstRecId":"#e10-ppt-it-all-ram"}},
+				{"rec": {"srcRecId":"#e10-ppt-it-ntb","dstRecId":"#e10-ppt-it-screen-size"}},
+				{"rec": {"srcRecId":"#e10-ppt-it-ntb","dstRecId":"#e10-ppt-it-screen-res"}},
+
+				{"rec": {"srcRecId":"#e10-ppt-it-mon","dstRecId":"#e10-ppt-it-screen-size"}},
+				{"rec": {"srcRecId":"#e10-ppt-it-mon","dstRecId":"#e10-ppt-it-screen-res"}},
+
+				{"rec": {"srcRecId":"#e10-ppt-it-printer","dstRecId":"#e10-ppt-it-printer-type"}},
+				{"rec": {"srcRecId":"#e10-ppt-it-printer","dstRecId":"#e10-ppt-it-printer-kind"}},
+				{"rec": {"srcRecId":"#e10-ppt-it-printer","dstRecId":"#e10-ppt-it-printer-psize"}},
+
+				{"rec": {"srcRecId":"#e10-ppt-it-phone","dstRecId":"#e10-ppt-it-mobile-os"}},
+
+				{"rec": {"srcRecId":"#e10-ppt-it-tablet","dstRecId":"#e10-ppt-it-mobile-os"}},
+
+				{"rec": {"srcRecId":"#e10-ppt-it-net","dstRecId":"#e10-ppt-it-net-type"}}
+			]
+		},
+		{
+			"table": "e10.base.doclinks",
+			"defaultValues": {"linkId":"e10pro-property-types-propgroups", "srcTableId":"e10pro.property.types", "dstTableId":"e10.base.propgroups"},
+			"name": "Propojení Typu majektu a vlastností",
+			"checkExistence": {"qryColumns": ["srcRecId", "dstRecId", "linkId"]},
+			"data": [
+				{"rec": {"srcRecId":"#ppt-it-pc","dstRecId":"#e10-ppt-props-common"}},
+				{"rec": {"srcRecId":"#ppt-it-pc","dstRecId":"#e10-ppt-it-pc"}},
+
+				{"rec": {"srcRecId":"#ppt-it-ntb","dstRecId":"#e10-ppt-props-common"}},
+				{"rec": {"srcRecId":"#ppt-it-ntb","dstRecId":"#e10-ppt-it-ntb"}},
+
+				{"rec": {"srcRecId":"#ppt-it-mon","dstRecId":"#e10-ppt-props-common"}},
+				{"rec": {"srcRecId":"#ppt-it-mon","dstRecId":"#e10-ppt-it-mon"}},
+
+				{"rec": {"srcRecId":"#ppt-it-printer","dstRecId":"#e10-ppt-props-common"}},
+				{"rec": {"srcRecId":"#ppt-it-printer","dstRecId":"#e10-ppt-it-printer"}},
+
+				{"rec": {"srcRecId":"#ppt-it-phone","dstRecId":"#e10-ppt-props-common"}},
+				{"rec": {"srcRecId":"#ppt-it-phone","dstRecId":"#e10-ppt-it-phone"}},
+
+				{"rec": {"srcRecId":"#ppt-it-tablet","dstRecId":"#e10-ppt-props-common"}},
+				{"rec": {"srcRecId":"#ppt-it-tablet","dstRecId":"#e10-ppt-it-tablet"}},
+
+				{"rec": {"srcRecId":"#ppt-it-net","dstRecId":"#e10-ppt-props-common"}},
+				{"rec": {"srcRecId":"#ppt-it-net","dstRecId":"#e10-ppt-it-net"}}
+			]
+		},
+		{
+			"table": "e10pro.property.groups",
+			"name": "Skupiny majetku",
+			"defaultValues": {"docState": 4000, "docStateMain": 2},
+			"checkExistence": {"qryColumns": ["fullName"]},
+			"data": [
+				{"rec": {"#": "ppt-groups-it", "fullName":"IT","shortName":"IT"}}
+			]
+		},
+		{
+			"table": "e10.base.doclinks",
+			"defaultValues": {"linkId":"e10pro-property-groups-proptypes", "srcTableId":"e10pro.property.groups", "dstTableId":"e10pro.property.types"},
+			"name": "Propojení Skupin majektu a Typů majetku",
+			"checkExistence": {"qryColumns": ["srcRecId", "dstRecId", "linkId"]},
+			"data": [
+				{"rec": {"srcRecId":"#ppt-groups-it","dstRecId":"#ppt-it-pc"}},
+				{"rec": {"srcRecId":"#ppt-groups-it","dstRecId":"#ppt-it-ntb"}},
+				{"rec": {"srcRecId":"#ppt-groups-it","dstRecId":"#ppt-it-mon"}},
+				{"rec": {"srcRecId":"#ppt-groups-it","dstRecId":"#ppt-it-printer"}},
+				{"rec": {"srcRecId":"#ppt-groups-it","dstRecId":"#ppt-it-phone"}},
+				{"rec": {"srcRecId":"#ppt-groups-it","dstRecId":"#ppt-it-tablet"}},
+				{"rec": {"srcRecId":"#ppt-groups-it","dstRecId":"#ppt-it-net"}}
+			]
+		}
+	]
+}

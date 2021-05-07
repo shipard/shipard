@@ -1,0 +1,15 @@
+{
+	"id": "e10.witems.itemRelated", "sql": "e10_witems_itemRelated", "name": "Související položky", "icon": "icon-exchange",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "srcItem", "name": "Položka", "type": "int", "reference": "e10.witems.items"},
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+
+		{"id": "kind", "name": "Druh ", "type": "int", "reference": "e10.witems.relatedKinds"},
+		{"id": "relatedItem", "name": "Související položka", "label": "Položka", "type": "int", "reference": "e10.witems.items"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10.witems.FormItemRelated"}
+	],
+	"options": ["systemTable"]
+}

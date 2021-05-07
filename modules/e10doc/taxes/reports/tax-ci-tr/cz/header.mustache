@@ -1,0 +1,116 @@
+<div class='e10-tax-report'>
+	<table class='fullWidth'>
+		<tr>
+			<td><span style="font-size: 121%; font-weight: bold;">A. ODDÍL</span></td>
+            <td style='text-align: right;'>
+            Vytištěno aplikací
+            {{#info.reportFormat.pdf}}
+                <img style='height: 1.18em; width: 5.2em; position: relative; bottom: -0.3em;' src='file://{{appDir}}/e10-modules/e10doc/core/reports/shipard-logo-black.svg'/>
+            {{/info.reportFormat.pdf}}
+            {{#info.reportFormat.widget}}
+                <img style='height: 1.5em; padding-bottom: 0.2em;' src='{{dsRoot}}/e10-modules/e10doc/core/reports/shipard-logo-black.svg'/>
+            {{/info.reportFormat.widget}}
+            </td>
+		</tr>
+	</table>
+	<table class="formSection">
+		<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+		<tr>
+			<td colspan="18">Finančnímu úřadu pro / Specializovanému finančnímu úřadu</td>
+			<td rowspan="9"></td>
+			<td class="c" colspan="15" rowspan="9" style="vertical-align: bottom; border: 1px solid black;">
+				otisk podacího razítka finančního úřadu
+			</td>
+		</tr>
+		<tr><td class="input" colspan="18"><span>{{data.parts.part1.c_ufo_cil}}</span></td></tr>
+		<tr><td colspan="18">Územní pracoviště v, ve, pro</td></tr>
+		<tr><td class="input" colspan="18"><span>{{data.parts.part1.c_pracufo}}</span></td></tr>
+		<tr><td colspan="18">Daňové identifikační číslo</td></tr>
+		<tr><td class="input" colspan="13"><span>CZ{{data.parts.part1.dic}}</span></td><td colspan="5"></td></tr>
+		<tr><td colspan="18"></td></tr>
+		<tr>
+			<td class="input" colspan="5"><span>řádné<span class='flag'>&nbsp;{{data.flags.forma.B}}{{data.flags.forma.O}}</span></span></td>
+			<td></td>
+			<td class="input" colspan="6"><span>dodatečné<span class='flag'>&nbsp;{{data.flags.forma.D}}{{data.flags.forma.E}}</span></span></td>
+			<td></td>
+			<td class="input" colspan="5"><span>opravné<span class='flag'>&nbsp;{{data.flags.forma.O}}{{data.flags.forma.E}}</span></span></td>
+		</tr>
+		<tr>
+			<td colspan="11"><small>Důvody pro podání dodatečného<br>daňového přiznání zjištěny dne</small></td>
+			<td class="input c" colspan="7"><span>{{data.properties.xml.d_zjist}}</span></td>
+		</tr>
+	</table>
+
+	<div class="separator"></div>
+
+	<div class="separator" style="padding-top: 1ex;"></div>
+	<div class="title1">PŘIZNÁNÍ</div>
+	<div style="text-align: center; font-weight: bold; margin-top: -1ex;">k dani z příjmu právnických osob</div>
+	<div class="separator" style="padding-top: 1ex;"></div>
+
+	<table class="formSection">
+		<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+		<tr>
+			<td class="r" colspan="11">od</td>
+			<td class="input c" colspan="4"><span>{{data.parts.part1.zdobd_od}}</span></td>
+			<td class="r" colspan="3">do</td>
+			<td class="input c" colspan="4"><span>{{data.parts.part1.zdobd_do}}</span></td>
+			<td colspan="14"></td>
+		</tr>
+		<tr><td colspan="33"><div class="separator"></div></td></tr>
+		<tr>
+			<td colspan="33">Název poplatníka</td>
+		</tr>
+		<tr>
+			<td class="input" colspan="33"><span>{{data.parts.part1.zkrobchjm}}</span></td>
+		</tr>
+		<tr>
+			<td colspan="33">Sídlo</td>
+		</tr>
+		<tr>
+			<td colspan="23">d) ulice (nebo část obce)</td>
+			<td></td>
+			<td colspan="9">e) číslo popisné / orientační</td>
+		</tr>
+		<tr>
+			<td class="input" colspan="23"><span>{{data.parts.part1.ulice}}</span></td>
+			<td></td>
+			<td class="input" colspan="9"><span>{{data.parts.part1.c_pop}} {{data.parts.part1.c_orient}}</span></td>
+		</tr>
+		<tr>
+			<td colspan="26">a) obec</td>
+			<td></td>
+			<td colspan="6">b) PSČ</td>
+		</tr>
+		<tr>
+			<td class="input" colspan="26"><span>{{data.parts.part1.naz_obce}}</span></td>
+			<td></td>
+			<td class="input" colspan="6"><span>{{data.parts.part1.psc}}</span></td>
+		</tr>
+		<tr>
+			<td colspan="12">g) stát / kód státu</td>
+			<td></td>
+			<td colspan="9">c) číslo telefonu</td>
+			<td colspan="10"></td>
+		</tr>
+		<tr>
+			<td class="input" colspan="12"><span>{{data.parts.part1.k_stat}} / {{data.partsData.part1.k_stat}}</span></td>
+			<td></td>
+			<td class="input" colspan="9"><span>{{data.parts.part1.c_telef}}</span></td>
+			<td colspan="10"></td>
+		</tr>
+		<tr>
+			<td colspan="36">Hlavní ekonomická činnost</td>
+		</tr>
+		<tr>
+			<td class="input t" colspan="36"><span style="white-space: pre; overflow: hidden;">{{data.properties.all.e10-CZ-TR-subjekt-e10-CZ-TR-NOKEC}}</span></td>
+		</tr>
+	</table>
+
+	<div class="separator"></div>
+	<div style="background-color: black; height: 2pt;"></div>
+	<div class="separator"></div>
+
+
+	<div class="pageNumber">1</div>
+</div>

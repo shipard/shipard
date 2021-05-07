@@ -1,0 +1,43 @@
+{
+	"subjects": {
+		"disableTopToolbar": 1,
+		"panels": {
+			"sources": {
+				"name": "Zdroje",
+				"icon": "icon-filter",
+				"fullsize": 1,
+				"order": 2000,
+				"rows": {
+					"main": {"order": 10000}
+				}
+			}
+		}
+	},
+	"main": {
+		"panels": {
+			"service-subjects": {
+				"name": "Subjekty",
+				"icon": "icon-building",
+				"fullsize": 1,
+				"order": 10000,
+				"rows": {
+					"main": {"order": 10000}
+				}
+			}
+		}
+	},
+	"crm": {
+		"disableTopToolbar": 1,
+		"panels": {
+			"sources": {
+				"name": "Zdroje",
+				"icon": "icon-filter",
+				"fullsize": 1,
+				"order": 2000,
+				"rows": {
+					"main": {"order": 10000}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,51 @@
+{{@setParams;myLayout:1}}
+
+<div class="container" style=''>
+    <div class="row">
+        <div class="col-lg-8 col-md-9">
+            {{#page.articles}}
+                <div class='article pageText' style="margin-bottom: 3em;">
+                    <div class="article-header" style="padding-bottom: 2ex;">
+                        <h2>
+                            <small class='pull-right' style="padding: 1ex; display: inline-block; font-size: 60%;">
+                                <i class='fa fa-calendar'></i>&nbsp;{{datePub}}
+                                <i class='fa fa-user'></i>&nbsp;{{authorFirstName}}&nbsp;{{authorLastName}}
+                            </small>
+                            <a href="{{url}}">{{title}}</a>
+                        </h2>
+                    </div>
+                    {{{text}}}
+                </div>
+            {{/page.articles}}
+
+            {{#page.article}}
+                <div class='pageText'>
+                    <div class='articleHeader'>
+                        <h2>{{page.title}}
+                            <small class='pull-right' style="padding: 1ex; display: inline-block; font-size: 60%;">
+                                <i class='fa fa-calendar'></i>&nbsp;{{datePub}}
+                                <i class='fa fa-user'></i>&nbsp;{{authorFirstName}}&nbsp;{{authorLastName}}
+                            </small>
+                        </h2>
+                    </div>
+                    {{{text}}}
+                </div>
+            {{/page.article}}
+
+            {{#page.needPagination}}
+                <ul class="pager">
+                    {{#page.pagePrev}}
+                        <li class="previous"><a href="{{{page.pagePrev}}}">&lsaquo; Novější články</a></li>
+                    {{/page.pagePrev}}
+                    {{#page.pageNext}}
+                        <li class="next"><a href="{{{page.pageNext}}}">Starší články &rsaquo;</a></li>
+                    {{/page.pageNext}}
+                </ul>
+            {{/page.needPagination}}
+        </div>
+
+        <div class="col-lg-4 col-md-3">
+        </div>
+    </div>
+</div>
+

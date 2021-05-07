@@ -1,0 +1,120 @@
+<?php
+
+namespace e10\witems;
+
+require_once __DIR__ . '/../../base/base.php';
+use \e10\TableView, \e10\TableViewDetail, \e10\TableForm, \e10\DbTable, \e10\utils;
+
+
+/**
+ * Class TableRelatedKinds
+ * @package e10\witems
+ */
+class TableRelatedKinds extends DbTable
+{
+	public function __construct ($dbmodel)
+	{
+		parent::__construct ($dbmodel);
+		$this->setName ('e10.witems.relatedKinds', 'e10_witems_relatedKinds', 'Druhy souvisejících položek');
+	}
+
+	public function createHeader ($recData, $options)
+	{
+		$hdr ['info'][] = ['class' => 'info', 'value' => $recData['shortName']];
+		$hdr ['icon'] = $this->tableIcon ($recData);
+		$hdr ['info'][] = ['class' => 'title', 'value' => $recData['fullName']];
+
+		return $hdr;
+	}
+
+	public function tableIcon ($recData, $options = NULL)
+	{
+		if ($recData['icon'] !== '')
+			return $recData['icon'];
+
+		return parent::tableIcon ($recData, $options);
+	}
+}
+
+
+/**
+ * Class ViewRelatedKinds
+ * @package e10\witems
+ */
+class ViewRelatedKinds extends TableView
+{
+	public function init ()
+	{
+		$this->enableDetailSearch = TRUE;
+
+		$this->setMainQueries ();
+	}
+
+	public function selectRows ()
+	{
+		$fts = $this->fullTextSearch ();
+
+		$q [] = 'SELECT * FROM [e10_witems_relatedKinds]';
+		array_push($q, '  WHERE 1');
+
+		// -- fulltext
+		if ($fts != '')
+		{
+			array_push($q, ' AND ([fullName] LIKE %s', '%' . $fts . '%');
+			array_push($q, ' OR [shortName] LIKE %s)', '%' . $fts . '%');
+		}
+
+		$this->queryMain ($q, '', ['[order]', '[fullName]', '[ndx]']);
+		$this->runQuery ($q);
+	}
+
+	public function renderRow ($item)
+	{
+		$listItem ['pk'] = $item['ndx'];
+		$listItem ['t1'] = $item['fullName'];
+		$listItem ['t2'] = $item['shortName'];
+
+		$props = [];
+		if ($item ['order'] != 0)
+			$props [] = ['icon' => 'icon-sort', 'text' => utils::nf ($item ['order'], 0)];
+		if (count($props))
+			$listItem ['i2'] = $props;
+
+
+		$listItem ['icon'] = $this->table->tableIcon ($item);
+
+		return $listItem;
+	}
+}
+
+
+/**
+ * Class ViewDetailRelatedKind
+ * @package e10\witems
+ */
+class ViewDetailRelatedKind extends TableViewDetail
+{
+}
+
+
+/**
+ * Class FormRelatedKind
+ * @package e10\witems
+ */
+class FormRelatedKind extends TableForm
+{
+	public function renderForm ()
+	{
+		$this->setFlag ('formStyle', 'e10-formStyleSimple');
+		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
+
+		$this->openForm ();
+			$this->addColumnInput ('fullName');
+			$this->addColumnInput ('shortName');
+			$this->addColumnInput ('useAsVariantItem');
+			$this->addColumnInput ('icon');
+			$this->addColumnInput ('order');
+		$this->closeForm ();
+	}
+}
+

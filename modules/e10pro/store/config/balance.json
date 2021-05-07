@@ -1,0 +1,14 @@
+{
+	"8100": {
+		"name": "Sběrná fakturace", "shortName": "SběrFakt", "icon": "icon-align-justify", "shortcut": "SbFa",
+		"type": "q", "id": "8100",  "side": "d", "docTypes": ["cashreg"], "debsAccountMask": "325",
+		"content": [
+			{"docType": "cashreg", "src": "row", "side": 0, "paymentMethod": 4, "personSide": 0, "symbolsSide": 0,
+				"itemId": "8100_{heads.person}_{heads.symbol1}_{heads.symbol2}_{item}_{rows.unit}"
+			},
+			{"docType": "invno", "src": "row", "operation": "1080003", "personSide": 0,
+				"itemId": "8100_{heads.person}_{rows.symbol1}_{rows.symbol2}_{item}_{rows.unit}"
+			}
+		]
+	}
+}

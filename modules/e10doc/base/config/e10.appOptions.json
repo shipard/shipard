@@ -1,0 +1,91 @@
+{
+	"cashboxes": {
+		"name": "Pokladny", "order": 16000, "group": "codebase",
+		"icon": "icon-money",
+		"type": "viewer",
+		"table": "e10doc.base.cashboxes",
+		"viewer": "default"
+	},
+	"bankaccounts": {
+		"name": "Vlastní bankovní spojení", "order": 15000, "group": "codebase",
+		"icon": "x-bank",
+		"type": "viewer",
+		"table": "e10doc.base.bankaccounts",
+		"viewer": "default"
+	},
+	"centres": {
+		"name": "Střediska", "order": 17000, "group": "codebase",
+		"icon": "icon-bullseye",
+		"type": "viewer",
+		"table": "e10doc.base.centres",
+		"viewer": "default"
+	},
+	"warehouses": {
+		"name": "Sklady", "order": 18000, "group": "codebase",
+		"icon": "icon-cubes",
+		"type": "viewer",
+		"table": "e10doc.base.warehouses",
+		"viewer": "default"
+	},
+	"transports": {
+		"name": "Způsoby dopravy", "order": 19000, "group": "codebase",
+		"icon": "icon-truck",
+		"type": "viewer",
+		"table": "e10doc.base.transports",
+		"viewer": "default"
+	},
+	"docnumbers": {
+		"name": "Číselné řady dokladů", "order": 20000, "group": "docs",
+		"icon": "icon-play-circle",
+		"type": "viewer",
+		"table": "e10doc.base.docnumbers",
+		"viewer": "default"
+	},
+	"dockinds": {
+		"name": "Druhy dokladů", "order": 21000, "group": "docs",
+		"icon": "icon-flag-o",
+		"type": "viewer",
+		"table": "e10doc.base.dockinds",
+		"viewer": "default"
+	},
+  "fiscalyears": {
+		"name": "Fiskální období", "order": 25000, "group": "periods",
+		"icon": "icon-calendar",
+		"type": "viewer",
+		"table": "e10doc.base.fiscalyears",
+		"viewer": "default"
+	},
+  "taxperiods": {
+		"name": "Období DPH", "order": 26000, "group": "periods",
+		"icon": "icon-lemon-o",
+		"type": "viewer",
+		"table": "e10doc.base.taxperiods",
+		"viewer": "default"
+	},
+	"taxregistrations": {
+		"name": "Registrace k daním", "order": 450000, "group": "core",
+		"icon": "icon-shield",
+		"type": "viewer", "table": "e10doc.base.taxRegs", "viewer": "default"
+	},
+	"reportsTexts": {
+		"name": "Texty na dokladech", "order": 10110000, "group": "docs",
+		"icon": "icon-file-code-o",
+		"type": "viewer", "table": "e10doc.base.reportsTexts", "viewer": "default"
+	},
+	"docsAdditions": {
+		"name": "Dodatky dokladů", "order": 10210000, "group": "docs",
+		"icon": "icon-sticky-note-o",
+		"type": "viewer", "table": "e10doc.base.additions", "viewer": "default"
+	},
+	"docsAdditionsTypes": {
+		"name": "Typy dodatků dokladů", "order": 10220000, "group": "docs",
+		"icon": "icon-podcast",
+		"type": "viewer", "table": "e10doc.base.additionsTypes", "viewer": "default"
+	},
+	"experimental": {
+		"options": [
+			{"cfgKey": "testAttInDocEditForms", "cfgName": "Testovat přílohy při editaci dokladů", "options": {"0": "Ne","1": "Ano"}}
+		]
+	}
+}
+

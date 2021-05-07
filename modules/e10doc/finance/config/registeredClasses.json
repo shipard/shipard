@@ -1,0 +1,5 @@
+{
+	"objectsCalls": {
+		"e10-finance-cashpay": {"classId": "e10doc.finance.CashPayEngine"}
+	}
+}

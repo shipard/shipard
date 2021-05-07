@@ -1,0 +1,44 @@
+{
+	"id": "mac.iot.sensors", "sql": "mac_iot_sensors", "name": "Senzory", "icon": "icon-eyedropper",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "uid", "name": "UID", "type": "string", "len": 20, "options": ["ascii"]},
+
+		{"id": "valueStyle", "name": "Styl hodnoty", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.iot.ioPortValueStyle", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "srcLan", "name": "Síť", "type": "int", "reference": "mac.lan.lans"},
+		{"id": "srcMqttTopic", "name": "MQTT topic", "type": "string", "len": "120"},
+
+		{"id": "quantityType", "name": "Druh hodnoty", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.data.quantityTypes", "cfgValue": "", "cfgText": "title"}},
+
+		{"id": "fullName", "name": "Úplný název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
+		{"id": "idName", "name": "ID", "type": "string", "len": 80},
+
+		{"id": "sensorBadgeLabel", "name": "Výchozí popiska - název/vlevo", "type": "string", "len": 50},
+		{"id": "sensorBadgeUnits", "name": "Výchozí popiska - jednotka/vpravo", "type": "string", "len": 50},
+		{"id": "sensorIcon", "name": "Ikona", "type": "string", "len": 50},
+
+		{"id": "flagLogin", "name": "Povolit k přihlašování", "type": "logical"},
+		{"id": "flagKbd", "name": "Emulace klávesnice", "type": "enumInt",
+			"enumCfg": {"cfgItem": "mac.iot.sensorKbdEmulation", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "place", "name": "Místo", "type": "int", "reference": "e10.base.places"},
+		{"id": "device", "name": "Zařízení", "type": "int", "reference": "mac.lan.devices"},
+		{"id": "rack", "name": "Rack", "type": "int", "reference": "mac.lan.racks"},
+		{"id": "zone", "name": "Zóna", "type": "int", "reference": "mac.base.zones"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "mac.iot.ViewSensors", "detail": "mac.iot.ViewDetailSensor"}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.iot.FormSensor"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

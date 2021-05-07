@@ -1,0 +1,14 @@
+{
+	"tables/e10.persons.persons": {
+		"fa5": "fa-users",
+		"fa5pro": "fa-users",
+		"bsi": "people",
+		"mdi": "people"
+	},
+	"tables/e10.persons.contacts": {
+		"fa5": "fa-user-friends",
+		"fa5pro": "fa-user-friends",
+		"bsi": "people-fill",
+		"mdi": "group"
+	}
+}

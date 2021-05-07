@@ -1,0 +1,8 @@
+{
+	"id": "e10pro.reports.pricelist",
+	"name": "Price Lists",
+	"config": [
+		{"id": "+reports", "name": "Výstupy", "file": "reports.json"},
+		{"id": "+registeredFunctions", "name": "Registrované funkce", "file": "registeredFunctions.json"}
+	]
+}

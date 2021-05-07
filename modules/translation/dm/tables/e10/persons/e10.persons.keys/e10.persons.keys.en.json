@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "Access keys"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "person": {
+            "name": "Person"
+        },
+        "key": {
+            "name": "Key"
+        },
+        "number": {
+            "name": "Registration number"
+        },
+        "pin": {
+            "name": "PIN"
+        },
+        "keyType": {
+            "name": "Key type"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

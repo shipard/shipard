@@ -1,0 +1,67 @@
+{
+    "table": {
+        "name": "Documents log"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "eventType": {
+            "name": "Event type"
+        },
+        "eventResult": {
+            "name": "Event result"
+        },
+        "eventTitle": {
+            "name": "Event name"
+        },
+        "eventSubtitle": {
+            "name": "Event description"
+        },
+        "eventData": {
+            "name": "Event data"
+        },
+        "tableid": {
+            "name": "Table"
+        },
+        "recid": {
+            "name": "Row"
+        },
+        "recidOwner": {
+            "name": "Row parent"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docID": {
+            "name": "Document ID"
+        },
+        "docType": {
+            "name": "Document type"
+        },
+        "docTypeName": {
+            "name": "Document type name"
+        },
+        "project": {
+            "name": "Project"
+        },
+        "user": {
+            "name": "User"
+        },
+        "ipaddress": {
+            "name": "IP address"
+        },
+        "ipaddressndx": {
+            "name": "IP address"
+        },
+        "deviceId": {
+            "name": "Device"
+        },
+        "last": {
+            "name": "Last event?"
+        },
+        "created": {
+            "name": "Creation timestamp"
+        }
+    }
+}

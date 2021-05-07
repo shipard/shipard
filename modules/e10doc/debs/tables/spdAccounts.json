@@ -1,0 +1,23 @@
+{
+	"id": "e10doc.debs.spdAccounts", "sql": "e10doc_debs_spdAccounts", "name": "Nastavení účtů výkazů", "icon": "icon-table",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "spreadsheetId", "name": "Výkaz", "type": "enumString", "len": 80, "options": ["saveOnChange"]},
+		{"id": "spreadsheetTable", "name": "Tabulka", "type": "enumString", "len": 5, "options": ["saveOnChange"]},
+		{"id": "spreadsheetRow", "name": "Řádek", "type": "enumString", "len": 5, "options": ["saveOnChange"]},
+		{"id": "spreadsheetCol", "name": "Sloupec", "type": "enumString", "len": 5, "options": ["saveOnChange"]},
+
+		{"id": "accountsMask", "name": "Účty", "type": "string", "len": 180},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "e10doc.debs.ViewSpdAccounts", "detail": "e10doc.debs.ViewDetailSpdAccount"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.debs.FormSpdAccount"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

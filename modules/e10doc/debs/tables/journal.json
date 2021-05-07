@@ -1,0 +1,70 @@
+{
+  "id": "e10doc.debs.journal", "sql": "e10doc_debs_journal", "name": "Účetní deník",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "document", "name": "Doklad", "type": "int", "reference": "e10doc.core.heads"},
+
+		{"id": "docType", "name": "Druh dokladu", "type": "enumString", "len": 10,
+			"enumCfg": {"cfgItem": "e10.docs.types", "cfgValue": "", "cfgText": "fullName"}},
+		{"id": "docNumber", "name": "Číslo dokladu", "type": "string", "len": 20},
+		{"id": "dateAccounting", "name": "Účetní datum", "type": "date"},
+		{"id": "fiscalYear", "name": "Fiskální rok", "type": "int", "reference": "e10doc.base.fiscalyears"},
+		{"id": "fiscalMonth", "name": "Fiskální měsíc", "type": "int", "reference": "e10doc.base.fiscalmonths"},
+		{"id": "fiscalType", "name": "Typ", "type": "enumInt",
+			"enumValues": {"0": "běžné", "1": "otevření", "2": "uzavření"}},
+
+    {"id": "text", "name": "Text", "type": "string", "len": 120},
+
+		{"id": "accMethod", "name": "Způsob účtování", "type": "enumString", "len": 12,
+			"enumCfg": {"cfgItem": "e10doc.acc.methods", "cfgValue": "", "cfgText": "title"}},
+		{"id": "cashBookId", "name": "id peněžního deníku", "type": "int", "reference": "e10doc.core.rows"},
+		{"id": "balance", "name": "Saldokonto", "type": "int"},
+
+		{"id": "accRing", "name": "Účetní okruh", "type": "enumInt",
+			"enumValues": {"20": "Výchozí", "40": "Zásoby"}},
+
+		{"id": "accountDrR", "name": "Účet MD R", "type": "int", "reference": "e10doc.debs.accounts"},
+    {"id": "accountDrId", "name": "Účet MD", "type": "string", "len": 12},
+    {"id": "accountCrR", "name": "Účet DAL R", "type": "int", "reference": "e10doc.debs.accounts"},
+    {"id": "accountCrId", "name": "Účet DAL", "type": "string", "len": 12},
+    {"id": "account", "name": "Účet R", "type": "int", "reference": "e10doc.debs.accounts"},
+    {"id": "accountId", "name": "Účet", "type": "string", "len": 12},
+
+    {"id": "currency", "name": "Měna", "type": "enumString", "len": 3,
+	    "enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
+    {"id": "money", "name": "Částka", "type": "money"},
+    {"id": "moneyDr", "name": "Částka MD", "type": "money"},
+    {"id": "moneyCr", "name": "Částka DAL", "type": "money"},
+
+    {"id": "currencyDoc", "name": "Měna dokladu", "type": "enumString", "len": 3,
+	    "enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
+    {"id": "moneyDoc", "name": "Částka v měně dokladu", "type": "money"},
+
+    {"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "symbol1", "name": "Variabilní symbol", "label": "VS", "type": "string", "len": 20},
+		{"id": "symbol2", "name": "Specifický symbol", "label": "SS", "type": "string", "len": 20},
+		{"id": "symbol3", "name": "Konstantní symbol", "label": "KS", "type": "string", "len": 10},
+		{"id": "centre", "name": "Středisko", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10doc.centres", "cfgValue": "ndx", "cfgText": "shortName"}},
+		{"id": "project", "name": "Projekt", "type": "int"},
+		{"id": "workOrder", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
+		{"id": "property", "name": "Majetek", "type": "int", "reference": "e10pro.property.property"},
+
+    {"id": "side", "name": "Strana", "type": "enumInt",
+			"enumValues": {"0": "MD", "1": "DAL"}}
+  ],
+  "views": [
+    {"id": "default", "class": "e10doc.debs.ViewJournalAll", "detail": "e10doc.debs.ViewDetailJournal"}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10doc.debs.FormJournal"}
+  ],
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "text"},
+	"indexes": [
+		{"id": "fiscalYear", "columns": ["fiscalYear"]},
+		{"id": "fiscalMonth", "columns": ["fiscalMonth"]},
+		{"id": "accountId", "columns": ["accountId"]},
+		{"id": "document", "columns": ["document"]},
+		{"id": "summaries", "columns": ["fiscalYear", "fiscalMonth", "fiscalType", "money", "moneyDr", "moneyCr", "accountId"]}
+	]
+}

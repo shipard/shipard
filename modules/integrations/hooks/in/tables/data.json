@@ -1,0 +1,25 @@
+{
+	"id": "integrations.hooks.in.data", "sql": "integrations_hooks_in_data", "name": "Příchozí Webhooks Data", "icon": "icon-download",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "hook", "name": "Hook", "type": "int", "reference": "integrations.hooks.in.hooks"},
+
+		{"id": "ipAddress", "name": "IP adresa", "type": "string", "len": 45},
+		{"id": "params", "name": "Parametry", "type": "memo"},
+		{"id": "payload", "name": "Data", "type": "memo"},
+		{"id": "protocol", "name": "Data", "type": "memo"},
+
+		{"id": "dateCreate", "name": "Datum a čas vytvoření", "type": "timestamp"},
+
+		{"id": "hookState", "name": "Stav zpracování", "type": "enumInt",
+			"enumValues": {"0": "Přijato", "1": "Probíhá zpracování", "2": "Zpracováno", "9": "Chyba zpracování"}}
+	],
+	"views": {
+		"default": {"id": "default", "class": "integrations.hooks.in.ViewData"}
+	},
+	"forms": [
+		{"id": "default", "class": "integrations.hooks.in.FormData"}
+	],
+	"ndx": 0
+}

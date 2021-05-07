@@ -1,0 +1,40 @@
+{
+    "table": {
+        "name": "Exchange rates"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "country": {
+            "name": "Country"
+        },
+        "currency": {
+            "name": "Currency"
+        },
+        "listNumber": {
+            "name": "Number"
+        },
+        "validFrom": {
+            "name": "Valid from"
+        },
+        "validTo": {
+            "name": "Valid until"
+        },
+        "listType": {
+            "name": "Exchange rate type"
+        },
+        "periodType": {
+            "name": "Period"
+        },
+        "rateType": {
+            "name": "Rate type"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

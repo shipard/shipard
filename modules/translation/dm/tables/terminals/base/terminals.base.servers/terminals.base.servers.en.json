@@ -1,0 +1,40 @@
+{
+    "table": {
+        "name": "Local servers"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "serverFQDN": {
+            "name": "Domain name of server"
+        },
+        "serverPort": {
+            "name": "Port"
+        },
+        "allowedFrom": {
+            "name": "Allowed from IP addresses"
+        },
+        "camerasURL": {
+            "name": "Cameras URL"
+        },
+        "cfgData": {
+            "name": "Configuration data"
+        },
+        "cfgDataVer": {
+            "name": "Version of configuration data"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

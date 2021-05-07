@@ -1,0 +1,31 @@
+{
+  "store": {
+		"name": "Prodavač",
+		"viewers": {
+			"e10.persons.persons": {"default": 2},
+			"e10doc.core.heads": {"cashregister": 2, "invoicesOut": 2, "orderIn": 2},
+			"e10.witems.items": {"cashreg": 2}
+		},
+		"documents": {
+			"e10doc.core.heads":	[
+				{"docType": ["cashreg", "orderin", "invno", "invpo"], "_access": 2, "_name": "Prodejky, Faktury a Objednávky přijaté"}
+			]
+		},
+		"reports": {"e10pro.reports.terminal_daily.reportDaily": 1, "e10pro.store.reportBalanceSalesInvoice": 2}
+	},
+	"sale": {
+		"viewers": {
+			"e10doc.core.heads": {"cashregister": 2, "cashregisterall": 2}
+		}
+	},
+	"scrtr": {
+		"viewers": {
+			"e10doc.core.heads": {"cashregister": 1}
+		}
+	},
+	"finance": {
+		"reports": {
+			"e10pro.reports.terminal_monthly.reportMonthly": 1
+		}
+	}
+}

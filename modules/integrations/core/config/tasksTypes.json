@@ -1,0 +1,5 @@
+{
+	"download-files" : {
+		"name": "Stahování souborů", "icon": "icon-folder", "classId": "integrations.services.gsuite.Service"
+	}
+}

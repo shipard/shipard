@@ -1,0 +1,25 @@
+{
+    "table": {
+        "name": "Sent Newsletters"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "subscriber": {
+            "name": "Subscriber"
+        },
+        "person": {
+            "name": "Person"
+        },
+        "newsletter": {
+            "name": "Newsletter"
+        },
+        "dateSend": {
+            "name": "Dispatch date"
+        },
+        "dateRead": {
+            "name": "Date of reading"
+        }
+    }
+}

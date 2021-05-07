@@ -1,0 +1,37 @@
+{
+	"id": "e10pro.kb.sections", "sql": "e10pro_kb_sections", "name": "Wiki Sekce", "icon": "icon-list-alt",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "title", "name": "Název", "type": "string", "len": 120},
+
+		{"id": "wiki", "name": "Wiki", "type": "int", "reference": "e10pro.kb.wikies"},
+
+		{"id": "order", "name": "Pořadí", "type": "int"},
+		{"id": "publicRead", "name": "Veřejná sekce", "type": "logical"},
+
+		{"id": "icon", "name": "Ikona", "type": "string", "len": 50},
+		{"id": "topMenuStyle", "name": "Umístění v horním menu", "type": "enumInt",
+			"enumValues": {"0": "Ano", "1": "Pouze ikona", "2": "Ne"}},
+		{"id": "homeTileStyle", "name": "Dlaždice na hlavní stránce", "type": "enumInt",
+			"enumValues": {"0": "Ano", "1": "Ano, bez obsahu", "2": "Ne"}},
+		{"id": "perex", "name": "Perex", "type": "memo"},
+		{"id": "pageFooter", "name": "Patička stránek", "type": "memo"},
+
+		{"id": "bookEnable", "name": "Povolit generování knihy", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "Ne", "1": "Správcům", "2": "Všem"}},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"views": [
+		{"id": "default", "class": "e10pro.kb.ViewSections", "help": "web/4628"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.kb.FormSection", "help": "web/4628"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "title"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

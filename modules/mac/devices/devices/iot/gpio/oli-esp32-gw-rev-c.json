@@ -1,0 +1,24 @@
+{
+	"pinLed": 33,
+	"pins": {
+		"ext1": {"title": "ext 1 / 3.3V", "hwnr": 0, "flags": ["pwr", "3.3v"]},
+		"ext2": {"title": "ext 2 / GND", "hwnr": 0, "flags": ["gnd"]},
+		"ext4": {"title": "ext 4 / GPIO5", "hwnr": 5, "flags": ["d", "in", "out", "hwInt", "disabled"]},
+		"ext5": {"title": "ext 5 / GPIO6 / SD_CLK", "hwnr": 6, "flags": ["d", "in", "out", "hwInt"]},
+		"ext6": {"title": "ext 6 / GPIO7 / SD_DATA0", "hwnr": 7, "flags": ["d", "in", "out", "hwInt"]},
+		"ext7": {"title": "ext 7 / GPIO8 / SD_DATA1", "hwnr": 8, "flags": ["d", "in", "out", "hwInt"]},
+		"ext8": {"title": "ext 8 / GPIO9 / SD_DATA2", "hwnr": 9, "flags": ["d", "in", "out", "hwInt"]},
+		"ext9": {"title": "ext 9 / GPI10 / SD_DATA3", "hwnr": 10, "flags": ["d", "in", "out", "hwInt"]},
+		"ext10": {"title": "ext 10 / GPI11 / SD_CMD", "hwnr": 11, "flags": ["d", "in", "out", "hwInt"]},
+		"ext11": {"title": "ext 11 / GPIO16 / serial1 RX", "hwnr": 16, "flags": ["d", "in", "out", "hwInt"]},
+		"ext12": {"title": "ext 12 / GPIO17 / serial1 TX", "hwnr": 17, "flags": ["d", "in", "out", "hwInt", "disabled"]},
+		"ext13": {"title": "ext 13 / GPIO32", "hwnr": 32, "flags": ["d", "a", "in", "out", "hwInt"]},
+		"ext14": {"title": "ext 14 / GPIO33/ LED", "hwnr": 33, "flags": ["d", "a", "in", "out", "hwInt"]},
+		"ext15": {"title": "ext 15 / GPI34 / BUT1", "hwnr": 34, "flags": ["d", "a", "in", "hwInt"]},
+		"ext16": {"title": "ext 16 / GPI35", "hwnr": 35, "flags": ["d", "a", "in", "hwInt"]},
+		"ext17": {"title": "ext 17 / GPI36", "hwnr": 36, "flags": ["d", "a", "in", "hwInt"]},
+		"ext18": {"title": "ext 18 / GPI39", "hwnr": 39, "flags": ["d", "a", "in", "hwInt"]},
+		"ext19": {"title": "ext 19 / GND", "hwnr": 0, "flags": ["gnd"]},
+		"ext20": {"title": "ext 20 / 5V", "hwnr": 0, "flags": ["pwr", "5v"]}
+	}
+}

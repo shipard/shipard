@@ -1,0 +1,12 @@
+{
+	"items": {
+		"lib.cacheItems.PurchasesStates": {
+			"onStartup": 1
+		}
+	},
+	"invalidate": {
+		"e10doc.core.heads": {
+			"purchase": ["lib.cacheItems.PurchasesStates"]
+		}
+	}
+}

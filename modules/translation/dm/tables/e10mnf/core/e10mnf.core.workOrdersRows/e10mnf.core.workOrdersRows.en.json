@@ -1,0 +1,51 @@
+{
+    "table": {
+        "name": "Rows of work orders"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "workOrder": {
+            "name": "Work order"
+        },
+        "rowOrder": {
+            "name": "Row order"
+        },
+        "item": {
+            "name": "Item"
+        },
+        "itemType": {
+            "name": "Item type"
+        },
+        "itemIsSet": {
+            "name": "Item is set"
+        },
+        "text": {
+            "name": "Text"
+        },
+        "quantity": {
+            "name": "Quantity",
+            "label": "QTY"
+        },
+        "unit": {
+            "name": "Unit"
+        },
+        "priceSource": {
+            "name": "Price source"
+        },
+        "priceItem": {
+            "name": "Unit price",
+            "label": "Price/unit"
+        },
+        "priceItemHc": {
+            "name": "Unit price [HC]"
+        },
+        "priceAll": {
+            "name": "Total price"
+        },
+        "priceAllHc": {
+            "name": "Total price [HC]"
+        }
+    }
+}

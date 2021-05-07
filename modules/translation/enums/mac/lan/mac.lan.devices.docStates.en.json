@@ -1,0 +1,26 @@
+{
+    "1000": {
+        "stateName": "In progress",
+        "actionName": "Save unfinished"
+    },
+    "4000": {
+        "stateName": "Confirmed",
+        "actionName": "Valid"
+    },
+    "9800": {
+        "stateName": "Deleted",
+        "actionName": "Delete"
+    },
+    "9100": {
+        "stateName": "In stock",
+        "actionName": "To stock"
+    },
+    "9000": {
+        "actionName": "Discard",
+        "stateName": "Discarted"
+    },
+    "8000": {
+        "stateName": "In editing",
+        "actionName": "Edit"
+    }
+}

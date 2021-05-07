@@ -1,0 +1,22 @@
+{
+    "table": {
+        "name": "Currencies - names translations"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "currency": {
+            "name": "Currency"
+        },
+        "language": {
+            "name": "Language"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "namePlural": {
+            "name": "Plural name"
+        }
+    }
+}

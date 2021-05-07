@@ -1,0 +1,7 @@
+{
+	"experimental": {
+		"options": [
+			{"cfgKey": "testNewInventory", "cfgName": "Testovat nové Zásoby", "options": {"0": "Ne","1": "Ano - NEZAPÍNAT"}}
+		]
+	}
+}

@@ -1,0 +1,20 @@
+{
+	"0": {
+		"fn": "Ostatní"
+	},
+	"1": {
+		"fn": "Fixní licence na počítač"
+	},
+	"2": {
+		"fn": "Fixní licence na uživatele"
+	},
+	"3": {
+		"fn": "Síťová licence"
+	},
+	"4": {
+		"fn": "HW klíč"
+	},
+	"5": {
+		"fn": "Pouze s koupeným HW"
+	}
+}

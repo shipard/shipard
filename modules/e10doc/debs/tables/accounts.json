@@ -1,0 +1,61 @@
+{
+  "id": "e10doc.debs.accounts", "sql": "e10doc_debs_accounts", "name": "Účtový rozvrh", "icon": "icon-th-large",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "id", "name": "Číslo účtu", "type": "string", "len": 12},
+    {"id": "fullName", "name": "Název", "type": "string", "len": 180},
+    {"id": "shortName", "name": "Název zkrácený", "type": "string", "len": 100},
+		{"id": "accGroup", "name": "Skupina účtů", "type": "logical", "options": ["saveOnChange"]},
+
+		{"id": "g1", "name": "Třída", "type": "string", "len": 1},
+		{"id": "g2", "name": "Skupina", "type": "string", "len": 2},
+		{"id": "g3", "name": "Syntetika", "type": "string", "len": 3},
+
+		{"id": "accMethod", "name": "Způsob účtování", "type": "enumString", "len": 12,
+			"enumCfg": {"cfgItem": "e10doc.acc.methods", "cfgValue": "", "cfgText": "title"}},
+
+    {"id": "accountKind", "name": "Povaha účtu", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "Aktiva", "1": "Pasiva", "2": "Náklady", "3": "Výnosy",
+										 "4": "Otevření období", "9": "Uzavření období",
+										 "5": "Aktivně pasivní", "6": "Podrozvaha", "7": "Vnitropodnikové náklady",
+										 "8": "Vnitropodnikové výnosy",
+										 "99": "---"}
+		},
+
+    {"id": "costsType", "name": "Druh nákladu", "type": "enumInt",
+			"enumValues": {"1": "Daňově uznatelný", "2": "Daňově neuznatelný", "0": "---"}},
+
+		{"id": "nontax", "name": "Nedaňový", "type": "logical"},
+		{"id": "excludeFromReports", "name": "Nedávat do přehledů", "type": "logical"},
+
+    {"id": "resultsType", "name": "Druh výsledku", "type": "enumInt",
+			"enumValues": {"0": "---", "1": "Provozní", "2": "Finanční", "3": "Mimořádný"}},
+		{"id": "toBalance", "name": "Účet je saldokontní", "type": "logical"},
+
+		{"id": "accItem", "name": "Účtopoložka", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "useFor", "name": "Používat pro", "type": "enumInt",
+			"enumValues": {"0": "vše", "2": "Prodej", "1": "Nákup", "100": "Bankovní výpisy", "101": "Účetní doklady"}},
+		{"id": "useBalance", "name": "Saldokonto", "type": "enumInt", "len": 4,
+			"enumCfg": {"cfgItem": "e10.balance", "cfgValue": "", "cfgText": "name"}},
+
+	  {"id": "validFrom", "name": "Platné od", "type": "date"},
+	  {"id": "validTo", "name": "Platné do", "type": "date"},
+
+		{"id": "note", "name": "Popis", "type": "memo"},
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+  "views": [
+    {"id": "default", "class": "e10doc.debs.ViewAccounts", "detail": "e10doc.debs.ViewDetailAccount"},
+		{"id": "combo", "class": "e10doc.debs.ViewAccountsCombo"}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10doc.debs.FormAccount"}
+  ],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10doc.debs.accounts.docStates"},
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"indexes": [
+		{"id": "accountId", "columns": ["id"]},
+		{"id": "accountKind", "columns": ["accountKind"]}
+	]
+}

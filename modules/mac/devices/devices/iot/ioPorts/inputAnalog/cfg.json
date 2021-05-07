@@ -1,0 +1,22 @@
+{
+	"name": "Čidlo Analogová hodnota",
+	"title": "Čidlo Analogová hodnota",
+	"useValueKind": 1,
+	"fields": {
+		"columns": [
+			{
+				"id": "pin", "name": "Pin", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["a", "in"]}
+			},
+			{
+				"id": "sendValue", "name": "Odesílat", "type": "enumInt",
+				"enumCfg": {"cfgItem": "mac.devices.analogValueTypes", "cfgValue": "", "cfgText": "name"}
+			},
+			{
+				"id": "measureInterval", "name": "Interval měření (milisekundy)", "type": "long", "placeholder": "1 000"
+			},
+			{
+				"id": "publishDelta", "name": "Minimální změna hodnoty [procenta]", "type": "int", "placeholder": "2"
+			}
+		]
+	}
+}

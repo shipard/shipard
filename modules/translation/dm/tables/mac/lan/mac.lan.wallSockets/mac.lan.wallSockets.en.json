@@ -1,0 +1,37 @@
+{
+    "table": {
+        "name": "Sockets"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "id": {
+            "name": "id"
+        },
+        "lan": {
+            "name": "Network"
+        },
+        "place": {
+            "name": "Place"
+        },
+        "placeDesc": {
+            "name": "Place specification"
+        },
+        "rack": {
+            "name": "Rack"
+        },
+        "idOrder": {
+            "name": "Order"
+        },
+        "locationType": {
+            "name": "Location"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

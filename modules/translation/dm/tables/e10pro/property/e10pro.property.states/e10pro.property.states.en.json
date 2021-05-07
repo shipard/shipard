@@ -1,0 +1,22 @@
+{
+    "table": {
+        "name": "States of property"
+    },
+    "columns": {
+        "property": {
+            "name": "Property"
+        },
+        "person": {
+            "name": "Person"
+        },
+        "centre": {
+            "name": "Centre"
+        },
+        "place": {
+            "name": "Place"
+        },
+        "quantity": {
+            "name": "Quantity"
+        }
+    }
+}

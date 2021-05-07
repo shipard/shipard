@@ -1,0 +1,44 @@
+{
+  "id": "wkf.docs.folders", "sql": "wkf_docs_folders", "name": "Složky dokumentů", "icon": "icon-folder",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+
+    {"id": "fullName", "name": "Název", "type": "string", "len": 100},
+    {"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 60},
+
+    {"id": "order", "name": "Pořadí", "type": "int"},
+    {"id": "icon", "name": "Ikona", "type": "string", "len": 50},
+
+    {"id": "shipardEmailId", "name": "ID pro došlé emaily Shipard", "type": "string", "len": 48},
+
+    {"id": "parentFolder", "name": "Nadřazená složka", "type": "int", "reference": "wkf.docs.folders", "options": ["saveOnChange"]},
+    {"id": "treeId", "name": "Zařazení ve stromu", "type": "string", "len": 20, "options": ["ascii"]},
+
+    {"id": "subFolderRightsType", "name": "Přístupová oprávnění", "type": "enumInt",
+      "enumValues": {"0": "z nadřazené sekce", "1": "vlastní"}, "options": ["saveOnChange"]},
+
+    {"id": "enabledDocsKinds", "name": "Povolené druhy dokumentů", "type": "enumInt", "options": ["saveOnChange"],
+      "enumValues": {"0": "Automaticky", "1": "Ruční nastavení", "2": "Z nadřazené sekce", "9": "Žádné"}},
+
+    {"id": "description", "name": "Popis", "type": "memo"},
+
+    {"id": "analyzeAttachments", "name": "Analyzovat přílohy", "type": "enumInt",
+      "enumValues": {"0": "Výchozí nastavení (ne)", "9":  "Ne", "10": "Ihned", "11": "Co nejdříve", "12": "Časem"}},
+
+    {"id": "docState", "name": "Stav", "type": "int"},
+    {"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+  "lists": [
+    {"id": "docsKinds", "class": "e10.base.ListRows", "name": "Druhy dokumentů", "table": "wkf.docs.foldersDocsKinds", "queryColumn": "folder", "orderColumn": "rowOrder"},
+    {"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+  ],
+  "states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+  "views": {
+    "default": {"id": "default", "class": "wkf.docs.ViewFolders", "help": "prirucka/4237"}
+  },
+  "forms": [
+    {"id": "default", "class": "wkf.docs.FormFolder", "help": "prirucka/4237"}
+  ],
+  "options": ["configSource"],
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

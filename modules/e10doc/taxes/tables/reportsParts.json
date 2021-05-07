@@ -1,0 +1,18 @@
+{
+	"id": "e10doc.taxes.reportsParts", "sql": "e10doc_taxes_reportsParts", "name": "Části daňových přiznání", "icon": "icon-shield",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "report", "name": "Přehled", "type": "int"},
+		{"id": "partId", "name": "Část", "type": "string", "len": "16"},
+		{"id": "filing", "name": "Podání", "type": "int"},
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+
+		{"id": "data", "name": "Data", "type": "subColumns"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.taxes.FormReportPart"}
+	],
+	"options": ["systemTable"],
+	"ndx": 1103
+}

@@ -1,0 +1,346 @@
+{
+    "table": {
+        "name": "Documents"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "docType": {
+            "name": "Document type"
+        },
+        "docKind": {
+            "name": "Document kind"
+        },
+        "activity": {
+            "name": "Activity"
+        },
+        "dbCounter": {
+            "name": "Numerical series"
+        },
+        "docNumber": {
+            "name": "Document number"
+        },
+        "docId": {
+            "name": "Registration number of document"
+        },
+        "docOrderNumber": {
+            "name": "Serial number"
+        },
+        "title": {
+            "name": "Document description"
+        },
+        "owner": {
+            "name": "Issuer"
+        },
+        "vatReg": {
+            "name": "Registration of VAT"
+        },
+        "person": {
+            "name": "Person"
+        },
+        "personType": {
+            "name": "Person type"
+        },
+        "author": {
+            "name": "Author"
+        },
+        "linkId": {
+            "name": "Linking Id"
+        },
+        "personRequest": {
+            "name": "Request ID"
+        },
+        "deliveryAddress": {
+            "name": "Mailing address"
+        },
+        "otherAddress1": {
+            "name": "Other address 1"
+        },
+        "otherAddress2": {
+            "name": "Other address 2"
+        },
+        "personVATIN": {
+            "name": "Person's VAT identification number"
+        },
+        "bankAccount": {
+            "name": "Bank account"
+        },
+        "myBankAccount": {
+            "name": "Own bank connection"
+        },
+        "centre": {
+            "name": "Centre"
+        },
+        "project": {
+            "name": "Project"
+        },
+        "workOrder": {
+            "name": "Work order"
+        },
+        "property": {
+            "name": "Property"
+        },
+        "transport": {
+            "name": "Way of transport"
+        },
+        "cashBox": {
+            "name": "Cashbox"
+        },
+        "payTerminal": {
+            "name": "Payment terminal",
+            "label": "Terminal"
+        },
+        "numCashBoxDoc": {
+            "name": "Cashbox document number"
+        },
+        "cashBoxDir": {
+            "name": "Cashbox document direction",
+            "label": "Relation direction"
+        },
+        "cashPersonName": {
+            "name": "Recipient number"
+        },
+        "cashPersonID": {
+            "name": "Recipient ID"
+        },
+        "personHandover": {
+            "name": "Took over"
+        },
+        "personBalance": {
+            "name": "Person for ledger"
+        },
+        "warehouse": {
+            "name": "Warehouse"
+        },
+        "numWareHouseDoc": {
+            "name": "Stocks document number"
+        },
+        "paymentMethod": {
+            "name": "Payment method"
+        },
+        "automaticRound": {
+            "name": "Automatic rounding"
+        },
+        "roundMethod": {
+            "name": "Rounding method",
+            "label": "Rounding"
+        },
+        "taxRoundMethod": {
+            "name": "VAT rounding method",
+            "label": "VAT rouding"
+        },
+        "initState": {
+            "name": "Initial state"
+        },
+        "correctiveDoc": {
+            "name": "Corrective document"
+        },
+        "collectingDoc": {
+            "name": "Collection document"
+        },
+        "dateIssue": {
+            "name": "Issue date"
+        },
+        "dateDue": {
+            "name": "Due date"
+        },
+        "dateAccounting": {
+            "name": "Accounting date"
+        },
+        "dateTax": {
+            "name": "Time of supply",
+            "label": "Time of supply"
+        },
+        "dateTaxDuty": {
+            "name": "Date of duty to admit tax",
+            "label": "Date of duty to admit tax"
+        },
+        "datePeriodBegin": {
+            "name": "Period beginning"
+        },
+        "datePeriodEnd": {
+            "name": "Period end"
+        },
+        "taxPeriod": {
+            "name": "Tax period"
+        },
+        "fiscalYear": {
+            "name": "Fiscal period - year"
+        },
+        "fiscalMonth": {
+            "name": "Fiscal period - month"
+        },
+        "symbol1": {
+            "name": "Variable symbol"
+        },
+        "symbol2": {
+            "name": "Specific symbol",
+            "label": "Specific symbol"
+        },
+        "taxPayer": {
+            "name": "Tax payer"
+        },
+        "taxCalc": {
+            "name": "Tax calculation"
+        },
+        "taxMethod": {
+            "name": "Calculate tax"
+        },
+        "taxType": {
+            "name": "Tax type"
+        },
+        "taxPercentDateType": {
+            "name": "Which date determinates VAT percentage"
+        },
+        "taxManual": {
+            "name": "Manual VAT calculation"
+        },
+        "currency": {
+            "name": "Currency"
+        },
+        "homeCurrency": {
+            "name": "Home currency"
+        },
+        "exchangeRate": {
+            "name": "Exchange rate"
+        },
+        "dateExchRate": {
+            "name": "Exchange rate date"
+        },
+        "quantity": {
+            "name": "Quantity"
+        },
+        "weightNet": {
+            "name": "Net weight",
+            "label": "Net weight"
+        },
+        "weightGross": {
+            "name": "Gross weight",
+            "label": "Gross weight"
+        },
+        "sumPrice": {
+            "name": "Price"
+        },
+        "sumBase": {
+            "name": "Tax base"
+        },
+        "sumTax": {
+            "name": "Total tax"
+        },
+        "sumTotal": {
+            "name": "Total sum including tax"
+        },
+        "rounding": {
+            "name": "Rounding"
+        },
+        "advance": {
+            "name": "Advance"
+        },
+        "prepayment": {
+            "name": "Prepayment"
+        },
+        "toPay": {
+            "name": "To pay"
+        },
+        "totalCash": {
+            "name": "Cash"
+        },
+        "initBalance": {
+            "name": "Initial balance"
+        },
+        "credit": {
+            "name": "Credit"
+        },
+        "debit": {
+            "name": "Debit"
+        },
+        "balance": {
+            "name": "Balance"
+        },
+        "creditHc": {
+            "name": "Credit in home currency"
+        },
+        "debitHc": {
+            "name": "Debit in home currency"
+        },
+        "sumPriceHc": {
+            "name": "Price [HC]"
+        },
+        "sumBaseHc": {
+            "name": "Tax base [HC]"
+        },
+        "sumTaxHc": {
+            "name": "Total tax [HC]"
+        },
+        "sumTotalHc": {
+            "name": "Total sum including tax [HC]"
+        },
+        "roundingHc": {
+            "name": "Rounding [HC]"
+        },
+        "advanceHc": {
+            "name": "Advance [HC]"
+        },
+        "toPayHc": {
+            "name": "To pay [HC]"
+        },
+        "costBase": {
+            "name": "Cost"
+        },
+        "costTotal": {
+            "name": "Cost including tax"
+        },
+        "costBaseHc": {
+            "name": "Cost in home currency"
+        },
+        "costTotalHc": {
+            "name": "Cost in home currency including tax"
+        },
+        "vatCS": {
+            "name": "To control report"
+        },
+        "activateCnt": {
+            "name": "Number of document activations"
+        },
+        "activateTimeFirst": {
+            "name": "Timestamp of first activation of document"
+        },
+        "activateTimeLast": {
+            "name": "Timestamp of last activation of document"
+        },
+        "activateDateFirst": {
+            "name": "Date of first activation of document"
+        },
+        "rosReg": {
+            "name": "ROS registration"
+        },
+        "rosState": {
+            "name": "ROS state"
+        },
+        "rosRecord": {
+            "name": "ROS active record"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "contract": {
+            "name": "Contract"
+        },
+        "docStateAcc": {
+            "name": "State of accounting"
+        },
+        "cashIn": {
+            "name": "Accepted cash"
+        },
+        "cashOut": {
+            "name": "Return cash"
+        },
+        "wkfProject": {
+            "name": "Project"
+        }
+    }
+}

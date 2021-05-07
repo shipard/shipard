@@ -1,0 +1,170 @@
+{
+	"name": "F. Odpočty podle § 34 odst. 4 zákona",
+	"title": "F. Odpočty podle § 34 odst. 4 zákona",
+
+	"fields": {
+		"columns": [
+			{"id": "pr1f_sl_1_r1_od", "type": "date", "name": "Zdaňovací období nebo období, za které je podáváno daňové přiznání, v němž vznikl nárok na odpočet podle § 34 odst. 4 a § 34a až § 34e zákona - od"},
+			{"id": "pr1f_sl_1_r1_do", "type": "date", "name": "Zdaňovací období nebo období, za které je podáváno daňové přiznání, v němž vznikl nárok na odpočet podle § 34 odst. 4 a § 34a až § 34e zákona - do"},
+			{"id": "pr1f_sl_1_r2_od", "type": "date", "name": "Zdaňovací období nebo období, za které je podáváno daňové přiznání, v němž vznikl nárok na odpočet podle § 34 odst. 4 a § 34a až § 34e zákona - od"},
+			{"id": "pr1f_sl_1_r2_do", "type": "date", "name": "Zdaňovací období nebo období, za které je podáváno daňové přiznání, v němž vznikl nárok na odpočet podle § 34 odst. 4 a § 34a až § 34e zákona - do"},
+			{"id": "pr1f_sl_1_r3_od", "type": "date", "name": "Zdaňovací období nebo období, za které je podáváno daňové přiznání, v němž vznikl nárok na odpočet podle § 34 odst. 4 a § 34a až § 34e zákona - od"},
+			{"id": "pr1f_sl_1_r3_do", "type": "date", "name": "Zdaňovací období nebo období, za které je podáváno daňové přiznání, v němž vznikl nárok na odpočet podle § 34 odst. 4 a § 34a až § 34e zákona - do"},
+			{"id": "pr1f_sl_1_r4_od", "type": "date", "name": "Zdaňovací období nebo období, za které je podáváno daňové přiznání, v němž vznikl nárok na odpočet podle § 34 odst. 4 a § 34a až § 34e zákona - od"},
+			{"id": "pr1f_sl_1_r4_do", "type": "date", "name": "Zdaňovací období nebo období, za které je podáváno daňové přiznání, v němž vznikl nárok na odpočet podle § 34 odst. 4 a § 34a až § 34e zákona - do"},
+			{"id": "pr1f_sl_2_r1", "type": "long", "name": "Celková výše nároku na odpočet na podporu výzkumu a vývoje vzniklá v uvedeném období"},
+			{"id": "pr1f_sl_3_r1", "type": "long", "name": "Část nároku na odpočet"},
+			{"id": "pr1f_sl_4_r1", "type": "long", "name": "Část nároku na odpočet"},
+			{"id": "pr1f_sl_5_r1", "type": "long", "name": "Část nároku na odpočet"},
+			{"id": "pr1f_sl_2_r2", "type": "long", "name": "Celková výše nároku na odpočet na podporu výzkumu a vývoje vzniklá v uvedeném období"},
+			{"id": "pr1f_sl_3_r2", "type": "long", "name": "Část nároku na odpočet"},
+			{"id": "pr1f_sl_4_r2", "type": "long", "name": "Část nároku na odpočet"},
+			{"id": "pr1f_sl_5_r2", "type": "long", "name": "Část nároku na odpočet"},
+			{"id": "pr1f_sl_2_r3", "type": "long", "name": "Celková výše nároku na odpočet na podporu výzkumu a vývoje vzniklá v uvedeném období"},
+			{"id": "pr1f_sl_3_r3", "type": "long", "name": "Část nároku na odpočet"},
+			{"id": "pr1f_sl_4_r3", "type": "long", "name": "Část nároku na odpočet"},
+			{"id": "pr1f_sl_5_r3", "type": "long", "name": "Část nároku na odpočet"},
+			{"id": "pr1f_sl_2_r4", "type": "long", "name": "Celková výše nároku na odpočet na podporu výzkumu a vývoje vzniklá v uvedeném období"},
+			{"id": "pr1f_sl_3_r4", "type": "long", "name": "Část nároku na odpočet"},
+			{"id": "pr1f_sl_4_r4", "type": "long", "name": "Část nároku na odpočet"},
+			{"id": "pr1f_sl_5_r4", "type": "long", "name": "Část nároku na odpočet"},
+
+
+			{"id": "pr1fc_sl_1_r1_od", "type": "date", "name": "Zdaňovací období nebo období, za které je podáváno daňové přiznání, v němž vznikl nárok na odpočet podle § 34 odst. 4 a § 34f až § 34h zákona - od"},
+			{"id": "pr1fc_sl_1_r1_do", "type": "date", "name": "Zdaňovací období nebo období, za které je podáváno daňové přiznání, v němž vznikl nárok na odpočet podle § 34 odst. 4 a § 34f až § 34h zákona - do"},
+			{"id": "pr1fc_sl_1_r2_od", "type": "date", "name": "Zdaňovací období nebo období, za které je podáváno daňové přiznání, v němž vznikl nárok na odpočet podle § 34 odst. 4 a § 34f až § 34h zákona - od"},
+			{"id": "pr1fc_sl_1_r2_do", "type": "date", "name": "Zdaňovací období nebo období, za které je podáváno daňové přiznání, v němž vznikl nárok na odpočet podle § 34 odst. 4 a § 34f až § 34h zákona - do"},
+			{"id": "pr1fc_sl_1_r3_od", "type": "date", "name": "Zdaňovací období nebo období, za které je podáváno daňové přiznání, v němž vznikl nárok na odpočet podle § 34 odst. 4 a § 34f až § 34h zákona - od"},
+			{"id": "pr1fc_sl_1_r3_do", "type": "date", "name": "Zdaňovací období nebo období, za které je podáváno daňové přiznání, v němž vznikl nárok na odpočet podle § 34 odst. 4 a § 34f až § 34h zákona - do"},
+			{"id": "pr1fc_sl_1_r4_od", "type": "date", "name": "Zdaňovací období nebo období, za které je podáváno daňové přiznání, v němž vznikl nárok na odpočet podle § 34 odst. 4 a § 34f až § 34h zákona - od"},
+			{"id": "pr1fc_sl_1_r4_do", "type": "date", "name": "Zdaňovací období nebo období, za které je podáváno daňové přiznání, v němž vznikl nárok na odpočet podle § 34 odst. 4 a § 34f až § 34h zákona - do"},
+			{"id": "pr1fc_sl_2_r1", "type": "long", "name": "Celková výše nároku na odpočet na podporu odborného vzdělávání vzniklá v uvedeném období"},
+			{"id": "pr1fc_sl_3_r1", "type": "long", "name": "Část nároku na odpočet odečtená v předcházejících obdobích"},
+			{"id": "pr1fc_sl_4_r1", "type": "long", "name": "Část nároku na odpočet odečtená v daném období"},
+			{"id": "pr1fc_sl_5_r1", "type": "long", "name": "Část nároku na odpočet kterou lze odečíst v následujících obdobích"},
+			{"id": "pr1fc_sl_2_r2", "type": "long", "name": "Celková výše nároku na odpočet na podporu odborného vzdělávání vzniklá v uvedeném období"},
+			{"id": "pr1fc_sl_3_r2", "type": "long", "name": "Část nároku na odpočet odečtená v předcházejících obdobích"},
+			{"id": "pr1fc_sl_4_r2", "type": "long", "name": "Část nároku na odpočet odečtená v daném období"},
+			{"id": "pr1fc_sl_5_r2", "type": "long", "name": "Část nároku na odpočet kterou lze odečíst v následujících obdobích"},
+			{"id": "pr1fc_sl_2_r3", "type": "long", "name": "Celková výše nároku na odpočet na podporu odborného vzdělávání vzniklá v uvedeném období"},
+			{"id": "pr1fc_sl_3_r3", "type": "long", "name": "Část nároku na odpočet odečtená v předcházejících obdobích"},
+			{"id": "pr1fc_sl_4_r3", "type": "long", "name": "Část nároku na odpočet odečtená v daném období"},
+			{"id": "pr1fc_sl_5_r3", "type": "long", "name": "Část nároku na odpočet kterou lze odečíst v následujících obdobích"},
+			{"id": "pr1fc_sl_2_r4", "type": "long", "name": "Celková výše nároku na odpočet na podporu odborného vzdělávání vzniklá v uvedeném období"},
+			{"id": "pr1fc_sl_3_r4", "type": "long", "name": "Část nároku na odpočet odečtená v předcházejících obdobích"},
+			{"id": "pr1fc_sl_4_r4", "type": "long", "name": "Část nároku na odpočet odečtená v daném období"},
+			{"id": "pr1fc_sl_5_r4", "type": "long", "name": "Část nároku na odpočet kterou lze odečíst v následujících obdobích"}
+		],
+
+		"layout": [
+			{
+				"table": {
+					"title": "b) Uplatňování odpočtu na podporu výzkumu a vývoje od základu daně podle § 34 odst. 4 a § 34a až § 34e zákona",
+					"header": [
+						{
+							"c0": "Řádek",
+							"c1od": "Zdaňovací období nebo období, za které je podáváno daňové přiznání, v němž vznikl nárok na odpočet podle § 34 odst. 4 a § 34a až § 34e zákona od – do",
+							"c2": "Celková výše nároku na odpočet na podporu výzkumu a vývoje vzniklá v období uvedeném ve sl. 1",
+							"c3": "Část nároku na odpočet ze sl. 2",
+							"_options": {
+								"colSpan": {"c1od": 2, "c3": 3},
+								"rowSpan": {"c0": 3, "c1od": 2, "c1do": 2, "c2": 2},
+								"cellClasses": {"c1od": "center", "c2": "center", "c3": "center"}
+							}
+						},
+						{
+							"c3": "odečtená v předcházejících obdobích",
+							"c4": "odečtená v daném období",
+							"c5": "kterou lze odečíst v následujících obdobích",
+							"_options": {
+								"cellClasses": {"c3": "center", "c4": "center", "c5": "center"}
+							}
+						},
+						{
+							"c1od": "1 - od", "c1do": "1 - do", "c2": "2", "c3": "3", "c4": "4", "c5": "5",
+							"_options": {
+								"cellClasses": {"c1od": "center", "c2od": "center", "c2": "center", "c3": "center", "c4": "center", "c5": "center"}
+							}
+						}
+					],
+					"cols": {
+						"c0": " Řádek", "c1od": "Od", "c1do": "Do", "c2": " Částka", "c3": " Částka", "c4": " Částka", "c5": " Částka"
+					},
+					"rows": [
+						{
+							"c0": "1", "c1od": {"scInput": "pr1f_sl_1_r1_od"}, "c1do": {"scInput": "pr1f_sl_1_r1_do"},
+							"c2": {"scInput": "pr1f_sl_2_r1"}, "c3": {"scInput": "pr1f_sl_3_r1"}, "c4": {"scInput": "pr1f_sl_4_r1"}, "c5": {"scInput": "pr1f_sl_5_r1"}
+						},
+						{
+							"c0": "2", "c1od": {"scInput": "pr1f_sl_1_r2_od"}, "c1do": {"scInput": "pr1f_sl_1_r2_do"},
+							"c2": {"scInput": "pr1f_sl_2_r2"}, "c3": {"scInput": "pr1f_sl_3_r2"}, "c4": {"scInput": "pr1f_sl_4_r2"}, "c5": {"scInput": "pr1f_sl_5_r2"}
+						},
+						{
+							"c0": "3", "c1od": {"scInput": "pr1f_sl_1_r3_od"}, "c1do": {"scInput": "pr1f_sl_1_r3_do"},
+							"c2": {"scInput": "pr1f_sl_2_r3"}, "c3": {"scInput": "pr1f_sl_3_r3"}, "c4": {"scInput": "pr1f_sl_4_r3"}, "c5": {"scInput": "pr1f_sl_5_r3"}
+						},
+						{
+							"c0": "4", "c1od": {"scInput": "pr1f_sl_1_r4_od"}, "c1do": {"scInput": "pr1f_sl_1_r4_do"},
+							"c2": {"scInput": "pr1f_sl_2_r4"}, "c3": {"scInput": "pr1f_sl_3_r4"}, "c4": {"scInput": "pr1f_sl_4_r4"}, "c5": {"scInput": "pr1f_sl_5_r4"}
+						}
+					]
+				}
+			},
+
+			{
+				"table": {
+					"title": "c) Uplatňování odpočtu na podporu odborného vzdělávání od základu daně podle § 34 odst. 4 a § 34f až § 34h zákona",
+					"header": [
+						{
+							"c0": "Řádek",
+							"c1od": "Zdaňovací období nebo období, za které je podáváno daňové přiznání, v němž vznikl nárok na odpočet podle § 34 odst. 4 a § 34f až § 34h zákona od – do",
+							"c2": "Celková výše nároku na odpočet na podporu odborného vzdělávání vzniklá v období uvedeném ve sl. 1",
+							"c3": "Část nároku na odpočet ze sl. 2",
+							"_options": {
+								"colSpan": {"c1od": 2, "c3": 3},
+								"rowSpan": {"c0": 3, "c1od": 2, "c1do": 2, "c2": 2},
+								"cellClasses": {"c1od": "center", "c2": "center", "c3": "center"}
+							}
+						},
+						{
+							"c3": "odečtená v předcházejících obdobích",
+							"c4": "odečtená v daném období",
+							"c5": "kterou lze odečíst v následujících obdobích",
+							"_options": {
+								"cellClasses": {"c3": "center", "c4": "center", "c5": "center"}
+							}
+						},
+						{
+							"c1od": "1 - od", "c1do": "1 - do", "c2": "2", "c3": "3", "c4": "4", "c5": "5",
+							"_options": {
+								"cellClasses": {"c1od": "center", "c2od": "center", "c2": "center", "c3": "center", "c4": "center", "c5": "center"}
+							}
+						}
+					],
+					"cols": {
+						"c0": " Řádek", "c1od": "Od", "c1do": "Do", "c2": " Částka", "c3": " Částka", "c4": " Částka", "c5": " Částka"
+					},
+					"rows": [
+						{
+							"c0": "1", "c1od": {"scInput": "pr1fc_sl_1_r1_od"}, "c1do": {"scInput": "pr1fc_sl_1_r1_do"},
+							"c2": {"scInput": "pr1fc_sl_2_r1"}, "c3": {"scInput": "pr1fc_sl_3_r1"}, "c4": {"scInput": "pr1fc_sl_4_r1"}, "c5": {"scInput": "pr1fc_sl_5_r1"}
+						},
+						{
+							"c0": "2", "c1od": {"scInput": "pr1fc_sl_1_r2_od"}, "c1do": {"scInput": "pr1fc_sl_1_r2_do"},
+							"c2": {"scInput": "pr1fc_sl_2_r2"}, "c3": {"scInput": "pr1fc_sl_3_r2"}, "c4": {"scInput": "pr1fc_sl_4_r2"}, "c5": {"scInput": "pr1fc_sl_5_r2"}
+						},
+						{
+							"c0": "3", "c1od": {"scInput": "pr1fc_sl_1_r3_od"}, "c1do": {"scInput": "pr1fc_sl_1_r3_do"},
+							"c2": {"scInput": "pr1fc_sl_2_r3"}, "c3": {"scInput": "pr1fc_sl_3_r3"}, "c4": {"scInput": "pr1fc_sl_4_r3"}, "c5": {"scInput": "pr1fc_sl_5_r3"}
+						},
+						{
+							"c0": "4", "c1od": {"scInput": "pr1fc_sl_1_r4_od"}, "c1do": {"scInput": "pr1fc_sl_1_r4_do"},
+							"c2": {"scInput": "pr1fc_sl_2_r4"}, "c3": {"scInput": "pr1fc_sl_3_r4"}, "c4": {"scInput": "pr1fc_sl_4_r4"}, "c5": {"scInput": "pr1fc_sl_5_r4"}
+						}
+					]
+				}
+			}
+
+		]
+	}
+}

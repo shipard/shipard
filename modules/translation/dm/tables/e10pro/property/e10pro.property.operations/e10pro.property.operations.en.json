@@ -1,0 +1,52 @@
+{
+    "table": {
+        "name": "Property movements"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "property": {
+            "name": "Property"
+        },
+        "date": {
+            "name": "Date"
+        },
+        "rowType": {
+            "name": "Row type"
+        },
+        "person": {
+            "name": "Person"
+        },
+        "centre": {
+            "name": "Centre"
+        },
+        "placeFrom": {
+            "name": "From"
+        },
+        "placeTo": {
+            "name": "To"
+        },
+        "quantity": {
+            "name": "Quantity"
+        },
+        "quantitySigned": {
+            "name": "Quantity +/-"
+        },
+        "quantityFrom": {
+            "name": "Quantity Movement FROM"
+        },
+        "quantityTo": {
+            "name": "Quantity Movement TO"
+        },
+        "note": {
+            "name": "Note"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

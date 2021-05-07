@@ -1,0 +1,28 @@
+{
+	"id": "e10.base.places", "sql": "e10_base_places", "name": "Místa", "icon": "icon-map-marker",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 40},
+		{"id": "id", "name": "ID", "type": "string", "len": 20},
+		{"id": "placeType", "name": "Typ místa", "type": "enumString", "len": 10,
+			"enumCfg": {"cfgItem": "e10.base.placeTypes", "cfgValue": "", "cfgText": "name"}},
+		{"id": "placeParent", "name": "Nadřazené místo", "type": "int", "reference": "e10.base.places", "comboViewer": "e10.base.ViewPlacesComboParents"},
+
+		{"id": "shortcutId", "name": "Zkrácené ID", "type": "string", "len": 50},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "address", "class": "e10.persons.ListAddress", "name": "Adresy"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "e10.base.ViewPlaces", "detail": "e10.base.ViewDetailPlace", "help": "prirucka/4536"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10.base.FormPlace", "help": "prirucka/4536"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

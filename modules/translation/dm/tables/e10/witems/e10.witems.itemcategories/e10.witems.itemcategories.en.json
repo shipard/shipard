@@ -1,0 +1,55 @@
+{
+    "table": {
+        "name": "Categories of items"
+    },
+    "columns": {
+        "ndx": {
+            "name": "ndx"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "icon": {
+            "name": "Icon"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "sortItems": {
+            "name": "Default sorting of items"
+        },
+        "askQCashRegister": {
+            "name": "Ask for quantity in cash register"
+        },
+        "askPCashRegister": {
+            "name": "Ask for price in cash register"
+        },
+        "owner": {
+            "name": "Parent category"
+        },
+        "treeLevel": {
+            "name": "Height of tree"
+        },
+        "treeId": {
+            "name": "Tree path ID"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "syncNdx": {
+            "name": "syncNdx"
+        },
+        "syncSrc": {
+            "name": "syncSrc"
+        }
+    }
+}

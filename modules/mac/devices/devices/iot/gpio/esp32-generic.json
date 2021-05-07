@@ -1,0 +1,31 @@
+{
+	"pinLed": 2,
+	"pins": {
+		"p0": {"title": "GPIO0 / ADC2 CH1", "hwnr": 0, "flags": ["d", "in", "out", "hwInt"]},
+		"p1": {"title": "GPIO1 / UART0 TX", "hwnr": 1, "flags": ["d", "in", "out", "hwInt"]},
+		"p2": {"title": "GPIO2 / ADC2 CH2", "hwnr": 2, "flags": ["d", "in", "out", "hwInt"]},
+		"p3": {"title": "GPIO3 / UART0 RX", "hwnr": 3, "flags": ["d", "in", "out", "hwInt"]},
+		"p4": {"title": "GPIO4", "hwnr": 4, "flags": ["d", "in", "out", "hwInt"]},
+		"p5": {"title": "GPIO5", "hwnr": 5, "flags": ["d", "in", "out", "hwInt"]},
+		"p12": {"title": "GPIO12 / ADC2 CH5", "hwnr": 12, "flags": ["d", "in", "out", "hwInt"]},
+		"p13": {"title": "GPIO13 / ADC2 CH4", "hwnr": 13, "flags": ["d", "in", "out", "hwInt"]},
+		"p14": {"title": "GPIO14 / ADC2 CH6", "hwnr": 14, "flags": ["d", "in", "out", "hwInt"]},
+		"p15": {"title": "GPIO15 / ADC2 CH3", "hwnr": 15, "flags": ["d", "in", "out", "hwInt"]},
+		"p16": {"title": "GPIO16 / UART2 RX", "hwnr": 16, "flags": ["d", "in", "out", "hwInt"]},
+		"p17": {"title": "GPIO17 / UART2 TX", "hwnr": 17, "flags": ["d", "in", "out", "hwInt"]},
+		"p18": {"title": "GPIO18", "hwnr": 18, "flags": ["d", "in", "out", "hwInt"]},
+		"p19": {"title": "GPIO19", "hwnr": 19, "flags": ["d", "in", "out", "hwInt"]},
+		"p21": {"title": "GPIO21 / I2C SDA", "hwnr": 21, "flags": ["d", "in", "out", "hwInt"]},
+		"p22": {"title": "GPIO22 / I2C SCL", "hwnr": 22, "flags": ["d", "in", "out", "hwInt"]},
+		"p23": {"title": "GPIO23", "hwnr": 23, "flags": ["d", "in", "out", "hwInt"]},
+		"p25": {"title": "GPIO25 / ADC2 CH8", "hwnr": 25, "flags": ["d", "in", "out", "hwInt"]},
+		"p26": {"title": "GPIO26 / ADC2 CH9", "hwnr": 26, "flags": ["d", "in", "out", "hwInt"]},
+		"p27": {"title": "GPIO27 / ADC2 CH7", "hwnr": 27, "flags": ["d", "in", "out", "hwInt"]},
+		"p32": {"title": "GPIO32 / ADC1 CH4", "hwnr": 32, "flags": ["d", "in", "out", "hwInt"]},
+		"p33": {"title": "GPIO33 / ADC1 CH5", "hwnr": 33, "flags": ["d", "in", "out", "hwInt"]},
+		"p34": {"title": "GPIO34 / ADC1 CH6", "hwnr": 34, "flags": ["d", "in", "hwInt"]},
+		"p35": {"title": "GPIO35 / ADC1 CH7", "hwnr": 35, "flags": ["d", "in", "hwInt"]},
+		"p36": {"title": "GPIO36 / ADC1 CH0", "hwnr": 36, "flags": ["d", "in", "hwInt"]},
+		"p39": {"title": "GPIO39 / ADC1 CH3", "hwnr": 39, "flags": ["d", "in", "hwInt"]}
+	}
+}

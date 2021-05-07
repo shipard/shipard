@@ -1,0 +1,26 @@
+{
+    "table": {
+        "name": "MAC address on device ports"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "device": {
+            "name": "Device"
+        },
+        "portNumber": {
+            "name": "Port number",
+            "label": "Number"
+        },
+        "created": {
+            "name": "Created"
+        },
+        "updated": {
+            "name": "Updated"
+        },
+        "macs": {
+            "name": "MAC addresses"
+        }
+    }
+}

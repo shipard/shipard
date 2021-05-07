@@ -1,0 +1,7 @@
+{
+	"props": {
+		"name": "Vlastnosti stránky",
+		"id": "props",
+		"properties": ["sideBarLeft", "sideBarRight"]
+	}
+}

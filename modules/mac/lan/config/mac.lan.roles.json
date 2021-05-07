@@ -1,0 +1,43 @@
+{
+  "maclan": {
+		"name": "Počítačové sítě",
+		"viewers": {
+			"mac.lan.alerts": {"default": 2},
+			"mac.lan.lans": {"default": 2},
+			"mac.lan.devices": {"default": 2, "all": 2, "cameras": 2, "iot": 2, "routers": 2, "shipardNodes": 2, "wifiAPs":  2, "servers":  2},
+			"mac.lan.unknowns": {"default": 2},
+			"mac.lan.macs": {"default": 2},
+			"mac.lan.macsOnPorts": {"default": 2},
+			"mac.lan.deviceTypes": {"default": 2},
+			"mac.lan.racks": {"default": 2},
+			"mac.lan.patchPanels": {"default": 2,"tree": 2},
+			"mac.lan.patchPanelsPorts": {"default": 2, "formList":  2},
+			"mac.lan.racksSensorsShow": {"default": 2, "formList":  2},
+			"mac.lan.swInstallPackages": {"default": 2},
+			"mac.lan.swApplications": {"default": 2},
+			"mac.lan.swLicenses": {"default": 2},
+			"mac.lan.devicesProperties": {"unknownPackages": 2},
+			"mac.lan.devicesSensorsShow": {"default": 2, "formList":  2},
+			"mac.lan.wallSockets": {"default": 2},
+			"mac.lan.vlans": {"default": 2, "comboVlans":  2, "comboGroups":  2},
+			"mac.lan.lansAddrRanges": {"default": 2},
+			"mac.lan.wlans": {"default": 2},
+			"mac.lan.ipAddress": {"default": 2},
+			"mac.lan.ipAddressLists": {"default": 2},
+			"mac.lan.ipAddressListsRows": {"default": 2},
+			"mac.lan.watchdogs": {"default": 2}
+		},
+	  "widgets": {
+		  "mac.lan.LanMonitoringWidget": 2,
+		  "mac.lan.LanAddressesWidget": 2
+	  },
+	  "reports": {
+		  "mac.lan.ReportSWLicenses": 2
+	  }
+	},
+	"admin": {
+		"reports": {
+			"mac.lan.libs.ReportShipardAgentInstall": 2
+		}
+	}
+}

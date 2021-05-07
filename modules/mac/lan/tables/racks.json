@@ -1,0 +1,50 @@
+{
+	"id": "mac.lan.racks", "sql": "mac_lan_racks", "name": "Racky", "icon": "icon-window-maximize",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "lan", "name": "Síť", "type": "int", "reference": "mac.lan.lans"},
+
+		{"id": "id", "name": "ID racku", "type": "string", "len": 30},
+
+		{"id": "place", "name": "Místo", "type": "int", "reference": "e10.base.places"},
+		{"id": "placeDesc", "name": "Upřesnění místa", "type": "string", "len": 80},
+
+		{"id": "property", "name": "Majetek", "type": "int", "reference": "mac.property.property", "module": "e10pro.property"},
+
+		{"id": "rackKind", "name": "Druh racku", "type": "enumInt",
+			"enumValues": {"10": "Hlavní", "20": "Vedlejší", "30": "Doplňkový"}},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "sensorsShow", "class": "e10.base.ListRows", "name": "Zobrazované senzory", "table": "mac.lan.racksSensorsShow", "queryColumn": "rack", "orderColumn": "rowOrder"}
+	],
+	"views": [
+		{"id": "default", "class": "mac.lan.ViewRacks",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewDetailRack"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.lan.FormRack"}
+	],
+	"reports": [
+		{
+			"id": "labelRack", "name": "Nálepka racku", "class": "mac.lan.libs.ReportRackLabel",
+			"directPrint": 1, "printerClass": "labels"
+		},
+		{
+			"id": "labelRackDevices", "name": "Nálepka zařízení", "class": "mac.lan.libs.ReportRackLabelDevices",
+			"directPrint": 1, "printerClass": "labels"
+		},
+		{
+			"id": "labelRackCables", "name": "Kabel", "class": "mac.lan.libs.ReportRackLabelCables",
+			"directPrint": 1, "printerClass": "labels"
+		}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

@@ -1,0 +1,4 @@
+[
+	{"name": "Značky", "class": "e10pro.reports.sale_brands.reportBrands", "icon": "icon-caret-square-o-up", "group": "e10doc-sale"},
+	{"name": "Prodeje dle značek", "class": "e10pro.reports.sale_brands.reportBrands", "icon": "icon-caret-square-o-up", "group": "e10doc-inventory", "order": 11000}
+]

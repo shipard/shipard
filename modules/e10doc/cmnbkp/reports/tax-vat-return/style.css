@@ -1,0 +1,29 @@
+@import url("../../../core/reports/formreport.css");
+
+h3 {display: inline;}
+
+table tr.grid {visibility: hidden; padding: 0; height: 0;}
+table tr.grid>td {visibility: hidden; padding: 0; width: 3%; height: 0;}
+table tr.grid>td.grid4 {visibility: hidden; padding: 0; width: 4%; height: 0;}
+
+table.formSection {width: 100%; margin: 0; padding: 0; border: 0}
+table.formSection td {border: 0; padding: 0; font-size: 7pt;}
+table.formSection td.first {border: 0; padding: 0 0 1pt 0; font-size: 7pt;}
+table.formSection td.input {border: 1pt solid #aaaaaa; padding: 1pt; font-size: 7pt; height: 9pt;}
+table.formSection td.c {text-align: center;}
+table.formSection td.l {text-align: left;}
+table.formSection td.r {text-align: right;}
+
+table.bigFrame {width: 100%; border: 1pt solid black;}
+
+table.tableSection {width: 100%; border: 1pt; background-color: #aaaaaa;}
+table.tableSection td {border: 0; padding: 1pt; background-color: #ffffff; font-size: 7pt; height: 9pt;}
+
+table.tableSection td.c {text-align: center; font-size: 7pt;}
+table.tableSection td.l {text-align: left; font-size: 7pt;}
+table.tableSection td.r {text-align: right;}
+table.tableSection td.b {font-weight: bold; background-color: #cccccc;}
+
+div.separator {padding-bottom: 2pt;}
+div.newPage {page-break-before: always; padding-bottom: 2pt;}
+div.pageNumber {width: 100%; text-align: center; font-size: 8pt; padding-top: 10pt;}

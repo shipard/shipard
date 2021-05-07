@@ -1,0 +1,16 @@
+{
+	"admin": {
+		"viewers": {
+			"wkf.base.issuesKinds": {"default": 2},
+			"wkf.base.issuesStatuses": {"default": 2},
+			"wkf.base.issuesStatusesKinds": {"default": 2},
+			"wkf.base.targets": {"default": 2},
+			"wkf.base.targetsKinds": {"default": 2},
+			"wkf.base.sections": {"default": 2},
+			"wkf.base.trays": {"default": 2},
+			"wkf.base.extNotifications": {"default": 2},
+			"wkf.base.projects": {"default": 2},
+			"wkf.base.boards": {"default": 2}
+		}
+	}
+}

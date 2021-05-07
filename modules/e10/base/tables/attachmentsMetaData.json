@@ -1,0 +1,18 @@
+{
+	"id": "e10.base.attachmentsMetaData", "sql": "e10_attachments_metaData", "name": "Data v Přílohách dokumentů",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "attachment", "name": "Příloha", "type": "int"},
+		{"id": "metaDataType", "name": "Druh dat", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10.att.metaDataTypes", "cfgValue": "", "cfgText": "name"}},
+		{"id": "data", "name": "Data", "type": "memo"},
+		{"id": "metaDataVersion", "name": "Verze", "type": "int"},
+		{"id": "created", "name": "Okamžik vytvoření", "type": "timestamp"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10.base.FormAttachmentsMetaData"}
+	],
+	"options": ["systemTable"],
+	"indexes": [
+	]
+}

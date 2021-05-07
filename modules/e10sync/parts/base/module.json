@@ -1,0 +1,7 @@
+{
+	"id": "e10sync.parts.base",
+	"name": "Synchronizace základních tabulek",
+	"tables": [],
+	"extensions": ["core"],
+	"modules": []
+}

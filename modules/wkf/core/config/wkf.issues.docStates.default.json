@@ -1,0 +1,37 @@
+{
+	"1000": {
+		"stateName": "Nově rozpracováno", "actionName": "Uložit rozpracované", "logName": "koncept",
+		"stateStyle": "concept", "mainState": 0, "goto": [1200, 9800],
+		"icon": "icon-star-o"
+	},
+	"1001": {
+		"stateName": "Nová zpráva", "actionName": "Uložit rozpracované", "logName": "nová zpráva",
+		"stateStyle": "new", "mainState": 0, "goto": [1200, 4000, 9000, 9800],
+		"icon": "icon-file-star-o"
+	},
+	"1200": {
+		"stateName": "K řešení", "actionName": "K řešení", "logName": "nová věc k řešení", "notify": 2,
+		"stateStyle": "confirmed", "mainState": 1, "readOnly": 1, "goto": [4000, 8000, 9000, 9800],
+		"icon": "icon-star"
+	},
+	"4000": {
+		"stateName": "Vyřešeno", "actionName": "Vyřešeno", "logName": "problém je vyřešen", "notify": 3,
+		"stateStyle": "done",  "mainState": 2, "readOnly": 1, "goto": [8000, 9000, 9800],
+		"icon": "icon-check-square-o"
+	},
+	"8000": {
+		"stateName": "V opravě", "actionName": "Opravit", "logName": "editace problému",
+		"stateStyle": "edit",  "mainState": 0, "goto": [1200, 4000, 9000, 9800],
+		"icon": "icon-edit"
+	},
+	"9000": {
+		"stateName": "Ukončeno", "actionName": "Ukončit", "logName": "problém je ukončen", "notify": 4,
+		"stateStyle": "archive",  "mainState": 5, "readOnly": 1, "goto": [8000],
+		"icon": "icon-thumbs-down", "buttonClass": "btn-info"
+	},
+	"9800": {
+		"stateName": "Smazáno", "actionName": "Smazat", "logName": "smazání problému", "notify": 4,
+		"stateStyle": "delete",  "mainState": 4, "readOnly": 1, "goto": [8000],
+		"icon": "icon-trash-o"
+	}
+}

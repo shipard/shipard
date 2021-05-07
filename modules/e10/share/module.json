@@ -1,0 +1,12 @@
+{
+  "id": "e10.share",
+  "name": "Share",
+  "tables": ["shares", "sharesfolders", "sharesitems"],
+  "modules": ["e10/base"],
+  "config": [
+    {"id": "+appSkeleton", "file": "share.appSkeleton.json"},
+		{"id": "+appOptions", "file": "e10.appOptions.json"},
+    {"id": "+e10.persons.roles", "file": "e10.share.roles.json"},
+		{"id": "e10.share.docStates", "file": "e10.share.docStates.json"}
+  ]
+}

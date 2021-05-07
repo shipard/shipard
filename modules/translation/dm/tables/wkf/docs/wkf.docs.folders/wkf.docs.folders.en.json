@@ -1,0 +1,49 @@
+{
+    "table": {
+        "name": "Document folders"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "icon": {
+            "name": "Icon"
+        },
+        "shipardEmailId": {
+            "name": "ID for received Shipard emails"
+        },
+        "parentFolder": {
+            "name": "Parent folder"
+        },
+        "treeId": {
+            "name": "Tree ID"
+        },
+        "subFolderRightsType": {
+            "name": "Access permissions"
+        },
+        "enabledDocsKinds": {
+            "name": "Allowed document kinds"
+        },
+        "description": {
+            "name": "Description"
+        },
+        "analyzeAttachments": {
+            "name": "Analyze attachments"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

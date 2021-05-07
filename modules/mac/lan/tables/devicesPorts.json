@@ -1,0 +1,45 @@
+{
+	"id": "mac.lan.devicesPorts", "sql": "mac_lan_devicesPorts", "name": "Porty síťových zařízení",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+		{"id": "device", "name": "Zařízení", "type": "int", "reference": "mac.lan.devices"},
+
+		{"id": "portKind", "name": "Druh portu", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.lan.ports.kinds", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "portNumber", "name": "Číslo portu", "label": "Číslo", "type": "int"},
+		{"id": "portId", "name": "ID portu", "label": "id", "type": "string", "len": 20},
+		{"id": "note", "name": "Poznámka", "type": "string", "len": 100},
+
+		{"id": "fullName", "name": "Název portu", "type": "string", "len": 140},
+
+		{"id": "portRole", "name": "Role portu", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.lan.ports.roles", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "vlan", "name": "VLAN", "type": "int", "reference": "mac.lan.vlans", "comboViewer": "comboVlans"},
+		{"id": "mac", "name": "MAC", "type": "string", "len": 20},
+
+		{"id": "connectedTo", "name": "Zapojeno do", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "Nepřipojeno", "1": "Zásuvka", "2": "Port zařízení", "3": "Mobilní"}},
+		{"id": "connectedToWallSocket", "name": "Zásuvka", "type": "int", "reference": "mac.lan.wallSockets"},
+		{"id": "connectedToDevice", "name": "Zařízení", "type": "int", "reference": "mac.lan.devices", "comboViewer": "default", "options": ["saveOnChange"]},
+		{"id": "connectedToPort", "name": "Port", "type": "int", "reference": "mac.lan.devicesPorts", "options": ["saveOnChange"]}
+	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.lan.FormDevicePort"}
+	],
+	"views": [
+		{"id": "default", "class": "mac.lan.ViewDevicesPorts"},
+		{"id": "formList", "class": "mac.lan.ViewDevicesPortsFormList", "type": "form",
+			"details": {
+				"default": {"title": "Přehled", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewDevicesPortsFormListDetail"}
+			}
+		}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "portId"},
+	"options": ["systemTable"]
+}

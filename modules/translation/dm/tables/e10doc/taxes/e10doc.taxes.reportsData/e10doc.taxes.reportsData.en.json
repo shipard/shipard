@@ -1,0 +1,19 @@
+{
+    "table": {
+        "name": "Tax returns data"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "report": {
+            "name": "Report"
+        },
+        "filing": {
+            "name": "Filing"
+        },
+        "data": {
+            "name": "Data"
+        }
+    }
+}

@@ -1,0 +1,12 @@
+{
+	"items": {
+		"lib.cacheItems.StoreStates": {
+			"onStartup": 1
+		}
+	},
+	"invalidate": {
+		"e10doc.core.heads": {
+			"cashreg": ["lib.cacheItems.StoreStates", "lib.cacheItems.OverviewSales"]
+		}
+	}
+}

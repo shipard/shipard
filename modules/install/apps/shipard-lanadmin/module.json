@@ -1,0 +1,16 @@
+{
+	"id": "pkgs.install.apps.shipard-lanadmin",
+	"name": "Dohled nad počítačovými sítěmi",
+	"modules": [
+		"pkgs/install/apps/shipard-core",
+
+		"lanadmin/core"
+	],
+
+	"config": [
+	],
+
+	"dataPackages": [
+		"pkgs/data/mac/codebase"
+	]
+}

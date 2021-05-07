@@ -1,0 +1,10 @@
+{
+	"id": "mac.iot.sensorsValues", "sql": "mac_iot_sensorsValues", "name": "Hodnoty senzorů",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "value", "name": "Hodnota", "type": "number", "dec": 3},
+		{"id": "time","name": "Čas aktualizace", "type": "timestamp"},
+		{"id": "counter","name": "Počet aktualizací", "type": "long"}
+	],
+	"options": ["systemTable"]
+}

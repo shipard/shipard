@@ -1,0 +1,14 @@
+{
+	"id": "terminals.ros",
+	"name": "Registration Of Sales",
+	"tables": ["rosRegs"],
+	"modules": ["terminals/base"],
+	"config": [
+		{"id": "+terminals.ros.types", "file": "rosTypes.json"},
+		{"id": "+terminals.ros.modes", "file": "rosModes.json"},
+		{"id": "+e10.persons.roles", "file": "e10.ros.roles.json"},
+		{"id": "+appOptions", "file": "e10.appOptions.json"},
+		{"id": "+reports", "file": "reports.json"},
+		{"id": "+tests", "file": "tests.json"}
+	]
+}

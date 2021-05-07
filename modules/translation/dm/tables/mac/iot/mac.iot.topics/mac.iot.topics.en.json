@@ -1,0 +1,22 @@
+{
+    "table": {
+        "name": "Issues topics"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "topicType": {
+            "name": "Topic type"
+        },
+        "iotBoxDevice": {
+            "name": "Device"
+        },
+        "ioPort": {
+            "name": "IO port"
+        },
+        "topic": {
+            "name": "Topic"
+        }
+    }
+}

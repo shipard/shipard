@@ -1,0 +1,15 @@
+{
+	"main_new": {
+		"panels": {
+			"reception-booking": {
+				"name": "Rezervace",
+				"icon": "icon-book",
+				"fullsize": 1,
+				"order": 10000,
+				"rows": {
+					"main": {"order": 10000}
+				}
+			}
+		}
+	}
+}

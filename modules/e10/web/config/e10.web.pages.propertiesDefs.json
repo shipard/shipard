@@ -1,0 +1,4 @@
+{
+	"sideBarLeft": {"name": "Levý sloupec", "type": "memo", "icon": "x-content"},
+	"sideBarRight": {"name": "Pravý sloupec", "type": "memo", "icon": "x-content"}
+}

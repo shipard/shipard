@@ -1,0 +1,14 @@
+{
+	"e10mnf.core.workOrders": {
+		"e10mnf-workRecs-admins": {"linkid": "e10mnf-workRecs-admins", "name": "Správci zakázky", "icon": "x-wrench",
+			"sources": [
+				{"id": "persons", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			]
+		},
+		"e10mnf-workRecs-members": {"linkid": "e10mnf-workRecs-members", "name": "Členové zakázky", "icon": "x-user",
+			"sources": [
+				{"id": "persons", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			]
+		}
+	}
+}

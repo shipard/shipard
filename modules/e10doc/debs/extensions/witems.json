@@ -1,0 +1,8 @@
+[
+	{
+		"table": "e10.witems.items",
+		"columns": [
+			{"id": "debsAccount", "name": "Účet R", "type": "int", "reference": "e10doc.debs.accounts"}
+		]
+	}
+]

@@ -1,0 +1,34 @@
+{
+    "table": {
+        "name": "VLANs"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "num": {
+            "name": "VLAN number"
+        },
+        "id": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "lan": {
+            "name": "Network"
+        },
+        "isGroup": {
+            "name": "Group"
+        },
+        "isPublic": {
+            "name": "Public VLAN"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

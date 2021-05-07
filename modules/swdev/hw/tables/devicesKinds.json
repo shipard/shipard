@@ -1,0 +1,31 @@
+{
+	"id": "swdev.hw.devicesKinds", "sql": "swdev_hw_devicesKinds", "name": "Druhy HW", "icon": "icon-server",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 70},
+		{"id": "id", "name": "id", "type": "string", "len": 80},
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+		{"id": "deviceType", "name": "Typ zařízení", "type": "enumInt",
+			"enumCfg": {"cfgItem": "swdev.hw.devices.types", "cfgValue": "", "cfgText": "name"}},
+		{"id": "icon", "name": "Ikona", "type": "string", "len": 50},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "swdev.hw.ViewDevicesKinds",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.hw.ViewDetailDeviceKind"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "swdev.hw.FormDeviceKind"}
+	],
+	"options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

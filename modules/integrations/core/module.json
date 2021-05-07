@@ -1,0 +1,14 @@
+{
+  "id": "integrations.core",
+  "name": "integrations - core",
+  "tables": [
+		"services", "tasks", "downloadFiles"
+	],
+	"modules": ["integrations/base"],
+  "config": [
+		{"id": "+appOptions", "file": "appOptions.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+		{"id": "+integration.services.types", "file": "servicesTypes.json"},
+		{"id": "+integration.tasks.types", "file": "tasksTypes.json"}
+  ]
+}

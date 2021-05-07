@@ -1,0 +1,30 @@
+{
+	"id": "e10doc.base.whPlaces", "sql": "e10doc_base_whPlaces", "name": "Skladovací místa", "icon": "icon-inbox",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "title", "name": "Název", "type": "string", "len": 80},
+		{"id": "subTitle", "name": "Doplňkový název", "type": "string", "len": 80},
+		{"id": "id", "name": "ID", "type": "string", "len": 60},
+		{"id": "warehouse", "name": "Sklad", "type": "int", "reference": "e10doc.base.warehouses"},
+		{"id": "ownerPlace", "name": "Nadřazené místo", "type": "int", "reference": "e10doc.base.whPlaces"},
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "e10doc.base.ViewWHPlaces", "detail": "e10doc.base.ViewDetailWHPlace"},
+		{"id": "tree", "class": "e10doc.base.ViewWHPlacesTree", "detail": "e10doc.base.ViewDetailWHPlace"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.base.FormWHPlace"}
+	],
+	"reports": [
+		{
+			"id": "label", "name": "Nálepka", "class": "e10doc.base.libs.ReportWHPlaceStick",
+			"directPrint": 1, "printerClass": "labels"
+		}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "title"}
+}

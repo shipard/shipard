@@ -1,0 +1,15 @@
+{
+	"id": "e10.world.countryLanguages", "sql": "e10_world_countryLanguages", "name": "Jazyky zemí", "icon": "icon-language",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "country", "name": "Země", "type": "int", "reference": "e10.world.countries"},
+		{"id": "language", "name": "Jazyk", "type": "int", "reference": "e10.world.languages"},
+		{"id": "nameCommon", "name": "Název běžný", "type": "string", "len": 180},
+		{"id": "nameOfficial", "name": "Název oficiální", "type": "string", "len": 180},
+		{"id": "rowOrder", "name": "Pořadí", "type": "int"},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné od", "type": "date"}
+	],
+	"options": ["systemTable"]
+}

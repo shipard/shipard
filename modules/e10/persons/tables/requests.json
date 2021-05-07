@@ -1,0 +1,33 @@
+{
+  "id": "e10.persons.requests", "sql": "e10_persons_requests", "name": "Požadavky na správu uživatelů",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+
+    {"id": "requestType", "name": "Požadavek", "type": "enumInt",
+			"enumValues": {
+				"0": "Registrace uživatele", "1": "Změna hesla", "2": "První přihlášení",
+				"3": "Žádost o pozvánku", "4": "Aktivace Shipard účtu", "5": "ID nepřihlášeného uživatele"}
+		},
+
+    {"id": "subject", "name": "Předmět", "type": "string", "len": 100},
+    {"id": "requestId", "name": "ID požadavku", "type": "string", "len": 40},
+    {"id": "loginHash", "name": "Email", "type": "string", "len": 40},
+		{"id": "requestData", "name": "Data požadavku", "type": "memo"},
+    {"id": "created", "name": "Okamžik vytvoření", "type": "timestamp"},
+    {"id": "validTo", "name": "Okamžik ukončení platnosti", "type": "timestamp"},
+    {"id": "finished", "name": "Okamžik vyřízení", "type": "timestamp"},
+    {"id": "addressCreate", "name": "IP adresa vytvoření požadavku", "type": "string", "len": 45},
+    {"id": "addressConfirm", "name": "IP adresa potvrzení požadavku", "type": "string", "len": 45},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+	"options": ["systemTable"],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.persons.requests.docStates"},
+  "views": [
+    {"id": "default", "class": "e10.persons.ViewRequests", "detail": "e10.persons.ViewDetailRequest"}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10.persons.FormRequest"}
+  ]
+}

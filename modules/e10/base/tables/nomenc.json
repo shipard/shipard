@@ -1,0 +1,18 @@
+{
+	"id": "e10.base.nomenc", "sql": "e10_base_nomenc", "name": "Nomenklatura",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "nomencType", "name": "Typ nomenklatury", "label": "Typ", "type": "int", "reference": "e10.base.nomencTypes"},
+		{"id": "nomencItem", "name": "Položka nomenklatury", "label": "Hodn", "type": "int", "reference": "e10.base.nomencItems", "comboViewer": "combo"},
+		{"id": "tableId", "name": "Tabulka", "type": "string", "len": 48, "options": ["ascii"]},
+		{"id": "recId", "name": "Řádek", "type": "int"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10.base.FormNomenc"}
+	],
+	"options": ["systemTable"],
+	"indexes": [
+		{"id": "s1", "columns": ["tableId", "recId"]},
+		{"id": "s2", "columns": ["tableId", "nomencType", "nomencItem", "recId"]}
+	]
+}

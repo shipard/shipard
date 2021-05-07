@@ -1,0 +1,17 @@
+{
+  "id": "mac.devices",
+  "name": "Monitoring And Control - Devices",
+  "tables": [],
+  "modules": ["mac/base"],
+
+  "config": [
+		{"id": "+mac.devices.types", "file": "mac.devices.types.json"},
+		{"id": "+mac.devices.serialLineSpeed", "file": "serialLineSpeed.json"},
+		{"id": "+mac.devices.serialLineMode", "file": "serialLineMode.json"},
+	  {"id": "+mac.devices.displayOrientation", "file": "displayOrientation.json"},
+	  {"id": "+mac.devices.analogValueTypes", "file": "analogValueTypes.json"},
+	  {"id": "+mac.devices.i2cIOExpanders", "file": "i2cIOExpanders.json"},
+	  {"id": "+mac.devices.expanderDir", "file": "expanderDir.json"},
+	  {"id": "+mac.devices.counterCoeficient", "file": "counterCoeficientTypes.json"}
+  ]
+}

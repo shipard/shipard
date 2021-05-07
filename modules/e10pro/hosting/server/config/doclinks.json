@@ -1,0 +1,11 @@
+{
+	"e10pro.hosting.server.portals": {
+		"e10pro-hosting-portal-login-users": {
+			"linkid": "e10pro-hosting-portal-login-users",
+			"name": "Uživatelé na přihlašovací obrazovce", "icon": "icon-user",
+			"sources": [
+				{"id": "persons", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			]
+		}
+	}
+}

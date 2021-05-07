@@ -1,0 +1,28 @@
+{
+	"0": {"name": "Ostatní"},
+	"1": {
+		"name": "CZ / ČNB / denní kurz hlavních měn", "title": "ČNB hlavní měny",
+		"country": "cz", "currency": "czk",
+		"periodType": 0, "rateType": 0,
+		"download": {
+			"workingDays": 1,
+			"afterTime": 1430
+		}
+	},
+	"2": {
+		"name": "CZ / ČNB / měsíční kurz ostatních měn", "title": "ČNB ostatní měny",
+		"country": "cz", "currency": "czk",
+		"periodType": 1, "rateType": 0,
+		"download": {
+			"monthDay": 1
+		}
+	},
+	"3": {
+		"name": "CZ / celní kurz", "title": "CZ / celní kurz",
+		"country": "cz", "currency": "czk",
+		"periodType": 1, "rateType": 1,
+		"download": {
+			"monthDay": 1
+		}
+	}
+}

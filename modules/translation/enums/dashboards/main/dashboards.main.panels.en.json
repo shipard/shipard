@@ -1,0 +1,17 @@
+{
+    "documents": {
+        "name": "Documents"
+    },
+    "trays": {
+        "name": "Trays"
+    },
+    "macAccess": {
+        "name": "Accesses"
+    },
+    "helpdesk_DISABLED": {
+        "name": "Support"
+    },
+    "news": {
+        "name": "Overview"
+    }
+}

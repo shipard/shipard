@@ -1,0 +1,40 @@
+{
+    "table": {
+        "name": "Languages"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "id": {
+            "name": "id"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "alpha2": {
+            "name": "ISO 639-1 Alpha-2 ID"
+        },
+        "alpha3b": {
+            "name": "ISO 639-2 Alpha-3 bibliographic ID"
+        },
+        "alpha3t": {
+            "name": "ISO 639-2 Alpha-3 terminology ID"
+        },
+        "urlWikipedia": {
+            "name": "Wikipedia URL"
+        },
+        "validFrom": {
+            "name": "Valid from"
+        },
+        "validTo": {
+            "name": "Valid until"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

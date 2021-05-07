@@ -1,0 +1,20 @@
+[
+	{
+		"table": "e10doc.debs.journal",
+		"indexes": [
+			{"id": "workOrder", "columns": ["workOrder"]}
+		]
+	},
+	{
+		"table": "e10doc.core.rows",
+		"indexes": [
+			{"id": "workOrder", "columns": ["workOrder"]}
+		]
+	},
+	{
+		"table": "e10pro.wkf.messages", "module": "e10pro.wkf",
+		"columns": [
+			{"id": "workOrder", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"}
+		]
+	}
+]

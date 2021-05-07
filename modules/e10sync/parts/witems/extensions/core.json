@@ -1,0 +1,40 @@
+[
+	{
+		"table": "e10.witems.brands",
+		"columns": [
+			{"id": "syncNdx", "name": "syncNdx", "type": "int"},
+			{"id": "syncSrc", "name": "syncSrc", "type": "int"}
+		]
+	},
+
+	{
+		"table": "e10.witems.itemcategories",
+		"columns": [
+			{"id": "syncNdx", "name": "syncNdx", "type": "int"},
+			{"id": "syncSrc", "name": "syncSrc", "type": "int"}
+		]
+	},
+	{
+		"table": "e10.witems.itemtypes",
+		"columns": [
+			{"id": "syncNdx", "name": "syncNdx", "type": "int"},
+			{"id": "syncSrc", "name": "syncSrc", "type": "int"}
+		]
+	},
+
+	{
+		"table": "e10.witems.relatedKinds",
+		"columns": [
+			{"id": "syncNdx", "name": "syncNdx", "type": "int"},
+			{"id": "syncSrc", "name": "syncSrc", "type": "int"}
+		]
+	},
+
+	{
+		"table": "e10.witems.items",
+		"columns": [
+			{"id": "syncNdx", "name": "syncNdx", "type": "int"},
+			{"id": "syncSrc", "name": "syncSrc", "type": "int"}
+		]
+	}
+]

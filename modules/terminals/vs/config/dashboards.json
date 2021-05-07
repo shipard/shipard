@@ -1,0 +1,28 @@
+{
+	"main": {
+		"panels": {
+			"vs": {
+				"name": "Dohled",
+				"icon": "icon-video-camera",
+				"fullsize": 1,
+				"order": 2200,
+				"rows": {
+					"main": {"order": 10000}
+				}
+			}
+		}
+	},
+	"main_new": {
+		"panels": {
+			"vs": {
+				"name": "Dohled",
+				"icon": "icon-video-camera",
+				"fullsize": 1,
+				"order": 2200,
+				"rows": {
+					"main": {"order": 10000}
+				}
+			}
+		}
+	}
+}

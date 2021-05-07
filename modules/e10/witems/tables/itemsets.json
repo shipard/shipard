@@ -1,0 +1,18 @@
+{
+	"id": "e10.witems.itemsets", "sql": "e10_witems_itemsets", "name": "Sady položek", "icon": "icon-indent",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "itemOwner", "name": "Patří do položky", "type": "int"},
+
+		{"id": "item", "name": "Položka", "type": "int", "reference": "e10.witems.items", "options": ["saveOnChange"]},
+		{"id": "quantity", "name": "Množství", "label": "Množ.", "type": "number", "dec": 3},
+		{"id": "setItemType", "name": "Typ", "type": "enumInt",
+			"enumValues": {"0": "dodatečná položka zásob", "1": "dodatečná položka"}},
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10.witems.FormItemSet"}
+	],
+	"options": ["systemTable"]
+}

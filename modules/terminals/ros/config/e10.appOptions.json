@@ -1,0 +1,7 @@
+{
+	"e10RosRegs": {
+		"name": "Registrace EET", "order": 850000, "group": "core", "icon": "icon-microchip",
+		"type": "viewer", "table": "terminals.ros.rosRegs", "viewer": "default"
+	}
+}
+

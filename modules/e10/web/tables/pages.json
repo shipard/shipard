@@ -1,0 +1,54 @@
+{
+  "id": "e10.web.pages", "sql": "e10_web_pages", "name": "Stránky", "icon": "icon-file-o",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "title", "name": "Název", "type": "string", "len": 120},
+    {"id": "menuTitle", "name": "Titulek menu", "type": "string", "len": 60},
+    {"id": "menuDisabled", "name": "Nedávat do menu", "type": "logical"},
+    {"id": "url", "name": "Url", "type": "string", "len": 100},
+		{"id": "redirectTo", "name": "Přesměrovat na", "type": "string", "len": 100},
+    {"id": "pageType", "name": "Typ", "type": "enumInt",
+			"enumValues": {"0": "stránka", "1": "článek"}},
+		{"id": "server", "name": "Server", "type": "int", "reference": "e10.web.servers"},
+    {"id": "text", "name": "Text", "type": "memo", "comboClass": "lib.web.WebTextSidebar"},
+		{"id": "editTextAsCode", "name": "Editovat text jako kód", "type": "logical"},
+    {"id": "perex", "name": "Perex", "type": "memo"},
+		{"id": "description", "name": "Popis", "type": "string", "len": 200},
+		{"id": "coverImage", "name": "Ilustrační obrázek", "type": "int", "reference": "e10.base.attachments", "comboViewer": "images"},
+
+		{"id": "pageMode", "name": "Funkce stránky", "type": "enumString", "len": 12, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10.web.pageModes", "cfgValue": "", "cfgText": "name"}},
+		{"id": "pageModeParams", "name": "Parametry", "type": "string", "len": 60},
+		{"id": "wiki", "name": "Wiki", "type": "int", "reference": "e10pro.kb.wikies"},
+
+		{"id": "author", "name": "Autor", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "dateCreate", "name": "Datum vzniku", "type": "timestamp"},
+		{"id": "datePub", "name": "Datum publikace", "type": "date"},
+		{"id": "dateClose", "name": "Datum ukončení platnosti", "type": "date"},
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+    {"id": "parentUrl", "name": "Nadřazené url", "type": "string", "len": 100},
+		{"id": "treeLevel", "name": "Úroveň zanoření", "type": "int"},
+		{"id": "treeId", "name": "ID větve stromu", "type": "string", "len": 40},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+  "lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"},
+    {"id": "properties", "class": "e10.base.ListProperties", "name": "Vlastnosti stránek webu",
+			"propertiesCfgList": "e10.web.pagesProperties"}
+  ],
+  "views": [
+    {"id": "default", "class": "e10.web.ViewPages",
+			"details": {
+				"preview": {"title": "Náhled", "icon": "icon-eye", "type": "detail", "class": "e10.web.ViewDetailPagePreview", "order": 1000},
+				"text": {"title": "Text", "icon": "icon-pencil", "type": "detail", "class": "e10.web.ViewDetailPageText", "order": 2000}
+			}
+		}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10.web.FormPagesPage"}
+  ],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.web.pages.docStates"}
+}

@@ -1,0 +1,18 @@
+{
+	"id": "e10.base.docsmodes", "sql": "e10_base_docsmodes", "name": "Módy dokumentů",
+	"columns": [
+		{"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "tableId", "name": "Tabulka", "type": "string", "len": 48},
+		{"id": "recId", "name": "Řádek", "type": "int"},
+
+		{"id": "mode", "name": "Mód", "type": "string", "len": 48},
+		{"id": "user", "name": "Uživatel", "type": "int", "reference": "e10.persons.persons"},
+
+		{"id": "key1", "name": "Klíč 1", "type": "string", "len": "64"},
+		{"id": "key2", "name": "Klíč 2", "type": "string", "len": "64"},
+
+		{"id": "created", "sql": "created", "name": "Okamžik vytvoření", "type": "timestamp"}
+	],
+	"options": ["systemTable"]
+}

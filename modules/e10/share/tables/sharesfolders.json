@@ -1,0 +1,11 @@
+{
+	"id": "e10.share.sharesfolders", "sql": "e10_share_sharesfolders", "name": "Složky Sdílení", "icon": "icon-share-alt",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "share", "name": "share", "type": "int"},
+		{"id": "id", "name": "ID", "type": "string", "len": 80},
+		{"id": "name", "name": "Název", "type": "string", "len": 120},
+		{"id": "cntItems", "name": "Počet položek", "type": "int"}
+	],
+	"options": ["systemTable"]
+}

@@ -1,0 +1,9 @@
+{
+	"id": "demo.core",
+	"name": "Podpora demonstračních dat",
+	"extensions": ["demo"],
+	"tables": ["tasks"],
+	"modules": ["e10/base"],
+	"config": [
+	]
+}

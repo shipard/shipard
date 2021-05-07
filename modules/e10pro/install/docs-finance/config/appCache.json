@@ -1,0 +1,43 @@
+{
+	"items": {
+		"lib.cacheItems.BankAccountsStates": {
+			"onStartup": 1
+		},
+		"lib.cacheItems.BalanceObligations": {
+			"onStartup": 1
+		},
+		"lib.cacheItems.BalanceReceivables": {
+			"onStartup": 1
+		},
+		"lib.cacheItems.OverviewSales": {
+			"onStartup": 1
+		},
+		"lib.cacheItems.OverviewCompanyResults": {
+			"onStartup": 1
+		},
+		"lib.cacheItems.CompanyDaily": {
+			"onStartup": 1
+		}
+	},
+	"invalidate": {
+		"e10doc.core.heads": {
+			"bank": [
+				"lib.cacheItems.BankAccountsStates", "lib.cacheItems.BalanceReceivables", "lib.cacheItems.BalanceObligations"
+			],
+			"cash": [
+				"lib.cacheItems.CashStates", "lib.cacheItems.BalanceReceivables", "lib.cacheItems.BalanceObligations"
+			],
+			"invno": [
+				"lib.cacheItems.CashStates", "lib.cacheItems.BalanceReceivables", "lib.cacheItems.BalanceObligations",
+				"lib.cacheItems.OverviewSales", "lib.cacheItems.CompanyDaily"
+			],
+			"invni": [
+				"lib.cacheItems.CashStates", "lib.cacheItems.BalanceReceivables", "lib.cacheItems.BalanceObligations",
+				"lib.cacheItems.CompanyDaily"
+			],
+			"ALL": [
+				"lib.cacheItems.OverviewCompanyResults"
+			]
+		}
+	}
+}

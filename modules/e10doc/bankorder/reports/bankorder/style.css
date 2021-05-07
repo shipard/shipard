@@ -1,0 +1,21 @@
+@import url("../../../core/reports/formreport.css");
+
+div#bankorder-top {font-size: 14pt; text-align: center; padding-top: 5pt;}
+
+div#simple-text {font-size: 10pt;}
+
+table#bankorder {margin-top: 10pt; border-collapse: collapse; width: 100%;}
+table#bankorder td {font-size: 10pt; text-align: center; margin: 0; padding: 3pt;}
+table#bankorder td.w10 {width: 10%;}
+table#bankorder td.w20 {width: 20%;}
+table#bankorder td.w30 {width: 30%;}
+table#bankorder td.w40 {width: 40%;}
+table#bankorder td.w50 {width: 50%;}
+table#bankorder td.border {border: .8pt solid #999;}
+table#bankorder td.noborder {border: 0;}
+table#bankorder td.right {text-align: right;}
+
+span#footer {font-size: 10pt;}
+span.with-line {float: right; margin-left: 20pt; border-top: .8pt solid #999; width: 100pt; padding-top: 2pt; text-align: center;}
+
+div.newPage {page-break-before: always; padding-bottom: 2pt;}

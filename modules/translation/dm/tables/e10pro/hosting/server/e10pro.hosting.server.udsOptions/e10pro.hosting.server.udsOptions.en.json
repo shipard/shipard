@@ -1,0 +1,19 @@
+{
+    "table": {
+        "name": "Setting of user data sources"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "uds": {
+            "name": "Data source"
+        },
+        "favorite": {
+            "name": "Favorite"
+        },
+        "dsOrder": {
+            "name": "Order"
+        }
+    }
+}

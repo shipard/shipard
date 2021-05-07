@@ -1,0 +1,16 @@
+{
+	"id": "mac.swlan.devicesSWHistory", "sql": "mac_swlan_devicesSWHistory", "name": "Historie SW na zařízeních", "icon": "icon-file-text-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "device", "name": "Zařízení", "type": "int", "reference": "mac.lan.devices"},
+		{"id": "sw", "name": "Software", "type": "int", "len": 6, "reference": "mac.sw.sw"},
+		{"id": "swVersion", "name": "verze software", "type": "int", "len": 6, "reference": "mac.sw.swVersions"},
+
+		{"id": "dateBegin", "name": "Datum a čas vzniku", "type": "timestamp"},
+		{"id": "dateEnd", "name": "Datum a čas ukončení", "type": "timestamp"},
+
+		{"id": "active", "name": "Nainstalováno", "type": "logical"}
+	],
+	"options": ["systemTable"]
+}

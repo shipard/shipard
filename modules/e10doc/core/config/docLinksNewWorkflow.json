@@ -1,0 +1,10 @@
+{
+	"e10doc.core.heads": {
+		"e10docs-inbox": {
+			"linkid": "e10docs-inbox", "name": "Došlá pošta", "icon": "icon-chevron-left",
+			"sources": [
+				{"table": "wkf.core.issues", "viewer": "wkf.core.viewers.DocsCombo"}
+			]
+		}
+	}
+}

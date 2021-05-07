@@ -1,0 +1,57 @@
+{
+	"0": {
+		"fn": "Jiné / neznámé",
+		"sn": "Jiné / neznámé"
+	},
+
+	"100": {
+		"osf": 0,
+		"fn": "Windows 10 Home",
+		"sn": "Windows 10 Home"
+	},
+	"101": {
+		"osf": 0,
+		"fn": "Windows 10 Professional",
+		"sn": "Windows 10 Pro"
+	},
+
+	"300": {
+		"osf": 1,
+		"fn": "Mac OS",
+		"sn": "Mac OS"
+	},
+
+	"400": {
+		"osf": 2,
+		"fn": "Debian",
+		"sn": "Debian"
+	},
+	"401": {
+		"osf": 2,
+		"fn": "Ubuntu",
+		"sn": "Ubuntu"
+	},
+	"402": {
+		"osf": 2,
+		"fn": "Armbian",
+		"sn": "Armbian"
+	},
+	"403": {
+		"osf": 2,
+		"fn": "Raspbian",
+		"sn": "Raspbian"
+	},
+
+	"1001": {
+		"osf": 3,
+		"fn": "Route OS",
+		"sn": "Route OS"
+	},
+
+	"1050": {
+		"osf": 4,
+		"fn": "EdgeCore ",
+		"sn": "EdgeCore"
+	}
+
+}

@@ -1,0 +1,22 @@
+{
+    "table": {
+        "name": "Dictionary data"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "dict": {
+            "name": "Dictionary"
+        },
+        "lang": {
+            "name": "Language"
+        },
+        "data": {
+            "name": "Data"
+        },
+        "checksum": {
+            "name": "Checksum"
+        }
+    }
+}

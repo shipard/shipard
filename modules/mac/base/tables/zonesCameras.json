@@ -1,0 +1,16 @@
+{
+	"id": "mac.base.zonesCameras", "sql": "mac_base_zonesCameras", "name": "Kamery v zónach", "icon": "icon-video-camera",
+	"columns": [
+		{"id": "ndx", "name": "ndx", "type": "int_ai"},
+
+		{"id": "zone", "name": "Zóna", "type": "int", "reference": "mac.base.zones"},
+		{"id": "camera", "name": "Kamera", "type": "int", "reference": "mac.lan.devices", "comboViewer": "cameras"},
+
+
+		{"id": "rowOrder", "name": "Pořadí", "type": "int"}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.base.FormZoneCamera"}
+	],
+	"options": ["systemTable"]
+}

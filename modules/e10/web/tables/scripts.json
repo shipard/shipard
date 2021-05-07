@@ -1,0 +1,32 @@
+{
+	"id": "e10.web.scripts", "sql": "e10_web_scripts", "name": "Skripty pro web", "icon": "icon-code",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "name", "name": "Název", "type": "string", "len": 120},
+		{"id": "id", "name": "Identifikátor", "type": "string", "len": 80},
+		{"id": "gid", "name": "Globální ID", "type": "string", "len": 16},
+
+		{"id": "code", "name": "Kód", "type": "code"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"},
+		{"id": "properties", "class": "e10.base.ListProperties", "name": "Vlastnosti stránek webu",
+			"propertiesCfgList": "e10.web.pagesProperties"}
+	],
+	"views": [
+		{"id": "default", "class": "e10.web.ViewScripts",
+			"details": {
+				"preview": {"title": "Náhled", "icon": "icon-eye", "type": "detail", "class": "e10.web.ViewDetailScriptPreview", "order": 1000},
+				"text": {"title": "Text", "icon": "icon-pencil", "type": "detail", "class": "e10.web.ViewDetailScriptSource", "order": 2000}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10.web.FormScript"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

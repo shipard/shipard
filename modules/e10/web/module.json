@@ -1,0 +1,28 @@
+{
+  "id": "e10.web",
+  "name": "Web",
+  "tables": [
+		"articles", "articlesSections", "blocks", "blocksItems", "scripts", "pages", "news", "urldecorations", "servers",
+		"wuKeys", "wuPasswords", "wuSessions"
+	],
+  "modules": ["e10/base"],
+  "config": [
+    {"id": "+appSkeleton", "name": "Rozšíření menu aplikace", "file": "web.appSkeleton.json"},
+    {"id": "+e10.persons.roles", "name": "Role uživatelů", "file": "e10.web.roles.json"},
+		{"id": "+appOptions", "name": "Nastavení webu", "file": "e10.appOptions.json"},
+	  {"id": "+e10.appOptions.groups", "file": "e10.appOptionsGroups.json"},
+		{"id": "+e10.base.clsfGroups", "name": "Části a rubriky webu", "file": "e10.web.clsfGroups.json"},
+    {"id": "+e10.web.pagesProperties", "name": "Vlastnosti stránek webu", "file": "e10.web.pages.properties.json"},
+    {"id": "+e10.base.properties", "name": "Definice vlastností stránek", "file": "e10.web.pages.propertiesDefs.json"},
+    {"id": "+e10.base.propertiesGroups", "name": "Skupiny vlastnostní stránek", "file": "e10.web.pages.propertiesGroups.json"},
+		{"id": "e10.web.pages.docStates", "name": "Stavy webových stránek", "file": "e10.web.pages.docStates.json"},
+		{"id": "e10.web.servers.docStates", "file": "e10.web.servers.docStates.json"},
+		{"id": "+e10.web.serverModes", "file": "e10.web.serverModes.json"},
+		{"id": "e10.web.wuKeys.docStates", "file": "e10.web.wuKeys.docStates.json"},
+		{"id": "+e10.web.pageModes", "file": "e10.web.pageModes.json"},
+	  {"id": "+e10.base.doclinks", "file": "e10.web.docLinks.json"},
+		{"id": "+widgets", "file": "widgets.json"},
+		{"id": "+dashboards", "file": "dashboards.json"},
+		{"id": "+registeredClasses", "file": "registeredClasses.json"}
+  ]
+}

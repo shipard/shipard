@@ -1,0 +1,33 @@
+{
+	"id": "mac.iot.controls", "sql": "mac_iot_controls", "name": "Ovládací prvky", "icon": "icon-toggle-on",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "uid", "name": "UID", "type": "string", "len": 20, "options": ["ascii"]},
+
+		{"id": "lan", "name": "Síť", "type": "int", "reference": "mac.lan.lans"},
+		{"id": "targetType", "name": "Cíl ovládacího prvku", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.iot.controlTargetsTypes", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "dstIOPort", "name": "Zařízení", "type": "int", "reference": "mac.lan.devicesIOPorts", "options": ["saveOnChange"]},
+
+		{"id": "dstIoTThing", "name": "IoT prvek", "type": "int", "reference": "mac.iot.things", "options": ["saveOnChange"]},
+		{"id": "dstIoTThingAction", "name": "Akce", "type": "enumString", "len": 40},
+		{"id": "mqttTopic", "name": "MQTT topic", "type": "string", "len": 120},
+		{"id": "mqttPayloadClick", "name": "MQTT zpráva", "type": "string", "len": 120},
+
+		{"id": "fullName", "name": "Úplný název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
+		{"id": "idName", "name": "ID", "type": "string", "len": 80},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "mac.iot.ViewControls", "detail": "mac.iot.ViewDetailControl"}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.iot.FormControl"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

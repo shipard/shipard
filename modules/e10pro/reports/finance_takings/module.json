@@ -1,0 +1,7 @@
+{
+	"id": "e10pro.reports.finance_takings",
+	"name": "Core takings reports",
+	"config": [
+		{"id": "+reports", "file": "reports.json"}
+	]
+}

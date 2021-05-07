@@ -1,0 +1,35 @@
+{
+	"id": "e10.base.notifications", "sql": "e10_base_notifications", "name": "Oznámení", "icon": "icon-bell-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "subject", "name": "Předmět", "type": "string", "len": 80},
+		{"id": "text", "name": "Popis", "type": "string", "len": 240},
+
+		{"id": "personDest", "name": "Uživatel Pro", "type": "int"},
+		{"id": "personSrc", "name": "Uživatel Od", "type": "int"},
+
+		{"id": "tableId", "name": "Tabulka", "type": "string", "len": 48},
+		{"id": "recId", "name": "Záznam", "type": "int"},
+		{"id": "recIdMain", "name": "Hlavní záznam", "type": "int"},
+
+		{"id": "icon", "name": "Ikona", "type": "string", "len": 32},
+
+		{"id": "objectType", "name": "Typ objektu", "type": "string", "len": 48},
+		{"id": "objectClass", "name": "Třída objektu", "type": "string", "len": 80},
+
+		{"id": "created","name": "Okamžik vytvoření", "type": "timestamp"},
+		{"id": "notified","name": "Okamžik oznámení", "type": "timestamp"},
+
+		{"id": "state", "name": "Stav", "type": "enumInt",
+			"enumValues": {"0": "Zobrazit", "1": "Skrýt"}},
+
+		{"id": "ntfType", "name": "Typ notifikace", "type": "enumInt",
+			"enumValues": {"0": "Novinka", "1": "K řešení", "2": "Vyřešeno", "4": "Ukončeno", "5": "Smazáno", "90": "Chyba", "91": "Nový email", "92": "Komentář", "99":  "Ostatní"}},
+		{"id": "ntfTypeName", "name": "Popis typu notifikace", "type": "string", "len": 48}
+	],
+	"options": ["systemTable"],
+	"views": [
+		{"id": "default", "class": "e10.base.ViewNotification"},
+		{"id": "nc", "class": "e10.base.ViewNotificationsCentre"}
+	]
+}

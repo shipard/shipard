@@ -1,0 +1,9 @@
+{
+	"admin": {
+		"viewers": {
+			"integrations.core.services": {"default": 2},
+			"integrations.core.tasks": {"default": 2},
+			"integrations.core.downloadFiles": {"default": 2}
+		}
+	}
+}

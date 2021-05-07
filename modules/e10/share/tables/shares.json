@@ -1,0 +1,29 @@
+{
+	"id": "e10.share.shares", "sql": "e10_share_shares", "name": "Sdílení", "icon": "icon-share-alt",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "name", "name": "Název", "type": "string", "len": 120},
+
+		{"id": "shareType", "name": "Typ", "type": "enumInt",
+			"enumValues": {"0": "other", "1": "simpleDocument", "2": "complexDocument"}},
+
+		{"id": "classId", "name": "Druh sdílení", "type": "string", "len": 80},
+		{"id": "tableId", "name": "Tabulka", "type": "string", "len": 48},
+		{"id": "recId", "name": "Řádek", "type": "int"},
+
+		{"id": "id", "name": "ID", "type": "string", "len": 40},
+		{"id": "dateCreate", "name": "Datum vzniku", "type": "timestamp"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.share.docStates"},
+	"views": [
+		{"id": "default", "class": "e10.share.ViewShares", "detail": "e10.share.ViewDetailShare"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10.share.FormShare"}
+	],
+	"order": [{"column": "name", "order": "ASC"}],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"}
+}

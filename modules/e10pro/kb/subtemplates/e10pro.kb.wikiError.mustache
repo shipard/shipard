@@ -1,0 +1,20 @@
+<div class="e10-wiki-header">
+    <h1 class="e10-wiki-title">{{data.page.title}}</h1>
+    <ul class="breadcrumb">
+        {{#data.page.breadcrumbs}}
+            <li class="breadcrumb-item{{#active}} active{{/active}}">
+                {{^active}}<a href="{{id}}">{{#icon}}<i class="{{@icon;dataItem:icon}}"></i>{{/icon}} {{title}}</a>{{/active}}
+                {{#active}}<span>{{title}}</span>{{/active}}
+            </li>
+        {{/data.page.breadcrumbs}}
+    </ul>
+</div>
+
+<div class="row">
+    <div class="col-md-9">
+        <div class="pageText">
+            {{{data.page.htmlPageText}}}
+        </div>
+    </div>
+</div>
+

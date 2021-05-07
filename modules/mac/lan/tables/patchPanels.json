@@ -1,0 +1,36 @@
+{
+	"id": "mac.lan.patchPanels", "sql": "mac_lan_patchPanels", "name": "Patch panely", "icon": "icon-ellipsis-h",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "fullName", "name": "Úplný název", "type": "string", "len": 120},
+		{"id": "id", "name": "Zkrácený název/ID", "type": "string", "len": 40},
+
+		{"id": "patchPanelKind", "name": "Druh patch panelu", "type": "enumInt",
+			"enumCfg": {"cfgItem": "mac.lan.patchPanels.kinds", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "rack", "name": "Rack", "type": "int", "reference": "mac.lan.racks"},
+		{"id": "rackPos", "name": "Pozice v racku", "type": "int"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "ports", "class": "e10.base.ListRows", "name": "Porty patch panelů", "table": "mac.lan.patchPanelsPorts", "queryColumn": "patchPanel", "orderColumn": "rowOrder"}
+	],
+	"views": [
+		{
+			"id": "default", "class": "mac.lan.ViewPatchPanels",  "detail": "mac.lan.ViewDetailPatchPanel"
+		},
+		{
+			"id": "tree", "class": "mac.lan.ViewPatchPanelsTree",  "detail": "mac.lan.ViewDetailPatchPanel"
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.lan.FormPatchPanel"}
+	],
+	"options": ["disableCopyRecords"],
+	"addWizard": {"class": "mac.lan.libs.AddPatchPanelWizard", "text":  "Přidat"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

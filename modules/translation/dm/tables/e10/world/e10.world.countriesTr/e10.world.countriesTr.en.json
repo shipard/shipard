@@ -1,0 +1,22 @@
+{
+    "table": {
+        "name": "Countries - names translations"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "country": {
+            "name": "Country"
+        },
+        "language": {
+            "name": "Language"
+        },
+        "nameCommon": {
+            "name": "Common name"
+        },
+        "nameOfficial": {
+            "name": "Official name"
+        }
+    }
+}

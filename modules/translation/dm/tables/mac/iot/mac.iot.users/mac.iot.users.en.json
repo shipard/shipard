@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "IoT Users"
+    },
+    "columns": {
+        "ndx": {
+            "name": "ndx"
+        },
+        "userType": {
+            "name": "User type"
+        },
+        "login": {
+            "name": "Login"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "password": {
+            "name": "Password"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

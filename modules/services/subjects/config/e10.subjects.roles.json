@@ -1,0 +1,19 @@
+{
+	"svcsbjadm": {
+		"name": "Správce Subjektů",
+		"roles": ["pwuser"],
+		"viewers": {
+			"services.subjects.subjects": {"default": 2, "sources": 1},
+			"services.subjects.types": {"default": 2},
+			"services.subjects.branches": {"default": 2},
+			"services.subjects.branchesParts": {"default": 2},
+			"services.subjects.kinds": {"default": 2},
+			"services.subjects.sizes": {"default": 2},
+			"services.subjects.activities": {"default": 2},
+			"services.subjects.commodities": {"default": 2}
+		},
+		"widgets": {
+			"services.subjects.SourcesWidget": 2
+		}
+	}
+}

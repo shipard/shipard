@@ -1,0 +1,40 @@
+[
+  {
+    "table": "e10doc.core.heads",
+    "views": {
+        "invoicesOut": {
+            "id": "invoicesOut", "class": "e10doc.invoicesOut.libs.ViewInvoices", "help": "prirucka/4862",
+            "details": {
+              "detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10doc.invoicesOut.libs.ViewDetailInvoices", "order": 1000}
+        }
+      }
+    },
+    "forms": [
+      {"id": "invoicesOut", "class": "e10doc.invoicesOut.libs.FormInvoiceOut", "help": "prirucka/4428"}
+    ],
+		"reports": [
+			{
+				"id": "invout", "name": "Faktura", "class": "e10doc.invoicesOut.libs.InvoiceOutReport",
+				"queryCol": "docType", "queryColValues": ["invno", "cashreg"],
+				"email": 1, "dropdown": 1
+			},
+			{
+				"id": "invnoCash", "name": "Pokladní lístek", "class": "e10doc.cash.CashReport",
+				"queryCol": "paymentMethod", "queryColValue": 1
+			}
+		]
+  },
+  {
+    "table": "e10doc.core.rows",
+    "forms": [
+      {"id": "invoicesOut", "class": "e10doc.invoicesOut.libs.FormInvoiceOutRow"}
+    ],
+		"views": [
+			{"id": "formListInvoicesOut", "class": "e10doc.invoicesOut.libs.ViewDocRowsInvoicesOutFormList", "type": "form",
+				"details": {
+					"default": {"title": "Přehled", "icon": "x-content", "type": "detail", "class": "e10doc.invoicesOut.libs.ViewDocRowsInvoicesOutFormListDetail"}
+				}
+			}
+		]
+  }
+]

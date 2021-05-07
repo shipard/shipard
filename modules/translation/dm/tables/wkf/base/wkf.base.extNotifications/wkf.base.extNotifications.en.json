@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "External notifications"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "minPriority": {
+            "name": "Min. priority"
+        },
+        "l1Channel": {
+            "name": "Notification channel"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

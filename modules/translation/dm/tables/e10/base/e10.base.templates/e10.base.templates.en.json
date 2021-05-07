@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "Templates"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "name": {
+            "name": "Template name"
+        },
+        "type": {
+            "name": "Type of template"
+        },
+        "templateCode": {
+            "name": "Code of template"
+        },
+        "sn": {
+            "name": "SN"
+        },
+        "replaceId": {
+            "name": "Replaces"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

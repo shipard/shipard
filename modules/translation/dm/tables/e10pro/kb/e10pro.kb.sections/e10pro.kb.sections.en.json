@@ -1,0 +1,46 @@
+{
+    "table": {
+        "name": "Wiki Sections"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "title": {
+            "name": "Title"
+        },
+        "wiki": {
+            "name": "Wiki"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "publicRead": {
+            "name": "Public section"
+        },
+        "icon": {
+            "name": "Icon"
+        },
+        "topMenuStyle": {
+            "name": "Placement in top menu"
+        },
+        "homeTileStyle": {
+            "name": "Home page tiles"
+        },
+        "perex": {
+            "name": "Perex"
+        },
+        "pageFooter": {
+            "name": "Pages footer"
+        },
+        "bookEnable": {
+            "name": "Enable book generating"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

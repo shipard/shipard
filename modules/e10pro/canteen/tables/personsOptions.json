@@ -1,0 +1,25 @@
+{
+	"id": "e10pro.canteen.personsOptions", "sql": "e10pro_canteen_personsOptions", "name": "Nastavení strávníků", "icon": "icon-user-circle",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "fullName", "name": "Úplný název", "type": "string", "len": 120},
+		{"id": "canteen", "name": "Jídelna", "type": "int", "reference": "e10pro.canteen.canteens"},
+		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "foods", "class": "e10.base.ListRows", "name": "Jídla", "table": "e10pro.canteen.personsOptionsFoods", "queryColumn": "personOptions", "orderColumn": "rowOrder"},
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"views": [
+		{"id": "default", "class": "e10pro.canteen.ViewPersonsOptions", "help": "prirucka/4702"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.canteen.FormPersonOptions", "help": "prirucka/4702"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

@@ -1,0 +1,29 @@
+{
+	"id": "e10doc.ddm.formatsItems", "sql": "e10doc_ddm_formatsItems", "name": "Položky formátů vytěžování dat dokladů", "icon": "icon-filter",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "format", "name": "Formát", "type": "int", "reference": "e10doc.ddm.formats"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 80},
+
+		{"id": "itemType", "name": "Typ údaje", "type": "enumString", "len": 50,
+			"enumCfg": {"cfgItem": "e10doc.ddm.formatItemsTypes", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "searchPrefix", "name": "Text před", "type": "string", "len": 100},
+		{"id": "prefixIsRegExp", "name": "RegExp", "type": "logical"},
+		{"id": "searchSuffix", "name": "Text za", "type": "string", "len": 100},
+		{"id": "suffixIsRegExp", "name": "RegExp", "type": "logical"},
+		{"id": "searchRegExp", "name": "Regulární výraz", "type": "string", "len": 200},
+		{"id": "searchRegExpFlags", "name": "Volby regulárního výrazu", "type": "string", "len": 20},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "e10doc.ddm.ViewFormatsItems"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.ddm.FormFormatItem"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"}
+}

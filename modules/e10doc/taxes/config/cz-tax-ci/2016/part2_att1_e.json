@@ -1,0 +1,68 @@
+{
+	"name": "Odečet daňové ztráty od základu daně podle § 34 odst. 1 až 3 zákona5) nebo snížení základu daně podílového fondu o záporný rozdíl mezi jeho příjmy a výdaji podle § 20 odst. 3 zákona, ve znění platném do 14. července 2011",
+	"title": "Odečet daňové ztráty od základu daně podle § 34 odst. 1 až 3 zákona5) nebo snížení základu daně podílového fondu o záporný rozdíl mezi jeho příjmy a výdaji podle § 20 odst. 3 zákona, ve znění platném do 14. července 2011",
+
+	"fields": {
+		"columns": [
+			{
+				"id": "table_P1E", "type": "recordSet", "name": "Odečet daňové ztráty (věta J)",
+				"columns": [
+					{"id": "pr1e_sl_1_od", "type": "date", "name": "Datum od"},
+					{"id": "pr1e_sl_1_do", "type": "date", "name": "Datum do"},
+					{"id": "pr1e_sl_2", "type": "long", "name": "Celková výše daňové ztráty vyměřené nebo přiznávané za období"},
+					{"id": "pr1e_sl_3", "type": "long", "name": "Část daňové ztráty ze sl. 2 odečtená v předcházejících zdaňovacích obdobích"},
+					{"id": "pr1e_sl_4", "type": "long", "name": "Část daňové ztráty ze sl. 2 odečtená v daném zdaňovacím období"},
+					{"id": "pr1e_sl_5", "type": "long", "name": "Část daňové ztráty ze sl. 2 kterou lze odečíst v následujících zdaňovacích obdobích"}
+				]
+			}
+		],
+
+		"layout": [
+			{
+				"recordSetTable": {
+					"recordSetColumn": "table_P1E",
+					"header": [
+						{
+							"#": "Řádek",
+							"pr1e_sl_1_od": "Zdaňovací období nebo období, za které se podává daňové přiznání, v němž daňová ztráta vznikla od – do",
+							"pr1e_sl_2": "Celková výše daňové ztráty vyměřené nebo přiznávané za období uvedené ve sl. 1",
+							"pr1e_sl_3": "Část daňové ztráty ze sl. 2",
+							"_options": {
+								"colSpan": {"pr1e_sl_1_od": 2, "pr1e_sl_3": 3},
+								"rowSpan": {"#": 3, "pr1e_sl_1_od": 2, "pr1e_sl_1_do": 2, "pr1e_sl_2": 2},
+								"cellClasses": {"pr1e_sl_1_od": "center", "pr1e_sl_2": "center", "pr1e_sl_3": "center"}
+							}
+						},
+						{
+							"pr1e_sl_3": "odečtená v předcházejících zdaňovacích obdobích",
+							"pr1e_sl_4": "odečtená v daném zdaňovacím období",
+							"pr1e_sl_5": "kterou lze odečíst v následujících zdaňovacích obdobích",
+							"_options": {
+								"cellClasses": {"pr1e_sl_3": "center", "pr1e_sl_4": "center", "pr1e_sl_5": "center"}
+							}
+						},
+						{
+							"pr1e_sl_1_od": "1 - od",
+							"pr1e_sl_1_do": "1 - do",
+							"pr1e_sl_2": "2",
+							"pr1e_sl_3": "3",
+							"pr1e_sl_4": "4",
+							"pr1e_sl_5": "5",
+							"_options": {
+								"cellClasses": {"pr1e_sl_1_od": "center", "pr1e_sl_1_do": "center", "pr1e_sl_2": "center", "pr1e_sl_3": "center", "pr1e_sl_4": "center", "pr1e_sl_5": "center"}
+							}
+						}
+					],
+					"cols": {
+						"#": " Řádek",
+						"pr1e_sl_1_od": "Od", "pr1e_sl_1_do": "Do",
+						"pr1e_sl_2": " qwe",
+						"pr1e_sl_3": " aaa",
+						"pr1e_sl_4": " bbb",
+						"pr1e_sl_5": " ccc"
+					}
+				}
+			}
+		]
+	}
+}

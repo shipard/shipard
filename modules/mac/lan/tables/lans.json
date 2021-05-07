@@ -1,0 +1,51 @@
+{
+	"id": "mac.lan.lans", "sql": "mac_lan_lans", "name": "Počítačové sítě", "icon": "x-site",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 60},
+		{"id": "owner", "name": "Majitel", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+		{"id": "mainServerLanControl", "name": "Hlavní server pro řízení sítě", "type": "int", "reference": "mac.lan.devices", "comboViewer": "shipardNodes"},
+		{"id": "mainServerCameras", "name": "Hlavní server pro kamery", "type": "int", "reference": "mac.lan.devices", "comboViewer": "shipardNodes"},
+		{"id": "mainServerIoT", "name": "Hlavní server pro IoT", "type": "int", "reference": "mac.lan.devices", "comboViewer": "shipardNodes"},
+		{"id": "mainRouter", "name": "Hlavní router", "type": "int", "reference": "mac.lan.devices", "comboViewer": "routers"},
+
+		{"id": "vlanManagement", "name": "VLAN pro management aktivních prvků", "type": "int", "reference": "mac.lan.vlans", "comboViewer": "comboVlans"},
+		{"id": "vlanAdmins", "name": "VLAN správců sítě", "type": "int", "reference": "mac.lan.vlans", "comboViewer": "comboVlans"},
+
+		{"id": "robotUser", "name": "Uživatel - robot pro komunikaci s databází ", "type": "int", "reference": "e10.persons.persons", "comboViewer": "users"},
+
+		{"id": "defaultMacDataSource", "name": "Výchozí zdroj dat pro monitoring", "type": "int", "reference": "mac.data.sources"},
+		{"id": "lanMonDashboardsUrl", "name": "URL pro dahboardy monitoringu", "type": "string", "len": 80},
+		{"id": "iotStoreDataSource", "name": "Zdroj dat pro IoT", "type": "int", "reference": "mac.data.sources"},
+
+		{"id": "alertsDeliveryTarget", "name": "Výstrahy doručovat do", "type": "enumString", "len": "48",
+			"enumCfg": {"cfgItem": "wkf.shipardEmails", "cfgValue": "", "cfgText": "title"}},
+
+		{"id": "rackLabelText", "name": "Text na nálepku racku", "type": "memo"},
+
+		{"id": "wiki", "name": "Wiki", "type": "int", "reference":  "e10pro.kb.wikies"},
+		{"id": "wikiSection", "name": "Wiki sekce", "type": "int", "reference":  "e10pro.kb.sections"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"views": [
+		{"id": "default", "class": "mac.lan.ViewLans",
+			"details": {
+				"preview": {"title": "Náhled", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewDetailLanPreview"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.lan.FormLan"}
+	],
+	"addWizard": {"class": "mac.lan.libs.AddWizardLan"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

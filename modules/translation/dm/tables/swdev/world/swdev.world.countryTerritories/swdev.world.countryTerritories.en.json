@@ -1,0 +1,25 @@
+{
+    "table": {
+        "name": "Territories of countries"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "country": {
+            "name": "Country"
+        },
+        "territory": {
+            "name": "Territory"
+        },
+        "rowOrder": {
+            "name": "Order"
+        },
+        "validFrom": {
+            "name": "Valid from"
+        },
+        "validTo": {
+            "name": "Valid until"
+        }
+    }
+}

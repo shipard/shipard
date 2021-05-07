@@ -1,0 +1,26 @@
+{
+    "8000": {
+        "stateName": "In editing",
+        "actionName": "Edit"
+    },
+    "1000": {
+        "actionName": "Edit",
+        "stateName": "Document in editing"
+    },
+    "1200": {
+        "stateName": "Confirmed",
+        "actionName": "Confirm"
+    },
+    "9000": {
+        "stateName": "In Archive",
+        "actionName": "Archive"
+    },
+    "9800": {
+        "stateName": "Deleted",
+        "actionName": "Delete"
+    },
+    "4000": {
+        "actionName": "Pay",
+        "stateName": "Sent to be payed"
+    }
+}

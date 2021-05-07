@@ -1,0 +1,16 @@
+{
+  "id": "e10pro.install.docs-accounting",
+  "name": "Účetnictví",
+  "config": [
+    {"id": "+appSkeleton", "name": "Kostra aplikace", "file": "docs-accounting.appSkeleton.json"},
+		{"id": "+appOptions", "name": "Nastavení účetnictví", "file": "e10.appOptions.json"},
+		{"id": "+e10.persons.roles", "name": "Role uživatelů", "file": "e10.persons.roles.json"},
+	  {"id": "+reports", "file": "reports.json"},
+	  {"id": "+tests", "file": "tests.json"}
+  ],
+  "modules": [
+		"e10pro/install/docs-core",
+		"e10doc/cash", "e10doc/bank", "e10doc/cmnbkp", "e10doc/finance", "e10doc/debs",
+		"e10/share", "e10sync/parts/acc"
+  ]
+}

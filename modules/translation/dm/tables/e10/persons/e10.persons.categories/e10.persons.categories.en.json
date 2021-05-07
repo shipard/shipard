@@ -1,0 +1,22 @@
+{
+    "table": {
+        "name": "Categories of persons"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "categoryType": {
+            "name": "Category type"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

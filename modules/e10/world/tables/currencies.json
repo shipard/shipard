@@ -1,0 +1,24 @@
+{
+	"id": "e10.world.currencies", "sql": "e10_world_currencies", "name": "Měny", "icon": "icon-money",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "id", "name": "id", "type": "string", "len": 10},
+		{"id": "name", "name": "Název", "type": "string", "len": 120},
+		{"id": "namePlural", "name": "Název mn. č.", "type": "string", "len": 120},
+		{"id": "symbol", "name": "Symbol", "type": "string", "len": 10},
+		{"id": "symbolNative", "name": "Symbol nativní", "type": "string", "len": 10},
+		{"id": "decimals", "name": "Počet des. míst", "type": "int"},
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"}
+	],
+	"views": [
+		{"id": "default", "class": "e10.world.ViewCurrencies",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "e10.world.ViewDetailCurrency"}
+			}
+		}
+	],
+	"options": ["systemTable"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"},
+	"documentCard": "e10.world.DocumentCardCurrency"
+}

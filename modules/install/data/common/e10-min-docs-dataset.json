@@ -1,0 +1,51 @@
+{
+	"name": "Základní sada dat pro dokladové evidence",
+	"datasets": [
+		{
+			"table": "e10.persons.groups",
+			"name": "Skupiny Osob",
+			"defaultValues": {"docState": 4000, "docStateMain": 2, "systemGroup":"-"},
+			"data": [
+				{"rec": {"#": "pgSupplier", "name":"Dodavatel"}},
+				{"rec": {"#": "pgCustomer", "name":"Odběratel"}},
+				{"rec": {"#": "pgAccountants", "name":"Účtárna", "systemGroup": "e10doc-accounting"}}
+			]
+		},
+		{
+			"table": "e10.witems.itemtypes",
+			"name": "Typy položek",
+			"data": [
+				{"rec": {"#":"it-service", "fullName":"Služby","shortName":"služby","id":"it-service","type":0,"docState":4000,"docStateMain":2}},
+				{"rec": {"#":"it-stock", "fullName":"Zásoby","shortName":"zásoby","id":"it-stock","type":1,"docState":4000,"docStateMain":2}},
+				{"rec": {"#":"it-accitem", "fullName":"Účetní položky","shortName":"účtopoložky","id":"it-accitem","type":2, "docState":4000,"docStateMain":2}}
+			]
+		},
+		{
+			"table": "e10.base.doclinks",
+			"name": "Typy položek - při nákupu zařadit Osobu do skupin",
+			"defaultValues": {"linkId": "e10-persons-groups-itemtypes-buy","srcTableId": "e10.witems.itemtypes", "dstTableId": "e10.persons.groups"},
+			"data": [
+				{"rec": {"srcRecId":"#it-service","dstRecId":"#pgSupplier"}},
+				{"rec": {"srcRecId":"#it-stock","dstRecId":"#pgSupplier"}},
+				{"rec": {"srcRecId":"#it-accitem","dstRecId":"#pgSupplier"}}
+			]
+		},
+		{
+			"table": "e10.base.doclinks",
+			"name": "Typy položek - při prodeji zařadit Osobu do skupin",
+			"defaultValues": {"linkId": "e10-persons-groups-itemtypes-sale","srcTableId": "e10.witems.itemtypes", "dstTableId": "e10.persons.groups"},
+			"data": [
+				{"rec": {"srcRecId":"#it-service","dstRecId":"#pgCustomer"}},
+				{"rec": {"srcRecId":"#it-stock","dstRecId":"#pgCustomer"}},
+				{"rec": {"srcRecId":"#it-accitem","dstRecId":"#pgCustomer"}}
+			]
+		},
+		{
+			"table": "e10doc.base.cashboxes",
+			"name": "Hlavní pokladna",
+			"data": [
+				{"rec": {"fullName":"Hlavní pokladna","shortName":"Hlavní","id":"1","currency":"czk"}}
+			]
+		}
+	]
+}

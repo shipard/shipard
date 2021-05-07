@@ -1,0 +1,37 @@
+{
+    "table": {
+        "name": "Racks"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "lan": {
+            "name": "Network"
+        },
+        "id": {
+            "name": "Rack ID"
+        },
+        "place": {
+            "name": "Place"
+        },
+        "placeDesc": {
+            "name": "Place specification"
+        },
+        "property": {
+            "name": "Property"
+        },
+        "rackKind": {
+            "name": "Rack type"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

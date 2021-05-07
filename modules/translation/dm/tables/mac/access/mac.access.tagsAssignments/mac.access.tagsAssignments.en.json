@@ -1,0 +1,49 @@
+{
+    "table": {
+        "name": "Assignments of Access keys"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "tag": {
+            "name": "Key"
+        },
+        "person": {
+            "name": "Person"
+        },
+        "validFrom": {
+            "name": "Valid from"
+        },
+        "validTo": {
+            "name": "Valid until"
+        },
+        "useCautionMoney": {
+            "name": "Require caution money"
+        },
+        "cautionMoneyAmount": {
+            "name": "Amount of caution money"
+        },
+        "cautionMoneyPayer": {
+            "name": "Payer of caution money"
+        },
+        "docCautionMoneyPay": {
+            "name": "Document of caution money payment"
+        },
+        "docCautionMoneyRefund": {
+            "name": "Document of caution money refund"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "assignType": {
+            "name": "Assigned to"
+        },
+        "place": {
+            "name": "Place"
+        }
+    }
+}

@@ -1,0 +1,18 @@
+{
+  "id": "services.subjects",
+  "name": "Subjects",
+	"modules": ["e10/base"],
+  "tables": [
+	  "activities", "commodities", "types", "branches", "branchesParts", "kinds", "sizes", "subjectsBranches",
+	  "subjects", "subjectsCounters"
+  ],
+  "config": [
+	  {"id": "+e10.persons.roles", "file": "e10.subjects.roles.json"},
+	  {"id": "+appOptions", "file": "e10.appOptions.json"},
+	  {"id": "+e10.base.doclinks", "file": "e10.subjects.docLinks.json"},
+	  {"id": "services.subjects.docStates", "file": "subjects.docStates.json"},
+	  {"id": "+widgets", "file": "widgets.json"},
+	  {"id": "+dashboards", "file": "dashboards.json"},
+	  {"id": "+registeredClasses", "file": "registeredClasses.json"}
+  ]
+}

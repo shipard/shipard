@@ -1,0 +1,8 @@
+{
+	"name": "Nastavení Majetku",
+	"includes": [
+		"install/data/countries/cz/property/property-props-common",
+		"install/data/countries/cz/property/property-type-vehicle",
+		"install/data/countries/cz/property/property-type-it"
+	]
+}

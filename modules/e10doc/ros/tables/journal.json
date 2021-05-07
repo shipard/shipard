@@ -1,0 +1,35 @@
+{
+	"id": "e10doc.ros.journal", "sql": "e10doc_ros_journal", "name": "Evidence tržeb", "icon": "icon-microchip",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "document", "name": "Doklad", "type": "int"},
+
+		{"id": "rosMode", "name": "Mód provozu", "type": "enumInt",
+			"enumCfg": {"cfgItem": "terminals.ros.modes", "cfgValue": "", "cfgText": "name"}},
+		{"id": "msgId", "name": "ID", "type": "string", "len": 36, "options": ["ascii"]},
+		{"id": "placeId1", "name": "ID provozovny", "type": "string", "len": 10, "options": ["ascii"]},
+		{"id": "placeId2", "name": "ID pokladny", "type": "string", "len": 20, "options": ["ascii"]},
+		{"id": "datePay", "name": "Datum a čas tržby", "type": "timestamp"},
+		{"id": "dateSent", "name": "Datum a čas odeslání", "type": "timestamp"},
+
+		{"id": "sendIndex", "name": "Poř. číslo odeslání", "type": "int"},
+
+		{"id": "state", "name": "Stav", "type": "enumInt",
+			"enumValues": {"1": "Úspěch", "2": "Chyba", "3": "Varování"}},
+
+		{"id": "resultCode1", "name": "Návratový kód 1", "type": "string", "len": 48, "options": ["ascii"]},
+		{"id": "resultCode2", "name": "Návratový kód 2", "type": "string", "len": 48, "options": ["ascii"]},
+
+		{"id": "amount", "name": "Částka", "type": "money"},
+
+		{"id": "dataSent", "name": "Odeslaná data", "type": "memo"},
+		{"id": "dataReceived", "name": "Přijatá data", "type": "memo"}
+	],
+	"options": ["systemTable"],
+	"forms": [
+		{"id": "show", "class": "e10doc.ros.RosRecordShow"}
+	],
+	"indexes": [
+		{"id": "document", "columns": ["document"]}
+	]
+}

@@ -1,0 +1,62 @@
+{
+    "settings": {
+        "name": "Settings"
+    },
+    "srvcfg": {
+        "name": "Settings"
+    },
+    "web": {
+        "name": "Web"
+    },
+    "docs": {
+        "name": "Documents"
+    },
+    "property": {
+        "name": "Property"
+    },
+    "e10mnf": {
+        "name": "GDPR"
+    },
+    "embedd": {
+        "name": "Settings"
+    },
+    "docs-stock": {
+        "name": "Stock"
+    },
+    "maclan": {
+        "name": "IT"
+    },
+    "docs-finance": {
+        "name": "Finance"
+    },
+    "appOverview": {
+        "name": "Overview"
+    },
+    "reports": {
+        "name": "Reports"
+    },
+    "startupConfig": {
+        "name": "Startup configuration"
+    },
+    "hosting": {
+        "name": "Hosting"
+    },
+    "swdev-dm": {
+        "name": "Data model"
+    },
+    "swdev-world": {
+        "name": "World"
+    },
+    "e10com": {
+        "name": "Commerce"
+    },
+    "sale": {
+        "name": "Sale"
+    },
+    "buy": {
+        "name": "Purchase"
+    },
+    "accounting": {
+        "name": "Accounting"
+    }
+}

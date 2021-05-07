@@ -1,0 +1,33 @@
+{
+  "id": "e10pro.hosting.server.servers", "sql": "e10pro_hosting_server_servers", "name": "Servery",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "name", "name": "Název", "type": "string", "len": 40},
+    {"id": "fqdn", "name": "Doménové jméno", "type": "string", "len": 70},
+		{"id": "id", "name": "ID", "type": "string", "len": 10},
+		{"id": "gid", "name": "GID", "type": "string", "len": 20},
+    {"id": "serverType", "name": "Typ serveru", "type": "enumInt", "options": ["saveOnChange"],
+      "enumValues": {"0": "Slave - Zdroje dat", "1": "Node - Místní server", "2": "Master"}
+    },
+	  {"id": "creatingDataSources", "name": "Zakládat zdroje dat", "type": "enumInt",
+		  "enumValues": {"0": "Ne", "1": "Ano, ale pouze pro tento server", "2": "Ano, všechny zdroje dat"}
+	  },
+	  {"id": "ipaddress", "name": "IP adresa", "type": "string", "len": 45, "options": ["ascii"]},
+
+	  {"id": "owner", "name": "Majitel", "type": "int", "reference": "e10.persons.persons"},
+	  {"id": "customer", "name": "Zákazník", "type": "int", "reference": "e10.persons.persons"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+  "views": [
+    {"id": "default", "class": "e10pro.hosting.server.ViewServers", "detail": "e10pro.hosting.server.ViewDetailServers"}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10pro.hosting.server.FormServer"}
+  ],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"},
+  "order": [{"column": "name", "order": "ASC"}],
+  "fullText": ["name", "fqdn"]
+}

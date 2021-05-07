@@ -1,0 +1,4 @@
+{
+	"name": "Doklad z došlé pošty",
+	"class": "demo.documents.libs.InboxDocument"
+}

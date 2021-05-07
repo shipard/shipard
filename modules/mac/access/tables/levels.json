@@ -1,0 +1,27 @@
+{
+	"id": "mac.access.levels", "sql": "mac_access_levels", "name": "Úrovně přístupu", "icon": "icon-empire",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "fullName", "name": "Název", "type": "string", "len": 100},
+		{"id": "id", "name": "Zkratka", "type": "string", "len": 20},
+
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+		{"id": "enableRoomAccess", "name": "Povolit pro přístup k pokojům", "type": "logical"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "cfg", "class": "e10.base.ListRows", "name": "Nastavení", "table": "mac.access.levelsCfg", "queryColumn": "accessLevel", "orderColumn": "rowOrder"}
+	],
+	"views": [
+		{"id": "default", "class": "mac.access.ViewLevels", "detail": "mac.access.ViewDetailLevel"}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.access.FormLevel"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

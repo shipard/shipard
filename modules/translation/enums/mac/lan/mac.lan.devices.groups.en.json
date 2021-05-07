@@ -1,0 +1,44 @@
+{
+    "20": {
+        "name": "Servers"
+    },
+    "22": {
+        "name": "NAS"
+    },
+    "25": {
+        "name": "IoT"
+    },
+    "30": {
+        "name": "Printers"
+    },
+    "40": {
+        "name": "Cameras"
+    },
+    "45": {
+        "name": "Terminals"
+    },
+    "50": {
+        "name": "Computers"
+    },
+    "81": {
+        "name": "UPS"
+    },
+    "99": {
+        "name": "Other"
+    },
+    "60": {
+        "name": "Multimedia"
+    },
+    "12": {
+        "name": "WiFi AP"
+    },
+    "0": {
+        "name": "All"
+    },
+    "65": {
+        "name": "Tablets and telephones"
+    },
+    "10": {
+        "name": "Active devices"
+    }
+}

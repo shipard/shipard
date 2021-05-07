@@ -1,0 +1,32 @@
+{
+	"name": "Shipard Node",
+	"title": "Shipard Node",
+	"fields": {
+		"columns": [
+			{"id": "serverFQDN", "group": "general", "name": "Doménové jméno serveru", "type": "string", "len": 80},
+			{"id": "httpsPort", "group": "general", "name": "HTTPS port", "type": "int", "placeholder": "443"},
+
+			{"id": "serverRole", "group": "general", "name": "Role serveru", "type": "enumString", "len": 20, "options": ["saveOnChange"],
+				"enumValues": {
+					"lc": "Řízení a monitoring sítě",
+					"rb": "Monitoring racků a sítě",
+					"cams": "Kamerový server"
+				}
+			},
+
+			{"id": "wssPort", "group": "wss", "name": "WSS port", "type": "int", "placeholder":  "8888", "enabled": {"serverRole": "lc"}},
+			{"id": "wssAllowedFrom", "group": "wss", "name": "Povolit WSS z IP adres", "type": "string", "len": 160, "enabled": {"serverRole": "lc"}},
+
+			{"id": "mqttHostAddress", "group": "mqtt", "name": "Adresa MQTT serveru", "type": "string", "len":  60, "placeholder":  "IP adresa nebo DNS jméno", "enabled": {"serverRole": "lc"}},
+
+			{"id": "camLogin", "group": "cam", "name": "Výchozí uživatel pro kamery", "type": "string", "len": 30, "enabled": {"serverRole": "cams"}},
+			{"id": "camPasswd", "group": "cam", "name": "Výchozí heslo pro kamery", "type": "string", "len": 50, "enabled": {"serverRole": "cams"}}
+		]
+	},
+	"dashboards": {
+		"realtime-summary": {
+			"title": "Přehled",
+			"template": "mac/devices/devices/shipardNode/shipardNode-netdata-dashboard-overview.mustache"
+		}
+	}
+}

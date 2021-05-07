@@ -1,0 +1,6 @@
+[
+	{"name": "Prodej zásob", "class": "e10pro.reports.inventory.reportSale", "icon": "icon-arrow-circle-up", "group": "e10doc-sale"},
+	{"name": "Prodej zásob", "class": "e10pro.reports.inventory.reportSale", "icon": "icon-arrow-circle-up", "group": "e10doc-inventory", "order": 10000},
+	{"name": "Nákup zásob", "class": "e10pro.reports.inventory.reportBuy", "icon": "icon-arrow-circle-down", "group": "e10doc-buy"},
+	{"name": "Nákup zásob", "class": "e10pro.reports.inventory.reportBuy", "icon": "icon-arrow-circle-down", "group": "e10doc-inventory", "order": 11000}
+]

@@ -1,0 +1,22 @@
+{
+    "1000": {
+        "stateName": "In progress",
+        "actionName": "Save unfinished"
+    },
+    "8000": {
+        "stateName": "In editing",
+        "actionName": "Edit"
+    },
+    "4000": {
+        "stateName": "Confirmed",
+        "actionName": "Valid"
+    },
+    "9000": {
+        "stateName": "In Archive",
+        "actionName": "Archive"
+    },
+    "9800": {
+        "stateName": "Deleted",
+        "actionName": "Delete"
+    }
+}

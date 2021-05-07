@@ -1,0 +1,19 @@
+{
+    "table": {
+        "name": "Document kinds in folders"
+    },
+    "columns": {
+        "ndx": {
+            "name": "ndx"
+        },
+        "folder": {
+            "name": "Folder"
+        },
+        "docKind": {
+            "name": "Document kind"
+        },
+        "rowOrder": {
+            "name": "Order"
+        }
+    }
+}

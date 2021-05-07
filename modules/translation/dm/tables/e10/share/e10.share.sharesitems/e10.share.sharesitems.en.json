@@ -1,0 +1,43 @@
+{
+    "table": {
+        "name": "Items of Sharing"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "share": {
+            "name": "share"
+        },
+        "folder": {
+            "name": "share"
+        },
+        "t1": {
+            "name": "Title 1"
+        },
+        "t2": {
+            "name": "Title 2"
+        },
+        "i1": {
+            "name": "Information 1"
+        },
+        "i2": {
+            "name": "Information 2"
+        },
+        "shareItemType": {
+            "name": "Type"
+        },
+        "tableId": {
+            "name": "Table"
+        },
+        "recId": {
+            "name": "Row"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "cntAttachments": {
+            "name": "Number of attachments"
+        }
+    }
+}

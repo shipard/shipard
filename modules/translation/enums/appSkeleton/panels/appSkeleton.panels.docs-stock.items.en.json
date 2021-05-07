@@ -1,0 +1,17 @@
+{
+    "items": {
+        "t1": "Items"
+    },
+    "reports": {
+        "t1": "Reports"
+    },
+    "stockInitStates": {
+        "t1": "Initial states"
+    },
+    "checks": {
+        "t1": "Stocktakings"
+    },
+    "stockIn": {
+        "t1": "Receiving records"
+    }
+}

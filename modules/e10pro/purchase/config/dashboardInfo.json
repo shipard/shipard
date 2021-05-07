@@ -1,0 +1,8 @@
+{
+	"dailyBar": [
+			{"order": 80000, "class": "e10pro.purchase.DashboardInfo"}
+	],
+	"dailySummary": [
+		{"order": 110000, "class": "e10pro.purchase.DashboardInfo"}
+	]
+}

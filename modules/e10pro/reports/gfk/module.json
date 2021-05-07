@@ -1,0 +1,8 @@
+{
+  "id": "e10pro.reports.gfk",
+  "name": "Gfk reports",
+  "config": [
+    {"id": "+reports", "name": "Výstupy", "file": "reports.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"}
+ ]
+}

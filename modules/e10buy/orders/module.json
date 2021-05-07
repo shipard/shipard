@@ -1,0 +1,14 @@
+{
+	"id": "e10buy.orders",
+	"name": "Vydané objednávky",
+	"tables": [
+		"docKinds", "docNumbers", "orders", "ordersRows"
+	],
+
+	"modules": ["e10buy/base", "e10doc/buy"],
+	"config": [
+		{"id": "+appOptions", "file": "e10.appOptions.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+		{"id": "e10buy.orders.docStates.default", "file": "orders.docStates.default.json"}
+	]
+}

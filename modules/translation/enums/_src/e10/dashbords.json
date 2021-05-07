@@ -1,0 +1,13 @@
+{
+	"dashboards": {
+		"name":  "Dashboardy", "key":  "", "values":  {"name":  "Název"},
+		"subItems": {
+			"panels": {
+				"name": "Panely dashboardu", "key": "",
+				"values": {
+					"name": "Text pod pravou ikonou"
+				}
+			}
+		}
+	}
+}

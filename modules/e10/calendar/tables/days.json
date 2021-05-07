@@ -1,0 +1,31 @@
+{
+	"id": "e10.calendar.days", "sql": "e10_calendar_days", "name": "Kalendář", "icon": "icon-calendar",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "day", "name": "Den", "type": "int"},
+		{"id": "month", "name": "Měsíc", "type": "int"},
+		{"id": "yearFrom", "name": "Rok od", "type": "int"},
+		{"id": "yearTo", "name": "Rok do", "type": "int"},
+		{"id": "country", "sql": "country", "name": "Země", "type": "int", "reference": "e10.world.countries"},
+		{"id": "dayType", "name": "Druh", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10.calendar.daysTypes", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "title", "name": "Název", "type": "string", "len": 120},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "e10.calendar.ViewDays",
+			"details": {
+				"default": {"title": "Přehled", "icon": "x-dashboard", "type": "detail", "class": "e10.calendar.ViewDetailDay"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10.calendar.FormDay"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "title"}
+}

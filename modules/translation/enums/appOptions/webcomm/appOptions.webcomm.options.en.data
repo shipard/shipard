@@ -1,0 +1,1 @@
+a:5:{s:11:"useArticles";a:1:{s:7:"cfgName";s:12:"Use Articles";}s:14:"useNewsletters";a:1:{s:7:"cfgName";s:15:"Use Newsletters";}s:22:"contactFormNotifyEmail";a:1:{s:7:"cfgName";s:23:"E-mail for Contact form";}s:7:"useNews";a:1:{s:7:"cfgName";s:10:"Use Events";}s:24:"unsubscribeNewsletterURL";a:1:{s:7:"cfgName";s:33:"Address to unsubscribe newsletter";}}

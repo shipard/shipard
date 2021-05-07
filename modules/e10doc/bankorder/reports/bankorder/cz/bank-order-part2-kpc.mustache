@@ -1,0 +1,13 @@
+--- 2. Hlavička účetního souboru
+
+{{{@write;text:1;width:2}}}
+{{#page.params.directDebit}}
+	{{{@write;text:1502;width:5}}}
+{{/page.params.directDebit}}
+{{^page.params.directDebit}}
+	{{{@write;text:1501;width:5}}}
+{{/page.params.directDebit}}
+{{{@write;var:data.export.shortDocNumber;align:right;paddingChar:0;width:3;maxLen:3}}}
+{{{@write;text:000;width:4}}}
+{{{@write;var:data.myBankAccount.bankCode;align:right;paddingChar:0;width:4;maxLen:4}}}
+{{{@write;cmd:nl}}}

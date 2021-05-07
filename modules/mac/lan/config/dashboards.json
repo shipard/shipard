@@ -1,0 +1,52 @@
+{
+	"maclan": {
+		"name": "Počítačová síť",
+		"disableTopToolbar": 1,
+		"panels": {
+			"lans": {
+				"name": "Přehled",
+				"icon": "icon-eye",
+				"fullsize": 1,
+				"order": 1000,
+				"rows": {
+					"main": {"order": 10000}
+				}
+			},
+			"wikies": {
+				"creatorClass": "mac.lan.libs.WikiDashboardPanelsCreator", "order": 11000,
+				"enabledCfgItem": "options.macLAN.useDocumentation"
+			},
+			"itIssues": {
+				"name": "K řešení",
+				"icon": "icon-check-square",
+				"fullsize": 1,
+				"order": 7000,
+				"rows": {
+					"main": {"order": 10000}
+				}
+			},
+			"addresses": {
+				"name": "Adresy",
+				"icon": "icon-crosshairs",
+				"fullsize": 1,
+				"order": 12000,
+				"rows": {
+					"main": {"order": 20000}
+				}
+			}
+		}
+	},
+	"macAccess": {
+		"name": "IoT",
+		"disableTopToolbar": 1,
+		"panels": {
+			"access": {
+				"name": "Přehled", "icon": "icon-eye", "order": 100000,
+				"fullsize": 1,
+				"rows": {
+					"main": {"order": 10000}
+				}
+			}
+		}
+	}
+}

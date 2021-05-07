@@ -1,0 +1,58 @@
+{
+  "sale": {
+		"name": "Prodej",
+		"roles": ["pwuser"],
+		"viewers": {
+			"e10doc.core.heads": {"invoicesOut": 2, "proformaOut": 2, "orderIn": 2, "cash": 2, "deliveryNote":  2},
+			"e10doc.contracts.core.heads": {"sale": 2}
+		},
+		"documents": {
+			"e10doc.core.heads": [
+				{"docType": ["invno", "invpo", "cash"], "_access": 2, "_name": "Vydané faktury a Pokladna"},
+				{"docType": "orderin", "_access": 2, "_name": "Objednávky přijaté"},
+				{"docType": "dlvrnote", "_access": 2, "_name": "Dodací listy"},
+				{"docType": "cashreg", "_access": 2, "_name": "Prodejky"},
+				{"docType": "cmnbkp", "activity": ["balSetOff", "ocpBalInSt"], "_access": 1, "_name": "Zápočty a Počáteční stavy saldokonta"}
+			]
+		},
+		"reports": {
+			"e10pro.reports.finance_takings.reportTakings": 2, "e10pro.reports.sale_items.reportItems": 2,
+			"e10pro.reports.sale_customers.reportCustomers": 2
+		}
+	},
+	"scrtr": {
+		"viewers": {
+			"e10doc.core.heads": {"invoicesOut": 1},
+			"e10doc.contracts.core.heads": {"sale": 1}
+		}
+	},
+	"acc": {
+		"reports": {
+			"e10doc.sale.reportListInvoicesOut": 2
+		}
+	},
+	"bsass": {
+		"viewers": {
+			"e10doc.core.heads": {"invoicesOut": 1},
+			"e10doc.contracts.core.heads": {"sale": 1}
+		},
+		"documents": {
+			"e10doc.core.heads": [
+				{"docType": ["invno", "invpo", "cash"], "_access": 1, "_name": "Vydané faktury a Pokladna"},
+				{"docType": "orderin", "_access": 1, "_name": "Objednávky přijaté"},
+				{"docType": "cashreg", "_access": 1, "_name": "Prodejky"},
+				{"docType": "cmnbkp", "activity": ["balSetOff", "ocpBalInSt"], "_access": 1, "_name": "Zápočty a Počáteční stavy saldokonta"}
+			]
+		},
+		"reports": {
+			"e10pro.reports.finance_takings.reportTakings": 2, "e10pro.reports.sale_items.reportItems": 2,
+			"e10pro.reports.sale_customers.reportCustomers": 2
+		}
+	},
+	"admin": {
+		"viewers": {
+			"e10doc.contracts.core.kinds": {"default": 2},
+			"e10doc.contracts.core.docNumbers": {"default": 2}
+		}
+	}
+}

@@ -1,0 +1,16 @@
+[
+	{
+		"table": "e10.persons.persons",
+		"columns": [
+			{"id": "syncNdx", "name": "syncNdx", "type": "int"},
+			{"id": "syncSrc", "name": "syncSrc", "type": "int"}
+		]
+	},
+	{
+		"table": "e10.persons.address",
+		"columns": [
+			{"id": "syncNdx", "name": "syncNdx", "type": "int"},
+			{"id": "syncSrc", "name": "syncSrc", "type": "int"}
+		]
+	}
+]

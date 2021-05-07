@@ -1,0 +1,10 @@
+{
+	"notifyChannels": {
+		"name": "Notifikační kanály", "order": 430000, "group": "integrations", "icon": "icon-bullhorn",
+		"type": "viewer", "table": "integrations.ntf.channels", "viewer": "default"
+	},
+	"notifyDelivery": {
+		"name": "Doručované externí notifikace", "order": 850000, "group": "integrations", "icon": "icon-truck",
+		"type": "viewer", "table": "integrations.ntf.delivery", "viewer": "default"
+	}
+}

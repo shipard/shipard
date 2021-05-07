@@ -1,0 +1,38 @@
+{
+	"id": "e10pro.canteen.foodOrders", "sql": "e10pro_canteen_foodOrders", "name": "Objednaná jídla", "icon": "icon-check-circle",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "canteen", "name": "Jídelna", "type": "int", "reference": "e10pro.canteen.canteens"},
+		{"id": "menu", "name": "Jídelní lístek", "type": "int", "reference": "e10pro.canteen.menus"},
+		{"id": "date", "name": "Datum", "type": "date"},
+		{"id": "orderNumber", "name": "Číslo objednávky", "type": "int"},
+		{"id": "food", "name": "Jídlo", "type": "int", "reference": "e10pro.canteen.menuFoods", "comboViewer": "comboOrder"},
+
+		{"id": "addFoods", "name": "Doplňková jídla", "type": "subColumns"},
+
+		{"id": "firstChoiceFood", "name": "Původně vybrané jídlo", "type": "int", "reference": "e10pro.canteen.menuFoods"},
+		{"id": "personOrder", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "personFee", "name": "Osoba pro vyúčtování", "type": "int", "reference": "e10.persons.persons"},
+
+		{"id": "taking", "name": "Odebrání jídla", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10pro.canteen.foodTakings", "cfgValue": "", "cfgText": "name"}},
+		{"id": "takeInProgress", "name": "Vydává se", "type": "logical"},
+		{"id": "takeInProgressDateTime", "name": "Datum a čas zahájení výdeje", "type": "timestamp"},
+		{"id": "takeDone", "name": "Odebráno", "type": "logical"},
+		{"id": "takeDateTime", "name": "Datum a čas odebrání", "type": "timestamp"},
+
+		{"id": "orderState", "name": "Stav objednávky", "type": "enumInt",
+			"enumValues": {"0": "otevřená", "1": "výběr jiného jídla", "2": "uzavřená"}},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "e10pro.canteen.ViewFoodOrders", "help": "prirucka/4705"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.canteen.FormFoodOrder", "help": "prirucka/4705"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10pro.canteen.foodOrders.docStates"}
+}

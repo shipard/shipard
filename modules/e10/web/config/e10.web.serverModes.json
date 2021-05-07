@@ -1,0 +1,8 @@
+{
+	"web": {"name": "Web", "icon": "icon-globe", "hpFunction": ""},
+	"wiki": {"name": "Wiki", "icon": "icon-book", "hpFunction": "wiki", "askWiki": 1},
+	"app": {"name": "Aplikace", "icon": "icon-cogs", "hpFunction": ""},
+	"display": {"name": "Displej", "icon": "icon-television", "hpFunction": ""},
+
+	"manual": {"name": "Ruční nastavení", "icon": "icon-wrench", "askHpFunction": 1}
+}

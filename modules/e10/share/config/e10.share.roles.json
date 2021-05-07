@@ -1,0 +1,8 @@
+{
+  "admin": {
+		"roles": ["user"],
+		"viewers": {
+			"e10.share.shares": {"default": 2}
+		}
+	}
+}

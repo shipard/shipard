@@ -1,0 +1,21 @@
+{
+	"core": {
+		"name": "Základní nastavení", "order": 10000, "group": "core", "help": "prirucka/116",
+		"icon": "e10-server-config",
+		"type": "cfgFile",
+		"options":
+			[
+				{"cfgKey": "ownerFullName", "cfgName": "Název"},
+				{"cfgKey": "ownerShortName", "cfgName": "Zkrácený název"},
+				{"cfgKey": "ownerDomicile", "cfgName": "Stát", "cfgItem": "e10.base.countries"},
+				{"cfgKey": "ownerPhone", "cfgName": "Kontaktní telefon", "importance": 1, "placeholder": "+420 123 456 789"},
+				{"cfgKey": "ownerEmail", "cfgName": "Kontaktní e-mail", "importance": 1, "placeholder": "info@nasefirma.cz"},
+				{"cfgKey": "ownerWeb", "cfgName": "Web", "importance": 1, "placeholder": "www.nasefirma.cz"},
+				{"cfgKey": "ownerLegalRegInfo", "cfgName": "Registrace v OR/ŽÚ", "importance": 1, "placeholder": "Registrace u Rejstříkového soudu v Praze, značka C 54345."},
+				{"cfgKey": "ownerPerson", "cfgName": "Vlastní Osoba", "reference": "e10.persons.persons"},
+				{"cfgKey": "defaultAccountType", "cfgName": "Typ účtu pro nové uživatele",
+					"options": {"0": "Shipard", "1": "Lokální"}}
+			]
+	}
+}
+

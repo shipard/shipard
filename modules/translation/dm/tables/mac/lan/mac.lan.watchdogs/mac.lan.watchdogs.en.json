@@ -1,0 +1,37 @@
+{
+    "table": {
+        "name": "Watchdogs"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "watchdog": {
+            "name": "Watchdog"
+        },
+        "time1": {
+            "name": "Timestamp 1"
+        },
+        "time2": {
+            "name": "Timestamp 2"
+        },
+        "time3": {
+            "name": "Okamžik 3"
+        },
+        "data1": {
+            "name": "Data 1"
+        },
+        "data2": {
+            "name": "Data 2"
+        },
+        "data3": {
+            "name": "Data 3"
+        },
+        "counter": {
+            "name": "Counter"
+        },
+        "device": {
+            "name": "Device"
+        }
+    }
+}

@@ -1,0 +1,41 @@
+{
+	"id": "wkf.docs.documents", "sql": "wkf_docs_documents", "name": "Dokumenty", "icon": "icon-file",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "documentId", "name": "ID", "type": "string", "len": 20, "options": ["ascii"]},
+
+		{"id": "folder", "name": "Složka", "type": "int", "reference": "wkf.docs.folders"},
+		{"id": "documentKind", "name": "Druh", "type": "enumInt", "len": 2, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "wkf.docs.kinds", "cfgValue": "", "cfgText": "sn"}},
+
+		{"id": "title", "name": "Název", "type": "string", "len": 160},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+
+		{"id": "text", "name": "Poznámka", "type": "memo"},
+
+		{"id": "author", "name": "Autor", "type": "int", "reference": "e10.persons.persons"},
+
+		{"id": "dateCreate", "name": "Datum vzniku", "type": "timestamp"},
+		{"id": "dateTouch", "name": "Datum poslední aktivity", "type": "timestamp"},
+		{"id": "activateCnt", "name": "Počet aktivací", "type": "int"},
+
+		{"id": "data", "name": "Data", "type": "subColumns"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"},
+		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"}
+	],
+	"views": [
+		{"id": "default", "class": "wkf.docs.ViewDocuments", "detail": "wkf.docs.ViewDetailDocument"}
+	],
+	"forms": [
+		{"id": "default", "class": "wkf.docs.forms.DocumentCore"}
+	],
+	"ndx": 1331
+}

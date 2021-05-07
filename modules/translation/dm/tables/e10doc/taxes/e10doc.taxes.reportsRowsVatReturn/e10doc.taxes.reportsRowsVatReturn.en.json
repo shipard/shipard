@@ -1,0 +1,64 @@
+{
+    "table": {
+        "name": "VAT return rows"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "report": {
+            "name": "Report"
+        },
+        "filing": {
+            "name": "Filing"
+        },
+        "dateTax": {
+            "name": "Time of supply",
+            "label": "Time of supply"
+        },
+        "dateTaxDuty": {
+            "name": "Date of duty to admit tax",
+            "label": "Date of duty to admit tax"
+        },
+        "vatId": {
+            "name": "VAT identification number"
+        },
+        "base": {
+            "name": "Tax base"
+        },
+        "tax": {
+            "name": "Tax amount"
+        },
+        "total": {
+            "name": "Total amount"
+        },
+        "quantity": {
+            "name": "Quantity"
+        },
+        "weight": {
+            "name": "Weight"
+        },
+        "taxCode": {
+            "name": "VAT type"
+        },
+        "taxRate": {
+            "name": "Tax rate"
+        },
+        "taxDir": {
+            "name": "Tax direction"
+        },
+        "taxPercents": {
+            "name": "Tax percentage",
+            "label": "%"
+        },
+        "document": {
+            "name": "Document"
+        },
+        "docNumber": {
+            "name": "Document number"
+        },
+        "docId": {
+            "name": "Document registration number"
+        }
+    }
+}

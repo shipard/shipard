@@ -1,0 +1,25 @@
+{
+	"id": "e10doc.taxes.reportsRowsVatRS", "sql": "e10doc_taxes_reportsRowsVatRS", "name": "Řádky souhrnného hlášení DPH",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "report", "name": "Přehled", "type": "int"},
+		{"id": "filing", "name": "Podání", "type": "int"},
+
+		{"id": "dateTax", "name": "Datum uskutečnění zdanitelného plnění", "label": "DUZP", "type": "date"},
+		{"id": "vatId", "name": "DIČ", "type": "string", "len": 20},
+
+		{"id": "base", "name": "Základ daně", "type": "money"},
+
+		{"id": "taxCode", "name": "Typ daně", "type": "enumString", "len": 7,
+			"enumCfg": {"cfgItem": "e10.base.taxCodes", "cfgValue": "", "cfgText": "name", "cfgPrint": "print"}},
+		{"id": "taxRate", "name": "Sazba daně", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10.base.taxRates", "cfgValue": "", "cfgText": ""}},
+		{"id": "taxDir", "name": "Směr daně", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10.base.taxDir", "cfgValue": "", "cfgText": ""}},
+
+		{"id": "document", "name": "Doklad", "type": "int", "reference": "e10doc.core.heads"},
+		{"id": "docNumber", "name": "Číslo dokladu", "type": "string", "len": 20}
+	],
+	"options": ["systemTable"],
+	"ndx": 1109
+}

@@ -1,0 +1,7 @@
+{
+	"payments": {
+		"name": "Platební údaje",
+		"id": "payments",
+		"properties": ["bankaccount"]
+	}
+}

@@ -1,0 +1,42 @@
+{
+	"0": {
+		"id": "none",
+		"name": "Nedetekováno",
+		"icon": "question-circle-o"
+	},
+	"1": {
+		"id": "other",
+		"name": "Ostatní",
+		"icon": "icon-file-o"
+	},
+	"2": {
+		"id": "pdf",
+		"name": "PDF soubor",
+		"icon": "icon-file-pdf-o"
+	},
+	"3": {
+		"id": "photo",
+		"name": "Fotografie",
+		"icon": "icon-camera"
+	},
+	"4": {
+		"id": "picture",
+		"name": "Obrázek",
+		"icon": "icon-picture-o"
+	},
+	"5": {
+		"id": "txt",
+		"name": "Textový soubor",
+		"icon": "icon-file-text-o"
+	},
+	"6": {
+		"id": "word",
+		"name": "Word",
+		"icon": "icon-file-word-o"
+	},
+	"7": {
+		"id": "xls",
+		"name": "excel",
+		"icon": "icon-file-excel-o"
+	}
+}

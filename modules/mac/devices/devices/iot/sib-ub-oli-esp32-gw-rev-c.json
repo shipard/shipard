@@ -1,0 +1,5 @@
+{
+	"name": "Olimex ESP32-GW Rev C",
+	"title": "Olimex ESP32-GW Rev C",
+	"gpioLayout": "oli-esp32-gw-rev-c"
+}

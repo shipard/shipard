@@ -1,0 +1,11 @@
+{
+    "wikiPageTerms": {
+        "cfgName": "Wiki page for Terms"
+    },
+    "wikiPageTables": {
+        "cfgName": "Wiki page for Tables"
+    },
+    "wikiPageEnums": {
+        "cfgName": "Wiki page for Enums"
+    }
+}

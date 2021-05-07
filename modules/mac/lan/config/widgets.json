@@ -1,0 +1,10 @@
+[
+	{
+		"class": "mac.lan.LanMonitoringWidget",
+		"dashboard": "maclan", "panel": "lans", "order": 1000, "row": "main", "width": 12, "type": "lans"
+	},
+	{
+		"class": "mac.access.libs.WidgetAccess",
+		"dashboard": "macAccess", "panel": "access", "order": 700000, "row": "main", "width": 12, "type": "fullsize"
+	}
+]

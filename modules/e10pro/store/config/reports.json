@@ -1,0 +1,3 @@
+[
+	{"name": "Sběrná fakturace", "class": "e10pro.store.reportBalanceSalesInvoice", "icon": "icon-align-justify", "group": "e10doc-balance", "order": 8100}
+]

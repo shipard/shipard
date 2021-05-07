@@ -1,0 +1,22 @@
+{
+  "id": "e10.witems",
+  "name": "Položky",
+  "tables": [
+		"items", "itemsets", "itemtypes", "itemcategories", "itemcategoriesqry", "itemSuppliers",
+		"brands", "units", "relatedKinds", "itemRelated"
+	],
+  "config": [
+		{"id": "e10.witems.docStates", "file": "e10.witems.docStates.json"},
+		{"id": "e10.witems.itemcategories.docStates", "file": "e10.witems.itemcategories.docStates.json"},
+		{"id": "e10.witems.itemtypes.docStates", "file": "e10.witems.itemtypes.docStates.json"},
+		{"id": "e10.witems.brands.docStates", "file": "e10.witems.brands.docStates.json"},
+    {"id": "+e10.witems.types", "file": "e10.witems.types.json"},
+    {"id": "+e10.witems", "file": "e10.witems.units.json"},
+    {"id": "+e10.witems.categorySortItems", "file": "e10.witems.categorySortItems.json"},
+    {"id": "+e10.witems.askQuantity", "file": "e10.witems.askQuantity.json"},
+		{"id": "+appOptions", "file": "e10.appOptions.json"},
+	  {"id": "+e10.appOptions.groups", "file": "e10.appOptionsGroups.json"},
+    {"id": "+e10.base.doclinks", "file": "e10.witems.docLinks.json"},
+		{"id": "+e10.base.clsfGroups", "file": "e10.items.clsfGroups.json"}
+  ]
+}

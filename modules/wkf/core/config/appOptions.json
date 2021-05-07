@@ -1,0 +1,18 @@
+{
+	"wkfn": {
+		"name": "Workflow", "order": 100, "group": "workflow",
+		"icon": "icon-cogs",
+		"type": "cfgFile",
+		"options":
+		[
+			{"cfgKey": "dashboardSectionsSelect", "cfgName": "Výběr sekcí v dashboardu",
+				"options": {"0": "Záložky nahoře", "1": "Strom vlevo"}},
+			{"cfgKey": "useHeadlines", "cfgName": "Používat Novinky",
+				"options": {"0": "Ne", "1": "Ano"}}
+		]
+	},
+	"wkfnFilters": {
+		"name": "Filtry zpráv", "order": 151000, "group": "workflow", "icon": "icon-filter",
+		"type": "viewer", "table": "wkf.core.filters", "viewer": "default"
+	}
+}

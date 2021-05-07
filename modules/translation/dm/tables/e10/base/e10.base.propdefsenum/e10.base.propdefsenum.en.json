@@ -1,0 +1,19 @@
+{
+    "table": {
+        "name": "Enumeration"
+    },
+    "columns": {
+        "ndx": {
+            "name": "ndx"
+        },
+        "property": {
+            "name": "Property"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "id": {
+            "name": "ID"
+        }
+    }
+}

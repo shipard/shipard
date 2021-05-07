@@ -1,0 +1,40 @@
+{
+    "table": {
+        "name": "Persons Validity"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "person": {
+            "name": "Person"
+        },
+        "valid": {
+            "name": "Valid"
+        },
+        "validVat": {
+            "name": "State of VAT"
+        },
+        "validOid": {
+            "name": "State of identification number"
+        },
+        "validAddress": {
+            "name": "State of addresses"
+        },
+        "taxPayer": {
+            "name": "VAT payer"
+        },
+        "revalidate": {
+            "name": "Revalidate"
+        },
+        "created": {
+            "name": "Created"
+        },
+        "updated": {
+            "name": "Last update"
+        },
+        "msg": {
+            "name": "Message"
+        }
+    }
+}

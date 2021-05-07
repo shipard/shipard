@@ -1,0 +1,12 @@
+{
+  "id": "services.sw",
+  "name": "Software",
+	"modules": ["mac/sw"],
+  "tables": ["swQueue"],
+	"extensions": ["sw"],
+  "config": [
+		{"id": "+appSkeleton", "file": "appSkeleton.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+		{"id": "+registeredClasses", "file": "registeredClasses.json"}
+	]
+}

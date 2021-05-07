@@ -1,0 +1,22 @@
+{
+	"id": "mac.lan.alerts", "sql": "mac_lan_alerts", "name": "Výstrahy", "icon": "icon-exclamation-triangle",
+	"columns": [
+		{"id": "ndx", "name": "ndx", "type": "int_ai"},
+
+		{"id": "alertType", "name": "Druh výstrahy", "type": "enumInt",
+			"enumCfg": {"cfgItem": "mac.lan.alerts.types", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "alertSubtype", "name": "Upřenění výstrahy", "type": "int"},
+		{"id": "alertScope", "name": "Prostor výstrahy", "type": "enumInt",
+			"enumCfg": {"cfgItem": "mac.lan.alerts.scopes", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "mac.lan.ViewAlerts", "detail": "mac.lan.ViewDetailAlert"}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.lan.FormAlert"}
+	]
+}

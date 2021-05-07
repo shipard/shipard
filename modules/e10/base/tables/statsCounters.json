@@ -1,0 +1,17 @@
+{
+	"id": "e10.base.statsCounters", "sql": "e10_base_statsCounters", "name": "Statistika počtů",
+	"columns": [
+		{"id": "id", "name": "id", "type": "string", "len": 40, "options": ["ascii"]},
+
+		{"id": "i1", "name": "i1", "type": "int"},
+		{"id": "i2", "name": "i1", "type": "int"},
+
+		{"id": "s1", "name": "s1", "type": "string", "len": 15, "options": ["ascii"]},
+		{"id": "s2", "name": "s2", "type": "string", "len": 25, "options": ["ascii"]},
+
+		{"id": "cnt", "name": "Počet", "type": "int"},
+		{"id": "updated", "name": "Aktualizováno", "type": "timestamp"}
+	],
+	"options": ["systemTable"],
+	"indexes": []
+}

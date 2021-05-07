@@ -1,0 +1,48 @@
+{
+	"id": "e10doc.base.reportsTexts", "sql": "e10doc_base_reportsTexts", "name": "Texty na dokladech", "icon": "icon-file-code-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "note", "name": "Poznámka", "type": "string", "len": 120},
+
+		{"id": "docType", "name": "Typ dokladu", "type": "enumString", "len": 10,
+			"enumCfg": {"cfgItem": "e10.docs.types", "cfgValue": "", "cfgText": "fullName"}},
+
+		{"id": "docDbCounter", "name": "Číselná řada", "type": "int", "reference": "e10doc.base.docnumbers"},
+		{"id": "cashBox", "name": "Pokladna", "type": "int", "reference": "e10doc.base.cashboxes"},
+
+		{"id": "docKind", "name": "Druh dokladu", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10.docs.kinds", "cfgValue": "ndx", "cfgText": "fullName"}},
+
+		{"id": "reportMode", "name": "Druh tisku", "type": "enumInt",
+			"enumValues": {
+				"0": "Klasická tiskárna",
+				"1": "Účtenky (POS tiskárna)"
+			}
+		},
+		{"id": "place", "name": "Umístění textu", "type": "enumString", "len": "25",
+			"enumValues": {
+				"supplier": "Dodavatel",
+				"contacts": "Kontaktní údaje",
+				"supplierAndContacts": "Dodavatel + Kontaktní údaje",
+				"subHeader": "Hlavička nad řádky",
+				"subFooter": "Patička na konci sestavy"
+			}
+		},
+
+		{"id": "text", "name": "Text", "type": "memo"},
+
+		{"id": "order", "name": "Pořadí", "type": "int"},
+		{"id": "systemOrder", "name": "Systémové pořadí", "type": "int"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "e10doc.base.ViewReportsTexts", "detail": "e10doc.base.ViewDetailReportsTexts", "help": "prirucka/4747"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.base.FormReportText", "help": "prirucka/4747"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "note"}
+}

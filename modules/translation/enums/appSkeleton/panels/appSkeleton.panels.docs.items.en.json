@@ -1,0 +1,26 @@
+{
+    "cashBox": {
+        "t1": "Cashbox"
+    },
+    "cashReg": {
+        "t1": "Cash register"
+    },
+    "invoicesOut": {
+        "t1": "Invoicing"
+    },
+    "contractSale": {
+        "t1": "Contract of sale"
+    },
+    "invni": {
+        "t1": "Invoices in"
+    },
+    "proformaOut": {
+        "t1": "Pro forma invoices"
+    },
+    "reports": {
+        "t1": "Reports"
+    },
+    "deliveryNote": {
+        "t1": "Delivery notes"
+    }
+}

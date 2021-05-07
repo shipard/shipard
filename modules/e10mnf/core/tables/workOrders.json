@@ -1,0 +1,85 @@
+{
+	"id": "e10mnf.core.workOrders", "sql": "e10mnf_core_workOrders", "name": "Zakázky", "icon": "icon-industry",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "dbCounter", "name": "Číselná řada", "type": "int"},
+		{"id": "dbCounterNdx", "name": "Pořadové číslo", "type": "int"},
+		{"id": "dbCounterYear", "name": "Rok", "type": "int"},
+		{"id": "docNumber", "name": "Číslo zakázky", "type": "string", "len": 20},
+		{"id": "docKind", "name": "Druh zakázky", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10mnf.workOrders.kinds", "cfgValue": "ndx", "cfgText": "fullName"}},
+		{"id": "title", "name": "Text dokladu", "type": "string", "len": 120},
+
+		{"id": "owner", "name": "Vlastní adresa", "type": "int", "reference": "e10.persons.persons"},
+
+		{"id": "customer", "name": "Zákazník", "type": "int", "reference": "e10.persons.persons", "options": ["saveOnChange"]},
+
+		{"id": "author", "name": "Vystavil", "type": "int", "reference": "e10.persons.persons"},
+
+		{"id": "dateIssue", "name": "Datum vystavení", "type": "date"},
+		{"id": "dateContract", "name": "Datum podpisu smlouvy", "type": "date"},
+		{"id": "dateBegin", "name": "Datum zahájení", "type": "date"},
+		{"id": "dateDeadlineRequested", "name": "Požadovaný termín", "type": "date"},
+		{"id": "dateDeadlineConfirmed", "name": "Potvrzený termín", "type": "date"},
+		{"id": "dateClosed", "name": "Datum uzavření", "type": "date"},
+
+		{"id": "centre", "name": "Středisko", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10doc.centres", "cfgValue": "ndx", "cfgText": "shortName"}},
+		{"id": "project", "name": "Projekt", "type": "int", "reference": "e10pro.wkf.projects", "module": "e10pro.wkf"},
+		{"id": "wkfProject", "name": "Projekt", "type": "int", "reference": "wkf.base.projects", "module": "wkf.base"},
+
+		{"id": "currency", "name": "Měna", "type": "enumString", "len": 3, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
+		{"id": "homeCurrency", "name": "Měna domácí", "type": "enumString", "len": 3,
+			"enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
+		{"id": "exchangeRate", "name": "Kurz", "type": "number", "dec": 5},
+		{"id": "dateExchRate", "name": "Datum kurzu", "type": "date"},
+
+		{"id": "sumPrice", "name": "Cena celkem", "type": "money"},
+		{"id": "sumPriceHc", "name": "Cena celkem [MD]", "type": "money"},
+		{"id": "price", "name": "Cena", "type": "money"},
+		{"id": "priceHc", "name": "Cena [MD]", "type": "money"},
+
+		{"id": "refId1", "name": "Interní číslo zakázky", "type": "string", "len": 30},
+		{"id": "refId2", "name": "Objednávka / HS", "type": "string", "len": 30},
+		{"id": "intTitle", "name": "Interní text dokladu", "type": "string", "len": 120},
+		{"id": "description", "name": "Popis zakázky", "type": "memo"},
+
+		{"id": "retentionGuarantees", "name": "Zádržné", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "Ne", "1": "Pevná částka", "2": "Procenta z celkové ceny"}},
+		{"id": "rgAmount", "name": "Částka zádržného", "type": "money"},
+		{"id": "rgAmountHc", "name": "Částka zádržného [MD]", "type": "money"},
+		{"id": "rgPercent", "name": "Procento zádržného", "type": "number", "dec": 1},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "rows", "class": "e10.base.ListRows", "name": "Řádky", "table": "e10mnf.core.workOrdersRows", "queryColumn": "workOrder", "orderColumn": "rowOrder"},
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"},
+		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"},
+		{"id": "address", "class": "e10.persons.ListAddress", "name": "Adresy"}
+	],
+	"views": [
+		{"id": "default", "class": "e10mnf.core.ViewWorkOrders",
+			"details": {
+				"default": {"title": "Přehled", "icon": "icon-file", "type": "detail", "class": "e10mnf.core.ViewDetailWorkOrder", "order": 1000},
+				"analysis": {"title": "Rozbor", "icon": "icon-pie-chart", "type": "detail", "class": "e10mnf.core.ViewDetailWorkOrderAnalysis", "order": 1000},
+				"accounting": {"title": "Účtování", "icon": "x-stamp", "type": "detail", "class": "e10mnf.core.ViewDetailWorkOrderAccounting", "order": 7000}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10mnf.core.FormWorkOrder"},
+		{"id": "show", "class": "e10mnf.core.WorkOrderShow"}
+	],
+	"reports": [
+		{"id": "workOrderAnalysis", "name": "Rozbor", "class": "e10mnf.core.ReportWorkOrderAnalysis", "dropdown": 1}
+	],
+	"documentCard": "e10mnf.core.WorkOrderCard",
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "title"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10mnf.core.workOrders.docStates.default"},
+	"ndx": 1120,
+	"indexes": [
+	]
+}

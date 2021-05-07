@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "Currencies - names translations"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "currency": {
+            "name": "Currency"
+        },
+        "language": {
+            "name": "Language"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "namePlural": {
+            "name": "Name in plural"
+        },
+        "urlWikipedia": {
+            "name": "Wikipedia URL"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

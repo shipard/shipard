@@ -1,0 +1,173 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+    <title>test</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="file://{{templateRoot}}style.css" type="text/css"/>
+</head>
+<body>
+
+
+<table class='vkp-vykup-header'>
+    <tr>
+        <td class='vkp-vykup-qr'>{{!<img src='file:///Users/sebik/sw/vykupna.cz/tmp/qr.png'/>!}}</td>
+        <td class='vkp-vykup-docheader'>
+            <h1>PŘEJÍMACÍ LIST</h1>
+            <h2>{{@dict;dataItem:data.flags.reportTitle}}</h2>
+            <h3>číslo <b>{{data.head.docNumber}}</b><br/>datum <b>{{data.head.dateIssue}}</b></h3>
+        </td>
+    </tr>
+</table>
+<table class='vkp-vykup-odbdod'>
+    <tr>
+        <td class='vkp-vykup-odb' style='background-image: url("file://{{appDir}}/reports/logo-razitko.svg"); background-repeat: no-repeat; background-position: top left; background-size: auto 36pt;'><b>{{data.owner.fullName}}</b><br/>
+            {{data.owner.address.street}}, {{data.owner.address.city}} {{data.owner.address.zipcode}} <br/>
+            {{#data.owner_identifiers}}
+                <b>{{@dict;dataItem:name}}:</b> {{value}}
+            {{/data.owner_identifiers}}
+            <br/><br/>
+            {{cfgItem.options.core.ownerLegalRegInfo}}
+        </td>
+        <td class='vkp-vykup-dod'>{{@dict;dodavatel}}:<small class='pull-right'>#{{data.person.id}}</small><br/><b>{{data.person.fullName}}</b><br/>
+            {{data.person.address.street}},
+            {{data.person.address.zipcode}} {{data.person.address.city}}<br/>
+
+            {{#data.person_identifiers}}
+                <b>{{@dict;dataItem:name}}:</b> {{value}}
+            {{/data.person_identifiers}}
+            <br/>
+        </td>
+    </tr>
+</table>
+
+
+<table class='vkp-vykup-radky'>
+    <thead>
+    <tr class='vkp-vykup-radky1'>
+        <th class='vkp-vykup-radky-cislo'>#</th>
+        <th class='vkp-vykup-radky-nazev' colspan='3'>materiál</th>
+
+        {{#data.flags.enablePrice}}
+            <th class='vkp-vykup-radky-cenajed'>Kč / kg</th>
+        {{/data.flags.enablePrice}}
+
+        <th class='vkp-vykup-radky-mnozstvi'>množství</th>
+        {{#data.flags.enablePrice}}
+            <th class='vkp-vykup-radky-cenacelkem'>cena</th>
+        {{/data.flags.enablePrice}}
+    </tr>
+    <tr class='vkp-vykup-radky2'>
+        <th class='vkp-vykup-radky-cislo'></th>
+        <th class='vkp-vykup-radky-kod'>kód odpadu</th>
+        <th class='vkp-vykup-radky-hspoz'>hspoz</th>
+        <th class='vkp-vykup-radky-cislomat'></th>
+        {{#data.flags.enablePrice}}
+            <th></th>
+        {{/data.flags.enablePrice}}
+        <th class='vkp-vykup-radky-mnozstvi-kg'>(kg)</th>
+        {{#data.flags.enablePrice}}
+            <th class='vkp-vykup-radky-cena-kc'>(kč)</th>
+        {{/data.flags.enablePrice}}
+    </tr>
+    </thead>
+
+    {{#data.rows}}
+        <tr class='vkp-vykup-radky1 small'>
+            <td class='vkp-vykup-radky-cislo'>{{rowNumber}}</td>
+            <td class='vkp-vykup-radky-nazev' colspan='3'>{{text}}</td>
+            {{#data.flags.enablePrice}}
+                <td class='number vkp-vykup-radky-cenajed'>{{print.priceItem}}</td>
+            {{/data.flags.enablePrice}}
+
+            <td class='number vkp-vykup-radky-mnozstvi'>{{quantity}}</td>
+            {{#data.flags.enablePrice}}
+                <td class='number vkp-vykup-radky-cenacelkem'>{{print.priceAll}}</td>
+            {{/data.flags.enablePrice}}
+        </tr>
+
+        <tr class='vkp-vykup-radky2 small'>
+            <td class='vkp-vykup-radky-cislo'>&nbsp;</td>
+            <td class='vkp-vykup-radky-kod'>{{rowItemProperties.odpady.kododp.0.value}}</td>
+            <td class='vkp-vykup-radky-hspoz'>{{rowItemProperties.odpady.hspoz.0.value}}</td>
+            <td class='vkp-vykup-radky-cislomat'></td>
+            <td></td>
+            {{#data.flags.enablePrice}}
+                <td></td>
+                <td></td>
+            {{/data.flags.enablePrice}}
+        </tr>
+    {{/data.rows}}
+</table>
+
+{{#data.flags.enablePrice}}
+    <div class='vkp-vykup-cena-a-zaok'>celkem: {{data.head.print.sumTotal}} {{data.head.print.currency}} zaokrouhlení: {{data.head.print.rounding}} {{data.head.print.currency}}</div>
+{{/data.flags.enablePrice}}
+<table class='vkp-vykup-celkem'>
+    <tr>
+        <td class='vkp-vykup-celkem-info'>
+            {{#data.flags.payInvoice}}
+                Částka bude uhrazena na základě Vaší faktury.<br/>
+                Režim přenesení daňové povinnosti - §92a-92e.<br/>
+                Materiál podléhá základní sazbě DPH.<br/>
+            {{/data.flags.payInvoice}}
+            {{#data.flags.payBatch}}
+                Částka za tento výkup bude uhrazena v hotovosti,<br/>
+                v termínu na základě vzájemné dohody.<br/>
+            {{/data.flags.payBatch}}
+        </td>
+        <td class='vkp-vykup-celkem-cena'>
+            {{#data.flags.enablePrice}}
+                {{#data.flags.payCash}}
+                    k úhradě
+                {{/data.flags.payCash}}
+                {{#data.flags.payInvoice}}
+                    k fakturaci
+                {{/data.flags.payInvoice}}
+                {{#data.flags.payBatch}}
+                    k vyúčtování
+                {{/data.flags.payBatch}}
+
+                {{data.head.print.toPay}} {{data.head.print.currency}}
+            {{/data.flags.enablePrice}}
+        </td>
+    </tr>
+</table>
+
+<table class='vkp-vykup-podpis'>
+    <tr>
+        <td class='vkp-vykup-podpis-dod-vlevo'></td>
+        <td class='vkp-vykup-podpis-odb'>
+            {{#data.author.signature.filename}}
+                <img src='file://{{appDir}}/att/{{data.author.signature.path}}{{data.author.signature.filename}}'/>
+            {{/data.author.signature.filename}}
+            <div>Vystavil: {{data.author.fullName}}</div>
+        </td>
+        <td class='vkp-vykup-podpis-dod'>
+            <div class='vkp-vykup-podpis-dod-prevzal'>
+                <span>
+                {{#data.flags.payCash}}
+                    Úhradu v hotovosti převzal:
+                {{/data.flags.payCash}}
+                {{^data.flags.payCash}}
+                    Materiál předal:
+                {{/data.flags.payCash}}
+                <br/>
+                {{data.person.hotovostPrevzalJmeno}}<br/>
+                OP: {{data.person.hotovostPrevzalOP}}
+                </span>
+            </div>
+            <div class='vkp-vykup-podpis-dod-podpis'>zde se prosím podepište</div>
+        </td>
+        <td class='vkp-vykup-podpis-dod-sipka'>&lsaquo;</td>
+    </tr>
+</table>
+<div class='vkp-paticka'>informace: 777 770 680 &bull; objednávky kontejnerů, kancelář: 777 770 683 &bull;
+    info@vykupna.cz &bull; www.vykupna.cz<br/>
+    Provozní doba: Po - Pá: 7-12 13-17 &nbsp; So, Ne: 9-11
+</div>
+
+
+
+</body>
+</html>
+

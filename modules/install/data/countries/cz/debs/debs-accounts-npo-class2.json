@@ -1,0 +1,24 @@
+{
+	"name": "Finanční účty",
+	"datasets": [
+		{
+			"table": "e10doc.debs.accounts",
+			"name": "Třída 2 - finanční účty",
+			"defaultValues": {"accGroup": 0, "accMethod": "debs", "docState": 4000, "docStateMain": 2},
+			"data": [
+				{"rec": {"id":"211100","fullName":"Pokladna","shortName":"Pokladna","accountKind":0}},
+				{"rec": {"id":"213100","fullName":"Ceniny","shortName":"Ceniny","accountKind":0}},
+				{"rec": {"id":"221100","fullName":"Bankovní účty","shortName":"Bankovní účty","accountKind":0}},
+				{"rec": {"id":"231100","fullName":"Krátkodobé bankovní úvěry","shortName":"Krátkodobé bankovní úvěry","accountKind":1}},
+				{"rec": {"id":"232100","fullName":"Eskontní úvěry","shortName":"Eskontní úvěry","accountKind":1}},
+				{"rec": {"id":"241100","fullName":"Vydané krátkodobé dluhopisy","shortName":"Vydané krátkodobé dluhopisy","accountKind":1}},
+				{"rec": {"id":"249100","fullName":"Ostatní krátkodobé finanční výpomoci","shortName":"Ostatní krátkodobé finanční výpomoci","accountKind":1}},
+				{"rec": {"id":"251100","fullName":"Majetkové cenné papíry k obchodování","shortName":"Majetkové CP k obchodování","accountKind":0}},
+				{"rec": {"id":"253100","fullName":"Dluhové cenné papíry k obchodování","shortName":"Dluhové CP k obchodování","accountKind":0}},
+				{"rec": {"id":"256100","fullName":"Ostatní cenné papíry","shortName":"Ostatní CP","accountKind":0}},
+				{"rec": {"id":"259100","fullName":"Pořizovaný krátkodobý finanční majetek","shortName":"Pořizovaný krátkodobý FM","accountKind":0}},
+				{"rec": {"id":"261100","fullName":"Peníze na cestě","shortName":"Peníze na cestě","accountKind":0,"toBalance":1}}
+			]
+		}
+	]
+}

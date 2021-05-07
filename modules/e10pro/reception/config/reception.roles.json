@@ -1,0 +1,24 @@
+{
+  "reception": {
+		"name": "Recepce",
+		"viewers": {
+			"e10pro.reception.foreigners": {"default": 2}
+		}
+	},
+	"admin": {
+		"viewers": {
+			"e10pro.reception.foreignersAccPlaces": {"default": 2},
+			"e10pro.reception.foreignersPoliceFiles": {"default": 2}
+		}
+	},
+	"store": {
+		"viewers": {
+			"e10pro.booking.bookings": {"e10pro.booking.ViewBookingAgenda": 2},
+			"e10.persons.persons": {"defaulters": 2}
+		},
+		"widgets": {
+			"e10doc.balance.widgetBalanceReceivables": 2, "lib.wkf.BookingWidget": 2,
+			"e10doc.finance.CashPayWidget": 2
+		}
+	}
+}

@@ -1,0 +1,17 @@
+{
+    "useAccessManagement": {
+        "cfgName": "Use access management"
+    },
+    "useTagsCautionMoney": {
+        "cfgName": "Require caution money for access tags"
+    },
+    "tagsCautionMoneyAmount": {
+        "cfgName": "Amount of caution money"
+    },
+    "cautionMoneyDocsMode": {
+        "cfgName": "Way of managing documents for caution money"
+    },
+    "useAssignTagsToRooms": {
+        "cfgName": "Allow assigning tags to rooms"
+    }
+}

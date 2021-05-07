@@ -1,0 +1,43 @@
+{
+    "table": {
+        "name": "Cashboxes"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "currency": {
+            "name": "Currency"
+        },
+        "exclFromDashboard": {
+            "name": "Exclude from dashboard"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "warehouseCashreg": {
+            "name": "Warehouse for Cash registers"
+        },
+        "warehousePurchase": {
+            "name": "Warehouse for Purchases"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "debsAccountId": {
+            "name": "Account"
+        }
+    }
+}

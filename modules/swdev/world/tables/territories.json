@@ -1,0 +1,30 @@
+{
+	"id": "swdev.world.territories", "sql": "swdev_world_territories", "name": "Oblasti a uskupení", "icon": "icon-map",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "name", "name": "Název", "type": "string", "len": 120},
+		{"id": "id", "name": "id", "type": "string", "len": 50},
+		{"id": "territoryType", "name": "Typ oblasti", "type": "enumInt",
+			"enumCfg": {"cfgItem": "swdev.world.territoriesTypes", "cfgValue": "", "cfgText": "name"}},
+		{"id": "flag", "name": "Vlajka", "type": "string", "len": 3},
+		{"id": "urlWikipedia", "name": "URL na Wikipedii", "type": "string", "len": 120},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{
+			"id": "default", "class": "swdev.world.ViewTerritories",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.world.ViewDetailTerritory"},
+				"tr": {"title": "Překlad", "icon": "icon-language", "type": "detail", "class": "swdev.world.ViewDetailTerritoryTr"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "swdev.world.FormTerritory"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"documentCard": "swdev.world.DocumentCardTerritory"
+}

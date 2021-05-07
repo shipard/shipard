@@ -1,0 +1,46 @@
+{
+    "table": {
+        "name": "Requests for users management"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "requestType": {
+            "name": "Request"
+        },
+        "subject": {
+            "name": "Subject"
+        },
+        "requestId": {
+            "name": "Request ID"
+        },
+        "loginHash": {
+            "name": "E-mail"
+        },
+        "requestData": {
+            "name": "Request data"
+        },
+        "created": {
+            "name": "Creation timestamp"
+        },
+        "validTo": {
+            "name": "Expiration timestamp"
+        },
+        "finished": {
+            "name": "Execution timestamp"
+        },
+        "addressCreate": {
+            "name": "IP address of request creation"
+        },
+        "addressConfirm": {
+            "name": "IP address of request confirmation"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

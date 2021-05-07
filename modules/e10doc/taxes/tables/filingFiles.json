@@ -1,0 +1,15 @@
+{
+	"id": "e10doc.taxes.filingFiles", "sql": "e10doc_taxes_filingFiles", "name": "Soubory podání daňových přiznání a přehledů", "icon": "icon-file-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "report", "name": "Přehled", "type": "int"},
+		{"id": "reportType", "name": "Typ", "type": "enumString", "len": 10,
+			"enumCfg": {"cfgItem": "e10doc.taxes.reportTypes", "cfgValue": "", "cfgText": "name"}},
+		{"id": "filing", "name": "Přehled", "type": "int"},
+		{"id": "fileType", "name": "Typ souboru", "type": "string", "len": 24},
+		{"id": "title", "name": "Název", "type": "string", "len": 120},
+		{"id": "attachment", "name": "Príloha", "type": "int"}
+	],
+	"options": ["systemTable"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "title"}
+}

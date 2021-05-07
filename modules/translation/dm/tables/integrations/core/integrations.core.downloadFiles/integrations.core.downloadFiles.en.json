@@ -1,0 +1,58 @@
+{
+    "table": {
+        "name": "Files download"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "service": {
+            "name": "Service"
+        },
+        "task": {
+            "name": "Task"
+        },
+        "fileId": {
+            "name": "File ID"
+        },
+        "fileName": {
+            "name": "File name"
+        },
+        "fileSize": {
+            "name": "File size"
+        },
+        "fileKind": {
+            "name": "File type"
+        },
+        "fileCreatedDateTime": {
+            "name": "File creation timestamp"
+        },
+        "userEmail": {
+            "name": "User e-mail"
+        },
+        "user": {
+            "name": "User"
+        },
+        "lat": {
+            "name": "Latitude"
+        },
+        "lon": {
+            "name": "Longitude"
+        },
+        "locState": {
+            "name": "State of geotagging"
+        },
+        "i1": {
+            "name": "Information 1"
+        },
+        "i2": {
+            "name": "Information 2"
+        },
+        "i3": {
+            "name": "Information 3"
+        },
+        "downloadState": {
+            "name": "Download state"
+        }
+    }
+}

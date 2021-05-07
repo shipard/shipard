@@ -1,0 +1,41 @@
+{
+    "1": {
+        "title": "Cash"
+    },
+    "2": {
+        "title": "Card"
+    },
+    "3": {
+        "title": "Cash on delivery"
+    },
+    "9": {
+        "title": "Check"
+    },
+    "11": {
+        "title": "PayPal"
+    },
+    "10": {
+        "title": "Postal order"
+    },
+    "12": {
+        "title": "Payment gateway"
+    },
+    "0": {
+        "title": "Transfer order"
+    },
+    "5": {
+        "title": "Cash receipt"
+    },
+    "7": {
+        "title": "Cash collection"
+    },
+    "4": {
+        "title": "Invoice"
+    },
+    "6": {
+        "title": "Collective document"
+    },
+    "8": {
+        "title": "Do not pay"
+    }
+}

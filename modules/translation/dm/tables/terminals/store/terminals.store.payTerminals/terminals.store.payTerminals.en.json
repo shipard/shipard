@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "Payment terminal"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "buttonText": {
+            "name": "Button text"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "personBalance": {
+            "name": "Person for ledger"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

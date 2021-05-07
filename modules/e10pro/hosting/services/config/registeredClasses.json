@@ -1,0 +1,7 @@
+{
+	"feed": {
+		"loginScreen": {
+			"classId": "e10pro.hosting.services.LoginScreenFeed"
+		}
+	}
+}

@@ -1,0 +1,54 @@
+{
+	"panels": {
+		"terminal": {"url": "/app/terminal", "zone": "sec", "objectType": "panel", "icon": "icon-bookmark", "name": "", "order": 900, "checkWorkplace": 1,
+								 "rightBar": "\\E10\\camerasBarRight", "leftBar": "\\E10\\camerasBarLeft",
+			"items": [
+				{"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "suppliers", "icon": "e10-persons-persons", "order": 10000, "hint": "terminal"},
+				{"t1": "Výkupy", "object": "viewer", "table": "e10doc.core.heads", "viewer": "purchase", "icon": "e10-docs-purchase", "order": 20000},
+				{"t1": "Prodejky", "disabledCfgItem": "options.e10doc-sale.disableCashreg", "object": "viewer", "table": "e10doc.core.heads", "icon":"docType/cashReg", "viewer": "cashregister", "order": 50000},
+				{"t1": "Pokladna", "object": "viewer", "table": "e10doc.core.heads", "viewer": "cash",
+					"icon": "e10-docs-cash", "order": 600000},
+				{"t1": "Položky", "object": "viewer", "table": "e10.witems.items", "viewer": "default", "icon": "e10-witems-items", "order": 100000},
+				{"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10pro-terminal", "icon": "system/iconReports", "order": 800000},
+				{"t1": "Ceník", "object": "report", "class": "e10pro.reports.pricelist.priceListPurchase", "subclass": "", "icon": "x-price", "order": 990000}
+			],
+			"smallItems": [
+				{"t1": "Registrace", "object": "viewer", "table": "e10pro.custreg.registrations", "viewer": "default", "icon": "icon-sign-in", "order": 10000, "hint": "terminal"}
+			]
+		},
+		"docs": {
+			"items": {
+				"purchase": {"t1": "Výkupy", "object": "viewer", "table": "e10doc.core.heads", "viewer": "purchase", "icon": "e10-docs-purchase", "order": 550000}
+			}
+		},
+		"buy": {
+			"items": {
+				"purchase": {"t1": "Výkupy", "object": "viewer", "table": "e10doc.core.heads", "viewer": "purchase", "icon": "e10-docs-purchase", "order": 550000}
+			}
+		}
+	},
+	"mobileui": {
+		"records": {
+			"groups": {
+				"docs": {
+					"items": {
+						"purchase": {
+							"t1": "Výkupy", "object": "viewer", "table": "e10doc.core.heads", "viewer": "purchase", "icon": "e10-docs-purchase", "order": 700000
+						}
+					}
+				}
+			}
+		},
+		"reports": {
+			"groups": {
+				"operative": {
+					"name": "Aktuálně", "order": 100000,
+					"items": {
+						"daily": {"t1": "Denní přehled", "object": "report", "class": "e10pro.reports.terminal_daily.reportDaily", "icon": "icon-file-o", "order": 100000},
+						"monthly": {"t1": "Měsíční přehled", "object": "report", "class": "e10pro.reports.terminal_monthly.reportMonthly", "icon": "icon-file-o", "order": 110000}
+					}
+				}
+			}
+		}
+	}
+}

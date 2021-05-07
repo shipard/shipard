@@ -1,0 +1,30 @@
+{
+	"0": {
+		"id": "issue", "name": "K řešení", "icon": "icon-check-square",
+		"order": 300, "addOrder": 200
+	},
+	"1": {
+		"id": "inbox", "name": "Došlá pošta", "icon": "icon-inbox",
+		"order": 100, "addOrder": 600
+	},
+	"2": {
+		"id": "talk", "name": "Diskuze", "icon": "icon-bullhorn",
+		"order": 200, "addOrder": 800
+	},
+	"3": {
+		"id": "outbox", "name": "Odeslaná pošta", "icon": "icon-send",
+		"order": 300, "addOrder": 90000
+	},
+	"4": {
+		"id": "test", "name": "Systémová kontrola", "icon": "icon-check-circle",
+		"order": 920, "addOrder": 0
+	},
+	"5": {
+		"id": "alert", "name": "Výstraha", "icon": "icon-exclamation-triangle",
+		"order": 910, "addOrder": 0
+	},
+	"6": {
+		"id": "note", "name": "Poznámka", "icon": "icon-file-text",
+		"order": 800, "addOrder": 0
+	}
+}

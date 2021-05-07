@@ -1,0 +1,38 @@
+{
+	"id": "terminals.base.workplaces", "sql": "terminals_base_workplaces", "name": "Pracoviště", "icon": "icon-sun-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "name", "name": "Název", "type": "string", "len": 80},
+		{"id": "id", "name": "ID", "type": "string", "len": 10},
+
+		{"id": "cashBox", "name": "Pokladna", "type": "int", "reference": "e10doc.base.cashboxes"},
+		{"id": "centre", "name": "Středisko", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10doc.centres", "cfgValue": "ndx", "cfgText": "shortName"}},
+
+		{"id": "printerDefault", "name": "Běžná tiskárna", "type": "int", "reference": "terminals.base.printers"},
+		{"id": "printerPOS", "name": "Tiskárna pro účtenky", "type": "int", "reference": "terminals.base.printers"},
+		{"id": "printerLabels", "name": "Tiskárna pro nálepky", "type": "int", "reference": "terminals.base.printers"},
+
+		{"id": "cameraStartDocument", "name": "Kamera zahajovací", "type": "int", "reference": "terminals.base.cameras"},
+		{"id": "cameraEndDocument", "name": "Kamera ukončovací", "type": "int", "reference": "terminals.base.cameras"},
+
+		{"id": "allowedFrom", "name": "Povoleno z IP adres", "type": "string", "len": 200},
+		{"id": "useTerminal", "name": "Používat Terminál", "type": "logical"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"views": {
+		"default": {"id": "default", "class": "terminals.base.ViewWorkplaces", "detail": "e10.base.ViewDetailTemplate", "help": "prirucka/4718"}
+	},
+	"forms": [
+		{"id": "default", "class": "terminals.base.FormWorkplace", "help": "prirucka/4718"}
+	],
+	"options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"},
+	"order": [{"column": "ndx", "order": "ASC"}]
+}

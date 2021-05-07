@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "Types of documents"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "docType": {
+            "name": "Document type"
+        },
+        "activity": {
+            "name": "Activity"
+        },
+        "debsAccountId": {
+            "name": "Account"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

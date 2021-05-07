@@ -1,0 +1,40 @@
+{
+    "table": {
+        "name": "Comments"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "issue": {
+            "name": "Issue"
+        },
+        "commentType": {
+            "name": "Type"
+        },
+        "author": {
+            "name": "Author"
+        },
+        "dateCreate": {
+            "name": "Date of origin"
+        },
+        "dateTouch": {
+            "name": "Date of last activity"
+        },
+        "displayOrder": {
+            "name": "Order for display"
+        },
+        "text": {
+            "name": "Text"
+        },
+        "activateCnt": {
+            "name": "Number of activations"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

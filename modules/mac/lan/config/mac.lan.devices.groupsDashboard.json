@@ -1,0 +1,37 @@
+{
+	"lan": {
+		"fn": "Síťové prvky",
+		"sn": "Síť",
+		"icon": "icon-sitemap"
+	},
+	"srv": {
+		"fn": "Servery a NASy",
+		"sn": "Servery",
+		"icon": "icon-server"
+	},
+	"cams": {
+		"fn": "Kamery",
+		"sn": "Kamery",
+		"icon": "icon-video-camera"
+	},
+	"wifi": {
+		"fn": "WiFi",
+		"sn": "WiFi",
+		"icon": "icon-wifi"
+	},
+	"ups": {
+		"fn": "UPS",
+		"sn": "UPS",
+		"icon": "icon-battery-three-quarters"
+	},
+	"trm": {
+		"fn": "Terminály",
+		"sn": "Terminály",
+		"icon": "icon-calculator"
+	},
+	"iot": {
+		"fn": "IoT",
+		"sn": "IoT",
+		"icon": "icon-power-off"
+	}
+}

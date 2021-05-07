@@ -1,0 +1,5 @@
+{
+  "id": "e10doc.deliveryNotes",
+  "name": "Delivery Notes",
+  "extensions": ["deliveryNotes"]
+}

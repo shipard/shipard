@@ -1,0 +1,19 @@
+{
+	"id": "e10doc.base.warehousesoptions", "sql": "e10doc_base_warehousesoptions", "name": "Nastavení skladů", "icon": "icon-cogs",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "warehouse", "name": "Sklad", "type": "int"},
+
+		{"id": "fiscalYear", "name": "Účetní období", "type": "int", "reference": "e10doc.base.fiscalyears"},
+		{"id": "calcPrices", "name": "Skladová cena", "type": "enumInt",
+			"enumValues": {"0": "Průměrná cena", "1": "Průměrná cena roční"}},
+
+		{"id": "debsAccInvAcquisition", "name": "Účet pořízení zásob", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+		{"id": "debsAccInvInStore", "name": "Účet zásob na skladě", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+		{"id": "debsAccInvInTransit", "name": "Účet zásob na cestě", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.base.FormWarehousesOption"}
+	],
+	"options": ["systemTable"]
+}

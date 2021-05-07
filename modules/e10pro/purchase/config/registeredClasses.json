@@ -1,0 +1,10 @@
+{
+	"financeTransactionInfo": [
+		{"classId": "e10pro.purchase.PurchasePaymentInfo"}
+	],
+	"startMenu": {
+		"purchases": {
+			"classId": "e10pro.purchase.StartMenu"
+		}
+	}
+}

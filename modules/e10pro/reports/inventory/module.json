@@ -1,0 +1,7 @@
+{
+	"id": "e10pro.reports.inventory",
+	"name": "Inventory reports",
+	"config": [
+		{"id": "+reports", "file": "reports.json"}
+	]
+}

@@ -1,0 +1,25 @@
+{
+	"macu": {
+		"viewers": {
+			"mac.access.tags": {"default": 2},
+			"mac.access.tagsAssignments": {"default": 2},
+			"mac.access.gates": {"default": 2},
+			"mac.access.gatesSchedule": {"default": 2},
+			"mac.access.levels": {"default": 2},
+			"mac.access.levelsCfg": {"default": 2, "formList":  2},
+			"mac.access.personsAccess": {"default": 2},
+			"mac.access.personsAccessLevels": {"default": 2},
+			"mac.access.log": {"default": 2}
+		},
+		"widgets": {
+			"mac.access.libs.WidgetAccess": 2
+		}
+	},
+	"bacstgm": {
+		"name": "Správa přístupových klíčů",
+		"roles": ["user"],
+		"viewers": {
+			"mac.base.accessTags": {"default": 2}
+		}
+	}
+}

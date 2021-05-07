@@ -1,0 +1,26 @@
+{
+  "id": "wkf.docs.docsKinds", "sql": "wkf_docs_docsKinds", "name": "Druhy Dokumentů", "icon": "icon-file-o",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+
+    {"id": "fullName", "name": "Název", "type": "string", "len": 100},
+    {"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 60},
+
+    {"id": "order", "name": "Pořadí", "type": "int"},
+    {"id": "icon", "name": "Ikona", "type": "string", "len": 50},
+
+    {"id": "vds", "name": "Rozšíření struktury", "type": "int", "reference":  "vds.base.defs"},
+
+    {"id": "docState", "name": "Stav", "type": "int"},
+    {"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+  "states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+  "views": {
+    "default": {"id": "default", "class": "wkf.docs.ViewDocsKinds", "help": "prirucka/4251"}
+  },
+  "forms": [
+    {"id": "default", "class": "wkf.docs.FormDocKind", "help": "prirucka/4251"}
+  ],
+  "options": ["configSource"],
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

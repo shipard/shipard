@@ -1,0 +1,5 @@
+{
+  "id": "e10doc.orderout",
+  "name": "Outgoing Orders",
+  "extensions": ["orderout"]
+}

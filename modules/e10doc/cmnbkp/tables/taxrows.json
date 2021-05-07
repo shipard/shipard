@@ -1,0 +1,31 @@
+{
+  "id": "e10doc.tax.rows", "sql": "e10doc_tax_rows", "name": "Řádky daňového přiznání",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "document", "name": "Doklad přiznání", "type": "int"},
+
+		{"id": "kindItem", "name": "Druh položky", "type": "string", "len": 32},
+
+		{"id": "base", "name": "Základ daně", "type": "money"},
+		{"id": "tax", "name": "Částka daně", "type": "money"},
+		{"id": "total", "name": "Částka celkem", "type": "money"},
+
+		{"id": "taxCode", "name": "Kód daně", "type": "int"},
+		{"id": "row", "name": "Řádek daně", "type": "int"},
+		{"id": "accountId", "name": "Účet", "type": "string", "len": 12},
+		{"id": "dir", "name": "Směr", "type": "int"},
+
+		{"id": "docNumber", "name": "Číslo dokladu", "type": "string", "len": 20},
+		{"id": "docType", "name": "Typ dokladu", "type": "enumString", "len": 10,
+			"enumCfg": {"cfgItem": "e10.docs.types", "cfgValue": "", "cfgText": "fullName"}},
+		{"id": "dateTax", "name": "Datum uskutečnění zdanitelného plnění", "label": "DUZP", "type": "date"},
+		{"id": "countryCode", "name": "Kód země", "type": "string", "len": 5},
+		{"id": "pvin", "name": "DIČ", "type": "string", "len": 20},
+		{"id": "shortpvin", "name": "Zkrácené DIČ", "type": "string", "len": 20},
+
+		{"id": "code", "name": "Kód plnění", "type": "int"},
+		{"id": "amount", "name": "Množství", "type": "number", "dec": 3},
+		{"id": "unit", "name": "Jednotka", "type": "string", "len": 8}
+	],
+	"options": ["systemTable"]
+}

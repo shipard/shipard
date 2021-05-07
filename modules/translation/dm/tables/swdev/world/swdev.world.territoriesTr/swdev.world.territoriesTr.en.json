@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Territories - names translations"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "territory": {
+            "name": "Territory"
+        },
+        "language": {
+            "name": "Language"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "urlWikipedia": {
+            "name": "Wikipedia URL"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

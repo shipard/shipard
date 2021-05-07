@@ -1,0 +1,37 @@
+{
+	"id": "mac.lan.devicesProperties", "sql": "mac_lan_devicesProperties", "name": "Vlastnosti zařízení",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "device", "name": "Zařízení", "type": "int", "reference": "mac.lan.devices"},
+
+		{"id": "property", "name": "Vlastnost", "type": "enumInt",
+			"enumCfg": {"cfgItem": "mac.lan.devices.properties.types", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "source", "name": "Zdroj", "type": "enumInt",
+			"enumValues": {"0": "SNMP", "1": "Autodetekce", "2": "Ručně"}},
+
+		{"id": "i1", "name": "Numerická hodnota 1", "type": "int"},
+		{"id": "i2", "name": "Numerická hodnota 2", "type": "int"},
+		{"id": "i3", "name": "Numerická hodnota 3", "type": "int"},
+		{"id": "i4", "name": "Numerická hodnota 4", "type": "int"},
+
+		{"id": "s1", "name": "Textová hodnota 1", "type": "string", "len": 190},
+		{"id": "key1", "name": "Klíč 1", "type": "string", "len": 15},
+		{"id": "key2", "name": "Klíč 2", "type": "string", "len": 15},
+
+		{"id": "dateCreate", "name": "Datum vytvoření", "type": "timestamp"},
+		{"id": "dateUpdate", "name": "Datum aktualizace", "type": "timestamp"},
+		{"id": "dateCheck", "name": "Datum kontroly", "type": "timestamp"},
+
+		{"id": "valueId", "name": "ID", "type": "string", "len": 32},
+		{"id": "deleted", "name": "Odinstalováno", "type": "int"},
+		{"id": "dateUninstall", "name": "Datum odinstalace", "type": "timestamp"}
+	],
+	"views": [
+		{"id": "unknownPackages", "class": "mac.lan.ViewUnknownPackages",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewDetailUnknownPackage"}
+			}
+		}
+	]
+}

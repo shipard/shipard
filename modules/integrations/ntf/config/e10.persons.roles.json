@@ -1,0 +1,8 @@
+{
+	"admin": {
+		"viewers": {
+			"integrations.ntf.channels": {"default": 2},
+			"integrations.ntf.delivery": {"default": 2}
+		}
+	}
+}

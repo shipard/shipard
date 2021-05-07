@@ -1,0 +1,11 @@
+{
+  "id": "services.money",
+  "name": "Money services",
+	"modules": ["e10/base"],
+  "tables": ["exchangeRatesLists", "exchangeRatesValues"],
+  "config": [
+	  {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+		{"id": "+services.money.exchangeRatesLists", "file": "exchangeRatesLists.json"},
+		{"id": "+registeredClasses", "file": "registeredClasses.json"}
+	]
+}

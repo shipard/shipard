@@ -1,0 +1,161 @@
+{{xmlMode}}<?xml version="1.0" encoding="UTF-8"?>
+
+<Pisemnost nazevSW="Shipard" verzeSW="2014.1.0">
+
+	<DPHDP3 verzePis="01.02">
+
+		<VetaD
+			k_uladis="DPH"
+			dokument="DP3"
+			dapdph_forma="B"
+			typ_platce="{{data.taxVatReturn.e10-CZ-VR.e10-CZ-VR-typPlatce}}"
+			trans="A"
+{{#data.taxVatReturn.taxPeriod.month}}
+			mesic="{{data.taxVatReturn.taxPeriod.month}}"
+			rok="{{data.taxVatReturn.taxPeriod.year}}"
+{{/data.taxVatReturn.taxPeriod.month}}
+{{#data.taxVatReturn.taxPeriod.quarter}}
+			ctvrt="{{data.taxVatReturn.taxPeriod.quarter}}"
+			rok="{{data.taxVatReturn.taxPeriod.year}}"
+{{/data.taxVatReturn.taxPeriod.quarter}}
+{{#data.taxVatReturn.taxPeriod.period.start}}
+			zdobd_od="{{data.taxVatReturn.taxPeriod.period.start}}"
+{{/data.taxVatReturn.taxPeriod.period.start}}
+{{#data.taxVatReturn.taxPeriod.period.end}}
+			zdobd_do="{{data.taxVatReturn.taxPeriod.period.end}}"
+{{/data.taxVatReturn.taxPeriod.period.end}}
+			d_poddp="{{data.head.dateIssue}}"
+			c_okec="{{data.taxVatReturn.e10-CZ-VR.e10-CZ-VR-kodOKEC}}"
+			kod_zo="{{data.taxVatReturn.e10-CZ-VR.e10-CZ-VR-novyZdanKod}}"
+		/>
+
+		<VetaP
+			c_ufo="{{data.taxVatReturn.e10-CZ-VR.e10-CZ-VR-FU}}"
+			c_pracufo="{{data.taxVatReturn.e10-CZ-VR.e10-CZ-VR-pracFU}}"
+			typ_ds="{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-typSubjektu}}"
+			dic="{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-DICbezKoduStatu}}"
+			zkrobchjm="{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-nazevOsoby}}"
+			jmeno="{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-jmeno}}"
+			prijmeni="{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-prijemni}}"
+			titul="{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-titul}}"
+			ulice="{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-ulice}}"
+			c_pop="{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-cisPopis}}"
+			c_orient="{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-cisOrient}}"
+			naz_obce="{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-mesto}}"
+			psc="{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-PSC}}"
+			stat="{{data.taxVatReturn.e10-CZ-VR-subjekt.e10-CZ-VR-stattext}}"
+			opr_jmeno="{{data.taxVatReturn.e10-CZ-VR-opr.e10-CZ-VR-jmeno}}"
+			opr_prijmeni="{{data.taxVatReturn.e10-CZ-VR-opr.e10-CZ-VR-prijmeni}}"
+			opr_postaveni="{{data.taxVatReturn.e10-CZ-VR-opr.e10-CZ-VR-vztah}}"
+			c_telef="{{data.taxVatReturn.e10-CZ-VR-kontakt.e10-CZ-VR-telefon}}"
+			email="{{data.taxVatReturn.e10-CZ-VR-kontakt.e10-CZ-VR-email}}"
+			sest_jmeno="{{data.taxVatReturn.e10-CZ-VR-sest.e10-CZ-VR-jmeno}}"
+			sest_prijmeni="{{data.taxVatReturn.e10-CZ-VR-sest.e10-CZ-VR-prijmeni}}"
+			sest_telef="{{data.taxVatReturn.e10-CZ-VR-sest.e10-CZ-VR-telefon}}"
+{{#data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-typZastupce}}
+			zast_ev_cislo="{{data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-evidCislo}}"
+			zast_dat_nar="{{data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-datumNarozeni}}"
+			zast_ic="{{data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-IC}}"
+			zast_jmeno="{{data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-jmeno}}"
+			zast_kod="{{data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-kodZastupce}}"
+			zast_nazev="{{data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-nazevOsoby}}"
+			zast_prijmeni="{{data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-prijmeni}}"
+			zast_typ="{{data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-typZastupce}}"
+{{/data.taxVatReturn.e10-CZ-VR-zast.e10-CZ-VR-typZastupce}}
+		/>
+
+		<Veta1
+			obrat23="{{data.taxVatReturn.roundedSum.row1.base}}"
+			dan23="{{data.taxVatReturn.roundedSum.row1.tax}}"
+			obrat5="{{data.taxVatReturn.roundedSum.row2.base}}"
+			dan5="{{data.taxVatReturn.roundedSum.row2.tax}}"
+			p_zb23="{{data.taxVatReturn.roundedSum.row3.base}}"
+			dan_pzb23="{{data.taxVatReturn.roundedSum.row3.tax}}"
+			p_zb5="{{data.taxVatReturn.roundedSum.row4.base}}"
+			dan_pzb5="{{data.taxVatReturn.roundedSum.row4.tax}}"
+			p_sl23_e="{{data.taxVatReturn.roundedSum.row5.base}}"
+			dan_psl23_e="{{data.taxVatReturn.roundedSum.row5.tax}}"
+			p_sl5_e="{{data.taxVatReturn.roundedSum.row6.base}}"
+			dan_psl5_e="{{data.taxVatReturn.roundedSum.row6.tax}}"
+			dov_zb23="{{data.taxVatReturn.roundedSum.row7.base}}"
+			dan_dzb23="{{data.taxVatReturn.roundedSum.row7.tax}}"
+			dov_zb5="{{data.taxVatReturn.roundedSum.row8.base}}"
+			dan_dzb5="{{data.taxVatReturn.roundedSum.row8.tax}}"
+			p_dop_nrg="{{data.taxVatReturn.roundedSum.row9.base}}"
+			dan_pdop_nrg="{{data.taxVatReturn.roundedSum.row9.tax}}"
+			rez_pren23="{{data.taxVatReturn.roundedSum.row10.base}}"
+			dan_rpren23="{{data.taxVatReturn.roundedSum.row10.tax}}"
+			rez_pren5="{{data.taxVatReturn.roundedSum.row11.base}}"
+			dan_rpren5="{{data.taxVatReturn.roundedSum.row11.tax}}"
+			p_sl23_z="{{data.taxVatReturn.roundedSum.row12.base}}"
+			dan_psl23_z="{{data.taxVatReturn.roundedSum.row12.tax}}"
+			p_sl5_z="{{data.taxVatReturn.roundedSum.row13.base}}"
+			dan_psl5_z="{{data.taxVatReturn.roundedSum.row13.tax}}"
+		/>
+
+		<Veta2
+			dod_zb="{{data.taxVatReturn.roundedSum.row20.base}}"
+			pln_sluzby="{{data.taxVatReturn.roundedSum.row21.base}}"
+			pln_vyvoz="{{data.taxVatReturn.roundedSum.row22.base}}"
+			dod_dop_nrg="{{data.taxVatReturn.roundedSum.row23.base}}"
+			pln_zaslani="{{data.taxVatReturn.roundedSum.row24.base}}"
+			pln_rez_pren="{{data.taxVatReturn.roundedSum.row25.base}}"
+			pln_ost="{{data.taxVatReturn.roundedSum.row26.base}}"
+		/>
+
+		<Veta3
+			tri_pozb="{{data.taxVatReturn.roundedSum.row30.base}}"
+			tri_dozb="{{data.taxVatReturn.roundedSum.row31.base}}"
+			dov_osv="{{data.taxVatReturn.roundedSum.row32.base}}"
+			opr_verit="{{data.taxVatReturn.roundedSum.row33.base}}"
+			opr_dluz="{{data.taxVatReturn.roundedSum.row34.base}}"
+		/>
+
+		<Veta4
+			pln23="{{data.taxVatReturn.roundedSum.row40.base}}"
+			odp_tuz23_nar="{{data.taxVatReturn.roundedSum.row40.tax}}"
+			odp_tuz23=""
+			pln5="{{data.taxVatReturn.roundedSum.row41.base}}"
+			odp_tuz5_nar="{{data.taxVatReturn.roundedSum.row41.tax}}"
+			odp_tuz5=""
+			dov_cu="{{data.taxVatReturn.roundedSum.row42.base}}"
+			odp_cu_nar="{{data.taxVatReturn.roundedSum.row42.tax}}"
+			odp_cu=""
+			nar_zdp23="{{data.taxVatReturn.roundedSum.row43.base}}"
+			od_zdp23="{{data.taxVatReturn.roundedSum.row43.tax}}"
+			odkr_zdp23=""
+			nar_zdp5="{{data.taxVatReturn.roundedSum.row44.base}}"
+			od_zdp5="{{data.taxVatReturn.roundedSum.row44.tax}}"
+			odkr_zdp5=""
+			odp_rez_nar="{{data.taxVatReturn.roundedSum.row45.tax}}"
+			odp_rezim=""
+			odp_sum_nar="{{data.taxVatReturn.roundedSum.row46.tax}}"
+			odp_sum_kr=""
+			nar_maj="{{data.taxVatReturn.roundedSum.row47.base}}"
+			od_maj="{{data.taxVatReturn.roundedSum.row47.tax}}"
+			odkr_maj=""
+		/>
+
+		<Veta5
+			plnosv_kf="{{data.taxVatReturn.roundedSum.row50.base}}"
+				pln_nkf=""
+				plnosv_nkf=""
+				koef_p20_nov=""
+				koef_p20_vypor=""
+				vypor_odp=""
+				odp_uprav_kf=""
+		/>
+
+		<Veta6
+			uprav_odp="{{data.taxVatReturn.roundedSum.row60.tax}}"
+			dan_vrac="{{data.taxVatReturn.roundedSum.row61.tax}}"
+			dan_zocelk="{{data.taxVatReturn.roundedSum.row62.tax}}"
+			odp_zocelk="{{data.taxVatReturn.roundedSum.row63.tax}}"
+			dano_da="{{data.taxVatReturn.roundedSum.row64.tax}}"
+			dano_no="{{data.taxVatReturn.roundedSum.row65.tax}}"
+			dano="{{data.taxVatReturn.roundedSum.row66.tax}}"
+		/>
+
+	</DPHDP3>
+
+</Pisemnost>

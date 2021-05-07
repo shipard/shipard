@@ -1,0 +1,25 @@
+{
+    "table": {
+        "name": "Sections of tax returns"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "report": {
+            "name": "Report"
+        },
+        "partId": {
+            "name": "Section"
+        },
+        "filing": {
+            "name": "Filing"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "data": {
+            "name": "Data"
+        }
+    }
+}

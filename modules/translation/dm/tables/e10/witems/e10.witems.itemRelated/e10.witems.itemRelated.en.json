@@ -1,0 +1,23 @@
+{
+    "table": {
+        "name": "Related items"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "srcItem": {
+            "name": "Item"
+        },
+        "rowOrder": {
+            "name": "Row order"
+        },
+        "kind": {
+            "name": "Kind"
+        },
+        "relatedItem": {
+            "name": "Related item",
+            "label": "Item"
+        }
+    }
+}

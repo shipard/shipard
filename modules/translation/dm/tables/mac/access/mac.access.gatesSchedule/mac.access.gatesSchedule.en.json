@@ -1,0 +1,61 @@
+{
+    "table": {
+        "name": "Time schedule of gates"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "rowOrder": {
+            "name": "Row order"
+        },
+        "gate": {
+            "name": "Gate"
+        },
+        "gateState": {
+            "name": "State"
+        },
+        "DOW1": {
+            "name": "Monday"
+        },
+        "DOW2": {
+            "name": "Tuesday"
+        },
+        "DOW3": {
+            "name": "Wednesday"
+        },
+        "DOW4": {
+            "name": "Thursday"
+        },
+        "DOW5": {
+            "name": "Friday"
+        },
+        "DOW6": {
+            "name": "Saturday"
+        },
+        "DOW7": {
+            "name": "Sunday"
+        },
+        "workingDays": {
+            "name": "Working days"
+        },
+        "nonWorkingDays": {
+            "name": "Non-working days"
+        },
+        "timeFrom": {
+            "name": "Start time"
+        },
+        "timeTo": {
+            "name": "End time"
+        },
+        "timeFromMin": {
+            "name": "Start time - minutes"
+        },
+        "timeToMin": {
+            "name": "End time - minutes"
+        },
+        "note": {
+            "name": "Note"
+        }
+    }
+}

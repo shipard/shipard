@@ -1,0 +1,25 @@
+{
+    "table": {
+        "name": "Element items"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "rowOrder": {
+            "name": "Row order"
+        },
+        "thing": {
+            "name": "IoT element"
+        },
+        "itemType": {
+            "name": "Link type"
+        },
+        "ioPort": {
+            "name": "Device"
+        },
+        "camera": {
+            "name": "Camera"
+        }
+    }
+}

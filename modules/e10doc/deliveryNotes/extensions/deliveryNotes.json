@@ -1,0 +1,23 @@
+[
+	{
+		"table": "e10doc.core.heads",
+		"views": [
+			{"id": "deliveryNote", "class": "e10doc.deliveryNotes.View", "detail": "e10doc.deliveryNotes.ViewDetail"}
+		],
+		"forms": [
+			{"id": "deliveryNote", "class": "e10doc.deliveryNotes.Form"}
+		],
+		"reports": [
+			{
+				"id": "deliveryNote", "name": "Dodací list", "class": "e10doc.deliveryNotes.Report",
+				"queryCol": "docType", "queryColValues": ["dlvrnote"], "email": 1
+			}
+		]
+	},
+	{
+		"table": "e10doc.core.rows",
+		"forms": [
+			{"id": "deliveryNote", "class": "e10doc.deliveryNotes.FormRows"}
+		]
+	}
+]

@@ -1,0 +1,22 @@
+{
+    "table": {
+        "name": "Types of network devices"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "deviceKind": {
+            "name": "Device type"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

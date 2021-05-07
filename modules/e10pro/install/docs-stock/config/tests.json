@@ -1,0 +1,10 @@
+[
+	{
+		"id": "tests.e10.inventory.MinusStates", "class": "lib.tests.TestReports",
+		"name": "Problémy se stavem zásob",
+		"notify": "e10doc-accounting", "systemSection": 58,
+		"reports": [
+			{"class": "e10doc.inventory.reportInventoryMinus", "cycles": ["prevFiscalYear", "thisFiscalYear"]}
+		]
+	}
+]

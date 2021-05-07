@@ -1,0 +1,18 @@
+{
+  "id": "e10.base.clsfgroups", "sql": "e10_base_clsfgroups", "name": "Skupiny zatřídění",
+  "columns": [
+    {"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "fullName", "sql": "fullName", "name": "Název", "type": "string", "len": 120}
+  ],
+  "views": [
+    {"id": "default", "class": "e10.base.ViewClsfGroups",
+			"details": {"default": {"title": "Štítky", "icon": "x-tag", "type": "detail", "class": "e10.base.ViewDetailClsfGroups"}}
+		}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10.base.FormClsfGroups"}
+  ],
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+  "order": [{"column": "fullName", "order": "ASC"}],
+  "fullText": ["fullName"]
+}

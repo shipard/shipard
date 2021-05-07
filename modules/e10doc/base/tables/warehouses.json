@@ -1,0 +1,33 @@
+{
+  "id": "e10doc.base.warehouses", "sql": "e10doc_base_warehouses", "name": "Sklady", "icon": "icon-cubes",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "fullName", "name": "Název", "type": "string", "len": 120},
+    {"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 40},
+		{"id": "id", "name": "ID", "type": "string", "len": 10},
+    {"id": "street", "name": "Ulice", "type": "string", "len": 250},
+    {"id": "city", "name": "Město", "type": "string", "len": 90},
+    {"id": "zipcode", "name": "PSČ", "type": "string", "len": 20},
+    {"id": "country", "name": "Země", "type": "enumString", "len": 2,
+      "enumCfg": {"cfgItem": "e10.base.countries", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+	"lists": [
+		{"id": "rows", "class": "e10.base.ListRows", "name": "Nastavení", "table": "e10doc.base.warehousesoptions", "queryColumn": "warehouse"}
+	],
+  "views": [
+    {"id": "default", "class": "e10doc.base.ViewWarehouses", "help": "prirucka/4574"}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10doc.base.FormWarehouses", "help": "prirucka/4574"}
+  ],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"options": ["configSource"],
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+  "order": [{"column": "fullName"}],
+  "fullText": ["fullName"]
+}

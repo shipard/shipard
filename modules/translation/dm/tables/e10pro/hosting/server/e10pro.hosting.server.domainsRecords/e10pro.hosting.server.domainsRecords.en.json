@@ -1,0 +1,43 @@
+{
+    "table": {
+        "name": "Domain records"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "recordType": {
+            "name": "Record type"
+        },
+        "domain": {
+            "name": "Domain"
+        },
+        "hostName": {
+            "name": "Name"
+        },
+        "value": {
+            "name": "Value"
+        },
+        "priority": {
+            "name": "Priority"
+        },
+        "ttl": {
+            "name": "TTL"
+        },
+        "registrarId": {
+            "name": "Registrar ID"
+        },
+        "versionProvider": {
+            "name": "Provider version ID"
+        },
+        "versionData": {
+            "name": "Data version ID"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

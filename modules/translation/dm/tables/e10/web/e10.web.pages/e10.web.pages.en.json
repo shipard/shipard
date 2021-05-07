@@ -1,0 +1,85 @@
+{
+    "table": {
+        "name": "Websites"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "title": {
+            "name": "Title"
+        },
+        "menuTitle": {
+            "name": "Menu title"
+        },
+        "menuDisabled": {
+            "name": "Do not add to menu"
+        },
+        "url": {
+            "name": "Url"
+        },
+        "redirectTo": {
+            "name": "Redirect to"
+        },
+        "pageType": {
+            "name": "Type"
+        },
+        "server": {
+            "name": "Server"
+        },
+        "text": {
+            "name": "Text"
+        },
+        "editTextAsCode": {
+            "name": "Edit text as code"
+        },
+        "perex": {
+            "name": "Lead paragraph"
+        },
+        "description": {
+            "name": "Description"
+        },
+        "coverImage": {
+            "name": "Cover image"
+        },
+        "pageMode": {
+            "name": "Page function"
+        },
+        "pageModeParams": {
+            "name": "Parameters"
+        },
+        "author": {
+            "name": "Author"
+        },
+        "dateCreate": {
+            "name": "Date of origin"
+        },
+        "datePub": {
+            "name": "Date of publication"
+        },
+        "dateClose": {
+            "name": "Expiration date"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "parentUrl": {
+            "name": "Parent url"
+        },
+        "treeLevel": {
+            "name": "Height of tree"
+        },
+        "treeId": {
+            "name": "Tree path ID"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "wiki": {
+            "name": "Wiki"
+        }
+    }
+}

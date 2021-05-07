@@ -1,0 +1,19 @@
+{
+    "table": {
+        "name": "Rows of IP addresses list"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "addressList": {
+            "name": "List of addresses"
+        },
+        "rowOrder": {
+            "name": "Row order"
+        },
+        "address": {
+            "name": "Address"
+        }
+    }
+}

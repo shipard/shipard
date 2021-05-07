@@ -1,0 +1,63 @@
+{
+	"id": "e10.web.servers", "sql": "e10_web_servers", "name": "Webové servery", "icon": "icon-globe",
+	"columns": [
+		{"id": "ndx", "name": "ndx", "type": "int_ai"},
+		{"id": "fullName", "name": "Úplný název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
+		{"id": "title", "name": "Titulek", "type": "string", "len": 80},
+		{"id": "domain", "name": "Doména", "type": "string", "len": 80},
+		{"id": "domainsRedirectHere", "name": "Domény pro přesměrování sem", "type": "string", "len": 180},
+		{"id": "urlBegin", "name": "Začátek webové adresy", "type": "string", "len": 100},
+
+		{"id": "templateNdx", "name": "Šablona", "type": "int", "reference": "e10.base.templates", "comboViewer": "webCombo", "options": ["saveOnChange"]},
+		{"id": "template", "name": "ID šablony", "type": "string", "len": 60},
+
+		{"id": "templateLookNdx", "name": "Vzhled", "type": "int", "reference": "e10.base.templatesLooks", "comboViewer": "webCombo"},
+		{"id": "templateLook", "name": "ID šablony", "type": "string", "len": 60},
+		{"id": "templateStylePath", "name": "Cesta na CSS", "type": "string", "len": 80},
+
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+		{"id": "serverMode", "name": "Funkce serveru", "type": "enumString", "len": 12, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10.web.serverModes", "cfgValue": "", "cfgText": "name"}},
+		{"id": "wiki", "name": "Wiki", "type": "int", "reference": "e10pro.kb.wikies"},
+		{"id": "homePageFunction", "name": "Funkce domovské stránky", "type": "string", "len": 80},
+
+		{"id": "gaid", "name": "Google Analytics ID", "type": "string", "len": 25},
+		{"id": "authType", "name": "Způsob přihlášení", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "Bez možnosti přihlášení", "1": "Uživatelé webu", "2": "Aplikace"}},
+		{"id": "loginRequired", "name": "Vyžadovat přihlášení", "type": "enumInt",
+			"enumValues": {"0": "Volitelně",  "1": "Vždy"}},
+		{"id": "authTypePassword", "name": "Povolit přihlašování heslem", "type": "logical"},
+		{"id": "authTypeUrlHash", "name": "Povolit přihlašování klíčem v URL", "type": "logical"},
+		{"id": "authTypeKeyId", "name": "Povolit přihlašování kódem", "type": "logical"},
+
+		{"id": "excludeFromDashboard", "name": "Nedávat do Přehledu", "type": "logical"},
+
+		{"id": "iconCore", "name": "Ikona webu (záložka prohlížeče)", "type": "int", "reference": "e10.base.attachments", "comboViewer": "images"},
+		{"id": "iconApp", "name": "Ikona aplikace (na ploše)", "type": "int", "reference": "e10.base.attachments", "comboViewer": "images"},
+		{"id": "iconAppIos", "name": "Ikona aplikace na iOS", "type": "int", "reference": "e10.base.attachments", "comboViewer": "images"},
+
+		{"id": "templateParams", "name": "Parametry šablony", "type": "subColumns"},
+
+		{"id": "iconUrl", "name": "URL ikony", "type": "string", "len": 160},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "e10.web.ViewServers", "detail": "e10.web.ViewDetailServer", "help": "web/4539"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10.web.FormServer", "help": "web/4539"}
+	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"docActions": {
+		"clone": {"action": "wizard", "class": "e10.web.CloneWebServerWizard", "title": "Klonovat", "icon": "icon-files-o"}
+	},
+	"options": ["configSource"],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.web.servers.docStates"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

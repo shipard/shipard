@@ -1,0 +1,11 @@
+{
+	"core": {
+		"title": "Základní nastavení", "order": 100
+	},
+	"system": {
+		"title": "Systém", "order": 999000
+	},
+	"codebase": {
+		"title": "Číselníky", "order": 30000
+	}
+}

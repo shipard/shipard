@@ -1,0 +1,213 @@
+{
+    "table": {
+        "name": "Rows of documents"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "document": {
+            "name": "Document"
+        },
+        "rowType": {
+            "name": "Row type"
+        },
+        "ownerRow": {
+            "name": "Parent row"
+        },
+        "rowOrder": {
+            "name": "Row order"
+        },
+        "operation": {
+            "name": "Operation"
+        },
+        "item": {
+            "name": "Item"
+        },
+        "itemType": {
+            "name": "Item type"
+        },
+        "itemBalance": {
+            "name": "Balance"
+        },
+        "itemIsSet": {
+            "name": "Item is set"
+        },
+        "text": {
+            "name": "Text"
+        },
+        "usrText1": {
+            "name": "User text 1"
+        },
+        "quantity": {
+            "name": "Quantity",
+            "label": "QTY"
+        },
+        "unit": {
+            "name": "Unit"
+        },
+        "weightNet": {
+            "name": "Net weight",
+            "label": "Net weight"
+        },
+        "weightGross": {
+            "name": "Gross weight",
+            "label": "Gross weight"
+        },
+        "currency": {
+            "name": "Currency"
+        },
+        "homeCurrency": {
+            "name": "Home currency"
+        },
+        "exchangeRate": {
+            "name": "Exchange rate"
+        },
+        "priceSource": {
+            "name": "Price source"
+        },
+        "priceItem": {
+            "name": "Unit price",
+            "label": "Price/unit"
+        },
+        "priceAll": {
+            "name": "Total price"
+        },
+        "taxBase": {
+            "name": "Tax base"
+        },
+        "tax": {
+            "name": "Tax amount"
+        },
+        "priceTotal": {
+            "name": "Total price including tax"
+        },
+        "credit": {
+            "name": "Credit"
+        },
+        "debit": {
+            "name": "Debit"
+        },
+        "creditHc": {
+            "name": "Credit in home currency"
+        },
+        "debitHc": {
+            "name": "Debit in home currency"
+        },
+        "bankRequestAmount": {
+            "name": "Amount in foreign currency",
+            "label": "Amount in FC"
+        },
+        "bankRequestCurrency": {
+            "name": "Currency"
+        },
+        "priceItemHc": {
+            "name": "Unit price [HC]",
+            "label": "Price/unit [HC]"
+        },
+        "priceAllHc": {
+            "name": "Total price [HC]"
+        },
+        "taxBaseHc": {
+            "name": "Tax base [HC]"
+        },
+        "taxBaseHcCorr": {
+            "name": "Tax base correction [HC]"
+        },
+        "taxHc": {
+            "name": "Tax amount [HC]"
+        },
+        "priceTotalHc": {
+            "name": "Total price including tax [HC]"
+        },
+        "costBase": {
+            "name": "Cost"
+        },
+        "costTotal": {
+            "name": "Cost including tax"
+        },
+        "costBaseHc": {
+            "name": "Cost in home currency"
+        },
+        "costTotalHc": {
+            "name": "Cost in home currency including tax"
+        },
+        "taxCode": {
+            "name": "Tax type"
+        },
+        "taxRate": {
+            "name": "Tax rate"
+        },
+        "taxPercents": {
+            "name": "Tax percentage"
+        },
+        "taxCalc": {
+            "name": "Tax calculation"
+        },
+        "symbol1": {
+            "name": "Variable symbol",
+            "label": "VS"
+        },
+        "symbol2": {
+            "name": "Specific symbol",
+            "label": "SS"
+        },
+        "symbol3": {
+            "name": "Constant symbol",
+            "label": "CS"
+        },
+        "bankAccount": {
+            "name": "Bank account",
+            "label": "Account number"
+        },
+        "dateDue": {
+            "name": "Due date"
+        },
+        "dateTax": {
+            "name": "Time of supply",
+            "label": "Time of supply"
+        },
+        "taxPeriod": {
+            "name": "Tax period"
+        },
+        "dateAccounting": {
+            "name": "Accounting date"
+        },
+        "fiscalYear": {
+            "name": "Fiscal period - year"
+        },
+        "fiscalMonth": {
+            "name": "Fiscal period - month"
+        },
+        "person": {
+            "name": "Person"
+        },
+        "centre": {
+            "name": "Centre"
+        },
+        "project": {
+            "name": "Project"
+        },
+        "workOrder": {
+            "name": "Work order"
+        },
+        "property": {
+            "name": "Property"
+        },
+        "invDirection": {
+            "name": "Direction of stock movement"
+        },
+        "invPrice": {
+            "name": "Stock price"
+        },
+        "invPriceAcc": {
+            "name": "Stock accounting price"
+        },
+        "debsAccountId": {
+            "name": "Account"
+        },
+        "wkfProject": {
+            "name": "Project"
+        }
+    }
+}

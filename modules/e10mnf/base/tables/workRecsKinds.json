@@ -1,0 +1,72 @@
+{
+	"id": "e10mnf.base.workRecsKinds", "sql": "e10mnf_base_workRecsKinds", "name": "Druhy pracovních záznamů", "icon": "icon-flash",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "fullName", "name": "Název", "type": "string", "len": 100},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 60},
+		{"id": "docType", "name": "Typ záznamu", "type": "enumInt", "len": 2,
+			"enumCfg": {"cfgItem": "e10mnf.workRecs.wrTypes", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "order", "name": "Pořadí", "type": "int"},
+		{"id": "icon", "name": "Ikona", "type": "string", "len": 50},
+
+		{"id": "useRows", "name": "Používat řádky", "type": "logical", "options": ["saveOnChange"]},
+
+		{"id": "askDateTimeOnHead", "name": "Zadávat čas na hlavičce", "type": "enumInt",
+			"enumValues": {
+				"0": "Nic",
+				"1": "Datum Od - Do a čas Od - Do",
+				"2": "Datum a čas Od - Do",
+				"4": "Datum a čas jako počet hodin"
+			}
+		},
+
+		{"id": "askDateTimeOnRows", "name": "Zadávat čas na řádcích", "type": "enumInt",
+			"enumValues": {
+				"0": "Nic",
+				"1": "Datum Od - Do a čas Od - Do",
+				"2": "Datum a čas Od - Do",
+				"4": "Datum a čas jako počet hodin",
+				"5": "Čas Od - Do",
+				"7": "Čas jako počet hodin"
+			}
+		},
+
+		{"id": "askPerson", "name": "Zadávat Osobu", "type": "enumInt",
+			"enumValues": {"0": "Na hlavičce", "1": "Na řádku"}},
+		{"id": "askProject", "name": "Zadávat projekt", "type": "enumInt",
+			"enumValues": {"0": "Ne", "1": "Na hlavičce", "2": "Na řádku"}},
+		{"id": "askWorkOrder", "name": "Zadávat zakázku", "type": "enumInt",
+			"enumValues": {"0": "Ne", "1": "Na hlavičce", "2": "Na řádku"}},
+		{"id": "askItem", "name": "Zadávat položku", "type": "enumInt",
+			"enumValues": {"0": "Ne", "1": "Na hlavičce", "2": "Na řádku"}},
+		{"id": "askPrice", "name": "Zadávat cenu", "type": "enumInt",
+			"enumValues": {"0": "Ne", "1": "Na hlavičce", "2": "Na řádku"}},
+		{"id": "askSubject", "name": "Zadávat předmět", "type": "enumInt",
+			"enumValues": {"1": "Ano", "0": "Ne"}},
+		{"id": "askNote", "name": "Zadávat poznámku", "type": "enumInt",
+			"enumValues": {"1": "Ano", "0": "Ne"}},
+
+		{"id": "startOnProject", "name": "Přidávat na projektu", "type": "logical"},
+		{"id": "startOnIssue", "name": "Přidávat na úkolu", "type": "logical"},
+		{"id": "startOnPerson", "name": "Přidávat na osobě", "type": "logical"},
+		{"id": "startOnDocument", "name": "Přidávat na záznamech", "type": "logical"},
+		{"id": "startGlobal", "name": "Přidávat globálně", "type": "logical"},
+		{"id": "enableStartStop", "name": "Povolit zahájení/ukončení", "type": "logical"},
+
+		{"id": "defaultSubject", "name": "Nastavit předmět", "type": "string", "len": 100},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": {
+		"default": {"id": "default", "class": "e10mnf.base.ViewWorkRecsKinds", "help": "prirucka/4868"}
+	},
+	"forms": [
+		{"id": "default", "class": "e10mnf.base.FormWorkRecsKind", "help": "prirucka/4868"}
+	],
+	"options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

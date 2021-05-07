@@ -1,0 +1,30 @@
+{
+    "table": {
+        "name": "Sensors shown on devices"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "device": {
+            "name": "Device"
+        },
+        "rowOrder": {
+            "name": "Row order"
+        },
+        "sensor": {
+            "name": "Sensor"
+        },
+        "sensorLabel": {
+            "name": "Label"
+        },
+        "camPosH": {
+            "name": "Position on camera - horizontally",
+            "label": "Horizontally"
+        },
+        "camPosV": {
+            "name": "Position on camera - vertically",
+            "label": "Vertically"
+        }
+    }
+}

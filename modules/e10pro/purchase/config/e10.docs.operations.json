@@ -1,0 +1,17 @@
+{
+	"1040001": {"title": "Zásoby", "docDir": 1, "itemType": 1,
+              "docTypes": {
+                "purchase" : {"order": 10000}
+              }
+  },
+	"1040002": {"title": "Úhrada výkupu", "docDir": 1, "paymentSymbols": 1,
+              "docTypes": {
+                "cash" : {"order": 200000}
+              }
+  },
+	"1040003": {"title": "Likvidace výkupu", "docDir": 1, "paymentSymbols": 1,
+              "docTypes": {
+                "invni" : {"order": 20000}
+              }
+  }
+}

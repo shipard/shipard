@@ -1,0 +1,12 @@
+[Unit]
+Description=e10 certificates issue/renew
+After=network.target auditd.service
+
+[Service]
+PIDFile=/var/run/e10-certs-generate.pid
+ExecStart=/var/www/e10-server/e10pro/hosting/server/tools/e10-certs-generate.sh
+Type=forking
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

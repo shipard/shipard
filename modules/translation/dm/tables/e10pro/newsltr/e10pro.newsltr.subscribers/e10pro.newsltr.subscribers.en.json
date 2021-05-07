@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "Newsletters subscribers"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "email": {
+            "name": "E-mail"
+        },
+        "person": {
+            "name": "Person"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "dateSubscribe": {
+            "name": "Subscription date"
+        },
+        "testAccount": {
+            "name": "Test account"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

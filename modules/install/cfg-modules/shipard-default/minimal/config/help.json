@@ -1,0 +1,12 @@
+{
+	"header": [
+		{"title": "Obsah", "url": "", "icon": "icon-file"},
+		{"title": "Ovládání aplikace", "url": "prirucka/s1", "icon": "icon-mouse-pointer"}
+	],
+	"panels": {
+		"/app/srvcfg": [
+			{"title": "Nastavení", "url": "prirucka/s25", "icon": "e10-server-config"},
+			{"title": "Uživatelé", "url": "prirucka/122", "icon": "icon-user"}
+		]
+	}
+}

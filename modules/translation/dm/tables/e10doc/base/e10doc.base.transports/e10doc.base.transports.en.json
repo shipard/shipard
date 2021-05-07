@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "Ways of transportation"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "personBalance": {
+            "name": "Person for ledger"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

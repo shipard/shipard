@@ -1,0 +1,8 @@
+{
+	"1" : {
+		"id": "matrix-room",
+		"name": "Matrix - chatovací místnost",
+		"icon": "icon-comments-o",
+		"classId": "integrations.ntf.libs.ChannelMatrix"
+	}
+}

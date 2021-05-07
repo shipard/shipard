@@ -1,0 +1,14 @@
+{
+	"0": {
+		"name": "Ostatní",
+		"docType": ""
+	},
+	"1": {
+		"name": "Banka",
+		"docType": "bank"
+	},
+	"2": {
+		"name": "Faktura přijatá",
+		"docType": "invni"
+	}
+}

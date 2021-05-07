@@ -1,0 +1,14 @@
+{
+  "id": "e10.base.clsf", "sql": "e10_base_clsf", "name": "Zatřídění dokumentů",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "clsfItem", "name": "Štítek", "type": "int"},
+    {"id": "group", "name": "Skupina", "type": "string", "len": 20},
+    {"id": "tableid", "name": "Tabulka", "type": "string", "len": 48, "options": ["ascii"]},
+    {"id": "recid", "name": "Řádek", "type": "int"}
+  ],
+	"options": ["systemTable"],
+  "indexes": [
+    {"id": "s1", "columns": ["tableid", "recid"]}
+  ]
+}

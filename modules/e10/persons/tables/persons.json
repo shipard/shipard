@@ -1,0 +1,78 @@
+{
+  "id": "e10.persons.persons", "sql": "e10_persons_persons", "name": "Osoby",
+  "columns": [
+    {"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "company", "sql": "company", "name": "Společnost", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "complicatedName", "name": "Zadat úplné jméno", "type": "logical", "options": ["saveOnChange"]},
+    {"id": "beforeName", "sql": "beforeName", "name": "Před jménem", "label": "titul", "type": "string", "len": 20},
+    {"id": "firstName", "sql": "firstName", "name": "Jméno", "type": "string", "len": 60},
+    {"id": "middleName", "sql": "middleName", "name": "Druhé jméno", "label": "prostřední jm.", "type": "string", "len": 60},
+    {"id": "lastName", "sql": "lastName", "name": "Příjmení", "type": "string", "len": 80},
+    {"id": "afterName", "sql": "afterName", "name": "Za jménem", "label": "titul", "type": "string", "len": 20},
+		{"id": "id", "name": "Kód osoby", "type": "string", "len": 16},
+
+		{"id": "moreAddress", "name": "Více adres", "type": "logical", "options": ["saveOnChange"]},
+
+		{"id": "personalId", "name": "Osobní číslo", "type": "string", "len": 12},
+    {"id": "gender", "name": "Pohlaví", "type": "enumInt",
+	    "enumCfg": {"cfgItem": "e10.persons.gender", "cfgValue": "", "cfgText": ""}},
+	  {"id": "language", "name": "Jazyk", "type": "enumString", "len": 5,
+		  "enumCfg": {"cfgItem": "e10.base.languages", "cfgValue": "", "cfgText": "name"}},
+    {"id": "fullName", "sql": "fullName", "name": "Název", "type": "string", "len": 140},
+		{"id": "lastUseDate", "name": "Datum posledního použití", "type": "date"},
+    {"id": "accountType", "name": "Typ účtu", "type": "enumInt",
+			"enumValues": {"0": "Žádný účet", "1": "Lokální účet", "2": "Účet Shipard"}},
+    {"id": "accountState", "name": "Stav účtu", "type": "enumInt",
+			"enumValues": {"0": "Neaktivní", "1": "Aktivní"}},
+		{"id": "personType", "name": "Typ osoby", "type": "enumInt",
+			"enumValues": {"0": "", "1": "Člověk", "2": "Firma", "3": "Robot"}},
+		{"id": "login", "name": "Přihlašovací email", "type": "string", "len": 70},
+		{"id": "loginHash", "name": "Kontrolní součet přihlašovacího emailu", "type": "string", "len": 40},
+	  {"id": "gid", "name": "Globální ID", "type": "long"},
+    {"id": "roles", "sql": "roles", "name": "Role", "type": "enumString", "len": 160, "enumMultiple": 1,
+	    "enumCfg": {"cfgItem": "e10.persons.roles", "cfgValue": "", "cfgText": "name"}},
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+  "lists": [
+    {"id": "address", "class": "e10.persons.ListAddress", "name": "Adresy", "table": "e10.persons.address"},
+
+		{"id": "groups", "class": "e10.persons.ListGroups", "name": "Skupiny", "table": "e10.persons.personsgroups"},
+    {"id": "properties", "class": "e10.base.ListProperties", "name": "Vlastnosti",
+			"propertiesCfgList": "e10.persons.properties"},
+		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"},
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"},
+		{"id": "connections", "class": "e10.base.ListRows", "name": "Vazby na jiné osoby", "table": "e10.persons.connections", "queryColumn": "person"}
+  ],
+  "views": {
+		"default": {
+			"id": "default", "class": "e10.persons.ViewPersons", "help": "prirucka/4845",
+			"details": {
+				"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "order":  0, "class": "e10.persons.ViewDetailPersons"}
+			}
+		},
+		"users": {
+			"id": "users", "class": "e10.persons.ViewUsers",
+			"details": {
+				"rights": {"title": "Práva", "icon": "icon-sign-in", "type": "detail", "order":  0, "class": "e10.persons.ViewDetailPersonsRights"},
+				"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "order":  0, "class": "e10.persons.ViewDetailPersons"}
+			}
+		}
+	},
+  "forms": [
+    {"id": "default", "class": "e10.persons.FormPersons", "help": "prirucka/4265"},
+	  {"id": "robot", "class": "e10.persons.FormPersonsRobot"},
+		{"id": "personDefault", "class": "e10.persons.libs.forms.PersonDefault", "help": "prirucka/4265"}
+  ],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.persons.docStates"},
+	"documentCard": "e10.persons.DocumentCardPerson",
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"addWizard": {"class": "e10.persons.AddWizard"},
+  "order": [{"column": "fullName", "order": "ASC"}],
+  "fullText": ["fullName"],
+	"ndx": 1000,
+	"indexes": [
+		{"id": "s1", "columns": ["docStateMain", "firstName", "lastName"]},
+		{"id": "fullName", "columns": ["fullName"]}
+	]
+}

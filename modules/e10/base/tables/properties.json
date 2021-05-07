@@ -1,0 +1,28 @@
+{
+  "id": "e10.base.properties", "sql": "e10_base_properties", "name": "Vlastnosti dokumentů",
+  "columns": [
+    {"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "property", "sql": "property", "name": "Vlastnost", "type": "string", "len": 24, "options": ["ascii"]},
+    {"id": "group", "sql": "group", "name": "Skupina", "type": "string", "len": 24, "options": ["ascii"]},
+		{"id": "subtype", "name": "Podtyp", "type": "string", "len": 10, "options": ["ascii"]},
+    {"id": "tableid", "sql": "tableid", "name": "Tabulka", "type": "string", "len": 48, "options": ["ascii"]},
+    {"id": "recid", "sql": "recid", "name": "Řádek", "type": "int"},
+    {"id": "valueString", "sql": "valueString", "name": "Hodnota text", "type": "string", "len": 64},
+    {"id": "valueNum", "sql": "valueNum", "name": "Hodnota číslo", "type": "int"},
+    {"id": "valueMemo", "sql": "valueMemo", "name": "Hodnota dlouhý text", "type": "memo"},
+    {"id": "valueDate", "sql": "valueDate", "name": "Hodnota datum", "type": "date"},
+		{"id": "note", "name": "Poznámka", "type": "string", "len": 50},
+    {"id": "created", "sql": "created", "name": "Okamžik vytvoření", "type": "timestamp"}
+  ],
+	"options": ["systemTable"],
+	"views": [
+		{"id": "combo", "class": "e10.base.ViewPropertiesCombo"}
+	],
+  "order": [{"column": "ndx", "order": "ASC"}],
+  "fullText": ["name", "filename"],
+  "autocomplete": {"row": "name"},
+	"indexes": [
+		{"id": "s1", "columns": ["tableid", "recid", "property", "valueString", "ndx"]},
+		{"id": "s2", "columns": ["valueString", "property", "tableid", "recid"]}
+	]
+}

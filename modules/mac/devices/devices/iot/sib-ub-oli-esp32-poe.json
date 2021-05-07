@@ -1,0 +1,5 @@
+{
+	"name": "Olimex ESP32-POE",
+	"title": "Olimex ESP32-POE",
+	"gpioLayout": "oli-esp32-poe"
+}

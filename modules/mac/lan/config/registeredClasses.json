@@ -1,0 +1,16 @@
+{
+	"objectsCalls": {
+		"mac-get-node-server-cfg": {"classId": "mac.lan.libs.GetNodeServerConfig"},
+
+		"mac-get-lan-monitoring-dashboards": {"classId": "mac.lan.libs.GetLanMonitoringDashboards"},
+		"mac-get-lan-monitoring-snmp": {"classId": "mac.lan.libs.GetLanMonitoringSnmp"},
+
+		"mac-get-lan-control-cfg": {"classId": "mac.lan.libs.GetLanControlConfig"},
+		"mac-set-lan-control-request-state": {"classId": "mac.lan.libs.SetLanControlRequestState"},
+
+		"mac-lan-info-upload": {"classId": "mac.lan.LanInfoUpload"},
+		"mac-lan-macs-upload": {"classId": "mac.lan.libs.LanMacsUpload"},
+		"mac-lan-info-download": {"classId": "mac.lan.LanInfoDownload"},
+		"mac-lan-alerts-download": {"classId": "mac.lan.libs.alerts.LanAlertsDownload"}
+	}
+}

@@ -1,0 +1,27 @@
+{
+	"e10doc-commerce": {
+		"name": "Zakázky a Obchod", "order": 15000, "group": "core",
+		"icon": "icon-industry",
+		"type": "cfgFile",
+		"enabledCfgItem": "options.experimental.testCommerce",
+		"options":
+			[
+				{"cfgKey": "useWorkOrders", "cfgName": "Používat Zakázky",
+					"options": {"0": "ne", "1": "ano"}},
+				{"cfgKey": "useOrdersOut", "cfgName": "Používat Vydané objednávky",
+					"options": {"0": "ne", "1": "ano"}},
+				{"cfgKey": "useOrdersIn", "cfgName": "Používat Přijaté objednávky",
+					"options": {"0": "ne", "1": "ano"}},
+				{"cfgKey": "usePanelCommerce", "cfgName": "Používat panel Obchod",
+					"options": {"0": "ne", "1": "ano"}},
+				{"cfgKey": "useWorkOrdersOnPanelCommerce", "cfgName": "Výkazy práce na panelu Obchod",
+					"options": {"0": "ne", "1": "ano"}}
+			]
+	},
+	"experimental": {
+		"options": [
+			{"cfgKey": "testCommerce", "cfgName": "Testovat Zakázky a Obchod", "options": {"0": "Ne","1": "Ano"}},
+			{"cfgKey": "testDashboardWorkOrders", "cfgName": "Testovat přehled Zakázky", "options": {"0": "Ne","1": "Ano"}}
+		]
+	}
+}

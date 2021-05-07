@@ -1,0 +1,25 @@
+{
+	"e10doc-sale": {
+		"options": [
+			{"cfgKey": "disableCashreg", "cfgName": "Vypnout Prodejky a maloobchodní kasu",
+				"options": {"0": "ne", "1": "ano"}},
+			{"cfgKey": "cashRegSalePricesType", "cfgName": "Prodejní ceny na prodejkách jsou",
+				"options": {"1": "bez DPH", "2": "včetně DPH"}},
+			{"cfgKey": "cashregItemComboByTypes", "cfgName": "U Prodejek filtrovat položky podle typů",
+				"options": {"0": "ne", "1": "ano"}},
+			{"cfgKey": "cashregItemComboSearch", "cfgName": "U Prodejek povolit textové hledání položek",
+				"options": {"0": "ne", "1": "ano"}},
+			{"cfgKey": "cashregItemComboCats", "cfgName": "Kategorie položek pro prodejky", "reference": "e10.witems.itemcategories"},
+			{"cfgKey": "cashregItemDefaultComboCat", "cfgName": "Výchozí kategorie položek pro prodejky", "reference": "e10.witems.itemcategories"},
+			{"cfgKey": "cashregMobileItemComboSearch", "cfgName": "V mobilní kase povolit textové hledání položek",
+				"options": {"0": "ne", "1": "ano"}},
+			{"cfgKey": "cashregMobileDisablePaymentCards", "cfgName": "V mobilní kase zakázat úhrady kartou",
+				"options": {"0": "ne", "1": "ano"}},
+			{"cfgKey": "cashregMobileEnablePaymentButtons", "cfgName": "V mobilní kase povolit tlačítka pro úhradu",
+				"options": {"0": "ne", "1": "ano"}},
+			{"cfgKey": "cashregItemOtherTaxRate1", "cfgName": "Položka 'Ostatní prodej' základní sazba", "reference": "e10.witems.items"},
+			{"cfgKey": "cashregItemOtherTaxRate2", "cfgName": "Položka 'Ostatní prodej' snížená sazba", "reference": "e10.witems.items"},
+			{"cfgKey": "cashregItemOtherTaxRate3", "cfgName": "Položka 'Ostatní prodej' druhá snížená sazba", "reference": "e10.witems.items"}
+		]
+	}
+}

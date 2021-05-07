@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Gates"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "gateType": {
+            "name": "Type"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "id": {
+            "name": "Short-cut"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

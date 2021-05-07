@@ -1,0 +1,8 @@
+{
+  "macvs": {
+	  "name": "Video dohled 2",
+		"widgets": {
+			"mac.vs.WidgetLive": 2
+		}
+	}
+}

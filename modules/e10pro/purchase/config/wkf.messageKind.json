@@ -1,0 +1,3 @@
+{
+	"doc.purchase": {"name": "Výkupní lístek", "types": ["outbox"]}
+}

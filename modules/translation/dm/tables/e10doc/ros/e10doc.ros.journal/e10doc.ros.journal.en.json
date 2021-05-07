@@ -1,0 +1,52 @@
+{
+    "table": {
+        "name": "ROS journal"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "document": {
+            "name": "Document"
+        },
+        "msgId": {
+            "name": "ID"
+        },
+        "placeId1": {
+            "name": "Place if business ID"
+        },
+        "placeId2": {
+            "name": "Cash box ID"
+        },
+        "datePay": {
+            "name": "Sales timestamp"
+        },
+        "dateSent": {
+            "name": "Dispatch timestamp"
+        },
+        "sendIndex": {
+            "name": "Dispatch sequence number"
+        },
+        "state": {
+            "name": "State"
+        },
+        "resultCode1": {
+            "name": "Result code 1"
+        },
+        "resultCode2": {
+            "name": "Result code 2"
+        },
+        "amount": {
+            "name": "Amount"
+        },
+        "dataSent": {
+            "name": "Sent data"
+        },
+        "dataReceived": {
+            "name": "Received data"
+        },
+        "rosMode": {
+            "name": "Operation mode"
+        }
+    }
+}

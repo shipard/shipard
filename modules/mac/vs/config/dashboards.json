@@ -1,0 +1,24 @@
+{
+	"main": {
+		"panels": {
+			"vs": {
+				"creatorClass": "mac.vs.DashboardPanelsCreator", "order": 2500
+			}
+		}
+	},
+	"main_new": {
+		"panels": {
+			"vs": {
+				"creatorClass": "mac.vs.DashboardPanelsCreator", "order": 2500
+			}
+		}
+	},
+	"vs": {
+		"disableTopToolbar": 1,
+		"panels": {
+			"vs": {
+				"creatorClass": "mac.vs.DashboardPanelsCreator", "order": 2500
+			}
+		}
+	}
+}

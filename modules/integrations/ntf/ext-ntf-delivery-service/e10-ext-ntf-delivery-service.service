@@ -1,0 +1,12 @@
+[Unit]
+Description=e10 external notifications delivery
+After=network.target auditd.service
+
+[Service]
+PIDFile=/var/run/ext-ntf-delivery-service.pid
+ExecStart=/var/www/e10-modules/integrations/ntf/ext-ntf-delivery-service/e10-ext-ntf-delivery-service.sh
+Type=forking
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

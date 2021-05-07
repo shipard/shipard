@@ -1,0 +1,29 @@
+{
+	"0": {
+		"name": "---", "pluralName": "", "icon": "x-cog"
+	},
+	"1": {
+		"name": "Router", "pluralName": "Routery", "icon": "icon-retweet"
+	},
+	"2": {
+		"name": "Switch", "pluralName": "Switche", "icon": "icon-sitemap"
+	},
+	"3": {
+		"name": "WiFi Přístupový bod", "pluralName": "WiFi Přístupové body", "icon": "x-router"
+	},
+	"4": {
+		"name": "IP Kamera", "pluralName": "IP Kamery", "icon": "icon-video-camera"
+	},
+	"5": {
+		"name": "NAS", "pluralName": "NAS", "icon": "icon-hdd-o"
+	},
+	"6": {
+		"name": "Shipard IoT Box", "pluralName": "Shipard IoT Boxy", "icon": "icon-plug"
+	},
+	"7": {
+		"name": "Iot Deska", "pluralName": "Iot Desky", "icon": "icon-power-off"
+	},
+	"8": {
+		"name": "PC Deska", "pluralName": "PC Desky", "icon": "icon-desktop"
+	}
+}

@@ -1,0 +1,6 @@
+{
+	"contractsSale": {
+		"name": "Smlouvy prodejní", "label": "Štítky", "icon": "icon-thumbs-up",
+		"tables": ["e10doc.contracts.core.heads"]
+	}
+}

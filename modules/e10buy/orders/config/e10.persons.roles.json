@@ -1,0 +1,13 @@
+{
+	"admin": {
+		"viewers": {
+			"e10buy.orders.docKinds": {"default": 2},
+			"e10buy.orders.docNumbers": {"default": 2}
+		}
+	},
+	"buy": {
+		"viewers": {
+			"e10buy.orders.orders": {"default": 2}
+		}
+	}
+}

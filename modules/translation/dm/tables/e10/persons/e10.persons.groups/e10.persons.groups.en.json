@@ -1,0 +1,25 @@
+{
+    "table": {
+        "name": "Groups of persons"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "systemGroup": {
+            "name": "System group"
+        },
+        "roles": {
+            "name": "Roles"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

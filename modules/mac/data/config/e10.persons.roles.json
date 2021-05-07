@@ -1,0 +1,7 @@
+{
+	"admin": {
+		"viewers": {
+			"mac.data.sources": {"default": 2}
+		}
+	}
+}

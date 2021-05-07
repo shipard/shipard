@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Statistics of counts"
+    },
+    "columns": {
+        "id": {
+            "name": "id"
+        },
+        "i1": {
+            "name": "i1"
+        },
+        "i2": {
+            "name": "i1"
+        },
+        "s1": {
+            "name": "s1"
+        },
+        "s2": {
+            "name": "s2"
+        },
+        "cnt": {
+            "name": "Count"
+        },
+        "updated": {
+            "name": "Updated"
+        }
+    }
+}

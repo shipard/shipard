@@ -1,0 +1,47 @@
+{
+    "vlans": {
+        "t1": "VLANs"
+    },
+    "ranges": {
+        "t1": "Adress ranges"
+    },
+    "wlans": {
+        "t1": "WiFi networks"
+    },
+    "wallSockets": {
+        "t1": "Sockets"
+    },
+    "racks": {
+        "t1": "Racks"
+    },
+    "dataSources": {
+        "t1": "Data sources"
+    },
+    "networks": {
+        "t1": "Networks"
+    },
+    "deviceTypes": {
+        "t1": "Types of devices"
+    },
+    "admins": {
+        "t1": "Admins"
+    },
+    "ipAddressLists": {
+        "t1": "Lists of IPs"
+    },
+    "ipAddress": {
+        "t1": "IP adresses"
+    },
+    "macsOnPorts": {
+        "t1": "By ports"
+    },
+    "watchdogs": {
+        "t1": "Watchdogs"
+    },
+    "alerts": {
+        "t1": "Alerts"
+    },
+    "macs": {
+        "t1": "All"
+    }
+}

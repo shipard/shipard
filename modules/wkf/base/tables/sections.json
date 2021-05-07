@@ -1,0 +1,54 @@
+{
+	"id": "wkf.base.sections", "sql": "wkf_base_sections", "name": "Sekce", "icon": "icon-columns",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "fullName", "name": "Název", "type": "string", "len": 100},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 60},
+
+		{"id": "order", "name": "Pořadí", "type": "int"},
+		{"id": "icon", "name": "Ikona", "type": "string", "len": 50},
+
+		{"id": "shipardEmailId", "name": "ID pro došlé emaily Shipard", "type": "string", "len": 48},
+
+		{"id": "parentSection", "name": "Nadřazená sekce", "type": "int", "reference": "wkf.base.sections", "options": ["saveOnChange"]},
+		{"id": "treeId", "name": "Zařazení ve stromu", "type": "string", "len": 20, "options": ["ascii"]},
+
+		{"id": "systemSectionType", "name": "Systémová sekce", "type": "enumInt", "len": 2,
+			"enumCfg": {"cfgItem": "wkf.systemSections.types", "cfgValue": "", "cfgText": "fullName"}},
+
+		{"id": "subSectionRightsType", "name": "Přístupová oprávnění", "type": "enumInt",
+			"enumValues": {"0": "z nadřazené sekce", "1": "vlastní"}, "options": ["saveOnChange"]},
+
+		{"id": "enabledIssueKinds", "name": "Povolené druhy zpráv", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "Automaticky", "1": "Ruční nastavení", "2": "Z nadřazené sekce", "9": "Žádné"}},
+		{"id": "newIssuesAllowed", "name": "Nové zprávy mohou přidávat", "type": "enumInt",
+			"enumValues": {"0": "Členové", "1": "Správci"}},
+
+		{"id": "orderBy", "name": "Pořadí zpráv", "type": "enumInt",
+			"enumCfg": {"cfgItem": "wkf.sections.orderBy", "cfgValue": "", "cfgText": "name"}},
+
+
+		{"id": "topic", "name": "Téma", "type": "memo"},
+
+		{"id": "analyzeAttachments", "name": "Analyzovat přílohy", "type": "enumInt",
+			"enumValues": {"0": "Výchozí nastavení (ne)", "9":  "Ne", "10": "Ihned", "11": "Co nejdříve", "12": "Časem"}},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "issuesKinds", "class": "e10.base.ListRows", "name": "Druhy zpráv", "table": "wkf.base.sectionsIssuesKinds", "queryColumn": "section", "orderColumn": "rowOrder"},
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": {
+		"default": {"id": "default", "class": "wkf.base.ViewSections", "help": "prirucka/4187"}
+	},
+	"forms": [
+		{"id": "default", "class": "wkf.base.FormSection", "help": "prirucka/4187"}
+	],
+	"options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"ndx": 1246
+}

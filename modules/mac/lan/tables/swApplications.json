@@ -1,0 +1,31 @@
+{
+	"id": "mac.lan.swApplications", "sql": "mac_lan_swApplications", "name": "SW Aplikace", "icon": "icon-hourglass-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 90},
+
+		{"id": "id", "name": "ID aplikace", "type": "string", "len": 32},
+
+		{"id": "type", "name": "Typ aplikace", "type": "enumInt",
+			"enumCfg": {"cfgItem": "mac.lan.sw.applications.types", "cfgValue": "", "cfgText": "name"}},
+		{"id": "license", "name": "Licenční ujednání", "type": "enumInt",
+			"enumCfg": {"cfgItem": "mac.lan.sw.applications.licenses", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "mac.lan.ViewSwApplications",
+			"details": {
+				"default": {"title": "Přehled", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewDetailSwApplication"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.lan.FormSwApplication"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"documentCard": "mac.lan.DocumentCardSwApplication"
+}

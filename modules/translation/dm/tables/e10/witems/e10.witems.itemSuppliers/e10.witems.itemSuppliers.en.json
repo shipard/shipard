@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "Items suppliers"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "item": {
+            "name": "Item"
+        },
+        "rowOrder": {
+            "name": "Row order"
+        },
+        "supplier": {
+            "name": "Supplier"
+        },
+        "itemId": {
+            "name": "ID"
+        },
+        "url": {
+            "name": "Web"
+        },
+        "validFrom": {
+            "name": "Valid from"
+        },
+        "validTo": {
+            "name": "Valid to"
+        }
+    }
+}

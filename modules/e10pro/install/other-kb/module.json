@@ -1,0 +1,5 @@
+{
+  "id": "e10pro.install.other-kb",
+  "name": "Databáze znalostí",
+  "modules": ["e10pro/kb"]
+}

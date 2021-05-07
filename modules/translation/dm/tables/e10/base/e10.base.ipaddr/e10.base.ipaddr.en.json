@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "IP addresses"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "title": {
+            "name": "Description"
+        },
+        "ipaddress": {
+            "name": "IP address"
+        },
+        "lat": {
+            "name": "Latitude"
+        },
+        "lon": {
+            "name": "Longitude"
+        },
+        "person": {
+            "name": "Person"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

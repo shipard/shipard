@@ -1,0 +1,15 @@
+{
+	"0": {"title": "Haléře", "type": 0, "precision": 2},
+
+	"1": {"title": "Koruny", "type": 0, "precision": 0},
+	"2": {"title": "Koruny nahoru", "type": 1, "precision": 0},
+	"3": {"title": "Koruny dolů", "type": -1, "precision": 0},
+
+	"4": {"title": "Desetníky", "type": 0, "precision": 1},
+	"5": {"title": "Desetníky nahoru", "type": 1, "precision": 1},
+	"6": {"title": "Desetníky dolů", "type": -1, "precision": 1},
+
+	"7": {"title": "Padesátníky", "type": 0, "precision": ".5"},
+	"8": {"title": "Padesátníky dolů", "type": -1, "precision": ".5"},
+	"9": {"title": "Padesátníky nahoru", "type": 1, "precision": ".5"}
+}

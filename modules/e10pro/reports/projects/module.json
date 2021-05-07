@@ -1,0 +1,5 @@
+{
+	"id": "e10pro.reports.projects",
+	"name": "Project Reports",
+	"extensions": ["projects"]
+}

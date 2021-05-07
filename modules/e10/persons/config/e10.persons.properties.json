@@ -1,0 +1,4 @@
+{
+	"ids": ["oid", "taxid", "pid", "idcn", "birthdate", "officialName", "shortName"],
+	"contacts": ["email", "phone", "skype", "web", "govDataBox"]
+}

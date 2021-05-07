@@ -1,0 +1,43 @@
+{
+    "table": {
+        "name": "SW Licenses"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "id": {
+            "name": "Registration number"
+        },
+        "application": {
+            "name": "Application"
+        },
+        "maxUsers": {
+            "name": "Max. number of users"
+        },
+        "validFrom": {
+            "name": "Valid from"
+        },
+        "validTo": {
+            "name": "Valid until"
+        },
+        "invoiceNumber": {
+            "name": "Invoice number"
+        },
+        "licenseNumber": {
+            "name": "License number"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

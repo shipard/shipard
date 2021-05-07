@@ -1,0 +1,37 @@
+{
+    "table": {
+        "name": "Calendar"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "day": {
+            "name": "Day"
+        },
+        "month": {
+            "name": "Month"
+        },
+        "yearFrom": {
+            "name": "Year from"
+        },
+        "yearTo": {
+            "name": "Year to"
+        },
+        "country": {
+            "name": "Country"
+        },
+        "dayType": {
+            "name": "Type"
+        },
+        "title": {
+            "name": "Name"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

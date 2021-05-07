@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "Incoming Webhooks Data"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "hook": {
+            "name": "Hook"
+        },
+        "ipAddress": {
+            "name": "IP address"
+        },
+        "params": {
+            "name": "Parameters"
+        },
+        "payload": {
+            "name": "Payload"
+        },
+        "protocol": {
+            "name": "Protocol"
+        },
+        "dateCreate": {
+            "name": "Creation timestamp"
+        },
+        "hookState": {
+            "name": "Processing state"
+        }
+    }
+}

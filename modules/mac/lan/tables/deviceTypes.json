@@ -1,0 +1,28 @@
+{
+	"id": "mac.lan.deviceTypes", "sql": "mac_lan_deviceTypes", "name": "Typy zařízení v síti", "icon": "icon-gamepad",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+
+		{"id": "deviceKind", "name": "Druh zařízení", "type": "enumInt",
+			"enumCfg": {"cfgItem": "mac.lan.devices.kinds", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "ports", "class": "e10.base.ListRows", "name": "Porty typu zařízení", "table": "mac.lan.deviceTypesPorts", "queryColumn": "deviceType"}
+	],
+	"views": [
+		{"id": "default", "class": "mac.lan.ViewDeviceTypes",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewDetailDeviceType"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.lan.FormDeviceType"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

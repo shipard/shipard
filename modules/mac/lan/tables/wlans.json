@@ -1,0 +1,36 @@
+{
+	"id": "mac.lan.wlans", "sql": "mac_lan_wlans", "name": "WiFi sítě", "icon": "icon-wifi",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Jméno", "type": "string", "len": 100},
+		{"id": "id", "name": "Zkrácený název", "type": "string", "len": 40},
+		{"id": "ssid", "name": "SSID", "type": "string", "len": 32},
+		{"id": "lan", "name": "Síť", "type": "int", "reference": "mac.lan.lans"},
+		{"id": "vlan", "name": "VLAN", "type": "int", "reference": "mac.lan.vlans", "comboViewer":  "comboVlans"},
+		{"id": "onAPs", "name": "Přístupové body", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "Automaticky dávat na všechny", "1": "Ruční výběr"}},
+
+		{"id": "wpaPassphrase", "name": "WPA klíč (heslo)", "type": "string", "len": 60},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"views": [
+		{"id": "default", "class": "mac.lan.ViewWlans",
+			"details": {
+				"preview": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewDetailWlan"}
+			}
+		}
+	],
+	"reports": [
+		{"id": "wlanSticker", "name": "Plakát", "class": "mac.lan.ReportWlanSticker"}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.lan.FormWlan"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "id"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

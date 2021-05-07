@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Users location history"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "user": {
+            "name": "id"
+        },
+        "lat": {
+            "name": "Latitude"
+        },
+        "lon": {
+            "name": "Longitude"
+        },
+        "alt": {
+            "name": "Altitude"
+        },
+        "acc": {
+            "name": "Accuracy"
+        },
+        "time": {
+            "name": "Time"
+        }
+    }
+}

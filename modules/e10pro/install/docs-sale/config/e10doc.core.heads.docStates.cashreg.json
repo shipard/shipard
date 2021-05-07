@@ -1,0 +1,18 @@
+{
+	"1000": {"stateName": "Rozpracovaný doklad", "actionName": "Opravit", "mainState": 0,
+						"stateStyle": "concept",  "mainState": 0, "goto": [1201, 1202, 1203, 9800]},
+
+	"1201": {"stateName": "Hradí se v hotovosti", "actionName": "Hotově", "stateStyle": "confirmed", "mainState": 1, "goto": [4000, 1000],
+							"setColumns": {"paymentMethod": 1}},
+	"1202": {"stateName": "Hradí se kartou", "actionName": "Kartou", "stateStyle": "confirmed", "mainState": 1, "goto": [4000, 1000],
+							"setColumns": {"paymentMethod": 2}},
+	"1203": {"stateName": "Sběrný doklad", "actionName": "Fakturou", "stateStyle": "confirmed", "mainState": 1, "goto": [4000, 1000],
+							"setColumns": {"paymentMethod": 4}},
+
+	"4000": {"stateName": "Hotovo", "actionName": "Uzavřít", "stateStyle": "done",  "mainState": 2, "readOnly": 1,
+					 "printAfterConfirm": 1, "enablePrint": 1, "goto": [8000]},
+
+	"4100": {"stateName": "Stornováno", "actionName": "Stornovat", "stateStyle": "cancel",  "mainState": 2, "readOnly": 1, "goto": [8000]},
+	"8000": {"stateName": "V opravě", "actionName": "Opravit", "stateStyle": "edit",  "mainState": 0, "goto": [4000, 4100]},
+	"9800": {"stateName": "Smazáno", "actionName": "Smazat", "stateStyle": "delete",  "mainState": 4, "readOnly": 1, "goto": [8000]}
+}

@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "Types of documents additions"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "dir": {
+            "name": "Kind"
+        },
+        "labelPrefix": {
+            "name": "Label"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

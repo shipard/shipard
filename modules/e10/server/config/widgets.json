@@ -1,0 +1,10 @@
+[
+	{
+		"name": "Database Info", "class": "lib.cfg.WidgetSystemInfoCore", "icon": "icon-database", "align": "left",
+		"dashboard": "srvcfg", "panel": "main", "order": 20000, "row": "info", "type": "systemInfo"
+	},
+	{
+		"class": "lib.cfg.WidgetSystemInfoCore", "align": "left",
+		"dashboard": "srvcfg", "panel": "calc_disabled", "order": 20000, "row": "info", "type": "systemInfo"
+	}
+]

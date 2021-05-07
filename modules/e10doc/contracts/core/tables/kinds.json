@@ -1,0 +1,89 @@
+{
+	"id": "e10doc.contracts.core.kinds", "sql": "e10doc_contracts_kinds", "name": "Druhy smluv", "icon": "icon-cogs",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "docType", "name": "Typ dokladu", "type": "enumString", "len": 10,
+			"enumCfg": {"cfgItem": "e10doc.contracts.types", "cfgValue": "", "cfgText": "fullName"}},
+
+		{"id": "fullName", "name": "Název", "type": "string", "len": 100},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 60},
+		{"id": "tabName", "name": "Titulek záložky prohlížeče", "type": "string", "len": 40},
+
+		{"id": "period", "name": "Periodicita plateb", "label": "Periodicita", "type": "enumInt",
+			"enumValues": {"0": "---", "1": "měsíc", "2": "čtvrtletí", "3": "pololetí", "4": "rok"}},
+		{"id": "periodOC", "name": "Zadávat Periodicitu plateb na smlouvě", "label": "Změna na smlouvě", "type": "logical"},
+
+		{"id": "invoicingDay", "name": "Fakturace", "type": "enumInt",
+			"enumValues": {"0": "počátek období", "1": "konec období"}},
+		{"id": "invoicingDayOC", "name": "Zadávat okamžik fakturace na smlouvě", "label": "Změna na smlouvě", "type": "logical"},
+		{"id": "createOffsetValue", "name": "Posun data vystavení faktury", "type": "int"},
+		{"id": "createOffsetUnit", "name": "Jednotka", "type": "enumInt",
+			"enumValues": {"0": "dny", "1": "měsíce"}},
+
+		{"id": "dstDocType", "name": "Vystavený Typ dokladu", "type": "enumString", "len": 10, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.contracts.dstDocTypes", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "dstDocTypeOC", "name": "Zadávat Vystavený typ dokladu na smlouvě", "label": "Změna na smlouvě", "type": "logical"},
+
+		{"id": "dstDocKind", "name": "Vystavený Druh dokladu", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10.docs.kinds", "cfgValue": "ndx", "cfgText": "fullName"}},
+		{"id": "dstDocKindOC", "name": "Zadávat Vystavený Druh dokladu na smlouvě", "label": "Změna na smlouvě", "type": "logical"},
+
+		{"id": "taxCalc", "name": "Výpočet daně", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "ceny jsou bez DPH", "1": "ceny jsou s DPH"}},
+		{"id": "taxCalcOC", "name": "Zadávat Výpočet daně na smlouvě", "label": "Změna na smlouvě", "type": "logical"},
+
+		{"id": "title", "name": "Text dokladu", "type": "string", "len": 120},
+		{"id": "titleOC", "name": "Zadávat Text dokladu na smlouvě", "label": "Změna na smlouvě", "type": "logical"},
+
+		{"id": "currency", "name": "Měna", "type": "enumString", "len": 3, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
+		{"id": "currencyOC", "name": "Zadávat Měnu na smlouvě", "label": "Změna na smlouvě", "type": "logical"},
+
+		{"id": "paymentMethod", "name": "Způsob úhrady", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10.docs.paymentMethods", "cfgValue": "", "cfgText": "title"}},
+		{"id": "paymentMethodOC", "name": "Zadávat Způsob úhrady na Smlouvě", "label": "Změna na smlouvě", "type": "logical"},
+
+		{"id": "myBankAccount", "name": "Vlastní bankovní spojení", "type": "int", "reference": "e10doc.base.bankaccounts"},
+		{"id": "myBankAccountOC", "name": "Zadávat Vlastní bankovní spojení na Smlouvě", "label": "Změna na smlouvě", "type": "logical"},
+
+		{"id": "dueDays", "name": "Počet dnů splatnosti", "label": "Dny splatnosti", "type": "int"},
+		{"id": "dueDaysOC", "name": "Zadávat Počet dnů splatnosti na smlouvě", "label": "Změna na smlouvě", "type": "logical"},
+
+		{"id": "dstDocState", "name": "Stav vystavené faktury", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.dstDocStates", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "dstDocAutoSend", "name": "Automaticky odesílat vystavené doklady", "type": "logical"},
+
+		{"id": "centre", "name": "Středisko", "type": "int", "reference": "e10doc.base.centres"},
+		{"id": "centreOC", "name": "Zadávat Středisko na Smlouvě", "label": "Změna na smlouvě", "type": "logical"},
+
+		{"id": "wkfProject", "name": "Projekt", "type": "int", "reference": "wkf.base.projects", "module": "wkf.base"},
+		{"id": "wkfProjectOC", "name": "Zadávat Projekt na Smlouvě", "label": "Změna na smlouvě", "type": "logical", "module": "wkf.base"},
+
+		{"id": "workOrder", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
+		{"id": "workOrderOC", "name": "Zadávat Zakázku na Smlouvě", "label": "Změna na smlouvě", "type": "logical"},
+
+		{"id": "invNote", "name": "Poznámka na fakturu", "type": "memo"},
+
+		{"id": "icon", "name": "Ikona", "type": "string", "len": 50},
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+		{"id": "useBatchCreating", "name": "Používat pro dávkové vytváření smluv", "type": "enumInt",
+			"enumValues": {"0": "ne", "1": "podle skupin Osob"}},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "rows", "class": "e10.base.ListRows", "name": "Řádky", "table": "e10doc.contracts.core.kindsRows", "queryColumn": "contractKind", "orderColumn": "rowOrder"},
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"views": [
+		{"id": "default", "class": "e10doc.contracts.core.ViewKinds", "detail": "e10doc.contracts.core.ViewDetailKind"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.contracts.core.FormKind"}
+	],
+	"options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

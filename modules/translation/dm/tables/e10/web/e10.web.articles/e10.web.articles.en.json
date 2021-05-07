@@ -1,0 +1,46 @@
+{
+    "table": {
+        "name": "Articles"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "title": {
+            "name": "Title"
+        },
+        "text": {
+            "name": "Text"
+        },
+        "perex": {
+            "name": "Lead paragraph"
+        },
+        "coverImage": {
+            "name": "Cover image"
+        },
+        "articleSection": {
+            "name": "Section"
+        },
+        "author": {
+            "name": "Author"
+        },
+        "dateCreate": {
+            "name": "Date of origin"
+        },
+        "datePub": {
+            "name": "Date of publication"
+        },
+        "dateClose": {
+            "name": "Expiration date"
+        },
+        "onTop": {
+            "name": "Pin to the top"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

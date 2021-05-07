@@ -1,0 +1,106 @@
+{
+    "table": {
+        "name": "Types of work orders"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "workOrderType": {
+            "name": "Work order type"
+        },
+        "disableRows": {
+            "name": "Disable order rows"
+        },
+        "priceOnHead": {
+            "name": "Enter price in header"
+        },
+        "useDescription": {
+            "name": "Use text description of order"
+        },
+        "useDateIssue": {
+            "name": "Use Issue date"
+        },
+        "labelDateIssue": {
+            "name": "Label"
+        },
+        "useDateContract": {
+            "name": "Use Contract date"
+        },
+        "labelDateContract": {
+            "name": "Label"
+        },
+        "useDateBegin": {
+            "name": "Use Start date"
+        },
+        "labelDateBegin": {
+            "name": "Label"
+        },
+        "useDateDeadlineRequested": {
+            "name": "Use Requested deadline"
+        },
+        "labelDateDeadlineRequested": {
+            "name": "Label"
+        },
+        "useDateDeadlineConfirmed": {
+            "name": "Use Confirmed deadline"
+        },
+        "labelDateDeadlineConfirmed": {
+            "name": "Label"
+        },
+        "useRefId1": {
+            "name": "Use Order's internal number"
+        },
+        "labelRefId1": {
+            "name": "Label"
+        },
+        "useRefId2": {
+            "name": "Use Order number"
+        },
+        "labelRefId2": {
+            "name": "Label"
+        },
+        "useIntTitle": {
+            "name": "Use Order's internal name"
+        },
+        "useRetentionGuarantees": {
+            "name": "Use Retention guarantees"
+        },
+        "useAddress": {
+            "name": "Enter addresses"
+        },
+        "invoicesInDetail": {
+            "name": "Display invoices in detail"
+        },
+        "useDetailMainSettings": {
+            "name": "Own settings of viewer detail"
+        },
+        "detailMainPart1": {
+            "name": "Content of order detail - position 1"
+        },
+        "detailMainPart2": {
+            "name": "Content of order detail - position 2"
+        },
+        "detailMainPart3": {
+            "name": "Content of order detail - position 3"
+        },
+        "detailMainPart4": {
+            "name": "Content of order detail - position 4"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

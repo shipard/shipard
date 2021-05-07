@@ -1,0 +1,10 @@
+{
+	"panels": {
+		"/app/finance": [
+			{"title": "Pokladna", "url": "ucetnictvi/78", "icon": "e10-docs-cash"},
+			{"title": "Banka", "url": "ucetnictvi/76", "icon": "e10-docs-bank"},
+			{"title": "Saldokonto", "url": "ucetnictvi/94", "icon": "icon-star-o"},
+			{"title": "Účetní doklady", "url": "ucetnictvi/79", "icon": "icon-file-text"}
+		]
+	}
+}

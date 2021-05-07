@@ -1,0 +1,8 @@
+{
+	"0": {
+		"name": "Odemknuto / otevřeno", "sc": "Odemknuto", "icon": "icon-unlock"
+	},
+	"1": {
+		"name": "Mimo provoz", "sc": "Mimo provoz", "icon": "icon-ban"
+	}
+}

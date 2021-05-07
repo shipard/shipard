@@ -1,0 +1,24 @@
+{
+	"id": "e10doc.core",
+	"name": "Documents",
+	"tables": ["heads", "rows", "taxes"],
+	"extensions": ["witems"],
+	"config": [
+		{"id": "+e10.base.doclinks", "file": "docLinksNewWorkflow.json", "module":  "wkf.core"},
+		{"id": "e10doc.core.heads.docStates.default", "name": "Stavy dokladů", "file": "e10doc.core.heads.docStates.default.json"},
+		{"id": "+e10.docs.properties", "name": "Vlastnosti dokladů", "file": "e10.docs.properties.json"},
+		{"id": "+e10.base.properties", "name": "Definice vlastností dokladů", "file": "e10.docs.propertiesDefs.json"},
+		{"id": "+e10.base.propertiesGroups", "name": "Skupiny vlastnostní dokladů", "file": "e10.docs.propertiesGroups.json"},
+		{"id": "+e10.docs.operations", "name": "Pohyby", "file": "e10.docs.operations.json"},
+		{"id": "+registeredClasses", "file": "registeredClasses.json"},
+		{"id": "+e10.base.clsfGroups", "file": "e10.documents.clsfGroups.json"},
+		{"id": "+dsStats", "file": "dsStats.json"},
+		{"id": "+dashboards", "file": "dashboards.json"},
+		{"id": "+e10.dashboardInfo", "file": "dashboardInfo.json"},
+		{"id": "+widgets", "file": "widgets.json"},
+		{"id": "+appOptions", "name": "Nastavení", "file": "e10.appOptions.json"},
+		{"id": "+wkf.systemSections.types", "file": "wkf.systemSectionsTypes.json"},
+		{"id": "+wkf.issues.systemKinds", "file": "wkf.issues.systemKinds.json"},
+		{"id": "e10doc.dstDocStates", "file": "dstDocStates.json"}
+	]
+}

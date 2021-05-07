@@ -1,0 +1,18 @@
+{
+	"mqtt-public": {
+		"name": "MQTT Public",
+		"class": "mqtt", "level": "ro"
+	},
+	"mqtt-iot-box": {
+		"name": "MQTT Iot Box",
+		"class": "mqtt", "level": "rw"
+	},
+	"mqtt-admin": {
+		"name": "MQTT Admin",
+		"class": "mqtt", "level": "adm"
+	},
+	"snmp-public": {
+		"name": "SNMP Public",
+		"class": "snmp", "level": "ro"
+	}
+}

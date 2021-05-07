@@ -1,0 +1,153 @@
+{
+	"name": "Prodejna",
+	"datasets": [
+		{
+			"table": "e10.witems.itemtypes",
+			"name": "Typy položek",
+			"defaultValues": {"docState": 4000, "docStateMain": 2},
+			"data": [
+				{"rec": {"#": "it-zbozi-prodej", "fullName":"Zboží na prodejně","shortName":"Zboží prodejna","id":"it-zbozi-prodej","icon":"","type":1}}
+			]
+		},
+		{
+			"table": "e10.base.propdefs",
+			"name": "Definice vlastností",
+			"defaultValues": {"docState": 4000, "docStateMain": 2},
+			"checkExistence": {"qryColumns": ["id"]},
+			"data": [
+				{"rec": {"#": "e10-ppt-item-ean", "shortName":"EAN","fullName":"Čárový kód","id":"ean","multipleValues":1,"type":"text"}}
+			]
+		},
+		{
+			"table": "e10.base.propgroups",
+			"name": "Skupiny vlastností",
+			"defaultValues": {"docState": 4000, "docStateMain": 2},
+			"data": [
+				{"rec": {"#": "e10-ppt-item-ids", "shortName":"Identifikace","fullName":"Identifikace položky","id":"ids"}}
+			]
+		},
+		{
+			"table": "e10.base.doclinks",
+			"defaultValues": {"linkId":"e10-base-propgoups-props", "srcTableId":"e10.base.propgroups", "dstTableId":"e10.base.propdefs"},
+			"name": "Propojení skupin a vlastností",
+			"data": [
+				{"rec": {"srcRecId":"#e10-ppt-item-ids","dstRecId":"#e10-ppt-item-ean"}}
+			]
+		},
+		{
+			"table": "e10.base.doclinks",
+			"defaultValues": {"linkId":"e10pro-property-types-propgroups", "srcTableId":"e10.witems.itemtypes", "dstTableId":"e10.base.propgroups"},
+			"name": "Propojení Typu položky a vlastností",
+			"data": [
+				{"rec": {"srcRecId":"#it-zbozi-prodej","dstRecId":"#e10-ppt-item-ids"}}
+			]
+		},
+		{
+			"table": "e10.witems.itemcategories",
+			"defaultValues": {"docState": 4000, "docStateMain": 2},
+			"name": "Kategorie položek",
+			"data": [
+				{"rec": {"#": "e10-itemcat-pk1", "fullName":"Pokladna","shortName":"Pokladna","id":"PK1","order":1000,"sortItems":"","owner":0}},
+				{"rec": {"#": "e10-itemcat-pk1-bakery", "fullName":"Pečivo","shortName":"Pečivo","askQCashRegister": 2, "id":"","order":1000,"owner":"#e10-itemcat-pk1"}},
+				{"rec": {"#": "e10-itemcat-pk1-cake", "fullName":"Zákusky","shortName":"Zákusky","askQCashRegister": 2, "id":"","order":2000,"owner":"#e10-itemcat-pk1"}},
+				{"rec": {"#": "e10-itemcat-pk1-other", "fullName":"Ostatní","shortName":"Ostatní","askQCashRegister": 1, "id":"","order":3000,"owner":"#e10-itemcat-pk1"}}
+			]
+		},
+		{"commands": [{"command": "upgradeApp"}]},
+		{
+			"table": "e10.witems.items",
+			"name": "Položky prodejna",
+			"defaultValues": {"type":"it-zbozi-prodej", "useFor":2, "defaultUnit":"pcs", "debsGroup":3, "docState":4000, "docStateMain": 2},
+			"data": [
+				{"rec": {"#": "e10-itemstore-bakery-1", "fullName":"Chleba kmínový 1 kg","shortName":"Chleba kmínový 1 kg","priceSell":29.9, "askQCashRegister": 1}},
+				{"rec": {"#": "e10-itemstore-bakery-2", "fullName":"Vánočka","shortName":"Vánočka","priceSell":38, "askQCashRegister": 1}},
+				{"rec": {"#": "e10-itemstore-bakery-3", "fullName":"Pletýnka malá","shortName":"Pletýnka malá","priceSell":6.5}},
+				{"rec": {"#": "e10-itemstore-bakery-4", "fullName":"Pletýnka velká","shortName":"","priceSell":14.3}},
+				{"rec": {"#": "e10-itemstore-bakery-5", "fullName":"Dalamánek","shortName":"","priceSell":6.8}},
+				{"rec": {"#": "e10-itemstore-bakery-6", "fullName":"Houska","shortName":"","priceSell":4.5}},
+
+				{"rec": {"#": "e10-itemstore-cake-1", "fullName":"Rakvička","shortName":"","priceSell":11.9}},
+				{"rec": {"#": "e10-itemstore-cake-2", "fullName":"Větrník","shortName":"","priceSell":22.7}},
+				{"rec": {"#": "e10-itemstore-cake-3", "fullName":"Tiramisu","shortName":"","priceSell":33.7}},
+				{"rec": {"#": "e10-itemstore-cake-4", "fullName":"Jablečný závin","shortName":"","priceSell":18.0}},
+
+				{
+					"rec": {"#": "e10-itemstore-other-1", "fullName":"Kofola plech 250ml","shortName":"","priceSell":9.9},
+					"properties": [{"value": "8594003840777", "group": "ids", "property": "ean"}]
+				},
+				{
+					"rec": {"#": "e10-itemstore-other-2", "fullName":"RedBull RED 250ml","shortName":"","priceSell":29.9},
+					"properties": [{"value": "90376788", "group": "ids", "property": "ean"}]
+				},
+				{
+					"rec": {"#": "e10-itemstore-other-3", "fullName":"RedBull SUMMER 250ml","shortName":"","priceSell":29.9},
+					"properties": [{"value": "90415784", "group": "ids", "property": "ean"}]
+				},
+				{
+					"rec": {"#": "e10-itemstore-other-4", "fullName":"RedBull SILVER 250ml","shortName":"","priceSell":29.9},
+					"properties": [{"value": "90376801", "group": "ids", "property": "ean"}]
+				},
+				{
+					"rec": {"#": "e10-itemstore-other-5", "fullName":"Coca Cola 500ml","shortName":"","priceSell":24.9},
+					"properties": [{"value": "54491472", "group": "ids", "property": "ean"}]
+				}
+			]
+		},
+		{
+			"table": "e10.base.doclinks",
+			"defaultValues": {"linkId":"e10-witems-items-categories", "srcTableId":"e10.witems.items", "dstTableId":"e10.witems.itemcategories"},
+			"name": "Zařazení položek do kategorií",
+			"data": [
+				{"rec": {"srcRecId":"#e10-itemstore-bakery-1","dstRecId":"#e10-itemcat-pk1-bakery"}},
+				{"rec": {"srcRecId":"#e10-itemstore-bakery-2","dstRecId":"#e10-itemcat-pk1-bakery"}},
+				{"rec": {"srcRecId":"#e10-itemstore-bakery-3","dstRecId":"#e10-itemcat-pk1-bakery"}},
+				{"rec": {"srcRecId":"#e10-itemstore-bakery-4","dstRecId":"#e10-itemcat-pk1-bakery"}},
+				{"rec": {"srcRecId":"#e10-itemstore-bakery-5","dstRecId":"#e10-itemcat-pk1-bakery"}},
+				{"rec": {"srcRecId":"#e10-itemstore-bakery-6","dstRecId":"#e10-itemcat-pk1-bakery"}},
+
+				{"rec": {"srcRecId":"#e10-itemstore-cake-1","dstRecId":"#e10-itemcat-pk1-cake"}},
+				{"rec": {"srcRecId":"#e10-itemstore-cake-2","dstRecId":"#e10-itemcat-pk1-cake"}},
+				{"rec": {"srcRecId":"#e10-itemstore-cake-3","dstRecId":"#e10-itemcat-pk1-cake"}},
+				{"rec": {"srcRecId":"#e10-itemstore-cake-4","dstRecId":"#e10-itemcat-pk1-cake"}},
+
+				{"rec": {"srcRecId":"#e10-itemstore-other-1","dstRecId":"#e10-itemcat-pk1-other"}},
+				{"rec": {"srcRecId":"#e10-itemstore-other-2","dstRecId":"#e10-itemcat-pk1-other"}},
+				{"rec": {"srcRecId":"#e10-itemstore-other-3","dstRecId":"#e10-itemcat-pk1-other"}},
+				{"rec": {"srcRecId":"#e10-itemstore-other-4","dstRecId":"#e10-itemcat-pk1-other"}},
+				{"rec": {"srcRecId":"#e10-itemstore-other-5","dstRecId":"#e10-itemcat-pk1-other"}}
+			]
+		},
+
+		{
+			"table": "e10doc.debs.accounts",
+			"name": "Účetní osnova",
+			"defaultValues": {"accGroup": 0, "accMethod": "debs", "docState": 4000, "docStateMain": 2},
+			"data": [
+				{"rec": {"id":"602200","fullName":"Hodinová sazba","shortName":"Hodinová sazba","accountKind":3,"resultsType":1}},
+				{"rec": {"id":"602300","fullName":"Práce na zakázkách","shortName":"Práce na zakázkách","accountKind":3,"resultsType":1}},
+				{"rec": {"id":"602400","fullName":"Dodaný materiál na zákázky","shortName":"Dodaný materiál na zákázky","accountKind":3,"resultsType":1}}
+			]
+		},
+		{
+			"table": "e10doc.debs.groups",
+			"name": "Účetní skupiny",
+			"defaultValues": {"docState": 4000,"docStateMain": 2},
+			"data": [
+				{"rec": {"#":"dgHourlyRate","fullName":"Hodinová sazba","analytics":"200"}},
+				{"rec": {"#":"dgProjects","fullName":"Zakázky","analytics":"300"}},
+				{"rec": {"#":"dgStuff","fullName":"Materiál","analytics":"400"}}
+			]
+		},
+		{
+			"table": "e10.witems.items",
+			"name": "Položky služeb pro prodej",
+			"defaultValues": {"type":"it-service","useFor":2,"docState":4000, "docStateMain": 2},
+			"data": [
+				{"rec": {"#":"service","fullName":"Servisní práce","defaultUnit":"hr","shortName":"Servisní práce","priceSell":350,"debsGroup":"#dgHourlyRate"}},
+				{"rec": {"#":"training","fullName":"Školení","defaultUnit":"hr","shortName":"Školení","priceSell":420,"debsGroup":"#dgHourlyRate"}},
+				{"rec": {"#":"projectWork","fullName":"Práce na zakázce","defaultUnit":"none","shortName":"Práce na zakázce","priceSell":0,"debsGroup":"#dgProjects"}},
+				{"rec": {"#":"stuff","fullName":"Materiál","defaultUnit":"none","shortName":"Materiál","priceSell":0,"debsGroup":"#dgStuff"}}
+			]
+		}
+	]
+}

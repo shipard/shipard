@@ -1,0 +1,9 @@
+{
+  "id": "e10.persons.sessions", "sql": "e10_persons_sessions", "name": "Sezení",
+  "columns": [
+    {"id": "ndx", "sql": "ndx", "name": "id", "type": "string", "len": 40, "options": ["ascii"]},
+    {"id": "person", "sql": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "created", "name": "Vytvořeno", "type": "timestamp"}
+  ],
+	"options": ["systemTable"]
+}

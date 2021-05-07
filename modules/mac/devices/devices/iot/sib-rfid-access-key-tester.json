@@ -1,0 +1,64 @@
+{
+	"name": "RFID acces key tester",
+	"title": "RFID acces key tester",
+	"gpioLayout": "oli-esp32-poe",
+
+	"fields": {
+		"groups": [
+			{"id":  "display", "title":  "Displej"}
+		],
+		"columns": [
+			{
+				"id": "displayOrientation", "group": "display", "name": "Orientace displeje", "type": "enumInt",
+				"enumCfg": {"cfgItem": "mac.devices.displayOrientation", "cfgValue": "", "cfgText": "name"}
+			}
+		]
+	},
+
+	"things": [
+		{
+			"id": "rfid-access-key-tester",
+			"items": {
+				"values": [
+					{
+						"ioPortId": "rfid" ,
+						"valueType": "access-key"
+					}
+				],
+				"displays": [
+					{
+						"ioPortId": "display"
+					}
+				]
+			}
+		}
+	],
+
+	"fixedIOPorts": [
+		{
+			"type": "dataRFIDPN532",
+			"portId": "rfid",
+			"pinHsuRX": "uext-4",
+			"pinHsuTX": "uext-3",
+			"portIdBuzzer": "buzzer",
+
+			"_dpUid": 10
+		},
+		{
+			"type": "displayNextion",
+			"portId": "display",
+			"pinRX": "uext-5",
+			"pinTX": "uext-6",
+
+			"_dpUid": 9,
+			"_cfgColumns": {"displayOrientation": "displayOrientation"}
+		},
+		{
+			"type": "controlBinary",
+			"portId": "buzzer",
+			"pin": "uext-10",
+
+			"_dpUid": 11
+		}
+	]
+}

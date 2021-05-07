@@ -1,0 +1,40 @@
+{
+    "table": {
+        "name": "Warehouses"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "street": {
+            "name": "Street"
+        },
+        "city": {
+            "name": "City"
+        },
+        "zipcode": {
+            "name": "Postal code"
+        },
+        "country": {
+            "name": "Country"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

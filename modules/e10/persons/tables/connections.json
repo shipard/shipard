@@ -1,0 +1,16 @@
+{
+	"id": "e10.persons.connections", "sql": "e10_persons_connections", "name": "Vazby osob",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "person", "name": "Osoby", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "connectedPerson", "name": "Spojená osoba", "label": "", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "note", "name": "Poznámka", "label": "✎", "type": "string", "len": 80},
+
+		{"id": "connectionType", "name": "Vazba", "type": "enumString", "len": 12,
+			"enumCfg": {"cfgItem": "e10.persons.connectionTypes", "cfgValue": "", "cfgText": "label"}}
+	],
+	"options": ["systemTable"],
+	"forms": [
+		{"id": "default", "class": "e10.persons.FormConnection"}
+	]
+}

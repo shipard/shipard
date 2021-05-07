@@ -1,0 +1,8 @@
+{
+	"admin": {
+		"viewers": {
+			"e10pro.booking.types": {"default": 2},
+			"e10pro.booking.bookings": {"default": 2, "agenda": 2}
+		}
+	}
+}

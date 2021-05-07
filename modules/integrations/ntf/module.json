@@ -1,0 +1,13 @@
+{
+  "id": "integrations.ntf",
+  "name": "integrations - notifications",
+  "tables": [
+		"channels", "delivery"
+	],
+	"modules": ["integrations/base"],
+  "config": [
+		{"id": "+appOptions", "file": "appOptions.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+		{"id": "+integration.ntf.channels.types", "file": "channelsTypes.json"}
+  ]
+}

@@ -1,0 +1,5 @@
+{
+	"name": "Prodejka",
+	"class": "demo.documents.libs.Cashreg",
+	"item": {"type": "it-zbozi-prodej"}
+}

@@ -1,0 +1,92 @@
+@font-face {
+	font-family: 'FontAwesome';
+	src: url('file:///var/www/e10-server/wwwlibs/Font-Awesome42/font/fontawesome-webfont.svg') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+body {margin-left: 10mm; font-size: 11pt; font-family: sans-serif;}
+
+.label {text-align: left !important; padding-right: 1ex; white-space: pre;}
+.number {text-align: right !important; padding-left: 1ex; white-space: pre;}
+.nowrap {white-space: pre;}
+.pull-right {float: right; text-align: right;}
+
+span.documentNumber {float: right;}
+
+div#top {font-size: 18pt;}
+table#head {clear: both; width: 100%; border-collapse: collapse; margin-bottom: 18pt; border-bottom: 1pt solid #000000; }
+table#head tr >td {line-height: 1.3; vertical-align: top; }
+table#head tr >td.supplier { width: 50%; vertical-align: top; padding-right: 9pt; }
+
+
+table.head {clear: both; width: 100%; border-collapse: collapse; margin-bottom: 10pt; margin-top: 6pt;
+	border-bottom: .6pt solid #000000; font-size: 10pt;}
+table.head tr>td {line-height: 1.3; vertical-align: top; padding-bottom: 3pt; }
+table.head tr>td.title {font-weight: bold; padding-right: 9pt;}
+
+
+span.hdr {display: block; font-weight: bold; padding-top: 12pt; margin-bottom: 3pt; color: #000000; border-bottom: 1pt solid #000000;
+	padding-left: -6pt; font-family: sans-serif;}
+div.hdr {font-weight: bold; padding-top: 12pt; margin-bottom: 3pt; color: #000000; border-bottom: 1pt solid #000000;
+	padding-left: -6pt; font-family: sans-serif;}
+
+
+span.title {display: block; font-weight: bold;  }
+span.address {margin-bottom: 12pt !important; display: block;}
+
+div#top {border-bottom: 3pt solid #000000;}
+
+
+table#documentDetails {width: 100%; }
+table#documentDetails td.label {vertical-align: bottom;}
+table#documentDetails td.value {text-align: right;vertical-align: bottom;}
+
+
+table#rows {width: 100%; border-collapse: collapse; line-height: 1.4;}
+table#rows th {text-align: left; padding-left: 6pt;}
+table#rows tr {border-bottom: 1pt solid #000000; }
+table#rows tr td {padding-left: 6pt;}
+table#rows tr.subtotal td {font-weight: bold;}
+
+table.rows {width: 100%; border-collapse: collapse; line-height: 1.2; font-size: 10pt;}
+table.rows th {text-align: left; padding: 3pt; border: .75pt solid black; background-color: #eee;}
+table.rows tr { }
+table.rows tr td {padding: 3pt; border: .75pt solid black; vertical-align: baseline;}
+table.rows tr.subtotal td {font-weight: bold;}
+table.rows tfoot>tr>td {font-weight: bold; padding: 3pt; border: .75pt solid black; background-color: #eee;}
+
+
+div.pay {font-size: 16pt; font-weight: bold; padding-top: 18pt; text-align: right;}
+
+div#sign {text-align: right; width: 165mm; padding-top: 2cm; position: relative;
+	background-repeat: no-repeat; background-size: contain;
+}
+div#sign span.signImg {display: inline-block; width: 80mm;height: 30mm; text-align: center;
+}
+div#sign span.signImg img {max-width: 80mm; max-height: 30mm;}
+div#sign span.logoImg {opacity:0.1;position: absolute; right: 0mm; text-align: center; width: 80mm;}
+div#sign span.name {display: inline-block; width: 80mm; text-align: center; border-top: 1pt solid #5B7F8C; padding-top: 2pt;}
+
+#sum {text-align: right !important; }
+#sum span {display: inline-block; padding-top: 18pt;}
+#sum span table {font-size: 9pt; border: .8pt solid #999; border-collapse: collapse;}
+#sum span table tr td {border: .8pt solid #999; padding: 3pt;}
+#sum span table thead tr th {border: .8pt solid #999; padding: 3pt; text-align: left;}
+
+div#spayd {position: relative; display: inline-block; width: 35mm; height: 35mm; float: left;text-align: center; border: .8pt solid black;}
+div#spayd img {width: 100%;}
+
+
+div.e10-reportHeader {
+	width: 100%; display: inline-block;
+	border-bottom: .85pt solid black;
+	margin-bottom: 1ex;
+	font-family: sans-serif;
+}
+div.e10-reportHeader span.info {display: inline-block; float: left;}
+div.e10-reportHeader span.title {font-weight: bold; font-size: 16pt; display: inline-block;line-height: 140%;}
+div.e10-reportHeader span.owner {text-align: right; float: right; font-style: italic; font-size: 9pt; line-height: 120%;}
+div.e10-reportHeader span.owner>span {white-space:pre;}
+ol.e10-reportNotes, p.e10-reportNotes {font-size: 90%; line-height: 1.4em; margin-top: 1em;}
+ol.e10-reportNotes {padding: 0px; margin: 0px; margin-left: 1.8em; margin-top: 1em; }

@@ -1,0 +1,34 @@
+{
+	"id": "e10.web.articles", "sql": "e10_web_articles", "name": "Články", "icon": "icon-newspaper-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "title", "name": "Název", "type": "string", "len": 120},
+		{"id": "text", "name": "Text", "type": "memo", "comboClass": "lib.web.WebTextSidebar"},
+		{"id": "perex", "name": "Perex", "type": "memo"},
+		{"id": "coverImage", "name": "Titulní obrázek", "type": "int", "reference": "e10.base.attachments", "comboViewer": "images"},
+
+		{"id": "articleSection", "name": "Sekce", "type": "int", "reference": "e10.web.articlesSections"},
+
+		{"id": "author", "name": "Autor", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "dateCreate", "name": "Datum vzniku", "type": "timestamp"},
+		{"id": "datePub", "name": "Datum publikace", "type": "date"},
+		{"id": "dateClose", "name": "Datum ukončení platnosti", "type": "date"},
+
+		{"id": "onTop", "name": "Přišpendlit nahoru", "type": "enumInt",
+			"enumValues": {"0": "Ne", "5": "Ano", "7": "Včetně textu"}},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "e10.web.ViewWebArticles",
+			"details": {
+				"preview": {"title": "Náhled", "icon": "icon-eye", "type": "detail", "class": "e10.web.ViewDetailArticlePreview", "order": 1000}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10.web.FormArticle"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

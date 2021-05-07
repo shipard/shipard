@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Placement of sensors and controls into the application"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "placementTo": {
+            "name": "Place to"
+        },
+        "workplace": {
+            "name": "Workplace"
+        },
+        "fullName": {
+            "name": "Full name"
+        },
+        "mainMenu": {
+            "name": "Into the main menu"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

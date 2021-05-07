@@ -1,0 +1,8 @@
+{
+	"mergeRecords": {
+		"e10-witems-items": ["e10doc.inventory.mergeItems"]
+	},
+	"objectsViews": {
+		"e10-inventory-states": {"classId": "e10doc.inventory.InventoryStatesIterator"}
+	}
+}

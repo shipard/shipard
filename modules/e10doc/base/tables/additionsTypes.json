@@ -1,0 +1,28 @@
+{
+	"id": "e10doc.base.additionsTypes", "sql": "e10doc_base_additionsTypes", "name": "Typy dodatků dokladů", "icon": "icon-podcast",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 40},
+		{"id": "id", "name": "ID", "type": "string", "len": 10},
+
+		{"id": "dir", "name": "Druh", "type": "enumInt",
+			"enumValues": {"0": "Naše", "1": "Cizí"}},
+
+		{"id": "labelPrefix", "name": "Popiska", "type": "string", "len": 80},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "e10doc.base.ViewAdditionsTypes", "help": "prirucka/4751"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.base.FormAdditionType", "help": "prirucka/4751"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"order": [{"column": "fullName"}],
+	"fullText": ["fullName"]
+}

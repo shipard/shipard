@@ -1,0 +1,44 @@
+{
+  "buy": {
+		"name": "Nákup",
+		"roles": ["pwuser"],
+		"viewers": {
+			"e10doc.core.heads": {"invoicesIn": 2, "cash": 2, "orderOut": 2}
+		},
+		"documents": {
+			"e10doc.core.heads":	[
+				{"docType": ["invni", "cash"], "_access": 2, "_name": "Faktury přijaté a Pokladna"},
+				{"docType": "prfmin", "_access": 2, "_name": "Faktury přijaté a Pokladna"},
+				{"docType": "orderout", "_access": 2, "_name": "Objednávky vydané"},
+				{"docType": "cmnbkp", "activity": ["balSetOff", "ocpBalInSt"], "_access": 1, "_name": "Zápočty a počáteční stavy saldokonta"}
+			]
+		},
+	  "reports": {
+		  "e10pro.reports.buy.ReportBrands": 2,
+		  "e10pro.reports.buy.ReportSuppliers": 2
+	  }
+	},
+	"scrtr": {
+		"viewers": {
+			"e10doc.core.heads": {"invoicesIn": 1}
+		}
+	},
+	"acc": {
+		"reports": {
+			"e10doc.buy.reportListInvoicesIn": 2
+		}
+	},
+	"bsass": {
+		"viewers": {
+			"e10doc.core.heads": {"invoicesIn": 1, "orderOut": 2}
+		},
+		"documents": {
+			"e10doc.core.heads":	[
+				{"docType": ["invni", "cash"], "_access": 1, "_name": "Faktury přijaté a Pokladna"},
+				{"docType": "prfmin", "_access": 1, "_name": "Faktury přijaté a Pokladna"},
+				{"docType": "orderout", "_access": 2, "_name": "Objednávky vydané"},
+				{"docType": "cmnbkp", "activity": ["balSetOff", "ocpBalInSt"], "_access": 1, "_name": "Zápočty a počáteční stavy saldokonta"}
+			]
+		}
+	}
+}

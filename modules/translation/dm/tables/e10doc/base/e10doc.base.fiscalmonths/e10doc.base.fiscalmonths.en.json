@@ -1,0 +1,34 @@
+{
+    "table": {
+        "name": "Fiscal period - month"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fiscalYear": {
+            "name": "Fiscal year"
+        },
+        "fiscalType": {
+            "name": "Type"
+        },
+        "calendarYear": {
+            "name": "Calendar year"
+        },
+        "calendarMonth": {
+            "name": "Calendar month"
+        },
+        "localOrder": {
+            "name": "Order"
+        },
+        "globalOrder": {
+            "name": "Global order"
+        },
+        "start": {
+            "name": "From"
+        },
+        "end": {
+            "name": "To"
+        }
+    }
+}

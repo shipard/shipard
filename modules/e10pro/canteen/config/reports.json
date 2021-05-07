@@ -1,0 +1,5 @@
+[
+	{"name": "Vyúčtování Osob", "class": "e10pro.canteen.reports.Persons", "icon": "icon-user", "group": "e10pro-canteen"},
+	{"name": "Denní přehled", "class": "e10pro.canteen.reports.Daily", "icon": "icon-cutlery", "group": "e10pro-canteen"},
+	{"name": "Měsíční přehled", "class": "e10pro.canteen.reports.Monthly", "icon": "icon-cutlery", "group": "e10pro-canteen"}
+]

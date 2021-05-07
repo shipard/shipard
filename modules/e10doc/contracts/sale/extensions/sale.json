@@ -1,0 +1,17 @@
+[
+  {
+    "table": "e10doc.contracts.core.heads",
+    "views": [
+      {"id": "sale", "class": "e10doc.contracts.sale.View", "detail": "e10doc.contracts.sale.ViewDetail", "help": "prirucka/4491"}
+    ],
+    "forms": [
+      {"id": "sale", "class": "e10doc.contracts.sale.Form", "help": "prirucka/4492"}
+    ]
+  },
+  {
+    "table": "e10doc.contracts.core.rows",
+    "forms": [
+      {"id": "sale", "class": "e10doc.contracts.sale.FormRow"}
+    ]
+  }
+]

@@ -1,0 +1,25 @@
+{
+	"id": "mac.admin.ipAddressLists", "sql": "mac_admin_ipAddressLists", "name": "Seznamy IP adres", "icon": "icon-user-secret",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "rows", "class": "e10.base.ListRows", "name": "Adresy", "table": "mac.admin.ipAddressListsRows", "queryColumn": "addressList", "orderColumn": "rowOrder"}
+	],
+	"views": [
+		{"id": "default", "class": "mac.admin.ViewIPAddressLists",
+			"details": {
+				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "mac.admin.ViewDetailIPAddressList"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.admin.FormIPAddressList"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

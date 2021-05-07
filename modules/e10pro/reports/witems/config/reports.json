@@ -1,0 +1,4 @@
+[
+	{"name": "Duplicitní položky", "class": "e10pro.reports.witems.reportDuplicities", "icon": "icon-code-fork", "group": "e10doc-inventory", "order": 90000},
+	{"name": "Duplicitní položky", "class": "e10pro.reports.witems.reportDuplicities", "icon": "icon-code-fork", "group": "e10-checks"}
+]

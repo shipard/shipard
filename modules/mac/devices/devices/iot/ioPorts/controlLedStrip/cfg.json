@@ -1,0 +1,14 @@
+{
+	"name": "LED pásek",
+	"title": "LED pásek",
+	"fields": {
+		"columns": [
+			{
+				"id": "pin", "name": "Pin", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["out"]}
+			},
+			{
+				"id": "cntLeds", "name": "Počet LED", "type": "int"
+			}
+		]
+	}
+}

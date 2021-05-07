@@ -1,0 +1,28 @@
+{
+    "table": {
+        "name": "Devices information"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "device": {
+            "name": "Device"
+        },
+        "dateCreate": {
+            "name": "Date of origin"
+        },
+        "dateUpdate": {
+            "name": "Update date"
+        },
+        "infoType": {
+            "name": "Informations type"
+        },
+        "checked": {
+            "name": "Checked"
+        },
+        "data": {
+            "name": "Data"
+        }
+    }
+}

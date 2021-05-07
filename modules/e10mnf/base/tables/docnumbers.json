@@ -1,0 +1,32 @@
+{
+	"id": "e10mnf.base.docnumbers", "sql": "e10mnf_base_docnumbers", "name": "Číselné řady zakázek", "icon": "icon-play-circle",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 40},
+		{"id": "tabName", "name": "Titulek záložky prohlížeče", "type": "string", "len": 40},
+		{"id": "docKeyId", "name": "Kód pro číslo zakázky", "type": "string", "len": 5},
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+		{"id": "useDocKinds", "name": "Používat druhy dokladů", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "Ne", "1": "Nastavit konkrétní druh", "2": "Nechat uživatele vybrat"}},
+		{"id": "docKind", "name": "Druh zakázky", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10mnf.workOrders.kinds", "cfgValue": "ndx", "cfgText": "fullName"}},
+
+		{"id": "invoicesInViewer", "name": "Zobrazovat faktury v prohlížeči", "type": "enumInt",
+			"enumValues": {"0": "Ne", "1": "Jen celkovou částku", "2": "Seznam faktur"}},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "e10mnf.base.ViewDocNumbers", "help": "prirucka/4866"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10mnf.base.FormDocNumber", "help": "prirucka/4866"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"fullText": ["fullName"]
+}

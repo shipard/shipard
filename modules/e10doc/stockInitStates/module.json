@@ -1,0 +1,5 @@
+{
+  "id": "e10doc.stockInitStates",
+  "name": "StockInSt",
+  "extensions": ["stockinst"]
+}

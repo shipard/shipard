@@ -1,0 +1,23 @@
+{
+	"id": "services.subjects.sizes", "sql": "services_subjects_sizes", "name": "Velikosti subjektů", "icon": "icon-expand",
+	"columns": [
+		{"id": "ndx", "name": "ndx", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "nomenclature", "class": "lib.nomenclature.ListNomenclature", "name": "Nomenklatura", "table": "e10.base.nomenc", "queryColumn": "recId"}
+	],
+	"options": ["configSource"],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "services.subjects.ViewSizes", "detail": "services.subjects.ViewDetailSize"}
+	],
+	"forms": [
+		{"id": "default", "class": "services.subjects.FormSize"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

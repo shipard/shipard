@@ -1,0 +1,37 @@
+{
+    "table": {
+        "name": "Newsletters"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "subject": {
+            "name": "Subject"
+        },
+        "text": {
+            "name": "Text"
+        },
+        "perex": {
+            "name": "Perex"
+        },
+        "dateCreate": {
+            "name": "Date of origin"
+        },
+        "dateSend": {
+            "name": "Dispatch date"
+        },
+        "datePub": {
+            "name": "Publication date"
+        },
+        "dateClose": {
+            "name": "Expiration date"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

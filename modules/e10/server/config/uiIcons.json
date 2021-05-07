@@ -1,0 +1,26 @@
+{
+    "fa5": {
+        "fullName": "Font Awesome 5",
+        "shortName": "FA 5",
+        "scPath": "icons/fa/5",
+        "type": 0,
+        "cssBaseClass": "fas ",
+        "styleLink": "icons/fa/5/css/all.min.css"
+    },
+    "bsi": {
+        "fullName": "Bootstrap Icons 1.4",
+        "shortName": "BSI 1.4",
+        "scPath": "icons/bsi/1.4",
+        "type": 0,
+        "cssBaseClass": "bi ",
+        "styleLink": "icons/bsi/1.4/font/bootstrap-icons.css"
+    },
+    "mdi": {
+        "fullName": "Material Design Icons",
+        "shortName": "MDI",
+        "scPath": "icons/mdi",
+        "type": 1,
+        "cssBaseClass": "mdi",
+        "styleLink": "icons/mdi/mdi.css"
+    }
+}

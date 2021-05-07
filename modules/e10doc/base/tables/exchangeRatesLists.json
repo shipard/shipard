@@ -1,0 +1,37 @@
+{
+	"id": "e10doc.base.exchangeRatesLists", "sql": "e10doc_base_exchangeRatesLists", "name": "Kurzovní lístky", "icon": "icon-usd",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "country", "name": "Země", "type": "int", "reference": "e10.world.countries"},
+		{"id": "currency", "name": "Měna", "type": "int", "reference": "e10.world.currencies"},
+		{"id": "listNumber", "name": "Číslo", "type": "int"},
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+
+		{"id": "listType", "name": "Typ kurzovního lístku", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10doc.base.exchangeRatesLists", "cfgValue": "", "cfgText": "name"}},
+		{"id": "periodType", "name": "Periodicita", "type": "enumInt",
+			"enumValues": {"0": "Denní", "1": "Měsíční", "99": "Ostatní"}},
+		{"id": "rateType", "name": "Druh kurzu", "type": "enumInt",
+			"enumValues": {"0": "Účetní", "1": "Celní", "99": "Ostatní"}},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "rates", "class": "e10.base.ListRows", "name": "Kurzy", "table": "e10doc.base.exchangeRatesValues", "queryColumn": "list"}
+	],
+	"views": {
+		"default": {
+			"id": "default", "class": "e10doc.base.ViewExchangeRatesLists",
+			"details": {
+				"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "order":  0, "class": "e10doc.base.ViewDetailExchangeRatesList"}
+			}
+		}
+	},
+	"forms": [
+		{"id": "default", "class": "e10doc.base.FormExchangeRatesList"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

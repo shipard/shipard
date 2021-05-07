@@ -1,0 +1,51 @@
+{
+	"name": "Výnosy",
+	"datasets": [
+		{
+			"table": "e10doc.debs.accounts",
+			"name": "Třída 6 - výnosy",
+			"defaultValues": {"accGroup": 0, "accMethod": "debs", "docState": 4000, "docStateMain": 2},
+			"data": [
+				{"rec": {"id":"601100","fullName":"Tržby za vlastní výrobky","shortName":"Tržby za vlastní výrobky","accountKind":3,"costsType":1,"resultsType":1}},
+				{"rec": {"id":"602100","fullName":"Tržby z prodeje služeb","shortName":"Tržby z prodeje služeb","accountKind":3,"costsType":1,"resultsType":1}},
+				{"rec": {"id":"604100","fullName":"Tržby za zboží","shortName":"Tržby za zboží","accountKind":3,"costsType":1,"resultsType":1}},
+				{"rec": {"id":"611100","fullName":"Změna stavu nedokončené výroby","shortName":"Změna stavu nedokončené výroby","accountKind":3,"costsType":1,"resultsType":1}},
+				{"rec": {"id":"612100","fullName":"Změna stavu polotovarů vlastní výroby","shortName":"Změna stavu polotovarů vlastní výroby","accountKind":3,"costsType":1,"resultsType":1}},
+				{"rec": {"id":"613100","fullName":"Změna stavu výrobků","shortName":"Změna stavu výrobků","accountKind":3,"costsType":1,"resultsType":1}},
+				{"rec": {"id":"614100","fullName":"Změna stavu zvířat","shortName":"Změna stavu zvířat","accountKind":3,"costsType":1,"resultsType":1}},
+				{"rec": {"id":"621100","fullName":"Aktivace materiálu a zboží","shortName":"Aktivace materiálu a zboží","accountKind":3,"costsType":1,"resultsType":1}},
+				{"rec": {"id":"622100","fullName":"Aktivace vnitropodnikových služeb","shortName":"Aktivace vnitropodnikových služeb","accountKind":3,"costsType":1,"resultsType":1}},
+				{"rec": {"id":"623100","fullName":"Aktivace dlouhodobého nehmotného majetku","shortName":"Aktivace dlouhodobého nehmotného majetku","accountKind":3,"costsType":1,"resultsType":1}},
+				{"rec": {"id":"624100","fullName":"Aktivace dlouhodobého hmotného majetku","shortName":"Aktivace dlouhodobého hmotného majetku","accountKind":3,"costsType":1,"resultsType":1}},
+				{"rec": {"id":"641100","fullName":"Tržby z prodeje dlouhodobého nehmotného a hmotného majetku","shortName":"Tržby z prodeje DNM a HM","accountKind":3,"costsType":1,"resultsType":1}},
+				{"rec": {"id":"642100","fullName":"Tržby z prodeje materiálu","shortName":"Tržby z prodeje materiálu","accountKind":3,"costsType":1,"resultsType":1}},
+				{"rec": {"id":"644100","fullName":"Smluvní pokuty a úroky z prodlení","shortName":"Smluvní pokuty a úroky z prodlení","accountKind":3,"costsType":1,"resultsType":1}},
+				{"rec": {"id":"646100","fullName":"Výnosy z odepsaných pohledávek","shortName":"Výnosy z odepsaných pohledávek","accountKind":3,"costsType":1,"resultsType":1}},
+				{"rec": {"id":"648100","fullName":"Ostatní provozní výnosy","shortName":"Ostatní provozní výnosy","accountKind":3,"costsType":1,"resultsType":1}},
+				{"rec": {"id":"648201","fullName":"Prodej evidovaného hmotného majetku","shortName":"Prodej evidovaného HM","accountKind":3,"costsType":1,"resultsType":1,"accItem":1,"useFor":2}},
+				{"rec": {"id":"648202","fullName":"Prodej evidovaného nehmotného majetku","shortName":"Prodej evidovaného NM","accountKind":3,"costsType":1,"resultsType":1,"accItem":1,"useFor":2}},
+				{"rec": {"id":"661100","fullName":"Tržby z prodeje cenných papírů a podílů","shortName":"Tržby z prodeje CP a podílů","accountKind":3,"costsType":1,"resultsType":2}},
+				{"rec": {"id":"662100","fullName":"Úroky","shortName":"Úroky","accountKind":3,"costsType":1,"resultsType":2}},
+				{"rec": {"id":"663100","fullName":"Kurzové zisky","shortName":"Kurzové zisky","accountKind":3,"costsType":1,"resultsType":2,"accItem":1,"useFor":101}},
+				{"rec": {"id":"664100","fullName":"Výnosy z přecenění cenných papírů","shortName":"Výnosy z přecenění CP","accountKind":3,"costsType":1,"resultsType":2}},
+				{"rec": {"id":"665100","fullName":"Výnosy z dlouhodobého finančního majetku","shortName":"Výnosy z dlouhodobého FM","accountKind":3,"costsType":1,"resultsType":2}},
+				{"rec": {"id":"666100","fullName":"Výnosy z krátkodobého finančního majetku","shortName":"Výnosy z krátkodobého FM","accountKind":3,"costsType":1,"resultsType":2}},
+				{"rec": {"id":"667100","fullName":"Výnosy z derivátových operací","shortName":"Výnosy z derivátových operací","accountKind":3,"costsType":1,"resultsType":2}},
+				{"rec": {"id":"668100","fullName":"Ostatní finanční výnosy","shortName":"Ostatní finanční výnosy","accountKind":3,"costsType":1,"resultsType":2}},
+				{"rec": {"id":"681100","fullName":"Výnosy ze změny metody","shortName":"Výnosy ze změny metody","accountKind":3,"costsType":1,"resultsType":3}},
+				{"rec": {"id":"688100","fullName":"Ostatní mimořádné výnosy","shortName":"Ostatní mimořádné výnosy","accountKind":3,"costsType":1,"resultsType":3}},
+				{"rec": {"id":"697100","fullName":"Převod provozních výnosů","shortName":"Převod provozních výnosů","accountKind":3,"costsType":1,"resultsType":1}},
+				{"rec": {"id":"698100","fullName":"Převod finančních výnosů","shortName":"Převod finančních výnosů","accountKind":3,"costsType":1,"resultsType":2}}
+			]
+		},
+		{
+			"table": "e10.witems.items",
+			"name": "Výnosové účtopoložky",
+			"defaultValues": {"type":"it-accitem","itemType":"@it-accitem","itemKind":2,"docState":4000,"docStateMain":2},
+			"data": [
+				{"rec": {"fullName":"Zaokrouhlení - výnosy","shortName":"Zaokrouhlení - výnosy","debsAccountId":"648100","id":"zaokrouhleni-vynosy","useFor":101}},
+				{"rec": {"fullName":"Úrok přijatý","shortName":"Úrok přijatý","debsAccountId":"662100","id":"662100","useFor":100}}
+			]
+		}
+	]
+}

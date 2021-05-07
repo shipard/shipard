@@ -1,0 +1,43 @@
+{
+    "table": {
+        "name": "Articles section"
+    },
+    "columns": {
+        "ndx": {
+            "name": "ndx"
+        },
+        "fullName": {
+            "name": "Full name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "title": {
+            "name": "Title"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "icon": {
+            "name": "Icon"
+        },
+        "addGallery": {
+            "name": "Add photo gallery automatically"
+        },
+        "addDownload": {
+            "name": "Add download automatically"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "showDate": {
+            "name": "Show date of publication"
+        },
+        "showAuthor": {
+            "name": "Show author"
+        }
+    }
+}

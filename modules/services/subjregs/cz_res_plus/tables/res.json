@@ -1,0 +1,33 @@
+{
+	"id": "services.subjregs.cz_res_plus.res", "sql": "services_subjregs_cz_res_plus_res", "name": "RES", "icon": "icon-building",
+	"columns": [
+		{"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "ico", "name": "IČ", "type": "string", "len": 8, "options": ["ascii"]},
+		{"id": "zuj", "name": "ZUJ", "type": "string", "len": 6, "options": ["ascii"]},
+		{"id": "nazev", "name": "Název", "type": "string", "len": 250},
+		{"id": "ulice", "name": "Ulice", "type": "string", "len": 70},
+		{"id": "obec", "name": "Obec", "type": "string", "len": 40},
+		{"id": "psc", "name": "PSČ", "type": "string", "len": 5, "options": ["ascii"]},
+		{"id": "forma", "name": "Právní forma", "type": "string", "len": 3, "options": ["ascii"]},
+		{"id": "okec6a", "name": "OKEČ", "type": "string", "len": 6, "options": ["ascii"]},
+		{"id": "datzan", "name": "Platné do", "type": "date"},
+		{"id": "datvzn", "name": "Platné od", "type": "date"},
+		{"id": "speceno", "name": "SpecENO", "type": "int"}
+	],
+	"views": {
+		"default": {
+			"id": "default", "class": "services.subjregs.cz_res_plus.ViewRes",
+			"details": {
+				"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "order":  0, "class": "services.subjregs.cz_res_plus.ViewDetailRes"}
+			}
+		}
+	},
+	"forms": [
+		{"id": "default", "class": "services.subjregs.cz-res-plus.FormRes"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "nazev"},
+	"indexes": [
+		{"id": "s1", "columns": ["nazev"]},
+		{"id": "s2", "columns": ["ico"]}
+	]
+}

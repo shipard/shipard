@@ -1,0 +1,22 @@
+{
+	"1000": {
+		"stateName": "Nepřeloženo", "actionName": "Uložit rozpracované", "logName": "text k překladu",
+		"stateStyle": "concept", "mainState": 0, "goto": [4000, 1200],
+		"icon": "icon-star-o"
+	},
+	"1200": {
+		"stateName": "K revizi", "actionName": "K revizi", "logName": "překlad k revizi",
+		"stateStyle": "confirmed", "mainState": 1, "close": 1, "readOnly": 0, "goto": [4000, 8000],
+		"icon": "icon-star"
+	},
+	"4000": {
+		"stateName": "Přeloženo", "actionName": "Přeloženo", "logName": "Hotovo",
+		"stateStyle": "done",  "mainState": 2, "readOnly": 1, "goto": [8000, 1200],
+		"icon": "icon-check-square-o"
+	},
+	"8000": {
+		"stateName": "V opravě", "actionName": "Opravit", "logName": "editace",
+		"stateStyle": "edit",  "mainState": 0, "goto": [1200, 4000],
+		"icon": "icon-edit"
+	}
+}

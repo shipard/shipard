@@ -1,0 +1,26 @@
+{
+    "table": {
+        "name": "Stocktakings rows"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "inventoryCheck": {
+            "name": "Stocktaking"
+        },
+        "item": {
+            "name": "Item"
+        },
+        "quantity": {
+            "name": "Quantity",
+            "label": "QTY"
+        },
+        "unit": {
+            "name": "Unit"
+        },
+        "note": {
+            "name": "Note"
+        }
+    }
+}

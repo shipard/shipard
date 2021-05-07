@@ -1,0 +1,24 @@
+{
+	"id": "integrations.ntf.channels", "sql": "integrations_ntf_channels", "name": "Notifikační kanály", "icon": "icon-bullhorn",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "fullName", "name": "Název", "type": "string", "len": 100},
+		{"id": "channelType", "name": "Typ kanálu", "type":  "enumInt",
+			"enumCfg": {"cfgItem": "integration.ntf.channels.types", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "channelCfg", "name": "Nastavení", "type": "subColumns"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": {
+		"default": {"id": "default", "class": "integrations.ntf.ViewChannels"}
+	},
+	"forms": [
+		{"id": "default", "class": "integrations.ntf.FormChannel"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"ndx": 0
+}

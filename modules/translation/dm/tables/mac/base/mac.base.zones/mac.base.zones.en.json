@@ -1,0 +1,43 @@
+{
+    "table": {
+        "name": "Zones"
+    },
+    "columns": {
+        "ndx": {
+            "name": "ndx"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "pathId": {
+            "name": "ID"
+        },
+        "fullPathId": {
+            "name": "Full ID"
+        },
+        "pathLevel": {
+            "name": "Level"
+        },
+        "ownerZone": {
+            "name": "Parent zone"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "icon": {
+            "name": "Icon"
+        },
+        "toDashboardVs": {
+            "name": "Video surveillance in dashboard"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

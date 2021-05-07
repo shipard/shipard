@@ -1,0 +1,11 @@
+{
+	"mac.lan.devices.kinds": {
+		"name":  "Druhy zařízení", "key":  "", "values":  {"name": "Název", "pluralName":  "Množné číslo"}
+	},
+	"mac.lan.devices.groups": {
+		"name":  "Skupiny zařízení", "key":  "", "values":  {"name": "Název"}
+	},
+	"mac.lan.devices.docStates": {
+		"name":  "Stavy dokumentů Síťových zařízení", "key":  "", "values":  {"stateName": "Název", "actionName":  "Název akce / tlačítko"}
+	}
+}

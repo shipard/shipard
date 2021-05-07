@@ -1,0 +1,59 @@
+{
+    "persons": {
+        "title": "Persons"
+    },
+    "e10World": {
+        "title": "World"
+    },
+    "system": {
+        "title": "System"
+    },
+    "web": {
+        "title": "Web"
+    },
+    "wkf": {
+        "title": "Workflow"
+    },
+    "workflow": {
+        "title": "Workflow"
+    },
+    "witems": {
+        "title": "Items"
+    },
+    "periods": {
+        "title": "Periods"
+    },
+    "docs": {
+        "title": "Documents"
+    },
+    "workOrders": {
+        "title": "Work orders"
+    },
+    "property": {
+        "title": "Property"
+    },
+    "core": {
+        "title": "Default settings"
+    },
+    "gdpr": {
+        "title": "GDPR"
+    },
+    "integrations": {
+        "title": "Service integrations"
+    },
+    "swdev": {
+        "title": "Development"
+    },
+    "mac": {
+        "title": "Surveillance and control"
+    },
+    "codebase": {
+        "title": "Codebooks"
+    },
+    "wikies": {
+        "title": "Wiki"
+    },
+    "building": {
+        "title": "Building"
+    }
+}

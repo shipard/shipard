@@ -1,0 +1,7 @@
+{
+	"id": "e10sync.parts.persons",
+	"name": "Synchronizace Osob",
+	"tables": [],
+	"extensions": ["core"],
+	"modules": []
+}

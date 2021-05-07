@@ -1,0 +1,23 @@
+[
+	{
+		"table": "e10.base.places",
+		"columns": [
+			{"id": "bookingType", "name": "Druh rezervace", "type": "enumString", "len": 10, "options": ["saveOnChange"],
+				"enumCfg": {"cfgItem": "e10pro.bookingTypes", "cfgValue": "", "cfgText": "fn"}},
+			{"id": "bookingCapacity", "name": "Kapacita pro rezervace", "type": "int"}
+		]
+	},
+	{
+		"table": "e10doc.contracts.core.heads", "module": "e10doc.contracts.sale",
+		"columns": [
+			{"id": "bookingPlaces", "name": "Rezervovat místa", "type": "logical", "options": ["saveOnChange"]}
+		]
+	},
+	{
+		"table": "e10doc.contracts.core.rows", "module": "e10doc.contracts.sale",
+		"columns": [
+			{"id": "bookingPlace", "name": "Rezervované místo", "type": "int", "reference": "e10.base.places", "options": ["saveOnChange"]},
+			{"id": "cntParts", "name": "Množství", "type": "enumInt"}
+		]
+	}
+]

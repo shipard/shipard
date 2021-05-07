@@ -1,0 +1,62 @@
+{
+  "id": "e10.base.attachments", "sql": "e10_attachments_files", "name": "Přílohy dokumentů", "icon": "icon-paperclip",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "symlinkTo", "name": "Odkaz na přílohu", "type": "int"},
+    {"id": "name", "name": "Název", "type": "string", "len": 80},
+		{"id": "perex", "name": "Popis", "type": "string", "len": 240},
+    {"id": "tableid", "name": "Tabulka", "type": "string", "len": 48, "options": ["ascii"]},
+    {"id": "recid", "name": "Řádek", "type": "int"},
+    {"id": "attplace", "name": "Místo přílohy", "type": "int"},
+    {"id": "path", "name": "Cesta na soubor", "type": "string", "len": 96},
+    {"id": "filename", "name": "Jméno souboru", "type": "string", "len": 240},
+    {"id": "filetype", "name": "Typ souboru", "type": "string", "len": 6},
+    {"id": "atttype", "name": "Typ přílohy", "type": "string", "len": 10},
+    {"id": "defaultImage", "name": "Titulní obrázek", "type": "logical"},
+    {"id": "order", "name": "Pořadí", "type": "int"},
+    {"id": "created","name": "Okamžik vytvoření", "type": "timestamp"},
+		{"id": "deleted", "name": "Smazáno", "type": "logical"},
+
+		{"id": "fileKind", "name": "Druh souboru", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10.att.fileKinds", "cfgValue": "", "cfgText": "name"}},
+		{"id": "fileSize", "name": "Velikost souboru", "type": "long"},
+		{"id": "fileCheckSum", "name": "Kontrolní součet souboru", "type": "string", "len": 40, "options": ["ascii"]},
+
+		{"id": "mddVersion", "name": "Verze detekce metadat", "type": "int"},
+
+    {"id": "i1", "name": "Informace 1", "type": "int"},
+    {"id": "i2", "name": "Informace 2", "type": "int"},
+		{"id": "i3", "name": "Informace 3", "type": "int"},
+
+		{"id": "ddfId", "name": "Datový formát", "type": "int"},
+	  {"id": "ddfNdx", "name": "Datový soubor", "type": "int", "reference":  "e10.base.docDataFiles"},
+
+		{"id": "lat", "name": "Zeměpisná šířka", "type": "number", "dec": 7},
+		{"id": "lon", "name": "Zeměpisná délka", "type": "number", "dec": 7},
+		{"id": "locState", "name": "Stav získání GPS souřadnic", "type": "enumInt",
+			"enumValues": {"0": "Zatím nezjištěno", "1": "Souřadnice jsou známé", "2": "Souřadnice nejsou dostupné"}},
+		{"id": "geoTagsState", "name": "Stav získání geografických značek", "type": "enumInt",
+			"enumValues": {"0": "Zatím nezjištěno", "1": "Přiřazeno", "2": "Žádná data"}},
+
+		{"id": "contentDate", "name": "Datum", "type": "timestamp"}
+  ],
+  "lists": [
+    {"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"}
+  ],
+	"options": ["systemTable"],
+	"trash": {"column": "deleted"},
+  "forms": [
+    {"id": "default", "class": "e10.base.FormAttachments"}
+  ],
+  "views": [
+    {"id": "default", "class": "e10.base.ViewAttachmentsAll"},
+    {"id": "images", "class": "e10.base.ViewAttachmentsImages"}
+  ],
+  "order": [{"column": "ndx", "order": "ASC"}],
+  "fullText": ["name", "filename"],
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "name"},
+	"indexes": [
+		{"id": "s1", "columns": ["tableid", "recid"]}
+	],
+	"ndx": 1013
+}

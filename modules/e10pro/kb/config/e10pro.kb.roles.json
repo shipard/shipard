@@ -1,0 +1,21 @@
+{
+  "kb": {
+		"name": "Databáze znalostí",
+		"roles": ["user"],
+		"viewers": {
+			"e10pro.kb.sections": {"default": 2},
+			"e10pro.kb.wikies": {"default": 2},
+			"e10pro.kb.texts": {"default": 2},
+			"e10pro.kb.annots": {"default": 2},
+			"e10pro.kb.annotsKinds": {"default": 2}
+		},
+	  "widgets": {
+		  "e10pro.kb.WidgetWiki": 2
+	  }
+	},
+	"user": {
+		"widgets": {
+			"e10pro.kb.WidgetWiki": 2
+		}
+	}
+}

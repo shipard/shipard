@@ -1,0 +1,7 @@
+{
+	"125": {
+		"fullName": "Výkupní lístek", "shortName": "Výkup", "icon": "e10-docs-purchase",
+		"order": 125910, "issueType": 3,
+		"askKind": 2, "askPersons":1, "askDeadline": 2, "askDateIncoming": 2
+	}
+}

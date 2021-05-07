@@ -1,0 +1,14 @@
+{
+	"id": "wkf.base.sectionsIssuesKinds", "sql": "wkf_base_sectionsIssuesKinds", "name": "Druhy zpráv v sekcích", "icon": "icon-flash",
+	"columns": [
+		{"id": "ndx", "name": "ndx", "type": "int_ai"},
+		{"id": "section", "name": "Sekce", "type": "int", "reference": "wkf.base.sections"},
+		{"id": "issueKind", "name": "Druh zprávy", "type": "int", "reference": "wkf.base.issuesKinds"},
+		{"id": "rowOrder", "name": "Pořadí", "type": "int"}
+	],
+	"forms": [
+		{"id": "default", "class": "wkf.base.FormSectionIssueKind"}
+	],
+	"options": ["systemTable"],
+	"ndx": 1247
+}

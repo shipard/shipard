@@ -1,0 +1,105 @@
+{
+  "id": "e10doc.core.rows", "sql": "e10doc_core_rows", "name": "Řádky dokladů",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "document", "name": "Doklad", "type": "int"},
+	  {"id": "rowType", "name": "Typ řádku", "type": "enumInt",
+		  "enumValues": {"0": "ručně", "1": "automaticky - sada - zásoby", "2": "automaticky - sada - doplňková položka"}},
+		{"id": "ownerRow", "name": "Nadřazený řádek", "type": "int"},
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+
+    {"id": "operation", "name": "Pohyb", "type": "enumInt", "len": 4, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10.docs.operations", "cfgValue": "", "cfgText": "title"}},
+
+    {"id": "item", "name": "Položka", "type": "int", "reference": "e10.witems.items", "comboViewer": "combo", "options": ["saveOnChange"]},
+    {"id": "itemType", "name": "Typ položky", "type": "enumString", "len": 15,
+	    "enumCfg": {"cfgItem": "e10.witems.types", "cfgValue": "", "cfgText": ".text"}},
+		{"id": "itemBalance", "name": "Saldokonto", "type": "enumInt", "len": 4,
+			"enumCfg": {"cfgItem": "e10.balance", "cfgValue": "", "cfgText": "name"}},
+		{"id": "itemIsSet", "name": "Položka je sada", "type": "enumInt",
+			"enumValues": {"0": "ne", "1": "ano, nutno doplnit do dokladu", "2": "ano, nutno přepočítat", "99": "ano, hotovo"}},
+    {"id": "text", "name": "Text", "type": "string", "len": 220},
+		{"id": "usrText1", "name": "Už. text 1", "type": "string", "len": 25},
+
+    {"id": "quantity", "name": "Množství", "label": "Množ.", "type": "number", "dec": 3, "options": ["saveOnChange"]},
+		{"id": "unit", "name": "Jednotka", "type": "enumString", "len": 8,
+			"enumCfg": {"cfgItem": "e10.witems.units", "cfgValue": "", "cfgText": "shortcut"}},
+    {"id": "weightNet", "name": "Hmotnost netto", "label": "Hm. netto", "type": "number", "dec": 3},
+    {"id": "weightGross", "name": "Hmotnost brutto", "label": "Hm. brutto", "type": "number", "dec": 3},
+
+    {"id": "currency", "name": "Měna", "type": "enumString", "len": 3,
+	    "enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
+    {"id": "homeCurrency", "name": "Měna domácí", "type": "enumString", "len": 3,
+	    "enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
+    {"id": "exchangeRate", "name": "Kurz", "type": "number", "dec": 7, "comboViewer": "combo", "comboTable": "e10doc.base.exchangeRatesValues"},
+
+	  {"id": "priceSource", "name": "Zdroj ceny", "type": "enumInt",
+		  "enumValues": {"0": "cena za položku", "1": "cena celkem"}},
+    {"id": "priceItem", "name": "Jednotková cena", "label": "Cena/jed", "type": "number", "dec": 4, "options": ["saveOnChange"]},
+    {"id": "priceAll", "name": "Cena celkem", "type": "money"},
+    {"id": "taxBase", "name": "Základ daně", "type": "money"},
+    {"id": "tax", "name": "Částka daně", "type": "money"},
+    {"id": "priceTotal", "name": "Cena celkem včetně daně", "type": "money"},
+    {"id": "credit", "name": "Přijato", "type": "money", "options": ["saveOnChange"]},
+    {"id": "debit", "name": "Vyplaceno", "type": "money", "options": ["saveOnChange"]},
+		{"id": "creditHc", "name": "Přijato v domácí měně", "type": "money"},
+		{"id": "debitHc", "name": "Vyplaceno v domácí měně", "type": "money"},
+		{"id": "bankRequestAmount", "name": "Částka v měně předpisu", "label": "Částka v CM", "type": "money"},
+		{"id": "bankRequestCurrency", "name": "Měna", "type": "enumString", "len": 3, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
+
+    {"id": "priceItemHc", "name": "Jednotková cena [MD]", "label": "Cena/jed [MD]", "type": "number", "dec": 4},
+    {"id": "priceAllHc", "name": "Cena celkem [MD]", "type": "money"},
+    {"id": "taxBaseHc", "name": "Základ daně [MD]", "type": "money"},
+		{"id": "taxBaseHcCorr", "name": "Korekce základu daně [MD]", "type": "money"},
+    {"id": "taxHc", "name": "Částka daně [MD]", "type": "money"},
+    {"id": "priceTotalHc", "name": "Cena celkem včetně daně [MD]", "type": "money"},
+
+	  {"id": "costBase", "name": "Cena", "type": "money"},
+	  {"id": "costTotal", "name": "Cena včetně daně", "type": "money"},
+	  {"id": "costBaseHc", "name": "Cena", "type": "money"},
+	  {"id": "costTotalHc", "name": "Cena včetně daně", "type": "money"},
+
+    {"id": "taxCode", "name": "Typ daně", "type": "enumString", "len": 7,
+	    "enumCfg": {"cfgItem": "e10.base.taxCodes", "cfgValue": "", "cfgText": "name"}, "options": ["saveOnChange"]},
+    {"id": "taxRate", "name": "Sazba daně", "type": "enumInt",
+	    "enumCfg": {"cfgItem": "e10.base.taxRates", "cfgValue": "", "cfgText": ""}},
+    {"id": "taxPercents", "name": "Procento daně", "type": "number", "dec": 2},
+    {"id": "taxCalc", "name": "Výpočet daně", "type": "enumInt",
+			"enumValues": {"1": "ze základu", "2": "z ceny celkem", "0": "bez daně"}, "options": ["saveOnChange"]},
+
+    {"id": "symbol1", "name": "Variabilní symbol", "label": "VS", "type": "string", "len": 20,
+			"comboViewer": "combo", "comboTable": "e10doc.balance.journal"
+		},
+    {"id": "symbol2", "name": "Specifický symbol", "label": "SS", "type": "string", "len": 20},
+    {"id": "symbol3", "name": "Konstantní symbol", "label": "KS", "type": "string", "len": 10},
+    {"id": "bankAccount", "name": "Bankovní účet", "label": "Č. účtu", "type": "string", "len": 40},
+    {"id": "dateDue", "name": "Datum splatnosti", "type": "date"},
+
+    {"id": "dateTax", "name": "Datum uskutečnění zdanitelného plnění", "label": "DUZP", "type": "date"},
+    {"id": "taxPeriod", "name": "Daňové období", "type": "int", "reference": "e10doc.base.taxperiods"},
+
+    {"id": "dateAccounting", "name": "Účetní datum", "type": "date"},
+    {"id": "fiscalYear", "name": "Fiskální období - roční", "type": "int", "reference": "e10doc.base.fiscalyears"},
+    {"id": "fiscalMonth", "name": "Fiskální období - měsíční", "type": "int", "reference": "e10doc.base.fiscalmonths"},
+
+    {"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "centre", "name": "Středisko", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10doc.centres", "cfgValue": "ndx", "cfgText": "shortName"}},
+		{"id": "project", "name": "Projekt", "type": "int", "reference": "e10pro.wkf.projects", "module": "e10pro.wkf"},
+		{"id": "wkfProject", "name": "Projekt", "type": "int", "reference": "wkf.base.projects", "module": "wkf.base"},
+		{"id": "workOrder", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
+		{"id": "property", "name": "Majetek", "type": "int", "reference": "e10pro.property.property"},
+
+    {"id": "invDirection", "name": "Směr skladového pohybu", "type": "enumInt",
+			"enumValues": {"0": "žádný", "1": "příjem", "-1": "výdej"}},
+    {"id": "invPrice", "name": "Skladová cena", "type": "money"},
+		{"id": "invPriceAcc", "name": "Účetní skladová cena", "type": "money"}
+  ],
+	"options": ["systemTable"],
+	"indexes": [
+		{"id": "item", "columns": ["item"]},
+		{"id": "person", "columns": ["person"]},
+		{"id": "s1", "columns": ["document", "text"]}
+	]
+}

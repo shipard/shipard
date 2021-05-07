@@ -1,0 +1,46 @@
+{
+    "table": {
+        "name": "Local servers"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "id": {
+            "name": "ID"
+        },
+        "serverFQDN": {
+            "name": "Domain name of server"
+        },
+        "supportCameras": {
+            "name": "Support cameras"
+        },
+        "supportLan": {
+            "name": "Support server monitoring"
+        },
+        "supportWss": {
+            "name": "Support WSS"
+        },
+        "wssPort": {
+            "name": "Port"
+        },
+        "wssAllowedFrom": {
+            "name": "Support for IP addresses"
+        },
+        "cfgData": {
+            "name": "Configuration data"
+        },
+        "cfgDataVer": {
+            "name": "Configuration data version"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        }
+    }
+}

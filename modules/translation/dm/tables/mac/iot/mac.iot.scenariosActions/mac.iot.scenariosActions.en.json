@@ -1,0 +1,31 @@
+{
+    "table": {
+        "name": "Scenarios actions"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "rowOrder": {
+            "name": "Row order"
+        },
+        "scenario": {
+            "name": "Scenario"
+        },
+        "actionType": {
+            "name": "Action type"
+        },
+        "dstIOPort": {
+            "name": "Device"
+        },
+        "dstIoTThing": {
+            "name": "IoT element"
+        },
+        "dstIoTThingAction": {
+            "name": "Action"
+        },
+        "note": {
+            "name": "Note"
+        }
+    }
+}

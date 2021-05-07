@@ -1,0 +1,24 @@
+{
+	"id": "e10doc.helpers.wkfSectionsRelations", "sql": "e10doc_helpers_wkfSectionsRelations", "name": "Vazby dokladů na sekce workflow", "icon": "icon-columns",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "name", "name": "Název", "type": "string", "len": 80},
+
+		{"id": "docType", "name": "Typ dokladu", "type": "enumString", "len": 10,
+			"enumCfg": {"cfgItem": "e10.docs.types", "cfgValue": "", "cfgText": "fullName"}},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"views": [
+		{"id": "default", "class": "e10doc.helpers.ViewWkfSectionsRelations", "help":  "prirucka/4877"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.helpers.FormWkfSectionsRelation", "help":  "prirucka/4877"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"}
+}

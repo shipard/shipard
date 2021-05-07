@@ -1,0 +1,7 @@
+{
+	"id": "e10pro.reports.terminal_daily",
+	"name": "Daily report",
+	"config": [
+		{"id": "+reports", "file": "reports.json"}
+	]
+}

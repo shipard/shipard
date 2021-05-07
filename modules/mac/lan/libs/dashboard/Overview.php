@@ -1,0 +1,386 @@
+<?php
+
+namespace mac\lan\libs\dashboard;
+
+
+use e10\Content, \e10\utils, \e10\json;
+use mac\data\libs\SensorHelper;
+
+
+/**
+ * Class Overview
+ * @package mac\lan\libs\dashboard
+ */
+class Overview extends Content
+{
+	var $lanNdx = 0;
+
+	/** @var \e10\widgetBoard */
+	var $widget;
+
+	/** @var \mac\lan\libs\dashboard\OverviewData */
+	var $overviewData;
+
+	/** @var \mac\lan\libs\LanTree */
+	var $lanTree;
+
+	var $macDataSourcesSensorsHelpers = [];
+
+	var $code = '';
+
+
+	public function setLan($lanNdx)
+	{
+		$this->lanNdx = $lanNdx;
+	}
+
+	public function createContentOverview()
+	{
+		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => "<div class='e10-gs-row'>"]);
+
+			$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => "<div class='e10-gs-col e10-gs-half'>"]);
+				$this->ccLanOverview();
+			$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => "</div>"]);
+
+			$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => "<div class='e10-gs-col e10-gs-half'>"]);
+				$this->ccAlerts();
+			$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => "</div>"]);
+
+		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => "</div>"]);
+	}
+
+	protected function ccLanOverview()
+	{
+		$c = '';
+		$c .= "<div class='e10-static-tabs e10-pane' id='e10-lan-overview' style='height: 100%;'>";
+
+		// -- tabs
+		$active = ' active';
+		$c .= "<ul class='e10-static-tabs tabs'>";
+		foreach ($this->overviewData->dgCfg as $dgId => $dg)
+		{
+			if (!isset($this->overviewData->dgData[$dgId]['devices']) || !count($this->overviewData->dgData[$dgId]['devices']))
+				continue;
+
+			$c .= "<li class='e10-static-tab tab$active' data-content-id='lan-overview-{$dgId}' style='border-right: 1px solid rgba(0,0,0,.3);'>";
+			$icn = $this->app()->ui()->icons()->cssClass($dg['icon']);
+			$c .= "&nbsp;<i class='$icn'></i> ";
+			$c .= "<span class='e10-ntf-badge'>?</span>";
+			$c .= "&nbsp;</li>";
+
+			$active='';
+		}
+		$c .= "</ul>";
+
+		// -- content
+		$active = 'active';
+		$c .= "<div class='e10-static-tab-content' style='overflow-y: auto;'>";
+		foreach ($this->overviewData->dgCfg as $dgId => $dg)
+		{
+			if (!isset($this->overviewData->dgData[$dgId]['devices']) || !count($this->overviewData->dgData[$dgId]['devices']))
+				continue;
+
+			$c .= "<div class='$active' id='lan-overview-{$dgId}'>";
+			if ($dgId == OverviewData::dgiLan)
+				$c .= $this->createContentOverview_LanTree();
+			else
+				$c .= $this->ccLanOverviewDevices($dgId);
+			$c .= "</div>";
+
+			$active='';
+		}
+		$c .= '</div>';
+
+		$c .= '</div>';
+
+		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $c]);
+	}
+
+	function ccLanOverviewDevices($dgId)
+	{
+		$c = '';
+
+		$c .= "<table class='compact fullWidth stripped'>";
+		foreach ($this->overviewData->dgData[$dgId]['devices'] as $deviceNdx)
+		{
+			$device = $this->overviewData->devices[$deviceNdx];
+			if ($device['hideFromDR'])
+				continue;
+			$c .= "<tr data-overview-group='e10-lan-do-{$dgId}'>";
+
+			$c .= "<td style='vertical-align: top;'>";
+			$c .= "<span class='indicator' id='e10-lan-do-{$deviceNdx}'><i class='fa fa-square'></i></span> ";
+			$c .= $this->app()->ui()->renderTextLine(['text' => $device['title'], 'icon' => $device['icon']/*, 'suffix' => $device['deviceId']*/]);
+			$c .= "</td>";
+
+			$c .= "<td style='vertical-align: middle;'>";
+			foreach ($device['sensorsBadges'] as $sb)
+			{
+				$sh = $this->macDataSourceSensorHelper($sb['badgeDataSource']);
+				if ($sh)
+				{
+					$bc = $sh->dsBadgeImg($sb['label'], $sb['badgeQuantityId'], $sb['badgeParams']);
+					$c .= ' '.$bc;
+				}
+			}
+			$c .= "</td>";
+
+
+			$c .= "</tr>";
+		}
+
+		$c .= "</table>";
+
+		return $c;
+
+	}
+
+	protected function createContentOverview_LanTree()
+	{
+		$c = '';
+
+		$c .= "<table class='compact fullWidth stripped'>";
+		foreach ($this->lanTree->dataTree as $treeItemNdx => $treeItem)
+		{
+			$device = $this->overviewData->devices[$treeItemNdx];
+			if ($device['hideFromDR'])
+				continue;
+
+			$c .= "<tr data-overview-group='e10-lan-do-lan'>";
+
+			$c .= "<td style='vertical-align: top;'>";
+			$c .= "<span class='indicator' id='e10-lan-do-{$treeItemNdx}'><i class='fa fa-square'></i></span> ";
+			$c .= utils::es($treeItem['title']);
+			$c .= "</td>";
+
+			$c .= "<td style='vertical-align: middle;'>";
+			if (isset($this->overviewData->devices[$treeItemNdx]['uplinkPortsBadges']))
+			{
+				foreach ($this->overviewData->devices[$treeItemNdx]['uplinkPortsBadges'] as $sb)
+				{
+					$sh = $this->macDataSourceSensorHelper($sb['badgeDataSource']);
+					if ($sh) {
+						$bc = $sh->dsBadgeImg($sb['label'], $sb['badgeQuantityId'], $sb['badgeParams']);
+						$c .= ' ' . "<span>".$bc."</span>";
+					}
+				}
+			}
+
+			foreach ($device['sensorsBadges'] as $sb)
+			{
+				$sh = $this->macDataSourceSensorHelper($sb['badgeDataSource']);
+				if ($sh)
+				{
+					$bc = $sh->dsBadgeImg($sb['label'], $sb['badgeQuantityId'], $sb['badgeParams']);
+					$c .= ' '.$bc;
+				}
+			}
+
+			$c .= "</td>";
+
+
+			$c .= "</tr>";
+			$c .= $this->createContentOverview_LanTree_Code(2, $treeItem['items']);
+		}
+		$c .= "</table>";
+
+		return $c;
+	}
+
+	protected function createContentOverview_LanTree_Code($level, $items)
+	{
+		$c = '';
+		if (!count($items))
+			return '';
+
+
+		foreach ($items as $treeItemNdx => $treeItem)
+		{
+			$device = $this->overviewData->devices[$treeItemNdx];
+			if ($device['hideFromDR'])
+				continue;
+
+			$c .= "<tr data-overview-group='e10-lan-do-lan'>";
+
+			$rack = $this->lanTree->racks[$treeItem['rackNdx']];
+
+			$c .= "<td style='vertical-align: middle;  padding-left: {$level}em;'>";
+			$c .= "<span class='indicator' id='e10-lan-do-{$treeItemNdx}'><i class='fa fa-square'></i></span> ";
+			$c .= utils::es($treeItem['title']);
+			$c .= "</td>";
+
+			$c .= "<td style='vertical-align: middle; '>";
+			if (isset($this->overviewData->devices[$treeItemNdx]['uplinkPortsBadges']))
+			{
+				foreach ($this->overviewData->devices[$treeItemNdx]['uplinkPortsBadges'] as $sb)
+				{
+					$sh = $this->macDataSourceSensorHelper($sb['badgeDataSource']);
+					if ($sh) {
+						$bc = $sh->dsBadgeImg($sb['label'], $sb['badgeQuantityId'], $sb['badgeParams']);
+						$c .= ' ' . "<span>".$bc."</span>";
+					}
+				}
+			}
+			$c .= "</td>";
+
+			$c .= "</tr>";
+
+			if (count($treeItem['items']))
+			{
+				$c .= $this->createContentOverview_LanTree_Code($level + 1, $treeItem['items']);
+			}
+		}
+
+		return $c;
+	}
+
+	protected function ccAlerts()
+	{
+		$this->createContentOverview_Changes();
+
+		$c = '';
+
+		$alertGroups = $this->app()->cfgItem('mac.lan.alerts.dashboardGroups');
+		$c .= "<div id='e10-lan-alerts'>";
+		foreach ($alertGroups as $agId => $ag)
+		{
+			if (isset($this->overviewData->dgData[$agId]) && (!isset($this->overviewData->dgData[$agId]['devices']) || !count($this->overviewData->dgData[$agId]['devices'])))
+				continue;
+
+			$c .= "<div id='e10-lan-alerts-{$agId}' class='e10-pane e10-pane-table' data-scope-id='{$agId}'>";
+
+			$c .= "<div class='alert-title'>";
+			$c .= $this->app()->ui()->renderTextLine(['text' => $ag['fn'], 'icon' => $ag['icon'], 'class' => 'e10-widget-big-text']);
+			$groupData = $this->overviewData->dgData[$agId];
+			if (isset($groupData['dpInfo']) && count($groupData['dpInfo']))
+			{
+
+				$c .= "<span class='pull-right'>";
+				foreach ($groupData['dpInfo'] as $dpi)
+				{
+					if (isset($dpi['badgeQuantityId']))
+					{
+						$sh = $this->macDataSourceSensorHelper($dpi['badgeDataSource']);
+						if ($sh)
+							$c .= '&nbsp; '.$sh->dsBadgeImg($dpi['label'], $dpi['badgeQuantityId'], $dpi['badgeParams']);
+					}
+				}
+				$c .= '</span>';
+			}
+			$c .= "</div>";
+
+			$c .= "<details class='pt1'>";
+			$c .= "<summary class='pb1'>";
+			$c .= "</summary>";
+			$c .= "<div class='content'>";
+			$c .= "</div>";
+			$c .= "</details>";
+			$c .= "</div>";
+
+		}
+		$c .= "</div>";
+
+		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $c]);
+	}
+
+	protected function createContentOverview_Changes()
+	{
+		if (isset($this->overviewData->lanChanges['nodeServers']))
+		{
+			$title = $this->overviewData->lanChanges['nodeServers']['title'];
+			$title[] = [
+				'type' => 'action', 'action' => 'addwizard', 'data-class' => 'mac.lan.libs.NodeServerCfgWizard',
+				'text' => 'Potvrdit změny', 'icon' => 'icon-check', 'class' => 'btn-sm pull-right', 'btnClass' => 'btn-primary',
+				'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widget->widgetId,
+			];
+			$title[] = ['text' => '', 'class' => 'block'];
+			$title[] = ['code' => '<hr style="margin-bottom: 1ex">'];
+
+			$this->addContent([
+				'type' => 'line', 'pane' => 'e10-pane e10-pane-table',
+				'line' => $this->overviewData->lanChanges['nodeServers']['labels'],
+				'paneTitle' => $title
+			]);
+		}
+
+		if (isset($this->overviewData->lanChanges['lanControl']))
+		{
+			$title = $this->overviewData->lanChanges['lanControl']['title'];
+			$title[] = [
+				'type' => 'action', 'action' => 'addwizard', 'data-class' => 'mac.lan.libs.LanControlCfgWizard',
+				'text' => 'Potvrdit změny', 'icon' => 'icon-check', 'class' => 'btn-sm pull-right', 'btnClass' => 'btn-primary',
+				'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widget->widgetId,
+			];
+			$title[] = ['text' => '', 'class' => 'block'];
+			$title[] = ['code' => '<hr style="margin-bottom: 1ex">'];
+
+			$c = '';
+			$c .= $this->app()->ui()->composeTextLine($this->overviewData->lanChanges['lanControl']['labels']);
+
+			$c .= "<details class='pt1'>";
+			$c .= "<summary class='pb1'>".utils::es('Přehled změn');
+			$c .= "</summary>";
+			$c .= "<div class='content2'>";
+
+			foreach ($this->overviewData->lanChanges['lanControl']['table'] as $changes)
+			{
+				$c .= $this->app()->ui()->renderTextLine(['text' => $changes['changes']['title'], 'class' => 'h2 block']);
+				$c .= "<div style='display: overflow-x: auto; border: 1px solid rgba(0,0,0,.25); background-color: #F0F0F0; margin-bottom: 2ex; padding: 2px;'><pre><code>".$changes['changes']['text'].'</code></pre></div>';
+			}
+
+			$c .= "</div>";
+			$c .= "</details>";
+
+			$this->addContent([
+				'type' => 'text', 'subtype' => 'rawhtml',
+				'pane' => 'e10-pane e10-pane-table',
+				'text' => $c,
+				'paneTitle' => $title
+			]);
+		}
+	}
+
+	function macDataSourceSensorHelper($dsNdx)
+	{
+		if (!isset($this->macDataSourcesSensorsHelpers[$dsNdx]))
+		{
+			$this->macDataSourcesSensorsHelpers[$dsNdx] = NULL;
+
+			$dsInfo = $this->db()->query ('SELECT * FROM [mac_data_sources] WHERE ndx = %i', $dsNdx)->fetch();
+			if ($dsInfo)
+			{
+				$sh = new SensorHelper($this->app());
+				$sh->dataSource = $dsInfo->toArray();
+
+				$this->macDataSourcesSensorsHelpers[$dsNdx] = $sh;
+			}
+		}
+
+		return $this->macDataSourcesSensorsHelpers[$dsNdx];
+	}
+
+	function createCode()
+	{
+		$cr = new \e10\ContentRenderer($this->app());
+		$cr->content = $this->content;
+		$this->code .= $cr->createCode('body');
+		$this->code .= "<script>e10.widgets.macLan.init('{$this->widget->widgetId}');</script>";
+	}
+
+	public function run(\e10\widgetBoard $widget)
+	{
+		$this->widget = $widget;
+
+		$this->overviewData = new \mac\lan\libs\dashboard\OverviewData($this->app());
+		$this->overviewData->setLan($this->lanNdx);
+		$this->overviewData->run();
+
+		$this->lanTree = new \mac\lan\libs\LanTree($this->app());
+		$this->lanTree->init();
+		$this->lanTree->setLan($this->lanNdx);
+		$this->lanTree->load();
+
+		$this->createContentOverview();
+		$this->createCode();
+	}
+}

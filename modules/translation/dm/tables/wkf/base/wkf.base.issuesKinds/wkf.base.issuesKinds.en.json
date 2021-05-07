@@ -1,0 +1,72 @@
+{
+    "table": {
+        "name": "Issue Kinds"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "fullName": {
+            "name": "Name"
+        },
+        "shortName": {
+            "name": "Short name"
+        },
+        "issueType": {
+            "name": "Type"
+        },
+        "systemKind": {
+            "name": "System kind"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "icon": {
+            "name": "Icon"
+        },
+        "askWorkOrder": {
+            "name": "Assign work order"
+        },
+        "askPersons": {
+            "name": "Assign persons"
+        },
+        "askPersonsUsers": {
+            "name": "Users allowed to assign persons",
+            "label": "Users"
+        },
+        "askKind": {
+            "name": "Assign kind"
+        },
+        "askDeadline": {
+            "name": "Assign deadline"
+        },
+        "askDeadlineUsers": {
+            "name": "Users allowed to assign deadline",
+            "label": "Users"
+        },
+        "askDateIncoming": {
+            "name": "Assign incoming date"
+        },
+        "enableConnectedIssues": {
+            "name": "Enable issue connection"
+        },
+        "analyzeAttachments": {
+            "name": "Analyze attachments"
+        },
+        "vds": {
+            "name": "Extension structure"
+        },
+        "docState": {
+            "name": "State"
+        },
+        "docStateMain": {
+            "name": "Main state"
+        },
+        "enableProjects": {
+            "name": "Enable Projects"
+        },
+        "enableTargets": {
+            "name": "Enable Targets"
+        }
+    }
+}

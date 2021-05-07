@@ -1,0 +1,16 @@
+{
+    "table": {
+        "name": "Statistic of items/documents types"
+    },
+    "columns": {
+        "docType": {
+            "name": "Document type"
+        },
+        "cnt": {
+            "name": "Quantity"
+        },
+        "item": {
+            "name": "Item"
+        }
+    }
+}

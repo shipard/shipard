@@ -1,0 +1,12 @@
+[
+	{
+		"table": "e10doc.core.heads",
+		"views_DISABLED": {
+			"invoicesOut": {
+				"panels": [
+					{"id": "sales", "title": "Prodejky", "type": "viewer", "table": "e10.persons.persons", "class": "e10pro.store.InvoiceCashregDisposal"}
+				]
+			}
+		}
+	}
+]

@@ -1,0 +1,22 @@
+{
+  "mnf": {
+		"name": "Zakázky",
+		"roles": ["pwuser"],
+		"viewers": {
+			"e10mnf.core.workOrders": {"default": 2}
+		},
+	  "reports": {
+		  "e10mnf.reports.analysis.WorkOrdersAnalysisReport": 2,
+			"e10mnf.core.libs.WorkedHoursReport": 2
+	  }
+	},
+	"admin": {
+		"viewers": {
+			"e10mnf.base.dockinds": {"default": 2},
+			"e10mnf.base.docnumbers": {"default": 2},
+			"e10mnf.base.workOrdersGroups": {"default": 2},
+			"e10mnf.base.workRecsKinds": {"default": 2},
+			"e10mnf.base.workRecsNumbers": {"default": 2}
+		}
+	}
+}

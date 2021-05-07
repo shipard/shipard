@@ -1,0 +1,24 @@
+{
+  "id": "e10.base.propgroups", "sql": "e10_base_propgroups", "name": "Skupiny vlastností",
+  "columns": [
+    {"id": "ndx", "name": "ndx", "type": "int_ai"},
+    {"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
+    {"id": "fullName", "name": "Název", "type": "string", "len": 120},
+    {"id": "id", "name": "ID", "type": "string", "len": 24},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+  "lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+  ],
+  "views": [
+    {"id": "default", "class": "e10.base.ViewPropGroups", "detail": "e10.base.ViewDetailPropGroup", "help": "prirucka/4755"}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10.base.FormPropGroup", "help": "prirucka/4755"}
+  ],
+	"options": ["configSource"],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.propgroups.docStates"},
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "shortName"}
+}

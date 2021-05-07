@@ -1,0 +1,88 @@
+{
+    "table": {
+        "name": "Attached files"
+    },
+    "columns": {
+        "ndx": {
+            "name": "id"
+        },
+        "symlinkTo": {
+            "name": "Link to the attachment"
+        },
+        "name": {
+            "name": "Name"
+        },
+        "perex": {
+            "name": "Description"
+        },
+        "tableid": {
+            "name": "Table"
+        },
+        "recid": {
+            "name": "Row"
+        },
+        "attplace": {
+            "name": "Attachment place"
+        },
+        "path": {
+            "name": "File path"
+        },
+        "filename": {
+            "name": "File name"
+        },
+        "filetype": {
+            "name": "File type"
+        },
+        "atttype": {
+            "name": "Attachment type"
+        },
+        "defaultImage": {
+            "name": "Cover image"
+        },
+        "order": {
+            "name": "Order"
+        },
+        "created": {
+            "name": "Creation timestamp"
+        },
+        "deleted": {
+            "name": "Deleted"
+        },
+        "fileKind": {
+            "name": "File kind"
+        },
+        "fileSize": {
+            "name": "File size"
+        },
+        "fileCheckSum": {
+            "name": "File checksum"
+        },
+        "mddVersion": {
+            "name": "Version of metadata detection"
+        },
+        "i1": {
+            "name": "Information 1"
+        },
+        "i2": {
+            "name": "Information 2"
+        },
+        "i3": {
+            "name": "Information 3"
+        },
+        "lat": {
+            "name": "Latitude"
+        },
+        "lon": {
+            "name": "Longitude"
+        },
+        "locState": {
+            "name": "State of geotagging"
+        },
+        "geoTagsState": {
+            "name": "State of obtaining geotags"
+        },
+        "contentDate": {
+            "name": "Date"
+        }
+    }
+}

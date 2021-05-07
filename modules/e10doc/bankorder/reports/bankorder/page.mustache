@@ -1,0 +1,142 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+		<title>test</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+		<link rel="stylesheet" href="file://{{templateRoot}}style.css" type="text/css"/>
+</head>
+<body>
+
+	{{#data.pages}}
+		{{#newPage}}
+			<div class="newPage"></div>
+		{{/newPage}}
+		<div id='bankorder-top'>
+			{{#oneRow}}
+				{{#directDebit}}
+					<span class='documentName'>PŘÍKAZ K INKASU</span>
+				{{/directDebit}}
+				{{^directDebit}}
+					<span class='documentName'>PŘÍKAZ K ÚHRADĚ</span>
+				{{/directDebit}}
+			{{/oneRow}}
+			{{^oneRow}}
+				{{#directDebit}}
+					<span class='documentName'>HROMADNÝ PŘÍKAZ K INKASU</span>
+				{{/directDebit}}
+				{{^directDebit}}
+					<span class='documentName'>HROMADNÝ PŘÍKAZ K ÚHRADĚ</span>
+				{{/directDebit}}
+			{{/oneRow}}
+		</div>
+
+		<div id="simple-text">
+			<br />Název banky: <b>{{myBankPerson.fullName}}</b>
+		</div>
+
+		<table id='bankorder'>
+			<tr>
+				{{#directDebit}}
+					<td class='w20 border'>Číslo účtu příjemce</td>
+				{{/directDebit}}
+				{{^directDebit}}
+					<td class='w20 border'>Číslo účtu plátce</td>
+				{{/directDebit}}
+				<td class='w10 border'>Kód banky</td>
+				{{^oneRow}}
+					<td class='w20 border'>Celková částka</td>
+				{{/oneRow}}
+				<td class='w20 border'>Splatnost dne</td>
+				{{#oneRow}}
+					<td class='w20 noborder'></td>
+					<td class='w10 noborder'></td>
+					<td class='w20 noborder'></td>
+				{{/oneRow}}
+				{{^oneRow}}
+					<td class='w10 noborder'></td>
+					<td class='w20 noborder'></td>
+				{{/oneRow}}
+			</tr>
+			<tr>
+				<td class='border'>{{myBankAccount.shortBankAccount}}</td>
+				<td class='border'>{{myBankAccount.bankCode}}</td>
+				{{^oneRow}}
+					<td class='border right'>{{totalPrice}}</td>
+				{{/oneRow}}
+				<td class='border'>{{dateDue}}</td>
+				{{#oneRow}}
+					<td class='w20 noborder'></td>
+					<td class='w10 noborder'></td>
+					<td class='w20 noborder'></td>
+				{{/oneRow}}
+				{{^oneRow}}
+					<td class='w10 noborder'></td>
+					<td class='w20 noborder'></td>
+				{{/oneRow}}
+			</tr>
+
+			<tr>
+				<td class='noborder'>&nbsp;</td>
+				<td class='noborder'>&nbsp;</td>
+				<td class='noborder'>&nbsp;</td>
+				<td class='noborder'>&nbsp;</td>
+				<td class='noborder'>&nbsp;</td>
+				<td class='noborder'>&nbsp;</td>
+			</tr>
+
+			<tr>
+				{{#directDebit}}
+					<td class='w20 border' rowspan='2'>Číslo účtu plátce</td>
+				{{/directDebit}}
+				{{^directDebit}}
+					<td class='w20 border' rowspan='2'>Číslo účtu příjemce</td>
+				{{/directDebit}}
+				<td class='w10 border' rowspan='2'>Kód banky</td>
+				<td class='w20 border' rowspan='2'>Částka</td>
+				<td class='w50 border' colspan='4'>Symbol platby</td>
+			</tr>
+			<tr>
+				<td class='w20 border'>Variabilní</td>
+				<td class='w10 border'>Konstatní</td>
+				<td class='w20 border'>Specifický</td>
+			</tr>
+
+			{{#rows}}
+				<tr>
+					<td class='border'>{{shortBankAccount}}</td>
+					<td class='border'>{{bankCode}}</td>
+					<td class='border right'>{{priceAll}}</td>
+					<td class='border'>{{symbol1}}</td>
+					<td class='border'>{{symbol3}}</td>
+					<td class='border'>{{symbol2}}</td>
+				</tr>
+			{{/rows}}
+
+			{{#oneRow}}
+				<tr>
+					<td class='noborder'>&nbsp;</td>
+					<td class='noborder'>&nbsp;</td>
+					<td class='noborder'>&nbsp;</td>
+					<td class='noborder'>&nbsp;</td>
+					<td class='noborder'>&nbsp;</td>
+					<td class='noborder'>&nbsp;</td>
+				</tr>
+				<tr>
+					<td class='border' colspan='3'>Doplňující údaj banky</td>
+					<td class='border' colspan='3'>Údaj pro vnitřní potřebu příkazce</td>
+				</tr>
+				<tr>
+					<td class='border' colspan='3'><br /><br /></td>
+					<td class='border' colspan='3'><br /><br /></td>
+				</tr>
+			{{/oneRow}}
+		</table>
+
+		<span id='footer'><br /><br /><br /><br /><br /><br />Dne: {{data.head.dateIssue}}</span>
+		<span id='footer' class='with-line'>Podpis příkazce</span>
+		<span id='footer' class='with-line'>Razítko příkazce</span>
+	{{/data.pages}}
+
+</body>
+</html>
+

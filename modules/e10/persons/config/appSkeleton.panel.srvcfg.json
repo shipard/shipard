@@ -1,0 +1,7 @@
+{
+	"panels": {
+		"srvcfg": {"smallItems": [
+			{"t1": "Klíče", "object": "viewer", "table": "e10.persons.keys", "viewer": "default", "icon": "icon-key", "order": 700000}
+		]}
+	}
+}

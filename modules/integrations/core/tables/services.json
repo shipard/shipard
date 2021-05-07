@@ -1,0 +1,24 @@
+{
+	"id": "integrations.core.services", "sql": "integrations_core_services", "name": "Služby", "icon": "icon-plug",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "fullName", "name": "Název", "type": "string", "len": 100},
+		{"id": "serviceType", "name": "Typ služby", "type":  "enumString", "len": 30,
+			"enumCfg": {"cfgItem": "integration.services.types", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "authKey", "name": "Přihlašovací klíč", "type": "memo"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": {
+		"default": {"id": "default", "class": "integrations.core.ViewServices"}
+	},
+	"forms": [
+		{"id": "default", "class": "integrations.core.FormService"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"ndx": 0
+}

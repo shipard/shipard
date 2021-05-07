@@ -1,0 +1,6 @@
+[
+	{
+		"class": "lanadmin.core.libs.LanAdminWidget",
+		"dashboard": "lanAdmin", "panel": "lans", "order": 1000, "row": "main", "width": 12, "type": "lans"
+	}
+]
