@@ -256,7 +256,7 @@ class TableTemplates extends DbTable
 		$this->createFiles ($recData);
 
 		if ($setOwner)
-			exec ('chown -R '.utils::wwwUser()." {$templateDir}/*");
+			exec ('chgrp -R '.utils::wwwGroup()." {$templateDir}/*");
 	}
 } // class TableTemplates
 

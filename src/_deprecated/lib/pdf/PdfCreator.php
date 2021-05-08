@@ -117,7 +117,7 @@ class PdfCreator extends Utility
 			}
 			else
 			{
-				$browserStatus = utils::loadCfgFile('/run/shpd-headless-browser.json');
+				$browserStatus = utils::loadCfgFile('/var/lib/shipard/shpd/shpd-headless-browser.json');
 				if ($browserStatus && isset($browserStatus['webSocketDebuggerUrl']))
 					$opts['wsEndpointUrl'] = $browserStatus['webSocketDebuggerUrl'];
 				$opts['browserExecutablePath'] = '/usr/bin/google-chrome';

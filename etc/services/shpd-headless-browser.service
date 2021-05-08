@@ -1,9 +1,11 @@
 [Unit]
-Description=headless browser v0.4
+Description=headless browser v0.5
 After=network.target auditd.service
 
 [Service]
-PIDFile=/run/shpd-headless-browser.pid
+User=shpd
+Group=shpd
+PIDFile=/var/lib/shipard/shpd/shpd-headless-browser.pid
 ExecStart=/usr/lib/shipard/etc/services/shpd-headless-browser.sh
 Type=forking
 Restart=on-failure

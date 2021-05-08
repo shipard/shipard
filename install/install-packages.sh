@@ -66,6 +66,17 @@ apt install --assume-yes --quiet libgbm1 libgtk-3-0 xdg-utils
 wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 dpkg -i google-chrome-stable_current_amd64.deb
 rm google-chrome-stable_current_amd64.deb
+
+
 npm -g i puppeteer-core
 
 #apt install postfix
+
+
+#
+# create shpd user
+#
+adduser --disabled-password --gecos "" --home /var/lib/shipard/shpd shpd
+adduser www-data shpd
+systemctl restart nginx
+systemctl restart php8.0-fpm

@@ -47,8 +47,8 @@ class DataPackageInstaller extends \E10\Utility
 	{
 		if ($this->cntAttachments)
 		{
-			passthru ('chown -R '.utils::wwwUser().':'.utils::wwwGroup().' att');
-			passthru ('chown -R '.utils::wwwUser().' imgcache');
+			passthru ('chgrp -R '.utils::wwwGroup().' att');
+			passthru ('chgrp -R '.utils::wwwGroup().' imgcache');
 		}
 	}
 

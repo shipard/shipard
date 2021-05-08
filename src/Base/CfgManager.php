@@ -48,7 +48,6 @@ class CfgManager
 	var $sqlCommands = array ();
 	var $dataModel;
 	var $loadedConfigFiles = array ();
-	var $httpdUser;
 	var $msgLevel = 1;
 	var $translateHints;
 
@@ -61,7 +60,6 @@ class CfgManager
 	public function __construct ()
 	{
 		$this->dataModel = new \Shipard\Application\DataModel();
-		$this->httpdUser = utils::wwwUser();
 	}
 
 	public function appCompileConfig ()
@@ -1368,11 +1366,11 @@ class CfgManager
 	{
 		$cfgDir = __APP_DIR__ . '/config/';
 
-		chown ($cfgDir . 'curr', $this->httpdUser);
+		chgrp ($cfgDir . 'curr', utils::wwwGroup());
 		forEach (glob ($cfgDir . 'curr/*') as $fn)
-			chown ($fn, $this->httpdUser);
+			chgrp ($fn, utils::wwwGroup());
 		forEach (glob ($cfgDir . 'appOptions.*') as $fn)
-			chown ($fn, $this->httpdUser);
+			chgrp ($fn, utils::wwwGroup());
 	}
 
 	function sqlCreateTableIndex ($table, $index)

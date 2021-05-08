@@ -40,9 +40,6 @@ class E10_App extends Application
 
 	public function appDemo ()
 	{
-		if (!$this->superuser())
-			return $this->err ('Need to be root');
-
 		$cfgString = file_get_contents ('config/createApp.json');
 		$initConfig = json_decode ($cfgString, TRUE);
 
@@ -97,9 +94,6 @@ class E10_App extends Application
 
 	public function appTask ()
 	{
-		if (!$this->superuser())
-			return $this->err ('Need to be root');
-
 		$taskNdx = intval($this->arg ('taskNdx'));
 		if (!$taskNdx)
 			return $this->err("Missing '--taskNdx' param");
@@ -222,9 +216,6 @@ class E10_App extends Application
 
 	public function generateBooks ()
 	{
-		if (!$this->superuser())
-			return $this->err ('Need to be root');
-
 		$sectionId = $this->arg ('section-id');
 		$pageId = $this->arg ('page-id');
 
@@ -574,9 +565,6 @@ class E10_App extends Application
 
 	public function rebuildTemplates ()
 	{
-		if (!$this->superuser())
-			return $this->err ('Need to be root');
-
 		$tableTemplates = $this->table ('e10.base.templates');
 		$rows = $this->db()->query ("SELECT * from [e10_base_templates] WHERE docState != 9800");
 		forEach ($rows as $row)
@@ -1118,9 +1106,6 @@ class E10_App extends Application
 
 	public function getHelpDeskInfo ()
 	{
-		if (!$this->superuser())
-			return $this->err ('Need to be root');
-
 		$hostingCfg = utils::hostingCfg(['serverGid', 'helpDeskServerUrl', 'helpDeskApiKey', ]);
 		if ($hostingCfg === FALSE)
 			return FALSE;
@@ -1211,7 +1196,7 @@ class E10_App extends Application
 			$hdInfo['checkSum'] = $requestCheckSum;
 			//echo json_encode($hdInfo, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)."\n\n";
 			file_put_contents('config/helpDeskInfo.json', json_encode($hdInfo, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
-			chown ('config/helpDeskInfo.json', utils::wwwUser());
+			chgrp ('config/helpDeskInfo.json', utils::wwwGroup());
 		}
 		else
 			return $this->err ('invalid dsid in response');

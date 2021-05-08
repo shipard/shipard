@@ -23,18 +23,21 @@ class ServerManager extends Utility
 		{
 			mkdir(__SHPD_VAR_DIR__, 0770, TRUE);
 			chown(__SHPD_VAR_DIR__, utils::wwwUser());
+			chgrp(__SHPD_VAR_DIR__, utils::wwwGroup());
 		}
 
 		if (!is_dir(__SHPD_VAR_DIR__.'/dscmd'))
 		{
 			mkdir(__SHPD_VAR_DIR__.'/dscmd', 0770, TRUE);
 			chown(__SHPD_VAR_DIR__.'/dscmd', utils::wwwUser());
+			chgrp(__SHPD_VAR_DIR__.'/dscmd', utils::wwwGroup());
 		}
 		
 		if (!is_dir(__SHPD_VAR_DIR__.'/tmp'))
 		{
 			mkdir(__SHPD_VAR_DIR__.'/tmp', 0770, TRUE);
 			chown(__SHPD_VAR_DIR__.'/tmp', utils::wwwUser());
+			chgrp(__SHPD_VAR_DIR__.'/tmp', utils::wwwGroup());
 		}
 
 		if (!is_dir(__SHPD_VAR_DIR__.'/upload'))
@@ -52,6 +55,7 @@ class ServerManager extends Utility
 		{
 			mkdir($dsRoot, 0770, TRUE);
 			chown($dsRoot, utils::wwwUser());
+			chgrp($dsRoot, utils::wwwGroup());
 		}
 
 		if (!is_readable($dsRoot . '/index.html'))

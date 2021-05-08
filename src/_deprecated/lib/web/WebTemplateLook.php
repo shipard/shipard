@@ -145,7 +145,7 @@ class WebTemplateLook extends Utility
 		if (utils::superuser())
 		{
 			// -- repair permissions
-			exec('chown -R '.utils::wwwUser().':'.utils::wwwGroup().' '.$this->destPath);
+			exec('chgrp -R '.utils::wwwGroup().' '.$this->destPath);
 			// -- delete sass cache
 			if (is_dir(__APP_DIR__.'/.sass-cache'))
 				exec ('rm -rf '.__APP_DIR__.'/.sass-cache');

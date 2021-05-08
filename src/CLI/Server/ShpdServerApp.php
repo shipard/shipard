@@ -589,7 +589,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 
 	public function appRights ()
 	{
-		passthru ('chown -R '.utils::wwwUser().':'.utils::wwwGroup().' att');
+		passthru ('chgrp -R '.utils::wwwGroup().' att');
 	}
 
 	public function appTest ()
@@ -836,58 +836,19 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		$dirName = "$appDir/$d/";
 		if (is_dir($dirName) == FALSE)
 		{
-			switch ($this->currentUser ())
-			{
-				case $this->manager->httpdUser:
-							mkdir ($dirName, 0770);
-							break;
-				default:
-					mkdir ($dirName, 0770);
-					chown ($dirName, $this->manager->httpdUser);
-					chgrp ($dirName, $this->manager->httpdUser);
-					break;
-			}
+			mkdir ($dirName, 0770);
 		}
-		else
-		if ($this->currentUser () !== $this->manager->httpdUser)
-		{
-			$cun = posix_getpwuid(fileowner($dirName));
-			if ($cun['name'] != $this->manager->httpdUser);
-				@chown ($dirName, $this->manager->httpdUser);
-			$cun = posix_getgrgid(filegroup($dirName));
-			if ($cun['name'] != $this->manager->httpdUser);
-				@chgrp ($dirName, $this->manager->httpdUser);
-		}
+
+		chgrp ($dirName, Utils::wwwGroup());
 	}
 
 	public function checkFile ($fullFileName)
 	{
 		if (!is_file ($fullFileName))
-		{
-			switch ($this->currentUser ())
-			{
-				case $this->manager->httpdUser:
-							file_put_contents ($fullFileName, "");
-							chmod ($fullFileName, 0660);
-							break;
-				default:
-							file_put_contents ($fullFileName, "");
-							chown ($fullFileName, $this->manager->httpdUser);
-							chmod ($fullFileName, 0660);
-							break;
-			}
-			return;
-		}
-		switch ($this->currentUser ())
-		{
-			case $this->manager->httpdUser:
-						chmod ($fullFileName, 0660);
-						break;
-			default:
-						chown ($fullFileName, $this->manager->httpdUser);
-						chmod ($fullFileName, 0660);
-						break;
-		}
+			file_put_contents ($fullFileName, "");
+
+		chmod ($fullFileName, 0660);
+		chgrp ($fullFileName, Utils::wwwGroup());
 	}
 
 	public function checkFilesystem ($appDir)
@@ -1489,18 +1450,10 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		if (count ($this->arguments) == 0)
 			return $this->help ();
 
-		if (!$this->superuser() && in_array($this->command (),
-				[
-					'app-upgrade', 'app-new', 'app-fullupgrade', 'app-init', 'app-reset', 'app-create', 'app-rights',
-					'server-check', 'app-dscmd', 'app-dscmd-all', 'app-getdsinfo', 'host-upgrade', 'app-httpd-ds',
-					'host-get-hosting-info'
-				]))
+		if (!$this->superuser() && in_array($this->command (), ['server-check', 'host-upgrade', ]))
 			return $this->manager->err ('Need to be root');
 
 		$this->quiet = $this->arg ("quiet");
-
-		//if ($this->superuser() && !$this->serverCheck())
-		//	return FALSE;
 
 		switch ($this->command ())
 		{

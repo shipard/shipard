@@ -1512,16 +1512,12 @@ class Utils
 
 	static function wwwGroup ()
 	{
-		if (PHP_OS === 'Darwin')
-			return '_www';
-		return 'www-data';
+		return 'shpd';
 	}
 
 	static function wwwUser ()
 	{
-		if (PHP_OS === 'Darwin')
-			return '_www';
-		return 'www-data';
+		return 'shpd';
 	}
 
 	static function superuser ()

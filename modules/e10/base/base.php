@@ -803,7 +803,6 @@ function addAttachments ($app, $toTableId, $toRecId, $fullFileName, $attType, $m
 				foreach ($steps as $step)
 				{
 					$p .= '/'.$step;
-					chown($p, utils::wwwUser());
 					chgrp($p, utils::wwwGroup());
 				}
 			}

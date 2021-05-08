@@ -114,7 +114,7 @@ class CronApp extends Application
 			if (!is_dir($destPath))
 			{
 				mkdir ($destPath, 0775, true);
-				chown ($destPath, utils::wwwUser());
+				chmod ($destPath, utils::wwwGroup());
 			}
 
 			$path_parts = pathinfo ($r['path']);
