@@ -73,7 +73,9 @@ class PdfCreator extends Utility
 			{
 				$cmd = '';
 
-				$cmd .= 'export NODE_PATH=/usr/local/lib/node_modules && ';
+				$nodePath = \is_dir('/usr/lib/node_modules/') ? '/usr/lib/node_modules/' : '/usr/local/lib/node_modules/';
+
+				$cmd .= 'export NODE_PATH='.$nodePath.' && ';
 
 				$cmd .= 'node ';
 				$cmd .= __SHPD_ROOT_DIR__.'src/_deprecated/lib/pdf/pdfRenderer.js ';
