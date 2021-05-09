@@ -19,49 +19,32 @@ class ServerManager extends Utility
 
 	public function checkFilesystem()
 	{
-		if (!is_dir(__SHPD_VAR_DIR__))
-		{
-			mkdir(__SHPD_VAR_DIR__, 0770, TRUE);
-			chown(__SHPD_VAR_DIR__, utils::wwwUser());
-			chgrp(__SHPD_VAR_DIR__, utils::wwwGroup());
-		}
-
-		if (!is_dir(__SHPD_VAR_DIR__.'/dscmd'))
-		{
-			mkdir(__SHPD_VAR_DIR__.'/dscmd', 0770, TRUE);
-			chown(__SHPD_VAR_DIR__.'/dscmd', utils::wwwUser());
-			chgrp(__SHPD_VAR_DIR__.'/dscmd', utils::wwwGroup());
-		}
-		
-		if (!is_dir(__SHPD_VAR_DIR__.'/tmp'))
-		{
-			mkdir(__SHPD_VAR_DIR__.'/tmp', 0770, TRUE);
-			chown(__SHPD_VAR_DIR__.'/tmp', utils::wwwUser());
-			chgrp(__SHPD_VAR_DIR__.'/tmp', utils::wwwGroup());
-		}
-
-		if (!is_dir(__SHPD_VAR_DIR__.'/upload'))
-			mkdir(__SHPD_VAR_DIR__.'/upload', 0770, TRUE);
-
-		if (!is_dir(__SHPD_VAR_DIR__.'/upload'))
-			mkdir(__SHPD_VAR_DIR__.'/upload', 0770, TRUE);
-
+		$this->mkDir(__SHPD_VAR_DIR__);
+		$this->mkDir(__SHPD_VAR_DIR__.'/dscmd');
+		$this->mkDir(__SHPD_VAR_DIR__.'/tmp');
+		$this->mkDir(__SHPD_VAR_DIR__.'/upload');
 
 		if (!isset($this->app()->cfgServer['dsRoot']))
 			return $this->app()->err('Value `dsRoot` not found in server configuration...');
-
 		$dsRoot = $this->app()->cfgServer['dsRoot'];	
-		if (!is_dir($dsRoot))	
-		{
-			mkdir($dsRoot, 0770, TRUE);
-			chown($dsRoot, utils::wwwUser());
-			chgrp($dsRoot, utils::wwwGroup());
-		}
+		$this->mkDir($dsRoot);
 
 		if (!is_readable($dsRoot . '/index.html'))
 			file_put_contents($dsRoot . '/index.html', '');
 
+		$this->app->machineDeviceId();
+
 		return TRUE;
+	}
+
+	public function mkDir($dir)
+	{
+		if (!is_dir($dir))
+			mkdir($dir, 0770, TRUE);
+
+		chmod($dir, 0770);
+		chown($dir, utils::wwwUser());
+		chgrp($dir, utils::wwwGroup());
 	}
 
 	public function checkServer ()
