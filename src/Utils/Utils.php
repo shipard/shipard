@@ -1473,14 +1473,14 @@ class Utils
 
 	static function machineDeviceId ()
 	{
-		if (!is_file('/etc/e10-device-id.cfg'))
+		if (!is_file('/etc/shipard/device-id.json'))
 		{
 			$deviceId = md5(json_encode(posix_uname()).mt_rand (1000000, 999999999).'-'.time().'-'.mt_rand (1000000, 999999999));
-			file_put_contents('/etc/e10-device-id.cfg', $deviceId);
+			file_put_contents('/etc/shipard/device-id.json', $deviceId);
 		}
 		else
 		{
-			$deviceId = file_get_contents('/etc/e10-device-id.cfg');
+			$deviceId = file_get_contents('/etc/shipard/device-id.json');
 		}
 
 		return $deviceId;
