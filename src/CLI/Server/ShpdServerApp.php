@@ -1459,7 +1459,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		{
 			case	"app-create":       return $this->appCreate ();
 			case	"app-new":       		return $this->appNew();
-			case	"app-dscmd¨":       	return $this->appDSCmd ();
+			case	"app-dscmd":       	return $this->appDSCmd ();
 			case	"app-dscmd-all":    return $this->appDSCmdAll ();
 			case	"app-walk":					return $this->appWalk ();
 
