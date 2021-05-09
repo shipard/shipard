@@ -58,7 +58,7 @@ apt install --assume-yes --quiet redis-server php-redis
 #
 # python
 #
-apt install python3-pip
+apt install --assume-yes --quiet python3-pip
 pip3 install PyPDF4
 
 #
