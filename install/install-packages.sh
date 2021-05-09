@@ -55,6 +55,11 @@ apt install --assume-yes --quiet ttf-mscorefonts-installer
 #
 apt install --assume-yes --quiet redis-server php-redis
 
+#
+# python
+#
+apt install python3-pip
+pip3 install PyPDF4
 
 #
 # chrome
