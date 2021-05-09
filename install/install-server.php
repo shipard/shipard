@@ -25,9 +25,15 @@ class Installation
 
 	public function wwwGroup ()
 	{
-		if (PHP_OS === 'Darwin')
-			return '_www';
-		return 'www-data';
+		return 'shpd';
+	}
+
+	protected function generatePassword ($len = 9)
+	{
+		$r = '';
+		for($i = 0; $i < $len; $i++)
+			$r .= chr (rand (0, 25) + ord('a'));
+		return $r;
 	}
 
 	protected function loadCfgFile ($fileName)
@@ -50,6 +56,7 @@ class Installation
 		if (!is_dir(__SHPD_ETC_DIR__))
 		{
 			mkdir(__SHPD_ETC_DIR__, 0750, TRUE);
+			chown (__SHPD_ETC_DIR__, $this->wwwGroup());
 			chgrp (__SHPD_ETC_DIR__, $this->wwwGroup());
 		}
 	}
@@ -64,7 +71,7 @@ class Installation
 
 		$defaultChannelId = 'devel';
 		$dsRoot = '/var/lib/shipard/data-sources/';
-
+		$dbPassword = $this->generatePassword();
 
 		$serverConfig = [
 			'serverDomain' => 'localhost.shpd.dev',
@@ -75,7 +82,7 @@ class Installation
 			'defaultChannel' => $defaultChannelId,
 			'dsRoot' => $dsRoot,
 			'dbUser' => 'root',
-			'dbPassword' => '',
+			'dbPassword' => $dbPassword,
 
 			'develMode' => 0,
 
