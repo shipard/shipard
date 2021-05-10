@@ -31,12 +31,10 @@ class WidgetReports extends \E10\Widget
 			$reportDef = Utils::searchArray($reports, 'class', $reportClass);
 			if ($reportDef)
 			{
-				$icon = 'fa fa-file-o';
-				if (isset($reportDef['icon']))
-					$icon = $this->app()->ui()->icons()->cssClass($reportDef['icon']);
+				$icon = $this->app()->ui()->icon($reportDef['icon'] ?? 'system/iconOther');
 
 				$autoSelect = TRUE;
-				$c .= "<li class='e10-wr-repsel auto' data-class='{$reportClass}'><i class='" . $icon . "'></i> " . Utils::es($reportDef ['name']) . "</li>";
+				$c .= "<li class='e10-wr-repsel auto' data-class='{$reportClass}'>$icon " . Utils::es($reportDef ['name']) . "</li>";
 			}
 		}
 		else
@@ -66,10 +64,8 @@ class WidgetReports extends \E10\Widget
 					}
 					if (!$this->app->checkAccess(['object' => 'report', 'class' => $r ['class']]))
 						continue;
-					$icon = 'fa fa-file-o';
-					if (isset($r['icon']))
-						$icon = $this->app()->ui()->icons()->cssClass($r['icon']);
-					$c .= "<li class='e10-wr-repsel{$auto}' data-class='{$r ['class']}'><i class='" . $icon . "'></i> " . \E10\es($r ['name']) . "</li>";
+					$icon = $this->app()->ui()->icon($r['icon'] ?? 'system/iconOther');
+					$c .= "<li class='e10-wr-repsel{$auto}' data-class='{$r ['class']}'>$icon " . \E10\es($r ['name']) . "</li>";
 					$this->objectData['widgetData'][] = [
 						'icon' => isset($r['icon']) ? $r['icon'] : 'icon-file-o',
 						'name' => $r['name'],

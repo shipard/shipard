@@ -1244,10 +1244,8 @@ class TableView extends \Shipard\Base\BaseObject
 
 		if ((isset ($listItem ['icon'])) && ($listItem ['icon'] != ''))
 		{
-			$icon = $this->app()->ui()->icons()->cssClass ($listItem ['icon']);
-			if (isset($listItem['!error']))
-				$icon .= ' e10-error';
-			$codeLine .= "<td class='df2-list-item-icon'><span class='$icon'></span></td>";
+			$icon = $this->app()->ui()->icon($listItem ['icon'], $listItem['!error'] ?? '', 'span');
+			$codeLine .= "<td class='df2-list-item-icon'>{$icon}</span></td>";
 		}
 		else
 		if ((isset ($listItem ['image'])) && ($listItem ['image'] !== ''))
@@ -1329,8 +1327,8 @@ class TableView extends \Shipard\Base\BaseObject
 
 		if ((isset ($listItem ['icon'])) && ($listItem ['icon'] != ''))
 		{
-			$icon = $this->app()->ui()->icons()->cssClass ($listItem ['icon']);
-			$codeLine .= "<span class='icon'><span class='$icon'></span></span>";
+			$icon = $this->app()->ui()->icon($listItem ['icon'], '', 'span');
+			$codeLine .= "<span class='icon'>{$icon}</span></span>";
 		}
 		else
 		if ((isset ($listItem ['image'])) && ($listItem ['image'] !== ''))
@@ -1431,8 +1429,7 @@ class TableView extends \Shipard\Base\BaseObject
 				foreach ($details as $id => $detail)
 				{
 					$c .= "<li data-detail='$id'$firstClass><a href='#'>";
-					$icon = $this->app()->ui()->icons()->cssClass ($detail['icon']);
-					$c .= "<i class='$icon'></i> ";
+					$c .= $this->app()->ui()->icon($detail['icon']);
 					$c .= \E10\es ($detail['title']);
 					$c .= '</a></li>';
 					$firstClass = '';
@@ -1446,8 +1443,7 @@ class TableView extends \Shipard\Base\BaseObject
 				foreach ($details as $id => $detail)
 				{
 					$c .= "<li data-detail='$id'$firstClass>";
-					$icon = $this->app()->ui()->icons()->cssClass ($detail['icon']);
-					$c .= "<div class='$icon'></div>";
+					$c .= $this->app()->ui()->icon ($detail['icon']);
 					$c .= \E10\es ($detail['title']);
 					$c .= '</li>';
 					$firstClass = "";
