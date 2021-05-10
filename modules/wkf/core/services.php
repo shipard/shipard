@@ -182,10 +182,6 @@ class ModuleServices extends \E10\CLI\ModuleServices
 
 	public function dataSourceStatsCreate()
 	{
-		$hostingCfg = utils::hostingCfg(['hostingGid', 'serverGid']);
-		if ($hostingCfg === FALSE)
-			return FALSE;
-
 		$minDate = new \DateTime();
 		$minDate = $minDate->sub(date_interval_create_from_date_string('12 months'));
 		$minDate = $minDate->sub(date_interval_create_from_date_string('1 day'));

@@ -243,7 +243,7 @@ class CfgManager
 			return $this->err ("Server config `".__SHPD_ETC_DIR__.'/server.json'."` not found or is invalid");
 
 		if (!isset($cfgServer['hostingDomain']))
-			return $this->err ("Missing 'hostingDomain' field in /etc/shipard/hosting.json");
+			return $this->err ("Missing 'hostingDomain' field in /etc/shipard/server.json");
 
 		$hosting = [];
 		$hosting['hostingDomain'] = $cfgServer['hostingDomain'];

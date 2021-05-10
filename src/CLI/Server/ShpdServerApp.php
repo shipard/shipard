@@ -258,7 +258,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		if (!$cronType)
 			return $this->err ("missing argument type");
 
-		passthru("e10-cron ".$cronType);
+		passthru(__SHPD_ROOT_DIR__."/tools/shpd-cron.php ".$cronType);
 	}
 
 	public function appDSCmd ()
@@ -639,7 +639,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 
 		$serverInfo['httpServer'] = 1; // nginx
 		$cfg = ['serverInfo' => $serverInfo];
-		file_put_contents(__APP_DIR__ . '/config/_e10_serverInfo.json', json_encode($cfg, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
+		file_put_contents(__APP_DIR__ . '/config/_serverInfo.json', json_encode($cfg, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
 	}
 
 	public function appUpgrade_ChannelInfo ($appDir = '')
@@ -709,6 +709,9 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 
 	public function appWalk ()
 	{
+		$dsroot = $this->cfgServer['dsRoot'];
+		chdir($dsroot);
+
 		$paramsArray = $_SERVER ['argv'];
 		$appCmd = $paramsArray [0];
 		array_shift($paramsArray);
@@ -1087,7 +1090,6 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 							"   host-backup: backup this host\r\n" .
 							"   host-check:  check this host\r\n" .
 							"   host-cleanup:cleanup this host\r\n" .
-							"   host-hourly: run hourly operations\r\n" .
 							"   host-upgrade:upgrade e10 packages\r\n" .
 							"   help:        general help\r\n" .
 							"\r\nSee 'shpd-server help <command>' for more information on a specific command.\r\n" .
@@ -1228,37 +1230,6 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		{
 			echo "$fileName --> {$path}\n";
 			symlink($path, $fileName);
-		}
-	}
-
-	public function hostHourly ()
-	{
-		$this->hostHourlyStats();
-	}
-
-	public function hostHourlyStats ()
-	{
-		$hostingCfg = $this->hostingCfg(FALSE);
-		if ($hostingCfg === FALSE)
-			return;
-		foreach ($hostingCfg as $hcId => $hc)
-		{
-			if (!isset ($hc['serverGid']))
-				continue;
-
-			$now = utils::now('Y-m-d H:i:s');
-			$data = [];
-
-			$dfs = intval(disk_free_space('/'));
-			$dts = intval(disk_total_space('/'));
-			$data [] = ['q' => 'server-disk-space-free', 'time' => $now,
-				'value1' => $dfs, 'value2' => $dts,
-				'zone1' => $hc['serverGid']];
-
-			$data = json_encode($data);
-			$now = new \DateTime();
-			$fileName = $now->format('Ymd-His') . '-' . 'host-hourly' . '-' . mt_rand(100000, 999999) . '_default_' . md5($data) . '.json';
-			file_put_contents("/var/lib/e10/upload/monc-hosting-$hcId/" . $fileName, $data);
 		}
 	}
 
@@ -1471,7 +1442,6 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 			case	"host-backup":			return $this->hostBackup ();
 			case	"server-check":				return $this->serverCheck ();
 			case	"host-cleanup":			return $this->hostCleanup ();
-			case	"host-hourly":			return $this->hostHourly();
 			case	"host-upgrade":			return $this->hostUpgrade();
 			case  "server-get-hosting-info":	return $this->getHostingInfo();
 			case	'netdata-alarm':		return $this->netDataAlarm();
