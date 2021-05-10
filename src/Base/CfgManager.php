@@ -273,7 +273,11 @@ class CfgManager
 		$newDir = __APP_DIR__ . "/config/new";
 		$currDir = __APP_DIR__ . "/config/curr";
 		if (!is_dir($newDir))
+		{
 			mkdir ($newDir, 0775, true);
+			chmod($newDir, 0770);
+			chgrp($newDir, utils::wwwGroup());
+		}
 		else
 			array_map( "unlink", glob ($newDir . '/*'));
 
@@ -1368,9 +1372,9 @@ class CfgManager
 
 		chgrp ($cfgDir . 'curr', utils::wwwGroup());
 		forEach (glob ($cfgDir . 'curr/*') as $fn)
-			chgrp ($fn, utils::wwwGroup());
+			Utils::checkFilePermissions ($fn);
 		forEach (glob ($cfgDir . 'appOptions.*') as $fn)
-			chgrp ($fn, utils::wwwGroup());
+			Utils::checkFilePermissions ($fn);
 	}
 
 	function sqlCreateTableIndex ($table, $index)

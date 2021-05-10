@@ -152,6 +152,7 @@ class SystemConfigWizard extends \E10\Wizard
 			$cfg[$cfgKeyParts[1]] = $cfgValue;
 
 			file_put_contents($fileName, utils::json_lint (json_encode ($cfg)));
+			chmod($fileName, 0660);
 		}
 
 		$this->updateConfiguration ();

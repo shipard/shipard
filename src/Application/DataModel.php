@@ -1,6 +1,7 @@
 <?php
 
 namespace Shipard\Application;
+use \Shipard\Utils\Utils;
 
 
 class DataModel
@@ -163,7 +164,7 @@ class DataModel
 
 			if (isset($tableDef['views']))
 			{
-				$vd = utils::searchArray($tableDef['views'], 'class', $viewId);
+				$vd = Utils::searchArray($tableDef['views'], 'class', $viewId);
 				if ($vd !== NULL)
 					return $vd;
 			}

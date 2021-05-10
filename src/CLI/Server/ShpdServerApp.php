@@ -241,7 +241,8 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 			passthru($cmd);
 		}
 
-		echo "DONE. New dsid is $dsid\n";
+		$url = 'https://'.$this->cfgServer['serverDomain'].'/'.$dsid.'/';
+		echo "DONE. New dsid: $dsid, login: ".$this->cfgServer['userEmail'].', URL: '.$url."\n";
 
 		return TRUE;
 	}
@@ -544,17 +545,19 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 	{
 		$this->dbCreate (TRUE);
 
-		$channelInfo = utils::loadCfgFile(__APP_DIR__.'/config/_e10_channelInfo.json');
+		$channelInfo = utils::loadCfgFile(__APP_DIR__.'/config/_server_channelInfo.json');
 
 		exec ('rm -rf '.__APP_DIR__.'/att/');
 		array_map ("unlink", glob (__APP_DIR__.'/config/_*'));
 
 		if (is_file('.demo'))
 			unlink('.demo');
+		if (is_file('config/modules-demo.json'))
+			unlink('config/modules-demo.json');
 
 		if ($channelInfo)
 		{
-			file_put_contents(__APP_DIR__.'/config/_e10_channelInfo.json', json_encode($channelInfo));
+			file_put_contents(__APP_DIR__.'/config/_server_channelInfo.json', json_encode($channelInfo));
 		}
 
 		$this->checkFilesystem (__APP_DIR__);
@@ -566,10 +569,10 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 
 		$this->checkFilesystem (__APP_DIR__);
 
-		passthru('e10-modules/e10/server/php/e10-app.php moduleService --service=checkSystemData');
-		passthru('e10-modules/e10/server/php/e10-app.php cfgUpdate');
-		passthru('e10-modules/e10/server/php/e10-cmd-cli.php app-upgrade');
-		passthru('e10-modules/e10/server/php/e10-cmd-cli.php app-fullupgrade');
+		passthru($this->shpdAppCmd.' moduleService --service=checkSystemData');
+		passthru($this->shpdAppCmd.' cfgUpdate');
+		passthru($this->shpdServerCmd.' app-upgrade');
+		passthru($this->shpdServerCmd.' app-fullupgrade');
 
 		if ($this->arg ('demo'))
 		{
@@ -846,9 +849,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 	{
 		if (!is_file ($fullFileName))
 			file_put_contents ($fullFileName, "");
-
-		chmod ($fullFileName, 0660);
-		chgrp ($fullFileName, Utils::wwwGroup());
+		Utils::checkFilePermissions ($fullFileName);
 	}
 
 	public function checkFilesystem ($appDir)
