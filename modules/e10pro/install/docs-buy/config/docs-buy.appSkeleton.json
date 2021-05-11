@@ -34,7 +34,7 @@
 		},
 		"reports": {
 			"items": {
-				"buy": {"t1": "Nákup", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-buy", "icon": "icon-shopping-cart", "order": 200000}
+				"buy": {"t1": "Nákup", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-buy", "icon": "e10doc-buy/buy", "order": 200000}
 			}
 		}
 	},

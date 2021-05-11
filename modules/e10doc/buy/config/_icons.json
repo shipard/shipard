@@ -1,0 +1,26 @@
+{
+    "e10doc-buy/buy":{
+        "fa5":"fa-cart-arrow-down",
+        "fa5pro":"fa-cart-arrow-down",
+        "bsi":"bi-cart-plus-fill",
+        "mdi":"add_shopping_cart"
+    },
+    "e10doc-buy/brands":{
+        "fa5":"fa-copyright",
+        "fa5pro":"fa-copyright",
+        "bsi":"bi-badge-tm",
+        "mdi":"copyright"
+    },
+    "e10doc-buy/suppliers":{
+        "fa5":"fa-users",
+        "fa5pro":"fa-users",
+        "bsi":"bi-people-fill",
+        "mdi":"people"
+    },
+    "e10doc-buy/inventoryBuy":{
+        "fa5":"fa-arrow-circle-down",
+        "fa5pro":"fa-arrow-circle-down",
+        "bsi":"bi-arrow-down-circle-fill",
+        "mdi":"arrow_circle_down"
+    }
+}

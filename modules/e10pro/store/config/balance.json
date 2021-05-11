@@ -1,6 +1,6 @@
 {
 	"8100": {
-		"name": "Sběrná fakturace", "shortName": "SběrFakt", "icon": "icon-align-justify", "shortcut": "SbFa",
+		"name": "Sběrná fakturace", "shortName": "SběrFakt", "icon": "balance/SalesInvoice", "shortcut": "SbFa",
 		"type": "q", "id": "8100",  "side": "d", "docTypes": ["cashreg"], "debsAccountMask": "325",
 		"content": [
 			{"docType": "cashreg", "src": "row", "side": 0, "paymentMethod": 4, "personSide": 0, "symbolsSide": 0,

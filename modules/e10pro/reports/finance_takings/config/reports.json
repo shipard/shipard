@@ -1,3 +1,3 @@
 [
-	{"name": "Výnosy", "class": "e10pro.reports.finance_takings.reportTakings", "icon": "icon-thumbs-o-up", "group": "e10doc-finance", "order": 1000}
+	{"name": "Výnosy", "class": "e10pro.reports.finance_takings.reportTakings", "icon": "e10doc-finance/takings", "group": "e10doc-finance", "order": 1000}
 ]

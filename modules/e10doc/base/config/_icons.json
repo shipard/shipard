@@ -4,5 +4,29 @@
         "fa5pro":"fa-truck-moving",
         "bsi":"bi-truck",
         "mdi":"local_shipping"
+    },
+    "tables/e10doc.base.exchangeRatesLists":{
+        "fa5":"fa-dollar-sign",
+        "fa5pro":"fa-dollar-sign",
+        "bsi":"bi-cash",
+        "mdi":"attach_money"
+    },
+    "tables/e10doc.base.cashboxes":{
+        "fa5":"fa-money-bill-alt",
+        "fa5pro":"fa-money-bill-alt",
+        "bsi":"bi-cash",
+        "mdi":"payments"
+    },
+    "tables/e10doc.base.bankaccounts":{
+        "fa5":"fa-university",
+        "fa5pro":"fa-university",
+        "bsi":"bi-credit-card-fill",
+        "mdi":"account_balance"
+    },
+    "tables/e10doc.base.centres":{
+        "fa5":"fa-bullseye",
+        "fa5pro":"fa-bullseye",
+        "bsi":"bi-bullseye",
+        "mdi":"track_changes"
     }
 }

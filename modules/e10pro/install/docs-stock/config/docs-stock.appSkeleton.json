@@ -3,11 +3,11 @@
 		"docs-stock":	{
 			"url": "/app/inventory", "objectType": "panel", "zone": "sec", "name": "Zásoby", "order": 500000,
 			"items": {
-				"stockIn": {"t1": "Příjemky", "object": "viewer", "table": "e10doc.core.heads", "viewer": "stockin", "icon": "e10-docs-stock-in", "order": 100000},
-				"stockOut": {"t1": "Výdejky", "object": "viewer", "table": "e10doc.core.heads", "viewer": "stockout", "icon": "e10-docs-stock-out", "order": 200000},
-				"items": {"t1": "Položky", "object": "viewer", "table": "e10.witems.items", "viewer": "inventory", "icon": "e10-witems-items", "order": 500000},
-				"stockInitStates": {"t1": "Počáteční stavy", "object": "viewer", "table": "e10doc.core.heads", "viewer": "stockinst", "icon": "e10-docs-stock-inst", "order": 600000},
-				"checks": {"t1": "Inventury", "object": "viewer", "table": "e10doc.inventory.checkHeads", "viewer": "default", "icon": "x-compute", "order": 650000},
+				"stockIn": {"t1": "Příjemky", "object": "viewer", "table": "e10doc.core.heads", "viewer": "stockin", "icon": "docType/stockIn", "order": 100000},
+				"stockOut": {"t1": "Výdejky", "object": "viewer", "table": "e10doc.core.heads", "viewer": "stockout", "icon": "docType/stockOut", "order": 200000},
+				"items": {"t1": "Položky", "object": "viewer", "table": "e10.witems.items", "viewer": "inventory", "icon": "tables/e10.witems.items", "order": 500000},
+				"stockInitStates": {"t1": "Počáteční stavy", "object": "viewer", "table": "e10doc.core.heads", "viewer": "stockinst", "icon": "docType/stockinst", "order": 600000},
+				"checks": {"t1": "Inventury", "object": "viewer", "table": "e10doc.inventory.checkHeads", "viewer": "default", "icon": "docType/inventory", "order": 650000},
 				"reports": {"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-inventory", "icon": "system/iconReports", "order": 800000}
 			},
 			"buttons": [
@@ -16,7 +16,7 @@
 		},
 		"reports": {
 			"items": {
-				"stocks": {"t1": "Zásoby", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-inventory", "icon": "icon-truck", "order": 300000}
+				"stocks": {"t1": "Zásoby", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-inventory", "icon": "e10doc-inventory/inventory", "order": 300000}
 			}
 		}
 	}

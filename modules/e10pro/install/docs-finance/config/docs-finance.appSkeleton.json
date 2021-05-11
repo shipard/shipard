@@ -3,7 +3,7 @@
 		"accounting": {
 			"url": "/app/accounting", "objectType": "panel", "zone": "sec", "name": "Účtárna", "order": 400000,
 			"items": {
-				"balance": {"t1": "Saldo", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-balance", "icon": "iconBalance", "order": 100000},
+				"balance": {"t1": "Saldo", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-balance", "icon": "system/iconBalance", "order": 100000},
 				"bank": {"t1": "Banka", "object": "viewer", "table": "e10doc.core.heads", "viewer": "bank", "icon": "docType/bank", "order": 200000},
 				"cash": {"t1": "Pokladna", "object": "viewer", "table": "e10doc.core.heads", "viewer": "cash", "icon": "docType/cash", "order": 300000},
 				"accDocs": {"t1": "Účetní doklady", "object": "viewer", "table": "e10doc.core.heads", "viewer": "cmnbkp", "icon": "docType/accDocs", "order": 400000},
@@ -19,7 +19,7 @@
 					"order": 9800000,
 					"subMenu": {
 						"items": {
-							"moneyRates": {"t1": "Kurzy měn", "object": "viewer", "table": "e10doc.base.exchangeRatesLists", "viewer": "default", "icon": "icon-usd", "order": 2200000}
+							"moneyRates": {"t1": "Kurzy měn", "object": "viewer", "table": "e10doc.base.exchangeRatesLists", "viewer": "default", "icon": "tables/e10doc.base.exchangeRatesLists", "order": 2200000}
 						}
 					}
 				},
@@ -28,9 +28,9 @@
 					"order": 9900000,
 					"subMenu": {
 						"items": {
-							"cashBoxes": {"t1": "Pokladny", "object": "viewer", "table": "e10doc.base.cashboxes", "viewer": "default", "icon": "icon-money", "order": 100000},
-							"bankAccounts": {"t1": "Bankovní účty", "object": "viewer", "table": "e10doc.base.bankaccounts", "viewer": "default", "icon": "icon-institution", "order": 200000},
-							"centres": {"t1": "Střediska", "object": "viewer", "table": "e10doc.base.centres", "viewer": "default", "icon": "icon-bullseye", "order": 300000}
+							"cashBoxes": {"t1": "Pokladny", "object": "viewer", "table": "e10doc.base.cashboxes", "viewer": "default", "icon": "tables/e10doc.base.cashboxes", "order": 100000},
+							"bankAccounts": {"t1": "Bankovní účty", "object": "viewer", "table": "e10doc.base.bankaccounts", "viewer": "default", "icon": "tables/e10doc.base.bankaccounts", "order": 200000},
+							"centres": {"t1": "Střediska", "object": "viewer", "table": "e10doc.base.centres", "viewer": "default", "icon": "tables/e10doc.base.centres", "order": 300000}
 						}
 					}
 				}
@@ -38,8 +38,8 @@
 		},
 		"reports": {
 			"items": {
-				"finance": {"t1": "Finance", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-finance", "icon": "icon-money", "order": 500000},
-				"balance": {"t1": "Saldo", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-balance", "icon": "icon-star-o", "order": 400000}
+				"finance": {"t1": "Finance", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-finance", "icon": "e10doc-finance/finance", "order": 500000},
+				"balance": {"t1": "Saldo", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-balance", "icon": "iconBalance", "order": 400000}
 			}
 		}
 	},
