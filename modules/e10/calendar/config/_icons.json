@@ -1,0 +1,8 @@
+{
+    "tables/e10.calendar.days":{
+        "fa5":"fa-calendar-day",
+        "fa5pro":"fa-calendar-day",
+        "bsi":"bi-calendar2-week-fill",
+        "mdi":"date_range"
+    }
+}

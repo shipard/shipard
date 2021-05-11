@@ -1,11 +1,11 @@
 [
-	{"name": "Hlavní kniha", "class": "e10doc.debs.libs.reports.GeneralLedger", "icon": "e10doc-finance/generalLedger", "group": "e10doc-finance", "order": 100000},
+	{"name": "Hlavní kniha", "class": "e10doc.debs.libs.reports.GeneralLedger", "icon": "report/generalLedger", "group": "e10doc-finance", "order": 100000},
 
-	{"name": "Výsledovka", "class": "e10doc.debs.libs.reports.ReportStatement", "icon": "e10doc-finance/reportStatement", "group": "e10doc-finance", "order": 100100},
-	{"name": "Rozvaha", "class": "e10doc.debs.libs.reports.ReportBalanceSheet", "icon": "e10doc-finance/reportBalanceSheet", "group": "e10doc-finance", "order": 100200},
-	{"name": "Cash Flow", "class": "e10doc.debs.libs.reports.ReportCashFlow", "icon": "e10doc-finance/reportCashFlow", "group": "e10doc-finance", "order": 100600},
+	{"name": "Výsledovka", "class": "e10doc.debs.libs.reports.ReportStatement", "icon": "report/Statement", "group": "e10doc-finance", "order": 100100},
+	{"name": "Rozvaha", "class": "e10doc.debs.libs.reports.ReportBalanceSheet", "icon": "report/BalanceSheet", "group": "e10doc-finance", "order": 100200},
+	{"name": "Cash Flow", "class": "e10doc.debs.libs.reports.ReportCashFlow", "icon": "report/CashFlow", "group": "e10doc-finance", "order": 100600},
 
-	{"name": "Účetní rekapitulace", "class": "e10doc.debs.libs.reports.ReportDocsSummary", "icon": "icon-table", "group": "e10docs", "order": 700000},
+	{"name": "Účetní rekapitulace", "class": "e10doc.debs.libs.reports.ReportDocsSummary", "icon": "report/docsSummary", "group": "e10docs", "order": 700000},
 
 	{"name": "Kontrola PS", "class": "e10doc.debs.libs.reports.CheckOpenStates", "icon": "icon-archive", "group": "e10-checks", "order": 900000}
 ]

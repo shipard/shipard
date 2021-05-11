@@ -65,7 +65,7 @@
 		"bsi": "",
 		"mdi": ""
 	},	
-	"actionUser": {
+	"iconUser": {
 		"fa5": "fa-user",
 		"fa5pro": "fa-user",
 		"bsi": "",
@@ -94,5 +94,17 @@
 		"fa5pro": "fa-ellipsis-v",
 		"bsi": "bi-three-dots-vertical",
 		"mdi": "more_vert"
+	},
+	"iconFile":{
+		"fa5": "fa-file",
+		"fa5pro": "fa-file",
+		"bsi": "bi-file-earmark-fill",
+		"mdi": "insert_drive_file"
+	},
+	"iconOwner":{
+		"fa5": "fa-building",
+		"fa5pro": "fa-building",
+		"bsi": "bi-building",
+		"mdi": "business"
 	}
 }

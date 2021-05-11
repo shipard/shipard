@@ -1,6 +1,6 @@
 {
 	"e10PayTerminals": {
-		"name": "Platební terminály", "order": 701000, "group": "codebase", "icon": "icon-calculator",
+		"name": "Platební terminály", "order": 701000, "group": "codebase",
 		"type": "viewer", "table": "terminals.store.payTerminals", "viewer": "default"
 	}
 }

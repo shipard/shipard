@@ -1,21 +1,18 @@
 {
 	"places": {
 		"name": "Místa", "order": 30000, "group": "codebase",
-		"icon": "icon-map-marker",
 		"type": "viewer",
 		"table": "e10.base.places",
 		"viewer": "default"
 	},
 	"propdefs": {
 		"name": "Definice vlastností", "order": 91000, "group": "core",
-		"icon": "x-properties",
 		"type": "viewer",
 		"table": "e10.base.propdefs",
 		"viewer": "default"
 	},
 	"propgroups": {
 		"name": "Skupiny vlastností", "order": 90000, "group": "core",
-		"icon": "x-properties",
 		"type": "viewer",
 		"table": "e10.base.propgroups",
 		"viewer": "default"

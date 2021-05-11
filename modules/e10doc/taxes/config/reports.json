@@ -1,5 +1,5 @@
 [
-	{"name": "Přiznání DPH", "class": "e10doc.taxes.VatReturn.VatReturnReport", "icon": "e10doc-finance/VatReturnReport","group": "e10doc-finance", "order": 91000},
-	{"name": "Kontrolní hlášení", "class": "e10doc.taxes.VatCS.VatCSReportAll", "icon": "e10doc-finance/VatCSReport","group": "e10doc-finance", "order": 91200},
-	{"name": "Souhrnné hlášení", "class": "e10doc.taxes.VatRS.VatRSReport", "icon": "e10doc-finance/VatRSReport","group": "e10doc-finance", "order": 91400}
+	{"name": "Přiznání DPH", "class": "e10doc.taxes.VatReturn.VatReturnReport", "icon": "report/VatReturnReport","group": "e10doc-finance", "order": 91000},
+	{"name": "Kontrolní hlášení", "class": "e10doc.taxes.VatCS.VatCSReportAll", "icon": "report/VatCSReport","group": "e10doc-finance", "order": 91200},
+	{"name": "Souhrnné hlášení", "class": "e10doc.taxes.VatRS.VatRSReport", "icon": "report/VatRSReport","group": "e10doc-finance", "order": 91400}
 ]

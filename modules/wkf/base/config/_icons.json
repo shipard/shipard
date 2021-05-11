@@ -1,0 +1,26 @@
+{
+    "tables/wkf.base.issuesKinds":{
+		"fa5": "fa-bolt",
+		"fa5pro": "fa-bolt",
+		"bsi": "bi-lightning-fill",
+		"mdi": "bolt"
+	},
+    "tables/wkf.base.sections":{
+		"fa5": "fa-columns",
+		"fa5pro": "fa-columns",
+		"bsi": "bi-layout-three-columns",
+		"mdi": "view_week"
+	},
+    "tables/wkf.base.projects":{
+		"fa5": "fa-lightbulb",
+		"fa5pro": "fa-lightbulb-on",
+		"bsi": "bi-lightbulb",
+		"mdi": "lightbulb"
+	},
+    "tables/wkf.base.boards":{
+		"fa5": "fa-window-maximize",
+		"fa5pro": "fa-window-maximize",
+		"bsi": "bi-layout-text-window-reverse",
+		"mdi": "dvr"
+	}
+}

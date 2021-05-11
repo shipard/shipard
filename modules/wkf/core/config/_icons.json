@@ -1,0 +1,8 @@
+{
+    "tables/wkf.core.filters":{
+		"fa5": "fa-filter",
+		"fa5pro": "fa-filter",
+		"bsi": "bi-funnel",
+		"mdi": "filter_alt"
+	}
+}

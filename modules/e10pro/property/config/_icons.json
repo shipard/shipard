@@ -40,5 +40,35 @@
 		"fa5pro": "fa-list",
 		"bsi": "bi-list-ul",
 		"mdi": "list"
+	},
+	"report/propertyList": {
+		"fa5": "fa-file",
+		"fa5pro": "fa-file",
+		"bsi": "bi-file-earmark",
+		"mdi": "insert_drive_file"
+	},
+	"report/depreciations": {
+		"fa5": "fa-sort-amount-down",
+		"fa5pro": "fa-sort-amount-down",
+		"bsi": "bi-sort-down",
+		"mdi": "arrow_downward"
+	},
+	"report/nonDeps": {
+		"fa5": "fa-bars",
+		"fa5pro": "fa-bars",
+		"bsi": "bi-list",
+		"mdi": "reorder"
+	},
+	"report/inventoryingReport": {
+		"fa5": "fa-clipboard-check",
+		"fa5pro": "fa-clipboard-check",
+		"bsi": "bi-clipboard-check",
+		"mdi": "inventory"
+	},
+	"report/accounting": {
+		"fa5": "fa-stamp",
+		"fa5pro": "fa-stamp",
+		"bsi": "bi-file-earmark-diff-fill",
+		"mdi": "approval"
 	}
 }

@@ -1,7 +1,7 @@
 {
 	"core": {
 		"name": "Základní nastavení", "order": 10000, "group": "core", "help": "prirucka/116",
-		"icon": "e10-server-config",
+		"icon": "basicSettings/basicSettings",
 		"type": "cfgFile",
 		"options":
 			[

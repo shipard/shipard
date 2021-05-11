@@ -14,7 +14,7 @@
     "docType/cashRegister":{
         "fa5":"fa-piggy-bank",
         "fa5pro":"fa-piggy-bank",
-        "bsi":"bi-wallet",
+        "bsi":"bi-piggy-bank",
         "mdi":"savings"
     },
     "docType/cashReg":{
@@ -62,7 +62,7 @@
     "docType/bank":{
         "fa5":"fa-university",
         "fa5pro":"fa-file-signature",
-        "bsi":"bi-credit-card",
+        "bsi":"bi-bank",
         "mdi":"account_balance"
     },
     "docType/cash":{
@@ -184,5 +184,29 @@
         "fa5pro":"fa-money-bill-alt",
         "bsi":"bi-cash",
         "mdi":"payments"
+    },
+    "e10docs/documents":{
+        "fa5":"fa-folder-open",
+        "fa5pro":"fa-folder-open",
+        "bsi":"bi-folder2-open",
+        "mdi":"folder_open"
+    },
+    "report/listInvoicesOut":{
+        "fa5":"fa-long-arrow-alt-up",
+        "fa5pro":"fa-arrow-alt-square-up",
+        "bsi":"bi-arrow-up-square-fill",
+        "mdi":"arrow_circle_up"
+    },
+    "report/listInvoicesIn":{
+        "fa5":"fa-long-arrow-alt-down",
+        "fa5pro":"fa-arrow-alt-square-down",
+        "bsi":"bi-arrow-down-square-fill",
+        "mdi":"arrow_circle_down"
+    },
+    "report/docsSummary":{
+        "fa5":"fa-table",
+        "fa5pro":"fa-table",
+        "bsi":"bi-table",
+        "mdi":"table_chart"
     }
 }

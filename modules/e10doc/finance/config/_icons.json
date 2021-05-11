@@ -5,67 +5,67 @@
         "bsi":"bi-cash",
         "mdi":"credit_card"
     },
-    "e10doc-finance/takings":{
+    "report/takings":{
         "fa5":"fa-thumbs-up",
         "fa5pro":"fa-thumbs-up",
         "bsi":"bi-hand-thumbs-up-fill",
         "mdi":"thumb_up"
     },
-    "e10doc-finance/expenses":{
+    "report/expenses":{
         "fa5":"fa-thumbs-down",
         "fa5pro":"fa-thumbs-down",
         "bsi":"bi-hand-thumbs-down-fill",
         "mdi":"thumb_down"
     },
-    "e10doc-finance/cashBook":{
+    "report/cashBook":{
         "fa5":"fa-piggy-bank",
         "fa5pro":"fa-piggy-bank",
-        "bsi":"bi-wallet",
+        "bsi":"bi-piggy-bank",
         "mdi":"savings"
     },
-    "e10doc-finance/VAT":{
+    "report/VAT":{
         "fa5":"fa-shield-alt",
         "fa5pro":"fa-shield-alt",
         "bsi":"bi-shield",
         "mdi":"shield"
     },
-    "e10doc-finance/VatReturnReport":{
+    "report/VatReturnReport":{
         "fa5":"fa-shield-alt",
         "fa5pro":"fa-shield-alt",
         "bsi":"bi-shield",
         "mdi":"shield"
     },
-    "e10doc-finance/VatCSReport":{
+    "report/VatCSReport":{
         "fa5":"fa-shield-alt",
         "fa5pro":"fa-shield-alt",
         "bsi":"bi-shield",
         "mdi":"shield"
     },
-    "e10doc-finance/VatRSReport":{
+    "report/VatRSReport":{
         "fa5":"fa-shield-alt",
         "fa5pro":"fa-shield-alt",
         "bsi":"bi-shield",
         "mdi":"shield"
     },
-    "e10doc-finance/generalLedger":{
+    "report/generalLedger":{
         "fa5":"fa-gavel",
         "fa5pro":"fa-gavel",
         "bsi":"bi-journal-text",
         "mdi":"gavel"
     },
-    "e10doc-finance/reportStatement":{
+    "report/Statement":{
         "fa5":"fa-gavel",
         "fa5pro":"fa-gavel",
         "bsi":"bi-journal-text",
         "mdi":"gavel"
     },
-    "e10doc-finance/reportBalanceSheet":{
+    "report/BalanceSheet":{
         "fa5":"fa-gavel",
         "fa5pro":"fa-gavel",
         "bsi":"bi-journal-text",
         "mdi":"gavel"
     },
-    "e10doc-finance/reportCashFlow":{
+    "report/CashFlow":{
         "fa5":"fa-gavel",
         "fa5pro":"fa-gavel",
         "bsi":"bi-journal-text",

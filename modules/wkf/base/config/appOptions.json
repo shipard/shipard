@@ -1,10 +1,10 @@
 {
 	"wkfnIssuesKinds": {
-		"name": "Druhy zpráv", "order": 181000, "group": "workflow", "icon": "icon-flash",
+		"name": "Druhy zpráv", "order": 181000, "group": "workflow",
 		"type": "viewer", "table": "wkf.base.issuesKinds", "viewer": "default"
 	},
 	"wkfnSections": {
-		"name": "Sekce", "order": 185000, "group": "workflow", "icon": "icon-columns",
+		"name": "Sekce", "order": 185000, "group": "workflow",
 		"type": "viewer", "table": "wkf.base.sections", "viewer": "default"
 	},
 	"wkfnTrays": {
@@ -12,11 +12,11 @@
 		"type": "viewer", "table": "wkf.base.trays", "viewer": "default", "enabledCfgItem": "options.experimental.testTrays"
 	},
 	"wkfnProjects": {
-		"name": "Projekty", "order": 185000, "group": "workflow", "icon": "icon-lightbulb-o",
+		"name": "Projekty", "order": 185000, "group": "workflow",
 		"type": "viewer", "table": "wkf.base.projects", "viewer": "default"
 	},
 	"wkfnBoards": {
-		"name": "Přehledy Zpráv", "order": 186000, "group": "workflow", "icon": "icon-window-maximize",
+		"name": "Přehledy Zpráv", "order": 186000, "group": "workflow",
 		"type": "viewer", "table": "wkf.base.boards", "viewer": "default"
 	},
 	"wkfnTargets": {

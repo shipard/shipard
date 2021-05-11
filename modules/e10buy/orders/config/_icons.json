@@ -1,0 +1,14 @@
+{
+    "tables/e10buy.orders.docNumbers":{
+        "fa5":"fa-play-circle",
+        "fa5pro":"fa-play-circle",
+        "bsi":"bi-play-circle-fill",
+        "mdi":"play_circle_filledfla"
+    },
+    "tables/e10buy.orders.docKinds":{
+        "fa5":"fa-flag",
+        "fa5pro":"fa-bi-flag",
+        "bsi":"bi-currency-exchange",
+        "mdi":"flag"
+    }
+}

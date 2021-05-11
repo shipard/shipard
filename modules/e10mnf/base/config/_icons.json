@@ -1,0 +1,32 @@
+{
+    "tables/e10mnf.base.docnumbers":{
+        "fa5":"fa-play-circle",
+        "fa5pro":"fa-play-circle",
+        "bsi":"bi-play-circle-fill",
+        "mdi":"play_circle_filled"
+    },
+    "tables/e10mnf.base.dockinds":{
+        "fa5":"fa-flag",
+        "fa5pro":"fa-flag",
+        "bsi":"bi-flag",
+        "mdi":"flag"
+    },
+    "tables/e10mnf.base.workOrdersGroups":{
+        "fa5":"fa-sticky-note",
+        "fa5pro":"fa-sticky-note",
+        "bsi":"bi-sticky",
+        "mdi":"sticky_note_2"
+    },
+    "tables/e10mnf.base.workRecsKinds":{
+        "fa5":"fa-bolt",
+        "fa5pro":"fa-bolt",
+        "bsi":"bi-lightning-fill",
+        "mdi":"bolt"
+    },
+    "tables/e10mnf.base.workRecsNumbers":{
+        "fa5":"fa-play-circle",
+        "fa5pro":"fa-play-circle",
+        "bsi":"bi-play-circle-fill",
+        "mdi":"play_circle_filled"
+    }
+}

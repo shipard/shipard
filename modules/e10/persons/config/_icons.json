@@ -2,13 +2,31 @@
 	"tables/e10.persons.persons": {
 		"fa5": "fa-users",
 		"fa5pro": "fa-users",
-		"bsi": "people",
+		"bsi": "bi-people",
 		"mdi": "people"
 	},
 	"tables/e10.persons.contacts": {
 		"fa5": "fa-user-friends",
 		"fa5pro": "fa-user-friends",
-		"bsi": "people-fill",
+		"bsi": "bi-people-fill",
 		"mdi": "group"
+	},
+	"tables/e10.persons.groups": {
+		"fa5": "fa-users",
+		"fa5pro": "fa-users",
+		"bsi": "bi-people-fill",
+		"mdi": "groups"
+	},
+	"e10.persons.categories": {
+		"fa5": "fa-id-card",
+		"fa5pro": "fa-id-card",
+		"bsi": "bi-person-badge",
+		"mdi": "badge"
+	},
+	"e10.persons.relations": {
+		"fa5": "fa-compress-alt",
+		"fa5pro": "fa-compress-alt",
+		"bsi": "bi-arrows-angle-contract",
+		"mdi": "close_fullscreen"
 	}
 }

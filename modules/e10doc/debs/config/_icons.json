@@ -10,5 +10,17 @@
         "fa5pro":"fa-th-large",
         "bsi":"bi-table",
         "mdi":"table_chart"
+    },
+    "tables/e10doc.debs.groups":{
+        "fa5":"fa-cog",
+        "fa5pro":"fa-cog",
+        "bsi":"bi-gear-fill",
+        "mdi":"settings"
+    },
+    "tables/e10doc.debs.spdAccounts":{
+        "fa5":"fa-table",
+        "fa5pro":"fa-table",
+        "bsi":"bi-table",
+        "mdi":"table_view"
     }
 }

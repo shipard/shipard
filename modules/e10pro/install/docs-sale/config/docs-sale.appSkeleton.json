@@ -42,7 +42,7 @@
 		"reports": {
 			"items": {
 				"sales": {"t1": "Prodej", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-sale", "icon": "e10doc-sale/sale", "order": 100000},
-				"documents": {"t1": "Doklady", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10docs", "icon": "icon-folder-open-o", "order": 876000}
+				"documents": {"t1": "Doklady", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10docs", "icon": "e10docs/documents", "order": 876000}
 			}
 		}
 	},

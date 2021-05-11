@@ -3,20 +3,20 @@
 		"web": {
 			"url": "/app/web", "zone": "sec", "objectType": "panel", "name": "Web", "order": 2000000,
 			"items": {
-				"events": {"t1": "Oznámení", "object": "viewer", "table": "e10.web.news", "viewer": "default", "icon": "icon-bullhorn",
+				"events": {"t1": "Oznámení", "object": "viewer", "table": "e10.web.news", "viewer": "default",
 					"order": 9990000, "enabledCfgItem": "options.webcomm.useNews"},
-				"articles": {"t1": "Články", "object": "viewer", "table": "e10.web.articles", "viewer": "default", "icon": "icon-newspaper-o",
+				"articles": {"t1": "Články", "object": "viewer", "table": "e10.web.articles", "viewer": "default",
 					"order": 200000, "enabledCfgItem": "options.webcomm.useArticles"},
-				"web": {"t1": "Web", "object": "widget", "class": "e10.widgetDashboard", "subclass": "webPanel", "icon": "icon-globe",
+				"web": {"t1": "Web", "object": "widget", "class": "e10.widgetDashboard", "subclass": "webPanel", "icon": "e10.widgetDashboard/web",
 					"order": 250000, "enabledCfgItem": "options.experimental.testNewWebEdit"},
-				"pages": {"t1": "Stránky", "object": "viewer", "table": "e10.web.pages", "viewer": "default", "icon": "icon-files-o",
+				"pages": {"t1": "Stránky", "object": "viewer", "table": "e10.web.pages", "viewer": "default",
 					"order": 300000},
-				"blocks": {"t1": "Bloky", "object": "viewer", "table": "e10.web.blocks", "viewer": "default", "icon": "icon-puzzle-piece",
+				"blocks": {"t1": "Bloky", "object": "viewer", "table": "e10.web.blocks", "viewer": "default",
 					"order": 400000},
-				"decorations": {"t1": "Dekorace", "object": "viewer", "table": "e10.web.urldecorations", "viewer": "default", "icon": "icon-paragraph",
+				"decorations": {"t1": "Dekorace", "object": "viewer", "table": "e10.web.urldecorations", "viewer": "default",
 					"order": 500000},
-				"templates": {"t1": "Šablony", "object": "viewer", "table": "e10.base.templates", "viewer": "web", "icon": "x-template", "order": 900000},
-				"looks": {"t1": "Vzhledy", "object": "viewer", "table": "e10.base.templatesLooks", "viewer": "web", "icon": "icon-file-image-o", "order": 900000}
+				"templates": {"t1": "Šablony", "object": "viewer", "table": "e10.base.templates", "viewer": "web", "order": 900000},
+				"looks": {"t1": "Vzhledy", "object": "viewer", "table": "e10.base.templatesLooks", "viewer": "web", "order": 900000}
 			}
 		}
 	}

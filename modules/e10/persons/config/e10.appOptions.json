@@ -1,14 +1,14 @@
 {
 	"e10PersonsGroups": {
-		"name": "Skupiny osob", "order": 14500, "group": "persons", "icon": "e10-persons-groups",
+		"name": "Skupiny osob", "order": 14500, "group": "persons",
 		"type": "viewer", "table": "e10.persons.groups", "viewer": "default"
 	},
 	"e10PersonsCategories": {
-		"name": "Kategorie osob", "order": 14900, "group": "persons", "icon": "icon-id-card-o",
+		"name": "Kategorie osob", "order": 14900, "group": "persons",
 		"type": "viewer", "table": "e10.persons.categories", "viewer": "default"
 	},
 	"e10PersonsRelations": {
-		"name": "Vztahy osob", "order": 17000, "group": "persons", "icon": "icon-compress",
+		"name": "Vztahy osob", "order": 17000, "group": "persons",
 		"type": "viewer", "table": "e10.persons.relations", "viewer": "default"
 	},
 	"experimental": {

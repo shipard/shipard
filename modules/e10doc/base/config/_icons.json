@@ -8,7 +8,7 @@
     "tables/e10doc.base.exchangeRatesLists":{
         "fa5":"fa-dollar-sign",
         "fa5pro":"fa-dollar-sign",
-        "bsi":"bi-cash",
+        "bsi":"bi-currency-exchange",
         "mdi":"attach_money"
     },
     "tables/e10doc.base.cashboxes":{
@@ -20,7 +20,7 @@
     "tables/e10doc.base.bankaccounts":{
         "fa5":"fa-university",
         "fa5pro":"fa-university",
-        "bsi":"bi-credit-card-fill",
+        "bsi":"bi-bank",
         "mdi":"account_balance"
     },
     "tables/e10doc.base.centres":{
@@ -28,5 +28,29 @@
         "fa5pro":"fa-bullseye",
         "bsi":"bi-bullseye",
         "mdi":"track_changes"
+    },
+    "tables/e10doc.base.taxRegs":{
+        "fa5":"fa-shield-alt",
+        "fa5pro":"fa-shield-alt",
+        "bsi":"bi-shield",
+        "mdi":"shield"
+    },
+    "tables/e10doc.base.fiscalyears":{
+        "fa5":"fa-calendar-alt",
+        "fa5pro":"fa-calendar-alt",
+        "bsi":"bi-calendar",
+        "mdi":"calendar_today"
+    },
+    "tables/e10doc.base.taxperiods":{
+        "fa5":"fa-calendar-alt",
+        "fa5pro":"fa-calendar-alt",
+        "bsi":"bi-calendar",
+        "mdi":"calendar_today"
+    },
+    "e10doc.base.warehouses":{
+        "fa5":"fa-cubes",
+        "fa5pro":"fa-cubes",
+        "bsi":"bi-shop-window",
+        "mdi":"inventory_2"
     }
 }
