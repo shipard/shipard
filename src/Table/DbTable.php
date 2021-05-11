@@ -764,10 +764,7 @@ class DbTable
 
 	public function tableIcon ($recData, $options = NULL)
 	{
-		if (isset($this->dbmodel->dataModel->model ['tables'][$this->tableId]['icon']))
-			return $this->dbmodel->dataModel->model ['tables'][$this->tableId]['icon'];
-
-		return 'x-cog';
+		return 'tables/'.$this->tableId;
 	}
 
 	public function tableId ()
