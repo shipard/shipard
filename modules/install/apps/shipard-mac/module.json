@@ -1,8 +1,8 @@
 {
-	"id": "pkgs.install.apps.shipard-mac",
+	"id": "install.apps.shipard-mac",
 	"name": "Dohled a řízení technologií",
 	"modules": [
-		"pkgs/install/apps/shipard-core",
+		"install/apps/shipard-core",
 
 		"mac/lan"
 	],
@@ -11,6 +11,7 @@
 	],
 
 	"dataPackages": [
-		"pkgs/data/mac/codebase"
+		"install/data/common/e10-robots",
+		"install/data/mac/codebase"
 	]
 }

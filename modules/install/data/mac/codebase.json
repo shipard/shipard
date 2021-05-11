@@ -1,0 +1,124 @@
+{
+	"name": "Základní číselníky pro Dohled a řízení",
+	"datasets": [
+		{
+			"table": "mac.lan.deviceTypes",
+			"name": "Druhy síťových zařízení",
+			"defaultValues": {"docState": 4000, "docStateMain": 2},
+			"data": [
+				{
+					"rec": {"fullName":"PC","deviceKind":1},
+					"ports": [
+						{"portKind":0,"portsCount":1,"portIdMask":"eth"},
+						{"portKind":1,"portsCount":1,"portIdMask":"wifi"}
+					]
+				},
+				{
+					"rec": {"fullName":"Notebook","deviceKind":2},
+					"ports": [
+						{"portKind":0,"portsCount":1,"portIdMask":"eth"},
+						{"portKind":1,"portsCount":1,"portIdMask":"wifi"}
+					]
+				},
+				{
+					"rec": {"fullName":"Tiskárna","deviceKind":3},
+					"ports": [
+						{"portKind":0,"portsCount":1,"portIdMask":"eth"}
+					]
+				},
+				{
+					"rec": {"fullName":"Telefon","deviceKind":5},
+					"ports": [
+						{"portKind":1,"portsCount":1,"portIdMask":"wifi"}
+					]
+				},
+				{
+					"rec": {"fullName":"Server","deviceKind":7},
+					"ports": [
+						{"portKind":0,"portsCount":1,"portIdMask":"eth"}
+					]
+				},
+				{
+					"rec": {"fullName":"Router 10 eth","deviceKind":8},
+					"ports": [
+						{"portKind":5,"portsCount":10,"portIdMask":"ether"},
+						{"portKind":10,"portsCount":1,"portIdMask":"mng"}
+					]
+				},
+				{
+					"rec": {"fullName":"Router 2 sfp+ + 8 eth","deviceKind":8},
+					"ports": [
+						{"portKind":6,"portsCount":2,"portIdMask":"sfp-sfpplus"},
+						{"portKind":5,"portsCount":8,"portIdMask":"eth"},
+						{"portKind":10,"portsCount":1,"portIdMask":"mng"}
+					]
+				},
+				{
+					"rec": {"fullName":"Switch 8 eth + 2 sfp","deviceKind":9},
+					"ports": [
+						{"portKind":5,"portsCount":8,"portIdMask":"eth"},
+						{"portKind":6,"portsCount":2,"portIdMask":"sfp"},
+						{"portKind":10,"portsCount":1,"portIdMask":"mng"}
+					]
+				},
+				{
+					"rec": {"fullName":"Switch 24 eth + 4 sfp","deviceKind":9},
+					"ports": [
+						{"portKind":5,"portsCount":24,"portIdMask":"eth"},
+						{"portKind":6,"portsCount":4,"portIdMask":"sfp"},
+						{"portKind":10,"portsCount":1,"portIdMask":"mng"}
+					]
+				},
+				{
+					"rec": {"fullName":"Switch 24 sfp + 2 sfp+","deviceKind":9},
+					"ports": [
+						{"portKind":6,"portsCount":24,"portIdMask":"sfp"},
+						{"portKind":6,"portsCount":2,"portIdMask":"sfp+"},
+						{"portKind":10,"portsCount":1,"portIdMask":"mng"}
+					]
+				},
+				{
+					"rec": {"fullName":"Switch 48 eth + 4 sfp","deviceKind":9},
+					"ports": [
+						{"portKind":5,"portsCount":48,"portIdMask":"eth"},
+						{"portKind":6,"portsCount":4,"portIdMask":"sfp"},
+						{"portKind":10,"portsCount":1,"portIdMask":"mng"}
+					]
+				},
+				{
+					"rec": {"fullName":"Kamera","deviceKind":10},
+					"ports": [
+						{"portKind":0,"portsCount":1,"portIdMask":"eth"}
+					]
+				},
+				{
+					"rec": {"fullName":"NAS","deviceKind":11},
+					"ports": [
+						{"portKind":0,"portsCount":1,"portIdMask":"eth"}
+					]
+				},
+				{
+					"rec": {"fullName":"WiFi AP","deviceKind":15},
+					"ports": [
+						{"portKind":0,"portsCount":1,"portIdMask":"eth"}
+					]
+				},
+				{
+					"rec": {"fullName":"UPS","deviceKind":30}
+				},
+				{
+					"rec": {"fullName":"Shipard Node Server","deviceKind":70},
+					"ports": [
+						{"portKind":0,"portsCount":1,"portIdMask":"eth"}
+					]
+				},
+				{
+					"rec": {"fullName":"Ostatní","deviceKind":99},
+					"ports": [
+						{"portKind":0,"portsCount":1,"portIdMask":"eth"}
+					]
+				}
+			]
+		}
+	]
+}
