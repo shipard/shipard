@@ -482,6 +482,19 @@ class TablePersons extends DbTable
 
 		return $info;
 	}
+
+	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, \E10\TableForm $form = NULL)
+	{
+		if (!$form)
+			return TRUE;
+		if ($columnId === 'accountType')
+		{
+			if (!$this->app()->cfgServer['useHosting'] && $cfgKey == 2)
+				return FALSE;
+		}
+
+		return parent::columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, $form);
+	}
 }
 
 

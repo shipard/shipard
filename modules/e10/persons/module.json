@@ -23,6 +23,7 @@
 		{"id": "+e10.appOptions.groups", "file": "appOptionsGroups.json"},
 		{"id": "+registeredClasses", "file": "registeredClasses.json"},
 		{"id": "+e10.persons.keyTypes", "file": "e10.persons.keyTypes.json"},
-		{"id": "+e10.persons.categories.types", "file": "e10.persons.categoriesTypes.json"}
+		{"id": "+e10.persons.categories.types", "file": "e10.persons.categoriesTypes.json"},
+		{"id": "+e10.persons.accountTypes", "file": "accountTypes.json"}
   ]
 }

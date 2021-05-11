@@ -21,7 +21,7 @@
     {"id": "fullName", "sql": "fullName", "name": "Název", "type": "string", "len": 140},
 		{"id": "lastUseDate", "name": "Datum posledního použití", "type": "date"},
     {"id": "accountType", "name": "Typ účtu", "type": "enumInt",
-			"enumValues": {"0": "Žádný účet", "1": "Lokální účet", "2": "Účet Shipard"}},
+			"enumCfg": {"cfgItem": "e10.persons.accountTypes", "cfgValue": "", "cfgText": "sn"}},
     {"id": "accountState", "name": "Stav účtu", "type": "enumInt",
 			"enumValues": {"0": "Neaktivní", "1": "Aktivní"}},
 		{"id": "personType", "name": "Typ osoby", "type": "enumInt",

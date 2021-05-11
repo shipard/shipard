@@ -17,7 +17,7 @@
 				"users": {"t1": "Uživatelé", "object": "viewer", "table": "e10.persons.persons", "viewer": "users", "icon": "tables/e10.persons.persons", "#": "users", "order": 200000},
 				"info": {"t1": "Info", "object": "widget", "class": "e10.widgetDashboard", "subclass": "srvcfg", "icon": "icon-info", "role": "admin", "order": 99999000},
 				"templates": {"t1": "Šablony", "object": "viewer", "table": "e10.base.templates", "viewer": "default", "icon": "x-template", "#": "templates", "order": 98100000},
-				"usersRequests": {"t1": "Registrace", "object": "viewer", "enabledCfgItem": "options.core.defaultAccountType",
+				"usersRequests": {"t1": "Registrace", "object": "viewer", 
 					"table": "e10.persons.requests", "viewer": "default", "icon": "x-request", "order": 99400000}
 			},
 			"buttons": [

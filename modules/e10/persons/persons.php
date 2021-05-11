@@ -449,7 +449,7 @@ class Authenticator extends \Shipard\Application\Authenticator
 		if ($person['personType'] == 3)
 			return $this->activateRobotsAccount($person);
 
-		$dact = $this->app->cfgItem('options.core.defaultAccountType', Authenticator::dactShipard);
+		$dact = $this->app()->cfgServer['useHosting'] ? Authenticator::dactShipard : Authenticator::dactLocal;
 
 		if ($dact == Authenticator::dactShipard)
 		{

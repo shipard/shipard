@@ -12,9 +12,7 @@
 				{"cfgKey": "ownerEmail", "cfgName": "Kontaktní e-mail", "importance": 1, "placeholder": "info@nasefirma.cz"},
 				{"cfgKey": "ownerWeb", "cfgName": "Web", "importance": 1, "placeholder": "www.nasefirma.cz"},
 				{"cfgKey": "ownerLegalRegInfo", "cfgName": "Registrace v OR/ŽÚ", "importance": 1, "placeholder": "Registrace u Rejstříkového soudu v Praze, značka C 54345."},
-				{"cfgKey": "ownerPerson", "cfgName": "Vlastní Osoba", "reference": "e10.persons.persons"},
-				{"cfgKey": "defaultAccountType", "cfgName": "Typ účtu pro nové uživatele",
-					"options": {"0": "Shipard", "1": "Lokální"}}
+				{"cfgKey": "ownerPerson", "cfgName": "Vlastní Osoba", "reference": "e10.persons.persons"}
 			]
 	}
 }
