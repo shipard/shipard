@@ -480,6 +480,7 @@ class ViewAppOptions extends TableView
 					continue;
 			}
 
+			$icon = isset ($c ['icon']) ? $c ['icon'] : '';
 			$help = '';
 			if ($c ['type'] === 'viewer')
 			{
@@ -490,13 +491,18 @@ class ViewAppOptions extends TableView
 					$vd = $table->viewDefinition ('default');
 				if ($vd && isset($vd['help']))
 					$help = $vd ['help'];
+				if ($icon === '')	
+					$icon = $table->tableIcon([]);
 			}
 			elseif (isset($c['help']))
 				$help = $c['help'];
 
+			if ($icon === '')	
+				$icon = 'system/iconOther';
+
 			$this->queryRows [] = [
 				'ndx' => $id, 'name' => $c ['name'], 'ffn' => $fullFileName,
-				'icon' => (isset ($c ['icon']) ? $c ['icon'] : 'x-cog'),
+				'icon' => $icon,
 				'help' => $help,
 			];
 		}
