@@ -2,7 +2,7 @@
 
 namespace mac\lan\libs;
 
-use e10\Content, \e10\utils, \e10\json, \mac\lan\libs\LanOverviewData,  \mac\data\libs\SensorHelper;
+use \Shipard\Base\Content, \e10\utils, \e10\json, \mac\lan\libs\LanOverviewData,  \mac\data\libs\SensorHelper;
 
 
 /**
@@ -316,9 +316,11 @@ class LanOverviewRenderer extends Content
 	{
 		$activeDeviceId = intval($this->app()->testGetParam ('e10-widget-dashboard-device-ndx'));
 
-		if (!in_array($activeDeviceId, $this->lanOverviewData->dgData[$this->dashboardDevicesGroup]['devices']))
-			$activeDeviceId = 0;
-
+		if (isset($this->lanOverviewData->dgData[$this->dashboardDevicesGroup]['devices']))
+		{
+			if (!in_array($activeDeviceId, $this->lanOverviewData->dgData[$this->dashboardDevicesGroup]['devices']))
+				$activeDeviceId = 0;
+		}
 		$c = '';
 
 		$c .= "<div class='e10-wf-tabs-vertical' style='width: 12em; padding-top: 1em;'>";
@@ -428,7 +430,7 @@ class LanOverviewRenderer extends Content
 	}
 
 
-	public function run($mainViewType, \e10\widgetBoard $widget)
+	public function run($mainViewType, \Shipard\UI\Core\WidgetBoard $widget)
 	{
 		$this->widget = $widget;
 		$this->mainViewType = $mainViewType;

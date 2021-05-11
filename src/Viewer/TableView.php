@@ -1524,10 +1524,10 @@ class TableView extends \Shipard\Base\BaseObject
 		}
 	}
 
-	public function createPanelContentQry (\e10\TableViewPanel $panel) {}
-	public function createPanelContentReview (\e10\TableViewPanel $panel) {}
-	public function createPanelContentLeft (\e10\TableViewPanel $panel) {}
-	public function createPanelContentRight (\e10\TableViewPanel $panel) {}
+	public function createPanelContentQry (TableViewPanel $panel) {}
+	public function createPanelContentReview (TableViewPanel $panel) {}
+	public function createPanelContentLeft (TableViewPanel $panel) {}
+	public function createPanelContentRight (TableViewPanel $panel) {}
 
 	public function createPanelContentHelp (TableViewPanel $panel)
 	{

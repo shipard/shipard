@@ -2,7 +2,7 @@
 
 namespace mac\access\libs;
 
-use \e10\TableView, \e10\utils, \e10\TableViewPanel, \e10\str;
+use \Shipard\Viewer\TableView, \e10\utils, \Shipard\Viewer\TableViewPanel, \e10\str;
 
 
 /**

@@ -3,7 +3,7 @@
 namespace mac\lan\libs\dashboard;
 
 
-use e10\Content, \e10\utils, \e10\json;
+use \Shipard\Base\Content, \e10\utils, \e10\json;
 use mac\data\libs\SensorHelper;
 
 
@@ -367,7 +367,7 @@ class Overview extends Content
 		$this->code .= "<script>e10.widgets.macLan.init('{$this->widget->widgetId}');</script>";
 	}
 
-	public function run(\e10\widgetBoard $widget)
+	public function run(\Shipard\UI\Core\WidgetBoard $widget)
 	{
 		$this->widget = $widget;
 

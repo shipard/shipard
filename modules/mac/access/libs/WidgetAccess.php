@@ -3,14 +3,14 @@
 namespace mac\access\libs;
 
 require_once __SHPD_MODULES_DIR__ . 'e10/base/base.php';
-use \e10\widgetBoard, \e10\utils, \e10\Utility, \e10\uiutils;
+use \Shipard\UI\Core\WidgetBoard, \e10\utils, \e10\Utility, \e10\uiutils;
 
 
 /**
  * Class WidgetAccess
  * @package mac\access
  */
-class WidgetAccess extends widgetBoard
+class WidgetAccess extends WidgetBoard
 {
 	var $today;
 	var $mobileMode;

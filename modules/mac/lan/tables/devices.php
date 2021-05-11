@@ -3,7 +3,7 @@
 namespace mac\lan;
 
 
-use \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\TableViewPanel, \E10\DbTable, \E10\utils;
+use \Shipard\Viewer\TableView, \E10\TableViewDetail, \E10\TableForm, \Shipard\Viewer\TableViewPanel, \E10\DbTable, \E10\utils;
 
 
 /**
@@ -594,13 +594,7 @@ class ViewDevices extends TableView
 		$qry = [];
 
 		// -- tags
-		$clsf = \E10\Base\classificationParams ($this->table);
-		foreach ($clsf as $cg)
-		{
-			$params = new \E10\Params ($panel->table->app());
-			$params->addParam ('checkboxes', 'query.clsf.'.$cg['id'], ['items' => $cg['items']]);
-			$qry[] = ['style' => 'params', 'title' => $cg['name'], 'params' => $params];
-		}
+		\e10\base\libs\Utils::addClassificationParamsToPanel($this->table, $panel);
 
 		// -- lans
 		$lans = $this->db()->query ('SELECT ndx, fullName FROM mac_lan_lans WHERE docStateMain != 4')->fetchPairs ('ndx', 'fullName');

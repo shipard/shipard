@@ -2,14 +2,14 @@
 
 namespace mac\lan;
 
-use \e10\widgetBoard, \e10\utils, \e10\Utility, \e10\uiutils;
+use \Shipard\UI\Core\WidgetBoard, \e10\utils, \e10\Utility, \e10\uiutils;
 
 
 /**
  * Class LanMonitoringWidget
  * @package mac\lan
  */
-class LanMonitoringWidget extends widgetBoard
+class LanMonitoringWidget extends WidgetBoard
 {
 	var $today;
 	var $mobileMode;

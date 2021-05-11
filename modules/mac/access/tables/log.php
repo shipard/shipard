@@ -3,7 +3,7 @@
 namespace mac\access;
 require_once __SHPD_MODULES_DIR__ . 'e10/base/base.php';
 
-use \e10\TableForm, \e10\DbTable, \e10\TableView, \e10\utils, \e10\str;
+use \e10\TableForm, \e10\DbTable, \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewPanel, \e10\utils, \e10\str;
 
 
 /**
