@@ -18,9 +18,7 @@ class UIUtils
 			$icon = $info['icontxt'];
 		else
 		{
-			$icon = "<i class='fa fa-file-o'></i>";
-			if (isset($info['icon']))
-				$icon = "<i class='".$app->ui()->icons()->cssClass($info['icon'])."'></i>";
+			$icon = $app->ui()->icon($info['icon'] ?? 'system/iconFile');
 		}
 
 		$c = "<div class='e10-reportHeader'>";
@@ -34,9 +32,9 @@ class UIUtils
 		$c .= '</span>';
 
 		$c .= "<span class='owner'>";
-		$c .= "<span><i class='fa fa-building'></i> ".utils::es($ownerName).'</span><br/>';
-		$c .= "<span><i class='fa fa-user'></i> ".utils::es($app->user()->data ('name')).'</span><br/>';
-		$c .= "<span><i class='fa fa-print'></i> ".utils::es(utils::datef($printTimeStamp, '%d, %T')).'</span>';
+		$c .= "<span>".$app->ui()->icon('system/iconOwner').' '.utils::es($ownerName).'</span><br/>';
+		$c .= "<span>".$app->ui()->icon('system/iconUser').' '.utils::es($app->user()->data ('name')).'</span><br/>';
+		$c .= "<span>".$app->ui()->icon('system/actionPrint').' '.utils::es(utils::datef($printTimeStamp, '%d, %T')).'</span>';
 		$c .= '</span>';
 		$c .= '</div>';
 

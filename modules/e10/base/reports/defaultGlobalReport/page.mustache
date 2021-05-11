@@ -1,0 +1,183 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+    <title>test</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style>
+        body {margin-left: 10mm; font-size: 10pt; font-family: Arial, sans-serif; }
+        .number {text-align: right;}
+        div.e10-reportContent h1 {font-size: 155%; text-align: left;
+            margin-bottom: .4ex; margin-top: 2ex;
+            font-family: Arial, sans-serif;}
+        div.e10-reportContent h2 {font-size: 133%; text-align: left; font-weight: normal;
+            margin-bottom: .4ex; margin-top: 1.6ex;
+						font-family: Arial, sans-serif;}
+
+        table.fullWidth {width: 100%;}
+        table.default {width: 100%; border-collapse: collapse; border: none; }
+        .default td {border: .85pt solid #B0B0B0; padding: 2pt 3pt; vertical-align: top;}
+
+				table.default thead tr:last-child {border-bottom: 2px solid #888 !important; font-family: Arial, sans-serif;}
+				table.default thead tr th {text-align: left; border: 1px solid #909090; padding: .6ex !important; background-color: #EEE !important;}
+				table.default thead tr th.number {text-align: right;}
+
+				table.default tr {font-family: Arial, sans-serif;}
+        table.default tr.hdr {background-color: #E0E0E0 !important;}
+				table.default tr.sum {font-weight: bold; border-top: 2px solid #888; background-color: #EEE !important; page-break-inside:avoid;}
+        table.default tr.subtotal {background-color: #E0E0E0 !important; font-weight: bold;}
+				table.default tr.sumtotal {font-weight: bold; border: 2px solid #000; page-break-inside:avoid;}
+        table.default tr.subheader td {font-weight: bold; font-size: 122%;}
+        table.default tr.separator td {border: none;}
+        table.default tr td.number {white-space: pre;}
+				table.default a {text-decoration: none; color: #000;}
+
+        table.default tr.e10-error td {background-color: #ff4040 !important; color: white !important; font-weight: bold;}
+        table.default tr.e10-warning1 td {background-color: #fff0f0 !important;}
+        table.default tr.e10-warning2 td {background-color: #ffe0e0 !important;}
+        table.default tr.e10-warning3 td {background-color: #ffb0b0 !important;}
+        table.default td.e10-row-play {background-color: #cfc !important;;}
+        table.default td.e10-row-stop {background-color: #fcc !important;;}
+        table.default td.e10-row-pause {background-color: #ffcb6b !important;;}
+
+        table.e10-print-small {
+            font-size: 8pt;
+        }
+        table.e10-print-small td {padding: 1.5pt 2pt;}
+
+        table.e10-print-12pt {
+	        font-size: 12pt;
+        }
+
+        div.e10-reportHeader {
+            width: 100%; display: inline-block;
+            border-bottom: .85pt solid black;
+            margin-bottom: 1ex;
+            font-family: Arial, sans-serif;
+				}
+        div.e10-reportHeader span.info {display: inline-block; float: left;}
+        div.e10-reportHeader span.title {font-weight: bold; font-size: 150%; line-height: 1.3em;}
+        div.e10-reportHeader span.owner {text-align: right; float: right; font-style: italic; font-size: 90%; line-height: 1.4em;}
+        div.e10-reportHeader span.owner>span {white-space:pre;}
+        ol.e10-reportNotes, p.e10-reportNotes {font-size: 90%; line-height: 1.4em; margin-top: 1em;}
+        ol.e10-reportNotes {padding: 0px; margin: 0px; margin-left: 1.8em; margin-top: 1em; }
+
+
+        .e10-row-minus {background-color: #fee; }
+
+				.e10-off {color: #777;}
+				.e10-small {color: #555; font-size: 85%;}
+				.e10-bold {font-weight: 600;}
+				.e10-em {font-style: italic;}
+				.e10-del {text-decoration: line-through;}
+
+
+				.e10-border-off-left {border-left: none !important;}
+				.e10-border-off-right {border-right: none !important;}
+				.e10-border-off-top {border-top: none !important;}
+				.e10-border-off-bottom {border-bottom: none !important;}
+
+        /* ---------
+				 * Calendars
+				 * ---------
+				 */
+        table.e10-cal { border-collapse: collapse; border: .75pt solid black; font-family: Arial, sans-serif;}
+        table.e10-cal th {border: .75pt solid black; padding: 2pt; }
+        table.e10-cal th span.pre {display: block; font-size: 70%;}
+        table.e10-cal td {border: .75pt solid black; padding: 2pt; vertical-align: middle;}
+        table.e10-cal td a {text-decoration: none !important; font-size: 80%; display: block; text-align: center; color: black; }
+        table.e10-cal td a i {padding: 0pt;}
+        table.e10-cal td.day {width: 2.5ex; text-align: center;}
+        table.e10-cal td.future {background-color: #FAFAFA;}
+
+				table.e10-cal td.presentNone {background-color: rgba(255,80,80,.2); }
+        table.e10-cal td.presentNone a {color: darkgray;}
+
+        table.e10-cal td.presentInsufficiently {background-color: rgba(255,80,80,.2); }
+        table.e10-cal td.presentInsufficiently a {color: darkgray;}
+
+        table.e10-cal td.presentMismatch {background-color: rgba(80,255,80,.2); }
+        table.e10-cal td.presentMismatch a {color: red;}
+
+        table.e10-cal td.presentPartially {background-color: rgba(80,255,80,.2); }
+        table.e10-cal td.presentPartially a {color: darkgray;}
+
+        table.e10-cal td.presentFully {background-color: rgba(80,255,80,.2);}
+
+
+				.pageBreakAfter {page-break-after: always;}
+        .pageBreakBefore {page-break-before: always;}
+
+				.width10 {width: 10%;}
+				.width15 {width: 15%;}
+				.width20 {width: 20%;}
+				.width25 {width: 25%;}
+				.width30 {width: 30%;}
+				.width35 {width: 35%;}
+				.width40 {width: 40%;}
+				.width45 {width: 45%;}
+				.width50 {width: 50%;}
+				.width55 {width: 55%;}
+				.width60 {width: 60%;}
+				.width65 {width: 65%;}
+				.width70 {width: 70%;}
+				.width75 {width: 75%;}
+				.width80 {width: 80%;}
+				.width85 {width: 85%;}
+				.width90 {width: 90%;}
+				.width95 {width: 95%;}
+				.width100 {width: 100%;}
+
+				.e10-w1em {width: 1em;}
+				.width10em {width: 10em;}
+				.width12em {width: 12em;}
+				.width14em {width: 14em;}
+				.width16em {width: 16em;}
+
+				.height2em {height: 2em;}
+				.height4em {height: 4em;}
+
+				.ml1 {margin-left: 1ex;}
+				.mr1 {margin-right: 1ex;}
+				.mt1 {margin-top: 1ex;}
+				.mb1 {margin-bottom: 1ex;}
+				.mb2 {margin-bottom: 2ex!important;}
+
+				.bt1 {border-top: 1px solid rgba(0,0,0,.25);}
+				.bb1 {border-bottom: 1px solid rgba(0,0,0,.25);}
+
+
+				table.width50 {width: 50% !important;}
+
+        .h1 {font-size: 133%; }
+        .h2 {font-size: 122%;}
+        .subtitle {margin-bottom: 4pt; font-size: 122%;}
+        .subtitle:not(:first-child) {
+            padding-top: 1em;
+        }
+        .suf {padding-left: .4em; font-size: 80%; font-weight: normal;}
+        .pre {color: #333; font-size: 85%; padding-right: 1ex;}
+        span.e10-prefix-left>.pre {float: left;}
+        td.e10-suffix-block>.suf {display: block; font-weight: normal; font-size: 75%; padding-left: 0;}
+        .center  {text-align: center !important;}
+        .break:before {display: block; content:"";}
+        .block {display: block;}
+
+				.e10-bg-t1 {background-color: #e1f7d5;}
+				.e10-bg-t2 {background-color: #ffcfab;}
+				.e10-bg-t3 {background-color: #ffe0e5;}
+				.e10-bg-t4 {background-color: #fbffb5;}
+				.e10-bg-t5 {background-color: #e0fffa;}
+				.e10-bg-t6 {background-color: #c5e0d6;}
+				.e10-bg-t7 {background-color: #9fe28f;}
+				.e10-bg-t8 {background-color: #ffefd5;}
+				.e10-bg-t9 {background-color: #eee;}
+    </style>
+    <link rel="stylesheet" href="file://{{fsRoot}}/www-root/sc/icons/fa/5/css/all.min.css">
+</head>
+<body>
+
+{{#data.text}}
+	{{{data.text}}}
+	</body>
+	</html>
+{{/data.text}}

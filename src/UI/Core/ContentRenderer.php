@@ -385,7 +385,7 @@ class ContentRenderer extends \Shipard\Base\BaseObject
 				$mimeType = mime_content_type('att/'.$a['path'].$a['filename']);
 				$thumbTitle = \E10\es ($a ['name']);
 
-				if (\E10\Application::$printMode)
+				if ($app->printMode)
 				{
 					$fullFileName = __APP_DIR__.'/att/'.$a['path'].$a['filename'];
 
@@ -938,7 +938,7 @@ class ContentRenderer extends \Shipard\Base\BaseObject
 
 		$c = '';
 
-		if (0 /**Application::$printMode  --TODO-- */)
+		if ($this->app()->printMode)
 		{
 			$c .= "\n<script>"."
 			function e10nf (n, c){
@@ -1106,7 +1106,7 @@ class ContentRenderer extends \Shipard\Base\BaseObject
 	{
 		$activeTab = isset($cp['selectedTab']) ? intval ($cp['selectedTab']) : 0;
 
-		if (0 /*Application::$printMode  --TODO-- */)
+		if ($this->app()->printMode)
 		{
 			$c = $this->createCodeBody($cp['tabs'][$activeTab]['content']);
 			return $c;

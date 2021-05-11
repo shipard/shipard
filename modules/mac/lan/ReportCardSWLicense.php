@@ -23,7 +23,7 @@ class ReportCardSWLicense extends FormReport
 		$this->setInfo('title', $this->recData['id']);
 		$this->setInfo('param', 'SW', $this->recData ['fullName']);
 
-		\E10\Application::$printMode = TRUE;
+		$this->app()->printMode = TRUE;
 		$card = new \mac\lan\DocumentCardSwLicense($this->app);
 		//$card->disableAttachments = TRUE;
 		$card->showDeprecations = TRUE;

@@ -36,7 +36,7 @@ class GlobalReport extends Report
 	function init ()
 	{
 		parent::init();
-		$this->reportTemplate = 'e10.server.defaultGlobalReport';
+		$this->reportTemplate = 'e10.base.defaultGlobalReport';
 		$this->reportParams = $this->params->detectValues();
 	}
 
@@ -134,7 +134,7 @@ class GlobalReport extends Report
 		$cr->setReport($this);
 		$code = $cr->createCode();
 
-		//if (!Application::$printMode && !$this->app->mobileMode)
+		if (!$this->app->printMode && !$this->app->mobileMode)
 		{
 			$code .= "<script>
 					$('div.e10-reportContent table.main').floatThead({
@@ -253,8 +253,7 @@ class GlobalReport extends Report
 		}
 
 		if ($this->format === 'pdf')
-			Application::$printMode = FALSE;
-
+			$this->app->printMode = FALSE;
 	}
 
 	public function createToolbar ()

@@ -25,7 +25,7 @@ class Application extends \Shipard\Application\ApplicationCore
 	/** @var \e10\web\WebPages  */
 	public $webEngine = NULL;
 	var $appCfg;
-	static $printMode = FALSE;
+	var $printMode = FALSE;
 	var $mobileMode = FALSE;
 	var $remote = '';
 	var $appSkeleton;
