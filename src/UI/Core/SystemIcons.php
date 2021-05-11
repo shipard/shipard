@@ -19,6 +19,10 @@ class SystemIcons
 		,actionPrint = 9
 		,actionSave = 10
 		,actionUser = 11
+		,iconHistory = 12
+		,iconOther = 13
+		,iconReports = 14
+		,iconSettings = 15
 	;
 
 

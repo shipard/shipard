@@ -46,5 +46,21 @@
     {
         "t": 0,
         "v": ""
+    },
+    {
+        "t": 0,
+        "v": "bi-clock-history"
+    },
+    {
+        "t": 0,
+        "v": "bi-three-dots-vertical"
+    },
+    {
+        "t": 0,
+        "v": "bi-file-earmark-bar-graph"
+    },
+    {
+        "t": 0,
+        "v": "bi-tools"
     }
 ]
