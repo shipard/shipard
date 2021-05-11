@@ -2,9 +2,27 @@
 <?php
 
 define ("__APP_DIR__", getcwd());
-require_once 'e10-modules/e10/server/php/e10-cli.php';
 
-use \E10\CLI\Application, \E10\utils;
+$cfgServerString = file_get_contents ('config/_server_channelInfo.json');
+if (!$cfgServerString)
+{
+	echo "ERROR: file `config/_server_channelInfo.json` not found.\n";
+	exit(100);
+}	
+$cfgServer = json_decode ($cfgServerString, true);
+if (!$cfgServer)
+{
+	echo "ERROR: file `config/_server_channelInfo.json` is not valid.\n";
+	exit(101);
+}
+	
+define('__SHPD_ROOT_DIR__', $cfgServer['serverInfo']['channelPath']);
+
+require_once __SHPD_ROOT_DIR__ . '/src/boot.php';
+
+
+use \Shipard\CLI\Application, \e10\utils;
+
 
 
 class CronApp extends Application
@@ -13,7 +31,7 @@ class CronApp extends Application
 	{
 		foreach ($this->dataModel->model ['modules'] as $moduleId => $moduleName)
 		{
-			$fmp = __APP_DIR__.'/e10-modules/'.str_replace('.', '/', $moduleId).'/';
+			$fmp = __SHPD_MODULES_DIR__.str_replace('.', '/', $moduleId).'/';
 
 			$msfn = $fmp.'services.php';
 			if (!is_file ($msfn))
@@ -25,79 +43,6 @@ class CronApp extends Application
 
 			$moduleService = new $className ($this);
 			$moduleService->onCron ($cronType);
-		}
-	}
-
-	public function checkApiAccess ()
-	{
-		$dsid = $this->cfgItem('dsid');
-		$time = time() - 600;
-		$dataForUpload = ['dsid' => $dsid, 'users' => []];
-
-		forEach (glob (__APP_DIR__.'/tmp/api/access/*') as $f)
-		{
-			$atime = fileatime ($f);
-			if ($atime < $time)
-				continue;
-			$bn = basename($f);
-			$data = explode ('_', $bn);
-			$userNdx = intval ($data[0]);
-
-			$userRecData = $this->db()->query('SELECT * FROM e10_persons_persons WHERE ndx = %i', $userNdx)->fetch();
-			if (!$userRecData)
-			{
-				error_log ("ERROR: bad user id '$userNdx'/'$dsid' in checkApiAccess: ".$f);
-				continue;
-			}
-
-			$deviceId = $data[2];
-			$timeStamp = new \DateTime(date('Y-m-d H:i:s', $atime));
-
-			// -- search ip address
-			$ipaddressndx = 0;
-			$ip = $this->db()->query('SELECT * FROM e10_base_ipaddr WHERE docState = 4000 AND ipaddress = %s', $data[1])->fetch();
-			if (isset ($ip['ndx']))
-				$ipaddressndx = $ip['ndx'];
-
-			// -- search device
-			$device = $this->db()->query('SELECT * FROM e10_base_devices WHERE id = %s', $deviceId)->fetch();
-			if (!$device)
-			{
-				$deviceRec = [
-						'id' => $deviceId, 'currentUser' => $userNdx, 'lastSeenOnline' => $timeStamp,
-						'ipaddress' => $data[1], 'ipaddressndx' => $ipaddressndx,
-						'docState' => 4000, 'docStateMain' => 2];
-				$this->db()->query('INSERT INTO e10_base_devices', $deviceRec);
-			}
-			else
-			{
-				$deviceRec = ['currentUser' => $userNdx, 'lastSeenOnline' => $timeStamp, 'ipaddress' => $data[1], 'ipaddressndx' => $ipaddressndx];
-				$this->db()->query('UPDATE e10_base_devices SET ', $deviceRec, ' WHERE ndx = %i', $device['ndx']);
-			}
-
-			$logRec = [
-					'eventType' => 2, 'user' => $userNdx, 'ipaddress' => $data[1], 'deviceid' => $deviceId,
-					'created' => $timeStamp, 'ipaddressndx' => $ipaddressndx, 'last' => 1
-			];
-
-			$this->db()->begin();
-			$this->db()->query('UPDATE e10_base_docslog SET [last] = 0 WHERE [last] = 1 AND eventType = 2 AND user = %i', intval ($data[0]));
-			$this->db()->query('INSERT INTO e10_base_docslog', $logRec);
-			$this->db()->commit();
-
-			$uploadUser = ['loginHash' => $userRecData['loginHash'], 'time' => date('Y-m-d H:i:s', $atime), 'ipaddress' => $data[1],
-										 'lat' => (isset($ip['lat'])) ? $ip['lat'] : 0, 'lon' => (isset($ip['lon'])) ? $ip['lon'] : 0];
-
-			$dataForUpload['users'][] = $uploadUser;
-		}
-
-		$hostingCfg = utils::hostingCfg();
-		if (count($dataForUpload['users']))
-		{
-			$data = json_encode ($dataForUpload);
-			$now = new \DateTime();
-			$fileName =  $now->format('Ymd-His').'-'.$dataForUpload['dsid'].'-'.mt_rand(100000,999999) .'_default_'.md5($data).'.json';
-			file_put_contents("/var/lib/e10/upload/apiaccess-{$hostingCfg['hostingGid']}/".$fileName, $data);
 		}
 	}
 
@@ -189,7 +134,6 @@ class CronApp extends Application
 
 	public function cronEver ()
 	{
-		$this->checkApiAccess ();
 		$this->checkRemoteAttachments ();
 	}
 
@@ -230,10 +174,6 @@ class CronApp extends Application
 
 	public function dataSourceStatsUpload ()
 	{
-		$hostingCfg = utils::hostingCfg(['hostingGid', 'serverGid']);
-		if ($hostingCfg === FALSE)
-			return FALSE;
-
 		$dsid = intval ($this->cfgItem('dsid'));
 
 		$dsStats = new \lib\hosting\DataSourceStats($this);
@@ -242,7 +182,7 @@ class CronApp extends Application
 		$data = json_encode ($dsStats->data);
 		$now = new \DateTime();
 		$fileName =  $now->format('Ymd-His').'-'.$dsid.'-'.mt_rand(100000,999999).md5($data).'.json';
-		file_put_contents("/var/lib/e10/upload/dsStats-{$hostingCfg['hostingGid']}/".$fileName, $data);
+		file_put_contents(__SHPD_VAR_DIR__."/upload/dsStats/".$fileName, $data);
 	}
 
 	public function run ()

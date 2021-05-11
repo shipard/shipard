@@ -129,6 +129,7 @@ class E10_App extends Application
 		$cfg[$cfgKeyParts[1]] = $cfgValue;
 
 		file_put_contents($fileName, utils::json_lint (json_encode ($cfg)));
+		chmod($fileName, 0660);
 	}
 
 	public function appWalk ()

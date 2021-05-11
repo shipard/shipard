@@ -1525,6 +1525,23 @@ class Utils
 		return (0 == posix_getuid());
 	}
 
+	static function checkFilePermissions ($fullFileName)
+	{
+		$fp = substr(sprintf('%o', fileperms($fullFileName)), -4);
+		if ($fp !== '0660')	
+		{
+			if (!chmod ($fullFileName, 0660))
+				error_log("chmod failed on `$fullFileName` [$fp]");
+		}
+		
+		$fg = posix_getgrgid(filegroup($fullFileName));
+		if ($fg['name'] !== self::wwwGroup())
+		{
+			if (!chgrp ($fullFileName, self::wwwGroup()))
+				error_log("chgrp failed on `$fullFileName` [{$fg['name']}]");
+		}
+	}
+
 	static function tableHeaderColName ($colName)
 	{
 		if (strpos(' +_|', $colName[0]) === FALSE)

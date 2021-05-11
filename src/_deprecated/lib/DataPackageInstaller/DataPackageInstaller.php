@@ -66,6 +66,7 @@ class DataPackageInstaller extends \E10\Utility
 				$cfg[$optionId] = $optionValue;
 			}
 			file_put_contents($fileName, utils::json_lint (json_encode ($cfg)));
+			chmod($fileName, 0660);
 		}
 
 		$this->upgradeApp();
