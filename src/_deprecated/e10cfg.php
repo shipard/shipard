@@ -254,7 +254,7 @@ class TblAppOptions extends DbTable
 							$recData = $this->loadItem ($pk);
 						break;
 			case 'save':
-						$data = Application::testGetData();
+						$data = $this->app()->testGetData();
 						$saveData = json_decode ($data, TRUE);
 						$recData = $saveData ['recData'];
 						break;
@@ -315,7 +315,7 @@ class TblAppOptions extends DbTable
 
 	public function saveFormData (TableForm &$formData, $saveData = NULL)
 	{
-		$data = Application::testGetData();
+		$data = $this->app()->testGetData();
 		$saveData = json_decode ($data, true);
 		$ndx = $saveData ['recData']['ndx'];
 
@@ -647,10 +647,10 @@ class FormAppOptions extends TableForm
 
 	public function renderSidebar ($type, $table, $id)
 	{
-		$allDataStr = Application::testGetData();
+		$allDataStr = $this->app()->testGetData();
 		$allData = json_decode ($allDataStr, TRUE);
 		$item = $allData ['recData'];
-		$srcColumnName = Application::testGetParam ('columnName');
+		$srcColumnName = $this->app()->testGetParam ('columnName');
 
 
 		if ($type == 'column')
@@ -761,7 +761,7 @@ class widgetServerInfo extends Widget
 {
 	public function create ()
 	{
-		$wid = Application::testGetParam ('newElementId');
+		$wid = $this->app()->testGetParam ('newElementId');
 		if ($wid == '')
 			$wid = 'wid' . time ();
 
