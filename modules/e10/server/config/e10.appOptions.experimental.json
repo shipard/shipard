@@ -29,12 +29,6 @@
 						"0": "Ne",
 						"1": "Ano"
 					}
-				},
-				{"cfgKey": "testNewPdfRender", "cfgName": "Testovat nové vytváření PDF souborů",
-					"options": {
-						"0": "Ne",
-						"1": "Ano"
-					}
 				}
 			]
 	}

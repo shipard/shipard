@@ -14,8 +14,6 @@ class PdfCreator extends Utility
 	var $dstFileName = '';
 	var $srcURL = '';
 
-	var $renderViaChrome = 0;
-
 	var $options = [
 		'paperOrientation' => 'landscape',
 		'paperFormat' => 'A4',
@@ -28,8 +26,6 @@ class PdfCreator extends Utility
 
 	public function setReport(\Shipard\Report\Report $report)
 	{
-		$this->renderViaChrome = 1;//intval($this->app()->cfgItem('options.experimental.testNewPdfRender', 0));
-
 		$this->srcFileName = $report->reportSrcFileName;
 		$this->srcURL = $report->reportSrcURL;
 		$this->dstFileName = $report->fullFileName;
@@ -71,27 +67,19 @@ class PdfCreator extends Utility
 
 		if ($fileExt === '.html')
 		{
-			if ($this->renderViaChrome)
-			{
-				$cmd = '';
+			$cmd = '';
 
-				$nodePath = \is_dir('/usr/lib/node_modules/') ? '/usr/lib/node_modules/' : '/usr/local/lib/node_modules/';
+			$nodePath = \is_dir('/usr/lib/node_modules/') ? '/usr/lib/node_modules/' : '/usr/local/lib/node_modules/';
 
-				$cmd .= 'export NODE_PATH='.$nodePath.' && ';
+			$cmd .= 'export NODE_PATH='.$nodePath.' && ';
 
-				$cmd .= 'node ';
-				$cmd .= __SHPD_ROOT_DIR__.'src/_deprecated/lib/pdf/pdfRenderer.js ';
-				$cmd .= $this->optsFileName;
-				$cmd .= ' > '.substr($this->srcFileName, 0, -5) . '.log' . ' 2>&1';
-				exec($cmd);
+			$cmd .= 'node ';
+			$cmd .= __SHPD_ROOT_DIR__.'src/_deprecated/lib/pdf/pdfRenderer.js ';
+			$cmd .= $this->optsFileName;
+			$cmd .= ' > '.substr($this->srcFileName, 0, -5) . '.log' . ' 2>&1';
+			exec($cmd);
 
-				$this->finalize();
-			}
-			else
-			{
-				exec ('phantomjs '.__APP_DIR__ . '/e10-modules/e10/server/utils/createpdf.js '.$this->srcFileName.' '.
-					$this->dstFileName.' '.$this->options['paperFormat'].' '.$this->options['paperOrientation'].' '.$this->options['paperMargin']);
-			}
+			$this->finalize();
 
 			$this->finalize();
 		}
@@ -111,19 +99,16 @@ class PdfCreator extends Utility
 			'pdfInfo' => $this->pdfInfo,
 		];
 
-		if ($this->renderViaChrome)
+		if (PHP_OS === 'Darwin')
 		{
-			if (PHP_OS === 'Darwin')
-			{
-				$opts['browserExecutablePath'] = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-			}
-			else
-			{
-				$browserStatus = utils::loadCfgFile('/var/lib/shipard/shpd/shpd-headless-browser.json');
-				if ($browserStatus && isset($browserStatus['webSocketDebuggerUrl']))
-					$opts['wsEndpointUrl'] = $browserStatus['webSocketDebuggerUrl'];
-				$opts['browserExecutablePath'] = '/usr/bin/google-chrome';
-			}
+			$opts['browserExecutablePath'] = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+		}
+		else
+		{
+			$browserStatus = utils::loadCfgFile('/var/lib/shipard/shpd/shpd-headless-browser.json');
+			if ($browserStatus && isset($browserStatus['webSocketDebuggerUrl']))
+				$opts['wsEndpointUrl'] = $browserStatus['webSocketDebuggerUrl'];
+			$opts['browserExecutablePath'] = '/usr/bin/google-chrome';
 		}
 
 		$this->optsFileName = substr($this->dstFileName, 0, -3).'json';

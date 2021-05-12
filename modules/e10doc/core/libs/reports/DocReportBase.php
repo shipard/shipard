@@ -34,13 +34,7 @@ class DocReportBase extends FormReport
 		if ($this->reportMode !== FormReport::rmDefault)
 			return;
 
-		$renderViaChrome = intval($this->app()->cfgItem('options.experimental.testNewPdfRender', 0));
-		$testNewDocReports = intval($this->app()->cfgItem('options.experimental.testNewDocReports', 0));
-		//if ($renderViaChrome && $testNewDocReports)
-		{
-			//$this->reportId .= '-default';
-			$this->reportTemplate .= '-default';
-		}
+		$this->reportTemplate .= '-default';
 	}
 
 	public function loadData()

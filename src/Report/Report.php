@@ -60,7 +60,6 @@ class Report extends \Shipard\Base\BaseObject
 
 	public $saveAs = FALSE;
 	public $mobile = FALSE;
-	var $renderViaChrome = 0;
 
 	public function __construct ($app = NULL)
 	{
@@ -72,8 +71,6 @@ class Report extends \Shipard\Base\BaseObject
 
 	public function init ()
 	{
-		$this->renderViaChrome = intval($this->app()->cfgItem('options.experimental.testNewPdfRender', 0));
-
 		$printerNdx = intval($this->app()->testGetParam('printer'));
 		if ($printerNdx)
 		{
