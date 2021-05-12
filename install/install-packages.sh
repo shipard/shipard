@@ -62,17 +62,9 @@ apt install --assume-yes --quiet python3-pip
 pip3 install PyPDF4
 
 #
-# chrome
+# chromium & puppeteer
 #
-
-#apt install --assume-yes --quiet chromium-browser
-
-apt install --assume-yes --quiet libgbm1 libgtk-3-0 xdg-utils
-wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-dpkg -i google-chrome-stable_current_amd64.deb
-rm google-chrome-stable_current_amd64.deb
-
-
+apt install --assume-yes --quiet chromium-browser
 npm -g i puppeteer-core
 
 #apt install postfix
@@ -81,7 +73,7 @@ npm -g i puppeteer-core
 #
 # create shpd user
 #
-adduser --disabled-password --gecos "" --home /var/lib/shipard/shpd shpd
+adduser --disabled-password --gecos "" --home /home/shpd shpd
 adduser www-data shpd
 systemctl restart nginx
 systemctl restart php8.0-fpm

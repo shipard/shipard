@@ -23,6 +23,7 @@ class ServerManager extends Utility
 		$this->mkDir(__SHPD_VAR_DIR__.'/dscmd');
 		$this->mkDir(__SHPD_VAR_DIR__.'/tmp');
 		$this->mkDir(__SHPD_VAR_DIR__.'/upload');
+		$this->mkDir(__SHPD_VAR_DIR__.'/shpd');
 
 		if (!isset($this->app()->cfgServer['dsRoot']))
 			return $this->app()->err('Value `dsRoot` not found in server configuration...');
