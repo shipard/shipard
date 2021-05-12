@@ -23,12 +23,6 @@
 						"o": "Staré chování Shipard",
 						"s": "Nové chování Shipard"
 					}
-				},
-				{"cfgKey": "testNewIcons", "cfgName": "Testovat nové ikony",
-					"options": {
-						"0": "Ne",
-						"1": "Ano"
-					}
 				}
 			]
 	}
