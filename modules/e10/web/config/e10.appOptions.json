@@ -1,39 +1,35 @@
 {
 	"servers": {
 		"name": "Webové servery", "order": 200000, "group": "web",
-		"icon": "icon-globe",
 		"type": "viewer",
 		"table": "e10.web.servers",
 		"viewer": "default"
 	},
 	"urlDecorations": {
 		"name": "Dekorace stránek webu", "order": 201000, "group": "web",
-		"icon": "x-cog",
 		"type": "viewer",
 		"table": "e10.web.urldecorations",
 		"viewer": "default"
 	},
 	"articlesSections": {
 		"name": "Sekce článků", "order": 203000, "group": "web",
-		"icon": "icon-newspaper-o",
 		"type": "viewer",
 		"table": "e10.web.articlesSections",
 		"viewer": "default"
 	},
 	"webScripts": {
 		"name": "Webové skripty", "order": 204000, "group": "web",
-		"icon": "icon-code",
 		"type": "viewer",
 		"table": "e10.web.scripts",
 		"viewer": "default"
 	},
 	"wuKeys": {
-		"name": "Klíče", "order": 230000, "group": "web", "icon": "icon-id-badge",
+		"name": "Klíče", "order": 230000, "group": "web",
 		"type": "viewer", "table": "e10.web.wuKeys", "viewer": "default"
 	},
 	"webcomm": {
 		"name": "Web a komunikace", "order": 12500, "group": "web",
-		"icon": "icon-bullhorn",
+		"icon": "settings/webComunication",
 		"type": "cfgFile",
 		"options":
 		[

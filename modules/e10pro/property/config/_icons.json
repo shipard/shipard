@@ -1,9 +1,9 @@
 {
 	"tables/e10pro.property.property": {
 		"fa5": "fa-university",
-		"fa5pro": "fa-sort-amount-desc",
-		"bsi": "bi-people-fill",
-		"mdi": "group"
+		"fa5pro": "fa-university",
+		"bsi": "bi-bank2",
+		"mdi": "account_balance"
 	},
 	"tables/e10pro.property.property-deps": {
 		"fa5": "fa-chevron-circle-down",
@@ -70,5 +70,11 @@
 		"fa5pro": "fa-stamp",
 		"bsi": "bi-file-earmark-diff-fill",
 		"mdi": "approval"
+	},
+	"settings/property":{
+		"fa5": "fa-university",
+		"fa5pro": "fa-university",
+		"bsi": "bi-bank2",
+		"mdi": "account_balance"
 	}
 }

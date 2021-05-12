@@ -1,7 +1,7 @@
 {
 	"shares": {
 		"name": "Sdílení", "order": 16000, "group": "system",
-		"icon": "icon-share-alt",
+		"icon": "settings/sharing",
 		"type": "cfgFile",
 		"options":
 		[

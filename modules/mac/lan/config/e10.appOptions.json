@@ -1,7 +1,7 @@
 {
 	"macLAN": {
 		"name": "Počítačová síť", "order": 200, "group": "mac",
-		"icon": "icon-sitemap",
+		"icon": "settings/network",
 		"type": "cfgFile",
 		"options":
 		[

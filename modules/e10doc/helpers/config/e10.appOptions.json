@@ -1,10 +1,10 @@
 {
 	"docsWkfSectionsRelations": {
-		"name": "Vazby dokladů na sekce workflow", "order": 29200, "group": "docs", "icon": "icon-columns",
+		"name": "Vazby dokladů na sekce workflow", "order": 29200, "group": "docs",
 		"type": "viewer", "table": "e10doc.helpers.wkfSectionsRelations", "viewer": "default"
 	},
 	"docsRowsSettings": {
-		"name": "Nastavení řádků dokladů", "order": 29300, "group": "docs", "icon": "icon-wrench",
+		"name": "Nastavení řádků dokladů", "order": 29300, "group": "docs",
 		"type": "viewer", "table": "e10doc.helpers.rowsSettings", "viewer": "default"
 	}
 }

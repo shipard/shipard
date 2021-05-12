@@ -1,0 +1,8 @@
+{
+    "tables/mac.data.sources": {
+		"fa5": "fa-database",
+		"fa5pro": "fa-database",
+		"bsi": "bi-hdd",
+		"mdi": "save"
+	}
+}

@@ -22,5 +22,35 @@
 		"fa5pro": "fa-window-maximize",
 		"bsi": "bi-layout-text-window-reverse",
 		"mdi": "dvr"
+	},
+    "tables/wkf.base.issuesStatuses":{
+		"fa5": "fa-tasks",
+		"fa5pro": "fa-tasks-alt",
+		"bsi": "bi-list-check",
+		"mdi": "checklist"
+	},
+    "tables/wkf.base.issuesStatusesKinds":{
+		"fa5": "fa-cogs",
+		"fa5pro": "fa-cogs",
+		"bsi": "bi-gear-fill",
+		"mdi": "settings"
+	},
+    "tables/wkf.base.targets":{
+		"fa5": "fa-flag-checkered",
+		"fa5pro": "fa-flag-checkered",
+		"bsi": "bi-flag-fill",
+		"mdi": "sports_score"
+	},
+    "tables/wkf.base.targetsKinds":{
+		"fa5": "fa-flag",
+		"fa5pro": "fa-flag",
+		"bsi": "bi-flag",
+		"mdi": "flag"
+	},
+    "tables/wkf.base.extNotifications":{
+		"fa5": "fa-external-link-alt",
+		"fa5pro": "fa-external-link-alt",
+		"bsi": "bi-link-45deg",
+		"mdi": "link"
 	}
 }

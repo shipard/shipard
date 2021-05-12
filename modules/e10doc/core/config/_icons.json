@@ -208,5 +208,41 @@
         "fa5pro":"fa-table",
         "bsi":"bi-table",
         "mdi":"table_chart"
+    },
+    "settigns/sale":{
+        "fa5":"fa-arrow-alt-circle-up",
+        "fa5pro":"fa-arrow-alt-circle-up",
+        "bsi":"bi-arrow-up-circle-fill",
+        "mdi":"arrow_circle_up"
+    },
+    "settigns/purchase":{
+        "fa5":"fa-arrow-alt-circle-down",
+        "fa5pro":"fa-arrow-alt-circle-down",
+        "bsi":"bi-arrow-down-circle-fill",
+        "mdi":"arrow_circle_down"
+    },
+    "settigns/finances":{
+        "fa5":"fa-money-bill-wave",
+        "fa5pro":"fa-money-bill-wave",
+        "bsi":"bi-cash-coin",
+        "mdi":"payments"
+    },
+    "settigns/workOrdersCommerce":{
+        "fa5":"fa-industry",
+        "fa5pro":"fa-industry-alt",
+        "bsi":"bi-building",
+        "mdi":"business"
+    },
+    "settigns/stock":{
+        "fa5":"fa-shopping-bag",
+        "fa5pro":"fa-shopping-bag",
+        "bsi":"bi-bag-fill",
+        "mdi":"shopping_bag"
+    },
+    "settigns/lab":{
+        "fa5":"fa-flask",
+        "fa5pro":"fa-flask",
+        "bsi":"bi-building",
+        "mdi":"science"
     }
 }

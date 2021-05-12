@@ -2,43 +2,43 @@
 	"panels": {
 		"maclan": {"url": "/app/maclan", "zone": "sec", "objectType": "panel", "name": "IT", "cntBigIcons": 4, "role": "maclan", "order": 1800000,
 			"items": {
-				"dashboard-lans": {"t1": "Síť", "object": "widget", "class": "e10.widgetDashboard", "subclass": "maclan", "icon": "icon-sitemap", "order": 5000},
-				"devices": {"t1": "Prvky sítě", "object": "viewer", "table": "mac.lan.devices", "viewer": "all", "icon": "icon-laptop", "order": 5100},
-				"dashboard-access": { "t1": "Budova", "object": "widget", "class": "e10.widgetDashboard", "subclass": "macAccess", "icon": "icon-building", "order": 5200},
+				"dashboard-lans": {"t1": "Síť", "object": "widget", "class": "e10.widgetDashboard", "subclass": "maclan", "icon": "e10.widgetDashboard/lanDashboard", "order": 5000},
+				"devices": {"t1": "Prvky sítě", "object": "viewer", "table": "mac.lan.devices", "viewer": "all", "order": 5100},
+				"dashboard-access": { "t1": "Budova", "object": "widget", "class": "e10.widgetDashboard", "subclass": "macAccess", "icon": "e10.widgetDashboard/building", "order": 5200},
 				"reports": {"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "mac-lan", "icon": "system/iconReports", "order": 80000},
 
 				"settingsLAN": {
-					"t1": "LAN nastavení", "object": "subMenu", "icon": "icon-sitemap",
+					"t1": "LAN nastavení", "object": "subMenu", "icon": "submenu/settingsLAN",
 					"order": 9900100,
 					"subMenu": {
 						"items": {
-							"vlans": {"t1": "VLANy", "object": "viewer", "table": "mac.lan.vlans", "viewer": "default", "icon": "icon-road", "order": 31000},
-							"ranges": {"t1": "Rozsahy adres", "object": "viewer", "table": "mac.lan.lansAddrRanges", "viewer": "default", "icon": "icon-arrows-h", "order": 32000},
-							"wlans": {"t1": "WiFi sítě", "object": "viewer", "table": "mac.lan.wlans", "viewer": "default", "icon": "icon-wifi", "order": 33000},
+							"vlans": {"t1": "VLANy", "object": "viewer", "table": "mac.lan.vlans", "viewer": "default", "order": 31000},
+							"ranges": {"t1": "Rozsahy adres", "object": "viewer", "table": "mac.lan.lansAddrRanges", "viewer": "default", "order": 32000},
+							"wlans": {"t1": "WiFi sítě", "object": "viewer", "table": "mac.lan.wlans", "viewer": "default", "order": 33000},
 
-							"wallSockets": {"t1": "Zásuvky", "object": "viewer", "table": "mac.lan.wallSockets", "viewer": "default", "icon": "icon-square-o", "order": 34100, "beforeSeparator":  1},
-							"racks": {"t1": "Racky", "object": "viewer", "table": "mac.lan.racks", "viewer": "default", "icon": "icon-window-maximize", "order": 34200},
-							"patchPanels": {"t1": "Patch panely", "object": "viewer", "table": "mac.lan.patchPanels", "viewer": "tree", "icon": "icon-ellipsis-h", "order": 34400},
+							"wallSockets": {"t1": "Zásuvky", "object": "viewer", "table": "mac.lan.wallSockets", "viewer": "default", "order": 34100, "beforeSeparator":  1},
+							"racks": {"t1": "Racky", "object": "viewer", "table": "mac.lan.racks", "viewer": "default", "order": 34200},
+							"patchPanels": {"t1": "Patch panely", "object": "viewer", "table": "mac.lan.patchPanels", "viewer": "tree", "order": 34400},
 
-							"dataSources" :{"t1": "Zdroje dat", "object": "viewer", "table": "mac.data.sources", "viewer": "default", "icon": "icon-database", "order": 89000, "beforeSeparator":  1},
+							"dataSources" :{"t1": "Zdroje dat", "object": "viewer", "table": "mac.data.sources", "viewer": "default", "order": 89000, "beforeSeparator":  1},
 
-							"networks": {"t1": "Sítě", "object": "viewer", "table": "mac.lan.lans", "viewer": "default", "icon": "x-site", "order": 36100, "beforeSeparator":  1},
-							"deviceTypes" :{"t1": "Typy zařízení", "object": "viewer", "table": "mac.lan.deviceTypes", "viewer": "default", "icon": "icon-gamepad", "order": 36200},
+							"networks": {"t1": "Sítě", "object": "viewer", "table": "mac.lan.lans", "viewer": "default", "order": 36100, "beforeSeparator":  1},
+							"deviceTypes" :{"t1": "Typy zařízení", "object": "viewer", "table": "mac.lan.deviceTypes", "viewer": "default", "order": 36200},
 
-							"admins" :{"t1": "Správci", "object": "viewer", "table": "mac.admin.admins", "viewer": "default", "icon": "icon-user-secret", "order": 500000, "beforeSeparator":  {"text": "Správa", "class": "block pl05 pt1", "icon":  "icon-square"}},
-							"ipAddressLists" :{"t1": "Seznamy IP adres", "object": "viewer", "table": "mac.lan.ipAddressLists", "viewer": "default", "icon": "icon-user-secret", "order": 500100},
-							"ipAddress" :{"t1": "IP adresy", "object": "viewer", "table": "mac.lan.ipAddress", "viewer": "default", "icon": "icon-crosshairs", "order": 500200},
+							"admins" :{"t1": "Správci", "object": "viewer", "table": "mac.admin.admins", "viewer": "default", "order": 500000, "beforeSeparator":  {"text": "Správa", "class": "block pl05 pt1", "icon": "submenu/management"}},
+							"ipAddressLists" :{"t1": "Seznamy IP adres", "object": "viewer", "table": "mac.lan.ipAddressLists", "viewer": "default", "order": 500100},
+							"ipAddress" :{"t1": "IP adresy", "object": "viewer", "table": "mac.lan.ipAddress", "viewer": "default", "order": 500200},
 
-							"macs": {"t1": "Všechny", "object": "viewer", "table": "mac.lan.macs", "viewer": "default", "icon": "icon-cube", "order": 600100, "beforeSeparator": {"text": "MAC adresy", "class": "block pl05 pt1", "icon":  "icon-square"}},
-							"macsOnPorts" :{"t1": "Podle portů", "object": "viewer", "table": "mac.lan.macsOnPorts", "viewer": "default", "icon": "icon-cubes", "order": 600200},
+							"macs": {"t1": "Všechny", "object": "viewer", "table": "mac.lan.macs", "viewer": "default", "order": 600100, "beforeSeparator": {"text": "MAC adresy", "class": "block pl05 pt1", "icon":  "icon-square"}},
+							"macsOnPorts" :{"t1": "Podle portů", "object": "viewer", "table": "mac.lan.macsOnPorts", "viewer": "default", "order": 600200},
 
-							"watchdogs": {"t1": "Watchdogs", "object": "viewer", "table": "mac.lan.watchdogs", "viewer": "default", "icon": "icon-heartbeat", "order": 700100, "beforeSeparator": {"text": "Monitor", "class": "block pl05 pt1", "icon":  "icon-square"}},
-							"alerts": {"t1": "Výstrahy", "object": "viewer", "table": "mac.lan.alerts", "viewer": "default", "icon": "icon-exclamation-triangle", "order": 700200}
+							"watchdogs": {"t1": "Watchdogs", "object": "viewer", "table": "mac.lan.watchdogs", "viewer": "default", "order": 700100, "beforeSeparator": {"text": "Monitor", "class": "block pl05 pt1", "icon":  "icon-square"}},
+							"alerts": {"t1": "Výstrahy", "object": "viewer", "table": "mac.lan.alerts", "viewer": "default", "order": 700200}
 						}
 					}
 				},
 				"settingsIoT": {
-					"t1": "IoT nastavení", "object": "subMenu", "icon": "icon-power-off",
+					"t1": "IoT nastavení", "object": "subMenu", "icon": "submenu/settingsIoT",
 					"order": 9900200,
 					"subMenu": {
 						"items": {
@@ -57,7 +57,7 @@
 					}
 				},
 				"building": {
-					"t1": "Nastavení Budova", "object": "subMenu", "icon": "icon-building",
+					"t1": "Nastavení Budova", "object": "subMenu", "icon": "submenu/settingsBuilding",
 					"order": 9900250,
 					"subMenu": {
 						"items": {
@@ -73,7 +73,7 @@
 					}
 				},
 				"settingsSW": {
-					"t1": "SW nastavení", "object": "subMenu", "icon": "icon-hourglass-o",
+					"t1": "SW nastavení", "object": "subMenu", "icon": "submenu/settingsSW",
 					"order": 9900300,
 					"subMenu": {
 						"items": {
@@ -117,7 +117,7 @@
 							"t1": "SW aplikace", "object": "viewer", "table": "mac.lan.swApplications", "viewer": "all",  "icon": "icon-hourglass-o", "order": 7810000
 						},
 						"lan-sw-licenses": {
-							"t1": "SW licence", "object": "viewer", "table": "mac.lan.swLicenses", "viewer": "all",  "icon": "icon-certificate", "order": 7820000
+							"t1": "SW licence", "object": "viewer", "table": "mac.lan.swLicenses", "viewer": "all", "order": 7820000
 						}
 					}
 				}

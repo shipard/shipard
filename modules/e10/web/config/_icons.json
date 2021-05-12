@@ -40,6 +40,29 @@
         "fa5pro":"fa-paragraph",
         "bsi":"bi-paragraph",
         "mdi":"view_sidebar"
+    },
+    "settings/webComunication":{
+        "fa5":"fa-bullhorn",
+        "fa5pro":"fa-bullhorn",
+        "bsi":"bi-megaphone",
+        "mdi":"campaign"
+    },
+    "tables/e10.web.servers":{
+        "fa5":"fa-globe-americas",
+        "fa5pro":"fa-globe-americas",
+        "bsi":"bi-globe",
+        "mdi":"public"
+    },
+    "tables/e10.web.scripts":{
+        "fa5":"fa-code",
+        "fa5pro":"fa-code",
+        "bsi":"bi-code-slash",
+        "mdi":"code"
+    },
+    "tables/e10.web.wuKeys":{
+        "fa5":"fa-id-badge",
+        "fa5pro":"fa-id-badge",
+        "bsi":"bi-person-badge-fill",
+        "mdi":"badge"
     }
-
 }

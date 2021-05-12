@@ -1,7 +1,7 @@
 {
 	"e10doc-stock": {
 		"name": "Zásoby", "order": 20000, "group": "core",
-		"icon": "icon-shopping-bag",
+		"icon": "settigns/stock",
 		"type": "cfgFile",
 		"options":
 			[

@@ -19,13 +19,12 @@
 	},
 	"ipaddr": {
 		"name": "IP adresy", "order": 300000, "group": "system",
-		"icon": "icon-sitemap",
 		"type": "viewer",
 		"table": "e10.base.ipaddr",
 		"viewer": "default"
 	},
 	"devices": {
-		"name": "Zařízení", "order": 91000, "group": "system", "icon": "icon-desktop",
+		"name": "Zařízení", "order": 91000, "group": "system",
 		"type": "viewer", "table": "e10.base.devices", "viewer": "default"
 	}
 }

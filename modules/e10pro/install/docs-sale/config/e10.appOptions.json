@@ -1,7 +1,7 @@
 {
 	"e10doc-sale": {
 		"name": "Prodej", "order": 12000, "group": "core", "help": "prirucka/117",
-		"icon": "e10-docs-invoices-out",
+		"icon": "settigns/sale",
 		"type": "cfgFile",
 		"options":
 			[
@@ -28,11 +28,11 @@
 			]
 	},
 	"contractsDocNumbers": {
-		"name": "Číselné řady smluv", "order": 56000, "group": "docs", "icon": "icon-play-circle",
+		"name": "Číselné řady smluv", "order": 56000, "group": "docs",
 		"type": "viewer", "table": "e10doc.contracts.core.docNumbers", "viewer": "default"
 	},
 	"contractsKinds": {
-		"name": "Druhy smluv", "order": 57000, "group": "docs", "icon": "icon-cogs",
+		"name": "Druhy smluv", "order": 57000, "group": "docs",
 		"type": "viewer", "table": "e10doc.contracts.core.kinds", "viewer": "default"
 	}
 }

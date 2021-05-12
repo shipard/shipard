@@ -1,6 +1,6 @@
 {
 	"vdsDefs": {
-		"name": "Rozšiřující datové struktury", "order": 890000, "group": "system", "icon": "icon-table",
+		"name": "Rozšiřující datové struktury", "order": 890000, "group": "system",
 		"type": "viewer", "table": "vds.base.defs", "viewer": "default"
 	}
 }

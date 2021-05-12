@@ -46,5 +46,23 @@
         "fa5pro":"fa-list-ul",
         "bsi":"bi-list-ul",
         "mdi":"format_list_bulleted"
+    },
+    "settings/sharing":{
+        "fa5":"fa-share-alt",
+        "fa5pro":"fa-share-alt",
+        "bsi":"bi-share-fill",
+        "mdi":"share"
+    },
+    "tables/e10.base.devices":{
+        "fa5":"fa-desktop",
+        "fa5pro":"fa-desktop",
+        "bsi":"bi-display",
+        "mdi":"desktop_windows"
+    },
+    "tables/e10.base.ipaddr":{
+        "fa5":"fa-sitemap",
+        "fa5pro":"fa-sitemap",
+        "bsi":"bi-diagram-3-fill",
+        "mdi":"device_hub"
     }
 }

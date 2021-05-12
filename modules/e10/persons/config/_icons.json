@@ -17,13 +17,13 @@
 		"bsi": "bi-people-fill",
 		"mdi": "groups"
 	},
-	"e10.persons.categories": {
+	"tables/e10.persons.categories": {
 		"fa5": "fa-id-card",
 		"fa5pro": "fa-id-card",
 		"bsi": "bi-person-badge",
 		"mdi": "badge"
 	},
-	"e10.persons.relations": {
+	"tables/e10.persons.relations": {
 		"fa5": "fa-compress-alt",
 		"fa5pro": "fa-compress-alt",
 		"bsi": "bi-arrows-angle-contract",

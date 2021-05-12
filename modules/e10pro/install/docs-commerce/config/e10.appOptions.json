@@ -1,7 +1,7 @@
 {
 	"e10doc-commerce": {
 		"name": "Zakázky a Obchod", "order": 15000, "group": "core",
-		"icon": "icon-industry",
+		"icon": "settigns/workOrdersCommerce",
 		"type": "cfgFile",
 		"enabledCfgItem": "options.experimental.testCommerce",
 		"options":

@@ -1,7 +1,7 @@
 {
 	"macAccess": {
 		"name": "Přístup do budovy/areálu", "order": 100, "group": "mac",
-		"icon": "icon-building-o",
+		"icon": "settings/accessBuilding",
 		"type": "cfgFile",
 		"options":
 		[
