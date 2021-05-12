@@ -1,7 +1,7 @@
 {
 	"wkfn": {
 		"name": "Workflow", "order": 100, "group": "workflow",
-		"icon": "icon-cogs",
+		"icon": "settings/workflow",
 		"type": "cfgFile",
 		"options":
 		[

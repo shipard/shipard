@@ -1,6 +1,6 @@
 {
 	"property": {
-		"name": "Majetek", "order": 1000, "group": "property", "icon": "icon-institution",
+		"name": "Majetek", "order": 1000, "group": "property", "icon": "settings/property",
 		"type": "cfgFile",
 		"options":
 		[
@@ -11,14 +11,12 @@
 	},
 	"propertyTypes": {
 		"name": "Typy majetku", "order": 31000, "group": "property",
-		"icon": "icon-list",
 		"type": "viewer",
 		"table": "e10pro.property.types",
 		"viewer": "default"
 	},
 	"propertyGroups": {
 		"name": "Skupiny majetku", "order": 31200, "group": "property",
-		"icon": "icon-object-group",
 		"type": "viewer",
 		"table": "e10pro.property.groups",
 		"viewer": "default"

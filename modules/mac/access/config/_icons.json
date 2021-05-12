@@ -1,0 +1,14 @@
+{
+    "settings/accessBuilding":{
+        "fa5":"fa-building",
+        "fa5pro":"fa-building",
+        "bsi":"bi-building",
+        "mdi":"business"
+    },
+    "settings/network":{
+        "fa5":"fa-sitemap",
+        "fa5pro":"fa-sitemap",
+        "bsi":"bi-diagram-3-fill",
+        "mdi":"device_hub"
+    }
+}

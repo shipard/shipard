@@ -31,14 +31,12 @@
 	},
 	"docnumbers": {
 		"name": "Číselné řady dokladů", "order": 20000, "group": "docs",
-		"icon": "icon-play-circle",
 		"type": "viewer",
 		"table": "e10doc.base.docnumbers",
 		"viewer": "default"
 	},
 	"dockinds": {
 		"name": "Druhy dokladů", "order": 21000, "group": "docs",
-		"icon": "icon-flag-o",
 		"type": "viewer",
 		"table": "e10doc.base.dockinds",
 		"viewer": "default"
@@ -61,17 +59,14 @@
 	},
 	"reportsTexts": {
 		"name": "Texty na dokladech", "order": 10110000, "group": "docs",
-		"icon": "icon-file-code-o",
 		"type": "viewer", "table": "e10doc.base.reportsTexts", "viewer": "default"
 	},
 	"docsAdditions": {
 		"name": "Dodatky dokladů", "order": 10210000, "group": "docs",
-		"icon": "icon-sticky-note-o",
 		"type": "viewer", "table": "e10doc.base.additions", "viewer": "default"
 	},
 	"docsAdditionsTypes": {
 		"name": "Typy dodatků dokladů", "order": 10220000, "group": "docs",
-		"icon": "icon-podcast",
 		"type": "viewer", "table": "e10doc.base.additionsTypes", "viewer": "default"
 	},
 	"experimental": {

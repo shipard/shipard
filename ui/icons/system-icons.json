@@ -6,34 +6,34 @@
 		"mdi": "test2"
 	},	
 	"actionCalendar": {
-		"fa5": "fa-calendar",
-		"fa5pro": "fa-calendar",
-		"bsi": "",
-		"mdi": ""
+		"fa5": "fa-calendar-alt",
+		"fa5pro": "fa-calendar-alt",
+		"bsi": "calendar",
+		"mdi": "calendar_today"
 	},	
 	"actionClose": {
 		"fa5": "fa-times-circle",
 		"fa5pro": "fa-times-circle",
-		"bsi": "",
-		"mdi": ""
+		"bsi": "bi-x-circle",
+		"mdi": "highlight_off"
 	},	
 	"actionCopy": {
-		"fa5": "fa-files-o",
-		"fa5pro": "fa-files-o",
-		"bsi": "",
-		"mdi": ""
+		"fa5": "fa-copy",
+		"fa5pro": "fa-copy",
+		"bsi": "bi-files",
+		"mdi": "file_copy"
 	},	
 	"actionDatabaseName": {
 		"fa5": "fa-building",
 		"fa5pro": "fa-building",
-		"bsi": "",
-		"mdi": ""
+		"bsi": "bi-building",
+		"mdi": "business"
 	},	
 	"actionHomePage": {
 		"fa5": "fa-home",
 		"fa5pro": "fa-home",
-		"bsi": "",
-		"mdi": ""
+		"bsi": "bi-house",
+		"mdi": "home"
 	},	
 	"actionLogout": {
 		"fa5": "fa-power-off",
@@ -43,33 +43,33 @@
 	},	
 	"actionNotifications": {
 		"fa5": "fa-bell",
-		"fa5pro": "fa-bell-o",
-		"bsi": "",
-		"mdi": ""
+		"fa5pro": "fa-bell",
+		"bsi": "bi-bell",
+		"mdi": "notifications"
 	},	
 	"actionOpen": {
-		"fa5": "fa-pencil-square-o",
-		"fa5pro": "fa-pencil-square-o",
-		"bsi": "",
-		"mdi": ""
+		"fa5": "fa-edit",
+		"fa5pro": "fa-edit",
+		"bsi": "bi-pencil-square",
+		"mdi": "drive_file_rename_outline"
 	},	
 	"actionPrint": {
 		"fa5": "fa-print",
 		"fa5pro": "fa-print",
-		"bsi": "",
-		"mdi": ""
+		"bsi": "bi-printer",
+		"mdi": "print"
 	},	
 	"actionSave": {
 		"fa5": "fa-download",
 		"fa5pro": "fa-download",
-		"bsi": "",
-		"mdi": ""
+		"bsi": "bi-download",
+		"mdi": "file_download"
 	},	
 	"iconUser": {
 		"fa5": "fa-user",
 		"fa5pro": "fa-user",
-		"bsi": "",
-		"mdi": ""
+		"bsi": "bi-person",
+		"mdi": "person"
 	},
 	"iconReports":{
 		"fa5":"fa-chart-bar",

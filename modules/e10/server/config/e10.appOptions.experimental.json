@@ -1,7 +1,7 @@
 {
 	"experimental": {
 		"name": "Laboratoř", "order": 9999000, "group": "core",
-		"icon": "x-lab",
+		"icon": "settigns/lab",
 		"type": "cfgFile",
 		"options":
 			[

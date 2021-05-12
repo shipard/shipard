@@ -1,7 +1,7 @@
 {
 	"e10doc-finance": {
 		"name": "Finance", "order": 14500, "group": "core",
-		"icon": "icon-money",
+		"icon": "settigns/finances",
 		"type": "cfgFile",
 		"options":
 			[

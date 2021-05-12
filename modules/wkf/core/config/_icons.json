@@ -4,5 +4,11 @@
 		"fa5pro": "fa-filter",
 		"bsi": "bi-funnel",
 		"mdi": "filter_alt"
+	},
+	"settings/workflow":{
+		"fa5": "fa-cogs",
+		"fa5pro": "fa-cogs",
+		"bsi": "bi-gear-fill",
+		"mdi": "settings"
 	}
 }

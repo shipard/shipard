@@ -1,0 +1,14 @@
+{
+    "tables/wkf.docs.folders":{
+		"fa5": "fa-folder",
+		"fa5pro": "fa-folders",
+		"bsi": "bi-folder",
+		"mdi": "folder"
+	},
+    "tables/wkf.docs.docsKinds":{
+		"fa5": "fa-file",
+		"fa5pro": "fa-file",
+		"bsi": "bi-file-earmark",
+		"mdi": "insert_drive_file"
+	}
+}

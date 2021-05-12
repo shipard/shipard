@@ -22,7 +22,7 @@
 	},
 	"wikies": {
 		"name": "Wiki dokumentace", "order": 100, "group": "wikies",
-		"icon": "icon-file-text",
+		"icon": "settings/wikiDocumentation",
 		"type": "cfgFile",
 		"options":
 		[

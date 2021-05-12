@@ -1,0 +1,32 @@
+{
+    "tables/terminals.base.workplaces":{
+        "fa5":"fa-building",
+        "fa5pro":"fa-building",
+        "bsi":"bi-building",
+        "mdi":"home_work"
+    },
+    "tables/terminals.base.printers":{
+        "fa5":"fa-print",
+        "fa5pro":"fa-print",
+        "bsi":"bi-printer",
+        "mdi":"print"
+    },
+    "tables/terminals.base.servers":{
+        "fa5":"fa-server",
+        "fa5pro":"fa-server",
+        "bsi":"bi-hdd-stack-fill",
+        "mdi":"dns"
+    },
+    "tables/terminals.base.sensors":{
+        "fa5":"fa-stethoscope",
+        "fa5pro":"fa-sensor-on",
+        "bsi":"bi-soundwave",
+        "mdi":"sensors"
+    },
+    "tables/terminals.base.cameras":{
+        "fa5":"fa-video",
+        "fa5pro":"fa-cctv",
+        "bsi":"bi-camera-video-fill",
+        "mdi":"videocam"
+    }
+}

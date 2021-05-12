@@ -1,0 +1,152 @@
+{
+    "e10.widgetDashboard/lanDashboard": {
+		"fa5": "fa-sitemap",
+		"fa5pro": "fa-sitemap",
+		"bsi": "bi-diagram-3",
+		"mdi": "device_hub"
+	},
+    "tables/mac.lan.devices": {
+		"fa5": "fa-laptop",
+		"fa5pro": "fa-phone-laptop",
+		"bsi": "bi-laptop",
+		"mdi": "computer"
+	},
+    "e10.widgetDashboard/building": {
+		"fa5": "fa-building",
+		"fa5pro": "fa-building",
+		"bsi": "bi-building",
+		"mdi": "business"
+	},
+    "submenu/settingsLAN": {
+		"fa5": "fa-sitemap",
+		"fa5pro": "fa-sitemap",
+		"bsi": "bi-diagram-3",
+		"mdi": "device_hub"
+	},
+    "submenu/settingsIoT": {
+		"fa5": "fa-power-off",
+		"fa5pro": "fa-power-off",
+		"bsi": "bi-power",
+		"mdi": "power_settings_new"
+	},
+    "submenu/settingsBuilding": {
+		"fa5": "fa-building",
+		"fa5pro": "fa-building",
+		"bsi": "bi-building",
+		"mdi": "business"
+	},
+    "submenu/settingsSW": {
+		"fa5": "fa-hourglass-half",
+		"fa5pro": "fa-hourglass-half",
+		"bsi": "bi-hourglass-split",
+		"mdi": "hourglass_empty"
+	},
+    "tables/mac.lan.swLicenses": {
+		"fa5": "fa-certificate",
+		"fa5pro": "fa-certificate",
+		"bsi": "bi-patch-check",
+		"mdi": "verified"
+	},
+    "report/SWLicenses": {
+		"fa5": "fa-certificate",
+		"fa5pro": "fa-certificate",
+		"bsi": "bi-patch-check",
+		"mdi": "verified"
+	},
+    "report/shipardAgent": {
+		"fa5": "fa-user-secret",
+		"fa5pro": "fa-user-secret",
+		"bsi": "bi-person-square",
+		"mdi": "support_agent"
+	},
+    "tables/mac.lan.vlans": {
+		"fa5": "fa-road",
+		"fa5pro": "fa-road",
+		"bsi": "bi-diagram-2",
+		"mdi": "device_hub"
+	},
+    "tables/mac.lan.lansAddrRanges": {
+		"fa5": "fa-arrows-alt-h",
+		"fa5pro": "fa-arrows-alt-h",
+		"bsi": "bi-arrows-angle-expand",
+		"mdi": "open_in_full"
+	},
+    "tables/mac.lan.wlans": {
+		"fa5": "fa-wifi",
+		"fa5pro": "fa-wifi",
+		"bsi": "bi-wifi",
+		"mdi": "wifi"
+	},
+    "tables/mac.lan.wallSockets": {
+		"fa5": "fa-plug",
+		"fa5pro": "fa-outlet",
+		"bsi": "bi-outlet",
+		"mdi": "outlet"
+	},
+    "tables/mac.lan.racks": {
+		"fa5": "fa-window-maximize",
+		"fa5pro": "fa-window-maximize",
+		"bsi": "bi-hdd-rack-fill",
+		"mdi": "web_asset"
+	},
+    "tables/mac.lan.patchPanels": {
+		"fa5": "fa-ellipsis-h",
+		"fa5pro": "fa-ellipsis-h",
+		"bsi": "bi-three-dots",
+		"mdi": "more_horiz"
+	},
+    "tables/mac.lan.lans": {
+		"fa5": "fa-sitemap",
+		"fa5pro": "fa-sitemap",
+		"bsi": "bi-diagram-3",
+		"mdi": "device_hub"
+	},
+    "tables/mac.lan.deviceTypes": {
+		"fa5": "fa-gamepad",
+		"fa5pro": "fa-gamepad-alt",
+		"bsi": "bi-controller",
+		"mdi": "sports_esports"
+	},
+    "submenu/management": {
+		"fa5": "fa-square",
+		"fa5pro": "fa-square",
+		"bsi": "bi-app",
+		"mdi": "check_box_outline_blank"
+	},
+    "tables/mac.lan.ipAddressLists": {
+		"fa5": "fa-list",
+		"fa5pro": "fa-list",
+		"bsi": "bi-list-task",
+		"mdi": "list"
+	},
+    "tables/mac.lan.ipAddress": {
+		"fa5": "fa-crosshairs",
+		"fa5pro": "fa-crosshairs",
+		"bsi": "bi-geo-fill",
+		"mdi": "location_on"
+	},
+    "tables/mac.lan.macs": {
+		"fa5": "fa-cube",
+		"fa5pro": "fa-cube",
+		"bsi": "bi-collection",
+		"mdi": "reorder"
+	},
+    "tables/mac.lan.macsOnPorts": {
+		"fa5": "fa-cubes",
+		"fa5pro": "fa-cubes",
+		"bsi": "bi-collection-fill",
+		"mdi": "list"
+	},
+    "tables/mac.lan.watchdogs": {
+		"fa5": "fa-heartbeat",
+		"fa5pro": "fa-heartbeat",
+		"bsi": "bi-eye",
+		"mdi": "visibility"
+	},
+    "tables/mac.lan.alerts": {
+		"fa5": "fa-exclamation-triangle",
+		"fa5pro": "fa-exclamation-triangle",
+		"bsi": "bi-exclamation-triangle-fill",
+		"mdi": "warning"
+	}
+}

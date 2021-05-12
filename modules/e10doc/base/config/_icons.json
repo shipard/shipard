@@ -47,10 +47,40 @@
         "bsi":"bi-calendar",
         "mdi":"calendar_today"
     },
-    "e10doc.base.warehouses":{
+    "tables/e10doc.base.warehouses":{
         "fa5":"fa-cubes",
         "fa5pro":"fa-cubes",
         "bsi":"bi-shop-window",
         "mdi":"inventory_2"
+    },
+    "tables/e10doc.base.docnumbers":{
+        "fa5":"fa-play-circle",
+        "fa5pro":"fa-play-circle",
+        "bsi":"bi-play-circle-fill",
+        "mdi":"play_circle_filled"
+    },
+    "tables/e10doc.base.dockinds":{
+        "fa5":"fa-flag",
+        "fa5pro":"fa-flag",
+        "bsi":"bi-flag",
+        "mdi":"flag"
+    },
+    "tables/e10doc.base.reportsTexts":{
+        "fa5":"fa-file-signature",
+        "fa5pro":"fa-file-signature",
+        "bsi":"bi-file-earmark-text-fill",
+        "mdi":"description"
+    },
+    "tables/e10doc.base.additions":{
+        "fa5":"fa-sticky-note",
+        "fa5pro":"fa-sticky-note",
+        "bsi":"bi-stickies",
+        "mdi":"sticky_note_2"
+    },
+    "tables/e10doc.base.additionsTypes":{
+        "fa5":"fa-podcast",
+        "fa5pro":"fa-podcast",
+        "bsi":"bi-stickies-fill",
+        "mdi":"podcasts"
     }
 }
