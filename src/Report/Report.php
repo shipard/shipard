@@ -30,6 +30,8 @@ class Report extends \Shipard\Base\BaseObject
 	public $mimeType;
 	public $srcFileExtension;
 	var $reportSrcFileName = '';
+	var $reportSrcFileNameRelative = '';
+	var $reportSrcURL = '';
 	public $format;
 	public $objectData = [];
 	public $ok = false;
@@ -125,7 +127,9 @@ class Report extends \Shipard\Base\BaseObject
 		}
 		elseif ($this->mimeType == 'application/pdf')
 		{
-			$this->reportSrcFileName = __APP_DIR__ . "/tmp/rpdf-" . time() . '-' . mt_rand () . '.' . $this->srcFileExtension;
+			$this->reportSrcFileNameRelative = "tmp/rpdf-" . time() . '-' . mt_rand () . '.' . $this->srcFileExtension;
+			$this->reportSrcFileName = __APP_DIR__ . '/' . $this->reportSrcFileNameRelative;
+			$this->reportSrcURL = 'https://'.$this->app()->cfgItem('hosting.serverDomain').$this->app()->dsRoot . '/'. $this->reportSrcFileNameRelative;
 			file_put_contents($this->reportSrcFileName, $this->objectData ['mainCode']);
 
 			$this->fullFileName = substr($this->reportSrcFileName, 0, -(strlen($this->srcFileExtension) + 1)) . '.pdf';

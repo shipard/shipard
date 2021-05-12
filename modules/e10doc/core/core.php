@@ -441,6 +441,7 @@ class ShortPaymentDescriptor extends \E10\Utility
 	public $spaydSha1 = '';
 	public $spaydQRCodeBaseFileName = '';
 	public $spaydQRCodeFullFileName = '';
+	public $spaydQRCodeURL = '';
 
 	public function createString ()
 	{
@@ -463,6 +464,7 @@ class ShortPaymentDescriptor extends \E10\Utility
 	{
 		$dirName = __APP_DIR__.'/imgcache/spayd/';
 		$this->spaydQRCodeFullFileName = $dirName . $this->spaydQRCodeBaseFileName;
+		$this->spaydQRCodeURL = $this->app()->dsRoot.'/imgcache/spayd/'.$this->spaydQRCodeBaseFileName;
 
 		if (is_file($this->spaydQRCodeFullFileName))
 			return;

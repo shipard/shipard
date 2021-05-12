@@ -12,6 +12,7 @@ class PdfCreator extends Utility
 {
 	var $srcFileName = '';
 	var $dstFileName = '';
+	var $srcURL = '';
 
 	var $renderViaChrome = 0;
 
@@ -30,6 +31,7 @@ class PdfCreator extends Utility
 		$this->renderViaChrome = 1;//intval($this->app()->cfgItem('options.experimental.testNewPdfRender', 0));
 
 		$this->srcFileName = $report->reportSrcFileName;
+		$this->srcURL = $report->reportSrcURL;
 		$this->dstFileName = $report->fullFileName;
 
 		$this->options['paperOrientation'] = $report->paperOrientation;
@@ -102,7 +104,7 @@ class PdfCreator extends Utility
 	protected function saveParamsForBrowser()
 	{
 		$opts = [
-			'url' => 'file://'.$this->srcFileName,
+			'url' => $this->srcURL,
 			'dstFileName' => $this->dstFileName,
 			'pdfOptions' => $this->options,
 			'pdfAttachments' => $this->pdfAttachments,

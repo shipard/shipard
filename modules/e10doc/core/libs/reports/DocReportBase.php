@@ -36,7 +36,7 @@ class DocReportBase extends FormReport
 
 		$renderViaChrome = intval($this->app()->cfgItem('options.experimental.testNewPdfRender', 0));
 		$testNewDocReports = intval($this->app()->cfgItem('options.experimental.testNewDocReports', 0));
-		if ($renderViaChrome && $testNewDocReports)
+		//if ($renderViaChrome && $testNewDocReports)
 		{
 			//$this->reportId .= '-default';
 			$this->reportTemplate .= '-default';
