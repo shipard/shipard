@@ -1542,6 +1542,17 @@ class Utils
 		}
 	}
 
+	static function mkDir($dir)
+	{
+		if (!is_dir($dir))
+			mkdir($dir, 0770, TRUE);
+
+		chmod($dir, 0770);
+		if (self::superuser())
+			chown($dir, self::wwwUser());
+		chgrp($dir, self::wwwGroup());
+	}
+
 	static function tableHeaderColName ($colName)
 	{
 		if (strpos(' +_|', $colName[0]) === FALSE)

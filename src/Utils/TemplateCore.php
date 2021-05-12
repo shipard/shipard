@@ -300,6 +300,11 @@ class TemplateCore extends \Mustache
 		return $this->app->dsRoot;
 	}
 
+	public function dsUrl ()
+	{
+		return 'https://'.$this->app->cfgItem('hosting.serverDomain').'/'.$this->app->cfgItem('dsid') . '/';
+	}
+
 	public function fsRoot ()
 	{
 		return __APP_DIR__;
