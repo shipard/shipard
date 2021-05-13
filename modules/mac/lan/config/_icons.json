@@ -148,5 +148,119 @@
 		"fa5pro": "fa-exclamation-triangle",
 		"bsi": "bi-exclamation-triangle-fill",
 		"mdi": "warning"
+	},
+    "tables/mac.lan.swApplications": {
+		"fa5": "fa-hourglass",
+		"fa5pro": "fa-hourglass",
+		"bsi": "bi-hourglass",
+		"mdi": "hourglass_full"
+	},
+    "deviceTypes/workStation": {
+		"fa5": "fa-desktop",
+		"fa5pro": "fa-desktop",
+		"bsi": "bi-display",
+		"mdi": "desktop_mac"
+	},
+    "deviceTypes/notebook": {
+		"fa5": "fa-laptop",
+		"fa5pro": "fa-laptop",
+		"bsi": "bi-laptop",
+		"mdi": "laptop"
+	},
+    "deviceTypes/printer": {
+		"fa5": "fa-print",
+		"fa5pro": "fa-print",
+		"bsi": "bi-printer",
+		"mdi": "print"
+	},
+    "deviceTypes/tablet": {
+		"fa5": "fa-tablet",
+		"fa5pro": "fa-tablet-alt",
+		"bsi": "bi-tablet",
+		"mdi": "tablet_mac"
+	},
+    "deviceTypes/phone": {
+		"fa5": "fa-mobile-alt",
+		"fa5pro": "fa-mobile-alt",
+		"bsi": "bi-phone",
+		"mdi": "phone_iphone"
+	},
+    "deviceTypes/tv": {
+		"fa5": "fa-tv",
+		"fa5pro": "fa-tv-alt",
+		"bsi": "bi-tv",
+		"mdi": "tv"
+	},
+    "deviceTypes/server": {
+		"fa5": "fa-server",
+		"fa5pro": "fa-server",
+		"bsi": "bi-hdd-stack-fill",
+		"mdi": "dns"
+	},
+    "deviceTypes/router": {
+		"fa5": "fa-retweet",
+		"fa5pro": "fa-router",
+		"bsi": "bi-arrow-repeat",
+		"mdi": "router"
+	},
+    "deviceTypes/switch": {
+		"fa5": "fa-sitemap",
+		"fa5pro": "fa-sitemap",
+		"bsi": "bi-diagram-3",
+		"mdi": "device_hub"
+	},
+    "deviceTypes/wifiAccessPoints": {
+		"fa5": "fa-signal",
+		"fa5pro": "fa-signal-stream",
+		"bsi": "bi-wifi-2",
+		"mdi": "sensors"
+	},
+    "deviceTypes/camera": {
+		"fa5": "fa-video",
+		"fa5pro": "fa-cctv",
+		"bsi": "bi-camera-video",
+		"mdi": "videocam"
+	},
+    "deviceTypes/nas": {
+		"fa5": "fa-hdd",
+		"fa5pro": "fa-hdd",
+		"bsi": "bi-hdd",
+		"mdi": "storage"
+	},
+    "deviceTypes/shipardNodeServer": {
+		"fa5": "fa-expand-arrows-alt",
+		"fa5pro": "fa-expand-arrows-alt",
+		"bsi": "bi-arrows-fullscreen",
+		"mdi": "zoom_out_map"
+	},
+    "deviceTypes/shipardIoiBoxes": {
+		"fa5": "fa-plug",
+		"fa5pro": "fa-plug",
+		"bsi": "bi-plug",
+		"mdi": "power"
+	},
+    "deviceTypes/opticConverter": {
+		"fa5": "fa-eraser",
+		"fa5pro": "fa-eraser",
+		"bsi": "bi-eraser-fill",
+		"mdi": "crop_7_5"
+	},
+    "deviceTypes/ups": {
+		"fa5": "fa-battery-three-quarters",
+		"fa5pro": "fa-battery-three-quarters",
+		"bsi": "bi-battery-half",
+		"mdi": "battery_full"
+	},
+    "deviceTypes/terminal": {
+		"fa5": "fa-calculator",
+		"fa5pro": "fa-calculator",
+		"bsi": "bi-calculator",
+		"mdi": "calculate"
+	},
+    "deviceTypes/other": {
+		"fa5": "fa-dot-circle",
+		"fa5pro": "fa-dot-circle",
+		"bsi": "bi-record-circle-fill",
+		"mdi": "radio_button_checked"
 	}
 }

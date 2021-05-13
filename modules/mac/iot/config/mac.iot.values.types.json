@@ -3,30 +3,30 @@
 		"fullName": "Ostatní",
 		"shortName": "Ostatní",
 		"id": "other", "topicType": 1,
-		"icon": "icon-question-circle-o"
+		"icon": "iotValuesKinds/other"
 	},
 	"1": {
 		"fullName": "Vstupní kód (RFID čip, QR kód, RZ vozidla, ...)",
 		"shortName": "Vstupní kód",
 		"id": "accessCode", "topicType": 2,
-		"icon": "icon-key"
+		"icon": "iotValuesKinds/accessCode"
 	},
 	"2": {
 		"fullName": "Pohyb v prostoru (PIR čidlo)",
 		"shortName": "Pohyb v prostoru",
 		"id": "motionDetectPlace", "topicType": 4,
-		"icon": "icon-spinner"
+		"icon": "iotValuesKinds/motionDetectPlace"
 	},
 	"3": {
 		"fullName": "Pohyb před zařízením (PIR čidlo)",
 		"shortName": "Pohyb před zařízením",
 		"id": "motionDetectDevice", "topicType": 2,
-		"icon": "icon-spinner"
+		"icon": "iotValuesKinds/motionDetectDevice"
 	},
 	"4": {
 		"fullName": "Teplota",
 		"shortName": "Teplota",
 		"id": "temperature",  "topicType": 3,
-		"icon": "icon-thermometer-three-quarters"
+		"icon": "iotValuesKinds/temperature"
 	}
 }

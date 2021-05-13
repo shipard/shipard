@@ -11,7 +11,7 @@
 		"shortName": "Dveře",
 		"id": "doors",
 		"coreType": "gate",
-		"icon": "icon-home",
+		"icon": "iotThingKinds/door",
 		"actions": {
 			"open-once": {
 				"fn": "Otevřít"
@@ -29,7 +29,7 @@
 		"shortName": "Brána / závora",
 		"id": "gate",
 		"coreType": "gate",
-		"icon": "icon-car",
+		"icon": "iotThingKinds/gate",
 		"actions": {
 			"open-once": {
 				"fn": "Otevřít"
@@ -50,13 +50,13 @@
 		"shortName": "Světla",
 		"id": "lights",
 		"coreType": "lights",
-		"icon": "icon-lightbulb-o"
+		"icon": "iiotThingKinds/lights"
 	},
 	"4": {
 		"fullName": "Turniket",
 		"shortName": "Turniket",
 		"id": "turnstile",
 		"coreType": "turnstile",
-		"icon": "icon-arrows-v"
+		"icon": "iotThingKinds/turnstile"
 	}
 }

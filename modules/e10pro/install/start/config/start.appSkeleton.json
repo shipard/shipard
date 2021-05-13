@@ -4,7 +4,7 @@
 			"url": "/app/dashboard", "zone": "sec", "objectType": "panel", "name": "", "icon": "icon-home", "order": 1000,
 			"items": {
 				"wkfDashboardStart": {
-					"t1": "Start", "object": "widget", "class": "e10.widgetDashboard", "subclass": "main_new", "icon": "icon-dot-circle-o",
+					"t1": "Start", "object": "widget", "class": "e10.widgetDashboard", "subclass": "main_new", "icon": "system/iconStart",
 					"order": 5800, "ntfBadgeId": "ntf-badge-wkf-start"
 				},
 

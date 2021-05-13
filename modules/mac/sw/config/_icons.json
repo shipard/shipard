@@ -1,0 +1,20 @@
+{
+    "tables/mac.sw.sw": {
+		"fa5": "fa-hourglass-half",
+		"fa5pro": "fa-hourglass-half",
+		"bsi": "bi-hourglass-split",
+		"mdi": "hourglass_empty"
+	},
+    "tables/mac.sw.publishers": {
+		"fa5": "fa-building",
+		"fa5pro": "fa-building",
+		"bsi": "bi-building",
+		"mdi": "business"
+	},
+    "tables/mac.sw.categories": {
+		"fa5": "fa-folder",
+		"fa5pro": "fa-folders",
+		"bsi": "bi-folder",
+		"mdi": "folder"
+	}
+}

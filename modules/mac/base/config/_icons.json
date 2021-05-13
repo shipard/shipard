@@ -1,0 +1,8 @@
+{
+    "tables/mac.base.zones": {
+		"fa5": "fa-crosshairs",
+		"fa5pro": "fa-crosshairs",
+		"bsi": "bi-geo-fill",
+		"mdi": "location_on"
+	}
+}

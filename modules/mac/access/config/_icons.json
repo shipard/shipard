@@ -10,5 +10,29 @@
         "fa5pro":"fa-sitemap",
         "bsi":"bi-diagram-3-fill",
         "mdi":"device_hub"
+    },
+    "tables/mac.access.personsAccess":{
+        "fa5":"fa-id-card-alt",
+        "fa5pro":"fa-id-card-alt",
+        "bsi":"bi-person-badge",
+        "mdi":"badge"
+    },
+    "tables/mac.access.tags":{
+        "fa5":"fa-key",
+        "fa5pro":"fa-key-skeleton",
+        "bsi":"bi-key",
+        "mdi":"vpn_key"
+    },
+    "tables/mac.access.levels":{
+        "fa5":"fa-universal-access",
+        "fa5pro":"fa-universal-access",
+        "bsi":"bi-patch-check",
+        "mdi":"local_police"
+    },
+    "tables/mac.access.tagsAssignments":{
+        "fa5":"fa-unlock-alt",
+        "fa5pro":"fa-unlock-alt",
+        "bsi":"bi-file-lock2",
+        "mdi":"lock"
     }
 }

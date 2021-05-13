@@ -42,17 +42,17 @@
 					"order": 9900200,
 					"subMenu": {
 						"items": {
-							"things": {"t1": "Iot Prvky", "object": "viewer", "table": "mac.iot.things", "viewer": "default", "icon": "icon-puzzle-piece", "order": 10100},
-							"scenarios": {"t1": "Scénáře", "object": "viewer", "table": "mac.iot.scenarios", "viewer": "default", "icon": "icon-play-circle", "order": 10200},
+							"things": {"t1": "Iot Prvky", "object": "viewer", "table": "mac.iot.things", "viewer": "default", "order": 10100},
+							"scenarios": {"t1": "Scénáře", "object": "viewer", "table": "mac.iot.scenarios", "viewer": "default", "order": 10200},
 
-							"sensors": {"t1": "Senzory a čidla", "object": "viewer", "table": "mac.iot.sensors", "viewer": "default", "icon": "icon-eyedropper", "order": 30100, "beforeSeparator": 1},
-							"controls": {"t1": "Ovládací prvky", "object": "viewer", "table": "mac.iot.controls", "viewer": "default", "icon": "icon-toggle-on", "order": 30200},
-							"scPlacements": {"t1": "Zařazení", "object": "viewer", "table": "mac.iot.scPlacements", "viewer": "default", "icon": "icon-hand-pointer-o", "order": 30400},
+							"sensors": {"t1": "Senzory a čidla", "object": "viewer", "table": "mac.iot.sensors", "viewer": "default", "order": 30100, "beforeSeparator": 1},
+							"controls": {"t1": "Ovládací prvky", "object": "viewer", "table": "mac.iot.controls", "viewer": "default", "order": 30200},
+							"scPlacements": {"t1": "Zařazení", "object": "viewer", "table": "mac.iot.scPlacements", "viewer": "default", "order": 30400},
 
-							"valuesKinds": {"t1": "Druhy hodnot", "object": "viewer", "table": "mac.iot.valuesKinds", "viewer": "default", "icon": "icon-tint", "order": 80100, "beforeSeparator": 1},
-							"thingsKinds": {"t1": "Druhy prvků", "object": "viewer", "table": "mac.iot.thingsKinds", "viewer": "default", "icon": "icon-tasks", "order": 80200},
+							"valuesKinds": {"t1": "Druhy hodnot", "object": "viewer", "table": "mac.iot.valuesKinds", "viewer": "default", "order": 80100, "beforeSeparator": 1},
+							"thingsKinds": {"t1": "Druhy prvků", "object": "viewer", "table": "mac.iot.thingsKinds", "viewer": "default", "order": 80200},
 
-							"users": {"t1": "Uživatelé", "object": "viewer", "table": "mac.iot.users", "viewer": "default", "icon": "icon-user-o", "order": 90100, "beforeSeparator": 1}
+							"users": {"t1": "Uživatelé", "object": "viewer", "table": "mac.iot.users", "viewer": "default", "order": 90100, "beforeSeparator": 1}
 						}
 					}
 				},
@@ -61,14 +61,14 @@
 					"order": 9900250,
 					"subMenu": {
 						"items": {
-							"accessKeys": {"t1": "Přístupové klíče", "object": "viewer", "table": "mac.access.tags", "viewer": "default", "icon": "icon-key", "order": 60100},
-							"accessPersons": {"t1": "Přístup osob", "object": "viewer", "table": "mac.access.personsAccess", "viewer": "default", "icon": "icon-user", "order": 60000},
+							"accessKeys": {"t1": "Přístupové klíče", "object": "viewer", "table": "mac.access.tags", "viewer": "default", "order": 60100},
+							"accessPersons": {"t1": "Přístup osob", "object": "viewer", "table": "mac.access.personsAccess", "viewer": "default", "order": 60000},
 
-							"accessLevels": {"t1": "Úrovně přístupu", "object": "viewer", "table": "mac.access.levels", "viewer": "default", "icon": "icon-empire", "order": 60300, "beforeSeparator":  1},
+							"accessLevels": {"t1": "Úrovně přístupu", "object": "viewer", "table": "mac.access.levels", "viewer": "default", "order": 60300, "beforeSeparator":  1},
 
-							"tagsAssignments": {"t1": "Přiřazení klíčů", "object": "viewer", "table": "mac.access.tagsAssignments", "viewer": "default", "icon": "icon-unlock-alt", "order": 65100, "beforeSeparator":  1},
+							"tagsAssignments": {"t1": "Přiřazení klíčů", "object": "viewer", "table": "mac.access.tagsAssignments", "viewer": "default", "order": 65100, "beforeSeparator":  1},
 
-							"macZones": {"t1": "Zóny", "object": "viewer", "table": "mac.base.zones", "viewer": "default", "icon": "icon-crosshairs", "order": 70100, "beforeSeparator":  1}
+							"macZones": {"t1": "Zóny", "object": "viewer", "table": "mac.base.zones", "viewer": "default", "order": 70100, "beforeSeparator":  1}
 						}
 					}
 				},
@@ -77,13 +77,13 @@
 					"order": 9900300,
 					"subMenu": {
 						"items": {
-							"sw": {"t1": "Software", "object": "viewer", "table": "mac.sw.sw", "viewer": "swlan", "icon": "icon-hourglass-half", "order": 10100},
-							"infoQueue": {"t1": "Ke zpracování", "object": "viewer", "table": "mac.swlan.infoQueue", "viewer": "default", "icon": "icon-question-circle", "order": 20100},
-							"publishers": {"t1": "Vydavatelé", "object": "viewer", "table": "mac.sw.publishers", "viewer": "default", "icon": "icon-building", "order": 22100, "beforeSeparator":  1},
-							"categories": {"t1": "Kategorie", "object": "viewer", "table": "mac.sw.categories", "viewer": "default", "icon": "icon-folder", "order": 22200},
+							"sw": {"t1": "Software", "object": "viewer", "table": "mac.sw.sw", "viewer": "swlan", "order": 10100},
+							"infoQueue": {"t1": "Ke zpracování", "object": "viewer", "table": "mac.swlan.infoQueue", "viewer": "default", "order": 20100},
+							"publishers": {"t1": "Vydavatelé", "object": "viewer", "table": "mac.sw.publishers", "viewer": "default", "order": 22100, "beforeSeparator":  1},
+							"categories": {"t1": "Kategorie", "object": "viewer", "table": "mac.sw.categories", "viewer": "default", "order": 22200},
 
-							"swApplications": {"t1": "Aplikace", "object": "viewer", "table": "mac.lan.swApplications", "viewer": "default", "icon": "icon-hourglass-o", "order": 111000, "beforeSeparator": {"text": "Zastaralé", "class": "block pl05 pt1", "icon":  "icon-square"}},
-							"swLicenses": {"t1": "Licence", "object": "viewer", "table": "mac.lan.swLicenses", "viewer": "default", "icon": "icon-certificate", "order": 112000}
+							"swApplications": {"t1": "Aplikace", "object": "viewer", "table": "mac.lan.swApplications", "viewer": "default", "order": 111000, "beforeSeparator": {"text": "Zastaralé", "class": "block pl05 pt1", "icon":  "icon-square"}},
+							"swLicenses": {"t1": "Licence", "object": "viewer", "table": "mac.lan.swLicenses", "viewer": "default", "order": 112000}
 						}
 					}
 				}

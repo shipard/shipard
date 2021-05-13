@@ -61,7 +61,7 @@
     },
     "docType/bank":{
         "fa5":"fa-university",
-        "fa5pro":"fa-file-signature",
+        "fa5pro":"fa-bank",
         "bsi":"bi-bank",
         "mdi":"account_balance"
     },

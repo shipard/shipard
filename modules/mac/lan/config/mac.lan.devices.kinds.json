@@ -4,91 +4,91 @@
 		"overviewOrder": 999999, "alerts": 2, "alertsScope": 0
 	},
 	"1": {
-		"name": "Pracovní stanice", "pluralName": "Pracovní stanice", "active": 1, "icon": "icon-desktop",
+		"name": "Pracovní stanice", "pluralName": "Pracovní stanice", "active": 1, "icon": "deviceTypes/workStation",
 		"overviewOrder": 30000, "alerts": 2, "alertsScope": 3
 	},
 	"2": {
-		"name": "Notebook", "pluralName": "Notebooky", "active": 1, "icon": "icon-laptop",
+		"name": "Notebook", "pluralName": "Notebooky", "active": 1, "icon": "deviceTypes/notebook",
 		"overviewOrder": 31000, "alerts": 2, "alertsScope": 3
 	},
 	"3": {
-		"name": "Tiskárna", "pluralName": "Tiskárny", "active": 1, "icon": "icon-print",
+		"name": "Tiskárna", "pluralName": "Tiskárny", "active": 1, "icon": "deviceTypes/printer",
 		"overviewOrder": 20000, "alerts": 2, "alertsScope": 0
 	},
 	"4": {
-		"name": "Tablet", "pluralName": "Tablety", "active": 1, "icon": "icon-tablet",
+		"name": "Tablet", "pluralName": "Tablety", "active": 1, "icon": "deviceTypes/tablet",
 		"overviewOrder": 40000, "alerts": 2, "alertsScope": 0
 	},
 	"5": {
-		"name": "Telefon", "pluralName": "Telefony", "active": 1, "icon": "icon-mobile",
+		"name": "Telefon", "pluralName": "Telefony", "active": 1, "icon": "deviceTypes/phone",
 		"overviewOrder": 41000, "alerts": 2, "alertsScope": 0
 	},
 	"6": {
-		"name": "Televize", "pluralName": "Televize", "active": 1, "icon": "icon-television",
+		"name": "Televize", "pluralName": "Televize", "active": 1, "icon": "deviceTypes/tv",
 		"overviewOrder": 32000, "alerts": 2, "alertsScope": 0
 	},
 	"7": {
-		"name": "Server", "pluralName": "Servery", "active": 1, "icon": "icon-server",
+		"name": "Server", "pluralName": "Servery", "active": 1, "icon": "deviceTypes/server",
 		"overviewOrder": 10000, "alerts": 1, "isMacDevice": 1, "useMonitoringDataSource": 1, "showDashboardRacks": 1,
 		"alertsScope": 2, "odg": "srv"
 	},
 
 	"8": {
-		"name": "Router", "pluralName": "Routery", "active": 1, "icon": "icon-retweet",
+		"name": "Router", "pluralName": "Routery", "active": 1, "icon": "deviceTypes/router",
 		"overviewOrder": 9000, "switchPorts": 1, "alerts": 1, "isMacDevice": 1, "useMonitoringDataSource": 1, "showDashboardRacks": 1,
 		"alertsScope": 1, "odg": "lan"
 	},
 	"9": {
-		"name": "Switch", "pluralName": "Switche", "active": 1, "icon": "icon-sitemap",
+		"name": "Switch", "pluralName": "Switche", "active": 1, "icon": "deviceTypes/switch",
 		"overviewOrder": 11000, "switchPorts": 1, "alerts": 1, "isMacDevice": 1, "useMonitoringDataSource": 1, "showDashboardRacks": 1,
 		"alertsScope": 1, "odg": "lan"
 	},
 	"15": {
-		"name": "WiFi Přístupový bod", "pluralName": "WiFi Přístupové body", "active": 1, "icon": "x-router",
+		"name": "WiFi Přístupový bod", "pluralName": "WiFi Přístupové body", "active": 1, "icon": "deviceTypes/wifiAccessPoints",
 		"overviewOrder": 12000, "switchPorts": 1, "alerts": 1, "isMacDevice": 1,
 		"alertsScope": 1, "odg": "wifi"
 	},
 
 	"10": {
-		"name": "Kamera", "pluralName": "Kamery", "active": 1, "icon": "icon-video-camera",
+		"name": "Kamera", "pluralName": "Kamery", "active": 1, "icon": "deviceTypes/camera",
 		"overviewOrder": 15000, "alerts": 1, "isMacDevice": 1, "useMonitoringDataSource": 1,
 		"alertsScope": 4, "odg": "cams"
 	},
 	"11": {
-		"name": "NAS", "pluralName": "NAS", "active": 1, "icon": "icon-hdd-o",
+		"name": "NAS", "pluralName": "NAS", "active": 1, "icon": "deviceTypes/nas",
 		"overviewOrder": 10200, "alerts": 1,  "isMacDevice": 1, "useMonitoringDataSource": 1, "showDashboardRacks": 1,
 		"alertsScope": 2, "odg": "srv"
 	},
 
 	"70": {
-		"name": "Shipard Node Server", "pluralName": "Shipard Node Servery", "active": 1, "icon": "icon-arrows-alt",
+		"name": "Shipard Node Server", "pluralName": "Shipard Node Servery", "active": 1, "icon": "deviceTypes/shipardNodeServer",
 		"overviewOrder": 18500, "alerts": 1, "isMacDevice": 1, "useMonitoringDataSource": 1, "showDashboardRacks": 1,
 		"alertsScope": 2, "odg": "srv"
 	},
 	"75": {
-		"name": "Shipard IoT Box", "pluralName": "Shipard IoT Boxy", "active": 1, "icon": "icon-plug",
+		"name": "Shipard IoT Box", "pluralName": "Shipard IoT Boxy", "active": 1, "icon": "deviceTypes/shipardIoiBoxes",
 		"overviewOrder": 19900, "alerts": 1, "isMacDevice": 1, "alertsScope": 6, "odg": "iot"
 	},
 
 	"20": {
-		"name": "Optický převodník", "pluralName": "Optické převodníky", "active": 1, "icon": "icon-eraser",
+		"name": "Optický převodník", "pluralName": "Optické převodníky", "active": 1, "icon": "deviceTypes/opticConverter",
 		"overviewOrder": 15000, "alerts": 1, "alertsScope": 0
 	},
 
 	"30": {
-		"name": "UPS", "pluralName": "UPS", "active": 1, "icon": "icon-battery-three-quarters",
+		"name": "UPS", "pluralName": "UPS", "active": 1, "icon": "deviceTypes/ups",
 		"overviewOrder": 80000, "isMacDevice": 1, "useMonitoringDataSource": 1, "showDashboardRacks": 1,
 		"alertsScope": 0, "odg": "ups"
 	},
 
 	"40": {
-		"name": "Terminál", "pluralName": "Terminály", "active": 1, "icon": "icon-calculator",
+		"name": "Terminál", "pluralName": "Terminály", "active": 1, "icon": "deviceTypes/terminal",
 		"overviewOrder": 82000, "alerts": 2, "isMacDevice": 1, "useMonitoringDataSource": 1,
 		"alertsScope": 5, "odg": "trm"
 	},
 
 	"99": {
-		"name": "Ostatní", "pluralName": "Ostatní", "active": 1, "icon": "icon-dot-circle-o",
+		"name": "Ostatní", "pluralName": "Ostatní", "active": 1, "icon": "deviceTypes/other",
 		"overviewOrder": 29000, "alerts": 2, "alertsScope": 0
 	}
 }
