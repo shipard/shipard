@@ -5,8 +5,8 @@ namespace e10mnf\core;
 require_once __SHPD_MODULES_DIR__ . 'e10/base/base.php';
 
 
-use \e10\utils, \e10\TableView, \e10\TableViewDetail, \e10\TableViewPanel, \e10\TableForm, \e10\DbTable, \e10doc\core\e10utils;
-
+use \e10\utils, \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Viewer\TableViewPanel, \e10\TableForm, \e10\DbTable, \e10doc\core\e10utils;
+use \e10doc\core\libs\GlobalParams;
 
 /**
  * Class TableWorkOrders
@@ -442,7 +442,7 @@ class ViewWorkOrders extends TableView
 				{
 					$this->invoices[$woNdx][$hc][$docNumber]['amount'] = $r['priceAll'];
 
-					$docItem = ['docState' => $r['docDocState'], 'docStateMain' => $r['docDocStateMain']];
+					$docItem = ['docState' => $r['docDocState'], 'docStateMain' => $r['docDocStateMain'], 'docType' => 'invno'];
 					$docDocState = $this->tableDocsHeads->getDocumentState($docItem);
 					$docDocStateClass = $this->tableDocsHeads->getDocumentStateInfo($docDocState['states'], $docItem, 'styleClass');
 					$this->invoices[$woNdx][$hc][$docNumber]['docStateClass'] = $docDocStateClass;
@@ -533,18 +533,7 @@ class ViewWorkOrders extends TableView
 	{
 		$qry = [];
 
-		/*
-		$paramsDates = new \E10Doc\Core\GlobalParams ($panel->table->app());
-		//$periodFlags = ['enableAll', 'quarters', 'halfs', 'years'];
-		//$paramsDates->addParam ('fiscalPeriod', 'query.period.fiscal',['flags' => $periodFlags]);
-
-		$paramsDates->addParam ('date', 'query.dateAccounting.from', array('title' => 'Datum od'));
-		$paramsDates->addParam ('date', 'query.dateAccounting.to', array('title' => 'Datum do'));
-
-		$paramsDates->detectValues();
-		*/
-
-		$paramsRows = new \E10Doc\Core\GlobalParams ($panel->table->app());
+		$paramsRows = new GlobalParams ($panel->table->app());
 		$paramsRows->addParam ('string', 'query.rows.text', ['title' => 'Text řádku']);
 		$paramsRows->addParam ('float', 'query.rows.amount', ['title' => 'Částka']);
 		$paramsRows->addParam ('float', 'query.rows.amountDiff', ['title' => '+/-']);

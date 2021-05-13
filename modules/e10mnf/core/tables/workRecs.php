@@ -512,7 +512,7 @@ class ViewWorkRecs extends TableView
 	public function selectRows ()
 	{
 		$mainQuery = $this->mainQueryId ();
-		$bottomTabId = $this->bottomTabId();
+		$bottomTabId = intval($this->bottomTabId());
 		$fts = $this->fullTextSearch ();
 
 		$q [] = 'SELECT workrecs.*, persons.fullName AS personName';
@@ -556,9 +556,9 @@ class ViewWorkRecs extends TableView
 			array_push ($q, " AND workrecs.[docStateMain] = 4");
 
 		if ($mainQuery == 'all')
-			array_push ($q, ' ORDER BY [dateBegin] DESC' . $this->sqlLimit());
+			array_push ($q, ' ORDER BY [dateBegin] DESC ' . $this->sqlLimit());
 		else
-			array_push ($q, ' ORDER BY workrecs.[docStateMain], [docNumber] DESC' . $this->sqlLimit());
+			array_push ($q, ' ORDER BY workrecs.[docStateMain], [docNumber] DESC ' . $this->sqlLimit());
 
 		$this->runQuery ($q);
 	} // selectRows

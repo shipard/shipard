@@ -3,7 +3,7 @@
 namespace e10\world;
 
 
-use \e10\TableView, \e10\TableViewDetail, \e10\TableViewPanel, \e10\DbTable, \e10\world;
+use \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Viewer\TableViewPanel, \e10\DbTable, \e10\world;
 
 
 /**

@@ -2,14 +2,14 @@
 
 namespace mac\vs;
 
-use e10\utils, \e10\widgetBoard, \mac\data\libs\SensorHelper;
+use e10\utils, \Shipard\UI\Core\WidgetBoard, \mac\data\libs\SensorHelper;
 
 
 /**
  * Class WidgetLive
  * @package mac\vs
  */
-class WidgetLive extends widgetBoard
+class WidgetLive extends WidgetBoard
 {
 	var $code = '';
 	var $viewerMode = '';

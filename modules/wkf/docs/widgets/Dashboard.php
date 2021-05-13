@@ -3,14 +3,14 @@
 
 namespace wkf\docs\widgets;
 
-use \e10\widgetBoard, \wkf\docs\TableFolders;
+use \Shipard\UI\Core\WidgetBoard, \wkf\docs\TableFolders;
 
 
 /**
  * Class Dashboard
  * @package wkf\docs\widgets
  */
-class Dashboard extends widgetBoard
+class Dashboard extends WidgetBoard
 {
 	var $treeMode = 0;
 	var $help = 'prirucka/4230';

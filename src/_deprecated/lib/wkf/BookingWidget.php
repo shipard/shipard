@@ -3,13 +3,13 @@
 namespace lib\Wkf;
 
 use \E10\utils, \E10\Utility, \E10\uiutils;
-
+use \Shipard\UI\Core\WidgetPane;
 
 /**
  * Class BookingWidget
  * @package lib\Wkf
  */
-class BookingWidget extends \E10\widgetPane
+class BookingWidget extends WidgetPane
 {
 	var $calParams;
 	var $calParamsValues;

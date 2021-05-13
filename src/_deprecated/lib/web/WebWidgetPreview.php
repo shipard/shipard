@@ -3,14 +3,14 @@
 
 namespace lib\web;
 
-use \e10\widgetBoard;
+use \Shipard\UI\Core\WidgetBoard;
 
 
 /**
  * Class WebWidgetPreview
  * @package lib\web
  */
-class WebWidgetPreview extends widgetBoard
+class WebWidgetPreview extends WidgetBoard
 {
 	var $useWiki = FALSE;
 	var $serverNdx = 0;

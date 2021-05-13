@@ -4,7 +4,7 @@ namespace mac\lan;
 
 
 use \Shipard\Viewer\TableView, \E10\TableViewDetail, \E10\TableForm, \Shipard\Viewer\TableViewPanel, \E10\DbTable, \E10\utils;
-
+use \e10\base\libs\UtilsBase;
 
 /**
  * Class TableDevices
@@ -586,7 +586,7 @@ class ViewDevices extends TableView
 		$this->watchdogsUtils->devicesBadges($this->pks, $this->devicesWDBadges);
 
 		$this->addresses = $this->table->loadAddresses ($this->pks);
-		$this->classification = \E10\Base\loadClassification ($this->table->app(), $this->table->tableId(), $this->pks, 'label label-info pull-right');
+		$this->classification = UtilsBase::loadClassification ($this->table->app(), $this->table->tableId(), $this->pks, 'label label-info pull-right');
 	}
 
 	public function createPanelContentQry (TableViewPanel $panel)
@@ -594,7 +594,7 @@ class ViewDevices extends TableView
 		$qry = [];
 
 		// -- tags
-		\e10\base\libs\Utils::addClassificationParamsToPanel($this->table, $panel);
+		UtilsBase::addClassificationParamsToPanel($this->table, $panel);
 
 		// -- lans
 		$lans = $this->db()->query ('SELECT ndx, fullName FROM mac_lan_lans WHERE docStateMain != 4')->fetchPairs ('ndx', 'fullName');

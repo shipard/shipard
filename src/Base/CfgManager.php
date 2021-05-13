@@ -137,10 +137,8 @@ class CfgManager
 
 		// -- application config
 		$appSkeleton = NULL;
-		if (is_file(__APP_DIR__ . "/config/application.json"))
-			$appSkeleton = $this->loadConfigFile ($newConfig, "application.json", __APP_DIR__ . "/config/");
 		if (!$appSkeleton)
-			$appSkeleton = array();
+			$appSkeleton = [];
 
 		// check for default values
 		$defaultPath = array ();

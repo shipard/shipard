@@ -1,9 +1,6 @@
 <?php
 
 namespace lib\Wkf;
-
-require_once __APP_DIR__ . '/e10-modules/e10/persons/tables/persons.php';
-
 use \E10\utils, \E10\Utility;
 
 

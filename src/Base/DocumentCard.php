@@ -1,6 +1,7 @@
 <?php
 
 namespace Shipard\Base;
+use \e10\base\libs\UtilsBase;
 
 /**
  * Class DocumentCard
@@ -91,7 +92,7 @@ class DocumentCard extends Content
 		if ($tableId === FALSE)
 			$tableId = $this->table->tableId();
 
-		$files = \E10\Base\loadAttachments ($this->table->app(), [$toRecId], $tableId);
+		$files = UtilsBase::loadAttachments ($this->table->app(), [$toRecId], $tableId);
 		if (isset($files[$toRecId]))
 			$this->content['body'][] = ['type' => 'attachments', 'attachments' => $files[$toRecId], 'title' => $title, 'downloadTitle' => $downloadTitle];
 	}

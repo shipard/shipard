@@ -3,13 +3,13 @@
 namespace E10Pro\Meters;
 
 use \E10\utils, \E10\Utility, \E10\uiutils;
-
+use \Shipard\UI\Core\WidgetPane;
 
 /**
  * Class MetersWidget
  * @package E10Pro\Meters
  */
-class MetersWidget extends \E10\widgetPane
+class MetersWidget extends WidgetPane
 {
 	var $calParams;
 	var $calParamsValues;

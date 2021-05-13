@@ -209,8 +209,9 @@ class ViewItemCategories extends TableView
 		//$listItem ['i1'] = $item['id'];
 		$listItem ['level'] = $item['treeLevel'];
 
+		$props = [];
 		if ($item ['order'] != 0)
-			$props [] = array ('i' => 'sort', 'text' => \E10\nf ($item ['order'], 0));
+			$props [] = ['i' => 'sort', 'text' => \E10\nf ($item ['order'], 0)];
 		if (count($props))
 			$listItem ['i2'] = $props;
 

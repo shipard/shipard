@@ -2,18 +2,14 @@
 
 
 namespace lib\workOrders;
-
-require_once __APP_DIR__ . '/e10-modules/e10pro/wkf/wkf.php';
-
-
-use \e10\widgetBoard;
+use \Shipard\UI\Core\WidgetBoard;
 
 
 /**
  * Class WorkOrdersWallWidget
  * @package lib\workOrders
  */
-class WorkOrdersWallWidget extends widgetBoard
+class WorkOrdersWallWidget extends WidgetBoard
 {
 	public function createContent ()
 	{
@@ -32,7 +28,6 @@ class WorkOrdersWallWidget extends widgetBoard
 		{
 			$parts = explode ('-', $this->activeTopTab);
 			$this->addContentViewer('e10mnf.core.workOrders', 'lib.workOrders.ViewerDashboardWorkOrders', ['workOrderGroup' => $parts[1], 'viewerMode' => $viewerMode]);
-//			$this->addContentViewer('e10pro.wkf.messages', 'lib.wkf.ViewerDashboardIssues', ['projectGroup' => $parts[1], 'viewerMode' => $viewerMode]);
 		}
 		elseif (substr ($this->activeTopTab, 0, 4) === 'map-')
 		{

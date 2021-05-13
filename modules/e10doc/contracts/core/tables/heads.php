@@ -2,7 +2,6 @@
 
 namespace E10Doc\Contracts\Core;
 
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
 use e10doc\core\e10utils, \e10\utils, \e10\TableView, \e10\TableViewDetail, \e10\TableForm, \e10\DbTable, e10\TableViewPanel;
 
 

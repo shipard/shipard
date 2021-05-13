@@ -3,7 +3,7 @@
 namespace wkf\docs\viewers;
 
 
-use \e10\TableView, \e10\utils, \e10\TableViewPanel;
+use \Shipard\Viewer\TableView, \e10\utils, \Shipard\Viewer\TableViewPanel;
 
 
 /**

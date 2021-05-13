@@ -1,7 +1,7 @@
 <?php
 
 namespace e10\witems\libs;
-use e10\TableViewPanel;
+use \Shipard\Viewer\TableViewPanel;
 
 
 

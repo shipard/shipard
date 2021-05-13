@@ -464,13 +464,13 @@ class ShortPaymentDescriptor extends \E10\Utility
 	{
 		$dirName = __APP_DIR__.'/imgcache/spayd/';
 		$this->spaydQRCodeFullFileName = $dirName . $this->spaydQRCodeBaseFileName;
-		$this->spaydQRCodeURL = $this->app()->dsRoot.'/imgcache/spayd/'.$this->spaydQRCodeBaseFileName;
+		$this->spaydQRCodeURL = 'https://'.$this->app()->cfgItem('hosting.serverDomain').'/'.$this->app->cfgItem('dsid').'/imgcache/spayd/'.$this->spaydQRCodeBaseFileName;
 
 		if (is_file($this->spaydQRCodeFullFileName))
 			return;
 
 		if (!is_dir($dirName))
-			mkdir($dirName, 0770, true);
+			utils::mkDir($dirName);
 
 		$cmd = "qrencode -lM -t SVG -o \"{$this->spaydQRCodeFullFileName}\" \"{$this->spaydString}\"";
 		exec ($cmd);

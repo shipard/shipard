@@ -3,14 +3,14 @@
 
 namespace wkf\core\widgets;
 
-use \e10\widgetBoard, \wkf\base\TableSections;
+use \Shipard\UI\Core\WidgetBoard, \wkf\base\TableSections;
 
 
 /**
  * Class DashboardTrays
  * @package wkf\core\widgets
  */
-class DashboardTrays extends widgetBoard
+class DashboardTrays extends WidgetBoard
 {
 	/** @var  \wkf\base\TableTrays */
 	var $tableTrays;

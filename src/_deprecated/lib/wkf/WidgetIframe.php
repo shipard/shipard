@@ -3,14 +3,14 @@
 
 namespace lib\wkf;
 
-use e10\widgetPane;
+use \Shipard\UI\Core\WidgetPane;
 
 
 /**
  * Class WidgetIframe
  * @package lib\wkf
  */
-class WidgetIframe extends widgetPane
+class WidgetIframe extends WidgetPane
 {
 	var $url = '';
 	var $deviceKind = '';

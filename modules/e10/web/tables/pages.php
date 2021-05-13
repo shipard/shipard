@@ -5,7 +5,7 @@ namespace e10\web;
 include_once __DIR__ . '/../web.php';
 include_once __DIR__ . '/../../base/base.php';
 
-use \E10\DataModel, \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \e10\TableViewPanel,
+use \E10\DataModel, \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \E10\TableForm, \Shipard\Viewer\TableViewPanel,
 		\E10\DbTable, \E10\utils, \e10\FormSidebar;
 
 
@@ -154,7 +154,11 @@ class TablePages extends DbTable
 
 	public function previewUrl ($recData)
 	{
-		$server = $this->app()->cfgItem ('e10.web.servers.list.'.$recData['server']);
+		if (!$recData)
+			return '';
+		$server = $this->app()->cfgItem ('e10.web.servers.list.'.$recData['server'], NULL);
+		if (!$server)
+			return '';
 		$url = $this->app()->urlProtocol . $_SERVER['HTTP_HOST'].$this->app()->dsRoot . '/www/'.$server['urlStartSec'];
 		$url .= ($recData['redirectTo']) ? $recData['redirectTo'] : $recData['url'];
 		return $url;
