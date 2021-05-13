@@ -5,23 +5,23 @@
     },
     {
         "t": 0,
-        "v": ""
+        "v": "calendar"
     },
     {
         "t": 0,
-        "v": ""
+        "v": "bi-x-circle"
     },
     {
         "t": 0,
-        "v": ""
+        "v": "bi-files"
     },
     {
         "t": 0,
-        "v": ""
+        "v": "bi-building"
     },
     {
         "t": 0,
-        "v": ""
+        "v": "bi-house"
     },
     {
         "t": 0,
@@ -29,23 +29,111 @@
     },
     {
         "t": 0,
-        "v": ""
+        "v": "bi-bell"
     },
     {
         "t": 0,
-        "v": ""
+        "v": "bi-pencil-square"
     },
     {
         "t": 0,
-        "v": ""
+        "v": "bi-printer"
     },
     {
         "t": 0,
-        "v": ""
+        "v": "bi-download"
     },
     {
         "t": 0,
-        "v": ""
+        "v": "bi-file-earmark-diff-fill"
+    },
+    {
+        "t": 0,
+        "v": "bi-pie-chart-fill"
+    },
+    {
+        "t": 0,
+        "v": "bi-star"
+    },
+    {
+        "t": 0,
+        "v": "bi-table"
+    },
+    {
+        "t": 0,
+        "v": "bi-list-ul"
+    },
+    {
+        "t": 0,
+        "v": "bi-arrows-angle-contract"
+    },
+    {
+        "t": 0,
+        "v": "bi-file-earmark"
+    },
+    {
+        "t": 0,
+        "v": "bi-clock-history"
+    },
+    {
+        "t": 0,
+        "v": "bi-graph-up"
+    },
+    {
+        "t": 0,
+        "v": "bi-clipboard"
+    },
+    {
+        "t": 0,
+        "v": "bi-file-earmark-bar-graph"
+    },
+    {
+        "t": 0,
+        "v": "bi-random"
+    },
+    {
+        "t": 0,
+        "v": "bi-arrow-down-circle"
+    },
+    {
+        "t": 0,
+        "v": "bi-arrow-up-circle"
+    },
+    {
+        "t": 0,
+        "v": "bi-box-arrow-up-right"
+    },
+    {
+        "t": 0,
+        "v": "bi-exclamation-triangle-fill"
+    },
+    {
+        "t": 0,
+        "v": "bi-plus-square-fill"
+    },
+    {
+        "t": 0,
+        "v": "bi-star"
+    },
+    {
+        "t": 0,
+        "v": "bi-file-earmark-text"
+    },
+    {
+        "t": 0,
+        "v": "bi-list"
+    },
+    {
+        "t": 0,
+        "v": "bi-shop-window"
+    },
+    {
+        "t": 0,
+        "v": "bi-binoculars-fillover"
+    },
+    {
+        "t": 0,
+        "v": "bi-file-earmark-fill"
     },
     {
         "t": 0,
@@ -57,10 +145,26 @@
     },
     {
         "t": 0,
+        "v": "bi-building"
+    },
+    {
+        "t": 0,
         "v": "bi-file-earmark-bar-graph"
     },
     {
         "t": 0,
         "v": "bi-tools"
+    },
+    {
+        "t": 0,
+        "v": "bi-record-circle-fill"
+    },
+    {
+        "t": 0,
+        "v": "bi-check-circle"
+    },
+    {
+        "t": 0,
+        "v": "bi-person"
     }
 ]

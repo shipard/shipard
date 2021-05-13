@@ -18,11 +18,37 @@ class SystemIcons
 		,actionOpen = 8
 		,actionPrint = 9
 		,actionSave = 10
-		,actionUser = 11
-		,iconHistory = 12
-		,iconOther = 13
-		,iconReports = 14
-		,iconSettings = 15
+		,detailAccounting = 11
+		,detailAnalysis = 12
+		,detailBalance = 13
+		,detailBalanceDueAnalysis = 14
+		,detailBalanceItems = 15
+		,detailBalanceRatesDifferences = 16
+		,detailDetail = 17
+		,detailHistory = 18
+		,detailMovement = 19
+		,detailNotes = 20
+		,detailReport = 21
+		,detailReportDifferences = 22
+		,detailReportInput = 23
+		,detailReportOutput = 24
+		,detailReportPDP = 25
+		,detailReportProblems = 26
+		,detailReportSum = 27
+		,detailReportSummaryReport = 28
+		,detailReportTranscript = 29
+		,detailRows = 30
+		,detailStock = 31
+		,detailUsage = 32
+		,iconFile = 33
+		,iconHistory = 34
+		,iconOther = 35
+		,iconOwner = 36
+		,iconReports = 37
+		,iconSettings = 38
+		,iconStart = 39
+		,iconToSolve = 40
+		,iconUser = 41
 	;
 
 

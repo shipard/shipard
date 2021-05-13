@@ -5,7 +5,7 @@
     },
     {
         "t": 0,
-        "v": "fa-calendar"
+        "v": "fa-calendar-alt"
     },
     {
         "t": 0,
@@ -13,7 +13,7 @@
     },
     {
         "t": 0,
-        "v": "fa-files-o"
+        "v": "fa-copy"
     },
     {
         "t": 0,
@@ -33,7 +33,7 @@
     },
     {
         "t": 0,
-        "v": "fa-pencil-square-o"
+        "v": "fa-edit"
     },
     {
         "t": 0,
@@ -45,7 +45,95 @@
     },
     {
         "t": 0,
-        "v": "fa-user"
+        "v": "fa-stamp"
+    },
+    {
+        "t": 0,
+        "v": "fa-chart-pie"
+    },
+    {
+        "t": 0,
+        "v": "fa-star"
+    },
+    {
+        "t": 0,
+        "v": "fa-table"
+    },
+    {
+        "t": 0,
+        "v": "fa-list"
+    },
+    {
+        "t": 0,
+        "v": "fa-compress-alt"
+    },
+    {
+        "t": 0,
+        "v": "fa-file"
+    },
+    {
+        "t": 0,
+        "v": "fa-history"
+    },
+    {
+        "t": 0,
+        "v": "fa-chart-line"
+    },
+    {
+        "t": 0,
+        "v": "fa-paste"
+    },
+    {
+        "t": 0,
+        "v": "fa-chart-bar"
+    },
+    {
+        "t": 0,
+        "v": "fa-random"
+    },
+    {
+        "t": 0,
+        "v": "fa-arrow-circle-down"
+    },
+    {
+        "t": 0,
+        "v": "fa-arrow-circle-up"
+    },
+    {
+        "t": 0,
+        "v": "fa-share"
+    },
+    {
+        "t": 0,
+        "v": "fa-exclamation-triangle"
+    },
+    {
+        "t": 0,
+        "v": "fa-plus-square"
+    },
+    {
+        "t": 0,
+        "v": "fa-star"
+    },
+    {
+        "t": 0,
+        "v": "fa-file-alt"
+    },
+    {
+        "t": 0,
+        "v": "fa-binoculars"
+    },
+    {
+        "t": 0,
+        "v": "fa-cubes"
+    },
+    {
+        "t": 0,
+        "v": "fa-bars"
+    },
+    {
+        "t": 0,
+        "v": "fa-file"
     },
     {
         "t": 0,
@@ -57,10 +145,26 @@
     },
     {
         "t": 0,
+        "v": "fa-building"
+    },
+    {
+        "t": 0,
         "v": "fa-chart-bar"
     },
     {
         "t": 0,
         "v": "fa-tools"
+    },
+    {
+        "t": 0,
+        "v": "fa-dot-circle"
+    },
+    {
+        "t": 0,
+        "v": "fa-check-circle"
+    },
+    {
+        "t": 0,
+        "v": "fa-user"
     }
 ]

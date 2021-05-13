@@ -5,23 +5,23 @@
     },
     {
         "t": 0,
-        "v": ""
+        "v": "calendar_today"
     },
     {
         "t": 0,
-        "v": ""
+        "v": "highlight_off"
     },
     {
         "t": 0,
-        "v": ""
+        "v": "file_copy"
     },
     {
         "t": 0,
-        "v": ""
+        "v": "business"
     },
     {
         "t": 0,
-        "v": ""
+        "v": "home"
     },
     {
         "t": 0,
@@ -29,23 +29,111 @@
     },
     {
         "t": 0,
-        "v": ""
+        "v": "notifications"
     },
     {
         "t": 0,
-        "v": ""
+        "v": "drive_file_rename_outline"
     },
     {
         "t": 0,
-        "v": ""
+        "v": "print"
     },
     {
         "t": 0,
-        "v": ""
+        "v": "file_download"
     },
     {
         "t": 0,
-        "v": ""
+        "v": "approval"
+    },
+    {
+        "t": 0,
+        "v": "pie_chart"
+    },
+    {
+        "t": 0,
+        "v": "grade"
+    },
+    {
+        "t": 0,
+        "v": "table_chart"
+    },
+    {
+        "t": 0,
+        "v": "list"
+    },
+    {
+        "t": 0,
+        "v": "close_fullscreen"
+    },
+    {
+        "t": 0,
+        "v": "insert_drive_file"
+    },
+    {
+        "t": 0,
+        "v": "history"
+    },
+    {
+        "t": 0,
+        "v": "equalizer"
+    },
+    {
+        "t": 0,
+        "v": "note_alt"
+    },
+    {
+        "t": 0,
+        "v": "assessment"
+    },
+    {
+        "t": 0,
+        "v": "shuffle"
+    },
+    {
+        "t": 0,
+        "v": "arrow_circle_down"
+    },
+    {
+        "t": 0,
+        "v": "arrow_circle_up"
+    },
+    {
+        "t": 0,
+        "v": "open_in_new"
+    },
+    {
+        "t": 0,
+        "v": "warning"
+    },
+    {
+        "t": 0,
+        "v": "add_circle"
+    },
+    {
+        "t": 0,
+        "v": "grade"
+    },
+    {
+        "t": 0,
+        "v": "description"
+    },
+    {
+        "t": 0,
+        "v": "reorder"
+    },
+    {
+        "t": 0,
+        "v": "inventory_2"
+    },
+    {
+        "t": 0,
+        "v": "preview"
+    },
+    {
+        "t": 0,
+        "v": "insert_drive_file"
     },
     {
         "t": 0,
@@ -57,10 +145,26 @@
     },
     {
         "t": 0,
+        "v": "business"
+    },
+    {
+        "t": 0,
         "v": "assessment"
     },
     {
         "t": 0,
         "v": "construction"
+    },
+    {
+        "t": 0,
+        "v": "radio_button_checked"
+    },
+    {
+        "t": 0,
+        "v": "check_circle"
+    },
+    {
+        "t": 0,
+        "v": "person"
     }
 ]
