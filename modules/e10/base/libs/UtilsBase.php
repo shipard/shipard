@@ -2,7 +2,7 @@
 
 
 namespace e10\base\libs;
-
+use \e10\base\TableAttachments;
 
 class UtilsBase
 {
@@ -95,7 +95,7 @@ class UtilsBase
 			{
 				$img = $row->toArray ();
 				$img['folder'] = 'att/';
-				$img['url'] = getAttachmentUrl ($app, $row);
+				$img['url'] = self::getAttachmentUrl ($app, $row);
 				if (strtolower($row['filetype']) === 'pdf' || strtolower($row['filetype']) === 'svg')
 					$img['original'] = 1;
 				if (strtolower($row['filetype']) === 'svg')
@@ -146,5 +146,53 @@ class UtilsBase
 		}
 	
 		return $files;
+	}
+
+	static function getAttachmentUrl ($app, $attachment, $thumbWidth = 0, $thumbHeight = 0, $fullUrl = FALSE, $params = FALSE)
+	{
+		$absUrl = '';
+		if ($fullUrl || (isset($app->clientType [1]) && $app->clientType [1] === 'cordova'))
+			$absUrl = $app->urlProtocol . $_SERVER['HTTP_HOST'];
+	
+		$url = '';
+	
+		if ($thumbWidth || $thumbHeight)
+		{
+			if ($attachment ['attplace'] === TableAttachments::apLocal)
+			{
+				$url = $absUrl.$app->dsRoot . '/imgs';
+				if ($thumbWidth)
+					$url .= '/-w' . intval($thumbWidth);
+				if ($thumbHeight)
+					$url .= '/-h' . intval($thumbHeight);
+				if ($params !== FALSE)
+					$url .= '/'.implode('/', $params);
+				$url .= '/att/' . $attachment ['path'] . urlencode($attachment ['filename']);
+			}
+			else
+			if ($attachment ['attplace'] === TableAttachments::apE10Remote)
+			{
+				$url = $attachment ['path'] . 'imgs';
+				if ($thumbWidth)
+					$url .= '/-w' . intval($thumbWidth);
+				if ($thumbHeight)
+					$url .= '/-h' . intval($thumbHeight);
+				$url .= '/' . urlencode($attachment ['filename']);
+			}
+			else
+			if ($attachment ['attplace'] === TableAttachments::apRemote)
+				$url = $attachment ['path'];
+		}
+		else
+		{
+			if ($attachment ['attplace'] === TableAttachments::apLocal)
+				$url = $absUrl.$app->dsRoot . '/att/' . $attachment ['path'] . $attachment ['filename'];
+			else
+			if ($attachment ['attplace'] === TableAttachments::apE10Remote)
+				$url = $attachment ['path'] . '/' . $attachment ['filename'];
+			if ($attachment ['attplace'] === TableAttachments::apRemote)
+				$url = $attachment ['path'];
+		}
+		return $url;
 	}	
 }

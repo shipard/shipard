@@ -8,9 +8,9 @@
 		],
     "views": {
       "purchase": {
-				"id": "purchase", "class": "e10doc.purchase.ViewPurchaseDocs",
+				"id": "purchase", "class": "e10doc.purchase.libs.ViewPurchaseDocs",
 				"details": {
-					"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10doc.purchase.ViewDetailPurchaseDocs", "order": 1000},
+					"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10doc.purchase.libs.ViewDetailPurchaseDocs", "order": 1000},
 					"accounting": {"title": "Účtování", "icon": "x-stamp", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
 				}
 			},
@@ -21,15 +21,15 @@
 			}
 		},
     "forms": [
-      {"id": "purchase", "class": "e10doc.purchase.FormPurchaseDocs"}
+      {"id": "purchase", "class": "e10doc.purchase.libs.FormPurchaseDocs"}
     ],
 		"reports": [
 			{
-				"id": "purchase", "name": "Výkupní lístek", "class": "e10doc.purchase.PurchaseReport",
+				"id": "purchase", "name": "Výkupní lístek", "class": "e10doc.purchase.libs.PurchaseReport",
 				"printerClass": "default", "queryCol": "docType", "queryColValues": ["purchase"], "email": 1
 			},
 			{
-				"id": "purchasepos", "name": "Účtenka", "class": "e10doc.purchase.PurchaseReportPos",
+				"id": "purchasepos", "name": "Účtenka", "class": "e10doc.purchase.libs.PurchaseReportPos",
 				"directPrint": 1, "printerClass": "pos", "queryCol": "docType", "queryColValues": ["purchase"]
 			}
 		],
@@ -40,7 +40,7 @@
   {
     "table": "e10doc.core.rows",
     "forms": [
-      {"id": "purchase", "class": "e10doc.purchase.FormPurchaseDocsRows"}
+      {"id": "purchase", "class": "e10doc.purchase.libs.FormPurchaseDocsRows"}
     ]
   }
 ]

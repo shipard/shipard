@@ -3737,7 +3737,7 @@ class FormHeads extends TableForm
 
 		switch ($allRecData['docType'])
 		{
-			case 'purchase': $viewer = $browseTable->getTableView ("e10doc.purchase.ViewItemsForPurchase", $comboParams); break;
+			case 'purchase': $viewer = $browseTable->getTableView ("e10doc.purchase.libs.ViewItemsForPurchase", $comboParams); break;
 			case 'cashreg':  $viewer = $browseTable->getTableView ("e10doc.cashRegister.libs.ViewItemsForCashRegister", $comboParams); break;
 			case 'mnf': 		 $viewer = $browseTable->getTableView ("e10doc.mnf.ViewItemsForMnf", $comboParams); break;
 		}
