@@ -62,11 +62,11 @@
 		"enablePrint": 1, "enableScan": 0, "focus": 1, "goto": [8000],
 		"printAfterConfirm": [
 			{
-				"id": "purchase", "class": "e10doc.purchase.PurchaseReport", "title": "Výkupní lístek A4",
+				"id": "purchase", "class": "e10doc.purchase.libs.PurchaseReport", "title": "Výkupní lístek A4",
 				"print": 1, "email": 1, "ask": 1, "copies": 1
 			},
 			{
-				"id": "purchasepos", "class": "e10doc.purchase.PurchaseReportPos", "title": "Výkupní lístek - účtenka",
+				"id": "purchasepos", "class": "e10doc.purchase.libs.PurchaseReportPos", "title": "Výkupní lístek - účtenka",
 				"print": 1, "ask": 1, "copies": 1
 			}
 		]
