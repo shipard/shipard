@@ -2,7 +2,7 @@
 
 namespace E10Doc\Base;
 
-use \e10\utils, \e10\TableView, \e10\TableForm, \e10\DbTable;
+use \e10\utils, \e10\TableView, \Shipard\Form\TableForm, \e10\DbTable;
 
 
 /**
@@ -17,7 +17,7 @@ class TableDocNumbers extends DbTable
 		$this->setName ('e10doc.base.docnumbers', 'e10doc_base_docnumbers', 'Číselné řady dokladů');
 	}
 
-	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, \E10\TableForm $form = NULL)
+	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, TableForm $form = NULL)
 	{
 		if ($columnId === 'docType')
 		{

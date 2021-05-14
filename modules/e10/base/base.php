@@ -444,7 +444,7 @@ class ListProperties implements \E10\IDocumentList
 		$this->table->app()->db()->query ($q, $this->table->tableId(), $this->recData ['ndx']);
 	}
 
-	function setRecord ($listId, \E10\TableForm $formData)
+	function setRecord ($listId, \Shipard\Form\TableForm $formData)
 	{
 		$this->table = $formData->table;
 		$this->listId = $listId;
@@ -1218,7 +1218,7 @@ function attachmentsWidget ($table, $recData)
 }
 
 
-function addAttachmentsWidget (\E10\TableForm $form)
+function addAttachmentsWidget (\Shipard\Form\TableForm $form)
 {
 	$form->appendElement (\E10\Base\attachmentsWidget($form->table, $form->recData), NULL);
 }
@@ -1388,7 +1388,7 @@ class ListRows implements \E10\IDocumentList
 	{
 	}
 
-	function setRecord ($listId, \E10\TableForm $formData)
+	function setRecord ($listId, \Shipard\Form\TableForm $formData)
 	{
 		$this->listId = $listId;
 		$this->formData = $formData;
@@ -1685,7 +1685,7 @@ class ListClassification implements \E10\IDocumentList
 		}
 	}
 
-	function setRecord ($listId, \E10\TableForm $formData)
+	function setRecord ($listId, \Shipard\Form\TableForm $formData)
 	{
 		$this->listId = $listId;
 		$this->formData = $formData;
@@ -2114,7 +2114,7 @@ class ListDocLinks implements \E10\IDocumentList
 		}
 	}
 
-	function setRecord ($listId, \E10\TableForm $formData)
+	function setRecord ($listId, \Shipard\Form\TableForm $formData)
 	{
 		$this->listId = $listId;
 		$this->formData = $formData;

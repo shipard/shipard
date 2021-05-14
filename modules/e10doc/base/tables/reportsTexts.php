@@ -1,7 +1,7 @@
 <?php
 
 namespace e10doc\base;
-use \e10\utils, \e10\TableView, \e10\TableForm, \e10\DbTable, \e10\FormReport;
+use \e10\utils, \e10\TableView, \Shipard\Form\TableForm, \e10\DbTable, \e10\FormReport;
 
 
 
@@ -143,7 +143,7 @@ class TableReportsTexts extends DbTable
 		return parent::tableIcon($recData, $options);
 	}
 
-	public function columnInfoEnum ($columnId, $valueType = 'cfgText', \E10\TableForm $form = NULL)
+	public function columnInfoEnum ($columnId, $valueType = 'cfgText', TableForm $form = NULL)
 	{
 		if ($columnId === 'docType')
 		{

@@ -2,7 +2,7 @@
 
 namespace e10pro\canteen;
 
-use \e10\utils, \e10\TableView, \e10\TableForm, \e10\DbTable, \e10doc\core\CreateDocumentUtility;
+use \e10\utils, \e10\TableView, \Shipard\Form\TableForm, \e10\DbTable, \e10doc\core\CreateDocumentUtility;
 
 
 /**
@@ -26,7 +26,7 @@ class TableCanteens extends DbTable
 		return $hdr;
 	}
 
-	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, \E10\TableForm $form = NULL)
+	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, TableForm $form = NULL)
 	{
 		if (!$form)
 			return TRUE;

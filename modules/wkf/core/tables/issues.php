@@ -7,6 +7,7 @@ require_once __SHPD_MODULES_DIR__ . 'e10/web/web.php';
 
 use E10\json;
 use \e10\utils, \E10\TableViewDetail, \E10\DbTable;
+use \Shipard\Form\TableForm;
 
 
 /**
@@ -303,7 +304,7 @@ class TableIssues extends DbTable
 		return FALSE;
 	}
 
-	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, \E10\TableForm $form = NULL)
+	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, TableForm $form = NULL)
 	{
 		if (!$form)
 			return TRUE;

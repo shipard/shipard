@@ -2,7 +2,7 @@
 
 namespace e10pro\bume;
 
-use \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\DbTable, \E10\utils;
+use \E10\TableView, \E10\TableViewDetail, \Shipard\Form\TableForm, \E10\DbTable, \E10\utils;
 
 
 /**
@@ -69,7 +69,7 @@ class TableBulkEmails extends DbTable
 		}
 	}
 
-	public function columnInfoEnum ($columnId, $valueType = 'cfgText', \E10\TableForm $form = NULL)
+	public function columnInfoEnum ($columnId, $valueType = 'cfgText', TableForm $form = NULL)
 	{
 		if ($columnId === 'senderEmail')
 		{

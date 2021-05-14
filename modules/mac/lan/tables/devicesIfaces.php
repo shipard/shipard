@@ -1,7 +1,7 @@
 <?php
 
 namespace mac\lan;
-use \e10\TableForm, \e10\DbTable, \e10\TableView, \e10\TableViewDetail, \e10\utils;
+use \Shipard\Form\TableForm, \e10\DbTable, \e10\TableView, \e10\TableViewDetail, \e10\utils;
 
 
 /**
@@ -16,7 +16,7 @@ class TableDevicesIfaces extends DbTable
 		$this->setName ('mac.lan.devicesIfaces', 'mac_lan_devicesIfaces', 'Síťová rozhraní zařízení');
 	}
 
-	public function columnInfoEnum ($columnId, $valueType = 'cfgText', \E10\TableForm $form = NULL)
+	public function columnInfoEnum ($columnId, $valueType = 'cfgText', TableForm $form = NULL)
 	{
 		if ($columnId === 'devicePort')
 		{

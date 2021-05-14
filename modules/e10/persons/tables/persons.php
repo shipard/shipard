@@ -7,7 +7,7 @@ use \Shipard\Viewer\TableViewPanel;
 require_once __DIR__ . '/../../base/base.php';
 
 
-use \E10\Application, \E10\utils, \E10\DataModel, \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\DbTable;
+use \E10\Application, \E10\utils, \E10\DataModel, \E10\TableView, \E10\TableViewDetail, \Shipard\Form\TableForm, \E10\DbTable;
 
 
 /**
@@ -483,7 +483,7 @@ class TablePersons extends DbTable
 		return $info;
 	}
 
-	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, \E10\TableForm $form = NULL)
+	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, TableForm $form = NULL)
 	{
 		if (!$form)
 			return TRUE;

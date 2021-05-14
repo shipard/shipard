@@ -45,7 +45,7 @@ interface IDocumentList
 	function init ();
 	function loadData ();
 	function saveData ($listData);
-	function setRecord ($listId, \E10\TableForm $formData);
+	function setRecord ($listId, \Shipard\Form\TableForm $formData);
 	function setRecData ($table, $listId, $recData);
 	function createHtmlCode ($options = 0);
 }
@@ -197,7 +197,7 @@ function createViewerPanelResponse ($app, TableViewPanel $panel)
 
 
 
-function createFormResponse ($app, TableForm $data, $format)
+function createFormResponse ($app, \Shipard\Form\TableForm $data, $format)
 {
 	$app->response->add ("mainCode", $data->finalCode ());
 	$app->response->add ("htmlHeader", $data->createHeaderCode ());

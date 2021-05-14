@@ -33,7 +33,7 @@ class UtilsBase
 		return $params;
 	}
 
-	static function addClassificationParamsToPanel(\Shipard\Table\DbTable $table, \Shipard\Viewer\TableViewPanel $panel)
+	static function addClassificationParamsToPanel(\Shipard\Table\DbTable $table, \Shipard\Viewer\TableViewPanel $panel, &$qry)
 	{
 		$clsf = self::classificationParams ($table);
 		foreach ($clsf as $cg)

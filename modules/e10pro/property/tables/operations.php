@@ -4,7 +4,7 @@ namespace E10Pro\Property;
 
 require_once 'property.php';
 
-use \E10\utils, \E10\TableView, \E10\TableForm, \E10\DbTable;
+use \E10\utils, \E10\TableView, \Shipard\Form\TableForm, \E10\DbTable;
 
 
 /**
@@ -68,7 +68,7 @@ class TableOperations extends DbTable
 			$recData['quantity'] = 1;
 	}
 
-	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, \E10\TableForm $form = NULL)
+	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, TableForm $form = NULL)
 	{
 		if (!$form)
 			return TRUE;

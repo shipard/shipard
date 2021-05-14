@@ -5,7 +5,7 @@ namespace E10Doc\Contracts\Core {
 use \E10\Application;
 use \E10\HeaderData;
 use \E10\DbTable;
-use \E10\TableForm;
+use \Shipard\Form\TableForm;
 
 
 /**
@@ -52,7 +52,7 @@ class TableRows extends DbTable
 		return $bookingType;
 	}
 
-	public function columnInfoEnum ($columnId, $valueType = 'cfgText', \E10\TableForm $form = NULL)
+	public function columnInfoEnum ($columnId, $valueType = 'cfgText', TableForm $form = NULL)
 	{
 		if ($columnId !== 'cntParts')
 			return parent::columnInfoEnum ($columnId, $valueType, $form);

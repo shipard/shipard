@@ -3,7 +3,7 @@
 namespace mac\lan;
 
 
-use \Shipard\Viewer\TableView, \E10\TableViewDetail, \E10\TableForm, \Shipard\Viewer\TableViewPanel, \E10\DbTable, \E10\utils;
+use \Shipard\Viewer\TableView, \E10\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Viewer\TableViewPanel, \E10\DbTable, \E10\utils;
 use \e10\base\libs\UtilsBase;
 
 /**
@@ -68,7 +68,7 @@ class TableDevices extends DbTable
 			$recData['uid'] = utils::createToken(32);
 	}
 
-	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, \E10\TableForm $form = NULL)
+	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, TableForm $form = NULL)
 	{
 		if (!$form)
 			return TRUE;
@@ -594,7 +594,7 @@ class ViewDevices extends TableView
 		$qry = [];
 
 		// -- tags
-		UtilsBase::addClassificationParamsToPanel($this->table, $panel);
+		UtilsBase::addClassificationParamsToPanel($this->table, $panel, $qry);
 
 		// -- lans
 		$lans = $this->db()->query ('SELECT ndx, fullName FROM mac_lan_lans WHERE docStateMain != 4')->fetchPairs ('ndx', 'fullName');

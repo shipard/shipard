@@ -136,7 +136,7 @@ class DbTable
 		return $destTable->columnInfoAutocomplete ($this, $srcColumnDef, $srcRecData, $search);
 	}
 
-	public function columnInfoEnum ($columnId, $valueType = 'cfgText', \E10\TableForm $form = NULL)
+	public function columnInfoEnum ($columnId, $valueType = 'cfgText', TableForm $form = NULL)
 	{
 		$res = array ();
 		$column = $this->app()->model()->column ($this->tableId, $columnId);
@@ -201,7 +201,7 @@ class DbTable
 		return '';
 	}
 
-	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, \E10\TableForm $form = NULL)
+	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, TableForm $form = NULL)
 	{
 		return TRUE;
 	}

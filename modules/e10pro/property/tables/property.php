@@ -5,7 +5,7 @@ namespace e10pro\property;
 require_once __SHPD_MODULES_DIR__ . 'e10/base/base.php';
 require_once __SHPD_MODULES_DIR__ . 'e10doc/core/core.php';
 
-use \E10\utils, \E10\TableView, \E10\TableViewDetail, \Shipard\Viewer\TableViewPanel, \E10\TableForm, \E10\DbTable, \e10doc\core\e10utils;
+use \E10\utils, \E10\TableView, \E10\TableViewDetail, \Shipard\Viewer\TableViewPanel, \Shipard\Form\TableForm, \E10\DbTable, \e10doc\core\e10utils;
 use \e10doc\core\libs\GlobalParams;
 
 /**
@@ -67,7 +67,7 @@ class TableProperty extends DbTable
 		}
 	}
 
-	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, \E10\TableForm $form = NULL)
+	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, TableForm $form = NULL)
 	{
 		if ($columnId == 'debsGroup')
 		{

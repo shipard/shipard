@@ -4,7 +4,7 @@ namespace mac\sw;
 require_once __SHPD_MODULES_DIR__ . 'e10/base/base.php';
 
 
-use \e10\TableForm, \e10\DbTable, \e10\TableView, \e10\utils, \e10\TableViewDetail;
+use \Shipard\Form\TableForm, \e10\DbTable, \e10\TableView, \e10\utils, \e10\TableViewDetail;
 
 
 /**
@@ -58,7 +58,7 @@ class TableSW extends DbTable
 		}
 	}
 
-	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, \E10\TableForm $form = NULL)
+	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, TableForm $form = NULL)
 	{
 		if ($columnId === 'osEdition')
 		{

@@ -4,6 +4,7 @@ namespace e10doc\core;
 
 use \e10\Application, \E10\utils, \E10\TableView;
 use \E10\DbTable, e10doc\core\e10utils;
+use \Shipard\Form\TableForm;
 
 
 /**
@@ -402,7 +403,7 @@ class TableRows extends DbTable
 		return TRUE;
 	}
 
-	public function columnInfoEnum ($columnId, $valueType = 'cfgText', \E10\TableForm $form = NULL)
+	public function columnInfoEnum ($columnId, $valueType = 'cfgText', TableForm $form = NULL)
 	{
 		if ($columnId !== 'operation' || $form === NULL)
 			return parent::columnInfoEnum ($columnId, $valueType = 'cfgText', $form);
@@ -444,7 +445,7 @@ class TableRows extends DbTable
 		return $res;
 	}
 
-	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, \E10\TableForm $form = NULL)
+	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, TableForm $form = NULL)
 	{
 		if (!$form)
 			return TRUE;

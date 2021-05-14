@@ -2,7 +2,7 @@
 
 namespace E10Doc\Base;
 
-use \E10\utils, \E10\TableView, \E10\TableForm, \E10\DbTable;
+use \E10\utils, \E10\TableView, \Shipard\Form\TableForm, \E10\DbTable;
 
 
 /**
@@ -27,7 +27,7 @@ class TableBankAccounts extends DbTable
 		return $hdr;
 	}
 
-	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, \E10\TableForm $form = NULL)
+	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, TableForm $form = NULL)
 	{
 		if (!$form)
 			return TRUE;

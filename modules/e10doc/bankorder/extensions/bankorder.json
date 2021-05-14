@@ -3,18 +3,18 @@
     "table": "e10doc.core.heads",
     "views": {
       "bankorder": {
-				"id": "bankorder", "class": "e10doc.bankorder.ViewBankOrders",
+				"id": "bankorder", "class": "e10doc.bankorder.libs.ViewBankOrders",
 				"details": {
-					"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10doc.bankorder.ViewDetailBankOrder"}
+					"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10doc.bankorder.libs.ViewDetailBankOrder"}
 				}
 			}
 		},
     "forms": [
-      {"id": "bankorder", "class": "e10doc.bankorder.FormBankOrder"}
+      {"id": "bankorder", "class": "e10doc.bankorder.libs.FormBankOrder"}
     ],
 		"reports": [
 			{
-				"id": "bankorder", "name": "Příkaz", "class": "e10doc.bankorder.BankOrderReport", "dropdown": 1,
+				"id": "bankorder", "name": "Příkaz", "class": "e10doc.bankorder.libs.BankOrderReport", "dropdown": 1,
 				"queryCol": "docType", "queryColValues": ["bankorder"]
 			}
 		]
@@ -22,7 +22,7 @@
   {
     "table": "e10doc.core.rows",
     "forms": [
-      {"id": "bankorder", "class": "e10doc.bankorder.FormBankOrderRow"}
+      {"id": "bankorder", "class": "e10doc.bankorder.libs.FormBankOrderRow"}
     ]
   }
 ]

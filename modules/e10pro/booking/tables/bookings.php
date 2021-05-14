@@ -2,7 +2,7 @@
 
 namespace E10Pro\Booking;
 
-use \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\DbTable, \E10\utils;
+use \E10\TableView, \E10\TableViewDetail, \Shipard\Form\TableForm, \E10\DbTable, \E10\utils;
 
 
 /**
@@ -38,7 +38,7 @@ class TableBookings extends DbTable
 			$recData ['currency'] = utils::homeCurrency ($this->app(), $recData ['dateBegin']);
 	}
 
-	public function columnInfoEnum ($columnId, $valueType = 'cfgText', \E10\TableForm $form = NULL)
+	public function columnInfoEnum ($columnId, $valueType = 'cfgText', TableForm $form = NULL)
 	{
 		if ($columnId !== 'cntParts')
 			return parent::columnInfoEnum ($columnId, $valueType, $form);

@@ -9,7 +9,7 @@ use E10\ContentRenderer;
 use \E10\TableViewDetail;
 use \E10\DbTable;
 use \E10\TableView;
-use \E10\TableForm;
+use \Shipard\Form\TableForm;
 use \e10doc\core\libs\DocsModes;
 
 
@@ -1878,7 +1878,7 @@ class TableHeads extends DbTable
 		$this->db()->query ("UPDATE [e10doc_core_heads] SET prepayment = 0 WHERE ndx = %i", $recData['ndx']);
 	}
 
-	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, \E10\TableForm $form = NULL)
+	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, TableForm $form = NULL)
 	{
 		if (!$form)
 			return TRUE;

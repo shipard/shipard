@@ -1404,7 +1404,7 @@ class ListAddress implements \E10\IDocumentList
 																								$this->table->tableId(), $this->recData ['ndx'], implode(', ', $usedNdx));
 	}
 
-	function setRecord ($listId, \E10\TableForm $formData)
+	function setRecord ($listId, \Shipard\Form\TableForm $formData)
 	{
 		$this->table = $formData->table;
 		$this->listId = $listId;
@@ -1652,7 +1652,7 @@ class ListGroups implements \E10\IDocumentList
 		}
 	}
 
-	function setRecord ($listId, \E10\TableForm $formData)
+	function setRecord ($listId, \Shipard\Form\TableForm $formData)
 	{
 		$this->listId = $listId;
 		$this->formData = $formData;

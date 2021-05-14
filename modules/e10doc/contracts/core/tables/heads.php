@@ -2,8 +2,8 @@
 
 namespace E10Doc\Contracts\Core;
 
-use e10doc\core\e10utils, \e10\utils, \e10\TableView, \e10\TableViewDetail, \e10\TableForm, \e10\DbTable, e10\TableViewPanel;
-
+use e10doc\core\e10utils, \e10\utils, \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \e10\DbTable, \Shipard\Viewer\TableViewPanel;
+use \e10\base\libs\UtilsBase;
 
 /**
  * Class TableHeads
@@ -25,7 +25,7 @@ class TableHeads extends DbTable
 		return 'sale';
 	}
 
-	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, \E10\TableForm $form = NULL)
+	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, TableForm $form = NULL)
 	{
 		if (!$form)
 			return TRUE;
@@ -325,7 +325,7 @@ class TableHeads extends DbTable
  */
 class ViewHeads extends TableView
 {
-	var $docType;
+	var $docType = 'sale';
 
 	var $docNumbers;
 	var $contractKinds;
@@ -469,7 +469,7 @@ class ViewHeads extends TableView
 		if (!count ($this->pks))
 			return;
 
-		$this->classification = \E10\Base\loadClassification ($this->table->app(), $this->table->tableId(), $this->pks);
+		$this->classification = UtilsBase::loadClassification ($this->table->app(), $this->table->tableId(), $this->pks);
 	}
 
 	public function renderRow ($item)
@@ -541,13 +541,7 @@ class ViewHeads extends TableView
 		}
 
 		// -- tags
-		$clsf = \E10\Base\classificationParams ($this->table);
-		foreach ($clsf as $cg)
-		{
-			$params = new \E10\Params ($panel->table->app());
-			$params->addParam ('checkboxes', 'query.clsf.'.$cg['id'], ['items' => $cg['items']]);
-			$qry[] = ['style' => 'params', 'title' => $cg['name'], 'params' => $params];
-		}
+		UtilsBase::addClassificationParamsToPanel($this->table, $panel, $qry);
 
 		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}

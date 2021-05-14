@@ -4,7 +4,7 @@ namespace e10doc\contracts\core;
 
 require_once __SHPD_MODULES_DIR__ . 'e10doc/core/core.php';
 
-use \e10\TableView, \e10\TableForm, \e10\DbTable, e10doc\core\e10utils, e10\utils, e10doc\core\CreateDocumentUtility;
+use \e10\TableView, \Shipard\Form\TableForm, \e10\DbTable, e10doc\core\e10utils, e10\utils, e10doc\core\CreateDocumentUtility;
 
 
 /**
@@ -70,7 +70,7 @@ class TableKinds extends DbTable
 		}
 	}
 
-	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, \E10\TableForm $form = NULL)
+	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, TableForm $form = NULL)
 	{
 		if (!$form)
 			return TRUE;
