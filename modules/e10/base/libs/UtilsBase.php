@@ -194,5 +194,66 @@ class UtilsBase
 				$url = $attachment ['path'];
 		}
 		return $url;
-	}	
+	}
+
+	static function linkedPersons ($app, $table, $toRecId, $elementClass = '')
+	{
+		if (is_string($table))
+			$tableId = $table;
+		else
+			$tableId = $table->tableId ();
+	
+		$links = $app->cfgItem ('e10.base.doclinks', NULL);
+	
+		if (!$links)
+			return array();
+		if (!isset($links [$tableId]))
+			return array();
+		$allLinks = $links [$tableId];
+	
+		$lp = array ();
+	
+		if (is_array($toRecId))
+		{
+			if (count($toRecId) === 0)
+				return $lp;
+			$recs = implode (', ', $toRecId);
+			$sql = "(SELECT links.ndx, links.linkId as linkId, links.srcRecId as srcRecId, links.dstRecId as dstRecId, persons.fullName as fullName, persons.company as company from e10_base_doclinks as links " .
+							"LEFT JOIN e10_persons_persons as persons ON links.dstRecId = persons.ndx " .
+							"where srcTableId = %s AND dstTableId = 'e10.persons.persons' AND links.srcRecId IN ($recs))" .
+							" UNION ".
+							"(SELECT links.ndx, links.linkId as linkId, links.srcRecId as srcRecId, 0, groups.name as fullName, 3 from e10_base_doclinks as links " .
+							"LEFT JOIN e10_persons_groups as groups ON links.dstRecId = groups.ndx " .
+							"where srcTableId = %s AND dstTableId = 'e10.persons.groups' AND links.srcRecId IN ($recs))";
+		}
+		else
+		{
+			$recId = intval($toRecId);
+			$sql = "(SELECT links.ndx, links.linkId as linkId, links.srcRecId as srcRecId, links.dstRecId as dstRecId, persons.fullName as fullName, persons.company as company from e10_base_doclinks as links " .
+							"LEFT JOIN e10_persons_persons as persons ON links.dstRecId = persons.ndx " .
+							"where srcTableId = %s AND dstTableId = 'e10.persons.persons' AND links.srcRecId = $recId)" .
+							" UNION ".
+							"(SELECT links.ndx, links.linkId as linkId, links.srcRecId as srcRecId, 0, groups.name as fullName, 3 from e10_base_doclinks as links " .
+							"LEFT JOIN e10_persons_groups as groups ON links.dstRecId = groups.ndx " .
+							"where srcTableId = %s AND dstTableId = 'e10.persons.groups' AND links.srcRecId = $recId)";
+		}
+	
+		$query = $app->db->query ($sql, $tableId, $tableId);
+	
+		foreach ($query as $r)
+		{
+			$icon = 'icon-sign-blank';
+			if (isset ($allLinks [$r['linkId']]['icon']))
+				$icon = $allLinks [$r['linkId']]['icon'];
+			if (isset ($lp [$r['srcRecId']][$r['linkId']]))
+				$lp [$r['srcRecId']][$r['linkId']][0]['text'] .= ', '.$r ['fullName'];
+			else
+				$lp [$r['srcRecId']][$r['linkId']][0] = ['icon' => $icon, 'text' => $r ['fullName'], 'class' => $elementClass];
+			if ($r['dstRecId'])
+				$lp [$r['srcRecId']][$r['linkId']][0]['pndx'][] = $r['dstRecId'];
+		}
+	
+		return $lp;
+	}
+	
 }

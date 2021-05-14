@@ -3,6 +3,7 @@
 namespace e10pro\kb;
 
 use \E10\utils, \E10\TableView, \E10\TableForm, \E10\DbTable;
+use \e10\base\libs\UtilsBase;
 
 
 /**
@@ -127,7 +128,7 @@ class ViewSections extends TableView
 		if (!count ($this->pks))
 			return;
 
-		$this->linkedPersons = \E10\Base\linkedPersons ($this->table->app(), $this->table, $this->pks);
+		$this->linkedPersons = UtilsBase::linkedPersons ($this->table->app(), $this->table, $this->pks);
 	}
 }
 
