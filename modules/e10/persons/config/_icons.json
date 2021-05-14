@@ -28,5 +28,17 @@
 		"fa5pro": "fa-compress-alt",
 		"bsi": "bi-arrows-angle-contract",
 		"mdi": "close_fullscreen"
+	},
+	"tables/e10.persons.requests": {
+		"fa5": "fa-receipt",
+		"fa5pro": "fa-receipt",
+		"bsi": "bi-receipt-cutoff",
+		"mdi": "receipt"
+	},
+	"tables/e10.persons.keys": {
+		"fa5":"fa-key",
+        "fa5pro":"fa-key-skeleton",
+        "bsi":"bi-key",
+        "mdi":"vpn_key"
 	}
 }

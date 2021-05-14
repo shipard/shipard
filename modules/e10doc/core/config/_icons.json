@@ -86,7 +86,7 @@
     "docType/openClosePeriods":{
         "fa5":"fa-archive",
         "fa5pro":"fa-archive",
-        "bsi":"bi-archive-fill",
+        "bsi":"bi-archive",
         "mdi":"inventory_2"
     },
     "docType/taxes":{
@@ -244,5 +244,197 @@
         "fa5pro":"fa-flask",
         "bsi":"bi-building",
         "mdi":"science"
-    }
+    },
+    "detailBalanceByItems":{
+		"fa5":"fa-list",
+        "fa5pro":"fa-list",
+        "bsi":"bi-list-ul",
+        "mdi":"list"
+	},
+	"detailBalanceDueAnalysis":{
+		"fa5":"fa-table",
+        "fa5pro":"fa-table",
+        "bsi":"bi-table",
+        "mdi":"table_chart"
+	},
+	"detailBalanceRatesDifferences":{
+		"fa5": "fa-compress-alt",
+		"fa5pro": "fa-compress-alt",
+		"bsi": "bi-arrows-angle-contract",
+		"mdi": "close_fullscreen"
+	},
+	"detailBalance":{
+		"fa5":"fa-star",
+		"fa5pro":"fa-star",
+		"bsi":"bi-star",
+		"mdi":"grade"
+	},
+    "detailReportItems":{
+		"fa5":"fa-shopping-bag",
+        "fa5pro":"fa-shopping-bag",
+        "bsi":"bi-bag-fill",
+        "mdi":"shopping-bag"
+	},
+    "detailReportTypes":{
+		"fa5":"fa-archive",
+        "fa5pro":"fa-archive",
+        "bsi":"bi-archive",
+        "mdi":"inventory_2"
+	},
+	"detailReportSum":{
+		"fa5": "fa-plus-square",
+		"fa5pro": "fa-plus-square",
+		"bsi": "bi-plus-square-fill",
+		"mdi": "add_circle"
+	},
+	"detailReportPDP":{
+		"fa5": "fa-share",
+		"fa5pro": "fa-share",
+		"bsi": "bi-box-arrow-up-right",
+		"mdi": "open_in_new"
+	},
+	"detailReportSummaryReport":{
+		"fa5":"fa-star",
+		"fa5pro":"fa-star",
+		"bsi":"bi-star",
+		"mdi":"grade"
+	},
+	"detailReportOutput":{
+		"fa5":"fa-arrow-circle-up",
+		"fa5pro":"fa-arrow-circle-up",
+		"bsi":"bi-arrow-up-circle",
+		"mdi":"arrow_circle_up"
+	},
+	"detailReportInput":{
+		"fa5":"fa-arrow-circle-down",
+		"fa5pro":"fa-arrow-circle-down",
+		"bsi":"bi-arrow-down-circle",
+		"mdi":"arrow_circle_down"
+	},
+	"detailReportTranscript":{
+		"fa5":"fa-file-alt",
+		"fa5pro":"fa-file-alt",
+		"bsi":"bi-file-earmark-text",
+		"mdi":"description"
+	},
+	"detailReportProblems":{
+		"fa5":"fa-exclamation-triangle",
+		"fa5pro":"fa-file-alt",
+		"bsi":"bi-exclamation-triangle-fill",
+		"mdi":"warning"
+	},
+	"detailReportDifferences":{
+		"fa5": "fa-random",
+		"fa5pro": "fa-random",
+		"bsi": "bi-random",
+		"mdi": "shuffle"
+	},
+	"detailReportAlphabetically":{
+		"fa5": "fa-sort-alpha-down",
+		"fa5pro": "fa-sort-alpha-down",
+		"bsi": "bi-sort-alpha-down",
+		"mdi": "sort_by_alpha"
+	},
+	"detailReportFinancially":{
+		"fa5": "fa-sort-amount-down",
+		"fa5pro": "fa-sort-amount-down",
+		"bsi": "bi-sort-down",
+		"mdi": "sort"
+	},
+	"detailReportTop":{
+		"fa5": "fa-trophy",
+		"fa5pro": "fa-trophy-alt",
+		"bsi": "bi-trophy",
+		"mdi": "emoji_events"
+	},
+	"detailReportCashregisters":{
+		"fa5": "fa-money-bill-alt",
+		"fa5pro": "fa-money-bill-alt",
+		"bsi": "bi-cash",
+		"mdi": "payments"
+	},
+	"detailReportUsers":{
+		"fa5": "fa-user",
+		"fa5pro": "fa-user",
+		"bsi": "bi-person",
+		"mdi": "person"
+	},
+	"detailReportBreakthroughs":{
+		"fa5": "fa-level-up-alt",
+		"fa5pro": "fa-level-up-alt",
+		"bsi": "bi-arrow-90deg-up",
+		"mdi": "arrow_upward"
+	},
+	"detailReportRenegades":{
+		"fa5": "fa-level-down-alt",
+		"fa5pro": "fa-level-down-alt",
+		"bsi": "bi-arrow-90deg-down",
+		"mdi": "arrow_downward"
+	},
+	"detailReportInputCsReport":{
+		"fa5": "fa-level-down-alt",
+		"fa5pro": "fa-level-down-alt",
+		"bsi": "bi-arrow-90deg-down",
+		"mdi": "arrow_downward"
+	},
+	"detailReportOutputCsReport":{
+		"fa5": "fa-level-down-alt",
+		"fa5pro": "fa-level-down-alt",
+		"bsi": "bi-arrow-90deg-down",
+		"mdi": "arrow_downward"
+	},
+	"detailReportStatement":{
+		"fa5":"fa-file-alt",
+		"fa5pro":"fa-file-alt",
+		"bsi":"bi-file-earmark-text",
+		"mdi":"description"
+	},
+	"detailReportAnalysis":{
+		"fa5":"fa-search-plus",
+		"fa5pro":"fa-search-plus",
+		"bsi":"bi-zoom-in",
+		"mdi":"zoom_in"
+	},
+	"detailReportDocuments":{
+		"fa5":"fa-list",
+		"fa5pro":"fa-list",
+		"bsi":"bi-list-ul",
+		"mdi":"list"
+	},
+	"detailReportAccounting":{
+		"fa5":"fa-list",
+		"fa5pro":"fa-list",
+		"bsi":"bi-list-ul",
+		"mdi":"list"
+	},
+	"detailReportOutdatedAccounts":{
+		"fa5":"fa-calendar-times",
+		"fa5pro":"fa-calendar-times",
+		"bsi":"bi-calendar-x",
+		"mdi":"event_busy"
+	},
+	"detailReportAccounts":{
+		"fa5":"fa-th-large",
+        "fa5pro":"fa-th-large",
+        "bsi":"bi-table",
+        "mdi":"table_chart"
+	},
+	"detailReportOther":{
+		"fa5":"fa-exclamation-triangle",
+		"fa5pro":"fa-file-alt",
+		"bsi":"bi-exclamation-triangle-fill",
+		"mdi":"warning"
+	},
+	"detailReportRegistration":{
+		"fa5":"fa-microchip",
+        "fa5pro":"fa-microchip",
+        "bsi":"bi-cpu-fill",
+        "mdi":"memory"
+	},
+	"detailReportPeriod":{
+		"fa5":"fa-file-alt",
+		"fa5pro":"fa-file-alt",
+		"bsi":"bi-file-earmark-text",
+		"mdi":"description"
+	}
 }

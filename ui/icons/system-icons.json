@@ -65,6 +65,12 @@
 		"bsi": "bi-download",
 		"mdi": "file_download"
 	},	
+	"actionRegenerate": {
+		"fa5": "fa-cogs",
+		"fa5pro": "fa-cogs",
+		"bsi": "bi-gear-fill",
+		"mdi": "settings"
+	},	
 	"iconUser": {
 		"fa5": "fa-user",
 		"fa5pro": "fa-user",
@@ -155,12 +161,6 @@
 		"bsi":"bi-pie-chart-fill",
 		"mdi":"pie_chart"
 	},
-	"detailBalance":{
-		"fa5":"fa-star",
-		"fa5pro":"fa-star",
-		"bsi":"bi-star",
-		"mdi":"grade"
-	},
 	"detailStock":{
 		"fa5":"fa-cubes",
         "fa5pro":"fa-cubes",
@@ -184,71 +184,5 @@
         "fa5pro":"fa-binoculars",
         "bsi":"bi-list",
         "mdi":"reorder"
-	},
-	"detailBalanceItems":{
-		"fa5":"fa-list",
-        "fa5pro":"fa-list",
-        "bsi":"bi-list-ul",
-        "mdi":"list"
-	},
-	"detailBalanceDueAnalysis":{
-		"fa5":"fa-table",
-        "fa5pro":"fa-table",
-        "bsi":"bi-table",
-        "mdi":"table_chart"
-	},
-	"detailBalanceRatesDifferences":{
-		"fa5": "fa-compress-alt",
-		"fa5pro": "fa-compress-alt",
-		"bsi": "bi-arrows-angle-contract",
-		"mdi": "close_fullscreen"
-	},
-	"detailReportSum":{
-		"fa5": "fa-plus-square",
-		"fa5pro": "fa-plus-square",
-		"bsi": "bi-plus-square-fill",
-		"mdi": "add_circle"
-	},
-	"detailReportPDP":{
-		"fa5": "fa-share",
-		"fa5pro": "fa-share",
-		"bsi": "bi-box-arrow-up-right",
-		"mdi": "open_in_new"
-	},
-	"detailReportSummaryReport":{
-		"fa5":"fa-star",
-		"fa5pro":"fa-star",
-		"bsi":"bi-star",
-		"mdi":"grade"
-	},
-	"detailReportOutput":{
-		"fa5":"fa-arrow-circle-up",
-		"fa5pro":"fa-arrow-circle-up",
-		"bsi":"bi-arrow-up-circle",
-		"mdi":"arrow_circle_up"
-	},
-	"detailReportInput":{
-		"fa5":"fa-arrow-circle-down",
-		"fa5pro":"fa-arrow-circle-down",
-		"bsi":"bi-arrow-down-circle",
-		"mdi":"arrow_circle_down"
-	},
-	"detailReportTranscript":{
-		"fa5":"fa-file-alt",
-		"fa5pro":"fa-file-alt",
-		"bsi":"bi-file-earmark-text",
-		"mdi":"description"
-	},
-	"detailReportProblems":{
-		"fa5":"fa-exclamation-triangle",
-		"fa5pro":"fa-file-alt",
-		"bsi":"bi-exclamation-triangle-fill",
-		"mdi":"warning"
-	},
-	"detailReportDifferences":{
-		"fa5": "fa-random",
-		"fa5pro": "fa-random",
-		"bsi": "bi-random",
-		"mdi": "shuffle"
 	}
 }
