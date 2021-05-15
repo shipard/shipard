@@ -112,7 +112,7 @@ class WebTemplateLook extends Utility
 			$dstCssFileName = $this->destPath.'/'.$this->templateLookRecData['lookId'].'-'.$styleId.'.css';
 
 			$styleContent = $this->skinVariables."\n\n";
-			$styleContent .= "@import \"../../e10-modules/e10templates/web/".$this->options['id']."/sass/{$styleId}.scss\";\n";
+			$styleContent .= "@import \"../../www-root/templates/web/".$this->options['id']."/sass/{$styleId}.scss\";\n";
 
 			$styleContent .= $this->templateLookRecData['lookStyleExt'];
 
@@ -129,7 +129,7 @@ class WebTemplateLook extends Utility
 
 			file_put_contents($dstFileName, $styleContent);
 
-			$cmd = "sass $dstFileName $dstCssFileName --style compressed --sourcemap=none 2>&1";
+			$cmd = "cd {$this->destPath} && sass $dstFileName $dstCssFileName --style compressed --sourcemap=none 2>&1";
 
 			$output = '';
 			$fp = popen($cmd, 'r');

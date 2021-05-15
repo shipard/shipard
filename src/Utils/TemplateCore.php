@@ -182,7 +182,10 @@ class TemplateCore extends \Mustache
 			$this->options = json_decode($optionsStr, TRUE);
 		}
 		else
+		{
+			error_log ("template.json `$fullOptionsName` not found");
 			$this->options = [];
+		}
 
 		$fullDictName = $this->templateRoot . 'dict.json';
 		if (is_file($fullDictName))

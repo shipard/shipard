@@ -64,7 +64,7 @@ class TableTemplatesLooks extends DbTable
 	public function subColumnsInfo ($recData, $columnId)
 	{
 		$template = new \e10\TemplateCore ($this->app());
-		$template->loadTemplate($recData['templateId'], FALSE);
+		$template->loadTemplate($recData['templateId'], 'page-web.mustache');
 
 		if (!$template || $template->options === FALSE || !isset($template->options[$columnId]))
 			return FALSE;
