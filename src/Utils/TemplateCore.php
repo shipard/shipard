@@ -171,8 +171,8 @@ class TemplateCore extends \Mustache
 		}
 		else
 		{
-			$this->urlRoot = __SHPD_MODULES_DIR__ . strtolower(implode ('/', $parts));
-			$this->templateRoot = __SHPD_MODULES_DIR__ . strtolower(implode ('/', $parts)) . '/';
+			$this->urlRoot = __SHPD_ROOT_DIR__ . __SHPD_TEMPLATE_SUBDIR__. implode ('/', $parts);
+			$this->templateRoot = __SHPD_ROOT_DIR__ . __SHPD_TEMPLATE_SUBDIR__. implode ('/', $parts) . '/';
 		}
 
 		$fullOptionsName = $this->templateRoot . 'template.json';
@@ -195,6 +195,12 @@ class TemplateCore extends \Mustache
 
 		if ($templateFileName !== FALSE)
 			$this->template = file_get_contents ($fullTemplateName);
+
+		if (!$this->template)
+		{
+			error_log("file `$fullTemplateName` not found [TID: $name]");
+			Utils::debugBacktrace();
+		}
 	}
 
 	public function clientType ()

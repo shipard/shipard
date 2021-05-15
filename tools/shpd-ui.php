@@ -332,11 +332,108 @@ class ShpdUIApp
 		return TRUE;
 	}
 
+	public function webTemplate ()
+	{
+		$templateCfg = utils::loadCfgFile('template.json');
+		if (!$templateCfg)
+			return $this->err ("file 'template.json' not found");
+
+		if (isset($templateCfg['disabled']))
+			return $this->err ("template is disabled...");
+
+		if (!isset($templateCfg['ndx']))
+			return $this->err ("field 'ndx' not found");
+		if (!isset($templateCfg['id']))
+			return $this->err ("field 'id' not found");
+		if (!isset($templateCfg['name']))
+			return $this->err ("field 'name' not found");
+
+		$looks = [];
+		$scanMask = 'looks/*.json';
+		forEach (glob($scanMask) as $lookFile)
+		{
+			echo '.';
+			$lookCfg = utils::loadCfgFile($lookFile);
+			if (!$lookCfg)
+			{
+				echo "\n";
+				return $this->err("SYNTAX ERROR: $lookFile");
+			}
+
+			$sassVariables = "@charset \"UTF-8\";\n\n";
+			foreach ($lookCfg['lookParams'] as $key => $value)
+			{
+				$sassVariables .= '$'.$key.': '.$value."; \n";
+			}
+
+			$bn = substr (basename($lookFile), 0, -5);
+			$ver = [];
+			foreach ($templateCfg['styles'] as $styleId)
+			{
+				$sassContent = $sassVariables;
+				$sassContent .= "\n@import \"../sass/$styleId.scss\";\n";
+
+				$sassFileName = 'styles/' . $bn . '.tmp.scss';
+				file_put_contents($sassFileName, $sassContent);
+
+				$cssFileName = 'styles/'.$bn.'-'.$styleId.'.css';
+				$cmd = "sass {$sassFileName} $cssFileName";
+
+				$cmd .= ' --style compressed';
+				//$cmd .= ' --sourcemap=none';
+
+				passthru($cmd);
+
+				$ver[$styleId] = md5_file($cssFileName);
+			}
+
+			$dstVerFileName = 'styles/'.$bn.'-versions.json';
+			file_put_contents($dstVerFileName, json_encode($ver));
+
+			$looks [$lookCfg['ndx']] = ['id' => $bn, 'name' => $lookCfg['name']];
+
+			$themeColor = '#00508a';
+			if (isset($lookCfg['lookParams']['e10w-brand-primary-bg']))
+				$themeColor = $lookCfg['lookParams']['e10w-brand-primary-bg'];
+
+			$this->allLooks[$lookCfg['ndx']] = ['id' => $bn, 'name' => $lookCfg['name'], 'themeColor' => $themeColor, 'template' => $templateCfg['id']];
+		}
+
+		file_put_contents('looks.json', json::lint($looks));
+		$this->allTemplates[$templateCfg['ndx']] = ['id' => $templateCfg['id'], 'name' => $templateCfg['name']];
+		if (isset($templateCfg['checkModule']))
+			$this->allTemplates[$templateCfg['ndx']]['checkModule'] = $templateCfg['checkModule'];
+
+		echo ' ok'."\n";
+		return TRUE;
+	}
+
+
+	public function webTemplates ()
+	{
+		$scanMask = '*';
+		forEach (glob ($scanMask, GLOB_ONLYDIR) as $templateDir)
+		{
+			if (!is_file($templateDir . '/template.json'))
+				continue;
+
+			echo '# '.$templateDir.': ';
+
+			$oldDir = getcwd();
+			chdir($templateDir);
+			$this->webTemplate();
+			chdir($oldDir);
+		}
+
+		file_put_contents('templates.json', json::lint($this->allTemplates));
+		file_put_contents('looks.json', json::lint($this->allLooks));
+
+		return TRUE;
+	}
+
+
 	public function run ($argv)
 	{
-		$this->modulesPath = '/var/www/e10-modules/';
-		$this->e10ServerPath = '/var/www/e10-modules/e10/server';
-
 		$this->arguments = parseArgs($argv);
 
 		if (count ($this->arguments) == 0)
@@ -344,9 +441,10 @@ class ShpdUIApp
 
 		switch ($this->command ())
 		{
-			case	"app-themes":		return $this->createAppThemes ();
-			case	"app-js":				return $this->js();
-			case	"app-icons":		return $this->createSystemIcons();
+			case	'app-themes':			return $this->createAppThemes ();
+			case	'app-js':					return $this->js();
+			case	'system-icons':		return $this->createSystemIcons();
+			case	'web-templates':	return $this->webTemplates ();
 		}
 
 		echo ("unknown command...\n");

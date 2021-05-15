@@ -1,7 +1,7 @@
 <?php
 
 namespace lib\objects;
-use \Shipard\Base\Service, \Shiaprd\Base\Response, \Shiaprd\Application\DataModel;
+use \Shipard\Base\Service, \Shipard\Application\Response, \Shipard\Application\DataModel;
 
 
 /**

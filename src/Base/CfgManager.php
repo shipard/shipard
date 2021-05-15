@@ -192,7 +192,7 @@ class CfgManager
 
 
 		if (!isset ($newConfig ['modulesPath']))
-			$newConfig ['modulesPath'] = __APP_DIR__.'/e10-modules/';
+			$newConfig ['modulesPath'] = __SHPD_MODULES_DIR__;
 
 		// -- check unset critical options
 		$newConfig['systemConfig']['unconfigured'] = 0;

@@ -16,3 +16,7 @@ build/packages/*.tgz
 build/packages/*.cmd
 
 www-root/ui-dev
+.sass-cache
+
+*.css.map
+

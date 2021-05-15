@@ -249,7 +249,7 @@ class WebTemplateMustache extends \E10\TemplateCore
 
 	function resolveCmd_webForm ($params)
 	{
-		$formIdParam = \E10\searchParam ($params, 'id', 'e10pro.wkf.contactForm');
+		$formIdParam = \E10\searchParam ($params, 'id', 'wkf.core.libs.ContactForm');
 		$formFwParam = \E10\searchParam ($params, 'fw', 'bs3');
 
 		$wf = $this->app->createObject ($formIdParam);

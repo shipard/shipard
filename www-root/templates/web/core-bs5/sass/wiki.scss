@@ -1,0 +1,144 @@
+@import "look-variables.scss";
+@import "look-core.scss";
+@import "_topMenuWeb.scss";
+
+@import "_typography.scss";
+//@import "../../libs/_images.scss";
+
+
+footer.page-footer {
+  color: #333;
+  a, a:visited {
+    color: #000;
+    text-decoration: underline;
+  }
+}
+
+.widget-wrapper {
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 2rem;
+}
+
+
+article>div.main {
+  background-color: $e10w-content-bg;
+  color: $e10w-content-text;
+}
+
+body.page-type-home {
+  > article > div.main {
+    box-shadow: none;
+  }
+}
+
+.e10-wiki-content
+{
+  clear: both;
+}
+
+
+
+
+h4.card-title>a>i {
+  //color: $e10w-brand-accent-text;
+}
+
+h4.card-title>a:hover {
+  text-decoration: none;
+}
+
+table.table td>a {
+  margin-left: 0;
+}
+
+
+div.row> div.col-md-4 > div.card {margin-bottom: 1rem;}
+
+
+.card .activator {
+  padding: 1rem 0 0 0;
+  > button {
+    padding: .5rem 0;
+    box-shadow: none;
+  }
+}
+
+
+
+
+.e10-sidebar-right {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 1000;
+  padding: 20px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: #fafafa;
+  border-left: 2px solid #dadada;
+}
+
+
+/* Sidebar navigation */
+.e10-sidebar-right {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.e10-sidebar-right .nav {
+  margin-bottom: 20px;
+}
+
+.e10-sidebar-right .nav-item {
+  width: 100%;
+}
+
+.e10-sidebar-right .nav-item + .nav-item {
+  margin-left: 0;
+}
+
+.e10-sidebar-right .nav-link {
+  border-radius: 0;
+}
+
+
+.e10-sidebar-left {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1000;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: #fafafa;
+  border-right: 2px solid #dadada;
+  padding: 0;
+
+  h3 {
+    padding-top:1rem;
+    padding-left: .6rem;
+    font-size: 133%;
+  }
+}
+
+body.top-menu-fixed-top {
+  .e10-sidebar-left {
+    padding-top: 3rem;
+  }
+  .e10-sidebar-right {
+    padding-top: 3rem;
+  }
+}
+
+
+
+a.nav-link {white-space: pre;}
+
+
+section.e10-wiki {
+  min-height: calc(100vh - 23rem);
+}
+
+

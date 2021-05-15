@@ -52,7 +52,7 @@ class TableTemplatesLooks extends DbTable
 		if ($pk < 100000)
 			return parent::columnRefInputTitle($form, $srcColumnId, $inputPrefix);
 
-		$allStdLooks = utils::loadCfgFile(__APP_DIR__.'/e10-modules/e10templates/web/looks.json');
+		$allStdLooks = utils::loadCfgFile(__SHPD_ROOT_DIR__.__SHPD_TEMPLATE_SUBDIR__.'web/looks.json');
 		$pk = strval($pk);
 		if ($allStdLooks && isset($allStdLooks[$pk]))
 			$refTitle = ['text' => $allStdLooks[$pk]['name']];
@@ -113,7 +113,7 @@ class TableTemplatesLooks extends DbTable
 			return ['name' => $item['name'], 'id' => $item['lookId']];
 		}
 
-		$allStdLooks = utils::loadCfgFile(__APP_DIR__.'/e10-modules/e10templates/web/looks.json');
+		$allStdLooks = utils::loadCfgFile(__SHPD_ROOT_DIR__.__SHPD_TEMPLATE_SUBDIR__.'web/looks.json');
 		$pk = strval($lookNdx);
 		if ($allStdLooks && isset($allStdLooks[$pk]))
 			return $allStdLooks[$pk];

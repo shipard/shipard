@@ -1,0 +1,26 @@
+{
+    "102100": {
+        "id": "102100-default",
+        "name": "Výchozí vzhled"
+    },
+    "102200": {
+        "id": "102200-blue",
+        "name": "Modrý"
+    },
+    "102210": {
+        "id": "102210-green",
+        "name": "Zelený"
+    },
+    "102220": {
+        "id": "102220-red",
+        "name": "Červený"
+    },
+    "102230": {
+        "id": "102230-yellow",
+        "name": "Žlutá"
+    },
+    "102700": {
+        "id": "102700-dark-default",
+        "name": "Tmavý"
+    }
+}

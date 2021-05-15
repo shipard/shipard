@@ -1,0 +1,44 @@
+{{#page.articles}}
+	<article class='article pageText'>
+		<div class='article-header'>
+			<h3><a href="{{url}}">{{title}}</a></h3>
+			{{#section.showDateOrAuthor}}
+				<span>
+					{{#section.showDate}}{{#datePub}}<i class='fa fa-calendar'></i>&nbsp;{{datePub}}{{/datePub}}{{/section.showDate}}
+					{{#section.showAuthor}}{{#authorLastName}}<i class='fa fa-user'></i>&nbsp;{{authorFirstName}}&nbsp;{{authorLastName}}{{/authorLastName}}{{/section.showAuthor}}
+				</span>
+			{{/section.showDateOrAuthor}}
+		</div>
+		{{{text}}}
+		<div class="article-end"></div>
+	</article>
+{{/page.articles}}
+
+{{#page.article}}
+	<article class='pageText'>
+		<div class='article-header'>
+			<h3>{{page.title}}</h3>
+			{{#section.showDateOrAuthor}}
+				<span>
+					{{#section.showDate}}{{#datePub}}<i class='fa fa-calendar'></i>&nbsp;{{datePub}}{{/datePub}}{{/section.showDate}}
+					{{#section.showAuthor}}{{#authorLastName}}<i class='fa fa-user'></i>&nbsp;{{authorFirstName}}&nbsp;{{authorLastName}}{{/authorLastName}}{{/section.showAuthor}}
+				</span>
+			{{/section.showDateOrAuthor}}
+		</div>
+		{{{text}}}
+		<div class="article-end"></div>
+	</article>
+{{/page.article}}
+
+{{#page.needPagination}}
+	<nav aria-label="Stránkování článků">
+		<ul class="pagination justify-content-center">
+			{{#page.pagePrev}}
+				<li class="page-item previous"><a class="page-link" href="{{{page.pagePrev}}}">&lsaquo; Novější články</a></li>
+			{{/page.pagePrev}}
+			{{#page.pageNext}}
+				<li class="page-item next"><a class="page-link" href="{{{page.pageNext}}}">Starší články &rsaquo;</a></li>
+			{{/page.pageNext}}
+		</ul>
+	</nav>
+{{/page.needPagination}}

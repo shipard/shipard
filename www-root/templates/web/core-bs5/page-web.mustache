@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="">
+	<meta name="author" content="">
+
+	<title>{{page.pageTitle}}</title>
+	{{{headMetaTags}}}
+
+	<link href="{{scRoot}}/bs/5.0/dist/css/bootstrap.min.css?v50b1" rel="stylesheet">
+	<link href="{{scRoot}}/icons/fa/4.7/css/font-awesome.min.css" rel="stylesheet">
+	<link href="{{scRoot}}/libs/js/highlightjs/styles/atom-one-light.css" rel="stylesheet">
+	<link href="{{scRoot}}/libs/js/fancybox/3/jquery.fancybox.min.css" rel="stylesheet">
+	<link href="{{dsRoot}}/{{serverInfo.templateStylePath}}/{{serverInfo.look}}-web.css?v={{serverInfo.lookVersion.web}}" rel="stylesheet">
+	{{#page.params.recaptcha-v3-site-key}}<script src='https://www.google.com/recaptcha/api.js?render={{page.params.recaptcha-v3-site-key}}'></script>{{/page.params.recaptcha-v3-site-key}}
+</head>
+
+<body{{page.bodyEditParams}} class="{{page.bodyClasses}}{{#serverInfo.templateParams.topMenuFixedTop}} top-menu-fixed-top{{/serverInfo.templateParams.topMenuFixedTop}}">
+
+<header>
+	<nav class="navbar navbar-expand-{{serverInfo.templateParams.desktopMenuFrom}}{{#serverInfo.templateParams.topMenuFixedTop}} fixed-top{{/serverInfo.templateParams.topMenuFixedTop}} {{serverInfo.templateParams.topMenuStyle}}">
+		<div class="container">
+				<span class="navbar-brand">
+					<a href="{{urlRoot}}/">
+						{{#serverInfo.images.template.headerLogo}}<img src="{{dsRoot}}{{serverInfo.images.template.headerLogo}}"/>{{/serverInfo.images.template.headerLogo}}
+						{{#serverInfo.templateParams.headerTitle}} <span class='d-{{serverInfo.templateParams.desktopMenuFrom}}'>{{serverInfo.templateParams.headerTitle}}</span>{{/serverInfo.templateParams.headerTitle}}
+					</a>
+				</span>
+			<button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+
+			<div class="collapse navbar-collapse flex-column align-items-end ml-lg-0 ml-" id="navbarCollapse">
+				{{#page.headerExt}}{{{page.headerExt}}}{{/page.headerExt}}
+				<ul class="nav navbar-nav menu-top-main">
+					{{#menu.items}}
+						<li class='nav-item{{#active}} active{{/active}}'>
+							<a class="nav-link" href="{{urlRoot}}{{url}}">{{title}}</a>
+						</li>
+					{{/menu.items}}
+                    {{#userAuthenticated}}
+                    <li class='nav-item' title="{{userName}}">
+                        <a class="nav-link" htef="#"><i class="fa fa-user-circle-o"></i></a>
+                    </li>
+                    {{/userAuthenticated}}
+				</ul>
+			</div>
+		</div>
+	</nav>
+</header>
+
+
+{{#page.params.myMain}}
+    {{{pageText}}}
+{{/page.params.myMain}}
+{{^page.params.myMain}}
+<div class="container">
+    {{#page.params.myLayout}}
+        {{{pageText}}}
+    {{/page.params.myLayout}}
+    {{^page.params.myLayout}}
+        <div class="row">
+            {{#page.layoutSidebarNone}}
+                <main class="e10w-top-element col-sm-12 e10w-content{{page.mainTextClass}}">
+                    {{{pageText}}}
+                </main>
+            {{/page.layoutSidebarNone}}
+            {{#page.layoutSidebarLeft}}
+                <div class="e10w-top-element sidebar left e10w-sb-start col-md-3 col-lg-3 e10-text">{{{textLeftSidebar}}}</div>
+                <main class="e10w-top-element col-md-9 main-text pageText e10w-content col-lg-9 {{page.mainTextClass}}">{{{pageText}}}</main>
+            {{/page.layoutSidebarLeft}}
+            {{#page.layoutSidebarRight}}
+                <main class="e10w-top-element col-lg-9 main-text pageText e10w-content {{page.mainTextClass}}">{{{pageText}}}</main>
+                <div class="e10w-top-element sidebar right e10w-sb-end col-lg-3">{{{textRightSidebar}}}</div>
+            {{/page.layoutSidebarRight}}
+            {{#page.layoutSidebarBoth}}
+                <div class="e10w-top-element sidebar left e10w-sb-start col-lg-3">{{{textLeftSidebar}}}</div>
+                <main class="e10w-top-element col-lg-6 main-text pageText e10w-content {{page.mainTextClass}}">{{{pageText}}}</main>
+                <div class="e10w-top-element sidebar right e10w-sb-end col-lg-3">{{{textRightSidebar}}}</div>
+            {{/page.layoutSidebarBoth}}
+        </div>
+    {{/page.params.myLayout}}
+</div>
+{{/page.params.myMain}}
+
+<footer id="pageFooter" class="page-footer">
+	<div class="container {{#mobileMode}}-fluid{{/mobileMode}}">
+		{{#page.footerFull}}{{{page.footerFull}}}{{/page.footerFull}}
+		{{^page.footerFull}}
+			<div class="row">
+                {{#page.pageModeWiki}}
+                    <div class="col-md-4 text-lg-center mt-3 pb-2">
+                        {{#serverInfo.images.template.footerLogo}}<img src="{{dsRoot}}{{serverInfo.images.template.footerLogo}}" style="max-width: 70%; max-height: 10rem; padding: 0; margin: 1rem;"/><br>{{/serverInfo.images.template.footerLogo}}
+                    </div>
+                    <div class="col-md-8 mt-3 pb-2">
+                        {{#data.page.sectionPageFooter}}{{{data.page.sectionPageFooter}}}{{/data.page.sectionPageFooter}}
+                    </div>
+                {{/page.pageModeWiki}}
+                {{^page.pageModeWiki}}
+                    <div class="col-md-12 text-lg-center mt-3 pb-2">
+                        {{#serverInfo.images.template.footerLogo}}<img src="{{dsRoot}}{{serverInfo.images.template.footerLogo}}" style="max-width: 70%; max-height: 10rem; padding: 0; margin: 1rem;"/><br>{{/serverInfo.images.template.footerLogo}}
+                        Copyright &copy; 2019<br>
+                    </div>
+                {{/page.pageModeWiki}}
+			</div>
+		{{/page.footerFull}}
+	</div>
+</footer>
+
+
+<script src="//code.jquery.com/jquery-3.2.1.min.js"></script>
+
+<script type="text/javascript">var httpApiRootPath = '{{urlRoot}}'; var httpServerRootPath = '{{urlServer}}';</script>
+{{#userAuthenticated}}
+    <script src="{{dsRoot}}/e10-modules/e10/server/js/e10web.js?ver=22"></script>
+{{/userAuthenticated}}
+
+<script type="text/javascript" src="{{scRoot}}/libs/js/popperjs/popper.min.js"></script>
+<script type="text/javascript" src="{{scRoot}}/bs/5.0/dist/js/bootstrap.min.js?v452"></script>
+<script type="text/javascript" src="{{scRoot}}/libs/js/highlightjs/highlight.pack.js"></script>
+<script type="text/javascript" src="{{scRoot}}/libs/js/fancybox/3/jquery.fancybox.min.js"></script>
+<script type="text/javascript" src="{{dsRoot}}/www-root/templates/web/libs/default.js?v=3"></script>
+
+<script>
+$("pre").each(function (i, e) {hljs.highlightBlock(e);});
+
+$(function() {
+	let $allVideos = $("iframe[src^='https://player.vimeo.com'], iframe[src^='https://www.youtube.com'], object, embed");
+	$allVideos.each(function() {
+		$(this)
+			.attr('data-aspectRatio', this.height / this.width)
+			.removeAttr('height')
+			.removeAttr('width');
+
+	});
+
+	$(window).resize(function() {
+		$allVideos.each(function() {
+			let $el = $(this);
+			let newWidth = $el.parent().width();
+			$el.width(newWidth).height(newWidth * $el.attr('data-aspectRatio'));
+		});
+
+	}).resize();
+
+});
+
+</script>
+
+{{{googleAnalytics}}}
+
+{{#page.params.recaptcha-v3-site-key}}
+	<script>
+		$('form').show();
+		$('form').submit(function(event) {
+			event.preventDefault();
+			grecaptcha.ready(function() {
+				grecaptcha.execute('{{page.params.recaptcha-v3-site-key}}', {action: 'contact_form'}).then(function(token) {
+					var recaptchaResponse = document.getElementById('recaptcha-response');
+					recaptchaResponse.value = token;
+					$('form').unbind('submit').submit();
+				});
+			});
+		});
+	</script>
+{{/page.params.recaptcha-v3-site-key}}
+
+
+</body>
+</html>

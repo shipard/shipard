@@ -75,7 +75,7 @@ class ViewDevices extends TableView
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
 
-		$d = new \e10\DeviceInfo();
+		$d = new \Shipard\Base\DeviceInfo();
 		$d->checkDeviceInfo($item);
 
 		$props3 = [];

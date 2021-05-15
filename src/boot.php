@@ -18,7 +18,7 @@ if (!defined('__SHPD_ETC_DIR__'))
 if (!defined('__SHPD_SERVER_ROOT_DIR__'))
 	define('__SHPD_SERVER_ROOT_DIR__', '/usr/lib/shipard/');
 	
-
+define ('__SHPD_TEMPLATE_SUBDIR__', '/www-root/templates/');
 
 define ('DIR_VENDOR', __SHPD_ROOT_DIR__.'/extlibs/vendor');
 

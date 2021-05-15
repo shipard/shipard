@@ -887,7 +887,7 @@ function htmlPageMenu ($app, $params)
 		return '';
 
 	$menuKey = \E10\searchParam($params, 'menu', '');
-	$menu = \E10\Application::cfgItem ($menuCfgKey, NULL);
+	$menu = $app->cfgItem ($menuCfgKey, NULL);
 
 	$menuClass = \E10\searchParam ($params, 'menuClass', 'menuMain');
 	$menuClassSub = \E10\searchParam ($params, 'menuClassSub', 'menuMainSub');
@@ -980,7 +980,7 @@ function createWebPageWiki ($app)
 		'mode' => 'app',
 		'hpFunction' => 'wiki', 'wiki' => $wikiNdx,
 		'look'=>'100100-default',
-		'templateStylePath' => 'e10-modules/e10templates/web/' . 'basic-bs4' . '/styles/',
+		'templateStylePath' => 'www-root/templates/web/' . 'basic-bs4' . '/styles/',
 		'bodyClasses' => 'e10-in-app-wiki',
 		'templateParams' => [
 			'defaultTemplateType'=>'page-wiki',

@@ -98,7 +98,7 @@ class TableServers extends DbTable
 					$recData['templateStylePath'] = 'templates/' . $templateLookInfo['id'];
 				} else
 				{
-					$recData['templateStylePath'] = 'e10-modules/e10templates/web/' . $ti . '/styles/';
+					$recData['templateStylePath'] = __SHPD_TEMPLATE_SUBDIR__.'/web/' . $ti . '/styles/';
 				}
 			}
 		}

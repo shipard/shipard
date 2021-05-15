@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="">
+	<meta name="author" content="">
+
+	<meta name="format-detection" content="telephone=no">
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge; IE=11;" />
+	<meta name='mobile-web-app-capable' content='yes'>
+	<meta name='apple-mobile-web-app-capable' content='yes'>
+
+	<title>{{#page.title}}{{page.title}} / {{/page.title}}Wiki {{templateParams.pageTitle}}</title>
+	{{{headMetaTags}}}
+
+	<link href="{{scRoot}}/bs/5.0/dist/css/bootstrap.min.css?v452" rel="stylesheet">
+	<link href="{{scRoot}}/icons/fa/4.7/css/font-awesome.min.css" rel="stylesheet">
+	<link href="{{scRoot}}/libs/js/highlightjs/styles/atom-one-light.css" rel="stylesheet">
+	<link href="{{scRoot}}/libs/js/fancybox/3/jquery.fancybox.min.css" rel="stylesheet">
+	<link href="{{dsRoot}}/{{serverInfo.templateStylePath}}/{{serverInfo.look}}-wiki.css?v={{serverInfo.lookVersion.wiki}}" rel="stylesheet">
+
+    <style type="text/css">
+        .sticky {
+            position: fixed;
+            top: 0;
+            padding-top: 3rem;
+            width: 100%;
+            background-color: white;
+            box-shadow: 0 2px 2px rgba(0,0,0,.2);
+            font-size: 80%;
+        }
+        .sticky > ul.breadcrumb {display: none;}
+        .sticky h2 {font-size: 120%;}
+        .sticky td.e10-wiki-page-header-title {padding-left: 1rem;}
+        .sticky td.e10-wiki-page-header-buttons {padding-right: 1rem;}
+
+        /* Add some top padding to the page content to prevent sudden quick movement (as the header gets a new position at the top of the page (position:fixed and top:0) */
+        .sticky + .e10-wiki-page {
+            /*padding-top: 3rem;*/
+        }
+
+    </style>
+</head>
+
+
+<body{{page.bodyEditParams}} class="page-type-{{data.page.pageType}}{{page.bodyClasses}}{{#serverInfo.templateParams.topMenuFixedTop}} top-menu-fixed-top{{/serverInfo.templateParams.topMenuFixedTop}}">
+
+<header>
+	{{^serverInfo.templateParams.topMenuFixedTop}}<div class="container col-sm-12 ml-md-auto mr-md-auto col-md-8" style="padding-left: 0;padding-right: 0;">{{/serverInfo.templateParams.topMenuFixedTop}}
+	<nav class="navbar navbar-expand-md{{#serverInfo.templateParams.topMenuFixedTop}} fixed-top{{/serverInfo.templateParams.topMenuFixedTop}} navbar-dark {{serverInfo.templateParams.topMenuStyle}}">
+			<span class="navbar-brand">
+				<a href="{{urlRoot}}/">
+					{{#serverInfo.images.template.headerLogo}}<img src="{{dsRoot}}{{serverInfo.images.template.headerLogo}}" style="height: 2rem;max-width: 60vw;"/>{{/serverInfo.images.template.headerLogo}}
+                    {{^serverInfo.images.template.headerLogo}}
+                        <i class="{{@icon;dataItem:templateParams.icon}}"></i> {{serverInfo.title}}
+                    {{/serverInfo.images.template.headerLogo}}
+					{{#serverInfo.templateParams.headerTitle}}<span>{{serverInfo.templateParams.headerTitle}}</span>{{/serverInfo.templateParams.headerTitle}}
+				</a>
+			</span>
+		<button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+		<div class="collapse navbar-collapse" id="navbarCollapse">
+			{{#data.sections.0}}
+				<ul class="nav navbar-nav">
+					{{#data.sections}}
+						{{#topMenu}}
+							<li class='nav-item{{#active}} active{{/active}}'{{^topMenuText}} title='{{title}}'{{/topMenuText}}>
+								<a class="nav-link" href="{{urlRoot}}/{{id}}">{{#icon}}<i class="{{@icon;dataItem:icon}}"></i>{{/icon}}<span{{^topMenuText}} class="d-lg-none"{{/topMenuText}}> {{title}}</span></a>
+							</li>
+						{{/topMenu}}
+					{{/data.sections}}
+				</ul>
+			{{/data.sections.0}}
+
+
+			<ul class="nav navbar-nav nav-flex-icons ml-auto">
+				<li class="nav-item{{#page.url_q}} active{{/page.url_q}}"><a href="{{urlRoot}}/q" class="nav-link"><i class="fa fa-search"></i> <span class="XXXhidden-sm-down">Hledání</span></a></li>
+				{{#userAuthenticated}}
+					<li class="nav-item"><span class="nav-link"><i class="fa fa-user-circle-o"></i> {{userName}}</span></li>
+					<li class="nav-item"><a class="nav-link " href="{{@urlUser;type:logout}}"  title="Odhlášení"><i class="fa fa-sign-out"></i></a></li>
+				{{/userAuthenticated}}
+				{{^userAuthenticated}}
+					<li class="nav-item"><a class="nav-link " href="{{@urlUser;type:login}}"><i class="fa fa-sign-in"></i> Přihlásit se</a></li>
+				{{/userAuthenticated}}
+			</ul>
+		</div>
+	</nav>
+	{{^serverInfo.templateParams.topMenuFixedTop}}</div>{{/serverInfo.templateParams.topMenuFixedTop}}
+</header>
+
+<article class="first-content-element">
+	<div class="container-fluid main">
+		{{#page.url_user}}<div class="row"><main class="col-sm-12 ml-md-auto col-md-12" role="main">{{/page.url_user}}
+
+		{{#page.params.myLayout}}{{{pageText}}}{{/page.params.myLayout}}
+		{{^page.params.myLayout}}<section class="e10-wiki">{{{pageText}}}</section>{{/page.params.myLayout}}
+
+		{{#page.url_user}}</main></div>{{/page.url_user}}
+	</div>
+</article>
+
+<script src="//code.jquery.com/jquery-3.2.1.min.js"></script>
+
+<script type="text/javascript">var httpApiRootPath = '{{urlRoot}}'; var httpServerRootPath = '{{urlServer}}';</script>
+{{#userAuthenticated}}<script src="{{dsRoot}}/e10-modules/e10/server/js/e10web.js?v=21"></script>{{/userAuthenticated}}
+
+<script type="text/javascript" src="{{scRoot}}/libs/js/popperjs/popper.min.js"></script>
+<script type="text/javascript" src="{{scRoot}}/bs/4.5/dist/js/bootstrap.min.js?v452"></script>
+<script type="text/javascript" src="{{scRoot}}/libs/js/highlightjs/highlight.pack.js"></script>
+<script type="text/javascript" src="{{scRoot}}/libs/js/fancybox/3/jquery.fancybox.min.js"></script>
+
+
+<script>
+$("pre").each(function (i, e) {
+	hljs.highlightBlock(e);
+});
+
+$(function() {
+	var $allVideos = $("iframe[src^='https://player.vimeo.com'], iframe[src^='https://www.youtube.com'], object, embed");
+
+	$allVideos.each(function() {
+		$(this)
+			.attr('data-aspectRatio', this.height / this.width)
+			.removeAttr('height')
+			.removeAttr('width');
+	});
+
+	$(window).resize(function() {
+		$allVideos.each(function() {
+			var $el = $(this);
+			var newWidth = $el.parent().width();
+			$el.width(newWidth).height(newWidth * $el.attr('data-aspectRatio'));
+		});
+
+	}).resize();
+
+});
+
+if (("standalone" in window.navigator) && window.navigator.standalone) {
+	$(document).on("click", "a",
+		function (event) {
+			var href = $(this).attr("href");
+			if (!href)
+				return;
+			event.preventDefault();
+			location.href = href;
+		}
+	);
+}
+
+window.onscroll = function() {myFunction()};
+
+// Get the header
+var header = document.getElementById("e10-wiki-header");
+
+// Get the offset position of the navbar
+if (header) {
+	var sticky = header.offsetTop;
+
+// Add the sticky class to the header when you reach its scroll position. Remove "sticky" when you leave the scroll position
+	function myFunction() {
+		if (window.pageYOffset > sticky) {
+			header.classList.add("sticky");
+			$(header).css({width: $(header).parent().width() /*header.parentElement.getBoundingClientRect().width*/});
+		} else {
+			header.classList.remove("sticky");
+			$(header).css({width: '100%'});
+		}
+	}
+}
+</script>
+
+{{{googleAnalytics}}}
+
+</body>
+</html>

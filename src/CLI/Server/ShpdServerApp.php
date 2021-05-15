@@ -1287,25 +1287,6 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		*/
 	}
 
-	public function hostUpgrade_extLibs ($repositoryId, $channelDir)
-	{
-		if ($repositoryId === 'e10-server')
-		{
-			$dir = $channelDir . '/e10-server/extlibs';
-			if (!is_dir($dir . '/vendor'))
-			{
-				passthru("cd {$dir} && composer install");
-			}
-		}
-		if ($repositoryId === 'e10-templates')
-		{
-			if (!is_link($channelDir . '/e10-server/e10templates'))
-			{
-				symlink($channelDir . '/e10-templates', $channelDir . '/e10-server/e10templates');
-			}
-		}
-	}
-
 	public function hostingCfg ($requiredFields = NULL)
 	{
 		if (!is_file('/etc/e10-hosting.cfg'))

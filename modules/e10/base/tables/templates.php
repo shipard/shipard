@@ -79,16 +79,11 @@ class TableTemplates extends DbTable
 
 	public function templateId ($templateType, $templateNdx)
 	{
-		//
 		if ($templateNdx < 100000)
 		{
 			$template = $this->loadItem ($templateNdx);
 			if ($template)
 				return $template['sn'];
-		}
-		elseif ($templateNdx == 699999)
-		{
-			return 'e10pro.hosting.server.templates.me';
 		}
 		else
 		{
@@ -96,7 +91,7 @@ class TableTemplates extends DbTable
 			if (isset($stdTemplates[$templateNdx]))
 			{
 				$stdTemplate = $stdTemplates[$templateNdx];
-				return 'e10templates.web.'.$stdTemplate['id'];
+				return 'web.'.$stdTemplate['id'];
 			}
 		}
 
@@ -112,7 +107,7 @@ class TableTemplates extends DbTable
 		$stdTemplates = NULL;
 		if ($type == 0)
 		{ // -- web
-			$allTemplates = utils::loadCfgFile(__APP_DIR__.'/e10-modules/e10templates/web/templates.json');
+			$allTemplates = utils::loadCfgFile(__APP_DIR__.__SHPD_TEMPLATE_SUBDIR__.'web/templates.json');
 			$stdTemplates = [];
 			foreach ($allTemplates as $oneTemplateId => $oneTemplate)
 			{
@@ -120,9 +115,6 @@ class TableTemplates extends DbTable
 					continue;
 				$stdTemplates[$oneTemplateId] = $oneTemplate;
 			}
-
-			if ($this->app()->dataModel->module('e10pro.hosting.server') !== FALSE)
-				$stdTemplates['699999'] = ['id' => 'e10pro.hosting.server.templates.me', 'name' => 'Portál'];
 		}
 
 		if ($stdTemplates)

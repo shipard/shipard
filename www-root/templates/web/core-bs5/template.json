@@ -1,0 +1,82 @@
+{
+	"name": "Základní šablona BS5",
+	"version": "0.1.2", "id": "core-bs5", "ndx": "700300",
+	"styles": ["web", "wiki", "app", "display"],
+	"extensions": [],
+
+	"templateParams": {
+		"columns": [
+			{"id": "defaultTemplateType", "name": "Výchozí typ šablony", "type": "enumString", "len": 40,
+				"enumValues": {
+					"web": "Webové stránky",
+					"wiki": "Wiki"
+				}
+			},
+
+			{"id": "headerLogo", "name": "Logo pro hlavičku", "type": "int", "reference": "e10.base.attachments", "comboViewer": "images"},
+			{"id": "headerTitle", "name": "Titulek pro hlavičku", "type": "string", "len": 40},
+			{"id": "footerLogo", "name": "Logo pro patičku", "type": "int", "reference": "e10.base.attachments", "comboViewer": "images"},
+
+			{"id": "topMenuStyle", "name": "Styl horního menu", "type": "enumString", "len": "20",
+				"enumValues": {
+					"top-menu-default": "Výchozí",
+					"top-menu-underline": "Podtržené odkazy",
+					"top-menu-tabs": "Záložky"
+				}
+			},
+			{"id": "topMenuFixedTop", "name": "Přichytit menu nahoru", "type": "logical"},
+			{"id": "desktopMenuFrom", "name": "Desktopový mód menu od", "type": "enumString", "len": "20",
+				"enumValues": {
+					"lg": "Běžný desktop",
+					"xl": "Velký desktop",
+					"sm": "Telefon/tablet",
+					"md": "Tablet na šířku"
+				}
+			}
+		]
+	},
+	"lookParams": {
+		"columns": [
+			{"id": "e10w-body-bg", "group": "body", "name": "Barva pozadí stránky", "label": "Pozadí", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-body-text", "group": "body", "name": "Barva textu stránky", "label": "Písmo", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+
+			{"id": "e10w-content-bg", "group": "content", "name": "Barva pozadí obsahu", "label": "Pozadí", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-content-text", "group": "content", "name": "Barva textu obsahu", "label": "Písmo", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-content-link-color", "group": "content", "name": "Barva textu odkazů", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-content-link-hover-text", "group": "content", "name": "Barva textu odkazů pod kurzorem", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-content-link-visited-text", "group": "content", "name": "Barva textu již navštívených odkazů", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+
+			{"id": "e10w-navbar-bg", "group": "navbar", "name": "Hlavička - barva pozadí", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-navbar-text", "group": "navbar", "name": "Hlavička - barva textu", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-navbar-select-bg", "group": "navbar", "name": "Hlavička - barva pozadí označení", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-navbar-select-text", "group": "navbar", "name": "Hlavička - barva textu", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+
+			{"id": "e10w-footer-bg", "group": "footer", "name": "Patička - barva pozadí", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-footer-text", "group": "footer", "name": "Patička - barva textu", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-footer-link-color", "group": "footer", "name": "Barva textu odkazů", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-footer-link-hover-text", "group": "footer", "name": "Barva textu odkazů pod kurzorem", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-footer-link-visited-text", "group": "footer", "name": "Barva textu již navštívených odkazů", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+
+			{"id": "e10w-sb-start-bg", "group": "sb-start", "name": "Barva pozadí", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-sb-start-text", "group": "sb-start", "name": "Barva textu", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-sb-start-link-color", "group": "sb-start", "name": "Barva textu odkazů", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-sb-start-link-hover-text", "group": "sb-start", "name": "Barva textu odkazů pod kurzorem", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-sb-start-link-visited-text", "group": "sb-start", "name": "Barva textu již navštívených odkazů", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+
+			{"id": "e10w-sb-end-bg", "group": "sb-end", "name": "Barva pozadí", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-sb-end-text", "group": "sb-end", "name": "Barva textu", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-sb-end-link-color", "group": "sb-end", "name": "Barva textu odkazů", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-sb-end-link-hover-text", "group": "sb-end", "name": "Barva textu odkazů pod kurzorem", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-sb-end-link-visited-text", "group": "sb-end", "name": "Barva textu již navštívených odkazů", "type": "string", "subtype": "color", "cssType": "color", "len": 20}
+
+		],
+		"groups": [
+			{"id": "body", "title": "Tělo stránky"},
+			{"id": "content", "title": "Obsah stránky"},
+			{"id": "navbar", "title": "Hlavička"},
+			{"id": "footer", "title": "Patička"},
+			{"id": "sb-start", "title":  "Levý sloupec"},
+			{"id": "sb-end", "title":  "Pravý sloupec"}
+		]
+	}
+}

@@ -1,0 +1,70 @@
+@import "look-variables.scss";
+@import "look-core.scss";
+
+
+@import "_typography.scss";
+//@import "../../libs/_images.scss";
+//@import "../../libs/bs4/_topMenuDisplay.scss";
+//@import "../../libs/bs4/price-cards/all.scss";
+//@import "../../libs/bs4/contact-cards/all.scss";
+//@import "../../libs/bs4/article-cards/all.scss";
+//@import "../../libs/bs4/selectable-cells/all.scss";
+//@import "../../libs/bs4/panels/all.scss";
+
+body {
+  background-color: $e10w-body-bg;
+  color: $e10w-body-text;
+}
+
+
+
+footer.page-footer {
+  background-color: $e10w-footer-bg;
+}
+
+
+.page-footer {
+  color: $e10w-footer-text;
+  a, a:visited {
+    color: #eee;
+  }
+
+  h5 {
+    font-size: 1.3rem;
+    padding-top: 1.7rem;
+    padding-bottom: .4rem;
+    //color: $e10w-brand-secondary-bg;
+  }
+
+  ul {
+    list-style: none;
+    padding-left: 0;
+
+    li {
+      padding: 1rem .5rem 1rem 0;
+      position:relative;
+    }
+    li:after {
+      content:"";
+      position: absolute;
+      left    : 0;
+      bottom  : 0;
+      height  : 1px;
+      width   : 80%;
+      border-bottom:1px solid rgba(255,255,255,.25);
+    }
+  }
+}
+
+.e10-wss-connect {
+  color: orange;
+}
+
+.e10-wss-open {
+  color: green;
+}
+
+.e10-wss-error {
+  color: red;
+}
+

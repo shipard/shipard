@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="">
+	<meta name="author" content="">
+
+	<title>{{page.pageTitle}}</title>
+	{{{headMetaTags}}}
+
+	<link href="{{scRoot}}/bs/5.0/dist/css/bootstrap.min.css?v452" rel="stylesheet">
+	<link href="{{scRoot}}/icons/fa/4.7/css/font-awesome.min.css" rel="stylesheet">
+	<link href="{{dsRoot}}/{{serverInfo.templateStylePath}}{{serverInfo.look}}-display.css?v={{serverInfo.lookVersion.display}}" rel="stylesheet">
+</head>
+
+<body class="{{page.bodyClasses}}{{#serverInfo.templateParams.topMenuFixedTop}} top-menu-fixed-top{{/serverInfo.templateParams.topMenuFixedTop}}">
+
+<header>
+	<nav class="navbar navbar-expand-{{serverInfo.templateParams.desktopMenuFrom}}{{#serverInfo.templateParams.topMenuFixedTop}} fixed-top{{/serverInfo.templateParams.topMenuFixedTop}} {{serverInfo.templateParams.topMenuStyle}}">
+		<div class="container-fluid">
+			<span class="navbar-brand">
+				<a href="{{urlRoot}}/">
+					{{#serverInfo.images.template.headerLogo}}<img src="{{dsRoot}}{{serverInfo.images.template.headerLogo}}"/>{{/serverInfo.images.template.headerLogo}}
+				</a>
+			</span>
+
+			{{#webModeTerminal}}
+				<div class="collapse navbar-collapse flex-column align-items-end ml-lg-0 ml-" id="XXX_navbarCollapse">
+					<a class="btn btn-success pull-right" href="{{@urlUser;type:logout}}">Hotovo</a>
+				</div>
+			{{/webModeTerminal}}
+
+			{{#menu.items.0}}
+				<button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+			{{/menu.items.0}}
+
+			{{#menu.items.0}}
+				<div class="collapse navbar-collapse flex-column align-items-end " id="navbarCollapse">
+					<ul class="nav navbar-nav menu-top-main">
+							{{#menu.items}}
+								<li class='nav-item{{#active}} active{{/active}}'>
+									<a class="nav-link" href="{{urlRoot}}{{url}}">{{title}}</a>
+								</li>
+							{{/menu.items}}
+					</ul>
+				</div>
+			{{/menu.items.0}}
+		</div>
+	</nav>
+</header>
+
+<main>
+	<div class="container-fluid">
+		{{^page.params.webLayout}}
+			{{{pageText}}}
+		{{/page.params.webLayout}}
+		{{#page.params.webLayout}}
+			<div class="row">
+				{{#page.layoutSidebarNone}}
+					<div class="col-sm-12 {{page.mainTextClass}}">
+						{{{pageText}}}
+					</div>
+				{{/page.layoutSidebarNone}}
+				{{#page.layoutSidebarLeft}}
+					<div class="sidebar left col-md-3 col-lg-3 e10-text">{{{textLeftSidebar}}}</div>
+					<div class="col-md-9 main-text col-lg-9 {{page.mainTextClass}}">{{{pageText}}}</div>
+				{{/page.layoutSidebarLeft}}
+				{{#page.layoutSidebarRight}}
+					<div class="col-lg-9 main-text {{page.mainTextClass}}">{{{pageText}}}</div>
+					<div class="sidebar right col-lg-3">{{{textRightSidebar}}}</div>
+				{{/page.layoutSidebarRight}}
+				{{#page.layoutSidebarBoth}}
+					<div class="sidebar left col-lg-3">{{{textLeftSidebar}}}</div>
+					<div class="col-lg-6 main-text {{page.mainTextClass}}">{{{pageText}}}</div>
+					<div class="sidebar right col-lg-3">{{{textRightSidebar}}}</div>
+				{{/page.layoutSidebarBoth}}
+			</div>
+		{{/page.params.webLayout}}
+	</div>
+	{{#page.footerExtension}}{{{page.footerExtension}}}{{/page.footerExtension}}
+</main>
+
+<footer id="pageFooter" class="page-footer footer-fixed">
+	<div class="container-fluid">
+		{{#page.footerFull}}{{{page.footerFull}}}{{/page.footerFull}}
+		{{^page.footerFull}}
+			<div class="row">
+				<div class="col-6" style="text-align: left;">
+					{{#webSocketServers}}
+						<span class="e10-wss-connect" id="wss-{{id}}" title="{{id}}/{{name}}"><i class="fa fa-circle"></i></span>
+					{{/webSocketServers}}
+				</div>
+				<div class="col-6" style="text-align: right;">
+					<img style="height: 1.2rem; opacity: .25;" src="{{urlRoot}}/e10-modules/e10templates/web/shipard1/files/shipard/logo-white-web.svg">
+				</div>
+			</div>
+		{{/page.footerFull}}
+	</div>
+</footer>
+
+
+<script src="//code.jquery.com/jquery-3.3.1.min.js"></script>
+
+<script type="text/javascript">var httpApiRootPath = '{{urlRoot}}'; var httpServerRootPath = '{{urlServer}}';</script>
+{{#serverInfo.secureWebPage}}<script src="{{dsRoot}}/e10-modules/e10/server/js/e10web.js?ver=22"></script>{{/serverInfo.secureWebPage}}
+<script type="text/javascript" src="{{scRoot}}/libs/js/popperjs/popper.min.js"></script>
+<script type="text/javascript" src="{{scRoot}}/bs/4.5/dist/js/bootstrap.min.js?v452"></script>
+{{{jsLibs}}}
+</body>
+</html>

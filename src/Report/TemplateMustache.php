@@ -42,7 +42,7 @@ class TemplateMustache extends \e10\TemplateCore
 		else
 		{
 			$tfn = array_pop ($parts);
-			$this->templateRoot = __SHPD_MODULES_DIR__ . '/' . implode ('/', $parts) . '/reports/'.$tfn.'/';
+			$this->templateRoot = __SHPD_MODULES_DIR__ . __SHPD_TEMPLATE_SUBDIR__ . '/' . implode ('/', $parts) . '/reports/'.$tfn.'/';
 			$fullTemplateName = $this->templateRoot . $templateFileName;
 			$fullDictName = $this->templateRoot . 'dict.json';
 			$this->templateBaseName = $tfn;
@@ -50,7 +50,7 @@ class TemplateMustache extends \e10\TemplateCore
 
 		if (!is_readable($fullTemplateName))
 		{
-			//error_log("TEMPLATE NOT FOUND: `$fullTemplateName`");
+			error_log("TEMPLATE NOT FOUND: `$fullTemplateName`");
 			return FALSE;
 		}
 

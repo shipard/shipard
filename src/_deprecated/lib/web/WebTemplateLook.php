@@ -44,8 +44,8 @@ class WebTemplateLook extends Utility
 		}
 		else
 		{
-			$this->urlRoot = 'e10-modules/' . strtolower(implode ('/', $parts));
-			$this->templateRoot = $this->app->cfgItem ('modulesPath') . '/' . strtolower(implode ('/', $parts)) . '/';
+			$this->urlRoot = __SHPD_ROOT_DIR__.__SHPD_TEMPLATE_SUBDIR__. implode ('/', $parts);
+			$this->templateRoot = __SHPD_ROOT_DIR__ . __SHPD_TEMPLATE_SUBDIR__ . implode ('/', $parts) . '/';
 		}
 
 		$fullOptionsName = $this->templateRoot . 'template.json';
@@ -57,6 +57,11 @@ class WebTemplateLook extends Utility
 
 			if (isset($this->options['version']))
 				$this->templateStyleVerId = $this->options['version'];
+		}
+		else
+		{
+			error_log("file `$fullOptionsName` not found [template: `$name`]");
+			Utils::debugBacktrace();
 		}
 
 		$this->lookParams = json::decode($this->templateLookRecData['lookParams']);

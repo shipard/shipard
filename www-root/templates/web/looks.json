@@ -1,0 +1,38 @@
+{
+    "102100": {
+        "id": "102100-default",
+        "name": "Výchozí vzhled",
+        "themeColor": "#00508a",
+        "template": "core-bs5"
+    },
+    "102200": {
+        "id": "102200-blue",
+        "name": "Modrý",
+        "themeColor": "#00508a",
+        "template": "core-bs5"
+    },
+    "102210": {
+        "id": "102210-green",
+        "name": "Zelený",
+        "themeColor": "#00508a",
+        "template": "core-bs5"
+    },
+    "102220": {
+        "id": "102220-red",
+        "name": "Červený",
+        "themeColor": "#00508a",
+        "template": "core-bs5"
+    },
+    "102230": {
+        "id": "102230-yellow",
+        "name": "Žlutá",
+        "themeColor": "#00508a",
+        "template": "core-bs5"
+    },
+    "102700": {
+        "id": "102700-dark-default",
+        "name": "Tmavý",
+        "themeColor": "#00508a",
+        "template": "core-bs5"
+    }
+}
