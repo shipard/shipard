@@ -36,7 +36,7 @@ class GlobalReport extends Report
 	function init ()
 	{
 		parent::init();
-		$this->reportTemplate = 'e10.base.defaultGlobalReport';
+		$this->reportTemplate = 'reports.default.globalReport.default';
 		$this->reportParams = $this->params->detectValues();
 	}
 

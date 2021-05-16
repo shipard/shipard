@@ -2,8 +2,6 @@
 
 namespace e10doc\core\libs\reports;
 
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
-
 use \E10\Application, \E10\utils, \e10\docsmodes, \E10\FormReport, \E10\FormSidebar, \E10\TableViewPanel;
 
 

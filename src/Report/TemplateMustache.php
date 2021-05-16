@@ -42,7 +42,7 @@ class TemplateMustache extends \e10\TemplateCore
 		else
 		{
 			$tfn = array_pop ($parts);
-			$this->templateRoot = __SHPD_MODULES_DIR__ . __SHPD_TEMPLATE_SUBDIR__ . '/' . implode ('/', $parts) . '/reports/'.$tfn.'/';
+			$this->templateRoot = __SHPD_ROOT_DIR__.__SHPD_TEMPLATE_SUBDIR__.'/'.implode ('/', $parts).'/'.$tfn.'/';
 			$fullTemplateName = $this->templateRoot . $templateFileName;
 			$fullDictName = $this->templateRoot . 'dict.json';
 			$this->templateBaseName = $tfn;
@@ -137,7 +137,7 @@ class TemplateMustache extends \e10\TemplateCore
 		if (isset($params['forceTableClass']))
 			$tableParams['forceTableClass'] = $params['forceTableClass'];
 
-		$c = \E10\renderTableFromArray ($cp['table'], $cp['header'], $tableParams);
+		$c = \E10\renderTableFromArray ($cp['table'], $cp['header'], $tableParams, $this->app);
 		return $c;
 	}
 

@@ -253,7 +253,7 @@ class SaveViewer extends Utility
 	public function open_PDF ()
 	{
 		$t = new TemplateMustache ($this->app());
-		if ($t->loadTemplate('e10.base.defaultGlobalReport') !== FALSE)
+		if ($t->loadTemplate('reports.default.globalReport.default') !== FALSE)
 		{
 			$c = $t->renderTemplate ();
 		}

@@ -9,7 +9,7 @@ class StockInReport extends \e10doc\core\libs\reports\DocReport
 	{
 		parent::init();
 
-		$this->setReportId('e10doc.stockIn.stockin');
+		$this->setReportId('reports.default.e10doc.stockIn.stockIn');
 	}
 }
 

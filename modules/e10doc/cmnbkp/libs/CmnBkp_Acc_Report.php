@@ -9,7 +9,7 @@ class CmnBkp_Acc_Report extends \e10doc\core\libs\reports\DocReport
 	{
 		parent::init();
 
-		$this->setReportId('e10doc.cmnbkp.acc');
+		$this->setReportId('reports.default.e10doc.cmnbkp.acc');
 	}
 
 	public function createToolbarSaveAs (&$printButton)
@@ -51,4 +51,4 @@ class CmnBkp_Acc_Report extends \e10doc\core\libs\reports\DocReport
 		$fn .= $this->recData['docNumber'].'.pdf';
 		return $fn;
 	}
-} // class CmnBkp_Acc_Report
+}

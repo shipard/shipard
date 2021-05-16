@@ -31,10 +31,10 @@ class DocReportBase extends FormReport
 		$this->reportId = $reportId;
 		$this->reportTemplate = $reportId;
 
-		if ($this->reportMode !== FormReport::rmDefault)
-			return;
-
-		$this->reportTemplate .= '-default';
+		//if ($this->reportMode !== FormReport::rmDefault)
+		//	return;
+		//
+		//$this->reportTemplate .= '-default';
 	}
 
 	public function loadData()

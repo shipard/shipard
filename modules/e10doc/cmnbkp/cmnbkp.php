@@ -55,7 +55,7 @@ class CmnBkp_SetOff_Report extends \e10doc\core\libs\reports\DocReport
 	{
 		parent::init();
 
-		$this->setReportId('e10doc.cmnbkp.set-off');
+		$this->setReportId('reports.default.e10doc.cmnbkp.set-off');
 	}
 }
 

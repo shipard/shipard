@@ -1,6 +1,0 @@
-@import url("../../../core/reports/formreport-default.css");
-
-
-table.signs {width: 100%; margin-top: 42pt; font-size: 10pt;}
-table.signs tr td {width: 50%; text-align: center; padding: 12pt; vertical-align: top;}
-table.signs tr td span {border-top: .8pt solid black; display: block; padding: 3pt;}
