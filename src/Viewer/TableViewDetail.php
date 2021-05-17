@@ -263,7 +263,7 @@ class TableViewDetail
 			$headerCode .= "<span class='txt'>{$info ['info']}</span>";
 			$headerCode .= "<h1>{$info ['title']}</h1>";
 			if (isset ($stateText))
-				$headerCode .= "<span class='docState'><i class='$stateIcon'></i> $stateText</span>";
+				$headerCode .= "<span class='docState'>".$this->app()->ui()->icon($stateIcon)." $stateText</span>";
 		}
 		else
 		{
@@ -275,7 +275,7 @@ class TableViewDetail
 					$headerCode .= '</div>';
 				}
 			if (isset ($stateText) && !$newMode)
-				$headerCode .= "<span class='docState'><i class='$stateIcon'></i> $stateText</span>";
+				$headerCode .= "<span class='docState'>".$this->app()->ui()->icon($stateIcon)." $stateText</span>";
 		}
 		$headerCode .= "</td>";
 

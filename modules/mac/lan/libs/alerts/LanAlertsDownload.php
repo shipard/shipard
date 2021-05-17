@@ -105,7 +105,7 @@ class LanAlertsDownload extends Utility
 
 			}
 			$header = ['title' => 'Zařízení'];
-			$alertScope['content'] = \e10\renderTableFromArray ($table, $header);
+			$alertScope['content'] = \e10\renderTableFromArray ($table, $header, [], $this->app());
 		}
 
 		foreach ($this->alertsCount as $asId => $as)

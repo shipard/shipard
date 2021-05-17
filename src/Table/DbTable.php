@@ -6,6 +6,7 @@ use \e10\utils;
 use \e10\json;
 use \Shipard\Form\TableForm;
 use \Shipard\Utils\Attachments;
+use \Shipard\UI\Core\SystemIcons;
 
 class DbTable
 {
@@ -985,7 +986,7 @@ class DbTable
 		return FALSE;
 	}
 
-	public function saveFormData (\e10\TableForm &$formData, $saveData = NULL)
+	public function saveFormData (TableForm &$formData, $saveData = NULL)
 	{
 		if ($saveData === NULL)
 		{
@@ -1463,16 +1464,16 @@ class DbTable
 					return $this->app()->ui()->icons()->cssClass($states ['states'][$stateValue]['icon']);
 				switch ($states ['states'][$stateValue]['stateStyle'])
 				{
-					case 'archive': return 'fa fa-inbox';
-					case 'concept': return 'fa fa-star-o';
-					case 'new': return 'fa file-text-o';
-					case 'delete': return 'fa fa-trash-o';
-					case 'cancel': return 'fa fa-times-circle';
-					case 'edit': return 'fa fa-edit';
-					case 'done': return 'fa fa-check-square-o';
-					case 'halfdone': return 'fa fa-adjust';
-					case 'confirmed': return 'fa fa-star';
-					default: return 'fa fa-question-sign';
+					case 'archive': return $this->app()->ui()->systemIcon(SystemIcons::docStateArchive);
+					case 'concept': return $this->app()->ui()->systemIcon(SystemIcons::docStateConcept);
+					case 'new': return $this->app()->ui()->systemIcon(SystemIcons::docStateNew);
+					case 'delete': $this->app()->ui()->systemIcon(SystemIcons::docStateDelete);
+					case 'cancel': $this->app()->ui()->systemIcon(SystemIcons::docStateCancel);
+					case 'edit': return $this->app()->ui()->systemIcon(SystemIcons::docStateEdit);
+					case 'done': return $this->app()->ui()->systemIcon(SystemIcons::docStateDone);
+					case 'halfdone': return $this->app()->ui()->systemIcon(SystemIcons::docStateHalfDone);
+					case 'confirmed': return $this->app()->ui()->systemIcon(SystemIcons::docStateConfirmed);
+					default: return $this->app()->ui()->systemIcon(SystemIcons::docStateUnknown);
 				}
 				break;
 		}

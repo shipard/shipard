@@ -92,7 +92,7 @@ class ViewDocsLogAll extends TableView
 				$docStateIcon = $table->getDocumentStateInfo($docStates, $item, 'styleIcon');
 				$docStateClass = $table->getDocumentStateInfo($docStates, $item, 'styleClass');
 
-				$listItem ['icon'] = 'icon-' . $docStateIcon;
+				$listItem ['icon'] = $docStateIcon;
 				$listItem ['class'] = $docStateClass;
 
 				$props1 [] = array('icon' => 'icon-table', 'text' => $table->tableName());
@@ -205,7 +205,7 @@ class ViewDocsLogDoc extends TableView
 
 			$listItem ['t1'] = $item['personName'];
 			$listItem ['i1'] = $docStateName;
-			$listItem ['icon'] = 'icon-' . $docStateIcon;
+			$listItem ['icon'] = $docStateIcon;
 			$listItem ['class'] = $docStateClass;
 		}
 

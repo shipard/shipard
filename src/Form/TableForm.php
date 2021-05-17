@@ -10,6 +10,7 @@ use \Shipard\Table\DbTable;
 use \Shipard\Base\Content;
 use \Shipard\Viewer\TableView;
 use \e10\ContentRenderer;
+use \Shipard\UI\Core\SystemIcons;
 
 
 class TableForm
@@ -1614,7 +1615,7 @@ class TableForm
 			}
 		}
 		if (isset ($stateText) && !$newMode)
-			$headerCode .= "<span class='docState'><i class='$stateIcon'></i> $stateText</span>";
+			$headerCode .= "<span class='docState'>".$this->app()->ui()->icon($stateIcon)." $stateText</span>";
 		$headerCode .= "</td>";
 
 		// sum table
@@ -1820,35 +1821,35 @@ class TableForm
 										{
 											case 'archive':
 															$class = ' btn-default';
-															$icon = '<i class="fa fa-inbox"></i> ';
+															$icon = $this->app()->ui()->systemIcon(SystemIcons::docStateArchive);
 															$side = 1;
 															break;
 											case 'confirmed':
 															$class = ' btn-info';
 															if (!isset ($btn['readOnly']) && (!isset($btn['close']) || !$btn['close']))
 																$params .= " data-noclose='1'";
-															$icon = '<i class="fa fa-star"></i> ';
+															$icon = $this->app()->ui()->systemIcon(SystemIcons::docStateConfirmed);
 															break;
 											case 'edit':
 											case 'concept':
 															$class = ' btn-warning';
 															$params .= " data-noclose='1'";
-															$icon = '<i class="fa fa-edit"></i> ';
+															$icon = $this->app()->ui()->systemIcon(SystemIcons::docStateEdit);
 															$side = 1;
 															break;
 											case 'delete':
 															$class = ' btn-danger';
-															$icon = '<i class="fa fa-trash-o"></i> ';
+															$icon = $this->app()->ui()->systemIcon(SystemIcons::docStateDelete);
 															$side = 1;
 															break;
 											case 'cancel':
 															$class = ' btn-danger';
-															$icon = '<i class="fa fa-times"></i> ';
+															$icon = $this->app()->ui()->systemIcon(SystemIcons::docStateCancel);
 															$side = 1;
 															break;
 											default:
 															$class = ' btn-success';
-															$icon = '<i class="fa fa-check-circle"></i> ';
+															$icon = $this->app()->ui()->systemIcon(SystemIcons::docStateDone);
 															break;
 										}
 										if (isset($btn['buttonClass']))
@@ -1871,7 +1872,7 @@ class TableForm
 				case 'print':
 				case 'printdirect':
 										$class .= ' btn-default df2-action-trigger';
-										$icon = '<i class="fa fa-print"></i> ';
+										$icon = $this->app()->ui()->systemIcon(SystemIcons::actionPrint);
 										$printerId = isset($btn['printer']) ? $btn['printer'] : '0';
 										$params .= " data-report='{$btn ['data-report']}' data-printer='{$printerId}' data-pk='{$this->recData['ndx']}' data-table='".$this->table->tableId()."'";
 										$side = 1;
@@ -1884,7 +1885,7 @@ class TableForm
 				$side = 0;
 
 			if (isset ($btn['icon']))
-				$icon = '<i class="'.$this->app()->ui()->icons()->cssClass($btn['icon']).'"></i> ';
+				$icon = $this->app()->ui()->icon($btn['icon']);
 
 			if ($btn['style'] == 'stateSave' && $btn['stateStyle'] == 'edit' && !isset ($btn['noclose']))
 				$side = 0;
@@ -1905,7 +1906,7 @@ class TableForm
 
 			if (isset ($btn['subButtons']))
 				$btnsCode [$side] .= "<div class='btn-group'>";
-			$btnsCode [$side] .= "<button{$btnid} class='btn btn-large$class' data-action='{$btn['action']}' data-fid='{$this->fid}' data-form='{$this->fid}'{$params}>{$icon}{$btn['text']}</button> ";
+			$btnsCode [$side] .= "<button{$btnid} class='btn btn-large$class' data-action='{$btn['action']}' data-fid='{$this->fid}' data-form='{$this->fid}'{$params}>{$icon}&nbsp;{$btn['text']}</button> ";
 			if (isset ($btn['subButtons']))
 			{
 				foreach($btn['subButtons'] as $subbtn)

@@ -62,7 +62,7 @@ class ViewDocsLogDocHistory extends TableView
 
 			$listItem ['t1'] = $item['personName'];
 			$listItem ['i1'] = $docStateName;
-			$listItem ['icon'] = 'icon-' . $docStateIcon;
+			$listItem ['icon'] = $docStateIcon;
 			$listItem ['class'] = $docStateClass;
 		}
 

@@ -5,7 +5,7 @@ use \translation\dicts\e10\base\system\DictSystem;
 use \e10\ContentRenderer;
 use \e10\utils;
 use \e10\uiutils;
-
+use \Shipard\UI\Core\SystemIcons;
 
 
 class TableView extends \Shipard\Base\BaseObject
@@ -709,7 +709,7 @@ class TableView extends \Shipard\Base\BaseObject
 				switch ($btn['action'])
 				{
 					case 'newform':	$class .= ' btn-success';
-													$icon = '<i class="fa fa-plus-circle"></i> ';
+													$icon = $this->app()->ui()->systemIcon(SystemIcons::actionAdd);
 													break;
 					case 'addwizard':	$class .= ' btn-success';
 														$iconName = isset($btn['icon']) ? $this->app()->ui()->icons()->cssClass($btn['icon']) : 'fa fa-play';
@@ -717,7 +717,7 @@ class TableView extends \Shipard\Base\BaseObject
 														break;
 					case 'new':
 													$class .= ' e10-document-trigger';
-													$icon = '<i class="fa fa-plus-square"></i> ';
+													$icon = $this->app()->ui()->systemIcon(SystemIcons::actionAdd);
 													if (isset ($btn ['table']))
 														$dataTable = "data-table='{$btn ['table']}' ";
 													break;
@@ -733,7 +733,7 @@ class TableView extends \Shipard\Base\BaseObject
 
 				if (isset ($btn['subButtons']) || isset ($btn['dropdownMenu']))
 					$c .= "<div class='btn-group'>";
-				$c .= "<button class='btn {$btnClass}$class df2-{$btn['type']}-trigger e10-sv-tlbr-btn-{$btn['action']}' {$dataTable}data-action='{$btn['action']}' data-viewer='{$this->vid}' $btnParams>{$icon}{$btnText}</button>";
+				$c .= "<button class='btn {$btnClass}$class df2-{$btn['type']}-trigger e10-sv-tlbr-btn-{$btn['action']}' {$dataTable}data-action='{$btn['action']}' data-viewer='{$this->vid}' $btnParams>{$icon}&nbsp;{$btnText}</button>";
 				if (isset ($btn['subButtons']))
 				{
 					foreach($btn['subButtons'] as $subbtn)
@@ -771,7 +771,7 @@ class TableView extends \Shipard\Base\BaseObject
 		{
 			$c .= "<div class='dropdown pull-left'>";
 			$c .= "<button class='btn btn-default dropdown-toggle' type='button' id='dropdownMenu1' data-toggle='dropdown' aria-haspopup='true' aria-expanded='true'>";
-			$c .= "<i class='fa fa-wrench'></i> ";
+			$c .= $this->app()->ui()->systemIcon(SystemIcons::iconSettings);
 			$c .= utils::es('Nástroje');
 			$c .= " <span class='caret'></span>";
 			$c .= "</button>";

@@ -69,7 +69,7 @@ class UICore extends \Shipard\Base\BaseObject
 		if (isset ($parts['code']))
 			return $parts['code'];
 		if (isset ($parts['table']))
-			return \e10\renderTableFromArray($parts['table'], $parts['header'], isset($parts['params']) ? $parts['params'] : []);
+			return $this->renderTableFromArray($parts['table'], $parts['header'], $parts['params'] ?? []);
 
 		$t = '';
 		forEach ($parts as $p)
@@ -105,7 +105,7 @@ class UICore extends \Shipard\Base\BaseObject
 				$t .= "<img src='{$p['img']}'/>";
 		}
 		if (isset ($p['prefix']))
-			$t .= "<span class='pre'>".utils::es($p['prefix']).'</span>';
+			$t .= "<span class='pre'>".Utils::es($p['prefix']).'</span>';
 
 		$i = '';
 		if (isset ($p ['icon']))
@@ -122,19 +122,19 @@ class UICore extends \Shipard\Base\BaseObject
 
 		$title = '';
 		if (isset ($p['title']))
-			$title = " title=\"".utils::es($p['title'])."\"";
+			$title = " title=\"".Utils::es($p['title'])."\"";
 
 		if (isset ($p['docAction']))
 		{
-			$element = utils::param($p, 'type', 'a');
+			$element = Utils::param($p, 'type', 'a');
 			$t .= "<$element";
 			if ($element === 'a')
 				$t .= " href='#'";
 			$linkClass = '';
-			$t .= utils::elementActionParams ($p, $linkClass);
+			$t .= Utils::elementActionParams ($p, $linkClass);
 			if (isset($p['table']))
 				$t.= " data-table='{$p['table']}'";
-			$t .= " class='$linkClass' data-action='{$p['docAction']}' $title>$i" . utils::es ($p ['text']) . "</$element>";
+			$t .= " class='$linkClass' data-action='{$p['docAction']}' $title>$i" . Utils::es ($p ['text']) . "</$element>";
 		}
 		else
 		if (isset($p['action']))
@@ -148,11 +148,11 @@ class UICore extends \Shipard\Base\BaseObject
 			$t .= " target='_new'";
 			$t .= '>';
 
-			$t .= $i.utils::es ($p['text']);
+			$t .= $i.Utils::es ($p['text']);
 			$t .= '</a>';
 		}
 		elseif (isset($p ['text']))
-			$t .= $i . utils::es($p ['text']);
+			$t .= $i . Utils::es($p ['text']);
 		else
 			$t .= $i;
 
@@ -162,7 +162,7 @@ class UICore extends \Shipard\Base\BaseObject
 		if (isset ($p['class']))
 		{
 			$params = (isset ($p['focusable'])) ? " tabindex='0'" : '';
-			return "<span{$params} class='{$p['class']}'$css{$title}" . utils::dataAttrs($p) . '>' . $t . '</span> ';
+			return "<span{$params} class='{$p['class']}'$css{$title}" . Utils::dataAttrs($p) . '>' . $t . '</span> ';
 		}
 		return $t;
 	}
@@ -221,30 +221,30 @@ class UICore extends \Shipard\Base\BaseObject
 			case 'editform':
 			case 'edit-iframe-doc':
 				$btnClass = 'btn-primary';
-				$icon = '<i class="fa fa-edit"></i> ';
+				$icon = $this->systemIcon(SystemIcons::actionOpen);
 				break;
 			case 'deleteform':
 				$btnClass = 'btn-danger';
-				$icon = '<i class="fa fa-trash-o"></i> ';
+				$icon = $this->systemIcon(SystemIcons::actionDelete);
 				break;
 			case 'print':
 			case 'printdirect':
-				$icon = '<i class="fa fa-print"></i> ';
+				$icon = $this->systemIcon(SystemIcons::actionPrint);
 				$btnClass = 'btn-default';
 				break;
 			case 'new':
 				$btnClass = 'btn-success';
 				$class .= ' e10-document-trigger';
-				$icon = '<i class="fa fa-plus-circle"></i> ';
+				$icon = $this->systemIcon(SystemIcons::actionAdd);
 				break;
 			case 'new-iframe-doc':
 				$btnClass = 'btn-success';
-				$icon = '<i class="fa fa-plus-circle"></i> ';
+				$icon = $this->systemIcon(SystemIcons::actionAdd);
 				break;
 			case 'newform':
 				$btnClass = 'btn-success';
 				$class .= ' df2-action-trigger';
-				$icon = '<i class="fa fa-plus-circle"></i> ';
+				$icon = $this->systemIcon(SystemIcons::actionAdd);
 				break;
 			case 'addwizard':
 				$btnClass = 'btn-success';
@@ -258,11 +258,11 @@ class UICore extends \Shipard\Base\BaseObject
 				break;
 			case 'moveDown':
 				$btnClass = 'btn-default';
-				$icon = '<i class="fa fa-chevron-down"></i> ';
+				$icon = $this->systemIcon(SystemIcons::actionMoveDown);
 				break;
 			case 'moveUp':
 				$btnClass = 'btn-default';
-				$icon = '<i class="fa fa-chevron-up"></i> ';
+				$icon = $this->systemIcon(SystemIcons::actionMoveUp);
 				break;
 			default:
 				$btnClass = 'btn-default';
@@ -283,11 +283,11 @@ class UICore extends \Shipard\Base\BaseObject
 			$params .= " title='".$this->es ($button['title'])."'";
 
 		if ($mode === 1)
-			$c .= "<li><a class='$class' data-action='{$button['action']}' $params>{$icon}{$btnText}</a></li>";
+			$c .= "<li><a class='$class' data-action='{$button['action']}' $params>{$icon}&nbsp;{$btnText}</a></li>";
 		else
 		{
 			if ($button['action'] !== '')
-				$c .= "<$element class='$elementClass $class' data-action='{$button['action']}' $params>{$icon}{$btnText}</$element>";
+				$c .= "<$element class='$elementClass $class' data-action='{$button['action']}' $params>{$icon}&nbsp;{$btnText}</$element>";
 		}
 
 		if (isset ($button['subButtons']))
@@ -376,4 +376,10 @@ class UICore extends \Shipard\Base\BaseObject
 	{
 		return $this->icons->systemIcon($i, $addClass, $element);
 	}
+
+	public function renderTableFromArray ($rows, $columns, $params = [])
+	{
+		$tr = new \Shipard\Utils\TableRenderer($rows, $columns, $params, $this->app());
+		return $tr->render();
+	}	
 }
