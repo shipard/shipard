@@ -51,7 +51,7 @@
 		"fa5": "fa-edit",
 		"fa5pro": "fa-edit",
 		"bsi": "bi-pencil-square",
-		"mdi": "drive_file_rename_outline"
+		"mdi": "edit_note"
 	},	
 	"actionPrint": {
 		"fa5": "fa-print",
@@ -71,6 +71,38 @@
 		"bsi": "bi-gear-fill",
 		"mdi": "settings"
 	},	
+	"actionMoveDown": {
+		"fa5": "fa-arrow-down",
+		"fa5pro": "fa-arrow-down",
+		"bsi": "bi-arrow-down",
+		"mdi": "arrow_downward"
+	},	
+	"actionMoveUp": {
+		"fa5": "fa-arrow-up",
+		"fa5pro": "fa-arrow-up",
+		"bsi": "bi-arrow-up",
+		"mdi": "arrow_upward"
+	},	
+	"actionMoveDelete": {
+		"fa5": "fa-trash-alt",
+		"fa5pro": "fa-trash-alt",
+		"bsi": "bi-trash",
+		"mdi": "delete"
+	},	
+	"actionExpandOpen": {
+		"fa5": "fa-plus-square",
+		"fa5pro": "fa-plus-square",
+		"bsi": "bi-plus-square",
+		"mdi": "add_circle_outline"
+	},	
+	"actionExpandClose": {
+		"fa5": "fa-minus-square",
+		"fa5pro": "fa-minus-square",
+		"bsi": "bi-dash-square",
+		"mdi": "remove_circle_outline"
+	},
+
+
 	"iconUser": {
 		"fa5": "fa-user",
 		"fa5pro": "fa-user",
@@ -125,6 +157,20 @@
 		"bsi": "bi-check-circle",
 		"mdi": "check_circle"
 	},
+	"iconPreview":{
+		"fa5":"fa-search-plus",
+		"fa5pro":"fa-search-plus",
+		"bsi":"bi-zoom-in",
+		"mdi":"zoom_in"
+	},
+	"iconSearch":{
+		"fa5":"fa-search",
+		"fa5pro":"fa-search",
+		"bsi":"bi-search",
+		"mdi":"search"
+	},
+
+
 	"detailDetail":{
 		"fa5": "fa-file",
 		"fa5pro": "fa-file",
@@ -184,5 +230,67 @@
         "fa5pro":"fa-binoculars",
         "bsi":"bi-list",
         "mdi":"reorder"
+	},
+
+
+	"docStateArchive":{
+		"fa5":"fa-inbox",
+        "fa5pro":"fa-inbox",
+        "bsi":"bi-inbox-fill",
+        "mdi":"inbox"
+	},
+	"docStateConcept":{
+		"fa5":"fa-star",
+        "fa5pro":"fa-star",
+        "bsi":"bi-star-fill",
+        "mdi":"star"
+	},
+	"docStateNew":{
+		"fa5":"fa-file-alt",
+		"fa5pro":"fa-file-alt",
+		"bsi":"bi-file-earmark-text",
+		"mdi":"description"
+	},
+	"docStateDelete":{
+		"fa5": "fa-trash-alt",
+		"fa5pro": "fa-trash-alt",
+		"bsi": "bi-trash",
+		"mdi": "delete"
+	},
+	"docStateCancel":{
+		"fa5": "fa-times-circle",
+		"fa5pro": "fa-times-circle",
+		"bsi": "bi-x-circle",
+		"mdi": "highlight_off"
+	},
+	"docStateEdit":{
+		"fa5": "fa-edit",
+		"fa5pro": "fa-edit",
+		"bsi": "bi-pencil-square",
+		"mdi": "edit_note"
+	},
+	"docStateDone":{
+		"fa5": "fa-check-square",
+		"fa5pro": "fa-check-square",
+		"bsi": "bi-check-square",
+		"mdi": "check_circle"
+	},
+	"docStateHalfDone":{
+		"fa5": "fa-adjust",
+		"fa5pro": "fa-adjust",
+		"bsi": "bi-circle-half",
+		"mdi": "tonality"
+	},
+	"docStateConfirmed":{
+		"fa5": "fa-certificate",
+		"fa5pro": "fa-certificate",
+		"bsi": "bi-patch-check",
+		"mdi": "verified"
+	},
+	"docStateUnknown":{
+		"fa5": "fa-question",
+		"fa5pro": "fa-question",
+		"bsi": "bi-question-lg",
+		"mdi": "help_outline"
 	}
 }
