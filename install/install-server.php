@@ -75,6 +75,7 @@ class Installation
 
 		$serverConfig = [
 			'serverDomain' => 'localhost.shpd.dev',
+			'serverId' => '',
 
 			'channels' => [
 				$defaultChannelId => ['path' => __SHPD_ROOT_DIR__],
@@ -96,7 +97,6 @@ class Installation
 		];
 
 		file_put_contents (__SHPD_ETC_DIR__.'/server.json', json_encode($serverConfig, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)."\n");
-		// mysql_secure_installation - https://bertvv.github.io/notes-to-self/2015/11/16/automating-mysql_secure_installation/
 	}
 
 	protected function checkExtLibs()
@@ -135,9 +135,9 @@ class Installation
 			return;
 		}
 
-		echo "__SHPD_ROOT_DIR__ : " . __SHPD_ROOT_DIR__ . "\n";
-		echo "__SHPD_ETC_DIR__  : " . __SHPD_ETC_DIR__  . "\n";
-		echo "__SHPD_VAR_DIR__  : " . __SHPD_VAR_DIR__  . "\n";
+		//echo "__SHPD_ROOT_DIR__ : " . __SHPD_ROOT_DIR__ . "\n";
+		//echo "__SHPD_ETC_DIR__  : " . __SHPD_ETC_DIR__  . "\n";
+		//echo "__SHPD_VAR_DIR__  : " . __SHPD_VAR_DIR__  . "\n";
 
 		$this->checkDirs();
 		$this->checkEtc();

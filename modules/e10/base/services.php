@@ -11,6 +11,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 	{
 		if ($this->initConfig)
 		{
+			/*
 			$hostingCfg = utils::hostingCfg(['hostingServerUrl']);
 
 			$siteName = $this->initConfig ['request']['name'];
@@ -31,7 +32,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			$msg->setBody($message);
 
 			$msg->sendMail();
-
+			*/	
 			return TRUE;
 		}
 	}

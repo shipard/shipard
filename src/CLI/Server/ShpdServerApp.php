@@ -332,7 +332,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		);
 		$context = stream_context_create($opts);
 
-		$url =  'https://'.$this->cfgServer['hostingDomain'].'api/call/e10pro.hosting.server.getDataSourceInfo?serverGid='.$this->cfgServer['serverGid'].'&dsid='.$dsid;
+		$url =  'https://'.$this->cfgServer['hostingDomain'].'/api/call/e10pro.hosting.server.getDataSourceInfo?serverId='.$this->cfgServer['serverId'].'&dsid='.$dsid;
 		$resultCode = file_get_contents ($url, FALSE, $context);
 		$resultData = json_decode ($resultCode, TRUE);
 

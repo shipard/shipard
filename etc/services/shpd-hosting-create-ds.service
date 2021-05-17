@@ -1,0 +1,14 @@
+[Unit]
+Description=Shipard create data sources from hosting ver 0.1
+After=network.target auditd.service
+
+[Service]
+User=shpd
+Group=shpd
+PIDFile=/var/lib/shipard/shpd/shpd-hosting-create-ds.pid
+ExecStart=/usr/lib/shipard/etc/services/shpd-hosting-create-ds.sh
+Type=forking
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
