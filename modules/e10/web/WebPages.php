@@ -652,7 +652,7 @@ class WebPages extends \E10\utility
 
 		if ($this->webPageType === webPages::wptSystemLogin)
 		{
-			$webTemplateId = $this->app->cfgItem ('e10.intranet.theme', 'e10.templates.system');
+			$webTemplateId = 'app.system';
 		}
 		else
 		if ($this->webPageType === webPages::wptExtranet)
@@ -661,7 +661,7 @@ class WebPages extends \E10\utility
 		}
 		else
 		{
-			$webTemplateId = (isset($this->serverInfo['template']) && $this->serverInfo['template'] !== '') ? $this->serverInfo['template'] : 'e10templates.web.basic-bs4';
+			$webTemplateId = (isset($this->serverInfo['template']) && $this->serverInfo['template'] !== '') ? $this->serverInfo['template'] : 'web.core-bs5';
 			if ($this->forceTemplate === FALSE)
 			{
 				if (isset($this->serverInfo['templateParams']['defaultTemplateType']))
