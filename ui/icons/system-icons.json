@@ -83,7 +83,7 @@
 		"bsi": "bi-arrow-up",
 		"mdi": "arrow_upward"
 	},	
-	"actionMoveDelete": {
+	"actionDelete": {
 		"fa5": "fa-trash-alt",
 		"fa5pro": "fa-trash-alt",
 		"bsi": "bi-trash",
