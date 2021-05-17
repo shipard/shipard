@@ -41,6 +41,10 @@
     },
     {
         "t": 0,
+        "v": "fa-cogs"
+    },
+    {
+        "t": 0,
         "v": "fa-download"
     },
     {
@@ -50,22 +54,6 @@
     {
         "t": 0,
         "v": "fa-chart-pie"
-    },
-    {
-        "t": 0,
-        "v": "fa-star"
-    },
-    {
-        "t": 0,
-        "v": "fa-table"
-    },
-    {
-        "t": 0,
-        "v": "fa-list"
-    },
-    {
-        "t": 0,
-        "v": "fa-compress-alt"
     },
     {
         "t": 0,
@@ -86,38 +74,6 @@
     {
         "t": 0,
         "v": "fa-chart-bar"
-    },
-    {
-        "t": 0,
-        "v": "fa-random"
-    },
-    {
-        "t": 0,
-        "v": "fa-arrow-circle-down"
-    },
-    {
-        "t": 0,
-        "v": "fa-arrow-circle-up"
-    },
-    {
-        "t": 0,
-        "v": "fa-share"
-    },
-    {
-        "t": 0,
-        "v": "fa-exclamation-triangle"
-    },
-    {
-        "t": 0,
-        "v": "fa-plus-square"
-    },
-    {
-        "t": 0,
-        "v": "fa-star"
-    },
-    {
-        "t": 0,
-        "v": "fa-file-alt"
     },
     {
         "t": 0,

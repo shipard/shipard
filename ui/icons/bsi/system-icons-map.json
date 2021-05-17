@@ -41,6 +41,10 @@
     },
     {
         "t": 0,
+        "v": "bi-gear-fill"
+    },
+    {
+        "t": 0,
         "v": "bi-download"
     },
     {
@@ -50,22 +54,6 @@
     {
         "t": 0,
         "v": "bi-pie-chart-fill"
-    },
-    {
-        "t": 0,
-        "v": "bi-star"
-    },
-    {
-        "t": 0,
-        "v": "bi-table"
-    },
-    {
-        "t": 0,
-        "v": "bi-list-ul"
-    },
-    {
-        "t": 0,
-        "v": "bi-arrows-angle-contract"
     },
     {
         "t": 0,
@@ -86,38 +74,6 @@
     {
         "t": 0,
         "v": "bi-file-earmark-bar-graph"
-    },
-    {
-        "t": 0,
-        "v": "bi-random"
-    },
-    {
-        "t": 0,
-        "v": "bi-arrow-down-circle"
-    },
-    {
-        "t": 0,
-        "v": "bi-arrow-up-circle"
-    },
-    {
-        "t": 0,
-        "v": "bi-box-arrow-up-right"
-    },
-    {
-        "t": 0,
-        "v": "bi-exclamation-triangle-fill"
-    },
-    {
-        "t": 0,
-        "v": "bi-plus-square-fill"
-    },
-    {
-        "t": 0,
-        "v": "bi-star"
-    },
-    {
-        "t": 0,
-        "v": "bi-file-earmark-text"
     },
     {
         "t": 0,

@@ -41,6 +41,10 @@
     },
     {
         "t": 0,
+        "v": "settings"
+    },
+    {
+        "t": 0,
         "v": "file_download"
     },
     {
@@ -50,22 +54,6 @@
     {
         "t": 0,
         "v": "pie_chart"
-    },
-    {
-        "t": 0,
-        "v": "grade"
-    },
-    {
-        "t": 0,
-        "v": "table_chart"
-    },
-    {
-        "t": 0,
-        "v": "list"
-    },
-    {
-        "t": 0,
-        "v": "close_fullscreen"
     },
     {
         "t": 0,
@@ -86,38 +74,6 @@
     {
         "t": 0,
         "v": "assessment"
-    },
-    {
-        "t": 0,
-        "v": "shuffle"
-    },
-    {
-        "t": 0,
-        "v": "arrow_circle_down"
-    },
-    {
-        "t": 0,
-        "v": "arrow_circle_up"
-    },
-    {
-        "t": 0,
-        "v": "open_in_new"
-    },
-    {
-        "t": 0,
-        "v": "warning"
-    },
-    {
-        "t": 0,
-        "v": "add_circle"
-    },
-    {
-        "t": 0,
-        "v": "grade"
-    },
-    {
-        "t": 0,
-        "v": "description"
     },
     {
         "t": 0,
