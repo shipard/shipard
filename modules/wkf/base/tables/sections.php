@@ -3,7 +3,7 @@
 namespace wkf\base;
 
 use e10\utils, e10\TableView, e10\TableForm, e10\DbTable, \lib\persons\LinkedPersons;
-
+use \e10\base\libs\UtilsBase;
 
 /**
  * Class TableSections
@@ -462,7 +462,7 @@ class ViewSections extends TableView
 		if (!count ($this->pks))
 			return;
 
-		$this->linkedPersons = \E10\Base\linkedPersons ($this->table->app(), $this->table, $this->pks, 'label label-default');
+		$this->linkedPersons = UtilsBase::linkedPersons ($this->app(), $this->table, $this->pks, 'label label-default');
 	}
 
 	function decorateRow (&$item)

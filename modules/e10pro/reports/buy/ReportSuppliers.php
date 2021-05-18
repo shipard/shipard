@@ -2,14 +2,14 @@
 
 namespace e10Pro\reports\buy;
 
-use e10doc\core\e10utils, \e10\utils, \e10\uiutils;
+use e10doc\core\libs\E10Utils, \e10\utils, \e10\uiutils;
 
 
 /**
  * Class ReportSuppliers
  * @package e10Pro\reports\buy
  */
-class ReportSuppliers extends \E10Doc\Core\GlobalReport
+class ReportSuppliers extends \e10doc\core\libs\reports\GlobalReport
 {
 	var $units;
 	var $currencies;
@@ -106,7 +106,7 @@ class ReportSuppliers extends \E10Doc\Core\GlobalReport
 		array_push ($q, ' LEFT JOIN e10_persons_persons AS persons ON heads.person = persons.ndx');
 		array_push ($q, ' WHERE heads.docState = 4000 ');
 
-		e10utils::fiscalPeriodQuery ($q, $this->reportParams ['fiscalPeriod']['value']);
+		E10Utils::fiscalPeriodQuery ($q, $this->reportParams ['fiscalPeriod']['value']);
 
 		if (!$this->fpq)
 			array_push ($q, ' AND [heads].[fiscalYear] IN %in', $this->enabledFiscalYears);

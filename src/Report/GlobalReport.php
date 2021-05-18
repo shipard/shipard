@@ -175,10 +175,10 @@ class GlobalReport extends Report
 
 		$baseFileName = $excelEngine->save ($spreadsheet);
 		$this->fullFileName = __APP_DIR__.'/tmp/'.$baseFileName;
-		$this->saveFileName = $this->saveAsFileName ();
+		$this->saveFileName = $this->saveAsFileName ('xls');
 	}
 
-	function saveAsFileName ()
+	function saveAsFileName ($type)
 	{
 		$fileName = 'report';
 		if (isset($this->info['title']))

@@ -13,7 +13,7 @@ require_once __SHPD_MODULES_DIR__ . 'e10doc/core/core.php';
  *
  */
 
-class reportDaily extends \E10Doc\Core\GlobalReport
+class reportDaily extends \e10doc\core\libs\reports\GlobalReport
 {
 	var $currencies;
 	var $unitNdx;

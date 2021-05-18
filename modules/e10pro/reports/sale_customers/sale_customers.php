@@ -12,7 +12,7 @@ require_once __SHPD_MODULES_DIR__ . 'e10doc/core/core.php';
  * Class reportCustomers
  * @package E10Pro\Reports\Sale_Customers
  */
-class reportCustomers extends \E10Doc\Core\GlobalReport
+class reportCustomers extends \e10doc\core\libs\reports\GlobalReport
 {
 	var $units;
 	var $currencies;

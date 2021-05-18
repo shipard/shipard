@@ -99,7 +99,7 @@ class ReportShipardAgentInstall extends \mac\lan\Report
 		return $d;
 	}
 
-	public function saveAsFileName ()
+	public function saveAsFileName ($type)
 	{
 		return 'shipard-agent-install.txt';
 	}

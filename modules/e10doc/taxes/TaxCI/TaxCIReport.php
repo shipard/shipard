@@ -799,11 +799,11 @@ class TaxCIReport extends \e10doc\taxes\TaxReportReport
 		$printButton['dropdownMenu'][] = [
 			'text' => 'Uložit jako XML soubor pro elektronické podání', 'icon' => 'icon-download',
 			'type' => 'reportaction', 'action' => 'print', 'class' => 'e10-print', 'data-format' => 'xml',
-			'data-filename' => $this->saveAsFileName()
+			'data-filename' => $this->saveAsFileName('xml')
 		];
 	}
 
-	public function saveAsFileName ()
+	public function saveAsFileName ($type)
 	{
 		$fn = $this->taxReportRecData['title'];
 		$fn .= '.xml';
@@ -815,7 +815,7 @@ class TaxCIReport extends \e10doc\taxes\TaxReportReport
 		$this->createContent_All();
 
 		$this->fullFileName = $this->createContentXml();
-		$this->saveFileName = $this->saveAsFileName ();
+		$this->saveFileName = $this->saveAsFileName ('xml');
 		$this->mimeType = 'application/xml';
 	}
 }

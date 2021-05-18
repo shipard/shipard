@@ -2,14 +2,14 @@
 
 namespace E10Pro\Reports\Terminal_monthly;
 
-use E10Doc\Core\e10utils, E10\utils;
+use e10doc\core\libs\E10Utils, E10\utils;
 
 
 /**
  * Class reportMonthly
  * @package E10Pro\Reports\Terminal_monthly
  */
-class reportMonthly extends \E10Doc\Core\GlobalReport
+class reportMonthly extends \e10doc\core\libs\reports\GlobalReport
 {
 	var $currencies;
 	var $unitNdx;
@@ -25,7 +25,7 @@ class reportMonthly extends \E10Doc\Core\GlobalReport
 	{
 		$this->startDate = utils::today();
 
-		$this->addParam ('fiscalPeriod', 'fiscalPeriod', ['flags' => ['quarters', 'halfs', 'years', 'enableAll'], 'defaultValue' => e10utils::todayFiscalMonth($this->app)]);
+		$this->addParam ('fiscalPeriod', 'fiscalPeriod', ['flags' => ['quarters', 'halfs', 'years', 'enableAll'], 'defaultValue' => E10Utils::todayFiscalMonth($this->app)]);
 		switch ($this->subReportId)
 		{
 			case '':
@@ -155,7 +155,7 @@ class reportMonthly extends \E10Doc\Core\GlobalReport
 				array_push ($q, ' AND heads.author = %i', $this->unitNdx);
 				break;
 		}
-		e10utils::fiscalPeriodQuery ($q, $this->reportParams ['fiscalPeriod']['value']);
+		E10Utils::fiscalPeriodQuery ($q, $this->reportParams ['fiscalPeriod']['value']);
 		array_push ($q, ' AND heads.docState = 4000 AND heads.docType IN %in', ['cashreg', 'invno']);
 		array_push ($q, ' GROUP BY heads.dateAccounting, heads.paymentMethod');
 		array_push ($q, ' ORDER BY heads.dateAccounting');
@@ -203,7 +203,7 @@ class reportMonthly extends \E10Doc\Core\GlobalReport
 				array_push ($q, ' AND heads.author = %i', $this->unitNdx);
 				break;
 		}
-		e10utils::fiscalPeriodQuery ($q, $this->reportParams ['fiscalPeriod']['value']);
+		E10Utils::fiscalPeriodQuery ($q, $this->reportParams ['fiscalPeriod']['value']);
 		array_push ($q, ' AND heads.docState = 4000 AND heads.docType = %s', 'purchase');
 		array_push ($q, ' GROUP BY heads.dateAccounting, heads.paymentMethod');
 		array_push ($q, ' ORDER BY heads.dateAccounting');

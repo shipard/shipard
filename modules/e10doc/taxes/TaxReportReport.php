@@ -59,12 +59,12 @@ class TaxReportReport extends \e10doc\core\libs\reports\GlobalReport
 		parent::init();
 
 		if (!$this->taxReportNdx)
-			$this->taxReportNdx = $this->reportParams ['taxReport']['value'];
+			$this->taxReportNdx = intval($this->reportParams ['taxReport']['value']);
 		$this->taxReportRecData = $this->tableTaxReports->loadItem ($this->taxReportNdx);
 		$this->taxReportDef = $this->app->cfgItem('e10doc.taxes.reportTypes.'.$this->taxReportRecData['reportType'], NULL);
 
 		if ($this->filingNdx === -1)
-			$this->filingNdx = $this->reportParams ['filing']['value'];
+			$this->filingNdx = intval($this->reportParams ['filing']['value']);
 
 		if ($this->filingNdx)
 			$this->filingRecData = $this->tableFilings->loadItem ($this->filingNdx);

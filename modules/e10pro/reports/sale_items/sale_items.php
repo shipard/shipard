@@ -2,14 +2,14 @@
 
 namespace E10Pro\Reports\Sale_Items;
 
-use E10\utils, E10Doc\Core\e10utils, \E10\uiutils, E10Doc\Core\Aggregate, E10Doc\Core\AggregateDocRows, E10Doc\Core\WidgetAggregate;
+use E10\utils, E10Doc\Core\e10utils, \E10\uiutils, e10doc\core\libs\Aggregate, e10doc\core\libs\AggregateDocRows, E10Doc\Core\WidgetAggregate;
 
 
 /**
  * Class Sales
  * @package E10Pro\Reports\Sale_Items
  */
-class Sales extends AggregateDocRows
+class Sales extends \e10doc\core\libs\AggregateDocRows
 {
 }
 
@@ -18,7 +18,7 @@ class Sales extends AggregateDocRows
  * Class reportItems
  * @package E10Pro\Reports\Sale_Items
  */
-class reportItems extends \E10Doc\Core\GlobalReport
+class reportItems extends \e10doc\core\libs\reports\GlobalReport
 {
 	var $units;
 	var $currencies;
