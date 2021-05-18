@@ -444,7 +444,7 @@ class reportVAT extends \e10doc\core\libs\reports\GlobalReport
 
 	public function subReportsList ()
 	{
-		$d[] = array ('id' => 'sum', 'icon' => 'icon-plus-square', 'title' => 'Sumárně');
+		$d[] = array ('id' => 'sum', 'icon' => 'detailReportSum', 'title' => 'Sumárně');
 		$d[] = array ('id' => 'items1', 'icon' => 'icon-list', 'title' => 'Položkově 1');
 		$d[] = array ('id' => 'items2', 'icon' => 'icon-list-ul', 'title' => 'Položkově 2');
 		$d[] = array ('id' => 'revCharge', 'icon' => 'icon-share', 'title' => 'PDP');

@@ -50,10 +50,10 @@
     {
       "id": "all", "class": "mac.lan.ViewDevicesAll",
       "details": {
-        "default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewDetailDeviceDetail"},
-        "sw": {"title": "SW", "icon": "icon-hourglass-half", "type": "detail", "class": "mac.lan.ViewDetailDeviceDetailSw"},
-        "info": {"title": "Info", "icon": "icon-info", "type": "detail", "class": "mac.lan.ViewDetailDeviceDetailInfo"},
-        "cfgScripts": {"title": "Nastavení", "icon": "icon-wrench", "type": "detail", "class": "mac.lan.ViewDetailDeviceDetailCfgScripts"}
+        "default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.lan.ViewDetailDeviceDetail"},
+        "sw": {"title": "SW", "icon": "detailSW", "type": "detail", "class": "mac.lan.ViewDetailDeviceDetailSw"},
+        "info": {"title": "Info", "icon": "system/detailInfo", "type": "detail", "class": "mac.lan.ViewDetailDeviceDetailInfo"},
+        "cfgScripts": {"title": "Nastavení", "icon": "system/detailSettings", "type": "detail", "class": "mac.lan.ViewDetailDeviceDetailCfgScripts"}
       },
 			"tools": [
 				{"class": "mac.lan.libs.LanControlSetToReloadRunningConfWizard", "icon": "icon-refresh", "text": "Znovu načíst aktuální stav všech zařízení"}

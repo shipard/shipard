@@ -18,7 +18,7 @@
 	"views": [
 		{"id": "default", "class": "swdev.hw.ViewDevicesKinds",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.hw.ViewDetailDeviceKind"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "swdev.hw.ViewDetailDeviceKind"}
 			}
 		}
 	],

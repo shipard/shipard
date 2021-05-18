@@ -51,7 +51,13 @@
         "fa5":"fa-arrow-alt-circle-down",
         "fa5pro":"fa-arrow-alt-circle-down",
         "bsi":"bi-file-arrow-down-fill",
-        "mdi":"assignment_returned"
+        "mdi":"arrow_circle_down"
+    },
+    "docType/ordersOut":{
+        "fa5":"fa-arrow-alt-circle-up",
+        "fa5pro":"fa-arrow-alt-circle-up",
+        "bsi":"bi-file-arrow-up-fill",
+        "mdi":"arrow_circle_up"
     },
     "docType/deliveryNote":{
         "fa5":"fa-file-signature",
@@ -245,6 +251,8 @@
         "bsi":"bi-building",
         "mdi":"science"
     },
+
+
     "detailBalanceByItems":{
 		"fa5":"fa-list",
         "fa5pro":"fa-list",
@@ -262,12 +270,6 @@
 		"fa5pro": "fa-compress-alt",
 		"bsi": "bi-arrows-angle-contract",
 		"mdi": "close_fullscreen"
-	},
-	"detailBalance":{
-		"fa5":"fa-star",
-		"fa5pro":"fa-star",
-		"bsi":"bi-star",
-		"mdi":"grade"
 	},
     "detailReportItems":{
 		"fa5":"fa-shopping-bag",
@@ -347,7 +349,7 @@
 		"bsi": "bi-trophy",
 		"mdi": "emoji_events"
 	},
-	"detailReportCashregisters":{
+	"detailReportCashRegisters":{
 		"fa5": "fa-money-bill-alt",
 		"fa5pro": "fa-money-bill-alt",
 		"bsi": "bi-cash",
@@ -378,10 +380,10 @@
 		"mdi": "arrow_downward"
 	},
 	"detailReportOutputCsReport":{
-		"fa5": "fa-level-down-alt",
-		"fa5pro": "fa-level-down-alt",
-		"bsi": "bi-arrow-90deg-down",
-		"mdi": "arrow_downward"
+		"fa5": "fa-level-up-alt",
+		"fa5pro": "fa-level-up-alt",
+		"bsi": "bi-arrow-90deg-up",
+		"mdi": "arrow_upward"
 	},
 	"detailReportStatement":{
 		"fa5":"fa-file-alt",
@@ -436,5 +438,73 @@
 		"fa5pro":"fa-file-alt",
 		"bsi":"bi-file-earmark-text",
 		"mdi":"description"
-	}
+	},
+	"detailReportAnalytic":{
+		"fa5":"fa-file-alt",
+		"fa5pro":"fa-file-alt",
+		"bsi":"bi-file-earmark-text",
+		"mdi":"description"
+	},
+	"detailReportStates":{
+		"fa5":"fa-chart-bar",
+		"fa5pro":"fa-chart-bar",
+		"bsi":"bi-clipboard-data",
+		"mdi":"assessment"
+	},
+	"detailReportAccountBalances":{
+		"fa5":"fa-check-square",
+        "fa5pro":"fa-check-square",
+        "bsi":"bi-check-square-fill",
+        "mdi":"check_box"
+	},
+	"detailReportCards1":{
+		"fa5":"fa-file",
+        "fa5pro":"fa-file",
+        "bsi":"bi-file-earmark",
+        "mdi":"insert_drive_file"
+	},
+	"detailReportCards2":{
+		"fa5":"fa-file-alt",
+        "fa5pro":"fa-file-alt",
+        "bsi":"bi-file-earmark-text",
+        "mdi":"article"
+	},
+	"detailReportCards3":{
+		"fa5":"fa-file-signature",
+        "fa5pro":"fa-file-signature",
+        "bsi":"bi-file-earmark-text-fill",
+        "mdi":"description"
+	},
+	"detailReportPostponedTax":{
+		"fa5":"fa-shield-alt",
+        "fa5pro":"fa-shield-alt",
+        "bsi":"bi-shield",
+        "mdi":"shield"
+	},
+	"detailReportTaxDepreciations":{
+		"fa5":"fa-shield-alt",
+        "fa5pro":"fa-shield-alt",
+        "bsi":"bi-shield",
+        "mdi":"shield"
+	},
+	"detailReportIncrements":{
+		"fa5": "fa-plus-square",
+		"fa5pro": "fa-plus-square",
+		"bsi": "bi-plus-square-fill",
+		"mdi": "add_circle"
+	},
+	"detailReportDepletions":{
+		"fa5":"fa-minus-square",
+        "fa5pro":"fa-minus-square",
+        "bsi":"bi-dash-square-fill",
+        "mdi":"remove_circle"
+	},
+
+
+    "form/document":{
+        "fa5": "fa-edit",
+		"fa5pro": "fa-edit",
+		"bsi": "bi-pencil-square",
+		"mdi": "edit_note"
+    }
 }

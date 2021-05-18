@@ -14,10 +14,10 @@
 	"views": [
 		{"id": "default", "class": "e10doc.inventory.ViewCheckHeads",
 			"details": {
-				"default": {"title": "Přehled", "icon": "icon-file", "type": "detail", "class": "e10doc.inventory.ViewDetailCheckHead", "order": 1000},
-				"items": {"title": "Položky", "icon": "e10-witems-items", "type": "detail", "class": "e10doc.inventory.ViewDetailCheckHeadItems", "order": 2000},
-				"states": {"title": "Stavy", "icon": "icon-eye", "type": "detail", "class": "e10doc.inventory.ViewDetailCheckHeadStates", "order": 4000},
-				"diffs": {"title": "Rozdíly", "icon": "icon-eye-slash", "type": "detail", "class": "e10doc.inventory.ViewDetailCheckHeadDiffs", "order": 6000}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.inventory.ViewDetailCheckHead", "order": 1000},
+				"items": {"title": "Položky", "icon": "detailReportItems", "type": "detail", "class": "e10doc.inventory.ViewDetailCheckHeadItems", "order": 2000},
+				"states": {"title": "Stavy", "icon": "detailReportStates", "type": "detail", "class": "e10doc.inventory.ViewDetailCheckHeadStates", "order": 4000},
+				"diffs": {"title": "Rozdíly", "icon": "detailReportDifferences", "type": "detail", "class": "e10doc.inventory.ViewDetailCheckHeadDiffs", "order": 6000}
 			}
 		}
 	],

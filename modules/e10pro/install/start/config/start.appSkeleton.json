@@ -18,7 +18,7 @@
 					}
 				},
 
-				"persons": {"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "default", "icon": "e10-persons-persons", "order": 100000}
+				"persons": {"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "default", "order": 100000}
 				}
 			},
 			"smallItems": [
@@ -43,7 +43,7 @@
 		"start": {
 			"items": {
 				"persons": {
-					"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "default", "icon": "icon-users",
+					"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "default",
 					"order": 100000
 				},
 				"mail": {

@@ -16,7 +16,7 @@
 		"default": {
 			"id": "default", "class": "services.persons.ViewPersons",
 			"details": {
-				"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "order":  0, "class": "services.persons.ViewDetailPerson"}
+				"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "services.persons.ViewDetailPerson"}
 			}
 		}
 	},

@@ -8,32 +8,32 @@
 		"views": {
 			"invoicesIn": {
 				"details": {
-						"accounting": {"title": "Účtování", "icon": "x-stamp", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
+						"accounting": {"title": "Účtování", "icon": "system/detailAccounting", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
 				}
 			},
 			"invoicesOut": {
 				"details": {
-					"accounting": {"title": "Účtování", "icon": "x-stamp", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
+					"accounting": {"title": "Účtování", "icon": "system/detailAccounting", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
 				}
 			},
 			"bank": {
 				"details": {
-					"accounting": {"title": "Účtování", "icon": "x-stamp", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
+					"accounting": {"title": "Účtování", "icon": "system/detailAccounting", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
 				}
 			},
 			"cash": {
 				"details": {
-					"accounting": {"title": "Účtování", "icon": "x-stamp", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
+					"accounting": {"title": "Účtování", "icon": "system/detailAccounting", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
 				}
 			},
 			"cmnbkp": {"id": "cmnbkp",
 				"details": {
-					"accounting": {"title": "Účtování", "icon": "x-stamp", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
+					"accounting": {"title": "Účtování", "icon": "system/detailAccounting", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
 				}
 			},
 			"cmnbkpocp": {"id": "cmnbkpocp",
 				"details": {
-					"accounting": {"title": "Účtování", "icon": "x-stamp", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
+					"accounting": {"title": "Účtování", "icon": "system/detailAccounting", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
 				}
 			}
 		},

@@ -20,7 +20,7 @@
 	"views": [
 		{"id": "default", "class": "services.sw.ViewSWQueue",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "services.sw.ViewDetailSWQueue"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "services.sw.ViewDetailSWQueue"}
 			}
 		}
 	],

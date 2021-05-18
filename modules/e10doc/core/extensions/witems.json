@@ -10,7 +10,7 @@
     "views": {
 			"default": {
 				"details": {
-						"journal": {"title": "Pohyby", "icon": "x-basket", "type": "detail", "class": "e10doc.core.ViewDetailItemsJournal", "order": 6000}
+						"journal": {"title": "Pohyby", "icon": "system/detailMovement", "type": "detail", "class": "e10doc.core.ViewDetailItemsJournal", "order": 6000}
 				}
 			}
 		}

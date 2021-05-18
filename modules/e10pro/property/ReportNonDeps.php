@@ -134,7 +134,7 @@ class ReportNonDeps extends \e10pro\property\ReportDepreciations
 
 	public function subReportsList ()
 	{
-		$d[] = ['id' => 'sum', 'icon' => 'icon-list', 'title' => 'Sumárně'];
+		$d[] = ['id' => 'sum', 'icon' => 'detailReportSum', 'title' => 'Sumárně'];
 		/*
 		$d[] = ['id' => 'balances', 'icon' => 'icon-check-square', 'title' => 'Zůstatky'];
 		$d[] = ['id' => 'cards1', 'icon' => 'icon-file-o', 'title' => 'Karty 1'];

@@ -5,7 +5,7 @@
       "bankorder": {
 				"id": "bankorder", "class": "e10doc.bankorder.libs.ViewBankOrders",
 				"details": {
-					"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10doc.bankorder.libs.ViewDetailBankOrder"}
+					"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.bankorder.libs.ViewDetailBankOrder"}
 				}
 			}
 		},

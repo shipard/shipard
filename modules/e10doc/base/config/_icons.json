@@ -82,5 +82,37 @@
         "fa5pro":"fa-podcast",
         "bsi":"bi-stickies-fill",
         "mdi":"podcasts"
+    },
+
+
+    "form/months":{
+        "fa5": "fa-list",
+		"fa5pro": "fa-list",
+		"bsi": "bi-list-ul",
+		"mdi": "list"
+    },
+    "form/account":{
+        "fa5":"fa-university",
+        "fa5pro":"fa-university",
+        "bsi":"bi-bank",
+        "mdi":"account_balance"
+    },
+    "form/eBanking":{
+        "fa5": "fa-plug",
+		"fa5pro": "fa-outlet",
+		"bsi": "bi-outlet",
+		"mdi": "outlet"
+    },
+    "form/warehouse":{
+        "fa5":"fa-cubes",
+        "fa5pro":"fa-cubes",
+        "bsi":"bi-shop-window",
+        "mdi":"inventory_2"
+    },
+    "form/detail":{
+        "fa5": "fa-file",
+		"fa5pro": "fa-file",
+		"bsi": "bi-file-earmark",
+		"mdi": "insert_drive_file"
     }
 }

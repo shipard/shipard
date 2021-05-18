@@ -271,9 +271,9 @@ class ReportStatement extends \e10doc\core\libs\reports\GlobalReport
 
 	public function subReportsList ()
 	{
-		$d[] = ['id' => 'overview', 'icon' => 'icon-file-text', 'title' => 'Analyticky'];
-		$d[] = ['id' => 'report', 'icon' => 'icon-file', 'title' => 'Výkaz'];
-		$d[] = ['id' => 'reportExplain', 'icon' => 'icon-search-plus', 'title' => 'Rozbor'];
+		$d[] = ['id' => 'overview', 'icon' => 'detailReportAnalytic', 'title' => 'Analyticky'];
+		$d[] = ['id' => 'report', 'icon' => 'detailReportStatement', 'title' => 'Výkaz'];
+		$d[] = ['id' => 'reportExplain', 'icon' => 'detailReportAnalysis', 'title' => 'Rozbor'];
 		return $d;
 	}
 }

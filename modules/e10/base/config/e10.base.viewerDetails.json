@@ -1,4 +1,4 @@
 {
-	"z_dochistory": {"title": "Historie", "icon": "icon-history", "type": "detail",
+	"z_dochistory": {"title": "Historie", "icon": "system/detailHistory", "type": "detail",
 										"class": "e10.base.ViewDetailDocHistory", "order":  3000000}
 }

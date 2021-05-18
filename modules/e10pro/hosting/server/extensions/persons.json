@@ -5,7 +5,7 @@
 			"hostingUsers": {
 				"id": "hostingUsers", "class": "e10pro.hosting.server.ViewerHostingUsers", "title": "Uživatelé",
 				"details": {
-					"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "order":  0, "class": "e10.persons.ViewDetailPersons"}
+					"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "e10.persons.ViewDetailPersons"}
 				}
 			}
 		}

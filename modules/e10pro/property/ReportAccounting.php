@@ -426,10 +426,10 @@ class ReportAccounting extends \e10pro\property\ReportDepreciations
 
 	public function subReportsList ()
 	{
-		$d[] = ['id' => 'sum', 'icon' => 'icon-list', 'title' => 'Sumárně'];
-		$d[] = ['id' => 'deps', 'icon' => 'icon-shield', 'title' => 'Odpisy'];
-		$d[] = ['id' => 'increase', 'icon' => 'icon-plus-square', 'title' => 'Přírustky'];
-		$d[] = ['id' => 'decrease', 'icon' => 'icon-minus-square', 'title' => 'Úbytky'];
+		$d[] = ['id' => 'sum', 'icon' => 'detailReportSum', 'title' => 'Sumárně'];
+		$d[] = ['id' => 'deps', 'icon' => 'detailReportTaxDepreciations', 'title' => 'Odpisy'];
+		$d[] = ['id' => 'increase', 'icon' => 'detailReportIncrements', 'title' => 'Přírustky'];
+		$d[] = ['id' => 'decrease', 'icon' => 'detailReportDepletions', 'title' => 'Úbytky'];
 		return $d;
 	}
 

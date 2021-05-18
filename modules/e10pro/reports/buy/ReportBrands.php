@@ -416,9 +416,9 @@ class ReportBrands extends \e10doc\core\libs\reports\GlobalReport
 
 	public function subReportsList ()
 	{
-		$d[] = array ('id' => 'sum', 'icon' => 'icon-plus-square', 'title' => 'Sumárně');
-		$d[] = array ('id' => 'types', 'icon' => 'icon-archive', 'title' => 'Typy');
-		$d[] = array ('id' => 'items', 'icon' => 'e10-witems-items', 'title' => 'Položky');
+		$d[] = array ('id' => 'sum', 'icon' => 'detailReportSum', 'title' => 'Sumárně');
+		$d[] = array ('id' => 'types', 'icon' => 'detailReportTypes', 'title' => 'Typy');
+		$d[] = array ('id' => 'items', 'icon' => 'detailReportItems', 'title' => 'Položky');
 		return $d;
 	}
 }

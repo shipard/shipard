@@ -6,7 +6,7 @@
   ],
   "views": [
     {"id": "default", "class": "e10.base.ViewClsfGroups",
-			"details": {"default": {"title": "Štítky", "icon": "x-tag", "type": "detail", "class": "e10.base.ViewDetailClsfGroups"}}
+			"details": {"default": {"title": "Štítky", "icon": "detailTags", "type": "detail", "class": "e10.base.ViewDetailClsfGroups"}}
 		}
   ],
   "forms": [

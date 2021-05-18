@@ -42,8 +42,8 @@
   "views": [
     {"id": "default", "class": "e10.web.ViewPages",
 			"details": {
-				"preview": {"title": "Náhled", "icon": "icon-eye", "type": "detail", "class": "e10.web.ViewDetailPagePreview", "order": 1000},
-				"text": {"title": "Text", "icon": "icon-pencil", "type": "detail", "class": "e10.web.ViewDetailPageText", "order": 2000}
+				"preview": {"title": "Náhled", "icon": "system/detailOverview", "type": "detail", "class": "e10.web.ViewDetailPagePreview", "order": 1000},
+				"text": {"title": "Text", "icon": "detailText", "type": "detail", "class": "e10.web.ViewDetailPageText", "order": 2000}
 			}
 		}
   ],

@@ -22,7 +22,7 @@
 	"views": [
 		{"id": "default", "class": "e10pro.hosting.server.ViewPartners",
 			"details": {
-				"overview": {"title": "Detail", "icon": "icon-file-o", "type": "detail", "class": "e10pro.hosting.server.ViewDetailPartner", "order": 10},
+				"overview": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.hosting.server.ViewDetailPartner", "order": 10},
 				"persons": {"title": "Osoby", "icon": "icon-user", "type": "detail", "class": "e10pro.hosting.server.ViewDetailPartnerPersons", "order": 20}
 			}
 		}

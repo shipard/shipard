@@ -29,7 +29,7 @@
 		"default": {
 			"id": "default", "class": "services.money.ViewExchangeRatesLists",
 			"details": {
-				"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "order":  0, "class": "services.money.ViewDetailExchangeRatesList"}
+				"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "services.money.ViewDetailExchangeRatesList"}
 			}
 		}
 	},

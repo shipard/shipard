@@ -28,12 +28,12 @@ class VatReturnReport extends \e10doc\taxes\TaxReportReport
 	public function subReportsList ()
 	{
 		$d[] = ['id' => 'sum', 'icontxt' => '∑', 'title' => 'Sumárně'];
-		$d[] = ['id' => 'out', 'icon' => 'icon-arrow-circle-up', 'title' => 'Výstup'];
-		$d[] = ['id' => 'in', 'icon' => 'icon-arrow-circle-down', 'title' => 'Vstup'];
-		$d[] = ['id' => 'revCharge', 'icon' => 'icon-share', 'title' => 'PDP'];
-		$d[] = ['id' => 'preview', 'icon' => 'icon-file', 'title' => 'Opis'];
-		$d[] = ['id' => 'errors', 'icon' => 'icon-exclamation-triangle', 'title' => 'Problémy'];
-		$d[] = ['id' => 'filings', 'icon' => 'icon-random', 'title' => 'Rozdíly'];
+		$d[] = ['id' => 'out', 'icon' => 'detailReportOutputCsReport', 'title' => 'Výstup'];
+		$d[] = ['id' => 'in', 'icon' => 'detailReportInputCsReport', 'title' => 'Vstup'];
+		$d[] = ['id' => 'revCharge', 'icon' => 'detailReportPDP', 'title' => 'PDP'];
+		$d[] = ['id' => 'preview', 'icon' => 'detailReportTranscript', 'title' => 'Opis'];
+		$d[] = ['id' => 'errors', 'icon' => 'detailReportProblems', 'title' => 'Problémy'];
+		$d[] = ['id' => 'filings', 'icon' => 'detailReportDifferences', 'title' => 'Rozdíly'];
 
 		return $d;
 	}

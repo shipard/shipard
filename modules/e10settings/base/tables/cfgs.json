@@ -15,7 +15,7 @@
 		{
 			"id": "default", "class": "e10settings.base.ViewCfgs",
 			"details": {
-				"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "order":  0, "class": "e10settings.base.ViewDetailCfg"}
+				"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "e10settings.base.ViewDetailCfg"}
 			}
 		}
 	],

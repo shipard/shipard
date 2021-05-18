@@ -21,7 +21,7 @@
 	"views": [
 		{"id": "default", "class": "mac.lan.ViewWlans",
 			"details": {
-				"preview": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewDetailWlan"}
+				"preview": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.lan.ViewDetailWlan"}
 			}
 		}
 	],

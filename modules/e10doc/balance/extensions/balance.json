@@ -4,13 +4,13 @@
 		"views": {
 			"default": {
 				"details": {
-					"balances": {"title": "Saldo", "icon": "icon-star-o", "type": "detail", "order":  50000, "class": "e10doc.balance.ViewDetailPersonsBalances"}
+					"balances": {"title": "Saldo", "icon": "system/detailBalance", "type": "detail", "order":  50000, "class": "e10doc.balance.ViewDetailPersonsBalances"}
 				}
 			},
 			"defaulters": {
 				"id": "defaulters", "class": "e10doc.balance.ViewPersonsDefaulters",
 				"details": {
-					"defaulter": {"title": "Detail", "icon": "icon-file", "type": "detail", "order":  0, "class": "e10doc.balance.ViewDetailPersonDefaulter"}
+					"defaulter": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "e10doc.balance.ViewDetailPersonDefaulter"}
 				}
 			}
 		}

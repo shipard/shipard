@@ -16,8 +16,8 @@
 		},
 		"docs": {
 			"smallItems": [
-				{"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "default", "icon": "e10-persons-persons", "order": 100000},
-				{"t1": "Položky", "object": "viewer", "table": "e10.witems.items", "viewer": "default", "icon": "e10-witems-items", "order": 200000}
+				{"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "default", "order": 100000},
+				{"t1": "Položky", "object": "viewer", "table": "e10.witems.items", "viewer": "default", "order": 200000}
 			]
 		},
 		"reports": {

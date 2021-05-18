@@ -7,7 +7,7 @@
 				"id": "swsrv", "class": "services.sw.libs.ViewSW",
 				"details":
 				{
-					"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "services.sw.libs.ViewDetailSW"},
+					"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "services.sw.libs.ViewDetailSW"},
 					"annotations": {"title": "Odkazy", "icon": "icon-external-link", "type": "detail", "class": "mac.sw.ViewDetailSWAnnotations", "order": 99000}
 				}
 			}

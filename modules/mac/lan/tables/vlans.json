@@ -18,7 +18,7 @@
 	"views": [
 		{"id": "default", "class": "mac.lan.ViewVlans",
 			"details": {
-				"preview": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewDetailVlan"}
+				"preview": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.lan.ViewDetailVlan"}
 			}
 		},
 		{"id": "comboVlans", "class": "mac.lan.ViewVlansComboVlans"},

@@ -357,10 +357,10 @@ class ReportSuppliers extends \e10doc\core\libs\reports\GlobalReport
 
 	public function subReportsList ()
 	{
-		$d[] = ['id' => 'all', 'icon' => 'icon-table', 'title' => 'Přehled'];
-		$d[] = ['id' => 'top', 'icon' => 'icon-trophy', 'title' => 'TOP'];
-		$d[] = ['id' => 'breakthroughs', 'icon' => 'icon-level-up', 'title' => 'Skokani'];
-		$d[] = ['id' => 'renegades', 'icon' => 'icon-level-down', 'title' => 'Odpadlíci'];
+		$d[] = ['id' => 'all', 'icon' => 'system/detailDetail', 'title' => 'Přehled'];
+		$d[] = ['id' => 'top', 'icon' => 'detailReportTop', 'title' => 'TOP'];
+		$d[] = ['id' => 'breakthroughs', 'icon' => 'detailReportBreakthroughs', 'title' => 'Skokani'];
+		$d[] = ['id' => 'renegades', 'icon' => 'detailReportRenegades', 'title' => 'Odpadlíci'];
 
 
 		return $d;

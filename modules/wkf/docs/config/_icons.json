@@ -10,5 +10,13 @@
 		"fa5pro": "fa-file",
 		"bsi": "bi-file-earmark",
 		"mdi": "insert_drive_file"
+	},
+
+
+    "form/folder":{
+		"fa5": "fa-folder",
+		"fa5pro": "fa-folder",
+		"bsi": "bi-folder",
+		"mdi": "folder"
 	}
 }

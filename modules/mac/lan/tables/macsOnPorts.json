@@ -12,7 +12,7 @@
 	"views": [
 		{"id": "default", "class": "mac.lan.ViewMacsOnPorts",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewDetailMacOnPorts"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.lan.ViewDetailMacOnPorts"}
 			}
 		}
 	],

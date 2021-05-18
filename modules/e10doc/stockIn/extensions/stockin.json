@@ -4,8 +4,8 @@
     "views": [
       {"id": "stockin", "class": "e10doc.stockIn.libs.ViewStockInDocs",
         "details": {
-          "detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10doc.stockIn.libs.ViewDetailStockIn", "order": 1000},
-          "accounting": {"title": "Účtování", "icon": "x-stamp", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
+          "detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.stockIn.libs.ViewDetailStockIn", "order": 1000},
+          "accounting": {"title": "Účtování", "icon": "system/detailAccounting", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
         }
       }
     ],

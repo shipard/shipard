@@ -29,10 +29,10 @@ class VatRSReport extends \e10doc\taxes\TaxReportReport
 
 	public function subReportsList ()
 	{
-		$d[] = ['id' => 'recStatement', 'icon' => 'icon-star', 'title' => 'Souhrnné hlášení'];
-		$d[] = ['id' => 'docs', 'icon' => 'icon-file-text-o', 'title' => 'Doklady'];
-		$d[] = ['id' => 'preview', 'icon' => 'icon-file', 'title' => 'Opis'];
-		$d[] = ['id' => 'errors', 'icon' => 'icon-exclamation-triangle', 'title' => 'Problémy'];
+		$d[] = ['id' => 'recStatement', 'icon' => 'detailReportSummaryReport', 'title' => 'Souhrnné hlášení'];
+		$d[] = ['id' => 'docs', 'icon' => 'detailReportDocuments', 'title' => 'Doklady'];
+		$d[] = ['id' => 'preview', 'icon' => 'detailReportTranscript', 'title' => 'Opis'];
+		$d[] = ['id' => 'errors', 'icon' => 'detailReportProblems', 'title' => 'Problémy'];
 
 		return $d;
 	}

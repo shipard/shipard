@@ -1218,9 +1218,9 @@ class reportBalanceReceivables extends reportBalance
 
 	public function subReportsList ()
 	{
-		$d[] = array ('id' => 'items', 'icon' => 'icon-list', 'title' => 'Položkově');
-		$d[] = array ('id' => 'analysis', 'icon' => 'icon-table', 'title' => 'Rozbor splatností');
-		$d[] = array ('id' => 'exchDiffs', 'icon' => 'icon-compress', 'title' => 'Kurzové rozdíly');
+		$d[] = array ('id' => 'items', 'icon' => 'detailBalanceByItems', 'title' => 'Položkově');
+		$d[] = array ('id' => 'analysis', 'icon' => 'detailBalanceDueAnalysis', 'title' => 'Rozbor splatností');
+		$d[] = array ('id' => 'exchDiffs', 'icon' => 'detailBalanceRatesDifferences', 'title' => 'Kurzové rozdíly');
 		return $d;
 	}
 }
@@ -1242,9 +1242,9 @@ class reportBalanceObligations extends reportBalance
 
 	public function subReportsList ()
 	{
-		$d[] = array ('id' => 'items', 'icon' => 'icon-list', 'title' => 'Položkově');
-		$d[] = array ('id' => 'analysis', 'icon' => 'icon-table', 'title' => 'Rozbor splatností');
-		$d[] = array ('id' => 'exchDiffs', 'icon' => 'icon-compress', 'title' => 'Kurzové rozdíly');
+		$d[] = array ('id' => 'items', 'icon' => 'detailBalanceByItems', 'title' => 'Položkově');
+		$d[] = array ('id' => 'analysis', 'icon' => 'detailBalanceDueAnalysis', 'title' => 'Rozbor splatností');
+		$d[] = array ('id' => 'exchDiffs', 'icon' => 'detailBalanceRatesDifferences', 'title' => 'Kurzové rozdíly');
 		return $d;
 	}
 
@@ -1291,8 +1291,8 @@ class reportBalanceDepositReceived extends reportBalance
 
 	public function subReportsList ()
 	{
-		$d[] = ['id' => 'items', 'icon' => 'icon-list', 'title' => 'Položkově'];
-		$d[] = ['id' => 'exchDiffs', 'icon' => 'icon-compress', 'title' => 'Kurzové rozdíly'];
+		$d[] = ['id' => 'items', 'icon' => 'detailBalanceByItems', 'title' => 'Položkově'];
+		$d[] = ['id' => 'exchDiffs', 'icon' => 'detailBalanceRatesDifferences', 'title' => 'Kurzové rozdíly'];
 		return $d;
 	}
 }
@@ -1312,8 +1312,8 @@ class reportBalanceAdvance extends reportBalance
 
 	public function subReportsList ()
 	{
-		$d[] = ['id' => 'items', 'icon' => 'icon-list', 'title' => 'Položkově'];
-		$d[] = ['id' => 'exchDiffs', 'icon' => 'icon-compress', 'title' => 'Kurzové rozdíly'];
+		$d[] = ['id' => 'items', 'icon' => 'detailBalanceByItems', 'title' => 'Položkově'];
+		$d[] = ['id' => 'exchDiffs', 'icon' => 'detailBalanceRatesDifferences', 'title' => 'Kurzové rozdíly'];
 		return $d;
 	}
 }
@@ -1333,8 +1333,8 @@ class reportBalanceCashInTransit extends reportBalance
 
 	public function subReportsList ()
 	{
-		$d[] = ['id' => 'items', 'icon' => 'icon-list', 'title' => 'Položkově'];
-		$d[] = ['id' => 'exchDiffs', 'icon' => 'icon-compress', 'title' => 'Kurzové rozdíly'];
+		$d[] = ['id' => 'items', 'icon' => 'detailBalanceByItems', 'title' => 'Položkově'];
+		$d[] = ['id' => 'exchDiffs', 'icon' => 'detailBalanceRatesDifferences', 'title' => 'Kurzové rozdíly'];
 		return $d;
 	}
 }

@@ -169,6 +169,12 @@
 		"bsi":"bi-search",
 		"mdi":"search"
 	},
+	"iconBalance":{
+		"fa5":"fa-star",
+		"fa5pro":"fa-star",
+		"bsi":"bi-star",
+		"mdi":"grade"
+	},
 
 
 	"detailDetail":{
@@ -176,6 +182,12 @@
 		"fa5pro": "fa-file",
 		"bsi": "bi-file-earmark",
 		"mdi": "insert_drive_file"
+	},
+	"detailBalance":{
+		"fa5":"fa-star",
+		"fa5pro":"fa-star",
+		"bsi":"bi-star",
+		"mdi":"grade"
 	},
 	"detailAccounting":{
 		"fa5": "fa-stamp",
@@ -187,7 +199,7 @@
 		"fa5": "fa-paste",
 		"fa5pro": "fa-paste",
 		"bsi": "bi-clipboard",
-		"mdi": "note_alt"
+		"mdi": "text_snippet"
 	},
 	"detailHistory":{
 		"fa5": "fa-history",
@@ -220,16 +232,34 @@
         "mdi":"equalizer"
 	},
 	"detailUsage":{
-		"fa5":"fa-bars",
-        "fa5pro":"fa-bars",
+		"fa5":"fa-eye",
+        "fa5pro":"fa-eye",
         "bsi":"bi-binoculars-fillover",
         "mdi":"preview"
 	},
 	"detailRows":{
-		"fa5":"fa-binoculars",
-        "fa5pro":"fa-binoculars",
+		"fa5":"fa-bars",
+        "fa5pro":"fa-bars",
         "bsi":"bi-list",
         "mdi":"reorder"
+	},
+	"detailInfo":{
+		"fa5":"fa-info",
+        "fa5pro":"fa-info-square",
+        "bsi":"bi-info-square",
+        "mdi":"info"
+	},
+	"detailSettings":{
+		"fa5": "fa-wrench",
+		"fa5pro": "fa-wrench",
+		"bsi": "bi-wrench",
+		"mdi": "build_circle"
+	},
+	"detailOverview":{
+		"fa5": "fa-eye",
+		"fa5pro": "fa-eye",
+		"bsi": "bi-eye-fill",
+		"mdi": "visibility"
 	},
 
 
@@ -292,5 +322,48 @@
 		"fa5pro": "fa-question",
 		"bsi": "bi-question-lg",
 		"mdi": "help_outline"
+	},
+
+	"form/header":{
+		"fa5": "fa-edit",
+		"fa5pro": "fa-edit",
+		"bsi": "bi-pencil-square",
+		"mdi": "edit_note"
+	},
+	"form/rows":{
+		"fa5": "fa-list",
+		"fa5pro": "fa-list",
+		"bsi": "bi-list-ul",
+		"mdi": "list"
+	},
+	"form/attachments":{
+		"fa5": "fa-paperclip",
+		"fa5pro": "fa-paperclip",
+		"bsi": "bi-paperclip",
+		"mdi": "attach_file"
+	},
+	"form/settings":{
+		"fa5": "fa-wrench",
+		"fa5pro": "fa-wrench",
+		"bsi": "bi-wrench",
+		"mdi": "build_circle"
+	},
+	"form/externalNote":{
+		"fa5": "fa-edit",
+		"fa5pro": "fa-edit",
+		"bsi": "bi-pencil-square",
+		"mdi": "edit_note"
+	},
+	"form/sorting":{
+		"fa5":"fa-tag",
+        "fa5pro":"fa-tag",
+        "bsi":"bi-tag-fill",
+        "mdi":"local_offer"
+	},
+	"form/filter":{
+		"fa5": "fa-filter",
+		"fa5pro": "fa-filter",
+		"bsi": "bi-funnel",
+		"mdi": "filter_alt"
 	}
 }

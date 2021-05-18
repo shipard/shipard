@@ -1,5 +1,5 @@
 {
-  "id": "e10.witems.items", "sql": "e10_witems_items", "name": "Položky", "icon": "e10-witems-items",
+  "id": "e10.witems.items", "sql": "e10_witems_items", "name": "Položky",
   "columns": [
     {"id": "ndx", "name": "id", "type": "int_ai"},
     {"id": "fullName", "name": "Název", "type": "string", "len": 120},
@@ -56,20 +56,20 @@
   "views": {
     "default": {"id": "default", "class": "e10.witems.ViewItems", "help": "prirucka/4847",
 			"details": {
-				"default": {"title": "Přehled", "icon": "x-dashboard", "type": "detail", "class": "e10.witems.ViewDetailItems", "order": 1000},
-				"using": {"title": "Použití", "icon": "icon-binoculars", "type": "detail", "class": "e10.witems.ViewDetailUsing", "order": 8000}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10.witems.ViewDetailItems", "order": 1000},
+				"using": {"title": "Použití", "icon": "system/detailUsage", "type": "detail", "class": "e10.witems.ViewDetailUsing", "order": 8000}
 			}
 		},
 	  "combo": {"id": "combo", "class": "e10.witems.ViewItemsCombo"},
 	  "inCategory": {"id": "inCategory", "class": "e10.witems.ItemsInCategoryViewer",
 		  "details": {
-			  "default": {"title": "Přehled", "icon": "x-dashboard", "type": "detail", "class": "e10.witems.ViewDetailItems", "order": 1000}
+			  "default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10.witems.ViewDetailItems", "order": 1000}
 		  }
 	  },
 		"byCategories": {"id": "byCategories", "class": "e10.witems.libs.ViewerItemsByCategories", "help": "prirucka/4847",
 			"details": {
-				"default": {"title": "Přehled", "icon": "x-dashboard", "type": "detail", "class": "e10.witems.ViewDetailItems", "order": 1000},
-				"using": {"title": "Použití", "icon": "icon-binoculars", "type": "detail", "class": "e10.witems.ViewDetailUsing", "order": 8000},
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10.witems.ViewDetailItems", "order": 1000},
+				"using": {"title": "Použití", "icon": "system/detailUsage", "type": "detail", "class": "e10.witems.ViewDetailUsing", "order": 8000},
 				"annotations": {"title": "Odkazy", "icon": "icon-external-link", "type": "detail", "class": "e10.witems.ViewDetailAnnotations", "order": 99000}
 			}
 		}

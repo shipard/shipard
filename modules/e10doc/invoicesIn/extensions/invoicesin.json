@@ -5,7 +5,7 @@
 			"invoicesIn": {
 				"id": "invoicesIn", "class": "e10doc.invoicesIn.libs.ViewInvoicesIn", "help": "prirucka/4861",
 				"details": {
-					"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10doc.invoicesIn.libs.ViewDetailInvoiceIn", "order": 1000}
+					"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.invoicesIn.libs.ViewDetailInvoiceIn", "order": 1000}
 				}
 			}
 		},

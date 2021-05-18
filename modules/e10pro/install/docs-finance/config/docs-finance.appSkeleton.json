@@ -39,7 +39,7 @@
 		"reports": {
 			"items": {
 				"finance": {"t1": "Finance", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-finance", "icon": "e10doc-finance/finance", "order": 500000},
-				"balance": {"t1": "Saldo", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-balance", "icon": "iconBalance", "order": 400000}
+				"balance": {"t1": "Saldo", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-balance", "icon": "system/iconBalance", "order": 400000}
 			}
 		}
 	},

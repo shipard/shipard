@@ -4,8 +4,8 @@
     "views": [
       {"id": "stockinst", "class": "e10doc.stockInitStates.libs.ViewStockInitStates", 
 				"details": {
-					"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10doc.stockInitStates.libs.ViewDetailStockInitState"},
-					"rows": {"title": "Řádky", "icon": "icon-file", "type": "detail", "class": "e10doc.stockInitStates.libs.ViewDetailStockInitStateRows"}
+					"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.stockInitStates.libs.ViewDetailStockInitState"},
+					"rows": {"title": "Řádky", "icon": "system/detailRows", "type": "detail", "class": "e10doc.stockInitStates.libs.ViewDetailStockInitStateRows"}
 				},
 			 "addWizard": {"class": "e10doc.stockInitStates.libs.AddWizard"}
 			}

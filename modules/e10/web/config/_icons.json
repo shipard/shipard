@@ -64,5 +64,93 @@
         "fa5pro":"fa-id-badge",
         "bsi":"bi-person-badge-fill",
         "mdi":"badge"
+    },
+
+
+    "form/text":{
+        "fa5": "fa-edit",
+		"fa5pro": "fa-edit",
+		"bsi": "bi-pencil-square",
+		"mdi": "edit_note"
+    },
+    "form/perex":{
+        "fa5": "fa-edit",
+		"fa5pro": "fa-edit",
+		"bsi": "bi-pencil-square",
+		"mdi": "edit_note"
+    },
+    "form/leftColumn":{
+        "fa5": "fa-columns",
+		"fa5pro": "fa-columns",
+		"bsi": "bi-layout-sidebar-inset",
+		"mdi": "view_week"
+    },
+    "form/rightColumn":{
+        "fa5": "fa-columns",
+		"fa5pro": "fa-columns",
+		"bsi": "bi-layout-sidebar-inset-reverse",
+		"mdi": "view_week"
+    },
+    "form/decorations":{
+        "fa5":"fa-paragraph",
+        "fa5pro":"fa-paragraph",
+        "bsi":"bi-paragraph",
+        "mdi":"view_sidebar"
+    },
+	"form/code":{
+		"fa5": "fa-edit",
+		"fa5pro": "fa-edit",
+		"bsi": "bi-pencil-square",
+		"mdi": "edit_note"
+	},
+	"form/cssStyle":{
+		"fa5": "fa-paint-brush",
+		"fa5pro": "fa-paint-brush",
+		"bsi": "bi-brush",
+		"mdi": "brush"
+	},
+	"form/stylesExtension":{
+		"fa5":"fa-code",
+        "fa5pro":"fa-code",
+        "bsi":"bi-code-slash",
+        "mdi":"code"
+	},
+	"form/billboard":{
+		"fa5":"fa-comment-alt",
+        "fa5pro":"fa-comment-alt",
+        "bsi":"bi-chat-square-text",
+        "mdi":"rate_review"
+	},
+	"form/print":{
+		"fa5": "fa-print",
+		"fa5pro": "fa-print",
+		"bsi": "bi-printer",
+		"mdi": "print"
+	},
+
+
+    "detailText":{
+        "fa5": "fa-pencil-alt",
+		"fa5pro": "fa-pencil-alt",
+		"bsi": "bi-pencil",
+		"mdi": "edit"
+    },
+    "detailContent":{
+        "fa5": "fa-file-alt",
+		"fa5pro": "fa-file-alt",
+		"bsi": "bi-file-earmark-text-fill",
+		"mdi": "description"
+    },
+    "detailCode":{
+        "fa5":"fa-code",
+        "fa5pro":"fa-code",
+        "bsi":"bi-code-slash",
+        "mdi":"code"
+    },
+    "detailTemplate":{
+        "fa5":"fa-file-code",
+        "fa5pro":"fa-file-code",
+        "bsi":"bi-file-earmark-code",
+        "mdi":"integration_instructions"
     }
 }

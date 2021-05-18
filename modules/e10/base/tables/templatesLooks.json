@@ -25,7 +25,7 @@
 			"id": "default",
 			"class": "e10.base.ViewTemplatesLooks",
 			"details": {
-				"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10.base.ViewDetailTemplateLook"},
+				"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10.base.ViewDetailTemplateLook"},
 				"data": {"title": "Data", "icon": "icon-code", "type": "detail", "class": "e10.base.ViewDetailTemplateLookData"}
 			}
 		},
@@ -33,7 +33,7 @@
 			"id": "web",
 			"class": "e10.base.ViewTemplatesLooksWeb",
 			"details": {
-				"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10.base.ViewDetailTemplateLook"},
+				"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10.base.ViewDetailTemplateLook"},
 				"data": {"title": "Data", "icon": "icon-code", "type": "detail", "class": "e10.base.ViewDetailTemplateLookData"}
 			}
 		},

@@ -17,9 +17,9 @@
 	"views": [
 		{"id": "default", "class": "e10.web.ViewBlocks",
 			"details": {
-				"items": {"title": "Obsah", "icon": "icon-eye", "type": "detail", "class": "e10.web.ViewDetailBlockItems", "order": 1000},
-				"code": {"title": "Kód", "icon": "icon-code", "type": "detail", "class": "e10.web.ViewDetailBlockCode", "order": 2000},
-				"template": {"title": "Šablona", "icon": "icon-file-code-o", "type": "detail", "class": "e10.web.ViewDetailBlockTemplate", "order": 3000}
+				"items": {"title": "Obsah", "icon": "detailContent", "type": "detail", "class": "e10.web.ViewDetailBlockItems", "order": 1000},
+				"code": {"title": "Kód", "icon": "detailCode", "type": "detail", "class": "e10.web.ViewDetailBlockCode", "order": 2000},
+				"template": {"title": "Šablona", "icon": "detailTemplate", "type": "detail", "class": "e10.web.ViewDetailBlockTemplate", "order": 3000}
 			}
 		}
 	],

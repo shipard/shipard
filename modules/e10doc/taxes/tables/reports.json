@@ -38,7 +38,7 @@
 		{
 			"id": "default", "class": "e10doc.taxes.ViewReports",
 			"details": {
-				"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "order":  0, "class": "e10doc.taxes.ViewDetailReport"},
+				"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "e10doc.taxes.ViewDetailReport"},
 				"preview": {"title": "Náhled", "icon": "icon-eye", "type": "detail", "order":  1000, "class": "e10doc.taxes.ViewDetailReportPreview"},
 				"errors": {"title": "Problémy", "icon": "icon-exclamation-triangle", "type": "detail", "order":  2000, "class": "e10doc.taxes.ViewDetailReportErrors"}
 			}

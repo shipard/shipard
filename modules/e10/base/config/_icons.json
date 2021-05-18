@@ -76,5 +76,33 @@
         "fa5pro":"fa-info-square",
         "bsi":"bi-info-square",
         "mdi":"info"
-    }
+    },
+
+
+    "form/place":{
+        "fa5": "fa-edit",
+		"fa5pro": "fa-edit",
+		"bsi": "bi-pencil-square",
+		"mdi": "edit_note"
+    },
+    "form/address":{
+        "fa5": "fa-location-arrow",
+		"fa5pro": "fa-location-arrow",
+		"bsi": "bi-geo-alt-fill",
+		"mdi": "near_me"
+    },
+
+
+	"detailProperty":{
+		"fa5": "fa-list",
+		"fa5pro": "fa-list",
+		"bsi": "bi-list-ul",
+		"mdi": "list"
+	},
+    "detailTags":{
+		"fa5":"fa-tag",
+        "fa5pro":"fa-tag",
+        "bsi":"bi-tag-fill",
+        "mdi":"local_offer"
+	}
 }

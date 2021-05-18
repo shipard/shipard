@@ -4,7 +4,7 @@
 		"views": {
 			"default": {
 				"details": {
-					"summary": {"title": "Rozbor", "icon": "icon-search-plus", "type": "detail", "class": "e10pro.reports.persons.ViewDetailPersonSummary", "order": 6000}
+					"summary": {"title": "Rozbor", "icon": "system/detailAnalysis", "type": "detail", "class": "e10pro.reports.persons.ViewDetailPersonSummary", "order": 6000}
 				}
 			}
 		}

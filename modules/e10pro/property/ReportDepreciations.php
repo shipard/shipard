@@ -1076,15 +1076,15 @@ class ReportDepreciations extends \e10doc\core\libs\reports\GlobalReport
 
 	public function subReportsList ()
 	{
-		$d[] = ['id' => 'sum', 'icon' => 'icon-list', 'title' => 'Sumárně'];
-		$d[] = ['id' => 'balances', 'icon' => 'icon-check-square', 'title' => 'Zůstatky'];
-		$d[] = ['id' => 'cards1', 'icon' => 'icon-file-o', 'title' => 'Karty 1'];
-		$d[] = ['id' => 'cards2', 'icon' => 'icon-file-text-o', 'title' => 'Karty 2'];
-		$d[] = ['id' => 'cards3', 'icon' => 'icon-file-text', 'title' => 'Karty 3'];
-		$d[] = ['id' => 'dt', 'icon' => 'icon-shield', 'title' => 'Odložená daň'];
-		$d[] = ['id' => 'taxUsed', 'icon' => 'icon-shield', 'title' => 'Daňové odpisy'];
-		$d[] = ['id' => 'increase', 'icon' => 'icon-plus-square', 'title' => 'Přírustky'];
-		$d[] = ['id' => 'decrease', 'icon' => 'icon-minus-square', 'title' => 'Úbytky'];
+		$d[] = ['id' => 'sum', 'icon' => 'detailReportSum', 'title' => 'Sumárně'];
+		$d[] = ['id' => 'balances', 'icon' => 'detailReportAccountBalances', 'title' => 'Zůstatky'];
+		$d[] = ['id' => 'cards1', 'icon' => 'detailReportCards1', 'title' => 'Karty 1'];
+		$d[] = ['id' => 'cards2', 'icon' => 'detailReportCards2', 'title' => 'Karty 2'];
+		$d[] = ['id' => 'cards3', 'icon' => 'detailReportCards3', 'title' => 'Karty 3'];
+		$d[] = ['id' => 'dt', 'icon' => 'detailReportPostponedTax', 'title' => 'Odložená daň'];
+		$d[] = ['id' => 'taxUsed', 'icon' => 'detailReportTaxDepreciations', 'title' => 'Daňové odpisy'];
+		$d[] = ['id' => 'increase', 'icon' => 'detailReportIncrements', 'title' => 'Přírustky'];
+		$d[] = ['id' => 'decrease', 'icon' => 'detailReportDepletions', 'title' => 'Úbytky'];
 		return $d;
 	}
 

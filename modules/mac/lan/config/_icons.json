@@ -262,5 +262,13 @@
 		"fa5pro": "fa-dot-circle",
 		"bsi": "bi-record-circle-fill",
 		"mdi": "radio_button_checked"
+	},
+
+
+	"detailSW":{
+		"fa5": "fa-hourglass-half",
+		"fa5pro": "fa-hourglass-half",
+		"bsi": "bi-hourglass-split",
+		"mdi": "hourglass_empty"
 	}
 }

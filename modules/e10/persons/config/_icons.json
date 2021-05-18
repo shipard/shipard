@@ -40,5 +40,21 @@
         "fa5pro":"fa-key-skeleton",
         "bsi":"bi-key",
         "mdi":"vpn_key"
+	},
+
+
+	"form/reason":{
+		"fa5": "fa-edit",
+		"fa5pro": "fa-edit",
+		"bsi": "bi-pencil-square",
+		"mdi": "edit_note"
+	},
+
+
+	"detailRights":{
+		"fa5":"fa-sign-in-alt",
+        "fa5pro":"fa-sign-in-alt",
+        "bsi":"bi-box-arrow-in-right",
+        "mdi":"login"
 	}
 }

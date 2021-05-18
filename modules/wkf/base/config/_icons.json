@@ -52,5 +52,19 @@
 		"fa5pro": "fa-external-link-alt",
 		"bsi": "bi-link-45deg",
 		"mdi": "link"
+	},
+
+
+	"form/sections":{
+		"fa5": "fa-columns",
+		"fa5pro": "fa-columns",
+		"bsi": "bi-layout-three-columns",
+		"mdi": "view_week"
+	},
+	"form/theme":{
+		"fa5": "fa-comment",
+		"fa5pro": "fa-comment",
+		"bsi": "bi-chat",
+		"mdi": "mode_comment"
 	}
 }

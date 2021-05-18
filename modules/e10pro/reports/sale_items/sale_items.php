@@ -266,9 +266,9 @@ class reportItems extends \e10doc\core\libs\reports\GlobalReport
 
 	public function subReportsList ()
 	{
-		$d[] = ['id' => 'sum', 'icon' => 'icon-plus-square', 'title' => 'Přehled'];
-		$d[] = ['id' => 'items', 'icon' => 'e10-witems-items', 'title' => 'Položky'];
-		$d[] = ['id' => 'types', 'icon' => 'icon-archive', 'title' => 'Typy'];
+		$d[] = ['id' => 'sum', 'icon' => 'system/detailDetail', 'title' => 'Přehled'];
+		$d[] = ['id' => 'items', 'icon' => 'detailReportItems', 'title' => 'Položky'];
+		$d[] = ['id' => 'types', 'icon' => 'detailReportTypes', 'title' => 'Typy'];
 		return $d;
 	}
 }

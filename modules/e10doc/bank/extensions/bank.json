@@ -6,7 +6,7 @@
 				"id": "bank", "class": "e10doc.bank.libs.ViewBankDocs", "help": "prirucka/76",
 				"addWizard": {"class": "e10doc.bank.libs.AddWizard"},
 				"details": {
-					"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10doc.bank.libs.ViewDetailBankDoc"}
+					"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.bank.libs.ViewDetailBankDoc"}
 				},
 				"tools": [
 					{"class": "lib.tools.viewer.bank.ConfirmNewWizard", "icon": "icon-star", "text": "Potvrdit nové výpisy"},

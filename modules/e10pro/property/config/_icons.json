@@ -76,5 +76,13 @@
 		"fa5pro": "fa-university",
 		"bsi": "bi-bank2",
 		"mdi": "account_balance"
+	},
+
+
+	"form/accessories":{
+		"fa5": "fa-headphones-alt",
+		"fa5pro": "fa-phone-laptop",
+		"bsi": "bi-headset",
+		"mdi": "devices"
 	}
 }

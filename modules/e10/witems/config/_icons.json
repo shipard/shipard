@@ -34,5 +34,30 @@
         "fa5pro":"fa-exchange-alt",
         "bsi":"bi-arrow-left-right",
         "mdi":"sync_alt"
+    },
+    "items/itemCategories":{
+        "fa5":"fa-tree",
+        "fa5pro":"fa-trees",
+        "bsi":"bi-tree-fill",
+        "mdi":"add_shopping_cart"
+    },
+
+    "form/properties":{
+        "fa5": "fa-list",
+		"fa5pro": "fa-list",
+		"bsi": "bi-list-ul",
+		"mdi": "list"
+    },
+    "form/suppliers":{
+        "fa5":"fa-industry",
+        "fa5pro":"fa-industry-alt",
+        "bsi":"bi-building",
+        "mdi":"business"
+    },
+    "form/relatedItems":{
+        "fa5":"fa-exchange-alt",
+        "fa5pro":"fa-exchange-alt",
+        "bsi":"bi-arrow-left-right",
+        "mdi":"sync_alt"
     }
 }

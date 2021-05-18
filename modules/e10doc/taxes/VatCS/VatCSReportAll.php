@@ -797,9 +797,9 @@ class VatCSReportAll extends \e10doc\taxes\TaxReportReport
 		$d[] = ['id' => 'A', 'icontxt' => 'Ⓐ', 'title' => 'Výstup'];
 		$d[] = ['id' => 'B', 'icontxt' => 'Ⓑ', 'title' => 'Vstup'];
 		$d[] = ['id' => 'C', 'icontxt' => 'Ⓒ', 'title' => 'Kontrolní řádky'];
-		$d[] = ['id' => 'preview', 'icon' => 'icon-file', 'title' => 'Opis'];
-		$d[] = ['id' => 'errors', 'icon' => 'icon-exclamation-triangle', 'title' => 'Problémy'];
-		$d[] = ['id' => 'filings', 'icon' => 'icon-random', 'title' => 'Rozdíly'];
+		$d[] = ['id' => 'preview', 'icon' => 'detailReportTranscript', 'title' => 'Opis'];
+		$d[] = ['id' => 'errors', 'icon' => 'detailReportProblems', 'title' => 'Problémy'];
+		$d[] = ['id' => 'filings', 'icon' => 'detailReportDifferences', 'title' => 'Rozdíly'];
 		//$d[] = ['id' => 'ALL', 'icontxt' => 'X', 'title' => 'Vše'];
 
 		return $d;

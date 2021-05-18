@@ -1,5 +1,5 @@
 {
-  "id": "e10.witems.itemcategories", "sql": "e10_witems_itemcategories", "name": "Kategorie položek", "icon": "icon-tree",
+  "id": "e10.witems.itemcategories", "sql": "e10_witems_itemcategories", "name": "Kategorie položek", "icon": "items/itemCategories",
   "columns": [
     {"id": "ndx", "name": "ndx", "type": "int_ai"},
     {"id": "fullName", "name": "Název", "type": "string", "len": 120},

@@ -48,14 +48,14 @@
 		"default": {
 			"id": "default", "class": "e10.persons.ViewPersons", "help": "prirucka/4845",
 			"details": {
-				"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "order":  0, "class": "e10.persons.ViewDetailPersons"}
+				"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "e10.persons.ViewDetailPersons"}
 			}
 		},
 		"users": {
 			"id": "users", "class": "e10.persons.ViewUsers",
 			"details": {
-				"rights": {"title": "Práva", "icon": "icon-sign-in", "type": "detail", "order":  0, "class": "e10.persons.ViewDetailPersonsRights"},
-				"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "order":  0, "class": "e10.persons.ViewDetailPersons"}
+				"rights": {"title": "Práva", "icon": "detailRights", "type": "detail", "order":  0, "class": "e10.persons.ViewDetailPersonsRights"},
+				"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "e10.persons.ViewDetailPersons"}
 			}
 		}
 	},

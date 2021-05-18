@@ -279,7 +279,7 @@ class reportExpenses extends \e10doc\core\libs\reports\GlobalReport
 
 	public function subReportsList ()
 	{
-		$d[] = array ('id' => 'sum', 'icon' => 'icon-plus-square', 'title' => 'Sumárně');
+		$d[] = array ('id' => 'sum', 'icon' => 'detailReportSum', 'title' => 'Sumárně');
 		return $d;
 	}
 }

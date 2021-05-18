@@ -144,8 +144,8 @@ class ReportCashFlow extends \e10doc\core\libs\reports\GlobalReport
 
 	public function subReportsList ()
 	{
-		$d[] = ['id' => 'report', 'icon' => 'icon-file', 'title' => 'Výkaz'];
-		$d[] = ['id' => 'reportExplain', 'icon' => 'icon-search-plus', 'title' => 'Rozbor'];
+		$d[] = ['id' => 'report', 'icon' => 'detailReportStatement', 'title' => 'Výkaz'];
+		$d[] = ['id' => 'reportExplain', 'icon' => 'detailReportAnalysis', 'title' => 'Rozbor'];
 		return $d;
 	}
 }

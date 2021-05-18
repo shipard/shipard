@@ -16,7 +16,7 @@
 	"views": [
 		{"id": "default", "class": "mac.lan.ViewDeviceTypes",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewDetailDeviceType"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.lan.ViewDetailDeviceType"}
 			}
 		}
 	],

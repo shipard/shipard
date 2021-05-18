@@ -10,5 +10,19 @@
 		"fa5pro": "fa-cogs",
 		"bsi": "bi-gear-fill",
 		"mdi": "settings"
+	},
+
+
+	"form/actions":{
+		"fa5": "fa-cogs",
+		"fa5pro": "fa-cogs",
+		"bsi": "bi-gear-fill",
+		"mdi": "settings"
+	},
+	"form/data":{
+		"fa5": "fa-th-list",
+		"fa5pro": "fa-th-list",
+		"bsi": "bi-list-ul",
+		"mdi": "list"
 	}
 }

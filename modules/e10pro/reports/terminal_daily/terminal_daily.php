@@ -346,8 +346,8 @@ class reportDaily extends \e10doc\core\libs\reports\GlobalReport
 
 	public function subReportsList ()
 	{
-		$d[] = array ('id' => 'cashboxes', 'icon' => 'icon-money', 'title' => 'Pokladny');
-		$d[] = array ('id' => 'authors', 'icon' => 'x-user', 'title' => 'Uživatelé');
+		$d[] = array ('id' => 'cashboxes', 'icon' => 'detailReportCashRegisters', 'title' => 'Pokladny');
+		$d[] = array ('id' => 'authors', 'icon' => 'detailReportUsers', 'title' => 'Uživatelé');
 		return $d;
 	}
 }

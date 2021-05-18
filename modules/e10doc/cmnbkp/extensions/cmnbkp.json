@@ -8,7 +8,7 @@
 					{"class": "e10doc.cmnbkp.VATReturnWizard", "icon": "icon-legal", "text": "Přiznání DPH", "place": "addButton"}
 				],
 				"details": {
-					"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10doc.cmnbkp.libs.ViewDetailCmnBkpDoc", "order": 1000}
+					"detail": {"title": "Přehled", "icon": "icon-file", "type": "detail", "class": "e10doc.cmnbkp.libs.ViewDetailCmnBkpDoc", "order": 1000}
 				}
 			},
 			"cmnbkpocp": {
@@ -24,7 +24,7 @@
 						"place": "addButton"}
 				],
 				"details": {
-					"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10doc.cmnbkp.libs.ViewDetailCmnBkpDoc", "order": 1000}
+					"detail": {"title": "Přehled", "icon": "icon-file", "type": "detail", "class": "e10doc.cmnbkp.libs.ViewDetailCmnBkpDoc", "order": 1000}
 				}
 			}
 		},

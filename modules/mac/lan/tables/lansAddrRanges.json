@@ -23,7 +23,7 @@
 	"views": [
 		{"id": "default", "class": "mac.lan.ViewLansAddrRanges",
 			"details": {
-				"preview": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewDetailLansAddrRange"}
+				"preview": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.lan.ViewDetailLansAddrRange"}
 			}
 		}
 	],

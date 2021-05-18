@@ -188,9 +188,9 @@ class reportCustomers extends \e10doc\core\libs\reports\GlobalReport
 
 	public function subReportsList ()
 	{
-		$d[] = ['id' => 'abc', 'icon' => 'icon-sort-alpha-asc', 'title' => 'Abecedně'];
-		$d[] = ['id' => 'amount', 'icon' => 'icon-sort-amount-desc', 'title' => 'Finančně'];
-		$d[] = ['id' => 'top', 'icon' => 'icon-trophy', 'title' => 'TOP 10'];
+		$d[] = ['id' => 'abc', 'icon' => 'detailReportAlphabetically', 'title' => 'Abecedně'];
+		$d[] = ['id' => 'amount', 'icon' => 'detailReportFinancially', 'title' => 'Finančně'];
+		$d[] = ['id' => 'top', 'icon' => 'detailReportTop', 'title' => 'TOP 10'];
 		return $d;
 	}
 

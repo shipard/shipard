@@ -9,7 +9,7 @@
 			"mnf": {
 				"id": "mnf", "class": "e10doc.mnf.ViewMnfDocs",
 				"details": {
-					"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "class": "e10doc.mnf.ViewDetailMnfDocs", "order": 1000}
+					"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.mnf.ViewDetailMnfDocs", "order": 1000}
 				}
 			}
 		},

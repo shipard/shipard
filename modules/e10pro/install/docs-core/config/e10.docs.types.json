@@ -1,6 +1,6 @@
 {
     "invno": {
-				"fullName": "Faktura vydaná běžná", "shortName": "Vydaná faktura", "icon": "e10-docs-invoices-out", "pluralName": "Vydané faktury",
+				"fullName": "Faktura vydaná běžná", "shortName": "Vydaná faktura", "icon": "docType/invoicesOut", "pluralName": "Vydané faktury",
 	      "shortcut": "FVB", "classId": "invoicesOut", "docIdCode": "1",
 				"taxDir": 1, "tradeDir": 1, "docDir": 2, "invDirection": -1,
         "useTax": 1, "taxDocument": 1, "acc": 1, "timeline": "out", "timelineSum": "def",
@@ -8,14 +8,14 @@
 				"outboxDocKind": "outbox-doctype-invno", "outboxSystemKind": 121, "outboxSystemSection": 121
 		},
     "invni": {
-				"fullName": "Faktura přijatá běžná", "shortName": "Přijatá faktura", "icon": "e10-docs-invoices-in", "pluralName": "Přijaté faktury",
+				"fullName": "Faktura přijatá běžná", "shortName": "Přijatá faktura", "icon": "docType/invoicesIn", "pluralName": "Přijaté faktury",
 	      "shortcut": "FPB", "classId": "invoicesIn", "docIdCode": "2",
 				"taxDir": 0, "tradeDir": 2, "docDir": 1,
         "useTax": 1, "taxDocument": 1, "acc": 1, "timeline": "in", "timelineSum": "def", "docNumbers": 1,
 				"primaryBalance": "2000"
 		},
     "cash": {
-				"fullName": "Pokladní doklad", "shortName": "Pokladna", "icon": "e10-docs-cash", "pluralName": "Pokladní doklady",
+				"fullName": "Pokladní doklad", "shortName": "Pokladna", "icon": "docType/cashReg", "pluralName": "Pokladní doklady",
 	      "shortcut": "POK", "classId": "cash", "docIdCode": "31",
 				"taxDir": 0, "tradeDir": 3, "docDir": 0,
         "useTax": 1, "taxDocument": 1, "acc": 1, "timeline": "?", "timelineSum": "def",
@@ -24,7 +24,7 @@
 				"fullName": "Bankovní doklad", "shortName": "Banka", "shortcut": "BNK", "pluralName": "Bankovní doklady",
 	      "classId": "bank", "docIdCode": "32", "docNumber": "%D%A%y%3",
 				"taxDir": 0, "tradeDir": 0, "docDir": 0, "useTax": 0, "acc": 1,
-        "icon": "e10-docs-bank", "headerStyle": "bank", "detailStyle": "bank", "documentCard": "e10doc.bank.dc.Detail"
+        "icon": "docType/bank", "headerStyle": "bank", "detailStyle": "bank", "documentCard": "e10doc.bank.dc.Detail"
     },
 	"bankorder": {
 		"fullName": "Příkaz k úhradě", "shortName": "Příkaz", "shortcut": "BNO", "pluralName": "Příkazy k úhradě",
@@ -34,7 +34,7 @@
 	},
     "prfmin": {"fullName": "Zálohová faktura přijatá", "shortName": "Zál.faktura přijatá", "pluralName": "Zálohové faktury přijaté",
 	      "shortcut": "FPZ", "classId": "proformain", "docIdCode": "22", "taxDir": 0,
-        "icon": "e10-docs-proforma-in", "tradeDir": 2, "useTax": 1},
+        "icon": "docType/proFormaIn", "tradeDir": 2, "useTax": 1},
 		"invpo": {
 				"fullName": "Faktura vydaná zálohová", "shortName": "Vydaná záloha", "icon": "icon-upload", "pluralName": "Faktury vydané zálohové",
 				"shortcut": "FVZ", "classId": "proformaOut", "docIdCode": "12",
@@ -65,19 +65,19 @@
 				"activitiesGroups": {"tax": "Daně", "bal": "Saldokonto", "ocp": "Otevření období", "clp": "Uzavření období", "prp": "Majetek"}
 		},
 		"orderin": {
-			"fullName": "Objednávka přijatá", "shortName": "Objednávka", "icon": "icon-caret-square-o-down", "pluralName": "Objednávky přijaté",
+			"fullName": "Objednávka přijatá", "shortName": "Objednávka", "icon": "docType/ordersIn", "pluralName": "Objednávky přijaté",
 			"shortcut": "OBP", "classId": "orderIn", "docIdCode": "61", "docDir": 2, "taxDir": 0, "docNumbers": 1,
 			"tradeDir": 1, "useTax": 1, "timeline": "in", "timelineSum": "other",
 			"docNumber": "%D%W%y%5"
 		},
 	"orderout": {
-		"fullName": "Objednávka vydaná", "shortName": "Objednávka", "icon": "icon-shopping-cart", "pluralName": "Objednávky vydané",
+		"fullName": "Objednávka vydaná", "shortName": "Objednávka", "icon": "docType/ordersOut", "pluralName": "Objednávky vydané",
 		"shortcut": "OBV", "classId": "orderOut", "docIdCode": "62", "docDir": 1, "taxDir": 0, "docNumbers": 1,
 		"tradeDir": 1, "useTax": 1, "timeline": "out", "timelineSum": "other",
 		"docNumber": "%D%W%y%5"
 	},
 	"dlvrnote": {
-		"fullName": "Dodací list", "shortName": "Dodací list", "icon": "icon-truck", "pluralName": "Dodací listy",
+		"fullName": "Dodací list", "shortName": "Dodací list", "icon": "docType/deliveryNote", "pluralName": "Dodací listy",
 		"shortcut": "DL", "classId": "deliveryNote", "docIdCode": "65", "docDir": 1, "taxDir": 0, "docNumbers": 1,
 		"tradeDir": 1, "useTax": 0, "timeline": "out", "timelineSum": "other",
 		"docNumber": "%D%W%y%5"

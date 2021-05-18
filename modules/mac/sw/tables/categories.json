@@ -17,7 +17,7 @@
 	"views": [
 		{"id": "default", "class": "mac.sw.ViewCategories",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "mac.sw.ViewDetailCategory"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.sw.ViewDetailCategory"}
 			}
 		}
 	],
