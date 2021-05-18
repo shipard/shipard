@@ -1443,7 +1443,7 @@ class TableView extends \Shipard\Base\BaseObject
 				foreach ($details as $id => $detail)
 				{
 					$c .= "<li data-detail='$id'$firstClass>";
-					$c .= $this->app()->ui()->icon ($detail['icon']);
+					$c .= $this->app()->ui()->icon ($detail['icon'], '', 'div');
 					$c .= \E10\es ($detail['title']);
 					$c .= '</li>';
 					$firstClass = "";

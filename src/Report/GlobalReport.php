@@ -80,8 +80,7 @@ class GlobalReport extends Report
 				}
 				else
 				{
-					$icon = $this->app()->ui()->icons()->cssClass($detail['icon']);
-					$c .= "<div class='$icon'></div>";
+					$c .= $this->app()->ui()->icon($detail['icon'], '', 'div');
 				}
 				$c .= \E10\es ($detail['title']);
 				$c .= '</li>';
