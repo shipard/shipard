@@ -156,7 +156,7 @@ class FormWatchdog extends TableForm
 		$this->setFlag ('maximize', 1);
 
 		$this->openForm ();
-		$tabs ['tabs'][] = ['text' => 'WD', 'icon' => 'x-content'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 		$this->openTabs ($tabs);
 				$this->openTab ();
 					$this->addColumnInput ('watchdog');

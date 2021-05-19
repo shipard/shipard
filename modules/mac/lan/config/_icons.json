@@ -270,5 +270,36 @@
 		"fa5pro": "fa-hourglass-half",
 		"bsi": "bi-hourglass-split",
 		"mdi": "hourglass_empty"
+	},
+
+	"formAddresses":{
+		"fa5": "fa-crosshairs",
+		"fa5pro": "fa-crosshairs",
+		"bsi": "bi-geo-fill",
+		"mdi": "location_on"
+	},
+	"formPorts":{
+		"fa5": "fa-plug",
+		"fa5pro": "fa-outlet",
+		"bsi": "bi-outlet",
+		"mdi": "outlet"
+	},
+	"formSensors":{
+		"fa5": "fa-eye-dropper",
+		"fa5pro": "fa-eye-dropper",
+		"bsi": "bi-eyedropper",
+		"mdi": "colorize"
+	},
+	"formWiki":{
+		"fa5": "fa-book",
+		"fa5pro": "fa-book",
+		"bsi": "bi-book",
+		"mdi": "auto_stories"
+	},
+	"formRackSticker":{
+		"fa5":"fa-tag",
+        "fa5pro":"fa-tag",
+        "bsi":"bi-tag-fill",
+        "mdi":"local_offer"
 	}
 }

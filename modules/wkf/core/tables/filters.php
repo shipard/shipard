@@ -182,9 +182,9 @@ class FormFilter extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 		$this->setFlag ('maximize', 1);
 
-		$tabs ['tabs'][] = ['text' => 'Filter', 'icon' => 'icon-filter'];
-		$tabs ['tabs'][] = ['text' => 'Akce', 'icon' => 'icon-cogs'];
-		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-wrench'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Akce', 'icon' => 'formActions'];
+		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);

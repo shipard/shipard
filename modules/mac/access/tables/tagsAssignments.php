@@ -143,8 +143,8 @@ class FormTagAssignment extends TableForm
 				$useTagsCautionMoney = 0;
 		}
 
-		$tabs ['tabs'][] = ['text' => 'Klíč', 'icon' => 'icon-key'];
-		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'icon-paperclip'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);

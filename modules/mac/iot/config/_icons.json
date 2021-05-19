@@ -100,5 +100,25 @@
 		"fa5pro": "fa-key-skeleton",
 		"bsi": "bi-key",
 		"mdi": "vpn_key"
+	},
+
+
+	"formConnect":{
+		"fa5": "fa-random",
+		"fa5pro": "fa-random",
+		"bsi": "bi-random",
+		"mdi": "shuffle"
+	},
+	"formSchedule":{
+		"fa5": "fa-clock",
+		"fa5pro": "fa-clock",
+		"bsi": "bi-clock",
+		"mdi": "schedule"
+	},
+	"formAction":{
+		"fa5": "fa-toggle-on",
+		"fa5pro": "fa-toggle-on",
+		"bsi": "bi-toggle-on",
+		"mdi": "toggle_on"
 	}
 }

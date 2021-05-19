@@ -99,7 +99,7 @@ class FormAdmin extends TableForm
 	{
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
-		$tabs ['tabs'][] = ['text' => 'Uživatel', 'icon' => 'icon-user-secret'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 		//$tabs ['tabs'][] = ['text' => 'Kamery', 'icon' => 'icon-video-camera'];
 		//$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'icon-paperclip'];
 

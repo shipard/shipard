@@ -5,6 +5,14 @@
 		"bsi": "bi-funnel",
 		"mdi": "filter_alt"
 	},
+	"tables/wkf.core.issues":{
+		"fa5": "fa-file",
+		"fa5pro": "fa-file",
+		"bsi": "bi-file-earmark",
+		"mdi": "insert_drive_file"
+	},
+
+
 	"settings/workflow":{
 		"fa5": "fa-cogs",
 		"fa5pro": "fa-cogs",
@@ -13,16 +21,10 @@
 	},
 
 
-	"form/actions":{
+	"formActions":{
 		"fa5": "fa-cogs",
 		"fa5pro": "fa-cogs",
 		"bsi": "bi-gear-fill",
 		"mdi": "settings"
-	},
-	"form/data":{
-		"fa5": "fa-th-list",
-		"fa5pro": "fa-th-list",
-		"bsi": "bi-list-ul",
-		"mdi": "list"
 	}
 }

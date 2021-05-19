@@ -238,10 +238,10 @@ class FormZone extends TableForm
 	{
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
-		$tabs ['tabs'][] = ['text' => 'Zóna', 'icon' => 'icon-crosshairs'];
-		$tabs ['tabs'][] = ['text' => 'Kamery', 'icon' => 'icon-video-camera'];
-		$tabs ['tabs'][] = ['text' => 'IoT', 'icon' => 'icon-power-off'];
-		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'icon-paperclip'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Kamery', 'icon' => 'formCameras'];
+		$tabs ['tabs'][] = ['text' => 'IoT', 'icon' => 'formIoT'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);

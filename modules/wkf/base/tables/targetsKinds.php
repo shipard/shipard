@@ -114,7 +114,7 @@ class FormTargetKind extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 		$this->setFlag ('maximize', 1);
 
-		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'x-content'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);

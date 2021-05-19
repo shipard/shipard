@@ -121,8 +121,8 @@ class FormRelation extends TableForm
 		//$this->setFlag ('maximize', 1);
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Důvod', 'icon' => 'x-content'];
-			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-image'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 			$this->openTabs ($tabs);
 				$this->openTab ();

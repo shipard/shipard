@@ -32,12 +32,12 @@ class FormCashRegisterDoc extends \E10Doc\Core\FormHeads
 
 		$this->openForm (self::ltNone);
 			$properties = $this->addList ('properties', '', self::loAddToFormLayout|self::loWidgetParts);
-			$tabs ['tabs'][] = array ('text' => 'Doklad', 'icon' => 'x-content');
+			$tabs ['tabs'][] = ['text' => 'Záhlaví', 'icon' => 'system/formHeader'];
 			forEach ($properties ['memoInputs'] as $mi)
 				$tabs ['tabs'][] = array ('text' => $mi ['text'], 'icon' => $mi ['icon']);
 			$this->addAccountingTab ($tabs['tabs']);
-			$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'x-attachments');
-			$tabs ['tabs'][] = array ('text' => 'Nastavení', 'icon' => 'x-wrench');
+			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
+			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 			$this->openTabs ($tabs, 'right');
 
 			$this->openTab (self::ltNone);

@@ -10,5 +10,11 @@
         "fa5pro":"fa-flag",
         "bsi":"bi-flag",
         "mdi":"flag"
+    },
+    "tables/e10doc.contracts.core.heads":{
+        "fa5":"fa-thumbs-up",
+        "fa5pro":"fa-thumbs-up",
+        "bsi":"bi-hand-thumbs-up-fill",
+        "mdi":"thumb_up"
     }
 }

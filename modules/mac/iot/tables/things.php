@@ -135,8 +135,8 @@ class FormThing extends TableForm
 	{
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
-		$tabs ['tabs'][] = ['text' => 'Věc', 'icon' => 'icon-puzzle-piece'];
-		$tabs ['tabs'][] = ['text' => 'Napojení', 'icon' => 'icon-exchange'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Napojení', 'icon' => 'formConnect'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);

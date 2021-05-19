@@ -247,10 +247,10 @@ class FormTemplateLook extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Vzhled', 'icon' => 'icon-paint-brush'];
-			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-wrench'];
-			$tabs ['tabs'][] = ['text' => 'Rozšíření stylů', 'icon' => 'icon-code'];
-			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-image'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
+			$tabs ['tabs'][] = ['text' => 'Rozšíření stylů', 'icon' => 'formStylesExtension'];
+			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
 					$this->addSubColumns ('lookParams');

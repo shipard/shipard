@@ -11,9 +11,9 @@ class FormStockInitState extends \e10doc\core\FormHeads
 		$this->setFlag ('sidebarPos', self::SIDEBAR_POS_RIGHT);
 
 		$this->openForm (self::ltNone);
-			$tabs ['tabs'][] = array ('text' => 'Doklad', 'icon' => 'x-content');
-			$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'x-attachments');
-			$tabs ['tabs'][] = array ('text' => 'Nastavení', 'icon' => 'x-wrench');
+			$tabs ['tabs'][] = ['text' => 'Záhlaví', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
+			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 			$this->openTabs ($tabs);
 
 			$this->openTab (self::ltNone);

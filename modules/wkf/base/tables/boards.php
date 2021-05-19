@@ -138,9 +138,9 @@ class FormBoard extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 		$this->setFlag ('maximize', 1);
 
-		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'x-content'];
-//		$tabs ['tabs'][] = ['text' => 'Údaje', 'icon' => 'icon-th-list'];
-		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-wrench'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+//		$tabs ['tabs'][] = ['text' => 'Údaje', 'icon' => 'formData'];
+		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);

@@ -924,17 +924,17 @@ class FormItems extends TableForm
 
 		$properties = $this->addList ('properties', '', TableForm::loAddToFormLayout|TableForm::loWidgetParts);
 
-		$tabs ['tabs'][] = ['text' => 'Vlastnosti', 'icon' => 'x-properties'];
+		$tabs ['tabs'][] = ['text' => 'Vlastnosti', 'icon' => 'formProperties'];
 		forEach ($properties ['memoInputs'] as $mi)
 			$tabs ['tabs'][] = ['text' => $mi ['text'], 'icon' => $mi ['icon']];
 		if ($isset)
-			$tabs ['tabs'][] = ['text' => 'Sada', 'icon' => 'icon-indent'];
+			$tabs ['tabs'][] = ['text' => 'Sada', 'icon' => 'formSet'];
 		if ($useSuppliers)
-			$tabs ['tabs'][] = ['text' => 'Dodavatelé', 'icon' => 'icon-industry'];
+			$tabs ['tabs'][] = ['text' => 'Dodavatelé', 'icon' => 'formSuppliers'];
 		if ($useRelated)
-			$tabs ['tabs'][] = ['text' => 'Související', 'icon' => 'icon-exchange'];
-		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-image'];
-		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'x-wrench'];
+			$tabs ['tabs'][] = ['text' => 'Související', 'icon' => 'formRelatedItems'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
+		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 		$this->openTabs ($tabs);
 			$this->openTab ();
 				$this->addColumnInput ("shortName");

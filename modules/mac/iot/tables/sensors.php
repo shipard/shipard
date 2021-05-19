@@ -209,8 +209,8 @@ class FormSensor extends TableForm
 	{
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
-		$tabs ['tabs'][] = ['text' => 'Sensor', 'icon' => 'icon-eyedropper'];
-		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'icon-paperclip'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		$quantityCfg =  $this->app()->cfgItem ('mac.data.quantityTypes.'.$this->recData['quantityType'], NULL);
 

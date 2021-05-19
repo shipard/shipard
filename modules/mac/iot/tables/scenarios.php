@@ -105,10 +105,10 @@ class FormScenario  extends TableForm
 	{
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
-		$tabs ['tabs'][] = ['text' => 'Scénář', 'icon' => 'icon-play-circle'];
-		$tabs ['tabs'][] = ['text' => 'Rozvrh', 'icon' => 'icon-clock-o'];
-		$tabs ['tabs'][] = ['text' => 'Akce', 'icon' => 'icon-toggle-on'];
-		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'icon-paperclip'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Rozvrh', 'icon' => 'formSchedule'];
+		$tabs ['tabs'][] = ['text' => 'Akce', 'icon' => 'formAction'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);

@@ -99,9 +99,9 @@ class FormLevel extends TableForm
 		$this->setFlag ('maximize', 1);
 		$assignTagsToRooms = intval($this->app()->cfgItem ('options.macAccess.useAssignTagsToRooms', 0));
 
-		$tabs ['tabs'][] = ['text' => 'Přístup', 'icon' => 'icon-empire'];
-		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-wrench'];
-		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'icon-paperclip'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);

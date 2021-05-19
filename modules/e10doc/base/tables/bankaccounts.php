@@ -192,8 +192,8 @@ class FormBankAccounts extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Účet', 'icon' => 'icon-institution'];
-			$tabs ['tabs'][] = ['text' => 'Ebanking', 'icon' => 'icon-plug'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Ebanking', 'icon' => 'formEBanking'];
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
 					$this->addColumnInput ('fullName');

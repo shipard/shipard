@@ -34,5 +34,13 @@
         "fa5pro":"fa-unlock-alt",
         "bsi":"bi-file-lock2",
         "mdi":"lock"
+    },
+
+
+    "formRights":{
+        "fa5":"fa-universal-access",
+        "fa5pro":"fa-universal-access",
+        "bsi":"bi-patch-check",
+        "mdi":"local_police"
     }
 }

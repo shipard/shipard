@@ -13,10 +13,16 @@
 	},
 
 
-    "form/folder":{
+    "formFolder":{
 		"fa5": "fa-folder",
 		"fa5pro": "fa-folder",
 		"bsi": "bi-folder",
 		"mdi": "folder"
+	},
+	"formIssueKinds":{
+		"fa5": "fa-bolt",
+		"fa5pro": "fa-bolt",
+		"bsi": "bi-lightning-fill",
+		"mdi": "bolt"
 	}
 }

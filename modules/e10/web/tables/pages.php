@@ -345,9 +345,9 @@ class FormPagesPage extends TableForm
 		$this->addColumnInput ('url');
 
 		$properties = $this->addList ('properties', '', TableForm::loAddToFormLayout|TableForm::loWidgetParts);
-		$tabs ['tabs'][] = ['text' => 'Text', 'icon' => 'x-content'];
-		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-image'];
-		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'x-wrench'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
+		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 		forEach ($properties ['memoInputs'] as $mi)
 			$tabs ['tabs'][] = ['text' => $mi ['text'], 'icon' => $mi ['icon']];
 

@@ -229,7 +229,7 @@ class FormPropDefs extends TableForm
 	{
 		//$this->setFlag ('formStyle', 'e10-formStyleSimple');
 
-		$tabs ['tabs'][] = array ('text' => 'Vlastnosti', 'icon' => 'x-properties');
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 
 		$this->openForm ();
 			$this->addColumnInput ("fullName");

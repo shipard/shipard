@@ -4,5 +4,19 @@
 		"fa5pro": "fa-crosshairs",
 		"bsi": "bi-geo-fill",
 		"mdi": "location_on"
+	},
+
+
+	"formCameras":{
+		"fa5": "fa-video",
+		"fa5pro": "fa-cctv",
+		"bsi": "bi-camera-video",
+		"mdi": "videocam"
+	},
+	"formIoT":{
+		"fa5": "fa-power-off",
+		"fa5pro": "fa-power-off",
+		"bsi": "bi-power",
+		"mdi": "power_settings_new"
 	}
 }

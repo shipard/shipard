@@ -210,11 +210,11 @@ class FormSW extends TableForm
 		$swClass = $this->app()->cfgItem('mac.swcore.swClass.'.$this->recData['swClass']);
 		$osFamily = $this->app()->cfgItem('mac.swcore.osFamily.'.$this->recData['osFamily']);
 
-		$tabs ['tabs'][] = ['text' => 'Aplikace', 'icon' => 'icon-hourglass-half'];
-		$tabs ['tabs'][] = ['text' => 'Verze', 'icon' => 'icon-hashtag'];
-		$tabs ['tabs'][] = ['text' => 'Názvy', 'icon' => 'icon-tags'];
-		$tabs ['tabs'][] = ['text' => 'ID', 'icon' => 'icon-crosshairs'];
-		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'icon-paperclip'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Verze', 'icon' => 'formVersions'];
+		$tabs ['tabs'][] = ['text' => 'Názvy', 'icon' => 'formNames'];
+		$tabs ['tabs'][] = ['text' => 'ID', 'icon' => 'formID'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formHeader'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);

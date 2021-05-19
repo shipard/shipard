@@ -94,7 +94,7 @@ class FormUser extends TableForm
 	{
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
-		$tabs ['tabs'][] = ['text' => 'Uživatel', 'icon' => 'icon-user-o'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);

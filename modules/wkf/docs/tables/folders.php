@@ -417,11 +417,11 @@ class FormFolder extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Složka', 'icon' => 'icon-folder'];
-			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-wrench'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 			if ($this->recData['enabledDocsKinds'] == 1)
-				$tabs ['tabs'][] = ['text' => 'Druhy dokumentů', 'icon' => 'icon-flash'];
-			$tabs ['tabs'][] = ['text' => 'Pozn.', 'icon' => 'icon-comment-o'];
+				$tabs ['tabs'][] = ['text' => 'Druhy dokumentů', 'icon' => 'formIssueKinds'];
+			$tabs ['tabs'][] = ['text' => 'Pozn.', 'icon' => 'system/formNote'];
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
 					$this->addColumnInput ('fullName');

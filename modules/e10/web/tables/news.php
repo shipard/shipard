@@ -206,10 +206,10 @@ class FormNews extends TableForm
 
 		$this->layoutClose ();
 
-		$tabs ['tabs'][] = ['text' => 'Text', 'icon' => 'x-content'];
-		$tabs ['tabs'][] = ['text' => 'Upoutávka', 'icon' => 'x-bubble'];
-		$tabs ['tabs'][] = ['text' => 'Tisknout', 'icon' => 'document-print'];
-		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-attachments'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Upoutávka', 'icon' => 'formBillboard'];
+		$tabs ['tabs'][] = ['text' => 'Tisknout', 'icon' => 'formPrint'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		$this->openTabs ($tabs);
 			$this->openTab (TableForm::ltNone);

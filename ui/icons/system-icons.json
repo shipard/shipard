@@ -312,10 +312,10 @@
 		"mdi": "tonality"
 	},
 	"docStateConfirmed":{
-		"fa5": "fa-certificate",
-		"fa5pro": "fa-certificate",
-		"bsi": "bi-patch-check",
-		"mdi": "verified"
+		"fa5":"fa-star",
+		"fa5pro":"fa-star",
+		"bsi":"bi-star",
+		"mdi":"grade"
 	},
 	"docStateUnknown":{
 		"fa5": "fa-question",
@@ -324,43 +324,44 @@
 		"mdi": "help_outline"
 	},
 
-	"form/header":{
+	
+	"formHeader":{
 		"fa5": "fa-edit",
 		"fa5pro": "fa-edit",
 		"bsi": "bi-pencil-square",
 		"mdi": "edit_note"
 	},
-	"form/rows":{
+	"formRows":{
 		"fa5": "fa-list",
 		"fa5pro": "fa-list",
 		"bsi": "bi-list-ul",
 		"mdi": "list"
 	},
-	"form/attachments":{
+	"formAttachments":{
 		"fa5": "fa-paperclip",
 		"fa5pro": "fa-paperclip",
 		"bsi": "bi-paperclip",
 		"mdi": "attach_file"
 	},
-	"form/settings":{
+	"formSettings":{
 		"fa5": "fa-wrench",
 		"fa5pro": "fa-wrench",
 		"bsi": "bi-wrench",
 		"mdi": "build_circle"
 	},
-	"form/externalNote":{
+	"formNote":{
 		"fa5": "fa-edit",
 		"fa5pro": "fa-edit",
 		"bsi": "bi-pencil-square",
 		"mdi": "edit_note"
 	},
-	"form/sorting":{
+	"formSorting":{
 		"fa5":"fa-tag",
         "fa5pro":"fa-tag",
         "bsi":"bi-tag-fill",
         "mdi":"local_offer"
 	},
-	"form/filter":{
+	"formFilter":{
 		"fa5": "fa-filter",
 		"fa5pro": "fa-filter",
 		"bsi": "bi-funnel",

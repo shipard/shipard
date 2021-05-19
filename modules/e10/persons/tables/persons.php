@@ -968,10 +968,10 @@ class FormPersons extends TableForm
 			$this->closeRow ();
 		$this->layoutClose ();
 
-		$tabs ['tabs'][] = array ('text' => 'Kontakty', 'icon' => 'x-doors');
-		$tabs ['tabs'][] = array ('text' => 'Zatřídění', 'icon' => 'x-tag');
-		$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'x-image');
-		$tabs ['tabs'][] = array ('text' => 'Nastavení', 'icon' => 'x-wrench');
+		$tabs ['tabs'][] = ['text' => 'Kontakty', 'icon' => 'formContacts'];
+		$tabs ['tabs'][] = ['text' => 'Zatřídění', 'icon' => 'system/formSorting'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
+		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 		$this->openTabs ($tabs);
 			$this->openTab ();
 					$this->addList ('properties', '', TableForm::loAddToFormLayout);
@@ -1046,10 +1046,10 @@ class FormPersonsRobot extends TableForm
 			$this->closeRow ();
 		$this->layoutClose ();
 
-		$tabs ['tabs'][] = array ('text' => 'Kontakty', 'icon' => 'x-doors');
-		$tabs ['tabs'][] = array ('text' => 'Zatřídění', 'icon' => 'x-tag');
-		$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'x-image');
-		$tabs ['tabs'][] = array ('text' => 'Nastavení', 'icon' => 'x-wrench');
+		$tabs ['tabs'][] = ['text' => 'Kontakty', 'icon' => 'formContacts'];
+		$tabs ['tabs'][] = ['text' => 'Zatřídění', 'icon' => 'system/formSorting'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
+		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 		$this->openTabs ($tabs);
 			$this->openTab ();
 				$this->addList ('properties', '', TableForm::loAddToFormLayout);

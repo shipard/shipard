@@ -42,19 +42,25 @@
         "mdi":"add_shopping_cart"
     },
 
-    "form/properties":{
+    "formProperties":{
         "fa5": "fa-list",
 		"fa5pro": "fa-list",
 		"bsi": "bi-list-ul",
 		"mdi": "list"
     },
-    "form/suppliers":{
+    "formSet":{
+        "fa5":"fa-indent",
+        "fa5pro":"fa-indent",
+        "bsi":"bi-text-indent-left",
+        "mdi":"format_indent_increase"
+    },
+    "formSuppliers":{
         "fa5":"fa-industry",
         "fa5pro":"fa-industry-alt",
         "bsi":"bi-building",
         "mdi":"business"
     },
-    "form/relatedItems":{
+    "formRelatedItems":{
         "fa5":"fa-exchange-alt",
         "fa5pro":"fa-exchange-alt",
         "bsi":"bi-arrow-left-right",

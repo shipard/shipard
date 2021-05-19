@@ -109,8 +109,8 @@ class FormIPAddressList extends TableForm
 		$this->setFlag ('maximize', 1);
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Vlastnosti', 'icon' => 'x-content'];
-			$tabs ['tabs'][] = ['text' => 'Adresy', 'icon' => 'icon-crosshairs'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Adresy', 'icon' => 'formAddresses'];
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
 					$this->addColumnInput ('fullName');

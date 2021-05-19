@@ -55,16 +55,22 @@
 	},
 
 
-	"form/sections":{
-		"fa5": "fa-columns",
-		"fa5pro": "fa-columns",
-		"bsi": "bi-layout-three-columns",
-		"mdi": "view_week"
-	},
-	"form/theme":{
+	"formTheme":{
 		"fa5": "fa-comment",
 		"fa5pro": "fa-comment",
 		"bsi": "bi-chat",
 		"mdi": "mode_comment"
+	},
+	"formData":{
+		"fa5": "fa-th-list",
+		"fa5pro": "fa-th-list",
+		"bsi": "bi-list-ul",
+		"mdi": "list"
+	},
+	"formIssueKinds":{
+		"fa5": "fa-bolt",
+		"fa5pro": "fa-bolt",
+		"bsi": "bi-lightning-fill",
+		"mdi": "bolt"
 	}
 }

@@ -1,4 +1,12 @@
 {
+    "tables/e10doc.core.heads":{
+        "fa5": "fa-file",
+		"fa5pro": "fa-file",
+		"bsi": "bi-file-earmark",
+		"mdi": "insert_drive_file"
+    },
+    
+    
     "docType/invoicesIn":{
         "fa5":"fa-file-download",
         "fa5pro":"fa-file-download",

@@ -25,15 +25,15 @@ class FormCmnBkpDoc extends \e10doc\core\FormHeads
 		$properties = $this->addList ('properties', '', self::loAddToFormLayout|self::loWidgetParts);
 
 		$this->openForm (self::ltNone);
-			$tabs ['tabs'][] = array ('text' => 'Záhlaví', 'icon' => 'x-content');
-			$tabs ['tabs'][] = array ('text' => 'Řádky', 'icon' => 'x-properties');
+			$tabs ['tabs'][] = ['text' => 'Záhlaví', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Řádky', 'icon' => 'system/formRows'];
 
 			forEach ($properties ['memoInputs'] as $mi)
-				$tabs ['tabs'][] = array ('text' => $mi ['text'], 'icon' => $mi ['icon']);
+				$tabs ['tabs'][] = ['text' => $mi ['text'], 'icon' => $mi ['icon']];
 
 			$this->addAccountingTab ($tabs['tabs']);
-			$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'x-attachments');
-			$tabs ['tabs'][] = array ('text' => 'Nastavení', 'icon' => 'x-wrench');
+			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
+			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 			$this->openTabs ($tabs, TRUE);
 
 			$this->openTab ();
@@ -100,11 +100,11 @@ class FormCmnBkpDoc extends \e10doc\core\FormHeads
 		$useDocKinds = $this->useDocKinds();
 
 		$this->openForm (self::ltNone);
-		$tabs ['tabs'][] = array ('text' => 'Záhlaví', 'icon' => 'x-content');
-		$tabs ['tabs'][] = array ('text' => 'Řádky', 'icon' => 'x-properties');
+		$tabs ['tabs'][] = ['text' => 'Záhlaví', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Řádky', 'icon' => 'system/formRows'];
 		$this->addAccountingTab ($tabs['tabs']);
-		$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'x-attachments');
-		$tabs ['tabs'][] = array ('text' => 'Nastavení', 'icon' => 'x-wrench');
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
+		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 		$this->openTabs ($tabs, TRUE);
 
 		$this->openTab ();

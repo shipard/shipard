@@ -121,12 +121,12 @@ class FormGroup extends TableForm
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
-		$tabs ['tabs'][] = ['text' => 'Vlastnosti', 'icon' => 'x-properties'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 
 		if ($this->recData['groupKind'] == TableGroups::agtPropertyDepreciated || $this->recData['groupKind'] == TableGroups::agtPropertyNonDepreciated)
-			$tabs ['tabs'][] = ['text' => 'Majetek', 'icon' => 'icon-institution'];
+			$tabs ['tabs'][] = ['text' => 'Majetek', 'icon' => 'formProperty'];
 
-		$tabs ['tabs'][] = ['text' => 'Poznámka', 'icon' => 'icon-edit'];
+		$tabs ['tabs'][] = ['text' => 'Poznámka', 'icon' => 'formNote'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs, TRUE);

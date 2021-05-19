@@ -16,5 +16,25 @@
 		"fa5pro": "fa-folders",
 		"bsi": "bi-folder",
 		"mdi": "folder"
+	},
+
+
+	"formVersions":{
+		"fa5": "fa-hashtag",
+		"fa5pro": "fa-hashtag",
+		"bsi": "bi-hash",
+		"mdi": "tag"
+	},
+	"formNames":{
+		"fa5": "fa-tags",
+		"fa5pro": "fa-tags",
+		"bsi": "bi-tags",
+		"mdi": "style"
+	},
+	"formID":{
+		"fa5": "fa-crosshairs",
+		"fa5pro": "fa-crosshairs",
+		"bsi": "bi-geo-fill",
+		"mdi": "location_on"
 	}
 }

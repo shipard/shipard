@@ -348,8 +348,8 @@ class FormTemplate extends TableForm
 
 		$this->openForm ();
 
-			$tabs ['tabs'][] = array ('text' => 'Kód', 'icon' => 'x-content');
-			$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'x-image');
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 			$this->openTabs ($tabs);
 
 				$this->openTab ();

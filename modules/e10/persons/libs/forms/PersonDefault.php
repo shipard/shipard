@@ -97,11 +97,11 @@ class PersonDefault extends TableForm
 				$this->closeRow ();
 			$this->layoutClose ();
 
-			$tabs ['tabs'][] = ['text' => 'Kontakty', 'icon' => 'x-doors'];
+			$tabs ['tabs'][] = ['text' => 'Kontakty', 'icon' => 'formContacts'];
 			//$tabs ['tabs'][] = ['text' => 'Adresy', 'icon' => 'x-tag'];
-			$tabs ['tabs'][] = ['text' => 'Zatřídění', 'icon' => 'x-tag'];
-			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-image'];
-			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'x-wrench'];
+			$tabs ['tabs'][] = ['text' => 'Zatřídění', 'icon' => 'system/formSorting'];
+			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
+			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 			if ($this->readOnly)
 				$tabs ['tabs'][] = ['text' => 'Zápisník', 'icon' => 'icon-clipboard'];
 			$this->openTabs ($tabs);

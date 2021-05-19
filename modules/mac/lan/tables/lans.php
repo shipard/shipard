@@ -222,11 +222,11 @@ class FormLan extends TableForm
 
 		$this->openForm ();
 
-		$tabs ['tabs'][] = ['text' => 'Síť', 'icon' => 'x-content'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 		if ($useDocumentation)
-			$tabs ['tabs'][] = ['text' => 'Dokumen-tace', 'icon' => 'icon-book'];
-		$tabs ['tabs'][] = ['text' => 'Nálepka racku', 'icon' => 'icon-tag'];
-		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-image'];
+			$tabs ['tabs'][] = ['text' => 'Dokumen-tace', 'icon' => 'formWiki'];
+		$tabs ['tabs'][] = ['text' => 'Nálepka racku', 'icon' => 'formRackSticker'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		$this->openTabs ($tabs);
 			$this->openTab ();

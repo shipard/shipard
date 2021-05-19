@@ -311,8 +311,8 @@ class FormRosReg extends TableForm
 	{
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 
-		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-wrench'];
-		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-image'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 		$this->openForm ();
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();

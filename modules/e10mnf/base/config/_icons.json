@@ -28,5 +28,13 @@
         "fa5pro":"fa-play-circle",
         "bsi":"bi-play-circle-fill",
         "mdi":"play_circle_filled"
+    },
+
+
+    "formDetail":{
+        "fa5": "fa-file-alt",
+		"fa5pro": "fa-file-alt",
+		"bsi": "bi-file-earmark-text-fill",
+		"mdi": "description"
     }
 }

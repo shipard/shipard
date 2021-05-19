@@ -264,7 +264,7 @@ class FormFiscalYears extends TableForm
 		$this->setFlag ('maximize', 1);
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 
-    $tabs ['tabs'][] = array ('text' => 'Měsíce', 'icon' => 'x-properties');
+    $tabs ['tabs'][] = array ('text' => 'Měsíce', 'icon' => 'formMonths');
 
 		$this->openForm ();
 

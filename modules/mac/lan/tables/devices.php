@@ -836,10 +836,10 @@ class FormDevice extends TableForm
 
 		$this->openForm ();
 
-		$tabs ['tabs'][] = ['text' => 'Vlastnosti', 'icon' => 'x-content'];
-		$tabs ['tabs'][] = ['text' => 'Adresy', 'icon' => 'icon-crosshairs'];
-		$tabs ['tabs'][] = ['text' => 'Porty', 'icon' => 'icon-plug'];
-		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'x-wrench'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Adresy', 'icon' => 'formAddresses'];
+		$tabs ['tabs'][] = ['text' => 'Porty', 'icon' => 'formPorts'];
+		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 
 		if ($isMacDevice)
 		{
@@ -849,8 +849,8 @@ class FormDevice extends TableForm
 				$tabs ['tabs'][] = ['text' => 'IO', 'icon' => 'icon-dot-circle-o'];
 		}
 
-		$tabs ['tabs'][] = ['text' => 'Senzory', 'icon' => 'icon-eyedropper'];
-		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-image'];
+		$tabs ['tabs'][] = ['text' => 'Senzory', 'icon' => 'formSensors'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		$this->openTabs ($tabs, TRUE);
 			$this->openTab ();

@@ -20,11 +20,11 @@ class FormCashDoc extends \e10doc\core\FormHeads
 			$useProperty = $this->table->app()->cfgItem ('options.property.usePropertyExpenses', 0);
 
 		$this->openForm (self::ltNone);
-			$tabs ['tabs'][] = array ('text' => 'Záhlaví', 'icon' => 'x-content');
-			$tabs ['tabs'][] = array ('text' => 'Řádky', 'icon' => 'x-properties');
+			$tabs ['tabs'][] = ['text' => 'Záhlaví', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Řádky', 'icon' => 'system/formRows'];
 			$this->addAccountingTab ($tabs['tabs']);
-			$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'x-attachments');
-			$tabs ['tabs'][] = array ('text' => 'Nastavení', 'icon' => 'x-wrench');
+			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
+			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 			$this->openTabs ($tabs, TRUE);
 
 			$this->openTab ();

@@ -3,7 +3,7 @@
 		"property": {
 			"url": "/app/property", "zone": "sec", "objectType": "panel", "name": "Majetek", "order": 1000000,
 			"items": {
-				"propertyAll": {"t1": "Evidence2", "object": "viewer", "table": "e10pro.property.property", "viewer": "default", "order": 10000},
+				"propertyAll": {"t1": "Evidence", "object": "viewer", "table": "e10pro.property.property", "viewer": "default", "order": 10000},
 				"propertyDeps": {"t1": "Odpisy", "object": "viewer", "table": "e10pro.property.property", "viewer": "debs", "icon": "tables/e10pro.property.property-deps", "order": 20000},
 				"places": {"t1": "Místa", "object": "viewer", "table": "e10.base.places", "viewer": "property", "icon": "tables/e10.base.places", "order": 60000},
 				"reports": {"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10pro-property", "icon": "system/iconReports", "order": 990000}

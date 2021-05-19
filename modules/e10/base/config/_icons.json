@@ -77,15 +77,15 @@
         "bsi":"bi-info-square",
         "mdi":"info"
     },
-
-
-    "form/place":{
-        "fa5": "fa-edit",
-		"fa5pro": "fa-edit",
-		"bsi": "bi-pencil-square",
-		"mdi": "edit_note"
+    "e10.base.attachments":{
+        "fa5": "fa-paperclip",
+		"fa5pro": "fa-paperclip",
+		"bsi": "bi-paperclip",
+		"mdi": "attach_file"
     },
-    "form/address":{
+
+
+    "formAddress":{
         "fa5": "fa-location-arrow",
 		"fa5pro": "fa-location-arrow",
 		"bsi": "bi-geo-alt-fill",
@@ -104,5 +104,19 @@
         "fa5pro":"fa-tag",
         "bsi":"bi-tag-fill",
         "mdi":"local_offer"
-	}
+	},
+
+
+    "tags/places":{
+        "fa5": "fa-map-marker-alt",
+		"fa5pro": "fa-map-marker-alt",
+		"bsi": "bi-geo-alt-fill",
+		"mdi": "place"
+    },
+    "tags/various":{
+        "fa5":"fa-tag",
+        "fa5pro":"fa-tag",
+        "bsi":"bi-tag-fill",
+        "mdi":"local_offer"
+    }
 }

@@ -11,11 +11,11 @@ class FormStockOut extends \e10doc\core\FormHeads
 		$this->setFlag ('sidebarPos', self::SIDEBAR_POS_RIGHT);
 
 		$this->openForm (self::ltNone);
-			$tabs ['tabs'][] = array ('text' => 'Záhlaví', 'icon' => 'x-content');
-			$tabs ['tabs'][] = array ('text' => 'Řádky', 'icon' => 'x-properties');
+			$tabs ['tabs'][] = array ('text' => 'Záhlaví', 'icon' => 'system/formHeader');
+			$tabs ['tabs'][] = array ('text' => 'Řádky', 'icon' => 'system/formRows');
 			$this->addAccountingTab ($tabs['tabs']);
-			$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'x-attachments');
-			$tabs ['tabs'][] = array ('text' => 'Nastavení', 'icon' => 'x-wrench');
+			$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'system/formAttachments');
+			$tabs ['tabs'][] = array ('text' => 'Nastavení', 'icon' => 'system/formSettings');
 			$this->openTabs ($tabs, TRUE);
 
 			$this->openTab ();

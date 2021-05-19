@@ -201,10 +201,10 @@ class FormArticle extends TableForm
 				$this->closeRow ();
 			$this->layoutClose ();
 
-			$tabs ['tabs'][] = ['text' => 'Text', 'icon' => 'x-content'];
-			$tabs ['tabs'][] = ['text' => 'Perex', 'icon' => 'x-content'];
-			$tabs ['tabs'][] = ['text' => 'Zatřídění', 'icon' => 'x-tag'];
-			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-attachments'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Perex', 'icon' => 'formPerex'];
+			$tabs ['tabs'][] = ['text' => 'Zatřídění', 'icon' => 'system/formSorting'];
+			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 			$this->openTabs ($tabs);
 				$this->openTab (TableForm::ltNone);
 					$this->addInputMemo ('text', NULL, TableForm::coFullSizeY);

@@ -485,11 +485,11 @@ class FormSection extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Sekce', 'icon' => 'icon-columns'];
-			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-wrench'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 			if ($this->recData['enabledIssueKinds'] == 1)
-				$tabs ['tabs'][] = ['text' => 'Druhy zpráv', 'icon' => 'icon-flash'];
-			$tabs ['tabs'][] = ['text' => 'Téma', 'icon' => 'icon-comment-o'];
+				$tabs ['tabs'][] = ['text' => 'Druhy zpráv', 'icon' => 'formIssueKinds'];
+			$tabs ['tabs'][] = ['text' => 'Téma', 'icon' => 'formTheme'];
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
 					$this->addColumnInput ('fullName');

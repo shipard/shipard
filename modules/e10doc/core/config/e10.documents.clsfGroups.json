@@ -1,3 +1,3 @@
 {
-	"documentsTags": {"name": "Doklady", "label": "Štítky", "icon": "icon-file-o", "tables": ["e10doc.core.heads"]}
+	"documentsTags": {"name": "Doklady", "label": "Štítky", "tables": ["e10doc.core.heads"]}
 }

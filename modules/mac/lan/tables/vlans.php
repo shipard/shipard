@@ -246,8 +246,8 @@ class FormVlan extends TableForm
 
 		$this->openForm ();
 
-			$tabs ['tabs'][] = ['text' => 'VLAN', 'icon' => 'icon-road'];
-			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-image'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 			$this->openTabs ($tabs,TRUE);
 				$this->openTab ();
