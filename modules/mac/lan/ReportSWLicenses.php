@@ -3,6 +3,7 @@
 namespace mac\lan;
 
 use e10\utils;
+use \e10\base\libs\UtilsBase;
 
 /**
  * Class ReportSWLicenses
@@ -147,11 +148,7 @@ class ReportSWLicenses extends \E10\GlobalReport
 		$this->qryPanelAddCheckBoxes($this->applications, 'applications', 'Aplikace');
 
 		// -- classification
-		$this->clsf = \E10\Base\classificationParams ($this->tableSWLicenses);
-		foreach ($this->clsf as $cg)
-		{
-			$this->addParam ('checkboxes', 'query.clsf.'.$cg['id'], ['items' => $cg['items'], 'place' => 'panel', 'title' => $cg['name']]);
-		}
+		UtilsBase::addClassificationParamsToPanel($this->tableSWLicenses, NULL, $qry);
 
 		// -- columns
 		$columns = [

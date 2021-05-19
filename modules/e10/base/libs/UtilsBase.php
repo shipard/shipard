@@ -33,12 +33,12 @@ class UtilsBase
 		return $params;
 	}
 
-	static function addClassificationParamsToPanel(\Shipard\Table\DbTable $table, \Shipard\Viewer\TableViewPanel $panel, &$qry)
+	static function addClassificationParamsToPanel(\Shipard\Table\DbTable $table, ?\Shipard\Viewer\TableViewPanel $panel, &$qry)
 	{
 		$clsf = self::classificationParams ($table);
 		foreach ($clsf as $cg)
 		{
-			$params = new \E10\Params ($panel->table->app());
+			$params = new \E10\Params ($table->app());
 			$params->addParam ('checkboxes', 'query.clsf.'.$cg['id'], ['items' => $cg['items']]);
 			$qry[] = ['style' => 'params', 'title' => $cg['name'], 'params' => $params];
 		}
