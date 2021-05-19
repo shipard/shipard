@@ -1451,10 +1451,9 @@ class TableForm
 					else
 						$class = '';
 				}
-				$ii = $this->app()->ui()->icons()->cssClass($t ['icon']);
-				$tabsCode .= "<li $class id='$thisTabId' data-first-click='1'>" .
-								"<div class='$ii'></div>" .
-								self::e ($t ['text']) . "</li>";
+				$tabsCode .= "<li $class id='$thisTabId' data-first-click='1'>";
+				$tabsCode .= $this->app()->ui()->icon($t ['icon'], '', 'div');
+				$tabsCode .= self::e ($t ['text']) . "</li>";
 				$this->tabsIdx++;
 				$class = '';
 			}
