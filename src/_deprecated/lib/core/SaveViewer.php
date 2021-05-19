@@ -181,7 +181,7 @@ class SaveViewer extends Utility
 
 			if ($c !== '')
 				$c .= $colSep;
-			if ($cv instanceof \DateTime)
+			if ($cv instanceof \DateTimeInterface)
 				$ct = $cv->format ('Y-m-d');
 			else if (is_double ($cv))
 				$ct = '"'.str_replace('.', ',', strval($cv)).'"';

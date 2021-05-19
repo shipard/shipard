@@ -651,7 +651,7 @@ class E10_App extends Application
 					$recMemos[$rowKey] = explode("\n", $rowValue);
 				}
 
-				if ($rowValue instanceof \DateTime)
+				if ($rowValue instanceof \DateTimeInterface)
 				{
 					$date = $rowValue->format('Y-m-d');
 					$time = $rowValue->format('H:i:s');

@@ -253,7 +253,7 @@ class Utils
 
 	static function createDateTime ($d, $isTimestamp = FALSE)
 	{
-		if ($d instanceof \DateTime || $d instanceof \Dibi\DateTime)
+		if ($d instanceof \DateTimeInterface)
 			return $d;
 		if (is_string($d))
 		{
@@ -1249,7 +1249,7 @@ class Utils
 				else
 					$cv = isset ($r[$cn]) ? $r[$cn] : '';
 
-				if ($cv instanceof \DateTime)
+				if ($cv instanceof \DateTimeInterface)
 					$ct = $cv->format ('Y-m-d');
 				else if (is_double ($cv) || is_int ($cv))
 				{

@@ -24,7 +24,7 @@ class Json
 	{
 		foreach ($data as $rowKey => $rowValue)
 		{
-			if ($rowValue instanceof \DateTime)
+			if ($rowValue instanceof \DateTimeInterface)
 			{
 				$date = $rowValue->format('Y-m-d');
 				$time = $rowValue->format('H:i:s');

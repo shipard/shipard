@@ -51,7 +51,7 @@ class E10Excel extends \E10\Utility
 						$sheet->setCellValueExplicit($cellId, $cell, DataType::TYPE_STRING);
 					elseif (is_double($cell))
 						$sheet->setCellValueExplicit($cellId, $cell, DataType::TYPE_NUMERIC);
-					elseif ($cell instanceof \DateTime)
+					elseif ($cell instanceof \DateTimeInterface)
 					{
 						$sheet->setCellValue($cellId, \PHPExcel_Shared_Date::PHPToExcel($cell));
 						$sheet->getStyle($cellId)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_DATE_DDMMYYYY);

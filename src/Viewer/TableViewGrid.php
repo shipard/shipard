@@ -120,14 +120,14 @@ class TableViewGrid extends \Shipard\Viewer\TableView
 			else
 				$cv = isset ($r[$cn]) ? $r[$cn] : '';
 
-			if ($cv instanceof \DateTime)
+			if ($cv instanceof \DateTimeInterface)
 				$ct = $cv->format ('d.m.Y');
 			else if (is_double ($cv) || is_int ($cv))
 			{
 				if (isset ($sums [$cn]))
 					$sums [$cn] += $cv;
 				if (is_int ($cv))
-					$ct = nf ($cv, 0);
+					$ct = Utils::nf ($cv, 0);
 				else
 					$ct = Utils::nfu ($cv, 2);
 			}

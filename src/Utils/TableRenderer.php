@@ -223,7 +223,7 @@ class TableRenderer extends \Shipard\Base\BaseObject
 				$cv = isset ($r[$cn]) ? $r[$cn] : '';
 
 			$ct = '';
-			if ($cv instanceof \DateTime)
+			if ($cv instanceof \DateTimeInterface)
 				$ct = $cv->format ('d.m.Y');
 			else if (is_double ($cv) || is_int ($cv))
 			{

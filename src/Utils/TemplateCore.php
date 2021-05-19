@@ -42,7 +42,7 @@ class TemplateCore extends \Mustache
 		if ($tag_name [0] === '&')
 			return $this->renderSubTemplate (substr($tag_name, 1));
 		$ret = parent::_getVariable($tag_name);
-		if ($ret instanceof \DateTime)
+		if ($ret instanceof \DateTimeInterface)
 			return $ret->format ('d.m.Y');
 		return $ret;
 	}

@@ -191,7 +191,7 @@ class TableRenderer
 			else
 				$cv = isset ($r[$cn]) ? $r[$cn] : '';
 
-			if ($cv instanceof \DateTime)
+			if ($cv instanceof \DateTimeInterface)
 			{
 				$this->sheet->setCellValue($cellId, \PhpOffice\PhpSpreadsheet\Shared\Date::PHPToExcel($cv));
 				$this->sheet->getStyle($cellId)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_DATE_DDMMYYYY);

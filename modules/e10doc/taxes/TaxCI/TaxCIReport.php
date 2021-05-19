@@ -784,7 +784,7 @@ class TaxCIReport extends \e10doc\taxes\TaxReportReport
 		$xml = '<'.$itemId;
 		foreach ($row as $k => $v)
 		{
-			if ($v instanceof \DateTime)
+			if ($v instanceof \DateTimeInterface)
 				$xml .= ' ' . $k . '="' . $v->format('d.m.Y') . '"';
 			else
 				$xml .= ' '.$k.'="'.utils::es($v).'"';

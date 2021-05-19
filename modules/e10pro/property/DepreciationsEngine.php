@@ -1421,7 +1421,7 @@ class DepreciationsEngine extends Utility
 				$cz = $this->dataProperty['accDepLength'];
 				if ($this->dataProperty['accDepLengthUnit'] == 'M')
 					$cz = ceil($this->dataProperty['accDepLength'] / 12);
-				if ($periodBegin instanceof \DateTime)
+				if ($periodBegin instanceof \DateTimeInterface)
 				{
 					$months = 12 - $periodBegin->format('m') + 1;
 					$deprecation = 2*$accBalance/($cz-$this->yearCounter+1) / 12 * $months;
