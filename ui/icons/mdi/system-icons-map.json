@@ -77,6 +77,10 @@
     },
     {
         "t": 0,
+        "v": "grade"
+    },
+    {
+        "t": 0,
         "v": "insert_drive_file"
     },
     {
@@ -85,11 +89,19 @@
     },
     {
         "t": 0,
+        "v": "info"
+    },
+    {
+        "t": 0,
         "v": "equalizer"
     },
     {
         "t": 0,
-        "v": "note_alt"
+        "v": "text_snippet"
+    },
+    {
+        "t": 0,
+        "v": "visibility"
     },
     {
         "t": 0,
@@ -98,6 +110,10 @@
     {
         "t": 0,
         "v": "reorder"
+    },
+    {
+        "t": 0,
+        "v": "build_circle"
     },
     {
         "t": 0,
@@ -121,7 +137,7 @@
     },
     {
         "t": 0,
-        "v": "verified"
+        "v": "grade"
     },
     {
         "t": 0,
@@ -146,6 +162,38 @@
     {
         "t": 0,
         "v": "help_outline"
+    },
+    {
+        "t": 0,
+        "v": "attach_file"
+    },
+    {
+        "t": 0,
+        "v": "filter_alt"
+    },
+    {
+        "t": 0,
+        "v": "edit_note"
+    },
+    {
+        "t": 0,
+        "v": "edit_note"
+    },
+    {
+        "t": 0,
+        "v": "list"
+    },
+    {
+        "t": 0,
+        "v": "build_circle"
+    },
+    {
+        "t": 0,
+        "v": "local_offer"
+    },
+    {
+        "t": 0,
+        "v": "grade"
     },
     {
         "t": 0,

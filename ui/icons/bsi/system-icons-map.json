@@ -77,11 +77,19 @@
     },
     {
         "t": 0,
+        "v": "bi-star"
+    },
+    {
+        "t": 0,
         "v": "bi-file-earmark"
     },
     {
         "t": 0,
         "v": "bi-clock-history"
+    },
+    {
+        "t": 0,
+        "v": "bi-info-square"
     },
     {
         "t": 0,
@@ -93,11 +101,19 @@
     },
     {
         "t": 0,
+        "v": "bi-eye-fill"
+    },
+    {
+        "t": 0,
         "v": "bi-file-earmark-bar-graph"
     },
     {
         "t": 0,
         "v": "bi-list"
+    },
+    {
+        "t": 0,
+        "v": "bi-wrench"
     },
     {
         "t": 0,
@@ -121,7 +137,7 @@
     },
     {
         "t": 0,
-        "v": "bi-patch-check"
+        "v": "bi-star"
     },
     {
         "t": 0,
@@ -146,6 +162,38 @@
     {
         "t": 0,
         "v": "bi-question-lg"
+    },
+    {
+        "t": 0,
+        "v": "bi-paperclip"
+    },
+    {
+        "t": 0,
+        "v": "bi-funnel"
+    },
+    {
+        "t": 0,
+        "v": "bi-pencil-square"
+    },
+    {
+        "t": 0,
+        "v": "bi-pencil-square"
+    },
+    {
+        "t": 0,
+        "v": "bi-list-ul"
+    },
+    {
+        "t": 0,
+        "v": "bi-wrench"
+    },
+    {
+        "t": 0,
+        "v": "bi-tag-fill"
+    },
+    {
+        "t": 0,
+        "v": "bi-star"
     },
     {
         "t": 0,

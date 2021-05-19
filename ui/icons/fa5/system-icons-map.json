@@ -77,11 +77,19 @@
     },
     {
         "t": 0,
+        "v": "fa-star"
+    },
+    {
+        "t": 0,
         "v": "fa-file"
     },
     {
         "t": 0,
         "v": "fa-history"
+    },
+    {
+        "t": 0,
+        "v": "fa-info"
     },
     {
         "t": 0,
@@ -93,11 +101,19 @@
     },
     {
         "t": 0,
+        "v": "fa-eye"
+    },
+    {
+        "t": 0,
         "v": "fa-chart-bar"
     },
     {
         "t": 0,
-        "v": "fa-binoculars"
+        "v": "fa-bars"
+    },
+    {
+        "t": 0,
+        "v": "fa-wrench"
     },
     {
         "t": 0,
@@ -105,7 +121,7 @@
     },
     {
         "t": 0,
-        "v": "fa-bars"
+        "v": "fa-eye"
     },
     {
         "t": 0,
@@ -121,7 +137,7 @@
     },
     {
         "t": 0,
-        "v": "fa-certificate"
+        "v": "fa-star"
     },
     {
         "t": 0,
@@ -146,6 +162,38 @@
     {
         "t": 0,
         "v": "fa-question"
+    },
+    {
+        "t": 0,
+        "v": "fa-paperclip"
+    },
+    {
+        "t": 0,
+        "v": "fa-filter"
+    },
+    {
+        "t": 0,
+        "v": "fa-edit"
+    },
+    {
+        "t": 0,
+        "v": "fa-edit"
+    },
+    {
+        "t": 0,
+        "v": "fa-list"
+    },
+    {
+        "t": 0,
+        "v": "fa-wrench"
+    },
+    {
+        "t": 0,
+        "v": "fa-tag"
+    },
+    {
+        "t": 0,
+        "v": "fa-star"
     },
     {
         "t": 0,
