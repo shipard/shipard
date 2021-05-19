@@ -1397,7 +1397,7 @@ class TableView extends \Shipard\Base\BaseObject
 
 				if (count ($details) === 0)
 					$details ['default'] = [
-						'title' => 'Detail', 'icon' => 'icon-file', 'order' => 1,
+						'title' => 'Detail', 'icon' => 'system/detailDetail', 'order' => 1,
 						'class' => $this->viewerDefinition ['detail']
 					];
 
