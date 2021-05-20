@@ -84,8 +84,10 @@ function createNewDataSource ()
 	
 	
 	$moduleParts = explode('.', $resultData ['data']['installModule']);
-	$module = 'install/apps/'.array_pop($moduleParts);//str_replace('.', '/', $resultData ['data']['installModule']);
-
+	$module = 'install/apps/'.array_pop($moduleParts);
+	
+	if (str_starts_with ($resultData ['data']['installModule'], 'pkgs.')) // old module?
+		$resultData ['data']['installModule'] = substr($resultData ['data']['installModule'], 5); // TODO: remove in new hosting
 
 	logMsg('* chdir: ' . $documentRoot);
 	chdir($documentRoot);
