@@ -476,16 +476,19 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		if (!isset($dsInfo['certsCheckSum']))
 			return;
 
-		$dstPath = __APP_DIR__.'/config/nginx/certs';
+		$dstPath = __APP_DIR__.'/config/nginx';
 
 		if (!is_dir($dstPath))
-			mkdir ($dstPath, 0750);
+			Utils::mkDir ($dstPath, 0750);
+		$dstPath .= '/certs';			
+		if (!is_dir($dstPath))
+			Utils::mkDir ($dstPath, 0750);
 
 		foreach ($dsInfo['certs'] as $certId => $certContent)
 		{
 			$certPath = $dstPath.'/'.$certId;
 			if (!is_dir($certPath))
-				mkdir ($certPath, 0750);
+				Utils::mkDir ($certPath, 0750);
 
 			$certInfo = [
 				'filesCheckSum' => $certContent['filesCheckSum'],
@@ -842,10 +845,8 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		$dirName = "$appDir/$d/";
 		if (is_dir($dirName) == FALSE)
 		{
-			mkdir ($dirName, 0770);
+			Utils::mkDir ($dirName);
 		}
-
-		chgrp ($dirName, Utils::wwwGroup());
 	}
 
 	public function checkFile ($fullFileName)

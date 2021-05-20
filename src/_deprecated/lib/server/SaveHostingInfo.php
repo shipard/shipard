@@ -3,7 +3,7 @@
 namespace lib\server;
 
 
-use \e10\Utility, \e10\utils;
+use \e10\Utility, \Shipard\Utils\Utils;
 
 
 /**
@@ -25,8 +25,7 @@ class SaveHostingInfo extends Utility
 	{
 		if (!is_dir($this->certsBasePath))
 		{
-			mkdir($this->certsBasePath, 0755, TRUE);
-			chgrp($this->certsBasePath, utils::wwwGroup());
+			Utils::mkDir($this->certsBasePath, 0755);
 		}
 	}
 
@@ -40,8 +39,7 @@ class SaveHostingInfo extends Utility
 			$certPath = $this->certsBasePath.$certName.'/';
 			if (!is_dir($certPath))
 			{
-				mkdir($certPath, 0755, TRUE);
-				chgrp($certPath, utils::wwwGroup());
+				Utils::mkDir($certPath, 0755);
 			}
 
 			foreach ($cert['files'] as $fileName => $fileContent)

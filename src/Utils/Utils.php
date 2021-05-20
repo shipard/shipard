@@ -1542,12 +1542,12 @@ class Utils
 		}
 	}
 
-	static function mkDir($dir)
+	static function mkDir($dir, $mode = 0770)
 	{
 		if (!is_dir($dir))
-			mkdir($dir, 0770, TRUE);
+			mkdir($dir, $mode, TRUE);
 
-		chmod($dir, 0770);
+		chmod($dir, $mode);
 		if (self::superuser())
 			chown($dir, self::wwwUser());
 		chgrp($dir, self::wwwGroup());
