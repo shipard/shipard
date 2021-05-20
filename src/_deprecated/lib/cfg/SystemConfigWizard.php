@@ -31,6 +31,9 @@ class SystemConfigWizard extends \E10\Wizard
 		if (!$this->initConfig)
 			return;
 
+		if (str_starts_with ($this->initConfig['installModule'], 'pkgs.'))
+			$this->initConfig['installModule'] = substr($this->initConfig['installModule'], 5); // TODO: remove in new hosting
+
 		$installModuleId = str_replace ('.', '/', $this->initConfig['installModule']);
 		$installModulePath = __SHPD_MODULES_DIR__ . $installModuleId;
 		$cfgString = file_get_contents ($installModulePath . '/' . 'module.json');
