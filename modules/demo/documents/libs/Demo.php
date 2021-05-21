@@ -14,8 +14,8 @@ class BalSetOffReport extends \e10doc\core\libs\reports\DocReport
 {
 	function init ()
 	{
-		$this->reportId = 'e10doc.cmnbkp.set-off';
-		$this->reportTemplate = 'e10doc.cmnbkp.set-off';
+		$this->reportId = 'reports.default.e10doc.cmnbkp.set-off';
+		$this->reportTemplate = 'reports.default.e10doc.cmnbkp.set-off';
 	}
 }
 

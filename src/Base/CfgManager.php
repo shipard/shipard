@@ -267,14 +267,18 @@ class CfgManager
 				$newConfig ['dsMode'] = Application::dsmProduction;
 		}
 
+		// -- base config dir
+		if (!is_dir(__APP_DIR__.'/config'))
+		{
+			Utils::mkDir (__APP_DIR__.'/config');
+		}
+
 		// -- save to temp dir
 		$newDir = __APP_DIR__ . "/config/new";
 		$currDir = __APP_DIR__ . "/config/curr";
 		if (!is_dir($newDir))
 		{
-			mkdir ($newDir, 0775, true);
-			chmod($newDir, 0770);
-			chgrp($newDir, utils::wwwGroup());
+			Utils::mkDir ($newDir);
 		}
 		else
 			array_map( "unlink", glob ($newDir . '/*'));

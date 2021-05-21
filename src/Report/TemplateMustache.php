@@ -1,7 +1,7 @@
 <?php
 
 namespace Shipard\Report;
-use \Shipard\Base\Utils;
+use \Shipard\Utils\Utils;
 
 
 class TemplateMustache extends \e10\TemplateCore
