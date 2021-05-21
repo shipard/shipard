@@ -115,9 +115,9 @@ class TableItems extends DbTable
 		if (isset ($this->itemsTypes [$item['type']]))
 		{
 			$itemType = $this->itemsTypes [$item['type']];
-			return (isset ($itemType ['icon']) && $itemType ['icon'] !== '') ? $itemType ['icon'] : 'e10-witems-items';
+			return (isset ($itemType ['icon']) && $itemType ['icon'] !== '') ? $itemType ['icon'] : 'tables/e10.witems.items';
 		}
-		return 'e10-witems-items';
+		return 'tables/e10.witems.items';
 	}
 
 	public function itemInCategory ($itemRecData, $propertyValues, $category)

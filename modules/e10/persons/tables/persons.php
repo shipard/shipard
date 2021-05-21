@@ -401,9 +401,9 @@ class TablePersons extends DbTable
 			return 'icon-android';
 
 		if ($recData ['company'])
-			return 'icon-building';
+			return 'system/iconOwner';
 
-		return 'icon-user-o';
+		return 'system/iconUser';
 	}
 
 	public function tableIcon ($recData, $options = NULL)

@@ -454,7 +454,7 @@ class Utils
 					if (isset($srcData[$rowId][$cellId]))
 					{
 						$destData[$rowId][$cellId] = $srcData[$rowId][$cellId];
-						$cutedTotals[$cellId] += $srcData[$rowId][$cellId];
+						$cutedTotals[$cellId] += floatval($srcData[$rowId][$cellId]);
 					}
 				}
 				else
@@ -463,9 +463,9 @@ class Utils
 					{
 						$totals[$rowId] += $srcData[$rowId][$cellId];
 						if (isset($cutedTotals['cutTotal']))
-							$cutedTotals['cutTotal'] += $srcData[$rowId][$cellId];
+							$cutedTotals['cutTotal'] += floatval($srcData[$rowId][$cellId]);
 						else
-							$cutedTotals['cutTotal'] = $srcData[$rowId][$cellId];
+							$cutedTotals['cutTotal'] = floatval($srcData[$rowId][$cellId]);
 					}
 				}
 				$colIdx++;
