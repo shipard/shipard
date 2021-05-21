@@ -509,10 +509,42 @@
 	},
 
 
-    "form/document":{
+    "formDocument":{
         "fa5": "fa-edit",
 		"fa5pro": "fa-edit",
 		"bsi": "bi-pencil-square",
 		"mdi": "edit_note"
+    },
+    "formLink":{
+        "fa5": "fa-link",
+		"fa5pro": "fa-link",
+		"bsi": "bi-link-45deg",
+		"mdi": "link"
+    },
+
+
+    "homeAgenda":{
+        "fa5":"fa-folder-open",
+        "fa5pro":"fa-folder-open",
+        "bsi":"bi-folder2-open",
+        "mdi":"folder_open"
+    },
+    "homeSecretariat":{
+        "fa5":"fa-inbox",
+        "fa5pro":"fa-inbox",
+        "bsi":"bi-inbox-fill",
+        "mdi":"inbox"
+    },
+    "homeToDo":{
+        "fa5":"fa-check-square",
+        "fa5pro":"fa-check-square",
+        "bsi":"bi-check-square-fill",
+        "mdi":"check_box"
+    },
+    "homeLeaders":{
+        "fa5":"fa-building",
+        "fa5pro":"fa-building",
+        "bsi":"bi-building",
+        "mdi":"business"
     }
 }

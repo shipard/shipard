@@ -72,5 +72,73 @@
 		"fa5pro": "fa-bolt",
 		"bsi": "bi-lightning-fill",
 		"mdi": "bolt"
-	}
+	},
+
+
+	"homeAccounting":{
+        "fa5": "fa-calculator",
+		"fa5pro": "fa-calculator",
+		"bsi": "bi-calculator",
+		"mdi": "calculate"
+    },
+    "homeDocuments":{
+        "fa5":"fa-file-alt",
+		"fa5pro":"fa-file-alt",
+		"bsi":"bi-file-earmark-text",
+		"mdi":"description"
+    },
+    "homeCashbox":{
+        "fa5":"fa-piggy-bank",
+        "fa5pro":"fa-piggy-bank",
+        "bsi":"bi-piggy-bank",
+        "mdi":"savings"
+    },
+    "homeBank":{
+        "fa5":"fa-university",
+        "fa5pro":"fa-bank",
+        "bsi":"bi-bank",
+        "mdi":"account_balance"
+    },
+    "homeWages":{
+        "fa5":"fa-money-bill-alt",
+        "fa5pro":"fa-money-bill-alt",
+        "bsi":"bi-cash",
+        "mdi":"payments"
+    },
+    "homeProperty":{
+        "fa5": "fa-cubes",
+		"fa5pro": "fa-cubes",
+		"bsi": "bi-collection-fill",
+		"mdi": "list"
+    },
+    "homeAlerts":{
+        "fa5":"fa-exclamation-circle",
+        "fa5pro":"fa-exclamation-circle",
+        "bsi":"bi-exclamation-circle-fill",
+        "mdi":"error"
+    },
+    "homeOther":{
+        "fa5":"fa-th",
+        "fa5pro":"fa-th",
+        "bsi":"bi-table",
+        "mdi":"table_rows"
+    },
+    "homeSent":{
+        "fa5":"fa-paper-plane",
+        "fa5pro":"fa-paper-plane",
+        "bsi":"bi-envelope",
+        "mdi":"send"
+    },
+    "homeShipard":{
+        "fa5":"fa-ship",
+        "fa5pro":"fa-ship",
+        "bsi":"bi-building",
+        "mdi":"directions_boat"
+    },
+    "homeDiscussions":{
+        "fa5":"fa-bullhorn",
+        "fa5pro":"fa-bullhorn",
+        "bsi":"bi-megaphone",
+        "mdi":"campaign"
+    }
 }

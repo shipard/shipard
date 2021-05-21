@@ -133,8 +133,8 @@ class FormScript extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Skript', 'icon' => 'icon-code'];
-			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-wrench'];
+			$tabs ['tabs'][] = ['text' => 'Skript', 'icon' => 'formScript'];
+			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
 					$this->addInputMemo ('code', NULL, TableForm::coFullSizeY, DataModel::ctCode);

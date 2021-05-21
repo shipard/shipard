@@ -260,9 +260,9 @@ class FormItemCategories extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 		$this->setFlag ('maximize', 1);
 
-		$tabs ['tabs'][] = array ('text' => 'Filtr', 'icon' => 'icon-filter');
-		$tabs ['tabs'][] = array ('text' => 'Nastavení', 'icon' => 'x-wrench');
-		$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'x-image');
+		$tabs ['tabs'][] = array ('text' => 'Filtr', 'icon' => 'formFilter');
+		$tabs ['tabs'][] = array ('text' => 'Nastavení', 'icon' => 'system/formSettings');
+		$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'system/formAttachments');
 
 		$this->openForm ();
 			$this->addColumnInput ("fullName");

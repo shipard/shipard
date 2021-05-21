@@ -216,9 +216,9 @@ class FormKind extends TableForm
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
-		$tabs ['tabs'][] = ['text' => 'Druh', 'icon' => 'icon-file-text-o'];
-		$tabs ['tabs'][] = ['text' => 'Řádky', 'icon' => 'icon-list'];
-		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-wrench'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Řádky', 'icon' => 'system/formRows'];
+		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);

@@ -301,5 +301,19 @@
         "fa5pro":"fa-tag",
         "bsi":"bi-tag-fill",
         "mdi":"local_offer"
-	}
+	},
+
+
+    "homeIT":{
+        "fa5": "fa-sitemap",
+		"fa5pro": "fa-sitemap",
+		"bsi": "bi-diagram-3",
+		"mdi": "device_hub"
+    },
+	"homeNetworkProblems":{
+        "fa5": "fa-exclamation-triangle",
+		"fa5pro": "fa-exclamation-triangle",
+		"bsi": "bi-exclamation-triangle-fill",
+		"mdi": "warning"
+    }
 }

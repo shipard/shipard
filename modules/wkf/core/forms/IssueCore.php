@@ -61,11 +61,11 @@ class IssueCore extends TableForm
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 		$this->setFlag ('maximize', 1);
 
-		$tabs ['tabs'][] = ['text' => 'Obsah', 'icon' => 'icon-pencil-square-o'];
-		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-sliders'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 		if ($enableConnectedIssues)
-			$tabs ['tabs'][] = ['text' => 'Propojení', 'icon' => 'icon-link'];
-		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'icon-paperclip'];
+			$tabs ['tabs'][] = ['text' => 'Propojení', 'icon' => 'formLink'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		$bigTextMode = 0;
 		if ($askPersons !== self::askYes && $askDeadline !== self::askYes && $askDateIncoming !== self::askYes && $askWorkOrder !== self::askYes)

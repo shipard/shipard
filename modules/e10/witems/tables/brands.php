@@ -163,7 +163,7 @@ class FormBrand extends TableForm
 		$this->addColumnInput ("homePage");
 		$this->addList ('doclinks', '', TableForm::loAddToFormLayout);
 
-		$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'x-image');
+		$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'system/formAttachments');
 		$this->openTabs ($tabs);
 
 			$this->openTab (TableForm::ltNone);

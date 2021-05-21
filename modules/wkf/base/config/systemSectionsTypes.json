@@ -9,37 +9,37 @@
 	},
 
 	"11": {
-		"fullName": "Agenda", "shortName": "Agenda", "order": 7000, "icon": "icon-folder-open-o",
+		"fullName": "Agenda", "shortName": "Agenda", "order": 7000, "icon": "homeAgenda",
 		"topSection": 0
 	},
 
 	"20": {
-		"fullName": "Sekretariát", "shortName": "Sekretariát", "order": 1000, "icon": "icon-inbox",
+		"fullName": "Sekretariát", "shortName": "Sekretariát", "order": 1000, "icon": "homeSecretariat",
 		"shipardEmailId": "posta",
 		"topSection": 11, "dik": [2, 51, 52, 53, 54, 60, 61, 62]
 	},
 	"21": {
-		"fullName": "Úkoly", "shortName": "Úkoly", "order": 2000, "icon": "icon-check-square",
+		"fullName": "Úkoly", "shortName": "Úkoly", "order": 2000, "icon": "homeToDo",
 		"topSection": 11, "dik": [1]
 	},
 
 	"30": {
-		"fullName": "IS Shipard", "shortName": "Shipard", "order": 300000, "icon": "icon-ship",
+		"fullName": "IS Shipard", "shortName": "Shipard", "order": 300000, "icon": "homeShipard",
 		"topSection": 0
 	},
 	"31": {
-		"fullName": "Diskuze o Shipardu", "shortName": "Diskuze", "order": 10000, "icon": "icon-bullhorn",
+		"fullName": "Diskuze o Shipardu", "shortName": "Diskuze", "order": 10000, "icon": "homeDiscussions",
 		"shipardEmailId": "shipard",
 		"topSection": 30, "dik": [3]
 	},
 	"161": {
-		"fullName": "Výstrahy aplikace", "shortName": "Výstrahy", "order": 100000 ,"icon": "icon-exclamation-circle",
+		"fullName": "Výstrahy aplikace", "shortName": "Výstrahy", "order": 100000 ,"icon": "homeAlerts",
 		"shipardEmailId": "app-alerts",
 		"topSection": 30, "enabledIssueKinds": 9
 	},
 
 	"220": {
-		"fullName": "Vedení", "shortName": "Vedení", "order": 5000, "icon": "icon-building",
+		"fullName": "Vedení", "shortName": "Vedení", "order": 5000, "icon": "homeLeaders",
 		"shipardEmailId": "vedeni",
 		"topSection": 11, "dik": [2, 51, 52, 53, 54, 60, 61, 62]
 	}

@@ -28,5 +28,13 @@
         "fa5pro":"fa-cctv",
         "bsi":"bi-camera-video-fill",
         "mdi":"videocam"
+    },
+
+
+    "formConfiguration":{
+        "fa5": "fa-wrench",
+		"fa5pro": "fa-wrench",
+		"bsi": "bi-wrench",
+		"mdi": "build_circle"
     }
 }

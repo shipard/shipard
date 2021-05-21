@@ -4,5 +4,13 @@
         "fa5pro":"fa-table",
         "bsi":"bi-table",
         "mdi":"table_view"
+    },
+
+
+    "formStructure":{
+        "fa5":"fa-table",
+        "fa5pro":"fa-table",
+        "bsi":"bi-table",
+        "mdi":"table_view"
     }
 }

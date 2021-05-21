@@ -31,8 +31,8 @@
 		},
 		"swdev-world": {"url": "/app/SwDevWorld", "zone": "sec", "objectType": "panel", "name": "Svět", "order": 95000000,
 			"items": {
-				"countries": {"t1": "Země", "object": "viewer", "table": "swdev.world.countries", "viewer": "default",  "icon": "icon-flag", "order": 100000},
-				"currencies": {"t1": "Měny", "object": "viewer", "table": "swdev.world.currencies", "viewer": "default",  "icon": "icon-money", "order": 500000},
+				"countries": {"t1": "Země", "object": "viewer", "table": "swdev.world.countries", "viewer": "default", "order": 100000},
+				"currencies": {"t1": "Měny", "object": "viewer", "table": "swdev.world.currencies", "viewer": "default", "order": 500000},
 				"langs": {"t1": "Jazyky", "object": "viewer", "table": "swdev.world.languages", "viewer": "default",  "icon": "icon-language", "order": 600000},
 				"terr": {"t1": "Oblasti", "object": "viewer", "table": "swdev.world.territories", "viewer": "default",  "icon": "icon-map", "order": 700000},
 				"reports": {"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "swdev-world", "icon": "icon-code", "order": 990000}

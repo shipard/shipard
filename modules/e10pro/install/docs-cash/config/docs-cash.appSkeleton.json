@@ -5,7 +5,7 @@
 				"finance": {
 					"name": "Finance", "order": 300000,
 					"items": {
-						"cash": {"t1": "Pokladna", "object": "viewer", "table": "e10doc.core.heads", "viewer": "cash", "icon": "e10-docs-cash", "order": 300000}
+						"cash": {"t1": "Pokladna", "object": "viewer", "table": "e10doc.core.heads", "viewer": "cash", "order": 300000}
 					}
 				}
 			}

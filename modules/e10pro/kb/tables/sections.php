@@ -146,12 +146,12 @@ class FormSection extends TableForm
 		$this->setFlag ('maximize', 1);
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Sekce', 'icon' => 'x-content'];
-			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-wrench'];
-			$tabs ['tabs'][] = ['text' => 'Perex', 'icon' => 'icon-file-text-o'];
-			$tabs ['tabs'][] = ['text' => 'Patička', 'icon' => 'icon-file-text-o'];
-			$tabs ['tabs'][] = ['text' => 'Kniha', 'icon' => 'icon-book'];
-			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-image'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
+			$tabs ['tabs'][] = ['text' => 'Perex', 'icon' => 'formPerex'];
+			$tabs ['tabs'][] = ['text' => 'Patička', 'icon' => 'formFooter'];
+			$tabs ['tabs'][] = ['text' => 'Kniha', 'icon' => 'formBook'];
+			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
 					$this->addColumnInput ('title');

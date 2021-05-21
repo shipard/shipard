@@ -320,7 +320,7 @@ class FormItemTypes extends TableForm
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
-		$tabs ['tabs'][] = array ('text' => 'Vlastnosti', 'icon' => 'x-properties');
+		$tabs ['tabs'][] = array ('text' => 'Základní', 'icon' => 'system/formHeader');
 
 		$this->openForm ();
 			$this->addColumnInput ("fullName");

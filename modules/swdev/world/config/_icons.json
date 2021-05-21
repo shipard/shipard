@@ -1,0 +1,14 @@
+{
+    "tables/swdev.world.countries":{
+        "fa5":"fa-flag",
+        "fa5pro":"fa-bi-flag",
+        "bsi":"bi-flag",
+        "mdi":"flag"
+    },
+    "tables/swdev.world.currencies":{
+        "fa5":"fa-money-bill-alt",
+        "fa5pro":"fa-money-bill-alt",
+        "bsi":"bi-cash",
+        "mdi":"payments"
+    }
+}

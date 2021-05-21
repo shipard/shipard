@@ -1,7 +1,7 @@
 [
     {
         "t": 0,
-        "v": "test2"
+        "v": "add_circle_outline"
     },
     {
         "t": 0,
@@ -53,7 +53,7 @@
     },
     {
         "t": 0,
-        "v": "edit_note"
+        "v": "edit"
     },
     {
         "t": 0,

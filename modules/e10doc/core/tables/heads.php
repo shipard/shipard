@@ -3172,7 +3172,7 @@ class FormHeads extends TableForm
 			return;
 
 		if ($this->table->accountingDocument ($this->recData))
-			$tabs [] = array ('text' => 'Účtování', 'icon' => 'x-stamp');
+			$tabs [] = array ('text' => 'Účtování', 'icon' => 'system/formAccounting');
 	}
 
 	public function addAccountingTabContent ()

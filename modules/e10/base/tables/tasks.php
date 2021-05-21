@@ -152,8 +152,8 @@ class FormTask extends TableForm
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Úloha', 'icon' => 'x-content'];
-			$tabs ['tabs'][] = ['text' => 'Parametry', 'icon' => 'icon-location-arrow'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Parametry', 'icon' => 'formParameters'];
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
 					$this->addColumnInput('title');

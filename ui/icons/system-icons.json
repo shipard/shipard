@@ -2,8 +2,8 @@
 	"actionAdd": {
 		"fa5": "fa-plus-circle",
 		"fa5pro": "fa-plus-circle",
-		"bsi": "test1",
-		"mdi": "test2"
+		"bsi": "plus-circle",
+		"mdi": "add_circle_outline"
 	},	
 	"actionCalendar": {
 		"fa5": "fa-calendar-alt",
@@ -32,7 +32,7 @@
 	"actionHomePage": {
 		"fa5": "fa-home",
 		"fa5pro": "fa-home",
-		"bsi": "bi-house",
+		"bsi": "bi-house-door-fill",
 		"mdi": "home"
 	},	
 	"actionLogout": {
@@ -51,7 +51,7 @@
 		"fa5": "fa-edit",
 		"fa5pro": "fa-edit",
 		"bsi": "bi-pencil-square",
-		"mdi": "edit_note"
+		"mdi": "edit"
 	},	
 	"actionPrint": {
 		"fa5": "fa-print",
@@ -366,5 +366,11 @@
 		"fa5pro": "fa-filter",
 		"bsi": "bi-funnel",
 		"mdi": "filter_alt"
+	},
+	"formAccounting":{
+		"fa5": "fa-stamp",
+		"fa5pro": "fa-stamp",
+		"bsi": "bi-file-earmark-diff-fill",
+		"mdi": "approval"
 	}
 }

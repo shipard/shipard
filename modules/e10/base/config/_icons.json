@@ -91,6 +91,12 @@
 		"bsi": "bi-geo-alt-fill",
 		"mdi": "near_me"
     },
+    "formParameters":{
+        "fa5": "fa-list",
+		"fa5pro": "fa-list",
+		"bsi": "bi-list-ul",
+		"mdi": "list"
+    },
 
 
 	"detailProperty":{

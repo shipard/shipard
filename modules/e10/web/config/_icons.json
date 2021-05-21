@@ -108,6 +108,18 @@
 		"bsi": "bi-printer",
 		"mdi": "print"
 	},
+    "formTemplate":{
+        "fa5":"fa-palette",
+        "fa5pro":"fa-palette",
+        "bsi":"bi-palette",
+        "mdi":"palette"
+    },
+    "formScript":{
+        "fa5":"fa-code",
+        "fa5pro":"fa-code",
+        "bsi":"bi-code-slash",
+        "mdi":"code"
+    },
 
 
     "detailText":{
