@@ -48,25 +48,26 @@ class SystemIcons
 		,docStateHalfDone = 38
 		,docStateNew = 39
 		,docStateUnknown = 40
-		,formAttachments = 41
-		,formFilter = 42
-		,formHeader = 43
-		,formNote = 44
-		,formRows = 45
-		,formSettings = 46
-		,formSorting = 47
-		,iconBalance = 48
-		,iconFile = 49
-		,iconHistory = 50
-		,iconOther = 51
-		,iconOwner = 52
-		,iconPreview = 53
-		,iconReports = 54
-		,iconSearch = 55
-		,iconSettings = 56
-		,iconStart = 57
-		,iconToSolve = 58
-		,iconUser = 59
+		,formAccounting = 41
+		,formAttachments = 42
+		,formFilter = 43
+		,formHeader = 44
+		,formNote = 45
+		,formRows = 46
+		,formSettings = 47
+		,formSorting = 48
+		,iconBalance = 49
+		,iconFile = 50
+		,iconHistory = 51
+		,iconOther = 52
+		,iconOwner = 53
+		,iconPreview = 54
+		,iconReports = 55
+		,iconSearch = 56
+		,iconSettings = 57
+		,iconStart = 58
+		,iconToSolve = 59
+		,iconUser = 60
 	;
 
 
