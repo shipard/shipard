@@ -22,7 +22,7 @@ class Dashboard extends WidgetBoard
 	{
 		$this->panelStyle = self::psNone;
 
-		$viewerMode = '0';
+		$viewerMode = '1';
 		$vmp = explode ('-', $this->activeTopTabRight);
 		if (isset($vmp[2]))
 			$viewerMode = $vmp[2];
@@ -168,8 +168,8 @@ class Dashboard extends WidgetBoard
 		else
 		{
 			$rt = [
-				'viewer-mode-2' => ['text' => '', 'icon' => 'icon-th', 'action' => 'viewer-mode-2'],
 				'viewer-mode-1' => ['text' => '', 'icon' => 'icon-th-list', 'action' => 'viewer-mode-1'],
+				'viewer-mode-2' => ['text' => '', 'icon' => 'icon-th', 'action' => 'viewer-mode-2'],
 				'viewer-mode-3' => ['text' => '', 'icon' => 'icon-square', 'action' => 'viewer-mode-3'],
 				'viewer-mode-0' => ['text' => '', 'icon' => 'icon-th-large', 'action' => 'viewer-mode-0'],
 			];
