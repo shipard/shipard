@@ -205,6 +205,38 @@ class ServerManager extends Utility
 		}
 	}
 
+	public function serverUpgrade()
+	{
+		// -- update sources
+		foreach ($this->app->cfgServer ['channels'] as $channelId => $channel)
+		{
+			$this->serverUpgrade_Channel($channelId, $channel);
+		}
+
+		// -- app-upgrade
+		passthru ('shpd-server app-walk app-upgrade');
+	}
+
+	protected function serverUpgrade_Channel(string $channelId, array $channel)
+	{
+		echo "# $channelId\n";
+		if (is_dir($channel['path']))
+		{
+			if (is_dir($channel['path'].'/.git'))
+			{
+				passthru("cd {$channel['path']} && git pull");
+			}
+			else 
+			{
+				error_log ("ERROR: channel `$channelId` (`{$channel['path']}`) is not git repository");
+			}
+		}
+		else
+		{
+			error_log ("ERROR: dir `{$channel['path']}` for channel `$channelId` not found");
+		}
+	}
+
 	public function checkAll()
 	{
 		if (!$this->checkServerConfig())

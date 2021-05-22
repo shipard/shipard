@@ -1234,58 +1234,10 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		}
 	}
 
-	public function hostUpgrade ()
+	public function serverUpgrade ()
 	{
-		/*
-		$repositories =
-			[
-				'e10-server' => ['master', 'devel'],
-				'e10-templates' => ['master', 'devel'],
-				'e10-static-content' => ['master']
-			];
-
-		foreach ($repositories as $repositoryId => $channels)
-		{
-			$this->hostUpgrade_checkDirs ($channels);
-			foreach ($channels as $channel)
-			{
-				$channelDir = __E10_ROOT__ . $channel;
-
-				if (is_dir($channelDir . '/'.$repositoryId))
-				{ // upgrade
-					passthru("cd {$channelDir}/{$repositoryId} && git pull");
-				}
-				else
-				{ // download
-					passthru("cd {$channelDir} && git clone git@bitbucket.org:shipard/{$repositoryId}.git");
-					if ($channel !== 'master')
-						passthru("cd {$channelDir}/{$repositoryId} && git checkout -b $channel remotes/origin/$channel");
-				}
-
-				$this->hostUpgrade_extLibs($repositoryId, $channelDir);
-			}
-		}
-		*/
-	}
-
-	public function hostUpgrade_checkDirs ($channels)
-	{
-		/*
-		if (!is_dir(__E10_ROOT__))
-		{
-			mkdir(__E10_ROOT__, 0755, TRUE);
-			$this->msg("create directory ".__E10_ROOT__);
-		}
-		foreach ($channels as $channel)
-		{
-			$channelDir = __E10_ROOT__.'/'.$channel;
-			if (!is_dir($channelDir))
-			{
-				mkdir($channelDir, 0755, TRUE);
-				$this->msg("create directory ".$channelDir);
-			}
-		}
-		*/
+		$sm = new ServerManager($this);
+		return $sm->serverUpgrade();
 	}
 
 	public function hostingCfg ($requiredFields = NULL)
@@ -1404,7 +1356,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		if (count ($this->arguments) == 0)
 			return $this->help ();
 
-		if (!$this->superuser() && in_array($this->command (), ['server-check', 'host-upgrade', ]))
+		if (!$this->superuser() && in_array($this->command (), ['server-check']))
 			return $this->manager->err ('Need to be root');
 
 		$this->quiet = $this->arg ("quiet");
@@ -1421,12 +1373,12 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 
 			case	"help":             return $this->help ();
 			
-			case	"host-backup":			return $this->hostBackup ();
-			case	"server-check":				return $this->serverCheck ();
-			case	"host-cleanup":			return $this->hostCleanup ();
-			case	"host-upgrade":			return $this->hostUpgrade();
+			case	"host-backup":							return $this->hostBackup ();
+			case	"server-check":							return $this->serverCheck ();
+			case	"host-cleanup":							return $this->hostCleanup ();
+			case	"server-upgrade":						return $this->serverUpgrade();
 			case  "server-get-hosting-info":	return $this->getHostingInfo();
-			case	'netdata-alarm':		return $this->netDataAlarm();
+			case	'netdata-alarm':						return $this->netDataAlarm();
 		}
 
 		if (!$this->manager->load ())
