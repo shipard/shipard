@@ -71,7 +71,7 @@ class TableProperty extends DbTable
 	{
 		if ($columnId == 'debsGroup')
 		{
-			if (!$form)
+			if (!$form || !isset ($cfgItem ['groupKind']))
 				return TRUE;
 
 			if ($form->recData['propertyCategory'] == 0 && $cfgItem ['groupKind'] != 2)
@@ -638,7 +638,7 @@ class FormProperty extends TableForm
 			$this->closeTab ();
 
 			$this->openTab (TableForm::ltNone);
-				\E10\Base\addAttachmentsWidget ($this);
+				$this->addAttachmentsViewer();
 			$this->closeTab ();
 
 		$this->closeTabs ();

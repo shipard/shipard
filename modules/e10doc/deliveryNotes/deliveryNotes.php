@@ -103,7 +103,7 @@ class Form extends \E10Doc\Core\FormHeads
 				}
 
 				$this->openTab (TableForm::ltNone);
-					\E10\Base\addAttachmentsWidget ($this);
+					$this->addAttachmentsViewer();
 				$this->closeTab ();
 
 				$this->openTab ();

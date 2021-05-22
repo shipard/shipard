@@ -33,7 +33,7 @@ class FormStockInitState extends \e10doc\core\FormHeads
       $this->closeTab ();
 
 			$this->openTab (self::ltNone);
-					\E10\Base\addAttachmentsWidget ($this);
+				$this->addAttachmentsViewer();
 			$this->closeTab ();
 
 			$this->openTab ();

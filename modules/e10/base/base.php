@@ -283,9 +283,9 @@ class ListProperties implements \E10\IDocumentList
 
 		$cfgItem = NULL;
 		if (isset ($this->listDefinition ['srcCfgKeyColumn']) && isset($this->recData [$this->listDefinition ['srcCfgKeyColumn']]))
-			$this->myProperties = $this->table->app()->cfgItem ($this->listDefinition ['propertiesCfgList'].'.'.$this->recData [$this->listDefinition ['srcCfgKeyColumn']], array());
+			$this->myProperties = $this->table->app()->cfgItem ($this->listDefinition ['propertiesCfgList'].'.'.$this->recData [$this->listDefinition ['srcCfgKeyColumn']], []);
 		else
-			$this->myProperties = $this->table->app()->cfgItem ($this->listDefinition ['propertiesCfgList'], array());
+			$this->myProperties = [];
 
 		if (isset ($this->listDefinition ['propertiesCfgList2']))
 		{
@@ -340,7 +340,9 @@ class ListProperties implements \E10\IDocumentList
 			{
 				forEach ($groupDef as $propertyId)
 				{
-					$p = $this->allProperties [$propertyId];
+					$p = $this->allProperties [$propertyId] ?? NULL;
+					if (!$p)
+						continue;
 					if (!$this->table->propertyEnabled ($this->recData, $groupId, $propertyId, $p, $this->dataGrouped))
 					{
 						unset ($this->dataGrouped[$groupId][$propertyId]);
@@ -1203,25 +1205,6 @@ class ViewAttachments extends \E10\TableViewWidget
 		$this->classification = \E10\Base\loadClassification($this->table->app(), $this->table->tableId(), $this->pks);
 	}
 } // class ViewAttachments
-
-
-function attachmentsWidget ($table, $recData)
-{
-	$c = '';
-	$ta = $table->app()->table ('e10.base.attachments');
-	$v = $ta->getTableView ('e10.base.ViewAttachments', ['tableid' => $table->tableId(), 'recid' => isset($recData ['ndx']) ? $recData ['ndx'] : 0]);
-	$v->renderViewerData ('');
-	$c .= $v->createViewerCode ('', FALSE);
-	$v->appendAsSubObject();
-
-	return $c;
-}
-
-
-function addAttachmentsWidget (\Shipard\Form\TableForm $form)
-{
-	$form->appendElement (\E10\Base\attachmentsWidget($form->table, $form->recData), NULL);
-}
 
 
 /*

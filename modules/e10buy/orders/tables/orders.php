@@ -703,7 +703,7 @@ class FormOrder extends TableForm
 
 
 			$this->openTab (TableForm::ltNone);
-				\E10\Base\addAttachmentsWidget ($this);
+				$this->addAttachmentsViewer();
 			$this->closeTab ();
 			$this->closeTabs ();
 		$this->closeForm ();

@@ -41,6 +41,9 @@ class TableDays extends DbTable
 
 	public function tableIcon ($recData, $options = NULL)
 	{
+		if (!isset($recData['dayType']))
+			return 'tables/e10.calendar.days';
+
 		$dt = $this->app()->cfgItem('e10.calendar.daysTypes.'.$recData['dayType']);
 		return $dt['icon'];
 	}

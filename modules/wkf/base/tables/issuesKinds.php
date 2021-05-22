@@ -36,12 +36,14 @@ class TableIssuesKinds extends DbTable
 
 	public function tableIcon ($recData, $options = NULL)
 	{
-		if ($recData['icon'] !== '')
-			return $recData['icon'];
-		$dt = $this->app()->cfgItem ('wkf.issues.types.'.$recData['issueType'], FALSE);
-		if ($dt)
-			return $dt['icon'];
-
+		if (isset($recData['icon']))
+		{
+			if ($recData['icon'] !== '')
+				return $recData['icon'];
+			$dt = $this->app()->cfgItem ('wkf.issues.types.'.$recData['issueType'], FALSE);
+			if ($dt)
+				return $dt['icon'];
+		}
 		return parent::tableIcon ($recData, $options);
 	}
 

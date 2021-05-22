@@ -150,7 +150,7 @@ class FormSwInstallPackage extends TableForm
 			$this->closeTab ();
 
 			$this->openTab (TableForm::ltNone);
-				\E10\Base\addAttachmentsWidget ($this);
+				$this->addAttachmentsViewer();
 			$this->closeTab ();
 
 		$this->closeTabs ();

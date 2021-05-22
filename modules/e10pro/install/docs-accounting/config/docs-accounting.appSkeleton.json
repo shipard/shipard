@@ -1,18 +1,5 @@
 {
 	"panels": {
-		"docs-finance":
-		{
-			"items": {
-				"accJournal": {
-					"t1": "Účetní deník", "object": "viewer", "table": "e10doc.debs.journal", "viewer": "default",
-					"enabledCfgItem": "e10doc.acc.use", "icon": "tables/e10doc.debs.journal", "order": 500000
-				},
-				"accounts": {
-					"t1": "Účtový rozvrh", "object": "viewer", "table": "e10doc.debs.accounts", "viewer": "default",
-					"enabledCfgItem": "e10doc.acc.use", "icon": "tables/e10doc.debs.accounts", "order": 2050000
-				}
-			}
-		},
 		"accounting":
 		{
 			"items": {

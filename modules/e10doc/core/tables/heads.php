@@ -3200,7 +3200,7 @@ class FormHeads extends TableForm
 		if ($this->readOnly)
 			$this->addDocumentCard('e10doc.core.dc.Attachments');
 		else
-			\E10\Base\addAttachmentsWidget ($this);
+			$this->addAttachmentsViewer();
 		$this->closeTab ();
 	}
 

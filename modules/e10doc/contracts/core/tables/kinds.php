@@ -99,7 +99,7 @@ class TableKinds extends DbTable
 
 	public function tableIcon ($recData, $options = NULL)
 	{
-		if ($recData['icon'] !== '')
+		if (isset($recData['icon']) && $recData['icon'] !== '')
 			return $recData['icon'];
 
 		return parent::tableIcon ($recData, $options);

@@ -147,7 +147,7 @@ class FormBlockItem extends TableForm
 				$this->closeTab ();
 
 				$this->openTab (self::ltNone);
-					\E10\Base\addAttachmentsWidget ($this);
+					$this->addAttachmentsViewer();
 				$this->closeTab ();
 			$this->closeTabs ();
 		$this->closeForm ();
@@ -184,7 +184,7 @@ class FormBlockItem extends TableForm
 				}
 
 				$this->openTab (self::ltNone);
-					\E10\Base\addAttachmentsWidget ($this);
+					$this->addAttachmentsViewer();
 				$this->closeTab ();
 			$this->closeTabs ();
 		$this->closeForm ();

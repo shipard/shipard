@@ -183,7 +183,7 @@ class FormUrlDecoration extends TableForm
 					$this->addColumnInput ('server');
 				$this->closeTab ();
 				$this->openTab (TableForm::ltNone);
-					\E10\Base\addAttachmentsWidget ($this);
+					$this->addAttachmentsViewer();
 				$this->closeTab ();
 			$this->closeTabs ();
 		$this->closeForm ();

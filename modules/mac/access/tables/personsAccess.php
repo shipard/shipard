@@ -157,7 +157,7 @@ class FormPersonAccess extends TableForm
 					$this->addList ('accessLevels');
 				$this->closeTab ();
 				$this->openTab (TableForm::ltNone);
-					\E10\Base\addAttachmentsWidget ($this);
+					$this->addAttachmentsViewer();
 				$this->closeTab ();
 			$this->closeTabs ();
 		$this->closeForm ();

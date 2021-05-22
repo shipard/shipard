@@ -17,19 +17,6 @@ class TableTaxPeriods extends DbTable
 		$this->setName ("e10doc.base.taxperiods", "e10doc_base_taxperiods", "Daňová období");
 	}
 
-	public function tableIcon ($recData, $options = NULL)
-	{
-		switch ($recData['docState'])
-		{
-			case 1000: return 'icon-star-o';
-			case 9000: return 'icon-lock';
-			case 8000: return 'icon-edit';
-			case 4000: return 'icon-check-square';
-			case 9800: return 'icon-trash-o';
-			default: return 'icon-question-sign';
-		}
-	}
-
 	public function createPeriod ($year, $vatReg = 1)
 	{
 		$vatPeriod = $this->app()->cfgItem ('options.core.vatPeriod', 0);

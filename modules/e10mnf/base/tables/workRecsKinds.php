@@ -29,12 +29,15 @@ class TableWorkRecsKinds extends DbTable
 
 	public function tableIcon ($recData, $options = NULL)
 	{
-		if ($recData['icon'] !== '')
-			return $recData['icon'];
-		$dt = $this->app()->cfgItem ('e10mnf.workRecs.wrTypes.'.$recData['docType'], FALSE);
-		if ($dt)
-			return $dt['icon'];
-
+		if (isset($recData['icon']))
+		{
+			if ($recData['icon'] !== '')
+				return $recData['icon'];
+			$dt = $this->app()->cfgItem ('e10mnf.workRecs.wrTypes.'.$recData['docType'], FALSE);
+			if ($dt)
+				return $dt['icon'];
+		}
+				
 		return parent::tableIcon ($recData, $options);
 	}
 

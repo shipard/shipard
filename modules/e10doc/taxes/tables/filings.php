@@ -139,7 +139,7 @@ class FormFiling extends TableForm
 					$this->addColumnInput('dateIssue');
 				$this->closeTab();
 				$this->openTab (TableForm::ltNone);
-					\E10\Base\addAttachmentsWidget ($this);
+					$this->addAttachmentsViewer();
 				$this->closeTab ();
 			$this->closeTabs();
 		$this->closeForm ();

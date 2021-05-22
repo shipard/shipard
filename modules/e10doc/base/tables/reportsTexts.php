@@ -135,11 +135,14 @@ class TableReportsTexts extends DbTable
 
 	public function tableIcon ($recData, $options = NULL)
 	{
-		switch ($recData['reportMode'])
+		if (isset($recData['reportMode']))
 		{
-			case FormReport::rmDefault: return 'icon-file-text-o';
-			case FormReport::rmPOS: return 'x-request';
-		}
+			switch ($recData['reportMode'])
+			{
+				case FormReport::rmDefault: return 'icon-file-text-o';
+				case FormReport::rmPOS: return 'x-request';
+			}
+		}	
 		return parent::tableIcon($recData, $options);
 	}
 
@@ -250,7 +253,7 @@ class FormReportText extends TableForm
 					$this->addColumnInput ('text', TableForm::coFullSizeY);
 				$this->closeTab();
 				$this->openTab (TableForm::ltNone);
-					\E10\Base\addAttachmentsWidget ($this);
+					$this->addAttachmentsViewer();
 				$this->closeTab ();
 			$this->closeTabs();
 		$this->closeForm ();
