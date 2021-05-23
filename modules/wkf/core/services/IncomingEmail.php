@@ -3,11 +3,7 @@
 
 namespace wkf\core\services;
 
-
-require_once __APP_DIR__.'/e10-modules/e10/server/php/3rd/php-mime-mail-parser/lib/MimeMailParser/Parser.php';
-require_once __APP_DIR__.'/e10-modules/e10/server/php/3rd/php-mime-mail-parser/lib/MimeMailParser/Attachment.php';
-
-use \MimeMailParser\Parser, \MimeMailParser\Attachment, e10\Utility, e10\utils, \e10\str, wkf\core\TableIssues;
+use \PhpMimeMailParser\Parser, \PhpMimeMailParser\Attachment, e10\Utility, e10\utils, \e10\str, wkf\core\TableIssues;
 use \e10doc\core\libs\DocsModes;
 
 
@@ -131,9 +127,11 @@ class IncomingEmail extends Utility
 			$attName = $path_parts ['filename'];
 
 			$attFileName = $baseFileName.'-'.base_convert(time() + rand(), 10, 35).'.'.$fileType;
-
-			$a->saveAttachment (__APP_DIR__.'/tmp/', $attFileName);
 			$attFullFileName = __APP_DIR__.'/tmp/'.$attFileName;
+
+			$attTempFileName = $a->save (__APP_DIR__.'/tmp/', Parser::ATTACHMENT_RANDOM_FILENAME);
+			rename($attTempFileName, $attFullFileName);
+
 			$attFullFileName = $this->checkFile($attFullFileName);
 			$path_parts = pathinfo ($attFullFileName);
 			$fileType = isset($path_parts ['extension']) ? $path_parts ['extension'] : '';
@@ -575,7 +573,7 @@ class IncomingEmail extends Utility
 				}
 				elseif (in_array($hdrId, self::$emlHeadersOther))
 				{
-					$str = utils::strToUtf8($decodedHdr['display']);
+					$str = utils::strToUtf8($decodedHdr['name']);
 					$systemInfo['email']['headers'][] = ['header' => $hdrId, 'value' => $str];
 				}
 			}
@@ -651,10 +649,25 @@ class IncomingEmail extends Utility
 
 	private function parseHeader ($hstr)
 	{
-		$headers =  mailparse_rfc822_parse_addresses ($hstr);
-		forEach ($headers as &$h)
+		if (is_string($hstr))
 		{
-			$h['name'] = $this->__decodeHeader($h['display']);
+			$headers =  mailparse_rfc822_parse_addresses ($hstr);
+			forEach ($headers as &$h)
+			{
+				$h['name'] = $this->__decodeHeader($h['display']);
+			}
+			return $headers;
+		}
+		
+		$headers = [];
+		foreach ($hstr as $oneHeader)
+		{
+			$items = mailparse_rfc822_parse_addresses ($oneHeader);
+			foreach ($items as $oneItem)
+			{
+				$i = ['address' => $oneItem['address'], 'name' => $oneItem['display']];
+				$headers[] = $i;
+			}
 		}
 		return $headers;
 	}

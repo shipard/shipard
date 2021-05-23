@@ -172,7 +172,7 @@ class Extract extends MetaData
 
 	public function run()
 	{
-		$this->extractConfig = $this->loadCfgFile(__APP_DIR__.'/e10-modules/lib/core/attachments/config/extract.json');
+		$this->extractConfig = $this->loadCfgFile(__SHPD_ROOT_DIR__.'/src/_deprecated/lib/core/attachments/config/extract.json');
 		if ($this->attNdx)
 			$this->scanOne();
 		elseif ($this->attTableId !== NULL)

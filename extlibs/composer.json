@@ -4,6 +4,7 @@
 		"ondrejnov/eet": "v0.2",
 		"google/apiclient": "^2.0",
 		"texy/texy": "^3.0",
-		"dibi/dibi": "4.1.5"
+		"dibi/dibi": "4.1.5",
+		"php-mime-mail-parser/php-mime-mail-parser": "^7.0"
 	}
 }

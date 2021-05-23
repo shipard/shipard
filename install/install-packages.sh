@@ -13,7 +13,7 @@ apt install --assume-yes --quiet nginx
 apt install --assume-yes --quiet mariadb-server
 
 
-apt install --assume-yes --quiet php-cli php-mysql php-fpm php-imap php-xml php-curl php-json php-intl php-zip php-bcmath php-gd php-mbstring php-curl php-soap
+apt install --assume-yes --quiet php-cli php-mysql php-fpm php-imap php-xml php-curl php-json php-intl php-zip php-bcmath php-gd php-mbstring php-curl php-soap php-mailparse
 
 
 apt install --assume-yes --quiet librsvg2-bin qrencode imagemagick poppler-utils zip graphviz idn
@@ -66,6 +66,12 @@ pip3 install PyPDF4
 #
 apt install --assume-yes --quiet chromium-browser
 npm -g i puppeteer-core
+
+#
+# OCR & att metadata tools
+#
+apt install --assume-yes --quiet libimage-exiftool-perl docx2txt tesseract-ocr tesseract-ocr-ces ocrmypdf
+
 
 #apt install postfix
 
