@@ -3,7 +3,7 @@
 		"panels": {
 			"company": {
 				"name": "Firma",
-				"icon": "icon-building",
+				"icon": "reportCompany",
 				"order": 3000,
 				"fullsize": 1,
 				"rows": {

@@ -1,22 +1,22 @@
 {
     "docs-invno": {
 				"fullName": "Faktura vydaná běžná", "shortName": "Vydaná faktura", "shortcut": "FVB", "pluralName": "Vydané faktury",
-				"icon": "e10-docs-invoices-out"},
+				"icon": "docType/invoicesOut"},
     "docs-invni": {
 				"fullName": "Faktura přijatá běžná", "shortName": "Přijatá faktura", "shortcut": "FPB", "pluralName": "Přijaté faktury",
-				"icon": "e10-docs-invoices-in"},
+				"icon": "docType/invoicesIn"},
     "docs-cash": {
 				"fullName": "Pokladní doklad", "shortName": "Pokladna", "shortcut": "POK", "pluralName": "Pokladní doklady",
-				"icon": "e10-docs-cash"},
+				"icon": "docType/cashRegister"},
     "docs-cashreg": {
 				"fullName": "Prodejka", "shortName": "Prodejka", "shortcut": "PRO", "pluralName": "Prodejky",
-				"icon": "x-wallet"},
+				"icon": "docType/cashReg"},
     "docs-stockin": {
 				"fullName": "Příjemka zásob", "shortName": "Příjemka", "shortcut": "PŘÍ", "pluralName": "Příjemky zásob",
-				"icon": "e10-docs-stock-in"},
+				"icon": "docType/stockIn"},
     "docs-stockout": {
 				"fullName": "Výdejka zásob", "shortName": "Výdejka", "shortcut": "VÝD", "pluralName": "Výdejky zásob",
-				"icon": "e10-docs-stock-in"},
+				"icon": "docType/stockOut"},
     "docs-purchase": {"fullName": "Výkupní lístek", "shortName": "Výkup", "shortcut": "VKP", "pluralName": "Výkupní lístky",
 				"icon": "icon-exclamation-triangle"}
 }

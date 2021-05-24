@@ -133,6 +133,9 @@
         "bsi":"bi-clipboard-check",
         "mdi":"inventory"
     },
+
+
+
     "balance/receivables":{
         "fa5":"fa-arrow-circle-up",
         "fa5pro":"fa-arrow-circle-up",
@@ -507,6 +510,14 @@
         "bsi":"bi-dash-square-fill",
         "mdi":"remove_circle"
 	},
+
+
+    "reportCompany":{
+        "fa5":"fa-building",
+        "fa5pro":"fa-building",
+        "bsi":"bi-building",
+        "mdi":"business"
+    },
 
 
     "formDocument":{

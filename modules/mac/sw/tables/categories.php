@@ -106,8 +106,8 @@ class FormCategory extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 		$this->setFlag ('maximize', 1);
 
-		$tabs ['tabs'][] = ['text' => 'Kategorie', 'icon' => 'icon-folder'];
-		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'icon-paperclip'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);

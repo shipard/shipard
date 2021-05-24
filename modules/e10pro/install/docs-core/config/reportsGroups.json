@@ -1,17 +1,17 @@
 {
 	"e10docs": {
-		"title": "Doklady", "icon": "icon-file-text-o", "order": 100000
+		"title": "Doklady", "icon": "homeReportDocuments", "order": 100000
 	},
 	"e10pro-property": {
-		"title": "Majetek", "icon": "icon-institution", "order": 50000
+		"title": "Majetek", "icon": "homeReportProperty", "order": 50000
 	},
 	"e10-checks": {
-		"title": "Kontroly", "icon": "icon-exclamation-triangle", "order": 400000
+		"title": "Kontroly", "icon": "homeReportCheckups", "order": 400000
 	},
 	"e10pro-terminal": {
-		"title": "Prodejna", "icon": "icon-file-o", "order": 1900
+		"title": "Prodejna", "icon": "homeReportShop", "order": 1900
 	},
 	"e10pro-other": {
-		"title": "Ostatní", "icon": "icon-file-o", "order": 800000
+		"title": "Ostatní", "icon": "homeReportOther", "order": 800000
 	}
 }

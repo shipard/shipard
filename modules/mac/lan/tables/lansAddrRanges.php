@@ -200,8 +200,8 @@ class FormLanAddrRange extends TableForm
 
 		$this->openForm ();
 
-			$tabs ['tabs'][] = ['text' => 'Rozsah', 'icon' => 'icon-road'];
-			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-image'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 			$this->openTabs ($tabs);
 				$this->openTab ();

@@ -1,0 +1,32 @@
+{
+    "homeReportDocuments":{
+		"fa5": "fa-file-alt",
+		"fa5pro": "fa-file-alt",
+		"bsi": "bi-file-earmark-text-fill",
+		"mdi": "description"
+	},
+    "homeReportProperty":{
+		"fa5":"fa-university",
+        "fa5pro":"fa-university",
+        "bsi":"bi-bank",
+        "mdi":"account_balance"
+	},
+    "homeReportCheckups":{
+		"fa5":"fa-exclamation-triangle",
+		"fa5pro":"fa-file-alt",
+		"bsi":"bi-exclamation-triangle-fill",
+		"mdi":"warning"
+	},
+    "homeReportShop":{
+		"fa5":"fa-store",
+		"fa5pro":"fa-store",
+		"bsi":"bi-shop",
+		"mdi":"store"
+	},
+    "homeReportOther":{
+		"fa5": "fa-file",
+		"fa5pro": "fa-file",
+		"bsi": "bi-file-earmark",
+		"mdi": "insert_drive_file"
+	}
+}

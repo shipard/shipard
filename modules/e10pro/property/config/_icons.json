@@ -90,5 +90,11 @@
 		"fa5pro": "fa-university",
 		"bsi": "bi-bank2",
 		"mdi": "account_balance"
+	},
+	"formDepreciations":{
+		"fa5": "fa-sort-amount-down",
+		"fa5pro": "fa-sort-amount-down",
+		"bsi": "bi-sort-down",
+		"mdi": "sort"
 	}
 }

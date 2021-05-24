@@ -3,7 +3,7 @@
 		"fullName": "Prodejka", "shortName": "Prodejka", "shortcut": "PRO", "pluralName": "Prodejky",
 		"classId": "cashregister", "docIdCode": "14",
 		"taxDir": 1, "tradeDir": 1, "docDir": 2,
-		"icon": "x-wallet", "useTax": 1, "taxDocument": 1, "acc": 1, "timeline": "out", "timelineSum": "def",
+		"icon": "docType/cashReg", "useTax": 1, "taxDocument": 1, "acc": 1, "timeline": "out", "timelineSum": "def",
 		"headerStyle": "toPay", "showInfo2": "tb", "groupNewLine": 0, "resetDatesWhenDone": 1, "showDate": "c",
 		"docNumber": "%D%B%y%5", "invDirection": -1}
 }

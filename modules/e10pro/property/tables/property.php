@@ -549,17 +549,17 @@ class FormProperty extends TableForm
 
 		$properties = $this->addList ('properties', '', TableForm::loAddToFormLayout|TableForm::loWidgetParts);
 
-		$tabs ['tabs'][] = array ('text' => 'Vlastnosti', 'icon' => 'x-properties');
-		$tabs ['tabs'][] = ['text' => 'Příslušen- ství', 'icon' => 'icon-black-tie'];
+		$tabs ['tabs'][] = array ('text' => 'Základní', 'icon' => 'system/formHeader');
+		$tabs ['tabs'][] = ['text' => 'Příslušen- ství', 'icon' => 'formAccessories'];
 		forEach ($properties ['memoInputs'] as $mi)
 			$tabs ['tabs'][] = array ('text' => $mi ['text'], 'icon' => $mi ['icon']);
 		if ($this->recData['foreign'] == FALSE && $useDeps)
 		{
-			$tabs ['tabs'][] = ['text' => 'Odpisy', 'icon' => 'icon-sort-amount-desc'];
+			$tabs ['tabs'][] = ['text' => 'Odpisy', 'icon' => 'formDepreciations'];
 			//$tabs ['tabs'][] = ['text' => 'Účtování', 'icon' => 'x-stamp'];
 		}
-		$tabs ['tabs'][] = array ('text' => 'Poznámka', 'icon' => 'x-content');
-		$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'x-attachments');
+		$tabs ['tabs'][] = array ('text' => 'Poznámka', 'icon' => 'system/formNote');
+		$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'system/formAttachments');
 
 		$this->openTabs ($tabs, TRUE);
 			$this->openTab ();

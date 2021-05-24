@@ -30,13 +30,13 @@
 		"fullName": "Příkaz k úhradě", "shortName": "Příkaz", "shortcut": "BNO", "pluralName": "Příkazy k úhradě",
 		"classId": "bankorder", "docIdCode": "33", "docNumber": "%D%A%y%4",
 		"taxDir": 0, "tradeDir": 0, "docDir": 0, "useTax": 0, "acc": 0,
-		"icon": "icon-share-square", "headerStyle": "bankorder", "detailStyle": "bank"
+		"icon": "docType/bankOrders", "headerStyle": "bankorder", "detailStyle": "bank"
 	},
     "prfmin": {"fullName": "Zálohová faktura přijatá", "shortName": "Zál.faktura přijatá", "pluralName": "Zálohové faktury přijaté",
 	      "shortcut": "FPZ", "classId": "proformain", "docIdCode": "22", "taxDir": 0,
         "icon": "docType/proFormaIn", "tradeDir": 2, "useTax": 1},
 		"invpo": {
-				"fullName": "Faktura vydaná zálohová", "shortName": "Vydaná záloha", "icon": "icon-upload", "pluralName": "Faktury vydané zálohové",
+				"fullName": "Faktura vydaná zálohová", "shortName": "Vydaná záloha", "icon": "docType/proFormaOut", "pluralName": "Faktury vydané zálohové",
 				"shortcut": "FVZ", "classId": "proformaOut", "docIdCode": "12",
 				"taxDir": 0, "tradeDir": 1, "docDir": 2, "invDirection": 0,
 				"useTax": 1, "taxDocument": 0, "timeline": "out", "timelineSum": "def",
@@ -47,7 +47,7 @@
 				"fullName": "Účetní doklad", "shortName": "Úč. doklad", "shortcut": "ÚČD", "pluralName": "Účetní doklady",
 				"classId": "cmnbkp", "docIdCode": "60",
 				"taxDir": 0, "tradeDir": 0, "docDir": 0, "useTax": 0, "acc": 1,
-				"icon": "x-documents", "headerStyle": "cmnbkp", "detailStyle": "cmnbkp",
+				"icon": "docType/accDocs", "headerStyle": "cmnbkp", "detailStyle": "cmnbkp",
 				"docNumber": "%D%y%C%4", "docNumbers": 1, "documentCard": "e10doc.cmnbkp.dc.Detail",
 				"activities": {
 					"taxVatReturn": {"name": "Přiznání DPH", "manualTaxPeriod": 1},

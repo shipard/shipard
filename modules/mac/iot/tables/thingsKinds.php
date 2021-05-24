@@ -127,8 +127,8 @@ class FormThingKind extends TableForm
 	{
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
-		$tabs ['tabs'][] = ['text' => 'Data', 'icon' => 'icon-database'];
-		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'icon-paperclip'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formHeader'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);

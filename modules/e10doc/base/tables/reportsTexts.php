@@ -1,5 +1,6 @@
 <?php
 
+
 namespace e10doc\base;
 use \e10\utils, \e10\TableView, \Shipard\Form\TableForm, \e10\DbTable, \e10\FormReport;
 
@@ -234,9 +235,9 @@ class FormReportText extends TableForm
 		$this->setFlag ('maximize', 1);
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-wrench'];
-			$tabs ['tabs'][] = ['text' => 'Text', 'icon' => 'x-content'];
-			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-image'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Text', 'icon' => 'formText'];
+			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
 					$this->addColumnInput ('docType');

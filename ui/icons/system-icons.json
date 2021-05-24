@@ -175,6 +175,77 @@
 		"bsi":"bi-star",
 		"mdi":"grade"
 	},
+	"iconLocked":{
+		"fa5":"fa-lock",
+		"fa5pro":"fa-lock-alt",
+		"bsi":"bi-lock-fill",
+		"mdi":"lock"
+	},
+	"iconFilePdf":{
+		"fa5":"fa-file-pdf",
+		"fa5pro":"fa-file-pdf",
+		"bsi":"bi-file-earmark-pdf-fill",
+		"mdi":"picture_as_pdf"
+	},
+
+
+
+	"personHuman":{
+		"fa5":"fa-user",
+		"fa5pro":"fa-user",
+		"bsi":"bi-person-fill",
+		"mdi":"person"
+	},
+	"personCompany":{
+		"fa5": "fa-building",
+		"fa5pro": "fa-building",
+		"bsi": "bi-building",
+		"mdi": "business"
+	},
+	"personRobot":{
+		"fa5":"fa-robot",
+		"fa5pro":"fa-user-robot",
+		"bsi":"bi-person-square",
+		"mdi":"smart_toy"
+	},
+
+
+	"filterOverview":{
+		"fa5":"fa-tachometer-alt",
+        "fa5pro":"fa-tachometer-alt",
+        "bsi":"bi-speedometer2",
+        "mdi":"speed"
+	},
+	"filterActive":{
+		"fa5":"fa-bolt",
+        "fa5pro":"fa-bolt",
+        "bsi":"bi-lightning-fill",
+        "mdi":"bolt"
+	},
+	"filterDone":{
+		"fa5":"fa-check",
+        "fa5pro":"fa-check",
+        "bsi":"bi-check",
+        "mdi":"check"
+	},
+	"filterArchive":{
+		"fa5":"fa-archive",
+        "fa5pro":"fa-archive",
+        "bsi":"bi-archive",
+        "mdi":"inventory_2"
+	},
+	"filterAll":{
+		"fa5": "fa-toggle-on",
+		"fa5pro": "fa-toggle-on",
+		"bsi": "bi-toggle-on",
+		"mdi": "toggle_on"
+	},
+	"filterTrash":{
+		"fa5":"fa-trash",
+        "fa5pro":"fa-trash",
+        "bsi":"bi-trash-fill",
+        "mdi":"delete"
+	},
 
 
 	"detailDetail":{
