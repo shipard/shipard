@@ -19,7 +19,7 @@
 	<link href="{{scRoot}}/libs/js/highlightjs/styles/atom-one-light.css" rel="stylesheet">
 	<link href="{{scRoot}}/libs/js/fancybox/3/jquery.fancybox.min.css" rel="stylesheet">
 	<link href="{{dsRoot}}/{{serverInfo.templateStylePath}}/{{serverInfo.look}}-wiki.css?v={{serverInfo.lookVersion.wiki}}" rel="stylesheet">
-
+	
     <style type="text/css">
         .sticky {
             position: fixed;
@@ -105,10 +105,9 @@
 <script src="//code.jquery.com/jquery-3.2.1.min.js"></script>
 
 <script type="text/javascript">var httpApiRootPath = '{{urlRoot}}'; var httpServerRootPath = '{{urlServer}}';</script>
-{{#userAuthenticated}}<script src="{{dsRoot}}/e10-modules/e10/server/js/e10web.js?v=21"></script>{{/userAuthenticated}}
-
+{{#userAuthenticated}}<script type="text/javascript" src="{{dsRoot}}/www-root/templates/web/libs/e10web.js?v=21"></script>{{/userAuthenticated}}
 <script type="text/javascript" src="{{scRoot}}/libs/js/popperjs/popper.min.js"></script>
-<script type="text/javascript" src="{{scRoot}}/bs/4.5/dist/js/bootstrap.min.js?v452"></script>
+<script type="text/javascript" src="{{scRoot}}/bs/5.0/dist/js/bootstrap.min.js?v452"></script>
 <script type="text/javascript" src="{{scRoot}}/libs/js/highlightjs/highlight.pack.js"></script>
 <script type="text/javascript" src="{{scRoot}}/libs/js/fancybox/3/jquery.fancybox.min.js"></script>
 

@@ -4,7 +4,7 @@ namespace mac\lan;
 
 
 use \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Viewer\TableViewPanel, \Shipard\Form\TableForm, \E10\DbTable, \e10\utils;
-
+use \e10\base\libs\UtilsBase;
 
 /**
  * Class TableSwLicenses
@@ -149,13 +149,7 @@ class ViewSwLicenses extends TableView
 		$qry = [];
 
 		// -- tags
-		$clsf = \E10\Base\classificationParams ($this->table);
-		foreach ($clsf as $cg)
-		{
-			$params = new \E10\Params ($panel->table->app());
-			$params->addParam ('checkboxes', 'query.clsf.'.$cg['id'], ['items' => $cg['items']]);
-			$qry[] = ['style' => 'params', 'title' => $cg['name'], 'params' => $params];
-		}
+		UtilsBase::addClassificationParamsToPanel($this->table, $panel, $qry);
 
 		// -- sw applications
 		$qapps[] = 'SELECT apps.ndx as appNdx, apps.shortName as appName FROM mac_lan_swLicenses as licenses';

@@ -2,16 +2,14 @@
 
 namespace e10pro\reports\tests\docs;
 
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
-
-use e10doc\core\e10utils;
+use e10doc\core\libs\E10Utils;
 
 
 /**
  * Class ReportExchangeRates
  * @package e10pro\reports\tests\docs
  */
-class ReportExchangeRates extends \e10doc\core\GlobalReport
+class ReportExchangeRates extends \e10doc\core\libs\reports\GlobalReport
 {
 	var $docTypes;
 
@@ -44,7 +42,7 @@ class ReportExchangeRates extends \e10doc\core\GlobalReport
 		array_push ($q, ' OR');
 		array_push ($q, ' EXISTS (SELECT ndx FROM e10doc_core_rows as [rows] WHERE heads.ndx = [rows].document AND exchangeRate = 1)');
 		array_push ($q, ')');
-		e10utils::fiscalPeriodQuery ($q, $this->reportParams ['fiscalPeriod']['value']);
+		E10Utils::fiscalPeriodQuery ($q, $this->reportParams ['fiscalPeriod']['value']);
 		array_push ($q, ' ORDER BY dateAccounting, docNumber');
 
 		$rows = $this->app->db()->query ($q);

@@ -952,10 +952,10 @@ class DashboardIssuesCore extends TableView
 			if (!$item['disableComments'])
 			{
 				$cmds [] = [
-					'action' => 'new', 'data-table' => 'e10pro.wkf.messages', 'icon' => 'icon-plus-circle',
+					'action' => 'new', 'data-table' => 'wkf.core.comments', 'icon' => 'system/actionAdd',
 					'text' => 'Nový komentář', 'type' => 'button', 'actionClass' => 'btn btn-xs btn-success', 'class' => 'pull-right',
-					'data-addParams' => '__msgType='.TableMessages::mtComment.'&__ownerMsg=' . $ndx,
-					'data-srcobjecttype' => 'viewer', 'data-srcobjectid' => $this->vid
+					'btnClass' => 'btn-success',
+					'data-addParams' => '__issue=' . $ndx,
 				];
 			}
 
@@ -1263,7 +1263,7 @@ class DashboardIssuesCore extends TableView
 		{
 			foreach ($attachments['images'] as $a)
 			{
-				$icon = ($a['filetype'] === 'pdf') ? 'icon-file-pdf-o' : 'icon-picture-o';
+				$icon = ($a['filetype'] === 'pdf') ? 'system/iconFile' : 'system/iconFile';
 				$l = ['text' => $a['name'], 'icon' => $icon, 'class' => 'e10-att-link btn btn-xs btn-default df2-action-trigger', 'prefix' => ''];
 				$l['data'] =
 					[

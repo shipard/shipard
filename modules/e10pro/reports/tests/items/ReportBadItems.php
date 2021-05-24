@@ -2,16 +2,13 @@
 
 namespace e10pro\reports\tests\items;
 
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
-
-use e10doc\core\e10utils, e10\utils;
+use e10doc\core\libs\E10Utils, \Shipard\Utils\Utils;
 
 
 /**
  * Class ReportBadItems
- * @package e10pro\reports\tests\items
  */
-class ReportBadItems extends \E10Doc\Core\GlobalReport
+class ReportBadItems extends \e10doc\core\libs\reports\GlobalReport
 {
 	/** @var \e10doc\core\TableHeads */
 	var $tableHeads;
@@ -33,12 +30,12 @@ class ReportBadItems extends \E10Doc\Core\GlobalReport
 		$this->tableHeads = $this->app()->table('e10doc.core.heads');
 		$this->tableItems = $this->app()->table('e10.witems.items');
 
-		$this->today = utils::today();
+		$this->today = Utils::today();
 
 		$this->docTypes = $this->app->cfgItem ('e10.docs.types');
 
 		if ($this->defaultFiscalPeriod === FALSE)
-			$this->defaultFiscalPeriod = e10utils::prevFiscalMonth($this->app());
+			$this->defaultFiscalPeriod = E10Utils::prevFiscalMonth($this->app());
 
 		if ($this->subReportId !== 'badItems')
 			$this->addParam ('fiscalPeriod', 'fiscalPeriod', ['flags' => ['enableAll', 'quarters', 'halfs', 'years'], 'defaultValue' => $this->defaultFiscalPeriod]);
@@ -62,8 +59,8 @@ class ReportBadItems extends \E10Doc\Core\GlobalReport
 
 		switch ($cycle)
 		{
-			case 'thisMonth': $this->fiscalPeriod = e10utils::todayFiscalMonth($this->app()); break;
-			case 'prevMonth': $this->fiscalPeriod = e10utils::prevFiscalMonth($this->app()); break;
+			case 'thisMonth': $this->fiscalPeriod = E10Utils::todayFiscalMonth($this->app()); break;
+			case 'prevMonth': $this->fiscalPeriod = E10Utils::prevFiscalMonth($this->app()); break;
 		}
 	}
 
@@ -122,15 +119,15 @@ class ReportBadItems extends \E10Doc\Core\GlobalReport
 			];
 			$newItem['_options']['cellClasses']['in'] = $this->itemStateClass($r);
 
-			if (!utils::dateIsBlank($r['typeValidTo']) && $r['typeValidTo'] < $this->today)
+			if (!Utils::dateIsBlank($r['typeValidTo']) && $r['typeValidTo'] < $this->today)
 			{
 				$newItem['_options']['cellClasses']['it'] = 'e10-warning2';
-				$newItem['note'] = 'Platnost typu položky vypršela '.utils::datef($r['typeValidTo']);
+				$newItem['note'] = 'Platnost typu položky vypršela '.Utils::datef($r['typeValidTo']);
 			}
 
-			if (utils::dateIsBlank($r['validTo']) && utils::dateIsBlank($r['typeValidTo']) && $r['validTo'] > $r['typeValidTo'])
+			if (Utils::dateIsBlank($r['validTo']) && Utils::dateIsBlank($r['typeValidTo']) && $r['validTo'] > $r['typeValidTo'])
 			{
-				$newItem['note'] = 'Platnost typu položky vypršela '.utils::datef($r['typeValidTo']);
+				$newItem['note'] = 'Platnost typu položky vypršela '.Utils::datef($r['typeValidTo']);
 			}
 
 			$data[] = $newItem;
@@ -212,7 +209,7 @@ class ReportBadItems extends \E10Doc\Core\GlobalReport
 		array_push ($q, ' OR (witems.[type] != [rows].itemType)');
 		array_push ($q, ' )');
 
-		e10utils::fiscalPeriodQuery ($q, $this->fiscalPeriod);
+		E10Utils::fiscalPeriodQuery ($q, $this->fiscalPeriod);
 
 		array_push ($q, ' ORDER BY heads.dateAccounting, docNumber');
 
@@ -228,7 +225,7 @@ class ReportBadItems extends \E10Doc\Core\GlobalReport
 			$newItem = [
 				'dn' => [
 					'text'=> $r['docNumber'], 'docAction' => 'edit', 'table' => 'e10doc.core.heads', 'pk'=> $r['document'], 'icon' => $docType ['icon']],
-					'person' => $r['personName'], 'date' => utils::datef($r['headDateAccounting'], '%d'), 'dt' => $docType ['shortcut'],
+					'person' => $r['personName'], 'date' => Utils::datef($r['headDateAccounting'], '%d'), 'dt' => $docType ['shortcut'],
 					'in' => ['text'=> $r['itemId'], 'docAction' => 'edit', 'table' => 'e10.witems.items', 'pk'=> $r['item']],
 					'itemName' => $r['itemName']
 			];
@@ -241,10 +238,10 @@ class ReportBadItems extends \E10Doc\Core\GlobalReport
 				$newItem['note'][] = ['text' => "Položka není nahrazena nástupcem `#".$r['successorId'].'` ('.$r['successorName'].')', 'class' => 'block'];
 			if ($r['itemDocState'] === 9800)
 				$newItem['note'][] = ['text' => 'Položka je smazaná', 'class' => 'block'];
-			if (!utils::dateIsBlank($r['itemValidTo']) && $r['itemValidTo'] < $r['headDateAccounting'])
-				$newItem['note'][] = ['text' => 'Položka je neplatná k '.utils::datef($r['itemValidTo']), 'class' => 'block'];
-			if (!utils::dateIsBlank($r['typeValidTo']) && $r['typeValidTo'] < $r['headDateAccounting'])
-				$newItem['note'][] = ['text' => 'Typ položky je neplatný k '.utils::datef($r['typeValidTo']), 'class' => 'block'];
+			if (!Utils::dateIsBlank($r['itemValidTo']) && $r['itemValidTo'] < $r['headDateAccounting'])
+				$newItem['note'][] = ['text' => 'Položka je neplatná k '.Utils::datef($r['itemValidTo']), 'class' => 'block'];
+			if (!Utils::dateIsBlank($r['typeValidTo']) && $r['typeValidTo'] < $r['headDateAccounting'])
+				$newItem['note'][] = ['text' => 'Typ položky je neplatný k '.Utils::datef($r['typeValidTo']), 'class' => 'block'];
 			if ($r['itemItemType'] !== $r['itemType'])
 				$newItem['note'][] = ['text' => "Nesprávný typ položky; je `".$r['itemType'].'`, má být `'.$r['itemItemType'].'`', 'class' => 'block'];
 

@@ -749,8 +749,7 @@ class ContentRenderer extends \Shipard\Base\BaseObject
 			else
 			if (isset($t['icon']))
 			{
-				$i = $this->app()->ui()->icons()->cssClass($t['icon']);
-				$c .= "<div class='paneIcon'><i class='$i'></i></div>";
+				$c .= "<div class='paneIcon'>".$this->app()->ui()->icon($t['icon'])."</div>";
 			}
 
 			$c .= '<div>';

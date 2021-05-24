@@ -1,18 +1,13 @@
 <?php
 
 namespace e10doc\debs\libs\reports;
-
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
-require_once __APP_DIR__ . '/e10-modules/e10doc/cmnbkp/cmnbkp.php';
-
-use e10doc\core\e10utils;
+use e10doc\core\libs\E10Utils;
 
 
 /**
  * Class CheckOpenStates
- * @package e10doc\debs\libs\reports
  */
-class CheckOpenStates extends \e10doc\core\GlobalReport
+class CheckOpenStates extends \e10doc\core\libs\reports\GlobalReport
 {
 	var $fiscalYear = 0;
 	var $fiscalPeriod = 0;
@@ -53,10 +48,10 @@ class CheckOpenStates extends \e10doc\core\GlobalReport
 	{
 		if ($this->fiscalYear === 0)
 			$this->fiscalYear = $this->reportParams ['fiscalYear']['value'];
-		$this->fiscalPeriod = e10utils::yearFirstFiscalMonth($this->app(), $this->fiscalYear);
+		$this->fiscalPeriod = E10Utils::yearFirstFiscalMonth($this->app(), $this->fiscalYear);
 
-		$this->prevFiscalYear = e10utils::prevFiscalYear($this->app(), $this->fiscalYear);
-		$this->prevFiscalPeriod = e10utils::yearLastFiscalMonth($this->app(), $this->prevFiscalYear);
+		$this->prevFiscalYear = E10Utils::prevFiscalYear($this->app(), $this->fiscalYear);
+		$this->prevFiscalPeriod = E10Utils::yearLastFiscalMonth($this->app(), $this->prevFiscalYear);
 
 		$this->fiscalYearCfg = $this->app->cfgItem('e10doc.acc.periods.' . $this->fiscalYear);
 		$this->prevFiscalYearCfg = $this->app->cfgItem('e10doc.acc.periods.' . $this->prevFiscalYear);
@@ -70,10 +65,10 @@ class CheckOpenStates extends \e10doc\core\GlobalReport
 
 	function createContent_DoOnePeriod ()
 	{
-		$this->fiscalPeriod = e10utils::yearFirstFiscalMonth($this->app(), $this->fiscalYear);
+		$this->fiscalPeriod = E10Utils::yearFirstFiscalMonth($this->app(), $this->fiscalYear);
 
-		$this->prevFiscalYear = e10utils::prevFiscalYear($this->app(), $this->fiscalYear);
-		$this->prevFiscalPeriod = e10utils::yearLastFiscalMonth($this->app(), $this->prevFiscalYear);
+		$this->prevFiscalYear = E10Utils::prevFiscalYear($this->app(), $this->fiscalYear);
+		$this->prevFiscalPeriod = E10Utils::yearLastFiscalMonth($this->app(), $this->prevFiscalYear);
 
 		$this->fiscalYearCfg = $this->app->cfgItem('e10doc.acc.periods.' . $this->fiscalYear);
 		$this->prevFiscalYearCfg = $this->app->cfgItem('e10doc.acc.periods.' . $this->prevFiscalYear);

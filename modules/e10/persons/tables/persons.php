@@ -398,12 +398,12 @@ class TablePersons extends DbTable
 	public function icon ($recData, $iconSet = NULL)
 	{
 		if (isset($recData ['personType']) && $recData ['personType'] === 3)
-			return 'icon-android';
+			return 'system/personRobot';
 
 		if ($recData ['company'])
-			return 'system/iconOwner';
+			return 'system/personCompany';
 
-		return 'system/iconUser';
+		return 'system/personHuman';
 	}
 
 	public function tableIcon ($recData, $options = NULL)

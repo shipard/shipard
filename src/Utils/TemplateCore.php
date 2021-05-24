@@ -359,7 +359,7 @@ class TemplateCore extends \Mustache
 		else
 			$icn = $params['icon'];
 
-		return $this->app()->ui()->icons()->cssClass ($icn);
+		return $this->app->ui()->icons()->cssClass ($icn);
 	}
 
 	function resolveCmd_ComposeTextLine ($params)

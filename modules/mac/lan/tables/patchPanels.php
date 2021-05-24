@@ -2,7 +2,7 @@
 
 namespace mac\lan;
 
-use \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\DbTable, e10\TableViewPanel;
+use \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Table\DbTable, \Shipard\Viewer\TableViewPanel;
 
 
 /**

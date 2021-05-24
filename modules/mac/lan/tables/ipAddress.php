@@ -1,9 +1,6 @@
 <?php
 
 namespace mac\lan;
-
-require_once __APP_DIR__ . '/e10-modules/e10/web/web.php';
-
 use \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\DbTable, \E10\utils;
 
 

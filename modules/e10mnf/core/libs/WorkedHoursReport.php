@@ -2,14 +2,14 @@
 
 namespace e10mnf\core\libs;
 
-use e10\utils, e10doc\core\e10utils, \e10doc\core\Aggregate;
+use \Shipard\Utils\Utils, e10doc\core\libs\E10Utils, \e10doc\core\libs\Aggregate;
 
 
 /**
  * Class WorkedHoursReport
  * @package e10mnf\core\libs
  */
-class WorkedHoursReport extends \E10Doc\Core\GlobalReport
+class WorkedHoursReport extends \e10doc\core\libs\reports\GlobalReport
 {
 	var $tableWorkOrders;
 	var $fiscalPeriod = 0;
@@ -71,7 +71,7 @@ class WorkedHoursReport extends \E10Doc\Core\GlobalReport
 		array_push ($q, ' WHERE 1');
 
 
-		e10utils::fiscalPeriodDateQuery ($this->app, $q, '[workRecsRows].[beginDate]', $this->reportParams ['fiscalPeriod']['value']);
+		E10Utils::fiscalPeriodDateQuery ($this->app, $q, '[workRecsRows].[beginDate]', $this->reportParams ['fiscalPeriod']['value']);
 
 		array_push ($q, ' ORDER BY persons.lastName, persons.firstName, [workRecsRows].[beginDate]');
 
@@ -87,7 +87,7 @@ class WorkedHoursReport extends \E10Doc\Core\GlobalReport
 			{
 				$colId = 'M' . $r['beginDate']->format('Ym');
 				//$colName = $r['beginDate']->format('m');
-				$colName = utils::$monthSc3[intval($r['beginDate']->format('m')) - 1];
+				$colName = Utils::$monthSc3[intval($r['beginDate']->format('m')) - 1];
 			}
 
 			$personNdx = $r['personNdx'];
@@ -131,7 +131,7 @@ class WorkedHoursReport extends \E10Doc\Core\GlobalReport
 		array_push ($q, ' WHERE 1');
 
 
-		e10utils::fiscalPeriodDateQuery ($this->app, $q, '[workRecsRows].[beginDate]', $this->reportParams ['fiscalPeriod']['value']);
+		E10Utils::fiscalPeriodDateQuery ($this->app, $q, '[workRecsRows].[beginDate]', $this->reportParams ['fiscalPeriod']['value']);
 
 		array_push ($q, ' ORDER BY workOrders.docNumber, [workRecsRows].[beginDate]');
 
@@ -147,7 +147,7 @@ class WorkedHoursReport extends \E10Doc\Core\GlobalReport
 			{
 				$colId = 'M' . $r['beginDate']->format('Ym');
 				//$colName = $r['beginDate']->format('m');
-				$colName = utils::$monthSc3[intval($r['beginDate']->format('m')) - 1];
+				$colName = Utils::$monthSc3[intval($r['beginDate']->format('m')) - 1];
 			}
 
 			$workOrderNdx = $r['workOrder'];

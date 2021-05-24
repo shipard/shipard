@@ -2,8 +2,8 @@
 
 namespace mac\lan;
 
-use \E10\TableView, \E10\TableViewDetail, \e10\TableViewPanel, \E10\TableForm, \E10\DbTable;
-
+use \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Viewer\TableViewPanel, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
+use \e10\base\libs\UtilsBase;
 
 /**
  * Class TableSwApplications
@@ -159,13 +159,7 @@ class ViewSwApplications extends TableView
 		$qry = [];
 
 		// -- tags
-		$clsf = \E10\Base\classificationParams ($this->table);
-		foreach ($clsf as $cg)
-		{
-			$params = new \E10\Params ($panel->table->app());
-			$params->addParam ('checkboxes', 'query.clsf.'.$cg['id'], ['items' => $cg['items']]);
-			$qry[] = ['style' => 'params', 'title' => $cg['name'], 'params' => $params];
-		}
+		UtilsBase::addClassificationParamsToPanel($this->table, $panel, $qry);
 
 		// -- app types
 		$types = [];

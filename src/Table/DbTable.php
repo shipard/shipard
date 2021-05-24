@@ -1461,19 +1461,19 @@ class DbTable
 				return FALSE;
 			case	'styleIcon':
 				if (isset($states ['states'][$stateValue]['icon']))
-					return $this->app()->ui()->icons()->cssClass($states ['states'][$stateValue]['icon']);
+					return $states ['states'][$stateValue]['icon'];
 				switch ($states ['states'][$stateValue]['stateStyle'])
 				{
-					case 'archive': return $this->app()->ui()->systemIcon(SystemIcons::docStateArchive);
-					case 'concept': return $this->app()->ui()->systemIcon(SystemIcons::docStateConcept);
-					case 'new': return $this->app()->ui()->systemIcon(SystemIcons::docStateNew);
-					case 'delete': $this->app()->ui()->systemIcon(SystemIcons::docStateDelete);
-					case 'cancel': $this->app()->ui()->systemIcon(SystemIcons::docStateCancel);
-					case 'edit': return $this->app()->ui()->systemIcon(SystemIcons::docStateEdit);
-					case 'done': return $this->app()->ui()->systemIcon(SystemIcons::docStateDone);
-					case 'halfdone': return $this->app()->ui()->systemIcon(SystemIcons::docStateHalfDone);
-					case 'confirmed': return $this->app()->ui()->systemIcon(SystemIcons::docStateConfirmed);
-					default: return $this->app()->ui()->systemIcon(SystemIcons::docStateUnknown);
+					case 'archive': return 'system/docStateArchive';
+					case 'concept': return 'system/docStateConcept';
+					case 'new': return 'system/docStateNew';
+					case 'delete': return 'system/docStateDelete';
+					case 'cancel': return 'system/docStateCancel';
+					case 'edit': return 'system/docStateEdit';
+					case 'done': return 'system/docStateDone';
+					case 'halfdone': return 'system/docStateHalfDone';
+					case 'confirmed': return 'system/docStateConfirmed';
+					default: return 'system/docStateUnknown';
 				}
 				break;
 		}

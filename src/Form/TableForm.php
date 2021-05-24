@@ -1553,7 +1553,7 @@ class TableForm
 		$headerCode = "<div class='content-header$class'>";
 		$headerCode .= "<table><tr>";
 
-		if ($newMode)
+		if (/*$newMode*/1)
 		{
 			if (isset ($info ['image']))
 			{
@@ -1566,18 +1566,17 @@ class TableForm
 			}
 			else
 			{
-				$icon = $this->app()->ui()->icons()->cssClass($info ['icon']);
+				$iconClass = '';
 				if (isset($headerInfo['!error']))
-					$icon .= ' e10-error';
-				$headerCode .= "<td class='content-header-icon-new'><span class='$icon'></span></td>";
+					$iconClass .= 'e10-error';
+				$headerCode .= "<td class='content-header-icon-new'>".$this->app()->ui()->icon($info ['icon'] ?? 'system/iconOther', $iconClass, 'span')."</td>";
 			}
 		}
 		else
 		{
 			if (isset($info ['icon']))
 			{
-				$icon = $this->app()->ui()->icons()->cssClass($info ['icon']);
-				$headerCode .= "<td class='content-header-icon $iconClass'><span class='$icon'></span></td>";
+				$headerCode .= "<td class='content-header-icon $iconClass'>".$this->app()->ui()->icon($info ['icon'])."</td>";
 			} elseif (isset($info ['emoji']))
 			{
 				$headerCode .= "<td class='content-header-emoji e10-ds-block $docStateClass'><span>" . utils::es($info ['emoji']) . "</span></td>";

@@ -2,16 +2,13 @@
 
 namespace terminals\ros;
 
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
-
-use \e10\utils, e10doc\core\e10utils;
+use \Shipard\Utils\Utils, e10doc\core\libs\E10Utils;
 
 
 /**
  * Class ReportTest
- * @package terminals\ros
  */
-class ReportTest extends \e10doc\core\GlobalReport
+class ReportTest extends \e10doc\core\libs\reports\GlobalReport
 {
 	var $tableHeads;
 	var $docTypes;
@@ -75,7 +72,7 @@ class ReportTest extends \e10doc\core\GlobalReport
 
 		if ($this->testEngine)
 		{
-			$maxDate = utils::today();
+			$maxDate = Utils::today();
 			$maxDate->sub (new \DateInterval('P10D'));
 			array_push ($q, ' AND heads.dateAccounting >= %d', $maxDate);
 		}
@@ -88,7 +85,7 @@ class ReportTest extends \e10doc\core\GlobalReport
 		array_push ($q, ' OR rosJournal.resultCode2 IS NULL');
 		array_push ($q, ' )');
 
-		e10utils::fiscalPeriodQuery ($q, $this->reportParams ['fiscalPeriod']['value']);
+		E10Utils::fiscalPeriodQuery ($q, $this->reportParams ['fiscalPeriod']['value']);
 		array_push ($q, ' ORDER BY dateAccounting, docNumber');
 
 		$rows = $this->app->db()->query ($q);
@@ -100,9 +97,9 @@ class ReportTest extends \e10doc\core\GlobalReport
 
 			$newItem = [
 				'dn' => ['text'=> $r['docNumber'], 'docAction' => 'edit', 'table' => 'e10doc.core.heads', 'pk'=> $r['ndx'], 'icon' => $docType ['icon']],
-				'person' => $r['personName'], 'title' => $r['title'], 'date' => utils::datef ($r['dateAccounting'], '%d'),
+				'person' => $r['personName'], 'title' => $r['title'], 'date' => Utils::datef ($r['dateAccounting'], '%d'),
 				'amount' => $r['toPay'], 'state' => $rosState, 'rc1' => $r['resultCode1'], 'rc2' => $r['resultCode2'],
-				'dateSent' => utils::datef ($r['dateSent'], '%d, %T')
+				'dateSent' => Utils::datef ($r['dateSent'], '%d, %T')
 			];
 
 			$newItem['_options']['cellClasses']['state'] = $rosClasses[$r['rosState']];

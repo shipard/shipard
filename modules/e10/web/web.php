@@ -976,11 +976,11 @@ function createWebPageWiki ($app)
 
 	$serverInfo = [
 		'sn' => 'Wiki', 'fn' => 'Wiki '.$app->cfgItem('options.core.ownerFullName'),
-		'title' => 'Pokus', 'template' => 'e10templates.web.core-bs4',
+		'title' => 'Pokus', 'template' => 'web.core-bs5',
 		'mode' => 'app',
 		'hpFunction' => 'wiki', 'wiki' => $wikiNdx,
-		'look'=>'100100-default',
-		'templateStylePath' => 'www-root/templates/web/' . 'basic-bs4' . '/styles/',
+		'look'=>'102100-default',
+		'templateStylePath' => 'www-root/templates/web/' . 'core-bs5' . '/styles/',
 		'bodyClasses' => 'e10-in-app-wiki',
 		'templateParams' => [
 			'defaultTemplateType'=>'page-wiki',

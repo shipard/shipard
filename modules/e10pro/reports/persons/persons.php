@@ -182,7 +182,7 @@ class reportContacts extends \E10\GlobalReport
  * Class reportDuplicities
  * @package E10Pro\Reports\Persons
  */
-class reportDuplicities extends \E10Doc\Core\GlobalReport
+class reportDuplicities extends \e10doc\core\libs\reports\GlobalReport
 {
 	var $tablePersons;
 	var $allProperties;

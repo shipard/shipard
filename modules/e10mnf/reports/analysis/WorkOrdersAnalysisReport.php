@@ -5,14 +5,13 @@ namespace e10mnf\reports\analysis;
 require_once __SHPD_MODULES_DIR__ . 'e10/base/base.php';
 require_once __SHPD_MODULES_DIR__ . 'e10doc/core/core.php';
 
-use e10\utils, e10doc\core\e10utils;
+use \Shipard\Utils\Utils, e10doc\core\libs\E10Utils;
 
 
 /**
  * Class WorkOrdersAnalysisReport
- * @package e10mnf\reports\analysis
  */
-class WorkOrdersAnalysisReport extends \E10Doc\Core\GlobalReport
+class WorkOrdersAnalysisReport extends \e10doc\core\libs\reports\GlobalReport
 {
 	var $tableWorkOrders;
 	var $fiscalPeriod = 0;
@@ -108,7 +107,7 @@ class WorkOrdersAnalysisReport extends \E10Doc\Core\GlobalReport
 			array_push ($q, ' AND workOrders.[docKind] = %i', substr($filter, 1));
 
 		array_push ($q, ' AND workOrders.[dateClosed] IS NOT NULL');
-		e10utils::fiscalPeriodDateQuery ($this->app, $q, '[workOrders].[dateClosed]', $this->reportParams ['fiscalPeriod']['value']);
+		E10Utils::fiscalPeriodDateQuery ($this->app, $q, '[workOrders].[dateClosed]', $this->reportParams ['fiscalPeriod']['value']);
 
 		$admin = $this->reportParams ['admin']['value'];
 		if ($admin)
@@ -169,7 +168,7 @@ class WorkOrdersAnalysisReport extends \E10Doc\Core\GlobalReport
 
 			if (count($e->troubles))
 			{
-				$item['t'] = ['text' => '', 'icon' => 'icon-exclamation-triangle', 'xxsuffix' => utils::nf(count($e->troubles))];
+				$item['t'] = ['text' => '', 'icon' => 'icon-exclamation-triangle', 'xxsuffix' => Utils::nf(count($e->troubles))];
 			}
 
 			$item['gm'] = ($item['c']) ? round ($item['b'] / $item['c'] * 100, 2) : 0.0;

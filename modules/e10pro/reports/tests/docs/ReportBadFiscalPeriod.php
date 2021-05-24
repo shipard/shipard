@@ -2,16 +2,14 @@
 
 namespace e10pro\reports\tests\docs;
 
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
-
-use e10doc\core\e10utils;
+use e10doc\core\libs\E10Utils;
 
 
 /**
  * Class ReportBadFiscalPeriod
  * @package e10pro\reports\tests\docs
  */
-class ReportBadFiscalPeriod extends \e10doc\core\GlobalReport
+class ReportBadFiscalPeriod extends \e10doc\core\libs\reports\GlobalReport
 {
 	var $docTypes;
 

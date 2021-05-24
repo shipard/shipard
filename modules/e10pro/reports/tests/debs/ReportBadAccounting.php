@@ -1,17 +1,13 @@
 <?php
 
 namespace e10pro\reports\tests\debs;
-
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
-
-use e10doc\core\e10utils, e10\utils;
+use e10doc\core\libs\E10Utils, \Shipard\Utils\Utils;
 
 
 /**
  * Class ReportBadAccounting
- * @package e10pro\reports\tests\debs
  */
-class ReportBadAccounting extends \E10Doc\Core\GlobalReport
+class ReportBadAccounting extends \e10doc\core\libs\reports\GlobalReport
 {
 	/** @var \e10doc\core\TableHeads */
 	var $tableHeads;
@@ -24,7 +20,7 @@ class ReportBadAccounting extends \E10Doc\Core\GlobalReport
 		$this->docTypes = $this->app->cfgItem ('e10.docs.types');
 
 		if ($this->defaultFiscalPeriod === FALSE)
-			$this->defaultFiscalPeriod = e10utils::prevFiscalMonth($this->app());
+			$this->defaultFiscalPeriod = E10Utils::prevFiscalMonth($this->app());
 
 		if ($this->subReportId !== 'accounts')
 			$this->addParam ('fiscalPeriod', 'fiscalPeriod', ['flags' => ['enableAll', 'quarters', 'halfs', 'years'], 'defaultValue' => $this->defaultFiscalPeriod]);
@@ -44,8 +40,8 @@ class ReportBadAccounting extends \E10Doc\Core\GlobalReport
 
 		switch ($cycle)
 		{
-			case 'thisMonth': $this->defaultFiscalPeriod = e10utils::todayFiscalMonth($this->app()); break;
-			case 'prevMonth': $this->defaultFiscalPeriod = e10utils::prevFiscalMonth($this->app()); break;
+			case 'thisMonth': $this->defaultFiscalPeriod = E10Utils::todayFiscalMonth($this->app()); break;
+			case 'prevMonth': $this->defaultFiscalPeriod = E10Utils::prevFiscalMonth($this->app()); break;
 		}
 	}
 
@@ -89,7 +85,7 @@ class ReportBadAccounting extends \E10Doc\Core\GlobalReport
 		array_push ($q, '	LEFT JOIN e10_persons_persons as persons ON heads.person = persons.ndx');
 		array_push ($q, ' WHERE heads.docState = 4000');
 		array_push ($q, ' AND docStateAcc > 1');
-		e10utils::fiscalPeriodQuery ($q, $this->reportParams ['fiscalPeriod']['value']);
+		E10Utils::fiscalPeriodQuery ($q, $this->reportParams ['fiscalPeriod']['value']);
 		array_push ($q, ' ORDER BY dateAccounting, docNumber');
 
 		$rows = $this->app->db()->query ($q);
@@ -101,7 +97,7 @@ class ReportBadAccounting extends \E10Doc\Core\GlobalReport
 			$newItem = [
 					'dn' => [
 						'text'=> $r['docNumber'], 'docAction' => 'edit', 'table' => 'e10doc.core.heads', 'pk'=> $r['ndx'], 'icon' => $docType ['icon']],
-						'person' => $r['personName'], 'title' => $r['title'], 'date' => utils::datef($r['dateAccounting'], '%d'), 'dt' => $docType ['shortcut'],
+						'person' => $r['personName'], 'title' => $r['title'], 'date' => Utils::datef($r['dateAccounting'], '%d'), 'dt' => $docType ['shortcut'],
 			];
 			$newItem['_options'] = ['cellClasses' => ['dn' => $this->docStateClass($r)]];
 			$data[] = $newItem;
@@ -129,11 +125,11 @@ class ReportBadAccounting extends \E10Doc\Core\GlobalReport
 		array_push ($q, ' LEFT JOIN e10doc_debs_accounts AS accounts ON journal.accountId = accounts.id');
 		array_push ($q, '	LEFT JOIN e10_persons_persons as persons ON journal.person = persons.ndx');
 		array_push ($q, ' WHERE accounts.ndx IS NULL');
-		e10utils::fiscalPeriodQuery ($q, $this->reportParams ['fiscalPeriod']['value'], 'journal.');
+		E10Utils::fiscalPeriodQuery ($q, $this->reportParams ['fiscalPeriod']['value'], 'journal.');
 
 		if ($this->testEngine)
 		{
-			$maxDate = utils::today();
+			$maxDate = Utils::today();
 			$maxDate->sub (new \DateInterval('P5D'));
 			array_push ($q, ' AND journal.dateAccounting <= %d', $maxDate);
 		}
@@ -149,7 +145,7 @@ class ReportBadAccounting extends \E10Doc\Core\GlobalReport
 			$newItem = [
 					'dn' => ['text'=> $r['docNumber'], 'docAction' => 'edit', 'table' => 'e10doc.core.heads', 'pk'=> $r['document'], 'icon' => $docType ['icon']],
 					'accountId' => ['text'=> $r['accountId'], 'docAction' => 'new', 'table' => 'e10doc.debs.accounts', 'addParams' => '__id='.$r['accountId'], 'icon' => 'icon-plus-circle'],
-					'person' => $r['personName'], 'title' => $r['text'], 'date' => utils::datef($r['dateAccounting'], '%d'), 'dt' => $docType ['shortcut']
+					'person' => $r['personName'], 'title' => $r['text'], 'date' => Utils::datef($r['dateAccounting'], '%d'), 'dt' => $docType ['shortcut']
 			];
 			$newItem['_options'] = ['cellClasses' => ['dn' => $this->docStateClass($r)]];
 			$data[] = $newItem;
@@ -241,7 +237,7 @@ class ReportBadAccounting extends \E10Doc\Core\GlobalReport
 			$newItem = [
 					'a' => ['text'=> $r['accountId'], 'docAction' => 'edit', 'table' => 'e10doc.debs.accounts', 'pk' => $r['accountNdx']],
 					'd' => ['text'=> $r['docNumber'], 'docAction' => 'edit', 'table' => 'e10doc.core.heads', 'pk' => $r['docNdx'], 'icon' => $docType['icon']],
-					'accDate' => utils::datef($r['accDate'], '%d'), 'money' => $r['money']
+					'accDate' => Utils::datef($r['accDate'], '%d'), 'money' => $r['money']
 					];
 			$data[] = $newItem;
 		}
@@ -274,7 +270,7 @@ class ReportBadAccounting extends \E10Doc\Core\GlobalReport
 		array_push ($q, '	LEFT JOIN e10_persons_persons as persons ON heads.person = persons.ndx');
 		array_push ($q, ' WHERE heads.docState != 4000');
 		array_push ($q, " AND EXISTS (SELECT ndx FROM e10doc_debs_journal WHERE heads.ndx = e10doc_debs_journal.document)");
-		e10utils::fiscalPeriodQuery ($q, $this->reportParams ['fiscalPeriod']['value']);
+		E10Utils::fiscalPeriodQuery ($q, $this->reportParams ['fiscalPeriod']['value']);
 		array_push ($q, ' ORDER BY dateAccounting, docNumber');
 
 		$rows = $this->app->db()->query ($q);
@@ -285,7 +281,7 @@ class ReportBadAccounting extends \E10Doc\Core\GlobalReport
 
 			$newItem = [
 				'dn' => ['text'=> $r['docNumber'], 'docAction' => 'edit', 'table' => 'e10doc.core.heads', 'pk'=> $r['ndx'], 'icon' => $docType ['icon']],
-				'person' => $r['personName'], 'title' => $r['title'], 'date' => utils::datef($r['dateAccounting'], '%d'), 'dt' => $docType ['shortcut']
+				'person' => $r['personName'], 'title' => $r['title'], 'date' => Utils::datef($r['dateAccounting'], '%d'), 'dt' => $docType ['shortcut']
 			];
 			$newItem['_options'] = ['cellClasses' => ['dn' => $this->docStateClass($r)]];
 			$data[] = $newItem;

@@ -108,7 +108,7 @@ class Base extends \e10\E10Object
 			{
 				$c .= "<div class='md-form'>";
 				if (isset($options ['icon']))
-					$c .= "<i class='".$this->app()->ui()->icons()->cssClass($options ['icon'])." prefix'></i>";
+					$c .= $this->app()->ui()->icon($options ['icon'], 'prefix');
 				$c .= "<textarea class='md-textarea' name='$inputName' id='$inputName' rows='10'></textarea>";
 				if ($inputError !== '')
 					$c .= "<label for='$inputName'  class='e10-form-input-error'>" . utils::es($inputError) . '</label>';
