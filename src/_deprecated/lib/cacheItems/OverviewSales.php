@@ -2,9 +2,8 @@
 
 namespace lib\cacheItems;
 
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
 
-use \e10\utils, \e10doc\core\e10utils;
+use \Shipard\Utils\Utils, \e10doc\core\libs\E10Utils;
 
 
 /**
@@ -26,7 +25,7 @@ class OverviewSales extends \Shipard\Base\CacheItem
 		array_push ($q, ' LEFT JOIN [e10doc_base_fiscalmonths] AS fm ON heads.fiscalMonth = fm.ndx');
 		array_push ($q, ' WHERE [docType] IN %in', ['invno', 'cashreg']);
 		array_push ($q, ' AND [docState] = %i', 4000);
-		e10utils::fiscalPeriodQuery ($q, $this->fiscalPeriods['fiscalPeriod'], 'heads.');
+		E10Utils::fiscalPeriodQuery ($q, $this->fiscalPeriods['fiscalPeriod'], 'heads.');
 		array_push ($q, ' GROUP BY 1, 2, 3');
 
 		$rows = $this->app->db()->query ($q);
@@ -58,7 +57,7 @@ class OverviewSales extends \Shipard\Base\CacheItem
 		{
 			$dateId = sprintf ('%04d-%02d', $r['calendarYear'], $r['calendarMonth']);
 			$monthNdx = $r['calendarMonth'] - 1;
-			$periodTitle = utils::$monthSc3[$monthNdx];
+			$periodTitle = Utils::$monthSc3[$monthNdx];
 			$dt = $r['docType'];
 
 			if (!isset($this->dataSales[$dateId]))
@@ -72,7 +71,7 @@ class OverviewSales extends \Shipard\Base\CacheItem
 
 	function createData ()
 	{
-		e10utils::fiscalPeriods($this->app, 'C-12-M', $this->fiscalPeriods);
+		E10Utils::fiscalPeriods($this->app, 'C-12-M', $this->fiscalPeriods);
 		$this->loadSales();
 
 		$this->data['title'] = 'Obrat';

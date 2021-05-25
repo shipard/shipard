@@ -2,8 +2,8 @@
 
 namespace lib\cacheItems;
 
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
-require_once __APP_DIR__ . '/e10-modules/e10doc/balance/balance.php';
+
+require_once __SHPD_MODULES_DIR__ . 'e10doc/balance/balance.php';
 
 use \e10doc\balance\reportBalanceReceivables;
 

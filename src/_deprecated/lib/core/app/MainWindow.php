@@ -697,8 +697,7 @@ class MainWindow extends \Shipard\Base\BaseObject
 
 			if (isset ($listItem ['icon']))
 			{
-				$icon = $this->app()->ui()->icons()->cssClass ($listItem ['icon']);
-				$codeLine .= "<span class='$icon'></span>";
+				$codeLine .= $this->app()->ui()->icon($listItem ['icon'], '', 'span');
 			}
 			elseif (isset ($listItem ['icontxt']))
 			{
@@ -776,7 +775,8 @@ class MainWindow extends \Shipard\Base\BaseObject
 			$codeLine .= "<span class='title'>";
 
 			if (isset ($listItem ['icon']))
-				$codeLine .= "<span class='icon ".$this->app()->ui()->icons()->cssClass($listItem ['icon'])."'></span>";
+				//$codeLine .= "<span class='icon ".$this->app()->ui()->icons()->cssClass($listItem ['icon'])."'></span>";
+				$codeLine .= $this->app()->ui()->icon($listItem ['icon'], 'icon', 'span');
 			elseif (isset ($listItem ['icontxt']))
 				$codeLine .= "<span class='icon'>{$listItem ['icontxt']}</span> ";
 
@@ -786,10 +786,10 @@ class MainWindow extends \Shipard\Base\BaseObject
 		}
 		else
 		{
-			$icon = isset($listItem['icon']) ? $listItem['icon'] : '';
+			$icon = $listItem['icon'] ?? '';
 			if ($icon === '' && isset($listItem['table']))
 				$icon = 'tables/' . $listItem['table'];
-			$codeLine .= $this->app()->ui()->icons()->icon($icon, 'i', 'div');
+			$codeLine .= $this->app()->ui()->icons()->icon($icon, 'i III', 'div');
 
 			/*	
 			if (isset ($listItem ['icon']))

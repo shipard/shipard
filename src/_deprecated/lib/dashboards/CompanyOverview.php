@@ -3,7 +3,7 @@
 namespace lib\dashboards;
 
 
-use e10\Content;
+use \Shipard\Base\Content;
 
 
 /**

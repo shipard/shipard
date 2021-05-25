@@ -7,7 +7,7 @@ namespace lib\dashboards;
  * Class CompanyOverviewWidget
  * @package lib\dashboards
  */
-class CompanyOverviewWidget extends \E10\widgetPane
+class CompanyOverviewWidget extends \Shipard\UI\Core\WidgetPane
 {
 	public function createContent ()
 	{

@@ -7,9 +7,8 @@ use e10\utils;
 
 /**
  * Class OverviewSales
- * @package lib\dashboards\widgets
  */
-class BalanceCore extends \e10\widgetPane
+class BalanceCore extends \Shipard\UI\Core\WidgetPane
 {
 	function createCodeMeter ($md)
 	{

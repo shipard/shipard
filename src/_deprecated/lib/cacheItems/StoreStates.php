@@ -2,9 +2,9 @@
 
 namespace lib\cacheItems;
 
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
 
-use \e10doc\core\e10utils, \e10\utils;
+
+use \Shipard\Utils\Utils;
 
 
 /**
@@ -43,7 +43,7 @@ class StoreStates extends \Shipard\Base\CacheItem
 		$shortData = [];
 		$cutedSum = [];
 		$maxRows = 8;
-		utils::cutRows ($data, $shortData, ['taxBaseHc','quantity'], $cutedSum, $maxRows);
+		Utils::cutRows ($data, $shortData, ['taxBaseHc','quantity'], $cutedSum, $maxRows);
 		if (count($cutedSum))
 		{
 			$cutedSum['title'] = 'Ostatní';

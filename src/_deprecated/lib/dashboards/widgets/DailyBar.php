@@ -9,7 +9,7 @@ use e10\utils;
  * Class DailyBar
  * @package lib\dashboards\widgets
  */
-class DailyBar extends \e10\widgetPane
+class DailyBar extends \Shipard\UI\Core\WidgetPane
 {
 	public function createContent ()
 	{

@@ -5,9 +5,8 @@ namespace lib\dashboards\widgets;
 
 /**
  * Class DailyInfo
- * @package lib\dashboards\widgets
  */
-class DailyInfo extends \e10\widgetPane
+class DailyInfo extends \Shipard\UI\Core\WidgetPane
 {
 	public function createContent ()
 	{

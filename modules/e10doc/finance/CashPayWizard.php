@@ -1,10 +1,6 @@
 <?php
 
 namespace e10doc\finance;
-
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
-
-
 use  e10\utils, e10doc\core\e10utils, e10\TableForm;
 
 
@@ -12,7 +8,7 @@ use  e10\utils, e10doc\core\e10utils, e10\TableForm;
  * Class CashPayWizard
  * @package e10doc\finance
  */
-class CashPayWizard extends /*\E10\Wizard*/ \E10Doc\Core\CreateDocumentWizard
+class CashPayWizard extends \e10doc\core\libs\CreateDocumentWizard
 {
 	public function doStep ()
 	{

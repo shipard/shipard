@@ -43,16 +43,20 @@ class Widget extends \Shipard\Base\BaseObject
 				$c .= "<li data-subreport='{$detail['id']}'$firstClass";
 				if (isset($detail['remote']))
 					$c .= " data-remote='{$detail['remote']}'";
+
+				if ($small)
+					$c .= " title=\"".Utils::es ($detail['title'])."\"";
+
 				$c .= '>';
 
 				if (isset($detail['ntfBadgeId']))
 					$c .= "<span class='e10-ntf-badge' id='{$detail['ntfBadgeId']}' style='display:none;'></span>";
 
-				$icon = $this->app()->ui()->icons()->cssClass ($detail['icon']);
-				if ($small)
-					$c .= "<div class='$icon' title=\"".Utils::es ($detail['title'])."\"></div>";
-				else
-					$c .= "<div class='$icon'></div>".Utils::es ($detail['title']).'</li>';
+				$c .= $this->app()->ui()->icon($detail['icon'], '', 'div');
+				if (!$small)
+					$c .= Utils::es ($detail['title']);
+				$c .= '</li>';
+
 				$firstClass = "";
 
 				$cnt++;

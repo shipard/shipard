@@ -2,11 +2,10 @@
 
 namespace E10Pro\Purchase;
 
-use \E10\TableViewDetail, \E10\TableViewPanel, \E10\TableForm, \E10\DbTable, \E10\utils, \E10\Widget, \E10\Application;
+use \Shipard\Viewer\TableViewDetail, \Shipard\Viewer\TableViewPanel, \E10\TableForm, \E10\DbTable, \E10\utils, \E10\Widget, \E10\Application;
 
-require_once __APP_DIR__ . '/e10-modules/e10/persons/tables/persons.php';
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
-require_once __APP_DIR__ . '/e10-modules/e10doc/balance/balance.php';
+require_once __SHPD_MODULES_DIR__ . 'e10/persons/tables/persons.php';
+require_once __SHPD_MODULES_DIR__ . 'e10doc/balance/balance.php';
 
 
 /**
@@ -14,7 +13,7 @@ require_once __APP_DIR__ . '/e10-modules/e10doc/balance/balance.php';
  *
  */
 
-class ViewSuppliers extends \E10\Persons\ViewPersons
+class ViewSuppliers extends \e10\persons\ViewPersons
 {
 	public function init ()
 	{
@@ -230,7 +229,7 @@ class InvoicePurchaseDisposal extends \E10Doc\Balance\BalanceDisposalViewer
  *
  */
 
-class AddWizard extends \E10Doc\Core\CreateDocumentWizard
+class AddWizard extends \e10doc\core\libs\CreateDocumentWizard
 {
 	protected function saveDocument ()
 	{

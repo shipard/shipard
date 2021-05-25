@@ -2,9 +2,8 @@
 
 namespace lib\cacheItems;
 
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
 
-use \e10\utils, \e10doc\core\e10utils;
+use \Shipard\Utils\Utils, \e10doc\core\libs\E10Utils;
 
 
 /**
@@ -33,7 +32,7 @@ class OverviewCompanyResults extends \Shipard\Base\CacheItem
 		if (isset($this->fiscalPeriods['accMethods']['sebs']))
 			array_push ($q, ' AND accounts.[excludeFromReports] = %i', 0);
 
-		e10utils::fiscalPeriodQuery ($q, $this->fiscalPeriods['fiscalPeriod'], 'journal.');
+		E10Utils::fiscalPeriodQuery ($q, $this->fiscalPeriods['fiscalPeriod'], 'journal.');
 		array_push ($q, ' GROUP BY 1, 2');
 
 		$rows = $this->app->db()->query ($q);
@@ -59,7 +58,7 @@ class OverviewCompanyResults extends \Shipard\Base\CacheItem
 		{
 			$dateId = sprintf ('%04d-%02d', $r['calendarYear'], $r['calendarMonth']);
 			$monthNdx = $r['calendarMonth'] - 1;
-			$periodTitle = utils::$monthSc3[$monthNdx];
+			$periodTitle = Utils::$monthSc3[$monthNdx];
 			$ak = $r['ak'];
 
 			if ($ak === 2)
@@ -94,14 +93,14 @@ class OverviewCompanyResults extends \Shipard\Base\CacheItem
 			$amount = '';
 			if ($res['b'] > 0.0)
 				$amount .= '+';
-			$amount .= utils::nf ($res['b'], 0);
+			$amount .= Utils::nf ($res['b'], 0);
 			$this->monthRecapitulation[] = ['prefix' => $res['title'], 'text' => $amount, 'class' => 'padd5'];
 		}
 	}
 
 	function createData ()
 	{
-		e10utils::fiscalPeriods($this->app, 'C-12-M', $this->fiscalPeriods);
+		E10Utils::fiscalPeriods($this->app, 'C-12-M', $this->fiscalPeriods);
 		if (isset($this->fiscalPeriods['accMethods']['debs']) && isset($this->fiscalPeriods['accMethods']['sebs']))
 			$this->docTypeNames = [2 => 'Náklady/Příjmy', 3 => 'Výnosy/Výdaje'];
 		elseif (isset($this->fiscalPeriods['accMethods']['sebs']))

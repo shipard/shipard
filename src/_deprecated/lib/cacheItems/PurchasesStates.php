@@ -1,15 +1,11 @@
 <?php
 
 namespace lib\cacheItems;
-
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
-
-use \e10\utils;
+use \Shipard\Utils\Utils;
 
 
 /**
  * Class PurchasesStates
- * @package lib\cacheItems
  */
 class PurchasesStates extends \Shipard\Base\CacheItem
 {
@@ -45,7 +41,7 @@ class PurchasesStates extends \Shipard\Base\CacheItem
 		$shortData = [];
 		$cutedSum = [];
 		$maxRows = 8;
-		utils::cutRows ($data, $shortData, ['taxBaseHc','quantity'], $cutedSum, $maxRows);
+		Utils::cutRows ($data, $shortData, ['taxBaseHc','quantity'], $cutedSum, $maxRows);
 		if (count($cutedSum))
 		{
 			$cutedSum['title'] = 'Ostatní';

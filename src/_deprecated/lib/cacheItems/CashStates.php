@@ -2,9 +2,8 @@
 
 namespace lib\cacheItems;
 
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
 
-use e10doc\Core\e10utils;
+use e10doc\core\libs\E10Utils;
 
 
 /**
@@ -39,7 +38,7 @@ class CashStates extends \Shipard\Base\CacheItem
 			if (!$lastDoc)
 				continue;
 
-			$balance = e10utils::getCashBoxInitState ($this->app, $cbNdx, new \DateTime(date('Ymd', strtotime('+1 day'))), $lastDoc['fiscalYear']);
+			$balance = E10Utils::getCashBoxInitState ($this->app, $cbNdx, new \DateTime(date('Ymd', strtotime('+1 day'))), $lastDoc['fiscalYear']);
 
 			$currId = $cbCfg['curr'];
 			$this->data['oneCurrId'] = $currId;
