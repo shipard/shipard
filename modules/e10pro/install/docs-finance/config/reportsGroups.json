@@ -1,8 +1,8 @@
 {
 	"e10doc-balance": {
-		"title": "Saldokonto", "icon": "icon-star-o", "order": 2000
+		"title": "Saldokonto", "icon": "homeReportBalance", "order": 2000
 	},
 	"e10doc-finance": {
-		"title": "Finance", "icon": "icon-money", "order": 2100
+		"title": "Finance", "icon": "homeReportFinance", "order": 2100
 	}
 }

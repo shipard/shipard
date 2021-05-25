@@ -28,5 +28,85 @@
 		"fa5pro": "fa-file",
 		"bsi": "bi-file-earmark",
 		"mdi": "insert_drive_file"
+	},
+
+
+	"paymentMethodTransferOrder":{
+		"fa5":"fa-university",
+        "fa5pro":"fa-university",
+        "bsi":"bi-bank",
+        "mdi":"account_balance"
+	},
+	"paymentMethodCash":{
+		"fa5":"fa-coins",
+        "fa5pro":"fa-coin",
+        "bsi":"bi-coin",
+        "mdi":"monetization_on"
+	},
+	"paymentMethodCard":{
+		"fa5":"fa-credit-card",
+        "fa5pro":"fa-credit-card-front",
+        "bsi":"bi-credit-card",
+        "mdi":"credit_card"
+	},
+	"paymentMethodCashOnDelivery":{
+		"fa5":"fa-truck",
+      	"fa5pro":"fa-truck",
+      	"bsi":"bi-truck",
+      	"mdi":"local_shipping"
+	},
+	"paymentMethodInvoice":{
+		"fa5": "fa-file-alt",
+		"fa5pro": "fa-file-alt",
+		"bsi": "bi-file-earmark-text-fill",
+		"mdi": "description"
+	},
+	"paymentMethodCashTicket":{
+		"fa5":"fa-file-invoice-dollar",
+        "fa5pro":"fa-file-invoice-dollar",
+        "bsi":"bi-file-bar-graph",
+        "mdi":"request_quote"
+	},
+	"paymentMethodCollectiveDoc":{
+		"fa5":"fa-inbox",
+        "fa5pro":"fa-inbox-in",
+        "bsi":"bi-inbox-fill",
+        "mdi":"move_to_inbox"
+	},
+	"paymentMethodCashCollection":{
+		"fa5":"fa-gas-pump",
+        "fa5pro":"fa-gas-pump",
+        "bsi":"bi-file-earmark",
+        "mdi":"local_gas_station"
+	},
+	"paymentMethodDoNotPay":{
+		"fa5":"fa-times",
+        "fa5pro":"fa-times",
+        "bsi":"bi-x",
+        "mdi":"close"
+	},
+	"paymentMethodCheck":{
+		"fa5":"fa-money-check-alt",
+        "fa5pro":"fa-money-check-alt",
+        "bsi":"bi-receipt",
+        "mdi":"receipt"
+	},
+	"paymentMethodPostalOrder":{
+		"fa5":"fa-envelope",
+        "fa5pro":"fa-envelope",
+        "bsi":"bi-envelope",
+        "mdi":"mail"
+	},
+	"paymentMethodPayPal":{
+		"fa5":"fa-share-square",
+        "fa5pro":"fa-share-square",
+        "bsi":"bi-arrow-90deg-right",
+        "mdi":"ios_share"
+	},
+	"paymentMethodPaymentGateway":{
+		"fa5":"fa-globe-americas",
+        "fa5pro":"fa-globe-americas",
+        "bsi":"bi-globe",
+        "mdi":"public"
 	}
 }

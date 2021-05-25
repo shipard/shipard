@@ -6,7 +6,7 @@
 					"subMenu": {
 						"items": {
 							"company": {
-								"t1": "Firma", "object": "widget", "class": "e10.widgetDashboard", "subclass": "wkfFirstReport", "icon": "icon-building",
+								"t1": "Firma", "object": "widget", "class": "e10.widgetDashboard", "subclass": "wkfFirstReport", "icon": "homeReportCompany",
 								"order": 1000
 							}
 						}

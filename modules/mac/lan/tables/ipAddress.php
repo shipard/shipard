@@ -95,7 +95,7 @@ class FormIPAddress extends TableForm
 
 		$this->openForm ();
 
-		$tabs ['tabs'][] = ['text' => 'IP adresa', 'icon' => 'icon-crosshairs'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 
 		$this->openTabs ($tabs);
 			$this->openTab ();

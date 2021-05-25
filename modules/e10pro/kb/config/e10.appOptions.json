@@ -1,21 +1,18 @@
 {
 	"kbWikies": {
 		"name": "Wiki", "order": 155000, "group": "wikies",
-		"icon": "icon-book",
 		"type": "viewer",
 		"table": "e10pro.kb.wikies",
 		"viewer": "default"
 	},
 	"kbWikiSections": {
 		"name": "Wiki sekce", "order": 156000, "group": "wikies",
-		"icon": "icon-list-alt",
 		"type": "viewer",
 		"table": "e10pro.kb.sections",
 		"viewer": "default"
 	},
 	"kbAnnotsKinds": {
 		"name": "Druhy anotací", "order": 170000, "group": "wikies",
-		"icon": "icon-list-alt",
 		"type": "viewer",
 		"table": "e10pro.kb.annotsKinds",
 		"viewer": "default"

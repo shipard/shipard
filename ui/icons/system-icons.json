@@ -151,12 +151,6 @@
 		"bsi": "bi-record-circle-fill",
 		"mdi": "radio_button_checked"
 	},
-	"iconToSolve":{
-		"fa5": "fa-check-circle",
-		"fa5pro": "fa-check-circle",
-		"bsi": "bi-check-circle",
-		"mdi": "check_circle"
-	},
 	"iconPreview":{
 		"fa5":"fa-search-plus",
 		"fa5pro":"fa-search-plus",
@@ -188,6 +182,37 @@
 		"mdi":"picture_as_pdf"
 	},
 
+
+	"rightSubmenuToDo":{
+		"fa5": "fa-check-circle",
+		"fa5pro": "fa-check-circle",
+		"bsi": "bi-check-circle",
+		"mdi": "check_circle"
+	},
+	"rightSubmenuDocuments":{
+		"fa5":"fa-archive",
+        "fa5pro":"fa-archive",
+        "bsi":"bi-archive",
+        "mdi":"inventory_2"
+	},
+	"rightSubmenuNews":{
+		"fa5":"fa-star",
+		"fa5pro":"fa-star",
+		"bsi":"bi-star",
+		"mdi":"grade"
+	},
+	"rightSubmenuCompartments":{
+		"fa5":"fa-folder-open",
+        "fa5pro":"fa-folder-open",
+        "bsi":"bi-folder2-open",
+        "mdi":"folder_open"
+	},
+	"rightSubmenuSupport":{
+		"fa5":"fa-life-ring",
+        "fa5pro":"fa-life-ring",
+        "bsi":"bi-life-preserver",
+        "mdi":"support"
+	},
 
 
 	"personHuman":{

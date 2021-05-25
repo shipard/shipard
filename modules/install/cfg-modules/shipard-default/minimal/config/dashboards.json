@@ -4,7 +4,7 @@
 		"panels": {
 			"news": {
 				"name": "K řešení",
-				"icon": "system/iconToSolve",
+				"icon": "system/rightSubmenuToDo",
 				"order": 1201,
 				"fullsize": 1,
 				"rows": {
@@ -13,21 +13,21 @@
 			},
 			"documents": {
 				"name": "Dokumenty",
-				"icon": "icon-archive",
+				"icon": "system/rightSubmenuDocuments",
 				"order": 1810,
 				"fullsize": 1,
 				"rows": {"main": {"order": 10000, "class": "full"}}
 			},
 			"headlines": {
 				"name": "Novinky",
-				"icon": "icon-star",
+				"icon": "system/rightSubmenuNews",
 				"order": 2010,
 				"fullsize": 1,
 				"rows": {"main": {"order": 10000, "class": "full"}}
 			},
 			"trays": {
 				"name": "Přihrádky",
-				"icon": "icon-folder-open-o",
+				"icon": "system/rightSubmenuCompartments",
 				"order": 4201,
 				"fullsize": 1,
 				"rows": {
@@ -39,7 +39,7 @@
 			},
 			"helpdesk": {
 				"name": "Podpora",
-				"icon": "icon-life-ring",
+				"icon": "system/rightSubmenuSupport",
 				"order": 800100,
 				"fullsize": 1,
 				"rows": {"main": {"order": 10000, "class": "full"}}

@@ -1,5 +1,5 @@
 {
 	"e10doc-sale": {
-		"title": "Prodej", "icon": "icon-thumbs-o-up", "order": 3000
+		"title": "Prodej", "icon": "homeReportSale", "order": 3000
 	}
 }

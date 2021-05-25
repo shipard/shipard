@@ -1,5 +1,5 @@
 {
 	"e10doc-inventory": {
-		"title": "Zásoby", "icon": "icon-truck", "order": 6000
+		"title": "Zásoby", "icon": "homeReportStock", "order": 6000
 	}
 }

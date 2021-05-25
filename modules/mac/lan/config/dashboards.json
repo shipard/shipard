@@ -5,7 +5,7 @@
 		"panels": {
 			"lans": {
 				"name": "Přehled",
-				"icon": "icon-eye",
+				"icon": "system/detailOverview",
 				"fullsize": 1,
 				"order": 1000,
 				"rows": {
@@ -18,7 +18,7 @@
 			},
 			"itIssues": {
 				"name": "K řešení",
-				"icon": "icon-check-square",
+				"icon": "system/rightSubmenuToDo",
 				"fullsize": 1,
 				"order": 7000,
 				"rows": {

@@ -1,5 +1,5 @@
 {
 	"e10mnf-reports": {
-		"title": "Zakázky", "icon": "icon-industry", "order": 10000
+		"title": "Zakázky", "icon": "homeReportWorkOrders", "order": 10000
 	}
 }

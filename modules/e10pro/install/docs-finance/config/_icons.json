@@ -1,0 +1,20 @@
+{
+  "homeReportBalance":{
+		"fa5":"fa-star",
+    "fa5pro":"fa-star",
+    "bsi":"bi-star-fill",
+    "mdi":"star"
+	},
+  "homeReportFinance":{
+		"fa5":"fa-money-bill-alt",
+    "fa5pro":"fa-money-bill-alt",
+    "bsi":"bi-cash",
+    "mdi":"payments"
+	},
+  "homeReportCompany":{
+    "fa5":"fa-building",
+    "fa5pro":"fa-building",
+    "bsi":"bi-building",
+    "mdi":"business"
+  }
+}

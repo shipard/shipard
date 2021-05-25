@@ -1,15 +1,15 @@
 {
-	"0": {"title": "Převodním příkazem", "cash": 0, "bank": 1, "icon": "x-bank"},
-	"1": {"title": "Hotově", "cash": 1, "bank": 0, "icon": "x-pig"},
-	"2": {"title": "Kartou", "cash": 0, "bank": 1, "icon": "x-creditcard"},
-	"3": {"title": "Dobírka", "cash": 0, "bank": 1, "icon": "x-transport-truck"},
-	"4": {"title": "Fakturou", "cash": 0, "bank": 0, "icon": "e10-docs-invoices-in"},
-	"5": {"title": "Pokladním lístkem", "cash": 0, "bank": 0, "icon": "x-request"},
-	"6": {"title": "Sběrný doklad", "cash": 0, "bank": 0, "batch": 1, "icon": "x-inbox"},
-	"7": {"title": "Inkasem", "cash": 0, "bank": 0, "icon": "x-fuel"},
-	"8": {"title": "Nehradí se", "cash": 0, "bank": 0, "nopay": 1, "icon": "x-recycle"},
-	"9": {"title": "Šekem", "cash": 0, "bank": 1, "nopay": 1, "icon": "icon-ticket"},
-	"10": {"title": "Poštovní poukázkou", "cash": 0, "bank": 0, "icon": "icon-envelope-o"},
-	"11": {"title": "PayPal", "cash": 0, "bank": 0, "icon": "icon-paypal"},
-	"12": {"title": "Platební brána", "cash": 0, "bank": 0, "icon": "icon-globe"}
+	"0": {"title": "Převodním příkazem", "cash": 0, "bank": 1, "icon": "paymentMethodTransferOrder"},
+	"1": {"title": "Hotově", "cash": 1, "bank": 0, "icon": "paymentMethodCash"},
+	"2": {"title": "Kartou", "cash": 0, "bank": 1, "icon": "paymentMethodCard"},
+	"3": {"title": "Dobírka", "cash": 0, "bank": 1, "icon": "paymentMethodCashOnDelivery"},
+	"4": {"title": "Fakturou", "cash": 0, "bank": 0, "icon": "paymentMethodInvoice"},
+	"5": {"title": "Pokladním lístkem", "cash": 0, "bank": 0, "icon": "paymentMethodCashTicket"},
+	"6": {"title": "Sběrný doklad", "cash": 0, "bank": 0, "batch": 1, "icon": "paymentMethodCollectiveDoc"},
+	"7": {"title": "Inkasem", "cash": 0, "bank": 0, "icon": "paymentMethodCashCollection"},
+	"8": {"title": "Nehradí se", "cash": 0, "bank": 0, "nopay": 1, "icon": "paymentMethodDoNotPay"},
+	"9": {"title": "Šekem", "cash": 0, "bank": 1, "nopay": 1, "icon": "paymentMethodCheck"},
+	"10": {"title": "Poštovní poukázkou", "cash": 0, "bank": 0, "icon": "paymentMethodPostalOrder"},
+	"11": {"title": "PayPal", "cash": 0, "bank": 0, "icon": "paymentMethodPayPal"},
+	"12": {"title": "Platební brána", "cash": 0, "bank": 0, "icon": "paymentMethodPaymentGateway"}
 }
