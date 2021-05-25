@@ -269,10 +269,6 @@
     },
     {
         "t": 0,
-        "v": "bi-check-circle"
-    },
-    {
-        "t": 0,
         "v": "bi-person"
     },
     {
@@ -286,5 +282,25 @@
     {
         "t": 0,
         "v": "bi-person-square"
+    },
+    {
+        "t": 0,
+        "v": "bi-folder2-open"
+    },
+    {
+        "t": 0,
+        "v": "bi-archive"
+    },
+    {
+        "t": 0,
+        "v": "bi-star"
+    },
+    {
+        "t": 0,
+        "v": "bi-life-preserver"
+    },
+    {
+        "t": 0,
+        "v": "bi-check-circle"
     }
 ]

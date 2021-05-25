@@ -3,13 +3,13 @@
 		"e10pro-canteens-admins": {
 			"linkid": "e10pro-canteens-admins", "name": "Správci", "icon": "icon-wrench",
 			"sources": [
-				{"id": "users", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+				{"id": "users", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			]
 		},
 		"e10pro-canteens-users": {
 			"linkid": "e10pro-canteens-users", "name": "Uživatelé", "icon": "icon-user",
 			"sources": [
-				{"id": "users", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+				{"id": "users", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			]
 		},
 		"e10pro-canteens-optimize-payers": {

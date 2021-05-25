@@ -22,7 +22,17 @@ class TableClsfGroups extends DbTable
 
 	public function icon ($item)
 	{
-		return $item ['icon'];
+		if (isset($item ['icon']) && $item ['icon'] !== '')
+			return $item ['icon'];
+		
+		if (isset($item['tables']))
+		{
+			$firstTableId = $item['tables'][0];
+			$table = $this->app()->table($firstTableId);
+			if ($table)
+				return $table->tableIcon([]);
+		}
+		return 'system/iconOther';	
 	}
 
 	public function loadItem ($ndx, $table = NULL)
@@ -76,7 +86,7 @@ class ViewClsfGroups extends TableView
 				if (mb_stristr($group['name'], $fts, FALSE, 'UTF-8') === FALSE && mb_stristr($nd, $fts, FALSE, 'UTF-8') === FALSE)
 						continue;
 			}
-			$this->queryRows [] = ["ndx" => $key, "fullName" => $group['name'], 'icon' => $group ['icon']];
+			$this->queryRows [] = ["ndx" => $key, "fullName" => $group['name'], 'icon' => $group ['icon'] ?? '', 'tables' => ($group['tables'] ?? [])];
 		}
 	}
 

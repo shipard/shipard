@@ -11,13 +11,13 @@
 		"e10-web-servers-admins": {
 			"linkid": "e10-web-servers-admins", "name": "Správci", "icon": "icon-user",
 			"sources": [
-				{"id": "users", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+				{"id": "users", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			]
 		},
 		"e10-web-servers-pageEdit": {
 			"linkid": "e10-web-servers-pageEdit", "name": "Editoři stránek", "icon": "icon-user",
 			"sources": [
-				{"id": "users", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+				{"id": "users", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			]
 		}
 	},
@@ -25,13 +25,13 @@
 		"e10-web-articleSection-admins": {
 			"linkid": "e10-web-articleSection-admins", "name": "Správci sekce", "icon": "icon-user",
 			"sources": [
-				{"id": "users", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+				{"id": "users", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			]
 		},
 		"e10-web-articleSection-authors": {
 			"linkid": "e10-web-articleSection-authors", "name": "Autoři", "icon": "icon-user",
 			"sources": [
-				{"id": "users", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+				{"id": "users", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			]
 		}
 	},

@@ -9,7 +9,7 @@
 	"e10doc.base.bankaccounts": {
 		"e10-bankaccount-notify-statement": {"linkid": "e10-bankaccount-notify-statement", "name": "Nový výpis dát na vědomí", "icon": "icon-chevron-left",
 			"sources": [
-				{"id": "persons", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			]
 		}
 	},

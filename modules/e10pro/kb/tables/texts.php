@@ -1,10 +1,6 @@
 <?php
 
 namespace e10pro\kb;
-
-require_once __APP_DIR__ . '/e10-modules/e10/web/web.php';
-require_once __APP_DIR__ . '/e10-modules/e10pro/kb/kb.php';
-
 use \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\FormReport, \E10\DbTable, \E10\utils;
 
 

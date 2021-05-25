@@ -269,10 +269,6 @@
     },
     {
         "t": 0,
-        "v": "check_circle"
-    },
-    {
-        "t": 0,
         "v": "person"
     },
     {
@@ -286,5 +282,25 @@
     {
         "t": 0,
         "v": "smart_toy"
+    },
+    {
+        "t": 0,
+        "v": "folder_open"
+    },
+    {
+        "t": 0,
+        "v": "inventory_2"
+    },
+    {
+        "t": 0,
+        "v": "grade"
+    },
+    {
+        "t": 0,
+        "v": "support"
+    },
+    {
+        "t": 0,
+        "v": "check_circle"
     }
 ]

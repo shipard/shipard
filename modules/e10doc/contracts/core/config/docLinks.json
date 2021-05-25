@@ -5,7 +5,7 @@
 			"name": "Pro skupiny Osob",
 			"icon": "icon-chevron-left",
 			"sources": [
-				{"id": "persons", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			]
 		}
 	}

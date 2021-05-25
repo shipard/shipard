@@ -16,14 +16,14 @@
 			"linkid": "wkf-issues-assigned", "name": "Přiřazeno", "icon": "icon-bolt",
 			"queryCol": "issueType", "queryColValue": 0,
 			"sources": [
-				{"id": "persons", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			],
 			"listId": "doclinksPersons"
 		},
 		"wkf-issues-notify": {
 			"linkid": "wkf-issues-notify", "name": "Na vědomí", "icon": "icon-share",
 			"sources": [
-				{"id": "persons", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			],
 			"listId": "doclinksPersons"
 		},
@@ -54,13 +54,13 @@
 		"wkf-filters-add-notify": {
 			"linkid": "wkf-filters-add-notify", "name": "Na vědomí", "icon": "icon-share",
 			"sources": [
-				{"id": "persons", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			]
 		},
 		"wkf-filters-add-assigned": {
 			"linkid": "wkf-filters-add-assigned", "name": "Přiřazeno", "icon": "icon-bolt",
 			"sources": [
-				{"id": "persons", "viewer": "e10pro.wkf.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			]
 		}
 	},

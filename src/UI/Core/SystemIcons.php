@@ -74,11 +74,15 @@ class SystemIcons
 		,iconSearch = 64
 		,iconSettings = 65
 		,iconStart = 66
-		,iconToSolve = 67
-		,iconUser = 68
-		,personCompany = 69
-		,personHuman = 70
-		,personRobot = 71
+		,iconUser = 67
+		,personCompany = 68
+		,personHuman = 69
+		,personRobot = 70
+		,rightSubmenuCompartments = 71
+		,rightSubmenuDocuments = 72
+		,rightSubmenuNews = 73
+		,rightSubmenuSupport = 74
+		,rightSubmenuToDo = 75
 	;
 
 

@@ -269,10 +269,6 @@
     },
     {
         "t": 0,
-        "v": "fa-check-circle"
-    },
-    {
-        "t": 0,
         "v": "fa-user"
     },
     {
@@ -286,5 +282,25 @@
     {
         "t": 0,
         "v": "fa-robot"
+    },
+    {
+        "t": 0,
+        "v": "fa-folder-open"
+    },
+    {
+        "t": 0,
+        "v": "fa-archive"
+    },
+    {
+        "t": 0,
+        "v": "fa-star"
+    },
+    {
+        "t": 0,
+        "v": "fa-life-ring"
+    },
+    {
+        "t": 0,
+        "v": "fa-check-circle"
     }
 ]
