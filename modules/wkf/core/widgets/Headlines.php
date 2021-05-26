@@ -3,14 +3,14 @@
 
 namespace wkf\core\widgets;
 
-use \e10\widgetBoard, \wkf\core\TableHeadlines;
+use \Shipard\UI\Core\WidgetBoard, \wkf\core\TableHeadlines;
 
 
 /**
  * Class Headlines
  * @package wkf\core\widgets
  */
-class Headlines extends widgetBoard
+class Headlines extends WidgetBoard
 {
 
 	var $help = 'prirucka/4599';

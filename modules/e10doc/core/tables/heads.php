@@ -1261,7 +1261,7 @@ class TableHeads extends DbTable
 
 	public function tableIcon ($recData, $options = NULL)
 	{
-		return $this->app()->cfgItem ('e10.docs.types.' . $recData['docType'].'.icon', 'x-cog');
+		return $this->app()->cfgItem ('e10.docs.types.' . $recData['docType'].'.icon', 'tables/e10doc.core.heads');
 	}
 
 

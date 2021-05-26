@@ -17,7 +17,7 @@ class DashboardPanelsCreator extends \e10\E10Object
 		$order = isset($dashboard['panels'][$panelId]['order']) ? $dashboard['panels'][$panelId]['order'] : 1800;
 		foreach ($usersZones as $z)
 		{
-			$icon = 'icon-video-camera';
+			$icon = 'deviceTypes/camera';
 			if (isset($z['icon']) && $z['icon'] !== '')
 				$icon = $z['icon'];
 

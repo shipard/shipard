@@ -17,7 +17,7 @@ class WikiDashboardPanelsCreator extends \e10\E10Object
 		foreach ($usersWikies as $w)
 		{
 
-			$icon = 'icon-book';
+			$icon = 'tables/e10pro.kb.wikies';
 			if (isset($w['icon']) && $w['icon'] !== '')
 				$icon = $w['icon'];
 

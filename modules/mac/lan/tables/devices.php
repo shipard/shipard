@@ -148,7 +148,7 @@ class TableDevices extends DbTable
 
 	public function tableIcon ($recData, $options = NULL)
 	{
-		return $this->app()->cfgItem ('mac.lan.devices.kinds.'.$recData['deviceKind'].'.icon', 'x-cog');
+		return $this->app()->cfgItem ('mac.lan.devices.kinds.'.$recData['deviceKind'].'.icon', 'tables/mac.lan.devices');
 	}
 
 	public function createHeader ($recData, $options)

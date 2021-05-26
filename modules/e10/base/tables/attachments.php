@@ -22,14 +22,16 @@ class TableAttachments extends DbTable
 
 	public function tableIcon ($recData, $options = NULL)
 	{
-		$fileKind = $recData['fileKind'];
-		if ($fileKind)
+		if (isset($recData['fileKind']))
 		{
-			$fileKindCfg = $this->app()->cfgItem('e10.att.fileKinds.' . $fileKind, NULL);
-			if ($fileKindCfg)
-				return $fileKindCfg['icon'];
+			$fileKind = $recData['fileKind'];
+			if ($fileKind)
+			{
+				$fileKindCfg = $this->app()->cfgItem('e10.att.fileKinds.' . $fileKind, NULL);
+				if ($fileKindCfg)
+					return $fileKindCfg['icon'];
+			}
 		}
-
 		return parent::tableIcon ($recData, $options);
 	}
 
