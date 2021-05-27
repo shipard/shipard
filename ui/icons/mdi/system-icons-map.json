@@ -69,6 +69,10 @@
     },
     {
         "t": 0,
+        "v": "support"
+    },
+    {
+        "t": 0,
         "v": "approval"
     },
     {
@@ -205,6 +209,10 @@
     },
     {
         "t": 0,
+        "v": "history"
+    },
+    {
+        "t": 0,
         "v": "edit_note"
     },
     {
@@ -285,6 +293,14 @@
     },
     {
         "t": 0,
+        "v": "vpn_key"
+    },
+    {
+        "t": 0,
+        "v": "dining"
+    },
+    {
+        "t": 0,
         "v": "folder_open"
     },
     {
@@ -293,7 +309,19 @@
     },
     {
         "t": 0,
+        "v": "settings"
+    },
+    {
+        "t": 0,
         "v": "grade"
+    },
+    {
+        "t": 0,
+        "v": "arrow_circle_up"
+    },
+    {
+        "t": 0,
+        "v": "auto_stories"
     },
     {
         "t": 0,

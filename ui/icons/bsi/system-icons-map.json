@@ -69,6 +69,10 @@
     },
     {
         "t": 0,
+        "v": "bi-life-preserver"
+    },
+    {
+        "t": 0,
         "v": "bi-file-earmark-diff-fill"
     },
     {
@@ -205,6 +209,10 @@
     },
     {
         "t": 0,
+        "v": "bi-clock-history"
+    },
+    {
+        "t": 0,
         "v": "bi-pencil-square"
     },
     {
@@ -285,6 +293,14 @@
     },
     {
         "t": 0,
+        "v": "bi-key"
+    },
+    {
+        "t": 0,
+        "v": "bi-shop-window"
+    },
+    {
+        "t": 0,
         "v": "bi-folder2-open"
     },
     {
@@ -293,7 +309,19 @@
     },
     {
         "t": 0,
+        "v": "bi-gear-fill"
+    },
+    {
+        "t": 0,
         "v": "bi-star"
+    },
+    {
+        "t": 0,
+        "v": "bi-arrow-up-circle-fill"
+    },
+    {
+        "t": 0,
+        "v": "bi-book"
     },
     {
         "t": 0,
