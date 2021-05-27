@@ -22,7 +22,7 @@
 				"witems": {"t1": "Položky", "object": "viewer", "table": "e10.witems.items",
 					"viewer": "default", "order": 910000, "disabledCfgItem": "options.experimental.witemsNewViewer"},
 				"witems2": {"t1": "Položky", "object": "viewer", "table": "e10.witems.items",
-					"viewer": "byCategories", "icon": "e10-witems-items", "order": 910000, "enabledCfgItem": "options.experimental.witemsNewViewer"},
+					"viewer": "byCategories", "order": 910000, "enabledCfgItem": "options.experimental.witemsNewViewer"},
 
 				"witemsCategories": {"t1": "Kategorie", "object": "viewer", "table": "e10.witems.itemcategories", "viewer": "editor", "order": 920000},
 

@@ -84,8 +84,8 @@
 		"mdi": "arrow_upward"
 	},	
 	"actionDelete": {
-		"fa5": "fa-trash-alt",
-		"fa5pro": "fa-trash-alt",
+		"fa5": "fa-trash",
+		"fa5pro": "fa-trash",
 		"bsi": "bi-trash",
 		"mdi": "delete"
 	},	
@@ -106,6 +106,12 @@
         "fa5pro":"fa-life-ring",
         "bsi":"bi-life-preserver",
         "mdi":"support"
+	},	
+	"actionAddWizard": {
+		"fa5":"fa-play",
+        "fa5pro":"fa-play",
+        "bsi":"bi-play",
+        "mdi":"play_arrow"
 	},
 
 
@@ -187,6 +193,48 @@
 		"bsi":"bi-file-earmark-pdf-fill",
 		"mdi":"picture_as_pdf"
 	},
+	"iconPinned":{
+		"fa5": "fa-thumbtack",
+		"fa5pro": "fa-thumbtack",
+		"bsi": "bi-pin",
+		"mdi": "push_pin"
+	},
+	"iconVideo":{
+		"fa5": "fa-video",
+		"fa5pro": "fa-video",
+		"bsi": "bi-camera-video",
+		"mdi": "videocam"
+	},
+	"iconImage":{
+		"fa5": "fa-image",
+		"fa5pro": "fa-image",
+		"bsi": "bi-image",
+		"mdi": "image"
+	},
+	"iconTerminal":{
+		"fa5": "fa-bookmark",
+		"fa5pro": "fa-bookmark",
+		"bsi": "bi-bookmark",
+		"mdi": "bookmark_border"
+	},
+	"iconViewerEnd":{
+		"fa5":"fa-th",
+        "fa5pro":"fa-th",
+        "bsi":"bi-table",
+        "mdi":"table_rows"
+	},
+	"iconHelp":{
+		"fa5":"fa-life-ring",
+        "fa5pro":"fa-life-ring",
+        "bsi":"bi-life-preserver",
+        "mdi":"support"
+	},
+	"iconAppInfoMenu":{
+		"fa5":"fa-th",
+        "fa5pro":"fa-th",
+        "bsi":"bi-table",
+        "mdi":"table_rows"
+	},
 
 
 	"rightSubmenuToDo":{
@@ -248,6 +296,86 @@
 		"fa5pro": "fa-utensils-alt",
 		"bsi": "bi-shop-window",
 		"mdi": "dining"
+	},
+
+
+	"issueToDo":{
+		"fa5": "fa-check-square",
+		"fa5pro": "fa-check-square",
+		"bsi": "bi-check-square",
+		"mdi": "check_circle"
+	},
+	"issueReceivedMail":{
+		"fa5":"fa-inbox",
+        "fa5pro":"fa-inbox",
+        "bsi":"bi-inbox-fill",
+        "mdi":"inbox"
+	},
+	"issueDiscussion":{
+		"fa5":"fa-bullhorn",
+        "fa5pro":"fa-bullhorn",
+        "bsi":"bi-megaphone",
+        "mdi":"campaign"
+	},
+	"issueSentMail":{
+		"fa5":"fa-paper-plane",
+        "fa5pro":"fa-paper-plane",
+        "bsi":"bi-envelope",
+        "mdi":"send"
+	},
+	"issueSystemControl":{
+		"fa5": "fa-check-circle",
+		"fa5pro": "fa-check-circle",
+		"bsi": "bi-check-circle",
+		"mdi": "check_circle"
+	},
+	"issueAlert":{
+		"fa5":"fa-exclamation-triangle",
+        "fa5pro":"fa-exclamation-triangle",
+        "bsi":"bi-exclamation-triangle-fill",
+        "mdi":"warning"
+	},
+	"issueNote":{
+		"fa5":"fa-sticky-note",
+        "fa5pro":"fa-sticky-note",
+        "bsi":"bi-stickies",
+        "mdi":"sticky_note_2"
+	},
+	"issueAdvertisementSPAM":{
+		"fa5": "fa-trash",
+		"fa5pro": "fa-trash",
+		"bsi": "bi-trash",
+		"mdi": "delete"
+	},
+	"issueMeeting":{
+		"fa5": "fa-users",
+		"fa5pro": "fa-users",
+		"bsi": "bi-people",
+		"mdi": "groups"
+	},
+	"issueCall":{
+		"fa5": "fa-phone-alt",
+		"fa5pro": "fa-phone-alt",
+		"bsi": "bi-telephone",
+		"mdi": "call"
+	},
+	"issueTask":{
+		"fa5": "fa-clipboard-list",
+		"fa5pro": "fa-clipboard-list-check",
+		"bsi": "bi-clipboard",
+		"mdi": "content_paste"
+	},
+	"issueBoardNote":{
+		"fa5": "fa-thumbtack",
+		"fa5pro": "fa-thumbtack",
+		"bsi": "bi-pin",
+		"mdi": "push_pin"
+	},
+	"issueComment":{
+		"fa5": "fa-comment",
+		"fa5pro": "fa-comment",
+		"bsi": "bi-chat",
+		"mdi": "mode_comment"
 	},
 
 
@@ -393,6 +521,12 @@
 		"bsi": "bi-eye-fill",
 		"mdi": "visibility"
 	},
+	"detailLinks":{
+		"fa5": "fa-external-link-alt",
+		"fa5pro": "fa-external-link-alt",
+		"bsi": "bi-link-45deg",
+		"mdi": "link"
+	},
 
 
 	"docStateArchive":{
@@ -414,8 +548,8 @@
 		"mdi":"description"
 	},
 	"docStateDelete":{
-		"fa5": "fa-trash-alt",
-		"fa5pro": "fa-trash-alt",
+		"fa5": "fa-trash",
+		"fa5pro": "fa-trash",
 		"bsi": "bi-trash",
 		"mdi": "delete"
 	},
@@ -510,6 +644,32 @@
 		"fa5pro": "fa-history",
 		"bsi": "bi-clock-history",
 		"mdi": "history"
+	},
+
+
+	"dashboardModeTilesSmall":{
+		"fa5":"fa-th",
+        "fa5pro":"fa-th",
+        "bsi":"bi-table",
+        "mdi":"table_rows"
+	},
+	"dashboardModeTilesBig":{
+		"fa5":"fa-th-large",
+        "fa5pro":"fa-th-large",
+        "bsi":"bi-table",
+        "mdi":"table_chart"
+	},
+	"dashboardModeRows":{
+		"fa5": "fa-th-list",
+		"fa5pro": "fa-th-list",
+		"bsi": "bi-list-ul",
+		"mdi": "list"
+	},
+	"dashboardModeViewer":{
+		"fa5": "fa-window-maximize",
+		"fa5pro": "fa-window-maximize",
+		"bsi": "bi-hdd-rack-fill",
+		"mdi": "web_asset"
 	}
 
 }

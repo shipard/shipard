@@ -267,12 +267,22 @@
 	},
 
 
+	"lanDeviceActiveDevices":{
+		"fa5": "fa-sitemap",
+		"fa5pro": "fa-sitemap",
+		"bsi": "bi-diagram-3",
+		"mdi": "device_hub"
+	},
+
+
 	"detailSW":{
 		"fa5": "fa-hourglass-half",
 		"fa5pro": "fa-hourglass-half",
 		"bsi": "bi-hourglass-split",
 		"mdi": "hourglass_empty"
 	},
+
+
 
 	"formAddresses":{
 		"fa5": "fa-crosshairs",

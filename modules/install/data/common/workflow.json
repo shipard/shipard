@@ -11,128 +11,128 @@
 			"data": [
 				{
 					"rec": {
-						"fullName":"Došlá pošta", "shortName":"Došlá pošta", "msgType":1, "order":101000, "id":"inbox-other-default", "icon":"icon-inbox",
+						"fullName":"Došlá pošta", "shortName":"Došlá pošta", "msgType":1, "order":101000, "id":"inbox-other-default", "icon":"system/issueReceivedMail",
 						"systemItem": 1, "askKind": 1, "askPrice":1, "askPersons":1, "askDeadline": 1, "askDateIncoming": 1,
 						"startOnBBoard": 1
 					}
 				},
 				{
 					"rec": {
-						"fullName":"Přijatá faktura","shortName":"Přijatá faktura","msgType":1,"order":102000, "id":"inbox-doctype-invni", "icon":"e10-docs-invoices-in",
+						"fullName":"Přijatá faktura","shortName":"Přijatá faktura","msgType":1,"order":102000, "id":"inbox-doctype-invni", "icon":"docType/invoicesIn",
 						"systemItem": 1, "askKind": 1, "askPrice":1, "askPersons":1, "askDeadline": 1, "askDateIncoming": 1
 					}
 				},
 				{
 					"rec": {
-						"fullName":"Bankovní výpis","shortName":"Bankovní výpis","msgType":1,"order":103000, "id":"inbox-doctype-bank", "icon":"e10-docs-bank",
+						"fullName":"Bankovní výpis","shortName":"Bankovní výpis","msgType":1,"order":103000, "id":"inbox-doctype-bank", "icon":"docType/bank",
 						"systemItem": 1, "askKind": 1, "askPrice":1, "askPersons":1, "askDeadline": 1, "askDateIncoming": 1
 					}
 				},
 				{
 					"rec": {
-						"fullName":"Objednávka přijatá","shortName":"Objednávka","msgType":1,"order":104000, "id":"inbox-doctype-orderin", "icon": "icon-caret-square-o-down",
+						"fullName":"Objednávka přijatá","shortName":"Objednávka","msgType":1,"order":104000, "id":"inbox-doctype-orderin", "icon": "docType/ordersIn",
 						"systemItem": 1, "askKind": 1, "askPrice":1, "askPersons":1, "askDeadline": 1, "askDateIncoming": 1
 					}
 				},
 				{
 					"rec": {
-						"fullName":"Poptávka","shortName":"Poptávka", "msgType":1, "order":105000, "id":"inbox-doctype-demandin", "icon":"",
+						"fullName":"Poptávka","shortName":"Poptávka", "msgType":1, "order":105000, "id":"inbox-doctype-demandin", "icon":"docTypeDemand",
 						"askKind": 1, "askPrice":1, "askPersons":1, "askDeadline": 1, "askDateIncoming": 1
 					}
 				},
 				{
 					"rec": {
-						"fullName":"Zápočet","shortName":"Zápočet","msgType":1,"order":106000,"id":"inbox-doctype-cmnbkp-balSetOff", "icon":"icon-arrows-v",
+						"fullName":"Zápočet","shortName":"Zápočet","msgType":1,"order":106000,"id":"inbox-doctype-cmnbkp-balSetOff", "icon":"docTypeCredit",
 						"systemItem": 1, "askKind": 1, "askPrice":1, "askPersons":1, "askDeadline": 1, "askDateIncoming": 1
 					}
 				},
 				{
 					"rec": {
-						"fullName":"Smlouva","shortName":"Smlouva","msgType":1,"order":107000,"id":"inbox-other-contract", "icon":"",
+						"fullName":"Smlouva","shortName":"Smlouva","msgType":1,"order":107000,"id":"inbox-other-contract", "icon":"docTypeContract",
 						"systemItem": 1, "askKind": 1, "askPrice":1, "askPersons":1, "askDeadline": 1, "askDateIncoming": 1
 					}
 				},
 				{
 					"rec": {
-						"fullName":"Upomínka","shortName":"Upomínka","msgType":1,"order":108000,"id":"inbox-other-demandForPay", "icon":"icon-exclamation",
+						"fullName":"Upomínka","shortName":"Upomínka","msgType":1,"order":108000,"id":"inbox-other-demandForPay", "icon":"docTypeReminder",
 						"systemItem": 1, "askKind": 1, "askPrice":1, "askPersons":1, "askDeadline": 1, "askDateIncoming": 1
 					}
 				},
 				{
 					"rec": {
-						"fullName":"Reklamní nabídka / SPAM","shortName":"SPAM","msgType":1,"order":120000,"id":"inbox-other-spam", "icon":"icon-trash",
+						"fullName":"Reklamní nabídka / SPAM","shortName":"SPAM","msgType":1,"order":120000,"id":"inbox-other-spam", "icon":"system/issueAdvertisementSPAM",
 						"systemItem": 1, "askKind": 1, "askPrice":1, "askPersons":1, "askDeadline": 1, "askDateIncoming": 1
 					}
 				},
 
 				{
 					"rec": {
-						"fullName":"Úkol", "shortName":"Úkol", "msgType":0, "order":130000, "id":"issue-task-default", "icon":"icon-check-square",
+						"fullName":"Úkol", "shortName":"Úkol", "msgType":0, "order":130000, "id":"issue-task-default", "icon":"system/issueToDo",
 						"systemItem": 1, "askPersons":1,
 						"startOnDocument":1, "startOnBBoard":1, "askDeadline": 1
 					}
 				},
 				{
 					"rec": {
-						"fullName":"Systémová kontrola","shortName":"Systémová kontrola","msgType":0,"order":180000,"id":"issue-test", "icon":"icon-exclamation-triangle",
+						"fullName":"Systémová kontrola","shortName":"Systémová kontrola","msgType":0,"order":180000,"id":"issue-test", "icon":"system/issueSystemControl",
 						"systemItem": 1, "disableManualAdd": 1
 					}
 				},
 
 				{
 					"rec": {
-						"fullName":"Odeslaná pošta","shortName":"Odeslaná pošta","msgType":2,"order":201000, "id":"outbox-default", "icon":"icon-paper-plane-o",
+						"fullName":"Odeslaná pošta","shortName":"Odeslaná pošta","msgType":2,"order":201000, "id":"outbox-default", "icon":"system/issueSentMail",
 						"systemItem": 1, "askKind": 1, "askPrice":1, "askPersons":1
 					}
 				},
 				{
 					"rec": {
-						"fullName":"Vydaná faktura","shortName":"Vydaná faktura","msgType":2,"order":202000, "id":"outbox-doctype-invno", "icon":"e10-docs-invoices-out",
+						"fullName":"Vydaná faktura","shortName":"Vydaná faktura","msgType":2,"order":202000, "id":"outbox-doctype-invno", "icon":"docType/invoicesOut",
 						"systemItem": 1, "askKind": 1, "askPrice":1, "askPersons":1
 					}
 				},
 				{
 					"rec": {
-						"fullName":"Zápočet","shortName":"Zápočet","msgType":2,"order":206000,"id":"outbox-doctype-cmnbkp-balSetOff", "icon":"icon-arrows-v",
+						"fullName":"Zápočet","shortName":"Zápočet","msgType":2,"order":206000,"id":"outbox-doctype-cmnbkp-balSetOff", "icon":"docTypeCredit",
 						"systemItem": 1, "askKind": 1, "askPrice":1, "askPersons":1
 					}
 				},
 				{
 					"rec": {
-						"fullName":"Upomínka","shortName":"Upomínka","msgType":2,"order":207000,"id":"outbox-other-demandForPay",  "icon":"icon-exclamation",
+						"fullName":"Upomínka","shortName":"Upomínka","msgType":2,"order":207000,"id":"outbox-other-demandForPay",  "icon":"system/issueAlert",
 						"systemItem": 1, "askKind": 1, "askPrice":1, "askPersons":1
 					}
 				},
 
 				{
 					"rec": {
-						"fullName":"Poznámka","shortName":"Poznámka","msgType":5,"order":501000,"id":"note-default", "icon":"icon-sticky-note-o"
+						"fullName":"Poznámka","shortName":"Poznámka","msgType":5,"order":501000,"id":"note-default", "icon":"system/issueNote"
 					}
 				},
 
 				{
 					"rec": {
-						"fullName":"Schůzka","shortName":"Schůzka","msgType":8,"order":601000,"id":"activity-meeting", "icon":"icon-users",
+						"fullName":"Schůzka","shortName":"Schůzka","msgType":8,"order":601000,"id":"activity-meeting", "icon":"system/issueMeeting",
 						"askPersons": 1,
 						"startOnProject": 1
 					}
 				},
 				{
 					"rec": {
-						"fullName":"Telefonát","shortName":"Telefonát","msgType":8,"order":606000,"id":"activity-phone", "icon":"icon-phone",
+						"fullName":"Telefonát","shortName":"Telefonát","msgType":8,"order":606000,"id":"activity-phone", "icon":"system/issueCall",
 						"askPersons": 1,
 						"startOnProject": 1
 					}
 				},
 				{
 					"rec": {
-						"fullName":"Práce na úkolu","shortName":"Práce na úkolu","msgType":8,"order":620000,"id":"activity-work", "icon":"icon-clipboard"
+						"fullName":"Práce na úkolu","shortName":"Práce na úkolu","msgType":8,"order":620000,"id":"activity-work", "icon":"system/issueTask"
 					}
 				},
 
 				{
 					"rec": {
-						"fullName":"Zpráva na nástěnce","shortName":"Nástěnka","msgType":3,"order":701000,"id":"bboard-default", "icon":"icon-thumb-tack",
+						"fullName":"Zpráva na nástěnce","shortName":"Nástěnka","msgType":3,"order":701000,"id":"bboard-default", "icon":"system/issueBoardNote",
 						"askPersons": 1,
 						"startOnBBoard": 1
 					}
@@ -140,7 +140,7 @@
 
 				{
 					"rec": {
-						"fullName":"Komentář","shortName":"Komentář","msgType":4,"order":901000,"id":"comment-default", "icon":"icon-comment-o",
+						"fullName":"Komentář","shortName":"Komentář","msgType":4,"order":901000,"id":"comment-default", "icon":"system/issueComment",
 						"systemItem": 1,
 						"startOnIssue": 1
 					}

@@ -29,7 +29,7 @@
 					"name": "Ostatní", "order": 700000,
 					"items": {
 						"witems": {
-							"t1": "Položky", "object": "viewer", "table": "e10.witems.items", "viewer": "default", "icon": "e10-witems-items", "order": 100000
+							"t1": "Položky", "object": "viewer", "table": "e10.witems.items", "viewer": "default", "order": 100000
 						}
 					}
 				}

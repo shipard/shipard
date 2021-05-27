@@ -8,7 +8,7 @@
 				{"t1": "Prodejky", "disabledCfgItem": "options.e10doc-sale.disableCashreg", "object": "viewer", "table": "e10doc.core.heads", "icon":"docType/cashReg", "viewer": "cashregister", "order": 50000},
 				{"t1": "Pokladna", "object": "viewer", "table": "e10doc.core.heads", "viewer": "cash",
 					"icon": "e10-docs-cash", "order": 600000},
-				{"t1": "Položky", "object": "viewer", "table": "e10.witems.items", "viewer": "default", "icon": "e10-witems-items", "order": 100000},
+				{"t1": "Položky", "object": "viewer", "table": "e10.witems.items", "viewer": "default", "order": 100000},
 				{"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10pro-terminal", "icon": "system/iconReports", "order": 800000},
 				{"t1": "Ceník", "object": "report", "class": "e10pro.reports.pricelist.priceListPurchase", "subclass": "", "icon": "x-price", "order": 990000}
 			],

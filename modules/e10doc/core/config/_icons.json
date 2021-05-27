@@ -133,7 +133,30 @@
         "bsi":"bi-clipboard-check",
         "mdi":"inventory"
     },
-
+    "docTypeDemand":{
+        "fa5": "fa-question-circle",
+		"fa5pro": "fa-question-circle",
+		"bsi": "bi-question-circle-fill",
+		"mdi": "help_outline"
+    },
+    "docTypeCredit":{
+        "fa5": "fa-arrows-alt-v",
+		"fa5pro": "fa-arrows-alt-v",
+		"bsi": "bi-arrow-down-up",
+		"mdi": "swap_vert"
+    },
+    "docTypeContract":{
+        "fa5": "fa-handshake",
+		"fa5pro": "fa-handshake",
+		"bsi": "bi-hand-thumbs-up",
+		"mdi": "thumb_up"
+    },
+    "docTypeReminder":{
+        "fa5": "fa-exclamation",
+		"fa5pro": "fa-exclamation",
+		"bsi": "bi-exclamation",
+		"mdi": "priority_high"
+    },
 
 
     "balance/receivables":{

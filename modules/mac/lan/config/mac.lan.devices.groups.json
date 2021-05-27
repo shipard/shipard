@@ -3,43 +3,43 @@
 		"name": "Vše", "icon": ""
 	},
 	"10": {
-		"name": "Aktivní prvky", "icon": "icon-sitemap", "devicesKinds": [8, 9, 20]
+		"name": "Aktivní prvky", "icon": "lanDeviceActiveDevices", "devicesKinds": [8, 9, 20]
 	},
 	"12": {
-		"name": "WiFi AP", "icon": "x-router", "devicesKinds": [15]
+		"name": "WiFi AP", "icon": "deviceTypes/wifiAccessPoints", "devicesKinds": [15]
 	},
 	"20": {
-		"name": "Servery", "icon": "icon-server", "devicesKinds": [7, 70]
+		"name": "Servery", "icon": "deviceTypes/server", "devicesKinds": [7, 70]
 	},
 	"22": {
-		"name": "NAS", "icon": "icon-hdd-o", "devicesKinds": [11]
+		"name": "NAS", "icon": "deviceTypes/nas", "devicesKinds": [11]
 	},
 	"25": {
-		"name": "IoT", "icon": "icon-plug", "devicesKinds": [75]
+		"name": "IoT", "icon": "deviceTypes/shipardIoiBoxes", "devicesKinds": [75]
 	},
 	"30": {
-		"name": "Tiskárny", "icon": "icon-print", "devicesKinds": [3]
+		"name": "Tiskárny", "icon": "deviceTypes/printer", "devicesKinds": [3]
 	},
 	"40": {
-		"name": "Kamery", "icon": "icon-video-camera", "devicesKinds": [10]
+		"name": "Kamery", "icon": "deviceTypes/camera", "devicesKinds": [10]
 	},
 	"45": {
-		"name": "Terminály", "icon": "icon-calculator", "devicesKinds": [40]
+		"name": "Terminály", "icon": "deviceTypes/terminal", "devicesKinds": [40]
 	},
 	"50": {
-		"name": "Počítače", "icon": "icon-laptop", "devicesKinds": [1, 2]
+		"name": "Počítače", "icon": "deviceTypes/notebook", "devicesKinds": [1, 2]
 	},
 	"60": {
-		"name": "Multimedia", "icon": "icon-television", "devicesKinds": [6]
+		"name": "Multimedia", "icon": "deviceTypes/tv", "devicesKinds": [6]
 	},
 	"65": {
-		"name": "Tablety a telefony", "icon": "icon-phone", "devicesKinds": [4, 5]
+		"name": "Tablety a telefony", "icon": "deviceTypes/phone", "devicesKinds": [4, 5]
 	},
 	"81": {
-		"name": "UPS", "icon": "icon-battery-three-quarters", "devicesKinds": [30]
+		"name": "UPS", "icon": "deviceTypes/ups", "devicesKinds": [30]
 	},
 
 	"99": {
-		"name": "Ostatní", "icon": "icon-dot-circle-o", "devicesKinds": [99]
+		"name": "Ostatní", "icon": "deviceTypes/other", "devicesKinds": [99]
 	}
 }

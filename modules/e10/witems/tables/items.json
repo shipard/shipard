@@ -70,7 +70,7 @@
 			"details": {
 				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10.witems.ViewDetailItems", "order": 1000},
 				"using": {"title": "Použití", "icon": "system/detailUsage", "type": "detail", "class": "e10.witems.ViewDetailUsing", "order": 8000},
-				"annotations": {"title": "Odkazy", "icon": "icon-external-link", "type": "detail", "class": "e10.witems.ViewDetailAnnotations", "order": 99000}
+				"annotations": {"title": "Odkazy", "icon": "system/detailLinks", "type": "detail", "class": "e10.witems.ViewDetailAnnotations", "order": 99000}
 			}
 		}
 	},

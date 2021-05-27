@@ -13,7 +13,7 @@
 				"witems": {"t1": "Položky", "object": "viewer", "table": "e10.witems.items",
 					"viewer": "default", "order": 910000, "disabledCfgItem": "options.experimental.witemsNewViewer"},
 				"witems2": {"t1": "Položky", "object": "viewer", "table": "e10.witems.items",
-					"viewer": "byCategories", "icon": "e10-witems-items", "order": 910000, "enabledCfgItem": "options.experimental.witemsNewViewer"},
+					"viewer": "byCategories", "order": 910000, "enabledCfgItem": "options.experimental.witemsNewViewer"},
 
 				"settings": {
 					"t1": "Nastavení", "object": "subMenu", "icon": "system/iconSettings",
