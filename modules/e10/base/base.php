@@ -279,20 +279,27 @@ class ListProperties implements \E10\IDocumentList
 	function init ()
 	{
 		$this->listDefinition = $this->table->listDefinition ($this->listId);
-		$this->allProperties = $this->table->app()->cfgItem ('e10.base.properties', array());
+		$this->allProperties = $this->table->app()->cfgItem ('e10.base.properties', []);
 
 		$cfgItem = NULL;
-		if (isset ($this->listDefinition ['srcCfgKeyColumn']) && isset($this->recData [$this->listDefinition ['srcCfgKeyColumn']]))
-			$this->myProperties = $this->table->app()->cfgItem ($this->listDefinition ['propertiesCfgList'].'.'.$this->recData [$this->listDefinition ['srcCfgKeyColumn']], []);
+		$this->myProperties = [];
+		if (isset ($this->listDefinition ['srcCfgKeyColumn']))
+		{
+			if (isset($this->recData [$this->listDefinition ['srcCfgKeyColumn']]))
+				$this->myProperties = $this->table->app()->cfgItem ($this->listDefinition ['propertiesCfgList'].'.'.$this->recData [$this->listDefinition ['srcCfgKeyColumn']], []);
+		}
 		else
-			$this->myProperties = [];
+			$this->myProperties = $this->table->app()->cfgItem ($this->listDefinition ['propertiesCfgList'], []);
 
 		if (isset ($this->listDefinition ['propertiesCfgList2']))
 		{
-			if (isset($this->listDefinition ['srcCfgKeyColumn2']) && isset($this->recData [$this->listDefinition ['srcCfgKeyColumn2']]))
-				$this->myProperties = array_merge($this->myProperties, $this->table->app()->cfgItem($this->listDefinition ['propertiesCfgList2'].'.'.$this->recData [$this->listDefinition ['srcCfgKeyColumn2']], array()));
+			if (isset($this->listDefinition ['srcCfgKeyColumn2']))
+			{
+				if (isset($this->recData [$this->listDefinition ['srcCfgKeyColumn2']]))
+					$this->myProperties = array_merge($this->myProperties, $this->table->app()->cfgItem($this->listDefinition ['propertiesCfgList2'].'.'.$this->recData [$this->listDefinition ['srcCfgKeyColumn2']], array()));
+			}	
 			else
-				$this->myProperties = array_merge($this->myProperties, $this->table->app()->cfgItem($this->listDefinition ['propertiesCfgList2'], array()));
+				$this->myProperties = array_merge($this->myProperties, $this->table->app()->cfgItem($this->listDefinition ['propertiesCfgList2'], []));
 		}
 		$this->table->checkDocumentPropertiesList ($this->myProperties, $this->recData);
 	}

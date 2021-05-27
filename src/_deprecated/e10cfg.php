@@ -5,6 +5,7 @@ namespace E10;
 
 use \Shipard\Viewer\TableViewPanel;
 use \Shipard\Form\TableForm;
+use \Shipard\Form\FormSidebar;
 
 function wcardtest ($pattern, $string)
 {
