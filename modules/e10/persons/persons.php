@@ -7,18 +7,18 @@ use \Shipard\Application\Application, E10\TableForm, E10\Wizard, E10\utils, e10\
 CONST rqtUserSelfRegistration = 0, rqtLostPassword = 1, rqtFirstLogin = 2, rqtInvitationRequest = 3, rqtActivateShipardAccount = 4;
 
 
-function createNewPerson (\e10\Application $app, $personData)
+function createNewPerson (\Shipard\Application\Application $app, $personData)
 {
 	/** @var \e10\persons\TablePersons $tablePersons */
 	$tablePersons = $app->table('e10.persons.persons');
 	$newPerson = [];
 
 	$personHead = $personData ['person'];
-	\E10\addToArray ($newPerson, $personHead, 'firstName');
-	\E10\addToArray ($newPerson, $personHead, 'lastName');
-	\E10\addToArray ($newPerson, $personHead, 'fullName', '');
-	\E10\addToArray ($newPerson, $personHead, 'company', 0);
-	\E10\addToArray ($newPerson, $personHead, 'accountType', 0);
+	utils::addToArray ($newPerson, $personHead, 'firstName');
+	utils::addToArray ($newPerson, $personHead, 'lastName');
+	utils::addToArray ($newPerson, $personHead, 'fullName', '');
+	utils::addToArray ($newPerson, $personHead, 'company', 0);
+	utils::addToArray ($newPerson, $personHead, 'accountType', 0);
 
 	$newPerson ['personType'] = 1;
 
@@ -39,8 +39,8 @@ function createNewPerson (\e10\Application $app, $personData)
 		$newPerson ['accountState'] = 1;
 	}
 
-	\E10\addToArray ($newPerson, $personHead, 'docState', 4000);
-	\E10\addToArray ($newPerson, $personHead, 'docStateMain', 2);
+	utils::addToArray ($newPerson, $personHead, 'docState', 4000);
+	utils::addToArray ($newPerson, $personHead, 'docStateMain', 2);
 
 	$newPersonNdx = $tablePersons->dbInsertRec($newPerson);
 
@@ -61,11 +61,11 @@ function createNewPerson (\e10\Application $app, $personData)
 		forEach ($personData ['address'] as $address)
 		{
 			$newAddress = array ('tableid' => 'e10.persons.persons', 'recid' => $newPersonNdx);
-			\E10\addToArray ($newAddress, $address, 'specification', '');
-			\E10\addToArray ($newAddress, $address, 'street', '');
-			\E10\addToArray ($newAddress, $address, 'city', '');
-			\E10\addToArray ($newAddress, $address, 'zipcode', '');
-			\E10\addToArray ($newAddress, $address, 'country', '');
+			utils::addToArray ($newAddress, $address, 'specification', '');
+			utils::addToArray ($newAddress, $address, 'street', '');
+			utils::addToArray ($newAddress, $address, 'city', '');
+			utils::addToArray ($newAddress, $address, 'zipcode', '');
+			utils::addToArray ($newAddress, $address, 'country', '');
 			$app->db->query ("INSERT INTO [e10_persons_address]", $newAddress);
 		}
 	}
