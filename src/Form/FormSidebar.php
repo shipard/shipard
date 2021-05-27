@@ -44,8 +44,7 @@ class FormSidebar extends Content
 				$c .= '>';
 				if ($t['icon'] !== '')
 				{
-					$i = $this->app()->ui()->icons()->cssClass($t['icon']);
-					$c .= "<icon class='$i'></icon> ";
+					$c .= $this->app()->ui()->icon($t['icon']).' ';
 				}
 				if ($t['name'] !== '')
 					$c .= utils::es ($t['name']);

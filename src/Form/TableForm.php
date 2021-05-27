@@ -1531,8 +1531,6 @@ class TableForm
 		else
 			$info = $headerInfo;
 
-		$newMode = isset($headerInfo['newMode']) ? $headerInfo['newMode'] : 0;
-
 		$class = '';
 		$icon = '';
 		$iconClass = 'e10-docstyle-off';
@@ -1543,8 +1541,7 @@ class TableForm
 			{
 				$iconClass = 'e10-docstyle-on';
 				$class = ' '.$docStateClass;
-				if ($newMode)
-					$class .= ' e10-ds-block';
+				$class .= ' e10-ds-block';
 				$stateIcon = $this->table->getDocumentStateInfo ($this->docState ['states'], $this->recData, 'styleIcon');
 				$stateText = \E10\es ($this->table->getDocumentStateInfo ($this->docState ['states'], $this->recData, 'name'));
 			}
@@ -1553,47 +1550,25 @@ class TableForm
 		$headerCode = "<div class='content-header$class'>";
 		$headerCode .= "<table><tr>";
 
-		if (/*$newMode*/1)
+		if (isset ($info ['image']))
 		{
-			if (isset ($info ['image']))
-			{
-				$headerCode .= "<td class='content-header-img-new' style='background-image: url({$info['image']});'>";
-				$headerCode .= '</td>';
-			}
-			elseif (isset($info ['emoji']))
-			{
-				$headerCode .= "<td class='content-header-emoji $iconClass'><span>".utils::es($info ['emoji'])."</span></td>";
-			}
-			else
-			{
-				$iconClass = '';
-				if (isset($headerInfo['!error']))
-					$iconClass .= 'e10-error';
-				$headerCode .= "<td class='content-header-icon-new'>".$this->app()->ui()->icon($info ['icon'] ?? 'system/iconOther', $iconClass, 'span')."</td>";
-			}
+			$headerCode .= "<td class='content-header-img-new' style='background-image: url({$info['image']});'>";
+			$headerCode .= '</td>';
+		}
+		elseif (isset($info ['emoji']))
+		{
+			$headerCode .= "<td class='content-header-emoji $iconClass'><span>".utils::es($info ['emoji'])."</span></td>";
 		}
 		else
 		{
-			if (isset($info ['icon']))
-			{
-				$headerCode .= "<td class='content-header-icon $iconClass'>".$this->app()->ui()->icon($info ['icon'])."</td>";
-			} elseif (isset($info ['emoji']))
-			{
-				$headerCode .= "<td class='content-header-emoji e10-ds-block $docStateClass'><span>" . utils::es($info ['emoji']) . "</span></td>";
-			}
-			if (isset ($info ['image']))
-			{
-				$headerCode .= "<td class='content-header-img'>";
-				$headerCode .= "<img src='{$info ['image']}'>";
-				$headerCode .= '</td>';
-			}
+			$iconClass = '';
+			if (isset($headerInfo['!error']))
+				$iconClass .= 'e10-error';
+			$headerCode .= "<td class='content-header-icon-new'>".$this->app()->ui()->icon($info ['icon'] ?? 'system/iconOther', $iconClass, 'span')."</td>";
 		}
 
 		// info
-		if ($newMode)
-			$headerCode .= "<td class='content-header-info-new'>";
-		else
-			$headerCode .= "<td class='content-header-info'>";
+		$headerCode .= "<td class='content-header-info-new'>";
 		if (isset ($info ['info']))
 		{
 			if (is_string($info ['info']))
@@ -1612,8 +1587,6 @@ class TableForm
 				}
 			}
 		}
-		if (isset ($stateText) && !$newMode)
-			$headerCode .= "<span class='docState'>".$this->app()->ui()->icon($stateIcon)." $stateText</span>";
 		$headerCode .= "</td>";
 
 		// sum table
@@ -1644,7 +1617,7 @@ class TableForm
 			$headerCode .= "</td>";
 		}
 
-		if ($newMode && isset ($info ['image']))
+		if (isset ($info ['image']))
 		{
 			$headerCode .= "<td class='content-header-img-new' style='background-image: url({$info['image']});'>";
 			$headerCode .= '</td>';
@@ -1764,7 +1737,7 @@ class TableForm
 		{
 			$toolbar [] =[
 				'type' => 'action', 'action' => 'open-popup', 'text' => '',
-				'icon' => 'icon-life-ring', 'style' => 'cancel', 'side' => 1,
+				'icon' => 'system/iconHelp', 'style' => 'cancel', 'side' => 1,
 				'data-popup-url' => 'https://doc.shipard.app/'.$fd['help'],
 				'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
 				'title' => 'Nápověda'//DictSystem::text(DictSystem::diBtn_Help)

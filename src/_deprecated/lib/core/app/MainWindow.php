@@ -149,7 +149,7 @@ class MainWindow extends \Shipard\Base\BaseObject
 				}
 			}
 
-			$userInfo .= "<li><span>".$this->app()->ui()->icons()->el('icon-building');
+			$userInfo .= "<li><span>".$this->app()->ui()->icon('system/iconOwner');
 			$ownerName = $this->app->cfgItem ('options.core.ownerShortName', '');
 			if ($ownerName == '')
 				$ownerName = '#'.$this->app->cfgItem ('dsid', '!');
@@ -167,9 +167,10 @@ class MainWindow extends \Shipard\Base\BaseObject
 				$userInfo .= "<li><span class='appMenuButton df2-action-trigger' data-action='addwizard' data-class='lib.cfg.WorkingDateWizard' title='Nastavit pracovní datum'><i class='fa fa-calendar'></i>{$wdText}</span></li>";
 			}
 
-			$userInfo .=  "<li><span><i class='fa fa-user'></i> ";
-			$userInfo .=  utils::es ($this->app->user()->data ('name'));
-			$userInfo .=  '</span></li>';
+			$userInfo .= '<li><span>';
+			$userInfo .= $this->app()->ui()->icons()->icon ('system/iconUser').'&nbsp;';
+			$userInfo .= utils::es ($this->app->user()->data ('name'));
+			$userInfo .= '</span></li>';
 
 			if ($this->app->userLanguage !== 'cs')
 			{
@@ -212,8 +213,8 @@ class MainWindow extends \Shipard\Base\BaseObject
 		$leftStatus .= "<ul class='appMenu appMenuLeft'>";
 
 		$leftStatus .= "<li class='appMenuIcon'>";
-		$leftStatus .=  "<span id='e10-mm-button' class='appMenuButton' style='border-left: none;'>";
-		$leftStatus .=  " <i class='fa fa-th'></i> ";
+		$leftStatus .=  "<span id='e10-mm-button' class='appMenuButton' style='border-left: none;'>&nbsp;";
+		$leftStatus .= $this->app()->ui()->icons()->icon ('system/iconAppInfoMenu').'&nbsp;';
 		$leftStatus .= '</span>';
 		$leftStatus .= '</li>';
 
@@ -788,14 +789,8 @@ class MainWindow extends \Shipard\Base\BaseObject
 			$icon = $listItem['icon'] ?? '';
 			if ($icon === '' && isset($listItem['table']))
 				$icon = 'tables/' . $listItem['table'];
-			$codeLine .= $this->app()->ui()->icons()->icon($icon, 'i III', 'div');
+			$codeLine .= $this->app()->ui()->icons()->icon($icon, 'i', 'div');
 
-			/*	
-			if (isset ($listItem ['icon']))
-				$codeLine .= "<div class='i ".$this->app()->ui()->icons()->cssClass($listItem ['icon'])."'></div>";
-			elseif (isset ($listItem ['icontxt']))
-				$codeLine .= "<div class='i'>{$listItem ['icontxt']}</div>";
-			*/
 			if (!$small && !$panelMode && isset($listItem ['t1']))
 				$codeLine .= "<div class='t'>".utils::es ($listItem ['t1']).'</div>';
 		}

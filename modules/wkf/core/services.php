@@ -23,6 +23,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 				continue;
 
 			$newItem = $kind;
+			unset($newItem['icon']);
 			$newItem['systemKind'] = $kindNdx;
 			$newItem['docState'] = 4000;
 			$newItem['docStateMain'] = 2;

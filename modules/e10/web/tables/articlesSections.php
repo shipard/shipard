@@ -2,12 +2,11 @@
 
 namespace e10\web;
 
-use \E10\utils, \E10\TableView, \E10\TableForm, \E10\DbTable;
-
+use \E10\utils, \Shipard\Viewer\TableView, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
+use \e10\base\libs\UtilsBase;
 
 /**
  * Class TableArticlesSections
- * @package e10\web
  */
 class TableArticlesSections extends DbTable
 {
@@ -179,7 +178,7 @@ class ViewArticlesSections extends TableView
 		if (!count ($this->pks))
 			return;
 
-		$this->linkedPersons = \E10\Base\linkedPersons ($this->table->app(), $this->table, $this->pks);
+		$this->linkedPersons = UtilsBase::linkedPersons ($this->table->app(), $this->table, $this->pks);
 	}
 }
 

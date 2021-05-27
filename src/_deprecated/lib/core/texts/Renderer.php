@@ -69,7 +69,7 @@ class Renderer extends Utility
 			else
 			{
 				//$hashtagTitle = $hashtagParts[1];
-				$icon = $this->app()->ui()->icons()->cssClass ('icon-file');
+				$icon = $this->app()->ui()->icon ('system/iconFile');
 			}
 
 			if ($valid)

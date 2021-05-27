@@ -101,8 +101,7 @@ class TableViewGrid extends \Shipard\Viewer\TableView
 
 			if ((isset ($listItem ['icon'])) && ($listItem ['icon'] !== ''))
 			{
-				$icon = $this->app()->ui()->icons()->cssClass ($listItem ['icon']);
-				$c .= "<i class='$icon'></i>";
+				$c .= $this->app()->ui()->icon($listItem ['icon']);
 			}
 
 			$c .= '</td>';

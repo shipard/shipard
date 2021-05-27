@@ -712,8 +712,7 @@ class TableView extends \Shipard\Base\BaseObject
 													$icon = $this->app()->ui()->systemIcon(SystemIcons::actionAdd);
 													break;
 					case 'addwizard':	$class .= ' btn-success';
-														$iconName = isset($btn['icon']) ? $this->app()->ui()->icons()->cssClass($btn['icon']) : 'fa fa-play';
-														$icon = "<i class='$iconName'></i> ";
+														$icon = $this->app()->ui()->icon($btn['icon'] ?? 'system/actionAddWizard');
 														break;
 					case 'new':
 													$class .= ' e10-document-trigger';
@@ -790,7 +789,7 @@ class TableView extends \Shipard\Base\BaseObject
 		{
 			$helpBtn = [
 				'type' => 'action', 'action' => 'open-popup', 'text' => '',
-				'icon' => 'icon-life-ring', 'style' => 'cancel',
+				'icon' => 'system/iconHelp', 'style' => 'cancel',
 				'data-popup-url' => 'https://doc.shipard.app/'.$this->viewerDefinition['help'],
 				'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
 				'actionClass' => 'pull-right',

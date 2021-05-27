@@ -464,7 +464,7 @@ class TableIssues extends DbTable
 					$icon = ($issueKind['icon'] !== '') ? $issueKind['icon'] : $issueType['icon'];
 					$txtTitle = $issueKind['fn'];
 					$addSubButton = [
-						'action' => 'new', 'data-table' => 'wkf.core.issues', 'icon' => $icon.' e10-w1em',
+						'action' => 'new', 'data-table' => 'wkf.core.issues', 'icon' => $icon,
 						'text' => $txtTitle, 'type' => 'span',
 						'data-addParams' => $addParams,
 					];

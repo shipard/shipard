@@ -184,8 +184,6 @@ class TableViewDetail
 
 	public function defaultHedearCode ($headerInfo, $xtitle='', $xinfo='')
 	{
-		$newMode = ($this->header !== NULL || isset($headerInfo['newMode']));
-
 		if (is_string ($headerInfo))
 		{
 			$info = array ('icon' => $headerInfo, 'title' => $xtitle, 'info' => $xinfo);
@@ -206,8 +204,7 @@ class TableViewDetail
 			{
 				$iconClass = 'e10-docstyle-on';
 				$class = ' '.$docStateClass;
-				if ($newMode)
-					$class .= ' e10-ds-block';
+				$class .= ' e10-ds-block';
 				$stateIcon = $this->table->getDocumentStateInfo ($docState ['states'], $this->item, 'styleIcon');
 				$stateText = \E10\es ($this->table->getDocumentStateInfo ($docState ['states'], $this->item, 'name'));
 			}
@@ -215,49 +212,26 @@ class TableViewDetail
 		$headerCode = "<div class='content-header$class'>";
 		$headerCode .= "<table><tr>";
 
-		if ($newMode)
+		if (isset ($info ['image']))
 		{
-			if (isset ($info ['image']))
-			{
-				$headerCode .= "<td class='content-header-img-new' style='background-image: url({$info['image']});'>";
-				$headerCode .= '</td>';
-			}
-			elseif (isset($info ['emoji']))
-			{
-				$headerCode .= "<td class='content-header-emoji $iconClass'><span>".utils::es($info ['emoji'])."</span></td>";
-			}
-			else
-			{
-				$icon = $this->app()->ui()->icons()->cssClass($info ['icon']);
-				if (isset($headerInfo['!error']))
-					$icon .= ' e10-error';
-				$headerCode .= "<td class='content-header-icon-new'><span class='$icon'></span></td>";
-			}
+			$headerCode .= "<td class='content-header-img-new' style='background-image: url({$info['image']});'>";
+			$headerCode .= '</td>';
+		}
+		elseif (isset($info ['emoji']))
+		{
+			$headerCode .= "<td class='content-header-emoji $iconClass'><span>".utils::es($info ['emoji'])."</span></td>";
 		}
 		else
 		{
-			if (isset($info ['icon']))
-			{
-				$icon = $this->app()->ui()->icons()->cssClass($info ['icon']);
-				$headerCode .= "<td class='content-header-icon $iconClass'><span class='$icon'></span></td>";
-			}
-			elseif (isset($info ['emoji']))
-			{
-				$headerCode .= "<td class='content-header-emoji e10-ds-block $docStateClass'><span>".utils::es($info ['emoji'])."</span></td>";
-			}
-			if (isset ($info ['image']))
-			{
-				$headerCode .= "<td class='content-header-img'>";
-				$headerCode .= "<img src='{$info ['image']}'>";
-				$headerCode .= '</td>';
-			}
+			$iconClass = '';
+			if (isset($headerInfo['!error']))
+				$iconClass .= 'e10-error';
+			$icon = $this->app()->ui()->icon($info ['icon'], $iconClass, 'span');
+			$headerCode .= "<td class='content-header-icon-new'>$icon</td>";
 		}
 
 		// info
-		if ($newMode)
-			$headerCode .= "<td class='content-header-info-new'>";
-		else
-			$headerCode .= "<td class='content-header-info'>";
+		$headerCode .= "<td class='content-header-info-new'>";
 		if (isset ($headerInfo ['info']) && is_string($info ['info']))
 		{ // old compatibility mode
 			$headerCode .= "<span class='txt'>{$info ['info']}</span>";
@@ -274,8 +248,6 @@ class TableViewDetail
 					$headerCode .= $this->app()->ui()->composeTextLine ($info ['value']);
 					$headerCode .= '</div>';
 				}
-			if (isset ($stateText) && !$newMode)
-				$headerCode .= "<span class='docState'>".$this->app()->ui()->icon($stateIcon)." $stateText</span>";
 		}
 		$headerCode .= "</td>";
 
@@ -297,7 +269,7 @@ class TableViewDetail
 			$headerCode .= "</td>";
 		}
 
-		if ($newMode && isset ($info ['image']))
+		if (isset ($info ['image']))
 		{
 			$headerCode .= "<td class='content-header-img-new' style='background-image: url({$info['image']});'>";
 			$headerCode .= '</td>';

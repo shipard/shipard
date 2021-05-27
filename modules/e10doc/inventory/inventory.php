@@ -1315,7 +1315,7 @@ class ViewItemsInventory extends \E10\TableViewGrid
 
 		$this->docTypes = $this->app()->cfgItem ('e10.docs.types');
 
-		$this->topParams = new \E10Doc\Core\GlobalParams ($this->table->app());
+		$this->topParams = new \e10doc\core\libs\GlobalParams ($this->table->app());
 		$this->topParams->addParam ('fiscalYear', 'queryFiscalYear', ['colWidth' => 3]);
 		$this->topParams->addParam ('warehouse', 'queryWarehouse', ['colWidth' => 2]);
 

@@ -216,7 +216,7 @@ class ViewItemCategories extends TableView
 			$listItem ['i2'] = $props;
 
 
-		$listItem ['icon'] = 'x-cog';
+		$listItem ['icon'] = $this->table->tableIcon($item);
 
 		return $listItem;
 	}

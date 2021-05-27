@@ -292,7 +292,7 @@ class ViewItemsJournal extends \E10\TableViewGrid
 		if ($this->queryParam ('item'))
 			$this->addAddParam ('item', $this->queryParam ('item'));
 
-		$this->docTypes = Application::cfgItem ('e10.docs.types');
+		$this->docTypes = $this->app()->cfgItem ('e10.docs.types');
 
 		parent::init();
 

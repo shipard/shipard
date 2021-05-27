@@ -26,22 +26,13 @@ class Icons extends BaseObject
 		$this->systemIcons->iconsId = $this->iconsId;
 	}
 
+	#[deprecated]
 	public function cssClass($i)
 	{
 		if (strstr ($i, 'icon-') !== FALSE)
 			return 'fas fa-'.substr($i, 5);
 
 		return 'appIcon-'.$i;
-	}
-
-	public function el($i)
-	{
-		$c = '<';
-		$c .= 'i';
-		$c .= ' class="'.$this->cssClass($i).'">';
-		$c .= '</i>';
-
-		return $c;
 	}
 
 	public function systemIcon(int $i, string $addClass = '', string $element = 'i')

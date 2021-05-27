@@ -63,8 +63,8 @@ class Overview extends Content
 				continue;
 
 			$c .= "<li class='e10-static-tab tab$active' data-content-id='lan-overview-{$dgId}' style='border-right: 1px solid rgba(0,0,0,.3);'>";
-			$icn = $this->app()->ui()->icons()->cssClass($dg['icon']);
-			$c .= "&nbsp;<i class='$icn'></i> ";
+			$c .= "&nbsp;";
+			$c .= $this->app()->ui()->icon($dg['icon']).' ';
 			$c .= "<span class='e10-ntf-badge'>?</span>";
 			$c .= "&nbsp;</li>";
 

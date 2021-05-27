@@ -174,15 +174,15 @@ class LanMonitoringWidget extends WidgetBoard
 		else
 		{
 			$rt = [
-				'viewer-mode-overview' => ['text' => '', 'icon' => 'icon-dashboard', 'action' => 'viewer-mode-overview'],
-				'viewer-mode-old' => ['text' => '', 'icon' => 'icon-file-text-o', 'action' => 'viewer-mode-old'],
-				'viewer-mode-dashboard-server' => ['text' => '', 'icon' => 'icon-server', 'action' => 'viewer-mode-dashboard-server'],
-				'viewer-mode-dashboard-nas' => ['text' => '', 'icon' => 'icon-hdd-o', 'action' => 'viewer-mode-dashboard-nas'],
-				'viewer-mode-dashboard-lan' => ['text' => '', 'icon' => 'icon-sitemap', 'action' => 'viewer-mode-dashboard-lan'],
-				'viewer-mode-dashboard-printer' => ['text' => '', 'icon' => 'icon-print', 'action' => 'viewer-mode-dashboard-printer'],
-				'viewer-mode-dashboard-ups' => ['text' => '', 'icon' => 'icon-battery-three-quarters', 'action' => 'viewer-mode-dashboard-ups'],
-				'viewer-mode-schema' => ['text' => '', 'icon' => 'icon-sitemap', 'action' => 'viewer-mode-schema'],
-				'viewer-mode-overviewnew' => ['text' => '', 'icon' => 'icon-dashboard', 'action' => 'viewer-mode-overviewnew'],
+				'viewer-mode-overview' => ['text' => '', 'icon' => 'system/detailOverview', 'action' => 'viewer-mode-overview'],
+				'viewer-mode-old' => ['text' => '', 'icon' => 'system/iconFile', 'action' => 'viewer-mode-old'],
+				'viewer-mode-dashboard-server' => ['text' => '', 'icon' => 'deviceTypes/server', 'action' => 'viewer-mode-dashboard-server'],
+				'viewer-mode-dashboard-nas' => ['text' => '', 'icon' => 'deviceTypes/nas', 'action' => 'viewer-mode-dashboard-nas'],
+				'viewer-mode-dashboard-lan' => ['text' => '', 'icon' => 'tables/mac.lan.lans', 'action' => 'viewer-mode-dashboard-lan'],
+				'viewer-mode-dashboard-printer' => ['text' => '', 'icon' => 'deviceTypes/printer', 'action' => 'viewer-mode-dashboard-printer'],
+				'viewer-mode-dashboard-ups' => ['text' => '', 'icon' => 'deviceTypes/ups', 'action' => 'viewer-mode-dashboard-ups'],
+				'viewer-mode-schema' => ['text' => '', 'icon' => 'system/iconImage', 'action' => 'viewer-mode-schema'],
+				'viewer-mode-overviewnew' => ['text' => '', 'icon' => 'system/detailOverview', 'action' => 'viewer-mode-overviewnew'],
 			];
 			$this->toolbar['rightTabs'] = $rt;
 		}
@@ -273,8 +273,7 @@ class LanMonitoringWidget extends WidgetBoard
 
 		$c .= "<div id='$devId' class='e10-document-trigger $devClass' data-table='mac.lan.devices' data-pk='$deviceNdx' data-action='edit'>";
 		$c .= "<div>";
-		$icon = $this->app()->ui()->icons()->cssClass($device['icon']);
-		$c .= "<i class='$icon fa-fw'></i> ";
+		$c .= $this->app()->ui()->icon($device['icon']).' ';
 		$c .= utils::es($device['title']);
 		$c .= "<label class='label label-default pull-right'>".utils::es($device['deviceId']).'</label> ';
 		$c .= '</div>';

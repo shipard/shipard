@@ -1359,7 +1359,7 @@ class DashboardIssuesCore extends TableView
 		{
 			$addButtons [] = [
 				'type' => 'action', 'action' => 'open-popup', 'text' => '',
-				'icon' => 'icon-life-ring', 'style' => 'cancel', 'side' => 1,
+				'icon' => 'system/iconHelp', 'style' => 'cancel', 'side' => 1,
 				'data-popup-url' => 'https://doc.shipard.app/' . $this->help,
 				'data-popup-width' => '0.5', 'data-popup-height' => '0.8', 'class' => '',
 				'title' => 'Nápověda'//DictSystem::text(DictSystem::diBtn_Help)

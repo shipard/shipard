@@ -5,6 +5,10 @@
     },
     {
         "t": 0,
+        "v": "fa-play"
+    },
+    {
+        "t": 0,
         "v": "fa-calendar-alt"
     },
     {
@@ -21,7 +25,7 @@
     },
     {
         "t": 0,
-        "v": "fa-trash-alt"
+        "v": "fa-trash"
     },
     {
         "t": 0,
@@ -73,6 +77,22 @@
     },
     {
         "t": 0,
+        "v": "fa-th-list"
+    },
+    {
+        "t": 0,
+        "v": "fa-th-large"
+    },
+    {
+        "t": 0,
+        "v": "fa-th"
+    },
+    {
+        "t": 0,
+        "v": "fa-window-maximize"
+    },
+    {
+        "t": 0,
         "v": "fa-stamp"
     },
     {
@@ -94,6 +114,10 @@
     {
         "t": 0,
         "v": "fa-info"
+    },
+    {
+        "t": 0,
+        "v": "fa-external-link-alt"
     },
     {
         "t": 0,
@@ -145,7 +169,7 @@
     },
     {
         "t": 0,
-        "v": "fa-trash-alt"
+        "v": "fa-trash"
     },
     {
         "t": 0,
@@ -229,6 +253,10 @@
     },
     {
         "t": 0,
+        "v": "fa-th"
+    },
+    {
+        "t": 0,
         "v": "fa-star"
     },
     {
@@ -241,7 +269,15 @@
     },
     {
         "t": 0,
+        "v": "fa-life-ring"
+    },
+    {
+        "t": 0,
         "v": "fa-history"
+    },
+    {
+        "t": 0,
+        "v": "fa-image"
     },
     {
         "t": 0,
@@ -254,6 +290,10 @@
     {
         "t": 0,
         "v": "fa-building"
+    },
+    {
+        "t": 0,
+        "v": "fa-thumbtack"
     },
     {
         "t": 0,
@@ -277,7 +317,71 @@
     },
     {
         "t": 0,
+        "v": "fa-bookmark"
+    },
+    {
+        "t": 0,
         "v": "fa-user"
+    },
+    {
+        "t": 0,
+        "v": "fa-video"
+    },
+    {
+        "t": 0,
+        "v": "fa-th"
+    },
+    {
+        "t": 0,
+        "v": "fa-trash"
+    },
+    {
+        "t": 0,
+        "v": "fa-exclamation-triangle"
+    },
+    {
+        "t": 0,
+        "v": "fa-thumbtack"
+    },
+    {
+        "t": 0,
+        "v": "fa-phone-alt"
+    },
+    {
+        "t": 0,
+        "v": "fa-comment"
+    },
+    {
+        "t": 0,
+        "v": "fa-bullhorn"
+    },
+    {
+        "t": 0,
+        "v": "fa-users"
+    },
+    {
+        "t": 0,
+        "v": "fa-sticky-note"
+    },
+    {
+        "t": 0,
+        "v": "fa-inbox"
+    },
+    {
+        "t": 0,
+        "v": "fa-paper-plane"
+    },
+    {
+        "t": 0,
+        "v": "fa-check-circle"
+    },
+    {
+        "t": 0,
+        "v": "fa-clipboard-list"
+    },
+    {
+        "t": 0,
+        "v": "fa-check-square"
     },
     {
         "t": 0,

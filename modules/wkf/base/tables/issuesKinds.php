@@ -40,6 +40,11 @@ class TableIssuesKinds extends DbTable
 		{
 			if ($recData['icon'] !== '')
 				return $recData['icon'];
+
+			$systemKind = $this->app->cfgItem ('wkf.issues.systemKinds.'.$recData['systemKind'], NULL);
+			if ($systemKind)
+				return $systemKind['icon'];
+
 			$dt = $this->app()->cfgItem ('wkf.issues.types.'.$recData['issueType'], FALSE);
 			if ($dt)
 				return $dt['icon'];
@@ -56,10 +61,24 @@ class TableIssuesKinds extends DbTable
 
 		foreach ($rows as $r)
 		{
+			$icon = $r ['icon'] ?? '';
+			if ($icon === '')
+			{
+				$systemKind = $this->app->cfgItem ('wkf.issues.systemKinds.'.$r['systemKind'], NULL);
+				if ($systemKind)
+					$icon = $systemKind['icon'];
+				else
+				{
+					$dt = $this->app()->cfgItem ('wkf.issues.types.'.$r['issueType'], FALSE);
+					if ($dt)
+						$icon = $dt['icon'];
+				}		
+			}	
+
 			$item = [
 				'ndx' => $r ['ndx'], 'fn' => $r ['fullName'], 'sn' => $r ['shortName'],
 				'issueType' => $r ['issueType'], 'systemKind' => $r ['systemKind'],
-				'icon' => $r ['icon'],
+				'icon' => $icon,
 
 				'askWorkOrder' => $r['askWorkOrder'],
 				'askPersons' => $r['askPersons'], 'askPersonsUsers' => $r['askPersonsUsers'],

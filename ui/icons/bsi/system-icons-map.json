@@ -5,6 +5,10 @@
     },
     {
         "t": 0,
+        "v": "bi-play"
+    },
+    {
+        "t": 0,
         "v": "calendar"
     },
     {
@@ -73,6 +77,22 @@
     },
     {
         "t": 0,
+        "v": "bi-list-ul"
+    },
+    {
+        "t": 0,
+        "v": "bi-table"
+    },
+    {
+        "t": 0,
+        "v": "bi-table"
+    },
+    {
+        "t": 0,
+        "v": "bi-hdd-rack-fill"
+    },
+    {
+        "t": 0,
         "v": "bi-file-earmark-diff-fill"
     },
     {
@@ -94,6 +114,10 @@
     {
         "t": 0,
         "v": "bi-info-square"
+    },
+    {
+        "t": 0,
+        "v": "bi-link-45deg"
     },
     {
         "t": 0,
@@ -229,6 +253,10 @@
     },
     {
         "t": 0,
+        "v": "bi-table"
+    },
+    {
+        "t": 0,
         "v": "bi-star"
     },
     {
@@ -241,7 +269,15 @@
     },
     {
         "t": 0,
+        "v": "bi-life-preserver"
+    },
+    {
+        "t": 0,
         "v": "bi-clock-history"
+    },
+    {
+        "t": 0,
+        "v": "bi-image"
     },
     {
         "t": 0,
@@ -254,6 +290,10 @@
     {
         "t": 0,
         "v": "bi-building"
+    },
+    {
+        "t": 0,
+        "v": "bi-pin"
     },
     {
         "t": 0,
@@ -277,7 +317,71 @@
     },
     {
         "t": 0,
+        "v": "bi-bookmark"
+    },
+    {
+        "t": 0,
         "v": "bi-person"
+    },
+    {
+        "t": 0,
+        "v": "bi-camera-video"
+    },
+    {
+        "t": 0,
+        "v": "bi-table"
+    },
+    {
+        "t": 0,
+        "v": "bi-trash"
+    },
+    {
+        "t": 0,
+        "v": "bi-exclamation-triangle-fill"
+    },
+    {
+        "t": 0,
+        "v": "bi-pin"
+    },
+    {
+        "t": 0,
+        "v": "bi-telephone"
+    },
+    {
+        "t": 0,
+        "v": "bi-chat"
+    },
+    {
+        "t": 0,
+        "v": "bi-megaphone"
+    },
+    {
+        "t": 0,
+        "v": "bi-people"
+    },
+    {
+        "t": 0,
+        "v": "bi-stickies"
+    },
+    {
+        "t": 0,
+        "v": "bi-inbox-fill"
+    },
+    {
+        "t": 0,
+        "v": "bi-envelope"
+    },
+    {
+        "t": 0,
+        "v": "bi-check-circle"
+    },
+    {
+        "t": 0,
+        "v": "bi-clipboard"
+    },
+    {
+        "t": 0,
+        "v": "bi-check-square"
     },
     {
         "t": 0,

@@ -57,8 +57,8 @@ class SensorHelper extends Utility
 		$c .= "<span class='$mainClass' id='mqtt-sensor-{$this->sensorInfo['sensorNdx']}' data-sensorid='".$this->sensorInfo['sensorNdx']."'>";
 		$c .= "<span class='$titleClass'>";
 
-		$sensorIcon = (isset($this->sensorInfo['icon']) && $this->sensorInfo['icon'] !== '') ? $this->sensorInfo['icon'] : 'icon-barcode';
-		$c .= "<i class='".$this->app()->ui()->icons()->cssClass($sensorIcon)."'></i> ";
+		$sensorIcon = (isset($this->sensorInfo['icon']) && $this->sensorInfo['icon'] !== '') ? $this->sensorInfo['icon'] : 'tables/mac.iot.sensors';
+		$c .= $this->app()->ui()->icon($sensorIcon).' ';
 		$c .= utils::es($this->sensorInfo['sensorBadgeLabel']);
 		$c .= '</span>';
 		if ($mode == 1)
