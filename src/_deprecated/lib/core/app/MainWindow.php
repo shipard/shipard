@@ -128,9 +128,9 @@ class MainWindow extends \Shipard\Base\BaseObject
 
 						$allwaysOn = $sensor['allwaysOn'] ? ' allwaysOn' : '';
 
-						$sensorIcon = $this->app()->ui()->icons()->cssClass($sensor['icon']);
+						$sensorIcon = $this->app()->ui()->icon($sensor['icon']);
 						$userInfo .= "<li class='e10-sensor{$allwaysOn}' data-sensorid='{$sensor['ndx']}' data-serveridx='$srvidx' id='wss-{$srv['ndx']}-{$sensor['ndx']}' title=\"$title\">";
-						$userInfo .= "<span><i class='$sensorIcon'/></i>";
+						$userInfo .= "<span>".$sensorIcon;
 						if ($sensor['class'] === 'number')
 							$userInfo .= "<span class='sd' id='e10-sensordisplay-{$sensor['ndx']}'>---</span>";
 						$userInfo .= '</span></li>';
@@ -288,7 +288,7 @@ class MainWindow extends \Shipard\Base\BaseObject
 		{
 			$title = utils::es($srv['name']);
 			$c .= "<li class='e10-wss e10-wss-none' id='wss-{$srv['id']}' title=\"$title\">";
-			$c .= "<span><i class='".$this->app()->ui()->icons()->cssClass($srv['icon'])."'/></i></span>";
+			$c .= '<span>'.$this->app()->ui()->icon($srv['icon']).'</span>';
 			$c .= '</li>';
 		}
 
@@ -374,8 +374,8 @@ class MainWindow extends \Shipard\Base\BaseObject
 			if ($helpHeader) {
 				$c .= "<div>";
 				foreach ($helpHeader as $hi) {
-					$i = (isset($hi['icon'])) ? $this->app()->ui()->icons()->cssClass($hi['icon']) : 'fa fa-file-text-o';
-					$c .= "<a class='nowrap' href='$helpUrl{$hi['url']}' target='_new'><i class='$i'></i>&nbsp;" . utils::es($hi['title']) . "</a> ";
+					$i = $this->app()->ui()->icon($hi['icon'] ?? 'system/iconFile');
+					$c .= "<a class='nowrap' href='$helpUrl{$hi['url']}' target='_new'>{$i}&nbsp;" . utils::es($hi['title']) . "</a> ";
 				}
 				$c .= '</div>';
 			}
@@ -383,8 +383,8 @@ class MainWindow extends \Shipard\Base\BaseObject
 			$helpIndex = $this->app->cfgItem('help.index.panels.' . $this->app->panel['url'], FALSE);
 			if ($helpIndex) {
 				foreach ($helpIndex as $hi) {
-					$i = (isset($hi['icon'])) ? $this->app()->ui()->icons()->cssClass($hi['icon']) : 'fa fa-file-text-o';
-					$c .= "<a class='nowrap' href='$helpUrl{$hi['url']}' target='_new'><i class='$i'></i>&nbsp;" . utils::es($hi['title']) . "</a> ";
+					$i = $this->app()->ui()->icon($hi['icon'] ?? 'system/iconFile');
+					$c .= "<a class='nowrap' href='$helpUrl{$hi['url']}' target='_new'>{$i}&nbsp;" . utils::es($hi['title']) . "</a> ";
 				}
 			}
 			$c .= '</li>';
@@ -775,7 +775,6 @@ class MainWindow extends \Shipard\Base\BaseObject
 			$codeLine .= "<span class='title'>";
 
 			if (isset ($listItem ['icon']))
-				//$codeLine .= "<span class='icon ".$this->app()->ui()->icons()->cssClass($listItem ['icon'])."'></span>";
 				$codeLine .= $this->app()->ui()->icon($listItem ['icon'], 'icon', 'span');
 			elseif (isset ($listItem ['icontxt']))
 				$codeLine .= "<span class='icon'>{$listItem ['icontxt']}</span> ";

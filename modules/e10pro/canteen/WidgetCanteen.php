@@ -2,14 +2,14 @@
 
 namespace e10pro\canteen;
 
-use \e10\widgetBoard, \e10\utils;
+use \Shipard\UI\Core\WidgetBoard, \e10\utils;
 
 
 /**
  * Class WidgetCanteen
  * @package e10pro\canteen
  */
-class WidgetCanteen extends widgetBoard
+class WidgetCanteen extends WidgetBoard
 {
 	var $canteenNdx = 0;
 
@@ -58,7 +58,7 @@ class WidgetCanteen extends widgetBoard
 					if ($food['foodName'] === '')
 					{
 						$cellContent[] = [
-							'text' => 'Nastavit', 'type' => 'button', 'actionClass' => 'btn btn-md btn-primary width100', 'icon' => 'icon-edit',
+							'text' => 'Nastavit', 'type' => 'button', 'actionClass' => 'btn btn-md btn-primary width100', 'icon' => 'system/actionOpen',
 							'docAction' => 'edit', 'table' => 'e10pro.canteen.menuFoods', 'pk' => $food['ndx'],
 							'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId
 						];
@@ -66,7 +66,7 @@ class WidgetCanteen extends widgetBoard
 					else
 					{
 						$cellContent[] = [
-							'text' => '', 'type' => 'button', 'actionClass' => 'btn btn-xs btn-primary pull-right', 'icon' => 'icon-edit',
+							'text' => '', 'type' => 'button', 'actionClass' => 'btn btn-xs btn-primary pull-right', 'icon' => 'system/actionOpen',
 							'docAction' => 'edit', 'table' => 'e10pro.canteen.menuFoods', 'pk' => $food['ndx'],
 							'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId
 						];
@@ -132,9 +132,9 @@ class WidgetCanteen extends widgetBoard
 
 
 			$menuTitle = [];
-			$menuTitle[] = ['text' => $menu['fullName'], 'class' => 'padd5 h1', 'icon' => 'icon-file-text-o'];
+			$menuTitle[] = ['text' => $menu['fullName'], 'class' => 'padd5 h1', 'icon' => 'system/iconFile'];
 			$menuTitle[] = [
-				'text' => 'Nastavit', 'type' => 'button', 'class' => 'pull-right padd5', 'actionClass' => 'btn btn-sm btn-primary', 'icon' => 'icon-edit',
+				'text' => 'Nastavit', 'type' => 'button', 'class' => 'pull-right padd5', 'actionClass' => 'btn btn-sm btn-primary', 'icon' => 'system/actionOpen',
 				'docAction' => 'edit', 'table' => 'e10pro.canteen.menus', 'pk' => $menu['ndx'],
 				'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId
 			];
@@ -355,7 +355,7 @@ class WidgetCanteen extends widgetBoard
 		$this->toolbar = ['tabs' => $tabs];
 		$rt = [
 			'viewer-mode-menu' => ['text' =>'', 'icon' => 'icon-cutlery', 'action' => 'viewer-mode-menu'],
-			'viewer-mode-peoples' => ['text' =>'', 'icon' => 'icon-user-circle', 'action' => 'viewer-mode-peoples'],
+			'viewer-mode-peoples' => ['text' =>'', 'icon' => 'system/iconUser', 'action' => 'viewer-mode-peoples'],
 			'viewer-mode-supplier' => ['text' =>'', 'icon' => 'icon-truck', 'action' => 'viewer-mode-supplier'],
 		];
 

@@ -126,8 +126,7 @@ class WidgetBoard extends \Shipard\UI\Core\WidgetPane
 						$c .= '<span>'.$this->app()->ui()->composeTextLine($tab['line']).'</span>';
 					else
 					{
-						$icon = $this->app()->ui()->icons()->cssClass($tab['icon']);
-						$c .= "<i class='$icon'></i>";
+						$c .= $this->app()->ui()->icon($tab['icon']);
 						if ($tab['text'] !== '')
 							$c .= '<span>' . '&nbsp;' . utils::es($tab['text']) . '</span>';
 					}
@@ -143,8 +142,8 @@ class WidgetBoard extends \Shipard\UI\Core\WidgetPane
 				foreach ($this->toolbar['rightTabs'] as $tabId => $tab)
 				{
 					$active = ($this->activeTopTabRight === $tabId) ? ' active' : '';
-					$icon = $this->app()->ui()->icons()->cssClass($tab['icon']);
-					$c .= "<li class='tab e10-widget-trigger{$active}' data-action='{$tab['action']}' data-tabid='{$tabId}'><i class='$icon'></i>".utils::es($tab['text']) . '</li>';
+					$icon = $this->app()->ui()->icon($tab['icon']);
+					$c .= "<li class='tab e10-widget-trigger{$active}' data-action='{$tab['action']}' data-tabid='{$tabId}'>$icon".utils::es($tab['text']) . '</li>';
 				}
 				$c .= '</ul>';
 			}

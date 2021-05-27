@@ -3,7 +3,7 @@
 namespace e10pro\canteen;
 
 use \e10\utils, \e10\TableView, \Shipard\Form\TableForm, \e10\DbTable, \e10doc\core\CreateDocumentUtility;
-
+use \e10\base\libs\UtilsBase;
 
 /**
  * Class TableCanteens
@@ -283,7 +283,7 @@ class ViewCanteens extends TableView
 		if (!count ($this->pks))
 			return;
 
-		$this->linkedPersons = \E10\Base\linkedPersons ($this->table->app(), $this->table, $this->pks);
+		$this->linkedPersons = UtilsBase::linkedPersons ($this->table->app(), $this->table, $this->pks);
 	}
 }
 

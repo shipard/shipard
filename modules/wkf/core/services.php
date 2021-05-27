@@ -83,6 +83,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 
 			$newItem = $st;
 			unset($newItem['topSection']);
+			unset($newItem['icon']);
 			$newItem['parentSection'] = $topSection['ndx'];
 			$newItem['systemSectionType'] = $stNdx;
 			$newItem['docState'] = 4000;

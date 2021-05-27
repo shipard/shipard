@@ -151,12 +151,12 @@ class DashboardIssuesCore extends TableView
 	{
 		if ($this->enableDetailSearch)
 		{
-			$mq [] = ['id' => 'active', 'title' => 'K řešení', 'icon' => 'icon-bolt'];
-			$mq [] = ['id' => 'done', 'title' => 'Hotovo', 'icon' => 'icon-check'];
-			$mq [] = ['id' => 'archive', 'title' => 'Archív', 'icon' => 'icon-archive'];
-			$mq [] = ['id' => 'all', 'title' => 'Vše', 'icon' => 'icon-toggle-on'];
+			$mq [] = ['id' => 'active', 'title' => 'K řešení', 'icon' => 'system/filterActive'];
+			$mq [] = ['id' => 'done', 'title' => 'Hotovo', 'icon' => 'system/filterDone'];
+			$mq [] = ['id' => 'archive', 'title' => 'Archív', 'icon' => 'system/filterArchive'];
+			$mq [] = ['id' => 'all', 'title' => 'Vše', 'icon' => 'system/filterAll'];
 			if ($this->app()->hasRole('pwuser'))
-				$mq [] = ['id' => 'trash', 'title' => 'Koš', 'icon' => 'icon-trash'];
+				$mq [] = ['id' => 'trash', 'title' => 'Koš', 'icon' => 'system/filterTrash'];
 			$this->setMainQueries($mq);
 		}
 	}
@@ -267,7 +267,7 @@ class DashboardIssuesCore extends TableView
 		foreach ($this->usersSections['top'] as $us => $sectionCfg)
 		{
 			$this->subSections[$us] = [
-				['text' => $sectionCfg['sn'], 'class' => '', 'icon' => $sectionCfg['icon'].' fa-fw'],
+				['text' => $sectionCfg['sn'], 'class' => '', 'icon' => $sectionCfg['icon']],
 				['code' => "<span class='e10-ntf-badge' id='ntf-badge-wkf-s{$us}' style='display:none;'></span>"],
 			];
 
@@ -278,7 +278,7 @@ class DashboardIssuesCore extends TableView
 					$nv = 0;
 				$nt = $marks->markCfg['states'][$nv]['name'];
 				$this->subSections[$us][] =
-					['text' => '', 'icon' => $marks->markCfg['states'][$nv]['icon'] . ' fa-fw', 'title' => $nt, 'class' => 'pull-right e10-small', 'css' => 'position: absolute; right:0; padding-right: 4px;'];
+					['text' => '', 'icon' => $marks->markCfg['states'][$nv]['icon'], 'title' => $nt, 'class' => 'pull-right e10-small', 'css' => 'position: absolute; right:0; padding-right: 4px;'];
 			}
 
 			if ($sectionCfg['subSections'])
@@ -295,7 +295,7 @@ class DashboardIssuesCore extends TableView
 					$nt = $marks->markCfg['states'][$nv]['name'];
 
 					$this->subSections[$us][0]['subItems'][$ss] = [
-						['text' => $subSectionCfg['sn'], 'class' => '', 'icon' => $subSectionCfg['icon'].' fa-fw'],
+						['text' => $subSectionCfg['sn'], 'class' => '', 'icon' => $subSectionCfg['icon']],
 						['code' => "<span class='e10-ntf-badge' id='ntf-badge-wkf-s{$ss}' style='display:none;'></span>"],
 						['text' => '', 'icon' => $marks->markCfg['states'][$nv]['icon'].' fa-fw', 'title' => $nt, 'class' => 'pull-right e10-small', 'css' => 'position: absolute; right:0; padding-right: 4px;'],
 					];
@@ -1263,7 +1263,7 @@ class DashboardIssuesCore extends TableView
 		{
 			foreach ($attachments['images'] as $a)
 			{
-				$icon = ($a['filetype'] === 'pdf') ? 'system/iconFile' : 'system/iconFile';
+				$icon = ($a['filetype'] === 'pdf') ? 'system/iconFilePdf' : 'system/iconFile';
 				$l = ['text' => $a['name'], 'icon' => $icon, 'class' => 'e10-att-link btn btn-xs btn-default df2-action-trigger', 'prefix' => ''];
 				$l['data'] =
 					[

@@ -4,7 +4,7 @@ namespace wkf\docs\viewers;
 
 
 use \Shipard\Viewer\TableView, \e10\utils, \Shipard\Viewer\TableViewPanel;
-
+use \e10\base\libs\UtilsBase;
 
 /**
  * Class DashboardDocumentsCore
@@ -119,11 +119,11 @@ class DashboardDocumentsCore extends TableView
 	{
 		if ($this->enableDetailSearch)
 		{
-			$mq [] = ['id' => 'active', 'title' => 'K řešení', 'icon' => 'icon-bolt'];
-			$mq [] = ['id' => 'archive', 'title' => 'Archív', 'icon' => 'icon-archive'];
-			$mq [] = ['id' => 'all', 'title' => 'Vše', 'icon' => 'icon-toggle-on'];
+			$mq [] = ['id' => 'active', 'title' => 'K řešení', 'icon' => 'system/filterActive'];
+			$mq [] = ['id' => 'archive', 'title' => 'Archív', 'icon' => 'system/filterArchive'];
+			$mq [] = ['id' => 'all', 'title' => 'Vše', 'icon' => 'system/filterAll'];
 			if ($this->app()->hasRole('pwuser'))
-				$mq [] = ['id' => 'trash', 'title' => 'Koš', 'icon' => 'icon-trash'];
+				$mq [] = ['id' => 'trash', 'title' => 'Koš', 'icon' => 'system/filterTrash'];
 			$this->setMainQueries($mq);
 		}
 	}
@@ -412,8 +412,8 @@ class DashboardDocumentsCore extends TableView
 		if (!count ($this->pks))
 			return;
 
-		$this->linkedPersons = \E10\Base\linkedPersons ($this->table->app(), $this->table, $this->pks, 'e10-small');
-		$this->atts = \E10\Base\loadAttachments ($this->app(), $this->pks, $this->table->tableId());
+		$this->linkedPersons = UtilsBase::linkedPersons ($this->table->app(), $this->table, $this->pks, 'e10-small');
+		$this->atts = UtilsBase::loadAttachments ($this->app(), $this->pks, $this->table->tableId());
 
 		$this->classification = \E10\Base\loadClassification ($this->app(), $this->table->tableId(), $this->pks);
 
@@ -644,14 +644,7 @@ class DashboardDocumentsCore extends TableView
 
 	function createPanelContentRight_Tags (TableViewPanel $panel, &$params, &$qry)
 	{
-		$clsf = \E10\Base\classificationParams ($this->table);
-		foreach ($clsf as $cg)
-		{
-			$tagsParams = new \E10\Params ($panel->table->app());
-			$tagsParams->addParam ('checkboxes', 'query.clsf.'.$cg['id'], ['items' => $cg['items']]);
-			$qry[] = ['style' => 'params', 'title' => $cg['name'], 'params' => $tagsParams];
-			$tagsParams->detectValues();
-		}
+		UtilsBase::addClassificationParamsToPanel($this->table, $panel, $qry);
 	}
 
 	function createPanelContentRight_UserRelated (TableViewPanel $panel, &$params, &$qry)

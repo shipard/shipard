@@ -62,8 +62,12 @@ class TableSections extends DbTable
 
 	public function checkSection (&$s)
 	{
+		$sst = NULL;
+		if ($s['systemSectionType'])
+			$sst = $this->app()->cfgItem ('wkf.systemSections.types.'.$s['systemSectionType'], NULL);
+
 		if ($s['icon'] === '')
-			$s['icon'] = 'icon-file';
+			$s['icon'] = $sst['icon'] ?? 'system/iconFile';
 	}
 
 	public function saveConfig ()
@@ -93,7 +97,7 @@ class TableSections extends DbTable
 			$section = [
 				'ndx' => $r ['ndx'],
 				'fn' => $r ['fullName'], 'sn' => ($r['shortName'] !== '') ? $r['shortName'] : $r['fullName'],
-				'icon' => ($r['icon'] !== '') ? $r['icon'] : 'icon-file',
+				'icon' => $r['icon'],
 				'parentSection' => $r['parentSection'], 'subSectionRightsType' => $r['subSectionRightsType'],
 				'sst' => $r['systemSectionType'], 'nia' => $r['newIssuesAllowed'], 'eik' => $r['enabledIssueKinds'],
 				'aa' => $r['analyzeAttachments'], 'orderBy' => $orderBy,

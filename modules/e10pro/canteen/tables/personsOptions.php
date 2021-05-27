@@ -2,7 +2,7 @@
 
 namespace e10pro\canteen;
 use \e10\TableView, \e10\TableForm, \e10\DbTable;
-
+use \e10\base\libs\UtilsBase;
 
 /**
  * Class TablePersonsOptions
@@ -157,7 +157,7 @@ class ViewPersonsOptions extends TableView
 
 		parent::selectRows2();
 
-		$this->linkedPersons = \E10\Base\linkedPersons ($this->table->app(), $this->table, $this->pks, 'label label-primary');
+		$this->linkedPersons = UtilsBase::linkedPersons ($this->table->app(), $this->table, $this->pks, 'label label-primary');
 
 		$q[] = 'SELECT * FROM [e10pro_canteen_personsOptionsFoods]';
 		array_push ($q, ' WHERE personOptions IN %in', $this->pks);

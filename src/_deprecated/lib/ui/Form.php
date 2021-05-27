@@ -278,9 +278,8 @@ class Form extends E10Object
 	{
 		$c = '';
 
-		$iconClass = $this->app()->ui()->icons()->cssClass('icon-times');
 		$c .= "<span class='lmb e10-trigger-action' data-action='form-close'>";
-		$c .= "<i class='$iconClass'></i>";
+		$c .= $this->app()->ui()->icon('system/actionClose');
 		$c .= "</span>";
 
 		$c .= "<div class='pageTitle'>";
@@ -298,12 +297,10 @@ class Form extends E10Object
 			$c .= '>';
 
 			//$c .= "<button type='submit'>";
-			$icon = $this->app()->ui()->icons()->cssClass($button['icon']);
-			$c.= "<i class='$icon'></i> ";
+			$c .= $this->app()->ui()->icon($button['icon']).' ';
 			$c .= utils::es($button['text']);
 
 			$c .= '</li>';
-
 		}
 
 		$c .= '</ul>';

@@ -2,7 +2,7 @@
 
 namespace e10pro\canteen;
 
-use \e10\utils, \e10\TableView, \e10\TableForm, \e10\DbTable;
+use \e10\utils, \Shipard\Viewer\TableView, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
 
 
 /**
@@ -51,7 +51,7 @@ class TableFoodOrders extends DbTable
 	public function subColumnsInfo ($recData, $columnId)
 	{
 		$canteenCfg = $this->app()->cfgItem ('e10pro.canteen.canteens.'.$recData['canteen'], NULL);
-		if ($canteenCfg && count($canteenCfg['addFoods']))
+		if ($canteenCfg && isset($canteenCfg['addFoods']) && count($canteenCfg['addFoods']))
 		{
 			$sci = ['columns' => []];
 			foreach ($canteenCfg['addFoods'] as $afNdx => $af)

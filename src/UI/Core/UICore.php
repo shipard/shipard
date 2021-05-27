@@ -110,8 +110,7 @@ class UICore extends \Shipard\Base\BaseObject
 		$i = '';
 		if (isset ($p ['icon']))
 		{
-			$icn = $this->icons()->cssClass ($p ['icon']);
-			$i = "<i class='$icn'></i>";
+			$i = $this->icons()->icon($p ['icon']);
 		}
 		elseif (isset ($p ['i']))
 			$i = "<i class='fa fa-{$p ['i']}'></i>";
@@ -276,7 +275,7 @@ class UICore extends \Shipard\Base\BaseObject
 			$class .= ' '.$btnClass;
 
 		if (isset($button ['icon']))
-			$icon = "<i class='fa-fw ".$this->icons()->cssClass($button ['icon'])."'></i> ";
+			$icon = $this->icons()->icon($button ['icon']).' ';
 
 		$btnText = (isset($button['text'])) ? $this->es ($button['text']) : '';
 		if (isset($button['title']))

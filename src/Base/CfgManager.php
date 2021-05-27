@@ -100,7 +100,7 @@ class CfgManager
 		}
 
 		// -- all _*.json files
-		$underscoreFiles = glob (__APP_DIR__ . '/config/_*.{json,yaml}', GLOB_BRACE);
+		$underscoreFiles = glob (__APP_DIR__ . '/config/_*.json', GLOB_BRACE);
 		forEach ($underscoreFiles as $uf)
 		{
 			$newAppOptionsConfig = $this->loadConfigFileCore (basename ($uf), __APP_DIR__ . "/config/");

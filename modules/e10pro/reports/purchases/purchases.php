@@ -2,7 +2,7 @@
 
 namespace E10Pro\Reports\Purchases;
 
-use E10\utils, E10Doc\Core\e10utils, \E10\uiutils, E10Doc\Core\Aggregate, E10Doc\Core\AggregateDocRows, E10Doc\Core\WidgetAggregate;
+use E10\utils, E10Doc\Core\e10utils, \E10\uiutils, e10doc\core\libs\Aggregate, e10doc\core\libs\AggregateDocRows, E10Doc\Core\WidgetAggregate;
 
 
 /**
@@ -23,7 +23,7 @@ class Purchases extends AggregateDocRows
  * Class reportPurchases
  * @package E10Pro\Reports\Purchases
  */
-class reportPurchases extends \E10Doc\Core\GlobalReport
+class reportPurchases extends \e10doc\core\libs\reports\GlobalReport
 {
 	var $period;
 
