@@ -3,7 +3,7 @@
 		"panels": {
 			"reception-booking": {
 				"name": "Rezervace",
-				"icon": "icon-book",
+				"icon": "system/rightSubmenuReservations",
 				"fullsize": 1,
 				"order": 10000,
 				"rows": {
@@ -12,7 +12,7 @@
 			},
 			"reception-receivables": {
 				"name": "Pohledávky",
-				"icon": "icon-arrow-circle-up",
+				"icon": "system/rightSubmenuReceivables",
 				"order": 200000,
 				"rows": {
 					"title": {"order": 1, "class": "full"},
@@ -34,7 +34,7 @@
 		"panels": {
 			"main": {
 				"name": "Pohledávky",
-				"icon": "icon-arrow-circle-up",
+				"icon": "system/rightSubmenuReceivables",
 				"order": 1000,
 				"rows": {
 					"title": {"order": 1, "class": "full"},
@@ -43,7 +43,7 @@
 			},
 			"booking": {
 				"name": "Rezervace",
-				"icon": "icon-book",
+				"icon": "system/rightSubmenuReservations",
 				"fullsize": 1,
 				"order": 2000,
 				"rows": {
@@ -81,7 +81,7 @@
 		"panels": {
 			"reception-receivables": {
 				"name": "Pohledávky",
-				"icon": "icon-arrow-circle-up",
+				"icon": "system/rightSubmenuReceivables",
 				"order": 200000,
 				"rows": {
 					"title": {"order": 1, "class": "full"},

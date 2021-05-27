@@ -183,9 +183,9 @@ class FormPersonOptions extends TableForm
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Osoba', 'icon' => 'icon-user-circle'];
-			$tabs ['tabs'][] = ['text' => 'Jídla', 'icon' => 'icon-cutlery'];
-			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-wrench'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Jídla', 'icon' => 'formMeals'];
+			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
 					$this->addColumnInput ('person');

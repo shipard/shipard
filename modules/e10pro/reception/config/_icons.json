@@ -1,0 +1,22 @@
+{
+    "tables/e10pro.reception.foreignersAccPlaces":{
+		"fa5": "fa-home",
+		"fa5pro": "fa-home",
+		"bsi": "bi-house-door-fill",
+		"mdi": "home"
+	},
+    "tables/e10pro.reception.foreignersPoliceFiles":{
+		"fa5": "fa-file-alt",
+		"fa5pro": "fa-file-alt",
+		"bsi": "bi-file-earmark-text-fill",
+		"mdi": "description"
+	},
+
+
+	"formForeignersData":{
+		"fa5": "fa-file-alt",
+		"fa5pro": "fa-file-alt",
+		"bsi": "bi-file-earmark-text-fill",
+		"mdi": "description"
+	}
+}

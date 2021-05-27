@@ -90,8 +90,8 @@ class FormForeignerPoliceFile extends TableForm
 		$this->setFlag ('maximize', 1);
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Údaje', 'icon' => 'x-content'];
-			$tabs ['tabs'][] = ['text' => 'Data', 'icon' => 'icon-file-text-o'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Data', 'icon' => 'formForeignersData'];
 
 			$this->openTabs ($tabs);
 				$this->openTab ();

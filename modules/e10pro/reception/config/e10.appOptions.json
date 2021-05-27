@@ -1,10 +1,10 @@
 {
 	"receptionAccPlaces": {
-		"name": "Místa ubytování cizinců", "order": 427000, "group": "building", "icon": "icon-home",
+		"name": "Místa ubytování cizinců", "order": 427000, "group": "building",
 		"type": "viewer", "table": "e10pro.reception.foreignersAccPlaces", "viewer": "default"
 	},
 	"receptionPoliceFiles": {
-		"name": "Soubory pro Cizineckou policii", "order": 827000, "group": "building", "icon": "icon-file-text-o",
+		"name": "Soubory pro Cizineckou policii", "order": 827000, "group": "building",
 		"type": "viewer", "table": "e10pro.reception.foreignersPoliceFiles", "viewer": "default"
 	}
 }

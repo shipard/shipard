@@ -100,6 +100,12 @@
 		"fa5pro": "fa-minus-square",
 		"bsi": "bi-dash-square",
 		"mdi": "remove_circle_outline"
+	},	
+	"actionSupport": {
+		"fa5":"fa-life-ring",
+        "fa5pro":"fa-life-ring",
+        "bsi":"bi-life-preserver",
+        "mdi":"support"
 	},
 
 
@@ -212,6 +218,36 @@
         "fa5pro":"fa-life-ring",
         "bsi":"bi-life-preserver",
         "mdi":"support"
+	},
+	"rightSubmenuReservations":{
+		"fa5": "fa-book",
+		"fa5pro": "fa-book",
+		"bsi": "bi-book",
+		"mdi": "auto_stories"
+	},
+	"rightSubmenuReceivables":{
+		"fa5":"fa-arrow-circle-up",
+        "fa5pro":"fa-arrow-circle-up",
+        "bsi":"bi-arrow-up-circle-fill",
+        "mdi":"arrow_circle_up"
+	},
+	"rightSubmenuMeters":{
+		"fa5": "fa-cogs",
+		"fa5pro": "fa-cogs",
+		"bsi": "bi-gear-fill",
+		"mdi": "settings"
+	},
+	"rightSubmenuAccess":{
+		"fa5":"fa-key",
+        "fa5pro":"fa-key-skeleton",
+        "bsi":"bi-key",
+        "mdi":"vpn_key"
+	},
+	"rightSubmenuCanteen":{
+		"fa5": "fa-utensils",
+		"fa5pro": "fa-utensils-alt",
+		"bsi": "bi-shop-window",
+		"mdi": "dining"
 	},
 
 
@@ -468,5 +504,12 @@
 		"fa5pro": "fa-stamp",
 		"bsi": "bi-file-earmark-diff-fill",
 		"mdi": "approval"
+	},
+	"formHistory":{
+		"fa5": "fa-history",
+		"fa5pro": "fa-history",
+		"bsi": "bi-clock-history",
+		"mdi": "history"
 	}
+
 }

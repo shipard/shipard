@@ -2,7 +2,7 @@
 	"main": {
 		"panels": {
 			"macAccess": {
-				"name": "Přístupy", "icon": "icon-key", "order": 560000,
+				"name": "Přístupy", "icon": "system/rightSubmenuAccess", "order": 560000,
 				"fullsize": 1,
 				"rows": {
 					"main": {"order": 10000}
@@ -14,7 +14,7 @@
 	"main_new": {
 		"panels": {
 			"macAccess": {
-				"name": "Přístupy", "icon": "icon-key", "order": 560000,
+				"name": "Přístupy", "icon": "system/rightSubmenuAccess", "order": 560000,
 				"fullsize": 1,
 				"rows": {
 					"main": {"order": 10000}

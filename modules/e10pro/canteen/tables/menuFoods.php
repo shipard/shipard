@@ -182,9 +182,9 @@ class FormMenuFood extends TableForm
 		$this->checkSoup();
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Jídlo', 'icon' => 'icon-bars'];
-			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-wrench'];
-			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-image'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
+			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
 					if ($this->canteenCfg['lunchMenuSoup'] != 2)

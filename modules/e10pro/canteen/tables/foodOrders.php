@@ -181,8 +181,8 @@ class FormFoodOrder extends TableForm
 		$this->canteenCfg = $this->app()->cfgItem ('e10pro.canteen.canteens.'.$this->recData['canteen']);
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Objednáno', 'icon' => 'icon-check-circle'];
-			$tabs ['tabs'][] = ['text' => 'Historie', 'icon' => 'icon-history'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Historie', 'icon' => 'system/formHistory'];
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab();
 					$this->addColumnInput ('canteen');

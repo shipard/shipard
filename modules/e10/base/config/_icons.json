@@ -71,17 +71,17 @@
         "bsi":"bi-box-arrow-in-right",
         "mdi":"login"
     },
+    "tables/e10.base.attachments":{
+        "fa5": "fa-paperclip",
+		"fa5pro": "fa-paperclip",
+		"bsi": "bi-paperclip",
+		"mdi": "attach_file"
+    },
     "e10.widgetDashboard/Info":{
         "fa5":"fa-info",
         "fa5pro":"fa-info-square",
         "bsi":"bi-info-square",
         "mdi":"info"
-    },
-    "e10.base.attachments":{
-        "fa5": "fa-paperclip",
-		"fa5pro": "fa-paperclip",
-		"bsi": "bi-paperclip",
-		"mdi": "attach_file"
     },
 
 

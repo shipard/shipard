@@ -3,7 +3,7 @@
 		"panels": {
 			"reception-booking": {
 				"name": "Rezervace",
-				"icon": "icon-book",
+				"icon": "system/rightSubmenuReservations",
 				"fullsize": 1,
 				"order": 10000,
 				"rows": {

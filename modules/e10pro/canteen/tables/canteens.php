@@ -301,11 +301,11 @@ class FormCanteen extends TableForm
 		$this->setFlag ('maximize', 1);
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Jídelna', 'icon' => 'icon-cutlery'];
-			$tabs ['tabs'][] = ['text' => 'Doplňková jídla', 'icon' => 'icon-circle-o'];
-			$tabs ['tabs'][] = ['text' => 'Fakturace', 'icon' => 'icon-money'];
-			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-wrench'];
-			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-image'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Doplňková jídla', 'icon' => 'formAdditionalMeals'];
+			$tabs ['tabs'][] = ['text' => 'Fakturace', 'icon' => 'formInvoicing'];
+			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
+			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
