@@ -214,7 +214,7 @@ class FormTray extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Přihrádka', 'icon' => 'icon-folder-open-o'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
 					$this->addColumnInput ('fullName');

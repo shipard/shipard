@@ -111,9 +111,9 @@ class FormHeadline extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 		$this->setFlag ('maximize', 1);
 
-		$tabs ['tabs'][] = ['text' => 'Novinka', 'icon' => 'icon-filter'];
-		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-wrench'];
-		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'icon-paperclip'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);

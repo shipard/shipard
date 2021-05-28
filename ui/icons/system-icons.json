@@ -112,6 +112,30 @@
         "fa5pro":"fa-play",
         "bsi":"bi-play",
         "mdi":"play_arrow"
+	},	
+	"actionInputPlus": {
+		"fa5": "fa-plus-square",
+		"fa5pro": "fa-plus-square",
+		"bsi": "bi-plus-square",
+		"mdi": "add_circle"
+	},	
+	"actionInputMinus": {
+		"fa5":"fa-minus-square",
+        "fa5pro":"fa-minus-square",
+        "bsi":"bi-dash-square",
+        "mdi":"remove_circle"
+	},	
+	"actionInputClear": {
+		"fa5":"fa-times",
+        "fa5pro":"fa-times",
+        "bsi":"bi-x",
+        "mdi":"close"
+	},	
+	"actionInputSearch": {
+		"fa5":"fa-search",
+		"fa5pro":"fa-search",
+		"bsi":"bi-search",
+		"mdi":"search"
 	},
 
 
@@ -234,6 +258,30 @@
         "fa5pro":"fa-th",
         "bsi":"bi-grid-3x3-gap-fill",
         "mdi":"apps"
+	},
+	"iconSpinner":{
+		"fa5": "fa-spinner",
+		"fa5pro": "fa-spinner",
+		"bsi": "bi-arrow-clockwise",
+		"mdi": "refresh"
+	},
+	"iconWorkplace":{
+		"fa5": "fa-home",
+		"fa5pro": "fa-home",
+		"bsi": "bi-house-door-fill",
+		"mdi": "home"
+	},
+	"iconLaboratory":{
+		"fa5":"fa-flask",
+        "fa5pro":"fa-flask",
+        "bsi":"bi-building",
+        "mdi":"science"
+	},
+	"iconLocalServer":{
+		"fa5":"fa-square",
+        "fa5pro":"fa-square",
+        "bsi":"bi-square-fill",
+        "mdi":"check_box_outline_blank"
 	},
 
 
