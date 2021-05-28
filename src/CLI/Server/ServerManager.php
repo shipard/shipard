@@ -7,6 +7,67 @@ use \Shipard\Base\Utility;
 
 class ServerManager extends Utility
 {
+	public function serverBackup ()
+	{
+		$thisHostName = utils::cfgItem($this->app->cfgServer, 'serverDomain', gethostname());
+
+		// -- data sources
+		$localBackupDir = utils::cfgItem($this->app->cfgServer, 'localBackupDir', '/var/lib/shipard/backups');
+		$thisLocalBackupDir = $localBackupDir . '/' . date ('Y-m-d');
+
+		// -- data sources
+		$cmd = "shpd-server app-walk app-backup --move-to=$localBackupDir";
+		if ($this->app()->quiet)
+			$cmd .= ' --quiet';
+		passthru ($cmd);
+
+		// -- /etc
+		exec ("cd / && tar -Pczf $thisLocalBackupDir/etc-$thisHostName-" . date ('Y-m-d') . '.tgz /etc/');
+
+		// -- static folders
+		$staticFolders = utils::cfgItem($this->app->cfgServer, 'staticFolders', []);
+		forEach ($staticFolders as $sf)
+		{
+			$bfn = str_replace('/', '-', substr($sf, 1, -1));
+			exec ("cd / && tar -Pczf $thisLocalBackupDir/$bfn-" . date ('Y-m-d') . ".tgz $sf");
+		}
+
+		// -- set owner/group
+		exec ("chown -R root:shpd $thisLocalBackupDir");
+
+		// -- remove backup week ago
+		$thisLocalBackupDir = $localBackupDir . '/' . date ('Y-m-d', strtotime('-1 week'));
+		if (is_dir($thisLocalBackupDir))
+			exec ('rm -rf '.$thisLocalBackupDir);
+
+		// -- host cleanup
+		$this->serverCleanup ();
+
+		return TRUE;
+	}
+
+	public function serverCleanup ()
+	{
+		$oldDir = getcwd();
+		$cmdCleanOldFiles = 'find . -mtime +1 -type f -delete';
+
+		if (is_dir('/var/lib/shipard/email'))
+		{
+			chdir ('/var/lib/shipard/email');
+			passthru ($cmdCleanOldFiles);
+		}
+
+		if (is_dir('/var/lib/shipard/tmp'))
+		{
+			chdir ('/var/lib/shipard/tmp');
+			passthru ('find . -mtime +3 -type f -delete');
+		}
+
+		chdir ($oldDir);
+
+		return TRUE;
+	}
+
 	public function checkServerConfig()
 	{
 		if (!is_readable(__SHPD_ETC_DIR__.'/server.json'))
@@ -23,6 +84,7 @@ class ServerManager extends Utility
 		$this->mkDir(__SHPD_VAR_DIR__.'/dscmd');
 		$this->mkDir(__SHPD_VAR_DIR__.'/tmp');
 		$this->mkDir(__SHPD_VAR_DIR__.'/upload');
+		$this->mkDir(__SHPD_VAR_DIR__.'/upload/dsStats');
 		$this->mkDir(__SHPD_VAR_DIR__.'/shpd');
 
 		if (!isset($this->app()->cfgServer['dsRoot']))

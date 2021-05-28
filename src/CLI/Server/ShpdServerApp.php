@@ -69,12 +69,10 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		$backupDir = __APP_DIR__ . '/tmp/bkp' . time ();
 		mkdir ($backupDir);
 
-		$dataSourceInfo = $this->dsCfg();
-		$hostingId = $dataSourceInfo['hosting'];
 		$dsid = $this->manager->cfgItem ('dsid');
 
-		$hostName = gethostname();
-		$backupName = $hostingId.'-'.$dsid.'-'.date ("Y-m-d");
+		$hostName = utils::cfgItem($this->cfgServer, 'serverDomain', gethostname());
+		$backupName = $dsid.'-'.date ("Y-m-d");
 		// --database
 		$cmd = "mysqldump --default-character-set=utf8mb4 -u {$this->manager->cfgItem ('db.login')} -p{$this->manager->cfgItem ('db.password')} {$this->manager->cfgItem ('db.database')} -r $backupDir/database.sql";
 		exec ($cmd);
@@ -98,12 +96,8 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		else
 			$syncAttachments = TRUE;
 
-		// -- index.php, favicon.ico, robots.txt
+		// -- index.php
 		copy (__APP_DIR__ . '/index.php', $backupDir.'/index.php');
-		if (is_file(__APP_DIR__ . '/favicon.ico'))
-			copy (__APP_DIR__ . '/favicon.ico', $backupDir.'/favicon.ico');
-		if (is_file(__APP_DIR__ . '/robots.txt'))
-			copy (__APP_DIR__ . '/robots.txt', $backupDir.'/robots.txt');
 
 		// --tar
 		$backupFileName = __APP_DIR__ . '/tmp/bkp-' . $backupName . ".tgz";
@@ -129,7 +123,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 				$dsBackupInfo = json_decode ($bistr, TRUE);
 			}
 
-			$dsbi = ['dsid' => $dsid, 'hosting' => $hostingId, 'serverPath' => __APP_DIR__,
+			$dsbi = ['dsid' => $dsid, 'host' => $hostName, 'serverPath' => __APP_DIR__,
 							 'syncAttachments' => $syncAttachments, 'backupFileSize' => $backupFileSize];
 			$dsBackupInfo [] = $dsbi;
 			file_put_contents ($dsBackupInfoFileName, json_encode($dsBackupInfo, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
@@ -1109,119 +1103,16 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		return $this->err ("command '$cmd' not exist; try 'help commands'");
 	}
 
-	public function hostBackup ()
+	public function serverBackup ()
 	{
-		if (!is_file('/etc/e10-hosting.cfg'))
-			return $this->err ("file '/etc/e10-hosting.cfg' not found");
-
-		$bkpSettings = json_decode (file_get_contents('/etc/e10-hosting.cfg'), TRUE);
-		if (!$bkpSettings)
-			return $this->err ("invalid server backup settings (syntax error?)");
-
-		$bkpSettings = array_pop($bkpSettings);
-
-		$thisHostName = utils::cfgItem($bkpSettings, 'thisHostName', gethostname());
-		$backupFolders = utils::cfgItem($bkpSettings, 'backupFolders', FALSE);
-		if ($backupFolders === FALSE)
-		{
-			$dr = utils::cfgItem($bkpSettings, 'documentRoot', '/var/www/data-sources');
-			if ($dr)
-			{
-				$backupFolders = array ();
-				$backupFolders [] = $dr;
-			}
-		}
-		if ($backupFolders === FALSE)
-			return $this->err ("unknown document root; nothing to backup");
-
-		// -- data sources
-		$localBackupDir = utils::cfgItem($bkpSettings, 'localBackupDir', "/var/lib/e10/backups");
-		$thisLocalBackupDir = $localBackupDir . '/' . date ('Y-m-d');
-
-		// -- data sources
-		forEach ($backupFolders as $oneFolder)
-		{
-			$cmd = "cd $oneFolder && e10 app-walk app-backup --move-to=$localBackupDir";
-			if ($this->quiet)
-				$cmd .= ' --quiet';
-			passthru ($cmd);
-		}
-
-		// -- /etc
-		exec ("cd / && tar -Pczf $thisLocalBackupDir/etc-$thisHostName-" . date ('Y-m-d') . ".tgz /etc/");
-
-		// -- static folders
-		$staticFolders = utils::cfgItem($bkpSettings, 'staticFolders', []);
-		forEach ($staticFolders as $sf)
-		{
-			$bfn = str_replace('/', '-', substr($sf, 1, -1));
-			exec ("cd / && tar -Pczf $thisLocalBackupDir/$bfn-" . date ('Y-m-d') . ".tgz $sf");
-		}
-
-		// -- set owner/group
-		exec ("chown -R root:js $thisLocalBackupDir");
-
-		// -- remove backup week ago
-		$thisLocalBackupDir = $localBackupDir . '/' . date ('Y-m-d', strtotime('-1 week'));
-		if (is_dir($thisLocalBackupDir))
-			exec ('rm -rf '.$thisLocalBackupDir);
-
-		// -- host cleanup
-		$this->hostCleanup ();
-
-		// -- upload to server
-		if (!isset ($bkpSettings['backupHost']) || !isset ($bkpSettings['backupUser']))
-			return TRUE;
-
-		$remoteBackupDir = utils::cfgItem($bkpSettings, 'remoteBackupDir', "/home/{$bkpSettings['backupUser']}/backups");
-
-		$remoteThisBackupDir = $remoteBackupDir . '/' . date ('Y/m/d');
-
-		$uploadCmd = "ssh -l {$bkpSettings['backupUser']} {$bkpSettings['backupHost']} mkdir -p $remoteThisBackupDir";
-		exec ($uploadCmd);
-		$uploadCmd = "scp $thisLocalBackupDir/* {$bkpSettings['backupUser']}@{$bkpSettings['backupHost']}:/$remoteThisBackupDir";
-		exec ($uploadCmd);
-
-		// -- sync attachments
-		$hostName = gethostname();
-		$backupInfoFileName = $thisLocalBackupDir . '/backupInfo-'.$hostName.'.json';
-		if (is_file($backupInfoFileName))
-		{
-			$bistr = file_get_contents($backupInfoFileName);
-			$dsBackupInfo = json_decode ($bistr, TRUE);
-			forEach ($dsBackupInfo as $oneBackup)
-			{
-				if (!$oneBackup['syncAttachments'])
-					continue;
-				$remoteThisSyncDir = $remoteBackupDir . '/sync/' . $oneBackup['dsid'] . '/att';
-
-				exec ("ssh -l {$bkpSettings['backupUser']} {$bkpSettings['backupHost']} mkdir -p $remoteThisSyncDir");
-
-				$syncCmd = "cd {$oneBackup['serverPath']} && " .
-									 "rsync -azk att/ {$bkpSettings['backupUser']}@{$bkpSettings['backupHost']}:$remoteThisSyncDir";
-				exec ($syncCmd);
-			}
-		}
+		$sm = new ServerManager($this);
+		return $sm->serverBackup();
 	}
 
-	public function hostCleanup ()
+	public function serverCleanup ()
 	{
-		$oldDir = getcwd();
-		$cmdCleanOldFiles = 'find . -mtime +1 -type f -delete';
-
-		if (is_dir('/var/lib/e10/email'))
-		{
-			chdir ('/var/lib/e10/email');
-			passthru ($cmdCleanOldFiles);
-		}
-
-		if (is_dir('/var/lib/e10/tmp'))
-		{
-			chdir ('/var/lib/e10/tmp');
-			passthru ('find . -mtime +3 -type f -delete');
-		}
-
-		chdir ($oldDir);
+		$sm = new ServerManager($this);
+		return $sm->serverCleanup();
 	}
 
 	public function hostCheck_CmdSymlink ($cmd, $path)
@@ -1356,7 +1247,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		if (count ($this->arguments) == 0)
 			return $this->help ();
 
-		if (!$this->superuser() && in_array($this->command (), ['server-check']))
+		if (!$this->superuser() && in_array($this->command (), ['server-backup', 'server-check', 'server-cleanup']))
 			return $this->manager->err ('Need to be root');
 
 		$this->quiet = $this->arg ("quiet");
@@ -1373,9 +1264,9 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 
 			case	"help":             return $this->help ();
 			
-			case	"host-backup":							return $this->hostBackup ();
+			case	"server-backup":						return $this->serverBackup ();
 			case	"server-check":							return $this->serverCheck ();
-			case	"host-cleanup":							return $this->hostCleanup ();
+			case	"server-cleanup":						return $this->serverCleanup ();
 			case	"server-upgrade":						return $this->serverUpgrade();
 			case  "server-get-hosting-info":	return $this->getHostingInfo();
 			case	'netdata-alarm':						return $this->netDataAlarm();
