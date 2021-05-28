@@ -2,36 +2,36 @@
 	"lan": {
 		"fn": "Síťové prvky",
 		"sn": "Síť",
-		"icon": "icon-sitemap"
+		"icon": "lanDeviceActiveDevices"
 	},
 	"srv": {
 		"fn": "Servery a NASy",
 		"sn": "Servery",
-		"icon": "icon-server"
+		"icon": "deviceTypes/server"
 	},
 	"cams": {
 		"fn": "Kamery",
 		"sn": "Kamery",
-		"icon": "icon-video-camera"
+		"icon": "deviceTypes/camera"
 	},
 	"wifi": {
 		"fn": "WiFi",
 		"sn": "WiFi",
-		"icon": "icon-wifi"
+		"icon": "deviceTypes/wifiAccessPoints"
 	},
 	"ups": {
 		"fn": "UPS",
 		"sn": "UPS",
-		"icon": "icon-battery-three-quarters"
+		"icon": "deviceTypes/ups"
 	},
 	"trm": {
 		"fn": "Terminály",
 		"sn": "Terminály",
-		"icon": "icon-calculator"
+		"icon": "deviceTypes/terminal"
 	},
 	"iot": {
 		"fn": "IoT",
 		"sn": "IoT",
-		"icon": "icon-power-off"
+		"icon": "deviceTypes/shipardIoiBoxes"
 	}
 }

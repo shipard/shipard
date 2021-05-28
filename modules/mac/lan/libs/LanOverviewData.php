@@ -62,16 +62,16 @@ class LanOverviewData extends Utility
 				'title' => 'LAN', 'icon' => 'icon-sitemap',
 			],
 			self::dgiServer => [
-				'title' => 'Servery', 'icon' => 'icon-server',
+				'title' => 'Servery', 'icon' => 'deviceTypes/server',
 			],
 			self::dgiNAS => [
-				'title' => 'NAS', 'icon' => 'icon-hdd-o',
+				'title' => 'NAS', 'icon' => 'deviceTypes/nas',
 			],
 			self::dgiCamera => [
-				'title' => 'Kamery', 'icon' => 'icon-video-camera'
+				'title' => 'Kamery', 'icon' => 'deviceTypes/camera'
 			],
 			self::dgiWiFi => [
-				'title' => 'WiFi', 'icon' => 'icon-wifi',
+				'title' => 'WiFi', 'icon' => 'deviceTypes/wifiAccessPoints',
 			],
 			self::dgiPrinter => [
 				'title' => 'Tiskárny', 'icon' => 'icon-print', 'disableAsDG' => 1,
@@ -80,13 +80,13 @@ class LanOverviewData extends Utility
 				'title' => 'Počítače', 'icon' => 'icon-desktop', 'disableAsDG' => 1,
 			],
 			self::dgiMobile => [
-				'title' => 'Mobilní', 'icon' => 'icon-mobile', 'disableAsDG' => 1,
+				'title' => 'Mobilní', 'icon' => 'deviceTypes/phone', 'disableAsDG' => 1,
 			],
 			self::dgiMultimedia => [
 				'title' => 'Multimedia', 'icon' => 'icon-television', 'disableAsDG' => 1,
 			],
 			self::dgiUPS => [
-				'title' => 'UPS', 'icon' => 'icon-battery-three-quarters', 'disableAsDG' => 1
+				'title' => 'UPS', 'icon' => 'deviceTypes/ups', 'disableAsDG' => 1
 			],
 			self::dgiOther => [
 				'title' => 'Ostatní', 'icon' => 'icon-dot-circle-o', 'disableAsDG' => 1
