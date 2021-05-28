@@ -220,8 +220,8 @@
 	"iconViewerEnd":{
 		"fa5":"fa-th",
         "fa5pro":"fa-th",
-        "bsi":"bi-table",
-        "mdi":"table_rows"
+        "bsi":"bi-grid-3x3-gap-fill",
+        "mdi":"apps"
 	},
 	"iconHelp":{
 		"fa5":"fa-life-ring",
@@ -232,8 +232,8 @@
 	"iconAppInfoMenu":{
 		"fa5":"fa-th",
         "fa5pro":"fa-th",
-        "bsi":"bi-table",
-        "mdi":"table_rows"
+        "bsi":"bi-grid-3x3-gap-fill",
+        "mdi":"apps"
 	},
 
 
@@ -296,6 +296,14 @@
 		"fa5pro": "fa-utensils-alt",
 		"bsi": "bi-shop-window",
 		"mdi": "dining"
+	},
+
+
+	"leftSubmenuBulkMail":{
+		"fa5": "fa-envelope-open",
+		"fa5pro": "fa-envelope-open",
+		"bsi": "bi-envelope-open",
+		"mdi": "mail"
 	},
 
 
@@ -494,7 +502,7 @@
 	"detailUsage":{
 		"fa5":"fa-eye",
         "fa5pro":"fa-eye",
-        "bsi":"bi-binoculars-fillover",
+        "bsi":"bi-binoculars-fill",
         "mdi":"preview"
 	},
 	"detailRows":{
@@ -645,13 +653,19 @@
 		"bsi": "bi-clock-history",
 		"mdi": "history"
 	},
+	"formNotes":{
+		"fa5": "fa-paste",
+		"fa5pro": "fa-paste",
+		"bsi": "bi-clipboard",
+		"mdi": "text_snippet"
+	},
 
 
 	"dashboardModeTilesSmall":{
 		"fa5":"fa-th",
         "fa5pro":"fa-th",
-        "bsi":"bi-table",
-        "mdi":"table_rows"
+        "bsi":"bi-grid-3x3-gap-fill",
+        "mdi":"apps"
 	},
 	"dashboardModeTilesBig":{
 		"fa5":"fa-th-large",

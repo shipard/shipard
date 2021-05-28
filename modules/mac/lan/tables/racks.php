@@ -110,9 +110,9 @@ class FormRack extends TableForm
 
 		$this->openForm ();
 
-		$tabs ['tabs'][] = ['text' => 'Vlastnosti', 'icon' => 'x-content'];
-		$tabs ['tabs'][] = ['text' => 'Senzory', 'icon' => 'icon-eyedropper'];
-		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-image'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Senzory', 'icon' => 'formSensors'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		$this->openTabs ($tabs, TRUE);
 		$this->openTab ();

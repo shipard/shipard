@@ -24,7 +24,7 @@
 			"smallItems": [
 				{
 					"t1": "Hromadná pošta", "object": "viewer", "table": "e10pro.bume.bulkEmails", "viewer": "default",
-					"icon": "icon-envelope-open", "order": 400000, "enabledCfgItem": "options.experimental.bulkEmails"
+					"order": 400000, "enabledCfgItem": "options.experimental.bulkEmails"
 				}
 			]
 		},

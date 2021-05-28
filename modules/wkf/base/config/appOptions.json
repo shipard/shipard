@@ -8,7 +8,7 @@
 		"type": "viewer", "table": "wkf.base.sections", "viewer": "default"
 	},
 	"wkfnTrays": {
-		"name": "Přihrádky na přílohy", "order": 187000, "group": "workflow", "icon": "icon-folder-open-o",
+		"name": "Přihrádky na přílohy", "order": 187000, "group": "workflow",
 		"type": "viewer", "table": "wkf.base.trays", "viewer": "default", "enabledCfgItem": "options.experimental.testTrays"
 	},
 	"wkfnProjects": {

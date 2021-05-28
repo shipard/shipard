@@ -103,7 +103,7 @@ class PersonDefault extends TableForm
 			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 			if ($this->readOnly)
-				$tabs ['tabs'][] = ['text' => 'Zápisník', 'icon' => 'icon-clipboard'];
+				$tabs ['tabs'][] = ['text' => 'Zápisník', 'icon' => 'system/formNotes'];
 			$this->openTabs ($tabs);
 				$this->openTab ();
 					$this->layoutOpen (TableForm::ltVertical);

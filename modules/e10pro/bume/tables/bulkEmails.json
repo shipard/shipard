@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.bume.bulkEmails", "sql": "e10pro_wkf_bulkEmails", "name": "Hromadná pošta", "icon": "icon-envelope-open",
+	"id": "e10pro.bume.bulkEmails", "sql": "e10pro_wkf_bulkEmails", "name": "Hromadná pošta", "icon": "system/leftSubmenuBulkMail",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "subject", "name": "Předmět zprávy", "type": "string", "len": 120},

@@ -4,7 +4,7 @@
 								 "rightBar": "\\mac\\vs\\libs\\VSUtils::camerasBarRight", "leftBar": "\\mac\\vs\\libs\\VSUtils::camerasBarLeft",
 			"items": [
 				{"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "suppliers", "icon": "e10-persons-persons", "order": 10000, "hint": "terminal"},
-				{"t1": "Výkupy", "object": "viewer", "table": "e10doc.core.heads", "viewer": "purchase", "icon": "e10-docs-purchase", "order": 20000},
+				{"t1": "Výkupy", "object": "viewer", "table": "e10doc.core.heads", "viewer": "purchase", "order": 20000},
 				{"t1": "Prodejky", "disabledCfgItem": "options.e10doc-sale.disableCashreg", "object": "viewer", "table": "e10doc.core.heads", "icon":"docType/cashReg", "viewer": "cashregister", "order": 50000},
 				{"t1": "Pokladna", "object": "viewer", "table": "e10doc.core.heads", "viewer": "cash",
 					"icon": "e10-docs-cash", "order": 600000},
@@ -18,12 +18,12 @@
 		},
 		"docs": {
 			"items": {
-				"purchase": {"t1": "Výkupy", "object": "viewer", "table": "e10doc.core.heads", "viewer": "purchase", "icon": "e10-docs-purchase", "order": 550000}
+				"purchase": {"t1": "Výkupy", "object": "viewer", "table": "e10doc.core.heads", "viewer": "purchase", "order": 550000}
 			}
 		},
 		"buy": {
 			"items": {
-				"purchase": {"t1": "Výkupy", "object": "viewer", "table": "e10doc.core.heads", "viewer": "purchase", "icon": "e10-docs-purchase", "order": 550000}
+				"purchase": {"t1": "Výkupy", "object": "viewer", "table": "e10doc.core.heads", "viewer": "purchase", "order": 550000}
 			}
 		}
 	},
@@ -33,7 +33,7 @@
 				"docs": {
 					"items": {
 						"purchase": {
-							"t1": "Výkupy", "object": "viewer", "table": "e10doc.core.heads", "viewer": "purchase", "icon": "e10-docs-purchase", "order": 700000
+							"t1": "Výkupy", "object": "viewer", "table": "e10doc.core.heads", "viewer": "purchase", "order": 700000
 						}
 					}
 				}

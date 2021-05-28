@@ -402,9 +402,9 @@ class FormBulkEmail extends TableForm
 			//	$this->closeRow ();
 			$this->layoutClose ();
 
-			$tabs ['tabs'][] = ['text' => 'Text', 'icon' => 'x-content'];
-			$tabs ['tabs'][] = ['text' => 'Příjemci', 'icon' => 'icon-id-card-o'];
-			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-attachments'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Příjemci', 'icon' => 'formRecipients'];
+			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 			$this->openTabs ($tabs);
 				$this->openTab (TableForm::ltNone);

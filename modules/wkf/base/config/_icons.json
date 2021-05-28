@@ -53,6 +53,12 @@
 		"bsi": "bi-link-45deg",
 		"mdi": "link"
 	},
+    "tables/wkf.base.trays":{
+		"fa5":"fa-folder-open",
+        "fa5pro":"fa-folder-open",
+        "bsi":"bi-folder2-open",
+        "mdi":"folder_open"
+	},
 
 
 	"formTheme":{
@@ -120,8 +126,8 @@
     "homeOther":{
         "fa5":"fa-th",
         "fa5pro":"fa-th",
-        "bsi":"bi-table",
-        "mdi":"table_rows"
+        "bsi":"bi-grid-3x3-gap-fill",
+        "mdi":"apps"
     },
     "homeSent":{
         "fa5":"fa-paper-plane",

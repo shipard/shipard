@@ -8,7 +8,7 @@
     "basicSettings/basicSettings":{
         "fa5":"fa-sliders-h",
         "fa5pro":"fa-sliders-v",
-        "bsi":"sliders",
+        "bsi":"bi-sliders",
         "mdi":"tune"
     }
 }
