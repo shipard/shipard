@@ -2,6 +2,6 @@
 	"e10pro-wkf-PersonsInGroup": {
 		"name": "Skupina osob",
 		"queryColumns": {"virtualGroupItem": "Skupina osob"},
-		"classId": "e10pro.wkf.PersonsVGPersonsInGroup"
+		"classId": "wkf.core.libs.PersonsVGPersonsInGroup"
 	}
 }

@@ -42,6 +42,8 @@ class DemoDocInbox extends DemoDocIssue
 		if (!isset($this->app->params['demoFastMode']))
 			$this->createPdfDocument ();
 
+		$recData = $this->tableIssues->loadItem($this->newIssueNdx);
+		$this->tableIssues->checkAfterSave2 ($recData); // TODO: dirty hack :-(
 		$this->tableIssues->docsLog ($this->newIssueNdx);
 	}
 

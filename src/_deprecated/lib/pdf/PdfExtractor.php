@@ -18,7 +18,7 @@ class PdfExtractor extends Utility
 	{
 		$this->fileName = $fileName;
 		$this->logFileName = substr($this->fileName, 0, -5) . '.extract.log';
-		$cmd = 'e10-modules/lib/pdf/pdfExtractor.py '.$this->fileName.' > '.$this->logFileName.' 2>&1';
+		$cmd = __SHPD_ROOT_DIR__.'src/_deprecated/lib/pdf/pdfExtractor.py '.$this->fileName.' > '.$this->logFileName.' 2>&1';
 		exec($cmd);
 
 		$this->pdfInfo = utils::loadCfgFile($this->fileName.'.json');

@@ -85,7 +85,7 @@
     },
     {
         "t": 0,
-        "v": "bi-table"
+        "v": "bi-grid-3x3-gap-fill"
     },
     {
         "t": 0,
@@ -149,7 +149,7 @@
     },
     {
         "t": 0,
-        "v": "bi-binoculars-fillover"
+        "v": "bi-binoculars-fill"
     },
     {
         "t": 0,
@@ -241,6 +241,10 @@
     },
     {
         "t": 0,
+        "v": "bi-clipboard"
+    },
+    {
+        "t": 0,
         "v": "bi-list-ul"
     },
     {
@@ -253,7 +257,7 @@
     },
     {
         "t": 0,
-        "v": "bi-table"
+        "v": "bi-grid-3x3-gap-fill"
     },
     {
         "t": 0,
@@ -329,7 +333,7 @@
     },
     {
         "t": 0,
-        "v": "bi-table"
+        "v": "bi-grid-3x3-gap-fill"
     },
     {
         "t": 0,
@@ -382,6 +386,10 @@
     {
         "t": 0,
         "v": "bi-check-square"
+    },
+    {
+        "t": 0,
+        "v": "bi-envelope-open"
     },
     {
         "t": 0,

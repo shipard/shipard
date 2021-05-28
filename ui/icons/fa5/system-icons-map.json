@@ -241,6 +241,10 @@
     },
     {
         "t": 0,
+        "v": "fa-paste"
+    },
+    {
+        "t": 0,
         "v": "fa-list"
     },
     {
@@ -382,6 +386,10 @@
     {
         "t": 0,
         "v": "fa-check-square"
+    },
+    {
+        "t": 0,
+        "v": "fa-envelope-open"
     },
     {
         "t": 0,

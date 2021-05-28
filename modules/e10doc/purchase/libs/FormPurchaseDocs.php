@@ -146,7 +146,7 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 
 		if (!isset ($this->recData['ndx']))
 		{
-			$addPicture = Application::testGetParam ('addPicture');
+			$addPicture = $this->app()->testGetParam ('addPicture');
 			if ($addPicture === '' && isset ($this->app()->workplace['startDocumentCamera']))
 			{
 				if (isset ($this->postData['cameras'][$this->app()->workplace['startDocumentCamera']]))
@@ -166,7 +166,7 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 		$q = "SELECT [rows].text AS rText, [rows].quantity AS rQuantity, [rows].unit AS rUnit, [rows].priceItem AS rPriceItem, [rows].priceAll AS rPriceAll
           FROM [e10doc_core_rows] AS [rows] WHERE [rows].document = %i ORDER BY ndx";
 
-		$cfgUnits = Application::cfgItem ('e10.witems.units');
+		$cfgUnits = $this->app()->cfgItem ('e10.witems.units');
 		$rows = $this->table->db()->query($q, $this->recData ['ndx'])->fetchAll ();
 		$list = array ();
 		forEach ($rows as $r)
@@ -250,7 +250,7 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 		if (isset ($this->table->app()->workplace['cashBox']))
 			$this->recData ['cashBox'] = $this->table->app()->workplace['cashBox'];
 
-		$this->recData ['roundMethod'] = intval(Application::cfgItem ('options.e10doc-buy.roundPurchase', 1));
+		$this->recData ['roundMethod'] = intval($this->app()->cfgItem ('options.e10doc-buy.roundPurchase', 1));
 		$this->recData ['taxCalc'] = 0;
 		$this->recData ['dateDue'] = utils::today();
 	}

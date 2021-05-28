@@ -7,7 +7,7 @@
 			"defaultValues": {"docState": 4000, "docStateMain": 2, "demo": 1},
 			"data": [
 				{
-					"rec": {"#":"pShipard", "fullName":"Shipard s.r.o.","company": 1, "demo": 0},
+					"rec": {"#":"pShipard", "fullName":"Naše firma, s.r.o.","company": 1, "demo": 1},
 					"address": [{"street": "nám. T.G.Masaryka 1281", "city": "Zlín", "zipcode": "76001"}],
 					"properties": [{"value": "info@shipard.com", "group": "contacts",  "property": "email"},
 						{"value": "774 020 522", "group": "contacts",  "property": "phone"},

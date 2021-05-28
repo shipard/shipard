@@ -8,6 +8,7 @@ use \translation\dicts\e10\base\system\DictSystem;
 
 use \e10\utils;
 use \e10\uiutils;
+use \e10\base\libs\UtilsBase;
 
 class TableViewDetail
 {
@@ -52,7 +53,7 @@ class TableViewDetail
 		if ($downloadTitle === FALSE)
 			$downloadTitle = ['icon' => 'icon-download', 'text' => 'Soubory ke stažení'];
 
-		$files = \E10\Base\loadAttachments ($this->table->app(), array($toRecId), $tableId);
+		$files = UtilsBase::loadAttachments ($this->table->app(), array($toRecId), $tableId);
 		if (isset($files[$toRecId]))
 			$this->content[] = array ('type' => 'attachments', 'attachments' => $files[$toRecId], 'title' => $title, 'downloadTitle' => $downloadTitle);
 	}

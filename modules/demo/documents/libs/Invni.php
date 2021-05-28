@@ -22,7 +22,11 @@ class Invni extends \demo\documents\libs\Core
 		$this->defaultValues['docStateMain'] = 0;
 
 		$this->data['rec']['docType'] = 'invni';
-		//$this->data['rec']['dbCounter'] = 1;
+
+		$dbCounters = $this->app()->cfgItem ('e10.docs.dbCounters.' . 'invni', ['1' => []]);
+		$activeDbCounter = key($dbCounters);
+		$this->data['rec']['dbCounter'] = $activeDbCounter;
+
 		$this->data['rec']['currency'] = 'czk';
 		$this->data['rec']['paymentMethod'] = 0;
 		$this->data['rec']['taxCalc'] = 1;
