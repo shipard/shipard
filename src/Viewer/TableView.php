@@ -270,7 +270,7 @@ class TableView extends \Shipard\Base\BaseObject
 
 	public function endMark ($blank)
 	{
-		return ['icon' => 'icon-th', 'text' => 'To je všechno'];
+		return ['icon' => 'system/iconViewerEnd', 'text' => 'To je všechno'];
 	}
 
 	public function bottomTabId ()

@@ -41,6 +41,22 @@
     },
     {
         "t": 0,
+        "v": "bi-x"
+    },
+    {
+        "t": 0,
+        "v": "bi-dash-square"
+    },
+    {
+        "t": 0,
+        "v": "bi-plus-square"
+    },
+    {
+        "t": 0,
+        "v": "bi-search"
+    },
+    {
+        "t": 0,
         "v": "bi-power"
     },
     {
@@ -285,6 +301,14 @@
     },
     {
         "t": 0,
+        "v": "bi-building"
+    },
+    {
+        "t": 0,
+        "v": "bi-square-fill"
+    },
+    {
+        "t": 0,
         "v": "bi-lock-fill"
     },
     {
@@ -317,6 +341,10 @@
     },
     {
         "t": 0,
+        "v": "bi-arrow-clockwise"
+    },
+    {
+        "t": 0,
         "v": "bi-record-circle-fill"
     },
     {
@@ -334,6 +362,10 @@
     {
         "t": 0,
         "v": "bi-grid-3x3-gap-fill"
+    },
+    {
+        "t": 0,
+        "v": "bi-house-door-fill"
     },
     {
         "t": 0,

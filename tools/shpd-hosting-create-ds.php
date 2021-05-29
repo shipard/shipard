@@ -6,7 +6,7 @@ function logMsg ($msg)
 	$now = new \DateTime();
 	$lfn = '/var/lib/shipard/tmp/shpd-hosting-create-ds-'.$now->format('Y-m-d').'.log';
 	file_put_contents($lfn, $msg."\n", FILE_APPEND);
-	echo $msg."\n";
+	//echo $msg."\n";
 }
 
 function machineDeviceId ()

@@ -41,6 +41,22 @@
     },
     {
         "t": 0,
+        "v": "close"
+    },
+    {
+        "t": 0,
+        "v": "remove_circle"
+    },
+    {
+        "t": 0,
+        "v": "add_circle"
+    },
+    {
+        "t": 0,
+        "v": "search"
+    },
+    {
+        "t": 0,
         "v": "power"
     },
     {
@@ -285,6 +301,14 @@
     },
     {
         "t": 0,
+        "v": "science"
+    },
+    {
+        "t": 0,
+        "v": "check_box_outline_blank"
+    },
+    {
+        "t": 0,
         "v": "lock"
     },
     {
@@ -317,6 +341,10 @@
     },
     {
         "t": 0,
+        "v": "refresh"
+    },
+    {
+        "t": 0,
         "v": "radio_button_checked"
     },
     {
@@ -334,6 +362,10 @@
     {
         "t": 0,
         "v": "apps"
+    },
+    {
+        "t": 0,
+        "v": "home"
     },
     {
         "t": 0,

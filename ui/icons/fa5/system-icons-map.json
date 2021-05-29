@@ -41,6 +41,22 @@
     },
     {
         "t": 0,
+        "v": "fa-times"
+    },
+    {
+        "t": 0,
+        "v": "fa-minus-square"
+    },
+    {
+        "t": 0,
+        "v": "fa-plus-square"
+    },
+    {
+        "t": 0,
+        "v": "fa-search"
+    },
+    {
+        "t": 0,
         "v": "fa-power-off"
     },
     {
@@ -285,6 +301,14 @@
     },
     {
         "t": 0,
+        "v": "fa-flask"
+    },
+    {
+        "t": 0,
+        "v": "fa-square"
+    },
+    {
+        "t": 0,
         "v": "fa-lock"
     },
     {
@@ -317,6 +341,10 @@
     },
     {
         "t": 0,
+        "v": "fa-spinner"
+    },
+    {
+        "t": 0,
         "v": "fa-dot-circle"
     },
     {
@@ -334,6 +362,10 @@
     {
         "t": 0,
         "v": "fa-th"
+    },
+    {
+        "t": 0,
+        "v": "fa-home"
     },
     {
         "t": 0,

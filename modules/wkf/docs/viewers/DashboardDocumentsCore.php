@@ -617,10 +617,10 @@ class DashboardDocumentsCore extends TableView
 		if ($this->treeMode)
 		{
 			$viewModes = [
-				'2' => ['text' => '', 'icon' => 'icon-th'],
-				'1' => ['text' => '', 'icon' => 'icon-th-list'],
-				'3' => ['text' => '', 'icon' => 'icon-square'],
-				'0' => ['text' => '', 'icon' => 'icon-th-large'],
+				'2' => ['text' => '', 'icon' => 'system/dashboardModeTilesSmall'],
+				'1' => ['text' => '', 'icon' => 'system/dashboardModeRows'],
+				//'3' => ['text' => '', 'icon' => 'icon-square'],
+				'0' => ['text' => '', 'icon' => 'system/dashboardModeTilesBig'],
 			];
 			$viewParams = new \E10\Params ($panel->table->app());
 
@@ -657,7 +657,7 @@ class DashboardDocumentsCore extends TableView
 		];
 		$paramsUserRelated = new \E10\Params ($panel->table->app());
 		$paramsUserRelated->addParam ('checkboxes', 'query.userRelated', ['items' => $checkBoxesUserRelated]);
-		$qry[] = ['style' => 'params', 'title' => ['text' => 'Moje věci', 'icon' => 'icon-user-circle-o'], 'params' => $paramsUserRelated];
+		$qry[] = ['style' => 'params', 'title' => ['text' => 'Moje věci', 'icon' => 'system/iconUser'], 'params' => $paramsUserRelated];
 		$paramsUserRelated->detectValues();
 	}
 
