@@ -1,5 +1,5 @@
 {
-	"id": "e10.calendar.days", "sql": "e10_calendar_days", "name": "Kalendář", "icon": "icon-calendar",
+	"id": "e10.calendar.days", "sql": "e10_calendar_days", "name": "Kalendář",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

@@ -1,5 +1,5 @@
 {
-	"id": "wkf.base.issuesKinds", "sql": "wkf_base_issuesKinds", "name": "Druhy Zpráv", "icon": "icon-flash",
+	"id": "wkf.base.issuesKinds", "sql": "wkf_base_issuesKinds", "name": "Druhy Zpráv", "icon": "tables/wkf.base.issuesKinds",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

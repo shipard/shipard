@@ -186,7 +186,7 @@ class Daily extends \e10\GlobalReport
 
 	public function subReportsList ()
 	{
-		$d[] = ['id' => 'peoples', 'icon' => 'icon-file', 'title' => 'Celkem'];
+		$d[] = ['id' => 'peoples', 'icon' => 'detailTotal', 'title' => 'Celkem'];
 		return $d;
 	}
 }

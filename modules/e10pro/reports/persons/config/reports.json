@@ -1,4 +1,4 @@
 [
-	{"name": "Kontakty", "class": "e10pro.reports.persons.reportContacts", "icon": "icon-envelope-o", "group": "e10pro-other"},
-	{"name": "Duplicitní osoby", "class": "e10pro.reports.persons.reportDuplicities", "icon": "icon-code-fork", "group": "e10-checks"}
+	{"name": "Kontakty", "class": "e10pro.reports.persons.reportContacts", "icon": "reportContacts", "group": "e10pro-other"},
+	{"name": "Duplicitní osoby", "class": "e10pro.reports.persons.reportDuplicities", "icon": "reportDuplicitePersons", "group": "e10-checks"}
 ]

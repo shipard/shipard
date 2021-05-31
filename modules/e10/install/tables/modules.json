@@ -1,5 +1,5 @@
 {
-	"id": "e10.install.modules", "sql": "e10_install_modules", "name": "Instalované moduly", "icon": "icon-puzzle-piece",
+	"id": "e10.install.modules", "sql": "e10_install_modules", "name": "Instalované moduly",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

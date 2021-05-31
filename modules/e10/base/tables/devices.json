@@ -1,5 +1,5 @@
 {
-	"id": "e10.base.devices", "sql": "e10_base_devices", "name": "Zařízení", "icon": "icon-desktop",
+	"id": "e10.base.devices", "sql": "e10_base_devices", "name": "Zařízení",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "name", "name": "Název", "type": "string", "len": 80},

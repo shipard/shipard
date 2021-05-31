@@ -2,41 +2,41 @@
 	"0": {
 		"id": "none",
 		"name": "Nedetekováno",
-		"icon": "question-circle-o"
+		"icon": "fileKindNone"
 	},
 	"1": {
 		"id": "other",
 		"name": "Ostatní",
-		"icon": "icon-file-o"
+		"icon": "fileKindOther"
 	},
 	"2": {
 		"id": "pdf",
 		"name": "PDF soubor",
-		"icon": "icon-file-pdf-o"
+		"icon": "fileKindPDF"
 	},
 	"3": {
 		"id": "photo",
 		"name": "Fotografie",
-		"icon": "icon-camera"
+		"icon": "fileKindPhoto"
 	},
 	"4": {
 		"id": "picture",
 		"name": "Obrázek",
-		"icon": "icon-picture-o"
+		"icon": "fileKindPicture"
 	},
 	"5": {
 		"id": "txt",
 		"name": "Textový soubor",
-		"icon": "icon-file-text-o"
+		"icon": "fileKindTxt"
 	},
 	"6": {
 		"id": "word",
 		"name": "Word",
-		"icon": "icon-file-word-o"
+		"icon": "fileKindWord"
 	},
 	"7": {
 		"id": "xls",
 		"name": "excel",
-		"icon": "icon-file-excel-o"
+		"icon": "fileKindXls"
 	}
 }

@@ -1,5 +1,5 @@
 {
-	"id": "e10.base.tasks", "sql": "e10_base_tasks", "name": "Systémové úlohy", "icon": "icon-cogs",
+	"id": "e10.base.tasks", "sql": "e10_base_tasks", "name": "Systémové úlohy",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

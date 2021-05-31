@@ -1,5 +1,5 @@
 {
-	"id": "e10.base.subtemplates", "sql": "e10_base_subtemplates", "name": "Podšablony", "icon": "icon-code",
+	"id": "e10.base.subtemplates", "sql": "e10_base_subtemplates", "name": "Podšablony",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "template", "name": "Šablona", "type": "int"},

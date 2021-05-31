@@ -2338,7 +2338,7 @@ class Application extends \Shipard\Application\ApplicationCore
 		if ($theme === FALSE)
 			$theme = $this->cfgItem ('e10settings.themes.desktop.default', FALSE);
 
-		$themeStatusColor = $theme['statusColor'];
+		$themeStatusColor = '';//$theme['statusColor'];
 		$dsIcon = $this->dsIcon();
 
 		$wm = [

@@ -17,8 +17,8 @@
 		"reports": {
 			"url": "/app/reports", "objectType": "panel", "zone": "sec", "name": "Přehledy", "order": 680000,
 			"items": {
-				"other": {"t1": "Ostatní", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10pro-other", "icon": "icon-file-text-o", "order": 999000},
-				"tests": {"t1": "Kontroly", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10-checks", "icon": "icon-exclamation-triangle", "order": 999999}
+				"other": {"t1": "Ostatní", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10pro-other", "icon": "homeReportOther", "order": 999000},
+				"tests": {"t1": "Kontroly", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10-checks", "icon": "homeReportCheckups", "order": 999999}
 			}
 		}
 	},

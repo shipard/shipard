@@ -1,5 +1,5 @@
 {
-	"id": "e10.base.templatesLooks", "sql": "e10_base_templatesLooks", "name": "Vzhledy šablon", "icon": "icon-file-image-o",
+	"id": "e10.base.templatesLooks", "sql": "e10_base_templatesLooks", "name": "Vzhledy šablon",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 
@@ -26,7 +26,7 @@
 			"class": "e10.base.ViewTemplatesLooks",
 			"details": {
 				"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10.base.ViewDetailTemplateLook"},
-				"data": {"title": "Data", "icon": "icon-code", "type": "detail", "class": "e10.base.ViewDetailTemplateLookData"}
+				"data": {"title": "Data", "icon": "detailData", "type": "detail", "class": "e10.base.ViewDetailTemplateLookData"}
 			}
 		},
 		"web": {
@@ -34,7 +34,7 @@
 			"class": "e10.base.ViewTemplatesLooksWeb",
 			"details": {
 				"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10.base.ViewDetailTemplateLook"},
-				"data": {"title": "Data", "icon": "icon-code", "type": "detail", "class": "e10.base.ViewDetailTemplateLookData"}
+				"data": {"title": "Data", "icon": "detailData", "type": "detail", "class": "e10.base.ViewDetailTemplateLookData"}
 			}
 		},
 		"webCombo": {

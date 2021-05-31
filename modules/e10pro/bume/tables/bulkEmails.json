@@ -25,8 +25,8 @@
 	"views": [
 		{"id": "default", "class": "e10pro.bume.ViewBulkEmails", "help": "prirucka/4898",
 			"details": {
-				"default": {"title": "Náhled", "icon": "icon-eye", "type": "detail", "class": "e10pro.bume.ViewDetailBulkEmail", "order": 1000},
-				"posts": {"title": "Příjemci", "icon": "icon-at", "type": "detail", "class": "e10pro.bume.ViewDetailBulkEmailPosts", "order": 2000}
+				"default": {"title": "Náhled", "icon": "system/detailOverview", "type": "detail", "class": "e10pro.bume.ViewDetailBulkEmail", "order": 1000},
+				"posts": {"title": "Příjemci", "icon": "system/detailRecipients", "type": "detail", "class": "e10pro.bume.ViewDetailBulkEmailPosts", "order": 2000}
 			}
 		}
 	],

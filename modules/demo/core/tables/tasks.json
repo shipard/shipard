@@ -1,5 +1,5 @@
 {
-	"id": "demo.core.tasks", "sql": "demo_core_tasks", "name": "Generování demonstračních dat", "icon": "icon-cogs",
+	"id": "demo.core.tasks", "sql": "demo_core_tasks", "name": "Generování demonstračních dat",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

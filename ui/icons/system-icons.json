@@ -2,13 +2,13 @@
 	"actionAdd": {
 		"fa5": "fa-plus-circle",
 		"fa5pro": "fa-plus-circle",
-		"bsi": "plus-circle",
+		"bsi": "bi-plus-circle",
 		"mdi": "add_circle_outline"
 	},	
 	"actionCalendar": {
 		"fa5": "fa-calendar-alt",
 		"fa5pro": "fa-calendar-alt",
-		"bsi": "calendar",
+		"bsi": "bi-calendar",
 		"mdi": "calendar_today"
 	},	
 	"actionClose": {
@@ -582,6 +582,12 @@
 		"fa5pro": "fa-external-link-alt",
 		"bsi": "bi-link-45deg",
 		"mdi": "link"
+	},
+	"detailRecipients":{
+		"fa5": "fa-at",
+		"fa5pro": "fa-at",
+		"bsi": "bi-at",
+		"mdi": "alternate_email"
 	},
 
 

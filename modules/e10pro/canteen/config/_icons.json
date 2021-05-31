@@ -66,5 +66,45 @@
 		"fa5pro": "fa-file-alt",
 		"bsi": "bi-file-earmark-text-fill",
 		"mdi": "description"
-	}
+	},
+
+
+	"detailByCompanies":{
+		"fa5":"fa-building",
+        "fa5pro":"fa-building",
+        "bsi":"bi-building",
+        "mdi":"business"
+	},
+	"detailTotal":{
+		"fa5": "fa-file",
+		"fa5pro": "fa-file",
+		"bsi": "bi-file-earmark",
+		"mdi": "insert_drive_file"
+	},
+	"detailDeptors":{
+		"fa5": "fa-user-circle",
+		"fa5pro": "fa-user-circle",
+		"bsi": "bi-person-circle",
+		"mdi": "account_circle"
+	},
+
+
+	"reportPersonsBilling":{
+        "fa5": "fa-user",
+		"fa5pro": "fa-user",
+		"bsi": "bi-person",
+		"mdi": "person"
+    },
+	"reportDailyReport":{
+        "fa5": "fa-utensils",
+		"fa5pro": "fa-utensils-alt",
+		"bsi": "bi-shop-window",
+		"mdi": "dining"
+    },
+	"reportMonthlyReport":{
+        "fa5": "fa-utensils",
+		"fa5pro": "fa-utensils-alt",
+		"bsi": "bi-shop-window",
+		"mdi": "dining"
+    }
 }

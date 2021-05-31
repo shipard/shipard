@@ -1,5 +1,5 @@
 {
-	"id": "e10.base.notifications", "sql": "e10_base_notifications", "name": "Oznámení", "icon": "icon-bell-o",
+	"id": "e10.base.notifications", "sql": "e10_base_notifications", "name": "Oznámení",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "subject", "name": "Předmět", "type": "string", "len": 80},

@@ -1,5 +1,5 @@
 {
-  "id": "e10.base.attachments", "sql": "e10_attachments_files", "name": "Přílohy dokumentů", "icon": "icon-paperclip",
+  "id": "e10.base.attachments", "sql": "e10_attachments_files", "name": "Přílohy dokumentů",
   "columns": [
     {"id": "ndx", "name": "id", "type": "int_ai"},
     {"id": "symlinkTo", "name": "Odkaz na přílohu", "type": "int"},

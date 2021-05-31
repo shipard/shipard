@@ -1,5 +1,5 @@
 {
-	"id": "e10.base.ipaddr", "sql": "e10_base_ipaddr", "name": "IP adresy", "icon": "icon-sitemap",
+	"id": "e10.base.ipaddr", "sql": "e10_base_ipaddr", "name": "IP adresy",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "title", "name": "Popis", "type": "string", "len": 60},

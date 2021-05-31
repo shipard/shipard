@@ -1,4 +1,4 @@
 [
-	{"name": "Duplicitní položky", "class": "e10pro.reports.witems.reportDuplicities", "icon": "e10doc-inventory/duplicities", "group": "e10doc-inventory", "order": 90000},
-	{"name": "Duplicitní položky", "class": "e10pro.reports.witems.reportDuplicities", "icon": "icon-code-fork", "group": "e10-checks"}
+	{"name": "Duplicitní položky", "class": "e10pro.reports.witems.reportDuplicities", "icon": "reportDupliciteItems", "group": "e10doc-inventory", "order": 90000},
+	{"name": "Duplicitní položky", "class": "e10pro.reports.witems.reportDuplicities", "icon": "reportDupliciteItems", "group": "e10-checks"}
 ]

@@ -252,9 +252,9 @@ class Monthly extends \e10\GlobalReport
 
 	public function subReportsList ()
 	{
-		$d[] = ['id' => 'byRelations', 'icon' => 'icon-building', 'title' => 'Podle firem'];
-		$d[] = ['id' => 'peoples', 'icon' => 'icon-file', 'title' => 'Celkem'];
-		$d[] = ['id' => 'debtors', 'icon' => 'icon-user-circle-o', 'title' => 'Dlužníci'];
+		$d[] = ['id' => 'byRelations', 'icon' => 'detailByCompanies', 'title' => 'Podle firem'];
+		$d[] = ['id' => 'peoples', 'icon' => 'detailTotal', 'title' => 'Celkem'];
+		$d[] = ['id' => 'debtors', 'icon' => 'detailDeptors', 'title' => 'Dlužníci'];
 		return $d;
 	}
 
@@ -268,7 +268,7 @@ class Monthly extends \e10\GlobalReport
 
 		$buttons[] = [
 			'type' => 'action', 'action' => 'addwizard', 'data-class' => 'e10pro.canteen.ResetPayersWizard',
-			'text' => 'Nastavit plátce', 'icon' => 'icon-user-circle-o', 'class' => 'btn-danger',
+			'text' => 'Nastavit plátce', 'icon' => 'detailDeptors', 'class' => 'btn-danger',
 			'data-addparams' => 'dateBegin='.$dateBegin->format('Y-m-d').'&dateEnd='.$dateEnd->format('Y-m-d').'&canteen='.$this->canteenNdx
 		];
 
