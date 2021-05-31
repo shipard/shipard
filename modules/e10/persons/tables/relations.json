@@ -1,5 +1,5 @@
 {
-	"id": "e10.persons.relations", "sql": "e10_persons_relations", "name": "Vztahy Osob", "icon": "icon-compress",
+	"id": "e10.persons.relations", "sql": "e10_persons_relations", "name": "Vztahy Osob",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},

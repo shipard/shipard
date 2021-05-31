@@ -1,5 +1,5 @@
 {
-	"0": {"fn": "Státní svátek","icon": "icon-flag", "nw":  1},
-	"1": {"fn": "Interní nepracovní den", "icon": "icon-times", "nw":  1},
-	"2": {"fn": "Běžný pracovní den", "icon": "icon-calendar-check-o", "nw":  0}
+	"0": {"fn": "Státní svátek","icon": "calendarPublicHoliday", "nw":  1},
+	"1": {"fn": "Interní nepracovní den", "icon": "calendarCompanyHoliday", "nw":  1},
+	"2": {"fn": "Běžný pracovní den", "icon": "calendarWorkingDay", "nw":  0}
 }

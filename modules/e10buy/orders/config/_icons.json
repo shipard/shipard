@@ -7,7 +7,7 @@
     },
     "tables/e10buy.orders.docKinds":{
         "fa5":"fa-flag",
-        "fa5pro":"fa-bi-flag",
+        "fa5pro":"fa-flag",
         "bsi":"bi-flag",
         "mdi":"flag"
     }

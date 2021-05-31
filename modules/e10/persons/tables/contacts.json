@@ -1,5 +1,5 @@
 {
-	"id": "e10.persons.contacts", "sql": "e10_persons_contacts", "name": "Kontakty", "icon": "icon-id-card-o",
+	"id": "e10.persons.contacts", "sql": "e10_persons_contacts", "name": "Kontakty",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "tableNdx","name": "Tabulka", "type": "short"},

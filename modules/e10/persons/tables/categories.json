@@ -1,5 +1,5 @@
 {
-	"id": "e10.persons.categories", "sql": "e10_persons_categories", "name": "Kategorie Osob", "icon": "icon-id-card-o",
+	"id": "e10.persons.categories", "sql": "e10_persons_categories", "name": "Kategorie Osob",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},

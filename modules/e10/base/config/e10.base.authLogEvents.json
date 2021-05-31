@@ -1,8 +1,8 @@
 {
-	"1": {"name": "Úspěšné přihlášení uživatele", "icon": "icon-sign-in", "error": 0},
-	"2": {"name": "Chyba přihlášení uživatele", "icon": "icon-exclamation-triangle", "error": 1},
-	"3": {"name": "Úspěšné ověření identity", "icon": "icon-check-circle-o", "error": 0},
-	"4": {"name": "Neúspěšné ověření identity", "icon": "icon-times-circle-o", "error": 1},
-	"5": {"name": "Neexistující uživatel", "icon": "icon-user-times", "error": 1},
-	"6": {"name": "Přihlašovací server neodpovídá", "icon": "icon-chain-broken", "error": 1}
+	"1": {"name": "Úspěšné přihlášení uživatele", "icon": "loginSuccess", "error": 0},
+	"2": {"name": "Chyba přihlášení uživatele", "icon": "loginFail", "error": 1},
+	"3": {"name": "Úspěšné ověření identity", "icon": "loginIdentityCheckSuccess", "error": 0},
+	"4": {"name": "Neúspěšné ověření identity", "icon": "loginIdentityCheckFail", "error": 1},
+	"5": {"name": "Neexistující uživatel", "icon": "loginUserNotFound", "error": 1},
+	"6": {"name": "Přihlašovací server neodpovídá", "icon": "loginServerNotResponding", "error": 1}
 }

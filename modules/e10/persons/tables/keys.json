@@ -1,5 +1,5 @@
 {
-	"id": "e10.persons.keys", "sql": "e10_persons_keys", "name": "Přístupové klíče", "icon": "icon-key",
+	"id": "e10.persons.keys", "sql": "e10_persons_keys", "name": "Přístupové klíče",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
