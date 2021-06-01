@@ -951,9 +951,12 @@ class ContentRenderer extends \Shipard\Base\BaseObject
 			return s + (j ? i.substr(0, j) + t : \"\") + i.substr(j).replace(/(\d{3})(?=\d)/g, \"$1\" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : \"\");
 			}
 			</script>";
-			$c .= "\n<script src='file://".__APP_DIR__."/e10-modules/e10/server/js/3rd/jquery/jquery-2.2.4.min.js'></script>";
-			$c .= "\n<script src='file://".__APP_DIR__."/e10-modules/wwwlibs/d3/d3.min.js'></script>";
-			$c .= "\n<script src='file://".__APP_DIR__."/e10-modules/wwwlibs/c3/c3.min.js'></script>";
+
+			$beginUrl = ($this->app()->remote !== '') ? 'https://' . $this->app()->remote : $this->app()->scRoot();
+
+			$c .= "\n<script src='{$beginUrl}/libs/js/jquery/jquery-2.2.4.min.js'></script>";
+			$c .= "\n<script src='{$beginUrl}/libs/js/d3/d3.min.js'></script>";
+			$c .= "\n<script src='{$beginUrl}/libs/js/c3/c3.min.js'></script>";
 			$c .= "\n<div id='$gid' style='height: 30em; width: 18cm;'></div> ";
 		}
 		else
@@ -965,9 +968,9 @@ class ContentRenderer extends \Shipard\Base\BaseObject
 			}
 			else
 			{
-				$beginUrl = '';// --TODO-- (Application::$remote !== '') ? 'https://' . Application::$remote : '';
-				$c .= "<script src='{$beginUrl}{$this->app->dsRoot}/e10-modules/wwwlibs/d3/d3.min.js'></script>";
-				$c .= "<script src='{$beginUrl}{$this->app->dsRoot}/e10-modules/wwwlibs/c3/c3.min.js'></script>";
+				$beginUrl = ($this->app()->remote !== '') ? 'https://' . $this->app()->remote : $this->app()->scRoot();
+				$c .= "<script src='{$beginUrl}/libs/js/d3/d3.min.js'></script>";
+				$c .= "<script src='{$beginUrl}/libs/js/c3/c3.min.js'></script>";
 			}
 
 			if (isset($cp['title']))

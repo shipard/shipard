@@ -323,7 +323,8 @@ viewerId=$(this).attr("id");initViewer(viewerId);});}}function
 e10setProgress(e,progress){if(progress)e.css({'color':'rgba(0,0,0,.2)'});else
 e.css({'color':'rgba(0,0,0,1)'});}function
 e10setProgressIndicator(objectId,state){var
-i=$('#'+objectId+'Progress');if(!i[0])return;if(state){if(i.attr('data-run')==='1')return;i.attr('data-run','1');i.data('oldState',i.html());i.html("<i class='fa fa-spinner fa-spin'></i>");}else{i.attr('data-run','0');i.html(i.data('oldState'));}}function
+i=$('#'+objectId+'Progress');if(!i[0])return;if(state){if(i.attr('data-run')==='1')return;i.attr('data-run','1');i.data('oldState',i.html());let
+spinnerUrl=httpApiRootPath+'/www-root/sc/shipard/spinner-bars.svg';i.html("<img style='width: 1em; height: 1em;' src='"+spinnerUrl+"'></i>");}else{i.attr('data-run','0');i.html(i.data('oldState'));}}function
 e10userSettingsMenu(){var
 userMenu=$('#e10-tm-user-m');userMenuBtn=userMenu.parent();if(userMenu.hasClass('active')){userMenu.removeClass('active');userMenuBtn.removeClass('active');}else{userMenuBtn.addClass('active');userMenu.addClass('active');userMenu.css({top:$('#e10-panel-topmenu').height()+2});}}var
 g_htmlCodeTopMenuSearch;var

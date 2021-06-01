@@ -1,6 +1,7 @@
 <?php
 
 namespace E10Doc\Mnf;
+require_once __SHPD_MODULES_DIR__ . 'e10/witems/tables/items.php';
 use \E10\DataModel, \E10\TableForm, \E10Doc\Core\ViewDetailHead, E10Doc\Core\e10utils;
 
 /**

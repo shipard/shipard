@@ -1296,15 +1296,6 @@ class DashboardIssuesCore extends TableView
 
 		$placeholder = 'hledat ⏎';
 
-		/*
-		if ($this->projectsGroup)
-		{
-			$projectGroup = $this->app()->cfgItem ('e10pro.wkf.projectsGroups.'.$this->projectsGroup, NULL);
-			if ($projectGroup && isset ($projectGroup['topic']) && $projectGroup['topic'] !== '')
-				$placeholder = $projectGroup['topic'];
-		}
-		*/
-
 		$c = '';
 
 		$c .= "<div class='e10-sv-search e10-sv-search-toolbar $toolbarClass' style='padding-left: 1ex; padding-right: 1ex;' data-style='padding: .5ex 1ex 1ex 1ex; display: inline-block; width: 100%;' id='{$this->vid}Search'>";

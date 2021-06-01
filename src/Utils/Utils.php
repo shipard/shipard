@@ -871,7 +871,7 @@ class Utils
 		);
 
 		$result = @file_get_contents ($url, FALSE, $context);
-		$responseHeaders = $http_response_header;
+		$responseHeaders = $http_response_header ?? [];
 		return ['content'=> $result, 'headers'=> $responseHeaders];
 	}
 
@@ -1630,7 +1630,7 @@ class Utils
 
 	static function serverCounter ($key, $inc = FALSE)
 	{
-		$tmpDir = '/var/lib/e10/tmp';
+		$tmpDir = '/var/lib/shipard/tmp';
 		if (!is_dir($tmpDir))
 			mkdir($tmpDir, 0770, TRUE);
 

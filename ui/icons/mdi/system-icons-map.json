@@ -121,6 +121,10 @@
     },
     {
         "t": 0,
+        "v": "calculate"
+    },
+    {
+        "t": 0,
         "v": "insert_drive_file"
     },
     {
@@ -149,7 +153,15 @@
     },
     {
         "t": 0,
+        "v": "alternate_email"
+    },
+    {
+        "t": 0,
         "v": "assessment"
+    },
+    {
+        "t": 0,
+        "v": "auto_stories"
     },
     {
         "t": 0,
@@ -273,11 +285,19 @@
     },
     {
         "t": 0,
+        "v": "support_agent"
+    },
+    {
+        "t": 0,
         "v": "apps"
     },
     {
         "t": 0,
         "v": "grade"
+    },
+    {
+        "t": 0,
+        "v": "save"
     },
     {
         "t": 0,
@@ -298,6 +318,10 @@
     {
         "t": 0,
         "v": "image"
+    },
+    {
+        "t": 0,
+        "v": "file_download"
     },
     {
         "t": 0,

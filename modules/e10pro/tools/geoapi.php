@@ -1,7 +1,6 @@
 <?php
 
-namespace geoApi
-{
+namespace geoApi;
 
 # ZDROJ: http://astro.mff.cuni.cz/mira/sh/sh.php?type=trans2 a http://astro.mff.cuni.cz/mira/sh/db_trans.tar.gz
 # db_trans.php - WGS-84 to S-JTSK and S-42 transformation.
@@ -638,7 +637,7 @@ function convert_WGS84_SJTSK ($lat, $long, $alt = 230)
 class postalAddress
 {
 	private $address;
-	private $place = array ();
+	private $place = [];
 
 	public function setAddress ($address)
 	{
@@ -670,9 +669,5 @@ class postalAddress
 	}
 
 	public function place () {return $this->place;}
-} // class postalAddress
+}
 
-
-
-
-} // namespace geoApi

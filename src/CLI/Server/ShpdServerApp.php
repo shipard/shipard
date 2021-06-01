@@ -605,6 +605,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 
 		$this->appUpgrade_ServerInfo ();
 		$this->appUpgrade_ChannelInfo ();
+		$this->appUpgrade_DetectVersion();
 
 		if ($this->manager->appCompileConfig ())
 		{
@@ -684,17 +685,21 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		
 		file_put_contents($channelConfigFileName, json_encode($cfg, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
 
-
-		// -- detect commit
-		if (is_dir(__SHPD_MODULES_DIR__.'/.git'))
-			system("cd ".__SHPD_MODULES_DIR__." && git log --pretty=format:'%h' -n 1 > ".$appDir.'/tmp/___commit.txt');
-		else
-			file_put_contents($appDir . '/tmp/___commit.txt', '');
-
-		$commitConfig = ['serverInfo' => ['e10version' => __E10_VERSION__, 'e10commit' => file_get_contents('tmp/___commit.txt')]];
-		file_put_contents($appDir . '/config/_e10_commitInfo.json', json_encode($commitConfig));
+		$this->appUpgrade_DetectVersion();
 
 		return TRUE;
+	}
+
+	public function appUpgrade_DetectVersion ()
+	{
+		// -- detect commit
+		if (is_dir(__SHPD_ROOT_DIR__.'/.git'))
+			system("cd ".__SHPD_ROOT_DIR__." && git log --pretty=format:'%h' -n 1 > ".__APP_DIR__.'/tmp/___commit.txt');
+		else
+			file_put_contents(__APP_DIR__. '/tmp/___commit.txt', '');
+
+		$commitConfig = ['serverInfo' => ['e10version' => __E10_VERSION__, 'e10commit' => file_get_contents('tmp/___commit.txt')]];
+		file_put_contents(__APP_DIR__ . '/config/_e10_commitInfo.json', json_encode($commitConfig));
 	}
 
 	public function createDSIcons()

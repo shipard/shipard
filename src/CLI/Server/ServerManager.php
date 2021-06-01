@@ -180,6 +180,7 @@ class ServerManager extends Utility
 		*/
 
 		$this->checkService ('shpd-ds-cmds', '/etc/services');
+		$this->checkService ('shpd-ds-services', '/etc/services');
 		$this->checkService ('shpd-headless-browser', '/etc/services');
 
 		if ($this->app()->cfgServer['useHosting'] && isset($this->app()->cfgServer['serverId']) && $this->app()->cfgServer['serverId'] !== '')

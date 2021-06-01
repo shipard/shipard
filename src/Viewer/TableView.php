@@ -975,14 +975,14 @@ class TableView extends \Shipard\Base\BaseObject
 				}
 				if ($this->disableFullTextSearchInput)
 					$h .=	"<td style='width: 2em!important; font-size: 40%;'>" .
-						"<span  data-action='fulltextsearchclear' id='{$this->vid}Progress' data-run='0'><icon class='fa fa-fw fa-none'></i></span>" .
+						"<span  data-action='fulltextsearchclear' id='{$this->vid}Progress' data-run='0'>&nbsp;&nbsp;</span>" .
 						'</td>';
 				else
 				{
 					$placeholder = ($this->disableIncrementalSearch) ? 'hledat ⏎' : 'hledat';
 
 					$h .= "<td class='fulltext $fulltextClass' style='$style'>" .
-							"<span class='df2-background-button df2-action-trigger df2-fulltext-clear' data-action='fulltextsearchclear' id='{$this->vid}Progress' data-run='0'><icon class='fa fa-times'></i></span>";
+							"<span class='df2-background-button df2-action-trigger df2-fulltext-clear' data-action='fulltextsearchclear' id='{$this->vid}Progress' data-run='0'>".$this->app()->ui()->icon('system/actionInputClear')."</span>";
 					$h .= "<input name='fullTextSearch' type='text' class='fulltext e10-viewer-search' autocomplete='off' placeholder='".utils::es($placeholder)."' value=''";
 					if ($this->disableIncrementalSearch)
 						$h .= " data-onenter='1'";

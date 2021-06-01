@@ -21,7 +21,7 @@ namespace Shipard\Utils;
  * 
  * https://gist.github.com/severak/d2a3ba96f2e3924e8fc3fbf9af32027c
  */
-final class gps
+final class Gps
 {
 	public static function parse($lonlat)
 	{

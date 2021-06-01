@@ -656,7 +656,8 @@ function e10setProgressIndicator (objectId, state)
 			return;
 		i.attr ('data-run', '1');
 		i.data ('oldState', i.html());
-		i.html ("<i class='fa fa-spinner fa-spin'></i>");
+		let spinnerUrl = httpApiRootPath + '/www-root/sc/shipard/spinner-bars.svg';
+		i.html("<img style='width: 1em; height: 1em;' src='"+spinnerUrl+"'></i>");
 	}
 	else
 	{

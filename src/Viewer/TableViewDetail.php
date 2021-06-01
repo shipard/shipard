@@ -49,9 +49,9 @@ class TableViewDetail
 			$tableId = $this->table->tableId();
 
 		if ($title === FALSE)
-			$title = ['icon' => 'icon-paperclip', 'text' => 'Přílohy'];
+			$title = ['icon' => 'system/formAttachments', 'text' => 'Přílohy'];
 		if ($downloadTitle === FALSE)
-			$downloadTitle = ['icon' => 'icon-download', 'text' => 'Soubory ke stažení'];
+			$downloadTitle = ['icon' => 'system/actionDownload', 'text' => 'Soubory ke stažení'];
 
 		$files = UtilsBase::loadAttachments ($this->table->app(), array($toRecId), $tableId);
 		if (isset($files[$toRecId]))
@@ -130,7 +130,7 @@ class TableViewDetail
 				'type' => 'action', 'action' => 'editform', 'text' => DictSystem::text(DictSystem::diBtn_Open), 'data-table' => $this->tableId(), 'data-pk' => $item['ndx'],
 				'subButtons' => [
 					[
-						'type' => 'action', 'action' => 'newform', 'icon' => 'icon-copy', 'title' => DictSystem::text(DictSystem::diBtn_Copy),
+						'type' => 'action', 'action' => 'newform', 'icon' => 'system/actionCopy', 'title' => DictSystem::text(DictSystem::diBtn_Copy),
 						'data-table' => $this->tableId(), 'data-copyfrom' => $item['ndx'], 'btnClass' => 'btn-primary'
 					]
 				]
@@ -281,7 +281,7 @@ class TableViewDetail
 		$headerCode .= "<td class='content-header-btns'>";
 		$headerCode .= "<button class='df2-action-trigger e10-close-detail' data-action='close-lv-detail'>&times;</button>";
 		$headerCode .= "<br/>";
-		$headerCode .= "<button class='df2-action-trigger e10-close-detail' style='font-size: 100%; position:relative; top: .75em;' data-action='print-lv-detail'><i class='fa fa-print'></i></button>";
+		$headerCode .= "<button class='df2-action-trigger e10-close-detail' style='font-size: 100%; position:relative; top: .75em;' data-action='print-lv-detail'>".$this->app()->ui()->icon('system/actionPrint')."</button>";
 		$headerCode .= "</td>";
 
 		$headerCode .= "</table>";

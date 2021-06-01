@@ -3,12 +3,9 @@
 namespace e10pro\canteen\reports;
 use \e10\utils, e10doc\core\e10utils, E10\uiutils;
 
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
-
 
 /**
  * Class Persons
- * @package e10pro\canteen\reports
  */
 class Persons extends \e10\GlobalReport
 {

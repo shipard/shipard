@@ -138,7 +138,7 @@ class SensorsAndControlsEngine extends Utility
 				'port' => $ws['subsystems']['wss']['wsPort'],
 				'wsUrl' => $ws['subsystems']['wss']['wsUrl'],
 				'postUrl' => $ws['subsystems']['wss']['postUrl'],
-				'icon' => 'icon-square',
+				'icon' => 'system/iconLocalServer',
 				'topics' => [],
 			];
 		}

@@ -50,6 +50,10 @@ class TableAddress extends DbTable
 
 	public function geoCode ($recData)
 	{
+		$googleMapsApiKey = $this->app()->cfgServer['googleMapsApiKey'] ?? '';
+		if ($googleMapsApiKey === '')
+			return FALSE;
+
 		$locHash = $this->geoCodeLocHash($recData);
 		$logEvent = ['tableid' => $recData['tableid'], 'recid' => $recData['recid'], 'eventType' => 3];
 
@@ -63,7 +67,7 @@ class TableAddress extends DbTable
 		$addressParam = urlencode($recData['street'].', '.$recData['city'].' '.$recData['zipcode'].', '.$recData['country']);
 		$logEvent['eventSubtitle'] = str::upToLen('GPS: '.$recData['street'].', '.$recData['city'].' '.$recData['zipcode'].', '.$recData['country'], 130);
 
-		$url = 'https://maps.googleapis.com/maps/api/geocode/json?address='.$addressParam.'&key=AIzaSyBxXmlKHZMB7MO0JweqmtOmVQNTLOjJSec';
+		$url = 'https://maps.googleapis.com/maps/api/geocode/json?address='.$addressParam.'&key='.$googleMapsApiKey;
 
 		$opts = ['http'=> ['timeout' => 1, 'method'=>'GET', 'header'=> "Connection: close\r\n"]];
 		$context = stream_context_create($opts);

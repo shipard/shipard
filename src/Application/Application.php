@@ -1236,9 +1236,7 @@ class Application extends \Shipard\Application\ApplicationCore
 
 			$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/libs/js/jquery/jquery-2.2.4.min.js\"></script>";
 
-			//$c .= "<link rel=\"stylesheet\" type=\"text/css\" href=\"{$scRoot}/icons/fa/4.7/css/font-awesome.min.css\">\n";
 			$iconsCfg = $this->ui()->icons()->iconsCfg;
-			//$c .= "<link rel=\"stylesheet\" type=\"text/css\" href=\"{$scRoot}/icons/fa/5/css/all.min.css\">\n";
 			$c .= "<link rel='stylesheet' type='text/css' href='{$scRoot}/{$iconsCfg['styleLink']}'>\n";
 
 			if ($useNewWebsockets)

@@ -1,7 +1,7 @@
 [
     {
         "t": 0,
-        "v": "plus-circle"
+        "v": "bi-plus-circle"
     },
     {
         "t": 0,
@@ -9,7 +9,7 @@
     },
     {
         "t": 0,
-        "v": "calendar"
+        "v": "bi-calendar"
     },
     {
         "t": 0,
@@ -121,6 +121,10 @@
     },
     {
         "t": 0,
+        "v": "bi-calculator"
+    },
+    {
+        "t": 0,
         "v": "bi-file-earmark"
     },
     {
@@ -149,7 +153,15 @@
     },
     {
         "t": 0,
+        "v": "bi-at"
+    },
+    {
+        "t": 0,
         "v": "bi-file-earmark-bar-graph"
+    },
+    {
+        "t": 0,
+        "v": "bi-book"
     },
     {
         "t": 0,
@@ -273,11 +285,19 @@
     },
     {
         "t": 0,
+        "v": "bi-person-square"
+    },
+    {
+        "t": 0,
         "v": "bi-grid-3x3-gap-fill"
     },
     {
         "t": 0,
         "v": "bi-star"
+    },
+    {
+        "t": 0,
+        "v": "bi-hdd"
     },
     {
         "t": 0,
@@ -298,6 +318,10 @@
     {
         "t": 0,
         "v": "bi-image"
+    },
+    {
+        "t": 0,
+        "v": "bi-download"
     },
     {
         "t": 0,

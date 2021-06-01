@@ -1830,7 +1830,7 @@ class TableForm
 										break;
 				case 'cancel':
 										$class = ' btn-default';
-										$icon = '<i class="fa fa-times-circle"></i> ';
+										$icon = $this->app()->ui()->systemIcon(SystemIcons::actionClose);
 										break;
 				case 'wizardNext':
 										$class = ' btn-success';

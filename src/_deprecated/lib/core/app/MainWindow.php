@@ -242,7 +242,7 @@ class MainWindow extends \Shipard\Base\BaseObject
 
 
 		$ncCode = "<div id='mainBrowserNC' class='e10-nc close'>";
-		$ncCode .= "<div class='e10-nc-toolbar'><span id='e10-nc-close' class='pull-right'><i class='fa fa-close'></i> Zavřít</span></div>";
+		$ncCode .= "<div class='e10-nc-toolbar'><span id='e10-nc-close' class='pull-right'>".$this->app()->ui()->icon('system/actionClose')." Zavřít</span></div>";
 
 		$ncCode .= "<div class='e10-nc-viewer e10-widget-pane' data-widget-class='e10.base.NotificationCentre'></div>";
 		$ncCode .= '</div>';
@@ -347,7 +347,7 @@ class MainWindow extends \Shipard\Base\BaseObject
 			$c .= "<div class='e10-off' title=\"".utils::es('emailová adresa vaší došlé pošty')."\"><i class='fa fa-inbox'></i> ".utils::es($emailBase.'@'.$emailDomain).'</div>';
 			$c .= '</li>';
 
-			$c .= "<li id='e10-mm-close'><i class='fa fa-close'></i></li>";
+			$c .= "<li id='e10-mm-close'>".$this->app()->ui()->icon('system/actionClose')."</li>";
 			$c .= "</ul>";
 		}
 
@@ -358,7 +358,7 @@ class MainWindow extends \Shipard\Base\BaseObject
 		//$c .= " <br> <a class='nowrap' href='https://{$portalInfo['portal']['host']}'><i class='fa fa-home'></i>&nbsp;".utils::es($portalInfo['portal']['title'])."</a> ";
 		$c .= '</span>'.'</li>';
 		if (!$dsMode)
-			$c .= "<li id='e10-mm-close'><i class='fa fa-close'></i></li>";
+			$c .= "<li id='e10-mm-close'>".$this->app()->ui()->icon('system/actionClose')."</li>";
 		$c .= "</ul>";
 
 		// -- help
@@ -420,7 +420,7 @@ class MainWindow extends \Shipard\Base\BaseObject
 				}
 			}
 			$c .= "<div class='h2'>" . utils::es('O vaši podporu se stará') . '</div>';
-			$c .= "<span class='nowrap'><i class='fa fa-building'></i> " . utils::es($dsi['supportName']) . "</span>&nbsp;<br>";
+			$c .= "<span class='nowrap'>".$this->app()->ui()->icon('system/iconOwner'). ' ' . utils::es($dsi['supportName']) . "</span>&nbsp;<br>";
 			$c .= "<span class='nowrap'><i class='fa fa-envelope'></i> <a href='mailto:{$dsi['supportEmail']}'>" . utils::es($dsi['supportEmail']) . "</a></span>&nbsp;";
 			$c .= "<span class='nowrap'><i class='fa fa-phone'></i> " . utils::es($dsi['supportPhone']) . "</span>";
 
@@ -671,7 +671,7 @@ class MainWindow extends \Shipard\Base\BaseObject
 			else
 			{
 				$class = '';
-				$icon = (isset($btn['icon'])) ? "<i class='fa fa-{$btn['icon']}'></i> " : '';
+				$icon = (isset($btn['icon'])) ? $this->app()->ui()->icon($btn['icon']).'&nbsp;' : '';
 				$class = (isset($btn['class'])) ? " btn-{$btn['class']}" : '';
 				$btnText = $btn['text'];
 				$c .= "<button class='btn btn-large$class df2-{$btn['type']}-trigger' data-action='{$btn['action']}'>{$icon}{$btnText}</button>";

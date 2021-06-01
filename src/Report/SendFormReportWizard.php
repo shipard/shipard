@@ -1,7 +1,8 @@
 <?php
 
 namespace Shipard\Report;
-use \Shipard\Base\Utils;
+use \Shipard\Utils\Utils;
+use \Shipard\Form\TableForm;
 
 
 class SendFormReportWizard extends \Shipard\Form\Wizard

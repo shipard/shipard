@@ -37,6 +37,7 @@ class DataSourceStatsEngine extends Utility
 
 		$tableHeader = ['docType' => 'Druh dokladu'];
 
+		$sumData = [];
 		$rows = $this->db()->query ($q);
 
 		foreach ($rows as $r)

@@ -1,0 +1,14 @@
+[Unit]
+Description=shpd periodic services v0.8
+After=network.target auditd.service
+
+[Service]
+User=shpd
+Group=shpd
+PIDFile=/var/lib/shipard/shpd/shpd-ds-services.pid
+ExecStart=/usr/lib/shipard/etc/services/shpd-ds-services.sh
+Type=forking
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
