@@ -1,7 +1,7 @@
 {
 	"0": {"name": "---", "shortName": "", "icon": "", "shortcut": "---", "id": "0", "docTypes": [],"content": []},
 	"1000": {
-		"name": "Pohledávky", "shortName": "Pohl", "icon": "icon-arrow-circle-up", "shortcut": "Poh", "id": "1000", "side": "d",
+		"name": "Pohledávky", "shortName": "Pohl", "icon": "balance/receivables", "shortcut": "Poh", "id": "1000", "side": "d",
 		"docTypes": ["invno", "invpo", "cashreg", "bank", "cash", "cmnbkp"], "debsAccountMask": "311",
 		"content": [
 			{"docType": "invno", "src": "head", "itemId": "1000_{personBalance}_{symbol1}_{symbol2}_{heads.currency}"},
@@ -31,7 +31,7 @@
 		]
 	},
 	"2000": {
-		"name": "Závazky", "shortName": "Závaz", "icon": "icon-arrow-circle-down", "shortcut": "Záv", "id": "2000", "side": "c", "docTypes": ["invni", "bank", "cash", "cmnbkp", "purchase"], "debsAccountMask": "321",
+		"name": "Závazky", "shortName": "Závaz", "icon": "balance/obligations", "shortcut": "Záv", "id": "2000", "side": "c", "docTypes": ["invni", "bank", "cash", "cmnbkp", "purchase"], "debsAccountMask": "321",
 		"content": [
 			{"docType": "invni", "src": "head", "itemId": "2000_{personBalance}_{symbol1}_{symbol2}_{heads.currency}"},
 			{"docType": "purchase", "src": "head", "paymentMethod": 0, "itemId": "2000_{personBalance}_{symbol1}_{symbol2}_{heads.currency}"},
@@ -61,7 +61,7 @@
 		]
 	},
 	"3000": {
-		"name": "Přijaté zálohy", "shortName": "PřiZál", "icon": "icon-arrow-circle-o-down", "shortcut": "PřiZ", "id": "3000", "side": "c", "docTypes": ["bank", "cash", "invno", "cashreg", "cmnbkp"], "debsAccountMask": "324",
+		"name": "Přijaté zálohy", "shortName": "PřiZál", "icon": "balance/depositReceived", "shortcut": "PřiZ", "id": "3000", "side": "c", "docTypes": ["bank", "cash", "invno", "cashreg", "cmnbkp"], "debsAccountMask": "324",
 		"content": [
 			{"docType": "bank", "src": "row", "operations": ["1020102", "1020103"], "side": 0, "itemId": "3000_{rows.person}_{rows.symbol1}_{rows.symbol2}_{heads.currency}"},
 			{"docType": "cash", "src": "row", "operations": ["1020102", "1020103"], "side": 0, "itemId": "3000_{rows.person}_{rows.symbol1}_{rows.symbol2}_{heads.currency}"},
@@ -96,7 +96,7 @@
 		]
 	},
 	"3500": {
-		"name": "Poskytnuté zálohy", "shortName": "PoskZál", "icon": "icon-arrow-circle-o-up", "shortcut": "PosZ", "id": "3500", "side": "d", "docTypes": ["bank", "cash", "invni", "cmnbkp"], "debsAccountMask": "314",
+		"name": "Poskytnuté zálohy", "shortName": "PoskZál", "icon": "balanceDepositProvided", "shortcut": "PosZ", "id": "3500", "side": "d", "docTypes": ["bank", "cash", "invni", "cmnbkp"], "debsAccountMask": "314",
 		"content": [
 			{"docType": "bank", "src": "row", "operation": "1010103", "side": 0, "itemId": "3500_{rows.person}_{rows.symbol1}_{rows.symbol2}_{heads.currency}"},
 			{"docType": "cash", "src": "row", "operation": "1010103", "side": 0, "personSide": 0, "itemId": "3500_{heads.person}_{rows.symbol1}_{rows.symbol2}_{heads.currency}"},
@@ -126,7 +126,7 @@
 		]
 	},
 	"4100": {
-		"name": "Peníze na cestě", "shortName": "PenNaCes", "icon": "icon-money", "shortcut": "PeC", "id": "4100", "side": "d",
+		"name": "Peníze na cestě", "shortName": "PenNaCes", "icon": "balance/cashInTransit", "shortcut": "PeC", "id": "4100", "side": "d",
 		"type": "hc", "docTypes": ["bank", "cash", "cmnbkp"], "debsAccountMask": "261",
 		"content": [
 			{"docType": "bank", "src": "row", "operation": "1030012", "side": 0, "itemId": "4100_{rows.person}_{rows.symbol1}_{rows.symbol2}_{heads.homeCurrency}"},

@@ -1,5 +1,5 @@
 {
-	"id": "e10.world.currenciesTr", "sql": "e10_world_currenciesTr", "name": "Měny - Lokalizace", "icon": "icon-money",
+	"id": "e10.world.currenciesTr", "sql": "e10_world_currenciesTr", "name": "Měny - Lokalizace",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "currency", "name": "Měna", "type": "int", "reference": "e10.world.currencies"},

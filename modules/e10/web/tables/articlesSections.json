@@ -1,5 +1,5 @@
 {
-	"id": "e10.web.articlesSections", "sql": "e10_web_articlesSections", "name": "Sekce článků", "icon": "icon-folder",
+	"id": "e10.web.articlesSections", "sql": "e10_web_articlesSections", "name": "Sekce článků",
 	"columns": [
 		{"id": "ndx", "name": "ndx", "type": "int_ai"},
 		{"id": "fullName", "name": "Úplný název", "type": "string", "len": 120},

@@ -1,5 +1,5 @@
 {
-	"id": "e10doc.contracts.core.kinds", "sql": "e10doc_contracts_kinds", "name": "Druhy smluv", "icon": "icon-cogs",
+	"id": "e10doc.contracts.core.kinds", "sql": "e10doc_contracts_kinds", "name": "Druhy smluv",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "docType", "name": "Typ dokladu", "type": "enumString", "len": 10,

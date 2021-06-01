@@ -1,5 +1,5 @@
 {
-	"id": "e10doc.base.exchangeRatesValues", "sql": "e10doc_base_exchangeRatesValues", "name": "Kurzy měn", "icon": "icon-money",
+	"id": "e10doc.base.exchangeRatesValues", "sql": "e10doc_base_exchangeRatesValues", "name": "Kurzy měn",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

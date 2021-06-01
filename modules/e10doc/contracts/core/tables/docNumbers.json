@@ -1,5 +1,5 @@
 {
-	"id": "e10doc.contracts.core.docNumbers", "sql": "e10doc_contracts_core_docNumbers", "name": "Číselné řady smluv", "icon": "icon-play-circle",
+	"id": "e10doc.contracts.core.docNumbers", "sql": "e10doc_contracts_core_docNumbers", "name": "Číselné řady smluv",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},

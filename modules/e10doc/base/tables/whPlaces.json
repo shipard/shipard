@@ -1,5 +1,5 @@
 {
-	"id": "e10doc.base.whPlaces", "sql": "e10doc_base_whPlaces", "name": "Skladovací místa", "icon": "icon-inbox",
+	"id": "e10doc.base.whPlaces", "sql": "e10doc_base_whPlaces", "name": "Skladovací místa",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "title", "name": "Název", "type": "string", "len": 80},

@@ -1,4 +1,14 @@
 {
+    "tables/e10doc.inventory.checkRows":{
+        "fa5": "fa-circle",
+		"fa5pro": "fa-circle",
+		"bsi": "bi-circle",
+		"mdi": "circle"
+    },
+    
+    
+    
+    
     "e10doc-inventory/inventory":{
         "fa5":"fa-truck-moving",
         "fa5pro":"fa-inventory",

@@ -7,7 +7,7 @@
 		"srvcfg": {
 			"smallItems": [
 				{"#": "shares", "t1": "Sdílení", "object": "viewer", "table": "e10.share.shares", "viewer": "default",
-					"icon": "icon-share-alt", "order": 910000, "enabledCfgItem": "options.shares.useShares"}
+					"icon": "iconSharing", "order": 910000, "enabledCfgItem": "options.shares.useShares"}
 			]
 		}
 	}

@@ -56,5 +56,93 @@
         "fa5pro":"fa-sign-in-alt",
         "bsi":"bi-box-arrow-in-right",
         "mdi":"login"
+	},
+
+
+	"address":{
+		"fa5": "fa-question",
+		"fa5pro": "fa-question",
+		"bsi": "bi-question-lg",
+		"mdi": "help_outline"
+	},
+	"addressResidence":{
+		"fa5":"fa-building",
+        "fa5pro":"fa-building",
+        "bsi":"bi-building",
+        "mdi":"business"
+	},
+	"addressBranchOffice":{
+		"fa5": "fa-home",
+		"fa5pro": "fa-home",
+		"bsi": "bi-house-door-fill",
+		"mdi": "home"
+	},
+	"addressMailingAddress":{
+		"fa5":"fa-envelope",
+        "fa5pro":"fa-envelope",
+        "bsi":"bi-envelope",
+        "mdi":"mail"
+	},
+	"addressShippingAddress":{
+		"fa5":"fa-paper-plane",
+        "fa5pro":"fa-paper-plane",
+        "bsi":"bi-envelope",
+        "mdi":"send"
+	},
+	"addressWorkshop":{
+		"fa5":"fa-store",
+		"fa5pro":"fa-store",
+		"bsi":"bi-shop",
+		"mdi":"store"
+	},
+
+
+	"personBirthDate":{
+		"fa5":"fa-asterisk",
+		"fa5pro":"fa-asterisk",
+		"bsi":"bi-asterisk",
+		"mdi":"today"
+	},
+	"personEmail":{
+		"fa5":"fa-envelope",
+        "fa5pro":"fa-envelope",
+        "bsi":"bi-envelope",
+        "mdi":"mail"
+	},
+	"personPhone":{
+		"fa5": "fa-phone-alt",
+		"fa5pro": "fa-phone-alt",
+		"bsi": "bi-telephone",
+		"mdi": "call"
+	},
+	"personSkype":{
+		"fa5": "fa-phone-volume",
+		"fa5pro": "fa-phone-volume",
+		"bsi": "bi-skype",
+		"mdi": "ring_volume"
+	},
+	"personWeb":{
+		"fa5":"fa-globe-americas",
+        "fa5pro":"fa-globe-americas",
+        "bsi":"bi-globe",
+        "mdi":"public"
+	},
+	"personDataBox":{
+		"fa5":"fa-shield-alt",
+        "fa5pro":"fa-shield-alt",
+        "bsi":"bi-shield",
+        "mdi":"shield"
+	},
+	"personOfficialName":{
+		"fa5": "fa-check-circle",
+		"fa5pro": "fa-check-circle",
+		"bsi": "bi-check-circle",
+		"mdi": "check_circle"
+	},
+	"personShortName":{
+		"fa5": "fa-hand-paper",
+		"fa5pro": "fa-hand-paper",
+		"bsi": "bi-hand-index",
+		"mdi": "pan_tool"
 	}
 }

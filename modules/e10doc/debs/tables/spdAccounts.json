@@ -1,5 +1,5 @@
 {
-	"id": "e10doc.debs.spdAccounts", "sql": "e10doc_debs_spdAccounts", "name": "Nastavení účtů výkazů", "icon": "icon-table",
+	"id": "e10doc.debs.spdAccounts", "sql": "e10doc_debs_spdAccounts", "name": "Nastavení účtů výkazů",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

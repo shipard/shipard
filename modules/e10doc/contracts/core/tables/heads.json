@@ -1,5 +1,5 @@
 {
-  "id": "e10doc.contracts.core.heads", "sql": "e10doc_contracts_heads", "name": "Smlouvy", "icon": "icon-thumbs-up",
+  "id": "e10doc.contracts.core.heads", "sql": "e10doc_contracts_heads", "name": "Smlouvy",
   "columns": [
     {"id": "ndx", "name": "id", "type": "int_ai"},
 

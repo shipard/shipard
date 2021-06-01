@@ -5,26 +5,26 @@
 			"cmnbkp": {
 				"id": "cmnbkp", "class": "e10doc.cmnbkp.libs.ViewCmnBkpDocs",
 				"addWizard": [
-					{"class": "e10doc.cmnbkp.VATReturnWizard", "icon": "icon-legal", "text": "Přiznání DPH", "place": "addButton"}
+					{"class": "e10doc.cmnbkp.VATReturnWizard", "icon": "docTypeVATReturn", "text": "Přiznání DPH", "place": "addButton"}
 				],
 				"details": {
-					"detail": {"title": "Přehled", "icon": "icon-file", "type": "detail", "class": "e10doc.cmnbkp.libs.ViewDetailCmnBkpDoc", "order": 1000}
+					"detail": {"title": "Přehled", "icon": "detailDetail", "type": "detail", "class": "e10doc.cmnbkp.libs.ViewDetailCmnBkpDoc", "order": 1000}
 				}
 			},
 			"cmnbkpocp": {
 				"id": "cmnbkpocp", "class": "e10doc.cmnbkp.libs.ViewCmnBkpOpenClosePeriods",
 				"addWizard": [
-					{"class": "e10doc.cmnbkp.libs.InitStatesBalancesWizard", "icon": "icon-star-o", "text": "Otevření období - saldokonta",
+					{"class": "e10doc.cmnbkp.libs.InitStatesBalancesWizard", "icon": "cmnbkpOpenPeriodBalances", "text": "Otevření období - saldokonta",
 						"place": "addButton"},
-					{"class": "e10doc.cmnbkp.libs.InitStatesOthersWizard", "icon": "icon-expand", "text": "Otevření období - aktiva/pasiva",
+					{"class": "e10doc.cmnbkp.libs.InitStatesOthersWizard", "icon": "cmnbkpOpenPeriodAssetsLiabilities", "text": "Otevření období - aktiva/pasiva",
 						"place": "addButton", "enabledCfgItem": "e10doc.acc.usedMethods.debs"},
-					{"class": "e10doc.cmnbkp.libs.CloseAccPeriodWizard", "icon": "icon-stop", "text": "Uzavření období",
+					{"class": "e10doc.cmnbkp.libs.CloseAccPeriodWizard", "icon": "cmnbkpClosePeriod", "text": "Uzavření období",
 						"place": "addButton", "enabledCfgItem": "e10doc.acc.usedMethods.debs"},
-					{"class": "e10doc.cmnbkp.libs.InitStatesResetWizard", "icon": "icon-refresh", "text": "Přegenerovat otevření období",
+					{"class": "e10doc.cmnbkp.libs.InitStatesResetWizard", "icon": "cmnbkpRegenerateOpenedPeriod", "text": "Přegenerovat otevření období",
 						"place": "addButton"}
 				],
 				"details": {
-					"detail": {"title": "Přehled", "icon": "icon-file", "type": "detail", "class": "e10doc.cmnbkp.libs.ViewDetailCmnBkpDoc", "order": 1000}
+					"detail": {"title": "Přehled", "icon": "detailDetail", "type": "detail", "class": "e10doc.cmnbkp.libs.ViewDetailCmnBkpDoc", "order": 1000}
 				}
 			}
 		},
@@ -52,7 +52,7 @@
 	{
 		"table": "e10.share.shares",
 		"addWizard": [
-			{"class": "e10doc.cmnbkp.ShareVatReturnWizard", "icon": "icon-star-o", "text": "Přiznání DPH",
+			{"class": "e10doc.cmnbkp.ShareVatReturnWizard", "icon": "docTypeVATReturn", "text": "Přiznání DPH",
 				"place": "addButton"}
 		]
 	}

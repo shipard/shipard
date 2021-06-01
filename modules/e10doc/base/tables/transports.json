@@ -1,5 +1,5 @@
 {
-	"id": "e10doc.base.transports", "sql": "e10doc_base_transports", "name": "Způsoby dopravy", "icon": "icon-truck",
+	"id": "e10doc.base.transports", "sql": "e10doc_base_transports", "name": "Způsoby dopravy",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},

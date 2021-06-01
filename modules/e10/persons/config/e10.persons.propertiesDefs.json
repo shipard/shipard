@@ -3,13 +3,13 @@
 	"taxid": {"name": "DIČ", "type": "text", "icontxt": "DIČ", "multi": 1, "needCompany": 1},
 	"pid": {"name": "Rodné číslo", "type": "text", "icontxt": "RČ", "needPerson": 1, "personalData":  1},
 	"idcn": {"name": "Číslo OP", "type": "text", "icontxt": "OP", "needPerson": 1, "personalData":  1},
-	"birthdate": {"name": "Datum narození", "type": "date", "icon": "icon-asterisk", "icontxt": "✱", "needPerson": 1, "personalData":  1},
-	"email": {"name": "Email", "type": "text", "icon": "icon-envelope-o", "icontxt": "✉", "multi": 1, "note": 1},
-	"phone": {"name": "Telefon", "type": "text", "icon": "icon-phone", "icontxt": "✆", "multi": 1, "note": 1},
-	"skype": {"name": "Skype", "type": "text", "icon": "icon-skype", "multi": 1, "note": 1, "optionaly": 1},
-	"web": {"name": "Web", "type": "text", "icon": "icon-globe", "multi": 1, "note": 1, "optionaly": 1},
-	"govDataBox": {"name": "Dat. schránka", "type": "text", "icon": "icon-shield", "note": 1, "optionaly": 1},
+	"birthdate": {"name": "Datum narození", "type": "date", "icon": "personBirthDate", "icontxt": "✱", "needPerson": 1, "personalData":  1},
+	"email": {"name": "Email", "type": "text", "icon": "personEmail", "icontxt": "✉", "multi": 1, "note": 1},
+	"phone": {"name": "Telefon", "type": "text", "icon": "personPhone", "icontxt": "✆", "multi": 1, "note": 1},
+	"skype": {"name": "Skype", "type": "text", "icon": "personSkype", "multi": 1, "note": 1, "optionaly": 1},
+	"web": {"name": "Web", "type": "text", "icon": "personWeb", "multi": 1, "note": 1, "optionaly": 1},
+	"govDataBox": {"name": "Dat. schránka", "type": "text", "icon": "personDataBox", "note": 1, "optionaly": 1},
 
-	"officialName": {"name": "Oficiální název", "type": "text", "icon": "icon-check-circle-o", "multi": 1, "note": 1, "optionaly": 1},
-	"shortName": {"name": "Zkrácený název", "type": "text", "icon": "icon-hand-o-right", "multi": 1, "note": 1, "optionaly": 1}
+	"officialName": {"name": "Oficiální název", "type": "text", "icon": "personOfficialName", "multi": 1, "note": 1, "optionaly": 1},
+	"shortName": {"name": "Zkrácený název", "type": "text", "icon": "personShortName", "multi": 1, "note": 1, "optionaly": 1}
 }

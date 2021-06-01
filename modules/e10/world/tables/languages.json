@@ -1,5 +1,5 @@
 {
-	"id": "e10.world.languages", "sql": "e10_world_languages", "name": "Jazyky", "icon": "icon-language",
+	"id": "e10.world.languages", "sql": "e10_world_languages", "name": "Jazyky",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "id", "name": "id", "type": "string", "len": 10},

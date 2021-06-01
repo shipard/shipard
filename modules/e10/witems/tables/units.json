@@ -1,5 +1,5 @@
 {
-	"id": "e10.witems.units", "sql": "e10_witems_units", "name": "Jednotky", "icon": "icon-balance-scale",
+	"id": "e10.witems.units", "sql": "e10_witems_units", "name": "Jednotky",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "shortcut", "name": "Zkratka", "type": "string", "len": 15},

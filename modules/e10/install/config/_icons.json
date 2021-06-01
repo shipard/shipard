@@ -1,0 +1,8 @@
+{
+    "tables/e10.install.packages": {
+		"fa5":"fa-puzzle-piece",
+        "fa5pro":"fa-puzzle-piece",
+        "bsi":"bi-puzzle",
+        "mdi":"extension"
+	}
+}

@@ -1,5 +1,5 @@
 {
-	"id": "e10.web.wuKeys", "sql": "e10_web_wuKeys", "name": "Klíče uživatelů webu", "icon": "icon-id-badge",
+	"id": "e10.web.wuKeys", "sql": "e10_web_wuKeys", "name": "Klíče uživatelů webu",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "webServer", "name": "Webový server", "type": "int", "reference": "e10.web.servers"},

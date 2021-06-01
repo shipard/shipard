@@ -1,5 +1,5 @@
 {
-	"id": "e10.web.scripts", "sql": "e10_web_scripts", "name": "Skripty pro web", "icon": "icon-code",
+	"id": "e10.web.scripts", "sql": "e10_web_scripts", "name": "Skripty pro web",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "name", "name": "Název", "type": "string", "len": 120},
@@ -19,8 +19,8 @@
 	"views": [
 		{"id": "default", "class": "e10.web.ViewScripts",
 			"details": {
-				"preview": {"title": "Náhled", "icon": "icon-eye", "type": "detail", "class": "e10.web.ViewDetailScriptPreview", "order": 1000},
-				"text": {"title": "Text", "icon": "icon-pencil", "type": "detail", "class": "e10.web.ViewDetailScriptSource", "order": 2000}
+				"preview": {"title": "Náhled", "icon": "detailOverview", "type": "detail", "class": "e10.web.ViewDetailScriptPreview", "order": 1000},
+				"text": {"title": "Text", "icon": "detailText", "type": "detail", "class": "e10.web.ViewDetailScriptSource", "order": 2000}
 			}
 		}
 	],

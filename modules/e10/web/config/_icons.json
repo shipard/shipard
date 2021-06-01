@@ -65,6 +65,14 @@
         "bsi":"bi-person-badge-fill",
         "mdi":"badge"
     },
+    "tables/e10.web.blocksItems":{
+        "fa5":"fa-square",
+        "fa5pro":"fa-square",
+        "bsi":"bi-square-fill",
+        "mdi":"check_box_outline_blank"
+    },
+
+
 
     "formText":{
         "fa5": "fa-file-alt",
@@ -153,5 +161,45 @@
         "fa5pro":"fa-map-signs",
         "bsi":"bi-signpost-2",
         "mdi":"table_chart"
+    },
+
+
+    "pageModeTextPage":{
+        "fa5": "fa-file",
+		"fa5pro": "fa-file",
+		"bsi": "bi-file-earmark",
+		"mdi": "insert_drive_file"
+    },
+
+
+    "serverModeWeb":{
+        "fa5":"fa-globe-americas",
+        "fa5pro":"fa-globe-americas",
+        "bsi":"bi-globe",
+        "mdi":"public"
+    },
+    "serverModeWiki":{
+        "fa5": "fa-book",
+		"fa5pro": "fa-book",
+		"bsi": "bi-book",
+		"mdi": "auto_stories"
+    },
+    "serverModeApp":{
+        "fa5": "fa-cogs",
+		"fa5pro": "fa-cogs",
+		"bsi": "bi-gear",
+		"mdi": "settings"
+    },
+    "serverModeDisplay":{
+        "fa5": "fa-tv",
+		"fa5pro": "fa-tv-alt",
+		"bsi": "bi-tv",
+		"mdi": "tv"
+    },
+    "serverModeManualSetting":{
+        "fa5": "fa-wrench",
+		"fa5pro": "fa-wrench",
+		"bsi": "bi-wrench",
+		"mdi": "build_circle"
     }
 }

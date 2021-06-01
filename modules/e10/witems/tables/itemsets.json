@@ -1,5 +1,5 @@
 {
-	"id": "e10.witems.itemsets", "sql": "e10_witems_itemsets", "name": "Sady položek", "icon": "icon-indent",
+	"id": "e10.witems.itemsets", "sql": "e10_witems_itemsets", "name": "Sady položek",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "itemOwner", "name": "Patří do položky", "type": "int"},

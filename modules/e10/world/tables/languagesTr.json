@@ -1,5 +1,5 @@
 {
-	"id": "e10.world.languagesTr", "sql": "e10_world_languagesTr", "name": "Jazyky - Lokalizace", "icon": "icon-language",
+	"id": "e10.world.languagesTr", "sql": "e10_world_languagesTr", "name": "Jazyky - Lokalizace",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "languageSrc", "name": "Zdrojový jazyk", "type": "int", "reference": "e10.world.languages"},

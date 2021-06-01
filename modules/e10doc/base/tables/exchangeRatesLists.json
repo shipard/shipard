@@ -1,5 +1,5 @@
 {
-	"id": "e10doc.base.exchangeRatesLists", "sql": "e10doc_base_exchangeRatesLists", "name": "Kurzovní lístky", "icon": "icon-usd",
+	"id": "e10doc.base.exchangeRatesLists", "sql": "e10doc_base_exchangeRatesLists", "name": "Kurzovní lístky",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

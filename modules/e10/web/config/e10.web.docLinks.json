@@ -1,7 +1,7 @@
 {
 	"e10.web.blocks": {
 		"e10-web-blocks-propgroups": {
-			"linkid": "e10-web-blocks-propgroups", "name": "Skupiny vlastností", "icon": "icon-cogs",
+			"linkid": "e10-web-blocks-propgroups", "name": "Skupiny vlastností", "icon": "tables/e10.base.propgroups",
 			"sources": [
 				{"table": "e10.base.propgroups"}
 			]
@@ -9,13 +9,13 @@
 	},
 	"e10.web.servers": {
 		"e10-web-servers-admins": {
-			"linkid": "e10-web-servers-admins", "name": "Správci", "icon": "icon-user",
+			"linkid": "e10-web-servers-admins", "name": "Správci", "icon": "system/iconUser",
 			"sources": [
 				{"id": "users", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			]
 		},
 		"e10-web-servers-pageEdit": {
-			"linkid": "e10-web-servers-pageEdit", "name": "Editoři stránek", "icon": "icon-user",
+			"linkid": "e10-web-servers-pageEdit", "name": "Editoři stránek", "icon": "system/iconUser",
 			"sources": [
 				{"id": "users", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			]
@@ -23,13 +23,13 @@
 	},
 	"e10.web.articlesSections": {
 		"e10-web-articleSection-admins": {
-			"linkid": "e10-web-articleSection-admins", "name": "Správci sekce", "icon": "icon-user",
+			"linkid": "e10-web-articleSection-admins", "name": "Správci sekce", "icon": "system/iconUser",
 			"sources": [
 				{"id": "users", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			]
 		},
 		"e10-web-articleSection-authors": {
-			"linkid": "e10-web-articleSection-authors", "name": "Autoři", "icon": "icon-user",
+			"linkid": "e10-web-articleSection-authors", "name": "Autoři", "icon": "system/iconUser",
 			"sources": [
 				{"id": "users", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			]
@@ -37,7 +37,7 @@
 	},
 	"e10.web.pages": {
 		"e10-web-pageArticles-sections": {
-			"linkid": "e10-web-pageArticles-sections", "name": "Sekce s články", "icon": "icon-folder",
+			"linkid": "e10-web-pageArticles-sections", "name": "Sekce s články", "icon": "tables/e10.web.articlesSections",
 			"sources": [
 				{"id": "sections", "viewer": "e10.web.ViewArticlesSections", "table": "e10.web.articlesSections"}
 			]

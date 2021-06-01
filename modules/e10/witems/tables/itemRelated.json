@@ -1,5 +1,5 @@
 {
-	"id": "e10.witems.itemRelated", "sql": "e10_witems_itemRelated", "name": "Související položky", "icon": "icon-exchange",
+	"id": "e10.witems.itemRelated", "sql": "e10_witems_itemRelated", "name": "Související položky",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "srcItem", "name": "Položka", "type": "int", "reference": "e10.witems.items"},

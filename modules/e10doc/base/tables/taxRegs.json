@@ -1,5 +1,5 @@
 {
-	"id": "e10doc.base.taxRegs", "sql": "e10doc_base_taxRegs", "name": "Registrace k daním", "icon": "icon-shield",
+	"id": "e10doc.base.taxRegs", "sql": "e10doc_base_taxRegs", "name": "Registrace k daním",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

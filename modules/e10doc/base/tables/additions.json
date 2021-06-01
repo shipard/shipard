@@ -1,5 +1,5 @@
 {
-	"id": "e10doc.base.additions", "sql": "e10doc_base_additions", "name": "Dodatky dokladů", "icon": "icon-sticky-note-o",
+	"id": "e10doc.base.additions", "sql": "e10doc_base_additions", "name": "Dodatky dokladů",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "additionType", "name": "Typ dodatku", "type": "enumInt", "len": 2, "options": ["saveOnChange"],

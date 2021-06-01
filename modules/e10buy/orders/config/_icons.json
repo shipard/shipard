@@ -10,5 +10,11 @@
         "fa5pro":"fa-flag",
         "bsi":"bi-flag",
         "mdi":"flag"
+    },
+    "tables/e10buy.orders.orders":{
+        "fa5":"fa-shopping-basket",
+        "fa5pro":"fa-shopping-basket",
+        "bsi":"bi-basket",
+        "mdi":"shopping_basket"
     }
 }

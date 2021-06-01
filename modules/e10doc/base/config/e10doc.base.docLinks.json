@@ -1,29 +1,29 @@
 {
 	"e10doc.base.dockinds": {
-		"e10doc-base-dockinds-propgroups": {"linkid": "e10doc-base-dockinds-propgroups", "name": "Skupiny vlastností", "icon": "chevron-left",
+		"e10doc-base-dockinds-propgroups": {"linkid": "e10doc-base-dockinds-propgroups", "name": "Skupiny vlastností", "icon": "tables/e10.base.propgroups",
 			"sources": [
 				{"table": "e10.base.propgroups"}
 			]
 		}
 	},
 	"e10doc.base.bankaccounts": {
-		"e10-bankaccount-notify-statement": {"linkid": "e10-bankaccount-notify-statement", "name": "Nový výpis dát na vědomí", "icon": "icon-chevron-left",
+		"e10-bankaccount-notify-statement": {"linkid": "e10-bankaccount-notify-statement", "name": "Nový výpis dát na vědomí", "icon": "tables/e10.persons.persons",
 			"sources": [
 				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			]
 		}
 	},
 	"e10doc.base.additions": {
-		"e10doc-base-additions-whs": {"linkid": "e10doc-base-additions-whs", "name": "Sklady", "icon": "icon-chevron-left",
+		"e10doc-base-additions-whs": {"linkid": "e10doc-base-additions-whs", "name": "Sklady", "icon": "tables/e10doc.base.warehouses",
 			"sources": [{"table": "e10doc.base.warehouses"}]
 		},
-		"e10doc-base-additions-itemTypes": {"linkid": "e10doc-base-additions-itemTypes", "name": "Typy položek", "icon": "icon-chevron-left",
+		"e10doc-base-additions-itemTypes": {"linkid": "e10doc-base-additions-itemTypes", "name": "Typy položek", "icon": "tables/e10.witems.itemtypes",
 			"sources": [{"table": "e10.witems.itemtypes"}]
 		}
 	},
 	"e10.witems.items": {
 		"e10-witems-items-whPlaces": {
-			"linkid": "e10-witems-items-whPlaces", "name": "Skladovací místa", "icon": "icon-inbox",
+			"linkid": "e10-witems-items-whPlaces", "name": "Skladovací místa", "icon": "tables/e10doc.base.whPlaces",
 			"sources": [
 				{"table": "e10doc.base.whPlaces"}
 			]

@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.kb.wikies", "sql": "e10pro_kb_wikies", "name": "Wiki", "icon": "icon-book",
+	"id": "e10pro.kb.wikies", "sql": "e10pro_kb_wikies", "name": "Wiki",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

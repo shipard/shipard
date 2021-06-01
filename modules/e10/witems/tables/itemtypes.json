@@ -1,5 +1,5 @@
 {
-  "id": "e10.witems.itemtypes", "sql": "e10_witems_itemtypes", "name": "Typy položek", "icon": "icon-hand-o-up",
+  "id": "e10.witems.itemtypes", "sql": "e10_witems_itemtypes", "name": "Typy položek",
   "columns": [
     {"id": "ndx", "name": "ndx", "type": "int_ai"},
     {"id": "fullName", "name": "Název", "type": "string", "len": 120},

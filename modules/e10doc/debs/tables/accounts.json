@@ -1,5 +1,5 @@
 {
-  "id": "e10doc.debs.accounts", "sql": "e10doc_debs_accounts", "name": "Účtový rozvrh", "icon": "icon-th-large",
+  "id": "e10doc.debs.accounts", "sql": "e10doc_debs_accounts", "name": "Účtový rozvrh",
   "columns": [
     {"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "id", "name": "Číslo účtu", "type": "string", "len": 12},

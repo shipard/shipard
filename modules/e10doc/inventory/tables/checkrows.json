@@ -1,5 +1,5 @@
 {
-	"id": "e10doc.inventory.checkRows", "sql": "e10doc_inventory_checkRows", "name": "Řádky inventur", "icon": "icon-circle-o",
+	"id": "e10doc.inventory.checkRows", "sql": "e10doc_inventory_checkRows", "name": "Řádky inventur",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "inventoryCheck", "name": "Inventura", "type": "int"},

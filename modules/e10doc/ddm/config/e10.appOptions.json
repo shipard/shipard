@@ -1,7 +1,7 @@
 {
 	"ddmFormats": {
 		"name": "Vytěžování dat z dokladů", "order": 20200000, "group": "docs",
-		"icon": "icon-filter",
+		"icon": "tables/e10doc.ddm.formats",
 		"type": "viewer",
 		"table": "e10doc.ddm.formats",
 		"viewer": "default"

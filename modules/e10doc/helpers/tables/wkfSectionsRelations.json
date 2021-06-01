@@ -1,5 +1,5 @@
 {
-	"id": "e10doc.helpers.wkfSectionsRelations", "sql": "e10doc_helpers_wkfSectionsRelations", "name": "Vazby dokladů na sekce workflow", "icon": "icon-columns",
+	"id": "e10doc.helpers.wkfSectionsRelations", "sql": "e10doc_helpers_wkfSectionsRelations", "name": "Vazby dokladů na sekce workflow",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "name", "name": "Název", "type": "string", "len": 80},

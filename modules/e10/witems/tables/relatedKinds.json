@@ -1,5 +1,5 @@
 {
-	"id": "e10.witems.relatedKinds", "sql": "e10_witems_relatedKinds", "name": "Druhy souvisejících položek", "icon": "icon-exchange",
+	"id": "e10.witems.relatedKinds", "sql": "e10_witems_relatedKinds", "name": "Druhy souvisejících položek",
 	"columns": [
 		{"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "shortName", "sql": "shortName", "name": "Zkrácený název", "type": "string", "len": 70},

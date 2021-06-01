@@ -283,6 +283,12 @@
         "bsi":"bi-square-fill",
         "mdi":"check_box_outline_blank"
 	},
+	"iconImport":{
+		"fa5":"fa-download",
+        "fa5pro":"fa-download",
+        "bsi":"bi-download",
+        "mdi":"file_download"
+	},
 
 
 	"rightSubmenuToDo":{
@@ -588,6 +594,12 @@
 		"fa5pro": "fa-at",
 		"bsi": "bi-at",
 		"mdi": "alternate_email"
+	},
+	"detailCalculate":{
+		"fa5": "fa-calculator",
+		"fa5pro": "fa-calculator",
+		"bsi": "bi-calculator",
+		"mdi": "calculate"
 	},
 
 

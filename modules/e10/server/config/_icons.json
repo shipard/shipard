@@ -10,5 +10,19 @@
         "fa5pro":"fa-sliders-v",
         "bsi":"bi-sliders",
         "mdi":"tune"
+    },
+
+
+    "iconSettings":{
+        "fa5": "fa-cogs",
+		"fa5pro": "fa-cogs",
+		"bsi": "bi-gear-fill",
+		"mdi": "settings"
+    },
+    "iconDatabaseInfo":{
+        "fa5": "fa-database",
+		"fa5pro": "fa-database",
+		"bsi": "bi-hdd",
+		"mdi": "save"
     }
 }

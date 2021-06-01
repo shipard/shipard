@@ -3,7 +3,7 @@
 		"e10doc-contractKinds-pg": {
 			"linkid": "e10doc-contractKinds-pg",
 			"name": "Pro skupiny Osob",
-			"icon": "icon-chevron-left",
+			"icon": "tables/e10.persons.persons",
 			"sources": [
 				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			]

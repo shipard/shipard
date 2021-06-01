@@ -1,5 +1,5 @@
 {
-	"id": "e10doc.ros.journal", "sql": "e10doc_ros_journal", "name": "Evidence tržeb", "icon": "icon-microchip",
+	"id": "e10doc.ros.journal", "sql": "e10doc_ros_journal", "name": "Evidence tržeb",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "document", "name": "Doklad", "type": "int"},

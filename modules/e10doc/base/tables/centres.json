@@ -1,5 +1,5 @@
 {
-  "id": "e10doc.base.centres", "sql": "e10doc_base_centres", "name": "Střediska", "icon": "icon-bullseye",
+  "id": "e10doc.base.centres", "sql": "e10doc_base_centres", "name": "Střediska",
   "columns": [
     {"id": "ndx", "name": "id", "type": "int_ai"},
     {"id": "fullName", "name": "Název", "type": "string", "len": 120},

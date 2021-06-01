@@ -1,5 +1,5 @@
 {
-	"id": "e10.world.countryCurrencies", "sql": "e10_world_countryCurrencies", "name": "Měny zemí", "icon": "icon-money",
+	"id": "e10.world.countryCurrencies", "sql": "e10_world_countryCurrencies", "name": "Měny zemí",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "country", "name": "Země", "type": "int", "reference": "e10.world.countries"},

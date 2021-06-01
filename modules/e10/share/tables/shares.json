@@ -1,5 +1,5 @@
 {
-	"id": "e10.share.shares", "sql": "e10_share_shares", "name": "Sdílení", "icon": "icon-share-alt",
+	"id": "e10.share.shares", "sql": "e10_share_shares", "name": "Sdílení",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "name", "name": "Název", "type": "string", "len": 120},

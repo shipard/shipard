@@ -1,4 +1,13 @@
 {
+    "tables/e10doc.finance.transactions":{
+        "fa5":"fa-money-bill-alt",
+        "fa5pro":"fa-money-bill-alt",
+        "bsi":"bi-cash",
+        "mdi":"credit_card"
+    },
+    
+    
+    
     "e10doc-finance/finance":{
         "fa5":"fa-money-bill-alt",
         "fa5pro":"fa-money-bill-alt",

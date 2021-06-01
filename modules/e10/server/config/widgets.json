@@ -1,6 +1,6 @@
 [
 	{
-		"name": "Database Info", "class": "lib.cfg.WidgetSystemInfoCore", "icon": "icon-database", "align": "left",
+		"name": "Database Info", "class": "lib.cfg.WidgetSystemInfoCore", "icon": "iconDatabaseInfo", "align": "left",
 		"dashboard": "srvcfg", "panel": "main", "order": 20000, "row": "info", "type": "systemInfo"
 	},
 	{

@@ -1,5 +1,5 @@
 {
-	"id": "e10.web.blocksItems", "sql": "e10_web_blocksItems", "name": "Položky Bloků", "icon": "icon-square-o",
+	"id": "e10.web.blocksItems", "sql": "e10_web_blocksItems", "name": "Položky Bloků",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

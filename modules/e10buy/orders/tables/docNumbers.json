@@ -1,5 +1,5 @@
 {
-	"id": "e10buy.orders.docNumbers", "sql": "e10buy_orders_docNumbers", "name": "Číselné řady objednávek", "icon": "icon-play-circle",
+	"id": "e10buy.orders.docNumbers", "sql": "e10buy_orders_docNumbers", "name": "Číselné řady objednávek",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},

@@ -1,7 +1,7 @@
 {
 	"e10doc.core.heads": {
 		"e10docs-inbox": {
-			"linkid": "e10docs-inbox", "name": "Došlá pošta", "icon": "icon-chevron-left",
+			"linkid": "e10docs-inbox", "name": "Došlá pošta", "icon": "system/issueReceivedMail",
 			"sources": [
 				{"table": "wkf.core.issues", "viewer": "wkf.core.viewers.DocsCombo"}
 			]

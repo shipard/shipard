@@ -1,0 +1,14 @@
+{
+    "bankConfirmNewStatements":{
+        "fa5":"fa-star",
+		"fa5pro":"fa-star",
+		"bsi":"bi-star",
+		"mdi":"grade"
+    },
+    "bankCloseConfirmedtatements":{
+        "fa5": "fa-check-circle",
+		"fa5pro": "fa-check-circle",
+		"bsi": "bi-check-circle",
+		"mdi": "check_circle"
+    }
+}

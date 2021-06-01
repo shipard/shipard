@@ -1,5 +1,5 @@
 {
-	"id": "e10.web.servers", "sql": "e10_web_servers", "name": "Webové servery", "icon": "icon-globe",
+	"id": "e10.web.servers", "sql": "e10_web_servers", "name": "Webové servery",
 	"columns": [
 		{"id": "ndx", "name": "ndx", "type": "int_ai"},
 		{"id": "fullName", "name": "Úplný název", "type": "string", "len": 120},
@@ -55,7 +55,7 @@
 		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
 	],
 	"docActions": {
-		"clone": {"action": "wizard", "class": "e10.web.CloneWebServerWizard", "title": "Klonovat", "icon": "icon-files-o"}
+		"clone": {"action": "wizard", "class": "e10.web.CloneWebServerWizard", "title": "Klonovat", "icon": "actionCopy"}
 	},
 	"options": ["configSource"],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.web.servers.docStates"},

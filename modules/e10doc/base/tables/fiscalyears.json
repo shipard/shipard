@@ -1,5 +1,5 @@
 {
-  "id": "e10doc.base.fiscalyears", "sql": "e10doc_base_fiscalyears", "name": "Fiskální období", "icon": "icon-calendar",
+  "id": "e10doc.base.fiscalyears", "sql": "e10doc_base_fiscalyears", "name": "Fiskální období",
   "columns": [
     {"id": "ndx", "name": "id", "type": "int_ai"},
     {"id": "fullName", "name": "Název", "type": "string", "len": 40},

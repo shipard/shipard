@@ -1,5 +1,5 @@
 {
-	"id": "e10doc.ddm.formatsItems", "sql": "e10doc_ddm_formatsItems", "name": "Položky formátů vytěžování dat dokladů", "icon": "icon-filter",
+	"id": "e10doc.ddm.formatsItems", "sql": "e10doc_ddm_formatsItems", "name": "Položky formátů vytěžování dat dokladů",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "format", "name": "Formát", "type": "int", "reference": "e10doc.ddm.formats"},

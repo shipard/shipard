@@ -1,5 +1,5 @@
 {
-	"id": "e10.witems.itemSuppliers", "sql": "e10_witems_itemSuppliers", "name": "Dodavatelé položek", "icon": "icon-industry",
+	"id": "e10.witems.itemSuppliers", "sql": "e10_witems_itemSuppliers", "name": "Dodavatelé položek",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "item", "name": "Položka", "type": "int", "reference": "e10.witems.items"},

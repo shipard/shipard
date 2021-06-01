@@ -9,8 +9,8 @@
 					"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.bank.libs.ViewDetailBankDoc"}
 				},
 				"tools": [
-					{"class": "lib.tools.viewer.bank.ConfirmNewWizard", "icon": "icon-star", "text": "Potvrdit nové výpisy"},
-					{"class": "lib.tools.viewer.bank.CloseConfirmedWizard", "icon": "icon-check-circle", "text": "Uzavřít potvrzené výpisy"}
+					{"class": "lib.tools.viewer.bank.ConfirmNewWizard", "icon": "bankConfirmNewStatements", "text": "Potvrdit nové výpisy"},
+					{"class": "lib.tools.viewer.bank.CloseConfirmedWizard", "icon": "bankCloseConfirmedtatements", "text": "Uzavřít potvrzené výpisy"}
 				]
 			}
 		},

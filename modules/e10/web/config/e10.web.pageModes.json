@@ -1,7 +1,7 @@
 {
-	"web": {"name": "Stránka", "icon": "icon-file-o"},
-	"articles": {"name": "Články", "icon": "icon-rss"},
-	"wiki": {"name": "Wiki", "icon": "icon-pencil"},
+	"web": {"name": "Stránka", "icon": "tables/e10.web.pages"},
+	"articles": {"name": "Články", "icon": "tables/e10.web.articles"},
+	"wiki": {"name": "Wiki", "icon": "tables/e10pro.kb.wikies"},
 
-	"textPlain": {"name": "Textová stránka", "icon": "icon-file-text"}
+	"textPlain": {"name": "Textová stránka", "icon": "pageModeTextPage"}
 }

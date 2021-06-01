@@ -39,7 +39,7 @@
 		},
 		"docActions": {
 			"import-docRows-debs": {
-				"action": "wizard", "class": "e10doc.debs.libs.ImportDocRowsDebsWizard", "title": "Import", "icon": "icon-download",
+				"action": "wizard", "class": "e10doc.debs.libs.ImportDocRowsDebsWizard", "title": "Import", "icon": "system/iconImport",
 				"queryCols": {
 					"docType": "cmnbkp"
 				}

@@ -1,5 +1,5 @@
 {
-	"id": "e10doc.base.places", "sql": "e10doc_base_places", "name": "Místa S", "icon": "icon-exclamation-triangle",
+	"id": "e10doc.base.places", "sql": "e10doc_base_places", "name": "Místa S",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},

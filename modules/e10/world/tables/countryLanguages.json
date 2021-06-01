@@ -1,5 +1,5 @@
 {
-	"id": "e10.world.countryLanguages", "sql": "e10_world_countryLanguages", "name": "Jazyky zemí", "icon": "icon-language",
+	"id": "e10.world.countryLanguages", "sql": "e10_world_countryLanguages", "name": "Jazyky zemí",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "country", "name": "Země", "type": "int", "reference": "e10.world.countries"},

@@ -1,5 +1,5 @@
 {
-	"id": "e10doc.debs.groups", "sql": "e10doc_debs_groups", "name": "Účetní skupiny", "icon": "icon-folder-open-o",
+	"id": "e10doc.debs.groups", "sql": "e10doc_debs_groups", "name": "Účetní skupiny",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 180},

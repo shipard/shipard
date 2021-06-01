@@ -1,5 +1,5 @@
 {
-  "id": "e10doc.base.warehouses", "sql": "e10doc_base_warehouses", "name": "Sklady", "icon": "icon-cubes",
+  "id": "e10doc.base.warehouses", "sql": "e10doc_base_warehouses", "name": "Sklady",
   "columns": [
     {"id": "ndx", "name": "id", "type": "int_ai"},
     {"id": "fullName", "name": "Název", "type": "string", "len": 120},

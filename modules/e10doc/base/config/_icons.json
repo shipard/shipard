@@ -83,6 +83,30 @@
         "bsi":"bi-stickies-fill",
         "mdi":"podcasts"
     },
+    "tables/e10doc.base.whPlaces":{
+        "fa5":"fa-cubes",
+        "fa5pro":"fa-cubes",
+        "bsi":"bi-shop-window",
+        "mdi":"inventory_2"
+    },
+    "tables/e10doc.base.exchangeRatesValues":{
+        "fa5":"fa-money-bill-alt",
+        "fa5pro":"fa-money-bill-alt",
+        "bsi":"bi-cash",
+        "mdi":"payments"
+    },
+    "tables/e10doc.base.places":{
+        "fa5": "fa-map-marker-alt",
+		"fa5pro": "fa-map-marker-alt",
+		"bsi": "bi-geo-alt-fill",
+		"mdi": "place"
+    },
+    "tables/e10doc.base.warehousesoptions":{
+        "fa5": "fa-cogs",
+		"fa5pro": "fa-cogs",
+		"bsi": "bi-gear",
+		"mdi": "settings"
+    },
 
 
     "formMonths":{

@@ -1,7 +1,7 @@
 {
 	"terminals.base.workplaces": {
 		"terminals-workplaces-purchase-cameras": {
-			"linkid": "terminals-workplaces-purchase-cameras", "name": "Kamery pro výkupy", "icon": "icon-camera",
+			"linkid": "terminals-workplaces-purchase-cameras", "name": "Kamery pro výkupy", "icon": "deviceTypes/camera",
 			"sources": [
 				{"table": "mac.lan.devices", "viewer": "cameras"}
 			]

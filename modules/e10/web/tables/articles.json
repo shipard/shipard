@@ -1,5 +1,5 @@
 {
-	"id": "e10.web.articles", "sql": "e10_web_articles", "name": "Články", "icon": "icon-newspaper-o",
+	"id": "e10.web.articles", "sql": "e10_web_articles", "name": "Články",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "title", "name": "Název", "type": "string", "len": 120},
@@ -23,7 +23,7 @@
 	"views": [
 		{"id": "default", "class": "e10.web.ViewWebArticles",
 			"details": {
-				"preview": {"title": "Náhled", "icon": "icon-eye", "type": "detail", "class": "e10.web.ViewDetailArticlePreview", "order": 1000}
+				"preview": {"title": "Náhled", "icon": "system/detailOverview", "type": "detail", "class": "e10.web.ViewDetailArticlePreview", "order": 1000}
 			}
 		}
 	],

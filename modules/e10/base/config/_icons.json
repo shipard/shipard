@@ -238,5 +238,27 @@
 		"fa5pro": "fa-unlink",
 		"bsi": "bi-x-circle",
 		"mdi": "link_off"
+    },
+
+
+    "iconForProcessing":{
+        "fa5":"fa-star",
+		"fa5pro":"fa-star",
+		"bsi":"bi-star",
+		"mdi":"grade"
+    },
+
+
+    "dataTypesTextContent":{
+        "fa5": "fa-file-alt",
+		"fa5pro": "fa-file-alt",
+		"bsi": "bi-file-earmark-text-fill",
+		"mdi": "description"
+    },
+    "dataTypesEXIF":{
+        "fa5": "fa-camera",
+		"fa5pro": "fa-camera",
+		"bsi": "bi-camera-fill",
+		"mdi": "image"
     }
 }

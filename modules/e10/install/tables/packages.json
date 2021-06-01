@@ -1,5 +1,5 @@
 {
-	"id": "e10.install.packages", "sql": "e10_install_packages", "name": "Instalační balíčky", "icon": "icon-puzzle-piece",
+	"id": "e10.install.packages", "sql": "e10_install_packages", "name": "Instalační balíčky",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

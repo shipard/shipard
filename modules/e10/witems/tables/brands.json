@@ -1,5 +1,5 @@
 {
-  "id": "e10.witems.brands", "sql": "e10_witems_brands", "name": "Značky", "icon": "icon-heart-o",
+  "id": "e10.witems.brands", "sql": "e10_witems_brands", "name": "Značky",
   "columns": [
     {"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
     {"id": "shortName", "sql": "shortName", "name": "Zkrácený název", "type": "string", "len": 70},

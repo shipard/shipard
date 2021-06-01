@@ -1,6 +1,6 @@
 {
 	"e10.persons.groups": {
-		"e10-persons-groups-balances": {"linkid": "e10-persons-groups-balances", "name": "Zobrazovat saldokonto skupin Osob", "icon": "icon-star-o",
+		"e10-persons-groups-balances": {"linkid": "e10-persons-groups-balances", "name": "Zobrazovat saldokonto skupin Osob", "icon": "iconBalance",
 			"sources": [
 				{"table": "e10.persons.groups"}
 			]

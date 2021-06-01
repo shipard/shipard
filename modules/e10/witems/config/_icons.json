@@ -35,12 +35,35 @@
         "bsi":"bi-arrow-left-right",
         "mdi":"sync_alt"
     },
+    "tables/e10.witems.itemRelated":{
+        "fa5":"fa-exchange-alt",
+        "fa5pro":"fa-exchange-alt",
+        "bsi":"bi-arrow-left-right",
+        "mdi":"sync_alt"
+    },
+    "tables/e10.witems.itemsets":{
+        "fa5":"fa-indent",
+        "fa5pro":"fa-indent",
+        "bsi":"bi-text-indent-left",
+        "mdi":"format_indent_increase"
+    },
+    "tables/e10.witems.itemSuppliers":{
+        "fa5":"fa-industry",
+        "fa5pro":"fa-industry-alt",
+        "bsi":"bi-building",
+        "mdi":"business"
+    },
+
+
+
     "items/itemCategories":{
         "fa5":"fa-tree",
         "fa5pro":"fa-trees",
         "bsi":"bi-tree-fill",
         "mdi":"add_shopping_cart"
     },
+
+
 
     "formProperties":{
         "fa5": "fa-list",

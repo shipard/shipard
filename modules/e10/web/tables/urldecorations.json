@@ -1,5 +1,5 @@
 {
-	"id": "e10.web.urldecorations", "sql": "e10_web_urldecorations", "name": "Dekorace stránek", "icon": "icon-paragraph",
+	"id": "e10.web.urldecorations", "sql": "e10_web_urldecorations", "name": "Dekorace stránek",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "title", "name": "Název", "type": "string", "len": 120},

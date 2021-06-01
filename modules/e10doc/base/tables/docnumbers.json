@@ -1,5 +1,5 @@
 {
-  "id": "e10doc.base.docnumbers", "sql": "e10doc_base_docnumbers", "name": "Číselné řady dokladů", "icon": "icon-play-circle",
+  "id": "e10doc.base.docnumbers", "sql": "e10doc_base_docnumbers", "name": "Číselné řady dokladů",
   "columns": [
     {"id": "ndx", "name": "id", "type": "int_ai"},
     {"id": "fullName", "name": "Název", "type": "string", "len": 120},

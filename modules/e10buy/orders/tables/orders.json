@@ -1,5 +1,5 @@
 {
-	"id": "e10buy.orders.orders", "sql": "e10buy_orders_orders", "name": "Objednávky vydané", "icon": "icon-shopping-basket",
+	"id": "e10buy.orders.orders", "sql": "e10buy_orders_orders", "name": "Objednávky vydané",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "dbCounter", "name": "Číselná řada", "type": "int"},
@@ -60,7 +60,7 @@
 	"views": [
 		{"id": "default", "class": "e10buy.orders.ViewOrders",
 			"details": {
-				"default": {"title": "Přehled", "icon": "icon-file", "type": "detail", "class": "e10buy.orders.ViewDetailOrder", "order": 1000}
+				"default": {"title": "Přehled", "icon": "detailDetail", "type": "detail", "class": "e10buy.orders.ViewDetailOrder", "order": 1000}
 			}
 		}
 	],

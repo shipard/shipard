@@ -1,5 +1,5 @@
 {
-	"id": "e10doc.helpers.rowsSettings", "sql": "e10doc_helpers_rowsSettings", "name": "Nastavení řádků dokladů", "icon": "icon-wrench",
+	"id": "e10doc.helpers.rowsSettings", "sql": "e10doc_helpers_rowsSettings", "name": "Nastavení řádků dokladů",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "settingsType", "name": "Typ nastavení", "type": "enumInt", "options": ["saveOnChange"],
