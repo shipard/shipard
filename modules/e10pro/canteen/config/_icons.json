@@ -47,6 +47,24 @@
         "bsi":"bi-envelope",
         "mdi":"send"
 	},
+    "tables/e10pro.canteen.canteensAddFoods":{
+		"fa5": "fa-circle",
+		"fa5pro": "fa-circle",
+		"bsi": "bi-circle",
+		"mdi": "circle"
+	},
+    "tables/e10pro.canteen.canteensFoodKinds":{
+		"fa5": "fa-utensils",
+		"fa5pro": "fa-utensils-alt",
+		"bsi": "bi-shop-window",
+		"mdi": "dining"
+	},
+    "tables/e10pro.canteen.personsOptionsFoods":{
+		"fa5": "fa-utensils",
+		"fa5pro": "fa-utensils-alt",
+		"bsi": "bi-shop-window",
+		"mdi": "dining"
+	},
 
 
 	"formMeals":{
@@ -106,5 +124,13 @@
 		"fa5pro": "fa-utensils-alt",
 		"bsi": "bi-shop-window",
 		"mdi": "dining"
-    }
+    },
+
+
+	"iconPayers":{
+		"fa5":"fa-money-bill-alt",
+        "fa5pro":"fa-money-bill-alt",
+        "bsi":"bi-cash",
+        "mdi":"payments"
+	}
 }

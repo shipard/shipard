@@ -4,7 +4,7 @@
 		"mainState": 0, "stateStyle": "concept",  "goto": [1200, 9800]
 	},
 	"1200": {
-		"stateName": "Rozesílá se", "actionName": "Rozeslat", "icon": "icon-paper-plane-o",
+		"stateName": "Rozesílá se", "actionName": "Rozeslat", "icon": "bulkEmailsSending",
 		"stateStyle": "confirmed", "mainState": 1, "close": 1, "readOnly": 1, "goto": [8000, 9800]
 	},
 	"4000": {

@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.hosting.server.domainsAccounts", "sql": "e10pro_hosting_server_domainsAccounts", "name": "Doménové účty", "icon": "icon-tty",
+	"id": "e10pro.hosting.server.domainsAccounts", "sql": "e10pro_hosting_server_domainsAccounts", "name": "Doménové účty",
 	"columns": [
 		{"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "name", "name": "Název", "type": "string", "len": 120},

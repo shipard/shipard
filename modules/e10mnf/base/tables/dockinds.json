@@ -1,5 +1,5 @@
 {
-	"id": "e10mnf.base.dockinds", "sql": "e10mnf_base_dockinds", "name": "Druhy zakázek", "icon": "icon-flag-o",
+	"id": "e10mnf.base.dockinds", "sql": "e10mnf_base_dockinds", "name": "Druhy zakázek",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},

@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.canteen.canteensFoodKinds", "sql": "e10pro_canteen_canteensFoodKinds", "name": "Druhy jídel", "icon": "icon-cutlery",
+	"id": "e10pro.canteen.canteensFoodKinds", "sql": "e10pro_canteen_canteensFoodKinds", "name": "Druhy jídel",
 	"columns": [
 		{"id": "ndx", "name": "ndx", "type": "int_ai"},
 

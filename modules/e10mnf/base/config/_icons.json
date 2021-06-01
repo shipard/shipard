@@ -36,5 +36,19 @@
 		"fa5pro": "fa-file-alt",
 		"bsi": "bi-file-earmark-text-fill",
 		"mdi": "description"
+    },
+
+
+    "wrTypesWorkRecord":{
+        "fa5": "fa-hourglass-half",
+		"fa5pro": "fa-hourglass-half",
+		"bsi": "bi-hourglass-split",
+		"mdi": "hourglass_empty"
+    },
+    "wrTypesOther":{
+        "fa5": "fa-paw",
+		"fa5pro": "fa-paw",
+		"bsi": "bi-hourglass",
+		"mdi": "pets"
     }
 }

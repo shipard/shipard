@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.canteen.personsOptionsFoods", "sql": "e10pro_canteen_personsOptionsFoods", "name": "Nastavená jídla", "icon": "icon-cutlery",
+	"id": "e10pro.canteen.personsOptionsFoods", "sql": "e10pro_canteen_personsOptionsFoods", "name": "Nastavená jídla",
 	"columns": [
 		{"id": "ndx", "name": "ndx", "type": "int_ai"},
 

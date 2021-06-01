@@ -1,5 +1,5 @@
 {
-	"id": "e10mnf.base.workRecsKinds", "sql": "e10mnf_base_workRecsKinds", "name": "Druhy pracovních záznamů", "icon": "icon-flash",
+	"id": "e10mnf.base.workRecsKinds", "sql": "e10mnf_base_workRecsKinds", "name": "Druhy pracovních záznamů",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

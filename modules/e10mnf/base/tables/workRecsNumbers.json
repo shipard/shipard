@@ -1,5 +1,5 @@
 {
-	"id": "e10mnf.base.workRecsNumbers", "sql": "e10mnf_base_workRecsNumbers", "name": "Číselné řady Pracovních záznamů", "icon": "icon-play-circle",
+	"id": "e10mnf.base.workRecsNumbers", "sql": "e10mnf_base_workRecsNumbers", "name": "Číselné řady Pracovních záznamů",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},

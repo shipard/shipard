@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.canteen.canteens", "sql": "e10pro_canteen_canteens", "name": "Jídelny", "icon": "icon-cutlery",
+	"id": "e10pro.canteen.canteens", "sql": "e10pro_canteen_canteens", "name": "Jídelny",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

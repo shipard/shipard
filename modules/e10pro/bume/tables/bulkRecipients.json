@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.bume.bulkRecipients", "sql": "e10pro_wkf_bulkRecipients", "name": "Adresáti hromadné pošty", "icon": "icon-id-card-o",
+	"id": "e10pro.bume.bulkRecipients", "sql": "e10pro_wkf_bulkRecipients", "name": "Adresáti hromadné pošty",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "bulkMail", "name": "Zpráva", "type": "int", "reference": "e10pro.bume.bulkEmails"},
@@ -19,7 +19,7 @@
 	"views": [
 		{"id": "default", "class": "e10pro.bume.ViewBulkRecipients",
 			"details": {
-				"default": {"title": "Detail", "icon": "icon-eye", "type": "detail", "class": "e10pro.bume.ViewDetaiBulkRecipient", "order": 1000}
+				"default": {"title": "Přehled", "icon": "detailDetail", "type": "detail", "class": "e10pro.bume.ViewDetaiBulkRecipient", "order": 1000}
 			}
 		}
 	],

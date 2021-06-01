@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.booking.types", "sql": "e10pro_booking_types", "name": "Druhy rezervací", "icon": "icon-bookmark-o",
+	"id": "e10pro.booking.types", "sql": "e10pro_booking_types", "name": "Druhy rezervací",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},

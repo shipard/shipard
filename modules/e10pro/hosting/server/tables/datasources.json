@@ -1,5 +1,5 @@
 {
-  "id": "e10pro.hosting.server.datasources", "sql": "e10pro_hosting_server_datasources", "name": "Zdroje dat", "icon": "icon-database",
+  "id": "e10pro.hosting.server.datasources", "sql": "e10pro_hosting_server_datasources", "name": "Zdroje dat",
   "columns": [
     {"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
     {"id": "name", "name": "Název", "type": "string", "len": 120},

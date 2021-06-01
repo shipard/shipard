@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.canteen.priceList", "sql": "e10pro_canteen_priceList", "name": "Ceník jídel", "icon": "icon-money",
+	"id": "e10pro.canteen.priceList", "sql": "e10pro_canteen_priceList", "name": "Ceník jídel",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

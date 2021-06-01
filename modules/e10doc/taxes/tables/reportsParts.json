@@ -1,5 +1,5 @@
 {
-	"id": "e10doc.taxes.reportsParts", "sql": "e10doc_taxes_reportsParts", "name": "Části daňových přiznání", "icon": "icon-shield",
+	"id": "e10doc.taxes.reportsParts", "sql": "e10doc_taxes_reportsParts", "name": "Části daňových přiznání",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "report", "name": "Přehled", "type": "int"},

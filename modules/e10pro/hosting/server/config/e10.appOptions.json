@@ -1,7 +1,7 @@
 {
 	"hosting": {
 		"name": "Hosting", "order": 12100, "group": "core",
-		"icon": "icon-database",
+		"icon": "system/iconDatabase",
 		"type": "cfgFile",
 		"options":
 		[

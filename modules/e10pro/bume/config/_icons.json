@@ -5,6 +5,18 @@
 		"bsi": "bi-envelope-open",
 		"mdi": "mail"
 	},
+	"tables/e10pro.bume.bulkPosts":{
+		"fa5":"fa-paper-plane",
+        "fa5pro":"fa-paper-plane",
+        "bsi":"bi-envelope",
+        "mdi":"send"
+	},
+	"tables/e10pro.bume.bulkRecipients":{
+		"fa5": "fa-id-card",
+		"fa5pro": "fa-id-card",
+		"bsi": "bi-person-badge",
+		"mdi": "badge"
+	},
 
 
 	"formRecipients":{
@@ -12,5 +24,13 @@
 		"fa5pro": "fa-address-card",
 		"bsi": "bi-person-badge",
 		"mdi": "badge"
+	},
+
+
+	"bulkEmailsSending":{
+		"fa5":"fa-paper-plane",
+        "fa5pro":"fa-paper-plane",
+        "bsi":"bi-envelope",
+        "mdi":"send"
 	}
 }

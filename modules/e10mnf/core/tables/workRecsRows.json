@@ -1,5 +1,5 @@
 {
-	"id": "e10mnf.core.workRecsRows", "sql": "e10mnf_core_workRecsRows", "name": "Řádky pracovních záznamů", "icon": "icon-hand",
+	"id": "e10mnf.core.workRecsRows", "sql": "e10mnf_core_workRecsRows", "name": "Řádky pracovních záznamů",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},

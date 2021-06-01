@@ -1,5 +1,5 @@
 {
-	"id": "e10mnf.base.workOrdersGroups", "sql": "e10mnf_base_workOrdersGroups", "name": "Skupiny zakázek", "icon": "icon-sticky-note-o",
+	"id": "e10mnf.base.workOrdersGroups", "sql": "e10mnf_base_workOrdersGroups", "name": "Skupiny zakázek",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

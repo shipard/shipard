@@ -1,5 +1,5 @@
 {
-	"id": "e10doc.taxes.filings", "sql": "e10doc_taxes_filings", "name": "Podání daňových přiznání a přehledů", "icon": "icon-paper-plane",
+	"id": "e10doc.taxes.filings", "sql": "e10doc_taxes_filings", "name": "Podání daňových přiznání a přehledů",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "report", "name": "Přehled", "type": "int"},

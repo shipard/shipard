@@ -2,7 +2,7 @@
 	"counts": {
 		"workOrders": {
 			"cntId": "e10-mnf-workOrders", "subTypeCol": "i1", "subTypeCfgPath": "e10mnf.workOrders.dbCounters", "subTypeCfgTitle": "name",
-			"title": "Zakázky", "icon": "icon-industry",
+			"title": "Zakázky", "icon": "tables/e10mnf.core.workOrders",
 			"subTypesCalcGroups": {"-": "workOrders"}
 		}
 	},

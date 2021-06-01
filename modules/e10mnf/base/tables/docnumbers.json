@@ -1,5 +1,5 @@
 {
-	"id": "e10mnf.base.docnumbers", "sql": "e10mnf_base_docnumbers", "name": "Číselné řady zakázek", "icon": "icon-play-circle",
+	"id": "e10mnf.base.docnumbers", "sql": "e10mnf_base_docnumbers", "name": "Číselné řady zakázek",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},

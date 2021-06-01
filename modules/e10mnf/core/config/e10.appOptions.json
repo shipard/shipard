@@ -1,16 +1,14 @@
 {
 	"workOrderDocNumbers": {
-		"name": "Číselné řady zakázek", "order": 3450000, "group": "workOrders", "icon": "icon-play-circle",
+		"name": "Číselné řady zakázek", "order": 3450000, "group": "workOrders",
 		"type": "viewer", "table": "e10mnf.base.docnumbers", "viewer": "default"
 	},
 	"workOrderKinds": {
 		"name": "Druhy zakázek", "order": 3460000, "group": "workOrders",
-		"icon": "icon-flag-o",
 		"type": "viewer", "table": "e10mnf.base.dockinds", "viewer": "default"
 	},
 	"workOrderGroups": {
 		"name": "Skupiny zakázek", "order": 3460000, "group": "workOrders",
-		"icon": "icon-sticky-note-o",
 		"type": "viewer", "table": "e10mnf.base.workOrdersGroups", "viewer": "default"
 	}
 }

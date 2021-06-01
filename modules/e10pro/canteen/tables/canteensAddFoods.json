@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.canteen.canteensAddFoods", "sql": "e10pro_canteen_canteensAddFoods", "name": "Doplňková jídla", "icon": "icon-circle-o",
+	"id": "e10pro.canteen.canteensAddFoods", "sql": "e10pro_canteen_canteensAddFoods", "name": "Doplňková jídla",
 	"columns": [
 		{"id": "ndx", "name": "ndx", "type": "int_ai"},
 

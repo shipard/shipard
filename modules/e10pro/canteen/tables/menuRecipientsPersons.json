@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.canteen.menuRecipientsPersons", "sql": "e10pro_canteen_menuRecipientsPersons", "name": "Menu k rozeslání", "icon": "icon-paper-plane",
+	"id": "e10pro.canteen.menuRecipientsPersons", "sql": "e10pro_canteen_menuRecipientsPersons", "name": "Menu k rozeslání",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

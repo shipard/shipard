@@ -1,5 +1,5 @@
 {
-	"id": "e10mnf.core.workRecs", "sql": "e10mnf_core_workRecs", "name": "Pracovní záznamy", "icon": "icon-paw",
+	"id": "e10mnf.core.workRecs", "sql": "e10mnf_core_workRecs", "name": "Pracovní záznamy",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "dbCounter", "name": "Číselná řada", "type": "int"},

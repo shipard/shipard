@@ -1,11 +1,11 @@
 {
 	"e10mnf.base.workOrdersGroups": {
-		"e10mnf-workRecsGroups-docKinds": {"linkid": "e10mnf-workRecsGroups-docKinds", "name": "Druhy zakázek", "icon": "icon-flag-o",
+		"e10mnf-workRecsGroups-docKinds": {"linkid": "e10mnf-workRecsGroups-docKinds", "name": "Druhy zakázek", "icon": "tables/e10mnf.base.dockinds",
 			"sources": [
 				{"id": "docKinds", "viewer": "default", "table": "e10mnf.base.dockinds"}
 			]
 		},
-		"e10mnf-workRecsGroups-docNumbers": {"linkid": "e10mnf-workRecsGroups-docNumbers", "name": "Číselné řady zakázek", "icon": "icon-play-circle",
+		"e10mnf-workRecsGroups-docNumbers": {"linkid": "e10mnf-workRecsGroups-docNumbers", "name": "Číselné řady zakázek", "icon": "tables/e10mnf.base.docnumbers",
 			"sources": [
 				{"id": "docKinds", "viewer": "default", "table": "e10mnf.base.docnumbers"}
 			]

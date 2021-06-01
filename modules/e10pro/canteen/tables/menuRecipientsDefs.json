@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.canteen.menuRecipientsDefs", "sql": "e10pro_canteen_menuRecipientsDefs", "name": "Definice strávníků", "icon": "icon-share",
+	"id": "e10pro.canteen.menuRecipientsDefs", "sql": "e10pro_canteen_menuRecipientsDefs", "name": "Definice strávníků",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

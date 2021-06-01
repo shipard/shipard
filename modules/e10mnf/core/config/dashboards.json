@@ -4,7 +4,7 @@
 		"panels": {
 			"workOrders": {
 				"name": "Zakázky",
-				"icon": "icon-industry",
+				"icon": "tables/e10mnf.core.workOrders",
 				"order": 7000,
 				"fullsize": 1,
 				"rows": {

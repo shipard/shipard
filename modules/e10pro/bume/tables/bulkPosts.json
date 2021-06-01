@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.bume.bulkPosts", "sql": "e10pro_wkf_bulkPosts", "name": "Odeslaná hromadná pošta", "icon": "icon-paper-plane-o",
+	"id": "e10pro.bume.bulkPosts", "sql": "e10pro_wkf_bulkPosts", "name": "Odeslaná hromadná pošta",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "bulkMail", "name": "Zpráva", "type": "int", "reference": "e10pro.bume.bulkEmails"},

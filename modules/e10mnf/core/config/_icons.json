@@ -4,5 +4,17 @@
         "fa5pro":"fa-industry-alt",
         "bsi":"bi-building",
         "mdi":"business"
+    },
+    "tables/e10mnf.core.workRecs":{
+        "fa5": "fa-paw",
+		"fa5pro": "fa-paw",
+		"bsi": "bi-hourglass",
+		"mdi": "pets"
+    },
+    "tables/e10mnf.core.workRecsRows":{
+        "fa5": "fa-list",
+		"fa5pro": "fa-list",
+		"bsi": "bi-list-ul",
+		"mdi": "list"
     }
 }

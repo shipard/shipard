@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.custreg.registrations", "sql": "e10pro_custreg_registrations", "name": "Registrace zákazníků", "icon": "icon-sign-in",
+	"id": "e10pro.custreg.registrations", "sql": "e10pro_custreg_registrations", "name": "Registrace zákazníků",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

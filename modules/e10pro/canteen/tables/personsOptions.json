@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.canteen.personsOptions", "sql": "e10pro_canteen_personsOptions", "name": "Nastavení strávníků", "icon": "icon-user-circle",
+	"id": "e10pro.canteen.personsOptions", "sql": "e10pro_canteen_personsOptions", "name": "Nastavení strávníků",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

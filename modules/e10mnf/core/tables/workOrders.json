@@ -1,5 +1,5 @@
 {
-	"id": "e10mnf.core.workOrders", "sql": "e10mnf_core_workOrders", "name": "Zakázky", "icon": "icon-industry",
+	"id": "e10mnf.core.workOrders", "sql": "e10mnf_core_workOrders", "name": "Zakázky", "icon": "tables/e10mnf.core.workOrders",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "dbCounter", "name": "Číselná řada", "type": "int"},
@@ -63,9 +63,9 @@
 	"views": [
 		{"id": "default", "class": "e10mnf.core.ViewWorkOrders",
 			"details": {
-				"default": {"title": "Přehled", "icon": "icon-file", "type": "detail", "class": "e10mnf.core.ViewDetailWorkOrder", "order": 1000},
-				"analysis": {"title": "Rozbor", "icon": "icon-pie-chart", "type": "detail", "class": "e10mnf.core.ViewDetailWorkOrderAnalysis", "order": 1000},
-				"accounting": {"title": "Účtování", "icon": "x-stamp", "type": "detail", "class": "e10mnf.core.ViewDetailWorkOrderAccounting", "order": 7000}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10mnf.core.ViewDetailWorkOrder", "order": 1000},
+				"analysis": {"title": "Rozbor", "icon": "system/detailAnalysis", "type": "detail", "class": "e10mnf.core.ViewDetailWorkOrderAnalysis", "order": 1000},
+				"accounting": {"title": "Účtování", "icon": "system/detailAccounting", "type": "detail", "class": "e10mnf.core.ViewDetailWorkOrderAccounting", "order": 7000}
 			}
 		}
 	],

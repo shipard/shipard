@@ -1,5 +1,5 @@
 {
-	"id": "e10doc.taxes.reports", "sql": "e10doc_taxes_reports", "name": "Daňová přiznání a přehledy", "icon": "icon-shield",
+	"id": "e10doc.taxes.reports", "sql": "e10doc_taxes_reports", "name": "Daňová přiznání a přehledy",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 
@@ -39,8 +39,8 @@
 			"id": "default", "class": "e10doc.taxes.ViewReports",
 			"details": {
 				"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "e10doc.taxes.ViewDetailReport"},
-				"preview": {"title": "Náhled", "icon": "icon-eye", "type": "detail", "order":  1000, "class": "e10doc.taxes.ViewDetailReportPreview"},
-				"errors": {"title": "Problémy", "icon": "icon-exclamation-triangle", "type": "detail", "order":  2000, "class": "e10doc.taxes.ViewDetailReportErrors"}
+				"preview": {"title": "Náhled", "icon": "system/detailOverview", "type": "detail", "order":  1000, "class": "e10doc.taxes.ViewDetailReportPreview"},
+				"errors": {"title": "Problémy", "icon": "detailProblems", "type": "detail", "order":  2000, "class": "e10doc.taxes.ViewDetailReportErrors"}
 			}
 		}
 	],

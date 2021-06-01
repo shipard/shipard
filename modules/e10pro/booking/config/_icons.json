@@ -4,5 +4,11 @@
 		"fa5pro": "fa-bookmark",
 		"bsi": "bi-bookmark",
 		"mdi": "bookmark_border"
+	},
+	"tables/e10pro.booking.bookings":{
+		"fa5": "fa-book",
+		"fa5pro": "fa-book",
+		"bsi": "bi-book",
+		"mdi": "auto_stories"
 	}
 }

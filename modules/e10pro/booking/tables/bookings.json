@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.booking.bookings", "sql": "e10pro_booking_bookings", "name": "Rezervace", "icon": "icon-book",
+	"id": "e10pro.booking.bookings", "sql": "e10pro_booking_bookings", "name": "Rezervace",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 
