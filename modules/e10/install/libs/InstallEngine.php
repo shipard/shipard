@@ -37,7 +37,7 @@ class InstallEngine extends Utility
 		{
 			$item = [
 				'packageId' => $packageId, 'packageVersion' => '0.0.1utns',
-				'packageCheckSum' => sha1_file(__APP_DIR__.'/e10-modules/'.$packageId.'.json')
+				'packageCheckSum' => sha1_file(__SHPD_MODULES_ROOT__.$packageId.'.json')
 			];
 
 			$this->db()->query ('INSERT INTO [e10_install_packages] ', $item);

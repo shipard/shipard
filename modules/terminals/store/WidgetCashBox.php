@@ -1,18 +1,16 @@
 <?php
 
 namespace terminals\store;
-
-require_once __APP_DIR__ . '/e10-modules/e10/witems/tables/itemcategories.php';
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
-
-use e10\utils, e10doc\core\e10utils;
+require_once __SHPD_MODULES_DIR__ . 'e10/witems/tables/itemcategories.php';
+use e10\utils, e10doc\core\libs\E10Utils;
+use \Shipard\UI\Core\WidgetPane;
 
 
 /**
  * Class WidgetCashBox
  * @package terminals\store
  */
-class WidgetCashBox extends \E10\widgetPane
+class WidgetCashBox extends WidgetPane
 {
 	var $code;
 	var $products = [];
@@ -31,7 +29,7 @@ class WidgetCashBox extends \E10\widgetPane
 			return;
 		}
 		$taxCalc = intval($this->app->cfgItem ('options.e10doc-sale.cashRegSalePricesType', 2));
-		$taxCalc = e10utils::taxCalcIncludingVATCode ($this->app(), $this->today, $taxCalc);
+		$taxCalc = E10Utils::taxCalcIncludingVATCode ($this->app(), $this->today, $taxCalc);
 
 		$catPath = $this->app->cfgItem ('e10.witems.categories.list.'.$comboByCats, '---');
 		$cats = $this->app->cfgItem ("e10.witems.categories.tree".$catPath.'.cats');
@@ -62,7 +60,7 @@ class WidgetCashBox extends \E10\widgetPane
 				$title = ($r['shortName'] !== '') ? $r['shortName'] : $r['fullName'];
 				$item = [
 						'title' => $title, 'name' => $r['fullName'], 'pk' => $r['ndx'],
-						'price' => e10utils::itemPriceSell($this->app, $taxCalc, $r),
+						'price' => E10Utils::itemPriceSell($this->app, $taxCalc, $r),
 						'unit' => $r['defaultUnit'], 'unitname' => $this->units[$r['defaultUnit']]['shortcut'],
 						'askq' => $askQuantity, 'askp' => $askPrice
 				];
@@ -501,7 +499,7 @@ class WidgetCashBox extends \E10\widgetPane
 		$this->widgetSystemParams['data-warehouse'] = 0;
 
 		$this->widgetSystemParams['data-taxcalc'] = intval($this->app->cfgItem ('options.e10doc-sale.cashRegSalePricesType', 2));
-		$this->widgetSystemParams['data-taxcalc'] = e10utils::taxCalcIncludingVATCode ($this->app(), $this->today, $this->widgetSystemParams['data-taxcalc']);
+		$this->widgetSystemParams['data-taxcalc'] = E10Utils::taxCalcIncludingVATCode ($this->app(), $this->today, $this->widgetSystemParams['data-taxcalc']);
 
 		$this->widgetSystemParams['data-roundmethod'] = 1;
 

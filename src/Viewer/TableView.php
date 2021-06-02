@@ -770,7 +770,7 @@ class TableView extends \Shipard\Base\BaseObject
 		{
 			$c .= "<div class='dropdown pull-left'>";
 			$c .= "<button class='btn btn-default dropdown-toggle' type='button' id='dropdownMenu1' data-toggle='dropdown' aria-haspopup='true' aria-expanded='true'>";
-			$c .= $this->app()->ui()->systemIcon(SystemIcons::iconSettings);
+			$c .= $this->app()->ui()->systemIcon(SystemIcons::iconSettings).'&nbsp;';
 			$c .= utils::es('Nástroje');
 			$c .= " <span class='caret'></span>";
 			$c .= "</button>";

@@ -231,7 +231,7 @@ class DataPackageInstaller extends \E10\Utility
 		{
 			if (isset($att['fileName']))
 			{
-				\E10\Base\addAttachments($this->app, $ownerTable->tableId(), $ownerRecData['ndx'], 'e10-modules/' . $att['fileName'], '');
+				\E10\Base\addAttachments($this->app, $ownerTable->tableId(), $ownerRecData['ndx'], __SHPD_MODULES_ROOT__ . $att['fileName'], '');
 				$this->cntAttachments++;
 			}
 		}

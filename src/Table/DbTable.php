@@ -401,7 +401,7 @@ class DbTable
 
 		$classId = $this->app()->model()->tableProperty ($this, 'documentCard');
 		if ($classId === FALSE)
-			$o = new DocumentCard($this->app());
+			$o = new \Shipard\Base\DocumentCard($this->app());
 		else
 			$o =  $this->app()->createObject($classId);
 

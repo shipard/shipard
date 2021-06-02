@@ -2,7 +2,7 @@
 
 namespace E10Doc\Bank\Import\cz_rb_email {
 
-require_once __APP_DIR__ . '/e10-modules/e10doc/bank/bank.php';
+require_once __SHPD_MODULES_ROOT__.'e10doc/bank/bank.php';
 
 use \E10\Application, E10\Wizard, E10\utils;
 

@@ -2,6 +2,9 @@
 	"clients": {
 		"OldDesktop": {
 			"title": "Old UI for desktop"
+		},
+		"OldMobile": {
+			"title": "Old UI for mobile devices"
 		}
 	},
 	"icons": {

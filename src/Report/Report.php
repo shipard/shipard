@@ -252,7 +252,7 @@ class Report extends \Shipard\Base\BaseObject
 		if (!$printerDriverCfg)
 			return;
 
-		$pdfn = __APP_DIR__.'/e10-modules/'.$printerDriverCfg['driver'];
+		$pdfn = __SHPD_MODULES_DIR__ . $printerDriverCfg['driver'];
 		$this->printerDriver = Utils::loadCfgFile($pdfn);
 		if (!$this->printerDriver)
 		{

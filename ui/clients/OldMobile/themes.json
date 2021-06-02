@@ -1,0 +1,8 @@
+{
+	"md-default":{"ndx":0, "name": "Obyčejné", "system": 1, "statusColor":  "#333"},
+	"md-bluegray":{"ndx":0, "name": "Šedomodrá", "system": 1, "statusColor":  "#333"},
+	"md-indigo":{"ndx":0, "name": "Indigo", "system": 1, "statusColor":  "#333"},
+	"md-lime":{"ndx":0, "name": "Limetka", "system": 1, "statusColor":  "#333"},
+	"md-shipard":{"ndx":0, "name": "Modrá", "system": 1, "statusColor":  "#333"},
+	"md-teal":{"ndx":0, "name": "Modrozelená", "system": 1, "statusColor":  "#333"}
+}

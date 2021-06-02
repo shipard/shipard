@@ -873,7 +873,7 @@ class Application extends \Shipard\Application\ApplicationCore
 	{
 		$files = unserialize (file_get_contents(__APP_DIR__.'/e10-modules/.cfg/filesMobile.data'));
 
-		$uiTheme = $this->cfgItem ('options.experimental.mobileuiTheme', 'md-teal');
+		$uiTheme = $this->cfgItem ('options.experimental.mobileuiTheme', 'md-default');
 		if ($uiTheme === '')
 			$uiTheme = 'md-teal';
 
@@ -1241,6 +1241,7 @@ class Application extends \Shipard\Application\ApplicationCore
 
 			if ($useNewWebsockets)
 				$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/libs/js/mqttws/mqttws31.min.js\"></script>\n";
+				//$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/libs/js/mqttjs/mqtt.min.js\"></script>\n";
 
 			$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/libs/js/codemirror/codemirror-4.7.1-min.js\"></script>\n";
 			$c .= "<link rel=\"stylesheet\" type=\"text/css\" href=\"{$scRoot}/libs/js/chosen/chosen.css\">\n";
@@ -1788,7 +1789,7 @@ class Application extends \Shipard\Application\ApplicationCore
 
 	function routeMobile ()
 	{
-		$router = $this->createObject ('ui.mobile.Router');
+		$router = $this->createObject ('Shipard.UI.OldMobile.Router');
 		return $router->run ();
 	}
 

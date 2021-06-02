@@ -1,0 +1,133 @@
+
+.docstate-border(@color) {
+
+  >div.txt {border-left: 1.5rem solid @color;}
+}
+
+.docstate-border2(@color) {
+	border-left: .5rem solid @color;
+}
+
+
+ul.e10-viewer-list {
+	z-index: 2;
+  li.r {
+		cursor: pointer;
+		-webkit-tap-highlight-color: @tapHighlightColor;
+
+    span.icon {
+      position: absolute;
+      font-size: 1.15rem;
+      width: 1.5rem;
+      opacity: .8;
+      text-align: center;
+			padding-top: 4px;
+    }
+    div.txt {
+      padding: 0px 2px 0px 4px;
+      display: inline-block;
+      width: 100%;
+
+			pointer-events: none;
+			border-left: 1.5rem solid transparent;
+    }
+
+    .t1 {
+      float: left;
+      font-size: 1.1rem;
+			line-height: 160%;
+
+      font-weight: 600;
+      padding-top: 2px;
+      white-space: pre;
+    }
+    .i1 {
+      float: right;
+    }
+
+    .t2 {
+      clear: both;
+      opacity: .8;
+      font-size: 1rem;
+			line-height: 150%;
+    }
+    .i2 {
+      float: right;
+      padding-bottom: 2px;
+    }
+
+    .t3 {
+      clear: both;
+			opacity: .8;
+			font-size: 0.9rem;
+			line-height: 144%;
+    }
+
+
+    border-bottom: 1px solid rgba(0,0,0,.2);
+    overflow-x: hidden;
+
+    &.e10-docstyle-concept {.docstate-border(@conceptHandleBackgroundColor);}
+    &.e10-docstyle-done {.docstate-border(@doneHandleBackgroundColor);}
+    &.e10-docstyle-halfdone {.docstate-border(@halfdoneHandleBackgroundColor);}
+    &.e10-docstyle-confirmed {.docstate-border(@confirmedHandleBackgroundColor);}
+    &.e10-docstyle-edit {.docstate-border(@editHandleBackgroundColor);}
+    &.e10-docstyle-delete {.docstate-border(@deleteHandleBackgroundColor);}
+    &.e10-docstyle-cancel {.docstate-border(@cancelHandleBackgroundColor);}
+    &.e10-docstyle-archive {.docstate-border(@archiveHandleBackgroundColor);}
+
+  }
+
+	li.e10-viewer-list-endNext {
+		text-align: center;
+		background-color: @tapInfoBackground;
+	}
+}
+
+div.e10-viewer-search {
+	background-color: @startMenuTileBackgroundColor;
+	padding: .4rem;
+	z-index: 1000;
+	>input {
+		width: 100%;
+		font-size: 1.3rem;
+		padding: 3px;
+		-webkit-appearance: initial;
+		outline: none;
+		border: 1px solid rgba(0,0,0,.5);
+	}
+	&.off {
+		display: none;
+	}
+	&.on {
+		display: block;
+		position: fixed;
+		width: 100vw;
+	}
+}
+
+
+ul.e10-viewer-tabs {
+	position: fixed;
+	width: 100%;
+	bottom: 0;
+
+	margin: 0;
+	list-style: none;
+	display: table;
+	background-color: @pageHeaderBackgroundColor;
+
+	>li {
+		display: table-cell;
+		text-align: center;
+		padding: .5rem .5rem 1rem .5rem;
+		opacity: .85;
+		cursor: pointer;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+	>li.active {
+		border-top: 4px solid @colorThemeAccent;
+		opacity: 1;
+	}
+}

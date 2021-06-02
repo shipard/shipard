@@ -1,8 +1,7 @@
 <?php
 
 namespace e10doc\cmnbkp\libs;
-use \E10\Wizard, \E10\TableForm, \e10Doc\core\e10utils;
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
+use \E10\Wizard, \E10\TableForm, \e10doc\core\libs\E10Utils;
 
 
 /**
@@ -42,8 +41,8 @@ class InitStatesResetWizard extends Wizard
 	public function renderFormWelcome ()
 	{
 		$this->recData['focusedDocNdx'] = $this->focusedPK;
-		$this->recData['fiscalYear'] = e10utils::todayFiscalYear($this->app());
-		$enumFiscalYears = e10utils::fiscalYearEnum ($this->app());
+		$this->recData['fiscalYear'] = E10Utils::todayFiscalYear($this->app());
+		$enumFiscalYears = E10Utils::fiscalYearEnum ($this->app());
 
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 

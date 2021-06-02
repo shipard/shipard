@@ -9,6 +9,10 @@
     },
     {
         "t": 0,
+        "v": "fa-long-arrow-alt-left"
+    },
+    {
+        "t": 0,
         "v": "fa-calendar-alt"
     },
     {
@@ -26,6 +30,10 @@
     {
         "t": 0,
         "v": "fa-trash"
+    },
+    {
+        "t": 0,
+        "v": "fa-download"
     },
     {
         "t": 0,
@@ -90,6 +98,22 @@
     {
         "t": 0,
         "v": "fa-life-ring"
+    },
+    {
+        "t": 0,
+        "v": "fa-check-circle"
+    },
+    {
+        "t": 0,
+        "v": "fa-play"
+    },
+    {
+        "t": 0,
+        "v": "fa-cloud"
+    },
+    {
+        "t": 0,
+        "v": "fa-tachometer-alt"
     },
     {
         "t": 0,
@@ -297,7 +321,15 @@
     },
     {
         "t": 0,
+        "v": "fa-bug"
+    },
+    {
+        "t": 0,
         "v": "fa-database"
+    },
+    {
+        "t": 0,
+        "v": "fa-envelope"
     },
     {
         "t": 0,
@@ -306,6 +338,10 @@
     {
         "t": 0,
         "v": "fa-file-pdf"
+    },
+    {
+        "t": 0,
+        "v": "fa-bars"
     },
     {
         "t": 0,
@@ -322,6 +358,14 @@
     {
         "t": 0,
         "v": "fa-download"
+    },
+    {
+        "t": 0,
+        "v": "fa-inbox"
+    },
+    {
+        "t": 0,
+        "v": "fa-keyboard"
     },
     {
         "t": 0,
@@ -345,11 +389,23 @@
     },
     {
         "t": 0,
+        "v": "fa-phone-alt"
+    },
+    {
+        "t": 0,
+        "v": "fa-camera"
+    },
+    {
+        "t": 0,
         "v": "fa-thumbtack"
     },
     {
         "t": 0,
         "v": "fa-search-plus"
+    },
+    {
+        "t": 0,
+        "v": "fa-eye"
     },
     {
         "t": 0,
@@ -386,6 +442,10 @@
     {
         "t": 0,
         "v": "fa-th"
+    },
+    {
+        "t": 0,
+        "v": "fa-exclamation-triangle"
     },
     {
         "t": 0,
@@ -465,6 +525,10 @@
     },
     {
         "t": 0,
+        "v": "fa-calendar-alt"
+    },
+    {
+        "t": 0,
         "v": "fa-utensils"
     },
     {
@@ -482,6 +546,10 @@
     {
         "t": 0,
         "v": "fa-star"
+    },
+    {
+        "t": 0,
+        "v": "fa-thumbtack"
     },
     {
         "t": 0,

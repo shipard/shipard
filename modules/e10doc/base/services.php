@@ -133,7 +133,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		if (!$cnt)
 			return TRUE;
 
-		passthru('e10-modules/e10/server/php/e10-cmd-cli.php app-fullupgrade');
+		passthru('shpd-server app-fullupgrade');
 		return FALSE;
 	}
 

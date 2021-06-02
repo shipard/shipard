@@ -349,7 +349,7 @@ class PersonValidator extends Utility
 		$this->loadPersonVat();
 
 		$tools = [];
-		$this->onlineToolsDef = $this->loadCfgFile(__APP_DIR__.'/e10-modules/e10/persons/config/e10.persons.onlineTools.json');
+		$this->onlineToolsDef = $this->loadCfgFile(__SHPD_MODULES_ROOT__.'e10/persons/config/e10.persons.onlineTools.json');
 
 		// -- OID
 		foreach ($this->checkOid as $oidId => $oidInfo)

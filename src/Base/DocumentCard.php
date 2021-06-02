@@ -2,6 +2,8 @@
 
 namespace Shipard\Base;
 use \e10\base\libs\UtilsBase;
+use \Shipard\UI\Core\ContentRenderer;
+
 
 /**
  * Class DocumentCard

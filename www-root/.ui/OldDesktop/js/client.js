@@ -324,7 +324,7 @@ e10setProgress(e,progress){if(progress)e.css({'color':'rgba(0,0,0,.2)'});else
 e.css({'color':'rgba(0,0,0,1)'});}function
 e10setProgressIndicator(objectId,state){var
 i=$('#'+objectId+'Progress');if(!i[0])return;if(state){if(i.attr('data-run')==='1')return;i.attr('data-run','1');i.data('oldState',i.html());let
-spinnerUrl=httpApiRootPath+'/www-root/sc/shipard/spinner-bars.svg';i.html("<img style='width: 1em; height: 1em;' src='"+spinnerUrl+"'></i>");}else{i.attr('data-run','0');i.html(i.data('oldState'));}}function
+spinnerUrl=httpApiRootPath+'/www-root/sc/shipard/spinner-bars.svg';i.html("<img style='width: 1em; height: 1em;' src='"+spinnerUrl+"'></img>");}else{i.attr('data-run','0');i.html(i.data('oldState'));}}function
 e10userSettingsMenu(){var
 userMenu=$('#e10-tm-user-m');userMenuBtn=userMenu.parent();if(userMenu.hasClass('active')){userMenu.removeClass('active');userMenuBtn.removeClass('active');}else{userMenuBtn.addClass('active');userMenu.addClass('active');userMenu.css({top:$('#e10-panel-topmenu').height()+2});}}var
 g_htmlCodeTopMenuSearch;var
@@ -1532,7 +1532,8 @@ params=df2collectFormData(paramsElement);params+=df2collectFormData($('#e10-repo
 reportClass=activeReport.attr('data-class');var
 urlPath=httpApiRootPath+"/api/report/"+reportClass+"/widget"+'?'+activeSubReportId+'&'+params;var
 browserContent=$("#e10reportWidget >div.e10-wr-content >div.e10-wr-data");var
-browserPanel=$("#e10reportWidget >div.e10-wr-content >div.e10-wr-params >div.params");browserContent.find("*:first").remove();browserContent.html("<div class='e10-reportContent'><i class='fa fa-spinner fa-spin fa-2x'></i> Přehled se připravuje, čekejte prosím...<br/></div>");var
+browserPanel=$("#e10reportWidget >div.e10-wr-content >div.e10-wr-params >div.params");browserContent.find("*:first").remove();let
+spinnerUrl=httpApiRootPath+'/www-root/sc/shipard/spinner-bars.svg';browserContent.html("<div class='e10-reportContent'><img style='width: 2em; height: 2em;' src='"+spinnerUrl+"'></img>&nbsp;Přehled se připravuje, čekejte prosím...<br/></div>");var
 jqxhr=$.getJSON(urlPath,function(data){browserContent.find("*:first").remove();browserContent.html(data.object.mainCode);$('#e10-tm-viewerbuttonbox').html(data.object.htmlCodeToolbarViewer);browserPanel.html(data.object.htmlCodeReportPanel);if(setTabs===1)$('#mainBrowserRightBarDetails').html(data.object.htmlCodeDetails);}).error(function(){alert("error 27: content not loaded ("+urlPath+")");});}function
 e10reportChangeTab(e,event){e.parent().find('li.active').removeClass('active');e.addClass('active');e10refreshReport(0);}function
 e10printReport(printButton,event){event.stopPropagation();event.preventDefault();var

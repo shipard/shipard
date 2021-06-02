@@ -214,7 +214,7 @@ class TableDevices extends DbTable
 			$macDeviceTypeCfg = $this->app()->cfgItem('mac.devices.types.' . $macDeviceTypeId, NULL);
 			if (!$macDeviceTypeCfg || !isset($macDeviceTypeCfg['cfg']))
 				return FALSE;
-			$cfgFileName = __APP_DIR__.'/e10-modules/mac/devices/devices/'.$macDeviceTypeCfg['cfg'].'.json';
+			$cfgFileName = __SHPD_MODULES_DIR__.'mac/devices/devices/'.$macDeviceTypeCfg['cfg'].'.json';
 			$cfg = utils::loadCfgFile($cfgFileName);
 			if ($cfg && isset($cfg['fields']))
 				return $cfg['fields'];
@@ -235,7 +235,7 @@ class TableDevices extends DbTable
 		$macDeviceTypeCfg = $this->app()->cfgItem('mac.devices.types.' . $macDeviceTypeId, NULL);
 		if (!$macDeviceTypeCfg || !isset($macDeviceTypeCfg['cfg']))
 			return [];
-		$cfgFileName = __APP_DIR__.'/e10-modules/mac/devices/devices/'.$macDeviceTypeCfg['cfg'].'.json';
+		$cfgFileName = __SHPD_MODULES_DIR__.'mac/devices/devices/'.$macDeviceTypeCfg['cfg'].'.json';
 		$cfg = utils::loadCfgFile($cfgFileName);
 		if ($cfg && isset($cfg['iotBoxInterfaces']))
 			return $cfg['iotBoxInterfaces'];
@@ -260,7 +260,7 @@ class TableDevices extends DbTable
 		$portTypeCfg = $this->app()->cfgItem('mac.devices.io.ports.types.'.$portTypeId, NULL);
 		if ($portTypeCfg && isset($portTypeCfg['cfgPath']))
 		{
-			$cfgFileName = __APP_DIR__ . '/e10-modules/mac/devices/devices/iot/' . $portTypeCfg['cfgPath'] . '/cfg.json';
+			$cfgFileName = __SHPD_MODULES_DIR__ . 'mac/devices/devices/iot/' . $portTypeCfg['cfgPath'] . '/cfg.json';
 			$cfg = utils::loadCfgFile($cfgFileName);
 			if ($cfg)
 				return $cfg;
@@ -270,7 +270,7 @@ class TableDevices extends DbTable
 
 	function gpioLayoutCore($gpioLayoutId)
 	{
-		$gpioLayoutFileName = __APP_DIR__ . '/e10-modules/mac/devices/devices/iot/gpio/'.$gpioLayoutId.'.json';
+		$gpioLayoutFileName = __SHPD_MODULES_DIR__ . 'mac/devices/devices/iot/gpio/'.$gpioLayoutId.'.json';
 		$gpioLayout = utils::loadCfgFile($gpioLayoutFileName);
 		if ($gpioLayout)
 			return $gpioLayout;
@@ -280,7 +280,7 @@ class TableDevices extends DbTable
 
 	function gpioLayoutFromRecData($deviceRecData)
 	{
-		$cfgFileName = __APP_DIR__ . '/e10-modules/mac/devices/devices/iot/' . $deviceRecData['macDeviceType'] . '.json';
+		$cfgFileName = __SHPD_MODULES_DIR__ . 'mac/devices/devices/iot/' . $deviceRecData['macDeviceType'] . '.json';
 		$macDeviceSubTypeCfg = utils::loadCfgFile($cfgFileName);
 		if ($macDeviceSubTypeCfg && isset($macDeviceSubTypeCfg['gpioLayout']))
 		{
@@ -333,7 +333,7 @@ class TableDevices extends DbTable
 		$macDeviceTypeCfg = $this->app()->cfgItem('mac.devices.types.' . $macDeviceTypeId, NULL);
 		if (!$macDeviceTypeCfg || !isset($macDeviceTypeCfg['cfg']))
 			return [];
-		$cfgFileName = __APP_DIR__.'/e10-modules/mac/devices/devices/'.$macDeviceTypeCfg['cfg'].'.json';
+		$cfgFileName = __SHPD_MODULES_DIR__.'mac/devices/devices/'.$macDeviceTypeCfg['cfg'].'.json';
 		$cfg = utils::loadCfgFile($cfgFileName);
 
 		return $cfg;

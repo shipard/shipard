@@ -6,7 +6,7 @@
 	"2": {
 		"name": "Dodavatel",
 		"useOnHuman": 1, "useOnCompany": 1, "needParentPerson": 0,
-		"classId": "e10pro.gdpr.SetPersonRelations",
+		"classId": "e10.persons.libs.SetPersonRelations",
 		"personLastUse": [
 			{"type": "e10doc-docs-buy", "role": 1}
 		]
@@ -14,7 +14,7 @@
 	"3": {
 		"name": "Odběratel",
 		"useOnHuman": 1, "useOnCompany": 1, "needParentPerson": 0,
-		"classId": "e10pro.gdpr.SetPersonRelations",
+		"classId": "e10.persons.libs.SetPersonRelations",
 		"personLastUse": [
 			{"type": "e10doc-docs-sale", "role": 1}
 		]
@@ -32,7 +32,7 @@
 	"50": {
 		"name": "Účetnictví",
 		"useOnHuman": 1, "useOnCompany": 1, "needParentPerson": 0,
-		"classId": "e10pro.gdpr.SetPersonRelations",
+		"classId": "e10.persons.libs.SetPersonRelations",
 		"personLastUse": [
 			{"type": "e10doc-docs-acc", "role": 1}
 		]
@@ -41,7 +41,7 @@
 	"90": {
 		"name": "Uživatel IS",
 		"useOnHuman": 1, "useOnCompany": 0, "needParentPerson": 0,
-		"classId": "e10pro.gdpr.SetPersonRelations",
+		"classId": "e10.persons.libs.SetPersonRelations",
 		"personLastUse": [
 			{"type": "e10-base-userAuth", "role": 0}
 		]

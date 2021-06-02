@@ -156,7 +156,7 @@ class CronApp extends Application
 		$dsStats->data['diskUsage']['created'] = new \DateTime();
 
 		// -- disk usage - files
-		$diskUsageFiles = intval(exec ('du -skL --exclude "e10-modules/*" --exclude "sc/*"')) * 1024;
+		$diskUsageFiles = intval(exec ('du -skL')) * 1024;
 		$dsStats->data['diskUsage']['fs'] = $diskUsageFiles;
 
 		// -- disk usage - database

@@ -247,7 +247,7 @@ class GlobalReport extends Report
 							break;
 			default:
 							$this->saveAs = TRUE;
-							$this->setSaveFileName ($this->saveFileName() . '.'.$this->format, mime_content_type($this->fullFileName));
+							$this->setSaveFileName ($this->saveFileName() . '.'.$this->format, mime_content_type('test.'.$this->format));
 							break;
 		}
 

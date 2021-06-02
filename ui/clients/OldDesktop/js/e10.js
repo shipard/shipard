@@ -657,7 +657,7 @@ function e10setProgressIndicator (objectId, state)
 		i.attr ('data-run', '1');
 		i.data ('oldState', i.html());
 		let spinnerUrl = httpApiRootPath + '/www-root/sc/shipard/spinner-bars.svg';
-		i.html("<img style='width: 1em; height: 1em;' src='"+spinnerUrl+"'></i>");
+		i.html("<img style='width: 1em; height: 1em;' src='"+spinnerUrl+"'></img>");
 	}
 	else
 	{
@@ -6317,7 +6317,8 @@ function e10refreshReport (setTabs)
 	var browserPanel = $("#e10reportWidget >div.e10-wr-content >div.e10-wr-params >div.params");
 
 	browserContent.find("*:first").remove();
-	browserContent.html ("<div class='e10-reportContent'><i class='fa fa-spinner fa-spin fa-2x'></i> Přehled se připravuje, čekejte prosím...<br/></div>");
+	let spinnerUrl = httpApiRootPath + '/www-root/sc/shipard/spinner-bars.svg';
+	browserContent.html ("<div class='e10-reportContent'><img style='width: 2em; height: 2em;' src='"+spinnerUrl+"'></img>&nbsp;Přehled se připravuje, čekejte prosím...<br/></div>");
 	var jqxhr = $.getJSON(urlPath, function(data) {
 		browserContent.find("*:first").remove();
 		browserContent.html (data.object.mainCode);
@@ -6702,6 +6703,12 @@ function mqttStartClient (serverIndex, disableMessage)
 		useSSL: true
 		}
 		);
+	
+	/*
+	ws.mqttClient = new mqtt.connect('wss://' + ws.fqdn + ':' + portNumber);
+	ws.mqttClient.on("connect", function(){wsSetState (serverIndex, 'open'); mqttSubscribeAll (serverIndex);});
+	ws.mqttClient.on("message", function (message) { mqttOnMessage(serverIndex, message); });
+	*/
 }
 
 function mqttSubscribeAll (serverIndex)

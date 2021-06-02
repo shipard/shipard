@@ -1,0 +1,53 @@
+div.e10-reportHeader {
+  display: inline-block;
+  width: 100%;
+
+  span.info {display: inline-block; float: left;};
+  span.title {display: none;}
+  span.owner {
+    display: none;
+  }
+
+  margin-bottom: 1ex;
+}
+
+table.default {
+  border-collapse: collapse; border: 1px solid #B0B0B0;
+
+  td {border: 1px solid #B0B0B0; padding: 4px;}
+  tr.separator td {border-left: 1px solid transparent; border-right: 1px solid transparent;}
+}
+
+table.default tr.warning {background-color: #f00 !important;}
+table.default tr.subtotal {background-color: #ddd !important; font-weight: bold;}
+table.default tr.sum {font-weight: bold; border-top: 2px solid #888; background-color: #eee !important;}
+table.default tr.sum td {text-align: left; font-weight: bold; border: 1px solid #909090 !important; padding: 4px !important;}
+table.default tr.sumtotal {font-weight: bold; border: 2px solid #000;}
+table.default tr.subheader {background-color: #f5f5f5; font-weight: 600; font-size: 122%;}
+table.default td.highlighted {font-weight: bold; background-color: #ddd;}
+
+
+table.fullWidth {width: 100%;}
+
+
+table.default thead tr {border-bottom: 2px solid #888;}
+table.default thead tr th {text-align: left; border: 1px solid #909090; padding: 4px !important; background-color: #eee !important;}
+
+table.stripped tbody tr:nth-child(even) {background-color: #F0F0F0 !important;}
+table.stripped tbody tr:nth-child(odd) {background-color: #FAFAFA !important;}
+
+td.e10-icon, th.e10-icon {width: 2em; text-align: center !important;}
+
+
+
+ol.e10-reportNotes, p.e10-reportNotes {opacity: .7; font-size: 90%; line-height: 1.4em; margin-top: 1em;}
+ol.e10-reportNotes li {margin-left: 1.8em;}
+
+div.e10-reportContent {
+  overflow-x: auto;
+  table.default {
+    font-size: 12px;
+  }
+  .subtitle {font-size: 122%; font-weight: normal; padding: .4ex;}
+  .subtitle:not(:first-child) {padding-top: 1em;}
+}

@@ -178,10 +178,10 @@ class reportCustomers extends \e10doc\core\libs\reports\GlobalReport
 			$pieData[] = [$r['personName'], $r['price']];
 
 		$this->addContent(['tabsId' => 'mainTabs', 'selectedTab' => $this->reportParams ['mainTabs']['value'], 'tabs' => [
-			['title' => ['icon' => 'icon-table', 'text' => 'Tabulka'], 'content' => [['type' => 'table', 'header' => $h, 'table' => $cutedData]]],
-			['title' => ['icon' => 'icon-pie-chart', 'text' => 'Podíly'], 'content' => [['type' => 'graph',
-				'graphType' => 'pie', 'graphData' => $pieData]]],
-		]]);
+				['title' => ['icon' => 'icon-table', 'text' => 'Tabulka'], 'content' => [['type' => 'table', 'header' => $h, 'table' => $cutedData]]],
+				['title' => ['icon' => 'icon-pie-chart', 'text' => 'Podíly'], 'content' => [['type' => 'graph', 'graphType' => 'pie', 'graphData' => $pieData]]],
+			]
+		]);
 
 		$this->setInfo('title', 'Největší odběratelé');
 	}

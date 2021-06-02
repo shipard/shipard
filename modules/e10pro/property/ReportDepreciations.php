@@ -567,7 +567,7 @@ class ReportDepreciations extends \e10doc\core\libs\reports\GlobalReport
 		if (isset($p['error']))
 		{
 			$newItem['_options']['cellClasses']['#'] = 'e10-error e10-bold';
-			$this->setInfo('note', 'err'.count($destTable), 'Majetek '.$newItem['propertyId'].' obsahuje chyby v odpisech');
+			$this->setInfo('note', 'err'.count($destTable), 'Majetek '.$newItem['propertyId']['text'].' obsahuje chyby v odpisech');
 			$this->setInfo('param', 'Upozornění', 'Některé karty majetku obsahují chyby');
 		}
 

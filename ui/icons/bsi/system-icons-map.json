@@ -9,6 +9,10 @@
     },
     {
         "t": 0,
+        "v": "bi-arrow-left"
+    },
+    {
+        "t": 0,
         "v": "bi-calendar"
     },
     {
@@ -26,6 +30,10 @@
     {
         "t": 0,
         "v": "bi-trash"
+    },
+    {
+        "t": 0,
+        "v": "bi-download"
     },
     {
         "t": 0,
@@ -90,6 +98,22 @@
     {
         "t": 0,
         "v": "bi-life-preserver"
+    },
+    {
+        "t": 0,
+        "v": "bi-check-circle"
+    },
+    {
+        "t": 0,
+        "v": "bi-play"
+    },
+    {
+        "t": 0,
+        "v": "bi-google"
+    },
+    {
+        "t": 0,
+        "v": "bi-speedometer2"
     },
     {
         "t": 0,
@@ -297,7 +321,15 @@
     },
     {
         "t": 0,
+        "v": "bi-bug"
+    },
+    {
+        "t": 0,
         "v": "bi-hdd"
+    },
+    {
+        "t": 0,
+        "v": "bi-envelope"
     },
     {
         "t": 0,
@@ -306,6 +338,10 @@
     {
         "t": 0,
         "v": "bi-file-earmark-pdf-fill"
+    },
+    {
+        "t": 0,
+        "v": "bi-list"
     },
     {
         "t": 0,
@@ -322,6 +358,14 @@
     {
         "t": 0,
         "v": "bi-download"
+    },
+    {
+        "t": 0,
+        "v": "bi-inbox-fill"
+    },
+    {
+        "t": 0,
+        "v": "bi-keyboard"
     },
     {
         "t": 0,
@@ -345,11 +389,23 @@
     },
     {
         "t": 0,
+        "v": "bi-telephone"
+    },
+    {
+        "t": 0,
+        "v": "bi-camera-fill"
+    },
+    {
+        "t": 0,
         "v": "bi-pin"
     },
     {
         "t": 0,
         "v": "bi-zoom-in"
+    },
+    {
+        "t": 0,
+        "v": "bi-binoculars-fill"
     },
     {
         "t": 0,
@@ -386,6 +442,10 @@
     {
         "t": 0,
         "v": "bi-grid-3x3-gap-fill"
+    },
+    {
+        "t": 0,
+        "v": "bi-exclamation-triangle"
     },
     {
         "t": 0,
@@ -465,6 +525,10 @@
     },
     {
         "t": 0,
+        "v": "bi-calendar"
+    },
+    {
+        "t": 0,
         "v": "bi-shop-window"
     },
     {
@@ -482,6 +546,10 @@
     {
         "t": 0,
         "v": "bi-star"
+    },
+    {
+        "t": 0,
+        "v": "bi-pin"
     },
     {
         "t": 0,

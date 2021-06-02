@@ -1,0 +1,26 @@
+{
+	"dstFileName": "test.js",
+	"srcFiles": [
+		{"fileName": "e10core.js"},
+		{"fileName": "e10viewer.js"},
+		{"fileName": "e10form.js"},
+		{"fileName": "OldDesktop/e10-server.js"},
+		{"fileName": "e10wss.js"},
+		{"fileName": "e10options.js"},
+		{"fileName": "e10terminal.js"},
+		{"fileName": "e10fastclick.js"},
+
+		{"fileName": "OldDesktop/widgets/e10-widgets.js"},
+		{"fileName": "OldDesktop/widgets/e10-widgets-vs.js"},
+		{"fileName": "OldDesktop/widgets/e10-widgets-lans.js"},
+		{"fileName": "OldDesktop/widgets/e10-widgets-macLan.js"},
+		{"fileName": "OldDesktop/widgets/e10-widgets-macVs.js"},
+		{"fileName": "OldDesktop/widgets/e10-widgets-cashPay.js"},
+
+		{"fileName": "e10mobile.js"},
+		{"fileName": "OldDesktop/e10-sumTables.js"},
+
+		{"fileName": "OldDesktop/3rd/float-thead.js", "minify": 0},
+		{"fileName": "OldDesktop/3rd/bootstrap.js", "minify": 0}
+	]
+}
