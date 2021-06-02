@@ -1,14 +1,14 @@
 {
 	"integrationsServices": {
-		"name": "Služby", "order": 431000, "group": "integrations", "icon": "icon-plug",
+		"name": "Služby", "order": 431000, "group": "integrations",
 		"type": "viewer", "table": "integrations.core.services", "viewer": "default"
 	},
 	"integrationsTasks": {
-		"name": "Úlohy", "order": 432000, "group": "integrations", "icon": "icon-cogs",
+		"name": "Úlohy", "order": 432000, "group": "integrations",
 		"type": "viewer", "table": "integrations.core.tasks", "viewer": "default"
 	},
 	"downloadFiles": {
-		"name": "Stahování souborů", "order": 436000, "group": "integrations", "icon": "icon-file",
+		"name": "Stahování souborů", "order": 436000, "group": "integrations",
 		"type": "viewer", "table": "integrations.core.downloadFiles", "viewer": "default"
 	}
 }

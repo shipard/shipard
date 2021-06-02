@@ -1,5 +1,5 @@
 {
-	"id": "mac.access.levels", "sql": "mac_access_levels", "name": "Úrovně přístupu", "icon": "icon-empire",
+	"id": "mac.access.levels", "sql": "mac_access_levels", "name": "Úrovně přístupu",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

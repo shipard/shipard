@@ -34,5 +34,68 @@
         "fa5pro":"fa-puzzle-piece",
         "bsi":"bi-puzzle",
         "mdi":"extension"
+    },
+    "tables/e10pro.hosting.server.partners":{
+        "fa5":"fa-id-badge",
+        "fa5pro":"fa-id-badge",
+        "bsi":"bi-person-badge-fill",
+        "mdi":"badge"
+    },
+    "tables/e10pro.hosting.server.portals":{
+        "fa5":"fa-umbrella",
+        "fa5pro":"fa-umbrella",
+        "bsi":"bi-umbrella",
+        "mdi":"umbrella"
+    },
+    "tables/e10pro.hosting.server.servers":{
+        "fa5": "fa-server",
+		"fa5pro": "fa-server",
+		"bsi": "bi-hdd-stack-fill",
+		"mdi": "dns"
+    },
+    "tables/e10pro.hosting.server.supportsKinds":{
+        "fa5":"fa-life-ring",
+        "fa5pro":"fa-life-ring",
+        "bsi":"bi-life-preserver",
+        "mdi":"support"
+    },
+    "tables/e10pro.hosting.server.partnersPersons":{
+        "fa5": "fa-user",
+		"fa5pro": "fa-user",
+		"bsi": "bi-person",
+		"mdi": "person"
+    },
+    "tables/e10pro.hosting.server.udsOptions":{
+        "fa5": "fa-wrench",
+		"fa5pro": "fa-wrench",
+		"bsi": "bi-wrench",
+		"mdi": "build_circle"
+    },
+    "tables/e10pro.hosting.server.usersds":{
+        "fa5": "fa-user",
+		"fa5pro": "fa-user",
+		"bsi": "bi-person",
+		"mdi": "person"
+    },
+
+
+
+    "detailRecords":{
+        "fa5":"fa-list-ul",
+        "fa5pro":"fa-list-ul",
+        "bsi":"bi-list-ul",
+        "mdi":"format_list_bulleted"
+    },
+    "detailGcloud":{
+        "fa5":"fa-cloud",
+        "fa5pro":"fa-cloud",
+        "bsi":"bi-google",
+        "mdi":"cloud"
+    },
+    "detailPersons":{
+        "fa5": "fa-user",
+		"fa5pro": "fa-user",
+		"bsi": "bi-person",
+		"mdi": "person"
     }
 }

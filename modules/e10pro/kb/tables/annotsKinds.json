@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.kb.annotsKinds", "sql": "e10pro_kb_annotsKinds", "name": "Druhy anotací", "icon": "icon-list-alt",
+	"id": "e10pro.kb.annotsKinds", "sql": "e10pro_kb_annotsKinds", "name": "Druhy anotací",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

@@ -1,5 +1,5 @@
 {
-	"id": "integrations.hooks.in.hooks", "sql": "integrations_hooks_in_hooks", "name": "Příchozí Webhooks", "icon": "icon-cloud-download",
+	"id": "integrations.hooks.in.hooks", "sql": "integrations_hooks_in_hooks", "name": "Příchozí Webhooks",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

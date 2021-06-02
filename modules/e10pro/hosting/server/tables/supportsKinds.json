@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.hosting.server.supportsKinds", "sql": "e10pro_hosting_server_supportsKinds", "name": "Druhy podpory", "icon": "icon-life-ring",
+	"id": "e10pro.hosting.server.supportsKinds", "sql": "e10pro_hosting_server_supportsKinds", "name": "Druhy podpory",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "name", "name": "Název", "type": "string", "len": 40},

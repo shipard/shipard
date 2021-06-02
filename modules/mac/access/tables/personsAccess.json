@@ -1,5 +1,5 @@
 {
-	"id": "mac.access.personsAccess", "sql": "mac_access_personsAccess", "name": "Přístup Osob", "icon": "icon-user",
+	"id": "mac.access.personsAccess", "sql": "mac_access_personsAccess", "name": "Přístup Osob",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

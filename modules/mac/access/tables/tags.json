@@ -1,5 +1,5 @@
 {
-	"id": "mac.access.tags", "sql": "mac_access_tags", "name": "Přístupové klíče", "icon": "icon-key",
+	"id": "mac.access.tags", "sql": "mac_access_tags", "name": "Přístupové klíče",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

@@ -1,5 +1,5 @@
 {
-  "id": "e10pro.property.property", "sql": "e10pro_property_property", "name": "Majetek", "icon": "icon-sort-amount-desc",
+  "id": "e10pro.property.property", "sql": "e10pro_property_property", "name": "Majetek",
   "columns": [
     {"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "propertyType", "name": "Typ majetku", "type": "int", "reference": "e10pro.property.types", "options": ["saveOnChange"]},
@@ -59,24 +59,24 @@
 	"views": [
 		{"id": "default", "class": "e10pro.property.ViewProperty", "help": "prirucka/4504",
 			"details": {
-				"default": {"title": "Přehled", "icon": "icon-file", "type": "detail", "class": "e10pro.property.ViewDetailProperty", "order": 1000},
-				"depsTax": {"title": "Daňové odpisy", "icon": "icon-sort-amount-desc", "type": "detail", "class": "e10pro.property.ViewDetailPropertyDepsTax", "order": 6100},
-				"depsAcc": {"title": "Účetní odpisy", "icon": "icon-sort-amount-desc", "type": "detail", "class": "e10pro.property.ViewDetailPropertyDepsAcc", "order": 6200},
-				"nonDeps": {"title": "Vývoj hodnoty", "icon": "icon-bars", "type": "detail", "class": "e10pro.property.ViewDetailPropertyNonDeps", "order": 6250},
-				"dt": {"title": "Odložená daň", "icon": "icon-shield", "type": "detail", "class": "e10pro.property.ViewDetailPropertyDeferredTax", "order": 6300},
-				"operations": {"title": "Pohyby", "icon": "icon-random", "type": "detail", "class": "e10pro.property.ViewDetailPropertyOperations", "order": 8000},
-				"accounting": {"title": "Účtování", "icon": "x-stamp", "type": "detail", "class": "e10pro.property.ViewDetailPropertyAccounting", "order": 9000}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.property.ViewDetailProperty", "order": 1000},
+				"depsTax": {"title": "Daňové odpisy", "icon": "detailTaxDepreciations", "type": "detail", "class": "e10pro.property.ViewDetailPropertyDepsTax", "order": 6100},
+				"depsAcc": {"title": "Účetní odpisy", "icon": "detailAccountingDepreciations", "type": "detail", "class": "e10pro.property.ViewDetailPropertyDepsAcc", "order": 6200},
+				"nonDeps": {"title": "Vývoj hodnoty", "icon": "detailValueProgress", "type": "detail", "class": "e10pro.property.ViewDetailPropertyNonDeps", "order": 6250},
+				"dt": {"title": "Odložená daň", "icon": "detailDeferredTax", "type": "detail", "class": "e10pro.property.ViewDetailPropertyDeferredTax", "order": 6300},
+				"operations": {"title": "Pohyby", "icon": "detailMovements", "type": "detail", "class": "e10pro.property.ViewDetailPropertyOperations", "order": 8000},
+				"accounting": {"title": "Účtování", "icon": "system/detailAccounting", "type": "detail", "class": "e10pro.property.ViewDetailPropertyAccounting", "order": 9000}
 			}
 		},
 		{"id": "debs", "class": "e10pro.property.ViewProperty", "help": "prirucka/4504",
 			"details": {
-				"debs": {"title": "Přehled", "icon": "icon-file", "type": "detail", "class": "e10pro.property.ViewDetailProperty", "order": 1000},
-				"depsTax": {"title": "Daňové odpisy", "icon": "icon-sort-amount-desc", "type": "detail", "class": "e10pro.property.ViewDetailPropertyDepsTax", "order": 6100},
-				"depsAcc": {"title": "Účetní odpisy", "icon": "icon-sort-amount-desc", "type": "detail", "class": "e10pro.property.ViewDetailPropertyDepsAcc", "order": 6200},
-				"nonDeps": {"title": "Vývoj hodnoty", "icon": "icon-bars", "type": "detail", "class": "e10pro.property.ViewDetailPropertyNonDeps", "order": 6250},
-				"dt": {"title": "Odložená daň", "icon": "icon-shield", "type": "detail", "class": "e10pro.property.ViewDetailPropertyDeferredTax", "order": 6300},
-				"operations": {"title": "Pohyby", "icon": "icon-random", "type": "detail", "class": "e10pro.property.ViewDetailPropertyOperations", "order": 8000},
-				"accounting": {"title": "Účtování", "icon": "x-stamp", "type": "detail", "class": "e10pro.property.ViewDetailPropertyAccounting", "order": 9000}
+				"debs": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.property.ViewDetailProperty", "order": 1000},
+				"depsTax": {"title": "Daňové odpisy", "icon": "detailTaxDepreciations", "type": "detail", "class": "e10pro.property.ViewDetailPropertyDepsTax", "order": 6100},
+				"depsAcc": {"title": "Účetní odpisy", "icon": "detailAccountingDepreciations", "type": "detail", "class": "e10pro.property.ViewDetailPropertyDepsAcc", "order": 6200},
+				"nonDeps": {"title": "Vývoj hodnoty", "icon": "detailValueProgress", "type": "detail", "class": "e10pro.property.ViewDetailPropertyNonDeps", "order": 6250},
+				"dt": {"title": "Odložená daň", "icon": "detailDeferredTax", "type": "detail", "class": "e10pro.property.ViewDetailPropertyDeferredTax", "order": 6300},
+				"operations": {"title": "Pohyby", "icon": "detailMovements", "type": "detail", "class": "e10pro.property.ViewDetailPropertyOperations", "order": 8000},
+				"accounting": {"title": "Účtování", "icon": "system/detailAccounting", "type": "detail", "class": "e10pro.property.ViewDetailPropertyAccounting", "order": 9000}
 			}
 		}
 	],

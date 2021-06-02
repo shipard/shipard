@@ -1,5 +1,5 @@
 {
-	"id": "mac.access.tagsAssignments", "sql": "mac_access_tagsAssignments", "name": "Přiřazení Přístupových klíčů", "icon": "icon-unlock-alt",
+	"id": "mac.access.tagsAssignments", "sql": "mac_access_tagsAssignments", "name": "Přiřazení Přístupových klíčů",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

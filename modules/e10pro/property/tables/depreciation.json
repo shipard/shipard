@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.property.depreciation", "sql": "e10pro_property_depreciation", "name": "Odpisy majetku", "icon": "icon-chevron-circle-down",
+	"id": "e10pro.property.depreciation", "sql": "e10pro_property_depreciation", "name": "Odpisy majetku",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "property", "name": "Majetek", "type": "int", "reference": "e10pro.property.property"},

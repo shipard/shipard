@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.meters.meters", "sql": "e10pro_meters_meters", "name": "Měřiče", "icon": "icon-cogs",
+	"id": "e10pro.meters.meters", "sql": "e10pro_meters_meters", "name": "Měřiče",
 	"columns": [
 		{"id": "ndx", "name": "ndx", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},

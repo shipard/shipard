@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.hosting.server.portals", "sql": "e10pro_hosting_server_portals", "name": "Portály", "icon": "icon-umbrella",
+	"id": "e10pro.hosting.server.portals", "sql": "e10pro_hosting_server_portals", "name": "Portály",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "name", "name": "Název", "type": "string", "len": 40},

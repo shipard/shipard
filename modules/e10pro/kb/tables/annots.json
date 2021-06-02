@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.kb.annots", "sql": "e10pro_kb_annots", "name": "Anotace", "icon": "icon-external-link",
+	"id": "e10pro.kb.annots", "sql": "e10pro_kb_annots", "name": "Anotace",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

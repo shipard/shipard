@@ -1,6 +1,6 @@
 [
 	{
 		"name": "Zdroje dat", "class": "e10pro.hosting.server.libs.DataSourcesPlansReport",
-		"icon": "icon-database", "group": "e10pro-hosting", "order": 1000
+		"icon": "sytem/iconDatabase", "group": "e10pro-hosting", "order": 1000
 	}
 ]

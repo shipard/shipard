@@ -4,9 +4,9 @@
     "views": {
       "suppliers":
 			{"id": "suppliers", "class": "e10pro.purchase.ViewSuppliers",
-				"addWizard": {"class": "e10pro.purchase.AddWizardFromID", "icon": "icon-credit-card"},
+				"addWizard": {"class": "e10pro.purchase.AddWizardFromID", "icon": "paymentMethodCard"},
 				"details": {
-					"purchases": {"title": "Výkupy", "icon": "x-pig", "type": "detail", "class": "e10pro.purchase.ViewDetailSupplier"}
+					"purchases": {"title": "Výkupy", "icon": "docTypePurchaseTicket", "type": "detail", "class": "e10pro.purchase.ViewDetailSupplier"}
 				}
 			}
 		}

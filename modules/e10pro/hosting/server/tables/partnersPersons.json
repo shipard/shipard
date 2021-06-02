@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.hosting.server.partnersPersons", "sql": "e10pro_hosting_server_partnersPersons", "name": "Osoby partnerů", "icon": "icon-user",
+	"id": "e10pro.hosting.server.partnersPersons", "sql": "e10pro_hosting_server_partnersPersons", "name": "Osoby partnerů",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},

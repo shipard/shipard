@@ -5,6 +5,18 @@
 		"bsi": "bi-geo-fill",
 		"mdi": "location_on"
 	},
+	"tables/mac.base.zonesCameras": {
+		"fa5": "fa-video",
+		"fa5pro": "fa-cctv",
+		"bsi": "bi-camera-video",
+		"mdi": "videocam"
+	},
+	"tables/mac.base.zonesIoTSC": {
+		"fa5": "fa-thermometer-three-quarters",
+		"fa5pro": "fa-thermometer-three-quarters",
+		"bsi": "bi-thermometer-half",
+		"mdi": "thermostat"
+	},
 
 
 	"formCameras":{

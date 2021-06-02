@@ -1,13 +1,13 @@
 {
 	"mac.iot.scPlacements": {
 		"mac-sc-placements-sensors": {
-			"linkid": "mac-sc-placements-sensors", "name": "Senzory", "icon": "icon-eyedropper",
+			"linkid": "mac-sc-placements-sensors", "name": "Senzory", "icon": "tables/mac.iot.sensors",
 			"sources": [
 				{"id": "sensors", "viewer": "default", "table": "mac.iot.sensors"}
 			]
 		},
 		"mac-sc-placements-controls": {
-			"linkid": "mac-sc-placements-controls", "name": "Ovládací prvky", "icon": "icon-toggle-on",
+			"linkid": "mac-sc-placements-controls", "name": "Ovládací prvky", "icon": "tables/mac.iot.controls",
 			"sources": [
 				{"id": "controls", "viewer": "default", "table": "mac.iot.controls"}
 			]

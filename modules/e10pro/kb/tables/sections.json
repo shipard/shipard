@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.kb.sections", "sql": "e10pro_kb_sections", "name": "Wiki Sekce", "icon": "icon-list-alt",
+	"id": "e10pro.kb.sections", "sql": "e10pro_kb_sections", "name": "Wiki Sekce",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "title", "name": "Název", "type": "string", "len": 120},

@@ -1,0 +1,29 @@
+{
+    "tables/integrations.core.services":{
+        "fa5": "fa-plug",
+		"fa5pro": "fa-outlet",
+		"bsi": "bi-outlet",
+		"mdi": "outlet"
+    },
+    "tables/integrations.core.tasks":{
+        "fa5": "fa-cogs",
+		"fa5pro": "fa-cogs",
+		"bsi": "bi-gear-fill",
+		"mdi": "settings"
+    },
+    "tables/integrations.core.downloadFiles":{
+        "fa5": "fa-file",
+		"fa5pro": "fa-file",
+		"bsi": "bi-file-earmark",
+		"mdi": "insert_drive_file"
+    },
+    
+
+
+    "taskTypeDownload":{
+        "fa5":"fa-folder",
+        "fa5pro":"fa-folders",
+        "bsi":"bi-folder",
+        "mdi":"folder"
+    }
+}

@@ -1,5 +1,5 @@
 {
-	"id": "mac.iot.scenarios", "sql": "mac_iot_scenarios", "name": "Scénáře", "icon": "icon-play-circle",
+	"id": "mac.iot.scenarios", "sql": "mac_iot_scenarios", "name": "Scénáře",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

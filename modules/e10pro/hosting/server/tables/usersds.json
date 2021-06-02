@@ -1,5 +1,5 @@
 {
-  "id": "e10pro.hosting.server.usersds", "sql": "e10pro_hosting_server_usersds", "name": "Zdroje dat uživatelů", "icon": "icon-user",
+  "id": "e10pro.hosting.server.usersds", "sql": "e10pro_hosting_server_usersds", "name": "Zdroje dat uživatelů",
   "columns": [
     {"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "user", "name": "Uživatel", "type": "int", "reference": "e10.persons.persons"},

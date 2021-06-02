@@ -1,5 +1,5 @@
 {
-	"id": "mac.admin.admins", "sql": "mac_admin_admins", "name": "Správci", "icon": "icon-user-secret",
+	"id": "mac.admin.admins", "sql": "mac_admin_admins", "name": "Správci",
 	"columns": [
 		{"id": "ndx", "name": "ndx", "type": "int_ai"},
 

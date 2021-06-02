@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.property.types", "sql": "e10pro_property_types", "name": "Typy majetku", "icon": "icon-list",
+	"id": "e10pro.property.types", "sql": "e10pro_property_types", "name": "Typy majetku",
 	"columns": [
 		{"id": "ndx", "name": "ndx", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},

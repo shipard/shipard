@@ -5,19 +5,19 @@
 			"enabledCfgItem": "options.e10doc-commerce.usePanelCommerce", "order": 280000,
 			"items": [
 				{
-					"t1": "Přehled", "object": "widget", "class": "e10.widgetDashboard", "subclass": "commerce", "icon": "icon-dashboard", "order": 5000,
+					"t1": "Přehled", "object": "widget", "class": "e10.widgetDashboard", "subclass": "commerce", "icon": "system/dashboardDashboard", "order": 5000,
 					"enabledCfgItem": "options.experimental.testDashboardWorkOrders"
 				},
-				{"t1": "Zakázky", "object": "viewer", "table": "e10mnf.core.workOrders", "viewer": "default", "icon": "icon-industry",
+				{"t1": "Zakázky", "object": "viewer", "table": "e10mnf.core.workOrders", "viewer": "default",
 					"enabledCfgItem": "options.e10doc-commerce.useWorkOrders", "order": 200000},
-				{"t1": "Přijaté objednávky", "object": "viewer", "table": "e10doc.core.heads", "viewer": "orderIn", "icon": "icon-cart-arrow-down",
+				{"t1": "Přijaté objednávky", "object": "viewer", "table": "e10doc.core.heads", "viewer": "orderIn",
 					"enabledCfgItem": "options.e10doc-commerce.useOrdersIn", "order": 300000},
-				{"t1": "Vydané objednávky", "object": "viewer", "table": "e10buy.orders.orders", "viewer": "default", "icon": "icon-shopping-basket",
+				{"t1": "Vydané objednávky", "object": "viewer", "table": "e10buy.orders.orders", "viewer": "default",
 					"enabledCfgItem": "options.e10doc-commerce.useOrdersOut", "order": 400000},
 				{"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10mnf-reports", "icon": "system/iconReports", "order": 700000}
 			],
 			"smallItems": [
-				{"t1": "Výkazy práce", "object": "viewer", "table": "e10mnf.core.workRecs", "viewer": "default",  "icon": "icon-paw",
+				{"t1": "Výkazy práce", "object": "viewer", "table": "e10mnf.core.workRecs", "viewer": "default",
 					"enabledCfgItem": "options.e10doc-commerce.useWorkOrdersOnPanelCommerce", "order": 70000
 				},
 				{"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "default", "order": 100000},
@@ -31,7 +31,7 @@
 				"e10mnf": {
 					"name": "Výroba", "order": 300000,
 					"items": {
-						"contracts": {"t1": "Zakázky", "object": "viewer", "table": "e10mnf.core.workOrders", "viewer": "default", "icon": "icon-industry",
+						"contracts": {"t1": "Zakázky", "object": "viewer", "table": "e10mnf.core.workOrders", "viewer": "default",
 							"enabledCfgItem": "options.e10doc-commerce.useWorkOrders", "order": 200000}
 					}
 				}

@@ -1,5 +1,5 @@
 {
-	"id": "mac.admin.ipAddress", "sql": "mac_admin_ipAddress", "name": "IP adresy", "icon": "icon-crosshairs",
+	"id": "mac.admin.ipAddress", "sql": "mac_admin_ipAddress", "name": "IP adresy",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},

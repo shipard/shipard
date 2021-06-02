@@ -41,6 +41,9 @@
 		"bsi": "bi-list-ul",
 		"mdi": "list"
 	},
+
+
+
 	"report/propertyList": {
 		"fa5": "fa-file",
 		"fa5pro": "fa-file",
@@ -96,5 +99,37 @@
 		"fa5pro": "fa-sort-amount-down",
 		"bsi": "bi-sort-down",
 		"mdi": "sort"
+	},
+
+
+	"detailTaxDepreciations":{
+		"fa5": "fa-sort-amount-down",
+		"fa5pro": "fa-sort-amount-down",
+		"bsi": "bi-sort-down",
+		"mdi": "arrow_downward"
+	},
+	"detailAccountingDepreciations":{
+		"fa5": "fa-sort-amount-down",
+		"fa5pro": "fa-sort-amount-down",
+		"bsi": "bi-sort-down",
+		"mdi": "arrow_downward"
+	},
+	"detailValueProgress":{
+		"fa5": "fa-bars",
+		"fa5pro": "fa-bars",
+		"bsi": "bi-list",
+		"mdi": "reorder"
+	},
+	"detailDeferredTax":{
+		"fa5":"fa-shield-alt",
+        "fa5pro":"fa-shield-alt",
+        "bsi":"bi-shield",
+        "mdi":"shield"
+	},
+	"detailMovements":{
+		"fa5": "fa-random",
+		"fa5pro": "fa-random",
+		"bsi": "bi-random",
+		"mdi": "shuffle"
 	}
 }

@@ -1,0 +1,8 @@
+{
+    "tables/e10settings.base.cfgs":{
+        "fa5": "fa-terminal",
+		"fa5pro": "fa-terminal",
+		"bsi": "bi-terminal",
+		"mdi": "code"
+    }
+}

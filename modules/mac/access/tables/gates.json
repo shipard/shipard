@@ -1,5 +1,5 @@
 {
-	"id": "mac.access.gates", "sql": "mac_access_gates", "name": "Brány a dveře", "icon": "icon-home",
+	"id": "mac.access.gates", "sql": "mac_access_gates", "name": "Brány a dveře",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

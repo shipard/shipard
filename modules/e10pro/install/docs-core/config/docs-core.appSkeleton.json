@@ -44,7 +44,7 @@
 					"order": 300,
 					"items": {
 						"dashboard": {
-							"t1": "Přehled", "object": "dashboard", "dashboard": "company", "icon": "icon-dashboard", "order": 100
+							"t1": "Přehled", "object": "dashboard", "dashboard": "company", "icon": "system/dashboardDashboard", "order": 100
 						}
 					}
 				}

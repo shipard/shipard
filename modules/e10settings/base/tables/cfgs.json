@@ -1,5 +1,5 @@
 {
-	"id": "e10settings.base.cfgs", "sql": "e10settings_base_cfgs", "name": "Konfigurace aplikace", "icon": "icon-terminal",
+	"id": "e10settings.base.cfgs", "sql": "e10settings_base_cfgs", "name": "Konfigurace aplikace",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "id", "name": "ID", "type": "string", "len": 190},

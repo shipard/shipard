@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.meters.groups", "sql": "e10pro_meters_groups", "name": "Skupiny měřičů", "icon": "icon-cog",
+	"id": "e10pro.meters.groups", "sql": "e10pro_meters_groups", "name": "Skupiny měřičů",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},

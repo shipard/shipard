@@ -1,5 +1,5 @@
 {
-	"id": "integrations.core.services", "sql": "integrations_core_services", "name": "Služby", "icon": "icon-plug",
+	"id": "integrations.core.services", "sql": "integrations_core_services", "name": "Služby",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

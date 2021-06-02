@@ -1,5 +1,5 @@
 {
-	"id": "integrations.core.tasks", "sql": "integrations_core_tasks", "name": "Úlohy", "icon": "icon-cogs",
+	"id": "integrations.core.tasks", "sql": "integrations_core_tasks", "name": "Úlohy",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

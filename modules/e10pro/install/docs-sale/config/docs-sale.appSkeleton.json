@@ -59,11 +59,11 @@
 						},
 						"proforma-out": {
 							"t1": "Zálohové faktury", "object": "viewer", "table": "e10doc.core.heads", "viewer": "proformaOut",
-							"icon": "icon-arrow-circle-o-up", "enabledCfgItem": "options.e10doc-sale.useProformaOut", "order": 150000
+							"icon": "docType/proFormaOut", "enabledCfgItem": "options.e10doc-sale.useProformaOut", "order": 150000
 						},
 						"contracts-sale": {
 							"t1": "Smlouvy prodejní", "object": "viewer", "table": "e10doc.contracts.core.heads", "viewer": "sale",
-							"icon": "icon-thumbs-up", "enabledCfgItem": "options.e10doc-sale.useContractSale", "order": 400000
+							"icon": "docType/contractSale", "enabledCfgItem": "options.e10doc-sale.useContractSale", "order": 400000
 						}
 					}
 				}

@@ -1,5 +1,5 @@
 {
-	"id": "mac.iot.users", "sql": "mac_iot_users", "name": "IoT Uživatelé", "icon": "icon-user-o",
+	"id": "mac.iot.users", "sql": "mac_iot_users", "name": "IoT Uživatelé",
 	"columns": [
 		{"id": "ndx", "name": "ndx", "type": "int_ai"},
 

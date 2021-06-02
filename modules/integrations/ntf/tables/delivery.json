@@ -1,5 +1,5 @@
 {
-	"id": "integrations.ntf.delivery", "sql": "integrations_ntf_delivery", "name": "Doručování notifikací", "icon": "icon-truck",
+	"id": "integrations.ntf.delivery", "sql": "integrations_ntf_delivery", "name": "Doručování notifikací",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "channel", "name": "Notifikační kanál", "type": "int", "reference":  "integrations.ntf.channels"},

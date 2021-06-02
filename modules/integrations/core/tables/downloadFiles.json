@@ -1,5 +1,5 @@
 {
-	"id": "integrations.core.downloadFiles", "sql": "integrations_core_downloadFiles", "name": "Stahování souborů", "icon": "icon-file",
+	"id": "integrations.core.downloadFiles", "sql": "integrations_core_downloadFiles", "name": "Stahování souborů",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

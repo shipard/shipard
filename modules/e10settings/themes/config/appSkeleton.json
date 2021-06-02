@@ -2,7 +2,7 @@
 	"panels": {
 		"srvcfg": {
 			"smallItems": [
-				{"t1": "Témata aplikace", "object": "viewer", "table": "e10settings.themes.appThemes", "viewer": "default", "icon": "icon-paint-brush", "order": 999991}
+				{"t1": "Témata aplikace", "object": "viewer", "table": "e10settings.themes.appThemes", "viewer": "default", "order": 999991}
 			]
 		}
 	}

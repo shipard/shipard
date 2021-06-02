@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.kb.textsRendered", "sql": "e10pro_kb_textsRendered", "name": "Hotové texty wiki stránek", "icon": "icon-file-text",
+	"id": "e10pro.kb.textsRendered", "sql": "e10pro_kb_textsRendered", "name": "Hotové texty wiki stránek",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "wikiPage", "name": "Wiki stránka", "type": "int", "reference": "e10pro.kb.texts"},

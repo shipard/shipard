@@ -1,5 +1,5 @@
 {
-	"id": "mac.access.personsAccessLevels", "sql": "mac_access_personsAccessLevels", "name": "Úrovně přístupu Osob", "icon": "icon-cog",
+	"id": "mac.access.personsAccessLevels", "sql": "mac_access_personsAccessLevels", "name": "Úrovně přístupu Osob",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},

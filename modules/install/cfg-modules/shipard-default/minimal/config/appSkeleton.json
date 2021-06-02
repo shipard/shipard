@@ -28,7 +28,7 @@
 			"disableAppMenu" : 1, "disableLeftMenu": 1, "hidden": 1,
 			"items": [
 				{"t1": "Přehled", "object": "widget", "class": "e10.widgetDashboard",
-					"subclass": "main", "icon": "icon-dashboard", "order": 5000}
+					"subclass": "main", "icon": "system/dashboardDashboard", "order": 5000}
 			]
 		},
 		"wikiAppPageR": {"urlRegExp": "/^\\/app\\/wiki\\-[0-9]+$/", "zone": "sec", "objectType": "redirect", "redirect": "", "order": 100},
@@ -38,7 +38,7 @@
 		"start": {
 			"items": {
 				"persons": {
-					"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "default", "icon": "icon-users",
+					"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "default",
 					"order": 100000
 				}
 			}

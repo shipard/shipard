@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.reception.foreigners", "sql": "e10pro_reception_foreigners", "name": "Evidence cizinců", "icon": "icon-id-card-o",
+	"id": "e10pro.reception.foreigners", "sql": "e10pro_reception_foreigners", "name": "Evidence cizinců",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

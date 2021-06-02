@@ -1,10 +1,10 @@
 {
 	"integrationsInHooks": {
-		"name": "Příchozí Webhooks", "order": 437000, "group": "integrations", "icon": "icon-cloud-download",
+		"name": "Příchozí Webhooks", "order": 437000, "group": "integrations",
 		"type": "viewer", "table": "integrations.hooks.in.hooks", "viewer": "default"
 	},
 	"integrationsInData": {
-		"name": "Příchozí Webhooks Data", "order": 437100, "group": "integrations", "icon": "icon-download",
+		"name": "Příchozí Webhooks Data", "order": 437100, "group": "integrations",
 		"type": "viewer", "table": "integrations.hooks.in.data", "viewer": "default"
 	}
 }

@@ -1,5 +1,5 @@
 {
-  "id": "e10pro.meters.values", "sql": "e10pro_meters_values", "name": "Naměřené hodnoty", "icon": "icon-archive",
+  "id": "e10pro.meters.values", "sql": "e10pro_meters_values", "name": "Naměřené hodnoty",
   "columns": [
     {"id": "ndx", "name": "id", "type": "int_ai"},
     {"id": "meter", "name": "Měřič", "type": "int", "reference": "e10pro.meters.meters"},

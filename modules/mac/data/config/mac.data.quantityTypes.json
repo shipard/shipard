@@ -1,40 +1,40 @@
 {
 	"0": {
-		"title": "Neznámé", "icon": "icon-tachometer"
+		"title": "Neznámé", "icon": "quantityTypeUnknown"
 	},
 	"1": {
-		"title": "Teplota", "icon": "icon-thermometer-three-quarters"
+		"title": "Teplota", "icon": "quantityTypeTemperature"
 	},
 	"20": {
-		"title": "Hmotnost", "icon": "icon-window-minimize"
+		"title": "Hmotnost", "icon": "quantityTypeWeight"
 	},
 	"80": {
-		"title": "Text", "icon": "icon-keyboard"
+		"title": "Text", "icon": "quantityTypeText"
 	},
 	"81": {
-		"title": "RZ vozidla", "icon": "icon-car"
+		"title": "RZ vozidla", "icon": "quantityTypeLicensePlate"
 	},
 	"82": {
-		"title": "RFID tag", "icon": "icon-tag", "login": 1, "kbd": 1
+		"title": "RFID tag", "icon": "quantityTypeRFIDTag", "login": 1, "kbd": 1
 	},
 	"83": {
-		"title": "Čárový kód", "icon": "icon-barcode", "login": 1, "kbd": 1
+		"title": "Čárový kód", "icon": "quantityTypeBarCode", "login": 1, "kbd": 1
 	},
 	"84": {
-		"title": "QR kód", "icon": "icon-qrcode", "login": 1, "kbd": 1
+		"title": "QR kód", "icon": "quantityTypeQRCode", "login": 1, "kbd": 1
 	},
 	"85": {
-		"title": "Telefonní číslo", "icon": "icon-phone"
+		"title": "Telefonní číslo", "icon": "quantityTypePhoneNumber"
 	},
 
 	"90": {
-		"title": "Logická hodnota", "icon": "icon-power-off"
+		"title": "Logická hodnota", "icon": "quantityTypeLogicalValue"
 	},
 	"96": {
-		"title": "Otevřeno/zavřeno", "icon": "icon-toggle-on"
+		"title": "Otevřeno/zavřeno", "icon": "quantityTypeOpenedClosed"
 	},
 
 	"100": {
-		"title": "Množtví dat", "icon": "icon-floppy-o"
+		"title": "Množtví dat", "icon": "quantityTypeDataAmount"
 	}
 }

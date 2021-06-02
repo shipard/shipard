@@ -1,5 +1,5 @@
 {
 	"download-files" : {
-		"name": "Stahování souborů", "icon": "icon-folder", "classId": "integrations.services.gsuite.Service"
+		"name": "Stahování souborů", "icon": "taskTypeDownload", "classId": "integrations.services.gsuite.Service"
 	}
 }

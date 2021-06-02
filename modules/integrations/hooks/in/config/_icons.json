@@ -1,0 +1,22 @@
+{
+    "tables/integrations.hooks.in.hooks":{
+        "fa5": "fa-plug",
+		"fa5pro": "fa-outlet",
+		"bsi": "bi-outlet",
+		"mdi": "outlet"
+    },
+    "tables/integrations.hooks.in.data":{
+        "fa5": "fa-cloud-download-alt",
+		"fa5pro": "fa-cloud-download-alt",
+		"bsi": "bi-cloud-download",
+		"mdi": "cloud_download"
+    },
+
+
+    "hooksTypes":{
+        "fa5": "fa-file",
+		"fa5pro": "fa-file",
+		"bsi": "bi-file-earmark",
+		"mdi": "insert_drive_file"
+    }
+}

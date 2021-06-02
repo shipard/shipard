@@ -1,16 +1,4 @@
-{
-    "settings/accessBuilding":{
-        "fa5":"fa-building",
-        "fa5pro":"fa-building",
-        "bsi":"bi-building",
-        "mdi":"business"
-    },
-    "settings/network":{
-        "fa5":"fa-sitemap",
-        "fa5pro":"fa-sitemap",
-        "bsi":"bi-diagram-3-fill",
-        "mdi":"device_hub"
-    },
+{ 
     "tables/mac.access.personsAccess":{
         "fa5":"fa-id-card-alt",
         "fa5pro":"fa-id-card-alt",
@@ -33,14 +21,99 @@
         "fa5":"fa-unlock-alt",
         "fa5pro":"fa-unlock-alt",
         "bsi":"bi-file-lock2",
-        "mdi":"lock"
+        "mdi":"lock_open"
+    },
+    "tables/mac.access.gates":{
+        "fa5": "fa-door-open",
+		"fa5pro": "fa-door-open",
+		"bsi": "bi-door-open",
+		"mdi": "meeting_room"
+    },
+    "tables/mac.access.gatesSchedule":{
+        "fa5": "fa-clock",
+		"fa5pro": "fa-clock",
+		"bsi": "bi-clock",
+		"mdi": "schedule"
+    },
+    "tables/mac.access.levelsCfg":{
+        "fa5": "fa-cogs",
+		"fa5pro": "fa-cogs",
+		"bsi": "bi-gear-fill",
+		"mdi": "settings"
+    },
+    "tables/mac.access.log":{
+        "fa5": "fa-eye",
+		"fa5pro": "fa-eye",
+		"bsi": "bi-eye-fill",
+		"mdi": "visibility"
+    },
+    "tables/mac.access.personsAccessLevels":{
+        "fa5":"fa-cog",
+        "fa5pro":"fa-cog",
+        "bsi":"bi-gear",
+        "mdi":"settings"
     },
 
+
+    "settings/accessBuilding":{
+        "fa5":"fa-building",
+        "fa5pro":"fa-building",
+        "bsi":"bi-building",
+        "mdi":"business"
+    },
+    "settings/network":{
+        "fa5":"fa-sitemap",
+        "fa5pro":"fa-sitemap",
+        "bsi":"bi-diagram-3-fill",
+        "mdi":"device_hub"
+    },
 
     "formRights":{
         "fa5":"fa-universal-access",
         "fa5pro":"fa-universal-access",
         "bsi":"bi-patch-check",
         "mdi":"local_police"
+    },
+
+
+
+    "tagTypeNFC_RFID":{
+        "fa5":"fa-tag",
+        "fa5pro":"fa-tag",
+        "bsi":"bi-tag-fill",
+        "mdi":"local_offer"
+    },
+    "tagTypePhone":{
+        "fa5": "fa-phone-alt",
+		"fa5pro": "fa-phone-alt",
+		"bsi": "bi-telephone",
+		"mdi": "call"
+    },
+    "tagTypeLicensePlate":{
+        "fa5": "fa-car",
+		"fa5pro": "fa-car",
+		"bsi": "bi-truck",
+		"mdi": "directions_car"
+    },
+    "tagTypeOther":{
+        "fa5": "fa-question-circle",
+		"fa5pro": "fa-question-circle",
+		"bsi": "bi-question-circle-fill",
+		"mdi": "help_outline"
+    },
+
+
+
+    "gateUnlocked":{
+        "fa5":"fa-unlock",
+        "fa5pro":"fa-unlock",
+        "bsi":"bi-file-lock2",
+        "mdi":"lock_open"
+    },
+    "gateInoperative":{
+        "fa5":"fa-ban",
+        "fa5pro":"fa-ban",
+        "bsi":"bi-x-circle",
+        "mdi":"hide_source"
     }
 }

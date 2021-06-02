@@ -7,7 +7,7 @@
 		}
 	},
 	"e10pro.property.groups": {
-		"e10pro-property-groups-proptypes": {"linkid": "e10pro-property-groups-proptypes", "name": "Začlenit typy majetku", "icon": "icon-object-group",
+		"e10pro-property-groups-proptypes": {"linkid": "e10pro-property-groups-proptypes", "name": "Začlenit typy majetku", "icon": "tables/e10pro.property.groups",
 			"sources": [
 				{"table": "e10pro.property.types"}
 			]

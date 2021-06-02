@@ -16,10 +16,10 @@
 				"other": {
 					"items": {
 						"property": {
-							"t1": "Majetek", "object": "viewer", "table": "e10pro.property.property", "viewer": "default", "icon": "icon-university", "order": 100000
+							"t1": "Majetek", "object": "viewer", "table": "e10pro.property.property", "viewer": "default", "order": 100000
 						},
 						"ltproperty": {
-							"t1": "Dlouhodobý", "object": "viewer", "table": "e10pro.property.property", "viewer": "debs", "icon": "icon-sort-amount-desc", "order": 100010
+							"t1": "Dlouhodobý", "object": "viewer", "table": "e10pro.property.property", "viewer": "debs", "icon": "report/depreciations", "order": 100010
 						}
 					}
 				}

@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.hosting.services.cal", "sql": "e10pro_hosting_services_cal", "name": "Kalendář", "icon": "icon-calendar",
+	"id": "e10pro.hosting.services.cal", "sql": "e10pro_hosting_services_cal", "name": "Kalendář",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

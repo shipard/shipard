@@ -227,7 +227,7 @@
 		"fa5": "fa-hdd",
 		"fa5pro": "fa-hdd",
 		"bsi": "bi-hdd",
-		"mdi": "storage"
+		"mdi": "save"
 	},
     "deviceTypes/shipardNodeServer": {
 		"fa5": "fa-expand-arrows-alt",

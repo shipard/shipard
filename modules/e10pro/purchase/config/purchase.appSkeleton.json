@@ -13,7 +13,7 @@
 				{"t1": "Ceník", "object": "report", "class": "e10pro.reports.pricelist.priceListPurchase", "subclass": "", "icon": "x-price", "order": 990000}
 			],
 			"smallItems": [
-				{"t1": "Registrace", "object": "viewer", "table": "e10pro.custreg.registrations", "viewer": "default", "icon": "icon-sign-in", "order": 10000, "hint": "terminal"}
+				{"t1": "Registrace", "object": "viewer", "table": "e10pro.custreg.registrations", "viewer": "default", "order": 10000, "hint": "terminal"}
 			]
 		},
 		"docs": {
@@ -44,8 +44,8 @@
 				"operative": {
 					"name": "Aktuálně", "order": 100000,
 					"items": {
-						"daily": {"t1": "Denní přehled", "object": "report", "class": "e10pro.reports.terminal_daily.reportDaily", "icon": "icon-file-o", "order": 100000},
-						"monthly": {"t1": "Měsíční přehled", "object": "report", "class": "e10pro.reports.terminal_monthly.reportMonthly", "icon": "icon-file-o", "order": 110000}
+						"daily": {"t1": "Denní přehled", "object": "report", "class": "e10pro.reports.terminal_daily.reportDaily", "icon": "e10doc-sale/reportDaily", "order": 100000},
+						"monthly": {"t1": "Měsíční přehled", "object": "report", "class": "e10pro.reports.terminal_monthly.reportMonthly", "icon": "e10doc-sale/reportMonthly", "order": 110000}
 					}
 				}
 			}

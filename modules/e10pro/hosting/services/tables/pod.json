@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.hosting.services.pod", "sql": "e10pro_hosting_services_pod", "name": "Obrázky dne", "icon": "icon-picture-o",
+	"id": "e10pro.hosting.services.pod", "sql": "e10pro_hosting_services_pod", "name": "Obrázky dne",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

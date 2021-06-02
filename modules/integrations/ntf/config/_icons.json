@@ -10,5 +10,13 @@
         "fa5pro":"fa-truck",
         "bsi":"bi-truck",
         "mdi":"local_shipping"
+    },
+
+
+    "channelTypeMatrixRoom":{
+        "fa5": "fa-comment",
+		"fa5pro": "fa-comment",
+		"bsi": "bi-chat",
+		"mdi": "mode_comment"
     }
 }

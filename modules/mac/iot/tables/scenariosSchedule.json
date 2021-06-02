@@ -1,5 +1,5 @@
 {
-	"id": "mac.iot.scenariosSchedule", "sql": "mac_iot_scenariosSchedule", "name": "Časový rozvrh scénářů", "icon": "icon-clock-o",
+	"id": "mac.iot.scenariosSchedule", "sql": "mac_iot_scenariosSchedule", "name": "Časový rozvrh scénářů",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},

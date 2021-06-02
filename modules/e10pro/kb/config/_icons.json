@@ -23,6 +23,12 @@
 		"bsi": "bi-file-break",
 		"mdi": "sticky_note_2"
 	},
+	"tables/e10pro.kb.textsRendered":{
+		"fa5": "fa-file-alt",
+		"fa5pro": "fa-file-alt",
+		"bsi": "bi-file-break",
+		"mdi": "sticky_note_2"
+	},
 	
 	
 	"settings/wikiDocumentation":{

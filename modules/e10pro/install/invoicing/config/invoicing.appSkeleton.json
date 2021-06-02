@@ -2,7 +2,7 @@
 	"panels": {
 		"agendy": {"url": "/agendy", "zone": "sec", "objectType": "panel", "name": "Agendy",
 							"items": [
-								{"t1": "Fakturace2", "object": "viewer", "table": "e10doc.core.heads", "viewer": "invoicesOut", "icon": "icon-arrow-alt-circle-up", "order": 100000},
+								{"t1": "Fakturace2", "object": "viewer", "table": "e10doc.core.heads", "viewer": "invoicesOut", "icon": "docType/invoicesOut", "order": 100000},
 								{"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "default", "order": 300000}
 							]
 		}

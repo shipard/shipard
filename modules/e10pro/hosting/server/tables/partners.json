@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.hosting.server.partners", "sql": "e10pro_hosting_server_partners", "name": "Partneři", "icon": "icon-id-badge",
+	"id": "e10pro.hosting.server.partners", "sql": "e10pro_hosting_server_partners", "name": "Partneři",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "name", "name": "Název", "type": "string", "len": 80},
@@ -23,7 +23,7 @@
 		{"id": "default", "class": "e10pro.hosting.server.ViewPartners",
 			"details": {
 				"overview": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.hosting.server.ViewDetailPartner", "order": 10},
-				"persons": {"title": "Osoby", "icon": "icon-user", "type": "detail", "class": "e10pro.hosting.server.ViewDetailPartnerPersons", "order": 20}
+				"persons": {"title": "Osoby", "icon": "detailPersons", "type": "detail", "class": "e10pro.hosting.server.ViewDetailPartnerPersons", "order": 20}
 			}
 		}
 	],

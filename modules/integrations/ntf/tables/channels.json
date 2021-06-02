@@ -1,5 +1,5 @@
 {
-	"id": "integrations.ntf.channels", "sql": "integrations_ntf_channels", "name": "Notifikační kanály", "icon": "icon-bullhorn",
+	"id": "integrations.ntf.channels", "sql": "integrations_ntf_channels", "name": "Notifikační kanály",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

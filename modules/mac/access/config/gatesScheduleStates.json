@@ -1,8 +1,8 @@
 {
 	"0": {
-		"name": "Odemknuto / otevřeno", "sc": "Odemknuto", "icon": "icon-unlock"
+		"name": "Odemknuto / otevřeno", "sc": "Odemknuto", "icon": "gateUnlocked"
 	},
 	"1": {
-		"name": "Mimo provoz", "sc": "Mimo provoz", "icon": "icon-ban"
+		"name": "Mimo provoz", "sc": "Mimo provoz", "icon": "gateInoperative"
 	}
 }

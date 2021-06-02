@@ -1,5 +1,5 @@
 {
-	"id": "mac.iot.topics", "sql": "mac_iot_topics", "name": "Témata zpráv", "icon": "icon-comment-o",
+	"id": "mac.iot.topics", "sql": "mac_iot_topics", "name": "Témata zpráv",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

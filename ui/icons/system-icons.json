@@ -137,6 +137,30 @@
 		"bsi":"bi-search",
 		"mdi":"search"
 	},
+	"actionDownload": {
+		"fa5": "fa-download",
+		"fa5pro": "fa-download",
+		"bsi": "bi-download",
+		"mdi": "file_download"
+	},
+	"actionWizardNext": {
+		"fa5":"fa-play",
+        "fa5pro":"fa-play",
+        "bsi":"bi-play",
+        "mdi":"play_arrow"
+	},
+	"actionWizardDone": {
+		"fa5": "fa-check-circle",
+		"fa5pro": "fa-check-circle",
+		"bsi": "bi-check-circle",
+		"mdi": "check_circle"
+	},
+	"actionBack": {
+		"fa5": "fa-long-arrow-alt-left",
+		"fa5pro": "fa-arrow-alt-left",
+		"bsi": "bi-arrow-left",
+		"mdi": "arrow_back"
+	},
 
 
 	"iconUser": {
@@ -301,6 +325,60 @@
 		"bsi": "bi-hdd",
 		"mdi": "save"
 	},
+	"iconReaders":{
+		"fa5":"fa-eye",
+        "fa5pro":"fa-eye",
+        "bsi":"bi-binoculars-fill",
+        "mdi":"preview"
+	},
+	"iconInbox":{
+		"fa5":"fa-inbox",
+        "fa5pro":"fa-inbox",
+        "bsi":"bi-inbox-fill",
+        "mdi":"inbox"
+	},
+	"iconBug":{
+		"fa5":"fa-bug",
+        "fa5pro":"fa-bug",
+        "bsi":"bi-bug",
+        "mdi":"bug_report"
+	},
+	"iconEmail":{
+		"fa5":"fa-envelope",
+        "fa5pro":"fa-envelope",
+        "bsi":"bi-envelope",
+        "mdi":"mail"
+	},
+	"iconPhone":{
+		"fa5": "fa-phone-alt",
+		"fa5pro": "fa-phone-alt",
+		"bsi": "bi-telephone",
+		"mdi": "call"
+	},
+	"iconHamburgerMenu":{
+		"fa5": "fa-bars",
+		"fa5pro": "fa-bars",
+		"bsi": "bi-list",
+		"mdi": "reorder"
+	},
+	"iconPhoto":{
+		"fa5": "fa-camera",
+		"fa5pro": "fa-camera",
+		"bsi": "bi-camera-fill",
+		"mdi": "image"
+	},
+	"iconKeyboard":{
+		"fa5": "fa-keyboard",
+		"fa5pro": "fa-keyboard",
+		"bsi": "bi-keyboard",
+		"mdi": "keyboard"
+	},
+	"iconWarning":{
+		"fa5": "fa-exclamation-triangle",
+		"fa5pro": "fa-exclamation-triangle",
+		"bsi": "bi-exclamation-triangle",
+		"mdi": "warning_amber"
+	},
 	
 
 
@@ -363,6 +441,18 @@
 		"fa5pro": "fa-utensils-alt",
 		"bsi": "bi-shop-window",
 		"mdi": "dining"
+	},
+	"rightSubmenuNoticeBoard":{
+		"fa5": "fa-thumbtack",
+		"fa5pro": "fa-thumbtack",
+		"bsi": "bi-pin",
+		"mdi": "push_pin"
+	},
+	"rightSubmenuCalendar":{
+		"fa5":"fa-calendar-alt",
+        "fa5pro":"fa-calendar-alt",
+        "bsi":"bi-calendar",
+        "mdi":"calendar_today"
 	},
 
 
@@ -746,6 +836,12 @@
 	},
 
 
+	"dashboardDashboard":{
+		"fa5":"fa-tachometer-alt",
+        "fa5pro":"fa-tachometer-alt",
+        "bsi":"bi-speedometer2",
+        "mdi":"speed"
+	},
 	"dashboardModeTilesSmall":{
 		"fa5":"fa-th",
         "fa5pro":"fa-th",
@@ -769,6 +865,15 @@
 		"fa5pro": "fa-window-maximize",
 		"bsi": "bi-hdd-rack-fill",
 		"mdi": "web_asset"
+	},
+
+
+
+	"brandsGoogle":{
+		"fa5":"fa-cloud",
+        "fa5pro":"fa-cloud",
+        "bsi":"bi-google",
+        "mdi":"cloud"
 	}
 
 }

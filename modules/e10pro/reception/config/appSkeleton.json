@@ -2,9 +2,9 @@
 	"panels": {
 		"terminal": {"url": "/app/terminal", "zone": "sec", "objectType": "panel", "icon": "system/iconTerminal", "name": "", "order": 900, "checkWorkplace": 1,
 			"items": [
-				{"t1": "Přehled", "object": "widget", "class": "e10.widgetDashboard", "subclass": "reception", "icon": "icon-dashboard", "order": 700},
-				{"#": "foreigners", "t1": "Cizinci", "object": "viewer", "table": "e10pro.reception.foreigners", "viewer": "default",  "icon": "icon-id-card-o", "order": 930000},
-				{"#": "defaulters", "t1": "Dlužníci", "object": "viewer", "table": "e10.persons.persons", "viewer": "defaulters",  "icon": "icon-frown-o", "order": 940000}
+				{"t1": "Přehled", "object": "widget", "class": "e10.widgetDashboard", "subclass": "reception", "icon": "system/dashboardDashboard", "order": 700},
+				{"#": "foreigners", "t1": "Cizinci", "object": "viewer", "table": "e10pro.reception.foreigners", "viewer": "default", "order": 930000},
+				{"#": "defaulters", "t1": "Dlužníci", "object": "viewer", "table": "e10.persons.persons", "viewer": "defaulters",  "icon": "detailDeptors", "order": 940000}
 			]
 		}
 	},
@@ -12,7 +12,7 @@
 		"start": {
 			"items": {
 				"defaulters": {
-					"t1": "Dlužníci", "object": "viewer", "table": "e10.persons.persons", "viewer": "defaulters", "icon": "icon-frown-o",
+					"t1": "Dlužníci", "object": "viewer", "table": "e10.persons.persons", "viewer": "defaulters", "icon": "detailDeptors",
 					"order": 3000
 				}
 			}

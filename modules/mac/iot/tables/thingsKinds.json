@@ -1,5 +1,5 @@
 {
-	"id": "mac.iot.thingsKinds", "sql": "mac_iot_thingsKinds", "name": "Druhy věcí", "icon": "icon-tasks",
+	"id": "mac.iot.thingsKinds", "sql": "mac_iot_thingsKinds", "name": "Druhy věcí",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

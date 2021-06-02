@@ -1,13 +1,13 @@
 {
 	"header": [
-		{"title": "Obsah", "url": "prirucka", "icon": "icon-file"},
-		{"title": "Ovládání aplikace", "url": "prirucka/s1", "icon": "icon-mouse-pointer"},
-		{"title": "Podpora", "url": "prirucka/s64", "icon": "icon-life-ring"}
+		{"title": "Obsah", "url": "prirucka", "icon": "iconContent"},
+		{"title": "Ovládání aplikace", "url": "prirucka/s1", "icon": "iconAppControling"},
+		{"title": "Podpora", "url": "prirucka/s64", "icon": "system/actionSupport"}
 	],
 	"panels": {
 		"/app/srvcfg": [
-			{"title": "Nastavení", "url": "prirucka/s25", "icon": "e10-server-config"},
-			{"title": "Uživatelé", "url": "prirucka/122", "icon": "icon-user"}
+			{"title": "Nastavení", "url": "prirucka/s25", "icon": "system/iconSettings"},
+			{"title": "Uživatelé", "url": "prirucka/122", "icon": "system/iconUser"}
 		]
 	}
 }

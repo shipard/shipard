@@ -5,7 +5,7 @@
 		"panels": {
 			"lans": {
 				"name": "Přehled",
-				"icon": "icon-eye",
+				"icon": "system/detailOverview",
 				"fullsize": 1,
 				"order": 1000,
 				"rows": {

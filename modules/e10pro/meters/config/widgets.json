@@ -1,6 +1,6 @@
 [
 	{
-		"name": "Měření", "class": "e10pro.meters.MetersWidget", "icon": "icon-cogs",
+		"name": "Měření", "class": "e10pro.meters.MetersWidget", "icon": "tables/e10pro.meters.meters",
 		"dashboard": "main_new", "panel": "reception-meters", "order": 700000, "row": "main", "width": 12, "type": "fullsize"
 	}
 ]

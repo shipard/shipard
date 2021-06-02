@@ -1,5 +1,5 @@
 {
-	"id": "mac.data.sources", "sql": "mac_data_sources", "name": "Zdroje dat", "icon": "icon-database",
+	"id": "mac.data.sources", "sql": "mac_data_sources", "name": "Zdroje dat",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

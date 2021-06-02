@@ -1,8 +1,8 @@
 {
 	"0": {
-		"name": "Osoba", "icon": "icon-person"
+		"name": "Osoba", "icon": "iconUser"
 	},
 	"1": {
-		"name": "Místo", "icon": "icon-map-marker"
+		"name": "Místo", "icon": "tables/e10.base.places"
 	}
 }

@@ -1,5 +1,5 @@
 {
-	"id": "mac.base.zonesCameras", "sql": "mac_base_zonesCameras", "name": "Kamery v zónach", "icon": "icon-video-camera",
+	"id": "mac.base.zonesCameras", "sql": "mac_base_zonesCameras", "name": "Kamery v zónach",
 	"columns": [
 		{"id": "ndx", "name": "ndx", "type": "int_ai"},
 

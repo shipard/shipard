@@ -4,7 +4,7 @@
 		"panels": {
 			"news": {
 				"name": "Přehled",
-				"icon": "icon-bell-o",
+				"icon": "system/detailDetail",
 				"order": 1201,
 				"fullsize": 1,
 				"rows": {

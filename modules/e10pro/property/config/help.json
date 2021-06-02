@@ -1,7 +1,7 @@
 {
 	"panels": {
 		"/app/property": [
-			{"title": "Majetek", "url": "185", "icon": "icon-university"}
+			{"title": "Majetek", "url": "185", "icon": "tables/e10pro.property.property"}
 		]
 	}
 }

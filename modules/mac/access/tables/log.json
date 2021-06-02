@@ -1,5 +1,5 @@
 {
-	"id": "mac.access.log", "sql": "mac_access_log", "name": "Log přístupů", "icon": "icon-eye",
+	"id": "mac.access.log", "sql": "mac_access_log", "name": "Log přístupů",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "created", "name": "Datum a čas", "type": "timestamp"},

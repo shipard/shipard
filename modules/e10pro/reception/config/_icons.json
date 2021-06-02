@@ -11,6 +11,12 @@
 		"bsi": "bi-file-earmark-text-fill",
 		"mdi": "description"
 	},
+    "tables/e10pro.reception.foreigners":{
+		"fa5": "fa-id-card",
+		"fa5pro": "fa-id-card",
+		"bsi": "bi-person-badge",
+		"mdi": "badge"
+	},
 
 
 	"formForeignersData":{

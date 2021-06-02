@@ -1,14 +1,14 @@
 {
 	"1": {
-		"name": "NFC/RFID tag", "sc": "NFC/RFID", "icon": "icon-tag"
+		"name": "NFC/RFID tag", "sc": "NFC/RFID", "icon": "tagTypeNFC_RFID"
 	},
 	"2": {
-		"name": "Telefonní číslo", "sc": "Telefon", "icon": "icon-phone"
+		"name": "Telefonní číslo", "sc": "Telefon", "icon": "tagTypePhone"
 	},
 	"3": {
-		"name": "Vozidlo - registrační značka", "sc": "RZ vozidla", "icon": "icon-car"
+		"name": "Vozidlo - registrační značka", "sc": "RZ vozidla", "icon": "tagTypeLicensePlate"
 	},
 	"0": {
-		"name": "Ostatní", "sc": "Ostatní", "icon": "icon-question-circle-o"
+		"name": "Ostatní", "sc": "Ostatní", "icon": "tagTypeOther"
 	}
 }

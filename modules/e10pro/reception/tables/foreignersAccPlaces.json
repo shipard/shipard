@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.reception.foreignersAccPlaces", "sql": "e10pro_reception_foreignersAccPlaces", "name": "Místa ubytovaání cizinců", "icon": "icon-home",
+	"id": "e10pro.reception.foreignersAccPlaces", "sql": "e10pro_reception_foreignersAccPlaces", "name": "Místa ubytovaání cizinců",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Jméno", "type": "string", "len": 100},

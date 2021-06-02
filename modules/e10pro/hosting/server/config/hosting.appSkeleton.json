@@ -3,17 +3,17 @@
 		"hosting": {
 			"url": "/app/hosting", "zone": "sec", "objectType": "panel", "name": "Hosting", "order": 1700000,
 			"items": [
-				{"#": "datasources", "t1": "Zdroje dat", "object": "viewer", "table": "e10pro.hosting.server.datasources", "viewer": "default", "icon": "x-datasource", "order": 100000},
-				{"#": "persons", "t1": "Uživatelé", "object": "viewer", "table": "e10.persons.persons", "viewer": "hostingUsers", "icon": "icon-user-circle", "order": 110000},
-				{"#": "partners", "t1": "Partneři", "object": "viewer", "table": "e10pro.hosting.server.partners", "viewer": "default", "icon": "icon-id-badge", "order": 290000},
-				{"#": "portals", "t1": "Portály", "object": "viewer", "table": "e10pro.hosting.server.portals", "viewer": "default", "icon": "icon-umbrella", "order": 300000},
-				{"#": "servers", "t1": "Servery", "object": "viewer", "table": "e10pro.hosting.server.servers", "viewer": "default", "icon": "x-server", "order": 310000},
-				{"#": "modules", "t1": "Moduly", "object": "viewer", "table": "e10pro.hosting.server.modules", "viewer": "default", "icon": "icon-puzzle-piece", "order": 320000},
-				{"#": "requests", "t1": "Požadavky", "object": "viewer", "table": "e10.persons.requests", "viewer": "default", "icon": "x-request", "order": 380000},
-				{"#": "domainsAccounts", "t1": "Doménové účty", "object": "viewer", "table": "e10pro.hosting.server.domainsAccounts", "viewer": "default", "icon": "icon-tty", "order": 8390000},
-				{"#": "domains", "t1": "Domény", "object": "viewer", "table": "e10pro.hosting.server.domains", "viewer": "default", "icon": "icon-globe", "order": 395000},
-				{"#": "certs", "t1": "Certifikáty", "object": "viewer", "table": "e10pro.hosting.server.certs", "viewer": "default", "icon": "icon-certificate", "order": 396000},
-				{"#": "supportsKinds", "t1": "Druhy podpory", "object": "viewer", "table": "e10pro.hosting.server.supportsKinds", "viewer": "default", "icon": "icon-life-ring", "order": 400000},
+				{"#": "datasources", "t1": "Zdroje dat", "object": "viewer", "table": "e10pro.hosting.server.datasources", "viewer": "default", "order": 100000},
+				{"#": "persons", "t1": "Uživatelé", "object": "viewer", "table": "e10.persons.persons", "viewer": "hostingUsers", "order": 110000},
+				{"#": "partners", "t1": "Partneři", "object": "viewer", "table": "e10pro.hosting.server.partners", "viewer": "default", "order": 290000},
+				{"#": "portals", "t1": "Portály", "object": "viewer", "table": "e10pro.hosting.server.portals", "viewer": "default", "order": 300000},
+				{"#": "servers", "t1": "Servery", "object": "viewer", "table": "e10pro.hosting.server.servers", "viewer": "default", "order": 310000},
+				{"#": "modules", "t1": "Moduly", "object": "viewer", "table": "e10pro.hosting.server.modules", "viewer": "default", "order": 320000},
+				{"#": "requests", "t1": "Požadavky", "object": "viewer", "table": "e10.persons.requests", "viewer": "default", "order": 380000},
+				{"#": "domainsAccounts", "t1": "Doménové účty", "object": "viewer", "table": "e10pro.hosting.server.domainsAccounts", "viewer": "default", "order": 8390000},
+				{"#": "domains", "t1": "Domény", "object": "viewer", "table": "e10pro.hosting.server.domains", "viewer": "default", "order": 395000},
+				{"#": "certs", "t1": "Certifikáty", "object": "viewer", "table": "e10pro.hosting.server.certs", "viewer": "default", "order": 396000},
+				{"#": "supportsKinds", "t1": "Druhy podpory", "object": "viewer", "table": "e10pro.hosting.server.supportsKinds", "viewer": "default", "order": 400000},
 				{"#": "reports", "t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10pro-hosting", "icon": "system/iconReports", "order": 9909000}
 			]
     },

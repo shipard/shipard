@@ -1,17 +1,17 @@
 {
 	"none" : {
-		"name": "Nic", "icon": "icon-file"
+		"name": "Nic", "icon": "hooksTypes"
 	},
 	"issues-default" : {
-		"name": "Zprávy", "icon": "icon-file"
+		"name": "Zprávy", "icon": "hooksTypes"
 	},
 	"bitBucket" : {
-		"name": "BitBucket", "icon": "icon-file",
+		"name": "BitBucket", "icon": "hooksTypes",
 		"baseDir": "integrations/hooks/in/services/bitBucket",
 		"classId": "integrations.hooks.in.services.bitBucket.BitBucket"
 	},
 	"wooCommerce" : {
-		"name": "Woo Commerce", "icon": "icon-file",
+		"name": "Woo Commerce", "icon": "hooksTypes",
 		"baseDir": "integrations/hooks/in/services/wooCommerce",
 		"classId": "integrations.hooks.in.services.wooCommerce.WooCommerce"
 	}

@@ -3,7 +3,7 @@
 		"attendance": {
 			"url": "/app/attendance", "zone": "sec", "objectType": "panel", "name": "Docházka", "order": 1500000,
 			"items": [
-				{"#": "list", "t1": "Docházka", "object": "viewer", "table": "e10pro.attendance.list", "viewer": "default",  "icon": "icon-check-square", "order": 100000},
+				{"#": "list", "t1": "Docházka", "object": "viewer", "table": "e10pro.attendance.list", "viewer": "default", "order": 100000},
 				{"#": "timeclock", "t1": "Přístupy", "object": "viewer", "table": "e10pro.attendance.timeclock", "viewer": "default",  "icon": "icon-ticket", "order": 200000},
 				{"#": "keys", "t1": "Klíče", "object": "viewer", "table": "e10.persons.keys", "viewer": "attendance", "icon": "icon-key", "order": 700000},
 				{"#": "reports", "t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10pro-attendance", "icon": "icon-file-text", "order": 99000}

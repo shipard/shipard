@@ -1,5 +1,5 @@
 {
-	"id": "mac.base.zonesIoTSC", "sql": "mac_base_zonesIoTSC", "name": "Senzory a ovládací prvky v zónach", "icon": "icon-thermometer",
+	"id": "mac.base.zonesIoTSC", "sql": "mac_base_zonesIoTSC", "name": "Senzory a ovládací prvky v zónach",
 	"columns": [
 		{"id": "ndx", "name": "ndx", "type": "int_ai"},
 		{"id": "zone", "name": "Zóna", "type": "int", "reference": "mac.base.zones"},

@@ -47,6 +47,33 @@
 		"bsi": "bi-people",
 		"mdi": "group"
     },
+    "tables/mac.iot.scenariosActions": {
+		"fa5": "fa-toggle-on",
+		"fa5pro": "fa-toggle-on",
+		"bsi": "bi-toggle-on",
+		"mdi": "toggle_on"
+    },
+    "tables/mac.iot.scenariosSchedule": {
+		"fa5": "fa-clock",
+		"fa5pro": "fa-clock",
+		"bsi": "bi-clock",
+		"mdi": "schedule"
+    },
+    "tables/mac.iot.thingsItems": {
+		"fa5":"fa-exchange-alt",
+        "fa5pro":"fa-exchange-alt",
+        "bsi":"bi-arrow-left-right",
+        "mdi":"sync_alt"
+    },
+    "tables/mac.iot.topics": {
+		"fa5": "fa-comment",
+		"fa5pro": "fa-comment",
+		"bsi": "bi-chat",
+		"mdi": "mode_comment"
+    },
+
+
+
 	"iotThingKinds/gate":{
 		"fa5": "fa-car",
 		"fa5pro": "fa-garage-open",

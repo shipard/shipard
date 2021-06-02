@@ -1,5 +1,5 @@
 {
-  "id": "e10pro.kb.texts", "sql": "e10pro_kb_texts", "name": "Texty", "icon": "icon-file-text",
+  "id": "e10pro.kb.texts", "sql": "e10pro_kb_texts", "name": "Texty",
   "columns": [
     {"id": "ndx", "name": "id", "type": "int_ai"},
 

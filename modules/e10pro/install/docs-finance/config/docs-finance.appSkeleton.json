@@ -49,11 +49,11 @@
 				"finance": {
 					"name": "Finance", "order": 300000,
 					"items": {
-						"bank": {"t1": "Banka", "object": "viewer", "table": "e10doc.core.heads", "viewer": "bank", "icon": "e10-docs-bank", "order": 200000},
-						"bankorder": {"t1": "Příkazy", "object": "viewer", "table": "e10doc.core.heads", "viewer": "bankorder", "icon": "icon-share-square",
+						"bank": {"t1": "Banka", "object": "viewer", "table": "e10doc.core.heads", "viewer": "bank", "order": 200000},
+						"bankorder": {"t1": "Příkazy", "object": "viewer", "table": "e10doc.core.heads", "viewer": "bankorder", "icon": "docType/bankOrders",
 													"enabledCfgItem": "options.e10doc-finance.useBankOrders", "order": 500000},
 						"acccmnbkp": {"t1": "Účetní doklady", "object": "viewer", "table": "e10doc.core.heads", "viewer": "cmnbkp",
-													"icon": "icon-file-text", "order": 400000}
+													"order": 400000}
 					}
 				}
 			}
@@ -64,8 +64,8 @@
 				"balance": {
 					"name": "Saldokonto", "order": 200000,
 					"items": {
-						"receivables": {"t1": "Pohledávky", "object": "report", "class": "e10doc.balance.reportBalanceReceivables", "icon": "icon-arrow-circle-up", "order": 100000},
-						"obligations": {"t1": "Závazky", "object": "report", "class": "e10doc.balance.reportBalanceObligations", "icon": "icon-arrow-circle-down", "order": 200000}
+						"receivables": {"t1": "Pohledávky", "object": "report", "class": "e10doc.balance.reportBalanceReceivables", "icon": "balance/receivables", "order": 100000},
+						"obligations": {"t1": "Závazky", "object": "report", "class": "e10doc.balance.reportBalanceObligations", "icon": "balance/obligations", "order": 200000}
 					}
 				}
 			}

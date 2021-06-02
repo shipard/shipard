@@ -1,5 +1,5 @@
 {
-  "id": "e10pro.hosting.server.modules", "sql": "e10pro_hosting_server_modules", "name": "Moduly systému", "icon": "icon-puzzle-piece",
+  "id": "e10pro.hosting.server.modules", "sql": "e10pro_hosting_server_modules", "name": "Moduly systému",
   "columns": [
     {"id": "ndx", "name": "id", "type": "int_ai"},
     {"id": "name", "name": "Název", "type": "string", "len": 80},

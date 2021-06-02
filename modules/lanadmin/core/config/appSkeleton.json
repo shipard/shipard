@@ -1,25 +1,25 @@
 {
 	"panels": {
 		"appMonitor": {
-			"url": "/app/appMonitor", "objectType": "panel", "zone": "sec", "order": -10, "icon": "icon-sitemap",
+			"url": "/app/appMonitor", "objectType": "panel", "zone": "sec", "order": -10, "icon": "e10.widgetDashboard/lanDashboard",
 			"disableRightMenu": 1, "disableLeftMenu": 1,
 			"items": {
-				"monitor": {"t1": "Přehled", "object": "widget", "class": "e10.widgetDashboard", "subclass": "lanAdmin", "icon": "icon-dashboard", "order": 5000}
+				"monitor": {"t1": "Přehled", "object": "widget", "class": "e10.widgetDashboard", "subclass": "lanAdmin", "icon": "system/dashboardDashboard", "order": 5000}
 			}
 		},
 		"lanadmin": {"url": "/app/lanadmin", "zone": "sec", "objectType": "panel", "name": "LanAdmin", "cntBigIcons": 4, "order": 1810000,
 			"items": {
-				"admins" :{"t1": "Správci", "object": "viewer", "table": "mac.admin.admins", "viewer": "default", "icon": "icon-user-secret", "order": 10000},
-				"dataSources" :{"t1": "Zdroje dat", "object": "viewer", "table": "lanadmin.core.dataSources", "viewer": "default", "icon": "icon-database", "order": 11000},
-				"ipAddressLists" :{"t1": "Seznamy IP adres", "object": "viewer", "table": "mac.admin.ipAddressLists", "viewer": "default", "icon": "icon-user-secret", "order": 12000},
-				"ipAddress" :{"t1": "IP adresy", "object": "viewer", "table": "mac.admin.ipAddress", "viewer": "default", "icon": "icon-crosshairs", "order": 14000}
+				"admins" :{"t1": "Správci", "object": "viewer", "table": "mac.admin.admins", "viewer": "default", "order": 10000},
+				"dataSources" :{"t1": "Zdroje dat", "object": "viewer", "table": "lanadmin.core.dataSources", "viewer": "default", "order": 11000},
+				"ipAddressLists" :{"t1": "Seznamy IP adres", "object": "viewer", "table": "mac.admin.ipAddressLists", "icon":"tables/mac.lan.ipAddressLists" ,"viewer": "default", "order": 12000},
+				"ipAddress" :{"t1": "IP adresy", "object": "viewer", "table": "mac.admin.ipAddress", "viewer": "default", "icon": "tables/mac.lan.ipAddress", "order": 14000}
 			}
 		},
 		"lan-admin-monitor": {
 			"url": "/app/monitor", "objectType": "panel", "zone": "sec", "order": 1,
 			"mainWidgetMode" : 1, "hidden": 1, "disableRightMenu": 1,
 			"items": {
-				"monitor": {"t1": "Přehled", "object": "widget", "class": "e10.widgetDashboard", "subclass": "lanAdmin", "icon": "icon-dashboard", "order": 5000}
+				"monitor": {"t1": "Přehled", "object": "widget", "class": "e10.widgetDashboard", "subclass": "lanAdmin", "icon": "system/dashboardDashboard", "order": 5000}
 			}
 		}
 	}

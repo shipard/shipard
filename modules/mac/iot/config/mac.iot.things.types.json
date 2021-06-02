@@ -4,7 +4,7 @@
 		"shortName": "Ostatní",
 		"id": "other", "topicType": 1,
 		"coreType": "none",
-		"icon": "icon-question-circle-o"
+		"icon": "iotValuesKinds/other"
 	},
 	"1": {
 		"fullName": "Dveře",

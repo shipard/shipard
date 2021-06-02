@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.hosting.server.domains", "sql": "e10pro_hosting_server_domains", "name": "Domény", "icon": "icon-globe",
+	"id": "e10pro.hosting.server.domains", "sql": "e10pro_hosting_server_domains", "name": "Domény",
 	"columns": [
 		{"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "domain", "name": "Doména", "type": "string", "len": 64},
@@ -20,9 +20,9 @@
 	"views": [
 		{"id": "default", "class": "e10pro.hosting.server.ViewDomains",
 			"details": {
-				"default": {"title": "Přehled", "icon": "icon-file", "type": "detail", "class": "e10pro.hosting.server.ViewDetailDomain"},
-				"records": {"title": "Záznamy", "icon": "icon-list-ul", "type": "detail", "class": "e10pro.hosting.server.ViewDetailDomainRecords"},
-				"api": {"title": "gcloud", "icon": "icon-google", "type": "detail", "class": "e10pro.hosting.server.ViewDetailDomainAPI"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.hosting.server.ViewDetailDomain"},
+				"records": {"title": "Záznamy", "icon": "detailRecords", "type": "detail", "class": "e10pro.hosting.server.ViewDetailDomainRecords"},
+				"api": {"title": "gcloud", "icon": "detailGcloud", "type": "detail", "class": "e10pro.hosting.server.ViewDetailDomainAPI"}
 			}
 		}
 	],

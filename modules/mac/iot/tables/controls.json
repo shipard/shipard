@@ -1,5 +1,5 @@
 {
-	"id": "mac.iot.controls", "sql": "mac_iot_controls", "name": "Ovládací prvky", "icon": "icon-toggle-on",
+	"id": "mac.iot.controls", "sql": "mac_iot_controls", "name": "Ovládací prvky",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "uid", "name": "UID", "type": "string", "len": 20, "options": ["ascii"]},

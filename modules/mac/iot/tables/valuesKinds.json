@@ -1,5 +1,5 @@
 {
-	"id": "mac.iot.valuesKinds", "sql": "mac_iot_valuesKinds", "name": "Druhy hodnot", "icon": "icon-eyedropper",
+	"id": "mac.iot.valuesKinds", "sql": "mac_iot_valuesKinds", "name": "Druhy hodnot",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

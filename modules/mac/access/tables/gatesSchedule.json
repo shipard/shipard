@@ -1,5 +1,5 @@
 {
-	"id": "mac.access.gatesSchedule", "sql": "mac_access_gatesSchedule", "name": "Časový rozvrh bran", "icon": "icon-clock-o",
+	"id": "mac.access.gatesSchedule", "sql": "mac_access_gatesSchedule", "name": "Časový rozvrh bran",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},

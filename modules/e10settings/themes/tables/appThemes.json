@@ -1,5 +1,5 @@
 {
-	"id": "e10settings.themes.appThemes", "sql": "e10settings_themes_appThemes", "name": "Témata aplikace", "icon": "icon-paint-brush",
+	"id": "e10settings.themes.appThemes", "sql": "e10settings_themes_appThemes", "name": "Témata aplikace",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

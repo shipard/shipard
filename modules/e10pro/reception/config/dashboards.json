@@ -21,7 +21,7 @@
 			},
 			"reception-meters": {
 				"checkModule": "e10pro.meters",
-				"name": "Měřiče", "icon": "icon-cogs", "order": 300000,
+				"name": "Měřiče", "icon": "system/rightSubmenuMeters", "order": 300000,
 				"fullsize": 1,
 				"rows": {
 					"main": {"order": 10000}
@@ -52,7 +52,7 @@
 			},
 			"meters": {
 				"checkModule": "e10pro.meters",
-				"name": "Měřiče", "icon": "icon-cogs", "order": 2300,
+				"name": "Měřiče", "icon": "system/rightSubmenuMeters", "order": 2300,
 				"fullsize": 1,
 				"rows": {
 					"main": {"order": 10000}
@@ -60,7 +60,7 @@
 			},
 			"bboard": {
 				"name": "Nástěnka",
-				"icon": "e10pro-wkf-bboard",
+				"icon": "system/rightSubmenuNoticeBoard",
 				"order": 3000,
 				"rows": {
 					"main": {"order": 10000, "align": "left"}
@@ -68,7 +68,7 @@
 			},
 			"calendar": {
 				"name": "Kalendář",
-				"icon": "icon-calendar",
+				"icon": "system/rightSubmenuCalendar",
 				"fullsize": 1,
 				"order": 4000,
 				"rows": {

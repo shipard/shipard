@@ -1,7 +1,7 @@
 {
 	"panels": {
 		"agendy": {
-			"url": "/app/dashboard", "zone": "sec", "objectType": "panel", "name": "", "icon": "icon-home", "order": 1000,
+			"url": "/app/dashboard", "zone": "sec", "objectType": "panel", "name": "", "icon": "actionHomePage", "order": 1000,
 			"items": {
 				"wkfDashboardStart": {
 					"t1": "Start", "object": "widget", "class": "e10.widgetDashboard", "subclass": "main_new", "icon": "system/iconStart",
@@ -33,7 +33,7 @@
 			"disableAppMenu" : 1, "disableLeftMenu": 1, "hidden": 1,
 			"items": [
 				{"t1": "Přehled", "object": "widget", "class": "e10.widgetDashboard",
-					"subclass": "main", "icon": "icon-dashboard", "order": 5000}
+					"subclass": "main", "icon": "system/dashboardDashboard", "order": 5000}
 			]
 		},
 		"wikiAppPageR": {"urlRegExp": "/^\\/app\\/wiki\\-[0-9]+$/", "zone": "sec", "objectType": "redirect", "redirect": "", "order": 100},

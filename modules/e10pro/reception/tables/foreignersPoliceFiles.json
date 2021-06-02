@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.reception.foreignersPoliceFiles", "sql": "e10pro_reception_foreignersPoliceFiles", "name": "Soubory pro cizineckou policii", "icon": "icon-file-text-o",
+	"id": "e10pro.reception.foreignersPoliceFiles", "sql": "e10pro_reception_foreignersPoliceFiles", "name": "Soubory pro cizineckou policii",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

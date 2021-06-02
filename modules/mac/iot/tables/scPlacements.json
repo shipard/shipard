@@ -1,5 +1,5 @@
 {
-	"id": "mac.iot.scPlacements", "sql": "mac_iot_scPlacements", "name": "Zařazení senzorů a ovládácích prvků do aplikace", "icon": "icon-hand-pointer-o",
+	"id": "mac.iot.scPlacements", "sql": "mac_iot_scPlacements", "name": "Zařazení senzorů a ovládácích prvků do aplikace",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

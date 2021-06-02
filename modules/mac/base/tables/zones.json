@@ -1,5 +1,5 @@
 {
-	"id": "mac.base.zones", "sql": "mac_base_zones", "name": "Zóny", "icon": "icon-crosshairs",
+	"id": "mac.base.zones", "sql": "mac_base_zones", "name": "Zóny",
 	"columns": [
 		{"id": "ndx", "name": "ndx", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 80},

@@ -1,5 +1,5 @@
 {
-	"id": "lanadmin.core.dataSources", "sql": "lanadmin_core_dataSources", "name": "Zdroje dat", "icon": "icon-database",
+	"id": "lanadmin.core.dataSources", "sql": "lanadmin_core_dataSources", "name": "Zdroje dat",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

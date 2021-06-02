@@ -2,8 +2,8 @@
 	"panels": {
 		"hosting": {
 			"smallItems": [
-				{"#": "calendar", "t1": "Kalendář", "object": "viewer", "table": "e10pro.hosting.services.cal", "viewer": "default", "icon": "icon-calendar", "order": 999100000},
-				{"#": "pod", "t1": "Obrázky dne", "object": "viewer", "table": "e10pro.hosting.services.pod", "viewer": "default", "icon": "icon-picture-o", "order": 999200000}
+				{"#": "calendar", "t1": "Kalendář", "object": "viewer", "table": "e10pro.hosting.services.cal", "viewer": "default", "order": 999100000},
+				{"#": "pod", "t1": "Obrázky dne", "object": "viewer", "table": "e10pro.hosting.services.pod", "viewer": "default", "order": 999200000}
 			]
     }
 	}
