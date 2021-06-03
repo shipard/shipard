@@ -3,20 +3,31 @@
 
 define ("__APP_DIR__", getcwd());
 
-$cfgServerString = file_get_contents ('config/_server_channelInfo.json');
-if (!$cfgServerString)
+
+if ($argv[1] !== 'app-walk')
 {
-	echo "ERROR: file `config/_server_channelInfo.json` not found.\n";
-	exit(100);
-}	
-$cfgServer = json_decode ($cfgServerString, true);
-if (!$cfgServer)
-{
-	echo "ERROR: file `config/_server_channelInfo.json` is not valid.\n";
-	exit(101);
+	$cfgServerString = file_get_contents ('config/_server_channelInfo.json');
+	if (!$cfgServerString)
+	{
+		echo "ERROR: file `config/_server_channelInfo.json` not found.\n";
+		exit(100);
+	}	
+	$cfgServer = json_decode ($cfgServerString, true);
+	if (!$cfgServer)
+	{
+		echo "ERROR: file `config/_server_channelInfo.json` is not valid.\n";
+		exit(101);
+	}
+		
+	define('__SHPD_ROOT_DIR__', $cfgServer['serverInfo']['channelPath']);
 }
-	
-define('__SHPD_ROOT_DIR__', $cfgServer['serverInfo']['channelPath']);
+
+if (!defined ('__SHPD_ROOT_DIR__'))
+{
+	$parts = explode('/', __DIR__);
+	array_pop($parts);
+	define('__SHPD_ROOT_DIR__', '/'.implode('/', $parts).'/');
+}
 
 require_once __SHPD_ROOT_DIR__ . '/src/boot.php';
 
@@ -134,6 +145,9 @@ class E10_App extends Application
 
 	public function appWalk ()
 	{
+		$dsroot = $this->cfgServer['dsRoot'];
+		chdir($dsroot);
+
 		$paramsArray = $_SERVER ['argv'];
 		unset ($paramsArray [1]);
 		$cmd = implode (' ', $paramsArray);
@@ -1105,106 +1119,6 @@ class E10_App extends Application
 		}
 	}
 
-	public function getHelpDeskInfo ()
-	{
-		$hostingCfg = utils::hostingCfg(['serverGid', 'helpDeskServerUrl', 'helpDeskApiKey', ]);
-		if ($hostingCfg === FALSE)
-			return FALSE;
-
-		if (utils::appStatus() !== TRUE)
-			return FALSE;
-
-		$dsInfo = utils::loadCfgFile('config/dataSourceInfo.json');
-		if ($dsInfo['dsid'] == '50842906798390')
-		{ // this is helpdesk...
-			return TRUE;
-		}
-		if ($dsInfo['condition'] > 1)
-		{ // test/internal/... data source
-			return TRUE;
-		}
-
-		// -- data source info
-		$requestData = [
-			'version' => 1,
-			'dsid' => $dsInfo['dsid'], 'dsName' => isset($dsInfo['shortName']) ? $dsInfo['shortName'] : $dsInfo['name'],
-			'users' => []
-		];
-
-		// -- users
-		$rows = $this->db()->query ('SELECT * FROM [e10_persons_persons] WHERE [docState] = 4000 AND accountState = 1 AND accountType = 2 AND roles != %s', '',
-			'AND [roles] != %s', 'guest', ' AND [company] = 0 AND [personType] = 1');
-		foreach ($rows as $r)
-		{
-			$roles = explode ('.', $r['roles']);
-			$this->authenticator->checkRolesDependencies($roles, $this->cfgItem('e10.persons.roles'));
-			$pwUser = 0;
-
-			if (in_array('hdus', $roles))
-				$pwUser = 1;
-
-			if (in_array('hdue', $roles))
-				$pwUser = 2;
-
-			if (!$pwUser)
-				continue;
-
-			$user = [
-				'login' => $r['login'], 'loginHash' => $r['loginHash'], 'pwUser' => $pwUser,
-				'complicatedName' => $r['complicatedName'],
-				'beforeName' => $r['beforeName'],
-				'firstName' => $r['firstName'],
-				'middleName' => $r['middleName'],
-				'lastName' => $r['lastName'],
-				'afterName' => $r['afterName'],
-			];
-
-			$requestData['users'][] = $user;
-		}
-
-		$requestDataStr = json_encode($requestData);
-		$requestCheckSum = sha1($requestDataStr);
-
-		$existedHelpDeskInfo = utils::loadCfgFile('config/helpDeskInfo.json');
-		if ($existedHelpDeskInfo && $existedHelpDeskInfo['checkSum'] === $requestCheckSum)
-			return TRUE;
-
-		$opts = array(
-			'http'=>array(
-				'timeout' => 30,
-				'method'=>"GET",
-				'header'=>
-					"e10-api-key: " . $hostingCfg['helpDeskApiKey'] . "\r\n".
-					"e10-device-id: " . utils::machineDeviceId (). "\r\n".
-					"Content-type: text/json"."\r\n".
-					"Content-Length: " . strlen($requestDataStr). "\r\n".
-					"Connection: close\r\n",
-				'content' => $requestDataStr,
-			)
-		);
-		$context = stream_context_create($opts);
-
-		$url =  $hostingCfg['helpDeskServerUrl'].'api/call/e10pro.helpdesk.getHelpDeskInfo';
-		$resultCode = file_get_contents ($url, FALSE, $context);
-		$resultData = json_decode ($resultCode, TRUE);
-
-		if ($resultData === FALSE || !isset($resultData['data']))
-			return $this->err ('invalid server response');
-
-		$hdInfo = $resultData['data'];
-		if ($hdInfo)
-		{
-			$hdInfo['checkSum'] = $requestCheckSum;
-			//echo json_encode($hdInfo, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)."\n\n";
-			file_put_contents('config/helpDeskInfo.json', json_encode($hdInfo, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
-			chgrp ('config/helpDeskInfo.json', utils::wwwGroup());
-		}
-		else
-			return $this->err ('invalid dsid in response');
-
-		return TRUE;
-	}
-
 	public function repairDocNumbers ()
 	{
 		$doRepair = intval($this->arg('do-repair'));
@@ -1238,6 +1152,27 @@ class E10_App extends Application
 			$this->db()->query ('UPDATE [e10_base_docslog] SET tableId = %s', $dstTableId, ' WHERE tableid = %s', $srcTableId);
 	}
 
+	public function tests()
+	{
+		$this->robotLogin();
+
+		$tests = $this->cfgItem('tests');
+		foreach ($tests as $t)
+		{
+			$testObject = $this->createObject($t['class']);
+			if (!$testObject)
+			{
+				echo "ERROR: Class '{$t['class']}' not found.\n";
+				continue;
+			}
+			$testObject->setDefinition($t);
+			$testObject->run();
+			unset($testObject);
+		}
+
+		return TRUE;
+	}
+
 	public function run ()
 	{
 		$this->quiet = $this->arg ('quiet');
@@ -1248,7 +1183,6 @@ class E10_App extends Application
 			case	"appOptions":										return $this->appOptions();
 			case	"appTask":											return $this->appTask();
 			case	"app-walk":											return $this->appWalk();
-			case	"appWalk":											return $this->appWalk();
 			case	"cfgUpdate":										return $this->cfgUpdate ();
 			case	'cli-action':										return $this->cliAction();
 			case	'createShare':									return $this->createShare();
@@ -1283,10 +1217,6 @@ class E10_App extends Application
 
 			case	"geoCode":											return $this->geoCode();
 
-			case	"lanInfo":											return $this->lanInfo();
-
-			case	"getHelpDeskInfo":							return $this->getHelpDeskInfo();
-
 			case	'cache-invalidate-item':				return $this->cacheInvalidateItem();
 
 
@@ -1295,6 +1225,8 @@ class E10_App extends Application
 			case 	"provozovny":										return $this->provozovny();
 
 			case	"repairDocNumbers":							return $this->repairDocNumbers();
+
+			case	"tests":												return $this->tests();
 		}
 		echo ("unknown or nothing param...\r\n");
 	}

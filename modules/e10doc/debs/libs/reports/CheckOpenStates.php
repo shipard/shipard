@@ -151,7 +151,7 @@ class CheckOpenStates extends \e10doc\core\libs\reports\GlobalReport
 		foreach ($table as &$r)
 		{
 			if (substr($r['accountId'], 0, 3) === '431' || substr($r['accountId'], 0, 3) === '931')
-				$r['endState'] = $totalsByKind[2] + $totalsByKind[3];
+				$r['endState'] = ($totalsByKind[2] ?? 0.0) + ($totalsByKind[3] ?? 0.0);
 
 			$r['diff'] = round($r['endState'] - $r['initState'], 2);
 

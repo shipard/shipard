@@ -96,7 +96,7 @@ class MainWindow extends \Shipard\Base\BaseObject
 			if (isset ($this->app->workplace['name']))
 			{
 				$userInfo .=  "<li><span>";
-				$userInfo .=  "<i class='fa fa-home'/></i> " . utils::es ($this->app->workplace['name']);
+				$userInfo .=  $this->app()->ui()->icon('system/iconWorkplace') . ' ' . utils::es ($this->app->workplace['name']);
 				$userInfo .=  '</span></li>';
 				$isWorkplace = 1;
 			}
@@ -164,7 +164,7 @@ class MainWindow extends \Shipard\Base\BaseObject
 				$wd = $this->app->getUserParam('wd', FALSE);
 				if ($wd)
 					$wdText = ' ' . utils::datef($wd);
-				$userInfo .= "<li><span class='appMenuButton df2-action-trigger' data-action='addwizard' data-class='lib.cfg.WorkingDateWizard' title='Nastavit pracovní datum'><i class='fa fa-calendar'></i>{$wdText}</span></li>";
+				$userInfo .= "<li><span class='appMenuButton df2-action-trigger' data-action='addwizard' data-class='lib.cfg.WorkingDateWizard' title='Nastavit pracovní datum'>".$this->app()->ui()->icon('system/actionCalendar')."{$wdText}</span></li>";
 			}
 
 			$userInfo .= '<li><span>';
@@ -196,9 +196,9 @@ class MainWindow extends \Shipard\Base\BaseObject
 			$userInfo .= '</span>';
 
 			if ($this->app->cfgItem ('develMode', 0) !== 0)
-				$userInfo .=  "<span><i class='fa fa-bug e10-error'></i></span>";
+				$userInfo .=  '<span>'.$this->app()->ui()->icon('system/iconBug', 'e10-error').'</span>';
 			if (!$this->app->production())
-				$userInfo .=  "<span class='e10-bg-t4 e10-error' title=\"".utils::es('Toto je testovací daatabáze')."\"><i class='fa fa-flask'></i></span>";
+				$userInfo .=  "<span class='e10-bg-t4 e10-error' title=\"".utils::es('Toto je testovací daatabáze')."\">".$this->app()->ui()->icon('system/iconLaboratory')."</span>";
 			$userInfo .=  '</li>';
 
 			$userInfo .=  '</ul>';

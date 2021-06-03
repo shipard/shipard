@@ -64,12 +64,12 @@ class RosEngine extends Utility
 
 		if ($this->rosMode == 2)
 		{ // demo ==> playground
-			$this->wsdlPath = __APP_DIR__ . '/e10-modules/lib/ros/cz/res/playground/Service.wsdl';
-			$this->certPath = __APP_DIR__ . '/e10-modules/lib/ros/cz/res/playground/cert';
+			$this->wsdlPath = __SHPD_ROOT_DIR__ . '/src/_deprecated/lib/' . 'ros/cz/res/playground/Service.wsdl';
+			$this->certPath = __SHPD_ROOT_DIR__ . '/src/_deprecated/lib/' . 'ros/cz/res/playground/cert';
 		}
 		else
 		{
-			$this->wsdlPath = __APP_DIR__ . '/e10-modules/lib/ros/cz/res/production/Service.wsdl';
+			$this->wsdlPath = __SHPD_ROOT_DIR__ . '/src/_deprecated/lib/' . 'ros/cz/res/production/Service.wsdl';
 			$this->certPath = __APP_DIR__ . '/res/ros/' . $this->rosReg['certPath'];
 		}
 	}

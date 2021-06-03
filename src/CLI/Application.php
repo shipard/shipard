@@ -17,7 +17,10 @@ class Application extends \Shipard\Application\Application
 		$this->e10dir = __SHPD_ROOT_DIR__;
 		$this->arguments = $this->parseArgs($argv);
 		if ($this->command() === 'appWalk' || $this->command() === 'app-walk')
+		{
+			$this->cfgServer = $this->loadCfgFile('/etc/shipard/server.json');
 			return;
+		}
 
 		// -- load last version id
 		$this->lastUsedVersionId = intval (@file_get_contents (__APP_DIR__ . "/config/E10_VERSION_ID"));

@@ -140,6 +140,12 @@ class ReportBadAccounting extends \e10doc\core\libs\reports\GlobalReport
 		$data = [];
 		forEach ($rows as $r)
 		{
+			if (!isset($this->docTypes [$r['docType']]))
+			{
+				error_log("Invalid doctype `{$r['docType']}`: ".json_encode($r));
+				continue;
+			}
+			
 			$docType = $this->docTypes [$r['docType']];
 
 			$newItem = [

@@ -51,7 +51,8 @@ class Detail extends \e10\DocumentCard
 			else
 			{
 				$line[] = ['text' => '', 'icon' => 'icon-check', 'class' => 'e10-linePart h1'];
-				$line[] = ['text' => 'ČÁSTEČNĚ UHRAZENO', 'prefix' => utils::nf($bi->paymentTotal / $this->item['toPay'] * 100, 0).' %', 'class' => 'e10-none'];
+				$partialAmount = (isset($this->item['toPay']) && $this->item['toPay']) ? ($bi->paymentTotal / $this->item['toPay']) * 100 : 0;	
+				$line[] = ['text' => 'ČÁSTEČNĚ UHRAZENO', 'prefix' => utils::nf($partialAmount, 0).' %', 'class' => 'e10-none'];
 			}
 
 		foreach ($bi->tools as $t)

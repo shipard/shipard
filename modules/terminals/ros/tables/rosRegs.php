@@ -135,7 +135,7 @@ class TableRosRegs extends DbTable
 
 		if ($rosMode == 2)
 		{ // testing/demo ==> playground
-			$crtPath = __APP_DIR__.'/e10-modules/lib/ros/cz/res/playground/cert';
+			$crtPath = __SHPD_ROOT_DIR__ . '/src/_deprecated/lib/'.'ros/cz/res/playground/cert';
 
 			$certs = [];
 			$certs['cert'] = file_get_contents($crtPath.'.crt');
