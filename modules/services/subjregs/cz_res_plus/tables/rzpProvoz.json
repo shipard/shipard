@@ -1,5 +1,5 @@
 {
-	"id": "services.subjregs.cz_res_plus.rzpProvoz", "sql": "services_subjregs_cz_res_plus_rzpProvoz", "name": "RZP Provozovny", "icon": "icon-industry",
+	"id": "services.subjregs.cz_res_plus.rzpProvoz", "sql": "services_subjregs_cz_res_plus_rzpProvoz", "name": "RZP Provozovny",
 	"columns": [
 		{"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "id_provoz", "name": "ID provozovny", "type": "long"},
@@ -14,7 +14,7 @@
 		"default": {
 			"id": "default", "class": "services.subjregs.cz_res_plus.ViewRzpProvoz",
 			"details": {
-				"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "order":  0, "class": "services.subjregs.cz_res_plus.ViewDetailRzpProvoz"}
+				"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "services.subjregs.cz_res_plus.ViewDetailRzpProvoz"}
 			}
 		}
 	},

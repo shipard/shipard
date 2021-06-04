@@ -4,5 +4,26 @@
         "fa5pro":"fa-microchip",
         "bsi":"bi-cpu-fill",
         "mdi":"memory"
+    },
+
+
+
+    "rosModeEnabled":{
+        "fa5":"fa-check",
+        "fa5pro":"fa-check",
+        "bsi":"bi-check",
+        "mdi":"check"
+    },
+    "rosModeTesting":{
+        "fa5": "fa-question",
+		"fa5pro": "fa-question",
+		"bsi": "bi-question-lg",
+		"mdi": "help_outline"
+    },
+    "rosModeDemo":{
+        "fa5": "fa-exclamation-triangle",
+		"fa5pro": "fa-exclamation-triangle",
+		"bsi": "bi-exclamation-triangle",
+		"mdi": "warning_amber"
     }
 }

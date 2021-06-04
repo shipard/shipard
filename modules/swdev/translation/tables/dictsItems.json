@@ -1,5 +1,5 @@
 {
-	"id": "swdev.translation.dictsItems", "sql": "swdev_translation_dictsItems", "name": "Položky slovníků", "icon": "icon-list",
+	"id": "swdev.translation.dictsItems", "sql": "swdev_translation_dictsItems", "name": "Položky slovníků",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "dict", "name": "Slovník", "type": "int", "reference": "swdev.translation.dicts"},
@@ -14,7 +14,7 @@
 	"views": [
 		{"id": "default", "class": "swdev.translation.ViewDictsItems",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.translation.ViewDetailDictItem"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "swdev.translation.ViewDetailDictItem"}
 			}
 		}
 	],

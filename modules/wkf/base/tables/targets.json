@@ -1,5 +1,5 @@
 {
-	"id": "wkf.base.targets", "sql": "wkf_base_targets", "name": "Cíle", "icon": "icon-flag-checkered",
+	"id": "wkf.base.targets", "sql": "wkf_base_targets", "name": "Cíle",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

@@ -1,5 +1,5 @@
 {
-	"id": "wkf.base.extNotifications", "sql": "wkf_base_extNotifications", "name": "Externí notifikace", "icon": "icon-external-link-square",
+	"id": "wkf.base.extNotifications", "sql": "wkf_base_extNotifications", "name": "Externí notifikace",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

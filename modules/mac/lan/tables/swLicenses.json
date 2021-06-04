@@ -1,5 +1,5 @@
 {
-	"id": "mac.lan.swLicenses", "sql": "mac_lan_swLicenses", "name": "SW Licence", "icon": "icon-certificate",
+	"id": "mac.lan.swLicenses", "sql": "mac_lan_swLicenses", "name": "SW Licence",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},

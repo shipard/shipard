@@ -1,6 +1,6 @@
 [
 	{
-		"name": "Dohled", "class": "mac.vs.WidgetLive", "icon": "icon-video-camera",
+		"name": "Dohled", "class": "mac.vs.WidgetLive", "icon": "system/iconCamera",
 		"dashboard": "main", "panel": "macvs", "order": 1000, "row": "main", "width": 12, "type": "vs"
 	}
 ]

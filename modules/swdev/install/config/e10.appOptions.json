@@ -1,14 +1,14 @@
 {
 	"swDevLanguages": {
-		"name": "Překládané jazyky", "order": 14500, "group": "swdev", "icon": "icon-language",
+		"name": "Překládané jazyky", "order": 14500, "group": "swdev",
 		"type": "viewer", "table": "swdev.translation.languages", "viewer": "default"
 	},
 	"swDevTranslators": {
-		"name": "Překladatelé", "order": 14600, "group": "swdev", "icon": "icon-user-o",
+		"name": "Překladatelé", "order": 14600, "group": "swdev",
 		"type": "viewer", "table": "swdev.translation.translators", "viewer": "default"
 	},
 	"swDevDicts": {
-		"name": "Slovníky", "order": 14900, "group": "swdev", "icon": "icon-book",
+		"name": "Slovníky", "order": 14900, "group": "swdev",
 		"type": "viewer", "table": "swdev.translation.dicts", "viewer": "default"
 	}
 }

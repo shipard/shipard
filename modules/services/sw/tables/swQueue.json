@@ -1,5 +1,5 @@
 {
-	"id": "services.sw.swQueue", "sql": "services_sw_swQueue", "name": "SW informace ke zpracování", "icon": "icon-file-text-o",
+	"id": "services.sw.swQueue", "sql": "services_sw_swQueue", "name": "SW informace ke zpracování",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

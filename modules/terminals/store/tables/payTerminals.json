@@ -1,5 +1,5 @@
 {
-	"id": "terminals.store.payTerminals", "sql": "terminals_store_payTerminals", "name": "Platební terminály", "icon": "icon-calculator",
+	"id": "terminals.store.payTerminals", "sql": "terminals_store_payTerminals", "name": "Platební terminály",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},

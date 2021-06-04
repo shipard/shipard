@@ -1,5 +1,5 @@
 {
-	"id": "swdev.hw.devicesKinds", "sql": "swdev_hw_devicesKinds", "name": "Druhy HW", "icon": "icon-server",
+	"id": "swdev.hw.devicesKinds", "sql": "swdev_hw_devicesKinds", "name": "Druhy HW",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

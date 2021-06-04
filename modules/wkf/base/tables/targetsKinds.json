@@ -1,5 +1,5 @@
 {
-	"id": "wkf.base.targetsKinds", "sql": "wkf_base_targetsKinds", "name": "Druhy cílů", "icon": "icon-flag-o",
+	"id": "wkf.base.targetsKinds", "sql": "wkf_base_targetsKinds", "name": "Druhy cílů",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

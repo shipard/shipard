@@ -1,5 +1,5 @@
 {
-	"id": "swdev.world.territories", "sql": "swdev_world_territories", "name": "Oblasti a uskupení", "icon": "icon-map",
+	"id": "swdev.world.territories", "sql": "swdev_world_territories", "name": "Oblasti a uskupení",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "name", "name": "Název", "type": "string", "len": 120},
@@ -16,8 +16,8 @@
 		{
 			"id": "default", "class": "swdev.world.ViewTerritories",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.world.ViewDetailTerritory"},
-				"tr": {"title": "Překlad", "icon": "icon-language", "type": "detail", "class": "swdev.world.ViewDetailTerritoryTr"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "swdev.world.ViewDetailTerritory"},
+				"tr": {"title": "Překlad", "icon": "detailTranslation", "type": "detail", "class": "swdev.world.ViewDetailTerritoryTr"}
 			}
 		}
 	],

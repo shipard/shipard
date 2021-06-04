@@ -1,5 +1,5 @@
 {
-	"id": "mac.lan.patchPanels", "sql": "mac_lan_patchPanels", "name": "Patch panely", "icon": "icon-ellipsis-h",
+	"id": "mac.lan.patchPanels", "sql": "mac_lan_patchPanels", "name": "Patch panely",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

@@ -1,5 +1,5 @@
 {
-  "id": "wkf.docs.docsKinds", "sql": "wkf_docs_docsKinds", "name": "Druhy Dokumentů", "icon": "icon-file-o",
+  "id": "wkf.docs.docsKinds", "sql": "wkf_docs_docsKinds", "name": "Druhy Dokumentů",
   "columns": [
     {"id": "ndx", "name": "id", "type": "int_ai"},
 

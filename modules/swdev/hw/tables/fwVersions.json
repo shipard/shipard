@@ -1,5 +1,5 @@
 {
-	"id": "swdev.hw.fwVersions", "sql": "swdev_hw_fwVersions", "name": "Verze Firmware", "icon": "icon-hashtag",
+	"id": "swdev.hw.fwVersions", "sql": "swdev_hw_fwVersions", "name": "Verze Firmware",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fw", "name": "Firmware", "type": "int", "reference": "swdev.hw.fw"},
@@ -12,7 +12,7 @@
 	"views": [
 		{"id": "default", "class": "swdev.hw.ViewFWVersions",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.hw.ViewDetailFWVersion"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "swdev.hw.ViewDetailFWVersion"}
 			}
 		}
 	],

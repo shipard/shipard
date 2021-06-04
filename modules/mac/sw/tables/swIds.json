@@ -1,5 +1,5 @@
 {
-	"id": "mac.sw.swIds", "sql": "mac_sw_swIds", "name": "ID software", "icon": "icon-crosshairs",
+	"id": "mac.sw.swIds", "sql": "mac_sw_swIds", "name": "ID software",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},

@@ -1,5 +1,5 @@
 {
-	"id": "services.subjects.kinds", "sql": "services_subjects_kinds", "name": "Druhy subjektů", "icon": "icon-folder-open-o",
+	"id": "services.subjects.kinds", "sql": "services_subjects_kinds", "name": "Druhy subjektů",
 	"columns": [
 		{"id": "ndx", "name": "ndx", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},

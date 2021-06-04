@@ -1,5 +1,5 @@
 {
-	"id": "terminals.base.servers", "sql": "terminals_base_servers", "name": "Místní servery", "icon": "icon-server",
+	"id": "terminals.base.servers", "sql": "terminals_base_servers", "name": "Místní servery",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "name", "name": "Název", "type": "string", "len": 80},

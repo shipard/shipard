@@ -379,6 +379,18 @@
 		"bsi": "bi-exclamation-triangle",
 		"mdi": "warning_amber"
 	},
+	"iconCamera":{
+		"fa5": "fa-video",
+		"fa5pro": "fa-cctv",
+		"bsi": "bi-camera-video",
+		"mdi": "videocam"
+	},
+	"iconBook":{
+		"fa5": "fa-book",
+		"fa5pro": "fa-book",
+		"bsi": "bi-book",
+		"mdi": "auto_stories"
+	},
 	
 
 
@@ -541,6 +553,12 @@
 		"fa5pro": "fa-comment",
 		"bsi": "bi-chat",
 		"mdi": "mode_comment"
+	},
+	"issueStandart":{
+		"fa5":"fa-times",
+        "fa5pro":"fa-times",
+        "bsi":"bi-x",
+        "mdi":"close"
 	},
 
 
@@ -709,6 +727,18 @@
 		"fa5pro": "fa-book",
 		"bsi": "bi-book",
 		"mdi": "auto_stories"
+	},
+	"detailSources":{
+		"fa5": "fa-filter",
+		"fa5pro": "fa-filter",
+		"bsi": "bi-funnel",
+		"mdi": "filter_alt"
+	},
+	"detailSubjects":{
+		"fa5": "fa-building",
+		"fa5pro": "fa-building",
+		"bsi": "bi-building",
+		"mdi": "business"
 	},
 
 

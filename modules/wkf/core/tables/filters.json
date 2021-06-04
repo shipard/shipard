@@ -1,5 +1,5 @@
 {
-	"id": "wkf.core.filters", "sql": "wkf_core_filters", "name": "Filtry zpráv", "icon": "icon-filter",
+	"id": "wkf.core.filters", "sql": "wkf_core_filters", "name": "Filtry zpráv",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

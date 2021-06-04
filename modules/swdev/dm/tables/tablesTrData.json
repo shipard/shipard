@@ -1,5 +1,5 @@
 {
-	"id": "swdev.dm.tablesTrData", "sql": "swdev_dm_tablesTrData", "name": "Data pro lokalizaci tabulek", "icon": "icon-language",
+	"id": "swdev.dm.tablesTrData", "sql": "swdev_dm_tablesTrData", "name": "Data pro lokalizaci tabulek",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "table", "name": "Tabulka", "type": "int", "reference": "swdev.dm.tables"},

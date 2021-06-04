@@ -1,5 +1,5 @@
 {
-	"id": "mac.lan.racks", "sql": "mac_lan_racks", "name": "Racky", "icon": "icon-window-maximize",
+	"id": "mac.lan.racks", "sql": "mac_lan_racks", "name": "Racky",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},

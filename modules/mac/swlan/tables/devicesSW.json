@@ -1,5 +1,5 @@
 {
-	"id": "mac.swlan.devicesSW", "sql": "mac_swlan_devicesSW", "name": "SW na zařízeních", "icon": "icon-file-text-o",
+	"id": "mac.swlan.devicesSW", "sql": "mac_swlan_devicesSW", "name": "SW na zařízeních",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

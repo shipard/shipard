@@ -1,5 +1,5 @@
 {
-	"id": "mac.lan.vlans", "sql": "mac_lan_vlans", "name": "VLANy", "icon": "icon-road",
+	"id": "mac.lan.vlans", "sql": "mac_lan_vlans", "name": "VLANy",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "num", "name": "Číslo VLANy", "type": "int", "placeholder": "1 - 4096"},

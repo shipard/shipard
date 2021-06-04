@@ -1,5 +1,5 @@
 {
-	"id": "swdev.world.countryTerritories", "sql": "swdev_world_countryTerritories", "name": "Oblasti zemí", "icon": "icon-map",
+	"id": "swdev.world.countryTerritories", "sql": "swdev_world_countryTerritories", "name": "Oblasti zemí",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "country", "name": "Země", "type": "int", "reference": "swdev.world.countries"},

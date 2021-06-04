@@ -3,56 +3,56 @@
 		"id": "windows",
 		"sn": "Windows",
 		"fn": "Microsoft Windows",
-		"icon": "icon-windows"
+		"icon": "osFamilyWindows"
 	},
 	"1": {
 		"id": "macos",
 		"sn": "MacOS",
 		"fn": "Mac OS",
-		"icon": "icon-apple"
+		"icon": "osFamilyMacOS"
 	},
 	"2": {
 		"id": "linux",
 		"sn": "Linux",
 		"fn": "Linux",
-		"icon": "icon-linux"
+		"icon": "osFamilyLinux"
 	},
 	"3": {
 		"id": "mikrotik",
 		"sn": "Mikrotik",
 		"fn": "Mikrotik",
-		"icon": "icon-server"
+		"icon": "osFamilyMikrotik"
 	},
 	"4": {
 		"id": "edgecore",
 		"sn": "EdgeCore",
 		"fn": "EdgeCore",
-		"icon": "icon-server"
+		"icon": "osFamilyEdgeCore"
 	},
 	"5": {
 		"id": "nas",
 		"sn": "NAS",
 		"fn": "NAS",
-		"icon": "icon-hdd-o"
+		"icon": "osFamilyNAS"
 	},
 
 	"100": {
 		"id": "iotbox",
 		"sn": "IoT Box",
 		"fn": "IoT Box",
-		"icon": "icon-power-off"
+		"icon": "osFamilyIoTBox"
 	},
 
 	"1000": {
 		"id": "ipcams",
 		"sn": "IP Cameras",
 		"fn": "IP Cameras",
-		"icon": "icon-video-camera"
+		"icon": "osFamilyIPCameras"
 	},
 
 	"32001": {
 		"sn": "Ostatní",
 		"fn": "Ostatní / jiné /neznámé",
-		"icon": "icon-question-circle-o"
+		"icon": "osFamilyOther"
 	}
 }

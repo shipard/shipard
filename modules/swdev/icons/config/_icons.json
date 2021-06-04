@@ -1,0 +1,38 @@
+{
+    "tables/swdev.icons.setsIcons":{
+        "fa5": "fa-hashtag",
+		"fa5pro": "fa-hashtag",
+		"bsi": "bi-hash",
+		"mdi": "tag"
+    },
+    "tables/swdev.icons.appIcons":{
+        "fa5": "fa-image",
+		"fa5pro": "fa-image",
+		"bsi": "bi-image",
+		"mdi": "photo_camera"
+    },
+    "tables/swdev.icons.appIconsGroups":{
+        "fa5":"fa-clone",
+        "fa5pro":"fa-clone",
+        "bsi":"bi-files",
+        "mdi":"content_copy"
+    },
+    "tables/swdev.icons.appIconsMapping":{
+        "fa5": "fa-link",
+		"fa5pro": "fa-link",
+		"bsi": "bi-link-45deg",
+		"mdi": "link"
+    },
+    "tables/swdev.icons.sets":{
+        "fa5":"fa-th",
+        "fa5pro":"fa-th",
+        "bsi":"bi-grid-3x3-gap-fill",
+        "mdi":"apps"
+    },
+    "tables/swdev.icons.setsVariants":{
+        "fa5": "fa-th-list",
+		"fa5pro": "fa-th-list",
+		"bsi": "bi-list-ul",
+		"mdi": "list"
+    }
+}

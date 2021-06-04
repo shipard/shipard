@@ -1,13 +1,13 @@
 {
-	"0": {"name": "Eth síťová karta", "sc": "Eth síť", "icon": "icon-plug", "useMac": 1},
-	"1": {"name": "WiFi síťová karta", "sc": "WiFI síť", "icon": "icon-wifi", "useMac": 1},
-	"2": {"name": "Optická síťová karta", "sc": "Opt. síť", "icon": "icon-sun-o", "useMac": 1},
+	"0": {"name": "Eth síťová karta", "sc": "Eth síť", "icon": "portKindEthNetwork", "useMac": 1},
+	"1": {"name": "WiFi síťová karta", "sc": "WiFI síť", "icon": "portKindWifiNetwork", "useMac": 1},
+	"2": {"name": "Optická síťová karta", "sc": "Opt. síť", "icon": "portKindOpticalNetwork", "useMac": 1},
 
-	"5": {"name": "ETH port aktivního prvku", "sc": "ETH port", "icon": "icon-plug", "useRole": 1, "useMac": 1},
-	"6": {"name": "SFP port aktivního prvku", "sc": "SFP port", "icon": "icon-sun-o", "useRole": 1, "useMac": 1},
+	"5": {"name": "ETH port aktivního prvku", "sc": "ETH port", "icon": "portKindETHPort", "useRole": 1, "useMac": 1},
+	"6": {"name": "SFP port aktivního prvku", "sc": "SFP port", "icon": "portKindSFPPort", "useRole": 1, "useMac": 1},
 
-	"10": {"name": "VLAN", "sc": "VLAN", "icon": "icon-square-o", "useVlan": 1, "useMac": 1},
-	"11": {"name": "Bridge", "sc": "Bridge", "icon": "icon-object-group", "useBridgePorts": 1},
+	"10": {"name": "VLAN", "sc": "VLAN", "icon": "portKindVLAN", "useVlan": 1, "useMac": 1},
+	"11": {"name": "Bridge", "sc": "Bridge", "icon": "portKindBridge", "useBridgePorts": 1},
 
-	"9": {"name": "Jiné", "sc": "Jiné", "icon": "icon-question-circle-o"}
+	"9": {"name": "Jiné", "sc": "Jiné", "icon": "portKindOther"}
 }

@@ -1,5 +1,5 @@
 {
-	"id": "wkf.base.docMarks", "sql": "wkf_base_docMarks", "name": "Značky dokumentů ve workflow", "icon": "icon-star-half",
+	"id": "wkf.base.docMarks", "sql": "wkf_base_docMarks", "name": "Značky dokumentů ve workflow",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "user", "name": "Uživatel", "type": "int", "reference": "e10.persons.persons"},

@@ -1,5 +1,5 @@
 {
-	"id": "swdev.dm.columns", "sql": "swdev_dm_columns", "name": "Sloupce", "icon": "icon-columns",
+	"id": "swdev.dm.columns", "sql": "swdev_dm_columns", "name": "Sloupce",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "table", "name": "Tabulka", "type": "int", "reference": "swdev.dm.tables"},

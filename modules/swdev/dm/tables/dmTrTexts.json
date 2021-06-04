@@ -1,5 +1,5 @@
 {
-	"id": "swdev.dm.dmTrTexts", "sql": "swdev_dm_dmTrTexts", "name": "Lokalizované texty datového modelu", "icon": "icon-font",
+	"id": "swdev.dm.dmTrTexts", "sql": "swdev_dm_dmTrTexts", "name": "Lokalizované texty datového modelu",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

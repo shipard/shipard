@@ -1,5 +1,5 @@
 {
-	"id": "terminals.base.workplaces", "sql": "terminals_base_workplaces", "name": "Pracoviště", "icon": "icon-sun-o",
+	"id": "terminals.base.workplaces", "sql": "terminals_base_workplaces", "name": "Pracoviště",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "name", "name": "Název", "type": "string", "len": 80},

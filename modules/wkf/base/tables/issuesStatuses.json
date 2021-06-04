@@ -1,5 +1,5 @@
 {
-	"id": "wkf.base.issuesStatuses", "sql": "wkf_base_issuesStatuses", "name": "Statusy Zpráv", "icon": "icon-tasks",
+	"id": "wkf.base.issuesStatuses", "sql": "wkf_base_issuesStatuses", "name": "Statusy Zpráv",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

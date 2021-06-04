@@ -8,7 +8,7 @@
 		"objectClass": "mac.lan.libs.alerts.WatchdogTimeout",
 		"severity": "error",
 		"severityTitle": "Chyby",
-		"severityIcon": "icon-exclamation-triangle"
+		"severityIcon": "alertTypeLostCommunication"
 	},
 	"11": {
 		"fn": "watchdog missing"
@@ -19,12 +19,12 @@
 		"objectClass": "mac.lan.libs.alerts.UpgradeOS",
 		"severity": "warning",
 		"severityTitle": "Upozornění",
-		"severityIcon": "icon-exclamation-circle"
+		"severityIcon": "alertTypeOSUpdate"
 	},
 	"21": {
 		"fn": "Zastaralý software",
 		"severity": "info",
 		"severityTitle": "Info",
-		"severityIcon": "icon-info-circle"
+		"severityIcon": "alertTypeOutdatedSoftware"
 	}
 }

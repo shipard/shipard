@@ -1,5 +1,5 @@
 {
-	"id": "services.subjects.subjects", "sql": "services_subjects_subjects", "name": "Subjekty", "icon": "icon-building",
+	"id": "services.subjects.subjects", "sql": "services_subjects_subjects", "name": "Subjekty",
 	"columns": [
 		{"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "subjectType", "name": "Typ subjektu", "type": "int", "reference": "services.subjects.types", "options": ["saveOnChange"]},

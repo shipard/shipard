@@ -1,15 +1,15 @@
 {
-	"0": {"name": "--- nenastavovat ----", "icon": "icon-times"},
+	"0": {"name": "--- nenastavovat ----", "icon": "portRolesDontSet"},
 
-	"10": {"name": "Access port", "useVlan": 1, "icon": "icon-square-o"},
+	"10": {"name": "Access port", "useVlan": 1, "icon": "portRolesAccessPort"},
 
-	"15": {"name": "Hybridní port", "useVlan": 1, "useVLANsList": 1, "icon": "icon-caret-square-o-right"},
+	"15": {"name": "Hybridní port", "useVlan": 1, "useVLANsList": 1, "icon": "portRolesHybridPort"},
 
-	"20": {"name": "Trunk - uplink", "icon": "icon-caret-square-o-up"},
-	"30": {"name": "Trunk - downlink", "icon": "icon-caret-square-o-down"},
+	"20": {"name": "Trunk - uplink", "icon": "portRolesTrunkUplink"},
+	"30": {"name": "Trunk - downlink", "icon": "portRolesTrunkDownlink"},
 
-	"40": {"name": "Skupina VLAN", "useVLANsList": 1, "icon": "icon-clone"},
+	"40": {"name": "Skupina VLAN", "useVLANsList": 1, "icon": "portRolesVLANGroup"},
 
-	"70": {"name": "Lokální port", "useManualAddr":  1, "icon": "icon-square"},
-	"90": {"name": "WAN/Internet", "useManualAddr":  1, "useGateway":  1, "icon": "icon-globe"}
+	"70": {"name": "Lokální port", "useManualAddr":  1, "icon": "portRolesLocalPort"},
+	"90": {"name": "WAN/Internet", "useManualAddr":  1, "useGateway":  1, "icon": "portRolesWANInternet"}
 }

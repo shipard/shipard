@@ -1,5 +1,5 @@
 {
-	"id": "wkf.docs.foldersDocsKinds", "sql": "wkf_docs_foldersDocsKinds", "name": "Druhy dokumentů ve složkách", "icon": "icon-flash",
+	"id": "wkf.docs.foldersDocsKinds", "sql": "wkf_docs_foldersDocsKinds", "name": "Druhy dokumentů ve složkách",
 	"columns": [
 		{"id": "ndx", "name": "ndx", "type": "int_ai"},
 		{"id": "folder", "name": "Sekce", "type": "int", "reference": "wkf.docs.folders"},

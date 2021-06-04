@@ -1,5 +1,5 @@
 {
-	"id": "mac.lan.lansAddrRanges", "sql": "mac_lan_lansAddrRanges", "name": "Rozsahy adres sítí", "icon": "icon-arrows-h",
+	"id": "mac.lan.lansAddrRanges", "sql": "mac_lan_lansAddrRanges", "name": "Rozsahy adres sítí",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "id", "name": "ID", "placeholder": "192.168.1", "type": "string", "len": 60},

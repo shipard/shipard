@@ -1,5 +1,5 @@
 {
-	"id": "swdev.translation.languages", "sql": "swdev_translation_languages", "name": "Překládáné jazyky", "icon": "icon-language",
+	"id": "swdev.translation.languages", "sql": "swdev_translation_languages", "name": "Překládáné jazyky",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "name", "name": "Název", "type": "string", "len": 180},
@@ -15,7 +15,7 @@
 	"views": [
 		{"id": "default", "class": "swdev.translation.ViewLanguages",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.translation.ViewDetailLanguage"}
+				"default": {"title": "Přehled", "icon": "system/detaildetail", "type": "detail", "class": "swdev.translation.ViewDetailLanguage"}
 			}
 		}
 	],

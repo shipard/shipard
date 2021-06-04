@@ -1,5 +1,5 @@
 {
-	"id": "terminals.base.printers", "sql": "terminals_base_printers", "name": "Tiskárny", "icon": "icon-print",
+	"id": "terminals.base.printers", "sql": "terminals_base_printers", "name": "Tiskárny",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},

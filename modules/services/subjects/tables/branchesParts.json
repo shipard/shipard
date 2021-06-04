@@ -1,5 +1,5 @@
 {
-	"id": "services.subjects.branchesParts", "sql": "services_subjects_branchesParts", "name": "Členění Oborů subjektů", "icon": "icon-circle-thin",
+	"id": "services.subjects.branchesParts", "sql": "services_subjects_branchesParts", "name": "Členění Oborů subjektů",
 	"columns": [
 		{"id": "ndx", "name": "ndx", "type": "int_ai"},
 		{"id": "branch", "name": "Obor", "type": "int", "reference": "services.subjects.branches"},

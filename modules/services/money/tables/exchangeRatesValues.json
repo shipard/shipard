@@ -1,5 +1,5 @@
 {
-	"id": "services.money.exchangeRatesValues", "sql": "services_money_exchangeRatesValues", "name": "Kurzy měn", "icon": "icon-money",
+	"id": "services.money.exchangeRatesValues", "sql": "services_money_exchangeRatesValues", "name": "Kurzy měn",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

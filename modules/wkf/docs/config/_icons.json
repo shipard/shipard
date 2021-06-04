@@ -11,6 +11,18 @@
 		"bsi": "bi-file-earmark",
 		"mdi": "insert_drive_file"
 	},
+    "tables/wkf.docs.documents":{
+		"fa5": "fa-file",
+		"fa5pro": "fa-file",
+		"bsi": "bi-file-earmark",
+		"mdi": "insert_drive_file"
+	},
+    "tables/wkf.docs.foldersDocsKinds":{
+		"fa5":"fa-bolt",
+        "fa5pro":"fa-bolt",
+        "bsi":"bi-lightning-fill",
+        "mdi":"bolt"
+	},
 
 
     "formFolder":{

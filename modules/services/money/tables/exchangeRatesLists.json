@@ -1,5 +1,5 @@
 {
-	"id": "services.money.exchangeRatesLists", "sql": "services_money_exchangeRatesLists", "name": "Kurzovní lístky", "icon": "icon-usd",
+	"id": "services.money.exchangeRatesLists", "sql": "services_money_exchangeRatesLists", "name": "Kurzovní lístky",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 100},

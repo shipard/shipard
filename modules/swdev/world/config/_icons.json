@@ -10,5 +10,82 @@
         "fa5pro":"fa-money-bill-alt",
         "bsi":"bi-cash",
         "mdi":"payments"
+    },
+    "tables/swdev.world.languages":{
+        "fa5":"fa-language",
+        "fa5pro":"fa-language",
+        "bsi":"bi-translate",
+        "mdi":"translate"
+    },
+    "tables/swdev.world.territories":{
+        "fa5":"fa-map-marked-alt",
+        "fa5pro":"fa-map-marked-alt",
+        "bsi":"bi-map",
+        "mdi":"map"
+    },
+    "tables/swdev.world.countriesTr":{
+        "fa5":"fa-flag",
+        "fa5pro":"fa-flag",
+        "bsi":"bi-flag",
+        "mdi":"flag"
+    },
+    "tables/swdev.world.countryCurrencies":{
+        "fa5":"fa-money-bill-alt",
+        "fa5pro":"fa-money-bill-alt",
+        "bsi":"bi-cash",
+        "mdi":"payments"
+    },
+    "tables/swdev.world.countryLanguages":{
+        "fa5":"fa-language",
+        "fa5pro":"fa-language",
+        "bsi":"bi-translate",
+        "mdi":"translate"
+    },
+    "tables/swdev.world.countryTerritories":{
+        "fa5":"fa-map-marked-alt",
+        "fa5pro":"fa-map-marked-alt",
+        "bsi":"bi-map",
+        "mdi":"map"
+    },
+    "tables/swdev.world.currenciesTr":{
+        "fa5":"fa-money-bill-alt",
+        "fa5pro":"fa-money-bill-alt",
+        "bsi":"bi-cash",
+        "mdi":"payments"
+    },
+    "tables/swdev.world.languagesTr":{
+        "fa5":"fa-language",
+        "fa5pro":"fa-language",
+        "bsi":"bi-translate",
+        "mdi":"translate"
+    },
+    "tables/swdev.world.territoriesTr":{
+        "fa5":"fa-map-marked-alt",
+        "fa5pro":"fa-map-marked-alt",
+        "bsi":"bi-map",
+        "mdi":"map"
+    },
+
+
+    "iconDetails":{
+        "fa5":"fa-code",
+        "fa5pro":"fa-code",
+        "bsi":"bi-code-slash",
+        "mdi":"code"
+    },
+    "iconConfigData":{
+        "fa5":"fa-code",
+        "fa5pro":"fa-code",
+        "bsi":"bi-code-slash",
+        "mdi":"code"
+    },
+
+
+
+    "detailTranslation":{
+        "fa5":"fa-language",
+        "fa5pro":"fa-language",
+        "bsi":"bi-translate",
+        "mdi":"translate"
     }
 }

@@ -1,5 +1,5 @@
 {
-	"id": "wkf.base.trays", "sql": "wkf_base_trays", "name": "Přihrádky na přílohy", "icon": "icon-folder-open-o",
+	"id": "wkf.base.trays", "sql": "wkf_base_trays", "name": "Přihrádky na přílohy",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 
@@ -23,7 +23,7 @@
 		"default": {
 			"id": "default", "class": "wkf.base.ViewTrays",
 			"details": {
-				"default": {"title": "Obsah", "icon": "icon-file", "type": "detail", "class": "wkf.base.ViewDetailTray", "order": 1000}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "wkf.base.ViewDetailTray", "order": 1000}
 			}
 		}
 	},

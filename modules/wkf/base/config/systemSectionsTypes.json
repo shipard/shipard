@@ -4,7 +4,7 @@
 	},
 
 	"10": {
-		"fullName": "Nástěnka", "shortName": "Nástěnka", "order": 10000, "icon": "icon-thumb-tack",
+		"fullName": "Nástěnka", "shortName": "Nástěnka", "order": 10000, "icon": "homeThumbTack",
 		"topSection": 0, "enabledIssueKinds": 9, "create": 0
 	},
 

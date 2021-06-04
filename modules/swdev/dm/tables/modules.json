@@ -1,5 +1,5 @@
 {
-	"id": "swdev.dm.modules", "sql": "swdev_dm_modules", "name": "Moduly", "icon": "icon-puzzle-piece",
+	"id": "swdev.dm.modules", "sql": "swdev_dm_modules", "name": "Moduly",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "id", "name": "id", "type": "string", "len": 80},

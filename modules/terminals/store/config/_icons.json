@@ -4,5 +4,14 @@
         "fa5pro":"fa-calculator",
         "bsi":"bi-calculator-fill",
         "mdi":"calculate"
+    },
+
+
+
+    "iconCashBox":{
+        "fa5":"fa-calculator",
+        "fa5pro":"fa-calculator",
+        "bsi":"bi-calculator-fill",
+        "mdi":"calculate"
     }
 }

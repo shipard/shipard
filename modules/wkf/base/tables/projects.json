@@ -1,5 +1,5 @@
 {
-	"id": "wkf.base.projects", "sql": "wkf_base_projects", "name": "Projekty", "icon": "icon-lightbulb-o",
+	"id": "wkf.base.projects", "sql": "wkf_base_projects", "name": "Projekty",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

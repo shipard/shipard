@@ -1,0 +1,52 @@
+{
+    "tables/swdev.hw.fw":{
+        "fa5": "fa-file-archive",
+		"fa5pro": "fa-file-archive",
+		"bsi": "bi-file-earmark-zip",
+		"mdi": "file_download"
+    },
+    "tables/swdev.hw.archs":{
+        "fa5":"fa-microchip",
+        "fa5pro":"fa-microchip",
+        "bsi":"bi-cpu-fill",
+        "mdi":"memory"
+    },
+    "tables/swdev.hw.devices":{
+        "fa5": "fa-laptop",
+		"fa5pro": "fa-phone-laptop",
+		"bsi": "bi-laptop",
+		"mdi": "computer"
+    },
+    "tables/swdev.hw.devicesKinds":{
+        "fa5": "fa-server",
+		"fa5pro": "fa-server",
+		"bsi": "bi-hdd-stack-fill",
+		"mdi": "dns"
+    },
+    "tables/swdev.hw.devicesSeries":{
+        "fa5": "fa-ellipsis-h",
+		"fa5pro": "fa-ellipsis-h",
+		"bsi": "bi-three-dots",
+		"mdi": "more_horiz"
+    },
+    "tables/swdev.hw.fwVersions":{
+        "fa5": "fa-hashtag",
+		"fa5pro": "fa-hashtag",
+		"bsi": "bi-hash",
+		"mdi": "tag"
+    },
+    "tables/swdev.hw.vendors":{
+        "fa5":"fa-industry",
+        "fa5pro":"fa-industry-alt",
+        "bsi":"bi-building",
+        "mdi":"business"
+    },
+
+
+    "iconIcons":{
+        "fa5": "fa-image",
+		"fa5pro": "fa-image",
+		"bsi": "bi-image",
+		"mdi": "photo_camera"
+    }
+}

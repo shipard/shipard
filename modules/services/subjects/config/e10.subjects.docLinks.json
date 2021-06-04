@@ -1,13 +1,13 @@
 {
 	"services.subjects.types": {
-		"services-subjects-types-propgroups": {"linkid": "services-subjects-types-propgroups", "name": "Skupiny vlastností", "icon": "chevron-left",
+		"services-subjects-types-propgroups": {"linkid": "services-subjects-types-propgroups", "name": "Skupiny vlastností", "icon": "tables/e10.base.propgroups",
 			"sources": [
 				{"table": "e10.base.propgroups"}
 			]
 		}
 	},
 	"services.subjects.branchesParts": {
-		"services-subjects-bparts-nace": {"linkid": "services-subjects-bparts-nace", "name": "NACE", "icon": "icon-list",
+		"services-subjects-bparts-nace": {"linkid": "services-subjects-bparts-nace", "name": "NACE", "icon": "tables/e10.install.nomencItems",
 			"sources": [
 				{"table": "e10.base.nomencItems", "viewer": "services.subjects.ViewerNomencItemsNACE"}
 			]

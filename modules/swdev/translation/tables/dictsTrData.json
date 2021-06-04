@@ -1,5 +1,5 @@
 {
-	"id": "swdev.translation.dictsTrData", "sql": "swdev_translation_dictsTrData", "name": "Data slovníků", "icon": "icon-book",
+	"id": "swdev.translation.dictsTrData", "sql": "swdev_translation_dictsTrData", "name": "Data slovníků",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "dict", "name": "Slovník", "type": "int", "reference": "swdev.translation.dicts"},

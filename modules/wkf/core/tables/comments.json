@@ -1,5 +1,5 @@
 {
-	"id": "wkf.core.comments", "sql": "wkf_core_comments", "name": "Komentáře", "icon": "icon-comments-o",
+	"id": "wkf.core.comments", "sql": "wkf_core_comments", "name": "Komentáře",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

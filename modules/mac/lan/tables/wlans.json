@@ -1,5 +1,5 @@
 {
-	"id": "mac.lan.wlans", "sql": "mac_lan_wlans", "name": "WiFi sítě", "icon": "icon-wifi",
+	"id": "mac.lan.wlans", "sql": "mac_lan_wlans", "name": "WiFi sítě",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Jméno", "type": "string", "len": 100},

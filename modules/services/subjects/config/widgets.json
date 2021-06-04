@@ -1,6 +1,6 @@
 [
 	{
-		"name": "Zdroje", "class": "services.subjects.SourcesWidget", "icon": "icon-eye",
+		"name": "Zdroje", "class": "services.subjects.SourcesWidget", "icon": "iconSources",
 		"dashboard": "subjects", "panel": "sources", "order": 1000, "row": "main", "width": 12, "type": "viewer"
 	},
 
@@ -11,7 +11,7 @@
 
 
 	{
-		"name": "Zdroje", "class": "services.subjects.SourcesWidget", "icon": "icon-eye",
+		"name": "Zdroje", "class": "services.subjects.SourcesWidget", "icon": "iconSources",
 		"dashboard": "crm", "panel": "sources", "order": 1000, "row": "main", "width": 12, "type": "viewer"
 	}
 ]

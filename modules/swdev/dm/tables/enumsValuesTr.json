@@ -1,5 +1,5 @@
 {
-	"id": "swdev.dm.enumsValuesTr", "sql": "swdev_dm_enumsValuesTr", "name": "Přeložené texty hodnot Enumů", "icon": "icon-list-ol",
+	"id": "swdev.dm.enumsValuesTr", "sql": "swdev_dm_enumsValuesTr", "name": "Přeložené texty hodnot Enumů",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "enum", "name": "Enum", "type": "int", "reference": "swdev.dm.enums"},

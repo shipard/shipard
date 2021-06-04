@@ -1,7 +1,7 @@
 {
-	"sw": {"name": "Software", "icon": "icon-file-archive-o"},
-	"storages": {"name": "Úložiště", "icon": "icon-folder-open-o"},
-	"system": {"name": "Informace o systému", "icon": "icon-microchip"},
-	"counters": {"name": "Počitadla", "icon": "icon-spinner"},
-	"drives": {"name": "Disky", "icon": "icon-hdd-o"}
+	"sw": {"name": "Software", "icon": "tables/mac.lan.swApplications"},
+	"storages": {"name": "Úložiště", "icon": "deviceInfoTypeStorage"},
+	"system": {"name": "Informace o systému", "icon": "deviceInfoTypeSystemInfo"},
+	"counters": {"name": "Počitadla", "icon": "system/iconSpinner"},
+	"drives": {"name": "Disky", "icon": "deviceInfoTypeDiscs"}
 }

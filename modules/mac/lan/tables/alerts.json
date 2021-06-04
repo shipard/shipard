@@ -1,5 +1,5 @@
 {
-	"id": "mac.lan.alerts", "sql": "mac_lan_alerts", "name": "Výstrahy", "icon": "icon-exclamation-triangle",
+	"id": "mac.lan.alerts", "sql": "mac_lan_alerts", "name": "Výstrahy",
 	"columns": [
 		{"id": "ndx", "name": "ndx", "type": "int_ai"},
 

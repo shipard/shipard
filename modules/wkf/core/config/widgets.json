@@ -18,7 +18,7 @@
 	},
 
 	{
-		"name": "Database Info", "class": "lib.cfg.WidgetSystemInfoCore", "icon": "icon-database", "align": "left",
+		"name": "Database Info", "class": "lib.cfg.WidgetSystemInfoCore", "icon": "system/iconDatabase", "align": "left",
 		"dashboard": "srvcfg", "panel": "issues", "order": 30000, "row": "info", "type": "systemInfo"
 	}
 ]

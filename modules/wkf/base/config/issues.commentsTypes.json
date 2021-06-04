@@ -1,11 +1,11 @@
 {
 	"0": {
-		"name": "Uživatelský komentář", "icon": "icon-keyboard"
+		"name": "Uživatelský komentář", "icon": "commentTypeUser"
 	},
 	"1": {
-		"name": "Workflow změna issue", "icon": "icon-pencil"
+		"name": "Workflow změna issue", "icon": "commentTypeIssueChange"
 	},
 	"2": {
-		"name": "Aktualizace výstrahy", "icon": "icon-exclamation-triangle"
+		"name": "Aktualizace výstrahy", "icon": "commentTypeIssueAlertUpdate"
 	}
 }

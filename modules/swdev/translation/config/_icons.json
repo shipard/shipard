@@ -1,0 +1,38 @@
+{
+    "tables/swdev.translation.dictsItems":{
+        "fa5": "fa-list",
+		"fa5pro": "fa-list",
+		"bsi": "bi-list-ul",
+		"mdi": "list"
+    },
+    "tables/swdev.translation.languages":{
+        "fa5":"fa-language",
+        "fa5pro":"fa-language",
+        "bsi":"bi-translate",
+        "mdi":"translate"
+    },
+    "tables/swdev.translation.translators":{
+        "fa5": "fa-user",
+		"fa5pro": "fa-user",
+		"bsi": "bi-person",
+		"mdi": "person"
+    },
+    "tables/swdev.translation.dicts":{
+        "fa5": "fa-book",
+		"fa5pro": "fa-book",
+		"bsi": "bi-book",
+		"mdi": "auto_stories"
+    },
+    "tables/swdev.translation.dictsItemsTr":{
+        "fa5": "fa-list",
+		"fa5pro": "fa-list",
+		"bsi": "bi-list-ul",
+		"mdi": "list"
+    },
+    "tables/swdev.translation.dictsTrData":{
+        "fa5": "fa-book",
+		"fa5pro": "fa-book",
+		"bsi": "bi-book",
+		"mdi": "auto_stories"
+    }
+}

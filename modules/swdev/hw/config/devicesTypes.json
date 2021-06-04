@@ -1,29 +1,29 @@
 {
 	"0": {
-		"name": "---", "pluralName": "", "icon": "x-cog"
+		"name": "---", "pluralName": "", "icon": "deviceTypes/other"
 	},
 	"1": {
-		"name": "Router", "pluralName": "Routery", "icon": "icon-retweet"
+		"name": "Router", "pluralName": "Routery", "icon": "deviceTypes/router"
 	},
 	"2": {
-		"name": "Switch", "pluralName": "Switche", "icon": "icon-sitemap"
+		"name": "Switch", "pluralName": "Switche", "icon": "deviceTypes/switch"
 	},
 	"3": {
-		"name": "WiFi Přístupový bod", "pluralName": "WiFi Přístupové body", "icon": "x-router"
+		"name": "WiFi Přístupový bod", "pluralName": "WiFi Přístupové body", "icon": "deviceTypes/wifiAccessPoints"
 	},
 	"4": {
-		"name": "IP Kamera", "pluralName": "IP Kamery", "icon": "icon-video-camera"
+		"name": "IP Kamera", "pluralName": "IP Kamery", "icon": "deviceTypes/camera"
 	},
 	"5": {
-		"name": "NAS", "pluralName": "NAS", "icon": "icon-hdd-o"
+		"name": "NAS", "pluralName": "NAS", "icon": "deviceTypes/nas"
 	},
 	"6": {
-		"name": "Shipard IoT Box", "pluralName": "Shipard IoT Boxy", "icon": "icon-plug"
+		"name": "Shipard IoT Box", "pluralName": "Shipard IoT Boxy", "icon": "deviceTypes/shipardIotBoxes"
 	},
 	"7": {
-		"name": "Iot Deska", "pluralName": "Iot Desky", "icon": "icon-power-off"
+		"name": "Iot Deska", "pluralName": "Iot Desky", "icon": "deviceTypesIotBoard"
 	},
 	"8": {
-		"name": "PC Deska", "pluralName": "PC Desky", "icon": "icon-desktop"
+		"name": "PC Deska", "pluralName": "PC Desky", "icon": "deviceTypes/workStation"
 	}
 }

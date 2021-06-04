@@ -1,5 +1,5 @@
 {
-	"id": "swdev.dm.enumsTrData", "sql": "swdev_dm_enumsTrData", "name": "Data pro lokalizaci enumů", "icon": "icon-language",
+	"id": "swdev.dm.enumsTrData", "sql": "swdev_dm_enumsTrData", "name": "Data pro lokalizaci enumů",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "enum", "name": "Enum", "type": "int", "reference": "swdev.dm.enums"},

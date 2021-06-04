@@ -1,0 +1,142 @@
+{
+    "lifeCycleUnknown":{
+        "fa5": "fa-question-circle",
+		"fa5pro": "fa-question-circle",
+		"bsi": "bi-question-circle-fill",
+		"mdi": "help_outline"
+    },
+    "lifeCycleActive":{
+        "fa5":"fa-thumbs-up",
+        "fa5pro":"fa-thumbs-up",
+        "bsi":"bi-hand-thumbs-up-fill",
+        "mdi":"thumb_up"
+    },
+    "lifeCycleOutdated":{
+        "fa5":"fa-thumbs-down",
+        "fa5pro":"fa-thumbs-down",
+        "bsi":"bi-hand-thumbs-down-fill",
+        "mdi":"thumb_down"
+    },
+    "lifeCycleTerminated":{
+        "fa5": "fa-exclamation-triangle",
+		"fa5pro": "fa-exclamation-triangle",
+		"bsi": "bi-exclamation-triangle",
+		"mdi": "warning_amber"
+    },
+    "lifeCyclePreliminary":{
+        "fa5": "fa-level-up-alt",
+		"fa5pro": "fa-level-up-alt",
+		"bsi": "bi-arrow-90deg-up",
+		"mdi": "arrow_upward"
+    },
+
+
+
+
+    "osFamilyWindows":{
+        "fa5":"fa-desktop",
+        "fa5pro":"fa-desktop",
+        "bsi":"bi-display",
+        "mdi":"desktop_windows"
+    },
+    "osFamilyMacOS":{
+        "fa5": "fa-laptop",
+		"fa5pro": "fa-phone-laptop",
+		"bsi": "bi-laptop",
+		"mdi": "computer"
+    },
+    "osFamilyLinux":{
+        "fa5": "fa-tv",
+		"fa5pro": "fa-tv-alt",
+		"bsi": "bi-tv",
+		"mdi": "tv"
+    },
+    "osFamilyMikrotik":{
+        "fa5": "fa-server",
+		"fa5pro": "fa-server",
+		"bsi": "bi-hdd-stack-fill",
+		"mdi": "dns"
+    },
+    "osFamilyEdgeCore":{
+        "fa5": "fa-server",
+		"fa5pro": "fa-server",
+		"bsi": "bi-hdd-stack-fill",
+		"mdi": "dns"
+    },
+    "osFamilyNAS":{
+        "fa5": "fa-hdd",
+		"fa5pro": "fa-hdd",
+		"bsi": "bi-hdd",
+		"mdi": "save"
+    },
+    "osFamilyIoTBox":{
+        "fa5": "fa-power-off",
+		"fa5pro": "fa-power-off",
+		"bsi": "bi-power",
+		"mdi": "power_settings_new"
+    },
+    "osFamilyIPCameras":{
+        "fa5": "fa-video",
+		"fa5pro": "fa-cctv",
+		"bsi": "bi-camera-video",
+		"mdi": "videocam"
+    },
+    "osFamilyOther":{
+        "fa5": "fa-question-circle",
+		"fa5pro": "fa-question-circle",
+		"bsi": "bi-question-circle-fill",
+		"mdi": "help_outline"
+    },
+
+
+
+
+    "swClassOther":{
+        "fa5": "fa-question-circle",
+		"fa5pro": "fa-question-circle",
+		"bsi": "bi-question-circle-fill",
+		"mdi": "help_outline"
+    },
+    "swClassOS":{
+        "fa5": "fa-save",
+		"fa5pro": "fa-save",
+		"bsi": "bi-save",
+		"mdi": "save"
+    },
+    "swClassOSExtensions":{
+        "fa5": "fa-cogs",
+		"fa5pro": "fa-cogs",
+		"bsi": "bi-gear",
+		"mdi": "settings"
+    },
+    "swClassSharedLibraries":{
+        "fa5": "fa-book",
+		"fa5pro": "fa-book",
+		"bsi": "bi-book",
+		"mdi": "auto_stories"
+    },
+    "swClassServer":{
+        "fa5": "fa-server",
+		"fa5pro": "fa-server",
+		"bsi": "bi-hdd-stack-fill",
+		"mdi": "dns"
+    },
+    "swClassBrowser":{
+        "fa5":"fa-globe-americas",
+        "fa5pro":"fa-globe-americas",
+        "bsi":"bi-globe",
+        "mdi":"public"
+    },
+    "swClassPWA":{
+        "fa5": "fa-hand-pointer",
+		"fa5pro": "fa-hand-pointer",
+		"bsi": "bi-hand-index",
+		"mdi": "touch_app"
+    },
+    "swClassApp":{
+        "fa5": "fa-mouse-pointer",
+		"fa5pro": "fa-mouse-pointer",
+		"bsi": "bi-mouse",
+		"mdi": "mouse"
+    }
+}

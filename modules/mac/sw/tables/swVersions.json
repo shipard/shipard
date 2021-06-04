@@ -1,5 +1,5 @@
 {
-	"id": "mac.sw.swVersions", "sql": "mac_sw_swVersions", "name": "Verze software", "icon": "icon-hashtag",
+	"id": "mac.sw.swVersions", "sql": "mac_sw_swVersions", "name": "Verze software",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},

@@ -1,5 +1,5 @@
 {
-	"id": "mac.swlan.infoQueue", "sql": "mac_swlan_infoQueue", "name": "SW informace ke zpracování", "icon": "icon-file-text-o",
+	"id": "mac.swlan.infoQueue", "sql": "mac_swlan_infoQueue", "name": "SW informace ke zpracování",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

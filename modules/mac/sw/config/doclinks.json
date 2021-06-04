@@ -1,7 +1,7 @@
 {
 	"mac.sw.sw": {
 		"mac-sw-swCats": {
-			"linkid": "mac-sw-swCats", "name": "Kategorie SW", "icon": "icon-folder",
+			"linkid": "mac-sw-swCats", "name": "Kategorie SW", "icon": "tables/mac.sw.categories",
 			"sources": [
 				{"id": "cats", "viewer": "default", "table": "mac.sw.categories"}
 			]

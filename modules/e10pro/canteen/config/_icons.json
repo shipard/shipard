@@ -125,6 +125,12 @@
 		"bsi": "bi-shop-window",
 		"mdi": "dining"
     },
+	"reportBySum":{
+        "fa5": "fa-plus-square",
+		"fa5pro": "fa-plus-square",
+		"bsi": "bi-plus-square-fill",
+		"mdi": "add_circle"
+    },
 
 
 	"iconPayers":{

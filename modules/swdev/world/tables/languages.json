@@ -1,5 +1,5 @@
 {
-	"id": "swdev.world.languages", "sql": "swdev_world_languages", "name": "Jazyky", "icon": "icon-language",
+	"id": "swdev.world.languages", "sql": "swdev_world_languages", "name": "Jazyky",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "id", "name": "id", "type": "string", "len": 10},
@@ -17,8 +17,8 @@
 	"views": [
 		{"id": "default", "class": "swdev.world.ViewLanguages",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.world.ViewDetailLanguage"},
-				"tr": {"title": "Překlad", "icon": "icon-language", "type": "detail", "class": "swdev.world.ViewDetailLanguageTr"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "swdev.world.ViewDetailLanguage"},
+				"tr": {"title": "Překlad", "icon": "detailTranslation", "type": "detail", "class": "swdev.world.ViewDetailLanguageTr"}
 			}
 		}
 	],

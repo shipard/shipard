@@ -3,7 +3,7 @@
 		"panels": {
 			"vs": {
 				"name": "Dohled",
-				"icon": "icon-video-camera",
+				"icon": "system/iconCamera",
 				"fullsize": 1,
 				"order": 2200,
 				"rows": {
@@ -16,7 +16,7 @@
 		"panels": {
 			"vs": {
 				"name": "Dohled",
-				"icon": "icon-video-camera",
+				"icon": "system/iconCamera",
 				"fullsize": 1,
 				"order": 2200,
 				"rows": {

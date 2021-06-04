@@ -4,5 +4,50 @@
 		"fa5pro": "fa-question-circle",
 		"bsi": "bi-question-circle-fill",
 		"mdi": "help_outline"
+	},
+	"tables/mac.swlan.devicesSW": {
+		"fa5": "fa-file-alt",
+		"fa5pro": "fa-file-alt",
+		"bsi": "bi-file-earmark-text-fill",
+		"mdi": "description"
+	},
+	"tables/mac.swlan.devicesSWHistory": {
+		"fa5": "fa-history",
+		"fa5pro": "fa-history",
+		"bsi": "bi-clock-history",
+		"mdi": "history"
+	},
+
+
+
+	"docStateConcept":{
+		"fa5":"fa-star",
+		"fa5pro":"fa-star",
+		"bsi":"bi-star",
+		"mdi":"grade"
+	},
+	"docStateConfirmed":{
+		"fa5":"fa-star",
+		"fa5pro":"fa-star",
+		"bsi":"bi-star",
+		"mdi":"grade"
+	},
+	"docStateDone":{
+		"fa5":"fa-check-square",
+        "fa5pro":"fa-check-square",
+        "bsi":"bi-check-square-fill",
+        "mdi":"check_box"
+	},
+	"docStateEdit":{
+		"fa5": "fa-edit",
+		"fa5pro": "fa-edit",
+		"bsi": "bi-pencil-square",
+		"mdi": "edit_note"
+	},
+	"docStateDelete":{
+		"fa5": "fa-trash",
+		"fa5pro": "fa-trash",
+		"bsi": "bi-trash",
+		"mdi": "delete"
 	}
 }

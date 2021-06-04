@@ -1,5 +1,5 @@
 {
-	"id": "swdev.translation.dictsItemsTr", "sql": "swdev_translation_dictsItemsTr", "name": "Přeložené položky slovníků", "icon": "icon-list",
+	"id": "swdev.translation.dictsItemsTr", "sql": "swdev_translation_dictsItemsTr", "name": "Přeložené položky slovníků",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "dictItem", "name": "Položka slovníku", "type": "int", "reference": "swdev.translation.dictsItems"},

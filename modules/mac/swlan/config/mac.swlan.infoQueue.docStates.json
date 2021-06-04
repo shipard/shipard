@@ -2,26 +2,26 @@
 	"1000": {
 		"stateName": "Nové", "actionName": "Analyzovat", "logName": "nové",
 		"stateStyle": "concept", "mainState": 0, "goto": [1200, 9800],
-		"icon": "icon-star-o"
+		"icon": "docStateConcept"
 	},
 	"1200": {
 		"stateName": "Analyzováno", "actionName": "Analyzovat", "logName": "analyzováno",
 		"stateStyle": "confirmed", "mainState": 1, "readOnly": 1, "goto": [4000, 8000, 9800],
-		"icon": "icon-star"
+		"icon": "docStateConfirmed"
 	},
 	"4000": {
 		"stateName": "Vyřešeno", "actionName": "Vyřešeno", "logName": "vyřešeno",
 		"stateStyle": "done",  "mainState": 2, "readOnly": 1, "goto": [8000, 9800],
-		"icon": "icon-check-square-o"
+		"icon": "docStateDone"
 	},
 	"8000": {
 		"stateName": "V opravě", "actionName": "Opravit", "logName": "editace",
 		"stateStyle": "edit",  "mainState": 0, "goto": [1200, 4000, 9800],
-		"icon": "icon-edit"
+		"icon": "docStateEdit"
 	},
 	"9800": {
 		"stateName": "Smazáno", "actionName": "Smazat", "logName": "smazání problému", "notify": 4,
 		"stateStyle": "delete",  "mainState": 4, "readOnly": 1, "goto": [8000],
-		"icon": "icon-trash-o"
+		"icon": "docStateDelete"
 	}
 }

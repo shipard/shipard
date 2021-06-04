@@ -1,5 +1,5 @@
 {
-	"id": "mac.sw.sw", "sql": "mac_sw_sw", "name": "Software", "icon": "icon-hourglass-half",
+	"id": "mac.sw.sw", "sql": "mac_sw_sw", "name": "Software",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 
@@ -43,7 +43,7 @@
 		{"id": "default", "class": "mac.sw.ViewSW",
 			"details": {
 				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.sw.ViewDetailSW"},
-				"annotations": {"title": "Odkazy", "icon": "icon-external-link", "type": "detail", "class": "mac.sw.ViewDetailSWAnnotations", "order": 99000}
+				"annotations": {"title": "Odkazy", "icon": "system/detailLinks", "type": "detail", "class": "mac.sw.ViewDetailSWAnnotations", "order": 99000}
 			}
 		}
 	],

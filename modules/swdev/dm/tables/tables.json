@@ -1,5 +1,5 @@
 {
-	"id": "swdev.dm.tables", "sql": "swdev_dm_tables", "name": "Tabulky", "icon": "icon-table",
+	"id": "swdev.dm.tables", "sql": "swdev_dm_tables", "name": "Tabulky",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "id", "name": "id", "type": "string", "len": 80},
@@ -19,9 +19,9 @@
 	"views": [
 		{"id": "default", "class": "swdev.dm.ViewTables",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.dm.ViewDetailTable"},
-				"doc": {"title": "Popis", "icon": "icon-book", "type": "detail", "class": "swdev.dm.ViewDetailTableDoc"},
-				"trData": {"title": "trData", "icon": "icon-language", "type": "detail", "class": "swdev.dm.ViewDetailTableTrData"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "swdev.dm.ViewDetailTable"},
+				"doc": {"title": "Popis", "icon": "detailDescription", "type": "detail", "class": "swdev.dm.ViewDetailTableDoc"},
+				"trData": {"title": "trData", "icon": "detailTrData", "type": "detail", "class": "swdev.dm.ViewDetailTableTrData"}
 			}
 		}
 	],

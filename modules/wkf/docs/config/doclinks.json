@@ -1,13 +1,13 @@
 {
 	"wkf.docs.folders": {
 		"wkf-doc-folders-members": {
-			"linkid": "wkf-doc-folders-members", "name": "Členové složky", "icon": "icon-user",
+			"linkid": "wkf-doc-folders-members", "name": "Členové složky", "icon": "system/iconUser",
 			"sources": [
 				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			]
 		},
 		"wkf-doc-folders-admins": {
-			"linkid": "wkf-doc-folders-admins", "name": "Správci složky", "icon": "icon-user-secret",
+			"linkid": "wkf-doc-folders-admins", "name": "Správci složky", "icon": "system/iconAdmin",
 			"sources": [
 				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			]
@@ -15,7 +15,7 @@
 	},
 	"wkf.docs.documents": {
 		"wkf-docs-participants": {
-			"linkid": "wkf-docs-participants", "name": "Účastníci", "icon": "icon-users",
+			"linkid": "wkf-docs-participants", "name": "Účastníci", "icon": "system/iconUser",
 			"sources": [
 				{"table": "e10.persons.persons"}
 			]

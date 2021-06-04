@@ -2,50 +2,50 @@
 	"0": {
 		"fn": "Ostatní / neznámé / jiné",
 		"sn": "Ostatní",
-		"icon": "icon-exclamation-triangle",
+		"icon": "swClassOther",
 		"infoOrder": 80
 	},
 	"1": {
 		"fn": "Operační systém",
 		"sn": "OS",
-		"icon": "icon-floppy-o",
+		"icon": "swClassOS",
 		"askOSInfo": 1,
 		"infoOrder": 1
 	},
 	"10": {
 		"fn": "Rozšíření OS: drivery, utility apod.",
 		"sn": "Drivery / utility OS",
-		"icon": "icon-cogs",
+		"icon": "swClassOSExtensions",
 		"infoOrder": 1000
 	},
 	"11": {
 		"fn": "Sdílené knihovny pro aplikace",
 		"sn": "Knihovny pro aplikace",
-		"icon": "icon-book",
+		"icon": "swClassSharedLibraries",
 		"infoOrder": 900
 	},
 	"20": {
 		"fn": "Serverová služba",
 		"sn": "Server",
-		"icon": "icon-server",
+		"icon": "swClassServer",
 		"infoOrder": 100
 	},
 	"40": {
 		"fn": "Webový prohlížeč",
 		"sn": "Webový prohlížeč",
-		"icon": "icon-globe",
+		"icon": "swClassBrowser",
 		"infoOrder": 10
 	},
 	"41": {
 		"fn": "PWA (webová aplikace)",
 		"sn": "PWA",
-		"icon": "icon-hand-pointer-o",
+		"icon": "swClassPWA",
 		"infoOrder": 50
 	},
 	"99": {
 		"fn": "Aplikace",
 		"sn": "Aplikace",
-		"icon": "icon-mouse-pointer",
+		"icon": "swClassApp",
 		"infoOrder": 20
 	}
 }

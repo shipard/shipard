@@ -59,6 +59,18 @@
         "bsi":"bi-folder2-open",
         "mdi":"folder_open"
 	},
+    "tables/wkf.base.docMarks":{
+		"fa5":"fa-star-half-alt",
+        "fa5pro":"fa-star-half-alt",
+        "bsi":"bi-star-half",
+        "mdi":"star_half"
+	},
+    "tables/wkf.base.sectionsIssuesKinds":{
+		"fa5":"fa-bolt",
+        "fa5pro":"fa-bolt",
+        "bsi":"bi-lightning-fill",
+        "mdi":"bolt"
+	},
 
 
 	"formTheme":{
@@ -146,5 +158,110 @@
         "fa5pro":"fa-bullhorn",
         "bsi":"bi-megaphone",
         "mdi":"campaign"
-    }
+    },
+    "homeThumbTack":{
+        "fa5": "fa-thumbtack",
+		"fa5pro": "fa-thumbtack",
+		"bsi": "bi-pin",
+		"mdi": "push_pin"
+    },
+
+
+
+	"notificationsSectionsNone":{
+		"fa5":"fa-bell-slash",
+        "fa5pro":"fa-bell-slash",
+        "bsi":"bi-bell-slash-fill",
+        "mdi":"notifications_off"
+	},
+	"notificationsSectionsAll":{
+		"fa5":"fa-bell",
+        "fa5pro":"fa-bell",
+        "bsi":"bi-bell-fill",
+        "mdi":"notifications"
+	},
+	"notificationsSectionsSilent":{
+		"fa5":"fa-volume-off",
+        "fa5pro":"fa-volume-off",
+        "bsi":"bi-volume-off",
+        "mdi":"volume_mute"
+	},
+	"notificationsSectionsImportant":{
+		"fa5":"fa-exclamation-circle",
+        "fa5pro":"fa-exclamation-circle",
+        "bsi":"bi-exclamation-circle-fill",
+        "mdi":"error"
+	},
+	"notificationsSectionsMine":{
+		"fa5": "fa-user-circle",
+		"fa5pro": "fa-user-circle",
+		"bsi": "bi-person-circle",
+		"mdi": "account_circle"
+	},
+
+
+
+	"notificationsIssuesNone":{
+		"fa5":"fa-bell-slash",
+        "fa5pro":"fa-bell-slash",
+        "bsi":"bi-bell-slash-fill",
+        "mdi":"notifications_off"
+	},
+	"notificationsIssuesStar":{
+		"fa5":"fa-star",
+		"fa5pro":"fa-star",
+		"bsi":"bi-star",
+		"mdi":"grade"
+	},
+	"notificationsIssuesDot":{
+		"fa5": "fa-circle",
+		"fa5pro": "fa-circle",
+		"bsi": "bi-circle",
+		"mdi": "circle"
+	},
+	"notificationsIssuesCritical":{
+		"fa5":"fa-bolt",
+        "fa5pro":"fa-bolt",
+        "bsi":"bi-lightning-fill",
+        "mdi":"bolt"
+	},
+	"notificationsIssuesFire":{
+		"fa5":"fa-fire",
+        "fa5pro":"fa-fire",
+        "bsi":"bi-lightning-charge",
+        "mdi":"local_fire_department"
+	},
+	"notificationsIssuesYes":{
+		"fa5":"fa-thumbs-up",
+        "fa5pro":"fa-thumbs-up",
+        "bsi":"bi-hand-thumbs-up-fill",
+        "mdi":"thumb_up"
+	},
+	"notificationsIssuesNo":{
+		"fa5":"fa-thumbs-down",
+        "fa5pro":"fa-thumbs-down",
+        "bsi":"bi-hand-thumbs-down-fill",
+        "mdi":"thumb_down"
+	},
+
+
+
+	"commentTypeUser":{
+		"fa5": "fa-keyboard",
+		"fa5pro": "fa-keyboard",
+		"bsi": "bi-keyboard",
+		"mdi": "keyboard"
+	},
+	"commentTypeIssueChange":{
+		"fa5": "fa-pencil-alt",
+		"fa5pro": "fa-pencil-alt",
+		"bsi": "bi-pencil",
+		"mdi": "edit"
+	},
+	"commentTypeIssueAlertUpdate":{
+		"fa5": "fa-exclamation-triangle",
+		"fa5pro": "fa-exclamation-triangle",
+		"bsi": "bi-exclamation-triangle",
+		"mdi": "warning_amber"
+	}
 }

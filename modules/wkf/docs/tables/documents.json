@@ -1,5 +1,5 @@
 {
-	"id": "wkf.docs.documents", "sql": "wkf_docs_documents", "name": "Dokumenty", "icon": "icon-file",
+	"id": "wkf.docs.documents", "sql": "wkf_docs_documents", "name": "Dokumenty",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "documentId", "name": "ID", "type": "string", "len": 20, "options": ["ascii"]},

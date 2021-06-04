@@ -1,13 +1,13 @@
 {
 	"wkf.base.sections": {
 		"wkf-sections-members": {
-			"linkid": "wkf-sections-members", "name": "Členové sekce", "icon": "icon-user",
+			"linkid": "wkf-sections-members", "name": "Členové sekce", "icon": "system/iconUser",
 			"sources": [
 				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			]
 		},
 		"wkf-sections-admins": {
-			"linkid": "wkf-sections-admins", "name": "Správci sekce", "icon": "icon-user-secret",
+			"linkid": "wkf-sections-admins", "name": "Správci sekce", "icon": "system/iconAdmin",
 			"sources": [
 				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			]
@@ -16,13 +16,13 @@
 
 	"wkf.base.trays": {
 		"wkf-trays-members": {
-			"linkid": "wkf-trays-members", "name": "Členové přihrádky", "icon": "icon-user",
+			"linkid": "wkf-trays-members", "name": "Členové přihrádky", "icon": "system/iconUser",
 			"sources": [
 				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			]
 		},
 		"wkf-trays-admins": {
-			"linkid": "wkf-trays-admins", "name": "Správci přihrádky", "icon": "icon-user-secret",
+			"linkid": "wkf-trays-admins", "name": "Správci přihrádky", "icon": "system/iconAdmin",
 			"sources": [
 				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			]
@@ -31,7 +31,7 @@
 
 	"wkf.base.extNotifications": {
 		"wkf-ext-ntf-sections": {
-			"linkid": "wkf-ext-ntf-sections", "name": "Sekce", "icon": "icon-columns",
+			"linkid": "wkf-ext-ntf-sections", "name": "Sekce", "icon": "tables/wkf.base.sections",
 			"sources": [
 				{"id": "sections", "viewer": "default", "table": "wkf.base.sections"}
 			]

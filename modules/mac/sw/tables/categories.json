@@ -1,5 +1,5 @@
 {
-	"id": "mac.sw.categories", "sql": "mac_sw_categories", "name": "Kategorie SW", "icon": "icon-folder",
+	"id": "mac.sw.categories", "sql": "mac_sw_categories", "name": "Kategorie SW",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "suid", "name": "ID", "type": "string", "len": 5, "options": ["ascii"]},

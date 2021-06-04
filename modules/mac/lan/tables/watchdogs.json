@@ -1,5 +1,5 @@
 {
-	"id": "mac.lan.watchdogs", "sql": "mac_lan_watchdogs", "name": "Watchdogs", "icon": "icon-heartbeat",
+	"id": "mac.lan.watchdogs", "sql": "mac_lan_watchdogs", "name": "Watchdogs",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

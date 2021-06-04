@@ -1,10 +1,10 @@
 [
 	{
-		"name": "Dohled", "class": "terminals.vs.WidgetLive", "icon": "icon-video-camera",
+		"name": "Dohled", "class": "terminals.vs.WidgetLive", "icon": "system/iconCamera",
 		"dashboard": "main", "panel": "vs", "order": 1000, "row": "main", "width": 12, "type": "vs"
 	},
 	{
-		"name": "Dohled", "class": "terminals.vs.WidgetLive", "icon": "icon-video-camera",
+		"name": "Dohled", "class": "terminals.vs.WidgetLive", "icon": "system/iconCamera",
 		"dashboard": "main_new", "panel": "vs", "order": 1000, "row": "main", "width": 12, "type": "vs"
 	}
 ]

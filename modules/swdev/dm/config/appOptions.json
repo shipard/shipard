@@ -1,7 +1,7 @@
 {
 	"swdevDocumentation": {
 		"name": "Dokumentace", "order": 1000, "group": "swdev",
-		"icon": "icon-book",
+		"icon": "system/iconBook",
 		"type": "cfgFile",
 		"options":
 		[

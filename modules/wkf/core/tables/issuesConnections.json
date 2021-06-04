@@ -1,5 +1,5 @@
 {
-	"id": "wkf.core.issuesConnections", "sql": "wkf_core_issuesConnections", "name": "Propojení zpráv", "icon": "icon-link",
+	"id": "wkf.core.issuesConnections", "sql": "wkf_core_issuesConnections", "name": "Propojení zpráv",
 	"columns": [
 		{"id": "ndx", "name": "ndx", "type": "int_ai"},
 		{"id": "connectionType", "name": "Typ propojení", "type": "enumInt",

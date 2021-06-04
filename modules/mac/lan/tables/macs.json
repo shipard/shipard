@@ -1,5 +1,5 @@
 {
-	"id": "mac.lan.macs", "sql": "mac_lan_macs", "name": "MAC adresy", "icon":  "icon-cube",
+	"id": "mac.lan.macs", "sql": "mac_lan_macs", "name": "MAC adresy",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "mac", "name": "MAC adresa", "type": "string", "len": 20, "options": ["ascii"]},

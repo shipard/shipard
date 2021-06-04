@@ -3,7 +3,7 @@
 		"start": {
 			"items": {
 				"storeCashBox": {
-					"t1": "Kasa", "object": "widget", "path": "widget/terminals.store.WidgetCashBox", "icon": "icon-calculator", "order": 1000, "role": "store"
+					"t1": "Kasa", "object": "widget", "path": "widget/terminals.store.WidgetCashBox", "icon": "iconCashBox", "order": 1000, "role": "store"
 				}
 			}
 		}

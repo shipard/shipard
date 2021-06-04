@@ -1,7 +1,7 @@
 {
 	"e10.witems.items": {
 		"swdev-items-fw": {
-			"linkid": "swdev-items-fw", "name": "Firmware", "icon": "icon-flag-o",
+			"linkid": "swdev-items-fw", "name": "Firmware", "icon": "tables/swdev.hw.fw",
 			"sources": [
 				{"id": "fw", "viewer": "default", "table": "swdev.hw.fw"}
 			]

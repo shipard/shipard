@@ -11,6 +11,18 @@
 		"bsi": "bi-file-earmark",
 		"mdi": "insert_drive_file"
 	},
+	"tables/wkf.core.comments":{
+		"fa5": "fa-comments",
+		"fa5pro": "fa-comments",
+		"bsi": "bi-chat",
+		"mdi": "question_answer"
+	},
+	"tables/wkf.core.issuesConnections":{
+		"fa5": "fa-link",
+		"fa5pro": "fa-link",
+		"bsi": "bi-link-45deg",
+		"mdi": "link"
+	},
 
 
 	"settings/workflow":{
@@ -26,5 +38,89 @@
 		"fa5pro": "fa-cogs",
 		"bsi": "bi-gear-fill",
 		"mdi": "settings"
+	},
+
+
+
+	"iconIssues":{
+		"fa5": "fa-comments",
+		"fa5pro": "fa-comments",
+		"bsi": "bi-chat",
+		"mdi": "question_answer"
+	},
+
+
+	"docLinkTo":{
+		"fa5": "fa-chevron-right",
+		"fa5pro": "fa-chevron-right",
+		"bsi": "bi-chevron-right",
+		"mdi": "arrow_forward_ios"
+	},
+	"docLinkFrom":{
+		"fa5": "fa-chevron-left",
+		"fa5pro": "fa-chevron-left",
+		"bsi": "bi-chevron-left",
+		"mdi": "arrow_back_ios"
+	},
+	"docLinkAssigned":{
+		"fa5":"fa-bolt",
+        "fa5pro":"fa-bolt",
+        "bsi":"bi-lightning-fill",
+        "mdi":"bolt"
+	},
+	"docLinkNotify":{
+		"fa5": "fa-share",
+		"fa5pro": "fa-share",
+		"bsi": "bi-box-arrow-up-right",
+		"mdi": "open_in_new"
+	},
+	"docLinkProjects":{
+		"fa5": "fa-lightbulb",
+		"fa5pro": "fa-lightbulb-on",
+		"bsi": "bi-lightbulb",
+		"mdi": "tungsten"
+	},
+	"docLinkTargets":{
+		"fa5": "fa-flag-checkered",
+		"fa5pro": "fa-flag-checkered",
+		"bsi": "bi-flag-fill",
+		"mdi": "sports_score"
+	},
+
+
+
+
+	"docFilterAddFrom":{
+		"fa5": "fa-chevron-left",
+		"fa5pro": "fa-chevron-left",
+		"bsi": "bi-chevron-left",
+		"mdi": "arrow_back_ios"
+	},
+	"docFilterAddTo":{
+		"fa5": "fa-chevron-right",
+		"fa5pro": "fa-chevron-right",
+		"bsi": "bi-chevron-right",
+		"mdi": "arrow_forward_ios"
+	},
+	"docFilterNotify":{
+		"fa5": "fa-share",
+		"fa5pro": "fa-share",
+		"bsi": "bi-box-arrow-up-right",
+		"mdi": "open_in_new"
+	},
+	"docFilterAddAssigned":{
+		"fa5":"fa-bolt",
+        "fa5pro":"fa-bolt",
+        "bsi":"bi-lightning-fill",
+        "mdi":"bolt"
+	},
+
+
+
+	"clsfItemsLimitWkfSections":{
+		"fa5": "fa-columns",
+		"fa5pro": "fa-columns",
+		"bsi": "bi-layout-sidebar-inset",
+		"mdi": "view_week"
 	}
 }

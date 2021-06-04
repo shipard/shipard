@@ -1,7 +1,7 @@
 {
 	"swdev.dm.terms": {
 		"swdev-dm-terms-see-also": {
-			"linkid": "swdev-dm-terms-see-also", "name": "Viz také", "icon": "icon-arrow-right",
+			"linkid": "swdev-dm-terms-see-also", "name": "Viz také", "icon": "iconSeeAlso",
 			"sources": [
 				{"id": "terms", "viewer": "swdev.dm.ViewTerms", "table": "swdev.dm.terms"}
 			]

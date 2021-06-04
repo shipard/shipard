@@ -1,5 +1,5 @@
 {
-	"id": "swdev.icons.appIconsGroups", "sql": "swdev_icons_appIconsGroups", "name": "Skupiny ikon aplikace", "icon": "icon-clone",
+	"id": "swdev.icons.appIconsGroups", "sql": "swdev_icons_appIconsGroups", "name": "Skupiny ikon aplikace",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
@@ -12,7 +12,7 @@
 	"views": [
 		{"id": "default", "class": "swdev.icons.ViewAppIconsGroups",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.icons.ViewDetailAppIconGroup"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "swdev.icons.ViewDetailAppIconGroup"}
 			}
 		}
 	],

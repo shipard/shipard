@@ -1,5 +1,5 @@
 {
-	"id": "terminals.ros.rosRegs", "sql": "terminals_ros_rosRegs", "name": "Registrace k EET", "icon": "icon-microchip",
+	"id": "terminals.ros.rosRegs", "sql": "terminals_ros_rosRegs", "name": "Registrace k EET",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

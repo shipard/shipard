@@ -1,5 +1,5 @@
 {
-	"id": "terminals.base.cameras", "sql": "terminals_base_cameras", "name": "Kamery", "icon": "icon-video-camera",
+	"id": "terminals.base.cameras", "sql": "terminals_base_cameras", "name": "Kamery",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "name", "name": "Název", "type": "string", "len": 80},

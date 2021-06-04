@@ -1,5 +1,5 @@
 {
-	"id": "mac.lan.ipAddressLists", "sql": "mac_lan_ipAddressLists", "name": "Seznamy IP adres", "icon": "icon-user-secret",
+	"id": "mac.lan.ipAddressLists", "sql": "mac_lan_ipAddressLists", "name": "Seznamy IP adres",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},

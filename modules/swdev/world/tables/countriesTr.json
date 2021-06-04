@@ -1,5 +1,5 @@
 {
-	"id": "swdev.world.countriesTr", "sql": "swdev_world_countriesTr", "name": "Země - Lokalizace", "icon": "icon-flag",
+	"id": "swdev.world.countriesTr", "sql": "swdev_world_countriesTr", "name": "Země - Lokalizace",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "country", "name": "Země", "type": "int", "reference": "swdev.world.countries"},

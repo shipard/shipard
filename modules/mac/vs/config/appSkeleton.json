@@ -3,7 +3,7 @@
 		"start": {
 			"items": {
 				"videoSurveillance": {
-					"t1": "Dohled", "object": "widget", "path": "widget/mac.vs.WidgetLive", "icon": "icon-camera", "order": 1300, "role": "macvs"
+					"t1": "Dohled", "object": "widget", "path": "widget/mac.vs.WidgetLive", "icon": "system/iconCamera", "order": 1300, "role": "macvs"
 				}
 			}
 		}

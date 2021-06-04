@@ -1,5 +1,5 @@
 {
-	"id": "swdev.dm.viewers", "sql": "swdev_dm_viewers", "name": "Prohlížeče", "icon": "icon-window-restore",
+	"id": "swdev.dm.viewers", "sql": "swdev_dm_viewers", "name": "Prohlížeče",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "table", "name": "Tabulka", "type": "int", "reference": "swdev.dm.tables"},
@@ -13,7 +13,7 @@
 	"views": [
 		{"id": "default", "class": "swdev.dm.ViewViewers",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.dm.ViewDetailViewer"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "swdev.dm.ViewDetailViewer"}
 			}
 		}
 	],

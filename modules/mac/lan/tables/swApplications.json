@@ -1,5 +1,5 @@
 {
-	"id": "mac.lan.swApplications", "sql": "mac_lan_swApplications", "name": "SW Aplikace", "icon": "icon-hourglass-o",
+	"id": "mac.lan.swApplications", "sql": "mac_lan_swApplications", "name": "SW Aplikace",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},

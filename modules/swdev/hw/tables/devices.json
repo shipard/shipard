@@ -1,5 +1,5 @@
 {
-	"id": "swdev.hw.devices", "sql": "swdev_hw_devices", "name": "HW Zařízení", "icon": "icon-fax",
+	"id": "swdev.hw.devices", "sql": "swdev_hw_devices", "name": "HW Zařízení",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},

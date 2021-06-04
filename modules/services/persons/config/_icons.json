@@ -1,0 +1,8 @@
+{
+    "tables/services.persons.persons":{
+        "fa5": "fa-users",
+		"fa5pro": "fa-users",
+		"bsi": "bi-people",
+		"mdi": "people"
+    }
+}

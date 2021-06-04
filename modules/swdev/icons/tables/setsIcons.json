@@ -1,5 +1,5 @@
 {
-	"id": "swdev.icons.setsIcons", "sql": "swdev_icons_setsIcons", "name": "Ikony v Sadě ikon", "icon": "icon-file-image-o",
+	"id": "swdev.icons.setsIcons", "sql": "swdev_icons_setsIcons", "name": "Ikony v Sadě ikon",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "iconsSet", "name": "Sada", "type": "int", "reference": "swdev.icons.sets"},
@@ -17,7 +17,7 @@
 	"views": [
 		{"id": "default", "class": "swdev.icons.ViewSetsIcons",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.icons.ViewDetailSetIcon"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "swdev.icons.ViewDetailSetIcon"}
 			}
 		},
 		{

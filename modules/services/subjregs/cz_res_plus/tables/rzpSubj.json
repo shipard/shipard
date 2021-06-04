@@ -1,5 +1,5 @@
 {
-	"id": "services.subjregs.cz_res_plus.rzpSubj", "sql": "services_subjregs_cz_res_plus_rzpSubj", "name": "RZP Subjekty", "icon": "icon-building-o",
+	"id": "services.subjregs.cz_res_plus.rzpSubj", "sql": "services_subjregs_cz_res_plus_rzpSubj", "name": "RZP Subjekty",
 	"columns": [
 		{"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "ico", "name": "IČ", "type": "string", "len": 8, "options": ["ascii"]},
@@ -12,7 +12,7 @@
 		"default": {
 			"id": "default", "class": "services.subjregs.cz_res_plus.ViewRzpSubj",
 			"details": {
-				"detail": {"title": "Detail", "icon": "icon-file", "type": "detail", "order":  0, "class": "services.subjregs.cz_res_plus.ViewDetailRzpSubj"}
+				"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "services.subjregs.cz_res_plus.ViewDetailRzpSubj"}
 			}
 		}
 	},

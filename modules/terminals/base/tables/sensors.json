@@ -1,5 +1,5 @@
 {
-	"id": "terminals.base.sensors", "sql": "terminals_base_sensors", "name": "Senzory", "icon": "icon-stethoscope",
+	"id": "terminals.base.sensors", "sql": "terminals_base_sensors", "name": "Senzory",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "name", "name": "Název", "type": "string", "len": 80},

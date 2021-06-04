@@ -1,5 +1,5 @@
 {
-	"id": "vds.base.defs", "sql": "vds_base_defs", "name": "Rozšiřující datové struktury", "icon": "icon-table",
+	"id": "vds.base.defs", "sql": "vds_base_defs", "name": "Rozšiřující datové struktury",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len":  120},

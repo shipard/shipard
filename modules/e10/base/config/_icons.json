@@ -47,12 +47,6 @@
         "bsi":"bi-list-ul",
         "mdi":"format_list_bulleted"
     },
-    "settings/sharing":{
-        "fa5":"fa-share-alt",
-        "fa5pro":"fa-share-alt",
-        "bsi":"bi-share-fill",
-        "mdi":"share"
-    },
     "tables/e10.base.devices":{
         "fa5":"fa-desktop",
         "fa5pro":"fa-desktop",
@@ -77,12 +71,6 @@
 		"bsi": "bi-paperclip",
 		"mdi": "attach_file"
     },
-    "e10.widgetDashboard/Info":{
-        "fa5":"fa-info",
-        "fa5pro":"fa-info-square",
-        "bsi":"bi-info-square",
-        "mdi":"info"
-    },
     "tables/e10.base.notifications":{
         "fa5": "fa-bell",
 		"fa5pro": "fa-bell",
@@ -100,6 +88,31 @@
         "fa5pro":"fa-puzzle-piece",
         "bsi":"bi-puzzle",
         "mdi":"extension"
+    },
+    "tables/e10.install.nomencItems":{
+        "fa5": "fa-list",
+		"fa5pro": "fa-list",
+		"bsi": "bi-list-ul",
+		"mdi": "list"
+    },
+
+
+
+    "settings/sharing":{
+        "fa5":"fa-share-alt",
+        "fa5pro":"fa-share-alt",
+        "bsi":"bi-share-fill",
+        "mdi":"share"
+    },
+
+
+
+
+    "e10.widgetDashboard/Info":{
+        "fa5":"fa-info",
+        "fa5pro":"fa-info-square",
+        "bsi":"bi-info-square",
+        "mdi":"info"
     },
 
 

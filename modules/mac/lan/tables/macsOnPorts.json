@@ -1,5 +1,5 @@
 {
-	"id": "mac.lan.macsOnPorts", "sql": "mac_lan_macsOnPorts", "name": "MAC adresy na portech zařízení", "icon":  "icon-cubes",
+	"id": "mac.lan.macsOnPorts", "sql": "mac_lan_macsOnPorts", "name": "MAC adresy na portech zařízení",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "device", "name": "Zařízení", "type": "int", "reference": "mac.lan.devices"},

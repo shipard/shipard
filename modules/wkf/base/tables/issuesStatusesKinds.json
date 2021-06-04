@@ -1,5 +1,5 @@
 {
-	"id": "wkf.base.issuesStatusesKinds", "sql": "wkf_base_issuesStatusesKinds", "name": "Druhy statusů Zpráv", "icon": "icon-cogs",
+	"id": "wkf.base.issuesStatusesKinds", "sql": "wkf_base_issuesStatusesKinds", "name": "Druhy statusů Zpráv",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

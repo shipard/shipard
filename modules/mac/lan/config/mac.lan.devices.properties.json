@@ -24,11 +24,11 @@
 			"linux": {"name": "Linux"}
 		},
 		"101": {
-			"wxp": {"name": "XP", "sc": "WinXP", "icon": "icon-windows"},
-			"w7": {"name": "7", "sc": "Win7", "icon": "icon-windows"},
-			"w8": {"name": "8", "sc": "Win8", "icon": "icon-windows"},
-			"w81": {"name": "8.1", "sc": "Win8.1", "icon": "icon-windows"},
-			"w10": {"name": "10", "sc": "Win10", "icon": "icon-windows"}
+			"wxp": {"name": "XP", "sc": "WinXP", "icon": "devicePropertiesWindows"},
+			"w7": {"name": "7", "sc": "Win7", "icon": "devicePropertiesWindows"},
+			"w8": {"name": "8", "sc": "Win8", "icon": "devicePropertiesWindows"},
+			"w81": {"name": "8.1", "sc": "Win8.1", "icon": "devicePropertiesWindows"},
+			"w10": {"name": "10", "sc": "Win10", "icon": "devicePropertiesWindows"}
 		}
 	}
 }

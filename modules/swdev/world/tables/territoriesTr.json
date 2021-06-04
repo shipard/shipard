@@ -1,5 +1,5 @@
 {
-	"id": "swdev.world.territoriesTr", "sql": "swdev_world_territoriesTr", "name": "Oblasti - Lokalizace", "icon": "icon-map",
+	"id": "swdev.world.territoriesTr", "sql": "swdev_world_territoriesTr", "name": "Oblasti - Lokalizace",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "territory", "name": "Oblast", "type": "int", "reference": "swdev.world.territories"},

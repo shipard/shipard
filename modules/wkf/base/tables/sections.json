@@ -1,5 +1,5 @@
 {
-	"id": "wkf.base.sections", "sql": "wkf_base_sections", "name": "Sekce", "icon": "icon-columns",
+	"id": "wkf.base.sections", "sql": "wkf_base_sections", "name": "Sekce",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

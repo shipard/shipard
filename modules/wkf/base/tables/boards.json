@@ -1,5 +1,5 @@
 {
-	"id": "wkf.base.boards", "sql": "wkf_base_boards", "name": "Přehledy Zpráv", "icon": "icon-window-maximize",
+	"id": "wkf.base.boards", "sql": "wkf_base_boards", "name": "Přehledy Zpráv",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 

@@ -4,7 +4,7 @@
 		"panels": {
 			"sources": {
 				"name": "Zdroje",
-				"icon": "icon-filter",
+				"icon": "system/detailSources",
 				"fullsize": 1,
 				"order": 2000,
 				"rows": {
@@ -17,7 +17,7 @@
 		"panels": {
 			"service-subjects": {
 				"name": "Subjekty",
-				"icon": "icon-building",
+				"icon": "system/detailSubjects",
 				"fullsize": 1,
 				"order": 10000,
 				"rows": {
@@ -31,7 +31,7 @@
 		"panels": {
 			"sources": {
 				"name": "Zdroje",
-				"icon": "icon-filter",
+				"icon": "system/detailSources",
 				"fullsize": 1,
 				"order": 2000,
 				"rows": {

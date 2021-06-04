@@ -56,7 +56,7 @@
         "cfgScripts": {"title": "Nastavení", "icon": "system/detailSettings", "type": "detail", "class": "mac.lan.ViewDetailDeviceDetailCfgScripts"}
       },
 			"tools": [
-				{"class": "mac.lan.libs.LanControlSetToReloadRunningConfWizard", "icon": "icon-refresh", "text": "Znovu načíst aktuální stav všech zařízení"}
+				{"class": "mac.lan.libs.LanControlSetToReloadRunningConfWizard", "icon": "iconRefresh", "text": "Znovu načíst aktuální stav všech zařízení"}
 			]
     },
     {

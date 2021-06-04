@@ -601,8 +601,8 @@ class Persons extends \e10\GlobalReport
 
 	public function subReportsList ()
 	{
-		$d[] = ['id' => 'total', 'icon' => 'icon-file-text-o', 'title' => 'Sumárně'];
-		$d[] = ['id' => 'peoples', 'icon' => 'icon-user', 'title' => 'Po Osobách'];
+		$d[] = ['id' => 'total', 'icon' => 'reportBySum', 'title' => 'Sumárně'];
+		$d[] = ['id' => 'peoples', 'icon' => 'reportPersonsBilling', 'title' => 'Po Osobách'];
 		return $d;
 	}
 

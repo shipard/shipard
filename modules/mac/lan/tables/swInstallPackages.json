@@ -1,5 +1,5 @@
 {
-	"id": "mac.lan.swInstallPackages", "sql": "mac_lan_swInstallPackages", "name": "Instalační balíčky SW", "icon": "icon-file-archive-o",
+	"id": "mac.lan.swInstallPackages", "sql": "mac_lan_swInstallPackages", "name": "Instalační balíčky SW",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},

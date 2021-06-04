@@ -1,5 +1,5 @@
 {
-	"id": "services.subjects.branches", "sql": "services_subjects_branches", "name": "Obory subjektů", "icon": "icon-circle-o-notch",
+	"id": "services.subjects.branches", "sql": "services_subjects_branches", "name": "Obory subjektů",
 	"columns": [
 		{"id": "ndx", "name": "ndx", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},

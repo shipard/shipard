@@ -8,7 +8,7 @@
 				"details":
 				{
 					"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "services.sw.libs.ViewDetailSW"},
-					"annotations": {"title": "Odkazy", "icon": "icon-external-link", "type": "detail", "class": "mac.sw.ViewDetailSWAnnotations", "order": 99000}
+					"annotations": {"title": "Odkazy", "icon": "system/detailLinks", "type": "detail", "class": "mac.sw.ViewDetailSWAnnotations", "order": 99000}
 				}
 			}
 		}

@@ -1,5 +1,5 @@
 {
-	"id": "swdev.world.currencies", "sql": "swdev_world_currencies", "name": "Měny", "icon": "icon-money",
+	"id": "swdev.world.currencies", "sql": "swdev_world_currencies", "name": "Měny",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "id", "name": "id", "type": "string", "len": 10},
@@ -18,8 +18,8 @@
 	"views": [
 		{"id": "default", "class": "swdev.world.ViewCurrencies",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.world.ViewDetailCurrency"},
-				"tr": {"title": "Překlad", "icon": "icon-language", "type": "detail", "class": "swdev.world.ViewDetailCurrencyTr"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "swdev.world.ViewDetailCurrency"},
+				"tr": {"title": "Překlad", "icon": "detailTranslation", "type": "detail", "class": "swdev.world.ViewDetailCurrencyTr"}
 			}
 		}
 	],

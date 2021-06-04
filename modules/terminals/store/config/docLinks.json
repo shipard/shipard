@@ -1,6 +1,6 @@
 {
 	"e10doc.base.cashboxes": {
-		"cashboxes-payTerminals": {"linkid": "cashboxes-payTerminals", "name": "Platební terminály", "icon": "icon-calculator",
+		"cashboxes-payTerminals": {"linkid": "cashboxes-payTerminals", "name": "Platební terminály", "icon": "tables/terminals.store.payTerminals",
 			"sources": [
 				{"table": "terminals.store.payTerminals"}
 			]

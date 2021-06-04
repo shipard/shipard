@@ -1,5 +1,5 @@
 {
-	"id": "services.subjects.sizes", "sql": "services_subjects_sizes", "name": "Velikosti subjektů", "icon": "icon-expand",
+	"id": "services.subjects.sizes", "sql": "services_subjects_sizes", "name": "Velikosti subjektů",
 	"columns": [
 		{"id": "ndx", "name": "ndx", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},

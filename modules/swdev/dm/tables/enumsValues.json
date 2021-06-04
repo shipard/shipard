@@ -1,5 +1,5 @@
 {
-	"id": "swdev.dm.enumsValues", "sql": "swdev_dm_enumsValues", "name": "Hodnoty Enumů", "icon": "icon-list-ol",
+	"id": "swdev.dm.enumsValues", "sql": "swdev_dm_enumsValues", "name": "Hodnoty Enumů",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "enum", "name": "Enum", "type": "int", "reference": "swdev.dm.enums"},
@@ -16,7 +16,7 @@
 	"views": [
 		{"id": "default", "class": "swdev.dm.ViewEnumsValues",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.dm.ViewDetailEnumValue"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "swdev.dm.ViewDetailEnumValue"}
 			}
 		}
 	],

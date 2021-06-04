@@ -1,5 +1,5 @@
 {
-	"id": "wkf.base.sectionsIssuesKinds", "sql": "wkf_base_sectionsIssuesKinds", "name": "Druhy zpráv v sekcích", "icon": "icon-flash",
+	"id": "wkf.base.sectionsIssuesKinds", "sql": "wkf_base_sectionsIssuesKinds", "name": "Druhy zpráv v sekcích",
 	"columns": [
 		{"id": "ndx", "name": "ndx", "type": "int_ai"},
 		{"id": "section", "name": "Sekce", "type": "int", "reference": "wkf.base.sections"},

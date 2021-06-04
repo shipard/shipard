@@ -1,7 +1,6 @@
 {
 	"servicesSubjectsTypes": {
 		"name": "Typy subjektů", "order": 31000, "group": "services",
-		"icon": "icon-list",
 		"type": "viewer", "table": "services.subjects.types", "viewer": "default"
 	}
 }

@@ -1,5 +1,5 @@
 {
-	"id": "swdev.icons.sets", "sql": "swdev_icons_sets", "name": "Sady ikon", "icon": "icon-th",
+	"id": "swdev.icons.sets", "sql": "swdev_icons_sets", "name": "Sady ikon",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
@@ -24,7 +24,7 @@
 	"views": [
 		{"id": "default", "class": "swdev.icons.ViewSets",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.icons.ViewDetailSet"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "swdev.icons.ViewDetailSet"}
 			}
 		}
 	],

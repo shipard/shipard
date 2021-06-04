@@ -1,5 +1,5 @@
 {
-	"id": "mac.lan.wallSockets", "sql": "mac_lan_wallSockets", "name": "Zásuvky", "icon": "icon-square-o",
+	"id": "mac.lan.wallSockets", "sql": "mac_lan_wallSockets", "name": "Zásuvky",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "id", "name": "Kód", "type": "string", "len": 20},

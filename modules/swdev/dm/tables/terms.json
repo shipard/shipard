@@ -1,5 +1,5 @@
 {
-	"id": "swdev.dm.terms", "sql": "swdev_dm_terms", "name": "Pojmy", "icon": "icon-hashtag",
+	"id": "swdev.dm.terms", "sql": "swdev_dm_terms", "name": "Pojmy",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Pojem", "type": "string", "len": 120},
@@ -20,8 +20,8 @@
 	"views": [
 		{"id": "default", "class": "swdev.dm.ViewTerms",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.dm.ViewDetailTerm"},
-				"trData": {"title": "trData", "icon": "icon-language", "type": "detail", "class": "swdev.dm.ViewDetailTermTrData"}
+				"default": {"title": "Přehld", "icon": "system/detailDetail", "type": "detail", "class": "swdev.dm.ViewDetailTerm"},
+				"trData": {"title": "trData", "icon": "detailTrData", "type": "detail", "class": "swdev.dm.ViewDetailTermTrData"}
 			}
 		}
 	],

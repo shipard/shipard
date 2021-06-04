@@ -1,5 +1,5 @@
 {
-	"id": "swdev.hw.archs", "sql": "swdev_hw_archs", "name": "Architektury HW", "icon": "icon-microchip",
+	"id": "swdev.hw.archs", "sql": "swdev_hw_archs", "name": "Architektury HW",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
@@ -12,7 +12,7 @@
 	"views": [
 		{"id": "default", "class": "swdev.hw.ViewArchs",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.hw.ViewDetailArch"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "swdev.hw.ViewDetailArch"}
 			}
 		}
 	],

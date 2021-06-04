@@ -1,5 +1,5 @@
 {
-	"id": "swdev.hw.devicesSeries", "sql": "swdev_hw_devicesSeries", "name": "Řady HW zařízení", "icon": "icon-ellipsis-h",
+	"id": "swdev.hw.devicesSeries", "sql": "swdev_hw_devicesSeries", "name": "Řady HW zařízení",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
@@ -14,7 +14,7 @@
 	"views": [
 		{"id": "default", "class": "swdev.hw.ViewDevicesSeries",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.hw.ViewDetailDeviceSeries"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "swdev.hw.ViewDetailDeviceSeries"}
 			}
 		}
 	],

@@ -1,5 +1,5 @@
 {
-  "id": "wkf.docs.folders", "sql": "wkf_docs_folders", "name": "Složky dokumentů", "icon": "icon-folder",
+  "id": "wkf.docs.folders", "sql": "wkf_docs_folders", "name": "Složky dokumentů",
   "columns": [
     {"id": "ndx", "name": "id", "type": "int_ai"},
 

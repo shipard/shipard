@@ -27,7 +27,7 @@
 			},
 			"addresses": {
 				"name": "Adresy",
-				"icon": "icon-crosshairs",
+				"icon": "detailAddresses",
 				"fullsize": 1,
 				"order": 12000,
 				"rows": {
@@ -41,7 +41,7 @@
 		"disableTopToolbar": 1,
 		"panels": {
 			"access": {
-				"name": "Přehled", "icon": "icon-eye", "order": 100000,
+				"name": "Přehled", "icon": "system/detailOverview", "order": 100000,
 				"fullsize": 1,
 				"rows": {
 					"main": {"order": 10000}

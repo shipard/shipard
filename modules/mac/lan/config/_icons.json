@@ -1,65 +1,17 @@
 {
-    "e10.widgetDashboard/lanDashboard": {
-		"fa5": "fa-sitemap",
-		"fa5pro": "fa-sitemap",
-		"bsi": "bi-diagram-3",
-		"mdi": "device_hub"
-	},
     "tables/mac.lan.devices": {
 		"fa5": "fa-laptop",
 		"fa5pro": "fa-phone-laptop",
 		"bsi": "bi-laptop",
 		"mdi": "computer"
 	},
-    "e10.widgetDashboard/building": {
-		"fa5": "fa-building",
-		"fa5pro": "fa-building",
-		"bsi": "bi-building",
-		"mdi": "business"
-	},
-    "submenu/settingsLAN": {
-		"fa5": "fa-sitemap",
-		"fa5pro": "fa-sitemap",
-		"bsi": "bi-diagram-3",
-		"mdi": "device_hub"
-	},
-    "submenu/settingsIoT": {
-		"fa5": "fa-power-off",
-		"fa5pro": "fa-power-off",
-		"bsi": "bi-power",
-		"mdi": "power_settings_new"
-	},
-    "submenu/settingsBuilding": {
-		"fa5": "fa-building",
-		"fa5pro": "fa-building",
-		"bsi": "bi-building",
-		"mdi": "business"
-	},
-    "submenu/settingsSW": {
-		"fa5": "fa-hourglass-half",
-		"fa5pro": "fa-hourglass-half",
-		"bsi": "bi-hourglass-split",
-		"mdi": "hourglass_empty"
-	},
-    "tables/mac.lan.swLicenses": {
+	"tables/mac.lan.swLicenses": {
 		"fa5": "fa-certificate",
 		"fa5pro": "fa-certificate",
 		"bsi": "bi-patch-check",
 		"mdi": "verified"
 	},
-    "report/SWLicenses": {
-		"fa5": "fa-certificate",
-		"fa5pro": "fa-certificate",
-		"bsi": "bi-patch-check",
-		"mdi": "verified"
-	},
-    "report/shipardAgent": {
-		"fa5": "fa-user-secret",
-		"fa5pro": "fa-user-secret",
-		"bsi": "bi-person-square",
-		"mdi": "support_agent"
-	},
-    "tables/mac.lan.vlans": {
+	"tables/mac.lan.vlans": {
 		"fa5": "fa-road",
 		"fa5pro": "fa-road",
 		"bsi": "bi-diagram-2",
@@ -107,13 +59,7 @@
 		"bsi": "bi-controller",
 		"mdi": "sports_esports"
 	},
-    "submenu/management": {
-		"fa5": "fa-square",
-		"fa5pro": "fa-square",
-		"bsi": "bi-app",
-		"mdi": "check_box_outline_blank"
-	},
-    "tables/mac.lan.ipAddressLists": {
+	"tables/mac.lan.ipAddressLists": {
 		"fa5": "fa-list",
 		"fa5pro": "fa-list",
 		"bsi": "bi-list-task",
@@ -155,6 +101,97 @@
 		"bsi": "bi-hourglass",
 		"mdi": "hourglass_full"
 	},
+    "tables/mac.lan.devicesPorts": {
+		"fa5": "fa-plug",
+		"fa5pro": "fa-plug",
+		"bsi": "bi-plug",
+		"mdi": "power"
+	},
+    "tables/mac.lan.alertsDevices": {
+		"fa5": "fa-exclamation-triangle",
+		"fa5pro": "fa-exclamation-triangle",
+		"bsi": "bi-exclamation-triangle-fill",
+		"mdi": "warning"
+	},
+    "tables/mac.lan.swInstallPackages": {
+		"fa5": "fa-file-archive",
+		"fa5pro": "fa-file-archive",
+		"bsi": "bi-file-earmark-zip",
+		"mdi": "file_download"
+	},
+    "tables/mac.lan.unknowns": {
+		"fa5": "fa-frown",
+		"fa5pro": "fa-frown",
+		"bsi": "bi-emoji-frown",
+		"mdi": "sentiment_dissatisfied"
+	},
+
+
+
+
+	"e10.widgetDashboard/lanDashboard": {
+		"fa5": "fa-sitemap",
+		"fa5pro": "fa-sitemap",
+		"bsi": "bi-diagram-3",
+		"mdi": "device_hub"
+	},
+    "e10.widgetDashboard/building": {
+		"fa5": "fa-building",
+		"fa5pro": "fa-building",
+		"bsi": "bi-building",
+		"mdi": "business"
+	},
+
+
+
+    "submenu/settingsLAN": {
+		"fa5": "fa-sitemap",
+		"fa5pro": "fa-sitemap",
+		"bsi": "bi-diagram-3",
+		"mdi": "device_hub"
+	},
+    "submenu/settingsIoT": {
+		"fa5": "fa-power-off",
+		"fa5pro": "fa-power-off",
+		"bsi": "bi-power",
+		"mdi": "power_settings_new"
+	},
+    "submenu/settingsBuilding": {
+		"fa5": "fa-building",
+		"fa5pro": "fa-building",
+		"bsi": "bi-building",
+		"mdi": "business"
+	},
+    "submenu/settingsSW": {
+		"fa5": "fa-hourglass-half",
+		"fa5pro": "fa-hourglass-half",
+		"bsi": "bi-hourglass-split",
+		"mdi": "hourglass_empty"
+	},
+    
+
+
+
+    "report/SWLicenses": {
+		"fa5": "fa-certificate",
+		"fa5pro": "fa-certificate",
+		"bsi": "bi-patch-check",
+		"mdi": "verified"
+	},
+    "report/shipardAgent": {
+		"fa5": "fa-user-secret",
+		"fa5pro": "fa-user-secret",
+		"bsi": "bi-person-square",
+		"mdi": "support_agent"
+	},
+    
+    "submenu/management": {
+		"fa5": "fa-square",
+		"fa5pro": "fa-square",
+		"bsi": "bi-app",
+		"mdi": "check_box_outline_blank"
+	},
+    
 
 
     "deviceTypes/workStation": {
@@ -235,7 +272,7 @@
 		"bsi": "bi-arrows-fullscreen",
 		"mdi": "zoom_out_map"
 	},
-    "deviceTypes/shipardIoiBoxes": {
+    "deviceTypes/shipardIotBoxes": {
 		"fa5": "fa-plug",
 		"fa5pro": "fa-plug",
 		"bsi": "bi-plug",
@@ -265,6 +302,12 @@
 		"bsi": "bi-record-circle-fill",
 		"mdi": "radio_button_checked"
 	},
+    "deviceTypesIotBoard": {
+		"fa5": "fa-power-off",
+		"fa5pro": "fa-power-off",
+		"bsi": "bi-power",
+		"mdi": "power_settings_new"
+	},
 
 
 	"lanDeviceActiveDevices":{
@@ -280,6 +323,12 @@
 		"fa5pro": "fa-hourglass-half",
 		"bsi": "bi-hourglass-split",
 		"mdi": "hourglass_empty"
+	},
+	"detailAddresses":{
+		"fa5": "fa-crosshairs",
+		"fa5pro": "fa-crosshairs",
+		"bsi": "bi-geo-fill",
+		"mdi": "location_on"
 	},
 
 
@@ -333,5 +382,212 @@
 		"fa5pro": "fa-sitemap",
 		"bsi": "bi-diagram-3",
 		"mdi": "device_hub"
+	},
+
+
+	"alertTypeLostCommunication":{
+		"fa5": "fa-exclamation-triangle",
+		"fa5pro": "fa-exclamation-triangle",
+		"bsi": "bi-exclamation-triangle",
+		"mdi": "warning_amber"
+	},
+	"alertTypeOSUpdate":{
+		"fa5": "fa-exclamation-triangle",
+		"fa5pro": "fa-exclamation-triangle",
+		"bsi": "bi-exclamation-triangle",
+		"mdi": "warning_amber"
+	},
+	"alertTypeOutdatedSoftware":{
+		"fa5": "fa-info-circle",
+		"fa5pro": "fa-info-circle",
+		"bsi": "bi-info-circle",
+		"mdi": "info"
+	},
+
+
+
+	"iconSquare":{
+		"fa5":"fa-square",
+        "fa5pro":"fa-square",
+        "bsi":"bi-square-fill",
+        "mdi":"check_box_outline_blank"
+	},
+	"iconClone":{
+		"fa5":"fa-clone",
+        "fa5pro":"fa-clone",
+        "bsi":"bi-files",
+        "mdi":"content_copy"
+	},
+	"iconRefresh":{
+		"fa5":"fa-redo-alt",
+        "fa5pro":"fa-redo-alt",
+        "bsi":"bi-arrow-repeat",
+        "mdi":"refresh"
+	},
+	
+
+
+	"deviceInfoTypeStorage":{
+		"fa5":"fa-folder-open",
+        "fa5pro":"fa-folder-open",
+        "bsi":"bi-folder2-open",
+        "mdi":"folder_open"
+	},
+	"deviceInfoTypeSystemInfo":{
+		"fa5":"fa-microchip",
+        "fa5pro":"fa-microchip",
+        "bsi":"bi-cpu-fill",
+        "mdi":"memory"
+	},
+	"deviceInfoTypeDiscs":{
+		"fa5": "fa-hdd",
+		"fa5pro": "fa-hdd",
+		"bsi": "bi-hdd",
+		"mdi": "save"
+	},
+
+
+	"docStateInStock":{
+		"fa5": "fa-sign-out-alt",
+		"fa5pro": "fa-sign-out-alt",
+		"bsi": "bi-box-arrow-right",
+		"mdi": "logout"
+	},
+
+
+
+	"devicePropertiesWindows":{
+		"fa5":"fa-desktop",
+        "fa5pro":"fa-desktop",
+        "bsi":"bi-display",
+        "mdi":"desktop_windows"
+	},
+
+
+	"vlansIncoming":{
+		"fa5":"fa-check-square",
+        "fa5pro":"fa-check-square",
+        "bsi":"bi-check-square-fill",
+        "mdi":"check_box"
+	},
+	"disabledAp":{
+		"fa5":"fa-times",
+        "fa5pro":"fa-times",
+        "bsi":"bi-x",
+        "mdi":"close"
+	},
+	"enabledAp":{
+		"fa5":"fa-check",
+        "fa5pro":"fa-check",
+        "bsi":"bi-check",
+        "mdi":"check"
+	},
+	"wifiMngVlans":{
+		"fa5":"fa-square",
+        "fa5pro":"fa-square",
+        "bsi":"bi-square-fill",
+        "mdi":"check_box_outline_blank"
+	},
+
+
+	"portKindEthNetwork":{
+		"fa5": "fa-plug",
+		"fa5pro": "fa-outlet",
+		"bsi": "bi-outlet",
+		"mdi": "outlet"
+	},
+	"portKindWifiNetwork":{
+		"fa5": "fa-wifi",
+		"fa5pro": "fa-wifi",
+		"bsi": "bi-wifi",
+		"mdi": "wifi"
+	},
+	"portKindOpticalNetwork":{
+		"fa5": "fa-wifi",
+		"fa5pro": "fa-wifi",
+		"bsi": "bi-wifi",
+		"mdi": "wifi"
+	},
+	"portKindETHPort":{
+		"fa5": "fa-plug",
+		"fa5pro": "fa-outlet",
+		"bsi": "bi-outlet",
+		"mdi": "outlet"
+	},
+	"portKindSFPPort":{
+		"fa5": "fa-sun",
+		"fa5pro": "fa-sun",
+		"bsi": "bi-sun",
+		"mdi": "wb_sunny"
+	},
+	"portKindVLAN":{
+		"fa5": "fa-square",
+		"fa5pro": "fa-square",
+		"bsi": "bi-app",
+		"mdi": "check_box_outline_blank"
+	},
+	"portKindBridge":{
+		"fa5": "fa-object-group",
+		"fa5pro": "fa-object-group",
+		"bsi": "bi-collection-fill",
+		"mdi": "devices"
+	},
+	"portKindOther":{
+		"fa5": "fa-question-circle",
+		"fa5pro": "fa-question-circle",
+		"bsi": "bi-question-circle-fill",
+		"mdi": "help_outline"
+	},
+
+
+
+
+	"portRolesDontSet":{
+		"fa5":"fa-times",
+        "fa5pro":"fa-times",
+        "bsi":"bi-x",
+        "mdi":"close"
+	},
+	"portRolesAccessPort":{
+		"fa5": "fa-square",
+		"fa5pro": "fa-square",
+		"bsi": "bi-app",
+		"mdi": "check_box_outline_blank"
+	},
+	"portRolesHybridPort":{
+		"fa5":"fa-caret-square-right",
+        "fa5pro":"fa-caret-square-right",
+        "bsi":"bi-caret-right-square-fill",
+        "mdi":"arrow_right"
+	},
+	"portRolesTrunkUplink":{
+		"fa5":"fa-caret-square-up",
+        "fa5pro":"fa-caret-square-up",
+        "bsi":"bi-caret-up-square-fill",
+        "mdi":"arrow_drop_up"
+	},
+	"portRolesTrunkDownlink":{
+		"fa5":"fa-caret-square-down",
+        "fa5pro":"fa-caret-square-down",
+        "bsi":"bi-caret-down-square-fill",
+        "mdi":"arrow_drop_down"
+	},
+	"portRolesVLANGroup":{
+		"fa5":"fa-clone",
+        "fa5pro":"fa-clone",
+        "bsi":"bi-files",
+        "mdi":"content_copy"
+	},
+	"portRolesLocalPort":{
+		"fa5": "fa-square",
+		"fa5pro": "fa-square",
+		"bsi": "bi-app",
+		"mdi": "check_box_outline_blank"
+	},
+	"portRolesWANInternet":{
+		"fa5":"fa-globe-americas",
+        "fa5pro":"fa-globe-americas",
+        "bsi":"bi-globe",
+        "mdi":"public"
 	}
 }

@@ -1,0 +1,60 @@
+{
+    "tables/services.subjects.subjects":{
+        "fa5": "fa-building",
+		"fa5pro": "fa-building",
+		"bsi": "bi-building",
+		"mdi": "business"
+    },
+    "tables/services.subjects.branches":{
+        "fa5": "fa-circle-notch",
+		"fa5pro": "fa-circle-notch",
+		"bsi": "bi-circle",
+		"mdi": "circle"
+    },
+    "tables/services.subjects.kinds":{
+        "fa5":"fa-folder-open",
+        "fa5pro":"fa-folder-open",
+        "bsi":"bi-folder2-open",
+        "mdi":"folder_open"
+    },
+    "tables/services.subjects.sizes":{
+        "fa5":"fa-expand",
+		"fa5pro":"fa-expand",
+		"bsi":"bi-fullscreen",
+		"mdi":"fullscreen"
+    },
+    "tables/services.subjects.activities":{
+        "fa5":"fa-running",
+		"fa5pro":"fa-runningspoo",
+		"bsi":"bi-headset",
+		"mdi":"directions_run"
+    },
+    "tables/services.subjects.commodities":{
+        "fa5":"fa-shopping-basket",
+        "fa5pro":"fa-shopping-basket",
+        "bsi":"bi-basket",
+        "mdi":"shopping_basket"
+    },
+    "tables/services.subjects.types":{
+        "fa5": "fa-list",
+		"fa5pro": "fa-list",
+		"bsi": "bi-list-ul",
+		"mdi": "list"
+    },
+    "tables/services.subjects.branchesParts":{
+        "fa5": "fa-circle",
+		"fa5pro": "fa-circle",
+		"bsi": "bi-circle",
+		"mdi": "circle"
+    },
+
+
+
+
+    "iconSources":{
+        "fa5": "fa-eye",
+		"fa5pro": "fa-eye",
+		"bsi": "bi-eye-fill",
+		"mdi": "visibility"
+    }
+}

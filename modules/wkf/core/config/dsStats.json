@@ -2,7 +2,7 @@
 	"counts": {
 		"issues": {
 			"cntId": "wkf-issues", "subTypeCol": "s2", "subTypeCfgPath": "wkf.issues.kinds", "subTypeCfgTitle": "fn",
-			"title": "Zprávy", "icon": "icon-comments-o",
+			"title": "Zprávy", "icon": "iconIssues",
 			"subTypesCalcGroups": {"-": "issues"}, "newWorkflow": 1
 		}
 	},

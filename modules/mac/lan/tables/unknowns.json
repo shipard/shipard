@@ -1,5 +1,5 @@
 {
-	"id": "mac.lan.unknowns", "sql": "mac_lan_unknowns", "name": "Neznámé", "icon": "icon-frown-o",
+	"id": "mac.lan.unknowns", "sql": "mac_lan_unknowns", "name": "Neznámé",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},

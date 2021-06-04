@@ -17,6 +17,30 @@
 		"bsi": "bi-folder",
 		"mdi": "folder"
 	},
+    "tables/mac.sw.publishersNames": {
+		"fa5": "fa-tags",
+		"fa5pro": "fa-tags",
+		"bsi": "bi-tags",
+		"mdi": "style"
+	},
+    "tables/mac.sw.swIds": {
+		"fa5": "fa-crosshairs",
+		"fa5pro": "fa-crosshairs",
+		"bsi": "bi-geo-fill",
+		"mdi": "location_on"
+	},
+    "tables/mac.sw.swNames": {
+		"fa5": "fa-tags",
+		"fa5pro": "fa-tags",
+		"bsi": "bi-tags",
+		"mdi": "style"
+	},
+    "tables/mac.sw.swVersions": {
+		"fa5": "fa-hashtag",
+		"fa5pro": "fa-hashtag",
+		"bsi": "bi-hash",
+		"mdi": "tag"
+	},
 
 
 	"formVersions":{

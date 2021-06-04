@@ -1,5 +1,5 @@
 {
-	"id": "swdev.dm.enums", "sql": "swdev_dm_enums", "name": "Enumy", "icon": "icon-th-list",
+	"id": "swdev.dm.enums", "sql": "swdev_dm_enums", "name": "Enumy",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "id", "name": "id", "type": "string", "len": 150},
@@ -19,9 +19,9 @@
 	"views": [
 		{"id": "default", "class": "swdev.dm.ViewEnums",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.dm.ViewDetailEnum"},
-				"doc": {"title": "Popis", "icon": "icon-book", "type": "detail", "class": "swdev.dm.ViewDetailEnumDoc"},
-				"trData": {"title": "trData", "icon": "icon-language", "type": "detail", "class": "swdev.dm.ViewDetailEnumTrData"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "swdev.dm.ViewDetailEnum"},
+				"doc": {"title": "Popis", "icon": "detailDescription", "type": "detail", "class": "swdev.dm.ViewDetailEnumDoc"},
+				"trData": {"title": "trData", "icon": "detailTrData", "type": "detail", "class": "swdev.dm.ViewDetailEnumTrData"}
 			}
 		}
 	],

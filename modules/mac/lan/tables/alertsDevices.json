@@ -1,5 +1,5 @@
 {
-	"id": "mac.lan.alertsDevices", "sql": "mac_lan_alertsDevices", "name": "Výstrahy - zařízení", "icon": "icon-exclamation-triangle",
+	"id": "mac.lan.alertsDevices", "sql": "mac_lan_alertsDevices", "name": "Výstrahy - zařízení",
 	"columns": [
 		{"id": "ndx", "name": "ndx", "type": "int_ai"},
 		{"id": "alert", "name": "Výstraha", "type": "int", "reference":  "mac.lan.alerts"},

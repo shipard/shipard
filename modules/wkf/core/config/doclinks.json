@@ -1,19 +1,19 @@
 {
 	"wkf.core.issues": {
 		"wkf-issues-to": {
-			"linkid": "wkf-issues-to", "name": "Pro", "icon": "icon-chevron-right",
+			"linkid": "wkf-issues-to", "name": "Pro", "icon": "docLinkTo",
 			"queryCol": "issueType", "queryColValue": 3,
 			"sources": [{"table": "e10.persons.persons"}],
 			"listId": "doclinksPersons"
 		},
 		"wkf-issues-from": {
-			"linkid": "wkf-issues-from", "name": "Od", "icon": "icon-chevron-left",
+			"linkid": "wkf-issues-from", "name": "Od", "icon": "docLinkFrom",
 			"queryCol": "issueType", "queryColValue": 1,
 			"sources": [{"table": "e10.persons.persons"}],
 			"listId": "doclinksPersons"
 		},
 		"wkf-issues-assigned": {
-			"linkid": "wkf-issues-assigned", "name": "Přiřazeno", "icon": "icon-bolt",
+			"linkid": "wkf-issues-assigned", "name": "Přiřazeno", "icon": "docLinkAssigned",
 			"queryCol": "issueType", "queryColValue": 0,
 			"sources": [
 				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
@@ -21,21 +21,21 @@
 			"listId": "doclinksPersons"
 		},
 		"wkf-issues-notify": {
-			"linkid": "wkf-issues-notify", "name": "Na vědomí", "icon": "icon-share",
+			"linkid": "wkf-issues-notify", "name": "Na vědomí", "icon": "docLinkNotify",
 			"sources": [
 				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			],
 			"listId": "doclinksPersons"
 		},
 		"wkf-issues-projects": {
-			"linkid": "wkf-issues-projects", "name": "Projekty", "icon": "icon-lightbulb-o",
+			"linkid": "wkf-issues-projects", "name": "Projekty", "icon": "docLinkProjects",
 			"sources": [
 				{"id": "projects", "table": "wkf.base.projects", "viewer": "default"}
 			],
 			"listId": "doclinksAssignment"
 		},
 		"wkf-issues-targets": {
-			"linkid": "wkf-issues-targets", "name": "Cíle", "icon": "icon-flag-checkered",
+			"linkid": "wkf-issues-targets", "name": "Cíle", "icon": "docLinkTargets",
 			"sources": [
 				{"id": "targets", "table": "wkf.base.targets", "viewer": "default"}
 			],
@@ -44,21 +44,21 @@
 	},
 	"wkf.core.filters": {
 		"wkf-filters-add-from": {
-			"linkid": "wkf-filters-add-from", "name": "Od", "icon": "icon-chevron-left",
+			"linkid": "wkf-filters-add-from", "name": "Od", "icon": "docFilterAddFrom",
 			"sources": [{"table": "e10.persons.persons"}]
 		},
 		"wkf-filters-add-to": {
-			"linkid": "wkf-filters-add-to", "name": "Pro", "icon": "icon-chevron-right",
+			"linkid": "wkf-filters-add-to", "name": "Pro", "icon": "docFilterAddTo",
 			"sources": [{"table": "e10.persons.persons"}]
 		},
 		"wkf-filters-add-notify": {
-			"linkid": "wkf-filters-add-notify", "name": "Na vědomí", "icon": "icon-share",
+			"linkid": "wkf-filters-add-notify", "name": "Na vědomí", "icon": "docFilterNotify",
 			"sources": [
 				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			]
 		},
 		"wkf-filters-add-assigned": {
-			"linkid": "wkf-filters-add-assigned", "name": "Přiřazeno", "icon": "icon-bolt",
+			"linkid": "wkf-filters-add-assigned", "name": "Přiřazeno", "icon": "docFilterAddAssigned",
 			"sources": [
 				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			]
@@ -66,7 +66,7 @@
 	},
 	"e10.base.clsfitems": {
 		"clsfItems-limit-wkf-sections": {
-			"linkid": "clsfItems-limit-wkf-sections", "name": "Omezit na sekce", "icon": "icon-columns",
+			"linkid": "clsfItems-limit-wkf-sections", "name": "Omezit na sekce", "icon": "clsfItemsLimitWkfSections",
 			"queryCol": "group", "queryColValue": "wkfIssuesTags",
 			"sources": [{"table": "wkf.base.sections"}]
 		}

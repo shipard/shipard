@@ -16,7 +16,7 @@
 	},
 	"9100": {
 		"stateName": "Ve skladu", "actionName": "Do skladu", "stateStyle": "confirmed",
-		"mainState": 1, "enablePrint": 1, "readOnly": 1, "icon": "icon-sign-out", "goto": [8000]
+		"mainState": 1, "enablePrint": 1, "readOnly": 1, "icon": "docStateInStock", "goto": [8000]
 	},
 	"9800": {
 		"stateName": "Smazáno", "actionName": "Smazat", "stateStyle": "delete",
