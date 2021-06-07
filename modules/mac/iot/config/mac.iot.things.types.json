@@ -50,7 +50,7 @@
 		"shortName": "Světla",
 		"id": "lights",
 		"coreType": "lights",
-		"icon": "iiotThingKinds/lights"
+		"icon": "iotThingKinds/lights"
 	},
 	"4": {
 		"fullName": "Turniket",

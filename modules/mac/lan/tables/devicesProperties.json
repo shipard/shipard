@@ -30,7 +30,7 @@
 	"views": [
 		{"id": "unknownPackages", "class": "mac.lan.ViewUnknownPackages",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewDetailUnknownPackage"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.lan.ViewDetailUnknownPackage"}
 			}
 		}
 	]

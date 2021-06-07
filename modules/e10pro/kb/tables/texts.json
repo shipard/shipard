@@ -42,8 +42,8 @@
 		{
 			"id": "default", "class": "e10pro.kb.ViewTexts",
 			"details": {
-				"preview": {"title": "Náhled", "icon": "x-content", "type": "detail", "class": "e10pro.kb.ViewDetailTextPreview"},
-				"text": {"title": "Text", "icon": "x-content", "type": "detail", "class": "e10pro.kb.ViewDetailText"}
+				"preview": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.kb.ViewDetailTextPreview"},
+				"text": {"title": "Text", "icon": "detailText", "type": "detail", "class": "e10pro.kb.ViewDetailText"}
 			}
 		}
   ],

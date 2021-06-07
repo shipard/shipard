@@ -12,7 +12,7 @@
 	"views": [
 		{"id": "default", "class": "e10.base.ViewNomencTypes",
 			"details": {
-				"default": {"title": "Přehled", "icon": "x-tag", "type": "detail", "class": "e10.base.ViewDetailNomencType"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10.base.ViewDetailNomencType"}
 			}
 		}
 	],

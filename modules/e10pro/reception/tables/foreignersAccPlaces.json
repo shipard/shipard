@@ -21,7 +21,7 @@
 	"views": [
 		{"id": "default", "class": "e10pro.reception.ViewForeignersAccPlaces",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "e10pro.reception.ViewDetailForeignersAccPlace"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.reception.ViewDetailForeignersAccPlace"}
 			}
 		}
 	],

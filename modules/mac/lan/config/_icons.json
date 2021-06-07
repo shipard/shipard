@@ -330,6 +330,12 @@
 		"bsi": "bi-geo-fill",
 		"mdi": "location_on"
 	},
+	"detailAll":{
+		"fa5":"fa-table",
+        "fa5pro":"fa-table",
+        "bsi":"bi-table",
+        "mdi":"table_chart"
+	},
 
 
 

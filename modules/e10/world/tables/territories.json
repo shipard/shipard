@@ -12,7 +12,7 @@
 		{
 			"id": "default", "class": "e10.world.ViewTerritories",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "e10.world.ViewDetailTerritory"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10.world.ViewDetailTerritory"}
 			}
 		}
 	],

@@ -5,7 +5,7 @@
 		"panels": {
 			"main": {
 				"name": "Přehled",
-				"icon": "detailOverview",
+				"icon": "system/detailOverview",
 				"order": 1000,
 				"fullsize": 1,
 				"rows": {
@@ -14,7 +14,7 @@
 			},
 			"calc": {
 				"name": "Kalkulace",
-				"icon": "detailCalculate",
+				"icon": "system/detailCalculate",
 				"order": 100000,
 				"fullsize": 1,
 				"rows": {

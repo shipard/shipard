@@ -25,12 +25,12 @@
 	"views": [
 		{"id": "default", "class": "e10.base.ViewNomencItems",
 			"details": {
-				"default": {"title": "Přehled", "icon": "x-tag", "type": "detail", "class": "e10.base.ViewDetailNomencItem"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10.base.ViewDetailNomencItem"}
 			}
 		},
 		{"id": "combo", "class": "e10.base.ViewNomencItemsCombo",
 			"details": {
-				"default": {"title": "Přehled", "icon": "x-tag", "type": "detail", "class": "e10.base.ViewDetailNomencItem"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10.base.ViewDetailNomencItem"}
 			}
 		}
 	],

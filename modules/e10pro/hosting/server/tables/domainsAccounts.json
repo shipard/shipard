@@ -21,7 +21,7 @@
 	"views": [
 		{"id": "default", "class": "e10pro.hosting.server.ViewDomainsAccounts",
 			"details": {
-				"default": {"title": "Přehled", "icon": "x-dashboard", "type": "detail", "class": "e10pro.hosting.server.ViewDetailDomainAccount"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.hosting.server.ViewDetailDomainAccount"}
 			}
 		}
 	],

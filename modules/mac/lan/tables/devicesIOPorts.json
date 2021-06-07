@@ -35,7 +35,7 @@
 		{"id": "comboThingsItems", "class": "mac.iot.libs.ViewDevicesIOPortsComboThings"},
 		{"id": "formList", "class": "mac.lan.ViewDevicesIOPortsFormList", "type": "form",
 			"details": {
-				"default": {"title": "Přehled", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewDevicesIOPortsFormListDetail"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.lan.ViewDevicesIOPortsFormListDetail"}
 			}
 		}
 	],

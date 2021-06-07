@@ -20,7 +20,7 @@
 	"views": [
 		{"id": "default", "class": "e10.persons.ViewRelations", "help": "prirucka/4933",
 			"details": {
-				"default": {"title": "Náhled", "icon": "x-content", "type": "detail", "class": "e10.persons.ViewDetailRelation"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10.persons.ViewDetailRelation"}
 			}
 		}
 	],

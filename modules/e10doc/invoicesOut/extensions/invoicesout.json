@@ -28,7 +28,7 @@
 		"views": [
 			{"id": "formListInvoicesOut", "class": "e10doc.invoicesOut.libs.ViewDocRowsInvoicesOutFormList", "type": "form",
 				"details": {
-					"default": {"title": "Přehled", "icon": "x-content", "type": "detail", "class": "e10doc.invoicesOut.libs.ViewDocRowsInvoicesOutFormListDetail"}
+					"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.invoicesOut.libs.ViewDocRowsInvoicesOutFormListDetail"}
 				}
 			}
 		]

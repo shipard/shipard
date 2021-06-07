@@ -16,7 +16,7 @@
 		{"id": "default", "class": "mac.iot.ViewThingsItems"},
 		{"id": "formList", "class": "mac.iot.ViewThingsItemsFormList", "type": "form",
 			"details": {
-				"default": {"title": "Přehled", "icon": "x-content", "type": "detail", "class": "mac.iot.ViewThingsItemsFormListDetail"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.iot.ViewThingsItemsFormListDetail"}
 			}
 		}
 	],

@@ -60,7 +60,7 @@
 	"views": [
 		{"id": "default", "class": "e10buy.orders.ViewOrders",
 			"details": {
-				"default": {"title": "Přehled", "icon": "detailDetail", "type": "detail", "class": "e10buy.orders.ViewDetailOrder", "order": 1000}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10buy.orders.ViewDetailOrder", "order": 1000}
 			}
 		}
 	],

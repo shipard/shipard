@@ -21,7 +21,7 @@
 	"views": [
 		{"id": "default", "class": "mac.lan.ViewWatchdogs",
 			"details": {
-				"preview": {"title": "Náhled", "icon": "x-content", "type": "detail", "class": "mac.lan.ViewDetailWatchdog"}
+				"preview": {"title": "Náhled", "icon": "system/detailOverview", "type": "detail", "class": "mac.lan.ViewDetailWatchdog"}
 			}
 		}
 	],

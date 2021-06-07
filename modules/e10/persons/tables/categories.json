@@ -13,7 +13,7 @@
 	"views": [
 		{"id": "default", "class": "e10.persons.ViewCategories", "help": "prirucka/4932",
 			"details": {
-				"default": {"title": "Náhled", "icon": "x-content", "type": "detail", "class": "e10.persons.ViewDetailCategory"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10.persons.ViewDetailCategory"}
 			}
 		}
 	],

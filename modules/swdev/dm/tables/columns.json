@@ -23,7 +23,7 @@
 	"views": [
 		{"id": "default", "class": "swdev.dm.ViewColumns",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "swdev.dm.ViewDetailColumn"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "swdev.dm.ViewDetailColumn"}
 			}
 		}
 	],

@@ -94,7 +94,7 @@ class ReportShipardAgentInstall extends \mac\lan\Report
 
 	public function subReportsList ()
 	{
-		$d[] = ['id' => 'all', 'icon' => 'icon-table', 'title' => 'Vše'];
+		$d[] = ['id' => 'all', 'icon' => 'detailAll', 'title' => 'Vše'];
 
 		return $d;
 	}

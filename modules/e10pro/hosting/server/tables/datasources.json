@@ -56,13 +56,13 @@
   "views": [
     {"id": "default", "class": "e10pro.hosting.server.ViewDatasources",
 			"details": {
-				"default": {"title": "Přehled", "icon": "x-dashboard", "type": "detail", "class": "e10pro.hosting.server.ViewDetailDatasources"},
-				"users": {"title": "Uživatelé", "icon": "x-user", "type": "detail", "class": "e10pro.hosting.server.ViewDetailDataSourceUsers"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.hosting.server.ViewDetailDatasources"},
+				"users": {"title": "Uživatelé", "icon": "system/iconUser", "type": "detail", "class": "e10pro.hosting.server.ViewDetailDataSourceUsers"}
 			}
 		},
 		{"id": "dashboard", "class": "e10pro.hosting.client.libs.DataSourcesDashboardViewer2",
 			"details": {
-				"default": {"title": "Přehled", "icon": "x-dashboard", "type": "detail", "class": "e10pro.hosting.client.libs.DataSourcesDashboardViewerDetail"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.hosting.client.libs.DataSourcesDashboardViewerDetail"}
 			}
 		}
   ],

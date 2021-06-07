@@ -195,8 +195,8 @@ class ReportTest extends \e10doc\core\libs\reports\GlobalReport
 
 	public function subReportsList ()
 	{
-		$d[] = ['id' => 'docs', 'icon' => 'icon-file-text-o', 'title' => 'Doklady'];
-		$d[] = ['id' => 'regs', 'icon' => 'icon-microchip', 'title' => 'Registrace'];
+		$d[] = ['id' => 'docs', 'icon' => 'detailReportDocuments', 'title' => 'Doklady'];
+		$d[] = ['id' => 'regs', 'icon' => 'detailReportRegistration', 'title' => 'Registrace'];
 		return $d;
 	}
 }

@@ -30,7 +30,7 @@
 	"views": [
 		{"id": "default", "class": "e10pro.custreg.ViewRegistrations",
 			"details": {
-				"default": {"title": "Přehled", "icon": "x-dashboard", "type": "detail", "class": "e10pro.custreg.ViewDetailRegistration"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.custreg.ViewDetailRegistration"}
 			}
 		}
 	],

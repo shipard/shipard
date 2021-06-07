@@ -27,7 +27,7 @@
 		{
 			"id": "default", "class": "e10pro.kb.ViewAnnots",
 			"details": {
-				"text": {"title": "Text", "icon": "x-content", "type": "detail", "class": "e10pro.kb.ViewDetailAnnot"}
+				"text": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.kb.ViewDetailAnnot"}
 			}
 		}
 	],

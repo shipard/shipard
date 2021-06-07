@@ -49,7 +49,7 @@
 	"views": [
 		{"id": "default", "class": "e10pro.reception.ViewForeigners",
 			"details": {
-				"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "e10pro.reception.ViewDetailForeigner"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.reception.ViewDetailForeigner"}
 			}
 		}
 	],

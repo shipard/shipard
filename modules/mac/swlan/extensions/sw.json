@@ -7,7 +7,7 @@
 				"id": "swlan", "class": "mac.swlan.libs.ViewSW",
 				"details":
 				{
-					"default": {"title": "Detail", "icon": "x-content", "type": "detail", "class": "mac.swlan.libs.ViewDetailSW"}
+					"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.swlan.libs.ViewDetailSW"}
 				}
 			}
 		}

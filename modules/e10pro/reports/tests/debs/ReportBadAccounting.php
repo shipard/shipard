@@ -311,11 +311,11 @@ class ReportBadAccounting extends \e10doc\core\libs\reports\GlobalReport
 
 	public function subReportsList ()
 	{
-		$d[] = ['id' => 'baddocs', 'icon' => 'icon-file', 'title' => 'Doklady'];
-		$d[] = ['id' => 'docstroubles', 'icon' => 'icon-list', 'title' => 'Účtování'];
-		$d[] = ['id' => 'outdatedAccounts', 'icon' => 'icon-calendar-times-o', 'title' => 'Neplatné účty'];
-		$d[] = ['id' => 'accounts', 'icon' => 'icon-th-large', 'title' => 'Účty'];
-		$d[] = ['id' => 'otherErrors', 'icon' => 'icon-exclamation-triangle', 'title' => 'Ostatní'];
+		$d[] = ['id' => 'baddocs', 'icon' => 'detailReportDocuments', 'title' => 'Doklady'];
+		$d[] = ['id' => 'docstroubles', 'icon' => 'system/detailAccounting', 'title' => 'Účtování'];
+		$d[] = ['id' => 'outdatedAccounts', 'icon' => 'detailReportOutdatedAccounts', 'title' => 'Neplatné účty'];
+		$d[] = ['id' => 'accounts', 'icon' => 'detailReportAccounts', 'title' => 'Účty'];
+		$d[] = ['id' => 'otherErrors', 'icon' => 'detailReportOther', 'title' => 'Ostatní'];
 
 		return $d;
 	}

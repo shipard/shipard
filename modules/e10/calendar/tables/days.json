@@ -19,7 +19,7 @@
 	"views": [
 		{"id": "default", "class": "e10.calendar.ViewDays",
 			"details": {
-				"default": {"title": "Přehled", "icon": "x-dashboard", "type": "detail", "class": "e10.calendar.ViewDetailDay"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10.calendar.ViewDetailDay"}
 			}
 		}
 	],

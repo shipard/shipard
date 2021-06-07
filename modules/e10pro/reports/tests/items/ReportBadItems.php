@@ -270,8 +270,8 @@ class ReportBadItems extends \e10doc\core\libs\reports\GlobalReport
 
 	public function subReportsList ()
 	{
-		$d[] = ['id' => 'badItems', 'icon' => 'icon-file', 'title' => 'Položky'];
-		$d[] = ['id' => 'badDocs', 'icon' => 'icon-list', 'title' => 'Doklady'];
+		$d[] = ['id' => 'badItems', 'icon' => 'detailReportItems', 'title' => 'Položky'];
+		$d[] = ['id' => 'badDocs', 'icon' => 'detailReportDocuments', 'title' => 'Doklady'];
 
 		return $d;
 	}
