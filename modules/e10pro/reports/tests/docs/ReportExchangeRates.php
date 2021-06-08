@@ -21,7 +21,7 @@ class ReportExchangeRates extends \e10doc\core\libs\reports\GlobalReport
 
 		parent::init();
 
-		$this->setInfo('icon', 'icon-warning-sign');
+		$this->setInfo('icon', 'tables/e10doc.base.exchangeRatesLists');
 		$this->setInfo('param', 'Období', $this->reportParams ['fiscalPeriod']['activeTitle']);
 	}
 

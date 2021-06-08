@@ -164,18 +164,18 @@ class reportInventoryStates extends \e10doc\core\libs\reports\GlobalReport
 		$title = NULL;
 		if ($this->reportType == 'minus')
 		{
-			$this->setInfo('icon', 'icon-minus-square');
+			$this->setInfo('icon', 'e10doc-inventory/minus');
 			$this->setInfo('title', 'Záporné stavy položek');
 			$title = 'Záporné stavy ke konci roku';
 		} else
 		if ($this->reportType == 'troubles')
 		{
-			$this->setInfo('icon', 'icon-exclamation-triangle');
+			$this->setInfo('icon', 'e10doc-inventory/troubles');
 			$this->setInfo('title', 'Problematické stavy položek');
 		}
 		else
 		{
-			$this->setInfo('icon', 'e10-witems-items');
+			$this->setInfo('icon', 'e10doc-inventory/inventoryStates');
 			$this->setInfo('title', 'Stavy položek');
 		}
 
@@ -371,7 +371,7 @@ class reportInventoryErrors extends \e10doc\core\libs\reports\GlobalReport
 		$this->tableItems = $this->app->table ('e10.witems.items');
 
 		$this->setInfo('title', 'Chyby ve skladové evidenci');
-		$this->setInfo('icon', 'icon-exclamation-circle');
+		$this->setInfo('icon', 'e10doc-inventory/errors');
 		$this->setInfo('param', 'Rok', $this->reportParams ['fiscalYear']['activeTitle']);
 		$this->setInfo('param', 'Sklad', $this->reportParams ['warehouse']['activeTitle']);
 	}
@@ -601,7 +601,7 @@ class reportInventoryWarehouse extends \e10doc\core\libs\reports\GlobalReport
 		$this->fiscalYear = $this->reportParams ['fiscalYear']['value'];
 
 		$this->setInfo('title', 'Rekapitulace skladu');
-		$this->setInfo('icon', 'icon-check-square');
+		$this->setInfo('icon', 'e10doc-inventory/warehouse');
 		$this->setInfo('param', 'Rok', $this->reportParams ['fiscalYear']['activeTitle']);
 		$this->setInfo('param', 'Sklad', $this->reportParams ['warehouse']['activeTitle']);
 	}

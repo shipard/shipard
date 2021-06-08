@@ -45,7 +45,7 @@ class ReportBadItems extends \e10doc\core\libs\reports\GlobalReport
 		if ($this->fiscalPeriod === '')
 			$this->fiscalPeriod = $this->reportParams ['fiscalPeriod']['value'];
 
-		$this->setInfo('icon', 'icon-warning');
+		$this->setInfo('icon', 'tables/e10.witems.items');
 		if ($this->subReportId !== 'badItems')
 			$this->setInfo('param', 'Období', $this->reportParams ['fiscalPeriod']['activeTitle']);
 	}

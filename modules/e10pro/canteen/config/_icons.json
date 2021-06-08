@@ -114,16 +114,16 @@
 		"mdi": "person"
     },
 	"reportDailyReport":{
-        "fa5": "fa-utensils",
-		"fa5pro": "fa-utensils-alt",
-		"bsi": "bi-shop-window",
-		"mdi": "dining"
+        "fa5":"fa-calendar-day",
+        "fa5pro":"fa-calendar-day",
+        "bsi":"bi-calendar-event-fill",
+        "mdi":"today"
     },
 	"reportMonthlyReport":{
-        "fa5": "fa-utensils",
-		"fa5pro": "fa-utensils-alt",
-		"bsi": "bi-shop-window",
-		"mdi": "dining"
+        "fa5":"fa-calendar-alt",
+        "fa5pro":"fa-calendar-alt",
+        "bsi":"bi-calendar",
+        "mdi":"calendar_today"
     },
 	"reportBySum":{
         "fa5": "fa-plus-square",

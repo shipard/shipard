@@ -1398,7 +1398,7 @@ class reportBalanceOffsetting extends \e10doc\core\libs\reports\GlobalReport
 		$this->addContent (array ('type' => 'table', 'header' => $h, 'table' => $data, 'main' => TRUE));
 
 		$this->setInfo('title', 'Návrh možných zápočtů');
-		$this->setInfo('icon', 'icon-exchange');
+		$this->setInfo('icon', 'balance/balanceOffsetting');
 		$this->setInfo('param', 'Rok', $this->reportParams ['fiscalYear']['activeTitle']);
 		$this->setInfo('saveFileName', 'Návrh možných zápočtů');
 		$this->setInfo('note', '1', 'Možný návrh zápočtů obsahuje vzájemné závazky a pohledávky s ohledem na měny.');

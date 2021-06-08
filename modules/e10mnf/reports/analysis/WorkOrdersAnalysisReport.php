@@ -47,7 +47,7 @@ class WorkOrdersAnalysisReport extends \e10doc\core\libs\reports\GlobalReport
 			$this->fiscalYear = $this->reportParams ['fiscalPeriod']['values'][$this->fiscalPeriod]['fiscalYear'];
 
 		$this->setInfo('title', 'Výsledky zakázek');
-		$this->setInfo('icon', 'icon-legal');
+		$this->setInfo('icon', 'reportWorkOrdersResults');
 		$this->setInfo('param', 'Období', $this->reportParams ['fiscalPeriod']['activeTitle']);
 		$this->setInfo('param', 'Filtr', $this->reportParams ['filter']['activeTitle']);
 

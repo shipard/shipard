@@ -23,7 +23,7 @@ class Monthly extends \e10\GlobalReport
 
 		parent::init();
 
-		$this->setInfo('icon', 'icon-cutlery');
+		$this->setInfo('icon', 'reportMonthlyReport');
 		$this->setInfo('param', 'Období', $this->reportParams ['calendarMonth']['activeTitle']);
 
 		$this->canteenNdx = $this->reportParams['canteen']['value'];

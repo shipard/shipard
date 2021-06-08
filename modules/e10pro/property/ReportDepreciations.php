@@ -750,7 +750,7 @@ class ReportDepreciations extends \e10doc\core\libs\reports\GlobalReport
 		$this->addContent(['type' => 'table', 'header' => $h, 'table' => $t, 'main' => TRUE]);
 
 
-		$this->setInfo('icon', 'icon-chevron-circle-down');
+		$this->setInfo('icon', 'report/depreciations');
 		$this->paperOrientation = 'landscape';
 	}
 

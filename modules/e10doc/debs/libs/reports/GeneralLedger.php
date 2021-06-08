@@ -32,7 +32,7 @@ class GeneralLedger extends \e10doc\core\libs\reports\GlobalReport
 			$this->fiscalYear = $this->reportParams ['fiscalPeriod']['values'][$this->fiscalPeriod]['fiscalYear'];
 
 		$this->setInfo('title', 'Hlavní kniha');
-		$this->setInfo('icon', 'icon-legal');
+		$this->setInfo('icon', 'report/generalLedger');
 		$this->setInfo('param', 'Období', $this->reportParams ['fiscalPeriod']['activeTitle']);
 		$this->setInfo('saveFileName', 'Hlavní kniha '.str_replace(' ', '', $this->reportParams ['fiscalPeriod']['activeTitle']));
 

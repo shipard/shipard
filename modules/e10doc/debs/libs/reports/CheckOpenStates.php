@@ -57,7 +57,7 @@ class CheckOpenStates extends \e10doc\core\libs\reports\GlobalReport
 		$this->prevFiscalYearCfg = $this->app->cfgItem('e10doc.acc.periods.' . $this->prevFiscalYear);
 
 		$this->setInfo('title', 'Kontrola počátečních stavů');
-		$this->setInfo('icon', 'icon-archive');
+		$this->setInfo('icon', 'reportControlInitialStates');
 
 
 		$this->createContent_DoOnePeriod();
@@ -78,9 +78,9 @@ class CheckOpenStates extends \e10doc\core\libs\reports\GlobalReport
 		if ($this->subReportId === 'period')
 		{
 			$this->setInfo('title', 'Kontrola počátečních stavů');
-			$this->setInfo('icon', 'icon-archive');
+			$this->setInfo('icon', 'reportControlInitialStates');
 			$this->setInfo('param', 'Období', $this->prevFiscalYearCfg['fullName'].' → '.$this->fiscalYearCfg['fullName']);
-			$this->setInfo('saveFileName', 'Kontrola počátečních stavů ' . str_replace(' ', '', $this->reportParams ['fiscalPeriod']['activeTitle']));
+			$this->setInfo('saveFileName', 'Kontrola počátečních stavů' . str_replace(' ', '', $this->reportParams ['fiscalPeriod']['activeTitle']));
 			$diffsOnly = 0;
 		}
 
@@ -217,7 +217,7 @@ class CheckOpenStates extends \e10doc\core\libs\reports\GlobalReport
 	function createContent_AllPeriods ()
 	{
 		$this->setInfo('title', 'Kontrola počátečních stavů');
-		$this->setInfo('icon', 'icon-archive');
+		$this->setInfo('icon', 'reportControlInitialStates');
 
 		$this->setInfo('title', 'Kontrola počátečních stavů');
 
@@ -257,8 +257,8 @@ class CheckOpenStates extends \e10doc\core\libs\reports\GlobalReport
 
 	public function subReportsList ()
 	{
-		$d[] = ['id' => 'all', 'icon' => 'icon-list', 'title' => 'Vše'];
-		$d[] = ['id' => 'period', 'icon' => 'icon-file', 'title' => 'Období'];
+		$d[] = ['id' => 'all', 'icon' => 'detailReportAll', 'title' => 'Vše'];
+		$d[] = ['id' => 'period', 'icon' => 'detailReportPeriod', 'title' => 'Období'];
 
 		return $d;
 	}

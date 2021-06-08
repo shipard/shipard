@@ -1,6 +1,6 @@
 {
 	"5000": {
-		"name": "Příjemky bez faktury", "shortName": "PříjBezFakt", "icon": "e10-docs-stock-in", "shortcut": "PřBF", "id": "5000", "side": "d", "docTypes": ["stockin", "invni", "cash", "cmnbkp"],
+		"name": "Příjemky bez faktury", "shortName": "PříjBezFakt", "icon": "balance/StockInInvoice", "shortcut": "PřBF", "id": "5000", "side": "d", "docTypes": ["stockin", "invni", "cash", "cmnbkp"],
 		"content": [
 			{"docType": "stockin", "src": "head", "amountColumn": "taxBase", "itemId": "5000_{person}_{symbol1}_{symbol2}_{heads.currency}"},
 			{"docType": "invni", "src": "row", "operation": "1099998", "checkItemBalance": 1,

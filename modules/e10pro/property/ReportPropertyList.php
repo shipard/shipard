@@ -47,7 +47,7 @@ class ReportPropertyList extends \e10doc\core\libs\reports\GlobalReport
 
 		parent::init();
 
-		$this->setInfo('icon', 'icon-file-o');
+		$this->setInfo('icon', 'report/propertyList');
 		$this->setInfo('title', 'Seznam majetku');
 
 		$this->paperOrientation = 'landscape';

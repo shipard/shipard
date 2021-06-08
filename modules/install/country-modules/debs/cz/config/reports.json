@@ -7,5 +7,5 @@
 
 	{"name": "Účetní rekapitulace", "class": "e10doc.debs.libs.reports.ReportDocsSummary", "icon": "report/docsSummary", "group": "e10docs", "order": 700000},
 
-	{"name": "Kontrola PS", "class": "e10doc.debs.libs.reports.CheckOpenStates", "icon": "reportControlPS", "group": "e10-checks", "order": 900000}
+	{"name": "Kontrola PS", "class": "e10doc.debs.libs.reports.CheckOpenStates", "icon": "reportControlInitialStates", "group": "e10-checks", "order": 900000}
 ]

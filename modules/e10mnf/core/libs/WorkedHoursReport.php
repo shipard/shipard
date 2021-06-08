@@ -41,7 +41,7 @@ class WorkedHoursReport extends \e10doc\core\libs\reports\GlobalReport
 
 
 		$this->setInfo('title', 'Odpracované hodiny');
-		$this->setInfo('icon', 'icon-user');
+		$this->setInfo('icon', 'reportHoursWorked');
 		$this->setInfo('param', 'Období', $this->reportParams ['fiscalPeriod']['activeTitle']);
 
 		$this->paperOrientation = 'landscape';
@@ -178,8 +178,8 @@ class WorkedHoursReport extends \e10doc\core\libs\reports\GlobalReport
 
 	public function subReportsList ()
 	{
-		$d[] = ['id' => 'persons', 'icon' => 'icon-user', 'title' => 'Lidé'];
-		$d[] = ['id' => 'workOrders', 'icon' => 'icon-industry', 'title' => 'Zakázky'];
+		$d[] = ['id' => 'persons', 'icon' => 'detailPersons', 'title' => 'Lidé'];
+		$d[] = ['id' => 'workOrders', 'icon' => 'detailWorkOrders', 'title' => 'Zakázky'];
 		return $d;
 	}
 }

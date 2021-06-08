@@ -206,7 +206,7 @@ class reportExpenses extends \e10doc\core\libs\reports\GlobalReport
 		if ($this->reportParams ['fiscalPeriod']['value'] == 0 || $this->reportParams ['fiscalPeriod']['value'][0] === 'Y' || strstr ($this->reportParams ['fiscalPeriod']['value'], ',') !== FALSE)
 			$this->period = Expenses::periodMonthly;
 
-		$this->setInfo('icon', 'icon-thumbs-o-down');
+		$this->setInfo('icon', 'report/expenses');
 		$this->setInfo('param', 'Období', $this->reportParams ['fiscalPeriod']['activeTitle']);
 
 		if (isset($this->reportParams ['centre']['activeTitle']) && $this->reportParams ['centre']['activeTitle'] != '-')

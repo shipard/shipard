@@ -128,7 +128,7 @@ class ReportNonDeps extends \e10pro\property\ReportDepreciations
 		$this->addContent(['type' => 'table', 'header' => $h, 'table' => $t, 'main' => TRUE]);
 
 
-		$this->setInfo('icon', 'icon-chevron-circle-down');
+		$this->setInfo('icon', 'report/nonDeps');
 		$this->paperOrientation = 'landscape';
 	}
 

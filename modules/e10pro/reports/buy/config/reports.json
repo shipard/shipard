@@ -1,5 +1,5 @@
 [
-	{"name": "Značky", "class": "e10pro.reports.buy.ReportBrands", "group": "e10doc-buy", "icon": "e10doc-buy/brands"},
-	{"name": "Nákupy dle značek", "class": "e10pro.reports.buy.ReportBrands", "group": "e10doc-inventory", "icon": "e10doc-inventory/buyBrands", "order": 20000},
+	{"name": "Značky", "class": "e10pro.reports.buy.ReportBrands", "group": "e10doc-buy", "icon": "tables/e10.witems.brands"},
+	{"name": "Nákupy dle značek", "class": "e10pro.reports.buy.ReportBrands", "group": "e10doc-inventory", "icon": "tables/e10.witems.brands", "order": 20000},
 	{"name": "Dodavatelé", "class": "e10pro.reports.buy.ReportSuppliers", "group": "e10doc-buy", "icon": "e10doc-buy/suppliers"}
 ]

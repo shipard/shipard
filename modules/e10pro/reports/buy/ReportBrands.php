@@ -32,7 +32,7 @@ class ReportBrands extends \e10doc\core\libs\reports\GlobalReport
 		$this->units = $this->app->cfgItem ('e10.witems.units');
 		$this->currencies = $this->app->cfgItem ('e10.base.currencies');
 
-		$this->setInfo('icon', 'icon-caret-square-o-down');
+		$this->setInfo('icon', 'tables/e10.witems.brands');
 		$this->setInfo('param', 'Období', $this->reportParams ['fiscalPeriod']['activeTitle']);
 		if (isset($this->reportParams ['itemBrand']['activeTitle']))
 			$this->setInfo('param', 'Značka', $this->reportParams ['itemBrand']['activeTitle']);

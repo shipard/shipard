@@ -524,7 +524,7 @@ class reportCashBook extends \e10doc\core\libs\reports\GlobalReport
 		$this->addContent (array ('type' => 'table', 'header' => $h, 'table' => $data, 'main' => TRUE));
 
 		$this->setInfo('title', 'Pokladní kniha');
-		$this->setInfo('icon', 'e10-docs-cash');
+		$this->setInfo('icon', 'report/cashBook');
 		$this->setInfo('param', 'Období', $this->reportParams ['fiscalPeriod']['activeTitle']);
 		$this->setInfo('param', 'Pokladna', $this->reportParams ['cashBox']['activeTitle']);
 		$cashBoxes = $this->app->cfgItem ('e10doc.cashBoxes', array());

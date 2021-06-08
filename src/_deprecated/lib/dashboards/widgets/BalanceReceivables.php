@@ -12,6 +12,6 @@ class BalanceReceivables extends \lib\dashboards\widgets\BalanceCore
 	public function createContent ()
 	{
 		$data = $this->app->cache->getCacheItem('lib.cacheItems.BalanceReceivables', TRUE);
-		$this->createBalance ('Pohledávky', 'icon-arrow-circle-up', '', $data);
+		$this->createBalance ('Pohledávky', 'balance/receivables', '', $data);
 	}
 }

@@ -23,7 +23,7 @@ class ReportDocsSummary extends \e10doc\core\libs\reports\GlobalReport
 		$this->fiscalYear = $this->reportParams ['fiscalPeriod']['values'][$this->fiscalPeriod]['fiscalYear'];
 
 		$this->setInfo('title', 'Účetní rekapitulace');
-		$this->setInfo('icon', 'icon-table');
+		$this->setInfo('icon', 'report/docsSummary');
 		$this->setInfo('param', 'Období', $this->reportParams ['fiscalPeriod']['activeTitle']);
 		$this->setInfo('saveFileName', 'Účetní rekapitulace '.str_replace(' ', '', $this->reportParams ['fiscalPeriod']['activeTitle']));
 

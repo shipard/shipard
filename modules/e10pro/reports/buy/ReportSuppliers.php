@@ -230,7 +230,7 @@ class ReportSuppliers extends \e10doc\core\libs\reports\GlobalReport
 
 		$this->addContent (['type' => 'table', 'header' => $h, 'table' => $data, 'main' => TRUE, 'params' => ['colClasses' => $colClasses, 'precision' => 0]]);
 
-		$this->setInfo('icon', 'e10-docs-invoices-in');
+		$this->setInfo('icon', 'e10doc-buy/suppliers');
 		$this->setInfo('title', 'Dodavatelé');
 		$this->paperOrientation = 'landscape';
 	}

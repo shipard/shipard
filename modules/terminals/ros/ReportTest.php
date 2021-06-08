@@ -32,7 +32,7 @@ class ReportTest extends \e10doc\core\libs\reports\GlobalReport
 
 		parent::init();
 
-		$this->setInfo('icon', 'icon-microchip');
+		$this->setInfo('icon', 'tables/e10doc.ros.journal');
 	}
 
 	function createContent ()

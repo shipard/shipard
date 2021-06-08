@@ -156,7 +156,7 @@ class ReportRequestsForPayment extends \e10doc\core\libs\reports\GlobalReport
 		$this->addContent (['type' => 'table', 'header' => $h, 'table' => $data, 'main' => TRUE]);
 
 		$this->setInfo('title', 'Návrh upomínek');
-		$this->setInfo('icon', 'icon-exclamation-circle');
+		$this->setInfo('icon', 'balanceAlerts');
 		$this->setInfo('param', 'Rok', $this->reportParams ['fiscalYear']['activeTitle']);
 		$this->setInfo('saveFileName', 'Návrh upomínek');
 	}

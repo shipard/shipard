@@ -19,7 +19,7 @@ class reportContacts extends \E10\GlobalReport
 
 		parent::init();
 
-		$this->setInfo('icon', 'icon-envelope-o');
+		$this->setInfo('icon', 'reportContacts');
 	}
 
 	function createContent ()
@@ -198,7 +198,7 @@ class reportDuplicities extends \e10doc\core\libs\reports\GlobalReport
 		$this->tablePersons = $this->app->table ('e10.persons.persons');
 
 		$this->setInfo('title', 'Duplicitní osoby');
-		$this->setInfo('icon', 'icon-code-fork');
+		$this->setInfo('icon', 'reportDuplicitePersons');
 		$this->setInfo('param', 'Včetně smazaných', $this->reportParams ['deleted']['activeTitle']);
 	}
 

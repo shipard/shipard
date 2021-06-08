@@ -119,7 +119,7 @@ class reportDaily extends \e10doc\core\libs\reports\GlobalReport
 	function createContent ()
 	{
 		$this->setInfo('title', 'Denní přehled');
-		$this->setInfo('icon', 'icon-check-circle');
+		$this->setInfo('icon', 'reportDailyReport');
 		$this->setInfo('param', 'Datum', utils::datef ($this->todayDate, '%d'));
 		switch ($this->subReportId)
 		{

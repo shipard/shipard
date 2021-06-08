@@ -52,7 +52,7 @@ class ReportStatement extends \e10doc\core\libs\reports\GlobalReport
 				$this->variant = $this->reportParams ['variant']['value'];
 		}
 
-		$this->setInfo('icon', 'icon-legal');
+		$this->setInfo('icon', 'report/Statement');
 		$this->setInfo('param', 'Období', $this->reportParams ['fiscalPeriod']['activeTitle']);
 		if (isset($this->reportParams ['centre']['activeTitle']) && $this->reportParams ['centre']['activeTitle'] != '-')
 			$this->setInfo('param', 'Středisko', $this->reportParams ['centre']['activeTitle']);

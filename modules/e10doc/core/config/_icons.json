@@ -243,6 +243,12 @@
         "bsi":"bi-cash",
         "mdi":"payments"
     },
+    "balanceAlerts":{
+        "fa5":"fa-exclamation-circle",
+        "fa5pro":"fa-exclamation-circle",
+        "bsi":"bi-exclamation-circle-fill",
+        "mdi":"error"
+    },
 
 
 
@@ -586,6 +592,12 @@
         "fa5pro":"fa-minus-square",
         "bsi":"bi-dash-square-fill",
         "mdi":"remove_circle"
+	},
+	"detailReportAll":{
+		"fa5": "fa-list",
+		"fa5pro": "fa-list",
+		"bsi": "bi-list-ul",
+		"mdi": "list"
 	},
 
 

@@ -25,7 +25,7 @@ class ReportSWLicenses extends \E10\GlobalReport
 		$this->addMyParams();
 		parent::init();
 
-		$this->setInfo('icon', 'icon-certificate');
+		$this->setInfo('icon', 'report/SWLicenses');
 		$this->setInfo('title', 'Seznam SW licencí');
 
 		$this->paperOrientation = 'landscape';

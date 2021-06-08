@@ -25,7 +25,7 @@ class Daily extends \e10\GlobalReport
 		$this->canteenNdx = $this->reportParams['canteen']['value'];
 		$this->canteenCfg = $this->app()->cfgItem ('e10pro.canteen.canteens.'.$this->canteenNdx);
 
-		$this->setInfo('icon', 'icon-cutlery');
+		$this->setInfo('icon', 'reportDailyReport');
 		$this->setInfo('param', 'Jídelna', $this->canteenCfg['fn']);
 
 		if ($this->date === NULL)

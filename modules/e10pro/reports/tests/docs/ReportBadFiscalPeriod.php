@@ -17,7 +17,7 @@ class ReportBadFiscalPeriod extends \e10doc\core\libs\reports\GlobalReport
 	{
 		$this->docTypes = $this->app->cfgItem ('e10.docs.types');
 		parent::init();
-		$this->setInfo('icon', 'icon-warning-sign');
+		$this->setInfo('icon', 'detailReportPeriod');
 	}
 
 	function createContent ()

@@ -27,7 +27,7 @@ class ReportBadAccounting extends \e10doc\core\libs\reports\GlobalReport
 
 		parent::init();
 
-		$this->setInfo('icon', 'icon-warning');
+		$this->setInfo('icon', 'detailReportAccounting');
 		if ($this->subReportId !== 'accounts')
 			$this->setInfo('param', 'Období', $this->reportParams ['fiscalPeriod']['activeTitle']);
 	}

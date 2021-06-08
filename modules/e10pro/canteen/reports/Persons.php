@@ -51,7 +51,7 @@ class Persons extends \e10\GlobalReport
 		if (!$this->periodEnd)
 			$this->periodEnd = utils::createDateTime($this->reportParams ['calendarMonth']['values'][$this->reportParams ['calendarMonth']['value']]['dateEnd']);
 
-		$this->setInfo('icon', 'icon-cutlery');
+		$this->setInfo('icon', 'reportPersonsBilling');
 		$this->setInfo('param', 'Vyúčtování stravy za období', $this->periodBegin->format('Y / m'));
 
 		if ($this->subReportId === 'debtors')

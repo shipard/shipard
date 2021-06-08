@@ -45,7 +45,7 @@ class reportItems extends \e10doc\core\libs\reports\GlobalReport
 		$this->units = $this->app->cfgItem ('e10.witems.units');
 		$this->currencies = $this->app->cfgItem ('e10.base.currencies');
 
-		$this->setInfo('icon', 'icon-thumbs-o-up');
+		$this->setInfo('icon', 'reportMonthlyReport');
 		$this->setInfo('param', 'Období', $this->reportParams ['fiscalPeriod']['activeTitle']);
 		$this->setInfo('note', '1', 'Všechny částky jsou bez DPH');
 	}

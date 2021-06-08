@@ -49,7 +49,7 @@ class ReportBalanceSheet extends \e10doc\core\libs\reports\GlobalReport
 				$this->variant = $this->reportParams ['variant']['value'];
 		}
 
-		$this->setInfo('icon', 'icon-legal');
+		$this->setInfo('icon', 'report/BalanceSheet');
 		$this->setInfo('param', 'Období', $this->reportParams ['fiscalPeriod']['activeTitle']);
 	}
 

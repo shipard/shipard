@@ -5,7 +5,7 @@
   {"name": "Poskytnuté zálohy", "class": "e10doc.balance.reportBalanceAdvance", "icon": "balance/balanceAdvance", "group": "e10doc-balance", "order": 3500},
   {"name": "Peníze na cestě", "class": "e10doc.balance.reportBalanceCashInTransit", "icon": "balance/cashInTransit", "group": "e10doc-balance", "order": 4100},
 
-	{"name": "Upomínky", "class": "e10doc.balance.ReportRequestsForPayment", "icon": "balance/requestsForPayment", "group": "e10doc-balance", "order": 9000000},
+	{"name": "Upomínky", "class": "e10doc.balance.ReportRequestsForPayment", "icon": "balanceAlerts", "group": "e10doc-balance", "order": 9000000},
 	{"name": "Zápočty", "class": "e10doc.balance.reportBalanceOffsetting", "icon": "balance/balanceOffsetting", "group": "e10doc-balance", "order": 9100000},
 	{"name": "Deník", "class": "e10doc.balance.reportBalanceJournal", "icon": "balance/balanceJournal", "group": "e10doc-balance", "order": 9999999}
 ]

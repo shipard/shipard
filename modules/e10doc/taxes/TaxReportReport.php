@@ -74,13 +74,13 @@ class TaxReportReport extends \e10doc\core\libs\reports\GlobalReport
 			$this->propertiesEngine = $this->app->createObject($this->taxReportDef['propertiesEngine']);
 			$this->propertiesEngine->load($this->taxReportNdx, $this->filingNdx);
 
-			$this->setInfo('icon', 'icon-shield');
+			$this->setInfo('icon', 'report/VatReturnReport');
 			$this->setInfo('title', $this->taxReportRecData['title']);
 			$this->setInfo('param', 'Období', utils::datef ($this->taxReportRecData['datePeriodBegin'], '%d').' - '.utils::datef ($this->taxReportRecData['datePeriodEnd'], '%d'));
 		}
 		else
 		{
-			$this->setInfo('icon', 'icon-shield');
+			$this->setInfo('icon', 'report/VatReturnReport');
 			$this->setInfo('title', 'Žádné kontrolní hlášení není k dispozici');
 		}
 

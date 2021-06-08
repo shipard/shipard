@@ -20,7 +20,7 @@ class reportDuplicities extends \e10doc\core\libs\reports\GlobalReport
 		$this->tableItems = $this->app->table ('e10.witems.items');
 
 		$this->setInfo('title', 'Duplicitní položky');
-		$this->setInfo('icon', 'icon-code-fork');
+		$this->setInfo('icon', 'reportDupliciteItems');
 		$this->setInfo('param', 'Včetně smazaných', $this->reportParams ['deleted']['activeTitle']);
 	}
 

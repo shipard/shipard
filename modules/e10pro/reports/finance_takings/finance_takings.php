@@ -138,7 +138,7 @@ class reportTakings extends \e10doc\core\libs\reports\GlobalReport
 		if ($this->reportParams ['fiscalPeriod']['value'] == 0 || $this->reportParams ['fiscalPeriod']['value'][0] === 'Y' || strstr ($this->reportParams ['fiscalPeriod']['value'], ',') !== FALSE)
 			$this->period = Takings::periodMonthly;
 
-		$this->setInfo('icon', 'icon-thumbs-o-up');
+		$this->setInfo('icon', 'report/takings');
 		$this->setInfo('param', 'Období', $this->reportParams ['fiscalPeriod']['activeTitle']);
 
 		if (isset($this->reportParams ['centre']['activeTitle']) && $this->reportParams ['centre']['activeTitle'] != '-')

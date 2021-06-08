@@ -102,7 +102,7 @@ class reportMonthly extends \e10doc\core\libs\reports\GlobalReport
 	function createContent ()
 	{
 		$this->setInfo('title', 'Měsíční přehled');
-		$this->setInfo('icon', 'icon-check-circle');
+		$this->setInfo('icon', 'reportMonthlyReport');
 		$this->setInfo('param', 'Období', $this->reportParams ['fiscalPeriod']['activeTitle']);
 		switch ($this->subReportId)
 		{

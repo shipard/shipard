@@ -16,5 +16,14 @@
 		"fa5pro": "fa-list",
 		"bsi": "bi-list-ul",
 		"mdi": "list"
+    },
+
+
+
+    "detailWorkOrders":{
+        "fa5":"fa-industry",
+        "fa5pro":"fa-industry-alt",
+        "bsi":"bi-building",
+        "mdi":"business"
     }
 }

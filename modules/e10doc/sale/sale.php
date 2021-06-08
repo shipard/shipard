@@ -56,7 +56,7 @@ class reportListInvoicesOut extends \e10doc\core\libs\reports\GlobalReport
 		$data [] = $total;
 
 		$this->setInfo('title', 'Kniha vydaných faktur');
-		$this->setInfo('icon', 'e10-docs-invoices-out');
+		$this->setInfo('icon', 'docType/invoicesOut');
 
 		if ($this->reportParams ['fiscalPeriod']['value'])
 			$this->setInfo('param', 'Účetní období', $this->reportParams ['fiscalPeriod']['activeTitle']);
