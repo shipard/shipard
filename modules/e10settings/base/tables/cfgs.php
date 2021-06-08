@@ -87,7 +87,7 @@ class ViewCfgs extends TableView
 		if (!$item['valid'])
 		{
 			$listItem ['class'] = 'e10-warning2';
-			$listItem ['icon'] = 'icon-exclamation-triangle';
+			$listItem ['icon'] = 'system/iconWarning';
 		}
 
 		return $listItem;

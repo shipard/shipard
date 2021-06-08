@@ -92,7 +92,7 @@ class ViewModules extends TableView
 		if ($item['private'])
 			$listItem ['t2'] .= ' ' . utils::es ('(Neveřejné)');
 		if ($item['order'])
-			$listItem ['i2'] = ['icon' => 'icon-sort', 'text' => \E10\nf ($item ['order'], 0)];
+			$listItem ['i2'] = ['icon' => 'system/iconOrder', 'text' => \E10\nf ($item ['order'], 0)];
 		return $listItem;
 	}
 }

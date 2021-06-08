@@ -100,7 +100,7 @@ class ItemsInCategoryViewer extends \E10\Witems\ViewItems
 		$props[] = ['text' => $this->table->itemType ($item), 'icon' => 'icon-hand-o-up', 'class' => ''];
 
 		if ($item['orderCashRegister'])
-			$props[] = ['icon' => 'icon-sort', 'text' => utils::nf ($item['orderCashRegister']), 'class' => ''];
+			$props[] = ['icon' => 'system/iconOrder', 'text' => utils::nf ($item['orderCashRegister']), 'class' => ''];
 
 		if (count($props))
 			$listItem ['t2'] = $props;

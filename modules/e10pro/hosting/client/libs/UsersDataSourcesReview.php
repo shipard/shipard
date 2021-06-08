@@ -231,7 +231,7 @@ class UsersDataSourcesReview extends Content
 		if (count($unlinkedDataSources))
 		{
 			$paneTitle = [
-				['text' => 'Máte zprávy z databází, které nevidíte', 'class' => 'h2 block', 'icon' => 'icon-exclamation-triangle'],
+				['text' => 'Máte zprávy z databází, které nevidíte', 'class' => 'h2 block', 'icon' => 'system/iconWarning'],
 				['text' => 'Kontaktujte prosím technickou podporu, abychom to napravili', 'class' => 'block mb1'],
 			];
 			$this->addContent(['pane' => 'e10-pane-core padd5 mb2 e10-bg-t3', 'type' => 'line', 'line' => $unlinkedDataSources, 'paneTitle' => $paneTitle]);

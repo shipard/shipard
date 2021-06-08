@@ -87,7 +87,7 @@ class ViewIssuesStatuses extends TableView
 		$props = [];
 
 		if ($item['order'])
-			$props[] = ['text' => utils::nf($item['order']), 'icon' => 'icon-sort', 'class' => 'label label-default'];
+			$props[] = ['text' => utils::nf($item['order']), 'icon' => 'system/iconOrder', 'class' => 'label label-default'];
 
 		if (count($props))
 			$listItem ['i2'] = $props;
@@ -98,7 +98,7 @@ class ViewIssuesStatuses extends TableView
 			if ($item['statusName'])
 				$listItem ['t2'][] = ['text' => $item['statusName'], 'icon' => 'icon-columns', 'class' => 'label label-default'];
 			else
-				$listItem ['t2'][] = ['text' => 'Není zadán Druh statusu', 'icon' => 'icon-exclamation-triangle', 'class' => 'label label-danger'];
+				$listItem ['t2'][] = ['text' => 'Není zadán Druh statusu', 'icon' => 'system/iconWarning', 'class' => 'label label-danger'];
 		}
 
 		return $listItem;

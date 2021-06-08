@@ -301,7 +301,7 @@ class ViewerDashboardKeys extends TableView
 					if ($ta['person']['ndx'])
 						$tt[] = ['text' => $ta['person']['fullName'], 'icon' => $ta['person']['icon'], 'class' => ''];
 					else
-						$tt[] = ['text' => 'Vadná osoba', 'icon' => 'icon-exclamation-triangle', 'class' => 'e10-error'];
+						$tt[] = ['text' => 'Vadná osoba', 'icon' => 'system/iconWarning', 'class' => 'e10-error'];
 					$tt[] = ['text' => utils::dateFromTo($ta['validFrom'], $ta['validTo'], NULL), 'xicon' => 'icon-keyboard-o', 'class' => 'e10-small'];
 					if ($ta['useCautionMoney'])
 						$tt[] = ['text' => utils::nf($ta['cautionMoneyAmount']), 'title' => 'Kauce', 'icon' => 'icon-money', 'class' => 'label label-default'];

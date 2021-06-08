@@ -218,7 +218,7 @@ class ViewerDashboardPersonsAccess extends TableView
 				{
 					$item['text'] = 'VADNÝ KLÍČ';
 					$item['class'] = 'label label-danger';
-					$item['icon'] = 'icon-exclamation-triangle';
+					$item['icon'] = 'system/iconWarning';
 				}
 				elseif ($r['docState'] !== 4000)
 				{

@@ -96,7 +96,7 @@ class ViewWorkOrdersGroups extends TableView
 		$props = [];
 
 		if ($item ['order'] != 0)
-			$props [] = ['icon' => 'icon-sort', 'text' => utils::nf ($item ['order']), 'class' => 'pull-right'];
+			$props [] = ['icon' => 'system/iconOrder', 'text' => utils::nf ($item ['order']), 'class' => 'pull-right'];
 
 		if (count($props))
 			$listItem ['t2'] = $props;

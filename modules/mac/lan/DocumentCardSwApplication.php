@@ -52,7 +52,7 @@ class DocumentCardSwApplication extends \e10\DocumentCard
 					}
 					else
 					{
-						$li = ['text' => 'chybí', 'icon' => 'icon-exclamation-triangle'];
+						$li = ['text' => 'chybí', 'icon' => 'system/iconWarning'];
 						$deviceRow['_options'] = ['class' => 'e10-warning1'];
 					}
 					$deviceRow['license'] = $li;

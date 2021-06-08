@@ -82,7 +82,7 @@ class TableDevicesPorts extends DbTable
 			if ($portRole)
 				return $portRole['icon'];
 
-			return 'icon-exclamation-triangle';
+			return 'system/iconWarning';
 		}
 
 		$portKind = $this->app()->cfgItem ('mac.lan.ports.kinds.'.$recData['portKind'], NULL);

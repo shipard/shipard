@@ -1317,7 +1317,7 @@ class DepreciationsEngine extends Utility
 		$content = [
 			'pane' => 'e10-pane e10-pane-table', 'header' => $h, 'table' => $t,
 			'params' => ['hideHeader' => 1],
-			'title' => ['text' => 'V nastavení odpisů jsou chyby', 'icon' => 'icon-exclamation-triangle', 'class' => 'e10-error']
+			'title' => ['text' => 'V nastavení odpisů jsou chyby', 'icon' => 'system/iconWarning', 'class' => 'e10-error']
 		];
 
 		return $content;

@@ -168,7 +168,7 @@ class WorkOrdersAnalysisReport extends \e10doc\core\libs\reports\GlobalReport
 
 			if (count($e->troubles))
 			{
-				$item['t'] = ['text' => '', 'icon' => 'icon-exclamation-triangle', 'xxsuffix' => Utils::nf(count($e->troubles))];
+				$item['t'] = ['text' => '', 'icon' => 'system/iconWarning', 'xxsuffix' => Utils::nf(count($e->troubles))];
 			}
 
 			$item['gm'] = ($item['c']) ? round ($item['b'] / $item['c'] * 100, 2) : 0.0;

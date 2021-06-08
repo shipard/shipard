@@ -354,7 +354,7 @@ class ViewFolders extends TableView
 			$props [] = ['icon' => 'icon-at', 'text' => $item ['shipardEmailId'], 'class' => 'label label-default'];
 
 		if ($item ['order'] != 0)
-			$props [] = ['icon' => 'icon-sort', 'text' => utils::nf ($item ['order']), 'class' => ''];
+			$props [] = ['icon' => 'system/iconOrder', 'text' => utils::nf ($item ['order']), 'class' => ''];
 
 		if (count($props))
 			$listItem ['i2'] = $props;

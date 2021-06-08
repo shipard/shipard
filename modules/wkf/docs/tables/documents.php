@@ -92,7 +92,7 @@ class TableDocuments extends DbTable
 
 	public function createHeader ($recData, $options)
 	{
-		$sourcesIcons = [0 => 'icon-keyboard-o', 1 => 'icon-envelope-o', 2 => 'icon-plug', 3 => 'icon-android', 4 => 'icon-exclamation-triangle'];
+		$sourcesIcons = [0 => 'icon-keyboard-o', 1 => 'icon-envelope-o', 2 => 'icon-plug', 3 => 'icon-android', 4 => 'system/iconWarning'];
 		$item = $recData;
 
 		$hdr ['newMode'] = 1;

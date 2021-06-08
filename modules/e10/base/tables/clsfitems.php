@@ -149,7 +149,7 @@ class ViewClsfItems extends TableView
 			$listItem ['t2'] = ['text' => $labelText, 'class' => 'label label-default'];
 
 		if ($item['order'])
-			$listItem ['i2'] = ['text' => utils::nf($item['order']), 'icon' => 'icon-sort', 'class' => 'label label-default'];
+			$listItem ['i2'] = ['text' => utils::nf($item['order']), 'icon' => 'system/iconOrder', 'class' => 'label label-default'];
 
 		return $listItem;
 	}

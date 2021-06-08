@@ -146,7 +146,7 @@ class Item extends \e10\DocumentCard
 
 			if ($r['setItemType'] === 0 && $r['dstTypeType'] != 1)
 			{
-				$itm['type'][] = ['text' => 'Položka není Zásoba', 'icon' => 'icon-exclamation-triangle', 'class' => 'e10-error label label-default'];
+				$itm['type'][] = ['text' => 'Položka není Zásoba', 'icon' => 'system/iconWarning', 'class' => 'e10-error label label-default'];
 				$rowIsValid = 0;
 			}
 

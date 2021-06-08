@@ -116,7 +116,7 @@ class ViewDocKinds extends TableView
 		$props[] = ['text' => $item['shortName'], 'class' => ''];
 
 		if ($item['order'])
-			$props[] = ['text' => utils::nf($item['order']), 'icon' => 'icon-sort', 'class' => 'pull-right label label-default'];
+			$props[] = ['text' => utils::nf($item['order']), 'icon' => 'system/iconOrder', 'class' => 'pull-right label label-default'];
 
 		$listItem ['t2'] = $props;
 

@@ -159,7 +159,7 @@ class TableRosRegs extends DbTable
 				'status' => 0,
 				'msg' => 'Nelze načíst certifikát - patrně není správně nahraný',
 				'labels' => [
-					['text' => 'Není nahrán certifikát', 'class' => 'label label-danger', 'icon' => 'icon-exclamation-triangle']
+					['text' => 'Není nahrán certifikát', 'class' => 'label label-danger', 'icon' => 'system/iconWarning']
 				]
 			];
 		}
@@ -171,7 +171,7 @@ class TableRosRegs extends DbTable
 				'status' => 0,
 				'msg' => 'Nelze načíst informace o certifikátu',
 				'labels' => [
-					['text' => 'Neznámá chyba', 'class' => 'label label-danger', 'icon' => 'icon-exclamation-triangle']
+					['text' => 'Neznámá chyba', 'class' => 'label label-danger', 'icon' => 'system/iconWarning']
 				]
 			];
 		}
@@ -182,7 +182,7 @@ class TableRosRegs extends DbTable
 				'status' => 0,
 				'msg' => 'Problém s certifikátem: '.$crtInfo['error'],
 				'labels' => [
-					['text' => $crtInfo['error'], 'class' => 'label label-danger', 'icon' => 'icon-exclamation-triangle']
+					['text' => $crtInfo['error'], 'class' => 'label label-danger', 'icon' => 'system/iconWarning']
 				]
 			];
 		}

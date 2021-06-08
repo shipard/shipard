@@ -374,7 +374,7 @@ class VatRSReport extends \e10doc\taxes\TaxReportReport
 		if ($r['valid'] !== 1)
 		{
 			if ($r['valid'] == 2)
-				$vatId[] = ['text' => '', 'icon' => 'icon-exclamation-triangle', 'class' => 'e10-error pull-right'];
+				$vatId[] = ['text' => '', 'icon' => 'system/iconWarning', 'class' => 'e10-error pull-right'];
 			elseif ($r['valid'] == 0)
 				$vatId[] = ['text' => '', 'icon' => 'icon-question-circle', 'class' => 'e10-off pull-right'];
 		}

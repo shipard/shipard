@@ -86,12 +86,12 @@ class ViewTargets extends TableView
 			if ($item['targetKindName'])
 				$listItem ['t2'] = ['text' => $item['targetKindName'], 'icon' => 'icon-columns', 'class' => 'label label-default'];
 			else
-				$listItem ['t2'] = ['text' => 'Není zadán druh cíle', 'icon' => 'icon-exclamation-triangle', 'class' => 'label label-danger'];
+				$listItem ['t2'] = ['text' => 'Není zadán druh cíle', 'icon' => 'system/iconWarning', 'class' => 'label label-danger'];
 		}
 
 		$props = [];
 		if ($item['order'])
-			$props[] = ['text' => utils::nf($item['order']), 'icon' => 'icon-sort', 'class' => 'label label-default'];
+			$props[] = ['text' => utils::nf($item['order']), 'icon' => 'system/iconOrder', 'class' => 'label label-default'];
 		if (count($props))
 			$listItem ['i2'] = $props;
 

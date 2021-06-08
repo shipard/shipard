@@ -492,13 +492,13 @@ class ViewDevicesIOPortsFormList extends \e10\TableViewGrid
 					if ($this->usedHWPins[$hwPin] === 1)
 						$pinsLabels[] = ['text' => '#'.$hwPin, 'class' => 'label label-info'];
 					else
-						$pinsLabels[] = ['text' => '#'.$hwPin, 'suffix' => 'vícenásobné použití', 'icon' => 'icon-exclamation-triangle', 'class' => 'label label-danger'];
+						$pinsLabels[] = ['text' => '#'.$hwPin, 'suffix' => 'vícenásobné použití', 'icon' => 'system/iconWarning', 'class' => 'label label-danger'];
 
 					$pinsLabels[] = ['text' => '', 'class' => 'break'];
 				}
 				else
 				{
-					$pinsLabels[] = ['text' => 'Chyba v konfiguraci pinu', 'icon' => 'icon-exclamation-triangle', 'class' => 'label label-danger'];
+					$pinsLabels[] = ['text' => 'Chyba v konfiguraci pinu', 'icon' => 'system/iconWarning', 'class' => 'label label-danger'];
 				}
 			}
 			else

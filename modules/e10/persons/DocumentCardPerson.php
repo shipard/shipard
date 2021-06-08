@@ -248,8 +248,8 @@ class DocumentCardPerson extends \e10\DocumentCard
 		}
 		else
 		{
-			$this->validity['icon'] = 'icon-exclamation-triangle';
-			$title = ['text' => 'Při kontrole byly nalezeny chyby', 'XXXicon' => 'icon-exclamation-triangle', 'class' => 'e10-error h2'];
+			$this->validity['icon'] = 'system/iconWarning';
+			$title = ['text' => 'Při kontrole byly nalezeny chyby', 'XXXicon' => 'system/iconWarning', 'class' => 'e10-error h2'];
 			$line = [$title];
 
 			if ($validity['revalidate'])
@@ -425,7 +425,7 @@ class DocumentCardPerson extends \e10\DocumentCard
 		}
 		else
 		{
-			$title = ['text' => 'Při kontrole byly nalezeny chyby', 'icon' => 'icon-exclamation-triangle', 'class' => 'e10-error h2'];
+			$title = ['text' => 'Při kontrole byly nalezeny chyby', 'icon' => 'system/iconWarning', 'class' => 'e10-error h2'];
 			$line = [$title];
 
 			if ($validity['revalidate'])

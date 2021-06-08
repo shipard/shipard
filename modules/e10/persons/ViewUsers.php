@@ -52,11 +52,11 @@ class ViewUsers extends \e10\persons\ViewPersons
 
 		$roles = [];
 		if ($item['accountState'] == 0)
-			$roles[] = ['class' => 'label label-danger', 'text' => 'Neaktivováno', 'icon' => 'icon-exclamation-triangle'];
+			$roles[] = ['class' => 'label label-danger', 'text' => 'Neaktivováno', 'icon' => 'system/iconWarning'];
 
 		if ($item['roles'] === '')
 		{
-			$roles[] = ['class' => 'label label-danger', 'text' => 'Uživatel nemá přiřazeny role', 'icon' => 'icon-exclamation-triangle'];
+			$roles[] = ['class' => 'label label-danger', 'text' => 'Uživatel nemá přiřazeny role', 'icon' => 'system/iconWarning'];
 		}
 		else
 		{
@@ -79,7 +79,7 @@ class ViewUsers extends \e10\persons\ViewPersons
 		if (isset($this->loginHashDuplicities[$item['loginHash']]))
 		{
 			$item['t2'][0]['class'] .= ' e10-error';
-			$item['t2'][0]['icon'] = 'icon-exclamation-triangle';
+			$item['t2'][0]['icon'] = 'system/iconWarning';
 			$item['t2'][0]['suffix'] = 'Duplicitní email!';
 		}
 

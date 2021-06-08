@@ -36,7 +36,7 @@ class DocsCombo extends TableView
 
 	var $sourcesIcons = [
 		0 => 'icon-keyboard-o', 1 => 'icon-envelope-o', 2 => 'icon-plug',
-		3 => 'icon-android', 4 => 'icon-exclamation-triangle', 5 => 'icon-globe'
+		3 => 'icon-android', 4 => 'system/iconWarning', 5 => 'icon-globe'
 	];
 
 

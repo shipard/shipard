@@ -489,7 +489,7 @@ class ViewServers extends TableView
 		if ($item['gaid'])
 			$props[] = ['icon' => 'icon-google', 'text' => $item['gaid'], 'class' => ''];
 		if ($item['order'])
-			$props[] = ['icon' => 'icon-sort', 'text' => strval ($item['order']), 'class' => ''];
+			$props[] = ['icon' => 'system/iconOrder', 'text' => strval ($item['order']), 'class' => ''];
 
 		$listItem ['i2'] = $props;
 

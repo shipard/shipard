@@ -161,7 +161,7 @@ use \E10\utils, \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\Table
 		$conditionsIcons = [
 			0 => 'icon-question',
 			1 => 'icon-check',
-			3 => 'icon-exclamation-triangle',
+			3 => 'system/iconWarning',
 			4 => 'icon-pause-circle-o',
 			5 => 'icon-refresh'
 		];
@@ -173,7 +173,7 @@ use \E10\utils, \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\Table
 
 		$today = utils::today();
 		if ($recData['condition'] === 0 && !utils::dateIsBlank($recData['dateTrialEnd']) && $recData['dateTrialEnd'] < $today)
-			$labels['condition'][] = ['text' => utils::datef($recData['dateTrialEnd']), 'class' => 'label label-danger', 'icon' => 'icon-exclamation-triangle'];
+			$labels['condition'][] = ['text' => utils::datef($recData['dateTrialEnd']), 'class' => 'label label-danger', 'icon' => 'system/iconWarning'];
 
 		return $labels;
 	}

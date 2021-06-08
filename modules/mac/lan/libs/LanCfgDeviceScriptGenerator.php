@@ -82,7 +82,7 @@ class LanCfgDeviceScriptGenerator extends Utility
 
 			if ($this->messages())
 				foreach ($this->messages() as $msg)
-					$msgs[] = ['text' => $msg['text'], 'class' => 'e10-error block', 'icon' => 'icon-exclamation-triangle'];
+					$msgs[] = ['text' => $msg['text'], 'class' => 'e10-error block', 'icon' => 'system/iconWarning'];
 
 			if ($this->lanCfgCreator->messages())
 				foreach ($this->lanCfgCreator->messages() as $msg)
@@ -90,7 +90,7 @@ class LanCfgDeviceScriptGenerator extends Utility
 
 			$content[] = ['pane' => 'e10-pane e10-pane-table', 'type' => 'line',
 				'line' => $msgs,
-				'paneTitle' => ['text' => 'Nastavení sítě obsahuje nesrovnalosti', 'class' => 'h1 e10-error', 'icon' => 'icon-exclamation-triangle']
+				'paneTitle' => ['text' => 'Nastavení sítě obsahuje nesrovnalosti', 'class' => 'h1 e10-error', 'icon' => 'system/iconWarning']
 			];
 		}
 

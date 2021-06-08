@@ -81,7 +81,7 @@ class CertDocumentCard extends \e10\DocumentCard
 			$this->addContent('body', [
 				'pane' => 'e10-pane e10-pane-table e10-pane-top', 'type' => 'line',
 				'line' => [
-					['text' => 'Informace o certifikátu nelze získat.', 'icon' => 'icon-exclamation-triangle', 'class' => 'h1 e10-error'],
+					['text' => 'Informace o certifikátu nelze získat.', 'icon' => 'system/iconWarning', 'class' => 'h1 e10-error'],
 					['text' => 'Certifikát patrně ještě nebyl vystaven...', 'class' => 'block']
 				]
 			]);

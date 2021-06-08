@@ -37,7 +37,7 @@ class DocumentCardDeviceSw extends \mac\lan\DocumentCardDevice
 						$appInfo['_options'] = ['class' => 'e10-row-plus'];
 					} else
 					{
-						$li = ['text' => 'chybí', 'icon' => 'icon-exclamation-triangle'];
+						$li = ['text' => 'chybí', 'icon' => 'system/iconWarning'];
 						$appInfo['_options'] = ['class' => 'e10-warning1'];
 						$appInfo['license'] = $li;
 					}
@@ -74,7 +74,7 @@ class DocumentCardDeviceSw extends \mac\lan\DocumentCardDevice
 		// -- unknown packages
 		if (count($this->unknownPackages))
 		{
-			$title = [['icon' => 'icon-exclamation-triangle', 'text' => 'Neznámé balíčky']];
+			$title = [['icon' => 'system/iconWarning', 'text' => 'Neznámé balíčky']];
 			$table = [];
 
 			foreach ($this->unknownPackages as $pkg)

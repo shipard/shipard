@@ -76,7 +76,7 @@ class ViewRelatedKinds extends TableView
 
 		$props = [];
 		if ($item ['order'] != 0)
-			$props [] = ['icon' => 'icon-sort', 'text' => utils::nf ($item ['order'], 0)];
+			$props [] = ['icon' => 'icon-sortsystem/iconOrder', 'text' => utils::nf ($item ['order'], 0)];
 		if (count($props))
 			$listItem ['i2'] = $props;
 

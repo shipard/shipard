@@ -391,6 +391,12 @@
 		"bsi": "bi-book",
 		"mdi": "auto_stories"
 	},
+	"iconOrder":{
+		"fa5": "fa-sort",
+		"fa5pro": "fa-sort",
+		"bsi": "bi-arrow-down-up",
+		"mdi": "swap_vert"
+	},
 	
 
 

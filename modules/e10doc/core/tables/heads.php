@@ -1456,7 +1456,7 @@ class TableHeads extends DbTable
 		foreach ($rows as $row)
 		{
 			if (!count($flags))
-				$flags[] = ['text' => 'Možná duplicita: ', 'class' => 'label label-danger mr1', 'icon' => 'icon-exclamation-triangle'];
+				$flags[] = ['text' => 'Možná duplicita: ', 'class' => 'label label-danger mr1', 'icon' => 'system/iconWarning'];
 
 			$docType = $this->app()->cfgItem ('e10.docs.types.' . $row['docType']);
 			$flags[] = [

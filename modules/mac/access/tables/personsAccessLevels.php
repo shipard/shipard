@@ -72,7 +72,7 @@ class ViewPersonsAccessLevels extends TableView
 
 		$listItem ['i2'] = [];
 		if ($item ['order'])
-			$listItem ['i2'][] = ['icon' => 'icon-sort', 'text' => utils::nf ($item ['order'], 0), 'class' => ''];
+			$listItem ['i2'][] = ['icon' => 'system/iconOrder', 'text' => utils::nf ($item ['order'], 0), 'class' => ''];
 */
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 

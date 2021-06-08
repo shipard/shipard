@@ -56,7 +56,7 @@ class ViewSetsIcons extends TableView
 		if ($item['setName'])
 			$listItem ['i2'] = ['text' => $item['setName'], 'class' => 'label label-info', 'icon' => 'icon-th'];
 		else
-			$listItem ['i2'] = ['text' => '!!!', 'class' => 'label label-danger', 'icon' => 'icon-exclamation-triangle'];
+			$listItem ['i2'] = ['text' => '!!!', 'class' => 'label label-danger', 'icon' => 'system/iconWarning'];
 
 		$listItem ['t2'] = $item['id'];
 

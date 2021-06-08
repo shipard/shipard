@@ -23,7 +23,7 @@ class VatReturnDocumentCard extends \e10doc\taxes\TaxReportDocumentCard
 
         if ($reportContent->cntErrors)
         {
-            $msg = [['text' => 'Přiznání DPH patrně obsahuje chyby', 'class' => 'h1', 'icon' => 'icon-exclamation-triangle']];
+            $msg = [['text' => 'Přiznání DPH patrně obsahuje chyby', 'class' => 'h1', 'icon' => 'system/iconWarning']];
 
             if (count($reportContent->invalidDocs))
                 $msg[] = ['text' => 'Nesrovnalosti v evidenci Dokladů ('.count($reportContent->invalidDocs).')', 'class' => 'block', 'icon' => 'icon-chevron-right'];

@@ -50,7 +50,7 @@ class ViewValues extends TableView
 		$listItem ['t2'] = $item['shortName'];
 
 		if ($item['order'])
-			$listItem['i2'] = ['icon' => 'icon-sort', 'text' => strval ($item['order'])];
+			$listItem['i2'] = ['icon' => 'system/iconOrder', 'text' => strval ($item['order'])];
 
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 

@@ -144,7 +144,7 @@ class DocumentCardDataSource extends \e10\DocumentCard
 						if (isset($flagsInfo[$key]))
 							$flags[] = $flagsInfo[$key];
 						else
-							$flags[] = ['text' => $key, 'icon' => 'icon-exclamation-triangle', 'class' => 'label label-danger'];
+							$flags[] = ['text' => $key, 'icon' => 'system/iconWarning', 'class' => 'label label-danger'];
 					}
 				}
 				if (isset($this->statsRecData['data']['accMethods']))
@@ -154,7 +154,7 @@ class DocumentCardDataSource extends \e10\DocumentCard
 						if (isset($flagsInfo[$key]))
 							$flags[] = $flagsInfo[$key];
 						else
-							$flags[] = ['text' => $key, 'icon' => 'icon-exclamation-triangle', 'class' => 'label label-danger'];
+							$flags[] = ['text' => $key, 'icon' => 'system/iconWarning', 'class' => 'label label-danger'];
 					}
 				}
 				if (count($flags))

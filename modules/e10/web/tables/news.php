@@ -35,7 +35,7 @@ class TableNews extends DbTable
 			$props[] = ['text' => $fromTo, 'icon' => 'icon-calendar'];
 
 		if ($recData['order'] != 0)
-			$props[] = ['text' => utils::nf ($recData['order']), 'icon' => 'icon-sort', 'class' => 'pull-right'];
+			$props[] = ['text' => utils::nf ($recData['order']), 'icon' => 'system/iconOrder', 'class' => 'pull-right'];
 		if ($recData['to_paper_docs'])
 			$props[] = ['text' => '', 'icon' => 'icon-print', 'class' => 'pull-right'];
 		if ($recData['to_top'])
@@ -87,7 +87,7 @@ class ViewNews extends TableView
 		if ($item['to_paper_docs'])
 			$props[] = ['text' => '', 'icon' => 'icon-print'];
 		if ($item['order'] != 0)
-			$props[] = ['text' => utils::nf ($item['order']), 'icon' => 'icon-sort'];
+			$props[] = ['text' => utils::nf ($item['order']), 'icon' => 'system/iconOrder'];
 
 		if (count($props))
 			$listItem ['i2'] = $props;

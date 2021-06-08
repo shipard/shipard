@@ -32,11 +32,11 @@ class ViewerHostingUsers extends \e10\persons\ViewUsers
 
 		$roles = [];
 		if ($item['accountState'] == 0)
-			$roles[] = ['class' => 'label label-danger', 'text' => 'Neaktivováno', 'icon' => 'icon-exclamation-triangle'];
+			$roles[] = ['class' => 'label label-danger', 'text' => 'Neaktivováno', 'icon' => 'system/iconWarning'];
 
 		if ($item['roles'] === '')
 		{
-			$roles[] = ['class' => 'label label-danger', 'text' => 'Uživatel nemá přiřazeny role', 'icon' => 'icon-exclamation-triangle'];
+			$roles[] = ['class' => 'label label-danger', 'text' => 'Uživatel nemá přiřazeny role', 'icon' => 'system/iconWarning'];
 		}
 		elseif ($item['roles'] !== 'guest')
 		{

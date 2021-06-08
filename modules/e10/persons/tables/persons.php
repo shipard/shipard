@@ -732,7 +732,7 @@ class ViewPersonsBase extends TableView
 		if ($this->showValidity)
 		{
 			if ($item['valid'] === 2)
-				$listItem ['t2'][] = ['text' => '', 'icon' => 'icon-exclamation-triangle', 'class' => 'e10-error'];
+				$listItem ['t2'][] = ['text' => '', 'icon' => 'system/iconWarning', 'class' => 'e10-error'];
 			//elseif ($item['valid'] === 1)
 			//	$listItem ['t2'][] = ['text' => '', 'icon' => 'icon-check', 'class' => 'e10-success e10-off e10-small'];
 		}
