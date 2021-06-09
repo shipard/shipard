@@ -28,11 +28,11 @@
     {"id": "rows", "class": "e10.base.ListRows", "name": "Podmínky", "table": "e10.witems.itemcategoriesqry", "queryColumn": "itemcategory"}
   ],
   "views": [
-    {"id": "default", "class": "e10.witems.ViewItemCategories", "detail": "e10.witems.ViewDetailItemCategories", "help": "prirucka/4871"},
+    {"id": "default", "class": "e10.witems.ViewItemCategories", "detail": "e10.witems.ViewDetailItemCategories", "help": "prirucka/131"},
 		{"id": "editor", "class": "e10.witems.ViewItemCategoriesEditor", "detail": "e10.witems.ViewDetailItemCategory"}
   ],
   "forms": [
-    {"id": "default", "class": "e10.witems.FormItemCategories", "help": "prirucka/4871"}
+    {"id": "default", "class": "e10.witems.FormItemCategories", "help": "prirucka/131"}
   ],
 	"options": ["configSource"],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.witems.itemcategories.docStates"},

@@ -35,13 +35,13 @@
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
 	"views": [
-		{"id": "default", "class": "e10pro.canteen.ViewMenuFoods", "help": "prirucka/4703"},
+		{"id": "default", "class": "e10pro.canteen.ViewMenuFoods", "help": "prirucka/63"},
 		{"id": "comboFood", "class": "e10pro.canteen.ViewerMenuComboFood"},
 		{"id": "comboSoup", "class": "e10pro.canteen.ViewerMenuComboSoup"},
 		{"id": "comboOrder", "class": "e10pro.canteen.ViewMenuFoodsComboOrder"}
 	],
 	"forms": [
-		{"id": "default", "class": "e10pro.canteen.FormMenuFood", "help": "prirucka/4703"}
+		{"id": "default", "class": "e10pro.canteen.FormMenuFood", "help": "prirucka/63"}
 	],
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "foodName"},
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10pro.canteen.menuFoods.docStates"}

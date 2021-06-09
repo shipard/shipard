@@ -18,11 +18,11 @@
     {"id": "rows", "class": "e10.base.ListRows", "name": "Hodnoty", "table": "e10.base.propdefsenum", "queryColumn": "property"}
   ],
   "views": [
-    {"id": "default", "class": "e10.base.ViewPropDefs", "detail": "e10.base.ViewDetailPropDefs", "help": "prirucka/4754"},
+    {"id": "default", "class": "e10.base.ViewPropDefs", "detail": "e10.base.ViewDetailPropDefs", "help": "prirucka/93"},
 		{"id": "combo", "class": "e10.base.ViewPropDefsCombo"}
   ],
   "forms": [
-    {"id": "default", "class": "e10.base.FormPropDefs", "help": "prirucka/4754"}
+    {"id": "default", "class": "e10.base.FormPropDefs", "help": "prirucka/93"}
   ],
 	"options": ["configSource"],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.properties.docStates"},

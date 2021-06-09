@@ -2,10 +2,10 @@
   {
     "table": "e10doc.core.heads",
     "views": [
-      {"id": "proformaOut", "class": "e10doc.proformaout.View", "detail": "e10doc.proformaout.ViewDetail", "help": "prirucka/4863"}
+      {"id": "proformaOut", "class": "e10doc.proformaout.View", "detail": "e10doc.proformaout.ViewDetail", "help": "prirucka/206"}
     ],
     "forms": [
-      {"id": "proformaOut", "class": "e10doc.proformaout.Form", "help": "prirucka/4476"}
+      {"id": "proformaOut", "class": "e10doc.proformaout.Form", "help": "prirucka/206"}
     ],
 		"reports": [
 			{

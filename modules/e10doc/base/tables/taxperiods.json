@@ -15,10 +15,10 @@
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
   ],
   "views": [
-    {"id": "default", "class": "e10doc.base.ViewTaxPeriods", "help":  "prirucka/4881"}
+    {"id": "default", "class": "e10doc.base.ViewTaxPeriods", "help":  "prirucka/97"}
   ],
   "forms": [
-    {"id": "default", "class": "e10doc.base.FormTaxPeriods", "help":  "prirucka/4881"}
+    {"id": "default", "class": "e10doc.base.FormTaxPeriods", "help":  "prirucka/97"}
   ],
 	"options": ["configSource"],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10doc.base.taxperiods.docStates"},

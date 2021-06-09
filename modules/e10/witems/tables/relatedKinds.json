@@ -14,10 +14,10 @@
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
 	"views": [
-		{"id": "default", "class": "e10.witems.ViewRelatedKinds", "detail": "e10.witems.ViewDetailRelatedKind", "help": "prirucka/4870"}
+		{"id": "default", "class": "e10.witems.ViewRelatedKinds", "detail": "e10.witems.ViewDetailRelatedKind", "help": "prirucka/133"}
 	],
 	"forms": [
-		{"id": "default", "class": "e10.witems.FormRelatedKind", "help": "prirucka/4870"}
+		{"id": "default", "class": "e10.witems.FormRelatedKind", "help": "prirucka/133"}
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "shortName"}

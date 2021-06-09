@@ -57,7 +57,7 @@
 		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"}
 	],
 	"views": [
-		{"id": "default", "class": "e10pro.property.ViewProperty", "help": "prirucka/4504",
+		{"id": "default", "class": "e10pro.property.ViewProperty", "help": "prirucka/221",
 			"details": {
 				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.property.ViewDetailProperty", "order": 1000},
 				"depsTax": {"title": "Daňové odpisy", "icon": "detailTaxDepreciations", "type": "detail", "class": "e10pro.property.ViewDetailPropertyDepsTax", "order": 6100},
@@ -68,7 +68,7 @@
 				"accounting": {"title": "Účtování", "icon": "system/detailAccounting", "type": "detail", "class": "e10pro.property.ViewDetailPropertyAccounting", "order": 9000}
 			}
 		},
-		{"id": "debs", "class": "e10pro.property.ViewProperty", "help": "prirucka/4504",
+		{"id": "debs", "class": "e10pro.property.ViewProperty", "help": "prirucka/221",
 			"details": {
 				"debs": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.property.ViewDetailProperty", "order": 1000},
 				"depsTax": {"title": "Daňové odpisy", "icon": "detailTaxDepreciations", "type": "detail", "class": "e10pro.property.ViewDetailPropertyDepsTax", "order": 6100},
@@ -81,7 +81,7 @@
 		}
 	],
   "forms": [
-    {"id": "default", "class": "e10pro.property.FormProperty", "help": "prirucka/4505"}
+    {"id": "default", "class": "e10pro.property.FormProperty", "help": "prirucka/221"}
   ],
 	"reports": [
 		{"id": "cardProperty", "name": "Karta", "class": "e10pro.property.ReportPropertyCard", "dropdown": 1},

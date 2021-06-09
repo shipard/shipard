@@ -3,14 +3,14 @@
     "table": "e10doc.core.heads",
     "views": {
 			"invoicesIn": {
-				"id": "invoicesIn", "class": "e10doc.invoicesIn.libs.ViewInvoicesIn", "help": "prirucka/4861",
+				"id": "invoicesIn", "class": "e10doc.invoicesIn.libs.ViewInvoicesIn", "help": "prirucka/207",
 				"details": {
 					"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.invoicesIn.libs.ViewDetailInvoiceIn", "order": 1000}
 				}
 			}
 		},
     "forms": [
-      {"id": "invoicesIn", "class": "e10doc.invoicesIn.libs.FormInvoiceIn", "help": "prirucka/4436"}
+      {"id": "invoicesIn", "class": "e10doc.invoicesIn.libs.FormInvoiceIn", "help": "prirucka/207"}
     ],
 		"reports": [
 			{

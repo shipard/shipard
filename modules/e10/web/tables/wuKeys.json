@@ -13,10 +13,10 @@
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
 	"views": [
-		{"id": "default", "class": "e10.web.ViewWuKeys", "help": "web/4541"}
+		{"id": "default", "class": "e10.web.ViewWuKeys", "help": "prirucka/151"}
 	],
 	"forms": [
-		{"id": "default", "class": "e10.web.FormWuKey", "help": "web/4541"}
+		{"id": "default", "class": "e10.web.FormWuKey", "help": "prirucka/151"}
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
 }

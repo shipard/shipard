@@ -19,10 +19,10 @@
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
 	"views": [
-		{"id": "default", "class": "e10pro.canteen.ViewMenuRecipientsDefs", "help": "prirucka/4706"}
+		{"id": "default", "class": "e10pro.canteen.ViewMenuRecipientsDefs", "help": "prirucka/66"}
 	],
 	"forms": [
-		{"id": "default", "class": "e10pro.canteen.FormMenuRecipientDef", "help": "prirucka/4706"}
+		{"id": "default", "class": "e10pro.canteen.FormMenuRecipientDef", "help": "prirucka/66"}
 	],
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}

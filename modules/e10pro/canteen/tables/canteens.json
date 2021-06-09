@@ -62,10 +62,10 @@
 	],
 
 	"views": [
-		{"id": "default", "class": "e10pro.canteen.ViewCanteens", "help": "prirucka/4699"}
+		{"id": "default", "class": "e10pro.canteen.ViewCanteens", "help": "prirucka/58"}
 	],
 	"forms": [
-		{"id": "default", "class": "e10pro.canteen.FormCanteen", "help": "prirucka/4699"}
+		{"id": "default", "class": "e10pro.canteen.FormCanteen", "help": "prirucka/58"}
 	],
 	"options": ["configSource"],
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},

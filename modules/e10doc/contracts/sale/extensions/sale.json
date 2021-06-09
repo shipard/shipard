@@ -2,10 +2,10 @@
   {
     "table": "e10doc.contracts.core.heads",
     "views": [
-      {"id": "sale", "class": "e10doc.contracts.core.ViewHeads", "detail": "e10doc.contracts.core.ViewDetailHead", "help": "prirucka/4491"}
+      {"id": "sale", "class": "e10doc.contracts.core.ViewHeads", "detail": "e10doc.contracts.core.ViewDetailHead", "help": "prirucka/210"}
     ],
     "forms": [
-      {"id": "sale", "class": "e10doc.contracts.core.FormHead", "help": "prirucka/4492"}
+      {"id": "sale", "class": "e10doc.contracts.core.FormHead", "help": "prirucka/210"}
     ]
   },
   {

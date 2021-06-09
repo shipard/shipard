@@ -46,10 +46,10 @@
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
 	"views": [
-		{"id": "default", "class": "e10.web.ViewServers", "detail": "e10.web.ViewDetailServer", "help": "web/4539"}
+		{"id": "default", "class": "e10.web.ViewServers", "detail": "e10.web.ViewDetailServer", "help": "prirucka/149"}
 	],
 	"forms": [
-		{"id": "default", "class": "e10.web.FormServer", "help": "web/4539"}
+		{"id": "default", "class": "e10.web.FormServer", "help": "prirucka/149"}
 	],
 	"lists": [
 		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}

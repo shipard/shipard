@@ -3,14 +3,14 @@
     "table": "e10doc.core.heads",
     "views": {
       "cash": {
-				"id": "cash", "class": "e10doc.cash.libs.ViewCashDocs", "help": "prirucka/4483",
+				"id": "cash", "class": "e10doc.cash.libs.ViewCashDocs", "help": "prirucka/209",
 				"details": {
 					"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.cash.libs.ViewDetailCashDoc"}
 				}
 			}
 		},
     "forms": [
-      {"id": "cash", "class": "e10doc.cash.libs.FormCashDoc", "help": "prirucka/4484"}
+      {"id": "cash", "class": "e10doc.cash.libs.FormCashDoc", "help": "prirucka/209"}
     ],
 		"reports": [
       {

@@ -35,10 +35,10 @@
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"views": {
-		"default": {"id": "default", "class": "terminals.base.ViewPrinters", "help": "prirucka/4719"}
+		"default": {"id": "default", "class": "terminals.base.ViewPrinters", "help": "prirucka/159"}
 	},
 	"forms": [
-		{"id": "default", "class": "terminals.base.FormPrinter", "help": "prirucka/4719"}
+		{"id": "default", "class": "terminals.base.FormPrinter", "help": "prirucka/159"}
 	],
 	"options": ["configSource"],
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}

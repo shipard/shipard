@@ -23,7 +23,7 @@
 		{"id": "rows", "class": "e10.base.ListRows", "name": "Adresáti", "table": "e10pro.bume.bulkRecipients", "queryColumn": "bulkMail"}
 	],
 	"views": [
-		{"id": "default", "class": "e10pro.bume.ViewBulkEmails", "help": "prirucka/4898",
+		{"id": "default", "class": "e10pro.bume.ViewBulkEmails", "help": "prirucka/52",
 			"details": {
 				"default": {"title": "Náhled", "icon": "system/detailOverview", "type": "detail", "class": "e10pro.bume.ViewDetailBulkEmail", "order": 1000},
 				"posts": {"title": "Příjemci", "icon": "system/detailRecipients", "type": "detail", "class": "e10pro.bume.ViewDetailBulkEmailPosts", "order": 2000}
@@ -31,6 +31,6 @@
 		}
 	],
 	"forms": [
-		{"id": "default", "class": "e10pro.bume.FormBulkEmail", "help": "prirucka/4898"}
+		{"id": "default", "class": "e10pro.bume.FormBulkEmail", "help": "prirucka/52"}
 	]
 }

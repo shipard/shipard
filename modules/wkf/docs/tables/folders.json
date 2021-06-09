@@ -34,10 +34,10 @@
   ],
   "states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
   "views": {
-    "default": {"id": "default", "class": "wkf.docs.ViewFolders", "help": "prirucka/4237"}
+    "default": {"id": "default", "class": "wkf.docs.ViewFolders", "help": "prirucka/127"}
   },
   "forms": [
-    {"id": "default", "class": "wkf.docs.FormFolder", "help": "prirucka/4237"}
+    {"id": "default", "class": "wkf.docs.FormFolder", "help": "prirucka/127"}
   ],
   "options": ["configSource"],
   "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}

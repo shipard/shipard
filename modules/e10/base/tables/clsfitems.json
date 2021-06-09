@@ -19,10 +19,10 @@
 		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
 	],
 	"views": [
-    {"id": "default", "class": "e10.base.ViewClsfItems", "detail": "e10.base.ViewDetailClsfItems", "help": "prirucka/4544"}
+    {"id": "default", "class": "e10.base.ViewClsfItems", "detail": "e10.base.ViewDetailClsfItems", "help": "prirucka/161"}
   ],
   "forms": [
-    {"id": "default", "class": "e10.base.FormClsfItems", "help": "prirucka/4544"}
+    {"id": "default", "class": "e10.base.FormClsfItems", "help": "prirucka/161"}
   ],
 	"options": ["configSource"],
   "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},

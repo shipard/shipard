@@ -13,10 +13,10 @@
 		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
 	],
 	"views": [
-		{"id": "default", "class": "e10pro.property.ViewGroups", "detail": "e10pro.property.ViewDetailGroup", "help":  "prirucka/4875"}
+		{"id": "default", "class": "e10pro.property.ViewGroups", "detail": "e10pro.property.ViewDetailGroup", "help":  "prirucka/145"}
 	],
 	"forms": [
-		{"id": "default", "class": "e10pro.property.FormGroup", "help":  "prirucka/4875"}
+		{"id": "default", "class": "e10pro.property.FormGroup", "help":  "prirucka/145"}
 	],
 	"options": ["configSource"],
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}

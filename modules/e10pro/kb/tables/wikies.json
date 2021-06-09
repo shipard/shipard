@@ -22,10 +22,10 @@
 		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
 	],
 	"views": [
-		{"id": "default", "class": "e10pro.kb.ViewWikies", "help": "web/4627"}
+		{"id": "default", "class": "e10pro.kb.ViewWikies", "help": "prirucka/152"}
 	],
 	"forms": [
-		{"id": "default", "class": "e10pro.kb.FormWiki", "help": "web/4627"}
+		{"id": "default", "class": "e10pro.kb.FormWiki", "help": "prirucka/152"}
 	],
 	"options": ["configSource"],
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},

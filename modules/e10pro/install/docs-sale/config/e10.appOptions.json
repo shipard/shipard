@@ -1,6 +1,6 @@
 {
 	"e10doc-sale": {
-		"name": "Prodej", "order": 12000, "group": "core", "help": "prirucka/117",
+		"name": "Prodej", "order": 12000, "group": "core", "help": "prirucka/90",
 		"icon": "settigns/sale",
 		"type": "cfgFile",
 		"options":

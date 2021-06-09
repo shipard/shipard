@@ -1,6 +1,6 @@
 {
 	"core": {
-		"name": "Základní nastavení", "order": 10000, "group": "core", "help": "prirucka/116",
+		"name": "Základní nastavení", "order": 10000, "group": "core", "help": "prirucka/89",
 		"icon": "basicSettings/basicSettings",
 		"type": "cfgFile",
 		"options":

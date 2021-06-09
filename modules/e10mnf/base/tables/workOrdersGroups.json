@@ -17,10 +17,10 @@
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"views": {
-		"default": {"id": "default", "class": "e10mnf.base.ViewWorkOrdersGroups", "help": "prirucka/4867"}
+		"default": {"id": "default", "class": "e10mnf.base.ViewWorkOrdersGroups", "help": "prirucka/115"}
 	},
 	"forms": [
-		{"id": "default", "class": "e10mnf.base.FormWorkOrderGroup", "help": "prirucka/4867"}
+		{"id": "default", "class": "e10mnf.base.FormWorkOrderGroup", "help": "prirucka/115"}
 	],
 	"options": ["configSource"],
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}

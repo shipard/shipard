@@ -17,10 +17,10 @@
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
 	"views": [
-		{"id": "default", "class": "e10pro.canteen.ViewPriceList", "help": "prirucka/4704"}
+		{"id": "default", "class": "e10pro.canteen.ViewPriceList", "help": "prirucka/64"}
 	],
 	"forms": [
-		{"id": "default", "class": "e10pro.canteen.FormPriceList", "help": "prirucka/4704"}
+		{"id": "default", "class": "e10pro.canteen.FormPriceList", "help": "prirucka/64"}
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
 }

@@ -3,7 +3,7 @@
     "table": "e10doc.core.heads",
     "views": {
       "bank": {
-				"id": "bank", "class": "e10doc.bank.libs.ViewBankDocs", "help": "prirucka/76",
+				"id": "bank", "class": "e10doc.bank.libs.ViewBankDocs", "help": "prirucka/181",
 				"addWizard": {"class": "e10doc.bank.libs.AddWizard"},
 				"details": {
 					"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.bank.libs.ViewDetailBankDoc"}
@@ -15,7 +15,7 @@
 			}
 		},
     "forms": [
-      {"id": "bank", "class": "e10doc.bank.libs.FormBankDoc", "help": "prirucka/76"}
+      {"id": "bank", "class": "e10doc.bank.libs.FormBankDoc", "help": "prirucka/181"}
     ]
   },
   {

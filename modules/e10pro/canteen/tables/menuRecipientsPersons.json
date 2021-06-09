@@ -15,6 +15,6 @@
 		{"id": "sentDate", "name": "Datum odeslání", "type": "timestamp"}
 	],
 	"views": [
-		{"id": "default", "class": "e10pro.canteen.ViewMenuRecipientsPersons", "help": "prirucka/4707"}
+		{"id": "default", "class": "e10pro.canteen.ViewMenuRecipientsPersons", "help": "prirucka/67"}
 	]
 }

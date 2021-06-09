@@ -10,10 +10,10 @@
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
   ],
   "views": [
-    {"id": "default", "class": "e10doc.base.ViewCentres", "help": "prirucka/121"}
+    {"id": "default", "class": "e10doc.base.ViewCentres", "help": "prirucka/103"}
   ],
   "forms": [
-    {"id": "default", "class": "e10doc.base.FormCentre", "help": "prirucka/121"}
+    {"id": "default", "class": "e10doc.base.FormCentre", "help": "prirucka/103"}
   ],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"options": ["configSource"],

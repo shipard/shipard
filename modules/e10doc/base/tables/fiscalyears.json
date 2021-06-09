@@ -22,10 +22,10 @@
     {"id": "rows", "class": "e10.base.ListRows", "name": "Měsíční období", "table": "e10doc.base.fiscalmonths", "queryColumn": "fiscalYear"}
   ],
   "views": [
-    {"id": "default", "class": "e10doc.base.ViewFiscalYears", "help":  "prirucka/4879"}
+    {"id": "default", "class": "e10doc.base.ViewFiscalYears", "help":  "prirucka/96"}
   ],
   "forms": [
-    {"id": "default", "class": "e10doc.base.FormFiscalYears", "help":  "prirucka/4879"}
+    {"id": "default", "class": "e10doc.base.FormFiscalYears", "help":  "prirucka/96"}
   ],
 	"options": ["configSource"],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10doc.base.taxperiods.docStates"},

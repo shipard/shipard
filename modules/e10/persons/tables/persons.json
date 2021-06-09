@@ -46,7 +46,7 @@
   ],
   "views": {
 		"default": {
-			"id": "default", "class": "e10.persons.ViewPersons", "help": "prirucka/4845",
+			"id": "default", "class": "e10.persons.ViewPersons", "help": "prirucka/203",
 			"details": {
 				"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "e10.persons.ViewDetailPersons"}
 			}
@@ -60,9 +60,9 @@
 		}
 	},
   "forms": [
-    {"id": "default", "class": "e10.persons.FormPersons", "help": "prirucka/4265"},
+    {"id": "default", "class": "e10.persons.FormPersons", "help": "prirucka/202"},
 	  {"id": "robot", "class": "e10.persons.FormPersonsRobot"},
-		{"id": "personDefault", "class": "e10.persons.libs.forms.PersonDefault", "help": "prirucka/4265"}
+		{"id": "personDefault", "class": "e10.persons.libs.forms.PersonDefault", "help": "prirucka/202"}
   ],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.persons.docStates"},
 	"documentCard": "e10.persons.DocumentCardPerson",

@@ -19,10 +19,10 @@
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"views": {
-		"default": {"id": "default", "class": "e10.base.ViewDevices", "help": "prirucka/4720"}
+		"default": {"id": "default", "class": "e10.base.ViewDevices", "help": "prirucka/157"}
 	},
 	"forms": [
-		{"id": "default", "class": "e10.base.FormDevice", "help": "prirucka/4720"}
+		{"id": "default", "class": "e10.base.FormDevice", "help": "prirucka/157"}
 	],
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"},
 	"indexes": [

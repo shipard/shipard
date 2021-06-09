@@ -54,7 +54,7 @@
 		{"id": "related", "class": "e10.base.ListRows", "name": "Související položky", "table": "e10.witems.itemRelated", "queryColumn": "srcItem", "orderColumn": "rowOrder"}
   ],
   "views": {
-    "default": {"id": "default", "class": "e10.witems.ViewItems", "help": "prirucka/4847",
+    "default": {"id": "default", "class": "e10.witems.ViewItems", "help": "prirucka/212",
 			"details": {
 				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10.witems.ViewDetailItems", "order": 1000},
 				"using": {"title": "Použití", "icon": "system/detailUsage", "type": "detail", "class": "e10.witems.ViewDetailUsing", "order": 8000}
@@ -66,7 +66,7 @@
 			  "default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10.witems.ViewDetailItems", "order": 1000}
 		  }
 	  },
-		"byCategories": {"id": "byCategories", "class": "e10.witems.libs.ViewerItemsByCategories", "help": "prirucka/4847",
+		"byCategories": {"id": "byCategories", "class": "e10.witems.libs.ViewerItemsByCategories", "help": "prirucka/212",
 			"details": {
 				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10.witems.ViewDetailItems", "order": 1000},
 				"using": {"title": "Použití", "icon": "system/detailUsage", "type": "detail", "class": "e10.witems.ViewDetailUsing", "order": 8000},
@@ -75,7 +75,7 @@
 		}
 	},
   "forms": [
-    {"id": "default", "class": "e10.witems.FormItems", "help": "prirucka/4290"}
+    {"id": "default", "class": "e10.witems.FormItems", "help": "prirucka/211"}
   ],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.witems.docStates"},
 	"documentCard": "e10.witems.dc.Item",

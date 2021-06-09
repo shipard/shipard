@@ -39,10 +39,10 @@
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"views": [
-		{"id": "default", "class": "e10doc.base.ViewReportsTexts", "detail": "e10doc.base.ViewDetailReportsTexts", "help": "prirucka/4747"}
+		{"id": "default", "class": "e10doc.base.ViewReportsTexts", "detail": "e10doc.base.ViewDetailReportsTexts", "help": "prirucka/138"}
 	],
 	"forms": [
-		{"id": "default", "class": "e10doc.base.FormReportText", "help": "prirucka/4747"}
+		{"id": "default", "class": "e10doc.base.FormReportText", "help": "prirucka/138"}
 	],
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "note"}
 }

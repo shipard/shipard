@@ -29,10 +29,10 @@
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
 	"views": [
-		{"id": "default", "class": "e10pro.canteen.ViewFoodOrders", "help": "prirucka/4705"}
+		{"id": "default", "class": "e10pro.canteen.ViewFoodOrders", "help": "prirucka/65"}
 	],
 	"forms": [
-		{"id": "default", "class": "e10pro.canteen.FormFoodOrder", "help": "prirucka/4705"}
+		{"id": "default", "class": "e10pro.canteen.FormFoodOrder", "help": "prirucka/65"}
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10pro.canteen.foodOrders.docStates"}
 }

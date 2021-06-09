@@ -22,10 +22,10 @@
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
 	"views": [
-		{"id": "default", "class": "e10.web.ViewUrlDecorations", "detail": "e10.web.ViewDetailUrlDecorations", "help": "web/4542"}
+		{"id": "default", "class": "e10.web.ViewUrlDecorations", "detail": "e10.web.ViewDetailUrlDecorations", "help": "prirucka/191"}
 	],
 	"forms": [
-		{"id": "default", "class": "e10.web.FormUrlDecoration", "help": "web/4542"}
+		{"id": "default", "class": "e10.web.FormUrlDecoration", "help": "prirucka/191"}
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"options": ["configSource"]

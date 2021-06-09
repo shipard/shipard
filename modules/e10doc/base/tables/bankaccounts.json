@@ -38,10 +38,10 @@
 		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
 	],
   "views": [
-    {"id": "default", "class": "e10doc.base.ViewBankAccounts", "help": "prirucka/119"}
+    {"id": "default", "class": "e10doc.base.ViewBankAccounts", "help": "prirucka/101"}
   ],
   "forms": [
-    {"id": "default", "class": "e10doc.base.FormBankAccounts", "help": "prirucka/119"}
+    {"id": "default", "class": "e10doc.base.FormBankAccounts", "help": "prirucka/101"}
   ],
 	"options": ["configSource"],
   "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},

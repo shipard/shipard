@@ -15,10 +15,10 @@
 		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
 	],
 	"views": [
-		{"id": "default", "class": "e10pro.canteen.ViewPersonsOptions", "help": "prirucka/4702"}
+		{"id": "default", "class": "e10pro.canteen.ViewPersonsOptions", "help": "prirucka/62"}
 	],
 	"forms": [
-		{"id": "default", "class": "e10pro.canteen.FormPersonOptions", "help": "prirucka/4702"}
+		{"id": "default", "class": "e10pro.canteen.FormPersonOptions", "help": "prirucka/62"}
 	],
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}

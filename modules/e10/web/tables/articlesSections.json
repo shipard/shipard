@@ -19,10 +19,10 @@
 
 	],
 	"views": [
-		{"id": "default", "class": "e10.web.ViewArticlesSections", "detail": "e10.web.ViewDetailArticleSection", "help": "web/4540"}
+		{"id": "default", "class": "e10.web.ViewArticlesSections", "detail": "e10.web.ViewDetailArticleSection", "help": "prirucka/150"}
 	],
 	"forms": [
-		{"id": "default", "class": "e10.web.FormArticleSection", "help": "web/4540"}
+		{"id": "default", "class": "e10.web.FormArticleSection", "help": "prirucka/150"}
 	],
 	"lists": [
 		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}

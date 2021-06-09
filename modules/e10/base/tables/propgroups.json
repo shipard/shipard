@@ -13,10 +13,10 @@
 		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
   ],
   "views": [
-    {"id": "default", "class": "e10.base.ViewPropGroups", "detail": "e10.base.ViewDetailPropGroup", "help": "prirucka/4755"}
+    {"id": "default", "class": "e10.base.ViewPropGroups", "detail": "e10.base.ViewDetailPropGroup", "help": "prirucka/94"}
   ],
   "forms": [
-    {"id": "default", "class": "e10.base.FormPropGroup", "help": "prirucka/4755"}
+    {"id": "default", "class": "e10.base.FormPropGroup", "help": "prirucka/94"}
   ],
 	"options": ["configSource"],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.propgroups.docStates"},

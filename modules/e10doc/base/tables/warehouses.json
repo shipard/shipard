@@ -20,10 +20,10 @@
 		{"id": "rows", "class": "e10.base.ListRows", "name": "Nastavení", "table": "e10doc.base.warehousesoptions", "queryColumn": "warehouse"}
 	],
   "views": [
-    {"id": "default", "class": "e10doc.base.ViewWarehouses", "help": "prirucka/4574"}
+    {"id": "default", "class": "e10doc.base.ViewWarehouses", "help": "prirucka/105"}
   ],
   "forms": [
-    {"id": "default", "class": "e10doc.base.FormWarehouses", "help": "prirucka/4574"}
+    {"id": "default", "class": "e10doc.base.FormWarehouses", "help": "prirucka/105"}
   ],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"options": ["configSource"],

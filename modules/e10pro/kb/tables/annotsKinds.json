@@ -15,10 +15,10 @@
 		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
 	],
 	"views": [
-		{"id": "default", "class": "e10pro.kb.ViewAnnotsKinds", "help": "web/4629"}
+		{"id": "default", "class": "e10pro.kb.ViewAnnotsKinds", "help": "prirucka/154"}
 	],
 	"forms": [
-		{"id": "default", "class": "e10pro.kb.FormAnnotKind", "help": "web/4629"}
+		{"id": "default", "class": "e10pro.kb.FormAnnotKind", "help": "prirucka/154"}
 	],
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}

@@ -14,10 +14,10 @@
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"views": [
-		{"id": "default", "class": "e10doc.base.ViewTransports", "detail": "e10doc.base.ViewDetailTransport", "help": "prirucka/4455"}
+		{"id": "default", "class": "e10doc.base.ViewTransports", "detail": "e10doc.base.ViewDetailTransport", "help": "prirucka/106"}
 	],
 	"forms": [
-		{"id": "default", "class": "e10doc.base.FormTransport", "help": "prirucka/4455"}
+		{"id": "default", "class": "e10doc.base.FormTransport", "help": "prirucka/106"}
 	],
 	"options": ["configSource"],
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}

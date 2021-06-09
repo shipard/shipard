@@ -20,10 +20,10 @@
 		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
 	],
   "views": [
-    {"id": "default", "class": "e10doc.base.ViewCashBoxes", "help": "prirucka/120"}
+    {"id": "default", "class": "e10doc.base.ViewCashBoxes", "help": "prirucka/102"}
   ],
   "forms": [
-    {"id": "default", "class": "e10doc.base.FormCashBoxes", "help": "prirucka/120"}
+    {"id": "default", "class": "e10doc.base.FormCashBoxes", "help": "prirucka/102"}
   ],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"options": ["configSource"],
