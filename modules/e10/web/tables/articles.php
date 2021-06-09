@@ -151,7 +151,7 @@ class ViewWebArticles extends TableView
 
 		$dates = [];
 		if ($item['onTop'])
-			$dates[] = ['text' => '', 'icon' => 'icon-thumb-tack', 'class' => 'e10-success'];
+			$dates[] = ['text' => '', 'icon' => 'system/iconPinned', 'class' => 'e10-success'];
 		if ($item['datePub'])
 			$dates[] = ['text' => utils::datef($item['datePub'], '%D'), 'icon' => 'system/actionPlay', 'class' => ''];
 		if ($item['dateClose'])

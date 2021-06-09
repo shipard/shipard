@@ -16,7 +16,7 @@ class WidgetForum extends \lib\wkf\DocumentsWallWidget
 	function createTabs ()
 	{
 		$tabs = [];
-		$tabs['bboard'] = ['icon' => 'icon-thumb-tack', 'text' => 'Nástěnka', 'action' => 'load-bboard'];
+		$tabs['bboard'] = ['icon' => 'system/iconPinned', 'text' => 'Nástěnka', 'action' => 'load-bboard'];
 		$this->addProjectsTabs($tabs);
 		$tabs['newsBoard'] = ['icon' => 'icon-smile-o', 'text' => 'Moje úkoly', 'action' => 'load-news-board'];
 		$tabs['search'] = ['icon' => 'icon-search', 'text' => '', 'action' => 'load-search'];

@@ -212,7 +212,7 @@ class DocumentsWallWidget extends widgetBoard
 	{
 		$tabs = [];
 
-		$tabs['bboard'] = ['icon' => 'icon-thumb-tack', 'text' => 'Nástěnka', 'action' => 'load-bboard'];
+		$tabs['bboard'] = ['icon' => 'system/iconPinned', 'text' => 'Nástěnka', 'action' => 'load-bboard'];
 
 		$tabs['newsBoard'] = ['icon' => 'icon-smile-o', 'text' => 'Moje úkoly', 'action' => 'load-news-board'];
 		$this->addProjectsTabs($tabs);

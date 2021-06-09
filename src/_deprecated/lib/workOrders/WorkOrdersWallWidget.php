@@ -100,7 +100,7 @@ class WorkOrdersWallWidget extends WidgetBoard
 	{
 		$tabs = [];
 
-		//$tabs['workOrders'] = ['icon' => 'icon-thumb-tack', 'text' => 'Zakázky', 'action' => 'load-workOrders'];
+		//$tabs['workOrders'] = ['icon' => 'system/iconPinned', 'text' => 'Zakázky', 'action' => 'load-workOrders'];
 		$this->addWorkOrdersGroupsTabs ($tabs);
 		$this->addMapsTabs($tabs);
 

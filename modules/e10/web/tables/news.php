@@ -39,7 +39,7 @@ class TableNews extends DbTable
 		if ($recData['to_paper_docs'])
 			$props[] = ['text' => '', 'icon' => 'system/actionPrint', 'class' => 'pull-right'];
 		if ($recData['to_top'])
-			$props[] = ['text' => '', 'icon' => 'icon-thumb-tack', 'class' => 'pull-right'];
+			$props[] = ['text' => '', 'icon' => 'system/iconPinned', 'class' => 'pull-right'];
 
 		$hdr ['info'][] = ['class' => 'info', 'value' => $props];
 		$hdr ['info'][] = ['class' => 'title', 'value' => $recData ['title']];
@@ -83,7 +83,7 @@ class ViewNews extends TableView
 
 		$props = [];
 		if ($item['to_top'])
-			$props[] = ['text' => '', 'icon' => 'icon-thumb-tack'];
+			$props[] = ['text' => '', 'icon' => 'system/iconPinned'];
 		if ($item['to_paper_docs'])
 			$props[] = ['text' => '', 'icon' => 'system/actionPrint'];
 		if ($item['order'] != 0)

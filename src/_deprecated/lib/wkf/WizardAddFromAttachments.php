@@ -67,7 +67,7 @@ class WizardAddFromAttachments extends Wizard
 
 	public function createHeader ()
 	{
-		$hdr = ['icon' => 'icon-inbox'];
+		$hdr = ['icon' => 'system/iconInbox'];
 
 		$hdr ['info'][] = ['class' => 'title', 'value' => 'Přidat došlé pošty z příloh'];
 		$hdr ['info'][] = ['class' => 'info', 'value' => 'Každý soubor přílohy bude přidán jako jedna nová došlá pošta'];

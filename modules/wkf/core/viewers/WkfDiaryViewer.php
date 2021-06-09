@@ -358,7 +358,7 @@ class WkfDiaryViewer extends TableView
 		$title[] = ['class' => 'id pull-right'.$msgTitleClass, 'text' => '#'.$item['issueId'], 'Xicon' => 'icon-hashtag'];
 
 		if ($item['onTop'])
-			$title[] = ['class' => 'id pull-right e10-success', 'text' => '', 'icon' => 'icon-thumb-tack'];
+			$title[] = ['class' => 'id pull-right e10-success', 'text' => '', 'icon' => 'system/iconPinned'];
 		if ($item['priority'] < 10)
 			$title[] = ['class' => 'id pull-right e10-error', 'text' => '', 'icon' => 'icon-exclamation'];
 		elseif ($item['priority'] > 10)

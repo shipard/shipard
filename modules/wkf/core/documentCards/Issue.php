@@ -239,7 +239,7 @@ class Issue extends \e10\DocumentCard
 						$dsClass = '  e10-ds '.$srcTable->getDocumentStateInfo ($docState ['states'], $srcRecData, 'styleClass');
 
 
-					$tt[] = ['text' => '', 'icon' => 'icon-thumb-tack', 'class' => 'e10-fs2 e10-me pr1'];
+					$tt[] = ['text' => '', 'icon' => 'system/iconPinned', 'class' => 'e10-fs2 e10-me pr1'];
 					$tt[] = $title;
 					$tt[] = [
 						'text' => 'Otevřít', 'icon' => 'system/actionOpen',
