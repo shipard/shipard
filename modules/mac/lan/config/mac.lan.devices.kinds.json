@@ -66,7 +66,7 @@
 		"alertsScope": 2, "odg": "srv"
 	},
 	"75": {
-		"name": "Shipard IoT Box", "pluralName": "Shipard IoT Boxy", "active": 1, "icon": "deviceTypes/shipardIoiBoxes",
+		"name": "Shipard IoT Box", "pluralName": "Shipard IoT Boxy", "active": 1, "icon": "deviceTypes/shipardIoTBoxes",
 		"overviewOrder": 19900, "alerts": 1, "isMacDevice": 1, "alertsScope": 6, "odg": "iot"
 	},
 

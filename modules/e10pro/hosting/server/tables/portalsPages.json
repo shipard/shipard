@@ -7,7 +7,7 @@
 
 		{"id": "pageType", "name": "Typ stránky", "type": "enumString", "len": 20,
 			"enumValues": {
-				"hp": "Domovská stránka webu", "help": "prirucka/11", "support": "Podpora", "portal": "Portál"}
+				"hp": "Domovská stránka webu", "help": "Nápověda", "support": "Podpora", "portal": "Portál"}
 		},
 
 		{"id": "title", "name": "Název", "type": "string", "len": 80},

@@ -13,7 +13,7 @@ use \Shipard\UI\Core\WidgetBoard, \wkf\core\TableHeadlines;
 class Headlines extends WidgetBoard
 {
 
-	var $help = 'prirucka/4599';
+	var $help = 'prirucka/11';
 
 	public function createContent ()
 	{

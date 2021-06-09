@@ -12,7 +12,7 @@ use \Shipard\UI\Core\WidgetBoard, \wkf\base\TableSections;
 class Dashboard extends WidgetBoard
 {
 	var $treeMode = 0;
-	var $help = 'prirucka/4599';
+	var $help = 'prirucka/11';
 
 	/** @var  \wkf\base\TableSections */
 	var $tableSections;

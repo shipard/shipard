@@ -32,6 +32,6 @@
 	"iot": {
 		"fn": "IoT",
 		"sn": "IoT",
-		"icon": "deviceTypes/shipardIoiBoxes"
+		"icon": "deviceTypes/shipardIoTBoxes"
 	}
 }

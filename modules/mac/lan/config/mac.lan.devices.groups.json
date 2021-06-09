@@ -15,7 +15,7 @@
 		"name": "NAS", "icon": "deviceTypes/nas", "devicesKinds": [11]
 	},
 	"25": {
-		"name": "IoT", "icon": "deviceTypes/shipardIoiBoxes", "devicesKinds": [75]
+		"name": "IoT", "icon": "deviceTypes/shipardIoTBoxes", "devicesKinds": [75]
 	},
 	"30": {
 		"name": "Tiskárny", "icon": "deviceTypes/printer", "devicesKinds": [3]

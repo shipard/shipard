@@ -272,7 +272,7 @@
 		"bsi": "bi-arrows-fullscreen",
 		"mdi": "zoom_out_map"
 	},
-    "deviceTypes/shipardIotBoxes": {
+    "deviceTypes/shipardIoTBoxes": {
 		"fa5": "fa-plug",
 		"fa5pro": "fa-plug",
 		"bsi": "bi-plug",
