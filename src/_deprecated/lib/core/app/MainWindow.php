@@ -180,7 +180,6 @@ class MainWindow extends \Shipard\Base\BaseObject
 				$userInfo .= '</span></li>';
 			}
 
-			$portalInfo = $this->app->portalInfo ();
 			$logoutUrl = $this->app->urlRoot . '/' . $this->app->appSkeleton['userManagement']['pathBase'] . '/' . $this->app->appSkeleton['userManagement']['pathLogoutCheck'];
 
 			$userInfo .=  "<li>";
@@ -188,8 +187,10 @@ class MainWindow extends \Shipard\Base\BaseObject
 			$userInfo .=  "<a id='e10-logout-full-button' class='appMenuButton' title='".DictSystem::es(DictSystem::diBtn_Logout)."' href='$logoutUrl'>".$this->app()->ui()->systemIcon(SystemIcons::actionLogout)."</a>";
 
 			if ($this->app->mobileMode)
-				$userInfo .=  "<span id='e10-logout-close-button' class='appMenuButton df2-panelaction-trigger' data-action='go' title='Ukončit' data-href='".'https://'.$portalInfo['pages']['portal']['host']."' style='display: none;'><i class='fa fa-times'></i></span>";
-
+			{
+				$portalDomain =  $this->app->cfgItem ('dsi.portalInfo.portalDomain', '');
+				$userInfo .=  "<span id='e10-logout-close-button' class='appMenuButton df2-panelaction-trigger' data-action='go' title='Ukončit' data-href='".'https://'.$portalDomain."' style='display: none;'><i class='fa fa-times'></i></span>";
+			}
 			$userInfo .=  "<span id='e10-nc-button' class='appMenuButton e10-ntf-button' title='Oznamovací centrum'>";
 			$userInfo .=  $this->app()->ui()->systemIcon(SystemIcons::actionNotifications)." <span style='width: 2em; display: inline-block; text-align: right;' id='e10-nc-button-cn'></span>";
 			$userInfo .=  "<span style='display: inline-block; padding-left: 1ex; display: none;' id='e10-nc-button-ra'> <i class='fa fa-play e10-success'></i></span>";
@@ -323,8 +324,6 @@ class MainWindow extends \Shipard\Base\BaseObject
 		$userInfo = $this->app->user()->data();
 		$userImg = $this->app->user()->data('picture');
 
-		$portalInfo = $this->app->portalInfo ();
-
 		$portalDomain =  $this->app->cfgItem ('dsi.portalInfo.portalDomain', '');
 		$bottomImg =  $this->app->cfgItem ('dsi.portalInfo.logoPortal.fileName', '');
 		$partnerImg =  $this->app->cfgItem ('dsi.partner.logoPartner.fileName', '');
@@ -355,7 +354,6 @@ class MainWindow extends \Shipard\Base\BaseObject
 		$c .= "<li style='width: 5em;text-align: center;'><div style='background-image: url({$userImg}); background-size: cover; width: 4em; height: 4em; border: 1px solid rgba(0,0,0,.25); border-radius: 50%;'/></li>";
 		$c .= "<li>";
 		$c .= "<div class='h2'>".utils::es($userInfo['name'])."</div><span class='e10-small'>".utils::es($userInfo['login']);
-		//$c .= " <br> <a class='nowrap' href='https://{$portalInfo['portal']['host']}'><i class='fa fa-home'></i>&nbsp;".utils::es($portalInfo['portal']['title'])."</a> ";
 		$c .= '</span>'.'</li>';
 		if (!$dsMode)
 			$c .= "<li id='e10-mm-close'>".$this->app()->ui()->icon('system/actionClose')."</li>";
@@ -364,12 +362,11 @@ class MainWindow extends \Shipard\Base\BaseObject
 		// -- help
 		if ($dsMode)
 		{
-			//$helpUrl = 'https://' . $portalInfo['pages']['help']['host'] . '/';
 			$helpUrl = 'https://shipard.org/';
 			$c .= "<ul class='e10-mm-list e10-mm-help'>";
-			$c .= "<li style='width: 5em; text-align: center;'><img src='https://navody.shipard.cz/e10-modules/e10templates/web/shipard1/files/shipard/icon-page-help.svg' style='width: 80%; padding-top: 1ex;'></li>";
+			$c .= "<li style='width: 5em; text-align: center;'><img src='".$this->app()->scRoot()."/shipard/graphics/icon-page-help.svg' style='width: 80%; padding-top: 1ex;'></li>";
 			$c .= "<li style='line-height: 1.8;'>";
-			$c .= "<div class='h2'>" . utils::es($portalInfo['pages']['help']['title']) . "</div>";
+			$c .= "<div class='h2'>" . utils::es('Nápověda') . "</div>";
 
 			$helpHeader = $this->app->cfgItem('help.index.header', FALSE);
 			if ($helpHeader) {
@@ -395,11 +392,11 @@ class MainWindow extends \Shipard\Base\BaseObject
 		// -- support
 		if ($dsMode)
 		{
-			$supportUrl = 'https://' . $portalInfo['pages']['support']['host'] . '/';
+			$supportUrl = 'https://' . $portalDomain . '/';
 			$c .= "<ul class='e10-mm-list'>";
-			$c .= "<li style='width: 5em; text-align: center;'><img src='https://navody.shipard.cz/e10-modules/e10templates/web/shipard1/files/shipard/icon-page-support.svg' style='width: 80%; padding-top: 1ex;'></li>";
+			$c .= "<li style='width: 5em; text-align: center;'><img src='".$this->app()->scRoot()."/shipard/graphics/icon-page-support.svg' style='width: 80%; padding-top: 1ex;'></li>";
 			$c .= "<li style='line-height: 1.8;'>";
-			$c .= "<div class='h2'>" . utils::es($portalInfo['pages']['support']['title']) . "</div>";
+			$c .= "<div class='h2'>" . utils::es('Podpora') . "</div>";
 
 			if (isset($dsi['supportSection']) && $dsi['supportSection'])
 			{
@@ -426,23 +423,6 @@ class MainWindow extends \Shipard\Base\BaseObject
 
 			$c .= '</li>';
 			$c .= '</ul>';
-		}
-
-		if (!$dsMode)
-		{
-			foreach ($portalInfo['pages'] as $pageId => $pageDef)
-			{
-				$url = 'https://' . $pageDef['host'] . '/';
-				$c .= "<a class='e10-mm-list' href='$url'>";
-				$c .= "<ul class='e10-mm-list'>";
-				$c .= "<li style='width: 5em; text-align: center;'><img src='https://navody.shipard.cz/e10-modules/e10templates/web/shipard1/files/shipard/icon-page-{$pageId}.svg' style='width: 80%; padding-top: 1ex;'></li>";
-				$c .= "<li style='line-height: 1.8;'>";
-				$c .= "<div class='h1'>".utils::es($pageDef['title']).'</div>';
-				$c .= "<div class='e10-off'>".utils::es($pageDef['subtitle']).'</div>';
-				$c .= '</li>';
-				$c .= '</ul>';
-				$c .= '</a>';
-			}
 		}
 
 		$c .= "<div class='e10-mm-dsInfo'>";

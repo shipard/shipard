@@ -13,7 +13,6 @@
 			]
 		},
 		"reports": {
-			"e10doc.finance.reportVAT": 1,
 			"e10doc.balance.reportBalanceReceivables": 1, "e10doc.balance.reportBalanceObligations": 1,
 			"e10doc.balance.reportBalanceDepositReceived": 1, "e10doc.balance.reportBalanceAdvance": 1,
 			"e10doc.balance.reportBalanceCashInTransit": 1, "e10doc.balance.reportBalanceJournal": 2,
@@ -48,7 +47,6 @@
 			"e10doc.core.heads": {"bank": 1, "cash": 1, "cmnbkp": 1}
 		},
 		"reports": {
-			"e10doc.finance.reportVAT": 1,
 			"e10doc.balance.reportBalanceReceivables": 1, "e10doc.balance.reportBalanceObligations": 1,
 			"e10doc.balance.reportBalanceDepositReceived": 1, "e10doc.balance.reportBalanceAdvance": 1,
 			"e10doc.balance.reportBalanceCashInTransit": 1, "e10doc.balance.reportBalanceJournal": 2,

@@ -20,7 +20,6 @@ class DocumentCard extends Content
 
 	CONST spTimeLine = 'tl', spDocuments = 'docs';
 
-	var $newMode = 0;
 	var $response;
 
 	/** @var \E10\DbTable */
@@ -46,16 +45,9 @@ class DocumentCard extends Content
 
 		if ($partId === self::spTimeLine)
 		{
-			if ($this->newMode)
-				$this->addPart(self::spTimeLine, [
-						'title' => 'Pošta a úkoly', 'icon' => 'icon-clock-o',
-						'orderId' => 100000, 'XXXheaderDates' => TRUE, 'enableBlank' => TRUE, 'workflowButtons' => 1,
-					]
-				);
-			else
 			$this->addPart(self::spTimeLine, [
-					'title' => 'Historie', 'icon' => 'icon-clock-o', 'subHeaders' => 'monthly',
-					'orderId' => 100000, 'headerDates' => TRUE, 'enableBlank' => TRUE, 'workflowButtons' => 1,
+					'title' => 'Pošta a úkoly', 'icon' => 'icon-clock-o',
+					'orderId' => 100000, 'XXXheaderDates' => TRUE, 'enableBlank' => TRUE, 'workflowButtons' => 1,
 				]
 			);
 		}
@@ -156,14 +148,6 @@ class DocumentCard extends Content
 				$item['monthId'] = $monthId;
 			}
 		}
-
-		// -- analyze sub headers
-		/*
-		foreach ($this->parts[$partId]['subHeaders']['years'] as $yearId => $sum)
-		{
-			if ($sum['cntMonths'] > 2)
-				$this->parts[$partId]['subHeaders']['years'][$yearId]['enableMonthHeaders'] = TRUE;
-		}*/
 	}
 
 	protected function addDiaryPinnedContent()
@@ -188,7 +172,7 @@ class DocumentCard extends Content
 	{
 	}
 
-	protected function createContentInfo ($tileMode = FALSE)
+	protected function createContentInfo ($tileMode = TRUE)
 	{
 		foreach ($this->parts as $partId => $partDef)
 			$this->analyzePart($partId);
@@ -208,16 +192,6 @@ class DocumentCard extends Content
 				$partClass = 'e10-tt';
 			$c .= "<div class='$partClass $partId'>";
 			$title = [['text' => $partDef['title'], 'icon' => $partDef['icon'], 'class' => 'h1 clear']];
-
-			/*
-			if (count($this->parts[$partId]['sums']))
-			{
-				foreach ($this->parts[$partId]['sums'] as $sumGroup => $sum)
-				{
-					$class = ($sumGroup === 'out') ? 'e10-row-plus' : 'e10-row-minus';
-					$title[] = ['text' => utils::nf($sum['amount']).',-', 'class' => 'sum pull-right '.$class];
-				}
-			}*/
 
 			if (isset($partDef['headerDates']) && $partDef['dateFirst'] && $partDef['dateLast'])
 			{
@@ -253,26 +227,6 @@ class DocumentCard extends Content
 				$monthId = $item['monthId'];
 				$yearId = $item['yearId'];
 
-				/*
-				if ($item['yearId'] !== $lastYearId)
-				{
-					$subHeader = [[
-							'text' => $this->parts[$partId]['subHeaders']['years'][$yearId]['title'],
-							'class' => 'title'
-					]];
-					if (count($this->parts[$partId]['subHeaders']['years'][$yearId]['sums']))
-					{
-						foreach ($this->parts[$partId]['subHeaders']['years'][$yearId]['sums'] as $sumGroup => $sum)
-						{
-							$class = ($sumGroup === 'out') ? 'e10-row-plus' : 'e10-row-minus';
-							$subHeader[] = ['text' => utils::nf($sum['amount']).',-', 'class' => 'sum pull-right '.$class];
-						}
-					}
-
-					$c .= "<div class='tl-header year'>".$this->app()->ui()->composeTextLine($subHeader).'</div>';
-				}
-				*/
-
 				if (isset($this->parts[$partId]['subHeaders']['years'][$yearId]['enableMonthHeaders']))
 				{
 					if ($item['monthId'] !== $lastMonthId)
@@ -281,15 +235,6 @@ class DocumentCard extends Content
 								'text' => $this->parts[$partId]['subHeaders']['months'][$monthId]['title'],
 								'class' => 'title'
 						]];
-						/*
-						if (count($this->parts[$partId]['subHeaders']['months'][$monthId]['sums']))
-						{
-							foreach ($this->parts[$partId]['subHeaders']['months'][$monthId]['sums'] as $sumGroup => $sum)
-							{
-								$class = ($sumGroup === 'out') ? 'e10-row-plus' : 'e10-row-minus';
-								$subHeader[] = ['text' => utils::nf($sum['amount']) . ',-', 'class' => 'sum pull-right ' . $class];
-							}
-						}*/
 
 						$c .= "<div class='tl-header month'>" . $this->app()->ui()->composeTextLine($subHeader) . '</div>';
 					}

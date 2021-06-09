@@ -105,6 +105,10 @@
     },
     {
         "t": 0,
+        "v": "bi-wrench"
+    },
+    {
+        "t": 0,
         "v": "bi-stop"
     },
     {
@@ -337,6 +341,10 @@
     },
     {
         "t": 0,
+        "v": "bi-chevron-right"
+    },
+    {
+        "t": 0,
         "v": "bi-grid-3x3-gap-fill"
     },
     {
@@ -369,7 +377,15 @@
     },
     {
         "t": 0,
+        "v": "bi-shop-window"
+    },
+    {
+        "t": 0,
         "v": "bi-hdd"
+    },
+    {
+        "t": 0,
+        "v": "bi-truck"
     },
     {
         "t": 0,
@@ -397,6 +413,14 @@
     },
     {
         "t": 0,
+        "v": "bi-house-door-fill"
+    },
+    {
+        "t": 0,
+        "v": "bi-person-badge-fill"
+    },
+    {
+        "t": 0,
         "v": "bi-image"
     },
     {
@@ -414,6 +438,14 @@
     {
         "t": 0,
         "v": "bi-building"
+    },
+    {
+        "t": 0,
+        "v": "bi-link-45deg"
+    },
+    {
+        "t": 0,
+        "v": "bi-list-ul"
     },
     {
         "t": 0,
@@ -438,6 +470,10 @@
     {
         "t": 0,
         "v": "bi-building"
+    },
+    {
+        "t": 0,
+        "v": "bi-envelope"
     },
     {
         "t": 0,
@@ -478,6 +514,10 @@
     {
         "t": 0,
         "v": "bi-arrow-clockwise"
+    },
+    {
+        "t": 0,
+        "v": "bi-star"
     },
     {
         "t": 0,
@@ -537,7 +577,15 @@
     },
     {
         "t": 0,
+        "v": "bi-exclamation"
+    },
+    {
+        "t": 0,
         "v": "bi-people"
+    },
+    {
+        "t": 0,
+        "v": "bi-snow"
     },
     {
         "t": 0,

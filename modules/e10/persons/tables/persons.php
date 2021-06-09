@@ -131,10 +131,8 @@ class TablePersons extends DbTable
 			$idFormula = $this->app()->cfgItem ('flags.e10.persons.idFormula', '%n');
 			$recData['id'] = utils::createRecId($recData, $idFormula);
 		}
-
-		$newPersons = $this->app()->cfgItem ('options.experimental.testNewPersonAddress', 0);
-		if ($recData['docState'] === 4000 && $newPersons)
-			$recData['moreAddress'] = 1;
+		if ($recData['docState'] === 4000)
+				$recData['moreAddress'] = 1;
 	}
 
 	public function columnRefInput ($form, $srcTable, $srcColumnId, $options, $label, $inputPrefix)
@@ -222,11 +220,7 @@ class TablePersons extends DbTable
 		if (isset($recData['personType']) && $recData['personType'] == 3)
 			return 'robot';
 
-		$newPersons = $this->app()->cfgItem ('options.experimental.testNewPersonAddress', 0);
-		if ($newPersons)
-			return 'personDefault';
-
-		return parent::formId ($recData, $ownerRecData, $operation);
+		return 'personDefault';
 	}
 
 	public function getRecordInfo ($recData, $options = 0)
@@ -352,8 +346,6 @@ class TablePersons extends DbTable
 
 	public function createHeader ($recData, $options)
 	{
-		$newMode = $this->app()->cfgItem ('options.experimental.testNewPersonDetail', 0);
-
 		$hdr ['icon'] = $this->icon ($recData);
 
 		if (!$recData || !isset ($recData ['ndx']) || $recData ['ndx'] == 0)
@@ -363,35 +355,33 @@ class TablePersons extends DbTable
 		$properties = $this->loadProperties ($ndx);
 		$classification = \E10\Base\loadClassification ($this->app(), $this->tableId(), $ndx);
 
-		$contactInfo = array ();
+		$contactInfo = [];
 		if (isset ($properties [$ndx]['ids']))
 			$contactInfo = $properties [$ndx]['ids'];
 
-		if (!$newMode && count($contactInfo) !== 0)
-			$hdr ['info'][] = array ('class' => 'info', 'value' => $contactInfo);
+		if (count($contactInfo) !== 0)
+			$hdr ['info'][] = ['class' => 'info', 'value' => $contactInfo];
 
 		$hdr ['info'][] = ['class' => 'title', 'value' => [['text' => $recData ['fullName']], ['text' => '#'.$recData ['id'], 'class' => 'pull-right id']]];
-
-		$secLine = array();
-		if (!$newMode && isset ($properties [$ndx]['groups']))
+		
+		$secLine = [];
+		
+		if (isset ($properties [$ndx]['groups']))
 		{
 			$secLine = $properties [$ndx]['groups'];
 			$secLine[0]['icon'] = 'e10-persons-groups';
 		}
-		if (!$newMode && isset ($classification [$ndx]['places']))
-			$secLine = array_merge ($secLine, $classification [$ndx]['places']);
-		if (!$newMode && count($secLine) !== 0)
-			$hdr ['info'][] = array ('class' => 'info', 'value' => $secLine);
 
-		if (!$newMode)
+		if (count($secLine) !== 0)
+			$hdr ['info'][] = ['class' => 'info', 'value' => $secLine];
+
+		$image = \E10\Base\getAttachmentDefaultImage($this->app(), $this->tableId(), $recData ['ndx']);
+		if (isset($image ['smallImage']))
 		{
-			$image = \E10\Base\getAttachmentDefaultImage($this->app(), $this->tableId(), $recData ['ndx']);
-			if (isset($image ['smallImage']))
-			{
-				$hdr ['image'] = $image ['smallImage'];
-				unset ($hdr ['icon']);
-			}
+			$hdr ['image'] = $image ['smallImage'];
+			unset ($hdr ['icon']);
 		}
+		
 		return $hdr;
 	}
 

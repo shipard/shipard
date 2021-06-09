@@ -19,10 +19,5 @@
 					"options": {"0": "Ne", "1": "Ano"}
 				}
 			]
-	},
-	"experimental": {
-		"options": [
-			{"cfgKey": "testNewDocReports", "cfgName": "Testovat nové sestavy dokladů", "options": {"0": "Ne","1": "Ano"}}
-		]
 	}
 }

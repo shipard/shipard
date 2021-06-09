@@ -1,22 +1,26 @@
 #!/usr/bin/env php
 <?php
 
+if (!defined('__SHPD_ETC_DIR__'))
+	define('__SHPD_ETC_DIR__', '/etc/shipard');
+
+
 function logMsg($lfn, $msg)
 {
-	file_put_contents($lfn, $msg."\n", FILE_APPEND);
+	//file_put_contents($lfn, $msg."\n", FILE_APPEND);
+	echo $msg."\n";
 }
 
-function hostingCfg ($domain)
+function serverCfg ()
 {
-	$cfgString = file_get_contents ('/etc/e10---hosting.cfg');
-	$cfg = json_decode ($cfgString, true);
-	foreach ($cfg as $oneItem)
+	$cfgServer = $this->loadCfgFile(__SHPD_ETC_DIR__.'/server.json');
+	if (!$cfgServer)
 	{
-		if (isset ($oneItem['hostingEmailDomains']) && in_array($domain, $oneItem['hostingEmailDomains']))
-			return $oneItem;
+		echo "ERROR: invalid server configuration; check file ".__SHPD_ETC_DIR__.'/server.json'."\n";
+		return NULL;
 	}
 
-	return FALSE;
+	return $cfgServer;
 }
 
 function machineDeviceId ()
@@ -31,7 +35,7 @@ function saveEmail ()
 	$nowStr = $now->format('Y-m-d_H:i:s');
 	$bn = $nowStr.'-'.sha1 (mt_rand(12345, 987654321) . time() . '-' . mt_rand(1111111111, 9999999999)) . '.eml';
 
-	$destFileName = '/var/lib/e10/email/' . $bn;
+	$destFileName = '/var/lib/shipard/email/' . $bn;
 	$fileReader = fopen ('php://stdin', 'r');
   $fileWriter = fopen ($destFileName, "w+");
 
@@ -53,6 +57,7 @@ function saveEmail ()
 
 function uploadEmail ($mailFileName, $rcptEmail)
 {
+	echo "!!$rcptEmail!!\n";
 	$lfn = $mailFileName.'.log';
 	logMsg($lfn, 'incoming email to `'.$rcptEmail.'`');
 	$debug = 0;
@@ -79,8 +84,8 @@ function uploadEmail ($mailFileName, $rcptEmail)
 		}
 
 		// -- detect upload url
-		$cfg = hostingCfg($rcptDomain);
-		$hostingServer = $cfg ['hostingServerUrl'];
+		$cfg = cfgServer();
+		$hostingServer = $cfg ['hostingDomain'];
 
 		$hostingApiKey = $cfg ['hostingApiKey'];
 		$opts = array(
@@ -179,6 +184,8 @@ function uploadEmail ($mailFileName, $rcptEmail)
 
 	return TRUE;
 } // uploadEmail
+
+echo "TEST!!!\n";
 
 $emailFileName = saveEmail ();
 uploadEmail ($emailFileName, $argv[2]);

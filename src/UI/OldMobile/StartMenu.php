@@ -375,12 +375,8 @@ class StartMenu extends \Shipard\UI\OldMobile\PageObject
 
 	function homeUrl ()
 	{
-		$portalInfo = $this->app->portalInfo ();
-
-		if (isset($portalInfo['pages']['portal']['host']))
-			return 'https://'.$portalInfo['pages']['portal']['host'];
-
-		return 'https://me.shipard.com';
+		$portalDomain =  $this->app->cfgItem ('dsi.portalInfo.portalDomain', '');
+		return 'https://'.$portalDomain.'/';
 	}
 }
 

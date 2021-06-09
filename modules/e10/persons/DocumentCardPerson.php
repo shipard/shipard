@@ -33,14 +33,6 @@ class DocumentCardPerson extends \e10\DocumentCard
 	{
 		$this->newMode = $this->app->cfgItem ('options.experimental.testNewPersonDetail', 0);
 
-		if (!$this->newMode)
-		{
-			$this->createContentHeader();
-			$this->createContentBody_OLD();
-
-			return;
-		}
-
 		$this->loadData();
 		$this->createContentBody();
 		$this->createHeader();
@@ -100,13 +92,12 @@ class DocumentCardPerson extends \e10\DocumentCard
 			if (!$object)
 				continue;
 
-			if ($this->newMode)
-				$object->tileMode = 1;
+			$object->tileMode = 1;
 
 			$object->createInfo ($this->recData['ndx'], $this);
 		}
 
-		$this->createContentInfo ($this->newMode);
+		$this->createContentInfo ();
 	}
 
 	function loadDataProperties ()
@@ -395,77 +386,6 @@ class DocumentCardPerson extends \e10\DocumentCard
 		if (count($contactInfo) !== 0)
 			$this->addContent('subTitle', ['type' => 'line', 'line' => $contactInfo]);
 
-	}
-
-	public function createContentContacts_OLD ()
-	{
-		$properties = $this->table->loadProperties ($this->recData['ndx']);
-		if (isset ($properties[$this->recData['ndx']]['contacts']))
-		{
-			if (count($properties[$this->recData['ndx']]['contacts']))
-				$this->addContent('body', ['type' => 'tags', 'tiles' => $properties[$this->recData['ndx']]['contacts'], 'class' => 'contacts']);
-		}
-	}
-
-	public function createContentValidity_OLD ()
-	{
-		$validity = $this->db()->query('SELECT * FROM [e10_persons_personsValidity] WHERE [person] = %i', $this->recData['ndx'])->fetch();
-
-		if (!$validity)
-		{
-			$line = ['text' => 'Kontrola zatím nebyla provedena'];
-			$this->addContent('body', ['pane' => 'e10-pane e10-pane-table e10-row-this', 'type' => 'line', 'line' => $line]);
-		}
-		elseif ($validity['valid'] === 1)
-		{
-			$line = [['text' => 'V pořádku', 'icon' => 'system/iconCheck', 'suffix' => utils::datef ($validity['updated'], '%D, %T')]];
-			if ($validity['revalidate'])
-				$line [] = ['text' => 'údaje byly opraveny, je naplánována nová kontrola', 'icon' => 'system/docStateEdit', 'class' => 'e10-small block'];
-			$this->addContent('body', ['pane' => 'e10-pane e10-pane-table e10-row-plus', 'type' => 'line', 'line' => $line]);
-		}
-		else
-		{
-			$title = ['text' => 'Při kontrole byly nalezeny chyby', 'icon' => 'system/iconWarning', 'class' => 'e10-error h2'];
-			$line = [$title];
-
-			if ($validity['revalidate'])
-				$line [] = ['text' => 'údaje byly opraveny, je naplánována nová kontrola', 'icon' => 'system/iconCheck', 'class' => 'e10-small block'];
-
-			$msg = json::decode($validity['msg']);
-			foreach ($msg as $partId => $part)
-			{
-				foreach ($part as $valueId => $error)
-				{
-					$info = ['text' => $valueId.': '.$error['msg'], 'class' => 'block', 'icon' => 'system/iconAngleRight'];
-					if (isset($error['registerName']))
-						$info['suffix'] = $error['registerName'];
-					$line[] = $info;
-				}
-			}
-
-			$ve = new \e10\persons\PersonValidator($this->app());
-			$tools = $ve->onlineTools($this->recData);
-			if ($tools)
-			{
-				$line[] = ['text' => '', 'class' => 'break padd5'];
-				foreach ($tools as $t)
-				{
-					$t['class'] = 'btn btn-default btn-sm';
-					$t['icon'] = 'system/iconLink';
-					$line[] = $t;
-				}
-			}
-
-			$this->addContent('body', ['pane' => 'e10-pane e10-pane-table e10-warning1', 'type' => 'line', 'line' => $line]);
-		}
-	}
-
-	public function createContentBody_OLD ()
-	{
-		$this->createContentValidity_OLD();
-		$this->createContentContacts_OLD();
-		$this->createContentConnections ();
-		$this->createContentPersonInfo();
 	}
 
 	public function createContentPersonInfo ()

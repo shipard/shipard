@@ -52,10 +52,10 @@ class ViewerDashboardHelpDesk extends \lib\wkf\ViewerDashboardIssues
 
 	function createCoreSearchCodeBegin()
 	{
-		$portalInfo = $this->app->portalInfo ();
+		$portalDomain =  $this->app->cfgItem ('dsi.portalInfo.portalDomain', '');
 
-		$logoUrl = "https://{$portalInfo['pages']['support']['host']}/e10-modules/e10templates/web/shipard1/files/shipard/logo-header-web.svg";
-		$linkUrl = "https://{$portalInfo['pages']['support']['host']}/";
+		$logoUrl = "https://{$portalDomain}/e10-modules/e10templates/web/shipard1/files/shipard/logo-header-web.svg";
+		$linkUrl = "https://{$portalDomain}/";
 		$c = '';
 		$c .= "<td><a href='$linkUrl' target='_new'><img src='$logoUrl' style='height: 2.8ex; padding-right: 1em;'></a></td>";
 

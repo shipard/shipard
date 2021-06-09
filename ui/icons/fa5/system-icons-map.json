@@ -105,6 +105,10 @@
     },
     {
         "t": 0,
+        "v": "fa-wrench"
+    },
+    {
+        "t": 0,
         "v": "fa-stop"
     },
     {
@@ -337,6 +341,10 @@
     },
     {
         "t": 0,
+        "v": "fa-angle-right"
+    },
+    {
+        "t": 0,
         "v": "fa-th"
     },
     {
@@ -369,7 +377,15 @@
     },
     {
         "t": 0,
+        "v": "fa-utensils"
+    },
+    {
+        "t": 0,
         "v": "fa-database"
+    },
+    {
+        "t": 0,
+        "v": "fa-truck"
     },
     {
         "t": 0,
@@ -397,6 +413,14 @@
     },
     {
         "t": 0,
+        "v": "fa-home"
+    },
+    {
+        "t": 0,
+        "v": "fa-id-badge"
+    },
+    {
+        "t": 0,
         "v": "fa-image"
     },
     {
@@ -414,6 +438,14 @@
     {
         "t": 0,
         "v": "fa-flask"
+    },
+    {
+        "t": 0,
+        "v": "fa-external-link-alt"
+    },
+    {
+        "t": 0,
+        "v": "fa-list"
     },
     {
         "t": 0,
@@ -438,6 +470,10 @@
     {
         "t": 0,
         "v": "fa-building"
+    },
+    {
+        "t": 0,
+        "v": "fa-paper-plane"
     },
     {
         "t": 0,
@@ -478,6 +514,10 @@
     {
         "t": 0,
         "v": "fa-spinner"
+    },
+    {
+        "t": 0,
+        "v": "fa-star"
     },
     {
         "t": 0,
@@ -537,7 +577,15 @@
     },
     {
         "t": 0,
+        "v": "fa-exclamation"
+    },
+    {
+        "t": 0,
         "v": "fa-users"
+    },
+    {
+        "t": 0,
+        "v": "fa-snowflake"
     },
     {
         "t": 0,

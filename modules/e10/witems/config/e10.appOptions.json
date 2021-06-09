@@ -31,7 +31,6 @@
 	},
 	"experimental": {
 		"options": [
-			{"cfgKey": "witemsNewCombo", "cfgName": "Nový výběr položek v řádcích dokladu", "options": {"0": "Ne","1": "Ano"}},
 			{"cfgKey": "witemsNewViewer", "cfgName": "Nový stromový prohlížeč položek", "options": {"0": "Ne","1": "Ano"}}
 		]
 	}

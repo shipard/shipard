@@ -68,7 +68,7 @@ class TableForm
 	const ltForm = 1, ltHorizontal = 2, ltVertical = 3, ltDocMain = 4, ltDocRows = 5, ltNone = 6, ltGrid = 7, ltRenderedTable = 99;
 
 	const disOld = 0, disNative = 1, disShipard = 2;
-	var $dateInputStyle = self::disOld;
+	var $dateInputStyle = self::disShipard;
 
 	// -- column options - lower bits are reserved for dataModel column options
 	const coHidden				= 0x00000100,
@@ -120,7 +120,7 @@ class TableForm
 
 		if ($this->table)
 		{
-			$disCfg = $this->app()->cfgItem('options.experimental.dateInputStyle', 'o');
+			$disCfg = $this->app()->cfgItem('options.experimental.dateInputStyle', 's');
 			if ($disCfg === 'n')
 				$this->dateInputStyle = self::disNative;
 			elseif ($disCfg === 's')

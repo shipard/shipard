@@ -11,22 +11,8 @@ use \E10\utils, \E10Doc\Core\e10utils, \E10\Wizard, \E10\TableForm, \E10\TableVi
 
 function inventoryRecalc ($app, $options = NULL)
 {
-	$newInventory = intval($app->cfgItem ('options.experimental.testNewInventory', 0));
-
-	if ($newInventory)
-	{
-		$e = new \e10doc\inventory\libs\InventoryStatesEngine($app);
-		$e->resetAllStates();
-	}
-	else
-	{
-		$engine = new \e10doc\inventory\Recalc($app);
-		$rows = $app->db->query('SELECT * from [e10doc_base_fiscalyears] WHERE docState != 9800 AND [start] IS NOT NULL AND [end] IS NOT NULL ORDER BY [start]');
-		foreach ($rows as $r)
-		{
-			$engine->createInventoryJournal($r['ndx']);
-		}
-	}
+	$e = new \e10doc\inventory\libs\InventoryStatesEngine($app);
+	$e->resetAllStates();
 
 	$objectData ['message'] = 'Zásoby jsou přepočítány.';
 	$objectData ['finalAction'] = 'reloadPanel';

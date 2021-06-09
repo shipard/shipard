@@ -6,8 +6,7 @@
   "config": [
     {"id": "+reports", "name": "Výstupy", "file": "reports.json"},
 		{"id": "e10doc.inventory.checkHeads.docStates", "file": "e10doc.inventory.checkHeads.docStates.json"},
-		{"id": "+registeredClasses", "file": "registeredClasses.json"},
-		{"id": "+appOptions", "name": "Nastavení", "file": "e10.appOptions.json"}
+		{"id": "+registeredClasses", "file": "registeredClasses.json"}
   ],
   "modules": ["e10pro/install/docs-core"]
 }

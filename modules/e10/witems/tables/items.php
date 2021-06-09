@@ -227,8 +227,7 @@ class TableItems extends DbTable
 		$hdr ['info'][] = array ('class' => 'info', 'value' => $itemTop);
 		$hdr ['info'][] = ['class' => 'title', 'value' => [['text' => $recData ['fullName']], ['text' => '#'.$recData ['id'], 'class' => 'pull-right id']]];
 
-		if (intval($this->app()->cfgItem ('options.experimental.testNewInventory', 0)))
-			$hdr['newMode'] = 1;
+		$hdr['newMode'] = 1;
 
 		$image = \E10\Base\getAttachmentDefaultImage ($this->app(), $this->tableId(), $recData ['ndx'], TRUE);
 		if (isset ($image ['smallImage']))
@@ -653,17 +652,8 @@ class ViewItems extends TableView
  */
 class ViewItemsCombo extends ViewItems
 {
-	var $useNewVersion = 0;
-
 	public function init ()
 	{
-		$this->useNewVersion = $this->app()->cfgItem ('options.experimental.witemsNewCombo', 0);
-		if (!$this->useNewVersion)
-		{
-			parent::init();
-			return;
-		}
-
 		$this->units = $this->table->app()->cfgItem ('e10.witems.units');
 
 		$this->withInventory = FALSE;
@@ -692,9 +682,6 @@ class ViewItemsCombo extends ViewItems
 
 	public function renderRow ($item)
 	{
-		if (!$this->useNewVersion)
-			return parent::renderRow($item);
-
 		$thisItemType = $this->table->itemType ($item, TRUE);
 
 		$listItem ['pk'] = $item ['ndx'];
@@ -751,12 +738,6 @@ class ViewItemsCombo extends ViewItems
 
 	function decorateRow (&$item)
 	{
-		if (!$this->useNewVersion)
-		{
-			parent::decorateRow($item);
-			return;
-		}
-
 		if (isset ($this->itemsStates [$item ['pk']]))
 		{
 			$i = [
@@ -774,12 +755,6 @@ class ViewItemsCombo extends ViewItems
 
 	public function selectRows2 ()
 	{
-		if (!$this->useNewVersion)
-		{
-			parent::selectRows2();
-			return;
-		}
-
 		if (!count ($this->pks))
 			return;
 
@@ -810,11 +785,6 @@ class ViewItemsCombo extends ViewItems
 
 	public function qryMain (array &$q)
 	{
-		if (!$this->useNewVersion)
-		{
-			parent::qryMain($q);
-			return;
-		}
 		$fts = $this->fullTextSearch ();
 
 		if ($fts != '')

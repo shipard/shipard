@@ -10,12 +10,5 @@
 	"e10PersonsRelations": {
 		"name": "Vztahy osob", "order": 17000, "group": "persons",
 		"type": "viewer", "table": "e10.persons.relations", "viewer": "default"
-	},
-	"experimental": {
-		"options": [
-			{"cfgKey": "testNewPersonDetail", "cfgName": "Testovat nový detail Osoby", "options": {"0": "Ne","1": "Ano"}},
-			{"cfgKey": "testNewPersonAddress", "cfgName": "Testovat nové Adresy Osob", "options": {"0": "Ne","1": "Ano"}}
-		]
 	}
 }
-

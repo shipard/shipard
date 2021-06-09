@@ -1451,7 +1451,6 @@ class ListAddress implements \E10\IDocumentList
 
 	function createHtmlCodeRow ($rowNumber, $dataItem)
 	{
-		$newPersons = $this->table->app()->cfgItem ('options.experimental.testNewPersonAddress', 0);
 		$inputPrefix = "lists.{$this->listId}.$rowNumber";
 
 		$rowClass = '';
@@ -1513,9 +1512,6 @@ class ListAddress implements \E10\IDocumentList
 			foreach ($countries as $val => $txt)
 				$c .= " <option value='$val'>" . \E10\es ($txt['name']) . "</option>";
 			$c .= "</select>";
-
-		if (!$this->formData->readOnly && !$newPersons)
-			$c .= " <button style='float: right; margin-right: 1ex;' title='Přidat další adresu' type='button' class='btn btn-default btn-xs e10-row-append' tabindex='-1' data-list='{$this->listId}' data-propid='' data-groupid=''><i class='fa fa-plus-circle'></i></button>";
 
 		$c .= "</td>";
 		$c .= "</tr>";
