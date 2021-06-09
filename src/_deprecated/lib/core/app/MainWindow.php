@@ -365,7 +365,7 @@ class MainWindow extends \Shipard\Base\BaseObject
 		if ($dsMode)
 		{
 			//$helpUrl = 'https://' . $portalInfo['pages']['help']['host'] . '/';
-			$helpUrl = 'https://doc.shipard.app/';
+			$helpUrl = 'https://shipard.org/';
 			$c .= "<ul class='e10-mm-list e10-mm-help'>";
 			$c .= "<li style='width: 5em; text-align: center;'><img src='https://navody.shipard.cz/e10-modules/e10templates/web/shipard1/files/shipard/icon-page-help.svg' style='width: 80%; padding-top: 1ex;'></li>";
 			$c .= "<li style='line-height: 1.8;'>";

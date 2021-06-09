@@ -520,7 +520,7 @@ class ViewAppOptions extends TableView
 			$listItem ['i1'] =[
 				'type' => 'action', 'action' => 'open-popup', 'text' => '',
 				'icon' => 'system/iconHelp', 'style' => 'cancel', 'side' => 1,
-				'data-popup-url' => 'https://doc.shipard.app/'.$item['help'],
+				'data-popup-url' => 'https://shipard.org/'.$item['help'],
 				'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
 				'title' => 'Nápověda'//DictSystem::text(DictSystem::diBtn_Help)
 			];

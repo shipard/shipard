@@ -11,7 +11,7 @@ class WidgetHelpDeskDocumentation extends \lib\wkf\WidgetIframe
 {
 	public function init()
 	{
-		$this->url = 'https://doc.shipard.app';
+		$this->url = 'https://shipard.org/prirucka';
 
 		parent::init();
 	}

@@ -790,7 +790,7 @@ class TableView extends \Shipard\Base\BaseObject
 			$helpBtn = [
 				'type' => 'action', 'action' => 'open-popup', 'text' => '',
 				'icon' => 'system/iconHelp', 'style' => 'cancel',
-				'data-popup-url' => 'https://doc.shipard.app/'.$this->viewerDefinition['help'],
+				'data-popup-url' => 'https://shipard.org/'.$this->viewerDefinition['help'],
 				'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
 				'actionClass' => 'pull-right',
 				'title' => 'Nápověda'//DictSystem::text(DictSystem::diBtn_Help)

@@ -795,7 +795,7 @@ class WkfDiaryViewer extends TableView
 			$addButtons[] = [
 				'type' => 'action', 'action' => 'open-popup', 'text' => '',
 				'icon' => 'system/iconHelp', 'style' => 'cancel',
-				'data-popup-url' => 'https://doc.shipard.app/'.'prirucka/4882',
+				'data-popup-url' => 'https://shipard.org/'.'prirucka/4882',
 				'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
 				'actionClass' => 'pull-right', 'class' => 'ml1',
 				'title' => 'Nápověda'//DictSystem::text(DictSystem::diBtn_Help)

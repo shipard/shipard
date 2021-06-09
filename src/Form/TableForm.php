@@ -1738,7 +1738,7 @@ class TableForm
 			$toolbar [] =[
 				'type' => 'action', 'action' => 'open-popup', 'text' => '',
 				'icon' => 'system/iconHelp', 'style' => 'cancel', 'side' => 1,
-				'data-popup-url' => 'https://doc.shipard.app/'.$fd['help'],
+				'data-popup-url' => 'https://shipard.org/'.$fd['help'],
 				'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
 				'title' => 'Nápověda'//DictSystem::text(DictSystem::diBtn_Help)
 			];
