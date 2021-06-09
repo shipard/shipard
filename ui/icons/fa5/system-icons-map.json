@@ -65,6 +65,10 @@
     },
     {
         "t": 0,
+        "v": "fa-sign-in-alt"
+    },
+    {
+        "t": 0,
         "v": "fa-power-off"
     },
     {
@@ -85,6 +89,10 @@
     },
     {
         "t": 0,
+        "v": "fa-play"
+    },
+    {
+        "t": 0,
         "v": "fa-print"
     },
     {
@@ -97,7 +105,15 @@
     },
     {
         "t": 0,
+        "v": "fa-stop"
+    },
+    {
+        "t": 0,
         "v": "fa-life-ring"
+    },
+    {
+        "t": 0,
+        "v": "fa-upload"
     },
     {
         "t": 0,
@@ -337,7 +353,19 @@
     },
     {
         "t": 0,
+        "v": "fa-calendar-alt"
+    },
+    {
+        "t": 0,
         "v": "fa-video"
+    },
+    {
+        "t": 0,
+        "v": "fa-check"
+    },
+    {
+        "t": 0,
+        "v": "fa-cogs"
     },
     {
         "t": 0,
@@ -397,6 +425,14 @@
     },
     {
         "t": 0,
+        "v": "fa-map-marker-alt"
+    },
+    {
+        "t": 0,
+        "v": "fa-sort"
+    },
+    {
+        "t": 0,
         "v": "fa-ellipsis-v"
     },
     {
@@ -434,6 +470,10 @@
     {
         "t": 0,
         "v": "fa-tools"
+    },
+    {
+        "t": 0,
+        "v": "fa-map-marker-alt"
     },
     {
         "t": 0,
@@ -489,6 +529,10 @@
     },
     {
         "t": 0,
+        "v": "fa-edit"
+    },
+    {
+        "t": 0,
         "v": "fa-bullhorn"
     },
     {
@@ -502,6 +546,10 @@
     {
         "t": 0,
         "v": "fa-inbox"
+    },
+    {
+        "t": 0,
+        "v": "fa-star"
     },
     {
         "t": 0,
@@ -522,6 +570,10 @@
     {
         "t": 0,
         "v": "fa-check-square"
+    },
+    {
+        "t": 0,
+        "v": "fa-eye-slash"
     },
     {
         "t": 0,

@@ -65,6 +65,10 @@
     },
     {
         "t": 0,
+        "v": "bi-box-arrow-in-right"
+    },
+    {
+        "t": 0,
         "v": "bi-power"
     },
     {
@@ -85,6 +89,10 @@
     },
     {
         "t": 0,
+        "v": "bi-play"
+    },
+    {
+        "t": 0,
         "v": "bi-printer"
     },
     {
@@ -97,7 +105,15 @@
     },
     {
         "t": 0,
+        "v": "bi-stop"
+    },
+    {
+        "t": 0,
         "v": "bi-life-preserver"
+    },
+    {
+        "t": 0,
+        "v": "bi-upload"
     },
     {
         "t": 0,
@@ -337,7 +353,19 @@
     },
     {
         "t": 0,
+        "v": "bi-calendar"
+    },
+    {
+        "t": 0,
         "v": "bi-camera-video"
+    },
+    {
+        "t": 0,
+        "v": "bi-check"
+    },
+    {
+        "t": 0,
+        "v": "bi-gear"
     },
     {
         "t": 0,
@@ -397,6 +425,14 @@
     },
     {
         "t": 0,
+        "v": "bi-geo-alt-fill"
+    },
+    {
+        "t": 0,
+        "v": "bi-arrow-down-up"
+    },
+    {
+        "t": 0,
         "v": "bi-three-dots-vertical"
     },
     {
@@ -434,6 +470,10 @@
     {
         "t": 0,
         "v": "bi-tools"
+    },
+    {
+        "t": 0,
+        "v": "bi-geo-alt-fill"
     },
     {
         "t": 0,
@@ -489,6 +529,10 @@
     },
     {
         "t": 0,
+        "v": "bi-pencil-square"
+    },
+    {
+        "t": 0,
         "v": "bi-megaphone"
     },
     {
@@ -502,6 +546,10 @@
     {
         "t": 0,
         "v": "bi-inbox-fill"
+    },
+    {
+        "t": 0,
+        "v": "bi-star"
     },
     {
         "t": 0,
@@ -522,6 +570,10 @@
     {
         "t": 0,
         "v": "bi-check-square"
+    },
+    {
+        "t": 0,
+        "v": "bi-eye-slash"
     },
     {
         "t": 0,
