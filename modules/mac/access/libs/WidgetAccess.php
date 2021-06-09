@@ -59,10 +59,10 @@ class WidgetAccess extends WidgetBoard
 
 
 		$rt = [
-			'viewer-mode-2' => ['text' =>'', 'icon' => 'icon-th', 'action' => 'viewer-mode-2'],
-			'viewer-mode-1' => ['text' =>'', 'icon' => 'icon-th-list', 'action' => 'viewer-mode-1'],
-			'viewer-mode-3' => ['text' =>'', 'icon' => 'icon-square', 'action' => 'viewer-mode-3'],
-			'viewer-mode-0' => ['text' =>'', 'icon' => 'icon-th-large', 'action' => 'viewer-mode-0'],
+			'viewer-mode-2' => ['text' =>'', 'icon' => 'system/dashboardModeTilesSmall', 'action' => 'viewer-mode-2'],
+			'viewer-mode-1' => ['text' =>'', 'icon' => 'system/dashboardModeRows', 'action' => 'viewer-mode-1'],
+			//'viewer-mode-3' => ['text' =>'', 'icon' => 'icon-square', 'action' => 'viewer-mode-3'],
+			'viewer-mode-0' => ['text' =>'', 'icon' => 'system/dashboardModeTilesBig', 'action' => 'viewer-mode-0'],
 		];
 		$this->toolbar['rightTabs'] = $rt;
 	}

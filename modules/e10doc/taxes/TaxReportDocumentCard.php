@@ -28,7 +28,7 @@ class TaxReportDocumentCard extends \e10\DocumentCard
 		// -- title
 		$tile = ['info' => [], 'class' => 'padd5 header'];
 		$title = [];
-		$title[] = ['class' => 'h1', 'text' => 'Přehled podání', 'icon' => 'icon-paper-plane'];
+		$title[] = ['class' => 'h1', 'text' => 'Přehled podání', 'icon' => 'system/iconPaperPlane'];
 		$title[] = [
 				'class' => 'pull-right btn-xs', 'text' => 'Nové podání', 'type' => 'document', 'icon' => 'system/actionAdd',
 				'action' => 'new', 'data-table' => 'e10doc.taxes.filings', 'data-addparams' => '__report='.$this->recData['ndx'].'&__reportType='.$this->recData['reportType']

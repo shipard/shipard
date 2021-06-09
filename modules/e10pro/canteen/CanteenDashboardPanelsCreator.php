@@ -16,7 +16,7 @@ class CanteenDashboardPanelsCreator extends \e10\E10Object
 		$order = isset($dashboard['panels'][$panelId]['order']) ? $dashboard['panels'][$panelId]['order'] : 1800;
 		foreach ($usersCanteens as $w)
 		{
-			$icon = 'icon-cutlery';
+			$icon = 'system/iconCutlery';
 			if (isset($w['icon']) && $w['icon'] !== '')
 				$icon = $w['icon'];
 

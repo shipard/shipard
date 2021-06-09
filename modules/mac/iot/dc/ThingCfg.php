@@ -36,7 +36,7 @@ class ThingCfg extends \e10\DocumentCard
 
 			// -- live
 			$content = [['pane' => 'e10-pane e10-pane-table','type' => 'text', 'subtype' => 'code', 'text' => $r['thingCfgData'],]];
-			$title = ['text' => 'Nastavení', 'icon' => 'icon-wrench', 'class' => $class];
+			$title = ['text' => 'Nastavení', 'icon' => 'system/actionSettings', 'class' => $class];
 			$tabs[] = ['title' => $title, 'content' => $content];
 
 			$cnt++;

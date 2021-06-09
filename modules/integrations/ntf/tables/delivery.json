@@ -33,6 +33,6 @@
 		{"id": "default", "class": "integrations.ntf.FormDelivery"}
 	],
 	"views": [
-		{"id": "default", "class": "integrations.ntf.ViewDelivery"}
+		{"id": "default", "class": "integrations.ntf.ViewDelivery", "help":"prirucka/143"}
 	]
 }

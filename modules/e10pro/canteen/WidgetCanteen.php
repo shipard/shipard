@@ -215,7 +215,7 @@ class WidgetCanteen extends WidgetBoard
 
 				//-- settings
 				$settingsBtn = [
-					'text' => '', 'type' => 'action', 'action' => 'addwizard', 'icon' => 'icon-wrench', 'title' => 'Upravit', 'btnClass' => 'btn-default btn-xs pull-right',
+					'text' => '', 'type' => 'action', 'action' => 'addwizard', 'icon' => 'system/actionSettings', 'title' => 'Upravit', 'btnClass' => 'btn-default btn-xs pull-right',
 					'data-table' => 'e10.persons.persons',
 					'data-class' => 'e10pro.canteen.libs.WizardModifyFoodOrder',
 					'data-addparams' => 'order-ndx='.$order['orderNdx'],
@@ -354,9 +354,9 @@ class WidgetCanteen extends WidgetBoard
 
 		$this->toolbar = ['tabs' => $tabs];
 		$rt = [
-			'viewer-mode-menu' => ['text' =>'', 'icon' => 'icon-cutlery', 'action' => 'viewer-mode-menu'],
+			'viewer-mode-menu' => ['text' =>'', 'icon' => 'system/iconCutlery', 'action' => 'viewer-mode-menu'],
 			'viewer-mode-peoples' => ['text' =>'', 'icon' => 'system/iconUser', 'action' => 'viewer-mode-peoples'],
-			'viewer-mode-supplier' => ['text' =>'', 'icon' => 'icon-truck', 'action' => 'viewer-mode-supplier'],
+			'viewer-mode-supplier' => ['text' =>'', 'icon' => 'system/iconDelivery', 'action' => 'viewer-mode-supplier'],
 		];
 
 		$this->toolbar['rightTabs'] = $rt;

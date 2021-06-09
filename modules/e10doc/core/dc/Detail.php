@@ -37,7 +37,7 @@ class Detail extends \e10\DocumentCard
 			return;
 
 		$line = [];
-		$line[] = ['text' => utils::datef($this->recData['dateDue']), 'icon' => 'icon-star-o'];
+		$line[] = ['text' => utils::datef($this->recData['dateDue']), 'icon' => 'system/iconStar'];
 
 		if ($bi->restAmount < 1.0)
 		{
@@ -414,7 +414,7 @@ class Detail extends \e10\DocumentCard
 			}
 			//else
 			//	$h = ['#' => '#', 'text' => 'Text řádku', 'quantity' => ' Množství', 'unit' => 'Jedn.'];
-			return ['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'title' => ['icon' => 'x-properties', 'text' => 'Řádky dokladu'], 'header' => $h, 'table' => $list];
+			return ['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'title' => ['icon' => 'system/iconList', 'text' => 'Řádky dokladu'], 'header' => $h, 'table' => $list];
 		}
 		return FALSE;
 	}

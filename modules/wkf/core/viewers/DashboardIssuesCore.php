@@ -620,9 +620,9 @@ class DashboardIssuesCore extends TableView
 		if ($item['onTop'])
 			$listItem ['i1'][] = ['class' => 'id e10-success', 'text' => '', 'icon' => 'system/iconPinned'];
 		if ($item['priority'] < 10)
-			$listItem ['i1'][] = ['class' => 'id e10-error', 'text' => '', 'icon' => 'icon-exclamation'];
+			$listItem ['i1'][] = ['class' => 'id e10-error', 'text' => '', 'icon' => 'system/issueImportant'];
 		elseif ($item['priority'] > 10)
-			$listItem ['i1'][] = ['class' => 'id e10-off', 'text' => '', 'icon' => 'icon-snowflake-o'];
+			$listItem ['i1'][] = ['class' => 'id e10-off', 'text' => '', 'icon' => 'system/issueNotImportant'];
 
 		$listItem ['i1'][] = ['class' => 'id', 'text' => '#'.$item['issueId'], 'Xicon' => 'icon-hashtag'];
 
@@ -753,9 +753,9 @@ class DashboardIssuesCore extends TableView
 		if ($item['onTop'])
 			$title[] = ['class' => 'id pull-right e10-success', 'text' => '', 'icon' => 'system/iconPinned'];
 		if ($item['priority'] < 10)
-			$title[] = ['class' => 'id pull-right e10-error', 'text' => '', 'icon' => 'icon-exclamation'];
+			$title[] = ['class' => 'id pull-right e10-error', 'text' => '', 'icon' => 'system/issueImportant'];
 		elseif ($item['priority'] > 10)
-			$title[] = ['class' => 'id pull-right e10-off', 'text' => '', 'icon' => 'icon-snowflake-o'];
+			$title[] = ['class' => 'id pull-right e10-off', 'text' => '', 'icon' => 'system/issueNotImportant'];
 
 		$title[] = ['class' => 'h2', 'text' => $item['subject'], 'icon' => $this->table->tableIcon($item, 1)];
 

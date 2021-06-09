@@ -113,7 +113,7 @@ class ViewJournalAll extends \E10\TableViewGrid
 		$this->setGrid ($g);
 
 		$this->setInfo('title', 'Účetní deník');
-		$this->setInfo('icon', 'icon-list');
+		$this->setInfo('icon', 'system/iconList');
 	}
 
 	public function createToolbar (){return array();}

@@ -1,12 +1,12 @@
 {
 	"header": [
-		{"title": "Obsah", "url": "", "icon": "iconContent"},
-		{"title": "Ovládání aplikace", "url": "prirucka/s1", "icon": "iconAppControling"}
+		{"title": "Obsah", "url": "prirucka", "icon": "iconContent"},
+		{"title": "Ovládání aplikace", "url": "prirucka/s3", "icon": "iconAppControling"}
 	],
 	"panels": {
 		"/app/srvcfg": [
-			{"title": "Nastavení", "url": "prirucka/s25", "icon": "system/iconSettings"},
-			{"title": "Uživatelé", "url": "prirucka/122", "icon": "system/iconUser"}
+			{"title": "Nastavení", "url": "prirucka/s7", "icon": "system/iconSettings"},
+			{"title": "Uživatelé", "url": "prirucka/160", "icon": "system/iconUser"}
 		]
 	}
 }

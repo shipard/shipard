@@ -13,7 +13,7 @@ class DeviceInfo
 		'Edge' => ['browser' => ['icon' => 'icon-edge', 'name' => 'Edge']],
 		'Internet Explorer' => ['browser' => ['icon' => 'icon-internet-explorer', 'name' => 'IE']],
 		'Apple Safari' => ['browser' => ['icon' => 'icon-safari', 'name' => 'Safari']],
-		'WebKit' => ['browser' => ['icon' => 'icon-tablet', 'name' => 'AppWebKit']],
+		'WebKit' => ['browser' => ['icon' => 'deviceTypes/tablet', 'name' => 'AppWebKit']],
 		'Vivaldi' => ['browser' => ['icon' => 'icon-vimeo-square', 'name' => 'Vivaldi']],
 	];
 	var $platforms = [

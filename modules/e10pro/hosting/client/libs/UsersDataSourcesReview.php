@@ -102,7 +102,7 @@ class UsersDataSourcesReview extends Content
 					['text' => $dsInfoItem['name'], 'class' => 'h1 e10-bold'],
 					['code' => $ntfBadge],
 					[
-						'text' => '', 'icon' => 'icon-external-link', 'title' => 'Otevřít',
+						'text' => '', 'icon' => 'system/iconLink', 'title' => 'Otevřít',
 						'action' => 'open-link', 'element' => 'span',
 						'data-url-download' => $dsInfoItem['dsUrl'],
 						'class' => 'pull-right df2-action-trigger h3', 'btnClass' => '',

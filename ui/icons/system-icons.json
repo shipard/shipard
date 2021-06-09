@@ -185,6 +185,14 @@
         "bsi":"bi-upload",
         "mdi":"file_upload"
 	},
+	"actionSettings": {
+		"fa5": "fa-wrench",
+		"fa5pro": "fa-wrench",
+		"bsi": "bi-wrench",
+		"mdi": "build_circle"
+	},
+
+
 
 
 	"iconUser": {
@@ -450,6 +458,60 @@
 		"fa5pro": "fa-calendar-alt",
 		"bsi": "bi-calendar",
 		"mdi": "calendar_today"
+	},	
+	"iconAngleRight": {
+		"fa5": "fa-angle-right",
+		"fa5pro": "fa-angle-right",
+		"bsi": "bi-chevron-right",
+		"mdi": "chevron_right"
+	},	
+	"iconLink": {
+		"fa5": "fa-external-link-alt",
+		"fa5pro": "fa-external-link-alt",
+		"bsi": "bi-link-45deg",
+		"mdi": "link"
+	},	
+	"iconCutlery": {
+		"fa5": "fa-utensils",
+		"fa5pro": "fa-utensils-alt",
+		"bsi": "bi-shop-window",
+		"mdi": "dining"
+	},	
+	"iconDelivery": {
+		"fa5":"fa-truck",
+      	"fa5pro":"fa-truck",
+      	"bsi":"bi-truck",
+      	"mdi":"local_shipping"
+	},	
+	"iconIdBadge": {
+		"fa5":"fa-id-badge",
+        "fa5pro":"fa-id-badge",
+        "bsi":"bi-person-badge-fill",
+        "mdi":"badge"
+	},	
+	"iconHome": {
+		"fa5": "fa-home",
+		"fa5pro": "fa-home",
+		"bsi": "bi-house-door-fill",
+		"mdi": "home"
+	},	
+	"iconPaperPlane": {
+		"fa5":"fa-paper-plane",
+        "fa5pro":"fa-paper-plane",
+        "bsi":"bi-envelope",
+        "mdi":"send"
+	},	
+	"iconStar": {
+		"fa5":"fa-star",
+		"fa5pro":"fa-star",
+		"bsi":"bi-star",
+		"mdi":"grade"
+	},	
+	"iconList": {
+		"fa5": "fa-list",
+		"fa5pro": "fa-list",
+		"bsi": "bi-list-ul",
+		"mdi": "list"
 	},
 	
 
@@ -637,6 +699,18 @@
 		"fa5pro": "fa-edit",
 		"bsi": "bi-pencil-square",
 		"mdi": "edit_note"
+	},	
+	"issueImportant": {
+		"fa5": "fa-exclamation",
+		"fa5pro": "fa-exclamation",
+		"bsi": "bi-exclamation",
+		"mdi": "priority_high"
+	},	
+	"issueNotImportant": {
+		"fa5": "fa-snowflake",
+		"fa5pro": "fa-snowflake",
+		"bsi": "bi-snow",
+		"mdi": "ac_unit"
 	},
 
 

@@ -67,7 +67,7 @@ class ViewPriceList extends TableView
 	{
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['icon'] = $this->table->tableIcon ($item);
-		$listItem ['t1'] = ['text' => $item['canteenName'], 'icon' => 'icon-cutlery'];
+		$listItem ['t1'] = ['text' => $item['canteenName'], 'icon' => 'system/iconCutlery'];
 
 		if ($item['foodKind'] === 0)
 			$listItem ['t1']['suffix'] = 'Hlavní jídlo';

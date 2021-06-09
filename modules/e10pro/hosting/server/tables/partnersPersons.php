@@ -102,9 +102,9 @@ class ViewPartnersPersons extends \E10\TableView
 
 		$props = [];
 		if ($item['isAdmin'])
-			$props[] = ['text' => 'Správce partnera', 'class' => 'label label-default', 'icon' => 'icon-wrench'];
+			$props[] = ['text' => 'Správce partnera', 'class' => 'label label-default', 'icon' => 'system/actionSettings'];
 		if ($item['isSupport'])
-			$props[] = ['text' => 'Technická podpora zákazníků', 'class' => 'label label-default', 'icon' => 'icon-life-ring'];
+			$props[] = ['text' => 'Technická podpora zákazníků', 'class' => 'label label-default', 'icon' => 'system/actionSupport'];
 		if (count($props))
 			$listItem ['t2'] = $props;
 

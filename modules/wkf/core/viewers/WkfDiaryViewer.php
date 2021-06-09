@@ -360,9 +360,9 @@ class WkfDiaryViewer extends TableView
 		if ($item['onTop'])
 			$title[] = ['class' => 'id pull-right e10-success', 'text' => '', 'icon' => 'system/iconPinned'];
 		if ($item['priority'] < 10)
-			$title[] = ['class' => 'id pull-right e10-error', 'text' => '', 'icon' => 'icon-exclamation'];
+			$title[] = ['class' => 'id pull-right e10-error', 'text' => '', 'icon' => 'system/issueImportant'];
 		elseif ($item['priority'] > 10)
-			$title[] = ['class' => 'id pull-right e10-off', 'text' => '', 'icon' => 'icon-snowflake-o'];
+			$title[] = ['class' => 'id pull-right e10-off', 'text' => '', 'icon' => 'system/issueNotImportant'];
 
 		$title[] = ['class' => 'h2', 'text' => $item['subject'], 'icon' => $this->table->tableIcon($item, 1)];
 		$title[] = ['text' => utils::datef ($item['dateCreate'], '%D, %T'), 'icon' => $this->sourcesIcons[$item['source']], 'class' => 'e10-off break'];

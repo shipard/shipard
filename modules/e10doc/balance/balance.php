@@ -1756,7 +1756,7 @@ class ViewDetailPersonsBalances extends \E10\TableViewDetail
 
 
 		// -- rows
-		$headerRows = ['#' => '#', 'icon' => ['icon' => 'icon-star-o', 'text' => ''], 'docNumber' => 'Doklad',
+		$headerRows = ['#' => '#', 'icon' => ['icon' => 'system/iconStar', 'text' => ''], 'docNumber' => 'Doklad',
 									 's1' => ' VS', 's2' => ' SS', 'date' => 'Splatnost', 'curr' => 'Měna',
 									 'request' => ' Předpis',
 									 'rest' => ' Zůstatek',

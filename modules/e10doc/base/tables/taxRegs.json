@@ -22,7 +22,7 @@
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
 	"views": [
-		{"id": "default", "class": "e10doc.base.ViewTaxRegs"}
+		{"id": "default", "class": "e10doc.base.ViewTaxRegs", "help":"prirucka/92"}
 	],
 	"forms": [
 		{"id": "default", "class": "e10doc.base.FormTaxReg"}

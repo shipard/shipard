@@ -146,7 +146,7 @@ class Dashboard extends WidgetBoard
 
 		$this->addSectionsTabs($tabs);
 		$this->addBoardsTabs($tabs);
-		$tabs['marked'] = ['icon' => 'icon-star', 'text' => '', 'title' => 'Označené', 'action' => 'load-marked'];
+		$tabs['marked'] = ['icon' => 'system/iconStar', 'text' => '', 'title' => 'Označené', 'action' => 'load-marked'];
 		$tabs['user'] = ['icon' => 'icon-user-circle-o', 'text' => '', 'title' => $this->app->user()->data('name'), 'action' => 'load-user'];
 		$tabs['search'] = ['icon' => 'icon-search', 'text' => '', 'title' => 'Hledat', 'action' => 'load-search'];
 

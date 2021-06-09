@@ -534,9 +534,9 @@ class ViewerDashboardCore extends TableView
 		if ($item['onTop'])
 			$title[] = ['class' => 'id pull-right e10-success', 'text' => '', 'icon' => 'system/iconPinned'];
 		if ($item['priority'] < 10)
-			$title[] = ['class' => 'id pull-right e10-error', 'text' => '', 'icon' => 'icon-exclamation'];
+			$title[] = ['class' => 'id pull-right e10-error', 'text' => '', 'icon' => 'system/issueImportant'];
 		elseif ($item['priority'] > 10)
-			$title[] = ['class' => 'id pull-right e10-off', 'text' => '', 'icon' => 'icon-snowflake-o'];
+			$title[] = ['class' => 'id pull-right e10-off', 'text' => '', 'icon' => 'system/issueNotImportant'];
 
 		$title[] = ['class' => 'id pull-right'.$msgTitleClass, 'text' => utils::nf($item['ndx']), 'icon' => 'icon-hashtag'];
 		$title[] = ['class' => 'h2', 'text' => $item['subject'], 'icon' => $this->table->tableIcon($item, 1)];

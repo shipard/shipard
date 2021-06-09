@@ -114,7 +114,7 @@ class ViewFoodOrders extends TableView
 			$listItem['t2'][] = ['text' => $ft['name'], 'icon' => 'icon-gift', 'class' => 'label label-info'];
 		}
 
-		$listItem['i2'][] = ['text' => $item['canteenName'], 'icon' => 'icon-cutlery', 'class' => 'label label-default'];
+		$listItem['i2'][] = ['text' => $item['canteenName'], 'icon' => 'system/iconCutlery', 'class' => 'label label-default'];
 
 		return $listItem;
 	}

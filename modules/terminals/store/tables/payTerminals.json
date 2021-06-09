@@ -14,7 +14,7 @@
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"views": {
-		"default": {"id": "default", "class": "terminals.store.ViewPayTerminals"}
+		"default": {"id": "default", "class": "terminals.store.ViewPayTerminals", "help":"prirucka/108"}
 	},
 	"forms": [
 		{"id": "default", "class": "terminals.store.FormPayTerminal"}

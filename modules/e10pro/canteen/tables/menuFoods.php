@@ -117,7 +117,7 @@ class ViewMenuFoods extends TableView
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
 		$listItem ['t2'] = [];
-		$listItem ['t2'][] = ['text' => ($item['foodName'] === '') ? '---' : $item['foodName'], 'icon' => 'icon-cutlery'];
+		$listItem ['t2'][] = ['text' => ($item['foodName'] === '') ? '---' : $item['foodName'], 'icon' => 'system/iconCutlery'];
 		$listItem ['t2'][] = ['text' => ($item['soupName'] === '') ? '---' : $item['soupName'], 'icon' => 'icon-spoon'];
 
 		return $listItem;

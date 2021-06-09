@@ -113,7 +113,7 @@ class DocumentCardSwLicense extends \e10\DocumentCard
 
 		foreach ($query as $r)
 		{
-			$icon = 'icon-desktop';
+			$icon = 'deviceTypes/workStation';
 			if (isset ($allLinks [$r['linkId']]['icon']))
 				$icon = $allLinks [$r['linkId']]['icon'];
 			if (isset ($lp [$r['srcRecId']][$r['linkId']]))

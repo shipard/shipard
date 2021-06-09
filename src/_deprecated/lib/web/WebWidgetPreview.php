@@ -112,7 +112,7 @@ class WebWidgetPreview extends WidgetBoard
 		$this->addServersTabs ($tabs);
 
 		$btns = [];
-		$btns[] = ['text' => '', 'prefix' => ' ', 'class' => 'e10-off', 'icon' => 'icon-angle-right',];
+		$btns[] = ['text' => '', 'prefix' => ' ', 'class' => 'e10-off', 'icon' => 'system/iconAngleRight',];
 		$btns[] = [
 			'type' => 'widget', 'action' => 'edit-iframe-doc',
 			'title' => 'Opravit stránku', 'text' => '', 'element' => 'li', 'btnClass' => 'btn-primary tab'
@@ -122,7 +122,7 @@ class WebWidgetPreview extends WidgetBoard
 			'title' => 'Přidat stránku', 'text' => '', 'element' => 'li', 'btnClass' => 'btn-success tab'
 		];
 		$btns[] = [
-			'type' => 'widget', 'action' => 'open-iframe-tab', 'icon' => 'icon-external-link',
+			'type' => 'widget', 'action' => 'open-iframe-tab', 'icon' => 'system/iconLink',
 			'title' => 'Otevřít v nové záložce', 'text' => '', 'element' => 'li', 'btnClass' => 'tab'
 		];
 
@@ -132,14 +132,14 @@ class WebWidgetPreview extends WidgetBoard
 			{
 				$btns[] = [
 					'docAction' => 'edit', 'table' => 'e10.base.templatesLooks', 'pk' => $serverInfo['lookNdx'],
-					'text' => '', 'title' => 'Vlastní nastavení vzhledu', 'icon' => 'icon-paint-brush', 'actionClass' => 'btn-info tab', 'type' => 'li',
+					'text' => '', 'title' => 'Vlastní nastavení vzhledu', 'icon' => 'tables/e10settings.themes.appThemes', 'actionClass' => 'btn-info tab', 'type' => 'li',
 					'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId
 				];
 			}
 
 			$btns[] = [
 				'docAction' => 'edit', 'table' => 'e10.web.servers', 'pk' => $this->serverNdx,
-				'text' => '', 'title' => 'Nastavení webu', 'icon' => 'icon-wrench','actionClass' => 'btn-warning tab', 'type' => 'li',
+				'text' => '', 'title' => 'Nastavení webu', 'icon' => 'system/actionSettings','actionClass' => 'btn-warning tab', 'type' => 'li',
 				'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId
 			];
 		}
@@ -147,10 +147,10 @@ class WebWidgetPreview extends WidgetBoard
 		$this->toolbar = ['buttons' => $btns, 'tabs' => $tabs];
 
 		$rt = [
-			'viewer-mode-desktop' => ['text' =>'', 'icon' => 'icon-desktop', 'action' => 'viewer-mode-desktop'],
+			'viewer-mode-desktop' => ['text' =>'', 'icon' => 'deviceTypes/workStation', 'action' => 'viewer-mode-desktop'],
 			'viewer-mode-mobile' => ['text' =>'', 'icon' => 'deviceTypes/phone', 'action' => 'viewer-mode-mobile'],
-			'viewer-mode-tablet' => ['text' =>'', 'icon' => 'icon-tablet', 'action' => 'viewer-mode-tablet'],
-			'viewer-mode-laptop' => ['text' =>'', 'icon' => 'icon-tablet fa-rotate-270', 'action' => 'viewer-mode-laptop'],
+			'viewer-mode-tablet' => ['text' =>'', 'icon' => 'deviceTypes/tablet', 'action' => 'viewer-mode-tablet'],
+			'viewer-mode-laptop' => ['text' =>'', 'icon' => 'deviceTypes/tabletRotate', 'action' => 'viewer-mode-laptop'],
 		];
 
 		$this->toolbar['rightTabs'] = $rt;

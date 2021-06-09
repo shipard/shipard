@@ -14,7 +14,7 @@
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"views": {
-		"default": {"id": "default", "class": "integrations.core.ViewServices"}
+		"default": {"id": "default", "class": "integrations.core.ViewServices", "help":"prirucka/142"}
 	},
 	"forms": [
 		{"id": "default", "class": "integrations.core.FormService"}

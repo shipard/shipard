@@ -197,7 +197,7 @@ class ViewServers extends TableView
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['t1'] = $item['name'];
 		$listItem ['i1'] = ['text' => '#'.$item['ndx'], 'class' => 'id'];
-		$listItem ['t2'] = ['text' => $item['cfgDataVer'], 'class' => '', 'icon' => 'icon-wrench'];
+		$listItem ['t2'] = ['text' => $item['cfgDataVer'], 'class' => '', 'icon' => 'system/actionSettings'];
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
 		return $listItem;

@@ -77,7 +77,7 @@ class LanOverviewData extends Utility
 				'title' => 'Tiskárny', 'icon' => 'isystem/actionPrint', 'disableAsDG' => 1,
 			],
 			self::dgiComputer => [
-				'title' => 'Počítače', 'icon' => 'icon-desktop', 'disableAsDG' => 1,
+				'title' => 'Počítače', 'icon' => 'deviceTypes/workStation', 'disableAsDG' => 1,
 			],
 			self::dgiMobile => [
 				'title' => 'Mobilní', 'icon' => 'deviceTypes/phone', 'disableAsDG' => 1,

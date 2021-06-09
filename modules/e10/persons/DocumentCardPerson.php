@@ -140,7 +140,7 @@ class DocumentCardPerson extends \e10\DocumentCard
 		if (!$this->relationsCategories)
 			return;
 
-		$this->privacy = ['icon' => 'icon-compress', 'relations' => []];
+		$this->privacy = ['icon' => 'tables/e10.persons.relations', 'relations' => []];
 
 		$q [] = 'SELECT relations.*,';
 		array_push ($q, ' parentPersons.fullName AS parentPersonFullName, parentPersons.id AS parentPersonId');
@@ -260,7 +260,7 @@ class DocumentCardPerson extends \e10\DocumentCard
 			{
 				foreach ($part as $valueId => $error)
 				{
-					$info = ['text' => $valueId.': '.$error['msg'], 'class' => 'block', 'icon' => 'icon-angle-right'];
+					$info = ['text' => $valueId.': '.$error['msg'], 'class' => 'block', 'icon' => 'system/iconAngleRight'];
 					if (isset($error['registerName']))
 						$info['suffix'] = $error['registerName'];
 					$line[] = $info;
@@ -275,7 +275,7 @@ class DocumentCardPerson extends \e10\DocumentCard
 				foreach ($tools as $t)
 				{
 					$t['class'] = 'btn btn-default btn-sm';
-					$t['icon'] = 'icon-external-link';
+					$t['icon'] = 'system/iconLink';
 					$line[] = $t;
 				}
 			}
@@ -302,7 +302,7 @@ class DocumentCardPerson extends \e10\DocumentCard
 		if ($this->contacts !== '')
 		{
 			$t [] = [
-				'c1' => ['icon' => 'icon-address-card-o', 'text' => ''],
+				'c1' => ['icon' => 'system/iconIdBadge', 'text' => ''],
 				'c2' => $this->contacts,
 				'_options' => ['cellTitles' => ['c1' => 'Kontaktní údaje']]
 			];
@@ -312,7 +312,7 @@ class DocumentCardPerson extends \e10\DocumentCard
 		if (count($this->addresses))
 		{
 			$t [] = [
-				'c1' => ['icon' => 'icon-home', 'text' => ''],
+				'c1' => ['icon' => 'system/iconHome', 'text' => ''],
 				'c2' => $this->addresses,
 				'_options' => ['cellTitles' => ['c1' => 'Poštovní adresa']]
 			];
@@ -436,7 +436,7 @@ class DocumentCardPerson extends \e10\DocumentCard
 			{
 				foreach ($part as $valueId => $error)
 				{
-					$info = ['text' => $valueId.': '.$error['msg'], 'class' => 'block', 'icon' => 'icon-angle-right'];
+					$info = ['text' => $valueId.': '.$error['msg'], 'class' => 'block', 'icon' => 'system/iconAngleRight'];
 					if (isset($error['registerName']))
 						$info['suffix'] = $error['registerName'];
 					$line[] = $info;
@@ -451,7 +451,7 @@ class DocumentCardPerson extends \e10\DocumentCard
 				foreach ($tools as $t)
 				{
 					$t['class'] = 'btn btn-default btn-sm';
-					$t['icon'] = 'icon-external-link';
+					$t['icon'] = 'system/iconLink';
 					$line[] = $t;
 				}
 			}

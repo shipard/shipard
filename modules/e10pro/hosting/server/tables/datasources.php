@@ -121,7 +121,7 @@ use \E10\utils, \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\Table
 		{
 			$adminRec = $this->app()->loadItem($recData['admin'], 'e10.persons.persons');
 			if ($adminRec['fullName'] != $ownerFullName)
-				$info [] = ['icon' => 'icon-wrench', 'text' => $adminRec['fullName']];
+				$info [] = ['icon' => 'system/actionSettings', 'text' => $adminRec['fullName']];
 		}
 		if ($recData['payer'])
 		{

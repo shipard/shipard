@@ -27,7 +27,7 @@ class Accounting extends \e10\DocumentCard
 
 		if (count ($balancesRows) == 0)
 		{
-			$this->addContent ('body', ['pane' => 'e10-pane e10-pane-table', 'type' => 'text', 'title' => ['icon' => 'icon-star-o', 'text' => 'Doklad '.$recData['docNumber'].' nemá zápisy v saldokontu'],
+			$this->addContent ('body', ['pane' => 'e10-pane e10-pane-table', 'type' => 'text', 'title' => ['icon' => 'system/iconStar', 'text' => 'Doklad '.$recData['docNumber'].' nemá zápisy v saldokontu'],
 					'header' => [], 'table' => []]);
 			return;
 		}
@@ -165,14 +165,14 @@ class Accounting extends \e10\DocumentCard
 		$a = $this->table->loadAccounting ($this->recData);
 
 		if ($a === FALSE)
-			$this->addContent ('body', ['pane' => 'e10-pane e10-pane-table', 'type' => 'text', 'title' => ['icon' => 'icon-list', 'text' => 'Doklad '.$this->recData['docNumber'].' nemá účetní zápisy'],
+			$this->addContent ('body', ['pane' => 'e10-pane e10-pane-table', 'type' => 'text', 'title' => ['icon' => 'system/iconList', 'text' => 'Doklad '.$this->recData['docNumber'].' nemá účetní zápisy'],
 					'header' => [], 'table' => []]);
 		else
-			$this->addContent ('body', ['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'title' => ['icon' => 'icon-list', 'text' => 'Zaúčtování dokladu '.$this->recData['docNumber'], 'class' => 'red'],
+			$this->addContent ('body', ['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'title' => ['icon' => 'system/iconList', 'text' => 'Zaúčtování dokladu '.$this->recData['docNumber'], 'class' => 'red'],
 					'header' => $a['accRowsHeader'], 'table' => $a['accRows']]);
 
 		if (isset($a['accNotes']))
-			$this->addContent ('body', ['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'title' => ['icon' => 'icon-list', 'text' => 'Problémy v zaúčtování'],
+			$this->addContent ('body', ['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'title' => ['icon' => 'system/iconList', 'text' => 'Problémy v zaúčtování'],
 					'header' => $a['accNotesHeader'], 'table' => $a['accNotes']]);
 	}
 
@@ -196,13 +196,13 @@ class Accounting extends \e10\DocumentCard
 
 		if (!count($data))
 		{
-			$this->addContent ('body', ['pane' => 'e10-pane e10-pane-table', 'type' => 'text', 'title' => ['icon' => 'icon-gavel', 'text' => 'Doklad '.$recData['docNumber'].' nemá záznamy pro kontrolní hlášení DPH'],
+			$this->addContent ('body', ['pane' => 'e10-pane e10-pane-table', 'type' => 'text', 'title' => ['icon' => 'report/generalLedger', 'text' => 'Doklad '.$recData['docNumber'].' nemá záznamy pro kontrolní hlášení DPH'],
 					'header' => [], 'table' => []]);
 			return;
 		}
 
 		$h = ['filingTitle' => 'Podání', 'rowKind' => 'Oddíl', 'base1' => ' Zák. 1', 'tax1' => ' Daň 1',  'base2' => ' Zák. 2', 'tax2' => ' Daň 2',  'base3' => ' Zák. 3', 'tax3' => ' Daň 3'];
-		$t = [['icon' => 'icon-gavel', 'text' => 'Záznamy pro kontrolní hlášení DPH']];
+		$t = [['icon' => 'report/generalLedger', 'text' => 'Záznamy pro kontrolní hlášení DPH']];
 		$t [] = ['text' => $vatId, 'prefix' => 'DIČ', 'class' => 'pull-right'];
 		$content = ['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'table' => $data, 'header' => $h, 'title' => $t, 'params' => ['disableZeros' => 1]];
 		$this->addContent ('body', $content);
@@ -325,7 +325,7 @@ class Accounting extends \e10\DocumentCard
 
 
 		$this->addContent([
-			'pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'title' => ['icon' => 'e10-witems-items', 'text' => 'Zásoby'],
+			'pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'title' => ['icon' => 'e10doc-inventory/inventoryStates', 'text' => 'Zásoby'],
 			'header' => $header[1], 'table' => $list, 'params' => ['header' => $header]
 			]);
 	}

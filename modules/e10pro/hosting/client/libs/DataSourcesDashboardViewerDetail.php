@@ -37,7 +37,7 @@ class DataSourcesDashboardViewerDetail extends TableViewDetail
 				'value' => [
 					['text' => $this->item['name'], 'class' => 'h2 e10-me'],
 					[
-						'text' => '', 'icon' => 'icon-external-link', 'title' => 'Otevřít',
+						'text' => '', 'icon' => 'system/iconLink', 'title' => 'Otevřít',
 						'action' => 'open-link', 'element' => 'span',
 						'data-url-download' => $this->item['urlApp'],
 						'class' => 'pull-right df2-action-trigger h3', 'btnClass' => '',

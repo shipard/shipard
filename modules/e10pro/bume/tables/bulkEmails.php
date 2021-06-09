@@ -182,7 +182,7 @@ class TableBulkEmails extends DbTable
 			if (!isset($labels[$r['virtualGroup']]))
 			{
 				$vg = $virtualGroups[$r['virtualGroup']];
-				$labels[$r['virtualGroup']] = ['text' => $vg['name'] . ': ' . $itemName, 'class' => $class, 'icon' => 'icon-paper-plane-o', 'css' => 'white-space: pre-line;'];
+				$labels[$r['virtualGroup']] = ['text' => $vg['name'] . ': ' . $itemName, 'class' => $class, 'icon' => 'system/iconPaperPlane', 'css' => 'white-space: pre-line;'];
 			}
 			else
 				$labels[$r['virtualGroup']]['text'] .= ', '.$itemName;
@@ -222,16 +222,16 @@ class ViewBulkEmails extends TableView
 		//$listItem ['i2'] = strval($item['sendingState']).' ';
 
 		if ($item['sendingState'] === 4 && $item['dateSent'])
-			$listItem ['i2'] = ['text' => utils::datef ($item['dateSent'], '%D, %T'), 'icon' => 'icon-paper-plane'];
+			$listItem ['i2'] = ['text' => utils::datef ($item['dateSent'], '%D, %T'), 'icon' => 'system/iconPaperPlane'];
 
 
-//		$listItem ['i2'] = ['text' => utils::datef ($item['dateReadyToSend'], '%D, %T'), 'icon' => 'icon-paper-plane'];
+//		$listItem ['i2'] = ['text' => utils::datef ($item['dateReadyToSend'], '%D, %T'), 'icon' => 'system/iconPaperPlane'];
 
 		/*
 				$props = [];
 
 				if ($item['dateSend'])
-					$props [] = ['icon' => 'icon-paper-plane-o', 'text' => utils::datef ($item['dateSend'], '%D, %T')];
+					$props [] = ['icon' => 'system/iconPaperPlane', 'text' => utils::datef ($item['dateSend'], '%D, %T')];
 
 				if (count($props))
 					$listItem ['i2'] = $props;
@@ -306,7 +306,7 @@ class ViewDetailBulkEmail extends TableViewDetail
 							break;
 			case TableBulkEmails::besReadyToSend:
 							$info[] = [
-								'text' => 'Rozeslat ihned', 'class' => 'pull-right', 'btnClass' => 'btn-primary btn-xs', 'icon' => 'icon-paper-plane',
+								'text' => 'Rozeslat ihned', 'class' => 'pull-right', 'btnClass' => 'btn-primary btn-xs', 'icon' => 'system/iconPaperPlane',
 								'data-table' => 'e10pro.bume.bulkEmails', 'data-pk'=>$recData['ndx'],
 								'type' => 'action', 'action' => 'wizard', 'data-class' => 'lib.wkf.SendBulkEmailWizard',
 								'data-srcobjecttype' => 'viewer', 'data-srcobjectid' => 'default'

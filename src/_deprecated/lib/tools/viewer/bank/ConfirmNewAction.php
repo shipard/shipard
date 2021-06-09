@@ -17,7 +17,7 @@ class ConfirmNewAction extends \lib\tools\viewer\ViewerToolsAction
 
 	function actionInfo ()
 	{
-		return ['name' => 'Potvrdit nové výpisy', 'icon' => 'icon-star'];
+		return ['name' => 'Potvrdit nové výpisy', 'icon' => 'system/iconStar'];
 	}
 
 	function doIt ()

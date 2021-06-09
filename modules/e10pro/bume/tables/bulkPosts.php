@@ -45,7 +45,7 @@ class ViewBulkPosts extends TableView
 		$props = [];
 
 		if ($item['sent'])
-			$props [] = ['icon' => 'icon-paper-plane-o', 'text' => utils::datef ($item['sentDate'], '%D, %T')];
+			$props [] = ['icon' => 'system/iconPaperPlane', 'text' => utils::datef ($item['sentDate'], '%D, %T')];
 		else
 			$props [] = ['icon' => 'icon-hourglass-half', 'text' => 'Čeká se na odeslání'];
 

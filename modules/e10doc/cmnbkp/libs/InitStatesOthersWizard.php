@@ -11,7 +11,7 @@ class InitStatesOthersWizard extends \e10doc\cmnbkp\libs\InitStatesWizard
 	public function createHeader ()
 	{
 		$hdr = array ();
-		$hdr ['icon'] = 'icon-star-o';
+		$hdr ['icon'] = 'system/iconStar';
 		$hdr ['info'][] = ['class' => 'title', 'value' => 'Otevření účetního období - Aktiva a Pasiva'];
 		$hdr ['info'][] = ['class' => 'info', 'value' => 'Vyberte účetní období, pro které chcete vygenerovat doklady.'];
 		return $hdr;

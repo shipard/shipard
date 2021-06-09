@@ -117,9 +117,9 @@ class ViewDomains extends TableView
 			$listItem ['t3'][] = ['text' => $item['domainAscii'], 'class' => 'label label-default', 'icon' => 'icon-keyboard-o'];
 
 		if ($item['accountRegName'])
-			$listItem ['t3'][] = ['text' => $item['accountRegName'], 'class' => 'label label-default', 'icon' => 'icon-wrench', 'prefix' => 'reg'];
+			$listItem ['t3'][] = ['text' => $item['accountRegName'], 'class' => 'label label-default', 'icon' => 'system/actionSettings', 'prefix' => 'reg'];
 		if ($item['accountDNSName'])
-			$listItem ['t3'][] = ['text' => $item['accountDNSName'], 'class' => 'label label-default', 'icon' => 'icon-wrench', 'prefix' => 'dns'];
+			$listItem ['t3'][] = ['text' => $item['accountDNSName'], 'class' => 'label label-default', 'icon' => 'system/actionSettings', 'prefix' => 'dns'];
 
 		return $listItem;
 	}

@@ -84,7 +84,7 @@ class ViewMenuRecipientsDefs extends TableView
 
 		$props = [];
 		if ($item['canteenName'])
-			$props[] = ['text' => $item['canteenName'], 'icon' => 'icon-cutlery', 'class' => 'label label-default'];
+			$props[] = ['text' => $item['canteenName'], 'icon' => 'system/iconCutlery', 'class' => 'label label-default'];
 
 		if ($item['recipientType'] === 0)
 		{

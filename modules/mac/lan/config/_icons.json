@@ -213,10 +213,16 @@
 		"mdi": "print"
 	},
     "deviceTypes/tablet": {
-		"fa5": "fa-tablet",
+		"fa5": "fa-tablet-alt",
 		"fa5pro": "fa-tablet-alt",
 		"bsi": "bi-tablet",
 		"mdi": "tablet_mac"
+	},
+    "deviceTypes/tabletRotate": {
+		"fa5": "fa-tablet-alt",
+		"fa5pro": "fa-rectangle-landscape",
+		"bsi": "bi-tablet-landscape",
+		"mdi": "tablet"
 	},
     "deviceTypes/phone": {
 		"fa5": "fa-mobile-alt",

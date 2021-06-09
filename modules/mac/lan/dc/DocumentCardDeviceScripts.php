@@ -41,7 +41,7 @@ class DocumentCardDeviceScripts extends \e10\DocumentCard
 			// -- generated scripts - running
 			$this->addScriptTab($tabs, ['text' => 'V zařízení', 'icon' => 'icon-check-square'], $existedScripts, 'running');
 			$this->addScriptTab($tabs, ['text' => 'Nastavuje se', 'icon' => 'icon-magic'], $existedScripts, 'new');
-			$this->addScriptTab($tabs, ['text' => 'K nastavení', 'icon' => 'icon-wrench'], $existedScripts, 'live');
+			$this->addScriptTab($tabs, ['text' => 'K nastavení', 'icon' => 'system/actionSettings'], $existedScripts, 'live');
 		}
 
 		$this->createContentBody_RealTimeSNMP($tabs);
@@ -122,7 +122,7 @@ class DocumentCardDeviceScripts extends \e10\DocumentCard
 
 			// -- live
 			$content = [['pane' => 'e10-pane e10-pane-table','type' => 'text', 'subtype' => 'code', 'text' => $r['liveData'],]];
-			$title = ['text' => 'K nastavení', 'icon' => 'icon-wrench', 'class' => $class];
+			$title = ['text' => 'K nastavení', 'icon' => 'system/actionSettings', 'class' => $class];
 			$tabs[] = ['title' => $title, 'content' => $content];
 
 			// -- node linux
@@ -147,7 +147,7 @@ class DocumentCardDeviceScripts extends \e10\DocumentCard
 
 			// -- live
 			$content = [['pane' => 'e10-pane e10-pane-table','type' => 'text', 'subtype' => 'code', 'text' => $r['iotBoxCfgData'],]];
-			$title = ['text' => 'IotBox', 'icon' => 'icon-wrench', 'class' => $class];
+			$title = ['text' => 'IotBox', 'icon' => 'system/actionSettings', 'class' => $class];
 			$tabs[] = ['title' => $title, 'content' => $content];
 
 			$cnt++;

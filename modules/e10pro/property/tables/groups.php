@@ -96,7 +96,7 @@ class ViewGroups extends TableView
 	{
 		/*if (isset ($this->linkedPersons [$item ['pk']]['e10-persons-groups-balances']))
 		{
-			$this->linkedPersons [$item ['pk']]['e10-persons-groups-balances'][0]['icon'] = 'icon-star-o';
+			$this->linkedPersons [$item ['pk']]['e10-persons-groups-balances'][0]['icon'] = 'system/iconStar';
 			$item ['i2'] = $this->linkedPersons [$item ['pk']]['e10-persons-groups-balances'];
 		}
 		*/

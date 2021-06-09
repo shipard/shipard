@@ -19,7 +19,7 @@
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
 	"views": [
-		{"id": "default", "class": "e10doc.contracts.core.ViewDocNumbers"}
+		{"id": "default", "class": "e10doc.contracts.core.ViewDocNumbers", "help":"prirucka/136"}
 	],
 	"forms": [
 		{"id": "default", "class": "e10doc.contracts.core.FormDocNumber"}

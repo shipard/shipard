@@ -113,7 +113,7 @@ class Detail extends \e10doc\core\dc\Detail
 		}
 
 		$h = ['#' => '#', 'text' => 'Popis', 'debit' => ' Vyplaceno', 'credit' => ' Přijato', 'balance' => ' Zůstatek'];
-		return ['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'title' => ['icon' => 'x-properties', 'text' => 'Řádky dokladu'], 'header' => $h, 'table' => $list];
+		return ['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'title' => ['icon' => 'system/iconList', 'text' => 'Řádky dokladu'], 'header' => $h, 'table' => $list];
 	}
 
 	public function createContentXXX ()

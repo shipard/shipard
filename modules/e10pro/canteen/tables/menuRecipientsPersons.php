@@ -73,7 +73,7 @@ class ViewMenuRecipientsPersons extends TableView
 		$props = [];
 		$props[] = ['text' => $item['email'], 'icon' => 'icon-at', 'class' => 'label label-default'];
 		if ($item['canteenName'])
-			$props[] = ['text' => $item['canteenName'], 'icon' => 'icon-cutlery', 'class' => 'label label-default'];
+			$props[] = ['text' => $item['canteenName'], 'icon' => 'system/iconCutlery', 'class' => 'label label-default'];
 		if ($item['menuName'])
 			$props[] = ['text' => $item['menuName'], 'icon' => 'icon-file-text-o', 'class' => 'label label-default'];
 

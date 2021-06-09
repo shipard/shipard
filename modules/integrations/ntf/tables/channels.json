@@ -14,7 +14,7 @@
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"views": {
-		"default": {"id": "default", "class": "integrations.ntf.ViewChannels"}
+		"default": {"id": "default", "class": "integrations.ntf.ViewChannels", "help":"prirucka/141"}
 	},
 	"forms": [
 		{"id": "default", "class": "integrations.ntf.FormChannel"}

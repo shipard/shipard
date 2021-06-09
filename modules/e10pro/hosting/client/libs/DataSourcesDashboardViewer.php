@@ -171,7 +171,7 @@ class DataSourcesDashboardViewer extends TableView
 		$item['pk'] = $ndx;
 		$item ['pane'] = ['title' => [], 'body' => [], 'class' => $this->paneClass.' df2-action-trigger '];
 
-		$optionsIcon = $item['favorite'] ? 'icon-star' : 'icon-star-o';
+		$optionsIcon = $item['favorite'] ? 'system/iconStar' : 'system/iconStar';
 		$optionsClass = $item['favorite'] ? 'e10-success' : 'e10-off';
 
 		$title = [];
@@ -274,7 +274,7 @@ class DataSourcesDashboardViewer extends TableView
 
 			$c .= "<div class='e10-pane-hover df2-action-trigger e10-fx-col e10-fx-1' style='height: 7em; margin: 1ex; align-items: center; border: 1px solid rgba(0,0,0,.65); border-radius: 4px; background-color: white; min-width: 7em;white-space: nowrap;overflow: hidden;text-overflow: ellipsis; $styleImg' $params>";
 
-			$optionsIcon = $ds['favorite'] ? 'icon-star' : 'icon-star-o';
+			$optionsIcon = $ds['favorite'] ? 'system/iconStar' : 'system/iconStar';
 			$optionsClass = $ds['favorite'] ? 'e10-success' : 'e10-off';
 
 			$btn = [

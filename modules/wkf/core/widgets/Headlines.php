@@ -83,7 +83,7 @@ class Headlines extends WidgetBoard
 	{
 		$tabs = [];
 
-		$tabs['marked'] = ['icon' => 'icon-star', 'text' => '', 'title' => 'Označené', 'action' => 'load-marked'];
+		$tabs['marked'] = ['icon' => 'system/iconStar', 'text' => '', 'title' => 'Označené', 'action' => 'load-marked'];
 		$tabs['user'] = ['icon' => 'icon-user-circle-o', 'text' => '', 'title' => $this->app->user()->data('name'), 'action' => 'load-user'];
 		$tabs['search'] = ['icon' => 'icon-search', 'text' => '', 'title' => 'Hledat', 'action' => 'load-search'];
 
@@ -97,8 +97,8 @@ class Headlines extends WidgetBoard
 		if ($testDIV)
 		{
 			$rt = [
-				'viewer-mode-2' => ['text' => '', 'icon' => 'icon-th', 'action' => 'viewer-mode-2'],
-				'viewer-mode-5' => ['text' =>'', 'icon' => 'icon-window-maximize', 'action' => 'viewer-mode-5'],
+				'viewer-mode-2' => ['text' => '', 'icon' => 'system/dashboardModeTilesSmall', 'action' => 'viewer-mode-2'],
+				'viewer-mode-5' => ['text' =>'', 'icon' => 'system/dashboardModeViewer', 'action' => 'viewer-mode-5'],
 			];
 			//$rt['viewer-mode-5'] = ['text' =>'', 'icon' => 'icon-window-maximize', 'action' => 'viewer-mode-5'];
 		}

@@ -664,7 +664,7 @@ class FormWorkRec extends TableForm
 
 		$tabs ['tabs'][] = ['text' => 'Popis', 'icon' => 'x-content'];
 		if ($useRows)
-			$tabs ['tabs'][] = ['text' => 'Řádky', 'icon' => 'icon-list'];
+			$tabs ['tabs'][] = ['text' => 'Řádky', 'icon' => 'system/iconList'];
 		$tabs ['tabs'][] = ['text' => 'Fakturace', 'icon' => 'e10-docs-invoices-out'];
 		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'x-wrench'];
 		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-attachments'];

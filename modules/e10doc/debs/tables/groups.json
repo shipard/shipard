@@ -26,7 +26,7 @@
 		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
 	],
 	"views": [
-		{"id": "default", "class": "e10doc.debs.ViewGroups", "detail": "e10doc.debs.ViewDetailGroup"}
+		{"id": "default", "class": "e10doc.debs.ViewGroups", "detail": "e10doc.debs.ViewDetailGroup", "help":"prirucka/104"}
 	],
 	"forms": [
 		{"id": "default", "class": "e10doc.debs.FormGroup"}

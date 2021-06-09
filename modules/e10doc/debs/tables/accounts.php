@@ -362,7 +362,7 @@ class ViewAccountsCombo extends TableView
 			if ($item['accountKind'] === 2 || $item['accountKind'] === 3)
 			{
 				if ($item ['nontax'])
-					$props [] = array ('i' => 'icon-angle-right', 'text' => 'Daňově neuznatelný');
+					$props [] = array ('i' => 'system/iconAngleRight', 'text' => 'Daňově neuznatelný');
 			}
 
 			$listItem ['i2'] = $props;

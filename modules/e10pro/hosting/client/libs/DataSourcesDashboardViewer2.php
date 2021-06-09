@@ -124,7 +124,7 @@ class DataSourcesDashboardViewer2 extends TableView
 
 		$listItem ['pane'] = ['title' => [], 'body' => [], 'class' => $this->paneClass.' df2-action-trigger-no-shift '];
 
-		$optionsIcon = $item['favorite'] ? 'icon-star' : 'icon-star-o';
+		$optionsIcon = $item['favorite'] ? 'system/iconStar' : 'system/iconStar';
 		$optionsClass = $item['favorite'] ? 'e10-success' : 'e10-off';
 
 		$title = [];

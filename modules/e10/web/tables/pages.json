@@ -40,7 +40,7 @@
 			"propertiesCfgList": "e10.web.pagesProperties"}
   ],
   "views": [
-    {"id": "default", "class": "e10.web.ViewPages",
+    {"id": "default", "class": "e10.web.ViewPages", "help":"prirucka/188",
 			"details": {
 				"preview": {"title": "Náhled", "icon": "system/detailOverview", "type": "detail", "class": "e10.web.ViewDetailPagePreview", "order": 1000},
 				"text": {"title": "Text", "icon": "detailText", "type": "detail", "class": "e10.web.ViewDetailPageText", "order": 2000}
@@ -48,7 +48,7 @@
 		}
   ],
   "forms": [
-    {"id": "default", "class": "e10.web.FormPagesPage"}
+    {"id": "default", "class": "e10.web.FormPagesPage", "help":"prirucka/188"}
   ],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.web.pages.docStates"}
 }

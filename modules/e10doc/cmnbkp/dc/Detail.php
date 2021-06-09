@@ -237,7 +237,7 @@ class Detail extends \e10doc\core\dc\Detail
 			unset ($h['state']);
 		}
 
-		$this->addContent ('body', ['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'title' => ['icon' => 'x-properties', 'text' => 'Řádky dokladu'],
+		$this->addContent ('body', ['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'title' => ['icon' => 'system/iconList', 'text' => 'Řádky dokladu'],
 				'header' => $h, 'table' => $list, 'params' => ['disableZeros' => 1]]);
 
 		$checkRows = [
@@ -586,7 +586,7 @@ class Detail extends \e10doc\core\dc\Detail
 				unset ($h[$key]);
 		}
 
-		$this->addContent ('body', array ('pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'title' => ['icon' => 'x-properties', 'text' => 'Řádky dokladu'],
+		$this->addContent ('body', array ('pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'title' => ['icon' => 'system/iconList', 'text' => 'Řádky dokladu'],
 				'header' => $h, 'table' => $list, 'params' => array ('disableZeros' => 1)));
 	}
 
@@ -629,7 +629,7 @@ class Detail extends \e10doc\core\dc\Detail
 
 		$h = array ('#' => '#', 'property' => 'Majetek', 'fullName' => 'Název', 'priceItem' => ' Částka');
 		$docTypes = $this->app->cfgItem ('e10.docs.types');
-		$this->addContent ('body', array ('pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'title' => ['icon' => 'x-properties', 'text' => 'Řádky dokladu ('.$docTypes['cmnbkp']['activities'][$params]['name'].')'],
+		$this->addContent ('body', array ('pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'title' => ['icon' => 'system/iconList', 'text' => 'Řádky dokladu ('.$docTypes['cmnbkp']['activities'][$params]['name'].')'],
 			'header' => $h, 'table' => $list, 'params' => array ('disableZeros' => 1)));
 	}
 

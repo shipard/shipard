@@ -78,7 +78,7 @@
 		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
 	],
 	"views": [
-		{"id": "default", "class": "e10doc.contracts.core.ViewKinds", "detail": "e10doc.contracts.core.ViewDetailKind"}
+		{"id": "default", "class": "e10doc.contracts.core.ViewKinds", "detail": "e10doc.contracts.core.ViewDetailKind", "help":"prirucka/137"}
 	],
 	"forms": [
 		{"id": "default", "class": "e10doc.contracts.core.FormKind"}

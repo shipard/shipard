@@ -98,7 +98,7 @@ class reportContacts extends \E10\GlobalReport
 	{
 		parent::createToolbarSaveAs ($printButton);
 		$printButton['dropdownMenu'][] = ['text' => 'CSV (.csv)', 'icon' => 'icon-file-text-o', 'type' => 'reportaction', 'action' => 'print', 'class' => 'e10-print', 'data-format' => 'csv'];
-		$printButton['dropdownMenu'][] = ['text' => 'vCard (.vcf)', 'icon' => 'icon-address-card', 'type' => 'reportaction', 'action' => 'print', 'class' => 'e10-print', 'data-format' => 'vcf'];
+		$printButton['dropdownMenu'][] = ['text' => 'vCard (.vcf)', 'icon' => 'system/iconIdBadge', 'type' => 'reportaction', 'action' => 'print', 'class' => 'e10-print', 'data-format' => 'vcf'];
 	}
 
 	public function saveReportAs ()

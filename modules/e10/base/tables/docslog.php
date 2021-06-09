@@ -33,7 +33,7 @@ class TableDocsLog extends DbTable
 
 		$itemTop = [
 			['icon' => 'system/iconSitemap', 'text' => $recData['ipaddress']],
-			['icon' => 'icon-desktop', 'text' => $recData['deviceId']]
+			['icon' => 'deviceTypes/workStation', 'text' => $recData['deviceId']]
 		];
 
 		$hdr ['info'][] = array ('class' => 'info', 'value' => $itemTop);

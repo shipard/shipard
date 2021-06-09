@@ -390,7 +390,7 @@ class ViewProperty extends TableView
 		if ($item ['foreign'])
 			$listItem ['t2'][] = ['text' => 'Cizí', 'class' => 'label label-primary'];
 		if ($item['typeName'])
-			$listItem ['t2'][] = ['text' => $item ['typeName'], 'class' => 'label label-default', 'icon' => 'icon-list'];
+			$listItem ['t2'][] = ['text' => $item ['typeName'], 'class' => 'label label-default', 'icon' => 'system/iconList'];
 		if ($item['debsGroupShortName'])
 			$listItem ['t2'][] = ['text' => $item ['debsGroupShortName'], 'class' => 'label label-default', 'icon' => 'icon-folder-open-o'];
 

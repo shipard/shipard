@@ -86,7 +86,7 @@ class ViewTasks extends TableView
 		$listItem ['i1'] = ['text' => '#'.utils::nf($item ['ndx']), 'class' => 'id'];
 
 		$props = [];
-		$props[] = ['text' => utils::datef ($item ['timeCreate'], '%D, %T'), 'icon' => 'icon-star-o'];
+		$props[] = ['text' => utils::datef ($item ['timeCreate'], '%D, %T'), 'icon' => 'system/iconStar'];
 
 		$listItem ['t2'] = $props;
 

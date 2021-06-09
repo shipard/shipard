@@ -243,9 +243,9 @@ class ViewDetailPartner extends TableViewDetail
 			$item['t1'][] = ['text' => '#'.$r['personId'], 'class' => 'pull-right id'];
 
 			if ($r['isSupport'])
-				$item['t1'][] = ['text' => '', 'title' => 'Technická podpora zákazníků', 'class' => 'pull-right', 'icon' => 'icon-life-ring'];
+				$item['t1'][] = ['text' => '', 'title' => 'Technická podpora zákazníků', 'class' => 'pull-right', 'icon' => 'system/actionSupport'];
 			if ($r['isAdmin'])
-				$item['t1'][] = ['text' => '', 'title' => 'Správce partnera', 'class' => 'pull-right', 'icon' => 'icon-wrench'];
+				$item['t1'][] = ['text' => '', 'title' => 'Správce partnera', 'class' => 'pull-right', 'icon' => 'system/actionSettings'];
 
 			$dstTable[] = $item;
 			$label = 0;

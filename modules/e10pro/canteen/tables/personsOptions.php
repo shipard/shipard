@@ -87,7 +87,7 @@ class ViewPersonsOptions extends TableView
 
 		$props = [];
 		if ($item['canteenName'])
-			$props[] = ['text' => $item['canteenName'], 'icon' => 'icon-cutlery', 'class' => 'label label-default'];
+			$props[] = ['text' => $item['canteenName'], 'icon' => 'system/iconCutlery', 'class' => 'label label-default'];
 
 
 		if (count($props))
@@ -103,7 +103,7 @@ class ViewPersonsOptions extends TableView
 			$item ['t2'] = [];
 			foreach ($this->personsFoods[$item['pk']] as $uf)
 			{
-				$info = ['text' => $uf['name'], 'class' => 'label label-info', 'icon' => 'icon-cutlery'];
+				$info = ['text' => $uf['name'], 'class' => 'label label-info', 'icon' => 'system/iconCutlery'];
 				$ft = $this->foodTakings[$uf['taking']];
 				if ($uf['taking'])
 					$info['suffix'] = $ft['name'];

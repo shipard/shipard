@@ -243,7 +243,7 @@ class ViewPages extends TableView
 		if ($item ['order'] != 0)
 			$props [] = ['i' => 'sort', 'text' => \E10\nf ($item ['order'], 0)];
 		if ($item ['redirectTo'] != '')
-			$props [] = ['icon' => 'icon-external-link', 'text' => $item ['redirectTo']];
+			$props [] = ['icon' => 'system/iconLink', 'text' => $item ['redirectTo']];
 		if ($item ['menuDisabled'])
 			$props [] = ['icon' => 'icon-times', 'text' => ''];
 
