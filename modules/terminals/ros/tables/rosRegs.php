@@ -192,7 +192,7 @@ class TableRosRegs extends DbTable
 		$now = new \DateTime();
 		$validTo = new \DateTime('@'.$crtInfo['validTo_time_t']);
 		$daysBeforeExpire = utils::dateDiff($now, $validTo);
-		$validToLabel = ['text' => utils::datef($validTo, '%d, %T'), 'icon' => 'icon-calendar', 'class' => 'label label-success'];
+		$validToLabel = ['text' => utils::datef($validTo, '%d, %T'), 'icon' => 'system/iconCalendar', 'class' => 'label label-success'];
 
 		if ($validTo <= $now)
 		{
@@ -267,7 +267,7 @@ class ViewRosRegs extends TableView
 			$txt .= ' → ';
 			if ($item['validTo'])
 				$txt = utils::datef ($item['validTo']);
-			$props[] = ['icon' => 'icon-calendar', 'text' => $txt, 'class' => 'label label-primary'];
+			$props[] = ['icon' => 'system/iconCalendar', 'text' => $txt, 'class' => 'label label-primary'];
 		}
 
 		$listItem ['i2'] = $props;

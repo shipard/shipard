@@ -76,7 +76,7 @@ class TableContacts extends DbTable
 			}
 
 			if ($inlineMode)
-				$a = ['text' => $txt, 'class' => 'block', 'icon' => 'icon-map-marker'];
+				$a = ['text' => $txt, 'class' => 'block', 'icon' => 'system/iconMapMarker'];
 			else
 			{
 				$a = $r->toArray();
@@ -112,7 +112,7 @@ class TableContacts extends DbTable
 
 		if ($inlineMode)
 		{
-			$a = ['text' => $txt, 'class' => 'block', 'icon' => 'icon-map-marker'];
+			$a = ['text' => $txt, 'class' => 'block', 'icon' => 'system/iconMapMarker'];
 			return $a;
 		}
 

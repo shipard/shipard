@@ -47,7 +47,7 @@ class Control extends Utility
 			'action' => 'inline-action',
 			//'class' => 'pull-right',
 
-			'icon' => 'icon-check',
+			'icon' => 'system/iconCheck',
 			'btnClass' => 'btn-primary',
 			'actionClass' => 'df2-action-trigger',
 

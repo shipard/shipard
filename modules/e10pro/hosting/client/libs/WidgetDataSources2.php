@@ -26,7 +26,7 @@ class WidgetDataSources2 extends widgetBoard
 		$refreshCode = "<li class='e10-widget-trigger active' data-action='viewer-mode-0' data-tabid='viewer-mode-2'><i class='fa fa-refresh'></i></li>";
 		$this->toolbar['buttons'][] = ['code' => $refreshCode, 'type' => 'li'];
 
-		$this->toolbar['buttons'][] = ['text' => $this->app->user()->data ('name'), 'icon' => 'icon-user'];
+		$this->toolbar['buttons'][] = ['text' => $this->app->user()->data ('name'), 'icon' => 'system/iconUser'];
 
 		$logoutUrl = $this->app()->urlRoot . '/' . $this->app()->appSkeleton['userManagement']['pathBase'] . '/' . $this->app()->appSkeleton['userManagement']['pathLogoutCheck'];
 		$logoutCode = "<li style='padding-right:0;'><a href='$logoutUrl' title='".DictSystem::es(DictSystem::diBtn_Logout)."' style='margin-top: auto;'><i class='fa fa-power-off' style='color: white!important;'></i></a></li>";

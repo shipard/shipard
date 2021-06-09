@@ -14,10 +14,10 @@ class WikiSystemPageTable extends \e10pro\kb\libs\SystemPageEngine
 
 	var $columnsOptions = [
 		'mandatory' => ['o' => DataModel::coMandatory, 'title' => 'Vyžadováno', 'icon' => 'icon-check-square-o'],
-		'saveOnChange' => ['o' => DataModel::coSaveOnChange, 'title' => 'Uložit při změně', 'icon' => 'icon-download'],
+		'saveOnChange' => ['o' => DataModel::coSaveOnChange, 'title' => 'Uložit při změně', 'icon' => 'system/actionDownload'],
 		'ascii' => ['o' => DataModel::coAscii, 'title' => 'Pouze ASCII znaky', 'icon' => 'icon-code'],
 		'scanner' => ['o' => DataModel::coScanner, 'title' => 'Ze skeneru čár. kódů', 'icon' => 'icon-barcode'],
-		'computed' => ['o' => DataModel::coComputed, 'title' => 'Automaticky vypočítáno', 'icon' => 'icon-cogs'],
+		'computed' => ['o' => DataModel::coComputed, 'title' => 'Automaticky vypočítáno', 'icon' => 'system/iconCogs'],
 		'ui' => ['o' => DataModel::coUserInput, 'title' => 'Zadáváno uživatelem', 'icon' => 'icon-keyboard-o'],
 	];
 

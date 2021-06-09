@@ -86,12 +86,12 @@ class ViewVlans extends TableView
 
 		$listItem ['t1'] = $item['fullName'];
 		if ($item['lanShortName'])
-			$listItem ['i2'] = ['text' => $item['lanShortName'], 'icon' => 'icon-sitemap'];
+			$listItem ['i2'] = ['text' => $item['lanShortName'], 'icon' => 'system/iconSitemap'];
 		else
-			$listItem ['i2'] = ['text' => '!!!', 'icon' => 'icon-sitemap'];
+			$listItem ['i2'] = ['text' => '!!!', 'icon' => 'system/iconSitemap'];
 
 		if ($item['isPublic'])
-			$listItem ['t2'] = [['text' => 'Veřejná', 'icon' => 'icon-user', 'class' => 'label label-warning']];
+			$listItem ['t2'] = [['text' => 'Veřejná', 'icon' => 'system/iconUser', 'class' => 'label label-warning']];
 
 		return $listItem;
 	}

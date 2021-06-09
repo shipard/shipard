@@ -24,7 +24,7 @@ class ContactsForm extends TableView
 		$this->addAddParam('tableNdx', $this->dstTableNdx);
 		$this->addAddParam('recNdx', $this->dstRecNdx);
 
-		$this->toolbarTitle = ['text' => 'Kontakty', 'class' => 'h2 e10-bold'/*, 'icon' => 'icon-map-marker'*/];
+		$this->toolbarTitle = ['text' => 'Kontakty', 'class' => 'h2 e10-bold'/*, 'icon' => 'system/iconMapMarker'*/];
 
 		$this->setMainQueries();
 
@@ -69,9 +69,9 @@ class ContactsForm extends TableView
 			$listItem ['t2'][] = ['text' => $item['role'], 'class' => 'label label-default'];
 
 		if ($item['email'] !== '')
-			$listItem ['t2'][] = ['text' => $item['email'], 'class' => 'nowrap', 'icon' => 'icon-envelope'];
+			$listItem ['t2'][] = ['text' => $item['email'], 'class' => 'nowrap', 'icon' => 'system/iconEmail'];
 		if ($item['phone'] !== '')
-			$listItem ['t2'][] = ['text' => $item['phone'], 'class' => 'nowrap', 'icon' => 'icon-phone'];
+			$listItem ['t2'][] = ['text' => $item['phone'], 'class' => 'nowrap', 'icon' => 'system/iconPhone'];
 
 		return $listItem;
 	}

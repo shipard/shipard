@@ -51,7 +51,7 @@ class AccessTag extends \e10\DocumentCard
 		{
 			$tt = [];
 			$tt[] = [
-				'action' => 'new', 'data-table' => 'mac.access.tagsAssignments', 'icon' => 'icon-plus-circle',
+				'action' => 'new', 'data-table' => 'mac.access.tagsAssignments', 'icon' => 'system/actionAdd',
 				'text' => 'Přiřadit',
 				'type' => 'button', 'actionClass' => 'btn',
 				'class' => '', 'btnClass' => 'btn-primary btn-xs',

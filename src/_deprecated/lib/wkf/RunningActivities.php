@@ -62,9 +62,9 @@ class RunningActivities extends Utility
 
 			$row = ['ndx' => $wrNdx];
 			$tt = [];
-			$tt[] = ['text' => $r['subject'], 'icon' => 'icon-user', 'class' => 'e10-off'];
+			$tt[] = ['text' => $r['subject'], 'icon' => 'system/iconUser', 'class' => 'e10-off'];
 
-			$tt[] = ['text' => utils::datef($r['dateBegin'], '%D, %T'), 'icon' => 'icon-play', 'class' => 'break e10-small'];
+			$tt[] = ['text' => utils::datef($r['dateBegin'], '%D, %T'), 'icon' => 'system/actionPlay', 'class' => 'break e10-small'];
 			$tt[] = ['text' => utils::dateDiffShort($r['dateBegin'], $now), 'icon' => 'icon-clock-o', 'class' => 'e10-small'];
 
 			$row['title'] = $tt;

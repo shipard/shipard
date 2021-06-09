@@ -109,7 +109,7 @@ class DocumentCardDataSource extends \e10\DocumentCard
 					'p1' => 'Velikost',
 					't1' => [
 						['text' => utils::snf($this->statsRecData['usageTotal']), 'icon' => 'icon-hdd-o', 'class' => '', 'title' => 'Celková velikost'],
-						['text' => utils::snf($this->statsRecData['usageDb']), 'icon' => 'icon-database', 'class' => '', 'title' => 'Databáze'],
+						['text' => utils::snf($this->statsRecData['usageDb']), 'icon' => 'system/iconDatabase', 'class' => '', 'title' => 'Databáze'],
 						['text' => utils::snf($this->statsRecData['usageFiles']), 'icon' => 'icon-paperclip', 'class' => '', 'title' => 'Přílohy'],
 					]
 				];
@@ -117,7 +117,7 @@ class DocumentCardDataSource extends \e10\DocumentCard
 				$info[] = [
 					'p1' => 'Uživatelé',
 					't1' => [
-						['text' => utils::snf($this->statsRecData['cntUsersActive1m']), 'icon' => 'icon-user', 'class' => '', 'title' => 'Počet aktivních uživatelů za poslední měsíc'],
+						['text' => utils::snf($this->statsRecData['cntUsersActive1m']), 'icon' => 'system/iconUser', 'class' => '', 'title' => 'Počet aktivních uživatelů za poslední měsíc'],
 						['text' => utils::snf($this->statsRecData['cntUsersAll1m']), 'icon' => 'icon-user-o', 'class' => '', 'title' => 'Počet všech uživatelů za poslední měsíc'],
 					]
 				];
@@ -180,7 +180,7 @@ class DocumentCardDataSource extends \e10\DocumentCard
 								$extModulesLabels[] = [
 									'text' => 'Počítačová síť',
 									'suffix' => utils::nf($em['lan']['countDevices']['ALL']).' zařízení',
-									'icon' => 'icon-sitemap', 'class' => 'label label-info'
+									'icon' => 'system/iconSitemap', 'class' => 'label label-info'
 								];
 							}
 							if (isset($em['lan']) && isset($em['lan']['countDevices']['10']))

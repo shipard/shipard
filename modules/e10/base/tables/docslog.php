@@ -32,7 +32,7 @@ class TableDocsLog extends DbTable
 			return $hdr;
 
 		$itemTop = [
-			['icon' => 'icon-sitemap', 'text' => $recData['ipaddress']],
+			['icon' => 'system/iconSitemap', 'text' => $recData['ipaddress']],
 			['icon' => 'icon-desktop', 'text' => $recData['deviceId']]
 		];
 
@@ -105,7 +105,7 @@ class ViewDocsLogAll extends TableView
 					$props2 [] = array('icon' => 'icon-chevron-right', 'text' => $docStateLogName);
 				else
 					$props2 [] = array('icon' => 'icon-chevron-right', 'text' => $docStateName);
-				$props2 [] = array('icon' => 'icon-user', 'text' => $item['personName']);
+				$props2 [] = array('icon' => 'system/iconUser', 'text' => $item['personName']);
 			}
 			else
 			{
@@ -115,15 +115,15 @@ class ViewDocsLogAll extends TableView
 		else
 		if ($item['eventType'] == 2)
 		{ // user access
-			$listItem ['icon'] = 'icon-user';
+			$listItem ['icon'] = 'system/iconUser';
 			$listItem ['t1'] = $item['personName'];
-			$props2 [] = array ('icon' => 'icon-sitemap', 'text' => $item['ipaddress']);
+			$props2 [] = array ('icon' => 'system/iconSitemap', 'text' => $item['ipaddress']);
 		}
 		else
 		if ($item['eventType'] === 3)
 		{ // system check
-			$listItem ['icon'] = 'icon-cogs';
-			$props2 [] = ['icon' => 'icon-sitemap', 'text' => $item['ipaddress']];
+			$listItem ['icon'] = 'system/iconCogs';
+			$props2 [] = ['icon' => 'system/iconSitemap', 'text' => $item['ipaddress']];
 			if (!isset($listItem ['class']))
 				$listItem ['class'] = '';
 			$listItem ['class'] .= $this->table->eventResultClass($item['eventResult']);
@@ -190,7 +190,7 @@ class ViewDocsLogDoc extends TableView
 
 		if ($item['eventType'] === 3)
 		{ // system check
-			$listItem ['icon'] = 'icon-cogs';
+			$listItem ['icon'] = 'system/iconCogs';
 			$listItem ['class'] = $this->table->eventResultClass($item['eventResult']);
 			$listItem ['t1'] = $item ['eventTitle'];
 			$listItem ['t3'] = $item ['eventSubtitle'];

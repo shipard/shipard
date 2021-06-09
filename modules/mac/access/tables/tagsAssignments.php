@@ -75,7 +75,7 @@ class ViewTagsAssignments extends TableView
 
 		$listItem ['t1'] = $item['personName'];
 		$listItem ['i1'] = ['text' => '#'.$item['personId'], 'class' => 'id'];
-		$listItem ['i2'] = ['text' => $item['tagId'], 'icon' => 'icon-key'];
+		$listItem ['i2'] = ['text' => $item['tagId'], 'icon' => 'tables/e10.persons.keys'];
 
 		$listItem ['t2'] = utils::datef($item['validFrom'], '%d, %T').' → ';
 		if ($item['validTo'])

@@ -78,7 +78,7 @@ class ImportDocRowsDebsWizard extends \E10\Wizard
 
 	public function createHeader ()
 	{
-		$hdr = ['icon' => 'icon-download'];
+		$hdr = ['icon' => 'system/actionDownload'];
 
 		$hdr ['info'][] = ['class' => 'title', 'value' => 'Import účetní dávky'];
 		$hdr ['info'][] = ['class' => 'info', 'value' => 'Vyberte .CSV soubor k importu'];

@@ -387,10 +387,10 @@ class ViewOrders extends TableView
 		if ($item['dateDeadlineConfirmed'])
 			$props[] = ['icon' => 'icon-calendar-check-o', 'text' => utils::datef ($item ['dateDeadlineConfirmed'], '%d'), 'class' => ''];
 		elseif ($item['dateDeadlineRequested'])
-			$props[] = ['icon' => 'icon-calendar-o', 'text' => utils::datef ($item ['dateDeadlineRequested'], '%d'), 'class' => ''];
+			$props[] = ['icon' => 'system/iconCalendar', 'text' => utils::datef ($item ['dateDeadlineRequested'], '%d'), 'class' => ''];
 
 		if ($item['dateClosed'])
-			$props[] = ['icon' => 'icon-stop', 'text' => utils::datef ($item ['dateClosed'], '%d'), 'class' => ''];
+			$props[] = ['icon' => 'system/actionStop', 'text' => utils::datef ($item ['dateClosed'], '%d'), 'class' => ''];
 
 		$listItem ['t2'] = $props;
 
@@ -632,13 +632,13 @@ class FormOrder extends TableForm
 		$dko = $this->dko;
 
 		$this->openForm ();
-		$tabs ['tabs'][] = ['text' => 'Záhlaví', 'icon' => 'x-content'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 		if (!$dko['disableRows'])
-			$tabs ['tabs'][] = ['text' => 'Řádky', 'icon' => 'x-properties'];
+			$tabs ['tabs'][] = ['text' => 'Řádky', 'icon' => 'system/formRows'];
 		if ($dko['useDescription'])
-			$tabs ['tabs'][] = ['text' => 'Popis', 'icon' => 'icon-pencil'];
-		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-wrench'];
-		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-attachments'];
+			$tabs ['tabs'][] = ['text' => 'Popis', 'icon' => 'system/formNote'];
+		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		$this->openTabs ($tabs, TRUE);
 			$this->openTab ();

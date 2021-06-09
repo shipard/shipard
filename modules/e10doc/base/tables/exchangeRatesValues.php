@@ -97,9 +97,9 @@ class ViewExchangeRatesValuesCombo extends TableView
 		if ($item['validFrom'] && $item['validFrom'])
 		{
 			if ($item['validFrom'] == $item['validTo'])
-				$props[] = ['text' => utils::datef($item['validFrom'], '%d'), 'icon' => 'icon-calendar', 'class' => ''];
+				$props[] = ['text' => utils::datef($item['validFrom'], '%d'), 'icon' => 'system/iconCalendar', 'class' => ''];
 			else
-				$props[] = ['text' => utils::datef($item['validFrom'], '%k').' - '.utils::datef($item['validTo']), 'icon' => 'icon-calendar', 'class' => ''];
+				$props[] = ['text' => utils::datef($item['validFrom'], '%k').' - '.utils::datef($item['validTo']), 'icon' => 'system/iconCalendar', 'class' => ''];
 		}
 		$listItem ['t1'] = $props;
 

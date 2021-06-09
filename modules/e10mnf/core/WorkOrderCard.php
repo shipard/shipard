@@ -307,7 +307,7 @@ class WorkOrderCard extends \e10\DocumentCard
 		{
 			$this->addContent ('body', [
 				'pane' => 'e10-pane e10-pane-table',
-				'paneTitle' => ['text' => 'Práce na zakázce', 'class' => 'h2', 'icon' => 'icon-cogs'],
+				'paneTitle' => ['text' => 'Práce na zakázce', 'class' => 'h2', 'icon' => 'system/iconCogs'],
 				'sumTable' => [
 					'objectId' => 'e10mnf.core.SumTableWorks',
 					'queryParams' => ['work_order' => $this->recData['ndx']]

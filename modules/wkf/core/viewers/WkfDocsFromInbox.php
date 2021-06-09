@@ -139,12 +139,12 @@ class WkfDocsFromInbox extends TableView
 	{
 		if ($this->enableDetailSearch)
 		{
-			$mq [] = ['id' => 'active', 'title' => 'K řešení', 'icon' => 'icon-bolt'];
-			$mq [] = ['id' => 'done', 'title' => 'Hotovo', 'icon' => 'icon-check'];
-			$mq [] = ['id' => 'archive', 'title' => 'Archív', 'icon' => 'icon-archive'];
-			$mq [] = ['id' => 'all', 'title' => 'Vše', 'icon' => 'icon-toggle-on'];
+			$mq [] = ['id' => 'active', 'title' => 'K řešení', 'icon' => 'system/filterActive'];
+			$mq [] = ['id' => 'done', 'title' => 'Hotovo', 'icon' => 'system/filterDone'];
+			$mq [] = ['id' => 'archive', 'title' => 'Archív', 'icon' => 'system/filterArchive'];
+			$mq [] = ['id' => 'all', 'title' => 'Vše', 'icon' => 'system/filterAll'];
 			if ($this->app()->hasRole('pwuser'))
-				$mq [] = ['id' => 'trash', 'title' => 'Koš', 'icon' => 'icon-trash'];
+				$mq [] = ['id' => 'trash', 'title' => 'Koš', 'icon' => 'system/filterTrash'];
 			$this->setMainQueries($mq);
 		}
 	}
@@ -386,7 +386,7 @@ class WkfDocsFromInbox extends TableView
 		{
 			if ($item['issueType'] !== TableIssues::mtInbox)
 				if ($item ['authorFullName'])
-					$title[] = ['icon' => 'icon-user', 'text' => $item ['authorFullName'], 'class' => 'e10-off'];
+					$title[] = ['icon' => 'system/iconUser', 'text' => $item ['authorFullName'], 'class' => 'e10-off'];
 
 			if ($item['issueType'] === TableIssues::mtInbox && isset ($this->linkedPersons [$ndx]['wkf-issues-from']))
 				$title[] = $this->linkedPersons [$ndx]['wkf-issues-from'];
@@ -430,7 +430,7 @@ class WkfDocsFromInbox extends TableView
 
 		$docButtons = [];
 		$docButtons[] = [
-			'type' => 'action', 'text' => 'Pořídit doklad', 'icon' => 'icon-plus-circle', 'action' => 'newform', 'data-table' => 'e10doc.core.heads',
+			'type' => 'action', 'text' => 'Pořídit doklad', 'icon' => 'system/actionAdd', 'action' => 'newform', 'data-table' => 'e10doc.core.heads',
 			'actionClass' => 'btn btn-primary', 'class' => 'pt1', '__type' => 'button', 'data-viewer' => $this->queryParam ('mainViewerId'),
 			'data-addparams' => '__fromIssueNdx='.$ndx.'&__fromIssueSubject='.urlencode($item['subject']),
 		];
@@ -444,7 +444,7 @@ class WkfDocsFromInbox extends TableView
 					continue;
 
 				$docButtons[] = [
-						'type' => 'action', 'text' => 'Importovat', 'icon' => 'icon-plus-circle', 'action' => 'newform', 'data-table' => 'e10doc.core.heads', 'data-pk' => '0',
+						'type' => 'action', 'text' => 'Importovat', 'icon' => 'system/actionAdd', 'action' => 'newform', 'data-table' => 'e10doc.core.heads', 'data-pk' => '0',
 						'actionClass' => 'btn btn-primary', 'class' => 'pt1', '__type' => 'button', 'data-viewer' => $this->queryParam ('mainViewerId'),
 						'data-create-params' => '__inboxNdx='.$ndx.'&__ddfId='.$attFile['ddfId'].'&__ddfNdx='.$attFile['ddfNdx'],
 						'data-create-doc' => 1

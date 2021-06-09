@@ -47,7 +47,7 @@ class ViewDocsLogDocHistory extends TableView
 
 		if ($item['eventType'] === 3)
 		{ // system check
-			$listItem ['icon'] = 'icon-cogs';
+			$listItem ['icon'] = 'system/iconCogs';
 			$listItem ['class'] = $this->table->eventResultClass($item['eventResult']);
 			$listItem ['t1'] = $item ['eventTitle'];
 			$listItem ['t3'] = $item ['eventSubtitle'];

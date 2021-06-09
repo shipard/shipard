@@ -54,10 +54,10 @@ class ViewerDashboardWorkOrders extends TableView
 
 		if ($this->enableDetailSearch)
 		{
-			$mq [] = ['id' => 'active', 'title' => 'Živé', 'icon' => 'icon-bolt'];
-			$mq [] = ['id' => 'done', 'title' => 'Hotové', 'icon' => 'icon-check-square'];
-			$mq [] = ['id' => 'all', 'title' => 'Vše', 'icon' => 'icon-toggle-on'];
-			$mq [] = ['id' => 'trash', 'title' => 'Koš', 'icon' => 'icon-trash'];
+			$mq [] = ['id' => 'active', 'title' => 'Živé', 'icon' => 'system/filterActive'];
+			$mq [] = ['id' => 'done', 'title' => 'Hotové', 'icon' => 'system/filterDone'];
+			$mq [] = ['id' => 'all', 'title' => 'Vše', 'icon' => 'system/filterAll'];
+			$mq [] = ['id' => 'trash', 'title' => 'Koš', 'icon' => 'system/filterTrash'];
 			$this->setMainQueries($mq);
 		}
 
@@ -310,7 +310,7 @@ class ViewerDashboardWorkOrders extends TableView
 		$title[] = ['class' => 'id pull-right'.$msgTitleClass, 'text' => $item['docNumber'], 'icon' => 'icon-hashtag'];
 		$title[] = ['class' => 'h2', 'text' => $item['title'], 'icon' => $this->table->tableIcon($item, 1)];
 		if ($item['customerFullName'])
-			$title[] = ['text' => $item['customerFullName'], 'icon' => 'icon-user', 'class' => 'e10-off block'];
+			$title[] = ['text' => $item['customerFullName'], 'icon' => 'system/iconUser', 'class' => 'e10-off block'];
 
 		if ($item['dateIssue'])
 			$title[] = ['icon' => 'icon-play-circle', 'text' => utils::datef ($item ['dateIssue'], '%d'), 'class' => 'label label-default'];
@@ -318,15 +318,15 @@ class ViewerDashboardWorkOrders extends TableView
 		if ($item['dateDeadlineConfirmed'])
 			$title[] = ['icon' => 'icon-calendar-check-o', 'text' => utils::datef ($item ['dateDeadlineConfirmed'], '%d'), 'class' => 'label label-info'];
 		elseif ($item['dateDeadlineRequested'])
-			$title[] = ['icon' => 'icon-calendar-o', 'text' => utils::datef ($item ['dateDeadlineRequested'], '%d'), 'class' => 'label label-default'];
+			$title[] = ['icon' => 'system/iconCalendar', 'text' => utils::datef ($item ['dateDeadlineRequested'], '%d'), 'class' => 'label label-default'];
 
 		if ($item['dateClosed'])
-			$title[] = ['icon' => 'icon-stop', 'text' => utils::datef ($item ['dateClosed'], '%d'), 'class' => 'label label-default'];
+			$title[] = ['icon' => 'system/actionStop', 'text' => utils::datef ($item ['dateClosed'], '%d'), 'class' => 'label label-default'];
 
 
 /*
 		if (!utils::dateIsBlank($item['date']))
-			$title[] = ['text' => utils::datef ($item['date'], '%D'), 'icon' => 'icon-calendar', 'class' => 'e10-off'];
+			$title[] = ['text' => utils::datef ($item['date'], '%D'), 'icon' => 'system/iconCalendar', 'class' => 'e10-off'];
 		else
 			$title[] = ['text' => utils::datef ($item['dateCreate'], '%D, %T'), 'icon' => 'icon-keyboard-o', 'class' => 'e10-off'];
 */
@@ -449,7 +449,7 @@ class ViewerDashboardWorkOrders extends TableView
 		//$this->tableWorksRecs->addWorksRecsButtons($addButtons, $btnParams);
 
 		$addButton = [
-			'action' => 'new', 'data-table' => 'e10pro.wkf.documents', 'icon' => 'icon-plus-circle',
+			'action' => 'new', 'data-table' => 'e10pro.wkf.documents', 'icon' => 'system/actionAdd',
 			'text' => 'Nový', 'type' => 'button', 'actionClass' => 'btn btn-sm',
 			'class' => 'e10-param-addButton', 'btnClass' => 'btn-success',
 			'data-srcobjecttype' => 'viewer', 'data-srcobjectid' => $this->vid,

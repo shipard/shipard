@@ -65,7 +65,7 @@ class WorkOrderAnalysisEngine extends Utility
 					'lastCredit' => ['icon' => 'icon-money'],
 					'end' => ['icon' => 'icon-flag-checkered'],
 					'pause' => ['icon' => 'icon-pause'],
-					'stop' => ['icon' => 'icon-stop'],
+					'stop' => ['icon' => 'system/actionStop'],
 					'fiscalPeriodBreak' => ['icon' => 'icon-calendar-times-o', 'class' => 'label label-default e10-me'],
 				]
 			]

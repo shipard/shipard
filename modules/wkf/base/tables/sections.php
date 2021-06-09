@@ -335,7 +335,7 @@ class TableSections extends DbTable
 		{
 			$options['dropdownMenu'][] = [
 				'type' => 'action', 'action' => 'addwizard', 'data-class' => 'wkf.core.libs.WizardAddFromAttachments', 'table' => 'wkf.core.sections',
-				'text' => 'Hromadně nahrát přílohy jako nové zprávy', 'icon' => 'icon-upload',
+				'text' => 'Hromadně nahrát přílohy jako nové zprávy', 'icon' => 'system/actionUpload',
 				'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $widgetId, 'data-form-element-id' => $viewerId,
 				'data-addParams' => 'dstSectionNdx=' . $sectionNdx,
 			];
@@ -357,7 +357,7 @@ class TableSections extends DbTable
 				$dsId = $this->app()->cfgItem('dsi.dsid', '');
 			$emailDomain = $this->app()->cfgItem('dsi.portalInfo.emailDomain', 'shipard.email');
 			$email = $dsId.'--'.$shipardEmailId.'@'.$emailDomain;
-			$info[] = ['text' => $email, 'class' => 'block e10-small', 'icon' => 'icon-envelope'];
+			$info[] = ['text' => $email, 'class' => 'block e10-small', 'icon' => 'system/iconEmail'];
 		}
 
 		$lp = new LinkedPersons($this->app());
@@ -433,7 +433,7 @@ class ViewSections extends TableView
 
 		if ($item['subSectionRightsType'] === 0 && $item['parentSection'])
 		{
-			$listItem['t2'] = ['icon' => 'icon-sign-in', 'text' => 'Přístupová práva se přebírají z nadřazené sekce', 'class' => 'label label-default'];
+			$listItem['t2'] = ['icon' => 'system/actionLogIn', 'text' => 'Přístupová práva se přebírají z nadřazené sekce', 'class' => 'label label-default'];
 		}
 
 		return $listItem;

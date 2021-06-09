@@ -83,7 +83,7 @@ class DocumentCardDeviceSw extends \mac\lan\DocumentCardDevice
 				$n = $pkg['name'];
 				$info[] = ['text' => $n, 'class' => ''];
 				$info[] = [
-						'docAction' => 'new', 'table' => 'mac.lan.swInstallPackages', 'icon' => 'icon-plus-circle',
+						'docAction' => 'new', 'table' => 'mac.lan.swInstallPackages', 'icon' => 'system/actionAdd',
 						'text' => 'Balíček', 'type' => 'button', 'actionClass' => 'btn btn-xs btn-success',
 						'class' => 'pull-right',
 						'addParams' => '__fullName=' . urlencode($n) . '&__pkgNames=' . urlencode($n),

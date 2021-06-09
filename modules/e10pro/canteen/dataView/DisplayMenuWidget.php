@@ -187,7 +187,7 @@ class DisplayMenuWidget extends DataView
 								$table[$thisRowId]['cntOrders'] = '';
 						}
 						else
-							$table[$thisRowId]['cntOrders'] = ['icon' => 'icon-user', 'text' => ''];
+							$table[$thisRowId]['cntOrders'] = ['icon' => 'system/iconUser', 'text' => ''];
 
 						$table[$thisRowId]['_options']['rowSpan']['day'] = count($dayFoods) + 1 + (isset($canteenEngine->canteenCfg['addFoods']) ? count($canteenEngine->canteenCfg['addFoods']) : 0);
 						$table[$thisRowId]['_options']['class'] = 'separator2';

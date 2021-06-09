@@ -78,7 +78,7 @@ class ViewBankDocs extends \e10doc\core\ViewHeads
 
 		$listItem ['t3'] = $item ['title'];
 
-		$props [] = ['icon' => 'icon-calendar', 'text' => \E10\df ($item['dateAccounting'], '%D'), 'class' => ''];
+		$props [] = ['icon' => 'system/iconCalendar', 'text' => \E10\df ($item['dateAccounting'], '%D'), 'class' => ''];
 
 		$docNumber = ['icon' => 'icon-file', 'text' => $item ['docNumber'], 'class' => ''];
 		if (isset($item['docStateAcc']) && $item['docStateAcc'] == 9)

@@ -27,7 +27,7 @@ class AddressForm extends TableView
 		$this->addAddParam('tableid', $this->dstTableId);
 		$this->addAddParam('recid', $this->dstRecId);
 
-		$this->toolbarTitle = ['text' => 'Adresy', 'class' => 'h2 e10-bold'/*, 'icon' => 'icon-map-marker'*/];
+		$this->toolbarTitle = ['text' => 'Adresy', 'class' => 'h2 e10-bold'/*, 'icon' => 'system/iconMapMarker'*/];
 		$this->setMainQueries();
 
 		parent::init();

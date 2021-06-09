@@ -59,7 +59,7 @@ class LanOverviewData extends Utility
 
 		$this->dgCfg = [
 			self::dgiLan => [
-				'title' => 'LAN', 'icon' => 'icon-sitemap',
+				'title' => 'LAN', 'icon' => 'system/iconSitemap',
 			],
 			self::dgiServer => [
 				'title' => 'Servery', 'icon' => 'deviceTypes/server',
@@ -74,7 +74,7 @@ class LanOverviewData extends Utility
 				'title' => 'WiFi', 'icon' => 'deviceTypes/wifiAccessPoints',
 			],
 			self::dgiPrinter => [
-				'title' => 'Tiskárny', 'icon' => 'icon-print', 'disableAsDG' => 1,
+				'title' => 'Tiskárny', 'icon' => 'isystem/actionPrint', 'disableAsDG' => 1,
 			],
 			self::dgiComputer => [
 				'title' => 'Počítače', 'icon' => 'icon-desktop', 'disableAsDG' => 1,

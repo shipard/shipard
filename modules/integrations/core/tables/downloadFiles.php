@@ -81,7 +81,7 @@ class ViewDownloadFiles extends TableView
 			$listItem['t2'][] = ['text' => utils::datef($item['fileCreatedDateTime'], '%D, %T'), 'class' => 'label label-default', 'icon' => 'icon-clock-o'];
 
 		if ($item['fileSize'])
-			$listItem['t2'][] = ['text' => utils::memf($item['fileSize']), 'class' => 'label label-default', 'icon' => 'icon-download'];
+			$listItem['t2'][] = ['text' => utils::memf($item['fileSize']), 'class' => 'label label-default', 'icon' => 'system/actionDownload'];
 
 		if ($item['userEmail'] !== '')
 			$listItem['t2'][] = ['text' => $item['userEmail'], 'class' => 'label label-default', 'icon' => 'icon-user-circle-o'];

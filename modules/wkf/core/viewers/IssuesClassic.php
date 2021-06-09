@@ -24,12 +24,12 @@ class IssuesClassic extends TableView
 
 		if ($this->enableDetailSearch)
 		{
-			$mq [] = ['id' => 'active', 'title' => 'K řešení', 'icon' => 'icon-bolt'];
-			$mq [] = ['id' => 'done', 'title' => 'Hotovo', 'icon' => 'icon-check'];
-			$mq [] = ['id' => 'archive', 'title' => 'Archív', 'icon' => 'icon-archive'];
-			$mq [] = ['id' => 'all', 'title' => 'Vše', 'icon' => 'icon-toggle-on'];
+			$mq [] = ['id' => 'active', 'title' => 'K řešení', 'icon' => 'system/filterActive'];
+			$mq [] = ['id' => 'done', 'title' => 'Hotovo', 'icon' => 'system/filterDone'];
+			$mq [] = ['id' => 'archive', 'title' => 'Archív', 'icon' => 'system/filterArchive'];
+			$mq [] = ['id' => 'all', 'title' => 'Vše', 'icon' => 'system/filterAll'];
 			if ($this->app()->hasRole('pwuser'))
-				$mq [] = ['id' => 'trash', 'title' => 'Koš', 'icon' => 'icon-trash'];
+				$mq [] = ['id' => 'trash', 'title' => 'Koš', 'icon' => 'system/filterTrash'];
 			$this->setMainQueries($mq);
 		}
 

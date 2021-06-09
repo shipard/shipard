@@ -85,7 +85,7 @@ class ReportPlaceProperty extends FormReport
 
 	public function loadData ()
 	{
-		$this->setInfo('icon', 'icon-map-marker');
+		$this->setInfo('icon', 'system/iconMapMarker');
 		$this->setInfo('title', 'Inventář');
 		$this->setInfo('param', 'Místo', $this->recData ['fullName']);
 

@@ -139,7 +139,7 @@ class Detail extends \e10doc\core\dc\Detail
 					{
 						if ($taxRows['tax-vat-return-sum'][substr($account, 3)]['tax'] == $accountData['taxValue'])
 						{
-							$item['state'] = ['icon' => 'icon-check', 'text' => ''];
+							$item['state'] = ['icon' => 'system/iconCheck', 'text' => ''];
 							$item['_options'] = ['cellClasses' => ['state' => 'e10-icon e10-row-play']];
 						}
 						else
@@ -167,7 +167,7 @@ class Detail extends \e10doc\core\dc\Detail
 				$taxBaseValue = $taxRows['tax-vat-return-sum'][$taxCode]['base'];
 				$taxValue = $taxRows['tax-vat-return-sum'][$taxCode]['tax'];
 				$item = ['description' => 'Neúčtuje se - '.$cfgTaxCodes[$taxCode]['name'], 'line' => $r['row'], 'taxBase' => $taxBaseValue];
-				$item['state'] = ['icon' => 'icon-check', 'text' => ''];
+				$item['state'] = ['icon' => 'system/iconCheck', 'text' => ''];
 				$item['_options'] = ['cellClasses' => ['state' => 'e10-icon e10-row-play', 'description' => 'e10-off', 'line' => 'e10-off', 'taxBase' => 'e10-off']];
 				if ($taxValue !== 0.0)
 				{
@@ -184,7 +184,7 @@ class Detail extends \e10doc\core\dc\Detail
 			}
 
 			$stateClasses = 'e10-icon e10-row-play';
-			$iconState = 'icon-check';
+			$iconState = 'system/iconCheck';
 			if ($badItem)
 			{
 				$stateClasses = 'e10-icon e10-row-stop';
@@ -213,13 +213,13 @@ class Detail extends \e10doc\core\dc\Detail
 						$item['taxValue'] = $row['credit']-$row['debit'];
 					else
 						$item['taxValue'] = $row['debit']-$row['credit'];
-					$item['state'] = ['icon' => 'icon-check', 'text' => ''];
+					$item['state'] = ['icon' => 'system/iconCheck', 'text' => ''];
 					$options['cellClasses'] = ['state' => 'e10-icon e10-row-play'];
 				}
 				else
 				{
 					$item['taxValue'] = $row['debit']-$row['credit'];
-					$item['state'] = ['icon' => 'icon-check', 'text' => ''];
+					$item['state'] = ['icon' => 'system/iconCheck', 'text' => ''];
 					$options['cellClasses'] = ['state' => 'e10-icon e10-row-play'];
 				}
 				$item['_options'] = $options;
@@ -275,7 +275,7 @@ class Detail extends \e10doc\core\dc\Detail
 			if (isset ($checkRow['details']['iconNameOK']))
 				$stateIconName = $checkRow['details']['iconNameOK'];
 			else
-				$stateIconName = 'icon-check';
+				$stateIconName = 'system/iconCheck';
 		}
 		else
 		{
@@ -346,7 +346,7 @@ class Detail extends \e10doc\core\dc\Detail
 
 					if ($d['docState'] == 4000)
 					{
-						$item['state'] = ['icon' => 'icon-check', 'text' => ''];
+						$item['state'] = ['icon' => 'system/iconCheck', 'text' => ''];
 						$item['_options'] = ['cellClasses' => ['state' => 'e10-icon e10-row-play', 'c1' => $docStateClass]];
 					}
 					else
@@ -386,7 +386,7 @@ class Detail extends \e10doc\core\dc\Detail
 						$item['c5'] = \E10\nf(0.0, 2);
 						if ($rv['tax'] == 0.0)
 						{
-							$item['state'] = ['icon' => 'icon-check', 'text' => ''];
+							$item['state'] = ['icon' => 'system/iconCheck', 'text' => ''];
 							$item['_options'] = ['cellClasses' => ['state' => 'e10-icon e10-row-play'], 'colSpan' => ['c1' => 2, 'c3' => 2]];
 						}
 						else
@@ -430,7 +430,7 @@ class Detail extends \e10doc\core\dc\Detail
 							}
 							else
 							{
-								$item['state'] = ['icon' => 'icon-check', 'text' => ''];
+								$item['state'] = ['icon' => 'system/iconCheck', 'text' => ''];
 								$item['_options'] = ['cellClasses' => ['state' => 'e10-icon e10-row-play'], 'colSpan' => ['c1' => 4]];
 							}
 							$list[] = $item;

@@ -3112,7 +3112,7 @@ class ViewHeads extends TableView
 		}
 		else
 		{
-			$props [] = ['icon' => 'icon-calendar', 'text' => \E10\df ($item['dateAccounting'], '%D'), 'class' => ''];
+			$props [] = ['icon' => 'system/iconCalendar', 'text' => \E10\df ($item['dateAccounting'], '%D'), 'class' => ''];
 		}
 		$this->renderRow_rosProps ($item, $props);
 		$listItem ['t2'] = $props;

@@ -56,7 +56,7 @@ class ViewLevels extends TableView
 
 		$listItem ['i2'] = [];
 		if ($item['enableRoomAccess'])
-			$listItem ['i2'][] = ['icon' => 'icon-map-marker', 'text' => 'Povoluje přístup k pokojům', 'class' => 'label label-info'];
+			$listItem ['i2'][] = ['icon' => 'system/iconMapMarker', 'text' => 'Povoluje přístup k pokojům', 'class' => 'label label-info'];
 		if ($item ['order'])
 			$listItem ['i2'][] = ['icon' => 'system/iconOrder', 'text' => utils::nf ($item ['order'], 0), 'class' => ''];
 

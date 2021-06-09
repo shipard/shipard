@@ -1170,7 +1170,7 @@ function webArticle ($app, $articlesSections, $template, $urlBegin)
 			$page ['tableId'] = 'e10.web.articles';
 			if (WebPages::$secureWebPage)
 			{
-				$b = ['text' => 'Opravit článek', 'icon' => 'icon-edit',
+				$b = ['text' => 'Opravit článek', 'icon' => 'system/actionOpen',
 					'attr' => [
 						['k' => 'table', 'v' => 'e10.web.articles'],
 						['k' => 'pk', 'v' => $page ['ndx']],
@@ -1276,7 +1276,7 @@ function webArticle ($app, $articlesSections, $template, $urlBegin)
 			$bt = 'Nový článek';
 			if (count($articlesSections) > 1)
 				$bt .= ': '.$us['sn'];
-			$b = ['text' => $bt, 'icon' => 'icon-edit',
+			$b = ['text' => $bt, 'icon' => 'system/actionOpen',
 				'attr' => [
 					['k' => 'table', 'v' => 'e10.web.articles'],
 					['k' => 'action', 'v' => 'new'],

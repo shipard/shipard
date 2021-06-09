@@ -43,7 +43,7 @@ class ViewBookingAgenda extends TableView
 		$cmds = [];
 
 		$cmds[] = [
-			'class' => 'pull-right', 'text' => 'Otevřít', 'icon' => 'icon-edit', 'docAction' => 'edit', 'table' => $this->tableId(),
+			'class' => 'pull-right', 'text' => 'Otevřít', 'icon' => 'system/actionOpen', 'docAction' => 'edit', 'table' => $this->tableId(),
 			'pk'=> $item ['ndx'], 'type' => 'button', 'actionClass' => 'btn btn-xs btn-primary'
 		];
 		$item ['pane']['info'][] = ['class' => 'commands', 'value' => $cmds];

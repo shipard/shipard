@@ -58,7 +58,7 @@ class ViewKeys extends TableView
 			$listItem ['t1'] = utils::es ('--- nepřiřazeno ---');
 
 		$props [] = array ('icontxt' => '#', 'text' => $item['number']);
-		$props [] = array ('icon' => 'icon-key', 'text' => $item['key']);
+		$props [] = array ('icon' => 'tables/e10.persons.keys', 'text' => $item['key']);
 		$listItem ['t2'] = $props;
 
 		return $listItem;

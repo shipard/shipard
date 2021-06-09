@@ -128,7 +128,7 @@ class ViewMenus extends TableView
 
 		$props = [];
 		if ($item['dateFrom'])
-			$props[] = ['text' => utils::dateFromTo ($item['dateFrom'], $item['dateTo'], NULL), 'icon' => 'icon-calendar', 'class' => 'label label-default'];
+			$props[] = ['text' => utils::dateFromTo ($item['dateFrom'], $item['dateTo'], NULL), 'icon' => 'system/iconCalendar', 'class' => 'label label-default'];
 
 		if (count($props))
 			$listItem ['i2'] = $props;

@@ -12,12 +12,12 @@ use translation\dicts\e10\base\system\DictSystem;
 class DashboardIssuesSection extends \wkf\core\viewers\DashboardIssuesCore
 {
 	var $viewerGroups = [
-		'bboard' => ['cntColumns' => 2, 'title' => ['text' => 'Nástěnka', 'icon' => 'icon-thumb-tack', 'class' => 'h2 e10-me']],
-		'unread' => ['cntColumns' => 0, 'title' => [['text' => 'Nepřečtené', 'icon' => 'icon-eye-slash', 'class' => 'h2 e10-me']]],
-		'concept' => ['cntColumns' => 0, 'title' => ['text' => 'Novinky a koncepty', 'icon' => 'icon-pencil-square', 'class' => 'h2 e10-me']],
-		'important' => ['cntColumns' => 0, 'title' => ['text' => 'Důležité', 'icon' => 'icon-bolt', 'class' => 'h2 e10-me']],
-		'marked' => ['cntColumns' => 0, 'title' => ['text' => 'Označené', 'icon' => 'icon-star', 'class' => 'h2 e10-me']],
-		'other' => ['cntColumns' => 0, 'title' => ['text' => 'K řešení', 'icon' => 'icon-check', 'class' => 'h2 e10-me']],
+		'bboard' => ['cntColumns' => 2, 'title' => ['text' => 'Nástěnka', 'icon' => 'system/issueBoardNote', 'class' => 'h2 e10-me']],
+		'unread' => ['cntColumns' => 0, 'title' => [['text' => 'Nepřečtené', 'icon' => 'system/issueUnread', 'class' => 'h2 e10-me']]],
+		'concept' => ['cntColumns' => 0, 'title' => ['text' => 'Novinky a koncepty', 'icon' => 'system/issueConcept', 'class' => 'h2 e10-me']],
+		'important' => ['cntColumns' => 0, 'title' => ['text' => 'Důležité', 'icon' => 'notificationsIssuesCritical', 'class' => 'h2 e10-me']],
+		'marked' => ['cntColumns' => 0, 'title' => ['text' => 'Označené', 'icon' => 'system/issueSelected', 'class' => 'h2 e10-me']],
+		'other' => ['cntColumns' => 0, 'title' => ['text' => 'K řešení', 'icon' => 'system/iconCheck', 'class' => 'h2 e10-me']],
 	];
 
 	public function init ()

@@ -69,7 +69,7 @@ class ViewSwLicenses extends TableView
 			$props[] = ['text' => $item['appName'], 'icon' => 'icon-hourglass-o', 'class' => ''];
 
 		if ($item['maxUsers'] !== 0)
-			$props[] = ['text' => utils::nf($item['maxUsers']), 'icon' => 'icon-user', 'class' => 'pull-right'];
+			$props[] = ['text' => utils::nf($item['maxUsers']), 'icon' => 'system/iconUser', 'class' => 'pull-right'];
 		if ($item['maxDevices'] !== 0)
 			$props[] = ['text' => utils::nf($item['maxDevices']), 'icon' => 'icon-desktop', 'class' => 'pull-right'];
 

@@ -242,7 +242,7 @@ class Issue extends \e10\DocumentCard
 					$tt[] = ['text' => '', 'icon' => 'icon-thumb-tack', 'class' => 'e10-fs2 e10-me pr1'];
 					$tt[] = $title;
 					$tt[] = [
-						'text' => 'Otevřít', 'icon' => 'icon-edit',
+						'text' => 'Otevřít', 'icon' => 'system/actionOpen',
 						'docAction' => 'edit', 'table' => $srcTable->tableId(), 'pk' => $this->recData['recNdx'],
 						'class' => 'pull-right',
 						'actionClass' => 'btn btn-primary btn-sm', 'type' => 'button',

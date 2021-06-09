@@ -68,7 +68,7 @@ class PatchPanel extends \e10\DocumentCard
 		{
 			$listItem ['cableTerm'][] = ['text' => $item['wallSocketId'], 'icon' => 'icon-square-o', 'class' => 'e10-bold'];
 			if ($item['wallSocketPlaceName'])
-				$listItem ['cableTerm'][] = ['text' => $item['wallSocketPlaceName'], 'icon' => 'icon-map-marker', 'class' => ''];
+				$listItem ['cableTerm'][] = ['text' => $item['wallSocketPlaceName'], 'icon' => 'system/iconMapMarker', 'class' => ''];
 		}
 		elseif ($item['cableTerm'] == TablePatchPanelsPorts::ctPatchPanel)
 		{

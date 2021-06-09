@@ -208,7 +208,7 @@ class WidgetCanteen extends WidgetBoard
 
 					if ($ordered)
 					{
-						$addFoodLabel = ['text' => $afCfg['fn'], 'icon' => 'icon-check', 'class' => 'label label-success'];
+						$addFoodLabel = ['text' => $afCfg['fn'], 'icon' => 'system/iconCheck', 'class' => 'label label-success'];
 						$table[$rowId][$dayId][] = $addFoodLabel;
 					}
 				}
@@ -343,7 +343,7 @@ class WidgetCanteen extends WidgetBoard
 		else
 			$tabTitle = utils::weekDate($weekNumber, $weekYear, 1, 'd.m').' - '.utils::weekDate($weekNumber, $weekYear, 5, 'd.m');
 
-		$tabs['week-' . $weekId] = ['icon' => 'icon-calendar', 'text' => $tabTitle, 'action' => 'load-week-' . $weekId];
+		$tabs['week-' . $weekId] = ['icon' => 'system/iconCalendar', 'text' => $tabTitle, 'action' => 'load-week-' . $weekId];
 	}
 
 	function createTabs ()

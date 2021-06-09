@@ -127,9 +127,9 @@ class FormFiling extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Obsah', 'icon' => 'icon-list'];
-			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-wrench'];
-			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'icon-paperclip'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
+			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();

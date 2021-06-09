@@ -63,7 +63,7 @@ class ViewSWQueue extends TableView
 		$props = [];
 
 		$props[] = [
-			'text' => utils::datef($item['dateCreate'], '%S %T'), 'class' => 'label label-default', 'icon' => 'icon-play'
+			'text' => utils::datef($item['dateCreate'], '%S %T'), 'class' => 'label label-default', 'icon' => 'system/actionPlay'
 		];
 
 		if ($item['cntSameAsOriginal'])
@@ -110,7 +110,7 @@ class FormSWQueue  extends TableForm
 	{
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
-		$tabs ['tabs'][] = ['text' => 'Data', 'icon' => 'icon-cogs'];
+		$tabs ['tabs'][] = ['text' => 'Data', 'icon' => 'system/iconCogs'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);

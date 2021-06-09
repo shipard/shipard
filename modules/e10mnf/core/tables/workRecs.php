@@ -300,7 +300,7 @@ class TableWorkRecs extends DbTable
 
 	public function createHeader ($recData, $options)
 	{
-		$sourcesIcons = [0 => 'icon-keyboard-o', 1 => 'icon-envelope-o', 2 => 'icon-plug', 3 => 'icon-android'];
+		$sourcesIcons = [0 => 'icon-keyboard-o', 1 => 'system/iconEmail', 2 => 'icon-plug', 3 => 'icon-android'];
 		$item = $recData;
 
 		$linkedPersons = \E10\Base\linkedPersons ($this->app(), $this, $recData['ndx']);
@@ -312,7 +312,7 @@ class TableWorkRecs extends DbTable
 		if ($recData['author'])
 		{
 			$author = $this->loadItem($recData['author'], 'e10_persons_persons');
-			$props[] = ['class' => 'e10-off', 'icon' => 'icon-user', 'text' => $author ['fullName']];
+			$props[] = ['class' => 'e10-off', 'icon' => 'system/iconUser', 'text' => $author ['fullName']];
 		}
 
 		if (isset ($linkedPersons [$item ['ndx']]['e10pro-wkf-message-from']))
@@ -583,7 +583,7 @@ class ViewWorkRecs extends TableView
 
 		$propsBeginEnd = [];
 		if ($item['beginDateTime'])
-			$propsBeginEnd [] = ['icon' => 'icon-sign-in', 'text' => utils::datef($item['beginDateTime'], '%d, %T'), 'class' => ''];
+			$propsBeginEnd [] = ['icon' => 'system/actionLogIn', 'text' => utils::datef($item['beginDateTime'], '%d, %T'), 'class' => ''];
 		if ($item['endDateTime'])
 		{
 			$format = '%T';

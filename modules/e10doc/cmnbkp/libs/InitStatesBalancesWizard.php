@@ -13,7 +13,7 @@ class InitStatesBalancesWizard extends \e10doc\cmnbkp\libs\InitStatesWizard
 	public function createHeader ()
 	{
 		$hdr = array ();
-		$hdr ['icon'] = 'icon-star-o';
+		$hdr ['icon'] = 'system/iconBalance';
 		$hdr ['info'][] = ['class' => 'title', 'value' => 'Otevření účetního období - saldokonta'];
 		$hdr ['info'][] = ['class' => 'info', 'value' => 'Vyberte účetní období, pro které chcete vygenerovat doklady.'];
 		return $hdr;

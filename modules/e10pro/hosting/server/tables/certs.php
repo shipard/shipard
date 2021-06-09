@@ -123,7 +123,7 @@ class ViewCerts extends TableView
 
 		$props = [];
 		if ($item['dsName'])
-			$props[] = ['text' => $item['dsName'], 'suffix' => '#'.$item['dsGid'], 'icon' => 'icon-database', 'class' => 'label label-default'];
+			$props[] = ['text' => $item['dsName'], 'suffix' => '#'.$item['dsGid'], 'icon' => 'system/iconDatabase', 'class' => 'label label-default'];
 		$listItem['t2'] = $props;
 
 		$cp = $this->certsProviders[$item['provider']];

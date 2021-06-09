@@ -400,7 +400,7 @@ class ViewProperty extends TableView
 		if ($item['propertyKind'] === TableProperty::pkSingle)
 		{
 			if ($item['statePersonName'])
-				$listItem ['i2'] = ['icon' => 'icon-user', 'text' => $item['statePersonName']];
+				$listItem ['i2'] = ['icon' => 'system/iconUser', 'text' => $item['statePersonName']];
 		}
 		return $listItem;
 	}

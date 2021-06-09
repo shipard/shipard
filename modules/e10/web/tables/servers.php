@@ -472,9 +472,9 @@ class ViewServers extends TableView
 		$loginRequired = ($item['loginRequired']) ? 'Vyžadováno' : 'Volitelně';
 		switch ($item['authType'])
 		{
-			case 0: $listItem ['t2'][] = ['text' => 'Ne', 'icon' => 'icon-sign-in', 'class' => 'label label-default']; break;
-			case 1: $listItem ['t2'][] = ['text' => 'Web', 'icon' => 'icon-sign-in', 'suffix' => $loginRequired, 'class' => 'label label-success']; break;
-			case 2: $listItem ['t2'][] = ['text' => 'Aplikace', 'icon' => 'icon-sign-in', 'suffix' => $loginRequired, 'class' => 'label label-danger']; break;
+			case 0: $listItem ['t2'][] = ['text' => 'Ne', 'icon' => 'system/actionLogIn', 'class' => 'label label-default']; break;
+			case 1: $listItem ['t2'][] = ['text' => 'Web', 'icon' => 'system/actionLogIn', 'suffix' => $loginRequired, 'class' => 'label label-success']; break;
+			case 2: $listItem ['t2'][] = ['text' => 'Aplikace', 'icon' => 'system/actionLogIn', 'suffix' => $loginRequired, 'class' => 'label label-danger']; break;
 		}
 
 		$listItem ['i1'] = ['text' => '#'.$item['ndx'], 'class' => 'id'];

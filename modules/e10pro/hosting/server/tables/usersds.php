@@ -176,16 +176,16 @@ class ViewUsersDataSources extends \E10\TableView
 	public function renderRow ($item)
 	{
 		$listItem ['pk'] = $item ['ndx'];
-		$listItem ['icon'] = 'icon-user';
+		$listItem ['icon'] = 'system/iconUser';
 		if ($this->queryParam ('datasource'))
 		{
 			$listItem ['t1'] = $item['userName'];
 			$listItem ['t2'] = $item['userEmail'];
 
-			$listItem ['i2'] = [['icon' => 'icon-play', 'text' => utils::datef ($item['created'], '%D')]];
+			$listItem ['i2'] = [['icon' => 'system/actionPlay', 'text' => utils::datef ($item['created'], '%D')]];
 
 			if ($item['lastLogin'])
-				$listItem ['i2'][] = ['icon' => 'icon-sign-in', 'text' => utils::datef ($item['lastLogin'], '%D, %T')];
+				$listItem ['i2'][] = ['icon' => 'system/actionLogIn', 'text' => utils::datef ($item['lastLogin'], '%D, %T')];
 
 			$listItem ['i1'] = ['text' => '#'.$item['userId'], 'class' => 'id'];
 		}

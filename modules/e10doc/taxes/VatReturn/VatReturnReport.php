@@ -1039,7 +1039,7 @@ class VatReturnReport extends \e10doc\taxes\TaxReportReport
 	public function createToolbarSaveAs (&$printButton)
 	{
 		$printButton['dropdownMenu'][] = [
-				'text' => 'Uložit jako XML soubor pro elektronické podání', 'icon' => 'icon-download',
+				'text' => 'Uložit jako XML soubor pro elektronické podání', 'icon' => 'system/actionDownload',
 				'type' => 'reportaction', 'action' => 'print', 'class' => 'e10-print', 'data-format' => 'xml',
 				'data-filename' => $this->saveAsFileName('xml')
 		];

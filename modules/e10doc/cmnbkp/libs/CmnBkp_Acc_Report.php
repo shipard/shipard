@@ -15,7 +15,7 @@ class CmnBkp_Acc_Report extends \e10doc\core\libs\reports\DocReport
 	public function createToolbarSaveAs (&$printButton)
 	{
 		$printButton['dropdownMenu'][] = [
-			'text' => 'Uložit jako kompletní PDF soubor včetně příloh', 'icon' => 'icon-download',
+			'text' => 'Uložit jako kompletní PDF soubor včetně příloh', 'icon' => 'system/actionDownload',
 			'type' => 'action', 'action' => 'print', 'data-saveas' => 'all', 'data-filename' => $this->saveAsFileName('all'),
 			'data-table' => $this->table->tableId(), 'data-report' => 'e10doc.cmnbkp.libs.CmnBkp_Acc_Report', 'data-pk' => $this->recData['ndx']
 		];
@@ -26,7 +26,7 @@ class CmnBkp_Acc_Report extends \e10doc\core\libs\reports\DocReport
 			if ($testISDoc)
 			{
 				$printButton['dropdownMenu'][] = [
-					'text' => 'Elektronický doklad ISDOC', 'icon' => 'icon-download',
+					'text' => 'Elektronický doklad ISDOC', 'icon' => 'system/actionDownload',
 					'type' => 'action', 'action' => 'print', 'data-saveas' => 'isdoc-xml', 'data-filename' => $this->saveAsFileName('isdoc-xml'),
 					'data-table' => $this->table->tableId(), 'data-report' => 'e10doc.core.libs.reports.DocReportISDoc', 'data-pk' => $this->recData['ndx']
 				];

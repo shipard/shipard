@@ -362,14 +362,14 @@ class CmnBkp_SetOff_Report extends \e10doc\core\libs\reports\DocReport
 		public function createToolbarSaveAs (&$printButton)
 		{
 			$printButton['dropdownMenu'][] = [
-				'text' => 'Přiznání DPH (.xml)', 'icon' => 'icon-download',
+				'text' => 'Přiznání DPH (.xml)', 'icon' => 'system/actionDownload',
 				'type' => 'action', 'action' => 'print', 'data-saveas' => 'cz/cz-tax-vat-return-xml', 'data-filename' => $this->saveAsFileName('cz/cz-tax-vat-return-xml'),
 				'data-table' => $this->table->tableId(), 'data-report' => 'e10doc.cmnbkp.CmnBkp_TaxVatReturn_Report', 'data-pk' => $this->recData['ndx']
 			];
 			if ($this->data['showTaxVatReturnReverseChargeOut'] != FALSE)
 			{
 				$printButton['dropdownMenu'][] = [
-					'text' => 'Výpis z evidence pro přiznání DPH (dodavatel) (.xml)', 'icon' => 'icon-download',
+					'text' => 'Výpis z evidence pro přiznání DPH (dodavatel) (.xml)', 'icon' => 'system/actionDownload',
 					'type' => 'action', 'action' => 'print', 'data-saveas' => 'cz/cz-tax-vat-return-reverse-charge-out-xml', 'data-filename' => $this->saveAsFileName('cz/cz-tax-vat-return-reverse-charge-out-xml'),
 					'data-table' => $this->table->tableId(), 'data-report' => 'e10doc.cmnbkp.CmnBkp_TaxVatReturn_Report', 'data-pk' => $this->recData['ndx']
 				];
@@ -377,7 +377,7 @@ class CmnBkp_SetOff_Report extends \e10doc\core\libs\reports\DocReport
 			if ($this->data['showTaxVatReturnReverseChargeIn'] != FALSE)
 			{
 				$printButton['dropdownMenu'][] = [
-					'text' => 'Výpis z evidence pro přiznání DPH (odběratel) (.xml)', 'icon' => 'icon-download',
+					'text' => 'Výpis z evidence pro přiznání DPH (odběratel) (.xml)', 'icon' => 'system/actionDownload',
 					'type' => 'action', 'action' => 'print', 'data-saveas' => 'cz/cz-tax-vat-return-reverse-charge-in-xml', 'data-filename' => $this->saveAsFileName('cz/cz-tax-vat-return-reverse-charge-in-xml'),
 					'data-table' => $this->table->tableId(), 'data-report' => 'e10doc.cmnbkp.CmnBkp_TaxVatReturn_Report', 'data-pk' => $this->recData['ndx']
 				];
@@ -385,7 +385,7 @@ class CmnBkp_SetOff_Report extends \e10doc\core\libs\reports\DocReport
 			if ($this->data['showTaxVatReturnIntraCommunity'] != FALSE)
 			{
 				$printButton['dropdownMenu'][] = [
-					'text' => 'Souhrnné hlášení pro přiznání DPH (.xml)', 'icon' => 'icon-download',
+					'text' => 'Souhrnné hlášení pro přiznání DPH (.xml)', 'icon' => 'system/actionDownload',
 					'type' => 'action', 'action' => 'print', 'data-saveas' => 'cz/cz-tax-vat-return-intra-community-xml', 'data-filename' => $this->saveAsFileName('cz/cz-tax-vat-return-intra-community-xml'),
 					'data-table' => $this->table->tableId(), 'data-report' => 'e10doc.cmnbkp.CmnBkp_TaxVatReturn_Report', 'data-pk' => $this->recData['ndx']
 				];

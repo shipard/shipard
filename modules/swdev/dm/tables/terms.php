@@ -206,8 +206,8 @@ class FormTerm extends TableForm
 		$this->setFlag ('maximize', 1);
 
 		$this->openForm ();
-		$tabs ['tabs'][] = ['text' => 'Text', 'icon' => 'icon-file-text-o'];
-		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-wrench'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 		$this->layoutOpen (TableForm::ltGrid);
 			$this->openRow ('grid-form-tabs');
 				$this->addColumnInput ('fullName', self::coColW8);

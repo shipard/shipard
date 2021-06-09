@@ -434,7 +434,7 @@ class RosEngine extends Utility
 		];
 		$t = [
 			['icon' => 'icon-microchip', 'text' => 'Záznamy pro EET'],
-			['icon' => 'icon-upload', 'class' => 'pull-right', 'title' => 'Výsledná odeslaná částka', 'text' => utils::nf($totalAmount, 2)]
+			['icon' => 'system/actionUpload', 'class' => 'pull-right', 'title' => 'Výsledná odeslaná částka', 'text' => utils::nf($totalAmount, 2)]
 		];
 
 		$content = ['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'table' => $data, 'header' => $h, 'title' => $t];

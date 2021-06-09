@@ -202,7 +202,7 @@ class DocumentCardPerson extends \e10\DocumentCard
 		}
 
 		$addRelationButton = [
-			'icon' => 'icon-plus-circle', 'action' => '', 'XXXdropUp' => '1', 'dropRight' => 1,
+			'icon' => 'system/actionAdd', 'action' => '', 'XXXdropUp' => '1', 'dropRight' => 1,
 			'text' => '', 'type' => 'button', 'actionClass' => 'btn btn-xs btn-default',
 			'class' => 'pull-right-absolute',
 			'dropdownMenu' => []
@@ -218,7 +218,7 @@ class DocumentCardPerson extends \e10\DocumentCard
 				$addParams .= '&__parentPerson='.intval($this->app()->cfgItem ('options.core.ownerPerson', 0));
 
 			$addRelationButton['dropdownMenu'][] = [
-				'action' => 'new', 'data-table' => 'e10.persons.relations', 'icon' => 'icon-plus-circle',
+				'action' => 'new', 'data-table' => 'e10.persons.relations', 'icon' => 'system/actionAdd',
 				'text' => $catDef['fn'], 'data-addParams' => $addParams,
 			];
 		}
@@ -239,11 +239,11 @@ class DocumentCardPerson extends \e10\DocumentCard
 		}
 		elseif ($validity['valid'] === 1)
 		{
-			$line = [['text' => 'V pořádku', 'XXicon' => 'icon-check', 'suffix' => utils::datef ($validity['updated'], '%D, %T')]];
+			$line = [['text' => 'V pořádku', 'XXicon' => 'system/iconCheck', 'suffix' => utils::datef ($validity['updated'], '%D, %T')]];
 			if ($validity['revalidate'])
-				$line [] = ['text' => 'údaje byly opraveny, je naplánována nová kontrola', 'icon' => 'icon-edit', 'class' => 'e10-small block'];
+				$line [] = ['text' => 'údaje byly opraveny, je naplánována nová kontrola', 'icon' => 'system/docStateEdit', 'class' => 'e10-small block'];
 			$this->validity['class'] = 'e10-row-plus';
-			$this->validity['icon'] = 'icon-check';
+			$this->validity['icon'] = 'system/iconCheck';
 			//$this->addContent('body', ['pane' => 'e10-pane e10-pane-table e10-row-plus', 'type' => 'line', 'line' => $line]);
 		}
 		else
@@ -253,7 +253,7 @@ class DocumentCardPerson extends \e10\DocumentCard
 			$line = [$title];
 
 			if ($validity['revalidate'])
-				$line [] = ['text' => 'údaje byly opraveny, je naplánována nová kontrola', 'icon' => 'icon-check', 'class' => 'e10-small block'];
+				$line [] = ['text' => 'údaje byly opraveny, je naplánována nová kontrola', 'icon' => 'system/iconCheck', 'class' => 'e10-small block'];
 
 			$msg = json::decode($validity['msg']);
 			foreach ($msg as $partId => $part)
@@ -418,9 +418,9 @@ class DocumentCardPerson extends \e10\DocumentCard
 		}
 		elseif ($validity['valid'] === 1)
 		{
-			$line = [['text' => 'V pořádku', 'icon' => 'icon-check', 'suffix' => utils::datef ($validity['updated'], '%D, %T')]];
+			$line = [['text' => 'V pořádku', 'icon' => 'system/iconCheck', 'suffix' => utils::datef ($validity['updated'], '%D, %T')]];
 			if ($validity['revalidate'])
-				$line [] = ['text' => 'údaje byly opraveny, je naplánována nová kontrola', 'icon' => 'icon-edit', 'class' => 'e10-small block'];
+				$line [] = ['text' => 'údaje byly opraveny, je naplánována nová kontrola', 'icon' => 'system/docStateEdit', 'class' => 'e10-small block'];
 			$this->addContent('body', ['pane' => 'e10-pane e10-pane-table e10-row-plus', 'type' => 'line', 'line' => $line]);
 		}
 		else
@@ -429,7 +429,7 @@ class DocumentCardPerson extends \e10\DocumentCard
 			$line = [$title];
 
 			if ($validity['revalidate'])
-				$line [] = ['text' => 'údaje byly opraveny, je naplánována nová kontrola', 'icon' => 'icon-check', 'class' => 'e10-small block'];
+				$line [] = ['text' => 'údaje byly opraveny, je naplánována nová kontrola', 'icon' => 'system/iconCheck', 'class' => 'e10-small block'];
 
 			$msg = json::decode($validity['msg']);
 			foreach ($msg as $partId => $part)

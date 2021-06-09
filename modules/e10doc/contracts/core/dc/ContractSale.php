@@ -113,11 +113,11 @@ class ContractSale extends \e10\DocumentCard
 			switch ($rowIsActive)
 			{
 				case 0:
-					$icon = 'icon-stop';
+					$icon = 'system/actionStop';
 					$class = 'e10-row-stop';
 					break;
 				case 1:
-					$icon = 'icon-play';
+					$icon = 'system/actionPlay';
 					$class = 'e10-row-play';
 					break;
 				case 2:
@@ -147,7 +147,7 @@ class ContractSale extends \e10\DocumentCard
 				'priceItem' => ' Cena/Jedn.', 'priceAll' => ' Cena celkem', '_options' => ['cellClasses' => ['state' => 'e10-icon']]);
 			if (count ($list) > 1)
 			{
-				$list[] = array ('state' => ['icon' => 'icon-play', 'text' => ''], 'text' => 'Celkem aktuálně platné', 'priceAll' => $totalPriceAll, '_options' => ['class' => 'sum', 'cellClasses' => ['state' => 'e10-icon']]);
+				$list[] = array ('state' => ['icon' => 'system/actionPlay', 'text' => ''], 'text' => 'Celkem aktuálně platné', 'priceAll' => $totalPriceAll, '_options' => ['class' => 'sum', 'cellClasses' => ['state' => 'e10-icon']]);
 			}
 			return array ('pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'title' => ['icon' => 'x-properties', 'text' => 'Řádky smlouvy'], 'header' => $h, 'table' => $list);
 		}
@@ -233,11 +233,11 @@ class ContractSale extends \e10\DocumentCard
 		else
 		if ($bi->restAmount == $docRecData['toPay'])
 		{
-			$line[] = ['text' => 'NEUHRAZENO', 'icon' => ($bi->daysOver > 0) ? 'icon-exclamation' : 'icon-check', 'class' => 'e10-linePart e10-error'];
+			$line[] = ['text' => 'NEUHRAZENO', 'icon' => ($bi->daysOver > 0) ? 'icon-exclamation' : 'system/iconCheck', 'class' => 'e10-linePart e10-error'];
 		}
 		else
 		{
-			$line[] = ['text' => '', 'icon' => 'icon-check', 'class' => 'e10-linePart h1'];
+			$line[] = ['text' => '', 'icon' => 'system/iconCheck', 'class' => 'e10-linePart h1'];
 			$line[] = ['text' => 'Částečná úhrada', 'prefix' => utils::nf($bi->paymentTotal / $docRecData['toPay'] * 100, 0).' %', 'class' => 'e10-none'];
 		}
 

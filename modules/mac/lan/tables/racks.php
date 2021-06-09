@@ -54,20 +54,20 @@ class ViewRacks extends TableView
 		$listItem ['i1'] = ['text' => $item['id'], 'class' => 'id'];
 
 		if ($item['lanShortName'])
-			$listItem ['i2'] = ['text' => $item['lanShortName'], 'icon' => 'icon-sitemap'];
+			$listItem ['i2'] = ['text' => $item['lanShortName'], 'icon' => 'system/iconSitemap'];
 		else
-			$listItem ['i2'] = ['text' => '!!!', 'icon' => 'icon-sitemap'];
+			$listItem ['i2'] = ['text' => '!!!', 'icon' => 'system/iconSitemap'];
 
 		if ($item['placeFullName'])
 		{
-			$listItem['t2'] = ['icon' => 'icon-map-marker', 'text' => $item['placeFullName']];
+			$listItem['t2'] = ['icon' => 'system/iconMapMarker', 'text' => $item['placeFullName']];
 			if ($item['placeDesc'] !== '')
 				$listItem['t2']['suffix'] = $item['placeDesc'];
 		}
 		elseif ($item['placeDesc'] !== '')
-			$listItem['t2'] = ['icon' => 'icon-map-marker', 'text' => $item['placeDesc']];
+			$listItem['t2'] = ['icon' => 'system/iconMapMarker', 'text' => $item['placeDesc']];
 		else
-			$listItem['t2'] = ['icon' => 'icon-map-marker', 'text' => '---'];
+			$listItem['t2'] = ['icon' => 'system/iconMapMarker', 'text' => '---'];
 
 		return $listItem;
 	}

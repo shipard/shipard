@@ -65,7 +65,7 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 						$this->addColumnInput ("person", DataModel::coSaveOnChange|self::coHeader);
 					$this->layoutClose ();
 
-					$regTitle = [['text' => 'Registrace', 'icon' => 'icon-user', 'class' => 'h2']];
+					$regTitle = [['text' => 'Registrace', 'icon' => 'system/iconUser', 'class' => 'h2']];
 					$regTitle[] = [
 						'text' => 'Tisk', 'class' => 'pull-right', 'type' => 'action', 'action' => 'printdirect', 'printer' => '1',
 						'data-report' => 'e10pro.custreg.RegistrationListReport', 'actionClass' => 'btn-sm',
@@ -74,7 +74,7 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 					if (!$this->readOnly)
 						$regTitle[] = [
 								'text' => 'Upravit', 'class' => 'pull-right', 'docAction' => 'edit',
-								'actionClass' => 'btn btn-primary btn-sm', 'type' => 'button', 'icon' => 'icon-edit',
+								'actionClass' => 'btn btn-primary btn-sm', 'type' => 'button', 'icon' => 'system/actionOpen',
 								'table' => 'e10.persons.persons', 'pk' => $this->recData['person'],
 								'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid
 						];

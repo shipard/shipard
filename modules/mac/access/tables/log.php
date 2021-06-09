@@ -13,7 +13,7 @@ use \e10\TableForm, \e10\DbTable, \Shipard\Viewer\TableView, \Shipard\Viewer\Tab
 class TableLog extends DbTable
 {
 	CONST lsAccessGranted = 0, lsAccessDenied = 1, lsWarning =  2, lsError = 3, lsBadRequest = 4;
-	static $icons = ['icon-check', 'icon-times', 'icon-exclamation', 'system/iconWarning', 'icon-flash'];
+	static $icons = ['system/iconCheck', 'icon-times', 'icon-exclamation', 'system/iconWarning', 'icon-flash'];
 
 	public function __construct ($dbmodel)
 	{

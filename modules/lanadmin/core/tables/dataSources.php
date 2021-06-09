@@ -97,7 +97,7 @@ class FormDataSource extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 		$this->setFlag ('maximize', 1);
 
-		$tabs ['tabs'][] = ['text' => 'Zdroj dat', 'icon' => 'icon-database'];
+		$tabs ['tabs'][] = ['text' => 'Zdroj dat', 'icon' => 'system/iconDatabase'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);

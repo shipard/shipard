@@ -47,7 +47,7 @@ class ViewUsers extends \e10\persons\ViewPersons
 		$listItem = parent::renderRow($item);
 
 		$listItem ['t2'] = [];
-		$listItem ['t2'][] = ['text' => $item['login'], 'icon' => 'icon-sign-in', 'class' => ''];
+		$listItem ['t2'][] = ['text' => $item['login'], 'icon' => 'system/actionLogIn', 'class' => ''];
 		$listItem ['loginHash'] = $item['loginHash'];
 
 		$roles = [];

@@ -132,7 +132,7 @@ class FormDomainAccount extends TableForm
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 		$this->openForm ();
 			$tabs ['tabs'][] = ['text' => 'Vlastnosti', 'icon' => 'x-properties'];
-			$tabs ['tabs'][] = ['text' => 'Přihlášení', 'icon' => 'icon-sign-in'];
+			$tabs ['tabs'][] = ['text' => 'Přihlášení', 'icon' => 'system/actionLogIn'];
 			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'icon-paperclip'];
 			$this->openTabs ($tabs);
 				$this->openTab ();

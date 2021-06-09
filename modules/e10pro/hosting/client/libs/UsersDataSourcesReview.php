@@ -225,7 +225,7 @@ class UsersDataSourcesReview extends Content
 		{
 
 
-			$unlinkedDataSources[] = ['text' => $r['dsFullName'], 'suffix' => '#'.$r['dataSource'], 'class' => 'block padd5 bt1', 'icon' => 'icon-database'];
+			$unlinkedDataSources[] = ['text' => $r['dsFullName'], 'suffix' => '#'.$r['dataSource'], 'class' => 'block padd5 bt1', 'icon' => 'system/iconDatabase'];
 		}
 
 		if (count($unlinkedDataSources))

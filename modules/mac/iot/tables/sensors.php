@@ -150,7 +150,7 @@ class ViewSensors extends TableView
 			}
 		}
 		if ($item['placeShorName'])
-			$listItem ['t2'][] = ['text' => $item ['placeShorName'], 'suffix' => $item['placeId'], 'class' => 'label label-default', 'icon' => 'icon-map-marker'];
+			$listItem ['t2'][] = ['text' => $item ['placeShorName'], 'suffix' => $item['placeId'], 'class' => 'label label-default', 'icon' => 'system/iconMapMarker'];
 		if ($item['zoneShortName'])
 			$listItem ['t2'][] = ['text' => $item ['zoneShortName'], 'suffix' => str_replace('/', '_', substr($item['zoneId'], 1)), 'class' => 'label label-default', 'icon' => 'icon-crosshairs'];
 		if ($item['rackFullName'])

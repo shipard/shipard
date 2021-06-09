@@ -110,7 +110,7 @@ class DocumentCardDevice extends \e10\DocumentCard
 				{
 					$item['connectedTo'][] = ['text' => $r['wallSocketId'], 'icon' => 'icon-square-o', 'class' => 'e10-bold'];
 					if ($r['wallSocketPlaceName'])
-						$item['connectedTo'][] = ['text' => $r['wallSocketPlaceName'], 'icon' => 'icon-map-marker', 'class' => ''];
+						$item['connectedTo'][] = ['text' => $r['wallSocketPlaceName'], 'icon' => 'system/iconMapMarker', 'class' => ''];
 
 					$this->loadNextPathStep ($item['connectedTo'], [
 						'type' => 'wallSocket',
@@ -230,7 +230,7 @@ class DocumentCardDevice extends \e10\DocumentCard
 	{
 		$tableAddresses = [];
 		$this->loadAddresses ($this->recData['ndx'], $tableAddresses);
-		$titleAddresses = ['text' => 'Síťové adresy', 'icon' => 'icon-sitemap', 'class' => 'header'];
+		$titleAddresses = ['text' => 'Síťové adresy', 'icon' => 'system/iconSitemap', 'class' => 'header'];
 		$headerAdresses = ['property' => '_Vlastnost', 'port' => 'Port', 'address' => 'Adresy'];
 
 		$tablePorts = [];

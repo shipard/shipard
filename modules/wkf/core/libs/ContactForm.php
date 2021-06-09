@@ -42,8 +42,8 @@ class ContactForm extends \Shipard\Base\WebForm
 			$c .= "<input type='hidden' id='recaptcha-response' name='webFormReCaptchtaResponse' value=''/>";
 		}
 
-		$c .= $this->addFormInput ('Váš e-mail', 'email', 'email', ['icon' => 'icon-envelope']);
-		$c .= $this->addFormInput ('Vaše jméno', 'text', 'name', ['icon' => 'icon-user']);
+		$c .= $this->addFormInput ('Váš e-mail', 'email', 'email', ['icon' => 'system/iconEmail']);
+		$c .= $this->addFormInput ('Vaše jméno', 'text', 'name', ['icon' => 'system/iconUser']);
 		$c .= $this->addFormInput ('Zpráva', 'memo', 'msg', ['icon' => 'icon-pencil']);
 
 		if ($this->fw === 'bs4')

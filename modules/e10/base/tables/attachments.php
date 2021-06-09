@@ -221,12 +221,12 @@ class TableAttachments extends DbTable
 		// -- gps coordinates
 		if ($attRecData['locState'] === 1)
 		{ // location exist
-			$info['labels'][] = ['icon' => 'icon-map-marker', 'text' => '', 'class' => 'e10-success'];
+			$info['labels'][] = ['icon' => 'system/iconMapMarker', 'text' => '', 'class' => 'e10-success'];
 		}
 		elseif ($attRecData['locState'] === 2)
 		{ // not available
 			if ($fileKind === 3) // photo
-				$info['labels'][] = ['icon' => 'icon-map-marker', 'text' => '', 'title' => 'Informace o poloze nejsou k dispozici', 'class' => 'e10-error'];
+				$info['labels'][] = ['icon' => 'system/iconMapMarker', 'text' => '', 'title' => 'Informace o poloze nejsou k dispozici', 'class' => 'e10-error'];
 		}
 
 		return $info;

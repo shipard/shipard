@@ -112,8 +112,8 @@ class FormLanguageTr extends TableForm
 		//$this->setFlag ('maximize', 1);
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Překlad', 'icon' => 'icon-language'];
-			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-wrench'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
 					$this->addColumnInput ('name');

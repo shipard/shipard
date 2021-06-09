@@ -156,19 +156,19 @@ class ViewOperations extends TableView
 
 		$props = [];
 		if ($item['personName'])
-			$props[] = ['icon' => 'icon-user', 'text' => $item['personName']];
+			$props[] = ['icon' => 'system/iconUser', 'text' => $item['personName']];
 
 		if ($item['centre'])
 			$props[] = ['icon' => 'icon-bullseye', 'text' => $this->centres[$item['centre']]['fullName']];
 
 		if ($item['placeFromName'] && $item['placeToName'])
-			$props[] = ['icon' => 'icon-map-marker', 'text' => $item['placeFromName'].' ➤ '.$item['placeToName']];
+			$props[] = ['icon' => 'system/iconMapMarker', 'text' => $item['placeFromName'].' ➤ '.$item['placeToName']];
 		else
 		if ($item['placeFromName'])
-			$props[] = ['icon' => 'icon-map-marker', 'text' => $item['placeFromName'].'✖︎'];
+			$props[] = ['icon' => 'system/iconMapMarker', 'text' => $item['placeFromName'].'✖︎'];
 		else
 		if ($item['placeToName'])
-			$props[] = ['icon' => 'icon-map-marker', 'text' => '➤'.$item['placeToName']];
+			$props[] = ['icon' => 'system/iconMapMarker', 'text' => '➤'.$item['placeToName']];
 
 		$listItem ['t2'] = $props;
 

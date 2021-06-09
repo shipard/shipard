@@ -18,7 +18,7 @@ class DailyBar extends \Shipard\UI\Core\WidgetPane
 		$today = utils::today();
 
 		$info = [];
-		$info['today'] = ['class' => '', 'content' => [['text' => utils::datef ($today, '%n %d'), 'icon' => 'icon-calendar']]];
+		$info['today'] = ['class' => '', 'content' => [['text' => utils::datef ($today, '%n %d'), 'icon' => 'system/iconCalendar']]];
 
 		/*
 		$info['exchangeRates'] = ['class' => '', 'content' => []];

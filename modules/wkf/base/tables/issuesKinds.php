@@ -178,7 +178,7 @@ class ViewIssuesKinds extends TableView
 		if ($item['askProject'] !== 2)
 			$propsInput[] = ['text' => '', 'title' => 'Projekt', 'icon' => 'icon-lightbulb-o', 'class' => ''];
 		if ($item['askPersons'] !== 2)
-			$propsInput[] = ['text' => '', 'title' => 'Osoby', 'icon' => 'icon-user', 'class' => ''];
+			$propsInput[] = ['text' => '', 'title' => 'Osoby', 'icon' => 'system/iconUser', 'class' => ''];
 		if (count($propsInput) > 1)
 			$listItem ['t2'][] = $propsInput;
 

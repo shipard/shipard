@@ -177,7 +177,7 @@ class PersonDashboard extends Utility
 			$tt[] = ['text' => $ntf['ntfTypeName'], 'iiicon' => 'icon-keyboard-o', 'class' => 'pull-right e10-small e10-tag e10-ds-block '.$ntfTypeClasses[$ntf['ntfType']]];
 			$tt[] = ['text' => $item['subject'], 'icon' => $ntf['icon'], 'class' => ''];
 			//$tt[] = ['text' => utils::datef($ntf['created'], '%D, %T'), 'icon' => 'icon-keyboard-o', 'class' => 'e10-small break'];
-			$tt[] = ['text' => $ntf['personName'], 'icon' => 'icon-user', 'class' => 'e10-small break'];
+			$tt[] = ['text' => $ntf['personName'], 'icon' => 'system/iconUser', 'class' => 'e10-small break'];
 
 			if ($item['projectFullName'])
 				$tt[] = ['icon' => 'icon-lightbulb-o', 'class' => 'label label-primary', 'text' => $item['projectFullName']];

@@ -33,11 +33,11 @@ class ViewerDashboardPersonsAccess extends TableView
 
 		if ($this->enableDetailSearch)
 		{
-			$mq [] = ['id' => 'active', 'title' => 'Aktivní', 'icon' => 'icon-check'];
-			$mq [] = ['id' => 'archive', 'title' => 'Archív', 'icon' => 'icon-archive'];
-			$mq [] = ['id' => 'all', 'title' => 'Vše', 'icon' => 'icon-toggle-on'];
+			$mq [] = ['id' => 'active', 'title' => 'Aktivní', 'icon' => 'system/iconCheck'];
+			$mq [] = ['id' => 'archive', 'title' => 'Archív', 'icon' => 'system/filterArchive'];
+			$mq [] = ['id' => 'all', 'title' => 'Vše', 'icon' => 'system/filterAll'];
 			if ($this->app()->hasRole('pwuser'))
-				$mq [] = ['id' => 'trash', 'title' => 'Koš', 'icon' => 'icon-trash'];
+				$mq [] = ['id' => 'trash', 'title' => 'Koš', 'icon' => 'system/filterTrash'];
 			$this->setMainQueries($mq);
 		}
 
@@ -283,7 +283,7 @@ class ViewerDashboardPersonsAccess extends TableView
 		$addButtons = [];
 
 		$addButtons[] = [
-			'action' => 'new', 'data-table' => 'mac.access.personsAccess', 'icon' => 'icon-plus-circle',
+			'action' => 'new', 'data-table' => 'mac.access.personsAccess', 'icon' => 'system/actionAdd',
 			'text' => 'Nová Osoba',
 			'type' => 'button', 'actionClass' => 'btn',
 			'class' => 'btn-block', 'btnClass' => 'btn-success btn-block',

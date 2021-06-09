@@ -119,7 +119,7 @@ class DocumentCardDeviceInfo extends \e10\DocumentCard
 	protected function createInfoSw ($data, $row)
 	{
 		$date = ($row['dateUpdate']) ? $row['dateUpdate'] : $row['dateCreate'];
-		$title = [['icon' => 'icon-download', 'text' => 'Software', 'suffix' => utils::datef($date, '%D, %T')]];
+		$title = [['icon' => 'system/actionDownload', 'text' => 'Software', 'suffix' => utils::datef($date, '%D, %T')]];
 
 		$table = [];
 		foreach ($data['items'] as $item)

@@ -85,7 +85,7 @@ class TableReportsTexts extends DbTable
 		}
 
 		if (!count($props))
-			$props [] = ['text' => 'Bude uplatněno na všech sestavách', 'icon' => 'icon-check', 'class' => $class];
+			$props [] = ['text' => 'Bude uplatněno na všech sestavách', 'icon' => 'system/iconCheck', 'class' => $class];
 
 		$enumPlaces = $this->columnInfoEnum('place');
 		if (isset($enumPlaces[$recData['place']]))

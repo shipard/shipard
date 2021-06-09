@@ -41,7 +41,7 @@ class TableAuthLog extends DbTable
 
 		$itemTop = [
 				['icon' => 'icon-clock-o', 'text' => utils::datef ($recData['created'], '%x'), 'class' => ''],
-				['icon' => 'icon-sitemap', 'text' => $recData['ipaddress'], 'class' => ''],
+				['icon' => 'system/iconSitemap', 'text' => $recData['ipaddress'], 'class' => ''],
 		];
 
 		$hdr ['info'][] = ['class' => 'info', 'value' => $itemTop];
@@ -126,7 +126,7 @@ class ViewAuthLog extends TableView
 
 		$props3 = [];
 		$props2 [] = ['icon' => 'icon-clock-o', 'text' => utils::datef ($item['created'], '%D, %T'), 'class' => ''];
-		$props2 [] = ['icon' => 'icon-sitemap', 'text' => $item['ipaddress'], 'class' => ''];
+		$props2 [] = ['icon' => 'system/iconSitemap', 'text' => $item['ipaddress'], 'class' => ''];
 
 		if ($item['session'] !== '')
 		{
@@ -140,15 +140,15 @@ class ViewAuthLog extends TableView
 		if ($this->thisIsHosting)
 		{
 			if ($item['dsShortName'])
-				$props2 [] = ['icon' => 'icon-database', 'text' => $item['dsShortName'], 'class' => ''];
+				$props2 [] = ['icon' => 'system/iconDatabase', 'text' => $item['dsShortName'], 'class' => ''];
 			elseif ($item['dsName'])
-				$props2 [] = ['icon' => 'icon-database', 'text' => $item['dsName'], 'class' => ''];
+				$props2 [] = ['icon' => 'system/iconDatabase', 'text' => $item['dsName'], 'class' => ''];
 		}
 
 		if ($item['deviceId'] !== '')
 		{
 			$sid = substr($item['deviceId'], 0, 3).'…'.substr($item['deviceId'], -5, 5);
-			$di = ['icon' => 'icon-laptop', 'text' => $sid, 'class' => ''];
+			$di = ['icon' => 'deviceTypes/notebook', 'text' => $sid, 'class' => ''];
 
 			$props3 [] = $di;
 		}
@@ -242,7 +242,7 @@ class ViewDetailAuthLog extends TableViewDetail
 			$d = new DeviceInfo();
 			$d->checkDeviceInfo($deviceRecData);
 
-			$deviceId = ['text' => $i['deviceId'], 'class' => 'block', 'icon' => 'icon-laptop'];
+			$deviceId = ['text' => $i['deviceId'], 'class' => 'block', 'icon' => 'deviceTypes/notebook'];
 			if ($deviceRecData['name'] !== '')
 				$deviceId['suffix'] = $deviceRecData['name'];
 			$props [] = $deviceId;

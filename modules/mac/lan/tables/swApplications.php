@@ -81,7 +81,7 @@ class ViewSwApplications extends TableView
 	{
 		if (isset($this->appInstall[$item ['pk']]))
 		{
-			$item ['t2'][] = ['text' => $this->appInstall[$item ['pk']], 'class' => 'label label-primary pull-right', 'icon' => 'icon-laptop'];
+			$item ['t2'][] = ['text' => $this->appInstall[$item ['pk']], 'class' => 'label label-primary pull-right', 'icon' => 'deviceTypes/notebook'];
 		}
 		if (isset($this->availableLicenses[$item ['pk']]))
 		{

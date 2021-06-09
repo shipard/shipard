@@ -31,7 +31,7 @@ class ViewStockInDocs extends \e10doc\core\ViewHeads
 			$docNumber['class'] = 'e10-error';
 		$props [] = $docNumber;
 
-		$props [] = ['icon' => 'icon-calendar', 'text' => \E10\df ($item['dateIssue'], '%d'), 'class' => ''];
+		$props [] = ['icon' => 'system/iconCalendar', 'text' => \E10\df ($item['dateIssue'], '%d'), 'class' => ''];
 
 		$listItem ['t2'] = $props;
 		return $listItem;

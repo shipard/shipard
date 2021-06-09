@@ -53,7 +53,7 @@ class ViewUnknowns extends TableView
 
 		$props = [];
 
-		$props[] = ['icon' => 'icon-play', 'text' => utils::datef($item['dateCreate'], '%d, %T')];
+		$props[] = ['icon' => 'system/actionPlay', 'text' => utils::datef($item['dateCreate'], '%d, %T')];
 		$props[] = ['icon' => 'icon-fast-forward', 'text' => utils::datef($item['dateTouch'], '%d, %T')];
 
 		if (count($props))
@@ -124,7 +124,7 @@ class ViewDetailUnknown extends TableViewDetail
 		$title = [['icon' => 'icon-frown-o', 'text' => 'Neznámé síťové zařízení', 'suffix' => '#'.$this->item['ndx']]];
 		$title[] = [
 				'type' => 'action', 'action' => 'addwizard', 'table' => 'mac.lan.devices',
-				'text' => 'Přidat zařízení', 'data-class' => 'mac.lan.AddDeviceWizard', 'icon' => 'icon-plus-circle',
+				'text' => 'Přidat zařízení', 'data-class' => 'mac.lan.AddDeviceWizard', 'icon' => 'system/actionAdd',
 				'class' => 'pull-right', 'actionClass' => 'btn-xs',
 				'data-addparams' => 'unknownNdx='.$this->item['ndx']
 		];

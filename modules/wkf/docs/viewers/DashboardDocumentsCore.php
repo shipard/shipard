@@ -481,7 +481,7 @@ class DashboardDocumentsCore extends TableView
 		{
 //			if ($item['issueType'] !== TableIssues::mtInbox)
 //				if ($item ['authorFullName'])
-//					$title[] = ['icon' => 'icon-user', 'text' => $item ['authorFullName'], 'class' => 'e10-off'];
+//					$title[] = ['icon' => 'system/iconUser', 'text' => $item ['authorFullName'], 'class' => 'e10-off'];
 
 				/*
 			if ($item['issueType'] === TableIssues::mtInbox && isset ($this->linkedPersons [$ndx]['wkf-issues-from']))

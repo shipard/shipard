@@ -99,7 +99,7 @@ class LanMonitoringWidget extends WidgetBoard
 
 		foreach ($enum as $lanNdx => $lanName)
 		{
-			$icon = 'icon-sitemap';
+			$icon = 'system/iconSitemap';
 			$tabs['lan-'.$lanNdx] = ['icon' => $icon, 'text' => $lanName, 'action' => 'load-lan-'.$lanNdx];
 		}
 

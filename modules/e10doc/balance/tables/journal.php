@@ -76,7 +76,7 @@ class ViewJournalAll extends \E10\TableViewGrid
 		$this->setGrid ($g);
 
 		$this->setInfo('title', 'Saldokontní deník');
-		$this->setInfo('icon', 'icon-star-o');
+		$this->setInfo('icon', 'system/iconBalance');
 	}
 
 	protected function addParamBalance ()

@@ -32,13 +32,13 @@ class ViewerDashboardKeys extends TableView
 
 		if ($this->enableDetailSearch)
 		{
-			$mq [] = ['id' => 'active', 'title' => 'Aktivní', 'icon' => 'icon-check'];
-			$mq [] = ['id' => 'assigned', 'title' => 'Přiřazeno', 'icon' => 'icon-user'];
+			$mq [] = ['id' => 'active', 'title' => 'Aktivní', 'icon' => 'system/iconCheck'];
+			$mq [] = ['id' => 'assigned', 'title' => 'Přiřazeno', 'icon' => 'system/iconUser'];
 			$mq [] = ['id' => 'unassigned', 'title' => 'Nepřiřazeno', 'icon' => 'icon-times'];
-			$mq [] = ['id' => 'archive', 'title' => 'Archív', 'icon' => 'icon-archive'];
-			$mq [] = ['id' => 'all', 'title' => 'Vše', 'icon' => 'icon-toggle-on'];
+			$mq [] = ['id' => 'archive', 'title' => 'Archív', 'icon' => 'system/filterArchive'];
+			$mq [] = ['id' => 'all', 'title' => 'Vše', 'icon' => 'system/filterAll'];
 			if ($this->app()->hasRole('pwuser'))
-				$mq [] = ['id' => 'trash', 'title' => 'Koš', 'icon' => 'icon-trash'];
+				$mq [] = ['id' => 'trash', 'title' => 'Koš', 'icon' => 'system/filterTrash'];
 			$this->setMainQueries($mq);
 		}
 
@@ -308,7 +308,7 @@ class ViewerDashboardKeys extends TableView
 				}
 				elseif ($ta['assignType'] === 1)
 				{
-					$tt[] = ['text' => $ta['place']['fullName'], 'icon' => 'icon-map-marker', 'class' => ''];
+					$tt[] = ['text' => $ta['place']['fullName'], 'icon' => 'system/iconMapMarker', 'class' => ''];
 					$tt[] = ['text' => utils::dateFromTo($ta['validFrom'], $ta['validTo'], NULL), 'xicon' => 'icon-keyboard-o', 'class' => 'e10-small'];
 				}
 				$row['title'] = $tt;
@@ -321,7 +321,7 @@ class ViewerDashboardKeys extends TableView
 			$tt = [];
 			$tt[] = ['text' => 'nepřiřazeno', 'icon' => 'icon-times', 'class' => 'e10-small'];
 			$tt[] = [
-				'action' => 'new', 'data-table' => 'mac.access.tagsAssignments', 'icon' => 'icon-plus-circle',
+				'action' => 'new', 'data-table' => 'mac.access.tagsAssignments', 'icon' => 'system/actionAdd',
 				'text' => 'Přiřadit',
 				'type' => 'button', 'actionClass' => 'btn',
 				'class' => 'pull-right', 'btnClass' => 'btn-success btn-xs',
@@ -343,7 +343,7 @@ class ViewerDashboardKeys extends TableView
 		$addButtons = [];
 
 		$addButtons[] = [
-			'action' => 'new', 'data-table' => 'mac.access.tags', 'icon' => 'icon-plus-circle',
+			'action' => 'new', 'data-table' => 'mac.access.tags', 'icon' => 'system/actionAdd',
 			'text' => 'Nový klíč',
 			'type' => 'button', 'actionClass' => 'btn',
 			'class' => 'btn-block', 'btnClass' => 'btn-success btn-block',
@@ -367,7 +367,7 @@ class ViewerDashboardKeys extends TableView
 
 		$paramsTagTypes = new \E10\Params ($panel->table->app());
 		$paramsTagTypes->addParam ('checkboxes', 'query.tagTypes', ['items' => $tagTypes]);
-		$qry[] = ['style' => 'params', 'title' => ['text' => 'Druhy klíčů', 'icon' => 'icon-key'], 'params' => $paramsTagTypes];
+		$qry[] = ['style' => 'params', 'title' => ['text' => 'Druhy klíčů', 'icon' => 'tables/e10.persons.keys'], 'params' => $paramsTagTypes];
 		$paramsTagTypes->detectValues();
 
 		if (count($qry))

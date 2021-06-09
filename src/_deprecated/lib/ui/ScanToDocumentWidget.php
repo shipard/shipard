@@ -16,7 +16,7 @@ class ScanToDocumentWidget extends \E10\widgetPane
 		if ($title === FALSE)
 			$title = ['icon' => 'icon-paperclip', 'text' => 'Přílohy'];
 		if ($downloadTitle === FALSE)
-			$downloadTitle = ['icon' => 'icon-download', 'text' => 'Soubory ke stažení'];
+			$downloadTitle = ['icon' => 'system/actionDownload', 'text' => 'Soubory ke stažení'];
 
 		$files = \E10\Base\loadAttachments ($this->app, [$toRecId], $tableId);
 		if (isset($files[$toRecId]))

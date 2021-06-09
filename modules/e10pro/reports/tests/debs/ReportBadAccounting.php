@@ -150,7 +150,7 @@ class ReportBadAccounting extends \e10doc\core\libs\reports\GlobalReport
 
 			$newItem = [
 					'dn' => ['text'=> $r['docNumber'], 'docAction' => 'edit', 'table' => 'e10doc.core.heads', 'pk'=> $r['document'], 'icon' => $docType ['icon']],
-					'accountId' => ['text'=> $r['accountId'], 'docAction' => 'new', 'table' => 'e10doc.debs.accounts', 'addParams' => '__id='.$r['accountId'], 'icon' => 'icon-plus-circle'],
+					'accountId' => ['text'=> $r['accountId'], 'docAction' => 'new', 'table' => 'e10doc.debs.accounts', 'addParams' => '__id='.$r['accountId'], 'icon' => 'system/actionAdd'],
 					'person' => $r['personName'], 'title' => $r['text'], 'date' => Utils::datef($r['dateAccounting'], '%d'), 'dt' => $docType ['shortcut']
 			];
 			$newItem['_options'] = ['cellClasses' => ['dn' => $this->docStateClass($r)]];
@@ -188,7 +188,7 @@ class ReportBadAccounting extends \e10doc\core\libs\reports\GlobalReport
 		forEach ($rows as $r)
 		{
 			$newItem = [
-					'a' => ['text'=> $r['accountId'], 'docAction' => 'new', 'table' => 'e10doc.debs.accounts', 'addParams' => '__id='.$r['accountId'], 'icon' => 'icon-plus-circle'],
+					'a' => ['text'=> $r['accountId'], 'docAction' => 'new', 'table' => 'e10doc.debs.accounts', 'addParams' => '__id='.$r['accountId'], 'icon' => 'system/actionAdd'],
 					'c' => $r['cnt']];
 			$data[] = $newItem;
 		}

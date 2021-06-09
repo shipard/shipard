@@ -98,12 +98,12 @@ class ViewTaxRegs extends TableView
 		$props[] = ['text' => $this->countries[$item['country']]['name'], 'class' => 'label label-default', 'icon' => 'icon-globe'];
 
 		$periodType = $this->table->columnInfoEnum ('periodType', 'cfgText');
-		$props[] = ['text' => $periodType[$item['periodType']], 'class' => 'label label-default', 'icon' => 'icon-calendar'];
+		$props[] = ['text' => $periodType[$item['periodType']], 'class' => 'label label-default', 'icon' => 'system/iconCalendar'];
 
 		if ($item['taxType'] === 'vat' && $item['country'] === 'cz')
 		{
 			$periodType = $this->table->columnInfoEnum ('periodTypeVatCS', 'cfgText');
-			$props[] = ['text' => 'KH: '.$periodType[$item['periodTypeVatCS']], 'class' => 'label label-default', 'icon' => 'icon-calendar'];
+			$props[] = ['text' => 'KH: '.$periodType[$item['periodTypeVatCS']], 'class' => 'label label-default', 'icon' => 'system/iconCalendar'];
 		}
 
 		$listItem ['t2'] = $props;

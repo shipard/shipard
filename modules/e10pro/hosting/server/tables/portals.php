@@ -189,7 +189,7 @@ class ViewPortals extends TableView
 
 		$listItem ['t2'] = [];
 		$listItem ['t2'][] = ['text' => $item['domain'], 'class' => '', 'icon' => 'icon-globe'];
-		$listItem ['t2'][] = ['text' => $item['emailDomain'], 'class' => '', 'icon' => 'icon-envelope'];
+		$listItem ['t2'][] = ['text' => $item['emailDomain'], 'class' => '', 'icon' => 'system/iconEmail'];
 
 		$listItem ['t3'] = ['text' => $item['supportEmail'].', '.$item['supportPhone'], 'class' => '', 'icon' => 'icon-life-ring'];
 

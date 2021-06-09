@@ -160,7 +160,7 @@ use \E10\utils, \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\Table
 		];
 		$conditionsIcons = [
 			0 => 'icon-question',
-			1 => 'icon-check',
+			1 => 'system/iconCheck',
 			3 => 'system/iconWarning',
 			4 => 'icon-pause-circle-o',
 			5 => 'icon-refresh'
@@ -180,7 +180,7 @@ use \E10\utils, \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\Table
 
 	public function tableIcon($recData, $options = NULL)
 	{
-		$iconSet = ['icon-check', 'icon-flask', 'icon-eye', 'icon-user-secret', 'icon-question'];
+		$iconSet = ['system/iconCheck', 'icon-flask', 'icon-eye', 'icon-user-secret', 'icon-question'];
 		return $iconSet[$recData['dsType']];
 	}
 
@@ -221,7 +221,7 @@ use \E10\utils, \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\Table
 						$extModulesLabels[] = [
 							'text' => 'Počítačová síť',
 							'suffix' => utils::nf($em['lan']['countDevices']['ALL']).' zařízení',
-							'icon' => 'icon-sitemap', 'class' => 'label label-info'
+							'icon' => 'system/iconSitemap', 'class' => 'label label-info'
 						];
 						$plan['extModulesPoints'] += intval($em['lan']['countDevices']['ALL']);
 					}
@@ -320,14 +320,14 @@ class ViewDatasources extends TableView
 		if (!$this->partner)
 			$this->setPanels (TableView::sptQuery|TableView::sptReview);
 
-		$mq [] = ['id' => 'valid', 'title' => 'Platné', 'icon' => 'icon-database'];
+		$mq [] = ['id' => 'valid', 'title' => 'Platné', 'icon' => 'system/iconDatabase'];
 		$mq [] = ['id' => 'active', 'title' => 'Aktivní', 'side' => 'left', 'icon' => 'icon-check-square'];
 		$mq [] = ['id' => 'online', 'title' => 'Online', 'side' => 'left', 'icon' => 'icon-bolt'];
 
 		$mq [] = ['id' => 'nonactive', 'title' => 'Neaktivní', 'icon' => 'icon-ban'];
-		$mq [] = ['id' => 'archive', 'title' => 'Archív', 'icon' => 'icon-archive'];
-		$mq [] = ['id' => 'all', 'title' => 'Vše', 'icon' => 'icon-toggle-on'];
-		$mq [] = ['id' => 'trash', 'title' => 'Koš', 'icon' => 'icon-trash'];
+		$mq [] = ['id' => 'archive', 'title' => 'Archív', 'icon' => 'system/filterArchive'];
+		$mq [] = ['id' => 'all', 'title' => 'Vše', 'icon' => 'system/filterAll'];
+		$mq [] = ['id' => 'trash', 'title' => 'Koš', 'icon' => 'system/filterTrash'];
 
 		$this->setMainQueries ($mq);
 
@@ -425,7 +425,7 @@ class ViewDatasources extends TableView
 			{
 				$info = [
 						'text' => utils::snf($this->dsStats[$item ['pk']]['cntUsersAll1m']).' / '.utils::snf($this->dsStats[$item ['pk']]['cntUsersActive1m']),
-						'class' => 'label label-warning pull-right', 'icon' => 'icon-user'];
+						'class' => 'label label-warning pull-right', 'icon' => 'system/iconUser'];
 				if ($this->dsStats[$item ['pk']]['cntUsersDocs1m'])
 					$info ['suffix'] = utils::snf($this->dsStats[$item ['pk']]['cntUsersDocs1m']);
 				$item ['t3'][] = $info;
@@ -642,9 +642,9 @@ class FormDatasource extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Vlastnosti', 'icon' => 'x-properties'];
-			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-wrench'];
-			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-image'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
+			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 			$this->openTabs ($tabs, TRUE);
 
 				$this->openTab ();

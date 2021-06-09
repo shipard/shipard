@@ -1822,10 +1822,10 @@ class TableView extends \Shipard\Base\BaseObject
 	{
 		if ($queries === NULL)
 			$this->mainQueries = [
-				['id' => 'active', 'title' => 'Aktivní', 'icon' => 'icon-bolt'],
-				['id' => 'archive', 'title' => 'Archív', 'icon' => 'icon-archive'],
-				['id' => 'all', 'title' => 'Vše', 'icon' => 'icon-toggle-on'],
-				['id' => 'trash', 'title' => 'Koš', 'icon' => 'icon-trash']
+				['id' => 'active', 'title' => 'Aktivní', 'icon' => 'system/filterActive'],
+				['id' => 'archive', 'title' => 'Archív', 'icon' => 'system/filterArchive'],
+				['id' => 'all', 'title' => 'Vše', 'icon' => 'system/filterAll'],
+				['id' => 'trash', 'title' => 'Koš', 'icon' => 'system/filterTrash']
 			];
 		else
 			$this->mainQueries = $queries;

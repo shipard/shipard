@@ -209,7 +209,7 @@ class ViewTags extends TableView
 					$item['t2'][] = [
 						'suffix' => utils::dateFromTo($ta['validFrom'], $ta['validTo'], NULL),
 						'text' => $ta['place']['fullName'],
-						'icon' => 'icon-map-marker', 'class' => 'label label-default'
+						'icon' => 'system/iconMapMarker', 'class' => 'label label-default'
 					];
 				}
 			}

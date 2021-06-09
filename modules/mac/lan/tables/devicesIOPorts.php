@@ -444,7 +444,7 @@ class ViewDevicesIOPortsFormList extends \e10\TableViewGrid
 		$portType = $this->portsTypes[$item['portType']];
 
 		$listItem ['pk'] = $item ['ndx'];
-		$listItem ['icon'] = 'icon-cogs';
+		$listItem ['icon'] = 'system/iconCogs';
 
 		$listItem ['portId'] = [];
 

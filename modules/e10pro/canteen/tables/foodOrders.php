@@ -105,7 +105,7 @@ class ViewFoodOrders extends TableView
 
 		$listItem['t3'] = $item['foodIndex'].'. '.$item['foodName'];
 		$listItem['t2'] = [];
-		$listItem['t2'][] = ['text' => utils::datef($item['date'], '%n %D'), 'icon' => 'icon-calendar', 'class' => 'label label-default'];
+		$listItem['t2'][] = ['text' => utils::datef($item['date'], '%n %D'), 'icon' => 'system/iconCalendar', 'class' => 'label label-default'];
 		$listItem['t2'][] = ['text' => $item['menuName'], 'icon' => 'icon-file-text-o', 'class' => 'label label-default'];
 
 		if ($item['taking'])

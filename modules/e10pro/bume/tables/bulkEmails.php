@@ -216,8 +216,8 @@ class ViewBulkEmails extends TableView
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 		$listItem ['t1'] = $item['subject'];
-		$listItem ['t2'] = [['text' => $item['authorName'], 'icon' => 'icon-user']];
-		$listItem ['t2'][] = ['text' => utils::datef($item['dateCreate'], '%D, %T'), 'icon' => 'icon-calendar'];
+		$listItem ['t2'] = [['text' => $item['authorName'], 'icon' => 'system/iconUser']];
+		$listItem ['t2'][] = ['text' => utils::datef($item['dateCreate'], '%D, %T'), 'icon' => 'system/iconCalendar'];
 
 		//$listItem ['i2'] = strval($item['sendingState']).' ';
 

@@ -209,11 +209,11 @@ class ViewDetailPartner extends TableViewDetail
 
 		$dsStatsInfo = $this->table()->partnerDSStats($i['ndx']);
 		$title = [
-			['text' => utils::nf($dsStatsInfo['1']['cnt']), 'icon' => 'icon-database', 'class' => 'label label-success', 'title' => 'Počet databází v ostrém provozu'],
+			['text' => utils::nf($dsStatsInfo['1']['cnt']), 'icon' => 'system/iconDatabase', 'class' => 'label label-success', 'title' => 'Počet databází v ostrém provozu'],
 			['text' => utils::snf($dsStatsInfo['1']['usageTotal']), 'icon' => 'icon-hdd-o', 'class' => 'label label-success', 'title' => 'Celková velikost databází v ostrém provozu'],
 			['text' => utils::snf($dsStatsInfo['1']['cntDocuments12m']), 'icon' => 'icon-file-text-o', 'class' => 'label label-success', 'title' => 'Počet dokladů za posledních 12 měsíců u databází v ostrém provozu'],
 
-			['text' => utils::nf($dsStatsInfo['NONPROD']['cnt']), 'icon' => 'icon-database', 'class' => 'label label-default', 'title' => 'Počet databází v testovacím provozu'],
+			['text' => utils::nf($dsStatsInfo['NONPROD']['cnt']), 'icon' => 'system/iconDatabase', 'class' => 'label label-default', 'title' => 'Počet databází v testovacím provozu'],
 			['text' => utils::snf($dsStatsInfo['NONPROD']['usageTotal']), 'icon' => 'icon-hdd-o', 'class' => 'label label-default', 'title' => 'Celková velikost databází v testovacím provozu'],
 			['text' => utils::snf($dsStatsInfo['NONPROD']['cntDocuments12m']), 'icon' => 'icon-file-text-o', 'class' => 'label label-default', 'title' => 'Počet dokladů za posledních 12 měsíců u databází v testovacím provozu'],
 		];
@@ -302,9 +302,9 @@ class FormPartner extends TableForm
 		//$this->setFlag ('maximize', 1);
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Portál', 'icon' => 'icon-umbrella'];
-			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-wrench'];
-			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'icon-paperclip'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
+			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
 					$this->addColumnInput ('name');

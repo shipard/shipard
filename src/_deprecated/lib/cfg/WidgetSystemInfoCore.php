@@ -57,7 +57,7 @@ class WidgetSystemInfoCore extends \Shipard\UI\Core\WidgetPane
 		$diskSpace[] = ['text' => utils::memf($dsInfo['dsStats']['usageTotal']), 'icon' => 'icon-hdd-o', 'class' => 'e10-widget-big-number', 'title' => 'Celková velikost databáze včetně příloh: '.utils::datef($date, '%D, %T')];
 		if (isset($dsInfo['dsStats']))
 		{
-			$diskSpace[] = ['text' => 'Data: ' . utils::memf($dsInfo['dsStats']['usageDb']), 'icon' => 'icon-database', 'class' => 'break padd5 e10-small'];
+			$diskSpace[] = ['text' => 'Data: ' . utils::memf($dsInfo['dsStats']['usageDb']), 'icon' => 'system/iconDatabase', 'class' => 'break padd5 e10-small'];
 			$diskSpace[] = ['text' => 'Přílohy: ' . utils::memf($dsInfo['dsStats']['usageFiles']), 'icon' => 'icon-paperclip', 'class' => 'break padd5 e10-small'];
 		}
 		else
@@ -67,7 +67,7 @@ class WidgetSystemInfoCore extends \Shipard\UI\Core\WidgetPane
 		// -- users
 		$usersPane = ['info' => [], 'class' => 'info'];
 		$users = [];
-		$users[] = ['text' => utils::nf($dsInfo['dsStats']['cntUsersAll1m']), 'icon' => 'icon-user', 'class' => 'e10-widget-big-number', 'title' => 'Celkový počet uživatelů, kteří se přihlásili za poslední měsíc'];
+		$users[] = ['text' => utils::nf($dsInfo['dsStats']['cntUsersAll1m']), 'icon' => 'system/iconUser', 'class' => 'e10-widget-big-number', 'title' => 'Celkový počet uživatelů, kteří se přihlásili za poslední měsíc'];
 		if (isset($dsInfo['dsStats']))
 		{
 			$users[] = ['text' => 'Aktivní: '.utils::nf($dsInfo['dsStats']['cntUsersActive1m']), 'icon' => 'icon-pencil', 'class' => 'break padd5 e10-small'];

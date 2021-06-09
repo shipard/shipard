@@ -147,15 +147,15 @@ class ViewWebArticles extends TableView
 		$listItem ['t1'] = $item['title'];
 
 		if ($item['authorFullName'])
-			$listItem ['t2'][] = ['icon' => 'icon-user', 'text' => $item['authorFullName'], 'class' => ''];
+			$listItem ['t2'][] = ['icon' => 'system/iconUser', 'text' => $item['authorFullName'], 'class' => ''];
 
 		$dates = [];
 		if ($item['onTop'])
 			$dates[] = ['text' => '', 'icon' => 'icon-thumb-tack', 'class' => 'e10-success'];
 		if ($item['datePub'])
-			$dates[] = ['text' => utils::datef($item['datePub'], '%D'), 'icon' => 'icon-play', 'class' => ''];
+			$dates[] = ['text' => utils::datef($item['datePub'], '%D'), 'icon' => 'system/actionPlay', 'class' => ''];
 		if ($item['dateClose'])
-			$dates[] = ['text' => utils::datef($item['dateClose'], '%D'), 'icon' => 'icon-stop', 'class' => ''];
+			$dates[] = ['text' => utils::datef($item['dateClose'], '%D'), 'icon' => 'system/actionStop', 'class' => ''];
 		if (count($dates))
 			$listItem ['i2'] = $dates;
 

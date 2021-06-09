@@ -36,10 +36,10 @@ class DocumentCardSwApplication extends \e10\DocumentCard
 				];
 
 				if ($d['lanShortName'])
-					$device[] = ['text' => $d['lanShortName'], 'icon' => 'icon-sitemap', 'class' => 'e10-small'];
+					$device[] = ['text' => $d['lanShortName'], 'icon' => 'system/iconSitemap', 'class' => 'e10-small'];
 
 				if ($d['placeFullName'])
-					$device[] = ['icon' => 'icon-map-marker', 'text' => $d['placeFullName'], 'class' => 'e10-small'];
+					$device[] = ['icon' => 'system/iconMapMarker', 'text' => $d['placeFullName'], 'class' => 'e10-small'];
 
 				$deviceRow['device'] = $device;
 
@@ -64,7 +64,7 @@ class DocumentCardSwApplication extends \e10\DocumentCard
 
 		if (count($table))
 		{
-			$title = [['icon' => 'icon-download', 'text' => 'Nainstalováno na zařízeních']];
+			$title = [['icon' => 'system/actionDownload', 'text' => 'Nainstalováno na zařízeních']];
 			$h = ['#' => '#', 'device' => 'Zařízení'];
 			if ($this->recData['license'] === 3)
 				$h['license'] = 'Licence';

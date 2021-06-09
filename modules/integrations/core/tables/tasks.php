@@ -91,7 +91,7 @@ class FormTask extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
 		$this->openForm ();
-		$tabs ['tabs'][] = ['text' => 'Služba', 'icon' => 'icon-cogs'];
+		$tabs ['tabs'][] = ['text' => 'Služba', 'icon' => 'system/iconCogs'];
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
 					$this->addColumnInput ('fullName');

@@ -232,7 +232,7 @@ class ViewDevicesPorts extends TableView
 					'text' => $item['wallSocketId'], 'icon' => 'icon-plug', 'class' => 'e10-bold'
 				];
 				if ($item['wallSocketPlaceName'])
-					$portConnectTo[] = ['text' => $item['wallSocketPlaceName'], 'icon' => 'icon-map-marker', 'class' => 'e10-small'];
+					$portConnectTo[] = ['text' => $item['wallSocketPlaceName'], 'icon' => 'system/iconMapMarker', 'class' => 'e10-small'];
 			}
 			else
 			{
@@ -394,7 +394,7 @@ class ViewDevicesPortsFormList extends \e10\TableViewGrid
 					'docAction' => 'edit', 'table' => 'mac.lan.wallSockets', 'pk' => $item['connectedToWallSocket']
 					];
 				if ($item['wallSocketPlaceName'])
-					$portConnectTo[] = ['text' => $item['wallSocketPlaceName'], 'icon' => 'icon-map-marker', 'class' => 'break e10-small'];
+					$portConnectTo[] = ['text' => $item['wallSocketPlaceName'], 'icon' => 'system/iconMapMarker', 'class' => 'break e10-small'];
 			}
 			else
 			{

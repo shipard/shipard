@@ -63,14 +63,14 @@ class ViewRequests extends TableView
 		$listItem ['icon'] = "x-request";
 		$listItem ['t1'] = $item['subject'];
 
-		$props [] = array ('icon' => 'icon-play', 'text' => \E10\df ($item['created']));
-		$props [] = array ('icon' => 'icon-sitemap', 'text' => $item['addressCreate']);
+		$props [] = array ('icon' => 'system/actionPlay', 'text' => \E10\df ($item['created']));
+		$props [] = array ('icon' => 'system/iconSitemap', 'text' => $item['addressCreate']);
 		$listItem ['t2'] = $props;
 
 		if ($item['finished'])
 		{
-			$props2 [] = array ('icon' => 'icon-check', 'text' => \E10\df ($item['finished']));
-			$props2 [] = array ('icon' => 'icon-sitemap', 'text' => $item['addressConfirm']);
+			$props2 [] = array ('icon' => 'system/iconCheck', 'text' => \E10\df ($item['finished']));
+			$props2 [] = array ('icon' => 'system/iconSitemap', 'text' => $item['addressConfirm']);
 			$listItem ['t3'] = $props2;
 		}
 

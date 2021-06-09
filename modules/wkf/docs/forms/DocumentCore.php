@@ -142,7 +142,7 @@ class DocumentCore extends TableForm
 		if ($title === FALSE)
 			$title = ['icon' => 'icon-paperclip', 'text' => 'Přílohy'];
 		if ($downloadTitle === FALSE)
-			$downloadTitle = ['icon' => 'icon-download', 'text' => 'Soubory ke stažení'];
+			$downloadTitle = ['icon' => 'system/actionDownload', 'text' => 'Soubory ke stažení'];
 
 		$files = \E10\Base\loadAttachments ($this->table->app(), array($toRecId), $tableId);
 		if (isset($files[$toRecId]))

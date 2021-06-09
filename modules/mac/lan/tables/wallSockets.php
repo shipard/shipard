@@ -67,14 +67,14 @@ class ViewWallSockets extends TableView
 
 		if ($item['placeFullName'])
 		{
-			$listItem['i1'] = ['icon' => 'icon-map-marker', 'text' => $item['placeFullName'], 'class' => 'id'];
+			$listItem['i1'] = ['icon' => 'system/iconMapMarker', 'text' => $item['placeFullName'], 'class' => 'id'];
 			if ($item['placeDesc'] !== '')
 				$listItem['i1']['suffix'] = $item['placeDesc'];
 		}
 		elseif ($item['placeDesc'] !== '')
-			$listItem['i1'] = ['icon' => 'icon-map-marker', 'text' => $item['placeDesc'], 'class' => 'id'];
+			$listItem['i1'] = ['icon' => 'system/iconMapMarker', 'text' => $item['placeDesc'], 'class' => 'id'];
 		else
-			$listItem['i1'] = ['icon' => 'icon-map-marker', 'text' => '---', 'class' => 'id e10-error'];
+			$listItem['i1'] = ['icon' => 'system/iconMapMarker', 'text' => '---', 'class' => 'id e10-error'];
 
 		$listItem ['i2'] = [];
 
@@ -84,9 +84,9 @@ class ViewWallSockets extends TableView
 			$listItem ['i2'][] = ['text' => '!!!', 'icon' => 'icon-window-maximize', 'class' => 'e10-error'];
 
 		if ($item['lanShortName'])
-			$listItem ['i2'][] = ['text' => $item['lanShortName'], 'icon' => 'icon-sitemap', 'class' => ''];
+			$listItem ['i2'][] = ['text' => $item['lanShortName'], 'icon' => 'system/iconSitemap', 'class' => ''];
 		else
-			$listItem ['i2'][] = ['text' => '!!!', 'icon' => 'icon-sitemap', 'class' => 'e10-error'];
+			$listItem ['i2'][] = ['text' => '!!!', 'icon' => 'system/iconSitemap', 'class' => 'e10-error'];
 
 		return $listItem;
 	}

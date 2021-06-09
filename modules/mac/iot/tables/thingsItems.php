@@ -92,7 +92,7 @@ class ViewThingsItemsFormList extends \e10\TableViewGrid
 	public function renderRow ($item)
 	{
 		$listItem ['pk'] = $item ['ndx'];
-		$listItem ['icon'] = 'icon-cogs';
+		$listItem ['icon'] = 'system/iconCogs';
 
 		$listItem ['type'] = [];
 
@@ -192,7 +192,7 @@ class FormThingItem extends TableForm
 
 		$thingItemTypeCfg = $this->app()->cfgItem('mac.iot.things.itemsTypes.'.$this->recData['itemType'], NULL);
 
-		$tabs ['tabs'][] = ['text' => 'Data', 'icon' => 'icon-database'];
+		$tabs ['tabs'][] = ['text' => 'Data', 'icon' => 'system/iconDatabase'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);

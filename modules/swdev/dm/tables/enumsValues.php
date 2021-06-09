@@ -103,7 +103,7 @@ class FormEnumValue extends TableForm
 
 		$this->openForm ();
 			$tabs ['tabs'][] = ['text' => 'Enum', 'icon' => 'x-content'];
-			$tabs ['tabs'][] = ['text' => 'cfg', 'icon' => 'icon-cogs'];
+			$tabs ['tabs'][] = ['text' => 'cfg', 'icon' => 'system/iconCogs'];
 
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();

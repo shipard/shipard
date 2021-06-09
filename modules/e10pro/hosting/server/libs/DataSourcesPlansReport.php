@@ -30,7 +30,7 @@ class DataSourcesPlansReport extends \E10\GlobalReport
 			$this->partnerNdx = intval($this->reportParams ['partner']['value']);
 
 		$this->setInfo('param', 'Partner', $this->reportParams ['partner']['activeTitle']);
-		$this->setInfo('icon', 'icon-database');
+		$this->setInfo('icon', 'system/iconDatabase');
 	}
 
 	function createContent ()

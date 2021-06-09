@@ -73,7 +73,7 @@ class DiaryHelper extends Utility
 			$title = [];
 			$title[] = ['class' => 'title', 'text' => $r['subject'], 'icon' => $this->tableIssues->tableIcon($r, 1)];
 			$title [] = [
-				'class' => 'label label-default pull-right', 'icon' => 'icon-edit',
+				'class' => 'label label-default pull-right', 'icon' => 'system/docStateEdit',
 				'text' => '', 'title' => 'Opravit', 'type' => 'span',
 				'pk' => $r['ndx'], 'docAction' => 'edit', 'data-table' => 'wkf.core.issues',
 			];

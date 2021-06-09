@@ -156,7 +156,7 @@ class FormScenarioSchedule extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_PARENT_FORM);
 		$this->setFlag ('maximize', 1);
 
-		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-cogs'];
+		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/iconCogs'];
 
 		$dowColState = 0;//($this->recData['workingDays'] || $this->recData['nonWorkingDays']) ? self::coReadOnly : 0;
 

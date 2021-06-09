@@ -33,7 +33,7 @@ class TableDevices extends DbTable
 		{
 			$p = explode ('.', $recData['clientTypeId']);
 			if ((isset($p[1]) && $p[1] === 'cordova') || ($p[0] === 'mobile' && $p[1] === 'browser'))
-				return 'icon-mobile';
+				return 'deviceTypes/phone';
 		}
 		return parent::tableIcon ($recData, $options);
 	}
@@ -59,7 +59,7 @@ class ViewDevices extends TableView
 	public function renderRow ($item)
 	{
 		$listItem ['t1'] = $item['name'];
-		$listItem ['t2'] = ['text' => $item['id'], 'icon' => 'icon-laptop'];
+		$listItem ['t2'] = ['text' => $item['id'], 'icon' => 'deviceTypes/notebook'];
 
 		$listItem ['pk'] = $item ['ndx'];
 
@@ -69,8 +69,8 @@ class ViewDevices extends TableView
 			$listItem ['i1'] = $item['ipaddress'];
 
 		$listItem ['i2'] = [
-				['icon' => 'icon-user', 'text' => $item['userName']],
-				['icon' => 'icon-sign-in', 'text' => utils::datef ($item['lastSeenOnline'], '%D, %T')]
+				['icon' => 'system/iconUser', 'text' => $item['userName']],
+				['icon' => 'system/actionLogIn', 'text' => utils::datef ($item['lastSeenOnline'], '%D, %T')]
 		];
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 

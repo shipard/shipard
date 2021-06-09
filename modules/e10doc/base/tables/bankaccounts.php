@@ -156,13 +156,13 @@ class ViewBankAccounts extends TableView
 		{
 			$ds = $this->app()->cfgItem('ebanking.downloads.'.$item['downloadStatements'], FALSE);
 			if ($ds)
-				$props[] = ['icon' => 'icon-download', 'text' => $ds['title']];
+				$props[] = ['icon' => 'system/actionDownload', 'text' => $ds['title']];
 		}
 		if ($item['uploadStatements'] !== '' && $item['uploadStatements'] !== 'none')
 		{
 			$ds = $this->app()->cfgItem('ebanking.uploads.'.$item['uploadStatements'], FALSE);
 			if ($ds)
-				$props[] = ['icon' => 'icon-upload', 'text' => $ds['title']];
+				$props[] = ['icon' => 'system/actionUpload', 'text' => $ds['title']];
 		}
 		if ($item['downloadTransactions'] !== '' && $item['downloadTransactions'] !== 'none')
 		{

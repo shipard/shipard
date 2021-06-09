@@ -290,7 +290,7 @@ class Overview extends Content
 			$title = $this->overviewData->lanChanges['nodeServers']['title'];
 			$title[] = [
 				'type' => 'action', 'action' => 'addwizard', 'data-class' => 'mac.lan.libs.NodeServerCfgWizard',
-				'text' => 'Potvrdit změny', 'icon' => 'icon-check', 'class' => 'btn-sm pull-right', 'btnClass' => 'btn-primary',
+				'text' => 'Potvrdit změny', 'icon' => 'system/iconCheck', 'class' => 'btn-sm pull-right', 'btnClass' => 'btn-primary',
 				'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widget->widgetId,
 			];
 			$title[] = ['text' => '', 'class' => 'block'];
@@ -308,7 +308,7 @@ class Overview extends Content
 			$title = $this->overviewData->lanChanges['lanControl']['title'];
 			$title[] = [
 				'type' => 'action', 'action' => 'addwizard', 'data-class' => 'mac.lan.libs.LanControlCfgWizard',
-				'text' => 'Potvrdit změny', 'icon' => 'icon-check', 'class' => 'btn-sm pull-right', 'btnClass' => 'btn-primary',
+				'text' => 'Potvrdit změny', 'icon' => 'system/iconCheck', 'class' => 'btn-sm pull-right', 'btnClass' => 'btn-primary',
 				'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widget->widgetId,
 			];
 			$title[] = ['text' => '', 'class' => 'block'];

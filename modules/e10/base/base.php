@@ -2278,7 +2278,7 @@ function linkedPersons2 ($app, $table, $toRecId, $elementClass = '')
 			$lp [$r['srcRecId']][$linkId] = ['icon' => $allLinks[$linkId]['icon'], 'name' => $allLinks[$linkId]['name'], 'labels' => []];
 		}
 
-		$icon = 'icon-check';
+		$icon = 'system/iconCheck';
 		if ($r['dstTableId'] === 'e10.persons.persons')
 			$icon = $tablePersons->tableIcon ($r);
 		elseif ($r['dstTableId'] === 'e10.persons.groups')

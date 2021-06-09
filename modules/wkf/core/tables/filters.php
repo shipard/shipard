@@ -75,7 +75,7 @@ class ViewFilters extends TableView
 		$this->renderRow_AddSetLabel($setProps, $item['actionSetPriority'], $this->priorities[$item['actionSetPriorityValue']], 'icon-signal', 'Důležitost');
 
 		if ($item['stopAfterApply'])
-			$setProps[] = ['text' => 'STOP', 'icon' => 'icon-stop', 'class' => 'label label-danger'];
+			$setProps[] = ['text' => 'STOP', 'icon' => 'system/actionStop', 'class' => 'label label-danger'];
 
 		if (count($setProps))
 			$listItem ['t3'] = $setProps;

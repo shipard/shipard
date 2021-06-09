@@ -21,7 +21,7 @@ class WizardNewDatasource extends Wizard
 	public function createHeader ()
 	{
 		$hdr = [];
-		$hdr ['icon'] = 'icon-database';
+		$hdr ['icon'] = 'system/iconDatabase';
 
 		$hdr ['info'][] = ['class' => 'title', 'value' => 'Vytvořit novou databázi'];
 

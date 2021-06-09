@@ -46,11 +46,11 @@ class Detail extends \e10\DocumentCard
 		else
 			if ($bi->restAmount == $this->recData['toPay'])
 			{
-				$line[] = ['text' => 'NEUHRAZENO', 'icon' => ($bi->daysOver > 0) ? 'icon-exclamation' : 'icon-check', 'class' => 'e10-linePart h1'];
+				$line[] = ['text' => 'NEUHRAZENO', 'icon' => ($bi->daysOver > 0) ? 'icon-exclamation' : 'system/iconCheck', 'class' => 'e10-linePart h1'];
 			}
 			else
 			{
-				$line[] = ['text' => '', 'icon' => 'icon-check', 'class' => 'e10-linePart h1'];
+				$line[] = ['text' => '', 'icon' => 'system/iconCheck', 'class' => 'e10-linePart h1'];
 				$partialAmount = (isset($this->item['toPay']) && $this->item['toPay']) ? ($bi->paymentTotal / $this->item['toPay']) * 100 : 0;	
 				$line[] = ['text' => 'ČÁSTEČNĚ UHRAZENO', 'prefix' => utils::nf($partialAmount, 0).' %', 'class' => 'e10-none'];
 			}
@@ -336,7 +336,7 @@ class Detail extends \e10\DocumentCard
 			$laTitleRight = $msgItem;
 			$laTitleRight ['class'] = 'pull-right';
 
-			$laDownloadTitleLeft = ['icon' => 'icon-download', 'text' => 'Soubory ke stažení'];
+			$laDownloadTitleLeft = ['icon' => 'system/actionDownload', 'text' => 'Soubory ke stažení'];
 			$laDownloadTitleRight = $msgItem;
 			$laDownloadTitleRight ['class'] = 'pull-right';
 

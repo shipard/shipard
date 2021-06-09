@@ -68,9 +68,9 @@ class ViewRelations extends TableView
 		$listItem ['t2'] = [['text' => $c['fn']]];
 
 		if ($item['validFrom'])
-			$listItem ['t2'][] = ['text' => utils::datef($item['validFrom'], '%D'), 'icon' => 'icon-play'];
+			$listItem ['t2'][] = ['text' => utils::datef($item['validFrom'], '%D'), 'icon' => 'system/actionPlay'];
 		if ($item['validTo'])
-			$listItem ['t2'][] = ['text' => utils::datef($item['validTo'], '%D'), 'icon' => 'icon-stop'];
+			$listItem ['t2'][] = ['text' => utils::datef($item['validTo'], '%D'), 'icon' => 'system/actionStop'];
 
 		if ($item['parentPersonFullName'])
 		{

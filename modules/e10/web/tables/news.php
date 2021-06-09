@@ -32,12 +32,12 @@ class TableNews extends DbTable
 		if ($recData['date_to'])
 			$fromTo .= " do " . utils::datef ($recData['date_to']);
 		if ($fromTo !== '')
-			$props[] = ['text' => $fromTo, 'icon' => 'icon-calendar'];
+			$props[] = ['text' => $fromTo, 'icon' => 'system/iconCalendar'];
 
 		if ($recData['order'] != 0)
 			$props[] = ['text' => utils::nf ($recData['order']), 'icon' => 'system/iconOrder', 'class' => 'pull-right'];
 		if ($recData['to_paper_docs'])
-			$props[] = ['text' => '', 'icon' => 'icon-print', 'class' => 'pull-right'];
+			$props[] = ['text' => '', 'icon' => 'system/actionPrint', 'class' => 'pull-right'];
 		if ($recData['to_top'])
 			$props[] = ['text' => '', 'icon' => 'icon-thumb-tack', 'class' => 'pull-right'];
 
@@ -85,7 +85,7 @@ class ViewNews extends TableView
 		if ($item['to_top'])
 			$props[] = ['text' => '', 'icon' => 'icon-thumb-tack'];
 		if ($item['to_paper_docs'])
-			$props[] = ['text' => '', 'icon' => 'icon-print'];
+			$props[] = ['text' => '', 'icon' => 'system/actionPrint'];
 		if ($item['order'] != 0)
 			$props[] = ['text' => utils::nf ($item['order']), 'icon' => 'system/iconOrder'];
 

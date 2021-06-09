@@ -648,7 +648,7 @@ class DashboardIssuesCore extends TableView
 
 		if ($item['source'] === 0)
 			if ($item ['authorFullName'])
-				$title[] = ['icon' => 'icon-user', 'text' => $item ['authorFullName'], 'class' => ''];
+				$title[] = ['icon' => 'system/iconUser', 'text' => $item ['authorFullName'], 'class' => ''];
 
 
 		$listItem ['t2'] = $title;
@@ -773,7 +773,7 @@ class DashboardIssuesCore extends TableView
 		{
 			if ($item['source'] === 0)
 				if ($item ['authorFullName'])
-					$title[] = ['icon' => 'icon-user', 'text' => $item ['authorFullName'], 'class' => 'e10-off'];
+					$title[] = ['icon' => 'system/iconUser', 'text' => $item ['authorFullName'], 'class' => 'e10-off'];
 
 			if ($item['issueType'] === TableIssues::mtInbox && isset ($this->linkedPersons [$ndx]['wkf-issues-from']))
 				$title[] = $this->linkedPersons [$ndx]['wkf-issues-from'];
@@ -912,7 +912,7 @@ class DashboardIssuesCore extends TableView
 
 					$row = ['info' => []];
 					$tt = [];
-					$tt[] = ['text' => $comment['authorFullName'], 'icon' => 'icon-user', 'class' => 'e10-off'];
+					$tt[] = ['text' => $comment['authorFullName'], 'icon' => 'system/iconUser', 'class' => 'e10-off'];
 					$tt[] = ['text' => utils::datef($comment['dateCreate'], '%D, %T'), 'icon' => 'icon-keyboard-o', 'class' => 'e10-off'];
 
 					if (isset($this->notifications[$commentNdx]))
@@ -921,7 +921,7 @@ class DashboardIssuesCore extends TableView
 					if ($comment['author'] === $this->thisUserId)
 					{
 						$tt [] = [
-							'class' => 'e10-small', 'icon' => 'icon-edit',
+							'class' => 'e10-small', 'icon' => 'system/docStateEdit',
 							'text' => '', 'title' => 'Opravit', 'type' => 'span',
 							'pk' => $comment['ndx'], 'docAction' => 'edit', 'data-table' => 'e10pro.wkf.messages',
 							'data-srcobjecttype' => 'viewer', 'data-srcobjectid' => $this->vid

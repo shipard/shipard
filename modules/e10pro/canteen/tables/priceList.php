@@ -85,7 +85,7 @@ class ViewPriceList extends TableView
 		if ($item['validTo'])
 			$txtDate .= utils::datef($item['validTo']);
 
-		$listItem['i2'] = ['text' => $txtDate, 'icon' => 'icon-calendar', 'class' => 'label label-default'];
+		$listItem['i2'] = ['text' => $txtDate, 'icon' => 'system/iconCalendar', 'class' => 'label label-default'];
 
 		if (count($props))
 			$listItem ['t2'] = $props;

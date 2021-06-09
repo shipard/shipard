@@ -37,13 +37,13 @@ class ReportWasteByPersons extends \e10pro\reports\waste_cz\ReportWasteCore
 			$this->persons[] = $personData['personNdx'];
 
 			// -- print button
-			$btn = ['type' => 'action', 'action' => 'print', 'style' => 'print', 'icon' => 'icon-print', 'text' => 'Přehled',
+			$btn = ['type' => 'action', 'action' => 'print', 'style' => 'print', 'icon' => 'system/actionPrint', 'text' => 'Přehled',
 				'data-report' => 'e10pro.reports.waste_cz.ReportWasteOnePerson',
 				'data-table' => 'e10.persons.persons', 'data-pk' => $personData['personNdx'], 'data-param-calendar-year' => $this->year,
 				'actionClass' => 'btn-xs', 'class' => 'pull-right'];
 			$btn['subButtons'] = [];
 			$btn['subButtons'][] = [
-				'type' => 'action', 'action' => 'addwizard', 'icon' => 'icon-envelope-o', 'title' => 'Odeslat emailem', 'btnClass' => 'btn-default btn-xs',
+				'type' => 'action', 'action' => 'addwizard', 'icon' => 'system/iconEmail', 'title' => 'Odeslat emailem', 'btnClass' => 'btn-default btn-xs',
 				'data-table' => 'e10.persons.persons', 'data-pk' => $personData['personNdx'], 'data-param-calendar-year' => $this->year,
 				'data-class' => 'e10.SendFormReportWizard',
 				'data-addparams' => 'reportClass=' . 'e10pro.reports.waste_cz.ReportWasteOnePerson' . '&documentTable=' . 'e10.persons.persons'
@@ -54,7 +54,7 @@ class ReportWasteByPersons extends \e10pro\reports\waste_cz\ReportWasteCore
 			{
 				$btn = [
 					'type' => 'action', 'action' => 'addwizard', 'data-table' => 'e10.persons.persons',
-					'text' => 'Načíst provozovny', 'data-class' => 'e10pro.purchase.WasteWorkshopWizard', 'icon' => 'icon-play',
+					'text' => 'Načíst provozovny', 'data-class' => 'e10pro.purchase.WasteWorkshopWizard', 'icon' => 'system/actionPlay',
 					'data-addparams' => 'personNdx='.$personData['personNdx'],
 					'actionClass' => 'btn-xs', 'class' => 'pull-right'
 				];
@@ -167,7 +167,7 @@ class ReportWasteByPersons extends \e10pro\reports\waste_cz\ReportWasteCore
 	{
 		$buttons = parent::createToolbar();
 		$buttons[] = [
-			'text' => 'Rozeslat hromadně emailem', 'icon' => 'icon-envelope',
+			'text' => 'Rozeslat hromadně emailem', 'icon' => 'system/iconEmail',
 			'type' => 'action', 'action' => 'addwizard', 'data-class' => 'e10pro.reports.waste_cz.ReportWasteOnePersonWizard',
 			'data-param-calendar-year' => $this->year,
 			'data-table' => 'e10.persons.persons', 'data-pk' => '0',

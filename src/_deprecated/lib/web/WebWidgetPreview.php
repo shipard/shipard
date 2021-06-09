@@ -148,7 +148,7 @@ class WebWidgetPreview extends WidgetBoard
 
 		$rt = [
 			'viewer-mode-desktop' => ['text' =>'', 'icon' => 'icon-desktop', 'action' => 'viewer-mode-desktop'],
-			'viewer-mode-mobile' => ['text' =>'', 'icon' => 'icon-mobile', 'action' => 'viewer-mode-mobile'],
+			'viewer-mode-mobile' => ['text' =>'', 'icon' => 'deviceTypes/phone', 'action' => 'viewer-mode-mobile'],
 			'viewer-mode-tablet' => ['text' =>'', 'icon' => 'icon-tablet', 'action' => 'viewer-mode-tablet'],
 			'viewer-mode-laptop' => ['text' =>'', 'icon' => 'icon-tablet fa-rotate-270', 'action' => 'viewer-mode-laptop'],
 		];

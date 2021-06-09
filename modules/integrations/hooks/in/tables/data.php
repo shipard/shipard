@@ -64,7 +64,7 @@ class ViewData extends TableView
 		$props = [];
 
 		if ($item['dateCreate'])
-			$props[] = ['text' => $item['dateCreate']->format('Y-m-d H:i:s'), 'class' => 'label label-default', 'icon' => 'icon-calendar'];
+			$props[] = ['text' => $item['dateCreate']->format('Y-m-d H:i:s'), 'class' => 'label label-default', 'icon' => 'system/iconCalendar'];
 
 		$props[] = ['text' => $item['ipAddress'], 'class' => 'label label-default', 'icon' => 'icon-road'];
 

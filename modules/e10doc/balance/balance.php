@@ -1764,7 +1764,7 @@ class ViewDetailPersonsBalances extends \E10\TableViewDetail
 		];
 
 		$this->addContent (['pane' => 'e10-pane e10-pane-table', 'type' => 'table',
-												'title' => ['icon' => 'icon-star-o', 'text' => 'Saldokonto'],
+												'title' => ['icon' => 'system/iconBalance', 'text' => 'Saldokonto'],
 												'header' => $headerRows, 'table' => $data['rows']]);
 	}
 

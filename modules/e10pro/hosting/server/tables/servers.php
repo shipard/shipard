@@ -10,7 +10,7 @@ use \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \e10\utils, \E10\DbTab
  */
 class TableServers extends DbTable
 {
-	public static $defaultIconSet = ['icon-server', 'icon-sitemap', 'x-server'];
+	public static $defaultIconSet = ['icon-server', 'system/iconSitemap', 'x-server'];
 
 	public function __construct ($dbmodel)
 	{
@@ -96,9 +96,9 @@ class ViewServers extends TableView
 		];
 
 		if ($item['creatingDataSources'] === 1)
-			$listItem ['t2'][] = ['text' => 'Svoje', 'icon' => 'icon-database', 'class' => 'label label-info'];
+			$listItem ['t2'][] = ['text' => 'Svoje', 'icon' => 'system/iconDatabase', 'class' => 'label label-info'];
 		elseif ($item['creatingDataSources'] === 2)
-			$listItem ['t2'][] = ['text' => 'Všechny', 'icon' => 'icon-database', 'class' => 'label label-success'];
+			$listItem ['t2'][] = ['text' => 'Všechny', 'icon' => 'system/iconDatabase', 'class' => 'label label-success'];
 
 		$listItem ['t2'][] = ['text' => $item['fqdn'], 'class' => '', 'suffix' => $item['ipaddress']];
 
@@ -106,7 +106,7 @@ class ViewServers extends TableView
 
 		$props3 = [];
 		if ($item['ownerFullName'])
-			$props3[] = ['text' => $item['ownerFullName'], 'icon' => 'icon-user'];
+			$props3[] = ['text' => $item['ownerFullName'], 'icon' => 'system/iconUser'];
 		if ($item['customerFullName'])
 			$props3[] = ['text' => $item['customerFullName'], 'icon' => 'icon-building'];
 

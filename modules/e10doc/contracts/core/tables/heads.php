@@ -61,7 +61,7 @@ class TableHeads extends DbTable
 		if ($recData['docState'] == 9000 || $recData['docState'] == 9800)
 				$itemIsActive = 0;
 		if ($itemIsActive == 0)
-			$hdr ['sum'][] = array ('class' => 'big', 'value' => ['icon' => 'icon-stop', 'text' => '']);
+			$hdr ['sum'][] = array ('class' => 'big', 'value' => ['icon' => 'system/actionStop', 'text' => '']);
 		if ($itemIsActive == 1)
 		{
 			$currencyName = $this->app()->cfgItem ('e10.base.currencies.'.$recData['currency'].'.shortcut');
@@ -494,7 +494,7 @@ class ViewHeads extends TableView
 
 		$props [] = ['icon' => 'icon-file', 'text' => $item['docNumber'], 'class' => ''];
 
-		$props [] = ['icon' => 'icon-play', 'text' => utils::datef ($item['start'], '%D'), 'class' => ''];
+		$props [] = ['icon' => 'system/actionPlay', 'text' => utils::datef ($item['start'], '%D'), 'class' => ''];
 		if ($item['end'])
 			$props [] = ['i' => 'stop', 'text' => utils::datef ($item['end'], '%D'), 'class' => ''];
 

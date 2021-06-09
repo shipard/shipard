@@ -39,10 +39,10 @@ class ViewIPAddresses extends TableView
 
 		$props = [];
 		if ($item['lat'] != 0 || $item['lon'] != 0)
-			$props[] = ['icon' => 'icon-map-marker', 'text' => $item['lat'].', '.$item['lon'], 'url' => 'https://maps.google.com/?q='.$item['lat'].','.$item['lon']];
+			$props[] = ['icon' => 'system/iconMapMarker', 'text' => $item['lat'].', '.$item['lon'], 'url' => 'https://maps.google.com/?q='.$item['lat'].','.$item['lon']];
 
 		if ($item['personName'])
-			$props[] = ['icon' => ($item['personCompany']) ? 'icon-building' : 'icon-user', 'text' => $item['personName']];
+			$props[] = ['icon' => ($item['personCompany']) ? 'system/personCompany' : 'system/iconUser', 'text' => $item['personName']];
 
 		if (count($props))
 			$listItem ['t2'] = $props;

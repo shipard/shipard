@@ -194,7 +194,7 @@ class ViewPatchPanelsTree extends ViewPatchPanels
 			$lanNdx = $r['lan'];
 			if (!isset($this->racks['L'.$lanNdx]))
 			{
-				$ic = [['text' => $r['lanShortName'], 'icon' => 'icon-sitemap', 'subItems' => []]];
+				$ic = [['text' => $r['lanShortName'], 'icon' => 'system/iconSitemap', 'subItems' => []]];
 				$this->racks['L'.$lanNdx] = $ic;
 			}
 

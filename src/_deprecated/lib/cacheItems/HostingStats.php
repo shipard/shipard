@@ -31,7 +31,7 @@ class HostingStats extends \Shipard\Base\CacheItem
 
 		$diskSpace = [];
 		$diskSpace[] = ['text' => utils::memf($diskSpaceData['usageTotal']), 'icon' => 'icon-hdd-o fa-fw', 'class' => 'e10-widget-big-text'];
-		$diskSpace[] = ['text' => utils::memf($diskSpaceData['usageDb']), 'icon' => 'icon-database', 'class' => 'tag e10-row-this pull-right'];
+		$diskSpace[] = ['text' => utils::memf($diskSpaceData['usageDb']), 'icon' => 'system/iconDatabase', 'class' => 'tag e10-row-this pull-right'];
 		$diskSpace[] = ['text' => utils::memf($diskSpaceData['usageFiles']), 'icon' => 'icon-paperclip', 'class' => 'tag e10-row-this pull-right'];
 
 		// -- content

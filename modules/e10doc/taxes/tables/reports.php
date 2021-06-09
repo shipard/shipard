@@ -326,8 +326,8 @@ class FormReport extends TableForm
 		$reportType = $this->app()->cfgItem('e10doc.taxes.reportTypes.'.$this->recData['reportType'], []);
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Obsah', 'icon' => 'icon-list'];
-			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-wrench'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formAttachments'];
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
 					$this->addSubColumns('headerInfo');

@@ -86,7 +86,7 @@ class FormService extends TableForm
 
 		$this->openForm ();
 			$tabs ['tabs'][] = ['text' => 'Služba', 'icon' => 'icon-plug'];
-			$tabs ['tabs'][] = ['text' => 'Klíč', 'icon' => 'icon-key'];
+			$tabs ['tabs'][] = ['text' => 'Klíč', 'icon' => 'tables/e10.persons.keys'];
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
 					$this->addColumnInput ('serviceType');

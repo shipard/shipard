@@ -83,7 +83,7 @@ class ViewInfoQueue extends TableView
 		$props = [];
 
 		$props[] = [
-			'text' => utils::datef($item['dateCreate'], '%S %T'), 'class' => 'label label-default', 'icon' => 'icon-play',
+			'text' => utils::datef($item['dateCreate'], '%S %T'), 'class' => 'label label-default', 'icon' => 'system/actionPlay',
 			'suffix' => $item['ipAddress'],
 		];
 
@@ -94,7 +94,7 @@ class ViewInfoQueue extends TableView
 			];
 
 		if ($item['osUserId'] !== '')
-			$props[] = ['text' => $item['osUserId'], 'class' => 'label label-default', 'icon' => 'icon-user'];
+			$props[] = ['text' => $item['osUserId'], 'class' => 'label label-default', 'icon' => 'system/iconUser'];
 
 		$props[] = [
 			'text' => $item['deviceFullName'], 'class' => 'label label-default',
@@ -153,7 +153,7 @@ class FormInfoQueue  extends TableForm
 	{
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
-		$tabs ['tabs'][] = ['text' => 'Zařízení', 'icon' => 'icon-cogs'];
+		$tabs ['tabs'][] = ['text' => 'Zařízení', 'icon' => 'system/iconCogs'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);

@@ -209,7 +209,7 @@ class TableIssues extends DbTable
 		if ($recData['author'])
 		{
 			$author = $this->loadItem($recData['author'], 'e10_persons_persons');
-			$props[] = ['class' => 'label label-default', 'icon' => 'icon-user', 'text' => $author ['fullName']];
+			$props[] = ['class' => 'label label-default', 'icon' => 'system/iconUser', 'text' => $author ['fullName']];
 		}
 		if (isset($item ['dateCreate']) && !utils::dateIsBlank($item ['dateCreate']))
 			$props[] = ['class' => '', 'icon' => $sourcesIcons[$item['source']], 'text' => utils::datef ($item ['dateCreate'], '%D, %T')];

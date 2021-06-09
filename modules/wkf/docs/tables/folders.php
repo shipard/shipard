@@ -285,7 +285,7 @@ class TableFolders extends DbTable
 				$dsId = $this->app()->cfgItem('dsi.dsid', '');
 			$emailDomain = $this->app()->cfgItem('dsi.portalInfo.emailDomain', 'shipard.email');
 			$email = $dsId.'--'.$shipardEmailId.'@'.$emailDomain;
-			$info[] = ['text' => $email, 'class' => 'block e10-small', 'icon' => 'icon-envelope'];
+			$info[] = ['text' => $email, 'class' => 'block e10-small', 'icon' => 'system/iconEmail'];
 		}
 
 		$lp = new LinkedPersons($this->app());
@@ -361,7 +361,7 @@ class ViewFolders extends TableView
 
 		if ($item['subFolderRightsType'] === 0 && $item['parentFolder'])
 		{
-			$listItem['t2'] = ['icon' => 'icon-sign-in', 'text' => 'Přístupová práva se přebírají z nadřazené složky', 'class' => 'label label-default'];
+			$listItem['t2'] = ['icon' => 'system/actionLogIn', 'text' => 'Přístupová práva se přebírají z nadřazené složky', 'class' => 'label label-default'];
 		}
 
 		return $listItem;

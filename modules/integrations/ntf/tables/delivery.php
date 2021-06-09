@@ -60,7 +60,7 @@ class ViewDelivery extends TableView
 		if ($item['doDelivery'])
 			$props2[] = ['text' => 'Zatím nedoručeno', 'suffix' => utils::datef($item['dtNextTry'],'%k %T'), 'icon' => 'icon-hourglass-start', 'class' => 'label label-primary'];
 		else
-			$props2[] = ['text' => 'Doručeno', 'suffix' => utils::datef($item['dtDelivery'],'%k %T'), 'icon' => 'icon-check', 'class' => 'label label-success'];
+			$props2[] = ['text' => 'Doručeno', 'suffix' => utils::datef($item['dtDelivery'],'%k %T'), 'icon' => 'system/iconCheck', 'class' => 'label label-success'];
 
 		$listItem['t2'] = $props2;
 

@@ -73,10 +73,10 @@ class ViewerDocumentsCore extends TableView
 
 		if ($this->enableDetailSearch)
 		{
-			$mq [] = ['id' => 'active', 'title' => 'K řešení', 'icon' => 'icon-bolt'];
-			$mq [] = ['id' => 'archive', 'title' => 'Archív', 'icon' => 'icon-archive'];
-			$mq [] = ['id' => 'all', 'title' => 'Vše', 'icon' => 'icon-toggle-on'];
-			$mq [] = ['id' => 'trash', 'title' => 'Koš', 'icon' => 'icon-trash'];
+			$mq [] = ['id' => 'active', 'title' => 'K řešení', 'icon' => 'system/filterActive'];
+			$mq [] = ['id' => 'archive', 'title' => 'Archív', 'icon' => 'system/filterArchive'];
+			$mq [] = ['id' => 'all', 'title' => 'Vše', 'icon' => 'system/filterAll'];
+			$mq [] = ['id' => 'trash', 'title' => 'Koš', 'icon' => 'system/filterTrash'];
 			$this->setMainQueries($mq);
 		}
 
@@ -387,20 +387,20 @@ class ViewerDocumentsCore extends TableView
 		$title[] = ['class' => 'id pull-right'.$msgTitleClass, 'text' => utils::nf($item['ndx']), 'icon' => 'icon-hashtag'];
 		$title[] = ['class' => 'h2', 'text' => $item['title'], 'icon' => $this->table->tableIcon($item, 1)];
 		if (!utils::dateIsBlank($item['date']))
-			$title[] = ['text' => utils::datef ($item['date'], '%D'), 'icon' => 'icon-calendar', 'class' => 'e10-off'];
+			$title[] = ['text' => utils::datef ($item['date'], '%D'), 'icon' => 'system/iconCalendar', 'class' => 'e10-off'];
 		else
 			$title[] = ['text' => utils::datef ($item['dateCreate'], '%D, %T'), 'icon' => 'icon-keyboard-o', 'class' => 'e10-off'];
 
 		if (!$this->simpleHeaders)
 		{
 			if ($item ['authorFullName'])
-				$title[] = ['icon' => 'icon-user', 'text' => $item ['authorFullName'], 'class' => 'e10-off'];
+				$title[] = ['icon' => 'system/iconUser', 'text' => $item ['authorFullName'], 'class' => 'e10-off'];
 			elseif ($item['source'] !== 0 && isset ($this->properties[$item['pk']]['emailheaders']['eml-from']))
 			{
 				$srcEmail = utils::searchArray($this->properties[$item['pk']]['emailheaders']['eml-from'], 'property', 'eml-from');
 				if ($srcEmail !== NULL)
 				{
-					$ei = ['icon' => 'icon-envelope-o', 'text' => $srcEmail ['value'], 'class' => 'e10-off'];
+					$ei = ['icon' => 'system/iconEmail', 'text' => $srcEmail ['value'], 'class' => 'e10-off'];
 					if (isset($srcEmail['note']))
 						$ei['suffix'] = $srcEmail['note'];
 					$title[] = $ei;
@@ -480,7 +480,7 @@ class ViewerDocumentsCore extends TableView
 
 					$row = ['info' => []];
 					$tt = [];
-					$tt[] = ['text' => $comment['authorFullName'], 'icon' => 'icon-user', 'class' => 'e10-off'];
+					$tt[] = ['text' => $comment['authorFullName'], 'icon' => 'system/iconUser', 'class' => 'e10-off'];
 					$tt[] = ['text' => utils::datef($comment['dateCreate'], '%D, %T'), 'icon' => 'icon-keyboard-o', 'class' => 'e10-off'];
 
 					if (isset($this->notifications[$commentNdx]))
@@ -489,7 +489,7 @@ class ViewerDocumentsCore extends TableView
 					if ($comment['author'] === $this->thisUserId)
 					{
 						$tt [] = [
-							'class' => 'e10-small', 'icon' => 'icon-edit',
+							'class' => 'e10-small', 'icon' => 'system/docStateEdit',
 							'text' => '', 'title' => 'Opravit', 'type' => 'span',
 							'pk' => $comment['ndx'], 'docAction' => 'edit', 'data-table' => 'e10pro.wkf.documents',
 							'data-srcobjecttype' => 'viewer', 'data-srcobjectid' => $this->vid
@@ -520,7 +520,7 @@ class ViewerDocumentsCore extends TableView
 			if (!$item['disableComments'])
 			{
 				$cmds [] = [
-					'action' => 'new', 'data-table' => 'e10pro.wkf.documents', 'icon' => 'icon-plus-circle',
+					'action' => 'new', 'data-table' => 'e10pro.wkf.documents', 'icon' => 'system/actionAdd',
 					'text' => 'Nový komentář', 'type' => 'button', 'actionClass' => 'btn btn-xs btn-success', 'class' => 'pull-right',
 					'data-addParams' => '__msgType='.TableMessages::mtComment.'&__ownerMsg=' . $ndx,
 					'data-srcobjecttype' => 'viewer', 'data-srcobjectid' => $this->vid
@@ -625,7 +625,7 @@ class ViewerDocumentsCore extends TableView
 		//$this->tableWorksRecs->addWorksRecsButtons($addButtons, $btnParams);
 
 		$addButton = [
-			'action' => 'new', 'data-table' => 'e10pro.wkf.documents', 'icon' => 'icon-plus-circle',
+			'action' => 'new', 'data-table' => 'e10pro.wkf.documents', 'icon' => 'system/actionAdd',
 			'text' => 'Nový', 'type' => 'button', 'actionClass' => 'btn btn-sm',
 			'class' => 'e10-param-addButton', 'btnClass' => 'btn-success',
 			'data-srcobjecttype' => 'viewer', 'data-srcobjectid' => $this->vid,

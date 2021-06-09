@@ -124,12 +124,12 @@ class WkfDiaryViewer extends TableView
 	{
 		if ($this->enableDetailSearch)
 		{
-			$mq [] = ['id' => 'active', 'title' => 'Aktivní', 'icon' => 'icon-bolt'];
-			$mq [] = ['id' => 'done', 'title' => 'Hotovo', 'icon' => 'icon-check'];
-			$mq [] = ['id' => 'archive', 'title' => 'Archív', 'icon' => 'icon-archive'];
-			$mq [] = ['id' => 'all', 'title' => 'Vše', 'icon' => 'icon-toggle-on'];
+			$mq [] = ['id' => 'active', 'title' => 'Aktivní', 'icon' => 'system/filterActive'];
+			$mq [] = ['id' => 'done', 'title' => 'Hotovo', 'icon' => 'system/filterDone'];
+			$mq [] = ['id' => 'archive', 'title' => 'Archív', 'icon' => 'system/filterArchive'];
+			$mq [] = ['id' => 'all', 'title' => 'Vše', 'icon' => 'system/filterAll'];
 			if ($this->app()->hasRole('pwuser'))
-				$mq [] = ['id' => 'trash', 'title' => 'Koš', 'icon' => 'icon-trash'];
+				$mq [] = ['id' => 'trash', 'title' => 'Koš', 'icon' => 'system/filterTrash'];
 			$this->setMainQueries($mq);
 		}
 	}
@@ -371,7 +371,7 @@ class WkfDiaryViewer extends TableView
 		{
 			if ($item['issueType'] !== TableIssues::mtInbox)
 				if ($item ['authorFullName'])
-					$title[] = ['icon' => 'icon-user', 'text' => $item ['authorFullName'], 'class' => 'e10-off'];
+					$title[] = ['icon' => 'system/iconUser', 'text' => $item ['authorFullName'], 'class' => 'e10-off'];
 
 			if ($item['issueType'] === TableIssues::mtInbox && isset ($this->linkedPersons [$ndx]['wkf-issues-from']))
 				$title[] = $this->linkedPersons [$ndx]['wkf-issues-from'];
@@ -489,7 +489,7 @@ class WkfDiaryViewer extends TableView
 
 					$row = ['info' => []];
 					$tt = [];
-					$tt[] = ['text' => $comment['authorFullName'], 'icon' => 'icon-user', 'class' => 'e10-off'];
+					$tt[] = ['text' => $comment['authorFullName'], 'icon' => 'system/iconUser', 'class' => 'e10-off'];
 					$tt[] = ['text' => utils::datef($comment['dateCreate'], '%D, %T'), 'icon' => 'icon-keyboard-o', 'class' => 'e10-off'];
 
 					if (isset($this->notifications[$commentNdx]))
@@ -530,7 +530,7 @@ class WkfDiaryViewer extends TableView
 			if (!$item['disableComments'])
 			{
 				$cmds [] = [
-					'action' => 'new', 'data-table' => 'wkf.core.comments', 'icon' => 'icon-plus-circle',
+					'action' => 'new', 'data-table' => 'wkf.core.comments', 'icon' => 'system/actionAdd',
 					'text' => 'Nový komentář', 'type' => 'button', 'actionClass' => 'btn btn-xs btn-success', 'class' => 'pull-right',
 					'data-addParams' => '__issue=' . $ndx,
 					'data-srcobjecttype' => 'viewer', 'data-srcobjectid' => $this->vid

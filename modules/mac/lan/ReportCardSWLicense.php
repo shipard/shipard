@@ -36,7 +36,7 @@ class ReportCardSWLicense extends FormReport
 	public function createToolbarSaveAs (&$printButton)
 	{
 		$printButton['dropdownMenu'][] = [
-				'text' => 'Uložit jako kompletní PDF soubor včetně příloh', 'icon' => 'icon-download',
+				'text' => 'Uložit jako kompletní PDF soubor včetně příloh', 'icon' => 'system/actionDownload',
 				'type' => 'action', 'action' => 'print', 'data-saveas' => 'all', 'data-filename' => $this->saveAsFileName('all'),
 				'data-table' => $this->table->tableId(), 'data-report' => 'mac.lan.ReportCardSWLicense', 'data-pk' => $this->recData['ndx']
 		];

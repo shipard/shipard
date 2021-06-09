@@ -18,11 +18,11 @@ class DashboardInfo extends \lib\dashboards\Info
 		$info = ['class' => '', 'content' => []];
 		$info['content'][] = [
 				'text' => utils::nf($data['data']['ds']['online']), 'suffix' => utils::nf($data['data']['ds']['active']),
-				'icon' => 'icon-database', 'class' => ''
+				'icon' => 'system/iconDatabase', 'class' => ''
 		];
 		$info['content'][] = [
 				'text' => utils::nf($data['data']['users']['online']), 'suffix' => utils::nf($data['data']['users']['active']),
-				'icon' => 'icon-user', 'class' => ''
+				'icon' => 'system/iconUser', 'class' => ''
 		];
 		$info['content'][] = ['text' => utils::memf($data['data']['diskSpace']['usageTotal']), 'icon' => 'icon-hdd-o', 'class' => ''];
 

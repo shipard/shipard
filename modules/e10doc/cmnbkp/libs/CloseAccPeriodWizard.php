@@ -13,7 +13,7 @@ class CloseAccPeriodWizard extends \e10doc\cmnbkp\libs\InitStatesWizard
 	public function createHeader ()
 	{
 		$hdr = array ();
-		$hdr ['icon'] = 'icon-stop';
+		$hdr ['icon'] = 'system/actionStop';
 		$hdr ['info'][] = ['class' => 'title', 'value' => 'Uzavření účetního období'];
 		$hdr ['info'][] = ['class' => 'info', 'value' => 'Vyberte účetní období, pro které chcete vygenerovat doklady.'];
 

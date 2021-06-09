@@ -65,9 +65,9 @@ class ViewWlans extends TableView
 
 		$listItem ['t1'] = $item['fullName'];
 		if ($item['lanShortName'])
-			$listItem ['i2'] = ['text' => $item['lanShortName'], 'icon' => 'icon-sitemap'];
+			$listItem ['i2'] = ['text' => $item['lanShortName'], 'icon' => 'system/iconSitemap'];
 		else
-			$listItem ['i2'] = ['text' => '!!!', 'icon' => 'icon-sitemap'];
+			$listItem ['i2'] = ['text' => '!!!', 'icon' => 'system/iconSitemap'];
 
 		$listItem ['t2'] = ['text' => $item['ssid'], 'icon' => 'icon-wifi', 'class' => ''];
 

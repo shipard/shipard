@@ -152,7 +152,7 @@ class BankOrderReport extends \e10doc\core\libs\reports\DocReport
 		if ($this->data['giro'])
 		{
 			$printButton['dropdownMenu'][] = [
-			'text' => 'Export příkazu k úhradě (.kpc)', 'icon' => 'icon-download',
+			'text' => 'Export příkazu k úhradě (.kpc)', 'icon' => 'system/actionDownload',
 			'type' => 'action', 'action' => 'print', 'data-saveas' => 'cz/bank-order-giro-kpc', 'data-filename' => $this->saveAsFileName('cz/bank-order-giro-kpc'),
 			'data-table' => $this->table->tableId(), 'data-report' => 'e10doc.bankorder.BankOrderReport', 'data-pk' => $this->recData['ndx']
 			];
@@ -160,7 +160,7 @@ class BankOrderReport extends \e10doc\core\libs\reports\DocReport
 		if ($this->data['directDebit'])
 		{
 			$printButton['dropdownMenu'][] = [
-				'text' => 'Export příkazu k inkasu (.kpc)', 'icon' => 'icon-download',
+				'text' => 'Export příkazu k inkasu (.kpc)', 'icon' => 'system/actionDownload',
 				'type' => 'action', 'action' => 'print', 'data-saveas' => 'cz/bank-order-direct-debit-kpc', 'data-filename' => $this->saveAsFileName('cz/bank-order-direct-debit-kpc'),
 				'data-table' => $this->table->tableId(), 'data-report' => 'e10doc.bankorder.BankOrderReport', 'data-pk' => $this->recData['ndx']
 			];

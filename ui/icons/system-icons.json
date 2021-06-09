@@ -161,6 +161,30 @@
 		"bsi": "bi-arrow-left",
 		"mdi": "arrow_back"
 	},
+	"actionLogIn": {
+		"fa5":"fa-sign-in-alt",
+        "fa5pro":"fa-sign-in-alt",
+        "bsi":"bi-box-arrow-in-right",
+        "mdi":"login"
+	},
+	"actionPlay": {
+		"fa5":"fa-play",
+        "fa5pro":"fa-play",
+        "bsi":"bi-play",
+        "mdi":"play_arrow"
+	},
+	"actionStop": {
+		"fa5":"fa-stop",
+        "fa5pro":"fa-stop",
+        "bsi":"bi-stop",
+        "mdi":"stop"
+	},
+	"actionUpload": {
+		"fa5":"fa-upload",
+        "fa5pro":"fa-upload",
+        "bsi":"bi-upload",
+        "mdi":"file_upload"
+	},
 
 
 	"iconUser": {
@@ -397,6 +421,36 @@
 		"bsi": "bi-arrow-down-up",
 		"mdi": "swap_vert"
 	},
+	"iconMapMarker":{
+		"fa5": "fa-map-marker-alt",
+		"fa5pro": "fa-map-marker-alt",
+		"bsi": "bi-geo-alt-fill",
+		"mdi": "place"
+	},
+	"iconSitemap":{
+		"fa5": "fa-map-marker-alt",
+		"fa5pro": "fa-map-marker-alt",
+		"bsi": "bi-geo-alt-fill",
+		"mdi": "place"
+	},
+	"iconCogs":{
+		"fa5": "fa-cogs",
+		"fa5pro": "fa-cogs",
+		"bsi": "bi-gear",
+		"mdi": "settings"
+	},
+	"iconCheck":{
+		"fa5":"fa-check",
+        "fa5pro":"fa-check",
+        "bsi":"bi-check",
+        "mdi":"check"
+	},	
+	"iconCalendar": {
+		"fa5": "fa-calendar-alt",
+		"fa5pro": "fa-calendar-alt",
+		"bsi": "bi-calendar",
+		"mdi": "calendar_today"
+	},
 	
 
 
@@ -565,6 +619,24 @@
         "fa5pro":"fa-times",
         "bsi":"bi-x",
         "mdi":"close"
+	},
+	"issueSelected":{
+		"fa5":"fa-star",
+		"fa5pro":"fa-star",
+		"bsi":"bi-star",
+		"mdi":"grade"
+	},
+	"issueUnread":{
+		"fa5":"fa-eye-slash",
+		"fa5pro":"fa-eye-slash",
+		"bsi":"bi-eye-slash",
+		"mdi":"visibility_off"
+	},
+	"issueConcept":{
+		"fa5": "fa-edit",
+		"fa5pro": "fa-edit",
+		"bsi": "bi-pencil-square",
+		"mdi": "edit_note"
 	},
 
 

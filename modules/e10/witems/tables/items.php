@@ -193,12 +193,12 @@ class TableItems extends DbTable
 		if (!utils::dateIsBlank($recData['validFrom']) && $recData['validFrom'] > $now)
 		{
 			$hdr['!error'] = 1;
-			$itemTop[] = ['text' => 'Od '.utils::datef($recData['validFrom']), 'icon' => 'icon-calendar', 'class' => 'label label-danger'];
+			$itemTop[] = ['text' => 'Od '.utils::datef($recData['validFrom']), 'icon' => 'system/iconCalendar', 'class' => 'label label-danger'];
 		}
 		if (!utils::dateIsBlank($recData['validTo']) && $recData['validTo'] < $now)
 		{
 			$hdr['!error'] = 1;
-			$itemTop[] = ['text' => 'Do '.utils::datef($recData['validTo']), 'icon' => 'icon-calendar', 'class' => 'label label-danger'];
+			$itemTop[] = ['text' => 'Do '.utils::datef($recData['validTo']), 'icon' => 'system/iconCalendar', 'class' => 'label label-danger'];
 		}
 
 		if (isset ($this->itemsTypes [$recData['type']]))
@@ -508,12 +508,12 @@ class ViewItems extends TableView
 		if (!utils::dateIsBlank($item['validFrom']) && $item['validFrom'] > $this->now)
 		{
 			$listItem['!error'] = 1;
-			$props[] = ['text' => 'Od '.utils::datef($item['validFrom']), 'icon' => 'icon-calendar', 'class' => 'label label-danger'];
+			$props[] = ['text' => 'Od '.utils::datef($item['validFrom']), 'icon' => 'system/iconCalendar', 'class' => 'label label-danger'];
 		}
 		if (!utils::dateIsBlank($item['validTo']) && $item['validTo'] < $this->now)
 		{
 			$listItem['!error'] = 1;
-			$props[] = ['text' => 'Do '.utils::datef($item['validTo']), 'icon' => 'icon-calendar', 'class' => 'label label-danger'];
+			$props[] = ['text' => 'Do '.utils::datef($item['validTo']), 'icon' => 'system/iconCalendar', 'class' => 'label label-danger'];
 		}
 
 		if ($item['successorItem'])
@@ -705,12 +705,12 @@ class ViewItemsCombo extends ViewItems
 		if (!utils::dateIsBlank($item['validFrom']) && $item['validFrom'] > $this->now)
 		{
 			$listItem['!error'] = 1;
-			$props[] = ['text' => 'Od '.utils::datef($item['validFrom']), 'icon' => 'icon-calendar', 'class' => 'label label-danger'];
+			$props[] = ['text' => 'Od '.utils::datef($item['validFrom']), 'icon' => 'system/iconCalendar', 'class' => 'label label-danger'];
 		}
 		if (!utils::dateIsBlank($item['validTo']) && $item['validTo'] < $this->now)
 		{
 			$listItem['!error'] = 1;
-			$props[] = ['text' => 'Do '.utils::datef($item['validTo']), 'icon' => 'icon-calendar', 'class' => 'label label-danger'];
+			$props[] = ['text' => 'Do '.utils::datef($item['validTo']), 'icon' => 'system/iconCalendar', 'class' => 'label label-danger'];
 		}
 
 		if (isset ($item['debsAccountId']) && $thisItemType['kind'] === 2)

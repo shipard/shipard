@@ -79,12 +79,12 @@ class ReportRequestsForPayment extends \e10doc\core\libs\reports\GlobalReport
 				$hdr['docNumber'][] = ['text' => '#'.$r['personId'], 'docAction' => 'edit', 'table' => 'e10.persons.persons', 'pk' => $r['personNdx'], 'class' => 'e10-small e10-linePart'];
 
 				// -- print button
-				$btn = ['type' => 'action', 'action' => 'print', 'style' => 'print', 'icon' => 'icon-print', 'text' => 'Upomínka',
+				$btn = ['type' => 'action', 'action' => 'print', 'style' => 'print', 'icon' => 'system/actionPrint', 'text' => 'Upomínka',
 								'data-report' => 'e10doc.balance.RequestForPayment',
 								'data-table' => 'e10.persons.persons', 'data-pk' => $r['personNdx'], 'actionClass' => 'btn-xs', 'class' => 'pull-right'];
 				$btn['subButtons'] = [];
 				$btn['subButtons'][] = [
-					'type' => 'action', 'action' => 'addwizard', 'icon' => 'icon-envelope-o', 'title' => 'Odeslat emailem', 'btnClass' => 'btn-default btn-xs',
+					'type' => 'action', 'action' => 'addwizard', 'icon' => 'system/iconEmail', 'title' => 'Odeslat emailem', 'btnClass' => 'btn-default btn-xs',
 					'data-table' => 'e10.persons.persons', 'data-pk' => $r['personNdx'], 'data-class' => 'e10.SendFormReportWizard',
 					'data-addparams' => 'reportClass=' . 'e10doc.balance.RequestForPayment' . '&documentTable=' . 'e10.persons.persons'
 				];
@@ -182,7 +182,7 @@ class ReportRequestsForPayment extends \e10doc\core\libs\reports\GlobalReport
 	{
 		$buttons = parent::createToolbar();
 		$buttons[] = [
-				'text' => 'Rozeslat hromadně emailem', 'icon' => 'icon-envelope',
+				'text' => 'Rozeslat hromadně emailem', 'icon' => 'system/iconEmail',
 				'type' => 'action', 'action' => 'addwizard', 'data-class' => 'e10doc.balance.RequestForPaymentWizard',
 				'data-table' => 'e10.persons.persons', 'data-pk' => '0',
 				'class' => 'btn-primary'

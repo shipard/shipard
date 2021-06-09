@@ -164,18 +164,18 @@ class ViewItemTypes extends TableView
 		if (!utils::dateIsBlank($item['validFrom']) && $item['validFrom'] > $this->today)
 		{
 			$listItem['!error'] = 1;
-			$props[] = ['text' => 'Od '.utils::datef($item['validFrom']), 'icon' => 'icon-calendar', 'class' => 'label label-danger'];
+			$props[] = ['text' => 'Od '.utils::datef($item['validFrom']), 'icon' => 'system/iconCalendar', 'class' => 'label label-danger'];
 		}
 		elseif (!utils::dateIsBlank($item['validFrom']))
-			$props[] = ['text' => 'Od '.utils::datef($item['validFrom']), 'icon' => 'icon-calendar', 'class' => 'label label-success'];
+			$props[] = ['text' => 'Od '.utils::datef($item['validFrom']), 'icon' => 'system/iconCalendar', 'class' => 'label label-success'];
 
 		if (!utils::dateIsBlank($item['validTo']) && $item['validTo'] < $this->today)
 		{
 			$listItem['!error'] = 1;
-			$props[] = ['text' => 'Do '.utils::datef($item['validTo']), 'icon' => 'icon-calendar', 'class' => 'label label-danger'];
+			$props[] = ['text' => 'Do '.utils::datef($item['validTo']), 'icon' => 'system/iconCalendar', 'class' => 'label label-danger'];
 		}
 		elseif (!utils::dateIsBlank($item['validTo']))
-			$props[] = ['text' => 'Do '.utils::datef($item['validTo']), 'icon' => 'icon-calendar', 'class' => 'label label-success'];
+			$props[] = ['text' => 'Do '.utils::datef($item['validTo']), 'icon' => 'system/iconCalendar', 'class' => 'label label-success'];
 
 		if (count($props))
 			$listItem['t2'] = $props;

@@ -101,7 +101,7 @@ class TaxReportViewerParts extends TableView
 		$title = [];
 
 		$title[] = [
-			'actionClass' => 'btn btn-primary', 'class' => 'pull-right', 'icon' => 'icon-edit', 'type' => 'button',
+			'actionClass' => 'btn btn-primary', 'class' => 'pull-right', 'icon' => 'system/docStateEdit', 'type' => 'button',
 			'text' => 'Upravit',
 			'pk' => $item['ndx'], 'docAction' => 'edit', 'data-table' => 'e10doc.taxes.reportsParts',
 			'data-srcobjecttype' => 'viewer', 'data-srcobjectid' => $this->vid
@@ -128,7 +128,7 @@ class TaxReportViewerParts extends TableView
 		$params = 'taxReport='.$this->ownerReportNdx.'&filing=0&subReportId=preview&fiscalYear='.$fiscalYearNdx;
 
 		$printButton = [
-			'text' => 'Tisk', 'icon' => 'icon-print',
+			'text' => 'Tisk', 'icon' => 'system/actionPrint',
 			'type' => 'reportaction', 'action' => 'print', 'class' => 'e10-print',
 			'data' => ['report-class' => 'e10doc.taxes.TaxCI.TaxCIReport'],
 			'data-params' => $params
@@ -136,7 +136,7 @@ class TaxReportViewerParts extends TableView
 		$c .= $this->app()->ui()->composeTextLine($printButton);
 
 		$printButton = [
-			'text' => 'Uložit jako XML soubor pro EPO', 'icon' => 'icon-download',
+			'text' => 'Uložit jako XML soubor pro EPO', 'icon' => 'system/actionDownload',
 			'type' => 'reportaction', 'action' => 'print', 'class' => 'e10-print',
 			'data' => ['report-class' => 'e10doc.taxes.TaxCI.TaxCIReport'],
 			'data-params' => $params,

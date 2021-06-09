@@ -20,8 +20,8 @@ class RosRecordShow extends TableFormShow
 		$this->loadData();
 
 		$tabs ['tabs'][] = ['text' => 'Info', 'icon' => 'icon-info-circle'];
-		$tabs ['tabs'][] = ['text' => 'Odesláno', 'icon' => 'icon-upload'];
-		$tabs ['tabs'][] = ['text' => 'Přijato', 'icon' => 'icon-download'];
+		$tabs ['tabs'][] = ['text' => 'Odesláno', 'icon' => 'system/actionUpload'];
+		$tabs ['tabs'][] = ['text' => 'Přijato', 'icon' => 'system/actionDownload'];
 
 		$this->openForm (TableForm::ltNone);
 			$this->openTabs ($tabs, TRUE);

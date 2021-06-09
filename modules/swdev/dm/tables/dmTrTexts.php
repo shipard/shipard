@@ -170,8 +170,8 @@ class FormDMTrText extends TableForm
 		}
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Text', 'icon' => 'icon-font'];
-			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-wrench'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 			$this->openTabs ($tabs, TRUE);
 				if ($this->recData['srcText'])
 				{

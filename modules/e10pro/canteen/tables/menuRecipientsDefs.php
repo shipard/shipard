@@ -89,9 +89,9 @@ class ViewMenuRecipientsDefs extends TableView
 		if ($item['recipientType'] === 0)
 		{
 			if ($item['personName'])
-				$props[] = ['text' => $item['personName'], 'icon' => 'icon-user', 'class' => 'label label-info'];
+				$props[] = ['text' => $item['personName'], 'icon' => 'system/iconUser', 'class' => 'label label-info'];
 			else
-				$props[] = ['text' => 'Osoba není zadána', 'icon' => 'icon-user', 'class' => 'label label-danger'];
+				$props[] = ['text' => 'Osoba není zadána', 'icon' => 'system/iconUser', 'class' => 'label label-danger'];
 		}
 		elseif ($item['recipientType'] === 1)
 		{

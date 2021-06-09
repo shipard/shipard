@@ -47,7 +47,7 @@ class DeviceInfo
 				}
 				else
 				{
-					$this->deviceInfo['osLine'] = ['icon' => 'icon-cogs', 'text' => $platform, 'suffix' => '['.$platform.'] '.$deviceInfo['clientInfo'], 'class' => $labelClass];
+					$this->deviceInfo['osLine'] = ['icon' => 'system/iconCogs', 'text' => $platform, 'suffix' => '['.$platform.'] '.$deviceInfo['clientInfo'], 'class' => $labelClass];
 				}
 			}
 			else
@@ -81,7 +81,7 @@ class DeviceInfo
 				}
 				else
 				{
-					$this->deviceInfo['osLine'] = ['icon' => 'icon-cogs', 'text' => $browserInfo['platform'], 'suffix' => '___'.$deviceInfo['clientInfo'], 'class' => $labelClass];
+					$this->deviceInfo['osLine'] = ['icon' => 'system/iconCogs', 'text' => $browserInfo['platform'], 'suffix' => '___'.$deviceInfo['clientInfo'], 'class' => $labelClass];
 				}
 			}
 		}

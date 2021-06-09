@@ -284,7 +284,7 @@ class ReportPropertyList extends \e10doc\core\libs\reports\GlobalReport
 	public function createToolbarSaveAs (&$printButton)
 	{
 		$printButton['dropdownMenu'][] = [
-				'text' => 'Uložit jako kompletní PDF soubor včetně příloh', 'icon' => 'icon-download',
+				'text' => 'Uložit jako kompletní PDF soubor včetně příloh', 'icon' => 'system/actionDownload',
 				'type' => 'reportaction', 'action' => 'print', 'class' => 'e10-print', 'data-format' => 'xpdf',
 				'data-filename' => $this->saveAsFileName('xpdf')
 

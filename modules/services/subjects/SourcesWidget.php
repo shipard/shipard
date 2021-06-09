@@ -192,7 +192,7 @@ class SourcesWidget extends \E10\widgetBoard
 		if ($this->app()->remote !== '')
 		{
 			$topBar[] = [
-					'type' => 'action', 'action' => 'addwizard', 'text' => 'Stáhnout zdroje', 'icon' => 'icon-download',
+					'type' => 'action', 'action' => 'addwizard', 'text' => 'Stáhnout zdroje', 'icon' => 'system/actionDownload',
 					'class' => 'pull-right', 'actionClass' => 'btn-sm btn-success',
 					'data-table' => 'services.subjects.subjects', 'data-class' => 'e10crm.core.AddSourcesWizard',
 					'data-addparams' => 'queryDefinition=' . base64_encode(json_encode($this->queryDefinition))

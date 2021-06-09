@@ -406,13 +406,13 @@ class ViewDevices extends TableView
 		$props = [];
 		if ($item['placeFullName'])
 		{
-			$placeLabel = ['icon' => 'icon-map-marker', 'text' => $item['placeFullName'], 'class' => ''];
+			$placeLabel = ['icon' => 'system/iconMapMarker', 'text' => $item['placeFullName'], 'class' => ''];
 			if ($item['placeDesc'] !== '')
 				$placeLabel['suffix'] = $item['placeDesc'];
 			$props[] = $placeLabel;
 		}
 		elseif ($item['placeDesc'] !== '')
-			$props[] = ['icon' => 'icon-map-marker', 'text' => $item['placeDesc'], 'class' => ''];
+			$props[] = ['icon' => 'system/iconMapMarker', 'text' => $item['placeDesc'], 'class' => ''];
 
 		if (count($props))
 			$listItem['t2'] = $props;
@@ -422,9 +422,9 @@ class ViewDevices extends TableView
 			$props[] = ['text' => $item['rackName'], 'icon' => 'icon-window-maximize', 'class' => ''];
 
 		if ($item['lanShortName'])
-			$props[] = ['text' => $item['lanShortName'], 'icon' => 'icon-sitemap', 'class' => ''];
+			$props[] = ['text' => $item['lanShortName'], 'icon' => 'system/iconSitemap', 'class' => ''];
 		else
-			$props[] = ['text' => '!!!', 'icon' => 'icon-sitemap', 'class' => ''];
+			$props[] = ['text' => '!!!', 'icon' => 'system/iconSitemap', 'class' => ''];
 
 		if (count($props))
 			$listItem['i2'] = $props;

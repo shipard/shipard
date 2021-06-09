@@ -59,7 +59,7 @@ class WorkingDateWizard extends \E10\Wizard
 
 	public function createHeader ()
 	{
-		$hdr = ['icon' => 'icon-calendar'];
+		$hdr = ['icon' => 'system/iconCalendar'];
 
 		$hdr ['info'][] = ['class' => 'title', 'value' => 'Nastavit pracovní datum'];
 		$hdr ['info'][] = ['class' => 'info', 'value' => 'Pracovní nahrazuje dnešní datum'];

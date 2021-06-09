@@ -146,7 +146,7 @@ class ViewNotificationsCentre extends TableView
 		{
 			$docNdx = (isset($item ['recIdMain']) && $item ['recIdMain']) ? $item ['recIdMain'] : $item ['recId'];
 			$cmds[] = [
-				'class' => 'pull-right', 'text' => 'Otevřít', 'icon' => 'icon-edit', 'docAction' => 'edit',
+				'class' => 'pull-right', 'text' => 'Otevřít', 'icon' => 'system/actionOpen', 'docAction' => 'edit',
 				'table' => $item['tableId'], 'pk' => $docNdx, 'type' => 'button', 'actionClass' => 'btn btn-xs btn-primary'
 			];
 		}

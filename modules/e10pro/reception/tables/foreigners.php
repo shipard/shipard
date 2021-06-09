@@ -84,7 +84,7 @@ class ViewForeigners extends TableView
 			$date .= ' → '.utils::datef($item['dateEnd'], '%d');
 
 		if ($date !== '')
-			$listItem ['t2'][] = ['text' => $date, 'icon' => 'icon-calendar'];
+			$listItem ['t2'][] = ['text' => $date, 'icon' => 'system/iconCalendar'];
 
 		return $listItem;
 	}

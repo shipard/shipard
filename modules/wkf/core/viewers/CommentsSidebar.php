@@ -112,7 +112,7 @@ class CommentsSidebar extends TableView
 		if ($item['author'] === $this->thisUserId || $this->issueAccessLevel === 2)
 		{
 			$title [] = [
-				'class' => 'label label-default pull-right', 'icon' => 'icon-edit',
+				'class' => 'label label-default pull-right', 'icon' => 'system/docStateEdit',
 				'text' => '', 'title' => 'Opravit', 'type' => 'span',
 				'pk' => $item['ndx'], 'docAction' => 'edit', 'data-table' => 'wkf.core.comments',
 				'data-srcobjecttype' => 'viewer', 'data-srcobjectid' => $this->vid

@@ -22,7 +22,7 @@ class HostingReviewDataSources extends Content
 		$tabs = [
 			['title' => ['icon' => 'icon-hdd-o', 'text' => 'Velikost'], 'content' => $biggestBySpace],
 			['title' => ['icon' => 'icon-file-text-o', 'text' => 'Doklady'], 'content' => $biggestByDocs],
-			['title' => ['icon' => 'icon-user', 'text' => 'Uživatelé'], 'content' => $biggestByUsersAll]
+			['title' => ['icon' => 'system/iconUser', 'text' => 'Uživatelé'], 'content' => $biggestByUsersAll]
 		];
 
 		if ($this->partner)

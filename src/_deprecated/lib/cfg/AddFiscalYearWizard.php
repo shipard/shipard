@@ -65,7 +65,7 @@ class AddFiscalYearWizard extends \E10\Wizard
 
 	public function createHeader ()
 	{
-		$hdr = ['icon' => 'icon-calendar'];
+		$hdr = ['icon' => 'system/iconCalendar'];
 
 		$hdr ['info'][] = ['class' => 'title', 'value' => 'Nové účetní období'];
 		$hdr ['info'][] = ['class' => 'info', 'value' => 'Zadejte rok, pro který chcete vytvořit nové účetní období.'];

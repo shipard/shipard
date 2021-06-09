@@ -27,7 +27,7 @@ class ViewerHostingUsers extends \e10\persons\ViewUsers
 		$listItem = parent::renderRow($item);
 
 		$listItem ['t2'] = [];
-		$listItem ['t2'][] = ['text' => $item['login'], 'icon' => 'icon-sign-in', 'class' => ''];
+		$listItem ['t2'][] = ['text' => $item['login'], 'icon' => 'system/actionLogIn', 'class' => ''];
 		$listItem ['loginHash'] = $item['loginHash'];
 
 		$roles = [];
@@ -88,7 +88,7 @@ class ViewerHostingUsers extends \e10\persons\ViewUsers
 				{
 					$plusCnt = count($this->usersDataSources[$pk]) - $cnt;
 					if ($plusCnt)
-						$item['t3'][] = ['text' => '+'.utils::nf ($plusCnt), 'icon' => 'icon-database', 'class' => 'label label-default'];
+						$item['t3'][] = ['text' => '+'.utils::nf ($plusCnt), 'icon' => 'system/iconDatabase', 'class' => 'label label-default'];
 					break;
 				}
 			}
@@ -118,7 +118,7 @@ class ViewerHostingUsers extends \e10\persons\ViewUsers
 
 			$this->usersDataSources[$pk][] = [
 				'text' => ($r['dsShortName'] != '' ? $r['dsShortName'] : $r['dsName']),
-				'icon' => 'icon-database', 'class' => 'label '.$dsClass
+				'icon' => 'system/iconDatabase', 'class' => 'label '.$dsClass
 			];
 
 			if (!isset($this->lastLogins[$pk]))

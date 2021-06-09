@@ -81,7 +81,7 @@ class MetersWidget extends WidgetPane
 
 		$btns = [];
 		$btns[] = [
-			'type' => 'action', 'action' => 'wizard', 'text' => 'Nový odečet', 'icon' => 'icon-plus-circle',
+			'type' => 'action', 'action' => 'wizard', 'text' => 'Nový odečet', 'icon' => 'system/actionAdd',
 			'data-table' => 'e10.persons.persons', 'data-class' => 'e10pro.meters.MetersWizard',
 			'data-addparams' => 'metersGroup='.$this->calParamsValues['metersGroup']['value'],
 			'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId

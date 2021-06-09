@@ -120,7 +120,7 @@ class AddWizardLan extends Wizard
 	public function createHeader ()
 	{
 		$hdr = [];
-		$hdr ['icon'] = 'icon-sitemap';
+		$hdr ['icon'] = 'system/iconSitemap';
 		$hdr ['info'][] = ['class' => 'title', 'value' => 'Přidat novou síť'];
 		$hdr ['info'][] = ['class' => 'info', 'value' => ['text' => 'Průvodce vytvoří novou síť včetně základního nastavení VLAN a rozsahů', 'icon' => 'icon-plus-square']];
 

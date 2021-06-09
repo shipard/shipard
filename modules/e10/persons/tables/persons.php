@@ -288,7 +288,7 @@ class TablePersons extends DbTable
 			else
 			forEach ($addrs as $a)
 				if ($a['street'] !== '' || $a['city'] !== '')
-					$addresses [$a ['recid']][] = ['text' => $a['street'] . ', ' . $a['city'], 'icon' => 'icon-map-marker', 'class' => 'nowrap'];
+					$addresses [$a ['recid']][] = ['text' => $a['street'] . ', ' . $a['city'], 'icon' => 'system/iconMapMarker', 'class' => 'nowrap'];
 		}
 
 		return $addresses;
@@ -734,7 +734,7 @@ class ViewPersonsBase extends TableView
 			if ($item['valid'] === 2)
 				$listItem ['t2'][] = ['text' => '', 'icon' => 'system/iconWarning', 'class' => 'e10-error'];
 			//elseif ($item['valid'] === 1)
-			//	$listItem ['t2'][] = ['text' => '', 'icon' => 'icon-check', 'class' => 'e10-success e10-off e10-small'];
+			//	$listItem ['t2'][] = ['text' => '', 'icon' => 'system/iconCheck', 'class' => 'e10-success e10-off e10-small'];
 		}
 
 		return $listItem;
@@ -1120,7 +1120,7 @@ class ViewDetailPersonsRights extends TableViewDetail
 
 		$title[] = [
 				'text'=> 'Nový', 'docAction' => 'new', 'table' => 'e10.persons.userspasswords', 'type' => 'button',
-				'actionClass' => 'btn btn-success btn-xs', 'icon' => 'icon-plus-circle', 'class' => 'pull-right',
+				'actionClass' => 'btn btn-success btn-xs', 'icon' => 'system/actionAdd', 'class' => 'pull-right',
 				'addParams' => "__pwType=1&__person={$this->item['ndx']}"
 		];
 

@@ -56,7 +56,7 @@ class DataSourcesDashboardViewer extends \e10pro\hosting\server\ViewDatasources
 		// -- add buttons
 		$addButtons = [];
 		$addButton = [
-			'text' => 'Nová databáze', 'action' => 'wizard', 'icon' => 'icon-database', 'data-class' => 'e10pro.hosting.client.libs.WizardNewDatasource',
+			'text' => 'Nová databáze', 'action' => 'wizard', 'icon' => 'system/iconDatabase', 'data-class' => 'e10pro.hosting.client.libs.WizardNewDatasource',
 			'data-addParams' => 'partnerNdx='.$this->partner,
 			'data-srcobjecttype' => 'viewer', 'data-srcobjectid' => $this->vid,
 		];

@@ -69,7 +69,7 @@ class ViewDocRowsFormList extends \e10\TableViewGrid
 	public function renderRow ($item)
 	{
 		$listItem ['pk'] = $item ['ndx'];
-		$listItem ['icon'] = 'icon-user';
+		$listItem ['icon'] = 'system/iconUser';
 
 		$listItem ['item'] = [
 			['text' => $item['itemName'], 'class' => 'e10-bold'],

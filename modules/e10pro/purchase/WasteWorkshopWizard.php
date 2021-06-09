@@ -25,7 +25,7 @@ class WasteWorkshopWizard extends Wizard
 	public function createHeader ()
 	{
 		$hdr = [];
-		$hdr ['icon'] = 'icon-play';
+		$hdr ['icon'] = 'system/actionPlay';
 
 		$hdr ['info'][] = ['class' => 'title', 'value' => 'Načíst provozovny'];
 

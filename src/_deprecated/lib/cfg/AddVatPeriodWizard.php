@@ -66,7 +66,7 @@ class AddVatPeriodWizard extends \E10\Wizard
 
 	public function createHeader ()
 	{
-		$hdr = ['icon' => 'icon-calendar'];
+		$hdr = ['icon' => 'system/iconCalendar'];
 
 		$hdr ['info'][] = ['class' => 'title', 'value' => 'Nové období DPH'];
 		$hdr ['info'][] = ['class' => 'info', 'value' => 'Zadejte kalendářní rok, pro který chcete vytvořit období DPH.'];

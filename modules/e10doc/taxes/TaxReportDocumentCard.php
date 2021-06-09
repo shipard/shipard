@@ -30,7 +30,7 @@ class TaxReportDocumentCard extends \e10\DocumentCard
 		$title = [];
 		$title[] = ['class' => 'h1', 'text' => 'Přehled podání', 'icon' => 'icon-paper-plane'];
 		$title[] = [
-				'class' => 'pull-right btn-xs', 'text' => 'Nové podání', 'type' => 'document', 'icon' => 'icon-plus-circle',
+				'class' => 'pull-right btn-xs', 'text' => 'Nové podání', 'type' => 'document', 'icon' => 'system/actionAdd',
 				'action' => 'new', 'data-table' => 'e10doc.taxes.filings', 'data-addparams' => '__report='.$this->recData['ndx'].'&__reportType='.$this->recData['reportType']
 		];
 
@@ -54,7 +54,7 @@ class TaxReportDocumentCard extends \e10\DocumentCard
 			$title = [];
 			$title[] = ['class' => 'h1 pull-left', 'text' => $propertiesEngine->name(), 'icon' => 'icon-file-o'];
 			$title[] = [
-					'class' => 'pull-right', 'actionClass' => 'btn btn-primary btn-xs', 'text' => 'Otevřít', 'icon' => 'icon-edit', 'type' => 'button',
+					'class' => 'pull-right', 'actionClass' => 'btn btn-primary btn-xs', 'text' => 'Otevřít', 'icon' => 'system/actionOpen', 'type' => 'button',
 					'docAction' => 'edit', 'pk' => $r['ndx'], 'table' => 'e10doc.taxes.filings'
 			];
 			$tile['info'][] = ['class' => 'info', 'value' => $title];

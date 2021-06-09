@@ -162,7 +162,7 @@ class SendFormReportWizard extends \Shipard\Form\Wizard
 	public function createHeader ()
 	{
 		$hdr = array ();
-		$hdr ['icon'] = 'icon-envelope-o';
+		$hdr ['icon'] = 'system/iconEmail';
 
 		$documentTable = $this->app()->table ($this->recData['documentTable']);
 		$item = $documentTable->loadItem ($this->recData['documentNdx']);

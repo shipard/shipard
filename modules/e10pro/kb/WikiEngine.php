@@ -612,7 +612,7 @@ class WikiEngine extends Utility
 		if (in_array('w', $section['roles']) || in_array('a', $section['roles']))
 		{
 			$b = [
-				'text' => 'Upravit', 'title' => 'Upravit stránku', 'icon' => 'icon-edit',
+				'text' => 'Upravit', 'title' => 'Upravit stránku', 'icon' => 'system/docStateEdit',
 				'actionClass' => 'e10-document-trigger',
 				'attr' => [
 					['k' => 'table', 'v' => 'e10pro.kb.texts'],
@@ -660,7 +660,7 @@ class WikiEngine extends Utility
 
 		if ($this->app()->hasRole('kb') || in_array('a', $section['roles']))
 		{
-			$b = ['text' => 'Upravit sekci', 'icon' => 'icon-edit',
+			$b = ['text' => 'Upravit sekci', 'icon' => 'system/docStateEdit',
 				'attr' => [
 					['k' => 'table', 'v' => 'e10pro.kb.sections'],
 					['k' => 'pk', 'v' => $sectionNdx],

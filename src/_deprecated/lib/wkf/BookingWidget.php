@@ -67,7 +67,7 @@ class BookingWidget extends WidgetPane
 
 		$btns = [];
 		$btns[] = [
-			'text' => 'Přidat', 'icon' => 'icon-plus-circle', 'action' => 'new', 'data-table' => 'e10pro.booking.bookings',
+			'text' => 'Přidat', 'icon' => 'system/actionAdd', 'action' => 'new', 'data-table' => 'e10pro.booking.bookings',
 			'type' => 'button', 'actionClass' => 'btn',
 			'data-addParams' => '__bookingType='.$this->calParamsValues['bookingType']['value'],
 			'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId

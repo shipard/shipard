@@ -36,7 +36,7 @@ class DocumentCardDeviceScripts extends \e10\DocumentCard
 			$this->scriptGenerator->init();
 			$this->scriptGenerator->setDevice($this->recData['ndx'], NULL, TRUE);
 			$this->scriptGenerator->addToContent($initContent);
-			$tabs[] = ['title' => ['text' => 'Inicializace', 'icon' => 'icon-cogs'], 'content' => $initContent];
+			$tabs[] = ['title' => ['text' => 'Inicializace', 'icon' => 'system/iconCogs'], 'content' => $initContent];
 
 			// -- generated scripts - running
 			$this->addScriptTab($tabs, ['text' => 'V zařízení', 'icon' => 'icon-check-square'], $existedScripts, 'running');
@@ -72,7 +72,7 @@ class DocumentCardDeviceScripts extends \e10\DocumentCard
 
 		$info = [];
 		if ($scriptsData[$part.'Timestamp'])
-			$info[] = ['text' => utils::datef($scriptsData[$part.'Timestamp'], '%d, %T'), 'icon' => 'icon-calendar', 'class' => 'label label-default'];
+			$info[] = ['text' => utils::datef($scriptsData[$part.'Timestamp'], '%d, %T'), 'icon' => 'system/iconCalendar', 'class' => 'label label-default'];
 		$info[] = ['text' => utils::memf(strlen($scriptsData[$part.'Text'])), 'icon' => 'icon-pencil', 'class' => 'label label-default'];
 		if ($scriptsData[$part.'Ver'] !== '')
 			$info[] = ['text' => '#'.$scriptsData[$part.'Ver'], 'icon' => 'icon-pencil', 'class' => 'label label-default'];
@@ -175,7 +175,7 @@ class DocumentCardDeviceScripts extends \e10\DocumentCard
 			['pane' => 'e10-pane e10-pane-table','type' => 'text', 'subtype' => 'code', 'text' => $dataStr, 'paneTitle' => ['text' => 'Realtime skript', 'class' => 'h2 subtitle']],
 			['pane' => 'e10-pane e10-pane-table','type' => 'text', 'subtype' => 'code', 'text' => $template->templateCode(), 'paneTitle' => ['text' => 'Realtime šablona', 'class' => 'h2']],
 		];
-		$title = ['text' => 'SNMP', 'icon' => 'icon-sitemap'];
+		$title = ['text' => 'SNMP', 'icon' => 'system/iconSitemap'];
 		$tabs[] = ['title' => $title, 'content' => $content];
 
 	}

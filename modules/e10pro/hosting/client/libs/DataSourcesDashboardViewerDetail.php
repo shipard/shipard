@@ -25,7 +25,7 @@ class DataSourcesDashboardViewerDetail extends TableViewDetail
 
 	function createDSHeader($cc)
 	{
-		$h = ['icon' => 'icon-database'];
+		$h = ['icon' => 'system/iconDatabase'];
 
 		if ($cc->dsHeader && count($cc->dsHeader))
 			$h['info'] = $cc->dsHeader;

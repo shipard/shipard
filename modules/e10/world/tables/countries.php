@@ -93,7 +93,7 @@ class ViewCountries extends TableView
 		if ($item['ccn3'] && $item['ccn3'] !== 0)
 			$listItem ['i2'][] = ['text' => strval($item['ccn3']), 'class' => 'label label-default'];
 		if ($item['callingCodes'] && $item['callingCodes'] !== '')
-			$listItem ['i2'][] = ['text' => $item['callingCodes'], 'icon' => 'icon-phone', 'class' => 'label label-default'];
+			$listItem ['i2'][] = ['text' => $item['callingCodes'], 'icon' => 'system/iconPhone', 'class' => 'label label-default'];
 		if ($item['tlds'] && $item['tlds'] !== '')
 			$listItem ['i2'][] = ['text' => $item['tlds'], 'icon' => 'icon-globe', 'class' => 'label label-info'];
 

@@ -91,11 +91,11 @@ class ViewRegistrations extends TableView
 		$listItem ['t1'] = $item['lastName'].' '.$item['firstName'];
 
 		$address = $item['street'].', '.$item['city'].' '.$item['zipcode'];
-		$listItem ['t2'] = ['text' => $address, 'icon' => 'icon-map-marker'];
+		$listItem ['t2'] = ['text' => $address, 'icon' => 'system/iconMapMarker'];
 
 		$props = [];
-		$props [] = ['icon' => 'icon-envelope', 'text' => $item['email'], 'class' => 'e10-tag e10-tag-contact'];
-		$props [] = ['icon' => 'icon-phone', 'text' => $item['phone'], 'class' => 'e10-tag e10-tag-contact'];
+		$props [] = ['icon' => 'system/iconEmail', 'text' => $item['email'], 'class' => 'e10-tag e10-tag-contact'];
+		$props [] = ['icon' => 'system/iconPhone', 'text' => $item['phone'], 'class' => 'e10-tag e10-tag-contact'];
 		$props [] = ['icon' => 'icon-institution', 'text' => $item['bankAccount'], 'class' => 'e10-tag e10-tag-contact'];
 		$listItem ['t3'] = $props;
 
@@ -153,7 +153,7 @@ class ViewDetailRegistration extends TableViewDetail
 
 		$title = [['icon' => 'icon-globe', 'text' => 'Registrační údaje']];
 		$title[] = ['type' => 'action', 'action' => 'addwizard', 'table' => 'e10.persons.persons',
-			'text' => 'Přidat', 'data-class' => 'e10pro.custreg.RegistrationAddWizard', 'icon' => 'icon-plus-circle',
+			'text' => 'Přidat', 'data-class' => 'e10pro.custreg.RegistrationAddWizard', 'icon' => 'system/actionAdd',
 			'class' => 'pull-right', 'actionClass' => 'btn-xs',
 			'data-addparams' => 'registrationNdx='.$this->item['ndx']];
 
@@ -202,7 +202,7 @@ class ViewDetailRegistration extends TableViewDetail
 
 			$h = ['p1' => ' ', 't1' => '', 'p2' => ' ', 't2' => ''];
 
-			$title = [['icon' => 'icon-user', 'text' => '#'.$i['id']]];
+			$title = [['icon' => 'system/iconUser', 'text' => '#'.$i['id']]];
 			$title[] = ['type' => 'action', 'action' => 'addwizard', 'table' => 'e10.persons.persons',
 				'text' => 'Sloučit Osoby', 'data-class' => 'e10pro.custreg.RegistrationMergeWizard', 'icon' => 'icon-code-fork',
 				'class' => 'pull-right', 'actionClass' => 'btn-xs',

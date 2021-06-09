@@ -75,12 +75,12 @@ class ViewerDashboardCore extends TableView
 
 		if ($this->enableDetailSearch)
 		{
-			$mq [] = ['id' => 'active', 'title' => 'K řešení', 'icon' => 'icon-bolt'];
-			$mq [] = ['id' => 'done', 'title' => 'Hotovo', 'icon' => 'icon-check'];
-			$mq [] = ['id' => 'archive', 'title' => 'Archív', 'icon' => 'icon-archive'];
-			$mq [] = ['id' => 'all', 'title' => 'Vše', 'icon' => 'icon-toggle-on'];
+			$mq [] = ['id' => 'active', 'title' => 'K řešení', 'icon' => 'system/filterActive'];
+			$mq [] = ['id' => 'done', 'title' => 'Hotovo', 'icon' => 'system/filterDone'];
+			$mq [] = ['id' => 'archive', 'title' => 'Archív', 'icon' => 'system/filterArchive'];
+			$mq [] = ['id' => 'all', 'title' => 'Vše', 'icon' => 'system/filterAll'];
 			if ($this->app()->hasRole('pwuser'))
-				$mq [] = ['id' => 'trash', 'title' => 'Koš', 'icon' => 'icon-trash'];
+				$mq [] = ['id' => 'trash', 'title' => 'Koš', 'icon' => 'system/filterTrash'];
 			$this->setMainQueries($mq);
 		}
 
@@ -545,13 +545,13 @@ class ViewerDashboardCore extends TableView
 		//if (!$this->simpleHeaders)
 		{
 			if ($item ['authorFullName'])
-				$title[] = ['icon' => 'icon-user', 'text' => $item ['authorFullName'], 'class' => 'e10-off'];
+				$title[] = ['icon' => 'system/iconUser', 'text' => $item ['authorFullName'], 'class' => 'e10-off'];
 			elseif ($item['source'] !== 0 && isset ($this->properties[$item['pk']]['emailheaders']['eml-from']))
 			{
 				$srcEmail = utils::searchArray($this->properties[$item['pk']]['emailheaders']['eml-from'], 'property', 'eml-from');
 				if ($srcEmail !== NULL)
 				{
-					$ei = ['icon' => 'icon-envelope-o', 'text' => $srcEmail ['value'], 'class' => 'e10-off'];
+					$ei = ['icon' => 'system/iconEmail', 'text' => $srcEmail ['value'], 'class' => 'e10-off'];
 					if (isset($srcEmail['note']))
 						$ei['suffix'] = $srcEmail['note'];
 					$title[] = $ei;
@@ -562,7 +562,7 @@ class ViewerDashboardCore extends TableView
 				$srcEmail = utils::searchArray($this->properties[$item['pk']]['wfinfo']['wf-from'], 'property', 'wf-from');
 				if ($srcEmail !== NULL)
 				{
-					$ei = ['icon' => 'icon-envelope-o', 'text' => $srcEmail ['value'], 'class' => 'e10-off'];
+					$ei = ['icon' => 'system/iconEmail', 'text' => $srcEmail ['value'], 'class' => 'e10-off'];
 					if (isset($srcEmail['note']))
 						$ei['suffix'] = $srcEmail['note'];
 					$title[] = $ei;
@@ -654,7 +654,7 @@ class ViewerDashboardCore extends TableView
 
 					$row = ['info' => []];
 					$tt = [];
-					$tt[] = ['text' => $comment['authorFullName'], 'icon' => 'icon-user', 'class' => 'e10-off'];
+					$tt[] = ['text' => $comment['authorFullName'], 'icon' => 'system/iconUser', 'class' => 'e10-off'];
 					$tt[] = ['text' => utils::datef($comment['dateCreate'], '%D, %T'), 'icon' => 'icon-keyboard-o', 'class' => 'e10-off'];
 
 					if (isset($this->notifications[$commentNdx]))
@@ -663,7 +663,7 @@ class ViewerDashboardCore extends TableView
 					if ($comment['author'] === $this->thisUserId)
 					{
 						$tt [] = [
-								'class' => 'e10-small', 'icon' => 'icon-edit',
+								'class' => 'e10-small', 'icon' => 'system/docStateEdit',
 								'text' => '', 'title' => 'Opravit', 'type' => 'span',
 								'pk' => $comment['ndx'], 'docAction' => 'edit', 'data-table' => 'e10pro.wkf.messages',
 								'data-srcobjecttype' => 'viewer', 'data-srcobjectid' => $this->vid
@@ -694,7 +694,7 @@ class ViewerDashboardCore extends TableView
 			if (!$item['disableComments'])
 			{
 				$cmds [] = [
-					'action' => 'new', 'data-table' => 'e10pro.wkf.messages', 'icon' => 'icon-plus-circle',
+					'action' => 'new', 'data-table' => 'e10pro.wkf.messages', 'icon' => 'system/actionAdd',
 					'text' => 'Nový komentář', 'type' => 'button', 'actionClass' => 'btn btn-xs btn-success', 'class' => 'pull-right',
 					'data-addParams' => '__msgType='.TableMessages::mtComment.'&__ownerMsg=' . $ndx,
 					'data-srcobjecttype' => 'viewer', 'data-srcobjectid' => $this->vid

@@ -67,7 +67,7 @@ class BalanceDocumentInfo extends Utility
 
 		$line = [];
 
-		$line[] = ['text' => utils::datef($this->docRecData['dateDue']), 'icon' => 'icon-star-o'];
+		$line[] = ['text' => utils::datef($this->docRecData['dateDue']), 'icon' => 'system/iconBalance'];
 
 		if ($this->restAmount < 1.0)
 		{
@@ -77,11 +77,11 @@ class BalanceDocumentInfo extends Utility
 		else
 		if ($this->restAmount == $this->docRecData['toPay'])
 		{
-			//$line[] = ['text' => 'NEUHRAZENO', 'icon' => ($this->daysOver > 0) ? 'icon-exclamation' : 'icon-check', 'class' => 'e10-linePart h1'];
+			//$line[] = ['text' => 'NEUHRAZENO', 'icon' => ($this->daysOver > 0) ? 'icon-exclamation' : 'system/iconCheck', 'class' => 'e10-linePart h1'];
 		}
 		else
 		{
-			//$line[] = ['text' => '', 'icon' => 'icon-check', 'class' => 'e10-linePart h1'];
+			//$line[] = ['text' => '', 'icon' => 'system/iconCheck', 'class' => 'e10-linePart h1'];
 			//$line[] = ['text' => 'ČÁSTEČNĚ UHRAZENO', 'prefix' => utils::nf($this->paymentTotal / $this->docRecData['toPay'] * 100, 0).' %', 'class' => 'e10-none'];
 		}
 
@@ -98,11 +98,11 @@ class BalanceDocumentInfo extends Utility
 
 			if ($this->daysOver > 1 && $this->primaryBalanceId == 1000)
 			{
-				$btn = ['type' => 'action', 'action' => 'print', 'style' => 'print', 'icon' => 'icon-print', 'text' => 'Upomínka', 'data-report' => 'e10doc.balance.RequestForPayment',
+				$btn = ['type' => 'action', 'action' => 'print', 'style' => 'print', 'icon' => 'system/actionPrint', 'text' => 'Upomínka', 'data-report' => 'e10doc.balance.RequestForPayment',
 								'data-table' => 'e10.persons.persons', 'data-pk' => $this->docRecData['person'], 'actionClass' => 'btn-xs', 'class' => 'pull-right'];
 				$btn['subButtons'] = [];
 				$btn['subButtons'][] = [
-					'type' => 'action', 'action' => 'addwizard', 'icon' => 'icon-envelope-o', 'title' => 'Odeslat emailem', 'btnClass' => 'btn-default btn-xs',
+					'type' => 'action', 'action' => 'addwizard', 'icon' => 'system/iconEmail', 'title' => 'Odeslat emailem', 'btnClass' => 'btn-default btn-xs',
 					'data-table' => 'e10.persons.persons', 'data-pk' => $this->docRecData['person'], 'data-class' => 'e10.SendFormReportWizard',
 					'data-addparams' => 'reportClass=' . 'e10doc.balance.RequestForPayment' . '&documentTable=' . 'e10.persons.persons'
 				];

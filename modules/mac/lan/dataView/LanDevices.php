@@ -136,7 +136,7 @@ class LanDevices extends \lib\dataView\DataView
 				{
 					$item['connectedTo'][] = ['text' => $r['wallSocketId'], 'icon' => 'icon-square-o', 'class' => 'e10-bold'];
 					if ($r['wallSocketPlaceName'])
-						$item['connectedTo'][] = ['text' => $r['wallSocketPlaceName'], 'icon' => 'icon-map-marker', 'class' => ''];
+						$item['connectedTo'][] = ['text' => $r['wallSocketPlaceName'], 'icon' => 'system/iconMapMarker', 'class' => ''];
 
 					$this->loadNextPathStep ($item['connectedTo'], [
 						'type' => 'wallSocket',

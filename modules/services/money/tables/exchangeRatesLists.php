@@ -44,9 +44,9 @@ class TableExchangeRatesLists extends DbTable
 		if ($recData['validFrom'] && $recData['validFrom'])
 		{
 			if ($recData['validFrom'] == $recData['validTo'])
-				$props[] = ['text' => utils::datef($recData['validFrom'], '%d'), 'icon' => 'icon-calendar', 'class' => ''];
+				$props[] = ['text' => utils::datef($recData['validFrom'], '%d'), 'icon' => 'system/iconCalendar', 'class' => ''];
 			else
-				$props[] = ['text' => utils::datef($recData['validFrom']).' - '.utils::datef($recData['validTo']), 'icon' => 'icon-calendar', 'class' => ''];
+				$props[] = ['text' => utils::datef($recData['validFrom']).' - '.utils::datef($recData['validTo']), 'icon' => 'system/iconCalendar', 'class' => ''];
 		}
 
 		$hdr ['info'][] = ['class' => 'info', 'value' => $props];
@@ -87,9 +87,9 @@ class ViewExchangeRatesLists extends TableView
 		if ($item['validFrom'] && $item['validFrom'])
 		{
 			if ($item['validFrom'] == $item['validTo'])
-				$props[] = ['text' => utils::datef($item['validFrom'], '%d'), 'icon' => 'icon-calendar', 'class' => ''];
+				$props[] = ['text' => utils::datef($item['validFrom'], '%d'), 'icon' => 'system/iconCalendar', 'class' => ''];
 			else
-				$props[] = ['text' => utils::datef($item['validFrom']).' - '.utils::datef($item['validTo']), 'icon' => 'icon-calendar', 'class' => ''];
+				$props[] = ['text' => utils::datef($item['validFrom']).' - '.utils::datef($item['validTo']), 'icon' => 'system/iconCalendar', 'class' => ''];
 		}
 
 		$listItem ['t2'] = $props;
