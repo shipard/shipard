@@ -49,7 +49,7 @@ class VSUtils
 			}
 	
 			$c .= "<button class='$btnClass'$btnParams>" .
-				"<img id='e10-cam-{$cam['ndx']}-$side' src='{$app->urlRoot}/e10-modules/e10/server/css/ph-image-1920-1080.svg'/>" .
+				"<img id='e10-cam-{$cam['ndx']}-$side' src='{$app->urlRoot}/www-root/sc/shipard/ph-image-1920-1080.svg'/>" .
 				'</button>';
 		}
 	

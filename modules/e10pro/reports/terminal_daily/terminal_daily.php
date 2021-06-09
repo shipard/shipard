@@ -58,9 +58,9 @@ class reportDaily extends \e10doc\core\libs\reports\GlobalReport
 		{
 			case '':
 			case 'cashboxes':
-				$this->unitNdx = $this->reportParams ['cashBox']['value']; break;
+				$this->unitNdx = intval($this->reportParams ['cashBox']['value']); break;
 			case 'authors':
-				$this->unitNdx = $this->reportParams ['author']['value']; break;
+				$this->unitNdx = intval($this->reportParams ['author']['value']); break;
 		}
 	}
 

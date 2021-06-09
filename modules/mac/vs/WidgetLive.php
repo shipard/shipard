@@ -334,7 +334,7 @@ class WidgetLive extends WidgetBoard
 	protected function gridImgElement ($cell, $cam)
 	{
 		$cameraNdx = $cam['ndx'];
-		$phUrl = $this->app->urlRoot.'/e10-modules/e10/server/css/ph-image-1920-1080.svg';
+		$phUrl = $this->app->urlRoot.'/www-root/sc/shipard/ph-image-1920-1080.svg';
 
 		$srv = $this->servers[$cam['localServer']];
 

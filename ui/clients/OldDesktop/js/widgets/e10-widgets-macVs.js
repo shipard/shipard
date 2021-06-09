@@ -17,7 +17,11 @@ e10client.prototype.widgets.macVs.init = function (elementId, localServers) {
 	e10.widgets.macVs.localServers = localServers;
 
 	$('img.e10-camp, #e10-vs-smart-main-img').error(function(){
-		this.src = httpApiRootPath+'/e10-modules/e10/server/css/ph-image-1920-1080-error.svg';
+		this.src = httpApiRootPath+'/www-root/sc/shipard/ph-image-1920-1080-error.svg';
+	});
+
+	$('img.e10-camp, #e10-vs-smart-main-img').load(function(){
+		$(this).attr ('data-load-in-progress', '0');
 	});
 
 	e10.widgets.macVs.smartMainElement = $('#e10-vs-smart-main');
@@ -59,14 +63,17 @@ e10client.prototype.widgets.macVs.reloadLive = function ()
 
 				var cameraId = imgElement.attr ('data-camera');
 
-				if (imgElement.hasClass('zoomed'))
-					imgElement.attr("src", origPicFileName).parent().attr("data-pict", origPicFileName);
-				else
-					imgElement.attr("src", picFileName).parent().attr("data-pict", origPicFileName);
+				if (imgElement.attr ('data-load-in-progress') === '1')
+					continue;
 
+				imgElement.attr('data-load-in-progress', '1');
+				imgElement.attr("src", picFileName).parent().attr("data-pict", origPicFileName);
 				if (e10.widgets.macVs.smartMainElement !== null && cameraId === e10.widgets.macVs.smartActiveCamera)
 				{
-					$('#e10-vs-smart-main-img').attr ('src', origPicFileName);
+					if ($('#e10-vs-smart-main-img').attr ('data-load-in-progress') !== '1') {
+						$('#e10-vs-smart-main-img').attr('data-load-in-progress', '1');
+						$('#e10-vs-smart-main-img').attr('src', origPicFileName);
+					}
 				}
 
 				if (data[ii].error)
@@ -125,36 +132,6 @@ e10client.prototype.widgets.macVs.setMainPicture = function (e)
 	}
 };
 
-e10client.prototype.widgets.macVs.zoomPicture = function (e)
-{
-	if (e.hasClass('zoomed'))
-	{
-		e.removeClass('zoomed');
-		e.parent().parent().removeClass('zoomed');
-	}
-	else
-	{
-		e.addClass('zoomed');
-		e.parent().parent().addClass('zoomed');
-	}
-};
-
-e10client.prototype.widgets.macVs.zoomMainPicture = function (e)
-{
-	var primaryBox = e.parent().find('div.e10-wvs-smart-primary-box');
-
-	if (e.hasClass('zoomed'))
-	{
-		e.removeClass('zoomed');
-		primaryBox.removeClass('zoomed');
-	}
-	else
-	{
-		e.addClass('zoomed');
-		primaryBox.addClass('zoomed');
-	}
-};
-
 e10client.prototype.widgets.macVs.setVideo = function (e)
 {
 	var camUrl = e.attr ('data-cam-url');
@@ -176,19 +153,3 @@ e10client.prototype.widgets.macVs.setVideo = function (e)
 
 	e.empty().html (c);
 };
-
-/*
-e10client.prototype.widgets.macVs.setDay = function (e)
-{
-	e10.widgets.macVs.archiveDate = e.val();
-	e10.widgets.macVs.setVideos();
-};
-
-e10client.prototype.widgets.macVs.setHour = function (e)
-{
-	e10.widgets.macVs.archiveHour = e.val();
-	e10.widgets.macVs.setVideos();
-};
-
-
-*/
