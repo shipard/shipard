@@ -19,7 +19,7 @@ class StartMenu extends Utility
 			$tileInfo = [
 				'name' => $z['sn'],
 				't1' => $z['sn'], 'class' => 'e10-small',
-				'icon' => 'icon-video-camera',
+				'icon' => 'deviceTypes/camera',
 				'object' => 'widget',
 				'order' => 100000,
 				'path' => 'widget/mac.vs.WidgetLive/zone-'.$z['ndx'],

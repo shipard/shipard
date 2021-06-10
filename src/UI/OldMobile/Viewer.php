@@ -5,7 +5,6 @@ namespace Shipard\UI\OldMobile;
 
 /**
  * Class Viewer
- * @package mobileui
  */
 class Viewer extends \Shipard\UI\OldMobile\PageObject
 {
@@ -55,7 +54,7 @@ class Viewer extends \Shipard\UI\OldMobile\PageObject
 	public function rightPageHeaderButtons ()
 	{
 		$rmbs = [];
-		$b = ['icon' => 'icon-search', 'action' => 'viewer-search'];
+		$b = ['icon' => 'system/iconSearch', 'action' => 'viewer-search'];
 		$rmbs[] = $b;
 
 /*

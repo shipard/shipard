@@ -4,7 +4,6 @@
   "tables": [],
 	"modules": ["mac/base"],
   "config": [
-    {"id": "+appSkeleton", "file": "appSkeleton.json"},
     {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
     {"id": "+dashboards", "file": "dashboards.json"},
     {"id": "+registeredClasses", "file": "registeredClasses.json"}

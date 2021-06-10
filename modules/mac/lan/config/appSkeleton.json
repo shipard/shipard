@@ -101,7 +101,7 @@
 		"records": {
 			"groups": {
 				"it2": {
-					"name": "IT2",
+					"name": "IT",
 					"order": 580000,
 					"items": {
 						"lan-devices": {

@@ -2,7 +2,7 @@
 
 namespace e10doc\balance;
 
-use \e10\utils, \e10\Utility, \e10\TableView, \e10doc\core\e10utils;
+use \e10\utils, \e10\Utility, \e10\TableView, \e10doc\core\libs\E10Utils;
 
 
 /**
@@ -17,7 +17,7 @@ class ViewPersonsDefaulters extends TableView
 	var $fiscalYear;
 	public function init ()
 	{
-		$this->fiscalYear = e10utils::todayFiscalYear($this->app());
+		$this->fiscalYear = E10Utils::todayFiscalYear($this->app());
 
 		$this->rowAction = 'widget';
 		$this->rowActionClass = 'e10doc.finance.CashPayWidget';
@@ -28,7 +28,7 @@ class ViewPersonsDefaulters extends TableView
 	public function selectRows ()
 	{
 		$fts = $this->fullTextSearch ();
-		$ubg = e10utils::usersBalancesGroups($this->app);
+		$ubg = E10Utils::usersBalancesGroups($this->app);
 
 		$q [] = 'SELECT personNdx, fullName, company, gender, lastName, ';
 		array_push($q, ' currency, ABS(SUM(receivables)) as receivables, ABS(SUM(obligations)) as obligations');
