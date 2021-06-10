@@ -19,7 +19,7 @@ class ViewerItemsByCategories extends \E10\Witems\ViewItems
 		$this->usePanelLeft = TRUE;
 		$this->linesWidth = 40;
 
-		$this->cats[0] = $ic = [['text' => 'Vše', 'icon' => 'icon-file-o', ]];
+		$this->cats[0] = $ic = [['text' => 'Vše', 'icon' => 'system/iconFile', ]];
 		$this->loadCategories('e10.witems.categories.tree', $this->cats);
 
 		$this->catsParam = new \E10\Params ($this->app);
@@ -45,12 +45,12 @@ class ViewerItemsByCategories extends \E10\Witems\ViewItems
 		foreach ($cats as $catTreeId => $cat)
 		{
 			$icNdx = $cat['ndx'];
-			$ic = [['text' => $cat['shortName'], 'icon' => ($cat['icon'] !== '') ? $cat['icon'] : 'icon-folder-o', 'subItems' => []]];
+			$ic = [['text' => $cat['shortName'], 'icon' => ($cat['icon'] !== '') ? $cat['icon'] : 'system/iconFile', 'subItems' => []]];
 
 			$dst[$icNdx] = $ic;
 			if (isset($cat['cats']) && count($cat['cats']))
 			{
-				$this->loadCategories($treeId . '.' . $cat['id'] . '.cats', $dst[$icNdx][0]['subItems']);
+				$this->loadCategories($treeId . '.' . $cat['id'] . '.cats', $dst[$icNdx][0]['subItems']);		
 			}
 			else
 				unset($dst[$icNdx][0]['subItems']);

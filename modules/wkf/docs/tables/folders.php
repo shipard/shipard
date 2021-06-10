@@ -2,7 +2,7 @@
 
 namespace wkf\docs;
 use e10\utils, e10\TableView, e10\TableForm, e10\DbTable, \lib\persons\LinkedPersons;
-
+use \e10\base\libs\UtilsBase;
 
 /**
  * Class TableFolders
@@ -62,7 +62,7 @@ class TableFolders extends DbTable
 	public function checkFolder (&$s)
 	{
 		if ($s['icon'] === '')
-			$s['icon'] = 'icon-folder';
+			$s['icon'] = 'tables/wkf.docs.folders';
 	}
 
 	public function saveConfig ()
@@ -80,7 +80,7 @@ class TableFolders extends DbTable
 			$this->checkFolder($r);
 			$folder = ['ndx' => $r ['ndx'],
 				'fn' => $r ['fullName'], 'sn' => ($r['shortName'] !== '') ? $r['shortName'] : $r['fullName'],
-				'icon' => ($r['icon'] !== '') ? $r['icon'] : 'icon-folder',
+				'icon' => $r['icon'],
 				'parentFolder' => $r['parentFolder'], 'subFolderRightsType' => $r['subFolderRightsType'],
 				'edk' => $r['enabledDocsKinds'],
 				'subFolders' => [],
@@ -394,7 +394,7 @@ class ViewFolders extends TableView
 		if (!count ($this->pks))
 			return;
 
-		$this->linkedPersons = \E10\Base\linkedPersons ($this->table->app(), $this->table, $this->pks, 'label label-default');
+		$this->linkedPersons = UtilsBase::linkedPersons ($this->table->app(), $this->table, $this->pks, 'label label-default');
 	}
 
 	function decorateRow (&$item)

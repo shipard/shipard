@@ -528,7 +528,7 @@ class ListProperties implements \E10\IDocumentList
 						if (isset ($p ['type']) && $p ['type'] == 'memo')
 						{
 							$inputCode = $this->createHtmlCodeRow ($rowNumber, $row, $p, $groupId, $propertyId);
-							$memoInputs [] = array ('text' => $p ['name'], 'icon' => 'x-content', 'widgetCode' => $inputCode);
+							$memoInputs [] = array ('text' => $p ['name'], 'icon' => 'system/formNote', 'widgetCode' => $inputCode);
 						}
 						else
 							$c .= $this->createHtmlCodeRow ($rowNumber, $row, $p, $groupId, $propertyId);

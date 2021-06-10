@@ -90,7 +90,7 @@ class ViewGroups extends TableView
 	public function renderRow ($item)
 	{
 		$listItem ['pk'] = $item ['ndx'];
-		$listItem ['icon'] = "e10-persons-groups";
+		$listItem ['icon'] = $this->table->tableIcon($item);
 		$listItem ['t1'] = $item['name'];
 
 		$sg = $this->table->columnInfoEnum ('systemGroup', 'cfgText');
