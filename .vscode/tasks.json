@@ -1,0 +1,17 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "app-upgrade",
+			"type": "shell",
+			"command": "shpd-server app-walk app-upgrade",
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [],
+			"group": {
+				"kind": "build"
+			}
+		}
+	]
+}
