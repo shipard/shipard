@@ -39,8 +39,8 @@ class DocumentCardDeviceScripts extends \e10\DocumentCard
 			$tabs[] = ['title' => ['text' => 'Inicializace', 'icon' => 'system/iconCogs'], 'content' => $initContent];
 
 			// -- generated scripts - running
-			$this->addScriptTab($tabs, ['text' => 'V zařízení', 'icon' => 'icon-check-square'], $existedScripts, 'running');
-			$this->addScriptTab($tabs, ['text' => 'Nastavuje se', 'icon' => 'icon-magic'], $existedScripts, 'new');
+			$this->addScriptTab($tabs, ['text' => 'V zařízení', 'icon' => 'system/iconCheckSquare'], $existedScripts, 'running');
+			$this->addScriptTab($tabs, ['text' => 'Nastavuje se', 'icon' => 'iconMagic'], $existedScripts, 'new');
 			$this->addScriptTab($tabs, ['text' => 'K nastavení', 'icon' => 'system/actionSettings'], $existedScripts, 'live');
 		}
 
@@ -112,12 +112,12 @@ class DocumentCardDeviceScripts extends \e10\DocumentCard
 
 			// -- running
 			$content = [['pane' => 'e10-pane e10-pane-table','type' => 'text', 'subtype' => 'code', 'text' => $r['runningData'],]];
-			$title = ['text' => 'V zařízení', 'icon' => 'icon-check-square', 'class' => $class];
+			$title = ['text' => 'V zařízení', 'icon' => 'system/iconCheckSquare', 'class' => $class];
 			$tabs[] = ['title' => $title, 'content' => $content];
 
 			// -- new
 			$content = [['pane' => 'e10-pane e10-pane-table','type' => 'text', 'subtype' => 'code', 'text' => $r['newData'],]];
-			$title = ['text' => 'Nastavuje se', 'icon' => 'icon-magic', 'class' => $class];
+			$title = ['text' => 'Nastavuje se', 'icon' => 'iconMagic', 'class' => $class];
 			$tabs[] = ['title' => $title, 'content' => $content];
 
 			// -- live

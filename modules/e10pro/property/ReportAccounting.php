@@ -48,6 +48,8 @@ class ReportAccounting extends \e10pro\property\ReportDepreciations
 		$this->addContent(['type' => 'table', 'header' => $h, 'table' => $this->accounting ['increase']['accTotals'], 'title' => 'Přírustky', 'main' => TRUE]);
 
 		$this->createContent_Sum_Totals();
+
+		$this->setInfo('icon', 'report/accounting');
 	}
 
 	function createContent_Sum_Totals ()
@@ -182,7 +184,7 @@ class ReportAccounting extends \e10pro\property\ReportDepreciations
 		$this->addContent(['type' => 'table', 'header' => $h, 'table' => $t, 'main' => TRUE]);
 
 
-		$this->setInfo('icon', 'icon-chevron-circle-down');
+		$this->setInfo('icon', 'tables/e10pro.property.depreciation');
 		$this->setInfo('title', 'Účtování odpisů majetku');
 		$this->paperOrientation = 'landscape';
 	}
@@ -212,7 +214,7 @@ class ReportAccounting extends \e10pro\property\ReportDepreciations
 		$this->addContent(['type' => 'table', 'header' => $h, 'table' => $t, 'main' => TRUE]);
 
 
-		$this->setInfo('icon', 'icon-chevron-circle-down');
+		$this->setInfo('icon', 'detailReportIncrements');
 		$this->setInfo('title', 'Účtování přírustků majetku');
 		$this->paperOrientation = 'landscape';
 	}
@@ -242,7 +244,7 @@ class ReportAccounting extends \e10pro\property\ReportDepreciations
 		$this->addContent(['type' => 'table', 'header' => $h, 'table' => $t, 'main' => TRUE]);
 
 
-		$this->setInfo('icon', 'icon-chevron-circle-down');
+		$this->setInfo('icon', 'detailReportDepletions');
 		$this->setInfo('title', 'Účtování úbytků majetku');
 		$this->paperOrientation = 'landscape';
 	}

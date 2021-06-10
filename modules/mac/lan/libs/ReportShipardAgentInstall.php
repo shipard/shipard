@@ -31,6 +31,7 @@ class ReportShipardAgentInstall extends \mac\lan\Report
 		}
 
 		$this->setInfo('title', 'Instalace ShipardAgent');
+		$this->setInfo('icon', 'report/shipardAgent');
 	}
 
 	function createContent_All ()

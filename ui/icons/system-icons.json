@@ -512,6 +512,12 @@
 		"fa5pro": "fa-list",
 		"bsi": "bi-list-ul",
 		"mdi": "list"
+	},	
+	"iconCheckSquare": {
+		"fa5":"fa-check-square",
+        "fa5pro":"fa-check-square",
+        "bsi":"bi-check-square-fill",
+        "mdi":"check_box"
 	},
 	
 

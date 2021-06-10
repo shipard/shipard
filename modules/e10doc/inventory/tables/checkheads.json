@@ -1,5 +1,5 @@
 {
-	"id": "e10doc.inventory.checkHeads", "sql": "e10doc_inventory_checkHeads", "name": "Inventury", "icon": "x-compute",
+	"id": "e10doc.inventory.checkHeads", "sql": "e10doc_inventory_checkHeads", "name": "Inventury",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "docNumber", "name": "Evidenční číslo", "type": "string", "len": 20},

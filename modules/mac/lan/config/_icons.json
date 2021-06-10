@@ -436,6 +436,12 @@
         "bsi":"bi-arrow-repeat",
         "mdi":"refresh"
 	},
+	"iconMagic":{
+		"fa5":"fa-magic",
+        "fa5pro":"fa-magic",
+        "bsi":"bi-sliders",
+        "mdi":"auto_fix_high"
+	},
 	
 
 

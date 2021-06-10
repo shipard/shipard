@@ -5,6 +5,12 @@
 		"bsi": "bi-circle",
 		"mdi": "circle"
     },
+    "tables/e10doc.inventory.checkHeads":{
+        "fa5":"fa-clipboard-check",
+        "fa5pro":"fa-clipboard-check",
+        "bsi":"bi-clipboard-check",
+        "mdi":"inventory"
+    },
     
     
     
