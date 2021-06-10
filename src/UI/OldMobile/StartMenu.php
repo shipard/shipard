@@ -171,6 +171,8 @@ class StartMenu extends \Shipard\UI\OldMobile\PageObject
 				$c .= "<li class='left'>";
 				if (isset($tile['icon']))
 					$c .= $this->app()->ui()->icon($tile['icon']);
+				elseif (isset($tile['table']))
+					$c .= $this->app()->ui()->icon('tables/'.$tile['table']).' ';
 				$c .= '</li>';
 
 				$c .= "<li class='content'>";
@@ -194,6 +196,8 @@ class StartMenu extends \Shipard\UI\OldMobile\PageObject
 						$c .= '>';
 						if (isset($btn['icon']))
 							$c .= $this->app()->ui()->icon($btn['icon']);
+						elseif (isset($btn['table']))
+							$c .= $this->app()->ui()->icon('tables/'.$btn['table']).' ';
 						$c .= '</li>';
 					}
 				}
