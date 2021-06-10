@@ -1,9 +1,0 @@
-{
-	"id": "e10pro.install.other-attendance",
-	"name": "Docházka",
-	"modules": ["e10pro/attendance", "tests/e10pro/attendance"],
-	"config": [
-		{"id": "+appSkeleton", "file": "appSkeleton.json"},
-		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"}
-	]
-}

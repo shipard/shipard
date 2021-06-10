@@ -7,7 +7,6 @@
 					"t1": "Start", "object": "widget", "class": "e10.widgetDashboard", "subclass": "main_new", "icon": "system/iconStart",
 					"order": 5800, "ntfBadgeId": "ntf-badge-wkf-start"
 				},
-
 				"reports": {
 					"t1": "Přehledy", "object": "subMenu", "class": "Shipard.Report.WidgetReports", "icon": "system/iconReports",
 					"order": 5900,
@@ -17,9 +16,7 @@
 						}
 					}
 				},
-
 				"persons": {"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "default", "order": 100000}
-				}
 			},
 			"smallItems": [
 				{
@@ -38,45 +35,5 @@
 		},
 		"wikiAppPageR": {"urlRegExp": "/^\\/app\\/wiki\\-[0-9]+$/", "zone": "sec", "objectType": "redirect", "redirect": "", "order": 100},
 		"wikiAppPage": {"urlRegExp": "/^\\/app\\/wiki\\-[0-9]+\\/(.*)$/", "objectType": "function", "function": "e10.web.createWebPageWiki", "zone": "sec", "order": 100}
-	},
-	"mobileui": {
-		"start": {
-			"items": {
-				"persons": {
-					"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "default",
-					"order": 100000
-				},
-				"mail": {
-					"t1": "Pošta", "object": "viewer", "table": "e10pro.wkf.messages", "viewer": "inbox", "icon": "icon-envelope",
-					"order": 700000, "width": 12,
-					"buttons": [
-						{"icon": "icon-camera", "data": {"action": "detail-add-photo", "table": "e10pro.wkf.messages", "pk": "_inbox"}, "native": 1},
-						{"icon": "icon-pencil", "data": {"action": "form", "classid": "e10pro.wkf.MobileFormInbox", "operation": "open"}}
-					]
-				},
-				"notes": {
-					"t1": "Poznámky", "object": "viewer", "table": "e10pro.wkf.messages", "viewer": "notes", "icon": "icon-pencil-square",
-					"order": 710000, "width": 12,
-					"buttons": [
-						{"icon": "icon-camera", "data": {"action": "detail-add-photo", "table": "e10pro.wkf.messages", "pk": "_note"}, "native": 1},
-						{"icon": "icon-pencil", "data": {"action": "form", "classid": "e10pro.wkf.MobileFormNote", "operation": "open"}}
-					]
-				}
-			}
-		},
-		"records": {
-			"groups": {
-				"other": {
-					"items": {
-						"projects": {
-							"t1": "Projekty", "object": "viewer", "table": "e10pro.wkf.projects", "viewer": "default", "icon": "icon-lightbulb-o", "order": 400000
-						},
-						"documents": {
-							"t1": "Dokumenty", "object": "viewer", "table": "e10pro.wkf.documents", "viewer": "common",  "icon": "e10pro-wkf-documents", "order": 800000
-						}
-					}
-				}
-			}
-		}
 	}
 }
