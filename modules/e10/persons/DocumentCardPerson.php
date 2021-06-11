@@ -31,8 +31,6 @@ class DocumentCardPerson extends \e10\DocumentCard
 
 	public function createContent ()
 	{
-		$this->newMode = $this->app->cfgItem ('options.experimental.testNewPersonDetail', 0);
-
 		$this->loadData();
 		$this->createContentBody();
 		$this->createHeader();

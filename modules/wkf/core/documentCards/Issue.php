@@ -21,8 +21,6 @@ class Issue extends \e10\DocumentCard
 
 	public function createContent ()
 	{
-		$this->newMode = 1;
-
 		$this->loadData();
 		$this->createContentBody();
 		//$this->createHeader();

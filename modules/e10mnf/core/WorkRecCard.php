@@ -162,8 +162,6 @@ class WorkRecCard extends \e10\DocumentCard
 
 	public function createContent ()
 	{
-		$this->newMode = 1;
-
 		$this->dk = $this->app()->cfgItem ('e10pro.wkf.wrKinds.'.$this->recData['docKind'], FALSE);
 		$this->useRows = (isset($this->dk['useRows']) && $this->dk['useRows']) ? 1 : 0;
 		$this->askPerson = isset($this->dk['askPerson']) ? $this->dk['askPerson'] : 0;

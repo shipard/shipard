@@ -203,8 +203,6 @@ class ItemUsing extends \e10\DocumentCard
 
 	public function createContent ()
 	{
-		$this->newMode = 1;
-
 		$this->createContentBody ();
 	}
 

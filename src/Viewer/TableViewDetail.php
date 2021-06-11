@@ -74,7 +74,7 @@ class TableViewDetail
 			foreach ($card->content['body'] as $cp)
 				$this->addContent($cp);
 		}
-		if ($card->newMode && $card->header)
+		if ($card->header)
 			$this->header = $card->header;
 	}
 
