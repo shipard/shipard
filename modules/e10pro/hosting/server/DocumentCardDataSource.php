@@ -108,9 +108,9 @@ class DocumentCardDataSource extends \e10\DocumentCard
 				$info[] = [
 					'p1' => 'Velikost',
 					't1' => [
-						['text' => utils::snf($this->statsRecData['usageTotal']), 'icon' => 'icon-hdd-o', 'class' => '', 'title' => 'Celková velikost'],
+						['text' => utils::snf($this->statsRecData['usageTotal']), 'icon' => 'quantityTypeDataAmount', 'class' => '', 'title' => 'Celková velikost'],
 						['text' => utils::snf($this->statsRecData['usageDb']), 'icon' => 'system/iconDatabase', 'class' => '', 'title' => 'Databáze'],
-						['text' => utils::snf($this->statsRecData['usageFiles']), 'icon' => 'icon-paperclip', 'class' => '', 'title' => 'Přílohy'],
+						['text' => utils::snf($this->statsRecData['usageFiles']), 'icon' => 'system/formAttachments', 'class' => '', 'title' => 'Přílohy'],
 					]
 				];
 
@@ -118,15 +118,15 @@ class DocumentCardDataSource extends \e10\DocumentCard
 					'p1' => 'Uživatelé',
 					't1' => [
 						['text' => utils::snf($this->statsRecData['cntUsersActive1m']), 'icon' => 'system/iconUser', 'class' => '', 'title' => 'Počet aktivních uživatelů za poslední měsíc'],
-						['text' => utils::snf($this->statsRecData['cntUsersAll1m']), 'icon' => 'icon-user-o', 'class' => '', 'title' => 'Počet všech uživatelů za poslední měsíc'],
+						['text' => utils::snf($this->statsRecData['cntUsersAll1m']), 'icon' => 'system/iconUser', 'class' => '', 'title' => 'Počet všech uživatelů za poslední měsíc'],
 					]
 				];
 
 				$info[] = [
 					'p1' => 'Doklady',
 					't1' => [
-						['text' => utils::snf($this->statsRecData['cntDocumentsAll']), 'icon' => 'icon-file-text-o', 'class' => '', 'title' => 'Celkový počet dokladů'],
-						['text' => utils::snf($this->statsRecData['cntDocuments12m']), 'icon' => 'icon-calendar-o', 'class' => '', 'title' => 'Počet dokladů za poslední rok'],
+						['text' => utils::snf($this->statsRecData['cntDocumentsAll']), 'icon' => 'dataTypesTextContent', 'class' => '', 'title' => 'Celkový počet dokladů'],
+						['text' => utils::snf($this->statsRecData['cntDocuments12m']), 'icon' => 'system/iconCalendar', 'class' => '', 'title' => 'Počet dokladů za poslední rok'],
 					]
 				];
 

@@ -62,7 +62,7 @@ class DatabaseResetWizard extends \E10\Wizard
 
 	public function createHeader ()
 	{
-		$hdr = ['icon' => 'icon-recycle'];
+		$hdr = ['icon' => 'system/actionRecycle'];
 
 		if (!$this->resetEnabled())
 		{

@@ -864,7 +864,7 @@ class DashboardIssuesCore extends TableView
 		}
 
 		if (isset($this->atts[$ndx]))
-			$title[] = ['text' => utils::nf($this->atts[$ndx]['count']), 'icon' => 'icon-paperclip', 'class' => 'e10-off pull-right'];
+			$title[] = ['text' => utils::nf($this->atts[$ndx]['count']), 'icon' => 'system/formAttachments', 'class' => 'e10-off pull-right'];
 
 		if (isset($this->connectedIssuesTo[$ndx]) || isset($this->connectedIssuesFrom[$ndx]))
 		{

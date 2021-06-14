@@ -191,6 +191,12 @@
 		"bsi": "bi-wrench",
 		"mdi": "build_circle"
 	},
+	"actionRecycle": {
+		"fa5": "fa-recycle",
+		"fa5pro": "fa-recycle",
+		"bsi": "bi-recycle",
+		"mdi": "autorenew"
+	},
 
 
 
@@ -518,6 +524,12 @@
         "fa5pro":"fa-check-square",
         "bsi":"bi-check-square-fill",
         "mdi":"check_box"
+	},	
+	"iconPencil": {
+		"fa5": "fa-pencil-alt",
+		"fa5pro": "fa-pencil-alt",
+		"bsi": "bi-pencil",
+		"mdi": "edit"
 	},
 	
 

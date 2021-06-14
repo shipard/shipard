@@ -73,9 +73,9 @@ class DocumentCardDeviceScripts extends \e10\DocumentCard
 		$info = [];
 		if ($scriptsData[$part.'Timestamp'])
 			$info[] = ['text' => utils::datef($scriptsData[$part.'Timestamp'], '%d, %T'), 'icon' => 'system/iconCalendar', 'class' => 'label label-default'];
-		$info[] = ['text' => utils::memf(strlen($scriptsData[$part.'Text'])), 'icon' => 'icon-pencil', 'class' => 'label label-default'];
+		$info[] = ['text' => utils::memf(strlen($scriptsData[$part.'Text'])), 'icon' => 'system/iconPencil', 'class' => 'label label-default'];
 		if ($scriptsData[$part.'Ver'] !== '')
-			$info[] = ['text' => '#'.$scriptsData[$part.'Ver'], 'icon' => 'icon-pencil', 'class' => 'label label-default'];
+			$info[] = ['text' => '#'.$scriptsData[$part.'Ver'], 'icon' => 'system/iconPencil', 'class' => 'label label-default'];
 
 		$content[] = [
 			'pane' => 'padd5',

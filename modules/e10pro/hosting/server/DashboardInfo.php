@@ -24,7 +24,7 @@ class DashboardInfo extends \lib\dashboards\Info
 				'text' => utils::nf($data['data']['users']['online']), 'suffix' => utils::nf($data['data']['users']['active']),
 				'icon' => 'system/iconUser', 'class' => ''
 		];
-		$info['content'][] = ['text' => utils::memf($data['data']['diskSpace']['usageTotal']), 'icon' => 'icon-hdd-o', 'class' => ''];
+		$info['content'][] = ['text' => utils::memf($data['data']['diskSpace']['usageTotal']), 'icon' => 'quantityTypeDataAmount', 'class' => ''];
 
 		$dailyBar['hosting'] = $info;
 	}
