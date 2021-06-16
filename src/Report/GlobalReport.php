@@ -257,7 +257,7 @@ class GlobalReport extends Report
 
 	public function createToolbar ()
 	{
-		$printButton = ['text' => 'Tisk', 'icon' => 'icon-print', 'type' => 'reportaction', 'action' => 'print', 'class' => 'e10-print'];
+		$printButton = ['text' => 'Tisk', 'icon' => 'system/actionPrint', 'type' => 'reportaction', 'action' => 'print', 'class' => 'e10-print'];
 		$this->createToolbarSaveAs ($printButton);
 		$buttons[] = $printButton;
 

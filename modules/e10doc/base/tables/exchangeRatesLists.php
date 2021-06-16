@@ -134,8 +134,8 @@ class FormExchangeRatesList extends TableForm
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
-		$tabs ['tabs'][] = ['text' => 'Lístek', 'icon' => 'icon-file-o'];
-		$tabs ['tabs'][] = ['text' => 'Kurzy', 'icon' => 'icon-money'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Kurzy', 'icon' => 'formExchangeRates'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs, TRUE);
