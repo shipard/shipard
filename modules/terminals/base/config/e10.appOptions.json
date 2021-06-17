@@ -6,18 +6,5 @@
 	"e10Printers": {
 		"name": "Tiskárny", "order": 855000, "group": "system",
 		"type": "viewer", "table": "terminals.base.printers", "viewer": "default"
-	},
-	"e10LocalServers": {
-		"name": "Místní servery", "order": 890000, "group": "system",
-		"type": "viewer", "table": "terminals.base.servers", "viewer": "default"
-	},
-	"e10Sensors": {
-		"name": "Sensory", "order": 895000, "group": "system",
-		"type": "viewer", "table": "terminals.base.sensors", "viewer": "default"
-	},
-	"e10Cameras": {
-		"name": "Kamery", "order": 896000, "group": "system",
-		"type": "viewer", "table": "terminals.base.cameras", "viewer": "default"
 	}
 }
-

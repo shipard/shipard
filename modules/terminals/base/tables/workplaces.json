@@ -13,9 +13,6 @@
 		{"id": "printerPOS", "name": "Tiskárna pro účtenky", "type": "int", "reference": "terminals.base.printers"},
 		{"id": "printerLabels", "name": "Tiskárna pro nálepky", "type": "int", "reference": "terminals.base.printers"},
 
-		{"id": "cameraStartDocument", "name": "Kamera zahajovací", "type": "int", "reference": "terminals.base.cameras"},
-		{"id": "cameraEndDocument", "name": "Kamera ukončovací", "type": "int", "reference": "terminals.base.cameras"},
-
 		{"id": "allowedFrom", "name": "Povoleno z IP adres", "type": "string", "len": 200},
 		{"id": "useTerminal", "name": "Používat Terminál", "type": "logical"},
 

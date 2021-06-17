@@ -159,8 +159,6 @@ class FormWorkplace extends TableForm
 			$this->addColumnInput ('printerPOS');
 			$this->addColumnInput ('printerLabels');
 			$this->addList ('doclinks', '', TableForm::loAddToFormLayout);
-			$this->addColumnInput ('cameraStartDocument');
-			$this->addColumnInput ('cameraEndDocument');
 			$this->addColumnInput ('allowedFrom');
 		$this->closeForm ();
 	}

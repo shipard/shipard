@@ -2,9 +2,6 @@
 	"admin": {
 		"viewers": {
 			"terminals.base.workplaces": {"default": 2},
-			"terminals.base.servers": {"default": 2},
-			"terminals.base.sensors": {"default": 2},
-			"terminals.base.cameras": {"default": 2},
 			"terminals.base.printers": {"default": 2}
 		}
 	}

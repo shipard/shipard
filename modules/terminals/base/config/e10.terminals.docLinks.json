@@ -10,19 +10,5 @@
 				{"id": "persons", "viewer": "e10.persons.ViewUsers", "table": "e10.persons.persons"}
 			]
 		}
-	},
-	"terminals.base.cameras": {
-		"terminals-base-cameras-sensors": {"linkid": "terminals-base-cameras-sensors", "name": "Senzory", "icon": "desktop",
-			"sources": [
-				{"table": "terminals.base.sensors"}
-			]
-		}
-	},
-	"terminals.base.sensors": {
-		"terminals-base-sensors-devices": {"linkid": "terminals-base-sensors-devices", "name": "Zařízení", "icon": "desktop",
-			"sources": [
-				{"table": "e10.base.devices"}
-			]
-		}
 	}
 }
