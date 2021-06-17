@@ -105,11 +105,9 @@ class ViewRacksSensorsShowFormList extends \e10\TableViewGrid
 		$fts = $this->fullTextSearch ();
 
 		$q [] = 'SELECT sensorsToShow.*, ';
-		array_push ($q, ' sensors.fullName AS sensorFullName, sensors.srcDataSourceQuantityId, sensors.srcDataSourceValuesIds, sensors.sensorBadgeLabel, sensors.sensorBadgeUnits,');
-		array_push ($q, ' dataSources.fullName AS dsFullName, dataSources.url AS srcDataSourceUrl');
+		array_push ($q, ' sensors.fullName AS sensorFullName, sensors.sensorBadgeLabel, sensors.sensorBadgeUnits');
 		array_push ($q, ' FROM [mac_lan_racksSensorsShow] AS sensorsToShow');
 		array_push ($q, ' LEFT JOIN [mac_iot_sensors] AS sensors ON sensorsToShow.sensor = sensors.ndx');
-		array_push ($q, ' LEFT JOIN [mac_data_sources] AS dataSources ON sensors.srcDataSource = dataSources.ndx');
 		array_push ($q, ' WHERE 1');
 		array_push ($q, ' AND sensorsToShow.[rack] = %i', $this->rack);
 

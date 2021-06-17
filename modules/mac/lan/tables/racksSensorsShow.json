@@ -5,7 +5,7 @@
 		{"id": "rack", "name": "Rack", "type": "int", "reference": "mac.lan.racks"},
 		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
 
-		{"id": "sensor", "name": "Senzor", "type": "int", "reference": "mac.data.sensors"},
+		{"id": "sensor", "name": "Senzor", "type": "int", "reference": "mac.iot.sensors"},
 		{"id": "sensorLabel", "name": "Titulek", "type": "string", "len": "50"}
 	],
 	"forms": [
