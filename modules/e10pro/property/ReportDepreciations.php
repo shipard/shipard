@@ -759,9 +759,9 @@ class ReportDepreciations extends \e10doc\core\libs\reports\GlobalReport
 		foreach ($this->data as $propertyNdx => $p)
 		{
 			$this->setInfo('icon', 'icon-university');
-			$this->setInfo('title', $p['propertyId']);
+			$this->setInfo('title', $p['propertyId']['text']);
 			$this->setInfo('param', 'Karta majetku', $p['fullName']);
-			$this->setInfo('worksheetTitle', $p['propertyId']);
+			$this->setInfo('worksheetTitle', $p['propertyId']['text']);
 
 			$this->addContent(['type' => 'reportHeader', 'reportHeader' => $this->info]);
 
@@ -783,9 +783,9 @@ class ReportDepreciations extends \e10doc\core\libs\reports\GlobalReport
 		foreach ($this->data as $propertyNdx => $p)
 		{
 			$this->setInfo('icon', 'icon-university');
-			$this->setInfo('title', $p['propertyId']);
+			$this->setInfo('title', $p['propertyId']['text']);
 			$this->setInfo('param', 'Karta majetku', $p['fullName']);
-			$this->setInfo('worksheetTitle', $p['propertyId']);
+			$this->setInfo('worksheetTitle', $p['propertyId']['text']);
 
 			$this->addContent(['type' => 'reportHeader', 'reportHeader' => $this->info]);
 
@@ -808,9 +808,9 @@ class ReportDepreciations extends \e10doc\core\libs\reports\GlobalReport
 		foreach ($this->data as $propertyNdx => $p)
 		{
 			$this->setInfo('icon', 'icon-university');
-			$this->setInfo('title', $p['propertyId']);
+			$this->setInfo('title', $p['propertyId']['text']);
 			$this->setInfo('param', 'Karta majetku', $p['fullName']);
-			$this->setInfo('worksheetTitle', $p['propertyId']);
+			$this->setInfo('worksheetTitle', $p['propertyId']['text']);
 
 			$this->addContent(['type' => 'reportHeader', 'reportHeader' => $this->info]);
 
@@ -960,7 +960,7 @@ class ReportDepreciations extends \e10doc\core\libs\reports\GlobalReport
 		$totals['st']['_options'] = ['class' => 'subtotal', 'colSpan' => ['propertyId' => 4]];
 		$totals['all']['_options'] = ['class' => 'sumtotal', 'beforeSeparator' => 'separator', 'colSpan' => ['propertyId' => 4]];
 
-		if (count($this->dataIncrease['lt']))
+		if (isset($this->dataIncrease['lt']) && count($this->dataIncrease['lt']))
 		{
 			$t[] = ['#' => 'Dlouhodobý majetek', '_options' => ['class' => 'subheader', 'colSpan' => ['#' => 6], 'cellClasses' => ['#' => 'e10-test']]];
 			foreach ($this->dataIncrease['lt'] as $p)
@@ -977,7 +977,7 @@ class ReportDepreciations extends \e10doc\core\libs\reports\GlobalReport
 		}
 
 		// -- short term
-		if (count($this->dataIncrease['st']))
+		if (isset($this->dataIncrease['st']) && count($this->dataIncrease['st']))
 		{
 			$t[] = ['#' => 'Krátkodobý majetek', '_options' => ['class' => 'subheader', 'colSpan' => ['#' => 6], 'cellClasses' => ['#' => 'e10-test']]];
 			foreach ($this->dataIncrease['st'] as $p)
@@ -992,7 +992,7 @@ class ReportDepreciations extends \e10doc\core\libs\reports\GlobalReport
 			$t[] = $totals['st'];
 		}
 
-		if (count($this->dataIncrease['lt']) && count($this->dataIncrease['st']))
+		if (isset($this->dataIncrease['lt']) && count($this->dataIncrease['lt']) && isset($this->dataIncrease['st']) && count($this->dataIncrease['st']))
 		{
 			$totals['all']['priceIn'] = $totals['lt']['priceIn'] + $totals['st']['priceIn'];
 			$totals['all']['propertyId'] = 'CELKEM:';
@@ -1039,7 +1039,7 @@ class ReportDepreciations extends \e10doc\core\libs\reports\GlobalReport
 		}
 
 		// -- short term
-		if (count($this->dataDecrease['st']))
+		if (isset($this->dataDecrease['st']) && count($this->dataDecrease['st']))
 		{
 			$t[] = ['#' => 'Krátkodobý majetek', '_options' => ['class' => 'subheader', 'colSpan' => ['#' => 6], 'cellClasses' => ['#' => 'e10-test']]];
 			foreach ($this->dataDecrease['st'] as $p)
@@ -1054,7 +1054,7 @@ class ReportDepreciations extends \e10doc\core\libs\reports\GlobalReport
 			$t[] = $totals['st'];
 		}
 
-		if (count($this->dataDecrease['lt']) && count($this->dataDecrease['st']))
+		if (isset($this->dataDecrease['lt']) && count($this->dataDecrease['lt']) && isset($this->dataDecrease['st']) && count($this->dataDecrease['st']))
 		{
 			$totals['all']['priceIn'] = $totals['lt']['priceIn'] + $totals['st']['priceIn'];
 			$totals['all']['propertyId'] = 'CELKEM:';
