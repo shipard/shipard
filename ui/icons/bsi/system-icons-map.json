@@ -97,6 +97,10 @@
     },
     {
         "t": 0,
+        "v": "bi-recycle"
+    },
+    {
+        "t": 0,
         "v": "bi-gear-fill"
     },
     {
@@ -373,6 +377,10 @@
     },
     {
         "t": 0,
+        "v": "bi-check-square-fill"
+    },
+    {
+        "t": 0,
         "v": "bi-gear"
     },
     {
@@ -474,6 +482,10 @@
     {
         "t": 0,
         "v": "bi-envelope"
+    },
+    {
+        "t": 0,
+        "v": "bi-pencil"
     },
     {
         "t": 0,

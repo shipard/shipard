@@ -97,6 +97,10 @@
     },
     {
         "t": 0,
+        "v": "fa-recycle"
+    },
+    {
+        "t": 0,
         "v": "fa-cogs"
     },
     {
@@ -373,6 +377,10 @@
     },
     {
         "t": 0,
+        "v": "fa-check-square"
+    },
+    {
+        "t": 0,
         "v": "fa-cogs"
     },
     {
@@ -474,6 +482,10 @@
     {
         "t": 0,
         "v": "fa-paper-plane"
+    },
+    {
+        "t": 0,
+        "v": "fa-pencil-alt"
     },
     {
         "t": 0,
