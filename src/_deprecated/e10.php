@@ -187,7 +187,7 @@ function createDetailResponse ($app, \Shipard\Viewer\TableViewDetail &$data)
 	return $app->response;
 }
 
-function createViewerPanelResponse ($app, TableViewPanel $panel)
+function createViewerPanelResponse ($app, \Shipard\Viewer\TableViewPanel $panel)
 {
 	$panel->doIt ();
 	$app->response->add ("objectType", "viewerpanel");

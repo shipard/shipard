@@ -2,7 +2,7 @@
 
 namespace wkf\core\viewers;
 
-use \e10\TableView, \e10\utils, \e10\TableViewPanel, \wkf\core\TableIssues;
+use \Shipard\Viewer\TableView, \e10\utils, \Shipard\Viewer\TableViewPanel, \wkf\core\TableIssues;
 
 
 /**
