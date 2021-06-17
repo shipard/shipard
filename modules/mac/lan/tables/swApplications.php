@@ -191,8 +191,8 @@ class FormSwApplication extends TableForm
 
 		$this->openForm ();
 
-		$tabs ['tabs'][] = ['text' => 'Aplikace', 'icon' => 'x-content'];
-		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-image'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		$this->openTabs ($tabs, TRUE);
 		$this->openTab ();

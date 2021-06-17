@@ -8,7 +8,7 @@
 				{"t1": "Uživatelé", "object": "viewer", "table": "e10.persons.persons", "viewer": "users", "#": "users", "order": 200000}
 			],
 			"buttons": [
-				{"text": "Přegenerovat nastavení", "type": "panelaction", "action": "e10.updateConfiguration", "icon": "cogs", "class": "warning"}
+				{"text": "Přegenerovat nastavení", "type": "panelaction", "action": "e10.updateConfiguration", "icon": "system/actionRegenerate", "class": "warning"}
 			]
 		},
 		"srvcfg": {"url": "/app/srvcfg", "zone": "sec", "objectType": "panel", "name": "Nastavení", "order": 99000001,
@@ -21,7 +21,7 @@
 					"table": "e10.persons.requests", "viewer": "default", "order": 99400000}
 			},
 			"buttons": [
-				{"text": "Přegenerovat nastavení", "type": "panelaction", "action": "e10.updateConfiguration", "icon": "cogs", "class": "warning"}
+				{"text": "Přegenerovat nastavení", "type": "panelaction", "action": "e10.updateConfiguration", "icon": "system/actionRegenerate", "class": "warning"}
 			]
 		},
 		"startupConfig": {"url": "/app/startupConfig", "zone": "sec", "objectType": "panel", "name": "Úvodní nastavení systému", "order": -1,
