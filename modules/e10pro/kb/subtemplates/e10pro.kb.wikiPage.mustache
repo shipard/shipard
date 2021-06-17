@@ -1,5 +1,6 @@
 <div class="row">
-		<nav class="col-sm-3 col-md-3 d-none d-md-block d-sm-none d-md-none e10-wiki e10-sidebar-left">
+		<nav class="col-md-3 col-lg-2 d-md-block bg-light e10-wiki e10-sidebar-left">
+			<div class="position-sticky pt-3">
 			<h3>{{data.page.sectionTitle}}</h3>
 			<ul class="e10-content-list">
 			{{#data.sectionContent}}
@@ -15,8 +16,9 @@
 				</li>
 			{{/data.sectionContent}}
 			</ul>
+			</div>
 		</nav>
-		<main class="col-sm-12 ml-md-auto col-md-9 e10-wiki e10-wiki-page" role="main">
+		<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 e10-wiki e10-wiki-page" role="main">
 
 	    <div id="e10-wiki-header" class="e10-wiki-header{{#data.page.docStateAlert}} {{data.page.docStateClass}}{{/data.page.docStateAlert}}">
 				<table class="e10-wiki-page-header" style="width: 100%;">

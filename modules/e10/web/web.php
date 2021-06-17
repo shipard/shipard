@@ -739,7 +739,7 @@ function articleImage ($app, $params)
 	$clickable = \E10\searchParam ($params, 'clickable', 0);
 
 	$cnt = 0;
-	$totalCnt = count ($attachments['images']);
+	$totalCnt = isset($attachments['images']) ? count ($attachments['images']) : 0;
 	$gallery = ['id' => 'article-gallery-'.$params ['owner']->counter(),
 							'inline' => \E10\searchParam ($params, 'inline', 1), 'rows' => []];
 	$style = \E10\searchParam ($params, 'style', NULL);

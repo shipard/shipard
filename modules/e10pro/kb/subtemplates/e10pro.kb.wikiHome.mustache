@@ -9,26 +9,31 @@
 			</form>
 		</div>
 
-		<div class="card-deck">
+		<div class="row">
 			{{#data.sections}}
 				{{#homeTile}}
+				<div class="col-sm-4">
 					<div class="card" style="min-width: 20rem; margin-bottom: 1rem;">
 						<div class="card-body">
 							<h4 class="card-title"><a href="{{url}}">{{#icon}}<i class="{{@icon;dataItem:icon}}"></i> {{/icon}}{{title}}</a>
 							{{^mobileMode}}
 								{{#buttons.0}}
-									<span class="pull-right dropdown">
-										<button class="btn btn-link btn-xs" type="button" id="dropdownMenuButton-{{id}}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="padding: .1rem 0; cursor: pointer;">
+								<div class="btn-group pull-right">	
+									<div class="dropdown">
+										<button class="btn btn-link btn-xs" type="button" id="dropdownMenuButton-{{id}}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="padding: .1rem 0; cursor: pointer;">
 											<i class="fa fa-fw fa-ellipsis-v"></i>
 										</button>
-										<div class="dropdown-menu dropdown-menu-right">
+										<ul class="dropdown-menu dropdown-menu-right">
 										{{#buttons}}
+											<li>
 											<a class="dropdown-item {{#actionClass}}{{actionClass}}{{/actionClass}}{{^actionClass}}e10-document-trigger{{/actionClass}}"{{#attr}} data-{{k}}="{{v}}"{{/attr}}>
 												<i class="{{@icon;dataItem:icon}} fa-fw"></i> {{text}}
 											</a>
+											</li>
 										{{/buttons}}
-										</div>
-									</span>
+										</ul>
+									</div>
+								</div>	
 								{{/buttons.0}}
 							{{/mobileMode}}
 							</h4>
@@ -45,6 +50,7 @@
 							</p>
 						</div>
 					</div>
+				</div>	
 				{{/homeTile}}
 			{{/data.sections}}
 		</div>
