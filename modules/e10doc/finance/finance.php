@@ -57,7 +57,7 @@ class reportVAT extends \e10doc\core\libs\reports\GlobalReport
 			$q .= "SELECT heads.taxPeriod, taxes.taxCode as taxCode, SUM(taxes.sumBaseHc+taxes.sumTaxHc) as sumTotal, SUM(taxes.sumBaseHc) as sumBase, SUM(taxes.sumTaxHc) as sumTax FROM e10doc_core_taxes as taxes";
 		$q .= " LEFT JOIN e10doc_core_heads AS heads ON taxes.document = heads.ndx WHERE heads.taxPeriod = %i AND heads.docState = 4000";
 
-		$cfgTaxCodes = Application::cfgItem ('e10.base.taxCodes');
+		$cfgTaxCodes = $this->app()->cfgItem ('e10.base.taxCodes');
 		$validTaxCodes = array ();
 		foreach ($cfgTaxCodes as $key => $c)
 			if ((isset ($c['rowTaxReturn'])) && ($c['rowTaxReturn'] != 0))

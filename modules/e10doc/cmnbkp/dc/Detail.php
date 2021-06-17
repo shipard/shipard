@@ -1,7 +1,7 @@
 <?php
 
 namespace e10doc\cmnbkp\dc;
-
+require_once __SHPD_MODULES_DIR__ . 'e10doc/finance/finance.php';
 
 /**
  * Class Detail
