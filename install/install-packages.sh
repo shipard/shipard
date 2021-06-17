@@ -35,6 +35,11 @@ php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 rm composer-setup.php
 
 #
+# lessc
+#
+npm install -g --force less less-plugin-clean-css
+
+#
 # sass
 #
 #apt install --assume-yes --quiet sass
