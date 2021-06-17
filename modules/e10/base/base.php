@@ -655,7 +655,10 @@ class ListProperties implements \E10\IDocumentList
 	function appendRowCode ()
 	{
 		if (!isset ($this->formData))
+		{
+			$this->formData = new \Shipard\Form\TableForm($this->table, 0, 'none');
 			$this->formData->fid = $this->fid;
+		}
 		$c = "";
 
 		$rowNumber = intval ($this->table->app()->testGetParam ('rowNumber'));

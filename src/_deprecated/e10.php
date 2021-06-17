@@ -260,7 +260,7 @@ function createWindowResponse ($app, Window $data)
 	return $app->response;
 }
 
-function createListResponse ($app, ListData &$data)
+function createListResponse ($app, \Shipard\Base\ListData &$data)
 {
 	$app->response->add ("objectType", "list");
 	$app->response->add ("object", $data->objectData);
