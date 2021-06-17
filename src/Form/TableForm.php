@@ -1995,20 +1995,20 @@ class TableForm
 					$rowOrderForInsert = $this->option ('rowOrderForInsert', 0);
 					$isLastRow = $this->option ('isLastRow', 0);
 
-					$h .= "<div class='e10-row-menu'><i class='fa fa-fw fa-bars'></i>";
+					$h .= "<div class='e10-row-menu'>".$this->app()->ui()->icon('system/iconHamburgerMenu');
 					$h .= "<div class='e10-row-menu-btns' style='float: left;'>";
-					$h .= "<button tabindex='-1' class='e10-row-action' data-action='delete' title='Smazat řádek'><i class='fa fa-trash-o'></i></button>";
+					$h .= "<button tabindex='-1' class='e10-row-action' data-action='delete' title='Smazat řádek'>".$this->app()->ui()->icon('system/actionDelete')."</button>";
 					if ($rowNumber !== 0)
-						$h .= "<button tabindex='-1' class='e10-row-action' data-action='up' title='Posunout nahoru'><i class='fa fa-chevron-circle-up'></i></button>";
+						$h .= "<button tabindex='-1' class='e10-row-action' data-action='up' title='Posunout nahoru'>".$this->app()->ui()->icon('system/actionMoveUp')."</button>";
 					if (!$isLastRow)
-						$h .= "<button tabindex='-1' class='e10-row-action' data-action='down' title='Posunout dolů'><i class='fa fa-chevron-circle-down'></i></button>";
-					$h .= "<button tabindex='-1' class='e10-row-action' data-action='insert' data-row='$rn' data-row-order='$rowOrderForInsert' title='Vložit řádek'><i class='fa fa-plus-circle'></i></button>";
+						$h .= "<button tabindex='-1' class='e10-row-action' data-action='down' title='Posunout dolů'>".$this->app()->ui()->icon('system/actionMoveDown')."</button>";
+					$h .= "<button tabindex='-1' class='e10-row-action' data-action='insert' data-row='$rn' data-row-order='$rowOrderForInsert' title='Vložit řádek'>".$this->app()->ui()->icon('system/actionAdd')."</button>";
 					$h .= '</div>';
 					$h .= '</div>';
 				}
 				else
 				{
-					$h .= "<button tabindex='-1' class='e10-row-action' data-action='delete' title='Smazat řádek'><i class='fa fa-trash-o'></i></button>";
+					$h .= "<button tabindex='-1' class='e10-row-action' data-action='delete' title='Smazat řádek'>".$this->app()->ui()->icon('system/actionDelete')."</button>";
 				}
 			}
 			$h .= "<div style='font-size:60%;'>".($rowNumber+1).'</div>';

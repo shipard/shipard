@@ -1427,7 +1427,7 @@ class ListRows implements \E10\IDocumentList
 
 			$c .= "<li class='e10-rows-append'>";
 			if ($this->formData->appendListRow ($this->listId))
-				$c .= "<button class='btn btn-default' data-list='{$this->listId}' data-row='$rowNumber' data-fid='{$this->fid}'><i class='fa fa-plus-circle'></i> Přidat další řádek</button>";
+				$c .= "<button class='btn btn-default' data-list='{$this->listId}' data-row='$rowNumber' data-fid='{$this->fid}'>".$this->formData->app()->ui()->icon('system/actionAdd')." Přidat další řádek</button>";
 			$c .= '</li>';
 		}
 
