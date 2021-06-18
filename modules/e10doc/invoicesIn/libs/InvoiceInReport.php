@@ -7,8 +7,10 @@ class InvoiceInReport extends \e10doc\core\libs\reports\DocReport
 {
 	function init ()
 	{
-		$this->reportId = 'e10doc.invoicesIn.invni';
-		$this->reportTemplate = 'e10doc.invoicesIn.invni';
+		parent::init();
+
+		$this->reportId = 'reports.default.e10doc.invoiceIn.invoice';
+		$this->reportTemplate = 'reports.default.e10doc.invoiceIn.invoice';
 	}
 }
 
