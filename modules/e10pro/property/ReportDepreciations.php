@@ -1022,7 +1022,7 @@ class ReportDepreciations extends \e10doc\core\libs\reports\GlobalReport
 		$totals['st']['_options'] = ['class' => 'subtotal', 'colSpan' => ['propertyId' => 4]];
 		$totals['all']['_options'] = ['class' => 'sumtotal', 'beforeSeparator' => 'separator', 'colSpan' => ['propertyId' => 4]];
 
-		if (count($this->dataDecrease['lt']))
+		if (isset($this->dataDecrease['lt']) && count($this->dataDecrease['lt']))
 		{
 			$t[] = ['#' => 'Dlouhodobý majetek', '_options' => ['class' => 'subheader', 'colSpan' => ['#' => 6], 'cellClasses' => ['#' => 'e10-test']]];
 			foreach ($this->dataDecrease['lt'] as $p)
