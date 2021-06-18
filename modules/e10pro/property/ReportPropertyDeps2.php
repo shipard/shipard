@@ -11,8 +11,10 @@ class ReportPropertyDeps2 extends \e10pro\property\ReportPropertyDeps
 {
 	function init ()
 	{
-		$this->reportId = 'e10pro.property.deps2';
-		$this->reportTemplate = 'e10pro.property.deps2';
+		parent::init();
+
+		$this->reportId = 'reports.default.e10pro.property.deps2';
+		$this->reportTemplate = 'reports.default.e10pro.property.deps2';
 		$this->paperOrientation = 'portrait';
 	}
 }

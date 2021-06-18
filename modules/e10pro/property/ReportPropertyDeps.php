@@ -13,9 +13,14 @@ class ReportPropertyDeps extends FormReport
 {
 	function init ()
 	{
-		$this->reportId = 'e10pro.property.deps';
-		$this->reportTemplate = 'e10pro.property.deps';
-		$this->paperOrientation = 'landscape';
+		parent::init();
+
+		if (!isset($this->reportId))
+		{
+			$this->reportId = 'reports.default.e10pro.property.deps';
+			$this->reportTemplate = 'reports.default.e10pro.property.deps';
+			$this->paperOrientation = 'landscape';
+		}
 	}
 
 	public function loadData ()

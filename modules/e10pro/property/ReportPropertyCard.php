@@ -13,9 +13,10 @@ class ReportPropertyCard extends FormReport
 {
 	function init ()
 	{
-		$this->reportId = 'e10pro.property.card';
-		$this->reportTemplate = 'e10pro.property.card';
+		$this->reportId = 'reports.default.e10pro.property.card';		
+		$this->reportTemplate = 'reports.default.e10pro.property.card';
 		$this->paperOrientation = 'landscape';
+		parent::init();
 	}
 
 	public function loadData ()

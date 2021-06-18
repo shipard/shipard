@@ -13,8 +13,10 @@ class ReportPropertyCardNonDeps extends FormReport
 {
 	function init ()
 	{
-		$this->reportId = 'e10pro.property.nondepscard';
-		$this->reportTemplate = 'e10pro.property.nondepscard';
+		parent::init();
+		
+		$this->reportId = 'reports.default.e10pro.property.nondepscard';
+		$this->reportTemplate = 'reports.default.e10pro.property.nondepscard';
 		$this->paperOrientation = 'portrait';
 	}
 

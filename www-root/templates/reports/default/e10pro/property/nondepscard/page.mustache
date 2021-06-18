@@ -3,8 +3,14 @@
 <head>
 	<title>test</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <link rel="stylesheet" href="file://{{fsRoot}}/e10-modules/wwwlibs/Font-Awesome44/less/font-awesome.css">
-	<link rel="stylesheet" href="file://{{templateRoot}}style.css" type="text/css"/>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/default/style-default.css" type="text/css"/>
+	<style>
+		body {font-size: 9pt; font-family: sans-serif;}
+		tr.e10-row-this {
+				font-style: italic;
+				background-color: #F5F5F5;
+		}
+	</style>
 </head>
 <body>
 	{{{stdReportHeader}}}
@@ -21,4 +27,3 @@
 	{{{@renderTable;dataItem:data.properties.deps;tableClass:rowsSmall}}}
 </body>
 </html>
-

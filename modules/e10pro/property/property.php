@@ -72,15 +72,15 @@ class ViewDetailPropertyPlace extends TableViewDetail
 
 /**
  * Class ReportPlaceProperty
- * @package E10Pro\Property
  */
-
 class ReportPlaceProperty extends FormReport
 {
 	function init ()
 	{
-		$this->reportId = 'e10pro.property.place';
-		$this->reportTemplate = 'e10pro.property.place';
+		parent::init();
+
+		$this->reportId = 'reports.default.e10pro.property.place';
+		$this->reportTemplate = 'reports.default.e10pro.property.place';
 	}
 
 	public function loadData ()
@@ -94,4 +94,3 @@ class ReportPlaceProperty extends FormReport
 			$this->data ['property'] = $list;
 	}
 }
-
