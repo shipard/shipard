@@ -217,8 +217,10 @@ class CheckReportProtocol extends FormReport
 
 	function init ()
 	{
-		$this->reportId = 'e10doc.inventory.check-protocol';
-		$this->reportTemplate = 'e10doc.inventory.check-protocol';
+		parent::init();
+		
+		$this->reportId = 'reports.default.e10doc.inventory.check-protocol';
+		$this->reportTemplate = 'reports.default.e10doc.inventory.check-protocol';
 	}
 
 	public function loadData ()
@@ -274,8 +276,10 @@ class CheckReportDiffs extends FormReport
 
 	function init ()
 	{
-		$this->reportId = 'e10doc.inventory.check-diffs';
-		$this->reportTemplate = 'e10doc.inventory.check-diffs';
+		parent::init();
+
+		$this->reportId = 'reports.default.e10doc.inventory.check-diffs';
+		$this->reportTemplate = 'reports.default.e10doc.inventory.check-diffs';
 	}
 
 	public function loadData ()

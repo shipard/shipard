@@ -3,7 +3,7 @@
 <head>
     <title>test</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <link rel="stylesheet" href="file://{{templateRoot}}style.css" type="text/css"/>
+    <link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/default/style-default.css" type="text/css"/>
 
     <style>
         #rows {
@@ -11,8 +11,8 @@
         }
 
         table.properties {
-            font-size: 10pt;
-            padding: 6pt;
+           font-size: 10pt;
+           padding: 6pt;
 
         }
 
@@ -23,17 +23,18 @@
 <body>
 
 <div id='top'>
-    <span class='documentName'>Inventura zásob - Protokol</span>
+    <span class='documentName'>Inventura zásob - Rozdíly</span>
     <span class='documentNumber'>{{@dict;číslo}}: {{data.head.docNumber}}</span>
 </div>
 
-<table class="properties">
+
+<table class="properties" style="width: 100%;">
     <tr>
         <td>Datum inventury:</td><td>{{data.head.dateCheck}}</td>
         <td>Sklad:</td><td>{{data.warehouse.fullName}}</td>
     </tr>
     <tr>
-        <td></td><td></td>
+        <td>Rozdíly ke dni:</td><td>{{data.today}}</td>
         <td>Poznámka:</td><td>{{data.head.subject}}</td>
     </tr>
     <tr>
@@ -47,7 +48,9 @@
         <th class='number'>{{@dict;ř.}}</th>
         <th class='number'>{{@dict;Položka}}</th>
         <th>{{@dict;Název}}</th>
-        <th class='number'>{{@dict;Zjištěný stav}}</th>
+        <th class='number'>{{@dict;Inventura}}</th>
+        <th class='number'>{{@dict;Na skladě}}</th>
+        <th class='number'>{{@dict;Rozdíl}}</th>
         <th>{{@dict;Jed.}}</th>
     </tr>
     </thead>
@@ -57,10 +60,14 @@
         <td class='number'>{{itemid}}</td>
         <td>{{itemFullName}}</td>
         <td class='number'>{{checkQuantity}}</td>
+        <td class='number'>{{invQuantity}}</td>
+        <td class='number'>{{diff}}</td>
         <td>{{@dict;dataItem:unit}}</td>
     </tr>
     {{/data.rowsAll}}
 </table>
+
+
 
 <div id='footer'></div>
 

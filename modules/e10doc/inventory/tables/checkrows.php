@@ -1,8 +1,6 @@
 <?php
 
 namespace E10Doc\Inventory;
-require_once __APP_DIR__ . '/e10-modules/e10doc/inventory/inventory.php';
-
 
 use \E10\Application, \E10\DbTable, \E10\TableView, \E10\TableViewGrid, \E10\TableForm, \E10\utils, \e10doc\core\e10utils;
 
@@ -61,7 +59,7 @@ class ViewCheckRows extends TableView
 		if ($this->queryParam ('inventoryCheck'))
 			$this->addAddParam ('inventoryCheck', $this->queryParam ('inventoryCheck'));
 
-		$this->itemsUnits = Application::cfgItem ('e10.witems.units');
+		$this->itemsUnits = $this->app()->cfgItem ('e10.witems.units');
 		if ($this->queryParam ('inventoryCheckMainState') == '0')
 			$this->classes = array ('addByBarcode');
 
@@ -146,7 +144,7 @@ class ViewCheckRowsStates extends TableViewGrid
 		if ($this->queryParam ('inventoryCheck'))
 			$this->addAddParam ('inventoryCheck', $this->queryParam ('inventoryCheck'));
 
-		$this->itemsUnits = Application::cfgItem ('e10.witems.units');
+		$this->itemsUnits = $this->app()->cfgItem ('e10.witems.units');
 
 		$g = array (
 			'#' => ' #',
@@ -241,7 +239,7 @@ class ViewCheckRowsDiffs extends TableViewGrid
 		if ($this->queryParam ('inventoryCheck'))
 			$this->addAddParam ('inventoryCheck', $this->queryParam ('inventoryCheck'));
 
-		$this->itemsUnits = Application::cfgItem ('e10.witems.units');
+		$this->itemsUnits = $this->app()->cfgItem ('e10.witems.units');
 
 		$g = array (
 			'#' => ' #',
