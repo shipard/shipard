@@ -271,11 +271,11 @@ class FormText extends TableForm
 		$this->openForm ();
 		$this->addColumnInput ("title");
 
-		$tabs ['tabs'][] = ['text' => 'Text', 'icon' => 'x-content'];
-		$tabs ['tabs'][] = ['text' => 'Perex', 'icon' => 'x-content'];
-		$tabs ['tabs'][] = ['text' => 'Odkazy', 'icon' => 'icon-external-link'];
-		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-image'];
-		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'x-wrench'];
+		$tabs ['tabs'][] = ['text' => 'Text', 'icon' => 'formText'];
+		$tabs ['tabs'][] = ['text' => 'Perex', 'icon' => 'formPerex'];
+		$tabs ['tabs'][] = ['text' => 'Odkazy', 'icon' => 'formLink'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
+		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 
 		$this->openTabs ($tabs);
 			$this->openTab (TableForm::ltNone);

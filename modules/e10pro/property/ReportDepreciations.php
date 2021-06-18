@@ -758,7 +758,7 @@ class ReportDepreciations extends \e10doc\core\libs\reports\GlobalReport
 	{
 		foreach ($this->data as $propertyNdx => $p)
 		{
-			$this->setInfo('icon', 'icon-university');
+			$this->setInfo('icon', 'tables/e10pro.property.property');
 			$this->setInfo('title', $p['propertyId']['text']);
 			$this->setInfo('param', 'Karta majetku', $p['fullName']);
 			$this->setInfo('worksheetTitle', $p['propertyId']['text']);
@@ -782,7 +782,7 @@ class ReportDepreciations extends \e10doc\core\libs\reports\GlobalReport
 	{
 		foreach ($this->data as $propertyNdx => $p)
 		{
-			$this->setInfo('icon', 'icon-university');
+			$this->setInfo('icon', 'tables/e10pro.property.property');
 			$this->setInfo('title', $p['propertyId']['text']);
 			$this->setInfo('param', 'Karta majetku', $p['fullName']);
 			$this->setInfo('worksheetTitle', $p['propertyId']['text']);
@@ -807,7 +807,7 @@ class ReportDepreciations extends \e10doc\core\libs\reports\GlobalReport
 	{
 		foreach ($this->data as $propertyNdx => $p)
 		{
-			$this->setInfo('icon', 'icon-university');
+			$this->setInfo('icon', 'tables/e10pro.property.property');
 			$this->setInfo('title', $p['propertyId']['text']);
 			$this->setInfo('param', 'Karta majetku', $p['fullName']);
 			$this->setInfo('worksheetTitle', $p['propertyId']['text']);
@@ -885,7 +885,7 @@ class ReportDepreciations extends \e10doc\core\libs\reports\GlobalReport
 		$this->addContent(['type' => 'table', 'header' => $h, 'table' => $t, 'main' => TRUE]);
 
 
-		$this->setInfo('icon', 'icon-shield');
+		$this->setInfo('icon', 'detailReportPostponedTax');
 		$this->paperOrientation = 'landscape';
 	}
 
@@ -1000,7 +1000,7 @@ class ReportDepreciations extends \e10doc\core\libs\reports\GlobalReport
 		}
 
 
-		$this->setInfo('icon', 'icon-chevron-circle-up');
+		$this->setInfo('icon', 'detailReportIncrements');
 		$this->setInfo('title', 'Přírustky majetku');
 		$this->setInfo('param', 'Účetní období', $this->reportParams ['fiscalYear']['activeTitle']);
 
@@ -1061,7 +1061,7 @@ class ReportDepreciations extends \e10doc\core\libs\reports\GlobalReport
 			$t[] = $totals['all'];
 		}
 
-		$this->setInfo('icon', 'icon-chevron-circle-down');
+		$this->setInfo('icon', 'detailReportDepletions');
 		$this->setInfo('title', 'Úbytky majetku');
 		$this->setInfo('param', 'Účetní období', $this->reportParams ['fiscalYear']['activeTitle']);
 
