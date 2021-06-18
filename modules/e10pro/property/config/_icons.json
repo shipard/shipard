@@ -32,7 +32,7 @@
 	"tables/e10pro.property.operations": {
 		"fa5": "fa-random",
 		"fa5pro": "fa-random",
-		"bsi": "bi-random",
+		"bsi": "bi-shuffle",
 		"mdi": "shuffle"
 	},
 	"tables/e10pro.property.types": {
@@ -129,7 +129,7 @@
 	"detailMovements":{
 		"fa5": "fa-random",
 		"fa5pro": "fa-random",
-		"bsi": "bi-random",
+		"bsi": "bi-shuffle",
 		"mdi": "shuffle"
 	}
 }

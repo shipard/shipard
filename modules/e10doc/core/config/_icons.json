@@ -422,7 +422,7 @@
 	"detailReportDifferences":{
 		"fa5": "fa-random",
 		"fa5pro": "fa-random",
-		"bsi": "bi-random",
+		"bsi": "bi-shuffle",
 		"mdi": "shuffle"
 	},
 	"detailReportAlphabetically":{
