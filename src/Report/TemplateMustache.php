@@ -2,7 +2,8 @@
 
 namespace Shipard\Report;
 use \Shipard\Utils\Utils;
-
+use \Shipard\UI\Core\UIUtils;
+use \Shipard\UI\Core\ContentRenderer;
 
 class TemplateMustache extends \e10\TemplateCore
 {
@@ -130,20 +131,22 @@ class TemplateMustache extends \e10\TemplateCore
 			return '';
 
 		$cp = $this->_getVariable($params['dataItem']);
-		$tableParams = isset ($cp['params']) ? $cp['params'] : array ('tableClass' => 'e10-vd-mainTable');
+		if ($cp === '')
+			return '';
+		$tableParams = $cp['params'] ?? ['tableClass' => 'e10-vd-mainTable'];
 
 		if (isset($params['tableClass']))
 			$tableParams['tableClass'] = $params['tableClass'];
 		if (isset($params['forceTableClass']))
 			$tableParams['forceTableClass'] = $params['forceTableClass'];
 
-		$c = \E10\renderTableFromArray ($cp['table'], $cp['header'], $tableParams, $this->app);
+		$c = $this->app->ui()->renderTableFromArray ($cp['table'], $cp['header'], $tableParams);
 		return $c;
 	}
 
 	protected function stdReportHeader ()
 	{
-		return uiutils::createReportContentHeader($this->app, $this->info);
+		return UIUtils::createReportContentHeader($this->app, $this->info);
 	}
 
 	public function setData ($report)
