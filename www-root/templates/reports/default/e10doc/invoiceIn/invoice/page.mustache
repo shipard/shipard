@@ -7,25 +7,6 @@
 </head>
 <body>
 
-	<div id='top'>
-		{{#data.head.taxPayer}}
-			{{#data.head.correctiveDoc}}
-				<span class='documentName'>{{@dict;Opravný daňový doklad}}</span>
-			{{/data.head.correctiveDoc}}
-			{{^data.head.correctiveDoc}}
-				<span class='documentName'>{{@dict;Faktura PŘIJATÁ- daňový doklad}}</span>
-			{{/data.head.correctiveDoc}}
-		{{/data.head.taxPayer}}
-		{{^data.head.taxPayer}}
-			{{#data.head.correctiveDoc}}
-				<span class='documentName'>Dobropis - neplátce DPH</span>
-			{{/data.head.correctiveDoc}}
-			{{^data.head.correctiveDoc}}
-				<span class='documentName'>{{@dict;Faktura PŘIJATÁ - neplátce DPH}}</span>
-			{{/data.head.correctiveDoc}}
-		{{/data.head.taxPayer}}
-		<span class='documentNumber'>{{@dict;číslo}}: {{data.head.docNumber}}</span>
-	</div>
 
 	<table id='head'>
 		<tr>
@@ -239,19 +220,6 @@
 	<div class='pay'>
 		{{@dict;Celkem k úhradě}}: {{data.head.print.toPay}} {{data.head.print.currency}}
 	</div>
-
-
-    <div id='footer'>
-        <span class='printedBy'>
-            {{@dict;Vytištěno aplikací}}
-            {{#info.reportFormat.pdf}}
-                <img style='height: 1.18em; width: 5.2em; position: relative; bottom: -0.3em;' src='file://{{appDir}}/e10-modules/e10doc/core/reports/shipard-logo-black.svg'/>
-            {{/info.reportFormat.pdf}}
-            {{#info.reportFormat.widget}}
-                <img style='height: 1.5em; padding-bottom: 0.2em;' src='{{dsRoot}}/e10-modules/e10doc/core/reports/shipard-logo-black.svg'/>
-            {{/info.reportFormat.widget}}
-        </span>
-    </div>
 
 </body>
 </html>
