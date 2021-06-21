@@ -36,7 +36,7 @@ class SpdBalanceSheet extends SpdAccCore
 			if ($accDef['endState'] == 0.0)
 				continue;
 
-			$accId = $accIdSpd;
+			$accId = strval($accIdSpd);
 			if ($accId[0] === 'a' || $accId[0] === 'p')
 				$accId = substr ($accIdSpd, 1);
 
