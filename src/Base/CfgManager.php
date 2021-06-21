@@ -78,8 +78,8 @@ class CfgManager
 			{
 				if (substr($moduleCfg ['file'], 0, 1) === '/')
 				{
-					$cfgFileName = $this->cfgItem('modulesPath').$moduleCfg ['file'];
-					$newModuleConfig = $this->loadConfigFile ($newConfig, $moduleCfg ['file'], $this->cfgItem('modulesPath'));
+					$cfgFileName = __SHPD_MODULES_DIR__.$moduleCfg ['file'];
+					$newModuleConfig = $this->loadConfigFile ($newConfig, $moduleCfg ['file'], __SHPD_MODULES_DIR__);
 				}
 				else
 				{
@@ -1259,14 +1259,15 @@ class CfgManager
 			if (isset ($this->loadedModules [$m]))
 				continue;
 
-			$fileName = $this->cfgItem('modulesPath') . $m . '/module.json';
+			$fileName = /*$this->cfgItem('modulesPath')*/ __SHPD_MODULES_DIR__ . $m . '/module.json';
 			$cfgString = file_get_contents ($fileName);
 			if (!$cfgString)
 			{
+				echo "Module '$m' not exists\n";
 				continue;
 			}
 			$moduleCfg = json_decode ($cfgString, true);
-			$moduleCfg ['fullPath'] = $this->cfgItem('modulesPath') . $m . '/';
+			$moduleCfg ['fullPath'] = __SHPD_MODULES_DIR__ . $m . '/';
 			$this->modules [] = $moduleCfg;
 			$this->loadedModules [$m] = $fileName;
 

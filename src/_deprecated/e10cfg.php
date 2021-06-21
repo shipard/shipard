@@ -487,6 +487,11 @@ class ViewAppOptions extends TableView
 			{
 				/** @var \e10\DbTable $table */
 				$table = $this->app()->table($c['table']);
+				if (!$table)
+				{
+					error_log("Invalid table `{$c['table']}`");
+					continue;
+				}
 				$vd = $table->viewDefinition($c['viewer']);
 				if (!$vd)
 					$vd = $table->viewDefinition ('default');
