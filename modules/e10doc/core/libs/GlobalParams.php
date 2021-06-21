@@ -177,10 +177,13 @@ class GlobalParams extends \e10\Params
 		if ($this->hasFlag ($p, 'enableAll'))
 			$p['values']['0'] = array ('title' => 'Vše', 'fiscalYear' => 0, 'calendarYear' => 0, 'calendarMonth' => 0, 'dateBegin' => '', 'dateEnd' => '');
 
-		$q = 'SELECT * FROM [e10doc_base_fiscalmonths] ';
+		$q[] = 'SELECT months.* FROM [e10doc_base_fiscalmonths] AS months';
+		array_push($q, ' LEFT JOIN [e10doc_base_fiscalyears] AS years ON months.fiscalYear = years.ndx');
+		array_push($q, ' WHERE 1');
+		array_push($q, ' AND years.docStateMain != %i', 4);
 		if (!$this->hasFlag ($p, 'openclose'))
-			$q .= 'WHERE fiscalType = 0 ';
-		$q .= 'ORDER BY [globalOrder] DESC';
+			array_push($q, ' AND months.fiscalType = %i', 0);
+		array_push($q, ' ORDER BY [globalOrder] DESC');
 
 		$periods = $this->app->db()->query($q)->fetchAll ();
 		forEach ($periods as $r)
@@ -192,6 +195,11 @@ class GlobalParams extends \e10\Params
 			if (!isset ($p['calendarYears'][$r['fiscalYear']]))
 			{
 				$fy = $this->app->cfgItem ('e10doc.acc.periods.'.$r['fiscalYear']);
+				if ($fy === '')
+				{
+					// TODO: error_log ("___FY_!{$r['fiscalYear']}!__".json_encode($fy));
+					continue;
+				}
 				$p['calendarYears'][$r['fiscalYear']] = [
 						'title' => $fy['fullName'], 'value' => 'Y' . $r['fiscalYear'],
 						'fiscalYear' => $r['fiscalYear'], 'dateBegin' => $r['start'], 'months' => []
