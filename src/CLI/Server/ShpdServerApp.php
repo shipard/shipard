@@ -3,6 +3,7 @@
 namespace Shipard\CLI\Server;
 use \Shipard\Utils\Utils;
 use \Shipard\CLI\Server\ServerManager;
+use \Shipard\CLI\Server\DSManager;
 
 
 
@@ -754,7 +755,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 
 		$sqlCmd = "\"";
 		if ($deleteBeforeCreate || $replace)
-			$sqlCmd .= "DROP DATABASE \`{$this->manager->cfgItem ('db.database')}\`; ";
+			$sqlCmd .= "DROP DATABASE IF EXISTS \`{$this->manager->cfgItem ('db.database')}\`; ";
 		$sqlCmd .= "CREATE DATABASE \`{$this->manager->cfgItem ('db.database')}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci; " .
 							 "GRANT ALL ON \`{$this->manager->cfgItem ('db.database')}\`.* TO '{$this->manager->cfgItem ('db.login')}'@'localhost' IDENTIFIED BY '{$this->manager->cfgItem ('db.password')}';";
 		$sqlCmd .= "\"";
@@ -882,6 +883,34 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		$this->machineDeviceId ();
 	}
 
+	public function dsCopyFrom ($moveMode = FALSE)
+	{
+		$params = [];
+
+		$dsId = $this->arg ('dsId');
+		if (!$dsId)
+		{
+			return $this->err ('param `--dsId` not found');
+		}
+		$params['dsId'] = $dsId;
+
+		$server = $this->arg ('server');
+		if (!$server)
+		{
+			return $this->err ('param `--server` not found');
+		}
+		$params['server'] = $server;
+
+
+		$dsm = new DSManager($this);
+		$dsm->init();
+		
+		if ($moveMode)
+			return $dsm->moveFrom($params);
+		else
+			return $dsm->copyFrom($params);
+	}
+
 	public function dsLs ()
 	{
 		$dsList = [];
@@ -981,7 +1010,8 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		$channelConfig = $this->loadCfgFile($appDir.'/config/_server_channelInfo.json');
 		if (!$channelConfig)
 		{
-			return $this->err('ERROR: invalid channel info');
+			//return $this->err('ERROR: invalid channel info');
+			return FALSE;
 		}
 
 		// -- reset index.php
@@ -1266,6 +1296,8 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 			case	"app-walk":					return $this->appWalk ();
 
 			case	"ds-ls":						return $this->dsLs ();
+			case	"ds-copy-from":			return $this->dsCopyFrom ();
+			case	"ds-move-from":			return $this->dsCopyFrom (TRUE);
 
 			case	"help":             return $this->help ();
 			
