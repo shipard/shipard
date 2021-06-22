@@ -13,9 +13,9 @@
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"views": [
-		{"id": "default", "class": "mac.access.ViewPersonsAccess", "detail": "mac.access.ViewDetailPersonsAccess"}
+		{"id": "default", "class": "mac.access.ViewPersonsAccess", "detail": "mac.access.ViewDetailPersonsAccess", "help":"prirucka/253"}
 	],
 	"forms": [
-		{"id": "default", "class": "mac.access.FormPersonAccess"}
+		{"id": "default", "class": "mac.access.FormPersonAccess", "help":"prirucka/253"}
 	]
 }

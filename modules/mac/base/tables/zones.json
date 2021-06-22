@@ -24,10 +24,10 @@
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"views": [
-		{"id": "default", "class": "mac.base.ViewZones", "detail": "mac.base.ViewDetailZone"}
+		{"id": "default", "class": "mac.base.ViewZones", "detail": "mac.base.ViewDetailZone", "help":"prirucka/257"}
 	],
 	"forms": [
-		{"id": "default", "class": "mac.base.FormZone"}
+		{"id": "default", "class": "mac.base.FormZone", "help":"prirucka/257"}
 	],
 	"options": ["configSource"],
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
