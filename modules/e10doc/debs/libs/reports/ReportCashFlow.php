@@ -39,12 +39,13 @@ class ReportCashFlow extends \e10doc\core\libs\reports\GlobalReport
 		if ($this->version === 'auto')
 			$this->version = $this->autoDetectVersion();
 
-		$this->setInfo('icon', 'icon-legal');
+		$this->setInfo('icon', 'report/CashFlow');
 		$this->setInfo('param', 'Období', $this->reportParams ['fiscalPeriod']['activeTitle']);
 	}
 
 	function addParamsVersions ()
 	{
+		
 		$enumVersions = [];
 		$enumVersions['auto'] = 'Automaticky';
 		foreach ($this->cashFlows as $cfId => $cfDef)
