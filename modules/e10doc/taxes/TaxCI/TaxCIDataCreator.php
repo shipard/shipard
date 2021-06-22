@@ -1,10 +1,7 @@
 <?php
 
 namespace e10doc\taxes\TaxCI;
-
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
-
-use \e10\utils, e10doc\core\e10utils;
+use \Shipard\Utils\Utils, e10doc\core\libs\E10Utils;
 
 
 /**
@@ -31,9 +28,9 @@ class TaxCIDataCreator extends \e10doc\taxes\TaxReportDataCreator
 	function createAll ()
 	{
 		$dates = ['begin'];
-		if (!utils::dateIsBlank($this->reportRecData['datePeriodBegin']))
+		if (!Utils::dateIsBlank($this->reportRecData['datePeriodBegin']))
 			$dates['begin'] = $this->reportRecData['datePeriodBegin']->format('Y-m-d');
-		if (!utils::dateIsBlank($this->reportRecData['datePeriodEnd']))
+		if (!Utils::dateIsBlank($this->reportRecData['datePeriodEnd']))
 			$dates['end'] = $this->reportRecData['datePeriodEnd']->format('Y-m-d');
 		$this->setItem ('dates', $dates);
 
@@ -113,11 +110,11 @@ class TaxCIDataCreator extends \e10doc\taxes\TaxReportDataCreator
 	function createBalanceSheet ($thousands)
 	{
 		$reportParamsData = ($this->reportRecData['params'] != '') ? json_decode($this->reportRecData['params'], TRUE) : [];
-		$bsType = utils::cfgItem($reportParamsData, 'uv_rozsah_rozv', 'P');
+		$bsType = Utils::cfgItem($reportParamsData, 'uv_rozsah_rozv', 'P');
 		$bsDef = $this->reportVersion['balanceSheets'][$bsType];
 
 		$report = new \pkgs\accounting\debs\ReportBalanceSheet($this->app());
-		$report->fiscalPeriod = e10utils::yearLastFiscalMonth($this->app(), $this->reportRecData['accPeriod']);
+		$report->fiscalPeriod = E10Utils::yearLastFiscalMonth($this->app(), $this->reportRecData['accPeriod']);
 		$report->resultFormat = ($thousands) ? '1000' : '0';
 		$report->subReportId = 'report';
 		$report->version = $bsDef['version'];
@@ -140,11 +137,11 @@ class TaxCIDataCreator extends \e10doc\taxes\TaxReportDataCreator
 	function createStatement ($thousands)
 	{
 		$reportParamsData = ($this->reportRecData['params'] != '') ? json_decode($this->reportRecData['params'], TRUE) : [];
-		$stType = utils::cfgItem($reportParamsData, 'uv_rozsah_vzz', 'P');
+		$stType = Utils::cfgItem($reportParamsData, 'uv_rozsah_vzz', 'P');
 		$stDef = $this->reportVersion['statements'][$stType];
 
 		$report = new \pkgs\accounting\debs\ReportStatement($this->app());
-		$report->fiscalPeriod = e10utils::yearLastFiscalMonth($this->app(), $this->reportRecData['accPeriod']);
+		$report->fiscalPeriod = E10Utils::yearLastFiscalMonth($this->app(), $this->reportRecData['accPeriod']);
 		$report->resultFormat = ($thousands) ? '1000' : '0';
 		$report->subReportId = 'report';
 		$report->version = $stDef['version'];
@@ -168,7 +165,7 @@ class TaxCIDataCreator extends \e10doc\taxes\TaxReportDataCreator
 	{
 		$report = new \e10doc\debs\libs\reports\GeneralLedger($this->app());
 		$report->fiscalYear = $this->reportRecData['accPeriod'];
-		$report->fiscalPeriod = e10utils::yearLastFiscalMonth($this->app(), $this->reportRecData['accPeriod']);
+		$report->fiscalPeriod = E10Utils::yearLastFiscalMonth($this->app(), $this->reportRecData['accPeriod']);
 		$report->init();
 		$report->createContent ();
 

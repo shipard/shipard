@@ -41,7 +41,7 @@ class TableDevicesIOPorts extends DbTable
 			$portTypeCfg = $this->app()->cfgItem('mac.devices.io.ports.types.'.$recData['portType'], NULL);
 			if ($portTypeCfg && isset($portTypeCfg['cfgPath']))
 			{
-				$cfgFileName = __APP_DIR__ . '/e10-modules/mac/devices/devices/iot/' . $portTypeCfg['cfgPath'] . '/cfg.json';
+				$cfgFileName = __SHPD_MODULES_DIR__ . 'mac/devices/devices/iot/' . $portTypeCfg['cfgPath'] . '/cfg.json';
 				$cfg = utils::loadCfgFile($cfgFileName);
 				if ($cfg)
 					return $cfg['fields'];
@@ -426,7 +426,7 @@ class ViewDevicesIOPortsFormList extends \e10\TableViewGrid
 		$this->macDeviceCfg = json_decode($this->deviceRecData['macDeviceCfg'], TRUE);
 
 		$this->macDeviceTypeCfg = $this->app()->cfgItem('mac.devices.types.' . $this->deviceRecData['macDeviceType'], NULL);
-		$cfgFileName = __APP_DIR__ . '/e10-modules/mac/devices/devices/' . $this->macDeviceTypeCfg['cfg'] . '.json';
+		$cfgFileName = __SHPD_MODULES_DIR__ . 'mac/devices/devices/' . $this->macDeviceTypeCfg['cfg'] . '.json';
 		$this->macDeviceSubTypeCfg = utils::loadCfgFile($cfgFileName);
 
 		$this->gpioLayout = $this->tableDevices->gpioLayoutFromRecData(/*$this->macDeviceSubTypeCfg['gpioLayout']*/$this->deviceRecData);

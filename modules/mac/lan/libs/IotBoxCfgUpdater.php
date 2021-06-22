@@ -198,7 +198,7 @@ class IotBoxCfgUpdater extends Utility
 		$this->cfgRecData = $this->getIotBoxCfg($deviceRecData['ndx']);
 
 		$this->macDeviceTypeCfg = $this->app()->cfgItem('mac.devices.types.' . $this->deviceRecData['macDeviceType'], NULL);
-		$cfgFileName = __APP_DIR__ . '/e10-modules/mac/devices/devices/' . $this->macDeviceTypeCfg['cfg'] . '.json';
+		$cfgFileName = __SHPD_MODULES_DIR__ . 'mac/devices/devices/' . $this->macDeviceTypeCfg['cfg'] . '.json';
 		$this->macDeviceSubTypeCfg = utils::loadCfgFile($cfgFileName);
 
 		$this->macDeviceCfg = json_decode($this->deviceRecData['macDeviceCfg'], TRUE);

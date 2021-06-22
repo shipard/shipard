@@ -293,24 +293,6 @@ class CfgManager
 		file_put_contents ($newDir . "/datamodel.data", serialize ($this->dataModel->model));
 		file_put_contents ($newDir . "/datamodel.json", json_encode ($this->dataModel->model));
 
-		// -- create languages configs
-		/*
-		$swdev = utils::loadCfgFile(__APP_DIR__ . '/e10-modules/.cfg/swdev.json');
-		$this->translateHints = $swdev['cfg'];
-		$langPath = __APP_DIR__ . '/e10-modules/.cfg/dicts/';
-		$languages = utils::loadCfgFile($langPath.'languages.json');
-		forEach ($languages as $langId => $langSettings)
-		{
-			if ($langId === 'cs')
-				continue;
-			$dictionary = utils::loadCfgFile($langPath.$langId.'.json');
-			$langConfig = $newConfig;
-			$this->appCompileConfig_CreateLanguage ($langConfig, $dictionary, $langConfig, '');
-			file_put_contents ($newDir . "/cfg.$langId.json", utils::json_lint(json_encode ($langConfig)));
-			file_put_contents ($newDir . "/cfg.$langId.data", serialize ($langConfig));
-		}
-		*/
-
 		// -- languages
 		$langs = ['cs', 'en'];
 		foreach ($langs as $lang)
@@ -345,7 +327,7 @@ class CfgManager
 		{
 			$tableIdParts = explode('.', $tableId);
 			array_pop($tableIdParts);
-			$dictFileName = __APP_DIR__.'/e10-modules/translation/dm/tables/'.implode('/', $tableIdParts).'/'.$tableId.'/'.$tableId.'.'.$langId.'.json';
+			$dictFileName = __SHPD_MODULES_DIR__.'translation/dm/tables/'.implode('/', $tableIdParts).'/'.$tableId.'/'.$tableId.'.'.$langId.'.json';
 			$dict = utils::loadCfgFile($dictFileName);
 
 			if (!$dict)

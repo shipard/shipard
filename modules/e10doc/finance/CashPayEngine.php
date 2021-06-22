@@ -2,8 +2,8 @@
 
 namespace e10doc\finance;
 
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
-require_once __APP_DIR__ . '/e10-modules/e10doc/balance/balance.php';
+require_once __SHPD_MODULES_DIR__ . 'e10doc/core/core.php';
+require_once __SHPD_MODULES_DIR__ . 'e10doc/balance/balance.php';
 
 use e10doc\balance\ReportBalance, E10Doc\Core\CreateDocumentUtility;
 

@@ -260,8 +260,6 @@ class Order extends \e10\DocumentCard
 
 	public function createContent ()
 	{
-		$this->newMode =1;
-
 		$this->dko =  $this->table->docKindOptions ($this->recData);
 		$this->tableDocsHeads = $this->app()->table ('e10doc.core.heads');
 		$this->tableAddress = $this->app()->table('e10.persons.address');

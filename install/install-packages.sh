@@ -4,12 +4,22 @@ apt --assume-yes --quiet update
 apt --assume-yes --quiet upgrade
 apt install --assume-yes --quiet ca-certificates apt-transport-https software-properties-common
 
+
+#
+# PHP 8
+#
 add-apt-repository --yes ppa:ondrej/php
 apt --assume-yes --quiet update
 apt --assume-yes --quiet upgrade
 
+#
+# NGINX
+#
 apt install --assume-yes --quiet nginx
 
+#
+# MariaDB
+#
 apt install --assume-yes --quiet mariadb-server
 
 

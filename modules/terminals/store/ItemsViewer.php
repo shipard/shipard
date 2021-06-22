@@ -1,16 +1,14 @@
 <?php
 
 namespace terminals\store;
-
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
-use e10doc\core\e10utils;
+use e10doc\core\libs\E10Utils;
 
 
 /**
  * Class ItemsViewer
  * @package terminals\store
  */
-class ItemsViewer extends \E10\Witems\ViewItems
+class ItemsViewer extends \e10\witems\ViewItems
 {
 	var $taxCalc = 2;
 
@@ -26,7 +24,7 @@ class ItemsViewer extends \E10\Witems\ViewItems
 
 		$listItem ['data-cc']['title'] = $item['shortName'];
 		$listItem ['data-cc']['name'] = $item['fullName'];
-		$listItem ['data-cc']['price'] = e10utils::itemPriceSell($this->app(), $this->taxCalc, $item);
+		$listItem ['data-cc']['price'] = E10Utils::itemPriceSell($this->app(), $this->taxCalc, $item);
 		$listItem ['data-cc']['unit'] = $item['defaultUnit'];
 		$listItem ['data-cc']['unitName'] = $this->units[$item['defaultUnit']]['shortcut'];
 

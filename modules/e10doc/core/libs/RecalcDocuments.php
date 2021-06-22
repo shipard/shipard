@@ -1,9 +1,6 @@
 <?php
 
 namespace e10doc\core\libs;
-
-require_once __APP_DIR__ . '/e10-modules/e10doc/debs/debs.php';
-
 use \e10\TableForm, \e10\utils, \e10\Utility;
 
 

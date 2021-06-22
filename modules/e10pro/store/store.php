@@ -3,9 +3,6 @@
 namespace E10Pro\Store;
 
 use \E10\TableViewDetail, \E10\TableForm, \E10\DbTable, \E10\utils, \E10\Widget, \E10\Application, \E10\TableViewPanel;
-
-
-//require_once __APP_DIR__ . '/e10-modules/e10/witems/tables/items.php';
 require_once __SHPD_MODULES_DIR__ . 'e10doc/balance/balance.php';
 
 

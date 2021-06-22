@@ -1,7 +1,7 @@
 <?php
 
 namespace e10\web\dataView;
-require_once __APP_DIR__ . '/e10-modules/e10/web/web.php';
+require_once __SHPD_MODULES_DIR__ . 'e10/web/web.php';
 use \lib\dataView\DataView, \e10\utils, \e10\web\webPages;
 
 

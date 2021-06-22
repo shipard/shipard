@@ -3,10 +3,6 @@
 namespace e10doc\debs\libs\reports;
 use e10\utils;
 
-//require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
-//require_once __APP_DIR__ . '/e10-modules/e10doc/cmnbkp/cmnbkp.php';
-
-
 /**
  * Class GeneralLedger
  * @package e10doc\debs\libs\reports

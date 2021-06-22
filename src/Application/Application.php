@@ -658,23 +658,6 @@ class Application extends \Shipard\Application\ApplicationCore
 		return false;
 	}
 
-	public function help ()
-	{
-		include_once (__APP_DIR__ . '/e10-modules/e10/web/parsers/texy/texy.min.php');
-		$texy = new \Texy ();
-		$helpText = file_get_contents(__APP_DIR__ . '/e10-modules/e10/server/help/default.txt');
-		$helpCode = $texy->process($helpText);
-
-		$h ['headerCode'] = "<h2>Nápověda<button class='df2-action-trigger e10-close-help' data-action='close-help'>×</button></h2>";
-		$h ['contentCode'] = $helpCode;
-
-		$r = new Response ($this, "");
-
-		$r->add ("objectType", "help");
-		$r->add ("object", $h);
-		return $r;
-	}
-
 	public function loadItem ($ndx, $tableId)
 	{
 		$table = $this->table ($tableId);
@@ -867,29 +850,6 @@ class Application extends \Shipard\Application\ApplicationCore
 		}
 
 		$data[$colDef['id']] = $total;
-	}
-
-	public function uiLoader ()
-	{
-		$files = unserialize (file_get_contents(__APP_DIR__.'/e10-modules/.cfg/filesMobile.data'));
-
-		$uiTheme = $this->cfgItem ('options.experimental.mobileuiTheme', 'md-default');
-		if ($uiTheme === '')
-			$uiTheme = 'md-teal';
-
-		$uiLoader = [];
-
-		$uiLoader ['uiTheme'] = $uiTheme;
-		$themeCssFile = 'mobile/'.$uiTheme.'/style.css';
-		$uiLoader ['css'][] = ['src' => 'e10-modules/.cfg/'.$themeCssFile.'?'.$files[$themeCssFile]['md5']];
-		$uiLoader ['js'][] = ['src' => 'e10-modules/.cfg/client/e10-cordova-ds.js?'.$files['client/e10-cordova-ds.js']['md5']];
-
-		$r = new Response ($this);
-
-		$r->add ('objectType', 'uiLoader');
-		$r->add ('object', $uiLoader);
-
-		return $r;
 	}
 
 	public function userGroups ()
@@ -1565,11 +1525,6 @@ class Application extends \Shipard\Application\ApplicationCore
 			$response = $this->callFunction ($functionName);
 			return $response;
 		}
-		if ($object == "help")
-		{
-			$response = $this->help ();
-			return $response;
-		}
 		if ($object == "wss")
 		{
 			$response = $this->wss ();
@@ -1632,11 +1587,6 @@ class Application extends \Shipard\Application\ApplicationCore
 			self::$appLog->setTaskType(AppLog::ttHttpApi, AppLog::tkObjects);
 			$objectsManager = new \lib\objects\ObjectsManager ($this);
 			return $objectsManager->run ();
-		}
-		if ($object === 'uiLoader')
-		{
-			$response = $this->uiLoader();
-			return $response;
 		}
 
 		$tableId = $this->requestPath [2];

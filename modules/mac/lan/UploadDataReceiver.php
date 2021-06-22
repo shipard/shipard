@@ -1,10 +1,6 @@
 <?php
 
 namespace mac\lan;
-
-require_once __APP_DIR__ . '/e10-modules/e10/web/web.php';
-
-
 use e10\DbTable, e10\utils, e10\Utility;
 
 

@@ -1,10 +1,7 @@
 <?php
 
 namespace e10doc\cashRegister;
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
-
-
-use e10\Utility, e10doc\core\e10utils;
+use e10\Utility, e10doc\core\libs\E10Utils;
 
 
 /**
@@ -35,10 +32,10 @@ class SearchItem extends Utility
 		$askQuantity = 0;
 		if ($r['defaultUnit'] !== 'pcs')
 			$askQuantity = 1;
-		$taxCalc = intval($this->app->cfgItem ('options.e10doc-sale.cashRegSalePricesType', e10utils::taxCalcIncludingVATCode($this->app(), $today)));
+		$taxCalc = intval($this->app->cfgItem ('options.e10doc-sale.cashRegSalePricesType', E10Utils::taxCalcIncludingVATCode($this->app(), $today)));
 		$this->result ['item'] = [
 				'title' => $r['shortName'], 'name' => $r['fullName'], 'pk' => $r['ndx'],
-				'price' => e10utils::itemPriceSell($this->app, $taxCalc, $r),
+				'price' => E10Utils::itemPriceSell($this->app, $taxCalc, $r),
 				'unit' => $r['defaultUnit'], 'unitName' => $this->units[$r['defaultUnit']]['shortcut'],
 				'askq' => $askQuantity
 		];

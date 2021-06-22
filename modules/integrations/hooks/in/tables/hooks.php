@@ -46,7 +46,7 @@ class TableHooks extends DbTable
 			if (!$hookTypeCfg || !isset($hookTypeCfg['baseDir']))
 				return FALSE;
 
-			$cfgFileName = __APP_DIR__.'/e10-modules/'.$hookTypeCfg['baseDir'].'/settings.json';
+			$cfgFileName = __SHPD_MODULES_DIR__.$hookTypeCfg['baseDir'].'/settings.json';
 			$cfg = utils::loadCfgFile($cfgFileName);
 			if ($cfg)
 				return $cfg['fields'];

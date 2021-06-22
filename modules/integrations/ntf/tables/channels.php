@@ -34,7 +34,7 @@ class TableChannels extends DbTable
 			if (!$channelType || !isset($channelType['id']))
 				return FALSE;
 
-			$cfgFileName = __APP_DIR__.'/e10-modules/integrations/ntf/config/notifyChannelsDefs/'.$channelType['id'].'.json';
+			$cfgFileName = __SHPD_MODULES_DIR__.'integrations/ntf/config/notifyChannelsDefs/'.$channelType['id'].'.json';
 			$cfg = utils::loadCfgFile($cfgFileName);
 			if ($cfg)
 				return $cfg['fields'];

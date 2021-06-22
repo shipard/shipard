@@ -19,7 +19,6 @@ use \Texy, \E10\utils, \e10\AppLog, \e10\Application, \e10\web\WebPages, \e10\we
 \E10\Application::RegisterFunction ('template', 'webArticles', 'e10.web.webArticles');
 \E10\Application::RegisterFunction ('template', 'urlUser', 'e10.web.urlUser');
 \E10\Application::RegisterFunction ('template', 'setParams', 'e10.web.setParams');
-\E10\Application::RegisterFunction ('template', 'mapCoordinates', 'e10.web.mapCoordinates');
 
 
 const urlDecorationLeftColumn = 0, urlDecorationRightColumn = 1, urlDecorationFooterExtended = 2,
@@ -1119,15 +1118,6 @@ function urlUser ($app, $params)
 	}
 	return $app->urlRoot.'/'.$uu;
 }
-
-function mapCoordinates ($app, $params)
-{
-	$users = \E10\searchParam($params, 'users', '');
-	require_once __APP_DIR__ . '/e10-modules/locshare/client/client.php';
-	$r = \LocShare\Client\getMap ($app, FALSE, $users);
-	return '<script>var mapCoordinates='.json_encode($r->dataItem('mapUsers')).';</script>';
-}
-
 
 /**
  * webArticle

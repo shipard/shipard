@@ -1,9 +1,6 @@
 <?php
 
 namespace e10\web;
-
-//require_once __APP_DIR__ . '/e10-modules/e10/web/web.php';
-
 use \e10\utils, \e10\json, \e10\TableView, \e10\TableForm, \e10\DbTable, \e10\TableViewDetail;
 
 
