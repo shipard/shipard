@@ -22,7 +22,7 @@ class VatCSReportAll extends \e10doc\taxes\TaxReportReport
 	function init()
 	{
 		$this->taxReportTypeId = 'cz-vat-cs';
-		$this->previewReportTemplate = 'e10doc.taxes.tax-vat-cs';
+		$this->previewReportTemplate = 'reports.default.e10doc.taxes.tax-vat-cs';
 		$this->filingTypeEnum = ['B' => 'Řádné', 'O' => 'Opravné', 'N' => 'Následné'];
 
 		parent::init();
@@ -1080,7 +1080,7 @@ class VatCSReportAll extends \e10doc\taxes\TaxReportReport
 		$this->data['currentPageNumber'] = 1;
 		$this->data['cntPagesTotal'] = $this->createContent_Preview_CountTotalPages();
 
-		$c = $this->renderFromTemplate ('e10doc.taxes.tax-vat-cs', 'headers');
+		$c = $this->renderFromTemplate ('reports.default.e10doc.taxes.tax-vat-cs', 'headers');
 		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $c]);
 
 		if (!$this->disableContent)
@@ -1092,7 +1092,7 @@ class VatCSReportAll extends \e10doc\taxes\TaxReportReport
 			$this->createContent_Preview_B2();
 
 			$this->data['currentPageNumber']++;
-			$c = $this->renderFromTemplate('e10doc.taxes.tax-vat-cs', 'section-c');
+			$c = $this->renderFromTemplate('reports.default.e10doc.taxes.tax-vat-cs', 'section-c');
 			$this->addContent(['type' => 'text', 'subtype' => 'rawhtml', 'text' => $c]);
 		}
 
@@ -1247,13 +1247,13 @@ class VatCSReportAll extends \e10doc\taxes\TaxReportReport
 	public function createContent_Preview_OpenPage ($section)
 	{
 		$this->data['currentPageNumber']++;
-		$this->previewCode .= $this->renderFromTemplate ('e10doc.taxes.tax-vat-cs', 'section-'.strtolower($section).'-begin');
+		$this->previewCode .= $this->renderFromTemplate ('reports.default.e10doc.taxes.tax-vat-cs', 'section-'.strtolower($section).'-begin');
 	}
 
 	public function createContent_Preview_ClosePage ($section)
 	{
 		$this->createContent_Preview_FillPage ($this->previewSettings[$section]['rowsPerPage'] - $this->previewRowNumberPage, $this->previewSettings[$section]['cols']);
-		$this->previewCode .= $this->renderFromTemplate ('e10doc.taxes.tax-vat-cs', 'section-'.strtolower($section).'-end');
+		$this->previewCode .= $this->renderFromTemplate ('reports.default.e10doc.taxes.tax-vat-cs', 'section-'.strtolower($section).'-end');
 	}
 
 	public function createContent_Preview_FillPage ($cntRows, $cntCols)

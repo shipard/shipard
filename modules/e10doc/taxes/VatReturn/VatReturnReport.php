@@ -18,7 +18,7 @@ class VatReturnReport extends \e10doc\taxes\TaxReportReport
 	function init()
 	{
 		$this->taxReportTypeId = 'eu-vat-tr';
-		$this->previewReportTemplate = 'e10doc.taxes.tax-eu-vat-tr/cz';
+		$this->previewReportTemplate = 'reports.default.e10doc.taxes.tax-eu-vat-tr/cz';
 		$this->taxCodes = $this->app->cfgItem ('e10.base.taxCodes');
 		$this->filingTypeEnum = ['B' => 'Řádné', 'O' => 'Opravné', 'D' => 'Dodatečné'];
 		
@@ -413,10 +413,10 @@ class VatReturnReport extends \e10doc\taxes\TaxReportReport
 		$this->data['currentPageNumber'] = 1;
 		$this->data['cntPagesTotal'] = 2;
 
-		$c = $this->renderFromTemplate ('e10doc.taxes.tax-eu-vat-tr/cz', 'header');
+		$c = $this->renderFromTemplate ('reports.default.e10doc.taxes.tax-eu-vat-tr/cz', 'header');
 		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $c]);
 
-		$c = $this->renderFromTemplate ('e10doc.taxes.tax-eu-vat-tr/cz', 'content');
+		$c = $this->renderFromTemplate ('reports.default.e10doc.taxes.tax-eu-vat-tr/cz', 'content');
 		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $c]);
 
 		if ($this->format === 'widget')

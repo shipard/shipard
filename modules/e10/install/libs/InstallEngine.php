@@ -13,21 +13,31 @@ class InstallEngine extends Utility
 {
 	public function checkUpgradeToNewSystem()
 	{
-		$cntPackages = $this->db()->query ('SELECT COUNT(*) AS cnt FROM [e10_install_packages]')->fetch();
-		if ($cntPackages && $cntPackages['cnt'])
-			return FALSE;
+		$cntPackagesOld = $this->db()->query ('SELECT COUNT(*) AS cnt FROM [e10_install_packages] WHERE [packageId] LIKE %s', 'pkgs/%')->fetch();
+		$cntPackagesNew = $this->db()->query ('SELECT COUNT(*) AS cnt FROM [e10_install_packages] WHERE [packageId] LIKE %s', 'install/%')->fetch();
+
+		$doIt = FALSE;
+
+		if ($cntPackagesOld && $cntPackagesOld['cnt'] && (!$cntPackagesNew || !$cntPackagesNew['cnt']))
+			$doIt = TRUE;
+
+		if (!$doIt)
+			return TRUE;
 
 		$dataPackages = [];
 		foreach ($this->app->dataModel->model ['modules'] as $moduleId => $moduleName)
 		{
 			$module = $this->loadModule($moduleId);
 			if ($module === FALSE)
+			{
+				error_log ("INVALID module `$moduleId`");
+				continue;
+			}	
+
+			if (!isset ($module['dataPackages']))
 				continue;
 
-			if (!isset ($module['data']))
-				continue;
-
-			forEach ($module['data'] as $packageId)
+			forEach ($module['dataPackages'] as $packageId)
 			{
 				$this->checkUpgradeToNewSystem_AddPackage ($packageId,$dataPackages);
 			}
@@ -36,8 +46,8 @@ class InstallEngine extends Utility
 		foreach ($dataPackages as $packageId)
 		{
 			$item = [
-				'packageId' => $packageId, 'packageVersion' => '0.0.1utns',
-				'packageCheckSum' => sha1_file(__SHPD_MODULES_ROOT__.$packageId.'.json')
+				'packageId' => $packageId, 'packageVersion' => '0.0.1utng',
+				'packageCheckSum' => sha1_file(__SHPD_MODULES_DIR__.$packageId.'.json'),
 			];
 
 			$this->db()->query ('INSERT INTO [e10_install_packages] ', $item);

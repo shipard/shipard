@@ -26,7 +26,7 @@ class TableFilings extends DbTable
 
 	public function checkBeforeSave (&$recData, $ownerData = NULL)
 	{
-		if ($recData['ndx'])
+		if (isset($recData['ndx']) && $recData['ndx'])
 		{
 			$reportTypeDef = $this->app()->cfgItem('e10doc.taxes.reportTypes.' . $recData['reportType'], NULL);
 			if ($reportTypeDef)

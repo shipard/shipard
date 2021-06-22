@@ -212,6 +212,9 @@ class GlobalReport extends Report
 	public function createReportContentTemplate ()
 	{
 		$c = '';
+		
+		if (!isset($this->reportId))
+			return $c;
 
 		$t = new TemplateMustache ($this->app);
 		if ($t->loadTemplate($this->reportId) !== FALSE)

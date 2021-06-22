@@ -102,6 +102,9 @@ class ModuleServices extends \E10\CLI\ModuleServices
 
 	public function onAppUpgrade ()
 	{
+		$s [] = ['end' => '2021-12-31', 'sql' => "UPDATE wkf_base_sections SET icon = '' WHERE icon LIKE 'icon-%'"];
+		$this->doSqlScripts ($s);
+
 		$this->checkIssuesSystemKinds();
 		$this->checkSystemSections();
 	}

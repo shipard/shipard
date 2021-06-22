@@ -5,7 +5,7 @@ use \e10doc\core\libs\GlobalParams;
 use \e10\uiutils;
 
 
-class GlobalReport extends \e10\GlobalReport
+class GlobalReport extends \Shipard\Report\GlobalReport
 {
 	protected function createParamsObject ()
 	{

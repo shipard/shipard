@@ -1,6 +1,4 @@
-@import url("../../../../core/reports/formreport.css");
-
-html {background-color: #c0fdbf;}
+html {background-color: #cffdbf;}
 body {padding: 1cm !important; margin: 0 !important;}
 
 table.formSection {width: 100%; margin: 0; padding: 0; border-collapse: collapse; table-layout: fixed; clear: both;}
@@ -15,6 +13,10 @@ table.formSection td.input>span {
     display: block;
     font-family: "Courier" !important;
 }
+table.formSection td.input.t>span {
+    font-family: sans-serif !important;
+}
+
 table.formSection td.input>span>span.flag {
     width: 2em;
     float: right;
@@ -71,4 +73,4 @@ div.subTitle {
     padding: 6pt 0;
 }
 
-div.e10-tax-report {height: 267mm !important; width: 100%; display: inline-block;}
+div.e10-tax-report {height: 258mm !important; width: 180mm !important; display: inline-block;}
