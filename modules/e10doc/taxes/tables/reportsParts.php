@@ -3,7 +3,8 @@
 namespace e10doc\taxes;
 
 use e10\DbTable, e10\TableForm, e10\utils, e10\json;
-
+use \e10doc\debs\libs\spreadsheets\SpdBalanceSheet;
+use \e10doc\debs\libs\spreadsheets\SpdStatement;
 
 /**
  * Class TableReportsParts
@@ -90,7 +91,7 @@ class TableReportsParts extends DbTable
 			$bsType = utils::cfgItem($reportParamsData, 'uv_rozsah_rozv', 'P');
 			$bsDef = $this->app()->cfgItem ('e10.acc.balanceSheets.'.$reportVersion['balanceSheets'][$bsType]['version'].'.variants.'.$reportVersion['balanceSheets'][$bsType]['variant']);
 
-			$spd = new \pkgs\accounting\debs\SpdBalanceSheet ($this->app());
+			$spd = new SpdBalanceSheet ($this->app());
 			$spd->spreadsheetId = $bsDef['spreadsheetId'];
 			$spd->subColumnsSrcPrefix = 'balanceSheetK';
 			$spd->createSubColumns();
@@ -103,7 +104,7 @@ class TableReportsParts extends DbTable
 			$stType = utils::cfgItem($reportParamsData, 'uv_rozsah_vzz', 'P');
 			$stDef = $this->app()->cfgItem ('e10.acc.statements.'.$reportVersion['statements'][$stType]['version'].'.variants.'.$reportVersion['statements'][$stType]['variant']);
 
-			$spd = new \pkgs\accounting\debs\SpdStatement ($this->app());
+			$spd = new SpdStatement ($this->app());
 			$spd->spreadsheetId = $stDef['spreadsheetId'];
 			$spd->subColumnsSrcPrefix = 'statementK';
 			$spd->createSubColumns();
@@ -112,7 +113,7 @@ class TableReportsParts extends DbTable
 			return ['fields' => $spd->subColumns, 'title' => 'Výkaz zisku a ztráty', 'resetAll' => 1];
 		}
 
-		$fn = __APP_DIR__.'/e10-modules/e10doc/taxes/config/'.$reportRecData['reportType'].'/'.$reportVersionId.'/'.$partId.'.json';
+		$fn = __SHPD_MODULES_DIR__.'e10doc/taxes/config/'.$reportRecData['reportType'].'/'.$reportVersionId.'/'.$partId.'.json';
 		$pd = utils::loadCfgFile($fn);
 		return $pd;
 	}

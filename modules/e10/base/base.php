@@ -628,8 +628,9 @@ class ListProperties implements \E10\IDocumentList
 			if ($this->formData->readOnly)
 				$readOnlyParam = " disabled='disabled'";
 			$c .= "<select data-fid='{$this->formData->fid}' id='$inputId' name='$inputPrefix.value'$readOnlyParam{$class}>";
-			foreach ($property ['enum'] as $value => $enumDef)
+			foreach ($property ['enum'] as $valueX => $enumDef)
 			{
+				$value = strval($valueX);
 				if ($value [0] == '.')
 					continue;
 				$c .= " <option value='{$value}'>" . utils::es ($enumDef ['fullName']) . '</option>';

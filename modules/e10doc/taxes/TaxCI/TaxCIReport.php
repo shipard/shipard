@@ -17,7 +17,7 @@ class TaxCIReport extends \e10doc\taxes\TaxReportReport
 	function init()
 	{
 		$this->taxReportTypeId = 'cz-tax-ci';
-		$this->previewReportTemplate = 'e10doc.taxes.tax-ci-tr/cz';
+		$this->previewReportTemplate = 'reports.default.e10doc.taxes.tax-ci-tr/cz';
 
 		parent::init();
 	}
@@ -56,10 +56,10 @@ class TaxCIReport extends \e10doc\taxes\TaxReportReport
 		$this->data['currentPageNumber'] = 1;
 		$this->data['cntPagesTotal'] = 2;
 
-		$c = $this->renderFromTemplate ('e10doc.taxes.tax-ci-tr/cz', 'header');
+		$c = $this->renderFromTemplate ('reports.default.e10doc.taxes.tax-ci-tr/cz', 'header');
 		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $c]);
 
-		$c = $this->renderFromTemplate ('e10doc.taxes.tax-ci-tr/cz', 'content');
+		$c = $this->renderFromTemplate ('reports.default.e10doc.taxes.tax-ci-tr/cz', 'content');
 		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $c]);
 
 		if ($this->format === 'widget')
