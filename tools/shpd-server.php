@@ -5,7 +5,7 @@ if (!defined ('__SHPD_ROOT_DIR__'))
 {
 	$parts = explode('/', __DIR__);
 	array_pop($parts);
-	define('__SHPD_ROOT_DIR__', '/'.implode('/', $parts).'/');
+	define('__SHPD_ROOT_DIR__', implode('/', $parts).'/');
 }
 define ("__APP_DIR__", getcwd());
 

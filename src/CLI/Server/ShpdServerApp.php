@@ -438,25 +438,23 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		$cfg = '';
 
 		// -- web via https
-		$cfg .= "# ".$dsInfo['name']."; cfg ver 0.4\n";
+		$cfg .= "# ".$dsInfo['name']."; app cfg ver 0.5\n";
 
 		$cfg .= "server {\n";
 		$cfg .= "\tlisten 443 ssl http2;\n";
 		$cfg .= "\tserver_name $domains;\n";
-		$cfg .= "\troot /var/www/data-sources/$dsid;\n";
+		$cfg .= "\troot ".$this->cfgServer['dsRoot']."$dsid;\n";
 		$cfg .= "\tindex index.php;\n";
-
-		$cfg .= "\tssl on;\n";
-		$cfg .= "\tssl_stapling on;\n";
-		$cfg .= "\tssl_stapling_verify on;\n";
 
 		$cfg .= "\tssl_certificate /var/lib/shipard/certs/$certId/chain.pem;\n";
 		$cfg .= "\tssl_certificate_key /var/lib/shipard/certs/$certId/privkey.pem;\n";
 		$cfg .= "\tssl_trusted_certificate /var/lib/shipard/certs/$certId/chain.pem;\n";
-		$cfg .= "\tssl_dhparam /etc/ssl/crt/dhparam.pem;\n";
+		
+		if (is_readable('/etc/ssl/dhparam.pem'))
+			$cfg .= "\tssl_dhparam /etc/ssl/dhparam.pem;\n";
 
-		$cfg .= "\tinclude /var/www/e10-server/e10/server/etc/nginx/e10vhost.conf;\n";
-		$cfg .= "\tinclude /var/www/e10-server/e10/server/etc/nginx/e10https.conf;\n";
+		$cfg .= "\tinclude ".__SHPD_ROOT_DIR__."etc/nginx/shpd-one-app.conf;\n";
+		$cfg .= "\tinclude ".__SHPD_ROOT_DIR__."etc/nginx/shpd-https.conf;\n";
 		$cfg .= "}\n\n";
 
 		// -- save
