@@ -585,7 +585,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 
 	public function appStatus ($status)
 	{
-		utils::setAppStatus ($status);
+		Utils::setAppStatus ($status);
 	}
 
 	public function appRights ()
@@ -909,6 +909,14 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 			return $dsm->moveFrom($params);
 		else
 			return $dsm->copyFrom($params);
+	}
+
+	public function dsFixPerms ()
+	{
+		$dsm = new DSManager($this);
+		$dsm->init();
+		
+		return $dsm->fixPerms();
 	}
 
 	public function dsLs ()
@@ -1298,6 +1306,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 			case	"ds-ls":						return $this->dsLs ();
 			case	"ds-copy-from":			return $this->dsCopyFrom ();
 			case	"ds-move-from":			return $this->dsCopyFrom (TRUE);
+			case	"ds-fix-perms":			return $this->dsFixPerms ();
 
 			case	"help":             return $this->help ();
 			

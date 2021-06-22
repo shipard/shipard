@@ -21,7 +21,7 @@ define('__SHPD_ROOT_DIR__', $cfgServer['serverInfo']['channelPath']);
 require_once __SHPD_ROOT_DIR__ . '/src/boot.php';
 
 
-use \Shipard\CLI\Application, \e10\utils;
+use \Shipard\CLI\Application, \Shipard\Utils\Utils;
 
 
 
@@ -59,11 +59,11 @@ class CronApp extends Application
 			if (!is_dir($destPath))
 			{
 				mkdir ($destPath, 0775, true);
-				chmod ($destPath, utils::wwwGroup());
+				chmod ($destPath, Utils::wwwGroup());
 			}
 
 			$path_parts = pathinfo ($r['path']);
-			$baseFileName =  utils::safeChars ($path_parts ['filename'].'.'.$path_parts ['extension']);
+			$baseFileName =  Utils::safeChars ($path_parts ['filename'].'.'.$path_parts ['extension']);
 
 			$fullFileName = $destPath.$baseFileName;
 
@@ -160,7 +160,7 @@ class CronApp extends Application
 		$dsStats->data['diskUsage']['fs'] = $diskUsageFiles;
 
 		// -- disk usage - database
-		$config = utils::loadCfgFile('config/config.json');
+		$config = Utils::loadCfgFile('config/config.json');
 		$q = 'SELECT table_schema, SUM(data_length + index_length) as dbsize FROM information_schema.TABLES' .
 				 ' WHERE table_schema = %s GROUP BY table_schema';
 		$dbinfo = $this->db()->query ($q, $config['db']['database'])->fetch();
@@ -187,6 +187,9 @@ class CronApp extends Application
 
 	public function run ()
 	{
+		if (Utils::appStatus() !== TRUE)
+			return;
+
 		$cronType = $this->command ();
 		if ($cronType !== '')
 		{

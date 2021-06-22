@@ -30,6 +30,18 @@ class DSManager extends Utility
 		Utils::mkDir($this->tmpDir);
 	}
 
+	protected function appStart()
+	{
+		$cmd = 'cd '.$this->dsPathLocal.' && shpd-server app-start';
+		passthru($cmd);
+	}
+
+	protected function appStop()
+	{
+		$cmd = 'cd '.$this->dsPathLocal.' && shpd-server app-stop';
+		passthru($cmd);
+	}
+
 	public function getServerInfo()
 	{
 		echo "# getServerInfo\n";
@@ -86,8 +98,10 @@ class DSManager extends Utility
 	public function checkBlankDSRoot()
 	{
 		if (is_dir($this->dsPathLocal.'config'))
+		{
+			$this->appStop();
 			return TRUE;
-
+		}	
 		echo "# init blank datasource folder\n";
 
 		utils::mkDir($this->dsPathLocal);
@@ -99,6 +113,8 @@ class DSManager extends Utility
 		$cmd = 'cd '.$this->dsPathLocal.' && tar xf '.$this->tmpDir.'/backup.tgz';
 		//echo $cmd."\n";
 		passthru($cmd);
+
+		$this->appStop();
 
 		Utils::mkDir($this->dsPathLocal.'config');
 		Utils::mkDir($this->dsPathLocal.'config/curr');
@@ -112,9 +128,6 @@ class DSManager extends Utility
 		passthru($cmd);
 
 		$cmd = 'cd '.$this->dsPathLocal.' && shpd-server app-upgrade';		
-		passthru($cmd);
-
-		$cmd = 'cd '.$this->dsPathLocal.' && shpd-server app-fullupgrade';		
 		passthru($cmd);
 
 		return TRUE;
@@ -174,7 +187,7 @@ class DSManager extends Utility
 		echo "# syncing attachments\n";
 		utils::mkDir($this->dsPathLocal.'att');
 
-		$cmd = 'rsync -azk -e "ssh " $USER@'.$this->params['server'].':'.$this->dsPathRemote.'att '.$this->dsPathLocal;
+		$cmd = 'rsync -azk --info=progress2 -e "ssh " $USER@'.$this->params['server'].':'.$this->dsPathRemote.'att '.$this->dsPathLocal;
 		//echo $cmd."\n";
 		passthru($cmd);
 
@@ -212,8 +225,23 @@ class DSManager extends Utility
 		passthru($cmd);
 		$cmd = 'cd '.$this->dsPathLocal.' && shpd-server app-upgrade';
 		passthru($cmd);
+		$cmd = 'cd '.$this->dsPathLocal.' && shpd-server app-fullupgrade';
+		passthru($cmd);
 
 		unlink ($this->dsPathLocal.'/database.sql');
+	}
+
+	public function doFixPerms()
+	{
+		$cmd = 'cd '.$this->dsPathLocal.' && shpd-server ds-fix-perms && shpd-server app-start';
+		if ($this->app->superuser())
+		{
+			passthru($cmd);
+		}
+		else
+		{
+			echo "PLEASE RUN:\nsudo sh -c \"{$cmd}\"\nto fix file permissions\n";				
+		}
 	}
 
 	public function copyFrom (array $params)
@@ -229,7 +257,9 @@ class DSManager extends Utility
 		if (!$this->syncAttachments())
 			return FALSE;
 
-		$this->restoreDb();	
+		$this->restoreDb();
+		
+		$this->doFixPerms();
 
 		return TRUE;	
 	}
@@ -251,6 +281,28 @@ class DSManager extends Utility
 		$this->downloadLiveBackup();	
 		$this->restoreDb();
 
+		$this->doFixPerms();
+
 		return TRUE;	
+	}
+
+	public function fixPermsDir($dir)
+	{
+		$cmd = 'find "'.$dir.'" -type d -print0 | xargs -0 chmod 770';
+		passthru($cmd);
+
+		$cmd = 'find "'.$dir.'" -type f -print0 | xargs -0 chmod 660';
+		passthru($cmd);
+
+		$cmd = 'chown -R shpd:shpd "'.$dir.'"';
+		passthru($cmd);
+	}
+
+	public function fixPerms()
+	{
+		$this->fixPermsDir('att');
+		$this->fixPermsDir('config');
+		$this->fixPermsDir('templates');
+		$this->fixPermsDir('tmp');
 	}
 }
