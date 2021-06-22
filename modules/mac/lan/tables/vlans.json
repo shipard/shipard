@@ -16,7 +16,7 @@
 		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
 	],
 	"views": [
-		{"id": "default", "class": "mac.lan.ViewVlans",
+		{"id": "default", "class": "mac.lan.ViewVlans", "help":"prirucka/239",
 			"details": {
 				"preview": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.lan.ViewDetailVlan"}
 			}
@@ -25,7 +25,7 @@
 		{"id": "comboGroups", "class": "mac.lan.ViewVlansComboGroups"}
 	],
 	"forms": [
-		{"id": "default", "class": "mac.lan.FormVlan"}
+		{"id": "default", "class": "mac.lan.FormVlan", "help":"prirucka/249"}
 	],
 	"addWizard": {"class": "mac.lan.libs.AddWizardVlan"},
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "id"},

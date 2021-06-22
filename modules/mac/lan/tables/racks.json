@@ -22,14 +22,14 @@
 		{"id": "sensorsShow", "class": "e10.base.ListRows", "name": "Zobrazované senzory", "table": "mac.lan.racksSensorsShow", "queryColumn": "rack", "orderColumn": "rowOrder"}
 	],
 	"views": [
-		{"id": "default", "class": "mac.lan.ViewRacks",
+		{"id": "default", "class": "mac.lan.ViewRacks", "help":"prirucka/240",
 			"details": {
 				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.lan.ViewDetailRack"}
 			}
 		}
 	],
 	"forms": [
-		{"id": "default", "class": "mac.lan.FormRack"}
+		{"id": "default", "class": "mac.lan.FormRack", "help":"prirucka/240"}
 	],
 	"reports": [
 		{

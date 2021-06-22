@@ -19,7 +19,7 @@
 		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
 	],
 	"views": [
-		{"id": "default", "class": "mac.lan.ViewWlans",
+		{"id": "default", "class": "mac.lan.ViewWlans", "help":"prirucka/243",
 			"details": {
 				"preview": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.lan.ViewDetailWlan"}
 			}
@@ -29,7 +29,7 @@
 		{"id": "wlanSticker", "name": "Plakát", "class": "mac.lan.ReportWlanSticker"}
 	],
 	"forms": [
-		{"id": "default", "class": "mac.lan.FormWlan"}
+		{"id": "default", "class": "mac.lan.FormWlan", "help":"prirucka/243"}
 	],
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "id"},
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}

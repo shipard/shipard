@@ -21,14 +21,14 @@
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
 	"views": [
-		{"id": "default", "class": "mac.lan.ViewLansAddrRanges",
+		{"id": "default", "class": "mac.lan.ViewLansAddrRanges", "help":"prirucka/242",
 			"details": {
 				"preview": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.lan.ViewDetailLansAddrRange"}
 			}
 		}
 	],
 	"forms": [
-		{"id": "default", "class": "mac.lan.FormLanAddrRange"}
+		{"id": "default", "class": "mac.lan.FormLanAddrRange", "help":"prirucka/242"}
 	],
 	"options": ["configSource"],
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "range"},

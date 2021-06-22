@@ -8,13 +8,13 @@
 		{"id": "ports", "name": "Porty", "type": "memo"}
 	],
 	"views": [
-		{"id": "default", "class": "mac.lan.ViewMacs",
+		{"id": "default", "class": "mac.lan.ViewMacs", "help":"prirucka/247",
 			"details": {
 				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.lan.ViewDetailMac"}
 			}
 		}
 	],
 	"forms": [
-		{"id": "default", "class": "mac.lan.FormMac"}
+		{"id": "default", "class": "mac.lan.FormMac", "help":"prirucka/247"}
 	]
 }

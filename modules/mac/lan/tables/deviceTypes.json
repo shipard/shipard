@@ -14,14 +14,14 @@
 		{"id": "ports", "class": "e10.base.ListRows", "name": "Porty typu zařízení", "table": "mac.lan.deviceTypesPorts", "queryColumn": "deviceType"}
 	],
 	"views": [
-		{"id": "default", "class": "mac.lan.ViewDeviceTypes",
+		{"id": "default", "class": "mac.lan.ViewDeviceTypes", "help":"prirucka/244",
 			"details": {
 				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.lan.ViewDetailDeviceType"}
 			}
 		}
 	],
 	"forms": [
-		{"id": "default", "class": "mac.lan.FormDeviceType"}
+		{"id": "default", "class": "mac.lan.FormDeviceType", "help":"prirucka/244"}
 	],
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}

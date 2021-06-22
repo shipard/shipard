@@ -17,10 +17,10 @@
 		{"id": "cfg", "class": "e10.base.ListRows", "name": "Nastavení", "table": "mac.access.levelsCfg", "queryColumn": "accessLevel", "orderColumn": "rowOrder"}
 	],
 	"views": [
-		{"id": "default", "class": "mac.access.ViewLevels", "detail": "mac.access.ViewDetailLevel"}
+		{"id": "default", "class": "mac.access.ViewLevels", "detail": "mac.access.ViewDetailLevel", "help":"prirucka/255"}
 	],
 	"forms": [
-		{"id": "default", "class": "mac.access.FormLevel"}
+		{"id": "default", "class": "mac.access.FormLevel", "help":"prirucka/255"}
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}

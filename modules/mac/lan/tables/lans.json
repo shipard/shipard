@@ -36,14 +36,14 @@
 		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
 	],
 	"views": [
-		{"id": "default", "class": "mac.lan.ViewLans",
+		{"id": "default", "class": "mac.lan.ViewLans", "help":"prirucka/237",
 			"details": {
 				"preview": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.lan.ViewDetailLanPreview"}
 			}
 		}
 	],
 	"forms": [
-		{"id": "default", "class": "mac.lan.FormLan"}
+		{"id": "default", "class": "mac.lan.FormLan", "help":"prirucka/238"}
 	],
 	"addWizard": {"class": "mac.lan.libs.AddWizardLan"},
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
