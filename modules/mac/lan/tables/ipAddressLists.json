@@ -11,14 +11,14 @@
 		{"id": "rows", "class": "e10.base.ListRows", "name": "Adresy", "table": "mac.lan.ipAddressListsRows", "queryColumn": "addressList", "orderColumn": "rowOrder"}
 	],
 	"views": [
-		{"id": "default", "class": "mac.lan.ViewIPAddressLists",
+		{"id": "default", "class": "mac.lan.ViewIPAddressLists", "help":"prirucka/246",
 			"details": {
 				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.lan.ViewDetailIPAddressList"}
 			}
 		}
 	],
 	"forms": [
-		{"id": "default", "class": "mac.lan.FormIPAddressList"}
+		{"id": "default", "class": "mac.lan.FormIPAddressList", "help":"prirucka/246"}
 	],
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}

@@ -13,14 +13,14 @@
 		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
 	],
 	"views": [
-		{"id": "default", "class": "mac.lan.ViewIPAddress",
+		{"id": "default", "class": "mac.lan.ViewIPAddress", "help":"prirucka/245",
 			"details": {
 				"preview": {"title": "Náhled", "icon": "system/detailOverview", "type": "detail", "class": "mac.lan.ViewDetailIPAddress"}
 			}
 		}
 	],
 	"forms": [
-		{"id": "default", "class": "mac.lan.FormIPAddress"}
+		{"id": "default", "class": "mac.lan.FormIPAddress", "help":"prirucka/245"}
 	],
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}

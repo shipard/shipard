@@ -10,13 +10,13 @@
 		{"id": "macs", "name": "MAC adresy", "type": "memo"}
 	],
 	"views": [
-		{"id": "default", "class": "mac.lan.ViewMacsOnPorts",
+		{"id": "default", "class": "mac.lan.ViewMacsOnPorts", "help":"prirucka/248",
 			"details": {
 				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.lan.ViewDetailMacOnPorts"}
 			}
 		}
 	],
 	"forms": [
-		{"id": "default", "class": "mac.lan.FormMacOnPort"}
+		{"id": "default", "class": "mac.lan.FormMacOnPort", "help":"prirucka/248"}
 	]
 }
