@@ -901,6 +901,10 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		}
 		$params['server'] = $server;
 
+		$user = $this->arg ('user');
+		if (!$user)
+			$user = '$USER';
+		$params['user'] = $user;
 
 		$dsm = new DSManager($this);
 		$dsm->init();
