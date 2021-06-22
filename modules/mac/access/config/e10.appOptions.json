@@ -1,6 +1,6 @@
 {
 	"macAccess": {
-		"name": "Přístup do budovy/areálu", "order": 100, "group": "mac",
+		"name": "Přístup do budovy/areálu", "order": 100, "group": "mac", "help":"prirucka/252",
 		"icon": "settings/accessBuilding",
 		"type": "cfgFile",
 		"options":
@@ -17,4 +17,3 @@
 		]
 	}
 }
-
