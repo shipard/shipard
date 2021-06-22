@@ -106,7 +106,7 @@ class DSManager extends Utility
 
 		utils::mkDir($this->dsPathLocal);
 
-		$cmd = 'scp $USER@'.$this->params['server'].':'.$this->backupFileNameRemote.' '.$this->tmpDir.'/backup.tgz';
+		$cmd = 'scp '.$this->params['user'].'@'.$this->params['server'].':'.$this->backupFileNameRemote.' '.$this->tmpDir.'/backup.tgz';
 		//echo $cmd."\n";
 		passthru($cmd);
 
@@ -187,7 +187,7 @@ class DSManager extends Utility
 		echo "# syncing attachments\n";
 		utils::mkDir($this->dsPathLocal.'att');
 
-		$cmd = 'rsync -azk --info=progress2 -e "ssh " $USER@'.$this->params['server'].':'.$this->dsPathRemote.'att '.$this->dsPathLocal;
+		$cmd = 'rsync -azk --info=progress2 -e "ssh " '.$this->params['user'].'@'.$this->params['server'].':'.$this->dsPathRemote.'att '.$this->dsPathLocal;
 		//echo $cmd."\n";
 		passthru($cmd);
 
