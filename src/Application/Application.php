@@ -2173,7 +2173,7 @@ class Application extends \Shipard\Application\ApplicationCore
 
 	public function sessionCookieName ()
 	{
-		if ($this->cfgItem('useHosting', 0))
+		if ($this->cfgServer['useHosting'])
 			$id = '_shp_sid_'.str_replace('.', '_', $this->cfgItem('hosting.hostingDomain'));
 		else	
 			$id = '_shp_sid_'.str_replace('.', '_', $this->cfgItem('hosting.serverDomain'));
@@ -2183,16 +2183,13 @@ class Application extends \Shipard\Application\ApplicationCore
 
 	public function sessionCookieDomain ()
 	{
-		if ($this->cfgItem('useHosting', 0))
+		if ($this->cfgServer['useHosting'])
 		{
 			$hp = explode('.', $_SERVER['HTTP_HOST']);
 			$hpr = array_reverse($hp);
 			$activeDomain = $hpr[1].'.'.$hpr[0];
 
 			return $activeDomain;
-	
-			//$scd = $this->cfgItem ('hosting.hostingDomain');
-			//return $scd;	
 		}
 
 		return $this->cfgServer['serverDomain'];
@@ -2200,7 +2197,7 @@ class Application extends \Shipard\Application\ApplicationCore
 
 	public function sessionCookiePath ()
 	{
-		if ($this->cfgItem('useHosting', 0))
+		if (!$this->cfgServer['useHosting'])
 			return $this->dsRoot;
 		return '/';
 	}
