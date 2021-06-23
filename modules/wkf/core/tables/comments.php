@@ -181,8 +181,8 @@ class FormComment extends TableForm
 		$this->setFlag ('maximize', 1);
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Text', 'icon' => 'x-content'];
-			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-attachments'];
+			$tabs ['tabs'][] = ['text' => 'Text', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab (TableForm::ltNone);
 					$this->addInputMemo ('text', NULL, TableForm::coFullSizeY);

@@ -612,7 +612,7 @@ class WikiEngine extends Utility
 		if (in_array('w', $section['roles']) || in_array('a', $section['roles']))
 		{
 			$b = [
-				'text' => 'Upravit', 'title' => 'Upravit stránku', 'icon' => 'system/docStateEdit',
+				'text' => 'Upravit', 'title' => 'Upravit stránku', 'icon' => 'system/actionOpen',
 				'actionClass' => 'e10-document-trigger',
 				'attr' => [
 					['k' => 'table', 'v' => 'e10pro.kb.texts'],
@@ -623,7 +623,7 @@ class WikiEngine extends Utility
 			$target[] = $b;
 
 			$b = [
-				'text' => 'Přidat', 'title' => 'Přidat podstránku', 'icon' => 'icon-plus',
+				'text' => 'Přidat', 'title' => 'Přidat podstránku', 'icon' => 'system/actionAdd',
 				'actionClass' => 'e10-document-trigger',
 				'attr' => [
 					['k' => 'table', 'v' => 'e10pro.kb.texts'],
@@ -634,7 +634,7 @@ class WikiEngine extends Utility
 			$target[] = $b;
 
 			$b = [
-				'text' => 'Přesunout', 'title' => 'Přesunout stránku', 'icon' => 'icon-arrow-circle-right',
+				'text' => 'Přesunout', 'title' => 'Přesunout stránku', 'icon' => 'system/actionMove',
 				'actionClass' => 'df2-action-trigger',
 				'attr' => [
 					['k' => 'table', 'v' => 'e10pro.kb.texts'],
@@ -721,7 +721,7 @@ class WikiEngine extends Utility
 
 		if ($enabled)
 		{
-			$b = ['text' => 'Přidat sekci', 'title' => 'Přidat sekci', 'icon' => 'icon-plus', 'attr' => [
+			$b = ['text' => 'Přidat sekci', 'title' => 'Přidat sekci', 'icon' => 'system/actionAdd', 'attr' => [
 				['k' => 'table', 'v' => 'e10pro.kb.sections'],
 				['k' => 'action', 'v' => 'new'],
 				['k' => 'addParams', 'v' => '__wiki=' . $this->wikiNdx]

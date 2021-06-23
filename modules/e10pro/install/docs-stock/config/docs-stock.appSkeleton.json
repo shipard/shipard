@@ -11,7 +11,7 @@
 				"reports": {"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-inventory", "icon": "system/iconReports", "order": 800000}
 			},
 			"buttons": [
-				{"text": "Přepočítat zásoby", "type": "panelaction", "action": "e10doc.inventory.inventoryRecalc", "icon": "cogs", "class": "warning"}
+				{"text": "Přepočítat zásoby", "type": "panelaction", "action": "e10doc.inventory.inventoryRecalc", "icon": "system/actionRegenerate", "class": "warning"}
 			]
 		},
 		"reports": {

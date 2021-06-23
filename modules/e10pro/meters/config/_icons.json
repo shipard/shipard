@@ -6,7 +6,7 @@
 		"mdi": "settings"
 	},
     "tables/e10pro.meters.groups":{
-		"fa5":"fa-cog",
+		    "fa5":"fa-cog",
         "fa5pro":"fa-cog",
         "bsi":"bi-gear",
         "mdi":"settings"

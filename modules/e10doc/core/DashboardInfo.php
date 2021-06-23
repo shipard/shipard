@@ -43,7 +43,7 @@ class DashboardInfo extends \lib\dashboards\Info
 		{
 			$title = [
 
-				['text' => 'Žádné informace pro dnešní den', 'icon' => 'icon-info', 'class' => ''],
+				['text' => 'Žádné informace pro dnešní den', 'icon' => 'system/iconInfo', 'class' => ''],
 
 			];
 			$docs = ['title' => $title, 'content' => []];

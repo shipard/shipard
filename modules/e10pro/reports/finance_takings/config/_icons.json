@@ -1,0 +1,32 @@
+{
+    "iconTable":{
+        "fa5":"fa-table",
+        "fa5pro":"fa-table",
+        "bsi":"bi-table",
+        "mdi":"table_chart"
+    },
+    "iconColumns":{
+        "fa5":"fa-chart-bar",
+		"fa5pro":"fa-chart-bar",
+		"bsi":"bi-bar-chart-line",
+		"mdi":"assessment"
+    },
+    "iconLines":{
+        "fa5":"fa-chart-line",
+		"fa5pro":"fa-chart-line",
+		"bsi":"bi-graph-up",
+		"mdi":"show_chart"
+    },
+    "iconShares":{
+        "fa5":"fa-chart-pie",
+		"fa5pro":"fa-chart-pie",
+		"bsi":"bi-pie-chart-fill",
+		"mdi":"pie_chart"
+    },
+    "iconAll":{
+        "fa5": "fa-file",
+		"fa5pro": "fa-file",
+		"bsi": "bi-file-earmark-fill",
+		"mdi": "insert_drive_file"
+    }
+}

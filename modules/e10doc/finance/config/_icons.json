@@ -79,5 +79,17 @@
         "fa5pro":"fa-gavel",
         "bsi":"bi-journal-text",
         "mdi":"gavel"
+    },
+    "reportTurnover":{
+        "fa5": "fa-handshake",
+		"fa5pro": "fa-handshake",
+		"bsi": "bi-hand-thumbs-up",
+		"mdi": "thumb_up"
+    },
+    "reportResults":{
+        "fa5": "fa-thumbs-up",
+		"fa5pro": "fa-thumbs-up",
+		"bsi": "bi-hand-thumbs-up",
+		"mdi": "thumb_up"
     }
 }

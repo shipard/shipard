@@ -17,8 +17,8 @@ class OverviewMoney extends \lib\dashboards\widgets\BalanceCore
 		$dataBank = $this->app->cache->getCacheItem('lib.cacheItems.BankAccountsStates', TRUE);
 
 		$amounts = [];
-		$amounts[] = ['text' => utils::nf ($dataBank['data']['totalHc']).' ', 'icon' => 'icon-institution', 'class' => 'e10-widget-big-text nowrap'];
-		$amounts[] = ['text' => utils::nf ($dataCash['data']['totalHc']), 'icon' => 'e10-docs-cash', 'class' => 'e10-widget-big-text nowrap'];
+		$amounts[] = ['text' => utils::nf ($dataBank['data']['totalHc']).' ', 'icon' => 'homeBank', 'class' => 'e10-widget-big-text nowrap'];
+		$amounts[] = ['text' => utils::nf ($dataCash['data']['totalHc']), 'icon' => 'homeCashbox', 'class' => 'e10-widget-big-text nowrap'];
 
 		$info = [];
 
@@ -48,7 +48,7 @@ class OverviewMoney extends \lib\dashboards\widgets\BalanceCore
 		$this->addContent (['type' => 'grid', 'cmd' => 'e10-fx-row']);
 
 		$this->addContent (['type' => 'grid', 'cmd' => 'e10-fx-col e10-fx-grow pa1']);
-		$this->addContent(['type' => 'line', 'line' => ['text' => 'Peníze', 'icon' => 'icon-money', 'class' => 'e10-widget-big-number nowrap']]);
+		$this->addContent(['type' => 'line', 'line' => ['text' => 'Peníze', 'icon' => 'homeReportFinance', 'class' => 'e10-widget-big-number nowrap']]);
 		$this->addContent(['type' => 'line', 'line' => $amounts, 'openCell' => 'e10-fx-block', 'closeCell' => 1]);
 		$this->addContent (['type' => 'grid', 'cmd' => 'fxClose']);
 

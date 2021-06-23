@@ -62,7 +62,7 @@ class DashboardIssuesCore extends TableView
 	CONST dvsPanes = 0, dvsPanesMini = 2, dvsPanesOneCol = 3, dvsRows = 1, dvsPanesMicro = 7, dvsViewer = 5;
 
 	var $sourcesIcons = [
-		0 => 'icon-keyboard-o', 1 => 'icon-envelope-o', 2 => 'icon-plug',
+		0 => 'system/iconKeyboard', 1 => 'system/iconEmail', 2 => 'icon-plug',
 		3 => 'icon-android', 4 => 'system/iconWarning', 5 => 'icon-globe'
 	];
 	var $msgKinds;

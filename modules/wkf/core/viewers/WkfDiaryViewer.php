@@ -498,7 +498,7 @@ class WkfDiaryViewer extends TableView
 					if ($comment['author'] === $this->thisUserId)
 					{
 						$tt [] = [
-							'class' => 'e10-small', 'icon' => 'icon-edit',
+							'class' => 'e10-small', 'icon' => 'system/actionOpen',
 							'text' => '', 'title' => 'Opravit', 'type' => 'span',
 							'pk' => $comment['ndx'], 'docAction' => 'edit', 'data-table' => 'wkf.core.comments',
 							'data-srcobjecttype' => 'viewer', 'data-srcobjectid' => $this->vid

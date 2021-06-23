@@ -293,7 +293,7 @@ class ViewerDashboardPersonsAccess extends TableView
 		/*
 		$addButtons[] = [
 			'type' => 'action', 'action' => 'addwizard', 'data-table' => 'e10.persons.persons',
-			'text' => 'Přidat hromadně', 'data-class' => 'mac.access.libs.WizardAddTagsBatch', 'icon' => 'icon-tags',
+			'text' => 'Přidat hromadně', 'data-class' => 'mac.access.libs.WizardAddTagsBatch', 'icon' => 'iconAddInBulk',
 			'class' => 'btn-block', 'actionClass' => 'btn btn-block', 'btnClass' => 'btn-primary',
 			'data-srcobjecttype' => 'widget', 'data-srcobjectid' => '',
 		];

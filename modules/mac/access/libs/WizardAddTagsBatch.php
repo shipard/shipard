@@ -95,7 +95,7 @@ class WizardAddTagsBatch extends Wizard
 	public function createHeader ()
 	{
 		$hdr = [];
-		$hdr ['icon'] = 'icon-tags';
+		$hdr ['icon'] = 'iconAddInBulk';
 		$hdr ['info'][] = ['class' => 'title', 'value' => 'Hromadné přidání klíčů'];
 		$hdr ['info'][] = ['class' => 'info', 'value' => ['text' => 'Nové klíče budou přidány k použití, ale nebudou nikomu přiřazeny', 'icon' => 'icon-plus']];
 

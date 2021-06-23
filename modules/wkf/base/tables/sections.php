@@ -326,7 +326,7 @@ class TableSections extends DbTable
 			$options = [
 				'type' => 'action', 'action' => 'addwizard', 'data-class' => 'wkf.core.forms.SectionUserOptions', 'table' => 'wkf.core.sections',
 				'dropRight' => 1, 'dropRightEl' => 1, 'element' => 'button', 'class' => 'pull-right-absolute',
-				'text' => '', 'title' => 'Nastavení sekce', 'icon' => 'icon-cog', 'btnClass' => 'btn-link pull-right',
+				'text' => '', 'title' => 'Nastavení sekce', 'icon' => 'system/actionUserSettings', 'btnClass' => 'btn-link pull-right',
 				'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $widgetId, 'data-form-element-id' => $viewerId,
 			];
 		}

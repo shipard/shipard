@@ -17,7 +17,7 @@ class DashboardInfo extends \lib\dashboards\Info
 
 		$info = ['class' => '', 'content' => []];
 
-		$i = ['text' => utils::nf($data['data']['sumBaseHc']), 'icon' => 'x-wallet', 'class' => ''];
+		$i = ['text' => utils::nf($data['data']['sumBaseHc']), 'icon' => 'docType/cashReg', 'class' => ''];
 		if ($data['data']['date'] != utils::today('Y-m-d'))
 			$i['suffix'] = utils::datef ($data['data']['date']);
 		$info['content'][] = $i;
@@ -34,7 +34,7 @@ class DashboardInfo extends \lib\dashboards\Info
 
 		$title = [
 				['text' => utils::nf($data['data']['sumBaseHc']), 'class' => 'pull-right'],
-				['text' => 'Prodejna', 'icon' => 'x-wallet', 'class' => ''],
+				['text' => 'Prodejna', 'icon' => 'docType/cashReg', 'class' => ''],
 				['text' => utils::nf($data['data']['cntDocs']), 'class' => 'badge badge-success'],
 		];
 

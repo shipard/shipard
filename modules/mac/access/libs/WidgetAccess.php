@@ -53,7 +53,7 @@ class WidgetAccess extends WidgetBoard
 
 		$tabs['persons'] = ['icon' => 'system/iconUser', 'text' => 'Osoby', 'action' => 'load-persons'];
 		$tabs['keys'] = ['icon' => 'tables/e10.persons.keys', 'text' => 'Klíče', 'action' => 'load-keys'];
-		$tabs['log'] = ['icon' => 'icon-eye', 'text' => 'Přístupy', 'action' => 'load-log'];
+		$tabs['log'] = ['icon' => 'tables/mac.access.log', 'text' => 'Přístupy', 'action' => 'load-log'];
 
 		$this->toolbar = ['tabs' => $tabs];
 

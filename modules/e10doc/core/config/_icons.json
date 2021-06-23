@@ -28,7 +28,7 @@
     "docType/cashReg":{
         "fa5":"fa-wallet",
         "fa5pro":"fa-wallet",
-        "bsi":"bi-wallet2",
+        "bsi":"bi-wallet",
         "mdi":"credit-card"
     },
     "docType/proFormaIn":{
@@ -75,7 +75,7 @@
     },
     "docType/bank":{
         "fa5":"fa-university",
-        "fa5pro":"fa-bank",
+        "fa5pro":"fa-university",
         "bsi":"bi-bank",
         "mdi":"account_balance"
     },

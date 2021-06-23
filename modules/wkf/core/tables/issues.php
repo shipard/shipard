@@ -176,7 +176,7 @@ class TableIssues extends DbTable
 
 	public function createHeader ($recData, $options)
 	{
-		$sourcesIcons = [0 => 'icon-keyboard-o', 1 => 'icon-envelope-o', 2 => 'icon-plug', 3 => 'icon-android', 4 => 'system/iconWarning'];
+		$sourcesIcons = [0 => 'system/iconKeyboard', 1 => 'icon-envelope-o', 2 => 'icon-plug', 3 => 'icon-android', 4 => 'system/iconWarning'];
 		$item = $recData;
 
 		$hdr ['newMode'] = 1;
@@ -191,7 +191,7 @@ class TableIssues extends DbTable
 		$classification = \E10\Base\loadClassification ($this->app(), $this->tableId(), $ndx);
 
 		$title = [];
-		$title[] = ['class' => 'id pull-right ', 'XXicon' => 'icon-keyboard-o', 'text' => '#'.$item ['issueId']];
+		$title[] = ['class' => 'id pull-right ', 'XXicon' => 'iconKeyboard', 'text' => '#'.$item ['issueId']];
 
 		$marks = new \lib\docs\Marks($this->app());
 		$marks->setMark(101);

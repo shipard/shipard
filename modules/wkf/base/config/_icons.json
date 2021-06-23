@@ -113,7 +113,7 @@
     },
     "homeBank":{
         "fa5":"fa-university",
-        "fa5pro":"fa-bank",
+        "fa5pro":"fa-university",
         "bsi":"bi-bank",
         "mdi":"account_balance"
     },
@@ -204,14 +204,14 @@
 	"notificationsIssuesNone":{
 		"fa5":"fa-bell-slash",
         "fa5pro":"fa-bell-slash",
-        "bsi":"bi-bell-slash-fill",
-        "mdi":"notifications_off"
+        "bsi":"bi-star",
+        "mdi":"grade"
 	},
 	"notificationsIssuesStar":{
 		"fa5":"fa-star",
 		"fa5pro":"fa-star",
-		"bsi":"bi-star",
-		"mdi":"grade"
+		"bsi":"bi-star-fill",
+		"mdi":"star"
 	},
 	"notificationsIssuesDot":{
 		"fa5": "fa-circle",

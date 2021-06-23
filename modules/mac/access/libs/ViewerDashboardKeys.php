@@ -34,7 +34,7 @@ class ViewerDashboardKeys extends TableView
 		{
 			$mq [] = ['id' => 'active', 'title' => 'Aktivní', 'icon' => 'system/iconCheck'];
 			$mq [] = ['id' => 'assigned', 'title' => 'Přiřazeno', 'icon' => 'system/iconUser'];
-			$mq [] = ['id' => 'unassigned', 'title' => 'Nepřiřazeno', 'icon' => 'icon-times'];
+			$mq [] = ['id' => 'unassigned', 'title' => 'Nepřiřazeno', 'icon' => 'iconNotAssigned'];
 			$mq [] = ['id' => 'archive', 'title' => 'Archív', 'icon' => 'system/filterArchive'];
 			$mq [] = ['id' => 'all', 'title' => 'Vše', 'icon' => 'system/filterAll'];
 			if ($this->app()->hasRole('pwuser'))
@@ -319,7 +319,7 @@ class ViewerDashboardKeys extends TableView
 		{
 			$row = ['info' => []];
 			$tt = [];
-			$tt[] = ['text' => 'nepřiřazeno', 'icon' => 'icon-times', 'class' => 'e10-small'];
+			$tt[] = ['text' => 'nepřiřazeno', 'icon' => 'iconNotAssigned', 'class' => 'e10-small'];
 			$tt[] = [
 				'action' => 'new', 'data-table' => 'mac.access.tagsAssignments', 'icon' => 'system/actionAdd',
 				'text' => 'Přiřadit',
@@ -352,7 +352,7 @@ class ViewerDashboardKeys extends TableView
 
 		$addButtons[] = [
 			'type' => 'action', 'action' => 'addwizard', 'data-table' => 'e10.persons.persons',
-			'text' => 'Přidat hromadně', 'data-class' => 'mac.access.libs.WizardAddTagsBatch', 'icon' => 'icon-tags',
+			'text' => 'Přidat hromadně', 'data-class' => 'mac.access.libs.WizardAddTagsBatch', 'icon' => 'iconAddInBulk',
 			'class' => 'btn-block', 'actionClass' => 'btn btn-block', 'btnClass' => 'btn-primary',
 			'data-srcobjecttype' => 'widget', 'data-srcobjectid' => '',
 		];

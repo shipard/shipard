@@ -248,11 +248,11 @@ class reportTakings extends \e10doc\core\libs\reports\GlobalReport
 		$engine->create();
 
 		$this->addContent(['tabsId' => 'mainTabs', 'selectedTab' => $this->reportParams ['mainTabs']['value'], 'tabs' => [
-			['title' => ['icon' => 'icon-table', 'text' => 'Tabulka'], 'content' => [['type' => 'table', 'header' => $engine->header, 'table' => $engine->data, 'main' => TRUE]]],
-			['title' => ['icon' => 'icon-bar-chart-o', 'text' => 'Sloupce'], 'content' => [$engine->graphBar]],
-			['title' => ['icon' => 'icon-line-chart', 'text' => 'Čáry'], 'content' => [$engine->graphLine]],
-			['title' => ['icon' => 'icon-pie-chart', 'text' => 'Podíly'], 'content' => [$engine->graphDonut]],
-			['title' => ['icon' => 'icon-file', 'text' => 'Vše'], 'content' => [['type' => 'table', 'header' => $engine->header, 'table' => $engine->data], $engine->graphBar, $engine->graphDonut]]
+			['title' => ['icon' => 'iconTable', 'text' => 'Tabulka'], 'content' => [['type' => 'table', 'header' => $engine->header, 'table' => $engine->data, 'main' => TRUE]]],
+			['title' => ['icon' => 'iconColumns', 'text' => 'Sloupce'], 'content' => [$engine->graphBar]],
+			['title' => ['icon' => 'iconLines', 'text' => 'Čáry'], 'content' => [$engine->graphLine]],
+			['title' => ['icon' => 'iconShares', 'text' => 'Podíly'], 'content' => [$engine->graphDonut]],
+			['title' => ['icon' => 'iconAll', 'text' => 'Vše'], 'content' => [['type' => 'table', 'header' => $engine->header, 'table' => $engine->data], $engine->graphBar, $engine->graphDonut]]
 		]]);
 
 		switch ($this->period)

@@ -75,7 +75,7 @@ class OverviewSales extends \Shipard\Base\CacheItem
 		$this->loadSales();
 
 		$this->data['title'] = 'Obrat';
-		$this->data['icon'] = 'icon-handshake-o';
+		$this->data['icon'] = 'reportTurnover';
 
 		$this->data['sales'] = \E10\sortByOneKey($this->dataSales, 'id', TRUE, TRUE);
 

@@ -109,7 +109,7 @@ class OverviewCompanyResults extends \Shipard\Base\CacheItem
 		$this->loadSales();
 
 		$this->data['title'] = 'Výsledky';
-		$this->data['icon'] = 'icon-thumbs-up';
+		$this->data['icon'] = 'reportResults';
 
 		$this->data['monthRecapitulation'] = $this->monthRecapitulation;
 		$this->data['results'] = \E10\sortByOneKey($this->dataResults, 'id', TRUE, TRUE);
