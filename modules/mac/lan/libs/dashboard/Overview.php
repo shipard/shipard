@@ -251,7 +251,7 @@ class Overview extends Content
 
 			$c .= "<div class='alert-title'>";
 			$c .= $this->app()->ui()->renderTextLine(['text' => $ag['fn'], 'icon' => $ag['icon'], 'class' => 'e10-widget-big-text']);
-			$groupData = $this->overviewData->dgData[$agId];
+			$groupData = $this->overviewData->dgData[$agId] ?? [];
 			if (isset($groupData['dpInfo']) && count($groupData['dpInfo']))
 			{
 

@@ -41,14 +41,16 @@ class DeviceInfo extends Utility
 		$this->deviceRecData = $this->tableDevices->loadItem($this->deviceNdx);
 		$this->lanRecData = $this->tableLans->loadItem($this->deviceRecData['lan']);
 
-		//$macDeviceCfg = json_decode($r['macDeviceCfg'], TRUE);
-		//if (!$macDeviceCfg)
-		//	continue;
-
 		$this->macDeviceTypeCfg = $this->app()->cfgItem('mac.devices.types.' . $this->deviceRecData['macDeviceType'], NULL);
-		$cfgFileName = __SHPD_MODULES_DIR__ . 'mac/devices/devices/' . $this->macDeviceTypeCfg['cfg'] . '.json';
-		$this->macDeviceSubTypeCfg = utils::loadCfgFile($cfgFileName);
-
+		if ($this->macDeviceTypeCfg === NULL)
+		{
+			$this->macDeviceSubTypeCfg = [];
+		}
+		else
+		{
+			$cfgFileName = __SHPD_MODULES_DIR__ . 'mac/devices/devices/' . $this->macDeviceTypeCfg['cfg'] . '.json';
+			$this->macDeviceSubTypeCfg = utils::loadCfgFile($cfgFileName);
+		}
 
 		$this->info['recData'] = $this->deviceRecData;
 
