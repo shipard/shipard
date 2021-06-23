@@ -297,7 +297,7 @@ class DashboardIssuesCore extends TableView
 					$this->subSections[$us][0]['subItems'][$ss] = [
 						['text' => $subSectionCfg['sn'], 'class' => '', 'icon' => $subSectionCfg['icon']],
 						['code' => "<span class='e10-ntf-badge' id='ntf-badge-wkf-s{$ss}' style='display:none;'></span>"],
-						['text' => '', 'icon' => $marks->markCfg['states'][$nv]['icon'].' fa-fw', 'title' => $nt, 'class' => 'pull-right e10-small', 'css' => 'position: absolute; right:0; padding-right: 4px;'],
+						['text' => '', 'icon' => $marks->markCfg['states'][$nv]['icon'], 'title' => $nt, 'class' => 'pull-right e10-small', 'css' => 'position: absolute; right:0; padding-right: 4px;'],
 					];
 				}
 			}
