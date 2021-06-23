@@ -300,7 +300,7 @@ class UICore extends \Shipard\Base\BaseObject
 			if ($button['action'] === '')
 				$c .= "<button type='button' class='$class $btnClass dropdown-toggle' data-toggle='dropdown'>{$icon}{$btnText}<span class='caret'></span></button>";
 			elseif (isset ($button['dropRightEl']))
-				$c .= "<button type='button' class='$btnClass dropdown-toggle' data-toggle='dropdown'><span class='caret' style='border: none; vertical-align: top; width: 1ex;'><i class='fa fa-ellipsis-v'></i></span></button>";
+				$c .= "<button type='button' class='$btnClass dropdown-toggle' data-toggle='dropdown'><span class='caret' style='border: none; vertical-align: top; width: 1ex;'>".$this->app()->ui()->icon('system/iconHamburgerMenu')."</span></button>";
 			elseif (isset ($button['dropRight']))
 				$c .= "<button type='button' class='btn $btnClass dropdown-toggle' data-toggle='dropdown'><span class='caret'></span></button>";
 			else
