@@ -8,10 +8,7 @@ class DeviceMonitoringTemplate extends \E10\TemplateCore
 {
 	public function loadTemplate ($name, $templateFileName = 'page.mustache')
 	{
-		//	$this->urlRoot = 'e10-modules/' . $name;
-		//	$this->templateRoot = $this->app->cfgItem ('modulesPath') . '/' . strtolower(implode ('/', $parts)) . '/';
-
-		$fullTemplateName = __APP_DIR__.'/e10-modules/' . $name;
+		$fullTemplateName = __SHPD_MODULES_ROOT__ . $name;
 
 		if ($templateFileName !== FALSE)
 			$this->template = file_get_contents ($fullTemplateName);
