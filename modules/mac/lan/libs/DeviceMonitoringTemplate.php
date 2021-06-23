@@ -8,7 +8,7 @@ class DeviceMonitoringTemplate extends \E10\TemplateCore
 {
 	public function loadTemplate ($name, $templateFileName = 'page.mustache')
 	{
-		$fullTemplateName = __SHPD_MODULES_ROOT__ . $name;
+		$fullTemplateName = __SHPD_MODULES_DIR__ . $name;
 
 		if ($templateFileName !== FALSE)
 			$this->template = file_get_contents ($fullTemplateName);
