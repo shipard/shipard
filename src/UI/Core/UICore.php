@@ -356,10 +356,10 @@ class UICore extends \Shipard\Base\BaseObject
 
 		if ($markCfg['type'] === 'check')
 		{
-			$iconClass = $this->icons()->cssClass($markCfg['states'][$markValue]['icon']);
+			$iconClass = '';
 			if ($markCfg['states'][$markValue]['classOn'] !== '')
-				$iconClass .= ' '.$markCfg['states'][$markValue]['classOn'];
-			$t .= "<i class='fa-fw $iconClass'></i>";
+				$iconClass = $markCfg['states'][$markValue]['classOn'];
+			$t .= $this->app()->ui()->icon($markCfg['states'][$markValue]['icon'], $iconClass);
 		}
 		$t .= '</span> ';
 

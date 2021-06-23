@@ -41,11 +41,10 @@ class DocMark extends E10ApiObject
 
 		if ($this->markCfg['type'] === 'check')
 		{
-			$iconClass = $this->app()->ui()->icons()->cssClass($this->markCfg['states'][$this->markNewState]['icon']);
+			$iconClass = '';
 			if ($this->markCfg['states'][$this->markNewState]['classOn'] !== '')
-				$iconClass .= ' '.$this->markCfg['states'][$this->markNewState]['classOn'];
-
-			$c .= "<i class='fa-fw $iconClass'></i>";
+				$iconClass = $this->markCfg['states'][$this->markNewState]['classOn'];
+			$c .= $this->app()->ui()->icon($this->markCfg['states'][$this->markNewState]['icon'], $iconClass);
 		}
 
 		$this->code .= $c;
