@@ -2,8 +2,6 @@
 
 
 namespace wkf\core\libs;
-require_once (__APP_DIR__ . '/e10-modules/e10/base/base.php');
-
 use e10\Wizard, e10\str;
 
 
