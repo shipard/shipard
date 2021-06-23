@@ -114,25 +114,39 @@ class ServerManager extends Utility
 	{
 		$develHost = $this->app()->cfgServer['develMode'];
 
-		// -- commands
-		/*
-		$this->hostCheck_CmdSymlink('e10-cron', '/var/www/e10-server/e10/server/php/e10-cron.php');
-		$this->hostCheck_CmdSymlink('e10-test', '/var/www/e10-server/tests/e10-test.php');
-		//$this->hostCheck_CmdSymlink('hostinge10-createdatasource', '/var/www/e10-server/e10pro/hosting/node/tools/hostinge10-createdatasource.php');
-		*/
-
-
 		// -- nginx
-		/*
 		if (is_dir ('/etc/nginx'))
 		{
 			$fn = '/etc/nginx/conf.d/shpd-server.conf';
-			if (!is_file($fn)) {
-				symlink('/etc/nginx/shpd-server.conf', $fn);
-				echo "# nginx restart required!\n";
+			if (!is_file($fn)) 
+			{
+				symlink(__SHPD_ROOT_DIR__.'/etc/nginx/shpd-server.conf', $fn);
+				echo "# `$fn` - nginx restart required!\n";
 			}
 		}
-		*/
+
+		// -- PHP
+		if (is_dir ('/etc/php/8.0'))
+		{
+			$fn = '/etc/php/8.0/fpm/pool.d/zz-shpd-php-fpm.conf';
+			if (!is_file($fn)) 
+			{
+				symlink(__SHPD_ROOT_DIR__.'/etc/php/zz-shpd-php-fpm.conf', $fn);
+				echo "# `$fn` - service php8.0-fpm restart required!\n";
+			}
+			$fn = '/etc/php/8.0/fpm/conf.d/95-shpd-php.ini';
+			if (!is_file($fn)) 
+			{
+				symlink(__SHPD_ROOT_DIR__.'/etc/php/95-shpd-php.ini', $fn);
+				echo "# `$fn` - service php8.0-fpm restart required!\n";
+			}
+			$fn = '/etc/php/8.0/cli/conf.d/95-shpd-php.ini';
+			if (!is_file($fn)) 
+			{
+				symlink(__SHPD_ROOT_DIR__.'/etc/php/95-shpd-php.ini', $fn);
+				echo "# `$fn` - service php8.0-fpm restart required!\n";
+			}
+		}
 
 		// -- crontab
 		if (!$develHost)
