@@ -10,7 +10,6 @@ use \Shipard\Table\DbTable;
 use \Shipard\Base\Content;
 use \Shipard\Viewer\TableView;
 use \e10\ContentRenderer;
-use \Shipard\UI\Core\SystemIcons;
 
 
 class TableForm
@@ -1792,35 +1791,35 @@ class TableForm
 										{
 											case 'archive':
 															$class = ' btn-default';
-															$icon = $this->app()->ui()->systemIcon(SystemIcons::docStateArchive);
+															$icon = $this->app()->ui()->icon('system/docStateArchive');
 															$side = 1;
 															break;
 											case 'confirmed':
 															$class = ' btn-info';
 															if (!isset ($btn['readOnly']) && (!isset($btn['close']) || !$btn['close']))
 																$params .= " data-noclose='1'";
-															$icon = $this->app()->ui()->systemIcon(SystemIcons::docStateConfirmed);
+															$icon = $this->app()->ui()->icon('system/docStateConfirmed');
 															break;
 											case 'edit':
 											case 'concept':
 															$class = ' btn-warning';
 															$params .= " data-noclose='1'";
-															$icon = $this->app()->ui()->systemIcon(SystemIcons::docStateEdit);
+															$icon = $this->app()->ui()->icon('system/docStateEdit');
 															$side = 1;
 															break;
 											case 'delete':
 															$class = ' btn-danger';
-															$icon = $this->app()->ui()->systemIcon(SystemIcons::docStateDelete);
+															$icon = $this->app()->ui()->icon('system/docStateDelete');
 															$side = 1;
 															break;
 											case 'cancel':
 															$class = ' btn-danger';
-															$icon = $this->app()->ui()->systemIcon(SystemIcons::docStateCancel);
+															$icon = $this->app()->ui()->icon('system/docStateCancel');
 															$side = 1;
 															break;
 											default:
 															$class = ' btn-success';
-															$icon = $this->app()->ui()->systemIcon(SystemIcons::docStateDone);
+															$icon = $this->app()->ui()->icon('system/docStateDone');
 															break;
 										}
 										if (isset($btn['buttonClass']))
@@ -1830,7 +1829,7 @@ class TableForm
 										break;
 				case 'cancel':
 										$class = ' btn-default';
-										$icon = $this->app()->ui()->systemIcon(SystemIcons::actionClose);
+										$icon = $this->app()->ui()->icon('system/actionClose');
 										break;
 				case 'wizardNext':
 										$class = ' btn-success';
@@ -1843,7 +1842,7 @@ class TableForm
 				case 'print':
 				case 'printdirect':
 										$class .= ' btn-default df2-action-trigger';
-										$icon = $this->app()->ui()->systemIcon(SystemIcons::actionPrint);
+										$icon = $this->app()->ui()->icon('system/actionPrint');
 										$printerId = isset($btn['printer']) ? $btn['printer'] : '0';
 										$params .= " data-report='{$btn ['data-report']}' data-printer='{$printerId}' data-pk='{$this->recData['ndx']}' data-table='".$this->table->tableId()."'";
 										$side = 1;

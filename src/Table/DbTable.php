@@ -6,7 +6,6 @@ use \e10\utils;
 use \e10\json;
 use \Shipard\Form\TableForm;
 use \Shipard\Utils\Attachments;
-use \Shipard\UI\Core\SystemIcons;
 use \Shipard\Base\ListData;
 
 

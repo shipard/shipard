@@ -5,7 +5,6 @@ use \translation\dicts\e10\base\system\DictSystem;
 use \e10\ContentRenderer;
 use \e10\utils;
 use \e10\uiutils;
-use \Shipard\UI\Core\SystemIcons;
 
 
 class TableView extends \Shipard\Base\BaseObject
@@ -709,14 +708,14 @@ class TableView extends \Shipard\Base\BaseObject
 				switch ($btn['action'])
 				{
 					case 'newform':	$class .= ' btn-success';
-													$icon = $this->app()->ui()->systemIcon(SystemIcons::actionAdd);
+													$icon = $this->app()->ui()->icon('system/actionAdd');
 													break;
 					case 'addwizard':	$class .= ' btn-success';
 														$icon = $this->app()->ui()->icon($btn['icon'] ?? 'system/actionAddWizard');
 														break;
 					case 'new':
 													$class .= ' e10-document-trigger';
-													$icon = $this->app()->ui()->systemIcon(SystemIcons::actionAdd);
+													$icon = $this->app()->ui()->icon('system/actionAdd');
 													if (isset ($btn ['table']))
 														$dataTable = "data-table='{$btn ['table']}' ";
 													break;
@@ -770,7 +769,7 @@ class TableView extends \Shipard\Base\BaseObject
 		{
 			$c .= "<div class='dropdown pull-left'>";
 			$c .= "<button class='btn btn-default dropdown-toggle' type='button' id='dropdownMenu1' data-toggle='dropdown' aria-haspopup='true' aria-expanded='true'>";
-			$c .= $this->app()->ui()->systemIcon(SystemIcons::iconSettings).'&nbsp;';
+			$c .= $this->app()->ui()->icon('system/iconSettings').'&nbsp;';
 			$c .= utils::es('Nástroje');
 			$c .= " <span class='caret'></span>";
 			$c .= "</button>";

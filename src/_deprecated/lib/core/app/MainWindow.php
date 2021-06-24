@@ -3,7 +3,6 @@
 namespace lib\core\app;
 
 use e10\utils, \translation\dicts\e10\base\system\DictSystem;
-use \Shipard\UI\Core\SystemIcons;
 
 /**
  * Class MainWindow
@@ -53,7 +52,7 @@ class MainWindow extends \Shipard\Base\BaseObject
 			$rbc = '';
 			$rbc .=  "<span id='e10-nc-button' class='appMenuButton e10-ntf-button' style='display: block; text-align: right; padding: 1ex; cursor: pointer;' title='Oznamovací centrum'>";
 			$rbc .=  "<span style='width: 2em; display: inline-block; ' id='e10-nc-button-cn'></span> ";
-			$rbc .=  $this->app()->ui()->systemIcon(SystemIcons::actionNotifications);
+			$rbc .=  $this->app()->ui()->icon('system/actionNotifications');
 			$rbc .=  "<span style='display: inline-block; padding-left: 1ex; display: none;' id='e10-nc-button-ra'> <i class='fa fa-play e10-success'></i></span>";
 			$rbc .= '</span>';
 
@@ -184,7 +183,7 @@ class MainWindow extends \Shipard\Base\BaseObject
 
 			$userInfo .=  "<li>";
 
-			$userInfo .=  "<a id='e10-logout-full-button' class='appMenuButton' title='".DictSystem::es(DictSystem::diBtn_Logout)."' href='$logoutUrl'>".$this->app()->ui()->systemIcon(SystemIcons::actionLogout)."</a>";
+			$userInfo .=  "<a id='e10-logout-full-button' class='appMenuButton' title='".DictSystem::es(DictSystem::diBtn_Logout)."' href='$logoutUrl'>".$this->app()->ui()->icon('system/actionLogout')."</a>";
 
 			if ($this->app->mobileMode)
 			{
@@ -192,7 +191,7 @@ class MainWindow extends \Shipard\Base\BaseObject
 				$userInfo .=  "<span id='e10-logout-close-button' class='appMenuButton df2-panelaction-trigger' data-action='go' title='Ukončit' data-href='".'https://'.$portalDomain."' style='display: none;'><i class='fa fa-times'></i></span>";
 			}
 			$userInfo .=  "<span id='e10-nc-button' class='appMenuButton e10-ntf-button' title='Oznamovací centrum'>";
-			$userInfo .=  $this->app()->ui()->systemIcon(SystemIcons::actionNotifications)." <span style='width: 2em; display: inline-block; text-align: right;' id='e10-nc-button-cn'></span>";
+			$userInfo .=  $this->app()->ui()->icon('system/actionNotifications')." <span style='width: 2em; display: inline-block; text-align: right;' id='e10-nc-button-cn'></span>";
 			$userInfo .=  "<span style='display: inline-block; padding-left: 1ex; display: none;' id='e10-nc-button-ra'> <i class='fa fa-play e10-success'></i></span>";
 			$userInfo .= '</span>';
 

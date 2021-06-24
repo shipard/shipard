@@ -10,105 +10,6 @@ class IconsManager extends Utility
 	var array $modulesIcons = [];
 	var $uiDefs = NULL;
 
-	public function createSystemIcons()
-	{
-		$systemIcons = $this->app()->loadCfgFile('ui/icons/system-icons.json');
-		if (!$systemIcons)
-			return $this->err("File 'ui/icons/system-icons.json' not found.");
-
-		ksort($systemIcons);
-
-		$this->createSystemIcons_constFile($systemIcons);
-				
-		$uiDefs = $this->app()->loadCfgFile('ui/ui.json');
-		if (!$uiDefs)
-			return $this->app()->err("ERROR: file `ui/ui.json` not found...");
-
-		$iconsTypesList = [];
-		$iconsTypesListShort = [];
-
-		forEach ($uiDefs['icons'] as $iconsId => $iconsDef)
-		{
-			echo "* {$iconsId}\n";
-			$iconsTypeDef = $this->app()->loadCfgFile('ui/icons/' . $iconsId . '/icons.json');
-			if (!$iconsTypeDef)
-				return $this->app->err("File `".'ui/icons/' . $iconsId . '/icons.json'."` is invalid.");
-
-			$iconsTypesList[$iconsId] = $iconsTypeDef;
-			$iconsTypesListShort[$iconsId] = $iconsTypeDef['fullName'];
-
-			$data = [];	
-			$idx = 0;
-			foreach ($systemIcons as $iconId => $iconDef)
-			{
-				if (!isset($systemIcons[$iconId][$iconsId]))
-				{
-					return $this->app()->err("ERROR: system icon `$iconId` has not definition for `[$iconId]`...");
-				}
-
-				$iconValue = $iconDef[$iconsId];
-
-				$icn = $iconDef[$iconsId] = ['t' => 0, 'v' => $iconValue];
-				$data[$idx] = $icn;
-				$idx++;
-			}
-
-			file_put_contents('ui/icons/'.$iconsId.'/system-icons-map.json', Json::lint($data));
-			file_put_contents('ui/icons/'.$iconsId.'/system-icons-map.data', serialize($data));
-		}
-
-		file_put_contents('modules/e10/server/config/uiIcons.json', Json::lint($iconsTypesList)."\n");
-		file_put_contents('modules/e10/server/config/uiIconsShort.json', Json::lint($iconsTypesListShort)."\n");
-		
-		return TRUE;
-	}
-
-	function createSystemIcons_constFile ($icons)
-	{		
-		$c = '';
-		$c .= "<?php\n\n";
-		$c .= "namespace Shipard\\UI\\Core;\n";
-		$c .= "class SystemIcons\n";
-		$c .= "{\n";
-		//$c .= "\tstatic".'$'."path = __APP_DIR__.'/e10-modules/translation/dicts/".implode("/", $idParts)."';\n";
-		//$c .= "\t static".'$'."baseFileName = '$className';\n";
-		$c .= "\tvar \$iconsId;\n";
-		$c .= "\tprivate ?array ".'$'."data = NULL;\n\n";
-
-		$c .= "\tconst\n";
-		$idNdx = 0;
-		foreach ($icons as $iconId => $iconDef)
-		{
-			$c .= "\t\t";
-			if ($idNdx)
-				$c .= ",";
-			else
-				$c .= " ";
-			$c .= $iconId." = ".$idNdx."\n";
-
-			$idNdx++;
-		}
-		$c .= "\t;\n\n";
-
-		$c .= "
-		public function systemIcon(int \$i)
-		{
-			if (!\$this->data)
-			{
-				\$this->data = unserialize(file_get_contents(__SHPD_ROOT_DIR__ . 'ui/icons/'.\$this->iconsId.'/system-icons-map.data'));
-			}
-	
-			return \$this->data[\$i];
-		}
-		";
-		$c .= "}\n";
-
-		file_put_contents('src/UI/Core/SystemIcons.php', $c);
-
-		return $c;
-	}
-
-
 	protected function scanModulesDir($path, $level)
 	{
 		$scanMask = $path . '/*';
@@ -181,10 +82,17 @@ class IconsManager extends Utility
 
 		$this->scanModulesDir(__SHPD_MODULES_DIR__, 0);
 
+		// -- system icons
 		$systemIcons = $this->app()->loadCfgFile(__SHPD_ROOT_DIR__.'ui/icons/system-icons.json');
 		if (!$systemIcons)
 			return $this->err("File 'ui/icons/system-icons.json' not found.");
 		$this->addModulesIcons($systemIcons, 'system/');
+
+		// -- user icons
+		$userIcons = $this->app()->loadCfgFile(__SHPD_ROOT_DIR__.'ui/icons/user-icons.json');
+		if (!$userIcons)
+			return $this->err("File 'ui/icons/user-icons.json' not found.");
+		$this->addModulesIcons($userIcons);
 
 		forEach ($this->uiDefs['icons'] as $iconsId => $iconsDef)
 		{

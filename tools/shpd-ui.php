@@ -325,13 +325,6 @@ class ShpdUIApp
 		file_put_contents($srcDir.'files.json', json_encode($filesData));
 	}
 
-	public function createSystemIcons()
-	{
-		$im = new \Shipard\CLI\Server\IconsManager($this);
-		$im->createSystemIcons();
-		return TRUE;
-	}
-
 	public function webTemplate ()
 	{
 		$templateCfg = utils::loadCfgFile('template.json');
@@ -443,7 +436,6 @@ class ShpdUIApp
 		{
 			case	'app-themes':			return $this->createAppThemes ();
 			case	'app-js':					return $this->js();
-			case	'system-icons':		return $this->createSystemIcons();
 			case	'web-templates':	return $this->webTemplates ();
 		}
 

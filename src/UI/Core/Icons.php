@@ -3,7 +3,6 @@
 namespace Shipard\UI\Core;
 
 use \Shipard\Base\BaseObject;
-use \Shipard\UI\Core\SystemIcons;
 
 /**
  * Class Icons
@@ -11,7 +10,6 @@ use \Shipard\UI\Core\SystemIcons;
 class Icons extends BaseObject
 {
 	private string $iconsId = 'fa5';
-	private SystemIcons $systemIcons;
 	var ?array $iconsCfg = NULL;
 	private ?array $modulesIcons = NULL;
 
@@ -22,8 +20,6 @@ class Icons extends BaseObject
 	{
 		$this->iconsId = $this->app()->cfgItem ('options.experimental.iconsTheme', 'fa5');
 		$this->iconsCfg = $this->app()->cfgItem ('ui.app.icons.types.'.$this->iconsId);
-		$this->systemIcons = new SystemIcons();
-		$this->systemIcons->iconsId = $this->iconsId;
 	}
 
 	#[deprecated]
@@ -33,12 +29,6 @@ class Icons extends BaseObject
 			return 'fas fa-'.substr($i, 5);
 
 		return 'appIcon-'.$i;
-	}
-
-	public function systemIcon(int $i, string $addClass = '', string $element = 'i')
-	{
-		$si = $this->systemIcons->systemIcon($i);
-		return $this->createIconElement($si, $addClass, $element);
 	}
 
 	public function icon(string $i, string $addClass = '', string $element = 'i')

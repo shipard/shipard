@@ -220,30 +220,30 @@ class UICore extends \Shipard\Base\BaseObject
 			case 'editform':
 			case 'edit-iframe-doc':
 				$btnClass = 'btn-primary';
-				$icon = $this->systemIcon(SystemIcons::actionOpen);
+				$icon = $this->icon('system/actionOpen');
 				break;
 			case 'deleteform':
 				$btnClass = 'btn-danger';
-				$icon = $this->systemIcon(SystemIcons::actionDelete);
+				$icon = $this->icon('system/actionDelete');
 				break;
 			case 'print':
 			case 'printdirect':
-				$icon = $this->systemIcon(SystemIcons::actionPrint);
+				$icon = $this->icon('system/actionPrint');
 				$btnClass = 'btn-default';
 				break;
 			case 'new':
 				$btnClass = 'btn-success';
 				$class .= ' e10-document-trigger';
-				$icon = $this->systemIcon(SystemIcons::actionAdd);
+				$icon = $this->icon('system/actionAdd');
 				break;
 			case 'new-iframe-doc':
 				$btnClass = 'btn-success';
-				$icon = $this->systemIcon(SystemIcons::actionAdd);
+				$icon = $this->icon('system/actionAdd');
 				break;
 			case 'newform':
 				$btnClass = 'btn-success';
 				$class .= ' df2-action-trigger';
-				$icon = $this->systemIcon(SystemIcons::actionAdd);
+				$icon = $this->icon('system/actionAdd');
 				break;
 			case 'addwizard':
 				$btnClass = 'btn-success';
@@ -257,11 +257,11 @@ class UICore extends \Shipard\Base\BaseObject
 				break;
 			case 'moveDown':
 				$btnClass = 'btn-default';
-				$icon = $this->systemIcon(SystemIcons::actionMoveDown);
+				$icon = $this->icon('system/actionMoveDown');
 				break;
 			case 'moveUp':
 				$btnClass = 'btn-default';
-				$icon = $this->systemIcon(SystemIcons::actionMoveUp);
+				$icon = $this->icon('system/actionMoveUp');
 				break;
 			default:
 				$btnClass = 'btn-default';
