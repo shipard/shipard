@@ -2,10 +2,10 @@
 
 namespace lib\ebanking\transactions;
 
-require_once __APP_DIR__ . '/e10-modules/e10doc/bank/bank.php';
+require_once __SHPD_MODULES_DIR__ . 'e10doc/bank/bank.php';
 
 
-use E10\utils, E10\Utility;
+use \Shipard\Base\Utility;
 
 
 /**
