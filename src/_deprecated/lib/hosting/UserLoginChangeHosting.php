@@ -165,7 +165,7 @@ class UserLoginChangeHosting extends Utility
 			$this->changedDbList."\n\n" .
 			"\nS pozdravem\n\n-- \n email: $hostingEmail | hotline: $hostingPhone | $hostingWeb \n";
 
-		$msg = new \E10\MailMessage($this->app);
+		$msg = new \Shipard\Report\MailMessage($this->app);
 		$msg->setFrom ('Technická podpora '.$hostingName, $hostingEmail);
 		$msg->setTo($this->dstLogin);
 		$msg->setSubject('Změna přihlašovacího emailu '.$hostingName);

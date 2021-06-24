@@ -33,7 +33,7 @@ class SendBulkEmailAction extends DocumentAction
 
 	public function sendOne ($onePost)
 	{
-		$msg = new \E10\MailMessage($this->app);
+		$msg = new \Shipard\Report\MailMessage($this->app);
 		$msg->setFrom ($this->bulkEmailRecData['senderEmail'], $this->bulkEmailRecData['senderEmail']);
 		$msg->setTo($onePost['email']);
 

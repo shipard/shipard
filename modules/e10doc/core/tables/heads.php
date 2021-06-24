@@ -1748,7 +1748,7 @@ class TableHeads extends DbTable
 					$msgSubject = $formReport->createReportPart('emailSubject');
 					$msgBody = $formReport->createReportPart('emailBody');
 
-					$msg = new \E10\MailMessage($this->app());
+					$msg = new \Shipard\Report\MailMessage($this->app());
 
 					$msg->setFrom($this->app()->cfgItem('options.core.ownerFullName'), $this->app()->cfgItem('options.core.ownerEmail'));
 					$msg->setTo($emails);

@@ -165,7 +165,7 @@ class ContactForm extends \Shipard\Base\WebForm
 		}
 		else
 		{
-			$msg = new \E10\MailMessage($this->app);
+			$msg = new \Shipard\Report\MailMessage($this->app);
 
 			$msg->setFrom($this->data['name'], $this->data['email']);
 			$q = 'SELECT recid, valueString FROM [e10_base_properties] where [group] = %s AND property = %s AND valueString = %s';

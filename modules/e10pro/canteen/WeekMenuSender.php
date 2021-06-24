@@ -321,7 +321,7 @@ class WeekMenuSender extends Utility
 			$body .= "k dispozici je nový jídelní lístek.\n\n";
 			$body .= "Objednávku jídla uskutečníte kliknutím na odkaz:\n$linkUrl\n\n";
 
-			$msg = new \E10\MailMessage($this->app);
+			$msg = new \Shipard\Report\MailMessage($this->app);
 			$msg->setFrom ($r['canteenName'], $this->app->cfgItem ('options.core.ownerEmail'));
 			$msg->setTo($r['email']);
 

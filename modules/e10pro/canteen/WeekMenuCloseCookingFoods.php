@@ -140,7 +140,7 @@ class WeekMenuCloseCookingFoods extends Utility
 				$body .= "Změnu objednaného jídla uskutečníte kliknutím na odkaz:\n$linkUrl\n\n";
 			}
 
-			$msg = new \E10\MailMessage($this->app);
+			$msg = new \Shipard\Report\MailMessage($this->app);
 			$msg->setFrom ($this->canteenEngine->canteenCfg['fn'], $this->app->cfgItem ('options.core.ownerEmail'));
 			$msg->setTo($emails[0]);
 

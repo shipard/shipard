@@ -43,7 +43,7 @@ class SupplierMenuSender extends Utility
 		$emails = preg_split("/[\s,]+/", $canteen['supplierEmail']);
 		foreach ($emails as $emailTo)
 		{
-			$msg = new \E10\MailMessage($this->app);
+			$msg = new \Shipard\Report\MailMessage($this->app);
 			$msg->setFrom($canteen['fn'], $this->app->cfgItem('options.core.ownerEmail'));
 			$msg->setTo($emailTo);
 
