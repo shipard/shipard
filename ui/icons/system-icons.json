@@ -1084,6 +1084,12 @@
 		"bsi": "bi-hdd-rack-fill",
 		"mdi": "web_asset"
 	},
+	"dashboardModeCamera":{
+		"fa5": "fa-video",
+		"fa5pro": "fa-cctv",
+		"bsi": "bi-camera-video",
+		"mdi": "videocam"
+	},
 
 
 

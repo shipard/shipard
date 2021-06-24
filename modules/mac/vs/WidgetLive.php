@@ -94,16 +94,16 @@ class WidgetLive extends WidgetBoard
 
 		foreach ($this->usersZones as $z)
 		{
-			$icon = 'icon-crosshairs';
+			$icon = 'tables/mac.base.zones';
 			$tabs['subzone-'.$z['ndx'].'-'.$this->zoneNdx] = ['icon' => $icon, 'text' => $z['sn'], 'action' => 'load-subzone-' . $z['ndx'].'-'.$this->zoneNdx];
 		}
 		$this->toolbar = ['tabs' => $tabs];
 
 		$rt = [
-			'viewer-mode-smart' => ['text' =>'', 'icon' => 'icon-th-list', 'action' => 'viewer-mode-smart'],
-			'viewer-mode-matrix1' => ['text' =>'', 'icon' => 'icon-th', 'action' => 'viewer-mode-matrix1'],
-			'viewer-mode-matrix2' => ['text' =>'', 'icon' => 'icon-th-large', 'action' => 'viewer-mode-matrix2'],
-			'viewer-mode-videoArchive' => ['text' =>'', 'icon' => 'icon-video-camera', 'action' => 'viewer-mode-videoArchive'],
+			'viewer-mode-smart' => ['text' =>'', 'icon' => 'system/dashboardModeRows', 'action' => 'viewer-mode-smart'],
+			'viewer-mode-matrix1' => ['text' =>'', 'icon' => 'system/dashboardModeTilesSmall', 'action' => 'viewer-mode-matrix1'],
+			'viewer-mode-matrix2' => ['text' =>'', 'icon' => 'system/dashboardModeTilesBig', 'action' => 'viewer-mode-matrix2'],
+			'viewer-mode-videoArchive' => ['text' =>'', 'icon' => 'system/dashboardModeCamera', 'action' => 'viewer-mode-videoArchive'],
 		];
 
 		$this->toolbar['rightTabs'] = $rt;
