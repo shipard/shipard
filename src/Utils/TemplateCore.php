@@ -367,7 +367,7 @@ class TemplateCore extends \Mustache
 		if (isset ($params['dataItem']))
 		{
 			$l = $this->getVar($params['dataItem']);
-			return $this->app()->ui()->composeTextLine($l);
+			return $this->app->ui()->composeTextLine($l);
 		}
 		return '';
 	}
