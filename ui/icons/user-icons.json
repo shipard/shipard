@@ -1,0 +1,310 @@
+{
+    "user/home":
+    {
+        "_title:cs":"Domeček",
+        "_title:en":"Home",
+        "_tags:cs":"domeček; dům; domov",
+        "_tags:en":"home; house",
+        "fa5": "fa-home",
+		"fa5pro": "fa-home",
+		"bsi": "bi-house-door-fill",
+		"mdi": "home"
+    },
+    "user/user":
+    {
+        "_title:cs":"Uživatel",
+        "_title:en":"Uživatel",
+        "_tags:cs":"uživatel; osoba; člověk",
+        "_tags:en":"user; person",
+        "fa5": "fa-user",
+		"fa5pro": "fa-user",
+		"bsi": "bi-person",
+		"mdi": "person"
+    },
+    "user/addressBook":
+    {
+        "_title:cs":"Adresář",
+        "_title:en":"Address book",
+        "_tags:cs":"adresář; adresa; kontakt",
+        "_tags:en":"address book; address; contact",
+        "fa5": "fa-address-book",
+		"fa5pro": "fa-address-book",
+		"bsi": "bi-person-badge",
+		"mdi": "contact_mail"
+    },
+    "user/other":
+    {
+        "_title:cs":"Ostatní",
+        "_title:en":"Other",
+        "_tags:cs":"ostatní; čáry; další; možnosti",
+        "_tags:en":"other; bars; more; options",
+        "fa5": "fa-bars",
+		"fa5pro": "fa-bars",
+		"bsi": "bi-list",
+		"mdi": "reorder"
+    },
+    "user/bell":
+    {
+        "_title:cs":"Zvonek",
+        "_title:en":"Bell",
+        "_tags:cs":"zvonek; zvon; upozornění; notifikace; oznámení",
+        "_tags:en":"bell; notification; alert; sound",
+        "fa5": "fa-bell",
+		"fa5pro": "fa-bell",
+		"bsi": "bi-bell",
+		"mdi": "notifications"
+    },
+    "user/book":
+    {
+        "_title:cs":"Kniha",
+        "_title:en":"Book",
+        "_tags:cs":"kniha; knížka; wiki; informace",
+        "_tags:en":"book; wiki; informations",
+        "fa5": "fa-book",
+		"fa5pro": "fa-book",
+		"bsi": "bi-book",
+		"mdi": "auto_stories"
+    },
+    "user/bullhorn":
+    {
+        "_title:cs":"Megafon",
+        "_title:en":"Bullhorn",
+        "_tags:cs":"megafon; hlášení; oznámení; diskuze",
+        "_tags:en":"bullhorn; megaphone; discussion; announcement",
+        "fa5":"fa-bullhorn",
+        "fa5pro":"fa-bullhorn",
+        "bsi":"bi-megaphone",
+        "mdi":"campaign"
+    },
+    "user/calculator":
+    {
+        "_title:cs":"Kalkulačka",
+        "_title:en":"Calculator",
+        "_tags:cs":"kalkukačka; výpočet; matematika; číslo; číslice",
+        "_tags:en":"calculator; calculate; math; number",
+        "fa5": "fa-calculator",
+		"fa5pro": "fa-calculator",
+		"bsi": "bi-calculator",
+		"mdi": "calculate"
+    },
+    "user/calendar":
+    {
+        "_title:cs":"Kalendář",
+        "_title:en":"Calendar",
+        "_tags:cs":"kalendář; datum; událost; svátek; dnes; měsíc",
+        "_tags:en":"calendar; date; event; day; month; holiday",
+        "fa5": "fa-calendar-alt",
+		"fa5pro": "fa-calendar-alt",
+		"bsi": "bi-calendar",
+		"mdi": "calendar_today"
+    },
+    "user/camera":
+    {
+        "_title:cs":"Kamera",
+        "_title:en":"Camera",
+        "_tags:cs":"kamera; fotka; záznam; obrázek",
+        "_tags:en":"camera; photo; recording; picture",
+        "fa5": "fa-camera",
+		"fa5pro": "fa-camera",
+		"bsi": "bi-camera-fill",
+		"mdi": "image"
+    },
+    "user/circle":
+    {
+        "_title:cs":"Kruh",
+        "_title:en":"Circle",
+        "_tags:cs":"kruh; kružnice; okruh; prsten; kolo",
+        "_tags:en":"circle; round; ring",
+        "fa5": "fa-circle",
+		"fa5pro": "fa-circle",
+		"bsi": "bi-circle",
+		"mdi": "circle"
+    },
+    "user/clock":
+    {
+        "_title:cs":"Hodiny",
+        "_title:en":"Clock",
+        "_tags:cs":"hodiny; čas",
+        "_tags:en":"clock; time",
+        "fa5": "fa-clock",
+		"fa5pro": "fa-clock",
+		"bsi": "bi-clock",
+		"mdi": "schedule"
+    },
+    "user/comment":
+    {
+        "_title:cs":"Komentář",
+        "_title:en":"Comment",
+        "_tags:cs":"komentář; zpráva; diskuze; bublina; oznámení",
+        "_tags:en":"comment; issue; message; discussion; notification; alert; announcement",
+        "fa5": "fa-comment",
+		"fa5pro": "fa-comment",
+		"bsi": "bi-chat",
+		"mdi": "mode_comment"
+    },
+    "user/database":
+    {
+        "_title:cs":"Databáze",
+        "_title:en":"Database",
+        "_tags:cs":"databáze; data",
+        "_tags:en":"database; data",
+        "fa5": "fa-database",
+		"fa5pro": "fa-database",
+		"bsi": "bi-hdd",
+		"mdi": "save"
+    },
+    "user/envelope":
+    {
+        "_title:cs":"Obálka",
+        "_title:en":"Envelope",
+        "_tags:cs":"obálka; e-mail; email; dopis; poslat; mail",
+        "_tags:en":"envelope; email; letter; sent; mail",
+        "fa5":"fa-envelope",
+        "fa5pro":"fa-envelope",
+        "bsi":"bi-envelope",
+        "mdi":"mail"
+    },
+    "user/eye":
+    {
+        "_title:cs":"Oko",
+        "_title:en":"Eye",
+        "_tags:cs":"oko; přehled",
+        "_tags:en":"eye; overview; view",
+        "fa5": "fa-eye",
+		"fa5pro": "fa-eye",
+		"bsi": "bi-eye-fill",
+		"mdi": "visibility"
+    },
+    "user/bolt":
+    {
+        "_title:cs":"Blesk",
+        "_title:en":"Bolt",
+        "_tags:cs":"blesk; důležité; bouřka; počasí",
+        "_tags:en":"bolt; important; storm; weather",
+        "fa5":"fa-bolt",
+        "fa5pro":"fa-bolt",
+        "bsi":"bi-lightning-fill",
+        "mdi":"bolt"
+    },
+    "user/folder":
+    {
+        "_title:cs":"Složka",
+        "_title:en":"Folder",
+        "_tags:cs":"složka; dokumenty; data; archiv",
+        "_tags:en":"folder; documents; data; archive; file",
+        "fa5":"fa-folder-open",
+        "fa5pro":"fa-folder-open",
+        "bsi":"bi-folder2-open",
+        "mdi":"folder_open"
+    },
+    "user/group":
+    {
+        "_title:cs":"Skupina uživatelů",
+        "_title:en":"Users",
+        "_tags:cs":"skupina; uživatel; spolupráce; člověk; lidé; uživatelé",
+        "_tags:en":"group; user; users; collaboration; person; people",
+        "fa5": "fa-users",
+		"fa5pro": "fa-users",
+		"bsi": "bi-people",
+		"mdi": "groups"
+    },
+    "user/hashtag":
+    {
+        "_title:cs":"Hashtag",
+        "_title:en":"Hashtag",
+        "_tags:cs":"hashtag; znak; tag",
+        "_tags:en":"hashtag; character; symbol; tag",
+        "fa5": "fa-hashtag",
+		"fa5pro": "fa-hashtag",
+		"bsi": "bi-hash",
+		"mdi": "tag"
+    },
+    "user/heart":
+    {
+        "_title:cs":"Srdce",
+        "_title:en":"Heart",
+        "_tags:cs":"srdce; líbí se mi; srdíčko; like",
+        "_tags:en":"heart; like",
+        "fa5": "fa-heart",
+		"fa5pro": "fa-heart",
+		"bsi": "bi-heart",
+		"mdi": "favorite_border"
+    },
+    "user/hourglass":
+    {
+        "_title:cs":"Přesípací hodiny",
+        "_title:en":"Hourglass",
+        "_tags:cs":"přesípací hodiny; čas; měření; měřič; písek; hodiny; přesípač",
+        "_tags:en":"hourglass; time; measurement; measure; sand; clock",
+        "fa5": "fa-hourglass-half",
+		"fa5pro": "fa-hourglass-half",
+		"bsi": "bi-hourglass-split",
+		"mdi": "hourglass_empty"
+    },
+    "user/idCard":
+    {
+        "_title:cs":"Průkaz totožnosti",
+        "_title:en":"ID card",
+        "_tags:cs":"průkaz totožnosti; občanský průkaz; občanka; informace; osoba; uživatel; vizitka",
+        "_tags:en":"id card; id; information; person; user; badge; card",
+        "fa5": "fa-id-card",
+		"fa5pro": "fa-id-card",
+		"bsi": "bi-person-badge",
+		"mdi": "badge"
+    },
+    "user/info":
+    {
+        "_title:cs":"Informace",
+        "_title:en":"Information",
+        "_tags:cs":"informace; info; i; údaje",
+        "_tags:en":"information; info; i",
+        "fa5": "fa-info",
+		"fa5pro": "fa-info",
+		"bsi": "bi-info-lg",
+		"mdi": "info"
+    },
+    "user/keyboard":
+    {
+        "_title:cs":"Klávesnice",
+        "_title:en":"Keyboard",
+        "_tags:cs":"klávesnice; klávesa; klávesy; počítač; zařízení; příslušenství; znak; písmeno; číslo",
+        "_tags:en":"keyboard; key; device; accessory; character; letter; number",
+        "fa5": "fa-info",
+		"fa5pro": "fa-info",
+		"bsi": "bi-info-lg",
+		"mdi": "info"
+    },
+    "user/lifeRing":
+    {
+        "_title:cs":"Záchranný kruh",
+        "_title:en":"Lifebuoy",
+        "_tags:cs":"podpora; záchraný kruh; loď; pomoc",
+        "_tags:en":"help; support; life ring; ship; boat; Lifebuoy",
+        "fa5":"fa-life-ring",
+        "fa5pro":"fa-life-ring",
+        "bsi":"bi-life-preserver",
+        "mdi":"support"
+    },
+    "user/lightBulb":
+    {
+        "_title:cs":"Žárovka",
+        "_title:en":"Light bulb",
+        "_tags:cs":"žárovka; světlo",
+        "_tags:en":"light bulb; bulb; light",
+        "fa5": "fa-info",
+		"fa5pro": "fa-info",
+		"bsi": "bi-info-lg",
+		"mdi": "info"
+    },
+    "user/mapMarker":
+    {
+        "_title:cs":"Poloha",
+        "_title:en":"Location",
+        "_tags:cs":"poloha; mapa; ukazatel",
+        "_tags:en":"location; map; locate; map marker",
+        "fa5": "fa-info",
+		"fa5pro": "fa-info",
+		"bsi": "bi-info-lg",
+		"mdi": "info"
+    }
+}
