@@ -4,18 +4,18 @@
 			"e10doc.debs.libs.reports.GeneralLedger": 2,
 			"e10doc.debs.libs.reports.CheckOpenStates": 2,
 			"e10doc.debs.libs.reports.ReportStatement": 2,
-			"e10doc.debs.libs.reportsReportBalanceSheet": 2,
-			"e10doc.debs.libs.reportsReportCashFlow": 2,
-			"e10doc.debs.libs.reportsReportDocsSummary": 2
+			"e10doc.debs.libs.reports.ReportBalanceSheet": 2,
+			"e10doc.debs.libs.reports.ReportCashFlow": 2,
+			"e10doc.debs.libs.reports.ReportDocsSummary": 2
 		}
 	},
 	"bsass": {
 		"reports": {
 			"e10doc.debs.libs.reports.GeneralLedger": 2,
 			"e10doc.debs.libs.reports.ReportStatement": 2,
-			"e10doc.debs.libs.reportsReportBalanceSheet": 2,
-			"e10doc.debs.libs.reportsReportCashFlow": 2,
-			"e10doc.debs.libs.reportsReportDocsSummary": 2
+			"e10doc.debs.libs.reports.ReportBalanceSheet": 2,
+			"e10doc.debs.libs.reports.ReportCashFlow": 2,
+			"e10doc.debs.libs.reports.ReportDocsSummary": 2
 		}
 	}
 }
