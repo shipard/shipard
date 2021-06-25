@@ -87,7 +87,7 @@ class IncomingEmail extends Utility
 		$text = $this->emailParser->getMessageBody('text');
 		$html = $this->emailParser->getMessageBody('html');
 
-		if ($html !== false)
+		if ($html !== '')
 			$issueRecData['body'] = $html;
 		else
 			$issueRecData['body'] = $text;
