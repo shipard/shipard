@@ -904,6 +904,10 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 			$user = '$USER';
 		$params['user'] = $user;
 
+		$disableAtt = $this->arg ('disable-att');
+		if ($disableAtt)
+			$params['disableAtt'] = 1;
+
 		$dsm = new DSManager($this);
 		$dsm->init();
 		
@@ -1024,6 +1028,8 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 			return FALSE;
 		}
 
+		$channelPath = $this->channelPath($channelConfig['serverInfo']['channelId']);
+
 		// -- reset index.php
 		$index = '';
 		$index .= "<?php\n";
@@ -1034,7 +1040,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		$index .= "}\n";
 		$index .= "else {\n";
 		$index .= "\tdefine ('__SHPD_APP_DIR__', __DIR__);\n";
-		$index .= "\tdefine ('__SHPD_ROOT_DIR__', '".$channelConfig['serverInfo']['channelPath']."');\n";
+		$index .= "\tdefine ('__SHPD_ROOT_DIR__', '".$channelPath."');\n";
 		$index .= "\trequire_once __SHPD_ROOT_DIR__.'src/boot.php';\n";
 		$index .= "";
 		$index .= "\t\$myApp = new \\Shipard\\Application\\Application ();\n";
@@ -1045,15 +1051,35 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 
 
 		// --- www-root dir
-		$wwwTargetPath = $channelConfig['serverInfo']['channelPath'].'www-root/';
+		clearstatcache();
+		$wwwTargetPath = $channelPath.'www-root/';
 		$existedLink = (is_readable('www-root')) ? readlink ('www-root') : FALSE;
+		//echo "    -> check www-root `{$wwwTargetPath}`; existedLink is `".json_encode($existedLink)."`\n";
 		if (!$existedLink || $existedLink !== $wwwTargetPath)
 		{
 			if ($existedLink)
+			{
+				//echo "    -> unlink `www-root`\n";
 				unlink('www-root');
+			}
+			//echo "    -> symlink (`$wwwTargetPath`, `www-root`)\n";
 			symlink($wwwTargetPath, 'www-root');
 		}
 		return TRUE;
+	}
+
+	public function channelPath(string $channelId) : string
+	{
+		if (isset($this->cfgServer['channels'][$channelId]))
+			return $this->cfgServer['channels'][$channelId]['path'];
+
+		$defaultChannelId = $this->cfgServer['defaultChannel'];
+
+		$channelCfg = $this->cfgServer['channels'][$defaultChannelId] ?? NULL;
+		if ($channelCfg)
+			return $channelCfg['path'];
+		
+		return '/usr/lib/shipard';
 	}
 
 	public function machineDeviceId ()

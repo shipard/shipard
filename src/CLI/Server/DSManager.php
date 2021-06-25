@@ -62,6 +62,13 @@ class DSManager extends Utility
 		{
 			return $this->app->err('Invalid server response');
 		}
+		$newServerCfg = \file_get_contents($this->tmpDir.'/from-server.json');
+		if ($newServerCfg !== '')
+		{ // NEW
+			$this->dsPathRemote = '/var/lib/shipard/data-sources/'.$this->params['dsId'].'/';
+			$this->backupFileNameRemote = '/var/lib/shipard/backups/'.$this->todayStr.'/bkp-'.$this->params['dsId'].'-'.$this->todayStr.'.tgz';
+			$this->oldMode = FALSE;
+		}
 
 		$oldServerCfg = \file_get_contents($this->tmpDir.'/from-e10-hosting.cfg');
 		if ($oldServerCfg !== '')
@@ -107,31 +114,52 @@ class DSManager extends Utility
 		utils::mkDir($this->dsPathLocal);
 
 		$cmd = 'scp '.$this->params['user'].'@'.$this->params['server'].':'.$this->backupFileNameRemote.' '.$this->tmpDir.'/backup.tgz';
-		//echo $cmd."\n";
+		//echo "   --> ".$cmd."\n";
 		passthru($cmd);
 
 		$cmd = 'cd '.$this->dsPathLocal.' && tar xf '.$this->tmpDir.'/backup.tgz';
-		//echo $cmd."\n";
+		//echo "  --> ".$cmd."\n";
 		passthru($cmd);
-
-		$this->appStop();
 
 		Utils::mkDir($this->dsPathLocal.'config');
 		Utils::mkDir($this->dsPathLocal.'config/curr');
 		Utils::mkDir($this->dsPathLocal.'config/nginx');
 
+		if (!$this->checkChannel())	
+			return FALSE;
 		if (!$this->checkModules())	
 			return FALSE;
 
+		$this->appStop();
+
 		$cmd = 'cd '.$this->dsPathLocal.' && shpd-server db-create --replace';
-		//echo $cmd."\n";
+		//echo "  --> ".$cmd."\n";
 		passthru($cmd);
 
 		$cmd = 'cd '.$this->dsPathLocal.' && shpd-server app-upgrade';		
+		//echo "  --> ".$cmd."\n";
 		passthru($cmd);
 
 		return TRUE;
 	}
+
+	public function checkChannel()
+	{
+		$channelConfig = $this->loadCfgFile($this->dsPathLocal.'config/_server_channelInfo.json');
+		if (!$channelConfig)
+			return TRUE;
+
+		$channelPath = $this->app()->channelPath($channelConfig['serverInfo']['channelId']);	
+
+		if ($channelPath !== !$channelConfig['serverInfo']['channelPath'])
+		{
+			echo "   ! channelPath for `{$channelConfig['serverInfo']['channelId']}` changed: `{$channelConfig['serverInfo']['channelPath']}` --> `$channelPath`\n";
+			$channelConfig['serverInfo']['channelPath'] = $channelPath;
+			file_put_contents($this->dsPathLocal.'config/_server_channelInfo.json', json_encode($channelConfig));
+		}
+
+		return TRUE;
+	}	
 
 	public function checkModules()
 	{
@@ -184,6 +212,12 @@ class DSManager extends Utility
 
 	public function syncAttachments()
 	{
+		if (isset($this->params['disableAtt']))
+		{
+			echo "# syncing attachments is disable\n";	
+			return TRUE;
+		}
+
 		echo "# syncing attachments\n";
 		utils::mkDir($this->dsPathLocal.'att');
 
