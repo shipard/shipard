@@ -32,6 +32,28 @@
 		"bsi": "bi-person-badge",
 		"mdi": "contact_mail"
     },
+    "user/archive":
+    {
+        "_title:cs":"Archív",
+        "_title:en":"Archive",
+        "_tags:cs":"archív; archiv; soubory; doklady; úložný prostor; složky; evidence",
+        "_tags:en":"archive; files; documents; storage; folders; filling",
+        "fa5":"fa-archive",
+        "fa5pro":"fa-archive",
+        "bsi":"bi-archive",
+        "mdi":"inventory_2"
+    },
+    "user/at":
+    {
+        "_title:cs":"Zavináč",
+        "_title:en":"At",
+        "_tags:cs":"zavináč; e-mail; email; pro",
+        "_tags:en":"at; email; for; recipient",
+        "fa5":"fa-at",
+        "fa5pro":"fa-at",
+        "bsi":"bi-at",
+        "mdi":"alternate_email"
+    },
     "user/other":
     {
         "_title:cs":"Ostatní",
@@ -42,6 +64,28 @@
 		"fa5pro": "fa-bars",
 		"bsi": "bi-list",
 		"mdi": "reorder"
+    },
+    "user/ban":
+    {
+        "_title:cs":"Ban",
+        "_title:en":"Ban",
+        "_tags:cs":"ban; zakázáno; block",
+        "_tags:en":"ban; block; blocked",
+        "fa5":"fa-ban",
+        "fa5pro":"fa-ban",
+        "bsi":"bi-x-circle",
+        "mdi":"hide_source"
+    },
+    "user/battery":
+    {
+        "_title:cs":"Baterka",
+        "_title:en":"Battery",
+        "_tags:cs":"baterka; nabít; výdrž",
+        "_tags:en":"battery; energy; charge",
+        "fa5": "fa-battery-three-quarters",
+		"fa5pro": "fa-battery-three-quarters",
+		"bsi": "bi-battery-half",
+		"mdi": "battery_full"
     },
     "user/bell":
     {
@@ -64,6 +108,28 @@
 		"fa5pro": "fa-book",
 		"bsi": "bi-book",
 		"mdi": "auto_stories"
+    },
+    "user/bookmark":
+    {
+        "_title:cs":"Záložka",
+        "_title:en":"Bookmark",
+        "_tags:cs":"záložka; označení; kniha; knížka",
+        "_tags:en":"bookmark; book; mark",
+        "fa5": "fa-bookmark",
+		"fa5pro": "fa-bookmark",
+		"bsi": "bi-bookmark",
+		"mdi": "bookmark_border"
+    },
+    "user/building":
+    {
+        "_title:cs":"Budova",
+        "_title:en":"Building",
+        "_tags:cs":"budova; stavba; společnost",
+        "_tags:en":"building; business",
+        "fa5":"fa-building",
+        "fa5pro":"fa-building",
+        "bsi":"bi-building",
+        "mdi":"business"
     },
     "user/bullhorn":
     {
@@ -142,6 +208,39 @@
 		"bsi": "bi-chat",
 		"mdi": "mode_comment"
     },
+    "user/code":
+    {
+        "_title:cs":"Kód",
+        "_title:en":"Code",
+        "_tags:cs":"kód; programování; příkaz; software",
+        "_tags:en":"code; software; coding",
+        "fa5":"fa-code",
+        "fa5pro":"fa-code",
+        "bsi":"bi-code-slash",
+        "mdi":"code"
+    },
+    "user/cog":
+    {
+        "_title:cs":"Ozubené kolečko",
+        "_title:en":"Cog",
+        "_tags:cs":"ozubené kolečko; nastavení; možnosti; upravit; nástroje",
+        "_tags:en":"cog; setting; settings; options; edit; gear",
+        "fa5":"fa-cog",
+        "fa5pro":"fa-cog",
+        "bsi":"bi-gear",
+        "mdi":"settings"
+    },
+    "user/cogs":
+    {
+        "_title:cs":"Ozubená kolečka",
+        "_title:en":"Cogs",
+        "_tags:cs":"ozubené kolečko; nastavení; možnosti; upravit; nástroje",
+        "_tags:en":"cog; setting; settings; options; edit; gear",
+        "fa5": "fa-cogs",
+		"fa5pro": "fa-cogs",
+		"bsi": "bi-gear",
+		"mdi": "settings"
+    },
     "user/database":
     {
         "_title:cs":"Databáze",
@@ -152,6 +251,50 @@
 		"fa5pro": "fa-database",
 		"bsi": "bi-hdd",
 		"mdi": "save"
+    },
+    "user/download":
+    {
+        "_title:cs":"Stáhnout",
+        "_title:en":"Download",
+        "_tags:cs":"stáhnout; download; stažení; uložit; soubor",
+        "_tags:en":"download; save; file",
+        "fa5": "fa-download",
+		"fa5pro": "fa-download",
+		"bsi": "bi-download",
+		"mdi": "file_download"
+    },
+    "user/edit":
+    {
+        "_title:cs":"Upravit",
+        "_title:en":"Edit",
+        "_tags:cs":"upravit; spravit; tužka; pero; text",
+        "_tags:en":"edit; re-do; pencil; pen; text",
+        "fa5": "fa-edit",
+		"fa5pro": "fa-edit",
+		"bsi": "bi-pencil-square",
+		"mdi": "edit_note"
+    },
+    "user/ellipsisHorizontal":
+    {
+        "_title:cs":"Elipsa horizontální",
+        "_title:en":"Ellipsis horizontal",
+        "_tags:cs":"elipsa horizontální; elipsa; tečky; další; ostatní; možnosti",
+        "_tags:en":"ellipsis horizontal; ellipsis; dots; other; more; options",
+        "fa5": "fa-ellipsis-h",
+		"fa5pro": "fa-ellipsis-h",
+		"bsi": "bi-three-dots",
+		"mdi": "more_horiz"
+    },
+    "user/ellipsisVertical":
+    {
+        "_title:cs":"Elipsa verticální",
+        "_title:en":"Ellipsis vertical",
+        "_tags:cs":"elipsa verticální; elipsa; tečky; další; ostatní; možnosti",
+        "_tags:en":"ellipsis vertical; ellipsis; dots; other; more; options",
+        "fa5": "fa-ellipsis-v",
+		"fa5pro": "fa-ellipsis-v",
+		"bsi": "bi-three-dots-vertical",
+		"mdi": "more_vert"
     },
     "user/envelope":
     {
@@ -175,6 +318,28 @@
 		"bsi": "bi-eye-fill",
 		"mdi": "visibility"
     },
+    "user/exchange":
+    {
+        "_title:cs":"Prohodit",
+        "_title:en":"Exchange",
+        "_tags:cs":"prohodit; vyměnit; výměna; prohození; šipka; směr",
+        "_tags:en":"exchange; change; arrow; direction",
+        "fa5":"fa-exchange-alt",
+        "fa5pro":"fa-exchange-alt",
+        "bsi":"bi-arrow-left-right",
+        "mdi":"sync_alt"
+    },
+    "user/externalLink":
+    {
+        "_title:cs":"Odkaz",
+        "_title:en":"External link",
+        "_tags:cs":"odkaz; otevřít",
+        "_tags:en":"link; external link; open",
+        "fa5": "fa-external-link-alt",
+		"fa5pro": "fa-external-link-alt",
+		"bsi": "bi-link-45deg",
+		"mdi": "link"
+    },
     "user/bolt":
     {
         "_title:cs":"Blesk",
@@ -185,6 +350,39 @@
         "fa5pro":"fa-bolt",
         "bsi":"bi-lightning-fill",
         "mdi":"bolt"
+    },
+    "user/filter":
+    {
+        "_title:cs":"Filtr",
+        "_title:en":"Filter",
+        "_tags:cs":"filtr; trychtýř; oddělit; skupiny",
+        "_tags:en":"filter; funnel; separate; groups",
+        "fa5": "fa-filter",
+		"fa5pro": "fa-filter",
+		"bsi": "bi-funnel",
+		"mdi": "filter_alt"
+    },
+    "user/fire":
+    {
+        "_title:cs":"Oheň",
+        "_title:en":"Fire",
+        "_tags:cs":"oheň; teplo; kouř; důležité; hoří; živel; dým",
+        "_tags:en":"fire; heat; smoke; important; element",
+        "fa5":"fa-fire",
+        "fa5pro":"fa-fire",
+        "bsi":"bi-lightning-charge",
+        "mdi":"local_fire_department"
+    },
+    "user/flag":
+    {
+        "_title:cs":"Vlajka",
+        "_title:en":"Flag",
+        "_tags:cs":"vlajka; symbol; cíl; začátek",
+        "_tags:en":"flag; symbol; finnish line; end; start",
+        "fa5":"fa-flag",
+        "fa5pro":"fa-flag",
+        "bsi":"bi-flag",
+        "mdi":"flag"
     },
     "user/folder":
     {
@@ -230,6 +428,17 @@
 		"bsi": "bi-heart",
 		"mdi": "favorite_border"
     },
+    "user/history":
+    {
+        "_title:cs":"Historie",
+        "_title:en":"History",
+        "_tags:cs":"historie; hodiny; šipka; vrátit",
+        "_tags:en":"history; clock; arrow; return",
+        "fa5": "fa-history",
+		"fa5pro": "fa-history",
+		"bsi": "bi-clock-history",
+		"mdi": "history"
+    },
     "user/hourglass":
     {
         "_title:cs":"Přesípací hodiny",
@@ -263,16 +472,38 @@
 		"bsi": "bi-info-lg",
 		"mdi": "info"
     },
+    "user/key":
+    {
+        "_title:cs":"Klíč",
+        "_title:en":"Key",
+        "_tags:cs":"klíč; dveře; odemknout; zámek",
+        "_tags:en":"key; door; unlock; lock",
+        "fa5":"fa-key",
+        "fa5pro":"fa-key-skeleton",
+        "bsi":"bi-key",
+        "mdi":"vpn_key"
+    },
     "user/keyboard":
     {
         "_title:cs":"Klávesnice",
         "_title:en":"Keyboard",
         "_tags:cs":"klávesnice; klávesa; klávesy; počítač; zařízení; příslušenství; znak; písmeno; číslo",
         "_tags:en":"keyboard; key; device; accessory; character; letter; number",
-        "fa5": "fa-info",
-		"fa5pro": "fa-info",
-		"bsi": "bi-info-lg",
-		"mdi": "info"
+        "fa5": "fa-keyboard",
+		"fa5pro": "fa-keyboard",
+		"bsi": "bi-keyboard",
+		"mdi": "keyboard"
+    },
+    "user/language":
+    {
+        "_title:cs":"Jazyk",
+        "_title:en":"Language",
+        "_tags:cs":"jazyk; překladač; překlad; přeložit; znaky",
+        "_tags:en":"language; translator; translate; characters",
+        "fa5":"fa-language",
+        "fa5pro":"fa-language",
+        "bsi":"bi-translate",
+        "mdi":"translate"
     },
     "user/lifeRing":
     {
@@ -296,15 +527,290 @@
 		"bsi": "bi-info-lg",
 		"mdi": "info"
     },
+    "user/lock":
+    {
+        "_title:cs":"Zámek",
+        "_title:en":"Lock",
+        "_tags:cs":"zámek; dveře; zamknout; klíč",
+        "_tags:en":"lock; door; key",
+        "fa5":"fa-lock",
+		"fa5pro":"fa-lock-alt",
+		"bsi":"bi-lock-fill",
+		"mdi":"lock"
+    },
+    "user/map":
+    {
+        "_title:cs":"Mapa",
+        "_title:en":"Map",
+        "_tags:cs":"mapa; poloha; směr",
+        "_tags:en":"map;location; locate; directions",
+        "fa5": "fa-map-marked-alt",
+		"fa5pro": "fa-map-marked-alt",
+		"bsi": "bi-map",
+		"mdi": "map"
+    },
     "user/mapMarker":
     {
         "_title:cs":"Poloha",
         "_title:en":"Location",
         "_tags:cs":"poloha; mapa; ukazatel",
         "_tags:en":"location; map; locate; map marker",
-        "fa5": "fa-info",
-		"fa5pro": "fa-info",
-		"bsi": "bi-info-lg",
-		"mdi": "info"
+        "fa5": "fa-map-marker-alt",
+		"fa5pro": "fa-map-marker-alt",
+		"bsi": "bi-geo-alt-fill",
+		"mdi": "place"
+    },
+    "user/microphone":
+    {
+        "_title:cs":"Mikrofon",
+        "_title:en":"Microphone",
+        "_tags:cs":"mikrofon; hlasitost; zvuk; zapnutý zvuk",
+        "_tags:en":"microphone; volume; sound; sound on; mic",
+        "fa5": "fa-microphone",
+		"fa5pro": "fa-microphone",
+		"bsi": "bi-mic",
+		"mdi": "mic"
+    },
+    "user/newspaper":
+    {
+        "_title:cs":"Noviny",
+        "_title:en":"Newspaper",
+        "_tags:cs":"noviny; článek; časopis; média",
+        "_tags:en":"news; newspaper; article; magazine; media",
+        "fa5": "fa-newspaper",
+		"fa5pro": "fa-newspaper",
+		"bsi": "bi-newspaper",
+		"mdi": "article"
+    },
+    "user/paintBrush":
+    {
+        "_title:cs":"Štětec",
+        "_title:en":"Paint brush",
+        "_tags:cs":"štětec; barva; šablona; malování",
+        "_tags:en":"paint brush; brush; paint; template",
+        "fa5": "fa-paint-brush",
+		"fa5pro": "fa-paint-brush",
+		"bsi": "bi-brush",
+		"mdi": "brush"
+    },
+    "user/paperPlane":
+    {
+        "_title:cs":"Vlaštovka",
+        "_title:en":"Paper plane",
+        "_tags:cs":"vlaštovka; papírová vlaštovka; poslat",
+        "_tags:en":"paper plane; sent",
+        "fa5":"fa-paper-plane",
+        "fa5pro":"fa-paper-plane",
+        "bsi":"bi-envelope",
+        "mdi":"send"
+    },
+    "user/pencil":
+    {
+        "_title:cs":"Tužka",
+        "_title:en":"Pencil",
+        "_tags:cs":"tužka; psaní; text; pero; opravit",
+        "_tags:en":"pencil; writing; text; pen; edit",
+        "fa5": "fa-pencil-alt",
+		"fa5pro": "fa-pencil-alt",
+		"bsi": "bi-pencil",
+		"mdi": "edit"
+    },
+    "user/phone":
+    {
+        "_title:cs":"Telefon",
+        "_title:en":"Phone",
+        "_tags:cs":"telefon; mobil; telefonní číslo; číslo; volat; hovor",
+        "_tags:en":"phone; call; mobile phone; number; telephone number; telephone",
+        "fa5": "fa-phone-alt",
+		"fa5pro": "fa-phone-alt",
+		"bsi": "bi-telephone",
+		"mdi": "call"
+    },
+    "user/photo":
+    {
+        "_title:cs":"Fotka",
+        "_title:en":"Photo",
+        "_tags:cs":"fotka; obrázek; portrét; foťák",
+        "_tags:en":"photo; image; portrait; camera",
+        "fa5": "fa-image",
+		"fa5pro": "fa-image",
+		"bsi": "bi-image",
+		"mdi": "photo_camera"
+    },
+    "user/powerOff":
+    {
+        "_title:cs":"Vypnout",
+        "_title:en":"Power off",
+        "_tags:cs":"vypnout; odhlásit se",
+        "_tags:en":"power off; shut down; power; logout; log out",
+        "fa5": "fa-power-off",
+		"fa5pro": "fa-power-off",
+		"bsi": "bi-power",
+		"mdi": "power_settings_new"
+    },
+    "user/reply":
+    {
+        "_title:cs":"Odpovědět",
+        "_title:en":"Reply",
+        "_tags:cs":"odpovědět; zpráva; odpověď; sdílet; email; e-mail",
+        "_tags:en":"reply; answer; message; email; share",
+        "fa5": "fa-reply-all",
+		"fa5pro": "fa-reply-all",
+		"bsi": "bi-reply-all",
+		"mdi": "reply_all"
+    },
+    "user/share":
+    {
+        "_title:cs":"Sdílet",
+        "_title:en":"Share",
+        "_tags:cs":"sdílet; poslat",
+        "_tags:en":"share; sent",
+        "fa5": "fa-share",
+		"fa5pro": "fa-share",
+		"bsi": "bi-box-arrow-up-right",
+		"mdi": "open_in_new"
+    },
+    "user/shareAlt":
+    {
+        "_title:cs":"Sdílet",
+        "_title:en":"Share",
+        "_tags:cs":"sdílet; poslat",
+        "_tags:en":"share; sent",
+        "fa5":"fa-share-alt",
+        "fa5pro":"fa-share-alt",
+        "bsi":"bi-share-fill",
+        "mdi":"share"
+    },
+    "user/shoppingBag":
+    {
+        "_title:cs":"Nákupní taška",
+        "_title:en":"Shopping bag",
+        "_tags:cs":"nákupní taška; taška; nákup; položka; věc; potraviny",
+        "_tags:en":"shopping bag; bag; shopping; shop; item; thing; groceries",
+        "fa5":"fa-shopping-bag",
+        "fa5pro":"fa-shopping-bag",
+        "bsi":"bi-bag-fill",
+        "mdi":"shopping-bag"
+    },
+    "user/signIn":
+    {
+        "_title:cs":"Přihlásit se",
+        "_title:en":"Sign in",
+        "_tags:cs":"přihlásit se; přihlášení; akce",
+        "_tags:en":"sign in; log in; login; signin",
+        "fa5":"fa-sign-in-alt",
+        "fa5pro":"fa-sign-in-alt",
+        "bsi":"bi-box-arrow-in-right",
+        "mdi":"login"
+    },
+    "user/signOut":
+    {
+        "_title:cs":"Odhlásit se",
+        "_title:en":"Sign out",
+        "_tags:cs":"odhlásit se; odhlášení; akce",
+        "_tags:en":"sign out; log out; logout; signout",
+        "fa5": "fa-sign-out-alt",
+		"fa5pro": "fa-sign-out-alt",
+		"bsi": "bi-box-arrow-right",
+		"mdi": "logout"
+    },
+    "user/snowflake":
+    {
+        "_title:cs":"Sněhová vločka",
+        "_title:en":"Snowflake",
+        "_tags:cs":"sněhová vločka; sníh; vločka; počasí; zima; teplota",
+        "_tags:en":"snowflake; snow; weather; snow storm; winter; temperature",
+        "fa5": "fa-snowflake",
+		"fa5pro": "fa-snowflake",
+		"bsi": "bi-snow",
+		"mdi": "ac_unit"
+    },
+    "user/square":
+    {
+        "_title:cs":"Čtverec",
+        "_title:en":"Square",
+        "_tags:cs":"čtverec; tvar; geometrie",
+        "_tags:en":"square; object; shape; geometry",
+        "fa5":"fa-square",
+        "fa5pro":"fa-square",
+        "bsi":"bi-square",
+        "mdi":"check_box_outline_blank"
+    },
+    "user/star":
+    {
+        "_title:cs":"Hvězda",
+        "_title:en":"Star",
+        "_tags:cs":"hvězda; hvězdička; označit; označené; důležité; počasí; nebe; noc; vesmír",
+        "_tags:en":"star; select; selected; important; weather; sky; night; space; grade",
+        "fa5":"fa-star",
+		"fa5pro":"fa-star",
+		"bsi":"bi-star",
+		"mdi":"grade"
+    },
+    "user/starHalf":
+    {
+        "_title:cs":"Hvězda napůl vyplněná",
+        "_title:en":"Half star",
+        "_tags:cs":"hvězda; hvězdička; označit; označené; půlka; půlka hvězdy",
+        "_tags:en":"star; select; selected; half; half star",
+        "fa5":"fa-star-half-alt",
+        "fa5pro":"fa-star-half-alt",
+        "bsi":"bi-star-half",
+        "mdi":"star_half"
+    },
+    "user/tag":
+    {
+        "_title:cs":"Štítek",
+        "_title:en":"Tag",
+        "_tags:cs":"štítek; jméno; označení",
+        "_tags:en":"tag; name; name tag; label",
+        "fa5":"fa-tag",
+        "fa5pro":"fa-tag",
+        "bsi":"bi-tag-fill",
+        "mdi":"local_offer"
+    },
+    "user/tags":
+    {
+        "_title:cs":"Štítky",
+        "_title:en":"Tags",
+        "_tags:cs":"štítek; jméno; označení; štítky",
+        "_tags:en":"tag; name; name tag; label; tags",
+        "fa5":"fa-tags",
+        "fa5pro":"fa-tags",
+        "bsi":"bi-tags-fill",
+        "mdi":"local_offer"
+    },
+    "user/thermometer":
+    {
+        "_title:cs":"Teploměr",
+        "_title:en":"Thermometer",
+        "_tags:cs":"teploměr; teplota; teplo; počasí; měřič",
+        "_tags:en":"thermometer; temperature; weather; meter",
+        "fa5": "fa-thermometer-three-quarters",
+		"fa5pro": "fa-thermometer-three-quarters",
+		"bsi": "bi-thermometer-half",
+		"mdi": "thermostat"
+    },
+    "user/thumbsUp":
+    {
+        "_title:cs":"Palec nahoru",
+        "_title:en":"Thumbs up",
+        "_tags:cs":"palec nahoru; palec; like; líbí se mi; ruka",
+        "_tags:en":"thumbs up; thumb; hand; like",
+        "fa5":"fa-thumbs-up",
+        "fa5pro":"fa-thumbs-up",
+        "bsi":"bi-hand-thumbs-up-fill",
+        "mdi":"thumb_up"
+    },
+    "user/thumbsDown":
+    {
+        "_title:cs":"Palec dolů",
+        "_title:en":"Thumbs down",
+        "_tags:cs":"palec dolů; palec; dislike; nelíbí se mi; ruka",
+        "_tags:en":"thumbs down; thumb; hand; dislike; unlike",
+        "fa5":"fa-thumbs-down",
+        "fa5pro":"fa-thumbs-down",
+        "bsi":"bi-hand-thumbs-down-fill",
+        "mdi":"thumb_down"
     }
 }
