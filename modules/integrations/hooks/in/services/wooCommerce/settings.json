@@ -5,8 +5,7 @@
 			{"id": "dbCounterOrders", "name": "Číselná řada pro objednávky", "type": "int", "reference": "e10doc.base.docnumbers"},
 			{"id": "witemPostage", "name": "Položka Poštovné", "type": "int", "reference": "e10.witems.items"},
 			{"id": "witemDiscount", "name": "Položka Sleva", "type": "int", "reference": "e10.witems.items"},
-			{"id": "centre", "name": "Středisko", "type": "enumInt",
-				"enumCfg": {"cfgItem": "e10doc.centres", "cfgValue": "ndx", "cfgText": "shortName"}}
+			{"id": "centre", "name": "Středisko", "type": "int", "reference": "e10doc.base.centres"}
 		]
 	}
 }

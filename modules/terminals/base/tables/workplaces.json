@@ -6,8 +6,7 @@
 		{"id": "id", "name": "ID", "type": "string", "len": 10},
 
 		{"id": "cashBox", "name": "Pokladna", "type": "int", "reference": "e10doc.base.cashboxes"},
-		{"id": "centre", "name": "Středisko", "type": "enumInt",
-			"enumCfg": {"cfgItem": "e10doc.centres", "cfgValue": "ndx", "cfgText": "shortName"}},
+		{"id": "centre", "name": "Středisko", "type": "int", "reference": "e10doc.base.centres"},
 
 		{"id": "printerDefault", "name": "Běžná tiskárna", "type": "int", "reference": "terminals.base.printers"},
 		{"id": "printerPOS", "name": "Tiskárna pro účtenky", "type": "int", "reference": "terminals.base.printers"},

@@ -10,8 +10,7 @@
 			"enumCfg": {"cfgItem": "e10pro.property.operations", "cfgValue": "", "cfgText": "title"}},
 
 		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
-		{"id": "centre", "name": "Středisko", "type": "enumInt",
-			"enumCfg": {"cfgItem": "e10doc.centres", "cfgValue": "ndx", "cfgText": "shortName"}},
+		{"id": "centre", "name": "Středisko", "type": "int", "reference": "e10doc.base.centres"},
 
 		{"id": "placeFrom", "name": "Z místa", "type": "int", "reference": "e10.base.places"},
 		{"id": "placeTo", "name": "Na místo", "type": "int", "reference": "e10.base.places"},

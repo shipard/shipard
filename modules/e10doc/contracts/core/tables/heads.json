@@ -43,8 +43,7 @@
 		  "enumCfg": {"cfgItem": "e10doc.dstDocStates", "cfgValue": "", "cfgText": "fn"}},
 	  {"id": "dstDocAutoSend", "name": "Automaticky odesílat vystavené doklady", "type": "logical"},
 
-		{"id": "centre", "name": "Středisko", "type": "enumInt",
-			"enumCfg": {"cfgItem": "e10doc.centres", "cfgValue": "ndx", "cfgText": "shortName"}},
+		{"id": "centre", "name": "Středisko", "type": "int", "reference": "e10doc.base.centres"},
 		{"id": "project", "name": "Projekt", "type": "int", "reference": "e10pro.wkf.projects", "module": "e10pro.wkf"},
 		{"id": "wkfProject", "name": "Projekt", "type": "int", "reference": "wkf.base.projects", "module": "wkf.base"},
 	  {"id": "workOrder", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},

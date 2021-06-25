@@ -15,8 +15,7 @@
 		{"id": "priceItem", "name": "Jednotková cena", "label": "Cena/jed", "type": "money", "options": ["saveOnChange"]},
 		{"id": "priceAll", "name": "Cena celkem", "type": "money"},
 
-		{"id": "centre", "name": "Středisko", "type": "enumInt",
-			"enumCfg": {"cfgItem": "e10doc.centres", "cfgValue": "ndx", "cfgText": "shortName"}},
+		{"id": "centre", "name": "Středisko", "type": "int", "reference": "e10doc.base.centres"},
 		{"id": "wkfProject", "name": "Projekt", "type": "int", "reference": "wkf.base.projects", "module": "wkf.base"},
 		{"id": "workOrder", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"}
 	],

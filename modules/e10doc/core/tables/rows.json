@@ -84,8 +84,7 @@
     {"id": "fiscalMonth", "name": "Fiskální období - měsíční", "type": "int", "reference": "e10doc.base.fiscalmonths"},
 
     {"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
-		{"id": "centre", "name": "Středisko", "type": "enumInt",
-			"enumCfg": {"cfgItem": "e10doc.centres", "cfgValue": "ndx", "cfgText": "shortName"}},
+		{"id": "centre", "name": "Středisko", "type": "int", "reference": "e10doc.base.centres"},
 		{"id": "project", "name": "Projekt", "type": "int", "reference": "e10pro.wkf.projects", "module": "e10pro.wkf"},
 		{"id": "wkfProject", "name": "Projekt", "type": "int", "reference": "wkf.base.projects", "module": "wkf.base"},
 		{"id": "workOrder", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
