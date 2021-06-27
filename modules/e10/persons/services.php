@@ -2,7 +2,7 @@
 
 namespace E10\Persons;
 use \Shipard\Utils\Utils;
-
+use \Shipard\Utils\World;
 
 function createNewPerson2 ($app, $personData)
 {
@@ -54,7 +54,12 @@ function createNewPerson2 ($app, $personData)
 			Utils::addToArray ($newAddress, $address, 'street', '');
 			Utils::addToArray ($newAddress, $address, 'city', '');
 			Utils::addToArray ($newAddress, $address, 'zipcode', '');
-			Utils::addToArray ($newAddress, $address, 'country', '');
+			Utils::addToArray ($newAddress, $address, 'country', $app->cfgItem ('options.core.ownerDomicile', 'cz'));
+
+			Utils::addToArray ($newAddress, $address, 'worldCountry', 0);
+			if ($newAddress['worldCountry'] === 0) // TODO: for compatibility with old hosting
+				$newAddress['worldCountry'] = World::countryNdx($app, $newAddress['country']);
+
 			$app->db->query ("INSERT INTO [e10_persons_address]", $newAddress);
 		}
 	}

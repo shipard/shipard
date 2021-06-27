@@ -3,6 +3,7 @@
 namespace E10\Persons;
 
 use \Shipard\Application\Application, E10\TableForm, E10\Wizard, E10\utils, e10\str, \translation\dicts\e10\base\system\DictSystem;
+use \Shipard\Utils\World;
 
 CONST rqtUserSelfRegistration = 0, rqtLostPassword = 1, rqtFirstLogin = 2, rqtInvitationRequest = 3, rqtActivateShipardAccount = 4;
 
@@ -65,7 +66,7 @@ function createNewPerson (\Shipard\Application\Application $app, $personData)
 			utils::addToArray ($newAddress, $address, 'street', '');
 			utils::addToArray ($newAddress, $address, 'city', '');
 			utils::addToArray ($newAddress, $address, 'zipcode', '');
-			utils::addToArray ($newAddress, $address, 'country', '');
+			utils::addToArray ($newAddress, $address, 'worldCountry', 60);
 			$app->db->query ("INSERT INTO [e10_persons_address]", $newAddress);
 		}
 	}
@@ -1372,8 +1373,8 @@ class ListAddress implements \E10\IDocumentList
 			$row ['tableid'] = $this->table->tableId();
 			$row ['recid'] = $this->recData ['ndx'];
 
-			if (!isset($row['country']) || $row['country'] === '')
-				$row['country'] = $this->table->app()->cfgItem ('options.core.ownerDomicile');
+			if (!isset($row['worldCountry']) || intval($row['worldCountry']) === 0)
+				$row['worldCountry'] = World::countryNdx($this->table->app(), $this->table->app()->cfgItem ('options.core.ownerDomicile', 'cz'));
 
 			if (!isset($row['docState']) || $row['docState'] === '')
 				$row['docState'] = 4000;
@@ -1459,10 +1460,12 @@ class ListAddress implements \E10\IDocumentList
 
 		$readOnlyParam = '';
 		$disabledParam = '';
+		$columnOptions = 0;
 		if ($this->formData->readOnly)
 		{
 			$disabledParam = " disabled='disabled'";
 			$readOnlyParam = " readonly='readonly'";
+			$columnOptions |= TableForm::coReadOnly;
 		}
 		$c = "";
 
@@ -1506,12 +1509,16 @@ class ListAddress implements \E10\IDocumentList
 		$c .= "<tr$rowClass><td class='e10-fl-cellLabel'>Město</td><td class='e10-fl-cellInput'><input type='text' name='$inputPrefix.city' class='e10-ef-w50' data-fid='{$this->formData->fid}'$readOnlyParam/></td></tr>";
 		$c .= "<tr$rowClass><td class='e10-fl-cellLabel'>PSČ</td><td class='e10-fl-cellInput'><input type='text' name='$inputPrefix.zipcode' class='e10-ef-w15' data-fid='{$this->formData->fid}'$readOnlyParam/></td></tr>";
 
-		$countries = $this->table->app()->cfgItem ('e10.base.countries');
 		$c .= "<tr$rowClass><td class='e10-fl-cellLabel'>Země</td><td class='e10-fl-cellInput'>";
-			$c .= "<select name='$inputPrefix.country' class='e10-inputEnum' data-fid='{$this->formData->fid}'$disabledParam>";
-			foreach ($countries as $val => $txt)
-				$c .= " <option value='$val'>" . \E10\es ($txt['name']) . "</option>";
-			$c .= "</select>";
+
+		if (!isset($dataItem['worldCountry']))
+			$dataItem['worldCountry'] = World::countryNdx($this->table->app(), $this->table->app()->cfgItem ('options.core.ownerDomicile', 'cz'));
+
+		$tableCountries = $this->table->app()->table('e10.world.countries');
+		$ff = new \Shipard\Form\TableForm($this->tableAddresses, '', '');
+		$ff->recData = $dataItem;
+		$inputC = $tableCountries->columnRefInput ($ff, $this->tableAddresses, 'worldCountry', $columnOptions, 'Země', $inputPrefix.'.');
+		$c .= $inputC ['inputCode'];
 
 		$c .= "</td>";
 		$c .= "</tr>";
@@ -1779,7 +1786,7 @@ class AddWizard extends \Shipard\Form\Wizard
 		$newAddress ['street'] = $this->recData ['street'];
 		$newAddress ['city'] = $this->recData ['city'];
 		$newAddress ['zipcode'] = $this->recData ['zipcode'];
-		$newAddress ['country'] = 'cz';
+		$newAddress ['worldCountry'] = $this->app->cfgItem ('options.core.ownerDomicile', 'cz');//60; // 'cz' - TODO: from any settings
 		$newPerson ['address'][] = $newAddress;
 
 		$newPerson ['ids'][] = array ('type' => 'oid', 'value' => $this->recData ['ic']);
@@ -1791,7 +1798,6 @@ class AddWizard extends \Shipard\Form\Wizard
 		$this->stepResult ['editDocument'] = 1;
 		$this->stepResult ['params'] = ['table' => 'e10.persons.persons', 'pk' => $newPersonNdx];
 	}
-
 }
 
 
@@ -1875,7 +1881,9 @@ class AddWizardFromID extends Wizard
 		$newAddress ['street'] = $this->recData ['street'.$sfx];
 		$newAddress ['city'] = $this->recData ['city'.$sfx];
 		$newAddress ['zipcode'] = $this->recData ['zipcode'.$sfx];
-		$newAddress ['country'] = 'cz';
+		$newAddress ['country'] = $this->app()->cfgItem ('options.core.ownerDomicile', 'cz');
+		$newAddress ['worldCountry'] = World::countryNdx($this->app(), $this->app()->cfgItem ('options.core.ownerDomicile', 'cz'));
+
 		$newPerson ['address'][] = $newAddress;
 
 		if ($this->recData ['idcn'] !== '')

@@ -2,7 +2,7 @@
 
 namespace e10\persons;
 use \E10\DbTable, e10\TableForm, e10\str;
-
+use \Shipard\Utils\World;
 
 /**
  * Class TableAddress
@@ -19,6 +19,7 @@ class TableAddress extends DbTable
 	public function checkBeforeSave (&$recData, $ownerData = NULL)
 	{
 		parent::checkBeforeSave ($recData, $ownerData);
+		$recData['country'] = World::countryId($this->app(), $recData['worldCountry']);
 
 		if (!isset ($recData['docState']) || $recData['docState'] == 0)
 		{
@@ -208,14 +209,15 @@ class FormAddress extends TableForm
 	public function renderForm ()
 	{
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
-
+		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
+		
 		$this->openForm ();
 			$this->addColumnInput ('type');
 			$this->addColumnInput ('specification');
 			$this->addColumnInput ('street');
 			$this->addColumnInput ('city');
 			$this->addColumnInput ('zipcode');
-			$this->addColumnInput ('country');
+			$this->addColumnInput ('worldCountry');
 		$this->closeForm ();
 	}
 }

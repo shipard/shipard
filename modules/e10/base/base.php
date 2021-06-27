@@ -1299,7 +1299,7 @@ class ListRows implements \E10\IDocumentList
 	{
 		$this->listDefinition = $this->headTable->listDefinition ($this->listId);
 		$this->rowsTable = $this->headTable->app()->table ($this->listDefinition ['table']);
-		$this->rowsTableQueryCol = $this->listDefinition ['queryColumn'];
+		$this->rowsTableQueryCol = $this->listDefinition ['queryColumn'] ?? '';
 
 		if (isset($this->listDefinition ['orderColumn']))
 			$this->rowsTableOrderCol = $this->listDefinition ['orderColumn'];

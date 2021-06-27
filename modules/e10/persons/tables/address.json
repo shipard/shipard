@@ -10,8 +10,9 @@
     {"id": "street", "sql": "street", "name": "Ulice", "type": "string", "len": 250},
     {"id": "city", "sql": "city", "name": "Město", "type": "string", "len": 90},
     {"id": "zipcode", "sql": "zipcode", "name": "PSČ", "type": "string", "len": 20},
-    {"id": "country", "sql": "country", "name": "Země", "type": "enumString", "len": 2,
-      "enumCfg": {"cfgItem": "e10.base.countries", "cfgValue": "", "cfgText": "name"}},
+    {"id": "worldCountry", "name": "Země", "type": "int", "reference": "e10.world.countries"},
+    {"id": "country", "name": "Země", "type": "enumString", "len": 2,
+      "enumCfg": {"cfgItem": "world.data.countriesIds", "cfgValue": "", "cfgText": "t"}},
 
 	  {"id": "lat", "name": "Zeměpisná šířka", "type": "number", "dec": 7},
 	  {"id": "lon", "name": "Zeměpisná délka", "type": "number", "dec": 7},

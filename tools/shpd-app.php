@@ -1152,6 +1152,12 @@ class E10_App extends Application
 			$this->db()->query ('UPDATE [e10_base_docslog] SET tableId = %s', $dstTableId, ' WHERE tableid = %s', $srcTableId);
 	}
 
+	public function upgradeOldE10()
+	{
+		$u = new \Shipard\Upgrade\OldE10\Upgrade($this);
+		$u->run();
+	}
+
 	public function tests()
 	{
 		$this->robotLogin();
@@ -1225,6 +1231,8 @@ class E10_App extends Application
 			case 	"provozovny":										return $this->provozovny();
 
 			case	"repairDocNumbers":							return $this->repairDocNumbers();
+
+			case	"upgradeOldE10":								return $this->upgradeOldE10();
 
 			case	"tests":												return $this->tests();
 		}

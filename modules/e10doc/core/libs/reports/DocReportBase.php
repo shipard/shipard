@@ -5,7 +5,7 @@ namespace e10doc\core\libs\reports;
 require_once __SHPD_MODULES_DIR__ . 'e10doc/core/core.php';
 
 use \e10\FormReport;
-
+use \Shipard\Utils\World;
 
 /**
  * Class DocReportBase
@@ -49,31 +49,17 @@ class DocReportBase extends FormReport
 	{
 		$personNdx = $this->recData [$columnId];
 		$this->data [$columnId] = $this->tablePersons->loadItem($personNdx);
-		$country = FALSE;
 		if ($personNdx)
 		{
 			$this->lang = $this->data [$columnId]['language'];
 			$this->data [$columnId]['lists'] = $this->tablePersons->loadLists($this->data [$columnId]);
 			if (isset($this->data [$columnId]['lists']['address'][0]))
 				$this->data [$columnId]['address'] = $this->data [$columnId]['lists']['address'][0];
-			// persons country
-			if (isset ($this->data [$columnId]['lists']['address']) && isset ($this->data [$columnId]['lists']['address'][0]))
-				$country = $this->app->cfgItem('e10.base.countries.' . $this->data [$columnId]['lists']['address'][0]['country'], FALSE);
-
-			if ($country)
-			{
-				$this->data [$columnId]['address']['countryName'] = $country['name'];
-				$this->data [$columnId]['address']['countryNameEng'] = $country['engName'];
-				$this->data [$columnId]['address']['countryNameSC2'] = $country['sc2'];
-
-				if ($this->lang == '')
-				{
-					if (is_string($country['lang']))
-						$this->lang = $country['lang'];
-					elseif (is_array($country['lang']))
-						$this->lang = $country['lang'][0];
-				}
-			}
+			
+			// persons country / language
+			World::setCountryInfo($this->app(), $this->data [$columnId]['lists']['address'][0]['worldCountry'], $this->data [$columnId]['address']);
+			if ($this->lang == '' && isset($this->data [$columnId]['address']['countryLangSC2']))
+				$this->lang = $this->data [$columnId]['address']['countryLangSC2'];
 
 			if (!in_array($this->lang, ['de', 'en', 'it', 'sk', 'cs']))
 				$this->lang = 'en';
@@ -105,7 +91,8 @@ class DocReportBase extends FormReport
 			}
 		}
 
-		$this->country = $country;
+		if (isset($this->data [$columnId]['address']['countryNameSC2']))
+			$this->country = $this->data [$columnId]['address']['countryNameSC2'];
 	}
 
 	function loadData_Author ()
@@ -133,10 +120,9 @@ class DocReportBase extends FormReport
 			if (isset($this->data ['owner']['lists']['address'][0]))
 			{
 				$this->data ['owner']['address'] = $this->data ['owner']['lists']['address'][0];
-				$this->ownerCountry = $this->app->cfgItem('e10.base.countries.' . $this->data ['owner']['lists']['address'][0]['country']);
-				$this->data ['owner']['address']['countryName'] = $this->ownerCountry['name'];
-				$this->data ['owner']['address']['countryNameEng'] = $this->ownerCountry['engName'];
-				$this->data ['owner']['address']['countryNameSC2'] = $this->ownerCountry['sc2'];
+				World::setCountryInfo($this->app(), $this->data ['owner']['lists']['address'][0]['worldCountry'], $this->data ['owner']['address']);
+				if (isset($this->data ['owner']['address']['countryNameSC2']))
+					$this->ownerCountry = $this->data ['owner']['address']['countryNameSC2'];
 			}
 			foreach ($this->data ['owner']['lists']['properties'] as $iii)
 			{
@@ -183,19 +169,12 @@ class DocReportBase extends FormReport
 		if (isset($this->data [$columnId]['lists']['address'][0]))
 			$this->data [$columnId]['address'] = $this->data [$columnId]['lists']['address'][0];
 		// persons country
-		$country = FALSE;
 		if (isset ($this->data [$columnId]['lists']['address']) && isset ($this->data [$columnId]['lists']['address'][0]))
-			$country = $this->app->cfgItem ('e10.base.countries.'.$this->data [$columnId]['lists']['address'][0]['country'], FALSE);
-		if ($country)
 		{
-			$this->data [$columnId]['address']['countryName'] = $country['name'];
-			$this->data [$columnId]['address']['countryNameEng'] = $country['engName'];
-			$this->data [$columnId]['address']['countryNameSC2'] = $country['sc2'];
-
-			if ($this->lang == '')
-				$this->lang = $country['lang'];
+			World::setCountryInfo($this->app(), $this->data [$columnId]['lists']['address'][0]['worldCountry'], $this->data [$columnId]['address']);
+			if ($this->lang == '' && isset($this->data [$columnId]['address']['countryLangSC2']))
+				$this->lang = $this->data [$columnId]['address']['countryLangSC2'];
 		}
-
 		forEach ($this->data [$columnId]['lists']['properties'] as $iii)
 		{
 			if ($iii['group'] != 'ids') continue;
