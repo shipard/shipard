@@ -2,6 +2,7 @@
 
 namespace e10doc\core\libs;
 use \e10\utils;
+use \Shipard\Utils\World;
 
 
 
@@ -17,8 +18,8 @@ class E10Utils
 
 	static function exchangeRate($app, $date, $srcCurrency, $dstCurrency)
 	{
-		$dstCurrencyNdx = world::currencyNdx($app, $dstCurrency);
-		$srcCurrencyNdx = world::currencyNdx($app, $srcCurrency);
+		$dstCurrencyNdx = World::currencyNdx($app, $dstCurrency);
+		$srcCurrencyNdx = World::currencyNdx($app, $srcCurrency);
 
 		$q [] = 'SELECT [values].*, [lists].listType AS listType, [lists].validFrom, [lists].validTo';
 		array_push ($q, ' FROM [e10doc_base_exchangeRatesValues] AS [values]');
