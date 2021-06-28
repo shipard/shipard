@@ -692,6 +692,17 @@
         "bsi":"bi-bag-fill",
         "mdi":"shopping-bag"
     },
+    "user/shoppingCart":
+    {
+        "_title:cs":"Nákupní vozík",
+        "_title:en":"Shopping cart",
+        "_tags:cs":"nákupní vozík; vozík; nákup; položka; věc; potraviny",
+        "_tags:en":"shopping cart; cart; shopping; shop; item; thing; groceries",
+        "fa5":"fa-shopping-cart",
+        "fa5pro":"fa-shopping-cart",
+        "bsi":"bi-cart",
+        "mdi":"shopping_cart"
+    },
     "user/signIn":
     {
         "_title:cs":"Přihlásit se",
@@ -780,6 +791,17 @@
         "bsi":"bi-tags-fill",
         "mdi":"local_offer"
     },
+    "user/terminal":
+    {
+        "_title:cs":"Terminál",
+        "_title:en":"Terminal",
+        "_tags:cs":"terminál; kód; programování",
+        "_tags:en":"terminal; code; programming; coding",
+        "fa5": "fa-terminal",
+		"fa5pro": "fa-terminal",
+		"bsi": "bi-terminal",
+		"mdi": "code"
+    },
     "user/thermometer":
     {
         "_title:cs":"Teploměr",
@@ -812,5 +834,302 @@
         "fa5pro":"fa-thumbs-down",
         "bsi":"bi-hand-thumbs-down-fill",
         "mdi":"thumb_down"
+    },
+    "user/toggleOff":
+    {
+        "_title:cs":"Vypnuto",
+        "_title:en":"Toggle off",
+        "_tags:cs":"vypnuto; vypnout; vypínač; zapínač",
+        "_tags:en":"toggle off; shut down; toggle; turn off",
+        "fa5":"fa-toggle-off",
+        "fa5pro":"fa-toggle-off",
+        "bsi":"bi-toggle-off",
+        "mdi":"toggle_off"
+    },
+    "user/toggleOn":
+    {
+        "_title:cs":"Zapnuto",
+        "_title:en":"Toggle on",
+        "_tags:cs":"zapnuto; zapnout; vypínač; zapínač",
+        "_tags:en":"toggle on; start; toggle; turn on",
+        "fa5": "fa-toggle-on",
+		"fa5pro": "fa-toggle-on",
+		"bsi": "bi-toggle-on",
+		"mdi": "toggle_on"
+    },
+    "user/trash":
+    {
+        "_title:cs":"Koš",
+        "_title:en":"Trash",
+        "_tags:cs":"koš; smetí; vyhodit; smazat",
+        "_tags:en":"trash; bin; take out; delete",
+        "fa5": "fa-trash",
+		"fa5pro": "fa-trash",
+		"bsi": "bi-trash",
+		"mdi": "delete"
+    },
+    "user/upload":
+    {
+        "_title:cs":"Nahrát",
+        "_title:en":"Upload",
+        "_tags:cs":"nahrát; dokument; nahrávání",
+        "_tags:en":"upload; document; uploading",
+        "fa5":"fa-upload",
+        "fa5pro":"fa-upload",
+        "bsi":"bi-upload",
+        "mdi":"file_upload"
+    },
+    "user/userSecret":
+    {
+        "_title:cs":"Anonymní režim",
+        "_title:en":"Secret user",
+        "_tags:cs":"anonymní režim; uživatel; správce; anonymní; incognito",
+        "_tags:en":"secret user; incognito; user; admin",
+        "fa5": "fa-user-secret",
+		"fa5pro": "fa-user-secret",
+		"bsi": "bi-person-square",
+		"mdi": "support_agent"
+    },
+    "user/videoCamera":
+    {
+        "_title:cs":"Video kamera",
+        "_title:en":"Video camera",
+        "_tags:cs":"video kamera; kamera; video; záběr; natáčet",
+        "_tags:en":"video camera; camera; video; shoot",
+        "fa5": "fa-video",
+		"fa5pro": "fa-video",
+		"bsi": "bi-camera-video",
+		"mdi": "videocam"
+    },
+    "user/volumeDown":
+    {
+        "_title:cs":"Nízká hlasitost",
+        "_title:en":"Volume down",
+        "_tags:cs":"nízká hlasitost; hlasitost; vyzvánění; zvuk",
+        "_tags:en":"volume down; low volume; volume; ring tone; sound",
+        "fa5": "fa-volume-down",
+		"fa5pro": "fa-volume-down",
+		"bsi": "bi-volume-down",
+		"mdi": "volume_down"
+    },
+    "user/volumeOff":
+    {
+        "_title:cs":"Tichý režim",
+        "_title:en":"Volume off",
+        "_tags:cs":"tichý režim; ticho; hlasitost; vyzvánění; zvuk",
+        "_tags:en":"volume off; silence; volume; ring tone; sound",
+        "fa5": "fa-volume-off",
+		"fa5pro": "fa-volume-off",
+		"bsi": "bi-volume-down",
+		"mdi": "volume_mute"
+    },
+    "user/volumeUp":
+    {
+        "_title:cs":"Vysoká hlasitost",
+        "_title:en":"Volume up",
+        "_tags:cs":"vysoká hlasitost; hlasitost; vyzvánění; zvuk",
+        "_tags:en":"volume up; volume; ring tone; sound",
+        "fa5": "fa-volume-up",
+		"fa5pro": "fa-volume-up",
+		"bsi": "bi-volume-up",
+		"mdi": "volume_up"
+    },
+    "user/wheelChair":
+    {
+        "_title:cs":"Invalidní vozík",
+        "_title:en":"Wheelchair",
+        "_tags:cs":"invalidní vozík; vozík; invalida; přístupnost; přístup",
+        "_tags:en":"wheel chair; disability; access; accessibility",
+        "fa5": "fa-wheelchair",
+		"fa5pro": "fa-wheelchair",
+		"bsi": "bi-person-badge",
+		"mdi": "accessible"
+    },
+    "user/wifi":
+    {
+        "_title:cs":"WiFi",
+        "_title:en":"WiFi",
+        "_tags:cs":"wifi; internet; připojení",
+        "_tags:en":"wifi; internet; connection",
+        "fa5": "fa-wifi",
+		"fa5pro": "fa-wifi",
+		"bsi": "bi-wifi",
+		"mdi": "wifi"
+    },
+    "user/blind":
+    {
+        "_title:cs":"WiFi",
+        "_title:en":"WiFi",
+        "_tags:cs":"wifi; internet; připojení",
+        "_tags:en":"wifi; internet; connection",
+        "fa5": "fa-wifi",
+		"fa5pro": "fa-wifi",
+		"bsi": "bi-wifi",
+		"mdi": "wifi"
+    },
+    "user/universalAccess":
+    {
+        "_title:cs":"Přístup",
+        "_title:en":"Universal access",
+        "_tags:cs":"přístup; přístupnost; uživatel",
+        "_tags:en":"universal access; access; user",
+        "fa5":"fa-universal-access",
+        "fa5pro":"fa-universal-access",
+        "bsi":"bi-patch-check",
+        "mdi":"local_police"
+    },
+    "user/handPointer":
+    {
+        "_title:cs":"Ukázat",
+        "_title:en":"Hand pointer",
+        "_tags:cs":"ukázat; ukazovač; ruka",
+        "_tags:en":"hand pointer; pointer; point; hand",
+        "fa5": "fa-hand-pointer",
+		"fa5pro": "fa-hand-pointer",
+		"bsi": "bi-hand-index",
+		"mdi": "touch_app"
+    },
+    "user/automobile":
+    {
+        "_title:cs":"Osobní automobil",
+        "_title:en":"Automobile",
+        "_tags:cs":"osobní automobil; automobil; auto; dopravní prostředek; doprava; přeprava",
+        "_tags:en":"automobile; car; vehicle; mean of transport; transport",
+        "fa5": "fa-hand-pointer",
+		"fa5pro": "fa-hand-pointer",
+		"bsi": "bi-hand-index",
+		"mdi": "touch_app"
+    },
+    "user/bicycle":
+    {
+        "_title:cs":"Kolo",
+        "_title:en":"Bicycle",
+        "_tags:cs":"kolo; cyklista; koníček; dopravní prostředek; doprava; přeprava",
+        "_tags:en":"bicycle; cyclist; hobby; mean of transport; transport",
+        "fa5": "fa-biking",
+		"fa5pro": "fa-biking",
+		"bsi": "bi-bicycle",
+		"mdi": "directions_bike"
+    },
+    "user/truck":
+    {
+        "_title:cs":"Nákladní automobil",
+        "_title:en":"Truck",
+        "_tags:cs":"nákladní automobil; náklaďák; auto; automobil; dopravní prostředek; doprava; přeprava",
+        "_tags:en":"truck; pickup; car; mean of transport; transport",
+        "fa5":"fa-truck",
+      	"fa5pro":"fa-truck",
+      	"bsi":"bi-truck",
+      	"mdi":"local_shipping"
+    },
+    "user/genderFemale":
+    {
+        "_title:cs":"Žena",
+        "_title:en":"Female",
+        "_tags:cs":"žena; pohlaví; člověk",
+        "_tags:en":"female; gender; person",
+        "fa5":"fa-venus",
+      	"fa5pro":"fa-venus",
+      	"bsi":"bi-gender-female",
+      	"mdi":"female"
+    },
+    "user/genderMale":
+    {
+        "_title:cs":"Muž",
+        "_title:en":"Male",
+        "_tags:cs":"muž; pohlaví; člověk",
+        "_tags:en":"male; gender; person",
+        "fa5":"fa-mars",
+      	"fa5pro":"fa-mars",
+      	"bsi":"bi-gender-male",
+      	"mdi":"male"
+    },
+    "user/nonBinary":
+    {
+        "_title:cs":"Nebinární pohlaví",
+        "_title:en":"Non binary",
+        "_tags:cs":"nebinární; pohlaví; člověk",
+        "_tags:en":"non binary; nonbinary; gender; person",
+        "fa5":"fa-mars",
+      	"fa5pro":"fa-mars",
+      	"bsi":"bi-gender-male",
+      	"mdi":"male"
+    },
+    "user/file":
+    {
+        "_title:cs":"Soubor",
+        "_title:en":"File",
+        "_tags:cs":"soubor; dokument",
+        "_tags:en":"file; document",
+        "fa5": "fa-file",
+		"fa5pro": "fa-file",
+		"bsi": "bi-file-earmark",
+		"mdi": "insert_drive_file"
+    },
+    "user/fileText":
+    {
+        "_title:cs":"Soubor - Text",
+        "_title:en":"Text file",
+        "_tags:cs":"soubor; dokument; text; popis",
+        "_tags:en":"file; document; text; description",
+        "fa5": "fa-file-alt",
+		"fa5pro": "fa-file-alt",
+		"bsi": "bi-file-earmark-text-fill",
+		"mdi": "description"
+    },
+    "user/filePDF":
+    {
+        "_title:cs":"PDF soubor",
+        "_title:en":"PDF file",
+        "_tags:cs":"soubor; dokument; pdf",
+        "_tags:en":"file; document; pdf",
+        "fa5":"fa-file-pdf",
+		"fa5pro":"fa-file-pdf",
+		"bsi":"bi-file-earmark-pdf-fill",
+		"mdi":"picture_as_pdf"
+    },
+    "user/fileUpload":
+    {
+        "_title:cs":"Nahrát soubor",
+        "_title:en":"Upload file",
+        "_tags:cs":"soubor; dokument; nahrát; šipka",
+        "_tags:en":"file; document; upload; arrow",
+        "fa5":"fa-file-upload",
+        "fa5pro":"fa-file-upload",
+        "bsi":"bi-file-earmark-arrow-up-fill",
+        "mdi":"upload_file"
+    },
+    "user/fileDownload":
+    {
+        "_title:cs":"Stáhnout soubor",
+        "_title:en":"Download file",
+        "_tags:cs":"soubor; dokument; stáhnout; šipka",
+        "_tags:en":"file; document; download; arrow",
+        "fa5":"fa-file-download",
+        "fa5pro":"fa-file-download",
+        "bsi":"bi-file-earmark-arrow-down-fill",
+        "mdi":"file_download"
+    },
+    "user/check":
+    {
+        "_title:cs":"Fajfka",
+        "_title:en":"Check",
+        "_tags:cs":"fajka; potvrdit; správně; znak; stav",
+        "_tags:en":"check; okay; confirm; character; state",
+        "fa5":"fa-check",
+        "fa5pro":"fa-check",
+        "bsi":"bi-check",
+        "mdi":"check"
+    },
+    "user/checkSquare":
+    {
+        "_title:cs":"Fajfka - čtverec",
+        "_title:en":"Check - square",
+        "_tags:cs":"fajka; potvrdit; správně; znak; stav; check box",
+        "_tags:en":"check; okay; confirm; character; state; check box",
+        "fa5":"fa-check-square",
+        "fa5pro":"fa-check-square",
+        "bsi":"bi-check-square-fill",
+        "mdi":"check_box"
     }
 }
