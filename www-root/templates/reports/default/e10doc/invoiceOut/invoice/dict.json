@@ -316,5 +316,45 @@
     "en": "Printed by",
     "it": "Stampato da",
     "sk": "Vytlačené aplikácií"
+  },
+  "Zákazník": {
+    "de": "Klient",
+    "en": "Customer",
+    "it": "Cliente",
+    "sk": "Zákazník"
+  },
+  "Strana": {
+    "de": "Seite",
+    "en": "Page",
+    "it": "Pagina",
+    "sk": "Strana"
+  },
+  "z": {
+    "de": "von",
+    "en": "of",
+    "it": "di",
+    "sk": "z"
+  },
+  "Dobrý den": {
+    "en": "Greetings",
+    "sk": "Dobrý deň"
+  },
+  "v příloze Vám zasíláme daňový doklad za poskytované služby": {
+    "en": "in attachments below you will find your invoice for provided services",
+    "sk": "v prílohe Vám zasielame daňový doklad za poskytované služby"
+  },
+  "Děkujeme za včasnou úhradu": {
+    "en": "Thank you for your in-time payment",
+    "sk": "Ďakujeme za včasnú úhradu"
+  },
+  "S pozdravem": {
+    "en": "Best wishes",
+    "sk": "S pozdravom"
+  },
+  "Faktura": {
+    "de": "Rechnung",
+    "en": "Invoice",
+    "it": "Fattura",
+    "sk": "Faktúra"
   }
 }
