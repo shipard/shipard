@@ -318,7 +318,7 @@ class ViewWorkOrders extends TableView
 	{
 		$fts = $this->fullTextSearch ();
 		$mainQuery = $this->mainQueryId ();
-		$bottomTabId = $this->bottomTabId();
+		$bottomTabId = intval($this->bottomTabId());
 
 		$q [] = 'SELECT workOrders.*, ';
 		array_push ($q, ' customers.fullName as customerFullName ');
