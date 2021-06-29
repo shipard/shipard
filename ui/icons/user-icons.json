@@ -1125,11 +1125,209 @@
     {
         "_title:cs":"Fajfka - čtverec",
         "_title:en":"Check - square",
-        "_tags:cs":"fajka; potvrdit; správně; znak; stav; check box",
-        "_tags:en":"check; okay; confirm; character; state; check box",
+        "_tags:cs":"fajka; potvrdit; správně; znak; stav; check box; square",
+        "_tags:en":"check; okay; confirm; character; state; check box; čtverec",
         "fa5":"fa-check-square",
         "fa5pro":"fa-check-square",
-        "bsi":"bi-check-square-fill",
+        "bsi":"bi-check-square",
         "mdi":"check_box"
+    },
+    "user/checkCircle":
+    {
+        "_title:cs":"Fajfka - kolečko",
+        "_title:en":"Check - circle",
+        "_tags:cs":"fajka; potvrdit; správně; znak; stav; check box; kolečko",
+        "_tags:en":"check; okay; confirm; character; state; check box; circle",
+        "fa5": "fa-check-circle",
+		"fa5pro": "fa-check-circle",
+		"bsi": "bi-check-circle",
+		"mdi": "check_circle"
+    },
+    "user/times":
+    {
+        "_title:cs":"Křížek",
+        "_title:en":"Times",
+        "_tags:cs":"křížek; zamítnout; špatně; znak; stav; x; zavřít",
+        "_tags:en":"times; deny; incorrect; character; state; x; close",
+        "fa5":"fa-times",
+        "fa5pro":"fa-times",
+        "bsi":"bi-x-lg",
+        "mdi":"close"
+    },
+    "user/timesCircle":
+    {
+        "_title:cs":"Křížek - kolečko",
+        "_title:en":"Times - circle",
+        "_tags:cs":"křížek; zamítnout; špatně; znak; stav; x; zavřít; kolečko",
+        "_tags:en":"times; deny; incorrect; character; state; x; close; circle",
+        "fa5": "fa-times-circle",
+		"fa5pro": "fa-times-circle",
+		"bsi": "bi-x-circle",
+		"mdi": "highlight_off"
+    },
+    "user/minus":
+    {
+        "_title:cs":"Mínus",
+        "_title:en":"Minus",
+        "_tags:cs":"mínus; znak; zmenšit; matematika; čára; čárka; smazat; vymazat; odstranit; odečíst",
+        "_tags:en":"minus; character; close; hide; mathematics; dash; remove; delete",
+        "fa5": "fa-minus",
+		"fa5pro": "fa-minus",
+		"bsi": "bi-dash-lg",
+		"mdi": "remove"
+    },
+    "user/minusSquare":
+    {
+        "_title:cs":"Mínus - čtverec",
+        "_title:en":"Minus - square",
+        "_tags:cs":"mínus; znak; zmenšit; matematika; smazat; vymazat; odstranit; čtverec",
+        "_tags:en":"minus; character; close; hide; mathematics; remove; delete; square",
+        "fa5":"fa-minus-square",
+        "fa5pro":"fa-minus-square",
+        "bsi":"bi-dash-square",
+        "mdi":"remove_circle"
+    },
+    "user/minusCircle":
+    {
+        "_title:cs":"Mínus - kolečko",
+        "_title:en":"Minus - circle",
+        "_tags:cs":"mínus; znak; zmenšit; matematika; smazat; vymazat; odstranit; kolečko",
+        "_tags:en":"minus; character; close; hide; mathematics; remove; delete; circle",
+        "fa5":"fa-minus-circle",
+        "fa5pro":"fa-minus-circle",
+        "bsi":"bi-dash-circle",
+        "mdi":"remove_circle"
+    },
+    "user/plus":
+    {
+        "_title:cs":"Plus",
+        "_title:en":"Plus",
+        "_tags:cs":"plus; znak; přidat; matematika; sečíst",
+        "_tags:en":"plus; character; add; mathematics",
+        "fa5":"fa-plus",
+        "fa5pro":"fa-plus",
+        "bsi":"bi-plus-lg",
+        "mdi":"add"
+    },
+    "user/plusSquare":
+    {
+        "_title:cs":"Plus - čtverec",
+        "_title:en":"Plus - square",
+        "_tags:cs":"plus; znak; přidat; matematika; sečíst; čtverec",
+        "_tags:en":"plus; character; add; mathematics; square",
+        "fa5": "fa-plus-square",
+		"fa5pro": "fa-plus-square",
+		"bsi": "bi-plus-square",
+		"mdi": "add_circle"
+    },
+    "user/plusCircle":
+    {
+        "_title:cs":"Plus - kolečko",
+        "_title:en":"Plus - circle",
+        "_tags:cs":"plus; znak; přidat; matematika; sečíst; kolečko",
+        "_tags:en":"plus; character; add; mathematics; circle",
+        "fa5": "fa-plus-circle",
+		"fa5pro": "fa-plus-circle",
+		"bsi": "bi-plus-circle",
+		"mdi": "add_circle_outline"
+    },
+    "user/exclamation":
+    {
+        "_title:cs":"Vykřičník",
+        "_title:en":"Exclamation",
+        "_tags:cs":"vykříčník; znak; pozor; upozornění; výstraha; chyba; error; priorita",
+        "_tags:en":"exclamation; character; warning; beware; alert; error; priority",
+        "fa5": "fa-exclamation",
+		"fa5pro": "fa-exclamation",
+		"bsi": "bi-exclamation",
+		"mdi": "priority_high"
+    },
+    "user/exclamationCircle":
+    {
+        "_title:cs":"Vykřičník - kolečko",
+        "_title:en":"Exclamation - circle",
+        "_tags:cs":"vykříčník; znak; pozor; upozornění; výstraha; kolečko; chyba; error; priorita",
+        "_tags:en":"exclamation; character; warning; beware; alert; circle; error; priority",
+        "fa5":"fa-exclamation-circle",
+        "fa5pro":"fa-exclamation-circle",
+        "bsi":"bi-exclamation-circle-fill",
+        "mdi":"error"
+    },
+    "user/exclamationTriangle":
+    {
+        "_title:cs":"Vykřičník - trojúhelník",
+        "_title:en":"Exclamation - triangle",
+        "_tags:cs":"vykříčník; znak; pozor; upozornění; výstraha; trojúhelník; chyba; error; priorita",
+        "_tags:en":"exclamation; character; warning; beware; alert; triangle; error; priority",
+        "fa5": "fa-exclamation-triangle",
+		"fa5pro": "fa-exclamation-triangle",
+		"bsi": "bi-exclamation-triangle",
+		"mdi": "warning_amber"
+    },
+    "user/question":
+    {
+        "_title:cs":"Otazník",
+        "_title:en":"Question",
+        "_tags:cs":"otazník; znak; otázka; neznámé; podpora; nápověda",
+        "_tags:en":"question; character; unknown; support; help",
+        "fa5": "fa-question",
+		"fa5pro": "fa-question",
+		"bsi": "bi-question-lg",
+		"mdi": "help_outline"
+    },
+    "user/questionCircle":
+    {
+        "_title:cs":"Otazník - kolečko",
+        "_title:en":"Question - circle",
+        "_tags:cs":"otazník; znak; otázka; neznámé; podpora; nápověda; kolečko",
+        "_tags:en":"question; character; unknown; support; help; circle",
+        "fa5": "fa-question-circle",
+		"fa5pro": "fa-question-circle",
+		"bsi": "bi-question-circle-fill",
+		"mdi": "help_outline"
+    },
+    "user/moneyBill":
+    {
+        "_title:cs":"Bankovna",
+        "_title:en":"Money bill",
+        "_tags:cs":"bankovka; peníze; platba; zaplatit; banka; hotovost",
+        "_tags:en":"money; bill; payment; money; pay; bank; cash",
+        "fa5":"fa-money-bill-alt",
+        "fa5pro":"fa-money-bill-alt",
+        "bsi":"bi-cash",
+        "mdi":"payments"
+    },
+    "user/creditCard":
+    {
+        "_title:cs":"Kreditní karta",
+        "_title:en":"Credit card",
+        "_tags:cs":"kreditní karta; karta; peníze; platba; zaplatit; banka; převod",
+        "_tags:en":"credit card; card; money; payment; pay; bank; transfer",
+        "fa5":"fa-credit-card",
+        "fa5pro":"fa-credit-card-front",
+        "bsi":"bi-credit-card",
+        "mdi":"credit_card"
+    },
+    "user/wallet":
+    {
+        "_title:cs":"Peněženka",
+        "_title:en":"Wallet",
+        "_tags:cs":"peněženka; peníze; platba; zaplatit",
+        "_tags:en":"wallet; money; payment; pay",
+        "fa5":"fa-wallet",
+        "fa5pro":"fa-wallet",
+        "bsi":"bi-wallet",
+        "mdi":"account_balance_wallet"
+    },
+    "user/bank":
+    {
+        "_title:cs":"Bank",
+        "_title:en":"Bank",
+        "_tags:cs":"banka; místo; peníze; budova; platba; zaplatit",
+        "_tags:en":"bank; place; building; money; payment; pay",
+        "fa5":"fa-university",
+        "fa5pro":"fa-university",
+        "bsi":"bi-bank",
+        "mdi":"account_balance"
     }
 }
