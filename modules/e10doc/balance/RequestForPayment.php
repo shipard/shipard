@@ -3,7 +3,7 @@
 
 namespace E10Doc\Balance;
 use \e10\FormReport, \e10doc\core\libs\E10Utils, \e10\utils;
-
+use \Shipard\Utils\World;
 
 /**
  * Class RequestForPayment
@@ -50,11 +50,12 @@ class RequestForPayment extends FormReport
 		$this->data ['person']['lists'] = $tablePersons->loadLists ($this->data ['person']);
 		$this->data ['person']['address'] = $this->data ['person']['lists']['address'][0];
 		// persons country
-		$country = $this->app->cfgItem ('e10.base.countries.'.$this->data ['person']['lists']['address'][0]['country']);
-		$this->data ['person']['address']['countryName'] = $country['name'];
-		$this->data ['person']['address']['countryNameEng'] = $country['engName'];
-		$this->data ['person']['address']['countryNameSC2'] = $country['sc2'];
-		$this->lang = $country['lang'];
+		World::setCountryInfo($this->app(), $this->data ['person']['lists']['address'][0]['worldCountry'], $this->data ['person']['address']);
+		if (isset($this->data ['person']['address']['countryLangSC2']))
+			$this->lang = $this->data ['person']['address']['countryLangSC2'];
+
+		if (!in_array($this->lang, ['de', 'en', 'it', 'sk', 'cs']))
+			$this->lang = 'en';
 
 		forEach ($this->data ['person']['lists']['properties'] as $iii)
 		{
@@ -80,10 +81,7 @@ class RequestForPayment extends FormReport
 			if (isset($this->data ['owner']['lists']['address'][0]))
 			{
 				$this->data ['owner']['address'] = $this->data ['owner']['lists']['address'][0];
-				$ownerCountry = $this->app->cfgItem('e10.base.countries.' . $this->data ['owner']['lists']['address'][0]['country']);
-				$this->data ['owner']['address']['countryName'] = $ownerCountry['name'];
-				$this->data ['owner']['address']['countryNameEng'] = $ownerCountry['engName'];
-				$this->data ['owner']['address']['countryNameSC2'] = $ownerCountry['sc2'];
+				World::setCountryInfo($this->app(), $this->data ['owner']['lists']['address'][0]['worldCountry'], $this->data ['owner']['address']);
 			}
 			forEach ($this->data ['owner']['lists']['properties'] as $iii)
 			{
