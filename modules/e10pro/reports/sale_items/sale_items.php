@@ -2,7 +2,7 @@
 
 namespace E10Pro\Reports\Sale_Items;
 
-use E10\utils, E10Doc\Core\e10utils, \E10\uiutils, e10doc\core\libs\Aggregate, e10doc\core\libs\AggregateDocRows, E10Doc\Core\WidgetAggregate;
+use E10\utils, e10doc\core\libs\E10Utils, \E10\uiutils, e10doc\core\libs\Aggregate, e10doc\core\libs\AggregateDocRows, E10Doc\Core\WidgetAggregate;
 
 
 /**
@@ -173,7 +173,7 @@ class reportItems extends \e10doc\core\libs\reports\GlobalReport
 		array_push ($q, ' LEFT JOIN e10_witems_brands AS brands ON items.brand = brands.ndx');
 		array_push ($q, ' WHERE heads.docState = 4000 ');
 
-		e10utils::fiscalPeriodQuery ($q, $this->reportParams ['fiscalPeriod']['value']);
+		E10Utils::fiscalPeriodQuery ($q, $this->reportParams ['fiscalPeriod']['value']);
 
 		if ($this->reportParams ['itemKind']['value'] != 999)
 		{
@@ -227,7 +227,7 @@ class reportItems extends \e10doc\core\libs\reports\GlobalReport
 		array_push ($q, ' LEFT JOIN e10_witems_itemtypes AS types ON items.itemType = types.ndx');
 		array_push ($q, ' WHERE heads.docState = 4000 ');
 
-		e10utils::fiscalPeriodQuery ($q, $this->reportParams ['fiscalPeriod']['value']);
+		E10Utils::fiscalPeriodQuery ($q, $this->reportParams ['fiscalPeriod']['value']);
 
 		if ($this->reportParams ['itemKind']['value'] != 999)
 		{
