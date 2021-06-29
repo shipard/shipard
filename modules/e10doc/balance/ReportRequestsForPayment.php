@@ -85,7 +85,7 @@ class ReportRequestsForPayment extends \e10doc\core\libs\reports\GlobalReport
 				$btn['subButtons'] = [];
 				$btn['subButtons'][] = [
 					'type' => 'action', 'action' => 'addwizard', 'icon' => 'system/iconEmail', 'title' => 'Odeslat emailem', 'btnClass' => 'btn-default btn-xs',
-					'data-table' => 'e10.persons.persons', 'data-pk' => $r['personNdx'], 'data-class' => 'e10.SendFormReportWizard',
+					'data-table' => 'e10.persons.persons', 'data-pk' => $r['personNdx'], 'data-class' => 'Shipard.Report.SendFormReportWizard',
 					'data-addparams' => 'reportClass=' . 'e10doc.balance.RequestForPayment' . '&documentTable=' . 'e10.persons.persons'
 				];
 				$hdr['docNumber'][] = $btn;

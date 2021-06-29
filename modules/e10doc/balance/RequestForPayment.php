@@ -2,7 +2,7 @@
 
 
 namespace E10Doc\Balance;
-use \e10\FormReport, \e10doc\core\e10utils, \e10\utils;
+use \e10\FormReport, \e10doc\core\libs\E10Utils, \e10\utils;
 
 
 /**
@@ -21,8 +21,8 @@ class RequestForPayment extends FormReport
 
 	function init ()
 	{
-		$this->reportId = 'e10doc.balance.requestForPayment';
-		$this->reportTemplate = 'e10doc.balance.requestForPayment';
+		$this->reportId = 'reports.default.e10doc.balance.requestForPayment';
+		$this->reportTemplate = 'reports.default.e10doc.balance.requestForPayment';
 	}
 
 	public function checkDocumentInfo (&$documentInfo)
@@ -34,14 +34,14 @@ class RequestForPayment extends FormReport
 
 	public function loadData ()
 	{
-		$this->fiscalYear = e10utils::todayFiscalYear($this->app);
+		$this->fiscalYear = E10Utils::todayFiscalYear($this->app);
 		$this->tablePersons = $this->app->table('e10.persons.persons');
 		$this->tableDocHeads = $this->app->table('e10doc.core.heads');
 		$this->currencies = $this->app->cfgItem ('e10.base.currencies');
 
 		parent::loadData();
 
-		$allProperties = \E10\Application::cfgItem ('e10.base.properties', array());
+		$allProperties = $this->app()->cfgItem ('e10.base.properties', []);
 
 
 		// person
@@ -136,7 +136,7 @@ class RequestForPayment extends FormReport
 	{
 		$today = utils::today();
 		$this->data ['today'] = utils::datef($today, '%d');
-		$dueDate = e10utils::balanceOverDueDate ($this->app);
+		$dueDate = E10Utils::balanceOverDueDate ($this->app);
 
 		$q[] = 'SELECT heads.docNumber, heads.dateDue, heads.dateDue as docDateDue, heads.ndx as docNdx, heads.docType as docType, heads.title as docTitle,';
 		array_push ($q, ' journal.currency as currency, journal.request as totalRequest, journal.symbol1, journal.symbol2, journal.[date] as dateDue,');
@@ -166,7 +166,7 @@ class RequestForPayment extends FormReport
 				'docNumber' => $r['docNumber'],
 				'request' => $r['totalRequest'] - $r['payments'] + $r['totalPayment'], 'curr' => $this->currencies[$r['currency']]['shortcut'],
 				'dateDue' => $r['dateDue'], 's1' => $r['symbol1'], 's2' => $r['symbol2'], 'docTitle' => $r['docTitle'], 'payment' => 0,
-				'_options' => ['class' => e10utils::balanceOverDueClass ($this->app, $overDueDays)]
+				'_options' => ['class' => E10Utils::balanceOverDueClass ($this->app, $overDueDays)]
 			];
 
 			if ($r['totalPayment'])
