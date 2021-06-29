@@ -1,7 +1,7 @@
 {
 	"panels": {
 		"/app/finance": [
-			{"title": "Pokladna", "url": "ucetnictvi/78", "icon": "docType/cashReg"},
+			{"title": "Pokladna", "url": "ucetnictvi/78", "icon": "docType/cash"},
 			{"title": "Banka", "url": "ucetnictvi/76", "icon": "docType/bank"},
 			{"title": "Saldokonto", "url": "ucetnictvi/94", "icon": "system/iconBalance"},
 			{"title": "Účetní doklady", "url": "ucetnictvi/79", "icon": "docType/accDocs"}

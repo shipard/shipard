@@ -19,17 +19,11 @@
         "bsi":"bi-file-earmark-arrow-up-fill",
         "mdi":"upload_file"
     },
-    "docType/cashRegister":{
-        "fa5":"fa-piggy-bank",
-        "fa5pro":"fa-piggy-bank",
-        "bsi":"bi-piggy-bank",
-        "mdi":"savings"
-    },
     "docType/cashReg":{
         "fa5":"fa-wallet",
         "fa5pro":"fa-wallet",
         "bsi":"bi-wallet",
-        "mdi":"credit-card"
+        "mdi":"account_balance_wallet"
     },
     "docType/proFormaIn":{
         "fa5":"fa-arrow-circle-down",
@@ -80,10 +74,10 @@
         "mdi":"account_balance"
     },
     "docType/cash":{
-        "fa5":"fa-money-check-alt",
-        "fa5pro":"fa-money-check-alt",
-        "bsi":"bi-wallet-fill",
-        "mdi":"money"
+        "fa5":"fa-piggy-bank",
+        "fa5pro":"fa-piggy-bank",
+        "bsi":"bi-piggy-bank",
+        "mdi":"savings"
     },
     "docType/accDocs":{
         "fa5":"fa-file-invoice-dollar",
@@ -380,7 +374,7 @@
 	"detailReportSum":{
 		"fa5": "fa-plus-square",
 		"fa5pro": "fa-plus-square",
-		"bsi": "bi-plus-square-fill",
+		"bsi": "bi-plus-square",
 		"mdi": "add_circle"
 	},
 	"detailReportPDP":{
@@ -548,7 +542,7 @@
 	"detailReportAccountBalances":{
 		"fa5":"fa-check-square",
         "fa5pro":"fa-check-square",
-        "bsi":"bi-check-square-fill",
+        "bsi":"bi-check-square",
         "mdi":"check_box"
 	},
 	"detailReportCards1":{
@@ -584,13 +578,13 @@
 	"detailReportIncrements":{
 		"fa5": "fa-plus-square",
 		"fa5pro": "fa-plus-square",
-		"bsi": "bi-plus-square-fill",
+		"bsi": "bi-plus-square",
 		"mdi": "add_circle"
 	},
 	"detailReportDepletions":{
 		"fa5":"fa-minus-square",
         "fa5pro":"fa-minus-square",
-        "bsi":"bi-dash-square-fill",
+        "bsi":"bi-dash-square",
         "mdi":"remove_circle"
 	},
 	"detailReportAll":{
@@ -638,7 +632,7 @@
     "homeToDo":{
         "fa5":"fa-check-square",
         "fa5pro":"fa-check-square",
-        "bsi":"bi-check-square-fill",
+        "bsi":"bi-check-square",
         "mdi":"check_box"
     },
     "homeLeaders":{

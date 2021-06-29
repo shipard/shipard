@@ -7,7 +7,7 @@
 				"icon": "docType/invoicesIn"},
     "docs-cash": {
 				"fullName": "Pokladní doklad", "shortName": "Pokladna", "shortcut": "POK", "pluralName": "Pokladní doklady",
-				"icon": "docType/cashRegister"},
+				"icon": "docType/cash"},
     "docs-cashreg": {
 				"fullName": "Prodejka", "shortName": "Prodejka", "shortcut": "PRO", "pluralName": "Prodejky",
 				"icon": "docType/cashReg"},

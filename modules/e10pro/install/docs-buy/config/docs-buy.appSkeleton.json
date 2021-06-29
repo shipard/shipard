@@ -7,7 +7,7 @@
 				"ordersOut": {"t1": "Vydané objednávky", "object": "viewer", "table": "e10buy.orders.orders", "viewer": "default",
 					"enabledCfgItem": "options.e10doc-commerce.useOrdersOut", "order": 220000},
 				"cashBox": {"t1": "Pokladna", "object": "viewer", "table": "e10doc.core.heads", "viewer": "cash",
-					"icon": "docType/cashRegister", "order": 250000},
+					"icon": "docType/cash", "order": 250000},
 
 				"persons": {"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "default", "order": 900000},
 				"witems": {"t1": "Položky", "object": "viewer", "table": "e10.witems.items",

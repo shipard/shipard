@@ -15,7 +15,7 @@
 				"primaryBalance": "2000"
 		},
     "cash": {
-				"fullName": "Pokladní doklad", "shortName": "Pokladna", "icon": "docType/cashReg", "pluralName": "Pokladní doklady",
+				"fullName": "Pokladní doklad", "shortName": "Pokladna", "icon": "docType/cash", "pluralName": "Pokladní doklady",
 	      "shortcut": "POK", "classId": "cash", "docIdCode": "31",
 				"taxDir": 0, "tradeDir": 3, "docDir": 0,
         "useTax": 1, "taxDocument": 1, "acc": 1, "timeline": "?", "timelineSum": "def",

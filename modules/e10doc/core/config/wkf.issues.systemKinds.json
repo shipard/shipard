@@ -16,7 +16,7 @@
 		"askKind": 1, "askPersons":1, "askDeadline": 1, "askDateIncoming": 1
 	},
 	"55": {
-		"fullName": "Pokladní lístek", "shortName": "Pokladna", "icon": "docType/cashRegister", "order": 105150, "issueType": 1,
+		"fullName": "Pokladní lístek", "shortName": "Pokladna", "icon": "docType/cash", "order": 105150, "issueType": 1,
 		"askKind": 1, "askPersons":1, "askDeadline": 1, "askDateIncoming": 1
 	},
 
