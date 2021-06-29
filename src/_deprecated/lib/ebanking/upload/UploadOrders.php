@@ -35,13 +35,13 @@ class UploadOrders extends Utility
 
 	public function createFiles ()
 	{
-		$reportPdf = $this->tableHeads->getReportData ('e10doc.bankorder.BankOrderReport', $this->bankOrderNdx);
+		$reportPdf = $this->tableHeads->getReportData ('e10doc.bankorder.libs.BankOrderReport', $this->bankOrderNdx);
 		$reportPdf->renderReport ();
 		$reportPdf->createReport ();
 
 		$this->fileNamePdf = $reportPdf->fullFileName;
 
-		$reportData = $this->tableHeads->getReportData ('e10doc.bankorder.BankOrderReport', $this->bankOrderNdx);
+		$reportData = $this->tableHeads->getReportData ('e10doc.bankorder.libs.BankOrderReport', $this->bankOrderNdx);
 		$reportData->saveAs = 'cz/bank-order-giro-kpc';
 		$reportData->renderReport ();
 		$reportData->createReport ();

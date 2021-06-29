@@ -8,8 +8,8 @@ class BankOrderReport extends \e10doc\core\libs\reports\DocReport
 {
 	function init ()
 	{
-		$this->reportId = 'e10doc.bankorder.bankorder';
-		$this->reportTemplate = 'e10doc.bankorder.bankorder';
+		$this->reportId = 'reports.default.e10doc.bankorder.bankorder';
+		$this->reportTemplate = 'reports.default.e10doc.bankorder.bankorder';
 	}
 
 	public function loadData ()
@@ -154,7 +154,7 @@ class BankOrderReport extends \e10doc\core\libs\reports\DocReport
 			$printButton['dropdownMenu'][] = [
 			'text' => 'Export příkazu k úhradě (.kpc)', 'icon' => 'system/actionDownload',
 			'type' => 'action', 'action' => 'print', 'data-saveas' => 'cz/bank-order-giro-kpc', 'data-filename' => $this->saveAsFileName('cz/bank-order-giro-kpc'),
-			'data-table' => $this->table->tableId(), 'data-report' => 'e10doc.bankorder.BankOrderReport', 'data-pk' => $this->recData['ndx']
+			'data-table' => $this->table->tableId(), 'data-report' => 'e10doc.bankorder.libs.BankOrderReport', 'data-pk' => $this->recData['ndx']
 			];
 		}
 		if ($this->data['directDebit'])
@@ -162,7 +162,7 @@ class BankOrderReport extends \e10doc\core\libs\reports\DocReport
 			$printButton['dropdownMenu'][] = [
 				'text' => 'Export příkazu k inkasu (.kpc)', 'icon' => 'system/actionDownload',
 				'type' => 'action', 'action' => 'print', 'data-saveas' => 'cz/bank-order-direct-debit-kpc', 'data-filename' => $this->saveAsFileName('cz/bank-order-direct-debit-kpc'),
-				'data-table' => $this->table->tableId(), 'data-report' => 'e10doc.bankorder.BankOrderReport', 'data-pk' => $this->recData['ndx']
+				'data-table' => $this->table->tableId(), 'data-report' => 'e10doc.bankorder.libs.BankOrderReport', 'data-pk' => $this->recData['ndx']
 			];
 		}
 	}
