@@ -36,12 +36,6 @@
 </head>
 <body>
 
-	<div id='top'>
-		<span class='documentName'>{{@dict;Upomínka}}</span>
-		<span class='documentNumber'>{{@dict;ze dne}}: {{data.today}}</span>
-	</div>
-
-
 	<table id='head'>
 		<tr>
 			<td class='supplier'>
@@ -97,8 +91,8 @@
 		</tr>
 	</table>
 
-	<p>Vážený zákazníku,</p>
-	<p>dovolujeme si Vás upozornit, že ke dni {{data.today}} stále evidujeme následující pohledávky:
+	<p>{{@dict;Vážený zákazníku}},</p>
+	<p>{{@dict;dovolujeme si Vás upozornit, že ke dni}} {{data.today}} {{@dict;stále evidujeme následující pohledávky}}:
 	</p>
 
 	<table class='rows' class="default">
@@ -135,8 +129,8 @@
 		{{/data.totals}}
 	</table>
 
-	<p>Prosíme Vás o co nejrychlejší kontrolu a úhradu dlužných částek.</p>
-	<p>Děkujeme</p>
+	<p>{{@dict;Prosíme Vás o co nejrychlejší kontrolu a úhradu dlužných částek}}.</p>
+	<p>{{@dict;Děkujeme}}</p>
 
 	<div id='sign'>
         <span class='logoImg'>
