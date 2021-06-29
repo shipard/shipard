@@ -1,9 +1,6 @@
 <?php
 
 namespace lib\docs;
-
-require_once __APP_DIR__ . '/e10-modules/e10/persons/tables/persons.php';
-
 use E10Doc\Core\e10utils, \E10\uiutils, \E10\TableForm, \E10\Wizard;
 
 

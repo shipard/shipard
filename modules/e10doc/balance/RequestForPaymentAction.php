@@ -1,12 +1,11 @@
 <?php
 
 namespace e10doc\balance;
-use \e10\DocumentAction, e10\MailMessage, \e10\utils;
+use \Shipard\Base\DocumentAction, \Shipard\Report\MailMessage, \Shipard\Utils\Utils;
 
 
 /**
  * Class RequestForPaymentAction
- * @package e10doc\balance
  */
 class RequestForPaymentAction extends DocumentAction
 {
@@ -56,7 +55,7 @@ class RequestForPaymentAction extends DocumentAction
 		$msg->setBody($msgBody);
 		$msg->setDocument ('e10.persons.persons', $personNdx, $report);
 
-		$attachmentFileName = utils::safeChars($report->createReportPart ('fileName'));
+		$attachmentFileName = Utils::safeChars($report->createReportPart ('fileName'));
 		if ($attachmentFileName === '')
 			$attachmentFileName = 'priloha';
 
