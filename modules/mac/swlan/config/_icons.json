@@ -35,7 +35,7 @@
 	"docStateDone":{
 		"fa5":"fa-check-square",
         "fa5pro":"fa-check-square",
-        "bsi":"bi-check-square-fill",
+        "bsi":"bi-check-square",
         "mdi":"check_box"
 	},
 	"docStateEdit":{

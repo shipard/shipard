@@ -128,7 +128,7 @@
 	"reportBySum":{
         "fa5": "fa-plus-square",
 		"fa5pro": "fa-plus-square",
-		"bsi": "bi-plus-square-fill",
+		"bsi": "bi-plus-square",
 		"mdi": "add_circle"
     },
 
