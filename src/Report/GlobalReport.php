@@ -306,7 +306,7 @@ class GlobalReport extends Report
 	public function createToolbarSaveAs (&$printButton)
 	{
 		if (1)
-			$printButton['dropdownMenu'][] = ['text' => 'Uložit jako Microsoft Excel', 'icon' => 'icon-file-excel-o', 'type' => 'reportaction', 'action' => 'print', 'class' => 'e10-print', 'data-format' => 'xlsx'];
+			$printButton['dropdownMenu'][] = ['text' => 'Uložit jako Microsoft Excel', 'icon' => 'system/actionSave', 'type' => 'reportaction', 'action' => 'print', 'class' => 'e10-print', 'data-format' => 'xlsx'];
 	}
 
 	public function createPanelCode ()

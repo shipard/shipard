@@ -997,12 +997,12 @@ class TableView extends \Shipard\Base\BaseObject
 					$h .= "<td style='vertical-align: middle; text-align: right; width: 90px;'>";
 
 					$h .= "<div class='btn-group pull-right'>";
-					$h .= "<button class='btn btn-large btn-default df2-action-trigger' data-action='printviewer' data-viewer='{$this->vid}' data-format='pdf'><i class='fa fa-print'></i></button>";
+					$h .= "<button class='btn btn-large btn-default df2-action-trigger' data-action='printviewer' data-viewer='{$this->vid}' data-format='pdf'>".$this->app()->ui()->icon('system/actionPrint')."</button>";
 
 					$h .= "<button type='button' class='btn btn-default dropdown-toggle'' data-toggle='dropdown'><span class='caret'></span></button>";
 					$h .= '<ul class="dropdown-menu" role="menu">';
 
-					$h .= "<li><a class='df2-action-trigger' data-action='printviewer' data-viewer='{$this->vid}' data-format='csv'><i class='fa fa-table'></i> ".utils::es('Uložit jako CSV soubor')."</a></li>";
+					$h .= "<li><a class='df2-action-trigger' data-action='printviewer' data-viewer='{$this->vid}' data-format='csv'>".$this->app()->ui()->icon('system/actionSave')." ".utils::es('Uložit jako CSV soubor')."</a></li>";
 					//$h .= "<li><a class='df2-action-trigger' data-action='printviewer' data-viewer='{$this->vid}' data-format='xls'><i class='fa fa-file-excel-o'></i> ".utils::es('Uložit jako Excel')."</a></li>";
 
 					$h .= '</ul>';
