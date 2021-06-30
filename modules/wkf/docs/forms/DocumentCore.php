@@ -140,7 +140,7 @@ class DocumentCore extends TableForm
 			$tableId = $this->table->tableId();
 
 		if ($title === FALSE)
-			$title = ['icon' => 'icon-paperclip', 'text' => 'Přílohy'];
+			$title = ['icon' => 'system/iconPaperclip', 'text' => 'Přílohy'];
 		if ($downloadTitle === FALSE)
 			$downloadTitle = ['icon' => 'system/actionDownload', 'text' => 'Soubory ke stažení'];
 

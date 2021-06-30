@@ -35,13 +35,13 @@ class ViewPurchaseDocs extends \E10Doc\Core\ViewHeads
 	{
 		$listItem = parent::renderRow ($item);
 
-		$icon = 'x-people-walk';
+		$icon = 'purchaseTicketTransportPerson';
 		if ($item['weighingMachine'] !== 0)
 		{
 			if ($item['weightGross'] < 999)
-				$icon = 'x-transport-car';
+				$icon = 'purchaseTicketTransportCar';
 			else
-				$icon = 'x-transport-truck';
+				$icon = 'purchaseTicketTransportTruck';
 		}
 		$listItem ['icon'] = $icon;
 

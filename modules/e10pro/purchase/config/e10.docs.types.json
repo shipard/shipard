@@ -1,7 +1,7 @@
 {
 	"purchase": {"fullName": "Výkupní lístek", "shortName": "Výkup", "pluralName": "Výkupní lístky",
 		"shortcut": "VKP", "classId": "purchase", "docIdCode": "21", "taxDir": 0,
-		"icon": "e10-docs-purchase", "tradeDir": 2, "docDir": 1, "useTax": 1, "acc": 1, "timeline": "in", "timelineSum": "def",
+		"icon": "docTypeRedemptions", "tradeDir": 2, "docDir": 1, "useTax": 1, "acc": 1, "timeline": "in", "timelineSum": "def",
 		"headerStyle": "toPay", "showInfo2": "wg", "showDate": "c",
 		"outboxDocKind": "doc.purchase", "outboxSystemKind": 125, "outboxSystemSection": 121,
 		"docNumber": "%D%W%y%M%5", "symbol1": "91%y%M%4", "invDirection": 1}

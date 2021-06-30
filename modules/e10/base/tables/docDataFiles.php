@@ -74,7 +74,7 @@ class FormDocDataFile extends TableForm
 		$tabs ['tabs'] = [];
 			foreach ($contents as $ci)
 				$tabs ['tabs'][] = ['text' => $ci['name'], 'icon' => $ci['icon']];
-		//$tabs ['tabs'][] = ['text' => 'TEST', 'icon' => 'icon-paperclip'];
+		//$tabs ['tabs'][] = ['text' => 'TEST', 'icon' => 'system/iconPaperclip'];
 
 			$this->addColumnInput ('ndx', self::coHidden);
 			$this->openTabs ($tabs, TRUE);

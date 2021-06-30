@@ -1305,9 +1305,9 @@ class TableHeads extends DbTable
 		$hdr = $this->createPersonHeaderInfo ($recData['person'], $recData);
 		$hdr ['icon'] = $this->tableIcon ($recData);
 		if (isset($recData ['docNumber']))
-			$docInfo [] = ['text' => $recData ['docNumber'] . ' ▪︎ ' . $docType ['shortName'], 'icon' => 'icon-file', 'class' => ''];
+			$docInfo [] = ['text' => $recData ['docNumber'] . ' ▪︎ ' . $docType ['shortName'], 'icon' => 'system/iconFile', 'class' => ''];
 		else
-			$docInfo [] = ['text' => '???' . ' ▪︎ ' . $docType ['shortName'], 'icon' => 'icon-file', 'class' => ''];
+			$docInfo [] = ['text' => '???' . ' ▪︎ ' . $docType ['shortName'], 'icon' => 'system/iconFile', 'class' => ''];
 
 		if (isset($recData['symbol1']) && $recData['symbol1'] !== '')
 		{
@@ -1831,7 +1831,7 @@ class TableHeads extends DbTable
 				}
 
 				$form->openRow('text-right');
-					$form->addStatic(['icon' => 'icon-file', 'text' => $report['title']], TableForm::coH2);
+					$form->addStatic(['icon' => 'system/iconFile', 'text' => $report['title']], TableForm::coH2);
 					if (isset ($report['print']))
 						$form->addCheckbox('extra.confirm.' . $report['id'] . '.print', 'Tisk', '1', 0, $doPrint);
 					if (isset ($report['email']))
@@ -3094,14 +3094,14 @@ class ViewHeads extends TableView
 
 		$listItem ['t3'] = $item ['title'];
 
-		$docNumber = ['icon' => 'icon-file', 'text' => $item ['docNumber'], 'class' => ''];
+		$docNumber = ['icon' => 'system/iconFile', 'text' => $item ['docNumber'], 'class' => ''];
 		if (isset($item['docStateAcc']) && $item['docStateAcc'] == 9)
 			$docNumber['class'] = 'e10-error';
 
 		$props [] = $docNumber;
 
 		if ($item ['symbol1'] != '' && $item ['symbol1'] !== $item ['docNumber'])
-			$props [] = ['icon' => 'icon-exchange', 'text' => $item ['symbol1'], 'class' => ''];
+			$props [] = ['icon' => 'system/iconExchange', 'text' => $item ['symbol1'], 'class' => ''];
 
 		if ($showDate === 'c' && $item['dateIssue']->format('ymd') === $this->today)
 		{

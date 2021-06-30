@@ -17,7 +17,7 @@ class DashboardInfo extends \lib\dashboards\Info
 
 		$info = ['class' => '', 'content' => []];
 
-		$i = ['text' => utils::nf($data['data']['toPay']), 'icon' => 'e10-docs-purchase', 'class' => ''];
+		$i = ['text' => utils::nf($data['data']['toPay']), 'icon' => 'docTypeRedemptions', 'class' => ''];
 		if ($data['data']['date'] != utils::today('Y-m-d'))
 			$i['suffix'] = utils::datef ($data['data']['date']);
 		$info['content'][] = $i;
@@ -35,7 +35,7 @@ class DashboardInfo extends \lib\dashboards\Info
 		$date = (!utils::dateIsBlank($data['date'])) ? utils::createDateTime($data['date']) : utils::today();
 		$title = [
 				['text' => utils::nf($data['data']['toPay']), 'class' => 'pull-right'],
-				['text' => 'Výkupy', 'icon' => 'e10-docs-purchase', 'class' => '', 'suffix' => utils::datef($date, '%k')],
+				['text' => 'Výkupy', 'icon' => 'docTypeRedemptions', 'class' => '', 'suffix' => utils::datef($date, '%k')],
 				['text' => utils::nf($data['data']['cntDocs']), 'class' => 'badge badge-success'],
 		];
 

@@ -115,7 +115,7 @@ class TaxReportDocumentCard extends \e10\DocumentCard
 			$filings[$filingNdx]['info'][] = ['class' => 'clear', 'value' => []];
 			if (count($attachments))
 			{
-				$filings[$filingNdx]['info'][] = ['class' => 'info', 'value' => ['class' => 'h3 pull-left', 'text' => 'Přílohy', 'icon' => 'icon-paperclip']];
+				$filings[$filingNdx]['info'][] = ['class' => 'info', 'value' => ['class' => 'h3 pull-left', 'text' => 'Přílohy', 'icon' => 'system/iconPaperclip']];
 				$filings[$filingNdx]['info'][] = ['class' => 'clear', 'value' => []];
 			}
 

@@ -55,7 +55,7 @@ class ViewerDocumentsCore extends TableView
 	var $showProjectsFolders = TRUE;
 	CONST dvsPanes = 0, dvsPanesMini = 2, dvsPanesOneCol = 3, dvsRows = 1;
 
-	var $sourcesIcons = [0 => 'icon-keyboard-o', 1 => 'icon-envelope-o', 2 => 'icon-plug', 3 => 'icon-android', 4 => 'system/iconWarning'];
+	var $sourcesIcons = [0 => 'icon-keyboard-o', 1 => 'system/iconEmail', 2 => 'icon-plug', 3 => 'icon-android', 4 => 'system/iconWarning'];
 	var $msgKinds;
 
 	/** @var  \e10pro\wkf\TableProjects */

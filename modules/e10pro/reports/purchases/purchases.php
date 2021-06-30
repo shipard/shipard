@@ -37,7 +37,7 @@ class reportPurchases extends \e10doc\core\libs\reports\GlobalReport
 
 		parent::init();
 
-		$this->setInfo('icon', 'e10-docs-purchase');
+		$this->setInfo('icon', 'docTypeRedemptions');
 		$this->setInfo('param', 'Období', $this->reportParams ['fiscalPeriod']['activeTitle']);
 		$this->setInfo('note', '1', 'Všechny částky jsou bez DPH');
 	}

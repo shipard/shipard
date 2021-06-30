@@ -560,6 +560,18 @@
         "fa5pro":"fa-play-circle",
         "bsi":"bi-play-circle-fill",
         "mdi":"play_circle_filled"
+	},	
+	"iconExchange": {
+		"fa5":"fa-exchange-alt",
+        "fa5pro":"fa-exchange-alt",
+        "bsi":"bi-arrow-left-right",
+        "mdi":"sync_alt"
+	},	
+	"iconPaperclip": {
+		"fa5": "fa-paperclip",
+		"fa5pro": "fa-paperclip",
+		"bsi": "bi-paperclip",
+		"mdi": "attach_file"
 	},
 	
 

@@ -48,7 +48,7 @@ class WkfDiaryViewer extends TableView
 	CONST dvsPanes = 0, dvsPanesMini = 2, dvsPanesOneCol = 3, dvsRows = 1, dvsPanesMicro = 7;
 
 	var $sourcesIcons = [
-		0 => 'icon-keyboard-o', 1 => 'icon-envelope-o', 2 => 'icon-plug',
+		0 => 'icon-keyboard-o', 1 => 'system/iconEmail', 2 => 'icon-plug',
 		3 => 'icon-android', 4 => 'system/iconWarning', 5 => 'icon-globe'
 	];
 
@@ -439,7 +439,7 @@ class WkfDiaryViewer extends TableView
 		}
 
 		if (isset($this->atts[$ndx]))
-			$title[] = ['text' => utils::nf($this->atts[$ndx]['count']), 'icon' => 'icon-paperclip', 'class' => 'e10-off pull-right'];
+			$title[] = ['text' => utils::nf($this->atts[$ndx]['count']), 'icon' => 'system/iconPaperclip', 'class' => 'e10-off pull-right'];
 
 		if (isset($this->connectedIssuesTo[$ndx]) || isset($this->connectedIssuesFrom[$ndx]))
 		{

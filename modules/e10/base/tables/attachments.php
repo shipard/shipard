@@ -391,7 +391,7 @@ class FormAttachments extends TableForm
 
 		$this->openForm ();
 
-		$tabs ['tabs'][] = ['text' => 'Příloha', 'icon' => 'icon-paperclip'];
+		$tabs ['tabs'][] = ['text' => 'Příloha', 'icon' => 'system/iconPaperclip'];
 			foreach ($this->metaData as $md)
 			{
 				$tabs ['tabs'][] = ['text' => $md['mdType']['tabLabel'], 'icon' => $md['mdType']['icon']];
