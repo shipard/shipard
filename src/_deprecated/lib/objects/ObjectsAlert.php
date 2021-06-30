@@ -1,7 +1,7 @@
 <?php
 
 namespace lib\objects;
-use e10\Service, e10\Response, \e10\str, \e10\json;
+use \Shipard\Base\Service, e10\Response, \e10\str, \e10\json;
 
 
 /**
