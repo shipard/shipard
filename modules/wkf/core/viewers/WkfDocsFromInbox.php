@@ -369,7 +369,7 @@ class WkfDocsFromInbox extends TableView
 			$item ['pane']['class'] .= ' e10-ds '.$item ['docStateClass'];
 
 		$title = [];
-		$title[] = ['class' => 'id pull-right', 'text' => '#'.$item['issueId'], 'Xicon' => 'icon-hashtag'];
+		$title[] = ['class' => 'id pull-right', 'text' => '#'.$item['issueId'], 'Xicon' => 'system/iconHashtag'];
 
 		if ($item['onTop'])
 			$title[] = ['class' => 'id pull-right e10-success', 'text' => '', 'icon' => 'system/iconPinned'];

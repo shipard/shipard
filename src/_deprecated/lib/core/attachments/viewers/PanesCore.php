@@ -215,7 +215,7 @@ class PanesCore extends TableView
 
 		$title = [];
 
-		//$title[] = ['class' => 'id pull-right'.$msgTitleClass, 'text' => utils::nf($item['ndx']), 'icon' => 'icon-hashtag'];
+		//$title[] = ['class' => 'id pull-right'.$msgTitleClass, 'text' => utils::nf($item['ndx']), 'icon' => 'system/iconHashtag'];
 		$title[] = ['class' => 'e10-bold', 'text' => $item['name'], 'XXicon' => $this->table->tableIcon($item, 1)];
 		//$title[] = ['text' => utils::datef ($item['dateCreate'], '%D, %T'), 'icon' => $this->sourcesIcons[$item['source']], 'class' => 'e10-off break'];
 

@@ -538,7 +538,7 @@ class ViewerDashboardCore extends TableView
 		elseif ($item['priority'] > 10)
 			$title[] = ['class' => 'id pull-right e10-off', 'text' => '', 'icon' => 'system/issueNotImportant'];
 
-		$title[] = ['class' => 'id pull-right'.$msgTitleClass, 'text' => utils::nf($item['ndx']), 'icon' => 'icon-hashtag'];
+		$title[] = ['class' => 'id pull-right'.$msgTitleClass, 'text' => utils::nf($item['ndx']), 'icon' => 'system/iconHashtag'];
 		$title[] = ['class' => 'h2', 'text' => $item['subject'], 'icon' => $this->table->tableIcon($item, 1)];
 		$title[] = ['text' => utils::datef ($item['dateCreate'], '%D, %T'), 'icon' => $this->sourcesIcons[$item['source']], 'class' => 'e10-off break'];
 
@@ -670,7 +670,7 @@ class ViewerDashboardCore extends TableView
 						];
 					}
 
-					$tt [] = ['class' => 'id pull-right', 'text' => utils::nf($commentNdx), 'icon' => 'icon-hashtag'];
+					$tt [] = ['class' => 'id pull-right', 'text' => utils::nf($commentNdx), 'icon' => 'system/iconHashtag'];
 
 					if ($comment['activateCnt'] > 1)
 						$tt [] = ['class' => 'id pull-right clear', 'text' => utils::datef ($comment['dateTouch'], '%D, %T'), 'icon' => 'icon-pencil-square'];

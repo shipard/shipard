@@ -307,7 +307,7 @@ class ViewerDashboardWorkOrders extends TableView
 
 		$title = [];
 
-		$title[] = ['class' => 'id pull-right'.$msgTitleClass, 'text' => $item['docNumber'], 'icon' => 'icon-hashtag'];
+		$title[] = ['class' => 'id pull-right'.$msgTitleClass, 'text' => $item['docNumber'], 'icon' => 'system/iconHashtag'];
 		$title[] = ['class' => 'h2', 'text' => $item['title'], 'icon' => $this->table->tableIcon($item, 1)];
 		if ($item['customerFullName'])
 			$title[] = ['text' => $item['customerFullName'], 'icon' => 'system/iconUser', 'class' => 'e10-off block'];

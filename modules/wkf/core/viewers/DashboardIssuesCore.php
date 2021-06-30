@@ -624,7 +624,7 @@ class DashboardIssuesCore extends TableView
 		elseif ($item['priority'] > 10)
 			$listItem ['i1'][] = ['class' => 'id e10-off', 'text' => '', 'icon' => 'system/issueNotImportant'];
 
-		$listItem ['i1'][] = ['class' => 'id', 'text' => '#'.$item['issueId'], 'Xicon' => 'icon-hashtag'];
+		$listItem ['i1'][] = ['class' => 'id', 'text' => '#'.$item['issueId'], 'Xicon' => 'system/iconHashtag'];
 
 		$dl = [];
 		$this->addDeadlineDate ($item, $dl);
@@ -748,7 +748,7 @@ class DashboardIssuesCore extends TableView
 			$title[] = $seb;
 		}
 
-		$title[] = ['class' => 'id pull-right'.$msgTitleClass, 'text' => '#'.$item['issueId'], 'Xicon' => 'icon-hashtag'];
+		$title[] = ['class' => 'id pull-right'.$msgTitleClass, 'text' => '#'.$item['issueId'], 'Xicon' => 'system/iconHashtag'];
 
 		if ($item['onTop'])
 			$title[] = ['class' => 'id pull-right e10-success', 'text' => '', 'icon' => 'system/iconPinned'];
@@ -928,7 +928,7 @@ class DashboardIssuesCore extends TableView
 						];
 					}
 
-					$tt [] = ['class' => 'id pull-right', 'text' => utils::nf($commentNdx), 'icon' => 'icon-hashtag'];
+					$tt [] = ['class' => 'id pull-right', 'text' => utils::nf($commentNdx), 'icon' => 'system/iconHashtag'];
 
 					if ($comment['activateCnt'] > 1)
 						$tt [] = ['class' => 'id pull-right clear', 'text' => utils::datef ($comment['dateTouch'], '%D, %T'), 'icon' => 'icon-pencil-square'];

@@ -355,7 +355,7 @@ class WkfDiaryViewer extends TableView
 
 		$title = [];
 
-		$title[] = ['class' => 'id pull-right'.$msgTitleClass, 'text' => '#'.$item['issueId'], 'Xicon' => 'icon-hashtag'];
+		$title[] = ['class' => 'id pull-right'.$msgTitleClass, 'text' => '#'.$item['issueId'], 'Xicon' => 'system/iconHashtag'];
 
 		if ($item['onTop'])
 			$title[] = ['class' => 'id pull-right e10-success', 'text' => '', 'icon' => 'system/iconPinned'];
@@ -505,7 +505,7 @@ class WkfDiaryViewer extends TableView
 						];
 					}
 
-					$tt [] = ['class' => 'id pull-right', 'text' => utils::nf($commentNdx), 'icon' => 'icon-hashtag'];
+					$tt [] = ['class' => 'id pull-right', 'text' => utils::nf($commentNdx), 'icon' => 'system/iconHashtag'];
 
 					if ($comment['activateCnt'] > 1)
 						$tt [] = ['class' => 'id pull-right clear', 'text' => utils::datef ($comment['dateTouch'], '%D, %T'), 'icon' => 'icon-pencil-square'];

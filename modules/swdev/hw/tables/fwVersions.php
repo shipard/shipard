@@ -99,7 +99,7 @@ class FormFWVersion extends TableForm
 		//$this->setFlag ('maximize', 1);
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'FW', 'icon' => 'icon-hashtag'];
+			$tabs ['tabs'][] = ['text' => 'FW', 'icon' => 'system/iconHashtag'];
 
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();

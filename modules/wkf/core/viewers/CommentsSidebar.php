@@ -107,7 +107,7 @@ class CommentsSidebar extends TableView
 
 		$title[] = ['class' => 'e10-bold', 'text' => $item ['authorFullName'], 'icon' => $icon];
 		$title[] = ['text' => utils::datef($item['dateCreate'], '%D, %T'), 'icon' => 'icon-keyboard-o', 'class' => 'e10-off'];
-		$title[] = ['class' => 'id pull-right', 'text' => utils::nf($item['ndx']), 'icon' => 'icon-hashtag'];
+		$title[] = ['class' => 'id pull-right', 'text' => utils::nf($item['ndx']), 'icon' => 'system/iconHashtag'];
 
 		if ($item['author'] === $this->thisUserId || $this->issueAccessLevel === 2)
 		{

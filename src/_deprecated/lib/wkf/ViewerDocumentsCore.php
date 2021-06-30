@@ -384,7 +384,7 @@ class ViewerDocumentsCore extends TableView
 
 		$title = [];
 
-		$title[] = ['class' => 'id pull-right'.$msgTitleClass, 'text' => utils::nf($item['ndx']), 'icon' => 'icon-hashtag'];
+		$title[] = ['class' => 'id pull-right'.$msgTitleClass, 'text' => utils::nf($item['ndx']), 'icon' => 'system/iconHashtag'];
 		$title[] = ['class' => 'h2', 'text' => $item['title'], 'icon' => $this->table->tableIcon($item, 1)];
 		if (!utils::dateIsBlank($item['date']))
 			$title[] = ['text' => utils::datef ($item['date'], '%D'), 'icon' => 'system/iconCalendar', 'class' => 'e10-off'];
@@ -496,7 +496,7 @@ class ViewerDocumentsCore extends TableView
 						];
 					}
 
-					$tt [] = ['class' => 'id pull-right', 'text' => utils::nf($commentNdx), 'icon' => 'icon-hashtag'];
+					$tt [] = ['class' => 'id pull-right', 'text' => utils::nf($commentNdx), 'icon' => 'system/iconHashtag'];
 
 					if ($comment['activateCnt'] > 1)
 						$tt [] = ['class' => 'id pull-right clear', 'text' => utils::datef ($comment['dateTouch'], '%D, %T'), 'icon' => 'icon-pencil-square'];

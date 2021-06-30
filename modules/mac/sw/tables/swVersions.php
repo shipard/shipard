@@ -170,7 +170,7 @@ class FormSWVersion extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_PARENT_FORM);
 		$this->setFlag ('maximize', 1);
 
-		$tabs ['tabs'][] = ['text' => 'Verze', 'icon' => 'icon-hashtag'];
+		$tabs ['tabs'][] = ['text' => 'Verze', 'icon' => 'system/iconHashtag'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);

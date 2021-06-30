@@ -548,6 +548,12 @@
 		"fa5pro": "fa-info",
 		"bsi": "bi-info-lg",
 		"mdi": "info"
+	},	
+	"iconHashtag": {
+		"fa5": "fa-hashtag",
+		"fa5pro": "fa-hashtag",
+		"bsi": "bi-hash",
+		"mdi": "tag"
 	},
 	
 
@@ -1089,6 +1095,12 @@
 		"fa5pro": "fa-cctv",
 		"bsi": "bi-camera-video",
 		"mdi": "videocam"
+	},
+	"dashboardModeSquare":{
+		"fa5":"fa-square",
+        "fa5pro":"fa-square",
+        "bsi":"bi-square-fill",
+        "mdi":"check_box_outline_blank"
 	},
 
 

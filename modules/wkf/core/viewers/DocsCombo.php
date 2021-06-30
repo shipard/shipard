@@ -102,7 +102,7 @@ class DocsCombo extends TableView
 		$listItem ['pane'] = ['class' => 'padd5 e10-ds ', 'title' => [], 'body' => []];
 
 		$title = [];
-		$title[] = ['class' => 'id pull-right', 'text' => '#'.$item['issueId'], 'Xicon' => 'icon-hashtag'];
+		$title[] = ['class' => 'id pull-right', 'text' => '#'.$item['issueId'], 'Xicon' => 'system/iconHashtag'];
 
 		if ($item['onTop'])
 			$title[] = ['class' => 'id pull-right e10-success', 'text' => '', 'icon' => 'system/iconPinned'];
