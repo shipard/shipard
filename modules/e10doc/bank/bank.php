@@ -6,6 +6,7 @@ use \E10\TableView, \E10\TableViewDetail, \E10\TableForm;
 use \E10\Application, E10\Wizard, \E10\utils, \E10\DataModel;
 use E10Doc\Core\e10utils;
 use \E10Doc\Core\ViewDetailHead;
+use \Shipard\Utils\Str;
 
 
 
@@ -329,7 +330,7 @@ class ebankingImportDoc extends \E10\Utility
 		//$r['item'] = $row['item'];
 
 		if (isset($row['memo']))
-			$r['text'] = implode ('|', $row['memo']);
+			$r['text'] = Str::upToLen(implode ('|', $row['memo']), 220);
 
 		//$r['quantity'] = $row['quantity'];
 		//$r['unit'] = $row['unit'];
