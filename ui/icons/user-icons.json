@@ -1329,5 +1329,137 @@
         "fa5pro":"fa-university",
         "bsi":"bi-bank",
         "mdi":"account_balance"
+    },
+    "user/euro":
+    {
+        "_title:cs":"Euro",
+        "_title:en":"Euro",
+        "_tags:cs":"euro; banka; peníze; měna",
+        "_tags:en":"euro; bank; money; currency",
+        "fa5":"fa-euro-sign",
+        "fa5pro":"fa-euro-sign",
+        "bsi":"bi-currency-euro",
+        "mdi":"euro"
+    },
+    "user/dollar":
+    {
+        "_title:cs":"Dolar",
+        "_title:en":"Dollar",
+        "_tags:cs":"dolar; dollar; banka; peníze; měna",
+        "_tags:en":"dollar; bank; money; currency",
+        "fa5":"fa-dollar-sign",
+        "fa5pro":"fa-dollar-sign",
+        "bsi":"bi-currency-dollar",
+        "mdi":"attach_money"
+    },
+    "user/pieChart":
+    {
+        "_title:cs":"Koláčový graf",
+        "_title:en":"Pie chart",
+        "_tags:cs":"graf; koláčový graf; matematika; čísla; data; rozbor",
+        "_tags:en":"graph; pie chart; chart; mathematics; numbers; data; analysis",
+        "fa5":"fa-chart-pie",
+		"fa5pro":"fa-chart-pie",
+		"bsi":"bi-pie-chart-fill",
+		"mdi":"pie_chart"
+    },
+    "user/barChart":
+    {
+        "_title:cs":"Graf",
+        "_title:en":"Chart",
+        "_tags:cs":"graf; sloupcový graf; matematika; čísla; data; rozbor",
+        "_tags:en":"graph; bar chart; chart; mathematics; numbers; data; analysis",
+        "fa5":"fa-chart-bar",
+		"fa5pro":"fa-chart-bar",
+		"bsi":"bi-clipboard-data",
+		"mdi":"assessment"
+    },
+    "user/list":
+    {
+        "_title:cs":"Seznam",
+        "_title:en":"List",
+        "_tags:cs":"seznam; odrážky; text; data",
+        "_tags:en":"list; bullets; bullet points; point; text; data",
+        "fa5":"fa-list-ul",
+        "fa5pro":"fa-list-ul",
+        "bsi":"bi-list-ul",
+        "mdi":"format_list_bulleted"
+    },
+    "user/align":
+    {
+        "_title:cs":"Zarovnat",
+        "_title:en":"Align Justify",
+        "_tags:cs":"zarovnat; text; soubor; textový soubor",
+        "_tags:en":"align; justify; text; file; text file",
+        "fa5":"fa-align-justify",
+        "fa5pro":"fa-align-justify",
+        "bsi":"bi-justify",
+        "mdi":"format_align_justify"
+    },
+    "user/alignLeft":
+    {
+        "_title:cs":"Rarovnat vlevo",
+        "_title:en":"Align Left",
+        "_tags:cs":"zarovnat; vlevo; do leva; text; soubor; textový soubor",
+        "_tags:en":"align; left; text; file; text file",
+        "fa5":"fa-align-left",
+        "fa5pro":"fa-align-left",
+        "bsi":"bi-justify-left",
+        "mdi":"format_align_left"
+    },
+    "user/alignRight":
+    {
+        "_title:cs":"Rarovnat vpravo",
+        "_title:en":"Align Right",
+        "_tags:cs":"zarovnat; vpravo; do prava; text; soubor; textový soubor",
+        "_tags:en":"align; right; text; file; text file",
+        "fa5":"fa-align-right",
+        "fa5pro":"fa-align-right",
+        "bsi":"bi-justify-right",
+        "mdi":"format_align_right"
+    },
+    "user/caretUp":
+    {
+        "_title:cs":"Stříška nahoru",
+        "_title:en":"Caret up",
+        "_tags:cs":"stříška; nahoru; šipka; směr",
+        "_tags:en":"caret; up; arrow; direction",
+        "fa5":"fa-caret-up",
+        "fa5pro":"fa-caret-up",
+        "bsi":"bi-caret-up",
+        "mdi":"arrow_drop_up"
+    },
+    "user/caretDown":
+    {
+        "_title:cs":"Stříška dolů",
+        "_title:en":"Caret down",
+        "_tags:cs":"stříška; dolů; šipka; směr",
+        "_tags:en":"caret; down; arrow; direction",
+        "fa5":"fa-caret-down",
+        "fa5pro":"fa-caret-down",
+        "bsi":"bi-caret-down",
+        "mdi":"arrow_drop_down"
+    },
+    "user/caretLeft":
+    {
+        "_title:cs":"Stříška vlevo",
+        "_title:en":"Caret left",
+        "_tags:cs":"stříška; vlevo; do leva; šipka; směr",
+        "_tags:en":"caret; left; arrow; direction",
+        "fa5":"fa-caret-left",
+        "fa5pro":"fa-caret-left",
+        "bsi":"bi-caret-left",
+        "mdi":"arrow_left"
+    },
+    "user/caretRight":
+    {
+        "_title:cs":"Stříška vpravo",
+        "_title:en":"Caret right",
+        "_tags:cs":"stříška; vpravo; do prava; šipka; směr",
+        "_tags:en":"caret; right; arrow; direction",
+        "fa5":"fa-caret-right",
+        "fa5pro":"fa-caret-right",
+        "bsi":"bi-caret-right",
+        "mdi":"arrow_right"
     }
 }
