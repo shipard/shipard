@@ -8,7 +8,7 @@ require_once __SHPD_MODULES_DIR__ . 'e10doc/core/core.php';
 
 
 use \E10\utils;
-use \E10\TableView, \E10\TableViewDetail, \Shipard\Viewer\TableViewPanel;
+use \Shipard\Viewer\TableView, \E10\TableViewDetail, \Shipard\Viewer\TableViewPanel;
 use \E10\TableForm;
 use \E10\DbTable;
 use \E10Doc\Core\e10utils;
@@ -766,6 +766,8 @@ class ViewItemsCombo extends ViewItems
 			return;
 
 		$date = ($mainQuery === 'today') ? utils::today() : $this->queryParam ('dateAccounting');
+		if (!$date)
+			$date = utils::today();
 		$fiscalYear = e10utils::todayFiscalYear($this->app, $date);
 
 		$q[] = 'SELECT SUM(quantity) as quantity, SUM(price) as price, MAX(date) as lastDate, item, unit ';
@@ -797,6 +799,9 @@ class ViewItemsCombo extends ViewItems
 	{
 		$mainQuery = $this->mainQueryId ();
 		$date = ($mainQuery === 'today') ? utils::today() : $this->queryParam ('dateAccounting');
+		if (!$date)
+			$date = utils::today();
+
 		array_push($q, ' AND ([items].[validFrom] IS NULL OR [items].[validFrom] <= %d)', $date);
 		array_push($q, ' AND ([items].[validTo] IS NULL OR [items].[validTo] >= %d)', $date);
 	}
