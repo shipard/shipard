@@ -39,8 +39,8 @@ class AddWizard extends \Shipard\Form\Wizard
 			if ($focusedPK !== 0)
 				$this->addCheckBox('replaceDocumentNdx', 'Přepsat aktuálně označený bankovní výpis', $focusedPK, 0);
 
-			$tabs ['tabs'][] = array ('text' => 'Soubor', 'icon' => 'x-content');
-			$tabs ['tabs'][] = array ('text' => 'Text', 'icon' => 'x-properties');
+			$tabs ['tabs'][] = array ('text' => 'Soubor', 'icon' => 'system/formHeader');
+			$tabs ['tabs'][] = array ('text' => 'Text', 'icon' => 'formText');
 			$this->openTabs ($tabs, TRUE);
 
 			$this->openTab ();
