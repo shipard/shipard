@@ -554,6 +554,12 @@
 		"fa5pro": "fa-hashtag",
 		"bsi": "bi-hash",
 		"mdi": "tag"
+	},	
+	"iconDateOfOrigin": {
+		"fa5":"fa-play-circle",
+        "fa5pro":"fa-play-circle",
+        "bsi":"bi-play-circle-fill",
+        "mdi":"play_circle_filled"
 	},
 	
 

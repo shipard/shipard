@@ -313,10 +313,10 @@ class ViewerDashboardWorkOrders extends TableView
 			$title[] = ['text' => $item['customerFullName'], 'icon' => 'system/iconUser', 'class' => 'e10-off block'];
 
 		if ($item['dateIssue'])
-			$title[] = ['icon' => 'icon-play-circle', 'text' => utils::datef ($item ['dateIssue'], '%d'), 'class' => 'label label-default'];
+			$title[] = ['icon' => 'system/iconDateOfOrigin', 'text' => utils::datef ($item ['dateIssue'], '%d'), 'class' => 'label label-default'];
 
 		if ($item['dateDeadlineConfirmed'])
-			$title[] = ['icon' => 'icon-calendar-check-o', 'text' => utils::datef ($item ['dateDeadlineConfirmed'], '%d'), 'class' => 'label label-info'];
+			$title[] = ['icon' => 'system/iconCalendar', 'text' => utils::datef ($item ['dateDeadlineConfirmed'], '%d'), 'class' => 'label label-info'];
 		elseif ($item['dateDeadlineRequested'])
 			$title[] = ['icon' => 'system/iconCalendar', 'text' => utils::datef ($item ['dateDeadlineRequested'], '%d'), 'class' => 'label label-default'];
 

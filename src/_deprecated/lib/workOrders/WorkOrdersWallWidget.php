@@ -60,7 +60,7 @@ class WorkOrdersWallWidget extends WidgetBoard
 
 		if (!count($woGroups))
 		{
-			$icon = 'icon-industry';
+			$icon = 'detailWorkOrders';
 			$wgNdx = 1;
 
 			$tabs['wog-'.$wgNdx] = ['icon' => $icon, 'text' => 'Zakázky', 'action' => 'load-wog-'.$wgNdx];
@@ -69,7 +69,7 @@ class WorkOrdersWallWidget extends WidgetBoard
 
 		foreach ($woGroups as $wgNdx => $wg)
 		{
-			$icon = 'icon-industry';
+			$icon = 'detailWorkOrders';
 			if ($wg['icon'] !== '')
 				$icon = $wg['icon'];
 
@@ -107,10 +107,10 @@ class WorkOrdersWallWidget extends WidgetBoard
 		$this->toolbar = ['tabs' => $tabs];
 
 		$rt = [
-				'viewer-mode-2' => ['text' =>'', 'icon' => 'icon-th', 'action' => 'viewer-mode-2'],
-				'viewer-mode-1' => ['text' =>'', 'icon' => 'icon-th-list', 'action' => 'viewer-mode-1'],
-				'viewer-mode-3' => ['text' =>'', 'icon' => 'icon-square', 'action' => 'viewer-mode-3'],
-				'viewer-mode-0' => ['text' =>'', 'icon' => 'icon-th-large', 'action' => 'viewer-mode-0'],
+				'viewer-mode-2' => ['text' =>'', 'icon' => 'system/dashboardModeTilesSmall', 'action' => 'viewer-mode-2'],
+				'viewer-mode-1' => ['text' =>'', 'icon' => 'system/dashboardModeRows', 'action' => 'viewer-mode-1'],
+				'viewer-mode-3' => ['text' =>'', 'icon' => 'system/dashboardModeSquare', 'action' => 'viewer-mode-3'],
+				'viewer-mode-0' => ['text' =>'', 'icon' => 'system/dashboardModeTilesBig', 'action' => 'viewer-mode-0'],
 			];
 
 		$this->toolbar['rightTabs'] = $rt;

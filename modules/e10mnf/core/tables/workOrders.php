@@ -656,14 +656,14 @@ class FormWorkOrder extends TableForm
 		$dko = $this->dko;
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Záhlaví', 'icon' => 'x-content'];
+			$tabs ['tabs'][] = ['text' => 'Záhlaví', 'icon' => 'system/formHeader'];
 			if (!$dko['disableRows'])
-				$tabs ['tabs'][] = ['text' => 'Řádky', 'icon' => 'x-properties'];
+				$tabs ['tabs'][] = ['text' => 'Řádky', 'icon' => 'system/formRows'];
 			if ($dko['useDescription'])
-				$tabs ['tabs'][] = ['text' => 'Popis', 'icon' => 'icon-pencil'];
+				$tabs ['tabs'][] = ['text' => 'Popis', 'icon' => 'formDescription'];
 			if ($dko['useAddress'])
-				$tabs ['tabs'][] = ['text' => 'Adresy', 'icon' => 'icon-home'];
-			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-attachments'];
+				$tabs ['tabs'][] = ['text' => 'Adresy', 'icon' => 'formAddress'];
+			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();

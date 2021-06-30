@@ -25,5 +25,13 @@
         "fa5pro":"fa-industry-alt",
         "bsi":"bi-building",
         "mdi":"business"
+    },
+
+
+    "formDescription":{
+        "fa5": "fa-pencil-alt",
+		"fa5pro": "fa-pencil-alt",
+		"bsi": "bi-pencil",
+		"mdi": "edit"
     }
 }

@@ -662,12 +662,12 @@ class FormWorkRec extends TableForm
 
 		$dth = $dk['askDateTimeOnHead'];
 
-		$tabs ['tabs'][] = ['text' => 'Popis', 'icon' => 'x-content'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 		if ($useRows)
-			$tabs ['tabs'][] = ['text' => 'Řádky', 'icon' => 'system/iconList'];
-		$tabs ['tabs'][] = ['text' => 'Fakturace', 'icon' => 'e10-docs-invoices-out'];
-		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'x-wrench'];
-		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-attachments'];
+			$tabs ['tabs'][] = ['text' => 'Řádky', 'icon' => 'system/formRows'];
+		$tabs ['tabs'][] = ['text' => 'Fakturace', 'icon' => 'docType/invoicesOut'];
+		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 
 		$this->openForm ();
