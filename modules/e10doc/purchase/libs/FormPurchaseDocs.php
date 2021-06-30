@@ -33,10 +33,10 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 		}
 
 		$this->openForm (self::ltNone);
-			$tabs ['tabs'][] = array ('text' => 'Doklad', 'icon' => 'x-content');
+			$tabs ['tabs'][] = array ('text' => 'Doklad', 'icon' => 'system/formHeader');
 			$this->addAccountingTab ($tabs['tabs']);
-			$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'x-attachments');
-			$tabs ['tabs'][] = array ('text' => 'Nastavení', 'icon' => 'x-wrench');
+			$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'system/formAttachments');
+			$tabs ['tabs'][] = array ('text' => 'Nastavení', 'icon' => 'system/formSettings');
 			$this->openTabs ($tabs, 'right');
 
 			$this->openTab (self::ltNone);
@@ -290,7 +290,7 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 		// -- bank accounts
 		if ($this->readOnly)
 		{
-			$this->addStatic(['text' => $this->recData['bankAccount'], 'icon' => 'icon-institution']);
+			$this->addStatic(['text' => $this->recData['bankAccount'], 'icon' => 'tables/e10doc.base.bankaccounts']);
 		}
 		else
 		{
@@ -310,7 +310,7 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 			}
 			if (count($bankAccounts))
 			{
-				$this->addStatic(['text' => 'Účet pro úhradu:', 'icon' => 'icon-institution', 'class' => 'block']);
+				$this->addStatic(['text' => 'Účet pro úhradu:', 'icon' => 'tables/e10doc.base.bankaccounts', 'class' => 'block']);
 				$this->addInputEnum2('bankAccount', NULL, $bankAccounts);
 			}
 		}
@@ -355,13 +355,13 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 			if ($this->recData[$columnId])
 			{
 				$a = $addresses[$this->recData[$columnId]];
-				$a[0]['icon'] = 'icon-home';
+				$a[0]['icon'] = 'system/iconHome';
 				$this->addStatic($a);
 			}
 		}
 		else
 		{
-			$this->addStatic(['text' => $labelText, 'icon' => 'icon-home', 'class' => 'block']);
+			$this->addStatic(['text' => $labelText, 'icon' => 'system/iconHome', 'class' => 'block']);
 			$this->addInputEnum2($columnId, NULL, $addresses);
 			if ($this->recData[$columnId] === 0 || !isset($addresses[$this->recData[$columnId]]))
 				$this->recData[$columnId] = ($suggestedAddressNdx) ? $suggestedAddressNdx : key($addresses);

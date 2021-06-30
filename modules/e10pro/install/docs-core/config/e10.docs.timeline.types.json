@@ -18,5 +18,5 @@
 				"fullName": "Výdejka zásob", "shortName": "Výdejka", "shortcut": "VÝD", "pluralName": "Výdejky zásob",
 				"icon": "docType/stockOut"},
     "docs-purchase": {"fullName": "Výkupní lístek", "shortName": "Výkup", "shortcut": "VKP", "pluralName": "Výkupní lístky",
-				"icon": "docTypePurchaseTicket"}
+				"icon": "docTypeRedemptions"}
 }

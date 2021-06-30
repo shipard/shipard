@@ -93,9 +93,9 @@ class FormMnfDocs extends \E10Doc\Core\FormHeads
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_LEFT);
 
 		$this->openForm (TableForm::ltNone);
-		$tabs ['tabs'][] = array ('text' => 'Doklad', 'icon' => 'x-content');
-		$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'x-attachments');
-		$tabs ['tabs'][] = array ('text' => 'Nastavení', 'icon' => 'x-wrench');
+		$tabs ['tabs'][] = array ('text' => 'Doklad', 'icon' => 'system/formHeader');
+		$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'system/formAttachments');
+		$tabs ['tabs'][] = array ('text' => 'Nastavení', 'icon' => 'system/formSettings');
 		$this->openTabs ($tabs, 'right');
 
 		$this->openTab (TableForm::ltNone);

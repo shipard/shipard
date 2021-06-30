@@ -271,13 +271,13 @@ class Detail extends \e10\DocumentCard
 				if (count($docsFrom))
 				{
 					$tr['from'] = $docsFrom;
-					$tr ['doc'][] = ['icon' => 'icon-arrow-right', 'text' => ' '];
+					$tr ['doc'][] = ['icon' => 'iconArrowRight', 'text' => ' '];
 				}
-				$tr ['doc'][] = ['icon' => 'icon-file-text-o fa-2x', 'text' => ' '];
+				$tr ['doc'][] = ['icon' => 'iconFileText', 'text' => ' '];
 				if (count($docsTo))
 				{
 					$tr['to'] = $docsTo;
-					$tr ['doc'][] = ['icon' => 'icon-arrow-right', 'text' => ' '];
+					$tr ['doc'][] = ['icon' => 'iconArrowRight', 'text' => ' '];
 				}
 				$tr ['_options'] = ['cellClasses' => ['from' => 'width30 number', 'to' => 'xxwidth50', 'doc' => 'nowrap docLinkIcon']];
 
@@ -332,7 +332,7 @@ class Detail extends \e10\DocumentCard
 				$docsTo[] = $msgItem;
 			}
 
-			$laTitleLeft = ['icon' => 'icon-paperclip', 'text' => 'Přílohy'];
+			$laTitleLeft = ['icon' => 'system/formAttachments', 'text' => 'Přílohy'];
 			$laTitleRight = $msgItem;
 			$laTitleRight ['class'] = 'pull-right';
 
