@@ -2,6 +2,7 @@
 
 namespace Shipard\Form;
 use \translation\dicts\e10\base\system\DictSystem;
+use \Shipard\Utils\Utils;
 
 class Wizard extends \Shipard\Form\TableForm
 {
@@ -112,7 +113,7 @@ class Wizard extends \Shipard\Form\TableForm
 			$c = "<ul 'e10-addwiz-msgs'>";
 			forEach ($this->messagess as $m)
 			{
-				$c .= "<li>" . utils::es ($m['text']) . '</li>';
+				$c .= "<li>" . Utils::es ($m['text']) . '</li>';
 			}
 
 			$c .= '</ul>';

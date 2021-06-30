@@ -2,6 +2,7 @@
 
 namespace Shipard\Report;
 use \Shipard\Utils\Utils;
+use \Shipard\Utils\Str;
 
 
 class MailMessage extends \Shipard\Base\Utility
@@ -102,7 +103,7 @@ class MailMessage extends \Shipard\Base\Utility
 			$sectionNdx = $tableIssues->defaultSection(20); // secretariat
 
 		$issueRecData = [
-			'subject' => $this->subject,
+			'subject' => Str::upToLen ($this->subject, 100),
 			'body' => $this->body,
 			'structVersion' => $tableIssues->currentStructVersion,
 			'source' => 1,
