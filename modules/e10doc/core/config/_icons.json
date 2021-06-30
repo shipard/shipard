@@ -34,7 +34,7 @@
     "docType/proFormaOut":{
         "fa5":"fa-arrow-circle-up",
         "fa5pro":"fa-arrow-circle-up",
-        "bsi":"bi-arrow-up-circle-up",
+        "bsi":"bi-arrow-up-circle",
         "mdi":"arrow_circle_up"
     },
     "docType/contractSale":{
