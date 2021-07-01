@@ -79,9 +79,9 @@ class ViewWallSockets extends TableView
 		$listItem ['i2'] = [];
 
 		if ($item['rackName'])
-			$listItem ['i2'][] = ['text' => $item['rackName'], 'icon' => 'icon-window-maximize', 'class' => ''];
+			$listItem ['i2'][] = ['text' => $item['rackName'], 'icon' => 'tables/mac.lan.racks', 'class' => ''];
 		else
-			$listItem ['i2'][] = ['text' => '!!!', 'icon' => 'icon-window-maximize', 'class' => 'e10-error'];
+			$listItem ['i2'][] = ['text' => '!!!', 'icon' => 'tables/mac.lan.racks', 'class' => 'e10-error'];
 
 		if ($item['lanShortName'])
 			$listItem ['i2'][] = ['text' => $item['lanShortName'], 'icon' => 'system/iconSitemap', 'class' => ''];
@@ -171,7 +171,7 @@ class ViewWallSockets extends TableView
 
 				$dstItem[] = [
 					'text' => $r['portId'], 'suffix' => '#' . $r['portNumber'],
-					'icon' => 'icon-arrow-circle-o-right', 'class' => ''
+					'icon' => 'iconArrowAltRightCircle', 'class' => ''
 				];
 
 				$this->connectedTo[$r['connectedToWallSocket']][] = $dstItem;

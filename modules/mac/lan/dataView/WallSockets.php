@@ -105,7 +105,7 @@ class WallSockets extends \lib\dataView\DataView
 
 				$dstItem[] = [
 					'text' => $r['portId'], /*'suffix' => '#' . $r['portNumber'],*/
-					'icon' => 'icon-arrow-circle-o-right', 'class' => ''
+					'icon' => 'iconArrowAltRightCircle', 'class' => ''
 				];
 
 				$data[$r['connectedToWallSocket']]['connectedTo'][] = $dstItem;

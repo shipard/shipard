@@ -55,9 +55,9 @@ class ViewMacs extends TableView
 
 		$listItem['i2'] = [];
 		if (!utils::dateIsBlank($item['updated']))
-			$listItem['i2'][] = ['text' => utils::datef($item['updated'], '%S %T'), 'icon' => 'icon-clock-o', 'class' => ''];
+			$listItem['i2'][] = ['text' => utils::datef($item['updated'], '%S %T'), 'icon' => 'system/iconClock', 'class' => ''];
 //		if (!utils::dateIsBlank($item['created']))
-//			$listItem['i2'][] = ['text' => utils::datef($item['created'], '%S %T'), 'icon' => 'icon-play-circle-o', 'class' => 'e10-small'];
+//			$listItem['i2'][] = ['text' => utils::datef($item['created'], '%S %T'), 'icon' => 'system/iconDateOfOrigin', 'class' => 'e10-small'];
 
 
 		return $listItem;

@@ -57,10 +57,10 @@ class ViewSources extends TableView
 		$listItem ['t2'][] = ['text' => $sourceTypes [$item ['sourceType']], 'class' => 'label label-default'];
 
 		if ($item['serverId'])
-			$listItem ['t2'][] = ['text' => $item ['serverId'], 'class' => 'label label-default', 'icon' => ($item['serverKind'] == 70) ? 'icon-arrows-alt' : 'icon-server'];
+			$listItem ['t2'][] = ['text' => $item ['serverId'], 'class' => 'label label-default', 'icon' => ($item['serverKind'] == 70) ? 'iconArrows' : 'tables/e10pro.hosting.server.servers'];
 
 		if ($item['url'] !== '')
-			$listItem ['t2'][] = ['text' => $item ['url'], 'class' => 'label label-default', 'icon' => 'icon-globe'];
+			$listItem ['t2'][] = ['text' => $item ['url'], 'class' => 'label label-default', 'icon' => 'tables/e10.web.servers'];
 
 		return $listItem;
 	}

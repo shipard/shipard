@@ -89,7 +89,7 @@ class ViewIPAddressLists extends TableView
 		foreach ($rows as $r)
 		{
 			$this->address[$r['addressList']][] = [
-				'text' => $r['addrFullName'], 'class' => 'label label-default', 'icon' => 'icon-crosshairs',
+				'text' => $r['addrFullName'], 'class' => 'label label-default', 'icon' => 'tables/mac.lan.ipAddress',
 				'suffix' => $r['addrHostName']
 			];
 		}

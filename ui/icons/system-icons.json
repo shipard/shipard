@@ -454,10 +454,10 @@
 		"mdi": "place"
 	},
 	"iconSitemap":{
-		"fa5": "fa-map-marker-alt",
-		"fa5pro": "fa-map-marker-alt",
-		"bsi": "bi-geo-alt-fill",
-		"mdi": "place"
+		"fa5": "fa-sitemap",
+		"fa5pro": "fa-sitemap",
+		"bsi": "bi-diagram-3",
+		"mdi": "device_hub"
 	},
 	"iconCogs":{
 		"fa5": "fa-cogs",
@@ -596,6 +596,12 @@
 		"fa5pro": "fa-cube",
 		"bsi":"bi-bank",
         "mdi":"account_balance"
+	},	
+	"iconClock": {
+		"fa5": "fa-clock",
+		"fa5pro": "fa-clock",
+		"bsi": "bi-clock",
+		"mdi": "schedule"
 	},
 	
 
