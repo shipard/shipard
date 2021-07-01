@@ -66,7 +66,8 @@ function createNewPerson (\Shipard\Application\Application $app, $personData)
 			utils::addToArray ($newAddress, $address, 'street', '');
 			utils::addToArray ($newAddress, $address, 'city', '');
 			utils::addToArray ($newAddress, $address, 'zipcode', '');
-			utils::addToArray ($newAddress, $address, 'worldCountry', 60);
+			utils::addToArray ($newAddress, $address, 'worldCountry', World::countryNdx($app, $app->cfgItem ('options.core.ownerDomicile', 'cz')));
+			utils::addToArray ($newAddress, $address, 'country', $app->cfgItem ('options.core.ownerDomicile', 'cz'));
 			$app->db->query ("INSERT INTO [e10_persons_address]", $newAddress);
 		}
 	}
@@ -1786,7 +1787,8 @@ class AddWizard extends \Shipard\Form\Wizard
 		$newAddress ['street'] = $this->recData ['street'];
 		$newAddress ['city'] = $this->recData ['city'];
 		$newAddress ['zipcode'] = $this->recData ['zipcode'];
-		$newAddress ['worldCountry'] = $this->app->cfgItem ('options.core.ownerDomicile', 'cz');//60; // 'cz' - TODO: from any settings
+		$newAddress ['worldCountry'] = 60; 	// CZ - fixed value
+		$newAddress ['country'] = 'cz'; 		// CZ - fixed value
 		$newPerson ['address'][] = $newAddress;
 
 		$newPerson ['ids'][] = array ('type' => 'oid', 'value' => $this->recData ['ic']);
