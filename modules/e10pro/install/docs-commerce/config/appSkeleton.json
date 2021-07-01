@@ -10,7 +10,7 @@
 				},
 				{"t1": "Zakázky", "object": "viewer", "table": "e10mnf.core.workOrders", "viewer": "default",
 					"enabledCfgItem": "options.e10doc-commerce.useWorkOrders", "order": 200000},
-				{"t1": "Přijaté objednávky", "object": "viewer", "table": "e10doc.core.heads", "viewer": "orderIn",
+				{"t1": "Přijaté objednávky", "object": "viewer", "table": "e10doc.core.heads", "viewer": "orderIn", "icon":"docType/ordersIn",
 					"enabledCfgItem": "options.e10doc-commerce.useOrdersIn", "order": 300000},
 				{"t1": "Vydané objednávky", "object": "viewer", "table": "e10buy.orders.orders", "viewer": "default",
 					"enabledCfgItem": "options.e10doc-commerce.useOrdersOut", "order": 400000},

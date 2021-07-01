@@ -42,7 +42,7 @@ class TableWorkOrders extends DbTable
 		}
 
 		$docInfo = [];
-		$docInfo[] = ['text' => $recData ['docNumber'], 'icon' => 'icon-file', 'class' => ''];
+		$docInfo[] = ['text' => $recData ['docNumber'], 'icon' => 'system/iconFile', 'class' => ''];
 		$docInfo[] = ['text' => $recData ['title'], 'class' => 'e10-small'];
 
 		$hdr ['info'][] = ['class' => 'info', 'value' => $docInfo];
@@ -388,16 +388,16 @@ class ViewWorkOrders extends TableView
 			$listItem ['t3'] = $item ['title'];
 
 		$props = [];
-		$docNumber = ['icon' => 'icon-file', 'text' => $item ['docNumber'], 'class' => ''];
+		$docNumber = ['icon' => 'system/iconFile', 'text' => $item ['docNumber'], 'class' => ''];
 		if ($item['refId1'] !== '')
 			$docNumber['suffix'] = $item['refId1'];
 		$props[] = $docNumber;
 
 		if ($item['dateIssue'])
-			$props[] = ['icon' => 'icon-play-circle', 'text' => utils::datef ($item ['dateIssue'], '%d'), 'class' => ''];
+			$props[] = ['icon' => 'system/iconDateOfOrigin', 'text' => utils::datef ($item ['dateIssue'], '%d'), 'class' => ''];
 
 		if ($item['dateDeadlineConfirmed'])
-			$props[] = ['icon' => 'icon-calendar-check-o', 'text' => utils::datef ($item ['dateDeadlineConfirmed'], '%d'), 'class' => ''];
+			$props[] = ['icon' => 'system/iconCalendar', 'text' => utils::datef ($item ['dateDeadlineConfirmed'], '%d'), 'class' => ''];
 		elseif ($item['dateDeadlineRequested'])
 			$props[] = ['icon' => 'system/iconCalendar', 'text' => utils::datef ($item ['dateDeadlineRequested'], '%d'), 'class' => ''];
 

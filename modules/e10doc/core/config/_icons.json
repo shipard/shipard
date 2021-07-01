@@ -44,22 +44,22 @@
         "mdi":"thumb_up"
     },
     "docType/workOrders":{
-        "fa5":"fa-briefcase",
-        "fa5pro":"fa-briefcase",
-        "bsi":"bi-briefcase",
-        "mdi":"business_center"
+        "fa5":"fa-industry",
+        "fa5pro":"fa-industry-alt",
+        "bsi":"bi-building",
+        "mdi":"business"
     },
     "docType/ordersIn":{
-        "fa5":"fa-arrow-alt-circle-down",
-        "fa5pro":"fa-arrow-alt-circle-down",
-        "bsi":"bi-file-arrow-down-fill",
-        "mdi":"arrow_circle_down"
+        "fa5":"fa-cart-arrow-down",
+        "fa5pro":"fa-cart-arrow-down",
+        "bsi":"bi-cart-plus",
+        "mdi":"add_shopping_cart"
     },
     "docType/ordersOut":{
-        "fa5":"fa-arrow-alt-circle-up",
-        "fa5pro":"fa-arrow-alt-circle-up",
-        "bsi":"bi-file-arrow-up-fill",
-        "mdi":"arrow_circle_up"
+        "fa5":"fa-shopping-basket",
+        "fa5pro":"fa-shopping-basket",
+        "bsi":"bi-basket",
+        "mdi":"shopping_basket"
     },
     "docType/deliveryNote":{
         "fa5":"fa-file-signature",
