@@ -595,9 +595,9 @@ class FormHead extends TableForm
 
 		$this->openForm (TableForm::ltNone);
 
-			$tabs ['tabs'][] = ['text' => 'Doklad', 'icon' => 'x-content'];
-			$tabs ['tabs'][] = ['text' => 'Poznámka', 'icon' => 'x-content'];
-			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-attachments'];
+			$tabs ['tabs'][] = ['text' => 'Záhlaví', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Poznámka', 'icon' => 'system/formNote'];
+			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 			$this->openTabs ($tabs, TRUE);
 
 			$this->openTab (TableForm::ltNone);
