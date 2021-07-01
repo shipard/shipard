@@ -26,7 +26,6 @@ class IoTSensorsDataReceiver extends Utility
 		$srv = $this->db()->query('SELECT lan FROM [mac_lan_devices] WHERE [ndx] = %i', $serverNdx)->fetch();
 		if (!$srv)
 			return;
-		error_log("____REC3: ".json_encode($data));
 
 		$now = new \DateTime();
 
