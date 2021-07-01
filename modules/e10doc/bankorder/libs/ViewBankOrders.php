@@ -69,14 +69,14 @@ class ViewBankOrders extends \E10Doc\Core\ViewHeads
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['icon'] = $this->icon;
 		$listItem ['t1'] = utils::datef($item['dateDue'], '%d');
-		$listItem ['i1'] = ['icon' => 'icon-minus-square', 'text' => utils::nf ($item['debit'], 2)];
+		$listItem ['i1'] = ['icon' => 'system/iconMinusSquare', 'text' => utils::nf ($item['debit'], 2)];
 
 		if ($item['credit'] != 0.0)
-			$listItem ['i2'] = ['icon' => 'icon-plus-square', 'text' => utils::nf ($item['credit'], 2)];
+			$listItem ['i2'] = ['icon' => 'system/iconPlusSquare', 'text' => utils::nf ($item['credit'], 2)];
 
 		$listItem ['t3'] = $item ['title'];
 
-		$props [] = ['icon' => 'icon-file', 'text' => $item ['docNumber']];
+		$props [] = ['icon' => 'system/iconFile', 'text' => $item ['docNumber']];
 
 		$listItem ['t2'] = $props;
 		return $listItem;

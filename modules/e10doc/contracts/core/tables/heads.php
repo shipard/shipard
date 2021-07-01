@@ -48,7 +48,7 @@ class TableHeads extends DbTable
 	{
 		$hdr = $this->createPersonHeaderInfo ($recData['person'], $recData);
 		$hdr ['icon'] = 'icon-thumbs-up';
-		$docInfo [] = array ('text' => $recData ['contractNumber'] . ' ▪︎ ' .'Smlouva prodejní', 'icon' => 'icon-file');
+		$docInfo [] = array ('text' => $recData ['contractNumber'] . ' ▪︎ ' .'Smlouva prodejní', 'icon' => 'system/iconFile');
 		$hdr ['info'][] = array ('class' => 'title', 'value' => $docInfo);
 
 		$now = time ();
@@ -492,7 +492,7 @@ class ViewHeads extends TableView
 
 		$listItem ['i2'] = $item['contractNumber'];
 
-		$props [] = ['icon' => 'icon-file', 'text' => $item['docNumber'], 'class' => ''];
+		$props [] = ['icon' => 'system/iconFile', 'text' => $item['docNumber'], 'class' => ''];
 
 		$props [] = ['icon' => 'system/actionPlay', 'text' => utils::datef ($item['start'], '%D'), 'class' => ''];
 		if ($item['end'])

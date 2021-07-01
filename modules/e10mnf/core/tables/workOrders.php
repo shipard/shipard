@@ -402,7 +402,7 @@ class ViewWorkOrders extends TableView
 			$props[] = ['icon' => 'system/iconCalendar', 'text' => utils::datef ($item ['dateDeadlineRequested'], '%d'), 'class' => ''];
 
 		if ($item['dateClosed'])
-			$props[] = ['icon' => 'system/actionStop', 'text' => utils::datef ($item ['dateClosed'], '%d'), 'class' => ''];
+			$props[] = ['icon' => 'system/iconStop', 'text' => utils::datef ($item ['dateClosed'], '%d'), 'class' => ''];
 
 		$listItem ['t2'] = $props;
 

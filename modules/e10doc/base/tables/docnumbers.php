@@ -163,7 +163,7 @@ class ViewDocNumbers extends TableView
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
 		$props = [];
-		$props[] = ['text' => $docType['fullName'], 'class' => 'label label-default', 'icon' => 'icon-file-o'];
+		$props[] = ['text' => $docType['fullName'], 'class' => 'label label-default', 'icon' => 'system/iconFile'];
 
 		if ($item ['docKind'])
 			$props[] = ['text' => $docKind['shortName'], 'icon' => 'icon-flag-o', 'class' => 'label label-default'];

@@ -29,12 +29,12 @@ class ViewCmnBkpDocs extends \e10doc\core\ViewHeads
 			$listItem ['i1']['prefix'] = $this->currencies[$item ['currency']]['shortcut'];
 
 		$props = [];
-		$docNumber = ['icon' => 'icon-file', 'text' => $item ['docNumber'], 'class' => ''];
+		$docNumber = ['icon' => 'system/iconFile', 'text' => $item ['docNumber'], 'class' => ''];
 		if (isset($item['docStateAcc']) && $item['docStateAcc'] == 9)
 			$docNumber['class'] = 'e10-error';
 		$props [] = $docNumber;
 
-		$props [] = ['i' => 'calendar', 'text' => \E10\df ($item['dateAccounting'], '%D'), 'class' => ''];
+		$props [] = ['icon' => 'system/iconCalendar', 'text' => \E10\df ($item['dateAccounting'], '%D'), 'class' => ''];
 		$listItem ['t2'] = $props;
 
 		if ($item ['title'] != '')

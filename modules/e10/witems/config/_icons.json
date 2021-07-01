@@ -94,5 +94,14 @@
 		"fa5pro": "fa-filter",
 		"bsi": "bi-funnel",
 		"mdi": "filter_alt"
+    },
+
+
+
+    "iconFolder":{
+        "fa5":"fa-folder-open",
+        "fa5pro":"fa-folder-open",
+        "bsi":"bi-folder2-open",
+        "mdi":"folder_open"
     }
 }

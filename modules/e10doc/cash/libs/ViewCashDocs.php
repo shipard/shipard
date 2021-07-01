@@ -34,9 +34,9 @@ class ViewCashDocs extends \e10doc\core\ViewHeads
 		$listItem ['t1'] = $item['personFullName'];
 
 		if ($item['cashBoxDir'] == 1)
-			$listItem ['i1'][] = array ('icon' => 'icon-plus-square', 'text' => \E10\nf ($item['toPay'], 2));
+			$listItem ['i1'][] = array ('icon' => 'system/iconPlusSquare', 'text' => \E10\nf ($item['toPay'], 2));
 		else
-			$listItem ['i1'][] = array ('icon' => 'icon-minus-square', 'text' => \E10\nf ($item['toPay'], 2));
+			$listItem ['i1'][] = array ('icon' => 'system/iconMinusSquare', 'text' => \E10\nf ($item['toPay'], 2));
 
 		if ($item ['taxPayer'])
 		{

@@ -212,7 +212,7 @@ class TableDocuments extends DbTable
 			if (isset($params['folder']))
 				$addParams .= '&__folder=' . $params['folder'];
 
-			$icon = ($docsKind['icon'] !== '') ? $docsKind['icon'] : 'icon-file';
+			$icon = ($docsKind['icon'] !== '') ? $docsKind['icon'] : 'system/iconFile';
 			$txtTitle = $docsKind['fn'];
 			$txtText = '';
 			$addButton = [

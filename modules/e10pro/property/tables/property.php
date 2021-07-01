@@ -125,9 +125,9 @@ class TableProperty extends DbTable
 			return 'icon-cubes';
 
 		if ($recData['propertyCategory'] === self::pcShortTerm || $recData['propertyCategory'] === self::pcLeasing)
-			return 'icon-cube';
+			return 'system/iconCube';
 		if ($recData['propertyCategory'] === self::pcLongTermLanded)
-			return 'icon-bars';
+			return 'report/nonDeps';
 
 		return parent::tableIcon ($recData, $options);
 	}

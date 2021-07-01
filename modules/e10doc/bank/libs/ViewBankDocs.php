@@ -71,16 +71,16 @@ class ViewBankDocs extends \e10doc\core\ViewHeads
 
 		$dc = array();
 		if ($item['debit'] != 0.0)
-			$dc [] = array ('icon' => 'icon-minus-square', 'text' => \E10\nf ($item['debit'], 2));
+			$dc [] = array ('icon' => 'system/iconMinusSquare', 'text' => \E10\nf ($item['debit'], 2));
 		if ($item['credit'] != 0.0)
-			$dc [] = array ('icon' => 'icon-plus-square', 'text' => \E10\nf ($item['credit'], 2));
+			$dc [] = array ('icon' => 'system/iconPlusSquare', 'text' => \E10\nf ($item['credit'], 2));
 		$listItem ['i2'] = $dc;
 
 		$listItem ['t3'] = $item ['title'];
 
 		$props [] = ['icon' => 'system/iconCalendar', 'text' => \E10\df ($item['dateAccounting'], '%D'), 'class' => ''];
 
-		$docNumber = ['icon' => 'icon-file', 'text' => $item ['docNumber'], 'class' => ''];
+		$docNumber = ['icon' => 'system/iconFile', 'text' => $item ['docNumber'], 'class' => ''];
 		if (isset($item['docStateAcc']) && $item['docStateAcc'] == 9)
 			$docNumber['class'] = 'e10-error';
 		$props [] = $docNumber;

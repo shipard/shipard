@@ -246,7 +246,7 @@
 	"iconFile":{
 		"fa5": "fa-file",
 		"fa5pro": "fa-file",
-		"bsi": "bi-file-earmark-fill",
+		"bsi": "bi-file-earmark",
 		"mdi": "insert_drive_file"
 	},
 	"iconOwner":{
@@ -572,6 +572,30 @@
 		"fa5pro": "fa-paperclip",
 		"bsi": "bi-paperclip",
 		"mdi": "attach_file"
+	},	
+	"iconPlusSquare": {
+		"fa5": "fa-plus-square",
+		"fa5pro": "fa-plus-square",
+		"bsi": "bi-plus-square",
+		"mdi": "add_circle"
+	},	
+	"iconMinusSquare": {
+		"fa5":"fa-minus-square",
+        "fa5pro":"fa-minus-square",
+        "bsi":"bi-dash-square",
+        "mdi":"remove_circle"
+	},	
+	"iconStop": {
+		"fa5":"fa-stop",
+        "fa5pro":"fa-stop",
+        "bsi":"bi-stop",
+        "mdi":"stop"
+	},	
+	"iconCube": {
+		"fa5": "fa-cube",
+		"fa5pro": "fa-cube",
+		"bsi":"bi-bank",
+        "mdi":"account_balance"
 	},
 	
 

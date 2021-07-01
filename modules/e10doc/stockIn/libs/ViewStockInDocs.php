@@ -26,7 +26,7 @@ class ViewStockInDocs extends \e10doc\core\ViewHeads
 
 		$listItem ['t3'] = $item ['title'];
 
-		$docNumber = ['icon' => 'icon-file', 'text' => $item ['docNumber'], 'class' => ''];
+		$docNumber = ['icon' => 'system/iconFile', 'text' => $item ['docNumber'], 'class' => ''];
 		if (isset($item['docStateAcc']) && $item['docStateAcc'] == 9)
 			$docNumber['class'] = 'e10-error';
 		$props [] = $docNumber;

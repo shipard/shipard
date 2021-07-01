@@ -45,7 +45,7 @@ class ViewerItemsByCategories extends \E10\Witems\ViewItems
 		foreach ($cats as $catTreeId => $cat)
 		{
 			$icNdx = $cat['ndx'];
-			$ic = [['text' => $cat['shortName'], 'icon' => ($cat['icon'] !== '') ? $cat['icon'] : 'system/iconFile', 'subItems' => []]];
+			$ic = [['text' => $cat['shortName'], 'icon' => ($cat['icon'] !== '') ? $cat['icon'] : 'iconFolder', 'subItems' => []]];
 
 			$dst[$icNdx] = $ic;
 			if (isset($cat['cats']) && count($cat['cats']))
