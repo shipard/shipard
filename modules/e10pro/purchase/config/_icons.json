@@ -1,0 +1,9 @@
+{
+
+	"iconPriceList":{
+		"fa5": "fa-dollar-sign",
+		"fa5pro": "fa-usd-square",
+		"bsi": "bi-currency-dollar",
+		"mdi": "request_quote"
+	}
+}

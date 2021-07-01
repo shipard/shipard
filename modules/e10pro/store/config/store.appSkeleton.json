@@ -4,8 +4,8 @@
 			"items": [
 				{"t1": "Prodejky", "disabledCfgItem": "options.e10doc-sale.disableCashreg", "object": "viewer", "table": "e10doc.core.heads", "viewer": "cashregister", "icon": "docType/cashReg", "order": 10000},
 				{"t1": "Položky", "object": "viewer", "table": "e10.witems.items", "viewer": "default", "order": 100000},
-				{"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "default", "icon": "e10-persons-persons", "order": 200000},
-				{"t1": "Fakturace", "object": "viewer", "table": "e10doc.core.heads", "viewer": "invoicesOut", "icon": "e10-docs-invoices-out", "order": 300000},
+				{"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "default", "order": 200000},
+				{"t1": "Fakturace", "object": "viewer", "table": "e10doc.core.heads", "viewer": "invoicesOut", "icon": "docType/invoicesOut", "order": 300000},
 				{"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10pro-terminal", "icon": "system/iconReports", "order": 800000}
 			]
 		},

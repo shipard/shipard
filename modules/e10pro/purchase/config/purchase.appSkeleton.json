@@ -3,14 +3,14 @@
 		"terminal": {"url": "/app/terminal", "zone": "sec", "objectType": "panel", "icon": "system/iconTerminal", "name": "", "order": 900, "checkWorkplace": 1,
 								 "rightBar": "\\mac\\vs\\libs\\VSUtils::camerasBarRight", "leftBar": "\\mac\\vs\\libs\\VSUtils::camerasBarLeft",
 			"items": [
-				{"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "suppliers", "icon": "e10-persons-persons", "order": 10000, "hint": "terminal"},
+				{"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "suppliers", "order": 10000, "hint": "terminal"},
 				{"t1": "Výkupy", "object": "viewer", "table": "e10doc.core.heads", "viewer": "purchase", "icon":"docTypeRedemptions", "order": 20000},
 				{"t1": "Prodejky", "disabledCfgItem": "options.e10doc-sale.disableCashreg", "object": "viewer", "table": "e10doc.core.heads", "icon":"docType/cashReg", "viewer": "cashregister", "order": 50000},
 				{"t1": "Pokladna", "object": "viewer", "table": "e10doc.core.heads", "viewer": "cash",
-					"icon": "e10-docs-cash", "order": 600000},
+					"icon": "docType/cash", "order": 600000},
 				{"t1": "Položky", "object": "viewer", "table": "e10.witems.items", "viewer": "default", "order": 100000},
 				{"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10pro-terminal", "icon": "system/iconReports", "order": 800000},
-				{"t1": "Ceník", "object": "report", "class": "e10pro.reports.pricelist.priceListPurchase", "subclass": "", "icon": "x-price", "order": 990000}
+				{"t1": "Ceník", "object": "report", "class": "e10pro.reports.pricelist.priceListPurchase", "subclass": "", "icon": "iconPriceList", "order": 990000}
 			],
 			"smallItems": [
 				{"t1": "Registrace", "object": "viewer", "table": "e10pro.custreg.registrations", "viewer": "default", "order": 10000, "hint": "terminal"}
