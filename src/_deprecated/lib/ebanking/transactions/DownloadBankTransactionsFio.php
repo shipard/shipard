@@ -2,7 +2,8 @@
 
 namespace lib\ebanking\transactions;
 
-use E10\utils;
+use \Shipard\Utils\Utils;
+use \Shipard\Utils\Str;
 
 
 /**
@@ -21,7 +22,7 @@ class DownloadBankTransactionsFio extends \lib\ebanking\transactions\DownloadBan
 		// https://www.fio.cz/ib_api/rest/last/API-TOKEN/transactions.xml
 		$url = 'https://www.fio.cz/ib_api/rest/last/'.$this->bankAccountRec['apiTokenTransactions'].'/'.'transactions.json';
 
-		$tmpFileName = utils::tmpFileName('json');
+		$tmpFileName = Utils::tmpFileName('json');
 
 		$data = @file_get_contents($url);
 		if ($data === FALSE)
@@ -82,7 +83,7 @@ class DownloadBankTransactionsFio extends \lib\ebanking\transactions\DownloadBan
 			if (isset($r['column8']))
 				$notes[] = $r['column8']['value'];
 
-			$newItem['note'] = implode(', ', $notes);
+			$newItem['note'] = Str::upToLen(implode(', ', $notes), 180);
 
 			$this->addTransaction($newItem);
 		}
