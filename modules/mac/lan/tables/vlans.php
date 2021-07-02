@@ -161,7 +161,7 @@ class ViewVlans extends TableView
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
-			$l = ['text' => $r['vlanName'], 'suffix' => $r['vlanNum'], 'icon' => 'icon-road', 'class' => 'label label-primary'];
+			$l = ['text' => $r['vlanName'], 'suffix' => $r['vlanNum'], 'icon' => 'tables/mac.lan.vlans', 'class' => 'label label-primary'];
 			$this->groupsInfo[$r['dstRecId']][] = $l;
 		}
 
@@ -176,7 +176,7 @@ class ViewVlans extends TableView
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
-			$l = ['text' => $r['vlanName'], 'icon' => ($r['vlanIsGroup']?'icon-folder-o':'icon-road'), 'class' => 'label label-success'];
+			$l = ['text' => $r['vlanName'], 'icon' => ($r['vlanIsGroup']?'icon-folder-o':'tables/mac.lan.vlans'), 'class' => 'label label-success'];
 			if (!$r['vlanIsGroup'])
 				$l['suffix'] = $r['vlanNum'];
 			$this->groupsInfo[$r['srcRecId']][] = $l;

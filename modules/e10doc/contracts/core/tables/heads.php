@@ -496,7 +496,7 @@ class ViewHeads extends TableView
 
 		$props [] = ['icon' => 'system/actionPlay', 'text' => utils::datef ($item['start'], '%D'), 'class' => ''];
 		if ($item['end'])
-			$props [] = ['i' => 'stop', 'text' => utils::datef ($item['end'], '%D'), 'class' => ''];
+			$props [] = ['icon' => 'system/iconStop', 'text' => utils::datef ($item['end'], '%D'), 'class' => ''];
 
 		$ck = isset($this->contractKinds[$item['docKind']]) ? $this->contractKinds[$item['docKind']] : NULL;
 		if ($ck)

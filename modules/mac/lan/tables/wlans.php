@@ -69,7 +69,7 @@ class ViewWlans extends TableView
 		else
 			$listItem ['i2'] = ['text' => '!!!', 'icon' => 'system/iconSitemap'];
 
-		$listItem ['t2'] = ['text' => $item['ssid'], 'icon' => 'icon-wifi', 'class' => ''];
+		$listItem ['t2'] = ['text' => $item['ssid'], 'icon' => 'tables/mac.lan.wlans', 'class' => ''];
 
 		return $listItem;
 	}

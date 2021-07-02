@@ -442,6 +442,18 @@
         "bsi":"bi-sliders",
         "mdi":"auto_fix_high"
 	},
+	"iconArrows":{
+		"fa5":"fa-arrows-alt",
+        "fa5pro":"fa-arrows-alt",
+        "bsi":"bi-arrows-move",
+        "mdi":"zoom_out_map"
+	},
+	"iconArrowAltRightCircle":{
+		"fa5":"fa-arrow-alt-circle-right",
+        "fa5pro":"fa-arrow-alt-circle-right",
+        "bsi":"bi-arrow-right-circle",
+        "mdi":"forward"
+	},
 	
 
 

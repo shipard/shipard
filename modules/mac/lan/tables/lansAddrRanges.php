@@ -98,10 +98,10 @@ class ViewLansAddrRanges extends TableView
 		$listItem ['i2'] = [];
 
 		if ($item['smFullName'])
-			$listItem ['i2'][] = ['text' => $item['smFullName'], 'icon' => 'icon-arrows-alt', 'class' => 'label label-info'];
+			$listItem ['i2'][] = ['text' => $item['smFullName'], 'icon' => 'iconArrows', 'class' => 'label label-info'];
 
 		if ($item['vlanId'])
-			$listItem ['i2'][] = ['text' => $item['vlanId'], 'icon' => 'icon-road', 'class' => ''];
+			$listItem ['i2'][] = ['text' => $item['vlanId'], 'icon' => 'tables/mac.lan.vlans', 'class' => ''];
 
 		if ($item['lanShortName'])
 			$listItem ['i2'][] = ['text' => $item['lanShortName'], 'icon' => 'system/iconSitemap', 'class' => ''];

@@ -956,17 +956,6 @@
 		"bsi": "bi-wifi",
 		"mdi": "wifi"
     },
-    "user/blind":
-    {
-        "_title:cs":"WiFi",
-        "_title:en":"WiFi",
-        "_tags:cs":"wifi; internet; připojení",
-        "_tags:en":"wifi; internet; connection",
-        "fa5": "fa-wifi",
-		"fa5pro": "fa-wifi",
-		"bsi": "bi-wifi",
-		"mdi": "wifi"
-    },
     "user/universalAccess":
     {
         "_title:cs":"Přístup",

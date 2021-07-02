@@ -104,9 +104,9 @@ class ViewPatchPanels extends TableView
 		$listItem ['i1'] = ['text' => $item['id'], 'class' => 'id'];
 
 		if ($item['rackName'])
-			$listItem ['t2'] = ['text' => $item['rackName'], 'suffix' => strval($item['rackPos']), 'icon' => 'icon-window-maximize'];
+			$listItem ['t2'] = ['text' => $item['rackName'], 'suffix' => strval($item['rackPos']), 'icon' => 'tables/mac.lan.racks'];
 		else
-			$listItem ['t2'] = ['text' => '!!!', 'icon' => 'icon-window-maximize', 'class' => 'e10-error'];
+			$listItem ['t2'] = ['text' => '!!!', 'icon' => 'tables/mac.lan.racks', 'class' => 'e10-error'];
 
 		$listItem['i2'] = ['text' => $ppkCfg['sn'], 'class' => 'label label-default'];
 
@@ -162,7 +162,7 @@ class ViewPatchPanelsTree extends ViewPatchPanels
 		$this->usePanelLeft = TRUE;
 		$this->linesWidth = 40;
 
-		$this->racks['0'] = $ic = [['text' => 'Vše', 'icon' => 'icon-file-o', ]];
+		$this->racks['0'] = $ic = [['text' => 'Vše', 'icon' => 'system/iconFile', ]];
 		$this->loadRacks();
 
 		$this->racksParam = new \E10\Params ($this->app);
@@ -198,7 +198,7 @@ class ViewPatchPanelsTree extends ViewPatchPanels
 				$this->racks['L'.$lanNdx] = $ic;
 			}
 
-			$ic = [['text' => $r['fullName'], 'icon' => 'icon-window-maximize', 'addParams' => ['rack' => $rackNdx]]];
+			$ic = [['text' => $r['fullName'], 'icon' => 'tables/mac.lan.racks', 'addParams' => ['rack' => $rackNdx]]];
 			$this->racks['L'.$lanNdx][0]['subItems'][$rackNdx] = $ic;
 		}
 	}

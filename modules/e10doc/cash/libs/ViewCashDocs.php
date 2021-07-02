@@ -44,8 +44,8 @@ class ViewCashDocs extends \e10doc\core\ViewHeads
 				$listItem ['i2'] = 'bez DPH: ' . \E10\nf ($item['sumBase'], 2);
 		}
 
-		$props [] = ['i' => 'file', 'text' => $item ['docNumber'], 'class' => ''];
-		$props [] = ['i' => 'calendar', 'text' => \E10\df ($item['dateAccounting'], '%D'), 'class' => ''];
+		$props [] = ['icon' => 'system/iconFile', 'text' => $item ['docNumber'], 'class' => ''];
+		$props [] = ['icon' => 'system/iconCalendar', 'text' => \E10\df ($item['dateAccounting'], '%D'), 'class' => ''];
 		$this->renderRow_rosProps ($item, $props);
 		$listItem ['t2'] = $props;
 
