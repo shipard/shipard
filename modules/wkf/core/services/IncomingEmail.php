@@ -3,8 +3,9 @@
 
 namespace wkf\core\services;
 
-use \PhpMimeMailParser\Parser, \PhpMimeMailParser\Attachment, e10\Utility, e10\utils, \e10\str, wkf\core\TableIssues;
+use \PhpMimeMailParser\Parser, \PhpMimeMailParser\Attachment, e10\Utility, e10\utils, wkf\core\TableIssues;
 use \e10doc\core\libs\DocsModes;
+use \Shipard\Utils\Str;
 
 
 /**
@@ -82,7 +83,7 @@ class IncomingEmail extends Utility
 		];
 
 		$subject = $this->emailParser->getHeader('subject');
-		$issueRecData['subject'] = $this->__decodeHeader($subject);
+		$issueRecData['subject'] = Str::upToLen($this->__decodeHeader($subject), 100);
 
 		$text = $this->emailParser->getMessageBody('text');
 		$html = $this->emailParser->getMessageBody('html');
@@ -555,7 +556,7 @@ class IncomingEmail extends Utility
 		$headers = $this->emailParser->getHeaders();
 		forEach ($headers as $hdrIdOrig => $hdrValues)
 		{
-			$hdrId = str::tolower($hdrIdOrig);
+			$hdrId = Str::tolower($hdrIdOrig);
 			if (!array_key_exists($hdrId, self::$emlHeadersAddr) && !in_array($hdrId, self::$emlHeadersOther))
 				continue;
 			$h = $this->parseHeader ($hdrValues);
