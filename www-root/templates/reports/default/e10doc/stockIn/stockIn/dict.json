@@ -81,6 +81,12 @@
     "it": "Data di scadenza",
     "sk": "Dátum splatnosti"
   },
+  "Účetní datum": {
+    "de": "Abrechnungsdatum",
+    "en": "Accounting date",
+    "it": "Data di contabile",
+    "sk": "Účtovný dátum"
+  },
   "Telefon": {
     "de": "Telefon",
     "en": "Phone",
