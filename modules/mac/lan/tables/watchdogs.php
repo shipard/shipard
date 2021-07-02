@@ -94,9 +94,9 @@ class ViewWatchdogs extends TableView
 
 		$props = [];
 		if ($wd)
-			$props[] = ['text' => $wd['fn'], 'icon' => 'icon-heartbeat', 'class' => 'label label-default'];
+			$props[] = ['text' => $wd['fn'], 'icon' => 'tables/mac.lan.watchdogs', 'class' => 'label label-default'];
 
-		$props[] = ['text' => utils::nf($item['counter']), 'icon' => 'icon-spinner', 'class' => 'label label-default'];
+		$props[] = ['text' => utils::nf($item['counter']), 'icon' => 'system/iconSpinner', 'class' => 'label label-default'];
 
 		$listItem ['t2'] = $props;
 
