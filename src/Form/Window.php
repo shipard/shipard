@@ -5,8 +5,6 @@ namespace Shipard\Form;
 
 class Window extends \Shipard\Form\TableForm
 {
-	/** @var \E10\Application */
-	var $app;
 	var $stepResult;
 	var $focusedPK = 0;
 
@@ -14,12 +12,12 @@ class Window extends \Shipard\Form\TableForm
 
 	public function __construct($app, $options = NULL)
 	{
-		parent::__construct(NULL, $app->requestPath (2), $app->requestPath (3));
 		$this->app = $app;
+		parent::__construct(NULL, $app->requestPath (2), $app->requestPath (3));
 
-		$this->focusedPK = intval (Application::testGetParam('focusedPK'));
+		$this->focusedPK = intval ($this->app()->testGetParam('focusedPK'));
 
-		$postData = Application::testGetData();
+		$postData = $this->app()->testGetData();
 		$this->postData = json_decode ($postData, TRUE);
 	}
 

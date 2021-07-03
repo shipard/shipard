@@ -1555,7 +1555,7 @@ class Application extends \Shipard\Application\ApplicationCore
 			if (isset ($this->requestPath [2]))
 				$windowClass = $this->requestPath [2];
 			$window = $this->createObject ($windowClass);
-			return createWindowResponse ($this, $window);
+			return \e10\createWindowResponse ($this, $window);
 		}
 		if ($object === 'f')
 		{

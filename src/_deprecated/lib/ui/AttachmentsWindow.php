@@ -2,7 +2,7 @@
 
 namespace lib\ui;
 
-use \E10\uiutils, \E10\str, \E10\TableForm, \E10\DbTable, E10\Window;
+use \Shipard\Form\Window;
 
 
 class AttachmentsWindow extends Window

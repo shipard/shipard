@@ -809,15 +809,15 @@ function addAttachments ($app, $toTableId, $toRecId, $fullFileName, $attType, $m
 		if (!is_dir($destPath))
 		{
 			mkdir ($destPath, 0775, true);
-			if (utils::superuser())
+			$steps = explode ('/', strftime ('%Y/%m/%d').'/'.$toTableId);
+			$p = __APP_DIR__ . '/att';
+			foreach ($steps as $step)
 			{
-				$steps = explode ('/', strftime ('%Y/%m/%d').'/'.$toTableId);
-				$p = __APP_DIR__ . '/att';
-				foreach ($steps as $step)
-				{
-					$p .= '/'.$step;
-					chgrp($p, utils::wwwGroup());
-				}
+				$p .= '/'.$step;
+				chmod($p, 0775);
+				if (Utils::superuser())
+					chown($p, Utils::wwwUser());
+				chgrp($p, Utils::wwwGroup());
 			}
 		}
 
