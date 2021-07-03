@@ -602,6 +602,12 @@
 		"fa5pro": "fa-clock",
 		"bsi": "bi-clock",
 		"mdi": "schedule"
+	},	
+	"iconMoney": {
+		"fa5":"fa-money-bill-alt",
+        "fa5pro":"fa-money-bill-alt",
+        "bsi":"bi-cash",
+        "mdi":"payments"
 	},
 	
 

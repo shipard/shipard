@@ -126,7 +126,7 @@ class ViewPersonsAccess extends TableView
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
-			$item = ['text' => $r['fullName'], 'icon' => 'icon-empire', 'class' => 'label label-default'];
+			$item = ['text' => $r['fullName'], 'icon' => 'tables/mac.access.levels', 'class' => 'label label-default'];
 			$this->accessLevels[$r['ndx']][] = $item;
 		}
 	}

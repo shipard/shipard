@@ -38,7 +38,7 @@
 <table id='head'>
 	<tr>
 		<td class='supplier'>
-			<div class='hdr'>Odběratel:<small class='pull-right'>#{{data.person.id}}</small></div>
+			<div class='hdr'>{{@dict;Odběratel}}:<small class='pull-right'>#{{data.person.id}}</small></div>
 			{{#data.reportTexts.supplierAndContacts}}{{{data.reportTexts.supplierAndContacts}}}{{/data.reportTexts.supplierAndContacts}}
 			{{^data.reportTexts.supplierAndContacts}}
 				<span class='address' id="supplier-address-box">
@@ -57,13 +57,13 @@
 			<span class='hdr'>Datumy a platební údaje:</span>
 			<table id='documentDetails'>
 				<tr>
-					<td class='label'>Variabilní symbol:</td><td class='value'><b>{{data.head.docNumber}}</b></td>
+					<td class='label'>{{@dict;Variabilní symbol}}:</td><td class='value'><b>{{data.head.docNumber}}</b></td>
 				</tr>
 				<tr>
-					<td class='label'>Datum vystavení:</td><td class='value'>{{data.head.dateIssue}}</td>
+					<td class='label'>{{@dict;Datum vystavení}}:</td><td class='value'>{{data.head.dateIssue}}</td>
 				</tr>
 				<tr>
-					<td class='label'>Účetní datum:</td><td class='value'>{{data.head.dateAccounting}}</td>
+					<td class='label'>{{@dict;Účetní datum}}:</td><td class='value'>{{data.head.dateAccounting}}</td>
 				</tr>
 			</table>
 		</td>
@@ -76,9 +76,9 @@
 	<thead>
 	<tr>
 		<th class='number'>ID</th>
-		<th>Položka</th>
-		<th class='number'>Množství</th>
-		<th>Jednotka</th>
+		<th>{{@dict;Položka}}</th>
+		<th class='number'>{{@dict;Množství}}</th>
+		<th>{{@dict;Jednotka}}</th>
 	</tr>
 	</thead>
 	{{#data.invrows}}

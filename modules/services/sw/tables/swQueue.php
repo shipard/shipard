@@ -68,7 +68,7 @@ class ViewSWQueue extends TableView
 
 		if ($item['cntSameAsOriginal'])
 			$props[] = [
-				'text' => utils::datef($item['dateSameAsOriginal'], '%S %T'), 'class' => 'label label-default', 'icon' => 'icon-repeat',
+				'text' => utils::datef($item['dateSameAsOriginal'], '%S %T'), 'class' => 'label label-default', 'icon' => 'iconRefresh',
 				'prefix' => $item['cntSameAsOriginal'].'x',
 			];
 
