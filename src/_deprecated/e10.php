@@ -242,7 +242,7 @@ function createWizardResponse ($app, \Shipard\Form\Wizard $data)
 	return $app->response;
 }
 
-function createWindowResponse ($app, Window $data)
+function createWindowResponse ($app, \Shipard\Form\Window $data)
 {
 	$app->response->add ("mainCode", $data->finalCode ());
 	$app->response->add ("htmlHeader", $data->createHeaderCode ());
