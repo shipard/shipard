@@ -3,7 +3,7 @@
 namespace e10buy\orders;
 
 use E10\Application;
-use \e10\utils, \e10\TableView, \e10\TableViewDetail, \e10\TableViewPanel, \e10\TableForm, \e10\DbTable, \e10doc\core\e10utils;
+use \e10\utils, \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Viewer\TableViewPanel, \Shipard\Form\TableForm, \e10\DbTable, \e10doc\core\libs\E10Utils;
 
 
 /**
@@ -311,7 +311,7 @@ class ViewOrders extends TableView
 	{
 		$fts = $this->fullTextSearch ();
 		$mainQuery = $this->mainQueryId ();
-		$bottomTabId = $this->bottomTabId();
+		$bottomTabId = intval($this->bottomTabId());
 
 		$q [] = 'SELECT [orders].*, ';
 		array_push ($q, ' suppliers.fullName as supplierFullName ');
@@ -525,7 +525,7 @@ class ViewOrders extends TableView
 		$qry = [];
 
 		/*
-		$paramsDates = new \E10Doc\Core\GlobalParams ($panel->table->app());
+		$paramsDates = new  \e10doc\core\libs\GlobalParams ($panel->table->app());
 		//$periodFlags = ['enableAll', 'quarters', 'halfs', 'years'];
 		//$paramsDates->addParam ('fiscalPeriod', 'query.period.fiscal',['flags' => $periodFlags]);
 
@@ -535,7 +535,7 @@ class ViewOrders extends TableView
 		$paramsDates->detectValues();
 		*/
 
-		$paramsRows = new \E10Doc\Core\GlobalParams ($panel->table->app());
+		$paramsRows = new  \e10doc\core\libs\GlobalParams ($panel->table->app());
 		$paramsRows->addParam ('string', 'query.rows.text', ['title' => 'Text řádku']);
 		$paramsRows->addParam ('float', 'query.rows.amount', ['title' => 'Částka']);
 		$paramsRows->addParam ('float', 'query.rows.amountDiff', ['title' => '+/-']);
@@ -559,12 +559,12 @@ class ViewOrders extends TableView
 	{
 		$qv = $this->queryValues();
 
-		//e10utils::datePeriodQuery('dateIssue', $q, $qv);
+		//E10Utils::datePeriodQuery('dateIssue', $q, $qv);
 
 		/*if (isset ($qv['period']['fiscal']))
-			e10utils::fiscalPeriodQuery($q, $qv['period']['fiscal']);
+			E10Utils::fiscalPeriodQuery($q, $qv['period']['fiscal']);
 		if (isset ($qv['period']['vat']))
-			e10utils::vatPeriodQuery($q, $qv['period']['vat']);
+			E10Utils::vatPeriodQuery($q, $qv['period']['vat']);
 		*/
 
 
@@ -583,7 +583,7 @@ class ViewOrders extends TableView
 				array_push($q, ' AND [rows].[text] LIKE %s', '%'.$qv['rows']['text'].'%');
 			}
 
-			e10utils::amountQuery ($q, '[rows].[priceAll]', $qv['rows']['amount'], $qv['rows']['amountDiff']);
+			E10Utils::amountQuery ($q, '[rows].[priceAll]', $qv['rows']['amount'], $qv['rows']['amountDiff']);
 
 			array_push($q, ' )');
 		}
