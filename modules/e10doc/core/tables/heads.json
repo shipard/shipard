@@ -44,7 +44,7 @@
     {"id": "cashBox", "name": "Pokladna", "type": "enumInt", "reference": "e10doc.base.cashboxes",
 			"enumCfg": {"cfgItem": "e10doc.cashBoxes", "cfgValue": "ndx", "cfgText": "shortName"}},
 		{"id": "payTerminal", "name": "Platební terminál", "label": "Terminál", "type": "enumInt",
-			"enumCfg": {"cfgItem": "e10.terminals.payTerminals", "cfgValue": "ndx", "cfgText": "shortName"}},
+			"enumCfg": {"cfgItem": "e10.terminals.payTerminals", "cfgValue": "ndx", "cfgText": "sn"}},
     {"id": "numCashBoxDoc", "name": "Číslo dokladu pokladny", "type": "string", "len": 20},
     {"id": "cashBoxDir", "name": "Směr pokladního dokladu", "label": "Směr", "type": "enumInt", "options": ["saveOnChange"],
 			"enumValues": {"1": "příjem", "2": "výdej"}},
