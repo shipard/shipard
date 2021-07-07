@@ -2,14 +2,14 @@
 	{
 		"table": "e10doc.core.heads",
 		"views": [
-			{"id": "deliveryNote", "class": "e10doc.deliveryNotes.View", "detail": "e10doc.deliveryNotes.ViewDetail"}
+			{"id": "deliveryNote", "class": "e10doc.deliveryNotes.libs.ViewDeliveryNotes", "detail": "e10doc.deliveryNotes.libs.ViewDetailDeliveryNote"}
 		],
 		"forms": [
-			{"id": "deliveryNote", "class": "e10doc.deliveryNotes.Form"}
+			{"id": "deliveryNote", "class": "e10doc.deliveryNotes.libs.FormDeliveryNote"}
 		],
 		"reports": [
 			{
-				"id": "deliveryNote", "name": "Dodací list", "class": "e10doc.deliveryNotes.Report",
+				"id": "deliveryNote", "name": "Dodací list", "class": "e10doc.deliveryNotes.libs.ReportDeliveryNote",
 				"queryCol": "docType", "queryColValues": ["dlvrnote"], "email": 1
 			}
 		]
@@ -17,7 +17,7 @@
 	{
 		"table": "e10doc.core.rows",
 		"forms": [
-			{"id": "deliveryNote", "class": "e10doc.deliveryNotes.FormRows"}
+			{"id": "deliveryNote", "class": "e10doc.deliveryNotes.libs.FormDeliveryNoteRow"}
 		]
 	}
 ]
