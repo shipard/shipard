@@ -4,7 +4,6 @@ namespace E10Doc\ProformaOut;
 
 use \E10\TableView, \E10\TableViewDetail;
 use \E10\TableForm;
-use \E10\Application;
 use \E10\utils;
 use E10Doc\Core\e10utils;
 use E10Doc\Core\ShortPaymentDescriptor;
@@ -162,12 +161,12 @@ class Form extends \E10Doc\Core\FormHeads
 			$dd = 14;
 		$this->recData ['dateDue']->add (new \DateInterval('P'.$dd.'D'));
 
-		$this->recData ['automaticRound'] = intval(Application::cfgItem ('options.e10doc-sale.automaticRoundOnSale', 0));
+		$this->recData ['automaticRound'] = intval($this->app()->cfgItem ('options.e10doc-sale.automaticRoundOnSale', 0));
 
 		if (!$this->copyDoc)
 		{
-			$this->recData ['roundMethod'] = intval(Application::cfgItem ('options.e10doc-sale.roundInvoice', 0));
-			$this->recData ['taxCalc'] = intval(Application::cfgItem ('options.e10doc-sale.salePricesType', 1));
+			$this->recData ['roundMethod'] = intval($this->app()->cfgItem ('options.e10doc-sale.roundInvoice', 0));
+			$this->recData ['taxCalc'] = intval($this->app()->cfgItem ('options.e10doc-sale.salePricesType', 1));
 			$this->recData ['taxCalc'] = e10utils::taxCalcIncludingVATCode ($this->app(), $this->recData['dateAccounting'], $this->recData ['taxCalc']);
 		}
 		else
