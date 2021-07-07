@@ -742,7 +742,7 @@ class DashboardIssuesCore extends TableView
 		{
 			$seb = [
 				'type' => 'action', 'action' => 'addwizard', 'data-table' => 'wkf.core.issues', 'data-pk' => strval($ndx),
-				'text' => '', 'title' => 'Rychlé úpravy', 'data-class' => 'wkf.core.forms.SmartEdit', 'icon' => 'icon-magic',
+				'text' => '', 'title' => 'Rychlé úpravy', 'data-class' => 'wkf.core.forms.SmartEdit', 'icon' => 'system/actionSettings',
 				'element' => 'span', 'class' => 'pull-right e10-small', 'actionClass' => '', 'btnClass' => '',
 			];
 			$title[] = $seb;
