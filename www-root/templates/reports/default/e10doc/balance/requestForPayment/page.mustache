@@ -132,21 +132,6 @@
 	<p>{{@dict;Prosíme Vás o co nejrychlejší kontrolu a úhradu dlužných částek}}.</p>
 	<p>{{@dict;Děkujeme}}</p>
 
-	<div id='sign'>
-        <span class='logoImg'>
-            {{#data.owner.logo.logo-razitko.filename}}
-                <img style='max-width:70mm;max-height:30mm;' src='file://{{appDir}}/att/{{data.owner.logo.logo-razitko.path}}{{data.owner.logo.logo-razitko.filename}}'/>
-            {{/data.owner.logo.logo-razitko.filename}}
-        </span>
-		<span class='signImg'>
-			{{#data.author.signature.filename}}
-				<img src='file://{{appDir}}/att/{{data.author.signature.path}}{{data.author.signature.filename}}'/>
-			{{/data.author.signature.filename}}
-		</span>
-		<br/>
-		<span class='name'>{{@dict;Vystavil}}: {{data.author.fullName}}</span>
-	</div>
-
 </body>
 </html>
 
