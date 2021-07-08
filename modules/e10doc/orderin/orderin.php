@@ -3,8 +3,8 @@
 namespace E10Doc\OrderIn;
 
 
-use \E10\TableForm, \E10\Application, \E10\utils,
-		E10Doc\Core\ShortPaymentDescriptor, \E10Doc\Core\ViewDetailHead, E10Doc\Core\e10utils;
+use \E10\TableForm, \E10\utils,
+		E10Doc\Core\ShortPaymentDescriptor, \E10Doc\Core\ViewDetailHead, e10doc\core\libs\E10Utils;
 
 
 /**
@@ -147,13 +147,13 @@ class Form extends \E10Doc\Core\FormHeads
 		parent::checkNewRec ();
 
 		$this->recData ['dateDue'] = new \DateTime ();
-		$this->recData ['dateDue']->add (new \DateInterval('P' . Application::cfgItem ('e10.options.dueDays', 14) . 'D'));
+		$this->recData ['dateDue']->add (new \DateInterval('P' . $this->app()->cfgItem ('e10.options.dueDays', 14) . 'D'));
 
 		if (!$this->copyDoc)
 		{
-			$this->recData ['roundMethod'] = intval(Application::cfgItem ('options.e10doc-sale.roundInvoice', 0));
-			$this->recData ['taxCalc'] = intval(Application::cfgItem ('options.e10doc-sale.salePricesType', 1));
-			$this->recData ['taxCalc'] = e10utils::taxCalcIncludingVATCode ($this->app(), $this->recData['dateAccounting'], $this->recData ['taxCalc']);
+			$this->recData ['roundMethod'] = intval($this->app()->cfgItem ('options.e10doc-sale.roundInvoice', 0));
+			$this->recData ['taxCalc'] = intval($this->app()->cfgItem ('options.e10doc-sale.salePricesType', 1));
+			$this->recData ['taxCalc'] = E10Utils::taxCalcIncludingVATCode ($this->app(), $this->recData['dateAccounting'], $this->recData ['taxCalc']);
 		}
 	}
 
