@@ -21,8 +21,8 @@ class Order extends \e10\DocumentCard
 	var $tableDocsHeads;
 
 	var $tableAddress;
-	var $addresses;
-	var $addressesAll;
+	var $addresses = [];
+	var $addressesAll = [];
 
 	var $docType;
 
