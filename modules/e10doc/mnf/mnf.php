@@ -32,7 +32,7 @@ class ViewMnfDocs extends \E10Doc\Core\ViewHeads
 	{
 		$listItem = parent::renderRow ($item);
 
-		$icon = 'x-factory';
+		$icon = 'iconProduction';
 		$listItem ['icon'] = $icon;
 
 

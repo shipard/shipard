@@ -2,7 +2,7 @@
 	"panels": {
 		"docs-stock": {
 			"items": [
-				{"t1": "Výroba", "object": "viewer", "table": "e10doc.core.heads", "viewer": "mnf", "icon": "x-factory", "order": 300000}
+				{"t1": "Výroba", "object": "viewer", "table": "e10doc.core.heads", "viewer": "mnf", "icon": "iconProduction", "order": 300000}
 			]
 		}
 	}

@@ -20,15 +20,15 @@ class FormDeliveryNote extends \E10Doc\Core\FormHeads
 
 		$this->openForm (self::ltNone);
 			$properties = $this->addList ('properties', '', self::loAddToFormLayout|self::loWidgetParts);
-			$tabs ['tabs'][] = ['text' => 'Záhlaví', 'icon' => 'x-content'];
-			$tabs ['tabs'][] = ['text' => 'Řádky', 'icon' => 'x-properties'];
+			$tabs ['tabs'][] = ['text' => 'Záhlaví', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Řádky', 'icon' => 'system/formRows'];
 			forEach ($properties ['memoInputs'] as $mi)
 				$tabs ['tabs'][] = ['text' => $mi ['text'], 'icon' => $mi ['icon']];
 
 			$this->addAccountingTab ($tabs['tabs']);
 
-			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-attachments'];
-			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'x-wrench'];
+			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
+			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 			$this->openTabs ($tabs, TRUE);
 
 				$this->openTab ();

@@ -2,7 +2,7 @@
 	"mnf": {
 		"fullName": "Výroba", "shortName": "Výroba", "pluralName": "Výroba",
 		"shortcut": "VRB", "classId": "mnf", "docIdCode": "46", "taxDir": 0,
-		"icon": "x-factory", "tradeDir": 0, "docDir": 1, "useTax": 0, "acc": 0,
+		"icon": "iconProduction", "tradeDir": 0, "docDir": 1, "useTax": 0, "acc": 0,
 		"headerStyle": "mnf", "showInfo2": "wg", "showDate": "c",
 		"docNumber": "%D%W%y%M%5"
 	}
