@@ -51,15 +51,15 @@ class Form extends \E10Doc\Core\FormHeads
 
 		$this->openForm (TableForm::ltNone);
 		$properties = $this->addList ('properties', '', TableForm::loAddToFormLayout|TableForm::loWidgetParts);
-		$tabs ['tabs'][] = array ('text' => 'Záhlaví', 'icon' => 'x-content');
-		$tabs ['tabs'][] = array ('text' => 'Řádky', 'icon' => 'x-properties');
+		$tabs ['tabs'][] = array ('text' => 'Záhlaví', 'icon' => 'system/formHeader');
+		$tabs ['tabs'][] = array ('text' => 'Řádky', 'icon' => 'system/formRows');
 		forEach ($properties ['memoInputs'] as $mi)
 			$tabs ['tabs'][] = array ('text' => $mi ['text'], 'icon' => $mi ['icon']);
 
 		$this->addAccountingTab ($tabs['tabs']);
 
-		$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'x-attachments');
-		$tabs ['tabs'][] = array ('text' => 'Nastavení', 'icon' => 'x-wrench');
+		$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'system/formAttachments');
+		$tabs ['tabs'][] = array ('text' => 'Nastavení', 'icon' => 'system/formSettings');
 		$this->openTabs ($tabs, TRUE);
 
 		$this->openTab ();
