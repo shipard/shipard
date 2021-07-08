@@ -2,7 +2,7 @@
 
 namespace E10Doc\Contracts\Core;
 
-use e10doc\core\e10utils, \e10\utils, \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \e10\DbTable, \Shipard\Viewer\TableViewPanel;
+use e10doc\core\libs\E10Utils, \e10\utils, \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \e10\DbTable, \Shipard\Viewer\TableViewPanel;
 use \e10\base\libs\UtilsBase;
 
 /**
@@ -84,7 +84,7 @@ class TableHeads extends DbTable
 		if (is_array ($itemPerson))
 			$recData = $itemPerson;
 		else
-			$recData = $tablePersons->loadItem ($itemPerson);
+			$recData = $tablePersons->loadItem (intval($itemPerson));
 
 		if (!$recData || !isset ($recData ['ndx']) || $recData ['ndx'] == 0)
 			return array();
@@ -139,7 +139,7 @@ class TableHeads extends DbTable
 	{
 		$rowRecData ['text'] = $itemRecData['fullName'];
 		$rowRecData ['unit'] = $itemRecData['defaultUnit'];
-		$rowRecData ['priceItem'] = e10utils::itemPriceSell($this->app(), $headRecData['taxCalc']+1, $itemRecData);
+		$rowRecData ['priceItem'] = E10Utils::itemPriceSell($this->app(), $headRecData['taxCalc']+1, $itemRecData);
 	}
 
 	public function makeDocNumber (&$recData)
