@@ -2,7 +2,7 @@
 
 namespace E10Doc\CmnBkp;
 use \E10\Wizard, \E10\TableForm, \E10\utils;
-
+require_once __SHPD_MODULES_DIR__ . 'e10doc/finance/finance.php';
 
 
 

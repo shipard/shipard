@@ -1,7 +1,7 @@
 <?php
 
 namespace E10Doc\Finance;
-use E10\Application, \E10\utils, e10doc\core\libs\E10Utils;
+use \E10\utils, e10doc\core\libs\E10Utils;
 
 
 /**
@@ -209,7 +209,7 @@ class reportVAT extends \e10doc\core\libs\reports\GlobalReport
 		array_push ($q, ' LEFT JOIN e10_persons_persons AS persons ON heads.person = persons.ndx');
 		array_push ($q, ' WHERE heads.taxPeriod = %i', $this->taxPeriod, ' AND heads.docState = 4000 ');
 
-		$cfgTaxCodes = Application::cfgItem ('e10.base.taxCodes');
+		$cfgTaxCodes = $this->app()->cfgItem ('e10.base.taxCodes');
 		$validTaxCodes = array ();
 		foreach ($cfgTaxCodes as $key => $c)
 			if ((isset ($c['rowTaxReturn'])) && ($c['rowTaxReturn'] != 0))
@@ -238,7 +238,7 @@ class reportVAT extends \e10doc\core\libs\reports\GlobalReport
 
 		forEach ($taxsums as $r)
 		{
-			$docType = Application::cfgItem ('e10.docs.types.' . $r['docType']);
+			$docType = $this->app()->cfgItem ('e10.docs.types.' . $r['docType']);
 			$taxCode = $cfgTaxCodes [$r['taxCode']];
 			$data [$taxCode['dir']][$r['taxCode']][] =
 				array ('title' => $r['taxCode'], 'row' => $taxCode['rowTaxReturn'],
@@ -329,7 +329,7 @@ class reportVAT extends \e10doc\core\libs\reports\GlobalReport
 				  LEFT JOIN e10doc_core_heads AS heads ON taxes.document = heads.ndx
 					WHERE heads.taxPeriod = %i AND heads.docState = 4000 ";
 
-		$cfgTaxCodes = Application::cfgItem ('e10.base.taxCodes');
+		$cfgTaxCodes = $this->app()->cfgItem ('e10.base.taxCodes');
 		$validTaxCodes = array ();
 
 		foreach ($cfgTaxCodes as $key => $c)
@@ -401,7 +401,7 @@ class reportVAT extends \e10doc\core\libs\reports\GlobalReport
 				  LEFT JOIN e10doc_core_heads AS heads ON taxes.document = heads.ndx
 					WHERE heads.taxPeriod = %i AND heads.docState = 4000 ";
 
-		$cfgTaxCodes = Application::cfgItem ('e10.base.taxCodes');
+		$cfgTaxCodes = $this->app()->cfgItem ('e10.base.taxCodes');
 		$validTaxCodes = array ();
 
 		foreach ($cfgTaxCodes as $key => $c)
