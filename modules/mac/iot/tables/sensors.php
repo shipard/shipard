@@ -2,7 +2,8 @@
 
 namespace mac\iot;
 
-use \e10\TableForm, \e10\DbTable, \e10\TableView, \e10\utils, \e10\TableViewDetail, \mac\data\libs\SensorHelper;
+use \e10\TableForm, \e10\DbTable, \e10\TableView, \e10\TableViewDetail, \mac\data\libs\SensorHelper;
+use \Shipard\Utils\Utils;
 
 
 /**
@@ -22,13 +23,13 @@ class TableSensors extends DbTable
 		parent::checkBeforeSave($recData, $ownerData);
 
 		if (!isset($recData['uid']) && $recData['uid'] === '')
-			$recData['uid'] = utils::createToken(20);
+			$recData['uid'] = Utils::createToken(20);
 
 		if (isset($recData['ndx']) && $recData['ndx'])
 		{
 			$valueExist = $this->db()->query('SELECT ndx FROM [mac_iot_sensorsValues] WHERE ndx = %i', $recData['ndx'])->fetch();
 			if (!$valueExist)
-				$this->db()->query('INSERT INTO [mac_iot_sensorsValues] SET ndx = %i', $recData['ndx'], ', [time] = %d', utils::now(), ', counter = 0, value = 0');
+				$this->db()->query('INSERT INTO [mac_iot_sensorsValues] SET ndx = %i', $recData['ndx'], ', [time] = %d', Utils::now(), ', counter = 0, value = 0');
 		}
 	}
 
@@ -160,6 +161,12 @@ class ViewSensors extends TableView
 
 		$props3 = [];
 		$props3[] = ['text' => $item['srcMqttTopic']];
+
+		if ($item['sensorTime'])
+		{
+			$props3[] = ['text' => Utils::datef($item['sensorTime'], '%S, %T'), 'class' => 'pull-right', 'icon' => 'system/iconClock'];
+		}
+
 		if (count($props3))
 			$listItem ['t3'] = $props3;
 
