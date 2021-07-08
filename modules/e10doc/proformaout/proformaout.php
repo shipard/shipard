@@ -241,7 +241,7 @@ class Report extends \e10doc\core\libs\reports\DocReport
 	{
 		parent::init();
 
-		$this->setReportId('e10doc.proformaout.invpo');
+		$this->setReportId('reports.default.e10doc.proformaOut.invpo');
 	}
 
 	public function loadData ()
