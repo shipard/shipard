@@ -53,31 +53,19 @@
     "it": "Metodo di pagamento",
     "sk": "Spôsob úhrady"
   },
-  "Variabilní symbol": {
+  "VS": {
     "de": "Zahlungsreferenz",
     "en": "Payment ID",
     "it": "Simbolo variabile",
-    "sk": "Variabilný symbol"
+    "sk": "VS"
   },
-  "Specifický symbol": {
+  "SS": {
     "de": "Referenz Nr.",
-    "en": "Reference ID",
+    "en": "Ref. ID",
     "it": "",
-    "sk": "Špecifický symbol"
+    "sk": "ŠS"
   },
-  "Datum vystavení": {
-    "de": "Ausstellungsdatum",
-    "en": "Date of issue",
-    "it": "Data di emissione",
-    "sk": "Dátum vystavenia"
-  },
-  "Datum u.zd.plnění": {
-    "de": "Datum der steuerbaren Leistung",
-    "en": "Delivery date",
-    "it": "Data di prestazioni",
-    "sk": "Dátum plnenia"
-  },
-  "Datum splatnosti": {
+  "Splatnost": {
     "de": "Fälligkeitsdatum",
     "en": "Payment date",
     "it": "Data di scadenza",
@@ -95,35 +83,35 @@
     "it": "Descrizione della voce",
     "sk": "Položka"
   },
-  "Množství": {
+  "Předpis": {
+    "de": "Betrag",
+    "en": "Amount",
+    "it": "Somma",
+    "sk": "Čiastka"
+  },
+  "Uhrazeno": {
+    "de": "Bezahlt",
+    "en": "Payed",
+    "it": "Pagato",
+    "sk": "Čiastka"
+  },
+  "Měna": {
     "de": "Menge",
     "en": "Quantity",
     "it": "Quantitá",
     "sk": "Množstvo"
   },
-  "Jed.": {
-    "de": "Einheit",
-    "en": "Unit",
-    "it": "UM",
-    "sk": "Jed."
-  },
-  "Cena/jed.": {
-    "de": "Einzelpreis",
-    "en": "Unit Price",
-    "it": "Prezzo per UM",
-    "sk": "Jed. cena"
-  },
-  "Cena celkem": {
-    "de": "Gesamtpreis",
-    "en": "Total Price",
-    "it": "Totale",
+  "K úhradě": {
+    "de": "Zur Zahlung",
+    "en": "To pay",
+    "it": "Da pagare",
     "sk": "Celkom"
   },
-  "Celkem k úhradě": {
+  "CELKOVÁ dlužná částka": {
     "de": "Rechnungsbetrag",
     "en": "Total to be paid",
     "it": "Da pagare",
-    "sk": "Suma na úhradu"
+    "sk": "CELKOVÁ dlžná čiastka"
   },
   "Vystavil": {
     "de": "Ausgestellt von",

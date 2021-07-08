@@ -7,31 +7,31 @@
 
         <style>
                 {{#data.owner.logo.logo-nadpis.filename}}
-                #supplier-address-hdr {
-                    background-image: url("file://{{appDir}}/att/{{data.owner.logo.logo-nadpis.path}}{{data.owner.logo.logo-nadpis.filename}}");
-                    background-position: bottom right;
-                    background-size: auto 60%;
-                    background-repeat: no-repeat;
-                }
-                {{/data.owner.logo.logo-nadpis.filename}}
-                {{#data.owner.logo.logo-vpravo.filename}}
-                #supplier-address-box {
-                    background-image: url("file://{{appDir}}/att/{{data.owner.logo.logo-vpravo.path}}{{data.owner.logo.logo-vpravo.filename}}");
-                    background-position: top right;
-                    background-size: auto 80%;
-                    background-repeat: no-repeat;
-                }
-                {{/data.owner.logo.logo-vpravo.filename}}
-                {{#data.owner.logo.logo-vlevo.filename}}
-                #supplier-address-box {
-                    background-image: url("file://{{appDir}}/att/{{data.owner.logo.logo-vlevo.path}}{{data.owner.logo.logo-vlevo.filename}}");
-                    background-position: top left;
-                    background-size: 5em;
-                    background-repeat: no-repeat;
+			#supplier-address-hdr {
+				background-image: url("{{dsUrl}}att/{{data.owner.logo.logo-nadpis.path}}{{data.owner.logo.logo-nadpis.filename}}");
+				background-position: bottom right;
+				background-size: auto 60%;
+				background-repeat: no-repeat;
+			}
+			{{/data.owner.logo.logo-nadpis.filename}}
+			{{#data.owner.logo.logo-vpravo.filename}}
+			#supplier-address-box {
+				background-image: url("{{dsUrl}}att/{{data.owner.logo.logo-vpravo.path}}{{data.owner.logo.logo-vpravo.filename}}");
+				background-position: top right;
+				background-size: auto 80%;
+				background-repeat: no-repeat;
+			}
+			{{/data.owner.logo.logo-vpravo.filename}}
+			{{#data.owner.logo.logo-vlevo.filename}}
+			#supplier-address-box {
+				background-image: url("{{dsUrl}}att/{{data.owner.logo.logo-vlevo.path}}{{data.owner.logo.logo-vlevo.filename}}");
+				background-position: top left;
+				background-size: 5em;
+				background-repeat: no-repeat;
 
-                    padding-left: 6em;
-                }
-                {{/data.owner.logo.logo-vlevo.filename}}
+				padding-left: 6em;
+			}
+			{{/data.owner.logo.logo-vlevo.filename}}
         </style>
 </head>
 <body>
@@ -121,7 +121,7 @@
 		{{#data.totals}}
 			<tfoot>
 				<tr>
-					<td colspan="5">CELKOVÁ dlužná částka:</td>
+					<td colspan="5">{{@dict;CELKOVÁ dlužná částka}}:</td>
 					<td class='number'><b>{{print.restAmount}}</b></td>
 					<td>{{curr}}</td>
 				</tr>
