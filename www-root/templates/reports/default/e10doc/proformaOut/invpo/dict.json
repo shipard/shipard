@@ -5,7 +5,7 @@
     "it": "Fattura proforma",
     "sk": "Zálohová faktúra"
   },
-  "Číslo": {
+  "Ev. číslo": {
     "de": "Nr.",
     "en": "No.",
     "it": "Num.",
@@ -298,5 +298,39 @@
     "en": "QR code",
     "it": "Codice QR",
     "sk": "QR kód"
+  },
+  "Vytištěno aplikací": {
+    "de": "Gedrückt mit",
+    "en": "Printed by",
+    "it": "Stampato da",
+    "sk": "Vytlačené aplikácií"
+  },
+  "Strana": {
+    "de": "Seite",
+    "en": "Page",
+    "it": "Pagina",
+    "sk": "Strana"
+  },
+  "Dobrý den": {
+    "en": "Greetings",
+    "sk": "Dobrý deň"
+  },
+  "v příloze Vám zasíláme zálohovou fakturu": {
+    "en": "in attachments below you will find your proforma invoice",
+    "sk": "v prílohe Vám zasielame zálohovú faktúru"
+  },
+  "Zákazník": {
+    "de": "Klient",
+    "en": "Customer",
+    "it": "Cliente",
+    "sk": "Zákazník"
+  },
+  "Děkujeme za včasnou úhradu": {
+    "en": "Thank you for your in-time payment",
+    "sk": "Ďakujeme za včasnú úhradu"
+  },
+  "S pozdravem": {
+    "en": "Best wishes",
+    "sk": "S pozdravom"
   }
 }

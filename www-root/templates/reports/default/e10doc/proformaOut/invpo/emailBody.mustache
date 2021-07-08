@@ -1,8 +1,8 @@
-{{textMode}}Dobrý den,
+{{textMode}}{{@dict;Dobrý den}},
 
-v příloze Vám zasíláme zálohovou fakturu: {{data.head.title}}.
+{{@dict;v příloze Vám zasíláme zálohovou fakturu}}: {{data.head.title}}.
 
-Zákazník: {{{data.person.fullName}}}
+{{@dict;Zákazník}}: {{{data.person.fullName}}}
 {{#data.head.datePeriodBegin}}
 {{@dict;Účtované období}}: {{data.head.datePeriodBegin}} {{@dict;až}} {{data.head.datePeriodEnd}}
 {{/data.head.datePeriodBegin}}
@@ -17,9 +17,9 @@ Zákazník: {{{data.person.fullName}}}
 {{/data.myBankAccount.iban}}
 
 
-Děkujeme za včasnou úhradu.
+{{@dict;Děkujeme za včasnou úhradu}}.
 
-S pozdravem
+{{@dict;S pozdravem}}
 
 --
  {{data.owner.fullName}}
