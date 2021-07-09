@@ -2,6 +2,7 @@
 
 namespace e10doc\cmnbkp\dc;
 require_once __SHPD_MODULES_DIR__ . 'e10doc/finance/finance.php';
+require_once __SHPD_MODULES_DIR__ . 'e10doc/cmnbkp/cmnbkp.php';
 
 /**
  * Class Detail
