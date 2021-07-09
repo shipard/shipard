@@ -22,44 +22,6 @@ function createInitStatesBalance ($app, $params)
 }
 
 
-
-/**
- * CmnBkpReport
- *
- * Výstupní sestava Obecného účetního dokladu
- *
- *
- */
-
-class CmnBkpReport extends \e10doc\core\libs\reports\DocReport
-{
-	function init ()
-	{
-		$this->reportId = 'e10doc.cmnbkp.cmnbkp';
-		$this->reportTemplate = 'e10doc.cmnbkp.cmnbkp';
-	}
-} // class CmnBkpReport
-
-
-/**
- * CmnBkp_SetOff_Report
- *
- * Výstupní sestava Zápočtu
- *
- *
- */
-
-class CmnBkp_SetOff_Report extends \e10doc\core\libs\reports\DocReport
-{
-	function init ()
-	{
-		parent::init();
-
-		$this->setReportId('reports.default.e10doc.cmnbkp.set-off');
-	}
-}
-
-
 	/**
 	 * CmnBkp_TaxVatReturn_Report
 	 *

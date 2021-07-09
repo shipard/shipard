@@ -35,11 +35,8 @@
 			{"id": "cmnbkp", "name": "Kontace", "class": "e10doc.cmnbkp.libs.CmnBkp_Acc_Report",
 				"queryCols": {"docStateAcc": [1, 9]}, "roles": ["acc", "audit"], "dropdown": 1
 			},
-			{"id": "setoff", "name": "Zápočet", "class": "e10doc.cmnbkp.CmnBkp_SetOff_Report",
+			{"id": "setoff", "name": "Zápočet", "class": "e10doc.cmnbkp.libs.ReportCmnBkp_SetOff",
 				"queryCols": {"docType": "cmnbkp", "activity": "balSetOff"}
-			},
-			{"id": "taxvatreturn", "name": "Přiznání DPH", "class": "e10doc.cmnbkp.CmnBkp_TaxVatReturn_Report", "dropdown": 1,
-				"queryCols": {"docType": "cmnbkp", "activity": "taxVatReturn"}
 			}
 		]
   },
