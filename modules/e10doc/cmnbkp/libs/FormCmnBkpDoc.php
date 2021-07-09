@@ -1,8 +1,7 @@
 <?php
 
 namespace e10doc\cmnbkp\libs;
-
-
+require_once __SHPD_MODULES_DIR__ . 'e10doc/cmnbkp/cmnbkp.php';
 
 
 class FormCmnBkpDoc extends \e10doc\core\FormHeads
