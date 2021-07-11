@@ -1450,5 +1450,280 @@
         "fa5pro":"fa-caret-right",
         "bsi":"bi-caret-right",
         "mdi":"arrow_right"
+    },
+    "user/arrowUp":
+    {
+        "_title:cs":"Šipka nahoru",
+        "_title:en":"Arrow up",
+        "_tags:cs":"šipka; nahoru; směr",
+        "_tags:en":"arrow; up; direction",
+        "fa5":"fa-arrow-up",
+        "fa5pro":"fa-arrow-up",
+        "bsi":"bi-arrow-up",
+        "mdi":"arrow_upward"
+    },
+    "user/arrowDown":
+    {
+        "_title:cs":"Šipka dolů",
+        "_title:en":"Arrow down",
+        "_tags:cs":"šipka; dolů; směr",
+        "_tags:en":"arrow; down; direction",
+        "fa5":"fa-arrow-down",
+        "fa5pro":"fa-arrow-down",
+        "bsi":"bi-arrow-down",
+        "mdi":"arrow_downward"
+    },
+    "user/arrowLeft":
+    {
+        "_title:cs":"Šipka vlevo",
+        "_title:en":"Arrow left",
+        "_tags:cs":"šipka; vlevo; do leva; směr",
+        "_tags:en":"arrow; left; direction",
+        "fa5":"fa-arrow-left",
+        "fa5pro":"fa-arrow-left",
+        "bsi":"bi-arrow-left",
+        "mdi":"arrow_back"
+    },
+    "user/arrowRight":
+    {
+        "_title:cs":"Šipka vpravo",
+        "_title:en":"Arrow right",
+        "_tags:cs":"šipka; vpravo; do prava; směr",
+        "_tags:en":"arrow; right; direction",
+        "fa5":"fa-arrow-right",
+        "fa5pro":"fa-arrow-right",
+        "bsi":"bi-arrow-right",
+        "mdi":"arrow_forward"
+    },
+    "user/arrowCircleUp":
+    {
+        "_title:cs":"Šipka nahoru - kolečko",
+        "_title:en":"Arrow up - circle",
+        "_tags:cs":"šipka; nahoru; směr; kolečko",
+        "_tags:en":"arrow; up; direction; circle",
+        "fa5":"fa-arrow-circle-up",
+        "fa5pro":"fa-arrow-circle-up",
+        "bsi":"bi-arrow-up-circle",
+        "mdi":"arrow_circle_up"
+    },
+    "user/arrowCircleDown":
+    {
+        "_title:cs":"Šipka dolů - kolečko",
+        "_title:en":"Arrow down - circle",
+        "_tags:cs":"šipka; dolů; směr; kolečko",
+        "_tags:en":"arrow; down; direction; circle",
+        "fa5":"fa-arrow-circle-down",
+        "fa5pro":"fa-arrow-circle-down",
+        "bsi":"bi-arrow-down-circle",
+        "mdi":"arrow_circle_down"
+    },
+    "user/arrowCircleLeft":
+    {
+        "_title:cs":"Šipka vlevo - kolečko",
+        "_title:en":"Arrow left - circle",
+        "_tags:cs":"šipka; vlevo; do leva; směr; kolečko",
+        "_tags:en":"arrow; left; direction; circle",
+        "fa5":"fa-arrow-circle-left",
+        "fa5pro":"fa-arrow-circle-left",
+        "bsi":"bi-arrow-left-circle",
+        "mdi":"arrow_back"
+    },
+    "user/arrowCircleRight":
+    {
+        "_title:cs":"Šipka vpravo - kolečko",
+        "_title:en":"Arrow right - circle",
+        "_tags:cs":"šipka; vpravo; do prava; směr; kolečko",
+        "_tags:en":"arrow; right; direction; circle",
+        "fa5":"fa-arrow-circle-right",
+        "fa5pro":"fa-arrow-circle-right",
+        "bsi":"bi-arrow-right-circle",
+        "mdi":"arrow_forward"
+    },
+    "user/chevronUp":
+    {
+        "_title:cs":"Chevron nahoru",
+        "_title:en":"Chevron up",
+        "_tags:cs":"stříška; nahoru; šipka; směr; chevron; v",
+        "_tags:en":"chevron; up; arrow; direction",
+        "fa5":"fa-chevron-up",
+        "fa5pro":"fa-chevron-up",
+        "bsi":"bi-chevron-up",
+        "mdi":"expand_less"
+    },
+    "user/chevronDown":
+    {
+        "_title:cs":"Chevron dolů",
+        "_title:en":"Chevron down",
+        "_tags:cs":"stříška; dolů; šipka; směr; chevron; v",
+        "_tags:en":"chevron; down; arrow; direction",
+        "fa5":"fa-chevron-down",
+        "fa5pro":"fa-chevron-down",
+        "bsi":"bi-chevron-down",
+        "mdi":"expand_more"
+    },
+    "user/chevronLeft":
+    {
+        "_title:cs":"Chevron vlevo",
+        "_title:en":"Chevron left",
+        "_tags:cs":"stříška; vlevo; do leva; šipka; směr; chevron; v",
+        "_tags:en":"chevron; left; arrow; direction",
+        "fa5":"fa-chevron-left",
+        "fa5pro":"fa-chevron-left",
+        "bsi":"bi-chevron-left",
+        "mdi":"chevron_left"
+    },
+    "user/chevronRight":
+    {
+        "_title:cs":"Chevron vpravo",
+        "_title:en":"Chevron right",
+        "_tags:cs":"stříška; vpravo; do prava; šipka; směr; chevron; v",
+        "_tags:en":"chevron; right; arrow; direction",
+        "fa5":"fa-chevron-right",
+        "fa5pro":"fa-chevron-right",
+        "bsi":"bi-chevron-right",
+        "mdi":"chevron_right"
+    },
+    "user/mobilePhone":
+    {
+        "_title:cs":"Mobilní telefon",
+        "_title:en":"Mobile phone",
+        "_tags:cs":"telefon; zařízení; mobil",
+        "_tags:en":"phone; telephone; device",
+        "fa5": "fa-mobile-alt",
+		"fa5pro": "fa-mobile-alt",
+		"bsi": "bi-phone",
+		"mdi": "phone_iphone"
+    },
+    "user/laptop":
+    {
+        "_title:cs":"Notebook",
+        "_title:en":"Laptop",
+        "_tags:cs":"notebook; počítač; laptop; zařízení",
+        "_tags:en":"notebook; laptop; computer; device",
+        "fa5": "fa-laptop",
+		"fa5pro": "fa-laptop",
+		"bsi": "bi-laptop",
+		"mdi": "laptop"
+    },
+    "user/desktop":
+    {
+        "_title:cs":"Monitor",
+        "_title:en":"Desktop",
+        "_tags:cs":"počítač; monitor; stolní počítač; zařízení",
+        "_tags:en":"desktop; monitor; work station; computer; device",
+        "fa5": "fa-desktop",
+		"fa5pro": "fa-desktop",
+		"bsi": "bi-display",
+		"mdi": "desktop_mac"
+    },
+    "user/printer":
+    {
+        "_title:cs":"Tiskárna",
+        "_title:en":"Printer",
+        "_tags:cs":"tiskárna; skener; zařízení",
+        "_tags:en":"desktop; monitor; work station; computer; device",
+        "fa5": "fa-print",
+		"fa5pro": "fa-print",
+		"bsi": "bi-printer",
+		"mdi": "print"
+    },
+    "user/tablet":
+    {
+        "_title:cs":"Tablet",
+        "_title:en":"Tablet",
+        "_tags:cs":"tablet; ipad; zařízení",
+        "_tags:en":"tablet; ipad; device",
+        "fa5": "fa-tablet-alt",
+		"fa5pro": "fa-tablet-alt",
+		"bsi": "bi-tablet",
+		"mdi": "tablet_mac"
+    },
+    "user/tv":
+    {
+        "_title:cs":"Televize",
+        "_title:en":"TV",
+        "_tags:cs":"televize; tv; zařízení",
+        "_tags:en":"television; tv; device",
+        "fa5": "fa-tv",
+		"fa5pro": "fa-tv-alt",
+		"bsi": "bi-tv",
+		"mdi": "tv"
+    },
+    "user/server":
+    {
+        "_title:cs":"Server",
+        "_title:en":"Server",
+        "_tags:cs":"server; zařízení; úložiště; hdd; data",
+        "_tags:en":"server; device; hdd; data; storage",
+        "fa5": "fa-server",
+		"fa5pro": "fa-server",
+		"bsi": "bi-hdd-stack-fill",
+		"mdi": "dns"
+    },
+    "user/sun":
+    {
+        "_title:cs":"Slunce",
+        "_title:en":"Sun",
+        "_tags:cs":"slunce; slunko; teplo; teplota; jasno; jas; počasí;",
+        "_tags:en":"sun; hot; warmth; brightness; weather",
+        "fa5": "fa-sun",
+		"fa5pro": "fa-sun",
+		"bsi": "bi-sun",
+		"mdi": "light_mode"
+    },
+    "user/cloud":
+    {
+        "_title:cs":"Mrak",
+        "_title:en":"Cloud",
+        "_tags:cs":"mrak; zataženo; počasí",
+        "_tags:en":"cloud; cloudy; weather",
+        "fa5": "fa-cloud",
+		"fa5pro": "fa-cloud",
+		"bsi": "bi-cloud",
+		"mdi": "cloud"
+    },
+    "user/moon":
+    {
+        "_title:cs":"Měsíc",
+        "_title:en":"Moon",
+        "_tags:cs":"měsíc; noc; tma; počasí",
+        "_tags:en":"moon; night; dark; weather",
+        "fa5": "fa-moon",
+		"fa5pro": "fa-moon",
+		"bsi": "bi-moon",
+		"mdi": "nightlight"
+    },
+    "user/inbox":
+    {
+        "_title:cs":"Inbox",
+        "_title:en":"Inbox",
+        "_tags:cs":"inbox; zprávy; zpráva",
+        "_tags:en":"inbox; messages; message; issue",
+        "fa5":"fa-inbox",
+        "fa5pro":"fa-inbox",
+        "bsi":"bi-inbox-fill",
+        "mdi":"inbox"
+    },
+    "user/search":
+    {
+        "_title:cs":"Hledat",
+        "_title:en":"Search",
+        "_tags:cs":"hledat; lupa; přiblížit; zvětšit",
+        "_tags:en":"searhc; magnifying glass; zoom; zoom in",
+        "fa5":"fa-search",
+		"fa5pro":"fa-search",
+		"bsi":"bi-search",
+		"mdi":"search"
+    },
+    "user/piggyBank":
+    {
+        "_title:cs":"Pokladnička",
+        "_title:en":"Piggy bank",
+        "_tags:cs":"pokladnička; pokladna; prasátko; peníze; drobné; hotovost; mince",
+        "_tags:en":"piggy bank; piggy; money; cash; coin",
+        "fa5":"fa-piggy-bank",
+        "fa5pro":"fa-piggy-bank",
+        "bsi":"bi-piggy-bank",
+        "mdi":"savings"
     }
 }
