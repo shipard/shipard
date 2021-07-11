@@ -31,7 +31,7 @@ class Icons extends BaseObject
 		return 'appIcon-'.$i;
 	}
 
-	public function icon(string $i, string $addClass = '', string $element = 'i')
+	public function icon(string $i, string $addClass = '', string $element = 'i', string $params = '')
 	{
 		if (!$this->modulesIcons)
 		{
@@ -39,10 +39,10 @@ class Icons extends BaseObject
 		}
 		$icon = isset($this->modulesIcons[$i]) ? $this->modulesIcons[$i] : ['t' => 0, 'v' => ''];
 		
-		return $this->createIconElement($icon, $addClass, $element);
+		return $this->createIconElement($icon, $addClass, $element, $params);
 	}
 
-	public function createIconElement(array $icon, string $addClass = '', string $element = 'i')
+	public function createIconElement(array $icon, string $addClass = '', string $element = 'i', string $params = '')
 	{
 		$c = '';
 		if ($this->iconsCfg['type'] === self::itCss)
@@ -50,7 +50,7 @@ class Icons extends BaseObject
 			$class = "{$this->iconsCfg['cssBaseClass']}{$icon['v']}";
 			if ($addClass !== '')
 				$class .= ' '.$addClass;
-			$c .= "<$element class='$class'>";
+			$c .= "<$element class='$class'$params>";
 			$c .= "</{$element}>";
 		}
 		else
@@ -58,7 +58,7 @@ class Icons extends BaseObject
 			$class = "{$this->iconsCfg['cssBaseClass']}";
 			if ($addClass !== '')
 				$class .= ' '.$addClass;
-			$c .= "<$element class='$class'>";
+			$c .= "<$element class='$class'$params>";
 			$c .= $icon['v'];
 			$c .= "</{$element}>";
 		}

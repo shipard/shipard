@@ -282,8 +282,8 @@ class DbTable
 		$inputCode .= "<span class='btns' style='display:none;'>";
 		if (!($options & TableForm::coReadOnly))
 		{
-			$inputCode .= "<i class='fa fa-times-circle e10-inputReference-clearItem'></i> ";
-			$inputCode .= "<i class='fa fa-edit e10-inputReference-editItem' data-table='$thisTableId' data-pk='0'></i>";
+			$inputCode .= $this->app()->ui()->icon('system/actionClose', 'e10-inputReference-clearItem').'&nbsp;';
+			$inputCode .= $this->app()->ui()->icon('system/actionOpen', 'e10-inputReference-editItem', 'i', " data-table='$thisTableId' data-pk='0'").'&nbsp;';
 		}
 		$inputCode .= "</span>";
 

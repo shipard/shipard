@@ -366,9 +366,9 @@ class UICore extends \Shipard\Base\BaseObject
 		return $t;
 	}
 
-	public function icon(string $i, string $addClass = '', string $element = 'i')
+	public function icon(string $i, string $addClass = '', string $element = 'i', string $params = '')
 	{
-		return $this->icons->icon($i, $addClass, $element);
+		return $this->icons->icon($i, $addClass, $element, $params);
 	}
 
 	public function systemIcon(int $i, string $addClass = '', string $element = 'i')
