@@ -777,11 +777,12 @@ class VATReturnEngine extends \E10\Utility
 
 		if ($id == 'odvod-dph' || $id == 'odpocet-dph')
 		{
-			$dateDue = clone $this->vatPeriod['end'];
+			$dateDue = new \DateTime($this->vatPeriod['end']);
 			if ($id == 'odvod-dph')
-				$dateDue->add(\DateInterval::createFromDateString('25 days'));
+				$dateDue->add(new \DateInterval('P25D'));
 			else
-				$dateDue->add(\DateInterval::createFromDateString('2 months'));
+				$dateDue->add(new \DateInterval('P60D'));
+			
 			$rowData['dateDue'] = $dateDue;
 			$rowData['symbol2'] = '705'.preg_replace("/[^0-9,.]/", "", $this->vatPeriod['id']);
 			$rowData = array_merge($rowData, $this->findPrevDocRowData ($rowData['item'], $ownerNdx, $personHead, TRUE));
