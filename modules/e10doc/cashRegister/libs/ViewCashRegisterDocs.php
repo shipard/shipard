@@ -23,6 +23,11 @@ class ViewCashRegisterDocs extends \e10doc\core\ViewHeads
 			$bt [] = array ('id' => '', 'title' => 'Vše', 'active' => 1);
 			$this->setBottomTabs ($bt);
 		}
+		else
+		{
+			if (isset($this->table->app()->workplace['cashBox']))
+				$this->addAddParam('cashBox', strval($this->table->app()->workplace['cashBox']));
+		}		
 	}
 
   public function renderRow ($item)
