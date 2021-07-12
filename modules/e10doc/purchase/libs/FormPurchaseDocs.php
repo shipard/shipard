@@ -210,7 +210,7 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 			$c .= '</h3>';
 		}
 
-		$c .= \E10\renderTableFromArray ($list, $h, $params);
+		$c .= $this->app->ui()->renderTableFromArray ($list, $h, $params);
 
 		$c .= '</div>';
 

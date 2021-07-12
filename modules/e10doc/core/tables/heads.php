@@ -1775,7 +1775,7 @@ class TableHeads extends DbTable
 		}
 	}
 
-	public function addFormPrintAfterConfirm (\E10\TableForm $form)
+	public function addFormPrintAfterConfirm (\Shipard\Form\TableForm $form)
 	{
 		$docStates = $this->documentStates ($form->recData);
 		if (!$docStates)
