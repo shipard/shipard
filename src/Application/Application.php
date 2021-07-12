@@ -2254,7 +2254,7 @@ class Application extends \Shipard\Application\ApplicationCore
 Application::RegisterFunction ('template', 'thisWorkplace', 'e10.thisWorkplace');
 
 
-Application::RegisterFunction ('template', 'dataView', 'e10.runDataView');
+Application::RegisterFunction ('template', 'dataView', 'Shipard.Application.runDataView');
 
 function runDataView ($app, $params)
 {
@@ -2266,10 +2266,10 @@ function runDataView ($app, $params)
 	}
 
 	$res = '';
-	$showParam = searchParam ($params, 'show', '');
+	$showParam = \E10\searchParam ($params, 'show', '');
 	$varName = \E10\searchParam($params, 'var', '');
 
-	$classId = searchParam ($params, 'classId', '');
+	$classId = \E10\searchParam ($params, 'classId', '');
 	if ($classId === 'documentCard')
 		$classId = 'lib.dataView.DataViewDocumentCard';
 	elseif ($classId === 'documentCard')
