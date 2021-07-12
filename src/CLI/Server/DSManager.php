@@ -322,6 +322,9 @@ class DSManager extends Utility
 
 	public function fixPermsDir($dir)
 	{
+		if (!is_dir($dir))
+			return;
+
 		$cmd = 'find "'.$dir.'" -type d -print0 | xargs -0 chmod 770';
 		passthru($cmd);
 
@@ -338,5 +341,7 @@ class DSManager extends Utility
 		$this->fixPermsDir('config');
 		$this->fixPermsDir('templates');
 		$this->fixPermsDir('tmp');
+		$this->fixPermsDir('imgcache');
+		$this->fixPermsDir('res');
 	}
 }
