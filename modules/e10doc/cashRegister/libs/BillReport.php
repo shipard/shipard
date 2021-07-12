@@ -13,8 +13,8 @@ class BillReport extends \e10doc\core\libs\reports\DocReport
 	function init ()
 	{
 		$this->reportMode = self::rmPOS;
-		$this->reportId = 'e10doc.cashregister.bill';
-		$this->reportTemplate = 'e10doc.cashregister.bill';
+		$this->reportId = 'reports.default.e10doc.cashRegister.bill';
+		$this->reportTemplate = 'reports.default.e10doc.cashRegister.bill';
 
 		$this->mimeType = 'application/x-octet-stream';
 
