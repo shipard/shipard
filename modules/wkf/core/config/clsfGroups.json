@@ -1,6 +1,6 @@
 {
 	"wkfIssuesTags": {
-		"name": "Zprávy a úkoly", "label": "Štítky",
+		"name": "Zprávy a úkoly", "label": "Štítky", "icon":"tables/wkf.core.issues",
 		"tables": ["wkf.core.issues"]
 	}
 }

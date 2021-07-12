@@ -1,4 +1,4 @@
 {
 	"webParts": {"name": "Členění článků webu", "icon": "tags/articlesSections", "tables": ["e10.web.pages"]},
-	"webSections": {"name": "Rubriky článků webu", "tables": ["e10.web.pages"]}
+	"webSections": {"name": "Rubriky článků webu", "tables": ["e10.web.pages"], "icon":"tables/e10.web.pages"}
 }

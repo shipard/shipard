@@ -1,3 +1,3 @@
 {
-	"workOrdersTags": {"name": "Zakázky", "label": "Štítky", "tables": ["e10mnf.core.workOrders"]}
+	"workOrdersTags": {"name": "Zakázky", "label": "Štítky", "tables": ["e10mnf.core.workOrders"], "icon":"tables/e10mnf.core.workOrders"}
 }

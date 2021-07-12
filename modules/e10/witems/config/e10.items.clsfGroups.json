@@ -2,6 +2,7 @@
 	"witemsTags": {
 		"name": "Položky",
 		"label": "Štítky",
-		"tables": ["e10.witems.items"]
+		"tables": ["e10.witems.items"],
+		"icon":"tables/e10.witems.items"
 	}
 }

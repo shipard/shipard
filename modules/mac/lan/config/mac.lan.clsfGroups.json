@@ -1,4 +1,4 @@
 {
-	"maclanDevicesTags": {"name": "Síťová zařízení", "label": "Štítky", "tables": ["mac.lan.devices"]},
-	"maclanSwLicensesTags": {"name": "SW Licence", "label": "Štítky", "tables": ["mac.lan.swLicenses"]}
+	"maclanDevicesTags": {"name": "Síťová zařízení", "label": "Štítky", "tables": ["mac.lan.devices"], "icon":"tables/mac.lan.devices"},
+	"maclanSwLicensesTags": {"name": "SW Licence", "label": "Štítky", "tables": ["mac.lan.swLicenses"], "icon":"tables/mac.lan.swLicenses"}
 }
