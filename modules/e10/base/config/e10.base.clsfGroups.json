@@ -1,5 +1,5 @@
 {
 	"places": {"name": "Místa", "icon": "tags/places"},
 	"others": {"name": "Různé", "icon": "tags/various"},
-	"attTags": {"name": "Přílohy", "label": "Štítky", "tables": ["e10.base.attachments"]}
+	"attTags": {"name": "Přílohy", "label": "Štítky", "tables": ["e10.base.attachments"], "icon":"tables/e10.base.attachments"}
 }

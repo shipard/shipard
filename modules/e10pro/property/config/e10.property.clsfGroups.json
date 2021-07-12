@@ -1,3 +1,3 @@
 {
-	"propertyTags": {"name": "Majetek", "label": "Štítky", "tables": ["e10pro.property.property"]}
+	"propertyTags": {"name": "Majetek", "label": "Štítky", "tables": ["e10pro.property.property"], "icon":"tables/e10pro.property.property"}
 }

@@ -1,6 +1,6 @@
 {
 	"personsTags": {
-		"name": "Osoby", "label": "Štítky",
+		"name": "Osoby", "label": "Štítky", "icon":"system/iconUser",
 		"tables": ["e10.persons.persons"]
 	}
 }
