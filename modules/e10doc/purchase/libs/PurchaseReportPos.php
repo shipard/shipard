@@ -11,12 +11,12 @@ class PurchaseReportPos extends PurchaseReport
 
 	function init()
 	{
-		$this->reportMode = FormReport::rmPOS;
+		$this->reportMode = self::rmPOS;
 		$this->mimeType = 'application/x-octet-stream';
 
 		parent::init();
 
-		$this->reportId = 'e10doc.purchase.purchasepos';
-		$this->reportTemplate = 'e10doc.purchase.purchasepos';
+		$this->reportId = 'reports.default.e10doc.purchase.purchasepos';
+		$this->reportTemplate = 'reports.default.e10doc.purchase.purchasepos';
 	}
 }
