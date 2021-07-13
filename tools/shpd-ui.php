@@ -15,10 +15,10 @@ define ("__APP_DIR__", getcwd());
 require_once __SHPD_ROOT_DIR__ . '/src/boot.php';
 
 use Shipard\Utils\Utils;
-
+use Shipard\Utils\Json;
 
 use \E10\CLI\Application;
-use \E10\DataModel, \e10\json;
+use \E10\DataModel;
 
 function parseArgs($argv)
 {
@@ -265,7 +265,7 @@ class ShpdUIApp
 	}
 	
 
-	public function js ()
+	public function jsApp ()
 	{
 		$uiDefs = $this->loadCfgFile('ui/ui.json');
 		if (!$uiDefs)
@@ -274,7 +274,7 @@ class ShpdUIApp
 		$destFolder = 'www-root/.ui/';
 		if (!is_dir($destFolder))
 			mkdir ($destFolder);
-		
+		$info = [];
 		forEach ($uiDefs['clients'] as $uiTypeId => $uiDef)
 		{
 			echo "* {$uiTypeId}\n";
@@ -288,13 +288,16 @@ class ShpdUIApp
 
 			$srcDir = 'ui/clients/' . $uiTypeId . '/js/';
 
-			$this->createJavascript(getcwd().'/'.$srcDir, getcwd().'/'.$destFolder);
+			$this->createJavascript(getcwd().'/'.$srcDir, getcwd().'/'.$destFolder, $info, $uiTypeId);
 		}
+
+		file_put_contents('ui/clients/'.'files.json', Json::lint($info));
+		file_put_contents('ui/clients/'.'files.data', serialize($info));
 
 		return TRUE;
 	}
 
-	public function createJavascript ($srcDir, $dstDir)
+	public function createJavascript ($srcDir, $dstDir, &$info, $infoKey)
 	{
 		$pkg = utils::loadCfgFile($srcDir.'package.json');
 		if (!$pkg)
@@ -318,12 +321,49 @@ class ShpdUIApp
 		$finalFileName = $dstDir.'client.js';
 		file_put_contents($finalFileName, $finalFileString);
 
-		$sha384 = hash_file('sha384', $finalFileName);
-		$filesData = [
-			'client.js' => 'sha384-'.$sha384
+		$sha384_ascii = hash_file('SHA384', $finalFileName);
+		$sha384_base64 = base64_encode(hash_file('SHA384', $finalFileName, true));
+		$info[$infoKey] = [
+			'client.js' => [
+				'sha384' => ''.$sha384_ascii,
+				'integrity' => 'sha384-'.$sha384_base64,
+				'ver' => md5_file($finalFileName),
+			]
 		];
-		file_put_contents($srcDir.'files.json', json_encode($filesData));
 	}
+
+	public function jsWeb ()
+	{
+		$uiDefs = $this->loadCfgFile('ui/ui.json');
+		if (!$uiDefs)
+			return $this->msg("ERROR: file `ui/ui.json` not found...");
+
+		$destFolder = 'www-root/.web-apps/';
+		if (!is_dir($destFolder))
+			mkdir ($destFolder);
+		$info = [];
+		forEach ($uiDefs['web-apps'] as $uiTypeId => $uiDef)
+		{
+			echo "* {$uiTypeId}\n";
+
+			$destFolder = 'www-root/.web-apps/'.$uiTypeId.'/';
+			if (!is_dir($destFolder))
+				mkdir ($destFolder);
+			$destFolder .= 'js/';
+			if (!is_dir($destFolder))
+				mkdir ($destFolder);
+
+			$srcDir = 'ui/web-apps/' . $uiTypeId . '/js/';
+
+			$this->createJavascript(getcwd().'/'.$srcDir, getcwd().'/'.$destFolder, $info, $uiTypeId);
+		}
+
+		file_put_contents('ui/web-apps/'.'files.json', Json::lint($info));
+		file_put_contents('ui/web-apps/'.'files.data', serialize($info));
+
+		return TRUE;
+	}
+
 
 	public function webTemplate ()
 	{
@@ -392,7 +432,7 @@ class ShpdUIApp
 			$this->allLooks[$lookCfg['ndx']] = ['id' => $bn, 'name' => $lookCfg['name'], 'themeColor' => $themeColor, 'template' => $templateCfg['id']];
 		}
 
-		file_put_contents('looks.json', json::lint($looks));
+		file_put_contents('looks.json', Json::lint($looks));
 		$this->allTemplates[$templateCfg['ndx']] = ['id' => $templateCfg['id'], 'name' => $templateCfg['name']];
 		if (isset($templateCfg['checkModule']))
 			$this->allTemplates[$templateCfg['ndx']]['checkModule'] = $templateCfg['checkModule'];
@@ -418,8 +458,8 @@ class ShpdUIApp
 			chdir($oldDir);
 		}
 
-		file_put_contents('templates.json', json::lint($this->allTemplates));
-		file_put_contents('looks.json', json::lint($this->allLooks));
+		file_put_contents('templates.json', Json::lint($this->allTemplates));
+		file_put_contents('looks.json', Json::lint($this->allLooks));
 
 		return TRUE;
 	}
@@ -435,8 +475,9 @@ class ShpdUIApp
 		switch ($this->command ())
 		{
 			case	'app-themes':			return $this->createAppThemes ();
-			case	'app-js':					return $this->js();
+			case	'app-js':					return $this->jsApp();
 			case	'web-templates':	return $this->webTemplates ();
+			case	'web-js':					return $this->jsWeb();
 		}
 
 		echo ("unknown command...\n");

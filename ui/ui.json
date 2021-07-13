@@ -7,6 +7,11 @@
 			"title": "Old UI for mobile devices"
 		}
 	},
+	"web-apps": {
+		"app": {
+			"title": "Web Applications"
+		}
+	},
 	"icons": {
 		"fa5": {
 			"title": "FA5"

@@ -1,0 +1,11 @@
+{
+	"dstFileName": "web-app.js",
+	"srcFiles": [
+		{"fileName": "utils.js"},
+		{"fileName": "server.js"},
+		{"fileName": "webActions.js"},
+		{"fileName": "selectableCells.js"},
+		{"fileName": "webApp.js"},
+		{"fileName": "wss.js"}
+	]
+}

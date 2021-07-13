@@ -135,7 +135,7 @@ class PageObject extends Utility
 			$c .= "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n";
 			
 			$themeUrl = "$absUrl{$this->app->urlRoot}/www-root/.ui/OldMobile/themes/" . $mobileuiTheme . "/$style?vv={$cfgID}";
-			$c .= "<link rel='stylesheet'\"' type='text/css' href='$themeUrl'/>\n";
+			$c .= "<link rel='stylesheet' type='text/css' href='$themeUrl'/>\n";
 
 			$c .= "\t<script type=\"text/javascript\">\nvar httpApiRootPath = '{$this->app->urlRoot}';var serverTitle=\"" . utils::es ($this->app->cfgItem ('options.core.ownerShortName', '')) . "\";" .
 				"var remoteHostAddress = '{$_SERVER ['REMOTE_ADDR']}'; e10ClientType = " . json_encode ($this->app->clientType) . ";\n";
@@ -162,7 +162,8 @@ class PageObject extends Utility
 
 			if ($this->dsMode !== Application::dsmDevel)
 			{
-				$c .= "\t<script type=\"text/javascript\" src=\"$absUrl{$this->app->urlRoot}/www-root/.ui/OldMobile/js/client.js?v".__E10_VERSION__.$cfgID."\"></script>\n";
+				$files = unserialize (file_get_contents(__SHPD_ROOT_DIR__.'/ui/clients/files.data'));
+				$c .= "\t<script type='text/javascript' integrity='{$files['OldMobile']['client.js']['integrity']}' src='$absUrl{$this->app->urlRoot}/www-root/.ui/OldMobile/js/client.js?v=".$files['OldMobile']['client.js']['ver']."'></script>\n";
 			}
 			else
 			{

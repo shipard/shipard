@@ -45,6 +45,16 @@ $e10w-content-title-text: #E5E4E2 !default;
 $e10w-content-subTitle-bg: #625D5D !default;
 $e10w-content-subTitle-text: #E5E4E2 !default;
 
+$e10w-brand-accent-color: #FDFF6B !default;
+$e10w-brand-primary-text: $e10w-content-subTitle-text !default;
+$e10w-brand-primary-bg: $e10w-content-subTitle-bg !default;
+$e10w-brand-secondary-text: white !default;
+$e10w-brand-secondary-bg: #007bff !default;
+$e10w-paper-bg: $e10w-body-bg !default;
+$e10w-paper-text: $e10w-body-text !default;
+
+
+
 /**
  * sidebar-start (left)
  */
@@ -114,6 +124,25 @@ $cancelHandleBackgroundColor:	#ff4040;
 
 $archiveHandleTextColor:		#999;
 $archiveHandleBackgroundColor:	#DEDEDE;
+
+
+// -- color modes
+$e10w-cm-done-bg: #41A317 !default;
+$e10w-cm-done-text: #FFF !default;
+$e10w-cm-failed-bg: #FF2400 !default;
+$e10w-cm-failed-text: #FFF !default;
+$e10w-cm-panelHandle-bg: #ECE5B6 !default;
+$e10w-cm-panelHandle-text: #2C3539 !default;
+$e10w-cm-panelSubTitle-bg: #625D5D !default;
+$e10w-cm-panelSubTitle-text: #E5E4E2 !default;
+$e10w-cm-panelTitle-bg: #2C3539 !default;
+$e10w-cm-panelTitle-text: #E5E4E2 !default;
+$e10w-cm-rest-bg: #488AC7 !default;
+$e10w-cm-rest-text: #FFF !default;
+$e10w-cm-rowContent-bg: #3D3C3A !default;
+$e10w-cm-rowContent-text: #E0E0F0 !default;
+$e10w-cm-rowHandle-bg: #79BAEC !default;
+$e10w-cm-rowHandle-text: #111 !default;
 
 
 // sizes

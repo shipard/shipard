@@ -793,16 +793,16 @@ class WebPages extends \E10\utility
 			$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/libs/js/mqttws/mqttws31.min.js\"></script>\n";
 			if ($this->app->cfgItem('develMode', 0) === 0)
 			{ // production
-				$files = unserialize (file_get_contents(__APP_DIR__.'/e10-modules/.cfg/filesWeb.data'));
-				$checkSum = $files['web/e10-web-app.js']['sha256'];
-				$c .= "<script type=\"text/javascript\" src=\"{$this->app->dsRoot}/e10-modules/.cfg/web/e10-web-app.js?v".$checkSum."\"></script>\n";
-			} else
+				$files = unserialize (file_get_contents(__SHPD_ROOT_DIR__.'/ui/web-apps/files.data'));
+				$c .= "<script type='text/javascript' integrity='{$files['app']['client.js']['integrity']}' src='{$this->app->dsRoot}/www-root/.web-apps/app/js/client.js?v=".$files['app']['client.js']['ver']."'></script>\n";
+			}
+			else
 			{ // development
-				$jsFiles = utils::loadCfgFile(__APP_DIR__ . '/e10-client/packaging/e10-web-app-js.json');
+				$jsFiles = utils::loadCfgFile(__APP_DIR__ . '/www-root/ui-dev/web-apps/app/js/package.json');
 				foreach ($jsFiles['srcFiles'] as $sf)
 				{
-					$checkSum = md5_file(__APP_DIR__."/e10-client/{$sf['fileName']}");
-					$c .= "<script type=\"text/javascript\" src=\"{$this->app->dsRoot}/e10-client/{$sf['fileName']}?v=$checkSum\"></script>\n";
+					$checkSum = md5_file(__APP_DIR__."/www-root/ui-dev/web-apps/app/js/{$sf['fileName']}");
+					$c .= "<script type=\"text/javascript\" src=\"{$this->app->dsRoot}/www-root/ui-dev/web-apps/app/js/{$sf['fileName']}?v=$checkSum\"></script>\n";
 				}
 			}
 		}

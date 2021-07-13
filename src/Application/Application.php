@@ -1211,7 +1211,8 @@ class Application extends \Shipard\Application\ApplicationCore
 
 			if ($this->cfgItem ('develMode', 0) === 0)
 			{ // production
-				$c .= "\t<script type=\"text/javascript\" src=\"$absUrl{$this->urlRoot}/www-root/.ui/OldDesktop/js/client.js?v".__E10_VERSION__.$cfgID."\"></script>\n";
+				$files = unserialize (file_get_contents(__SHPD_ROOT_DIR__.'/ui/clients/files.data'));
+				$c .= "\t<script type='text/javascript' integrity='{$files['OldDesktop']['client.js']['integrity']}' src='$absUrl{$this->urlRoot}/www-root/.ui/OldDesktop/js/client.js?v=".$files['OldDesktop']['client.js']['ver']."'></script>\n";
 			}
 			else
 			{ // development

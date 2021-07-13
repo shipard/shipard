@@ -12,6 +12,30 @@
 			"group": {
 				"kind": "build"
 			}
+		},
+		{
+			"label": "WEB: web-templates",
+			"type": "shell",
+			"command": "../../../tools/shpd-ui.php web-templates",
+			"options": {
+				"cwd": "${workspaceFolder}/www-root/templates/web"
+			},
+			"problemMatcher": [],
+			"group": {
+				"kind": "build"
+			}
+		},
+		{
+			"label": "APP: app-js",
+			"type": "shell",
+			"command": "tools/shpd-ui.php app-js",
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [],
+			"group": {
+				"kind": "build"
+			}
 		}
 	]
 }
