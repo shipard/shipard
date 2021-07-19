@@ -2,17 +2,14 @@
 
 namespace e10doc\finance;
 
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
-
-
-use  e10\utils, e10doc\core\e10utils, e10\TableForm;
+use  e10\utils;
 
 
 /**
  * Class CashPayWidget
  * @package e10doc\finance
  */
-class CashPayWidget extends \E10\widgetPane
+class CashPayWidget extends \Shipard\UI\Core\WidgetPane
 {
 	var $personsTable;
 	var $personNdx = 0;

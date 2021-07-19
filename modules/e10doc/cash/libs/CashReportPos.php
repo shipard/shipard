@@ -5,11 +5,6 @@ namespace e10doc\cash\libs;
 
 class CashReportPos extends CashReport
 {
-	function command ($cmd)
-	{
-		$this->objectData ['mainCode'] .= chr($cmd);
-	}
-
 	public function init ()
 	{
 		$this->reportMode = self::rmPOS;
@@ -17,7 +12,7 @@ class CashReportPos extends CashReport
 
 		parent::init();
 
-		$this->reportId = 'e10doc.cash.cashpos';
-		$this->reportTemplate = 'e10doc.cash.cashpos';
+		$this->reportId = 'reports.default.e10doc.cash.cashpos';
+		$this->reportTemplate = 'reports.default.e10doc.cash.cashpos';
 	}
 }
