@@ -79,7 +79,11 @@ class TableTemplates extends DbTable
 
 	public function templateId ($templateType, $templateNdx)
 	{
-		if ($templateNdx < 100000)
+		if (!$templateNdx)
+		{
+			return '';
+		}
+		elseif ($templateNdx < 100000)
 		{
 			$template = $this->loadItem ($templateNdx);
 			if ($template)

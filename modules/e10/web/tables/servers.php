@@ -73,7 +73,7 @@ class TableServers extends DbTable
 		if ($recData['templateNdx'] !== 0)
 		{
 			$tableTemplates = $this->app()->table('e10.base.templates');
-			$recData['template'] = $tableTemplates->templateId(0, $recData['templateNdx']);
+			$recData['template'] = $tableTemplates->templateId(0, intval($recData['templateNdx']));
 
 			$tableTemplatesLooks = $this->app()->table('e10.base.templatesLooks');
 			$allTemplateLooks = $tableTemplatesLooks->templateLooks (0, $recData['templateNdx']);

@@ -76,6 +76,9 @@ class TableTemplatesLooks extends DbTable
 	{
 		$looks = [];
 
+		if (!$templateNdx)
+			return $looks;
+
 		// -- user defined looks
 		$q [] = 'SELECT * FROM [e10_base_templatesLooks]';
 		array_push ($q, ' WHERE [template] = %i', $templateNdx, ' AND [docStateMain] < 4', ' ORDER BY [name], [ndx] ');
