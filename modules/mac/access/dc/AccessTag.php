@@ -72,7 +72,7 @@ class AccessTag extends \e10\DocumentCard
 
 
 		// -- assignment history
-		if (count($this->tagInfo->tagInfo['assignmentHistory']))
+		if (isset($this->tagInfo->tagInfo['assignmentHistory']) && count($this->tagInfo->tagInfo['assignmentHistory']))
 		{
 			$ah = ['#' => '#', 'validFrom' => 'Od', 'validTo' => 'Do', 'assigned' => 'Přiřazeno'];
 
