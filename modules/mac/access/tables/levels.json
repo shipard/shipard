@@ -14,7 +14,8 @@
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
 	"lists": [
-		{"id": "cfg", "class": "e10.base.ListRows", "name": "Nastavení", "table": "mac.access.levelsCfg", "queryColumn": "accessLevel", "orderColumn": "rowOrder"}
+		{"id": "cfg", "class": "e10.base.ListRows", "name": "Nastavení", "table": "mac.access.levelsCfg", "queryColumn": "accessLevel", "orderColumn": "rowOrder"},
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
 	],
 	"views": [
 		{"id": "default", "class": "mac.access.ViewLevels", "detail": "mac.access.ViewDetailLevel", "help":"prirucka/255"}

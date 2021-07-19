@@ -1,0 +1,10 @@
+{
+	"mac.access.levels": {
+		"mac-acccess-levels-pg": {
+			"linkid": "mac-acccess-levels-pg", "name": "Skupiny Osob", "icon": "tables/e10.persons.groups",
+			"sources": [
+				{"table": "e10.persons.groups"}
+			]
+		}
+	}
+}

@@ -161,7 +161,18 @@ class TagManager extends DataView
 
 		$this->data['assignPersons'] = [];
 
-		$enabledPersonsGroups = [4, 3];
+		$qpg = [];
+		array_push($qpg, 'SELECT DISTINCT links.dstRecId FROM [e10_base_doclinks] AS [links]');
+		array_push($qpg, ' LEFT JOIN [e10_persons_groups] AS [groups] ON links.dstRecId = [groups].ndx');
+		array_push($qpg, ' WHERE srcTableId = %s', 'mac.access.levels', ' AND dstTableId = %s', 'e10.persons.groups');
+		array_push($qpg, ' AND [links].linkId = %s', 'mac-acccess-levels-pg');
+		array_push($qpg, ' AND [groups].docStateMain <= %i', 2);
+		$rowsPG = $this->db()->query($qpg);
+		$enabledPersonsGroups = [];
+		foreach ($rowsPG as $pg)
+		{
+			$enabledPersonsGroups[] = $pg['dstRecId'];
+		}
 
 		$q = [];
 		array_push($q, 'SELECT [persons].*');

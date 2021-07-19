@@ -111,6 +111,7 @@ class FormLevel extends TableForm
 					$this->addColumnInput ('order');
 					if ($assignTagsToRooms)
 						$this->addColumnInput ('enableRoomAccess');
+					$this->addList ('doclinks', '', TableForm::loAddToFormLayout);	
 				$this->closeTab ();
 				$this->openTab (TableForm::ltNone);
 					$this->addListViewer ('cfg', 'formList');
