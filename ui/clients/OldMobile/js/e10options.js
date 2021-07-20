@@ -173,8 +173,6 @@ e10client.prototype.options.openAppMenuDialog = function ()
 	}
 
 	var cc = '';
-	//cc += "<div class='e10-option-row'><label>Sdílet polohu</label><input type='checkbox' class='e10-inputLogical' name='shareLocation' value='1'></div>";
-	//cc += "<div class='e10-option-row'><label>Používat Bluetooth</label><input type='checkbox' class='e10-inputLogical' name='useBluetooth' value='1'></div>";
 
 	if (1)
 	{
@@ -200,16 +198,6 @@ e10client.prototype.options.openAppMenuDialog = function ()
 		cc += "<div class='e10-option-bigbtn e10-trigger-action' data-action='app-logout'><i class='fa fa-power-off'></i><span>Odhlásit</span></div>";
 		cc += "</div>";
 	}
-	else
-	{
-		cc += "<div class='block'>";
-		cc += "<div class='e10-option-bigbtn e10-trigger-action' style='width: 100%;' data-action='app-logout'><i class='fa fa-power-off'></i><span>Odhlásit</span></div>";
-		cc += "</div>";
-	}
-
-	cc += "<div class='block'>";
-	cc += "<div class='e10-option-rowbtn e10-trigger-action' data-action='app-about'>O Shipardu<br><small>Verze "+e10.appVersion+"</small></span><div class='info' style='display:none;'></div></div>";
-	cc += "</div>";
 
 	var data = {
 		toolbarCode: tc,

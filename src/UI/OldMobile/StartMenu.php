@@ -338,16 +338,8 @@ class StartMenu extends \Shipard\UI\OldMobile\PageObject
 
 	public function rightPageHeaderButtons ()
 	{
-		if ($this->app->testGetParam('standaloneApp') === '1')
-			return FALSE;
-		if ($this->app->clientType [1] !== 'cordova')
-			return FALSE;
-
 		$rmbs = [];
-		if ($this->app->clientType [1] === 'cordova')
-			$b = ['icon' => 'system/actionClose', 'url' => 'index.html', 'backButton' => 1];
-		else
-			$b = ['icon' => 'system/actionClose', 'url' => $this->homeUrl()];
+		$b = ['icon' => 'system/actionClose', 'action' => 'app-logout'];
 		$rmbs[] = $b;
 
 		return $rmbs;
@@ -376,11 +368,5 @@ class StartMenu extends \Shipard\UI\OldMobile\PageObject
 	}
 
 	public function pageType () {return 'home';}
-
-	function homeUrl ()
-	{
-		$portalDomain =  $this->app->cfgItem ('dsi.portalInfo.portalDomain', '');
-		return 'https://'.$portalDomain.'/';
-	}
 }
 

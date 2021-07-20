@@ -541,6 +541,7 @@ class Authenticator extends \Shipard\Application\Authenticator
 					return FALSE;
 			} else
 				return FALSE;
+			$this->startSession($this->app, $row['ndx'], '');
 		}
 		else
 		if ($row['accountType'] == Authenticator::actLocal)

@@ -25,7 +25,7 @@ class Login extends \Shipard\UI\OldMobile\PageObject
 		if (isset($headers['e10-device-id']))
 			$this->deviceId = $headers['e10-device-id'];
 		else
-			$this->deviceId = $this->app->testCookie ('e10-deviceId');
+			$this->deviceId = $this->app->testCookie ('_shp_did');
 
 		if ($this->deviceId === '')
 		{
@@ -88,7 +88,7 @@ class Login extends \Shipard\UI\OldMobile\PageObject
 			$c .= '</form>';
 
 			if ($this->app->testGetParam ("from", NULL) != NULL)
-				$c .= "<div class='m e10-error'>chybně zadaný pin</div>";
+				$c .= "<div class='h1 m e10-error center'>Chybně zadaný PIN</div>";
 
 			$c .= '</div>';
 		}
@@ -135,24 +135,7 @@ class Login extends \Shipard\UI\OldMobile\PageObject
 
 	public function rightPageHeaderButtons ()
 	{
-		if ($this->app->testGetParam('standaloneApp') === '1')
-			return FALSE;
-
-		$rmbs = [];
-		if ($this->app->clientType [1] === 'cordova')
-		{
-			if ($this->mode === '')
-				$b = ['icon' => 'icon-times', 'url' => 'index.html', 'backButton' => 1];
-			else
-				$b = ['icon' => 'icon-refresh', 'url' => 'index.html'];
-		}
-		else
-		{
-			$b = ['icon' => 'system/actionClose', 'url' => 'https://m.shipard.com'];
-		}
-		$rmbs[] = $b;
-
-		return $rmbs;
+		return FALSE;
 	}
 
 	public function pageTitle()
