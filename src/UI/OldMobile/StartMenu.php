@@ -339,7 +339,7 @@ class StartMenu extends \Shipard\UI\OldMobile\PageObject
 	public function rightPageHeaderButtons ()
 	{
 		$rmbs = [];
-		$b = ['icon' => 'system/actionClose', 'action' => 'app-logout'];
+		$b = ['icon' => 'system/actionLogout', 'action' => 'app-logout'];
 		$rmbs[] = $b;
 
 		return $rmbs;
