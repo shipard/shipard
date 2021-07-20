@@ -264,7 +264,7 @@ class TableServers extends DbTable
 
 			if (count ($redirectsHosts))
 				$cfg .= ' < '.implode (' ', $redirectsHosts);
-			$cfg .= '; cfg ver 0.3'."\n\n";
+			$cfg .= '; cfg ver 0.4'."\n\n";
 
 			$domainParts = explode('.', $domain);
 			$cntAllDomainParts = count($domainParts);
@@ -280,20 +280,15 @@ class TableServers extends DbTable
 			$cfg .= "server {\n";
 			$cfg .= "\tlisten 443 ssl http2;\n";
 			$cfg .= "\tserver_name $domain;\n";
-			$cfg .= "\troot /var/www/data-sources/$dsid;\n";
+			$cfg .= "\troot /var/lib/shipard/data-sources/$dsid;\n";
 			$cfg .= "\tindex index.php;\n";
-
-			$cfg .= "\tssl on;\n";
-			$cfg .= "\tssl_stapling on;\n";
-			$cfg .= "\tssl_stapling_verify on;\n";
 
 			$cfg .= "\tssl_certificate $certPath/$certId/chain.pem;\n";
 			$cfg .= "\tssl_certificate_key $certPath/$certId/privkey.pem;\n";
-			$cfg .= "\tssl_trusted_certificate $certPath/$certId/chain.pem;\n";
-			$cfg .= "\tssl_dhparam /etc/ssl/crt/dhparam.pem;\n";
-
-			$cfg .= "\tinclude /var/www/e10-server/e10/server/etc/nginx/e10vhost.conf;\n";
-			$cfg .= "\tinclude /var/www/e10-server/e10/server/etc/nginx/e10https.conf;\n";
+			if (is_readable('/etc/ssl/dhparam.pem'))
+				$cfg .= "\tssl_dhparam /etc/ssl/dhparam.pem;\n";
+			$cfg .= "\tinclude /usr/lib/shipard/etc/nginx/shpd-one-app.conf;\n";
+			$cfg .= "\tinclude /usr/lib/shipard/etc/nginx/shpd-https.conf;\n";
 			$cfg .= "}\n\n";
 
 			// -- https redirects
@@ -313,9 +308,9 @@ class TableServers extends DbTable
 
 				$cfg .= "\tssl_certificate $certPath/$certId/chain.pem;\n";
 				$cfg .= "\tssl_certificate_key $certPath/$certId/privkey.pem;\n";
-				$cfg .= "\tssl_trusted_certificate $certPath/$certId/chain.pem;\n";
-				$cfg .= "\tssl_dhparam /etc/ssl/crt/dhparam.pem;\n";
-				$cfg .= "\tinclude /var/www/e10-server/e10/server/etc/nginx/e10https.conf;\n";
+				if (is_readable('/etc/ssl/dhparam.pem'))
+					$cfg .= "\tssl_dhparam /etc/ssl/dhparam.pem;\n";
+				$cfg .= "\tinclude /usr/lib/shipard/etc/nginx/shpd-https.conf;\n";
 
 				$cfg .= "\tlocation / {\n";
 				$cfg .= "\t\treturn 301 https://$domain".'$request_uri'.";\n";
