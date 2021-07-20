@@ -950,7 +950,7 @@ class TableForm
 		$o->loadData();
 		$o->renderCode();
 
-		$labelCode = ($label && $label !== '') ? $this->app()->ui()->TextLine($label) : '';
+		$labelCode = ($label && $label !== '') ? $this->app()->ui()->composeTextLine($label) : '';
 
 		$hints = $this->columnOptionsHints ($options, $columnId);
 		$this->appendElement ($o->code, $labelCode, $hints);

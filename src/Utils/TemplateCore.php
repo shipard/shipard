@@ -217,6 +217,16 @@ class TemplateCore extends \Mustache
 		return $this->app->appCfg;
 	}
 
+	public function htmlCodeIcons()
+	{
+		$scRoot = $this->app->scRoot();
+		$iconsCfg = $this->app->ui()->icons()->iconsCfg;
+		$c = '';
+		$c .= "<link rel='stylesheet' type='text/css' href='{$scRoot}/{$iconsCfg['styleLink']}'>\n";
+
+		return $c;
+	}
+
 	public function mobileMode ()
 	{
 		return $this->app->mobileMode;
@@ -359,7 +369,7 @@ class TemplateCore extends \Mustache
 		else
 			$icn = $params['icon'];
 
-		return $this->app->ui()->icons()->cssClass ($icn);
+		return $this->app->ui()->icon($icn);
 	}
 
 	function resolveCmd_ComposeTextLine ($params)

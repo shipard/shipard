@@ -238,18 +238,17 @@ ul.e10-angle-list {
     list-style-type: none;
   }
   >li:before {
-    content: "\f105";
-    font-family: FontAwesome;
+    content: "›";
     text-indent: -1rem;
     display: inline-block;
     position: relative;
     text-align: center;
   }
   >li.back:before {
-    content: "\f104";
+    content: "‹";
   }
   >li.page:before {
-    content: "\f14b";
+    content: "█";
     font-size: 90%;
   }
 }

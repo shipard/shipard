@@ -10,7 +10,7 @@
 	{{{headMetaTags}}}
 
 	<link href="{{scRoot}}/bs/5.0/dist/css/bootstrap.min.css?v452" rel="stylesheet">
-	<link href="{{scRoot}}/icons/fa/4.7/css/font-awesome.min.css" rel="stylesheet">
+	{{{htmlCodeIcons}}}
 	<link href="{{scRoot}}/libs/js/fancybox/3/jquery.fancybox.min.css" rel="stylesheet">
 	<link href="{{dsRoot}}/{{serverInfo.templateStylePath}}/{{serverInfo.look}}-app.css?v={{serverInfo.lookVersion.app}}" rel="stylesheet">
 
@@ -125,7 +125,7 @@
 				<div class="col-md-12 text-lg-center mt-3 pb-1">
 				{{#page.buttons}}
 					<button class="e10-document-trigger btn btn-primary btn-xs"{{#attr}} data-{{k}}="{{v}}"{{/attr}} title="{{text}}">
-						<i class="{{@icon;dataItem:icon}}"></i> {{text}}
+						{{{@icon;dataItem:icon}}}"></i> {{text}}
 					</button>
 				{{/page.buttons}}
 					<hr>
@@ -138,7 +138,7 @@
 			<div class="row">
 				<div class="col-6 mt-2 pb-2" style="text-align: left;">
 					{{#webSocketServers}}
-						<span class="e10-wss-connect" id="wss-{{id}}" title="{{id}}/{{name}}"><i class="{{@icon;dataItem:icon}}"></i></span>
+						<span class="e10-wss-connect" id="wss-{{id}}" title="{{id}}/{{name}}">{{{@icon;dataItem:icon}}}</span>
 					{{/webSocketServers}}
 
 					{{#serverInfo.images.template.footerLogo}}<img src="{{dsRoot}}{{serverInfo.images.template.footerLogo}}" style="height: 1.4rem; "/><br>{{/serverInfo.images.template.footerLogo}}

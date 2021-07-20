@@ -308,7 +308,7 @@ class TableRenderer extends \Shipard\Base\BaseObject
 					foreach ($r['_options']['expandable']['query-params'] as $qpk => $qpv)
 						$expParams .= ' data-query-'.$qpk."='".utils::es($qpv)."'";
 				}
-				$expCode = "<span class='e10-sum-table-exp-icon expandable' data-exp-parent-id='{$r['_options']['expandable']['exp-parent-id']}'$expParams><i class='fa fa-plus-square-o fa-fw'></i></span>&nbsp;";
+				$expCode = "<span class='e10-sum-table-exp-icon expandable' data-exp-parent-id='{$r['_options']['expandable']['exp-parent-id']}'$expParams>".$this->app->ui()->icon('system/actionExpandOpen')."</span>&nbsp;";
 
 				$ct = $expCode.$ct;
 			}

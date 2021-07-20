@@ -4,7 +4,7 @@
 				<ul class="e10-content-list mt-3">
 					{{#data.sections}}
 						<li  class="{{#active}}active{{/active}}">
-							<a href="{{id}}">{{#icon}}<i class="{{@icon;dataItem:icon}}"></i> {{/icon}}{{title}}</a>
+							<a href="{{id}}">{{#icon}}{{{@icon;dataItem:icon}}} {{/icon}}{{title}}</a>
 						</li>
 					{{/data.sections}}
 				</ul>
@@ -14,11 +14,11 @@
 	<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 e10-wiki" role="main">
 		<div id="e10-wiki-header" class="e10-wiki-header">
 
-	    <span class="pull-right text-sm-right">
+	    <span class="float-end text-sm-right pt-2">
 				<span class="d-none d-md-block">
 			    {{#data.page.buttons}}
 				    <button class="{{#actionClass}}{{actionClass}}{{/actionClass}}{{^actionClass}}e10-document-trigger{{/actionClass}} btn btn-primary btn-sm"{{#attr}} data-{{k}}="{{v}}"{{/attr}} title="{{text}}">
-							<i class="{{@icon;dataItem:icon}}"></i>
+							{{{@icon;dataItem:icon}}}
 				    </button>
 			    {{/data.page.buttons}}
 				</span>
@@ -29,7 +29,7 @@
 			<ul class="breadcrumb">
 				{{#data.page.breadcrumbs}}
 					<li class="breadcrumb-item{{#active}} active{{/active}}">
-						{{^active}}<a href="{{url}}">{{#icon}}<i class="{{@icon;dataItem:icon}}"></i>{{/icon}} {{title}}</a>{{/active}}
+						{{^active}}<a href="{{url}}">{{#icon}}{{{@icon;dataItem:icon}}} {{/icon}}{{title}}</a>{{/active}}
 						{{#active}}<span>{{title}}</span>{{/active}}
 					</li>
 				{{/data.page.breadcrumbs}}

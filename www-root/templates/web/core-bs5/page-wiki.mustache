@@ -15,7 +15,7 @@
 	{{{headMetaTags}}}
 
 	<link href="{{scRoot}}/bs/5.0/dist/css/bootstrap.min.css?v452" rel="stylesheet">
-	<link href="{{scRoot}}/icons/fa/5/css/fontawesome.min.css?v511" rel="stylesheet">
+	{{{htmlCodeIcons}}}
 	<link href="{{scRoot}}/libs/js/highlightjs/styles/atom-one-light.css" rel="stylesheet">
 	<link href="{{scRoot}}/libs/js/fancybox/3/jquery.fancybox.min.css" rel="stylesheet">
 	<link href="{{dsRoot}}/{{serverInfo.templateStylePath}}/{{serverInfo.look}}-wiki.css?v={{serverInfo.lookVersion.wiki}}" rel="stylesheet">
@@ -53,7 +53,7 @@
 				<a href="{{urlRoot}}/">
 					{{#serverInfo.images.template.headerLogo}}<img src="{{dsRoot}}{{serverInfo.images.template.headerLogo}}" style="height: 2rem;max-width: 60vw;"/>{{/serverInfo.images.template.headerLogo}}
                     {{^serverInfo.images.template.headerLogo}}
-                        <i class="{{@icon;dataItem:templateParams.icon}}"></i> {{serverInfo.title}}
+                        {{{@icon;dataItem:templateParams.icon}}} {{serverInfo.title}}
                     {{/serverInfo.images.template.headerLogo}}
 					{{#serverInfo.templateParams.headerTitle}}<span>{{serverInfo.templateParams.headerTitle}}</span>{{/serverInfo.templateParams.headerTitle}}
 				</a>
@@ -68,7 +68,7 @@
 					{{#data.sections}}
 						{{#topMenu}}
 							<li class='nav-item{{#active}} active{{/active}}'{{^topMenuText}} title='{{title}}'{{/topMenuText}}>
-								<a class="nav-link" href="{{urlRoot}}/{{id}}">{{#icon}}<i class="{{@icon;dataItem:icon}}"></i>{{/icon}}<span{{^topMenuText}} class="d-lg-none"{{/topMenuText}}> {{title}}</span></a>
+								<a class="nav-link" href="{{urlRoot}}/{{id}}">{{#icon}}{{{@icon;dataItem:icon}}}{{/icon}}<span{{^topMenuText}} class="d-lg-none"{{/topMenuText}}> {{title}}</span></a>
 							</li>
 						{{/topMenu}}
 					{{/data.sections}}

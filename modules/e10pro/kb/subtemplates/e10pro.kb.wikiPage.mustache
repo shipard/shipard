@@ -25,11 +25,11 @@
 						<tr>
 								<td class="e10-wiki-page-header-title">
 										<h2 class="e10-wiki-title"{{#data.page.subTitle}} style="margin-bottom: 0;"{{/data.page.subTitle}}>
-												{{#data.page.icon}}<i class="{{@icon;dataItem:data.page.icon}}"></i> {{/data.page.icon}}{{data.page.title}}
+											{{#data.page.icon}}{{{@icon;dataItem:data.page.icon}}} {{/data.page.icon}}{{data.page.title}}
 										</h2>
 										{{#data.page.subTitle}}<small style="display: inline-block; margin-bottom: .4rem;">{{data.page.subTitle}}</small>{{/data.page.subTitle}}
 								</td>
-								<td class="e10-wiki-page-header-buttons text-right">
+								<td class="e10-wiki-page-header-buttons text-end">
 								<span>
 									 <small class="grey-text e10-wiki-pageId">#{{data.page.id}}</small>
 										{{#data.page.tags}}<span class="tag z-depth-0" style="{{css}}">{{text}}</span> {{/data.page.tags}}
@@ -37,7 +37,7 @@
 								<span class="d-none d-md-inline-block">
 								{{#data.page.buttons}}
 										<button class="{{actionClass}} btn btn-primary btn-sm"{{#attr}} data-{{k}}="{{v}}"{{/attr}} title="{{title}}">
-											<i class="{{@icon;dataItem:icon}}"></i>
+											{{{@icon;dataItem:icon}}}
 										</button>
 								{{/data.page.buttons}}
 								</span>
@@ -49,7 +49,7 @@
 		    <ul class="breadcrumb">
 			    {{#data.page.breadcrumbs}}
 				    <li class="breadcrumb-item{{#active}} active{{/active}}">
-					    {{^active}}<a href="{{url}}">{{#icon}}<i class="{{@icon;dataItem:icon}}"></i>{{/icon}} {{title}}</a>{{/active}}
+					    {{^active}}<a href="{{url}}">{{#icon}}{{{@icon;dataItem:icon}}}{{/icon}} {{title}}</a>{{/active}}
 					    {{#active}}<span>{{title}}</span>{{/active}}
 				    </li>
 			    {{/data.page.breadcrumbs}}

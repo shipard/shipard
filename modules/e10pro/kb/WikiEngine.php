@@ -697,7 +697,7 @@ class WikiEngine extends Utility
 
 		if ($this->app()->hasRole('kb') && in_array('a', $section['roles']))
 		{
-			$b = ['text' => 'Spravovat stránky', 'icon' => 'icon-pencil-square', 'actionClass' => 'df2-action-trigger',
+			$b = ['text' => 'Spravovat stránky', 'icon' => 'system/actionSettings', 'actionClass' => 'df2-action-trigger',
 				'attr' => [
 					['k' => 'popup-url', 'v' => $this->app()->dsRoot.'/app/!/widget/viewer/e10pro.kb.texts/default'],
 					['k' => 'action', 'v' => 'open-popup'],

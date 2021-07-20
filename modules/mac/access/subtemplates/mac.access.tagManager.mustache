@@ -18,14 +18,14 @@
 		<button class="btn btn-large btn-danger" data-toggle="modal" data-target="#exampleModal" data-action="unassignFromPerson" data-assign-ndx="{{data.tagInfo.currentAssignment.personNdx}}" data-assign-title="{{data.tagInfo.currentAssignment.personFullName}}">Odebrat!</button>
 
 		{{#data.tagInfo.otherKeys}}
-			<i class="{{@icon;dataItem:keyIcon}}"></i> {{key}}
+			{{{@icon;dataItem:keyIcon}}} {{key}}
 			<br>
 		{{/data.tagInfo.otherKeys}}
 
 		{{#data.tagInfo.personContacts.0}}
 			<h4>Kontaktní údaje:</h4>
 			{{#data.tagInfo.personContacts}}
-				<i class="{{@icon;dataItem:icon}}"></i> {{text}} <br>
+				{{{@icon;dataItem:icon}}} {{text}} <br>
 			{{/data.tagInfo.personContacts}}
 		{{/data.tagInfo.personContacts.0}}
 	{{/data.tagInfo.assignedToPerson}}
