@@ -608,6 +608,12 @@
         "fa5pro":"fa-money-bill-alt",
         "bsi":"bi-cash",
         "mdi":"payments"
+	},	
+	"iconLocalMenu": {
+		"fa5": "fa-ellipsis-v",
+		"fa5pro": "fa-ellipsis-v",
+		"bsi": "bi-three-dots-vertical",
+		"mdi": "more_vert"
 	},
 	
 

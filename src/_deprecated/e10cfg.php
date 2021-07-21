@@ -504,7 +504,7 @@ class ViewAppOptions extends TableView
 				$help = $c['help'];
 
 			if ($icon === '')	
-				$icon = 'system/iconOther';
+				$icon = 'system/iconFile';
 
 			$this->queryRows [] = [
 				'ndx' => $id, 'name' => $c ['name'], 'ffn' => $fullFileName,
