@@ -264,7 +264,7 @@ class TableServers extends DbTable
 
 			if (count ($redirectsHosts))
 				$cfg .= ' < '.implode (' ', $redirectsHosts);
-			$cfg .= '; cfg ver 0.4'."\n\n";
+			$cfg .= '; cfg ver 0.5'."\n\n";
 
 			$domainParts = explode('.', $domain);
 			$cntAllDomainParts = count($domainParts);
@@ -301,10 +301,6 @@ class TableServers extends DbTable
 				$cfg .= ' '.implode(' ', $redirectsHosts);
 				$cfg .= ";\n";
 				$cfg .= "\troot /var/www;\n";
-
-				$cfg .= "\tssl on;\n";
-				$cfg .= "\tssl_stapling on;\n";
-				$cfg .= "\tssl_stapling_verify on;\n";
 
 				$cfg .= "\tssl_certificate $certPath/$certId/chain.pem;\n";
 				$cfg .= "\tssl_certificate_key $certPath/$certId/privkey.pem;\n";
