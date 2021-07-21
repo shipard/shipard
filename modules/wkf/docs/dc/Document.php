@@ -3,7 +3,7 @@
 namespace wkf\docs\dc;
 
 use \e10\utils, \e10\json, wkf\core\TableDocuments;
-
+use \e10\base\libs\UtilsBase;
 
 /**
  * Class Document
@@ -45,7 +45,7 @@ class Document extends \e10\DocumentCard
 
 	function loadData()
 	{
-		$this->linkedPersons = \E10\Base\linkedPersons2 ($this->table->app(), $this->table, $this->recData['ndx'], 'label label-default');
+		$this->linkedPersons = UtilsBase::linkedPersons2 ($this->table->app(), $this->table, $this->recData['ndx'], 'label label-default');
 	}
 
 	public function createContentBody ()
