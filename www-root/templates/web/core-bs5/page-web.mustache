@@ -9,11 +9,11 @@
 	<title>{{page.pageTitle}}</title>
 	{{{headMetaTags}}}
 
-	<link href="{{scRoot}}/bs/5.0/dist/css/bootstrap.min.css?v50b1" rel="stylesheet">
-	<link href="{{scRoot}}/icons/fa/4.7/css/font-awesome.min.css" rel="stylesheet">
+	<link href="{{scRoot}}/bs/5.0/dist/css/bootstrap.min.css?v501" rel="stylesheet">
+	{{{htmlCodeIcons}}}
 	<link href="{{scRoot}}/libs/js/highlightjs/styles/atom-one-light.css" rel="stylesheet">
 	<link href="{{scRoot}}/libs/js/fancybox/3/jquery.fancybox.min.css" rel="stylesheet">
-	<link href="{{dsRoot}}/{{serverInfo.templateStylePath}}/{{serverInfo.look}}-web.css?v={{serverInfo.lookVersion.web}}" rel="stylesheet">
+	<link href="{{dsRoot}}{{serverInfo.templateStylePath}}/{{serverInfo.look}}-web.css?v={{serverInfo.lookVersion.web}}" rel="stylesheet">
 	{{#page.params.recaptcha-v3-site-key}}<script src='https://www.google.com/recaptcha/api.js?render={{page.params.recaptcha-v3-site-key}}'></script>{{/page.params.recaptcha-v3-site-key}}
 </head>
 
