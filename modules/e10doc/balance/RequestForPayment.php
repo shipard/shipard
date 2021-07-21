@@ -42,16 +42,17 @@ class RequestForPayment extends FormReport
 		parent::loadData();
 
 		$allProperties = $this->app()->cfgItem ('e10.base.properties', []);
-
+		$this->lang = '';
 
 		// person
 		$tablePersons = $this->app->table ('e10.persons.persons');
 		$this->data ['person'] = $this->table->loadItem ($this->recData ['ndx'], 'e10_persons_persons');
 		$this->data ['person']['lists'] = $tablePersons->loadLists ($this->data ['person']);
 		$this->data ['person']['address'] = $this->data ['person']['lists']['address'][0];
+		$this->lang = $this->data ['person']['language'];
 		// persons country
 		World::setCountryInfo($this->app(), $this->data ['person']['lists']['address'][0]['worldCountry'], $this->data ['person']['address']);
-		if (isset($this->data ['person']['address']['countryLangSC2']))
+		if ($this->lang == '' && isset($this->data ['person']['address']['countryLangSC2']))
 			$this->lang = $this->data ['person']['address']['countryLangSC2'];
 
 		if (!in_array($this->lang, ['de', 'en', 'it', 'sk', 'cs']))
