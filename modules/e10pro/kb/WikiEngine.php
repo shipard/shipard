@@ -675,7 +675,7 @@ class WikiEngine extends Utility
 			$lso = 1000;
 			if (isset($this->sections[$sectionNdx]['lastOrder']))
 				$lso += $this->sections[$sectionNdx]['lastOrder'];
-			$b = ['text' => 'Přidat podstránku', 'icon' => 'icon-plus', 'attr' => [
+			$b = ['text' => 'Přidat podstránku', 'icon' => 'system/actionAdd', 'attr' => [
 					['k' => 'table', 'v' => 'e10pro.kb.texts'],
 					['k' => 'action', 'v' => 'new'],
 					['k' => 'addParams', 'v' => '__thisType=1&__mainType=1&__ownerText=0' . '&__section=' . $sectionNdx . '&__order=' . $lso]
