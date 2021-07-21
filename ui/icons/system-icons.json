@@ -614,6 +614,18 @@
 		"fa5pro": "fa-ellipsis-v",
 		"bsi": "bi-three-dots-vertical",
 		"mdi": "more_vert"
+	},	
+	"iconWikiStart": {
+		"fa5": "fa-rocket",
+		"fa5pro": "fa-rocket-launch",
+		"bsi": "bi-flag",
+		"mdi": "flag"
+	},
+	"iconBinoculars": {
+		"fa5": "fa-binoculars",
+		"fa5pro": "fa-binoculars",
+		"bsi": "bi-binoculars-fill",
+		"mdi": "visibility"
 	},
 	
 
