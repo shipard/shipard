@@ -15,7 +15,7 @@
 				"taxes": {"t1": "Daně", "object": "viewer", "table": "e10doc.taxes.reports", "viewer": "default", "icon": "docType/taxes", "order": 2100000},
 
 				"others": {
-					"t1": "Ostatní", "object": "subMenu", "icon": "system/iconOther",
+					"t1": "Ostatní", "object": "subMenu", "icon": "system/iconLocalMenu",
 					"order": 9800000,
 					"subMenu": {
 						"items": {

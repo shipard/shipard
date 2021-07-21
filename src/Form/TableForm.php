@@ -1563,7 +1563,7 @@ class TableForm
 			$iconClass = '';
 			if (isset($headerInfo['!error']))
 				$iconClass .= 'e10-error';
-			$headerCode .= "<td class='content-header-icon-new'>".$this->app()->ui()->icon($info ['icon'] ?? 'system/iconOther', $iconClass, 'span')."</td>";
+			$headerCode .= "<td class='content-header-icon-new'>".$this->app()->ui()->icon($info ['icon'] ?? 'system/iconFile', $iconClass, 'span')."</td>";
 		}
 
 		// info
