@@ -122,7 +122,7 @@ class RowsSettings extends Utility
 
 		if ($setValueType === 2)
 		{
-			$t = new \e10\TemplateMustache($this->app());
+			$t = new \Shipard\Report\TemplateMustache($this->app());
 			$t->data['row'] = $docRow;
 			$t->data['head'] = $docHead;
 			$value = $t->render($settingsValue);
