@@ -2,5 +2,36 @@
 	"ndx": 102200,
 	"name": "Modrý",
 	"lookParams": {
+		"e10w-navbar-bg": "#a2d2ff",
+		"e10w-navbar-text": "#000000",
+		"e10w-navbar-select-bg": "#ffc8dd",
+		"e10w-navbar-select-text": "#000000",
+
+		"e10w-footer-bg": "#a2d2ff",
+		"e10w-footer-text": "#000000",
+		"e10w-footer-link-text": "#cdb4db",
+		"e10w-footer-link-hover-text": "#e6f1fc",
+		"e10w-footer-link-visited-text": "#ffafcc",
+
+		"e10w-content-bg": "#e6f1fc",
+		"e10w-content-text": "#000000",
+		"e10w-content-link-text": "#cdb4db",
+		"e10w-content-link-hover-text": "#bde0fe",
+		"e10w-content-link-visited-text": "#ffafcc",
+
+		"e10w-body-bg": "#e6f1fc",
+		"e10w-body-text": "#000000",
+
+		"e10w-sb-start-bg": "#bde0fe",
+		"e10w-sb-start-text": "#000000",
+		"e10w-sb-start-link-color": "#cdb4db",
+		"e10w-sb-start-link-hover-text": "#e6f1fc",
+		"e10w-sb-start-link-visited-text": "#ffafcc",
+
+		"e10w-sb-end-bg": "#bde0fe",
+		"e10w-sb-end-text": "#000000",
+		"e10w-sb-end-link-color": "#cdb4db",
+		"e10w-sb-end-link-hover-text": "#e6f1fc",
+		"e10w-sb-end-link-visited-text": "#ffafcc"
 	}
 }

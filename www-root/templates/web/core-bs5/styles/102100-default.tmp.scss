@@ -1,4 +1,30 @@
 @charset "UTF-8";
 
+$e10w-navbar-bg: #003D5B; 
+$e10w-navbar-text: #FFFFFF; 
+$e10w-navbar-select-bg: #d3d6d9; 
+$e10w-navbar-select-text: #007bff; 
+$e10w-footer-bg: #003D5B; 
+$e10w-footer-text: #FFFFFF; 
+$e10w-footer-link-text: #007bff; 
+$e10w-footer-link-hover-text: darken($e10w-footer-link-text, 15%); 
+$e10w-footer-link-visited-text: lighten($e10w-footer-link-text, 15%); 
+$e10w-content-bg: #FEFEFE; 
+$e10w-content-text: #111; 
+$e10w-content-link-text: #007bff; 
+$e10w-content-link-hover-text: #darken($e10w-footer-link-text, 15%); 
+$e10w-content-link-visited-text: lighten($e10w-footer-link-text, 15%); 
+$e10w-body-bg: #FEFEFE; 
+$e10w-body-text: #111; 
+$e10w-sb-start-bg: #d3d6d9; 
+$e10w-sb-start-text: #111; 
+$e10w-sb-start-link-color: #007bff; 
+$e10w-sb-start-link-hover-text: darken($e10w-footer-link-text, 15%); 
+$e10w-sb-start-link-visited-text: lighten($e10w-footer-link-text, 15%); 
+$e10w-sb-end-bg: #d3d6d9; 
+$e10w-sb-end-text: #111; 
+$e10w-sb-end-link-color: #007bff; 
+$e10w-sb-end-link-hover-text: darken($e10w-footer-link-text, 15%); 
+$e10w-sb-end-link-visited-text: lighten($e10w-footer-link-text, 15%); 
 
 @import "../sass/display.scss";
