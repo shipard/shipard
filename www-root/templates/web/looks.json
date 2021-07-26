@@ -24,8 +24,8 @@
         "template": "core-bs5"
     },
     "102230": {
-        "id": "102230-yellow",
-        "name": "Žlutá",
+        "id": "102230-light",
+        "name": "Světlý",
         "themeColor": "#00508a",
         "template": "core-bs5"
     },
