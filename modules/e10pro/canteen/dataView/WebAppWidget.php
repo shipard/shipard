@@ -171,7 +171,7 @@ class WebAppWidget extends DataView
 						if ($menu['dayCntFoods'][$dayId] === 0)
 							$c .= "<div class='badge badge-danger'>" . utils::es('Nevaří se') . '</div>';
 						else
-							$c .= "<div class='badge badge-info'>" . utils::es('Uzavřeno') . '</div>';
+							$c .= "<div class='badge bg-info'>" . utils::es('Uzavřeno') . '</div>';
 					}
 					else
 					{
@@ -266,7 +266,7 @@ class WebAppWidget extends DataView
 							}
 						}
 
-						$allergens = $this->tableMenuFoods->allergens($food, FALSE, 'badge badge-light');
+						$allergens = $this->tableMenuFoods->allergens($food, FALSE, 'badge bg-info');
 						if (count($allergens))
 							$c .= '&nbsp;' . $this->app()->ui()->composeTextLine($allergens);
 

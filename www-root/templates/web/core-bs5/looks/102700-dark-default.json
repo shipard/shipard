@@ -32,7 +32,37 @@
 		"e10w-sb-end-text": "#c1bdb3",
 		"e10w-sb-end-link-color": "#a3cef1",
 		"e10w-sb-end-link-hover-text": "#f39b3e",
-		"e10w-sb-end-link-visited-text": "#7f7979"
+		"e10w-sb-end-link-visited-text": "#7f7979",
 
+		"e10-sc-title-bg":"#111111",
+		"e10-sc-title-text": "#c1bdb3",
+
+		"e10-sc-item-selected-bg": "#f39b3e",
+		"e10-sc-item-selected-text": "#000000",
+		"e10-sc-item-selectable-bg": "#222222",
+		"e10-sc-item-selectable-text": "#c1bdb3",
+		"e10-sc-item-disabled-bg": "#3C3C3C",
+		"e10-sc-item-disabled-text": "#c1bdb3",
+		"e10-sc-item-inactive-bg": "#3C3C3C",
+		"e10-sc-item-inactive-text": "#c1bdb3",
+		"e10-sc-item-inactive-selected-bg": "#bec0c2",
+		"e10-sc-item-inactive-selected-text": "#000000",
+		"e10-sc-item-selectable-hover-bg": "#a3cef1",
+		"e10-sc-item-selectable-hover-text": "#000000",
+
+		"e10-display-cm-panelTitle-bg": "#a3cef1",
+		"e10-display-cm-panelTitle-text": "#000",
+		"e10-display-cm-tr-separator1": "#bec0c2",
+		"e10-display-cm-tr-separator2": "#a3cef1",
+		"e10-display-cm-rowContent-bg": "#3C3C3C",
+		"e10-display-cm-rowContent-text": "#000000",
+		"e10-display-cm-panelSubTitle-bg": "#111111",
+		"e10-display-cm-panelSubTitle-text": "#FFFFFF",
+		"e10-display-cm-panelHandle-bg": "#bec0c2",
+		"e10-display-cm-panelHandle-text": "#242424",
+		"e10-display-cm-percentage-rest": "#f39b3e",
+		"e10-display-cm-rest-bg": "#f39b3e",
+		"e10-display-cm-rest-text": "#000",
+		"div-e10-display-panel-title": "#f39b3e"
 	}
 }

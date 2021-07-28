@@ -32,6 +32,38 @@
 		"e10w-sb-end-text": "#111",
 		"e10w-sb-end-link-color": "#007bff",
 		"e10w-sb-end-link-hover-text": "darken($e10w-footer-link-text, 15%)",
-		"e10w-sb-end-link-visited-text": "lighten($e10w-footer-link-text, 15%)"
+		"e10w-sb-end-link-visited-text": "lighten($e10w-footer-link-text, 15%)",
+
+
+		"e10-sc-title-bg":"#003D5B",
+		"e10-sc-title-text": "#FFF",
+
+		"e10-sc-item-selected-bg": "#0294db",
+		"e10-sc-item-selected-text": "#FFFFFF",
+		"e10-sc-item-selectable-bg": "#FFFFFF",
+		"e10-sc-item-selectable-text": "#000000",
+		"e10-sc-item-disabled-bg": "#d3d6d9",
+		"e10-sc-item-disabled-text": "#000000",
+		"e10-sc-item-inactive-bg": "#d3d6d9",
+		"e10-sc-item-inactive-text": "#000000",
+		"e10-sc-item-inactive-selected-bg": "#bec0c2",
+		"e10-sc-item-inactive-selected-text": "#000000",
+		"e10-sc-item-selectable-hover-bg": "#fff2b2",
+		"e10-sc-item-selectable-hover-text": "#000000",
+
+		"e10-display-cm-panelTitle-bg": "#003D5B",
+		"e10-display-cm-panelTitle-text": "#FFF",
+		"e10-display-cm-tr-separator1": "#fff2b2",
+		"e10-display-cm-tr-separator2": "#003D5B",
+		"e10-display-cm-rowContent-bg": "#d3d6d9",
+		"e10-display-cm-rowContent-text": "#000000",
+		"e10-display-cm-panelSubTitle-bg": "#656769",
+		"e10-display-cm-panelSubTitle-text": "#FFFFFF",
+		"e10-display-cm-panelHandle-bg": "#fff2b2",
+		"e10-display-cm-panelHandle-text": "#242424",
+		"e10-display-cm-percentage-rest": "#0294db",
+		"e10-display-cm-rest-bg": "#0294db",
+		"e10-display-cm-rest-text": "#000000",
+		"div-e10-display-panel-title": "#0294db"
 	}
 }

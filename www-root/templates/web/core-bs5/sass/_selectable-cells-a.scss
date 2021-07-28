@@ -12,24 +12,24 @@ div.e10-sc-cell {
 }
 
 div.e10-sc-item.selected {
-  color: $e10w-brand-secondary-text;
-  background-color: $e10w-brand-secondary-bg;
+  background-color: $e10-sc-item-selected-bg;
+  color: $e10-sc-item-selected-text;
 }
 
 div.e10-sc-item.selectable {
-  background-color: $e10w-paper-bg;
-  color: $e10w-paper-text;
+  background-color: $e10-sc-item-selectable-bg;
+  color: $e10-sc-item-selectable-text;
   cursor: pointer;
 }
 
 div.e10-sc-item.disabled {
-  background-color: darken($e10w-paper-bg, 25%);
-  color: lighten($e10w-paper-text, 30%);
+  background-color: $e10-sc-item-disabled-bg;
+  color: $e10-sc-item-disabled-text;
 }
 
 div.e10-sc-item.inactive {
-  background-color: darken($e10w-paper-bg, 15%);
-  color: lighten($e10w-paper-text, 15%);
+  background-color: $e10-sc-item-inactive-bg;
+  color: $e10-sc-item-inactive-text;
 }
 
 div.e10-sc-item.disabled.selected {
@@ -38,13 +38,13 @@ div.e10-sc-item.disabled.selected {
 }
 
 div.e10-sc-item.inactive.selected {
-  color: $e10w-brand-secondary-text;
-  background-color: $e10w-brand-secondary-bg;
+  color: $e10-sc-item-inactive-selected-text;
+  background-color: $e10-sc-item-inactive-selected-bg;
 }
 
 div.e10-sc-item.selectable:hover {
-  background-color: darken($e10w-paper-bg, 15%);
-  color: $e10w-paper-text;
+  background-color: $e10-sc-item-selectable-hover-bg;
+  color: $e10-sc-item-selectable-hover-text;
   cursor: pointer;
 }
 
@@ -56,14 +56,9 @@ div.e10-sc-item.selectable:hover {
 div.e10-sc-title {
   font-weight: bold;
   font-size: 122%;
-  color: $e10w-brand-primary-text;
-  background-color: $e10w-brand-primary-bg;
+  color: $e10-sc-title-text;
+  background-color: $e10-sc-title-bg;
   padding: .5rem;
-}
-
-div.e10-sc-body {
-  padding: 0 .5rem .5rem .5rem;
-  border: 2px solid $e10w-brand-primary-bg;
 }
 
 

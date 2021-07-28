@@ -99,7 +99,7 @@ class ServingFoodOrdersWidget extends DataView
 					$c .= '<div class="e10-display-cm-rowTitle">'.utils::es($food['personOrderName']).'</div>';
 					$c .= '<small>'.utils::es($food['foodName']).'</small>';
 					$ft = $this->foodTakings[$food['taking']];
-					$c .= "&nbsp; &nbsp;<span class='badge badge-info pull-right'>".utils::es($ft['name']).'</span>';
+					$c .= "&nbsp; &nbsp;<span class='badge bg-info pull-right'>".utils::es($ft['name']).'</span>';
 				$c .= '</div>';
 
 				if ($food['takeInProgress'] === 1)

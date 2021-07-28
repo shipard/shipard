@@ -101,7 +101,7 @@ class ServingFoodRemainingWidget extends DataView
 			if ($food['taking'])
 			{
 				$ft = $this->foodTakings[$food['taking']];
-				$c .= "&nbsp; &nbsp;<span class='badge badge-info pull-right'>" . utils::es($ft['name']) . '</span>';
+				$c .= "&nbsp; &nbsp;<span class='badge bg-info pull-right'>" . utils::es($ft['name']) . '</span>';
 			}
 			$c .= '</div>';
 

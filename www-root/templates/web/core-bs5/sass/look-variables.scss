@@ -35,23 +35,21 @@ $e10w-footer-link-visited-text: lighten($e10w-footer-link-text, 15%) !default;
 /**
  * content
  */
-$e10w-content-bg: #FEFEFE !default;
-$e10w-content-text: #111 !default;
-$e10w-content-link-text: #111 !default;
-$e10w-content-link-hover-text: darken($e10w-content-link-text, 15%) !default;
-$e10w-content-link-visited-text: darken($e10w-content-link-text, 10%) !default;
-$e10w-content-title-bg: #2C3539 !default;
-$e10w-content-title-text: #E5E4E2 !default;
-$e10w-content-subTitle-bg: #625D5D !default;
-$e10w-content-subTitle-text: #E5E4E2 !default;
-
-$e10w-brand-accent-color: #FDFF6B !default;
-$e10w-brand-primary-text: $e10w-content-subTitle-text !default;
-$e10w-brand-primary-bg: $e10w-content-subTitle-bg !default;
-$e10w-brand-secondary-text: white !default;
-$e10w-brand-secondary-bg: #007bff !default;
-$e10w-paper-bg: $e10w-body-bg !default;
-$e10w-paper-text: $e10w-body-text !default;
+$e10-sc-item-selected-bg: #007bff !default;
+$e10-sc-item-selectable: $e10w-body-bg !default;
+$e10-sc-item-selected-text: #FFF !default;
+$e10-sc-item-selectable-text: #000000 !default;
+$e10-sc-item-selectable-bg: #FFF !default;
+$e10-sc-item-disabled-bg: #d3d6d9 !default;
+$e10-sc-item-disabled-text: #000 !default;
+$e10-sc-item-inactive-bg: #d3d6d9 !default;
+$e10-sc-item-inactive-text: #000 !default;
+$e10-sc-title-bg: #003D5B !default;
+$e10-sc-title-text: #FFF !default;
+$e10-sc-item-inactive-selected-bg: #bec0c2 !default;
+$e10-sc-item-inactive-selected-text: #000 !default;
+$e10-sc-item-selectable-hover-bg: #d3d6d9 !default;
+$e10-sc-item-selectable-hover-text: #000 !default;
 
 
 
@@ -131,18 +129,24 @@ $e10w-cm-done-bg: #41A317 !default;
 $e10w-cm-done-text: #FFF !default;
 $e10w-cm-failed-bg: #FF2400 !default;
 $e10w-cm-failed-text: #FFF !default;
-$e10w-cm-panelHandle-bg: #ECE5B6 !default;
-$e10w-cm-panelHandle-text: #2C3539 !default;
-$e10w-cm-panelSubTitle-bg: #625D5D !default;
-$e10w-cm-panelSubTitle-text: #E5E4E2 !default;
-$e10w-cm-panelTitle-bg: #2C3539 !default;
-$e10w-cm-panelTitle-text: #E5E4E2 !default;
-$e10w-cm-rest-bg: #488AC7 !default;
-$e10w-cm-rest-text: #FFF !default;
-$e10w-cm-rowContent-bg: #3D3C3A !default;
-$e10w-cm-rowContent-text: #E0E0F0 !default;
 $e10w-cm-rowHandle-bg: #79BAEC !default;
 $e10w-cm-rowHandle-text: #111 !default;
+
+
+$e10-display-cm-panelTitle-bg: #003D5B !default;
+$e10-display-cm-panelTitle-text: #FFF !default;
+$e10-display-cm-tr-separator1: #fff2b2 !default;
+$e10-display-cm-tr-separator2: #003D5B !default;
+$e10-display-cm-rowContent-bg: #d3d6d9 !default;
+$e10-display-cm-rowContent-text: #000 !default;
+$e10-display-cm-panelSubTitle-bg: #656769 !default;
+$e10-display-cm-panelSubTitle-text: #FFFFFF !default;
+$e10-display-cm-panelHandle-bg: #fff2b2 !default;
+$e10-display-cm-panelHandle-text: #242424 !default;
+$e10-display-cm-percentage-rest: #0294db !default;
+$e10-display-cm-rest-bg: #ffe669 !default;
+$e10-display-cm-rest-text: #000000 !default;
+$div-e10-display-panel-title: #ffd747 !default;
 
 
 // sizes
