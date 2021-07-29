@@ -1,11 +1,12 @@
 /**
  * default colors
  */
-$e10w-body-bg: #F0F0F0 !default;
+$e10w-body-bg: #FEFEFE !default;
 $e10w-body-text: #111 !default;
 $e10w-content-link-text: #6666FF !default;
 $e10w-content-link-hover-text: #667788 !default;
 $e10w-content-link-visited-text: #667788 !default;
+
 
 //$e10w-brand-primary-bg: #003D5B !default;
 //$e10w-brand-primary-text: #FFFFFF !default;
@@ -21,14 +22,14 @@ $e10w-content-link-visited-text: #667788 !default;
  */
 $e10w-navbar-bg: #003D5B !default;
 $e10w-navbar-text: #FFFFFF !default;
-$e10w-navbar-select-bg: #FFFFFF !default;
-$e10w-navbar-select-text: #003D5B !default;
+$e10w-navbar-select-bg: #d3d6d9 !default;
+$e10w-navbar-select-text: #007bff !default;
 
 /**
  * footer
  */
-$e10w-footer-bg: $e10w-navbar-bg !default;
-$e10w-footer-text: $e10w-navbar-text !default;
+$e10w-footer-bg: #003D5B !default;
+$e10w-footer-text: #FFFFFF !default;
 $e10w-footer-link-text: #007bff !default;
 $e10w-footer-link-hover-text: darken($e10w-footer-link-text, 15%) !default;
 $e10w-footer-link-visited-text: lighten($e10w-footer-link-text, 15%) !default;
@@ -37,7 +38,13 @@ $e10w-footer-link-visited-text: lighten($e10w-footer-link-text, 15%) !default;
 /**
  * content
  */
-$e10-sc-item-selected-bg: #007bff !default;
+$e10w-content-bg: #FEFEFE !default;
+$e10w-content-text: #111 !default;
+$e10w-content-link-text: #007bff !default;
+$e10w-content-link-hover-text: darken($e10w-footer-link-text, 15%) !default;
+$e10w-content-link-visited-text: lighten($e10w-footer-link-text, 15%) !default;
+
+$e10-sc-item-selected-bg: #0294db !default;
 $e10-sc-item-selectable: $e10w-body-bg !default;
 $e10-sc-item-selected-text: #FFF !default;
 $e10-sc-item-selectable-text: #000000 !default;
@@ -58,9 +65,9 @@ $e10-sc-item-selectable-hover-text: #000 !default;
 /**
  * sidebar-start (left)
  */
-$e10w-sb-start-bg: #AEFEFE !default;
+$e10w-sb-start-bg: #d3d6d9 !default;
 $e10w-sb-start-text: #111 !default;
-$e10w-sb-start-link-text: #111 !default;
+$e10w-sb-start-link-text: #007bff !default;
 $e10w-sb-start-link-hover-text: darken($e10w-content-link-text, 15%) !default;
 $e10w-sb-start-link-visited-text: darken($e10w-content-link-text, 10%) !default;
 $e10w-sb-start-title-bg: #2C3539 !default;
@@ -71,9 +78,9 @@ $e10w-sb-start-subTitle-text: #E5E4E2 !default;
 /**
  * sidebar-end (right)
  */
-$e10w-sb-end-bg: #FEAEFE !default;//#FEFEFE !default;
+$e10w-sb-end-bg: #d3d6d9 !default;
 $e10w-sb-end-text: #111 !default;
-$e10w-sb-end-link-text: #111 !default;
+$e10w-sb-end-link-text: #007bff !default;
 $e10w-sb-end-link-hover-text: darken($e10w-content-link-text, 15%) !default;
 $e10w-sb-end-link-visited-text: darken($e10w-content-link-text, 10%) !default;
 $e10w-sb-end-title-bg: #2C3539 !default;
@@ -87,7 +94,7 @@ $e10w-sb-end-subTitle-text: #E5E4E2 !default;
  */
 $e10w-paneA-bg: $e10w-navbar-bg !default;
 $e10w-paneA-text: $e10w-navbar-text !default;
-$e10w-paneA-link-color: #007bff !default;
+$e10w-paneA-link-text: #007bff !default;
 $e10w-paneA-link-hover-color: darken($e10w-content-link-text, 15%) !default;
 $e10w-paneA-link-visited-color: lighten($e10w-content-link-text, 15%) !default;
 $e10w-paneA-handle-bg: #ECE5B6 !default;
@@ -146,9 +153,9 @@ $e10-display-cm-panelSubTitle-text: #FFFFFF !default;
 $e10-display-cm-panelHandle-bg: #fff2b2 !default;
 $e10-display-cm-panelHandle-text: #242424 !default;
 $e10-display-cm-percentage-rest: #0294db !default;
-$e10-display-cm-rest-bg: #ffe669 !default;
+$e10-display-cm-rest-bg: #0294db !default;
 $e10-display-cm-rest-text: #000000 !default;
-$div-e10-display-panel-title: #ffd747 !default;
+$div-e10-display-panel-title: #0294db !default;
 
 
 // sizes

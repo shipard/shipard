@@ -24,13 +24,13 @@
 
 		"e10w-sb-start-bg": "#3C3C3C",
 		"e10w-sb-start-text": "#c1bdb3",
-		"e10w-sb-start-link-color": "#a3cef1",
+		"e10w-sb-start-link-text": "#a3cef1",
 		"e10w-sb-start-link-hover-text": "#f39b3e",
 		"e10w-sb-start-link-visited-text": "#7f7979",
 
 		"e10w-sb-end-bg": "#3C3C3C",
 		"e10w-sb-end-text": "#c1bdb3",
-		"e10w-sb-end-link-color": "#a3cef1",
+		"e10w-sb-end-link-text": "#a3cef1",
 		"e10w-sb-end-link-hover-text": "#f39b3e",
 		"e10w-sb-end-link-visited-text": "#7f7979",
 

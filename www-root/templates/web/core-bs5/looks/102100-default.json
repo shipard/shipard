@@ -16,7 +16,7 @@
 		"e10w-content-bg": "#FEFEFE",
 		"e10w-content-text": "#111",
 		"e10w-content-link-text": "#007bff",
-		"e10w-content-link-hover-text": "#darken($e10w-footer-link-text, 15%)",
+		"e10w-content-link-hover-text": "darken($e10w-footer-link-text, 15%)",
 		"e10w-content-link-visited-text": "lighten($e10w-footer-link-text, 15%)",
 
 		"e10w-body-bg": "#FEFEFE",
@@ -24,13 +24,13 @@
 
 		"e10w-sb-start-bg": "#d3d6d9",
 		"e10w-sb-start-text": "#111",
-		"e10w-sb-start-link-color": "#007bff",
+		"e10w-sb-start-link-text": "#007bff",
 		"e10w-sb-start-link-hover-text": "darken($e10w-footer-link-text, 15%)",
 		"e10w-sb-start-link-visited-text": "lighten($e10w-footer-link-text, 15%)",
 
 		"e10w-sb-end-bg": "#d3d6d9",
 		"e10w-sb-end-text": "#111",
-		"e10w-sb-end-link-color": "#007bff",
+		"e10w-sb-end-link-text": "#007bff",
 		"e10w-sb-end-link-hover-text": "darken($e10w-footer-link-text, 15%)",
 		"e10w-sb-end-link-visited-text": "lighten($e10w-footer-link-text, 15%)",
 

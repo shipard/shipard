@@ -53,19 +53,19 @@
 
 			{"id": "e10w-footer-bg", "group": "footer", "name": "Patička - barva pozadí", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
 			{"id": "e10w-footer-text", "group": "footer", "name": "Patička - barva textu", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
-			{"id": "e10w-footer-link-color", "group": "footer", "name": "Barva textu odkazů", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-footer-link-text", "group": "footer", "name": "Barva textu odkazů", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
 			{"id": "e10w-footer-link-hover-text", "group": "footer", "name": "Barva textu odkazů pod kurzorem", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
 			{"id": "e10w-footer-link-visited-text", "group": "footer", "name": "Barva textu již navštívených odkazů", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
 
 			{"id": "e10w-sb-start-bg", "group": "sb-start", "name": "Barva pozadí", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
 			{"id": "e10w-sb-start-text", "group": "sb-start", "name": "Barva textu", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
-			{"id": "e10w-sb-start-link-color", "group": "sb-start", "name": "Barva textu odkazů", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-sb-start-link-text", "group": "sb-start", "name": "Barva textu odkazů", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
 			{"id": "e10w-sb-start-link-hover-text", "group": "sb-start", "name": "Barva textu odkazů pod kurzorem", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
 			{"id": "e10w-sb-start-link-visited-text", "group": "sb-start", "name": "Barva textu již navštívených odkazů", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
 
 			{"id": "e10w-sb-end-bg", "group": "sb-end", "name": "Barva pozadí", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
 			{"id": "e10w-sb-end-text", "group": "sb-end", "name": "Barva textu", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
-			{"id": "e10w-sb-end-link-color", "group": "sb-end", "name": "Barva textu odkazů", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-sb-end-link-text", "group": "sb-end", "name": "Barva textu odkazů", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
 			{"id": "e10w-sb-end-link-hover-text", "group": "sb-end", "name": "Barva textu odkazů pod kurzorem", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
 			{"id": "e10w-sb-end-link-visited-text", "group": "sb-end", "name": "Barva textu již navštívených odkazů", "type": "string", "subtype": "color", "cssType": "color", "len": 20}
 

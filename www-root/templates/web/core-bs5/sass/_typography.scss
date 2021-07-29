@@ -98,6 +98,7 @@ kbd {
 
   div+p, table+p, p+table {clear: both; margin-top: 1ex !important;}
 
+  /*
   a:not([class]) {
     color: $e10w-content-link-text !important;
     text-decoration: underline !important;
@@ -105,7 +106,7 @@ kbd {
   a:not([class]):visited {
     color: $e10w-content-link-visited-text !important;
     text-decoration: underline !important;
-  }
+  }*/
 }
 
 article + article {
