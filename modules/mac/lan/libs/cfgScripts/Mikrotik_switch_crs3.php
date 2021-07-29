@@ -151,23 +151,30 @@ class Mikrotik_switch_crs3 extends \mac\lan\libs\cfgScripts\Mikrotik
 
 		foreach ($portsOnVlans as $vlanNum => $vlan)
 		{
-			ksort($vlan['tagged']);
-			$taggedPorts = "";
-			foreach ($vlan['tagged'] as $port)
+			$taggedPorts = '';
+			if (isset($vlan['tagged']))
 			{
-				if (strlen ($taggedPorts))
-					$taggedPorts .= ",";
-				$taggedPorts .= $port;
-			}
-			ksort($vlan['untagged']);
-			$untaggedPorts = "";
-			foreach ($vlan['untagged'] as $port)
-			{
-				if (strlen ($untaggedPorts))
-					$untaggedPorts .= ",";
-				$untaggedPorts .= $port;
+				ksort($vlan['tagged']);
+				foreach ($vlan['tagged'] as $port)
+				{
+					if (strlen ($taggedPorts))
+						$taggedPorts .= ",";
+					$taggedPorts .= $port;
+				}
 			}
 
+			$untaggedPorts = '';
+			if (isset($vlan['untagged']))
+			{
+				ksort($vlan['untagged']);
+				foreach ($vlan['untagged'] as $port)
+				{
+					if (strlen ($untaggedPorts))
+						$untaggedPorts .= ",";
+					$untaggedPorts .= $port;
+				}
+			}
+		
 			$item =['type' => 'add',
 				'params' => [
 					'bridge' => 'IFB_VLANS',
