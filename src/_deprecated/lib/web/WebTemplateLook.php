@@ -3,7 +3,7 @@
 
 namespace lib\web;
 
-use \e10\Utility, \e10\json, \e10\uiutils, \e10\utils;
+use \e10\Utility, \e10\json, \e10\uiutils, \Shipard\Utils\Utils;
 
 
 /**
@@ -73,7 +73,7 @@ class WebTemplateLook extends Utility
 	{
 		$this->destPath = __APP_DIR__.'/templates/'.$this->templateLookRecData['lookId'];
 		if (is_dir($this->destPath) === FALSE)
-			mkdir ($this->destPath, 0755, TRUE);
+			Utils::mkDir ($this->destPath, 0775);
 
 		$this->skinVariables = '// based on template version: '.$this->options['version'].' / '.$this->templateStyleVerCheckSum."\n\n";
 
@@ -147,10 +147,10 @@ class WebTemplateLook extends Utility
 		$dstSkinVariablesFileName = $this->destPath.'/'.$this->templateLookRecData['lookId'].'-skinVariables.scss';
 		file_put_contents($dstSkinVariablesFileName, $this->skinVariables);
 
-		if (utils::superuser())
+		if (Utils::superuser())
 		{
 			// -- repair permissions
-			exec('chgrp -R '.utils::wwwGroup().' '.$this->destPath);
+			exec('chgrp -R '.Utils::wwwGroup().' '.$this->destPath);
 			// -- delete sass cache
 			if (is_dir(__APP_DIR__.'/.sass-cache'))
 				exec ('rm -rf '.__APP_DIR__.'/.sass-cache');

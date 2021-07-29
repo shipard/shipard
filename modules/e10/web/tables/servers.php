@@ -95,7 +95,7 @@ class TableServers extends DbTable
 
 				if ($recData['templateLookNdx'] < 100000)
 				{
-					$recData['templateStylePath'] = 'templates/' . $templateLookInfo['id'];
+					$recData['templateStylePath'] = '/templates/' . $templateLookInfo['id'];
 				} else
 				{
 					$recData['templateStylePath'] = __SHPD_TEMPLATE_SUBDIR__.'/web/' . $ti . '/styles/';
