@@ -199,7 +199,7 @@ class TemplateCore extends \Mustache
 		if ($templateFileName !== FALSE)
 			$this->template = file_get_contents ($fullTemplateName);
 
-		if (!$this->template)
+		if ($templateFileName !== FALSE && !$this->template)
 		{
 			error_log("file `$fullTemplateName` not found [TID: $name]");
 			Utils::debugBacktrace();

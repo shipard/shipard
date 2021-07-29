@@ -42,7 +42,7 @@
 
 			{"id": "e10w-content-bg", "group": "content", "name": "Barva pozadí obsahu", "label": "Pozadí", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
 			{"id": "e10w-content-text", "group": "content", "name": "Barva textu obsahu", "label": "Písmo", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
-			{"id": "e10w-content-link-color", "group": "content", "name": "Barva textu odkazů", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-content-link-text", "group": "content", "name": "Barva textu odkazů", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
 			{"id": "e10w-content-link-hover-text", "group": "content", "name": "Barva textu odkazů pod kurzorem", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
 			{"id": "e10w-content-link-visited-text", "group": "content", "name": "Barva textu již navštívených odkazů", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
 
