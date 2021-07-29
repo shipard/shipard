@@ -104,7 +104,6 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		$backupFileName = __APP_DIR__ . '/tmp/bkp-' . $backupName . ".tgz";
 		$cmd = "tar -h -czf $backupFileName -C $backupDir .";
 		exec ($cmd);
-		$backupFileSize = filesize($backupFileName);
 
 		// -- move backup file?
 		$moveBackupTo = $this->arg ("move-to");
@@ -113,20 +112,29 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 			$destBkpFolder = $moveBackupTo.'/'.date ("Y-m-d").'/';
 			if (!is_dir($destBkpFolder))
 				mkdir ($destBkpFolder, 0770, true);
-			rename ($backupFileName, $destBkpFolder . 'bkp-' . $backupName . ".tgz");
+
+			$finalBkpFileName = $destBkpFolder . 'bkp-' . $backupName . '.tgz';
+			rename ($backupFileName, $finalBkpFileName);
 
 			// backup/ds info
-			$dsBackupInfo = array ();
-			$dsBackupInfoFileName = $destBkpFolder . 'backupInfo-'.$hostName.'.json';
+			$dsBackupInfo = [];
+			$dsBackupInfoFileName = $destBkpFolder . 'backupInfo.json';
 			if (is_file($dsBackupInfoFileName))
 			{
 				$bistr = file_get_contents($dsBackupInfoFileName);
 				$dsBackupInfo = json_decode ($bistr, TRUE);
 			}
 
-			$dsbi = ['dsid' => $dsid, 'host' => $hostName, 'serverPath' => __APP_DIR__,
-							 'syncAttachments' => $syncAttachments, 'backupFileSize' => $backupFileSize];
-			$dsBackupInfo [] = $dsbi;
+			$backupFileSize = filesize($finalBkpFileName);
+			$backupCheckSum = hash_file('SHA256', $finalBkpFileName);
+			$dsbi = [
+				'dsid' => $dsid,
+				'bkpFileName' => $finalBkpFileName,
+				'bkpFileSize' => $backupFileSize,
+				'bkpSHA256' => $backupCheckSum,
+				'syncAttachments' => $syncAttachments, 
+			];
+			$dsBackupInfo ['dataSources'][] = $dsbi;
 			file_put_contents ($dsBackupInfoFileName, json_encode($dsBackupInfo, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
 
 			if ($backupFileSize > 1000 * 1000 * 100) // 100MB

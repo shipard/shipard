@@ -10,6 +10,7 @@ class ServerManager extends Utility
 	public function serverBackup ()
 	{
 		$thisHostName = utils::cfgItem($this->app->cfgServer, 'serverDomain', gethostname());
+		$timeBegin = time();
 
 		// -- data sources
 		$localBackupDir = utils::cfgItem($this->app->cfgServer, 'localBackupDir', '/var/lib/shipard/backups');
@@ -21,16 +22,36 @@ class ServerManager extends Utility
 			$cmd .= ' --quiet';
 		passthru ($cmd);
 
+		// -- prepare backup/ds info
+		$dsBackupInfo = [];
+		$dsBackupInfoFileName = $thisLocalBackupDir . '/backupInfo.json';
+		if (is_file($dsBackupInfoFileName))
+		{
+			$bistr = file_get_contents($dsBackupInfoFileName);
+			$dsBackupInfo = json_decode ($bistr, TRUE);
+		}
+
 		// -- /etc
-		exec ("cd / && tar -Pczf $thisLocalBackupDir/etc-$thisHostName-" . date ('Y-m-d') . '.tgz /etc/');
+		$etcFileName = $thisLocalBackupDir."/etc-$thisHostName-" . date ('Y-m-d') . '.tgz';
+		exec ("cd / && tar -Pczf $etcFileName /etc/");
+		$dsBackupInfo['hostFiles'][] = ['fileName' => $etcFileName, 'fileSHA256' => hash_file('SHA256', $etcFileName)];
 
 		// -- static folders
 		$staticFolders = utils::cfgItem($this->app->cfgServer, 'staticFolders', []);
 		forEach ($staticFolders as $sf)
 		{
 			$bfn = str_replace('/', '-', substr($sf, 1, -1));
-			exec ("cd / && tar -Pczf $thisLocalBackupDir/$bfn-" . date ('Y-m-d') . ".tgz $sf");
+			$sfFullFileName = "$thisLocalBackupDir/$bfn-" . date ('Y-m-d') . '.tgz';
+			exec ("cd / && tar -Pczf $sfFullFileName $sf");
+			$dsBackupInfo['hostFiles'][] = ['fileName' => $sfFullFileName, 'fileSHA256' => hash_file('SHA256', $sfFullFileName)];
 		}
+
+		// -- save backup/ds info
+		$timeEnd = time();
+		$dsBackupInfo['timeBegin'] = $timeBegin;
+		$dsBackupInfo['timeEnd'] = $timeEnd;
+		$dsBackupInfo['done'] = 1;
+		file_put_contents ($dsBackupInfoFileName, json_encode($dsBackupInfo, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
 
 		// -- set owner/group
 		exec ("chown -R root:shpd $thisLocalBackupDir");
@@ -89,7 +110,7 @@ class ServerManager extends Utility
 
 		if (!isset($this->app()->cfgServer['dsRoot']))
 			return $this->app()->err('Value `dsRoot` not found in server configuration...');
-		$dsRoot = $this->app()->cfgServer['dsRoot'];	
+		$dsRoot = $this->app()->cfgServer['dsRoot'];
 		$this->mkDir($dsRoot);
 
 		if (!is_readable($dsRoot . '/index.html'))
