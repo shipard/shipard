@@ -129,6 +129,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 			$backupCheckSum = hash_file('SHA256', $finalBkpFileName);
 			$dsbi = [
 				'dsid' => $dsid,
+				'serverPath' => __APP_DIR__,
 				'bkpFileName' => $finalBkpFileName,
 				'bkpFileSize' => $backupFileSize,
 				'bkpSHA256' => $backupCheckSum,
