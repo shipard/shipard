@@ -146,7 +146,7 @@ class ViewVlans extends TableView
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
-			$l = ['text' => $r['vlanName'], 'icon' => 'icon-folder-o', 'class' => 'label label-info'];
+			$l = ['text' => $r['vlanName'], 'icon' => 'iconUserVlan', 'class' => 'label label-info'];
 			$this->groupsInfo[$r['srcRecId']][] = $l;
 		}
 

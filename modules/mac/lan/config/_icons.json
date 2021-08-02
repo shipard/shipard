@@ -466,6 +466,13 @@
         "bsi":"bi-chevron-right",
         "mdi":"arrow_forward_ios"
 	},
+	"iconUserVlan":{
+		"fa5":"fa-folder-open",
+        "fa5pro":"fa-folder-open",
+        "bsi":"bi-folder2-open",
+        "mdi":"folder_open"
+	},
+
 	
 
 
