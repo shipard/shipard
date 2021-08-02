@@ -454,6 +454,18 @@
         "bsi":"bi-arrow-right-circle",
         "mdi":"forward"
 	},
+	"iconLeftSocket":{
+		"fa5":"fa-chevron-circle-left",
+        "fa5pro":"fa-chevron-square-left",
+        "bsi":"bi-chevron-left",
+        "mdi":"arrow_back_ios_new"
+	},
+	"iconRightSocket":{
+		"fa5":"fa-chevron-circle-right",
+        "fa5pro":"fa-chevron-square-right",
+        "bsi":"bi-chevron-right",
+        "mdi":"arrow_forward_ios"
+	},
 	
 
 

@@ -57,9 +57,9 @@ class ViewWallSockets extends TableView
 	{
 		$listItem ['pk'] = $item ['ndx'];
 		if ($item['locationType'] === 1)
-			$listItem ['icon'] = 'icon-chevron-circle-left';
+			$listItem ['icon'] = 'iconLeftSocket';
 		elseif ($item['locationType'] === 2)
-			$listItem ['icon'] = 'icon-chevron-circle-right';
+			$listItem ['icon'] = 'iconRightSocket';
 		else
 			$listItem ['icon'] = $this->table->tableIcon ($item);
 
