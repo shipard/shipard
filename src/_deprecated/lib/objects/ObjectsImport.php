@@ -1,7 +1,7 @@
 <?php
 
 namespace lib\objects;
-use E10\Service, E10\Response, E10\DataModel;
+use \Shipard\Base\Service, \Shipard\Application\Response, E10\DataModel;
 
 
 /**
@@ -73,7 +73,9 @@ class ObjectsImport extends Service
 
 		$this->operation = 'insert';
 		$this->importPKColumnName = '';
-		if (isset($newRec['impNdx']))
+		if (isset($this->data['pkColumnName']))
+			$this->importPKColumnName = $this->data['pkColumnName'];
+		elseif (isset($newRec['impNdx']))
 			$this->importPKColumnName = 'impNdx';
 		elseif (isset($newRec['syncNdx']))
 			$this->importPKColumnName = 'syncNdx';
