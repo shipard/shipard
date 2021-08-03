@@ -728,7 +728,7 @@ class ViewDevicesCameras extends ViewDevices
 	{
 		$listItem = parent::renderRow($item);
 
-		$image = \E10\Base\getAttachmentDefaultImage ($this->app(), $this->table->tableId(), $item['ndx']);
+		$image = UtilsBase::getAttachmentDefaultImage ($this->app(), $this->table->tableId(), $item['ndx']);
 		if (isset($image ['smallImage']))
 		{
 			$listItem ['image'] = $image ['smallImage'];

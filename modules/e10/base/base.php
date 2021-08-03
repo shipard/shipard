@@ -966,27 +966,6 @@ function getAttachmentsThumbnails ($app, $toTableId, $toRecId, $width, $height)
 	return $files;
 }
 
-function getAttachmentDefaultImage ($app, $toTableId, $toRecId, $enableAnyImage = FALSE)
-{
-	$img = array ();
-
-	$q[] = 'SELECT * FROM [e10_attachments_files]';
-	array_push($q, ' WHERE [tableid] = %s AND [recid] = %i AND [deleted] = 0', $toTableId, $toRecId);
-	if (!$enableAnyImage)
-		array_push($q, ' AND [defaultImage] = 1');
-	array_push($q, ' ORDER BY defaultImage DESC, [order], name LIMIT 0, 1');
-
-	$mainImage = $app->db->query ($q)->fetch ();
-	if ($mainImage)
-	{
-		$img ['originalImage'] = getAttachmentUrl ($app, $mainImage);
-		$img ['smallImage'] = getAttachmentUrl ($app, $mainImage, 196, 196);
-		$img ['fileName'] = $mainImage['path'] . $mainImage['filename'];
-	}
-
-	return $img;
-}
-
 function getDefaultImages ($app, $toTableId, $toRecIds, $params = FALSE, $enableAnyImage = FALSE, $thWidth = 1024, $thHeight = 0)
 {
 	$images = [];

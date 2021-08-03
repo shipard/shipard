@@ -4,7 +4,7 @@ namespace e10\base;
 require_once __SHPD_MODULES_DIR__ . 'e10/base/base.php';
 
 use \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\DbTable;
-
+use \e10\base\libs\UtilsBase;
 
 /**
  * Class TablePlaces
@@ -32,7 +32,7 @@ class TablePlaces extends DbTable
 		$hdr ['info'][] = ['class' => 'info', 'value' => $recData ['id'] . ' / ' .$recData ['shortName']];
 		$hdr ['info'][] = ['class' => 'title', 'value' => $recData ['fullName']];
 
-		$image = \E10\Base\getAttachmentDefaultImage ($this->app(), $this->tableId(), $recData ['ndx'], TRUE);
+		$image = UtilsBase::getAttachmentDefaultImage ($this->app(), $this->tableId(), $recData ['ndx'], TRUE);
 		if (isset ($image ['smallImage']))
 			$hdr ['image'] = $image ['smallImage'];
 

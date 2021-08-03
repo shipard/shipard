@@ -12,7 +12,7 @@ use \Shipard\Viewer\TableView, \E10\TableViewDetail, \Shipard\Viewer\TableViewPa
 use \E10\TableForm;
 use \E10\DbTable;
 use \E10Doc\Core\e10utils;
-
+use \e10\base\libs\UtilsBase;
 
 /**
  * Class TableItems
@@ -229,7 +229,7 @@ class TableItems extends DbTable
 
 		$hdr['newMode'] = 1;
 
-		$image = \E10\Base\getAttachmentDefaultImage ($this->app(), $this->tableId(), $recData ['ndx'], TRUE);
+		$image = UtilsBase::getAttachmentDefaultImage ($this->app(), $this->tableId(), $recData ['ndx'], TRUE);
 		if (isset ($image ['smallImage']))
 			$hdr ['image'] = $image ['smallImage'];
 

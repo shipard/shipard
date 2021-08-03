@@ -1,13 +1,14 @@
 <?php
 
-namespace E10\Persons;
+namespace e10\persons;
 
 use e10\utils, e10\json;
 use e10pro\gdpr\TablePersonsRelations;
+use \e10\base\libs\UtilsBase;
+
 
 /**
  * Class DocumentCardPerson
- * @package E10\Persons
  */
 class DocumentCardPerson extends \e10\DocumentCard
 {
@@ -46,7 +47,7 @@ class DocumentCardPerson extends \e10\DocumentCard
 		if (count($this->groups))
 			$this->header['info'][] = ['class' => 'info', 'value' => $this->groups];
 
-		$image = \E10\Base\getAttachmentDefaultImage ($this->app(), $this->table->tableId(), $this->recData ['ndx']);
+		$image = UtilsBase::getAttachmentDefaultImage ($this->app(), $this->table->tableId(), $this->recData ['ndx']);
 		if (isset($image ['smallImage']))
 			$this->header['image'] = $image ['smallImage'];
 	}
@@ -368,7 +369,7 @@ class DocumentCardPerson extends \e10\DocumentCard
 		if (count($secLine) !== 0)
 			$hdr ['info'][] = array ('class' => 'info', 'value' => $secLine);
 
-		$image = \E10\Base\getAttachmentDefaultImage ($this->app, $this->table->tableId(), $recData ['ndx']);
+		$image = UtilsBase::getAttachmentDefaultImage ($this->app, $this->table->tableId(), $recData ['ndx']);
 		if (isset($image ['smallImage']))
 		{
 			$hdr ['image'] = $image ['smallImage'];

@@ -6,6 +6,7 @@ require_once __SHPD_MODULES_DIR__ . 'e10/base/base.php';
 
 
 use \e10\utils, \e10\web\webPages;
+use \e10\base\libs\UtilsBase;
 
 /**
  * Class WebTemplateMustache
@@ -82,7 +83,7 @@ class WebTemplateMustache extends \E10\TemplateCore
 
 		if (isset ($this->page['tableId']) && isset ($this->page['ndx']))
 		{
-			$image = \E10\Base\getAttachmentDefaultImage ($this->app, $this->page['tableId'], $this->page['ndx']);
+			$image = UtilsBase::getAttachmentDefaultImage ($this->app, $this->page['tableId'], $this->page['ndx']);
 			if (isset ($image['fileName']))
 				$this->page['coverImage'] = $image;
 		}

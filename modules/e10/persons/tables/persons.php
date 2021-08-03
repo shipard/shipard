@@ -2,7 +2,7 @@
 
 namespace E10\Persons;
 use \Shipard\Viewer\TableViewPanel;
-
+use \e10\base\libs\UtilsBase;
 
 require_once __DIR__ . '/../../base/base.php';
 
@@ -375,7 +375,7 @@ class TablePersons extends DbTable
 		if (count($secLine) !== 0)
 			$hdr ['info'][] = ['class' => 'info', 'value' => $secLine];
 
-		$image = \E10\Base\getAttachmentDefaultImage($this->app(), $this->tableId(), $recData ['ndx']);
+		$image = UtilsBase::getAttachmentDefaultImage($this->app(), $this->tableId(), $recData ['ndx']);
 		if (isset($image ['smallImage']))
 		{
 			$hdr ['image'] = $image ['smallImage'];
