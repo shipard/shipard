@@ -126,7 +126,7 @@ class Report extends \Shipard\Base\BaseObject
 		{
 			$this->reportSrcFileNameRelative = "tmp/rpdf-" . time() . '-' . mt_rand () . '.' . $this->srcFileExtension;
 			$this->reportSrcFileName = __APP_DIR__ . '/' . $this->reportSrcFileNameRelative;
-			$this->reportSrcURL = 'https://'.$this->app()->cfgItem('hosting.serverDomain').'/'.$this->app->cfgItem('dsid') . '/'. $this->reportSrcFileNameRelative;
+			$this->reportSrcURL = 'https://'.$this->app()->cfgItem('hostingCfg.serverDomain').'/'.$this->app->cfgItem('dsid') . '/'. $this->reportSrcFileNameRelative;
 			file_put_contents($this->reportSrcFileName, $this->objectData ['mainCode']);
 
 			$this->fullFileName = substr($this->reportSrcFileName, 0, -(strlen($this->srcFileExtension) + 1)) . '.pdf';

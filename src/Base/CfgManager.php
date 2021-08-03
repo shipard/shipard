@@ -249,7 +249,7 @@ class CfgManager
 		
 		$cfgServer['useHosting'] = $cfgServer['useHosting'];
 
-		$newConfig['hosting'] = $hosting;
+		$newConfig['hostingCfg'] = $hosting;
 
 		$newConfig ['authServerUrl'] = 'https://'.$hosting['hostingDomain'].'/';
 		$newConfig ['hostingServerUrl'] = 'https://'.$hosting['hostingDomain'].'/';

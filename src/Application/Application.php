@@ -2125,9 +2125,9 @@ class Application extends \Shipard\Application\ApplicationCore
 	public function sessionCookieName ()
 	{
 		if ($this->cfgServer['useHosting'])
-			$id = '_shp_sid_'.str_replace('.', '_', $this->cfgItem('hosting.hostingDomain'));
+			$id = '_shp_sid_'.str_replace('.', '_', $this->cfgItem('hostingCfg.hostingDomain'));
 		else	
-			$id = '_shp_sid_'.str_replace('.', '_', $this->cfgItem('hosting.serverDomain'));
+			$id = '_shp_sid_'.str_replace('.', '_', $this->cfgItem('hostingCfg.serverDomain'));
 
 		return $id;
 	}

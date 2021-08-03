@@ -321,7 +321,7 @@ class TemplateCore extends \Mustache
 
 	public function dsUrl ()
 	{
-		return 'https://'.$this->app->cfgItem('hosting.serverDomain').'/'.$this->app->cfgItem('dsid') . '/';
+		return 'https://'.$this->app->cfgItem('hostingCfg.serverDomain').'/'.$this->app->cfgItem('dsid') . '/';
 	}
 
 	public function fsRoot ()
