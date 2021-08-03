@@ -1,0 +1,21 @@
+{
+	"id": "e10pro.hosting.server.partnersPersons", "sql": "e10pro_hosting_server_partnersPersons", "name": "Osoby partnerů",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "partner", "name": "Partner", "type": "int", "reference": "e10pro.hosting.server.partners"},
+
+		{"id": "isAdmin", "name": "Správce partnera", "type": "logical"},
+		{"id": "isSupport", "name": "Technická podpora zákazníků", "type": "logical"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "e10pro.hosting.server.ViewPartnersPersons", "detail": "e10pro.hosting.server.ViewDetailPartnerPerson"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.hosting.server.FormPartnerPerson"}
+	]
+}

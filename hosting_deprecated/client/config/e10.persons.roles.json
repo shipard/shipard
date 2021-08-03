@@ -1,0 +1,11 @@
+{
+	"user": {
+		"viewers": {
+			"e10pro.hosting.server.datasources": {"dashboard": 2}
+		},
+		"widgets": {
+			"e10pro.hosting.client.libs.WidgetDataSources": 2,
+			"e10pro.hosting.client.libs.WidgetDataSources2": 2
+		}
+	}
+}

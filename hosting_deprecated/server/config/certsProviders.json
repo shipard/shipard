@@ -1,0 +1,11 @@
+{
+	"0": {
+		"name": "Neznámý / nenastavený", "labelClass": "danger"
+	},
+	"1": {
+		"name": "Lets'Encrypt", "labelClass": "success"
+	},
+	"120": {
+		"name": "Interní Shipard", "labelClass": "warning"
+	}
+}

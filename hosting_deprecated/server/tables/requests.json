@@ -1,0 +1,26 @@
+{
+  "id": "e10pro.hosting.server.requests", "sql": "e10pro_hosting_server_requests", "name": "Požadavky na nové zdroje dat",
+  "columns": [
+    {"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "title", "sql": "title", "name": "Název", "type": "string", "len": 160},
+    {"id": "ip", "sql": "ip", "name": "IP adresa", "type": "string", "len": 50},
+		{"id": "dsid", "sql": "dsid", "name": "ID", "type": "string", "len": 50},
+		{"id": "email", "sql": "email", "name": "E-mail", "type": "string", "len": 80},
+		{"id": "module", "sql": "module", "name": "Modul", "type": "string", "len": 80},
+		{"id": "application", "sql": "application", "name": "Aplikace", "type": "int"},
+		{"id": "server", "name": "server", "type": "int", "reference": "e10pro.hosting.server.servers"},
+		{"id": "documentRoot", "name": "Kořenový adresář", "type": "string", "len": 80},
+		{"id": "state", "sql": "state", "name": "Stav", "type": "int"},
+		{"id": "created", "sql": "created", "name": "Vytvořeno", "type": "timestamp"},
+		{"id": "key1", "sql": "key1", "name": "Klíč", "type": "string", "len": 40},
+    {"id": "requestData", "sql": "requestData", "name": "Data požadavku", "type": "memo"}
+  ],
+  "views": [
+    {"id": "default", "class": "e10pro.hosting.server.ViewRequests", "detail": "e10pro.hosting.server.ViewDetailRequests"}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10pro.hosting.server.FormRequest"}
+  ],
+  "order": [{"column": "ndx", "order": "DESC"}],
+  "fullText": ["title", "email"]
+}

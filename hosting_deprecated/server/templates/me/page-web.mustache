@@ -1,0 +1,41 @@
+{{{@hostingPortalInfo}}}<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="utf-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name='mobile-web-app-capable' content='yes'>
+    <meta name='theme-color' content='#00508a'>
+    <link rel="shortcut icon" sizes="128x128" href="{{urlRoot}}/imgs/-w128/att/{{data.hostingPortal.this.logoIcon.fileName}}">
+    <link rel="shortcut icon" sizes="256x256" href="{{urlRoot}}/imgs/-w256/att/{{data.hostingPortal.this.logoIcon.fileName}}">
+    <link rel="shortcut icon" sizes="512x512" href="{{urlRoot}}/imgs/-w512/att/{{data.hostingPortal.this.logoIcon.fileName}}">
+    <meta name='apple-mobile-web-app-capable' content='yes'>
+    <meta name='apple-mobile-web-app-status-bar-style' content='black-translucent'>
+    <meta name="apple-mobile-web-app-title" content="{{data.hostingPortal.this.portalTitle}}{{#cfgItem.develMode}} DEV{{/cfgItem.develMode}}"/>
+    <link rel="apple-touch-icon" href="{{urlRoot}}/imgs/-w512/att/{{data.hostingPortal.this.logoIcon.fileName}}"/>
+    <link rel="apple-touch-startup-image" href="{{urlRoot}}/imgs/-w320/att/{{data.hostingPortal.this.logoIcon.fileName}}"/>
+
+    <meta name="application-name" content="{{data.hostingPortal.this.portalTitle}}{{#cfgItem.develMode}} DEV{{/cfgItem.develMode}}"/>
+    <meta name="msapplication-TileImage" content="{{urlRoot}}/imgs/-w512/att/{{data.hostingPortal.this.logoIcon.fileName}}">
+    <meta name="msapplication-TileColor" content="#c62828">
+
+		{{#mobileMode}}<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'/>{{/mobileMode}}
+
+    <title>{{data.hostingPortal.this.portalTitle}}</title>
+    <link href="https://fonts.googleapis.com/css?family=Atomic+Age" rel="stylesheet">
+    <link href="{{templateRoot}}/styles/{{data.hostingPortal.this.cssStyle}}/style.css?v=11" rel="stylesheet">
+</head>
+
+{{^page.url_user}}{{^userAuthenticated}}{{{@redirect;to:/user/login}}}{{/userAuthenticated}}{{/page.url_user}}
+
+
+{{#page.url_}}{{{&overview}}}{{/page.url_}}
+{{^page.url_}}
+	{{#page.url_user_login}}
+		{{#data.hostingPortal.this.hasLoginUsers}}{{{&demoLogin}}}{{/data.hostingPortal.this.hasLoginUsers}}
+		{{^data.hostingPortal.this.hasLoginUsers}}{{{&system}}}{{/data.hostingPortal.this.hasLoginUsers}}
+	{{/page.url_user_login}}
+
+	{{^page.url_user_login}}{{{&system}}}{{/page.url_user_login}}
+{{/page.url_}}

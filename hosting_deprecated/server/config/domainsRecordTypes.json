@@ -1,0 +1,10 @@
+{
+	"MX": {"name": "MX"},
+	"A": {"name": "A"},
+	"AAAA": {"name": "AAAA"},
+	"CNAME": {"name": "CNAME"},
+	"TXT": {"name": "TXT"},
+	"SPF": {"name": "SPF"},
+	"SRV": {"name": "SRV"},
+	"DNSKEY": {"name": "DNSKEY"}
+}

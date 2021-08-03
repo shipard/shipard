@@ -1,0 +1,34 @@
+{
+	"shipard-app": {
+		"name": "shipard.app",
+		"disableTopToolbar": 1,
+		"panels": {
+			"ds": {
+				"name": "Můj Shipard", "icon": "iconMyShipard",
+				"order": 10000,
+				"fullsize": 1,
+				"ntfBadgeId": "ntf-badge-hosting-dbs",
+				"rows": {"main": {"order": 10000, "class": "full"}}
+			},
+			"support": {
+				"name": "Fóra", "icon": "iconForums",
+				"order": 12000,
+				"fullsize": 1,
+				"ntfBadgeId": "ntf-badge-wkf-start",
+				"rows": {"main": {"order": 10000, "class": "full"}}
+			},
+			"documentation": {
+				"name": "Návody", "icon": "iconDocumentation",
+				"order": 14000,
+				"fullsize": 1,
+				"rows": {"main": {"order": 10000, "class": "full"}}
+			},
+			"partner": {
+				"name": "Partner", "icon": "iconPartner",
+				"order": 20000,
+				"fullsize": 1,
+				"rows": {"main": {"order": 10000, "class": "full"}}
+			}
+		}
+	}
+}

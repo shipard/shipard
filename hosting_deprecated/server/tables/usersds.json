@@ -1,0 +1,22 @@
+{
+  "id": "e10pro.hosting.server.usersds", "sql": "e10pro_hosting_server_usersds", "name": "Zdroje dat uživatelů",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "user", "name": "Uživatel", "type": "int", "reference": "e10.persons.persons"},
+    {"id": "datasource", "name": "Zdroj dat", "type": "int", "reference": "e10pro.hosting.server.datasources"},
+		{"id": "udsOptions", "name": "Nastavení uživatele", "type": "int", "reference": "e10pro.hosting.server.udsOptions"},
+		{"id": "created", "name": "Poslední přihlášení", "type": "timestamp"},
+		{"id": "lastLogin", "name": "Poslední přihlášení", "type": "timestamp"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+	"options": ["timelineSource"],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+  "views": [
+    {"id": "default", "class": "e10pro.hosting.server.ViewUsersDataSources", "detail": "e10pro.hosting.server.ViewDetailUsersds"}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10pro.hosting.server.FormUsersDataSource"}
+  ]
+}

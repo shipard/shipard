@@ -1,0 +1,34 @@
+{
+	"hstng": {
+		"name": "Hosting",
+		"roles": ["hstngsvs"],
+		"viewers": {
+			"e10.persons.persons": {"hostingUsers": 2},
+			"e10pro.hosting.server.modules": {"default": 2},
+			"e10pro.hosting.server.datasources": {"default": 2},
+			"e10pro.hosting.server.servers": {"default": 2},
+			"e10pro.hosting.server.requests": {"default": 2},
+			"e10pro.hosting.server.usersds": {"default": 2, "e10pro.hosting.server.ViewUsersDataSources": 2},
+			"e10pro.hosting.server.portals": {"default": 2},
+			"e10pro.hosting.server.partners": {"default": 2},
+			"e10pro.hosting.server.partnersPersons": {"default": 2},
+			"e10pro.hosting.server.domainsAccounts": {"default": 2},
+			"e10pro.hosting.server.domains": {"default": 2},
+			"e10pro.hosting.server.domainsRecords": {"default": 2},
+			"e10pro.hosting.server.certs": {"default": 2},
+			"e10pro.hosting.server.supportsKinds": {"default": 2}
+		}
+	},
+	"hstngcd": {
+		"name": "Hosting Partner",
+		"widgets": {
+			"lib.hosting.DataSourcesWallWidget": 2
+		}
+	},
+	"bsass": {
+		"viewers": {
+			"e10pro.hosting.server.modules": {"default": 1},
+			"e10pro.hosting.server.datasources": {"default": 1}
+		}
+	}
+}

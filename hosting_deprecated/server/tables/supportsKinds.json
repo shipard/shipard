@@ -1,0 +1,29 @@
+{
+	"id": "e10pro.hosting.server.supportsKinds", "sql": "e10pro_hosting_server_supportsKinds", "name": "Druhy podpory",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "name", "name": "Název", "type": "string", "len": 40},
+
+		{
+			"id": "forumLevel", "name": "Přístup do fóra podpory", "type": "enumInt",
+			"enumValues": {
+				"0": "Žádný",
+				"1": "Vlastní sekce na veřejném fóru",
+				"2": "Ve vlastní databázi"
+			}
+		},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "e10pro.hosting.server.ViewSupportsKinds", "detail": "e10pro.hosting.server.ViewDetailSupportKind"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.hosting.server.FormSupportsKind"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"},
+	"options": ["configSource"]
+}

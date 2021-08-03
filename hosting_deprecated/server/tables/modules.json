@@ -1,0 +1,28 @@
+{
+  "id": "e10pro.hosting.server.modules", "sql": "e10pro_hosting_server_modules", "name": "Moduly systému",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "name", "name": "Název", "type": "string", "len": 80},
+	  {"id": "description", "name": "Popis", "type": "string", "len": 140},
+		{"id": "type", "name": "Typ", "type": "enumInt",
+			"enumValues": {"0": "Instalační balíček", "1": "Rozšiřující modul", "2": "Ostatní"}},
+    {"id": "id", "name": "ID", "type": "string", "len": 50},
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+		{"id": "private", "name": "Neveřejné", "type": "logical"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+  "views": [
+    {"id": "default", "class": "e10pro.hosting.server.ViewModules", "detail": "e10pro.hosting.server.ViewDetailModule"}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10pro.hosting.server.FormModule"}
+  ],
+	"options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"},
+  "order": [{"column": "name", "order": "DESC"}],
+  "fullText": ["name", "ndx"]
+}

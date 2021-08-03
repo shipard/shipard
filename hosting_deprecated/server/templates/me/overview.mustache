@@ -1,0 +1,242 @@
+{{{@usersDataSources}}}
+
+<body class="me-body-overview">
+
+<nav class="navbar navbar-default navbar-fixed-top" id="header">
+    <div class="container-fluid me-header">
+        <div class="row">
+            <div class="col-lg-12 col-xs-12 col-sm-12 me-user-info">
+                <div class="me-user-image" title="{{userName}}" style="background-image: url({{userImage}}); background-size: cover;"></div>
+								<div style="float: left; display: inline-block; padding-left: 2rem;">
+									<span style="font-size: 2.5rem;">{{userName}}</span><br>
+									<span style="font-size: 1.5rem;">{{data.hostingPortal.this.portalTitle}}</span>
+								</div>
+
+							{{^mobileModeXXXX}}
+                <div class="me-clock">
+                    <div class="me-clock-display">
+                        <div class="me-clock-time" id="big-clock"></div>
+                        <div class="me-clock-date" id="big-clock-date"></div>
+                    </div>
+                </div>
+                {{/mobileModeXXXX}}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<nav class="me-panels" style="position: fixed; left: 0; right: 0;">
+    <div class="container-fluid me-panels" id='panels'>
+        <div class="row">
+					<!--
+            <div class="col-lg-4 col-md-4 col-sm-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title"><i class="fa fa-bullhorn"></i> Novinky</h3>
+                    </div>
+                    <div class="panel-body">
+                        ...
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-4 col-sm-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title"><i class="fa fa-check-square-o"></i> Úkoly</h3>
+                    </div>
+                    <div class="panel-body">
+                        ...
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-4 col-sm-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title"><i class="fa fa-bell-o"></i> Agenda</h3>
+                    </div>
+                    <div class="panel-body">
+                        ...
+                    </div>
+                </div>
+            </div>
+            !-->
+        </div>
+    </div>
+</nav>
+
+
+<div class="container-fluid me-databases">
+    {{#data.dataSources.count}}
+        <div class="row">
+            {{#data.dataSources.all}}
+                {{#ready}}
+                    <div class="col-lg-2 col-md-2 col-sm-4 col-xs-6 me-ds-tile ds-tile-{{class}}">
+                        <a href="{{urlApp}}{{#mobileMode}}m{{/mobileMode}}app" target='_blank' onclick="return openDataSource(this, '{{urlApp}}');"{{#imageUrl}} class="bgimg" style="background-image: url({{imageUrl}});"{{/imageUrl}}>
+                            <div>
+                                <div class="me-ds-title">{{shortName}}</div>
+                            </div>
+                        </a>
+                    </div>
+                {{/ready}}
+                {{^ready}}
+                    <b>{{name}}</b>
+                    {{comment}}
+                {{/ready}}
+            {{/data.dataSources.all}}
+        </div>
+    {{/data.dataSources.count}}
+</div>
+
+
+<div class="container-fluid me-footer" id="footer">
+    <div class="row">
+        <div class="col-lg-6 col-md-4 col-sm-12">
+            <div style="padding: 2rem">
+                <span class='e10-sp-title2'><b>{{@tr;id:e10.base.system.DictSystem.diCore_TechnicalSupport}}:</b></span><br>
+                <span class='e10-sp-title2'><i class="fa fa-phone"></i> {{data.hostingPortal.this.supportPhone}}</span><br>
+                <span class='e10-sp-title2'><i class="fa fa-envelope"></i> <a href="mailto:{{data.hostingPortal.this.supportEmail}}">{{data.hostingPortal.this.supportEmail}}</a></span><br>
+                <span class='e10-sp-title2'><i class="fa fa-globe"></i> <a href="{{data.hostingPortal.this.supportWeb}}" target="new">{{data.hostingPortal.this.supportWebTitle}}</a></span><br>
+            </div>
+        </div>
+				<div class="col-lg-3 col-md-4 col-sm-6">
+					<div class='me-bottom-buttons' style="text-align: center;">
+						<a href="/" id='btn-iface-touch' class='btn-iface-switch' data-interface-type='touch' title="Mobilní rozhraní" onclick="return setInterfaceType('touch');"><i class='fa fa-tablet fa-4x fa-fw'></i><br><small>{{@tr;id:e10.base.system.DictSystem.diBtn_Tablet}}</small></a>
+						<a href="/" id='btn-iface-desktop' class='btn-iface-switch' data-interface-type='desktop' title="Klasický počítač" onclick="return setInterfaceType('desktop');"><i class='fa fa-desktop fa-4x fa-fw'></i><br><small>{{@tr;id:e10.base.system.DictSystem.diBtn_Computer}}</small></a>
+					</div>
+				</div>
+        <div class="col-lg-3 col-md-4 col-sm-6" style="text-align: right;">
+            <div class='me-bottom-buttons' style="text-align: center; display: inline-block;">
+                <a href="{{@urlUser;type:logout}}" title="{{@tr;id:e10.base.system.DictSystem.diBtn_Logout}}"><i class='fa fa-power-off fa-4x fa-fw'></i><br><small>{{@tr;id:e10.base.system.DictSystem.diBtn_Logout}}</small></a>
+            </div>
+        </div>
+			<div class="col-lg-12 col-md-12 col-sm-12">
+				<div style="padding-top: 2rem; text-align: center;">
+					<img class="me-logo" alt="Logo" src="{{dsRoot}}/att/{{data.hostingPortal.this.logoFooter.fileName}}">
+					<br>
+					<small>
+						{{@tr;id:e10.base.system.DictSystem.diCore_Version}} {{cfgItem.serverInfo.e10version}}.{{cfgItem.serverInfo.e10commit}}.{{#mobileMode}}m{{/mobileMode}}{{^mobileMode}}d{{/mobileMode}}.<span class='visible-xs-inline'>xs</span><span class='visible-sm-inline'>sm</span><span class='visible-md-inline'>md</span><span class='visible-lg-inline'>lg</span>{{#cfgItem.develMode}}.dev{{/cfgItem.develMode}}
+					</small>
+				</div>
+			</div>
+    </div>
+</div>
+
+<script type="text/javascript">var httpApiRootPath = '{{urlRoot}}'; var httpServerRootPath = '{{urlServer}}';</script>
+<script src="//cdn.shipard.com/jquery/jquery-2.2.4.min.js"></script>
+<script src="{{dsRoot}}/e10-modules/wwwlibs/bootstrap3/js/bootstrap.min.js"></script>
+<script src="{{dsRoot}}/e10-modules/e10/server/js/e10web.js"></script>
+
+<script>
+	var standaloneApp = 0;
+	if (("standalone" in window.navigator) && window.navigator.standalone)
+		standaloneApp = 1;
+	else
+	if (window.matchMedia('(display-mode: standalone)').matches)
+		standaloneApp = 2;
+
+	if (standaloneApp === 1)
+	{
+		$('body').addClass ('e10-ios-standalone-app');
+	}
+</script>
+
+<script>
+	window.scrollTo(0, 100);
+
+	$(window).scroll(function() {
+        var threshold = $('#panels').height();
+        var st = $(this).scrollTop();
+        //console.log (threshold + ' / ' + st);
+
+        if (st > threshold){
+            $('#panels').hide();//addClass ('hdn');
+        } else {
+            $('#panels').show();//removeClass ('hdn');
+        }
+    });
+
+	function openDataSource(button, url)
+	{
+		var finalUrl = '';
+
+		if (g_e10_interfaceType === 'desktop')
+		{
+			finalUrl = url+'app';
+		}
+		else
+		{
+			finalUrl = url+'mapp';
+		}
+
+		if (standaloneApp) {
+			window.location = finalUrl;
+			return false;
+		}
+
+		button.href = finalUrl;
+		return true;
+	}
+
+	function setInterfaceType(interfaceType)
+	{
+		g_e10_interfaceType = interfaceType;
+		localStorage.setItem('e10_interfaceType', g_e10_interfaceType);
+		resetInterfaceTypeButtons();
+
+		return false;
+	}
+
+	function resetInterfaceTypeButtons()
+	{
+		if (g_e10_interfaceType === 'desktop')
+		{
+			$('#btn-iface-touch').removeClass('active');
+			$('#btn-iface-desktop').addClass('active');
+		}
+		else
+		{
+			$('#btn-iface-touch').addClass('active');
+			$('#btn-iface-desktop').removeClass('active');
+		}
+	}
+
+
+		function bigClock()
+    {
+        var days = ['Ne', 'Po', 'Út', 'St', 'Čt', 'Pá', 'So'];
+        var thetime = new Date();
+        var nhours= thetime.getHours();
+        var nmins = thetime.getMinutes();
+        var nsecs = thetime.getSeconds();
+        if (nmins < 10)
+            nmins = '0' + nmins;
+
+        var t = days[thetime.getDay()]+' '+thetime.getDate()+'.'+(thetime.getMonth()+1)+'.'+thetime.getFullYear();
+        $('#big-clock-date').text (t);
+
+        $('#big-clock').text (nhours + ':' + nmins);
+        setTimeout (bigClock ,1000 * (60 - nsecs));
+    }
+    {{^mobileMode}}/*bigClock();*/{{/mobileMode}}
+
+		var threshold = $('#panels').height();
+		if ($(window).scrollTop() > threshold){
+			$('#panels').hide();
+		} else {
+			$('#panels').show();
+		}
+
+
+		// -- interface type
+		var g_e10_interfaceType = localStorage.getItem('e10_interfaceType');
+		if (g_e10_interfaceType === null)
+		{
+			{{^mobileMode}}g_e10_interfaceType = 'desktop';{{/mobileMode}}
+			{{#mobileMode}}g_e10_interfaceType = 'touch';{{/mobileMode}}
+			localStorage.setItem('e10_interfaceType', g_e10_interfaceType);
+		}
+		resetInterfaceTypeButtons();
+</script>
+
+</body>
+</html>

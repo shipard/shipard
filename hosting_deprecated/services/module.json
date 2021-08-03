@@ -1,0 +1,11 @@
+{
+  "id": "e10pro.hosting.services",
+  "name": "Služby hostingu",
+	"tables": ["cal", "pod"],
+	"config": [
+		{"id": "+appSkeleton", "file": "appSkeleton.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+		{"id": "+hosting.services.calendar.eventTypes", "file": "hosting.services.calendar.eventTypes.json"},
+		{"id": "+registeredClasses", "file": "registeredClasses.json"}
+	]
+}
