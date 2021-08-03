@@ -1,0 +1,31 @@
+{
+  "id": "hosting.core",
+  "name": "Hosting",
+	"tables": [
+		"hostings", "servers", "domainsAccounts", 
+		"domains", "domainsRecords", "certs",
+		"partners", "partnersPersons", 
+		"dataSources", "dsStats", "dsUsers", "dsUsersOptions", "dsUsersSummary",
+		"modules"
+	],
+	"config": [
+		{"id": "+appSkeleton", "file": "hosting.appSkeleton.json"},
+		{"id": "+appOptions", "file": "e10.appOptions.json"},
+		{"id": "+e10.dashboardInfo", "file": "dashboardInfo.json"},
+		{"id": "hosting.core.dataSources.docStates", "file": "hosting.server.datasources.docStates.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+		{"id": "+e10.base.doclinks", "file": "doclinks.json"},
+		{"id": "+widgets", "file": "widgets.json"},
+		{"id": "+dashboards", "file": "dashboards.json"},
+		{"id": "+hosting.core.domainsRegistrars", "file": "domainsRegistrars.json"},
+		{"id": "+hosting.core.domainsRecordTypes", "file": "domainsRecordTypes.json"},
+		{"id": "+hosting.core.certsProviders", "file": "certsProviders.json"},
+		{"id": "+e10.base.clsfGroups", "file": "clsfGroups.json"},
+		{"id": "+registeredClasses", "file": "registeredClasses.json"},
+		{"id": "+reports", "file": "reports.json"}
+	],
+	"extensions": ["persons"],
+	"modules": [
+		"integrations/core"
+	]
+}

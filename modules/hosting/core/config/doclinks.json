@@ -1,0 +1,18 @@
+{
+	"hosting.core.hostings": {
+		"hosting-core-hostings-domainsWeb": {
+			"linkid": "hosting-core-hostings-domainsWeb",
+			"name": "Domény pro web", "icon": "system/iconUser",
+			"sources": [
+				{"id": "domains", "viewer": "default", "table": "hosting.core.domains"}
+			]
+		},
+		"hosting-core-hostings-domainsEmail": {
+			"linkid": "hosting-core-hostings-domainsEmail",
+			"name": "Domény pro e-mail", "icon": "system/iconEmail",
+			"sources": [
+				{"id": "domains", "viewer": "default", "table": "hosting.core.domains"}
+			]
+		}
+	}
+}

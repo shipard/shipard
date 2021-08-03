@@ -1,0 +1,75 @@
+{
+  "id": "hosting.core.dataSources", "sql": "hosting_core_dataSources", "name": "Zdroje dat",
+  "columns": [
+    {"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "name", "name": "Název", "type": "string", "len": 120},
+	  {"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 40},
+		{"id": "gid", "name": "GID", "type": "string", "len": 20, "options": ["ascii"]},
+	  {"id": "dsId1", "name": "ID zdroje dat", "type": "string", "len": 40, "options": ["ascii"]},
+	  {"id": "dsId2", "name": "Zastaralé ID zdroje dat", "type": "string", "len": 40, "options": ["ascii"]},
+
+		{"id": "server", "name": "Server", "type": "int", "reference": "hosting.core.servers"},
+		
+		{"id": "owner", "name": "Majitel", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "admin", "name": "Technický správce", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "payer", "name": "Plátce", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "partner", "name": "Partner", "type": "int", "reference": "hosting.core.partners"},
+		
+	  {"id": "supportSection", "name": "Sekce podpory", "type": "int", "reference": "wkf.base.sections"},
+
+		{"id": "urlApp", "name": "URL aplikace", "type": "string", "len": 100},
+		{"id": "installModule", "name": "Instalační modul", "type": "int", "reference": "hosting.core.modules"},
+
+		{"id": "dateStart", "sql": "dateStart", "name": "Datum zahájení", "type": "date"},
+	  {"id": "dateTrialEnd", "name": "Konec zkušební lhůty", "type": "date"},
+
+		{"id": "appWarning", "name": "Upozornění", "type": "enumInt",
+		  "enumValues": {
+			  "0": "Žádné",
+			  "1": "Neuhrazeno - Upozornění", "2": "Neuhrazeno - Poslední šance",
+			  "4": "Zkušební lhůta - Upozornění", "3": "Zkušební lhůta - Poslední šance"
+		  }
+	  },
+
+		{"id": "created", "sql": "created", "name": "Vytvořeno", "type": "timestamp"},
+
+		{"id": "dsType", "name": "Typ", "type": "enumInt",
+			"enumValues": {"0": "Ostrý zdroj dat", "1": "Zkušební zdroj dat", "3": "Interní", "4": "Ostatní"}},
+
+		{"id": "condition", "name": "Stav", "type": "enumInt",
+			"enumValues": {"0": "Čeká na založení", "1": "Zkušební lhůta", "2": "Ostrý provoz", "3": "Expirováno", "4": "Pozastaveno", "5": "Smazáno"}},
+
+		{"id": "invoicingTo", "name": "Fakturovat", "type": "enumInt",
+			"enumValues": {"0": "Partner", "1": "Koncový zákazník", "2": "Smlouva", "3": "Nefakturuje se"}},
+
+	  {"id": "imageUrl", "name": "URL obrázku", "type": "string", "len": 160},
+	  {"id": "dsIconServerUrl", "name": "Ikona - URL serveru", "type": "string", "len": 60},
+	  {"id": "dsIconFileName", "name": "Ikona - jméno souboru", "type": "string", "len": 120},
+
+	  {"id": "inProgress", "name": "Zdroj se zakládá", "type": "int"},
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+  "views": [
+    {"id": "default", "class": "hosting.core.ViewDataSources",
+			"details": {
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "hosting.core.ViewDetailDataSources"},
+				"users": {"title": "Uživatelé", "icon": "system/iconUser", "type": "detail", "class": "hosting.core.ViewDetailDataSourceUsers"}
+			}
+		},
+		{"id": "dashboard", "class": "e10pro.hosting.client.libs.DataSourcesDashboardViewer2",
+			"details": {
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.hosting.client.libs.DataSourcesDashboardViewerDetail"}
+			}
+		}
+  ],
+  "forms": [
+    {"id": "default", "class": "hosting.core.FormDataSource"},
+		{"id": "show", "class": "hosting.core.FormDataSourceShow"}
+  ],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "hosting.core.dataSources.docStates"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"},
+	"indexes": [
+		{"id": "s1", "columns": ["gid"]}
+	]
+}

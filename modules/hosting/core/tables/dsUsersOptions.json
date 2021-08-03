@@ -1,0 +1,13 @@
+{
+	"id": "hosting.core.dsUsersOptions", "sql": "hosting_core_dsUsersOptions", "name": "Nastavení zdrojů dat uživatelů",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "uds", "name": "Zdroj dat", "type": "int", "reference": "hosting.core.dsUsers"},
+		{"id": "favorite", "name": "Do oblíbených", "type": "logical"},
+		{"id": "dsOrder", "name": "Pořadí", "type": "int"}
+	],
+	"options": ["systemTable"],
+	"forms": [
+		{"id": "default", "class": "e10pro.hosting.server.FormDSUserOptions"}
+	]
+}

@@ -1,0 +1,34 @@
+{
+	"id": "hosting.core.hostings", "sql": "hosting_core_hostings", "name": "Hostingy",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "name", "name": "Název", "type": "string", "len": 40},
+
+		{"id": "hostingTitle", "name": "Titulek", "type": "string", "len": 60},
+		{"id": "supportEmail", "name": "E-mail na podporu", "type": "string", "len": 120},
+		{"id": "supportPhone", "name": "Telefon na podporu", "type": "string", "len": 120},
+		{"id": "supportWeb", "name": "Web podpory", "type": "string", "len": 120},
+
+		{"id": "logoPortal", "name": "Logo portálu", "type": "int", "reference": "e10.base.attachments", "comboViewer": "images"},
+		{"id": "logoIcon", "name": "Logo - ikona prohlížeče", "type": "int", "reference": "e10.base.attachments", "comboViewer": "images"},
+		{"id": "logoIconPortalHome", "name": "Logo - ikona pro levý horní roh", "type": "int", "reference": "e10.base.attachments", "comboViewer": "images"},
+		{"id": "logoFooter", "name": "Logo - zápatí", "type": "int", "reference": "e10.base.attachments", "comboViewer": "images"},
+
+		{"id": "gid", "name": "GID", "type": "string", "len": 20},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "hosting.core.ViewHostings", "detail": "hosting.core.ViewDetailHosting"}
+	],
+	"forms": [
+		{"id": "default", "class": "hosting.core.FormHosting"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"},
+	"options": ["configSource"]
+}

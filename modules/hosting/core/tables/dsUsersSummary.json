@@ -1,0 +1,17 @@
+{
+	"id": "hosting.core.dsUsersSummary", "sql": "hosting_core_dsUsersSummary", "name": "Přehledy pro uživatele",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "user", "name": "Uživatel", "type": "int", "reference":  "e10.persons.persons"},
+		{"id": "dataSource", "name": "Zdroj dat", "type": "int", "reference": "hosting.core.dataSources"},
+		{"id": "summaryType", "name": "Typ přehledu", "type": "enumInt",
+			"enumValues": {"0": "Workflow"}},
+		{"id": "cnt", "name": "Počet", "type": "int"},
+		{"id": "cntUnread", "name": "Počet nepřečtených", "type": "int"},
+		{"id": "cntTodo", "name": "Počet k řešení", "type": "int"},
+		{"id": "data", "name": "Data", "type": "memo"},
+		{"id": "checksum", "name": "Kontrolní součet", "type": "string", "len":  40, "options": ["ascii"]},
+		{"id": "updated", "name": "Datum a čas aktualizace", "type": "timestamp"}
+	],
+	"options": ["systemTable"]
+}

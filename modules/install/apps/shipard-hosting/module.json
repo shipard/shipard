@@ -1,0 +1,14 @@
+{
+	"id": "install.apps.shipard-hosting",
+	"name": "Hosting Shipard",
+	"modules": [
+		"install/apps/shipard-core",
+		"hosting/core"
+	],
+
+	"config": [
+	],
+
+	"dataPackages": [
+	]
+}
