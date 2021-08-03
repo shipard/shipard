@@ -1,4 +1,0 @@
-{
-	"hostingDomainsTags": {"name": "Domény", "label": "Štítky", "tables": ["e10pro.hosting.server.domains"]},
-	"hostingCertsTags": {"name": "Certifikáty", "label": "Štítky", "tables": ["e10pro.hosting.server.certs"]}
-}
