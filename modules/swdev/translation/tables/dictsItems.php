@@ -3,7 +3,7 @@
 namespace swdev\translation;
 
 
-use \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\TableViewPanel, \E10\DbTable, \e10\utils, \e10\str;
+use \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Viewer\TableViewPanel, \E10\DbTable, \e10\utils, \e10\str;
 
 
 /**

@@ -3,7 +3,8 @@
 namespace swdev\world;
 
 
-use \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\TableViewPanel, \E10\DbTable, \E10\utils;
+use \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Viewer\TableViewPanel, \E10\DbTable, \E10\utils;
+use \e10\base\libs\UtilsBase;
 
 
 /**
@@ -97,13 +98,7 @@ class ViewTerritories extends TableView
 		$qry = [];
 
 		// -- tags
-		$clsf = \E10\Base\classificationParams ($this->table);
-		foreach ($clsf as $cg)
-		{
-			$params = new \E10\Params ($panel->table->app());
-			$params->addParam ('checkboxes', 'query.clsf.'.$cg['id'], ['items' => $cg['items']]);
-			$qry[] = ['style' => 'params', 'title' => $cg['name'], 'params' => $params];
-		}
+		UtilsBase::addClassificationParamsToPanel($this->table, $panel, $qry);
 
 		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}

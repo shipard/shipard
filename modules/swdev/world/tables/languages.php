@@ -4,7 +4,7 @@ namespace swdev\world;
 
 require_once __SHPD_MODULES_DIR__ . 'e10/base/base.php';
 
-use \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\TableViewPanel, \E10\DbTable, \E10\utils;
+use \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Viewer\TableViewPanel, \E10\DbTable, \E10\utils;
 
 
 /**

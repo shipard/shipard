@@ -2,7 +2,7 @@
 	"id": "swdev.install",
 	"name": "Software Development",
 	"tables": [],
-	"modules": ["swdev/dm", "swdev/world", "swdev/translation", "swdev/icons", "swdev/hw"],
+	"modules": ["swdev/dm", "swdev/world", "swdev/translation", "swdev/hw"],
 	"config": [
 		{"id": "+appSkeleton", "file": "appSkeleton.json"},
 		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},

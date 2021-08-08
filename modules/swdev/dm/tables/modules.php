@@ -3,8 +3,8 @@
 namespace swdev\dm;
 
 
-use \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\TableViewPanel, \E10\DbTable, \E10\utils;
-
+use \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Viewer\TableViewPanel, \E10\DbTable, \E10\utils;
+use \e10\base\libs\UtilsBase;
 
 /**
  * Class TableModules
@@ -126,19 +126,7 @@ class ViewModules extends TableView
 		$qry = [];
 
 		// -- tags
-		$clsf = \E10\Base\classificationParams ($this->table);
-		foreach ($clsf as $cg)
-		{
-			$params = new \E10\Params ($panel->table->app());
-			$params->addParam ('checkboxes', 'query.clsf.'.$cg['id'], ['items' => $cg['items']]);
-			$qry[] = ['style' => 'params', 'title' => $cg['name'], 'params' => $params];
-		}
-
-		// -- lans
-//		$lans = $this->db()->query ('SELECT ndx, fullName FROM mac_lan_lans WHERE docStateMain != 4')->fetchPairs ('ndx', 'fullName');
-//		$lans['0'] = 'Žádná síť';
-//		$this->qryPanelAddCheckBoxes($panel, $qry, $lans, 'lans', 'Sítě');
-
+		UtilsBase::addClassificationParamsToPanel($this->table, $panel, $qry);
 
 		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}
