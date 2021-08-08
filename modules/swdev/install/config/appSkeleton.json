@@ -7,21 +7,6 @@
 				"enums": {"t1": "Enumy", "object": "viewer", "table": "swdev.dm.enums", "viewer": "default", "order": 115000},
 				"terms": {"t1": "Pojmy", "object": "viewer", "table": "swdev.dm.terms", "viewer": "default", "order": 116000},
 
-				"icons": {
-					"t1": "Ikony", "object": "subMenu", "icon": "iconIcons",
-					"order": 120000,
-					"subMenu": {
-						"items": {
-							"appIcons": {"t1": "Ikony aplikace", "object": "viewer", "table": "swdev.icons.appIcons", "viewer": "default", "order": 7000},
-							"appIconsGroups": {"t1": "Skupiny ikon", "object": "viewer", "table": "swdev.icons.appIconsGroups", "viewer": "default", "order": 7100},
-
-							"setsIcons": {"t1": "Ikony v sadách", "object": "viewer", "table": "swdev.icons.setsIcons", "viewer": "default", "order": 8000},
-							"sets": {"t1": "Sady ikon", "object": "viewer", "table": "swdev.icons.sets", "viewer": "default", "order": 8100},
-							"setsVariants": {"t1": "Varianty sad", "object": "viewer", "table": "swdev.icons.setsVariants", "viewer": "default", "order": 8200}
-						}
-					}
-				},
-
 				"columns": {"t1": "Sloupce", "object": "viewer", "table": "swdev.dm.columns", "viewer": "default", "order": 120000},
 				"viewers": {"t1": "Prohlížeče", "object": "viewer", "table": "swdev.dm.viewers", "viewer": "default", "order": 130000},
 				"modules": {"t1": "Moduly", "object": "viewer", "table": "swdev.dm.modules", "viewer": "default", "order": 200000},
