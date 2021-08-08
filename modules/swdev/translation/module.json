@@ -2,7 +2,6 @@
 	"id": "swdev.translation",
 	"name": "Translation",
 	"tables": ["languages", "translators", "dicts", "dictsItems", "dictsItemsTr", "dictsTrData"],
-	"modules": ["e10pro/install/start"],
 	"config": [
 	]
 }

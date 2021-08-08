@@ -4,7 +4,6 @@
 	"tables": [
 		"sets", "setsVariants", "setsIcons", "appIcons", "appIconsGroups", "appIconsMapping"
 	],
-	"modules": ["e10pro/install/start"],
 	"config": [
 		{"id": "+e10.base.clsfGroups", "file": "clsfGroups.json"},
 		{"id": "+appOptions", "file": "appOptions.json"}

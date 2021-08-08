@@ -5,7 +5,6 @@
 		"modules", "tables", "columns", "viewers", "dmTrTexts", "tablesTrData",
 		"enums", "enumsValues", "enumsValuesTr", "enumsTrData", "terms"
 	],
-	"modules": ["e10pro/install/start"],
 	"config": [
 		{"id": "+registeredFunctions", "file": "registeredFunctions.json"},
 		{"id": "+appOptions", "file": "appOptions.json"},

@@ -4,7 +4,6 @@
 	"tables": [
 		"archs", "devices", "devicesKinds", "devicesSeries", "fw", "fwVersions", "vendors"
 	],
-	"modules": ["e10pro/install/start"],
 	"config": [
 		{"id": "swdev.hw.devices.types", "file": "devicesTypes.json"},
 		{"id": "+e10.base.doclinks", "file": "doclinks.json"}

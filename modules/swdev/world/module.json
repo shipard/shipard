@@ -6,7 +6,6 @@
 		"countries", "countryCurrencies", "countryLanguages", "countryTerritories",
 		"currenciesTr", "languagesTr", "countriesTr", "territoriesTr"
 	],
-	"modules": ["e10pro/install/start"],
 	"config": [
 		{"id": "+swdev.world.territoriesTypes", "file": "territoriesTypes.json"},
 		{"id": "+reports", "file": "reports.json"}
