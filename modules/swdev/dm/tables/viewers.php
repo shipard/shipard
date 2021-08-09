@@ -110,7 +110,7 @@ class FormViewer extends TableForm
 		//$this->setFlag ('maximize', 1);
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Prohlížeč', 'icon' => 'icon-window-restore'];
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();

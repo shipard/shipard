@@ -196,7 +196,7 @@ class FormEnum extends TableForm
 		//$this->setFlag ('maximize', 1);
 
 		$this->openForm ();
-			$tabs ['tabs'][] = ['text' => 'Enum', 'icon' => 'x-content'];
+			$tabs ['tabs'][] = ['text' => 'Enum', 'icon' => 'system/formHeader'];
 			$tabs ['tabs'][] = ['text' => 'cfg', 'icon' => 'system/iconCogs'];
 
 			$this->openTabs ($tabs, TRUE);

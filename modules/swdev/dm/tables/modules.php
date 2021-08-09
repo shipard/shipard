@@ -145,7 +145,7 @@ class FormModule extends TableForm
 		//$this->setFlag ('maximize', 1);
 
 		$this->openForm ();
-		$tabs ['tabs'][] = ['text' => 'Modul', 'icon' => 'x-content'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
 					$this->addColumnInput ('id');

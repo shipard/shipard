@@ -144,8 +144,8 @@ class FormColumn extends TableForm
 		//$this->setFlag ('maximize', 1);
 
 		$this->openForm ();
-		$tabs ['tabs'][] = ['text' => 'Sloupec', 'icon' => 'icon-columns'];
-		$tabs ['tabs'][] = ['text' => 'Definice', 'icon' => 'icon-code'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Definice', 'icon' => 'formDefinition'];
 
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();

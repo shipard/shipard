@@ -88,5 +88,12 @@
         "fa5pro":"fa-language",
         "bsi":"bi-translate",
         "mdi":"translate"
+    },
+
+    "formDefinition":{
+        "fa5":"fa-code",
+        "fa5pro":"fa-code",
+        "bsi":"bi-code-slash",
+        "mdi":"code"
     }
 }
