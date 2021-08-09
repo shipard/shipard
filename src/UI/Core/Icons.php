@@ -65,4 +65,14 @@ class Icons extends BaseObject
 		
 		return $c;
 	}
+
+	public function exist(string $i)
+	{
+		if (!$this->modulesIcons)
+		{
+			$this->modulesIcons = unserialize (file_get_contents(__APP_DIR__.'/config/icons-'.$this->iconsId.'.data'));			
+		}
+
+		return isset($this->modulesIcons[$i]);
+	}
 }

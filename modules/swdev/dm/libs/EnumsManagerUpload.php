@@ -113,7 +113,7 @@ class EnumsManagerUpload extends Utility
 
 	public function run()
 	{
-		$path = __APP_DIR__.'/e10-modules/translation/enums/_src';
+		$path = __SHPD_MODULES_DIR__.'translation/enums/_src';
 		//echo $path."\n";
 		$this->prepareFolder($path);
 	}

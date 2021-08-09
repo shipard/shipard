@@ -141,25 +141,25 @@ class WikiSystemPageTable extends \e10pro\kb\libs\SystemPageEngine
 
 			$c .= "<td class='number'>";
 			$c .= utils::nf($colNumber).'.';
-			$c .= '</td'>
+			$c .= '</td>';
 
 
 			$columnUrl = $r['dmWikiPage'];
 			$c .= "<td>";
 			$c .= "<a href='$columnUrl'>".utils::es($r['name']).'</a>';
-			$c .= '</td'>
+			$c .= '</td>';
 
 			$c .= "<td>";
 			$c .= utils::es($r['id']);
-			$c .= '</td'>
+			$c .= '</td>';
 
 			$c .= "<td>";
 			$c .= $this->tableColumnsCode_ColType($r);
-			$c .= '</td'>
+			$c .= '</td>';
 
 			$c .= "<td>";
 			$c .= $this->tableColumnsCode_Reference($r);
-			$c .= '</td'>
+			$c .= '</td>';
 
 
 			$c .= "</tr>";

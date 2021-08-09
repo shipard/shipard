@@ -33,7 +33,7 @@ class TranslationDownloaderCLI extends Utility
 			{
 				$tableIdParts = explode('.', $tableId);
 				array_pop($tableIdParts);
-				$fileName = 'e10-modules/translation/dm/tables/'.implode('/', $tableIdParts).'/'.$tableId.'/'.$tableId.'.'.$langId.'.json';
+				$fileName = __SHPD_MODULES_DIR__.'translation/dm/tables/'.implode('/', $tableIdParts).'/'.$tableId.'/'.$tableId.'.'.$langId.'.json';
 				$doUpdate = 0;
 				if (!is_readable($fileName))
 					$doUpdate = 1;
@@ -54,7 +54,7 @@ class TranslationDownloaderCLI extends Utility
 
 			$tableIdParts = explode('.', $u['tableId']);
 			array_pop($tableIdParts);
-			$dir = 'e10-modules/translation/dm/tables/'.implode('/', $tableIdParts).'/'.$u['tableId'];
+			$dir = __SHPD_MODULES_DIR__.'translation/dm/tables/'.implode('/', $tableIdParts).'/'.$u['tableId'];
 			if (!is_dir($dir))
 				mkdir($dir, 0777, TRUE);
 
@@ -88,7 +88,7 @@ class TranslationDownloaderCLI extends Utility
 		{
 			$dictIdParts = explode('.', $dictId);
 			$dictClassName = array_pop($dictIdParts);
-			$dictPath = 'e10-modules/translation/dicts/'.implode('/', $dictIdParts);
+			$dictPath = __SHPD_MODULES_DIR__.'translation/dicts/'.implode('/', $dictIdParts);
 			$dictClassFileName = $dictPath.'/'.$dictClassName.'.php';
 
 			$doUpdate = 0;
@@ -125,7 +125,7 @@ class TranslationDownloaderCLI extends Utility
 
 			$dictIdParts = explode('.', $dictId);
 			$dictClassName = array_pop($dictIdParts);
-			$dictPath = 'e10-modules/translation/dicts/'.implode('/', $dictIdParts);
+			$dictPath = __SHPD_MODULES_DIR__.'translation/dicts/'.implode('/', $dictIdParts);
 			if (!is_dir($dictPath))
 				mkdir($dictPath, 0777, TRUE);
 
@@ -167,8 +167,8 @@ class TranslationDownloaderCLI extends Utility
 			foreach ($enum as $langId => $langState)
 			{
 				$enumIdParts = array_slice(explode('.', $enumId), 0, 2);
-				$fileName = 'e10-modules/translation/enums/'.implode('/', $enumIdParts).'/'.$enumId.'.'.$langId.'.json';
-				$fileNameData = 'e10-modules/translation/enums/'.implode('/', $enumIdParts).'/'.$enumId.'.'.$langId.'.data';
+				$fileName = __SHPD_MODULES_DIR__.'translation/enums/'.implode('/', $enumIdParts).'/'.$enumId.'.'.$langId.'.json';
+				$fileNameData = __SHPD_MODULES_DIR__.'translation/enums/'.implode('/', $enumIdParts).'/'.$enumId.'.'.$langId.'.data';
 				$doUpdate = 0;
 				if (!is_readable($fileName))
 					$doUpdate = 1;
@@ -184,7 +184,7 @@ class TranslationDownloaderCLI extends Utility
 		echo "\n";
 
 		sort($enumsList, SORT_STRING);
-		file_put_contents(__APP_DIR__.'/e10-modules/translation/enums/_src/enums.json', json::lint($enumsList));
+		file_put_contents(__SHPD_MODULES_DIR__.'translation/enums/_src/enums.json', json::lint($enumsList));
 
 		foreach ($toUpdate as $u)
 		{
@@ -193,7 +193,7 @@ class TranslationDownloaderCLI extends Utility
 				echo ('.'.$u['langId']);
 
 			$enumIdParts = array_slice(explode('.', $u['enumId']), 0, 2);
-			$enumPath = 'e10-modules/translation/enums/'.implode('/', $enumIdParts).'/';
+			$enumPath = __SHPD_MODULES_DIR__.'translation/enums/'.implode('/', $enumIdParts).'/';
 			if (!is_dir($enumPath))
 				mkdir($enumPath, 0777, TRUE);
 

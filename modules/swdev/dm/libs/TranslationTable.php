@@ -245,7 +245,7 @@ class TranslationTable extends Utility
 		$c .= "use \\e10\\Application, \\e10\\utils;\n\n";
 		$c .= "class ".$className."\n";
 		$c .= "{\n";
-		$c .= "\t static".'$'."path = __APP_DIR__.'/e10-modules/translation/dicts/".implode("/", $idParts)."';\n";
+		$c .= "\t static".'$'."path = __SHPD_MODULES_DIR__.'translation/dicts/".implode("/", $idParts)."';\n";
 		$c .= "\t static".'$'."baseFileName = '$className';\n";
 		$c .= "\t static".'$'."data = NULL;\n\n";
 

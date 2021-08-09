@@ -98,9 +98,11 @@ class WikiSystemPageEnum extends \e10pro\kb\libs\SystemPageEngine
 
 		$config = json_decode($enumRecData['config'], TRUE);
 
-		foreach ($config['textsIds'] as $columnId => $columnTitle)
-			$h[$columnId] = $columnTitle;
-
+		if (isset($config['textsIds']))
+		{
+			foreach ($config['textsIds'] as $columnId => $columnTitle)
+				$h[$columnId] = $columnTitle;
+		}
 
 		$c = '';
 

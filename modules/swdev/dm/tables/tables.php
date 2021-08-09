@@ -29,8 +29,9 @@ class TableTables extends DbTable
 
 	public function tableIcon ($recData, $options = NULL)
 	{
-		if (isset($recData['icon']) && $recData['icon'] !== '')
-			return $recData['icon'];
+		$iconId = 'tables/'.$recData['id'];
+		if ($this->app()->ui()->icons()->exist($iconId))
+			return $iconId;
 
 		return parent::tableIcon ($recData, $options);
 	}

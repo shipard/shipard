@@ -2,15 +2,21 @@
 <?php
 
 define ("__APP_DIR__", getcwd());
-require_once __DIR__ . '/e10-cli.php';
+if (!defined ('__SHPD_ROOT_DIR__'))
+{
+	$parts = explode('/', __DIR__);
+	array_pop($parts);
+	define('__SHPD_ROOT_DIR__', '/'.implode('/', $parts).'/');
+}
 
-use \E10\CLI\Application, \E10\utils, \E10\DataModel, \e10\json;
+require_once __SHPD_ROOT_DIR__ . '/src/boot.php';
+use \Shipard\CLI\Application, \e10\utils, \e10\DataModel, \e10\json;
 
 
 /**
- * Class E10SwDevApp
+ * Class ShpdDevApp
  */
-class E10SwDevApp extends Application
+class ShpdDevApp extends Application
 {
 	var $quiet = FALSE;
 	var $devServerCfg = NULL;
@@ -103,7 +109,7 @@ class E10SwDevApp extends Application
 
 	function loadDevServerCfg()
 	{
-		$fn = (isset ($_SERVER['HOME']) ? $_SERVER['HOME'] : '/root').'/.e10/devel.json';
+		$fn = (isset ($_SERVER['HOME']) ? $_SERVER['HOME'] : '/root').'/.shipard/devel.json';
 		if (!is_file($fn))
 		{
 			return $this->err ("DevServerCfg not found; file `$fn` not exist...");
@@ -133,7 +139,7 @@ class E10SwDevApp extends Application
 
 		switch ($this->command ())
 		{
-			case	'create-packages':							return $this->createPackages();
+			case	'create-packages':						return $this->createPackages();
 		}
 
 		if (!$this->loadDevServerCfg())
@@ -141,10 +147,11 @@ class E10SwDevApp extends Application
 
 		switch ($this->command ())
 		{
-			case	'dm-upload':										return $this->dmUpload();
-			case	'enums-upload':								return $this->enumsUpload();
-			case	'tr-download':									return $this->trDownload();
-			case	'world-upload':								return $this->worldUpload();
+			case	'upload-dm':									return $this->dmUpload();
+			case	'upload-enums':								return $this->enumsUpload();
+			case	'download-tr':								return $this->trDownload();
+		
+			case	'upload-world':								return $this->worldUpload();
 		}
 		echo ("unknown or nothing param...\r\n");
 	}
@@ -155,6 +162,6 @@ class E10SwDevApp extends Application
 	}
 }
 
-$myApp = new E10SwDevApp ($argv);
+$myApp = new ShpdDevApp ($argv);
 $myApp->run ();
 
