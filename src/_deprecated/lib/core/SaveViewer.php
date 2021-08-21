@@ -26,6 +26,7 @@ class SaveViewer extends Utility
 
 	protected $buffer = '';
 
+	var $baseFileName;
 	var $srcFullFileName;
 	var $finalFullFileName;
 
@@ -49,6 +50,7 @@ class SaveViewer extends Utility
 		$destFileSuffix = '.'.$this->formatDef['destFileSuffix'];
 
 		$baseFileName = "v-{$this->format}-" . time() . '-' . mt_rand (1000000, 9999999);
+		$this->baseFileName = $baseFileName;
 		$this->srcFullFileName = __APP_DIR__ . "/tmp/".$baseFileName.$srcFileSuffix;
 		$this->finalFullFileName = __APP_DIR__ . "/tmp/".$baseFileName.$destFileSuffix;
 
@@ -69,7 +71,7 @@ class SaveViewer extends Utility
 		$this->viewer->init ();
 		$this->viewer->selectRows ();
 
-		$this->viewer->gridTableRenderer = new \Shipard\Utils\TableRenderer(NULL, $this->viewer->gridStruct, ['tableClass' => 'e10-vd-mainTable']);
+		$this->viewer->gridTableRenderer = new \Shipard\Utils\TableRenderer(NULL, $this->viewer->gridStruct, ['tableClass' => 'e10-vd-mainTable'], $this->app());
 		$this->viewer->gridTableRenderer->init ();
 
 		$this->open();
@@ -310,7 +312,19 @@ class SaveViewer extends Utility
 
 	public function createFinalFile_PDF()
 	{
-		exec ('phantomjs '.__APP_DIR__ . '/e10-modules/e10/server/utils/createpdf.js '.$this->srcFullFileName.' '.
-				$this->finalFullFileName.' '.'A4'.' '.'landscape'.' '.'1cm');
+		$report = new \Shipard\Report\GlobalReport($this->app());
+		$report->init();
+
+		$report->reportSrcFileName = $this->srcFullFileName;
+		$report->reportSrcFileNameRelative = 'tmp/'.$this->baseFileName.'.html';
+		$report->reportSrcURL = 'https://'.$this->app()->cfgItem('hostingCfg.serverDomain').'/'.$this->app->cfgItem('dsid') . '/'. $report->reportSrcFileNameRelative;
+		$report->dstFileName = $this->finalFullFileName;
+		$report->fullFileName = $this->finalFullFileName;
+
+		$report->paperOrientation = 'landscape';
+
+		$pdfCreator = new \lib\pdf\PdfCreator($this->app());		
+		$pdfCreator->setReport($report);
+		$pdfCreator->createPdf();
 	}
 }
