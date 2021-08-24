@@ -4,6 +4,7 @@ namespace E10\Persons;
 
 use \Shipard\Application\Application, E10\TableForm, E10\Wizard, E10\utils, e10\str, \translation\dicts\e10\base\system\DictSystem;
 use \Shipard\Utils\World;
+use \e10\base\libs\UtilsBase;
 
 CONST rqtUserSelfRegistration = 0, rqtLostPassword = 1, rqtFirstLogin = 2, rqtInvitationRequest = 3, rqtActivateShipardAccount = 4;
 
@@ -873,8 +874,7 @@ class Authenticator extends \Shipard\Application\Authenticator
 		$this->app->db->query("INSERT INTO [e10_persons_requests]", $newRequest);
 
 		$email = $this->createEmailForRequest($type, $data, $requestId);
-		\E10\SendEmail($email ['subject'], $email ['message'], $email ['fromEmail'], $emailAddress,
-				$email ['fromName'], '');
+		UtilsBase::sendEmail($this->app, $email ['subject'], $email ['message'], $email ['fromEmail'], $emailAddress, $email ['fromName'], '');
 	}
 
 	public function createEmailForRequest($type, $data, $requestId)

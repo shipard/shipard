@@ -349,5 +349,23 @@ class UtilsBase
 		return $lp;
 	}
 	
+	static function sendEmail ($app, $subject, $message, $fromAdress, $toAdress, $fromName = '', $toName = '', $html = FALSE)
+	{
+		if ($app->cfgItem ('develMode', 0) !== 0)
+			return;
 	
+		if ($fromName == '')
+			$fromName = $fromAdress;
+		if ($toName == '')
+			$toName = $toAdress;
+		$subjectEncoded = "=?utf-8?B?".base64_encode ($subject)."?=";
+		$header = "MIME-Version: 1.0\n";
+		if ($html)
+			$header .= "Content-Type: text/html; charset=utf-8\n";
+		else
+			$header .= "Content-Type: text/plain; charset=utf-8\n";
+		$header .= "From: =?UTF-8?B?".base64_encode($fromName)."?=<".$fromAdress.">\n";
+		$header .= "To: =?UTF-8?B?".base64_encode($toName)."?=<".$toAdress.">\n";
+		return mail ("", $subjectEncoded, $message, $header);
+	}	
 }

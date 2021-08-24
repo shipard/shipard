@@ -6,7 +6,7 @@ require_once __APP_DIR__ . '/e10-modules/e10/base/tables/notifications.php';
 require_once __APP_DIR__ . '/e10-modules/e10pro/wkf/wkf.php';
 
 use \E10\utils;
-
+use \e10\base\libs\UtilsBase;
 
 /**
  * Class ReportDaily
@@ -89,7 +89,7 @@ class DigestDaily extends \E10\Digest
 			$fromName = $this->app->cfgItem ('options.core.ownerShortName', 'Shipard');
 			$subject = 'Denní přehled '.$today->format('d.m.Y')." ($fromName)";
 
-			\E10\SendEmail ($subject, $body, $fromEmail, $r['login'], $fromName, $r['fullName'], TRUE);
+			UtilsBase::sendEmail ($this->app, $subject, $body, $fromEmail, $r['login'], $fromName, $r['fullName'], TRUE);
 		}
 	}
 }
