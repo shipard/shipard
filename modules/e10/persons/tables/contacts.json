@@ -25,7 +25,6 @@
 	"forms": [
 		{"id": "default", "class": "e10.persons.FormContact"}
 	],
-	"options": ["systemTable"],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"}
 }

@@ -75,6 +75,8 @@
 		"roles": ["user"],
 		"viewers": {
 			"e10.persons.persons": {"default": 2},
+			"e10.persons.address": {"default": 2, "form": 2},
+			"e10.persons.contacts": {"default": 2, "form": 2},
 			"e10.persons.relations": {"default": 2},
 			"e10.witems.items": {"default": 2, "combo": 2, "byCategories": 2},
 			"e10.witems.brands": {"default": 2},

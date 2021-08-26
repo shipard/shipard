@@ -42,7 +42,6 @@
 		{"id": "default", "class": "e10.persons.FormAddress"}
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
-	"options": ["systemTable"],
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "city"},
 	"indexes": [
 		{"id": "s1", "columns": ["country"]},
