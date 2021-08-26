@@ -131,7 +131,7 @@ class UtilsBase
 			{
 				$img = $row->toArray ();
 				$img['folder'] = 'att/';
-				$img['url'] = getAttachmentUrl ($app, $row);
+				$img['url'] = self::getAttachmentUrl ($app, $row);
 				if (strtolower($row['filetype']) === 'pdf' || strtolower($row['filetype']) === 'svg')
 					$img['original'] = 1;
 				if (strtolower($row['filetype']) === 'svg')
@@ -161,8 +161,8 @@ class UtilsBase
 		$mainImage = $app->db->query ($q)->fetch ();
 		if ($mainImage)
 		{
-			$img ['originalImage'] = getAttachmentUrl ($app, $mainImage);
-			$img ['smallImage'] = getAttachmentUrl ($app, $mainImage, 196, 196);
+			$img ['originalImage'] = self::getAttachmentUrl ($app, $mainImage);
+			$img ['smallImage'] = self::getAttachmentUrl ($app, $mainImage, 196, 196);
 			$img ['fileName'] = $mainImage['path'] . $mainImage['filename'];
 		}
 	

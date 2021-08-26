@@ -7,6 +7,8 @@ require_once __SHPD_MODULES_DIR__ . 'e10doc/core/core.php';
 
 use \E10\utils, \E10\TableView, \E10\TableViewDetail, \Shipard\Viewer\TableViewPanel, \Shipard\Form\TableForm, \E10\DbTable, \e10doc\core\e10utils;
 use \e10doc\core\libs\GlobalParams;
+use \e10\base\libs\UtilsBase;
+
 
 /**
  * Class TableProperty
@@ -45,7 +47,7 @@ class TableProperty extends DbTable
 		$hdr ['info'][] = array ('class' => 'info', 'value' => $itemTop);
 		$hdr ['info'][] = array ('class' => 'title', 'value' => $recData ['fullName']);
 
-		$image = \E10\Base\getAttachmentDefaultImage ($this->app(), $this->tableId(), $recData ['ndx']);
+		$image = UtilsBase::getAttachmentDefaultImage ($this->app(), $this->tableId(), $recData ['ndx']);
 		if (isset ($image ['smallImage']))
 			$hdr ['image'] = $image ['smallImage'];
 
