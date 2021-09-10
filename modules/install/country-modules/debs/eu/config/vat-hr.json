@@ -11,10 +11,10 @@
     },
 	"taxRates": {
 		"0": "Základní",
-		"1": "Snížená",
-        "4": "První snížená",
-		"2": "Bez daně",
-		"3": "Osvobozeno"
+		"1": "První snížená",
+        "2": "Druhá snížená",
+		"3": "Bez daně",
+		"4": "Osvobozeno"
 	},
 	"taxCodes": {
 		"HR110": {
@@ -23,12 +23,12 @@
 			"rowTaxReturn": 40
 		},
 		"HR111": {
-			"fullName": "Tuzemsko/Vstup/Snížená", "name": "Snížená", "print": "Snížená",
+			"fullName": "Tuzemsko/Vstup/První snížená", "name": "První snížená", "print": "První snížená",
 			"type": 0, "dir": 0, "rate": 1,
 			"rowTaxReturn": 41
 		},
 		"HR301": {
-			"fullName": "Tuzemsko/Vstup/První snížená", "name": "První snížená", "print": "První snížená",
+			"fullName": "Tuzemsko/Vstup/Druhá snížená", "name": "Druhá snížená", "print": "Druhá snížená",
 			"type": 0, "dir": 0, "rate": 4,
 			"rowTaxReturn": 41
 		},
@@ -43,11 +43,11 @@
 			"rowTaxReturn": 1
 		},
 		"HR121": {
-			"fullName": "Tuzemsko/Výstup/Snížená", "name": "Snížená", "print": "Snížená",
+			"fullName": "Tuzemsko/Výstup/První snížená", "name": "První snížená", "print": "První snížená",
 			"type": 0, "dir": 1, "rate": 1, "rowTaxReturn": 2
 		},
 		"HR310": {
-			"fullName": "Tuzemsko/Výstup/První snížená", "name": "První snížená", "print": "První snížená",
+			"fullName": "Tuzemsko/Výstup/Druhá snížená", "name": "Druhá snížená", "print": "Druhá snížená",
 			"type": 0, "dir": 1, "rate": 4, "rowTaxReturn": 2
 		},
 		"HR122": {
@@ -76,12 +76,12 @@
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 3
 		},
 		"HR206": {
-			"fullName": "EU/Výstup/Zboží/Snížená (odběratel)", "name": "Snížená - zboží EU (ODB)", "print": "Snížená - zboží EU (odběratel)",
+			"fullName": "EU/Výstup/Zboží/První snížená (odběratel)", "name": "První snížená - zboží EU (ODB)", "print": "První snížená - zboží EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 1, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 4
 		},
 		"HR360": {
-			"fullName": "EU/Výstup/Zboží/První snížená (odběratel)", "name": "První snížená - zboží EU (ODB)", "print": "První snížená - zboží EU (odběratel)",
+			"fullName": "EU/Výstup/Zboží/Druhá snížená (odběratel)", "name": "Druhá snížená - zboží EU (ODB)", "print": "Druhá snížená - zboží EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 4
 		},
@@ -91,12 +91,12 @@
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 5
 		},
 		"HR208": {
-			"fullName": "EU/Výstup/Služby/Snížená (odběratel)", "name": "Snížená - služby EU (ODB)", "print": "Snížená - služby EU (odběratel)",
+			"fullName": "EU/Výstup/Služby/První snížená (odběratel)", "name": "První snížená - služby EU (ODB)", "print": "První snížená - služby EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 1, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 6
 		},
 		"HR362": {
-			"fullName": "EU/Výstup/Služby/První snížená (odběratel)", "name": "První snížená - služby EU (ODB)", "print": "První snížená - služby EU (odběratel)",
+			"fullName": "EU/Výstup/Služby/Druhá snížená (odběratel)", "name": "Druhá snížená - služby EU (ODB)", "print": "Druhá snížená - služby EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 6
 		},
@@ -106,12 +106,12 @@
 			"sumTax": 0, "rowTaxReturn": 43
 		},
 		"HR216": {
-			"fullName": "EU/Vstup/Zboží/Snížená", "name": "Snížená - zboží EU", "print": "EU/Zboží/Snížená",
+			"fullName": "EU/Vstup/Zboží/První snížená", "name": "První snížená - zboží EU", "print": "EU/Zboží/První snížená",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "206",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
 		"HR390": {
-			"fullName": "EU/Vstup/Zboží/První snížená", "name": "První snížená - zboží EU", "print": "EU/Zboží/První snížená",
+			"fullName": "EU/Vstup/Zboží/Druhá snížená", "name": "Druhá snížená - zboží EU", "print": "EU/Zboží/Druhá snížená",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "360",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
@@ -121,12 +121,12 @@
 			"sumTax": 0, "rowTaxReturn": 43
 		},
 		"HR218": {
-			"fullName": "EU/Vstup/Služby/Snížená", "name": "Snížená - služby EU", "print": "EU/Služby/Snížená",
+			"fullName": "EU/Vstup/Služby/První snížená", "name": "První snížená - služby EU", "print": "EU/Služby/První snížená",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "208",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
 		"HR392": {
-			"fullName": "EU/Vstup/Služby/První snížená", "name": "První snížená - služby EU", "print": "EU/Služby/První snížená",
+			"fullName": "EU/Vstup/Služby/Druhá snížená", "name": "Druhá snížená - služby EU", "print": "EU/Služby/Druhá snížená",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "362",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
@@ -141,12 +141,12 @@
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 7
 		},
 		"HR406": {
-			"fullName": "DOVOZ/Výstup/Zboží/Snížená (odběratel)", "name": "Snížená - zboží DOVOZ (ODB)", "print": "Snížená - zboží DOVOZ (odběratel)",
+			"fullName": "DOVOZ/Výstup/Zboží/První snížená (odběratel)", "name": "První snížená - zboží DOVOZ (ODB)", "print": "První snížená - zboží DOVOZ (odběratel)",
 			"type": 2, "dir": 1, "rate": 1, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 8
 		},
 		"HR460": {
-			"fullName": "DOVOZ/Výstup/Zboží/První snížená (odběratel)", "name": "První snížená - zboží DOVOZ (ODB)", "print": "První snížená - zboží DOVOZ (odběratel)",
+			"fullName": "DOVOZ/Výstup/Zboží/Druhá snížená (odběratel)", "name": "Druhá snížená - zboží DOVOZ (ODB)", "print": "Druhá snížená - zboží DOVOZ (odběratel)",
 			"type": 2, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 8
 		},
@@ -156,12 +156,12 @@
 			"sumTax": 0, "rowTaxReturn": 43
 		},
 		"HR416": {
-			"fullName": "DOVOZ/Vstup/Zboží/Snížená", "name": "Snížená - zboží DOVOZ", "print": "DOVOZ/Zboží/Snížená",
+			"fullName": "DOVOZ/Vstup/Zboží/První snížená", "name": "První snížená - zboží DOVOZ", "print": "DOVOZ/Zboží/První snížená",
 			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "406",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
 		"HR490": {
-			"fullName": "DOVOZ/Vstup/Zboží/První snížená", "name": "První snížená - zboží DOVOZ", "print": "DOVOZ/Zboží/První snížená",
+			"fullName": "DOVOZ/Vstup/Zboží/Druhá snížená", "name": "Druhá snížená - zboží DOVOZ", "print": "DOVOZ/Zboží/Druhá snížená",
 			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "460",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
@@ -171,30 +171,30 @@
 		}
 	},
 	"taxPercents": [
-		{"code": "FI110", "from": "2013-01-01", "to": "0000-00-00", "value": 25.0},
-		{"code": "FI111", "from": "0000-00-00", "to": "0000-00-00", "value": 14.0},
-		{"code": "FI120", "from": "0000-00-00", "to": "0000-00-00", "value": 24.0},
-		{"code": "FI121", "from": "0000-00-00", "to": "0000-00-00", "value": 14.0},
-		{"code": "FI201", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
-		{"code": "FI202", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
-		{"code": "FI215", "from": "0000-00-00", "to": "0000-00-00", "value": 24.0},
-		{"code": "FI216", "from": "0000-00-00", "to": "0000-00-00", "value": 14.0},
-		{"code": "FI217", "from": "0000-00-00", "to": "0000-00-00", "value": 24.0},
-		{"code": "FI218", "from": "0000-00-00", "to": "0000-00-00", "value": 14.0},
-		{"code": "FI000", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
-		{"code": "FI112", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
-		{"code": "FI122", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
-		{"code": "FI123", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "HR110", "from": "0000-00-00", "to": "0000-00-00", "value": 25.0},
+		{"code": "HR111", "from": "0000-00-00", "to": "0000-00-00", "value": 13.0},
+		{"code": "HR120", "from": "0000-00-00", "to": "0000-00-00", "value": 25.0},
+		{"code": "HR121", "from": "0000-00-00", "to": "0000-00-00", "value": 13.0},
+		{"code": "HR201", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "HR202", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "HR215", "from": "0000-00-00", "to": "0000-00-00", "value": 25.0},
+		{"code": "HR216", "from": "0000-00-00", "to": "0000-00-00", "value": 13.0},
+		{"code": "HR217", "from": "0000-00-00", "to": "0000-00-00", "value": 25.0},
+		{"code": "HR218", "from": "0000-00-00", "to": "0000-00-00", "value": 13.0},
+		{"code": "HR000", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "HR112", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "HR122", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "HR123", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
 
-		{"code": "FI301", "from": "0000-00-00", "to": "0000-00-00", "value": 10.0},
-		{"code": "FI310", "from": "0000-00-00", "to": "0000-00-00", "value": 10.0},
-		{"code": "FI390", "from": "0000-00-00", "to": "0000-00-00", "value": 10.0},
-		{"code": "FI392", "from": "0000-00-00", "to": "0000-00-00", "value": 10.0},
+		{"code": "HR301", "from": "0000-00-00", "to": "0000-00-00", "value": 5.0},
+		{"code": "HR310", "from": "0000-00-00", "to": "0000-00-00", "value": 5.0},
+		{"code": "HR390", "from": "0000-00-00", "to": "0000-00-00", "value": 5.0},
+		{"code": "HR392", "from": "0000-00-00", "to": "0000-00-00", "value": 5.0},
 
-		{"code": "FI401", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
-		{"code": "FI415", "from": "0000-00-00", "to": "0000-00-00", "value": 24.0},
-		{"code": "FI416", "from": "0000-00-00", "to": "0000-00-00", "value": 14.0},
-		{"code": "FI490", "from": "0000-00-00", "to": "0000-00-00", "value": 10.0}
+		{"code": "HR401", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "HR415", "from": "0000-00-00", "to": "0000-00-00", "value": 25.0},
+		{"code": "HR416", "from": "0000-00-00", "to": "0000-00-00", "value": 13.0},
+		{"code": "HR490", "from": "0000-00-00", "to": "0000-00-00", "value": 5.0}
 	],
 	"taxNotes": {
 		"eu": {"text": "Daň odvede zákazník"}

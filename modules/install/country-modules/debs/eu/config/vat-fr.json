@@ -11,9 +11,9 @@
     },
 	"taxRates": {
 		"0": "Základní",
-		"1": "Snížená",
-        "2": "První snížená",
-		"3": "Druhá snížená",
+		"1": "První snížená",
+        "2": "Druhá snížená",
+		"3": "Třetí snížená",
 		"4": "Bez daně",
 		"5": "Osvobozeno"
 
@@ -25,17 +25,17 @@
 			"rowTaxReturn": 40
 		},
 		"FR111": {
-			"fullName": "Tuzemsko/Vstup/Snížená", "name": "Snížená", "print": "Snížená",
+			"fullName": "Tuzemsko/Vstup/První snížená", "name": "První snížená", "print": "První snížená",
 			"type": 0, "dir": 0, "rate": 1,
 			"rowTaxReturn": 41
 		},
 		"FR301": {
-			"fullName": "Tuzemsko/Vstup/První snížená", "name": "První snížená", "print": "První snížená",
+			"fullName": "Tuzemsko/Vstup/Druhá snížená", "name": "Druhá snížená", "print": "Druhá snížená",
 			"type": 0, "dir": 0, "rate": 4,
 			"rowTaxReturn": 41
 		},
 		"FR302": {
-			"fullName": "Tuzemsko/Vstup/Druhá snížená", "name": "Druhá snížená", "print": "Druhá snížená",
+			"fullName": "Tuzemsko/Vstup/Třetí snížená", "name": "Třetí snížená", "print": "Třetí snížená",
 			"type": 0, "dir": 0, "rate": 5,
 			"rowTaxReturn": 41
 		},
@@ -50,15 +50,15 @@
 			"rowTaxReturn": 1
 		},
 		"FR121": {
-			"fullName": "Tuzemsko/Výstup/Snížená", "name": "Snížená", "print": "Snížená",
+			"fullName": "Tuzemsko/Výstup/První snížená", "name": "První snížená", "print": "První snížená",
 			"type": 0, "dir": 1, "rate": 1, "rowTaxReturn": 2
 		},
 		"FR310": {
-			"fullName": "Tuzemsko/Výstup/První snížená", "name": "První snížená", "print": "První snížená",
+			"fullName": "Tuzemsko/Výstup/Druhá snížená", "name": "Druhá snížená", "print": "Druhá snížená",
 			"type": 0, "dir": 1, "rate": 4, "rowTaxReturn": 2
 		},
 		"FR311": {
-			"fullName": "Tuzemsko/Výstup/Druhá snížená", "name": "Druhá snížená", "print": "Druhá snížená",
+			"fullName": "Tuzemsko/Výstup/Třetí snížená", "name": "Třetí snížená", "print": "Třetí snížená",
 			"type": 0, "dir": 1, "rate": 5, "rowTaxReturn": 2
 		},
 		"FR122": {
@@ -81,38 +81,23 @@
 			"type": 1, "dir": 1, "rate": 2,
 			"rowTaxReturn": 21, "intraCommunityCode": 3, "note": "eu"
 		},
-		"FR203": {
-			"fullName": "Tuzemsko/Výstup/Základní - přenesení DP (odběratel)", "name": "Základní - PDP (ODB)", "print": "Základní - přenesení daňové povinnosti (odběratel)",
-			"type": 0, "dir": 1, "rate": 0, "noPayTax": 1, "hidden": 1,
-			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 10
-		},
-		"FR204": {
-			"fullName": "Tuzemsko/Výstup/Snížená - přenesení DP (odběratel)", "name": "Snížená - PDP (ODB)", "print": "Snížená - přenesení daňové povinnosti (odběratel)",
-			"type": 0, "dir": 1, "rate": 1, "noPayTax": 1, "hidden": 1,
-			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 11
-		},
-		"FR370": {
-			"fullName": "Tuzemsko/Výstup/První snížená - přenesení DP (odběratel)", "name": "První snížená - PDP (ODB)", "print": "První snížená - přenesení daňové povinnosti (odběratel)",
-			"type": 0, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
-			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 11
-		},
 		"FR205": {
 			"fullName": "EU/Výstup/Zboží/Základní (odběratel)", "name": "Základní - zboží EU (ODB)", "print": "Základní - zboží EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 0, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 3
 		},
 		"FR206": {
-			"fullName": "EU/Výstup/Zboží/Snížená (odběratel)", "name": "Snížená - zboží EU (ODB)", "print": "Snížená - zboží EU (odběratel)",
+			"fullName": "EU/Výstup/Zboží/První snížená (odběratel)", "name": "První snížená - zboží EU (ODB)", "print": "První snížená - zboží EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 1, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 4
 		},
 		"FR360": {
-			"fullName": "EU/Výstup/Zboží/První snížená (odběratel)", "name": "První snížená - zboží EU (ODB)", "print": "První snížená - zboží EU (odběratel)",
+			"fullName": "EU/Výstup/Zboží/Druhá snížená (odběratel)", "name": "Druhá snížená - zboží EU (ODB)", "print": "Druhá snížená - zboží EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 4
 		},
 		"FR361": {
-			"fullName": "EU/Výstup/Zboží/Druhá snížená (odběratel)", "name": "Druhá snížená - zboží EU (ODB)", "print": "Druhá snížená - zboží EU (odběratel)",
+			"fullName": "EU/Výstup/Zboží/Třetí snížená (odběratel)", "name": "Třetí snížená - zboží EU (ODB)", "print": "Třetí snížená - zboží EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 5, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 4
 		},
@@ -122,17 +107,17 @@
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 5
 		},
 		"FR208": {
-			"fullName": "EU/Výstup/Služby/Snížená (odběratel)", "name": "Snížená - služby EU (ODB)", "print": "Snížená - služby EU (odběratel)",
+			"fullName": "EU/Výstup/Služby/První snížená (odběratel)", "name": "První snížená - služby EU (ODB)", "print": "První snížená - služby EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 1, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 6
 		},
 		"FR362": {
-			"fullName": "EU/Výstup/Služby/První snížená (odběratel)", "name": "První snížená - služby EU (ODB)", "print": "První snížená - služby EU (odběratel)",
+			"fullName": "EU/Výstup/Služby/Druhá snížená (odběratel)", "name": "Druhá snížená - služby EU (ODB)", "print": "Druhá snížená - služby EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 6
 		},
 		"FR363": {
-			"fullName": "EU/Výstup/Služby/Druhá snížená (odběratel)", "name": "Druhá snížená - služby EU (ODB)", "print": "Druhá snížená - služby EU (odběratel)",
+			"fullName": "EU/Výstup/Služby/Třetí snížená (odběratel)", "name": "Třetí snížená - služby EU (ODB)", "print": "Třetí snížená - služby EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 5, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 6
 		},
@@ -142,17 +127,17 @@
 			"sumTax": 0, "rowTaxReturn": 43
 		},
 		"FR216": {
-			"fullName": "EU/Vstup/Zboží/Snížená", "name": "Snížená - zboží EU", "print": "EU/Zboží/Snížená",
+			"fullName": "EU/Vstup/Zboží/První snížená", "name": "První snížená - zboží EU", "print": "EU/Zboží/První snížená",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "206",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
 		"FR390": {
-			"fullName": "EU/Vstup/Zboží/První snížená", "name": "První snížená - zboží EU", "print": "EU/Zboží/První snížená",
+			"fullName": "EU/Vstup/Zboží/Druhá snížená", "name": "Druhá snížená - zboží EU", "print": "EU/Zboží/Druhá snížená",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "360",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
 		"FR391": {
-			"fullName": "EU/Vstup/Zboží/Druhá snížená", "name": "Druhá snížená - zboží EU", "print": "EU/Zboží/Druhá snížená",
+			"fullName": "EU/Vstup/Zboží/Třetí snížená", "name": "Třetí snížená - zboží EU", "print": "EU/Zboží/Třetí snížená",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "361",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
@@ -162,17 +147,17 @@
 			"sumTax": 0, "rowTaxReturn": 43
 		},
 		"FR218": {
-			"fullName": "EU/Vstup/Služby/Snížená", "name": "Snížená - služby EU", "print": "EU/Služby/Snížená",
+			"fullName": "EU/Vstup/Služby/První snížená", "name": "První snížená - služby EU", "print": "EU/Služby/První snížená",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "208",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
 		"FR392": {
-			"fullName": "EU/Vstup/Služby/První snížená", "name": "První snížená - služby EU", "print": "EU/Služby/První snížená",
+			"fullName": "EU/Vstup/Služby/Druhá snížená", "name": "Druhá snížená - služby EU", "print": "EU/Služby/Druhá snížená",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "362",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
 		"FR393": {
-			"fullName": "EU/Vstup/Služby/Druhá snížená", "name": "Druhá snížená - služby EU", "print": "EU/Služby/Druhá snížená",
+			"fullName": "EU/Vstup/Služby/Třetí snížená", "name": "Třetí snížená - služby EU", "print": "EU/Služby/Třetí snížená",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "363",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
@@ -187,17 +172,17 @@
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 7
 		},
 		"FR406": {
-			"fullName": "DOVOZ/Výstup/Zboží/Snížená (odběratel)", "name": "Snížená - zboží DOVOZ (ODB)", "print": "Snížená - zboží DOVOZ (odběratel)",
+			"fullName": "DOVOZ/Výstup/Zboží/První snížená (odběratel)", "name": "První snížená - zboží DOVOZ (ODB)", "print": "První snížená - zboží DOVOZ (odběratel)",
 			"type": 2, "dir": 1, "rate": 1, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 8
 		},
 		"FR460": {
-			"fullName": "DOVOZ/Výstup/Zboží/První snížená (odběratel)", "name": "První snížená - zboží DOVOZ (ODB)", "print": "První snížená - zboží DOVOZ (odběratel)",
+			"fullName": "DOVOZ/Výstup/Zboží/Druhá snížená (odběratel)", "name": "Druhá snížená - zboží DOVOZ (ODB)", "print": "Druhá snížená - zboží DOVOZ (odběratel)",
 			"type": 2, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 8
 		},
 		"FR461": {
-			"fullName": "DOVOZ/Výstup/Zboží/Druhá snížená (odběratel)", "name": "Druhá snížená - zboží DOVOZ (ODB)", "print": "Druhá snížená - zboží DOVOZ (odběratel)",
+			"fullName": "DOVOZ/Výstup/Zboží/Třetí snížená (odběratel)", "name": "Třetí snížená - zboží DOVOZ (ODB)", "print": "Třetí snížená - zboží DOVOZ (odběratel)",
 			"type": 2, "dir": 1, "rate": 5, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 8
 		},
@@ -207,17 +192,17 @@
 			"sumTax": 0, "rowTaxReturn": 43
 		},
 		"FR416": {
-			"fullName": "DOVOZ/Vstup/Zboží/Snížená", "name": "Snížená - zboží DOVOZ", "print": "DOVOZ/Zboží/Snížená",
+			"fullName": "DOVOZ/Vstup/Zboží/První snížená", "name": "První snížená - zboží DOVOZ", "print": "DOVOZ/Zboží/První snížená",
 			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "406",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
 		"FR490": {
-			"fullName": "DOVOZ/Vstup/Zboží/První snížená", "name": "První snížená - zboží DOVOZ", "print": "DOVOZ/Zboží/První snížená",
+			"fullName": "DOVOZ/Vstup/Zboží/Druhá snížená", "name": "Druhá snížená - zboží DOVOZ", "print": "DOVOZ/Zboží/Druhá snížená",
 			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "460",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
 		"FR491": {
-			"fullName": "DOVOZ/Vstup/Zboží/Druhá snížená", "name": "Druhá snížená - zboží DOVOZ", "print": "DOVOZ/Zboží/Druhá snížená",
+			"fullName": "DOVOZ/Vstup/Zboží/Třetí snížená", "name": "Třetí snížená - zboží DOVOZ", "print": "DOVOZ/Zboží/Třetí snížená",
 			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "461",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
