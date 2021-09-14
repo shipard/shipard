@@ -2667,6 +2667,8 @@ class ViewHeads extends TableView
 	var $tableWorkOrders = NULL;
 
 	var $accounting = TRUE;
+	var $useMoreTaxRegs = 0;
+	var $taxRegs = NULL;
 
 	var $rosClasses = [0 => 'label-default', 1 => 'label-success', 2 => 'label-warning', 3 => 'label-danger'];
 
@@ -2688,6 +2690,8 @@ class ViewHeads extends TableView
 		$this->currencies = $this->table->app()->cfgItem ('e10.base.currencies');
 		$this->today = date('ymd');
 		$this->paymentMethods = $this->table->app()->cfgItem ('e10.docs.paymentMethods');
+		$this->useMoreTaxRegs = intval($this->table->app()->cfgItem ('e10doc.base.tax.flags.moreRegs', 0));
+		$this->taxRegs = $this->table->app()->cfgItem ('e10doc.base.taxRegs.vat');
 
 		$this->createMainQueries ();
 		$this->createBottomTabs ();
@@ -2952,7 +2956,8 @@ class ViewHeads extends TableView
 			array_push($q, ' heads.docStateAcc as docStateAcc,');
 
 		array_push($q, ' persons.fullName as personFullName, heads.[paymentMethod],');
-		array_push($q, ' heads.[rosReg] as rosReg, heads.[rosState] as rosState');
+		array_push($q, ' heads.[rosReg] as rosReg, heads.[rosState] as rosState,');
+		array_push($q, ' heads.[vatReg], heads.[vatCountry]');
 		array_push($q, ' FROM [e10doc_core_heads] AS heads');
 		array_push($q, ' LEFT JOIN [e10_persons_persons] AS persons ON heads.person = persons.ndx');
 		array_push($q, ' WHERE 1');
@@ -3126,6 +3131,20 @@ class ViewHeads extends TableView
 			$docNumber['class'] = 'e10-error';
 
 		$props [] = $docNumber;
+
+		if ($this->useMoreTaxRegs && $item['taxPayer'] && $item['vatReg'])
+		{
+			$taxReg = $this->taxRegs[$item['vatReg']] ?? NULL;
+			if ($taxReg)
+			{
+				if ($taxReg['payerKind'] === 0)
+					$taxRegLabel = ['text' => substr($taxReg['taxId'], 0, 2), 'class' => 'label label-default', 'icon' => 'tables/e10doc.base.taxRegs'];
+				else
+					$taxRegLabel = ['text' => 'OSS', 'suffix' => $item['vatCountry'], 'class' => 'label label-default', 'icon' => 'tables/e10doc.base.taxRegs'];	
+
+				$props [] = $taxRegLabel;	
+			}
+		}
 
 		if ($item ['symbol1'] != '' && $item ['symbol1'] !== $item ['docNumber'])
 			$props [] = ['icon' => 'system/iconExchange', 'text' => $item ['symbol1'], 'class' => ''];

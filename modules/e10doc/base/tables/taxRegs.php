@@ -62,6 +62,7 @@ class TableTaxRegs extends DbTable
 
 		// -- create cfg file
 		$list = [];
+		$taxFlags = ['moreRegs' => 0, 'useOSS' => 0];
 		$rows = $this->app()->db->query ('SELECT * from [e10doc_base_taxRegs] WHERE [docState] != 9800 ORDER BY [ndx]');
 
 		foreach ($rows as $r)
@@ -75,12 +76,21 @@ class TableTaxRegs extends DbTable
 			if ($r['taxType'] === 'vat' && $r['country'] === 'cz')
 				$tr['periodTypeVatCS'] = $r['periodTypeVatCS'];
 
+			if ($r['taxType'] === 'vat' && $r['payerKind'] === 1)
+				$taxFlags['useOSS'] = 1;
+
+			$taxFlags['moreRegs']++;
+
 			$list [$r['taxType']][$r['ndx']] = $tr;
 		}
 
-		// save to file
+		// save to file - registrations
 		$cfg ['e10doc']['base']['taxRegs'] = $list;
 		file_put_contents(__APP_DIR__ . '/config/_e10doc.base.taxRegs.json', utils::json_lint (json_encode ($cfg)));
+		// save to file - flags
+		$cfg = [];
+		$cfg ['e10doc']['base']['tax']['flags'] = $taxFlags;
+		file_put_contents(__APP_DIR__ . '/config/_e10doc.base.tax.flags.json', utils::json_lint (json_encode ($cfg)));
 	}
 }
 

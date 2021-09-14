@@ -152,6 +152,8 @@ class ViewReports extends TableView
 {
 	var $reportsTypes;
 	var $reportTypesParam;
+	var $useMoreTaxRegs = 0;
+	var $taxRegs = NULL;
 
 	public function init ()
 	{
@@ -162,6 +164,8 @@ class ViewReports extends TableView
 		$this->setMainQueries ();
 
 		$this->reportsTypes = $this->app()->cfgItem('e10doc.taxes.reportTypes', []);
+		$this->useMoreTaxRegs = intval($this->table->app()->cfgItem ('e10doc.base.tax.flags.moreRegs', 0));
+		$this->taxRegs = $this->table->app()->cfgItem ('e10doc.base.taxRegs.vat');
 
 		$enum = [];
 		$active = 1;
@@ -218,6 +222,15 @@ class ViewReports extends TableView
 		$listItem ['t1'] = $item['title'];
 		$listItem['t2'] = utils::datef($item['datePeriodBegin'], '%d').' - '.utils::datef($item['datePeriodEnd'], '%d');
 		$listItem ['icon'] = $this->table->tableIcon($item);
+
+		if ($this->useMoreTaxRegs)
+		{
+			$taxReg = $this->taxRegs[$item['taxReg']] ?? NULL;
+			if ($taxReg)
+			{
+				$listItem ['t3'] = $taxReg['title'];
+			}
+		}
 
 		return $listItem;
 	}
