@@ -540,6 +540,36 @@ class E10Utils
 		return $properties;
 	}
 
+	static function docVatCountryId($app, $docHeadRecData)
+	{
+		if ($docHeadRecData['vatCountry'] !== '')
+			return $docHeadRecData['vatCountry'];
+
+		return 'cz';
+	}
+
+	static function docTaxCodes($app, $docHeadRecData)
+	{
+		return self::taxCodes ($app, self::docVatCountryId($app, $docHeadRecData));
+	}
+
+	static function docTaxNotes($app, $docHeadRecData)
+	{
+		return self::taxNotes ($app, self::docVatCountryId($app, $docHeadRecData));
+	}
+
+	static function taxCodes($app, $countryId)
+	{
+		$tc = $app->cfgItem ('e10doc.taxes.vat.'.$countryId.'.taxCodes', NULL);
+		return $tc;
+	}
+
+	static function taxNotes($app, $countryId)
+	{
+		$tc = $app->cfgItem ('e10doc.taxes.vat.'.$countryId.'.taxNotes', NULL);
+		return $tc;
+	}
+
 	static function taxCode ($app, $dirTax, $taxRate)
 	{
 		$taxes = $app->cfgItem ('e10.base.taxCodes');
@@ -555,10 +585,20 @@ class E10Utils
 		return $taxCode;
 	}
 
+	static function taxCodeCfg($app, $taxCodeId)
+	{
+		$countryId = strtolower(substr($taxCodeId, 0, 2));
+
+		$tc = $app->cfgItem ('e10doc.taxes.vat.'.$countryId.'.taxCodes.'.$taxCodeId, NULL);
+		return $tc;
+	}
+
 	static function taxPercent ($app, $taxCode, $date)
 	{
+		$countryId = strtolower(substr($taxCode, 0, 2));
 		$dateTax = utils::createDateTime ($date);
-		$percSettings = $app->cfgItem ('e10.base.taxPercents');
+		$percSettings = $app->cfgItem ('e10doc.taxes.vat.'.$countryId.'.taxPercents', NULL);
+
 		forEach ($percSettings as $itm)
 		{
 			if ($itm ['code'] != $taxCode)

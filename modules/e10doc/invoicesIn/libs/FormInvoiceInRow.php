@@ -2,7 +2,7 @@
 
 namespace e10doc\invoicesIn\libs;
 use \Shipard\Application\DataModel;
-
+use \e10doc\core\libs\E10Utils;
 
 class FormInvoiceInRow extends \e10doc\core\libs\FormDocRows
 {
@@ -10,7 +10,7 @@ class FormInvoiceInRow extends \e10doc\core\libs\FormDocRows
 	{
 		$ownerRecData = $this->option ('ownerRecData');
 		$operation = $this->table->app()->cfgItem ('e10.docs.operations.' . $this->recData ['operation'], FALSE);
-		$taxCode = $this->table->app()->cfgItem ('e10.base.taxCodes.' . $this->recData ['taxCode'], FALSE);
+		$taxCode = E10Utils::taxCodeCfg($this->app(), $this->recData ['taxCode']);
 		$usePropertyExpenses = $this->table->app()->cfgItem ('options.property.usePropertyExpenses', 0);
 
 		$this->openForm (self::ltGrid);

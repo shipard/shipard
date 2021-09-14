@@ -4,6 +4,8 @@ namespace e10doc\cmnbkp\dc;
 require_once __SHPD_MODULES_DIR__ . 'e10doc/finance/finance.php';
 require_once __SHPD_MODULES_DIR__ . 'e10doc/cmnbkp/cmnbkp.php';
 
+use \e10doc\core\libs\E10Utils;
+
 /**
  * Class Detail
  * @package e10doc\cmnbkp\dc
@@ -18,7 +20,7 @@ class Detail extends \e10doc\core\dc\Detail
 		if ($this->table->app()->model()->table ('e10doc.debs.accounts') !== FALSE)
 			$debsAccountIdCol = ', [debsAccountId]';
 
-		$cfgTaxCodes = $this->app()->cfgItem ('e10.base.taxCodes');
+		$cfgTaxCodes = E10Utils::docTaxCodes($this->app(), $this->item);
 		$balances = $this->app()->cfgItem ('e10.balance');
 
 		$q = "SELECT * FROM [e10doc_tax_rows] WHERE [document] = %i";

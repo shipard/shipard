@@ -28,6 +28,7 @@ class TaxReportReport extends \e10doc\core\libs\reports\GlobalReport
 	var $taxReportNdx = 0;
 	var $taxReportRecData = NULL;
 	var $taxReportDef = NULL;
+	var $taxRegCfg = NULL;
 
 	var $filingRecData = NULL;
 	var $filingNdx = -1;
@@ -62,6 +63,7 @@ class TaxReportReport extends \e10doc\core\libs\reports\GlobalReport
 			$this->taxReportNdx = intval($this->reportParams ['taxReport']['value']);
 		$this->taxReportRecData = $this->tableTaxReports->loadItem ($this->taxReportNdx);
 		$this->taxReportDef = $this->app->cfgItem('e10doc.taxes.reportTypes.'.$this->taxReportRecData['reportType'], NULL);
+		$this->taxRegCfg = $this->app()->cfgItem('e10doc.base.taxRegs.vat.'.$this->taxReportRecData['taxReg'], NULL);
 
 		if ($this->filingNdx === -1)
 			$this->filingNdx = intval($this->reportParams ['filing']['value']);

@@ -11,7 +11,8 @@ use \E10\DbTable;
 use \E10\TableView;
 use \Shipard\Form\TableForm;
 use \e10doc\core\libs\DocsModes;
-
+use \Shipard\Utils\World;
+use \e10doc\core\libs\E10Utils;
 
 
 CONST docDir_None = 0, docDir_In = 1, docDir_Out = 2;
@@ -467,6 +468,22 @@ class TableHeads extends DbTable
 			}
 		}
 
+		// -- vatReg & vatCountry
+		if ($recData['vatReg'])
+		{
+			$vatReg = $this->app()->cfgItem('e10doc.base.taxRegs.vat.'.$recData['vatReg'], NULL);
+			if ($vatReg && $vatReg['payerKind'] === 0)
+			{ // regular payer - not OSS
+				$recData['vatWorldCountry'] = $vatReg['worldCountry'];
+			}
+			$recData['vatCountry'] = World::countryId($this->app(), $recData['vatWorldCountry']);
+		}
+		else
+		{
+			$recData['vatWorldCountry'] = 0;
+			$recData['vatCountry'] = '';
+		}
+
 		$this->checkColumnsSettings($recData);
 
 		parent::checkBeforeSave ($recData, $ownerData);
@@ -705,7 +722,16 @@ class TableHeads extends DbTable
 		{
 			$vatRegs = $this->app()->cfgItem('e10doc.base.taxRegs.vat', NULL);
 			if ($vatRegs)
+			{
 				$recData['vatReg'] = key($vatRegs);
+
+				$vatReg = $vatRegs[$recData['vatReg']];
+				if ($vatReg && $vatReg['payerKind'] === 0)
+				{ // regular payer - not OSS
+					$recData['vatWorldCountry'] = $vatReg['worldCountry'];
+					$recData['vatCountry'] = World::countryId($this->app(), $recData['vatWorldCountry']);
+				}
+			}	
 			else
 				$recData['vatReg'] = 0;
 		}
@@ -1113,6 +1139,7 @@ class TableHeads extends DbTable
 		$vatReg = $this->app()->cfgItem('e10doc.base.taxRegs.vat.'.$recData['vatReg'], NULL);
 		if (!$vatReg)
 			return;
+
 		foreach ($taxReports as $tr)
 		{
 			if (!isset($tr['docTypes']) || !in_array($recData['docType'], $tr['docTypes']))
@@ -1906,7 +1933,7 @@ class TableHeads extends DbTable
 
 	public function summaryVAT ($item, $wide = FALSE)
 	{
-		$cfgTaxCodes = $this->app()->cfgItem ('e10.base.taxCodes');
+		$cfgTaxCodes = E10Utils::docTaxCodes($this->app(), $item);//$this->app()->cfgItem ('e10.base.!taxCodes');
 
 		$fc = ($item ['currency'] !== $item ['homeCurrency']);
 
@@ -1970,7 +1997,7 @@ class TableHeads extends DbTable
 				else
 				{
 					$dataTaxes [] = [
-						'title' => $taxCode['fullName'], 'percents' => utils::nf($r['taxPercents']),
+						'title' => $taxCode['fullName'], 'percents' => strval($r['taxPercents']),
 						'curr' => $currencyName,
 						'base' => $r['sumBase'], 'tax' => $r['sumTax'], 'total' => $r['sumTotal'],
 						'_options' => ['rowSpan' => ['title' => 2, 'percents' => 2], 'cellClasses' => $cellClasses]
@@ -3404,6 +3431,8 @@ class FormHeads extends TableForm
 		$this->recData ['sumTaxHc'] = 0.0;
 		$this->recData ['sumTotalHc'] = 0.0;
 
+		$docTaxCodes = E10Utils::docTaxCodes($this->app(), $this->recData);
+
 		if ($this->recData ['taxManual'])
 		{ // manual taxes; calc sums only
 			$q = 'SELECT taxCode, sumBase, sumTax, sumTotal, sumPrice,'.
@@ -3412,7 +3441,7 @@ class FormHeads extends TableForm
 			$newTaxes = $this->table->db()->query ($q, $this->recData ['ndx']);
 			forEach ($newTaxes as $newTax)
 			{
-				$cfgTaxCode = $this->app()->cfgItem ('e10.base.taxCodes.' . $newTax['taxCode'], NULL);
+				$cfgTaxCode = $docTaxCodes[$newTax['taxCode']];//$this->app()->cfgItem ('e10.base.!taxCodes.' . $newTax['taxCode'], NULL);
 
 				if (isset ($cfgTaxCode['hidden']) && $cfgTaxCode['hidden'])
 					continue;
@@ -3459,7 +3488,7 @@ class FormHeads extends TableForm
 		$newRows = [];
 		forEach ($newTaxes as $newTax)
 		{
-			$cfgTaxCode = $this->app()->cfgItem ('e10.base.taxCodes.' . $newTax['taxCode'], NULL);
+			$cfgTaxCode = $docTaxCodes[$newTax['taxCode']];//$this->app()->cfgItem ('e10.base.!taxCodes.' . $newTax['taxCode'], NULL);
 			$zeroTax = 0;
 			if (isset ($cfgTaxCode ['zeroTax']) && ($cfgTaxCode ['zeroTax'] == 1))
 				$zeroTax = 1;

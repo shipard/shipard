@@ -1,0 +1,33 @@
+{
+	"id": "install.country-modules.debs.eu",
+	"name": "EU taxes",
+	"config": [
+		{"id": "+e10doc.taxes.vat.at", "file": "vat-at.json"},
+		{"id": "+e10doc.taxes.vat.be", "file": "vat-be.json"},
+		{"id": "+e10doc.taxes.vat.bg", "file": "vat-bg.json"},
+		{"id": "+e10doc.taxes.vat.cy", "file": "vat-cy.json"},
+		{"id": "+e10doc.taxes.vat.cz", "file": "vat-cz.json"},
+		{"id": "+e10doc.taxes.vat.de", "file": "vat-de.json"},
+		{"id": "+e10doc.taxes.vat.dk", "file": "vat-dk.json"},
+		{"id": "+e10doc.taxes.vat.ee", "file": "vat-ee.json"},
+		{"id": "+e10doc.taxes.vat.el", "file": "vat-el.json"},
+		{"id": "+e10doc.taxes.vat.es", "file": "vat-es.json"},
+		{"id": "+e10doc.taxes.vat.fi", "file": "vat-fi.json"},
+		{"id": "+e10doc.taxes.vat.fr", "file": "vat-fr.json"},
+		{"id": "+e10doc.taxes.vat.hr", "file": "vat-hr.json"},
+		{"id": "+e10doc.taxes.vat.hu", "file": "vat-hu.json"},
+		{"id": "+e10doc.taxes.vat.ie", "file": "vat-ie.json"},
+		{"id": "+e10doc.taxes.vat.it", "file": "vat-it.json"},
+		{"id": "+e10doc.taxes.vat.lt", "file": "vat-lt.json"},
+		{"id": "+e10doc.taxes.vat.lu", "file": "vat-lu.json"},
+		{"id": "+e10doc.taxes.vat.lv", "file": "vat-lv.json"},
+		{"id": "+e10doc.taxes.vat.mt", "file": "vat-mt.json"},
+		{"id": "+e10doc.taxes.vat.nl", "file": "vat-nl.json"},
+		{"id": "+e10doc.taxes.vat.pl", "file": "vat-pl.json"},
+		{"id": "+e10doc.taxes.vat.pt", "file": "vat-pt.json"},
+		{"id": "+e10doc.taxes.vat.ro", "file": "vat-ro.json"},
+		{"id": "+e10doc.taxes.vat.se", "file": "vat-se.json"},
+		{"id": "+e10doc.taxes.vat.si", "file": "vat-si.json"},
+		{"id": "+e10doc.taxes.vat.sk", "file": "vat-sk.json"}
+	]
+}

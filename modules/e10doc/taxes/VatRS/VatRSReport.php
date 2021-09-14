@@ -3,7 +3,7 @@
 namespace e10doc\taxes\VatRS;
 
 use e10\utils;
-
+use e10doc\core\libs\E10Utils;
 
 /**
  * Class VatRSReport
@@ -21,10 +21,11 @@ class VatRSReport extends \e10doc\taxes\TaxReportReport
 	{
 		$this->taxReportTypeId = 'eu-vat-rs';
 		$this->previewReportTemplate = 'reports.default.e10doc.taxes.tax-eu-vat-rs/cz';
-		$this->taxCodes = $this->app->cfgItem ('e10.base.taxCodes');
 		$this->filingTypeEnum = ['B' => 'Řádné', 'O' => 'Opravné', 'D' => 'Dodatečné'];
 		
 		parent::init();
+
+		$this->taxCodes = E10Utils::taxCodes($this->app(), $this->taxRegCfg['country']);
 	}
 
 	public function subReportsList ()

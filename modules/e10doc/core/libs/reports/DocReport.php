@@ -5,6 +5,7 @@ namespace e10doc\core\libs\reports;
 require_once __SHPD_MODULES_DIR__ . 'e10doc/core/core.php';
 
 use \e10doc\core\libs\reports\DocReportBase;
+use \e10doc\core\libs\E10Utils;
 
 
 /**
@@ -36,8 +37,8 @@ class DocReport extends DocReportBase
 		$this->data['nonTaxAdvanceSumTaxHc'] = 0;
 		$this->data['nonTaxAdvanceSumTotalHc'] = 0;
 
-		$cfgTaxCodes = $this->app->cfgItem('e10.base.taxCodes');
-		$cfgTaxNotes = $this->app->cfgItem('e10.base.taxNotes');
+		$cfgTaxCodes = E10Utils::docTaxCodes($this->app(), $this->recData);//$this->app->cfgItem('e10.base.!taxCodes');
+		$cfgTaxNotes = E10Utils::docTaxNotes($this->app(), $this->recData);//$this->app->cfgItem('e10.base.taxNotes');
 
 		$usedAdditions = [];
 		$usedAdditionsMarksIds = [];

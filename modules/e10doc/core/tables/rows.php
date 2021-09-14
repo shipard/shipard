@@ -3,9 +3,9 @@
 namespace e10doc\core;
 
 use \e10\Application, \E10\utils, \E10\TableView;
-use \E10\DbTable, e10doc\core\e10utils;
+use \E10\DbTable;
 use \Shipard\Form\TableForm;
-
+use \e10doc\core\libs\E10Utils;
 
 /**
  * Řádky Dokladů
@@ -24,6 +24,7 @@ class TableRows extends DbTable
 	{
 		$ownerData = $this->ownerRecData($recData, $ownerData);
 		$docType = $this->app()->cfgItem ('e10.docs.types.' . $ownerData ['docType'], NULL);
+		$docTaxCodes = E10Utils::docTaxCodes($this->app(), $ownerData);
 
 		if (!isset($recData ['priceSource']))
 			$recData ['priceSource'] = 0;
@@ -85,7 +86,7 @@ class TableRows extends DbTable
 					if (!isset($recData ['_fixTaxCode']))
 					{
 						$recData ['taxRate'] = $item['vatRate'];
-						$recData ['taxCode'] = e10utils::taxCode($this->app(), $this->taxDir($recData, $ownerData), $item['vatRate']);
+						$recData ['taxCode'] = E10Utils::taxCode($this->app(), $this->taxDir($recData, $ownerData), $item['vatRate']);
 					}
 					else
 					{
@@ -109,11 +110,11 @@ class TableRows extends DbTable
 		if (!isset($recData['taxCode']))
 			$recData ['taxCode'] = $this->defaultTaxCode ($recData, $ownerData);
 
-    $cfgTaxCode = $this->app()->cfgItem ('e10.base.taxCodes.' . $recData['taxCode'], NULL);
+    $cfgTaxCode = $docTaxCodes[$recData['taxCode']] ?? NULL;
 		if (!$cfgTaxCode || !$this->checkTaxCode ($recData['taxCode'], $cfgTaxCode, $recData, $ownerData))
 		{
 			$recData ['taxCode'] = $this->defaultTaxCode ($recData, $ownerData);
-			$cfgTaxCode = $this->app()->cfgItem ('e10.base.taxCodes.' . $recData['taxCode'], NULL);
+			$cfgTaxCode = $docTaxCodes[$recData['taxCode']] ?? NULL;
 		}
 
 		$zeroTax = 0;
@@ -142,10 +143,10 @@ class TableRows extends DbTable
 
 		if ($ownerData ['taxPayer'])
 		{
-			$taxDate = e10utils::headsTaxDate ($ownerData);
-			$cfgTaxCode = $this->app()->cfgItem ('e10.base.taxCodes.' . $recData['taxCode'], NULL);
-			if (!$cfgTaxCode)
-				error_log("INVALID TAX CODE: ".json_encode($recData['taxCode'])." - ".json_encode($recData));
+			$taxDate = E10Utils::headsTaxDate ($ownerData);
+			$cfgTaxCode = $docTaxCodes[$recData['taxCode']] ?? NULL;
+			//if (!$cfgTaxCode)
+			//	error_log("INVALID TAX CODE: ".json_encode($recData['taxCode'])." - ".json_encode($recData));
 			$recData ['taxRate'] = $cfgTaxCode ['rate'];
 			$recData ['taxPercents'] = $this->taxPercent ($recData ['taxCode'], $taxDate);
 		}
@@ -395,7 +396,7 @@ class TableRows extends DbTable
 		if ($ownerRecData ['taxType'] != $taxCode ['type'])
 			return FALSE;
 
-		$taxDate = e10utils::headsTaxDate ($ownerRecData);
+		$taxDate = E10Utils::headsTaxDate ($ownerRecData);
 		$tp = $this->taxPercent ($taxCodeKey, $taxDate);
 		if ($tp === FALSE)
 			return FALSE;
@@ -405,10 +406,13 @@ class TableRows extends DbTable
 
 	public function columnInfoEnum ($columnId, $valueType = 'cfgText', TableForm $form = NULL)
 	{
-		if ($columnId !== 'operation' || $form === NULL)
-			return parent::columnInfoEnum ($columnId, $valueType = 'cfgText', $form);
+		if ($columnId === 'operation' && $form)	
+			return $this->columnInfoEnumOperations ($form->recData, $form->option ('ownerRecData'));
 
-		return $this->columnInfoEnumOperations ($form->recData, $form->option ('ownerRecData'));
+		if ($columnId === 'taxCode' && $form)
+			return $this->columnInfoEnumTaxCodes($form->recData, $form->option ('ownerRecData'), $form);
+
+		return parent::columnInfoEnum ($columnId, $valueType = 'cfgText', $form);	
 	}
 
 	public function columnInfoEnumOperations ($recData, $ownerRecData)
@@ -445,6 +449,23 @@ class TableRows extends DbTable
 		return $res;
 	}
 
+	public function columnInfoEnumTaxCodes ($recData, $ownerRecData, $form)
+	{
+		$taxDate = E10Utils::headsTaxDate ($ownerRecData);
+		$taxCodes = E10Utils::docTaxCodes($this->app(), $ownerRecData);
+		$enum = [];
+		foreach ($taxCodes as $tcId => $tc)
+		{
+			if (!$this->columnInfoEnumTest ('taxCode', $tcId, $tc, $form))
+				continue;
+
+			$taxPercents = $this->taxPercent($tcId, $taxDate);
+			$enum[$tcId] = $tc['name'].': '.$taxPercents.' %';
+		}
+
+		return $enum;
+	}
+
 	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, TableForm $form = NULL)
 	{
 		if (!$form)
@@ -469,17 +490,16 @@ class TableRows extends DbTable
 	public function defaultTaxCode ($recData, $ownerRecData)
 	{
 		if ($ownerRecData['taxCalc'] === 0)
-			return 0;
+			return strtoupper(E10Utils::docVatCountryId($this->app(), $ownerRecData)).'000';
 
-		$taxCodes = $this->app()->cfgItem ('e10.base.taxCodes');
+		$taxCodes = E10Utils::docTaxCodes($this->app(), $ownerRecData);
 		forEach ($taxCodes as $codeId => $code)
 		{
 			if ($this->checkTaxCode($codeId, $code, $recData, $ownerRecData))
 				return $codeId;
 		}
-		return 0;
+		return '00000';
 	}
-
 
 	public function docDir ($recData, $ownerRecData)
 	{
@@ -520,27 +540,7 @@ class TableRows extends DbTable
 
 	public function taxPercent ($taxCode, $date)
 	{
-		return e10utils::taxPercent($this->app(), $taxCode, $date);
-		/*
-		$dateTax = utils::createDateTime ($date);
-		$percSettings = $this->app()->cfgItem ('e10.base.taxPercents');
-		forEach ($percSettings as $itm)
-		{
-			if ($itm ['code'] != $taxCode)
-				continue;
-
-			$dateFrom = utils::createDateTime ($itm ['from']);
-			$dateTo = utils::createDateTime ($itm ['to']);
-
-			if (($dateFrom) && ($dateFrom > $dateTax))
-				continue;
-			if (($dateTo) && ($dateTo < $dateTax))
-				continue;
-
-			return floatval ($itm ['value']);
-		}
-		return FALSE;
-		*/
+		return E10Utils::taxPercent($this->app(), $taxCode, $date);
 	}
 
 	public function formId ($recData, $ownerRecData = NULL, $operation = 'edit')

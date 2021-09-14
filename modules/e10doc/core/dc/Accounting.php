@@ -2,6 +2,7 @@
 
 namespace e10doc\core\dc;
 use \e10\utils;
+use \e10doc\core\libs\E10Utils;
 
 
 /**
@@ -208,6 +209,75 @@ class Accounting extends \e10\DocumentCard
 		$this->addContent ('body', $content);
 	}
 
+	function createVatReport($recData)
+	{
+		$q[] = 'SELECT [rows].*, filings.title as filingTitle, reports.title AS reportTitle ';
+		array_push($q, ' FROM [e10doc_taxes_reportsRowsVatReturn] as [rows]');
+		array_push($q, ' LEFT JOIN [e10doc_taxes_filings] AS filings ON [rows].filing = filings.ndx');
+		array_push($q, ' LEFT JOIN [e10doc_taxes_reports] AS reports ON [rows].report = reports.ndx');
+		array_push($q, ' WHERE [document] = %i', $recData['ndx']);
+		array_push($q, ' ORDER BY [ndx] DESC');
+
+		$data = [];
+		$rows = $this->table->db()->query ($q);
+		foreach ($rows as $r)
+		{
+			$item = $r->toArray();
+			$taxCode = E10Utils::taxCodeCfg($this->app(), $r['taxCode']);
+			if ($taxCode)
+				$item['tc'] = $taxCode['fullName'];
+
+			$data[] = $item;
+		}
+
+		if (!count($data))
+		{
+			$this->addContent ('body', ['pane' => 'e10-pane e10-pane-table', 'type' => 'text', 'title' => ['icon' => 'report/generalLedger', 'text' => 'Doklad '.$recData['docNumber'].' nemá záznamy pro přiznání DPH'],
+					'header' => [], 'table' => []]);
+			return;
+		}
+
+		$h = ['reportTitle' => 'Přiznání', 'filingTitle' => 'Podání', 'tc' => 'Sazba', 'taxPercents' => ' %', 'base' => ' Základ', 'tax' => ' Daň'];
+		$t = [['icon' => 'report/generalLedger', 'text' => 'Záznamy pro přiznání DPH']];
+		$content = ['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'table' => $data, 'header' => $h, 'title' => $t, 'params' => ['disableZeros' => 1]];
+		$this->addContent ('body', $content);
+	}
+
+	function createOSSReport($recData)
+	{
+		$q[] = 'SELECT [rows].*, filings.title as filingTitle, reports.title AS reportTitle ';
+		array_push($q, ' FROM [e10doc_taxes_reportsRowsVatOSS] as [rows]');
+		array_push($q, ' LEFT JOIN [e10doc_taxes_filings] AS filings ON [rows].filing = filings.ndx');
+		array_push($q, ' LEFT JOIN [e10doc_taxes_reports] AS reports ON [rows].report = reports.ndx');
+		array_push($q, ' WHERE [document] = %i', $recData['ndx']);
+		array_push($q, ' ORDER BY [ndx] DESC');
+
+		$data = [];
+		$rows = $this->table->db()->query ($q);
+		foreach ($rows as $r)
+		{
+			$item = $r->toArray();
+			$taxCode = E10Utils::taxCodeCfg($this->app(), $r['taxCode']);
+			if ($taxCode)
+				$item['tc'] = $taxCode['fullName'];
+			$item['cc'] = strtoupper($r['countryConsumption']);
+
+			$data[] = $item;
+		}
+
+		if (!count($data))
+		{
+			$this->addContent ('body', ['pane' => 'e10-pane e10-pane-table', 'type' => 'text', 'title' => ['icon' => 'report/generalLedger', 'text' => 'Doklad '.$recData['docNumber'].' nemá záznamy pro přiznání OSS'],
+					'header' => [], 'table' => []]);
+			return;
+		}
+
+		$h = ['reportTitle' => 'Přiznání', 'filingTitle' => 'Podání', 'cc' => 'Země', 'tc' => 'Sazba', 'taxPercents' => ' %', 'base' => ' Základ', 'tax' => ' Daň'];
+		$t = [['icon' => 'report/generalLedger', 'text' => 'Záznamy pro přiznání OSS']];
+		$content = ['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'table' => $data, 'header' => $h, 'title' => $t, 'params' => ['disableZeros' => 1]];
+		$this->addContent ('body', $content);
+	}
+
 	function createRos($recData)
 	{
 		if (!$recData['rosReg'])
@@ -339,7 +409,9 @@ class Accounting extends \e10\DocumentCard
 
 		$this->createContentAccounting();
 		$this->createBalances($this->recData);
+		$this->createVatReport($this->recData);
 		$this->createVatCSReport($this->recData);
+		$this->createOSSReport($this->recData);
 		$this->createRos($this->recData);
 		$this->createInventory($this->recData);
 	}

@@ -3,11 +3,10 @@
 namespace e10doc\taxes\VatRS;
 
 use \e10\utils, \e10\Utility;
-
+use \e10doc\core\libs\E10Utils;
 
 /**
  * Class VatRSEngine
- * @package e10doc\taxes\VatReturn
  */
 class VatRSEngine extends \e10doc\taxes\TaxReportEngine
 {
@@ -16,14 +15,6 @@ class VatRSEngine extends \e10doc\taxes\TaxReportEngine
 	public function init ()
 	{
 		$this->taxReportId = 'eu-vat-rs';
-
-		$this->rsTaxCodes = [];
-		foreach ($this->app->cfgItem ('e10.base.taxCodes') as $key => $c)
-		{
-			if (isset ($c['intraCommunityCode']))
-				$this->rsTaxCodes[] = $key;
-		}
-
 		parent::init();
 	}
 
@@ -42,7 +33,25 @@ class VatRSEngine extends \e10doc\taxes\TaxReportEngine
 
 	public function documentAdd ($recData)
 	{
-		$taxCodes = $this->app->cfgItem ('e10.base.taxCodes');
+		$vatRegCfg = $this->app()->cfgItem('e10doc.base.taxRegs.vat.'.$recData['vatReg'], NULL);
+		if (!$vatRegCfg)
+			return;
+		if ($vatRegCfg['payerKind'] !== 0) // regular payer - not OSS
+			return;
+
+		$this->reportRecData = $this->searchReport($recData['dateTax'], $recData['vatReg']);
+
+		$taxCodes = E10Utils::taxCodes($this->app(), $vatRegCfg['country']);
+
+		$this->rsTaxCodes = [];
+		foreach ($taxCodes as $key => $c)
+		{
+			if (isset ($c['intraCommunityCode']))
+				$this->rsTaxCodes[] = $key;
+		}
+
+		if (!count($this->rsTaxCodes))
+			return;
 
 		$docRows = $this->db()->query (
 				'SELECT * FROM [e10doc_core_taxes] WHERE [document] = %i', $recData['ndx'],
@@ -93,7 +102,6 @@ class VatRSEngine extends \e10doc\taxes\TaxReportEngine
 		if ($recData['docState'] === 4100)
 			return;
 
-		$this->reportRecData = $this->searchReport($recData['dateTax'], $recData['vatReg']);
 		$this->documentAdd($recData);
 	}
 
@@ -109,6 +117,7 @@ class VatRSEngine extends \e10doc\taxes\TaxReportEngine
 		array_push($q, ' WHERE 1');
 
 		array_push($q, ' AND [docType] IN %in', $this->taxReportType['docTypes']);
+		array_push($q, ' AND [vatReg] = %i', $this->reportRecData['taxReg']);
 		array_push($q, ' AND [docState] = %i', 4000);
 		array_push($q, ' AND [dateTax] >= %d', $recData['datePeriodBegin']);
 		array_push($q, ' AND [dateTax] <= %d', $recData['datePeriodEnd']);

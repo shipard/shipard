@@ -3,6 +3,7 @@
 namespace e10doc\taxes\VatCS;
 
 use \e10\utils, \e10\Utility;
+use \e10doc\core\libs\E10Utils;
 
 
 /**
@@ -135,7 +136,18 @@ class VatCSEngine extends \e10doc\taxes\TaxReportEngine
 		if ($recData['taxCalc'] == 0)
 			return;
 
-		$taxCodes = $this->app->cfgItem ('e10.base.taxCodes');
+		$vatRegCfg = $this->app()->cfgItem('e10doc.base.taxRegs.vat.'.$recData['vatReg'], NULL);
+		if (!$vatRegCfg)
+		{
+			return;
+		}
+		if ($vatRegCfg['payerKind'] !== 0) // regular payer, not OSS
+		{
+			return;
+		}
+
+		$this->reportRecData = $this->searchReport($recData['dateTax'], $recData['vatReg']);
+		$taxCodes = E10Utils::docTaxCodes($this->app(), $recData);
 
 		$docRows = $this->db()->query ('SELECT * FROM [e10doc_core_taxes] WHERE [document] = %i ORDER by ndx', $recData['ndx']);
 		$newRows = [];
@@ -209,7 +221,6 @@ class VatCSEngine extends \e10doc\taxes\TaxReportEngine
 		if ($recData['docState'] === 4100)
 			return;
 
-		$this->reportRecData = $this->searchReport($recData['dateTax'], $recData['vatReg']);
 		$this->documentAdd($recData);
 	}
 

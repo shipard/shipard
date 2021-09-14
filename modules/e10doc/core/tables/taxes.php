@@ -3,7 +3,7 @@
 namespace E10Doc\Core;
 
 use \E10\DbTable, \E10\TableForm, \E10\utils, \E10\DataModel;
-
+use \e10doc\core\libs\E10Utils;
 
 /**
  * Daně Dokladu
@@ -20,7 +20,7 @@ class TableTaxes extends DbTable
 
 	public function checkBeforeSave (&$recData, $ownerData = NULL)
 	{
-		$cfgTaxCode = $this->app()->cfgItem ('e10.base.taxCodes.' . $recData['taxCode'], NULL);
+		$cfgTaxCode = E10Utils::taxCodeCfg($this->app(), $recData['taxCode']);
 		$noPayTax = 0;
 		if (isset ($cfgTaxCode ['noPayTax']) && ($cfgTaxCode ['noPayTax'] == 1))
 			$noPayTax = 1;

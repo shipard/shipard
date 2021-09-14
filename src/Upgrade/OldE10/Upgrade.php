@@ -14,6 +14,7 @@ class Upgrade extends Utility
 	protected function upgradeWorldCountries()
 	{
 		$this->upgradeWorldCountries_Table('e10.persons.address', 'country', 'worldCountry');
+		$this->upgradeWorldCountries_Table('e10doc.base.taxRegs', 'country', 'worldCountry');
 	}
 
 	protected function upgradeWorldCountries_Table(string $tableId, string $oldColumnId, string $newColumnId)
@@ -30,6 +31,10 @@ class Upgrade extends Utility
 		array_push ($q, ' AND (['.$newColumnId.'] = %i', 0, ' OR ['.$newColumnId.'] IS NULL)');
 
 		$rows = $this->db()->query($q);
+
+		if (!$rows || !count($rows))
+			return;
+
 		foreach ($rows as $r)
 		{
 			$oldCountryId = $r[$oldColumnId];
@@ -41,8 +46,50 @@ class Upgrade extends Utility
 		}
 	}
 
+	protected function upgradeTaxCodes($tableId, $columnId = 'taxCode')
+	{
+		$table = $this->app()->table($tableId);
+		if (!$table)
+			return;
+
+		echo "### ".$table->sqlName()."\n";
+
+		$q = [];
+		array_push ($q, 'SELECT DISTINCT ['.$columnId.']');
+		array_push ($q, ' FROM ['.$table->sqlName().']');
+		array_push ($q, ' WHERE 1');
+
+		$rows = $this->db()->query($q);
+
+		if (!$rows || !count($rows))
+			return;
+	
+		foreach ($rows as $r)
+		{
+			if (strlen($r[$columnId]) === 5)
+				continue;
+
+			$newTaxCode = 'CZ'.trim($r[$columnId]);
+			if ($newTaxCode === 'CZ0' || $newTaxCode == '' || $newTaxCode == 'CZ')	
+				$newTaxCode = 'CZ000';
+
+			echo "* ".json_encode($r[$columnId]) .' -> '.$newTaxCode;
+
+			$update = [$columnId => $newTaxCode];
+			$this->db()->query('UPDATE ['.$table->sqlName().'] SET ', $update, ' WHERE ['.$columnId.'] = %s', $r[$columnId]);
+			echo " - ".\Dibi::$sql;
+
+			echo "\n";
+		}
+	}
+
 	public function run()
 	{
 		$this->upgradeWorld();
+
+		$this->upgradeTaxCodes('e10doc.core.rows');
+		$this->upgradeTaxCodes('e10doc.core.taxes');
+		$this->upgradeTaxCodes('e10doc.taxes.reportsRowsVatReturn');
+		$this->upgradeTaxCodes('e10doc.taxes.reportsRowsVatRS');
 	}
 }

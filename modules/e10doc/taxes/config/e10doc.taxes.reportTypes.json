@@ -2,7 +2,11 @@
 	"eu-vat-tr": {
 		"name": "Přiznání DPH",
 		"shortName": "Přiznání DPH",
-		"country": ["cz"], "validFrom": "1993-01-01", "validTo": "0000-00-00",
+		"country": [
+			"at", "be", "bg", "bg", "cy", "cz", "de", "dk", "ee", "el", "es", "fi", "fr", "hr", "hu", 
+			"ie", "it", "lt", "lu", "lv", "mt", "nl", "pl", "pt", "ro", "se", "si", "sk"
+		], 
+		"validFrom": "1993-01-01", "validTo": "0000-00-00",
 		"periodType": "vat",
 		"engine": "e10doc.taxes.VatReturn.VatReturnEngine",
 		"filingEngine": "e10doc.taxes.VatReturn.VatReturnFilingEngine",
@@ -10,6 +14,19 @@
 		"documentCard": "e10doc.taxes.VatReturn.VatReturnDocumentCard",
 		"report": "e10doc.taxes.VatReturn.VatReturnReport",
 		"docTypes": ["invno", "invni", "cash", "cashreg"]
+	},
+
+	"eu-vat-oss": {
+		"name": "DPH - OSS",
+		"shortName": "DPH - OSS",
+		"country": ["cz"], "validFrom": "2021-01-01", "validTo": "0000-00-00",
+		"periodType": "vat",
+		"engine": "e10doc.taxes.VatOSS.VatOSSEngine",
+		"filingEngine": "e10doc.taxes.VatOSS.VatOSSFilingEngine",
+		"propertiesEngine": "e10doc.taxes.VatOSS.VatOSSProperties",
+		"documentCard": "e10doc.taxes.VatOSS.VatOSSDocumentCard",
+		"report": "e10doc.taxes.VatOSS.VatOSSReport",
+		"docTypes": ["invno"]
 	},
 
 	"cz-vat-cs": {
@@ -28,7 +45,8 @@
 	"eu-vat-rs": {
 		"name": "Souhrnné hlášení DPH",
 		"shortName": "Souhrnné hlášení",
-		"country": ["cz"], "validFrom": "1995-01-01", "validTo": "0000-00-00",
+		"country": ["cz"], 
+		"validFrom": "1995-01-01", "validTo": "0000-00-00",
 		"periodType": "vat",
 		"engine": "e10doc.taxes.VatRS.VatRSEngine",
 		"filingEngine": "e10doc.taxes.VatRS.VatRSFilingEngine",

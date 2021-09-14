@@ -2,7 +2,7 @@
 
 namespace e10doc\taxes\VatReturn;
 
-use e10\utils, e10\uiutils, e10\json, e10doc\core\e10utils;
+use e10\utils, e10\uiutils, e10\json, e10doc\core\libs\E10Utils;
 
 
 /**
@@ -19,10 +19,11 @@ class VatReturnReport extends \e10doc\taxes\TaxReportReport
 	{
 		$this->taxReportTypeId = 'eu-vat-tr';
 		$this->previewReportTemplate = 'reports.default.e10doc.taxes.tax-eu-vat-tr/cz';
-		$this->taxCodes = $this->app->cfgItem ('e10.base.taxCodes');
 		$this->filingTypeEnum = ['B' => 'Řádné', 'O' => 'Opravné', 'D' => 'Dodatečné'];
 		
 		parent::init();
+
+		$this->taxCodes = E10Utils::taxCodes($this->app(), $this->taxRegCfg['country']);
 	}
 
 	public function subReportsList ()

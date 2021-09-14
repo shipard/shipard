@@ -1,0 +1,30 @@
+{
+	"id": "e10doc.taxes.reportsRowsVatOSS", "sql": "e10doc_taxes_reportsRowsVatOSS", "name": "Řádky DPH OSS",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "report", "name": "Přehled", "type": "int"},
+		{"id": "filing", "name": "Podání", "type": "int"},
+
+		{"id": "base", "name": "Základ daně", "type": "money"},
+		{"id": "tax", "name": "Částka daně", "type": "money"},
+		{"id": "total", "name": "Částka celkem", "type": "money"},
+
+    {"id": "countrySupplier", "name": "Země dodavatele", "type": "enumString", "len": 2,
+      "enumCfg": {"cfgItem": "world.data.countriesIds", "cfgValue": "", "cfgText": "t"}},
+    {"id": "countryConsumption", "name": "Země spotřeby", "type": "enumString", "len": 2,
+      "enumCfg": {"cfgItem": "world.data.countriesIds", "cfgValue": "", "cfgText": "t"}},
+
+		{"id": "taxCode", "name": "Typ daně", "type": "enumString", "len": 7,
+			"enumCfg": {"cfgItem": "e10.base.taxCodes", "cfgValue": "", "cfgText": "name", "cfgPrint": "print"}},
+		{"id": "taxRate", "name": "Sazba daně", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10.base.taxRates", "cfgValue": "", "cfgText": ""}},
+		{"id": "taxPercents", "name": "Procento daně", "label": "%", "type": "number", "dec": 2},
+		{"id": "supplyType", "name": "Typ dodání", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10doc.taxes.ossSuplyTypes", "cfgValue": "", "cfgText": "name"}},
+    {"id": "vatRateType", "name": "Typ sazby", "type": "enumInt",
+      "enumCfg": {"cfgItem": "e10doc.taxes.ossVatRateTypes", "cfgValue": "", "cfgText": "name"}},
+  
+		{"id": "document", "name": "Doklad", "type": "int", "reference": "e10doc.core.heads"}
+	],
+	"options": ["systemTable"]
+}

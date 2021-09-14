@@ -2,7 +2,7 @@
 
 namespace e10doc\core\dc;
 use \e10\utils, wkf\core\TableIssues;
-
+use \e10doc\core\libs\E10Utils;
 
 /**
  * Class Detail
@@ -431,14 +431,25 @@ class Detail extends \e10\DocumentCard
 		$this->linkedDocuments();
 		$this->advances();
 
-		if ($detailStyle == 'taxes')
+		if ($detailStyle === 'taxes')
 		{
 			if ($docType['useTax'])
 			{
 				if ($this->recData['taxPayer'] && $this->recData['taxCalc'] != 0)
 				{
 					$vs = $this->table->summaryVAT ($this->recData);
-					$vs['title'] = ['icon' => 'icon-shield', 'text' => 'Rekapitulace DPH'];
+					$vs['title'] = [['icon' => 'docType/taxes', 'text' => 'Rekapitulace DPH']];
+
+					$taxReg = $this->app()->cfgItem('e10doc.base.taxRegs.vat.'.$this->recData['vatReg'], NULL);
+					if ($taxReg)
+					{
+						$vs['title'][] = ['text' => $taxReg['title'], 'class' => 'pull-right e10-small label label-default'];
+						if ($taxReg['payerKind'] === 1)
+						{ // OSS
+							$countryId = E10Utils::docVatCountryId($this->app(), $this->recData);
+							$vs['title'][] = ['text' => strtoupper($countryId), 'class' => 'pull-right e10-small label label-info'];
+						}
+					}
 					$vs['pane'] = 'e10-pane e10-pane-table';
 					$this->addContent ('body', $vs);
 				}

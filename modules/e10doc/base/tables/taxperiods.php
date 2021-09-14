@@ -132,7 +132,7 @@ class ViewTaxPeriods extends TableView
 		forEach ($vatRegs as $ndx => $vatReg)
 		{
 			$addParams = ['vatReg' => $ndx];
-			$nbt = ['id' => $ndx, 'title' => $vatReg['taxId'], 'active' => $active, 'addParams' => $addParams];
+			$nbt = ['id' => $ndx, 'title' => $vatReg['title'], 'active' => $active, 'addParams' => $addParams];
 			$bt [] = $nbt;
 
 			$active = 0;

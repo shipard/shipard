@@ -4,7 +4,8 @@ namespace E10Doc\Debs;
 
 require_once __SHPD_MODULES_DIR__ . 'e10doc/core/core.php';
 
-use \E10\TableViewDetail, \E10\utils, E10\Utility, \e10\str, e10doc\core\e10utils;
+use \E10\TableViewDetail, \E10\utils, E10\Utility, \e10\str;
+use \e10doc\core\libs\E10Utils;
 
 
 /**
@@ -192,7 +193,7 @@ class docAccounting extends Utility
 			if (!$this->testDocDir($step))
 				continue;
 
-			$taxCode = $this->app->cfgItem ('e10.base.taxCodes.'.$r['taxCode'], FALSE);
+			$taxCode = E10Utils::taxCodeCfg($this->app, $r['taxCode']);
 
 			$this->searchAccountVAT ($step, $r, $newRow);
 			$newRow ['money'] = $r['sumTaxHc'];
@@ -200,7 +201,7 @@ class docAccounting extends Utility
 			$newRow ['project'] = $this->docHead['project'];
 			$newRow ['workOrder'] = $this->docHead['workOrder'];
 			$newRow ['property'] = $this->docHead['property'];
-			$newRow ['text'] = 'DPH: '.(($taxCode) ? $taxCode['fullName'] : '');
+			$newRow ['text'] = 'DPH: '.($taxCode['fullName'] ?? '');
 			$newRow ['side'] = utils::param($step, 'side', 1);
 
 			if (isset ($taxCode['hidden'])) // place 'reversed' tax codes to other side
@@ -748,7 +749,7 @@ class docAccounting extends Utility
 			else
 			if ($a['accountSrc'] === 'warehouse')
 			{
-				$whOptions = e10utils::warehouseOptions ($this->app, $this->docHead ['warehouse'], $this->docHead ['fiscalYear']);
+				$whOptions = E10Utils::warehouseOptions ($this->app, $this->docHead ['warehouse'], $this->docHead ['fiscalYear']);
 
 				if (isset($a['accountType']) && isset($whOptions[$a['accountType']]) && $whOptions[$a['accountType']] !== '')
 					$newRow ['accountId'] = $whOptions[$a['accountType']];

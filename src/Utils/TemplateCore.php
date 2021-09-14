@@ -6,7 +6,7 @@ namespace Shipard\Utils;
 class TemplateCore extends \Mustache
 {
 	/** @var \E10\Application */
-	protected $app;
+	var $app;
 	protected $template;
 	protected $subTemplate;
 	protected $subTemplateParams = [];

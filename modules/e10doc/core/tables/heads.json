@@ -15,9 +15,12 @@
 
     {"id": "owner", "name": "Vlastní adresa", "type": "int", "reference": "e10.persons.persons"},
 
-	  {"id": "vatReg", "name": "Registrace DPH", "type": "enumInt",
-		  "enumCfg": {"cfgItem": "e10doc.base.taxRegs.vat", "cfgValue": "ndx", "cfgText": "taxId"}},
-
+	  {"id": "vatReg", "name": "Registrace DPH", "type": "enumInt", "options": ["saveOnChange"],
+		  "enumCfg": {"cfgItem": "e10doc.base.taxRegs.vat", "cfgValue": "ndx", "cfgText": "title"}},
+    {"id": "vatWorldCountry", "name": "Země plnění", "type": "int", "reference": "e10.world.countries", "options": ["saveOnChange"]},
+    {"id": "vatCountry", "name": "Země plnění", "type": "enumString", "len": 2,
+      "enumCfg": {"cfgItem": "world.data.countriesIds", "cfgValue": "", "cfgText": "t"}},
+  
     {"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons", "options": ["saveOnChange"]},
 		{"id": "personType", "name": "Typ osoby", "type": "enumInt",
 			"enumValues": {"0": "", "1": "Člověk", "2": "Firma"}},

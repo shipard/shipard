@@ -126,41 +126,6 @@ class ShareVatReturn extends \e10\share\ShareEngine
 		}
 	}
 
-	function addDocuments_OLD ()
-	{
-		$cfgTaxCodes = $this->app->cfgItem ('e10.base.taxCodes');
-		$validTaxCodes = array ();
-		foreach ($cfgTaxCodes as $key => $c)
-			if ((isset ($c['rowTaxReturn'])) && ($c['rowTaxReturn'] != 0))
-				$validTaxCodes[] = $key;
-
-		$q[] = 'SELECT heads.taxPeriod, heads.docNumber, heads.docType, heads.dateTax as dateTax, taxes.taxCode as taxCode,';
-		array_push ($q, ' persons.fullName as personName, heads.personVATIN as personVATIN, heads.ndx as headNdx, heads.cashBoxDir,');
-		array_push ($q, ' heads.toPayHc as toPayHc,');
-		array_push ($q, ' SUM(taxes.sumBaseHc+taxes.sumTaxHc) as sumTotal, SUM(taxes.sumBaseHc) as sumBase, SUM(taxes.sumTaxHC) as sumTax');
-		array_push ($q, ' FROM e10doc_core_taxes as taxes');
-		array_push ($q, ' LEFT JOIN e10doc_core_heads AS heads ON taxes.document = heads.ndx');
-		array_push ($q, ' LEFT JOIN e10_persons_persons AS persons ON heads.person = persons.ndx');
-		array_push ($q, ' WHERE heads.taxPeriod = %i', $this->vatPeriodNdx, ' AND heads.docState = 4000 ');
-		if (count($validTaxCodes))
-			array_push ($q, ' AND taxes.taxCode IN %in', $validTaxCodes);
-		array_push ($q, ' GROUP BY taxes.document');
-		array_push ($q, ' ORDER BY taxes.dateTax, heads.docNumber');
-
-		$rows = $this->app->db()->query($q);
-		forEach ($rows as $r)
-		{
-			$docType = $this->app->cfgItem ('e10.docs.types.' . $r['docType']);
-
-			$info = [
-				't1' => $r['docNumber'].' ▪︎ '.$docType['shortcut'], 'i1' => utils::nf($r['toPayHc'], 2),
-				't2' => $r['personName'], 'i2' => utils::datef ($r['dateTax'], '%d')
-			];
-			$id = $docType['shortcut'].'-'.$r['docNumber'];
-			$this->addE10Document($r['headNdx'], $r, $info, $id);
-		}
-	}
-
 	function addDocuments ()
 	{
 		foreach ($this->enabledDocsTypes as $dt)

@@ -2,7 +2,7 @@
 
 namespace e10doc\ddf\isdoc\libs;
 use \e10\json, e10\utils;
-
+use \e10doc\core\libs\E10Utils;
 
 /**
  * Class ISDoc
@@ -232,7 +232,7 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 			if (($dateTo) && ($dateTo < $dateTax))
 				continue;
 
-			$taxCodeCfg = $this->app()->cfgItem('e10.base.taxCodes.'.$itm['code'], NULL);
+			$taxCodeCfg = E10Utils::taxCodeCfg($this->app(), $itm['code']);
 			if (!$taxCodeCfg)
 				continue;
 

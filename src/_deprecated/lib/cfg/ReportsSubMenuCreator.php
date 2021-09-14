@@ -12,7 +12,7 @@ class ReportsSubMenuCreator extends SubMenuCreator
 {
 	public function run ()
 	{
-		$reportsGroups = $this->app()->cfgItem ('reportsGroups');
+		$reportsGroups = $this->app()->cfgItem ('reportsGroups', []);
 		foreach ($reportsGroups as $groupId => $reportGroup)
 		{
 			$menuItemId = 'reports-'.$groupId;
@@ -28,7 +28,7 @@ class ReportsSubMenuCreator extends SubMenuCreator
 		}
 
 		$order = 10000;
-		$reports = $this->app()->cfgItem ('reports');
+		$reports = $this->app()->cfgItem ('reports', []);
 		foreach ($reports as $report)
 		{
 			$groupId = $report['group'];

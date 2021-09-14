@@ -1,9 +1,6 @@
 <?php
 
 namespace lib\cfg;
-
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
-
 use E10Doc\Core\e10utils, E10\TableForm;
 
 
@@ -43,7 +40,7 @@ class AddVatPeriodWizard extends \E10\Wizard
 			$vatRegs = $this->app()->cfgItem ('e10doc.base.taxRegs.vat', []);
 			$vatRegsEnum = [];
 			foreach ($vatRegs as $vr)
-				$vatRegsEnum[$vr['ndx']] = $vr['taxId'];
+				$vatRegsEnum[$vr['ndx']] = $vr['title'];
 
 			$this->addInputEnum2('vatReg', 'DIČ', $vatRegsEnum, TableForm::INPUT_STYLE_OPTION);
 		$this->closeForm ();

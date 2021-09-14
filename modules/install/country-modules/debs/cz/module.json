@@ -1,7 +1,6 @@
 {
 	"id": "install.country-modules.debs.cz",
 	"name": "Double-entry bookkeeping system",
-	"__extensions": ["debs"],
 	"config": [
 		{"id": "+reports", "file": "reports.json"},
 		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
@@ -13,7 +12,7 @@
 		{"id": "+e10.base", "name": "Daně", "file": "taxes.json"},
 		{"id": "+e10pro.property", "file": "property.json"}
 	],
-	"modules": ["e10/share"],
+	"modules": ["e10/share", "install/country-modules/debs/eu"],
 
 	"dataPackages": [
 		"install/data/countries/cz/debs/debs-accounts-default"

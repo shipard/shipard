@@ -1,20 +1,17 @@
 <?php
 
-namespace e10doc\taxes\VatReturn;
-
-use \e10\utils, \e10\Utility;
+namespace e10doc\taxes\VatOSS;
+use \Shipard\Utils\Utils;
 use \e10doc\core\libs\E10Utils;
 
-
 /**
- * Class VatReturnEngine
- * @package e10doc\taxes
+ * Class VatOSSEngine
  */
-class VatReturnEngine extends \e10doc\taxes\TaxReportEngine
+class VatOSSEngine extends \e10doc\taxes\TaxReportEngine
 {
 	public function init ()
 	{
-		$this->taxReportId = 'eu-vat-tr';
+		$this->taxReportId = 'eu-vat-oss';
 		parent::init();
 	}
 
@@ -28,30 +25,45 @@ class VatReturnEngine extends \e10doc\taxes\TaxReportEngine
 		$recData['taxPeriod'] = $vp ['ndx'];
 		$recData['datePeriodBegin'] = $vp ['start'];
 		$recData['datePeriodEnd'] = $vp ['end'];
-		$recData['title'] = 'Přiznání DPH '.$vp ['id'];
+		$recData['title'] = 'DPH OSS '.$vp ['id'];
 	}
 
 	public function documentAdd ($recData)
 	{
-		$vatRegCfg = $this->app()->cfgItem('e10doc.base.taxRegs.vat.'.$recData['vatReg'], NULL);
-		if (!$vatRegCfg)
+		/*
+		if ($recData['vatReg'] != $this->reportRecData['taxReg'])
+		{
+			error_log("__INVALID_VATREG__[DOC: {$recData['vatReg']}, REP: {$this->reportRecData['taxReg']}]".json_encode($this->reportRecData));
 			return;
-		if ($vatRegCfg['payerKind'] !== 0) // regular payer - not OSS
+		}
+		*/
+
+    $vatRegCfg = $this->app()->cfgItem('e10doc.base.taxRegs.vat.'.$recData['vatReg'], NULL);
+    if (!$vatRegCfg)
+		{
+			error_log("__INVALID_VATREG_CFG__");
 			return;
+		}
+    if ($vatRegCfg['payerKind'] !== 1) // OSS - not regular payer
+		{
+			error_log("__INVALID_PAYER_KIND__");
+      return;
+		}
+    $this->reportRecData = $this->searchReport($recData['dateTax'], $recData['vatReg']);
 
-		$this->reportRecData = $this->searchReport($recData['dateTax'], $recData['vatReg']);
-
-		$taxCodes = E10Utils::taxCodes($this->app(), $vatRegCfg['country']);
+		$taxCodes = E10Utils::docTaxCodes($this->app(), $recData);
 
 		$docRows = $this->db()->query ('SELECT * FROM [e10doc_core_taxes] WHERE [document] = %i ORDER by ndx', $recData['ndx']);
 		forEach ($docRows as $r)
 		{
-			if (!$r['taxCode'])
+			if ($r['taxCode'] === '')
 				continue;
 			$taxCode = $taxCodes[$r['taxCode']];
-			if (!isset($taxCode['dir']))
+			if (!isset($taxCode['dir']) || $taxCode['dir'] !== 1) // out / sale
+			{
+				error_log("__INVALID_TAXCODE_DIR_`{$r['taxCode']}`_");
 				continue;
-
+			}	
 			$newRow = [
 					'report' => $this->reportRecData['ndx'],
 
@@ -59,30 +71,23 @@ class VatReturnEngine extends \e10doc\taxes\TaxReportEngine
 					'tax' => $r['sumTaxHc'],
 					'total' => $r['sumTotalHc'],
 
+          'countryConsumption' => $recData['vatCountry'],
+
 					'taxCode' => $r['taxCode'],
 					'taxRate' => $r['taxRate'],
-					'taxDir' => $taxCode['dir'],
+          'taxPercents' => $r['taxPercents'],
 					//'taxType' => $taxCode['type'],
 
 					'document' => $recData['ndx'],
-					'docNumber' => $recData['docNumber'],
-					'docId' => $recData['docId'],
-
-					'dateTax' => $recData['dateTax'],
-					'dateTaxDuty' => $recData['dateTaxDuty'],
-					'vatId' => $recData['personVATIN'],
-
-					'quantity' => $r['quantity'],
-					'weight' => $r['weight'],
 			];
 
-			$this->db()->query('INSERT INTO [e10doc_taxes_reportsRowsVatReturn] ', $newRow);
+			$this->db()->query('INSERT INTO [e10doc_taxes_reportsRowsVatOSS] ', $newRow);
 		}
 	}
 
 	public function documentRemove ($recData)
 	{
-		$this->db()->query ('DELETE FROM [e10doc_taxes_reportsRowsVatReturn] WHERE [filing] = 0 AND [document] = %i', $recData['ndx']);
+		$this->db()->query ('DELETE FROM [e10doc_taxes_reportsRowsVatOSS] WHERE [filing] = 0 AND [document] = %i', $recData['ndx']);
 	}
 
 	public function doDocument($recData)
@@ -104,7 +109,7 @@ class VatReturnEngine extends \e10doc\taxes\TaxReportEngine
 		$this->reportRecData = $recData;
 
 		// -- remove old rows
-		$this->db()->query ('DELETE FROM [e10doc_taxes_reportsRowsVatReturn] WHERE [filing] = 0 AND [report] = %i', $recData['ndx']);
+		$this->db()->query ('DELETE FROM [e10doc_taxes_reportsRowsVatOSS] WHERE [filing] = 0 AND [report] = %i', $recData['ndx']);
 
 		// -- add new rows
 		$q[] = 'SELECT * FROM [e10doc_core_heads]';
@@ -123,5 +128,4 @@ class VatReturnEngine extends \e10doc\taxes\TaxReportEngine
 			$this->documentAdd($r);
 		}
 	}
-
 }

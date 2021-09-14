@@ -1,12 +1,17 @@
 {
 	"id": "e10doc.taxes",
 	"name": "Daně",
-	"tables": ["reports", "reportsParts", "reportsData", "filings", "filingFiles", "reportsRowsVatReturn", "reportsRowsVatCS", "reportsRowsVatRS"],
+	"tables": [
+		"reports", "reportsParts", "reportsData", "filings", "filingFiles", 
+		"reportsRowsVatReturn", "reportsRowsVatCS", "reportsRowsVatRS", "reportsRowsVatOSS"
+	],
 	"config": [
 		{"id": "+reports", "name": "Výstupy", "file": "reports.json"},
 		{"id": "e10doc.taxes.reportTypes", "file": "e10doc.taxes.reportTypes.json"},
 		{"id": "e10doc.taxes.filings.docStates", "file": "e10doc.taxes.filings.docStates.json"},
 		{"id": "e10doc.taxes.vatReports.docStates", "file": "e10doc.taxes.vatReports.docStates.json"},
+		{"id": "e10doc.taxes.ossSuplyTypes", "file": "e10doc.taxes.ossSuplyTypes.json"},
+		{"id": "e10doc.taxes.ossVatRateTypes", "file": "e10doc.taxes.ossVatRateTypes.json"},
 
 		{"id": "+e10.base.properties", "file": "e10doc.taxes.properties.common.json"},
 		{"id": "+e10doc.taxes.reportProperties", "file": "e10.taxes.reportProperties.cz.json"},
