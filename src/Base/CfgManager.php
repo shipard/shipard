@@ -1008,7 +1008,7 @@ class CfgManager
 			}
 
 			$colInfo = $ti->getColumn ($sqlColName);
-			if ($colInfo->getType () == \Dibi\Type::TEXT && $col ['type'] == 'string')
+			if ($colInfo->getType () == \Dibi\Type::TEXT && ($col ['type'] == 'string' || $col ['type'] == 'enumString'))
 			{
 				if ($colInfo->getSize() != $col ['len'])
 				{
