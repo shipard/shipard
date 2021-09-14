@@ -63,6 +63,12 @@ class FormInvoiceIn extends \e10doc\core\FormHeads
 				$this->layoutOpen (self::ltForm);
 					if ($taxPayer)
 					{
+						if ($this->useMoreVATRegs())
+						{
+							$this->addColumnInput ('vatReg');
+							$this->addColumnInput ('vatWorldCountry');
+						}
+
 						$this->addColumnInput ("taxCalc");
 						if ($this->recData['taxCalc'])
 						{
