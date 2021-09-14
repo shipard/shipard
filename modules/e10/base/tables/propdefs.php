@@ -111,7 +111,7 @@ class ViewPropDefs extends TableView
 		//$listItem ['i1'] = $item['id'];
 		$listItem ['itemType'] = $item ['type'];
 
-		$listItem ['icon'] = 'x-properties';
+		$listItem ['icon'] = 'tables/e10.base.propdefs';
 
 		return $listItem;
 	}
@@ -212,7 +212,7 @@ class ViewPropDefsCombo extends ViewPropDefs
 		//$listItem ['i2'] = $item['id'];
 		$listItem ['itemType'] = $item ['type'];
 
-		$listItem ['icon'] = 'x-properties';
+		$listItem ['icon'] = 'tables/e10.base.propdefs';
 
 		return $listItem;
 	}

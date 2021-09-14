@@ -82,7 +82,7 @@ class ViewPropGroups extends TableView
 		$listItem ['t1'] = $item['fullName'];
 		//$listItem ['i1'] = $item['id'];
 
-		$listItem ['icon'] = 'x-properties';
+		$listItem ['icon'] = 'tables/e10.base.propgroups';
 
 		return $listItem;
 	}
