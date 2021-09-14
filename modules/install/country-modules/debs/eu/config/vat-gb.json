@@ -1,0 +1,156 @@
+{
+	"taxTypes": {
+        "0": {"title": "tuzemsko"}, 
+        "1": {"title": "intrakomunitární"}, 
+        "2": {"title": "zahraničí"}
+    },
+	"taxDir": {
+        "0": {"title":"Vstup"},
+        "1": {"title":"Výstup"},
+        "2": {"title":"none"}
+    },
+	"taxRates": {
+		"0": {"title": "Základní"},
+        "1": {"title": "Snížená"},
+		"2": {"title": "Bez daně"},
+		"3": {"title": "Osvobozeno"}
+	},
+	"taxCodes": {
+		"GB110": {
+			"fullName": "Tuzemsko/Vstup/Základní", "name": "Základní", "print": "Základní",
+			"type": 0, "dir": 0, "rate": 0,
+			"rowTaxReturn": 40
+		},
+		"GB111": {
+			"fullName": "Tuzemsko/Vstup/Snížená", "name": "Snížená", "print": "Snížená",
+			"type": 0, "dir": 0, "rate": 4,
+			"rowTaxReturn": 41
+		},
+		"GB112": {
+			"fullName": "Tuzemsko/Vstup/Bez daně", "name": "Bez daně", "print": "Bez daně",
+			"type": 0, "dir": 0, "rate": 2,
+			"rowTaxReturn": 0
+		},
+		"GB120": {
+			"fullName": "Tuzemsko/Výstup/Základní", "name": "Základní", "print": "Základní",
+			"type": 0, "dir": 1, "rate": 0,
+			"rowTaxReturn": 1
+		},
+		"GB121": {
+			"fullName": "Tuzemsko/Výstup/Snížená", "name": "Snížená", "print": "Snížená",
+			"type": 0, "dir": 1, "rate": 4, "rowTaxReturn": 2
+		},
+		"GB122": {
+			"fullName": "Tuzemsko/Výstup/Bez daně", "name": "Bez daně", "print": "Bez daně",
+			"type": 0, "dir": 1, "rate": 2,
+			"rowTaxReturn": 0
+		},
+		"GB123": {
+			"fullName": "Tuzemsko/Výstup/Osvobozeno", "name": "Osvobozeno", "print": "Osvobozeno",
+			"type": 0, "dir": 1, "rate": 3,
+			"rowTaxReturn": 50
+		},
+		"GB201": {
+			"fullName": "EU/Výstup/Zboží", "name": "Zboží EU", "print": "EU/Zboží",
+			"type": 1, "dir": 1, "rate": 2,
+			"rowTaxReturn": 20, "intraCommunityCode": 0, "note": "eu"
+		},
+		"GB202": {
+			"fullName": "EU/Výstup/Služby", "name": "Služby EU", "print": "EU/Služby",
+			"type": 1, "dir": 1, "rate": 2,
+			"rowTaxReturn": 21, "intraCommunityCode": 3, "note": "eu"
+		},
+		"GB205": {
+			"fullName": "EU/Výstup/Zboží/Základní (odběratel)", "name": "Základní - zboží EU (ODB)", "print": "Základní - zboží EU (odběratel)",
+			"type": 1, "dir": 1, "rate": 0, "noPayTax": 1, "hidden": 1,
+			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 3
+		},
+		"GB206": {
+			"fullName": "EU/Výstup/Zboží/Snížená (odběratel)", "name": "Snížená - zboží EU (ODB)", "print": "Snížená - zboží EU (odběratel)",
+			"type": 1, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
+			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 4
+		},
+		"GB207": {
+			"fullName": "EU/Výstup/Služby/Základní (odběratel)", "name": "Základní - služby EU (ODB)", "print": "Základní - služby EU (odběratel)",
+			"type": 1, "dir": 1, "rate": 0, "noPayTax": 1, "hidden": 1,
+			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 5
+		},
+		"GB208": {
+			"fullName": "EU/Výstup/Služby/Snížená (odběratel)", "name": "Snížená - služby EU (ODB)", "print": "Snížená - služby EU (odběratel)",
+			"type": 1, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
+			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 6
+		},
+		"GB215": {
+			"fullName": "EU/Vstup/Zboží/Základní", "name": "Základní - zboží EU", "print": "EU/Zboží/Základní",
+			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "205",
+			"sumTax": 0, "rowTaxReturn": 43
+		},
+		"GB216": {
+			"fullName": "EU/Vstup/Zboží/Snížená", "name": "Snížená - zboží EU", "print": "EU/Zboží/Snížená",
+			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "360",
+			"sumTax": 0, "rowTaxReturn": 44
+		},
+		"GB217": {
+			"fullName": "EU/Vstup/Služby/Základní", "name": "Základní - služby EU", "print": "EU/Služby/Základní",
+			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "207",
+			"sumTax": 0, "rowTaxReturn": 43
+		},
+		"GB218": {
+			"fullName": "EU/Vstup/Služby/Snížená", "name": "Snížená - služby EU", "print": "EU/Služby/Snížená",
+			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "362",
+			"sumTax": 0, "rowTaxReturn": 44
+		},
+		"GB401": {
+			"fullName": "VÝVOZ/Výstup/Zboží", "name": "Zboží VÝVOZ", "print": "VÝVOZ/Zboží",
+			"type": 2, "dir": 1, "rate": 2,
+			"rowTaxReturn": 22
+		},
+		"GB405": {
+			"fullName": "DOVOZ/Výstup/Zboží/Základní (odběratel)", "name": "Základní - zboží DOVOZ (ODB)", "print": "Základní - zboží DOVOZ (odběratel)",
+			"type": 2, "dir": 1, "rate": 0, "noPayTax": 1, "hidden": 1,
+			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 7
+		},
+		"GB406": {
+			"fullName": "DOVOZ/Výstup/Zboží/Snížená (odběratel)", "name": "Snížená - zboží DOVOZ (ODB)", "print": "Snížená - zboží DOVOZ (odběratel)",
+			"type": 2, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
+			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 8
+		},
+		"GB415": {
+			"fullName": "DOVOZ/Vstup/Zboží/Základní", "name": "Základní - zboží DOVOZ", "print": "DOVOZ/Zboží/Základní",
+			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "405",
+			"sumTax": 0, "rowTaxReturn": 43
+		},
+		"GB416": {
+			"fullName": "DOVOZ/Vstup/Zboží/Snížená", "name": "Snížená - zboží DOVOZ", "print": "DOVOZ/Zboží/Snížená",
+			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "460",
+			"sumTax": 0, "rowTaxReturn": 44
+		},
+		"GB000": {
+			"fullName": "Nedaňový řádek", "name": "---", "print": "---",
+			"rate": 0
+		}
+	},
+	"taxPercents": [
+		{"code": "GB110", "from": "0000-00-00", "to": "0000-00-00", "value": 20.0},
+		{"code": "GB111", "from": "0000-00-00", "to": "0000-00-00", "value": 5.0},
+		{"code": "GB120", "from": "0000-00-00", "to": "0000-00-00", "value": 20.0},
+		{"code": "GB121", "from": "0000-00-00", "to": "0000-00-00", "value": 5.0},
+		{"code": "GB201", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "GB202", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "GB215", "from": "0000-00-00", "to": "0000-00-00", "value": 20.0},
+		{"code": "GB216", "from": "0000-00-00", "to": "0000-00-00", "value": 5.0},
+		{"code": "GB217", "from": "0000-00-00", "to": "0000-00-00", "value": 20.0},
+		{"code": "GB218", "from": "0000-00-00", "to": "0000-00-00", "value": 5.0},
+		{"code": "GB000", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "GB112", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "GB122", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "GB123", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+
+		{"code": "GB401", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "GB415", "from": "0000-00-00", "to": "0000-00-00", "value": 20.0},
+		{"code": "GB416", "from": "0000-00-00", "to": "0000-00-00", "value": 5.0}
+	],
+	"taxNotes": {
+		"eu": {"text": "Daň odvede zákazník"}
+	}
+}

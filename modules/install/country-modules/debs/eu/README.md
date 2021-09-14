@@ -174,3 +174,11 @@
 - Zdroje:
     - https://www.verksamt.se/web/international/running/vat
     - https://www.avalara.com/vatlive/en/country-guides/europe/sweden/swedish-vat-rates.html
+
+### Velká Británie
+- COVID-19:
+    - https://www.avalara.com/vatlive/en/country-guides/europe/uk/british-vat-rates.html
+    - https://www.avalara.com/vatlive/en/vat-news/uk-cuts-hospitality-vat-to-5-till-12-jan-2021.html
+- Zdroje:
+    - https://www.gov.uk/vat-rates
+    - https://www.avalara.com/vatlive/en/country-guides/europe/uk/british-vat-rates.html 
