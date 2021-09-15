@@ -1,14 +1,4 @@
 {
-	"taxTypes": {
-        "0": {"title": "tuzemsko"}, 
-        "1": {"title": "intrakomunitární"}, 
-        "2": {"title": "zahraničí"}
-    },
-	"taxDir": {
-        "0": {"title":"Vstup"},
-        "1": {"title":"Výstup"},
-        "2": {"title":"none"}
-    },
 	"taxRates": {
 		"0": "Základní",
 		"1": "První snížená",
@@ -19,228 +9,228 @@
 
 	},
 	"taxCodes": {
-		"IE110": {
+		"EUIE110": {
 			"fullName": "Tuzemsko/Vstup/Základní", "name": "Základní", "print": "Základní",
 			"type": 0, "dir": 0, "rate": 0,
 			"rowTaxReturn": 40
 		},
-		"IE111": {
+		"EUIE111": {
 			"fullName": "Tuzemsko/Vstup/První snížená", "name": "První snížená", "print": "První snížená",
 			"type": 0, "dir": 0, "rate": 1,
 			"rowTaxReturn": 41
 		},
-		"IE301": {
+		"EUIE301": {
 			"fullName": "Tuzemsko/Vstup/Druhá snížená", "name": "Druhá snížená", "print": "Druhá snížená",
 			"type": 0, "dir": 0, "rate": 4,
 			"rowTaxReturn": 41
 		},
-		"IE302": {
+		"EUIE302": {
 			"fullName": "Tuzemsko/Vstup/Třetí snížená", "name": "Třetí snížená", "print": "Třetí snížená",
 			"type": 0, "dir": 0, "rate": 5,
 			"rowTaxReturn": 41
 		},
-		"IE112": {
+		"EUIE112": {
 			"fullName": "Tuzemsko/Vstup/Bez daně", "name": "Bez daně", "print": "Bez daně",
 			"type": 0, "dir": 0, "rate": 2,
 			"rowTaxReturn": 0
 		},
-		"IE120": {
+		"EUIE120": {
 			"fullName": "Tuzemsko/Výstup/Základní", "name": "Základní", "print": "Základní",
 			"type": 0, "dir": 1, "rate": 0,
 			"rowTaxReturn": 1
 		},
-		"IE121": {
+		"EUIE121": {
 			"fullName": "Tuzemsko/Výstup/První snížená", "name": "První snížená", "print": "První snížená",
 			"type": 0, "dir": 1, "rate": 1, "rowTaxReturn": 2
 		},
-		"IE310": {
+		"EUIE310": {
 			"fullName": "Tuzemsko/Výstup/Druhá snížená", "name": "Druhá snížená", "print": "Druhá snížená",
 			"type": 0, "dir": 1, "rate": 4, "rowTaxReturn": 2
 		},
-		"IE311": {
+		"EUIE311": {
 			"fullName": "Tuzemsko/Výstup/Třetí snížená", "name": "Třetí snížená", "print": "Třetí snížená",
 			"type": 0, "dir": 1, "rate": 5, "rowTaxReturn": 2
 		},
-		"IE122": {
+		"EUIE122": {
 			"fullName": "Tuzemsko/Výstup/Bez daně", "name": "Bez daně", "print": "Bez daně",
 			"type": 0, "dir": 1, "rate": 2,
 			"rowTaxReturn": 0
 		},
-		"IE123": {
+		"EUIE123": {
 			"fullName": "Tuzemsko/Výstup/Osvobozeno", "name": "Osvobozeno", "print": "Osvobozeno",
 			"type": 0, "dir": 1, "rate": 3,
 			"rowTaxReturn": 50
 		},
-		"IE201": {
+		"EUIE201": {
 			"fullName": "EU/Výstup/Zboží", "name": "Zboží EU", "print": "EU/Zboží",
 			"type": 1, "dir": 1, "rate": 2,
 			"rowTaxReturn": 20, "intraCommunityCode": 0, "note": "eu"
 		},
-		"IE202": {
+		"EUIE202": {
 			"fullName": "EU/Výstup/Služby", "name": "Služby EU", "print": "EU/Služby",
 			"type": 1, "dir": 1, "rate": 2,
 			"rowTaxReturn": 21, "intraCommunityCode": 3, "note": "eu"
 		},
-		"IE205": {
+		"EUIE205": {
 			"fullName": "EU/Výstup/Zboží/Základní (odběratel)", "name": "Základní - zboží EU (ODB)", "print": "Základní - zboží EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 0, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 3
 		},
-		"IE206": {
+		"EUIE206": {
 			"fullName": "EU/Výstup/Zboží/První snížená (odběratel)", "name": "První snížená - zboží EU (ODB)", "print": "První snížená - zboží EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 1, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 4
 		},
-		"IE360": {
+		"EUIE360": {
 			"fullName": "EU/Výstup/Zboží/Druhá snížená (odběratel)", "name": "Druhá snížená - zboží EU (ODB)", "print": "Druhá snížená - zboží EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 4
 		},
-		"IE361": {
+		"EUIE361": {
 			"fullName": "EU/Výstup/Zboží/Třetí snížená (odběratel)", "name": "Třetí snížená - zboží EU (ODB)", "print": "Třetí snížená - zboží EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 5, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 4
 		},
-		"IE207": {
+		"EUIE207": {
 			"fullName": "EU/Výstup/Služby/Základní (odběratel)", "name": "Základní - služby EU (ODB)", "print": "Základní - služby EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 0, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 5
 		},
-		"IE208": {
+		"EUIE208": {
 			"fullName": "EU/Výstup/Služby/První snížená (odběratel)", "name": "První snížená - služby EU (ODB)", "print": "První snížená - služby EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 1, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 6
 		},
-		"IE362": {
+		"EUIE362": {
 			"fullName": "EU/Výstup/Služby/Druhá snížená (odběratel)", "name": "Druhá snížená - služby EU (ODB)", "print": "Druhá snížená - služby EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 6
 		},
-		"IE363": {
+		"EUIE363": {
 			"fullName": "EU/Výstup/Služby/Třetí snížená (odběratel)", "name": "Třetí snížená - služby EU (ODB)", "print": "Třetí snížená - služby EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 5, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 6
 		},
-		"IE215": {
+		"EUIE215": {
 			"fullName": "EU/Vstup/Zboží/Základní", "name": "Základní - zboží EU", "print": "EU/Zboží/Základní",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "205",
 			"sumTax": 0, "rowTaxReturn": 43
 		},
-		"IE216": {
+		"EUIE216": {
 			"fullName": "EU/Vstup/Zboží/První snížená", "name": "První snížená - zboží EU", "print": "EU/Zboží/První snížená",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "206",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"IE390": {
+		"EUIE390": {
 			"fullName": "EU/Vstup/Zboží/Druhá snížená", "name": "Druhá snížená - zboží EU", "print": "EU/Zboží/Druhá snížená",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "360",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"IE391": {
+		"EUIE391": {
 			"fullName": "EU/Vstup/Zboží/Třetí snížená", "name": "Třetí snížená - zboží EU", "print": "EU/Zboží/Třetí snížená",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "361",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"IE217": {
+		"EUIE217": {
 			"fullName": "EU/Vstup/Služby/Základní", "name": "Základní - služby EU", "print": "EU/Služby/Základní",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "207",
 			"sumTax": 0, "rowTaxReturn": 43
 		},
-		"IE218": {
+		"EUIE218": {
 			"fullName": "EU/Vstup/Služby/První snížená", "name": "První snížená - služby EU", "print": "EU/Služby/První snížená",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "208",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"IE392": {
+		"EUIE392": {
 			"fullName": "EU/Vstup/Služby/Druhá snížená", "name": "Druhá snížená - služby EU", "print": "EU/Služby/Druhá snížená",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "362",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"IE393": {
+		"EUIE393": {
 			"fullName": "EU/Vstup/Služby/Třetí snížená", "name": "Třetí snížená - služby EU", "print": "EU/Služby/Třetí snížená",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "363",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"IE401": {
+		"EUIE401": {
 			"fullName": "VÝVOZ/Výstup/Zboží", "name": "Zboží VÝVOZ", "print": "VÝVOZ/Zboží",
 			"type": 2, "dir": 1, "rate": 2,
 			"rowTaxReturn": 22
 		},
-		"IE405": {
+		"EUIE405": {
 			"fullName": "DOVOZ/Výstup/Zboží/Základní (odběratel)", "name": "Základní - zboží DOVOZ (ODB)", "print": "Základní - zboží DOVOZ (odběratel)",
 			"type": 2, "dir": 1, "rate": 0, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 7
 		},
-		"IE406": {
+		"EUIE406": {
 			"fullName": "DOVOZ/Výstup/Zboží/První snížená (odběratel)", "name": "První snížená - zboží DOVOZ (ODB)", "print": "První snížená - zboží DOVOZ (odběratel)",
 			"type": 2, "dir": 1, "rate": 1, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 8
 		},
-		"IE460": {
+		"EUIE460": {
 			"fullName": "DOVOZ/Výstup/Zboží/Druhá snížená (odběratel)", "name": "Druhá snížená - zboží DOVOZ (ODB)", "print": "Druhá snížená - zboží DOVOZ (odběratel)",
 			"type": 2, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 8
 		},
-		"IE461": {
+		"EUIE461": {
 			"fullName": "DOVOZ/Výstup/Zboží/Třetí snížená (odběratel)", "name": "Třetí snížená - zboží DOVOZ (ODB)", "print": "Třetí snížená - zboží DOVOZ (odběratel)",
 			"type": 2, "dir": 1, "rate": 5, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 8
 		},
-		"IE415": {
+		"EUIE415": {
 			"fullName": "DOVOZ/Vstup/Zboží/Základní", "name": "Základní - zboží DOVOZ", "print": "DOVOZ/Zboží/Základní",
 			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "405",
 			"sumTax": 0, "rowTaxReturn": 43
 		},
-		"IE416": {
+		"EUIE416": {
 			"fullName": "DOVOZ/Vstup/Zboží/První snížená", "name": "První snížená - zboží DOVOZ", "print": "DOVOZ/Zboží/První snížená",
 			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "406",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"IE490": {
+		"EUIE490": {
 			"fullName": "DOVOZ/Vstup/Zboží/Druhá snížená", "name": "Druhá snížená - zboží DOVOZ", "print": "DOVOZ/Zboží/Druhá snížená",
 			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "460",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"IE491": {
+		"EUIE491": {
 			"fullName": "DOVOZ/Vstup/Zboží/Třetí snížená", "name": "Třetí snížená - zboží DOVOZ", "print": "DOVOZ/Zboží/Třetí snížená",
 			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "461",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"IE000": {
+		"EUIE000": {
 			"fullName": "Nedaňový řádek", "name": "---", "print": "---",
 			"rate": 0
 		}
 	},
 	"taxPercents": [
-		{"code": "IE110", "from": "0000-00-00", "to": "0000-00-00", "value": 23.0},
-		{"code": "IE111", "from": "0000-00-00", "to": "0000-00-00", "value": 13.5},
-		{"code": "IE120", "from": "0000-00-00", "to": "0000-00-00", "value": 23.0},
-		{"code": "IE121", "from": "0000-00-00", "to": "0000-00-00", "value": 13.5},
-		{"code": "IE201", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
-		{"code": "IE202", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
-		{"code": "IE215", "from": "0000-00-00", "to": "0000-00-00", "value": 23.0},
-		{"code": "IE216", "from": "0000-00-00", "to": "0000-00-00", "value": 13.5},
-		{"code": "IE217", "from": "0000-00-00", "to": "0000-00-00", "value": 23.0},
-		{"code": "IE218", "from": "0000-00-00", "to": "0000-00-00", "value": 13.5},
-		{"code": "IE000", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
-		{"code": "IE112", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
-		{"code": "IE122", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
-		{"code": "IE123", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "EUIE110", "from": "0000-00-00", "to": "0000-00-00", "value": 23.0},
+		{"code": "EUIE111", "from": "0000-00-00", "to": "0000-00-00", "value": 13.5},
+		{"code": "EUIE120", "from": "0000-00-00", "to": "0000-00-00", "value": 23.0},
+		{"code": "EUIE121", "from": "0000-00-00", "to": "0000-00-00", "value": 13.5},
+		{"code": "EUIE201", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "EUIE202", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "EUIE215", "from": "0000-00-00", "to": "0000-00-00", "value": 23.0},
+		{"code": "EUIE216", "from": "0000-00-00", "to": "0000-00-00", "value": 13.5},
+		{"code": "EUIE217", "from": "0000-00-00", "to": "0000-00-00", "value": 23.0},
+		{"code": "EUIE218", "from": "0000-00-00", "to": "0000-00-00", "value": 13.5},
+		{"code": "EUIE000", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "EUIE112", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "EUIE122", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "EUIE123", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
 
-		{"code": "IE301", "from": "0000-00-00", "to": "0000-00-00", "value": 9.0},
-		{"code": "IE302", "from": "0000-00-00", "to": "0000-00-00", "value": 4.8},
-		{"code": "IE310", "from": "0000-00-00", "to": "0000-00-00", "value": 9.0},
-		{"code": "IE311", "from": "0000-00-00", "to": "0000-00-00", "value": 4.8},
-		{"code": "IE390", "from": "0000-00-00", "to": "0000-00-00", "value": 9.0},
-		{"code": "IE391", "from": "0000-00-00", "to": "0000-00-00", "value": 4.8},
-		{"code": "IE392", "from": "0000-00-00", "to": "0000-00-00", "value": 9.0},
-		{"code": "IE393", "from": "0000-00-00", "to": "0000-00-00", "value": 4.8},
+		{"code": "EUIE301", "from": "0000-00-00", "to": "0000-00-00", "value": 9.0},
+		{"code": "EUIE302", "from": "0000-00-00", "to": "0000-00-00", "value": 4.8},
+		{"code": "EUIE310", "from": "0000-00-00", "to": "0000-00-00", "value": 9.0},
+		{"code": "EUIE311", "from": "0000-00-00", "to": "0000-00-00", "value": 4.8},
+		{"code": "EUIE390", "from": "0000-00-00", "to": "0000-00-00", "value": 9.0},
+		{"code": "EUIE391", "from": "0000-00-00", "to": "0000-00-00", "value": 4.8},
+		{"code": "EUIE392", "from": "0000-00-00", "to": "0000-00-00", "value": 9.0},
+		{"code": "EUIE393", "from": "0000-00-00", "to": "0000-00-00", "value": 4.8},
 
-		{"code": "IE401", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
-		{"code": "IE415", "from": "0000-00-00", "to": "0000-00-00", "value": 23.0},
-		{"code": "IE416", "from": "0000-00-00", "to": "0000-00-00", "value": 13.5},
-		{"code": "IE490", "from": "0000-00-00", "to": "0000-00-00", "value": 9.0},
-		{"code": "IE491", "from": "0000-00-00", "to": "0000-00-00", "value": 4.8}
+		{"code": "EUIE401", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "EUIE415", "from": "0000-00-00", "to": "0000-00-00", "value": 23.0},
+		{"code": "EUIE416", "from": "0000-00-00", "to": "0000-00-00", "value": 13.5},
+		{"code": "EUIE490", "from": "0000-00-00", "to": "0000-00-00", "value": 9.0},
+		{"code": "EUIE491", "from": "0000-00-00", "to": "0000-00-00", "value": 4.8}
 	],
 	"taxNotes": {
 		"eu": {"text": "Daň odvede zákazník"}

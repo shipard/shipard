@@ -1,14 +1,4 @@
 {
-	"taxTypes": {
-        "0": {"title": "tuzemsko"}, 
-        "1": {"title": "intrakomunitární"}, 
-        "2": {"title": "zahraničí"}
-    },
-	"taxDir": {
-        "0": {"title":"Vstup"},
-        "1": {"title":"Výstup"},
-        "2": {"title":"none"}
-    },
 	"taxRates": {
 		"0": {"title": "Základní"},
 		"1": {"title": "Střední"},
@@ -17,184 +7,184 @@
 		"4": {"title": "Osvobozeno"}
 	},
 	"taxCodes": {
-		"BE110": {
+		"EUBE110": {
 			"fullName": "Tuzemsko/Vstup/Základní", "name": "Základní", "print": "Základní",
 			"type": 0, "dir": 0, "rate": 0,
 			"rowTaxReturn": 40
 		},
-		"BE111": {
+		"EUBE111": {
 			"fullName": "Tuzemsko/Vstup/Střední", "name": "Střední", "print": "Střední",
 			"type": 0, "dir": 0, "rate": 1,
 			"rowTaxReturn": 41
 		},
-		"BE301": {
+		"EUBE301": {
 			"fullName": "Tuzemsko/Vstup/Snížená", "name": "Snížená", "print": "Snížená",
 			"type": 0, "dir": 0, "rate": 4,
 			"rowTaxReturn": 41
 		},
-		"BE112": {
+		"EUBE112": {
 			"fullName": "Tuzemsko/Vstup/Bez daně", "name": "Bez daně", "print": "Bez daně",
 			"type": 0, "dir": 0, "rate": 2,
 			"rowTaxReturn": 0
 		},
-		"BE120": {
+		"EUBE120": {
 			"fullName": "Tuzemsko/Výstup/Základní", "name": "Základní", "print": "Základní",
 			"type": 0, "dir": 1, "rate": 0,
 			"rowTaxReturn": 1
 		},
-		"BE121": {
+		"EUBE121": {
 			"fullName": "Tuzemsko/Výstup/Střední", "name": "Střední", "print": "Střední",
 			"type": 0, "dir": 1, "rate": 1, "rowTaxReturn": 2
 		},
-		"BE310": {
+		"EUBE310": {
 			"fullName": "Tuzemsko/Výstup/Snížená", "name": "Snížená", "print": "Snížená",
 			"type": 0, "dir": 1, "rate": 4, "rowTaxReturn": 2
 		},
-		"BE122": {
+		"EUBE122": {
 			"fullName": "Tuzemsko/Výstup/Bez daně", "name": "Bez daně", "print": "Bez daně",
 			"type": 0, "dir": 1, "rate": 2,
 			"rowTaxReturn": 0
 		},
-		"BE123": {
+		"EUBE123": {
 			"fullName": "Tuzemsko/Výstup/Osvobozeno", "name": "Osvobozeno", "print": "Osvobozeno",
 			"type": 0, "dir": 1, "rate": 3,
 			"rowTaxReturn": 50
 		},
-		"BE201": {
+		"EUBE201": {
 			"fullName": "EU/Výstup/Zboží", "name": "Zboží EU", "print": "EU/Zboží",
 			"type": 1, "dir": 1, "rate": 2,
 			"rowTaxReturn": 20, "intraCommunityCode": 0, "note": "eu"
 		},
-		"BE202": {
+		"EUBE202": {
 			"fullName": "EU/Výstup/Služby", "name": "Služby EU", "print": "EU/Služby",
 			"type": 1, "dir": 1, "rate": 2,
 			"rowTaxReturn": 21, "intraCommunityCode": 3, "note": "eu"
 		},
-		"BE205": {
+		"EUBE205": {
 			"fullName": "EU/Výstup/Zboží/Základní (odběratel)", "name": "Základní - zboží EU (ODB)", "print": "Základní - zboží EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 0, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 3
 		},
-		"BE206": {
+		"EUBE206": {
 			"fullName": "EU/Výstup/Zboží/Střední (odběratel)", "name": "Střední - zboží EU (ODB)", "print": "Střední - zboží EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 1, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 4
 		},
-		"BE360": {
+		"EUBE360": {
 			"fullName": "EU/Výstup/Zboží/Snížená (odběratel)", "name": "Snížená - zboží EU (ODB)", "print": "Snížená - zboží EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 4
 		},
-		"BE207": {
+		"EUBE207": {
 			"fullName": "EU/Výstup/Služby/Základní (odběratel)", "name": "Základní - služby EU (ODB)", "print": "Základní - služby EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 0, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 5
 		},
-		"BE208": {
+		"EUBE208": {
 			"fullName": "EU/Výstup/Služby/Střední (odběratel)", "name": "Střední - služby EU (ODB)", "print": "Střední - služby EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 1, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 6
 		},
-		"BE362": {
+		"EUBE362": {
 			"fullName": "EU/Výstup/Služby/Snížená (odběratel)", "name": "Snížená - služby EU (ODB)", "print": "Snížená - služby EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 6
 		},
-		"BE215": {
+		"EUBE215": {
 			"fullName": "EU/Vstup/Zboží/Základní", "name": "Základní - zboží EU", "print": "EU/Zboží/Základní",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "205",
 			"sumTax": 0, "rowTaxReturn": 43
 		},
-		"BE216": {
+		"EUBE216": {
 			"fullName": "EU/Vstup/Zboží/Střední", "name": "Střední - zboží EU", "print": "EU/Zboží/Střední",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "206",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"BE390": {
+		"EUBE390": {
 			"fullName": "EU/Vstup/Zboží/Snížená", "name": "Snížená - zboží EU", "print": "EU/Zboží/Snížená",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "360",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"BE217": {
+		"EUBE217": {
 			"fullName": "EU/Vstup/Služby/Základní", "name": "Základní - služby EU", "print": "EU/Služby/Základní",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "207",
 			"sumTax": 0, "rowTaxReturn": 43
 		},
-		"BE218": {
+		"EUBE218": {
 			"fullName": "EU/Vstup/Služby/Střední", "name": "Střední - služby EU", "print": "EU/Služby/Střední",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "208",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"BE392": {
+		"EUBE392": {
 			"fullName": "EU/Vstup/Služby/Snížená", "name": "Snížená - služby EU", "print": "EU/Služby/Snížená",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "362",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"BE401": {
+		"EUBE401": {
 			"fullName": "VÝVOZ/Výstup/Zboží", "name": "Zboží VÝVOZ", "print": "VÝVOZ/Zboží",
 			"type": 2, "dir": 1, "rate": 2,
 			"rowTaxReturn": 22
 		},
-		"BE405": {
+		"EUBE405": {
 			"fullName": "DOVOZ/Výstup/Zboží/Základní (odběratel)", "name": "Základní - zboží DOVOZ (ODB)", "print": "Základní - zboží DOVOZ (odběratel)",
 			"type": 2, "dir": 1, "rate": 0, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 7
 		},
-		"BE406": {
+		"EUBE406": {
 			"fullName": "DOVOZ/Výstup/Zboží/Střední (odběratel)", "name": "Střední - zboží DOVOZ (ODB)", "print": "Střední - zboží DOVOZ (odběratel)",
 			"type": 2, "dir": 1, "rate": 1, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 8
 		},
-		"BE460": {
+		"EUBE460": {
 			"fullName": "DOVOZ/Výstup/Zboží/Snížená (odběratel)", "name": "Snížená - zboží DOVOZ (ODB)", "print": "Snížená - zboží DOVOZ (odběratel)",
 			"type": 2, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 8
 		},
-		"BE415": {
+		"EUBE415": {
 			"fullName": "DOVOZ/Vstup/Zboží/Základní", "name": "Základní - zboží DOVOZ", "print": "DOVOZ/Zboží/Základní",
 			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "405",
 			"sumTax": 0, "rowTaxReturn": 43
 		},
-		"BE416": {
+		"EUBE416": {
 			"fullName": "DOVOZ/Vstup/Zboží/Střední", "name": "Střední - zboží DOVOZ", "print": "DOVOZ/Zboží/Střední",
 			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "406",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"BE490": {
+		"EUBE490": {
 			"fullName": "DOVOZ/Vstup/Zboží/Snížená", "name": "Snížená - zboží DOVOZ", "print": "DOVOZ/Zboží/Snížená",
 			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "460",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"BE000": {
+		"EUBE000": {
 			"fullName": "Nedaňový řádek", "name": "---", "print": "---",
 			"rate": 0
 		}
 	},
 	"taxPercents": [
-		{"code": "BE110", "from": "0000-00-00", "to": "0000-00-00", "value": 21.0},
-		{"code": "BE111", "from": "0000-00-00", "to": "0000-00-00", "value": 12.0},
-		{"code": "BE120", "from": "0000-00-00", "to": "0000-00-00", "value": 21.0},
-		{"code": "BE121", "from": "0000-00-00", "to": "0000-00-00", "value": 12.0},
-		{"code": "BE201", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
-		{"code": "BE202", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
-		{"code": "BE215", "from": "0000-00-00", "to": "0000-00-00", "value": 21.0},
-		{"code": "BE216", "from": "0000-00-00", "to": "0000-00-00", "value": 12.0},
-		{"code": "BE217", "from": "0000-00-00", "to": "0000-00-00", "value": 21.0},
-		{"code": "BE218", "from": "0000-00-00", "to": "0000-00-00", "value": 12.0},
-		{"code": "BE000", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
-		{"code": "BE112", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
-		{"code": "BE122", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
-		{"code": "BE123", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "EUBE110", "from": "0000-00-00", "to": "0000-00-00", "value": 21.0},
+		{"code": "EUBE111", "from": "0000-00-00", "to": "0000-00-00", "value": 12.0},
+		{"code": "EUBE120", "from": "0000-00-00", "to": "0000-00-00", "value": 21.0},
+		{"code": "EUBE121", "from": "0000-00-00", "to": "0000-00-00", "value": 12.0},
+		{"code": "EUBE201", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "EUBE202", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "EUBE215", "from": "0000-00-00", "to": "0000-00-00", "value": 21.0},
+		{"code": "EUBE216", "from": "0000-00-00", "to": "0000-00-00", "value": 12.0},
+		{"code": "EUBE217", "from": "0000-00-00", "to": "0000-00-00", "value": 21.0},
+		{"code": "EUBE218", "from": "0000-00-00", "to": "0000-00-00", "value": 12.0},
+		{"code": "EUBE000", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "EUBE112", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "EUBE122", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "EUBE123", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
 
-		{"code": "BE301", "from": "0000-00-00", "to": "0000-00-00", "value": 6.0},
-		{"code": "BE310", "from": "0000-00-00", "to": "0000-00-00", "value": 6.0},
-		{"code": "BE390", "from": "0000-00-00", "to": "0000-00-00", "value": 6.0},
-		{"code": "BE392", "from": "0000-00-00", "to": "0000-00-00", "value": 6.0},
+		{"code": "EUBE301", "from": "0000-00-00", "to": "0000-00-00", "value": 6.0},
+		{"code": "EUBE310", "from": "0000-00-00", "to": "0000-00-00", "value": 6.0},
+		{"code": "EUBE390", "from": "0000-00-00", "to": "0000-00-00", "value": 6.0},
+		{"code": "EUBE392", "from": "0000-00-00", "to": "0000-00-00", "value": 6.0},
 
-		{"code": "BE401", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
-		{"code": "BE415", "from": "0000-00-00", "to": "0000-00-00", "value": 21.0},
-		{"code": "BE416", "from": "0000-00-00", "to": "0000-00-00", "value": 12.0},
-		{"code": "BE490", "from": "0000-00-00", "to": "0000-00-00", "value": 6.0}
+		{"code": "EUBE401", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "EUBE415", "from": "0000-00-00", "to": "0000-00-00", "value": 21.0},
+		{"code": "EUBE416", "from": "0000-00-00", "to": "0000-00-00", "value": 12.0},
+		{"code": "EUBE490", "from": "0000-00-00", "to": "0000-00-00", "value": 6.0}
 	],
 	"taxNotes": {
 		"pdp4": {"text": "Daň odvede zákazník"},

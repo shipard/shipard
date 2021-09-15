@@ -1,6 +1,4 @@
 {
-	"taxTypes": {"0": "tuzemsko", "1": "intrakomunitární", "2": "zahraničí"},
-	"taxDir": {"0": "Vstup", "1": "Výstup", "2": "none"},
 	"taxRates": {
 		"0": "Základní",
 		"1": "Snížená",
@@ -10,352 +8,352 @@
 		"5": "Druhá snížená"
 	},
 	"taxCodes": {
-		"CZ110": {
+		"EUCZ110": {
 			"fullName": "Tuzemsko/Vstup/Základní", "name": "Základní", "print": "Základní",
 			"type": 0, "dir": 0, "rate": 0,
 			"rowTaxReturn": 40
 		},
-		"CZ111": {
+		"EUCZ111": {
 			"fullName": "Tuzemsko/Vstup/Snížená", "name": "Snížená", "print": "Snížená",
 			"type": 0, "dir": 0, "rate": 1,
 			"rowTaxReturn": 41
 		},
-		"CZ301": {
+		"EUCZ301": {
 			"fullName": "Tuzemsko/Vstup/První snížená", "name": "První snížená", "print": "První snížená",
 			"type": 0, "dir": 0, "rate": 4,
 			"rowTaxReturn": 41
 		},
-		"CZ302": {
+		"EUCZ302": {
 			"fullName": "Tuzemsko/Vstup/Druhá snížená", "name": "Druhá snížená", "print": "Druhá snížená",
 			"type": 0, "dir": 0, "rate": 5,
 			"rowTaxReturn": 41
 		},
-		"CZ112": {
+		"EUCZ112": {
 			"fullName": "Tuzemsko/Vstup/Bez daně", "name": "Bez daně", "print": "Bez daně",
 			"type": 0, "dir": 0, "rate": 2,
 			"rowTaxReturn": 0
 		},
-		"CZ115": {
+		"EUCZ115": {
 			"fullName": "Tuzemsko/Vstup/Základní - přenesení DP4", "name": "Základní - PDP 4", "print": "Základní - přenesení daňové povinnosti 4",
 			"type": 0, "dir": 0, "rate": 0, "noPayTax": 1, "reverseTaxCode": "203", "reverseCharge": 1, "reverseChargeCode": 4,
 			"sumTax": 0, "rowTaxReturn": 43
 		},
-		"CZ116": {
+		"EUCZ116": {
 			"fullName": "Tuzemsko/Vstup/Snížená - přenesení DP4", "name": "Snížená - PDP 4", "print": "Snížená - přenesení daňové povinnosti 4",
 			"type": 0, "dir": 0, "rate": 1, "noPayTax": 1, "reverseTaxCode": "204", "reverseCharge": 1, "reverseChargeCode": 4,
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"CZ340": {
+		"EUCZ340": {
 			"fullName": "Tuzemsko/Vstup/První snížená - přenesení DP4", "name": "První snížená - PDP 4", "print": "První snížená - přenesení daňové povinnosti 4",
 			"type": 0, "dir": 0, "rate": 4, "noPayTax": 1, "reverseTaxCode": "370", "reverseCharge": 1, "reverseChargeCode": 4,
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"CZ117": {
+		"EUCZ117": {
 			"fullName": "Tuzemsko/Vstup/Základní - přenesení DP5", "name": "Základní - PDP 5", "print": "Základní - přenesení daňové povinnosti 5",
 			"type": 0, "dir": 0, "rate": 0, "noPayTax": 1, "reverseTaxCode": "203", "reverseCharge": 1, "reverseChargeCode": 5, "reverseChargeAmount": "w",
 			"sumTax": 0, "rowTaxReturn": 43
 		},
-		"CZ118": {
+		"EUCZ118": {
 			"fullName": "Tuzemsko/Vstup/Základní krácená", "name": "Základní krácená", "print": "Základní krácená",
 			"type": 0, "dir": 0, "rate": 0,
 			"rowTaxReturn": 40
 		},
-		"CZ119": {
+		"EUCZ119": {
 			"fullName": "Tuzemsko/Vstup/Snížená krácená", "name": "Snížená krácená", "print": "Snížená krácená",
 			"type": 0, "dir": 0, "rate": 1,
 			"rowTaxReturn": 41
 		},
-		"CZ341": {
+		"EUCZ341": {
 			"fullName": "Tuzemsko/Vstup/První snížená krácená", "name": "První snížená krácená", "print": "První snížená krácená",
 			"type": 0, "dir": 0, "rate": 4,
 			"rowTaxReturn": 41
 		},
-		"CZ342": {
+		"EUCZ342": {
 			"fullName": "Tuzemsko/Vstup/Druhá snížená krácená", "name": "Druhá snížená krácená", "print": "Druhá snížená krácená",
 			"type": 0, "dir": 0, "rate": 5,
 			"rowTaxReturn": 41
 		},
-		"CZ120": {
+		"EUCZ120": {
 			"fullName": "Tuzemsko/Výstup/Základní", "name": "Základní", "print": "Základní",
 			"type": 0, "dir": 1, "rate": 0,
 			"rowTaxReturn": 1
 		},
-		"CZ121": {
+		"EUCZ121": {
 			"fullName": "Tuzemsko/Výstup/Snížená", "name": "Snížená", "print": "Snížená",
 			"type": 0, "dir": 1, "rate": 1, "rowTaxReturn": 2
 		},
-		"CZ310": {
+		"EUCZ310": {
 			"fullName": "Tuzemsko/Výstup/První snížená", "name": "První snížená", "print": "První snížená",
 			"type": 0, "dir": 1, "rate": 4, "rowTaxReturn": 2
 		},
-		"CZ311": {
+		"EUCZ311": {
 			"fullName": "Tuzemsko/Výstup/Druhá snížená", "name": "Druhá snížená", "print": "Druhá snížená",
 			"type": 0, "dir": 1, "rate": 5, "rowTaxReturn": 2
 		},
-		"CZ122": {
+		"EUCZ122": {
 			"fullName": "Tuzemsko/Výstup/Bez daně", "name": "Bez daně", "print": "Bez daně",
 			"type": 0, "dir": 1, "rate": 2,
 			"rowTaxReturn": 0
 		},
-		"CZ123": {
+		"EUCZ123": {
 			"fullName": "Tuzemsko/Výstup/Osvobozeno", "name": "Osvobozeno", "print": "Osvobozeno",
 			"type": 0, "dir": 1, "rate": 3,
 			"rowTaxReturn": 50
 		},
-		"CZ150": {
+		"EUCZ150": {
 			"fullName": "Tuzemsko/Výstup/Základní - přenesení DP4", "name": "Základní - PDP 4", "print": "Základní - přenesení daňové povinnosti 4",
 			"type": 0, "dir": 1, "rate": 0, "zeroTax": 1, "reverseCharge": 1, "reverseChargeCode": 4,
 			"rowTaxReturn": 25, "note": "pdp4"
 		},
-		"CZ151": {
+		"EUCZ151": {
 			"fullName": "Tuzemsko/Výstup/Snížená - přenesení DP4", "name": "Snížená - PDP 4", "print": "Snížená - přenesení daňové povinnosti 4",
 			"type": 0, "dir": 1, "rate": 1, "zeroTax": 1, "reverseCharge": 1, "reverseChargeCode": 4,
 			"rowTaxReturn": 25, "note": "pdp4"
 		},
-		"CZ350": {
+		"EUCZ350": {
 			"fullName": "Tuzemsko/Výstup/První snížená - přenesení DP4", "name": "První snížená - PDP 4", "print": "První snížená - přenesení daňové povinnosti 4",
 			"type": 0, "dir": 1, "rate": 4, "zeroTax": 1, "reverseCharge": 1, "reverseChargeCode": 4,
 			"rowTaxReturn": 25, "note": "pdp4"
 		},
-		"CZ152": {
+		"EUCZ152": {
 			"fullName": "Tuzemsko/Výstup/Základní - přenesení DP5", "name": "Základní - PDP 5", "print": "Základní - přenesení daňové povinnosti 5",
 			"type": 0, "dir": 1, "rate": 0, "zeroTax": 1, "reverseCharge": 1, "reverseChargeCode": 5, "reverseChargeAmount": "w",
 			"rowTaxReturn": 25, "note": "pdp5"
 		},
-		"CZ201": {
+		"EUCZ201": {
 			"fullName": "EU/Výstup/Zboží", "name": "Zboží EU", "print": "EU/Zboží",
 			"type": 1, "dir": 1, "rate": 2,
 			"rowTaxReturn": 20, "intraCommunityCode": 0, "note": "eu"
 		},
-		"CZ202": {
+		"EUCZ202": {
 			"fullName": "EU/Výstup/Služby", "name": "Služby EU", "print": "EU/Služby",
 			"type": 1, "dir": 1, "rate": 2,
 			"rowTaxReturn": 21, "intraCommunityCode": 3, "note": "eu"
 		},
-		"CZ203": {
+		"EUCZ203": {
 			"fullName": "Tuzemsko/Výstup/Základní - přenesení DP (odběratel)", "name": "Základní - PDP (ODB)", "print": "Základní - přenesení daňové povinnosti (odběratel)",
 			"type": 0, "dir": 1, "rate": 0, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 10
 		},
-		"CZ204": {
+		"EUCZ204": {
 			"fullName": "Tuzemsko/Výstup/Snížená - přenesení DP (odběratel)", "name": "Snížená - PDP (ODB)", "print": "Snížená - přenesení daňové povinnosti (odběratel)",
 			"type": 0, "dir": 1, "rate": 1, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 11
 		},
-		"CZ370": {
+		"EUCZ370": {
 			"fullName": "Tuzemsko/Výstup/První snížená - přenesení DP (odběratel)", "name": "První snížená - PDP (ODB)", "print": "První snížená - přenesení daňové povinnosti (odběratel)",
 			"type": 0, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 11
 		},
-		"CZ205": {
+		"EUCZ205": {
 			"fullName": "EU/Výstup/Zboží/Základní (odběratel)", "name": "Základní - zboží EU (ODB)", "print": "Základní - zboží EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 0, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 3
 		},
-		"CZ206": {
+		"EUCZ206": {
 			"fullName": "EU/Výstup/Zboží/Snížená (odběratel)", "name": "Snížená - zboží EU (ODB)", "print": "Snížená - zboží EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 1, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 4
 		},
-		"CZ360": {
+		"EUCZ360": {
 			"fullName": "EU/Výstup/Zboží/První snížená (odběratel)", "name": "První snížená - zboží EU (ODB)", "print": "První snížená - zboží EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 4
 		},
-		"CZ361": {
+		"EUCZ361": {
 			"fullName": "EU/Výstup/Zboží/Druhá snížená (odběratel)", "name": "Druhá snížená - zboží EU (ODB)", "print": "Druhá snížená - zboží EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 5, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 4
 		},
-		"CZ207": {
+		"EUCZ207": {
 			"fullName": "EU/Výstup/Služby/Základní (odběratel)", "name": "Základní - služby EU (ODB)", "print": "Základní - služby EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 0, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 5
 		},
-		"CZ208": {
+		"EUCZ208": {
 			"fullName": "EU/Výstup/Služby/Snížená (odběratel)", "name": "Snížená - služby EU (ODB)", "print": "Snížená - služby EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 1, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 6
 		},
-		"CZ362": {
+		"EUCZ362": {
 			"fullName": "EU/Výstup/Služby/První snížená (odběratel)", "name": "První snížená - služby EU (ODB)", "print": "První snížená - služby EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 6
 		},
-		"CZ363": {
+		"EUCZ363": {
 			"fullName": "EU/Výstup/Služby/Druhá snížená (odběratel)", "name": "Druhá snížená - služby EU (ODB)", "print": "Druhá snížená - služby EU (odběratel)",
 			"type": 1, "dir": 1, "rate": 5, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 6
 		},
-		"CZ215": {
+		"EUCZ215": {
 			"fullName": "EU/Vstup/Zboží/Základní", "name": "Základní - zboží EU", "print": "EU/Zboží/Základní",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "205",
 			"sumTax": 0, "rowTaxReturn": 43
 		},
-		"CZ216": {
+		"EUCZ216": {
 			"fullName": "EU/Vstup/Zboží/Snížená", "name": "Snížená - zboží EU", "print": "EU/Zboží/Snížená",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "206",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"CZ390": {
+		"EUCZ390": {
 			"fullName": "EU/Vstup/Zboží/První snížená", "name": "První snížená - zboží EU", "print": "EU/Zboží/První snížená",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "360",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"CZ391": {
+		"EUCZ391": {
 			"fullName": "EU/Vstup/Zboží/Druhá snížená", "name": "Druhá snížená - zboží EU", "print": "EU/Zboží/Druhá snížená",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "361",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"CZ217": {
+		"EUCZ217": {
 			"fullName": "EU/Vstup/Služby/Základní", "name": "Základní - služby EU", "print": "EU/Služby/Základní",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "207",
 			"sumTax": 0, "rowTaxReturn": 43
 		},
-		"CZ218": {
+		"EUCZ218": {
 			"fullName": "EU/Vstup/Služby/Snížená", "name": "Snížená - služby EU", "print": "EU/Služby/Snížená",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "208",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"CZ392": {
+		"EUCZ392": {
 			"fullName": "EU/Vstup/Služby/První snížená", "name": "První snížená - služby EU", "print": "EU/Služby/První snížená",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "362",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"CZ393": {
+		"EUCZ393": {
 			"fullName": "EU/Vstup/Služby/Druhá snížená", "name": "Druhá snížená - služby EU", "print": "EU/Služby/Druhá snížená",
 			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "363",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"CZ401": {
+		"EUCZ401": {
 			"fullName": "VÝVOZ/Výstup/Zboží", "name": "Zboží VÝVOZ", "print": "VÝVOZ/Zboží",
 			"type": 2, "dir": 1, "rate": 2,
 			"rowTaxReturn": 22
 		},
-		"CZ405": {
+		"EUCZ405": {
 			"fullName": "DOVOZ/Výstup/Zboží/Základní (odběratel)", "name": "Základní - zboží DOVOZ (ODB)", "print": "Základní - zboží DOVOZ (odběratel)",
 			"type": 2, "dir": 1, "rate": 0, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 7
 		},
-		"CZ406": {
+		"EUCZ406": {
 			"fullName": "DOVOZ/Výstup/Zboží/Snížená (odběratel)", "name": "Snížená - zboží DOVOZ (ODB)", "print": "Snížená - zboží DOVOZ (odběratel)",
 			"type": 2, "dir": 1, "rate": 1, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 8
 		},
-		"CZ460": {
+		"EUCZ460": {
 			"fullName": "DOVOZ/Výstup/Zboží/První snížená (odběratel)", "name": "První snížená - zboží DOVOZ (ODB)", "print": "První snížená - zboží DOVOZ (odběratel)",
 			"type": 2, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 8
 		},
-		"CZ461": {
+		"EUCZ461": {
 			"fullName": "DOVOZ/Výstup/Zboží/Druhá snížená (odběratel)", "name": "Druhá snížená - zboží DOVOZ (ODB)", "print": "Druhá snížená - zboží DOVOZ (odběratel)",
 			"type": 2, "dir": 1, "rate": 5, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 8
 		},
-		"CZ415": {
+		"EUCZ415": {
 			"fullName": "DOVOZ/Vstup/Zboží/Základní", "name": "Základní - zboží DOVOZ", "print": "DOVOZ/Zboží/Základní",
 			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "405",
 			"sumTax": 0, "rowTaxReturn": 43
 		},
-		"CZ416": {
+		"EUCZ416": {
 			"fullName": "DOVOZ/Vstup/Zboží/Snížená", "name": "Snížená - zboží DOVOZ", "print": "DOVOZ/Zboží/Snížená",
 			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "406",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"CZ490": {
+		"EUCZ490": {
 			"fullName": "DOVOZ/Vstup/Zboží/První snížená", "name": "První snížená - zboží DOVOZ", "print": "DOVOZ/Zboží/První snížená",
 			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "460",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"CZ491": {
+		"EUCZ491": {
 			"fullName": "DOVOZ/Vstup/Zboží/Druhá snížená", "name": "Druhá snížená - zboží DOVOZ", "print": "DOVOZ/Zboží/Druhá snížená",
 			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "461",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
-		"CZ000": {
+		"EUCZ000": {
 			"fullName": "Nedaňový řádek", "name": "---", "print": "---",
 			"rate": 0
 		}
 	},
 	"taxPercents": [
-		{"code": "CZ110", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},
-		{"code": "CZ110", "from": "2012-01-01", "to": "2012-12-31", "value": 20.0},
-		{"code": "CZ110", "from": "2013-01-01", "to": "0000-00-00", "value": 21.0},
-		{"code": "CZ111", "from": "2010-01-01", "to": "2011-12-31", "value": 10.0},
-		{"code": "CZ111", "from": "2012-01-01", "to": "2012-12-31", "value": 14.0},
-		{"code": "CZ111", "from": "2013-01-01", "to": "2014-12-31", "value": 15.0},
-		{"code": "CZ115", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},
-		{"code": "CZ115", "from": "2012-01-01", "to": "2012-12-31", "value": 20.0},
-		{"code": "CZ115", "from": "2013-01-01", "to": "0000-00-00", "value": 21.0},
-		{"code": "CZ116", "from": "2010-01-01", "to": "2011-12-31", "value": 10.0},
-		{"code": "CZ116", "from": "2012-01-01", "to": "2012-12-31", "value": 14.0},
-		{"code": "CZ116", "from": "2013-01-01", "to": "2014-12-31", "value": 15.0},
-		{"code": "CZ117", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},
-		{"code": "CZ117", "from": "2012-01-01", "to": "2012-12-31", "value": 20.0},
-		{"code": "CZ117", "from": "2013-01-01", "to": "0000-00-00", "value": 21.0},
-		{"code": "CZ118", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},
-		{"code": "CZ118", "from": "2012-01-01", "to": "2012-12-31", "value": 20.0},
-		{"code": "CZ118", "from": "2013-01-01", "to": "0000-00-00", "value": 21.0},
-		{"code": "CZ119", "from": "2010-01-01", "to": "2011-12-31", "value": 10.0},
-		{"code": "CZ119", "from": "2012-01-01", "to": "2012-12-31", "value": 14.0},
-		{"code": "CZ119", "from": "2013-01-01", "to": "2014-12-31", "value": 15.0},
-		{"code": "CZ120", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},
-		{"code": "CZ120", "from": "2012-01-01", "to": "2012-12-31", "value": 20.0},
-		{"code": "CZ120", "from": "2013-01-01", "to": "0000-00-00", "value": 21.0},
-		{"code": "CZ121", "from": "2010-01-01", "to": "2011-12-31", "value": 10.0},
-		{"code": "CZ121", "from": "2012-01-01", "to": "2012-12-31", "value": 14.0},
-		{"code": "CZ121", "from": "2013-01-01", "to": "2014-12-31", "value": 15.0},
-		{"code": "CZ150", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},
-		{"code": "CZ150", "from": "2012-01-01", "to": "2012-12-31", "value": 20.0},
-		{"code": "CZ150", "from": "2013-01-01", "to": "0000-00-00", "value": 21.0},
-		{"code": "CZ151", "from": "2010-01-01", "to": "2011-12-31", "value": 10.0},
-		{"code": "CZ151", "from": "2012-01-01", "to": "2012-12-31", "value": 14.0},
-		{"code": "CZ151", "from": "2013-01-01", "to": "2014-12-31", "value": 15.0},
-		{"code": "CZ152", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},
-		{"code": "CZ152", "from": "2012-01-01", "to": "2012-12-31", "value": 20.0},
-		{"code": "CZ152", "from": "2013-01-01", "to": "0000-00-00", "value": 21.0},
-		{"code": "CZ201", "from": "2010-01-01", "to": "0000-00-00", "value": 0.0},
-		{"code": "CZ202", "from": "2010-01-01", "to": "0000-00-00", "value": 0.0},
-		{"code": "CZ215", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},
-		{"code": "CZ215", "from": "2012-01-01", "to": "2012-12-31", "value": 20.0},
-		{"code": "CZ215", "from": "2013-01-01", "to": "0000-00-00", "value": 21.0},
-		{"code": "CZ216", "from": "2010-01-01", "to": "2011-12-31", "value": 10.0},
-		{"code": "CZ216", "from": "2012-01-01", "to": "2012-12-31", "value": 14.0},
-		{"code": "CZ216", "from": "2013-01-01", "to": "2014-12-31", "value": 15.0},
-		{"code": "CZ217", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},
-		{"code": "CZ217", "from": "2012-01-01", "to": "2012-12-31", "value": 20.0},
-		{"code": "CZ217", "from": "2013-01-01", "to": "0000-00-00", "value": 21.0},
-		{"code": "CZ218", "from": "2010-01-01", "to": "2011-12-31", "value": 10.0},
-		{"code": "CZ218", "from": "2012-01-01", "to": "2012-12-31", "value": 14.0},
-		{"code": "CZ218", "from": "2013-01-01", "to": "2014-12-31", "value": 15.0},
-		{"code": "CZ000", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
-		{"code": "CZ112", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
-		{"code": "CZ113", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
-		{"code": "CZ122", "from": "0000-00-00", "to":	 "0000-00-00", "value": 0.0},
-		{"code": "CZ123", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "EUCZ110", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},
+		{"code": "EUCZ110", "from": "2012-01-01", "to": "2012-12-31", "value": 20.0},
+		{"code": "EUCZ110", "from": "2013-01-01", "to": "0000-00-00", "value": 21.0},
+		{"code": "EUCZ111", "from": "2010-01-01", "to": "2011-12-31", "value": 10.0},
+		{"code": "EUCZ111", "from": "2012-01-01", "to": "2012-12-31", "value": 14.0},
+		{"code": "EUCZ111", "from": "2013-01-01", "to": "2014-12-31", "value": 15.0},
+		{"code": "EUCZ115", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},
+		{"code": "EUCZ115", "from": "2012-01-01", "to": "2012-12-31", "value": 20.0},
+		{"code": "EUCZ115", "from": "2013-01-01", "to": "0000-00-00", "value": 21.0},
+		{"code": "EUCZ116", "from": "2010-01-01", "to": "2011-12-31", "value": 10.0},
+		{"code": "EUCZ116", "from": "2012-01-01", "to": "2012-12-31", "value": 14.0},
+		{"code": "EUCZ116", "from": "2013-01-01", "to": "2014-12-31", "value": 15.0},
+		{"code": "EUCZ117", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},
+		{"code": "EUCZ117", "from": "2012-01-01", "to": "2012-12-31", "value": 20.0},
+		{"code": "EUCZ117", "from": "2013-01-01", "to": "0000-00-00", "value": 21.0},
+		{"code": "EUCZ118", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},
+		{"code": "EUCZ118", "from": "2012-01-01", "to": "2012-12-31", "value": 20.0},
+		{"code": "EUCZ118", "from": "2013-01-01", "to": "0000-00-00", "value": 21.0},
+		{"code": "EUCZ119", "from": "2010-01-01", "to": "2011-12-31", "value": 10.0},
+		{"code": "EUCZ119", "from": "2012-01-01", "to": "2012-12-31", "value": 14.0},
+		{"code": "EUCZ119", "from": "2013-01-01", "to": "2014-12-31", "value": 15.0},
+		{"code": "EUCZ120", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},
+		{"code": "EUCZ120", "from": "2012-01-01", "to": "2012-12-31", "value": 20.0},
+		{"code": "EUCZ120", "from": "2013-01-01", "to": "0000-00-00", "value": 21.0},
+		{"code": "EUCZ121", "from": "2010-01-01", "to": "2011-12-31", "value": 10.0},
+		{"code": "EUCZ121", "from": "2012-01-01", "to": "2012-12-31", "value": 14.0},
+		{"code": "EUCZ121", "from": "2013-01-01", "to": "2014-12-31", "value": 15.0},
+		{"code": "EUCZ150", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},
+		{"code": "EUCZ150", "from": "2012-01-01", "to": "2012-12-31", "value": 20.0},
+		{"code": "EUCZ150", "from": "2013-01-01", "to": "0000-00-00", "value": 21.0},
+		{"code": "EUCZ151", "from": "2010-01-01", "to": "2011-12-31", "value": 10.0},
+		{"code": "EUCZ151", "from": "2012-01-01", "to": "2012-12-31", "value": 14.0},
+		{"code": "EUCZ151", "from": "2013-01-01", "to": "2014-12-31", "value": 15.0},
+		{"code": "EUCZ152", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},
+		{"code": "EUCZ152", "from": "2012-01-01", "to": "2012-12-31", "value": 20.0},
+		{"code": "EUCZ152", "from": "2013-01-01", "to": "0000-00-00", "value": 21.0},
+		{"code": "EUCZ201", "from": "2010-01-01", "to": "0000-00-00", "value": 0.0},
+		{"code": "EUCZ202", "from": "2010-01-01", "to": "0000-00-00", "value": 0.0},
+		{"code": "EUCZ215", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},
+		{"code": "EUCZ215", "from": "2012-01-01", "to": "2012-12-31", "value": 20.0},
+		{"code": "EUCZ215", "from": "2013-01-01", "to": "0000-00-00", "value": 21.0},
+		{"code": "EUCZ216", "from": "2010-01-01", "to": "2011-12-31", "value": 10.0},
+		{"code": "EUCZ216", "from": "2012-01-01", "to": "2012-12-31", "value": 14.0},
+		{"code": "EUCZ216", "from": "2013-01-01", "to": "2014-12-31", "value": 15.0},
+		{"code": "EUCZ217", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},
+		{"code": "EUCZ217", "from": "2012-01-01", "to": "2012-12-31", "value": 20.0},
+		{"code": "EUCZ217", "from": "2013-01-01", "to": "0000-00-00", "value": 21.0},
+		{"code": "EUCZ218", "from": "2010-01-01", "to": "2011-12-31", "value": 10.0},
+		{"code": "EUCZ218", "from": "2012-01-01", "to": "2012-12-31", "value": 14.0},
+		{"code": "EUCZ218", "from": "2013-01-01", "to": "2014-12-31", "value": 15.0},
+		{"code": "EUCZ000", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "EUCZ112", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "EUCZ113", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "EUCZ122", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "EUCZ123", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
 
-		{"code": "CZ301", "from": "2015-01-01", "to": "0000-00-00", "value": 15.0},
-		{"code": "CZ302", "from": "2015-01-01", "to": "0000-00-00", "value": 10.0},
-		{"code": "CZ310", "from": "2015-01-01", "to": "0000-00-00", "value": 15.0},
-		{"code": "CZ311", "from": "2015-01-01", "to": "0000-00-00", "value": 10.0},
-		{"code": "CZ340", "from": "2015-01-01", "to": "0000-00-00", "value": 15.0},
-		{"code": "CZ341", "from": "2015-01-01", "to": "0000-00-00", "value": 15.0},
-		{"code": "CZ342", "from": "2015-01-01", "to": "0000-00-00", "value": 10.0},
-		{"code": "CZ350", "from": "2015-01-01", "to": "0000-00-00", "value": 15.0},
-		{"code": "CZ390", "from": "2015-01-01", "to": "0000-00-00", "value": 15.0},
-		{"code": "CZ391", "from": "2015-01-01", "to": "0000-00-00", "value": 10.0},
-		{"code": "CZ392", "from": "2015-01-01", "to": "0000-00-00", "value": 15.0},
-		{"code": "CZ393", "from": "2015-01-01", "to": "0000-00-00", "value": 10.0},
+		{"code": "EUCZ301", "from": "2015-01-01", "to": "0000-00-00", "value": 15.0},
+		{"code": "EUCZ302", "from": "2015-01-01", "to": "0000-00-00", "value": 10.0},
+		{"code": "EUCZ310", "from": "2015-01-01", "to": "0000-00-00", "value": 15.0},
+		{"code": "EUCZ311", "from": "2015-01-01", "to": "0000-00-00", "value": 10.0},
+		{"code": "EUCZ340", "from": "2015-01-01", "to": "0000-00-00", "value": 15.0},
+		{"code": "EUCZ341", "from": "2015-01-01", "to": "0000-00-00", "value": 15.0},
+		{"code": "EUCZ342", "from": "2015-01-01", "to": "0000-00-00", "value": 10.0},
+		{"code": "EUCZ350", "from": "2015-01-01", "to": "0000-00-00", "value": 15.0},
+		{"code": "EUCZ390", "from": "2015-01-01", "to": "0000-00-00", "value": 15.0},
+		{"code": "EUCZ391", "from": "2015-01-01", "to": "0000-00-00", "value": 10.0},
+		{"code": "EUCZ392", "from": "2015-01-01", "to": "0000-00-00", "value": 15.0},
+		{"code": "EUCZ393", "from": "2015-01-01", "to": "0000-00-00", "value": 10.0},
 
-		{"code": "CZ401", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
-		{"code": "CZ415", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},
-		{"code": "CZ415", "from": "2012-01-01", "to": "2012-12-31", "value": 20.0},
-		{"code": "CZ415", "from": "2013-01-01", "to": "0000-00-00", "value": 21.0},
-		{"code": "CZ416", "from": "2010-01-01", "to": "2011-12-31", "value": 10.0},
-		{"code": "CZ416", "from": "2012-01-01", "to": "2012-12-31", "value": 14.0},
-		{"code": "CZ416", "from": "2013-01-01", "to": "2014-12-31", "value": 15.0},
-		{"code": "CZ490", "from": "2015-01-01", "to": "0000-00-00", "value": 15.0},
-		{"code": "CZ491", "from": "2015-01-01", "to": "0000-00-00", "value": 10.0}
+		{"code": "EUCZ401", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "EUCZ415", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},
+		{"code": "EUCZ415", "from": "2012-01-01", "to": "2012-12-31", "value": 20.0},
+		{"code": "EUCZ415", "from": "2013-01-01", "to": "0000-00-00", "value": 21.0},
+		{"code": "EUCZ416", "from": "2010-01-01", "to": "2011-12-31", "value": 10.0},
+		{"code": "EUCZ416", "from": "2012-01-01", "to": "2012-12-31", "value": 14.0},
+		{"code": "EUCZ416", "from": "2013-01-01", "to": "2014-12-31", "value": 15.0},
+		{"code": "EUCZ490", "from": "2015-01-01", "to": "0000-00-00", "value": 15.0},
+		{"code": "EUCZ491", "from": "2015-01-01", "to": "0000-00-00", "value": 10.0}
 	],
 	"taxNotes": {
 		"pdp4": {"text": "Daň odvede zákazník"},
