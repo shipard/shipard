@@ -1,10 +1,10 @@
 {
 	"taxRates": {
-		"0": {"title": "Základní"},
-		"1": {"title": "Střední"},
-        "2": {"title": "Snížená"},
-		"3": {"title": "Bez daně"},
-		"4": {"title": "Osvobozeno"}
+		"0": {"title": "Základní", "rt": 1},
+		"1": {"title": "Střední", "rt": 2},
+        "2": {"title": "Snížená", "rt": 2},
+		"3": {"title": "Bez daně", "rt": 0},
+		"4": {"title": "Osvobozeno", "rt": 0}
 	},
 	"taxCodes": {
 		"EUBE110": {

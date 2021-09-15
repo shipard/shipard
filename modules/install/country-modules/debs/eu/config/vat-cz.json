@@ -1,11 +1,11 @@
 {
 	"taxRates": {
-		"0": "Základní",
-		"1": "Snížená",
-		"2": "Bez daně",
-		"3": "Osvobozeno",
-		"4": "První snížená",
-		"5": "Druhá snížená"
+		"0": {"title": "Základní", "rt": 1},
+		"1": {"title": "Snížená", "rt": 2},
+		"2": {"title": "Bez daně", "rt": 0},
+		"3": {"title": "Osvobozeno", "rt": 0},
+		"4": {"title": "První snížená", "rt": 2},
+		"5": {"title": "Druhá snížená", "rt": 2}
 	},
 	"taxCodes": {
 		"EUCZ110": {

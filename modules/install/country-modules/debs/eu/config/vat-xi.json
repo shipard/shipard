@@ -1,9 +1,9 @@
 {
 	"taxRates": {
-		"0": {"title": "Základní"},
-        "1": {"title": "Snížená"},
-		"2": {"title": "Bez daně"},
-		"3": {"title": "Osvobozeno"}
+		"0": {"title": "Základní", "rt": 1},
+        "1": {"title": "Snížená", "rt": 2},
+		"2": {"title": "Bez daně", "rt": 0},
+		"3": {"title": "Osvobozeno", "rt": 0}
 	},
 	"taxCodes": {
 		"EUXI110": {

@@ -1,8 +1,8 @@
 {
 	"taxRates": {
-		"0": {"title": "Základní"},
-		"1": {"title": "Bez daně"},
-		"2": {"title": "Osvobozeno"}
+		"0": {"title": "Základní", "rt": 1},
+		"1": {"title": "Bez daně", "rt": 0},
+		"2": {"title": "Osvobozeno", "rt": 0}
 	},
 	"taxCodes": {
 		"EUDK110": {

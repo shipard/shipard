@@ -1,10 +1,10 @@
 {
 	"taxRates": {
-		"0": "Základní",
-		"1": "Snížená",
-        "2": "Supersnížená",
-		"3": "Bez daně",
-		"4": "Osvobozeno"
+		"0": {"title": "Základní", "rt": 1},
+		"1": {"title": "Snížená", "rt": 2},
+        "2": {"title": "Supersnížená", "rt": 2},
+		"3": {"title": "Bez daně", "rt": 0},
+		"4": {"title": "Osvobozeno", "rt": 0}
 	},
 	"taxCodes": {
 		"EUES110": {

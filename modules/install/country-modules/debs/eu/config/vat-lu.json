@@ -1,11 +1,11 @@
 {
 	"taxRates": {
-		"0": "Základní",
-		"1": "Střední",
-        "2": "Snížená",
-		"3": "Supersnížená",
-		"4": "Bez daně",
-		"5": "Osvobozeno"
+		"0": {"title": "Základní", "rt": 1},
+		"1": {"title": "Střední", "rt": 2},
+        "2": {"title": "Snížená", "rt": 2},
+		"3": {"title": "Supersnížená", "rt": 2},
+		"4": {"title": "Bez daně", "rt": 0},
+		"5": {"title": "Osvobozeno", "rt": 0}
 
 	},
 	"taxCodes": {
