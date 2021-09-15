@@ -129,7 +129,7 @@ class ViewTaxRegs extends TableView
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
 		$props = [];
-		$props[] = ['text' => $this->countries[$item['country']]['name'], 'class' => 'label label-default', 'icon' => 'icon-globe'];
+		$props[] = ['text' => $this->countries[$item['country']]['name'], 'class' => 'label label-default', 'icon' => 'system/iconGlobe'];
 
 		$periodType = $this->table->columnInfoEnum ('periodType', 'cfgText');
 		$props[] = ['text' => $periodType[$item['periodType']], 'class' => 'label label-default', 'icon' => 'system/iconCalendar'];

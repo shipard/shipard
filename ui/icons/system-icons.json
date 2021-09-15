@@ -627,6 +627,12 @@
 		"bsi": "bi-binoculars-fill",
 		"mdi": "visibility"
 	},
+	"iconGlobe":{
+		"fa5":"fa-globe-americas",
+        "fa5pro":"fa-globe-americas",
+        "bsi":"bi-globe",
+        "mdi":"public"
+	},
 	
 
 
