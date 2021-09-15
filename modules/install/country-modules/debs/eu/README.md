@@ -148,6 +148,10 @@
     - https://www.avalara.com/vatlive/en/country-guides/europe/greece/greek-vat-rates.html
     - https://taxsummaries.pwc.com/greece/corporate/other-taxes
 
+### Severní Irsko
+- Zdroje:
+    - https://home.kpmg/ie/en/home/insights/2020/12/northern-ireland-vat-rules-brexit.html
+
 ### Slovensko
 - COVID-19:
     - https://home.kpmg/xx/en/home/insights/2020/04/slovakia-tax-developments-in-response-to-covid-19.html
