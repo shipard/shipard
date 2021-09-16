@@ -16,11 +16,10 @@
     {"id": "owner", "name": "Vlastní adresa", "type": "int", "reference": "e10.persons.persons"},
 
 	  {"id": "vatReg", "name": "Registrace DPH", "type": "enumInt", "options": ["saveOnChange"],
-		  "enumCfg": {"cfgItem": "e10doc.base.taxRegs.vat", "cfgValue": "ndx", "cfgText": "title"}},
-    {"id": "vatWorldCountry", "name": "Země plnění", "type": "int", "reference": "e10.world.countries", "options": ["saveOnChange"]},
-    {"id": "vatCountry", "name": "Země plnění", "type": "enumString", "len": 2,
-      "enumCfg": {"cfgItem": "world.data.countriesIds", "cfgValue": "", "cfgText": "t"}},
-  
+		  "enumCfg": {"cfgItem": "e10doc.base.taxRegs", "cfgValue": "ndx", "cfgText": "title"}},
+    {"id": "taxCountry", "name": "Země plnění", "type": "enumString", "len": 2, "options": ["saveOnChange"],
+      "enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": ""}},
+    
     {"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons", "options": ["saveOnChange"]},
 		{"id": "personType", "name": "Typ osoby", "type": "enumInt",
 			"enumValues": {"0": "", "1": "Člověk", "2": "Firma"}},
@@ -103,6 +102,10 @@
 	    "enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
     {"id": "exchangeRate", "name": "Kurz", "type": "number", "dec": 7, "comboViewer": "combo", "comboTable": "e10doc.base.exchangeRatesValues"},
     {"id": "dateExchRate", "name": "Datum kurzu", "type": "date"},
+
+    {"id": "taxCurrency", "name": "Měna DPH", "type": "enumString", "len": 3,
+      "enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
+    {"id": "taxExchangeRate", "name": "Kurz měny DPH", "type": "number", "dec": 7, "comboViewer": "combo", "comboTable": "e10doc.base.exchangeRatesValues"},
 
 		{"id": "quantity", "name": "Množství", "type": "number", "dec": 3},
     {"id": "weightNet", "name": "Hmotnost netto", "label": "Hm. netto", "type": "number", "dec": 3},

@@ -37,7 +37,7 @@ class AddVatPeriodWizard extends \E10\Wizard
 		$this->openForm ();
 			$this->addInput ('calendarYear', 'Rok', TableForm::INPUT_STYLE_INT);
 
-			$vatRegs = $this->app()->cfgItem ('e10doc.base.taxRegs.vat', []);
+			$vatRegs = $this->app()->cfgItem ('e10doc.base.taxRegs', []);
 			$vatRegsEnum = [];
 			foreach ($vatRegs as $vr)
 				$vatRegsEnum[$vr['ndx']] = $vr['title'];

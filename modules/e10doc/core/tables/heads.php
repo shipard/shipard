@@ -333,7 +333,7 @@ class TableHeads extends DbTable
 	{
 		if (!isset($recData['vatReg']) || !$recData['vatReg'])
 		{
-			$vatRegs = $this->app()->cfgItem('e10doc.base.taxRegs.vat', NULL);
+			$vatRegs = $this->app()->cfgItem('e10doc.base.taxRegs', NULL);
 			if ($vatRegs)
 				$recData['vatReg'] = key($vatRegs);
 			else
@@ -349,6 +349,9 @@ class TableHeads extends DbTable
 			$recData ['currency'] = $recData ['homeCurrency'];
     if ($recData ['exchangeRate'] == 0)
       $recData ['exchangeRate'] = 1;
+
+		if ($recData ['taxExchangeRate'] == 0)
+			$recData ['taxExchangeRate'] = 1;
 
 		// -- test home vs doc currency
 		if ($recData ['currency'] === $recData ['homeCurrency'])
@@ -468,20 +471,32 @@ class TableHeads extends DbTable
 			}
 		}
 
-		// -- vatReg & vatCountry
+		// -- vatReg & taxCountry
 		if ($recData['vatReg'])
 		{
-			$vatReg = $this->app()->cfgItem('e10doc.base.taxRegs.vat.'.$recData['vatReg'], NULL);
+			$vatReg = $this->app()->cfgItem('e10doc.base.taxRegs.'.$recData['vatReg'], NULL);
 			if ($vatReg && $vatReg['payerKind'] === 0)
 			{ // regular payer - not OSS
-				$recData['vatWorldCountry'] = $vatReg['worldCountry'];
+				$recData['taxCountry'] = $vatReg['taxCountry'];
 			}
-			$recData['vatCountry'] = World::countryId($this->app(), $recData['vatWorldCountry']);
+			else
+			{
+				$recData['taxType'] = 0;
+			}
+			$tcc = E10Utils::taxRegCurrency($this->app(), $vatReg, $recData['taxCountry']);
+			if ($recData['taxCurrency'] !== $tcc)
+			{
+				$recData['taxCurrency'] = $tcc;
+				$er = E10Utils::exchangeRate($this->app(), $recData['dateAccounting'], $recData['homeCurrency'], $recData['taxCurrency']);
+				if ($er)
+					$recData['taxExchangeRate'] = $er;
+				else
+					$recData['taxExchangeRate'] = 1;
+			}
 		}
 		else
 		{
-			$recData['vatWorldCountry'] = 0;
-			$recData['vatCountry'] = '';
+			$recData['taxCountry'] = '';
 		}
 
 		$this->checkColumnsSettings($recData);
@@ -542,6 +557,18 @@ class TableHeads extends DbTable
 				{
 					$saveData['recData']['exchangeRate'] = $er;
 					$saveData['recData']['dateExchRate'] = $saveData['recData']['dateAccounting'];
+				}
+			}
+			return;
+		}
+		if ($changedInput === 'taxCurrency')
+		{
+			if (isset($saveData['recData']['dateAccounting']) && !utils::dateIsBlank($saveData['recData']['dateAccounting']))
+			{
+				$er = e10utils::exchangeRate($this->app(), $saveData['recData']['dateAccounting'], $saveData['recData']['homeCurrency'], $saveData['recData']['taxCurrency']);
+				if ($er !== 0)
+				{
+					$saveData['recData']['taxExchangeRate'] = $er;
 				}
 			}
 			return;
@@ -720,7 +747,7 @@ class TableHeads extends DbTable
 
 		if (!isset($recData['vatReg']) || !$recData['vatReg'])
 		{
-			$vatRegs = $this->app()->cfgItem('e10doc.base.taxRegs.vat', NULL);
+			$vatRegs = $this->app()->cfgItem('e10doc.base.taxRegs', NULL);
 			if ($vatRegs)
 			{
 				$recData['vatReg'] = key($vatRegs);
@@ -728,10 +755,9 @@ class TableHeads extends DbTable
 				$vatReg = $vatRegs[$recData['vatReg']];
 				if ($vatReg && $vatReg['payerKind'] === 0)
 				{ // regular payer - not OSS
-					$recData['vatWorldCountry'] = $vatReg['worldCountry'];
-					$recData['vatCountry'] = World::countryId($this->app(), $recData['vatWorldCountry']);
+					$recData['taxCountry'] = $vatReg['taxCountry'];
 				}
-			}	
+			}
 			else
 				$recData['vatReg'] = 0;
 		}
@@ -1136,7 +1162,7 @@ class TableHeads extends DbTable
 		if (!$taxReports)
 			return;
 
-		$vatReg = $this->app()->cfgItem('e10doc.base.taxRegs.vat.'.$recData['vatReg'], NULL);
+		$vatReg = $this->app()->cfgItem('e10doc.base.taxRegs.'.$recData['vatReg'], NULL);
 		if (!$vatReg)
 			return;
 
@@ -1144,7 +1170,7 @@ class TableHeads extends DbTable
 		{
 			if (!isset($tr['docTypes']) || !in_array($recData['docType'], $tr['docTypes']))
 				continue;
-			if (!in_array($vatReg['country'], $tr['country']))
+			if (isset($tr['enabledCfgItem']) && !$this->app()->cfgItem ($tr['enabledCfgItem'], 0))
 				continue;
 
 			$trEngine = $this->app()->createObject($tr['engine']);
@@ -1905,6 +1931,18 @@ class TableHeads extends DbTable
 		$this->db()->query ("UPDATE [e10doc_core_heads] SET prepayment = 0 WHERE ndx = %i", $recData['ndx']);
 	}
 
+	public function columnInfoEnum ($columnId, $valueType = 'cfgText', TableForm $form = NULL)
+	{
+		if ($columnId === 'taxCountry' && $form)
+		{
+			$taxReg = $this->app()->cfgItem('e10doc.base.taxRegs.'.$form->recData['vatReg'], NULL);
+			if ($taxReg)
+				return E10Utils::taxCountries ($this->app(), $taxReg['taxArea']);
+			return [];	
+		}
+		return parent::columnInfoEnum ($columnId, $valueType = 'cfgText', $form);	
+	}
+
 	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, TableForm $form = NULL)
 	{
 		if (!$form)
@@ -1933,12 +1971,14 @@ class TableHeads extends DbTable
 
 	public function summaryVAT ($item, $wide = FALSE)
 	{
-		$cfgTaxCodes = E10Utils::docTaxCodes($this->app(), $item);//$this->app()->cfgItem ('e10.base.!taxCodes');
+		$cfgTaxCodes = E10Utils::docTaxCodes($this->app(), $item);
 
-		$fc = ($item ['currency'] !== $item ['homeCurrency']);
+		$fc = intval(($item ['currency'] !== $item ['homeCurrency']));
+		$tc = intval($item ['taxCurrency'] !== $item ['homeCurrency'] && $item ['taxCurrency'] !== $item ['currency'] && $item ['taxCurrency'] !== '');
 
 		$currencyName = $this->app()->cfgItem ('e10.base.currencies.'.$item ['currency'].'.shortcut');
 		$homeCurrencyName = $this->app()->cfgItem ('e10.base.currencies.'.$item ['homeCurrency'].'.shortcut');
+		$taxCurrencyName = $this->app()->cfgItem ('e10.base.currencies.'.$item ['taxCurrency'].'.shortcut');
 
 		$q = "SELECT * FROM [e10doc_core_taxes] WHERE [document] = %i ORDER BY [taxPercents] DESC, [taxCode]";
 		$rows = $this->db()->query($q, $item ['ndx']);
@@ -1988,7 +2028,7 @@ class TableHeads extends DbTable
 			}
 
 
-			if ($fc)
+			if ($fc || $tc)
 			{
 				if ($wide)
 				{
@@ -2000,21 +2040,35 @@ class TableHeads extends DbTable
 						'title' => $taxCode['fullName'], 'percents' => strval($r['taxPercents']),
 						'curr' => $currencyName,
 						'base' => $r['sumBase'], 'tax' => $r['sumTax'], 'total' => $r['sumTotal'],
-						'_options' => ['rowSpan' => ['title' => 2, 'percents' => 2], 'cellClasses' => $cellClasses]
+						'_options' => ['rowSpan' => ['#' => 1 + $fc + $tc, 'title' => 1 + $fc + $tc, 'percents' => 1 + $fc + $tc], 'cellClasses' => $cellClasses]
 					];
-					$dataTaxes [] = [
-						'curr' => $homeCurrencyName,
-						'base' => $r['sumBaseHc'], 'tax' => $r['sumTaxHc'], 'total' => $r['sumTotalHc'],
-						'_options' => ['cellClasses' => $cellClasses]
-					];
+					if ($fc)
+					{
+						$dataTaxes [] = [
+							'curr' => $homeCurrencyName,
+							'base' => $r['sumBaseHc'], 'tax' => $r['sumTaxHc'], 'total' => $r['sumTotalHc'],
+							'_options' => ['cellClasses' => $cellClasses]
+						];
+					}
+
+					if ($tc)
+					{
+						$dataTaxes [] = [
+							'curr' => $taxCurrencyName,
+							'base' => $r['sumBaseTax'], 'tax' => $r['sumTaxTax'], 'total' => $r['sumTotalTax'],
+							'_options' => ['cellClasses' => $cellClasses]
+						];
+					}
 				}
 			}
 			else
+			{
 				$dataTaxes [] = [
 					'title' => $taxCode['fullName'], 'percents' => utils::nf($r['taxPercents']),
 					'base' => $r['sumBaseHc'], 'tax' => $r['sumTaxHc'], 'total' => $r['sumTotalHc'],
 					'_options' => ['cellClasses' => $cellClasses]
 				];
+			}	
 		}
 
 		// -- total
@@ -2048,7 +2102,7 @@ class TableHeads extends DbTable
 			}
 		}
 
-		if ($fc)
+		if ($fc || $tc)
 			$h = array ('#' => '#', 'title' => 'Sazba', 'percents' => ' %', 'curr' => 'Měna', 'base' => ' Základ', 'tax' => ' Daň', 'total' => ' Celkem');
 		else
 			$h = array ('#' => '#', 'title' => 'Sazba', 'percents' => ' %', 'base' => ' Základ', 'tax' => ' Daň', 'total' => ' Celkem');
@@ -2691,7 +2745,7 @@ class ViewHeads extends TableView
 		$this->today = date('ymd');
 		$this->paymentMethods = $this->table->app()->cfgItem ('e10.docs.paymentMethods');
 		$this->useMoreTaxRegs = intval($this->table->app()->cfgItem ('e10doc.base.tax.flags.moreRegs', 0));
-		$this->taxRegs = $this->table->app()->cfgItem ('e10doc.base.taxRegs.vat');
+		$this->taxRegs = $this->table->app()->cfgItem ('e10doc.base.taxRegs');
 
 		$this->createMainQueries ();
 		$this->createBottomTabs ();
@@ -2957,7 +3011,7 @@ class ViewHeads extends TableView
 
 		array_push($q, ' persons.fullName as personFullName, heads.[paymentMethod],');
 		array_push($q, ' heads.[rosReg] as rosReg, heads.[rosState] as rosState,');
-		array_push($q, ' heads.[vatReg], heads.[vatCountry]');
+		array_push($q, ' heads.[vatReg], heads.[taxCountry]');
 		array_push($q, ' FROM [e10doc_core_heads] AS heads');
 		array_push($q, ' LEFT JOIN [e10_persons_persons] AS persons ON heads.person = persons.ndx');
 		array_push($q, ' WHERE 1');
@@ -3138,9 +3192,9 @@ class ViewHeads extends TableView
 			if ($taxReg)
 			{
 				if ($taxReg['payerKind'] === 0)
-					$taxRegLabel = ['text' => substr($taxReg['taxId'], 0, 2), 'class' => 'label label-default', 'icon' => 'tables/e10doc.base.taxRegs'];
+					$taxRegLabel = ['text' => strtoupper($taxReg['taxCountry']), 'class' => 'label label-default', 'icon' => 'tables/e10doc.base.taxRegs'];
 				else
-					$taxRegLabel = ['text' => 'OSS', 'suffix' => $item['vatCountry'], 'class' => 'label label-default', 'icon' => 'tables/e10doc.base.taxRegs'];	
+					$taxRegLabel = ['text' => 'OSS', 'suffix' => strtoupper($item['taxCountry']), 'class' => 'label label-default', 'icon' => 'tables/e10doc.base.taxRegs'];	
 
 				$props [] = $taxRegLabel;	
 			}
@@ -3507,7 +3561,7 @@ class FormHeads extends TableForm
 		$newRows = [];
 		forEach ($newTaxes as $newTax)
 		{
-			$cfgTaxCode = $docTaxCodes[$newTax['taxCode']];//$this->app()->cfgItem ('e10.base.!taxCodes.' . $newTax['taxCode'], NULL);
+			$cfgTaxCode = $docTaxCodes[$newTax['taxCode']];
 			$zeroTax = 0;
 			if (isset ($cfgTaxCode ['zeroTax']) && ($cfgTaxCode ['zeroTax'] == 1))
 				$zeroTax = 1;
@@ -3526,6 +3580,30 @@ class FormHeads extends TableForm
 			$nt ['sumBaseHc'] = $newTax ['taxBaseHc'];
 			$nt ['sumTaxHc'] = $newTax ['taxHc'];
 			$nt ['sumTotalHc'] = $newTax ['priceTotalHc'];
+
+			// -- tax currency amounts:
+			$nt ['sumBaseTax'] = 0;
+			$nt ['sumTaxTax'] = 0;
+			$nt ['sumTotalTax'] = 0;
+
+			if ($this->recData ['currency'] === $this->recData ['taxCurrency'])
+			{
+				$nt ['sumBaseTax'] = $nt ['sumBase'];
+				$nt ['sumTaxTax'] = $nt ['sumTax'];
+				$nt ['sumTotalTax'] = $nt ['sumTotal'];
+			}
+			elseif ($this->recData ['homeCurrency'] === $this->recData ['taxCurrency'])
+			{
+				$nt ['sumBaseTax'] = $nt ['sumBaseHc'];
+				$nt ['sumTaxTax'] = $nt ['sumTaxHc'];
+				$nt ['sumTotalTax'] = $nt ['sumTotalHc'];
+			}
+			else
+			{
+				$nt ['sumBaseTax'] = round($nt ['sumBaseHc'] / $this->recData ['taxExchangeRate'], 2);
+				$nt ['sumTaxTax'] = round($nt ['sumTaxHc'] / $this->recData ['taxExchangeRate'], 2);
+				$nt ['sumTotalTax'] = round($nt ['sumTotalHc'] / $this->recData ['taxExchangeRate'], 2);
+			}
 
 			$nt ['weight'] = $newTax ['weight'];
 			$nt ['quantity'] = $newTax ['quantity'];
@@ -3844,6 +3922,16 @@ class FormHeads extends TableForm
 			];
 			return $cp;
 		}
+		if ($srcTableId === 'e10doc.core.heads' && $srcColumnId === 'taxExchangeRate')
+		{
+			$cp = [
+				'docType' => strval ($recData['docType']),
+				'srcCurrency' => $recData['homeCurrency'], 'dstCurrency' => $recData['taxCurrency'],
+				'dstColumnId' => $srcColumnId,
+				'dateAccounting' => utils::createDateTime ($recData['dateAccounting'])->format('Y-m-d')
+			];
+			return $cp;
+		}
 		if ($srcTableId === 'e10doc.core.rows' && $srcColumnId === 'exchangeRate')
 		{
 			$cp = [
@@ -3888,7 +3976,7 @@ class FormHeads extends TableForm
 	protected function useMoreVATRegs()
 	{
 		if (!$this->vatRegs)
-			$this->vatRegs = $this->app()->cfgItem ('e10doc.base.taxRegs.vat', []);
+			$this->vatRegs = $this->app()->cfgItem ('e10doc.base.taxRegs', []);
 		return (count($this->vatRegs) > 1);
 	}
 

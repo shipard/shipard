@@ -3,6 +3,10 @@
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 
+		{"id": "taxArea", "name": "Daňová oblast", "type": "enumString", "len": 15, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.base.taxAreas", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "taxCountry", "name": "Daňová země", "type": "enumString", "len": 2, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": ""}},
 		{"id": "taxType", "name": "Daň", "type": "enumString", "len": 15, "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "e10doc.base.taxRegsTypes", "cfgValue": "", "cfgText": "name"}},
 		{"id": "payerKind", "name": "Druh plátce", "type": "enumInt", "options": ["saveOnChange"],

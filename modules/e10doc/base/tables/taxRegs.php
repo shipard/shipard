@@ -2,8 +2,9 @@
 
 namespace e10doc\base;
 
-use \E10\utils, \E10\TableView, \E10\TableForm, \E10\DbTable;
+use \E10\utils, \E10\TableView, \Shipard\Form\TableForm, \E10\DbTable;
 use \Shipard\Utils\World;
+use \e10doc\core\libs\E10Utils;
 
 /**
  * Class TableTaxRegs
@@ -19,13 +20,14 @@ class TableTaxRegs extends DbTable
 	public function checkBeforeSave (&$recData, $ownerData = NULL)
 	{
 		parent::checkBeforeSave ($recData, $ownerData);
-		$recData['country'] = World::countryId($this->app(), $recData['worldCountry']);
+	}
 
-		if (!isset ($recData['docState']) || $recData['docState'] == 0)
-		{
-			$recData['docState'] = 4000;
-			$recData['docState'] = 2;
-		}
+	public function columnInfoEnum ($columnId, $valueType = 'cfgText', TableForm $form = NULL)
+	{
+		if ($columnId === 'taxCountry' && $form)	
+			return E10Utils::taxCountries ($this->app(), $form->recData['taxArea']);
+
+		return parent::columnInfoEnum ($columnId, $valueType = 'cfgText', $form);	
 	}
 
 	public function createHeader ($recData, $options)
@@ -49,12 +51,13 @@ class TableTaxRegs extends DbTable
 			if ($vatPeriod != 0 && $vatId != '')
 			{
 				$newReg = [
-						'taxType' => 'vat', 'taxId' => $vatId, 
-						'country' => 'cz', 
+						'taxArea' => 'eu', 
+						'taxCountry' => 'cz', 
+						'taxType' => 'vat', 
+						'taxId' => $vatId, 
 						'docState' => 4000, 'docStateMain' => 2, 'title' => 'DPH - ' . $vatId,
 						'periodType' => $vatPeriod, 'periodTypeVatCS' => 1
 				];
-				$newReg['worldCountry'] = World::countryNdx($this->app(), $newReg['country']);
 
 				$this->db()->query('INSERT INTO [e10doc_base_taxRegs] ', $newReg);
 			}
@@ -68,20 +71,22 @@ class TableTaxRegs extends DbTable
 		foreach ($rows as $r)
 		{
 			$tr = [
-				'ndx' => $r ['ndx'], 'taxType' => $r['taxType'], 'payerKind' => $r['payerKind'],
+				'ndx' => $r ['ndx'], 
+				'taxArea' => $r['taxArea'], 
+				'taxCountry' => $r['taxCountry'],
+				'taxType' => $r['taxType'], 'payerKind' => $r['payerKind'],
 				'taxId' => $r ['taxId'], 'title' => $r ['title'], 
-				'country' => $r['country'], 'worldCountry' => $r['worldCountry'], 
 				'periodType' => $r['periodType']
 			];
-			if ($r['taxType'] === 'vat' && $r['country'] === 'cz')
+			if ($r['taxType'] === 'vat' && $r['taxCountry'] === 'cz')
 				$tr['periodTypeVatCS'] = $r['periodTypeVatCS'];
 
-			if ($r['taxType'] === 'vat' && $r['payerKind'] === 1)
+			if ($r['taxArea'] === 'eu' && $r['taxType'] === 'vat' && $r['payerKind'] === 1)
 				$taxFlags['useOSS'] = 1;
 
 			$taxFlags['moreRegs']++;
 
-			$list [$r['taxType']][$r['ndx']] = $tr;
+			$list[$r['ndx']] = $tr;
 		}
 
 		// save to file - registrations
@@ -102,12 +107,12 @@ class TableTaxRegs extends DbTable
 class ViewTaxRegs extends TableView
 {
 	var $taxRegsTypes;
-	var $countries;
+	var $taxAreas;
 
 	public function init ()
 	{
 		$this->taxRegsTypes = $this->app()->cfgItem('e10doc.base.taxRegsTypes');
-		$this->countries = $this->app()->cfgItem('e10.base.countries');
+		$this->taxAreas = $this->app()->cfgItem('e10doc.base.taxAreas');
 
 		parent::init();
 
@@ -129,12 +134,25 @@ class ViewTaxRegs extends TableView
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
 		$props = [];
-		$props[] = ['text' => $this->countries[$item['country']]['name'], 'class' => 'label label-default', 'icon' => 'system/iconGlobe'];
+
+		$taxArea = $this->taxAreas[$item['taxArea']] ?? NULL;
+		if ($taxArea)
+		{
+			$props[] = ['text' => $taxArea['sn'], 'class' => 'label label-default', 'icon' => 'system/iconGlobe'];
+
+			$taxCountry = $taxArea['countries'][$item['taxCountry']] ?? NULL;
+			if ($taxCountry)
+				$props[] = ['text' => $taxCountry['fn'], 'class' => 'label label-default'];
+			else
+				$props[] = ['text' => 'Neznámá země', 'class' => 'label label-danger'];
+			}	
+		else
+			$props[] = ['text' => 'Neznámá daňová oblast', 'class' => 'label label-danger'];
 
 		$periodType = $this->table->columnInfoEnum ('periodType', 'cfgText');
 		$props[] = ['text' => $periodType[$item['periodType']], 'class' => 'label label-default', 'icon' => 'system/iconCalendar'];
 
-		if ($item['taxType'] === 'vat' && $item['country'] === 'cz')
+		if ($item['taxType'] === 'vat' && $item['taxCountry'] === 'cz')
 		{
 			$periodType = $this->table->columnInfoEnum ('periodTypeVatCS', 'cfgText');
 			$props[] = ['text' => 'KH: '.$periodType[$item['periodTypeVatCS']], 'class' => 'label label-default', 'icon' => 'system/iconCalendar'];
@@ -182,13 +200,16 @@ class FormTaxReg extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
 		$this->openForm ();
+			$this->addColumnInput ('taxArea');
 			$this->addColumnInput ('taxType');
+			$this->addColumnInput ('taxCountry');
+
 			if ($this->recData['taxType'] === 'vat')
 				$this->addColumnInput ('payerKind');
-			$this->addColumnInput ('worldCountry');
+
 			$this->addColumnInput ('taxId');
 			$this->addColumnInput ('periodType');
-			if ($this->recData['taxType'] === 'vat' && $this->recData['country'] === 'cz')
+			if ($this->recData['taxType'] === 'vat' && $this->recData['taxCountry'] === 'cz')
 				$this->addColumnInput ('periodTypeVatCS');
 			$this->addColumnInput ('title');
 		$this->closeForm ();

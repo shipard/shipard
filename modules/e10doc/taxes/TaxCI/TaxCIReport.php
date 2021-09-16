@@ -728,7 +728,7 @@ class TaxCIReport extends \e10doc\taxes\TaxReportReport
 
 			$this->data['flags']['forma'][$partData['dapdpp_forma']] = 'X';
 
-			$vatReg = $this->app()->cfgItem('e10doc.base.taxRegs.vat.'.$this->taxReportRecData['taxReg'], NULL);
+			$vatReg = $this->app()->cfgItem('e10doc.base.taxRegs.'.$this->taxReportRecData['taxReg'], NULL);
 			if ($vatReg)
 				$partData['dic'] = substr($vatReg['taxId'], 2);
 		}

@@ -66,12 +66,18 @@ class Upgrade extends Utility
 	
 		foreach ($rows as $r)
 		{
-			if (strlen($r[$columnId]) === 5)
+			if (strlen($r[$columnId]) === 7)
 				continue;
 
-			$newTaxCode = 'CZ'.trim($r[$columnId]);
-			if ($newTaxCode === 'CZ0' || $newTaxCode == '' || $newTaxCode == 'CZ')	
-				$newTaxCode = 'CZ000';
+			if (strlen($r[$columnId]) === 5)
+			{
+				$newTaxCode = 'EU'.trim($r[$columnId]);
+			}
+			else {
+				$newTaxCode = 'EUCZ'.trim($r[$columnId]);
+				if ($newTaxCode === 'EUCZ0' || $newTaxCode == '' || $newTaxCode == 'EUCZ')	
+					$newTaxCode = 'EUCZ000';					
+			}
 
 			echo "* ".json_encode($r[$columnId]) .' -> '.$newTaxCode;
 

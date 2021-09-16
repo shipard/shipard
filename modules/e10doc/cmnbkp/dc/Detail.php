@@ -193,8 +193,12 @@ class Detail extends \e10doc\core\dc\Detail
 				$stateClasses = 'e10-icon e10-row-stop';
 				$iconState = 'icon-exclamation-circle';
 			}
-			$list[] = ['description' => $subTotalLabels[$dir]['description'], 'taxBase' => $baseValueSubtotal, 'taxValue' => $taxValueSubtotal, 'state' => ['icon' => $iconState, 'text' => ''],
-					'_options' => ['class' => 'subtotal', 'afterSeparator' => 'separator', 'cellClasses' => ['state' => $stateClasses], 'colSpan' => ['description' => 2]]];
+			$list[] = [
+				'description' => $subTotalLabels[$dir]['description'] ?? '!!!', 
+				'taxBase' => $baseValueSubtotal, 'taxValue' => $taxValueSubtotal, 
+				'state' => ['icon' => $iconState, 'text' => ''],
+				'_options' => ['class' => 'subtotal', 'afterSeparator' => 'separator', 'cellClasses' => ['state' => $stateClasses], 'colSpan' => ['description' => 2]]
+			];
 		}
 
 		$cnt = 0;
@@ -659,9 +663,9 @@ class Detail extends \e10doc\core\dc\Detail
 					'colSpan' => ['text' => 4]));
 				break;
 
-			case 'taxVatReturn': // DPH
-				$this->addContentTaxVatReturn();
-				break;
+			//case 'taxVatReturn': // DPH
+			//	$this->addContentTaxVatReturn();
+			//	break;
 
 			case 'prpActivate': // Zařazení majetku
 			case 'prpDiscard': // Vyřazení majetku

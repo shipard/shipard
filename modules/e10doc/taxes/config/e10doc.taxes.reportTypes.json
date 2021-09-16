@@ -2,10 +2,6 @@
 	"eu-vat-tr": {
 		"name": "Přiznání DPH",
 		"shortName": "Přiznání DPH",
-		"country": [
-			"at", "be", "bg", "bg", "cy", "cz", "de", "dk", "ee", "el", "es", "fi", "fr", "hr", "hu", 
-			"ie", "it", "lt", "lu", "lv", "mt", "nl", "pl", "pt", "ro", "se", "si", "sk"
-		], 
 		"validFrom": "1993-01-01", "validTo": "0000-00-00",
 		"periodType": "vat",
 		"engine": "e10doc.taxes.VatReturn.VatReturnEngine",
@@ -19,7 +15,8 @@
 	"eu-vat-oss": {
 		"name": "DPH - OSS",
 		"shortName": "DPH - OSS",
-		"country": ["cz"], "validFrom": "2021-01-01", "validTo": "0000-00-00",
+		"enabledCfgItem": "e10doc.base.tax.flags.moreRegs",
+		"validFrom": "2021-01-01", "validTo": "0000-00-00",
 		"periodType": "vat",
 		"engine": "e10doc.taxes.VatOSS.VatOSSEngine",
 		"filingEngine": "e10doc.taxes.VatOSS.VatOSSFilingEngine",
@@ -32,7 +29,7 @@
 	"cz-vat-cs": {
 		"name": "Kontrolní hlášení DPH",
 		"shortName": "Kontrolní hlášení",
-		"country": ["cz"], "validFrom": "2016-01-01", "validTo": "0000-00-00",
+		"validFrom": "2016-01-01", "validTo": "0000-00-00",
 		"periodType": "vat",
 		"engine": "e10doc.taxes.VatCS.VatCSEngine",
 		"filingEngine": "e10doc.taxes.VatCS.VatCSFilingEngine",
@@ -45,7 +42,6 @@
 	"eu-vat-rs": {
 		"name": "Souhrnné hlášení DPH",
 		"shortName": "Souhrnné hlášení",
-		"country": ["cz"], 
 		"validFrom": "1995-01-01", "validTo": "0000-00-00",
 		"periodType": "vat",
 		"engine": "e10doc.taxes.VatRS.VatRSEngine",

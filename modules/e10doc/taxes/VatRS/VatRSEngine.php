@@ -33,7 +33,7 @@ class VatRSEngine extends \e10doc\taxes\TaxReportEngine
 
 	public function documentAdd ($recData)
 	{
-		$vatRegCfg = $this->app()->cfgItem('e10doc.base.taxRegs.vat.'.$recData['vatReg'], NULL);
+		$vatRegCfg = $this->app()->cfgItem('e10doc.base.taxRegs.'.$recData['vatReg'], NULL);
 		if (!$vatRegCfg)
 			return;
 		if ($vatRegCfg['payerKind'] !== 0) // regular payer - not OSS
@@ -41,7 +41,7 @@ class VatRSEngine extends \e10doc\taxes\TaxReportEngine
 
 		$this->reportRecData = $this->searchReport($recData['dateTax'], $recData['vatReg']);
 
-		$taxCodes = E10Utils::taxCodes($this->app(), $vatRegCfg['country']);
+		$taxCodes = E10Utils::taxCodes($this->app(), $vatRegCfg['taxArea'], $vatRegCfg['taxCountry']);
 
 		$this->rsTaxCodes = [];
 		foreach ($taxCodes as $key => $c)

@@ -1,0 +1,211 @@
+{
+  "fn": "Evropská Unie", 
+  "sn": "EU",
+  "taxType": "vat",
+  "countries":
+  {
+    "at": {
+      "sn": "Rakousko",
+      "fn": "AT - Rakousko",
+      "country": "at",
+      "validFrom": "0000-00-00", "validTo": "0000-00-00",
+      "currency": "eur"
+    },
+    "be": {
+      "sn": "Belgie",
+      "fn": "BE - Belgie",
+      "country": "be",
+      "validFrom": "0000-00-00", "validTo": "0000-00-00",
+      "currency": "eur"
+    },
+    "bg": {
+      "sn": "Bulharsko",
+      "fn": "BG - Bulharsko",
+      "country": "bg",
+      "validFrom": "2007-01-01", "validTo": "0000-00-00",
+      "currency": "bgn"
+    },
+    "cy": {
+      "sn": "Kypr",
+      "fn": "CY - Kypr",
+      "country": "cy",
+      "validFrom": "2004-05-01", "validTo": "0000-00-00",
+      "currency": "eur"
+    },
+    "cz": {
+      "sn": "Česko",
+      "fn": "CZ - Česko",
+      "country": "cz",
+      "validFrom": "2004-05-01", "validTo": "0000-00-00",
+      "currency": "czk"
+    },
+    "de": {
+      "sn": "Německo",
+      "fn": "DE - Německo",
+      "country": "de",
+      "validFrom": "0000-00-00", "validTo": "0000-00-00",
+      "currency": "eur"
+    },
+    "dk": {
+      "sn": "Dánsko",
+      "fn": "DK - Dánsko",
+      "country": "dk",
+      "validFrom": "0000-00-00", "validTo": "0000-00-00",
+      "currency": "dkk"
+    },
+    "ee": {
+      "sn": "Estonsko",
+      "fn": "EE - Estonsko",
+      "country": "de",
+      "validFrom": "2004-05-01", "validTo": "0000-00-00",
+      "currency": "eur"
+    },
+    "el": {
+      "sn": "Řecko",
+      "fn": "EL/GR - Řecko",
+      "country": "gr",
+      "validFrom": "0000-00-00", "validTo": "0000-00-00",
+      "currency": "eur"
+    },
+    "es": {
+      "sn": "Španělsko",
+      "fn": "ES - Španělsko",
+      "country": "es",
+      "validFrom": "0000-00-00", "validTo": "0000-00-00",
+      "currency": "eur"
+    },
+    "gb": {
+      "sn": "Velká Británie",
+      "fn": "GB - Velká Británie",
+      "country": "gb",
+      "validFrom": "0000-00-00", "validTo": "2020-12-31",
+      "currency": "gbp"
+    },
+    "fi": {
+      "sn": "Finsko",
+      "fn": "FI - Finsko",
+      "country": "fi",
+      "validFrom": "0000-00-00", "validTo": "0000-00-00",
+      "currency": "eur"
+    },
+    "fr": {
+      "sn": "Francie",
+      "fn": "FR - Francie",
+      "country": "fr",
+      "validFrom": "0000-00-00", "validTo": "0000-00-00",
+      "currency": "eur"
+    },
+    "hr": {
+      "sn": "Chorvatsko",
+      "fn": "HR - Chorvatsko",
+      "country": "hr",
+      "validFrom": "2013-07-01", "validTo": "0000-00-00",
+      "currency": "hrk"
+    },
+    "hu": {
+      "sn": "Maďarsko",
+      "fn": "HU - Maďarsko",
+      "country": "hu",
+      "validFrom": "2004-05-01", "validTo": "0000-00-00",
+      "currency": "huf"
+    },
+    "ie": {
+      "sn": "Irsko",
+      "fn": "IE - Irsko",
+      "country": "ie",
+      "validFrom": "0000-00-00", "validTo": "0000-00-00",
+      "currency": "eur"
+    },
+    "it": {
+      "sn": "Itálie",
+      "fn": "IT - Itálie",
+      "country": "it",
+      "validFrom": "0000-00-00", "validTo": "0000-00-00",
+      "currency": "eur"
+    },
+    "lt": {
+      "sn": "Litva",
+      "fn": "LT - Litva",
+      "country": "lt",
+      "validFrom": "2004-05-01", "validTo": "0000-00-00",
+      "currency": "eur"
+    },
+    "lu": {
+      "sn": "Lucembursko",
+      "fn": "LU - Lucembursko",
+      "country": "lu",
+      "validFrom": "0000-00-00", "validTo": "0000-00-00",
+      "currency": "eur"
+    },
+    "lv": {
+      "sn": "Lotyšsko",
+      "fn": "LV - Lotyšsko",
+      "country": "lv",
+      "validFrom": "2004-05-01", "validTo": "0000-00-00",
+      "currency": "eur"
+    },
+    "mt": {
+      "sn": "Malta",
+      "fn": "MT - Malta",
+      "country": "mt",
+      "validFrom": "2004-05-01", "validTo": "0000-00-00",
+      "currency": "eur"
+    },
+    "nl": {
+      "sn": "Nizozemsko",
+      "fn": "NL - Nizozemsko",
+      "country": "nl",
+      "validFrom": "0000-00-00", "validTo": "0000-00-00",
+      "currency": "eur"
+    },
+    "pl": {
+      "sn": "Polsko",
+      "fn": "PL - Polsko",
+      "country": "pl",
+      "validFrom": "2004-05-01", "validTo": "0000-00-00",
+      "currency": "pln"
+    },
+    "pt": {
+      "sn": "Portugalsko",
+      "fn": "PT - Portugalsko",
+      "country": "pt",
+      "validFrom": "0000-00-00", "validTo": "0000-00-00",
+      "currency": "eur"
+    },
+    "ro": {
+      "sn": "Rumunsko",
+      "fn": "RO - Rumunsko",
+      "country": "ro",
+      "validFrom": "2007-07-01", "validTo": "0000-00-00",
+      "currency": "ron"
+    },
+    "se": {
+      "sn": "Švédsko",
+      "fn": "SE - Švédsko",
+      "country": "se",
+      "validFrom": "0000-00-00", "validTo": "0000-00-00",
+      "currency": "sek"
+    },
+    "si": {
+      "sn": "Slovinsko",
+      "fn": "SI - Slovinsko",
+      "country": "si",
+      "validFrom": "2004-05-01", "validTo": "0000-00-00",
+      "currency": "eur"
+    },
+    "sk": {
+      "sn": "Slovensko",
+      "fn": "SK - Slovensko",
+      "country": "sk",
+      "validFrom": "2004-05-01", "validTo": "0000-00-00",
+      "currency": "eur"
+    },
+    "xi": {
+      "sn": "Severní Irsko",
+      "fn": "XI - Severní Irsko",
+      "country": "",
+      "validFrom": "2021-01-01", "validTo": "0000-00-00",
+      "currency": "gbp"
+    }
+  }
+}

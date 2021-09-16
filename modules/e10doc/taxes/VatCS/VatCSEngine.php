@@ -35,7 +35,7 @@ class VatCSEngine extends \e10doc\taxes\TaxReportEngine
 
 	public function checkNewReport ($forDate, &$recData)
 	{
-		$vatReg = $this->app()->cfgItem('e10doc.base.taxRegs.vat.'.$recData['taxReg'], NULL);
+		$vatReg = $this->app()->cfgItem('e10doc.base.taxRegs.'.$recData['taxReg'], NULL);
 		if (!$vatReg)
 		{
 			error_log ("---VAT-REG-NOT-FOUND!!!!");
@@ -136,8 +136,12 @@ class VatCSEngine extends \e10doc\taxes\TaxReportEngine
 		if ($recData['taxCalc'] == 0)
 			return;
 
-		$vatRegCfg = $this->app()->cfgItem('e10doc.base.taxRegs.vat.'.$recData['vatReg'], NULL);
+		$vatRegCfg = $this->app()->cfgItem('e10doc.base.taxRegs.'.$recData['vatReg'], NULL);
 		if (!$vatRegCfg)
+		{
+			return;
+		}
+		if ($vatRegCfg['taxCountry'] !== 'cz')
 		{
 			return;
 		}
@@ -237,6 +241,7 @@ class VatCSEngine extends \e10doc\taxes\TaxReportEngine
 
 		array_push($q, ' AND [docType] IN %in', $this->taxReportType['docTypes']);
 		array_push($q, ' AND [docState] = %i', 4000);
+		array_push($q, ' AND [vatReg] = %i', $this->reportRecData['taxReg']);
 		array_push($q, ' AND [dateTax] >= %d', $recData['datePeriodBegin']);
 		array_push($q, ' AND [dateTax] <= %d', $recData['datePeriodEnd']);
 		array_push($q, ' ORDER BY [dateAccounting], [docNumber]');

@@ -63,7 +63,8 @@ class FormInvoiceOut extends \E10Doc\Core\FormHeads
 								if ($this->useMoreVATRegs())
 								{
 									$this->addColumnInput ('vatReg');
-									$this->addColumnInput ('vatWorldCountry');
+									if ($this->vatRegs[$this->recData['vatReg']]['payerKind'] === 1)
+										$this->addColumnInput ('taxCountry');
 								}
 								$this->addColumnInput ("taxCalc");
 								$this->addColumnInput ("taxType");
@@ -133,6 +134,9 @@ class FormInvoiceOut extends \E10Doc\Core\FormHeads
 					$this->addColumnInput ("docKind");
 
 				$this->addColumnInput ('taxManual');
+
+				$this->addColumnInput ('taxCurrency');
+				$this->addColumnInput ('taxExchangeRate');
 			$this->closeTab ();
 
 			$this->closeTabs ();

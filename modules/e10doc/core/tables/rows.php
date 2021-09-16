@@ -490,7 +490,7 @@ class TableRows extends DbTable
 	public function defaultTaxCode ($recData, $ownerRecData)
 	{
 		if ($ownerRecData['taxCalc'] === 0)
-			return strtoupper(E10Utils::docVatCountryId($this->app(), $ownerRecData)).'000';
+			return 'EU'.strtoupper(E10Utils::docTaxCountryId($this->app(), $ownerRecData)).'000';
 
 		$taxCodes = E10Utils::docTaxCodes($this->app(), $ownerRecData);
 		forEach ($taxCodes as $codeId => $code)
@@ -498,7 +498,7 @@ class TableRows extends DbTable
 			if ($this->checkTaxCode($codeId, $code, $recData, $ownerRecData))
 				return $codeId;
 		}
-		return '00000';
+		return '0000000';
 	}
 
 	public function docDir ($recData, $ownerRecData)

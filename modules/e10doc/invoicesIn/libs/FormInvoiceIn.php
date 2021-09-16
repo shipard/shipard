@@ -66,7 +66,8 @@ class FormInvoiceIn extends \e10doc\core\FormHeads
 						if ($this->useMoreVATRegs())
 						{
 							$this->addColumnInput ('vatReg');
-							$this->addColumnInput ('vatWorldCountry');
+							if ($this->vatRegs[$this->recData['vatReg']]['payerKind'] === 1)
+								$this->addColumnInput ('taxCountry');
 						}
 
 						$this->addColumnInput ("taxCalc");

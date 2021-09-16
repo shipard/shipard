@@ -23,7 +23,7 @@ class TableTaxPeriods extends DbTable
 		if ($vatPeriod == 0)
 			return 0;
 
-		$vatRegCfg = $this->app()->cfgItem ('e10doc.base.taxRegs.vat.'.$vatReg, NULL);
+		$vatRegCfg = $this->app()->cfgItem ('e10doc.base.taxRegs.'.$vatReg, NULL);
 		if (!$vatRegCfg)
 			return 0;
 
@@ -86,7 +86,7 @@ class TableTaxPeriods extends DbTable
 		$now = new \DateTime ();
 		$year =	intval ($now->format ('Y'));
 
-		$vatRegs = $this->app()->cfgItem ('e10doc.base.taxRegs.vat', []);
+		$vatRegs = $this->app()->cfgItem ('e10doc.base.taxRegs', []);
 		foreach ($vatRegs as $vr)
 		{
 			$this->createPeriod($year, $vr['ndx']);
@@ -128,7 +128,7 @@ class ViewTaxPeriods extends TableView
 		$this->setMainQueries ($mq);
 
 		$active = 1;
-		$vatRegs = $this->app()->cfgItem ('e10doc.base.taxRegs.vat', []);
+		$vatRegs = $this->app()->cfgItem ('e10doc.base.taxRegs', []);
 		forEach ($vatRegs as $ndx => $vatReg)
 		{
 			$addParams = ['vatReg' => $ndx];

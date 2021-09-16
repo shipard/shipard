@@ -33,7 +33,7 @@ class VatReturnEngine extends \e10doc\taxes\TaxReportEngine
 
 	public function documentAdd ($recData)
 	{
-		$vatRegCfg = $this->app()->cfgItem('e10doc.base.taxRegs.vat.'.$recData['vatReg'], NULL);
+		$vatRegCfg = $this->app()->cfgItem('e10doc.base.taxRegs.'.$recData['vatReg'], NULL);
 		if (!$vatRegCfg)
 			return;
 		if ($vatRegCfg['payerKind'] !== 0) // regular payer - not OSS
@@ -41,7 +41,7 @@ class VatReturnEngine extends \e10doc\taxes\TaxReportEngine
 
 		$this->reportRecData = $this->searchReport($recData['dateTax'], $recData['vatReg']);
 
-		$taxCodes = E10Utils::taxCodes($this->app(), $vatRegCfg['country']);
+		$taxCodes = E10Utils::taxCodes($this->app(), $vatRegCfg['taxArea'], $vatRegCfg['taxCountry']);
 
 		$docRows = $this->db()->query ('SELECT * FROM [e10doc_core_taxes] WHERE [document] = %i ORDER by ndx', $recData['ndx']);
 		forEach ($docRows as $r)
@@ -55,14 +55,14 @@ class VatReturnEngine extends \e10doc\taxes\TaxReportEngine
 			$newRow = [
 					'report' => $this->reportRecData['ndx'],
 
-					'base' => $r['sumBaseHc'],
-					'tax' => $r['sumTaxHc'],
-					'total' => $r['sumTotalHc'],
+					'base' => $r['sumBaseTax'],
+					'tax' => $r['sumTaxTax'],
+					'total' => $r['sumTotalTax'],
 
 					'taxCode' => $r['taxCode'],
 					'taxRate' => $r['taxRate'],
 					'taxDir' => $taxCode['dir'],
-					//'taxType' => $taxCode['type'],
+					'taxPercents' => $r['taxPercents'],
 
 					'document' => $recData['ndx'],
 					'docNumber' => $recData['docNumber'],
@@ -123,5 +123,4 @@ class VatReturnEngine extends \e10doc\taxes\TaxReportEngine
 			$this->documentAdd($r);
 		}
 	}
-
 }

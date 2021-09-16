@@ -23,7 +23,7 @@ class VatReturnReport extends \e10doc\taxes\TaxReportReport
 		
 		parent::init();
 
-		$this->taxCodes = E10Utils::taxCodes($this->app(), $this->taxRegCfg['country']);
+		$this->taxCodes = E10Utils::taxCodes($this->app(), $this->taxRegCfg['taxArea'], $this->taxRegCfg['taxCountry']);
 	}
 
 	public function subReportsList ()

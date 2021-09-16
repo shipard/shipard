@@ -165,7 +165,7 @@ class ViewReports extends TableView
 
 		$this->reportsTypes = $this->app()->cfgItem('e10doc.taxes.reportTypes', []);
 		$this->useMoreTaxRegs = intval($this->table->app()->cfgItem ('e10doc.base.tax.flags.moreRegs', 0));
-		$this->taxRegs = $this->table->app()->cfgItem ('e10doc.base.taxRegs.vat');
+		$this->taxRegs = $this->table->app()->cfgItem ('e10doc.base.taxRegs');
 
 		$enum = [];
 		$active = 1;

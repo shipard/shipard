@@ -137,7 +137,7 @@ class VatCSProperties extends \e10doc\taxes\TaxReportProperties
 			}
 		}
 
-		$vatReg = $this->app()->cfgItem('e10doc.base.taxRegs.vat.'.$this->taxReportRecData['taxReg'], NULL);
+		$vatReg = $this->app()->cfgItem('e10doc.base.taxRegs.'.$this->taxReportRecData['taxReg'], NULL);
 		if ($vatReg)
 			$this->properties['xml']['dic'] = substr($vatReg['taxId'], 2);
 

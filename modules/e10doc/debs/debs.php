@@ -17,6 +17,7 @@ class docAccounting extends Utility
 {
 	var $docHead;
 	var $docFiscalMonth;
+	var $docTaxRegCfg;
 	var $docAccounting = NULL;
 	var $accOpts;
 	var $accMethodId = '';
@@ -201,7 +202,7 @@ class docAccounting extends Utility
 			$newRow ['project'] = $this->docHead['project'];
 			$newRow ['workOrder'] = $this->docHead['workOrder'];
 			$newRow ['property'] = $this->docHead['property'];
-			$newRow ['text'] = 'DPH: '.($taxCode['fullName'] ?? '');
+			$newRow ['text'] = 'DPH: '.($taxCode['fullName'] ?? 'Chybný kód daně `'.$r['taxCode'].'`');
 			$newRow ['side'] = utils::param($step, 'side', 1);
 
 			if (isset ($taxCode['hidden'])) // place 'reversed' tax codes to other side
@@ -727,9 +728,16 @@ class docAccounting extends Utility
 		if ($step['cat'][0] == '#')
 			$newRow ['accountId'] = substr ($step['cat'], 1);
 		else
-			$newRow ['accountId'] = $step['cat'].$row['taxCode'];
-	}
+		{
+			$taxHomeCountry = E10Utils::docTaxHomeCountryId($this->app(), $this->docHead);
+			$taxRegCountry = $this->docTaxRegCfg['taxCountry'];
 
+			if ($taxHomeCountry === $taxRegCountry && $this->docTaxRegCfg['payerKind'] === 0)
+				$newRow ['accountId'] = $step['cat'].substr($row['taxCode'], 4);
+			else
+				$newRow ['accountId'] = $step['cat'].substr($row['taxCode'], 2);
+		}
+	}
 
 	protected function searchAccountId ($a, $row, &$newRow)
 	{
@@ -847,6 +855,7 @@ class docAccounting extends Utility
 	public function setDocument ($recData)
 	{
 		$this->docHead = $recData;
+		$this->docTaxRegCfg = $this->app()->cfgItem ('e10doc.base.taxRegs.'.$this->docHead['vatReg'], NULL);
 
 		if ($recData['fiscalMonth'] == 0 || $recData['fiscalYear'] == 0)
 		{

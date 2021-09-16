@@ -68,6 +68,7 @@ class ViewExchangeRatesValuesCombo extends TableView
 	var $srcCurrencyNdx = 0;
 	var $dstCurrencyNdx = 0;
 	var $docDate = NULL;
+	var $dstColumnId = 'exchangeRate';
 
 	public function init ()
 	{
@@ -82,12 +83,15 @@ class ViewExchangeRatesValuesCombo extends TableView
 
 		if ($this->queryParam ('dateAccounting'))
 			$this->docDate = utils::createDateTime($this->queryParam ('dateAccounting'));
+
+		if ($this->queryParam ('dstColumnId'))
+			$this->dstColumnId = $this->queryParam ('dstColumnId');
 	}
 
 	public function renderRow ($item)
 	{
 		$listItem ['pk'] = $item ['ndx'];
-		$listItem ['data-cc']['exchangeRate'] = $item['exchangeRateOneUnit'];
+		$listItem ['data-cc'][$this->dstColumnId] = $item['exchangeRateOneUnit'];
 
 		$list = $this->exrLists[$item['listType']];
 		$listItem ['i1'] = utils::nfu ($item['exchangeRate']);

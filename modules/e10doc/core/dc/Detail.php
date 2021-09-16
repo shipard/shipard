@@ -440,13 +440,13 @@ class Detail extends \e10\DocumentCard
 					$vs = $this->table->summaryVAT ($this->recData);
 					$vs['title'] = [['icon' => 'docType/taxes', 'text' => 'Rekapitulace DPH']];
 
-					$taxReg = $this->app()->cfgItem('e10doc.base.taxRegs.vat.'.$this->recData['vatReg'], NULL);
+					$taxReg = $this->app()->cfgItem('e10doc.base.taxRegs.'.$this->recData['vatReg'], NULL);
 					if ($taxReg)
 					{
 						$vs['title'][] = ['text' => $taxReg['title'], 'class' => 'pull-right e10-small label label-default'];
 						if ($taxReg['payerKind'] === 1)
 						{ // OSS
-							$countryId = E10Utils::docVatCountryId($this->app(), $this->recData);
+							$countryId = E10Utils::docTaxCountryId($this->app(), $this->recData);
 							$vs['title'][] = ['text' => strtoupper($countryId), 'class' => 'pull-right e10-small label label-info'];
 						}
 					}

@@ -30,15 +30,7 @@ class VatOSSEngine extends \e10doc\taxes\TaxReportEngine
 
 	public function documentAdd ($recData)
 	{
-		/*
-		if ($recData['vatReg'] != $this->reportRecData['taxReg'])
-		{
-			error_log("__INVALID_VATREG__[DOC: {$recData['vatReg']}, REP: {$this->reportRecData['taxReg']}]".json_encode($this->reportRecData));
-			return;
-		}
-		*/
-
-    $vatRegCfg = $this->app()->cfgItem('e10doc.base.taxRegs.vat.'.$recData['vatReg'], NULL);
+    $vatRegCfg = $this->app()->cfgItem('e10doc.base.taxRegs.'.$recData['vatReg'], NULL);
     if (!$vatRegCfg)
 		{
 			error_log("__INVALID_VATREG_CFG__");
@@ -67,11 +59,11 @@ class VatOSSEngine extends \e10doc\taxes\TaxReportEngine
 			$newRow = [
 					'report' => $this->reportRecData['ndx'],
 
-					'base' => $r['sumBaseHc'],
-					'tax' => $r['sumTaxHc'],
-					'total' => $r['sumTotalHc'],
+					'base' => $r['sumBaseTax'],
+					'tax' => $r['sumTaxTax'],
+					'total' => $r['sumTotalTax'],
 
-          'countryConsumption' => $recData['vatCountry'],
+          'countryConsumption' => $recData['taxCountry'],
 
 					'taxCode' => $r['taxCode'],
 					'taxRate' => $r['taxRate'],
