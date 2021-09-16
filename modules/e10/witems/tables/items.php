@@ -9,7 +9,7 @@ require_once __SHPD_MODULES_DIR__ . 'e10doc/core/core.php';
 
 use \E10\utils;
 use \Shipard\Viewer\TableView, \E10\TableViewDetail, \Shipard\Viewer\TableViewPanel;
-use \E10\TableForm;
+use \Shipard\Form\TableForm;
 use \E10\DbTable;
 use \E10Doc\Core\e10utils;
 use \e10\base\libs\UtilsBase;
@@ -98,6 +98,23 @@ class TableItems extends DbTable
 			$refTitle = ['prefix' => '#'.$refRec ['id'], 'text' => $refRec ['fullName']];
 
 		return $refTitle;
+	}
+
+	public function columnInfoEnum ($columnId, $valueType = 'cfgText', TableForm $form = NULL)
+	{
+		if ($columnId === 'vatRate')	
+		{
+			$enum = [];
+			$taxRates = $this->app()->cfgItem('e10doc.taxes.eu.cz.taxRates', []);
+			foreach ($taxRates as $trId => $tr)
+			{
+				$enum[$trId] = $tr['title'];
+			}
+
+			return $enum;
+		}
+
+		return parent::columnInfoEnum ($columnId, $valueType = 'cfgText', $form);	
 	}
 
 	function copyDocumentRecord ($srcRecData, $ownerRecord = NULL)

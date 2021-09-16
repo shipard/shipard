@@ -596,9 +596,9 @@ class E10Utils
 		return $tc;
 	}
 
-	static function taxCode ($app, $dirTax, $taxRate)
+	static function taxCode ($app, $headRecData, $dirTax, $taxRate)
 	{
-		$taxes = $app->cfgItem ('e10.base.taxCodes');
+		$taxes = self::docTaxCodes($app, $docHeadRecData);
 		$taxCode = '';
 		forEach ($taxes as $itmid => $itm) {
 			if ($itm ['dir'] != $dirTax)

@@ -86,7 +86,7 @@ class TableRows extends DbTable
 					if (!isset($recData ['_fixTaxCode']))
 					{
 						$recData ['taxRate'] = $item['vatRate'];
-						$recData ['taxCode'] = E10Utils::taxCode($this->app(), $this->taxDir($recData, $ownerData), $item['vatRate']);
+						$recData ['taxCode'] = E10Utils::taxCode($this->app(), $ownerData, $this->taxDir($recData, $ownerData), $item['vatRate']);
 					}
 					else
 					{

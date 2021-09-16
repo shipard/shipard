@@ -1307,9 +1307,9 @@ class TableHeads extends DbTable
 		return $info;
 	}
 
-	public function taxCode ($dirTax, $taxRate)
+	public function taxCode ($dirTax, $headRecData, $taxRate)
 	{
-		return e10utils::taxCode ($this->app(), $dirTax, $taxRate);
+		return E10Utils::taxCode ($this->app(), $headRecData, $dirTax, $taxRate);
   }
 
 	public function tableIcon ($recData, $options = NULL)
@@ -2137,29 +2137,29 @@ class TableHeads extends DbTable
 		switch ($docType ['tradeDir'])
 		{
 			case 1: // sale
-						$rowRecData ['taxCode'] = $this->taxCode (1, $rowRecData ['taxRate']);
+						$rowRecData ['taxCode'] = $this->taxCode (1, $headRecData, $rowRecData ['taxRate']);
 						$rowRecData ['priceItem'] = $this->resetRowItem_PriceSell($headRecData, $rowRecData, $itemRecData, $docType);
 						break;
 			case 2: // buy
 						$rowRecData ['priceItem'] = $itemRecData ['priceBuy'];
-						$rowRecData ['taxCode'] = $this->taxCode (0, $rowRecData ['taxRate']);
+						$rowRecData ['taxCode'] = $this->taxCode (0, $headRecData, $rowRecData ['taxRate']);
 						break;
 			case 3:
 						if ($headRecData['cashBoxDir'] == 1)
 						{
-							$rowRecData ['taxCode'] = $this->taxCode (1, $rowRecData ['taxRate']);
+							$rowRecData ['taxCode'] = $this->taxCode (1, $headRecData, $rowRecData ['taxRate']);
 							$rowRecData ['priceItem'] = $this->resetRowItem_PriceSell($headRecData, $rowRecData, $itemRecData, $docType);
 						}
 						else
 						if ($headRecData['cashBoxDir'] == 2)
 						{
 							$rowRecData ['priceItem'] = $itemRecData ['priceBuy'];
-							$rowRecData ['taxCode'] = $this->taxCode (0, $rowRecData ['taxRate']);
+							$rowRecData ['taxCode'] = $this->taxCode (0, $headRecData, $rowRecData ['taxRate']);
 						}
 						break;
 			case 5: // stock in
 						$rowRecData ['priceItem'] = $this->rowItemHistoryPrice ($headRecData, $rowRecData, $itemRecData, $docType);
-						$rowRecData ['taxCode'] = $this->taxCode (0, $rowRecData ['taxRate']);
+						$rowRecData ['taxCode'] = $this->taxCode (0, $headRecData, $rowRecData ['taxRate']);
 						break;
 		}
 	}
