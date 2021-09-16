@@ -1,0 +1,87 @@
+{
+	"taxRates": {
+		"0": {"title": "Základní", "rt": 1},
+        "1": {"title": "Snížená", "rt": 2},
+		"2": {"title": "Bez daně", "rt": 0},
+		"3": {"title": "Osvobozeno", "rt": 0}
+	},
+	"taxCodes": {
+		"ALAL110": {
+			"fullName": "Tuzemsko/Vstup/Základní", "name": "Základní", "print": "Základní",
+			"type": 0, "dir": 0, "rate": 0,
+			"rowTaxReturn": 40
+		},
+		"ALAL111": {
+			"fullName": "Tuzemsko/Vstup/Snížená", "name": "Snížená", "print": "Snížená",
+			"type": 0, "dir": 0, "rate": 4,
+			"rowTaxReturn": 41
+		},
+		"ALAL112": {
+			"fullName": "Tuzemsko/Vstup/Bez daně", "name": "Bez daně", "print": "Bez daně",
+			"type": 0, "dir": 0, "rate": 2,
+			"rowTaxReturn": 0
+		},
+		"ALAL120": {
+			"fullName": "Tuzemsko/Výstup/Základní", "name": "Základní", "print": "Základní",
+			"type": 0, "dir": 1, "rate": 0,
+			"rowTaxReturn": 1
+		},
+		"ALAL121": {
+			"fullName": "Tuzemsko/Výstup/Snížená", "name": "Snížená", "print": "Snížená",
+			"type": 0, "dir": 1, "rate": 4, "rowTaxReturn": 2
+		},
+		"ALAL122": {
+			"fullName": "Tuzemsko/Výstup/Bez daně", "name": "Bez daně", "print": "Bez daně",
+			"type": 0, "dir": 1, "rate": 2,
+			"rowTaxReturn": 0
+		},
+		"ALAL123": {
+			"fullName": "Tuzemsko/Výstup/Osvobozeno", "name": "Osvobozeno", "print": "Osvobozeno",
+			"type": 0, "dir": 1, "rate": 3,
+			"rowTaxReturn": 50
+		},
+		"ALAL401": {
+			"fullName": "VÝVOZ/Výstup/Zboží", "name": "Zboží VÝVOZ", "print": "VÝVOZ/Zboží",
+			"type": 2, "dir": 1, "rate": 2,
+			"rowTaxReturn": 22
+		},
+		"ALAL405": {
+			"fullName": "DOVOZ/Výstup/Zboží/Základní (odběratel)", "name": "Základní - zboží DOVOZ (ODB)", "print": "Základní - zboží DOVOZ (odběratel)",
+			"type": 2, "dir": 1, "rate": 0, "noPayTax": 1, "hidden": 1,
+			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 7
+		},
+		"ALAL406": {
+			"fullName": "DOVOZ/Výstup/Zboží/Snížená (odběratel)", "name": "Snížená - zboží DOVOZ (ODB)", "print": "Snížená - zboží DOVOZ (odběratel)",
+			"type": 2, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
+			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 8
+		},
+		"ALAL415": {
+			"fullName": "DOVOZ/Vstup/Zboží/Základní", "name": "Základní - zboží DOVOZ", "print": "DOVOZ/Zboží/Základní",
+			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "405",
+			"sumTax": 0, "rowTaxReturn": 43
+		},
+		"ALAL416": {
+			"fullName": "DOVOZ/Vstup/Zboží/Snížená", "name": "Snížená - zboží DOVOZ", "print": "DOVOZ/Zboží/Snížená",
+			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "460",
+			"sumTax": 0, "rowTaxReturn": 44
+		},
+		"ALAL000": {
+			"fullName": "Nedaňový řádek", "name": "---", "print": "---",
+			"rate": 0
+		}
+	},
+	"taxPercents": [
+		{"code": "ALAL110", "from": "0000-00-00", "to": "0000-00-00", "value": 20.0},
+		{"code": "ALAL111", "from": "0000-00-00", "to": "0000-00-00", "value": 6.0},
+		{"code": "ALAL120", "from": "0000-00-00", "to": "0000-00-00", "value": 20.0},
+		{"code": "ALAL121", "from": "0000-00-00", "to": "0000-00-00", "value": 6.0},
+		{"code": "ALAL000", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "ALAL112", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "ALAL122", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "ALAL123", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+
+		{"code": "ALAL401", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "ALAL415", "from": "0000-00-00", "to": "0000-00-00", "value": 20.0},
+		{"code": "ALAL416", "from": "0000-00-00", "to": "0000-00-00", "value": 6.0}
+	]
+}

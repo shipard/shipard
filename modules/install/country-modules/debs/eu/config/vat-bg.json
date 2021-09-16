@@ -141,8 +141,6 @@
 		{"code": "EUBG416", "from": "0000-00-00", "to": "0000-00-00", "value": 9.0}
 	],
 	"taxNotes": {
-		"pdp4": {"text": "Daň odvede zákazník"},
-		"pdp5": {"text": "Daň odvede zákazník"},
 		"eu": {"text": "Daň odvede zákazník"}
 	}
 }

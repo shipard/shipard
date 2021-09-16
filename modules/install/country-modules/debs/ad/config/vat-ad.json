@@ -1,0 +1,136 @@
+{
+	"taxRates": {
+        "0": {"title": "Zvýšená", "rt": 3},
+		"1": {"title": "Základní", "rt": 1},
+		"2": {"title": "Speciální", "rt": 2},
+        "3": {"title": "Snížená", "rt": 2},
+		"4": {"title": "Bez daně", "rt": 0},
+		"5": {"title": "Osvobozeno", "rt": 0}
+
+	},
+	"taxCodes": {
+		"ADAD110": {
+			"fullName": "Tuzemsko/Vstup/Základní", "name": "Základní", "print": "Základní",
+			"type": 0, "dir": 0, "rate": 0,
+			"rowTaxReturn": 40
+		},
+		"ADAD111": {
+			"fullName": "Tuzemsko/Vstup/Speciální", "name": "Speciální", "print": "Speciální",
+			"type": 0, "dir": 0, "rate": 1,
+			"rowTaxReturn": 41
+		},
+		"ADAD301": {
+			"fullName": "Tuzemsko/Vstup/Snížená", "name": "Snížená", "print": "Snížená",
+			"type": 0, "dir": 0, "rate": 4,
+			"rowTaxReturn": 41
+		},
+		"ADAD302": {
+			"fullName": "Tuzemsko/Vstup/Zvýšená", "name": "Zvýšená", "print": "Zvýšená",
+			"type": 0, "dir": 0, "rate": 5,
+			"rowTaxReturn": 41
+		},
+		"ADAD112": {
+			"fullName": "Tuzemsko/Vstup/Bez daně", "name": "Bez daně", "print": "Bez daně",
+			"type": 0, "dir": 0, "rate": 2,
+			"rowTaxReturn": 0
+		},
+		"ADAD120": {
+			"fullName": "Tuzemsko/Výstup/Základní", "name": "Základní", "print": "Základní",
+			"type": 0, "dir": 1, "rate": 0,
+			"rowTaxReturn": 1
+		},
+		"ADAD121": {
+			"fullName": "Tuzemsko/Výstup/Speciální", "name": "Speciální", "print": "Speciální",
+			"type": 0, "dir": 1, "rate": 1, "rowTaxReturn": 2
+		},
+		"ADAD310": {
+			"fullName": "Tuzemsko/Výstup/Snížená", "name": "Snížená", "print": "Snížená",
+			"type": 0, "dir": 1, "rate": 4, "rowTaxReturn": 2
+		},
+		"ADAD311": {
+			"fullName": "Tuzemsko/Výstup/Zvýšená", "name": "Zvýšená", "print": "Zvýšená",
+			"type": 0, "dir": 1, "rate": 5, "rowTaxReturn": 2
+		},
+		"ADAD122": {
+			"fullName": "Tuzemsko/Výstup/Bez daně", "name": "Bez daně", "print": "Bez daně",
+			"type": 0, "dir": 1, "rate": 2,
+			"rowTaxReturn": 0
+		},
+		"ADAD123": {
+			"fullName": "Tuzemsko/Výstup/Osvobozeno", "name": "Osvobozeno", "print": "Osvobozeno",
+			"type": 0, "dir": 1, "rate": 3,
+			"rowTaxReturn": 50
+		},
+		"ADAD401": {
+			"fullName": "VÝVOZ/Výstup/Zboží", "name": "Zboží VÝVOZ", "print": "VÝVOZ/Zboží",
+			"type": 2, "dir": 1, "rate": 2,
+			"rowTaxReturn": 22
+		},
+		"ADAD405": {
+			"fullName": "DOVOZ/Výstup/Zboží/Základní (odběratel)", "name": "Základní - zboží DOVOZ (ODB)", "print": "Základní - zboží DOVOZ (odběratel)",
+			"type": 2, "dir": 1, "rate": 0, "noPayTax": 1, "hidden": 1,
+			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 7
+		},
+		"ADAD406": {
+			"fullName": "DOVOZ/Výstup/Zboží/Speciální (odběratel)", "name": "Speciální - zboží DOVOZ (ODB)", "print": "Speciální - zboží DOVOZ (odběratel)",
+			"type": 2, "dir": 1, "rate": 1, "noPayTax": 1, "hidden": 1,
+			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 8
+		},
+		"ADAD460": {
+			"fullName": "DOVOZ/Výstup/Zboží/Snížená (odběratel)", "name": "Snížená - zboží DOVOZ (ODB)", "print": "Snížená - zboží DOVOZ (odběratel)",
+			"type": 2, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
+			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 8
+		},
+		"ADAD461": {
+			"fullName": "DOVOZ/Výstup/Zboží/Zvýšená (odběratel)", "name": "Zvýšená - zboží DOVOZ (ODB)", "print": "Zvýšená - zboží DOVOZ (odběratel)",
+			"type": 2, "dir": 1, "rate": 5, "noPayTax": 1, "hidden": 1,
+			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 8
+		},
+		"ADAD415": {
+			"fullName": "DOVOZ/Vstup/Zboží/Základní", "name": "Základní - zboží DOVOZ", "print": "DOVOZ/Zboží/Základní",
+			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "405",
+			"sumTax": 0, "rowTaxReturn": 43
+		},
+		"ADAD416": {
+			"fullName": "DOVOZ/Vstup/Zboží/Speciální", "name": "Speciální - zboží DOVOZ", "print": "DOVOZ/Zboží/Speciální",
+			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "406",
+			"sumTax": 0, "rowTaxReturn": 44
+		},
+		"ADAD490": {
+			"fullName": "DOVOZ/Vstup/Zboží/Snížená", "name": "Snížená - zboží DOVOZ", "print": "DOVOZ/Zboží/Snížená",
+			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "460",
+			"sumTax": 0, "rowTaxReturn": 44
+		},
+		"ADAD491": {
+			"fullName": "DOVOZ/Vstup/Zboží/Zvýšená", "name": "Zvýšená - zboží DOVOZ", "print": "DOVOZ/Zboží/Zvýšená",
+			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "461",
+			"sumTax": 0, "rowTaxReturn": 44
+		},
+		"ADAD000": {
+			"fullName": "Nedaňový řádek", "name": "---", "print": "---",
+			"rate": 0
+		}
+	},
+	"taxPercents": [
+		{"code": "ADAD110", "from": "0000-00-00", "to": "0000-00-00", "value": 4.5},
+		{"code": "ADAD111", "from": "0000-00-00", "to": "0000-00-00", "value": 2.5},
+		{"code": "ADAD120", "from": "0000-00-00", "to": "0000-00-00", "value": 4.5},
+		{"code": "ADAD121", "from": "0000-00-00", "to": "0000-00-00", "value": 2.5},
+		{"code": "ADAD000", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "ADAD112", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "ADAD122", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "ADAD123", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+
+		{"code": "ADAD301", "from": "0000-00-00", "to": "0000-00-00", "value": 1.0},
+		{"code": "ADAD302", "from": "0000-00-00", "to": "0000-00-00", "value": 9.5},
+		{"code": "ADAD310", "from": "0000-00-00", "to": "0000-00-00", "value": 1.0},
+		{"code": "ADAD311", "from": "0000-00-00", "to": "0000-00-00", "value": 9.5},
+
+		{"code": "ADAD401", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+        {"code": "ADAD491", "from": "0000-00-00", "to": "0000-00-00", "value": 9.5},
+		{"code": "ADAD415", "from": "0000-00-00", "to": "0000-00-00", "value": 4.5},
+		{"code": "ADAD416", "from": "0000-00-00", "to": "0000-00-00", "value": 2.5},
+		{"code": "ADAD490", "from": "0000-00-00", "to": "0000-00-00", "value": 1.0}
+
+	]
+}

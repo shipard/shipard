@@ -1,0 +1,87 @@
+{
+	"taxRates": {
+		"0": {"title": "Základní", "rt": 1},
+        "1": {"title": "Speciální", "rt": 2},
+		"2": {"title": "Bez daně", "rt": 0},
+		"3": {"title": "Osvobozeno", "rt": 0}
+	},
+	"taxCodes": {
+		"RSRS110": {
+			"fullName": "Tuzemsko/Vstup/Základní", "name": "Základní", "print": "Základní",
+			"type": 0, "dir": 0, "rate": 0,
+			"rowTaxReturn": 40
+		},
+		"RSRS111": {
+			"fullName": "Tuzemsko/Vstup/Speciální", "name": "Speciální", "print": "Speciální",
+			"type": 0, "dir": 0, "rate": 4,
+			"rowTaxReturn": 41
+		},
+		"RSRS112": {
+			"fullName": "Tuzemsko/Vstup/Bez daně", "name": "Bez daně", "print": "Bez daně",
+			"type": 0, "dir": 0, "rate": 2,
+			"rowTaxReturn": 0
+		},
+		"RSRS120": {
+			"fullName": "Tuzemsko/Výstup/Základní", "name": "Základní", "print": "Základní",
+			"type": 0, "dir": 1, "rate": 0,
+			"rowTaxReturn": 1
+		},
+		"RSRS121": {
+			"fullName": "Tuzemsko/Výstup/Speciální", "name": "Speciální", "print": "Speciální",
+			"type": 0, "dir": 1, "rate": 4, "rowTaxReturn": 2
+		},
+		"RSRS122": {
+			"fullName": "Tuzemsko/Výstup/Bez daně", "name": "Bez daně", "print": "Bez daně",
+			"type": 0, "dir": 1, "rate": 2,
+			"rowTaxReturn": 0
+		},
+		"RSRS123": {
+			"fullName": "Tuzemsko/Výstup/Osvobozeno", "name": "Osvobozeno", "print": "Osvobozeno",
+			"type": 0, "dir": 1, "rate": 3,
+			"rowTaxReturn": 50
+		},
+		"RSRS401": {
+			"fullName": "VÝVOZ/Výstup/Zboží", "name": "Zboží VÝVOZ", "print": "VÝVOZ/Zboží",
+			"type": 2, "dir": 1, "rate": 2,
+			"rowTaxReturn": 22
+		},
+		"RSRS405": {
+			"fullName": "DOVOZ/Výstup/Zboží/Základní (odběratel)", "name": "Základní - zboží DOVOZ (ODB)", "print": "Základní - zboží DOVOZ (odběratel)",
+			"type": 2, "dir": 1, "rate": 0, "noPayTax": 1, "hidden": 1,
+			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 7
+		},
+		"RSRS406": {
+			"fullName": "DOVOZ/Výstup/Zboží/Speciální (odběratel)", "name": "Speciální - zboží DOVOZ (ODB)", "print": "Speciální - zboží DOVOZ (odběratel)",
+			"type": 2, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
+			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 8
+		},
+		"RSRS415": {
+			"fullName": "DOVOZ/Vstup/Zboží/Základní", "name": "Základní - zboží DOVOZ", "print": "DOVOZ/Zboží/Základní",
+			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "405",
+			"sumTax": 0, "rowTaxReturn": 43
+		},
+		"RSRS416": {
+			"fullName": "DOVOZ/Vstup/Zboží/Speciální", "name": "Speciální - zboží DOVOZ", "print": "DOVOZ/Zboží/Speciální",
+			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "460",
+			"sumTax": 0, "rowTaxReturn": 44
+		},
+		"RSRS000": {
+			"fullName": "Nedaňový řádek", "name": "---", "print": "---",
+			"rate": 0
+		}
+	},
+	"taxPercents": [
+		{"code": "RSRS110", "from": "0000-00-00", "to": "0000-00-00", "value": 20.0},
+		{"code": "RSRS111", "from": "0000-00-00", "to": "0000-00-00", "value": 10.0},
+		{"code": "RSRS120", "from": "0000-00-00", "to": "0000-00-00", "value": 20.0},
+		{"code": "RSRS121", "from": "0000-00-00", "to": "0000-00-00", "value": 10.0},
+		{"code": "RSRS000", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "RSRS112", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "RSRS122", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "RSRS123", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+
+		{"code": "RSRS401", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "RSRS415", "from": "0000-00-00", "to": "0000-00-00", "value": 20.0},
+		{"code": "RSRS416", "from": "0000-00-00", "to": "0000-00-00", "value": 10.0}
+	]
+}

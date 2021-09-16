@@ -1,0 +1,87 @@
+{
+	"taxRates": {
+		"0": {"title": "Základní", "rt": 1},
+        "1": {"title": "Snížená", "rt": 2},
+		"2": {"title": "Bez daně", "rt": 0},
+		"3": {"title": "Osvobozeno", "rt": 0}
+	},
+	"taxCodes": {
+		"ISIS110": {
+			"fullName": "Tuzemsko/Vstup/Základní", "name": "Základní", "print": "Základní",
+			"type": 0, "dir": 0, "rate": 0,
+			"rowTaxReturn": 40
+		},
+		"ISIS111": {
+			"fullName": "Tuzemsko/Vstup/Snížená", "name": "Snížená", "print": "Snížená",
+			"type": 0, "dir": 0, "rate": 4,
+			"rowTaxReturn": 41
+		},
+		"ISIS112": {
+			"fullName": "Tuzemsko/Vstup/Bez daně", "name": "Bez daně", "print": "Bez daně",
+			"type": 0, "dir": 0, "rate": 2,
+			"rowTaxReturn": 0
+		},
+		"ISIS120": {
+			"fullName": "Tuzemsko/Výstup/Základní", "name": "Základní", "print": "Základní",
+			"type": 0, "dir": 1, "rate": 0,
+			"rowTaxReturn": 1
+		},
+		"ISIS121": {
+			"fullName": "Tuzemsko/Výstup/Snížená", "name": "Snížená", "print": "Snížená",
+			"type": 0, "dir": 1, "rate": 4, "rowTaxReturn": 2
+		},
+		"ISIS122": {
+			"fullName": "Tuzemsko/Výstup/Bez daně", "name": "Bez daně", "print": "Bez daně",
+			"type": 0, "dir": 1, "rate": 2,
+			"rowTaxReturn": 0
+		},
+		"ISIS123": {
+			"fullName": "Tuzemsko/Výstup/Osvobozeno", "name": "Osvobozeno", "print": "Osvobozeno",
+			"type": 0, "dir": 1, "rate": 3,
+			"rowTaxReturn": 50
+		},
+		"ISIS401": {
+			"fullName": "VÝVOZ/Výstup/Zboží", "name": "Zboží VÝVOZ", "print": "VÝVOZ/Zboží",
+			"type": 2, "dir": 1, "rate": 2,
+			"rowTaxReturn": 22
+		},
+		"ISIS405": {
+			"fullName": "DOVOZ/Výstup/Zboží/Základní (odběratel)", "name": "Základní - zboží DOVOZ (ODB)", "print": "Základní - zboží DOVOZ (odběratel)",
+			"type": 2, "dir": 1, "rate": 0, "noPayTax": 1, "hidden": 1,
+			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 7
+		},
+		"ISIS406": {
+			"fullName": "DOVOZ/Výstup/Zboží/Snížená (odběratel)", "name": "Snížená - zboží DOVOZ (ODB)", "print": "Snížená - zboží DOVOZ (odběratel)",
+			"type": 2, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
+			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 8
+		},
+		"ISIS415": {
+			"fullName": "DOVOZ/Vstup/Zboží/Základní", "name": "Základní - zboží DOVOZ", "print": "DOVOZ/Zboží/Základní",
+			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "405",
+			"sumTax": 0, "rowTaxReturn": 43
+		},
+		"ISIS416": {
+			"fullName": "DOVOZ/Vstup/Zboží/Snížená", "name": "Snížená - zboží DOVOZ", "print": "DOVOZ/Zboží/Snížená",
+			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "460",
+			"sumTax": 0, "rowTaxReturn": 44
+		},
+		"ISIS000": {
+			"fullName": "Nedaňový řádek", "name": "---", "print": "---",
+			"rate": 0
+		}
+	},
+	"taxPercents": [
+		{"code": "ISIS110", "from": "0000-00-00", "to": "0000-00-00", "value": 24.0},
+		{"code": "ISIS111", "from": "0000-00-00", "to": "0000-00-00", "value": 11.0},
+		{"code": "ISIS120", "from": "0000-00-00", "to": "0000-00-00", "value": 24.0},
+		{"code": "ISIS121", "from": "0000-00-00", "to": "0000-00-00", "value": 11.0},
+		{"code": "ISIS000", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "ISIS112", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "ISIS122", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "ISIS123", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+
+		{"code": "ISIS401", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "ISIS415", "from": "0000-00-00", "to": "0000-00-00", "value": 24.0},
+		{"code": "ISIS416", "from": "0000-00-00", "to": "0000-00-00", "value": 11.0}
+	]
+}

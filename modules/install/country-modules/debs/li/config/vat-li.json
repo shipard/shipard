@@ -1,0 +1,111 @@
+{
+	"taxRates": {
+		"0": {"title": "Základní", "rt": 1},
+		"1": {"title": "Speciální", "rt": 2},
+        "2": {"title": "Snížená", "rt": 2},
+		"3": {"title": "Bez daně", "rt": 0},
+		"4": {"title": "Osvobozeno", "rt": 0}
+	},
+	"taxCodes": {
+		"LILI110": {
+			"fullName": "Tuzemsko/Vstup/Základní", "name": "Základní", "print": "Základní",
+			"type": 0, "dir": 0, "rate": 0,
+			"rowTaxReturn": 40
+		},
+		"LILI111": {
+			"fullName": "Tuzemsko/Vstup/Speciální", "name": "Speciální", "print": "Speciální",
+			"type": 0, "dir": 0, "rate": 1,
+			"rowTaxReturn": 41
+		},
+		"LILI301": {
+			"fullName": "Tuzemsko/Vstup/Snížená", "name": "Snížená", "print": "Snížená",
+			"type": 0, "dir": 0, "rate": 4,
+			"rowTaxReturn": 41
+		},
+		"LILI112": {
+			"fullName": "Tuzemsko/Vstup/Bez daně", "name": "Bez daně", "print": "Bez daně",
+			"type": 0, "dir": 0, "rate": 2,
+			"rowTaxReturn": 0
+		},
+		"LILI120": {
+			"fullName": "Tuzemsko/Výstup/Základní", "name": "Základní", "print": "Základní",
+			"type": 0, "dir": 1, "rate": 0,
+			"rowTaxReturn": 1
+		},
+		"LILI121": {
+			"fullName": "Tuzemsko/Výstup/Speciální", "name": "Speciální", "print": "Speciální",
+			"type": 0, "dir": 1, "rate": 1, "rowTaxReturn": 2
+		},
+		"LILI310": {
+			"fullName": "Tuzemsko/Výstup/Snížená", "name": "Snížená", "print": "Snížená",
+			"type": 0, "dir": 1, "rate": 4, "rowTaxReturn": 2
+		},
+		"LILI122": {
+			"fullName": "Tuzemsko/Výstup/Bez daně", "name": "Bez daně", "print": "Bez daně",
+			"type": 0, "dir": 1, "rate": 2,
+			"rowTaxReturn": 0
+		},
+		"LILI123": {
+			"fullName": "Tuzemsko/Výstup/Osvobozeno", "name": "Osvobozeno", "print": "Osvobozeno",
+			"type": 0, "dir": 1, "rate": 3,
+			"rowTaxReturn": 50
+		},
+		"LILI401": {
+			"fullName": "VÝVOZ/Výstup/Zboží", "name": "Zboží VÝVOZ", "print": "VÝVOZ/Zboží",
+			"type": 2, "dir": 1, "rate": 2,
+			"rowTaxReturn": 22
+		},
+		"LILI405": {
+			"fullName": "DOVOZ/Výstup/Zboží/Základní (odběratel)", "name": "Základní - zboží DOVOZ (ODB)", "print": "Základní - zboží DOVOZ (odběratel)",
+			"type": 2, "dir": 1, "rate": 0, "noPayTax": 1, "hidden": 1,
+			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 7
+		},
+		"LILI406": {
+			"fullName": "DOVOZ/Výstup/Zboží/Speciální (odběratel)", "name": "Speciální - zboží DOVOZ (ODB)", "print": "Speciální - zboží DOVOZ (odběratel)",
+			"type": 2, "dir": 1, "rate": 1, "noPayTax": 1, "hidden": 1,
+			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 8
+		},
+		"LILI460": {
+			"fullName": "DOVOZ/Výstup/Zboží/Snížená (odběratel)", "name": "Snížená - zboží DOVOZ (ODB)", "print": "Snížená - zboží DOVOZ (odběratel)",
+			"type": 2, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
+			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 8
+		},
+		"LILI415": {
+			"fullName": "DOVOZ/Vstup/Zboží/Základní", "name": "Základní - zboží DOVOZ", "print": "DOVOZ/Zboží/Základní",
+			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "405",
+			"sumTax": 0, "rowTaxReturn": 43
+		},
+		"LILI416": {
+			"fullName": "DOVOZ/Vstup/Zboží/Speciální", "name": "Speciální - zboží DOVOZ", "print": "DOVOZ/Zboží/Speciální",
+			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "406",
+			"sumTax": 0, "rowTaxReturn": 44
+		},
+		"LILI490": {
+			"fullName": "DOVOZ/Vstup/Zboží/Snížená", "name": "Snížená - zboží DOVOZ", "print": "DOVOZ/Zboží/Snížená",
+			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "460",
+			"sumTax": 0, "rowTaxReturn": 44
+		},
+		"LILI000": {
+			"fullName": "Nedaňový řádek", "name": "---", "print": "---",
+			"rate": 0
+		}
+	},
+	"taxPercents": [
+		{"code": "LILI110", "from": "0000-00-00", "to": "0000-00-00", "value": 7.7},
+		{"code": "LILI111", "from": "0000-00-00", "to": "0000-00-00", "value": 3.7},
+		{"code": "LILI120", "from": "0000-00-00", "to": "0000-00-00", "value": 7.7},
+		{"code": "LILI121", "from": "0000-00-00", "to": "0000-00-00", "value": 3.7},
+		{"code": "LILI000", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "LILI112", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "LILI122", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "LILI123", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+
+		{"code": "LILI301", "from": "0000-00-00", "to": "0000-00-00", "value": 2.5},
+		{"code": "LILI310", "from": "0000-00-00", "to": "0000-00-00", "value": 2.5},
+
+		{"code": "LILI401", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "LILI415", "from": "0000-00-00", "to": "0000-00-00", "value": 7.7},
+		{"code": "LILI416", "from": "0000-00-00", "to": "0000-00-00", "value": 3.7},
+		{"code": "LILI490", "from": "0000-00-00", "to": "0000-00-00", "value": 2.5}
+	]
+}

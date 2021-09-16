@@ -1,0 +1,67 @@
+{
+	"taxRates": {
+		"0": {"title": "Základní", "rt": 1},
+		"1": {"title": "Bez daně", "rt": 0},
+		"2": {"title": "Osvobozeno", "rt": 0}
+	},
+	"taxCodes": {
+		"BABA110": {
+			"fullName": "Tuzemsko/Vstup/Základní", "name": "Základní", "print": "Základní",
+			"type": 0, "dir": 0, "rate": 0,
+			"rowTaxReturn": 40
+		},
+		"BABA112": {
+			"fullName": "Tuzemsko/Vstup/Bez daně", "name": "Bez daně", "print": "Bez daně",
+			"type": 0, "dir": 0, "rate": 2,
+			"rowTaxReturn": 0
+		},
+		"BABA120": {
+			"fullName": "Tuzemsko/Výstup/Základní", "name": "Základní", "print": "Základní",
+			"type": 0, "dir": 1, "rate": 0,
+			"rowTaxReturn": 1
+		},
+		"BABA122": {
+			"fullName": "Tuzemsko/Výstup/Bez daně", "name": "Bez daně", "print": "Bez daně",
+			"type": 0, "dir": 1, "rate": 2,
+			"rowTaxReturn": 0
+		},
+		"BABA123": {
+			"fullName": "Tuzemsko/Výstup/Osvobozeno", "name": "Osvobozeno", "print": "Osvobozeno",
+			"type": 0, "dir": 1, "rate": 3,
+			"rowTaxReturn": 50
+		},
+		"BABA401": {
+			"fullName": "VÝVOZ/Výstup/Zboží", "name": "Zboží VÝVOZ", "print": "VÝVOZ/Zboží",
+			"type": 2, "dir": 1, "rate": 2,
+			"rowTaxReturn": 22
+		},
+		"BABA405": {
+			"fullName": "DOVOZ/Výstup/Zboží/Základní (odběratel)", "name": "Základní - zboží DOVOZ (ODB)", "print": "Základní - zboží DOVOZ (odběratel)",
+			"type": 2, "dir": 1, "rate": 0, "noPayTax": 1, "hidden": 1,
+			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 7
+		},
+		"BABA415": {
+			"fullName": "DOVOZ/Vstup/Zboží/Základní", "name": "Základní - zboží DOVOZ", "print": "DOVOZ/Zboží/Základní",
+			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "405",
+			"sumTax": 0, "rowTaxReturn": 43
+		},
+		"BABA000": {
+			"fullName": "Nedaňový řádek", "name": "---", "print": "---",
+			"rate": 0
+		}
+	},
+	"taxPercents": [
+		{"code": "BABA110", "from": "0000-00-00", "to": "0000-00-00", "value": 17.0},
+		{"code": "BABA120", "from": "0000-00-00", "to": "0000-00-00", "value": 17.0},
+		{"code": "BABA000", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "BABA112", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "BABA122", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "BABA123", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+
+		{"code": "BABA401", "from": "0000-00-00", "to": "0000-00-00", "value": 0.0},
+		{"code": "BABA415", "from": "0000-00-00", "to": "0000-00-00", "value": 17.0}
+	],
+	"taxNotes": {
+		"eu": {"text": "Daň odvede zákazník"}
+	}
+}
