@@ -596,7 +596,7 @@ class E10Utils
 		return $tc;
 	}
 
-	static function taxCode ($app, $headRecData, $dirTax, $taxRate)
+	static function taxCode ($app, $docHeadRecData, $dirTax, $taxRate)
 	{
 		$taxes = self::docTaxCodes($app, $docHeadRecData);
 		$taxCode = '';
