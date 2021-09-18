@@ -55,13 +55,14 @@ class VatOSSEngine extends \e10doc\taxes\TaxReportEngine
 			{
 				error_log("__INVALID_TAXCODE_DIR_`{$r['taxCode']}`_");
 				continue;
-			}	
+			}
 			$newRow = [
 					'report' => $this->reportRecData['ndx'],
 
-					'base' => $r['sumBaseTax'],
-					'tax' => $r['sumTaxTax'],
-					'total' => $r['sumTotalTax'],
+					'docCurrency' => $recData['currency'],
+					'baseDC' => $r['sumBase'],
+					'taxDC' => $r['sumTax'],
+					'totalDC' => $r['sumTotal'],
 
           'countryConsumption' => $recData['taxCountry'],
 

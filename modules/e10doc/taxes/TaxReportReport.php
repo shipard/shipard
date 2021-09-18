@@ -29,6 +29,8 @@ class TaxReportReport extends \e10doc\core\libs\reports\GlobalReport
 	var $taxReportRecData = NULL;
 	var $taxReportDef = NULL;
 	var $taxRegCfg = NULL;
+	var $taxRegCountries = NULL;
+	var $useMoreTaxRegs = 0;
 
 	var $filingRecData = NULL;
 	var $filingNdx = -1;
@@ -46,6 +48,8 @@ class TaxReportReport extends \e10doc\core\libs\reports\GlobalReport
 
 	function init()
 	{
+		$this->useMoreTaxRegs = intval($this->app()->cfgItem ('e10doc.base.tax.flags.moreRegs', 0));
+
 		$this->tableTaxReports = $this->app->table('e10doc.taxes.reports');
 		$this->tableReportsParts = $this->app()->table('e10doc.taxes.reportsParts');
 
@@ -64,6 +68,7 @@ class TaxReportReport extends \e10doc\core\libs\reports\GlobalReport
 		$this->taxReportRecData = $this->tableTaxReports->loadItem ($this->taxReportNdx);
 		$this->taxReportDef = $this->app->cfgItem('e10doc.taxes.reportTypes.'.$this->taxReportRecData['reportType'], NULL);
 		$this->taxRegCfg = $this->app()->cfgItem('e10doc.base.taxRegs.'.$this->taxReportRecData['taxReg'], NULL);
+		$this->taxRegCountries = E10Utils::taxCountries($this->app(), $this->taxRegCfg['taxArea'], NULL, TRUE);
 
 		if ($this->filingNdx === -1)
 			$this->filingNdx = intval($this->reportParams ['filing']['value']);
@@ -79,6 +84,8 @@ class TaxReportReport extends \e10doc\core\libs\reports\GlobalReport
 			$this->setInfo('icon', 'report/VatReturnReport');
 			$this->setInfo('title', $this->taxReportRecData['title']);
 			$this->setInfo('param', 'Období', utils::datef ($this->taxReportRecData['datePeriodBegin'], '%d').' - '.utils::datef ($this->taxReportRecData['datePeriodEnd'], '%d'));
+			
+			$this->setInfo('param', 'DIČ', $this->taxRegCfg['title']);
 		}
 		else
 		{
@@ -122,9 +129,15 @@ class TaxReportReport extends \e10doc\core\libs\reports\GlobalReport
 		foreach ($rows as $r)
 		{
 			$switch[$r['ndx']] = $r['title'];
+			if ($this->useMoreTaxRegs)
+			{
+				$reportTaxReg = $this->app()->cfgItem('e10doc.base.taxRegs.'.$r['taxReg'], NULL);
+				if ($reportTaxReg)
+					$switch[$r['ndx']] .= ' '.$reportTaxReg['title'];
+			}
 		}
 
-		$this->addParam('switch', 'taxReport', ['title' => 'Hlášení', 'switch' => $switch]);
+		$this->addParam('switch', 'taxReport', ['title' => NULL, 'switch' => $switch]);
 	}
 
 	public function addParamFiling ()

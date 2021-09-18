@@ -12,10 +12,6 @@
 		{"id": "payerKind", "name": "Druh plátce", "type": "enumInt", "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "e10doc.base.tagsRegsPayerKinds", "cfgValue": "", "cfgText": "name"}},
 
-		{"id": "worldCountry", "name": "Země", "type": "int", "reference": "e10.world.countries"},
-		{"id": "country", "name": "Země", "type": "enumString", "len": 2, "options": ["saveOnChange"],
-			"enumCfg": {"cfgItem": "e10.base.countries", "cfgValue": "", "cfgText": "name"}},
-
 		{"id": "taxId", "name": "DIČ", "type": "string", "len": 20},
 
 		{"id": "periodType", "name": "Periodicita", "type": "enumInt",

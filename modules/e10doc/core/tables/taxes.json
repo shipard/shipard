@@ -18,10 +18,6 @@
     {"id": "sumTaxHc", "name": "Daň celkem [MD]", "type": "money"},
     {"id": "sumTotalHc", "name": "Celkem včetně daně [MD]", "type": "money"},
 
-    {"id": "sumBaseTax", "name": "Základ daně [DPH]", "type": "money"},
-    {"id": "sumTaxTax", "name": "Daň celkem [DPH]", "type": "money"},
-    {"id": "sumTotalTax", "name": "Celkem včetně daně [DPH]", "type": "money"},
-
     {"id": "quantity", "name": "Množství", "type": "number", "dec": 3},
     {"id": "weight", "name": "Hmotnost", "type": "number", "dec": 3},
 

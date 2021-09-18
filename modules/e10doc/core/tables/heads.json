@@ -103,10 +103,6 @@
     {"id": "exchangeRate", "name": "Kurz", "type": "number", "dec": 7, "comboViewer": "combo", "comboTable": "e10doc.base.exchangeRatesValues"},
     {"id": "dateExchRate", "name": "Datum kurzu", "type": "date"},
 
-    {"id": "taxCurrency", "name": "Měna DPH", "type": "enumString", "len": 3,
-      "enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
-    {"id": "taxExchangeRate", "name": "Kurz měny DPH", "type": "number", "dec": 7, "comboViewer": "combo", "comboTable": "e10doc.base.exchangeRatesValues"},
-
 		{"id": "quantity", "name": "Množství", "type": "number", "dec": 3},
     {"id": "weightNet", "name": "Hmotnost netto", "label": "Hm. netto", "type": "number", "dec": 3},
     {"id": "weightGross", "name": "Hmotnost brutto", "label": "Hm. brutto", "type": "number", "dec": 3},

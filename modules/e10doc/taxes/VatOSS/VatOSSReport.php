@@ -91,24 +91,28 @@ class VatOSSReport extends \e10doc\taxes\TaxReportReport
     foreach ($this->data['SUM'] as $r)
     {
       $itm = [
-        'cc' => $r['countryConsumption'],
+        'cc' => $this->taxRegCountries[$r['countryConsumption']]['fn'],
         'taxPercents' => $r['taxPercents'],
-        'base' => $r['sumBase'],
-        'tax' => $r['sumTax'],
+				'docCurrency' => strtoupper($r['docCurrency']),
+        'baseDC' => $r['sumBaseDC'],
+        'taxDC' => $r['sumTaxDC'],
       ];
 
-      $sum['total']['base'] += $r['sumBase'];
-      $sum['total']['tax'] += $r['sumTax'];
+      $sum['total']['baseTC'] += $r['sumBaseTC'];
+      $sum['total']['taxTC'] += $r['sumTaxTC'];
 
       $table[] = $itm;
     }
 
-
 		$table[] = $sum['total'];
-
 		$title = [['text' => 'Sumární přehled', 'class' => 'h2']];
-
-		$h = ['#' => '#', 'cc' => 'Země', 'taxPercents' => ' %', 'base' => ' Základ', 'tax' => ' Daň'];
+		$h = [
+			'#' => '#', 'cc' => 'Země', 
+			'docCurrency' => 'Měna',
+			'taxPercents' => ' %', 
+			'baseDC' => ' Základ', 'taxDC' => ' Daň',
+			'baseTC' => ' Základ EUR', 'taxTC' => ' Daň EUR',
+		];
 		$this->addContent (['type' => 'table', 'header' => $h, 'table' => $table, 'title' => $title, 'params' => ['_hideHeader' => 1]]);
 	}
 
@@ -206,15 +210,15 @@ class VatOSSReport extends \e10doc\taxes\TaxReportReport
 
 	public function loadData_Sum ()
 	{
-		$q[] = 'SELECT countryConsumption, taxPercents, SUM(base) AS sumBase, SUM(tax) AS sumTax, SUM(total) AS sumTotal';
+		$q[] = 'SELECT countryConsumption, docCurrency, taxPercents, SUM(baseDC) AS sumBaseDC, SUM(taxDC) AS sumTaxDC, SUM(totalDC) AS sumTotalDC';
 		array_push($q, ' FROM [e10doc_taxes_reportsRowsVatOSS] AS [rows]');
 
 		array_push($q, ' WHERE 1');
 		array_push($q, ' AND [report] = %i', $this->taxReportNdx);
 		array_push($q, ' AND [filing] = %i', $this->filingNdx);
 
-		array_push($q, ' GROUP BY countryConsumption, taxPercents');
-		array_push($q, ' ORDER BY countryConsumption, taxPercents');
+		array_push($q, ' GROUP BY countryConsumption, docCurrency, taxPercents');
+		array_push($q, ' ORDER BY countryConsumption, docCurrency, taxPercents');
 
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)

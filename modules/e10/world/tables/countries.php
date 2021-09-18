@@ -115,6 +115,7 @@ class ViewCountries extends TableView
 			array_push($q, ' AND (');
 			array_push($q, ' countries.[nameCommon] LIKE %s', '%'.$fts.'%');
 			array_push($q, ' OR countries.[id] LIKE %s', '%'.$fts.'%');
+			array_push($q, ' OR countries.[cca2] = %s', $fts);
 			array_push($q, ' OR EXISTS (SELECT country FROM e10_world_countriesTr ',
 				'WHERE countries.ndx = country AND (nameCommon LIKE %s', '%'.$fts.'%', ' OR nameOfficial LIKE %s)', '%'.$fts.'%',
 				')');

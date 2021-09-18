@@ -5,9 +5,15 @@
 		{"id": "report", "name": "Přehled", "type": "int"},
 		{"id": "filing", "name": "Podání", "type": "int"},
 
-		{"id": "base", "name": "Základ daně", "type": "money"},
-		{"id": "tax", "name": "Částka daně", "type": "money"},
-		{"id": "total", "name": "Částka celkem", "type": "money"},
+		{"id": "docCurrency", "name": "Měna plnění", "type": "enumString", "len": 3,
+	    "enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
+		{"id": "baseDC", "name": "Základ daně", "type": "money"},
+		{"id": "taxDC", "name": "Částka daně", "type": "money"},
+		{"id": "totalDC", "name": "Částka celkem", "type": "money"},
+
+		{"id": "baseTC", "name": "Základ daně", "type": "money"},
+		{"id": "taxTC", "name": "Částka daně", "type": "money"},
+		{"id": "totalTC", "name": "Částka celkem", "type": "money"},
 
     {"id": "countrySupplier", "name": "Země dodavatele", "type": "enumString", "len": 2,
       "enumCfg": {"cfgItem": "world.data.countriesIds", "cfgValue": "", "cfgText": "t"}},

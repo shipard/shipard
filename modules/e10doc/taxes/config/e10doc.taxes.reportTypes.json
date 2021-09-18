@@ -15,7 +15,7 @@
 	"eu-vat-oss": {
 		"name": "DPH - OSS",
 		"shortName": "DPH - OSS",
-		"enabledCfgItem": "e10doc.base.tax.flags.moreRegs",
+		"enabledCfgItem": "e10doc.base.tax.flags.useOSS",
 		"validFrom": "2021-01-01", "validTo": "0000-00-00",
 		"periodType": "vat",
 		"engine": "e10doc.taxes.VatOSS.VatOSSEngine",

@@ -3,7 +3,6 @@
 namespace e10doc\base;
 
 use \E10\utils, \E10\TableView, \Shipard\Form\TableForm, \E10\DbTable;
-use \Shipard\Utils\World;
 use \e10doc\core\libs\E10Utils;
 
 /**
