@@ -2,7 +2,7 @@
 
 namespace wkf\core\libs;
 use Shipard\Utils\Utils;
-
+use \e10\base\libs\UtilsBase;
 
 class ContactForm extends \Shipard\Base\WebForm
 {
@@ -207,7 +207,7 @@ class ContactForm extends \Shipard\Base\WebForm
 			$body .= "--------------------------------\n";
 			$body .= $this->data['msg'];
 			$body .= "\n--------------------------------\n\n";
-			\E10\SendEmail ($subject, $body, $fromEmail, $toEmail, 'Kontaktní formulář', 'Kontaktní formulář');
+			UtilsBase::sendEmail ($this->app, $subject, $body, $fromEmail, $toEmail, 'Kontaktní formulář', 'Kontaktní formulář');
 		}
 
 		return TRUE;
