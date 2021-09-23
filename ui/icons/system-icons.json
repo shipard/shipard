@@ -633,6 +633,12 @@
         "bsi":"bi-globe",
         "mdi":"public"
 	},
+	"iconAppControling":{
+		"fa5": "fa-mouse-pointer",
+		"fa5pro": "fa-mouse-pointer",
+		"bsi": "bi-mouse",
+		"mdi": "mouse"
+	},
 	
 
 
