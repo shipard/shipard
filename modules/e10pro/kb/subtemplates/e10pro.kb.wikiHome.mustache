@@ -3,19 +3,19 @@
 
 		<div class="row">
 			<form style="width: 100%;" action="{{data.urlBegin}}q">
-				<div class="form-group" style="padding: 0.5rem 1rem; ">
+				<div class="form-group mb-3">
 					<input type="search" name="q" class="form-control" placeholder="Zadejte hledaný text a stiskněte ⏎..." autofocus value="{{data.page.queryText}}">
 				</div>
 			</form>
 		</div>
 
-		<div class="row">
+		<div class="row row-cols-1 row-cols-md-3 g-2">
 			{{#data.sections}}
 				{{#homeTile}}
-				<div class="col-sm-4">
-					<div class="card" style="min-width: 20rem; margin-bottom: 1rem;">
+				<div class="col mb-1">
+					<div class="card h-100">
 						<div class="card-body">
-							<h4 class="card-title"><a href="{{url}}">{{#icon}}{{{@icon;dataItem:icon}}} {{/icon}}{{title}}</a>
+							<h4 class="card-title">{{#icon}}{{{@icon;dataItem:icon}}} {{/icon}}<a href="{{url}}">{{title}}</a>
 							{{^mobileMode}}
 								{{#buttons.0}}
 								<div class="btn-group float-end">	

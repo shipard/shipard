@@ -1,6 +1,6 @@
 [
 	{"name": "Přiznání DPH", "class": "e10doc.taxes.VatReturn.VatReturnReport", "icon": "report/VatReturnReport","group": "e10doc-finance", "order": 91000},
-	{"name": "Přiznání OSS", "class": "e10doc.taxes.VatOSS.VatOSSReport", "icon": "report/VatReturnReport","group": "e10doc-finance", "order": 91100},
+	{"name": "Přiznání OSS", "class": "e10doc.taxes.VatOSS.VatOSSReport", "icon": "report/VatReturnReport","group": "e10doc-finance", "order": 91100, "enabledCfgItem": "e10doc.base.tax.flags.useOSS"},
 	{"name": "Kontrolní hlášení", "class": "e10doc.taxes.VatCS.VatCSReportAll", "icon": "report/VatCSReport","group": "e10doc-finance", "order": 91200},
 	{"name": "Souhrnné hlášení", "class": "e10doc.taxes.VatRS.VatRSReport", "icon": "report/VatRSReport","group": "e10doc-finance", "order": 91400}
 ]

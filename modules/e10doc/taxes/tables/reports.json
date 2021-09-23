@@ -16,7 +16,7 @@
 		{"id": "datePeriodEnd", "name": "Konec období", "type": "date"},
 
 		{"id": "taxReg", "name": "Registrace k dani", "type": "enumInt",
-			"enumCfg": {"cfgItem": "e10doc.base.taxRegs.vat", "cfgValue": "ndx", "cfgText": "title"}},
+			"enumCfg": {"cfgItem": "e10doc.base.taxRegs", "cfgValue": "ndx", "cfgText": "title"}},
 		{"id": "taxPeriod", "name": "Daňové období", "type": "int", "reference": "e10doc.base.taxperiods"},
 		{"id": "accPeriod", "name": "Účetní období", "type": "int", "reference": "e10doc.base.fiscalyears"},
 		{"id": "accMonth", "name": "Účetní měsíc", "type": "int", "reference": "e10doc.base.fiscalmonths"},

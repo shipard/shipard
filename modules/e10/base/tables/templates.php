@@ -40,6 +40,16 @@ class TableTemplates extends DbTable
 		}
 	}
 
+	public function createHeader ($recData, $options)
+	{
+		$h = parent::createHeader ($recData, $options);
+		$h ['info'][] = ['class' => 'title', 'value' => $recData ['name']];
+		$h ['info'][] = ['class' => 'info', 'value' => $recData ['sn']];
+
+		return $h;
+	}
+
+
 	public function columnRefInputTitle ($form, $srcColumnId, $inputPrefix)
 	{
 		$pk = isset ($form->recData [$srcColumnId]) ? $form->recData [$srcColumnId] : 0;
@@ -240,6 +250,12 @@ class TableTemplates extends DbTable
 		parent::checkAfterSave2 ($recData);
 
 		$templateDir = $this->getTemplateDir ($recData);
+
+		if (isset($recData['replaceId'][0]) && $recData['replaceId'][0] === '!')
+		{
+			return;
+		}
+
 		exec ("rm -rf {$templateDir}/*");
 
 		if ($recData['type'] == 0) // web
@@ -278,6 +294,7 @@ class ViewTemplates extends TableView
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['t1'] = $item['name'];
 		$listItem ['t2'] = $item['replaceId'];
+		$listItem ['t2'] = $item['sn'];
 
 		$fileTypes = $this->table->columnInfoEnum ('type', 'cfgText');
 		$listItem ['i2'] = $fileTypes [$item ['type']];
@@ -324,7 +341,7 @@ class ViewTemplates extends TableView
 
 class ViewDetailTemplate extends TableViewDetail
 {
-	public function createHeaderCode ()
+	public function createHeaderCodeXXX ()
 	{
 		$item = $this->item;
 		$info = $item ['sn'];
@@ -368,13 +385,6 @@ class FormTemplate extends TableForm
 
 			$this->closeTabs ();
 		$this->closeForm ();
-	}
-
-	public function createHeaderCode ()
-	{
-		$item = $this->recData;
-		$info = '';
-		return $this->defaultHedearCode ('x-properties', $item ['name'], $info);
 	}
 } // class FormTemplate
 

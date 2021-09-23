@@ -217,7 +217,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$dsStats->data['users']['lastMonth']['docs'] = ['users' => $cntUsers, 'ops' => $cntOps];
 
 		// -- tax/vat/ros
-		$vatReg = $this->app->cfgItem('e10doc.base.taxRegs.vat', NULL);
+		$vatReg = $this->app->cfgItem('e10doc.base.taxRegs', NULL);
 		if ($vatReg)
 			$dsStats->data['flags']['vat'] = 1;
 

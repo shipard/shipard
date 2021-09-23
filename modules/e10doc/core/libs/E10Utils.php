@@ -620,7 +620,7 @@ class E10Utils
 		return $tc;
 	}
 
-	static function taxCountries($app, $taxAreaId)
+	static function taxCountries($app, $taxAreaId, $date = NULL, $fullConfig = FALSE)
 	{
 		$ta = $app->cfgItem('e10doc.base.taxAreas.'.$taxAreaId, NULL);
 		if (!$ta)
@@ -629,7 +629,10 @@ class E10Utils
 		$enum = [];
 		foreach ($ta['countries'] as $countryId => $country)
 		{
-			$enum[$countryId] = $country['fn'];
+			if ($fullConfig)	
+				$enum[$countryId] = $country;
+			else
+				$enum[$countryId] = $country['fn'];
 		}
 		
 		return $enum;

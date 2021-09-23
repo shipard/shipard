@@ -55,9 +55,9 @@ class VatReturnEngine extends \e10doc\taxes\TaxReportEngine
 			$newRow = [
 					'report' => $this->reportRecData['ndx'],
 
-					'base' => $r['sumBaseTax'],
-					'tax' => $r['sumTaxTax'],
-					'total' => $r['sumTotalTax'],
+					'base' => $r['sumBaseHc'],
+					'tax' => $r['sumTaxHc'],
+					'total' => $r['sumTotalHc'],
 
 					'taxCode' => $r['taxCode'],
 					'taxRate' => $r['taxRate'],

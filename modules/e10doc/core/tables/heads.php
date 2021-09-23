@@ -350,9 +350,6 @@ class TableHeads extends DbTable
     if ($recData ['exchangeRate'] == 0)
       $recData ['exchangeRate'] = 1;
 
-		if ($recData ['taxExchangeRate'] == 0)
-			$recData ['taxExchangeRate'] = 1;
-
 		// -- test home vs doc currency
 		if ($recData ['currency'] === $recData ['homeCurrency'])
 			$recData ['exchangeRate'] = 1;
@@ -483,16 +480,6 @@ class TableHeads extends DbTable
 			{
 				$recData['taxType'] = 0;
 			}
-			$tcc = E10Utils::taxRegCurrency($this->app(), $vatReg, $recData['taxCountry']);
-			if ($recData['taxCurrency'] !== $tcc)
-			{
-				$recData['taxCurrency'] = $tcc;
-				$er = E10Utils::exchangeRate($this->app(), $recData['dateAccounting'], $recData['homeCurrency'], $recData['taxCurrency']);
-				if ($er)
-					$recData['taxExchangeRate'] = $er;
-				else
-					$recData['taxExchangeRate'] = 1;
-			}
 		}
 		else
 		{
@@ -557,18 +544,6 @@ class TableHeads extends DbTable
 				{
 					$saveData['recData']['exchangeRate'] = $er;
 					$saveData['recData']['dateExchRate'] = $saveData['recData']['dateAccounting'];
-				}
-			}
-			return;
-		}
-		if ($changedInput === 'taxCurrency')
-		{
-			if (isset($saveData['recData']['dateAccounting']) && !utils::dateIsBlank($saveData['recData']['dateAccounting']))
-			{
-				$er = e10utils::exchangeRate($this->app(), $saveData['recData']['dateAccounting'], $saveData['recData']['homeCurrency'], $saveData['recData']['taxCurrency']);
-				if ($er !== 0)
-				{
-					$saveData['recData']['taxExchangeRate'] = $er;
 				}
 			}
 			return;
@@ -1974,11 +1949,9 @@ class TableHeads extends DbTable
 		$cfgTaxCodes = E10Utils::docTaxCodes($this->app(), $item);
 
 		$fc = intval(($item ['currency'] !== $item ['homeCurrency']));
-		$tc = intval($item ['taxCurrency'] !== $item ['homeCurrency'] && $item ['taxCurrency'] !== $item ['currency'] && $item ['taxCurrency'] !== '');
 
 		$currencyName = $this->app()->cfgItem ('e10.base.currencies.'.$item ['currency'].'.shortcut');
 		$homeCurrencyName = $this->app()->cfgItem ('e10.base.currencies.'.$item ['homeCurrency'].'.shortcut');
-		$taxCurrencyName = $this->app()->cfgItem ('e10.base.currencies.'.$item ['taxCurrency'].'.shortcut');
 
 		$q = "SELECT * FROM [e10doc_core_taxes] WHERE [document] = %i ORDER BY [taxPercents] DESC, [taxCode]";
 		$rows = $this->db()->query($q, $item ['ndx']);
@@ -2028,7 +2001,7 @@ class TableHeads extends DbTable
 			}
 
 
-			if ($fc || $tc)
+			if ($fc)
 			{
 				if ($wide)
 				{
@@ -2040,22 +2013,13 @@ class TableHeads extends DbTable
 						'title' => $taxCode['fullName'], 'percents' => strval($r['taxPercents']),
 						'curr' => $currencyName,
 						'base' => $r['sumBase'], 'tax' => $r['sumTax'], 'total' => $r['sumTotal'],
-						'_options' => ['rowSpan' => ['#' => 1 + $fc + $tc, 'title' => 1 + $fc + $tc, 'percents' => 1 + $fc + $tc], 'cellClasses' => $cellClasses]
+						'_options' => ['rowSpan' => ['#' => 1 + $fc, 'title' => 1 + $fc, 'percents' => 1 + $fc], 'cellClasses' => $cellClasses]
 					];
 					if ($fc)
 					{
 						$dataTaxes [] = [
 							'curr' => $homeCurrencyName,
 							'base' => $r['sumBaseHc'], 'tax' => $r['sumTaxHc'], 'total' => $r['sumTotalHc'],
-							'_options' => ['cellClasses' => $cellClasses]
-						];
-					}
-
-					if ($tc)
-					{
-						$dataTaxes [] = [
-							'curr' => $taxCurrencyName,
-							'base' => $r['sumBaseTax'], 'tax' => $r['sumTaxTax'], 'total' => $r['sumTotalTax'],
 							'_options' => ['cellClasses' => $cellClasses]
 						];
 					}
@@ -2166,12 +2130,14 @@ class TableHeads extends DbTable
 
 	function resetRowItem_PriceSell($headRecData, $rowRecData, $itemRecData, $docType)
 	{
+		error_log("__1__");
 		if ($headRecData['taxCalc'] == 1)
 		{ // ze základu
 			if ($itemRecData['priceSellBase'] != 0.0)
 				return $itemRecData['priceSellBase'];
 			if ($itemRecData['priceSellTotal'] != 0.0)
 			{
+				error_log("__2__");
 				$taxDate = e10utils::headsTaxDate ($headRecData);
 				$taxPercents = e10utils::taxPercent ($this->app(), $rowRecData['taxCode'], $taxDate);
 				$price = $itemRecData['priceSellTotal'];
@@ -3581,30 +3547,6 @@ class FormHeads extends TableForm
 			$nt ['sumTaxHc'] = $newTax ['taxHc'];
 			$nt ['sumTotalHc'] = $newTax ['priceTotalHc'];
 
-			// -- tax currency amounts:
-			$nt ['sumBaseTax'] = 0;
-			$nt ['sumTaxTax'] = 0;
-			$nt ['sumTotalTax'] = 0;
-
-			if ($this->recData ['currency'] === $this->recData ['taxCurrency'])
-			{
-				$nt ['sumBaseTax'] = $nt ['sumBase'];
-				$nt ['sumTaxTax'] = $nt ['sumTax'];
-				$nt ['sumTotalTax'] = $nt ['sumTotal'];
-			}
-			elseif ($this->recData ['homeCurrency'] === $this->recData ['taxCurrency'])
-			{
-				$nt ['sumBaseTax'] = $nt ['sumBaseHc'];
-				$nt ['sumTaxTax'] = $nt ['sumTaxHc'];
-				$nt ['sumTotalTax'] = $nt ['sumTotalHc'];
-			}
-			else
-			{
-				$nt ['sumBaseTax'] = round($nt ['sumBaseHc'] / $this->recData ['taxExchangeRate'], 2);
-				$nt ['sumTaxTax'] = round($nt ['sumTaxHc'] / $this->recData ['taxExchangeRate'], 2);
-				$nt ['sumTotalTax'] = round($nt ['sumTotalHc'] / $this->recData ['taxExchangeRate'], 2);
-			}
-
 			$nt ['weight'] = $newTax ['weight'];
 			$nt ['quantity'] = $newTax ['quantity'];
 
@@ -3918,16 +3860,6 @@ class FormHeads extends TableForm
 			$cp = [
 				'docType' => strval ($recData['docType']),
 				'srcCurrency' => $recData['homeCurrency'], 'dstCurrency' => $recData['currency'],
-				'dateAccounting' => utils::createDateTime ($recData['dateAccounting'])->format('Y-m-d')
-			];
-			return $cp;
-		}
-		if ($srcTableId === 'e10doc.core.heads' && $srcColumnId === 'taxExchangeRate')
-		{
-			$cp = [
-				'docType' => strval ($recData['docType']),
-				'srcCurrency' => $recData['homeCurrency'], 'dstCurrency' => $recData['taxCurrency'],
-				'dstColumnId' => $srcColumnId,
 				'dateAccounting' => utils::createDateTime ($recData['dateAccounting'])->format('Y-m-d')
 			];
 			return $cp;

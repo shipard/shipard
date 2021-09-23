@@ -134,9 +134,6 @@ class FormInvoiceOut extends \E10Doc\Core\FormHeads
 					$this->addColumnInput ("docKind");
 
 				$this->addColumnInput ('taxManual');
-
-				$this->addColumnInput ('taxCurrency');
-				$this->addColumnInput ('taxExchangeRate');
 			$this->closeTab ();
 
 			$this->closeTabs ();

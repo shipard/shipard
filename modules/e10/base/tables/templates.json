@@ -5,7 +5,7 @@
 
 		{"id": "name", "name": "Název šablony", "type": "string", "len": 120},
 		{"id": "type", "name": "Typ šablony", "type": "enumInt",
-			"enumValues": {"0": "Web", "1": "Doklad", "2": "Report", "3": "Spreadsheet"}},
+			"enumValues": {"0": "Web", "1": "Doklad", "2": "Report", "3": "Spreadsheet"}},		
 
 		{"id": "templateCode", "name": "Kód šablony", "type": "memo"},
 

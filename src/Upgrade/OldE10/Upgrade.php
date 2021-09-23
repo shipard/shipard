@@ -14,7 +14,6 @@ class Upgrade extends Utility
 	protected function upgradeWorldCountries()
 	{
 		$this->upgradeWorldCountries_Table('e10.persons.address', 'country', 'worldCountry');
-		$this->upgradeWorldCountries_Table('e10doc.base.taxRegs', 'country', 'worldCountry');
 	}
 
 	protected function upgradeWorldCountries_Table(string $tableId, string $oldColumnId, string $newColumnId)
@@ -44,6 +43,24 @@ class Upgrade extends Utility
 			$this->db()->query('UPDATE ['.$table->sqlName().'] SET ', $update, ' WHERE ['.$oldColumnId.'] = %s', $oldCountryId);
 			echo " * ".\Dibi::$sql."\n";
 		}
+	}
+
+	protected function upgradeDocs()
+	{
+		$this->upgradeTaxCodes('e10doc.core.rows');
+		$this->upgradeTaxCodes('e10doc.core.taxes');
+		$this->upgradeTaxCodes('e10doc.taxes.reportsRowsVatReturn');
+		$this->upgradeTaxCodes('e10doc.taxes.reportsRowsVatRS');
+	}
+
+	protected function upgradeTaxRegs()
+	{
+		$table = $this->app()->table('e10doc.base.taxRegs');
+		if (!$table)
+			return;
+
+		$this->db()->query('UPDATE [e10doc_base_taxRegs] SET [taxArea] = %s', 'eu', ' WHERE [taxArea] = %s', '');
+		$this->db()->query('UPDATE [e10doc_base_taxRegs] SET [taxCountry] = %s', 'cz', ' WHERE [taxCountry] = %s', '');
 	}
 
 	protected function upgradeTaxCodes($tableId, $columnId = 'taxCode')
@@ -92,10 +109,7 @@ class Upgrade extends Utility
 	public function run()
 	{
 		$this->upgradeWorld();
-
-		$this->upgradeTaxCodes('e10doc.core.rows');
-		$this->upgradeTaxCodes('e10doc.core.taxes');
-		$this->upgradeTaxCodes('e10doc.taxes.reportsRowsVatReturn');
-		$this->upgradeTaxCodes('e10doc.taxes.reportsRowsVatRS');
+		$this->upgradeTaxRegs();
+		$this->upgradeDocs();
 	}
 }

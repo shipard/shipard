@@ -393,11 +393,14 @@ class ShpdUIApp
 				return $this->err("SYNTAX ERROR: $lookFile");
 			}
 
+			$cssVariables = ":root {\n";
 			$sassVariables = "@charset \"UTF-8\";\n\n";
 			foreach ($lookCfg['lookParams'] as $key => $value)
 			{
 				$sassVariables .= '$'.$key.': '.$value."; \n";
+				$cssVariables .= "\t".'--'.$key.': '.$value.";\n";
 			}
+			$cssVariables .= "}\n\n";
 
 			$bn = substr (basename($lookFile), 0, -5);
 			$ver = [];
@@ -405,6 +408,7 @@ class ShpdUIApp
 			{
 				$sassContent = $sassVariables;
 				$sassContent .= "\n@import \"../sass/$styleId.scss\";\n";
+				$sassContent .= $cssVariables;
 
 				$sassFileName = 'styles/' . $bn . '.tmp.scss';
 				file_put_contents($sassFileName, $sassContent);

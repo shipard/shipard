@@ -259,8 +259,10 @@ class Accounting extends \e10\DocumentCard
 			$item = $r->toArray();
 			$taxCode = E10Utils::taxCodeCfg($this->app(), $r['taxCode']);
 			if ($taxCode)
-				$item['tc'] = $taxCode['fullName'];
+				$item['tc'] = $taxCode['print'];
 			$item['cc'] = strtoupper($r['countryConsumption']);
+
+			$item['docCurrency'] = $this->app()->cfgItem ('e10.base.currencies.'.$r['docCurrency'].'.shortcut');
 
 			$data[] = $item;
 		}
@@ -272,7 +274,11 @@ class Accounting extends \e10\DocumentCard
 			return;
 		}
 
-		$h = ['reportTitle' => 'Přiznání', 'filingTitle' => 'Podání', 'cc' => 'Země', 'tc' => 'Sazba', 'taxPercents' => ' %', 'base' => ' Základ', 'tax' => ' Daň'];
+		$h = [
+			'reportTitle' => 'Přiznání', 'filingTitle' => 'Podání', 'cc' => 'Země', 'tc' => 'Sazba', 'taxPercents' => ' %', 
+			'baseDC' => ' Základ', 'taxDC' => ' Daň', 'docCurrency' => ' Měna', 
+			'baseTC' => ' Základ EUR', 'taxTC' => ' Daň EUR'
+		];
 		$t = [['icon' => 'report/generalLedger', 'text' => 'Záznamy pro přiznání OSS']];
 		$content = ['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'table' => $data, 'header' => $h, 'title' => $t, 'params' => ['disableZeros' => 1]];
 		$this->addContent ('body', $content);

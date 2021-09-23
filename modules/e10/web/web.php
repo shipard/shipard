@@ -7,7 +7,6 @@ namespace E10\Web;
 use \Texy, \E10\utils, \e10\AppLog, \e10\Application, \e10\web\WebPages, \e10\web\WebTemplateMustache;
 
 \E10\Application::RegisterFunction ('template', 'fullTextSearch', 'e10.web.fullTextSearch');
-\E10\Application::RegisterFunction ('template', 'pageMenu', 'e10.web.htmlPageMenu');
 \E10\Application::RegisterFunction ('template', 'articleDownload', 'e10.web.articleDownload');
 \E10\Application::RegisterFunction ('template', 'articleGallery', 'e10.web.articleGallery');
 \E10\Application::RegisterFunction ('template', 'articleImage', 'e10.web.articleImage');
@@ -51,6 +50,7 @@ class E10Texy extends \Texy
 		$this->addHandler ('script', '\E10\Web\texyScriptHandler');
 		$this->addHandler ('phrase', '\E10\Web\texyPhraseHandler');
 		//$this->addHandler ('linkURL', '\E10\Web\texyLinkURLHandler');
+		$this->addHandler ('beforeParse', '\E10\Web\texyBeforeparseHandler');
 
 		if ($unsafe === FALSE)
 			unset ($this->allowedTags['script']);
@@ -63,6 +63,8 @@ class E10Texy extends \Texy
 		$this->allowedTags['summary'] = TRUE;
 		$this->allowedTags['video'] = TRUE;
 		$this->allowedTags['source'] = TRUE;
+		$this->allowedTags['img'] = TRUE;
+		$this->allowedTags['wrapper'] = TRUE;
 
 		$this->headingModule->top = 2;
 	}
@@ -131,7 +133,6 @@ function texyScriptHandler ($invocation, $cmd, $args, $raw)
 	return $invocation->texy->protect ($html, Texy::CONTENT_BLOCK);
 }
 
-
 function texyPhraseHandler ($invocation, $phrase, $content, $modifier, $link)
 {
 	if ($link && $invocation->texy->externalLinks)
@@ -146,7 +147,6 @@ function texyPhraseHandler ($invocation, $phrase, $content, $modifier, $link)
 	return $invocation->proceed();
 }
 
-
 function texyLinkURLHandler($invocation, $link)
 {
 	if ($link && $invocation->texy->externalLinks)
@@ -157,116 +157,13 @@ function texyLinkURLHandler($invocation, $link)
 	return $invocation->proceed();
 }
 
-
-function renderPageMenu2 ($app, $menu, $menuMode, array &$result, $class='menuMain nav', $classSubOld = 'menuMainSub', $level = 0)
+function texyBeforeparseHandler($texy, &$text, $singleLine)
 {
-	if ((!$menu) || !isset($menu['items']))
-		return '';
-
-	$subMenu = NULL;
-
-	$c = "";
-
-	$class_ul = $class;
-	if ($class_ul === 'bootstrap-dropdown')
-		$class_ul = 'dropdown-menu';
-	$classSub = $classSubOld;
-	$class_a = '';
-
-	$rp = $app->requestPath();
-
-	$c .= "<ul class='$class_ul'>";
-	foreach ($menu['items'] as $mi)
-	{
-		if (isset ($mi ['menuDisabled']))
-			continue;
-
-		$menuTitle = $mi['title'];
-		$menuUrl = $mi['url'];
-		$linkUrl = isset ($mi['redirectTo']) ? $mi['redirectTo'] :$mi['url'];
-
-		$urlParts = explode ('/', $menuUrl);
-		$itemClassId = implode('-', $urlParts);
-		$itemClass = "$class_ul$itemClassId $class-l-$level";
-
-		if (isset($mi['items']) && count($mi['items']))
-			$itemClass .= " $class-with-submenu";
-		else
-			$itemClass .= " $class-no-submenu";
-
-		$isActive = false;
-
-		if (isset ($urlParts [1]) && $urlParts [1] == $app->requestPath (0) && ($level === 0))
-			$isActive = true;
-		else
-		if (isset ($urlParts [2]) && $urlParts [2] == $app->requestPath (1) && ($level === 1))
-			$isActive = true;
-		else
-		if ($menuUrl == $rp || (isset ($urlParts [1]) && $urlParts [1] === $app->requestPath (0)))
-			$isActive = true;
-		else
-		if ($linkUrl == $rp)
-			$isActive = true;
-
-		$isActive2 = FALSE;
-
-		if (strlen ($rp) >= strlen ($linkUrl))
-		{
-			$xx1 = substr($rp, 0, strlen ($linkUrl));
-			if ($xx1 == $linkUrl)
-				$isActive2 = TRUE;
-		}
-		else
-		if (strlen ($rp) <= strlen ($linkUrl))
-		{
-			$xx1 = substr($linkUrl, 0, strlen ($rp));
-			if ($xx1 == $linkUrl)
-				$isActive2 = TRUE;
-		}
-
-		if ($rp != '/' && $urlParts [1] == '' )
-			$isActive2 = false;
-
-		if ($isActive2)
-			$itemClass .= " active";
-
-		$href = $app->urlRoot . $linkUrl;
-		if (isset ($mi['redirectTo']))
-		{
-			if (substr($mi['redirectTo'], 0, 4) === 'http')
-				$href = $mi['redirectTo'];
-			else
-				$href = $app->urlRoot . $mi['redirectTo'];
-		}
-
-		if ($classSubOld === 'bootstrap-dropdown' && isset($mi['items']))
-		{
-			$itemCode = "<li class='dropdown'><a href='" . $href . "' class='dropdown-toggle' data-toggle='dropdown'>" . utils::es ($menuTitle) . ' <b class="caret"></b></a>';
-		}
-		else
-			$itemCode = "<li class='$itemClass'><a href='" . $href . "'$class_a>" . utils::es ($menuTitle) . '</a>';
-
-		if ($isActive)
-			$subMenu = $mi;
-
-		if ($menuMode == 'full')
-		{
-			$itemCode .= renderPageMenu2 ($app, $mi, $menuMode, $result, $classSub, $classSub,  $level + 1);
-			$subMenu = NULL;
-		}
-		$itemCode .= '</li>';
-
-		$c .= $itemCode;
-	}
-	$c .= "</ul>";
-
-	$result [] = $c;
-	if ($subMenu != NULL)
-		$c .= renderPageMenu2 ($app, $subMenu, $menuMode, $result, $classSub, $classSub, $level + 1);
-
-	return $c;
+	if ($texy->template)
+		$text = str_replace("{{templateRoot}}",$texy->template->templateRoot(), $text);
+	$text = str_replace("{{urlRoot}}", $texy->app->urlRoot, $text);
+	$text = str_replace("{{dsRoot}}", $texy->app->dsRoot, $text);
 }
-
 
 function renderPage ($app, &$page, $params)
 {
@@ -851,61 +748,6 @@ function articleImage ($app, $params)
   return $c;
 }
 
-function activeWebMenu ($app, $menu, $maxLevel = -1)
-{
-	$m = $menu;
-	$level = 0;
-	$activeUrl = $app->requestPath ();
-	while (1)
-	{
-		$thisUrl = $app->requestPath ($level);
-		if ($thisUrl == '')
-			break;
-		$subMenu = utils::searchArray ($m, 'url', '/'.$thisUrl);
-		if (!isset ($subMenu['items']))
-			break;
-		$m = $subMenu['items'];
-
-		$level++;
-		if ($maxLevel != -1 && $level > $maxLevel)
-			break;
-
-		if ($activeUrl === $thisUrl)
-			break;
-	}
-	return $subMenu;
-}
-
-function htmlPageMenu ($app, $params)
-{
-	if ($app->cfgItem ('loginRequired', 0) && !$app->user->isAuthenticated ())
-		return '';
-
-	$menuCfgKey = 'e10.web.menu.'.$params['owner']->webEngine->serverInfo['ndx'];
-	if ($params['owner']->webEngine->webPageType === WebPages::wptSystemLogin)
-		return '';
-
-	$menuKey = \E10\searchParam($params, 'menu', '');
-	$menu = $app->cfgItem ($menuCfgKey, NULL);
-
-	$menuClass = \E10\searchParam ($params, 'menuClass', 'menuMain');
-	$menuClassSub = \E10\searchParam ($params, 'menuClassSub', 'menuMainSub');
-
-	$menuMode = \E10\searchParam ($params, 'menuMode', 'simple');
-	$menuLevel = \E10\searchParam ($params, 'menuLevel', -1);
-	$activeMenuLevel = \E10\searchParam ($params, 'activeMenuLevel', -1);
-
-	if ($menuKey === 'active')
-		$menu = activeWebMenu ($app, $menu['items'], $activeMenuLevel);
-
-	$menuParts = array ();
-	$html = renderPageMenu2 ($app, $menu, $menuMode, $menuParts, $menuClass, $menuClassSub/*, $classSub = 'menuMainSub'*/);
-
-	if ($menuLevel == -1)
-		return $html;
-
-	return $menuParts [$menuLevel];
-}
 
 
 function attFileName ($app, $params)
