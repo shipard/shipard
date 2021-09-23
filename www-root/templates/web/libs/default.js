@@ -4,8 +4,8 @@ $(function() {
 });
 
 function e10w_responsiveVideo() {
-	var $allVideos = $("iframe[src^='//player.vimeo.com'], iframe[src^='//www.youtube.com'], object, embed");
-
+	var $allVideos = $("iframe[src^='https://player.vimeo.com'], iframe[src^='https://www.youtube.com'], object, embed");
+	
 	$allVideos.each(function() {
 		$(this)
 			.attr('data-aspectRatio', this.height / this.width)
