@@ -331,7 +331,7 @@ class WikiEngine extends Utility
 		else
 		{
 			$this->breadcrumbs[] = ['title' => $this->page['sectionTitle'], 'id' => 's'.$this->page['sectionNdx'], 'url' => $this->urlBegin.'s'.$this->page['sectionNdx']];
-			$this->breadcrumbs[] = ['title' => '', 'id' => '', 'url' => $this->urlBegin, 'icon' => 'icon-home'];
+			$this->breadcrumbs[] = ['title' => '', 'id' => '', 'url' => $this->urlBegin, 'icon' => 'system/iconHome'];
 			return;
 		}
 
@@ -340,7 +340,7 @@ class WikiEngine extends Utility
 		else
 		{
 			$this->breadcrumbs[] = ['title' => $r['sectionTitle'], 'id' => 's'.$r['section'], 'url' => $this->urlBegin.'s'.$r['section']];
-			$this->breadcrumbs[] = ['title' => '', 'id' => '', 'icon' => 'icon-home', 'url' => $this->urlBegin];
+			$this->breadcrumbs[] = ['title' => '', 'id' => '', 'icon' => 'system/iconHome', 'url' => $this->urlBegin];
 		}
 	}
 
@@ -468,7 +468,7 @@ class WikiEngine extends Utility
 		$this->page['sectionPageFooter'] = $r['sectionPageFooter'].$this->sectionInfo ($this->sectionNdx, $r['title']);
 
 		$this->breadcrumbs[] = ['title' => $r['title'], 'id' => 's'.$this->sectionNdx, 'active' => 1];
-		$this->breadcrumbs[] = ['title' => '', 'id' => '', 'url' => $this->urlBegin, 'icon' => 'icon-home', 'active' => 0];
+		$this->breadcrumbs[] = ['title' => '', 'id' => '', 'url' => $this->urlBegin, 'icon' => 'system/iconHome', 'active' => 0];
 
 		$this->page['breadcrumbs'] = array_reverse($this->breadcrumbs);
 
@@ -793,7 +793,7 @@ class WikiEngine extends Utility
 		$this->page['title'] = 'Stránka neexistuje';
 		$this->page['text'] = 'stránka, kterou hledáte, nebyla nalezena...';
 		$this->page['id'] = $this->pageId;
-		$this->breadcrumbs[] = ['title' => '', 'id' => $this->app()->urlRoot.'/', 'url' => $this->urlBegin, 'icon' => 'icon-home'];
+		$this->breadcrumbs[] = ['title' => '', 'id' => $this->app()->urlRoot.'/', 'url' => $this->urlBegin, 'icon' => 'system/iconHome'];
 
 		$this->page['breadcrumbs'] = array_reverse($this->breadcrumbs);
 
