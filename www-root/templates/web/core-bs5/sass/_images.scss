@@ -63,3 +63,26 @@ a.thumbnail:hover {
   }
 }
 
+div.article-carousel-a {
+  margin-bottom: 1rem;
+  text-align: center;
+
+  .carousel-caption {
+    color: $e10w-content-link-text;
+    a, a:hover, a:visited {
+      color: $e10w-content-link-text;
+    }
+    text-shadow: 2px 2px 4px rgba(0,0,0,.7);
+  }
+
+  div.carousel-picture {
+    height: 26rem;
+    background-size: cover; background-position-x: center;
+    background-repeat: no-repeat;
+  }
+
+  h5 {
+    font-size: 2rem;
+  }
+}
+
