@@ -95,7 +95,7 @@
 <script src="{{dsRoot}}/www-root/sc/bs/3.3/js/bootstrap.min.js"></script>
 
 <script>
-    var loginScreenUrl = '{{cfgItem.authServerUrl}}/feed/loginScreen/test';
+    var loginScreenUrl = '{{#cfgItem.authServerUrl}}{{cfgItem.authServerUrl}}{{/cfgItem.authServerUrl}}{{^cfgItem.authServerUrl}}https://shipard.app/{{/cfgItem.authServerUrl}}/feed/loginScreen/test';
 
     if (window.location.hash !== '')
     {
