@@ -251,8 +251,14 @@ class CfgManager
 
 		$newConfig['hostingCfg'] = $hosting;
 
-		$newConfig ['authServerUrl'] = 'https://'.$hosting['hostingDomain'].'/';
-		$newConfig ['hostingServerUrl'] = 'https://'.$hosting['hostingDomain'].'/';
+		$newConfig ['authServerUrl'] = '';
+		$newConfig ['hostingServerUrl'] = '';
+
+		if (isset($hosting['hostingDomain']) && $hosting['hostingDomain'] !== '')
+		{
+			$newConfig ['authServerUrl'] = 'https://'.$hosting['hostingDomain'].'/';
+			$newConfig ['hostingServerUrl'] = 'https://'.$hosting['hostingDomain'].'/';
+		}
 
 		// -- data source mode
 		if (!isset($newConfig ['develMode']))
