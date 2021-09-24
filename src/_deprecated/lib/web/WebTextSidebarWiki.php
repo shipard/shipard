@@ -3,7 +3,7 @@
 
 namespace lib\web;
 
-use e10\FormSidebar, e10\TableView;
+use \Shipard\Form\FormSidebar, \Shipard\Viewer\TableView;
 
 
 /**
