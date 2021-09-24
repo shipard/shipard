@@ -36,17 +36,17 @@ class ViewerSidebarImages extends TableView
 		$c .= "<div class='e10-tvw-item' id='{$this->vid}Footerdddd'>";
 
 		$c .= $this->addBtnCode ([
-			['title' => 'Galerie všech obrázků', 'icons' => ['icon-picture-o'], 'code' => '{{articleImage}}', 'text' => 'Vše'],
+			['title' => 'Galerie všech obrázků', 'icons' => ['system/iconImage'], 'code' => '{{articleImage}}', 'text' => 'Vše'],
 			[
-				'title' => 'Galerie vybraných obrázků', 'icons' => ['icon-check', 'icon-picture-o'],
+				'title' => 'Galerie vybraných obrázků', 'icons' => ['system/iconCheck', 'system/iconImage'],
 				'code' => '{{articleImage;', 'function' => 'webTextArticleImageSelected', 'text' => 'Vybrané'
 			]
 		]);
 
 		$c .= $this->addBtnCode ([
-			['title' => 'Kolotoč všech obrázků', 'icons' => ['icon-spinner'], 'code' => '{{articleImage;showAs:carousel}}', 'text' => 'Vše'],
+			['title' => 'Kolotoč všech obrázků', 'icons' => ['system/iconSpinner'], 'code' => '{{articleImage;showAs:carousel}}', 'text' => 'Vše'],
 			[
-				'title' => 'Kolotoč vybraných obrázků', 'icons' => ['icon-check', 'icon-spinner'],
+				'title' => 'Kolotoč vybraných obrázků', 'icons' => ['system/iconCheck', 'system/iconSpinner'],
 				'code' => '{{articleImage;showAs:carousel;', 'function' => 'webTextArticleImageSelected', 'text' => 'Vybrané'
 			]
 		]);
@@ -124,10 +124,10 @@ class ViewerSidebarImages extends TableView
 		$c .= "<span class='pull-right'>#{$listItem ['ndx']}</span>";
 
 		$c .= "<div class='padd5 break number' style='line-height: 2.5em;'>";
-		$c .= $this->addBtnCode ([['title' => 'Přidat jako samostatný obrázek', 'icons' => ['icon-picture-o'], 'code' => '{{articleImage;id:'.$listItem['ndx'].'}}']]);
+		$c .= $this->addBtnCode ([['title' => 'Přidat jako samostatný obrázek', 'icons' => ['system/iconImage'], 'code' => '{{articleImage;id:'.$listItem['ndx'].'}}']]);
 		$c .= '<br>';
-		$c .= $this->addBtnCode ([['title' => 'Přidat jako obrázek zarovnaný doleva', 'icons' => ['icon-angle-double-left', 'icon-picture-o'], 'code' => '{{articleImage;id:'.$listItem['ndx'].';style:left}}']]);
-		$c .= $this->addBtnCode ([['title' => 'Přidat jako obrázek zarovnaný doprava', 'icons' => ['icon-picture-o', 'icon-angle-double-right'], 'code' => '{{articleImage;id:'.$listItem['ndx'].';style:right}}']]);
+		$c .= $this->addBtnCode ([['title' => 'Přidat jako obrázek zarovnaný doleva', 'icons' => ['system/iconAngleDoubleLeft', 'system/iconImage'], 'code' => '{{articleImage;id:'.$listItem['ndx'].';style:left}}']]);
+		$c .= $this->addBtnCode ([['title' => 'Přidat jako obrázek zarovnaný doprava', 'icons' => ['system/iconImage', 'system/iconAngleDoubleRight'], 'code' => '{{articleImage;id:'.$listItem['ndx'].';style:right}}']]);
 		$c .= "</div>";
 
 
@@ -180,7 +180,7 @@ class ViewerSidebarImages extends TableView
 
 		if (!$deleted)
 		{
-			$c .= "<button class='btn btn-primary btn-xs df2-action-trigger' data-formId='default' data-action='editform' title='Opravit'><i class='fa fa-pencil'></i></button> ";
+			$c .= "<button class='btn btn-primary btn-xs df2-action-trigger' data-formId='default' data-action='editform' title='Opravit'>".$this->app()->ui()->icons()->icon('system/actionOpen')."</button> ";
 		}
 
 		if ($trash != FALSE)
@@ -188,7 +188,7 @@ class ViewerSidebarImages extends TableView
 			if ($deleted)
 				$c .= "<button class='btn btn-success btn-xs df2-action-trigger' data-action='undeleteform'>Vzít z koše zpět</button> ";
 			else
-				$c .= "<button class='btn btn-danger btn-xs df2-action-trigger' data-action='deleteform' title='Smazat'><i class='fa fa-trash'></i></button> ";
+				$c .= "<button class='btn btn-danger btn-xs df2-action-trigger' data-action='deleteform' title='Smazat'>".$this->app()->ui()->icons()->icon('system/actionDelete')."</button> ";
 		}
 
 		$c .= "</span>";
@@ -214,8 +214,7 @@ class ViewerSidebarImages extends TableView
 
 			foreach ($b['icons'] as $icon)
 			{
-				$i = $this->app()->ui()->icons()->cssClass($icon);
-				$c .= "<i class='$i'></i> ";
+				$c .= $this->app()->ui()->icons()->icon($icon).'&nbsp;';
 			}
 			if (isset($b['text']))
 				$c .= utils::es($b['text']);

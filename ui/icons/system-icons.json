@@ -639,6 +639,18 @@
 		"bsi": "bi-mouse",
 		"mdi": "mouse"
 	},
+	"iconAngleDoubleLeft":{
+		"fa5": "fa-angle-double-left",
+		"fa5pro": "fa-angle-double-left",
+		"bsi": "bi-chevron-double-left",
+		"mdi": "arrow_back_ios"
+	},
+	"iconAngleDoubleRight":{
+		"fa5": "fa-angle-double-right",
+		"fa5pro": "fa-angle-double-right",
+		"bsi": "bi-chevron-double-right",
+		"mdi": "arrow_forward_ios"
+	},
 	
 
 
