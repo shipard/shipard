@@ -736,7 +736,40 @@ class docAccounting extends Utility
 				$newRow ['accountId'] = $step['cat'].substr($row['taxCode'], 4);
 			else
 				$newRow ['accountId'] = $step['cat'].substr($row['taxCode'], 2);
+
+			$this->checkAccountVAT ($newRow ['accountId'], $row['taxCode']);
 		}
+	}
+
+	protected function checkAccountVAT ($accountId, $taxCodeId)
+	{
+		$exist = $this->db()->query ('SELECT ndx, id FROM [e10doc_debs_accounts]',
+		' WHERE [accGroup] = 0 AND [id] = %s', $accountMask.'%',
+		' AND accMethod = %s', $this->accMethodId)->fetch();
+
+		if ($exist)
+			return;
+		
+		$taxCode = E10Utils::taxCodeCfg($this->app, $taxCodeId);
+		$docTaxCountryId = E10Utils::docTaxCountryId($this->app(), $this->docHead);
+		$taxHomeCountry = E10Utils::docTaxHomeCountryId($this->app(), $this->docHead);
+		if ($docTaxCountryId === '')
+			$docTaxCountryId = $taxHomeCountry;
+
+		$countryTxt = strtoupper($docTaxCountryId).' ';
+		if ($docTaxCountryId === $taxHomeCountry)
+			$countryTxt = '';
+
+		$newAccount = [
+			'id' => $accountId, 'accountKind' => 5,
+			'accGroup' => 0, 'accMethod' => 'debs', 'docState' => 4000, 'docStateMain' => 2,
+			'fullName' => 'Daň z přidané hodnoty '.$countryTxt.'('.$taxCode['fullName'].')',
+			'shortName' => 'DPH '.$countryTxt.'('.$taxCode['fullName'].')',
+		];
+
+		$tableAccounts = $this->app()->table('e10doc.debs.accounts');
+		$newAccountNdx = $tableAccounts->dbInsertRec($newAccount);
+		$tableAccounts->docsLog ($newAccountNdx);
 	}
 
 	protected function searchAccountId ($a, $row, &$newRow)
