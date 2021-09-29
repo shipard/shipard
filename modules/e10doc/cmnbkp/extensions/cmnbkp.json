@@ -4,9 +4,6 @@
     "views": {
 			"cmnbkp": {
 				"id": "cmnbkp", "class": "e10doc.cmnbkp.libs.ViewCmnBkpDocs",
-				"addWizard": [
-					{"class": "e10doc.cmnbkp.VATReturnWizard", "icon": "docTypeVATReturn", "text": "Přiznání DPH", "place": "addButton"}
-				],
 				"details": {
 					"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.cmnbkp.libs.ViewDetailCmnBkpDoc", "order": 1000}
 				}

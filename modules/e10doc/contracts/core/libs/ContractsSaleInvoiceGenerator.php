@@ -112,7 +112,8 @@ class ContractsSaleInvoiceGenerator extends \E10\Utility
 		$r['rowOrder'] = (count($this->invRows) + 1) * 100;
 
 		$item = $this->tableDocsRows->loadItem ($row['item'], 'e10_witems_items');
-		$r['taxCode'] = $this->tableDocsHeads->taxCode (1, $item['vatRate']);
+		if ($item) // TODO: log invalid item
+			$r['taxCode'] = $this->tableDocsHeads->taxCode (1, $this->invHead, $item['vatRate']);
 
 		$this->invRows[] = $r;
 	}

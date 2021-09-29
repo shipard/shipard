@@ -20,13 +20,18 @@ class TaxReportDocumentCard extends \e10\DocumentCard
 		$this->reportTypeDef = $this->app()->cfgItem('e10doc.taxes.reportTypes.'.$this->recData['reportType'], NULL);
 	}
 
+	protected function createAccInfo($filingRecData) : ?array
+	{
+		return NULL;
+	}
+
 	public function createContentFilings ()
 	{
 		$filings = [];
 		$propertiesEngine = $this->app->createObject($this->reportTypeDef['propertiesEngine']);
 
 		// -- title
-		$tile = ['info' => [], 'class' => 'padd5 header'];
+		$tile = ['info' => [], 'class' => 'padd5 subtitle e10-bg-t9'];
 		$title = [];
 		$title[] = ['class' => 'h1', 'text' => 'Přehled podání', 'icon' => 'system/iconPaperPlane'];
 		$title[] = [
@@ -36,6 +41,9 @@ class TaxReportDocumentCard extends \e10\DocumentCard
 
 		$tile['info'][] = ['class' => 'info', 'value' => $title];
 		$filings[] = $tile;
+
+		$lastActiveFillingNdx = 0;
+		$lastActiveFillingRecData = NULL;
 
 		// -- filings
 		$q[] = 'SELECT * FROM [e10doc_taxes_filings]';
@@ -50,7 +58,12 @@ class TaxReportDocumentCard extends \e10\DocumentCard
 			$docStateClass = $this->tableFilings->getDocumentStateInfo ($docState['states'], $r, 'styleClass');
 			$propertiesEngine->load ($this->recData['ndx'], $r['ndx']);
 
-			$tile = ['info' => [], 'class' => 'row '.$docStateClass];
+			if (!$lastActiveFillingNdx)
+			{
+				$lastActiveFillingNdx = $r['ndx'];
+				$lastActiveFillingRecData = $r->toArray();
+			}
+			$tile = ['info' => [], 'class' => 'row e10-ds '.$docStateClass];
 			$title = [];
 			$title[] = ['class' => 'h1 pull-left', 'text' => $propertiesEngine->name(), 'icon' => 'icon-file-o'];
 			$title[] = [
@@ -151,6 +164,8 @@ class TaxReportDocumentCard extends \e10\DocumentCard
 			$info[] = ['text' => 'Zatím nebylo vytvořeno žádné podání.'];
 			$filings[0]['info'][] = ['value' => $info];
 		}
+
+		$this->addContent('body', $this->createAccInfo($lastActiveFillingRecData));
 
 		$this->addContent('body', ['type' => 'tiles', 'pane' => 'e10-pane', 'tiles' => $filings, 'class' => 'panes']);
 	}

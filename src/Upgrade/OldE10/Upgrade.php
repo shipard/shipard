@@ -61,6 +61,42 @@ class Upgrade extends Utility
 
 		$this->db()->query('UPDATE [e10doc_base_taxRegs] SET [taxArea] = %s', 'eu', ' WHERE [taxArea] = %s', '');
 		$this->db()->query('UPDATE [e10doc_base_taxRegs] SET [taxCountry] = %s', 'cz', ' WHERE [taxCountry] = %s', '');
+
+		// -- accDocument / e10doc_taxes_reports
+		$dbCounter = $this->db()->query ('SELECT * FROM [e10doc_base_docnumbers] WHERE [docType] = %s AND [activitiesGroup] = %s', 'cmnbkp', 'tax')->fetch();
+		if (!$dbCounter || !isset ($dbCounter['ndx']))
+			return;
+
+		$q = [];
+		array_push ($q, 'SELECT * FROM [e10doc_taxes_reports]');
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND [accDocument] = %i', 0);
+		array_push ($q, ' AND [docState] = %i', 4000);
+		array_push ($q, ' AND [reportType] = %s', 'eu-vat-tr');
+
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$accDoc = $this->db()->query ('SELECT * FROM [e10doc_core_heads] WHERE [docType] = %s', 'cmnbkp', 
+				' AND [dbCounter] = %i AND [taxPeriod] = %i', $dbCounter['ndx'], $r['taxPeriod'])->fetch();
+
+			if (!$accDoc)
+				continue;
+
+			// -- taxReport	
+			$this->db()->query ('UPDATE [e10doc_taxes_reports] SET [accDocument] = %i', $accDoc['ndx'], ' WHERE [ndx] = %i', $r['ndx']);
+
+			$qf = [];
+			$qf[] = 'SELECT * FROM [e10doc_taxes_filings]';
+			array_push($qf, ' WHERE [report] = %i', $r['ndx'], ' AND [docState] = %i', 4000);
+			array_push($qf, ' ORDER BY dateIssue DESC, ndx DESC');
+			$lastFiling = $this->db()->query($qf)->fetch();
+			if ($lastFiling && isset($lastFiling['ndx']))
+			{
+				$linkId = 'accTaxReport;'.$r['ndx'].';'.$lastFiling['ndx'];
+				$this->db()->query ('UPDATE [e10doc_core_heads] SET [linkId] = %s', $linkId, ' WHERE [ndx] = %i', $accDoc['ndx']);
+			}
+		}
 	}
 
 	protected function upgradeTaxCodes($tableId, $columnId = 'taxCode')

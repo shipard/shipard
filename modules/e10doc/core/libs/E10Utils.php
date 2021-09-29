@@ -596,9 +596,25 @@ class E10Utils
 		return $tc;
 	}
 
-	static function taxCode ($app, $docHeadRecData, $dirTax, $taxRate)
+	static function taxCodeForDocRow ($app, $docHeadRecData, $dirTax, $taxRate)
 	{
 		$taxes = self::docTaxCodes($app, $docHeadRecData);
+		$taxCode = '';
+		forEach ($taxes as $itmid => $itm) {
+			if ($itm ['dir'] != $dirTax)
+				continue;
+			if ($itm ['rate'] != $taxRate)
+				continue;
+			$taxCode = $itmid;
+			break;
+		}
+		return $taxCode;
+	}
+
+	static function taxCodeForItem ($app, $vatRegCfg, $dirTax, $taxRate)
+	{
+		//$taxes = self::docTaxCodes($app, $docHeadRecData);
+		$taxes = self::taxCodes ($app, $vatRegCfg['taxArea'], $vatRegCfg['taxCountry']);
 		$taxCode = '';
 		forEach ($taxes as $itmid => $itm) {
 			if ($itm ['dir'] != $dirTax)
@@ -683,39 +699,42 @@ class E10Utils
 		return 3;
 	}
 
-	static function itemPriceSell($app, $taxCalc, $itemRecData)
+	static function itemPriceSell($app, $taxRegCfg, $taxCalc, $itemRecData)
 	{
-		if ($taxCalc == 1)
-		{ // ze základu
-			if ($itemRecData['priceSellBase'] != 0.0)
-				return $itemRecData['priceSellBase'];
-			if ($itemRecData['priceSellTotal'] != 0.0)
-			{
-				$taxDate = utils::today();
-				$taxCode = e10utils::taxCode($app, 1, $itemRecData['vatRate']);
-				$taxPercents = e10utils::taxPercent ($app, $taxCode, $taxDate);
-				$price = $itemRecData['priceSellTotal'];
-				$k = round (($taxPercents / ($taxPercents + 100)), 4);
-				$tax = utils::round (($price * $k), 2, 0);
-				$base = round (($price - $tax), 2);
-				return $base;
+		if ($taxRegCfg)
+		{
+			if ($taxCalc == 1)
+			{ // ze základu
+				if ($itemRecData['priceSellBase'] != 0.0)
+					return $itemRecData['priceSellBase'];
+				if ($itemRecData['priceSellTotal'] != 0.0)
+				{
+					$taxDate = utils::today();
+					$taxCode = self::taxCodeForItem($app, $taxRegCfg, 1, $itemRecData['vatRate']);
+					$taxPercents = self::taxPercent ($app, $taxCode, $taxDate);
+					$price = $itemRecData['priceSellTotal'];
+					$k = round (($taxPercents / ($taxPercents + 100)), 4);
+					$tax = utils::round (($price * $k), 2, 0);
+					$base = round (($price - $tax), 2);
+					return $base;
+				}
+			}
+			elseif ($taxCalc == 2 || $taxCalc == 3)
+			{ // ze ceny celkem
+				if ($itemRecData['priceSellTotal'] != 0.0)
+					return $itemRecData['priceSellTotal'];
+				if ($itemRecData['priceSellBase'] != 0.0)
+				{
+					$taxDate = utils::today();
+					$taxCode = self::taxCodeForItem($app, $taxRegCfg, 1, $itemRecData['vatRate']);
+					$taxPercents = self::taxPercent ($app, $taxCode, $taxDate);
+					$price = $itemRecData['priceSellBase'];
+					$total = utils::round (($price * ((100 + $taxPercents) / 100)), 2, 0);
+					return $total;
+				}
 			}
 		}
-		elseif ($taxCalc == 2 || $taxCalc == 3)
-		{ // ze ceny celkem
-			if ($itemRecData['priceSellTotal'] != 0.0)
-				return $itemRecData['priceSellTotal'];
-			if ($itemRecData['priceSellBase'] != 0.0)
-			{
-				$taxDate = utils::today();
-				$taxCode = e10utils::taxCode($app, 1, $itemRecData['vatRate']);
-				$taxPercents = e10utils::taxPercent ($app, $taxCode, $taxDate);
-				$price = $itemRecData['priceSellBase'];
-				$total = utils::round (($price * ((100 + $taxPercents) / 100)), 2, 0);
-				return $total;
-			}
-		}
-
+	
 		// -- nedaňový doklad
 		if ($itemRecData['priceSellTotal'] != 0.0)
 			return $itemRecData['priceSellTotal'];
@@ -725,6 +744,17 @@ class E10Utils
 			return $itemRecData ['priceSell'];
 
 		return 0.0;
+	}
+
+	static function primaryTaxRegCfg($app)
+	{
+		$taxRegs = $app->cfgItem('e10doc.base.taxRegs', NULL);
+		if (!$taxRegs)
+			return NULL;
+
+		$k = key($taxRegs);
+		
+		return $taxRegs[$k];
 	}
 }
 

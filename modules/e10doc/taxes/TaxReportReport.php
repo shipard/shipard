@@ -41,6 +41,7 @@ class TaxReportReport extends \e10doc\core\libs\reports\GlobalReport
 	var $enumFilings;
 
 	var $data = [];
+	var $tcSums = [];
 	var $partsData;
 	var $partsDefs;
 	var $xml = '';

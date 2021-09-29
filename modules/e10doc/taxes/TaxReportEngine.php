@@ -2,7 +2,7 @@
 
 namespace e10doc\taxes;
 
-use \e10\utils, \e10\Utility;
+use \e10\utils, \Shipard\Base\Utility;
 
 
 /**

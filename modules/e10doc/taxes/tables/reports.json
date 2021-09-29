@@ -24,6 +24,8 @@
 		{"id": "homeCurrency", "name": "Měna domácí", "type": "enumString", "len": 3,
 			"enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
 
+		{"id": "accDocument", "name": "Doklad zaúčtování", "type": "int", "reference": "e10doc.core.heads"},
+
 		{"id": "headerInfo", "name": "Hlavička", "type": "subColumns"},
 		{"id": "params", "name": "Parametry", "type": "memo"},
 

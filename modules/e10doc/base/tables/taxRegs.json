@@ -21,6 +21,8 @@
 
 		{"id": "title", "name": "Název", "type": "string", "len": 80},
 
+		{"id": "taxOffice", "name": "Finanční úřad", "type": "int", "reference": "e10.persons.persons"},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],

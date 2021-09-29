@@ -14,6 +14,7 @@ class VatReturnReport extends \e10doc\taxes\TaxReportReport
 	var $taxCodes;
 	var $oldVatReturn = NULL;
 	var $disableOldVatReturn = FALSE;
+	var $totalTaxVatReturnAmount = 0.0;
 
 	function init()
 	{
@@ -96,6 +97,8 @@ class VatReturnReport extends \e10doc\taxes\TaxReportReport
 				$this->data['rowsRounded']['row66']['tax'] =
 						$totalTaxVatReturn  - ($this->oldVatReturn->data['rowsRounded']['row62']['tax'] - $this->oldVatReturn->data['rowsRounded']['row63']['tax']);
 		}
+
+		$this->totalTaxVatReturnAmount = $totalTaxVatReturn;
 
 		$this->data['rows']['row66']['tax'] = $this->data['rowsRounded']['row66']['tax'];
 
@@ -856,6 +859,7 @@ class VatReturnReport extends \e10doc\taxes\TaxReportReport
 		{
 			$newItem = $r->toArray();
 			$this->data['SUM'][] = $newItem;
+			$this->tcSums[$r['taxDir']][$r['taxCode']] = $newItem;
 		}
 	}
 

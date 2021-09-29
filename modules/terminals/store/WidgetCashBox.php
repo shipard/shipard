@@ -28,6 +28,7 @@ class WidgetCashBox extends WidgetPane
 		{
 			return;
 		}
+		$taxReg = E10Utils::primaryTaxRegCfg($this->app());
 		$taxCalc = intval($this->app->cfgItem ('options.e10doc-sale.cashRegSalePricesType', 2));
 		$taxCalc = E10Utils::taxCalcIncludingVATCode ($this->app(), $this->today, $taxCalc);
 
@@ -60,7 +61,7 @@ class WidgetCashBox extends WidgetPane
 				$title = ($r['shortName'] !== '') ? $r['shortName'] : $r['fullName'];
 				$item = [
 						'title' => $title, 'name' => $r['fullName'], 'pk' => $r['ndx'],
-						'price' => E10Utils::itemPriceSell($this->app, $taxCalc, $r),
+						'price' => E10Utils::itemPriceSell($this->app, $taxReg, $taxCalc, $r),
 						'unit' => $r['defaultUnit'], 'unitname' => $this->units[$r['defaultUnit']]['shortcut'],
 						'askq' => $askQuantity, 'askp' => $askPrice
 				];

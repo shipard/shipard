@@ -1284,7 +1284,7 @@ class TableHeads extends DbTable
 
 	public function taxCode ($dirTax, $headRecData, $taxRate)
 	{
-		return E10Utils::taxCode ($this->app(), $headRecData, $dirTax, $taxRate);
+		return E10Utils::taxCodeForDocRow($this->app(), $headRecData, $dirTax, $taxRate);
   }
 
 	public function tableIcon ($recData, $options = NULL)

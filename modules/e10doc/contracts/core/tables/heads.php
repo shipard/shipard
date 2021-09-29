@@ -139,7 +139,9 @@ class TableHeads extends DbTable
 	{
 		$rowRecData ['text'] = $itemRecData['fullName'];
 		$rowRecData ['unit'] = $itemRecData['defaultUnit'];
-		$rowRecData ['priceItem'] = E10Utils::itemPriceSell($this->app(), $headRecData['taxCalc']+1, $itemRecData);
+
+		$taxReg = E10Utils::primaryTaxRegCfg($this->app());
+		$rowRecData ['priceItem'] = E10Utils::itemPriceSell($this->app(), $taxReg, $headRecData['taxCalc']+1, $itemRecData);
 	}
 
 	public function makeDocNumber (&$recData)

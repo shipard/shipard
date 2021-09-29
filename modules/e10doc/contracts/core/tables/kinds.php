@@ -94,7 +94,9 @@ class TableKinds extends DbTable
 	{
 		$rowRecData ['text'] = $itemRecData['fullName'];
 		$rowRecData ['unit'] = $itemRecData['defaultUnit'];
-		$rowRecData ['priceItem'] = e10utils::itemPriceSell($this->app(), $headRecData['taxCalc']+1, $itemRecData);
+
+		$taxReg = E10Utils::primaryTaxRegCfg($this->app());
+		$rowRecData ['priceItem'] = e10utils::itemPriceSell($this->app(), $taxReg, $headRecData['taxCalc']+1, $itemRecData);
 	}
 
 	public function tableIcon ($recData, $options = NULL)

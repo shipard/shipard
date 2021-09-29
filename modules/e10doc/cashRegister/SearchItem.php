@@ -17,6 +17,7 @@ class SearchItem extends Utility
 
 	protected function search ()
 	{
+		$taxReg = E10Utils::primaryTaxRegCfg($this->app());
 		$symbol = $this->app->requestPath(4);
 		$today = new \DateTime();
 
@@ -35,7 +36,7 @@ class SearchItem extends Utility
 		$taxCalc = intval($this->app->cfgItem ('options.e10doc-sale.cashRegSalePricesType', E10Utils::taxCalcIncludingVATCode($this->app(), $today)));
 		$this->result ['item'] = [
 				'title' => $r['shortName'], 'name' => $r['fullName'], 'pk' => $r['ndx'],
-				'price' => E10Utils::itemPriceSell($this->app, $taxCalc, $r),
+				'price' => E10Utils::itemPriceSell($this->app, $taxReg, $taxCalc, $r),
 				'unit' => $r['defaultUnit'], 'unitName' => $this->units[$r['defaultUnit']]['shortcut'],
 				'askq' => $askQuantity
 		];

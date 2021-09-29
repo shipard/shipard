@@ -75,7 +75,8 @@ class TableTaxRegs extends DbTable
 				'taxCountry' => $r['taxCountry'],
 				'taxType' => $r['taxType'], 'payerKind' => $r['payerKind'],
 				'taxId' => $r ['taxId'], 'title' => $r ['title'], 
-				'periodType' => $r['periodType']
+				'periodType' => $r['periodType'],
+				'taxOffice' => $r['taxOffice']
 			];
 			if ($r['taxType'] === 'vat' && $r['taxCountry'] === 'cz')
 				$tr['periodTypeVatCS'] = $r['periodTypeVatCS'];
@@ -87,6 +88,9 @@ class TableTaxRegs extends DbTable
 
 			$list[$r['ndx']] = $tr;
 		}
+
+		if ($taxFlags['moreRegs'] <= 1)
+			$taxFlags['moreRegs'] = 0;
 
 		// save to file - registrations
 		$cfg ['e10doc']['base']['taxRegs'] = $list;
@@ -211,6 +215,7 @@ class FormTaxReg extends TableForm
 			if ($this->recData['taxType'] === 'vat' && $this->recData['taxCountry'] === 'cz')
 				$this->addColumnInput ('periodTypeVatCS');
 			$this->addColumnInput ('title');
+			$this->addColumnInput ('taxOffice');
 		$this->closeForm ();
 	}
 }
