@@ -195,7 +195,7 @@ class ViewDetailPropDefs extends TableViewDetail
 	{
 		$item = $this->item;
 		$info = $item ['fullName'];
-		return $this->defaultHedearCode ('x-properties', $item ['fullName'], $info);
+		return $this->defaultHedearCode ('tables/e10.base.propdefs', $item ['fullName'], $info);
 	}
 }
 
@@ -253,7 +253,7 @@ class FormPropDefs extends TableForm
 	{
 		$item = $this->recData;
 		$info = '';
-		return $this->defaultHedearCode ('x-properties', $item ['fullName'], $info);
+		return $this->defaultHedearCode ('tables/e10.base.propdefs', $item ['fullName'], $info);
 	}
 } // class FormPropDefs
 
