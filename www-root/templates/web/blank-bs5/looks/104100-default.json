@@ -1,0 +1,14 @@
+{
+	"ndx": 104100,
+	"name": "Výchozí vzhled",
+	"lookParams": {
+		"e10w-body-bg": "#FEFEFE",
+		"e10w-body-text": "#111",
+
+		"e10w-content-bg": "#FEFEFE",
+		"e10w-content-text": "#111",
+		"e10w-content-link-text": "#007bff",
+		"e10w-content-link-hover-text": "#007bff",
+		"e10w-content-link-visited-text": "#007bff"
+	}
+}

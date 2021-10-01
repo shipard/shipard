@@ -1,4 +1,10 @@
 {
+    "104100": {
+        "id": "104100-default",
+        "name": "Výchozí vzhled",
+        "themeColor": "#00508a",
+        "template": "blank-bs5"
+    },
     "102100": {
         "id": "102100-default",
         "name": "Výchozí vzhled",

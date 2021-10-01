@@ -671,12 +671,19 @@ class WebPages extends \E10\utility
 				$webTemplateId = $this->forceTemplate;
 		}
 
+		$forceTemplateScript = NULL;
+		if (isset($this->serverInfo['templateMainScript']) && $this->serverInfo['templateMainScript'])
+		{
+			$scriptItem = $this->db()->query('SELECT [ndx], [code] FROM [e10_web_scripts] WHERE [ndx] = %i', $this->serverInfo['templateMainScript'])->fetch();
+			if ($scriptItem)
+				$forceTemplateScript = $scriptItem['code'];
+		}
 		$this->template = new WebTemplateMustache ($this->app);
 		if (isset($this->serverInfo['templateParams']))
 			$this->template->templateParams = $this->serverInfo['templateParams'];
 		$this->template->serverInfo = $this->serverInfo;
 		$this->template->webEngine = $this;
-		$this->template->loadTemplate ($webTemplateId, $templateType.'.mustache');
+		$this->template->loadTemplate ($webTemplateId, $templateType.'.mustache', $forceTemplateScript);
 
 		if (isset($this->serverInfo['look']) && $this->serverInfo['look'] !== '' && $this->serverInfo['templateStylePath'] !== '')
 		{

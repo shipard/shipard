@@ -25,7 +25,7 @@ class TemplateMustache extends \e10\TemplateCore
 		return $this->app->appCfg;
 	}
 
-	public function loadTemplate ($name, $templateFileName = 'page.mustache')
+	public function loadTemplate ($name, $templateFileName = 'page.mustache', $forceTemplateScript = NULL)
 	{
 		$fullTemplateName = '';
 		$fullDictName = '';

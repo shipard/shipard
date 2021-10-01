@@ -137,7 +137,7 @@ class TableServers extends DbTable
 			$s = [
 				'ndx' => $r['ndx'], 'fn' => $r ['fullName'], 'sn' => $r ['shortName'], 'title' => $r ['title'],
 				'domain' => $r['domain'],
-				'mode' => $r['serverMode'], 'wiki' => $r['wiki'], 'hpFunction' => $r['homePageFunction'],
+				'mode' => $r['serverMode'], 'wiki' => $r['wiki'], 'hpFunction' => $r['homePageFunction'], 'templateMainScript' => $r['templateMainScript'],
 				'urlStart' => $urlStart, 'urlStartSec' => str_replace('/', '-', $urlStart),
 				'template' => $r['template'], 'look' => $r['templateLook'], 'lookNdx' => $r['templateLookNdx'], 'templateStylePath' => $r['templateStylePath'],
 				'templateParams' => $templateParams, 'themeColor' => '#00508a',
@@ -589,6 +589,7 @@ class FormServer extends TableForm
 					$this->addColumnInput ('excludeFromDashboard');
 					$this->addColumnInput ('order');
 					$this->addColumnInput ('gaid');
+					$this->addColumnInput ('templateMainScript');
 				$this->closeTab ();
 				$this->openTab (TableForm::ltNone);
 					$this->addAttachmentsViewer();

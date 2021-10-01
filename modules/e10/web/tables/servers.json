@@ -39,6 +39,7 @@
 		{"id": "iconAppIos", "name": "Ikona aplikace na iOS", "type": "int", "reference": "e10.base.attachments", "comboViewer": "images"},
 
 		{"id": "templateParams", "name": "Parametry šablony", "type": "subColumns"},
+		{"id": "templateMainScript", "name": "Skript pro šablonu", "type": "int", "reference": "e10.web.scripts"},
 
 		{"id": "iconUrl", "name": "URL ikony", "type": "string", "len": 160},
 

@@ -157,7 +157,7 @@ class TemplateCore extends \Mustache
 		return $this->render ($this->subTemplate);
 	}
 
-	public function loadTemplate ($name, $templateFileName = 'page.mustache')
+	public function loadTemplate ($name, $templateFileName = 'page.mustache', $forceTemplateScript = NULL)
 	{
 		$fullTemplateName = '';
 		$fullOptionsName = '';
@@ -192,6 +192,12 @@ class TemplateCore extends \Mustache
 		{
 			$dictText = file_get_contents($fullDictName);
 			$this->dict = json_decode ($dictText, TRUE);
+		}
+
+		if ($forceTemplateScript)
+		{
+			$this->template = $forceTemplateScript;
+			return;
 		}
 
 		$fullTemplateName = $this->templateRoot . $templateFileName;

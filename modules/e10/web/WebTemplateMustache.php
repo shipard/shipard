@@ -12,7 +12,7 @@ use \e10\base\libs\UtilsBase;
  * Class WebTemplateMustache
  * @package e10\web
  */
-class WebTemplateMustache extends \E10\TemplateCore
+class WebTemplateMustache extends \Shipard\Utils\TemplateCore
 {
 	/** @var  \e10\web\webPages */
 	public $webEngine;

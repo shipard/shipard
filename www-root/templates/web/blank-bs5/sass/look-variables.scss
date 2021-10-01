@@ -1,0 +1,54 @@
+/**
+ * default colors
+ */
+$e10w-body-bg: #FEFEFE !default;
+$e10w-body-text: #111 !default;
+$e10w-content-link-text: #6666FF !default;
+$e10w-content-link-hover-text: #667788 !default;
+$e10w-content-link-visited-text: #667788 !default;
+$e10w-content-bg: #FEFEFE !default;
+$e10w-content-text: #111 !default;
+$e10w-content-link-text: #007bff !default;
+
+
+/**
+ * document states
+ */
+$concepthandleTextColor:				#999;
+$conceptHandleBackgroundColor:	#FDFF6B;
+
+$doneHandleTextColor:						#999;
+$doneHandleBackgroundColor:			#a0d7a0;
+
+$halfdoneHandleTextColor:				#999;
+$halfdoneHandleBackgroundColor:	#BDD0F2;
+
+$confirmedHandleTextColor:			#999;
+$confirmedHandleBackgroundColor:#BDD0F2;
+
+$editHandleTextColor:						#999;
+$editHandleBackgroundColor:			#FFCB6B;
+
+$deleteHandleTextColor:					#999;
+$deleteHandleBackgroundColor:		#000;
+
+$cancelHandleTextColor:					#999;
+$cancelHandleBackgroundColor:		#ff4040;
+
+$archiveHandleTextColor:				#999;
+$archiveHandleBackgroundColor:	#DEDEDE;
+
+
+/**
+ * breakpoints
+ */
+
+$grid-breakpoints: (
+        xs: 0,
+        sm: 576px,
+        md: 768px,
+        lg: 992px,
+        xl: 1200px
+) !default;
+
+$grid-gutter-width: 30px !default;

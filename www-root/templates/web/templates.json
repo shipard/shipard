@@ -1,4 +1,8 @@
 {
+    "700400": {
+        "id": "blank-bs5",
+        "name": "Prázdná šablona BS5"
+    },
     "700300": {
         "id": "core-bs5",
         "name": "Základní šablona BS5"

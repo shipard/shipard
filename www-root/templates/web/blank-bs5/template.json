@@ -1,0 +1,27 @@
+{
+	"name": "Prázdná šablona BS5",
+	"version": "0.1.1", "id": "blank-bs5", "ndx": "700400",
+	"styles": ["web"],
+	"extensions": [],
+
+	"templateParams": {
+		"columns": [
+		]
+	},
+	"lookParams": {
+		"columns": [
+			{"id": "e10w-body-bg", "group": "body", "name": "Barva pozadí stránky", "label": "Pozadí", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-body-text", "group": "body", "name": "Barva textu stránky", "label": "Písmo", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+
+			{"id": "e10w-content-bg", "group": "content", "name": "Barva pozadí obsahu", "label": "Pozadí", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-content-text", "group": "content", "name": "Barva textu obsahu", "label": "Písmo", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-content-link-text", "group": "content", "name": "Barva textu odkazů", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-content-link-hover-text", "group": "content", "name": "Barva textu odkazů pod kurzorem", "type": "string", "subtype": "color", "cssType": "color", "len": 20},
+			{"id": "e10w-content-link-visited-text", "group": "content", "name": "Barva textu již navštívených odkazů", "type": "string", "subtype": "color", "cssType": "color", "len": 20}
+		],
+		"groups": [
+			{"id": "body", "title": "Tělo stránky"},
+			{"id": "content", "title": "Obsah stránky"}
+		]
+	}
+}
