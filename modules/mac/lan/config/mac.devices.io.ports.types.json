@@ -11,6 +11,9 @@
 	"dataRFIDPN532": {
 		"name": "RFID PN532", "cfgPath": "ioPorts/dataRFIDPN532", "sensor": 1
 	},
+	"dataRFIDMOD1356MIFARE": {
+		"name": "MOD RFID 1356 MIFARE", "cfgPath": "ioPorts/dataRFIDMOD1356MIFARE", "sensor": 1
+	},
 	"dataRFID125kHz": {
 		"name": "RFID 125 kHz", "cfgPath": "ioPorts/dataRFID125kHz", "sensor": 1
 	},
