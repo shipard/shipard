@@ -47,10 +47,16 @@ class Upgrade extends Utility
 
 	protected function upgradeDocs()
 	{
+		$table = $this->app()->table('e10doc.base.taxRegs');
+		if (!$table)
+			return;
+
 		$this->upgradeTaxCodes('e10doc.core.rows');
 		$this->upgradeTaxCodes('e10doc.core.taxes');
 		$this->upgradeTaxCodes('e10doc.taxes.reportsRowsVatReturn');
 		$this->upgradeTaxCodes('e10doc.taxes.reportsRowsVatRS');
+
+		$this->db()->query('UPDATE [e10doc_core_heads] SET [taxCountry] = %s', 'cz', ' WHERE [taxCountry] = %s', '', ' AND [vatReg] != %i', 0);
 	}
 
 	protected function upgradeTaxRegs()
