@@ -193,6 +193,9 @@ class TableItems extends DbTable
 			$itemType = $this->itemsTypes [$item['type']];
 			return (isset ($itemType ['.text'])) ? $itemType ['.text'] : '';
 		}
+		if ($all)
+			return NULL;
+
 		return $item['type'];
 	}
 
@@ -537,14 +540,14 @@ class ViewItems extends TableView
 			if (utils::dateIsBlank($item['successorDate']) || $item['successorDate'] < $this->now)
 				$listItem['!error'] = 1;
 		}
-		if (isset ($item['debsAccountId']) && $thisItemType['kind'] === 2)
+		if (isset ($item['debsAccountId']) && $thisItemType && $thisItemType['kind'] === 2)
 			$listItem ['i1'] = $item['debsAccountId'];
 		else
-			$listItem ['i1'] = array ('text' => '#'.$item['id'], 'class' => 'id');
+			$listItem ['i1'] = ['text' => '#'.$item['id'], 'class' => 'id'];
 
 		$listItem ['icon'] = $this->table->icon ($item);
 
-		if ($thisItemType['kind'] !== 2)
+		if ($thisItemType && $thisItemType['kind'] !== 2)
 		{
 			$listItem ['i2'] = [];
 
