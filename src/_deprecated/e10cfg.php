@@ -581,7 +581,7 @@ class ViewDetailAppOptions extends TableViewDetail
 				if (is_string($cfgValue))
 					$props[] = array ('p' => $o ['cfgName'], 'v' => $cfgValue);
 				else
-					$props[] = array ('p' => $o ['cfgName'], 'v' => $cfgValue[$nameKey]);
+					$props[] = array ('p' => $o ['cfgName'], 'v' => $cfgValue[$nameKey] ?? $cfgValue['fullName']);
 			}
 			else
 			if (isset($o['options']) && isset($o['options'][$item [$o ['cfgKey']]]))
@@ -708,7 +708,7 @@ class FormAppOptions extends TableForm
 				if (is_string($cfgValue))
 					$options[$cfgId] = $cfgValue;
 				else
-					$options[$cfgId] = $cfgValue[$nameKey];
+					$options[$cfgId] = $cfgValue[$nameKey] ?? $cfgValue['fullName'];
 			}
 			$form->addInputEnum2 ($prefixKey.$o ['cfgKey'], $o ['cfgName'], $options, $style = self::INPUT_STYLE_OPTION);
 		}
