@@ -1,31 +1,31 @@
 {
     "tables/e10pro.kb.texts":{
 		"fa5": "fa-file-alt",
-		"fa5pro": "fa-file-alt",
+		"fa6pro": "fa-file-alt",
 		"bsi": "bi-file-earmark-text-fill",
 		"mdi": "description"
 	},
 	"tables/e10pro.kb.wikies":{
 		"fa5": "fa-book",
-		"fa5pro": "fa-book",
+		"fa6pro": "fa-book",
 		"bsi": "bi-book",
 		"mdi": "auto_stories"
 	},
 	"tables/e10pro.kb.sections":{
 		"fa5": "fa-newspaper",
-		"fa5pro": "fa-newspaper",
+		"fa6pro": "fa-newspaper",
 		"bsi": "bi-newspaper",
 		"mdi": "web"
 	},
 	"tables/e10pro.kb.annotsKinds":{
 		"fa5": "fa-file-alt",
-		"fa5pro": "fa-file-alt",
+		"fa6pro": "fa-file-alt",
 		"bsi": "bi-file-break",
 		"mdi": "sticky_note_2"
 	},
 	"tables/e10pro.kb.textsRendered":{
 		"fa5": "fa-file-alt",
-		"fa5pro": "fa-file-alt",
+		"fa6pro": "fa-file-alt",
 		"bsi": "bi-file-break",
 		"mdi": "sticky_note_2"
 	},
@@ -33,7 +33,7 @@
 	
 	"settings/wikiDocumentation":{
 		"fa5": "fa-file-alt",
-		"fa5pro": "fa-file-alt",
+		"fa6pro": "fa-file-alt",
 		"bsi": "bi-file-earmark-text-fill",
 		"mdi": "description"
 	},
@@ -41,19 +41,19 @@
 
 	"formFooter":{
 		"fa5": "fa-file-alt",
-		"fa5pro": "fa-file-alt",
+		"fa6pro": "fa-file-alt",
 		"bsi": "bi-file-earmark-break",
 		"mdi": "description"
 	},
     "formPerex":{
         "fa5": "fa-edit",
-		"fa5pro": "fa-edit",
+		"fa6pro": "fa-edit",
 		"bsi": "bi-pencil-square",
 		"mdi": "edit_note"
     },
     "formBook":{
         "fa5": "fa-book",
-		"fa5pro": "fa-book",
+		"fa6pro": "fa-book",
 		"bsi": "bi-book",
 		"mdi": "auto_stories"
     }

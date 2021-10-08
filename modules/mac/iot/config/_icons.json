@@ -1,73 +1,73 @@
 {
     "tables/mac.iot.things": {
 		"fa5": "fa-puzzle-piece",
-		"fa5pro": "fa-puzzle-piece",
+		"fa6pro": "fa-puzzle-piece",
 		"bsi": "bi-puzzle",
 		"mdi": "extension"
     },
     "tables/mac.iot.scenarios": {
 		"fa5": "fa-play-circle",
-		"fa5pro": "fa-play-circle",
+		"fa6pro": "fa-play-circle",
 		"bsi": "bi-play-circle-fill",
 		"mdi": "play_circle_filled"
     },
     "tables/mac.iot.sensors": {
 		"fa5": "fa-eye-dropper",
-		"fa5pro": "fa-eye-dropper",
+		"fa6pro": "fa-eye-dropper",
 		"bsi": "bi-eyedropper",
 		"mdi": "colorize"
     },
     "tables/mac.iot.controls": {
 		"fa5": "fa-toggle-on",
-		"fa5pro": "fa-toggle-on",
+		"fa6pro": "fa-toggle-on",
 		"bsi": "bi-toggle-on",
 		"mdi": "toggle_on"
     },
     "tables/mac.iot.scPlacements": {
 		"fa5": "fa-hand-pointer",
-		"fa5pro": "fa-hand-pointer",
+		"fa6pro": "fa-hand-pointer",
 		"bsi": "bi-hand-index",
 		"mdi": "touch_app"
     },
     "tables/mac.iot.valuesKinds": {
 		"fa5": "fa-tint",
-		"fa5pro": "fa-tint",
+		"fa6pro": "fa-tint",
 		"bsi": "bi-droplet-fill",
 		"mdi": "water_drop"
     },
     "tables/mac.iot.thingsKinds": {
 		"fa5": "fa-tasks",
-		"fa5pro": "fa-tasks-alt",
+		"fa6pro": "fa-tasks-alt",
 		"bsi": "bi-list-task",
 		"mdi": "list"
     },
     "tables/mac.iot.users": {
 		"fa5": "fa-user-friends",
-		"fa5pro": "fa-user-friends",
+		"fa6pro": "fa-user-friends",
 		"bsi": "bi-people",
 		"mdi": "group"
     },
     "tables/mac.iot.scenariosActions": {
 		"fa5": "fa-toggle-on",
-		"fa5pro": "fa-toggle-on",
+		"fa6pro": "fa-toggle-on",
 		"bsi": "bi-toggle-on",
 		"mdi": "toggle_on"
     },
     "tables/mac.iot.scenariosSchedule": {
 		"fa5": "fa-clock",
-		"fa5pro": "fa-clock",
+		"fa6pro": "fa-clock",
 		"bsi": "bi-clock",
 		"mdi": "schedule"
     },
     "tables/mac.iot.thingsItems": {
 		"fa5":"fa-exchange-alt",
-        "fa5pro":"fa-exchange-alt",
+        "fa6pro":"fa-exchange-alt",
         "bsi":"bi-arrow-left-right",
         "mdi":"sync_alt"
     },
     "tables/mac.iot.topics": {
 		"fa5": "fa-comment",
-		"fa5pro": "fa-comment",
+		"fa6pro": "fa-comment",
 		"bsi": "bi-chat",
 		"mdi": "mode_comment"
     },
@@ -76,55 +76,55 @@
 
 	"iotThingKinds/gate":{
 		"fa5": "fa-car",
-		"fa5pro": "fa-garage-open",
+		"fa6pro": "fa-garage-open",
 		"bsi": "bi-truck",
 		"mdi": "directions_car_filled"
 	},
 	"iotThingKinds/door":{
 		"fa5": "fa-door-open",
-		"fa5pro": "fa-door-open",
+		"fa6pro": "fa-door-open",
 		"bsi": "bi-door-open",
 		"mdi": "meeting_room"
 	},
 	"iotThingKinds/lights":{
 		"fa5": "fa-lightbulb",
-		"fa5pro": "fa-lightbulb-on",
+		"fa6pro": "fa-lightbulb-on",
 		"bsi": "bi-lightbulb",
 		"mdi": "tungsten"
 	},
 	"iotThingKinds/turnstile":{
 		"fa5": "fa-arrows-alt-v",
-		"fa5pro": "fa-arrows-alt-v",
+		"fa6pro": "fa-arrows-alt-v",
 		"bsi": "bi-arrow-down-up",
 		"mdi": "swap_vert"
 	},
 	"iotValuesKinds/other":{
 		"fa5": "fa-question-circle",
-		"fa5pro": "fa-question-circle",
+		"fa6pro": "fa-question-circle",
 		"bsi": "bi-question-circle-fill",
 		"mdi": "help_outline"
 	},
 	"iotValuesKinds/motionDetectPlace":{
 		"fa5": "fa-spinner",
-		"fa5pro": "fa-spinner",
+		"fa6pro": "fa-spinner",
 		"bsi": "bi-arrow-clockwise",
 		"mdi": "refresh"
 	},
 	"iotValuesKinds/motionDetectDevice":{
 		"fa5": "fa-spinner",
-		"fa5pro": "fa-spinner",
+		"fa6pro": "fa-spinner",
 		"bsi": "bi-arrow-clockwise",
 		"mdi": "refresh"
 	},
 	"iotValuesKinds/temperature":{
 		"fa5": "fa-thermometer-three-quarters",
-		"fa5pro": "fa-thermometer-three-quarters",
+		"fa6pro": "fa-thermometer-three-quarters",
 		"bsi": "bi-thermometer-half",
 		"mdi": "thermostat"
 	},
 	"iotValuesKinds/accessCode":{
 		"fa5": "fa-key",
-		"fa5pro": "fa-key-skeleton",
+		"fa6pro": "fa-key-skeleton",
 		"bsi": "bi-key",
 		"mdi": "vpn_key"
 	},
@@ -132,19 +132,19 @@
 
 	"formConnect":{
 		"fa5": "fa-random",
-		"fa5pro": "fa-random",
+		"fa6pro": "fa-random",
 		"bsi": "bi-shuffle",
 		"mdi": "shuffle"
 	},
 	"formSchedule":{
 		"fa5": "fa-clock",
-		"fa5pro": "fa-clock",
+		"fa6pro": "fa-clock",
 		"bsi": "bi-clock",
 		"mdi": "schedule"
 	},
 	"formAction":{
 		"fa5": "fa-toggle-on",
-		"fa5pro": "fa-toggle-on",
+		"fa6pro": "fa-toggle-on",
 		"bsi": "bi-toggle-on",
 		"mdi": "toggle_on"
 	}

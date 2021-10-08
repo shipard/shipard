@@ -1,19 +1,19 @@
 {
     "purchaseTicketTransportCar":{
         "fa5": "fa-car-side",
-		"fa5pro": "fa-car-side",
+		"fa6pro": "fa-car-side",
 		"bsi": "bi-truck",
 		"mdi": "directions_car"
     },
     "purchaseTicketTransportTruck":{
         "fa5":"fa-truck",
-      	"fa5pro":"fa-truck",
+      	"fa6pro":"fa-truck",
       	"bsi":"bi-truck",
       	"mdi":"local_shipping"
     },
     "purchaseTicketTransportPerson":{
         "fa5":"fa-walking",
-      	"fa5pro":"fa-person-dolly",
+      	"fa6pro":"fa-person-dolly",
       	"bsi":"bi-person",
       	"mdi":"directions_walk"
     }

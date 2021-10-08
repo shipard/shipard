@@ -1,13 +1,13 @@
 {
     "tables/integrations.ntf.channels":{
         "fa5":"fa-bullhorn",
-        "fa5pro":"fa-bullhorn",
+        "fa6pro":"fa-bullhorn",
         "bsi":"bi-megaphone",
         "mdi":"campaign"
     },
     "tables/integrations.ntf.delivery":{
         "fa5":"fa-truck",
-        "fa5pro":"fa-truck",
+        "fa6pro":"fa-truck",
         "bsi":"bi-truck",
         "mdi":"local_shipping"
     },
@@ -15,7 +15,7 @@
 
     "channelTypeMatrixRoom":{
         "fa5": "fa-comment",
-		"fa5pro": "fa-comment",
+		"fa6pro": "fa-comment",
 		"bsi": "bi-chat",
 		"mdi": "mode_comment"
     }

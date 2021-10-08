@@ -1,19 +1,19 @@
 {
     "tables/mac.admin.admins": {
 		"fa5": "fa-user-secret",
-		"fa5pro": "fa-user-secret",
+		"fa6pro": "fa-user-secret",
 		"bsi": "bi-person-square",
 		"mdi": "support_agent"
 	},
 	"tables/mac.admin.ipAddressLists": {
 		"fa5": "fa-list",
-		"fa5pro": "fa-list",
+		"fa6pro": "fa-list",
 		"bsi": "bi-list-task",
 		"mdi": "list"
 	},
 	"tables/mac.admin.ipAddress": {
 		"fa5": "fa-crosshairs",
-		"fa5pro": "fa-crosshairs",
+		"fa6pro": "fa-crosshairs",
 		"bsi": "bi-geo-fill",
 		"mdi": "location_on"
 	}

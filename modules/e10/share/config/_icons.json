@@ -1,19 +1,19 @@
 {
 	"tables/e10.share.shares":{
 		"fa5":"fa-share-alt",
-        "fa5pro":"fa-share-alt",
+        "fa6pro":"fa-share-alt",
         "bsi":"bi-share-fill",
         "mdi":"share"
 	},
     "tables/e10.share.sharesfolders":{
 		"fa5":"fa-share-alt",
-        "fa5pro":"fa-share-alt",
+        "fa6pro":"fa-share-alt",
         "bsi":"bi-share-fill",
         "mdi":"share"
 	},
     "tables/e10.share.sharesitems":{
 		"fa5":"fa-share-alt",
-        "fa5pro":"fa-share-alt",
+        "fa6pro":"fa-share-alt",
         "bsi":"bi-share-fill",
         "mdi":"share"
 	},
@@ -22,7 +22,7 @@
 
     "iconSharing":{
 		"fa5":"fa-share-alt",
-        "fa5pro":"fa-share-alt",
+        "fa6pro":"fa-share-alt",
         "bsi":"bi-share-fill",
         "mdi":"share"
 	}

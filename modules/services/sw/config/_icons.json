@@ -1,7 +1,7 @@
 {
     "tables/services.sw.swQueue":{
         "fa5": "fa-question-circle",
-		"fa5pro": "fa-question-circle",
+		"fa6pro": "fa-question-circle",
 		"bsi": "bi-question-circle-fill",
 		"mdi": "help_outline"
     }

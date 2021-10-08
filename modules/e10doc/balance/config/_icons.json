@@ -1,19 +1,19 @@
 {
     "iconBalance":{
         "fa5":"fa-star",
-        "fa5pro":"fa-star",
+        "fa6pro":"fa-star",
         "bsi":"bi-star-fill",
         "mdi":"star"
     },
     "iconSmile":{
         "fa5":"fa-smile",
-        "fa5pro":"fa-smile",
+        "fa6pro":"fa-smile",
         "bsi":"bi-emoji-smile",
         "mdi":"sentiment_satisfied"
     },
     "iconArrowCircleUp":{
         "fa5":"fa-arrow-circle-up",
-        "fa5pro":"fa-arrow-circle-up",
+        "fa6pro":"fa-arrow-circle-up",
         "bsi":"bi-arrow-up-circle",
         "mdi":"arrow_circle_up"
     }

@@ -1,73 +1,73 @@
 {
     "tables/e10.web.articles":{
         "fa5":"fa-newspaper",
-        "fa5pro":"fa-newspaper",
+        "fa6pro":"fa-newspaper",
         "bsi":"bi-newspaper",
         "mdi":"article"
     },
     "tables/e10.web.articlesSections":{
         "fa5":"fa-folder",
-        "fa5pro":"fa-folders",
+        "fa6pro":"fa-folders",
         "bsi":"bi-folder",
         "mdi":"folder"
     },
     "tables/e10.web.blocks":{
         "fa5":"fa-puzzle-piece",
-        "fa5pro":"fa-puzzle-piece",
+        "fa6pro":"fa-puzzle-piece",
         "bsi":"bi-puzzle",
         "mdi":"extension"
     },
     "tables/e10.web.news":{
         "fa5":"fa-bullhorn",
-        "fa5pro":"fa-bullhorn",
+        "fa6pro":"fa-bullhorn",
         "bsi":"bi-megaphone",
         "mdi":"campaign"
     },
     "tables/e10.web.pages":{
         "fa5":"fa-copy",
-        "fa5pro":"fa-copy",
+        "fa6pro":"fa-copy",
         "bsi":"bi-files",
         "mdi":"content_copy"
     },
     "e10.widgetDashboard/web":{
         "fa5":"fa-globe-americas",
-        "fa5pro":"fa-globe-americas",
+        "fa6pro":"fa-globe-americas",
         "bsi":"bi-globe",
         "mdi":"public"
     },
     "tables/e10.web.urldecorations":{
         "fa5":"fa-paragraph",
-        "fa5pro":"fa-paragraph",
+        "fa6pro":"fa-paragraph",
         "bsi":"bi-paragraph",
         "mdi":"view_sidebar"
     },
     "settings/webComunication":{
         "fa5":"fa-bullhorn",
-        "fa5pro":"fa-bullhorn",
+        "fa6pro":"fa-bullhorn",
         "bsi":"bi-megaphone",
         "mdi":"campaign"
     },
     "tables/e10.web.servers":{
         "fa5":"fa-globe-americas",
-        "fa5pro":"fa-globe-americas",
+        "fa6pro":"fa-globe-americas",
         "bsi":"bi-globe",
         "mdi":"public"
     },
     "tables/e10.web.scripts":{
         "fa5":"fa-code",
-        "fa5pro":"fa-code",
+        "fa6pro":"fa-code",
         "bsi":"bi-code-slash",
         "mdi":"code"
     },
     "tables/e10.web.wuKeys":{
         "fa5":"fa-id-badge",
-        "fa5pro":"fa-id-badge",
+        "fa6pro":"fa-id-badge",
         "bsi":"bi-person-badge-fill",
         "mdi":"badge"
     },
     "tables/e10.web.blocksItems":{
         "fa5":"fa-square",
-        "fa5pro":"fa-square",
+        "fa6pro":"fa-square",
         "bsi":"bi-square-fill",
         "mdi":"check_box_outline_blank"
     },
@@ -76,55 +76,55 @@
 
     "formText":{
         "fa5": "fa-file-alt",
-		"fa5pro": "fa-file-alt",
+		"fa6pro": "fa-file-alt",
 		"bsi": "bi-file-earmark-text-fill",
 		"mdi": "description"
     },
     "formPerex":{
         "fa5": "fa-edit",
-		"fa5pro": "fa-edit",
+		"fa6pro": "fa-edit",
 		"bsi": "bi-pencil-square",
 		"mdi": "edit_note"
     },
     "formLeftColumn":{
         "fa5": "fa-columns",
-		"fa5pro": "fa-columns",
+		"fa6pro": "fa-columns",
 		"bsi": "bi-layout-sidebar-inset",
 		"mdi": "view_week"
     },
     "formRightColumn":{
         "fa5": "fa-columns",
-		"fa5pro": "fa-columns",
+		"fa6pro": "fa-columns",
 		"bsi": "bi-layout-sidebar-inset-reverse",
 		"mdi": "view_week"
     },
 	"formStylesExtension":{
 		"fa5":"fa-code",
-        "fa5pro":"fa-code",
+        "fa6pro":"fa-code",
         "bsi":"bi-code-slash",
         "mdi":"code"
 	},
 	"formBillboard":{
 		"fa5":"fa-comment-alt",
-        "fa5pro":"fa-comment-alt",
+        "fa6pro":"fa-comment-alt",
         "bsi":"bi-chat-square-text",
         "mdi":"rate_review"
 	},
 	"formPrint":{
 		"fa5": "fa-print",
-		"fa5pro": "fa-print",
+		"fa6pro": "fa-print",
 		"bsi": "bi-printer",
 		"mdi": "print"
 	},
     "formTemplate":{
         "fa5":"fa-palette",
-        "fa5pro":"fa-palette",
+        "fa6pro":"fa-palette",
         "bsi":"bi-palette",
         "mdi":"palette"
     },
     "formScript":{
         "fa5":"fa-code",
-        "fa5pro":"fa-code",
+        "fa6pro":"fa-code",
         "bsi":"bi-code-slash",
         "mdi":"code"
     },
@@ -132,25 +132,25 @@
 
     "detailText":{
         "fa5": "fa-pencil-alt",
-		"fa5pro": "fa-pencil-alt",
+		"fa6pro": "fa-pencil-alt",
 		"bsi": "bi-pencil",
 		"mdi": "edit"
     },
     "detailContent":{
         "fa5": "fa-file-alt",
-		"fa5pro": "fa-file-alt",
+		"fa6pro": "fa-file-alt",
 		"bsi": "bi-file-earmark-text-fill",
 		"mdi": "description"
     },
     "detailCode":{
         "fa5":"fa-code",
-        "fa5pro":"fa-code",
+        "fa6pro":"fa-code",
         "bsi":"bi-code-slash",
         "mdi":"code"
     },
     "detailTemplate":{
         "fa5":"fa-file-code",
-        "fa5pro":"fa-file-code",
+        "fa6pro":"fa-file-code",
         "bsi":"bi-file-earmark-code",
         "mdi":"integration_instructions"
     },
@@ -158,7 +158,7 @@
 
     "tags/articlesSections":{
         "fa5":"fa-map-signs",
-        "fa5pro":"fa-map-signs",
+        "fa6pro":"fa-map-signs",
         "bsi":"bi-signpost-2",
         "mdi":"table_chart"
     },
@@ -166,7 +166,7 @@
 
     "pageModeTextPage":{
         "fa5": "fa-file",
-		"fa5pro": "fa-file",
+		"fa6pro": "fa-file",
 		"bsi": "bi-file-earmark",
 		"mdi": "insert_drive_file"
     },
@@ -174,31 +174,31 @@
 
     "serverModeWeb":{
         "fa5":"fa-globe-americas",
-        "fa5pro":"fa-globe-americas",
+        "fa6pro":"fa-globe-americas",
         "bsi":"bi-globe",
         "mdi":"public"
     },
     "serverModeWiki":{
         "fa5": "fa-book",
-		"fa5pro": "fa-book",
+		"fa6pro": "fa-book",
 		"bsi": "bi-book",
 		"mdi": "auto_stories"
     },
     "serverModeApp":{
         "fa5": "fa-cogs",
-		"fa5pro": "fa-cogs",
+		"fa6pro": "fa-cogs",
 		"bsi": "bi-gear",
 		"mdi": "settings"
     },
     "serverModeDisplay":{
         "fa5": "fa-tv",
-		"fa5pro": "fa-tv-alt",
+		"fa6pro": "fa-tv-alt",
 		"bsi": "bi-tv",
 		"mdi": "tv"
     },
     "serverModeManualSetting":{
         "fa5": "fa-wrench",
-		"fa5pro": "fa-wrench",
+		"fa6pro": "fa-wrench",
 		"bsi": "bi-wrench",
 		"mdi": "build_circle"
     }

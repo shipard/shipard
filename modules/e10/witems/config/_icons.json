@@ -1,55 +1,55 @@
 {
     "tables/e10.witems.items":{
         "fa5":"fa-shopping-bag",
-        "fa5pro":"fa-shopping-bag",
+        "fa6pro":"fa-shopping-bag",
         "bsi":"bi-bag-fill",
         "mdi":"shopping-bag"
     },
     "tables/e10.witems.itemcategories":{
         "fa5":"fa-tree",
-        "fa5pro":"fa-trees",
+        "fa6pro":"fa-trees",
         "bsi":"bi-tree-fill",
         "mdi":"add_shopping_cart"
     },
     "tables/e10.witems.brands":{
         "fa5":"fa-copyright",
-        "fa5pro":"fa-copyright",
+        "fa6pro":"fa-copyright",
         "bsi":"bi-heart-fill",
         "mdi":"park"
     },
     "tables/e10.witems.itemtypes":{
         "fa5":"fa-cog",
-        "fa5pro":"fa-cog",
+        "fa6pro":"fa-cog",
         "bsi":"bi-gear",
         "mdi":"settings"
     },
     "tables/e10.witems.units":{
         "fa5":"fa-balance-scale",
-        "fa5pro":"fa-balance-scale",
+        "fa6pro":"fa-balance-scale",
         "bsi":"bi-speedometer",
         "mdi":"speed"
     },
     "tables/e10.witems.relatedKinds":{
         "fa5":"fa-exchange-alt",
-        "fa5pro":"fa-exchange-alt",
+        "fa6pro":"fa-exchange-alt",
         "bsi":"bi-arrow-left-right",
         "mdi":"sync_alt"
     },
     "tables/e10.witems.itemRelated":{
         "fa5":"fa-exchange-alt",
-        "fa5pro":"fa-exchange-alt",
+        "fa6pro":"fa-exchange-alt",
         "bsi":"bi-arrow-left-right",
         "mdi":"sync_alt"
     },
     "tables/e10.witems.itemsets":{
         "fa5":"fa-indent",
-        "fa5pro":"fa-indent",
+        "fa6pro":"fa-indent",
         "bsi":"bi-text-indent-left",
         "mdi":"format_indent_increase"
     },
     "tables/e10.witems.itemSuppliers":{
         "fa5":"fa-industry",
-        "fa5pro":"fa-industry-alt",
+        "fa6pro":"fa-industry-alt",
         "bsi":"bi-building",
         "mdi":"business"
     },
@@ -58,7 +58,7 @@
 
     "items/itemCategories":{
         "fa5":"fa-tree",
-        "fa5pro":"fa-trees",
+        "fa6pro":"fa-trees",
         "bsi":"bi-tree-fill",
         "mdi":"add_shopping_cart"
     },
@@ -67,31 +67,31 @@
 
     "formProperties":{
         "fa5": "fa-list",
-		"fa5pro": "fa-list",
+		"fa6pro": "fa-list",
 		"bsi": "bi-list-ul",
 		"mdi": "list"
     },
     "formSet":{
         "fa5":"fa-indent",
-        "fa5pro":"fa-indent",
+        "fa6pro":"fa-indent",
         "bsi":"bi-text-indent-left",
         "mdi":"format_indent_increase"
     },
     "formSuppliers":{
         "fa5":"fa-industry",
-        "fa5pro":"fa-industry-alt",
+        "fa6pro":"fa-industry-alt",
         "bsi":"bi-building",
         "mdi":"business"
     },
     "formRelatedItems":{
         "fa5":"fa-exchange-alt",
-        "fa5pro":"fa-exchange-alt",
+        "fa6pro":"fa-exchange-alt",
         "bsi":"bi-arrow-left-right",
         "mdi":"sync_alt"
     },
     "formFilter":{
         "fa5": "fa-filter",
-		"fa5pro": "fa-filter",
+		"fa6pro": "fa-filter",
 		"bsi": "bi-funnel",
 		"mdi": "filter_alt"
     },
@@ -100,7 +100,7 @@
 
     "iconFolder":{
         "fa5":"fa-folder-open",
-        "fa5pro":"fa-folder-open",
+        "fa6pro":"fa-folder-open",
         "bsi":"bi-folder2-open",
         "mdi":"folder_open"
     }

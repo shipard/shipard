@@ -1,13 +1,13 @@
 {
     "reportDuplicitePersons":{
         "fa5":"fa-code-branch",
-        "fa5pro":"fa-code-branch",
+        "fa6pro":"fa-code-branch",
         "bsi":"bi-diagram-2-fill",
         "mdi":"grid_view"
     },
     "reportContacts":{
         "fa5":"fa-envelope",
-        "fa5pro":"fa-envelope",
+        "fa6pro":"fa-envelope",
         "bsi":"bi-envelope",
         "mdi":"mail"
     }

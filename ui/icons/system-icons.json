@@ -1,211 +1,211 @@
 {
 	"actionAdd": {
 		"fa5": "fa-plus-circle",
-		"fa5pro": "fa-plus-circle",
+		"fa6pro": "fa-plus-circle",
 		"bsi": "bi-plus-circle",
 		"mdi": "add_circle_outline"
 	},	
 	"actionCalendar": {
 		"fa5": "fa-calendar-alt",
-		"fa5pro": "fa-calendar-alt",
+		"fa6pro": "fa-calendar-alt",
 		"bsi": "bi-calendar",
 		"mdi": "calendar_today"
 	},	
 	"actionClose": {
 		"fa5": "fa-times-circle",
-		"fa5pro": "fa-times-circle",
+		"fa6pro": "fa-times-circle",
 		"bsi": "bi-x-circle",
 		"mdi": "highlight_off"
 	},	
 	"actionCopy": {
 		"fa5": "fa-copy",
-		"fa5pro": "fa-copy",
+		"fa6pro": "fa-copy",
 		"bsi": "bi-files",
 		"mdi": "file_copy"
 	},	
 	"actionDatabaseName": {
 		"fa5": "fa-building",
-		"fa5pro": "fa-building",
+		"fa6pro": "fa-building",
 		"bsi": "bi-building",
 		"mdi": "business"
 	},	
 	"actionHomePage": {
 		"fa5": "fa-home",
-		"fa5pro": "fa-home",
+		"fa6pro": "fa-home",
 		"bsi": "bi-house-door-fill",
 		"mdi": "home"
 	},	
 	"actionLogout": {
 		"fa5": "fa-power-off",
-		"fa5pro": "fa-power-off",
+		"fa6pro": "fa-power-off",
 		"bsi": "bi-power",
 		"mdi": "power"
 	},	
 	"actionNotifications": {
 		"fa5": "fa-bell",
-		"fa5pro": "fa-bell",
+		"fa6pro": "fa-bell",
 		"bsi": "bi-bell",
 		"mdi": "notifications"
 	},	
 	"actionOpen": {
 		"fa5": "fa-edit",
-		"fa5pro": "fa-edit",
+		"fa6pro": "fa-edit",
 		"bsi": "bi-pencil-square",
 		"mdi": "edit"
 	},	
 	"actionPrint": {
 		"fa5": "fa-print",
-		"fa5pro": "fa-print",
+		"fa6pro": "fa-print",
 		"bsi": "bi-printer",
 		"mdi": "print"
 	},	
 	"actionSave": {
 		"fa5": "fa-download",
-		"fa5pro": "fa-download",
+		"fa6pro": "fa-download",
 		"bsi": "bi-download",
 		"mdi": "file_download"
 	},	
 	"actionRegenerate": {
 		"fa5": "fa-cogs",
-		"fa5pro": "fa-cogs",
+		"fa6pro": "fa-cogs",
 		"bsi": "bi-gear-fill",
 		"mdi": "settings"
 	},	
 	"actionMoveDown": {
 		"fa5": "fa-arrow-down",
-		"fa5pro": "fa-arrow-down",
+		"fa6pro": "fa-arrow-down",
 		"bsi": "bi-arrow-down",
 		"mdi": "arrow_downward"
 	},	
 	"actionMoveUp": {
 		"fa5": "fa-arrow-up",
-		"fa5pro": "fa-arrow-up",
+		"fa6pro": "fa-arrow-up",
 		"bsi": "bi-arrow-up",
 		"mdi": "arrow_upward"
 	},	
 	"actionDelete": {
 		"fa5": "fa-trash",
-		"fa5pro": "fa-trash",
+		"fa6pro": "fa-trash",
 		"bsi": "bi-trash",
 		"mdi": "delete"
 	},	
 	"actionExpandOpen": {
 		"fa5": "fa-plus-square",
-		"fa5pro": "fa-plus-square",
+		"fa6pro": "fa-plus-square",
 		"bsi": "bi-plus-square",
 		"mdi": "add_circle_outline"
 	},	
 	"actionExpandClose": {
 		"fa5": "fa-minus-square",
-		"fa5pro": "fa-minus-square",
+		"fa6pro": "fa-minus-square",
 		"bsi": "bi-dash-square",
 		"mdi": "remove_circle_outline"
 	},	
 	"actionSupport": {
 		"fa5":"fa-life-ring",
-        "fa5pro":"fa-life-ring",
+        "fa6pro":"fa-life-ring",
         "bsi":"bi-life-preserver",
         "mdi":"support"
 	},	
 	"actionAddWizard": {
 		"fa5":"fa-play",
-        "fa5pro":"fa-play",
+        "fa6pro":"fa-play",
         "bsi":"bi-play",
         "mdi":"play_arrow"
 	},	
 	"actionInputPlus": {
 		"fa5": "fa-plus-square",
-		"fa5pro": "fa-plus-square",
+		"fa6pro": "fa-plus-square",
 		"bsi": "bi-plus-square",
 		"mdi": "add_circle"
 	},	
 	"actionInputMinus": {
 		"fa5":"fa-minus-square",
-        "fa5pro":"fa-minus-square",
+        "fa6pro":"fa-minus-square",
         "bsi":"bi-dash-square",
         "mdi":"remove_circle"
 	},	
 	"actionInputClear": {
 		"fa5":"fa-times",
-        "fa5pro":"fa-times",
+        "fa6pro":"fa-times",
         "bsi":"bi-x-lg",
         "mdi":"close"
 	},	
 	"actionInputSearch": {
 		"fa5":"fa-search",
-		"fa5pro":"fa-search",
+		"fa6pro":"fa-search",
 		"bsi":"bi-search",
 		"mdi":"search"
 	},
 	"actionDownload": {
 		"fa5": "fa-download",
-		"fa5pro": "fa-download",
+		"fa6pro": "fa-download",
 		"bsi": "bi-download",
 		"mdi": "file_download"
 	},
 	"actionWizardNext": {
 		"fa5":"fa-play",
-        "fa5pro":"fa-play",
+        "fa6pro":"fa-play",
         "bsi":"bi-play",
         "mdi":"play_arrow"
 	},
 	"actionWizardDone": {
 		"fa5": "fa-check-circle",
-		"fa5pro": "fa-check-circle",
+		"fa6pro": "fa-check-circle",
 		"bsi": "bi-check-circle",
 		"mdi": "check_circle"
 	},
 	"actionBack": {
 		"fa5": "fa-long-arrow-alt-left",
-		"fa5pro": "fa-arrow-alt-left",
+		"fa6pro": "fa-arrow-alt-left",
 		"bsi": "bi-arrow-left",
 		"mdi": "arrow_back"
 	},
 	"actionLogIn": {
 		"fa5":"fa-sign-in-alt",
-        "fa5pro":"fa-sign-in-alt",
+        "fa6pro":"fa-sign-in-alt",
         "bsi":"bi-box-arrow-in-right",
         "mdi":"login"
 	},
 	"actionPlay": {
 		"fa5":"fa-play",
-        "fa5pro":"fa-play",
+        "fa6pro":"fa-play",
         "bsi":"bi-play",
         "mdi":"play_arrow"
 	},
 	"actionStop": {
 		"fa5":"fa-stop",
-        "fa5pro":"fa-stop",
+        "fa6pro":"fa-stop",
         "bsi":"bi-stop",
         "mdi":"stop"
 	},
 	"actionUpload": {
 		"fa5":"fa-upload",
-        "fa5pro":"fa-upload",
+        "fa6pro":"fa-upload",
         "bsi":"bi-upload",
         "mdi":"file_upload"
 	},
 	"actionSettings": {
 		"fa5": "fa-wrench",
-		"fa5pro": "fa-wrench",
+		"fa6pro": "fa-wrench",
 		"bsi": "bi-wrench",
 		"mdi": "build_circle"
 	},
 	"actionRecycle": {
 		"fa5": "fa-recycle",
-		"fa5pro": "fa-recycle",
+		"fa6pro": "fa-recycle",
 		"bsi": "bi-recycle",
 		"mdi": "autorenew"
 	},
 	"actionUserSettings": {
 		"fa5":"fa-cog",
-        "fa5pro":"fa-cog",
+        "fa6pro":"fa-cog",
         "bsi":"bi-gear",
         "mdi":"settings"
 	},
 	"actionMove": {
 		"fa5":"fa-arrow-circle-right",
-        "fa5pro":"fa-arrow-circle-right",
+        "fa6pro":"fa-arrow-circle-right",
         "bsi":"bi-arrow-right-circle",
         "mdi":"drive_file_move"
 	},
@@ -215,439 +215,439 @@
 
 	"iconUser": {
 		"fa5": "fa-user",
-		"fa5pro": "fa-user",
+		"fa6pro": "fa-user",
 		"bsi": "bi-person",
 		"mdi": "person"
 	},
 	"iconReports":{
 		"fa5":"fa-chart-bar",
-		"fa5pro":"fa-chart-bar",
+		"fa6pro":"fa-chart-bar",
 		"bsi":"bi-file-earmark-bar-graph",
 		"mdi":"assessment"
 	},
 	"iconHistory":{
 		"fa5": "fa-history",
-		"fa5pro": "fa-history",
+		"fa6pro": "fa-history",
 		"bsi": "bi-clock-history",
 		"mdi": "history"
 	},
 	"iconSettings":{
 		"fa5": "fa-tools",
-		"fa5pro": "fa-tools",
+		"fa6pro": "fa-tools",
 		"bsi": "bi-tools",
 		"mdi": "construction"
 	},
 	"iconOther":{
 		"fa5": "fa-ellipsis-v",
-		"fa5pro": "fa-ellipsis-v",
+		"fa6pro": "fa-ellipsis-v",
 		"bsi": "bi-three-dots-vertical",
 		"mdi": "more_vert"
 	},
 	"iconFile":{
 		"fa5": "fa-file",
-		"fa5pro": "fa-file",
+		"fa6pro": "fa-file",
 		"bsi": "bi-file-earmark",
 		"mdi": "insert_drive_file"
 	},
 	"iconOwner":{
 		"fa5": "fa-building",
-		"fa5pro": "fa-building",
+		"fa6pro": "fa-building",
 		"bsi": "bi-building",
 		"mdi": "business"
 	},
 	"iconStart":{
 		"fa5": "fa-dot-circle",
-		"fa5pro": "fa-dot-circle",
+		"fa6pro": "fa-dot-circle",
 		"bsi": "bi-record-circle-fill",
 		"mdi": "radio_button_checked"
 	},
 	"iconPreview":{
 		"fa5":"fa-search-plus",
-		"fa5pro":"fa-search-plus",
+		"fa6pro":"fa-search-plus",
 		"bsi":"bi-zoom-in",
 		"mdi":"zoom_in"
 	},
 	"iconSearch":{
 		"fa5":"fa-search",
-		"fa5pro":"fa-search",
+		"fa6pro":"fa-search",
 		"bsi":"bi-search",
 		"mdi":"search"
 	},
 	"iconBalance":{
 		"fa5":"fa-star",
-		"fa5pro":"fa-star",
+		"fa6pro":"fa-star",
 		"bsi":"bi-star",
 		"mdi":"grade"
 	},
 	"iconLocked":{
 		"fa5":"fa-lock",
-		"fa5pro":"fa-lock-alt",
+		"fa6pro":"fa-lock-alt",
 		"bsi":"bi-lock-fill",
 		"mdi":"lock"
 	},
 	"iconFilePdf":{
 		"fa5":"fa-file-pdf",
-		"fa5pro":"fa-file-pdf",
+		"fa6pro":"fa-file-pdf",
 		"bsi":"bi-file-earmark-pdf-fill",
 		"mdi":"picture_as_pdf"
 	},
 	"iconPinned":{
 		"fa5": "fa-thumbtack",
-		"fa5pro": "fa-thumbtack",
+		"fa6pro": "fa-thumbtack",
 		"bsi": "bi-pin",
 		"mdi": "push_pin"
 	},
 	"iconVideo":{
 		"fa5": "fa-video",
-		"fa5pro": "fa-video",
+		"fa6pro": "fa-video",
 		"bsi": "bi-camera-video",
 		"mdi": "videocam"
 	},
 	"iconImage":{
 		"fa5": "fa-image",
-		"fa5pro": "fa-image",
+		"fa6pro": "fa-image",
 		"bsi": "bi-image",
 		"mdi": "image"
 	},
 	"iconTerminal":{
 		"fa5": "fa-bookmark",
-		"fa5pro": "fa-bookmark",
+		"fa6pro": "fa-bookmark",
 		"bsi": "bi-bookmark",
 		"mdi": "bookmark_border"
 	},
 	"iconViewerEnd":{
 		"fa5":"fa-th",
-        "fa5pro":"fa-th",
+        "fa6pro":"fa-th",
         "bsi":"bi-grid-3x3-gap-fill",
         "mdi":"apps"
 	},
 	"iconHelp":{
 		"fa5":"fa-life-ring",
-        "fa5pro":"fa-life-ring",
+        "fa6pro":"fa-life-ring",
         "bsi":"bi-life-preserver",
         "mdi":"support"
 	},
 	"iconAppInfoMenu":{
 		"fa5":"fa-th",
-        "fa5pro":"fa-th",
+        "fa6pro":"fa-th",
         "bsi":"bi-grid-3x3-gap-fill",
         "mdi":"apps"
 	},
 	"iconSpinner":{
 		"fa5": "fa-spinner",
-		"fa5pro": "fa-spinner",
+		"fa6pro": "fa-spinner",
 		"bsi": "bi-arrow-clockwise",
 		"mdi": "refresh"
 	},
 	"iconWorkplace":{
 		"fa5": "fa-home",
-		"fa5pro": "fa-home",
+		"fa6pro": "fa-home",
 		"bsi": "bi-house-door-fill",
 		"mdi": "home"
 	},
 	"iconLaboratory":{
 		"fa5":"fa-flask",
-        "fa5pro":"fa-flask",
+        "fa6pro":"fa-flask",
         "bsi":"bi-building",
         "mdi":"science"
 	},
 	"iconLocalServer":{
 		"fa5":"fa-square",
-        "fa5pro":"fa-square",
+        "fa6pro":"fa-square",
         "bsi":"bi-square-fill",
         "mdi":"check_box_outline_blank"
 	},
 	"iconImport":{
 		"fa5":"fa-download",
-        "fa5pro":"fa-download",
+        "fa6pro":"fa-download",
         "bsi":"bi-download",
         "mdi":"file_download"
 	},
 	"iconAdmin":{
 		"fa5": "fa-user-secret",
-		"fa5pro": "fa-user-secret",
+		"fa6pro": "fa-user-secret",
 		"bsi": "bi-person-square",
 		"mdi": "support_agent"
 	},
 	"iconDatabase":{
 		"fa5": "fa-database",
-		"fa5pro": "fa-database",
+		"fa6pro": "fa-database",
 		"bsi": "bi-hdd",
 		"mdi": "save"
 	},
 	"iconReaders":{
 		"fa5":"fa-eye",
-        "fa5pro":"fa-eye",
+        "fa6pro":"fa-eye",
         "bsi":"bi-binoculars-fill",
         "mdi":"preview"
 	},
 	"iconInbox":{
 		"fa5":"fa-inbox",
-        "fa5pro":"fa-inbox",
+        "fa6pro":"fa-inbox",
         "bsi":"bi-inbox-fill",
         "mdi":"inbox"
 	},
 	"iconBug":{
 		"fa5":"fa-bug",
-        "fa5pro":"fa-bug",
+        "fa6pro":"fa-bug",
         "bsi":"bi-bug",
         "mdi":"bug_report"
 	},
 	"iconEmail":{
 		"fa5":"fa-envelope",
-        "fa5pro":"fa-envelope",
+        "fa6pro":"fa-envelope",
         "bsi":"bi-envelope",
         "mdi":"mail"
 	},
 	"iconPhone":{
 		"fa5": "fa-phone-alt",
-		"fa5pro": "fa-phone-alt",
+		"fa6pro": "fa-phone-alt",
 		"bsi": "bi-telephone",
 		"mdi": "call"
 	},
 	"iconHamburgerMenu":{
 		"fa5": "fa-bars",
-		"fa5pro": "fa-bars",
+		"fa6pro": "fa-bars",
 		"bsi": "bi-list",
 		"mdi": "reorder"
 	},
 	"iconPhoto":{
 		"fa5": "fa-camera",
-		"fa5pro": "fa-camera",
+		"fa6pro": "fa-camera",
 		"bsi": "bi-camera-fill",
 		"mdi": "image"
 	},
 	"iconKeyboard":{
 		"fa5": "fa-keyboard",
-		"fa5pro": "fa-keyboard",
+		"fa6pro": "fa-keyboard",
 		"bsi": "bi-keyboard",
 		"mdi": "keyboard"
 	},
 	"iconWarning":{
 		"fa5": "fa-exclamation-triangle",
-		"fa5pro": "fa-exclamation-triangle",
+		"fa6pro": "fa-exclamation-triangle",
 		"bsi": "bi-exclamation-triangle",
 		"mdi": "warning_amber"
 	},
 	"iconCamera":{
 		"fa5": "fa-video",
-		"fa5pro": "fa-cctv",
+		"fa6pro": "fa-cctv",
 		"bsi": "bi-camera-video",
 		"mdi": "videocam"
 	},
 	"iconBook":{
 		"fa5": "fa-book",
-		"fa5pro": "fa-book",
+		"fa6pro": "fa-book",
 		"bsi": "bi-book",
 		"mdi": "auto_stories"
 	},
 	"iconOrder":{
 		"fa5": "fa-sort",
-		"fa5pro": "fa-sort",
+		"fa6pro": "fa-sort",
 		"bsi": "bi-arrow-down-up",
 		"mdi": "swap_vert"
 	},
 	"iconMapMarker":{
 		"fa5": "fa-map-marker-alt",
-		"fa5pro": "fa-map-marker-alt",
+		"fa6pro": "fa-map-marker-alt",
 		"bsi": "bi-geo-alt-fill",
 		"mdi": "place"
 	},
 	"iconSitemap":{
 		"fa5": "fa-sitemap",
-		"fa5pro": "fa-sitemap",
+		"fa6pro": "fa-sitemap",
 		"bsi": "bi-diagram-3",
 		"mdi": "device_hub"
 	},
 	"iconCogs":{
 		"fa5": "fa-cogs",
-		"fa5pro": "fa-cogs",
+		"fa6pro": "fa-cogs",
 		"bsi": "bi-gear",
 		"mdi": "settings"
 	},
 	"iconCheck":{
 		"fa5":"fa-check",
-        "fa5pro":"fa-check",
+        "fa6pro":"fa-check",
         "bsi":"bi-check-lg",
         "mdi":"check"
 	},	
 	"iconCalendar": {
 		"fa5": "fa-calendar-alt",
-		"fa5pro": "fa-calendar-alt",
+		"fa6pro": "fa-calendar-alt",
 		"bsi": "bi-calendar",
 		"mdi": "calendar_today"
 	},	
 	"iconAngleRight": {
 		"fa5": "fa-angle-right",
-		"fa5pro": "fa-angle-right",
+		"fa6pro": "fa-angle-right",
 		"bsi": "bi-chevron-right",
 		"mdi": "chevron_right"
 	},	
 	"iconLink": {
 		"fa5": "fa-external-link-alt",
-		"fa5pro": "fa-external-link-alt",
+		"fa6pro": "fa-external-link-alt",
 		"bsi": "bi-box-arrow-up-right",
 		"mdi": "link"
 	},	
 	"iconCutlery": {
 		"fa5": "fa-utensils",
-		"fa5pro": "fa-utensils-alt",
+		"fa6pro": "fa-utensils-alt",
 		"bsi": "bi-shop-window",
 		"mdi": "dining"
 	},	
 	"iconDelivery": {
 		"fa5":"fa-truck",
-      	"fa5pro":"fa-truck",
+      	"fa6pro":"fa-truck",
       	"bsi":"bi-truck",
       	"mdi":"local_shipping"
 	},	
 	"iconIdBadge": {
 		"fa5":"fa-id-badge",
-        "fa5pro":"fa-id-badge",
+        "fa6pro":"fa-id-badge",
         "bsi":"bi-person-badge-fill",
         "mdi":"badge"
 	},	
 	"iconHome": {
 		"fa5": "fa-home",
-		"fa5pro": "fa-home",
+		"fa6pro": "fa-home",
 		"bsi": "bi-house-door-fill",
 		"mdi": "home"
 	},	
 	"iconPaperPlane": {
 		"fa5":"fa-paper-plane",
-        "fa5pro":"fa-paper-plane",
+        "fa6pro":"fa-paper-plane",
         "bsi":"bi-envelope",
         "mdi":"send"
 	},	
 	"iconStar": {
 		"fa5":"fa-star",
-		"fa5pro":"fa-star",
+		"fa6pro":"fa-star",
 		"bsi":"bi-star",
 		"mdi":"grade"
 	},	
 	"iconList": {
 		"fa5": "fa-list",
-		"fa5pro": "fa-list",
+		"fa6pro": "fa-list",
 		"bsi": "bi-list-ul",
 		"mdi": "list"
 	},	
 	"iconCheckSquare": {
 		"fa5":"fa-check-square",
-        "fa5pro":"fa-check-square",
+        "fa6pro":"fa-check-square",
         "bsi":"bi-check-square",
         "mdi":"check_box"
 	},	
 	"iconPencil": {
 		"fa5": "fa-pencil-alt",
-		"fa5pro": "fa-pencil-alt",
+		"fa6pro": "fa-pencil-alt",
 		"bsi": "bi-pencil",
 		"mdi": "edit"
 	},	
 	"iconInfo": {
 		"fa5": "fa-info",
-		"fa5pro": "fa-info",
+		"fa6pro": "fa-info",
 		"bsi": "bi-info-lg",
 		"mdi": "info"
 	},	
 	"iconHashtag": {
 		"fa5": "fa-hashtag",
-		"fa5pro": "fa-hashtag",
+		"fa6pro": "fa-hashtag",
 		"bsi": "bi-hash",
 		"mdi": "tag"
 	},	
 	"iconDateOfOrigin": {
 		"fa5":"fa-play-circle",
-        "fa5pro":"fa-play-circle",
+        "fa6pro":"fa-play-circle",
         "bsi":"bi-play-circle-fill",
         "mdi":"play_circle_filled"
 	},	
 	"iconExchange": {
 		"fa5":"fa-exchange-alt",
-        "fa5pro":"fa-exchange-alt",
+        "fa6pro":"fa-exchange-alt",
         "bsi":"bi-arrow-left-right",
         "mdi":"sync_alt"
 	},	
 	"iconPaperclip": {
 		"fa5": "fa-paperclip",
-		"fa5pro": "fa-paperclip",
+		"fa6pro": "fa-paperclip",
 		"bsi": "bi-paperclip",
 		"mdi": "attach_file"
 	},	
 	"iconPlusSquare": {
 		"fa5": "fa-plus-square",
-		"fa5pro": "fa-plus-square",
+		"fa6pro": "fa-plus-square",
 		"bsi": "bi-plus-square",
 		"mdi": "add_circle"
 	},	
 	"iconMinusSquare": {
 		"fa5":"fa-minus-square",
-        "fa5pro":"fa-minus-square",
+        "fa6pro":"fa-minus-square",
         "bsi":"bi-dash-square",
         "mdi":"remove_circle"
 	},	
 	"iconStop": {
 		"fa5":"fa-stop",
-        "fa5pro":"fa-stop",
+        "fa6pro":"fa-stop",
         "bsi":"bi-stop",
         "mdi":"stop"
 	},	
 	"iconCube": {
 		"fa5": "fa-cube",
-		"fa5pro": "fa-cube",
+		"fa6pro": "fa-cube",
 		"bsi":"bi-bank",
         "mdi":"account_balance"
 	},	
 	"iconClock": {
 		"fa5": "fa-clock",
-		"fa5pro": "fa-clock",
+		"fa6pro": "fa-clock",
 		"bsi": "bi-clock",
 		"mdi": "schedule"
 	},	
 	"iconMoney": {
 		"fa5":"fa-money-bill-alt",
-        "fa5pro":"fa-money-bill-alt",
+        "fa6pro":"fa-money-bill-alt",
         "bsi":"bi-cash",
         "mdi":"payments"
 	},	
 	"iconLocalMenu": {
 		"fa5": "fa-ellipsis-v",
-		"fa5pro": "fa-ellipsis-v",
+		"fa6pro": "fa-ellipsis-v",
 		"bsi": "bi-three-dots-vertical",
 		"mdi": "more_vert"
 	},	
 	"iconWikiStart": {
 		"fa5": "fa-rocket",
-		"fa5pro": "fa-rocket-launch",
+		"fa6pro": "fa-rocket-launch",
 		"bsi": "bi-flag",
 		"mdi": "flag"
 	},
 	"iconBinoculars": {
 		"fa5": "fa-binoculars",
-		"fa5pro": "fa-binoculars",
+		"fa6pro": "fa-binoculars",
 		"bsi": "bi-binoculars-fill",
 		"mdi": "visibility"
 	},
 	"iconGlobe":{
 		"fa5":"fa-globe-americas",
-        "fa5pro":"fa-globe-americas",
+        "fa6pro":"fa-globe-americas",
         "bsi":"bi-globe",
         "mdi":"public"
 	},
 	"iconAppControling":{
 		"fa5": "fa-mouse-pointer",
-		"fa5pro": "fa-mouse-pointer",
+		"fa6pro": "fa-mouse-pointer",
 		"bsi": "bi-mouse",
 		"mdi": "mouse"
 	},
 	"iconAngleDoubleLeft":{
 		"fa5": "fa-angle-double-left",
-		"fa5pro": "fa-angle-double-left",
+		"fa6pro": "fa-angle-double-left",
 		"bsi": "bi-chevron-double-left",
 		"mdi": "arrow_back_ios"
 	},
 	"iconAngleDoubleRight":{
 		"fa5": "fa-angle-double-right",
-		"fa5pro": "fa-angle-double-right",
+		"fa6pro": "fa-angle-double-right",
 		"bsi": "bi-chevron-double-right",
 		"mdi": "arrow_forward_ios"
 	},
@@ -656,73 +656,73 @@
 
 	"rightSubmenuToDo":{
 		"fa5": "fa-check-circle",
-		"fa5pro": "fa-check-circle",
+		"fa6pro": "fa-check-circle",
 		"bsi": "bi-check-circle",
 		"mdi": "check_circle"
 	},
 	"rightSubmenuDocuments":{
 		"fa5":"fa-archive",
-        "fa5pro":"fa-archive",
+        "fa6pro":"fa-archive",
         "bsi":"bi-archive",
         "mdi":"inventory_2"
 	},
 	"rightSubmenuNews":{
 		"fa5":"fa-star",
-		"fa5pro":"fa-star",
+		"fa6pro":"fa-star",
 		"bsi":"bi-star",
 		"mdi":"grade"
 	},
 	"rightSubmenuCompartments":{
 		"fa5":"fa-folder-open",
-        "fa5pro":"fa-folder-open",
+        "fa6pro":"fa-folder-open",
         "bsi":"bi-folder2-open",
         "mdi":"folder_open"
 	},
 	"rightSubmenuSupport":{
 		"fa5":"fa-life-ring",
-        "fa5pro":"fa-life-ring",
+        "fa6pro":"fa-life-ring",
         "bsi":"bi-life-preserver",
         "mdi":"support"
 	},
 	"rightSubmenuReservations":{
 		"fa5": "fa-book",
-		"fa5pro": "fa-book",
+		"fa6pro": "fa-book",
 		"bsi": "bi-book",
 		"mdi": "auto_stories"
 	},
 	"rightSubmenuReceivables":{
 		"fa5":"fa-arrow-circle-up",
-        "fa5pro":"fa-arrow-circle-up",
+        "fa6pro":"fa-arrow-circle-up",
         "bsi":"bi-arrow-up-circle-fill",
         "mdi":"arrow_circle_up"
 	},
 	"rightSubmenuMeters":{
 		"fa5": "fa-cogs",
-		"fa5pro": "fa-cogs",
+		"fa6pro": "fa-cogs",
 		"bsi": "bi-gear-fill",
 		"mdi": "settings"
 	},
 	"rightSubmenuAccess":{
 		"fa5":"fa-key",
-        "fa5pro":"fa-key-skeleton",
+        "fa6pro":"fa-key-skeleton",
         "bsi":"bi-key",
         "mdi":"vpn_key"
 	},
 	"rightSubmenuCanteen":{
 		"fa5": "fa-utensils",
-		"fa5pro": "fa-utensils-alt",
+		"fa6pro": "fa-utensils-alt",
 		"bsi": "bi-shop-window",
 		"mdi": "dining"
 	},
 	"rightSubmenuNoticeBoard":{
 		"fa5": "fa-thumbtack",
-		"fa5pro": "fa-thumbtack",
+		"fa6pro": "fa-thumbtack",
 		"bsi": "bi-pin",
 		"mdi": "push_pin"
 	},
 	"rightSubmenuCalendar":{
 		"fa5":"fa-calendar-alt",
-        "fa5pro":"fa-calendar-alt",
+        "fa6pro":"fa-calendar-alt",
         "bsi":"bi-calendar",
         "mdi":"calendar_today"
 	},
@@ -730,7 +730,7 @@
 
 	"leftSubmenuBulkMail":{
 		"fa5": "fa-envelope-open",
-		"fa5pro": "fa-envelope-open",
+		"fa6pro": "fa-envelope-open",
 		"bsi": "bi-envelope-open",
 		"mdi": "mail"
 	},
@@ -738,115 +738,115 @@
 
 	"issueToDo":{
 		"fa5": "fa-check-square",
-		"fa5pro": "fa-check-square",
+		"fa6pro": "fa-check-square",
 		"bsi": "bi-check-square",
 		"mdi": "check_circle"
 	},
 	"issueReceivedMail":{
 		"fa5":"fa-inbox",
-        "fa5pro":"fa-inbox",
+        "fa6pro":"fa-inbox",
         "bsi":"bi-inbox-fill",
         "mdi":"inbox"
 	},
 	"issueDiscussion":{
 		"fa5":"fa-bullhorn",
-        "fa5pro":"fa-bullhorn",
+        "fa6pro":"fa-bullhorn",
         "bsi":"bi-megaphone",
         "mdi":"campaign"
 	},
 	"issueSentMail":{
 		"fa5":"fa-paper-plane",
-        "fa5pro":"fa-paper-plane",
+        "fa6pro":"fa-paper-plane",
         "bsi":"bi-envelope",
         "mdi":"send"
 	},
 	"issueSystemControl":{
 		"fa5": "fa-check-circle",
-		"fa5pro": "fa-check-circle",
+		"fa6pro": "fa-check-circle",
 		"bsi": "bi-check-circle",
 		"mdi": "check_circle"
 	},
 	"issueAlert":{
 		"fa5":"fa-exclamation-triangle",
-        "fa5pro":"fa-exclamation-triangle",
+        "fa6pro":"fa-exclamation-triangle",
         "bsi":"bi-exclamation-triangle-fill",
         "mdi":"warning"
 	},
 	"issueNote":{
 		"fa5":"fa-sticky-note",
-        "fa5pro":"fa-sticky-note",
+        "fa6pro":"fa-sticky-note",
         "bsi":"bi-stickies",
         "mdi":"sticky_note_2"
 	},
 	"issueAdvertisementSPAM":{
 		"fa5": "fa-trash",
-		"fa5pro": "fa-trash",
+		"fa6pro": "fa-trash",
 		"bsi": "bi-trash",
 		"mdi": "delete"
 	},
 	"issueMeeting":{
 		"fa5": "fa-users",
-		"fa5pro": "fa-users",
+		"fa6pro": "fa-users",
 		"bsi": "bi-people",
 		"mdi": "groups"
 	},
 	"issueCall":{
 		"fa5": "fa-phone-alt",
-		"fa5pro": "fa-phone-alt",
+		"fa6pro": "fa-phone-alt",
 		"bsi": "bi-telephone",
 		"mdi": "call"
 	},
 	"issueTask":{
 		"fa5": "fa-clipboard-list",
-		"fa5pro": "fa-clipboard-list-check",
+		"fa6pro": "fa-clipboard-list-check",
 		"bsi": "bi-clipboard",
 		"mdi": "content_paste"
 	},
 	"issueBoardNote":{
 		"fa5": "fa-thumbtack",
-		"fa5pro": "fa-thumbtack",
+		"fa6pro": "fa-thumbtack",
 		"bsi": "bi-pin",
 		"mdi": "push_pin"
 	},
 	"issueComment":{
 		"fa5": "fa-comment",
-		"fa5pro": "fa-comment",
+		"fa6pro": "fa-comment",
 		"bsi": "bi-chat",
 		"mdi": "mode_comment"
 	},
 	"issueStandart":{
 		"fa5":"fa-times",
-        "fa5pro":"fa-times",
+        "fa6pro":"fa-times",
         "bsi":"bi-x-lg",
         "mdi":"close"
 	},
 	"issueSelected":{
 		"fa5":"fa-star",
-		"fa5pro":"fa-star",
+		"fa6pro":"fa-star",
 		"bsi":"bi-star",
 		"mdi":"grade"
 	},
 	"issueUnread":{
 		"fa5":"fa-eye-slash",
-		"fa5pro":"fa-eye-slash",
+		"fa6pro":"fa-eye-slash",
 		"bsi":"bi-eye-slash",
 		"mdi":"visibility_off"
 	},
 	"issueConcept":{
 		"fa5": "fa-edit",
-		"fa5pro": "fa-edit",
+		"fa6pro": "fa-edit",
 		"bsi": "bi-pencil-square",
 		"mdi": "edit_note"
 	},	
 	"issueImportant": {
 		"fa5": "fa-exclamation",
-		"fa5pro": "fa-exclamation",
+		"fa6pro": "fa-exclamation",
 		"bsi": "bi-exclamation",
 		"mdi": "priority_high"
 	},	
 	"issueNotImportant": {
 		"fa5": "fa-snowflake",
-		"fa5pro": "fa-snowflake",
+		"fa6pro": "fa-snowflake",
 		"bsi": "bi-snow",
 		"mdi": "ac_unit"
 	},
@@ -854,19 +854,19 @@
 
 	"personHuman":{
 		"fa5":"fa-user",
-		"fa5pro":"fa-user",
+		"fa6pro":"fa-user",
 		"bsi":"bi-person-fill",
 		"mdi":"person"
 	},
 	"personCompany":{
 		"fa5": "fa-building",
-		"fa5pro": "fa-building",
+		"fa6pro": "fa-building",
 		"bsi": "bi-building",
 		"mdi": "business"
 	},
 	"personRobot":{
 		"fa5":"fa-robot",
-		"fa5pro":"fa-user-robot",
+		"fa6pro":"fa-user-robot",
 		"bsi":"bi-person-square",
 		"mdi":"smart_toy"
 	},
@@ -874,37 +874,37 @@
 
 	"filterOverview":{
 		"fa5":"fa-tachometer-alt",
-        "fa5pro":"fa-tachometer-alt",
+        "fa6pro":"fa-tachometer-alt",
         "bsi":"bi-speedometer2",
         "mdi":"speed"
 	},
 	"filterActive":{
 		"fa5":"fa-bolt",
-        "fa5pro":"fa-bolt",
+        "fa6pro":"fa-bolt",
         "bsi":"bi-lightning-fill",
         "mdi":"bolt"
 	},
 	"filterDone":{
 		"fa5":"fa-check",
-        "fa5pro":"fa-check",
+        "fa6pro":"fa-check",
         "bsi":"bi-check-lg",
         "mdi":"check"
 	},
 	"filterArchive":{
 		"fa5":"fa-archive",
-        "fa5pro":"fa-archive",
+        "fa6pro":"fa-archive",
         "bsi":"bi-archive",
         "mdi":"inventory_2"
 	},
 	"filterAll":{
 		"fa5": "fa-toggle-on",
-		"fa5pro": "fa-toggle-on",
+		"fa6pro": "fa-toggle-on",
 		"bsi": "bi-toggle-on",
 		"mdi": "toggle_on"
 	},
 	"filterTrash":{
 		"fa5":"fa-trash",
-        "fa5pro":"fa-trash",
+        "fa6pro":"fa-trash",
         "bsi":"bi-trash-fill",
         "mdi":"delete"
 	},
@@ -912,121 +912,121 @@
 
 	"detailDetail":{
 		"fa5": "fa-file",
-		"fa5pro": "fa-file",
+		"fa6pro": "fa-file",
 		"bsi": "bi-file-earmark",
 		"mdi": "insert_drive_file"
 	},
 	"detailBalance":{
 		"fa5":"fa-star",
-		"fa5pro":"fa-star",
+		"fa6pro":"fa-star",
 		"bsi":"bi-star",
 		"mdi":"grade"
 	},
 	"detailAccounting":{
 		"fa5": "fa-stamp",
-		"fa5pro": "fa-stamp",
+		"fa6pro": "fa-stamp",
 		"bsi": "bi-file-earmark-diff-fill",
 		"mdi": "approval"
 	},
 	"detailNotes":{
 		"fa5": "fa-paste",
-		"fa5pro": "fa-paste",
+		"fa6pro": "fa-paste",
 		"bsi": "bi-clipboard",
 		"mdi": "text_snippet"
 	},
 	"detailHistory":{
 		"fa5": "fa-history",
-		"fa5pro": "fa-history",
+		"fa6pro": "fa-history",
 		"bsi": "bi-clock-history",
 		"mdi": "history"
 	},
 	"detailReport":{
 		"fa5":"fa-chart-bar",
-		"fa5pro":"fa-chart-bar",
+		"fa6pro":"fa-chart-bar",
 		"bsi":"bi-file-earmark-bar-graph",
 		"mdi":"assessment"
 	},
 	"detailAnalysis":{
 		"fa5":"fa-chart-pie",
-		"fa5pro":"fa-chart-pie",
+		"fa6pro":"fa-chart-pie",
 		"bsi":"bi-pie-chart-fill",
 		"mdi":"pie_chart"
 	},
 	"detailStock":{
 		"fa5":"fa-cubes",
-        "fa5pro":"fa-cubes",
+        "fa6pro":"fa-cubes",
         "bsi":"bi-shop-window",
         "mdi":"inventory_2"
 	},
 	"detailMovement":{
 		"fa5":"fa-chart-line",
-        "fa5pro":"fa-chart-line",
+        "fa6pro":"fa-chart-line",
         "bsi":"bi-graph-up",
         "mdi":"equalizer"
 	},
 	"detailUsage":{
 		"fa5":"fa-eye",
-        "fa5pro":"fa-eye",
+        "fa6pro":"fa-eye",
         "bsi":"bi-binoculars-fill",
         "mdi":"preview"
 	},
 	"detailRows":{
 		"fa5":"fa-bars",
-        "fa5pro":"fa-bars",
+        "fa6pro":"fa-bars",
         "bsi":"bi-list",
         "mdi":"reorder"
 	},
 	"detailInfo":{
 		"fa5":"fa-info",
-        "fa5pro":"fa-info-square",
+        "fa6pro":"fa-info-square",
         "bsi":"bi-info-square",
         "mdi":"info"
 	},
 	"detailSettings":{
 		"fa5": "fa-wrench",
-		"fa5pro": "fa-wrench",
+		"fa6pro": "fa-wrench",
 		"bsi": "bi-wrench",
 		"mdi": "build_circle"
 	},
 	"detailOverview":{
 		"fa5": "fa-eye",
-		"fa5pro": "fa-eye",
+		"fa6pro": "fa-eye",
 		"bsi": "bi-eye-fill",
 		"mdi": "visibility"
 	},
 	"detailLinks":{
 		"fa5": "fa-external-link-alt",
-		"fa5pro": "fa-external-link-alt",
+		"fa6pro": "fa-external-link-alt",
 		"bsi": "bi-link-45deg",
 		"mdi": "link"
 	},
 	"detailRecipients":{
 		"fa5": "fa-at",
-		"fa5pro": "fa-at",
+		"fa6pro": "fa-at",
 		"bsi": "bi-at",
 		"mdi": "alternate_email"
 	},
 	"detailCalculate":{
 		"fa5": "fa-calculator",
-		"fa5pro": "fa-calculator",
+		"fa6pro": "fa-calculator",
 		"bsi": "bi-calculator",
 		"mdi": "calculate"
 	},
 	"detailReservations":{
 		"fa5": "fa-book",
-		"fa5pro": "fa-book",
+		"fa6pro": "fa-book",
 		"bsi": "bi-book",
 		"mdi": "auto_stories"
 	},
 	"detailSources":{
 		"fa5": "fa-filter",
-		"fa5pro": "fa-filter",
+		"fa6pro": "fa-filter",
 		"bsi": "bi-funnel",
 		"mdi": "filter_alt"
 	},
 	"detailSubjects":{
 		"fa5": "fa-building",
-		"fa5pro": "fa-building",
+		"fa6pro": "fa-building",
 		"bsi": "bi-building",
 		"mdi": "business"
 	},
@@ -1034,61 +1034,61 @@
 
 	"docStateArchive":{
 		"fa5":"fa-inbox",
-        "fa5pro":"fa-inbox",
+        "fa6pro":"fa-inbox",
         "bsi":"bi-inbox-fill",
         "mdi":"inbox"
 	},
 	"docStateConcept":{
 		"fa5":"fa-star",
-        "fa5pro":"fa-star",
+        "fa6pro":"fa-star",
         "bsi":"bi-star-fill",
         "mdi":"star"
 	},
 	"docStateNew":{
 		"fa5":"fa-file-alt",
-		"fa5pro":"fa-file-alt",
+		"fa6pro":"fa-file-alt",
 		"bsi":"bi-file-earmark-text",
 		"mdi":"description"
 	},
 	"docStateDelete":{
 		"fa5": "fa-trash",
-		"fa5pro": "fa-trash",
+		"fa6pro": "fa-trash",
 		"bsi": "bi-trash",
 		"mdi": "delete"
 	},
 	"docStateCancel":{
 		"fa5": "fa-times-circle",
-		"fa5pro": "fa-times-circle",
+		"fa6pro": "fa-times-circle",
 		"bsi": "bi-x-circle",
 		"mdi": "highlight_off"
 	},
 	"docStateEdit":{
 		"fa5": "fa-edit",
-		"fa5pro": "fa-edit",
+		"fa6pro": "fa-edit",
 		"bsi": "bi-pencil-square",
 		"mdi": "edit_note"
 	},
 	"docStateDone":{
 		"fa5": "fa-check-square",
-		"fa5pro": "fa-check-square",
+		"fa6pro": "fa-check-square",
 		"bsi": "bi-check-square",
 		"mdi": "check_circle"
 	},
 	"docStateHalfDone":{
 		"fa5": "fa-adjust",
-		"fa5pro": "fa-adjust",
+		"fa6pro": "fa-adjust",
 		"bsi": "bi-circle-half",
 		"mdi": "tonality"
 	},
 	"docStateConfirmed":{
 		"fa5":"fa-star",
-		"fa5pro":"fa-star",
+		"fa6pro":"fa-star",
 		"bsi":"bi-star",
 		"mdi":"grade"
 	},
 	"docStateUnknown":{
 		"fa5": "fa-question",
-		"fa5pro": "fa-question",
+		"fa6pro": "fa-question",
 		"bsi": "bi-question-lg",
 		"mdi": "help_outline"
 	},
@@ -1096,61 +1096,61 @@
 	
 	"formHeader":{
 		"fa5": "fa-edit",
-		"fa5pro": "fa-edit",
+		"fa6pro": "fa-edit",
 		"bsi": "bi-pencil-square",
 		"mdi": "edit_note"
 	},
 	"formRows":{
 		"fa5": "fa-list",
-		"fa5pro": "fa-list",
+		"fa6pro": "fa-list",
 		"bsi": "bi-list-ul",
 		"mdi": "list"
 	},
 	"formAttachments":{
 		"fa5": "fa-paperclip",
-		"fa5pro": "fa-paperclip",
+		"fa6pro": "fa-paperclip",
 		"bsi": "bi-paperclip",
 		"mdi": "attach_file"
 	},
 	"formSettings":{
 		"fa5": "fa-wrench",
-		"fa5pro": "fa-wrench",
+		"fa6pro": "fa-wrench",
 		"bsi": "bi-wrench",
 		"mdi": "build_circle"
 	},
 	"formNote":{
 		"fa5": "fa-edit",
-		"fa5pro": "fa-edit",
+		"fa6pro": "fa-edit",
 		"bsi": "bi-pencil-square",
 		"mdi": "edit_note"
 	},
 	"formSorting":{
 		"fa5":"fa-tag",
-        "fa5pro":"fa-tag",
+        "fa6pro":"fa-tag",
         "bsi":"bi-tag-fill",
         "mdi":"local_offer"
 	},
 	"formFilter":{
 		"fa5": "fa-filter",
-		"fa5pro": "fa-filter",
+		"fa6pro": "fa-filter",
 		"bsi": "bi-funnel",
 		"mdi": "filter_alt"
 	},
 	"formAccounting":{
 		"fa5": "fa-stamp",
-		"fa5pro": "fa-stamp",
+		"fa6pro": "fa-stamp",
 		"bsi": "bi-file-earmark-diff-fill",
 		"mdi": "approval"
 	},
 	"formHistory":{
 		"fa5": "fa-history",
-		"fa5pro": "fa-history",
+		"fa6pro": "fa-history",
 		"bsi": "bi-clock-history",
 		"mdi": "history"
 	},
 	"formNotes":{
 		"fa5": "fa-paste",
-		"fa5pro": "fa-paste",
+		"fa6pro": "fa-paste",
 		"bsi": "bi-clipboard",
 		"mdi": "text_snippet"
 	},
@@ -1158,43 +1158,43 @@
 
 	"dashboardDashboard":{
 		"fa5":"fa-tachometer-alt",
-        "fa5pro":"fa-tachometer-alt",
+        "fa6pro":"fa-tachometer-alt",
         "bsi":"bi-speedometer2",
         "mdi":"speed"
 	},
 	"dashboardModeTilesSmall":{
 		"fa5":"fa-th",
-        "fa5pro":"fa-th",
+        "fa6pro":"fa-th",
         "bsi":"bi-grid-3x3-gap-fill",
         "mdi":"apps"
 	},
 	"dashboardModeTilesBig":{
 		"fa5":"fa-th-large",
-        "fa5pro":"fa-th-large",
+        "fa6pro":"fa-th-large",
         "bsi":"bi-table",
         "mdi":"table_chart"
 	},
 	"dashboardModeRows":{
 		"fa5": "fa-th-list",
-		"fa5pro": "fa-th-list",
+		"fa6pro": "fa-th-list",
 		"bsi": "bi-list-ul",
 		"mdi": "list"
 	},
 	"dashboardModeViewer":{
 		"fa5": "fa-window-maximize",
-		"fa5pro": "fa-window-maximize",
+		"fa6pro": "fa-window-maximize",
 		"bsi": "bi-hdd-rack-fill",
 		"mdi": "web_asset"
 	},
 	"dashboardModeCamera":{
 		"fa5": "fa-video",
-		"fa5pro": "fa-cctv",
+		"fa6pro": "fa-cctv",
 		"bsi": "bi-camera-video",
 		"mdi": "videocam"
 	},
 	"dashboardModeSquare":{
 		"fa5":"fa-square",
-        "fa5pro":"fa-square",
+        "fa6pro":"fa-square",
         "bsi":"bi-square-fill",
         "mdi":"check_box_outline_blank"
 	},
@@ -1203,7 +1203,7 @@
 
 	"brandsGoogle":{
 		"fa5":"fa-cloud",
-        "fa5pro":"fa-cloud",
+        "fa6pro":"fa-cloud",
         "bsi":"bi-google",
         "mdi":"cloud"
 	}

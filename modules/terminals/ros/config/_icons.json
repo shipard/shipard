@@ -1,7 +1,7 @@
 {
     "tables/terminals.ros.rosRegs":{
         "fa5":"fa-microchip",
-        "fa5pro":"fa-microchip",
+        "fa6pro":"fa-microchip",
         "bsi":"bi-cpu-fill",
         "mdi":"memory"
     },
@@ -10,19 +10,19 @@
 
     "rosModeEnabled":{
         "fa5":"fa-check",
-        "fa5pro":"fa-check",
+        "fa6pro":"fa-check",
         "bsi":"bi-check",
         "mdi":"check"
     },
     "rosModeTesting":{
         "fa5": "fa-question",
-		"fa5pro": "fa-question",
+		"fa6pro": "fa-question",
 		"bsi": "bi-question-lg",
 		"mdi": "help_outline"
     },
     "rosModeDemo":{
         "fa5": "fa-exclamation-triangle",
-		"fa5pro": "fa-exclamation-triangle",
+		"fa6pro": "fa-exclamation-triangle",
 		"bsi": "bi-exclamation-triangle",
 		"mdi": "warning_amber"
     }

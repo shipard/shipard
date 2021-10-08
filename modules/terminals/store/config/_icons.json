@@ -1,7 +1,7 @@
 {
     "tables/terminals.store.payTerminals":{
         "fa5":"fa-calculator",
-        "fa5pro":"fa-calculator",
+        "fa6pro":"fa-calculator",
         "bsi":"bi-calculator-fill",
         "mdi":"calculate"
     },
@@ -10,7 +10,7 @@
 
     "iconCashBox":{
         "fa5":"fa-calculator",
-        "fa5pro":"fa-calculator",
+        "fa6pro":"fa-calculator",
         "bsi":"bi-calculator-fill",
         "mdi":"calculate"
     }

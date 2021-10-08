@@ -1,13 +1,13 @@
 {
     "tables/services.money.exchangeRatesLists":{
         "fa5":"fa-dollar-sign",
-        "fa5pro":"fa-dollar-sign",
+        "fa6pro":"fa-dollar-sign",
         "bsi":"bi-currency-exchange",
         "mdi":"attach_money"
     },
     "tables/services.money.exchangeRatesValues":{
         "fa5":"fa-money-bill-alt",
-        "fa5pro":"fa-money-bill-alt",
+        "fa6pro":"fa-money-bill-alt",
         "bsi":"bi-cash",
         "mdi":"payments"
     }

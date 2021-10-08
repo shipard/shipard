@@ -1,31 +1,31 @@
 {
     "tables/e10mnf.base.docnumbers":{
         "fa5":"fa-play-circle",
-        "fa5pro":"fa-play-circle",
+        "fa6pro":"fa-play-circle",
         "bsi":"bi-play-circle-fill",
         "mdi":"play_circle_filled"
     },
     "tables/e10mnf.base.dockinds":{
         "fa5":"fa-flag",
-        "fa5pro":"fa-flag",
+        "fa6pro":"fa-flag",
         "bsi":"bi-flag",
         "mdi":"flag"
     },
     "tables/e10mnf.base.workOrdersGroups":{
         "fa5":"fa-sticky-note",
-        "fa5pro":"fa-sticky-note",
+        "fa6pro":"fa-sticky-note",
         "bsi":"bi-sticky",
         "mdi":"sticky_note_2"
     },
     "tables/e10mnf.base.workRecsKinds":{
         "fa5":"fa-bolt",
-        "fa5pro":"fa-bolt",
+        "fa6pro":"fa-bolt",
         "bsi":"bi-lightning-fill",
         "mdi":"bolt"
     },
     "tables/e10mnf.base.workRecsNumbers":{
         "fa5":"fa-play-circle",
-        "fa5pro":"fa-play-circle",
+        "fa6pro":"fa-play-circle",
         "bsi":"bi-play-circle-fill",
         "mdi":"play_circle_filled"
     },
@@ -33,7 +33,7 @@
 
     "formDetail":{
         "fa5": "fa-file-alt",
-		"fa5pro": "fa-file-alt",
+		"fa6pro": "fa-file-alt",
 		"bsi": "bi-file-earmark-text-fill",
 		"mdi": "description"
     },
@@ -41,13 +41,13 @@
 
     "wrTypesWorkRecord":{
         "fa5": "fa-hourglass-half",
-		"fa5pro": "fa-hourglass-half",
+		"fa6pro": "fa-hourglass-half",
 		"bsi": "bi-hourglass-split",
 		"mdi": "hourglass_empty"
     },
     "wrTypesOther":{
         "fa5": "fa-paw",
-		"fa5pro": "fa-paw",
+		"fa6pro": "fa-paw",
 		"bsi": "bi-hourglass",
 		"mdi": "pets"
     }

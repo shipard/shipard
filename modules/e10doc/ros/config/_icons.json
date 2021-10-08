@@ -1,7 +1,7 @@
 {
     "tables/e10doc.ros.journal":{
         "fa5":"fa-microchip",
-        "fa5pro":"fa-microchip",
+        "fa6pro":"fa-microchip",
         "bsi":"bi-cpu-fill",
         "mdi":"memory"
     }

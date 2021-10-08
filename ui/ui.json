@@ -21,6 +21,9 @@
 		},
 		"mdi": {
 			"title": "Material Design Icons"
+		},
+		"fa6pro": {
+			"title": "FA6"
 		}
 	}
 }

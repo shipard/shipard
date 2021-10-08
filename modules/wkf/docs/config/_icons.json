@@ -1,25 +1,25 @@
 {
     "tables/wkf.docs.folders":{
 		"fa5": "fa-folder",
-		"fa5pro": "fa-folders",
+		"fa6pro": "fa-folders",
 		"bsi": "bi-folder",
 		"mdi": "folder"
 	},
     "tables/wkf.docs.docsKinds":{
 		"fa5": "fa-file",
-		"fa5pro": "fa-file",
+		"fa6pro": "fa-file",
 		"bsi": "bi-file-earmark",
 		"mdi": "insert_drive_file"
 	},
     "tables/wkf.docs.documents":{
 		"fa5": "fa-file",
-		"fa5pro": "fa-file",
+		"fa6pro": "fa-file",
 		"bsi": "bi-file-earmark",
 		"mdi": "insert_drive_file"
 	},
     "tables/wkf.docs.foldersDocsKinds":{
 		"fa5":"fa-bolt",
-        "fa5pro":"fa-bolt",
+        "fa6pro":"fa-bolt",
         "bsi":"bi-lightning-fill",
         "mdi":"bolt"
 	},
@@ -27,13 +27,13 @@
 
     "formFolder":{
 		"fa5": "fa-folder",
-		"fa5pro": "fa-folder",
+		"fa6pro": "fa-folder",
 		"bsi": "bi-folder",
 		"mdi": "folder"
 	},
 	"formIssueKinds":{
 		"fa5": "fa-bolt",
-		"fa5pro": "fa-bolt",
+		"fa6pro": "fa-bolt",
 		"bsi": "bi-lightning-fill",
 		"mdi": "bolt"
 	}

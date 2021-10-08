@@ -1,19 +1,19 @@
 {
     "tables/mac.base.zones": {
 		"fa5": "fa-crosshairs",
-		"fa5pro": "fa-crosshairs",
+		"fa6pro": "fa-crosshairs",
 		"bsi": "bi-geo-fill",
 		"mdi": "location_on"
 	},
 	"tables/mac.base.zonesCameras": {
 		"fa5": "fa-video",
-		"fa5pro": "fa-cctv",
+		"fa6pro": "fa-cctv",
 		"bsi": "bi-camera-video",
 		"mdi": "videocam"
 	},
 	"tables/mac.base.zonesIoTSC": {
 		"fa5": "fa-thermometer-three-quarters",
-		"fa5pro": "fa-thermometer-three-quarters",
+		"fa6pro": "fa-thermometer-three-quarters",
 		"bsi": "bi-thermometer-half",
 		"mdi": "thermostat"
 	},
@@ -21,13 +21,13 @@
 
 	"formCameras":{
 		"fa5": "fa-video",
-		"fa5pro": "fa-cctv",
+		"fa6pro": "fa-cctv",
 		"bsi": "bi-camera-video",
 		"mdi": "videocam"
 	},
 	"formIoT":{
 		"fa5": "fa-power-off",
-		"fa5pro": "fa-power-off",
+		"fa6pro": "fa-power-off",
 		"bsi": "bi-power",
 		"mdi": "power_settings_new"
 	}

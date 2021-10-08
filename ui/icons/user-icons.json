@@ -6,7 +6,7 @@
         "_tags:cs":"domeček; dům; domov",
         "_tags:en":"home; house",
         "fa5": "fa-home",
-		"fa5pro": "fa-home",
+		"fa6pro": "fa-home",
 		"bsi": "bi-house-door-fill",
 		"mdi": "home"
     },
@@ -17,7 +17,7 @@
         "_tags:cs":"uživatel; osoba; člověk",
         "_tags:en":"user; person",
         "fa5": "fa-user",
-		"fa5pro": "fa-user",
+		"fa6pro": "fa-user",
 		"bsi": "bi-person",
 		"mdi": "person"
     },
@@ -28,7 +28,7 @@
         "_tags:cs":"adresář; adresa; kontakt",
         "_tags:en":"address book; address; contact",
         "fa5": "fa-address-book",
-		"fa5pro": "fa-address-book",
+		"fa6pro": "fa-address-book",
 		"bsi": "bi-person-badge",
 		"mdi": "contact_mail"
     },
@@ -39,7 +39,7 @@
         "_tags:cs":"archív; archiv; soubory; doklady; úložný prostor; složky; evidence",
         "_tags:en":"archive; files; documents; storage; folders; filling",
         "fa5":"fa-archive",
-        "fa5pro":"fa-archive",
+        "fa6pro":"fa-archive",
         "bsi":"bi-archive",
         "mdi":"inventory_2"
     },
@@ -50,7 +50,7 @@
         "_tags:cs":"zavináč; e-mail; email; pro",
         "_tags:en":"at; email; for; recipient",
         "fa5":"fa-at",
-        "fa5pro":"fa-at",
+        "fa6pro":"fa-at",
         "bsi":"bi-at",
         "mdi":"alternate_email"
     },
@@ -61,7 +61,7 @@
         "_tags:cs":"ostatní; čáry; další; možnosti",
         "_tags:en":"other; bars; more; options",
         "fa5": "fa-bars",
-		"fa5pro": "fa-bars",
+		"fa6pro": "fa-bars",
 		"bsi": "bi-list",
 		"mdi": "reorder"
     },
@@ -72,7 +72,7 @@
         "_tags:cs":"ban; zakázáno; block",
         "_tags:en":"ban; block; blocked",
         "fa5":"fa-ban",
-        "fa5pro":"fa-ban",
+        "fa6pro":"fa-ban",
         "bsi":"bi-x-circle",
         "mdi":"hide_source"
     },
@@ -83,7 +83,7 @@
         "_tags:cs":"baterka; nabít; výdrž",
         "_tags:en":"battery; energy; charge",
         "fa5": "fa-battery-three-quarters",
-		"fa5pro": "fa-battery-three-quarters",
+		"fa6pro": "fa-battery-three-quarters",
 		"bsi": "bi-battery-half",
 		"mdi": "battery_full"
     },
@@ -94,7 +94,7 @@
         "_tags:cs":"zvonek; zvon; upozornění; notifikace; oznámení",
         "_tags:en":"bell; notification; alert; sound",
         "fa5": "fa-bell",
-		"fa5pro": "fa-bell",
+		"fa6pro": "fa-bell",
 		"bsi": "bi-bell",
 		"mdi": "notifications"
     },
@@ -105,7 +105,7 @@
         "_tags:cs":"kniha; knížka; wiki; informace",
         "_tags:en":"book; wiki; informations",
         "fa5": "fa-book",
-		"fa5pro": "fa-book",
+		"fa6pro": "fa-book",
 		"bsi": "bi-book",
 		"mdi": "auto_stories"
     },
@@ -116,7 +116,7 @@
         "_tags:cs":"záložka; označení; kniha; knížka",
         "_tags:en":"bookmark; book; mark",
         "fa5": "fa-bookmark",
-		"fa5pro": "fa-bookmark",
+		"fa6pro": "fa-bookmark",
 		"bsi": "bi-bookmark",
 		"mdi": "bookmark_border"
     },
@@ -127,7 +127,7 @@
         "_tags:cs":"budova; stavba; společnost",
         "_tags:en":"building; business",
         "fa5":"fa-building",
-        "fa5pro":"fa-building",
+        "fa6pro":"fa-building",
         "bsi":"bi-building",
         "mdi":"business"
     },
@@ -138,7 +138,7 @@
         "_tags:cs":"megafon; hlášení; oznámení; diskuze",
         "_tags:en":"bullhorn; megaphone; discussion; announcement",
         "fa5":"fa-bullhorn",
-        "fa5pro":"fa-bullhorn",
+        "fa6pro":"fa-bullhorn",
         "bsi":"bi-megaphone",
         "mdi":"campaign"
     },
@@ -149,7 +149,7 @@
         "_tags:cs":"kalkukačka; výpočet; matematika; číslo; číslice",
         "_tags:en":"calculator; calculate; math; number",
         "fa5": "fa-calculator",
-		"fa5pro": "fa-calculator",
+		"fa6pro": "fa-calculator",
 		"bsi": "bi-calculator",
 		"mdi": "calculate"
     },
@@ -160,7 +160,7 @@
         "_tags:cs":"kalendář; datum; událost; svátek; dnes; měsíc",
         "_tags:en":"calendar; date; event; day; month; holiday",
         "fa5": "fa-calendar-alt",
-		"fa5pro": "fa-calendar-alt",
+		"fa6pro": "fa-calendar-alt",
 		"bsi": "bi-calendar",
 		"mdi": "calendar_today"
     },
@@ -171,7 +171,7 @@
         "_tags:cs":"kamera; fotka; záznam; obrázek",
         "_tags:en":"camera; photo; recording; picture",
         "fa5": "fa-camera",
-		"fa5pro": "fa-camera",
+		"fa6pro": "fa-camera",
 		"bsi": "bi-camera-fill",
 		"mdi": "image"
     },
@@ -182,7 +182,7 @@
         "_tags:cs":"kruh; kružnice; okruh; prsten; kolo",
         "_tags:en":"circle; round; ring",
         "fa5": "fa-circle",
-		"fa5pro": "fa-circle",
+		"fa6pro": "fa-circle",
 		"bsi": "bi-circle",
 		"mdi": "circle"
     },
@@ -193,7 +193,7 @@
         "_tags:cs":"hodiny; čas",
         "_tags:en":"clock; time",
         "fa5": "fa-clock",
-		"fa5pro": "fa-clock",
+		"fa6pro": "fa-clock",
 		"bsi": "bi-clock",
 		"mdi": "schedule"
     },
@@ -204,7 +204,7 @@
         "_tags:cs":"komentář; zpráva; diskuze; bublina; oznámení",
         "_tags:en":"comment; issue; message; discussion; notification; alert; announcement",
         "fa5": "fa-comment",
-		"fa5pro": "fa-comment",
+		"fa6pro": "fa-comment",
 		"bsi": "bi-chat",
 		"mdi": "mode_comment"
     },
@@ -215,7 +215,7 @@
         "_tags:cs":"kód; programování; příkaz; software",
         "_tags:en":"code; software; coding",
         "fa5":"fa-code",
-        "fa5pro":"fa-code",
+        "fa6pro":"fa-code",
         "bsi":"bi-code-slash",
         "mdi":"code"
     },
@@ -226,7 +226,7 @@
         "_tags:cs":"ozubené kolečko; nastavení; možnosti; upravit; nástroje",
         "_tags:en":"cog; setting; settings; options; edit; gear",
         "fa5":"fa-cog",
-        "fa5pro":"fa-cog",
+        "fa6pro":"fa-cog",
         "bsi":"bi-gear",
         "mdi":"settings"
     },
@@ -237,7 +237,7 @@
         "_tags:cs":"ozubené kolečko; nastavení; možnosti; upravit; nástroje",
         "_tags:en":"cog; setting; settings; options; edit; gear",
         "fa5": "fa-cogs",
-		"fa5pro": "fa-cogs",
+		"fa6pro": "fa-cogs",
 		"bsi": "bi-gear",
 		"mdi": "settings"
     },
@@ -248,7 +248,7 @@
         "_tags:cs":"databáze; data",
         "_tags:en":"database; data",
         "fa5": "fa-database",
-		"fa5pro": "fa-database",
+		"fa6pro": "fa-database",
 		"bsi": "bi-hdd",
 		"mdi": "save"
     },
@@ -259,7 +259,7 @@
         "_tags:cs":"stáhnout; download; stažení; uložit; soubor",
         "_tags:en":"download; save; file",
         "fa5": "fa-download",
-		"fa5pro": "fa-download",
+		"fa6pro": "fa-download",
 		"bsi": "bi-download",
 		"mdi": "file_download"
     },
@@ -270,7 +270,7 @@
         "_tags:cs":"upravit; spravit; tužka; pero; text",
         "_tags:en":"edit; re-do; pencil; pen; text",
         "fa5": "fa-edit",
-		"fa5pro": "fa-edit",
+		"fa6pro": "fa-edit",
 		"bsi": "bi-pencil-square",
 		"mdi": "edit_note"
     },
@@ -281,7 +281,7 @@
         "_tags:cs":"elipsa horizontální; elipsa; tečky; další; ostatní; možnosti",
         "_tags:en":"ellipsis horizontal; ellipsis; dots; other; more; options",
         "fa5": "fa-ellipsis-h",
-		"fa5pro": "fa-ellipsis-h",
+		"fa6pro": "fa-ellipsis-h",
 		"bsi": "bi-three-dots",
 		"mdi": "more_horiz"
     },
@@ -292,7 +292,7 @@
         "_tags:cs":"elipsa verticální; elipsa; tečky; další; ostatní; možnosti",
         "_tags:en":"ellipsis vertical; ellipsis; dots; other; more; options",
         "fa5": "fa-ellipsis-v",
-		"fa5pro": "fa-ellipsis-v",
+		"fa6pro": "fa-ellipsis-v",
 		"bsi": "bi-three-dots-vertical",
 		"mdi": "more_vert"
     },
@@ -303,7 +303,7 @@
         "_tags:cs":"obálka; e-mail; email; dopis; poslat; mail",
         "_tags:en":"envelope; email; letter; sent; mail",
         "fa5":"fa-envelope",
-        "fa5pro":"fa-envelope",
+        "fa6pro":"fa-envelope",
         "bsi":"bi-envelope",
         "mdi":"mail"
     },
@@ -314,7 +314,7 @@
         "_tags:cs":"oko; přehled",
         "_tags:en":"eye; overview; view",
         "fa5": "fa-eye",
-		"fa5pro": "fa-eye",
+		"fa6pro": "fa-eye",
 		"bsi": "bi-eye-fill",
 		"mdi": "visibility"
     },
@@ -325,7 +325,7 @@
         "_tags:cs":"prohodit; vyměnit; výměna; prohození; šipka; směr",
         "_tags:en":"exchange; change; arrow; direction",
         "fa5":"fa-exchange-alt",
-        "fa5pro":"fa-exchange-alt",
+        "fa6pro":"fa-exchange-alt",
         "bsi":"bi-arrow-left-right",
         "mdi":"sync_alt"
     },
@@ -336,7 +336,7 @@
         "_tags:cs":"odkaz; otevřít",
         "_tags:en":"link; external link; open",
         "fa5": "fa-external-link-alt",
-		"fa5pro": "fa-external-link-alt",
+		"fa6pro": "fa-external-link-alt",
 		"bsi": "bi-link-45deg",
 		"mdi": "link"
     },
@@ -347,7 +347,7 @@
         "_tags:cs":"blesk; důležité; bouřka; počasí",
         "_tags:en":"bolt; important; storm; weather",
         "fa5":"fa-bolt",
-        "fa5pro":"fa-bolt",
+        "fa6pro":"fa-bolt",
         "bsi":"bi-lightning-fill",
         "mdi":"bolt"
     },
@@ -358,7 +358,7 @@
         "_tags:cs":"filtr; trychtýř; oddělit; skupiny",
         "_tags:en":"filter; funnel; separate; groups",
         "fa5": "fa-filter",
-		"fa5pro": "fa-filter",
+		"fa6pro": "fa-filter",
 		"bsi": "bi-funnel",
 		"mdi": "filter_alt"
     },
@@ -369,7 +369,7 @@
         "_tags:cs":"oheň; teplo; kouř; důležité; hoří; živel; dým",
         "_tags:en":"fire; heat; smoke; important; element",
         "fa5":"fa-fire",
-        "fa5pro":"fa-fire",
+        "fa6pro":"fa-fire",
         "bsi":"bi-lightning-charge",
         "mdi":"local_fire_department"
     },
@@ -380,7 +380,7 @@
         "_tags:cs":"vlajka; symbol; cíl; začátek",
         "_tags:en":"flag; symbol; finnish line; end; start",
         "fa5":"fa-flag",
-        "fa5pro":"fa-flag",
+        "fa6pro":"fa-flag",
         "bsi":"bi-flag",
         "mdi":"flag"
     },
@@ -391,7 +391,7 @@
         "_tags:cs":"složka; dokumenty; data; archiv",
         "_tags:en":"folder; documents; data; archive; file",
         "fa5":"fa-folder-open",
-        "fa5pro":"fa-folder-open",
+        "fa6pro":"fa-folder-open",
         "bsi":"bi-folder2-open",
         "mdi":"folder_open"
     },
@@ -402,7 +402,7 @@
         "_tags:cs":"skupina; uživatel; spolupráce; člověk; lidé; uživatelé",
         "_tags:en":"group; user; users; collaboration; person; people",
         "fa5": "fa-users",
-		"fa5pro": "fa-users",
+		"fa6pro": "fa-users",
 		"bsi": "bi-people",
 		"mdi": "groups"
     },
@@ -413,7 +413,7 @@
         "_tags:cs":"hashtag; znak; tag",
         "_tags:en":"hashtag; character; symbol; tag",
         "fa5": "fa-hashtag",
-		"fa5pro": "fa-hashtag",
+		"fa6pro": "fa-hashtag",
 		"bsi": "bi-hash",
 		"mdi": "tag"
     },
@@ -424,7 +424,7 @@
         "_tags:cs":"srdce; líbí se mi; srdíčko; like",
         "_tags:en":"heart; like",
         "fa5": "fa-heart",
-		"fa5pro": "fa-heart",
+		"fa6pro": "fa-heart",
 		"bsi": "bi-heart",
 		"mdi": "favorite_border"
     },
@@ -435,7 +435,7 @@
         "_tags:cs":"historie; hodiny; šipka; vrátit",
         "_tags:en":"history; clock; arrow; return",
         "fa5": "fa-history",
-		"fa5pro": "fa-history",
+		"fa6pro": "fa-history",
 		"bsi": "bi-clock-history",
 		"mdi": "history"
     },
@@ -446,7 +446,7 @@
         "_tags:cs":"přesípací hodiny; čas; měření; měřič; písek; hodiny; přesípač",
         "_tags:en":"hourglass; time; measurement; measure; sand; clock",
         "fa5": "fa-hourglass-half",
-		"fa5pro": "fa-hourglass-half",
+		"fa6pro": "fa-hourglass-half",
 		"bsi": "bi-hourglass-split",
 		"mdi": "hourglass_empty"
     },
@@ -457,7 +457,7 @@
         "_tags:cs":"průkaz totožnosti; občanský průkaz; občanka; informace; osoba; uživatel; vizitka",
         "_tags:en":"id card; id; information; person; user; badge; card",
         "fa5": "fa-id-card",
-		"fa5pro": "fa-id-card",
+		"fa6pro": "fa-id-card",
 		"bsi": "bi-person-badge",
 		"mdi": "badge"
     },
@@ -468,7 +468,7 @@
         "_tags:cs":"informace; info; i; údaje",
         "_tags:en":"information; info; i",
         "fa5": "fa-info",
-		"fa5pro": "fa-info",
+		"fa6pro": "fa-info",
 		"bsi": "bi-info-lg",
 		"mdi": "info"
     },
@@ -479,7 +479,7 @@
         "_tags:cs":"klíč; dveře; odemknout; zámek",
         "_tags:en":"key; door; unlock; lock",
         "fa5":"fa-key",
-        "fa5pro":"fa-key-skeleton",
+        "fa6pro":"fa-key-skeleton",
         "bsi":"bi-key",
         "mdi":"vpn_key"
     },
@@ -490,7 +490,7 @@
         "_tags:cs":"klávesnice; klávesa; klávesy; počítač; zařízení; příslušenství; znak; písmeno; číslo",
         "_tags:en":"keyboard; key; device; accessory; character; letter; number",
         "fa5": "fa-keyboard",
-		"fa5pro": "fa-keyboard",
+		"fa6pro": "fa-keyboard",
 		"bsi": "bi-keyboard",
 		"mdi": "keyboard"
     },
@@ -501,7 +501,7 @@
         "_tags:cs":"jazyk; překladač; překlad; přeložit; znaky",
         "_tags:en":"language; translator; translate; characters",
         "fa5":"fa-language",
-        "fa5pro":"fa-language",
+        "fa6pro":"fa-language",
         "bsi":"bi-translate",
         "mdi":"translate"
     },
@@ -512,7 +512,7 @@
         "_tags:cs":"podpora; záchraný kruh; loď; pomoc",
         "_tags:en":"help; support; life ring; ship; boat; Lifebuoy",
         "fa5":"fa-life-ring",
-        "fa5pro":"fa-life-ring",
+        "fa6pro":"fa-life-ring",
         "bsi":"bi-life-preserver",
         "mdi":"support"
     },
@@ -523,7 +523,7 @@
         "_tags:cs":"žárovka; světlo",
         "_tags:en":"light bulb; bulb; light",
         "fa5": "fa-info",
-		"fa5pro": "fa-info",
+		"fa6pro": "fa-info",
 		"bsi": "bi-info-lg",
 		"mdi": "info"
     },
@@ -534,7 +534,7 @@
         "_tags:cs":"zámek; dveře; zamknout; klíč",
         "_tags:en":"lock; door; key",
         "fa5":"fa-lock",
-		"fa5pro":"fa-lock-alt",
+		"fa6pro":"fa-lock-alt",
 		"bsi":"bi-lock-fill",
 		"mdi":"lock"
     },
@@ -545,7 +545,7 @@
         "_tags:cs":"mapa; poloha; směr",
         "_tags:en":"map;location; locate; directions",
         "fa5": "fa-map-marked-alt",
-		"fa5pro": "fa-map-marked-alt",
+		"fa6pro": "fa-map-marked-alt",
 		"bsi": "bi-map",
 		"mdi": "map"
     },
@@ -556,7 +556,7 @@
         "_tags:cs":"poloha; mapa; ukazatel",
         "_tags:en":"location; map; locate; map marker",
         "fa5": "fa-map-marker-alt",
-		"fa5pro": "fa-map-marker-alt",
+		"fa6pro": "fa-map-marker-alt",
 		"bsi": "bi-geo-alt-fill",
 		"mdi": "place"
     },
@@ -567,7 +567,7 @@
         "_tags:cs":"mikrofon; hlasitost; zvuk; zapnutý zvuk",
         "_tags:en":"microphone; volume; sound; sound on; mic",
         "fa5": "fa-microphone",
-		"fa5pro": "fa-microphone",
+		"fa6pro": "fa-microphone",
 		"bsi": "bi-mic",
 		"mdi": "mic"
     },
@@ -578,7 +578,7 @@
         "_tags:cs":"noviny; článek; časopis; média",
         "_tags:en":"news; newspaper; article; magazine; media",
         "fa5": "fa-newspaper",
-		"fa5pro": "fa-newspaper",
+		"fa6pro": "fa-newspaper",
 		"bsi": "bi-newspaper",
 		"mdi": "article"
     },
@@ -589,7 +589,7 @@
         "_tags:cs":"štětec; barva; šablona; malování",
         "_tags:en":"paint brush; brush; paint; template",
         "fa5": "fa-paint-brush",
-		"fa5pro": "fa-paint-brush",
+		"fa6pro": "fa-paint-brush",
 		"bsi": "bi-brush",
 		"mdi": "brush"
     },
@@ -600,7 +600,7 @@
         "_tags:cs":"vlaštovka; papírová vlaštovka; poslat",
         "_tags:en":"paper plane; sent",
         "fa5":"fa-paper-plane",
-        "fa5pro":"fa-paper-plane",
+        "fa6pro":"fa-paper-plane",
         "bsi":"bi-envelope",
         "mdi":"send"
     },
@@ -611,7 +611,7 @@
         "_tags:cs":"tužka; psaní; text; pero; opravit",
         "_tags:en":"pencil; writing; text; pen; edit",
         "fa5": "fa-pencil-alt",
-		"fa5pro": "fa-pencil-alt",
+		"fa6pro": "fa-pencil-alt",
 		"bsi": "bi-pencil",
 		"mdi": "edit"
     },
@@ -622,7 +622,7 @@
         "_tags:cs":"telefon; mobil; telefonní číslo; číslo; volat; hovor",
         "_tags:en":"phone; call; mobile phone; number; telephone number; telephone",
         "fa5": "fa-phone-alt",
-		"fa5pro": "fa-phone-alt",
+		"fa6pro": "fa-phone-alt",
 		"bsi": "bi-telephone",
 		"mdi": "call"
     },
@@ -633,7 +633,7 @@
         "_tags:cs":"fotka; obrázek; portrét; foťák",
         "_tags:en":"photo; image; portrait; camera",
         "fa5": "fa-image",
-		"fa5pro": "fa-image",
+		"fa6pro": "fa-image",
 		"bsi": "bi-image",
 		"mdi": "photo_camera"
     },
@@ -644,7 +644,7 @@
         "_tags:cs":"vypnout; odhlásit se",
         "_tags:en":"power off; shut down; power; logout; log out",
         "fa5": "fa-power-off",
-		"fa5pro": "fa-power-off",
+		"fa6pro": "fa-power-off",
 		"bsi": "bi-power",
 		"mdi": "power_settings_new"
     },
@@ -655,7 +655,7 @@
         "_tags:cs":"odpovědět; zpráva; odpověď; sdílet; email; e-mail",
         "_tags:en":"reply; answer; message; email; share",
         "fa5": "fa-reply-all",
-		"fa5pro": "fa-reply-all",
+		"fa6pro": "fa-reply-all",
 		"bsi": "bi-reply-all",
 		"mdi": "reply_all"
     },
@@ -666,7 +666,7 @@
         "_tags:cs":"sdílet; poslat",
         "_tags:en":"share; sent",
         "fa5": "fa-share",
-		"fa5pro": "fa-share",
+		"fa6pro": "fa-share",
 		"bsi": "bi-box-arrow-up-right",
 		"mdi": "open_in_new"
     },
@@ -677,7 +677,7 @@
         "_tags:cs":"sdílet; poslat",
         "_tags:en":"share; sent",
         "fa5":"fa-share-alt",
-        "fa5pro":"fa-share-alt",
+        "fa6pro":"fa-share-alt",
         "bsi":"bi-share-fill",
         "mdi":"share"
     },
@@ -688,7 +688,7 @@
         "_tags:cs":"nákupní taška; taška; nákup; položka; věc; potraviny",
         "_tags:en":"shopping bag; bag; shopping; shop; item; thing; groceries",
         "fa5":"fa-shopping-bag",
-        "fa5pro":"fa-shopping-bag",
+        "fa6pro":"fa-shopping-bag",
         "bsi":"bi-bag-fill",
         "mdi":"shopping-bag"
     },
@@ -699,7 +699,7 @@
         "_tags:cs":"nákupní vozík; vozík; nákup; položka; věc; potraviny",
         "_tags:en":"shopping cart; cart; shopping; shop; item; thing; groceries",
         "fa5":"fa-shopping-cart",
-        "fa5pro":"fa-shopping-cart",
+        "fa6pro":"fa-shopping-cart",
         "bsi":"bi-cart",
         "mdi":"shopping_cart"
     },
@@ -710,7 +710,7 @@
         "_tags:cs":"přihlásit se; přihlášení; akce",
         "_tags:en":"sign in; log in; login; signin",
         "fa5":"fa-sign-in-alt",
-        "fa5pro":"fa-sign-in-alt",
+        "fa6pro":"fa-sign-in-alt",
         "bsi":"bi-box-arrow-in-right",
         "mdi":"login"
     },
@@ -721,7 +721,7 @@
         "_tags:cs":"odhlásit se; odhlášení; akce",
         "_tags:en":"sign out; log out; logout; signout",
         "fa5": "fa-sign-out-alt",
-		"fa5pro": "fa-sign-out-alt",
+		"fa6pro": "fa-sign-out-alt",
 		"bsi": "bi-box-arrow-right",
 		"mdi": "logout"
     },
@@ -732,7 +732,7 @@
         "_tags:cs":"sněhová vločka; sníh; vločka; počasí; zima; teplota",
         "_tags:en":"snowflake; snow; weather; snow storm; winter; temperature",
         "fa5": "fa-snowflake",
-		"fa5pro": "fa-snowflake",
+		"fa6pro": "fa-snowflake",
 		"bsi": "bi-snow",
 		"mdi": "ac_unit"
     },
@@ -743,7 +743,7 @@
         "_tags:cs":"čtverec; tvar; geometrie",
         "_tags:en":"square; object; shape; geometry",
         "fa5":"fa-square",
-        "fa5pro":"fa-square",
+        "fa6pro":"fa-square",
         "bsi":"bi-square",
         "mdi":"check_box_outline_blank"
     },
@@ -754,7 +754,7 @@
         "_tags:cs":"hvězda; hvězdička; označit; označené; důležité; počasí; nebe; noc; vesmír",
         "_tags:en":"star; select; selected; important; weather; sky; night; space; grade",
         "fa5":"fa-star",
-		"fa5pro":"fa-star",
+		"fa6pro":"fa-star",
 		"bsi":"bi-star",
 		"mdi":"grade"
     },
@@ -765,7 +765,7 @@
         "_tags:cs":"hvězda; hvězdička; označit; označené; půlka; půlka hvězdy",
         "_tags:en":"star; select; selected; half; half star",
         "fa5":"fa-star-half-alt",
-        "fa5pro":"fa-star-half-alt",
+        "fa6pro":"fa-star-half-alt",
         "bsi":"bi-star-half",
         "mdi":"star_half"
     },
@@ -776,7 +776,7 @@
         "_tags:cs":"štítek; jméno; označení",
         "_tags:en":"tag; name; name tag; label",
         "fa5":"fa-tag",
-        "fa5pro":"fa-tag",
+        "fa6pro":"fa-tag",
         "bsi":"bi-tag-fill",
         "mdi":"local_offer"
     },
@@ -787,7 +787,7 @@
         "_tags:cs":"štítek; jméno; označení; štítky",
         "_tags:en":"tag; name; name tag; label; tags",
         "fa5":"fa-tags",
-        "fa5pro":"fa-tags",
+        "fa6pro":"fa-tags",
         "bsi":"bi-tags-fill",
         "mdi":"local_offer"
     },
@@ -798,7 +798,7 @@
         "_tags:cs":"terminál; kód; programování",
         "_tags:en":"terminal; code; programming; coding",
         "fa5": "fa-terminal",
-		"fa5pro": "fa-terminal",
+		"fa6pro": "fa-terminal",
 		"bsi": "bi-terminal",
 		"mdi": "code"
     },
@@ -809,7 +809,7 @@
         "_tags:cs":"teploměr; teplota; teplo; počasí; měřič",
         "_tags:en":"thermometer; temperature; weather; meter",
         "fa5": "fa-thermometer-three-quarters",
-		"fa5pro": "fa-thermometer-three-quarters",
+		"fa6pro": "fa-thermometer-three-quarters",
 		"bsi": "bi-thermometer-half",
 		"mdi": "thermostat"
     },
@@ -820,7 +820,7 @@
         "_tags:cs":"palec nahoru; palec; like; líbí se mi; ruka",
         "_tags:en":"thumbs up; thumb; hand; like",
         "fa5":"fa-thumbs-up",
-        "fa5pro":"fa-thumbs-up",
+        "fa6pro":"fa-thumbs-up",
         "bsi":"bi-hand-thumbs-up-fill",
         "mdi":"thumb_up"
     },
@@ -831,7 +831,7 @@
         "_tags:cs":"palec dolů; palec; dislike; nelíbí se mi; ruka",
         "_tags:en":"thumbs down; thumb; hand; dislike; unlike",
         "fa5":"fa-thumbs-down",
-        "fa5pro":"fa-thumbs-down",
+        "fa6pro":"fa-thumbs-down",
         "bsi":"bi-hand-thumbs-down-fill",
         "mdi":"thumb_down"
     },
@@ -842,7 +842,7 @@
         "_tags:cs":"vypnuto; vypnout; vypínač; zapínač",
         "_tags:en":"toggle off; shut down; toggle; turn off",
         "fa5":"fa-toggle-off",
-        "fa5pro":"fa-toggle-off",
+        "fa6pro":"fa-toggle-off",
         "bsi":"bi-toggle-off",
         "mdi":"toggle_off"
     },
@@ -853,7 +853,7 @@
         "_tags:cs":"zapnuto; zapnout; vypínač; zapínač",
         "_tags:en":"toggle on; start; toggle; turn on",
         "fa5": "fa-toggle-on",
-		"fa5pro": "fa-toggle-on",
+		"fa6pro": "fa-toggle-on",
 		"bsi": "bi-toggle-on",
 		"mdi": "toggle_on"
     },
@@ -864,7 +864,7 @@
         "_tags:cs":"koš; smetí; vyhodit; smazat",
         "_tags:en":"trash; bin; take out; delete",
         "fa5": "fa-trash",
-		"fa5pro": "fa-trash",
+		"fa6pro": "fa-trash",
 		"bsi": "bi-trash",
 		"mdi": "delete"
     },
@@ -875,7 +875,7 @@
         "_tags:cs":"nahrát; dokument; nahrávání",
         "_tags:en":"upload; document; uploading",
         "fa5":"fa-upload",
-        "fa5pro":"fa-upload",
+        "fa6pro":"fa-upload",
         "bsi":"bi-upload",
         "mdi":"file_upload"
     },
@@ -886,7 +886,7 @@
         "_tags:cs":"anonymní režim; uživatel; správce; anonymní; incognito",
         "_tags:en":"secret user; incognito; user; admin",
         "fa5": "fa-user-secret",
-		"fa5pro": "fa-user-secret",
+		"fa6pro": "fa-user-secret",
 		"bsi": "bi-person-square",
 		"mdi": "support_agent"
     },
@@ -897,7 +897,7 @@
         "_tags:cs":"video kamera; kamera; video; záběr; natáčet",
         "_tags:en":"video camera; camera; video; shoot",
         "fa5": "fa-video",
-		"fa5pro": "fa-video",
+		"fa6pro": "fa-video",
 		"bsi": "bi-camera-video",
 		"mdi": "videocam"
     },
@@ -908,7 +908,7 @@
         "_tags:cs":"nízká hlasitost; hlasitost; vyzvánění; zvuk",
         "_tags:en":"volume down; low volume; volume; ring tone; sound",
         "fa5": "fa-volume-down",
-		"fa5pro": "fa-volume-down",
+		"fa6pro": "fa-volume-down",
 		"bsi": "bi-volume-down",
 		"mdi": "volume_down"
     },
@@ -919,7 +919,7 @@
         "_tags:cs":"tichý režim; ticho; hlasitost; vyzvánění; zvuk",
         "_tags:en":"volume off; silence; volume; ring tone; sound",
         "fa5": "fa-volume-off",
-		"fa5pro": "fa-volume-off",
+		"fa6pro": "fa-volume-off",
 		"bsi": "bi-volume-down",
 		"mdi": "volume_mute"
     },
@@ -930,7 +930,7 @@
         "_tags:cs":"vysoká hlasitost; hlasitost; vyzvánění; zvuk",
         "_tags:en":"volume up; volume; ring tone; sound",
         "fa5": "fa-volume-up",
-		"fa5pro": "fa-volume-up",
+		"fa6pro": "fa-volume-up",
 		"bsi": "bi-volume-up",
 		"mdi": "volume_up"
     },
@@ -941,7 +941,7 @@
         "_tags:cs":"invalidní vozík; vozík; invalida; přístupnost; přístup",
         "_tags:en":"wheel chair; disability; access; accessibility",
         "fa5": "fa-wheelchair",
-		"fa5pro": "fa-wheelchair",
+		"fa6pro": "fa-wheelchair",
 		"bsi": "bi-person-badge",
 		"mdi": "accessible"
     },
@@ -952,7 +952,7 @@
         "_tags:cs":"wifi; internet; připojení",
         "_tags:en":"wifi; internet; connection",
         "fa5": "fa-wifi",
-		"fa5pro": "fa-wifi",
+		"fa6pro": "fa-wifi",
 		"bsi": "bi-wifi",
 		"mdi": "wifi"
     },
@@ -963,7 +963,7 @@
         "_tags:cs":"přístup; přístupnost; uživatel",
         "_tags:en":"universal access; access; user",
         "fa5":"fa-universal-access",
-        "fa5pro":"fa-universal-access",
+        "fa6pro":"fa-universal-access",
         "bsi":"bi-patch-check",
         "mdi":"local_police"
     },
@@ -974,7 +974,7 @@
         "_tags:cs":"ukázat; ukazovač; ruka",
         "_tags:en":"hand pointer; pointer; point; hand",
         "fa5": "fa-hand-pointer",
-		"fa5pro": "fa-hand-pointer",
+		"fa6pro": "fa-hand-pointer",
 		"bsi": "bi-hand-index",
 		"mdi": "touch_app"
     },
@@ -985,7 +985,7 @@
         "_tags:cs":"osobní automobil; automobil; auto; dopravní prostředek; doprava; přeprava",
         "_tags:en":"automobile; car; vehicle; mean of transport; transport",
         "fa5": "fa-hand-pointer",
-		"fa5pro": "fa-hand-pointer",
+		"fa6pro": "fa-hand-pointer",
 		"bsi": "bi-hand-index",
 		"mdi": "touch_app"
     },
@@ -996,7 +996,7 @@
         "_tags:cs":"kolo; cyklista; koníček; dopravní prostředek; doprava; přeprava",
         "_tags:en":"bicycle; cyclist; hobby; mean of transport; transport",
         "fa5": "fa-biking",
-		"fa5pro": "fa-biking",
+		"fa6pro": "fa-biking",
 		"bsi": "bi-bicycle",
 		"mdi": "directions_bike"
     },
@@ -1007,7 +1007,7 @@
         "_tags:cs":"nákladní automobil; náklaďák; auto; automobil; dopravní prostředek; doprava; přeprava",
         "_tags:en":"truck; pickup; car; mean of transport; transport",
         "fa5":"fa-truck",
-      	"fa5pro":"fa-truck",
+      	"fa6pro":"fa-truck",
       	"bsi":"bi-truck",
       	"mdi":"local_shipping"
     },
@@ -1018,7 +1018,7 @@
         "_tags:cs":"žena; pohlaví; člověk",
         "_tags:en":"female; gender; person",
         "fa5":"fa-venus",
-      	"fa5pro":"fa-venus",
+      	"fa6pro":"fa-venus",
       	"bsi":"bi-gender-female",
       	"mdi":"female"
     },
@@ -1029,7 +1029,7 @@
         "_tags:cs":"muž; pohlaví; člověk",
         "_tags:en":"male; gender; person",
         "fa5":"fa-mars",
-      	"fa5pro":"fa-mars",
+      	"fa6pro":"fa-mars",
       	"bsi":"bi-gender-male",
       	"mdi":"male"
     },
@@ -1040,7 +1040,7 @@
         "_tags:cs":"nebinární; pohlaví; člověk",
         "_tags:en":"non binary; nonbinary; gender; person",
         "fa5":"fa-mars",
-      	"fa5pro":"fa-mars",
+      	"fa6pro":"fa-mars",
       	"bsi":"bi-gender-male",
       	"mdi":"male"
     },
@@ -1051,7 +1051,7 @@
         "_tags:cs":"soubor; dokument",
         "_tags:en":"file; document",
         "fa5": "fa-file",
-		"fa5pro": "fa-file",
+		"fa6pro": "fa-file",
 		"bsi": "bi-file-earmark",
 		"mdi": "insert_drive_file"
     },
@@ -1062,7 +1062,7 @@
         "_tags:cs":"soubor; dokument; text; popis",
         "_tags:en":"file; document; text; description",
         "fa5": "fa-file-alt",
-		"fa5pro": "fa-file-alt",
+		"fa6pro": "fa-file-alt",
 		"bsi": "bi-file-earmark-text-fill",
 		"mdi": "description"
     },
@@ -1073,7 +1073,7 @@
         "_tags:cs":"soubor; dokument; pdf",
         "_tags:en":"file; document; pdf",
         "fa5":"fa-file-pdf",
-		"fa5pro":"fa-file-pdf",
+		"fa6pro":"fa-file-pdf",
 		"bsi":"bi-file-earmark-pdf-fill",
 		"mdi":"picture_as_pdf"
     },
@@ -1084,7 +1084,7 @@
         "_tags:cs":"soubor; dokument; nahrát; šipka",
         "_tags:en":"file; document; upload; arrow",
         "fa5":"fa-file-upload",
-        "fa5pro":"fa-file-upload",
+        "fa6pro":"fa-file-upload",
         "bsi":"bi-file-earmark-arrow-up-fill",
         "mdi":"upload_file"
     },
@@ -1095,7 +1095,7 @@
         "_tags:cs":"soubor; dokument; stáhnout; šipka",
         "_tags:en":"file; document; download; arrow",
         "fa5":"fa-file-download",
-        "fa5pro":"fa-file-download",
+        "fa6pro":"fa-file-download",
         "bsi":"bi-file-earmark-arrow-down-fill",
         "mdi":"file_download"
     },
@@ -1106,7 +1106,7 @@
         "_tags:cs":"fajka; potvrdit; správně; znak; stav",
         "_tags:en":"check; okay; confirm; character; state",
         "fa5":"fa-check",
-        "fa5pro":"fa-check",
+        "fa6pro":"fa-check",
         "bsi":"bi-check",
         "mdi":"check"
     },
@@ -1117,7 +1117,7 @@
         "_tags:cs":"fajka; potvrdit; správně; znak; stav; check box; square",
         "_tags:en":"check; okay; confirm; character; state; check box; čtverec",
         "fa5":"fa-check-square",
-        "fa5pro":"fa-check-square",
+        "fa6pro":"fa-check-square",
         "bsi":"bi-check-square",
         "mdi":"check_box"
     },
@@ -1128,7 +1128,7 @@
         "_tags:cs":"fajka; potvrdit; správně; znak; stav; check box; kolečko",
         "_tags:en":"check; okay; confirm; character; state; check box; circle",
         "fa5": "fa-check-circle",
-		"fa5pro": "fa-check-circle",
+		"fa6pro": "fa-check-circle",
 		"bsi": "bi-check-circle",
 		"mdi": "check_circle"
     },
@@ -1139,7 +1139,7 @@
         "_tags:cs":"křížek; zamítnout; špatně; znak; stav; x; zavřít",
         "_tags:en":"times; deny; incorrect; character; state; x; close",
         "fa5":"fa-times",
-        "fa5pro":"fa-times",
+        "fa6pro":"fa-times",
         "bsi":"bi-x-lg",
         "mdi":"close"
     },
@@ -1150,7 +1150,7 @@
         "_tags:cs":"křížek; zamítnout; špatně; znak; stav; x; zavřít; kolečko",
         "_tags:en":"times; deny; incorrect; character; state; x; close; circle",
         "fa5": "fa-times-circle",
-		"fa5pro": "fa-times-circle",
+		"fa6pro": "fa-times-circle",
 		"bsi": "bi-x-circle",
 		"mdi": "highlight_off"
     },
@@ -1161,7 +1161,7 @@
         "_tags:cs":"mínus; znak; zmenšit; matematika; čára; čárka; smazat; vymazat; odstranit; odečíst",
         "_tags:en":"minus; character; close; hide; mathematics; dash; remove; delete",
         "fa5": "fa-minus",
-		"fa5pro": "fa-minus",
+		"fa6pro": "fa-minus",
 		"bsi": "bi-dash-lg",
 		"mdi": "remove"
     },
@@ -1172,7 +1172,7 @@
         "_tags:cs":"mínus; znak; zmenšit; matematika; smazat; vymazat; odstranit; čtverec",
         "_tags:en":"minus; character; close; hide; mathematics; remove; delete; square",
         "fa5":"fa-minus-square",
-        "fa5pro":"fa-minus-square",
+        "fa6pro":"fa-minus-square",
         "bsi":"bi-dash-square",
         "mdi":"remove_circle"
     },
@@ -1183,7 +1183,7 @@
         "_tags:cs":"mínus; znak; zmenšit; matematika; smazat; vymazat; odstranit; kolečko",
         "_tags:en":"minus; character; close; hide; mathematics; remove; delete; circle",
         "fa5":"fa-minus-circle",
-        "fa5pro":"fa-minus-circle",
+        "fa6pro":"fa-minus-circle",
         "bsi":"bi-dash-circle",
         "mdi":"remove_circle"
     },
@@ -1194,7 +1194,7 @@
         "_tags:cs":"plus; znak; přidat; matematika; sečíst",
         "_tags:en":"plus; character; add; mathematics",
         "fa5":"fa-plus",
-        "fa5pro":"fa-plus",
+        "fa6pro":"fa-plus",
         "bsi":"bi-plus-lg",
         "mdi":"add"
     },
@@ -1205,7 +1205,7 @@
         "_tags:cs":"plus; znak; přidat; matematika; sečíst; čtverec",
         "_tags:en":"plus; character; add; mathematics; square",
         "fa5": "fa-plus-square",
-		"fa5pro": "fa-plus-square",
+		"fa6pro": "fa-plus-square",
 		"bsi": "bi-plus-square",
 		"mdi": "add_circle"
     },
@@ -1216,7 +1216,7 @@
         "_tags:cs":"plus; znak; přidat; matematika; sečíst; kolečko",
         "_tags:en":"plus; character; add; mathematics; circle",
         "fa5": "fa-plus-circle",
-		"fa5pro": "fa-plus-circle",
+		"fa6pro": "fa-plus-circle",
 		"bsi": "bi-plus-circle",
 		"mdi": "add_circle_outline"
     },
@@ -1227,7 +1227,7 @@
         "_tags:cs":"vykříčník; znak; pozor; upozornění; výstraha; chyba; error; priorita",
         "_tags:en":"exclamation; character; warning; beware; alert; error; priority",
         "fa5": "fa-exclamation",
-		"fa5pro": "fa-exclamation",
+		"fa6pro": "fa-exclamation",
 		"bsi": "bi-exclamation",
 		"mdi": "priority_high"
     },
@@ -1238,7 +1238,7 @@
         "_tags:cs":"vykříčník; znak; pozor; upozornění; výstraha; kolečko; chyba; error; priorita",
         "_tags:en":"exclamation; character; warning; beware; alert; circle; error; priority",
         "fa5":"fa-exclamation-circle",
-        "fa5pro":"fa-exclamation-circle",
+        "fa6pro":"fa-exclamation-circle",
         "bsi":"bi-exclamation-circle-fill",
         "mdi":"error"
     },
@@ -1249,7 +1249,7 @@
         "_tags:cs":"vykříčník; znak; pozor; upozornění; výstraha; trojúhelník; chyba; error; priorita",
         "_tags:en":"exclamation; character; warning; beware; alert; triangle; error; priority",
         "fa5": "fa-exclamation-triangle",
-		"fa5pro": "fa-exclamation-triangle",
+		"fa6pro": "fa-exclamation-triangle",
 		"bsi": "bi-exclamation-triangle",
 		"mdi": "warning_amber"
     },
@@ -1260,7 +1260,7 @@
         "_tags:cs":"otazník; znak; otázka; neznámé; podpora; nápověda",
         "_tags:en":"question; character; unknown; support; help",
         "fa5": "fa-question",
-		"fa5pro": "fa-question",
+		"fa6pro": "fa-question",
 		"bsi": "bi-question-lg",
 		"mdi": "help_outline"
     },
@@ -1271,7 +1271,7 @@
         "_tags:cs":"otazník; znak; otázka; neznámé; podpora; nápověda; kolečko",
         "_tags:en":"question; character; unknown; support; help; circle",
         "fa5": "fa-question-circle",
-		"fa5pro": "fa-question-circle",
+		"fa6pro": "fa-question-circle",
 		"bsi": "bi-question-circle-fill",
 		"mdi": "help_outline"
     },
@@ -1282,7 +1282,7 @@
         "_tags:cs":"bankovka; peníze; platba; zaplatit; banka; hotovost",
         "_tags:en":"money; bill; payment; money; pay; bank; cash",
         "fa5":"fa-money-bill-alt",
-        "fa5pro":"fa-money-bill-alt",
+        "fa6pro":"fa-money-bill-alt",
         "bsi":"bi-cash",
         "mdi":"payments"
     },
@@ -1293,7 +1293,7 @@
         "_tags:cs":"kreditní karta; karta; peníze; platba; zaplatit; banka; převod",
         "_tags:en":"credit card; card; money; payment; pay; bank; transfer",
         "fa5":"fa-credit-card",
-        "fa5pro":"fa-credit-card-front",
+        "fa6pro":"fa-credit-card-front",
         "bsi":"bi-credit-card",
         "mdi":"credit_card"
     },
@@ -1304,7 +1304,7 @@
         "_tags:cs":"peněženka; peníze; platba; zaplatit",
         "_tags:en":"wallet; money; payment; pay",
         "fa5":"fa-wallet",
-        "fa5pro":"fa-wallet",
+        "fa6pro":"fa-wallet",
         "bsi":"bi-wallet",
         "mdi":"account_balance_wallet"
     },
@@ -1315,7 +1315,7 @@
         "_tags:cs":"banka; místo; peníze; budova; platba; zaplatit",
         "_tags:en":"bank; place; building; money; payment; pay",
         "fa5":"fa-university",
-        "fa5pro":"fa-university",
+        "fa6pro":"fa-university",
         "bsi":"bi-bank",
         "mdi":"account_balance"
     },
@@ -1326,7 +1326,7 @@
         "_tags:cs":"euro; banka; peníze; měna",
         "_tags:en":"euro; bank; money; currency",
         "fa5":"fa-euro-sign",
-        "fa5pro":"fa-euro-sign",
+        "fa6pro":"fa-euro-sign",
         "bsi":"bi-currency-euro",
         "mdi":"euro"
     },
@@ -1337,7 +1337,7 @@
         "_tags:cs":"dolar; dollar; banka; peníze; měna",
         "_tags:en":"dollar; bank; money; currency",
         "fa5":"fa-dollar-sign",
-        "fa5pro":"fa-dollar-sign",
+        "fa6pro":"fa-dollar-sign",
         "bsi":"bi-currency-dollar",
         "mdi":"attach_money"
     },
@@ -1348,7 +1348,7 @@
         "_tags:cs":"graf; koláčový graf; matematika; čísla; data; rozbor",
         "_tags:en":"graph; pie chart; chart; mathematics; numbers; data; analysis",
         "fa5":"fa-chart-pie",
-		"fa5pro":"fa-chart-pie",
+		"fa6pro":"fa-chart-pie",
 		"bsi":"bi-pie-chart-fill",
 		"mdi":"pie_chart"
     },
@@ -1359,7 +1359,7 @@
         "_tags:cs":"graf; sloupcový graf; matematika; čísla; data; rozbor",
         "_tags:en":"graph; bar chart; chart; mathematics; numbers; data; analysis",
         "fa5":"fa-chart-bar",
-		"fa5pro":"fa-chart-bar",
+		"fa6pro":"fa-chart-bar",
 		"bsi":"bi-clipboard-data",
 		"mdi":"assessment"
     },
@@ -1370,7 +1370,7 @@
         "_tags:cs":"seznam; odrážky; text; data",
         "_tags:en":"list; bullets; bullet points; point; text; data",
         "fa5":"fa-list-ul",
-        "fa5pro":"fa-list-ul",
+        "fa6pro":"fa-list-ul",
         "bsi":"bi-list-ul",
         "mdi":"format_list_bulleted"
     },
@@ -1381,7 +1381,7 @@
         "_tags:cs":"zarovnat; text; soubor; textový soubor",
         "_tags:en":"align; justify; text; file; text file",
         "fa5":"fa-align-justify",
-        "fa5pro":"fa-align-justify",
+        "fa6pro":"fa-align-justify",
         "bsi":"bi-justify",
         "mdi":"format_align_justify"
     },
@@ -1392,7 +1392,7 @@
         "_tags:cs":"zarovnat; vlevo; do leva; text; soubor; textový soubor",
         "_tags:en":"align; left; text; file; text file",
         "fa5":"fa-align-left",
-        "fa5pro":"fa-align-left",
+        "fa6pro":"fa-align-left",
         "bsi":"bi-justify-left",
         "mdi":"format_align_left"
     },
@@ -1403,7 +1403,7 @@
         "_tags:cs":"zarovnat; vpravo; do prava; text; soubor; textový soubor",
         "_tags:en":"align; right; text; file; text file",
         "fa5":"fa-align-right",
-        "fa5pro":"fa-align-right",
+        "fa6pro":"fa-align-right",
         "bsi":"bi-justify-right",
         "mdi":"format_align_right"
     },
@@ -1414,7 +1414,7 @@
         "_tags:cs":"stříška; nahoru; šipka; směr",
         "_tags:en":"caret; up; arrow; direction",
         "fa5":"fa-caret-up",
-        "fa5pro":"fa-caret-up",
+        "fa6pro":"fa-caret-up",
         "bsi":"bi-caret-up",
         "mdi":"arrow_drop_up"
     },
@@ -1425,7 +1425,7 @@
         "_tags:cs":"stříška; dolů; šipka; směr",
         "_tags:en":"caret; down; arrow; direction",
         "fa5":"fa-caret-down",
-        "fa5pro":"fa-caret-down",
+        "fa6pro":"fa-caret-down",
         "bsi":"bi-caret-down",
         "mdi":"arrow_drop_down"
     },
@@ -1436,7 +1436,7 @@
         "_tags:cs":"stříška; vlevo; do leva; šipka; směr",
         "_tags:en":"caret; left; arrow; direction",
         "fa5":"fa-caret-left",
-        "fa5pro":"fa-caret-left",
+        "fa6pro":"fa-caret-left",
         "bsi":"bi-caret-left",
         "mdi":"arrow_left"
     },
@@ -1447,7 +1447,7 @@
         "_tags:cs":"stříška; vpravo; do prava; šipka; směr",
         "_tags:en":"caret; right; arrow; direction",
         "fa5":"fa-caret-right",
-        "fa5pro":"fa-caret-right",
+        "fa6pro":"fa-caret-right",
         "bsi":"bi-caret-right",
         "mdi":"arrow_right"
     },
@@ -1458,7 +1458,7 @@
         "_tags:cs":"šipka; nahoru; směr",
         "_tags:en":"arrow; up; direction",
         "fa5":"fa-arrow-up",
-        "fa5pro":"fa-arrow-up",
+        "fa6pro":"fa-arrow-up",
         "bsi":"bi-arrow-up",
         "mdi":"arrow_upward"
     },
@@ -1469,7 +1469,7 @@
         "_tags:cs":"šipka; dolů; směr",
         "_tags:en":"arrow; down; direction",
         "fa5":"fa-arrow-down",
-        "fa5pro":"fa-arrow-down",
+        "fa6pro":"fa-arrow-down",
         "bsi":"bi-arrow-down",
         "mdi":"arrow_downward"
     },
@@ -1480,7 +1480,7 @@
         "_tags:cs":"šipka; vlevo; do leva; směr",
         "_tags:en":"arrow; left; direction",
         "fa5":"fa-arrow-left",
-        "fa5pro":"fa-arrow-left",
+        "fa6pro":"fa-arrow-left",
         "bsi":"bi-arrow-left",
         "mdi":"arrow_back"
     },
@@ -1491,7 +1491,7 @@
         "_tags:cs":"šipka; vpravo; do prava; směr",
         "_tags:en":"arrow; right; direction",
         "fa5":"fa-arrow-right",
-        "fa5pro":"fa-arrow-right",
+        "fa6pro":"fa-arrow-right",
         "bsi":"bi-arrow-right",
         "mdi":"arrow_forward"
     },
@@ -1502,7 +1502,7 @@
         "_tags:cs":"šipka; nahoru; směr; kolečko",
         "_tags:en":"arrow; up; direction; circle",
         "fa5":"fa-arrow-circle-up",
-        "fa5pro":"fa-arrow-circle-up",
+        "fa6pro":"fa-arrow-circle-up",
         "bsi":"bi-arrow-up-circle",
         "mdi":"arrow_circle_up"
     },
@@ -1513,7 +1513,7 @@
         "_tags:cs":"šipka; dolů; směr; kolečko",
         "_tags:en":"arrow; down; direction; circle",
         "fa5":"fa-arrow-circle-down",
-        "fa5pro":"fa-arrow-circle-down",
+        "fa6pro":"fa-arrow-circle-down",
         "bsi":"bi-arrow-down-circle",
         "mdi":"arrow_circle_down"
     },
@@ -1524,7 +1524,7 @@
         "_tags:cs":"šipka; vlevo; do leva; směr; kolečko",
         "_tags:en":"arrow; left; direction; circle",
         "fa5":"fa-arrow-circle-left",
-        "fa5pro":"fa-arrow-circle-left",
+        "fa6pro":"fa-arrow-circle-left",
         "bsi":"bi-arrow-left-circle",
         "mdi":"arrow_back"
     },
@@ -1535,7 +1535,7 @@
         "_tags:cs":"šipka; vpravo; do prava; směr; kolečko",
         "_tags:en":"arrow; right; direction; circle",
         "fa5":"fa-arrow-circle-right",
-        "fa5pro":"fa-arrow-circle-right",
+        "fa6pro":"fa-arrow-circle-right",
         "bsi":"bi-arrow-right-circle",
         "mdi":"arrow_forward"
     },
@@ -1546,7 +1546,7 @@
         "_tags:cs":"stříška; nahoru; šipka; směr; chevron; v",
         "_tags:en":"chevron; up; arrow; direction",
         "fa5":"fa-chevron-up",
-        "fa5pro":"fa-chevron-up",
+        "fa6pro":"fa-chevron-up",
         "bsi":"bi-chevron-up",
         "mdi":"expand_less"
     },
@@ -1557,7 +1557,7 @@
         "_tags:cs":"stříška; dolů; šipka; směr; chevron; v",
         "_tags:en":"chevron; down; arrow; direction",
         "fa5":"fa-chevron-down",
-        "fa5pro":"fa-chevron-down",
+        "fa6pro":"fa-chevron-down",
         "bsi":"bi-chevron-down",
         "mdi":"expand_more"
     },
@@ -1568,7 +1568,7 @@
         "_tags:cs":"stříška; vlevo; do leva; šipka; směr; chevron; v",
         "_tags:en":"chevron; left; arrow; direction",
         "fa5":"fa-chevron-left",
-        "fa5pro":"fa-chevron-left",
+        "fa6pro":"fa-chevron-left",
         "bsi":"bi-chevron-left",
         "mdi":"chevron_left"
     },
@@ -1579,7 +1579,7 @@
         "_tags:cs":"stříška; vpravo; do prava; šipka; směr; chevron; v",
         "_tags:en":"chevron; right; arrow; direction",
         "fa5":"fa-chevron-right",
-        "fa5pro":"fa-chevron-right",
+        "fa6pro":"fa-chevron-right",
         "bsi":"bi-chevron-right",
         "mdi":"chevron_right"
     },
@@ -1590,7 +1590,7 @@
         "_tags:cs":"telefon; zařízení; mobil",
         "_tags:en":"phone; telephone; device",
         "fa5": "fa-mobile-alt",
-		"fa5pro": "fa-mobile-alt",
+		"fa6pro": "fa-mobile-alt",
 		"bsi": "bi-phone",
 		"mdi": "phone_iphone"
     },
@@ -1601,7 +1601,7 @@
         "_tags:cs":"notebook; počítač; laptop; zařízení",
         "_tags:en":"notebook; laptop; computer; device",
         "fa5": "fa-laptop",
-		"fa5pro": "fa-laptop",
+		"fa6pro": "fa-laptop",
 		"bsi": "bi-laptop",
 		"mdi": "laptop"
     },
@@ -1612,7 +1612,7 @@
         "_tags:cs":"počítač; monitor; stolní počítač; zařízení",
         "_tags:en":"desktop; monitor; work station; computer; device",
         "fa5": "fa-desktop",
-		"fa5pro": "fa-desktop",
+		"fa6pro": "fa-desktop",
 		"bsi": "bi-display",
 		"mdi": "desktop_mac"
     },
@@ -1623,7 +1623,7 @@
         "_tags:cs":"tiskárna; skener; zařízení",
         "_tags:en":"desktop; monitor; work station; computer; device",
         "fa5": "fa-print",
-		"fa5pro": "fa-print",
+		"fa6pro": "fa-print",
 		"bsi": "bi-printer",
 		"mdi": "print"
     },
@@ -1634,7 +1634,7 @@
         "_tags:cs":"tablet; ipad; zařízení",
         "_tags:en":"tablet; ipad; device",
         "fa5": "fa-tablet-alt",
-		"fa5pro": "fa-tablet-alt",
+		"fa6pro": "fa-tablet-alt",
 		"bsi": "bi-tablet",
 		"mdi": "tablet_mac"
     },
@@ -1645,7 +1645,7 @@
         "_tags:cs":"televize; tv; zařízení",
         "_tags:en":"television; tv; device",
         "fa5": "fa-tv",
-		"fa5pro": "fa-tv-alt",
+		"fa6pro": "fa-tv-alt",
 		"bsi": "bi-tv",
 		"mdi": "tv"
     },
@@ -1656,7 +1656,7 @@
         "_tags:cs":"server; zařízení; úložiště; hdd; data",
         "_tags:en":"server; device; hdd; data; storage",
         "fa5": "fa-server",
-		"fa5pro": "fa-server",
+		"fa6pro": "fa-server",
 		"bsi": "bi-hdd-stack-fill",
 		"mdi": "dns"
     },
@@ -1667,7 +1667,7 @@
         "_tags:cs":"slunce; slunko; teplo; teplota; jasno; jas; počasí;",
         "_tags:en":"sun; hot; warmth; brightness; weather",
         "fa5": "fa-sun",
-		"fa5pro": "fa-sun",
+		"fa6pro": "fa-sun",
 		"bsi": "bi-sun",
 		"mdi": "light_mode"
     },
@@ -1678,7 +1678,7 @@
         "_tags:cs":"mrak; zataženo; počasí",
         "_tags:en":"cloud; cloudy; weather",
         "fa5": "fa-cloud",
-		"fa5pro": "fa-cloud",
+		"fa6pro": "fa-cloud",
 		"bsi": "bi-cloud",
 		"mdi": "cloud"
     },
@@ -1689,7 +1689,7 @@
         "_tags:cs":"měsíc; noc; tma; počasí",
         "_tags:en":"moon; night; dark; weather",
         "fa5": "fa-moon",
-		"fa5pro": "fa-moon",
+		"fa6pro": "fa-moon",
 		"bsi": "bi-moon",
 		"mdi": "nightlight"
     },
@@ -1700,7 +1700,7 @@
         "_tags:cs":"inbox; zprávy; zpráva",
         "_tags:en":"inbox; messages; message; issue",
         "fa5":"fa-inbox",
-        "fa5pro":"fa-inbox",
+        "fa6pro":"fa-inbox",
         "bsi":"bi-inbox-fill",
         "mdi":"inbox"
     },
@@ -1711,7 +1711,7 @@
         "_tags:cs":"hledat; lupa; přiblížit; zvětšit",
         "_tags:en":"searhc; magnifying glass; zoom; zoom in",
         "fa5":"fa-search",
-		"fa5pro":"fa-search",
+		"fa6pro":"fa-search",
 		"bsi":"bi-search",
 		"mdi":"search"
     },
@@ -1722,7 +1722,7 @@
         "_tags:cs":"pokladnička; pokladna; prasátko; peníze; drobné; hotovost; mince",
         "_tags:en":"piggy bank; piggy; money; cash; coin",
         "fa5":"fa-piggy-bank",
-        "fa5pro":"fa-piggy-bank",
+        "fa6pro":"fa-piggy-bank",
         "bsi":"bi-piggy-bank",
         "mdi":"savings"
     }

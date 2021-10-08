@@ -1,0 +1,10 @@
+{
+	"fa6pro": {
+			"fullName": "Font Awesome 6 Pro",
+			"shortName": "FA 6 Pro",
+			"scPath": "icons/fa/6pro",
+			"type": 0,
+			"cssBaseClass": "fad ",
+			"styleLink": "icons/fa/6pro/css/all.min.css"
+	}
+}

@@ -1,13 +1,13 @@
 {
     "tables/e10doc.helpers.wkfSectionsRelations":{
         "fa5":"fa-columns",
-        "fa5pro":"fa-columns",
+        "fa6pro":"fa-columns",
         "bsi":"bi-layout-three-columns",
         "mdi":"view_week"
     },
     "tables/e10doc.helpers.rowsSettings":{
         "fa5":"fa-cog",
-        "fa5pro":"fa-cog",
+        "fa6pro":"fa-cog",
         "bsi":"bi-gear",
         "mdi":"settings"
     }

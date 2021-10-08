@@ -1,19 +1,19 @@
 {
     "tables/e10doc.contracts.core.docNumbers":{
         "fa5":"fa-play-circle",
-        "fa5pro":"fa-play-circle",
+        "fa6pro":"fa-play-circle",
         "bsi":"bi-play-circle-fill",
         "mdi":"play_circle_filled"
     },
     "tables/e10doc.contracts.core.kinds":{
         "fa5":"fa-flag",
-        "fa5pro":"fa-flag",
+        "fa6pro":"fa-flag",
         "bsi":"bi-flag",
         "mdi":"flag"
     },
     "tables/e10doc.contracts.core.heads":{
         "fa5":"fa-thumbs-up",
-        "fa5pro":"fa-thumbs-up",
+        "fa6pro":"fa-thumbs-up",
         "bsi":"bi-hand-thumbs-up-fill",
         "mdi":"thumb_up"
     }

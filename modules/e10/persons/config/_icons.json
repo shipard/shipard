@@ -1,43 +1,43 @@
 {
 	"tables/e10.persons.persons": {
 		"fa5": "fa-users",
-		"fa5pro": "fa-users",
+		"fa6pro": "fa-users",
 		"bsi": "bi-people",
 		"mdi": "people"
 	},
 	"tables/e10.persons.contacts": {
 		"fa5": "fa-user-friends",
-		"fa5pro": "fa-user-friends",
+		"fa6pro": "fa-user-friends",
 		"bsi": "bi-people-fill",
 		"mdi": "group"
 	},
 	"tables/e10.persons.groups": {
 		"fa5": "fa-users",
-		"fa5pro": "fa-users",
+		"fa6pro": "fa-users",
 		"bsi": "bi-people-fill",
 		"mdi": "groups"
 	},
 	"tables/e10.persons.categories": {
 		"fa5": "fa-id-card",
-		"fa5pro": "fa-id-card",
+		"fa6pro": "fa-id-card",
 		"bsi": "bi-person-badge",
 		"mdi": "badge"
 	},
 	"tables/e10.persons.relations": {
 		"fa5": "fa-compress-alt",
-		"fa5pro": "fa-compress-alt",
+		"fa6pro": "fa-compress-alt",
 		"bsi": "bi-arrows-angle-contract",
 		"mdi": "close_fullscreen"
 	},
 	"tables/e10.persons.requests": {
 		"fa5": "fa-receipt",
-		"fa5pro": "fa-receipt",
+		"fa6pro": "fa-receipt",
 		"bsi": "bi-receipt-cutoff",
 		"mdi": "receipt"
 	},
 	"tables/e10.persons.keys": {
 		"fa5":"fa-key",
-        "fa5pro":"fa-key-skeleton",
+        "fa6pro":"fa-key-skeleton",
         "bsi":"bi-key",
         "mdi":"vpn_key"
 	},
@@ -45,7 +45,7 @@
 
 	"formContacts":{
 		"fa5": "fa-address-book",
-		"fa5pro": "fa-address-book",
+		"fa6pro": "fa-address-book",
 		"bsi": "bi-person-badge",
 		"mdi": "contact_mail"
 	},
@@ -53,7 +53,7 @@
 
 	"detailRights":{
 		"fa5":"fa-sign-in-alt",
-        "fa5pro":"fa-sign-in-alt",
+        "fa6pro":"fa-sign-in-alt",
         "bsi":"bi-box-arrow-in-right",
         "mdi":"login"
 	},
@@ -61,37 +61,37 @@
 
 	"address":{
 		"fa5": "fa-question",
-		"fa5pro": "fa-question",
+		"fa6pro": "fa-question",
 		"bsi": "bi-question-lg",
 		"mdi": "help_outline"
 	},
 	"addressResidence":{
 		"fa5":"fa-building",
-        "fa5pro":"fa-building",
+        "fa6pro":"fa-building",
         "bsi":"bi-building",
         "mdi":"business"
 	},
 	"addressBranchOffice":{
 		"fa5": "fa-home",
-		"fa5pro": "fa-home",
+		"fa6pro": "fa-home",
 		"bsi": "bi-house-door-fill",
 		"mdi": "home"
 	},
 	"addressMailingAddress":{
 		"fa5":"fa-envelope",
-        "fa5pro":"fa-envelope",
+        "fa6pro":"fa-envelope",
         "bsi":"bi-envelope",
         "mdi":"mail"
 	},
 	"addressShippingAddress":{
 		"fa5":"fa-paper-plane",
-        "fa5pro":"fa-paper-plane",
+        "fa6pro":"fa-paper-plane",
         "bsi":"bi-envelope",
         "mdi":"send"
 	},
 	"addressWorkshop":{
 		"fa5":"fa-store",
-		"fa5pro":"fa-store",
+		"fa6pro":"fa-store",
 		"bsi":"bi-shop",
 		"mdi":"store"
 	},
@@ -99,49 +99,49 @@
 
 	"personBirthDate":{
 		"fa5":"fa-asterisk",
-		"fa5pro":"fa-asterisk",
+		"fa6pro":"fa-asterisk",
 		"bsi":"bi-asterisk",
 		"mdi":"today"
 	},
 	"personEmail":{
 		"fa5":"fa-envelope",
-        "fa5pro":"fa-envelope",
+        "fa6pro":"fa-envelope",
         "bsi":"bi-envelope",
         "mdi":"mail"
 	},
 	"personPhone":{
 		"fa5": "fa-phone-alt",
-		"fa5pro": "fa-phone-alt",
+		"fa6pro": "fa-phone-alt",
 		"bsi": "bi-telephone",
 		"mdi": "call"
 	},
 	"personSkype":{
 		"fa5": "fa-phone-volume",
-		"fa5pro": "fa-phone-volume",
+		"fa6pro": "fa-phone-volume",
 		"bsi": "bi-skype",
 		"mdi": "ring_volume"
 	},
 	"personWeb":{
 		"fa5":"fa-globe-americas",
-        "fa5pro":"fa-globe-americas",
+        "fa6pro":"fa-globe-americas",
         "bsi":"bi-globe",
         "mdi":"public"
 	},
 	"personDataBox":{
 		"fa5":"fa-shield-alt",
-        "fa5pro":"fa-shield-alt",
+        "fa6pro":"fa-shield-alt",
         "bsi":"bi-shield",
         "mdi":"shield"
 	},
 	"personOfficialName":{
 		"fa5": "fa-check-circle",
-		"fa5pro": "fa-check-circle",
+		"fa6pro": "fa-check-circle",
 		"bsi": "bi-check-circle",
 		"mdi": "check_circle"
 	},
 	"personShortName":{
 		"fa5": "fa-hand-paper",
-		"fa5pro": "fa-hand-paper",
+		"fa6pro": "fa-hand-paper",
 		"bsi": "bi-hand-index",
 		"mdi": "pan_tool"
 	}

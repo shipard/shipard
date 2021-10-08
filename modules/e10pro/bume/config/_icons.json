@@ -1,19 +1,19 @@
 {
     "tables/e10pro.bume.bulkEmails":{
 		"fa5": "fa-envelope-open",
-		"fa5pro": "fa-envelope-open",
+		"fa6pro": "fa-envelope-open",
 		"bsi": "bi-envelope-open",
 		"mdi": "mail"
 	},
 	"tables/e10pro.bume.bulkPosts":{
 		"fa5":"fa-paper-plane",
-        "fa5pro":"fa-paper-plane",
+        "fa6pro":"fa-paper-plane",
         "bsi":"bi-envelope",
         "mdi":"send"
 	},
 	"tables/e10pro.bume.bulkRecipients":{
 		"fa5": "fa-id-card",
-		"fa5pro": "fa-id-card",
+		"fa6pro": "fa-id-card",
 		"bsi": "bi-person-badge",
 		"mdi": "badge"
 	},
@@ -21,7 +21,7 @@
 
 	"formRecipients":{
 		"fa5": "fa-address-card",
-		"fa5pro": "fa-address-card",
+		"fa6pro": "fa-address-card",
 		"bsi": "bi-person-badge",
 		"mdi": "badge"
 	},
@@ -29,7 +29,7 @@
 
 	"bulkEmailsSending":{
 		"fa5":"fa-paper-plane",
-        "fa5pro":"fa-paper-plane",
+        "fa6pro":"fa-paper-plane",
         "bsi":"bi-envelope",
         "mdi":"send"
 	}

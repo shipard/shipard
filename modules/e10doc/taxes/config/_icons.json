@@ -1,25 +1,25 @@
 {
     "tables/e10doc.taxes.filingFiles":{
         "fa5": "fa-file",
-		"fa5pro": "fa-file",
+		"fa6pro": "fa-file",
 		"bsi": "bi-file-earmark",
 		"mdi": "insert_drive_file"
     },
     "tables/e10doc.taxes.filings":{
         "fa5":"fa-paper-plane",
-        "fa5pro":"fa-paper-plane",
+        "fa6pro":"fa-paper-plane",
         "bsi":"bi-envelope",
         "mdi":"send"
     },
     "tables/e10doc.taxes.reports":{
         "fa5":"fa-shield-alt",
-        "fa5pro":"fa-shield-alt",
+        "fa6pro":"fa-shield-alt",
         "bsi":"bi-shield",
         "mdi":"shield"
     },
     "tables/e10doc.taxes.reportsParts":{
         "fa5":"fa-shield-alt",
-        "fa5pro":"fa-shield-alt",
+        "fa6pro":"fa-shield-alt",
         "bsi":"bi-shield",
         "mdi":"shield"
     },
@@ -28,7 +28,7 @@
 
     "detailProblems":{
         "fa5": "fa-exclamation-triangle",
-		"fa5pro": "fa-exclamation-triangle",
+		"fa6pro": "fa-exclamation-triangle",
 		"bsi": "bi-exclamation-triangle",
 		"mdi": "warning_amber"
     }

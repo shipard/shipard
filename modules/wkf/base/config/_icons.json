@@ -1,73 +1,73 @@
 {
     "tables/wkf.base.issuesKinds":{
 		"fa5": "fa-bolt",
-		"fa5pro": "fa-bolt",
+		"fa6pro": "fa-bolt",
 		"bsi": "bi-lightning-fill",
 		"mdi": "bolt"
 	},
     "tables/wkf.base.sections":{
 		"fa5": "fa-columns",
-		"fa5pro": "fa-columns",
+		"fa6pro": "fa-columns",
 		"bsi": "bi-layout-three-columns",
 		"mdi": "view_week"
 	},
     "tables/wkf.base.projects":{
 		"fa5": "fa-lightbulb",
-		"fa5pro": "fa-lightbulb-on",
+		"fa6pro": "fa-lightbulb-on",
 		"bsi": "bi-lightbulb",
 		"mdi": "lightbulb"
 	},
     "tables/wkf.base.boards":{
 		"fa5": "fa-window-maximize",
-		"fa5pro": "fa-window-maximize",
+		"fa6pro": "fa-window-maximize",
 		"bsi": "bi-layout-text-window-reverse",
 		"mdi": "dvr"
 	},
     "tables/wkf.base.issuesStatuses":{
 		"fa5": "fa-tasks",
-		"fa5pro": "fa-tasks-alt",
+		"fa6pro": "fa-tasks-alt",
 		"bsi": "bi-list-check",
 		"mdi": "checklist"
 	},
     "tables/wkf.base.issuesStatusesKinds":{
 		"fa5": "fa-cogs",
-		"fa5pro": "fa-cogs",
+		"fa6pro": "fa-cogs",
 		"bsi": "bi-gear-fill",
 		"mdi": "settings"
 	},
     "tables/wkf.base.targets":{
 		"fa5": "fa-flag-checkered",
-		"fa5pro": "fa-flag-checkered",
+		"fa6pro": "fa-flag-checkered",
 		"bsi": "bi-flag-fill",
 		"mdi": "sports_score"
 	},
     "tables/wkf.base.targetsKinds":{
 		"fa5": "fa-flag",
-		"fa5pro": "fa-flag",
+		"fa6pro": "fa-flag",
 		"bsi": "bi-flag",
 		"mdi": "flag"
 	},
     "tables/wkf.base.extNotifications":{
 		"fa5": "fa-external-link-alt",
-		"fa5pro": "fa-external-link-alt",
+		"fa6pro": "fa-external-link-alt",
 		"bsi": "bi-link-45deg",
 		"mdi": "link"
 	},
     "tables/wkf.base.trays":{
 		"fa5":"fa-folder-open",
-        "fa5pro":"fa-folder-open",
+        "fa6pro":"fa-folder-open",
         "bsi":"bi-folder2-open",
         "mdi":"folder_open"
 	},
     "tables/wkf.base.docMarks":{
 		"fa5":"fa-star-half-alt",
-        "fa5pro":"fa-star-half-alt",
+        "fa6pro":"fa-star-half-alt",
         "bsi":"bi-star-half",
         "mdi":"star_half"
 	},
     "tables/wkf.base.sectionsIssuesKinds":{
 		"fa5":"fa-bolt",
-        "fa5pro":"fa-bolt",
+        "fa6pro":"fa-bolt",
         "bsi":"bi-lightning-fill",
         "mdi":"bolt"
 	},
@@ -75,19 +75,19 @@
 
 	"formTheme":{
 		"fa5": "fa-comment",
-		"fa5pro": "fa-comment",
+		"fa6pro": "fa-comment",
 		"bsi": "bi-chat",
 		"mdi": "mode_comment"
 	},
 	"formData":{
 		"fa5": "fa-th-list",
-		"fa5pro": "fa-th-list",
+		"fa6pro": "fa-th-list",
 		"bsi": "bi-list-ul",
 		"mdi": "list"
 	},
 	"formIssueKinds":{
 		"fa5": "fa-bolt",
-		"fa5pro": "fa-bolt",
+		"fa6pro": "fa-bolt",
 		"bsi": "bi-lightning-fill",
 		"mdi": "bolt"
 	},
@@ -95,73 +95,73 @@
 
 	"homeAccounting":{
         "fa5": "fa-calculator",
-		"fa5pro": "fa-calculator",
+		"fa6pro": "fa-calculator",
 		"bsi": "bi-calculator",
 		"mdi": "calculate"
     },
     "homeDocuments":{
         "fa5":"fa-file-alt",
-		"fa5pro":"fa-file-alt",
+		"fa6pro":"fa-file-alt",
 		"bsi":"bi-file-earmark-text",
 		"mdi":"description"
     },
     "homeCashbox":{
         "fa5":"fa-piggy-bank",
-        "fa5pro":"fa-piggy-bank",
+        "fa6pro":"fa-piggy-bank",
         "bsi":"bi-piggy-bank",
         "mdi":"savings"
     },
     "homeBank":{
         "fa5":"fa-university",
-        "fa5pro":"fa-university",
+        "fa6pro":"fa-university",
         "bsi":"bi-bank",
         "mdi":"account_balance"
     },
     "homeWages":{
         "fa5":"fa-money-bill-alt",
-        "fa5pro":"fa-money-bill-alt",
+        "fa6pro":"fa-money-bill-alt",
         "bsi":"bi-cash",
         "mdi":"payments"
     },
     "homeProperty":{
         "fa5": "fa-cubes",
-		"fa5pro": "fa-cubes",
+		"fa6pro": "fa-cubes",
 		"bsi": "bi-collection-fill",
 		"mdi": "list"
     },
     "homeAlerts":{
         "fa5":"fa-exclamation-circle",
-        "fa5pro":"fa-exclamation-circle",
+        "fa6pro":"fa-exclamation-circle",
         "bsi":"bi-exclamation-circle-fill",
         "mdi":"error"
     },
     "homeOther":{
         "fa5":"fa-th",
-        "fa5pro":"fa-th",
+        "fa6pro":"fa-th",
         "bsi":"bi-grid-3x3-gap-fill",
         "mdi":"apps"
     },
     "homeSent":{
         "fa5":"fa-paper-plane",
-        "fa5pro":"fa-paper-plane",
+        "fa6pro":"fa-paper-plane",
         "bsi":"bi-envelope",
         "mdi":"send"
     },
     "homeShipard":{
         "fa5":"fa-ship",
-        "fa5pro":"fa-ship",
+        "fa6pro":"fa-ship",
         "bsi":"bi-building",
         "mdi":"directions_boat"
     },
     "homeDiscussions":{
         "fa5":"fa-bullhorn",
-        "fa5pro":"fa-bullhorn",
+        "fa6pro":"fa-bullhorn",
         "bsi":"bi-megaphone",
         "mdi":"campaign"
     },
     "homeThumbTack":{
         "fa5": "fa-thumbtack",
-		"fa5pro": "fa-thumbtack",
+		"fa6pro": "fa-thumbtack",
 		"bsi": "bi-pin",
 		"mdi": "push_pin"
     },
@@ -170,31 +170,31 @@
 
 	"notificationsSectionsNone":{
 		"fa5":"fa-bell-slash",
-        "fa5pro":"fa-bell-slash",
+        "fa6pro":"fa-bell-slash",
         "bsi":"bi-bell-slash-fill",
         "mdi":"notifications_off"
 	},
 	"notificationsSectionsAll":{
 		"fa5":"fa-bell",
-        "fa5pro":"fa-bell",
+        "fa6pro":"fa-bell",
         "bsi":"bi-bell-fill",
         "mdi":"notifications"
 	},
 	"notificationsSectionsSilent":{
 		"fa5":"fa-volume-off",
-        "fa5pro":"fa-volume-off",
+        "fa6pro":"fa-volume-off",
         "bsi":"bi-volume-off",
         "mdi":"volume_mute"
 	},
 	"notificationsSectionsImportant":{
 		"fa5":"fa-exclamation-circle",
-        "fa5pro":"fa-exclamation-circle",
+        "fa6pro":"fa-exclamation-circle",
         "bsi":"bi-exclamation-circle-fill",
         "mdi":"error"
 	},
 	"notificationsSectionsMine":{
 		"fa5": "fa-user-circle",
-		"fa5pro": "fa-user-circle",
+		"fa6pro": "fa-user-circle",
 		"bsi": "bi-person-circle",
 		"mdi": "account_circle"
 	},
@@ -203,43 +203,43 @@
 
 	"notificationsIssuesNone":{
 		"fa5":"fa-bell-slash",
-        "fa5pro":"fa-bell-slash",
+        "fa6pro":"fa-bell-slash",
         "bsi":"bi-star",
         "mdi":"grade"
 	},
 	"notificationsIssuesStar":{
 		"fa5":"fa-star",
-		"fa5pro":"fa-star",
+		"fa6pro":"fa-star",
 		"bsi":"bi-star-fill",
 		"mdi":"star"
 	},
 	"notificationsIssuesDot":{
 		"fa5": "fa-circle",
-		"fa5pro": "fa-circle",
+		"fa6pro": "fa-circle",
 		"bsi": "bi-circle",
 		"mdi": "circle"
 	},
 	"notificationsIssuesCritical":{
 		"fa5":"fa-bolt",
-        "fa5pro":"fa-bolt",
+        "fa6pro":"fa-bolt",
         "bsi":"bi-lightning-fill",
         "mdi":"bolt"
 	},
 	"notificationsIssuesFire":{
 		"fa5":"fa-fire",
-        "fa5pro":"fa-fire",
+        "fa6pro":"fa-fire",
         "bsi":"bi-lightning-charge",
         "mdi":"local_fire_department"
 	},
 	"notificationsIssuesYes":{
 		"fa5":"fa-thumbs-up",
-        "fa5pro":"fa-thumbs-up",
+        "fa6pro":"fa-thumbs-up",
         "bsi":"bi-hand-thumbs-up-fill",
         "mdi":"thumb_up"
 	},
 	"notificationsIssuesNo":{
 		"fa5":"fa-thumbs-down",
-        "fa5pro":"fa-thumbs-down",
+        "fa6pro":"fa-thumbs-down",
         "bsi":"bi-hand-thumbs-down-fill",
         "mdi":"thumb_down"
 	},
@@ -248,19 +248,19 @@
 
 	"commentTypeUser":{
 		"fa5": "fa-keyboard",
-		"fa5pro": "fa-keyboard",
+		"fa6pro": "fa-keyboard",
 		"bsi": "bi-keyboard",
 		"mdi": "keyboard"
 	},
 	"commentTypeIssueChange":{
 		"fa5": "fa-pencil-alt",
-		"fa5pro": "fa-pencil-alt",
+		"fa6pro": "fa-pencil-alt",
 		"bsi": "bi-pencil",
 		"mdi": "edit"
 	},
 	"commentTypeIssueAlertUpdate":{
 		"fa5": "fa-exclamation-triangle",
-		"fa5pro": "fa-exclamation-triangle",
+		"fa6pro": "fa-exclamation-triangle",
 		"bsi": "bi-exclamation-triangle",
 		"mdi": "warning_amber"
 	}

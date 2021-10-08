@@ -1,25 +1,25 @@
 {
     "tables/e10doc.debs.journal":{
         "fa5":"fa-list",
-        "fa5pro":"fa-list",
+        "fa6pro":"fa-list",
         "bsi":"bi-list-ul",
         "mdi":"list-ul"
     },
     "tables/e10doc.debs.accounts":{
         "fa5":"fa-th-large",
-        "fa5pro":"fa-th-large",
+        "fa6pro":"fa-th-large",
         "bsi":"bi-table",
         "mdi":"table_chart"
     },
     "tables/e10doc.debs.groups":{
         "fa5":"fa-cog",
-        "fa5pro":"fa-cog",
+        "fa6pro":"fa-cog",
         "bsi":"bi-gear-fill",
         "mdi":"settings"
     },
     "tables/e10doc.debs.spdAccounts":{
         "fa5":"fa-table",
-        "fa5pro":"fa-table",
+        "fa6pro":"fa-table",
         "bsi":"bi-table",
         "mdi":"table_view"
     }

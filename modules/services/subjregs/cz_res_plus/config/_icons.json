@@ -1,19 +1,19 @@
 {
     "tables/services.subjregs.cz_res_plus.res":{
         "fa5": "fa-building",
-		"fa5pro": "fa-building",
+		"fa6pro": "fa-building",
 		"bsi": "bi-building",
 		"mdi": "business"
     },
     "tables/services.subjregs.cz_res_plus.rzpSubj":{
         "fa5":"fa-industry",
-        "fa5pro":"fa-industry-alt",
+        "fa6pro":"fa-industry-alt",
         "bsi":"bi-building",
         "mdi":"business"
     },
     "tables/services.subjregs.cz_res_plus.rzpProvoz":{
         "fa5":"fa-store",
-		"fa5pro":"fa-store",
+		"fa6pro":"fa-store",
 		"bsi":"bi-shop",
 		"mdi":"store"
     }

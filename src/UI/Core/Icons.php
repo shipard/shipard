@@ -19,7 +19,7 @@ class Icons extends BaseObject
 	public function init()
 	{
 		$this->iconsId = $this->app()->cfgItem ('options.experimental.iconsTheme', 'fa5');
-		$this->iconsCfg = $this->app()->cfgItem ('ui.app.icons.types.'.$this->iconsId);
+		$this->iconsCfg = $this->app()->cfgItem ('ui.app.icons.types.'.$this->iconsId, []);
 	}
 
 	#[deprecated]
@@ -35,7 +35,7 @@ class Icons extends BaseObject
 	{
 		if (!$this->modulesIcons)
 		{
-			$this->modulesIcons = unserialize (file_get_contents(__APP_DIR__.'/config/icons-'.$this->iconsId.'.data'));			
+			$this->modulesIcons = unserialize (file_get_contents(__APP_DIR__.'/config/icons-'.$this->iconsId.'.data'));
 		}
 		$icon = isset($this->modulesIcons[$i]) ? $this->modulesIcons[$i] : ['t' => 0, 'v' => ''];
 		

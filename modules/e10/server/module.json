@@ -10,7 +10,7 @@
 	  {"id": "+tests", "file": "tests.json"},
 
 		{"id": "+e10settings.themes.desktop", "file": "oldDesktopThemes.json"},
-		{"id": "+e10settings.themes.icons", "file": "uiIconsShort.json"},
-		{"id": "+ui.app.icons.types", "file": "uiIcons.json"}
+		{"id": "+ui.app.icons.types", "file": "uiIcons.json"},
+		{"id": "+ui.app.icons.types", "file": "uiIcons-fa6pro.json"}
   ]
 }

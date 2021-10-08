@@ -1,43 +1,43 @@
 {
 	"tables/e10pro.property.property": {
 		"fa5": "fa-university",
-		"fa5pro": "fa-university",
+		"fa6pro": "fa-university",
 		"bsi": "bi-bank2",
 		"mdi": "account_balance"
 	},
 	"tables/e10pro.property.property-deps": {
 		"fa5": "fa-chevron-circle-down",
-		"fa5pro": "fa-chevron-circle-down",
+		"fa6pro": "fa-chevron-circle-down",
 		"bsi": "bi-arrow-down-circle-fill",
 		"mdi": "arrow_circle_down"
 	},
 	"tables/e10pro.property.depreciation": {
 		"fa5": "fa-chevron-circle-down",
-		"fa5pro": "fa-chevron-circle-down",
+		"fa6pro": "fa-chevron-circle-down",
 		"bsi": "bi-arrow-down-circle-fill",
 		"mdi": "arrow_circle_down"
 	},
 	"tables/e10pro.property.deps": {
 		"fa5": "fa-chevron-circle-down",
-		"fa5pro": "fa-chevron-circle-down",
+		"fa6pro": "fa-chevron-circle-down",
 		"bsi": "bi-arrow-down-circle-fill",
 		"mdi": "arrow_circle_down"
 	},
 	"tables/e10pro.property.groups": {
 		"fa5": "fa-object-group",
-		"fa5pro": "fa-object-group",
+		"fa6pro": "fa-object-group",
 		"bsi": "bi-collection-fill",
 		"mdi": "devices"
 	},
 	"tables/e10pro.property.operations": {
 		"fa5": "fa-random",
-		"fa5pro": "fa-random",
+		"fa6pro": "fa-random",
 		"bsi": "bi-shuffle",
 		"mdi": "shuffle"
 	},
 	"tables/e10pro.property.types": {
 		"fa5": "fa-list",
-		"fa5pro": "fa-list",
+		"fa6pro": "fa-list",
 		"bsi": "bi-list-ul",
 		"mdi": "list"
 	},
@@ -46,37 +46,37 @@
 
 	"report/propertyList": {
 		"fa5": "fa-file",
-		"fa5pro": "fa-file",
+		"fa6pro": "fa-file",
 		"bsi": "bi-file-earmark",
 		"mdi": "insert_drive_file"
 	},
 	"report/depreciations": {
 		"fa5": "fa-sort-amount-down",
-		"fa5pro": "fa-sort-amount-down",
+		"fa6pro": "fa-sort-amount-down",
 		"bsi": "bi-sort-down",
 		"mdi": "arrow_downward"
 	},
 	"report/nonDeps": {
 		"fa5": "fa-bars",
-		"fa5pro": "fa-bars",
+		"fa6pro": "fa-bars",
 		"bsi": "bi-list",
 		"mdi": "reorder"
 	},
 	"report/inventoryingReport": {
 		"fa5": "fa-clipboard-check",
-		"fa5pro": "fa-clipboard-check",
+		"fa6pro": "fa-clipboard-check",
 		"bsi": "bi-clipboard-check",
 		"mdi": "inventory"
 	},
 	"report/accounting": {
 		"fa5": "fa-stamp",
-		"fa5pro": "fa-stamp",
+		"fa6pro": "fa-stamp",
 		"bsi": "bi-file-earmark-diff-fill",
 		"mdi": "approval"
 	},
 	"settings/property":{
 		"fa5": "fa-university",
-		"fa5pro": "fa-university",
+		"fa6pro": "fa-university",
 		"bsi": "bi-bank2",
 		"mdi": "account_balance"
 	},
@@ -84,19 +84,19 @@
 
 	"formAccessories":{
 		"fa5": "fa-headphones-alt",
-		"fa5pro": "fa-phone-laptop",
+		"fa6pro": "fa-phone-laptop",
 		"bsi": "bi-headset",
 		"mdi": "devices"
 	},
 	"formProperty":{
 		"fa5": "fa-university",
-		"fa5pro": "fa-university",
+		"fa6pro": "fa-university",
 		"bsi": "bi-bank2",
 		"mdi": "account_balance"
 	},
 	"formDepreciations":{
 		"fa5": "fa-sort-amount-down",
-		"fa5pro": "fa-sort-amount-down",
+		"fa6pro": "fa-sort-amount-down",
 		"bsi": "bi-sort-down",
 		"mdi": "sort"
 	},
@@ -104,31 +104,31 @@
 
 	"detailTaxDepreciations":{
 		"fa5": "fa-sort-amount-down",
-		"fa5pro": "fa-sort-amount-down",
+		"fa6pro": "fa-sort-amount-down",
 		"bsi": "bi-sort-down",
 		"mdi": "arrow_downward"
 	},
 	"detailAccountingDepreciations":{
 		"fa5": "fa-sort-amount-down",
-		"fa5pro": "fa-sort-amount-down",
+		"fa6pro": "fa-sort-amount-down",
 		"bsi": "bi-sort-down",
 		"mdi": "arrow_downward"
 	},
 	"detailValueProgress":{
 		"fa5": "fa-bars",
-		"fa5pro": "fa-bars",
+		"fa6pro": "fa-bars",
 		"bsi": "bi-list",
 		"mdi": "reorder"
 	},
 	"detailDeferredTax":{
 		"fa5":"fa-shield-alt",
-        "fa5pro":"fa-shield-alt",
+        "fa6pro":"fa-shield-alt",
         "bsi":"bi-shield",
         "mdi":"shield"
 	},
 	"detailMovements":{
 		"fa5": "fa-random",
-		"fa5pro": "fa-random",
+		"fa6pro": "fa-random",
 		"bsi": "bi-shuffle",
 		"mdi": "shuffle"
 	}

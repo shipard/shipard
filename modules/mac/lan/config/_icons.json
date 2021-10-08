@@ -1,127 +1,127 @@
 {
     "tables/mac.lan.devices": {
 		"fa5": "fa-laptop",
-		"fa5pro": "fa-phone-laptop",
+		"fa6pro": "fa-phone-laptop",
 		"bsi": "bi-laptop",
 		"mdi": "computer"
 	},
 	"tables/mac.lan.swLicenses": {
 		"fa5": "fa-certificate",
-		"fa5pro": "fa-certificate",
+		"fa6pro": "fa-certificate",
 		"bsi": "bi-patch-check",
 		"mdi": "verified"
 	},
 	"tables/mac.lan.vlans": {
 		"fa5": "fa-road",
-		"fa5pro": "fa-road",
+		"fa6pro": "fa-road",
 		"bsi": "bi-diagram-2",
 		"mdi": "device_hub"
 	},
     "tables/mac.lan.lansAddrRanges": {
 		"fa5": "fa-arrows-alt-h",
-		"fa5pro": "fa-arrows-alt-h",
+		"fa6pro": "fa-arrows-alt-h",
 		"bsi": "bi-arrows-angle-expand",
 		"mdi": "open_in_full"
 	},
     "tables/mac.lan.wlans": {
 		"fa5": "fa-wifi",
-		"fa5pro": "fa-wifi",
+		"fa6pro": "fa-wifi",
 		"bsi": "bi-wifi",
 		"mdi": "wifi"
 	},
     "tables/mac.lan.wallSockets": {
 		"fa5": "fa-plug",
-		"fa5pro": "fa-outlet",
+		"fa6pro": "fa-outlet",
 		"bsi": "bi-outlet",
 		"mdi": "outlet"
 	},
     "tables/mac.lan.racks": {
 		"fa5": "fa-window-maximize",
-		"fa5pro": "fa-window-maximize",
+		"fa6pro": "fa-window-maximize",
 		"bsi": "bi-hdd-rack-fill",
 		"mdi": "web_asset"
 	},
     "tables/mac.lan.patchPanels": {
 		"fa5": "fa-ellipsis-h",
-		"fa5pro": "fa-ellipsis-h",
+		"fa6pro": "fa-ellipsis-h",
 		"bsi": "bi-three-dots",
 		"mdi": "more_horiz"
 	},
     "tables/mac.lan.lans": {
 		"fa5": "fa-sitemap",
-		"fa5pro": "fa-sitemap",
+		"fa6pro": "fa-sitemap",
 		"bsi": "bi-diagram-3",
 		"mdi": "device_hub"
 	},
     "tables/mac.lan.deviceTypes": {
 		"fa5": "fa-gamepad",
-		"fa5pro": "fa-gamepad-alt",
+		"fa6pro": "fa-gamepad-alt",
 		"bsi": "bi-controller",
 		"mdi": "sports_esports"
 	},
 	"tables/mac.lan.ipAddressLists": {
 		"fa5": "fa-list",
-		"fa5pro": "fa-list",
+		"fa6pro": "fa-list",
 		"bsi": "bi-list-task",
 		"mdi": "list"
 	},
     "tables/mac.lan.ipAddress": {
 		"fa5": "fa-crosshairs",
-		"fa5pro": "fa-crosshairs",
+		"fa6pro": "fa-crosshairs",
 		"bsi": "bi-geo-fill",
 		"mdi": "location_on"
 	},
     "tables/mac.lan.macs": {
 		"fa5": "fa-cube",
-		"fa5pro": "fa-cube",
+		"fa6pro": "fa-cube",
 		"bsi": "bi-collection",
 		"mdi": "reorder"
 	},
     "tables/mac.lan.macsOnPorts": {
 		"fa5": "fa-cubes",
-		"fa5pro": "fa-cubes",
+		"fa6pro": "fa-cubes",
 		"bsi": "bi-collection-fill",
 		"mdi": "list"
 	},
     "tables/mac.lan.watchdogs": {
 		"fa5": "fa-heartbeat",
-		"fa5pro": "fa-heartbeat",
+		"fa6pro": "fa-heartbeat",
 		"bsi": "bi-eye",
 		"mdi": "visibility"
 	},
     "tables/mac.lan.alerts": {
 		"fa5": "fa-exclamation-triangle",
-		"fa5pro": "fa-exclamation-triangle",
+		"fa6pro": "fa-exclamation-triangle",
 		"bsi": "bi-exclamation-triangle-fill",
 		"mdi": "warning"
 	},
     "tables/mac.lan.swApplications": {
 		"fa5": "fa-hourglass",
-		"fa5pro": "fa-hourglass",
+		"fa6pro": "fa-hourglass",
 		"bsi": "bi-hourglass",
 		"mdi": "hourglass_full"
 	},
     "tables/mac.lan.devicesPorts": {
 		"fa5": "fa-plug",
-		"fa5pro": "fa-plug",
+		"fa6pro": "fa-plug",
 		"bsi": "bi-plug",
 		"mdi": "power"
 	},
     "tables/mac.lan.alertsDevices": {
 		"fa5": "fa-exclamation-triangle",
-		"fa5pro": "fa-exclamation-triangle",
+		"fa6pro": "fa-exclamation-triangle",
 		"bsi": "bi-exclamation-triangle-fill",
 		"mdi": "warning"
 	},
     "tables/mac.lan.swInstallPackages": {
 		"fa5": "fa-file-archive",
-		"fa5pro": "fa-file-archive",
+		"fa6pro": "fa-file-archive",
 		"bsi": "bi-file-earmark-zip",
 		"mdi": "file_download"
 	},
     "tables/mac.lan.unknowns": {
 		"fa5": "fa-frown",
-		"fa5pro": "fa-frown",
+		"fa6pro": "fa-frown",
 		"bsi": "bi-emoji-frown",
 		"mdi": "sentiment_dissatisfied"
 	},
@@ -131,13 +131,13 @@
 
 	"e10.widgetDashboard/lanDashboard": {
 		"fa5": "fa-sitemap",
-		"fa5pro": "fa-sitemap",
+		"fa6pro": "fa-sitemap",
 		"bsi": "bi-diagram-3",
 		"mdi": "device_hub"
 	},
     "e10.widgetDashboard/building": {
 		"fa5": "fa-building",
-		"fa5pro": "fa-building",
+		"fa6pro": "fa-building",
 		"bsi": "bi-building",
 		"mdi": "business"
 	},
@@ -146,25 +146,25 @@
 
     "submenu/settingsLAN": {
 		"fa5": "fa-sitemap",
-		"fa5pro": "fa-sitemap",
+		"fa6pro": "fa-sitemap",
 		"bsi": "bi-diagram-3",
 		"mdi": "device_hub"
 	},
     "submenu/settingsIoT": {
 		"fa5": "fa-power-off",
-		"fa5pro": "fa-power-off",
+		"fa6pro": "fa-power-off",
 		"bsi": "bi-power",
 		"mdi": "power_settings_new"
 	},
     "submenu/settingsBuilding": {
 		"fa5": "fa-building",
-		"fa5pro": "fa-building",
+		"fa6pro": "fa-building",
 		"bsi": "bi-building",
 		"mdi": "business"
 	},
     "submenu/settingsSW": {
 		"fa5": "fa-hourglass-half",
-		"fa5pro": "fa-hourglass-half",
+		"fa6pro": "fa-hourglass-half",
 		"bsi": "bi-hourglass-split",
 		"mdi": "hourglass_empty"
 	},
@@ -174,20 +174,20 @@
 
     "report/SWLicenses": {
 		"fa5": "fa-certificate",
-		"fa5pro": "fa-certificate",
+		"fa6pro": "fa-certificate",
 		"bsi": "bi-patch-check",
 		"mdi": "verified"
 	},
     "report/shipardAgent": {
 		"fa5": "fa-user-secret",
-		"fa5pro": "fa-user-secret",
+		"fa6pro": "fa-user-secret",
 		"bsi": "bi-person-square",
 		"mdi": "support_agent"
 	},
     
     "submenu/management": {
 		"fa5": "fa-square",
-		"fa5pro": "fa-square",
+		"fa6pro": "fa-square",
 		"bsi": "bi-app",
 		"mdi": "check_box_outline_blank"
 	},
@@ -196,121 +196,121 @@
 
     "deviceTypes/workStation": {
 		"fa5": "fa-desktop",
-		"fa5pro": "fa-desktop",
+		"fa6pro": "fa-desktop",
 		"bsi": "bi-display",
 		"mdi": "desktop_mac"
 	},
     "deviceTypes/notebook": {
 		"fa5": "fa-laptop",
-		"fa5pro": "fa-laptop",
+		"fa6pro": "fa-laptop",
 		"bsi": "bi-laptop",
 		"mdi": "laptop"
 	},
     "deviceTypes/printer": {
 		"fa5": "fa-print",
-		"fa5pro": "fa-print",
+		"fa6pro": "fa-print",
 		"bsi": "bi-printer",
 		"mdi": "print"
 	},
     "deviceTypes/tablet": {
 		"fa5": "fa-tablet-alt",
-		"fa5pro": "fa-tablet-alt",
+		"fa6pro": "fa-tablet-alt",
 		"bsi": "bi-tablet",
 		"mdi": "tablet_mac"
 	},
     "deviceTypes/tabletRotate": {
 		"fa5": "fa-tablet-alt",
-		"fa5pro": "fa-rectangle-landscape",
+		"fa6pro": "fa-rectangle-landscape",
 		"bsi": "bi-tablet-landscape",
 		"mdi": "tablet"
 	},
     "deviceTypes/phone": {
 		"fa5": "fa-mobile-alt",
-		"fa5pro": "fa-mobile-alt",
+		"fa6pro": "fa-mobile-alt",
 		"bsi": "bi-phone",
 		"mdi": "phone_iphone"
 	},
     "deviceTypes/tv": {
 		"fa5": "fa-tv",
-		"fa5pro": "fa-tv-alt",
+		"fa6pro": "fa-tv-alt",
 		"bsi": "bi-tv",
 		"mdi": "tv"
 	},
     "deviceTypes/server": {
 		"fa5": "fa-server",
-		"fa5pro": "fa-server",
+		"fa6pro": "fa-server",
 		"bsi": "bi-hdd-stack-fill",
 		"mdi": "dns"
 	},
     "deviceTypes/router": {
 		"fa5": "fa-retweet",
-		"fa5pro": "fa-router",
+		"fa6pro": "fa-router",
 		"bsi": "bi-arrow-repeat",
 		"mdi": "router"
 	},
     "deviceTypes/switch": {
 		"fa5": "fa-sitemap",
-		"fa5pro": "fa-sitemap",
+		"fa6pro": "fa-sitemap",
 		"bsi": "bi-diagram-3",
 		"mdi": "device_hub"
 	},
     "deviceTypes/wifiAccessPoints": {
 		"fa5": "fa-signal",
-		"fa5pro": "fa-signal-stream",
+		"fa6pro": "fa-signal-stream",
 		"bsi": "bi-wifi-2",
 		"mdi": "sensors"
 	},
     "deviceTypes/camera": {
 		"fa5": "fa-video",
-		"fa5pro": "fa-cctv",
+		"fa6pro": "fa-cctv",
 		"bsi": "bi-camera-video",
 		"mdi": "videocam"
 	},
     "deviceTypes/nas": {
 		"fa5": "fa-hdd",
-		"fa5pro": "fa-hdd",
+		"fa6pro": "fa-hdd",
 		"bsi": "bi-hdd",
 		"mdi": "save"
 	},
     "deviceTypes/shipardNodeServer": {
 		"fa5": "fa-expand-arrows-alt",
-		"fa5pro": "fa-expand-arrows-alt",
+		"fa6pro": "fa-expand-arrows-alt",
 		"bsi": "bi-arrows-fullscreen",
 		"mdi": "zoom_out_map"
 	},
     "deviceTypes/shipardIoTBoxes": {
 		"fa5": "fa-plug",
-		"fa5pro": "fa-plug",
+		"fa6pro": "fa-plug",
 		"bsi": "bi-plug",
 		"mdi": "power"
 	},
     "deviceTypes/opticConverter": {
 		"fa5": "fa-eraser",
-		"fa5pro": "fa-eraser",
+		"fa6pro": "fa-eraser",
 		"bsi": "bi-eraser-fill",
 		"mdi": "crop_7_5"
 	},
     "deviceTypes/ups": {
 		"fa5": "fa-battery-three-quarters",
-		"fa5pro": "fa-battery-three-quarters",
+		"fa6pro": "fa-battery-three-quarters",
 		"bsi": "bi-battery-half",
 		"mdi": "battery_full"
 	},
     "deviceTypes/terminal": {
 		"fa5": "fa-calculator",
-		"fa5pro": "fa-calculator",
+		"fa6pro": "fa-calculator",
 		"bsi": "bi-calculator",
 		"mdi": "calculate"
 	},
     "deviceTypes/other": {
 		"fa5": "fa-dot-circle",
-		"fa5pro": "fa-dot-circle",
+		"fa6pro": "fa-dot-circle",
 		"bsi": "bi-record-circle-fill",
 		"mdi": "radio_button_checked"
 	},
     "deviceTypesIotBoard": {
 		"fa5": "fa-power-off",
-		"fa5pro": "fa-power-off",
+		"fa6pro": "fa-power-off",
 		"bsi": "bi-power",
 		"mdi": "power_settings_new"
 	},
@@ -318,7 +318,7 @@
 
 	"lanDeviceActiveDevices":{
 		"fa5": "fa-sitemap",
-		"fa5pro": "fa-sitemap",
+		"fa6pro": "fa-sitemap",
 		"bsi": "bi-diagram-3",
 		"mdi": "device_hub"
 	},
@@ -326,19 +326,19 @@
 
 	"detailSW":{
 		"fa5": "fa-hourglass-half",
-		"fa5pro": "fa-hourglass-half",
+		"fa6pro": "fa-hourglass-half",
 		"bsi": "bi-hourglass-split",
 		"mdi": "hourglass_empty"
 	},
 	"detailAddresses":{
 		"fa5": "fa-crosshairs",
-		"fa5pro": "fa-crosshairs",
+		"fa6pro": "fa-crosshairs",
 		"bsi": "bi-geo-fill",
 		"mdi": "location_on"
 	},
 	"detailAll":{
 		"fa5":"fa-table",
-        "fa5pro":"fa-table",
+        "fa6pro":"fa-table",
         "bsi":"bi-table",
         "mdi":"table_chart"
 	},
@@ -347,31 +347,31 @@
 
 	"formAddresses":{
 		"fa5": "fa-crosshairs",
-		"fa5pro": "fa-crosshairs",
+		"fa6pro": "fa-crosshairs",
 		"bsi": "bi-geo-fill",
 		"mdi": "location_on"
 	},
 	"formPorts":{
 		"fa5": "fa-plug",
-		"fa5pro": "fa-outlet",
+		"fa6pro": "fa-outlet",
 		"bsi": "bi-outlet",
 		"mdi": "outlet"
 	},
 	"formSensors":{
 		"fa5": "fa-eye-dropper",
-		"fa5pro": "fa-eye-dropper",
+		"fa6pro": "fa-eye-dropper",
 		"bsi": "bi-eyedropper",
 		"mdi": "colorize"
 	},
 	"formWiki":{
 		"fa5": "fa-book",
-		"fa5pro": "fa-book",
+		"fa6pro": "fa-book",
 		"bsi": "bi-book",
 		"mdi": "auto_stories"
 	},
 	"formRackSticker":{
 		"fa5":"fa-tag",
-        "fa5pro":"fa-tag",
+        "fa6pro":"fa-tag",
         "bsi":"bi-tag-fill",
         "mdi":"local_offer"
 	},
@@ -379,19 +379,19 @@
 
     "homeIT":{
         "fa5": "fa-sitemap",
-		"fa5pro": "fa-sitemap",
+		"fa6pro": "fa-sitemap",
 		"bsi": "bi-diagram-3",
 		"mdi": "device_hub"
     },
 	"homeNetworkProblems":{
         "fa5": "fa-exclamation-triangle",
-		"fa5pro": "fa-exclamation-triangle",
+		"fa6pro": "fa-exclamation-triangle",
 		"bsi": "bi-exclamation-triangle-fill",
 		"mdi": "warning"
     },
 	"homeReportIT":{
 		"fa5": "fa-sitemap",
-		"fa5pro": "fa-sitemap",
+		"fa6pro": "fa-sitemap",
 		"bsi": "bi-diagram-3",
 		"mdi": "device_hub"
 	},
@@ -399,19 +399,19 @@
 
 	"alertTypeLostCommunication":{
 		"fa5": "fa-exclamation-triangle",
-		"fa5pro": "fa-exclamation-triangle",
+		"fa6pro": "fa-exclamation-triangle",
 		"bsi": "bi-exclamation-triangle",
 		"mdi": "warning_amber"
 	},
 	"alertTypeOSUpdate":{
 		"fa5": "fa-exclamation-triangle",
-		"fa5pro": "fa-exclamation-triangle",
+		"fa6pro": "fa-exclamation-triangle",
 		"bsi": "bi-exclamation-triangle",
 		"mdi": "warning_amber"
 	},
 	"alertTypeOutdatedSoftware":{
 		"fa5": "fa-info-circle",
-		"fa5pro": "fa-info-circle",
+		"fa6pro": "fa-info-circle",
 		"bsi": "bi-info-circle",
 		"mdi": "info"
 	},
@@ -420,55 +420,55 @@
 
 	"iconSquare":{
 		"fa5":"fa-square",
-        "fa5pro":"fa-square",
+        "fa6pro":"fa-square",
         "bsi":"bi-square-fill",
         "mdi":"check_box_outline_blank"
 	},
 	"iconClone":{
 		"fa5":"fa-clone",
-        "fa5pro":"fa-clone",
+        "fa6pro":"fa-clone",
         "bsi":"bi-files",
         "mdi":"content_copy"
 	},
 	"iconRefresh":{
 		"fa5":"fa-redo-alt",
-        "fa5pro":"fa-redo-alt",
+        "fa6pro":"fa-redo-alt",
         "bsi":"bi-arrow-repeat",
         "mdi":"refresh"
 	},
 	"iconMagic":{
 		"fa5":"fa-magic",
-        "fa5pro":"fa-magic",
+        "fa6pro":"fa-magic",
         "bsi":"bi-sliders",
         "mdi":"auto_fix_high"
 	},
 	"iconArrows":{
 		"fa5":"fa-arrows-alt",
-        "fa5pro":"fa-arrows-alt",
+        "fa6pro":"fa-arrows-alt",
         "bsi":"bi-arrows-move",
         "mdi":"zoom_out_map"
 	},
 	"iconArrowAltRightCircle":{
 		"fa5":"fa-arrow-alt-circle-right",
-        "fa5pro":"fa-arrow-alt-circle-right",
+        "fa6pro":"fa-arrow-alt-circle-right",
         "bsi":"bi-arrow-right-circle",
         "mdi":"forward"
 	},
 	"iconLeftSocket":{
 		"fa5":"fa-chevron-circle-left",
-        "fa5pro":"fa-chevron-square-left",
+        "fa6pro":"fa-chevron-square-left",
         "bsi":"bi-chevron-left",
         "mdi":"arrow_back_ios_new"
 	},
 	"iconRightSocket":{
 		"fa5":"fa-chevron-circle-right",
-        "fa5pro":"fa-chevron-square-right",
+        "fa6pro":"fa-chevron-square-right",
         "bsi":"bi-chevron-right",
         "mdi":"arrow_forward_ios"
 	},
 	"iconUserVlan":{
 		"fa5":"fa-folder-open",
-        "fa5pro":"fa-folder-open",
+        "fa6pro":"fa-folder-open",
         "bsi":"bi-folder2-open",
         "mdi":"folder_open"
 	},
@@ -478,19 +478,19 @@
 
 	"deviceInfoTypeStorage":{
 		"fa5":"fa-folder-open",
-        "fa5pro":"fa-folder-open",
+        "fa6pro":"fa-folder-open",
         "bsi":"bi-folder2-open",
         "mdi":"folder_open"
 	},
 	"deviceInfoTypeSystemInfo":{
 		"fa5":"fa-microchip",
-        "fa5pro":"fa-microchip",
+        "fa6pro":"fa-microchip",
         "bsi":"bi-cpu-fill",
         "mdi":"memory"
 	},
 	"deviceInfoTypeDiscs":{
 		"fa5": "fa-hdd",
-		"fa5pro": "fa-hdd",
+		"fa6pro": "fa-hdd",
 		"bsi": "bi-hdd",
 		"mdi": "save"
 	},
@@ -498,7 +498,7 @@
 
 	"docStateInStock":{
 		"fa5": "fa-sign-out-alt",
-		"fa5pro": "fa-sign-out-alt",
+		"fa6pro": "fa-sign-out-alt",
 		"bsi": "bi-box-arrow-right",
 		"mdi": "logout"
 	},
@@ -507,7 +507,7 @@
 
 	"devicePropertiesWindows":{
 		"fa5":"fa-desktop",
-        "fa5pro":"fa-desktop",
+        "fa6pro":"fa-desktop",
         "bsi":"bi-display",
         "mdi":"desktop_windows"
 	},
@@ -515,25 +515,25 @@
 
 	"vlansIncoming":{
 		"fa5":"fa-check-square",
-        "fa5pro":"fa-check-square",
+        "fa6pro":"fa-check-square",
         "bsi":"bi-check-square",
         "mdi":"check_box"
 	},
 	"disabledAp":{
 		"fa5":"fa-times",
-        "fa5pro":"fa-times",
+        "fa6pro":"fa-times",
         "bsi":"bi-x-lg",
         "mdi":"close"
 	},
 	"enabledAp":{
 		"fa5":"fa-check",
-        "fa5pro":"fa-check",
+        "fa6pro":"fa-check",
         "bsi":"bi-check",
         "mdi":"check"
 	},
 	"wifiMngVlans":{
 		"fa5":"fa-square",
-        "fa5pro":"fa-square",
+        "fa6pro":"fa-square",
         "bsi":"bi-square-fill",
         "mdi":"check_box_outline_blank"
 	},
@@ -541,49 +541,49 @@
 
 	"portKindEthNetwork":{
 		"fa5": "fa-plug",
-		"fa5pro": "fa-outlet",
+		"fa6pro": "fa-outlet",
 		"bsi": "bi-outlet",
 		"mdi": "outlet"
 	},
 	"portKindWifiNetwork":{
 		"fa5": "fa-wifi",
-		"fa5pro": "fa-wifi",
+		"fa6pro": "fa-wifi",
 		"bsi": "bi-wifi",
 		"mdi": "wifi"
 	},
 	"portKindOpticalNetwork":{
 		"fa5": "fa-wifi",
-		"fa5pro": "fa-wifi",
+		"fa6pro": "fa-wifi",
 		"bsi": "bi-wifi",
 		"mdi": "wifi"
 	},
 	"portKindETHPort":{
 		"fa5": "fa-plug",
-		"fa5pro": "fa-outlet",
+		"fa6pro": "fa-outlet",
 		"bsi": "bi-outlet",
 		"mdi": "outlet"
 	},
 	"portKindSFPPort":{
 		"fa5": "fa-sun",
-		"fa5pro": "fa-sun",
+		"fa6pro": "fa-sun",
 		"bsi": "bi-sun",
 		"mdi": "wb_sunny"
 	},
 	"portKindVLAN":{
 		"fa5": "fa-square",
-		"fa5pro": "fa-square",
+		"fa6pro": "fa-square",
 		"bsi": "bi-app",
 		"mdi": "check_box_outline_blank"
 	},
 	"portKindBridge":{
 		"fa5": "fa-object-group",
-		"fa5pro": "fa-object-group",
+		"fa6pro": "fa-object-group",
 		"bsi": "bi-collection-fill",
 		"mdi": "devices"
 	},
 	"portKindOther":{
 		"fa5": "fa-question-circle",
-		"fa5pro": "fa-question-circle",
+		"fa6pro": "fa-question-circle",
 		"bsi": "bi-question-circle-fill",
 		"mdi": "help_outline"
 	},
@@ -593,49 +593,49 @@
 
 	"portRolesDontSet":{
 		"fa5":"fa-times",
-        "fa5pro":"fa-times",
+        "fa6pro":"fa-times",
         "bsi":"bi-x-lg",
         "mdi":"close"
 	},
 	"portRolesAccessPort":{
 		"fa5": "fa-square",
-		"fa5pro": "fa-square",
+		"fa6pro": "fa-square",
 		"bsi": "bi-app",
 		"mdi": "check_box_outline_blank"
 	},
 	"portRolesHybridPort":{
 		"fa5":"fa-caret-square-right",
-        "fa5pro":"fa-caret-square-right",
+        "fa6pro":"fa-caret-square-right",
         "bsi":"bi-caret-right-square-fill",
         "mdi":"arrow_right"
 	},
 	"portRolesTrunkUplink":{
 		"fa5":"fa-caret-square-up",
-        "fa5pro":"fa-caret-square-up",
+        "fa6pro":"fa-caret-square-up",
         "bsi":"bi-caret-up-square-fill",
         "mdi":"arrow_drop_up"
 	},
 	"portRolesTrunkDownlink":{
 		"fa5":"fa-caret-square-down",
-        "fa5pro":"fa-caret-square-down",
+        "fa6pro":"fa-caret-square-down",
         "bsi":"bi-caret-down-square-fill",
         "mdi":"arrow_drop_down"
 	},
 	"portRolesVLANGroup":{
 		"fa5":"fa-clone",
-        "fa5pro":"fa-clone",
+        "fa6pro":"fa-clone",
         "bsi":"bi-files",
         "mdi":"content_copy"
 	},
 	"portRolesLocalPort":{
 		"fa5": "fa-square",
-		"fa5pro": "fa-square",
+		"fa6pro": "fa-square",
 		"bsi": "bi-app",
 		"mdi": "check_box_outline_blank"
 	},
 	"portRolesWANInternet":{
 		"fa5":"fa-globe-americas",
-        "fa5pro":"fa-globe-americas",
+        "fa6pro":"fa-globe-americas",
         "bsi":"bi-globe",
         "mdi":"public"
 	}

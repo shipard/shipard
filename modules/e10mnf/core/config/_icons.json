@@ -1,19 +1,19 @@
 {
     "tables/e10mnf.core.workOrders":{
         "fa5":"fa-industry",
-        "fa5pro":"fa-industry-alt",
+        "fa6pro":"fa-industry-alt",
         "bsi":"bi-building",
         "mdi":"business"
     },
     "tables/e10mnf.core.workRecs":{
         "fa5": "fa-paw",
-		"fa5pro": "fa-paw",
+		"fa6pro": "fa-paw",
 		"bsi": "bi-hourglass",
 		"mdi": "pets"
     },
     "tables/e10mnf.core.workRecsRows":{
         "fa5": "fa-list",
-		"fa5pro": "fa-list",
+		"fa6pro": "fa-list",
 		"bsi": "bi-list-ul",
 		"mdi": "list"
     },
@@ -22,7 +22,7 @@
 
     "detailWorkOrders":{
         "fa5":"fa-industry",
-        "fa5pro":"fa-industry-alt",
+        "fa6pro":"fa-industry-alt",
         "bsi":"bi-building",
         "mdi":"business"
     },
@@ -30,7 +30,7 @@
 
     "formDescription":{
         "fa5": "fa-pencil-alt",
-		"fa5pro": "fa-pencil-alt",
+		"fa6pro": "fa-pencil-alt",
 		"bsi": "bi-pencil",
 		"mdi": "edit"
     }

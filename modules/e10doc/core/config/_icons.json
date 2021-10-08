@@ -1,7 +1,7 @@
 {
     "tables/e10doc.core.heads":{
         "fa5": "fa-file",
-		"fa5pro": "fa-file",
+		"fa6pro": "fa-file",
 		"bsi": "bi-file-earmark",
 		"mdi": "insert_drive_file"
     },
@@ -9,163 +9,163 @@
     
     "docType/invoicesIn":{
         "fa5":"fa-file-download",
-        "fa5pro":"fa-file-download",
+        "fa6pro":"fa-file-download",
         "bsi":"bi-file-earmark-arrow-down-fill",
         "mdi":"file_download"
     },
     "docType/invoicesOut":{
         "fa5":"fa-file-upload",
-        "fa5pro":"fa-file-upload",
+        "fa6pro":"fa-file-upload",
         "bsi":"bi-file-earmark-arrow-up-fill",
         "mdi":"upload_file"
     },
     "docType/cashReg":{
         "fa5":"fa-wallet",
-        "fa5pro":"fa-wallet",
+        "fa6pro":"fa-wallet",
         "bsi":"bi-wallet",
         "mdi":"account_balance_wallet"
     },
     "docType/proFormaIn":{
         "fa5":"fa-arrow-circle-down",
-        "fa5pro":"fa-arrow-circle-down",
+        "fa6pro":"fa-arrow-circle-down",
         "bsi":"bi-arrow-up-circle-down",
         "mdi":"arrow_circle_down"
     },
     "docType/proFormaOut":{
         "fa5":"fa-arrow-circle-up",
-        "fa5pro":"fa-arrow-circle-up",
+        "fa6pro":"fa-arrow-circle-up",
         "bsi":"bi-arrow-up-circle",
         "mdi":"arrow_circle_up"
     },
     "docType/contractSale":{
         "fa5":"fa-thumbs-up",
-        "fa5pro":"fa-thumbs-up",
+        "fa6pro":"fa-thumbs-up",
         "bsi":"bi-hand-thumbs-up-fill",
         "mdi":"thumb_up"
     },
     "docType/workOrders":{
         "fa5":"fa-industry",
-        "fa5pro":"fa-industry-alt",
+        "fa6pro":"fa-industry-alt",
         "bsi":"bi-building",
         "mdi":"business"
     },
     "docType/ordersIn":{
         "fa5":"fa-cart-arrow-down",
-        "fa5pro":"fa-cart-arrow-down",
+        "fa6pro":"fa-cart-arrow-down",
         "bsi":"bi-cart-plus",
         "mdi":"add_shopping_cart"
     },
     "docType/ordersOut":{
         "fa5":"fa-shopping-basket",
-        "fa5pro":"fa-shopping-basket",
+        "fa6pro":"fa-shopping-basket",
         "bsi":"bi-basket",
         "mdi":"shopping_basket"
     },
     "docType/deliveryNote":{
         "fa5":"fa-file-signature",
-        "fa5pro":"fa-file-signature",
+        "fa6pro":"fa-file-signature",
         "bsi":"bi-truck",
         "mdi":"local-shipping"
     },
     "docType/bank":{
         "fa5":"fa-university",
-        "fa5pro":"fa-university",
+        "fa6pro":"fa-university",
         "bsi":"bi-bank",
         "mdi":"account_balance"
     },
     "docType/cash":{
         "fa5":"fa-piggy-bank",
-        "fa5pro":"fa-piggy-bank",
+        "fa6pro":"fa-piggy-bank",
         "bsi":"bi-piggy-bank",
         "mdi":"savings"
     },
     "docType/accDocs":{
         "fa5":"fa-file-invoice-dollar",
-        "fa5pro":"fa-file-invoice-dollar",
+        "fa6pro":"fa-file-invoice-dollar",
         "bsi":"bi-file-bar-graph",
         "mdi":"request_quote"
     },
     "docType/bankOrders":{
         "fa5":"fa-share-square",
-        "fa5pro":"fa-share-square",
+        "fa6pro":"fa-share-square",
         "bsi":"bi-arrow-90deg-right",
         "mdi":"ios_share"
     },
     "docType/openClosePeriods":{
         "fa5":"fa-archive",
-        "fa5pro":"fa-archive",
+        "fa6pro":"fa-archive",
         "bsi":"bi-archive",
         "mdi":"inventory_2"
     },
     "docType/taxes":{
         "fa5":"fa-shield-alt",
-        "fa5pro":"fa-shield",
+        "fa6pro":"fa-shield",
         "bsi":"bi-shield",
         "mdi":"shield"
     },
     "docType/stockIn":{
         "fa5":"fa-arrow-down",
-        "fa5pro":"fa-arrow-to-bottom",
+        "fa6pro":"fa-arrow-to-bottom",
         "bsi":"bi-download",
         "mdi":"file_download"
     },
     "docType/stockOut":{
         "fa5":"fa-arrow-up",
-        "fa5pro":"fa-arrow-to-top",
+        "fa6pro":"fa-arrow-to-top",
         "bsi":"bi-upload",
         "mdi":"file_upload"
     },
     "docType/stockinst":{
         "fa5":"fa-chart-area",
-        "fa5pro":"fa-chart-area",
+        "fa6pro":"fa-chart-area",
         "bsi":"bi-clipboard-data",
         "mdi":"assessment"
     },
     "docType/inventory":{
         "fa5":"fa-clipboard-check",
-        "fa5pro":"fa-clipboard-check",
+        "fa6pro":"fa-clipboard-check",
         "bsi":"bi-clipboard-check",
         "mdi":"inventory"
     },
     "docTypeDemand":{
         "fa5": "fa-question-circle",
-		"fa5pro": "fa-question-circle",
+		"fa6pro": "fa-question-circle",
 		"bsi": "bi-question-circle-fill",
 		"mdi": "help_outline"
     },
     "docTypeCredit":{
         "fa5": "fa-arrows-alt-v",
-		"fa5pro": "fa-arrows-alt-v",
+		"fa6pro": "fa-arrows-alt-v",
 		"bsi": "bi-arrow-down-up",
 		"mdi": "swap_vert"
     },
     "docTypeContract":{
         "fa5": "fa-handshake",
-		"fa5pro": "fa-handshake",
+		"fa6pro": "fa-handshake",
 		"bsi": "bi-hand-thumbs-up",
 		"mdi": "thumb_up"
     },
     "docTypeReminder":{
         "fa5": "fa-exclamation",
-		"fa5pro": "fa-exclamation",
+		"fa6pro": "fa-exclamation",
 		"bsi": "bi-exclamation",
 		"mdi": "priority_high"
     },
     "docTypeVATReturn":{
         "fa5":"fa-file-alt",
-		"fa5pro":"fa-file-alt",
+		"fa6pro":"fa-file-alt",
 		"bsi":"bi-file-earmark-text",
 		"mdi":"description"
     },
     "docTypePurchaseTicket":{
         "fa5":"fa-file-alt",
-		"fa5pro":"fa-file-alt",
+		"fa6pro":"fa-file-alt",
 		"bsi":"bi-file-earmark-text",
 		"mdi":"description"
     },
     "docTypeRedemptions":{
         "fa5":"fa-balance-scale",
-        "fa5pro":"fa-balance-scale",
+        "fa6pro":"fa-balance-scale",
         "bsi":"bi-truck-flatbed",
         "mdi":"local_shipping"
     },
@@ -173,79 +173,79 @@
 
     "balance/receivables":{
         "fa5":"fa-arrow-circle-up",
-        "fa5pro":"fa-arrow-circle-up",
+        "fa6pro":"fa-arrow-circle-up",
         "bsi":"bi-arrow-up-circle-fill",
         "mdi":"arrow_circle_up"
     },
     "balance/obligations":{
         "fa5":"fa-arrow-circle-down",
-        "fa5pro":"fa-arrow-circle-down",
+        "fa6pro":"fa-arrow-circle-down",
         "bsi":"bi-arrow-down-circle-fill",
         "mdi":"arrow_circle_down"
     },
     "balance/depositReceived":{
         "fa5":"fa-arrow-down",
-        "fa5pro":"fa-arrow-down",
+        "fa6pro":"fa-arrow-down",
         "bsi":"bi-arrow-down",
         "mdi":"arrow_downward"
     },
     "balanceDepositProvided":{
         "fa5":"fa-arrow-up",
-        "fa5pro":"fa-arrow-up",
+        "fa6pro":"fa-arrow-up",
         "bsi":"bi-arrow-up",
         "mdi":"arrow_upward"
     },
     "balance/balanceAdvance":{
         "fa5":"fa-arrow-up",
-        "fa5pro":"fa-arrow-up",
+        "fa6pro":"fa-arrow-up",
         "bsi":"bi-arrow-up",
         "mdi":"arrow_upward"
     },
     "balance/cashInTransit":{
         "fa5":"fa-money-bill-wave",
-        "fa5pro":"fa-envelope-open-dollar",
+        "fa6pro":"fa-envelope-open-dollar",
         "bsi":"bi-cash-stack",
         "mdi":"payments"
     },
     "balance/requestsForPayment":{
         "fa5":"fa-exclamation-circle",
-        "fa5pro":"fa-exclamation-circle",
+        "fa6pro":"fa-exclamation-circle",
         "bsi":"bi-exclamation-circle-fill",
         "mdi":"error"
     },
     "balance/balanceOffsetting":{
         "fa5":"fa-exchange-alt",
-        "fa5pro":"fa-exchange-alt",
+        "fa6pro":"fa-exchange-alt",
         "bsi":"bi-arrow-left-right",
         "mdi":"sync_alt"
     },
     "balance/balanceJournal":{
         "fa5":"fa-list-alt",
-        "fa5pro":"fa-list-alt",
+        "fa6pro":"fa-list-alt",
         "bsi":"bi-card-list",
         "mdi":"list_alt"
     },
     "balance/StockInInvoice":{
         "fa5":"fa-arrow-down",
-        "fa5pro":"fa-arrow-to-bottom",
+        "fa6pro":"fa-arrow-to-bottom",
         "bsi":"bi-download",
         "mdi":"file_download"
     },
     "balance/SalesInvoice":{
         "fa5":"fa-align-justify",
-        "fa5pro":"fa-align-justify",
+        "fa6pro":"fa-align-justify",
         "bsi":"bi-justify",
         "mdi":"format_align_justify"
     },
     "balance/Transactions":{
         "fa5":"fa-money-bill-alt",
-        "fa5pro":"fa-money-bill-alt",
+        "fa6pro":"fa-money-bill-alt",
         "bsi":"bi-cash",
         "mdi":"payments"
     },
     "balanceAlerts":{
         "fa5":"fa-exclamation-circle",
-        "fa5pro":"fa-exclamation-circle",
+        "fa6pro":"fa-exclamation-circle",
         "bsi":"bi-exclamation-circle-fill",
         "mdi":"error"
     },
@@ -254,7 +254,7 @@
 
     "e10docs/documents":{
         "fa5":"fa-folder-open",
-        "fa5pro":"fa-folder-open",
+        "fa6pro":"fa-folder-open",
         "bsi":"bi-folder2-open",
         "mdi":"folder_open"
     },
@@ -263,25 +263,25 @@
 
     "cmnbkpOpenPeriodBalances":{
         "fa5":"fa-star",
-		"fa5pro":"fa-star",
+		"fa6pro":"fa-star",
 		"bsi":"bi-star",
 		"mdi":"grade"
     },
     "cmnbkpOpenPeriodAssetsLiabilities":{
         "fa5":"fa-expand",
-		"fa5pro":"fa-expand",
+		"fa6pro":"fa-expand",
 		"bsi":"bi-fullscreen",
 		"mdi":"fullscreen"
     },
     "cmnbkpClosePeriod":{
         "fa5":"fa-stop-circle",
-		"fa5pro":"fa-stop-circle",
+		"fa6pro":"fa-stop-circle",
 		"bsi":"bi-stop-circle-fill",
 		"mdi":"stop_circle"
     },
     "cmnbkpRegenerateOpenedPeriod":{
         "fa5":"fa-redo-alt",
-		"fa5pro":"fa-redo-alt",
+		"fa6pro":"fa-redo-alt",
 		"bsi":"bi-upload",
 		"mdi":"refresh"
     },
@@ -290,19 +290,19 @@
 
     "report/listInvoicesOut":{
         "fa5":"fa-long-arrow-alt-up",
-        "fa5pro":"fa-arrow-alt-square-up",
+        "fa6pro":"fa-arrow-alt-square-up",
         "bsi":"bi-arrow-up-square-fill",
         "mdi":"arrow_circle_up"
     },
     "report/listInvoicesIn":{
         "fa5":"fa-long-arrow-alt-down",
-        "fa5pro":"fa-arrow-alt-square-down",
+        "fa6pro":"fa-arrow-alt-square-down",
         "bsi":"bi-arrow-down-square-fill",
         "mdi":"arrow_circle_down"
     },
     "report/docsSummary":{
         "fa5":"fa-table",
-        "fa5pro":"fa-table",
+        "fa6pro":"fa-table",
         "bsi":"bi-table",
         "mdi":"table_chart"
     },
@@ -311,37 +311,37 @@
 
     "settigns/sale":{
         "fa5":"fa-arrow-alt-circle-up",
-        "fa5pro":"fa-arrow-alt-circle-up",
+        "fa6pro":"fa-arrow-alt-circle-up",
         "bsi":"bi-arrow-up-circle-fill",
         "mdi":"arrow_circle_up"
     },
     "settigns/purchase":{
         "fa5":"fa-arrow-alt-circle-down",
-        "fa5pro":"fa-arrow-alt-circle-down",
+        "fa6pro":"fa-arrow-alt-circle-down",
         "bsi":"bi-arrow-down-circle-fill",
         "mdi":"arrow_circle_down"
     },
     "settigns/finances":{
         "fa5":"fa-money-bill-wave",
-        "fa5pro":"fa-money-bill-wave",
+        "fa6pro":"fa-money-bill-wave",
         "bsi":"bi-cash-coin",
         "mdi":"payments"
     },
     "settigns/workOrdersCommerce":{
         "fa5":"fa-industry",
-        "fa5pro":"fa-industry-alt",
+        "fa6pro":"fa-industry-alt",
         "bsi":"bi-building",
         "mdi":"business"
     },
     "settigns/stock":{
         "fa5":"fa-shopping-bag",
-        "fa5pro":"fa-shopping-bag",
+        "fa6pro":"fa-shopping-bag",
         "bsi":"bi-bag-fill",
         "mdi":"shopping_bag"
     },
     "settigns/lab":{
         "fa5":"fa-flask",
-        "fa5pro":"fa-flask",
+        "fa6pro":"fa-flask",
         "bsi":"bi-building",
         "mdi":"science"
     },
@@ -349,253 +349,253 @@
 
     "detailBalanceByItems":{
 		"fa5":"fa-list",
-        "fa5pro":"fa-list",
+        "fa6pro":"fa-list",
         "bsi":"bi-list-ul",
         "mdi":"list"
 	},
 	"detailBalanceDueAnalysis":{
 		"fa5":"fa-table",
-        "fa5pro":"fa-table",
+        "fa6pro":"fa-table",
         "bsi":"bi-table",
         "mdi":"table_chart"
 	},
 	"detailBalanceRatesDifferences":{
 		"fa5": "fa-compress-alt",
-		"fa5pro": "fa-compress-alt",
+		"fa6pro": "fa-compress-alt",
 		"bsi": "bi-arrows-angle-contract",
 		"mdi": "close_fullscreen"
 	},
     "detailReportItems":{
 		"fa5":"fa-shopping-bag",
-        "fa5pro":"fa-shopping-bag",
+        "fa6pro":"fa-shopping-bag",
         "bsi":"bi-bag-fill",
         "mdi":"shopping-bag"
 	},
     "detailReportTypes":{
 		"fa5":"fa-archive",
-        "fa5pro":"fa-archive",
+        "fa6pro":"fa-archive",
         "bsi":"bi-archive",
         "mdi":"inventory_2"
 	},
 	"detailReportSum":{
 		"fa5": "fa-plus-square",
-		"fa5pro": "fa-plus-square",
+		"fa6pro": "fa-plus-square",
 		"bsi": "bi-plus-square",
 		"mdi": "add_circle"
 	},
 	"detailReportPDP":{
 		"fa5": "fa-share",
-		"fa5pro": "fa-share",
+		"fa6pro": "fa-share",
 		"bsi": "bi-box-arrow-up-right",
 		"mdi": "open_in_new"
 	},
 	"detailReportSummaryReport":{
 		"fa5":"fa-star",
-		"fa5pro":"fa-star",
+		"fa6pro":"fa-star",
 		"bsi":"bi-star",
 		"mdi":"grade"
 	},
 	"detailReportOutput":{
 		"fa5":"fa-arrow-circle-up",
-		"fa5pro":"fa-arrow-circle-up",
+		"fa6pro":"fa-arrow-circle-up",
 		"bsi":"bi-arrow-up-circle",
 		"mdi":"arrow_circle_up"
 	},
 	"detailReportInput":{
 		"fa5":"fa-arrow-circle-down",
-		"fa5pro":"fa-arrow-circle-down",
+		"fa6pro":"fa-arrow-circle-down",
 		"bsi":"bi-arrow-down-circle",
 		"mdi":"arrow_circle_down"
 	},
 	"detailReportTranscript":{
 		"fa5":"fa-file-alt",
-		"fa5pro":"fa-file-alt",
+		"fa6pro":"fa-file-alt",
 		"bsi":"bi-file-earmark-text",
 		"mdi":"description"
 	},
 	"detailReportProblems":{
 		"fa5":"fa-exclamation-triangle",
-		"fa5pro":"fa-file-alt",
+		"fa6pro":"fa-file-alt",
 		"bsi":"bi-exclamation-triangle-fill",
 		"mdi":"warning"
 	},
 	"detailReportDifferences":{
 		"fa5": "fa-random",
-		"fa5pro": "fa-random",
+		"fa6pro": "fa-random",
 		"bsi": "bi-shuffle",
 		"mdi": "shuffle"
 	},
 	"detailReportAlphabetically":{
 		"fa5": "fa-sort-alpha-down",
-		"fa5pro": "fa-sort-alpha-down",
+		"fa6pro": "fa-sort-alpha-down",
 		"bsi": "bi-sort-alpha-down",
 		"mdi": "sort_by_alpha"
 	},
 	"detailReportFinancially":{
 		"fa5": "fa-sort-amount-down",
-		"fa5pro": "fa-sort-amount-down",
+		"fa6pro": "fa-sort-amount-down",
 		"bsi": "bi-sort-down",
 		"mdi": "sort"
 	},
 	"detailReportTop":{
 		"fa5": "fa-trophy",
-		"fa5pro": "fa-trophy-alt",
+		"fa6pro": "fa-trophy-alt",
 		"bsi": "bi-trophy",
 		"mdi": "emoji_events"
 	},
 	"detailReportCashRegisters":{
 		"fa5": "fa-money-bill-alt",
-		"fa5pro": "fa-money-bill-alt",
+		"fa6pro": "fa-money-bill-alt",
 		"bsi": "bi-cash",
 		"mdi": "payments"
 	},
 	"detailReportUsers":{
 		"fa5": "fa-user",
-		"fa5pro": "fa-user",
+		"fa6pro": "fa-user",
 		"bsi": "bi-person",
 		"mdi": "person"
 	},
 	"detailReportBreakthroughs":{
 		"fa5": "fa-level-up-alt",
-		"fa5pro": "fa-level-up-alt",
+		"fa6pro": "fa-level-up-alt",
 		"bsi": "bi-arrow-90deg-up",
 		"mdi": "arrow_upward"
 	},
 	"detailReportRenegades":{
 		"fa5": "fa-level-down-alt",
-		"fa5pro": "fa-level-down-alt",
+		"fa6pro": "fa-level-down-alt",
 		"bsi": "bi-arrow-90deg-down",
 		"mdi": "arrow_downward"
 	},
 	"detailReportInputCsReport":{
 		"fa5": "fa-level-down-alt",
-		"fa5pro": "fa-level-down-alt",
+		"fa6pro": "fa-level-down-alt",
 		"bsi": "bi-arrow-90deg-down",
 		"mdi": "arrow_downward"
 	},
 	"detailReportOutputCsReport":{
 		"fa5": "fa-level-up-alt",
-		"fa5pro": "fa-level-up-alt",
+		"fa6pro": "fa-level-up-alt",
 		"bsi": "bi-arrow-90deg-up",
 		"mdi": "arrow_upward"
 	},
 	"detailReportStatement":{
 		"fa5":"fa-file-alt",
-		"fa5pro":"fa-file-alt",
+		"fa6pro":"fa-file-alt",
 		"bsi":"bi-file-earmark-text",
 		"mdi":"description"
 	},
 	"detailReportAnalysis":{
 		"fa5":"fa-search-plus",
-		"fa5pro":"fa-search-plus",
+		"fa6pro":"fa-search-plus",
 		"bsi":"bi-zoom-in",
 		"mdi":"zoom_in"
 	},
 	"detailReportDocuments":{
 		"fa5":"fa-list",
-		"fa5pro":"fa-list",
+		"fa6pro":"fa-list",
 		"bsi":"bi-list-ul",
 		"mdi":"list"
 	},
 	"detailReportAccounting":{
 		"fa5":"fa-list",
-		"fa5pro":"fa-list",
+		"fa6pro":"fa-list",
 		"bsi":"bi-list-ul",
 		"mdi":"list"
 	},
 	"detailReportOutdatedAccounts":{
 		"fa5":"fa-calendar-times",
-		"fa5pro":"fa-calendar-times",
+		"fa6pro":"fa-calendar-times",
 		"bsi":"bi-calendar-x",
 		"mdi":"event_busy"
 	},
 	"detailReportAccounts":{
 		"fa5":"fa-th-large",
-        "fa5pro":"fa-th-large",
+        "fa6pro":"fa-th-large",
         "bsi":"bi-table",
         "mdi":"table_chart"
 	},
 	"detailReportOther":{
 		"fa5":"fa-exclamation-triangle",
-		"fa5pro":"fa-file-alt",
+		"fa6pro":"fa-file-alt",
 		"bsi":"bi-exclamation-triangle-fill",
 		"mdi":"warning"
 	},
 	"detailReportRegistration":{
 		"fa5":"fa-microchip",
-        "fa5pro":"fa-microchip",
+        "fa6pro":"fa-microchip",
         "bsi":"bi-cpu-fill",
         "mdi":"memory"
 	},
 	"detailReportPeriod":{
 		"fa5":"fa-file-alt",
-		"fa5pro":"fa-file-alt",
+		"fa6pro":"fa-file-alt",
 		"bsi":"bi-file-earmark-text",
 		"mdi":"description"
 	},
 	"detailReportAnalytic":{
 		"fa5":"fa-file-alt",
-		"fa5pro":"fa-file-alt",
+		"fa6pro":"fa-file-alt",
 		"bsi":"bi-file-earmark-text",
 		"mdi":"description"
 	},
 	"detailReportStates":{
 		"fa5":"fa-chart-bar",
-		"fa5pro":"fa-chart-bar",
+		"fa6pro":"fa-chart-bar",
 		"bsi":"bi-clipboard-data",
 		"mdi":"assessment"
 	},
 	"detailReportAccountBalances":{
 		"fa5":"fa-check-square",
-        "fa5pro":"fa-check-square",
+        "fa6pro":"fa-check-square",
         "bsi":"bi-check-square",
         "mdi":"check_box"
 	},
 	"detailReportCards1":{
 		"fa5":"fa-file",
-        "fa5pro":"fa-file",
+        "fa6pro":"fa-file",
         "bsi":"bi-file-earmark",
         "mdi":"insert_drive_file"
 	},
 	"detailReportCards2":{
 		"fa5":"fa-file-alt",
-        "fa5pro":"fa-file-alt",
+        "fa6pro":"fa-file-alt",
         "bsi":"bi-file-earmark-text",
         "mdi":"article"
 	},
 	"detailReportCards3":{
 		"fa5":"fa-file-signature",
-        "fa5pro":"fa-file-signature",
+        "fa6pro":"fa-file-signature",
         "bsi":"bi-file-earmark-text-fill",
         "mdi":"description"
 	},
 	"detailReportPostponedTax":{
 		"fa5":"fa-shield-alt",
-        "fa5pro":"fa-shield-alt",
+        "fa6pro":"fa-shield-alt",
         "bsi":"bi-shield",
         "mdi":"shield"
 	},
 	"detailReportTaxDepreciations":{
 		"fa5":"fa-shield-alt",
-        "fa5pro":"fa-shield-alt",
+        "fa6pro":"fa-shield-alt",
         "bsi":"bi-shield",
         "mdi":"shield"
 	},
 	"detailReportIncrements":{
 		"fa5": "fa-plus-square",
-		"fa5pro": "fa-plus-square",
+		"fa6pro": "fa-plus-square",
 		"bsi": "bi-plus-square",
 		"mdi": "add_circle"
 	},
 	"detailReportDepletions":{
 		"fa5":"fa-minus-square",
-        "fa5pro":"fa-minus-square",
+        "fa6pro":"fa-minus-square",
         "bsi":"bi-dash-square",
         "mdi":"remove_circle"
 	},
 	"detailReportAll":{
 		"fa5": "fa-list",
-		"fa5pro": "fa-list",
+		"fa6pro": "fa-list",
 		"bsi": "bi-list-ul",
 		"mdi": "list"
 	},
@@ -603,7 +603,7 @@
 
     "reportCompany":{
         "fa5":"fa-building",
-        "fa5pro":"fa-building",
+        "fa6pro":"fa-building",
         "bsi":"bi-building",
         "mdi":"business"
     },
@@ -611,13 +611,13 @@
 
     "formDocument":{
         "fa5": "fa-edit",
-		"fa5pro": "fa-edit",
+		"fa6pro": "fa-edit",
 		"bsi": "bi-pencil-square",
 		"mdi": "edit_note"
     },
     "formLink":{
         "fa5": "fa-link",
-		"fa5pro": "fa-link",
+		"fa6pro": "fa-link",
 		"bsi": "bi-link-45deg",
 		"mdi": "link"
     },
@@ -625,25 +625,25 @@
 
     "homeAgenda":{
         "fa5":"fa-folder-open",
-        "fa5pro":"fa-folder-open",
+        "fa6pro":"fa-folder-open",
         "bsi":"bi-folder2-open",
         "mdi":"folder_open"
     },
     "homeSecretariat":{
         "fa5":"fa-inbox",
-        "fa5pro":"fa-inbox",
+        "fa6pro":"fa-inbox",
         "bsi":"bi-inbox-fill",
         "mdi":"inbox"
     },
     "homeToDo":{
         "fa5":"fa-check-square",
-        "fa5pro":"fa-check-square",
+        "fa6pro":"fa-check-square",
         "bsi":"bi-check-square",
         "mdi":"check_box"
     },
     "homeLeaders":{
         "fa5":"fa-building",
-        "fa5pro":"fa-building",
+        "fa6pro":"fa-building",
         "bsi":"bi-building",
         "mdi":"business"
     },
@@ -652,13 +652,13 @@
 
     "iconArrowRight":{
         "fa5": "fa-arrow-right",
-		"fa5pro": "fa-arrow-right",
+		"fa6pro": "fa-arrow-right",
 		"bsi": "bi-arrow-right",
 		"mdi": "arrow_right_alt"
     },
     "iconFileText":{
         "fa5": "fa-file-alt",
-		"fa5pro": "fa-file-alt",
+		"fa6pro": "fa-file-alt",
 		"bsi": "bi-file-earmark-text-fill",
 		"mdi": "description"
     }

@@ -1,7 +1,7 @@
 {
     "tables/mac.data.sources": {
 		"fa5": "fa-database",
-		"fa5pro": "fa-database",
+		"fa6pro": "fa-database",
 		"bsi": "bi-hdd",
 		"mdi": "save"
 	},
@@ -9,73 +9,73 @@
 
 	"quantityTypeUnknown":{
 		"fa5":"fa-tachometer-alt",
-        "fa5pro":"fa-tachometer-alt",
+        "fa6pro":"fa-tachometer-alt",
         "bsi":"bi-speedometer2",
         "mdi":"speed"
 	},
 	"quantityTypeTemperature":{
 		"fa5": "fa-thermometer-three-quarters",
-		"fa5pro": "fa-thermometer-three-quarters",
+		"fa6pro": "fa-thermometer-three-quarters",
 		"bsi": "bi-thermometer-half",
 		"mdi": "thermostat"
 	},
 	"quantityTypeWeight":{
 		"fa5": "fa-balance-scale",
-		"fa5pro": "fa-balance-scale",
+		"fa6pro": "fa-balance-scale",
 		"bsi": "bi-clipboard-data",
 		"mdi": "fitness_center"
 	},
 	"quantityTypeText":{
 		"fa5": "fa-keyboard",
-		"fa5pro": "fa-keyboard",
+		"fa6pro": "fa-keyboard",
 		"bsi": "bi-keyboard",
 		"mdi": "keyboard"
 	},
 	"quantityTypeLicensePlate":{
 		"fa5": "fa-car",
-		"fa5pro": "fa-car",
+		"fa6pro": "fa-car",
 		"bsi": "bi-truck",
 		"mdi": "directions_car"
 	},
 	"quantityTypeRFIDTag":{
 		"fa5":"fa-tag",
-        "fa5pro":"fa-tag",
+        "fa6pro":"fa-tag",
         "bsi":"bi-tag-fill",
         "mdi":"local_offer"
 	},
 	"quantityTypeBarCode":{
 		"fa5":"fa-barcode",
-        "fa5pro":"fa-barcode-read",
+        "fa6pro":"fa-barcode-read",
         "bsi":"bi-upc-scan",
         "mdi":"document_scanner"
 	},
 	"quantityTypeQRCode":{
 		"fa5":"fa-qrcode",
-        "fa5pro":"fa-qrcode",
+        "fa6pro":"fa-qrcode",
         "bsi":"bi-upc-scan",
         "mdi":"qr_code_scanner"
 	},
 	"quantityTypePhoneNumber":{
 		"fa5": "fa-phone-alt",
-		"fa5pro": "fa-phone-alt",
+		"fa6pro": "fa-phone-alt",
 		"bsi": "bi-telephone",
 		"mdi": "call"
 	},
 	"quantityTypeLogicalValue":{
 		"fa5": "fa-power-off",
-		"fa5pro": "fa-power-off",
+		"fa6pro": "fa-power-off",
 		"bsi": "bi-power",
 		"mdi": "power_settings_new"
 	},
 	"quantityTypeOpenedClosed":{
 		"fa5": "fa-toggle-on",
-		"fa5pro": "fa-toggle-on",
+		"fa6pro": "fa-toggle-on",
 		"bsi": "bi-toggle-on",
 		"mdi": "toggle_on"
 	},
 	"quantityTypeDataAmount":{
 		"fa5": "fa-hdd",
-		"fa5pro": "fa-hdd",
+		"fa6pro": "fa-hdd",
 		"bsi": "bi-hdd",
 		"mdi": "save"
 	}

@@ -1,109 +1,109 @@
 {
     "tables/e10doc.base.transports":{
         "fa5":"fa-truck-moving",
-        "fa5pro":"fa-truck-moving",
+        "fa6pro":"fa-truck-moving",
         "bsi":"bi-truck",
         "mdi":"local_shipping"
     },
     "tables/e10doc.base.exchangeRatesLists":{
         "fa5":"fa-dollar-sign",
-        "fa5pro":"fa-dollar-sign",
+        "fa6pro":"fa-dollar-sign",
         "bsi":"bi-currency-exchange",
         "mdi":"attach_money"
     },
     "tables/e10doc.base.cashboxes":{
         "fa5":"fa-money-bill-alt",
-        "fa5pro":"fa-money-bill-alt",
+        "fa6pro":"fa-money-bill-alt",
         "bsi":"bi-cash",
         "mdi":"payments"
     },
     "tables/e10doc.base.bankaccounts":{
         "fa5":"fa-university",
-        "fa5pro":"fa-university",
+        "fa6pro":"fa-university",
         "bsi":"bi-bank",
         "mdi":"account_balance"
     },
     "tables/e10doc.base.centres":{
         "fa5":"fa-bullseye",
-        "fa5pro":"fa-bullseye",
+        "fa6pro":"fa-bullseye",
         "bsi":"bi-bullseye",
         "mdi":"track_changes"
     },
     "tables/e10doc.base.taxRegs":{
         "fa5":"fa-shield-alt",
-        "fa5pro":"fa-shield-alt",
+        "fa6pro":"fa-shield-alt",
         "bsi":"bi-shield",
         "mdi":"shield"
     },
     "tables/e10doc.base.fiscalyears":{
         "fa5":"fa-calendar-alt",
-        "fa5pro":"fa-calendar-alt",
+        "fa6pro":"fa-calendar-alt",
         "bsi":"bi-calendar",
         "mdi":"calendar_today"
     },
     "tables/e10doc.base.taxperiods":{
         "fa5":"fa-calendar-alt",
-        "fa5pro":"fa-calendar-alt",
+        "fa6pro":"fa-calendar-alt",
         "bsi":"bi-calendar",
         "mdi":"calendar_today"
     },
     "tables/e10doc.base.warehouses":{
         "fa5":"fa-cubes",
-        "fa5pro":"fa-cubes",
+        "fa6pro":"fa-cubes",
         "bsi":"bi-shop-window",
         "mdi":"inventory_2"
     },
     "tables/e10doc.base.docnumbers":{
         "fa5":"fa-play-circle",
-        "fa5pro":"fa-play-circle",
+        "fa6pro":"fa-play-circle",
         "bsi":"bi-play-circle-fill",
         "mdi":"play_circle_filled"
     },
     "tables/e10doc.base.dockinds":{
         "fa5":"fa-flag",
-        "fa5pro":"fa-flag",
+        "fa6pro":"fa-flag",
         "bsi":"bi-flag",
         "mdi":"flag"
     },
     "tables/e10doc.base.reportsTexts":{
         "fa5":"fa-file-signature",
-        "fa5pro":"fa-file-signature",
+        "fa6pro":"fa-file-signature",
         "bsi":"bi-file-earmark-text-fill",
         "mdi":"description"
     },
     "tables/e10doc.base.additions":{
         "fa5":"fa-sticky-note",
-        "fa5pro":"fa-sticky-note",
+        "fa6pro":"fa-sticky-note",
         "bsi":"bi-stickies",
         "mdi":"sticky_note_2"
     },
     "tables/e10doc.base.additionsTypes":{
         "fa5":"fa-podcast",
-        "fa5pro":"fa-podcast",
+        "fa6pro":"fa-podcast",
         "bsi":"bi-stickies-fill",
         "mdi":"podcasts"
     },
     "tables/e10doc.base.whPlaces":{
         "fa5":"fa-cubes",
-        "fa5pro":"fa-cubes",
+        "fa6pro":"fa-cubes",
         "bsi":"bi-shop-window",
         "mdi":"inventory_2"
     },
     "tables/e10doc.base.exchangeRatesValues":{
         "fa5":"fa-money-bill-alt",
-        "fa5pro":"fa-money-bill-alt",
+        "fa6pro":"fa-money-bill-alt",
         "bsi":"bi-cash",
         "mdi":"payments"
     },
     "tables/e10doc.base.places":{
         "fa5": "fa-map-marker-alt",
-		"fa5pro": "fa-map-marker-alt",
+		"fa6pro": "fa-map-marker-alt",
 		"bsi": "bi-geo-alt-fill",
 		"mdi": "place"
     },
     "tables/e10doc.base.warehousesoptions":{
         "fa5": "fa-cogs",
-		"fa5pro": "fa-cogs",
+		"fa6pro": "fa-cogs",
 		"bsi": "bi-gear",
 		"mdi": "settings"
     },
@@ -111,25 +111,25 @@
 
     "formMonths":{
         "fa5": "fa-calendar-alt",
-		"fa5pro": "fa-calendar-alt",
+		"fa6pro": "fa-calendar-alt",
 		"bsi": "bi-calendar",
 		"mdi": "calendar_today"
     },
     "formEBanking":{
         "fa5": "fa-plug",
-		"fa5pro": "fa-outlet",
+		"fa6pro": "fa-outlet",
 		"bsi": "bi-outlet",
 		"mdi": "outlet"
     },
     "formText":{
         "fa5": "fa-file-alt",
-		"fa5pro": "fa-file-alt",
+		"fa6pro": "fa-file-alt",
 		"bsi": "bi-file-earmark-text-fill",
 		"mdi": "description"
     },
     "formExchangeRates":{
         "fa5":"fa-money-bill-alt",
-        "fa5pro":"fa-money-bill-alt",
+        "fa6pro":"fa-money-bill-alt",
         "bsi":"bi-cash",
         "mdi":"payments"
     }

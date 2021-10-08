@@ -1,97 +1,97 @@
 {
 	"tables/e10.base.places": {
 		"fa5": "fa-map-marker-alt",
-		"fa5pro": "fa-map-marker-alt",
+		"fa6pro": "fa-map-marker-alt",
 		"bsi": "bi-geo-alt-fill",
 		"mdi": "place"
 	},
 	"tables/e10.base.clsfgroups":{
 		"fa5": "fa-tags",
-		"fa5pro": "fa-tags",
+		"fa6pro": "fa-tags",
 		"bsi": "bi-tags-fill",
 		"mdi": "local-offer"
 	},
 	"tables/e10.base.nomencTypes":{
 		"fa5": "fa-list-ol",
-		"fa5pro": "fa-list-ol",
+		"fa6pro": "fa-list-ol",
 		"bsi": "bi-list-ol",
 		"mdi": "format_list_numbered"
 	},
 	"tables/e10.base.tasks":{
 		"fa5": "fa-cogs",
-		"fa5pro": "fa-cogs",
+		"fa6pro": "fa-cogs",
 		"bsi": "bi-gear",
 		"mdi": "settings"
 	},
     "tables/e10.base.templates":{
         "fa5":"fa-palette",
-        "fa5pro":"fa-palette",
+        "fa6pro":"fa-palette",
         "bsi":"bi-palette",
         "mdi":"palette"
     },
     "tables/e10.base.templatesLooks":{
         "fa5":"fa-swatchbook",
-        "fa5pro":"fa-swatchbook",
+        "fa6pro":"fa-swatchbook",
         "bsi":"bi-palette2",
         "mdi":"collections"
     },
     "tables/e10.base.propdefs":{
         "fa5":"fa-list-ol",
-        "fa5pro":"fa-list-ol",
+        "fa6pro":"fa-list-ol",
         "bsi":"bi-list-ol",
         "mdi":"format_list_numbered"
     },
     "tables/e10.base.propgroups":{
         "fa5":"fa-list-ul",
-        "fa5pro":"fa-list-ul",
+        "fa6pro":"fa-list-ul",
         "bsi":"bi-list-ul",
         "mdi":"format_list_bulleted"
     },
     "tables/e10.base.devices":{
         "fa5":"fa-desktop",
-        "fa5pro":"fa-desktop",
+        "fa6pro":"fa-desktop",
         "bsi":"bi-display",
         "mdi":"desktop_windows"
     },
     "tables/e10.base.ipaddr":{
         "fa5":"fa-sitemap",
-        "fa5pro":"fa-sitemap",
+        "fa6pro":"fa-sitemap",
         "bsi":"bi-diagram-3-fill",
         "mdi":"device_hub"
     },
     "tables/e10.base.authLog":{
         "fa5":"fa-sign-in-alt",
-        "fa5pro":"fa-sign-in-alt",
+        "fa6pro":"fa-sign-in-alt",
         "bsi":"bi-box-arrow-in-right",
         "mdi":"login"
     },
     "tables/e10.base.attachments":{
         "fa5": "fa-paperclip",
-		"fa5pro": "fa-paperclip",
+		"fa6pro": "fa-paperclip",
 		"bsi": "bi-paperclip",
 		"mdi": "attach_file"
     },
     "tables/e10.base.notifications":{
         "fa5": "fa-bell",
-		"fa5pro": "fa-bell",
+		"fa6pro": "fa-bell",
 		"bsi": "bi-bell",
 		"mdi": "notifications"
     },
     "tables/e10.base.subtemplates":{
         "fa5":"fa-code",
-        "fa5pro":"fa-code",
+        "fa6pro":"fa-code",
         "bsi":"bi-code-slash",
         "mdi":"code"
     },
     "tables/e10.install.modules":{
         "fa5":"fa-puzzle-piece",
-        "fa5pro":"fa-puzzle-piece",
+        "fa6pro":"fa-puzzle-piece",
         "bsi":"bi-puzzle",
         "mdi":"extension"
     },
     "tables/e10.install.nomencItems":{
         "fa5": "fa-list",
-		"fa5pro": "fa-list",
+		"fa6pro": "fa-list",
 		"bsi": "bi-list-ul",
 		"mdi": "list"
     },
@@ -100,7 +100,7 @@
 
     "settings/sharing":{
         "fa5":"fa-share-alt",
-        "fa5pro":"fa-share-alt",
+        "fa6pro":"fa-share-alt",
         "bsi":"bi-share-fill",
         "mdi":"share"
     },
@@ -110,7 +110,7 @@
 
     "e10.widgetDashboard/Info":{
         "fa5":"fa-info",
-        "fa5pro":"fa-info-square",
+        "fa6pro":"fa-info-square",
         "bsi":"bi-info-square",
         "mdi":"info"
     },
@@ -118,13 +118,13 @@
 
     "formAddress":{
         "fa5": "fa-location-arrow",
-		"fa5pro": "fa-location-arrow",
+		"fa6pro": "fa-location-arrow",
 		"bsi": "bi-geo-alt-fill",
 		"mdi": "near_me"
     },
     "formParameters":{
         "fa5": "fa-list",
-		"fa5pro": "fa-list",
+		"fa6pro": "fa-list",
 		"bsi": "bi-list-ul",
 		"mdi": "list"
     },
@@ -132,19 +132,19 @@
 
 	"detailProperty":{
 		"fa5": "fa-list",
-		"fa5pro": "fa-list",
+		"fa6pro": "fa-list",
 		"bsi": "bi-list-ul",
 		"mdi": "list"
 	},
     "detailTags":{
 		"fa5":"fa-tag",
-        "fa5pro":"fa-tag",
+        "fa6pro":"fa-tag",
         "bsi":"bi-tag-fill",
         "mdi":"local_offer"
 	},
     "detailData":{
         "fa5":"fa-code",
-        "fa5pro":"fa-code",
+        "fa6pro":"fa-code",
         "bsi":"bi-code-slash",
         "mdi":"code"
     },
@@ -152,13 +152,13 @@
 
     "tags/places":{
         "fa5": "fa-map-marker-alt",
-		"fa5pro": "fa-map-marker-alt",
+		"fa6pro": "fa-map-marker-alt",
 		"bsi": "bi-geo-alt-fill",
 		"mdi": "place"
     },
     "tags/various":{
         "fa5":"fa-tag",
-        "fa5pro":"fa-tag",
+        "fa6pro":"fa-tag",
         "bsi":"bi-tag-fill",
         "mdi":"local_offer"
     },
@@ -167,49 +167,49 @@
 
     "fileKindNone":{
         "fa5": "fa-question-circle",
-		"fa5pro": "fa-question-circle",
+		"fa6pro": "fa-question-circle",
 		"bsi": "bi-question-circle-fill",
 		"mdi": "help_outline"
     },
     "fileKindOther":{
         "fa5": "fa-file",
-		"fa5pro": "fa-file",
+		"fa6pro": "fa-file",
 		"bsi": "bi-file-earmark",
 		"mdi": "insert_drive_file"
     },
     "fileKindPDF":{
         "fa5":"fa-file-pdf",
-		"fa5pro":"fa-file-pdf",
+		"fa6pro":"fa-file-pdf",
 		"bsi":"bi-file-earmark-pdf-fill",
 		"mdi":"picture_as_pdf"
     },
     "fileKindPhoto":{
         "fa5": "fa-camera",
-		"fa5pro": "fa-camera",
+		"fa6pro": "fa-camera",
 		"bsi": "bi-camera-fill",
 		"mdi": "image"
     },
     "fileKindPicture":{
         "fa5": "fa-image",
-		"fa5pro": "fa-image",
+		"fa6pro": "fa-image",
 		"bsi": "bi-image",
 		"mdi": "photo_camera"
     },
     "fileKindTxt":{
         "fa5": "fa-file-alt",
-		"fa5pro": "fa-file-alt",
+		"fa6pro": "fa-file-alt",
 		"bsi": "bi-file-earmark-text-fill",
 		"mdi": "description"
     },
     "fileKindWord":{
         "fa5": "fa-file-word",
-		"fa5pro": "fa-file-word",
+		"fa6pro": "fa-file-word",
 		"bsi": "bi-file-earmark-word",
 		"mdi": "description"
     },
     "fileKindXls":{
         "fa5": "fa-file-excel",
-		"fa5pro": "fa-file-excel",
+		"fa6pro": "fa-file-excel",
 		"bsi": "bi-file-earmark-excel",
 		"mdi": "description"
     },
@@ -218,37 +218,37 @@
 
     "loginSuccess":{
         "fa5":"fa-sign-in-alt",
-        "fa5pro":"fa-sign-in-alt",
+        "fa6pro":"fa-sign-in-alt",
         "bsi":"bi-box-arrow-in-right",
         "mdi":"login"
     },
     "loginFail":{
         "fa5": "fa-exclamation-triangle",
-		"fa5pro": "fa-exclamation-triangle",
+		"fa6pro": "fa-exclamation-triangle",
 		"bsi": "bi-exclamation-triangle",
 		"mdi": "warning_amber"
     },
     "loginIdentityCheckSuccess":{
         "fa5": "fa-check-circle",
-		"fa5pro": "fa-check-circle",
+		"fa6pro": "fa-check-circle",
 		"bsi": "bi-check-circle",
 		"mdi": "check_circle"
     },
     "loginIdentityCheckFail":{
         "fa5": "fa-times-circle",
-		"fa5pro": "fa-times-circle",
+		"fa6pro": "fa-times-circle",
 		"bsi": "bi-x-circle",
 		"mdi": "highlight_off"
     },
     "loginUserNotFound":{
         "fa5": "fa-user-times",
-		"fa5pro": "fa-user-times",
+		"fa6pro": "fa-user-times",
 		"bsi": "bi-person-x",
 		"mdi": "person_off"
     },
     "loginServerNotResponding":{
         "fa5": "fa-unlink",
-		"fa5pro": "fa-unlink",
+		"fa6pro": "fa-unlink",
 		"bsi": "bi-x-circle",
 		"mdi": "link_off"
     },
@@ -256,7 +256,7 @@
 
     "iconForProcessing":{
         "fa5":"fa-star",
-		"fa5pro":"fa-star",
+		"fa6pro":"fa-star",
 		"bsi":"bi-star",
 		"mdi":"grade"
     },
@@ -264,13 +264,13 @@
 
     "dataTypesTextContent":{
         "fa5": "fa-file-alt",
-		"fa5pro": "fa-file-alt",
+		"fa6pro": "fa-file-alt",
 		"bsi": "bi-file-earmark-text-fill",
 		"mdi": "description"
     },
     "dataTypesEXIF":{
         "fa5": "fa-camera",
-		"fa5pro": "fa-camera",
+		"fa6pro": "fa-camera",
 		"bsi": "bi-camera-fill",
 		"mdi": "image"
     }
