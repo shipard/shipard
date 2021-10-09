@@ -782,7 +782,7 @@ class ContentRenderer extends \Shipard\Base\BaseObject
 				{
 					if (isset ($info['title']))
 						$c .= $this->app()->ui()->composeTextLine ($info ['title']);
-					$c .= \E10\renderTableFromArray ($info['table'], $info['header'], isset ($info['params']) ? $info['params'] : []);
+					$c .= $this->app()->ui()->renderTableFromArray ($info['table'], $info['header'], isset ($info['params']) ? $info['params'] : []);
 				}
 				else
 					$c .= $this->app()->ui()->composeTextLine ($info ['value']);

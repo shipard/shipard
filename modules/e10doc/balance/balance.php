@@ -1660,7 +1660,7 @@ class ViewDetailPersonsBalances extends \E10\TableViewDetail
 {
 	protected $fiscalYear = 0;
 	protected $showBalances = array();
-	protected $balances;
+	protected $balances = [];
 	protected $currencies;
 	protected $docTypes;
 
@@ -1786,13 +1786,13 @@ class ViewDetailPersonsBalances extends \E10\TableViewDetail
 		array_push ($q, ' ORDER BY [side], saldo.[date] DESC, pairId');
 
 		$rows = $this->app()->db()->query ($q);
-		$data = array ();
-		$sumTotal = array ();
-		$currenciesRateTotal = array ();
+		$data = [];
+		$sumTotal = [];
+		$currenciesRateTotal = [];
 		forEach ($rows as $r)
 		{
 			$pid = $r['pairId'];
-			if ($this->balances[$r['type']]['type'] === 'hc')
+			if (isset($this->balances[$r['type']]['type']) && $this->balances[$r['type']]['type'] === 'hc')
 			{
 				$r['currency'] = $r['homeCurrency'];
 				$r['request'] = $r['requestHc'];
@@ -1877,7 +1877,7 @@ class ViewDetailPersonsBalances extends \E10\TableViewDetail
 				$currenciesRateTotal[$dataRow['currency']] = ['dateAccounting' => $dataRow['dateAccounting'], 'exchangeRate' => $dataRow['exchangeRate']];
 			else
 			{
-				if ($dataRow['dateAccounting'] > $sumTotal[$dataRow['currency']]['dateAccounting'])
+				if ($dataRow['dateAccounting'] > /*$sumTotal[$dataRow['currency']]['dateAccounting']*/$currenciesRateTotal[$dataRow['currency']]['dateAccounting'])
 				{
 					$currenciesRateTotal[$dataRow['currency']]['dateAccounting'] = $dataRow['dateAccounting'];
 					$currenciesRateTotal[$dataRow['currency']]['exchangeRate'] = $dataRow['exchangeRate'];
