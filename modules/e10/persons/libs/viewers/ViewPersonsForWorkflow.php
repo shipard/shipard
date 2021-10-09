@@ -99,7 +99,7 @@ class ViewPersonsForWorkflow extends TableView
 		$listItem ['pk'] = $item ['ndx'];
 		if ($item['company'] === 999)
 		{
-			$listItem ['icon'] = 'e10-persons-groups';
+			$listItem ['icon'] = 'tables/e10.persons.groups';
 			$listItem ['table'] = 'e10.persons.groups';
 		}
 		else
