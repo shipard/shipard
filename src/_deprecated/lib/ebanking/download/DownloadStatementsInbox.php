@@ -41,7 +41,7 @@ class DownloadStatementsInbox extends \lib\ebanking\download\DownloadStatements
 
 		$this->inboxNdx = $recData['ndx'];
 
-		$attachments = \E10\Base\getAttachments ($this->app, 'e10pro.wkf.messages', $this->inboxNdx);
+		$attachments = \E10\Base\getAttachments ($this->app, 'wkf.core.issues', $this->inboxNdx);
 		foreach ($attachments as $a)
 		{
 			if (mb_substr($a, - mb_strlen($this->inboxQueryParams['attachmentSuffix'])) === $this->inboxQueryParams['attachmentSuffix'])
