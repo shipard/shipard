@@ -595,8 +595,8 @@ class WebPages extends \E10\utility
 			elseif ($page['pageMode'] === 'wiki')
 			{
 				$pageId = $this->app()->requestPath ($page['treeLevel'] + 1);
-				$this->template->page['params']['myLayout'] = '1';
-				$this->template->pageParams['myLayout'] = '1';
+				//$this->template->page['params']['myLayout'] = '1';
+				//$this->template->pageParams['myLayout'] = '1';
 
 				$this->template->page['pageModeWiki'] = '1';
 
@@ -610,7 +610,7 @@ class WebPages extends \E10\utility
 					'title' => $wikiEngine->page['title'],
 					'text' => $wikiEngine->page['code'],
 					'status' => $wikiEngine->status,
-					'params' => ['myLayout' => '1'],
+					//'params' => ['myLayout' => '1'],
 					'bodyClasses' => 'e10-edit-no-iframe',
 					'pageModeWiki' => 1
 				];

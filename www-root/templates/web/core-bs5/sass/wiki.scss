@@ -106,13 +106,7 @@ div.row> div.col-md-4 > div.card {margin-bottom: 1rem;}
 
 
 .e10-sidebar-left {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
   z-index: 1000;
-  overflow-x: hidden;
-  overflow-y: auto;
   background-color: #fafafa;
   border-right: 2px solid #dadada;
   padding: 0;
@@ -126,7 +120,6 @@ div.row> div.col-md-4 > div.card {margin-bottom: 1rem;}
 
 body.top-menu-fixed-top {
   .e10-sidebar-left {
-    padding-top: 3rem;
   }
   .e10-sidebar-right {
     padding-top: 3rem;
