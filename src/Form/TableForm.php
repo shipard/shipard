@@ -507,13 +507,13 @@ class TableForm
 
 		switch ($inputStyle)
 		{
-			case self::INPUT_STYLE_MONEY: $inputClass = 'e10-inputMoney'; $rightLayout = TRUE; break;
+			case self::INPUT_STYLE_MONEY: $inputClass = 'e10-inputMoney'; $inputParams .= "autocomplete='off'"; $rightLayout = TRUE; break;
 			case self::INPUT_STYLE_DATE: $this->inputInfoHtml($inputStyle, $inputClass, $inputType, $inputParams); break;
 			case self::INPUT_STYLE_DATETIME: $this->inputInfoHtml($inputStyle, $inputClass, $inputType, $inputParams); break;
 			case self::INPUT_STYLE_TIME: $inputClass = 'e10-inputTime'; $placeholder = " placeholder='HH:MM'";break;
 			case self::INPUT_STYLE_TIMELEN: $inputClass = 'e10-inputTimeLen'; $placeholder = " placeholder='HH:MM'";break;
-			case self::INPUT_STYLE_DOUBLE: $inputClass = 'e10-inputDouble'; $rightLayout = TRUE; break;
-			case self::INPUT_STYLE_INT: $inputClass = 'e10-inputInt'; $rightLayout = TRUE; break;
+			case self::INPUT_STYLE_DOUBLE: $inputClass = 'e10-inputDouble';  $inputParams .= "autocomplete='off'"; $rightLayout = TRUE; break;
+			case self::INPUT_STYLE_INT: $inputClass = 'e10-inputInt';  $inputParams .= "autocomplete='off'"; $rightLayout = TRUE; break;
 			case self::INPUT_STYLE_STRING:
 										$inputClass = 'e10-inputString';
 										if ($len)
