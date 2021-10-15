@@ -489,7 +489,7 @@ class TableView extends \Shipard\Base\BaseObject
 			$c .= "</div>";
 
 			$c .= "</td>";
-			$c .= "<td class='c e10-trigger-cv'><i class='fa fa-times'></i></td>";
+			$c .= "<td class='c e10-trigger-cv'>".$this->app()->ui()->icon('system/actionClose')."</td>";
 			$c .= "</tr>";
 			$c .= "</table>";
 		}

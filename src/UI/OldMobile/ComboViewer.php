@@ -1,13 +1,13 @@
 <?php
 
-namespace ui\mobile;
+namespace Shipard\UI\OldMobile;
 
 
 /**
  * Class ComboViewer
  * @package ui\mobile
  */
-class ComboViewer extends \ui\mobile\PageObject
+class ComboViewer extends \Shipard\UI\OldMobile\PageObject
 {
 	/** @var \e10\TableView */
 	var $viewer = NULL;

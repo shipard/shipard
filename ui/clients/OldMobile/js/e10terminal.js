@@ -304,7 +304,7 @@ e10client.prototype.terminal.addDocumentRow = function (item) {
 			' data-totalprice="' + totalPrice + '"' +
 			'>';
 
-	row += '<td class="e10-terminal-action" data-action="remove-row"><i class="fa fa-times"></i></td>';
+	row += '<td class="e10-terminal-action" data-action="remove-row">×</td>';
 
 	row +=
 			'<td class="item">' + '<span class="t">'+e10.escapeHtml(item.name) + '</span>' + '<br>' +
@@ -314,8 +314,8 @@ e10client.prototype.terminal.addDocumentRow = function (item) {
 
 	row += '<td class="q number">' + quantity + '</td>';
 
-	row += '<td class="e10-terminal-action" data-action="quantity-plus"><i class="fa fa-plus"></i></td>';
-	row += '<td class="e10-terminal-action" data-action="quantity-minus"><i class="fa fa-minus"></i></td>';
+	row += '<td class="e10-terminal-action" data-action="quantity-plus">+</td>';
+	row += '<td class="e10-terminal-action" data-action="quantity-minus">-</td>';
 
 	row += '</tr>';
 

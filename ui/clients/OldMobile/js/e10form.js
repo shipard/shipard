@@ -486,7 +486,7 @@ e10client.prototype.form.getNumber = function (options) {
 	c += "<table class='e10-get-number-keyboard'>";
 
 	c += "<tr>";
-	c += "<td class='c e10-trigger-gn'><i class='fa fa-times'></i></td><td class='m' colspan='3'>";
+	c += "<td class='c e10-trigger-gn'>✕</td><td class='m' colspan='3'>";
 	if (e10.form.gnOptions.title)
 		c += "<div class='title'>"+e10.escapeHtml(e10.form.gnOptions.title)+"</div>";
 	if (e10.form.gnOptions.subtitle)
@@ -496,12 +496,12 @@ e10client.prototype.form.getNumber = function (options) {
 
 
 	c += "<tr>";
-	c += "<td class='d e10-trigger-gn' colspan='3'></td><td class='b e10-trigger-gn'><i class='fa fa-arrow-circle-left'></i></td>";
+	c += "<td class='d e10-trigger-gn' colspan='3'></td><td class='b e10-trigger-gn'>←</td>";
 	c += "</tr>";
 
 
 	c += "<tr>";
-	c += "<td class='n e10-trigger-gn'>7</td><td class='n e10-trigger-gn'>8</td><td class='n e10-trigger-gn'>9</td><td class='ok e10-trigger-gn' rowspan='4'><i class='fa fa-check'></i></td>";
+	c += "<td class='n e10-trigger-gn'>7</td><td class='n e10-trigger-gn'>8</td><td class='n e10-trigger-gn'>9</td><td class='ok e10-trigger-gn' rowspan='4'>✔︎</td>";
 	c += "</tr>";
 
 	c += "<tr>";

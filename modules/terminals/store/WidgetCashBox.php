@@ -135,31 +135,31 @@ class WidgetCashBox extends WidgetPane
 		$c .= "<ul class='display'>";
 
 		$c .= $this->composeCodeSensors();
-		$c .= "<li class='e10-terminal-action' data-action='terminal-search-code-manually'><i class='fa fa-keyboard-o'></i></li>";
+		$c .= "<li class='e10-terminal-action' data-action='terminal-search-code-manually'>".$this->app()->ui()->icon('system/iconKeyboard')."</li>";
 		if ($enableFullSearch)
-			$c .= "<li class='e10-terminal-action' data-action='terminal-search-code-combo'><i class='fa fa-search'></i></li>";
+			$c .= "<li class='e10-terminal-action' data-action='terminal-search-code-combo'>".$this->app()->ui()->icon('system/actionInputSearch')."</li>";
 
 		$c .= "<li class='total number nowrap e10-terminal-action' data-action='terminal-pay'>0.00</li>";
 		$c .= '</ul>';
 
 		$c .= "<ul class='symbol' style='display: none;'>";
 		$c .= "<li class='value'></li>";
-		$c .= "<li class='e10-terminal-action icon' data-action='terminal-symbol-clear'><i class='fa fa-times'></i></li>";
+		$c .= "<li class='e10-terminal-action icon' data-action='terminal-symbol-clear'>".$this->app()->ui()->icon('system/actionInputClear')."</li>";
 		$c .= '</ul>';
 
 		$c .= "<div class='close'>";
 		$c .= '<div class="h1">';
-		$c .= '<i class="fa fa-user"></i> '.utils::es($this->app->user()->data ('name'));
+		$c .= $this->app()->ui()->icon('system/iconUser').' '.utils::es($this->app->user()->data ('name'));
 
 		if ($this->app->workplace)
-			$c .= ' <i class="fa fa-home"></i> '.utils::es($this->app->workplace['name']);
+			$c .= ' '.$this->app()->ui()->icon('system/iconWorkplace').' '.utils::es($this->app->workplace['name']);
 		else
-			$c .= ' <i class="fa fa-exclamation-triangle"></i> '.utils::es('Neznámé pracoviště');
+			$c .= ' '.$this->app()->ui()->icon('system/iconWarning').' '.utils::es('Neznámé pracoviště');
 
 		$c .= '</div>';
 		$c .= "<div>";
-		$c .= "<button class='link btn btn-info' id='e10-back-button' data-path='#start'><i class='fa fa-arrow-left'></i> Konec</button>";
-		$c .= "<button class='btn btn-info pull-right e10-terminal-action' data-action='print-retry' id='terminal-print-retry'><i class='fa fa-print'></i></button>";
+		$c .= "<button class='link btn btn-info' id='e10-back-button' data-path='#start'>".$this->app()->ui()->icon('system/actionBack')." Konec</button>";
+		$c .= "<button class='btn btn-info pull-right e10-terminal-action' data-action='print-retry' id='terminal-print-retry'>".$this->app()->ui()->icon('system/actionPrint')."</button>";
 		$c .= '</div>';
 		$c .= '<b>'.utils::es('Můžete prodávat').'</b><br/>';
 		$c .= '<div class="e10-small">'.utils::es('Účtenku vytisknete stisknutím částky vpravo nahoře.').'</div>';
@@ -277,7 +277,8 @@ class WidgetCashBox extends WidgetPane
 		if ($cntOtherItems)
 		{
 			$c .= "<li$class data-tabid='e10-wcb-cat-calc_kbd'>";
-			$c .= " <i class='fa fa-calculator'></i> ";
+			$c .= ' '.$this->app()->ui()->icon('system/detailCalculate').' ';
+
 			$c .= '</li>';
 		}
 
@@ -326,13 +327,13 @@ class WidgetCashBox extends WidgetPane
 			$c .= "<table class='e10-calc-keyboard'>";
 
 			$c .= "<tr>";
-			$c .= "<td class='d e10-trigger-ck' colspan='3' id='e10-display-ck'></td><td class='b e10-trigger-ck'><i class='fa fa-arrow-circle-left'></i></td>";
+			$c .= "<td class='d e10-trigger-ck' colspan='3' id='e10-display-ck'></td><td class='b e10-trigger-ck'>".$this->app()->ui()->icon('system/actionBack')."</td>";
 			$c .= "</tr>";
 
 			$c .= "<tr>";
 			$c .= "<td class='n e10-trigger-ck'>7</td><td class='n e10-trigger-ck'>8</td><td class='n e10-trigger-ck'>9</td>";
 
-			$c .= "<td class='multiply e10-trigger-ck'><i class='fa fa-times'></i></td>";
+			$c .= "<td class='multiply e10-trigger-ck'>".$this->app()->ui()->icon('system/actionInputClear')."</td>";
 
 			$c .= "</tr>";
 
@@ -442,7 +443,7 @@ class WidgetCashBox extends WidgetPane
 		$c .= '</div>';
 
 		$c .= "<div class='back-buttons'>";
-		$c .= "<button class='btn btn-warning e10-terminal-action' data-action='terminal-cashbox'><i class='fa fa-arrow-left'></i> Zpět do kasy</button>";
+		$c .= "<button class='btn btn-warning e10-terminal-action' data-action='terminal-cashbox'>".$this->app()->ui()->icon('system/actionBack')." Zpět do kasy</button>";
 		$c .= '</div>';
 
 
