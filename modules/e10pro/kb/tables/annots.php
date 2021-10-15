@@ -137,7 +137,7 @@ class FormAnnot extends TableForm
 		$this->openForm ();
 			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 			//		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
-			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'formAttachments'];
+			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
 					$this->addColumnInput ('annotKind');
