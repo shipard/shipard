@@ -177,14 +177,14 @@ a.btn:visited {
 }
 
 
-a.btn.btn-primary, a.btn.btn-success {
+a.btn.btn-primary, a.btn.btn-success, a.btn.btn-secondary, a.btn.btn-danger {
   color: white;
 }
-a.btn.btn-primary:hover, a.btn.btn-success:hover {
+a.btn.btn-primary:hover, a.btn.btn-success:hover, a.btn.btn-secondary:hover, a.btn.btn-danger:hover {
   color: white;
 }
 
-a.btn.btn-primary:visited, a.btn.btn-success:visited {
+a.btn.btn-primary:visited, a.btn.btn-success:visited, a.btn.btn-secondary:visited, a.btn.btn-danger:visited {
   color: #f0f0f0;
 }
 
