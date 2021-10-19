@@ -115,6 +115,8 @@ class TableServers extends DbTable
 		$webs = [];
 		foreach ($rows as $r)
 		{
+			if ($r['domain'] === '')
+				continue;
 			$host = $r['domain'];
 			$urlStart = $host;
 
