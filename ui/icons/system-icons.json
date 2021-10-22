@@ -651,6 +651,12 @@
 		"bsi": "bi-chevron-double-right",
 		"mdi": "arrow_forward_ios"
 	},
+	"iconDollarBadgePro":{
+		"fa5": "fa-dollar-sign",
+		"fa6pro": "fa-badge-dollar",
+		"bsi": "bi-currency-dollar",
+		"mdi": "monetization_on"
+	},
 	
 
 
