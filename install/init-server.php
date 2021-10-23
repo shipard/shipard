@@ -101,7 +101,7 @@ class Installation
 
 	protected function checkExtLibs()
 	{
-		if (str_starts_with(__SHPD_ROOT_DIR__, '/usr/lib/'))
+		if (!str_starts_with(__SHPD_ROOT_DIR__, '/usr/lib/'))
 			return;
 
 		$composerLockFileName = __SHPD_ROOT_DIR__ . '/extlibs/composer.lock';

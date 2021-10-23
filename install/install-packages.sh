@@ -12,6 +12,11 @@ add-apt-repository --yes ppa:ondrej/php
 apt --assume-yes --quiet update
 apt --assume-yes --quiet upgrade
 
+#Raspberry Pi - raspbian
+#sudo wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
+#echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/php.list
+#sudo apt update
+
 #
 # NGINX
 #
@@ -23,7 +28,7 @@ apt install --assume-yes --quiet nginx
 apt install --assume-yes --quiet mariadb-server
 
 
-apt install --assume-yes --quiet php-cli php-mysql php-fpm php-imap php-xml php-curl php-json php-intl php-zip php-bcmath php-gd php-mbstring php-curl php-soap php-mailparse
+apt install --assume-yes --quiet php-cli php-mysql php-fpm php-imap php-xml php-curl php-json php-intl php-zip php-bcmath php-gd php-mbstring php-soap php-mailparse
 
 
 apt install --assume-yes --quiet librsvg2-bin qrencode imagemagick poppler-utils zip graphviz idn
