@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 
 echo -n "" > /var/lib/shipard/shpd/shpd-headless-browser.json
-/usr/bin/chromium-browser --remote-debugging-port=9222 --headless --no-sandbox --font-render-hinting=none &
+
+if [ -f "/usr/bin/chromium-browser" ]; then
+    /usr/bin/chromium-browser --remote-debugging-port=9222 --headless --no-sandbox --font-render-hinting=none &
+else
+    /usr/bin/chromium --remote-debugging-port=9222 --headless --no-sandbox --font-render-hinting=none &
+fi
+
 echo $! > /var/lib/shipard/shpd/shpd-headless-browser.pid
 while ! [ -s /var/lib/shipard/shpd/shpd-headless-browser.json ]; do
     sleep 0.5
