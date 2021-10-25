@@ -48,9 +48,14 @@ class InstallationDb
 		}
 
 		// -- mysql_secure_installation
-		$sqlCmd  = "UPDATE mysql.user SET Password=PASSWORD('{$cfgServer['dbPassword']}') WHERE User='root'; ";
-		$sqlCmd .= "DELETE FROM mysql.user WHERE User=''; ";
-		$sqlCmd .= "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1'); ";
+		$cmd = "mysqladmin -u root password {$cfgServer['dbPassword']}";
+		passthru($cmd);
+
+		//$sqlCmd .= "DELETE FROM mysql.user WHERE User=''; ";
+		
+		//$sqlCmd .= "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1'); ";
+		// DELETE FROM mysql.global_priv WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+
 		$sqlCmd .= "DROP DATABASE IF EXISTS test; ";
 		$sqlCmd .= "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%'; ";
 		$sqlCmd .= "FLUSH PRIVILEGES;";
@@ -59,12 +64,11 @@ class InstallationDb
 		passthru($cmd);
 
 		// -- enable root on localhost
-		$sqlCmd  = "USE mysql; ";
-		$sqlCmd .= "UPDATE user SET plugin='' WHERE user='root'; ";
-		$sqlCmd .= "FLUSH PRIVILEGES;";
-		
-		$cmd = "mysql -u root -p{$cfgServer['dbPassword']} -e \"".$sqlCmd.'"';
-		passthru($cmd);
+		//$sqlCmd  = "USE mysql; ";
+		//$sqlCmd .= "UPDATE user SET plugin='' WHERE user='root'; ";
+		//$sqlCmd .= "FLUSH PRIVILEGES;";
+		//$cmd = "mysql -u root -p{$cfgServer['dbPassword']} -e \"".$sqlCmd.'"';
+		//passthru($cmd);
 	}
 	
 	public function run()
