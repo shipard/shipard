@@ -18,7 +18,8 @@ class WebTemplateMustache extends \Shipard\Utils\TemplateCore
 	public $webEngine;
 	var $webBlocksList = NULL;
 
-	public function googleAnalytics ()	{return $this->webEngine->googleAnalytics();}
+	public function googleAnalytics ()	{return $this->webEngine->webAnalytics();}
+	public function webAnalytics ()	{return $this->webEngine->webAnalytics();}
 
 	protected function _getVariable($tag_name)
 	{

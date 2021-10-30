@@ -734,26 +734,42 @@ class WebPages extends \E10\utility
 		$this->loginRequired = (isset($this->serverInfo['loginRequired'])) ? $this->serverInfo['loginRequired'] : 0;
 	}
 
-	function googleAnalytics ()
+	function webAnalytics ()
 	{
-		$gaid = isset($this->serverInfo['gaid']) ? $this->serverInfo['gaid'] : '';
+		$c = '';
 
-		if ($gaid == '' || webPages::$secureWebPage)
-			return '';
+		$gaid = $this->serverInfo['gaid'] ?? '';
+		if ($gaid !== '' && !webPages::$secureWebPage)
+		{	
+			$c .= "(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+				(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+				m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+				})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-		$c = "<script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+				ga('create', '$gaid', 'auto');
+				ga('send', 'pageview');\n";
+		}
 
-  ga('create', '$gaid', 'auto');
-  ga('send', 'pageview');
-
-</script>";
+		$mtmSiteId = $this->serverInfo['mtmSiteId'] ?? '';
+		$mtmUrl = $this->serverInfo['mtmUrl'] ?? '';
+		if ($mtmSiteId != '' && $mtmUrl !== '' && !webPages::$secureWebPage)
+		{	
+			$c .= "var _paq = window._paq = window._paq || [];
+				_paq.push(['trackPageView']);
+				_paq.push(['enableLinkTracking']);
+				(function() {
+					var u='".$mtmUrl."';
+					_paq.push(['setTrackerUrl', u+'matomo.php']);
+					_paq.push(['setSiteId', '".$mtmSiteId."']);
+					var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+					g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+				})();\n";
+		}
 
 		return $c;
 	}
+
+	function googleAnalytics () {return $this->webAnalytics();} // TODO: remove in next versions
 
 	function webManifestUrl ()
 	{
