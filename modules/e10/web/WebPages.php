@@ -766,7 +766,10 @@ class WebPages extends \E10\utility
 				})();\n";
 		}
 
-		return $c;
+		if ($c === '')
+			return '';
+
+		return '<script>'.$c."</script>\n";
 	}
 
 	function googleAnalytics () {return $this->webAnalytics();} // TODO: remove in next versions
