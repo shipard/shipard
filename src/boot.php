@@ -1,7 +1,7 @@
 <?php
 
 define ('__E10_VERSION_ID__', 64);
-define ('__E10_VERSION__', '181');
+define ('__E10_VERSION__', '199.1');
 
 if (!defined ('__SHPD_MODULES_DIR__'))
 	define ('__SHPD_MODULES_DIR__', __SHPD_ROOT_DIR__.'/modules/');
