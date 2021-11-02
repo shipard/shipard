@@ -287,6 +287,8 @@ class IotBoxCfgUpdater extends Utility
 						$ioPort[$key] = $pinCfg['hwnr'];
 					}
 				}
+				elseif ($portTypeCfgColumn['type'] === 'int')
+					$ioPort[$key] = intval($value);
 				else
 					$ioPort[$key] = $value;
 			}

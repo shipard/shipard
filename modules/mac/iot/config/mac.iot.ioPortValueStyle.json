@@ -13,5 +13,10 @@
 		"fn": "Čtečka - ruční načítání hodnoty  (RFID čtečka, čtečka 2D / QR kódů...)",
 		"sn": "Čtečka",
 		"topicPattern": "readers/{{iotBoxId}}/{{ioPortId}}"
+	},
+	"3": {
+		"fn": "Jiný - bez použití MQTT",
+		"sn": "Jiný - bez MQTT",
+		"topicPattern": "other/{{iotBoxId}}/{{ioPortId}}"
 	}
 }

@@ -17,6 +17,12 @@
 			},
 			{
 				"id": "pinTX", "name": "Pin TX (výstup)", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["out", "hwInt"]}
+			},
+			{
+				"id": "useTelnet", "name": "Zapnout telnet server", "type": "logical", "options": ["saveOnChange"]
+			},
+			{
+				"id": "telnetPort", "name": "Port", "type": "int", "enabled": {"useTelnet": 1}
 			}
 		]
 	}
