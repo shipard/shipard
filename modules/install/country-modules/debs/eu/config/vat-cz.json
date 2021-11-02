@@ -35,22 +35,22 @@
 		},
 		"EUCZ115": {
 			"fullName": "Tuzemsko/Vstup/Základní - přenesení DP4", "name": "Základní - PDP 4", "print": "Základní - přenesení daňové povinnosti 4",
-			"type": 0, "dir": 0, "rate": 0, "noPayTax": 1, "reverseTaxCode": "203", "reverseCharge": 1, "reverseChargeCode": 4,
+			"type": 0, "dir": 0, "rate": 0, "noPayTax": 1, "reverseTaxCode": "EUCZ203", "reverseCharge": 1, "reverseChargeCode": 4,
 			"sumTax": 0, "rowTaxReturn": 43
 		},
 		"EUCZ116": {
 			"fullName": "Tuzemsko/Vstup/Snížená - přenesení DP4", "name": "Snížená - PDP 4", "print": "Snížená - přenesení daňové povinnosti 4",
-			"type": 0, "dir": 0, "rate": 1, "noPayTax": 1, "reverseTaxCode": "204", "reverseCharge": 1, "reverseChargeCode": 4,
+			"type": 0, "dir": 0, "rate": 1, "noPayTax": 1, "reverseTaxCode": "EUCZ204", "reverseCharge": 1, "reverseChargeCode": 4,
 			"sumTax": 0, "rowTaxReturn": 44
 		},
 		"EUCZ340": {
 			"fullName": "Tuzemsko/Vstup/První snížená - přenesení DP4", "name": "První snížená - PDP 4", "print": "První snížená - přenesení daňové povinnosti 4",
-			"type": 0, "dir": 0, "rate": 4, "noPayTax": 1, "reverseTaxCode": "370", "reverseCharge": 1, "reverseChargeCode": 4,
+			"type": 0, "dir": 0, "rate": 4, "noPayTax": 1, "reverseTaxCode": "EUCZ370", "reverseCharge": 1, "reverseChargeCode": 4,
 			"sumTax": 0, "rowTaxReturn": 44
 		},
 		"EUCZ117": {
 			"fullName": "Tuzemsko/Vstup/Základní - přenesení DP5", "name": "Základní - PDP 5", "print": "Základní - přenesení daňové povinnosti 5",
-			"type": 0, "dir": 0, "rate": 0, "noPayTax": 1, "reverseTaxCode": "203", "reverseCharge": 1, "reverseChargeCode": 5, "reverseChargeAmount": "w",
+			"type": 0, "dir": 0, "rate": 0, "noPayTax": 1, "reverseTaxCode": "EUCZ203", "reverseCharge": 1, "reverseChargeCode": 5, "reverseChargeAmount": "w",
 			"sumTax": 0, "rowTaxReturn": 43
 		},
 		"EUCZ118": {
@@ -187,42 +187,42 @@
 		},
 		"EUCZ215": {
 			"fullName": "EU/Vstup/Zboží/Základní", "name": "Základní - zboží EU", "print": "EU/Zboží/Základní",
-			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "205",
+			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "EUCZ205",
 			"sumTax": 0, "rowTaxReturn": 43
 		},
 		"EUCZ216": {
 			"fullName": "EU/Vstup/Zboží/Snížená", "name": "Snížená - zboží EU", "print": "EU/Zboží/Snížená",
-			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "206",
+			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "EUCZ206",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
 		"EUCZ390": {
 			"fullName": "EU/Vstup/Zboží/První snížená", "name": "První snížená - zboží EU", "print": "EU/Zboží/První snížená",
-			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "360",
+			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "EUCZ360",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
 		"EUCZ391": {
 			"fullName": "EU/Vstup/Zboží/Druhá snížená", "name": "Druhá snížená - zboží EU", "print": "EU/Zboží/Druhá snížená",
-			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "361",
+			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "EUCZ361",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
 		"EUCZ217": {
 			"fullName": "EU/Vstup/Služby/Základní", "name": "Základní - služby EU", "print": "EU/Služby/Základní",
-			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "207",
+			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "EUCZ207",
 			"sumTax": 0, "rowTaxReturn": 43
 		},
 		"EUCZ218": {
 			"fullName": "EU/Vstup/Služby/Snížená", "name": "Snížená - služby EU", "print": "EU/Služby/Snížená",
-			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "208",
+			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "EUCZ208",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
 		"EUCZ392": {
 			"fullName": "EU/Vstup/Služby/První snížená", "name": "První snížená - služby EU", "print": "EU/Služby/První snížená",
-			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "362",
+			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "EUCZ362",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
 		"EUCZ393": {
 			"fullName": "EU/Vstup/Služby/Druhá snížená", "name": "Druhá snížená - služby EU", "print": "EU/Služby/Druhá snížená",
-			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "363",
+			"type": 1, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "EUCZ363",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
 		"EUCZ401": {
@@ -252,22 +252,22 @@
 		},
 		"EUCZ415": {
 			"fullName": "DOVOZ/Vstup/Zboží/Základní", "name": "Základní - zboží DOVOZ", "print": "DOVOZ/Zboží/Základní",
-			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "405",
+			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "EUCZ405",
 			"sumTax": 0, "rowTaxReturn": 43
 		},
 		"EUCZ416": {
 			"fullName": "DOVOZ/Vstup/Zboží/Snížená", "name": "Snížená - zboží DOVOZ", "print": "DOVOZ/Zboží/Snížená",
-			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "406",
+			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "EUCZ406",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
 		"EUCZ490": {
 			"fullName": "DOVOZ/Vstup/Zboží/První snížená", "name": "První snížená - zboží DOVOZ", "print": "DOVOZ/Zboží/První snížená",
-			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "460",
+			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "EUCZ460",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
 		"EUCZ491": {
 			"fullName": "DOVOZ/Vstup/Zboží/Druhá snížená", "name": "Druhá snížená - zboží DOVOZ", "print": "DOVOZ/Zboží/Druhá snížená",
-			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "461",
+			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "EUCZ461",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
 		"EUCZ000": {
