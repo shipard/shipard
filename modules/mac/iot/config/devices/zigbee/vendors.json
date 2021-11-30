@@ -1,0 +1,11 @@
+{
+	"ikea": {
+		"fn": "IKEA"
+	},
+	"philips": {
+		"fn": "Philips"
+	},
+	"sonoff": {
+		"fn": "Sonoff"
+	}
+}

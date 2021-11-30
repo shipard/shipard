@@ -1,0 +1,40 @@
+{
+	"id": "mac.iot.devicesIOPorts", "sql": "mac_iot_devicesIOPorts", "name": "IO Porty Zařízení",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+		{"id": "iotDevice", "name": "Zařízení", "type": "int", "reference": "mac.iot.devices"},
+		{"id": "fpid", "name": "fpid", "type": "string", "len": 30},
+
+		{"id": "portType", "name": "Druh portu", "type": "enumString", "len": 40, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.iot.ioPorts.types", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "portId", "name": "ID portu", "type": "string", "len": 30},
+		{"id": "portCfg", "name": "Nastavení portu", "type": "subColumns"},
+
+		{"id": "valueStyle", "name": "Styl hodnoty", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.iot.ioPortValueStyle", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "sendAsAction", "name": "Odesílat jako Akci", "type": "logical"},	
+		{"id": "mqttTopic", "name": "Topic", "type": "string", "len": 160},
+
+		{"id": "fullName", "name": "Název portu", "type": "string", "len": 140},
+		{"id": "note", "name": "Poznámka", "type": "string", "len": 160},
+
+		{"id": "disabled", "name": "Zakázáno", "type": "logical"}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.iot.FormDeviceIOPort"}
+	],
+	"views": [
+		{"id": "default", "class": "mac.iot.ViewDevicesIOPorts"},
+		{"id": "combo", "class": "mac.iot.ViewDevicesIOPortsCombo"},
+		{"id": "comboThingsItems", "class": "mac.iot.libs.ViewDevicesIOPortsComboThings"},
+		{"id": "formList", "class": "mac.iot.ViewDevicesIOPortsFormList", "type": "form",
+			"details": {
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.iot.ViewDevicesIOPortsFormListDetail"}
+			}
+		}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "portId"},
+	"options": ["systemTable"]
+}

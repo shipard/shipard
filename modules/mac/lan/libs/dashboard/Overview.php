@@ -109,7 +109,7 @@ class Overview extends Content
 			$c .= "<tr data-overview-group='e10-lan-do-{$dgId}'>";
 
 			$c .= "<td style='vertical-align: top;'>";
-			$c .= "<span class='indicator' id='e10-lan-do-{$deviceNdx}'><i class='fa fa-square'></i></span> ";
+			$c .= "<span class='indicator' id='e10-lan-do-{$deviceNdx}'>".$this->app()->ui()->icon('system/iconCheck')."</span> ";
 			$c .= $this->app()->ui()->renderTextLine(['text' => $device['title'], 'icon' => $device['icon']/*, 'suffix' => $device['deviceId']*/]);
 			$c .= "</td>";
 
@@ -149,7 +149,7 @@ class Overview extends Content
 			$c .= "<tr data-overview-group='e10-lan-do-lan'>";
 
 			$c .= "<td style='vertical-align: top;'>";
-			$c .= "<span class='indicator' id='e10-lan-do-{$treeItemNdx}'><i class='fa fa-square'></i></span> ";
+			$c .= "<span class='indicator' id='e10-lan-do-{$treeItemNdx}'>".$this->app()->ui()->icon('system/iconCheck')."</span> ";
 			$c .= utils::es($treeItem['title']);
 			$c .= "</td>";
 
@@ -205,7 +205,7 @@ class Overview extends Content
 			$rack = $this->lanTree->racks[$treeItem['rackNdx']];
 
 			$c .= "<td style='vertical-align: middle;  padding-left: {$level}em;'>";
-			$c .= "<span class='indicator' id='e10-lan-do-{$treeItemNdx}'><i class='fa fa-square'></i></span> ";
+			$c .= "<span class='indicator' id='e10-lan-do-{$treeItemNdx}'>".$this->app()->ui()->icon('system/iconCheck')."</span> ";
 			$c .= utils::es($treeItem['title']);
 			$c .= "</td>";
 

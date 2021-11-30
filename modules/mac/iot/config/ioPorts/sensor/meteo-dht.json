@@ -1,0 +1,13 @@
+{
+	"name": "Meteo čidlo DHT22",
+	"title": "Meteo čidlo DHT22",
+	"useValueKind": 0,
+	"fixedValuesTopic": "sensors/",
+	"fields": {
+		"columns": [
+			{
+				"id": "pinData", "name": "Pin", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["in"]}
+			}
+		]
+	}
+}

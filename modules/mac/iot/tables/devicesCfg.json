@@ -1,0 +1,16 @@
+{
+	"id": "mac.iot.devicesCfg", "sql": "mac_iot_devicesCfg", "name": "Konfigurace IoT zařízení",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "iotDevice", "name": "Zařízení", "type": "int", "reference": "mac.iot.devices"},
+
+		{"id": "cfgData", "name": "Data nastavení", "type": "memo"},
+		{"id": "cfgDataVer", "name": "Verze", "type": "string", "len": 40, "options": ["ascii"]},
+		{"id": "cfgDataTimestamp", "name": "Datum a čas", "type": "timestamp"},
+
+		{"id": "deviceInfoData", "name": "Informace o zařízení", "type": "memo"},
+		{"id": "deviceInfoVer", "name": "Verze informací o zařízení", "type": "string", "len": 40, "options": ["ascii"]},
+		{"id": "deviceInfoTimestamp", "name": "Datum a čas informací o zařízení", "type": "timestamp"}
+	],
+	"options": ["systemTable"]
+}

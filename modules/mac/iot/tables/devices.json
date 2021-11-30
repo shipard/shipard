@@ -1,0 +1,45 @@
+{
+	"id": "mac.iot.devices", "sql": "mac_iot_devices", "name": "IoT zařízení",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "fullName", "name": "Úplný název", "type": "string", "len": 120},
+		{"id": "friendlyId", "name": "ID", "type": "string", "len": 60},
+		{"id": "hwId", "name": "HW ID", "type": "string", "len": 24},
+
+		{"id": "lan", "name": "Síť", "type": "int", "reference": "mac.lan.lans"},
+		{"id": "place", "name": "Místo", "type": "int", "reference": "e10.base.places"},
+		{"id": "deviceType", "name": "Typ ovládacího prvku", "type": "enumString", "len": 15, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.iot.devices.types", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "deviceKind", "name": "Druh ovládacího prvku", "type": "enumString", "len": 20, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.iot.devices.kinds", "cfgValue": "", "cfgText": "fn"}},
+	
+		{"id": "deviceVendor", "name": "Výrobce", "type": "enumString", "len": 20, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": ""}},
+		{"id": "deviceModel", "name": "Model", "type": "enumString", "len": 40, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": ""}},
+	
+		{"id": "deviceSettings", "name": "Nastavení", "type": "subColumns"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+  "lists": [
+		{"id": "ioPorts", "class": "e10.base.ListRows", "name": "IO Porty", "table": "mac.iot.devicesIOPorts", "queryColumn": "iotDevice", "orderColumn": "rowOrder"}
+  ],
+
+	"views": [
+		{
+			"id": "default", "class": "mac.iot.ViewDevices", 
+      "details": {
+        "default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.iot.ViewDetailDevice"},
+        "cfgScripts": {"title": "Nastavení", "icon": "system/detailSettings", "type": "detail", "class": "mac.iot.ViewDetailDeviceCfgScripts"}
+      }
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.iot.FormDevice"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

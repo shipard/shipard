@@ -15,7 +15,8 @@
 		{"id": "vlanManagement", "name": "VLAN pro management aktivních prvků", "type": "int", "reference": "mac.lan.vlans", "comboViewer": "comboVlans"},
 		{"id": "vlanAdmins", "name": "VLAN správců sítě", "type": "int", "reference": "mac.lan.vlans", "comboViewer": "comboVlans"},
 
-		{"id": "robotUser", "name": "Uživatel - robot pro komunikaci s databází ", "type": "int", "reference": "e10.persons.persons", "comboViewer": "users"},
+		{"id": "robotUser", "name": "Uživatel - robot pro komunikaci s databází", "type": "int", "reference": "e10.persons.persons", "comboViewer": "users"},
+		{"id": "domain", "name": "Doména", "type": "string", "len": "80"},
 
 		{"id": "defaultMacDataSource", "name": "Výchozí zdroj dat pro monitoring", "type": "int", "reference": "mac.data.sources"},
 		{"id": "lanMonDashboardsUrl", "name": "URL pro dahboardy monitoringu", "type": "string", "len": 80},

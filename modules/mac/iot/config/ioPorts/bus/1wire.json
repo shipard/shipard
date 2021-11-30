@@ -1,0 +1,14 @@
+{
+	"name": "1-Wire",
+	"title": "1-Wire",
+	"useValueKind": 0,
+	"isBus": 1,
+	"fixedValuesTopic": "sensors/",
+	"fields": {
+		"columns": [
+			{
+				"id": "pin", "name": "Pin", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["in", "hwInt"]}
+			}
+		]
+	}
+}

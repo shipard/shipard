@@ -23,11 +23,14 @@
 	"router-mikrotik": {
 		"dk": 8, "fn": "Mikrotik", "cfg": "router/router-mikrotik", "sgClassId": "mac.lan.libs.cfgScripts.Mikrotik_router"
 	},
+	"ad-mikrotik": {
+		"dk": 14, "fn": "AD Mikrotik", "cfg": "ad/ad-mikrotik", "sgClassId": "mac.lan.libs.cfgScripts.Mikrotik_router"
+	},
 	"server-linux": {
-		"dk": 7, "fn": "Linux", "cfg": "server/server-linux"
+		"dk": 7, "fn": "Linux", "cfg": "server/server-linux", "useHWMode": 1
 	},
 	"server-windows": {
-		"dk": 7, "fn": "Windows", "cfg": "server/server-windows"
+		"dk": 7, "fn": "Windows", "cfg": "server/server-windows", "useHWMode": 1
 	},
 	"nas-synology": {
 		"dk": 11, "fn": "Synology", "cfg": "nas/nas-synology"
@@ -39,7 +42,7 @@
 		"dk": 30, "fn": "NUT", "cfg": "ups/ups-nut"
 	},
 	"shipardNode-common": {
-		"dk": 70, "fn": "Shipard Node", "cfg": "shipardNode/shipardNode-common"
+		"dk": 70, "fn": "ZRUŠENO - Shipard Node", "cfg": "shipardNode/shipardNode-common"
 	},
 	"sib-ub-oli-esp32-poe": {
 		"dk": 75, "fn": "Olimex ESP32-POE", "cfg": "iot/sib-ub-oli-esp32-poe", "useIOPorts": 1

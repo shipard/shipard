@@ -1,0 +1,12 @@
+{
+	"light": {
+		"fn": "Světlo"
+	},
+
+	"controller": {
+		"fn": "Ovladač"
+	}
+
+
+}
+

@@ -1,0 +1,15 @@
+{
+	"name": "Měřič osvětlení BH1750",
+	"title": "Měřič osvětlení BH1750",
+	"useValueKind": 1,
+	"fields": {
+		"columns": [
+			{
+				"id": "i2cBusPortId", "name": "I2C sběrnice", "type": "enumString", "len": 30, "enumCfgFlags": {"type": "ioPortId"}
+			},
+			{
+				"id": "address", "name": "Adresa (hex)", "type": "string", "len": 2, "placeholder": "23"
+			}
+		]
+	}
+}

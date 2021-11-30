@@ -1,0 +1,34 @@
+{
+	"name": "Počitadlo impulsů",
+	"title": "Počitadlo impulsů",
+	"useValueKind": 1,
+	"fields": {
+		"columns": [
+			{
+				"id": "pin", "name": "Pin", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["in"]}
+			},
+			{
+				"id": "publishCntr", "name": "Hlásit stav počitadla", "type": "logical"
+			},
+			{
+				"id": "publishPPS", "name": "Hlásit počet impulsů / sekundu", "type": "logical"
+			},
+			{
+				"id": "publishPPM", "name": "Hlásit počet impulsů / minutu", "type": "logical"
+			},
+			{
+				"id": "useCoef", "name": "Přepočítávat naměřenou hodnotu koeficientem", "type": "enumInt",
+				"enumCfg": {"cfgItem": "mac.devices.counterCoeficient", "cfgValue": "", "cfgText": "name"}
+			},
+			{
+				"id": "coef", "name": "Koeficinet", "type": "int"
+			},
+			{
+				"id": "timeoutOnToOff", "name": "Minimální délka trvání stavu Zapnuto [s]", "type": "int"
+			},
+			{
+				"id": "publishDelta", "name": "Minimální změna hodnoty počtu impulsů [%]", "type": "int", "placeholder": "2"
+			}
+		]
+	}
+}

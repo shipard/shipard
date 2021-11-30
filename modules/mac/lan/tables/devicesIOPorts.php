@@ -154,11 +154,6 @@ class TableDevicesIOPorts extends DbTable
 		}
 		else
 		{
-/*			$topicStyle = $ioPortRecData['topicStyle'];
-			if (!$topicStyle) // auto detect
-				$topicStyle = $valueStyleCfg['topicStyle'];
-			$topicStyleCfg = $this->app()->cfgItem('mac.iot.ioPortTopicStyle.' . $topicStyle, NULL);
-*/
 			$topicPattern = $valueStyleCfg['topicPattern'];
 		}
 

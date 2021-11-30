@@ -29,7 +29,7 @@ class NodeServerCfgUpdater extends Utility
 
 	var $changes = NULL;
 
-	var $formatVersion = '2020-11.1';
+	var $formatVersion = '2021-11.2';
 
 	var $defaultWebSocketsPort = 8888;
 	var $useNewWebsockets = 0;
@@ -54,7 +54,7 @@ class NodeServerCfgUpdater extends Utility
 
 		$this->useNewWebsockets = $this->app->cfgItem ('options.experimental.testNewWebsockets', 0);
 		if ($this->useNewWebsockets)
-			$this->defaultWebSocketsPort = 9002;
+			$this->defaultWebSocketsPort = 9883;
 	}
 
 	function lanCfg($lanNdx)
@@ -77,10 +77,10 @@ class NodeServerCfgUpdater extends Utility
 		$localServers = [];
 		$mainServers = [];
 
-		$q[] = 'SELECT devices.*, lans.mainServerCameras, lans.mainServerLanControl, lans.mainServerIot, lans.alertsDeliveryTarget';
+		$q[] = 'SELECT devices.*, lans.mainServerCameras, lans.mainServerLanControl, lans.mainServerIot, lans.alertsDeliveryTarget, lans.[domain] AS lanDomain';
 		array_push ($q,' FROM [mac_lan_devices] AS devices');
 		array_push ($q,' LEFT JOIN mac_lan_lans AS lans ON devices.lan = lans.ndx');
-		array_push ($q,' WHERE devices.[deviceKind] = %i', 70, ' AND devices.[docState] != %i', 9800);
+		array_push ($q,' WHERE devices.[deviceKind] = %i', 7, ' AND devices.[nodeSupport] = %i', 1, ' AND devices.[docState] != %i', 9800);
 		array_push ($q,' ORDER BY devices.[id], devices.[fullName], devices.[ndx]');
 		$rows = $this->app()->db->query ($q);
 
@@ -91,19 +91,23 @@ class NodeServerCfgUpdater extends Utility
 				continue;
 
 			$lanCfg = $this->lanCfg($r['lan']);
+			$lanDomain = $r['lanDomain'];
 
 			$s = [
 				'ndx' => $r['ndx'], 'id' => $r['id'], 'name' => $r ['fullName'],
-				'fqdn' => $macDeviceCfg['serverFQDN'],
+				'enableLC' => $macDeviceCfg['enableLC'],
+				'enableCams' => $macDeviceCfg['enableCams'],
+				'enableRack' => $macDeviceCfg['enableRack'],
+				'enableOthers' => $macDeviceCfg['enableOthers'],
+				'fqdn' => $macDeviceCfg['serverFQDN'] ?? '',
 				'httpsPort' => (isset($macDeviceCfg['httpsPort']) && (intval($macDeviceCfg['httpsPort']))) ? intval($macDeviceCfg['httpsPort']) : 443,
 				'lanNdx' => $r['lan'],
-				'serverRole' => isset($macDeviceCfg['serverRole']) ? $macDeviceCfg['serverRole'] : '',
+				'domain' => $lanDomain,
 				'mqttServerHost' => '',
 				'alertsDeliveryTarget' => $r['alertsDeliveryTarget'],
 				'alertsDeliveryEmail' => ($r['alertsDeliveryTarget'] !== '') ? $this->app()->cfgItem('dsid', 0) . '--'.$r['alertsDeliveryTarget'].'@shipard.email' : '',
 				'lanCfgVer' => $lanCfg->cfgVer,
 				'formatVersion' => $this->formatVersion,
-				'subsystems' => [],
 			];
 
 			if ($r['mainServerIot'] && !isset($mainServers[$r['mainServerIot']]))
@@ -120,65 +124,32 @@ class NodeServerCfgUpdater extends Utility
 					$s['mqttServerHost'] = $mainServers[$r['mainServerIot']]['macDeviceCfgX']['serverFQDN'];
 			}
 
-			$s['subsystems']['lan']['enabled'] = 0;
-			if ($macDeviceCfg['serverRole'] === 'lc' || $macDeviceCfg['serverRole'] === 'rb')
-				$s['subsystems']['lan']['enabled'] = 1;
-
-			$s['subsystems']['lanControl']['enabled'] = 0;
-			if ($macDeviceCfg['serverRole'] === 'lc')
-				$s['subsystems']['lanControl']['enabled'] = 1;
-
-			$s['subsystems']['cameras']['enabled'] = 0;
-			if ($macDeviceCfg['serverRole'] === 'cams')
-			{
-				$s['camerasURL'] = 'https://'.$macDeviceCfg['serverFQDN'].'/';
-				$s['subsystems']['cameras']['enabled'] = 1;
-				$s['subsystems']['cameras']['camerasURL'] = 'https://'.$macDeviceCfg['serverFQDN'].'/';
-			}
-
-			$s['subsystems']['wss']['enabled'] = 0;
-			if ($macDeviceCfg['serverRole'] === 'lc')
-			{
-				$s['subsystems']['wss']['enabled'] = 1;
-				$s['subsystems']['wss']['wsPort'] = ($macDeviceCfg['wssPort']) ? $macDeviceCfg['wssPort'] : $this->defaultWebSocketsPort;
-				$s['subsystems']['wss']['lanNdx'] =  $r['lan'];
-				if ($macDeviceCfg['serverFQDN'] !== '')
-				{
-					$s['subsystems']['wss']['fqdn'] = $macDeviceCfg['serverFQDN'];
-					$s['subsystems']['wss']['wsUrl'] = 'wss://' . $macDeviceCfg['serverFQDN'] . ':' . (($macDeviceCfg['wssPort']) ? $macDeviceCfg['wssPort'] : $this->defaultWebSocketsPort) . '/realtime/';
-					$s['subsystems']['wss']['postUrl'] = 'https://' . $macDeviceCfg['serverFQDN'] . ':' . (($macDeviceCfg['wssPort']) ? $macDeviceCfg['wssPort'] : $this->defaultWebSocketsPort) . '/';
-				}
-				else
-				{
-					$s['subsystems']['wss']['wsUrl'] = '';
-					$s['subsystems']['wss']['postUrl'] = '';
-				}
-
-				$af = explode(' ', $macDeviceCfg['wssAllowedFrom']);
-				foreach ($af as $afIP)
-					$s['subsystems']['wss']['allowedFrom'][] = trim($afIP);
-			}
-
-			$s['subsystems']['mqtt']['enabled'] = 0;
-			if ($macDeviceCfg['serverRole'] === 'lc')
-			{
-				$s['subsystems']['mqtt']['enabled'] = 1;
-			}
-
 			$cfgData = $s;
 
 			$localServers[$r['ndx']] = $s;
 
 			$this->nodeServerConfigLan ($cfgData, $r['ndx']);
 
+			if ($macDeviceCfg['serverFQDN'] !== '')
+				$cfgData['fqdn'] = $macDeviceCfg['serverFQDN'];
 
-			if ($macDeviceCfg['serverRole'] === 'cams')
+			if ($macDeviceCfg['enableCams'])
 			{
+				$cfgData['camerasURL'] = 'https://'.$macDeviceCfg['serverFQDN'].'/';
 				$this->nodeServerConfigCameras($cfgData, $r['ndx'], $r['lan'], $r['mainServerCameras'] === $r['ndx'], $macDeviceCfg);
-			}
+				$this->nodeServerConfigLanControl($cfgData, $r['ndx'], $r['lan'], $r['mainServerLanControl'] === $r['ndx']);
 
-			if ($macDeviceCfg['serverRole'] === 'lc')
+			}
+			if ($macDeviceCfg['enableLC'])
 			{
+				$cfgData['wsUrl'] =  'wss://' . $macDeviceCfg['serverFQDN'] . ':' . (($macDeviceCfg['wssPort']) ? $macDeviceCfg['wssPort'] : $this->defaultWebSocketsPort);
+				$cfgData['wsPort'] = ($macDeviceCfg['wssPort']) ? $macDeviceCfg['wssPort'] : $this->defaultWebSocketsPort;
+				$cfgData['lanNdx'] =  $r['lan'];
+
+				$af = explode(' ', $macDeviceCfg['wssAllowedFrom']);
+				foreach ($af as $afIP)
+					$cfgData['wssAllowedFrom'][] = trim($afIP);
+
 				$this->nodeServerConfigIotBoxes($cfgData, $r['ndx'], $r['lan'], $r['mainServerLanControl'] === $r['ndx']);
 				$this->nodeServerConfigIotThings($cfgData, $r['ndx'], $r['lan'], $r['mainServerLanControl'] === $r['ndx']);
 				$this->nodeServerConfigLanControl($cfgData, $r['ndx'], $r['lan'], $r['mainServerLanControl'] === $r['ndx']);
@@ -321,7 +292,10 @@ class NodeServerCfgUpdater extends Utility
 
 	function nodeServerConfigIotBoxes (&$cfgData, $serverNdx, $lanNdx, $isDefaultServer)
 	{
+
 		$iotBoxes = [];
+
+		/*
 		$q[] = 'SELECT devices.*, ibCfg.iotBoxCfgData FROM [mac_lan_devices] AS [devices]';
 		array_push($q, ' LEFT JOIN [mac_lan_devicesCfgIoTBoxes] AS ibCfg ON [devices].ndx = ibCfg.[device]');
 		array_push($q, ' WHERE [deviceKind] = 75 AND [docState] != 9800');
@@ -348,6 +322,31 @@ class NodeServerCfgUpdater extends Utility
 
 			$iotBoxes [$r['ndx']] = $iotBox;
 		}
+		*/
+
+		$q[] = 'SELECT iotDevices.*, ibCfg.cfgData FROM [mac_iot_devices] AS [iotDevices]';
+		array_push($q, ' LEFT JOIN [mac_iot_devicesCfg] AS ibCfg ON [iotDevices].ndx = ibCfg.[iotDevice]');
+		array_push($q, ' WHERE [deviceType] = %s', 'shipard', ' AND [docState] != 9800');
+		array_push($q,'ORDER BY [friendlyId], [fullName], [ndx]');
+		$rows = $this->app()->db->query ($q);
+
+		foreach ($rows as $r)
+		{
+			$iotDeviceCfg = json_decode($r['cfgData'], TRUE);
+			$iotBoxCfg = $iotDeviceCfg['iotBoxCfg'] ?? NULL;
+			if (!$iotBoxCfg)
+				continue;
+
+			$iotBox = [
+				'ndx' => $r['ndx'], 'id' => $r['friendlyId'], 'name' => $r ['fullName'], 'localServer' => $serverNdx,
+				'mac' => [strtolower($r['hwId'])],
+				'cfg' => $iotBoxCfg
+			];
+
+			$iotBoxes [$r['ndx']] = $iotBox;
+		}
+
+
 
 		if (count($iotBoxes))
 			$cfgData['iotBoxes'] = $iotBoxes;
@@ -355,12 +354,10 @@ class NodeServerCfgUpdater extends Utility
 
 	function nodeServerConfigIotThings (&$cfgData, $serverNdx, $lanNdx, $isDefaultServer)
 	{
-		$itc = new \mac\iot\libs\IotCfgCreator($this->app());
-		$itc->iotBoxes = $cfgData['iotBoxes'];
-		$itc->init();
-		$itc->setParams($serverNdx, $lanNdx);
-		$itc->createConfig();
-		$cfgData['iotThings'] = $itc->cfg;
+		$iecc = new \mac\iot\libs\IotEngineCfgCreator($this->app());
+		$iecc->init();
+		$iecc->run();
+		$cfgData['iotThings'] = $iecc->cfg;
 	}
 
 	function nodeServerConfigLanControl (&$cfgData, $serverNdx, $lanNdx, $isDefaultServer)

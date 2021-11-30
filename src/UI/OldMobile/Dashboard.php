@@ -7,7 +7,7 @@ namespace ui\mobile;
  * Class Dashboard
  * @package mobileui
  */
-class Dashboard extends \ui\mobile\PageObject
+class Dashboard extends \Shipard\UI\OldMobile\PageObject
 {
 	var $viewer = NULL;
 

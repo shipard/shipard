@@ -6,7 +6,7 @@ use e10\Utility, \e10\utils, \e10\json;
 
 class DeviceMonitoringTemplate extends \E10\TemplateCore
 {
-	public function loadTemplate ($name, $templateFileName = 'page.mustache')
+	public function loadTemplate ($name, $templateFileName = 'page.mustache', $forceTemplateScript = NULL)
 	{
 		$fullTemplateName = __SHPD_MODULES_DIR__ . $name;
 

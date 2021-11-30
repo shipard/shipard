@@ -868,11 +868,12 @@ class Application extends \Shipard\Application\ApplicationCore
 
 	public function webSocketServers ()
 	{
-		$wssAll = $this->cfgItem ('e10.terminals.servers', []);
+		//$wssAll = $this->cfgItem ('e10.terminals.servers', []);
 
-		if (!count($wssAll))
+		//if (!count($wssAll))
 			return $this->webSocketServersNew ();
 
+		/*	
 		$wss = [];
 		forEach ($wssAll as $ws)
 		{
@@ -905,6 +906,7 @@ class Application extends \Shipard\Application\ApplicationCore
 		}
 
 		return $wss;
+		*/
 	}
 
 	public function wss ()

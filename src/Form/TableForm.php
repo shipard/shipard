@@ -168,7 +168,7 @@ class TableForm
 			if (isset ($recData['recData']))
 			{
 				$this->recData = $recData['recData'];
-				$this->uiData = $recData['ui'];
+				$this->uiData = $recData['ui'] ?? [];
 			}
 			else
 				$this->recData = $recData;
@@ -1014,8 +1014,7 @@ class TableForm
 		{
 			foreach ($sci['groups'] as $group)
 			{
-				if (isset($group['title']))
-					$this->addGroupLabel ($group['title']);
+				$groupAdded = 0;
 				foreach ($sci['columns'] as $col)
 				{
 					if (!isset($col['group']) || $col['group'] !== $group['id'])
@@ -1027,6 +1026,13 @@ class TableForm
 					$sco = 0;
 					if ($sce === 1)
 						$sco = self::coReadOnly;
+
+					if (!$groupAdded && isset($group['title']))
+					{
+						$this->addGroupLabel ($group['title']);
+						$groupAdded = 1;
+					}
+
 					$this->addColumnInput($col['id'], $sco, FALSE, $columnId);
 				}
 			}

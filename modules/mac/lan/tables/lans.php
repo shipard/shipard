@@ -234,6 +234,7 @@ class FormLan extends TableForm
 				$this->addColumnInput ('shortName');
 
 				$this->addSeparator(self::coH2);
+				$this->addColumnInput ('domain');
 				$this->addColumnInput ('mainServerLanControl');
 				$this->addColumnInput ('mainServerCameras');
 				$this->addColumnInput ('mainServerIoT');

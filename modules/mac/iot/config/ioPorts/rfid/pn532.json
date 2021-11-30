@@ -1,0 +1,27 @@
+{
+	"name": "RFID PN532",
+	"title": "RFID PN532",
+	"useValueKind": 1,
+	"fields": {
+		"columns": [
+			{"id": "mode", "name": "Způsob připojení", "type": "enumInt", "options": ["saveOnChange"],
+				"enumValues": {"0": "I2C", "1": "HSU (UART)"}
+			},
+			{
+				"id": "i2cBusPortId", "name": "I2C sběrnice", "type": "enumString", "len": 30, "enumCfgFlags": {"type": "ioPortId"},
+				"enabled": {"mode": 0}
+			},
+			{
+				"id": "pinRX", "name": "Pin RX (vstup)", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["in", "hwInt"]},
+				"enabled": {"mode": 1}
+			},
+			{
+				"id": "pinTX", "name": "Pin TX (výstup)", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["out", "hwInt"]},
+				"enabled": {"mode": 1}
+			},
+			{
+				"id": "portIdBuzzer", "name": "IO port Bzučák", "type": "enumString", "len": 30, "enumCfgFlags": {"type": "ioPortId"}
+			}
+		]
+	}
+}

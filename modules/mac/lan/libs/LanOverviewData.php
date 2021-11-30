@@ -216,7 +216,7 @@ class LanOverviewData extends Utility
 
 				}
 			}
-			elseif ($deviceKind === 7 || ($deviceKind === 70 && isset($this->devices[$deviceNdx]['macDeviceCfg']) && ($this->devices[$deviceNdx]['macDeviceCfg']['supportCameras'] || $this->devices[$deviceNdx]['macDeviceCfg']['supportWss'])))
+			elseif ($deviceKind === 7 || ($deviceKind === 70 && isset($this->devices[$deviceNdx]['macDeviceCfg']) && ($this->devices[$deviceNdx]['macDeviceCfg']['rnableCams'] || $this->devices[$deviceNdx]['macDeviceCfg']['supportWss'])))
 			{ // servers
 				if ($this->devices[$deviceNdx]['macDeviceType'] === 'server-linux' || $this->devices[$deviceNdx]['macDeviceType'] === 'shipardNode-common')
 				{
@@ -228,7 +228,7 @@ class LanOverviewData extends Utility
 					];
 				}
 
-				if (isset($this->devices[$deviceNdx]['macDeviceCfg']) && $this->devices[$deviceNdx]['macDeviceCfg']['supportCameras'])
+				if (isset($this->devices[$deviceNdx]['macDeviceCfg']) && $this->devices[$deviceNdx]['macDeviceCfg']['enableCams'])
 				{ // video
 					$badgeQuantityId = 'shn_video.filessize';
 					$this->dgData[self::dgiCamera]['dpInfo'][] = [

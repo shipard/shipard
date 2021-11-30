@@ -1,11 +1,39 @@
 {
 	"name": "Server Linux",
 	"title": "Linux",
+
 	"fields": {
 		"columns": [
+			{"id": "enableLC", "group": "general", "name": "Řízení sítě", "type": "logical", "options": ["saveOnChange"]},
+			{"id": "enableCams", "group": "general", "name": "Kamerový server", "type": "logical", "options": ["saveOnChange"]},
+			{"id": "enableRack", "group": "general", "name": "Monitoring a správa racku", "type": "logical", "options": ["saveOnChange"]},
+			{"id": "enableOthers", "group": "general", "name": "Ostatní", "type": "logical", "options": ["saveOnChange"]},
 
-		]
+			{"id": "enableWebSrv", "group": "websrv", "name": "Zapnout web server", "type": "logical", "options": ["saveOnChange"]},
+			{"id": "serverFQDN", "group": "websrv", "name": "Doménové jméno serveru", "type": "string", "len": 80, "enabled": {"enableWebSrv": 1}},
+			{"id": "httpsPort", "group": "websrv", "name": "HTTPS port", "type": "int", "placeholder": "443", "enabled": {"enableWebSrv": 1}},
+
+			{"id": "wssAllowedFrom", "group": "lc", "name": "Povolit WSS z IP adres", "type": "string", "len": 160, "enabled": {"enableLC": 1}},
+			{"id": "mqttHostAddress", "group": "lc", "name": "Adresa MQTT serveru", "type": "string", "len":  60, "placeholder":  "IP adresa nebo DNS jméno", "enabled": {"enableLC": 1}},
+			{"id": "wssPort", "group": "lc", "name": "Port pro WSS", "type": "int", "placeholder":  "8888", "enabled": {"enableLC": 1}},
+
+			{"id": "showRacks", "group": "rack", "name": "Displej se stavem racku", "type": "logical", "options": ["saveOnChange"], "enabled": {"enableRack": 1}},
+			{"id": "displayRack1", "group": "rack", "name": "Rack 1", "type": "int", "reference": "mac.lan.racks", "enabled": {"enableRack": 1, "showRacks": 1}},
+			{"id": "displayRack2", "group": "rack", "name": "Rack 2", "type": "int", "reference": "mac.lan.racks", "enabled": {"enableRack": 1, "showRacks": 1}},
+			{"id": "displayRack3", "group": "rack", "name": "Rack 3", "type": "int", "reference": "mac.lan.racks", "enabled": {"enableRack": 1, "showRacks": 1}},
+			
+			{"id": "camLogin", "group": "cams", "name": "Výchozí uživatel pro kamery", "type": "string", "len": 30, "enabled": {"enableCams": 1}},
+			{"id": "camPasswd", "group": "cams", "name": "Výchozí heslo pro kamery", "type": "string", "len": 50, "enabled": {"enableCams": 1}}
+		],
+		"groups": [
+				{"id": "general", "title": "Základní nastavení"},
+				{"id": "websrv", "title": "Webový server"},
+				{"id": "lc", "title": "Monitoring a řízení sítě"},
+				{"id": "rack", "title": "Správa racku"},
+				{"id": "cams", "title": "Kamerový server"}
+			]
 	},
+
 	"dashboards": {
 		"realtime-summary": {
 			"title": "Přehled",

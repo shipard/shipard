@@ -17,23 +17,34 @@ class LanInfoUpload extends Utility
 	{
 		$data = json_decode($this->app()->postData(), TRUE);
 		if (!$data)
+		{
+			error_log("---no post data--");
 			return;
+		}
 
 		$reUploadFrom = $this->app()->testGetParam('reupload-from');
 		if ($reUploadFrom !== '')
 		{
 			$data = $this->checkReUpload($reUploadFrom, $data);
 			if (!$data)
+			{
+				error_log("---no check reupload--");	
 				return;
+			}
 		}
 
 		$serverNdx = intval($data['serverId']);
 		if (!$serverNdx)
+		{
+			error_log("---unknown server `$serverNdx`--");	
 			return;
-
+		}
 		$cfg = $this->db()->query ('SELECT newDataVer FROM [mac_lan_devicesCfgNodes] WHERE device = %i', $serverNdx)->fetch();
 		if (!$cfg)
+		{
+			error_log("-- no nodeCfg--");
 			return;
+		}	
 
 		$this->result ['cfgDataVer'] = $cfg['newDataVer'];
 

@@ -11,11 +11,7 @@
 			"hosting.core.dsUsers": {"default": 2, "e10pro.hosting.server.ViewUsersDataSources": 2},
 			"hosting.core.hostings": {"default": 2},
 			"hosting.core.partners": {"default": 2},
-			"hosting.core.partnersPersons": {"default": 2},
-			"hosting.core.domainsAccounts": {"default": 2},
-			"hosting.core.domains": {"default": 2},
-			"hosting.core.domainsRecords": {"default": 2},
-			"hosting.core.certs": {"default": 2}
+			"hosting.core.partnersPersons": {"default": 2}
 		}
 	},
 	"hstngcd": {

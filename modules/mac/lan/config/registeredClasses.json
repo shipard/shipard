@@ -1,6 +1,7 @@
 {
 	"objectsCalls": {
 		"mac-get-node-server-cfg": {"classId": "mac.lan.libs.GetNodeServerConfig"},
+		"mac-get-node-server-certs": {"classId": "mac.lan.libs.GetNodeServerCerts"},
 
 		"mac-get-lan-monitoring-dashboards": {"classId": "mac.lan.libs.GetLanMonitoringDashboards"},
 		"mac-get-lan-monitoring-snmp": {"classId": "mac.lan.libs.GetLanMonitoringSnmp"},

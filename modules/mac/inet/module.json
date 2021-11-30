@@ -1,0 +1,13 @@
+{
+  "id": "mac.inet",
+  "name": "Monitoring And Control - Internet",
+  "tables": ["certs", "domains", "domainsAccounts"],
+  "modules": ["integrations/core"],
+
+  "config": [
+		{"id": "+mac.inet.domainsRegistrars", "file": "domainsRegistrars.json"},
+		{"id": "+mac.inet.domainsRecordTypes", "file": "domainsRecordTypes.json"},
+		{"id": "+mac.inet.certsProviders", "file": "certsProviders.json"}
+
+	]
+}

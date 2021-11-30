@@ -144,7 +144,7 @@ class OverviewData extends Utility
 					$this->dgData[$dgId]['devices'] = [];
 				}
 
-				if (!in_array($deviceNdx, $this->dgData[$dgId]['devices']))
+				if (!in_array($deviceNdx, $this->dgData[$dgId]['devices'] ?? []))
 					$this->dgData[$dgId]['devices'][] = $deviceNdx;
 			}
 
@@ -181,7 +181,7 @@ class OverviewData extends Utility
 					];
 				}
 
-				if (isset($this->devices[$deviceNdx]['macDeviceCfg']) && $this->devices[$deviceNdx]['macDeviceCfg']['serverRole'] === 'cams')
+				if (isset($this->devices[$deviceNdx]['macDeviceCfg']) && $this->devices[$deviceNdx]['macDeviceCfg']['enableCams'])
 				{ // video
 					$badgeQuantityId = 'shn_video.filessize';
 					$this->dgData[self::dgiCamera]['dpInfo'][] = [
@@ -297,7 +297,7 @@ class OverviewData extends Utility
 			}
 			elseif ($deviceKind === 70)
 			{ // shipard node server
-				if (isset($this->devices[$deviceNdx]['macDeviceCfg']) && $this->devices[$deviceNdx]['macDeviceCfg']['serverRole'] === 'cams')
+				if (isset($this->devices[$deviceNdx]['macDeviceCfg']) && $this->devices[$deviceNdx]['macDeviceCfg']['enableCams'])
 				{ // video
 					if ($r['portNumber'] == 2)
 					{

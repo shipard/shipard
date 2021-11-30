@@ -1,0 +1,36 @@
+{
+	"id": "mac.iot.eventsOn", "sql": "mac_iot_eventsOn", "name": "Události Když",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+    {"id": "tableId", "name": "Tabulka", "type": "string", "len": 48, "options": ["ascii"]},
+    {"id": "recId", "name": "Řádek", "type": "int"},
+
+		{"id": "fullName", "name": "Název", "type": "string", "len": "100"},
+
+		{"id": "eventType", "name": "Typ události", "type": "enumString", "len": "20", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.iot.events.onEventTypes", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "iotDevice", "name": "Zdrojové zařízení", "type": "int", "reference": "mac.iot.devices", "options": ["saveOnChange"]},
+		{"id": "iotDeviceEvent", "name": "Událost", "type": "enumString", "len": "60", "options": ["saveOnChange"], 
+			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "iotDeviceEventValueEnum", "name": "Hodnota události", "type": "enumString", "len": "60",
+			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "iotDeviceEventValue", "name": "Hodnota události text", "type": "string", "len": "60"},
+		{"id": "mqttTopic", "name": "Zdrojový MQTT topic", "type": "string", "len": "100"},
+		{"id": "mqttTopicPayloadItemId", "name": "Položka zprávy", "type": "string", "len": "100"},
+		{"id": "mqttTopicPayloadValue", "name": "Hodnota", "type": "string", "len": "100"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "mac.iot.ViewEventsOn"},
+		{"id": "form", "class": "mac.iot.ViewEventsOnForm"}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.iot.FormEventOn"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"options": ["systemTable"]
+}

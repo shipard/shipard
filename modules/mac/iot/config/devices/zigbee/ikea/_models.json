@@ -1,0 +1,38 @@
+{
+	"LED1936G5": {
+		"fn": "TRADFRI LED globe-bulb E27 470 lumen, dimmable, white spectrum, opal white",
+		"modelID": "TRADFRIbulbG125E27WSopal470lm"
+	},
+	"L1529": {
+		"fn": "FLOALT LED light panel, dimmable, white spectrum (60x60 cm)",
+		"modelID": "FLOALT panel WS 60x60"
+	},
+
+	"E2001/E2002": {
+		"fn": "STYRBAR remote control N2",
+		"modelID": "Remote Control N2"
+	},
+	"E1812": {
+		"fn": "TRADFRI shortcut button",
+		"modelID": "TRADFRI SHORTCUT Button"
+	},
+	"E1744": {
+		"fn": "SYMFONISK sound controller",
+		"modelID": "SYMFONISK Sound Controller"
+	},
+
+	"E1525/E1745": {
+		"fn": "TRADFRI motion sensor",
+		"modelID": "TRADFRI motion sensor"
+	},
+
+	"E1603/E1702/E1708": {
+		"fn": "TRADFRI control outlet",
+		"modelID": "TRADFRI control outlet"
+	},
+
+	"E1757": {
+		"fn": "FYRTUR roller blind",
+		"modelID": "FYRTUR block-out roller blind"
+	}
+}

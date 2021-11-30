@@ -1,0 +1,16 @@
+{
+	"name": "Sběrnice I2C",
+	"title": "Sběrnice I2C",
+	"useValueKind": 0,
+	"isBus": 1,
+	"fields": {
+		"columns": [
+			{
+				"id": "pinSDA", "name": "Pin SDA", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["in", "hwInt"]}
+			},
+			{
+				"id": "pinSCL", "name": "Pin SCL", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["out", "hwInt"]}
+			}
+		]
+	}
+}

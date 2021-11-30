@@ -93,6 +93,11 @@ class TableZones extends DbTable
 				$dashboards[$dashboardId] = $newDashboardItem;
 			}
 
+			// -- places
+			$placesRows = $this->db()->query ('SELECT [ndx], [place] FROM [mac_base_zonesPlaces] WHERE [zone] = %i', $r['ndx'], ' ORDER BY [rowOrder], [ndx]');
+			foreach ($placesRows as $pr)
+				$zone['places'][] = $pr['place'];
+
 			$zones[$r['ndx']] = $zone;
 		}
 
@@ -240,6 +245,7 @@ class FormZone extends TableForm
 
 		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 		$tabs ['tabs'][] = ['text' => 'Kamery', 'icon' => 'formCameras'];
+		$tabs ['tabs'][] = ['text' => 'Místa', 'icon' => 'tables/e10.base.places'];
 		$tabs ['tabs'][] = ['text' => 'IoT', 'icon' => 'formIoT'];
 		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
@@ -257,6 +263,10 @@ class FormZone extends TableForm
 
 				$this->openTab (TableForm::ltNone);
 					$this->addList ('cameras');
+				$this->closeTab ();
+
+				$this->openTab (TableForm::ltNone);
+					$this->addList ('places');
 				$this->closeTab ();
 
 				$this->openTab (TableForm::ltNone);

@@ -19,6 +19,7 @@
 	],
 	"lists": [
 		{"id": "cameras", "class": "e10.base.ListRows", "name": "Kamery", "table": "mac.base.zonesCameras", "queryColumn": "zone", "orderColumn": "rowOrder"},
+		{"id": "places", "class": "e10.base.ListRows", "name": "Místa", "table": "mac.base.zonesPlaces", "queryColumn": "zone", "orderColumn": "rowOrder"},
 		{"id": "sc", "class": "e10.base.ListRows", "name": "Senzory a ovládací prvky", "table": "mac.base.zonesIoTSC", "queryColumn": "zone", "orderColumn": "rowOrder"},
 		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
 	],

@@ -1,0 +1,73 @@
+{
+	"data/serial": {
+		"name": "Sériová linka", "sensor": 1, "dataType": "text"
+	},
+	"data/wiegand": {
+		"name": "Wiegand", "sensor": 1, "dataType": "text"
+	},
+
+	"rfid/pn532": {
+		"name": "RFID PN532", "sensor": 1, "dataType": "text"
+	},
+	"rfid/oli-mod1356-mif": {
+		"name": "MOD RFID 1356 MIFARE", "sensor": 1, "dataType": "text"
+	},
+	"rfid/125kHz": {
+		"name": "RFID 125 kHz", "sensor": 1, "dataType": "text"
+	},
+
+	"control/binary": {
+		"name": "Ovladač Zapnuto / Vypnuto", "dataType": "binary"
+	},
+	"control/level": {
+		"name": "Ovladač úrovně", "dataType": "numeric"
+	},
+	"control/led-strip": {
+		"name": "LED pásek", "dataType": "text"
+	},
+	"control/h-bridge": {
+		"name": "H můstek", "dataType": "enum"
+	},
+
+	"input/binary": {
+		"name": "Čidlo Zapnuto / Vypnuto", "sensor": 1, "dataType": "text"
+	},
+	"input/analog": {
+		"name": "Čidlo - Analogová hodnota", "sensor": 1
+	},
+	"input/counter": {
+		"name": "Počitadlo impulsů", "sensor": 1
+	},
+
+	"sensor/meteo-dht": {
+		"name": "Meteo čidlo DHT22", "sensor": 1
+	},
+	"sensor/meteo-bme280": {
+		"name": "Meteo čidlo BME280", "sensor": 1
+	},
+	"sensor/meteo-bh1750": {
+		"name": "Měřič osvětlení BH1750", "sensor": 1, "dataType": "numeric"
+	},
+	"sensor/distance-us": {
+		"name": "Měřič vzdálenosti (ultrazvukový)", "sensor": 1, "dataType": "numeric"
+	},
+
+	"display/nextion": {
+		"name": "Displej Nextion"
+	},
+
+	"bus/i2c": {
+		"name": "Sběrnice I2C"
+	},
+	"bus/1wire": {
+		"name": "1-Wire"
+	},
+
+	"gpio-expander/i2c": {
+		"name": "GPIO expander I2C"
+	},
+
+	"signal/gsm": {
+		"name": "GSM modul", "sensor": 1, "dataType": "text"
+	}
+}

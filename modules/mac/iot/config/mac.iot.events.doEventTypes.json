@@ -1,0 +1,15 @@
+{
+	"setDeviceProperty": {
+		"fn": "Nastavit vlastnost zařízení"
+	},
+	"incDeviceProperty": {
+		"fn": "Zvyšovat hodnotu vlastnosti zařízení"
+	},
+	"decDeviceProperty": {
+		"fn": "Snižovat hodnotu vlastnosti zařízení"
+	},
+
+	"sendMqttMsg": {
+		"fn": "Odeslat MQTT zprávu"
+	}
+}

@@ -40,7 +40,7 @@ class IotAction extends E10ApiObject
 	{
 		$this->userNdx = $this->app()->userNdx();
 		$this->tableControls = $this->app()->table('mac.iot.controls');
-		$this->tableThings = $this->app()->table('mac.iot.things');
+		//$this->tableThings = $this->app()->table('mac.iot.things');
 		$this->tableLans = $this->app()->table('mac.lan.lans');
 		$this->tableDevices = $this->app()->table('mac.lan.devices');
 
@@ -54,6 +54,7 @@ class IotAction extends E10ApiObject
 			return;
 		}
 
+		/*
 		if ($this->actionType === 'thing-action')
 		{
 			$this->controlRecData = $this->tableControls->loadRecData('@uid:'.$this->requestParam('control', '---'));
@@ -79,6 +80,37 @@ class IotAction extends E10ApiObject
 				'iotControl' => $this->controlRecData['uid'],
 				'thing' => $this->thingRecData['id'],
 				'thingAction' => $thingAction
+			];
+		}*/
+
+		if ($this->actionType === 'set-scene')
+		{
+			$this->iotDevicesUtils = new \mac\iot\libs\IotDevicesUtils($this->app());
+			$placeNdx = $this->requestParam('place', 0);
+			$placeTopic = $this->iotDevicesUtils->placeTopic($placeNdx);
+			if ($placeTopic === '')
+				return;
+
+			$sceneNdx = $this->requestParam('scene', 0);
+
+			/*
+			$sceneRecData = $this->app()->loadItem($sceneNdx, 'mac.iot.scenes');
+			if (!$sceneRecData)
+			{
+				return;
+			}
+			*/
+
+			$sceneTopic = $this->iotDevicesUtils->sceneTopic($sceneNdx);
+			if ($placeTopic === '')
+				return;
+			$payloadData = ['scene' => $sceneTopic];
+
+			$this->lanNdx = 1;//$this->controlRecData['lan'];
+			$this->requestData = [
+				'actionType' => 'mqtt-publish',
+				'mqttTopic' => $placeTopic.'/set',
+				'mqttPayload' => json_encode($payloadData),
 			];
 		}
 
@@ -122,16 +154,22 @@ class IotAction extends E10ApiObject
 
 	function runAction()
 	{
+		error_log("___IOT_ACTION___");
 		if ($this->paramsError)
+		{
+			error_log("___PARAM_ERROR___");
 			return FALSE;
+		}	
 
 		if ($this->lanControlURL === '')
+		{
+			error_log("__ERROR_lanControlURL__");
 			return FALSE;
-
+		}	
 		$url = $this->lanControlURL.'control/';
 
 		$result = utils::http_post($url, json_encode($this->requestData));
-		//error_log("@@@ GO: ".json_encode($result));
+		error_log("@@@ GO `$url`: --".json_encode($this->requestData)."--".json_encode($result));
 	}
 
 	public function createResponseContent($response)

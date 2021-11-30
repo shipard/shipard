@@ -18,12 +18,12 @@ class SensorsAndControlsEngine extends Utility
 
 	public function load()
 	{
-		$useNewWebsockets = $this->app()->cfgItem ('options.experimental.testNewWebsockets', 0);
+		//$useNewWebsockets = $this->app()->cfgItem ('options.experimental.testNewWebsockets', 0);
 
 		$this->loadWss();
 
-		if (!$useNewWebsockets)
-			return;
+		//if (!$useNewWebsockets)
+		//	return;
 
 		if ($this->app()->model()->module('mac.lan') === FALSE)
 			return;
@@ -66,16 +66,19 @@ class SensorsAndControlsEngine extends Utility
 
 		// -- sensors
 		$q = [];
-		$q[] = 'SELECT docLinks.*, sensors.*';
-		array_push ($q, ' FROM [e10_base_doclinks] AS docLinks');
-		array_push ($q, ' LEFT JOIN [mac_iot_sensors] AS sensors ON docLinks.dstRecId = sensors.ndx');
-		array_push ($q, ' WHERE srcTableId = %s', 'mac.iot.scPlacements', 'AND dstTableId = %s', 'mac.iot.sensors');
-		array_push ($q, ' AND docLinks.linkId = %s', 'mac-sc-placements-sensors', 'AND srcRecId IN %in', array_keys($this->scPlacements));
+		$q[] = 'SELECT placements.ndx AS placementNdx, sensors.*';
+		array_push ($q, ' FROM [mac_iot_scPlacements] AS placements');
+		array_push ($q, ' LEFT JOIN [mac_iot_sensors] AS sensors ON placements.sensor = sensors.ndx');
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND placements.ndx IN %in', array_keys($this->scPlacements));
+
+		//array_push ($q, ' WHERE srcTableId = %s', 'mac.iot.scPlacements', 'AND dstTableId = %s', 'mac.iot.sensors');
+		//array_push ($q, ' AND docLinks.linkId = %s', 'mac-sc-placements-sensors', 'AND srcRecId IN %in', array_keys($this->scPlacements));
 
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
-			$scpNdx = $r['srcRecId'];
+			$scpNdx = $r['placementNdx'];
 			$item = $r->toArray();
 			$item['type'] = 'sensor';
 			$item['mainMenu'] = $this->scPlacements[$scpNdx]['mainMenu'];
@@ -114,15 +117,15 @@ class SensorsAndControlsEngine extends Utility
 		$this->wss = [];
 		forEach ($wssAll as $ws)
 		{
-			if ($ws['subsystems']['wss']['enabled'] !== 1)
+			//if ($ws['subsystems']['wss']['enabled'] !== 1)
+			//	continue;
+			if (!isset($ws['enableLC']) || !$ws['enableLC'])
 				continue;
-			if (!isset($ws['subsystems']['wss']['wsUrl']) || $ws['subsystems']['wss']['wsUrl'] === '')
-				continue;
-			if (substr($ws['subsystems']['wss']['wsUrl'], 0, 7) === 'wss://:') // TODO: better solution needed
-				continue;
+			//if (substr($ws['subsystems']['wss']['wsUrl'], 0, 7) === 'wss://:') // TODO: better solution needed
+			//	continue;
 
 			$enabled = FALSE;
-			forEach ($ws['subsystems']['wss']['allowedFrom'] as $af)
+			forEach ($ws['wssAllowedFrom'] as $af)
 			{
 				if ($af === substr ($_SERVER['REMOTE_ADDR'], 0, strlen($af)))
 				{
@@ -134,10 +137,10 @@ class SensorsAndControlsEngine extends Utility
 				continue;
 			$this->wss [$ws['lanNdx']] = [
 				'id' => $ws['ndx'], 'name' => $ws['name'],
-				'fqdn' => $ws['subsystems']['wss']['fqdn'],
-				'port' => $ws['subsystems']['wss']['wsPort'],
-				'wsUrl' => $ws['subsystems']['wss']['wsUrl'],
-				'postUrl' => $ws['subsystems']['wss']['postUrl'],
+				'fqdn' => $ws['fqdn'],
+				'port' => $ws['wsPort'],
+				'wsUrl' => $ws['wsUrl'],
+				//'postUrl' => $ws['subsystems']['wss']['postUrl'],
 				'icon' => 'system/iconLocalServer',
 				'topics' => [],
 			];

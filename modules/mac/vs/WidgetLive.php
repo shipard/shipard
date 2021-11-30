@@ -37,7 +37,7 @@ class WidgetLive extends WidgetBoard
 	var $usersZones;
 
 	var $iotSC = [];
-
+	var $iotScenes = [];
 
 	public function init ()
 	{
@@ -245,6 +245,7 @@ class WidgetLive extends WidgetBoard
 		$c .= "<span class='h1 pt1 pb1'>".utils::es('Chyba načítání obrázků ze serveru...').'</span>';
 		$c .= "</div>";
 
+		/*
 		if (count($this->iotSC) && $this->viewerMode !== 'videoArchive')
 		{
 			$c .= "<div style='position: absolute; width: 100%; z-index: 2000; display: flex; padding: 6px; background-color: rgba(0,0,0,.4); top: 0px; height: 3em;'>";
@@ -256,6 +257,7 @@ class WidgetLive extends WidgetBoard
 
 			$camsStyle = " style='margin-top: 3em;'";
 		}
+		*/
 
 		$c .= "<div class='e10-fx-borders'$camsStyle>";
 		$c .= $this->createGridCodeCell($this->gridDefinition, $usedLocalServers, $camIndex);
@@ -445,8 +447,8 @@ class WidgetLive extends WidgetBoard
 			}
 		}
 
+		$this->createContent_Toolbar ();
 		$this->createGridDefinition();
-		$this->loadIoTSC();
 		//$this->loadSensors();
 
 		if (substr ($this->activeTopTab, 0, 8) === 'subzone-')
@@ -464,6 +466,37 @@ class WidgetLive extends WidgetBoard
 			$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $this->code]);
 		}
 	}
+
+	public function createContent_Toolbar()
+	{
+		$this->loadIoTSC();
+		$this->loadScenes();
+		$c = '';
+
+		$c .= "<div class='padd5' style='display: inline-block; width: 100%;'>";
+
+		$c .= "<span class='_pull-right'>";
+		foreach ($this->iotScenes as $placeId => $placeCfg)
+		{
+			$c .= $this->createEnumParamCode ($placeCfg);
+		}
+		$c .= '</span>';
+
+		if (count($this->iotSC))
+		{
+			$c .= "<span class='pull-right'>";
+			foreach ($this->iotSC as $sc)
+			{
+				$c .= $sc['code'];
+			}
+			$c .= '</span>';
+		}
+
+		$c .= '</div>';
+
+		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $c]);
+	}
+
 
 	public function loadArchiveContent ()
 	{
@@ -654,15 +687,105 @@ class WidgetLive extends WidgetBoard
 		{
 			if ($r['rowType'] === 0)
 			{ // sensor
-
+				$sh = new SensorHelper($this->app());
+				$sh->setSensor($r['iotSensor']);
+				$sensorCode = $sh->badgeCode(1);
+				$sc = "<span class='padd5'>".$sensorCode.'</span]>';
+				$this->iotSC[] = ['type' => 0, 'object' => $sensor, 'code' => $sc];
 			}
 			else
 			{ // control
 				$control = new \mac\iot\libs\Control($this->app());
 				$control->setControl($r['iotControl']);
 
-				$this->iotSC[] = ['type' => 1, 'object' => $control];
+				$this->iotSC[] = ['type' => 1, 'object' => $control, 'code' => $control->controlCode()];
 			}
 		}
+	}
+
+	function loadScenes()
+	{
+		if (!isset($this->zone['places']) || !count($this->zone['places']))
+			return;
+
+		$q [] = 'SELECT scenes.*,';
+		array_push($q, ' places.fullName AS placeFullName');
+		array_push($q, ' FROM mac_iot_scenes AS scenes');
+		array_push($q, ' LEFT JOIN e10_base_places AS places ON scenes.place = places.ndx');
+		array_push($q, ' WHERE 1');
+		array_push($q, ' AND place IN %in', $this->zone['places']);
+
+		$scenes = [];
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$placeNdx = $r['place'];
+			if (!isset($scenes[$placeNdx]))
+			{
+				$scenes[$placeNdx] = ['title' => $r['placeFullName'], 'paramId' => "set_scene_{$placeNdx}_{$r['ndx']}", 'enum' => []];
+			}
+
+			$btn = [
+				'title' => $r['fullName'],
+				'data' => [
+					'action' => 'inline-action',	
+					'object-class-id' => 'mac.iot.libs.IotAction',	
+					'action-param-action-type' => 'set-scene',	
+					'action-param-place' => strval($placeNdx),
+					'action-param-scene' => strval($r['ndx']),	
+				],
+			];
+
+			$scenes[$placeNdx]['enum'][$r['friendlyId']] = $btn;
+			if (!isset($scenes[$placeNdx]['defaultValue']))
+				$scenes[$placeNdx]['defaultValue'] = $r['friendlyId'];
+		}
+
+		$this->iotScenes = $scenes;
+	}
+
+	function createEnumParamCode ($p)
+	{
+		$paramId = $p['paramId'];
+		$activeValue = '';
+		if (isset($p['defaultValue']))
+			$activeValue = $p['defaultValue'];
+
+		$c = '';
+		
+		$justified = isset($p['justified']) ? intval($p['justified']) : 0;
+		$grpClass = 'btn-group e10-param-inline';
+		if ($justified)
+			$grpClass .= ' btn-group-justified';
+
+		$c .= "<div class='$grpClass' data-paramid='$paramId'>";
+		if (isset ($p['title']))
+			$c .= "<span class='btn btn-default'><b>" . Utils::es($p['title']) . ':</b></span>';
+		$first = TRUE;
+		forEach ($p['enum'] as $pid => $pc)
+		{
+			$t = is_string($pc['title']) ? Utils::es($pc['title']) : Utils::es($pc['title']['text']);
+
+			$class = ($pid == $activeValue) ? 'active ': '';
+			$class .= 'btn btn-default df2-action-trigger';
+
+			if ($justified)
+				$c .= "<div class='btn-group' role='group'>";
+			$c .= "<button data-value='$pid' data-title='$t' class='$class'";
+
+			if (isset($pc['data']))
+			{
+				foreach ($pc['data'] as $btnPartId => $btnPartValue)
+					$c .= ' data-'.$btnPartId."='".$btnPartValue."'";
+			}
+	
+			$c .= '>' . $this->app()->ui()->composeTextLine($pc['title']);
+			$c .= '</button>';
+			if ($justified)
+				$c .= '</div>';
+		}
+		$c .= '</div>';
+		
+		return $c;
 	}
 }

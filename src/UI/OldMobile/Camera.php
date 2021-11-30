@@ -7,7 +7,7 @@ namespace ui\mobile;
  * Class Camera
  * @package mobileui
  */
-class Camera extends \ui\mobile\PageObject
+class Camera extends \Shipard\UI\OldMobile\PageObject
 {
 	public function createContentCodeInside ()
 	{

@@ -2,8 +2,7 @@
   "id": "hosting.core",
   "name": "Hosting",
 	"tables": [
-		"hostings", "servers", "domainsAccounts", 
-		"domains", "domainsRecords", "certs",
+		"hostings", "servers", 		
 		"partners", "partnersPersons", 
 		"dataSources", "dsStats", "dsUsers", "dsUsersOptions", "dsUsersSummary",
 		"modules"
@@ -17,15 +16,12 @@
 		{"id": "+e10.base.doclinks", "file": "doclinks.json"},
 		{"id": "+widgets", "file": "widgets.json"},
 		{"id": "+dashboards", "file": "dashboards.json"},
-		{"id": "+hosting.core.domainsRegistrars", "file": "domainsRegistrars.json"},
-		{"id": "+hosting.core.domainsRecordTypes", "file": "domainsRecordTypes.json"},
-		{"id": "+hosting.core.certsProviders", "file": "certsProviders.json"},
 		{"id": "+e10.base.clsfGroups", "file": "clsfGroups.json"},
 		{"id": "+registeredClasses", "file": "registeredClasses.json"},
 		{"id": "+reports", "file": "reports.json"}
 	],
 	"extensions": ["persons"],
 	"modules": [
-		"integrations/core"
+		"integrations/core", "mac/inet"
 	]
 }

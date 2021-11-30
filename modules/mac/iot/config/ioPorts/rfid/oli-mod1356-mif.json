@@ -1,0 +1,18 @@
+{
+	"name": "MOD RFID 1356 MIFARE",
+	"title": "MOD RFID 1356 MIFARE",
+	"useValueKind": 1,
+	"fields": {
+		"columns": [
+			{
+				"id": "pinRX", "name": "Pin RX (vstup)", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["in", "hwInt"]}
+			},
+			{
+				"id": "pinTX", "name": "Pin TX (výstup)", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["out", "hwInt"]}
+			},
+			{
+				"id": "portIdBuzzer", "name": "IO port Bzučák", "type": "enumString", "len": 30, "enumCfgFlags": {"type": "ioPortId"}
+			}
+		]
+	}
+}

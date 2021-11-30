@@ -1,0 +1,15 @@
+{
+	"name": "Měřič vzdálenosti - ultrazvukový",
+	"title": "Měřič vzdálenosti - ultrazvukový",
+	"useValueKind": 1,
+	"fields": {
+		"columns": [
+			{
+				"id": "pinTrigger", "name": "Pin Trigger", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["out", "hwInt"]}
+			},
+			{
+				"id": "pinEcho", "name": "Pin Echo", "type": "enumInt", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["in", "hwInt"]}
+			}
+		]
+	}
+}

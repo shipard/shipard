@@ -1,0 +1,38 @@
+{
+	"io": {
+		"pins": {
+			"ext1-1": {"title": "ext1.1 / 5V", "hwnr": -1, "flags": ["pwr", "5v"]},
+			"ext1-2": {"title": "ext1.2 / 3.3V", "hwnr": -1, "flags": ["pwr", "3.3v"]},
+			"ext1-3": {"title": "ext1.3 / GND", "hwnr": -1, "flags": ["gnd"]},
+			"ext1-4": {"title": "ext1.4 / ESP_EN", "hwnr": -1, "flags": ["disabled"]},
+			"ext1-5": {"title": "ext1.5 / GPIO0", "hwnr": 0, "flags": ["d", "in", "out", "hwInt"]},
+			"ext1-6": {"title": "ext1.6 / GPIO1 / U0TXD / CONSOLE TX", "hwnr": 1, "flags": ["d", "in", "out", "hwInt", "disabled"]},
+			"ext1-7": {"title": "ext1.7 / GPIO2 / HS2_DATA0", "hwnr": 2, "flags": ["d", "in", "out", "hwInt"]},
+			"ext1-8": {"title": "ext1.8 / GPIO3 / U0RXD / CONSOLE RX", "hwnr": 3, "flags": ["d", "in", "out", "hwInt", "disabled"]},
+			"ext1-9": {"title": "ext1.9 / GPIO4 / U1TXD", "hwnr": 4, "flags": ["d", "in", "out", "hwInt"]},
+			"ext1-10": {"title": "ext1.10 / GPIO5 / SPI_CS", "hwnr": 5, "flags": ["d", "in", "out", "hwInt"]},
+	
+			"ext2-1": {"title": "ext2.1 / GPI39", "hwnr": 39, "flags": ["d", "a", "in", "hwInt"]},
+			"ext2-2": {"title": "ext2.2 / GPI36 / U1RXD", "hwnr": 36, "flags": ["d", "a", "in", "hwInt"]},
+			"ext2-3": {"title": "ext2.3 / GPI35", "hwnr": 35, "flags": ["d", "a", "in", "hwInt"]},
+			"ext2-4": {"title": "ext2.4 / GPI34 / BUT1", "hwnr": 34, "flags": ["d", "a", "in", "hwInt"]},
+			"ext2-5": {"title": "ext2.5 / GPIO33", "hwnr": 33, "flags": ["d", "a", "in", "out", "hwInt"]},
+			"ext2-6": {"title": "ext2.6 / GPIO32", "hwnr": 32, "flags": ["d", "a", "in", "out", "hwInt"]},
+			"ext2-7": {"title": "ext2.7 / GPIO16 / I2C-SCL", "hwnr": 16, "flags": ["d", "in", "out", "hwInt"]},
+			"ext2-8": {"title": "ext2.8 / GPIO15 / HS2_CMD", "hwnr": 15, "flags": ["d", "in", "out", "hwInt"]},
+			"ext2-9": {"title": "ext2.9 / GPIO14 / HS2_CLK", "hwnr": 14, "flags": ["d", "in", "out", "hwInt"]},
+			"ext2-10": {"title": "ext2.10 / GPIO13 / I2C-SDA", "hwnr": 13, "flags": ["d", "in", "out", "hwInt"]},
+	
+			"uext-1": {"title": "uext 1 / 3.3V", "hwnr": -1, "flags": ["pwr", "3.3v"]},
+			"uext-2": {"title": "uext 2 / GND", "hwnr": -1, "flags": ["gnd"]},
+			"uext-3": {"title": "uext 3 / GPIO4", "hwnr": 4, "flags": ["d", "in", "out", "hwInt"]},
+			"uext-4": {"title": "uext 4 / GPI36", "hwnr": 36, "flags": ["d", "a", "in", "hwInt"]},
+			"uext-5": {"title": "uext 5 / GPIO16 / I2C-SCL", "hwnr": 16, "flags": ["d", "in", "out", "hwInt"]},
+			"uext-6": {"title": "uext 6 / GPIO13 / I2C-SDA", "hwnr": 13, "flags": ["d", "in", "out", "hwInt"]},
+			"uext-7": {"title": "uext 7 / GPIO15 / HS2_CMD", "hwnr": 15, "flags": ["d", "in", "out", "hwInt"]},
+			"uext-8": {"title": "uext 8 / GPIO2 / HS2_DATA0", "hwnr": 2, "flags": ["d", "in", "out", "hwInt"]},
+			"uext-9": {"title": "uext 9 / GPIO14 / HS2_CLK", "hwnr": 14, "flags": ["d", "in", "out", "hwInt"]},
+			"uext-10": {"title": "uext 10 / GPIO5 / SPI_CS", "hwnr": 5, "flags": ["d", "in", "out", "hwInt"]}
+		}
+	}
+}

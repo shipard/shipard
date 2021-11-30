@@ -3,7 +3,7 @@
 		"name": "Vše", "icon": ""
 	},
 	"10": {
-		"name": "Aktivní prvky", "icon": "lanDeviceActiveDevices", "devicesKinds": [8, 9, 20]
+		"name": "Aktivní prvky", "icon": "lanDeviceActiveDevices", "devicesKinds": [8, 9, 14, 20]
 	},
 	"12": {
 		"name": "WiFi AP", "icon": "deviceTypes/wifiAccessPoints", "devicesKinds": [15]

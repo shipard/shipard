@@ -1,11 +1,17 @@
 {
-    "tables/mac.iot.things": {
+    "tables/mac.iot.setups": {
 		"fa5": "fa-puzzle-piece",
 		"fa6pro": "fa-puzzle-piece",
 		"bsi": "bi-puzzle",
 		"mdi": "extension"
     },
-    "tables/mac.iot.scenarios": {
+		"tables/mac.iot.devices":{
+			"fa5": "fa-lightbulb",
+			"fa6pro": "fa-lightbulb-on",
+			"bsi": "bi-lightbulb",
+			"mdi": "tungsten"
+		},	
+    "tables/mac.iot.scenes": {
 		"fa5": "fa-play-circle",
 		"fa6pro": "fa-play-circle",
 		"bsi": "bi-play-circle-fill",
@@ -35,7 +41,7 @@
 		"bsi": "bi-droplet-fill",
 		"mdi": "water_drop"
     },
-    "tables/mac.iot.thingsKinds": {
+    "tables/mac.iot.devicesGroups": {
 		"fa5": "fa-tasks",
 		"fa6pro": "fa-tasks-alt",
 		"bsi": "bi-list-task",

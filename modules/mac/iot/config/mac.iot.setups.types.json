@@ -1,0 +1,60 @@
+{
+	"other": {
+		"fn": "Vlastní",
+		"sn": "Vlastní",
+		"coreType": "none",
+		"icon": "iotValuesKinds/other"
+	},
+	"doors": {
+		"fn": "Dveře",
+		"sn": "Dveře",
+		"id": "doors",
+		"coreType": "doors",
+		"icon": "iotThingKinds/door",
+		"actions": {
+			"open-once": {
+				"fn": "Otevřít"
+			},
+			"open-once-in": {
+				"fn": "Otevřít - příchod"
+			},
+			"open-once-out": {
+				"fn": "Otevřít - odchod"
+			}
+		}
+	},
+	"gate": {
+		"fn": "Brána / závora",
+		"sn": "Brána / závora",
+		"id": "gate",
+		"coreType": "gate",
+		"icon": "iotThingKinds/gate",
+		"actions": {
+			"open-once": {
+				"fn": "Otevřít"
+			},
+			"open-once-in": {
+				"fn": "Otevřít - příjezd"
+			},
+			"open-once-out": {
+				"fn": "Otevřít - odjezd"
+			},
+			"open-stay": {
+				"fn": "Otevřít na pořád"
+			}
+		}
+	},
+	"lights": {
+		"fn": "Světla",
+		"sn": "Světla",
+		"id": "lights",
+		"coreType": "lights",
+		"icon": "iotThingKinds/lights"
+	},
+	"turnstile": {
+		"fn": "Turniket",
+		"sn": "Turniket",
+		"coreType": "turnstile",
+		"icon": "iotThingKinds/turnstile"
+	}
+}

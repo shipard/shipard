@@ -1,0 +1,46 @@
+{
+    "tables/mac.inet.domains":{
+			"fa5":"fa-globe-americas",
+			"fa6pro":"fa-globe-americas",
+			"bsi":"bi-globe",
+			"mdi":"public"
+    },
+    "tables/mac.inet.certs":{
+			"fa5": "fa-certificate",
+			"fa6pro": "fa-certificate",
+			"bsi": "bi-patch-check",
+			"mdi": "verified"
+    },
+    "tables/mac.inet.domainsAccounts":{
+      "fa5": "fa-tty",
+			"fa6pro": "fa-tty",
+			"bsi": "bi-person-circle",
+			"mdi": "tty"
+    },
+    "tables/mac.inet.domainsRecords":{
+      "fa5": "fa-file",
+			"fa6pro": "fa-file",
+			"bsi": "bi-file-earmark",
+			"mdi": "insert_drive_file"
+    },
+
+
+    "detailRecords":{
+			"fa5":"fa-list-ul",
+			"fa6pro":"fa-list-ul",
+			"bsi":"bi-list-ul",
+			"mdi":"format_list_bulleted"
+    },
+    "detailGcloud":{
+			"fa5":"fa-cloud",
+			"fa6pro":"fa-cloud",
+			"bsi":"bi-google",
+			"mdi":"cloud"
+    },
+    "detailPersons":{
+			"fa5": "fa-user",
+			"fa6pro": "fa-user",
+			"bsi": "bi-person",
+			"mdi": "person"
+    }
+}

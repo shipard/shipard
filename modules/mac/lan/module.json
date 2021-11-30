@@ -15,7 +15,7 @@
 	],
 	"modules": [
 		"mac/admin", "mac/data", "mac/devices", "terminals/base",
-		"mac/iot", "mac/vs", "mac/access", "mac/sw", "mac/swlan"
+		"mac/iot", "mac/vs", "mac/access", "mac/sw", "mac/swlan", "mac/inet"
 	],
 	"config": [
 		{"id": "+alerts", "file": "alerts.json"},
@@ -38,6 +38,7 @@
 		{"id": "mac.lan.deviceInfoTypes", "file": "mac.lan.deviceInfoTypes.json"},
 		{"id": "mac.lan.patchPanels.kinds", "file": "mac.lan.patchPanels.kinds.json"},
 		{"id": "mac.lan.patchPanels.cableTerm", "file": "mac.lan.patchPanels.cableTerm.json"},
+		{"id": "mac.lan.devices.hwModes", "file": "mac.lan.devices.hwModes.json"},
 		{"id": "+mac.devices.io.ports.types", "file": "mac.devices.io.ports.types.json"},
 		{"id": "+registeredClasses", "file": "registeredClasses.json"},
 		{"id": "+e10.base.clsfGroups", "file": "mac.lan.clsfGroups.json"},

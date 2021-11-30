@@ -78,7 +78,6 @@ class TableSensors extends DbTable
 		array_push ($q, ' LEFT JOIN [mac_base_zones] AS zones ON sensors.zone = zones.ndx');
 		array_push ($q, ' WHERE 1');
 		array_push ($q, ' AND sensors.docState = %i', 4000);
-		array_push ($q, ' AND sensors.valueStyle = %i', 0);
 		array_push ($q, ' AND sensors.srcLan = %i', $srcLan);
 
 		$rows = $this->db()->query($q);
@@ -197,6 +196,8 @@ class ViewSensors extends TableView
 			array_push ($q, ' AND (');
 			array_push ($q, ' sensors.[fullName] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ' OR sensors.[shortName] LIKE %s', '%'.$fts.'%');
+			array_push ($q, ' OR sensors.[idName] LIKE %s', '%'.$fts.'%');
+			array_push ($q, ' OR sensors.[srcMqttTopic] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ')');
 		}
 
@@ -224,10 +225,6 @@ class FormSensor extends TableForm
 		$this->openForm ();
 			$this->openTabs ($tabs);
 				$this->openTab ();
-					$this->addColumnInput ('valueStyle');
-					$this->addSeparator(self::coH2);
-
-					$this->addColumnInput('srcLan');
 					$this->addColumnInput('srcMqttTopic');
 					$this->addSeparator(self::coH2);
 					$this->addColumnInput('quantityType');
@@ -253,6 +250,7 @@ class FormSensor extends TableForm
 					$this->addColumnInput('zone');
 					$this->addColumnInput('rack');
 					$this->addColumnInput('device');
+					$this->addColumnInput('srcLan');
 				$this->closeTab ();
 
 				$this->openTab (TableForm::ltNone);

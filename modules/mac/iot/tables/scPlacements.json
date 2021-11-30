@@ -6,7 +6,11 @@
 		{"id": "placementTo", "name": "Přiřadit k", "type": "enumInt", "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "mac.iot.scPlacements.targets", "cfgValue": "", "cfgText": "fn"}},
 
+		{"id": "sensor", "name": "Senzor", "type": "int", "reference": "mac.iot.sensors"},
+
 		{"id": "workplace", "name": "Pracoviště", "type": "int", "reference": "terminals.base.workplaces"},
+		{"id": "lanDevice", "name": "Síťové zařízení", "type": "int", "reference": "mac.lan.devices"},
+		{"id": "lanRack", "name": "Rack", "type": "int", "reference": "mac.lan.racks"},
 
 		{"id": "fullName", "name": "Úplný název", "type": "string", "len": 120},
 
@@ -15,9 +19,6 @@
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
-	],
-	"lists": [
-		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"views": [

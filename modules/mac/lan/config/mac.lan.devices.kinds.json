@@ -43,6 +43,13 @@
 		"overviewOrder": 11000, "switchPorts": 1, "alerts": 1, "isMacDevice": 1, "useMonitoringDataSource": 1, "showDashboardRacks": 1,
 		"alertsScope": 1, "odg": "lan"
 	},
+
+	"14": {
+		"name": "Aktivní prvek", "pluralName": "Aktivní prvky", "active": 1, "icon": "deviceTypes/router",
+		"overviewOrder": 9000, "switchPorts": 1, "alerts": 1, "isMacDevice": 1, "useMonitoringDataSource": 1, "showDashboardRacks": 1,
+		"alertsScope": 1, "odg": "lan"
+	},
+
 	"15": {
 		"name": "WiFi Přístupový bod", "pluralName": "WiFi Přístupové body", "active": 1, "icon": "deviceTypes/wifiAccessPoints",
 		"overviewOrder": 12000, "switchPorts": 1, "alerts": 1, "isMacDevice": 1,
@@ -61,7 +68,7 @@
 	},
 
 	"70": {
-		"name": "Shipard Node Server", "pluralName": "Shipard Node Servery", "active": 1, "icon": "deviceTypes/shipardNodeServer",
+		"name": "ZRUŠENO - Shipard Node Server", "pluralName": "ZRUŠENO - Shipard Node Servery", "active": 1, "icon": "deviceTypes/shipardNodeServer",
 		"overviewOrder": 18500, "alerts": 1, "isMacDevice": 1, "useMonitoringDataSource": 1, "showDashboardRacks": 1,
 		"alertsScope": 2, "odg": "srv"
 	},

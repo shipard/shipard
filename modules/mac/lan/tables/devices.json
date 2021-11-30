@@ -12,6 +12,11 @@
     {"id": "deviceType", "name": "Typ zařízení", "type": "int", "reference": "mac.lan.deviceTypes", "options": ["saveOnChange"]},
     {"id": "deviceKind", "name": "Druh zařízení", "type": "enumInt",
       "enumCfg": {"cfgItem": "mac.lan.devices.kinds", "cfgValue": "", "cfgText": "name"}},
+		{"id": "hwMode", "name": "Mód HW", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.lan.devices.hwModes", "cfgValue": "", "cfgText": "fn"}},	
+		{"id": "hwServer", "name": "Server", "type": "int", "reference": "mac.lan.devices"},
+		{"id": "nodeSupport", "name": "Server", "type": "logical"},
+
     {"id": "deviceTypeName", "name": "Typové označení", "type": "string", "len": 80},
 
     {"id": "place", "name": "Místo", "type": "int", "reference": "e10.base.places"},

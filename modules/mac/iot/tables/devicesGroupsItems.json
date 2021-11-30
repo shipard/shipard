@@ -1,0 +1,23 @@
+{
+	"id": "mac.iot.devicesGroupsItems", "sql": "mac_iot_devicesGroupsItems", "name": "Zařízení ve skupinách",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+		{"id": "devicesGroup", "name": "Sestava", "type": "int", "reference": "mac.iot.devicesGroups"},
+		{"id": "iotDevice", "name": "Zařízení", "type": "int", "reference": "mac.iot.devices"}
+	],
+	"views": [
+		{"id": "default", "class": "mac.iot.ViewDevicesGroupsItems"},
+		{"id": "formList", "class": "mac.iot.ViewDevicesGroupsItemsFormList", "type": "form",
+			"details": {
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.iot.ViewDevicesGroupItemsFormListDetail"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.iot.FormDeviceGroupItem"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "iotDevice"},
+	"options": ["systemTable"]
+}

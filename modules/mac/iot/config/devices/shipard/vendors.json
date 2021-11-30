@@ -1,0 +1,11 @@
+{
+	"espressif": {
+		"fn": "Espressif"
+	},
+	"shipard": {
+		"fn": "Shipard"
+	},
+	"olimex": {
+		"fn": "Olimex"
+	}
+}

@@ -6,6 +6,7 @@
 		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
 
 		{"id": "sensor", "name": "Senzor", "type": "int", "reference": "mac.iot.sensors"},
+		
 		{"id": "sensorLabel", "name": "Titulek", "type": "string", "len": "50"}
 	],
 	"forms": [

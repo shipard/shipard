@@ -206,9 +206,9 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 							'dsid' => $appName,
 							'name' => 'Test '.$appName,
 							'hosting' => 1,
-							'supportName'=> 'shipard.org',
-							'supportUrl'=> 'https://shipard.org',
-							'supportPhone'=> '+420 774 077 436',
+							'supportName'=> 'forum.shipard.org',
+							'supportUrl'=> 'https://forum.shipard.org',
+							'supportPhone'=> '',
 							'supportEmail'=> 'admin@shipard.org',
 							'dsimage' => 'https://shipard.app/imgs/-w256/att/2019/05/07/e10pro.wkf.documents/shipard-logo-2-134r9o1.png'
 			];

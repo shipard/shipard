@@ -5,9 +5,27 @@
 	"1": {
 		"title": "Teplota", "icon": "quantityTypeTemperature"
 	},
+
 	"20": {
 		"title": "Hmotnost", "icon": "quantityTypeWeight"
 	},
+	"21": {
+		"title": "Tlak", "icon": "quantityTypeUnknown"
+	},
+	"22": {
+		"title": "Úroveň osvětlení", "icon": "iotThingKinds/lights"
+	},
+	"23": {
+		"title": "Vlhkost", "icon": "quantityTypeUnknown"
+	},
+
+	"70": {
+		"title": "Otáčky", "icon": "quantityTypeUnknown"
+	},
+	"71": {
+		"title": "Průtok", "icon": "quantityTypeUnknown"
+	},
+
 	"80": {
 		"title": "Text", "icon": "quantityTypeText"
 	},
@@ -29,6 +47,9 @@
 
 	"90": {
 		"title": "Logická hodnota", "icon": "quantityTypeLogicalValue"
+	},
+	"93": {
+		"title": "Pohybové čidlo", "icon": "quantityTypeLogicalValue"
 	},
 	"96": {
 		"title": "Otevřeno/zavřeno", "icon": "quantityTypeOpenedClosed"

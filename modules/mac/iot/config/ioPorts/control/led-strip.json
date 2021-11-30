@@ -1,0 +1,78 @@
+{
+	"name": "LED pásek",
+	"title": "LED pásek",
+	"fields": {
+		"columns": [
+			{
+				"id": "pin", "name": "Pin", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["out"]}
+			},
+			{
+				"id": "cntLeds", "name": "Počet LED", "type": "int"
+			}
+		]
+	},
+	"dataModel": {
+		"itemType": "controls",
+		"data-type": "binary",
+		"valueClass": "mac.iot.libs.IotDevicePayloadValueIotBox",
+		"enumSet": {
+			"static": {
+				"title": "ON",
+				"fields": {
+					"columns": [
+						{
+							"id": "color", "name": "Barva", "type": "string", "len": 20, "subtype": "color"
+						}
+					]
+				}
+			},
+			"off": {
+				"title": "OFF", "value": "static:1:000000"
+			},
+			"scan": {
+				"title": "scan",
+				"fields": {
+					"columns": [
+						{"id": "interval", "name": "Doba trvání jednoho oběhu [ms]", "type": "int"},
+						{"id": "colorActive", "name": "Aktivní barva", "type": "string", "len": 20, "subtype": "color"},
+						{"id": "colorBg", "name": "Barva podkladu", "type": "string", "len": 20, "subtype": "color"}
+					]
+				}
+			},
+			"dual-scan": {
+				"title": "dual-scan",
+				"fields": {
+					"columns": [
+						{"id": "interval", "name": "Doba trvání jednoho oběhu [ms]", "type": "int"},
+						{"id": "colorActive", "name": "Aktivní barva", "type": "string", "len": 20, "subtype": "color"},
+						{"id": "colorBg", "name": "Barva podkladu", "type": "string", "len": 20, "subtype": "color"}
+					]
+				}
+			},
+			"larson-scanner": {
+				"title": "larson-scanner",
+				"fields": {
+					"columns": [
+						{"id": "interval", "name": "Doba trvání jednoho oběhu [ms]", "type": "int"},
+						{"id": "colorActive", "name": "Aktivní barva", "type": "string", "len": 20, "subtype": "color"}
+					]
+				}
+			},
+			"breath": {
+				"title": "breath",
+				"fields": {
+					"columns": [
+						{"id": "colorActive", "name": "Aktivní barva", "type": "string", "len": 20, "subtype": "color"},
+						{"id": "colorBg", "name": "Barva podkladu", "type": "string", "len": 20, "subtype": "color"}
+					]
+				}
+			}
+		},
+		"enumGet": {
+			"1": {"title": "ON"},
+			"0": {"title": "OFF"}
+		},
+		"value-on": "1",
+		"value-off": "0"
+	}
+}

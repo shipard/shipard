@@ -1,0 +1,9 @@
+{
+	"deviceAction": {
+		"fn": "Událost ze zařízení"
+	},
+
+	"mqttMsg": {
+		"fn": "MQTT zpráva"
+	}
+}

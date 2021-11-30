@@ -42,15 +42,14 @@
 					"order": 9900200,
 					"subMenu": {
 						"items": {
-							"things": {"t1": "Iot Prvky", "object": "viewer", "table": "mac.iot.things", "viewer": "default", "order": 10100},
-							"scenarios": {"t1": "Scénáře", "object": "viewer", "table": "mac.iot.scenarios", "viewer": "default", "order": 10200},
+							"devices": {"t1": "Zařízení", "object": "viewer", "table": "mac.iot.devices", "viewer": "default", "order": 10100},
+							"devicesGroups": {"t1": "Skupiny", "object": "viewer", "table": "mac.iot.devicesGroups", "viewer": "default", "order": 10101},
+							"sets": {"t1": "Sestavy", "object": "viewer", "table": "mac.iot.setups", "viewer": "default", "order": 10105},
+							"scenarios": {"t1": "Scény", "object": "viewer", "table": "mac.iot.scenes", "viewer": "default", "order": 10200},
 
 							"sensors": {"t1": "Senzory a čidla", "object": "viewer", "table": "mac.iot.sensors", "viewer": "default", "order": 30100, "beforeSeparator": 1},
 							"controls": {"t1": "Ovládací prvky", "object": "viewer", "table": "mac.iot.controls", "viewer": "default", "order": 30200},
 							"scPlacements": {"t1": "Zařazení", "object": "viewer", "table": "mac.iot.scPlacements", "viewer": "default", "order": 30400},
-
-							"valuesKinds": {"t1": "Druhy hodnot", "object": "viewer", "table": "mac.iot.valuesKinds", "viewer": "default", "order": 80100, "beforeSeparator": 1},
-							"thingsKinds": {"t1": "Druhy prvků", "object": "viewer", "table": "mac.iot.thingsKinds", "viewer": "default", "order": 80200},
 
 							"users": {"t1": "Uživatelé", "object": "viewer", "table": "mac.iot.users", "viewer": "default", "order": 90100, "beforeSeparator": 1}
 						}
@@ -84,6 +83,17 @@
 
 							"swApplications": {"t1": "Aplikace", "object": "viewer", "table": "mac.lan.swApplications", "viewer": "default", "order": 111000, "beforeSeparator": {"text": "Zastaralé", "class": "block pl05 pt1", "icon":  "iconSquare"}},
 							"swLicenses": {"t1": "Licence", "object": "viewer", "table": "mac.lan.swLicenses", "viewer": "default", "order": 112000}
+						}
+					}
+				},
+				"inet": {
+					"t1": "Internet", "object": "subMenu", "icon": "system/iconGlobe",
+					"order": 9900300,
+					"subMenu": {
+						"items": {
+							"domains": {"t1": "Domény", "object": "viewer", "table": "mac.inet.domains", "viewer": "default", "order": 10100},
+							"certs": {"t1": "Certifikáty", "object": "viewer", "table": "mac.inet.certs", "viewer": "default", "order": 10200},
+							"domainsAccounts": {"t1": "Doménové účty", "object": "viewer", "table": "mac.inet.domainsAccounts", "viewer": "default", "order": 20100, "beforeSeparator":  1}
 						}
 					}
 				}

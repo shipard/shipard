@@ -3347,9 +3347,15 @@ function e10InlineAction (e)
 	if (e.attr('data-pk') !== undefined)
 		requestParams['pk'] = e.attr('data-pk');
 
-	e10.server.api(requestParams, function(data) {
+		e10.server.api(requestParams, function(data) {
 		if (data.reloadNotifications === 1)
 			e10NCReset();
+
+		if (e.parent().hasClass('btn-group'))
+		{
+			e.parent().find('>button.active').removeClass('active');
+			e.addClass('active');
+		}
 	});
 }
 
@@ -6681,7 +6687,7 @@ function mqttStartClient (serverIndex, disableMessage)
 {
 	var ws = webSocketServers[serverIndex];
 
-	if (ws.fqdn === '')
+	if (ws.fqdn === null || ws.fqdn === '')
 		return;
 	var portNumber = parseInt(ws.port);
 	if (portNumber === 0)

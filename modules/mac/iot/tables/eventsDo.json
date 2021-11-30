@@ -1,0 +1,40 @@
+{
+	"id": "mac.iot.eventsDo", "sql": "mac_iot_eventsDo", "name": "Události Co",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+    {"id": "tableId", "name": "Tabulka", "type": "string", "len": 48, "options": ["ascii"]},
+    {"id": "recId", "name": "Řádek", "type": "int"},
+
+		{"id": "fullName", "name": "Název", "type": "string", "len": "100"},
+
+		{"id": "eventType", "name": "Typ události", "type": "enumString", "len": "20", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.iot.events.doEventTypes", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "iotDevice", "name": "Cílové zařízení", "type": "int", "reference": "mac.iot.devices", "options": ["saveOnChange"]},
+		{"id": "useGroup", "name": "Použít skupinu", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "iotDevicesGroup", "name": "Cílová skupina", "type": "int", "reference": "mac.iot.devicesGroups", "options": ["saveOnChange"]},
+		{"id": "iotDeviceProperty", "name": "Nastavení", "type": "enumString", "len": "60", "options": ["saveOnChange"], 
+			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "iotDevicePropertyValueEnum", "name": "Hodnota", "type": "enumString", "len": "60",
+			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "iotDevicePropertyValue", "name": "Hodnota události text", "type": "string", "len": "60"},
+
+		{"id": "eventValueCfg", "name": "Nastavení události", "type": "subColumns"},
+
+		{"id": "mqttTopic", "name": "Zdrojový MQTT topic", "type": "string", "len": "100"},
+		{"id": "mqttTopicPayloadValue", "name": "Hodnota", "type": "memo"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "mac.iot.ViewEventsDo"},
+		{"id": "form", "class": "mac.iot.ViewEventsDoForm"}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.iot.FormEventDo"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"options": ["systemTable"]
+}

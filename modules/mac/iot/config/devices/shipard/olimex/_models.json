@@ -1,0 +1,14 @@
+{
+	"oli-esp32-evb": {
+		"fn": "ESP32-EVB"
+	},
+	"oli-esp32-gw-rev-c": {
+		"fn": "ESP32-GW Rev. C"
+	},
+	"oli-esp32-gw-rev-f": {
+		"fn": "ESP32-GW Rev. F"
+	},
+	"oli-esp32-poe": {
+		"fn": "ESP32-POE"
+	}
+}

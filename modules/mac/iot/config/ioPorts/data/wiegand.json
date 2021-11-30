@@ -1,0 +1,15 @@
+{
+	"name": "Wiegand",
+	"title": "Wiegand",
+	"useValueKind": 1,
+	"fields": {
+		"columns": [
+			{
+				"id": "pinD0", "name": "Pin DATA 0", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["in", "hwInt"]}
+			},
+			{
+				"id": "pinD1", "name": "Pin DATA 1", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["in", "hwInt"]}
+			}
+		]
+	}
+}

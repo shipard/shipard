@@ -15,8 +15,6 @@
 		{"id": "valueKind", "name": "Druh hodnoty", "type": "int", "reference": "mac.iot.valuesKinds"},
 		{"id": "valueStyle", "name": "Styl hodnoty", "type": "enumInt", "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "mac.iot.ioPortValueStyle", "cfgValue": "", "cfgText": "fn"}},
-		{"id": "topicStyle", "name": "Nastavení MQTT topic", "type": "enumInt", "options": ["saveOnChange"],
-			"enumCfg": {"cfgItem": "mac.iot.ioPortTopicStyle", "cfgValue": "", "cfgText": "fn"}},
 		{"id": "mqttTopic", "name": "Topic", "type": "string", "len": 160},
 
 		{"id": "fullName", "name": "Název portu", "type": "string", "len": 140},

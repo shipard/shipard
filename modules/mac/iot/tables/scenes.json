@@ -1,0 +1,30 @@
+{
+	"id": "mac.iot.scenes", "sql": "mac_iot_scenes", "name": "Scény",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 60},
+		{"id": "friendlyId", "name": "ID", "type": "string", "len": 60},
+
+		{"id": "place", "name": "Místo", "type": "int", "reference": "e10.base.places"},
+		{"id": "lan", "name": "Síť", "type": "int", "reference": "mac.lan.lans"},
+
+		{"id": "order", "name": "Pořadí", "type": "int"},
+		{"id": "icon", "name": "Ikona", "type": "string", "len": 50},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "mac.iot.ViewScenes", "detail": "mac.iot.ViewDetailScene"}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.iot.FormScene"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

@@ -1,0 +1,45 @@
+{
+	"name": "Ovladač Zapnuto / Vypnuto",
+	"title": "Ovladač Zapnuto / Vypnuto",
+	"fields": {
+		"columns": [
+			{
+				"id": "pin", "name": "Pin", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["out"]}
+			},
+			{
+				"id": "reverse", "name": "Obrácená logika (ON = LOW, OFF = HIGH)", "type": "logical"
+			}
+		]
+	},
+	"dataModel": {
+		"itemType": "controls",
+		"data-type": "binary",
+		"valueClass": "mac.iot.libs.IotDevicePayloadValueIotBox",
+		"enumSet": {
+			"1": {"title": "ON"},
+			"0": {"title": "OFF"},
+			"!": {"title": "TOGGLE"},
+			"push": {
+				"title": "PUSH",
+				"fields": {
+					"columns": [
+						{"id": "interval", "name": "Doba trvání [ms]", "type": "int"}
+					]
+				}
+			},
+			"disable": {"title": "DISABLE"},
+			"enable": {"title": "ENABLE"},
+			"1_disable": {"title": "ON + DISABLE"},
+			"0_disable": {"title": "OFF + DISABLE"},
+			"enable_1": {"title": "ENABLE + ON"},
+			"enable_0": {"title": "ENABLE + OFF"}
+		},
+		"enumGet": {
+			"1": {"title": "ON"},
+			"0": {"title": "OFF"}
+		},
+		"value-on": "1",
+		"value-off": "0",
+		"value-toggle": "!"
+	}
+}

@@ -11,7 +11,7 @@ use \e10\TableForm, \e10\DbTable, \e10\TableView, \e10\utils, \e10\TableViewDeta
  */
 class TableSCPlacements extends DbTable
 {
-	CONST ptWorkplace = 0;
+	CONST ptWorkplace = 0, ptLANDevice = 1, ptLANRack = 2;
 
 	public function __construct ($dbmodel)
 	{
@@ -65,6 +65,26 @@ class ViewSCPlacements extends TableView
 		{
 			$listItem ['t2'][] = ['text' => $item['workplaceName'], 'class' => 'label label-default', 'icon' => 'icon-sun-o'];
 		}
+		elseif ($item['placementTo'] == TableSCPlacements::ptLANDevice)
+		{
+			if ($item['lanDevice'])
+				$listItem ['t2'][] = ['text' => $item['lanDeviceName'], 'class' => 'label label-default', 'icon' => 'tables/mac.lan.devices'];
+			else
+				$listItem ['t2'][] = ['text' => '!!!', 'class' => 'label label-default e10-error', 'icon' => 'tables/mac.lan.racks'];
+		}
+		elseif ($item['placementTo'] == TableSCPlacements::ptLANRack)
+		{
+			if ($item['lanRack'])
+				$listItem ['t2'][] = ['text' => $item['rackName'], 'class' => 'label label-default', 'icon' => 'tables/mac.lan.racks'];
+			else
+				$listItem ['t2'][] = ['text' => '!!!', 'class' => 'label label-default e10-error', 'icon' => 'tables/mac.lan.racks'];
+		}
+
+
+	if ($item['sensor'])
+		$listItem ['t2'][] = ['text' => $item['sensorName'], 'class' => 'label label-info', 'icon' => 'tables/mac.iot.sensors'];
+	else
+		$listItem ['t2'][] = ['text' => '!!!', 'class' => 'label label-info e10-error', 'icon' => 'tables/mac.iot.sensors'];
 
 		return $listItem;
 	}
@@ -73,10 +93,16 @@ class ViewSCPlacements extends TableView
 	{
 		$fts = $this->fullTextSearch ();
 
-		$q [] = 'SELECT [placements].*, ';
-		array_push ($q, ' workplaces.name AS [workplaceName]');
+		$q [] = 'SELECT [placements].*,';
+		array_push ($q, ' workplaces.name AS [workplaceName],');
+		array_push ($q, ' racks.[fullName] AS [rackName], racks.[id] AS [rackId],');
+		array_push ($q, ' lanDevices.[fullName] AS [lanDeviceName], lanDevices.[id] AS [lanDeviceId],');
+		array_push ($q, ' sensors.[fullName] AS [sensorName], sensors.[idName] AS [sensorId]');
 		array_push ($q, ' FROM [mac_iot_scPlacements] AS [placements]');
 		array_push ($q, ' LEFT JOIN [terminals_base_workplaces] AS [workplaces] ON [placements].workplace = [workplaces].ndx');
+		array_push ($q, ' LEFT JOIN [mac_lan_racks] AS [racks] ON [placements].lanRack = [racks].ndx');
+		array_push ($q, ' LEFT JOIN [mac_lan_devices] AS [lanDevices] ON [placements].lanDevice = [lanDevices].ndx');
+		array_push ($q, ' LEFT JOIN [mac_iot_sensors] AS [sensors] ON [placements].sensor = [sensors].ndx');
 		array_push ($q, ' WHERE 1');
 
 		// -- fulltext
@@ -88,7 +114,7 @@ class ViewSCPlacements extends TableView
 			array_push ($q, ')');
 		}
 
-		$this->queryMain ($q, 'workplaces.', ['[fullName]', '[ndx]']);
+		$this->queryMain ($q, 'placements.', ['[fullName]', '[ndx]']);
 		$this->runQuery ($q);
 	}
 }
@@ -112,17 +138,27 @@ class FormSCPlacement  extends TableForm
 				$this->openTab ();
 					$this->addColumnInput ('fullName');
 					$this->addColumnInput ('placementTo');
+
 					$this->addSeparator(self::coH2);
 
-					if ($this->recData['placementTo'] == TableSCPlacements::ptWorkplace)
+					if ($this->recData['placementTo'] === TableSCPlacements::ptWorkplace)
 					{
 						$this->addColumnInput('workplace');
+						$this->addColumnInput('mainMenu');
+					}
+					elseif ($this->recData['placementTo'] === TableSCPlacements::ptLANDevice)
+					{
+						$this->addColumnInput('lanDevice');
+					}
+					elseif ($this->recData['placementTo'] === TableSCPlacements::ptLANRack)
+					{
+						$this->addColumnInput('lanRack');
 					}
 
-					$this->addSeparator(self::coH2);
-					$this->addList ('doclinks', '', TableForm::loAddToFormLayout);
+					$this->addColumnInput('sensor');
 
-					$this->addColumnInput('mainMenu');
+					//$this->addSeparator(self::coH2);
+					//$this->addList ('doclinks', '', TableForm::loAddToFormLayout);
 				$this->closeTab ();
 
 				$this->openTab (TableForm::ltNone);

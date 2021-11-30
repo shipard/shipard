@@ -11,7 +11,7 @@ use e10\Utility;
  */
 class GetNodeServerConfig extends Utility
 {
-	public $result = ['success' => 0];
+	public $result = ['success' => 0, 'test' => 'abcde'];
 
 	public function run ()
 	{

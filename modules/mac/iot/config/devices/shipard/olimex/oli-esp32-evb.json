@@ -1,0 +1,65 @@
+{
+	"io": {
+		"pins": {
+			"ext1-1": {"title": "ext1.1 (L1) / GPIO0", "hwnr": 0, "flags": ["d", "in", "out", "hwInt"]},
+			"ext1-2": {"title": "ext1.2 (R1) / GPIO1 / UART0: TXD", "hwnr": 1, "flags": ["d", "in", "out", "hwInt", "disabled"]},
+	
+			"ext1-3": {"title": "ext1.3 (L2) / GPIO2 / SPI0: MISO", "hwnr": 2, "flags": ["d", "a", "in", "out", "hwInt"]},
+			"ext1-4": {"title": "ext1.4 (R2) / GPIO3 / UART0: RXD", "hwnr": 3, "flags": ["d", "in", "out", "hwInt", "disabled"]},
+	
+			"ext1-5": {"title": "ext1.5 (L3) / GPIO4 / UART1: TXD", "hwnr": 4, "flags": ["d", "a", "in", "out", "hwInt"]},
+			"ext1-6": {"title": "ext1.6 (R3) / GPIO5 / CAN: TX", "hwnr": 5, "flags": ["d", "in", "out", "hwInt"]},
+	
+			"ext1-7": {"title": "ext1.7 (L4) / GPIO6", "hwnr": 6, "flags": ["d", "in", "out", "hwInt", "disabled"]},
+			"ext1-8": {"title": "ext1.8 (R4) / GPIO7", "hwnr": 7, "flags": ["d", "in", "out", "hwInt", "disabled"]},
+	
+			"ext1-9": {"title": "ext1.9 (L5) / GPIO8", "hwnr": 8, "flags": ["d", "in", "out", "hwInt", "disabled"]},
+			"ext1-10": {"title": "ext1.10 (R5) / GPIO9", "hwnr": 9, "flags": ["d", "in", "out", "hwInt"]},
+	
+			"ext1-11": {"title": "ext1.11 (L6) / GPIO10", "hwnr": 10, "flags": ["d", "in", "out", "hwInt"]},
+			"ext1-12": {"title": "ext1.12 (R6) / GPIP11", "hwnr": 11, "flags": ["d", "in", "out", "hwInt", "disabled"]},
+	
+			"ext1-13": {"title": "ext1.13 (L7) / GPIO12 / IR: TX", "hwnr": 12, "flags": ["d", "in", "out", "hwInt"]},
+			"ext1-14": {"title": "ext1.14 (R7) / GPIO13 / I2C0: SDA", "hwnr": 13, "flags": ["d", "a","in", "out", "hwInt"]},
+	
+			"ext1-15": {"title": "ext1.15 (L8) / GPIO14 / SPI0: SCK", "hwnr": 14, "flags": ["d", "a", "in", "out", "hwInt"]},
+			"ext1-16": {"title": "ext1.16 (R8) / GPIO15 / SPI0: MOSI", "hwnr": 15, "flags": ["d", "a", "in", "out", "hwInt"]},
+	
+			"ext1-17": {"title": "ext1.17 (L9) / GPIO16 / I2C0: SCL", "hwnr": 16, "flags": ["d", "in", "out", "hwInt"]},
+			"ext1-18": {"title": "ext1.18 (R9) / GPIP17 / SPI0: CS0", "hwnr": 17, "flags": ["d", "in", "out", "hwInt"]},
+	
+			"ext1-19": {"title": "ext1.19 (L10) / GPIO18 / MDIO", "hwnr": 18, "flags": ["d", "in", "out", "hwInt"]},
+			"ext1-20": {"title": "ext1.20 (R10) / GPIP19 / TXD0", "hwnr": 19, "flags": ["d", "in", "out", "hwInt"]},
+	
+			"ext1-21": {"title": "ext1.21 (L11) / GPIO21 / TX_EN", "hwnr": 21, "flags": ["d", "in", "out", "hwInt"]},
+			"ext1-22": {"title": "ext1.22 (R11) / GPIP22 / TXD1", "hwnr": 22, "flags": ["d", "in", "out", "hwInt"]},
+	
+			"ext1-23": {"title": "ext1.23 (L12) / GPIO23 / MDC", "hwnr": 23, "flags": ["d", "in", "out", "hwInt"]},
+			"ext1-24": {"title": "ext1.24 (R12) / GPI025 / RXD0", "hwnr": 25, "flags": ["d", "a", "in", "out", "hwInt"]},
+	
+			"ext1-25": {"title": "ext1.25 (L13) / GPIO26 / RXD1", "hwnr": 26, "flags": ["d", "in", "out", "hwInt"]},
+			"ext1-26": {"title": "ext1.26 (R13) / GPIP27 / RX_DV", "hwnr": 27, "flags": ["d", "in", "out", "hwInt"]},
+	
+			"ext1-27": {"title": "ext1.27 (L14) / GPIO32 / RELAY1", "hwnr": 32, "flags": ["d", "in", "out", "hwInt"]},
+			"ext1-28": {"title": "ext1.28 (R14) / GPIP33 / RELAY2", "hwnr": 33, "flags": ["d", "in", "out", "hwInt"]},
+	
+			"ext1-29": {"title": "ext1.29 (L15) / GPIO34 / BUTTON0", "hwnr": 34, "flags": ["d", "in", "out", "hwInt"]},
+			"ext1-30": {"title": "ext1.30 (R15) / GPIP35 / CAN: RX", "hwnr": 35, "flags": ["d", "in", "out", "hwInt"]},
+	
+			"ext1-31": {"title": "ext1.31 (L16) / GPIO36 / UART1: RXD", "hwnr": 36, "flags": ["d", "in", "out", "hwInt"]},
+			"ext1-32": {"title": "ext1.32 (R16) / GPIP39 / IR: RX", "hwnr": 39, "flags": ["d", "in", "out", "hwInt"]},
+	
+			"ext1-33": {"title": "ext1.33 (L17)/ ESP_EN", "hwnr": -1, "flags": ["disabled"]},
+			"ext1-34": {"title": "ext1.34 (R17) / GND", "hwnr": -1, "flags": ["gnd"]},
+	
+			"ext1-35": {"title": "ext1.35 (L18) / GND", "hwnr": -1, "flags": ["gnd"]},
+			"ext1-36": {"title": "ext1.35 (R18) / GND", "hwnr": -1, "flags": ["gnd"]},
+	
+			"ext1-37": {"title": "ext1.37 (L19) / 3.3V", "hwnr": -1, "flags": ["pwr", "3.3v"]},
+			"ext1-38": {"title": "ext1.38 (R19) / 3.3V", "hwnr": -1, "flags": ["pwr", "3.3v"]},
+	
+			"ext1-39": {"title": "ext1.39 (L20) / 5V", "hwnr": -1, "flags": ["pwr", "5v"]},
+			"ext1-40": {"title": "ext1.40 (R20) / 5V", "hwnr": -1, "flags": ["pwr", "5v"]}
+		}
+	}
+}

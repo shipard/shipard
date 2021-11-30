@@ -79,12 +79,12 @@
             <div class="col-md-6 col-sm-6" >
                 <div>
                     <span class='e10-sp-title2'><b>{{@tr;id:e10.base.system.DictSystem.diCore_TechnicalSupport}}:</b> <a href="{{cfgItem.dsi.supportUrl}}" target="new">{{cfgItem.dsi.supportName}}</a></span><br>
-                    <span class='e10-sp-title2'><i class="fa fa-phone"></i> {{cfgItem.dsi.supportPhone}}</span>
+                    {{#cfgItem.dsi.supportPhone}}<span class='e10-sp-title2'><i class="fa fa-phone"></i> {{cfgItem.dsi.supportPhone}}</span>{{/cfgItem.dsi.supportPhone}}
                     <span class='e10-sp-title2'><i class="fa fa-envelope"></i> <a href="mailto:{{cfgItem.dsi.supportEmail}}">{{cfgItem.dsi.supportEmail}}</a></span>
                 </div>
             </div>
             <div class="col-md-6 col-sm-6 text-right hidden-xs" style="background-color: #111; ">
-                <span class='e10-sp-title2'>powered by <a href="https://shipard.cz" target="new">shipard.cz</a></span>
+                <span class='e10-sp-title2'>powered by <a href="https://shipard.org" target="new">shipard.org</a></span>
                 <br><small title="{{data.thisDeviceId}}">{{@tr;id:e10.base.system.DictSystem.diCore_Version}} {{cfgItem.serverInfo.e10version}}.{{cfgItem.serverInfo.e10commit}}{{#cfgItem.serverInfo.e10channelName}}#{{cfgItem.serverInfo.e10channelName}}{{/cfgItem.serverInfo.e10channelName}}&nbsp;</small>
             </div>
         </div>

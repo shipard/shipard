@@ -1,0 +1,84 @@
+{
+	"gpioLayout": "shipard/olimex/oli-esp32-poe",
+	"enabledPins": ["uext-5", "uext-6"],
+	"fields": {
+		"groups": [
+			{"id":  "l1", "title":  "Sériová linka 1"},
+			{"id":  "l2", "title":  "Sériová linka 2"}
+		],
+		"columns": [
+			{
+				"id": "serial1Enabled", "group":  "l1", "name": "Port 1 je povolen", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			},
+			{
+				"id": "serial1Speed1", "group":  "l1", "name": "Rychlost portu 1", "label": "Rychlost", "type": "enumInt",
+				"enumCfg": {"cfgItem": "mac.iot.ioPorts.serialLineSpeed", "cfgValue": "", "cfgText": "name"}, "enabled": {"serial1Enabled": "1"}
+			},
+			{
+				"id": "serial1Mode1", "group":  "l1", "name": "Nastavení portu 1", "label": "Nastavení", "type": "enumInt",
+				"enumCfg": {"cfgItem": "mac.iot.ioPorts.serialLineMode", "cfgValue": "", "cfgText": "name"}, "enabled": {"serial1Enabled": "1"}
+			},
+			{
+				"id": "serial1ValueKind", "group":  "l1", "name": "Druh hodnoty", "type": "int", "reference": "mac.iot.valuesKinds", "enabled": {"serial1Enabled": "1"}
+			},
+			{
+				"id": "serial1PortId", "group":  "l1", "name": "ID portu 1", "label": "ID portu", "type": "string", "len": 30, "enabled": {"serial1Enabled": "1"}
+			},
+			{
+				"id": "serial1FullName", "group":  "l1", "name": "Název portu 1", "label": "Název", "type": "string", "len": 140, "enabled": {"serial1Enabled": "1"}
+			},
+
+			{
+				"id": "serial2Enabled", "group":  "l2", "name": "Port 2 je povolen", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			},
+			{
+				"id": "serial1Speed2", "group":  "l2", "name": "Rychlost portu 2", "label": "Rychlost", "type": "enumInt", "enabled": {"serial2Enabled": "1"},
+				"enumCfg": {"cfgItem": "mac.iot.ioPorts.serialLineSpeed", "cfgValue": "", "cfgText": "name"}, "readOnly": {"serial2Enabled": "0"}
+			},
+			{
+				"id": "serial1Mode2", "group":  "l2", "name": "Nastavení portu 2", "label": "Nastavení", "type": "enumInt",
+				"enumCfg": {"cfgItem": "mac.iot.ioPorts.serialLineMode", "cfgValue": "", "cfgText": "name"}, "enabled": {"serial2Enabled": "1"}
+			},
+			{
+				"id": "serial2PortId", "group":  "l2", "name": "ID portu 2", "label": "ID portu", "type": "string", "len": 30, "enabled": {"serial2Enabled": "1"}
+			},
+			{
+				"id": "serial2FullName", "group":  "l2", "name": "Název portu 2", "label": "Název", "type": "string", "len": 140, "enabled": {"serial2Enabled": "1"}
+			}
+		]
+	},
+	"fixedIOPorts": {
+		"serial1": {
+			"type": "data/serial",
+			"portId": "serial1",
+
+			"pinRX": "uext-4",
+			"pinTX": "uext-3",
+
+			"_cfgColumns": {"serial1Speed1": "speed", "serial1Mode1": "mode"},
+			"_rowColumns": {"serial1PortId": "portId", "serial1FullName": "fullName"},
+			"_portDisabled": {"serial1Enabled": 0}
+		},
+		"serial2": {
+			"type": "data/serial",
+			"portId": "serial2",
+
+			"pinRX": "uext-8",
+			"pinTX": "uext-7",
+
+			"_cfgColumns": {"serial1Speed2": "speed", "serial1Mode2": "mode"},
+			"_rowColumns": {"serial2PortId": "portId", "serial2FullName": "fullName"},
+			"_portDisabled": {"serial2Enabled": 0}
+		},
+		"buzzer": {
+			"type": "control/binary",
+			"portId": "buzzer",
+			"pin": "uext-10"
+		},
+		"led": {
+			"type": "control/binary",
+			"portId": "led",
+			"pin": "uext-9"
+		}
+	}
+}

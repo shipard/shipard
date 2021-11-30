@@ -4,6 +4,7 @@ namespace Shipard\Table;
 use \Shipard\Application\DataModel;
 use \e10\utils;
 use \e10\json;
+use \Shipard\Utils\Str;
 use \Shipard\Form\TableForm;
 use \Shipard\Utils\Attachments;
 use \Shipard\Base\ListData;
@@ -705,7 +706,7 @@ class DbTable
 		$recInfo = $this->getRecordInfo ($recData);
 		$ipAddr = (isset($_SERVER ['REMOTE_ADDR'])) ? $_SERVER ['REMOTE_ADDR'] : '0.0.0.0';
 		$logEvent = array ('tableid' => $this->tableId, 'recid' => $ndx, 'docState' => $recData [$stateColumn],
-			'eventTitle' => $recInfo ['title'], 'created' => utils::now(),
+			'eventTitle' => Str::upToLen($recInfo ['title'], 180), 'created' => utils::now(),
 			'ipaddress' => $ipAddr, 'deviceId' => $this->app()->deviceId);
 
 		$logEvent ['user'] = $this->app()->user()->data ('id');
@@ -941,13 +942,27 @@ class DbTable
 				$data = [];
 
 			foreach ($subColumns as $key => $value)
+			{
 				$data[$key] = $value;
-
+			}	
 			$sci = $this->subColumnsInfo($saveData ['recData'], $columnId);
 			if ($sci !== FALSE)
 				$this->app()->subColumnsCalc($data, $sci);
 
-			$saveData['recData'][$columnId] = json_encode($data);
+			if ($sci)	
+			{
+				$dataClean = [];	
+				foreach ($sci['columns'] as $colCfg)
+				{
+					$key = $colCfg['id'];
+					
+					if (isset($data[$key]))
+						$dataClean[$key] = $data[$key];
+				}
+				$saveData['recData'][$columnId] = json_encode($dataClean);
+			}
+			else
+				$saveData['recData'][$columnId] = json_encode($data);
 		}
 	}
 

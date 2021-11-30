@@ -61,6 +61,24 @@ class TableDevices extends DbTable
 				$recData['deviceKind'] = $deviceType['deviceKind'];
 		}
 
+		$recData['nodeSupport'] = 0;
+		if ($recData['deviceKind'] == 7)
+		{
+			$macDeviceCfg = json_decode($recData['macDeviceCfg'], TRUE);
+			if ($macDeviceCfg)
+			{
+				if (
+					(isset($macDeviceCfg['enableLC']) && $macDeviceCfg['enableLC'])	||
+					(isset($macDeviceCfg['enableCams']) && $macDeviceCfg['enableCams'])	||
+					(isset($macDeviceCfg['enableRack']) && $macDeviceCfg['enableRack'])	||
+					(isset($macDeviceCfg['enableOthers']) && $macDeviceCfg['enableOthers'])
+				)	
+				{
+					$recData['nodeSupport'] = 1;
+				}
+			}
+		}
+
 		if (isset($recData['id']) && $recData['id'] === '' && isset($recData['ndx']) && $recData['ndx'] !== 0)
 			$recData['id'] = strval ($recData['ndx']);
 
@@ -404,6 +422,10 @@ class ViewDevices extends TableView
 			$listItem ['i1'] = ['text' => $item['id'], 'class' => 'evNumber', 'suffix' => '#'.$item['ndx']];
 
 		$props = [];
+
+		if ($item['nodeSupport'])
+			$props[] = ['icon' => 'system/iconCheck', 'text' => 'node', 'class' => 'label label-info'];
+
 		if ($item['placeFullName'])
 		{
 			$placeLabel = ['icon' => 'system/iconMapMarker', 'text' => $item['placeFullName'], 'class' => ''];
@@ -802,7 +824,7 @@ class ViewDevicesShipardNodes extends ViewDevices
 {
 	public function init ()
 	{
-		$this->deviceKind = 70;
+		$this->deviceKind = [7, 70];
 		parent::init();
 	}
 }
@@ -837,9 +859,6 @@ class FormDevice extends TableForm
 		$this->openForm ();
 
 		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
-		$tabs ['tabs'][] = ['text' => 'Adresy', 'icon' => 'formAddresses'];
-		$tabs ['tabs'][] = ['text' => 'Porty', 'icon' => 'formPorts'];
-		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 
 		if ($isMacDevice)
 		{
@@ -849,31 +868,54 @@ class FormDevice extends TableForm
 				$tabs ['tabs'][] = ['text' => 'IO', 'icon' => 'icon-dot-circle-o'];
 		}
 
+		$tabs ['tabs'][] = ['text' => 'Adresy', 'icon' => 'formAddresses'];
+		$tabs ['tabs'][] = ['text' => 'Porty', 'icon' => 'formPorts'];
+		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
+
 		$tabs ['tabs'][] = ['text' => 'Senzory', 'icon' => 'formSensors'];
 		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		$this->openTabs ($tabs, TRUE);
 			$this->openTab ();
-				$this->addColumnInput ('deviceType');
-				if ($isMacDevice)
-					$this->addColumnInput ('macDeviceType');
 				$this->addColumnInput ('fullName');
 				$this->addColumnInput ('id');
-				$this->addColumnInput ('evNumber');
+				$this->addSeparator(TableForm::coH3);
+
+				$this->addColumnInput ('deviceType');
+				if ($isMacDevice)
+				{
+					$this->openRow();
+						$this->addColumnInput ('macDeviceType');
+						if ($macDeviceCfg && isset($macDeviceCfg['useHWMode']))
+							$this->addColumnInput ('hwMode', self::coNoLabel);
+					$this->closeRow();
+					if ($this->recData['hwMode'])
+						$this->addColumnInput ('hwServer');
+				}
+
+				$this->addSeparator(TableForm::coH3);
 				$this->addColumnInput ('deviceTypeName');
 				$this->addColumnInput ('place');
 				$this->addColumnInput ('placeDesc');
 				$this->addColumnInput ('rack');
-				$this->addColumnInput ('lan');
-				$this->addColumnInput ('property');
 
-				if ($deviceKind && isset($deviceKind['useMonitoringDataSource']))
-				{
-					$this->addSeparator(TableForm::coH2);
-					$this->addColumnInput('macDataSource');
-				}
+				$this->addSeparator(TableForm::coH3);
 				$this->addList ('clsf', '', TableForm::loAddToFormLayout);
 			$this->closeTab ();
+
+			if ($isMacDevice)
+			{
+				$this->openTab ();
+					$this->addSubColumns('macDeviceCfg');
+					//$this->addColumnInput ('localServer');
+				$this->closeTab ();
+				if ($useIOPorts)
+				{
+					$this->openTab(TableForm::ltNone);
+						$this->addListViewer('ioPorts', 'formList');
+					$this->closeTab();
+				}
+			}
 
 			$this->openTab (TableForm::ltNone);
 				//$this->addList ('ifaces');
@@ -891,21 +933,16 @@ class FormDevice extends TableForm
 				$this->addColumnInput ('alerts');
 				$this->addColumnInput ('hideFromDR');
 				$this->addColumnInput ('uid');
-			$this->closeTab ();
-
-			if ($isMacDevice)
-			{
-				$this->openTab ();
-					$this->addSubColumns('macDeviceCfg');
-					//$this->addColumnInput ('localServer');
-				$this->closeTab ();
-				if ($useIOPorts)
+				$this->addColumnInput ('evNumber');
+				$this->addColumnInput ('property');
+				$this->addColumnInput ('lan');
+				if ($deviceKind && isset($deviceKind['useMonitoringDataSource']))
 				{
-					$this->openTab(TableForm::ltNone);
-						$this->addListViewer('ioPorts', 'formList');
-					$this->closeTab();
+					$this->addSeparator(TableForm::coH2);
+					$this->addColumnInput('macDataSource');
 				}
-			}
+
+			$this->closeTab ();
 
 			$this->openTab (TableForm::ltNone);
 				$this->addListViewer ('sensorsShow', 'formList');
@@ -1047,6 +1084,8 @@ class ViewDetailDeviceDetailInfo extends TableViewDetail
 		$card = new \mac\lan\DocumentCardDeviceInfo($this->app());
 		$card->setDocument($this->table(), $this->item);
 		$card->createContent();
+		if (!isset($card->content['body']))
+			return;
 		foreach ($card->content['body'] as $cp)
 			$this->addContent($cp);
 	}

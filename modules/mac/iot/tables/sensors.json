@@ -4,9 +4,6 @@
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "uid", "name": "UID", "type": "string", "len": 20, "options": ["ascii"]},
 
-		{"id": "valueStyle", "name": "Styl hodnoty", "type": "enumInt", "options": ["saveOnChange"],
-			"enumCfg": {"cfgItem": "mac.iot.ioPortValueStyle", "cfgValue": "", "cfgText": "fn"}},
-
 		{"id": "srcLan", "name": "Síť", "type": "int", "reference": "mac.lan.lans"},
 		{"id": "srcMqttTopic", "name": "MQTT topic", "type": "string", "len": "120"},
 

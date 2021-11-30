@@ -7,7 +7,7 @@ namespace ui\mobile;
  * Class Maps
  * @package mobileui
  */
-class Maps extends \ui\mobile\PageObject
+class Maps extends \Shipard\UI\OldMobile\PageObject
 {
 	public function createContentCodeInside ()
 	{

@@ -25,7 +25,12 @@
 			"mac.lan.ipAddress": {"default": 2},
 			"mac.lan.ipAddressLists": {"default": 2},
 			"mac.lan.ipAddressListsRows": {"default": 2},
-			"mac.lan.watchdogs": {"default": 2}
+			"mac.lan.watchdogs": {"default": 2},
+
+			"mac.inet.domainsAccounts": {"default": 2},
+			"mac.inet.domains": {"default": 2},
+			"mac.inet.domainsRecords": {"default": 2},
+			"mac.inet.certs": {"default": 2}
 		},
 	  "widgets": {
 		  "mac.lan.LanMonitoringWidget": 2,

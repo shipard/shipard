@@ -1,0 +1,15 @@
+{
+	"id": "mac.base.zonesPlaces", "sql": "mac_base_zonesPlaces", "name": "Místa v zónach",
+	"columns": [
+		{"id": "ndx", "name": "ndx", "type": "int_ai"},
+
+		{"id": "zone", "name": "Zóna", "type": "int", "reference": "mac.base.zones"},
+		{"id": "place", "name": "Místo", "type": "int", "reference": "e10.base.places"},
+
+		{"id": "rowOrder", "name": "Pořadí", "type": "int"}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.base.FormZonePlace"}
+	],
+	"options": ["systemTable"]
+}

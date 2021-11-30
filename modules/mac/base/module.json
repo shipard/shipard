@@ -1,7 +1,7 @@
 {
   "id": "mac.base",
   "name": "Monitoring And Control - Base",
-  "tables": ["zones", "zonesCameras", "zonesIoTSC"],
+  "tables": ["zones", "zonesCameras", "zonesPlaces", "zonesIoTSC"],
   "modules": ["e10/base"],
 
   "config": [

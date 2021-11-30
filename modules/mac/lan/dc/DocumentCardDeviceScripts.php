@@ -17,7 +17,7 @@ class DocumentCardDeviceScripts extends \e10\DocumentCard
 	{
 		$tabs = [];
 
-		if ($this->recData['deviceKind'] === 70)
+		if ($this->recData['nodeSupport'])
 		{ // -- node server
 			$this->createContentBody_NodeServer($tabs);
 		}
@@ -78,7 +78,7 @@ class DocumentCardDeviceScripts extends \e10\DocumentCard
 			$info[] = ['text' => '#'.$scriptsData[$part.'Ver'], 'icon' => 'system/iconPencil', 'class' => 'label label-default'];
 
 		$content[] = [
-			'pane' => 'padd5',
+			'pane' => 'padd5 e10-pane e10-pane-table',
 			'type' => 'line', 'line' => $info
 		];
 
@@ -198,7 +198,7 @@ class DocumentCardDeviceScripts extends \e10\DocumentCard
 				$apiKey = $apiKeyData['emailHash'];
 		}
 
-		$codeInstall = "wget https://download.shipard.org/shipard-node/server-app/shipard-node-install-stable-debian.cmd\n";
+		$codeInstall = "wget https://download.shipard.org/shipard-node/server-app-2/shipard-node-install-stable-debian.cmd\n";
 		$codeInstall .= "sh shipard-node-install-stable-debian.cmd\n";
 		$codeInstall .= "shipard-node cfg-init --server-id=\"{$this->recData['ndx']}\" --ds-url=\"$dsUrl\" --api-key=\"{$apiKey}\"\n";
 		$codeInstall .= "\n\n";

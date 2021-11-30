@@ -20,7 +20,7 @@ class LanInfoDownload extends Utility
 
 		$lanInfo = ['ranges' => []];
 
-		$rows = $this->app()->db->query ('SELECT ndx FROM [mac_lan_devices] WHERE [deviceKind] = %i', 70, ' AND [docState] != %i', 9800);
+		$rows = $this->app()->db->query ('SELECT ndx FROM [mac_lan_devices] WHERE [deviceKind] = %i', 7, ' AND [nodeSupport] = %i', 1,  ' AND [docState] != %i', 9800);
 		foreach ($rows as $r)
 		{
 			$itemKey = 'lanDevicesInfo_' . $r['ndx'];

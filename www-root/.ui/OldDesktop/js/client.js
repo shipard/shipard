@@ -877,7 +877,7 @@ e10ViewerInlineAction(e){if(e.attr('data-object-class-id')===undefined)return;va
 viewerId=searchParentAttr(e,'data-viewer');var
 requestParams={};requestParams['object-class-id']=e.attr('data-object-class-id');requestParams['action-type']=e.attr('data-action-type');elementPrefixedAttributes(e,'data-action-param-',requestParams);if(e.attr('data-pk')!==undefined)requestParams['pk']=e.attr('data-pk');e10.server.api(requestParams,function(data){if(data.reloadNotifications===1)e10NCReset();viewerRefresh($('#'+viewerId));});}function
 e10InlineAction(e){if(e.attr('data-object-class-id')===undefined)return;var
-requestParams={};requestParams['object-class-id']=e.attr('data-object-class-id');requestParams['action-type']=e.attr('data-action-type');elementPrefixedAttributes(e,'data-action-param-',requestParams);if(e.attr('data-pk')!==undefined)requestParams['pk']=e.attr('data-pk');e10.server.api(requestParams,function(data){if(data.reloadNotifications===1)e10NCReset();});}function
+requestParams={};requestParams['object-class-id']=e.attr('data-object-class-id');requestParams['action-type']=e.attr('data-action-type');elementPrefixedAttributes(e,'data-action-param-',requestParams);if(e.attr('data-pk')!==undefined)requestParams['pk']=e.attr('data-pk');e10.server.api(requestParams,function(data){if(data.reloadNotifications===1)e10NCReset();if(e.parent().hasClass('btn-group')){e.parent().find('>button.active').removeClass('active');e.addClass('active');}});}function
 e10FormNeedSave(element,saveType){e10FormSetAsModified(element);if(saveType===-1){e10SaveOnChange(element);}}function
 e10FormRowAction(event,button){var
 action=button.attr('data-action');if(action==="delete"){e10FormRowActionDelete(button);return;}if(action==="insert"){e10FormRowActionInsert(button);return;}if(action==="up"){e10FormRowActionUp(button);return;}if(action==="down"){e10FormRowActionDown(button);return;}alert("e10FormRowAction: "+action);}function
@@ -1615,7 +1615,7 @@ i
 in
 webSocketServers){mqttStartClient(i);}}function
 mqttStartClient(serverIndex,disableMessage){var
-ws=webSocketServers[serverIndex];if(ws.fqdn==='')return;var
+ws=webSocketServers[serverIndex];if(ws.fqdn===null||ws.fqdn==='')return;var
 portNumber=parseInt(ws.port);if(portNumber===0)return;ws.retryTimer=0;ws.mqttClient=new
 Paho.MQTT.Client(ws.fqdn,portNumber,deviceId+"-"+Math.random().toString(36));ws.mqttClient.onConnectionLost=function(){setTimeout(function(){wsSetState(serverIndex,'error');},200);webSocketServers[serverIndex].retryTimer=setTimeout(function(){mqttStartClient(serverIndex,1);},3000);};ws.mqttClient.onMessageArrived=function(message){mqttOnMessage(serverIndex,message);};ws.mqttClient.connect({onSuccess:function(){wsSetState(serverIndex,'open');mqttSubscribeAll(serverIndex);},onFailure:function(){wsSetState(serverIndex,'error');webSocketServers[serverIndex].retryTimer=setTimeout(function(){mqttStartClient(serverIndex,1);},3000);},useSSL:true});}function
 mqttSubscribeAll(serverIndex){var

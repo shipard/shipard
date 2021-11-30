@@ -1,0 +1,30 @@
+{
+	"id": "mac.iot.setups", "sql": "mac_iot_setups", "name": "IoT sestavy",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "setupType", "name": "Druh sestavy", "label":  "Typ", "type": "enumString", "len": "40", 
+			"enumCfg": {"cfgItem": "mac.iot.setups.types", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "place", "name": "Místo", "type": "int", "reference": "e10.base.places"},
+
+		{"id": "fullName", "name": "Úplný název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
+		{"id": "id", "name": "ID", "type": "string", "len": 60},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "mac.iot.ViewSetups",
+			"details": {
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.iot.ViewDetailSetup"},
+				"cfgScripts": {"title": "Nastavení", "icon": "system/detailSettings", "type": "detail", "class": "mac.iot.ViewDetailSetupCfg"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.iot.FormSetup"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

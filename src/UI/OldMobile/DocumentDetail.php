@@ -9,7 +9,7 @@ use E10\ContentRenderer;
  * Class Viewer
  * @package mobileui
  */
-class DocumentDetail extends \ui\mobile\PageObject
+class DocumentDetail extends \Shipard\UI\OldMobile\PageObject
 {
 	var $documentCard = NULL;
 	var $documentNdx = 0;
