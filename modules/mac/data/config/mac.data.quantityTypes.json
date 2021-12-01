@@ -10,46 +10,31 @@
 		"title": "Hmotnost", "icon": "quantityTypeWeight"
 	},
 	"21": {
-		"title": "Tlak", "icon": "quantityTypeUnknown"
+		"title": "Tlak", "icon": "quantityTypePressure"
 	},
 	"22": {
-		"title": "Úroveň osvětlení", "icon": "iotThingKinds/lights"
+		"title": "Úroveň osvětlení", "icon": "quantityTypeLighting"
 	},
 	"23": {
-		"title": "Vlhkost", "icon": "quantityTypeUnknown"
+		"title": "Vlhkost", "icon": "quantityTypeHumidity"
 	},
 
 	"70": {
-		"title": "Otáčky", "icon": "quantityTypeUnknown"
+		"title": "Otáčky", "icon": "quantityTypeSpeed"
 	},
 	"71": {
-		"title": "Průtok", "icon": "quantityTypeUnknown"
+		"title": "Průtok", "icon": "quantityTypeFlow"
 	},
 
 	"80": {
 		"title": "Text", "icon": "quantityTypeText"
-	},
-	"81": {
-		"title": "RZ vozidla", "icon": "quantityTypeLicensePlate"
-	},
-	"82": {
-		"title": "RFID tag", "icon": "quantityTypeRFIDTag", "login": 1, "kbd": 1
-	},
-	"83": {
-		"title": "Čárový kód", "icon": "quantityTypeBarCode", "login": 1, "kbd": 1
-	},
-	"84": {
-		"title": "QR kód", "icon": "quantityTypeQRCode", "login": 1, "kbd": 1
-	},
-	"85": {
-		"title": "Telefonní číslo", "icon": "quantityTypePhoneNumber"
 	},
 
 	"90": {
 		"title": "Logická hodnota", "icon": "quantityTypeLogicalValue"
 	},
 	"93": {
-		"title": "Pohybové čidlo", "icon": "quantityTypeLogicalValue"
+		"title": "Pohybové čidlo", "icon": "quantityTypeMotionSensor"
 	},
 	"96": {
 		"title": "Otevřeno/zavřeno", "icon": "quantityTypeOpenedClosed"

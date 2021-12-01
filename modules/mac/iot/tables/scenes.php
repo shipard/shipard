@@ -104,8 +104,8 @@ class FormScene  extends TableForm
 
 		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 		//$tabs ['tabs'][] = ['text' => 'Rozvrh', 'icon' => 'formSchedule'];
-		$tabs ['tabs'][] = ['text' => 'Akce', 'icon' => 'formAction'];
-		$tabs ['tabs'][] = ['text' => 'Události', 'icon' => 'formAction'];
+		$tabs ['tabs'][] = ['text' => 'Nastavení scény', 'icon' => 'formSceneSetting'];
+		$tabs ['tabs'][] = ['text' => 'Události', 'icon' => 'formEvents'];
 		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		$this->openForm ();

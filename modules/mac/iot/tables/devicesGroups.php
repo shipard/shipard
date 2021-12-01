@@ -134,7 +134,7 @@ class FormDeviceGroup extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
 		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
-		$tabs ['tabs'][] = ['text' => 'Napojení', 'icon' => 'formConnect'];
+		$tabs ['tabs'][] = ['text' => 'Zařízení', 'icon' => 'formDevices'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs, TRUE);

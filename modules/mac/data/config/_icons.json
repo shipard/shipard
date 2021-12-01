@@ -8,10 +8,10 @@
 
 
 	"quantityTypeUnknown":{
-		"fa5":"fa-tachometer-alt",
-        "fa6pro":"fa-tachometer-alt",
-        "bsi":"bi-speedometer2",
-        "mdi":"speed"
+		"fa5": "fa-question-circle",
+		"fa6pro": "fa-question-circle",
+		"bsi": "bi-question-circle-fill",
+		"mdi": "help_outline"
 	},
 	"quantityTypeTemperature":{
 		"fa5": "fa-thermometer-three-quarters",
@@ -25,47 +25,53 @@
 		"bsi": "bi-clipboard-data",
 		"mdi": "fitness_center"
 	},
+	"quantityTypePressure":{
+		"fa5":"fa-compress-alt",
+        "fa6pro":"fa-compress-alt",
+        "bsi":"bi-arrows-angle-contract",
+        "mdi":"close_fullscreen"
+	},
+	"quantityTypeLighting":{
+		"fa5": "fa-lightbulb",
+		"fa6pro": "fa-lightbulb-on",
+		"bsi": "bi-lightbulb",
+		"mdi": "lightbulb"
+	},
+	"quantityTypeHumidity":{
+		"fa5": "fa-tint",
+		"fa6pro": "fa-humidity",
+		"bsi": "bi-moisture",
+		"mdi": "water_drop"
+	},
+	"quantityTypeSpeed":{
+		"fa5":"fa-tachometer-alt",
+        "fa6pro":"fa-tachometer-alt",
+        "bsi":"bi-speedometer2",
+        "mdi":"speed"
+	},
+	"quantityTypeFlow":{
+		"fa5": "fa-arrow-right",
+		"fa6pro": "fa-arrow-right",
+		"bsi": "bi-arrow-right",
+		"mdi": "arrow_right_alt"
+	},
 	"quantityTypeText":{
 		"fa5": "fa-keyboard",
 		"fa6pro": "fa-keyboard",
 		"bsi": "bi-keyboard",
 		"mdi": "keyboard"
 	},
-	"quantityTypeLicensePlate":{
-		"fa5": "fa-car",
-		"fa6pro": "fa-car",
-		"bsi": "bi-truck",
-		"mdi": "directions_car"
-	},
-	"quantityTypeRFIDTag":{
-		"fa5":"fa-tag",
-        "fa6pro":"fa-tag",
-        "bsi":"bi-tag-fill",
-        "mdi":"local_offer"
-	},
-	"quantityTypeBarCode":{
-		"fa5":"fa-barcode",
-        "fa6pro":"fa-barcode-read",
-        "bsi":"bi-upc-scan",
-        "mdi":"document_scanner"
-	},
-	"quantityTypeQRCode":{
-		"fa5":"fa-qrcode",
-        "fa6pro":"fa-qrcode",
-        "bsi":"bi-upc-scan",
-        "mdi":"qr_code_scanner"
-	},
-	"quantityTypePhoneNumber":{
-		"fa5": "fa-phone-alt",
-		"fa6pro": "fa-phone-alt",
-		"bsi": "bi-telephone",
-		"mdi": "call"
-	},
 	"quantityTypeLogicalValue":{
 		"fa5": "fa-power-off",
 		"fa6pro": "fa-power-off",
 		"bsi": "bi-power",
 		"mdi": "power_settings_new"
+	},
+	"quantityTypeMotionSensor":{
+		"fa5": "fa-walking",
+		"fa6pro": "fa-walking",
+		"bsi": "bi-person-bounding-box",
+		"mdi": "directions_walk"
 	},
 	"quantityTypeOpenedClosed":{
 		"fa5": "fa-toggle-on",

@@ -309,7 +309,7 @@ class FormEventDo extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 		//$this->setFlag ('maximize', 1);
 
-		$tabs ['tabs'][] = ['text' => 'Data', 'icon' => 'system/iconDatabase'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 
 		$iotDevicesUtils = new \mac\iot\libs\IotDevicesUtils($this->app());
 

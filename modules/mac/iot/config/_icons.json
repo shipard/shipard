@@ -9,7 +9,7 @@
 			"fa5": "fa-lightbulb",
 			"fa6pro": "fa-lightbulb-on",
 			"bsi": "bi-lightbulb",
-			"mdi": "tungsten"
+			"mdi": "lightbulb"
 		},	
     "tables/mac.iot.scenes": {
 		"fa5": "fa-play-circle",
@@ -96,7 +96,7 @@
 		"fa5": "fa-lightbulb",
 		"fa6pro": "fa-lightbulb-on",
 		"bsi": "bi-lightbulb",
-		"mdi": "tungsten"
+		"mdi": "lightbulb"
 	},
 	"iotThingKinds/turnstile":{
 		"fa5": "fa-arrows-alt-v",
@@ -136,11 +136,11 @@
 	},
 
 
-	"formConnect":{
-		"fa5": "fa-random",
-		"fa6pro": "fa-random",
-		"bsi": "bi-shuffle",
-		"mdi": "shuffle"
+	"formDevices":{
+		"fa5": "fa-lightbulb",
+		"fa6pro": "fa-lightbulb-on",
+		"bsi": "bi-lightbulb",
+		"mdi": "lightbulb"
 	},
 	"formSchedule":{
 		"fa5": "fa-clock",
@@ -148,7 +148,13 @@
 		"bsi": "bi-clock",
 		"mdi": "schedule"
 	},
-	"formAction":{
+	"formSceneSetting":{
+		"fa5": "fa-wrench",
+		"fa6pro": "fa-wrench",
+		"bsi": "bi-wrench",
+		"mdi": "build_circle"
+	},
+	"formEvents":{
 		"fa5": "fa-toggle-on",
 		"fa6pro": "fa-toggle-on",
 		"bsi": "bi-toggle-on",
