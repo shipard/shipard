@@ -16,14 +16,14 @@
 		{"id": "devices", "class": "e10.base.ListRows", "name": "Zařízení", "table": "mac.iot.devicesGroupsItems", "queryColumn": "devicesGroup", "orderColumn": "rowOrder"}
   ],
 	"views": [
-		{"id": "default", "class": "mac.iot.ViewDevicesGroups",
+		{"id": "default", "class": "mac.iot.ViewDevicesGroups", "help":"prirucka/509",
 			"details": {
 				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.iot.ViewDetailDeviceGroup"}
 			}
 		}
 	],
 	"forms": [
-		{"id": "default", "class": "mac.iot.FormDeviceGroup"}
+		{"id": "default", "class": "mac.iot.FormDeviceGroup", "help":"prirucka/509"}
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}

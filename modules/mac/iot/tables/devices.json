@@ -30,7 +30,7 @@
 
 	"views": [
 		{
-			"id": "default", "class": "mac.iot.ViewDevices", 
+			"id": "default", "class": "mac.iot.ViewDevices", "help":"prirucka/508",
       "details": {
         "default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.iot.ViewDetailDevice"},
         "cfgScripts": {"title": "Nastavení", "icon": "system/detailSettings", "type": "detail", "class": "mac.iot.ViewDetailDeviceCfgScripts"}
@@ -38,7 +38,7 @@
 		}
 	],
 	"forms": [
-		{"id": "default", "class": "mac.iot.FormDevice"}
+		{"id": "default", "class": "mac.iot.FormDevice", "help":"prirucka/508"}
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}

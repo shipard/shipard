@@ -21,10 +21,10 @@
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"views": [
-		{"id": "default", "class": "mac.iot.ViewScenes", "detail": "mac.iot.ViewDetailScene"}
+		{"id": "default", "class": "mac.iot.ViewScenes", "detail": "mac.iot.ViewDetailScene", "help":"prirucka/511"}
 	],
 	"forms": [
-		{"id": "default", "class": "mac.iot.FormScene"}
+		{"id": "default", "class": "mac.iot.FormScene", "help":"prirucka/511"}
 	],
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
 }
