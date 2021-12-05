@@ -60,6 +60,7 @@ class ViewVlans extends TableView
 {
 	var $isGroup = FALSE;
 	var $groupsInfo = [];
+	var $addrRanges = [];
 
 	/** @var \mac\lan\TableLans */
 	var $tableLans;
@@ -181,6 +182,20 @@ class ViewVlans extends TableView
 				$l['suffix'] = $r['vlanNum'];
 			$this->groupsInfo[$r['srcRecId']][] = $l;
 		}
+
+		// -- address ranges
+		$q = [];
+		$q[] = 'SELECT addrRanges.*';
+		array_push ($q, ' FROM [mac_lan_lansAddrRanges] AS addrRanges');
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND addrRanges.vlan IN %in', $this->pks);
+
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$l = ['text' => $r['shortName'], 'icon' => 'tables/mac.lan.lansAddrRanges', 'class' => 'label label-default'];
+			$this->addrRanges[$r['vlan']][] = $l;
+		}
 	}
 
 	function decorateRow (&$item)
@@ -191,6 +206,13 @@ class ViewVlans extends TableView
 				$item['t2'] = array_merge($item['t2'], $this->groupsInfo [$item ['pk']]);
 			else
 				$item['t2'] = $this->groupsInfo [$item ['pk']];
+		}
+		if (isset ($this->addrRanges [$item ['pk']]))
+		{
+			if (isset($item ['t2']))
+				$item['t2'] = array_merge($item['t2'], $this->addrRanges [$item ['pk']]);
+			else
+				$item['t2'] = $this->addrRanges [$item ['pk']];
 		}
 	}
 }
