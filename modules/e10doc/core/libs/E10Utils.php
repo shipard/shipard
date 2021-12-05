@@ -407,7 +407,7 @@ class E10Utils
 		if (!$period)
 			return 0;
 
-		$pd = clone $period['start'];
+		$pd = new \DateTime($period['start']);
 		$pd->sub(new \DateInterval('P12M'));
 
 		return self::todayFiscalMonth($app, $pd, $period['fiscalType']);
