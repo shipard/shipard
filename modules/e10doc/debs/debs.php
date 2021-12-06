@@ -744,7 +744,7 @@ class docAccounting extends Utility
 	protected function checkAccountVAT ($accountId, $taxCodeId)
 	{
 		$exist = $this->db()->query ('SELECT ndx, id FROM [e10doc_debs_accounts]',
-		' WHERE [accGroup] = 0 AND [id] = %s', $accountMask.'%',
+		' WHERE [accGroup] = 0 AND [id] = %s', $accountId,
 		' AND accMethod = %s', $this->accMethodId)->fetch();
 
 		if ($exist)

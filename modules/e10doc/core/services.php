@@ -57,6 +57,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$this->doSqlScripts ($s);
 
 		$this->checkPersonGroupAccountants();
+		$this->checkVATAccountsDuplicity();
 		//$this->newBalance ();
 	}
 
@@ -109,6 +110,34 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$q = 'INSERT INTO [e10doc_base_statsPersonDocType] (cnt, [docType], person)
 					SELECT count(*), docType, person from e10doc_core_heads where docState = 4000 AND dateAccounting > %d group by docType, person';
 		$this->app->db()->query ($q, $minDate);
+	}
+
+	function checkVATAccountsDuplicity ()
+	{
+		$q [] = 'SELECT * FROM [e10doc_debs_accounts]';
+		array_push($q, ' WHERE [id] LIKE %s', '343%');
+		array_push($q, ' ORDER BY [id], [ndx]');
+
+		$existedAccounts = [];
+		$recsToRemove = [];
+
+		$docs = $this->app->db()->query ($q);
+		foreach ($docs as $r)
+		{
+			$id = $r['id'];
+			if (!isset($existedAccounts[$id]))
+				$existedAccounts[$id] = 1;
+			else
+				$existedAccounts[$id]++;
+			
+			if ($existedAccounts[$id] > 1)
+				$recsToRemove[] = $r['ndx'];
+		}
+
+		foreach ($recsToRemove as $ndx)
+		{
+			$this->db()->query('DELETE FROM [e10doc_debs_accounts] WHERE [ndx] = %i', $ndx);
+		}
 	}
 
 	public function resetStatsItemDocType ()
