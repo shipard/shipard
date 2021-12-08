@@ -147,25 +147,25 @@ class ServerManager extends Utility
 		}
 
 		// -- PHP
-		if (is_dir ('/etc/php/8.0'))
+		if (is_dir ('/etc/php/8.1'))
 		{
-			$fn = '/etc/php/8.0/fpm/pool.d/zz-shpd-php-fpm.conf';
+			$fn = '/etc/php/8.1/fpm/pool.d/zz-shpd-php-fpm.conf';
 			if (!is_file($fn)) 
 			{
 				symlink(__SHPD_ROOT_DIR__.'/etc/php/zz-shpd-php-fpm.conf', $fn);
-				echo "# `$fn` - service php8.0-fpm restart required!\n";
+				echo "# `$fn` - service php8.1-fpm restart required!\n";
 			}
-			$fn = '/etc/php/8.0/fpm/conf.d/95-shpd-php.ini';
+			$fn = '/etc/php/8.1/fpm/conf.d/95-shpd-php.ini';
 			if (!is_file($fn)) 
 			{
 				symlink(__SHPD_ROOT_DIR__.'/etc/php/95-shpd-php.ini', $fn);
-				echo "# `$fn` - service php8.0-fpm restart required!\n";
+				echo "# `$fn` - service php8.1-fpm restart required!\n";
 			}
-			$fn = '/etc/php/8.0/cli/conf.d/95-shpd-php.ini';
+			$fn = '/etc/php/8.1/cli/conf.d/95-shpd-php.ini';
 			if (!is_file($fn)) 
 			{
 				symlink(__SHPD_ROOT_DIR__.'/etc/php/95-shpd-php.ini', $fn);
-				echo "# `$fn` - service php8.0-fpm restart required!\n";
+				echo "# `$fn` - service php8.1-fpm restart required!\n";
 			}
 		}
 
