@@ -33,7 +33,7 @@ apt install --assume-yes --quiet nginx
 apt install --assume-yes --quiet mariadb-server
 
 
-apt install --assume-yes --quiet php-cli php-mysql php-fpm php-imap php-xml php-curl php-json php-intl php-zip php-bcmath php-gd php-mbstring php-soap php-mailparse
+apt install --assume-yes --quiet php8.1-cli php8.1-mysql php8.1-fpm php8.1-imap php8.1-xml php8.1-curl php8.1-intl php8.1-zip php8.1-bcmath php8.1-gd php8.1-mbstring php8.1-soap php8.1-mailparse
 
 
 apt install --assume-yes --quiet librsvg2-bin qrencode imagemagick poppler-utils zip graphviz idn
@@ -78,7 +78,7 @@ apt install --assume-yes --quiet ttf-mscorefonts-installer
 #
 # redis
 #
-apt install --assume-yes --quiet redis-server php-redis
+apt install --assume-yes --quiet redis-server php8.1-redis
 
 #
 # python
@@ -112,4 +112,4 @@ apt install --assume-yes --quiet libimage-exiftool-perl docx2txt tesseract-ocr t
 adduser --disabled-password --gecos "" --home /home/shpd shpd
 adduser www-data shpd
 systemctl restart nginx
-systemctl restart php8.0-fpm
+systemctl restart php8.1-fpm
