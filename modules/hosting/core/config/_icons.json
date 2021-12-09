@@ -5,12 +5,6 @@
 			"bsi": "bi-hdd",
 			"mdi": "save"
     },
-    "tables/hosting.core.modules":{
-			"fa5":"fa-puzzle-piece",
-			"fa6pro":"fa-puzzle-piece",
-			"bsi":"bi-puzzle",
-			"mdi":"extension"
-    },
     "tables/hosting.core.partners":{
         "fa5":"fa-id-badge",
         "fa6pro":"fa-id-badge",

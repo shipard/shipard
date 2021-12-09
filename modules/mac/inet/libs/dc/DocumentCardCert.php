@@ -1,6 +1,6 @@
 <?php
 
-namespace hosting\core\libs\dc;
+namespace mac\inet\libs\dc;
 
 use \e10\utils;
 

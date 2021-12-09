@@ -1196,7 +1196,12 @@ class TableView extends \Shipard\Base\BaseObject
 		}
 		if (isset ($listItem ['table']))
 			$codeLine .= " data-table='{$listItem ['table']}'";
-
+		if (isset ($listItem ['data-url-download']))
+		{
+				$codeLine .= " data-url-download='".Utils::es($listItem ['data-url-download'])."'";
+				$codeLine .= " data-action='open-link'";
+		}
+	
 		$codeLine .= ">";
 
 		$codeLine .= $this->rowHtmlContent ($listItem);

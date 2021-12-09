@@ -4,14 +4,16 @@
 		"roles": ["hstngsvs"],
 		"viewers": {
 			"e10.persons.persons": {"hostingUsers": 2},
-			"hosting.core.modules": {"default": 2},
 			"hosting.core.dataSources": {"default": 2},
 			"hosting.core.servers": {"default": 2},
 			"hosting.core.requests": {"default": 2},
 			"hosting.core.dsUsers": {"default": 2, "e10pro.hosting.server.ViewUsersDataSources": 2},
 			"hosting.core.hostings": {"default": 2},
 			"hosting.core.partners": {"default": 2},
-			"hosting.core.partnersPersons": {"default": 2}
+			"hosting.core.partnersPersons": {"default": 2},
+
+			"mac.inet.domains": {"default": 2},
+			"mac.inet.certs": {"default": 2}
 		}
 	},
 	"hstngcd": {

@@ -1,0 +1,11 @@
+{
+	"shipard-economy": {
+		"fn": "Ekonomika"
+	},
+	"shipard-core": {
+		"fn": "Základní prázdný systém"
+	},
+	"shipard-mac": {
+		"fn": "Počítačové sítě a IoT"
+	}
+}

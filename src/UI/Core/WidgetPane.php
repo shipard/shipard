@@ -4,7 +4,7 @@ namespace Shipard\UI\Core;
 use \Shipard\Utils\Utils;
 
 
-class WidgetPane extends Widget
+class WidgetPane extends \Shipard\UI\Core\Widget
 {
 	/** @var \E10\Params */
 	var $params;

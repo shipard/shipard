@@ -29,8 +29,11 @@ class FormDSUserOptions extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
 		$this->openForm ();
-			$this->addColumnInput ('favorite');
-			$this->addColumnInput ('dsOrder');
+			$this->addColumnInput ('addToToolbar');
+			$this->addColumnInput ('toolbarOrder');
+
+			$this->addColumnInput ('addToDashboard');
+			$this->addColumnInput ('dashboardOrder');
 		$this->closeForm ();
 	}
 }

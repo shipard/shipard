@@ -4,6 +4,7 @@ namespace E10\Persons;
 
 use \Shipard\Application\Application, E10\TableForm, E10\Wizard, E10\utils, e10\str, \translation\dicts\e10\base\system\DictSystem;
 use \Shipard\Utils\World;
+use \Shipard\Utils\Email;
 use \e10\base\libs\UtilsBase;
 
 CONST rqtUserSelfRegistration = 0, rqtLostPassword = 1, rqtFirstLogin = 2, rqtInvitationRequest = 3, rqtActivateShipardAccount = 4;
@@ -245,7 +246,7 @@ class RegistrationForm extends \Shipard\Base\WebForm
 			return FALSE;
 		}
 
-		if (!\E10\ValidateEmailAdress ($this->app->testPostParam ("regEmail")))
+		if (!Email::validateEmailAdress ($this->app->testPostParam ("regEmail")))
 		{
 			$this->formErrors ['regEmail'] = 'Zadejte prosím platnou emailovou adresu';
 			return FALSE;
@@ -331,7 +332,7 @@ class LostPasswordForm extends \Shipard\Base\WebForm
 			return FALSE;
 		}
 
-		if (!\E10\ValidateEmailAdress ($this->app->testPostParam ("regEmail")))
+		if (!Email::validateEmailAdress ($this->app->testPostParam ("regEmail")))
 		{
 			$this->formErrors ['regEmail'] = DictSystem::text(DictSystem::diLostPasswordForm_Error_InvalidEmail);
 			return FALSE;
@@ -1048,7 +1049,7 @@ class Authenticator extends \Shipard\Application\Authenticator
 		$names = explode(' ', $wf->data ['regName']);
 		$lastName = array_pop($names);
 		$firstName = implode(' ', $names);
-		$roles = 'guest';
+		$roles = 'user';
 		$newPerson ['person'] = array('firstName' => $firstName, 'lastName' => $lastName,
 				'roles' => $roles, 'login' => $wf->data ['regEmail'],
 				'accountType' => 1);

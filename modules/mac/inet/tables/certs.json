@@ -7,6 +7,7 @@
 		{"id": "anotherHosts", "name": "Další jména", "type": "string", "len": 240},
 		{"id": "anotherHostsAscii", "name": "Další jména v ASCII", "type": "string", "len": 240},
 		{"id": "fileId", "name": "ID", "type": "string", "len": 80},
+		{"id": "dataSource", "name": "Zdroj dat", "type": "int", "reference": "hosting.core.dataSources"},
 
 		{"id": "provider", "name": "Poskytovatel", "type": "enumInt",
 			"enumCfg": {"cfgItem": "mac.inet.certsProviders", "cfgValue": "", "cfgText": "name"}},

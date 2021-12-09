@@ -1,7 +1,7 @@
 {
   "id": "hosting.core.dataSources", "sql": "hosting_core_dataSources", "name": "Zdroje dat",
   "columns": [
-    {"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "ndx", "name": "id", "type": "int_ai"},
     {"id": "name", "name": "Název", "type": "string", "len": 120},
 	  {"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 40},
 		{"id": "gid", "name": "GID", "type": "string", "len": 20, "options": ["ascii"]},
@@ -14,13 +14,13 @@
 		{"id": "admin", "name": "Technický správce", "type": "int", "reference": "e10.persons.persons"},
 		{"id": "payer", "name": "Plátce", "type": "int", "reference": "e10.persons.persons"},
 		{"id": "partner", "name": "Partner", "type": "int", "reference": "hosting.core.partners"},
-		
-	  {"id": "supportSection", "name": "Sekce podpory", "type": "int", "reference": "wkf.base.sections"},
 
 		{"id": "urlApp", "name": "URL aplikace", "type": "string", "len": 100},
-		{"id": "installModule", "name": "Instalační modul", "type": "int", "reference": "hosting.core.modules"},
+		{"id": "installModule", "name": "Instalační modul", "type": "enumString", "len": 32,
+			"enumCfg": {"cfgItem": "hosting.core.installModules", "cfgValue": "", "cfgText": "fn"}},
 
-		{"id": "dateStart", "sql": "dateStart", "name": "Datum zahájení", "type": "date"},
+		{"id": "dateCreated", "name": "Vytvořeno", "type": "timestamp"},
+		{"id": "dateStart", "name": "Datum zahájení", "type": "date"},
 	  {"id": "dateTrialEnd", "name": "Konec zkušební lhůty", "type": "date"},
 
 		{"id": "appWarning", "name": "Upozornění", "type": "enumInt",
@@ -30,8 +30,6 @@
 			  "4": "Zkušební lhůta - Upozornění", "3": "Zkušební lhůta - Poslední šance"
 		  }
 	  },
-
-		{"id": "created", "sql": "created", "name": "Vytvořeno", "type": "timestamp"},
 
 		{"id": "dsType", "name": "Typ", "type": "enumInt",
 			"enumValues": {"0": "Ostrý zdroj dat", "1": "Zkušební zdroj dat", "3": "Interní", "4": "Ostatní"}},
@@ -45,6 +43,9 @@
 	  {"id": "imageUrl", "name": "URL obrázku", "type": "string", "len": 160},
 	  {"id": "dsIconServerUrl", "name": "Ikona - URL serveru", "type": "string", "len": 60},
 	  {"id": "dsIconFileName", "name": "Ikona - jméno souboru", "type": "string", "len": 120},
+
+		{"id": "dsIcon", "name": "Ikona", "type": "string", "len": 50},
+		{"id": "dsEmoji", "name": "Emoji", "type": "string", "len": 6},
 
 	  {"id": "inProgress", "name": "Zdroj se zakládá", "type": "int"},
 		{"id": "docState", "name": "Stav", "type": "int"},

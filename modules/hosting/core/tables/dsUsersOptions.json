@@ -3,11 +3,17 @@
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "uds", "name": "Zdroj dat", "type": "int", "reference": "hosting.core.dsUsers"},
-		{"id": "favorite", "name": "Do oblíbených", "type": "logical"},
-		{"id": "dsOrder", "name": "Pořadí", "type": "int"}
+		
+		{"id": "addToToolbar", "name": "Přidat do levých ikon", "type": "enumInt",
+			"enumValues": {"0": "Automaticky", "1": "Ano", "2": "Ne"}},
+		{"id": "toolbarOrder", "name": "Pořadí v ikonách", "type": "int"},
+
+		{"id": "addToDashboard", "name": "Přidat do přehledu", "type": "enumInt",
+			"enumValues": {"0": "Automaticky", "3": "Jako hlavní", "2": "Jako druhotné", "1": "Jako nedůležité", "9": "Ne"}},
+		{"id": "dashboardOrder", "name": "Pořadí v přehledu", "type": "int"}
 	],
 	"options": ["systemTable"],
 	"forms": [
-		{"id": "default", "class": "e10pro.hosting.server.FormDSUserOptions"}
+		{"id": "default", "class": "hosting.core.FormDSUserOptions"}
 	]
 }

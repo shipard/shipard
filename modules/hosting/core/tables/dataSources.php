@@ -19,9 +19,8 @@ use \e10\base\libs\UtilsBase;
 
 	public function checkBeforeSave(&$recData, $ownerData = NULL)
 	{
-		//if ($recData['gid'] == 0)
-		//	$recData ['gid'] = mt_rand(10000, 999999) . '0' . mt_rand(100000, 9999999);
-		//$recData['gidstr'] = strval($recData ['gid']);
+		if (isset($recData['gid']) && $recData['gid'] === '')
+			$recData ['gid'] = Utils::createToken(4).'-'.Utils::createToken(4).'-'.Utils::createToken(4).'-'.Utils::createToken(4);
 
 		if (isset($recData ['ndx']) && $recData ['ndx'])
 		{
@@ -29,15 +28,15 @@ use \e10\base\libs\UtilsBase;
 			$image = UtilsBase::getAttachmentDefaultImage($this->app(), 'e10pro.hosting.server.datasources', $recData ['ndx']);
 			if (isset($image['fileName']))
 			{
-				$recData['imageUrl'] = $this->app()->cfgItem('hostingServerUrl') . 'imgs/-w256/att/' . $image['fileName'];
-				$recData['dsIconServerUrl'] = $this->app()->cfgItem('hostingServerUrl');
-				$recData['dsIconFileName'] = 'att/' . $image['fileName'];
+				//$recData['imageUrl'] = $this->app()->cfgItem('hostingServerUrl') . 'imgs/-w256/att/' . $image['fileName'];
+				//$recData['dsIconServerUrl'] = $this->app()->cfgItem('hostingServerUrl');
+				//$recData['dsIconFileName'] = 'att/' . $image['fileName'];
 			}
 			else
 			{
-				$recData['imageUrl'] = '';
-				$recData['dsIconServerUrl'] = '';
-				$recData['dsIconFileName'] = '';
+			//	$recData['imageUrl'] = '';
+			//	$recData['dsIconServerUrl'] = '';
+			//	$recData['dsIconFileName'] = '';
 			}
 		}
 
@@ -84,12 +83,20 @@ use \e10\base\libs\UtilsBase;
 
 		$hdr ['info'][] = ['class' => 'info', 'value' => $info];
 
+		/*
 		$image = UtilsBase::getAttachmentDefaultImage($this->app(), $this->tableId(), $recData ['ndx']);
 		if (isset($image ['smallImage']))
 		{
 			$hdr ['image'] = $image ['smallImage'];
 			unset ($hdr ['icon']);
+		}*/
+		if ($recData ['imageUrl'])
+		{
+			$hdr ['image'] = $recData ['imageUrl'];
+			//unset ($hdr ['icon']);
 		}
+
+		
 
 		return $hdr;
 	}
@@ -370,7 +377,7 @@ class ViewDataSources extends TableView
 				$ascii = FALSE;
 
  			array_push ($q, ' AND (');
-			array_push ($q, ' ds.[name] LIKE %s OR ds.[gidstr] LIKE %s', '%'.$fts.'%', $fts.'%');
+			array_push ($q, ' ds.[name] LIKE %s OR ds.[gid] LIKE %s', '%'.$fts.'%', $fts.'%');
 			array_push ($q, ' OR servers.id LIKE %s', $fts.'%');
 			if ($ascii)
 			{
@@ -475,9 +482,11 @@ class ViewDataSources extends TableView
 		$this->qryPanelAddCheckBoxes($panel, $qry, $servers, 'servers', 'Servery');
 
 		// -- modules
+		/*
 		$modules = $this->db()->query ('SELECT ndx, name FROM hosting_core_modules WHERE docStateMain != 4')->fetchPairs ('ndx', 'name');
 		$modules['0'] = 'Žádný';
 		$this->qryPanelAddCheckBoxes($panel, $qry, $modules, 'installModules', 'Instalační moduly');
+		*/
 
 		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}
@@ -487,11 +496,14 @@ class ViewDataSources extends TableView
 		//$panel->setContent('e10pro.hosting.server.HostingReviewDataSources');
 
 		///** @var \e10pro\hosting\server\HostingReviewDataSources $o */
+
+		/*
 		$o = new \e10pro\hosting\server\HostingReviewDataSources($this->app());//$this->table->app()->createObject($classId);
 		$o->partner = $this->partner;
 		$o->create();
 		foreach ($o->content['body'] as $cp)
 			$panel->addContent($cp);
+		*/	
 	}
 }
 
@@ -556,7 +568,6 @@ class FormDataSource extends TableForm
 					$this->addColumnInput ('owner');
 					$this->addColumnInput ('partner');
 					$this->addColumnInput ('admin');
-					$this->addColumnInput ('supportSection');
 					$this->addSeparator(self::coH2);
 					$this->addColumnInput ('dsType');
 					$this->addColumnInput ('condition');
@@ -574,6 +585,8 @@ class FormDataSource extends TableForm
 					$this->addColumnInput ('gid');
 					$this->addColumnInput ('dateStart');
 					$this->addColumnInput ('dateTrialEnd');
+					$this->addColumnInput ('dsIcon');
+					$this->addColumnInput ('dsEmoji');
 				$this->closeTab ();
 
 				$this->openTab (TableForm::ltNone);

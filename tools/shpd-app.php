@@ -294,7 +294,7 @@ class E10_App extends Application
 		$suggestedPassword = $this->arg ('password');
 
 		$loginHash = md5(strtolower(trim($email)));
-		$userRec = $this->db()->query ('SELECT * FROM [e10_persons_persons] WHERE loginHash = %s', $loginHash)->fetch();
+		$userRec = $this->db()->query ('SELECT * FROM [e10_persons_persons] WHERE docStateMain <= 2 AND loginHash = %s', $loginHash)->fetch();
 		if (!$userRec)
 			return $this->err ("user with email '{$email}' not exist");
 
@@ -365,7 +365,7 @@ class E10_App extends Application
 			return $this->err ('missing argument --email=user@some.email');
 
 		$loginHash = md5(strtolower(trim($email)));
-		$userRec = $this->db()->query ('SELECT * FROM [e10_persons_persons] WHERE loginHash = %s', $loginHash)->fetch();
+		$userRec = $this->db()->query ('SELECT * FROM [e10_persons_persons] WHERE docStateMain <= 2 AND loginHash = %s', $loginHash)->fetch();
 		if (!$userRec)
 			return $this->err ("user with email '{$email}' not exist");
 

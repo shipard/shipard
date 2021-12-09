@@ -3,10 +3,10 @@
 
 namespace lib\hosting;
 
-use \e10\widgetBoard;
+use \Shipard\UI\Core\WidgetBoard;
 
 
-class DataSourcesWallWidget extends widgetBoard
+class DataSourcesWallWidget extends WidgetBoard
 {
 	/** @var  \e10\DbTable */
 	//var $table;

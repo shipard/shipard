@@ -1,6 +1,6 @@
 [
 	{
-		"class": "lib.hosting.DataSourcesWallWidget", "dashboard": "shipard-app", "panel": "partner", "order": 1001, "row": "main", "width": 12,
-		"type": "wkfWall"
+		"class": "hosting.core.libs.HomePageWidget",
+		"dashboard": "shipard-app", "panel": "ds", "order": 5000, "row": "main", "width": 12, "type": "lans"
 	}
 ]
