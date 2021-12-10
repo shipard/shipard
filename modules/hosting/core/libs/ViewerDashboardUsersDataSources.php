@@ -47,7 +47,7 @@ class ViewerDashboardUsersDataSources extends TableView
 			$listItem ['icon'] = 'system/iconDatabase';
 		}
 		$listItem ['t1'] = $item['name'];
-		$listItem ['i1'] = ['text' => '#'.$item['gid'], 'class' => 'id'];
+		$listItem ['i1'] = ['text' => '#'.$item['dsGidStr'], 'class' => 'id'];
 		$listItem ['class'] = 'df2-action-trigger';
 		if ($item['appWarning'] != 0)
 			$listItem ['class'] = 'e10-row-minus';

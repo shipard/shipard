@@ -2769,6 +2769,11 @@ function df2ViewerAction (event, e)
 			window.open (url, '_blank');
 			return;
 		}
+		if (popUpId === 'THIS-TAB')
+		{
+			document.location.href = url;
+			return;
+		}
 
 		if (usePopup)
 		{

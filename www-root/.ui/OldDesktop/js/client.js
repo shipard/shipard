@@ -708,7 +708,7 @@ usePopup=0;var
 shift=0;if((event&&event.altKey))shift=1;var
 withShift='popup';if(e.attr('data-with-shift')==='tab')usePopup=!shift;else
 if(e.attr('data-with-shift')==='popup'||e.attr('data-with-shift')===undefined)usePopup=shift;var
-popUpId='default';if(e.attr('data-popup-id'))popUpId=e.attr('data-popup-id');if(popUpId==='NEW-TAB'){window.open(url,'_blank');return;}if(usePopup){var
+popUpId='default';if(e.attr('data-popup-id'))popUpId=e.attr('data-popup-id');if(popUpId==='NEW-TAB'){window.open(url,'_blank');return;}if(popUpId==='THIS-TAB'){document.location.href=url;return;}if(usePopup){var
 height=((screen.availHeight*window.devicePixelRatio)*0.8)|0;var
 width=(height*.7+50)|0;var
 nw=window.open(url,"e10pw"+popUpId,"location=no,status=no,width="+width+",height="+height);nw.focus();return;}window.open(url,"e10nt"+popUpId);return;}if(actionType==="open-popup"){var

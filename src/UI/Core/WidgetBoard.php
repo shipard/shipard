@@ -109,6 +109,20 @@ class WidgetBoard extends \Shipard\UI\Core\WidgetPane
 					$logoUrl = $this->app->dsRoot.$this->toolbar['logo'];
 					$c .= "<li class='e10-panel-logo' style='text-align: left; padding: 0 1.6ex;'><a href='{$this->app->urlRoot}/'><img style='height: 1.7em;' src='$logoUrl'/></a></li>";
 				}
+				elseif (isset($this->toolbar['logoUrl']))
+				{
+					$logoUrl = $this->toolbar['logoUrl'];
+					$c .= "<li class='e10-panel-logo' style='text-align: left; padding: 0 1.6ex;'><a href='{$this->app->urlRoot}/'><img style='height: 1.7em;' src='$logoUrl'/></a></li>";
+				}
+				elseif (isset($this->toolbar['logos']))
+				{
+					foreach ($this->toolbar['logos'] as $logoUrl)
+					{
+						$c .= "<li class='e10-panel-logo' style='text-align: left; padding: 0 1.6ex;'>";
+						$c .= "<img style='height: 1.7em;' src='$logoUrl'/>";
+						$c .= "</li>";
+					}
+				}
 
 				foreach ($this->toolbar['tabs'] as $tabId => $tab)
 				{
