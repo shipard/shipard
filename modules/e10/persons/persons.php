@@ -178,9 +178,9 @@ class LoginForm extends \Shipard\Base\WebForm
 		$c .= "<div class='col-sm-offset-2 col-sm-10'>";
 		$c .= "<button type='submit' class='btn btn-primary' name='doit'>".DictSystem::es(DictSystem::diLoginForm_LoginButton)."</button>";
 
-		$c .= " &nbsp; <a href='".$this->app->urlRoot  . "/" . $this->authenticator->option ('pathBase') . "/" . $this->authenticator->option ('pathLostPassword')."'>Neznám heslo</a>";
-		if ($this->app->cfgItem ('enableUserRegistration', 0))
-			$c .= " | <a  href='".$this->app->dsRoot  . "/" . $this->authenticator->option ('pathBase') . "/" . $this->authenticator->option ('pathRegistration')."'>Chci se zaregistrovat</a>";
+		//$c .= " &nbsp; <a href='".$this->app->urlRoot  . "/" . $this->authenticator->option ('pathBase') . "/" . $this->authenticator->option ('pathLostPassword')."'>Neznám heslo</a>";
+		//if ($this->app->cfgItem ('enableUserRegistration', 0))
+		//	$c .= " | <a  href='".$this->app->dsRoot  . "/" . $this->authenticator->option ('pathBase') . "/" . $this->authenticator->option ('pathRegistration')."'>Chci se zaregistrovat</a>";
 		$c .= '</div>';
 		$c .= '</div>';
 
@@ -201,9 +201,17 @@ class RegistrationForm extends \Shipard\Base\WebForm
 {
 	public function createFormCode ()
 	{
-		$c = "<form class='form-horizontal' method='POST'>
-	<input type='hidden' name='webFormId' value='e10pro.hosting.server.userRegForm'/>
-  <fieldset>";
+		$useReCaptcha = $this->app->cfgItem('recaptcha-v3-app-site-key', '') !== '';
+
+
+		$c = "<form class='form-horizontal' method='POST'>";
+		$c .= "<input type='hidden' name='webFormId' value='e10pro.hosting.server.userRegForm'/>";
+		if ($useReCaptcha)
+		{
+			$c .= "<input type='hidden' id='recaptcha-response' name='webFormReCaptchtaResponse' value=''/>";
+		}
+	
+		$c .= "<fieldset>";
 
 		$c .= $this->addFormInput ('Jméno a příjmení', 'text', 'regName');
 		$c .= $this->addFormInput ('E-mail', 'email', 'regEmail'/*, array ('help' => 'Funkční e-mail je nezbytný k aktivaci registrace')*/);
@@ -274,6 +282,37 @@ class RegistrationForm extends \Shipard\Base\WebForm
 		{
 			$this->formErrors ['regPassword2'] = 'Hesla nejsou stejná';
 			return FALSE;
+		}
+
+		$reCaptchaResponse = $this->app->testPostParam ('webFormReCaptchtaResponse', NULL);
+		if ($reCaptchaResponse !== NULL)
+		{
+			if ($reCaptchaResponse === '')
+			{
+				$this->formErrors ['msg'] = 'Odeslání formuláře se nezdařilo.';
+				return FALSE;
+			}
+
+			$validateUrl = 'https://www.google.com/recaptcha/api/siteverify?secret='.$this->app->cfgItem('recaptcha-v3-app-secret-key', '').'&response='.$reCaptchaResponse.'&remoteip='.$_SERVER ['REMOTE_ADDR'];
+			$validateResult =  \E10\http_post ($validateUrl, '');
+			$validateResultData = json_decode($validateResult['content'], TRUE);
+			if ($validateResultData && isset($validateResultData['success']))
+			{
+				if ($validateResultData['success'])
+				{
+					if ($validateResultData['score'] < 0.5)
+					{
+						$this->formErrors ['msg'] = 'Vaše registrace bohužel vypadá jako SPAM.';
+						return FALSE;
+					}
+					//$this->spamScore = strval($validateResultData['score']);
+				}
+				else
+				{
+					$this->formErrors ['msg'] = 'Odeslání formuláře se nezdařilo.';
+					return FALSE;
+				}
+			}
 		}
 
 		return TRUE;

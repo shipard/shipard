@@ -6,6 +6,9 @@
     <meta name="robots" content="noindex, nofollow">
     <title>{{page.pageTitle}}</title>
     <link href="{{dsRoot}}/www-root/templates/app/system/style.css?v=7" rel="stylesheet">
+		{{#page.url_user_registration}}
+		{{#cfgItem.recaptcha-v3-app-site-key}}<script src='https://www.google.com/recaptcha/api.js?render={{cfgItem.recaptcha-v3-app-site-key}}'></script>{{/cfgItem.recaptcha-v3-app-site-key}}
+		{{/page.url_user_registration}}
 </head>
 
 {{#page.url_user_login}}
@@ -34,7 +37,9 @@
             <ul class="nav navbar-nav pull-right">
                 <li {{#page.url_user_login}}class='active'{{/page.url_user_login}}><a href="{{@urlUser;type:login}}"><span><i class="fa fa-sign-in"></i> {{@tr;id:e10.base.system.DictSystem.diLoginPage_Menu_Login}}</span></a></li>
                 <li {{#page.url_user_lost-password}}class='active'{{/page.url_user_lost-password}}><a href="{{@urlUser;type:lostPassword}}"><span><i class="fa fa-lock"></i> {{@tr;id:e10.base.system.DictSystem.diLoginPage_Menu_LostPassword}}</span></a></li>
-
+								{{#cfgItem.enableUserRegistration}}
+                	<li {{#page.url_user_registration}}class='active'{{/page.url_user_registration}}><a href="{{@urlUser;type:registration}}"><span><i class="fa fa-user"></i> Registrace</span></a></li>
+								{{/cfgItem.enableUserRegistration}}
 								{{#systemLanguages}}
 										<li{{#active}} class="active"{{/active}}><a href="{{@urlUser;type:setLanguage}}/{{id}}"><span>{{f}} {{sc}}{{#beta}}<sup style="padding:0 1px; margin-left: 2px;background-color: #c4c4c4;color: #111; border-radius: 2px;">beta</sup>{{/beta}}</span></a></li>
 								{{/systemLanguages}}
@@ -196,6 +201,23 @@
         {{/page.url_user_login}}
 </script>
 
+{{#page.url_user_registration}}
+	{{#cfgItem.recaptcha-v3-app-site-key}}
+		<script>
+			$('form').show();
+			$('form').submit(function(event) {
+				event.preventDefault();
+				grecaptcha.ready(function() {
+					grecaptcha.execute('{{cfgItem.recaptcha-v3-app-site-key}}', {action: 'registration_form'}).then(function(token) {
+						var recaptchaResponse = document.getElementById('recaptcha-response');
+						recaptchaResponse.value = token;
+						$('form').unbind('submit').submit();
+					});
+				});
+			});
+		</script>
+	{{/cfgItem.recaptcha-v3-app-site-key}}
+{{/page.url_user_registration}}
 
 </body>
 </html>
