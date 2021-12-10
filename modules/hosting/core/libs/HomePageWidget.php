@@ -7,7 +7,7 @@ use \Shipard\Utils\Utils;
 
 /**
  * Class HomePageWidget
- * @package hosting\core
+ * @package hosting\core\libs
  */
 class HomePageWidget extends WidgetBoard
 {
@@ -20,6 +20,14 @@ class HomePageWidget extends WidgetBoard
 
 	public function init ()
 	{
+		$this->activeTabId = $this->app()->testGetParam ('e10-widget-dashboard-tab-id');
+
+		if ($this->activeTabId === '')
+			$this->activeTabId = 'tab-home';
+
+		if ($this->activeTabId === 'tab-home')
+			$this->createDashboard_BBoard_Toolbar();
+
 		parent::init();
 	}
 
@@ -96,11 +104,6 @@ class HomePageWidget extends WidgetBoard
 
 	public function createContent ()
 	{
-		$this->activeTabId = $this->app()->testGetParam ('e10-widget-dashboard-tab-id');
-
-		if ($this->activeTabId === '')
-			$this->activeTabId = 'tab-home';
-
 		$this->panelStyle = self::psNone;
 		$this->loadDataToolbar();
 
@@ -126,8 +129,6 @@ class HomePageWidget extends WidgetBoard
 
 		$c .= "<ul class='e10-wf-tabs' data-value-id='e10-widget-dashboard-tab-id'>";
 
-		//$c .= "<li class='bb1'>&nbsp;</li>";
-
 		$c .= "<li class='tab bb1 e10-widget-trigger$active' data-tabid='".'tab-home'."' id='dstab-home'  style='padding: 0;'>";
 		$c .= "<div style='font-size: 3rem; text-align:center; width: 4rem; height: 4rem;'>";
 		$c .= $this->app()->ui()->icon('system/iconHome');
@@ -146,13 +147,13 @@ class HomePageWidget extends WidgetBoard
 			}
 			elseif ($ds['dsEmoji'] !== '')
 			{
-				$c .= "<div title=\"".Utils::es($ds['title'])."\" style='font-size: 3rem; max-width: 4rem; width: 4rem; height: 4rem; padding: 0.4rem; overflow: hidden; text-align: center;'>";
+				$c .= "<div title=\"".Utils::es($ds['title'])."\" style='font-size: 3rem; max-width: 4rem; width: 4rem; height: 4rem; padding: 0.4rem; overflow: hidden; text-align: center; display: inline;'>";
 				$c .= Utils::es($ds['dsEmoji']);
 				$c .= "</div>";	
 			}
 			elseif ($ds['dsIcon'] !== '')
 			{
-				$c .= "<div title=\"".Utils::es($ds['title'])."\" style='font-size: 2.8rem; max-width: 4rem; width: 4rem; height: 4rem; padding: 0.4rem; overflow: hidden; text-align: center;'>";
+				$c .= "<div title=\"".Utils::es($ds['title'])."\" style='font-size: 2.6rem; max-width: 4rem; width: 4rem; height: 4rem; padding: 0.4rem; overflow: hidden; text-align: center;'>";
 				$c .= $this->app->ui()->icon($ds['dsIcon']);
 				$c .= "</div>";	
 			}
@@ -166,12 +167,6 @@ class HomePageWidget extends WidgetBoard
 			$c .= "</li>";
 		}
 
-		$active = ($this->activeTabId === 'tab-ds') ? ' active' : '';
-		$c .= "<li class='tab bb1 e10-widget-trigger$active' data-tabid='".'tab-ds'."' id='dstab-home'  style='padding: 0;'>";
-		$c .= "<div style='font-size: 3rem; text-align:center; width: 4rem; height: 4rem;'>";
-		$c .= $this->app()->ui()->icon('system/iconDatabase');
-		$c .= "</div>";
-
 		$c .= "<ul>";
 		$c .= "</div>";
 
@@ -183,14 +178,6 @@ class HomePageWidget extends WidgetBoard
 		if ($this->activeTabId === 'tab-home')
 		{
 			$this->createDashboard_BBoard();
-			return;
-		}
-
-		if ($this->activeTabId === 'tab-ds')
-		{
-			$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => '<div style="float: right; width: calc(100% - 4rem - 4px); height: 100%; position: absolute; left: 4rem;">']);
-			$this->addContentViewer('hosting.core.dataSources', 'hosting.core.libs.ViewerDashboardUsersDataSources', ['widgetId' => $this->widgetId]);
-			$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => '</div>']);
 			return;
 		}
 
@@ -211,35 +198,37 @@ class HomePageWidget extends WidgetBoard
 
 	protected function createDashboard_BBoard()
 	{
-		$this->loadDataBBoard();
-
 		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => '<div style="float: right; width: calc(100% - 4rem - 1px); height: 100%; position: absolute; left: 4rem;">']);
 
-		// -- user info
-		$userInfo = $this->app()->user()->data();
-		$logoutUrl = $this->app()->urlRoot . '/' . $this->app()->appSkeleton['userManagement']['pathBase'] . '/' . $this->app()->appSkeleton['userManagement']['pathLogoutCheck'];
-		$userTile = ['title' => [], 'body' => [], 'class' => 'bb1 e10-bg-t9'];
-		$title = [];
-		$title[] = ['class' => 'h1', 'text' => $userInfo['name'], 'icon' => 'system/iconUser'];		
-		$title[] = ['class' => 'h1 pull-right', 'url' => $logoutUrl, 'text' => '', 'title' => 'Odhlásit', 'icon' => 'system/actionLogout'];
-		$userTile['title'][] = ['value' => $title];
-		$this->addContent (['type' => 'grid', 'cmd' => 'rowOpen']);
-		$this->addContent(['type' => 'tiles', 'tiles' => [$userTile], 'class' => 'panes']);
-		$this->addContent (['type' => 'grid', 'cmd' => 'rowClose']);
+		$toolbarCode = parent::renderContentTitle();
+		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $toolbarCode]);
 
-		// -- data sources
-		foreach ($this->dsBBoard as $dashboardPriorityId => $dbDataSources)
+		// -- databases
+		if ($this->activeTopTab === 'viewer-mode-dbs')
 		{
-			$this->addContent (['type' => 'grid', 'cmd' => 'rowOpen']);
+			$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => '<div style="float: right; width: calc(100% - 1px); height: calc(100% - 3rem); position: absolute; left: 0;">']);
+			$this->addContentViewer('hosting.core.dataSources', 'hosting.core.libs.ViewerDashboardUsersDataSources', ['widgetId' => $this->widgetId]);
+			$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => '</div>']);
 
-			foreach ($dbDataSources as $dsId => $ds)
-			{
-				$this->createDashboard_BBoard_DSTile($ds, $dashboardPriorityId);
-			}
-
-			$this->addContent (['type' => 'grid', 'cmd' => 'rowClose']);
+			return;
 		}
+		
+		// -- overview
+		if ($this->activeTopTab === 'viewer-mode-home')
+		{
+			$this->loadDataBBoard();
+			foreach ($this->dsBBoard as $dashboardPriorityId => $dbDataSources)
+			{
+				$this->addContent (['type' => 'grid', 'cmd' => 'rowOpen']);
 
+				foreach ($dbDataSources as $dsId => $ds)
+				{
+					$this->createDashboard_BBoard_DSTile($ds, $dashboardPriorityId);
+				}
+
+				$this->addContent (['type' => 'grid', 'cmd' => 'rowClose']);
+			}
+		}	
 
 		// -- footer
 		$fc = '';
@@ -264,6 +253,33 @@ class HomePageWidget extends WidgetBoard
 		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => '</div>']);
 	}
 
+	function createDashboard_BBoard_Toolbar ()
+	{
+		$userInfo = $this->app()->user()->data();
+		$logoutUrl = $this->app()->urlRoot . '/' . $this->app()->appSkeleton['userManagement']['pathBase'] . '/' . $this->app()->appSkeleton['userManagement']['pathLogoutCheck'];
+
+		$tabs = [];
+
+		$tabs['viewer-mode-home'] = ['text' => ' Přehled', 'icon' => 'system/iconStart', 'action' => 'viewer-mode-home'];
+		$tabs['viewer-mode-dbs'] = ['text' => ' Databáze', 'icon' => 'system/iconDatabase', 'action' => 'viewer-mode-dbs'];
+	
+		$this->toolbar = ['tabs' => $tabs];
+
+		$btns = [];
+		$btns[] = ['text' => $userInfo['name'], 'prefix' => ' ', 'class' => '', 'icon' => 'system/iconUser',];
+		$btns[] = [
+			'type' => 'action', 'action' => 'open-link', 
+			'icon' => 'system/actionLogout',
+			'data-url-download' => $logoutUrl, 'data-popup-id' => 'THIS-TAB',
+			'title' => 'Odhlásit', 'text' => '', 'element' => 'li', 'btnClass' => 'tab'
+		];
+
+		$this->toolbar['buttons'] = $btns;
+		$this->toolbar['logos'] = [
+			'https://system.shipard.app/att/2017/09/26/e10pro.wkf.documents/shipard-logo-header-web-t9n9ug.svg'
+		];
+	}
+
 	protected function createDashboard_BBoard_DSTile($ds, $dashboardPriorityId)
 	{
 		$width = 4;
@@ -283,20 +299,20 @@ class HomePageWidget extends WidgetBoard
 		
 		if ($ds['dsImageUrl'] !== '')
 		{
-			$css = "";
+			$css = '';
 			$css .= " background-image:url(\"{$ds['dsImageUrl']}\"); background-size: auto 90%; background-position: left center; background-repeat: no-repeat; width: 3rem; height: 3rem; display: block; float: left; margin: .2rem;";
 			$title[] = ['text' => '', 'class' => '', 'css' => $css];
 		}
 		elseif ($ds['dsEmoji'] !== '')
 		{
-			$css = "";
+			$css = '';
 			$css .= " width: 3rem; height: 3rem; display: block; float: left; font-size: 260%; margin: .2rem; text-align: center;";
 			$title[] = ['text' => $ds['dsEmoji'], 'class' => '', 'css' => $css];
 		}
 		else
 		{
 			$icon = ($ds['dsIcon'] !== '') ? $ds['dsIcon'] : 'system/iconDatabase';
-			$css = "";
+			$css = '';
 			$css .= " width: 3rem; height: 3rem; display: block; float: left; font-size: 210%; margin: .2rem; text-align: center;";
 			$title[] = ['text' => '', 'class' => '', 'icon' => $icon, 'css' => $css];
 		}
@@ -311,6 +327,11 @@ class HomePageWidget extends WidgetBoard
 			$this->addContent(['type' => 'tiles', 'tiles' => [$dsTile], 'class' => 'panes', 'pane' => 'e10-pane e10-pane-core']);
 		$this->addContent (['type' => 'grid', 'cmd' => 'colClose']);
 	}
+
+	function renderContentTitle ()
+	{
+		return '';
+	}	
 
 	public function title() {return FALSE;}
 }

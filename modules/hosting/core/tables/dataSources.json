@@ -30,6 +30,9 @@
 			  "4": "Zkušební lhůta - Upozornění", "3": "Zkušební lhůta - Poslední šance"
 		  }
 	  },
+		
+		{"id": "shpGeneration", "name": "Generace Shipardu", "type": "enumInt",
+			"enumCfg": {"cfgItem": "hosting.core.shipardGenerations", "cfgValue": "", "cfgText": "fn"}},
 
 		{"id": "dsType", "name": "Typ", "type": "enumInt",
 			"enumValues": {"0": "Ostrý zdroj dat", "1": "Zkušební zdroj dat", "3": "Interní", "4": "Ostatní"}},

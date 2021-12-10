@@ -12,6 +12,7 @@
 		{"id": "+e10.dashboardInfo", "file": "dashboardInfo.json"},
 		{"id": "hosting.core.dataSources.docStates", "file": "hosting.server.datasources.docStates.json"},
 		{"id": "hosting.core.installModules", "file": "installModules.json"},
+		{"id": "hosting.core.shipardGenerations", "file": "shipardGenerations.json"},
 		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
 		{"id": "+e10.base.doclinks", "file": "doclinks.json"},
 		{"id": "+widgets", "file": "widgets.json"},

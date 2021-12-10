@@ -66,7 +66,7 @@ use \e10\base\libs\UtilsBase;
 		{
 			$ownerRec = $this->app()->loadItem($recData['owner'], 'e10.persons.persons');
 			$ownerFullName = $ownerRec['fullName'];
-			$info [] = ['icon' => 'icon-building', 'text' => $ownerFullName];
+			$info [] = ['icon' => 'system/iconBuilding', 'text' => $ownerFullName];
 		}
 		if ($recData['admin'])
 		{
@@ -297,7 +297,24 @@ class ViewDataSources extends TableView
 	public function renderRow ($item)
 	{
 		$listItem ['pk'] = $item ['ndx'];
-		$listItem ['icon'] = $this->table->tableIcon ($item);
+
+		if ($item['imageUrl'] !== '')
+		{
+			$listItem ['svgIcon'] = $item['imageUrl'];
+		}
+		elseif ($item['dsEmoji'] !== '')
+		{
+			$listItem ['emoji'] = $item['dsEmoji'];
+		}
+		elseif ($item['dsIcon'] !== '')
+		{
+			$listItem ['icon'] = $item['dsIcon'];
+		}
+		else
+		{
+			$listItem ['icon'] = 'system/iconDatabase';
+		}
+
 		$listItem ['t1'] = $item['name'];
 		$listItem ['i1'] = ['text' => '#'.$item['gid'], 'class' => 'id'];
 
@@ -313,12 +330,12 @@ class ViewDataSources extends TableView
 		$listItem ['i2'] = [];
 
 		if ($item['partnerName'])
-			$listItem ['i2'][] = ['icon' => 'icon-id-badge', 'text' => $item['partnerName'], 'class' => ''];
+			$listItem ['i2'][] = ['icon' => 'tables/hosting.core.partners', 'text' => $item['partnerName'], 'class' => ''];
 
 		if ($item['serverName'])
-			$listItem ['i2'][] = ['icon' => 'icon-server', 'text' => $item['serverName'], 'class' => ''];
+			$listItem ['i2'][] = ['icon' => 'tables/hosting.core.servers', 'text' => $item['serverName'], 'class' => ''];
 		else
-			$listItem ['i2'][] = ['icon' => 'icon-server', 'text' => '---', 'class' => 'e10-warning2'];
+			$listItem ['i2'][] = ['icon' => 'tables/hosting.core.servers', 'text' => '---', 'class' => 'e10-warning2'];
 
 		if ($item['dsId1'] !== '')
 		{
@@ -587,6 +604,7 @@ class FormDataSource extends TableForm
 					$this->addColumnInput ('dateTrialEnd');
 					$this->addColumnInput ('dsIcon');
 					$this->addColumnInput ('dsEmoji');
+					$this->addColumnInput ('shpGeneration');
 				$this->closeTab ();
 
 				$this->openTab (TableForm::ltNone);
