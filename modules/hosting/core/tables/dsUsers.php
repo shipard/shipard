@@ -19,7 +19,8 @@ class TableDSUsers extends DbTable
 	public function checkNewRec (&$recData)
 	{
 		parent::checkNewRec ($recData);
-		$recData['created'] = new \DateTime();
+		if (!isset($recData['created']) || utils::dateIsBlank($recData['created']))
+			$recData['created'] = new \DateTime();
 	}
 
 	public function checkAfterSave2 (&$recData)
