@@ -1,6 +1,6 @@
 <?php
 
-require_once '/var/lib/shipard/extlibs/vendor/autoload.php';
+require_once '/usr/lib/shipard/extlibs/vendor/autoload.php';
 use dibi;
 
 
@@ -33,14 +33,10 @@ function testPostParam ($paramName, $defaultValue = '')
 
 function hostingCfg ()
 {
-	$cfgString = file_get_contents ('/etc/shipard/server.cfg');
+	$cfgString = file_get_contents ('/etc/shipard/server.json');
 	$cfg = json_decode ($cfgString, true);
-	foreach ($cfg as $oneItem)
-	{
-		return $oneItem;
-	}
 
-	return FALSE;
+	return $cfg;
 }
 
 function connectDb ()
@@ -72,7 +68,7 @@ function addToLog ($info, $failInfo = NULL)
 
 	$item ['created'] = new \DateTime();
 	$item ['ipaddress'] = $ipAddr;
-	$item ['dsGid'] = $dsGid;
+	//$item ['dsGid'] = $dsGid;
 	$item ['deviceId'] = $deviceId;
 
 	dibi::query ('INSERT INTO [e10_base_authLog] ', $item);
