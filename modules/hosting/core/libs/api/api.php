@@ -23,13 +23,12 @@ function confirmNewDataSource ($app)
 
 	if ($dsid != '')
 	{
-		$ds = $app->db()->query ('SELECT * FROM [hosting_core_dataSources] WHERE [gid] = %i', $dsid)->fetch ();
+		$ds = $app->db()->query ('SELECT * FROM [hosting_core_dataSources] WHERE [gid] = %s', $dsid)->fetch ();
 		$server = $app->db()->query ('SELECT * FROM [hosting_core_servers] WHERE [ndx] = %i', $serverId)->fetch ();
 
 		if ($ds)
 		{
 			$urlApp = 'https://' . $server ['fqdn'] . '/' . $ds ['gid'] . '/';
-			$urlWeb = 'https://' . $server ['fqdn'] . '/' . $ds ['gid'] . '/';
 
 			// set data source state and server
 			$app->db()->query ('UPDATE [hosting_core_dataSources] SET [inProgress] = 0, [docState] = 4000, [docStateMain] = 2, [server] = %i, ', $serverId,
