@@ -31,7 +31,7 @@ function confirmNewDataSource ($app)
 			$urlApp = 'https://' . $server ['fqdn'] . '/' . $ds ['gid'] . '/';
 
 			// set data source state and server
-			$app->db()->query ('UPDATE [hosting_core_dataSources] SET [inProgress] = 0, [docState] = 4000, [docStateMain] = 2, [server] = %i, ', $serverId,
+			$app->db()->query ('UPDATE [hosting_core_dataSources] SET [inProgress] = 0, [docState] = 4000, [docStateMain] = 2, [condition] = 1, [server] = %i, ', $serverId,
 							'[urlApp] = %s ', $urlApp, ' WHERE [ndx] = %i', $ds ['ndx']);
 
 			// check admin connect

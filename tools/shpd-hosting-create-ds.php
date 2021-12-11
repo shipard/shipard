@@ -82,9 +82,7 @@ function createNewDataSource ()
 	logMsg('---');
 	$dsid = $resultData ['data']['request']['gid'];
 	
-	
-	$moduleParts = explode('.', $resultData ['data']['installModule']);
-	$module = 'install/apps/'.array_pop($moduleParts);
+	$module = $resultData ['data']['installModule'];
 	
 	if (str_starts_with ($resultData ['data']['installModule'], 'pkgs.')) // old module?
 		$resultData ['data']['installModule'] = substr($resultData ['data']['installModule'], 5); // TODO: remove in new hosting
