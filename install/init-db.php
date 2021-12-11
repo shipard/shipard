@@ -56,7 +56,7 @@ class InstallationDb
 		//$sqlCmd .= "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1'); ";
 		// DELETE FROM mysql.global_priv WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
 
-		$sqlCmd .= "DROP DATABASE IF EXISTS test; ";
+		$sqlCmd = "DROP DATABASE IF EXISTS test; ";
 		$sqlCmd .= "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%'; ";
 		$sqlCmd .= "FLUSH PRIVILEGES;";
 		
