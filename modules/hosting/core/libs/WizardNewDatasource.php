@@ -57,7 +57,7 @@ class WizardNewDatasource extends Wizard
 			//	continue;
 			$enumModules[$moduleId] = ['text' => $m['fn']/*, 'suffix' => $m['description']*/];
 		}
-		$this->recData['installModule'] = 'shipard-economy'; // TODO: settings
+		$this->recData['installModule'] = 'install/apps/shipard-economy'; // TODO: settings
 
 		$this->recData['partner'] = intval($this->app()->testGetParam('partnerNdx'));
 
@@ -101,15 +101,13 @@ class WizardNewDatasource extends Wizard
 		//if (intval($this->recData['testNG']))
 		//	$server = 17;
 
-		$installModuleDef =	$this->app()->cfgItem('hosting.core.installModules.'.$this->recData['installModule'], NULL);
-
 		// -- data source
 		/** @var \hosting\core\TableDatasources $tableDataSources */
 		$tableDataSources = $this->app()->table('hosting.core.dataSources');
 		$newDataSource = [
 			'name' => $this->recData['companyName'],
 			'shortName' => '',
-			'installModule' => $installModuleDef['moduleId'] ?? '',
+			'installModule' => $this->recData['installModule'],
 			'gid' => '',
 			'server' => $server,
 

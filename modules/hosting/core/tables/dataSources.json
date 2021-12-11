@@ -16,7 +16,7 @@
 		{"id": "partner", "name": "Partner", "type": "int", "reference": "hosting.core.partners"},
 
 		{"id": "urlApp", "name": "URL aplikace", "type": "string", "len": 100},
-		{"id": "installModule", "name": "Instalační modul", "type": "enumString", "len": 32,
+		{"id": "installModule", "name": "Instalační modul", "type": "enumString", "len": 64,
 			"enumCfg": {"cfgItem": "hosting.core.installModules", "cfgValue": "", "cfgText": "fn"}},
 
 		{"id": "dateCreated", "name": "Vytvořeno", "type": "timestamp"},

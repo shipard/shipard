@@ -228,10 +228,13 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		// -- install/apps/shipard-core
 		$dsid = '03'.mt_rand(10000000, 88888888).'777';
 		
-		$module = 'install/apps/shipard-'.$appType;
+		if (strstr($appType, '/') == FALSE)
+			$module = 'install/apps/shipard-'.$appType;
+		else
+			$module = $appType;	
 
 		if (!is_dir(__SHPD_MODULES_DIR__.$module))
-			return $this->err ('ERROR: invalid argument --type; module `'.$appType.'` not found. use core, economy or mac');
+			return $this->err ('ERROR: invalid argument --type; module `'.$module.'` not found. use core, economy or mac');
 
 		$cmd = $this->shpdServerCmd." app-create --name=$dsid --module=$module";
 		passthru($cmd);
