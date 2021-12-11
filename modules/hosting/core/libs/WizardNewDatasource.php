@@ -101,13 +101,15 @@ class WizardNewDatasource extends Wizard
 		//if (intval($this->recData['testNG']))
 		//	$server = 17;
 
+		$installModuleDef =	$this->app()->cfgItem('hosting.core.installModules.'.$this->recData['installModule'], NULL);
+
 		// -- data source
 		/** @var \hosting\core\TableDatasources $tableDataSources */
 		$tableDataSources = $this->app()->table('hosting.core.dataSources');
 		$newDataSource = [
 			'name' => $this->recData['companyName'],
 			'shortName' => '',
-			'installModule' => $this->recData['installModule'],
+			'installModule' => $installModuleDef['moduleId'] ?? '',
 			'gid' => '',
 			'server' => $server,
 
