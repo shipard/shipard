@@ -1461,12 +1461,12 @@ class Utils
 
 	static function hostingCfg ($requeredFields = NULL)
 	{
-		if (!is_file(__SHPD_ETC_DIR__.'/hosting.json'))
-			return utils::err ("file `".__SHPD_ETC_DIR__.'/hosting.json'."` not found");
+		if (!is_file(__SHPD_ETC_DIR__.'/server.json'))
+			return utils::err ("file `".__SHPD_ETC_DIR__.'/server.json'."` not found");
 
-		$cfg = json_decode (file_get_contents(__SHPD_ETC_DIR__.'/hosting.json'), TRUE);
+		$cfg = json_decode (file_get_contents(__SHPD_ETC_DIR__.'/server.json'), TRUE);
 		if (!$cfg)
-			return utils::err ("invalid `".__SHPD_ETC_DIR__.'/hosting.json'."` settings (syntax error?)");
+			return utils::err ("invalid `".__SHPD_ETC_DIR__.'/server.json'."` settings (syntax error?)");
 
 		return $cfg;
 	}

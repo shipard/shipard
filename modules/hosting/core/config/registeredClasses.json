@@ -1,5 +1,5 @@
 {
 	"objectsCalls": {
-		"hosting-user-summary-upload": {"classId": "e10pro.hosting.server.libs.HostingUserSummaryUpload"}
+		"hosting-user-summary-upload": {"classId": "hosting.core.libs.HostingUserSummaryUpload"}
 	}
 }

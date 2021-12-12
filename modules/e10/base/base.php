@@ -2345,7 +2345,7 @@ class NotificationCentre extends \Shipard\UI\Core\WidgetPane
 		$badges['ntf-badge-wkf-start'] = $badges['ntf-badge-wkf-total'];
 
 		// -- unused sections
-		/** @var  $tableSections \wkf\base\TableSections */
+		/** @var \wkf\base\TableSections $tableSections */
 		$tableSections = $this->app->table ('wkf.base.sections');
 		$usersSections = $tableSections->usersSections();
 		foreach ($usersSections['all'] as $sectionNdx => $s)
@@ -2356,14 +2356,14 @@ class NotificationCentre extends \Shipard\UI\Core\WidgetPane
 		}
 
 		// -- hosting - TODO: move to better place
-		if ($this->app->model()->module ('e10pro.hosting.server') !== FALSE)
+		if ($this->app->model()->module ('hosting.core') !== FALSE)
 		{
 			$badges['ntf-badge-hosting-dbs'] = 0;
 
 			$q = [];
-			array_push ($q, 'SELECT [summary].[cntUnread], [summary].[cntTodo], [ds].[gidStr]');
-			array_push ($q, ' FROM [e10pro_hosting_server_udsSummary] AS [summary]');
-			array_push ($q, ' LEFT JOIN [e10pro_hosting_server_datasources] AS [ds] ON [summary].dataSource = [ds].ndx');
+			array_push ($q, 'SELECT [summary].[cntUnread], [summary].[cntTodo], [ds].[gid]');
+			array_push ($q, ' FROM [hosting_core_dsUsersSummary] AS [summary]');
+			array_push ($q, ' LEFT JOIN [hosting_core_dataSources] AS [ds] ON [summary].dataSource = [ds].ndx');
 			array_push ($q, ' WHERE [user] = %i', $this->app->userNdx());
 			$rows = $this->db()->query($q);
 			foreach ($rows as $r)

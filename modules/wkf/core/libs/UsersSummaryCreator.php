@@ -290,8 +290,7 @@ class UsersSummaryCreator extends Utility
 			{
 				$hostingCfg = utils::hostingCfg();
 				$ce = new \lib\objects\ClientEngine($this->app());
-				$ce->apiUrl = 'https://shipard.app/' . 'api/objects/call/hosting-user-summary-upload';
-				//$ce->apiUrl = 'https://sebik-mb.shipard.pro/devel/' . 'api/objects/call/hosting-user-summary-upload';
+				$ce->apiUrl = 'https://hq.shipard.app/' . 'api/objects/call/hosting-user-summary-upload';
 				$ce->apiKey = $hostingCfg['hostingApiKey'];
 			}
 
