@@ -36,7 +36,7 @@ class HomePageWidget extends WidgetBoard
 		$maxToolbarCnt = 12;
 
 		$qf[] = 'SELECT dsUsers.dataSource,';
-		array_push($qf, ' dataSources.shortName AS dsShortName, dataSources.name AS dsFullName, dataSources.urlApp AS dsUrl,');
+		array_push($qf, ' dataSources.shortName AS dsShortName, dataSources.name AS dsFullName, dataSources.urlApp AS dsUrl, dataSources.gid AS dsGid,');
 		array_push($qf, ' dataSources.imageUrl AS dsImageUrl, dataSources.dsEmoji AS dsEmoji, dataSources.dsIcon AS dsIcon');
 		array_push($qf, ' FROM [hosting_core_dsUsersOptions] AS dsOptions');
 		array_push($qf, ' INNER JOIN [hosting_core_dsUsers] AS dsUsers ON dsOptions.uds = dsUsers.ndx');
@@ -55,6 +55,7 @@ class HomePageWidget extends WidgetBoard
 			$item = [
 				'title' => ($r['dsShortName'] === '') ? $r['dsFullName'] : $r['dsShortName'], 'dsUrl' => $r['dsUrl'],
 				'dsImageUrl' => $r['dsImageUrl'], 'dsEmoji' => $r['dsEmoji'], 'dsIcon' => $r['dsIcon'],
+				'gid' => $r['dsGid'],
 			];
 			$this->dataSources[$r['dataSource']] = $item;
 		}
@@ -65,7 +66,7 @@ class HomePageWidget extends WidgetBoard
 		$maxDashboardCnt = 19;
 
 		$qf[] = 'SELECT dsUsers.dataSource,';
-		array_push($qf, ' dataSources.shortName AS dsShortName, dataSources.name AS dsFullName, dataSources.urlApp AS dsUrl,');
+		array_push($qf, ' dataSources.shortName AS dsShortName, dataSources.name AS dsFullName, dataSources.urlApp AS dsUrl, dataSources.gid AS dsGid,');
 		array_push($qf, ' dataSources.imageUrl AS dsImageUrl, dataSources.dsEmoji AS dsEmoji, dataSources.dsIcon AS dsIcon,');
 		array_push($qf, ' dsOptions.addToDashboard');
 		array_push($qf, ' FROM [hosting_core_dsUsersOptions] AS dsOptions');
@@ -85,6 +86,7 @@ class HomePageWidget extends WidgetBoard
 			$item = [
 				'title' => ($r['dsShortName'] === '') ? $r['dsFullName'] : $r['dsShortName'], 'dsUrl' => $r['dsUrl'],
 				'dsImageUrl' => $r['dsImageUrl'], 'dsEmoji' => $r['dsEmoji'], 'dsIcon' => $r['dsIcon'],
+				'gid' => $r['dsGid'],
 			];
 
 			$dashboardPriorityId = $r['addToDashboard'];
@@ -319,6 +321,13 @@ class HomePageWidget extends WidgetBoard
 
 		$dsTitleName = ['class' => 'h1 padd5', 'text' => $ds['title']];
 		$title[] = $dsTitleName;
+
+		$ntfBadge = "<sup class='e10-ntf-badge' id='ntf-badge-unread-ds-".utils::es($ds['gid'])."' style='display: none;'></sup>";
+		$title[] = ['code' => $ntfBadge];
+
+		$ntfBadge = "<sup class='e10-ntf-badge e10-ntf-badge-todo' id='ntf-badge-todo-ds-".utils::es($ds['gid'])."' style='display: none;'></sup>";
+		$title[] = ['code' => $ntfBadge];
+
 		$title[] = ['text' => '', 'class' => 'clear block'];
 
 		$dsTile['title'][] = ['value' => $title, 'class' => 'e10-bg-t9 block'];

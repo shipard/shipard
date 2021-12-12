@@ -33,7 +33,7 @@ class HostingUserSummaryUpload extends Utility
 			return;
 		}
 
-		$dsRecData = $this->db()->query ('SELECT * FROM [hosting_server_dataSources] WHERE [gid] = %s', $dsId,
+		$dsRecData = $this->db()->query ('SELECT * FROM [hosting_core_dataSources] WHERE [gid] = %s', $dsId,
 			' AND [docState] IN %in', [4000, 8000])->fetch();
 		if (!$dsRecData)
 		{

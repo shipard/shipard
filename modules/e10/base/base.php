@@ -2370,8 +2370,8 @@ class NotificationCentre extends \Shipard\UI\Core\WidgetPane
 			{
 				$badges['ntf-badge-hosting-dbs'] += $r['cntUnread'];
 				$badges['ntf-badge-app-total'] += $r['cntUnread'];
-				$badges['ntf-badge-unread-ds-'.$r['gidStr']] = $r['cntUnread'];
-				$badges['ntf-badge-todo-ds-'.$r['gidStr']] = $r['cntTodo'];
+				$badges['ntf-badge-unread-ds-'.$r['gid']] = $r['cntUnread'];
+				$badges['ntf-badge-todo-ds-'.$r['gid']] = $r['cntTodo'];
 			}
 		}
 
