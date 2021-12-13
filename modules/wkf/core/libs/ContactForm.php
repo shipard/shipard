@@ -115,7 +115,7 @@ class ContactForm extends \Shipard\Base\WebForm
 
 	public function doIt ()
 	{
-		$useNewWorkflow = $this->app->useNewWorkflow();
+		$useNewWorkflow = 1;
 		if ($useNewWorkflow)
 		{
 			/*
