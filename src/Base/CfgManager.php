@@ -267,7 +267,7 @@ class CfgManager
 		{
 			if ($newConfig ['develMode'])
 				$newConfig ['dsMode'] = Application::dsmDevel;
-			elseif (isset($newConfig ['dsi']['condition']) && $newConfig ['dsi']['condition'] == 2)
+			elseif (isset($newConfig ['dsi']['dsType']) && $newConfig ['dsi']['dsType'] === 1)
 				$newConfig ['dsMode'] = Application::dsmTesting;
 			else	
 				$newConfig ['dsMode'] = Application::dsmProduction;
