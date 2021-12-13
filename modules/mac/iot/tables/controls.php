@@ -173,12 +173,10 @@ class ViewControls extends TableView
 
 		$q [] = 'SELECT [controls].*, ';
 		array_push ($q, ' ioPortsDevices.fullName AS [ioPortDeviceFullName], ioPortsDevices.deviceKind AS [ioPortDeviceKind],');
-		array_push ($q, ' ioPorts.portId AS [ioPortId], ioPorts.fullName AS [ioPortFullName],');
-		array_push ($q, ' [things].fullName AS [thingName], [things].thingKind');
+		array_push ($q, ' ioPorts.portId AS [ioPortId], ioPorts.fullName AS [ioPortFullName]');
 		array_push ($q, ' FROM [mac_iot_controls] AS [controls]');
 		array_push ($q, ' LEFT JOIN [mac_lan_devicesIOPorts] AS ioPorts ON [controls].dstIOPort = ioPorts.ndx');
 		array_push ($q, ' LEFT JOIN [mac_lan_devices] AS ioPortsDevices ON ioPorts.device = ioPortsDevices.ndx');
-		array_push ($q, ' LEFT JOIN [mac_iot_things] AS [things] ON [controls].dstIoTThing = [things].ndx');
 		array_push ($q, ' WHERE 1');
 
 		// -- fulltext
