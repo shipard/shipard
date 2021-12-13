@@ -27,5 +27,10 @@
 			"e10pro.hosting.server.modules": {"default": 1},
 			"e10pro.hosting.server.datasources": {"default": 1}
 		}
+	},
+	"user": {
+		"widgets": {
+			"lib.hosting.libs.HomePageWidget": 2
+		}
 	}
 }
