@@ -1,7 +1,6 @@
 <?php
 
 namespace e10doc\debs\libs\spreadsheets;
-use \e10doc\debs\libs\spreadsheets\SpdStatement;
 
 use \e10\utils;
 
