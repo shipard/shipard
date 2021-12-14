@@ -71,7 +71,7 @@ class TablePartners extends DbTable
 		array_push($q, ' SUM(stats.cntDocuments12m) as cntDocuments12m, stats.cntUsersAll1m as cntUsersAll1m,');
 		array_push($q, ' stats.datasource, ds.name as dsName');
 		array_push($q, ' FROM e10pro_hosting_server_datasourcesStats AS stats');
-		array_push($q, ' LEFT JOIN e10pro_hosting_server_datasources AS ds ON stats.datasource = ds.ndx');
+		array_push($q, ' LEFT JOIN hosting_core_datasources AS ds ON stats.dataSource = ds.ndx');
 		array_push($q, ' WHERE ds.docState = 4000');
 		array_push($q, ' AND ds.partner = %i', $partnerNdx);
 		array_push($q, ' GROUP BY 1');

@@ -42,7 +42,7 @@ class TableDSUsers extends DbTable
 		}
 
 		$dsid = $uploadData['dsid'];
-		$dsidRecData = $this->db()->query ('SELECT * FROM [e10pro_hosting_server_datasources] WHERE [gid] = %i', $dsid)->fetch();
+		$dsidRecData = $this->db()->query ('SELECT * FROM [hosting_core_dataSources] WHERE [gid] = %s', $dsid)->fetch();
 		if (!$dsidRecData)
 		{
 			error_log ("TableUsersds::invalid dsid '{$dsid}': ".json_encode($uploadData));
@@ -58,7 +58,7 @@ class TableDSUsers extends DbTable
 				continue;
 			}
 
-			$userdsRecData = $this->db()->query ('SELECT * FROM [e10pro_hosting_server_usersds] WHERE [user] = %i AND [datasource] = %i',
+			$userdsRecData = $this->db()->query ('SELECT * FROM [hosting_core_dsUsers] WHERE [user] = %i AND [dataSource] = %i',
 																						$userRecData['ndx'], $dsidRecData['ndx'])->fetch();
 
 			if (!$userdsRecData)
@@ -67,9 +67,9 @@ class TableDSUsers extends DbTable
 				continue;
 			}
 
-			$this->db()->query ('UPDATE [e10pro_hosting_server_usersds] set lastLogin = %t WHERE ndx = %i AND (lastLogin < %t OR lastLogin IS NULL)',
+			$this->db()->query ('UPDATE [hosting_core_dsUsers] set lastLogin = %t WHERE ndx = %i AND (lastLogin < %t OR lastLogin IS NULL)',
 													$u['time'], $userdsRecData['ndx'], $u['time']);
-			$this->db()->query ('UPDATE [e10pro_hosting_server_datasources] set lastLogin = %t WHERE ndx = %i AND (lastLogin < %t OR lastLogin IS NULL)',
+			$this->db()->query ('UPDATE [hosting_core_dataSources] set lastLogin = %t WHERE ndx = %i AND (lastLogin < %t OR lastLogin IS NULL)',
 													$u['time'], $dsidRecData['ndx'], $u['time']);
 		}
 		$this->app()->cache->invalidateItem('lib.cacheItems.HostingStats');
@@ -169,7 +169,7 @@ class ViewDSUsers extends TableView
 		if ($this->queryParam ('user'))
 		{
 			$q = "SELECT usersds.*, ds.name AS dsName, ds.docState AS docState, ds.docStateMain AS docStateMain FROM [e10pro_hosting_server_usersds] as usersds " .
-					 "LEFT JOIN e10pro_hosting_server_datasources as ds ON usersds.datasource = ds.ndx WHERE usersds.user = %i" . $this->sqlLimit();
+					 "LEFT JOIN hosting_core_dataSources as ds ON usersds.datasource = ds.ndx WHERE usersds.user = %i" . $this->sqlLimit();
 			$this->runQuery ($q, $this->queryParam ('user'));
 		}
 		else
@@ -177,7 +177,7 @@ class ViewDSUsers extends TableView
 			$q[] = 'SELECT usersds.*, users.fullName AS userName, users.ndx AS userNdx, users.id AS userId, users.login AS userEmail';
 			array_push($q, ' FROM [hosting_core_dsUsers] AS usersds');
 			array_push($q, ' LEFT JOIN e10_persons_persons AS users ON usersds.user = users.ndx');
-			array_push($q, ' WHERE usersds.datasource = %i', $this->queryParam ('dataSource'));
+			array_push($q, ' WHERE usersds.dataSource = %i', $this->queryParam ('dataSource'));
 
 			if ($fts != '')
 				array_push ($q, " AND (users.[fullName] LIKE %s)", '%'.$fts.'%');

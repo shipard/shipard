@@ -70,7 +70,7 @@ class ViewAuthLog extends TableView
 		parent::init();
 
 		$this->eventTypes = $this->app()->cfgItem ('e10.base.authLog.events');
-		if ($this->app()->model()->table ('e10pro.hosting.server.datasources') !== FALSE)
+		if ($this->app()->model()->table ('hosting.core.dataSources') !== FALSE)
 			$this->thisIsHosting = TRUE;
 	}
 
@@ -89,7 +89,7 @@ class ViewAuthLog extends TableView
 		array_push ($q, 'LEFT JOIN e10_base_devices as [devices] ON log.deviceId = devices.id');
 
 		if ($this->thisIsHosting)
-			array_push ($q, 'LEFT JOIN e10pro_hosting_server_datasources AS datasources ON log.dsGid = datasources.gid');
+			array_push ($q, 'LEFT JOIN hosting_core_dataSources AS datasources ON log.dsGid = datasources.gid');
 
 		array_push($q, ' WHERE 1');
 
@@ -199,9 +199,9 @@ class ViewDetailAuthLog extends TableViewDetail
 		$i = $this->item;
 		$info = [];
 
-		if ($this->app()->model()->table ('e10pro.hosting.server.datasources') !== FALSE && $i['dsGid'])
+		if ($this->app()->model()->table ('hosting.core.dataSources') !== FALSE && $i['dsGid'])
 		{
-			$dsRecData = $this->app()->db()->query('SELECT * FROM [e10pro_hosting_server_datasources] WHERE gidStr = %s', $i['dsGid'])->fetch();
+			$dsRecData = $this->app()->db()->query('SELECT * FROM [hosting_core_dataSources] WHERE gid = %s', $i['dsGid'])->fetch();
 			if ($dsRecData)
 			{
 				$info[] = [

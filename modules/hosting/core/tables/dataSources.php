@@ -25,7 +25,7 @@ use \e10\base\libs\UtilsBase;
 		if (isset($recData ['ndx']) && $recData ['ndx'])
 		{
 			// -- ds image
-			$image = UtilsBase::getAttachmentDefaultImage($this->app(), 'e10pro.hosting.server.datasources', $recData ['ndx']);
+			$image = UtilsBase::getAttachmentDefaultImage($this->app(), 'hosting.core.dataSources', $recData ['ndx']);
 			if (isset($image['fileName']))
 			{
 				//$recData['imageUrl'] = $this->app()->cfgItem('hostingServerUrl') . 'imgs/-w256/att/' . $image['fileName'];
@@ -50,7 +50,7 @@ use \e10\base\libs\UtilsBase;
 
 		if ($recData['server'])
 		{
-			$serverRec = $this->app()->loadItem($recData['server'], 'e10pro.hosting.server.servers');
+			$serverRec = $this->app()->loadItem($recData['server'], 'hosting.core.servers');
 			$topInfo[] = ['icon' => 'x-server', 'text' => $serverRec['id']];
 		}
 

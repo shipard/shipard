@@ -830,8 +830,8 @@ class Authenticator extends \Shipard\Application\Authenticator
 		if ($request)
 		{
 			// -- check data source
-			$dsid = intval($request['dsid']);
-			$dataSource = $this->app->db->fetch('SELECT * FROM [e10pro_hosting_server_datasources] WHERE [gid] = %i', $dsid);
+			$dsid = $request['dsid'];
+			$dataSource = $this->app->db->fetch('SELECT * FROM [hosting_core_dataSources] WHERE [gid] = %s', $dsid);
 			if ($dataSource)
 			{
 				$loginHash = $request['newUser']['loginHash'];
@@ -844,9 +844,9 @@ class Authenticator extends \Shipard\Application\Authenticator
 							$dataSource['ndx'], $existingPerson['ndx']);
 					if (!$userds)
 					{ // connect
-						$newLinkedDataSource = ['user' => $existingPerson['ndx'], 'datasource' => $dataSource['ndx'],
+						$newLinkedDataSource = ['user' => $existingPerson['ndx'], 'dataSource' => $dataSource['ndx'],
 								'created' => new \DateTime(), 'docState' => 4000, 'docStateMain' => 2];
-						$tableUsersDS = $this->app->table('e10pro.hosting.server.usersds');
+						$tableUsersDS = $this->app->table('hosting.core.dsUsers');
 						$tableUsersDS->addUsersDSLink($newLinkedDataSource);
 						// -- send email
 
@@ -1175,8 +1175,8 @@ class Authenticator extends \Shipard\Application\Authenticator
 		$done = intval($this->app->testGetParam('done'));
 		if ($done === 1)
 		{
-			$dsid = intval($requestData['dsid']);
-			$dataSource = $this->app->db->fetch('SELECT * FROM [e10pro_hosting_server_datasources] WHERE [gid] = %i', $dsid);
+			$dsid = $requestData['dsid'];
+			$dataSource = $this->app->db->fetch('SELECT * FROM [hosting_core_dataSources] WHERE [gid] = %s', $dsid);
 
 			// set request as confirmed
 			$this->app->db()->query("UPDATE [e10_persons_requests] SET [docState] = 4000, [docStateMain] = 2, [finished] = NOW(), [addressConfirm] = %s WHERE [ndx] = %i",
@@ -1211,12 +1211,12 @@ class Authenticator extends \Shipard\Application\Authenticator
 
 		$newPersonNdx = \E10\Persons\createNewPerson($this->app, $newPerson);
 
-		$dsid = intval($requestData['dsid']);
-		$dataSource = $this->app->db->fetch('SELECT * FROM [e10pro_hosting_server_datasources] WHERE [gid] = %i', $dsid);
+		$dsid = $requestData['dsid'];
+		$dataSource = $this->app->db->fetch('SELECT * FROM [hosting_core_dataSources] WHERE [gid] = %s', $dsid);
 
-		$newLinkedDataSource = ['user' => $newPersonNdx, 'datasource' => $dataSource['ndx'],
+		$newLinkedDataSource = ['user' => $newPersonNdx, 'dataSource' => $dataSource['ndx'],
 				'created' => new \DateTime(), 'docState' => 4000, 'docStateMain' => 2];
-		$tableUsersDS = $this->app->table('e10pro.hosting.server.usersds');
+		$tableUsersDS = $this->app->table('hosting.core.dsUsers');
 		$tableUsersDS->addUsersDSLink($newLinkedDataSource);
 
 		header('Location: ' . $this->app->urlProtocol . $_SERVER['HTTP_HOST'] . $this->app->urlRoot . $this->app->requestPath() . '?done=1');

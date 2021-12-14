@@ -126,7 +126,7 @@ class HomePageWidget extends WidgetBoard
 
 		$c .= "<style>div.e10-wdb {border: none;} div.e10-viewer-fw-toolbar div.e10-sv-fw-toolbar{border: none;}</style>";
 
-		$c .= "<div class='e10-wf-tabs-vertical' style='width: 4rem; padding: 0; background-color: #00508aa0;'>";
+		$c .= "<div class='e10-wf-tabs-vertical' style='width: 4rem; padding: 0; background-color: #00508aa0; overflow-y: auto;'>";
 		$c .= "<input type='hidden' name='e10-widget-dashboard-tab-id' id='e10-widget-dashboard-tab-id' value='{$this->activeTabId}'>";
 
 		$c .= "<ul class='e10-wf-tabs' data-value-id='e10-widget-dashboard-tab-id'>";
