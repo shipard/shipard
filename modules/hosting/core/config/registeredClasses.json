@@ -1,5 +1,10 @@
 {
 	"objectsCalls": {
 		"hosting-user-summary-upload": {"classId": "hosting.core.libs.HostingUserSummaryUpload"}
+	},
+	"feed": {
+		"loginScreen": {
+			"classId": "hosting.core.libs.LoginScreenFeed"
+		}
 	}
 }

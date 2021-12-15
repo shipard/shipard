@@ -74,12 +74,6 @@
                 </div>
 
     <div class="row" style="position: absolute; width:100%; bottom: 0px;" id="e10-sp-footer">
-        <div class="row e10-sp-dayInfo hidden-xs">
-            <div id="e10-sp-dayInfo" class="col-md-6 col-sm-6 e10-sp-dayInfo-left">
-            </div>
-            <div id="e10-sp-podInfo" class="col-md-6 col-sm-6 e10-sp-dayInfo-right">
-            </div>
-        </div>
         <div class="row e10-sp-footer" style="background-color: #111; ">
             <div class="col-md-6 col-sm-6" >
                 <div>
@@ -127,34 +121,6 @@
             $('#e10-sp-desktop').append (podCode);
         }
 
-        var dayInfo = "";
-        dayInfo += '<div class="e10-sp-today-date">' + data.object.dayInfo.date + '</div>';
-
-        if (data.object.dayInfo.nameday !== undefined)
-        {
-            dayInfo += '<div><small>svátek má</small> ';
-
-            var l = data.object.dayInfo.nameday.length;
-            for (var i = 0; i < l; i++)
-            {
-                dayInfo += data.object.dayInfo.nameday[i].title;
-
-                if (i == (l - 2))
-                    dayInfo += ' a ';
-                else
-                if (i < (l - 1))
-                    dayInfo += ', ';
-            }
-
-            dayInfo += '</div>';
-        }
-        if (data.object.dayInfo.holiday !== undefined)
-        {
-            for (var i = 0; i < data.object.dayInfo.holiday.length; i++)
-                dayInfo += '<div>' + data.object.dayInfo.holiday[i].title +'</div>';
-        }
-        $('#e10-sp-dayInfo').html (dayInfo);
-
         var podInfo = "";
         if (data.object.podTitle !== undefined)
         {
@@ -163,19 +129,6 @@
                 podInfo += '<br>' + data.object.podYears;
 
             $('#e10-sp-podInfo').html (podInfo);
-        }
-
-        if (data.object.news && data.object.news !== '')
-        {
-            var boxNews = $('#e10-sp-news');
-            if (boxNews.length) {
-                boxNews.css({
-                    "padding-top": ($('#e10-sp-header').height()) + 'px',
-                    "padding-bottom": ($('#e10-sp-footer').height()) + 'px'
-                });
-                $('#e10-sp-news-content').height($('body').innerHeight() - $('#e10-sp-footer').height()).html(data.object.news);
-                boxNews.show();
-            }
         }
     });
 
