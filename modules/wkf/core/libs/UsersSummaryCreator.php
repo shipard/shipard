@@ -16,6 +16,8 @@ class UsersSummaryCreator extends Utility
 	var $usersSections = NULL;
 	var $usersNotifications = NULL;
 
+	var $thisIsHosting = FALSE;
+
 	/** @var \wkf\core\TableIssues */
 	var $tableIssues = NULL;
 
@@ -252,7 +254,12 @@ class UsersSummaryCreator extends Utility
 		array_push($q, ' WHERE 1');
 		array_push($q, ' AND [roles] != %s', '', ' AND [roles] != %s', 'guest');
 		array_push($q, ' AND [personType] = %i', 1);
-		array_push($q, ' AND [accountType] = %i', 2);
+
+		if ($this->thisIsHosting)
+			array_push($q, ' AND [accountType] = %i', 1);
+		else
+			array_push($q, ' AND [accountType] = %i', 2);
+
 		array_push($q, ' AND [docStateMain] <= %i', 2);
 		array_push($q, ' ORDER BY [ndx]');
 
@@ -305,6 +312,9 @@ class UsersSummaryCreator extends Utility
 
 	public function run()
 	{
+		if ($this->app->model()->module ('hosting.core') !== FALSE)
+			$this->thisIsHosting = TRUE;
+
 		$this->createAllUsers();
 		$this->upload();
 	}
