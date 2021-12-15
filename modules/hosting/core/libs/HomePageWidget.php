@@ -326,10 +326,10 @@ class HomePageWidget extends WidgetBoard
 		$dsTitleName = ['class' => 'h1 padd5', 'text' => $ds['title']];
 		$title[] = $dsTitleName;
 
-		$ntfBadge = "<sup class='e10-ntf-badge' id='ntf-badge-unread-ds-".utils::es($ds['gid'])."' style='display: none;'></sup>";
+		$ntfBadge = " <sup class='e10-ntf-badge' id='ntf-badge-unread-ds-".utils::es($ds['gid'])."' style='display: none;'></sup>";
 		$title[] = ['code' => $ntfBadge];
 
-		$ntfBadge = "<sup class='e10-ntf-badge e10-ntf-badge-todo' id='ntf-badge-todo-ds-".utils::es($ds['gid'])."' style='display: none;'></sup>";
+		$ntfBadge = " <sup class='e10-ntf-badge e10-ntf-badge-todo' id='ntf-badge-todo-ds-".utils::es($ds['gid'])."' style='display: none;'></sup>";
 		$title[] = ['code' => $ntfBadge];
 
 		$title[] = ['text' => '', 'class' => 'clear block'];
@@ -359,6 +359,16 @@ class HomePageWidget extends WidgetBoard
 				'header' => $h, 'table' => $t,
 				'params' => ['hideHeader' => 1, 'forceTableClass' => 'properties fullWidth']
 			]);
+
+
+		$deleteButton = 	
+			[
+				'text' => 'Zrušit účet', 'action' => 'wizard', 'icon' => 'system/actionDelete', 'data-class' => 'hosting.core.libs.WizardDeleteAccount',
+				'btnClass' => 'btn btn-danger', 'class' => 'pull-right',
+				'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId,						
+			];
+		$this->addContent (['type' => 'line', 'line' => $deleteButton]);
+
 		$this->addContent (['type' => 'grid', 'cmd' => 'colClose']);
 
 

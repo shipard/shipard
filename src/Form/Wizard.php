@@ -51,6 +51,7 @@ class Wizard extends \Shipard\Form\TableForm
 			$toolbar [] = array ('type' => 'action', 'action' => 'cancelform', 'text' => DictSystem::text(DictSystem::diBtn_Close), 'style' => 'cancel');
 		}
 		else
+		if ($this->stepResult['lastStep'] !== 999)
 			$toolbar [] = array ('type' => 'action', 'action' => 'cancelform', 'text' => DictSystem::text(DictSystem::diBtn_Close), 'style' => 'cancel');
 
 		return $toolbar;
