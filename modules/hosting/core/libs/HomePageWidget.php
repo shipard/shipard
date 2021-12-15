@@ -230,7 +230,11 @@ class HomePageWidget extends WidgetBoard
 
 				$this->addContent (['type' => 'grid', 'cmd' => 'rowClose']);
 			}
-		}	
+		}
+		elseif ($this->activeTopTab === 'viewer-mode-user')
+		{
+			$this->createDashboard_BBoard_User();
+		}
 
 		// -- footer
 		$fc = '';
@@ -264,11 +268,11 @@ class HomePageWidget extends WidgetBoard
 
 		$tabs['viewer-mode-home'] = ['text' => ' Přehled', 'icon' => 'system/iconStart', 'action' => 'viewer-mode-home'];
 		$tabs['viewer-mode-dbs'] = ['text' => ' Databáze', 'icon' => 'system/iconDatabase', 'action' => 'viewer-mode-dbs'];
+		$tabs['viewer-mode-user'] = ['text' => ' '.$userInfo['name'], 'icon' => 'system/iconUser', 'action' => 'viewer-mode-user'];
 	
 		$this->toolbar = ['tabs' => $tabs];
 
 		$btns = [];
-		$btns[] = ['text' => $userInfo['name'], 'prefix' => ' ', 'class' => '', 'icon' => 'system/iconUser',];
 		$btns[] = [
 			'type' => 'action', 'action' => 'open-link', 
 			'icon' => 'system/actionLogout',
@@ -335,6 +339,55 @@ class HomePageWidget extends WidgetBoard
 		$this->addContent (['type' => 'grid', 'cmd' => 'colOpen', 'width' => $width]);
 			$this->addContent(['type' => 'tiles', 'tiles' => [$dsTile], 'class' => 'panes', 'pane' => 'e10-pane e10-pane-core']);
 		$this->addContent (['type' => 'grid', 'cmd' => 'colClose']);
+	}
+
+	function createDashboard_BBoard_User ()
+	{
+		$userInfo = $this->app()->user()->data();
+		$this->addContent (['type' => 'grid', 'cmd' => 'rowOpen']);
+
+
+
+		$this->addContent (['type' => 'grid', 'cmd' => 'colOpen', 'width' => 6]);
+		$row = 0;
+		$t[$row] = ['t1' => 'Jméno', 'v1' => $userInfo['name']];
+		$row++;
+		$t[$row] = ['t1' => 'Přihlašovací e-mail', 'v1' => $userInfo['login']];
+		$h = ['t1' => '', 'v1' => ''];
+		$this->addContent ([
+				'pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'paneTitle' => ['text' => 'Údaje o uživateli', 'class' => 'h1 bb1 block', 'icon' => 'system/iconUser'],
+				'header' => $h, 'table' => $t,
+				'params' => ['hideHeader' => 1, 'forceTableClass' => 'properties fullWidth']
+			]);
+		$this->addContent (['type' => 'grid', 'cmd' => 'colClose']);
+
+
+		$this->addContent (['type' => 'grid', 'cmd' => 'colOpen', 'width' => 6]);
+		$row = 0;
+		$t = [];
+		if ($this->app()->hasRole('hstngdb'))
+			$t[$row] = ['t1' => 'Vytváření nových databází', 'v1' => ['text' => 'Povoleno', 'icon' => 'system/iconCheck']];
+		else
+			$t[$row] = [
+				't1' => 'Vytváření nových databází', 'v1' => [
+					['text' => 'Zakázáno', 'icon' => 'system/docStateCancel'], 
+					[
+						'text' => 'Povolit', 'action' => 'wizard', 'icon' => 'system/iconCheck', 'data-class' => 'hosting.core.libs.WizardEnableCreatingDatabases',
+						'btnClass' => 'btn btn-success', 'class' => 'pull-right',
+						'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId,						
+					],
+				],
+			];
+
+		$h = ['t1' => '', 'v1' => ''];
+		$this->addContent ([
+				'pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'paneTitle' => ['text' => 'Oprávnění', 'class' => 'h1 bb1 block', 'icon' => 'system/iconUser'],
+				'header' => $h, 'table' => $t,
+				'params' => ['hideHeader' => 1, 'forceTableClass' => 'properties fullWidth']
+			]);
+		$this->addContent (['type' => 'grid', 'cmd' => 'colClose']);
+
+		$this->addContent (['type' => 'grid', 'cmd' => 'rowClose']);
 	}
 
 	function renderContentTitle ()

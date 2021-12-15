@@ -1,7 +1,7 @@
 {
 	"hstng": {
-		"name": "Hosting",
-		"roles": ["hstngsvs"],
+		"name": "Hosting Admin",
+		"roles": ["hstngsvs", "hstngcd"],
 		"viewers": {
 			"e10.persons.persons": {"hostingUsers": 2},
 			"hosting.core.dataSources": {"default": 2},
@@ -18,9 +18,13 @@
 	},
 	"hstngcd": {
 		"name": "Hosting Partner",
+		"roles": ["hstngdb"],
 		"widgets": {
 			"lib.hosting.DataSourcesWallWidget": 2
 		}
+	},
+	"hstngdb": {
+		"name": "Zakládání databází"
 	},
 	"user": {
 		"widgets": {

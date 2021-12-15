@@ -117,7 +117,7 @@ class ViewerDashboardUsersDataSources extends TableView
 
 		array_push($q, ' servers.id AS serverId,');
 		array_push($q, ' ds.dsId1, ds.name, ds.shortName, ds.imageUrl, ds.ndx AS dsNdx, ds.gid AS dsGidStr, ds.docState AS docState, ds.docStateMain AS docStateMain,');
-		array_push($q, ' ds.dsEmoji AS dsEmoji, ds.dsIcon AS dsIcon,');
+		array_push($q, ' ds.dsEmoji AS dsEmoji, ds.dsIcon AS dsIcon, ds.appWarning, ds.inProgress,');
 		array_push($q, ' udsOptions.ndx AS udsOptionsNdx');
 		array_push($q, ' FROM [hosting_core_dsUsers] AS usersds');
 		array_push($q, ' RIGHT JOIN [hosting_core_dataSources] AS ds ON usersds.dataSource = ds.ndx');
@@ -149,12 +149,16 @@ class ViewerDashboardUsersDataSources extends TableView
 	public function createToolbar()
 	{
 		$tlbr = [];
-		$addButton = [
-			'text' => 'Nová databáze', 'action' => 'wizard', 'icon' => 'system/iconDatabase', 'data-class' => 'hosting.core.libs.WizardNewDatasource',
-			'btnClass' => 'btn btn-primary',
-			'data-srcobjecttype' => 'viewer', 'data-srcobjectid' => $this->vid,
-		];
-		$tlbr[] = $addButton;		
+
+		if ($this->app()->hasRole('hstngdb'))
+		{
+			$addButton = [
+				'text' => 'Nová databáze', 'action' => 'wizard', 'icon' => 'system/iconDatabase', 'data-class' => 'hosting.core.libs.WizardNewDatasource',
+				'btnClass' => 'btn btn-primary',
+				'data-srcobjecttype' => 'viewer', 'data-srcobjectid' => $this->vid,
+			];
+			$tlbr[] = $addButton;
+		}
 
 		return $tlbr;
 	}
