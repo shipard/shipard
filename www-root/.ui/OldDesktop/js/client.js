@@ -1482,14 +1482,14 @@ ncRunningActivities.hide();if(data.cntNotifications>0){ncIcon.attr("class","fa f
 iconFileName=e10dsIconServerUrl+'imgs/-i256/-b'+data.cntNotifications+'/-v2/'+e10dsIconFileName;appBrowserIconElement.attr('href',iconFileName);}else{ncIcon.attr("class","fa fa-bell-o e10-off");appBrowserIconElement.attr('href',e10dsIcon);}g_activeNtfBadges=[];for(var
 badgeId
 in
-data.ntfBadges){if(data.ntfBadges[badgeId])g_activeNtfBadges[badgeId]=data.ntfBadges[badgeId];var
-ntfElement=$('#'+badgeId);if(!ntfElement.length)continue;if(data.ntfBadges[badgeId]){ntfElement.text(data.ntfBadges[badgeId]).show();}else
-ntfElement.text('').hide();}}function
+data.ntfBadges){if(data.ntfBadges[badgeId])g_activeNtfBadges[badgeId]=data.ntfBadges[badgeId];setNotificationBadge(badgeId);}}function
 setNotificationBadges(){for(var
 badgeId
 in
-g_activeNtfBadges){var
-ntfElement=$('#'+badgeId);if(!ntfElement.length)continue;if(g_activeNtfBadges[badgeId]){ntfElement.text(g_activeNtfBadges[badgeId]).show();}else
+g_activeNtfBadges){setNotificationBadge(badgeId);}}function
+setNotificationBadge(badgeId){var
+ntfElement=$('#'+badgeId);if(ntfElement.length){if(g_activeNtfBadges[badgeId])ntfElement.text(g_activeNtfBadges[badgeId]).show();else
+ntfElement.text('').hide();}ntfElement=$('#'+badgeId+'-sec');if(ntfElement.length){if(g_activeNtfBadges[badgeId])ntfElement.text(g_activeNtfBadges[badgeId]).show();else
 ntfElement.text('').hide();}}function
 e10NCShowBubbles(notifications){if(notifications===undefined)return;for(var
 i=0;i<notifications.length;i++){var

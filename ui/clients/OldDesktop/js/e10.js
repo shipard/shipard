@@ -6120,16 +6120,7 @@ function e10NCSetButton (data)
 	{
 		if (data.ntfBadges[badgeId])
 			g_activeNtfBadges[badgeId] = data.ntfBadges[badgeId];
-
-		var ntfElement = $('#'+badgeId);
-		if (!ntfElement.length)
-			continue;
-		if (data.ntfBadges[badgeId])
-		{
-			ntfElement.text(data.ntfBadges[badgeId]).show();
-		}
-		else
-			ntfElement.text('').hide();
+		setNotificationBadge(badgeId);	
 	}
 }
 
@@ -6137,16 +6128,29 @@ function setNotificationBadges()
 {
 	for (var badgeId in g_activeNtfBadges)
 	{
-		var ntfElement = $('#'+badgeId);
-		if (!ntfElement.length)
-			continue;
+		setNotificationBadge(badgeId);
+	}
+}
+
+function setNotificationBadge(badgeId)
+{
+	var ntfElement = $('#'+badgeId);
+	if (ntfElement.length)
+	{
 		if (g_activeNtfBadges[badgeId])
-		{
 			ntfElement.text(g_activeNtfBadges[badgeId]).show();
-		}
 		else
 			ntfElement.text('').hide();
 	}
+	ntfElement = $('#'+badgeId+'-sec');
+	if (ntfElement.length)
+	{
+		if (g_activeNtfBadges[badgeId])
+			ntfElement.text(g_activeNtfBadges[badgeId]).show();
+		else
+			ntfElement.text('').hide();
+	}
+
 }
 
 function e10NCShowBubbles (notifications)

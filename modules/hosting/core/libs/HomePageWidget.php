@@ -140,7 +140,12 @@ class HomePageWidget extends WidgetBoard
 		foreach ($this->dataSources as $dsNdx => $ds)
 		{
 			$active = ($dsNdx == $this->activeTabId) ? ' active' : '';
-			$c .= "<li class='tab bb1 e10-widget-trigger$active' data-tabid='".$dsNdx."' id='e10-lanadmin-dstab-{$dsNdx}' style='padding: 0;'>";
+			$c .= "<li class='tab bb1 e10-widget-trigger$active' data-tabid='".$dsNdx."' id='e10-lanadmin-dstab-{$dsNdx}' style='padding: 0; position: relative;'>";
+			
+			$c .= "<span style='position: absolute; right: .4ex; bottom: .4ex; font-size: 110%;'>";
+			$c .= " <span class='e10-ntf-badge' id='ntf-badge-unread-ds-".utils::es($ds['gid'])."-sec' style='display: none;'></span>";
+			$c .= " <span class='e10-ntf-badge e10-ntf-badge-todo' id='ntf-badge-todo-ds-".utils::es($ds['gid'])."-sec' style='display: none;'></span>";
+			$c .= '</span>';
 
 			if ($ds['dsImageUrl'] !== '')
 			{
