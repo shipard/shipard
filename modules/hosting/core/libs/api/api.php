@@ -156,7 +156,7 @@ function getDataSourceInfo ($app)
 
 		$partnerNdx = ($r['partner']) ? $r ['partner'] : 1;
 		$partnerInfo = $tablePartners->partnerInfo ($partnerNdx);
-		$portalInfo = ['supportPhone' => '+420 ', 'supportEmail' => 'podpora@shipard.cz', 'name' => 'Shipard'];//$app->cfgItem ('e10pro.hosting.portals.portals.'.$partnerInfo['portal']);
+		$portalInfo = ['supportPhone' => '+420 774 020 522', 'supportEmail' => 'podpora@shipard.cz', 'supportUrl' => 'https://shipard.cz/', 'name' => 'Shipard'];//$app->cfgItem ('e10pro.hosting.portals.portals.'.$partnerInfo['portal']);
 
 		$supportKind = ['name' => 'Nedostupné', 'forumLevel' => 0];
 		if ($r['supportKind'])
@@ -183,6 +183,7 @@ function getDataSourceInfo ($app)
 			
 			'supportPhone' => ($partnerInfo['supportPhone'] !== '') ? $partnerInfo['supportPhone'] : $portalInfo['supportPhone'],
 			'supportEmail' => ($partnerInfo['supportEmail'] !== '') ? $partnerInfo['supportEmail'] : $portalInfo['supportEmail'],
+			'supportEmail' => ($partnerInfo['webUrl'] !== '') ? $partnerInfo['webUrl'] : $portalInfo['supportEmail'],
 			'supportKind' => $supportKind,
 			'supportSection' => $r['supportSection'],
 
