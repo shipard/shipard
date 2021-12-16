@@ -166,11 +166,11 @@ class LoginForm extends \Shipard\Base\WebForm
 		if ($this->app->testPostParam ("from", NULL) != NULL)
 			$c .= "<div class='alert alert-danger'>".DictSystem::es(DictSystem::diLoginForm_Error_WrongLoginOrPassword)."</div>";
 
-		$c .= $this->addFormInput (DictSystem::text(DictSystem::diCore_Email), 'email', 'login', ['fullWidth' => 1]);
-		$c .= $this->addFormInput (DictSystem::text(DictSystem::diCore_Password), 'password', 'password', ['fullWidth' => 1]);
+		$c .= $this->addInputBox (DictSystem::text(DictSystem::diCore_Email), 'email', 'login', ['fullWidth' => 1]);
+		$c .= $this->addInputBox (DictSystem::text(DictSystem::diCore_Password), 'password', 'password', ['fullWidth' => 1]);
 
-		if ($this->authenticator->option ('enableLoginRemember', 0))
-			$c .= $this->addFormInput (DictSystem::text(DictSystem::diLoginForm_RememberMe), 'checkbox', 'loginRemember');
+		//if ($this->authenticator->option ('enableLoginRemember', 0))
+		//	$c .= $this->addFormInput (DictSystem::text(DictSystem::diLoginForm_RememberMe), 'checkbox', 'loginRemember');
 
 		$c .= "<input type='hidden' name='from' value='$referer'>";
 
@@ -213,10 +213,10 @@ class RegistrationForm extends \Shipard\Base\WebForm
 	
 		$c .= "<fieldset>";
 
-		$c .= $this->addFormInput ('Jméno a příjmení', 'text', 'regName');
-		$c .= $this->addFormInput ('E-mail', 'email', 'regEmail'/*, array ('help' => 'Funkční e-mail je nezbytný k aktivaci registrace')*/);
-		$c .= $this->addFormInput ('Heslo', 'password', 'regPassword');
-		$c .= $this->addFormInput ('Potvrzení hesla', 'password', 'regPassword2');
+		$c .= $this->addInputBox ('Jméno a příjmení', 'text', 'regName');
+		$c .= $this->addInputBox ('E-mail', 'email', 'regEmail'/*, array ('help' => 'Funkční e-mail je nezbytný k aktivaci registrace')*/);
+		$c .= $this->addInputBox ('Heslo', 'password', 'regPassword');
+		$c .= $this->addInputBox ('Potvrzení hesla', 'password', 'regPassword2');
 
 		$c .= "</fieldset>";
 		$c .= "<div class='form-actions'><button type='submit' class='btn btn-primary'>Zaregistrovat</button></div>";
@@ -334,7 +334,7 @@ class LostPasswordForm extends \Shipard\Base\WebForm
 					<input type='hidden' name='webFormId' value='e10pro.hosting.server.lastPasswordForm'/>";
 
 		$c .= "<p>".DictSystem::es(DictSystem::diLostPasswordForm_InfoText).'</p>';
-		$c .= $this->addFormInput ('E-mail', 'email', 'regEmail');
+		$c .= $this->addInputBox ('E-mail', 'email', 'regEmail');
 
 		$c .= "<div class='form-group'>
 						<div class='col-sm-12'>

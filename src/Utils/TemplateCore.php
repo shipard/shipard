@@ -248,6 +248,11 @@ class TemplateCore extends \Mustache
 		return array_values($this->app->systemLanguages);
 	}
 
+	public function userLanguage()
+	{
+		return $this->app->systemLanguages[$this->app->userLanguage];
+	}
+
 	public function userAppAccess ()
 	{
 		return $this->app->hasRole ('user'); // TODO: not working, any idea?

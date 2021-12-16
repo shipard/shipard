@@ -1,125 +1,113 @@
 <!DOCTYPE html>
 <html lang="cs" style="height:100%;">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex, nofollow">
-    <title>{{page.pageTitle}}</title>
-    <link href="{{dsRoot}}/www-root/templates/app/system/style.css?v=7" rel="stylesheet">
-		{{#page.url_user_registration}}
-		{{#cfgItem.recaptcha-v3-app-site-key}}<script src='https://www.google.com/recaptcha/api.js?render={{cfgItem.recaptcha-v3-app-site-key}}'></script>{{/cfgItem.recaptcha-v3-app-site-key}}
-		{{/page.url_user_registration}}
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="robots" content="noindex, nofollow">
+	<title>{{page.pageTitle}}</title>
+	<link href="{{scRoot}}/bs/5.1/dist/css/bootstrap.min.css?v511" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="{{dsRoot}}/www-root/sc/icons/fa/5/css/all.min.css">
+	{{#page.url_user_registration}}
+	{{#cfgItem.recaptcha-v3-app-site-key}}<script src='https://www.google.com/recaptcha/api.js?render={{cfgItem.recaptcha-v3-app-site-key}}'></script>{{/cfgItem.recaptcha-v3-app-site-key}}
+	{{/page.url_user_registration}}
+
+	<style>
+		form>p {text-align: center;}
+		.e10-form-input-error {color: #AA0000; }
+	</style>
 </head>
 
 {{#page.url_user_login}}
-    {{{@thisWorkplace;searchUsers:1}}}
+	{{{@thisWorkplace;searchUsers:1}}}
 {{/page.url_user_login}}
 
-<body style="">
-<div class="navbar navbar-inverse navbar-fixed-top" role="navigation" id="e10-sp-header">
-    <div class="container-fluid">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class='e10-sp-title1' href="{{urlRoot}}">{{cfgItem.options.core.ownerFullName}}</a><br>
-            {{#cfgItem.options.core.ownerEmail}}
-                <span class='e10-sp-title2'><i class="fa fa-envelope"></i> <a href="mailto:{{cfgItem.options.core.ownerEmail}}">{{cfgItem.options.core.ownerEmail}}</a></span>
-            {{/cfgItem.options.core.ownerEmail}}
-            {{#cfgItem.options.core.ownerPhone}}
-                <span class='e10-sp-title2'><i class="fa fa-phone"></i> {{cfgItem.options.core.ownerPhone}}</span>
-            {{/cfgItem.options.core.ownerPhone}}
-        </div>
-        <div id="navbar" class="collapse navbar-collapse navbar-header-collapse">
-            <ul class="nav navbar-nav pull-right">
-                <li {{#page.url_user_login}}class='active'{{/page.url_user_login}}><a href="{{@urlUser;type:login}}"><span><i class="fa fa-sign-in"></i> {{@tr;id:e10.base.system.DictSystem.diLoginPage_Menu_Login}}</span></a></li>
-                <li {{#page.url_user_lost-password}}class='active'{{/page.url_user_lost-password}}><a href="{{@urlUser;type:lostPassword}}"><span><i class="fa fa-lock"></i> {{@tr;id:e10.base.system.DictSystem.diLoginPage_Menu_LostPassword}}</span></a></li>
-								{{#cfgItem.enableUserRegistration}}
-                	<li {{#page.url_user_registration}}class='active'{{/page.url_user_registration}}><a href="{{@urlUser;type:registration}}"><span><i class="fa fa-user"></i> Registrace</span></a></li>
-								{{/cfgItem.enableUserRegistration}}
+<body style="height: 100vh !important;">
+<div class="container-fluid" id="main-container" style="height: 100vh !important; overflow-y: auto;">
+	<div id="main-row" class="row h-100">
+		<div class="col-sm-6 col-md-6 col-lg-6 col-xl-5" style="background-color:#E0E0E0EF; box-shadow: 4px 0px 4px rgba(0,0,0,.3); min-height: 100vh;">
+			<div class="d-flex align-items-end flex-column h-100 __p-1">
+				
+				<div class="w-100 pt-3">
+					<ul class="nav nav-pills nav-fill __nav-justified">
+						<li class='nav-item'><a class="nav-link {{#page.url_user_login}} active{{/page.url_user_login}}" href="{{@urlUser;type:login}}"><span><i class="fa fa-sign-in-alt"></i> {{@tr;id:e10.base.system.DictSystem.diLoginPage_Menu_Login}}</span></a></li>
+						<li class='nav-item'><a class="nav-link {{#page.url_user_lost-password}} active{{/page.url_user_lost-password}}" href="{{@urlUser;type:lostPassword}}"><i class="fa fa-lock"></i> <span style='white-space: pre;'>{{@tr;id:e10.base.system.DictSystem.diLoginPage_Menu_LostPassword}}</span></a></li>
+						{{#cfgItem.enableUserRegistration}}
+							<li class='nav-item'><a class="nav-link {{#page.url_user_registration}} active{{/page.url_user_registration}}" href="{{@urlUser;type:registration}}"><span><i class="fa fa-user"></i> Registrace</span></a></li>
+						{{/cfgItem.enableUserRegistration}}
+
+						<li class="nav-item dropdown">
+							<a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false"><i class="fa fa-language"></i> {{userLanguage.f}} {{userLanguage.sc}}</a>
+							<ul class="dropdown-menu">
 								{{#systemLanguages}}
-										<li{{#active}} class="active"{{/active}}><a href="{{@urlUser;type:setLanguage}}/{{id}}"><span>{{f}} {{sc}}{{#beta}}<sup style="padding:0 1px; margin-left: 2px;background-color: #c4c4c4;color: #111; border-radius: 2px;">beta</sup>{{/beta}}</span></a></li>
+										<li><a class="dropdown-item {{#active}} active{{/active}}" href="{{@urlUser;type:setLanguage}}/{{id}}"><span>{{f}} {{sc}}{{#beta}}<sup style="margin-left: 6px;background-color: #333;color: #eee; border-radius: 4px; padding: 0 4px;">beta</sup>{{/beta}}</span></a></li>
 								{{/systemLanguages}}
-            </ul>
-        </div>
-    </div>
-</div>
+							</ul>
+						</li>
+					</ul>
+				</div>
 
-<div class="container-fluid" style="height: 100%;">
-    <div id="e10-sp-desktop" class="row">
-        <div id="e10-sp-content" class="col-md-4 col-md-offset-3 col-sm-6 col-sm-offset-3 e10-sp-content e10-sp-centered-block col-xs-10 col-xs-offset-1">
-            <h2>{{page.title}}</h2>
-            {{{pageText}}}
+				<div class="w-100 text-center pt-5 pb-5">
+				{{#cfgItem.flags.loginScreenLogo}}<img src="{{cfgItem.flags.loginScreenLogo}}" style="height: 5vh;" title="{{cfgItem.options.core.ownerFullName}}"></img>{{/cfgItem.flags.loginScreenLogo}}
+				{{^cfgItem.flags.loginScreenLogo}}<h3>{{cfgItem.options.core.ownerFullName}}</h3>{{/cfgItem.flags.loginScreenLogo}}
+				</div>
 
-            {{#data.thisWorkplace.loginUsers}}
-                <ul class="list-group e10-sp-userslist" style="text-align: left;">
-                    {{#data.thisWorkplace.loginUsersList}}
-                        <li class="list-group-item" data-login="{{login}}"><i class="fa fa-user"></i> <b>{{firstName}}</b> {{lastName}}</li>
-                    {{/data.thisWorkplace.loginUsersList}}
-                </ul>
-            {{/data.thisWorkplace.loginUsers}}
-        </div>
+				<div class="w-100 p-3">
+					<h2 class="text-center pb-2">{{page.title}}</h2>
+					{{{pageText}}}
+				</div>
+				
+				<div class="w-100">
+					{{#data.thisWorkplace.loginUsers}}
+						<ul class="list-group e10-sp-userslist" style="text-align: left;">
+							{{#data.thisWorkplace.loginUsersList}}
+								<li class="list-group-item" data-login="{{login}}"><i class="fa fa-user"></i> <b>{{firstName}}</b> {{lastName}}</li>
+							{{/data.thisWorkplace.loginUsersList}}
+						</ul>
+					{{/data.thisWorkplace.loginUsers}}
+				</div>
+				
+				<div class="mt-auto p-2 text-center w-100">
+					<div>
+						<span class='e10-sp-title2'><b>{{@tr;id:e10.base.system.DictSystem.diCore_TechnicalSupport}}:</b> <a href="{{cfgItem.dsi.supportUrl}}" target="new">{{cfgItem.dsi.supportName}}</a></span><br>
+						{{#cfgItem.dsi.supportPhone}}<span class='e10-sp-title2'><i class="fa fa-phone"></i> {{cfgItem.dsi.supportPhone}}</span>{{/cfgItem.dsi.supportPhone}}
+						<span class='e10-sp-title2'><i class="fa fa-envelope"></i> <a href="mailto:{{cfgItem.dsi.supportEmail}}">{{cfgItem.dsi.supportEmail}}</a></span>
+					</div>
+					<div>
+						<small>powered by <a href="https://shipard.org" target="new">shipard.org</a>
+							| {{@tr;id:e10.base.system.DictSystem.diCore_Version}} {{cfgItem.serverInfo.e10version}}.{{cfgItem.serverInfo.e10commit}}.{{#mobileMode}}m{{/mobileMode}}{{^mobileMode}}d{{/mobileMode}}.<span class='d-sm-none'>xs</span><span class='d-none d-sm-inline d-md-none'>sm</span><span class='d-none d-md-inline d-lg-none'>md</span><span class='d-none d-lg-inline d-xl-none'>lg</span><span class='d-none d-xxl-none d-xl-inline'>xl</span><span class='d-none d-xl-none d-xxl-inline'>xxl</span>{{#cfgItem.develMode}}.dev{{/cfgItem.develMode}}</small>
+					</div>
+				</div>
+				
+			</div>
+		</div>
 
-        {{#page.url_user_login}}
-            {{^data.thisWorkplace.loginUsers}}
-                <div id="e10-sp-news" class="col-md-3 col-md-offset-2 e10-sp-centered-block" style="display: none; background-color: rgba(0,0,0,.50); height: 100%; max-height: 100vh;">
-                    <div id="e10-sp-news-content" class='news' style="overflow-y: auto; "></div>
-                </div>
-            {{/data.thisWorkplace.loginUsers}}
-        {{/page.url_user_login}}
+		<div class="col-sm-6 col-md-7 col-lg-6 col-xl-7" style="background-color: transparent;">
+		</div>
+	</div>
+</div>	
 
-                </div>
 
-    <div class="row" style="position: absolute; width:100%; bottom: 0px;" id="e10-sp-footer">
-        <div class="row e10-sp-footer" style="background-color: #111; ">
-            <div class="col-md-6 col-sm-6" >
-                <div>
-                    <span class='e10-sp-title2'><b>{{@tr;id:e10.base.system.DictSystem.diCore_TechnicalSupport}}:</b> <a href="{{cfgItem.dsi.supportUrl}}" target="new">{{cfgItem.dsi.supportName}}</a></span><br>
-                    {{#cfgItem.dsi.supportPhone}}<span class='e10-sp-title2'><i class="fa fa-phone"></i> {{cfgItem.dsi.supportPhone}}</span>{{/cfgItem.dsi.supportPhone}}
-                    <span class='e10-sp-title2'><i class="fa fa-envelope"></i> <a href="mailto:{{cfgItem.dsi.supportEmail}}">{{cfgItem.dsi.supportEmail}}</a></span>
-                </div>
-            </div>
-            <div class="col-md-6 col-sm-6 text-right hidden-xs" style="background-color: #111; ">
-                <span class='e10-sp-title2'>powered by <a href="https://shipard.org" target="new">shipard.org</a></span>
-                <br><small title="{{data.thisDeviceId}}">{{@tr;id:e10.base.system.DictSystem.diCore_Version}} {{cfgItem.serverInfo.e10version}}.{{cfgItem.serverInfo.e10commit}}{{#cfgItem.serverInfo.e10channelName}}#{{cfgItem.serverInfo.e10channelName}}{{/cfgItem.serverInfo.e10channelName}}&nbsp;</small>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script src="//cdn.shipard.com/jquery/jquery-2.0.1.min.js"></script>
-<script src="{{dsRoot}}/www-root/sc/bs/3.3/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="{{scRoot}}/libs/js/jquery/jquery-3.5.1.min.js"></script>
+<script type="text/javascript" src="{{scRoot}}/bs/5.1/dist/js/bootstrap.bundle.min.js?v511"></script>
 
 <script>
-    var loginScreenUrl = '{{#cfgItem.authServerUrl}}{{cfgItem.authServerUrl}}{{/cfgItem.authServerUrl}}{{^cfgItem.authServerUrl}}https://shipard.app/{{/cfgItem.authServerUrl}}/feed/loginScreen/test';
-
-    if (window.location.hash !== '')
-    {
-        if (window.location.hash.lastIndexOf('#date:', 0) === 0)
-        {
-            loginScreenUrl += "?date="+window.location.hash.substr(6);
-        }
-    }
+	var loginScreenUrl = '{{#cfgItem.authServerUrl}}{{cfgItem.authServerUrl}}{{/cfgItem.authServerUrl}}{{^cfgItem.authServerUrl}}https://shipard.app/{{/cfgItem.authServerUrl}}/feed/loginScreen/test';
+	if (window.location.hash !== '')
+	{
+		if (window.location.hash.lastIndexOf('#date:', 0) === 0)
+		{
+				loginScreenUrl += "?date="+window.location.hash.substr(6);
+		}
+	}
 
     var jqxhr = $.getJSON (loginScreenUrl, function(data) {
-        var podCode = '';
-        if (1)
-        {
-            podCode += '<div class="e10-sp-background" style="';
-            podCode += "background-image: url('" + data.object.backgroundPicture + "');";
-            podCode += 'background-size: cover; background-position: center center;"></div>';
-            $('body').append (podCode);
-        }
-        else
-        {
-            podCode += '<div class="e10-sp-background" style="max-height: 95%; max-width: 90%; position:absolute; height: 80%; z-index: -1; transform: translateX(-50%) translateY(-50%); left: 50%;top: 50%;height: 80%;">';
-            podCode += '<img src="' + data.object.backgroundPicture + '" style="max-height:100%; height:100%; border: 1px solid rgba(0,0,0,.6);box-shadow: 1px 1px 4px rgba(0,0,0,.25);">';
-            podCode += '</div>';
-            $('#e10-sp-desktop').append (podCode);
-        }
+			var podCode = '';
+				$("body").css ({
+					"background-image": "url('" + data.object.backgroundPicture + "')",
+					"background-size": "cover",
+					"background-position": "center center",
+					"background-repeat": "no-repeat",
+					});
 
         var podInfo = "";
         if (data.object.podTitle !== undefined)
@@ -133,25 +121,25 @@
     });
 
 
-        {{#data.thisWorkplace.loginUsers}}
-        $('#login').attr('autocomplete', 'off');
-        $('#password').attr('autocomplete', 'off');
-        $("#e10-lf").attr('autocomplete', 'off');
-        $('#login').val('');
+		{{#data.thisWorkplace.loginUsers}}
+		$('#login').attr('autocomplete', 'off');
+		$('#password').attr('autocomplete', 'off');
+		$("#e10-lf").attr('autocomplete', 'off');
+		$('#login').val('');
 
-        $("body").on ('click', "ul.e10-sp-userslist>li", function(event) {
-            event.stopPropagation();
-            event.preventDefault();
-            $('#login').val($(this).attr ('data-login'));
-            $('#password').val('').focus();
-        });
-        {{/data.thisWorkplace.loginUsers}}
+		$("body").on ('click', "ul.e10-sp-userslist>li", function(event) {
+				event.stopPropagation();
+				event.preventDefault();
+				$('#login').val($(this).attr ('data-login'));
+				$('#password').val('').focus();
+		});
+		{{/data.thisWorkplace.loginUsers}}
 
 
-        {{#page.url_user_login}}
-            {{#cfgItem.autoLoginUser}}$('#login').val('{{cfgItem.autoLoginUser}}');{{/cfgItem.autoLoginUser}}
-            {{#cfgItem.autoLoginPassword}}$('#password').val('{{cfgItem.autoLoginPassword}}');{{/cfgItem.autoLoginPassword}}
-        {{/page.url_user_login}}
+		{{#page.url_user_login}}
+				{{#cfgItem.autoLoginUser}}$('#login').val('{{cfgItem.autoLoginUser}}');{{/cfgItem.autoLoginUser}}
+				{{#cfgItem.autoLoginPassword}}$('#password').val('{{cfgItem.autoLoginPassword}}');{{/cfgItem.autoLoginPassword}}
+		{{/page.url_user_login}}
 </script>
 
 {{#page.url_user_registration}}
@@ -174,4 +162,3 @@
 
 </body>
 </html>
-
