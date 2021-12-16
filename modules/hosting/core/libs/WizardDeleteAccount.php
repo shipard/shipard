@@ -15,7 +15,7 @@ class WizardDeleteAccount extends Wizard
 	{
 		if ($this->pageNumber == 1)
 		{
-			$this->doEnable();
+			$this->doRemove();
 		}
 	}
 
@@ -47,12 +47,9 @@ class WizardDeleteAccount extends Wizard
 		$this->closeForm ();
 	}
 
-	public function doEnable ()
+	public function doRemove ()
 	{
 		$this->stepResult ['lastStep'] = 1;
-
-		if ($this->app()->hasRole('hstngdb'))
-			return;
 
 		if (!intval($this->recData['confirm']))
 		{
