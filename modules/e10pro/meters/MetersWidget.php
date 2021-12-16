@@ -141,7 +141,7 @@ class MetersWidget extends WidgetPane
 		array_push ($q, ' WHERE vals.[meter] IN %in', $this->activeMeters);
 		array_push ($q, ' ORDER BY [datetime] DESC, ndx DESC');
 
-		array_push ($q, ' LIMIT 1000');
+		array_push ($q, ' LIMIT 2000');
 
 		$rows = $this->app->db()->query ($q);
 
