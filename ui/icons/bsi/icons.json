@@ -1,8 +1,8 @@
 {
-	"fullName": "Bootstrap Icons 1.5",
-	"shortName": "BSI 1.5",
-	"scPath": "icons/bsi/1.5",
+	"fullName": "Bootstrap Icons 1.7",
+	"shortName": "BSI 1.7",
+	"scPath": "icons/bsi/1.7",
 	"type": 0,
 	"cssBaseClass": "bi ",
-	"styleLink": "icons/bsi/1.5/font/bootstrap-icons.css"
+	"styleLink": "icons/bsi/1.7/font/bootstrap-icons.css"
 }
