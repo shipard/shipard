@@ -1986,6 +1986,8 @@ class Application extends \Shipard\Application\ApplicationCore
 				return $this->uploadFile ();
 			case 'manifest.webmanifest':
 				return $this->webManifest();
+			case 'robots.txt':
+				return $this->webRobotsTxt();
 			case 'sw.js':
 				$this->serviceWorker(); return NULL;
 		}
@@ -2249,6 +2251,12 @@ class Application extends \Shipard\Application\ApplicationCore
 
 		$code = json::lint($wm);
 
+		return new Response ($this, $code, 200);
+	}
+
+	function webRobotsTxt()
+	{
+		$code = "Disallow: /\n";
 		return new Response ($this, $code, 200);
 	}
 }
