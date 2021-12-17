@@ -28,15 +28,15 @@ use \e10\base\libs\UtilsBase;
 			$image = UtilsBase::getAttachmentDefaultImage($this->app(), 'hosting.core.dataSources', $recData ['ndx']);
 			if (isset($image['fileName']))
 			{
-				//$recData['imageUrl'] = $this->app()->cfgItem('hostingServerUrl') . 'imgs/-w256/att/' . $image['fileName'];
-				//$recData['dsIconServerUrl'] = $this->app()->cfgItem('hostingServerUrl');
-				//$recData['dsIconFileName'] = 'att/' . $image['fileName'];
+				$recData['imageUrl'] = $this->app()->cfgItem('hostingServerUrl') . 'imgs/-w256/att/' . $image['fileName'];
+				$recData['dsIconServerUrl'] = $this->app()->cfgItem('hostingServerUrl');
+				$recData['dsIconFileName'] = 'att/' . $image['fileName'];
 			}
 			else
 			{
-			//	$recData['imageUrl'] = '';
-			//	$recData['dsIconServerUrl'] = '';
-			//	$recData['dsIconFileName'] = '';
+				$recData['imageUrl'] = '';
+				$recData['dsIconServerUrl'] = '';
+				$recData['dsIconFileName'] = '';
 			}
 		}
 
@@ -83,13 +83,12 @@ use \e10\base\libs\UtilsBase;
 
 		$hdr ['info'][] = ['class' => 'info', 'value' => $info];
 
-		/*
 		$image = UtilsBase::getAttachmentDefaultImage($this->app(), $this->tableId(), $recData ['ndx']);
 		if (isset($image ['smallImage']))
 		{
 			$hdr ['image'] = $image ['smallImage'];
 			unset ($hdr ['icon']);
-		}*/
+		}
 		if ($recData ['imageUrl'])
 		{
 			$hdr ['image'] = $recData ['imageUrl'];
