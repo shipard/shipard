@@ -33,9 +33,10 @@ class HomePageWidget extends WidgetBoard
 
 	function loadDataToolbar()
 	{
-		$maxToolbarCnt = 12;
+		$maxToolbarCnt = 32;
+		$maxToolbarAutoCnt = 9;
 
-		$qf[] = 'SELECT dsUsers.dataSource,';
+		$qf[] = 'SELECT dsUsers.dataSource, dsOptions.addToToolbar,';
 		array_push($qf, ' dataSources.shortName AS dsShortName, dataSources.name AS dsFullName, dataSources.urlApp AS dsUrl, dataSources.gid AS dsGid,');
 		array_push($qf, ' dataSources.imageUrl AS dsImageUrl, dataSources.dsEmoji AS dsEmoji, dataSources.dsIcon AS dsIcon');
 		array_push($qf, ' FROM [hosting_core_dsUsersOptions] AS dsOptions');
@@ -50,22 +51,27 @@ class HomePageWidget extends WidgetBoard
 		array_push($qf, ' LIMIT 0, %i', $maxToolbarCnt);
 		$rows = $this->db()->query($qf);
 
+		$cnt = 0;
 		foreach ($rows as $r)
 		{
+			if ($r['addToToolbar'] == 0 && $cnt >= $maxToolbarAutoCnt)
+				break;
 			$item = [
 				'title' => ($r['dsShortName'] === '') ? $r['dsFullName'] : $r['dsShortName'], 'dsUrl' => $r['dsUrl'],
 				'dsImageUrl' => $r['dsImageUrl'], 'dsEmoji' => $r['dsEmoji'], 'dsIcon' => $r['dsIcon'],
 				'gid' => $r['dsGid'],
 			];
 			$this->dataSources[$r['dataSource']] = $item;
+			$cnt++;
 		}
 	}
 
 	function loadDataBBoard()
 	{
-		$maxDashboardCnt = 19;
+		$maxDashboardCnt = 48;
+		$maxDashboardAutoCnt = 19;
 
-		$qf[] = 'SELECT dsUsers.dataSource,';
+		$qf[] = 'SELECT dsUsers.dataSource, dsOptions.addToDashboard,';
 		array_push($qf, ' dataSources.shortName AS dsShortName, dataSources.name AS dsFullName, dataSources.urlApp AS dsUrl, dataSources.gid AS dsGid,');
 		array_push($qf, ' dataSources.imageUrl AS dsImageUrl, dataSources.dsEmoji AS dsEmoji, dataSources.dsIcon AS dsIcon,');
 		array_push($qf, ' dsOptions.addToDashboard');
@@ -83,6 +89,8 @@ class HomePageWidget extends WidgetBoard
 		$cnt = 0;
 		foreach ($rows as $r)
 		{
+			if ($r['addToDashboard'] == 0 && $cnt >= $maxDashboardAutoCnt)
+				break;
 			$item = [
 				'title' => ($r['dsShortName'] === '') ? $r['dsFullName'] : $r['dsShortName'], 'dsUrl' => $r['dsUrl'],
 				'dsImageUrl' => $r['dsImageUrl'], 'dsEmoji' => $r['dsEmoji'], 'dsIcon' => $r['dsIcon'],
@@ -286,9 +294,8 @@ class HomePageWidget extends WidgetBoard
 		];
 
 		$this->toolbar['buttons'] = $btns;
-		$this->toolbar['logos'] = [
-			'https://system.shipard.app/att/2017/09/26/e10pro.wkf.documents/shipard-logo-header-web-t9n9ug.svg'
-		];
+		$this->toolbar['logoUrl'] = 
+			'https://system.shipard.app/att/2017/09/26/e10pro.wkf.documents/shipard-logo-header-web-t9n9ug.svg';
 	}
 
 	protected function createDashboard_BBoard_DSTile($ds, $dashboardPriorityId)
