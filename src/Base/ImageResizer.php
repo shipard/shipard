@@ -236,24 +236,38 @@ class ImageResizer
 			{
 				$cmd .= "-gravity none ";
 
-				$badgePointSize = intval(($imgWidth / 2) * 1.1);
-				$badgeLetterSize = intval($badgePointSize / 2);
+				if ($this->badge === '.')
+				{
+					$circleDiameter = intval(($imgWidth / 10));
+					$circlePosX = intval($imgWidth - $circleDiameter * 1.6);
+					$circlePosY = intval($circleDiameter * 1.6);
+					$circlePosX2 = $circlePosX + $circleDiameter;
+					$circlePosY2 = $circlePosY + $circleDiameter;
+					$strokeWidth = intval($circleDiameter / 4);
 
-				$badgeTextPadding = intval($badgeLetterSize / 3);
-				$badgeWidth = intval($badgeLen * $badgeLetterSize) + $badgeTextPadding * 2;
-				$badgeHeight = intval($badgePointSize + $badgeTextPadding / 2);
-				$badgePosX = $imgWidth - $badgeWidth - 7;
-				$badgePosXEnd = $imgWidth - 7;
-				$textPosXEnd = $imgWidth - $badgeTextPadding - 7;
-				$badgePosY = $imgHeight - $badgeHeight - 7;
-				$badgePosYEnd = $imgWidth - 7;
+					$cmd .= "-stroke white -strokewidth $strokeWidth -draw \"fill orange circle $circlePosX,$circlePosY $circlePosX2,$circlePosY2 \" ";
+				}
+				else
+				{
+					$badgePointSize = intval(($imgWidth / 2) * 1.1);
+					$badgeLetterSize = intval($badgePointSize / 2);
 
-				$textPosX = intval ($imgWidth - $badgeWidth + $badgeTextPadding * 0.8);
+					$badgeTextPadding = intval($badgeLetterSize / 3);
+					$badgeWidth = intval($badgeLen * $badgeLetterSize) + $badgeTextPadding * 2;
+					$badgeHeight = intval($badgePointSize + $badgeTextPadding / 2);
+					$badgePosX = $imgWidth - $badgeWidth - 7;
+					$badgePosXEnd = $imgWidth - 7;
+					$textPosXEnd = $imgWidth - $badgeTextPadding - 7;
+					$badgePosY = $imgHeight - $badgeHeight - 7;
+					$badgePosYEnd = $imgWidth - 7;
 
-				$cmd .= "-stroke white -strokewidth 7 -draw \"fill rgb(194,24,7) roundRectangle {$badgePosX},{$badgePosY} {$badgePosXEnd},{$badgePosYEnd} 5,5\" ";
-				$cmd .= "-font helvetica -stroke white -strokewidth 7 ";
-				$cmd .= "-pointsize {$badgePointSize} ";
-				$cmd .= "-draw \"fill white text {$textPosX},{$textPosXEnd} '{$this->badge}' \" ";
+					$textPosX = intval ($imgWidth - $badgeWidth + $badgeTextPadding * 0.8);
+
+					$cmd .= "-stroke white -strokewidth 7 -draw \"fill rgb(194,24,7) roundRectangle {$badgePosX},{$badgePosY} {$badgePosXEnd},{$badgePosYEnd} 5,5\" ";
+					$cmd .= "-font helvetica -stroke white -strokewidth 7 ";
+					$cmd .= "-pointsize {$badgePointSize} ";
+					$cmd .= "-draw \"fill white text {$textPosX},{$textPosXEnd} '{$this->badge}' \" ";
+				}	
 			}
 			$cmd .= "\"{$this->cacheFullFileName}\" ";
 		}

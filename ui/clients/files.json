@@ -1,9 +1,9 @@
 {
     "OldDesktop": {
         "client.js": {
-            "sha384": "209384e987f72a234a842500cd440dc9c3af2000a3ba07f87a85d9a3eba40d92a624e745f03ae663cb8ec62c4c35d1c9",
-            "integrity": "sha384-IJOE6Yf3KiNKhCUAzUQNycOvIACjugf4eoXZo+ukDZKmJOdF8DrmY8uOxixMNdHJ",
-            "ver": "a1f168d4d5f0a7694ef1eea75494dfe7"
+            "sha384": "cc2929293eeb2e96fefc2747e7e0c07715eed80f1480d2b69962072866c1b56534599beab990337b910d9a1663afef9f",
+            "integrity": "sha384-zCkpKT7rLpb+/CdH5+DAdxXu2A8UgNK2mWIHKGbBtWU0WZvquZAze5ENmhZjr++f",
+            "ver": "a67ea6fc3bf5e4fb3d2d98a7e4f6c2f8"
         }
     },
     "OldMobile": {

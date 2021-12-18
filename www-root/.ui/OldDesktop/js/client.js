@@ -1479,7 +1479,7 @@ ncIcon=$('#e10-nc-button>i');var
 appBrowserIconElement=$('#e10-browser-app-icon');var
 ncRunningActivities=$('#e10-nc-button-ra');if(data.runningActivities)ncRunningActivities.show();else
 ncRunningActivities.hide();if(data.cntNotifications>0){ncIcon.attr("class","fa fa-bell-o");var
-iconFileName=e10dsIconServerUrl+'imgs/-i256/-b'+data.cntNotifications+'/-v2/'+e10dsIconFileName;appBrowserIconElement.attr('href',iconFileName);}else{ncIcon.attr("class","fa fa-bell-o e10-off");appBrowserIconElement.attr('href',e10dsIcon);}g_activeNtfBadges=[];for(var
+iconFileName=e10dsIconServerUrl+'imgs/-i256/-b./-v4/'+e10dsIconFileName;if(data.cntNotifications<10)iconFileName=e10dsIconServerUrl+'imgs/-i256/-b'+data.cntNotifications+'/-v4/'+e10dsIconFileName;appBrowserIconElement.attr('href',iconFileName);}else{ncIcon.attr("class","fa fa-bell-o e10-off");appBrowserIconElement.attr('href',e10dsIcon);}g_activeNtfBadges=[];for(var
 badgeId
 in
 data.ntfBadges){if(data.ntfBadges[badgeId])g_activeNtfBadges[badgeId]=data.ntfBadges[badgeId];setNotificationBadge(badgeId);}}function
