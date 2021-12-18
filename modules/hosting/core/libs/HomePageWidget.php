@@ -311,7 +311,7 @@ class HomePageWidget extends WidgetBoard
 		if ($ds['dsImageUrl'] !== '')
 		{
 			$css = '';
-			$css .= " background-image:url(\"{$ds['dsImageUrl']}\"); background-size: auto 90%; background-position: left center; background-repeat: no-repeat; width: 3rem; height: 3rem; display: block; float: left; margin: .2rem;";
+			$css .= " background-image:url(\"{$ds['dsImageUrl']}\"); background-size: 90% auto; background-position: left center; background-repeat: no-repeat; width: 3rem; height: 3rem; display: block; float: left; margin: .2rem;";
 			$title[] = ['text' => '', 'class' => '', 'css' => $css];
 		}
 		elseif ($ds['dsEmoji'] !== '')
