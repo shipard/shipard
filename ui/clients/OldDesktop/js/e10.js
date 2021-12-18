@@ -6107,9 +6107,9 @@ function e10NCSetButton (data)
 
 	if (data.cntNotifications > 0) {
 		ncIcon.attr("class", "fa fa-bell-o");
-		var iconFileName = e10dsIconServerUrl + 'imgs/-i256/-b./-v4/' + e10dsIconFileName;
+		var iconFileName = e10dsIconServerUrl + 'imgs/-i256/-b./-v5/' + e10dsIconFileName;
 		if (data.cntNotifications < 10)
-			iconFileName = e10dsIconServerUrl + 'imgs/-i256/-b' + data.cntNotifications + '/-v4/' + e10dsIconFileName;
+			iconFileName = e10dsIconServerUrl + 'imgs/-i256/-b' + data.cntNotifications + '/-v5/' + e10dsIconFileName;
 		appBrowserIconElement.attr ('href', iconFileName);
 	}
 	else {

@@ -238,14 +238,14 @@ class ImageResizer
 
 				if ($this->badge === '.')
 				{
-					$circleDiameter = intval(($imgWidth / 10));
+					$circleDiameter = intval(($imgWidth / 7));
 					$circlePosX = intval($imgWidth - $circleDiameter * 1.6);
 					$circlePosY = intval($circleDiameter * 1.6);
 					$circlePosX2 = $circlePosX + $circleDiameter;
 					$circlePosY2 = $circlePosY + $circleDiameter;
 					$strokeWidth = intval($circleDiameter / 4);
 
-					$cmd .= "-stroke white -strokewidth $strokeWidth -draw \"fill orange circle $circlePosX,$circlePosY $circlePosX2,$circlePosY2 \" ";
+					$cmd .= "-stroke \"rgba(0,0,0,.25)\" -strokewidth $strokeWidth -draw \"fill orange circle $circlePosX,$circlePosY $circlePosX2,$circlePosY2 \" ";
 				}
 				else
 				{
