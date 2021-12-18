@@ -89,13 +89,6 @@ use \e10\base\libs\UtilsBase;
 			$hdr ['image'] = $image ['smallImage'];
 			unset ($hdr ['icon']);
 		}
-		if ($recData ['imageUrl'])
-		{
-			$hdr ['image'] = $recData ['imageUrl'];
-			//unset ($hdr ['icon']);
-		}
-
-		
 
 		return $hdr;
 	}
@@ -107,6 +100,12 @@ use \e10\base\libs\UtilsBase;
 		$dsTypes = $this->columnInfoEnum('dsType', 'cfgText');
 		$dsTypesClasses = ['label-default', 'label-warning', 'label-primary', 'label-primary', 'label-default'];
 		$labels['dsType'] = ['text' => $dsTypes[$recData['dsType']], 'class' => 'label ' . $dsTypesClasses[$recData['dsType']], 'icon' => $this->tableIcon($recData)];
+
+		if ($recData['shpGeneration'] !== 0)
+		{
+			$generations = $this->columnInfoEnum('shpGeneration', 'cfgText');
+			$labels['condition'][] = ['text' => $generations[$recData['shpGeneration']], 'class' => 'label label-info'];
+		}	
 
 		//"enumValues": {"0": "Čeká na založení", "1": "Zkušební lhůta", "2": "Ostrý provoz", "3": "Expirováno", "4": "Pozastaveno", "5": "Smazáno"}},
 		$conditions = $this->columnInfoEnum('condition', 'cfgText');
