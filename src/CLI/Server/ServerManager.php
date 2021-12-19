@@ -219,7 +219,10 @@ class ServerManager extends Utility
 		$this->checkService ('shpd-headless-browser', '/etc/services');
 
 		if ($this->app()->cfgServer['useHosting'] && isset($this->app()->cfgServer['serverId']) && $this->app()->cfgServer['serverId'] !== '')
+		{
 			$this->checkService ('shpd-hosting-create-ds', '/etc/services');
+			$this->checkService ('shpd-hosting-upload', '/etc/services');
+		}	
 	}
 
 	protected function checkService ($serviceBaseFileName, $serviceFileSrcFolder)
