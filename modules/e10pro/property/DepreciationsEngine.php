@@ -1558,7 +1558,7 @@ class DepreciationsEngine extends Utility
 
 	function fiscalPeriodNext ($date)
 	{
-		$nextDay = clone $date;
+		$nextDay = new \DateTime($date->format('Y-m-d'));
 		$nextDay->add(\DateInterval::createFromDateString('+1 day'));
 		$nextFp = $this->fiscalPeriod($nextDay);
 
