@@ -63,14 +63,12 @@ class TableDSUsers extends DbTable
 
 			if (!$userdsRecData)
 			{
-				error_log ("TableUsersds::invalid user #{$userRecData['ndx']} in datasource #{$dsidRecData['ndx']}: ".json_encode($u));
+				error_log ("TableUsersds::invalid user #{$userRecData['ndx']} in datasource #{$dsidRecData['ndx']}/{$dsidRecData['gid']}: ".json_encode($u));
 				continue;
 			}
 
 			$this->db()->query ('UPDATE [hosting_core_dsUsers] set lastLogin = %t WHERE ndx = %i AND (lastLogin < %t OR lastLogin IS NULL)',
 													$u['time'], $userdsRecData['ndx'], $u['time']);
-			$this->db()->query ('UPDATE [hosting_core_dataSources] set lastLogin = %t WHERE ndx = %i AND (lastLogin < %t OR lastLogin IS NULL)',
-													$u['time'], $dsidRecData['ndx'], $u['time']);
 		}
 		$this->app()->cache->invalidateItem('lib.cacheItems.HostingStats');
 

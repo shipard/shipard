@@ -1,6 +1,6 @@
 <?php
 
-namespace hosting\cerver;
+namespace hosting\core;
 
 use \e10\DbTable, \e10\utils;
 
