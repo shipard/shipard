@@ -1036,7 +1036,7 @@ function checkWebPage ($app)
 	if ($app->requestPath(0) === 'user')
 	{
 		$serverInfo = [
-			'ndx' => 0, 'sn' => 'Přihlášení', 'fn' => 'Přihlášení k '.$app->cfgItem('options.core.ownerFullName'), 'title' => 'Příhlášení',
+			'ndx' => 0, 'sn' => 'Přihlášení', 'fn' => 'Přihlášení k '.$app->cfgItem('options.core.ownerFullName'), 'title' => 'Přihlášení',
 			'authType' => 2, 'loginRequered' => 1,
 		];
 		return createWebPage($app, WebPages::wptSystemLogin, $serverInfo);
