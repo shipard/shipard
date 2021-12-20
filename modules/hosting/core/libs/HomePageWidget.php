@@ -206,7 +206,7 @@ class HomePageWidget extends WidgetBoard
 		$iframeUrl = $this->dataSources[$dsNdx]['dsUrl'].'app/dashboard';
 		$c = '';
 		$c .= "<div style='width: calc(100% - 4rem); height: 100%; float: left;'>";
-		$c .= "<iframe data-sandbox='allow-scripts' frameborder='0' height='100%' width='100%' style='width:100%;height:calc(100%);' src='{$iframeUrl}'></iframe>";
+		$c .= "<iframe data-sandbox='allow-scripts' allow='fullscreen' frameborder='0' height='100%' width='100%' style='width:100%;height:calc(100%);' src='{$iframeUrl}'></iframe>";
 		$c .= '</div>';		
 		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $c]);
 	}
