@@ -135,10 +135,9 @@ class NodeServerCfgUpdater extends Utility
 
 			if ($macDeviceCfg['enableCams'])
 			{
-				$cfgData['camerasURL'] = 'https://'.$macDeviceCfg['serverFQDN'].'/';
+				$cfgData['camerasURL'] = 'https://'.$macDeviceCfg['serverFQDN'] . ($cfgData['httpsPort'] !== 443 ? ':'.$cfgData['httpsPort'].'/' : '/');
 				$this->nodeServerConfigCameras($cfgData, $r['ndx'], $r['lan'], $r['mainServerCameras'] === $r['ndx'], $macDeviceCfg);
 				$this->nodeServerConfigLanControl($cfgData, $r['ndx'], $r['lan'], $r['mainServerLanControl'] === $r['ndx']);
-
 			}
 			if ($macDeviceCfg['enableLC'])
 			{
