@@ -64,7 +64,11 @@ class DownloadBankTransactionsFio extends \lib\ebanking\transactions\DownloadBan
 
 			$newItem['currency'] = strtolower($r['column14']['value']);
 
-			$newItem['bankAccount'] = $r['column2']['value'].'/'.$r['column3']['value'];
+			$newItem['bankAccount'] = '';
+			if (isset($r['column2']))
+				$newItem['bankAccount'] = $r['column2']['value'];
+			if (isset($r['column3']))	
+				$newItem['bankAccount'] .= '/'.$r['column3']['value'];
 			$newItem['bankAccount'] = ltrim ($newItem['bankAccount'], '0'); // strip leading zeros and blank account prefix
 			$newItem['bankAccount'] = ltrim ($newItem['bankAccount'], '-');
 			$newItem['bankAccount'] = ltrim ($newItem['bankAccount'], '0');
