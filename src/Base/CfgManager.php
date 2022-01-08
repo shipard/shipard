@@ -1040,7 +1040,7 @@ class CfgManager
 				$matches = [];
 				$pr1 = preg_match('/[0-9\,]+/', $sqlType, $matches);
 				$prParts = explode (',', $matches[0]);
-				if ($col['dec'] !== intval($prParts[1]))
+				if ($col['dec'] !== intval($prParts[1]) || 18 !== intval($prParts[0]))
 				{ // numeric precision changed...
 					if ($colNdx != 0)
 						$alterTableAddColumn .= ', ';
@@ -1422,7 +1422,7 @@ class CfgManager
 			case 'string': $c .= "({$col['len']}) DEFAULT \"\""; break;
 			case 'enumString': $c .= "({$col['len']}) DEFAULT \"\""; break;
 			case 'money': $c .= '(12, 2) DEFAULT 0.0'; break;
-			case 'number': $c .= "(12, {$col['dec']}) DEFAULT 0.0"; break;
+			case 'number': $c .= "(18, {$col['dec']}) DEFAULT 0.0"; break;
 			case 'time': $c .= "(5) DEFAULT \"\""; break;
 		}
 

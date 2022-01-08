@@ -213,7 +213,7 @@ class DbMysql extends \lib\database\Database
 			case 'string': $sqlColType .= "({$col['len']}) "; $info['default'] = ''; break;
 			case 'enumString': $sqlColType .= "({$col['len']}) "; $info['default'] = ''; break;
 			case 'money': $sqlColType .= '(12, 2) DEFAULT 0.0'; $info['default'] = 0.0; break;
-			case 'number': $sqlColType .= "(12, {$col['dec']}) DEFAULT 0.0"; $info['default'] = 0.0; break;
+			case 'number': $sqlColType .= "(18, {$col['dec']}) DEFAULT 0.0"; $info['default'] = 0.0; break;
 			case 'time': $sqlColType .= "(5)"; $info['default'] = ''; break;
 		}
 
