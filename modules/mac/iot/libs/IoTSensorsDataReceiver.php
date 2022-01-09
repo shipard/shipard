@@ -68,7 +68,37 @@ class IoTSensorsDataReceiver extends Utility
 					'docState' => 1000, 'docStateMain' => 0,
 				];
 
-				/** @var $tableSensors \mac\iot\TableSensors */
+				if (str_starts_with($sensorData['topic'], 'shp/sensors/va/cams/'))
+				{ // shp/sensors/va/cams/CAM-ID/files-size
+					$topicParts = explode('/', $sensorData['topic']);
+					$camId = $topicParts[4];
+					$valueId = $topicParts[5];
+
+					$existedDevice = $this->db()->query('SELECT * FROM [mac_lan_devices] WHERE [id] = %s', $camId, ' AND [docState] = %i', 4000)->fetch();
+					if ($existedDevice)
+					{
+						$newSensor['device'] = $existedDevice['ndx'];
+						if ($existedDevice['place'])
+							$newSensor['place'] = $existedDevice['place'];
+					}
+
+					if ($valueId === 'files-size')
+					{
+						$newSensor['fullName'] = 'Velikost video archívu '.$camId;
+						$newSensor['shortName'] = 'Velikost video archívu '.$camId;
+						$newSensor['idName'] = 'video-archive-files-size-'.$camId;
+						$newSensor['quantityType'] = 100;
+					}
+					elseif ($valueId === 'hourly-files-size')
+					{
+						$newSensor['fullName'] = 'Hodinová velikost videa '.$camId;
+						$newSensor['shortName'] = 'Hodinová velikost videa '.$camId;
+						$newSensor['idName'] = 'video-hourly-files-size-'.$camId;
+						$newSensor['quantityType'] = 100;
+					}
+				}
+
+				/** @var \mac\iot\TableSensors $tableSensors */
 				$tableSensors = $this->app()->table('mac.iot.sensors');
 				$newSensorNdx = $tableSensors->dbInsertRec($newSensor);
 				$tableSensors->docsLog($newSensorNdx);
