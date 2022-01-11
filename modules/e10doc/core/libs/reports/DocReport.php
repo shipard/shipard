@@ -163,8 +163,9 @@ class DocReport extends DocReportBase
 				continue;
 			$taxCode = $cfgTaxCodes[$row['taxCode']];
 
-			$r = $row;
+			$r = $row->toArray();
 			$r ['print'] = $this->getPrintValues($tableDocTaxes, $r);
+			$r ['print']['taxCode'] = $taxCode['print'];
 
 			if (isset($taxCode['note']))
 			{
