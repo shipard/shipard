@@ -5,56 +5,27 @@
 		"coreType": "none",
 		"icon": "iotValuesKinds/other"
 	},
-	"doors": {
-		"fn": "Dveře",
-		"sn": "Dveře",
-		"id": "doors",
-		"coreType": "doors",
-		"icon": "iotThingKinds/door",
-		"actions": {
-			"open-once": {
-				"fn": "Otevřít"
-			},
-			"open-once-in": {
-				"fn": "Otevřít - příchod"
-			},
-			"open-once-out": {
-				"fn": "Otevřít - odchod"
-			}
-		}
-	},
 	"gate": {
-		"fn": "Brána / závora",
-		"sn": "Brána / závora",
+		"fn": "Vstup / výstup (brána, dveře, závora...)",
+		"sn": "Vstup / výstup (brána, dveře, závora...)",
 		"id": "gate",
 		"coreType": "gate",
 		"icon": "iotThingKinds/gate",
+		"requests": {
+			"open": {
+				"fn": "Otevřít",
+				"classId": "mac.access.libs.AccessGateCheck",
+				"onSuccess": "open",
+				"onFail": "access-denied"
+			}
+		},
 		"actions": {
-			"open-once": {
+			"open": {
 				"fn": "Otevřít"
 			},
-			"open-once-in": {
-				"fn": "Otevřít - příjezd"
-			},
-			"open-once-out": {
-				"fn": "Otevřít - odjezd"
-			},
-			"open-stay": {
-				"fn": "Otevřít na pořád"
+			"access-denied": {
+				"fn": "Přístup byl zamítnut"
 			}
 		}
-	},
-	"lights": {
-		"fn": "Světla",
-		"sn": "Světla",
-		"id": "lights",
-		"coreType": "lights",
-		"icon": "iotThingKinds/lights"
-	},
-	"turnstile": {
-		"fn": "Turniket",
-		"sn": "Turniket",
-		"coreType": "turnstile",
-		"icon": "iotThingKinds/turnstile"
 	}
 }

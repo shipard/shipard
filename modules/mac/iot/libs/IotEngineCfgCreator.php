@@ -57,6 +57,20 @@ class IotEngineCfgCreator extends Utility
 				return $dm['deviceTopic'] ?? NULL;
 			}
 		}
+		elseif ($eo['eventType'] === 'setupAction')
+		{
+			return $this->iotDevicesUtils->iotSetupTopic($eo['iotSetup']);
+		}	
+		elseif ($eo['eventType'] === 'readerValue')
+		{
+			$dm = $this->iotDeviceDataModel($eo['iotDevice']);
+			if ($dm)
+			{
+				$property = $dm['properties'][$eo['iotDeviceEvent']] ?? NULL;
+				if ($property)
+					return $property['valueTopic'] ?? NULL;
+			}
+		}
 		elseif ($eo['eventType'] === 'mqttMsg')
 		{
 			return $eo['mqttTopic'];
@@ -77,9 +91,13 @@ class IotEngineCfgCreator extends Utility
 					return $dm['deviceTopic'].'/set';
 			}
 		}
+		elseif ($ed['eventType'] === 'sendSetupRequest')
+		{
+			return $ed['mqttTopic'];
+		}
 		elseif ($ed['eventType'] === 'sendMqttMsg')
 		{
-			return $eo['mqttTopic'];
+			return $ed['mqttTopic'];
 		}
 
 		return $t;
@@ -102,13 +120,21 @@ class IotEngineCfgCreator extends Utility
 		}
 
 		if ($additionalField)
+		{
 			foreach ($additionalField as $key => $value)
 				$this->cfg['eventsOn'][$topic][$key] = $value;
-
+		}
 		if ($eo['eventType'] === 'deviceAction')
 		{
 			$item = ['type' => 0, 'dataItem' => $eo['iotDeviceEvent'], 'dataValue' => $eo['iotDeviceEventValueEnum'], 'do' => []];
-			
+		}
+		elseif ($eo['eventType'] === 'setupAction')
+		{
+			$item = ['type' => 4, 'dataItem' => 'action', 'dataValue' => $eo['iotSetupEvent'], 'do' => []];
+		}
+		elseif ($eo['eventType'] === 'readerValue')
+		{
+			$item = ['type' => 2, 'do' => []];
 		}
 		elseif ($eo['eventType'] === 'mqttMsg')
 		{
@@ -139,6 +165,12 @@ class IotEngineCfgCreator extends Utility
 			{
 				$destTopic = $this->eventDoTopic($r);
 				$dst['sendMqtt'][$destTopic]['payload'] = $r['mqttTopicPayloadValue'];
+				continue;
+			}
+			if ($r['eventType'] === 'sendSetupRequest')
+			{
+				$destTopic = $this->iotDevicesUtils->iotSetupTopic($r['iotSetup']);
+				$dst['sendSetupRequest'][$destTopic]['actions'][] = ['operation' => 'request', 'request' => $r['iotSetupRequest']];
 				continue;
 			}
 
@@ -251,22 +283,17 @@ class IotEngineCfgCreator extends Utility
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
+			$dt = ['type' => 'setup', 'setupType' => $r['setupType'], 'ndx' => $r['ndx']];
+			$setupTopic = $this->iotDevicesUtils->iotSetupTopic($r['ndx']);
+
+			$this->addTopic($setupTopic, $dt);
+			$this->addPlace($r['place']);
+
+			$setupsListenTopic = 'shp/setups/#';
+			if (!in_array($setupsListenTopic, $this->cfg['listenTopics']))
+				$this->cfg['listenTopics'][] = $setupsListenTopic;
+
 			$this->addEventsOn('mac.iot.setups', $r['ndx']);
-			/*
-			$qeo = [];
-			$qeo [] = 'SELECT eventsOn.*';
-			array_push ($qeo, ' FROM [mac_iot_eventsOn] AS [eventsOn]');
-			//array_push ($qed, ' LEFT JOIN [mac_iot_devices] AS iotDevices ON eventsDo.iotDevice = iotDevices.ndx');
-	
-			array_push ($qeo, ' WHERE 1');
-			array_push ($qeo, ' AND [eventsOn].[tableId] = %s', 'mac.iot.setups');
-			array_push ($qeo, ' AND [eventsOn].[recId] = %i', $r['ndx']);
-			$eoRows = $this->db()->query($qeo);
-			foreach ($eoRows as $eor)
-			{
-				$this->addEventOn($eor);
-			}
-			*/
 		}
 	}
 
@@ -313,6 +340,7 @@ class IotEngineCfgCreator extends Utility
 		array_push ($qeo, ' WHERE 1');
 		array_push ($qeo, ' AND [eventsOn].[tableId] = %s', $tableId);
 		array_push ($qeo, ' AND [eventsOn].[recId] = %i', $recId);
+		array_push ($qeo, ' AND [eventsOn].[docState] != %i', 9800);
 		$eoRows = $this->db()->query($qeo);
 		foreach ($eoRows as $eor)
 		{
@@ -337,16 +365,15 @@ class IotEngineCfgCreator extends Utility
 	protected function doScenesAdd($sceneRecData)
 	{
 		$topic = $this->iotDevicesUtils->sceneTopic($sceneRecData['ndx']);
-		$this->addTopic($topic, ['type' => 'scene', 'ndx' => $sceneRecData['ndx'], 'place' => $this->iotDevicesUtils->placeTopic($sceneRecData['place'])]);
+		$setupTopic = $this->iotDevicesUtils->iotSetupTopic($sceneRecData['setup']);
+		$this->addTopic($topic, ['type' => 'scene', 'ndx' => $sceneRecData['ndx'], 'setup' => $setupTopic]);
 		
 		$scene = [];
-
-		$placeTopic = $this->addPlace($sceneRecData['place']);
-		$scene['place'] = $placeTopic;
+		$scene['setup'] = $setupTopic;
 		
-		$this->cfg['topics'][$placeTopic]['scenes'][] = $topic;
+		$this->cfg['topics'][$setupTopic]['scenes'][] = $topic;
 
-		$this->addEventsOn('mac.iot.scenes', $sceneRecData['ndx'], ['scene' => $topic, 'place' => $placeTopic]);
+		$this->addEventsOn('mac.iot.scenes', $sceneRecData['ndx'], ['scene' => $topic, 'setup' => $setupTopic]);
 
 		$scene['do'] = [];
 		$this->addEventsDo('mac.iot.scenes', $sceneRecData['ndx'], $scene['do']);
@@ -356,17 +383,18 @@ class IotEngineCfgCreator extends Utility
 
 	protected function addPlace($placeNdx)
 	{
+		if (!$placeNdx)
+			return '';
+
 		$topic = $this->iotDevicesUtils->placeTopic($placeNdx);
 		//if (isset($this->cfg['places'][$topic]))
 		//	return $topic;
 
-		$place = [];
-
 		$this->addTopic($topic, ['type' => 'place', 'ndx' => $placeNdx]);
 
-		$topicListenPlaces = 'shp/places/#';
-		if (!in_array($topicListenPlaces, $this->cfg['listenTopics']))
-			$this->cfg['listenTopics'][] = $topicListenPlaces;
+		//$topicListenPlaces = 'shp/places/#';
+		//if (!in_array($topicListenPlaces, $this->cfg['listenTopics']))
+		//	$this->cfg['listenTopics'][] = $topicListenPlaces;
 
 		return $topic;
 	}
@@ -416,9 +444,9 @@ class IotEngineCfgCreator extends Utility
 
 	public function run()
 	{
-		$this->doScenes();
 		$this->doDevices();
 		$this->doSetups();
+		$this->doScenes();
 		$this->doSensors();
 
 		ksort($this->cfg['topics'], SORT_STRING);

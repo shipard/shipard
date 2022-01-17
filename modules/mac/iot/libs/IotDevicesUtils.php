@@ -96,7 +96,7 @@ class IotDevicesUtils extends Utility
 		return $cfgData['dataModel'] ?? NULL;
 	}
 
-	public function deviceEvents($deviceNdx)
+	public function deviceEvents($deviceNdx, $eventType)
 	{
 		$dataModel = $this->deviceDataModel($deviceNdx);
 		
@@ -105,8 +105,12 @@ class IotDevicesUtils extends Utility
 		if (!$dataModel || !isset($dataModel['properties']))
 			return $events;
 
+
 		foreach ($dataModel['properties'] as $pid => $p)
 		{
+			if (isset($p['eventType']) && $p['eventType'] !== $eventType)
+				continue;
+
 			$events[$pid] = $p;
 		}
 
@@ -207,4 +211,44 @@ class IotDevicesUtils extends Utility
 		return $topic;
 	}
 
+	public function iotSetupTopic($setupNdx)
+	{
+		$r = $this->app()->loadItem($setupNdx, 'mac.iot.setups');
+		$topic = 'shp/setups/';
+		if ($r)
+		{
+			$topic .= $r['id'] === '' ? 'setup'.$r['ndx'] : $r['id'];
+		}
+		else
+			$topic .= '---UNKOWN-SETUP-'.$setupNdx.'---';
+
+		return $topic;
+	}
+
+	public function iotSetupActions($setupNdx)
+	{
+		$setup = $this->app()->loadItem($setupNdx, 'mac.iot.setups');
+
+		$setupType = $this->app()->cfgItem('mac.iot.setups.types.'.$setup['setupType'], NULL);
+		if ($setupType && isset($setupType['actions']))
+			return $setupType['actions'];
+
+		return [];
+	}
+
+	public function iotSetupRequests($iotSetupNdx)
+	{
+		if (!$iotSetupNdx)
+			return [];
+
+		$setup = $this->app()->loadItem($iotSetupNdx, 'mac.iot.setups');
+		if ($setup)
+		{
+			$setupType = $this->app()->cfgItem('mac.iot.setups.types.'.$setup['setupType'], NULL);
+			if ($setupType && isset($setupType['requests']))
+				return $setupType['requests'];
+		}
+
+		return [];
+	}
 }

@@ -8,7 +8,9 @@
 	"decDeviceProperty": {
 		"fn": "Snižovat hodnotu vlastnosti zařízení"
 	},
-
+	"sendSetupRequest": {
+		"fn": "Odeslat požadavek na IoT sestavu"
+	},
 	"sendMqttMsg": {
 		"fn": "Odeslat MQTT zprávu"
 	}

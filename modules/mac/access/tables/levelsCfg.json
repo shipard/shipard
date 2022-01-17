@@ -5,7 +5,7 @@
 		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
 		{"id": "accessLevel", "name": "Úroveň", "type": "int", "reference": "mac.access.levels"},
 
-		{"id": "gate", "name": "Brána/dveře", "type": "int", "reference": "mac.iot.things"},
+		{"id": "gate", "name": "Brána/dveře", "type": "int", "reference": "mac.iot.setups"},
 
 		{"id": "enableTagType1", "name": "Povolit přístup přes RFID tag", "type": "logical"},
 		{"id": "enableTagType2", "name": "Povolit přístup přes telefonní číslo", "type": "logical"},

@@ -4,7 +4,7 @@
   "tables": [
 		"devices", "devicesIOPorts", "devicesCfg", "devicesGroups", "devicesGroupsItems",
 		"eventsOn", "eventsDo",
-		"setups", 
+		"setups", "setupsStates",
 
 	  "topics", "sensors", "sensorsValues",
 	  "controls", "scPlacements",

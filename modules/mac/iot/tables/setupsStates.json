@@ -1,0 +1,10 @@
+{
+	"id": "mac.iot.setupsStates", "sql": "mac_iot_setupsStates", "name": "Stavy Sestav",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "setup", "name": "Sestava", "type": "int", "reference": "mac.iot.setups"},
+		{"id": "activeScene", "name": "Aktivní scéna", "type": "int", "reference": "mac.iot.scenes"},
+		{"id": "activateTime","name": "Čas aktualizace", "type": "timestamp"}
+	],
+	"options": ["systemTable"]
+}

@@ -3,6 +3,14 @@
 		"fn": "Událost ze zařízení"
 	},
 
+	"readerValue": {
+		"fn": "Hodnota ze čtečky"
+	},
+
+	"setupAction": {
+		"fn": "Akce ze sestavy"
+	},
+
 	"mqttMsg": {
 		"fn": "MQTT zpráva"
 	}

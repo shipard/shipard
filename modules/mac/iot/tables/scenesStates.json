@@ -1,0 +1,10 @@
+{
+	"id": "mac.iot.scenesStates", "sql": "mac_iot_scenesStates", "name": "Stavy Scén",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "place", "name": "Místo", "type": "int", "reference": "e10.base.places"},
+		{"id": "activeScene", "name": "Aktivní scéna", "type": "int", "reference": "mac.iot.scenes"},
+		{"id": "activateTime","name": "Čas aktualizace", "type": "timestamp"}
+	],
+	"options": ["systemTable"]
+}

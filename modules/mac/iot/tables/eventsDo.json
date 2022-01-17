@@ -20,6 +20,10 @@
 			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": "fn"}},
 		{"id": "iotDevicePropertyValue", "name": "Hodnota události text", "type": "string", "len": "60"},
 
+		{"id": "iotSetup", "name": "Sestava", "type": "int", "reference": "mac.iot.setups", "options": ["saveOnChange"]},
+		{"id": "iotSetupRequest", "name": "Požadavek", "type": "enumString", "len": "40", "options": ["saveOnChange"], 
+			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": "fn"}},
+
 		{"id": "eventValueCfg", "name": "Nastavení události", "type": "subColumns"},
 
 		{"id": "mqttTopic", "name": "Zdrojový MQTT topic", "type": "string", "len": "100"},

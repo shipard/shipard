@@ -7,6 +7,7 @@
 		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 60},
 		{"id": "friendlyId", "name": "ID", "type": "string", "len": 60},
 
+		{"id": "setup", "name": "Sestava", "type": "int", "reference": "mac.iot.setups"},
 		{"id": "place", "name": "Místo", "type": "int", "reference": "e10.base.places"},
 		{"id": "lan", "name": "Síť", "type": "int", "reference": "mac.lan.lans"},
 

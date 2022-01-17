@@ -9,13 +9,11 @@ use e10\Utility, \e10\utils, \e10\str, mac\access\TableLog;
  * Class AccessGateCheck
  * @package mac\lan\libs
  *
- * https://example.shipard.app/api/objects/call/mac-access-gate-check
- * curl -H "e10-api-key: api-key-abcdef" -d '{"type": "rfid", "gate": "5", "value": "key-value"}' https://example.shipard.app/api/objects/call/mac-access-gate-check
  */
 class AccessGateCheck extends Utility
 {
-	/** @var \mac\iot\TableThings */
-	var $tableIotThings;
+	/** @var \mac\iot\TableSetups */
+	var $tableIotSetups;
 	/** @var \mac\iot\TableControls */
 	var $tableIotControls;
 	/** @var \mac\lan\TableDevices */
@@ -26,6 +24,8 @@ class AccessGateCheck extends Utility
 	var $tablePlaces;
 	/** @var \mac\access\TableLog */
 	var $tableLog;
+
+	var \mac\iot\libs\IotDevicesUtils $iotDevicesUtils;
 
 	var $requestParams = NULL;
 	var $requestType = NULL;
@@ -46,7 +46,9 @@ class AccessGateCheck extends Utility
 		'control' => ['mainKeyType' => 2]
 	];
 
-	var $gateRecData = NULL;
+	var $setupRecData = NULL;
+	var $setupCfg = NULL;
+	var $setupRequestCfg = NULL;
 	var $cameraRecData = NULL;
 	var $tagRecData = NULL;
 	var $tagAssignmentRecData = NULL;
@@ -72,13 +74,11 @@ class AccessGateCheck extends Utility
 			if ($requestParams)
 			{
 				$this->requestParams = $requestParams;
-				return TRUE;
+				return;
 			}
 		}
 
 		$this->requestParams = $params;
-
-		return FALSE;
 	}
 
 	function checkRequestParams()
@@ -92,18 +92,25 @@ class AccessGateCheck extends Utility
 					'img' => $imgFileName,
 				];
 
-				$fn = $tmpPath.'vd-' . time() . '-' . mt_rand(100000, 999999) . '.json';
-				file_put_contents($fn, json_encode($eventData));
-
-				$topic = 'shp/access/gate/vd/'.$gateId.'/'.$eventData['cam'];
-
+{
+  setup: 4,
+  request: 'open',
+  srcPayload: { _payload: '815CDE628E0504' },
+  srcTopic: 'shp/readers/test-poe1/rfid'
+}
  */
 
 		if (!$this->requestParams)
 			return $this->setResult('Missing request params');
 
-		if (!isset($this->requestParams['type']))
-			return $this->setResult('Missing `type` param');
+		if (!isset($this->requestParams['srcPayload']))
+			return $this->setResult('Missing `srcPayload` param');
+
+		if (isset($this->requestParams['srcPayload']['_payload']) && is_string($this->requestParams['srcPayload']['_payload']))
+		{
+			$this->requestParams['type'] = 'rfid';
+			$this->requestParams['value'] = $this->requestParams['srcPayload']['_payload'];
+		}	
 
 		if (!isset($this->requestTypes[$this->requestParams['type']]))
 			return $this->setResult('Wrong `type` param');
@@ -113,8 +120,8 @@ class AccessGateCheck extends Utility
 		if (isset($this->requestTypeCfg['mainKeyType']))
 			$this->mainKeyType = $this->requestTypeCfg['mainKeyType'];
 
-		if (!isset($this->requestParams['gate']))
-			return $this->setResult('Missing `gate` param');
+		if (!isset($this->requestParams['setup']))
+			return $this->setResult('Missing `setup` param');
 
 		// -- key value
 		if ($this->mainKeyType == 0)
@@ -186,12 +193,15 @@ class AccessGateCheck extends Utility
 	function checkGate1()
 	{
 		// -- gate
-		$this->gateRecData = $this->tableIotThings->loadItem($this->requestParams['gate']);
-		if (!$this->gateRecData)
-			return $this->setResult('Invalid `gate` id '.$this->requestParams['gate']);
-		elseif ($this->gateRecData['docState'] !== 4000 && $this->gateRecData['docState'] !== 8000)
-			return $this->setResult('Invalid `gate` state: '.$this->gateRecData['docState']);
-		$this->logInfo['gate'] = $this->gateRecData['ndx'];
+		$this->setupRecData = $this->tableIotSetups->loadItem($this->requestParams['setup']);
+		if (!$this->setupRecData)
+			return $this->setResult('Invalid `setup` id '.$this->requestParams['setup']);
+		elseif ($this->setupRecData['docState'] !== 4000 && $this->setupRecData['docState'] !== 8000)
+			return $this->setResult('Invalid `setup` state: '.$this->setupRecData['docState']);
+		$this->logInfo['gate'] = $this->setupRecData['ndx'];
+
+		$this->setupCfg = $this->app()->cfgItem('mac.iot.setups.types.'.$this->setupRecData['setupType'], NULL);
+		$this->setupRequestCfg = $this->setupCfg['requests'][$this->requestParams['request']] ?? NULL;
 
 		// -- camera
 		if (isset($this->requestParams['cam']))
@@ -357,7 +367,7 @@ class AccessGateCheck extends Utility
 		array_push($q, ' WHERE 1');
 		array_push($q, ' AND levels.docState IN %in', [4000, 8000]);
 		array_push($q, ' AND levelsCfg.accessLevel IN %in', $this->personAccessLevels);
-		array_push($q, ' AND (levelsCfg.gate = %i', 0, ' OR levelsCfg.gate = %i)', $this->requestParams['gate']);
+		array_push($q, ' AND (levelsCfg.gate = %i', 0, ' OR levelsCfg.gate = %i)', $this->requestParams['setup']);
 		array_push($q, ' AND levelsCfg.enableDOW'.$dow.' = %i', 1);
 		array_push($q, ' AND (levelsCfg.enabledTimeFromMin = %i', 0, ' OR levelsCfg.enabledTimeFromMin <= %i)', $minutes);
 		array_push($q, ' AND (levelsCfg.enabledTimeToMin = %i', 0, ' OR levelsCfg.enabledTimeToMin >= %i)', $minutes);
@@ -432,23 +442,40 @@ class AccessGateCheck extends Utility
 	{
 		$this->now = new \DateTime();
 
-		$this->tableIotThings = $this->app()->table('mac.iot.things');
+		$this->tableIotSetups = $this->app()->table('mac.iot.setups');
 		$this->tableIotControls = $this->app()->table('mac.iot.controls');
 		$this->tableLog = $this->app()->table('mac.access.log');
 		$this->tableDevices = $this->app()->table('mac.lan.devices');
 		$this->tablePersons = $this->app()->table('e10.persons.persons');
 		$this->tablePlaces = $this->app()->table('e10.base.places');
+
+		$this->iotDevicesUtils = new \mac\iot\libs\IotDevicesUtils($this->app());
 	}
 
 	public function run ()
 	{
 		$this->init();
 
-		$this->setRequestParams(NULL);
+		if (!$this->requestParams)
+			$this->setRequestParams(NULL);
+
 		$this->requestParamsValid = $this->check();
 
 		if ($this->requestParamsValid)
 			$this->check();
+
+		if ($this->result['success'])
+		{
+			$this->result ['callActions'] = [
+				['topic' => $this->iotDevicesUtils->iotSetupTopic($this->setupRecData['ndx']), 'payload' => ['action' => $this->setupRequestCfg['onSuccess']]],
+			];
+		}
+		else
+		{
+			$this->result ['callActions'] = [
+				['topic' => $this->iotDevicesUtils->iotSetupTopic($this->setupRecData['ndx']), 'payload' => ['action' => $this->setupRequestCfg['onFail']]],
+			];
+		}
 
 		$this->saveLog();
 	}

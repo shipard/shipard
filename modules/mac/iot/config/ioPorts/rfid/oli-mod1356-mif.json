@@ -14,5 +14,10 @@
 				"id": "portIdBuzzer", "name": "IO port Bzučák", "type": "enumString", "len": 30, "enumCfgFlags": {"type": "ioPortId"}
 			}
 		]
+	},
+	"dataModel": {
+		"itemType": "readers",
+		"data-type": "signal",
+		"eventType": "readerValue"
 	}
 }

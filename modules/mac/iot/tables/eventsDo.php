@@ -160,6 +160,19 @@ class TableEventsDo extends DbTable
 			return $enum;
 		}
 
+		if ($columnId === 'iotSetupRequest')
+		{
+			$enum = [];
+
+			$requests = $iotDevicesUtils->iotSetupRequests($form->recData['iotSetup']);
+			foreach ($requests as $requestId => $req)
+			{
+				$enum[$requestId] = $req['fn'];
+			}
+
+			return $enum;
+		}
+
 		return parent::columnInfoEnum ($columnId, $valueType, $form);
 	}
 
@@ -173,6 +186,12 @@ class TableEventsDo extends DbTable
 			//$this->addColumnInput ('mqttTopic');
 			//$this->addColumnInput ('mqttTopicPayloadValue');
 
+			return;
+		}
+		elseif ($eventRow['eventType'] === 'sendSetupRequest')
+		{
+			$dest[] = ['text' => $eventRow['iotSetupId'], 'class' => 'label label-default', 'icon' => 'tables/mac.iot.setups'];
+			$dest[] = ['text' => $eventRow['iotSetupRequest'], 'class' => 'label label-info'];
 			return;
 		}
 	
@@ -264,11 +283,12 @@ class ViewEventsDoForm extends TableView
 
 		$q [] = 'SELECT eventsDo.*,';
 		array_push ($q, ' iotDevices.friendlyId AS deviceFriendlyId, iotDevices.fullName AS deviceFullName,');
-		array_push ($q, ' devicesGroups.shortName AS devicesGroupName');
+		array_push ($q, ' devicesGroups.shortName AS devicesGroupName,');
+		array_push ($q, ' iotSetups.id AS iotSetupId, iotSetups.fullName AS iotSetupFullName');
 		array_push ($q, ' FROM [mac_iot_eventsDo] AS [eventsDo]');
 		array_push ($q, ' LEFT JOIN [mac_iot_devices] AS iotDevices ON eventsDo.iotDevice = iotDevices.ndx');
 		array_push ($q, ' LEFT JOIN [mac_iot_devicesGroups] AS devicesGroups ON eventsDo.iotDevicesGroup = devicesGroups.ndx');
-
+		array_push ($q, ' LEFT JOIN [mac_iot_setups] AS iotSetups ON eventsDo.iotSetup = iotSetups.ndx');
 		array_push ($q, ' WHERE 1');
 		array_push ($q, ' AND [eventsDo].[tableId] = %s', $this->dstTableId);
 		array_push ($q, ' AND [eventsDo].[recId] = %i', $this->dstRecId);
@@ -317,10 +337,17 @@ class FormEventDo extends TableForm
 			$this->openTabs ($tabs);
 				$this->openTab ();
 					$this->addColumnInput ('fullName');
-					$this->openRow();
+
+					if ($this->recData['eventType'] !== 'sendSetupRequest' && $this->recData['eventType'] !== 'sendMqttMsg')
+					{
+						$this->openRow();
+							$this->addColumnInput ('eventType');
+							$this->addColumnInput ('useGroup');
+						$this->closeRow();
+					}
+					else
 					$this->addColumnInput ('eventType');
-					$this->addColumnInput ('useGroup');
-					$this->closeRow();
+
 					if ($this->recData['eventType'] === 'setDeviceProperty')
 					{
 						if ($this->recData['useGroup'])
@@ -352,6 +379,11 @@ class FormEventDo extends TableForm
 						else
 							$this->addColumnInput ('iotDevice');
 						$this->addColumnInput ('iotDeviceProperty');
+					}
+					elseif ($this->recData['eventType'] === 'sendSetupRequest')
+					{
+						$this->addColumnInput ('iotSetup');
+						$this->addColumnInput ('iotSetupRequest');
 					}
 					elseif ($this->recData['eventType'] === 'sendMqttMsg')
 					{

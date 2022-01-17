@@ -34,5 +34,23 @@
 			"uext-9": {"title": "uext 9 / GPIO14 / HS2_CLK", "hwnr": 14, "flags": ["d", "in", "out", "hwInt"]},
 			"uext-10": {"title": "uext 10 / GPIO5 / SPI_CS", "hwnr": 5, "flags": ["d", "in", "out", "hwInt"]}
 		}
+	},
+
+	"fields": {
+		"groups": [
+			{"id":  "cfg", "title":  "Nastavení"}
+		],
+		"columns": [
+			{
+				"id": "espNowServerEnabled", "group":  "cfg", "name": "Povolit ESP-NOW server", "type": "logical", "options": ["saveOnChange"]
+			}
+		]
+	},
+	"fixedIOPorts": {
+		"esp-now-server": {
+			"type": "networks/esp-now-server",
+			"portId": "esp-now",
+			"_portDisabled": {"espNowServerEnabled": 0}
+		}
 	}
 }

@@ -33,8 +33,10 @@ class FormZoneIoTSC extends TableForm
 				$this->addColumnInput ('rowType', TableForm::coColW3);
 				if ($this->recData['rowType'] == 0)
 					$this->addColumnInput ('iotSensor', TableForm::coColW9);
-				else
+				elseif ($this->recData['rowType'] == 1)
 					$this->addColumnInput ('iotControl', TableForm::coColW9);
+				else
+					$this->addColumnInput ('iotSetup', TableForm::coColW9);
 			$this->closeRow();
 		$this->closeForm ();
 	}

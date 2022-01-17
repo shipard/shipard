@@ -691,54 +691,87 @@ class WidgetLive extends WidgetBoard
 				$sh->setSensor($r['iotSensor']);
 				$sensorCode = $sh->badgeCode(1);
 				$sc = "<span class='padd5'>".$sensorCode.'</span]>';
-				$this->iotSC[] = ['type' => 0, 'object' => $sensor, 'code' => $sc];
+				$this->iotSC[] = ['type' => 0, 'code' => $sc];
 			}
-			else
+			elseif ($r['rowType'] === 1)
 			{ // control
 				$control = new \mac\iot\libs\Control($this->app());
 				$control->setControl($r['iotControl']);
 
 				$this->iotSC[] = ['type' => 1, 'object' => $control, 'code' => $control->controlCode()];
 			}
+			elseif ($r['rowType'] === 2)
+			{ // setup
+				$this->iotSC[] = ['type' => 2];
+			}
 		}
 	}
 
 	function loadScenes()
 	{
-		if (!isset($this->zone['places']) || !count($this->zone['places']))
+		//if (!isset($this->zone['places']) || !count($this->zone['places']))
+		//	return;
+
+		// -- setups
+		$setups = [];
+		$q [] = 'SELECT iotSC.*';
+		array_push($q, ' FROM [mac_base_zonesIoTSC] AS iotSC');
+		array_push($q, ' WHERE 1');
+		array_push($q, ' AND iotSC.rowType = %i', 2);
+		if (isset($this->zone['oz']) )
+			array_push($q, ' AND (iotSC.[zone] = %i', $this->zone['ndx'], ' OR iotSC.[zone] = %i', $this->zone['oz'], ')');
+		else
+			array_push($q, ' AND iotSC.[zone] = %i', $this->zone['ndx']);
+
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+			$setups[] = $r['iotSetup'];
+
+		// -- scenes
+		if (!count($setups))
 			return;
 
-		$q [] = 'SELECT scenes.*,';
-		array_push($q, ' places.fullName AS placeFullName');
+		$q = [];
+		array_push($q, 'SELECT scenes.*, setups.fullName AS setupFullName');
 		array_push($q, ' FROM mac_iot_scenes AS scenes');
-		array_push($q, ' LEFT JOIN e10_base_places AS places ON scenes.place = places.ndx');
+		array_push($q, ' LEFT JOIN mac_iot_setups AS setups ON scenes.setup = setups.ndx');
 		array_push($q, ' WHERE 1');
-		array_push($q, ' AND place IN %in', $this->zone['places']);
+		array_push($q, ' AND setup IN %in', $setups);
+		
+		/*
+		*/
 
 		$scenes = [];
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
-			$placeNdx = $r['place'];
-			if (!isset($scenes[$placeNdx]))
+			$setupNdx = $r['setup'];
+			$sceneNdx = $r['ndx'];
+			if (!isset($scenes[$setupNdx]))
 			{
-				$scenes[$placeNdx] = ['title' => $r['placeFullName'], 'paramId' => "set_scene_{$placeNdx}_{$r['ndx']}", 'enum' => []];
+				$scenes[$setupNdx] = ['title' => $r['setupFullName'], 'paramId' => "set_scene_{$setupNdx}_{$r['ndx']}", 'enum' => []];
+				$activeScene = $this->db()->query('SELECT * FROM [mac_iot_setupsStates] WHERE [setup] = %i', $setupNdx)->fetch();
+				if ($activeScene)
+					$scenes[$setupNdx]['activeScene'] = $activeScene['activeScene'];
 			}
 
 			$btn = [
-				'title' => $r['fullName'],
+				'title' => $r['shortName'],
 				'data' => [
 					'action' => 'inline-action',	
 					'object-class-id' => 'mac.iot.libs.IotAction',	
 					'action-param-action-type' => 'set-scene',	
-					'action-param-place' => strval($placeNdx),
+					'action-param-setup' => strval($setupNdx),
 					'action-param-scene' => strval($r['ndx']),	
 				],
 			];
 
-			$scenes[$placeNdx]['enum'][$r['friendlyId']] = $btn;
-			if (!isset($scenes[$placeNdx]['defaultValue']))
-				$scenes[$placeNdx]['defaultValue'] = $r['friendlyId'];
+			$scenes[$setupNdx]['enum'][$r['friendlyId']] = $btn;
+
+			if (!isset($scenes[$setupNdx]['defaultValue']) && $scenes[$setupNdx]['activeScene'] === $sceneNdx)
+				$scenes[$setupNdx]['defaultValue'] = $r['friendlyId'];
+			//if (!isset($scenes[$placeNdx]['defaultValue']) && !isset($scenes[$placeNdx]['activeScene']))
+			//	$scenes[$placeNdx]['defaultValue'] = $r['friendlyId'];
 		}
 
 		$this->iotScenes = $scenes;

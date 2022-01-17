@@ -4,7 +4,8 @@
 	"fields": {
 		"groups": [
 			{"id":  "l1", "title":  "Sériová linka 1"},
-			{"id":  "l2", "title":  "Sériová linka 2"}
+			{"id":  "l2", "title":  "Sériová linka 2"},
+			{"id":  "l3", "title":  "ESP-NOW server"}
 		],
 		"columns": [
 			{
@@ -27,6 +28,13 @@
 			{
 				"id": "serial1FullName", "group":  "l1", "name": "Název portu 1", "label": "Název", "type": "string", "len": 140, "enabled": {"serial1Enabled": "1"}
 			},
+			{
+				"id": "serial1UseTelnet", "group":  "l1", "name": "Zapnout telnet server", "type": "logical", "options": ["saveOnChange"], "enabled": {"serial1Enabled": "1"}
+			},
+			{
+				"id": "serial1TelnetPort", "group":  "l1", "name": "Port", "type": "int", "enabled": {"serial1Enabled": "1", "serial1UseTelnet": 1}
+			},
+
 
 			{
 				"id": "serial2Enabled", "group":  "l2", "name": "Port 2 je povolen", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
@@ -44,6 +52,16 @@
 			},
 			{
 				"id": "serial2FullName", "group":  "l2", "name": "Název portu 2", "label": "Název", "type": "string", "len": 140, "enabled": {"serial2Enabled": "1"}
+			},
+			{
+				"id": "serial2UseTelnet", "group":  "l2", "name": "Zapnout telnet server", "type": "logical", "options": ["saveOnChange"], "enabled": {"serial2Enabled": "1"}
+			},
+			{
+				"id": "serial2TelnetPort", "group":  "l2", "name": "Port", "type": "int", "enabled": {"serial2Enabled": "1","serial2UseTelnet": 1}
+			},
+
+			{
+				"id": "espNowServerEnabled", "group":  "l3", "name": "Povolit ESP-NOW server", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
 			}
 		]
 	},
@@ -55,7 +73,7 @@
 			"pinRX": "uext-4",
 			"pinTX": "uext-3",
 
-			"_cfgColumns": {"serial1Speed1": "speed", "serial1Mode1": "mode"},
+			"_cfgColumns": {"serial1Speed1": "speed", "serial1Mode1": "mode", "serial1UseTelnet": "useTelnet", "serial1TelnetPort": "telnetPort"},
 			"_rowColumns": {"serial1PortId": "portId", "serial1FullName": "fullName"},
 			"_portDisabled": {"serial1Enabled": 0}
 		},
@@ -66,7 +84,7 @@
 			"pinRX": "uext-8",
 			"pinTX": "uext-7",
 
-			"_cfgColumns": {"serial1Speed2": "speed", "serial1Mode2": "mode"},
+			"_cfgColumns": {"serial1Speed2": "speed", "serial1Mode2": "mode", "serial2UseTelnet": "useTelnet", "serial2TelnetPort": "telnetPort"},
 			"_rowColumns": {"serial2PortId": "portId", "serial2FullName": "fullName"},
 			"_portDisabled": {"serial2Enabled": 0}
 		},
@@ -79,6 +97,12 @@
 			"type": "control/binary",
 			"portId": "led",
 			"pin": "uext-9"
+		},
+
+		"esp-now-server": {
+			"type": "networks/esp-now-server",
+			"portId": "esp-now",
+			"_portDisabled": {"espNowServerEnabled": 0}
 		}
 	}
 }

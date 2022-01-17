@@ -45,7 +45,7 @@ class TableEventsOn extends DbTable
 
 		if ($columnId === 'iotDeviceEvent')
 		{
-			$events = $iotDevicesUtils->deviceEvents($form->recData['iotDevice']);
+			$events = $iotDevicesUtils->deviceEvents($form->recData['iotDevice'], $form->recData['eventType']);
 			if (!$events)
 				return [];
 
@@ -56,9 +56,22 @@ class TableEventsOn extends DbTable
 			return $enum;
 		}
 
+		if ($columnId === 'iotSetupEvent')
+		{
+			$events = $iotDevicesUtils->iotSetupActions($form->recData['iotSetup']);
+			if (!$events)
+				return [];
+
+			$enum = [];
+			foreach ($events as $key => $value)
+				$enum[$key] = $value['fn'];
+
+			return $enum;
+		}
+
 		if ($columnId === 'iotDeviceEventValueEnum')
 		{
-			$events = $iotDevicesUtils->deviceEvents($form->recData['iotDevice']);
+			$events = $iotDevicesUtils->deviceEvents($form->recData['iotDevice'], $form->recData['eventType']);
 			if (!$events)
 				return [];
 
@@ -89,7 +102,17 @@ class TableEventsOn extends DbTable
 			$dest[] = ['text' => ' = ', 'class' => 'label label-default'];
 			$dest[] = ['text' => $eventRow['iotDeviceEventValueEnum'], 'class' => 'label label-info'];
 		}
-		elseif ($$eventRow['eventType'] === 'mqttMsg')
+		elseif ($eventRow['eventType'] === 'setupAction')
+		{
+			$dest[] = ['text' => $eventRow['iotSetupId'], 'class' => 'label label-default', 'icon' => 'tables/mac.iot.setups'];
+			$dest[] = ['text' => $eventRow['iotSetupEvent'], 'class' => 'label label-info'];
+		}
+		elseif ($eventRow['eventType'] === 'readerValue')
+		{
+			$dest[] = ['text' => $eventRow['deviceFriendlyId'], 'class' => 'label label-default'];
+			$dest[] = ['text' => $eventRow['iotDeviceEvent'], 'class' => 'label label-default'];
+		}
+		elseif ($eventRow['eventType'] === 'mqttMsg')
 		{
 			//$this->addColumnInput ('mqttTopic');
 			//$this->addColumnInput ('mqttTopicPayloadItemId');
@@ -168,9 +191,11 @@ class ViewEventsOnForm extends TableView
 		$fts = $this->fullTextSearch ();
 
 		$q [] = 'SELECT eventsOn.*,';
-		array_push ($q, ' iotDevices.friendlyId AS deviceFriendlyId, iotDevices.fullName AS deviceFullName');
+		array_push ($q, ' iotDevices.friendlyId AS deviceFriendlyId, iotDevices.fullName AS deviceFullName,');
+		array_push ($q, ' iotSetups.id AS iotSetupId, iotSetups.fullName AS iotSetupFullName');
 		array_push ($q, ' FROM [mac_iot_eventsOn] AS [eventsOn]');
 		array_push ($q, ' LEFT JOIN [mac_iot_devices] AS iotDevices ON eventsOn.iotDevice = iotDevices.ndx');
+		array_push ($q, ' LEFT JOIN [mac_iot_setups] AS iotSetups ON eventsOn.iotSetup = iotSetups.ndx');
 
 		array_push ($q, ' WHERE 1');
 		array_push ($q, ' AND [eventsOn].[tableId] = %s', $this->dstTableId);
@@ -202,10 +227,12 @@ class ViewEventsOnForm extends TableView
 		$q = [];
 		$q [] = 'SELECT eventsDo.*,';
 		array_push ($q, ' iotDevices.friendlyId AS deviceFriendlyId, iotDevices.fullName AS deviceFullName,');
-		array_push ($q, ' devicesGroups.shortName AS devicesGroupName');
+		array_push ($q, ' devicesGroups.shortName AS devicesGroupName,');
+		array_push ($q, ' iotSetups.id AS iotSetupId, iotSetups.fullName AS iotSetupFullName');
 		array_push ($q, ' FROM [mac_iot_eventsDo] AS [eventsDo]');
 		array_push ($q, ' LEFT JOIN [mac_iot_devices] AS iotDevices ON eventsDo.iotDevice = iotDevices.ndx');
 		array_push ($q, ' LEFT JOIN [mac_iot_devicesGroups] AS devicesGroups ON eventsDo.iotDevicesGroup = devicesGroups.ndx');
+		array_push ($q, ' LEFT JOIN [mac_iot_setups] AS iotSetups ON eventsDo.iotSetup = iotSetups.ndx');
 
 		array_push ($q, ' WHERE 1');
 		array_push ($q, ' AND [eventsDo].[tableId] = %s', 'mac.iot.eventsOn');
@@ -244,6 +271,16 @@ class FormEventOn extends TableForm
 						$this->addColumnInput ('iotDevice');
 						$this->addColumnInput ('iotDeviceEvent');
 						$this->addColumnInput ('iotDeviceEventValueEnum');
+					}
+					elseif ($this->recData['eventType'] === 'readerValue')
+					{
+						$this->addColumnInput ('iotDevice');
+						$this->addColumnInput ('iotDeviceEvent');
+					}
+					elseif ($this->recData['eventType'] === 'setupAction')
+					{
+						$this->addColumnInput ('iotSetup');
+						$this->addColumnInput ('iotSetupEvent');
 					}
 					elseif ($this->recData['eventType'] === 'mqttMsg')
 					{

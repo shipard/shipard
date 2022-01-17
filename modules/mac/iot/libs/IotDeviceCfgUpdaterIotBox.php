@@ -152,7 +152,7 @@ class IotDeviceCfgUpdaterIotBox extends \mac\iot\libs\IotDeviceCfgUpdater
 				continue;
 
 			$portCfg = json_decode($uioPort['portCfg'], TRUE);
-			if (!$portCfg || !count($portCfg))
+			if ($portCfg === FALSE || $portCfg === NULL)
 			{
 				continue;
 			}
@@ -247,6 +247,7 @@ class IotDeviceCfgUpdaterIotBox extends \mac\iot\libs\IotDeviceCfgUpdater
 			if (isset($ioPortTypeCfg['dataModel']))
 				$ioPortProperties = array_merge($ioPortProperties, $ioPortTypeCfg['dataModel']);
 
+			/*	
 			if ($portTypeId === 'input/binary')
 			{
 				$this->dataModel['properties'][$uioPort['portId']] = [
@@ -258,6 +259,13 @@ class IotDeviceCfgUpdaterIotBox extends \mac\iot\libs\IotDeviceCfgUpdater
 				$this->dataModel['properties'][$uioPort['portId']] = [
 					'itemType' => 'control', 'data-type' => 'binary'
 				];
+			}*/
+
+
+			if ($ioPortProperties['eventType'] === 'readerValue')
+			{
+				$ioPortProperties['valueTopic'] = $uioPort['mqttTopic'];
+				
 			}
 
 			$this->dataModel['properties'][$uioPort['portId']] = $ioPortProperties;

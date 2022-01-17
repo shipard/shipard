@@ -19,5 +19,10 @@
 				"id": "pinTX", "name": "Pin TX (výstup)", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["out", "hwInt"]}
 			}
 		]
+	},
+	"dataModel": {
+		"itemType": "readers",
+		"data-type": "signal",
+		"eventType": "readerValue"
 	}
 }

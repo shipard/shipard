@@ -85,11 +85,10 @@ class IotAction extends E10ApiObject
 
 		if ($this->actionType === 'set-scene')
 		{
-			$this->iotDevicesUtils = new \mac\iot\libs\IotDevicesUtils($this->app());
-			$placeNdx = $this->requestParam('place', 0);
-			$placeTopic = $this->iotDevicesUtils->placeTopic($placeNdx);
-			if ($placeTopic === '')
-				return;
+			
+			$iotDevicesUtils = new \mac\iot\libs\IotDevicesUtils($this->app());
+			$setupNdx = $this->requestParam('setup', 0);
+			$setupTopic = $iotDevicesUtils->iotSetupTopic($setupNdx);
 
 			$sceneNdx = $this->requestParam('scene', 0);
 
@@ -101,15 +100,13 @@ class IotAction extends E10ApiObject
 			}
 			*/
 
-			$sceneTopic = $this->iotDevicesUtils->sceneTopic($sceneNdx);
-			if ($placeTopic === '')
-				return;
+			$sceneTopic = $iotDevicesUtils->sceneTopic($sceneNdx);
 			$payloadData = ['scene' => $sceneTopic];
 
 			$this->lanNdx = 1;//$this->controlRecData['lan'];
 			$this->requestData = [
 				'actionType' => 'mqtt-publish',
-				'mqttTopic' => $placeTopic.'/set',
+				'mqttTopic' => $setupTopic.'/set',
 				'mqttPayload' => json_encode($payloadData),
 			];
 		}

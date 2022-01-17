@@ -69,5 +69,9 @@
 
 	"signal/gsm": {
 		"name": "GSM modul", "sensor": 1, "dataType": "text"
+	},
+
+	"networks/esp-now-server": {
+		"name": "ESP-NOW server", "dataType": "none"
 	}
 }

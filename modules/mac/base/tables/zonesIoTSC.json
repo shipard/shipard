@@ -8,7 +8,8 @@
 			"enumCfg": {"cfgItem": "mac.base.zonesIotSCRowTypes", "cfgValue": "", "cfgText": "fn"}},
 
 		{"id": "iotSensor", "name": "Senzor", "type": "int", "reference": "mac.iot.sensors"},
-		{"id": "iotControl", "name": "ovládací prvek", "type": "int", "reference": "mac.iot.controls"},
+		{"id": "iotControl", "name": "Ovládací prvek", "type": "int", "reference": "mac.iot.controls"},
+		{"id": "iotSetup", "name": "Sestava", "type": "int", "reference": "mac.iot.setups"},
 
 		{"id": "rowOrder", "name": "Pořadí", "type": "int"}
 	],
