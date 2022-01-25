@@ -84,6 +84,12 @@ function e10client () {
 
 		if (action === 'workspace-login')
 			return e10.workspaceLogin(e);
+
+		if (actionType === 'inline-action')
+		{
+			e10InlineAction (e);
+			return;
+		}
 	}
 
 	/**
@@ -144,6 +150,28 @@ function e10client () {
 			e10.widgetTabsInit();
 			//if (className === 'e10.base.NotificationCentre')
 			//	e10NCSetButton (data.object);
+		});
+	}
+
+	function e10InlineAction (e)
+	{
+		if (e.attr('data-object-class-id') === undefined)
+			return;
+	
+		var requestParams = {};
+		requestParams['object-class-id'] = e.attr('data-object-class-id');
+		requestParams['action-type'] = e.attr('data-action-type');
+		elementPrefixedAttributes (e, 'data-action-param-', requestParams);
+		if (e.attr('data-pk') !== undefined)
+			requestParams['pk'] = e.attr('data-pk');
+	
+			e10.server.api(requestParams, function(data) {
+	
+			if (e.parent().hasClass('btn-group'))
+			{
+				e.parent().find('>button.active').removeClass('active');
+				e.addClass('active');
+			}
 		});
 	}
 
@@ -386,6 +414,12 @@ function e10client () {
 		});
 
 		$('body').on(e10.CLICK_EVENT, ".e10-trigger-action", function (event) {
+			event.stopPropagation();
+			event.preventDefault();
+			e10Action(event, $(this));
+		});
+
+		$('body').on(e10.CLICK_EVENT, ".df2-action-trigger", function (event) {
 			event.stopPropagation();
 			event.preventDefault();
 			e10Action(event, $(this));
