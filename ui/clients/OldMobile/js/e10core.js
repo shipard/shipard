@@ -85,7 +85,7 @@ function e10client () {
 		if (action === 'workspace-login')
 			return e10.workspaceLogin(e);
 
-		if (actionType === 'inline-action')
+		if (action === 'inline-action')
 		{
 			e10InlineAction (e);
 			return;
