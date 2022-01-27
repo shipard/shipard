@@ -78,8 +78,8 @@ class ViewLog extends \e10\TableViewGrid
 
 		$listItem ['id'] = $item['ndx'];
 		$listItem ['created'] = utils::datef($item['created'], '%d, %T');
-		if ($item['gateName'])
-			$listItem['gate'] = $item['gateName'];
+		if ($item['iotSetupName'])
+			$listItem['gate'] = $item['iotSetupName'];
 
 		if ($item['keyValue'] === $item['tagKeyValue'])
 		{
@@ -126,13 +126,15 @@ class ViewLog extends \e10\TableViewGrid
 		array_push ($q, ' [tags].[keyValue] AS [tagKeyValue],');
 		array_push ($q, ' [persons].[fullName] AS [personName], [persons].company, [persons].personType,');
 		array_push ($q, ' [places].[fullName] AS [placeName],');
-		array_push ($q, ' [iotControls].[fullName] AS [iotControlName]');
+		array_push ($q, ' [iotControls].[fullName] AS [iotControlName],');
+		array_push ($q, ' [iotSetups].[fullName] AS [iotSetupName]');
 		array_push ($q, ' FROM [mac_access_log] AS [log]');
 		array_push ($q, ' LEFT JOIN [mac_iot_things] AS [gates] ON [log].[gate] = [gates].ndx');
 		array_push ($q, ' LEFT JOIN [mac_access_tags] AS [tags] ON [log].[tag] = [tags].ndx');
 		array_push ($q, ' LEFT JOIN [e10_persons_persons] AS [persons] ON [log].[person] = [persons].ndx');
 		array_push ($q, ' LEFT JOIN [e10_base_places] AS [places] ON [log].[place] = [places].ndx');
 		array_push ($q, ' LEFT JOIN [mac_iot_controls] AS [iotControls] ON [log].[iotControl] = [iotControls].ndx');
+		array_push ($q, ' LEFT JOIN [mac_iot_setups] AS [iotSetups] ON [log].[gate] = [iotSetups].ndx');
 		array_push ($q, ' WHERE 1');
 
 		// -- fulltext

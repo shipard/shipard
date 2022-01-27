@@ -305,7 +305,7 @@ class ViewEventsDoForm extends TableView
 			array_push ($q, ')');
 		}
 		*/
-		array_push ($q, ' ORDER BY eventsDo.[rowOrder] ' . $this->sqlLimit ());
+		$this->queryMain ($q, 'eventsDo.', ['[rowOrder]', '[ndx]']);
 
 		$this->runQuery ($q);
 	}

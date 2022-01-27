@@ -213,7 +213,7 @@ class ViewEventsOnForm extends TableView
 			array_push ($q, ')');
 		}
 		*/
-		array_push ($q, ' ORDER BY eventsOn.[rowOrder] ' . $this->sqlLimit ());
+		$this->queryMain ($q, 'eventsOn.', ['[rowOrder]', '[ndx]']);
 
 		$this->runQuery ($q);
 	}

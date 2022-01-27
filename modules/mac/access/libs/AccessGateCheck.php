@@ -42,6 +42,7 @@ class AccessGateCheck extends Utility
 		'vd' => ['tagType' => 3],
 		'rfid' => ['tagType' => 1],
 		'call' => ['tagType' => 2],
+		'device' => ['mainKeyType' => 3],
 
 		'control' => ['mainKeyType' => 2]
 	];
@@ -110,7 +111,12 @@ class AccessGateCheck extends Utility
 		{
 			$this->requestParams['type'] = 'rfid';
 			$this->requestParams['value'] = $this->requestParams['srcPayload']['_payload'];
-		}	
+		}
+		elseif (isset($this->requestParams['srcTopicInfo']['type']) && $this->requestParams['srcTopicInfo']['type'] === 'device')
+		{
+			$this->requestParams['type'] = 'device';
+			$this->requestParams['value'] = $this->requestParams['srcTopic'];
+		}
 
 		if (!isset($this->requestTypes[$this->requestParams['type']]))
 			return $this->setResult('Wrong `type` param');
@@ -141,6 +147,9 @@ class AccessGateCheck extends Utility
 		{ // iotControl
 			if (!isset($this->requestParams['iotControl']) || $this->requestParams['iotControl'] === '')
 				return $this->setResult('Missing / blank `iotControl` param');
+		}
+		if ($this->mainKeyType == 3)
+		{ // @TODO: device
 		}
 
 		return TRUE;
@@ -182,6 +191,10 @@ class AccessGateCheck extends Utility
 		{ // iotControl
 			if (!$this->checkIoTControl())
 				return FALSE;
+		}
+		elseif ($this->mainKeyType == 3)
+		{ // device
+			$this->logInfo['msg'] = $this->requestParams['srcTopic'] ?? '!';
 		}
 
 		$this->logInfo['state'] = TableLog::lsAccessGranted;

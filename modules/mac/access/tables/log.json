@@ -6,7 +6,7 @@
 		{"id": "state", "name": "Stav", "type": "enumInt",
 			"enumValues": {"0": "OK", "1": "Přístup odepřen", "2": "varování"}, "3": "error", "4":  "bad request"},
 		{"id": "mainKeyType", "name": "Typ klíče", "type": "enumInt",
-			"enumValues": {"0": "Tag", "1": "Vstupenka", "2": "Ovládací prvek"}},
+			"enumValues": {"0": "Tag", "1": "Vstupenka", "2": "Ovládací prvek", "3": "Zařízení"}},
 		{"id": "tagType", "name": "Druh klíče", "type": "enumInt",
 			"enumCfg": {"cfgItem": "mac.access.tagTypes", "cfgValue": "", "cfgText": "name"}},
 		{"id": "keyDevice", "name": "Zařízení", "type": "int", "reference": "mac.lan.devices"},
