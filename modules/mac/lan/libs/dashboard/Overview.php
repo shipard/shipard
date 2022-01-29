@@ -25,6 +25,7 @@ class Overview extends Content
 	var $lanTree;
 
 	var $macDataSourcesSensorsHelpers = [];
+	var $lanSensorsHelpers = [];
 
 	var $code = '';
 
@@ -114,6 +115,19 @@ class Overview extends Content
 			$c .= "</td>";
 
 			$c .= "<td style='vertical-align: middle;'>";
+
+			if (isset($device['lanBadges']))
+			{
+				foreach ($device['lanBadges'] as $sb)
+				{
+					$sh = $this->lanSensorHelper($device['lan']);
+					if ($sh) {
+						$bc = $sh->lanBadgeImg($sb['label'], $sb['badgeQuantityId'], $sb['badgeParams'], $sb['lanBadgesUrl'] ?? '');
+						$c .= ' ' . "<span>".$bc."</span>";
+					}
+				}
+			}
+
 			foreach ($device['sensorsBadges'] as $sb)
 			{
 				$sh = $this->macDataSourceSensorHelper($sb['badgeDataSource']);
@@ -158,9 +172,21 @@ class Overview extends Content
 			{
 				foreach ($this->overviewData->devices[$treeItemNdx]['uplinkPortsBadges'] as $sb)
 				{
-					$sh = $this->macDataSourceSensorHelper($sb['badgeDataSource']);
+					$sh = $this->lanSensorHelper($device['lan']);
 					if ($sh) {
-						$bc = $sh->dsBadgeImg($sb['label'], $sb['badgeQuantityId'], $sb['badgeParams']);
+						$bc = $sh->lanBadgeImg($sb['label'], $sb['badgeQuantityId'], $sb['badgeParams']);
+						$c .= ' ' . "<span>".$bc."</span>";
+					}
+				}
+			}
+
+			if (isset($this->overviewData->devices[$treeItemNdx]['lanBadges']))
+			{
+				foreach ($this->overviewData->devices[$treeItemNdx]['lanBadges'] as $sb)
+				{
+					$sh = $this->lanSensorHelper($device['lan']);
+					if ($sh) {
+						$bc = $sh->lanBadgeImg($sb['label'], $sb['badgeQuantityId'], $sb['badgeParams'], $sb['lanBadgesUrl'] ?? '');
 						$c .= ' ' . "<span>".$bc."</span>";
 					}
 				}
@@ -172,7 +198,6 @@ class Overview extends Content
 				if ($sh)
 				{
 					$bc = $sh->dsBadgeImg($sb['label'], $sb['badgeQuantityId'], $sb['badgeParams']);
-					$c .= ' '.$bc;
 				}
 			}
 
@@ -202,7 +227,7 @@ class Overview extends Content
 
 			$c .= "<tr data-overview-group='e10-lan-do-lan'>";
 
-			$rack = $this->lanTree->racks[$treeItem['rackNdx']];
+			//$rack = $this->lanTree->racks[$treeItem['rackNdx']];
 
 			$c .= "<td style='vertical-align: middle;  padding-left: {$level}em;'>";
 			$c .= "<span class='indicator' id='e10-lan-do-{$treeItemNdx}'>".$this->app()->ui()->icon('system/iconCheck')."</span> ";
@@ -214,9 +239,9 @@ class Overview extends Content
 			{
 				foreach ($this->overviewData->devices[$treeItemNdx]['uplinkPortsBadges'] as $sb)
 				{
-					$sh = $this->macDataSourceSensorHelper($sb['badgeDataSource']);
+					$sh = $this->lanSensorHelper($device['lan']);
 					if ($sh) {
-						$bc = $sh->dsBadgeImg($sb['label'], $sb['badgeQuantityId'], $sb['badgeParams']);
+						$bc = $sh->lanBadgeImg($sb['label'], $sb['badgeQuantityId'], $sb['badgeParams']);
 						$c .= ' ' . "<span>".$bc."</span>";
 					}
 				}
@@ -258,12 +283,14 @@ class Overview extends Content
 				$c .= "<span class='pull-right'>";
 				foreach ($groupData['dpInfo'] as $dpi)
 				{
+					/*
 					if (isset($dpi['badgeQuantityId']))
 					{
-						$sh = $this->macDataSourceSensorHelper($dpi['badgeDataSource']);
+						$sh = $this->lanSensorHelper($dpi['lan']);
 						if ($sh)
-							$c .= '&nbsp; '.$sh->dsBadgeImg($dpi['label'], $dpi['badgeQuantityId'], $dpi['badgeParams']);
+							$c .= '&nbsp; '.$sh->lanBadgeImg($dpi['label'], $dpi['badgeQuantityId'], $dpi['badgeParams']);
 					}
+					*/
 				}
 				$c .= '</span>';
 			}
@@ -357,6 +384,32 @@ class Overview extends Content
 		}
 
 		return $this->macDataSourcesSensorsHelpers[$dsNdx];
+	}
+
+	function lanSensorHelper($lanNdx) : ?SensorHelper
+	{
+		if (!isset($this->lanSensorsHelpers[$lanNdx]))
+		{
+			$this->lanSensorsHelpers[$lanNdx] = NULL;
+
+			$lanRecData = $this->overviewData->lanRecData($lanNdx);
+			if (!$lanRecData || !isset($lanRecData['mainServerLanControl']) || !$lanRecData['mainServerLanControl'])
+				return NULL;
+
+			$mainServerLanControl = $this->overviewData->devices[$lanRecData['mainServerLanControl']] ?? NULL;
+			if (!$mainServerLanControl)
+				return NULL;
+		
+			$httpsPort = (isset($mainServerLanControl['macDeviceCfg']['httpsPort']) && (intval($mainServerLanControl['macDeviceCfg']['httpsPort']))) ? intval($mainServerLanControl['macDeviceCfg']['httpsPort']) : 443;
+			$url = 'https://'.$mainServerLanControl['macDeviceCfg']['serverFQDN'].':'.$httpsPort.'/netdata/';
+
+			$sh = new SensorHelper($this->app());
+			$sh->lanInfo = ['baseUrl' => $url, 'lanBadgesUrl' => $mainServerLanControl['lanBadgesUrl']];
+
+			$this->lanSensorsHelpers[$lanNdx] = $sh;
+		}
+
+		return $this->lanSensorsHelpers[$lanNdx];
 	}
 
 	function createCode()

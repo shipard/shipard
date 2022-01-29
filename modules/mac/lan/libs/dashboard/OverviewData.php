@@ -4,7 +4,7 @@ namespace mac\lan\libs\dashboard;
 
 
 
-use E10\Utility;
+use \Shipard\Base\Utility, \Shipard\Utils\Utils;
 
 
 /**
@@ -71,7 +71,7 @@ class OverviewData extends Utility
 
 	function loadData_Devices()
 	{
-		$q[] = 'SELECT devices.ndx AS deviceNdx, devices.fullName AS deviceFullName, devices.deviceKind, devices.id AS deviceId, devices.hideFromDR,';
+		$q[] = 'SELECT devices.ndx AS deviceNdx, devices.fullName AS deviceFullName, devices.deviceKind, devices.id AS deviceId, devices.uid AS deviceUid, devices.hideFromDR, devices.monitored,';
 		array_push ($q, ' devices.alerts, devices.lan, devices.place, devices.rack, devices.macDataSource, devices.macDeviceCfg, devices.macDeviceType, devices.lan AS deviceLan');
 		array_push ($q, ' FROM [mac_lan_devices] AS devices');
 		array_push ($q, ' LEFT JOIN e10_base_places AS places ON devices.place = places.ndx');
@@ -106,26 +106,25 @@ class OverviewData extends Utility
 
 			$this->devices[$deviceNdx] = [
 				'title' => $r['deviceFullName'], 'deviceId' => $r['deviceId'], 'icon' => $dk['icon'],
-				'dk' => $r['deviceKind'], 'lan' => $r['lan'],
-				'macDataSource' => $r['macDataSource'], 'macDeviceType' => $r['macDeviceType'],
+				'dk' => $r['deviceKind'], 'lan' => $r['lan'], 
+				'monitored' => $r['monitored'],
+				'macDataSource' => $r['macDataSource'], 
+				'macDeviceType' => $r['macDeviceType'],
 				'hideFromDR' => $r['hideFromDR'],
 				'rack' => $deviceRack,
+				'lanBadgesUrl' => Utils::safeChars($r['deviceId'], TRUE).'-'.$r['deviceUid'],
 				'ifaces' => [], 'sensorsBadges' => []
 			];
-
-			if (isset($dk['useMonitoringDataSource']) && !$r['macDataSource'])
-			{
-				$lrd = $this->lanRecData($r['deviceLan']);
-				$this->devices[$deviceNdx]['macDataSource'] = $lrd['defaultMacDataSource'];
-			}
 
 			$this->devicesPks[] = $deviceNdx;
 
 
-			if ($this->devices[$deviceNdx]['macDataSource'] && !in_array($deviceNdx, $this->devicesWithDashboards))
+			//if ($this->devices[$deviceNdx]['macDataSource'] && !in_array($deviceNdx, $this->devicesWithDashboards))
+			if (isset($dk['useMonitoring']) && in_array('active', $dk['useMonitoring']) && $this->devices[$deviceNdx]['monitored'])
 				$this->devicesWithDashboards[] = $deviceNdx;
 
-			if ($this->devices[$deviceNdx]['macDataSource'] && $this->devices[$deviceNdx]['macDataSource'] === $this->macDataSourceNdx && !in_array($deviceNdx, $this->devicesWithSnmpRealtime))
+			//if ($this->devices[$deviceNdx]['macDataSource'] && $this->devices[$deviceNdx]['macDataSource'] === $this->macDataSourceNdx && !in_array($deviceNdx, $this->devicesWithSnmpRealtime))
+			if (isset($dk['useMonitoring']) && in_array('passive', $dk['useMonitoring']))
 				$this->devicesWithSnmpRealtime[] = $deviceNdx;
 
 			if ($r['macDeviceType'] !== '' && $r['macDeviceCfg'] !== '')
@@ -154,48 +153,49 @@ class OverviewData extends Utility
 				if ($this->devices[$deviceNdx]['macDeviceType'] === 'nas-synology')
 				{
 					$badgeQuantityId = 'maclan_'.$this->devices[$deviceNdx]['lan'].'_D'.$deviceNdx.'.system_load';
-					$this->devices[$deviceNdx]['sensorsBadges'][] = [
+					$this->devices[$deviceNdx]['lanBadges'][] = [
 						'label' => 'load15',
-						'badgeDataSource' => $this->devices[$deviceNdx]['macDataSource'], 'badgeQuantityId' => $badgeQuantityId,
-						'badgeParams' => ['dimensions' => 'load15', 'units' => ' ', 'value_color' => 'COLOR:null|red>5|orange>2|#00A000>=0'],
+						'badgeQuantityId' => $badgeQuantityId,
+						'badgeParams' => ['dimensions' => 'load15', 'units' => ' ', 'value_color' => 'COLOR:null|red>5|orange>2|00A000>=0'],
 					];
 
-					$this->devices[$deviceNdx]['sensorsBadges'][] = [
+					$this->devices[$deviceNdx]['lanBadges'][] = [
 						'label' => 'CPU','badgeQuantityId' => 'maclan_'.$this->devices[$deviceNdx]['lan'].'_D'.$deviceNdx.'.system_temperature',
 						'badgeDataSource' => $this->devices[$deviceNdx]['macDataSource'],
-						'badgeParams' => ['dimensions' => 'System', 'units' => '°C', 'value_color' => 'COLOR:null|red>55|orange>45|#00A000>10|#FFA0FF>=0'],
+						'badgeParams' => ['dimensions' => 'System', 'units' => '°C', 'value_color' => 'COLOR:null|red>55|orange>45|00A000>10|FFA0FF>=0'],
 					];
-
 				}
-
 			}
 			elseif ($deviceKind === 7 || $deviceKind === 70)
 			{ // servers
-				if ($this->devices[$deviceNdx]['macDataSource'] && ($this->devices[$deviceNdx]['macDeviceType'] === 'server-linux' || $this->devices[$deviceNdx]['macDeviceType'] === 'shipardNode-common'))
+				if ($this->devices[$deviceNdx]['monitored'] && ($this->devices[$deviceNdx]['macDeviceType'] === 'server-linux' || $this->devices[$deviceNdx]['macDeviceType'] === 'shipardNode-common'))
 				{
 					$badgeQuantityId = 'system.load';
-					$this->devices[$deviceNdx]['sensorsBadges'][] = [
+					$this->devices[$deviceNdx]['lanBadges'][] = [
 						'label' => 'load15',
-						'badgeDataSource' => $this->devices[$deviceNdx]['macDataSource'], 'badgeQuantityId' => $badgeQuantityId,
-						'badgeParams' => ['dimensions' => 'load15', 'units' => ' ', 'precision' => 2, 'value_color' => 'COLOR:null|orange>3|red>6|#00A000>=0'],
+						'badgeQuantityId' => $badgeQuantityId,
+						'lanBadgesUrl' => $this->devices[$deviceNdx]['lanBadgesUrl'],
+						'badgeParams' => ['dimensions' => 'load15', 'units' => ' ', 'precision' => 2, 'value_color' => 'COLOR:null|orange>3|red>6|00A000>=0'],
 					];
 				}
 
 				if (isset($this->devices[$deviceNdx]['macDeviceCfg']) && $this->devices[$deviceNdx]['macDeviceCfg']['enableCams'])
 				{ // video
+					/*
 					$badgeQuantityId = 'shn_video.filessize';
 					$this->dgData[self::dgiCamera]['dpInfo'][] = [
 						'label' => 'Archiv',
 						'badgeDataSource' => $this->devices[$deviceNdx]['macDataSource'], 'badgeQuantityId' => $badgeQuantityId,
-						'badgeParams' => ['units' => 'TB', 'divide' => 1024, 'precision' => 2, 'value_color' => 'COLOR:null|red<1|red>700|orange>500|#00A000>1', 'refresh' => 120],
+						'badgeParams' => ['units' => 'TB', 'divide' => 1024, 'precision' => 2, 'value_color' => 'COLOR:null|red<1|red>700|orange>500|00A000>1', 'refresh' => 120],
 					];
 
 					$badgeQuantityId = 'shn_video.archivedhours';
 					$this->dgData[self::dgiCamera]['dpInfo'][] = [
 						'label' => 'Historie',
 						'badgeDataSource' => $this->devices[$deviceNdx]['macDataSource'], 'badgeQuantityId' => $badgeQuantityId,
-						'badgeParams' => ['precision' => 1, 'value_color' => 'COLOR:null|red<96|orange<168|#00A000>=0', 'refresh' => 120],
+						'badgeParams' => ['precision' => 1, 'value_color' => 'COLOR:null|red<96|orange<168|00A000>=0', 'refresh' => 120],
 					];
+					*/
 				}
 			}
 			elseif ($deviceKind === 30)
@@ -205,19 +205,19 @@ class OverviewData extends Utility
 					$this->devices[$deviceNdx]['sensorsBadges'][] = [
 						'label' => 'L','badgeQuantityId' => 'apcupsd_local.load',
 						'badgeDataSource' => $this->devices[$deviceNdx]['macDataSource'],
-						'badgeParams' => ['dimensions' => 'load', 'label_color' => '#4C787E', 'value_color' => 'COLOR:null|red>40|orange>15|#00A000>1|#FF70FF>=0', 'refresh' => 120],
+						'badgeParams' => ['dimensions' => 'load', 'label_color' => '4C787E', 'value_color' => 'COLOR:null|red>40|orange>15|00A000>1|FF70FF>=0', 'refresh' => 120],
 					];
 
 					$this->devices[$deviceNdx]['sensorsBadges'][] = [
 						'label' => 'B','badgeQuantityId' => 'apcupsd_local.charge',
 						'badgeDataSource' => $this->devices[$deviceNdx]['macDataSource'],
-						'badgeParams' => ['dimensions' => 'charge', 'label_color' => '#4C787E', 'value_color' => 'COLOR:null|#00A000>=95|orange>50|red>=0', 'refresh' => 75],
+						'badgeParams' => ['dimensions' => 'charge', 'label_color' => '4C787E', 'value_color' => 'COLOR:null|00A000>=95|orange>50|red>=0', 'refresh' => 75],
 					];
 
 					$this->devices[$deviceNdx]['sensorsBadges'][] = [
 						'label' => 'T','badgeQuantityId' => 'apcupsd_local.time',
 						'badgeDataSource' => $this->devices[$deviceNdx]['macDataSource'],
-						'badgeParams' => ['dimensions' => 'time', 'units' => 'minutes', 'label_color' => '#4C787E', 'value_color' => 'COLOR:null|#00A000>=45|orange>25|red>=0', 'refresh' => 75],
+						'badgeParams' => ['dimensions' => 'time', 'units' => 'minutes', 'label_color' => '#4C787E', 'value_color' => 'COLOR:null|00A000>=45|orange>25|red>=0', 'refresh' => 75],
 					];
 				}
 				elseif ($this->devices[$deviceNdx]['macDeviceType'] === 'ups-nut')
@@ -225,19 +225,19 @@ class OverviewData extends Utility
 					$this->devices[$deviceNdx]['sensorsBadges'][] = [
 						'label' => 'L','badgeQuantityId' => 'nut_'.$deviceId.'.load',
 						'badgeDataSource' => $this->devices[$deviceNdx]['macDataSource'],
-						'badgeParams' => ['dimensions' => 'load', 'label_color' => '#4C787E', 'value_color' => 'COLOR:null|red>40|orange>15|#00A000>1|#FF70FF>=0', 'refresh' => 120],
+						'badgeParams' => ['dimensions' => 'load', 'label_color' => '4C787E', 'value_color' => 'COLOR:null|red>40|orange>15|00A000>1|FF70FF>=0', 'refresh' => 120],
 					];
 
 					$this->devices[$deviceNdx]['sensorsBadges'][] = [
 						'label' => 'B','badgeQuantityId' => 'nut_'.$deviceId.'.charge',
 						'badgeDataSource' => $this->devices[$deviceNdx]['macDataSource'],
-						'badgeParams' => ['dimensions' => 'charge', 'label_color' => '#4C787E', 'value_color' => 'COLOR:null|#00A000>=95|orange>50|red>=0', 'refresh' => 75],
+						'badgeParams' => ['dimensions' => 'charge', 'label_color' => '4C787E', 'value_color' => 'COLOR:null|00A000>=95|orange>50|red>=0', 'refresh' => 75],
 					];
 
 					$this->devices[$deviceNdx]['sensorsBadges'][] = [
 						'label' => 'T','badgeQuantityId' => 'nut_'.$deviceId.'.runtime',
 						'badgeDataSource' => $this->devices[$deviceNdx]['macDataSource'],
-						'badgeParams' => ['dimensions' => 'runtime', 'units' => 'seconds', 'label_color' => '#4C787E', 'value_color' => 'COLOR:null|#00A000>=45|orange>25|red>=0', 'refresh' => 75],
+						'badgeParams' => ['dimensions' => 'runtime', 'units' => 'seconds', 'label_color' => '#4C787E', 'value_color' => 'COLOR:null|00A000>=45|orange>25|red>=0', 'refresh' => 75],
 					];
 				}
 			}
@@ -248,10 +248,11 @@ class OverviewData extends Utility
 	}
 
 	function loadDevicesPorts()
-	{
+	{		
 		if (!count($this->devicesPks))
+		{
 			return;
-
+		}	
 		$addrTypes = $this->app->cfgItem('mac.lan.ifacesAddrTypes');
 
 		$q[] = 'SELECT ports.*, ';
@@ -278,8 +279,8 @@ class OverviewData extends Utility
 				$badgeValueId = 'maclan_'.$this->devices[$deviceNdx]['lan'].'_D'.$deviceNdx.'.bandwidth_port'.$r['portNumber'];
 				$this->devices[$deviceNdx]['uplinkPortsBadges'][] = [
 					'label' => $label, 'ndx' => $r['portNdx'],
-					'badgeDataSource' => $this->devices[$deviceNdx]['macDataSource'], 'badgeQuantityId' => $badgeValueId,
-					'badgeParams' => ['dimensions' => 'in|out', 'options' => 'abs', 'units' => 'Mb/s', 'divide' => '1024', 'precision' => 2, 'value_color' => 'COLOR:null|lightgray<1|red>100|orange>75|#00A000>5'],
+					'badgeQuantityId' => $badgeValueId,
+					'badgeParams' => ['dimensions' => 'in|out', 'options' => 'abs', 'units' => 'Mb/s', 'divide' => '1024', 'precision' => 2, 'value_color' => 'COLOR:null|lightgray<1|red>100|orange>75|00A000>5'],
 				];
 			}
 			elseif ($r['portRole'] === 20 && $deviceKind === 9)
@@ -290,25 +291,22 @@ class OverviewData extends Utility
 				$badgeValueId = 'maclan_'.$this->devices[$deviceNdx]['lan'].'_D'.$deviceNdx.'.bandwidth_port'.$r['portNumber'];
 				$this->devices[$deviceNdx]['uplinkPortsBadges'][] = [
 					'label' => $r['portId'],
-					'badgeDataSource' => $this->devices[$deviceNdx]['macDataSource'], 'badgeQuantityId' => $badgeValueId,
-					'badgeParams' => ['dimensions' => 'in|out', 'label_color' => '#2C3539', 'options' => 'abs', 'units' => 'Mb/s', 'divide' => '1024', 'precision' => 2, 'value_color' => 'COLOR:null|lightgray<1|red>100|orange>75|#00A000>5'],
+					'badgeQuantityId' => $badgeValueId,
+					'badgeParams' => ['dimensions' => 'in|out', 'label_color' => '#2C3539', 'options' => 'abs', 'units' => 'Mb/s', 'divide' => '1024', 'precision' => 2, 'value_color' => 'COLOR:null|lightgray<1|red>100|orange>75|00A000>5'],
 				];
 				$this->devices[$deviceNdx]['badgesTitle'] = '→ '.$r['connectedDeviceId'].' / '.$r['connectedPortId'];
 			}
-			elseif ($deviceKind === 70)
-			{ // shipard node server
-				if (isset($this->devices[$deviceNdx]['macDeviceCfg']) && $this->devices[$deviceNdx]['macDeviceCfg']['enableCams'])
-				{ // video
-					if ($r['portNumber'] == 2)
-					{
-						$badgeQuantityId = 'maclan_'.$this->devices[$deviceNdx]['lan'].'_D'.$r['connectedToDevice'].'.bandwidth_port'.$r['connectedPortNumber'];
-						$this->dgData[self::dgiCamera]['dpInfo'][] = [
-							'label' => 'Provoz',
-							'badgeDataSource' => $this->devices[$r['connectedToDevice']]['macDataSource'], 'badgeQuantityId' => $badgeQuantityId,
-							'badgeParams' => ['dimensions' => 'in|out', 'options' => 'abs', 'units' => 'Mb/s', 'divide' => '1024', 'precision' => 2, 'value_color' => 'COLOR:null|red<5|red>700|orange>500|#00A000>5'],
-						];
-					}
-				}
+			else
+			{
+				
+				$badgeQuantityId = 'maclan_'.$this->devices[$deviceNdx]['lan'].'_D'.$deviceNdx.'.bandwidth_port'.$r['portNumber'];
+				$this->devices[$r['connectedToDevice']]['lanBadges'][] = [
+						'label' => 'Provoz',
+						'badgeQuantityId' => $badgeQuantityId,
+						'badgeParams' => ['dimensions' => 'in|out', 'options' => 'abs', 'units' => 'Mb/s', 'divide' => '1024', 
+						'precision' => 2, 'value_color' => 'COLOR:null|lightgray<1|red>100|orange>75|AABB00>6|00A000>5'
+					],
+				];
 			}
 		}
 	}

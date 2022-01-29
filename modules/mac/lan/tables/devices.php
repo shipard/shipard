@@ -62,11 +62,12 @@ class TableDevices extends DbTable
 		}
 
 		$recData['nodeSupport'] = 0;
-		if ($recData['deviceKind'] == 7)
+		$recData['monitored'] = 0;
+		$macDeviceCfg = json_decode($recData['macDeviceCfg'], TRUE);
+		if ($macDeviceCfg)
 		{
-			$macDeviceCfg = json_decode($recData['macDeviceCfg'], TRUE);
-			if ($macDeviceCfg)
-			{
+			if ($recData['deviceKind'] == 7)
+			{	
 				if (
 					(isset($macDeviceCfg['enableLC']) && $macDeviceCfg['enableLC'])	||
 					(isset($macDeviceCfg['enableCams']) && $macDeviceCfg['enableCams'])	||
@@ -76,6 +77,11 @@ class TableDevices extends DbTable
 				{
 					$recData['nodeSupport'] = 1;
 				}
+			}	
+			
+			if ((isset($macDeviceCfg['monNetdataEnabled']) && $macDeviceCfg['monNetdataEnabled']))	
+			{
+				$recData['monitored'] = 1;
 			}
 		}
 
@@ -425,6 +431,8 @@ class ViewDevices extends TableView
 
 		if ($item['nodeSupport'])
 			$props[] = ['icon' => 'system/iconCheck', 'text' => 'node', 'class' => 'label label-info'];
+		if ($item['monitored'])
+			$props[] = ['icon' => 'tables/mac.lan.lans', 'text' => 'Netdata', 'class' => 'label label-info'];
 
 		if ($item['placeFullName'])
 		{

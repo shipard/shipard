@@ -15,7 +15,8 @@
 		{"id": "hwMode", "name": "Mód HW", "type": "enumInt", "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "mac.lan.devices.hwModes", "cfgValue": "", "cfgText": "fn"}},	
 		{"id": "hwServer", "name": "Server", "type": "int", "reference": "mac.lan.devices"},
-		{"id": "nodeSupport", "name": "Server", "type": "logical"},
+		{"id": "nodeSupport", "name": "Shipard Node", "type": "logical"},
+		{"id": "monitored", "name": "Monitorováno", "type": "logical"},
 
     {"id": "deviceTypeName", "name": "Typové označení", "type": "string", "len": 80},
 

@@ -29,7 +29,7 @@ class NodeServerCfgUpdater extends Utility
 
 	var $changes = NULL;
 
-	var $formatVersion = '2021-11.2';
+	var $formatVersion = '2022-01.28';
 
 	var $defaultWebSocketsPort = 8888;
 	var $useNewWebsockets = 0;
@@ -149,6 +149,7 @@ class NodeServerCfgUpdater extends Utility
 				foreach ($af as $afIP)
 					$cfgData['wssAllowedFrom'][] = trim($afIP);
 
+				$this->nodeServerNginxProxies($cfgData, $r['ndx'], $r['lan'], $r['mainServerLanControl'] === $r['ndx']);	
 				$this->nodeServerConfigIotBoxes($cfgData, $r['ndx'], $r['lan'], $r['mainServerLanControl'] === $r['ndx']);
 				$this->nodeServerConfigIotThings($cfgData, $r['ndx'], $r['lan'], $r['mainServerLanControl'] === $r['ndx']);
 				$this->nodeServerConfigLanControl($cfgData, $r['ndx'], $r['lan'], $r['mainServerLanControl'] === $r['ndx']);
@@ -404,6 +405,51 @@ class NodeServerCfgUpdater extends Utility
 
 		if (count($devices))
 			$cfgData['lanControlDevices'] = $devices;
+	}
+
+	function nodeServerNginxProxies (&$cfgData, $serverNdx, $lanNdx, $isDefaultServer)
+	{
+		$proxies = [];
+
+		$q [] = 'SELECT devices.*';
+		array_push($q, ' FROM [mac_lan_devices] AS [devices]');
+		array_push($q, ' WHERE 1');
+		array_push($q, ' AND devices.[monitored] = %i', 1);
+
+		if ($isDefaultServer)
+			array_push ($q,'AND (localServer = %i', $serverNdx, ' OR (localServer = %i', 0, ' AND lan = %i))', $lanNdx);
+		else
+			array_push ($q,'AND localServer = %i', $serverNdx);
+
+		array_push($q, ' AND devices.[docStateMain] <= %i', 2);
+		array_push($q, ' ORDER BY devices.ndx');
+
+		$rows = $this->app()->db->query ($q);
+
+		foreach ($rows as $r)
+		{
+			$macDeviceCfg = json_decode($r['macDeviceCfg'], TRUE);
+			if (!$macDeviceCfg)
+				continue;
+
+			$macDeviceType = $this->app()->cfgItem('mac.devices.types.'.$r['macDeviceType'], NULL);
+			if (!$macDeviceType)
+				continue;
+
+			$proxyId = utils::safeChars($r['id'], TRUE).'-'.$r['uid'];
+			$destPort = intval($macDeviceCfg['monNetdataPort']);
+			if (!$destPort)
+				$destPort = 19999;
+			$proxy = [
+				'id' => $proxyId, 
+				'destIP' => $macDeviceCfg['monNetdataIPAddress'], 
+				'destPort' => $destPort, 
+			];
+			$proxies[] = $proxy;
+		}
+
+		if (count($proxies))
+			$cfgData['httpProxies'] = $proxies;
 	}
 
 	function getNodeServerCfg($serverNdx)

@@ -18,21 +18,22 @@ class GetLanMonitoringSnmp extends Utility
 	{
 		$serverNdx = intval($this->app->requestPath(4));
 		if (!$serverNdx)
+		{
+			$this->result['msg'][] = "server param missing in url";
 			return;
+		}	
 		$serverRecData = $this->db()->query ('SELECT * FROM [mac_lan_devices] WHERE ndx = %i', $serverNdx)->fetch();
 		if (!$serverRecData)
+		{
+			$this->result['msg'][] = "invalid server id";
 			return;
-
-		$dataSourceRecData = $this->db()->query ('SELECT * FROM [mac_data_sources] WHERE server = %i', $serverNdx)->fetch();
-		if (!$dataSourceRecData)
-			return;
-
+		}	
+		
 		$lanNdx = $serverRecData['lan'];
 		$snmpData = [];
 
 		$lanOverviewData = new \mac\lan\libs\LanOverviewData($this->app());
 		$lanOverviewData->setLan($lanNdx);
-		$lanOverviewData->macDataSourceNdx = $dataSourceRecData['ndx'];
 		$lanOverviewData->run();
 
 		foreach ($lanOverviewData->devicesWithSnmpRealtime as $deviceNdx)

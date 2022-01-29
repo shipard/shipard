@@ -20,7 +20,7 @@ class LanOverviewData extends Utility
 	var $deviceKinds;
 
 	var $lanNdx = 0;
-	var $macDataSourceNdx = 0;
+	//var $macDataSourceNdx = 0;
 
 	var $devices = [];
 	var $devicesPks = [];
@@ -122,7 +122,7 @@ class LanOverviewData extends Utility
 
 	function loadData_Devices()
 	{
-		$q[] = 'SELECT devices.ndx AS deviceNdx, devices.fullName AS deviceFullName, devices.deviceKind, devices.id AS deviceId, devices.hideFromDR,';
+		$q[] = 'SELECT devices.ndx AS deviceNdx, devices.fullName AS deviceFullName, devices.deviceKind, devices.id AS deviceId, devices.hideFromDR, devices.monitored,';
 		array_push ($q, ' devices.alerts, devices.lan, devices.place, devices.rack, devices.macDataSource, devices.macDeviceCfg, devices.macDeviceType, devices.lan AS deviceLan');
 		array_push ($q, ' FROM [mac_lan_devices] AS devices');
 		array_push ($q, ' LEFT JOIN e10_base_places AS places ON devices.place = places.ndx');
@@ -156,25 +156,29 @@ class LanOverviewData extends Utility
 
 			$this->devices[$deviceNdx] = [
 				'title' => $r['deviceFullName'], 'deviceId' => $r['deviceId'], 'icon' => $dk['icon'],
-				'dk' => $r['deviceKind'], 'lan' => $r['lan'],
+				'dk' => $r['deviceKind'], 'lan' => $r['lan'], 'monitored' => $r['monitored'],
 				'macDataSource' => $r['macDataSource'], 'macDeviceType' => $r['macDeviceType'],
 				'rack' => $deviceRack,
 				'ifaces' => [], 'sensorsBadges' => []
 			];
 
-			if (isset($dk['useMonitoringDataSource']) && !$r['macDataSource'])
+			/*if (isset($dk['useMonitoringDataSource']) && !$r['macDataSource'])
 			{
 				$lrd = $this->lanRecData($r['deviceLan']);
 				$this->devices[$deviceNdx]['macDataSource'] = $lrd['defaultMacDataSource'];
-			}
+			}*/
 
 			$this->devicesPks[] = $deviceNdx;
 
 
-			if ($this->devices[$deviceNdx]['macDataSource'] && !in_array($deviceNdx, $this->devicesWithDashboards))
+			//$this->tableDevices
+			//"useMonitoring": ["passive", "snmp"],
+			//if ($this->devices[$deviceNdx]['macDataSource'] && !in_array($deviceNdx, $this->devicesWithDashboards))
+			if (isset($dk['useMonitoring']) && in_array('active', $dk['useMonitoring']) && $this->devices[$deviceNdx]['monitored'])
 				$this->devicesWithDashboards[] = $deviceNdx;
 
-			if ($this->devices[$deviceNdx]['macDataSource'] && $this->devices[$deviceNdx]['macDataSource'] === $this->macDataSourceNdx && !in_array($deviceNdx, $this->devicesWithSnmpRealtime))
+//			if ($this->devices[$deviceNdx]['macDataSource'] && $this->devices[$deviceNdx]['macDataSource'] === $this->macDataSourceNdx && !in_array($deviceNdx, $this->devicesWithSnmpRealtime))
+			if (isset($dk['useMonitoring']) && in_array('passive', $dk['useMonitoring']))
 				$this->devicesWithSnmpRealtime[] = $deviceNdx;
 
 			if ($r['macDeviceType'] !== '' && $r['macDeviceCfg'] !== '')
@@ -277,8 +281,10 @@ class LanOverviewData extends Utility
 	function loadDevicesPorts()
 	{
 		if (!count($this->devicesPks))
+		{
+			error_log("____NO DEVICES_2___");
 			return;
-
+		}	
 		$addrTypes = $this->app->cfgItem('mac.lan.ifacesAddrTypes');
 
 		$q[] = 'SELECT ports.*, ';
@@ -305,7 +311,8 @@ class LanOverviewData extends Utility
 				$badgeValueId = 'maclan_'.$this->devices[$deviceNdx]['lan'].'_D'.$deviceNdx.'.bandwidth_port'.$r['portNumber'];
 				$this->dgData[self::dgiLan]['dpInfo'][] = [
 					'label' => $label, 'ndx' => $r['portNdx'],
-					'badgeDataSource' => $this->devices[$deviceNdx]['macDataSource'], 'badgeQuantityId' => $badgeValueId,
+					'badgeDataSource' => 0, 
+					'badgeQuantityId' => $badgeValueId,
 					'badgeParams' => ['dimensions' => 'in|out', 'options' => 'abs', 'units' => 'Mb/s', 'divide' => '1024', 'precision' => 2, 'value_color' => 'COLOR:null|lightgray<1|red>100|orange>75|#00A000>5'],
 				];
 			}
@@ -317,7 +324,8 @@ class LanOverviewData extends Utility
 				$badgeValueId = 'maclan_'.$this->devices[$deviceNdx]['lan'].'_D'.$deviceNdx.'.bandwidth_port'.$r['portNumber'];
 				$this->devices[$deviceNdx]['uplinkPortsBadges'][] = [
 					'label' => $r['portId'],
-					'badgeDataSource' => $this->devices[$deviceNdx]['macDataSource'], 'badgeQuantityId' => $badgeValueId,
+					'badgeDataSource' => 0, 
+					'badgeQuantityId' => $badgeValueId,
 					'badgeParams' => ['dimensions' => 'in|out', 'label_color' => '#2C3539', 'options' => 'abs', 'units' => 'Mb/s', 'divide' => '1024', 'precision' => 2, 'value_color' => 'COLOR:null|lightgray<1|red>100|orange>75|#00A000>5'],
 				];
 				$this->devices[$deviceNdx]['badgesTitle'] = '→ '.$r['connectedDeviceId'].' / '.$r['connectedPortId'];
@@ -331,7 +339,8 @@ class LanOverviewData extends Utility
 						$badgeQuantityId = 'maclan_'.$this->devices[$deviceNdx]['lan'].'_D'.$r['connectedToDevice'].'.bandwidth_port'.$r['connectedPortNumber'];
 						$this->dgData[self::dgiCamera]['dpInfo'][] = [
 							'label' => 'Provoz',
-							'badgeDataSource' => $this->devices[$r['connectedToDevice']]['macDataSource'], 'badgeQuantityId' => $badgeQuantityId,
+							'badgeDataSource' => $this->devices[$r['connectedToDevice']]['macDataSource'], 
+							'badgeQuantityId' => $badgeQuantityId,
 							'badgeParams' => ['dimensions' => 'in|out', 'options' => 'abs', 'units' => 'Mb/s', 'divide' => '1024', 'precision' => 2, 'value_color' => 'COLOR:null|red<5|red>700|orange>500|#00A000>5'],
 						];
 					}

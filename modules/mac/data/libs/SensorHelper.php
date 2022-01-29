@@ -13,6 +13,7 @@ class SensorHelper extends Utility
 {
 	var $dataSource = NULL;
 	var $sensorInfo = NULL;
+	var $lanInfo = NULL;
 
 	public function setSensor($sensorNdx)
 	{
@@ -119,6 +120,33 @@ class SensorHelper extends Utility
 		$c .= "<img class='e10-auto-reload'";
 		$c .= " data-src='$srcUrl'";
 		$c .= " src='$url'";
+		$c .= "/>";
+
+		return $c;
+	}
+
+	public function lanBadgeImg($label, $quantityId, $badgeParams, $lanBadgeUrl = '')
+	{
+		$c = '';
+
+		$params = [];
+		$params['chart'] = $quantityId;
+		$params['label'] = $label;
+
+		if ($badgeParams)
+			foreach ($badgeParams as $k => $v)
+				$params[$k] = strval($v);
+
+		$srcUrl = $this->lanInfo['baseUrl'];
+		
+		$srcUrl .= ($lanBadgeUrl !== '') ? $lanBadgeUrl : $this->lanInfo['lanBadgesUrl'];
+		$srcUrl .= "/api/v1/badge.svg".'?'.http_build_query($params);
+
+		$params['xyz'] = time();
+
+		$c .= "<img class='e10-auto-reload'";
+		$c .= " data-src='$srcUrl'";
+		$c .= " src='$srcUrl'";
 		$c .= "/>";
 
 		return $c;

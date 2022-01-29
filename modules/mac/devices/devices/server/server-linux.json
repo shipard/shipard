@@ -23,14 +23,19 @@
 			{"id": "displayRack3", "group": "rack", "name": "Rack 3", "type": "int", "reference": "mac.lan.racks", "enabled": {"enableRack": 1, "showRacks": 1}},
 			
 			{"id": "camLogin", "group": "cams", "name": "Výchozí uživatel pro kamery", "type": "string", "len": 30, "enabled": {"enableCams": 1}},
-			{"id": "camPasswd", "group": "cams", "name": "Výchozí heslo pro kamery", "type": "string", "len": 50, "enabled": {"enableCams": 1}}
+			{"id": "camPasswd", "group": "cams", "name": "Výchozí heslo pro kamery", "type": "string", "len": 50, "enabled": {"enableCams": 1}},
+		
+			{"id": "monNetdataEnabled", "group": "monitoring", "name": "Monitorováno pomocí Netdata", "type": "logical", "options": ["saveOnChange"]},
+			{"id": "monNetdataIPAddress", "group": "monitoring", "name": "Netdata IP adresa", "type": "string", "len": 55, "enabled": {"monNetdataEnabled": 1}},
+			{"id": "monNetdataPort", "group": "monitoring", "name": "Netdata port", "placeholder": "19999", "type": "int", "enabled": {"monNetdataEnabled": 1}}	
 		],
 		"groups": [
 				{"id": "general", "title": "Základní nastavení"},
 				{"id": "websrv", "title": "Webový server"},
 				{"id": "lc", "title": "Monitoring a řízení sítě"},
 				{"id": "rack", "title": "Správa racku"},
-				{"id": "cams", "title": "Kamerový server"}
+				{"id": "cams", "title": "Kamerový server"},
+				{"id": "monitoring", "title": "Monitoring tohoto serveru"}
 			]
 	},
 

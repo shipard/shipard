@@ -29,24 +29,30 @@
 	},
 	"7": {
 		"name": "Server", "pluralName": "Servery", "active": 1, "icon": "deviceTypes/server",
-		"overviewOrder": 10000, "alerts": 1, "isMacDevice": 1, "useMonitoringDataSource": 1, "showDashboardRacks": 1,
+		"overviewOrder": 10000, "alerts": 1, "isMacDevice": 1,
+		"useMonitoring": ["active", "netdata"],
+		"showDashboardRacks": 1,
 		"alertsScope": 2, "odg": "srv"
 	},
 
 	"8": {
 		"name": "Router", "pluralName": "Routery", "active": 1, "icon": "deviceTypes/router",
-		"overviewOrder": 9000, "switchPorts": 1, "alerts": 1, "isMacDevice": 1, "useMonitoringDataSource": 1, "showDashboardRacks": 1,
+		"overviewOrder": 9000, "switchPorts": 1, "alerts": 1, "isMacDevice": 1,
+		"useMonitoring": ["passive", "snmp"],
+		"showDashboardRacks": 1,
 		"alertsScope": 1, "odg": "lan"
 	},
 	"9": {
 		"name": "Switch", "pluralName": "Switche", "active": 1, "icon": "deviceTypes/switch",
-		"overviewOrder": 11000, "switchPorts": 1, "alerts": 1, "isMacDevice": 1, "useMonitoringDataSource": 1, "showDashboardRacks": 1,
+		"overviewOrder": 11000, "switchPorts": 1, "alerts": 1, "isMacDevice": 1, "showDashboardRacks": 1,
+		"useMonitoring": ["passive", "snmp"],
 		"alertsScope": 1, "odg": "lan"
 	},
 
 	"14": {
 		"name": "Aktivní prvek", "pluralName": "Aktivní prvky", "active": 1, "icon": "deviceTypes/router",
-		"overviewOrder": 9000, "switchPorts": 1, "alerts": 1, "isMacDevice": 1, "useMonitoringDataSource": 1, "showDashboardRacks": 1,
+		"overviewOrder": 9000, "switchPorts": 1, "alerts": 1, "isMacDevice": 1, "showDashboardRacks": 1,
+		"useMonitoring": ["passive", "snmp"],
 		"alertsScope": 1, "odg": "lan"
 	},
 
@@ -58,18 +64,19 @@
 
 	"10": {
 		"name": "Kamera", "pluralName": "Kamery", "active": 1, "icon": "deviceTypes/camera",
-		"overviewOrder": 15000, "alerts": 1, "isMacDevice": 1, "useMonitoringDataSource": 1,
+		"overviewOrder": 15000, "alerts": 1, "isMacDevice": 1,
 		"alertsScope": 4, "odg": "cams"
 	},
 	"11": {
 		"name": "NAS", "pluralName": "NAS", "active": 1, "icon": "deviceTypes/nas",
-		"overviewOrder": 10200, "alerts": 1,  "isMacDevice": 1, "useMonitoringDataSource": 1, "showDashboardRacks": 1,
+		"overviewOrder": 10200, "alerts": 1,  "isMacDevice": 1, "showDashboardRacks": 1,
+		"useMonitoring": ["passive", "snmp"],
 		"alertsScope": 2, "odg": "srv"
 	},
 
 	"70": {
 		"name": "ZRUŠENO - Shipard Node Server", "pluralName": "ZRUŠENO - Shipard Node Servery", "active": 1, "icon": "deviceTypes/shipardNodeServer",
-		"overviewOrder": 18500, "alerts": 1, "isMacDevice": 1, "useMonitoringDataSource": 1, "showDashboardRacks": 1,
+		"overviewOrder": 18500, "alerts": 1, "isMacDevice": 1, "showDashboardRacks": 1,
 		"alertsScope": 2, "odg": "srv"
 	},
 	"75": {
@@ -84,13 +91,13 @@
 
 	"30": {
 		"name": "UPS", "pluralName": "UPS", "active": 1, "icon": "deviceTypes/ups",
-		"overviewOrder": 80000, "isMacDevice": 1, "useMonitoringDataSource": 1, "showDashboardRacks": 1,
+		"overviewOrder": 80000, "isMacDevice": 1, "showDashboardRacks": 1,
 		"alertsScope": 0, "odg": "ups"
 	},
 
 	"40": {
 		"name": "Terminál", "pluralName": "Terminály", "active": 1, "icon": "deviceTypes/terminal",
-		"overviewOrder": 82000, "alerts": 2, "isMacDevice": 1, "useMonitoringDataSource": 1,
+		"overviewOrder": 82000, "alerts": 2, "isMacDevice": 1,
 		"alertsScope": 5, "odg": "trm"
 	},
 
