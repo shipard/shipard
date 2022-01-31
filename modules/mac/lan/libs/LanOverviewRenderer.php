@@ -2,7 +2,7 @@
 
 namespace mac\lan\libs;
 
-use \Shipard\Base\Content, \e10\utils, \e10\json, \mac\lan\libs\LanOverviewData,  \mac\data\libs\SensorHelper;
+use \Shipard\Base\Content, \e10\utils, \e10\json, \mac\lan\libs\dashboard\OverviewData,  \mac\data\libs\SensorHelper;
 
 
 /**
@@ -13,7 +13,7 @@ class LanOverviewRenderer extends Content
 {
 	var $lanNdx = 0;
 
-	/** @var \mac\lan\libs\LanOverviewData */
+	/** @var \mac\lan\libs\dashboard\OverviewData */
 	var $lanOverviewData;
 
 	/** @var \e10\widgetBoard */
@@ -316,9 +316,9 @@ class LanOverviewRenderer extends Content
 	{
 		$activeDeviceId = intval($this->app()->testGetParam ('e10-widget-dashboard-device-ndx'));
 
-		if (isset($this->lanOverviewData->dgData[$this->dashboardDevicesGroup]['devices']))
+		if (isset($this->lanOverviewData->dgData[$this->mainViewType]['devices']))
 		{
-			if (!in_array($activeDeviceId, $this->lanOverviewData->dgData[$this->dashboardDevicesGroup]['devices']))
+			if (!isset($this->lanOverviewData->dgData[$this->mainViewType]['devices'][$activeDeviceId]))
 				$activeDeviceId = 0;
 		}
 		$c = '';
@@ -327,12 +327,18 @@ class LanOverviewRenderer extends Content
 		$c .= "<input type='hidden' name='e10-widget-dashboard-device-ndx' id='e10-widget-dashboard-device-ndx' value='$activeDeviceId'>";
 
 		$c .= "<ul class='e10-wf-tabs' data-value-id='e10-widget-dashboard-device-ndx'>";
-		foreach ($this->lanOverviewData->dgData[$this->dashboardDevicesGroup]['devices'] as $deviceNdx)
+		//$c .= json_encode($this->mainViewType);
+		//$c .= json_encode($this->lanOverviewData->dgData);
+		foreach ($this->lanOverviewData->dgData[$this->mainViewType]['devices'] as $deviceNdx => $deviceInfo)
 		{
+			$device = $this->lanOverviewData->devices[$deviceNdx];
+			if (!isset($device['dkCfg']['useMonitoring']))
+				continue;
+			if (!$device['monitored'] && in_array('active', $device['dkCfg']['useMonitoring']))
+				continue;
+
 			if (!$activeDeviceId)
 				$activeDeviceId = $deviceNdx;
-
-			$device = $this->lanOverviewData->devices[$deviceNdx];
 
 			$active = ($deviceNdx === $activeDeviceId) ? ' active' : '';
 			$c .= "<li class='tab e10-widget-trigger$active' data-tabid='".$deviceNdx."'>";
@@ -409,7 +415,6 @@ class LanOverviewRenderer extends Content
 		$this->code .= $cr->createCode('body');
 	}
 
-
 	function macDataSourceSensorHelper($dsNdx)
 	{
 		if (!isset($this->macDataSourcesSensorsHelpers[$dsNdx]))
@@ -429,20 +434,20 @@ class LanOverviewRenderer extends Content
 		return $this->macDataSourcesSensorsHelpers[$dsNdx];
 	}
 
-
 	public function run($mainViewType, \Shipard\UI\Core\WidgetBoard $widget)
 	{
 		$this->widget = $widget;
 		$this->mainViewType = $mainViewType;
 
-		$this->lanOverviewData = new \mac\lan\libs\LanOverviewData($this->app());
+		$this->lanOverviewData = new \mac\lan\libs\dashboard\OverviewData($this->app());
+		//$this->lanOverviewData = new \mac\lan\libs\LanOverviewData($this->app());
 		$this->lanOverviewData->setLan($this->lanNdx);
 		$this->lanOverviewData->run();
 
 		if ($mainViewType === 'overview')
 		{
-			$this->createContentOverview();
-			$this->createCode();
+			//$this->createContentOverview();
+			//$this->createCode();
 		}
 		else
 		{

@@ -32,7 +32,7 @@ class GetLanMonitoringSnmp extends Utility
 		$lanNdx = $serverRecData['lan'];
 		$snmpData = [];
 
-		$lanOverviewData = new \mac\lan\libs\LanOverviewData($this->app());
+		$lanOverviewData = new \mac\lan\libs\dashboard\OverviewData($this->app());
 		$lanOverviewData->setLan($lanNdx);
 		$lanOverviewData->run();
 

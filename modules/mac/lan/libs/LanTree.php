@@ -89,6 +89,7 @@ class LanTree extends Utility
 			' connectedDevices.deviceKind AS connectedDeviceKind, connectedDevices.rack AS connectedRackNdx,',
 			' connectedDevices.hideFromDR,');
 		array_push ($q, ' connectedPorts.portNumber AS connectedPortNumber, connectedPorts.portId AS connectedPortId,');
+		array_push ($q, ' portDevices.id AS portDeviceId,');
 		array_push ($q, ' connectedDevicesRacks.id AS connectedDeviceRackId, connectedDevicesRacks.fullName AS connectedDeviceRackName');
 		array_push ($q, ' FROM [mac_lan_devicesPorts] AS ports');
 		array_push ($q, ' LEFT JOIN [mac_lan_vlans] AS vlans ON ports.vlan = vlans.ndx');
@@ -97,12 +98,13 @@ class LanTree extends Utility
 		array_push ($q, ' LEFT JOIN [e10_base_places] AS wallSocketsPlaces ON wallSockets.place = wallSocketsPlaces.ndx');
 
 		array_push ($q, ' LEFT JOIN [mac_lan_devices] AS connectedDevices ON ports.connectedToDevice = connectedDevices.ndx');
+		array_push ($q, ' LEFT JOIN [mac_lan_devices] AS portDevices ON ports.device = portDevices.ndx');
 		array_push ($q, ' LEFT JOIN [mac_lan_devicesPorts] AS connectedPorts ON ports.connectedToPort = connectedPorts.ndx');
 		array_push ($q, ' LEFT JOIN [mac_lan_racks] AS connectedDevicesRacks ON connectedDevices.rack = connectedDevicesRacks.ndx');
 
 		array_push ($q, ' WHERE ports.device = %i', $deviceNdx);
 		array_push ($q, ' AND ports.portRole = %i', 30);
-		array_push ($q, ' ORDER BY connectedDevicesRacks.fullName, ports.[portNumber], ports.[ndx]');
+		array_push ($q, ' ORDER BY connectedDevicesRacks.fullName, portDevices.id, ports.[portNumber], ports.[ndx]');
 //		array_push ($q, ' ORDER BY ports.[portNumber], ports.[ndx]');
 
 		$rows = $this->db()->query($q);
@@ -123,6 +125,7 @@ class LanTree extends Utility
 
 			$newItem = [
 				'deviceNdx' => $r['connectedToDevice'],
+				'deviceId' => $r['portDeviceId'],
 				'rackNdx' => $r['connectedRackNdx'],
 				'title' => $r['connectedDeviceName'],
 				'num' => $r['portNumber'],

@@ -176,8 +176,8 @@ class LanMonitoringWidget extends WidgetBoard
 			$rt = [
 				'viewer-mode-overview' => ['text' => '', 'icon' => 'system/detailOverview', 'action' => 'viewer-mode-overview'],
 				'viewer-mode-old' => ['text' => '', 'icon' => 'system/iconFile', 'action' => 'viewer-mode-old'],
-				'viewer-mode-dashboard-server' => ['text' => '', 'icon' => 'deviceTypes/server', 'action' => 'viewer-mode-dashboard-server'],
-				'viewer-mode-dashboard-nas' => ['text' => '', 'icon' => 'deviceTypes/nas', 'action' => 'viewer-mode-dashboard-nas'],
+				'viewer-mode-dashboard-srv' => ['text' => '', 'icon' => 'deviceTypes/server', 'action' => 'viewer-mode-dashboard-server'],
+				//'viewer-mode-dashboard-nas' => ['text' => '', 'icon' => 'deviceTypes/nas', 'action' => 'viewer-mode-dashboard-nas'],
 				'viewer-mode-dashboard-lan' => ['text' => '', 'icon' => 'tables/mac.lan.lans', 'action' => 'viewer-mode-dashboard-lan'],
 				'viewer-mode-dashboard-printer' => ['text' => '', 'icon' => 'deviceTypes/printer', 'action' => 'viewer-mode-dashboard-printer'],
 				'viewer-mode-dashboard-ups' => ['text' => '', 'icon' => 'deviceTypes/ups', 'action' => 'viewer-mode-dashboard-ups'],
@@ -333,11 +333,11 @@ class LanMonitoringWidget extends WidgetBoard
 		}
 		else
 		{
-			$lor = new \mac\lan\libs\LanOverviewRenderer($this->app());
-			$lor->setLan($this->lanNdx);
-			$lor->run('overview', $this);
+			//$lor = new \mac\lan\libs\LanOverviewRenderer($this->app());
+			//$lor->setLan($this->lanNdx);
+			//$lor->run('overview', $this);
 
-			$this->addContent(['type' => 'text', 'subtype' => 'rawhtml', 'text' => $lor->code]);
+			//$this->addContent(['type' => 'text', 'subtype' => 'rawhtml', 'text' => $lor->code]);
 		}
 	}
 

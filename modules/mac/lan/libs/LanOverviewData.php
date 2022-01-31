@@ -282,7 +282,6 @@ class LanOverviewData extends Utility
 	{
 		if (!count($this->devicesPks))
 		{
-			error_log("____NO DEVICES_2___");
 			return;
 		}	
 		$addrTypes = $this->app->cfgItem('mac.lan.ifacesAddrTypes');

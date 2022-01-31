@@ -28,6 +28,9 @@ class DeviceInfo extends Utility
 	/** @var \mac\lan\TableLans */
 	var $tableLans;
 	var $lanRecData = NULL;
+	var $deviceMonitoringBaseUrl = '';
+	var $deviceMonitoringNetdataUrl = '';
+	var $mainMonitoringNetdataUrl = '';
 
 	public function setDevice($deviceNdx)
 	{
@@ -40,6 +43,20 @@ class DeviceInfo extends Utility
 
 		$this->deviceRecData = $this->tableDevices->loadItem($this->deviceNdx);
 		$this->lanRecData = $this->tableLans->loadItem($this->deviceRecData['lan']);
+
+		$mainServerLanControl = $this->tableDevices->loadItem($this->lanRecData['mainServerLanControl']);
+		if ($mainServerLanControl)
+		{	
+			$macDeviceCfg = json_decode($mainServerLanControl['macDeviceCfg'], TRUE);
+			if ($macDeviceCfg)
+			{
+				$httpsPort = (isset($macDeviceCfg['httpsPort']) && (intval($macDeviceCfg['httpsPort']))) ? intval($macDeviceCfg['httpsPort']) : 443;
+				$baseUrl = 'https://'.$macDeviceCfg['serverFQDN'].':'.$httpsPort.'/';
+				$this->deviceMonitoringBaseUrl = $baseUrl;
+				$this->deviceMonitoringNetdataUrl = $baseUrl.'netdata/'.Utils::safeChars($this->deviceRecData['id'], TRUE).'-'.$this->deviceRecData['uid'];
+				$this->mainMonitoringNetdataUrl = $baseUrl.'netdata/'.Utils::safeChars($mainServerLanControl['id'], TRUE).'-'.$mainServerLanControl['uid'];
+			}	
+		}
 
 		$this->macDeviceTypeCfg = $this->app()->cfgItem('mac.devices.types.' . $this->deviceRecData['macDeviceType'], NULL);
 		if ($this->macDeviceTypeCfg === NULL)
@@ -67,33 +84,17 @@ class DeviceInfo extends Utility
 
 	protected function loadDataSources()
 	{
-		$mainDataSource = $this->deviceRecData['macDataSource'];
-		if (!$mainDataSource)
-			$mainDataSource = $this->lanRecData['defaultMacDataSource'];
-
-		if ($mainDataSource)
+		//$deviceUrl
+		if ($this->deviceRecData['monitored'])
 		{
-			$sourceRecData = $this->tableSources->loadItem($mainDataSource);
-			if ($sourceRecData)
-			{
-				$cfg = $this->app()->cfgItem('mac.data.sourcesTypes.'.$sourceRecData['sourceType']);
-				$engine = NULL;
-
-				$classId = isset($cfg['classId']) ? $cfg['classId'] : '';
-				if ($classId !== '')
-				{
-					$engine = $this->app()->createObject($classId);
-					if ($engine)
-					{
-
-					}
-				}
-
-				$source = ['recData' => $sourceRecData, 'cfg' => $cfg, 'engine' => $engine];
-
-				$this->dataSources[] = $source;
-			}
+			$source = ['url' => $this->deviceMonitoringNetdataUrl,];
+			$this->dataSources[] = $source;
 		}
+		else
+		{
+			$source = ['url' => $this->mainMonitoringNetdataUrl,];
+			$this->dataSources[] = $source;
+		}	
 	}
 
 	public function loadPorts ($deviceNdx, &$dstTable)

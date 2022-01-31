@@ -39,22 +39,22 @@ class DeviceDashboardEngine extends Utility
 			if (!isset($this->deviceInfo->macDeviceSubTypeCfg['dashboards']))
 				continue;
 
-			$this->dataSourceUrl = $source['recData']['url'];
+			$this->dataSourceUrl = $source['url'];
 
 			foreach ($this->deviceInfo->macDeviceSubTypeCfg['dashboards'] as $dashboardViewId => $dashboard)
 			{
-				$dashboardId = $dashboardViewId . '-' . $this->deviceNdx;
+				$dashboardId = $dashboardViewId . '-' . $this->deviceInfo->deviceRecData['uid'];
 
-				$urlBegin = $this->deviceInfo->lanRecData['lanMonDashboardsUrl'];
+				$urlBegin = $this->deviceInfo->deviceMonitoringBaseUrl;
 				if ($urlBegin !== '')
 				{
 					$dashboardUrl = $urlBegin;
 					if (substr($dashboardUrl, -1, 1) !== '/')
 						$dashboardUrl .= '/';
 
+					$dashboardUrl .= 'dashboards/';
 					$dashboardUrl .= $dashboardId . '.html?v='.time();
 					$item = ['title' => $dashboard['title'], 'type' => 'iframe', 'url' => $dashboardUrl, 'id' => $dashboardId];
-
 
 					if ($withCode)
 						$item['code'] = $this->createDashboardCode($dashboard);
@@ -64,12 +64,12 @@ class DeviceDashboardEngine extends Utility
 			}
 
 			// -- netdata full view
-			if (($this->deviceInfo->deviceRecData['deviceKind'] === 7 || $this->deviceInfo->deviceRecData['deviceKind'] === 70) && $this->deviceInfo->deviceRecData['macDataSource'])
+			if (($this->deviceInfo->deviceRecData['deviceKind'] === 7 || $this->deviceInfo->deviceRecData['deviceKind'] === 70))
 			{ // server / node server
 					$item = [
 							'title' => ['text' => 'Všechna data'],
 							'type' => 'iframe',
-							'url' => $source['recData']['url'],
+							'url' => $source['url'],
 					];
 					$topBar['realtime-full-view'] = $item;
 			}

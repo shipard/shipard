@@ -6,6 +6,7 @@ namespace mac\lan\libs\dashboard;
 use \Shipard\Base\Content, \e10\utils, \e10\json;
 use mac\data\libs\SensorHelper;
 
+use function e10\sortByOneKey;
 
 /**
  * Class Overview
@@ -102,19 +103,21 @@ class Overview extends Content
 		$c = '';
 
 		$c .= "<table class='compact fullWidth stripped'>";
-		foreach ($this->overviewData->dgData[$dgId]['devices'] as $deviceNdx)
+		$devices = \e10\sortByOneKey($this->overviewData->dgData[$dgId]['devices'], 'treeOrder', TRUE);
+		foreach ($devices as $deviceNdx => $deviceInfo)
 		{
 			$device = $this->overviewData->devices[$deviceNdx];
 			if ($device['hideFromDR'])
 				continue;
 			$c .= "<tr data-overview-group='e10-lan-do-{$dgId}'>";
 
-			$c .= "<td style='vertical-align: top;'>";
+			$treeLevel = ($deviceInfo['treeLevel']) ? ('padding-left: '.($deviceInfo['treeLevel'] * 2).'em;') : '';
+			$c .= "<td style='vertical-align: top; $treeLevel' class='no-wrap width30'>";
 			$c .= "<span class='indicator' id='e10-lan-do-{$deviceNdx}'>".$this->app()->ui()->icon('system/iconCheck')."</span> ";
 			$c .= $this->app()->ui()->renderTextLine(['text' => $device['title'], 'icon' => $device['icon']/*, 'suffix' => $device['deviceId']*/]);
 			$c .= "</td>";
 
-			$c .= "<td style='vertical-align: middle;'>";
+			$c .= "<td style='vertical-align: middle; padding-left: 1em;'>";
 
 			if (isset($device['lanBadges']))
 			{
@@ -162,12 +165,12 @@ class Overview extends Content
 
 			$c .= "<tr data-overview-group='e10-lan-do-lan'>";
 
-			$c .= "<td style='vertical-align: top;'>";
+			$c .= "<td style='vertical-align: top;' class='no-wrap width20'>";
 			$c .= "<span class='indicator' id='e10-lan-do-{$treeItemNdx}'>".$this->app()->ui()->icon('system/iconCheck')."</span> ";
 			$c .= utils::es($treeItem['title']);
 			$c .= "</td>";
 
-			$c .= "<td style='vertical-align: middle;'>";
+			$c .= "<td style='vertical-align: middle; padding-left: 1em;'>";
 			if (isset($this->overviewData->devices[$treeItemNdx]['uplinkPortsBadges']))
 			{
 				foreach ($this->overviewData->devices[$treeItemNdx]['uplinkPortsBadges'] as $sb)
@@ -229,12 +232,12 @@ class Overview extends Content
 
 			//$rack = $this->lanTree->racks[$treeItem['rackNdx']];
 
-			$c .= "<td style='vertical-align: middle;  padding-left: {$level}em;'>";
+			$c .= "<td style='vertical-align: middle;  padding-left: {$level}em;' class='no-wrap width20'>";
 			$c .= "<span class='indicator' id='e10-lan-do-{$treeItemNdx}'>".$this->app()->ui()->icon('system/iconCheck')."</span> ";
 			$c .= utils::es($treeItem['title']);
 			$c .= "</td>";
 
-			$c .= "<td style='vertical-align: middle; '>";
+			$c .= "<td style='vertical-align: middle; padding-left: 1em;'>";
 			if (isset($this->overviewData->devices[$treeItemNdx]['uplinkPortsBadges']))
 			{
 				foreach ($this->overviewData->devices[$treeItemNdx]['uplinkPortsBadges'] as $sb)
