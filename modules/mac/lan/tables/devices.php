@@ -898,7 +898,10 @@ class FormDevice extends TableForm
 							$this->addColumnInput ('hwMode', self::coNoLabel);
 					$this->closeRow();
 					if ($this->recData['hwMode'])
+					{
 						$this->addColumnInput ('hwServer');
+						$this->addColumnInput ('vmId');
+					}	
 				}
 
 				$this->addSeparator(TableForm::coH3);

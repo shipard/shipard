@@ -120,6 +120,7 @@ class SensorHelper extends Utility
 		$c .= "<img class='e10-auto-reload'";
 		$c .= " data-src='$srcUrl'";
 		$c .= " src='$url'";
+		$c .= " data-badge-id='$quantityId'";
 		$c .= "/>";
 
 		return $c;
@@ -134,8 +135,14 @@ class SensorHelper extends Utility
 		$params['label'] = $label;
 
 		if ($badgeParams)
+		{
 			foreach ($badgeParams as $k => $v)
+			{
+				if ($k[0] === '_')
+					continue;
 				$params[$k] = strval($v);
+			}	
+		}
 
 		$srcUrl = $this->lanInfo['baseUrl'];
 		
@@ -147,6 +154,9 @@ class SensorHelper extends Utility
 		$c .= "<img class='e10-auto-reload'";
 		$c .= " data-src='$srcUrl'";
 		$c .= " src='$srcUrl'";
+		$c .= " data-badge-id='$quantityId'";
+		if (isset($badgeParams['_title']))
+			$c .= " title='".utils::es($badgeParams['_title'])."'";
 		$c .= "/>";
 
 		return $c;

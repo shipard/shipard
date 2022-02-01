@@ -71,7 +71,7 @@ class OverviewData extends Utility
 
 	function loadData_Devices()
 	{
-		$q[] = 'SELECT devices.ndx AS deviceNdx, devices.fullName AS deviceFullName, devices.deviceKind, devices.id AS deviceId, devices.uid AS deviceUid, devices.hideFromDR, devices.monitored,';
+		$q[] = 'SELECT devices.ndx AS deviceNdx, devices.fullName AS deviceFullName, devices.deviceKind, devices.id AS deviceId, devices.uid AS deviceUid, devices.hideFromDR, devices.monitored, devices.vmId AS deviceVMId,';
 		array_push ($q, ' devices.alerts, devices.lan, devices.place, devices.rack, devices.macDataSource, devices.macDeviceCfg, devices.macDeviceType, devices.lan AS deviceLan,');
 		array_push ($q, ' devices.hwMode, devices.hwServer, parentDevices.id AS parentDeviceId');
 		array_push ($q, ' FROM [mac_lan_devices] AS devices');
@@ -83,7 +83,7 @@ class OverviewData extends Utility
 		if ($this->lanNdx)
 			array_push ($q, ' AND devices.lan = %i', $this->lanNdx);
 
-		array_push ($q, ' ORDER BY lans.[order], lans.[fullName], devices.id');
+		array_push ($q, ' ORDER BY lans.[order], lans.[fullName], devices.hwMode, devices.id');
 		$rows = $this->app->db()->query($q);
 		$counter = 0;
 		foreach ($rows as $r)
@@ -192,6 +192,34 @@ class OverviewData extends Utility
 						'lanBadgesUrl' => $this->devices[$deviceNdx]['lanBadgesUrl'],
 						'badgeParams' => ['dimensions' => 'load15', 'units' => ' ', 'precision' => 2, 'value_color' => 'COLOR:null|orange>3|red>6|00A000>=0'],
 					];
+
+					$badgeQuantityId = 'system.uptime';
+					$this->devices[$deviceNdx]['lanBadges'][] = [
+						'label' => 'uptime',
+						'badgeQuantityId' => $badgeQuantityId,
+						'lanBadgesUrl' => $this->devices[$deviceNdx]['lanBadgesUrl'],
+						'badgeParams' => ['dimensions' => 'uptime', 'precision' => 2, 'value_color' => 'COLOR:null|orange>7776000|red>15552000|00A000>=0'],
+					];
+				}
+
+				if ($r['hwMode'] === 2 && $r['hwServer'] && $r['deviceVMId'] !== '')
+				{ 
+					$VMIDND = preg_replace(['~[^0-9a-zA-Z]~i'], '_', $r['deviceVMId']);
+					$badgeQuantityId = 'cgroup_'.$VMIDND.'.cpu_limit';
+					$this->devices[$deviceNdx]['lanBadges'][] = [
+						'label' => 'CPU',
+						'badgeQuantityId' => $badgeQuantityId,
+						'lanBadgesUrl' => $this->devices[$r['hwServer']]['lanBadgesUrl'],
+						'badgeParams' => ['dimensions' => 'used', 'units' => '%', 'precision' => 1, 'value_color' => 'COLOR:null|orange>50|red>90|00A000>=0'],
+					];
+
+					$badgeQuantityId = 'cgroup_'.$VMIDND.'.mem_usage_limit';
+					$this->devices[$deviceNdx]['lanBadges'][] = [
+						'label' => 'MEM',
+						'badgeQuantityId' => $badgeQuantityId,
+						'lanBadgesUrl' => $this->devices[$r['hwServer']]['lanBadgesUrl'],
+						'badgeParams' => ['dimensions' => 'used', 'precision' => 1, 'value_color' => 'COLOR:null|orange>4000|red>8000|00A000>=0'],
+					];
 				}
 
 				if (isset($this->devices[$deviceNdx]['macDeviceCfg']) && $this->devices[$deviceNdx]['macDeviceCfg']['enableCams'])
@@ -271,11 +299,13 @@ class OverviewData extends Utility
 		$addrTypes = $this->app->cfgItem('mac.lan.ifacesAddrTypes');
 
 		$q[] = 'SELECT ports.*, ';
-		array_push ($q,' connectedDevices.id AS connectedDeviceId, connectedDevices.id AS connectedDeviceId,');
-		array_push ($q,' connectedPorts.ndx AS portNdx, connectedPorts.portId AS connectedPortId, connectedPorts.note AS connectedPortNote, connectedPorts.portNumber AS connectedPortNumber');
+		array_push ($q,' connectedDevices.id AS connectedDeviceId, connectedDevices.id AS connectedDeviceId, connectedDevices.hideFromDR AS connectedDeviceHideFromDR,');
+		array_push ($q,' connectedPorts.ndx AS portNdx, connectedPorts.portId AS connectedPortId, connectedPorts.note AS connectedPortNote, connectedPorts.portNumber AS connectedPortNumber, connectedPorts.portRole AS connectedPortRole,');
+		array_push ($q,' portDevices.hideFromDR AS portDeviceHideFromDR');
 		array_push ($q,' FROM [mac_lan_devicesPorts] AS ports');
 		array_push ($q,' LEFT JOIN [mac_lan_devices] AS connectedDevices ON ports.connectedToDevice = connectedDevices.ndx');
 		array_push ($q,' LEFT JOIN [mac_lan_devicesPorts] AS connectedPorts ON ports.connectedToPort = connectedPorts.ndx');
+		array_push ($q,' LEFT JOIN [mac_lan_devices] AS portDevices ON ports.device = portDevices.ndx');
 		array_push ($q,' WHERE 1');
 		array_push ($q,' AND ports.device IN %in', $this->devicesPks);
 		array_push ($q,' ORDER BY ports.rowOrder, ports.ndx');
@@ -285,6 +315,7 @@ class OverviewData extends Utility
 		{
 			$deviceNdx = $r['device'];
 			$deviceKind = $this->devices[$deviceNdx]['dk'];
+			$disableConnectedDevice = FALSE;
 
 			if ($r['portRole'] === 90 && $deviceKind === 8)
 			{ // WAN/Internet port
@@ -295,11 +326,16 @@ class OverviewData extends Utility
 				$this->devices[$deviceNdx]['uplinkPortsBadges'][] = [
 					'label' => $label, 'ndx' => $r['portNdx'],
 					'badgeQuantityId' => $badgeValueId,
-					'badgeParams' => ['dimensions' => 'in|out', 'options' => 'abs', 'units' => 'Mb/s', 'divide' => '1024', 'precision' => 2, 'value_color' => 'COLOR:null|lightgray<1|red>100|orange>75|00A000>5'],
+					'badgeParams' => [
+						'dimensions' => 'in|out', 'label_color' => '47556C', 'options' => 'abs', 'units' => 'Mb/s', 
+						'divide' => '1024', 'precision' => 2, 'value_color' => 'COLOR:null|lightgray<1|red>100|orange>75|00A000>5', 
+						'_title' => $this->devices[$deviceNdx]['deviceId'].' / '.$r['portId'],
+					],
 				];
+				//$disableConnectedDevice = TRUE;
 			}
 			elseif ($r['portRole'] === 20 && $deviceKind === 9)
-			{ // uplink
+			{ // uplink - switch
 				if (!isset($this->devices[$deviceNdx]['uplinkPortsBadges']))
 					$this->devices[$deviceNdx]['uplinkPortsBadges'] = [];
 
@@ -307,27 +343,50 @@ class OverviewData extends Utility
 				$this->devices[$deviceNdx]['uplinkPortsBadges'][] = [
 					'label' => $r['portId'],
 					'badgeQuantityId' => $badgeValueId,
-					'badgeParams' => ['dimensions' => 'in|out', 'label_color' => '#2C3539', 'options' => 'abs', 'units' => 'Mb/s', 'divide' => '1024', 'precision' => 2, 'value_color' => 'COLOR:null|lightgray<1|red>100|orange>75|00A000>5'],
+					'badgeParams' => [
+						'dimensions' => 'in|out', 'label_color' => '273539', 'options' => 'abs', 
+						'units' => 'Mb/s', 'divide' => '1024', 'precision' => 2, 'value_color' => 'COLOR:null|lightgray<1|red>100|orange>75|00A000>5',
+						'_title' => '→ '.$r['connectedDeviceId'].' / '.$r['connectedPortId'],
+					],
 				];
-				$this->devices[$deviceNdx]['badgesTitle'] = '→ '.$r['connectedDeviceId'].' / '.$r['connectedPortId'];
+				//$this->devices[$deviceNdx]['badgesTitle'] = '→ '.$r['connectedDeviceId'].' / '.$r['connectedPortId'];
+				//$disableConnectedDevice = TRUE;
 			}
-			else
+			elseif (/*$r['portRole'] === 10 &&*/ $r['connectedPortRole'] === 90)
+			{ // /*access port*/ to router WAN port
+				if (!isset($this->devices[$deviceNdx]['uplinkPortsBadges']))
+					$this->devices[$deviceNdx]['uplinkPortsBadges'] = [];
+
+				$badgeValueId = 'maclan_'.$this->devices[$deviceNdx]['lan'].'_D'.$deviceNdx.'.bandwidth_port'.$r['portNumber'];
+				$this->devices[$deviceNdx]['uplinkPortsBadges'][] = [
+					'label' => $r['portId'],
+					'badgeQuantityId' => $badgeValueId,
+					'badgeParams' => [
+						'dimensions' => 'in|out', 'label_color' => '652739', 'options' => 'abs', 
+						'units' => 'Mb/s', 'divide' => '1024', 'precision' => 2, 'value_color' => 'COLOR:null|lightgray<1|red>100|orange>75|00A000>5',
+						'_title' => '→ '.$r['connectedDeviceId'].' / '.$r['connectedPortId'],
+					],
+				];
+			}
+
+			if ($r['connectedDeviceHideFromDR'] || $r['portDeviceHideFromDR'] || $r['connectedPortRole'] === 90)
+				$disableConnectedDevice = 1;
+
+			if (!$disableConnectedDevice)
 			{
-				//if ($r['portRole'] !== 90)
-				{
-					$label = $r['connectedPortNote'];
-					if ($label === '')
-						$label = $r['connectedPortId'];
-					$badgeQuantityId = 'maclan_'.$this->devices[$deviceNdx]['lan'].'_D'.$deviceNdx.'.bandwidth_port'.$r['portNumber'];
-					$this->devices[$r['connectedToDevice']]['lanBadges'][] = [
-							'label' => $label,
-							'badgeQuantityId' => $badgeQuantityId,
-							'badgeParams' => [
-								'dimensions' => 'in|out', 'options' => 'abs', 'units' => 'Mb/s', 'divide' => '1024', 
-								'precision' => 2, 'value_color' => 'COLOR:null|lightgray<1|red>100|orange>75|AABB00>6|00A000>5'
-							],
-					];
-				}
+				//$label = $r['connectedPortNote'];
+				//if ($label === '')
+					$label = $r['connectedPortId'];
+				$badgeQuantityId = 'maclan_'.$this->devices[$deviceNdx]['lan'].'_D'.$deviceNdx.'.bandwidth_port'.$r['portNumber'];
+				$this->devices[$r['connectedToDevice']]['lanBadges'][] = [
+						'label' => $label,
+						'badgeQuantityId' => $badgeQuantityId,
+						'badgeParams' => [
+							'dimensions' => 'in|out', 'label_color' => '476C55', 'options' => 'abs', 'units' => 'Mb/s', 'divide' => '1024', 
+							'precision' => 2, 'value_color' => 'COLOR:null|lightgray<1|red>100|orange>75|AABB00>6|00A000>5',
+							'_title' => '→ '.$this->devices[$deviceNdx]['deviceId'].' / '.$r['portId'],
+						],
+				];
 			}
 		}
 	}

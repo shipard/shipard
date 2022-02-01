@@ -75,11 +75,11 @@ class LanTree extends Utility
 				'hideFromDR' => $drd['hideFromDR'],
 				'items' => []
 			];
-			$this->loadTree($dndx, $this->dataTree[$dndx]['items']);
+			$this->loadTree($dndx, $this->dataTree[$dndx]['items'], 0);
 		}
 	}
 
-	function loadTree($deviceNdx, &$items)
+	function loadTree($deviceNdx, &$items, $level)
 	{
 		$q = [];
 		array_push ($q, 'SELECT ports.*, ');
@@ -103,7 +103,8 @@ class LanTree extends Utility
 		array_push ($q, ' LEFT JOIN [mac_lan_racks] AS connectedDevicesRacks ON connectedDevices.rack = connectedDevicesRacks.ndx');
 
 		array_push ($q, ' WHERE ports.device = %i', $deviceNdx);
-		array_push ($q, ' AND ports.portRole = %i', 30);
+		if ($level)
+			array_push ($q, ' AND ports.portRole = %i', 30);
 		array_push ($q, ' ORDER BY connectedDevicesRacks.fullName, portDevices.id, ports.[portNumber], ports.[ndx]');
 //		array_push ($q, ' ORDER BY ports.[portNumber], ports.[ndx]');
 
@@ -138,7 +139,7 @@ class LanTree extends Utility
 			$items[$r['connectedToDevice']] = $newItem;
 
 			if ($r['portRole'] === 30 && $r['connectedDeviceKind'] === 9)
-				$this->loadTree($r['connectedToDevice'], $items[$r['connectedToDevice']]['items']);
+				$this->loadTree($r['connectedToDevice'], $items[$r['connectedToDevice']]['items'], $level + 1);
 		}
 	}
 
