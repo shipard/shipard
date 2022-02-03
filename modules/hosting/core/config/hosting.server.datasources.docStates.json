@@ -5,7 +5,7 @@
 	},
 	"1100": {
 		"stateName": "Čeká na vytvoření", "actionName": "Vytvořit",
-		"mainState": 0, "stateStyle": "new", "readOnly": 1, "goto": [4000, 8000, 9800], "queryCols": {"condition": "5"}
+		"mainState": 0, "stateStyle": "new", "readOnly": 1, "goto": [4000, 8000, 9800], "queryCols": {"condition": "0"}
 	},
 	"4000": {
 		"stateName": "V pořádku", "actionName": "V pořádku", "stateStyle": "done",
