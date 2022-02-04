@@ -8,9 +8,9 @@
     },
     "OldMobile": {
         "client.js": {
-            "sha384": "8888946cd72b7e07d6c875983be53bbf46c77ad96d30375a0e5b93b90bb00a1c99bf818a89acc73df74a5b5cc615b78a",
-            "integrity": "sha384-iIiUbNcrfgfWyHWYO+U7v0bHetltMDdaDluTuQuwChyZv4GKiazHPfdKW1zGFbeK",
-            "ver": "8180a73a98196f3f90585ba34b6b1e73"
+            "sha384": "408b5dc2da74d89550d46372592857f4d1a48c96875defc98d537a92857b09609c91273611f6017691882d8f845dbc5d",
+            "integrity": "sha384-QItdwtp02JVQ1GNyWShX9NGkjJaHXe/JjVN6koV7CWCckSc2EfYBdpGILY+EXbxd",
+            "ver": "dc2252d47dd49a5f6546c3722761690a"
         }
     }
 }

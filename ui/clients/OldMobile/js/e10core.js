@@ -175,6 +175,16 @@ function e10client () {
 		});
 	}
 
+	function e10StaticTab (e, event)
+	{
+		e.parent().find ('li.active').removeClass ('active');
+		e.addClass ('active');
+
+		e.parent().parent().find('div.e10-static-tab-content>div.active').removeClass('active');
+		$('#'+e.data('content-id')).addClass('active');
+
+	}
+
 	function e10FormsTabClick (e)
 	{
 		var pageid = e.attr ("id");
@@ -472,6 +482,10 @@ function e10client () {
 		$("body").on (e10.CLICK_EVENT, "span.e10-sum-table-exp-icon", function(event) {
 			e10SumTableExpandedCellClick ($(this), event);
 		});
+
+		$("body").on (e10.CLICK_EVENT, "li.e10-static-tab", function(event) {
+			e10StaticTab ($(this), event);
+		});	
 
 		$("body").on ('keydown', function(event) {
 			e10.keyDown(event, $(this));
