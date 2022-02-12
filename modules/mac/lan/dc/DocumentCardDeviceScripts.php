@@ -198,8 +198,8 @@ class DocumentCardDeviceScripts extends \e10\DocumentCard
 				$apiKey = $apiKeyData['emailHash'];
 		}
 
-		$codeInstall = "wget https://download.shipard.org/shipard-node/server-app-2/shipard-node-install-stable-debian.cmd\n";
-		$codeInstall .= "sh shipard-node-install-stable-debian.cmd\n";
+		$codeInstall = "wget https://download.shipard.org/shipard-node/server-app-2/shipard-node-install-devel-debian.cmd\n";
+		$codeInstall .= "sh shipard-node-install-devel-debian.cmd\n";
 		$codeInstall .= "shipard-node cfg-init --server-id=\"{$this->recData['ndx']}\" --ds-url=\"$dsUrl\" --api-key=\"{$apiKey}\"\n";
 		$codeInstall .= "\n\n";
 		$content[] = ['pane' => 'e10-pane e10-pane-table', 'paneTitle' => ['text' => 'Instalace Shipard Node', 'class' => 'h2 mb2 block'], 'type' => 'text', 'subtype' => 'code', 'text' => $codeInstall];
