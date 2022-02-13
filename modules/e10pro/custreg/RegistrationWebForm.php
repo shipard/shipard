@@ -6,7 +6,7 @@ namespace e10pro\custreg;
  * Class RegistrationWebForm
  * @package e10pro\custreg
  */
-class RegistrationWebForm extends \E10\WebForm
+class RegistrationWebForm extends \Shipard\Base\WebForm
 {
 	var $valid = FALSE;
 
