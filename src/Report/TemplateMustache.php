@@ -39,6 +39,7 @@ class TemplateMustache extends \e10\TemplateCore
 			$fullTemplateName = $this->templateRoot . $templateFileName;
 			$fullDictName = $this->templateRoot . 'dict.json';
 			$this->templateBaseName = $parts[0];
+			$this->templateUrlRoot = 'https://'.$this->app->cfgItem('hostingCfg.serverDomain').'/'.$this->app->cfgItem('dsid') . '/'.'/templates/'.$replace['sn'].'/';
 		}
 		else
 		{
@@ -47,6 +48,7 @@ class TemplateMustache extends \e10\TemplateCore
 			$fullTemplateName = $this->templateRoot . $templateFileName;
 			$fullDictName = $this->templateRoot . 'dict.json';
 			$this->templateBaseName = $tfn;
+			$this->templateUrlRoot = __SHPD_TEMPLATE_SUBDIR__.'/'.implode ('/', $parts).'/'.$tfn.'/';
 		}
 
 		if (!is_readable($fullTemplateName))

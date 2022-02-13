@@ -12,6 +12,7 @@ class TemplateCore extends \Mustache
 	protected $subTemplateParams = [];
 	protected $cntr = 1;
 	public $templateRoot;
+	public $templateUrlRoot;
 	public $options = FALSE;
 	public $dict = NULL;
 	public $lang = FALSE;
@@ -168,11 +169,13 @@ class TemplateCore extends \Mustache
 		{
 			$this->urlRoot = 'templates/' . $name;
 			$this->templateRoot = __APP_DIR__ . '/templates/' . $name . '/';
+			$this->templateUrlRoot = '/templates/' . $name . '/';
 		}
 		else
 		{
 			$this->urlRoot = __SHPD_ROOT_DIR__ . __SHPD_TEMPLATE_SUBDIR__. implode ('/', $parts);
 			$this->templateRoot = __SHPD_ROOT_DIR__ . __SHPD_TEMPLATE_SUBDIR__. implode ('/', $parts) . '/';
+			$this->templateUrlRoot = __SHPD_TEMPLATE_SUBDIR__. implode ('/', $parts) . '/';
 		}
 
 		$fullOptionsName = $this->templateRoot . 'template.json';
@@ -323,6 +326,11 @@ class TemplateCore extends \Mustache
 	public function templateRoot ()
 	{
 		return $this->app->dsRoot.'/'.$this->urlRoot;
+	}
+
+	public function templateUrlRoot ()
+	{
+		return $this->templateUrlRoot;
 	}
 
 	public function dsRoot ()

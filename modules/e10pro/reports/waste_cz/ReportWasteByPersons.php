@@ -45,7 +45,7 @@ class ReportWasteByPersons extends \e10pro\reports\waste_cz\ReportWasteCore
 			$btn['subButtons'][] = [
 				'type' => 'action', 'action' => 'addwizard', 'icon' => 'system/iconEmail', 'title' => 'Odeslat emailem', 'btnClass' => 'btn-default btn-xs',
 				'data-table' => 'e10.persons.persons', 'data-pk' => $personData['personNdx'], 'data-param-calendar-year' => $this->year,
-				'data-class' => 'e10.SendFormReportWizard',
+				'data-class' => 'Shipard.Report.SendFormReportWizard',
 				'data-addparams' => 'reportClass=' . 'e10pro.reports.waste_cz.ReportWasteOnePerson' . '&documentTable=' . 'e10.persons.persons'
 			];
 			$personInfo[] = $btn;

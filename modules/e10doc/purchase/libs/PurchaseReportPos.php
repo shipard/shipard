@@ -4,11 +4,6 @@ namespace e10doc\purchase\libs;
 
 class PurchaseReportPos extends PurchaseReport
 {
-	function command ($cmd)
-	{
-		$this->objectData ['mainCode'] .= chr($cmd);
-	}
-
 	function init()
 	{
 		$this->reportMode = self::rmPOS;

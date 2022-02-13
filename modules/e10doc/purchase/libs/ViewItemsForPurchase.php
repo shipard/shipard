@@ -150,6 +150,9 @@ class ViewItemsForPurchase extends \e10\witems\ViewItems
 
 	function decorateRow (&$item)
 	{
+		if (!isset($item ['pk']))
+			return;
+
 		if (isset ($this->itemsStates [$item ['pk']]))
 			$item ['i2'] = \E10\nf ($this->itemsStates [$item ['pk']]['quantity'], 2).' '.$this->itemsStates [$item ['pk']]['unit'] .
 					(isset($item ['i2']['text']) ? ' / '.$item ['i2']['text'] : '');

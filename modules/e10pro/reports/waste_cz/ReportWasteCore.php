@@ -9,7 +9,7 @@ use \E10\utils;
  * Class ReportWasteCore
  * @package e10pro\reports\waste_cz
  */
-class ReportWasteCore extends \E10Doc\Core\GlobalReport
+class ReportWasteCore extends \e10doc\core\libs\reports\GlobalReport
 {
 	var $wasteCodes;
 	var $itemWasteCodes = [];
@@ -22,7 +22,7 @@ class ReportWasteCore extends \E10Doc\Core\GlobalReport
 		//$this->inventory = ($this->app->model()->table ('e10doc.inventory.journal') !== FALSE);
 		$this->inventory = FALSE;
 
-		$fn = __APP_DIR__ . '/e10-modules/e10pro/reports/waste_cz/config/wastecodes.json';
+		$fn = __SHPD_MODULES_DIR__.'/e10pro/reports/waste_cz/config/wastecodes.json';
 		$this->wasteCodes = utils::loadCfgFile($fn);
 
 		$this->setParams ('fiscalYear');

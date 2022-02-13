@@ -3,7 +3,9 @@
 namespace e10pro\reports\waste_cz;
 
 
-use \e10\FormReport, \e10\utils, e10doc\core\e10utils;
+use \Shipard\Report\FormReport;
+use \e10doc\core\libs\E10Utils;
+use \Shipard\Utils\Utils;
 
 /**
  * Class ReportWasteOnePerson
@@ -28,8 +30,8 @@ class ReportWasteOnePerson extends FormReport
 
 	function init ()
 	{
-		$this->reportId = 'e10pro.reports.waste_cz.reportWasteOnePerson';
-		$this->reportTemplate = 'e10pro.reports.waste_cz.reportWasteOnePerson';
+		$this->reportId = 'reports.default.e10pro.reports.waste_cz.reportWasteOnePerson';
+		$this->reportTemplate = 'reports.default.e10pro.reports.waste_cz.reportWasteOnePerson';
 	}
 
 	public function setOutsideParam ($param, $value)
@@ -86,8 +88,8 @@ class ReportWasteOnePerson extends FormReport
 	{
 		//$this->inventory = ($this->app->model()->table ('e10doc.inventory.journal') !== FALSE);
 		$this->inventory = FALSE;
-		$fn = __APP_DIR__ . '/e10-modules/e10pro/reports/waste_cz/config/wastecodes.json';
-		$this->wasteCodes = utils::loadCfgFile($fn);
+		$fn = __SHPD_MODULES_DIR__.'/e10pro/reports/waste_cz/config/wastecodes.json';
+		$this->wasteCodes = Utils::loadCfgFile($fn);
 
 		$cy = $this->app()->testGetParam ('data-param-calendar-year');
 		if ($this->calendarYear === 0 && $cy !== '')
@@ -95,12 +97,12 @@ class ReportWasteOnePerson extends FormReport
 
 		$this->data['calendarYear'] = strval ($this->calendarYear);
 
-		$this->fiscalYear = e10utils::todayFiscalYear($this->app);
+		$this->fiscalYear = E10Utils::todayFiscalYear($this->app);
 		$this->tablePersons = $this->app->table('e10.persons.persons');
 		$this->tableDocHeads = $this->app->table('e10doc.core.heads');
 		$this->currencies = $this->app->cfgItem ('e10.base.currencies');
 
-		$allProperties = \E10\Application::cfgItem ('e10.base.properties', array());
+		$allProperties = $this->app()->cfgItem ('e10.base.properties', []);
 
 
 		// person
