@@ -1097,7 +1097,6 @@ function e10jsinit ()
 	});
 
 	initEventer();
-	initWebsockets ();
 	initMQTT ();
 }
 
@@ -6457,142 +6456,11 @@ function e10report (button, event)
 
 
 // -- websockets servers
-
-function initWebsockets ()
-{
-	if (g_useMqtt)
-		return;
-  for (var i in webSocketServers)
-	{
-		wsStartServer (i);
-	}
-}
-
-
-function wsStartServer (serverIndex, disableMessage)
-{
-	var ws = webSocketServers[serverIndex];
-
-	if (ws.wsUrl === '')
-		return;
-
-	ws.server = null;
-	ws.retryTimer = 0;
-
-	if ("WebSocket" in window)
-		 ws.server = new WebSocket(ws.wsUrl);
-	else
-	if ("MozWebSocket" in window)
-		 ws.server = new MozWebSocket(ws.wsUrl);
-
-	ws.server.onopen = function() {wsSetState (serverIndex, 'open');};
-	ws.server.onerror = function(evt) {
-		wsSetState (serverIndex, 'error');
-		if (disableMessage == undefined)
-		{
-			new PNotify({
-				title: 'Místní server nefunguje',
-				text: "Nelze se připojit k místnímu serveru '" + ws.name + "'.\n\n<b>Kontaktujte prosím vašeho správce.</b>",
-				type: "error",
-				stack: g_NotifyStackTopRight
-			});
-		}
-	};
-	ws.server.onclose = function() {
-		wsSetState (serverIndex, 'error');
-		webSocketServers[serverIndex].retryTimer = setTimeout (function (){wsStartServer(serverIndex, 1);}, 3000);
-	};
-	ws.server.onmessage = function(e) {wsOnMessage (serverIndex, e.data);}
-}
-
-
 function wsSetState (serverIndex, socketState)
 {
 	var ws = webSocketServers[serverIndex];
 	var serverIcon = $('#wss-'+ws.id);
 	serverIcon.attr('class','e10-wss e10-wss-'+socketState);
-}
-
-
-function wsOnMessage (serverIndex, stringData)
-{
-	var data =  JSON.parse(stringData);
-
-	var sensorId = data.sensorId;
-	var elid = 'wss-' + webSocketServers[serverIndex].ndx + '-' + sensorId;
-	var deviceBtn = $('#'+elid);
-
-	if (!deviceBtn.is ('LI'))
-		return;
-
-	if (data.cmd)
-	{
-		if (data.deviceId == deviceId)
-			return;
-		if (data.cmd == 'lockSensor')
-			deviceBtn.removeClass ('e10-sensor-on');
-		if (data.cmd == 'unlockSensor')
-			deviceBtn.addClass ('e10-sensor-on');
-		return;
-	}
-
-	if (!deviceBtn.hasClass ('e10-sensor-on') && !deviceBtn.hasClass ('allwaysOn'))
-		return;
-
-	if (data.sensorClass == 'barcode')
-	{
-		var barcode = data.value;
-		if (barcode.length == 12)
-			barcode = '0' + data.value;
-		if (g_openModals.length != 0)
-		{
-			var kbdSwitch = $('#wss-bc-kbd');
-			if (kbdSwitch.hasClass ('e10-bc-kbd-on'))
-			{
-				var currentInput = $('#'+g_focusedInputId);
-				//if (currentInput.is ('INPUT'))
-				{
-					currentInput.val (barcode);
-					kbdSwitch.removeClass ('e10-bc-kbd-on').addClass ('e10-bc-kbd-off');
-					return;
-				}
-			}
-
-			var modalId = g_openModals [g_openModals.length - 1];
-			var modalElement = $('#' + modalId);
-			var formId = modalElement.attr ('data-formId');
-			var options = {"appendRowList": "rows", "appendRowItemBarcode": barcode};
-			e10SaveOnChange ($('#' + formId), options);
-			return;
-		}
-		e10CheckBarcode (barcode);
-	}
-
-	if (data.sensorClass == 'number')
-	{
-		var value = data.value;
-		$('#e10-sensordisplay-'+sensorId).text (value);
-		if (g_openModals.length != 0)
-		{
-			var modalId = g_openModals [g_openModals.length - 1];
-			var modalElement = $('#' + modalId);
-			var receiveSensors = modalElement.attr ('data_receivesensors');
-			if (receiveSensors !== undefined)
-			{
-				var sids = receiveSensors.split (' ');
-				for(i = 0; i < sids.length; i++)
-					$('#'+sids[i]).text (value);
-			}
-		}
-		if (g_camerasBarTimer !== 0)
-		{
-			clearTimeout (g_camerasBarTimer);
-			g_camerasBarTimer = 0;
-			camerasReload();
-		}
-	}
-
-	//alert (data.value);
 }
 
 
@@ -6685,8 +6553,6 @@ function viewerAddRowFromSensor (viewer, sensorType, sensorValue)
 // -- mqtt clients
 function initMQTT ()
 {
-	if (!g_useMqtt)
-		return;
 	for (var i in webSocketServers)
 	{
 		mqttStartClient (i);

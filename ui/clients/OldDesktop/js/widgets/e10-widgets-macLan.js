@@ -227,7 +227,7 @@ e10client.prototype.widgets.macLan.reloadBadges = function () {
 		$(this).attr('src', url);
 	});
 
-	e10.widgets.macLan.badgesTimer = setTimeout(e10.widgets.macLan.reloadBadges, 20000);
+	e10.widgets.macLan.badgesTimer = setTimeout(e10.widgets.macLan.reloadBadges, 10000);
 };
 
 e10client.prototype.widgets.macLan.reloadAlerts = function () {

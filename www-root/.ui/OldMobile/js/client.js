@@ -627,7 +627,7 @@ url=$(this).attr('data-src')+'?xyz='+idd;$(this).attr('src',url);});var
 alertsElement=$('#e10-lan-alerts');alertsElement.find('>div img.e10-auto-reload').each(function(){var
 idd=new
 Date().valueOf();var
-url=$(this).attr('data-src')+'?xyz='+idd;$(this).attr('src',url);});e10.widgets.macLan.badgesTimer=setTimeout(e10.widgets.macLan.reloadBadges,20000);};e10client.prototype.widgets.macLan.reloadAlerts=function(){if(e10.widgets.macLan.alertsTimer){clearTimeout(e10.widgets.macLan.alertsTimer);}var
+url=$(this).attr('data-src')+'?xyz='+idd;$(this).attr('src',url);});e10.widgets.macLan.badgesTimer=setTimeout(e10.widgets.macLan.reloadBadges,10000);};e10client.prototype.widgets.macLan.reloadAlerts=function(){if(e10.widgets.macLan.alertsTimer){clearTimeout(e10.widgets.macLan.alertsTimer);}var
 urlPath="/api/objects/call/mac-lan-alerts-download";e10.server.get(urlPath,function(data){e10.widgets.macLan.setAlerts(data);});e10.widgets.macLan.alertsTimer=setTimeout(e10.widgets.macLan.reloadAlerts,65000);};e10client.prototype.widgets.macLan.setAlerts=function(data){var
 alertsElement=$('#e10-lan-alerts');alertsElement.find('>div').each(function(){var
 scopeId=$(this).attr('data-scope-id');var
