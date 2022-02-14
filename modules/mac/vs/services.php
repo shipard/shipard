@@ -2,8 +2,6 @@
 
 namespace mac\vs;
 
-use e10\utils;
-
 
 /**
  * Class ModuleServices
@@ -29,20 +27,38 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			$context = stream_context_create($opts);
 			$resultString = file_get_contents ($url, FALSE, $context);
 			if (!$resultString)
+			{
+				error_log("Download video archive for server #{$cam['localServer']} from `$url` failed...");
 				continue;
+			}	
 			$resultData = json_decode ($resultString, TRUE);
 			if (!$resultData)
+			{
+				error_log("Invalid video archive data for server #{$cam['localServer']} from `$url` (wrong json syntax?)");
 				continue;
+			}
 
 			file_put_contents(__APP_DIR__.'/tmp/e10-vs-archive-'.$cam['localServer'].'.json', $resultString);
 
 			$doneServers[] = $cam['localServer'];
 		}
+
+		return TRUE;
 	}
 
 	public function onCronEver ()
 	{
 		$this->downloadVideoArchives();
+	}
+
+	public function onCliAction ($actionId)
+	{
+		switch ($actionId)
+		{
+			case 'download-video-archives': return $this->downloadVideoArchives();
+		}
+
+		parent::onCliAction($actionId);
 	}
 
 	public function onCron ($cronType)
