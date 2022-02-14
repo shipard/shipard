@@ -21,6 +21,9 @@ class ModuleServices extends \E10\CLI\ModuleServices
 				continue;
 
 			$srv = $servers[$cam['localServer']];
+			if (!isset($srv['camerasURL']) || $srv['camerasURL'] === '' || $srv['camerasURL'] === 'https:///')	
+				continue;
+
 			$url = $srv['camerasURL'].'archive';
 
 			$opts = ['http'=> ['timeout' => 30, 'method'=>'GET', 'header'=> "Connection: close\r\n"]];
