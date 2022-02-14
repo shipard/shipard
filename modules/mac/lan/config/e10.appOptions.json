@@ -8,10 +8,5 @@
 			{"cfgKey": "useDocumentation", "cfgName": "Používat dokumentaci",
 				"options": {"0": "Ne", "1": "Ano, ručně", "2": "Ano, automaticky"}}
 		]
-	},
-	"experimental": {
-		"options": [
-			{"cfgKey": "testNewWebsockets", "cfgName": "Testovat nové Websockety", "options": {"0": "Ne","1": "Ano"}}
-		]
 	}
 }

@@ -807,7 +807,7 @@ class WebPages extends \E10\utility
 
 		if ($this->serverInfo['mode'] === 'app')
 		{
-			$useNewWebsockets = $this->app()->cfgItem ('options.experimental.testNewWebsockets', 0);
+			$useNewWebsockets = 1;
 
 			$wss = $this->app()->webSocketServersNew();
 			$c .= "\t<script type=\"text/javascript\">\n";
@@ -834,7 +834,7 @@ class WebPages extends \E10\utility
 		}
 		elseif ($this->serverInfo['mode'] === 'display')
 		{
-			$useNewWebsockets = $this->app()->cfgItem ('options.experimental.testNewWebsockets', 0);
+			$useNewWebsockets = 1;
 			$wss = $this->app()->webSocketServersNew();
 			$c .= "\t<script type=\"text/javascript\">\n";
 			$c .= "var remoteHostAddress = '{$_SERVER ['REMOTE_ADDR']}'; e10ClientType = " . json_encode ($this->app()->clientType) . ";\n";

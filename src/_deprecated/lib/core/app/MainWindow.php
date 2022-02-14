@@ -101,52 +101,9 @@ class MainWindow extends \Shipard\Base\BaseObject
 			}
 
 			// -- web socket servers
-			$useNewWebsockets = $this->app->cfgItem ('options.experimental.testNewWebsockets', 0);
 			$wss = $this->app->webSocketServers();
 
-			if ($useNewWebsockets)
-			{
-				$userInfo .= $this->wssCode($wss);
-			}
-			else
-			{
-				$srvidx = 0;
-				$barcodeCnt = 0;
-				foreach ($wss as $srv)
-				{
-					$title = utils::es($srv['name']);
-					$userInfo .= "<li class='e10-wss e10-wss-none' id='wss-{$srv['id']}' title=\"$title\">";
-					$userInfo .= "<span><i class='fa fa-flag'/></i></span>";
-					$userInfo .= '</li>';
-
-					foreach ($srv['sensors'] as $sensor)
-					{
-						if (count($sensor['devices']) && !in_array($this->app->deviceId, $sensor['devices']))
-							continue;
-						$title = utils::es($sensor['name']);
-
-						$allwaysOn = $sensor['allwaysOn'] ? ' allwaysOn' : '';
-
-						$sensorIcon = $this->app()->ui()->icon($sensor['icon']);
-						$userInfo .= "<li class='e10-sensor{$allwaysOn}' data-sensorid='{$sensor['ndx']}' data-serveridx='$srvidx' id='wss-{$srv['ndx']}-{$sensor['ndx']}' title=\"$title\">";
-						$userInfo .= "<span>".$sensorIcon;
-						if ($sensor['class'] === 'number')
-							$userInfo .= "<span class='sd' id='e10-sensordisplay-{$sensor['ndx']}'>---</span>";
-						$userInfo .= '</span></li>';
-
-						if ($sensor['class'] === 'barcode')
-							$barcodeCnt++;
-					}
-					$srvidx++;
-				}
-
-				if ($barcodeCnt !== 0)
-				{ // barcode/keyboard switch
-					$userInfo .= "<li class='e10-bc-kbd-off' id='wss-bc-kbd' title=\"Přepnout na klávesnici\">";
-					$userInfo .= "<span><i class='fa fa-pencil'/></i></span>";
-					$userInfo .= '</li>';
-				}
-			}
+			$userInfo .= $this->wssCode($wss);
 
 			$userInfo .= "<li><span>".$this->app()->ui()->icon('system/iconOwner');
 			$ownerName = $this->app->cfgItem ('options.core.ownerShortName', '');

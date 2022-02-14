@@ -1051,7 +1051,7 @@ class Application extends \Shipard\Application\ApplicationCore
 	public function addPageCodeParts ($type, $parts, $page, $appWindow = FALSE)
 	{
 		$absUrl = '';
-		$useNewWebsockets = $this->cfgItem ('options.experimental.testNewWebsockets', 0);
+		$useNewWebsockets = 1;
 
 		$c = '';
 		switch ($type)
@@ -1135,7 +1135,7 @@ class Application extends \Shipard\Application\ApplicationCore
 
 	public function createPageCodeOpen ($page, $appWindow = FALSE)
 	{
-		$useNewWebsockets = $this->cfgItem ('options.experimental.testNewWebsockets', 0);
+		$useNewWebsockets = 1;
 
 		$absUrl = '';
 
@@ -1507,7 +1507,7 @@ class Application extends \Shipard\Application\ApplicationCore
 
 		self::$appLog->setUser();
 
-		if (isset($this->requestPath [2]) && $this->requestPath [2] !== 'e10pro.hosting.server.getNewDataSource' && $this->requestPath [2] !== 'e10.base.NotificationCentre') // TODO: cleanup
+		if (isset($this->requestPath [2]) && $this->requestPath [2] !== 'hosting.core.libs.api.getNewDataSource' && $this->requestPath [2] !== 'e10.base.NotificationCentre') // TODO: cleanup
 			touch (__APP_DIR__.'/tmp/api/access/'.$this->user->data ['id'].'_'.$_SERVER ['REMOTE_ADDR'].'_'.$this->deviceId);
 
 		$object = isset($this->requestPath [1]) ? $this->requestPath [1] : '';

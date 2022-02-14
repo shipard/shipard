@@ -18,12 +18,7 @@ class SensorsAndControlsEngine extends Utility
 
 	public function load()
 	{
-		//$useNewWebsockets = $this->app()->cfgItem ('options.experimental.testNewWebsockets', 0);
-
 		$this->loadWss();
-
-		//if (!$useNewWebsockets)
-		//	return;
 
 		if ($this->app()->model()->module('mac.lan') === FALSE)
 			return;

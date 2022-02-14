@@ -52,9 +52,7 @@ class NodeServerCfgUpdater extends Utility
 		$this->tableIOPorts = $this->app()->table('mac.lan.devicesIOPorts');
 		$this->tableSensors = $this->app()->table('mac.iot.sensors');
 
-		$this->useNewWebsockets = $this->app->cfgItem ('options.experimental.testNewWebsockets', 0);
-		if ($this->useNewWebsockets)
-			$this->defaultWebSocketsPort = 9883;
+		$this->defaultWebSocketsPort = 9883;
 	}
 
 	function lanCfg($lanNdx)
