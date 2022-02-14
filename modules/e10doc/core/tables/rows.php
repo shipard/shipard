@@ -66,8 +66,10 @@ class TableRows extends DbTable
 
 
 		// item type
-		if (!isset ($recData ['item']))
+		if (!isset ($recData ['item']) || $recData ['item'] === '')
 			$recData ['item'] = 0;
+		if (!isset ($recData ['itemIsSet']) || $recData ['itemIsSet'] === '')
+			$recData ['itemIsSet'] = 0;
 
 		if (!isset ($recData ['itemType']))
 			$recData ['itemType'] = '';

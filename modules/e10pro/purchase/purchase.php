@@ -207,7 +207,7 @@ class InvoicePurchaseDisposal extends \E10Doc\Balance\BalanceDisposalViewer
 												 'addParams' => '__docType=invni');
 		$item['buttons'] = $buttons;
 
-		$item['docActionData']['operation'] = '1040002';
+		$item['docActionData']['operation'] = '1040003';
 		$item['docActionData']['title'] = 'Likvidace výkupu';
 
 		// -- dbCounter: TODO: settings in sales options
@@ -218,7 +218,7 @@ class InvoicePurchaseDisposal extends \E10Doc\Balance\BalanceDisposalViewer
 	public function checkDocumentTile ($document, &$tile)
 	{
 		$tile['docActionData']['text'] = 'Likvidace výkupu '.$document['docNumber'];
-		$tile['docActionData']['taxCode'] = '117'; // TODO: settings?
+		$tile['docActionData']['taxCode'] = 'EUCZ117'; // TODO: settings?
 		$tile['docActionData']['weightNet'] = $document['weightNet'];
 	}
 } // InvoicePurchaseDisposal
