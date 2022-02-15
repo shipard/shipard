@@ -9,7 +9,7 @@ class ReportPurchasePaymentInfo extends \e10doc\purchase\libs\PurchaseReport
 {
 	function init ()
 	{
-		$this->reportId = 'e10pro.purchase.paymentinfo';
-		$this->reportTemplate = 'e10pro.purchase.paymentinfo';
+		$this->reportId = 'reports.default.e10pro.purchase.paymentinfo';
+		$this->reportTemplate = 'reports.default.e10pro.purchase.paymentinfo';
 	}
 }
