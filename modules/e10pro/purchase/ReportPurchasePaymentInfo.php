@@ -1,17 +1,11 @@
 <?php
 
-namespace E10Pro\Purchase;
-
-require_once __APP_DIR__.'/e10-modules/e10doc/purchase/purchase.php';
-
-use E10\utils, E10\Utility;
-
+namespace e10pro\purchase;
 
 /**
  * Class ReportPurchasePaymentInfo
- * @package E10Pro\Purchase
  */
-class ReportPurchasePaymentInfo extends \e10doc\purchase\PurchaseReport
+class ReportPurchasePaymentInfo extends \e10doc\purchase\libs\PurchaseReport
 {
 	function init ()
 	{
