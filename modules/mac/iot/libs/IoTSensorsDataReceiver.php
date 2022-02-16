@@ -52,8 +52,10 @@ class IoTSensorsDataReceiver extends Utility
 			$rows = $this->db()->query($q);
 			foreach ($rows as $r)
 			{
-				if ($sensorData['value'] === '' || $sensorData['value'] === false)
+				if ($sensorData['value'] === '' || $sensorData['value'] === false || $sensorData['value'] === 'nan')
 					$sensorData['value'] = 0;
+				if (is_string($sensorData['value']))
+					$sensorData['value'] = floatval($sensorData['value']);
 				$this->db()->query('UPDATE [mac_iot_sensorsValues] SET [value] = %f', $sensorData['value'],
 					', [time] = %t', $now, ', [counter] = [counter] + 1',
 					' WHERE [ndx] = %i', $r['ndx']);
