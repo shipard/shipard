@@ -53,7 +53,8 @@ class TemplateMustache extends \e10\TemplateCore
 
 		if (!is_readable($fullTemplateName))
 		{
-			error_log("TEMPLATE NOT FOUND: `$fullTemplateName`");
+			if ($templateFileName === 'page.mustache')
+				error_log("TEMPLATE NOT FOUND: `$fullTemplateName`");
 			return FALSE;
 		}
 
