@@ -1,11 +1,6 @@
 <?php
 
 namespace lib\ebanking\upload;
-
-
-require_once __APP_DIR__ . '/e10-modules/e10doc/bank/bank.php';
-
-
 use E10\utils, E10\Utility;
 
 
