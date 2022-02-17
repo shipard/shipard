@@ -4,7 +4,7 @@ namespace terminals\ros;
 
 require_once __SHPD_MODULES_DIR__ . 'e10/base/base.php';
 
-use \e10\utils, \e10\json, \E10\TableView, \E10\TableForm, \E10\DbTable, \e10\Application;
+use \e10\utils, \e10\json, \E10\TableView, \E10\TableForm, \E10\DbTable, \Shipard\Application\Application;
 
 
 /**
@@ -139,8 +139,8 @@ class TableRosRegs extends DbTable
 
 			$certs = [];
 			$certs['cert'] = file_get_contents($crtPath.'.crt');
-			$certs['pkey'] = file_get_contents($crtPath.'.key');
-			$crtInfo = openssl_x509_parse($certs['cert'],0);
+			$certs['pkey'] = file_get_contents($crtPath.'.pem');
+			$crtInfo = openssl_x509_parse($certs['cert'], 0);
 
 			return [
 				'status' => 1,
@@ -214,7 +214,7 @@ class TableRosRegs extends DbTable
 			'labels' => [
 				$validToLabel,
 				['text' => 'OK', 'class' => 'label label-success', 'icon' => 'icon-certificate'],
-				['text' => $crtInfo['subject']['commonName'], 'suffix' => $crtInfo['subject']['description'], 'class' => 'label label-success', 'icon' => 'icon-address-card-o'],
+				['text' => $crtInfo['subject']['commonName'], 'suffix' => $crtInfo['subject']['description'] ?? '', 'class' => 'label label-success', 'icon' => 'icon-address-card-o'],
 				['text' => $crtInfo['issuer']['commonName'], 'suffix' => $crtInfo['issuer']['organizationName'], 'class' => 'label label-success', 'icon' => 'icon-feed']
 			]
 		];
