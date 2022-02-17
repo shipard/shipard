@@ -3,7 +3,7 @@
     <ul class="breadcrumb">
         {{#data.page.breadcrumbs}}
             <li class="breadcrumb-item{{#active}} active{{/active}}">
-                {{^active}}<a href="{{id}}">{{{#icon}}{{@icon;dataItem:icon}}} {{title}}</a>{{/active}}
+                {{^active}}<a href="{{id}}">{{#icon}}{{{@icon;dataItem:icon}}} {{/icon}}{{title}}</a>{{/active}}
                 {{#active}}<span>{{title}}</span>{{/active}}
             </li>
         {{/data.page.breadcrumbs}}
