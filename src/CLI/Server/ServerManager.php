@@ -177,6 +177,16 @@ class ServerManager extends Utility
 				symlink(__SHPD_SERVER_ROOT_DIR__.'/etc/cron.d/shpd-server.conf', $fn);
 		}
 
+		// -- apt upgrades
+		if (is_dir ('/etc/apt/apt.conf.d'))
+		{
+			$fn = '/etc/apt/apt.conf.d/99zz-shp-upgrades';
+			if (!is_file($fn)) 
+			{
+				symlink(__SHPD_ROOT_DIR__.'/etc/apt/99zz-shp-upgrades', $fn);
+			}
+		}
+
 		/*
 		foreach ($hostingCfg as $hcId => $hc)
 		{
@@ -313,6 +323,9 @@ class ServerManager extends Utility
 		{
 			$this->serverUpgrade_Channel($channelId, $channel);
 		}
+
+		// -- host check
+		passthru ('shpd-server server-check');
 
 		// -- app-upgrade
 		passthru ('shpd-server app-walk app-upgrade');

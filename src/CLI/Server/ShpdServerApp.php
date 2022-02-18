@@ -1214,6 +1214,12 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		return $sm->serverUpgrade();
 	}
 
+	public function serverAfterPkgsUpgrade()
+	{
+		$cmd = "/usr/sbin/service shpd-headless-browser restart";
+		passthru($cmd);
+	}
+
 	public function hostingCfg ($requiredFields = NULL)
 	{
 		if (!is_file('/etc/e10-hosting.cfg'))
@@ -1330,7 +1336,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		if (count ($this->arguments) == 0)
 			return $this->help ();
 
-		if (!$this->superuser() && in_array($this->command (), ['server-backup', 'server-check', 'server-cleanup']))
+		if (!$this->superuser() && in_array($this->command (), ['server-backup', 'server-check', 'server-cleanup', 'server-after-pkgs-upgrade']))
 			return $this->manager->err ('Need to be root');
 
 		$this->quiet = $this->arg ("quiet");
@@ -1354,6 +1360,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 			case	"server-check":							return $this->serverCheck ();
 			case	"server-cleanup":						return $this->serverCleanup ();
 			case	"server-upgrade":						return $this->serverUpgrade();
+			case  "server-after-pkgs-upgrade":return $this->serverAfterPkgsUpgrade();
 			case  "server-get-hosting-info":	return $this->getHostingInfo();
 			case	'netdata-alarm':						return $this->netDataAlarm();
 		}
