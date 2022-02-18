@@ -299,7 +299,7 @@ class ViewPlacesComboParents extends ViewPlaces
 {
 	public function defaultQuery (&$q)
 	{
-		if ($this->queryParam('placeType'))
+		if ($this->queryParam('placeType') && $this->queryParam('placeType') !== 'other')
 		{
 			array_push ($q, ' AND places.[placeType] <> %s ', $this->queryParam('placeType'));
 		}
