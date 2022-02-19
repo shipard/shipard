@@ -72,6 +72,12 @@ class WikiEngine extends Utility
 			$this->doError(404, 'p');
 			return;
 		}
+		$section = $this->sections[$pageSectionNdx] ?? NULL;
+		if (!$section)
+		{
+			$this->doError(404, 'p');
+			return;
+		}
 
 		$pageSectionRecData = $this->db()->query('SELECT * FROM [e10pro_kb_sections] WHERE [ndx] = %i', $pageSectionNdx)->fetch();
 		if (!$pageSectionRecData || $pageSectionRecData['wiki'] !== $this->wikiNdx)
@@ -90,8 +96,8 @@ class WikiEngine extends Utility
 
 
 		$writerUser = 0;
-		$section = $this->sections[$pageSectionNdx];
-		if (in_array('w', $section['roles']) || in_array('a', $section['roles']))
+		$section = $this->sections[$pageSectionNdx] ?? NULL;
+		if (isset($section['roles']) && (in_array('w', $section['roles']) || in_array('a', $section['roles'])))
 			$writerUser = 1;
 
 		$this->page['title'] = $r['title'];
@@ -607,9 +613,13 @@ class WikiEngine extends Utility
 		if (!$this->page['sectionNdx'])
 			return;
 
-		$section = $this->sections[$this->page['sectionNdx']];
+		$section = $this->sections[$this->page['sectionNdx']] ?? NULL;
+		if (!$section || !isset($section['roles']))
+		{
+			return;
+		}
 
-		if (in_array('w', $section['roles']) || in_array('a', $section['roles']))
+		if (isset($section['roles']) && (in_array('w', $section['roles']) || in_array('a', $section['roles'])))
 		{
 			$b = [
 				'text' => 'Upravit', 'title' => 'Upravit stránku', 'icon' => 'system/actionOpen',
@@ -650,11 +660,10 @@ class WikiEngine extends Utility
 
 	function createSectionButtons ($sectionNdx, &$target)
 	{
-		$section = $this->sections[$sectionNdx];
+		$section = $this->sections[$sectionNdx] ?? NULL;
 
-		if (!isset($section['roles']))
+		if (!$section || !isset($section['roles']))
 		{
-
 			return;
 		}
 
