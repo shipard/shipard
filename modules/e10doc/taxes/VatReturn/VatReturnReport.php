@@ -123,7 +123,7 @@ class VatReturnReport extends \e10doc\taxes\TaxReportReport
 
 		foreach ($this->data['rowsRounded'] as $rid => $row)
 		{
-			$this->data['rowsPrint'][$rid] = ['base' => utils::nf($row['base']), 'tax' => utils::nf($row['tax']),'total' => utils::nf($row['total']) ];
+			$this->data['rowsPrint'][$rid] = ['base' => utils::nf($row['base'] ?? 0.0), 'tax' => utils::nf($row['tax'] ?? 0.0), 'total' => utils::nf($row['total'] ?? 0.0) ];
 		}
 	}
 
@@ -326,8 +326,10 @@ class VatReturnReport extends \e10doc\taxes\TaxReportReport
 				];
 			}
 
-
-			$item = ['dateTax' => $r['dateTax'], 'base' => $r['base'], 'tax' => $r['tax'], 'total' => $r['total']];
+			$item = [
+				'dateTax' => $r['dateTax'], 'base' => $r['base'], 'tax' => $r['tax'], 'total' => $r['total'], 
+				'person' => $this->personName($r),
+			];
 			$item['docNumber'] = $this->docNumber($r, $item);
 			$item['vatId'] = $this->vatId($r);
 
@@ -351,7 +353,7 @@ class VatReturnReport extends \e10doc\taxes\TaxReportReport
 
 		$dirName = $this->app->cfgItem ('e10.base.taxDir.'.$dir);
 		$title = [['text' => $dirName, 'class' => 'h2']];
-		$h = ['#' => '#', 'docNumber' => 'Doklad', 'dateTax' => 'DUZP', 'vatId' => 'DIČ', 'base' => ' Základ', 'tax' => ' Daň', 'total' => ' Celkem'];
+		$h = ['#' => '#', 'docNumber' => 'Doklad', 'dateTax' => 'DUZP', 'vatId' => 'DIČ', 'person' => 'Partner', 'base' => ' Základ', 'tax' => ' Daň', 'total' => ' Celkem'];
 		$this->addContent (['type' => 'table', 'header' => $h, 'table' => $table, 'title' => $title, 'main' => TRUE]);
 	}
 
@@ -405,7 +407,7 @@ class VatReturnReport extends \e10doc\taxes\TaxReportReport
 	public function createContent_Errors ()
 	{
 		$this->createContent_Errors_InvalidDocs();
-//		$this->createContent_Errors_InvalidPersons();
+		$this->createContent_Errors_InvalidPersons();
 		//	$this->createContent_Errors_BadVatIds();
 	}
 
@@ -821,6 +823,7 @@ class VatReturnReport extends \e10doc\taxes\TaxReportReport
 		$this->loadData_ReverseCharge();
 
 		$this->loadInvalidDocs();
+		$this->loadInvalidPersons('e10doc_taxes_reportsRowsVatReturn');
 
 		if (!$this->filingNdx && isset($this->reportParams ['filingType']['value']))
 		{
@@ -868,7 +871,7 @@ class VatReturnReport extends \e10doc\taxes\TaxReportReport
 		$did = 'D'.$dir;
 
 		$q[] = 'SELECT [rows].*, docs.docState as docState, ';
-		array_push($q, ' docs.person AS personNdx, docs.docType AS docType, persons.fullName AS personName, persons.id AS personId, ');
+		array_push($q, ' docs.person AS personNdx, docs.docType AS docType, persons.fullName AS personName, persons.id AS personId, persons.personType, persons.company,');
 		array_push($q, ' validity.valid AS valid, validity.msg AS personMsg, validity.revalidate AS personRevalidate');
 		array_push($q, ' FROM [e10doc_taxes_reportsRowsVatReturn] AS [rows]');
 		array_push($q, ' LEFT JOIN [e10doc_core_heads] as docs ON [rows].document = docs.ndx');
@@ -996,16 +999,7 @@ class VatReturnReport extends \e10doc\taxes\TaxReportReport
 		if (!$r['personNdx'])
 			return '';
 
-		$vatId = ['table' => 'e10.persons.persons', 'pk' => $r['personNdx'], 'docAction' => 'edit'];
-		if ($r['vatId'] === '')
-		{
-			$vatId['text'] = '#'.$r['personId'];
-			$vatId['class'] = 'e10-small';
-		}
-		else
-			$vatId['text'] = $r['vatId'];
-		$vatId['title'] = $r['personName'];
-
+		$vatId = ['text' => $r['vatId']];
 		$badVatId = FALSE;
 		if (isset($this->badVatIds[$r['vatId']]))
 			$badVatId = TRUE;
@@ -1027,6 +1021,22 @@ class VatReturnReport extends \e10doc\taxes\TaxReportReport
 		}
 
 		return $vatId;
+	}
+
+	public function personName ($r)
+	{
+		if (!$r['personNdx'])
+			return '';
+
+		if ($this->format === 'pdf')
+			return $r['personName'];
+
+		$personName = ['table' => 'e10.persons.persons', 'pk' => $r['personNdx'], 'docAction' => 'edit'];
+		$personName['text'] = $r['personName'];
+		$personName['suffix'] = '#'.$r['personId'];
+		$personName['icon'] = $this->tablePersons->tableIcon($r);
+
+		return $personName;
 	}
 
 	function addXmlRow ($itemId, $row)

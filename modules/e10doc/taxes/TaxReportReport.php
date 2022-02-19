@@ -17,6 +17,8 @@ class TaxReportReport extends \e10doc\core\libs\reports\GlobalReport
 	var $tableFilings;
 	/** @var  \e10\DbTable */
 	var $tableDocs;
+	/** @var  \e10\persons\TablePersons */
+	var $tablePersons;
 
 	var $previewReportTemplate = '';
 
@@ -56,6 +58,7 @@ class TaxReportReport extends \e10doc\core\libs\reports\GlobalReport
 
 		$this->tableFilings = $this->app->table('e10doc.taxes.reports');
 		$this->tableDocs = $this->app->table('e10doc.core.heads');
+		$this->tablePersons = $this->app->table('e10.persons.persons');
 		$this->docTypes = $this->app->cfgItem ('e10.docs.types');
 
 		$this->addParam('fiscalYear');
@@ -323,6 +326,51 @@ class TaxReportReport extends \e10doc\core\libs\reports\GlobalReport
 					'msg' => 'Doklad není uzavřen',
 			];
 			$this->invalidDocs[] = $item;
+			$this->cntErrors++;
+		}
+	}
+
+	public function loadInvalidPersons($forTableSQLName)
+	{
+		$q[] = 'SELECT [rows].vatId as vatId, [rows].ndx as rowNdx, [rows].docNumber as docNumber, [rows].document as docNdx,';
+		array_push($q, ' docs.person as personNdx, docs.docType as docType, persons.fullName as personFullName,');
+		array_push($q, ' validity.valid as personValid, validity.msg as personMsg, validity.revalidate as personRevalidate');
+		array_push($q, ' FROM ['.$forTableSQLName.'] AS [rows]');
+		array_push($q, ' LEFT JOIN [e10doc_core_heads] as docs ON [rows].document = docs.ndx');
+		array_push($q, ' LEFT JOIN [e10_persons_persons] as persons ON docs.person = persons.ndx');
+		array_push($q, ' LEFT JOIN [e10_persons_personsValidity] AS validity ON persons.ndx = validity.person');
+		array_push($q, ' WHERE 1');
+		array_push($q, ' AND [rows].[report] = %i', $this->taxReportNdx);
+		array_push($q, ' AND [rows].[filing] = %i', $this->filingNdx);
+
+		array_push($q, ' AND docs.[person] != 0');
+		array_push($q, 'AND (',
+				' validity.[valid] != %i', 1,
+				' OR',
+					'NOT EXISTS (SELECT ndx FROM [e10_persons_personsValidity] WHERE person = docs.person)',
+				')');
+		array_push($q, ' ORDER BY persons.fullName');
+
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$personNdx = $r['personNdx'];
+			$item = [
+					'rowNdx' => $r['rowNdx'], 'docNumber' => $r['docNumber'], 'docNdx' => $r['docNdx'], 'docType' => $r['docType'],
+					'personNdx' => $r['personNdx'], 'personFullName' => $r['personFullName']
+			];
+
+			if (!isset($this->invalidPersons[$personNdx]))
+			{
+				$this->invalidPersons[$personNdx] = [
+						'fullName' => $r['personFullName'],
+						'valid' => $r['personValid'], 'msg' => $r['personMsg'],
+						'revalidate' => $r['personRevalidate'],
+						'docs' => []
+				];
+			}
+
+			$this->invalidPersons[$personNdx]['docs'][] = $item;
 			$this->cntErrors++;
 		}
 	}
