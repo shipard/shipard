@@ -11,5 +11,10 @@
 				"id": "pinD1", "name": "Pin DATA 1", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["in", "hwInt"]}
 			}
 		]
+	},
+	"dataModel": {
+		"itemType": "readers",
+		"data-type": "signal",
+		"eventType": "readerValue"
 	}
 }
