@@ -15,6 +15,7 @@ class DeviceInfo extends Utility
 	var $deviceRecData = NULL;
 	var $macDeviceTypeCfg = NULL;
 	var $macDeviceSubTypeCfg = NULL;
+	var $macDeviceCfg = NULL;
 	var $dataSources = [];
 
 	var $info = [];
@@ -31,6 +32,7 @@ class DeviceInfo extends Utility
 	var $deviceMonitoringBaseUrl = '';
 	var $deviceMonitoringNetdataUrl = '';
 	var $mainMonitoringNetdataUrl = '';
+	var $zigbee2mqttUrl = '';
 
 	public function setDevice($deviceNdx)
 	{
@@ -53,9 +55,9 @@ class DeviceInfo extends Utility
 				$httpsPort = (isset($macDeviceCfg['httpsPort']) && (intval($macDeviceCfg['httpsPort']))) ? intval($macDeviceCfg['httpsPort']) : 443;
 				$baseUrl = 'https://'.$macDeviceCfg['serverFQDN'].':'.$httpsPort.'/';
 				$this->deviceMonitoringBaseUrl = $baseUrl;
-				$this->deviceMonitoringNetdataUrl = $baseUrl.'netdata/'.Utils::safeChars($this->deviceRecData['id'], TRUE).'-'.$this->deviceRecData['uid'];
-				$this->mainMonitoringNetdataUrl = $baseUrl.'netdata/'.Utils::safeChars($mainServerLanControl['id'], TRUE).'-'.$mainServerLanControl['uid'];
-			}	
+				$this->deviceMonitoringNetdataUrl = $baseUrl.'netdata/nd-'.Utils::safeChars($this->deviceRecData['id'], TRUE).'-'.$this->deviceRecData['uid'];
+				$this->mainMonitoringNetdataUrl = $baseUrl.'netdata/nd-'.Utils::safeChars($mainServerLanControl['id'], TRUE).'-'.$mainServerLanControl['uid'];
+			}
 		}
 
 		$this->macDeviceTypeCfg = $this->app()->cfgItem('mac.devices.types.' . $this->deviceRecData['macDeviceType'], NULL);
@@ -80,6 +82,17 @@ class DeviceInfo extends Utility
 
 		$this->info['addresses'] = [];
 		$this->loadAddresses($this->deviceNdx, $this->info['addresses']);
+
+		// -- zigbee2mqtt		
+		$macDeviceCfg = json_decode($this->deviceRecData['macDeviceCfg'], TRUE);
+		if ($macDeviceCfg)
+		{
+			if (isset($macDeviceCfg['zigbee2MQTTEnabled']) && intval($macDeviceCfg['zigbee2MQTTEnabled']))
+			{
+				$this->zigbee2mqttUrl = $baseUrl.'z2m/z2m-'.Utils::safeChars($mainServerLanControl['id'], TRUE).'-'.$mainServerLanControl['uid'].'/';
+			}
+			$this->macDeviceCfg = $macDeviceCfg;
+		}
 	}
 
 	protected function loadDataSources()

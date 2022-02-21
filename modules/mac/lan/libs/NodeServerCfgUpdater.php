@@ -29,7 +29,7 @@ class NodeServerCfgUpdater extends Utility
 
 	var $changes = NULL;
 
-	var $formatVersion = '2022-01.28';
+	var $formatVersion = '2022-02.19';
 
 	var $defaultWebSocketsPort = 8888;
 	var $useNewWebsockets = 0;
@@ -412,7 +412,8 @@ class NodeServerCfgUpdater extends Utility
 		$q [] = 'SELECT devices.*';
 		array_push($q, ' FROM [mac_lan_devices] AS [devices]');
 		array_push($q, ' WHERE 1');
-		array_push($q, ' AND devices.[monitored] = %i', 1);
+		//array_push($q, ' AND devices.[monitored] = %i', 1);
+		array_push($q, ' AND devices.[deviceKind] = %i', 7);
 
 		if ($isDefaultServer)
 			array_push ($q,'AND (localServer = %i', $serverNdx, ' OR (localServer = %i', 0, ' AND lan = %i))', $lanNdx);
@@ -434,16 +435,53 @@ class NodeServerCfgUpdater extends Utility
 			if (!$macDeviceType)
 				continue;
 
-			$proxyId = utils::safeChars($r['id'], TRUE).'-'.$r['uid'];
-			$destPort = intval($macDeviceCfg['monNetdataPort']);
-			if (!$destPort)
-				$destPort = 19999;
-			$proxy = [
-				'id' => $proxyId, 
-				'destIP' => $macDeviceCfg['monNetdataIPAddress'], 
-				'destPort' => $destPort, 
-			];
-			$proxies[] = $proxy;
+			if (intval($macDeviceCfg['monNetdataEnabled']))
+			{
+				$proxyId = 'nd-'.utils::safeChars($r['id'], TRUE).'-'.$r['uid'];
+				$destPort = intval($macDeviceCfg['monNetdataPort']);
+				if (!$destPort)
+					$destPort = 19999;
+				$proxy = [
+					'id' => $proxyId, 
+					'type' => 'netdata',
+					'destIP' => $macDeviceCfg['monNetdataIPAddress'], 
+					'destPort' => $destPort, 
+				];
+				$proxies[] = $proxy;
+			}
+
+			if (intval($macDeviceCfg['zigbee2MQTTEnabled']))
+			{
+				$proxyId = 'z2m-'.utils::safeChars($r['id'], TRUE).'-'.$r['uid'];
+				$destPort = intval($macDeviceCfg['zigbee2MQTTUIPort']);
+				if (!$destPort)
+					$destPort = 8099;
+				$destAddress = $macDeviceCfg['zigbee2MQTTUIIPAddress'];	
+				if ($destAddress === '')
+					$destAddress = 'localhost';
+				$proxy = [
+					'id' => $proxyId, 
+					'type' => 'inside',
+				];
+
+				$idef = "\tlocation /z2m/{$proxyId} {\n";
+				$idef .= "\t\tproxy_pass http://{$destAddress}:{$destPort}/;\n";
+				$idef .= "\t\t".'proxy_set_header Host $host;'."\n";
+				$idef .= "\t\t".'proxy_set_header X-Real-IP $remote_addr;'."\n";
+				$idef .= "\t\t".'proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;'."\n";
+				$idef .= "\t}\n";
+				
+				$idef .= "\tlocation /z2m/$proxyId/api {\n";
+				$idef .= "\t\tproxy_pass http://{$destAddress}:{$destPort}/;\n";
+				$idef .= "\t\t".'proxy_set_header Host $host;'."\n";
+				
+				$idef .= "\t\t".'proxy_http_version 1.1;'."\n";
+				$idef .= "\t\t".'proxy_set_header Upgrade $http_upgrade;'."\n";
+				$idef .= "\t\t".'proxy_set_header Connection "upgrade";'."\n";
+				$idef .= "\t}\n\n";
+				$proxy['insideDef'] = $idef;
+				$proxies[] = $proxy;
+			}
 		}
 
 		if (count($proxies))

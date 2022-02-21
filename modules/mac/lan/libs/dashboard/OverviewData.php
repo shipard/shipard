@@ -114,7 +114,7 @@ class OverviewData extends Utility
 				'macDeviceType' => $r['macDeviceType'],
 				'hideFromDR' => $r['hideFromDR'],
 				'rack' => $deviceRack,
-				'lanBadgesUrl' => Utils::safeChars($r['deviceId'], TRUE).'-'.$r['deviceUid'],
+				'lanBadgesUrl' => 'nd-'.Utils::safeChars($r['deviceId'], TRUE).'-'.$r['deviceUid'],
 				'dkCfg' => $dk,
 				'ifaces' => [], 'sensorsBadges' => []
 			];

@@ -64,14 +64,24 @@ class DeviceDashboardEngine extends Utility
 			}
 
 			// -- netdata full view
-			if (($this->deviceInfo->deviceRecData['deviceKind'] === 7 || $this->deviceInfo->deviceRecData['deviceKind'] === 70))
+			if (($this->deviceInfo->deviceRecData['deviceKind'] === 7))
 			{ // server / node server
 					$item = [
-							'title' => ['text' => 'Všechna data'],
+							'title' => ['text' => 'Netdata'],
 							'type' => 'iframe',
 							'url' => $source['url'],
 					];
 					$topBar['realtime-full-view'] = $item;
+			}
+
+			if ($this->deviceInfo->zigbee2mqttUrl !== '')
+			{
+				$item = [
+					'title' => ['text' => 'Zigbee'],
+					'type' => 'iframe',
+					'url' => $this->deviceInfo->zigbee2mqttUrl,
+				];
+				$topBar['zigbee2mqtt'] = $item;
 			}
 		}
 
