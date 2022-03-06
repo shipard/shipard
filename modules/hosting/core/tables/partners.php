@@ -70,8 +70,8 @@ class TablePartners extends DbTable
 		$q[] = 'SELECT ds.condition, COUNT(*) AS cnt, SUM(stats.usageDb) as usageDb, SUM(stats.usageFiles) as usageFiles, SUM(stats.usageTotal) as usageTotal,';
 		array_push($q, ' SUM(stats.cntDocuments12m) as cntDocuments12m, stats.cntUsersAll1m as cntUsersAll1m,');
 		array_push($q, ' stats.datasource, ds.name as dsName');
-		array_push($q, ' FROM e10pro_hosting_server_datasourcesStats AS stats');
-		array_push($q, ' LEFT JOIN hosting_core_datasources AS ds ON stats.dataSource = ds.ndx');
+		array_push($q, ' FROM hosting_core_dsStats AS stats');
+		array_push($q, ' LEFT JOIN hosting_core_dataSources AS ds ON stats.dataSource = ds.ndx');
 		array_push($q, ' WHERE ds.docState = 4000');
 		array_push($q, ' AND ds.partner = %i', $partnerNdx);
 		array_push($q, ' GROUP BY 1');
@@ -204,7 +204,6 @@ class ViewDetailPartner extends TableViewDetail
 
 //		$title = [['icon' => 'icon-umbrella', 'text' => $i['name'], 'class' => 'h2']];
 
-		/*
 		$dsStatsInfo = $this->table()->partnerDSStats($i['ndx']);
 		$title = [
 			['text' => utils::nf($dsStatsInfo['1']['cnt']), 'icon' => 'system/iconDatabase', 'class' => 'label label-success', 'title' => 'Počet databází v ostrém provozu'],
@@ -215,7 +214,6 @@ class ViewDetailPartner extends TableViewDetail
 			['text' => utils::snf($dsStatsInfo['NONPROD']['usageTotal']), 'icon' => 'icon-hdd-o', 'class' => 'label label-default', 'title' => 'Celková velikost databází v testovacím provozu'],
 			['text' => utils::snf($dsStatsInfo['NONPROD']['cntDocuments12m']), 'icon' => 'icon-file-text-o', 'class' => 'label label-default', 'title' => 'Počet dokladů za posledních 12 měsíců u databází v testovacím provozu'],
 		];
-		*/
 
 		$this->addContent (['pane' => 'e10-pane e10-pane-table', 'type' => 'table',
 			'title' => $title,
@@ -307,7 +305,6 @@ class FormPartner extends TableForm
 					$this->addColumnInput ('name');
 					$this->addColumnInput ('owner');
 
-					$this->addColumnInput ('portal');
 					$this->addColumnInput ('webUrl');
 					$this->addColumnInput ('supportEmail');
 					$this->addColumnInput ('supportPhone');

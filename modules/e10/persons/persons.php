@@ -840,8 +840,8 @@ class Authenticator extends \Shipard\Application\Authenticator
 				if ($existingPerson)
 				{ // person exist
 					// -- connect to data source
-					$userds = $this->app->db->fetch('SELECT * FROM [e10pro_hosting_server_usersds] WHERE [datasource] = %i AND [user] = %i',
-							$dataSource['ndx'], $existingPerson['ndx']);
+					$userds = $this->app->db->fetch('SELECT * FROM [hosting_core_dsUsers] WHERE [dataSource] = %i AND [user] = %i',
+						$dataSource['ndx'], $existingPerson['ndx']);
 					if (!$userds)
 					{ // connect
 						$newLinkedDataSource = ['user' => $existingPerson['ndx'], 'dataSource' => $dataSource['ndx'],

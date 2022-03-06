@@ -166,8 +166,8 @@ class ViewDSUsers extends TableView
 
 		if ($this->queryParam ('user'))
 		{
-			$q = "SELECT usersds.*, ds.name AS dsName, ds.docState AS docState, ds.docStateMain AS docStateMain FROM [e10pro_hosting_server_usersds] as usersds " .
-					 "LEFT JOIN hosting_core_dataSources as ds ON usersds.datasource = ds.ndx WHERE usersds.user = %i" . $this->sqlLimit();
+			$q = "SELECT usersds.*, ds.name AS dsName, ds.docState AS docState, ds.docStateMain AS docStateMain FROM [hosting_core_dsUsers] as usersds " .
+					 "LEFT JOIN hosting_core_dataSources as ds ON usersds.dataSource = ds.ndx WHERE usersds.user = %i" . $this->sqlLimit();
 			$this->runQuery ($q, $this->queryParam ('user'));
 		}
 		else

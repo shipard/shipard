@@ -459,13 +459,13 @@ class ViewDataSources extends TableView
 
 	public function selectRows2 ()
 	{
-	//	if (!count ($this->pks))
+		if (!count ($this->pks))
 			return;
 
 		// -- data source stats
-		$dsStats = $this->db()->query ('SELECT * FROM e10pro_hosting_server_datasourcesStats WHERE datasource IN %in', $this->pks);
+		$dsStats = $this->db()->query ('SELECT * FROM hosting_core_dsStats WHERE dataSource IN %in', $this->pks);
 		foreach ($dsStats as $r)
-			$this->dsStats[$r['datasource']] = $r->toArray();
+			$this->dsStats[$r['dataSource']] = $r->toArray();
 	}
 
 	public function createPanelContentQry (TableViewPanel $panel)
