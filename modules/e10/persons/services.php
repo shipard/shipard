@@ -100,6 +100,10 @@ class ModuleServices extends \E10\CLI\ModuleServices
 
 	public function onAppUpgrade ()
 	{
+		$s = [];
+		$s [] = ['end' => '2022-12-31', 'sql' => "update e10_persons_address set docState = 4000, docStateMain = 2 where docState = 0"];
+		$this->doSqlScripts ($s);
+
 		// check owner persons properties
 		$ownerPerson = $this->app->cfgItem ('options.core.ownerPerson', 0);
 		if ($ownerPerson)
