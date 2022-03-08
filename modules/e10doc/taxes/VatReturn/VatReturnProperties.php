@@ -108,7 +108,7 @@ class VatReturnProperties extends \e10doc\taxes\TaxReportProperties
 		$xmlProperties['trans'] = 'A';
 
 		// OKEC/NACE
-		$okecList = utils::loadCfgFile(__SHPD_MODULES_DIR__.'e10doc/taxes/reports/tax-eu-vat-tr/cz/okec.json');
+		$okecList = utils::loadCfgFile(__SHPD_SERVER_ROOT_DIR__.'www-root/templates/reports/default/e10doc/taxes/tax-eu-vat-tr/cz/okec.json');
 		if (isset($okecList[$xmlProperties['c_okec']]))
 			$myProperties['e10-CZ-TR-subjekt-e10-CZ-TR-NOKEC'] = $okecList[$xmlProperties['c_okec']];
 		else
