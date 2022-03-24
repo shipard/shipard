@@ -35,7 +35,7 @@
 	</style>
 </head>
 
-<body{{page.bodyEditParams}} class="{{page.bodyClasses}}{{#serverInfo.templateParams.topMenuFixedTop}} top-menu-fixed-top{{/serverInfo.templateParams.topMenuFixedTop}}">
+<body{{{page.bodyEditParams}}} class="{{page.bodyClasses}}{{#serverInfo.templateParams.topMenuFixedTop}} top-menu-fixed-top{{/serverInfo.templateParams.topMenuFixedTop}}">
 
 <div class="app">
 <header>
@@ -117,7 +117,7 @@
 	{{#page.footerExtension}}{{{page.footerExtension}}}{{/page.footerExtension}}
 </main>
 
-<footer id="pageFooter" class="page-footer ">
+<footer id="pageFooter" class="page-footer" style="position: absolute; bottom: 0; width: 100%;">
 	<div class="container-fluid">
 		{{#page.buttons.0}}
 			<div class="row">
@@ -153,11 +153,11 @@
 </div>
 
 <script type="text/javascript">var httpApiRootPath = '{{urlRoot}}'; var httpServerRootPath = '{{urlServer}}';</script>
-{{#serverInfo.secureWebPage}}<script src="{{dsRoot}}/e10-modules/e10/server/js/e10web.js?ver=22"></script>{{/serverInfo.secureWebPage}}
+{{#serverInfo.secureWebPage}}<script src="{{dsRoot}}/www-root/templates/web/libs/e10web.js?ver=22"></script>{{/serverInfo.secureWebPage}}
 <script type="text/javascript" src="{{scRoot}}/libs/js/popperjs/popper.min.js"></script>
 <script type="text/javascript" src="{{scRoot}}/bs/5.1/dist/js/bootstrap.min.js?v511"></script>
 <script type="text/javascript" src="{{scRoot}}/libs/js/fancybox/3/jquery.fancybox.min.js"></script>
-<script type="text/javascript" src="{{dsRoot}}/e10-modules/e10templates/libs/utils/default.js?v=2"></script>
+<script type="text/javascript" src="{{dsRoot}}/www-root/templates/web/libs/default.js?v=3"></script>
 {{{jsLibs}}}
 </body>
 </html>
