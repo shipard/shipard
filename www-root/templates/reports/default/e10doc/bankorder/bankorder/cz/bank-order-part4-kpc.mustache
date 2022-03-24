@@ -13,9 +13,9 @@
 {{{@write;text: ;width:1}}}
 {{#symbol2}}{{{@write;var:symbol2;align:right;maxLen:10}}}{{/symbol2}}
 {{^symbol2}}{{{@write;var:data.export.blankABOSymbol2;width:1}}}{{/symbol2}}
-{{#text}}
+{{#ABOText}}
 	{{{@write;text: ;width:1}}}
 	{{{@write;text:AV}}}{{{@write;cmd:dp}}}
 	{{{@write;var:text;maxLen:35;ascii:1}}}
 {{/text}}
-{{{@write;cmd:nl}}}
+{{{@write;cmd:crlf}}}

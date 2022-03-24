@@ -48,8 +48,8 @@ class BankOrderReport extends \e10doc\core\libs\reports\DocReport
 		}
 
 		$this->data['export']['blankABOSymbol2'] = ' ';
-		if ($this->data['myBankAccount']['bankCode'] === '2010')
-			$this->data['export']['blankABOSymbol2'] = '0'; // FIO ABO change 2015-11-12
+		//if ($this->data['myBankAccount']['bankCode'] === '2010')
+		$this->data['export']['blankABOSymbol2'] = '0'; // FIO ABO change 2015-11-12
 
 		$this->data['pages'] = array();
 		$newPage = false;
@@ -122,6 +122,11 @@ class BankOrderReport extends \e10doc\core\libs\reports\DocReport
 			}
 
 			$row['text'] = $docRow['text'];
+
+			$row['ABOText'] = substr(strtr($docRow['text'], utils::$transDiacritic), 0, 35);
+			if ($this->data['myBankAccount']['bankCode'] === '0800')
+				$row['ABOText'] = substr($row['ABOText'], 0, 31);
+
 			$row['symbol1'] = $docRow['symbol1'];
 			$row['symbol2'] = $docRow['symbol2'];
 			$row['symbol3'] = $docRow['symbol3'];

@@ -330,6 +330,7 @@ class TemplateMustache extends \e10\TemplateCore
 		switch ($command)
 		{
 			case 'nl': return "\n";
+			case 'crlf': return "\r\n";			
 			case 'dp': return ":";
 			case 'sp': return " ";
 			case 'reset': return chr(27).chr(64);
