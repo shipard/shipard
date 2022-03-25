@@ -1,4 +1,8 @@
 {
+	"LED1836G9": {
+		"fn": "TRADFRI LED bulb E26/E27 806 lumen, dimmable, warm white",
+		"modelID": "TRADFRI bulb E27 WW 806lm"
+	},
 	"LED1936G5": {
 		"fn": "TRADFRI LED globe-bulb E27 470 lumen, dimmable, white spectrum, opal white",
 		"modelID": "TRADFRIbulbG125E27WSopal470lm"
