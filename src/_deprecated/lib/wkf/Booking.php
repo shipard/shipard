@@ -91,7 +91,8 @@ class Booking extends Utility
 		if (!$this->useContracts)
 			return;
 
-		$q [] = 'SELECT [rows].*, places.shortName as placeName, heads.start as headDateBegin, heads.end as headDateEnd, persons.fullName as personFullName, heads.ndx as headNdx, places.bookingCapacity as placeCapacity';
+		$q [] = 'SELECT [rows].*, places.shortName as placeName, heads.start as headDateBegin, heads.end as headDateEnd, persons.fullName as personFullName,';
+		$q [] = ' heads.ndx as headNdx, heads.[docState] AS headDocState, places.bookingCapacity as placeCapacity';
 		$q [] = ' FROM [e10doc_contracts_rows] as [rows]';
 		$q [] = ' LEFT JOIN e10doc_contracts_heads as heads ON [rows].contract = heads.ndx';
 		$q [] = ' LEFT JOIN e10_base_places as places ON [rows].bookingPlace = places.ndx';
@@ -99,7 +100,7 @@ class Booking extends Utility
 		array_push ($q, ' WHERE 1');
 
 		array_push ($q, ' AND places.[bookingType] = %s', $this->bookingType);
-		array_push ($q, ' AND heads.[docState] = 4000 AND heads.[bookingPlaces] = 1');
+		array_push ($q, ' AND heads.[docState] IN %in', [4000, 8000], ' AND heads.[bookingPlaces] = 1');
 
 		array_push ($q, ' AND (([rows].[start] IS NULL OR [rows].[start] <= %d) AND (heads.[start] IS NULL OR heads.[start] <= %d))', $this->dateEnd, $this->dateEnd);
 		array_push ($q, ' AND (([rows].[end] IS NULL OR [rows].[end] >= %d) AND (heads.[end] IS NULL OR heads.[end] >= %d))', $this->dateBegin, $this->dateBegin);
@@ -133,7 +134,9 @@ class Booking extends Utility
 				$cntParts = $placeCapacity;
 
 			$newBooking = [
-				'ndx' => $r['headNdx'], 'subject' => $r['personFullName'], 'dateBegin' => $dateBegin, 'dateEnd' => $dateEnd, 'onRow' => 0,'cntParts' => $cntParts,
+				'ndx' => $r['headNdx'], 'subject' => $r['personFullName'], 'dateBegin' => $dateBegin, 
+				'dateEnd' => $dateEnd, 'onRow' => 0,'cntParts' => $cntParts,
+				'docState' => $r['headDocState'],
 				'days' => $days, 'table' => 'e10doc.contracts.core.heads'];
 			$this->bookings[$r['bookingPlace']][$dayId][] = $newBooking;
 		}
@@ -338,6 +341,8 @@ class Booking extends Utility
 						if (($placePart+$b['cntParts']) > $place['cap'])
 							$cellClass .= ' ob';
 
+						if ($b['docState'] !== 4000)	
+							$cellClass .= '  e10-ds e10-docstyle-edit';
 						$c .= "<td class='bk$cellClass' data-date='$dayId'$cs$rs>";
 
 						$label = $b['subject'];
