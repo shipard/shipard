@@ -9,7 +9,8 @@ use \Shipard\Application\DataModel;
 use \Shipard\Table\DbTable;
 use \Shipard\Base\Content;
 use \Shipard\Viewer\TableView;
-use \e10\ContentRenderer;
+use \Shipard\UI\Core\ContentRenderer;
+use \Shipard\Utils\TableRenderer;
 
 
 class TableForm
@@ -1062,7 +1063,7 @@ class TableForm
 					if (isset($layoutItem['table']['header']))
 						$params['header'] = $layoutItem['table']['header'];
 
-					$tr = new TableRenderer($layoutItem['table']['rows'], $layoutItem['table']['cols'], $params);
+					$tr = new TableRenderer($layoutItem['table']['rows'], $layoutItem['table']['cols'], $params, $this->app());
 					$tr->form = $this;
 					$tr->subColumnInfo = $sci;
 					$tr->formColumnId = $columnId;
@@ -1115,7 +1116,7 @@ class TableForm
 					}
 					$this->setOption('inputPrefix', 'subColumns.'.$columnId.'.');
 
-					$tr = new TableRenderer($rc, $layoutItem['recordSetTable']['cols'], $params);
+					$tr = new TableRenderer($rc, $layoutItem['recordSetTable']['cols'], $params, $this->app());
 					$tr->form = $this;
 					$tr->subColumnInfo = $sci;
 					$tr->formColumnId = $columnId;
