@@ -16,7 +16,7 @@ class LoginKey extends \e10\web\webForms\Base
 	{
 		$this->authenticator = $this->webEngine->authenticator;
 
-		$referer = $this->authenticator->loginReferer ();
+		$referer = '/';//$this->authenticator->loginReferer ();
 
 		$c = '';
 		$c .= "<form class='form-horizontal' method='POST' action='{$this->app->urlRoot}/" . $this->authenticator->option ('pathBase') . "/" . $this->authenticator->option ('pathLoginCheck') . "' id='e10-lf-authKey' autocomplete='off'>";
