@@ -70,18 +70,18 @@ class TaxCIReport extends \e10doc\taxes\TaxReportReport
 	{
 		$this->xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n";
 		$this->xml .= "<Pisemnost nazevSW=\"Shipard\" verzeSW=\"".__E10_VERSION__."\">\n";
-		$this->xml .= "<DPPDP8 verzePis=\"02.01\">\n";
+		$this->xml .= "<".$this->reportVersion['docVerId']." verzePis=\"02.01\">\n";
 	}
 
 	public function createContentXml_End ()
 	{
-		$this->xml .= "</DPPDP8>\n</Pisemnost>\n";
+		$this->xml .= "</".$this->reportVersion['docVerId'].">\n</Pisemnost>\n";
 	}
 
 	public function createContentXml_V_D()
 	{
 		$v = [
-			'dokument' => 'DP8', 'k_uladis' => 'DPP',
+			'dokument' => $this->reportVersion['docVerIdShort'], 'k_uladis' => 'DPP',
 			'd_uv' => $this->taxReportRecData['datePeriodEnd'],
 			'zdobd_od' => $this->taxReportRecData['datePeriodBegin'],
 			'zdobd_do' => $this->taxReportRecData['datePeriodEnd'],
@@ -323,8 +323,8 @@ class TaxCIReport extends \e10doc\taxes\TaxReportReport
 				];
 			$this->addXmlRow('VetaV', $v);
 			$cnt++;
-			$total_pr1e_sl_4 += $r['pr1e_sl_4'];
-			$total_pr1e_sl_5 += $r['pr1e_sl_5'];
+			$total_pr1e_sl_4 += intval($r['pr1e_sl_4']);
+			$total_pr1e_sl_5 += intval($r['pr1e_sl_5']);
 		}
 
 		if ($cnt)

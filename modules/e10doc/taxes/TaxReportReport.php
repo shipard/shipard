@@ -9,13 +9,13 @@ use e10\utils, e10\json, e10\uiutils, e10doc\core\libs\E10Utils;
  */
 class TaxReportReport extends \e10doc\core\libs\reports\GlobalReport
 {
-	/** @var  \e10\DbTable */
+	/** @var  \e10doc\taxes\TableReports */
 	var $tableTaxReports;
 	/** @var  \e10doc\taxes\TableReportsParts */
 	var $tableReportsParts;
-	/** @var  \e10\DbTable */
+	/** @var  \e10doc\taxes\TableFilings */
 	var $tableFilings;
-	/** @var  \e10\DbTable */
+	/** @var  \e10doc\core\TableHeads */
 	var $tableDocs;
 	/** @var  \e10\persons\TablePersons */
 	var $tablePersons;

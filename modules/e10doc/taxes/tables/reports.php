@@ -222,6 +222,9 @@ class ViewReports extends TableView
 		$listItem ['t1'] = $item['title'];
 		$listItem['t2'] = utils::datef($item['datePeriodBegin'], '%d').' - '.utils::datef($item['datePeriodEnd'], '%d');
 		$listItem ['icon'] = $this->table->tableIcon($item);
+		$reportVersion = $this->table->reportVersion ($item, TRUE);
+		if (isset($reportVersion['docVerId']))
+			$listItem['i2'] = $reportVersion['docVerId'];
 
 		if ($this->useMoreTaxRegs)
 		{

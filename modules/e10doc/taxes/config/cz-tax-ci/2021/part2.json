@@ -1,0 +1,198 @@
+{
+	"name": "II. ODDÍL – daň z příjmů právnických osob",
+	"title": "II. ODDÍL – daň z příjmů právnických osob (dále jen „daň“)",
+
+	"fields": {
+		"columns": [
+			{"id": "d_hospvysl", "type": "date", "src": "dates.end", "name": "Výsledek hospodaření před zdaněním (zisk+, ztráta -) nebo rozdíl mezi příjmy a výdaji ke dni"},
+			{"id": "kc_ii10_10", "type": "long", "src": "statement.C_0_54_5", "name": "Výsledek hospodaření (zisk +, ztráta –) nebo rozdíl mezi příjmy a výdaji"},
+
+			{"id": "kc_ii30_20", "type": "long", "name": "Částky neoprávněně zkracující příjmy (§ 23 odst. 3 písm. a) bod 1 zákona), a hodnota nepeněžních příjmů (§ 23 odst. 6 zákona), pokud nejsou zahrnuty ve výsledku hospodaření nebo v rozdílu mezi příjmy a výdaji na ř.10"},
+			{"id": "kc_ii40_30", "type": "long", "name": "Částky, o které se podle § 23 odst. 3 písm. a) bodů 3 až 20 zákona zvyšuje výsledek hospodaření nebo rozdíl mezi příjmy a výdaji na ř.10"},
+			{"id": "kc_ii50_40", "type": "long", "src": "nonTaxCostsTotal", "name": "Výdaje (náklady) neuznávané za výdaje (náklady) vynaložené k dosažení, zajištění a udržení příjmů (§ 25 nebo 24 zákona), pokud jsou zahrnuty ve výsledku hospodaření nebo v rozdílu mezi příjmy a výdaji na ř. 10"},
+			{"id": "kc_ii60_50", "type": "long", "src": "propertyDeps.diffTaxAcc", "name": "Rozdíl, o který odpisy hmotného a nehmotného majetku (§ 26 a § 32a zákona) uplatněné v účetnictví převyšují odpisy tohoto majetku stanovené podle § 26 až 33 zákona"},
+			{"id": "kc_ii71_61", "type": "long", "name": "Úprava základu daně podle § 23 odst. 8 zákona v případě zrušení poplatníka s likvidací"},
+			{"id": "kc_ii80_70", "type": "long", "name": "Mezisoučet (ř. 20 + 30 + 40 + 50 + 61 + 62)", "sum": "kc_ii30_20 kc_ii40_30 kc_ii50_40 kc_ii60_50 kc_ii71_61"},
+
+			{"id": "kc_ii110_100", "type": "long", "name": "Příjmy, které nejsou předmětem daně podle § 18 odst. 2 zákona, pokud jsou zahrnuty ve výsledku hospodaření nebo v rozdílu mezi příjmy a výdaji (ř. 10)"},
+			{"id": "kc_ii111_101", "type": "long", "name": "Příjmy, jež u veřejně prospěšných poplatníků, nejsou předmětem daně podle § 18a odst. 1 zákona, pokud jsou zahrnuty ve výsledku hospodaření nebo v rozdílu mezi příjmy a výdaji (ř. 10)"},
+			{"id": "kc_ii_109", "type": "long", "name": "Příjmy osvobozené od daně podle § 19b zákona, pokud jsou zahrnuty ve výsledku hospodaření nebo v rozdílu mezi příjmy a výdaji (ř. 10)"},
+			{"id": "kc_ii120_110", "type": "long", "name": "Příjmy osvobozené od daně podle § 19 zákona, pokud jsou zahrnuty ve výsledku hospodaření nebo v rozdílu mezi příjmy a výdaji (ř. 10)"},
+			{"id": "kc_ii_111", "type": "long", "name": "Částky, o které se podle § 23 odst. 3 písm. b) zákona snižuje výsledek hospodaření nebo rozdíl mezi příjmy a výdaji (ř.10)"},
+			{"id": "kc_ii_112", "type": "long", "name": "Částky, o které lze podle § 23 odst. 3 písm. c) zákona snížit výsledek hospodaření nebo rozdíl mezi příjmy a výdaji (ř.10)"},
+			{"id": "kc_ii130_120", "type": "long", "name": "Příjmy nezahrnované do základu daně podle § 23 odst. 4 písm. a) zákona"},
+			{"id": "kc_ii140_130", "type": "long", "name": "Příjmy nezahrnované do základu daně podle § 23 odst. 4 písm. b) zákona"},
+			{"id": "kc_ii150_140", "type": "long", "name": "Příjmy a částky podle § 23 odst. 4 zákona, s výjimkou příjmů podle § 23 odst. 4 písm. a) a b) zákona, nezahrnované do základu daně"},
+			{"id": "kc_ii170_150", "type": "long", "name": "Rozdíl, o který odpisy hmotného a nehmotného majetku stanovené podle § 26 až 33 zákona převyšují odpisy tohoto majetku uplatněné v účetnictví"},
+			{"id": "kc_ii180_160", "type": "long", "name": "Souhrn jednotlivých rozdílů, o které částky výdajů (nákladů) vynaložených na dosažení, zajištění a udržení příjmů převyšují náklady uplatněné v účetnictví"},
+			{"id": "kc_ii181_161", "type": "long", "name": "Úprava základu daně podle § 23 odst. 8 zákona v případě zrušení poplatníka s likvidací"},
+			{"id": "kc_ii182_162", "type": "long", "name": ""},
+			{"id": "kc_ii182_162_text", "type": "string", "len": 60, "name": ""},
+			{"id": "kc_ii190_170", "type": "long", "name": "Mezisoučet (ř. 100 + 101 + 109 + 110 + 111 + 112 + 120 + 130 + 140 + 150 + 160 + 161 + 162)",
+				"sum": "kc_ii110_100 kc_ii111_101 kc_ii_109 kc_ii120_110 kc_ii_111 kc_ii_112 kc_ii130_120 kc_ii140_130 kc_ii150_140 kc_ii170_150 kc_ii180_160 kc_ii181_161 kc_ii182_162"},
+
+			{"id": "kc_ii200_200", "type": "long", "name": "Základ daně před úpravou o část základu daně (daňové ztráty) připadající na komplementáře a o příjmy podléhající zdanění v zahraničí, u nichž je uplatňováno vynětí, a před snížením o položky podle § 34 a § 20 odst. 7 nebo odst. 8 zákona, nebo daňová ztráta před úpravou o část základu daně (daňové ztráty) připadající na komplementáře a o příjmy podléhající zdanění v zahraničí, u nichž je uplatňováno vynětí (ř. 10 + 70 - 170) 3)"},
+			{"id": "kc_ii201_201", "type": "long", "name": "Část základu daně nebo daňové ztráty připadající na komplementáře 3),4)"},
+			{"id": "kc_ii250_210", "type": "long", "name": "Úhrn vyňatých příjmů (základů daně a daňových ztrát) podléhajících zdanění v zahraničí 3)5)"},
+			{"id": "kc_ii_220", "type": "long", "name": "Základ daně po úpravě o část základu daně (daňové ztráty) připadající na komplementáře a o příjmy podléhající zdanění v zahraničí, u nichž je uplatňováno vynětí, před snížením o položky podle § 34 a § 20 odst. 7 nebo odst. 8 zákona 5) nebo daňová ztráta po úpravě o část základu daně (daňové ztráty) připadající na komplementáře a o příjmy podléhající zdanění v zahraničí, u nichž je uplatňováno vynětí (ř. 200 - 201 - 210) 3)"},
+
+			{"id": "kc_ii210_230", "type": "long", "name": "Odečet daňové ztráty podle § 34 odst. 1 zákona 5)"},
+			{"id": "kc_ii220_240", "type": "long", "name": "Odečet dosud neuplatněného nároku, vzniklého v předchozích zdaňovacích obdobích podle § 34 odst. 3 až 10 a 12 zákona, ve znění platném do 31. prosince 2004"},
+			{"id": "kc_ii221_241", "type": "long", "name": "nevyplňovat"},
+			{"id": "kc_ii_242", "type": "long", "name": "Odečet nároku na odpočet na podporu výzkumu a vývoje podle § 34 odst. 4 a § 34a až § 34e zákona, včetně odečtu dosud neuplatněných výdajů (nákladů) při realizaci projektů výzkumu a vývoje ve znění zákona platném do 31. 12. 2013"},
+			{"id": "kc_ii_243", "type": "long", "name": "Odečet nároku na odpočet na podporu odborného vzdělávání podle § 34 odst. 4 a § 34f až § 34h zákona"},
+			{"id": "kc_ii230_250", "type": "long", "name": "Základ daně po úpravě o část základu daně (daňové ztráty) připadající na komplementáře a o příjmy podléhající zdanění v zahraničí, u nichž je uplatňováno vynětí, snížený o položky podle § 34, před snížením o položky podle § 20 odst. 7 nebo odst. 8 zákona5) (ř. 220 - 230 - 240 - 241 - 242 - 243)"},
+
+			{"id": "kc_ii231_251", "type": "long", "name": "Částka podle § 20 odst. 7 zákona, o níž mohou veřejně prospěšní poplatníci (§ 17a zákona) dále snížit základ daně uvedený na ř. 250"},
+			{"id": "kc_ii240_260", "type": "long", "name": "Odečet bezúplatných plnění podle § 20 odst. 8 zákona (nejvýše 10% z částky na ř. 250) 5)"},
+			{"id": "kc_ii260_270", "type": "long", "name": "Základ daně po úpravě o část základu daně (daňové ztráty) připadající na komplementáře a o příjmy podléhající zdanění v zahraničí, u nichž je uplatňováno vynětí, snížený o položky podle § 34 a částky podle § 20 odst. 7 nebo 8 zákona, zaokrouhlený na celé tisícikoruny dolů5) (ř. 250 - 251 - 260)"},
+
+			{"id": "kc_ii270_280", "type": "long", "name": "Sazba daně (v %) podle § 21 odst. 1 nebo odst. 2 anebo odst. 3 zákona, ve spojení s § 21 odst. 6 zákona"},
+			{"id": "kc_ii280_290", "type": "long", "name": "Daň (ř. 270 x ř. 280) / 100"},
+
+			{"id": "kc_ii290_300", "type": "long", "name": "Slevy na dani podle § 35 odst. 1 a § 35a nebo § 35b zákona (nejvýše do částky na ř. 290) 5)"},
+			{"id": "kc_ii291_301", "type": "long", "name": "nevyplňovat"},
+			{"id": "kc_ii300_310", "type": "long", "name": "Daň upravená o položky uvedené na ř. 300 a 301 (ř. 290 - 300 ± 301) 5)"},
+
+			{"id": "kc_ii310_320", "type": "long", "name": "Zápočet daně zaplacené v zahraničí na daň uvedenou na ř. 310 5) (nejvýše do částky uvedené na ř. 310)"},
+			{"id": "kc_ii320_330", "type": "long", "name": "Daň po zápočtu na ř. 320 (ř. 310 - 320), zaokrouhlená na celé Kč nahoru 5)"},
+
+			{"id": "kc_ii_331", "type": "long", "name": "Samostatný základ daně podle § 20b zákona, zaokrouhlený na celé tisícikoruny dolů 5)"},
+			{"id": "kc_ii_332", "type": "long", "name": "Sazba daně (v %) podle § 21 odst. 4 zákona, ve spojení s § 21 odst. 6 zákona"},
+			{"id": "kc_ii_333", "type": "long", "name": "Daň ze samostatného základu daně (ř. 331 x ř. 332)/100, zaokrouhlená na celé Kč nahoru"},
+			{"id": "kc_ii_334", "type": "long", "name": "Zápočet daně zaplacené v zahraničí na daň ze samostatného základu daně (nejvýše do částky uvedené na ř. 333)"},
+			{"id": "kc_ii_335", "type": "long", "name": "Daň ze samostatného základu daně po zápočtu (ř. 333 - 334), zaokrouhlená na celé Kč nahoru"},
+
+
+			{"id": "kc_ii_340", "type": "long", "name": "Celková daň (ř. 330 + 335)"},
+
+			{"id": "kc_ii_360", "type": "long", "name": "Poslední známá daň pro účely stanovení výše a periodicity záloh podle § 38a odst. 1 zákona (ř. 340 - 335 = ř. 330)"}
+		],
+
+		"layout": [
+			{
+				"table": {
+					"cols": {"rn": " Řád.", "c1": "Název položky", "c2": " Částka", "c3": " Ke dni"},
+					"rows": [
+						{
+							"rn": "10", "c1": {"scLabel": "d_hospvysl"}, "c2": {"scInput": "kc_ii10_10"}, "c3": {"scInput": "d_hospvysl"}
+						}
+					],
+					"params": {"colClasses": {"rn": "e10-bg-t8", "c1": "e10-row-info", "c2": "e10-bg-white width10em"}}
+				}
+			},
+
+			{
+				"table": {
+					"cols": {"rn": " Řád.", "text": "Název položky", "value": " Částka"},
+					"rows": [
+						{"rn": "20", "text": {"scLabel": "kc_ii30_20"}, "value": {"scInput": "kc_ii30_20"}},
+						{"rn": "30", "text": {"scLabel": "kc_ii40_30"}, "value": {"scInput": "kc_ii40_30"}},
+						{"rn": "40", "text": {"scLabel": "kc_ii50_40"}, "value": {"scInput": "kc_ii50_40"}},
+						{"rn": "50", "text": {"scLabel": "kc_ii60_50"}, "value": {"scInput": "kc_ii60_50"}},
+						{"rn": "61", "text": {"scLabel": "kc_ii71_61"}, "value": {"scInput": "kc_ii71_61"}},
+						{"rn": "70", "text": {"scLabel": "kc_ii80_70"}, "value": {"scInput": "kc_ii80_70"}},
+
+						{"rn": "", "_options": {"class": "separator", "colSpan": {"rn": 3}, "cellClasses": {"rn": "e10-bg-none"}}},
+						{"rn": "100", "text": {"scLabel": "kc_ii110_100"}, "value": {"scInput": "kc_ii110_100"}},
+						{"rn": "101", "text": {"scLabel": "kc_ii111_101"}, "value": {"scInput": "kc_ii111_101"}},
+						{"rn": "109", "text": {"scLabel": "kc_ii_109"}, "value": {"scInput": "kc_ii_109"}},
+						{"rn": "110", "text": {"scLabel": "kc_ii120_110"}, "value": {"scInput": "kc_ii120_110"}},
+						{"rn": "111", "text": {"scLabel": "kc_ii_111"}, "value": {"scInput": "kc_ii_111"}},
+						{"rn": "112", "text": {"scLabel": "kc_ii_112"}, "value": {"scInput": "kc_ii_112"}},
+						{"rn": "120", "text": {"scLabel": "kc_ii130_120"}, "value": {"scInput": "kc_ii130_120"}},
+						{"rn": "130", "text": {"scLabel": "kc_ii140_130"}, "value": {"scInput": "kc_ii140_130"}},
+						{"rn": "140", "text": {"scLabel": "kc_ii150_140"}, "value": {"scInput": "kc_ii150_140"}},
+						{"rn": "150", "text": {"scLabel": "kc_ii170_150"}, "value": {"scInput": "kc_ii170_150"}},
+						{"rn": "160", "text": {"scLabel": "kc_ii180_160"}, "value": {"scInput": "kc_ii180_160"}},
+						{"rn": "161", "text": {"scLabel": "kc_ii181_161"}, "value": {"scInput": "kc_ii181_161"}},
+						{"rn": "162", "text": {"scInput": "kc_ii182_162_text"}, "value": {"scInput": "kc_ii182_162"}},
+						{"rn": "170", "text": {"scLabel": "kc_ii190_170"}, "value": {"scInput": "kc_ii190_170"}},
+
+						{"rn": "", "_options": {"class": "separator", "colSpan": {"rn": 3}, "cellClasses": {"rn": "e10-bg-none"}}},
+						{"rn": "200", "text": {"scLabel": "kc_ii200_200"}, "value": {"scInput": "kc_ii200_200"}},
+						{"rn": "201", "text": {"scLabel": "kc_ii201_201"}, "value": {"scInput": "kc_ii201_201"}},
+						{"rn": "210", "text": {"scLabel": "kc_ii250_210"}, "value": {"scInput": "kc_ii250_210"}},
+						{"rn": "220", "text": {"scLabel": "kc_ii_220"}, "value": {"scInput": "kc_ii_220"}}
+					],
+					"params": {"colClasses": {"rn": "e10-bg-t8", "text": "e10-row-info", "value": "e10-bg-white width10em"}}
+				}
+			},
+
+			{
+				"table": {
+					"cols": {"rn": " Řád.", "text": "Název položky", "value": " Částka"},
+					"rows": [
+						{"rn": "230", "text": {"scLabel": "kc_ii210_230"}, "value": {"scInput": "kc_ii210_230"}},
+						{"rn": "240", "text": {"scLabel": "kc_ii220_240"}, "value": {"scInput": "kc_ii220_240"}},
+						{"rn": "241", "text": {"scLabel": "kc_ii221_241"}, "value": {"scInput": "kc_ii221_241"}},
+						{"rn": "242", "text": {"scLabel": "kc_ii_242"}, "value": {"scInput": "kc_ii_242"}},
+						{"rn": "243", "text": {"scLabel": "kc_ii_243"}, "value": {"scInput": "kc_ii_243"}},
+						{"rn": "250", "text": {"scLabel": "kc_ii230_250"}, "value": {"scInput": "kc_ii230_250"}}
+					]
+				}
+			},
+
+			{
+				"table": {
+					"cols": {"rn": " Řád.", "text": "Název položky", "value": " Částka"},
+					"rows": [
+						{"rn": "251", "text": {"scLabel": "kc_ii231_251"}, "value": {"scInput": "kc_ii231_251"}},
+						{"rn": "260", "text": {"scLabel": "kc_ii240_260"}, "value": {"scInput": "kc_ii240_260"}},
+						{"rn": "270", "text": {"scLabel": "kc_ii260_270"}, "value": {"scInput": "kc_ii260_270"}}
+					]
+				}
+			},
+
+			{
+				"table": {
+					"cols": {"rn": " Řád.", "text": "Název položky", "value": " Částka"},
+					"rows": [
+						{"rn": "280", "text": {"scLabel": "kc_ii270_280"}, "value": {"scInput": "kc_ii270_280"}},
+						{"rn": "290", "text": {"scLabel": "kc_ii280_290"}, "value": {"scInput": "kc_ii280_290"}}
+					]
+				}
+			},
+
+			{
+				"table": {
+					"cols": {"rn": " Řád.", "text": "Název položky", "value": " Částka"},
+					"rows": [
+						{"rn": "300", "text": {"scLabel": "kc_ii290_300"}, "value": {"scInput": "kc_ii290_300"}},
+						{"rn": "301", "text": {"scLabel": "kc_ii291_301"}, "value": {"scInput": "kc_ii291_301"}},
+						{"rn": "310", "text": {"scLabel": "kc_ii300_310"}, "value": {"scInput": "kc_ii300_310"}}
+					]
+				}
+			},
+
+			{
+				"table": {
+					"cols": {"rn": " Řád.", "text": "Název položky", "value": " Částka"},
+					"rows": [
+						{"rn": "320", "text": {"scLabel": "kc_ii310_320"}, "value": {"scInput": "kc_ii310_320"}},
+						{"rn": "330", "text": {"scLabel": "kc_ii320_330"}, "value": {"scInput": "kc_ii320_330"}}
+					]
+				}
+			},
+
+			{
+				"table": {
+					"cols": {"rn": " Řád.", "text": "Název položky", "value": " Částka"},
+					"rows": [
+						{"rn": "331", "text": {"scLabel": "kc_ii_331"}, "value": {"scInput": "kc_ii_331"}},
+						{"rn": "332", "text": {"scLabel": "kc_ii_332"}, "value": {"scInput": "kc_ii_332"}},
+						{"rn": "333", "text": {"scLabel": "kc_ii_333"}, "value": {"scInput": "kc_ii_333"}},
+						{"rn": "334", "text": {"scLabel": "kc_ii_334"}, "value": {"scInput": "kc_ii_334"}},
+						{"rn": "335", "text": {"scLabel": "kc_ii_335"}, "value": {"scInput": "kc_ii_335"}},
+
+						{"rn": "", "_options": {"class": "separator"}},
+						{"rn": "340", "text": {"scLabel": "kc_ii_340"}, "value": {"scInput": "kc_ii_340"}},
+
+						{"rn": "", "_options": {"class": "separator"}},
+						{"rn": "360", "text": {"scLabel": "kc_ii_360"}, "value": {"scInput": "kc_ii_360"}}
+					]
+				}
+			}
+		]
+	}
+}

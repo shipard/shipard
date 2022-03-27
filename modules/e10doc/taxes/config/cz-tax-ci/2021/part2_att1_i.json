@@ -1,0 +1,32 @@
+{
+	"name": "I. Zápočet daně zaplacené v zahraničí 5)",
+	"title": "I. Zápočet daně zaplacené v zahraničí 5)",
+
+	"fields": {
+		"columns": [
+			{"id": "pr1i_1", "type": "long", "name": "Úhrn daní zaplacených v zahraničí, o které lze snížit daňovou povinnost metodou úplného zápočtu"},
+			{"id": "pr1i_2", "type": "long", "name": "Úhrn daní zaplacených v zahraničí, u nichž lze uplatnit metodu prostého zápočtu (úhrn částek z ř. 3 samostatných příloh k tabulce I)"},
+			{"id": "pr1i_3", "type": "long", "name": "Úhrn částek daní zaplacených v zahraničí, o které lze snížit daňovou povinnost metodou prostého zápočtu (úhrn částek z ř. 7 samostatných příloh k tabulce I)"},
+			{"id": "pr1i_4", "type": "long", "name": "Výše daní zaplacených v zahraničí, kterou lze započíst metodou úplného a prostého zápočtu (součet částek z ř. 1 a 3)"},
+			{"id": "kc_dppd17_g17", "type": "long", "name": "Výše daní zaplacených v zahraničí, kterou nelze započíst (kladný rozdíl mezi částkami na ř. 2 a 3, zvýšený o kladný rozdíl mezi částkami na ř. 4 a na ř. 320 II. oddílu)"}
+		],
+
+		"layout": [
+			{
+				"table": {
+					"cols": {"rn": " číslo řádku", "text": "popis", "value": " hodnota"},
+					"header": [
+						{"rn": "Řád.", "text": "Název položky", "value": "Částka"}
+					],
+					"rows": [
+						{"rn": "1", "text": {"scLabel": "pr1i_1"}, "value": {"scInput": "pr1i_1"}},
+						{"rn": "2", "text": {"scLabel": "pr1i_2"}, "value": {"scInput": "pr1i_2"}},
+						{"rn": "3", "text": {"scLabel": "pr1i_3"}, "value": {"scInput": "pr1i_3"}},
+						{"rn": "4", "text": {"scLabel": "pr1i_4"}, "value": {"scInput": "pr1i_4"}},
+						{"rn": "5", "text": {"scLabel": "kc_dppd17_g17"}, "value": {"scInput": "kc_dppd17_g17"}}
+					]
+				}
+			}
+		]
+	}
+}

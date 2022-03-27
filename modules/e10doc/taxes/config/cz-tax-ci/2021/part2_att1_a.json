@@ -1,0 +1,25 @@
+{
+	"name": "A. Rozdělení výdajů (nákladů), které se neuznávají za výdaje (náklady) vynaložené na dosažení, zajištění a udržení příjmů, uvedených na řádku 40 podle účtových skupin účtové třídy – náklady",
+	"title": "A. Rozdělení výdajů (nákladů), které se neuznávají za výdaje (náklady) vynaložené na dosažení, zajištění a udržení příjmů, uvedených na řádku 40 podle účtových skupin účtové třídy – náklady",
+
+	"fields": {
+		"columns": [
+			{
+				"id": "table_P1A", "type": "recordSet", "src": "nonTaxCosts", "name": "Přehled nedaňových nákladů",
+				"columns": [
+					{"id": "kc_1a", "type": "long", "name": "Částka"},
+					{"id": "naz_uc_skup", "type": "string", "len": 60, "name": "Název účtové skupiny"}
+				]
+			}
+		],
+
+		"layout": [
+			{
+				"recordSetTable": {
+					"recordSetColumn": "table_P1A",
+					"cols": {"#": " Řádek", "naz_uc_skup": "Název účtové skupiny", "kc_1a": " Částka"}
+				}
+			}
+		]
+	}
+}
