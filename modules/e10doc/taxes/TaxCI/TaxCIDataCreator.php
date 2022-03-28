@@ -113,7 +113,7 @@ class TaxCIDataCreator extends \e10doc\taxes\TaxReportDataCreator
 		$bsType = Utils::cfgItem($reportParamsData, 'uv_rozsah_rozv', 'P');
 		$bsDef = $this->reportVersion['balanceSheets'][$bsType];
 
-		$report = new \pkgs\accounting\debs\ReportBalanceSheet($this->app());
+		$report = new \e10doc\debs\libs\reports\ReportBalanceSheet($this->app());
 		$report->fiscalPeriod = E10Utils::yearLastFiscalMonth($this->app(), $this->reportRecData['accPeriod']);
 		$report->resultFormat = ($thousands) ? '1000' : '0';
 		$report->subReportId = 'report';
@@ -128,7 +128,7 @@ class TaxCIDataCreator extends \e10doc\taxes\TaxReportDataCreator
 		else
 		{
 			foreach ($report->spd->subColumnsData as $key => $value)
-				$report->spd->subColumnsData[$key] = intval(round($report->spd->subColumnsData[$key], 0));
+				$report->spd->subColumnsData[$key] = intval(round(intval($report->spd->subColumnsData[$key]), 0));
 		}
 		$report->spd->subColumnsData['VARIANT'] = $bsType;
 		$this->setItem ($dataItemId, $report->spd->subColumnsData);
@@ -140,7 +140,7 @@ class TaxCIDataCreator extends \e10doc\taxes\TaxReportDataCreator
 		$stType = Utils::cfgItem($reportParamsData, 'uv_rozsah_vzz', 'P');
 		$stDef = $this->reportVersion['statements'][$stType];
 
-		$report = new \pkgs\accounting\debs\ReportStatement($this->app());
+		$report = new \e10doc\debs\libs\reports\ReportStatement($this->app());
 		$report->fiscalPeriod = E10Utils::yearLastFiscalMonth($this->app(), $this->reportRecData['accPeriod']);
 		$report->resultFormat = ($thousands) ? '1000' : '0';
 		$report->subReportId = 'report';
@@ -155,7 +155,7 @@ class TaxCIDataCreator extends \e10doc\taxes\TaxReportDataCreator
 		else
 		{
 			foreach ($report->spd->subColumnsData as $key => $value)
-				$report->spd->subColumnsData[$key] = intval(round($report->spd->subColumnsData[$key], 0));
+				$report->spd->subColumnsData[$key] = intval(round(intval($report->spd->subColumnsData[$key]), 0));
 		}
 		$report->spd->subColumnsData['VARIANT'] = $stType;
 		$this->setItem ($dataItemId, $report->spd->subColumnsData);
