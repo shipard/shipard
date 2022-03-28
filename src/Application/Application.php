@@ -846,7 +846,7 @@ class Application extends \Shipard\Application\ApplicationCore
 			if (!isset ($data[$sumCid]))
 				continue;
 
-			$total += ($minus) ? - $data[$sumCid] : $data[$sumCid];
+			$total += ($minus) ? - ($data[$sumCid] === '' ? 0 : $data[$sumCid]) : ($data[$sumCid] === '' ? 0 : $data[$sumCid]);
 		}
 
 		$data[$colDef['id']] = $total;
