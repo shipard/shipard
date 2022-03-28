@@ -14,8 +14,9 @@ class TaxReportDataCreator extends Utility
 	var $taxReportId = '';
 	var $taxReportType = NULL;
 
-	/** @var  \e10\DbTable */
+	/** @var  \e10doc\taxes\TableReports */
 	var $tableReports;
+	/** @var  \e10doc\taxes\TableReportsParts */
 	var $tableReportsParts;
 	var $reportVersionId;
 	var $reportVersion;
@@ -115,6 +116,11 @@ class TaxReportDataCreator extends Utility
 
 	function resetSrcValue ($col, &$destData)
 	{
+		if (isset($col['defaultValue']))
+		{
+			$destData[$col['id']] = $col['defaultValue'];
+		}
+		
 		if (!isset($col['src']))
 			return;
 

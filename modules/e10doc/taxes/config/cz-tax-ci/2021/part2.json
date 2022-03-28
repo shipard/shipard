@@ -47,7 +47,7 @@
 			{"id": "kc_ii240_260", "type": "long", "name": "Odečet bezúplatných plnění podle § 20 odst. 8 zákona (nejvýše 10% z částky na ř. 250) 5)"},
 			{"id": "kc_ii260_270", "type": "long", "name": "Základ daně po úpravě o část základu daně (daňové ztráty) připadající na komplementáře a o příjmy podléhající zdanění v zahraničí, u nichž je uplatňováno vynětí, snížený o položky podle § 34 a částky podle § 20 odst. 7 nebo 8 zákona, zaokrouhlený na celé tisícikoruny dolů5) (ř. 250 - 251 - 260)"},
 
-			{"id": "kc_ii270_280", "type": "long", "name": "Sazba daně (v %) podle § 21 odst. 1 nebo odst. 2 anebo odst. 3 zákona, ve spojení s § 21 odst. 6 zákona"},
+			{"id": "kc_ii270_280", "type": "long", "name": "Sazba daně (v %) podle § 21 odst. 1 nebo odst. 2 anebo odst. 3 zákona, ve spojení s § 21 odst. 6 zákona", "defaultValue": 19},
 			{"id": "kc_ii280_290", "type": "long", "name": "Daň (ř. 270 x ř. 280) / 100"},
 
 			{"id": "kc_ii290_300", "type": "long", "name": "Slevy na dani podle § 35 odst. 1 a § 35a nebo § 35b zákona (nejvýše do částky na ř. 290) 5)"},
@@ -58,7 +58,7 @@
 			{"id": "kc_ii320_330", "type": "long", "name": "Daň po zápočtu na ř. 320 (ř. 310 - 320), zaokrouhlená na celé Kč nahoru 5)"},
 
 			{"id": "kc_ii_331", "type": "long", "name": "Samostatný základ daně podle § 20b zákona, zaokrouhlený na celé tisícikoruny dolů 5)"},
-			{"id": "kc_ii_332", "type": "long", "name": "Sazba daně (v %) podle § 21 odst. 4 zákona, ve spojení s § 21 odst. 6 zákona"},
+			{"id": "kc_ii_332", "type": "long", "name": "Sazba daně (v %) podle § 21 odst. 4 zákona, ve spojení s § 21 odst. 6 zákona", "defaultValue": 15},
 			{"id": "kc_ii_333", "type": "long", "name": "Daň ze samostatného základu daně (ř. 331 x ř. 332)/100, zaokrouhlená na celé Kč nahoru"},
 			{"id": "kc_ii_334", "type": "long", "name": "Zápočet daně zaplacené v zahraničí na daň ze samostatného základu daně (nejvýše do částky uvedené na ř. 333)"},
 			{"id": "kc_ii_335", "type": "long", "name": "Daň ze samostatného základu daně po zápočtu (ř. 333 - 334), zaokrouhlená na celé Kč nahoru"},
