@@ -94,6 +94,7 @@ class TaxCIReport extends \e10doc\taxes\TaxReportReport
 		$this->addXmlVItem('part1', 'hl_cin_2', $v);
 
 		$this->addXmlVItem('part1', 'uv_vyhl', $v);
+		$this->addXmlVItem('part1', 'kat_uj', $v);
 		$this->addXmlVItem('part1', 'typ_dapdpp', $v);
 		$this->addXmlVItem('part1', 'typ_popldpp', $v);
 		$this->addXmlVItem('part1', 'spoj_zahr', $v);

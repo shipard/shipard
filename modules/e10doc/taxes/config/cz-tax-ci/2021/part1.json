@@ -64,6 +64,15 @@
 				}
 			},
 
+			{"id": "kat_uj", "group": "dp", "name": "Kategorie účetní jednotky", "type": "enumString", "len": 1,
+				"enumValues": {
+					"M": "M - mikro účetní jednotka",
+					"L": "L - malá účetní jednotka",
+					"S": "S - střední účetní jednotka",
+					"V": "V - velká účetní jednotka"
+				}
+			},
+
 			{"id": "typ_popldpp", "group": "dp", "name": "Typ poplatníka", "type": "enumString", "len": 1,
 				"enumValues": {
 					"1": "1. ostatní",
