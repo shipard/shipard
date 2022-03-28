@@ -66,8 +66,8 @@ class TaxCIDataCreator extends \e10doc\taxes\TaxReportDataCreator
 				if (!isset($data[$colId]))
 					$data[$colId] = 0.0;
 
-				$data[$colId] += $groupData['totals']['taxUsed'];
-				$taxDepsTotal += $groupData['totals']['taxUsed'];
+				$data[$colId] += intval($groupData['totals']['taxUsed']);
+				$taxDepsTotal += intval($groupData['totals']['taxUsed']);
 			}
 		}
 		$data['taxDepsTotal'] = $taxDepsTotal;
