@@ -1,8 +1,5 @@
-@import url("../../../../core/reports/formreport.css");
-
-
 html {background-color: #f7d0b9;}
-body {padding: 1cm !important; margin: 0 !important;}
+body {}
 
 table.formSection {width: 100%; margin: 0; padding: 0; border-collapse: collapse; table-layout: fixed; clear: both;}
 table.formSection td {padding-top: 1pt; font-size: 7.5pt; width: 3.3333333333%; vertical-align: middle;}
@@ -76,4 +73,4 @@ div.subTitle {
 	padding: 6pt 0;
 }
 
-div.e10-tax-report {height: 268mm !important; width: 180mm !important; display: inline-block; position: absolute;}
+div.e10-tax-report-tmpdis {width: 100%; display: inline-block;}

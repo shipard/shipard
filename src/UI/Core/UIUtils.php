@@ -84,7 +84,7 @@ class UIUtils
 					if (!uiutils::subColumnEnabled ($col, $data))
 						continue;
 
-					$t[] = ['txt' => $col['name'], 'val' => $app->subColumnValue ($col, $data[$col['id']])];
+					$t[] = ['txt' => $col['name'], 'val' => $app->subColumnValue ($col, $data[$col['id']] ?? '')];
 				}
 			}
 			$params = ['hideHeader' => 1];
@@ -171,7 +171,7 @@ class UIUtils
 		else
 		{
 			$t = [];
-			$h = ['txt' => 'Název', 'val' => ' Hodnota'];
+			$h = ['txt' => 'Název', 'val' => ' HodnotaX'];
 			foreach ($sci['columns'] as $col)
 				$t[] = ['txt' => $col['name'], 'val' => $app->subColumnValue ($col, $data[$col['id']])];
 			$content[] = ['type' => 'table', 'table' => $t, 'header' => $h];

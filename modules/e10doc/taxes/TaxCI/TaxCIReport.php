@@ -20,6 +20,8 @@ class TaxCIReport extends \e10doc\taxes\TaxReportReport
 		$this->previewReportTemplate = 'reports.default.e10doc.taxes.tax-ci-tr/cz';
 
 		parent::init();
+
+		$this->paperMargin = '7mm';
 	}
 
 	public function subReportsList ()
@@ -103,9 +105,12 @@ class TaxCIReport extends \e10doc\taxes\TaxReportReport
 		$this->addXmlVItem('part1', 'uc_zav', $v);
 		$this->addXmlVItem('part1', 'uv_rozsah', $v);
 
+		$this->partsData['part1']['uv_rozsah'] ??= 0;
+		$this->partsData['part1']['uv_rozsah_rozv'] ??= 0;
 		if ($this->partsData['part1']['uv_rozsah'] !== $this->partsData['part1']['uv_rozsah_rozv'])
 			$this->addXmlVItem('part1', 'uv_rozsah_rozv', $v);
 
+		$this->partsData['part1']['uv_rozsah_vzz'] ??= 0;
 		if ($this->partsData['part1']['uv_rozsah'] !== $this->partsData['part1']['uv_rozsah_vzz'])
 			$this->addXmlVItem('part1', 'uv_rozsah_vzz', $v);
 
@@ -534,7 +539,7 @@ class TaxCIReport extends \e10doc\taxes\TaxReportReport
 		$firstRowNumber = isset($bsDef['PASIVA']['firstRowNumber']) ? $bsDef['PASIVA']['firstRowNumber'] : 1;
 		$rowNumber = intval($bsDef['PASIVA']['firstRow']);
 		$tbl = intval($bsDef['PASIVA']['table']);
-		$cntRows = intval($bsDef['PASIVA']['cntRows']);
+		$cntRows = intval($bsDef['PASIVA']['cntRows'] ?? 0);
 
 		// -- new mode
 		if (isset($bsDef['PASIVA']['rows']))
@@ -712,6 +717,7 @@ class TaxCIReport extends \e10doc\taxes\TaxReportReport
 				$this->data['parts'][$r['partId']][$key] = $pv;
 			}
 
+			$this->data['partsDef'][$r['partId']] = $partDef;
 			$partTable = uiutils::renderSubColumns ($this->app(), $partData, $partDef['fields']);
 			$this->data['partsTables'][$r['partId']] = $partTable;
 		}
@@ -750,6 +756,8 @@ class TaxCIReport extends \e10doc\taxes\TaxReportReport
 
 	function partColumnXmlValue ($partId, $partKey, $excludeBlank = TRUE)
 	{
+		if (!$this->partsDefs)
+			return NULL;
 		$value = $this->partsData[$partId][$partKey] ?? NULL;
 
 		$colDef = utils::searchArray($this->partsDefs[$partId]['fields']['columns'], 'id', $partKey);

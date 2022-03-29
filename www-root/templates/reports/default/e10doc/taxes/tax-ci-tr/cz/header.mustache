@@ -5,14 +5,15 @@
             <td style='text-align: right;'>
             Vytištěno aplikací
             {{#info.reportFormat.pdf}}
-                <img style='height: 1.18em; width: 5.2em; position: relative; bottom: -0.3em;' src='file://{{appDir}}/e10-modules/e10doc/core/reports/shipard-logo-black.svg'/>
+                <img style='height: 1.18em; width: 5.2em; position: relative; bottom: -0.3em;' src='{{scRoot}}/shipard/graphics/logo-black.svg'/>
             {{/info.reportFormat.pdf}}
             {{#info.reportFormat.widget}}
-                <img style='height: 1.5em; padding-bottom: 0.2em;' src='{{dsRoot}}/e10-modules/e10doc/core/reports/shipard-logo-black.svg'/>
+                <img style='height: 1.5em; padding-bottom: 0.2em;' src='{{scRoot}}/shipard/graphics/logo-black.svg'/>
             {{/info.reportFormat.widget}}
             </td>
 		</tr>
 	</table>
+	
 	<table class="formSection">
 		<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
 		<tr>
@@ -110,6 +111,105 @@
 	<div class="separator"></div>
 	<div style="background-color: black; height: 2pt;"></div>
 	<div class="separator"></div>
+
+
+
+
+
+
+
+	<div style="font-size: 121%; font-weight: bold;">B. ODDÍL</div>
+	<div class="subTitle" style='margin-top: -1ex;'>
+		PROHLAŠUJI, ŽE VŠECHNY MNOU UVEDENÉ ÚDAJE V ODDÍLECH A, B, C TOHOTO PŘIZNÁNÍ JSOU PRAVDIVÉ A ÚPLNÉ<br>A STVRZUJI JE SVÝM PODPISEM
+	</div>
+
+	<div class="bigFrame">
+		<table class="formSection">
+			<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+			<tr>
+				<td colspan=9><b>Údaje o podepisující osobě:</b></td>
+				<td colspan=10>Kód podepisující osoby:</td><td colspan=14></td>
+			</tr>
+			<tr>
+				<td colspan="9"></td>
+				<td class="input c" colspan="3"><span>{{data.properties.xml.zast_kod}}</span></td>
+				<td colspan="21"></td>
+			</tr>
+			<tr>
+				<td colspan=33>Jméno(-a) a příjmení / Název právnické osoby</td>
+			</tr>
+			<tr>
+				<td class="input" colspan="33">
+                <span>
+									{{#data.properties.xml.zast_kod}}
+										{{data.properties.all.e10-CZ-TR-podOsoba-e10-CZ-TR-jmeno}} {{data.properties.all.e10-CZ-TR-podOsoba-e10-CZ-TR-prijmeni}} {{data.properties.all.e10-CZ-TR-podOsoba-e10-CZ-TR-nazevPrOsoby}}
+									{{/data.properties.xml.zast_kod}}
+								</span>
+				</td>
+			</tr>
+			<tr>
+				<td colspan=33>Datum narození / Evidenční číslo osvědčení daňového poradce / IČ právnické osoby</td>
+			</tr>
+			<tr>
+				<td class="input" colspan="33">
+                <span>
+									{{#data.properties.xml.zast_kod}}
+										{{data.properties.all.e10-CZ-TR-podOsoba-e10-CZ-TR-datumNar}} {{data.properties.all.e10-CZ-TR-podOsoba-e10-CZ-TR-evidCislo}} {{data.properties.all.e10-CZ-TR-podOsoba-e10-CZ-TR-ICPrOsoby}}
+									{{/data.properties.xml.zast_kod}}
+								</span>
+				</td>
+			</tr>
+			<tr>
+				<td colspan=33><b>Fyzická osoba oprávněná k podpisu</b> (je-li daňový subjekt či zástupce právnickou osobou),<br/><b>s uvedením vztahu k právnické osobě</b> (např. jednatel, pověřený pracovník apod.)</td>
+			</tr>
+			<tr>
+				<td colspan=33>Jméno(-a) a příjmení / Vztah k právnické osobě</td>
+			</tr>
+			<tr>
+				<td class="input" colspan="33"><span>{{data.properties.all.e10-CZ-TR-oprOsoba-e10-CZ-TR-jmeno}} {{data.properties.all.e10-CZ-TR-oprOsoba-e10-CZ-TR-prijmeni}} / {{data.properties.all.e10-CZ-TR-oprOsoba-e10-CZ-TR-vztah}}</span></td>
+			</tr>
+
+			<tr>
+				<td colspan="33"><div style='background-color: black; height: 2pt; margin-top: 5pt;'> </div></td>
+			</tr>
+
+			<tr>
+				<td colspan="20"><b>Daňový subjekt / osoba oprávněná k podpisu</b></td>
+				<td class="c" colspan="13">Vlastnoruční podpis</td>
+			</tr>
+			<tr>
+				<td colspan="7">Datum</td>
+				<td></td>
+				<td class="c" colspan="12">Otisk razítka</td>
+				<td></td>
+				<td class="c" colspan="12">daňového subjektu / osoby oprávněné k podpisu</td>
+			</tr>
+			<tr>
+				<td class="input c" colspan="7" style='vertical-align: top;'><span>{{data.properties.xml.d_poddp}}</span></td>
+				<td></td>
+				<td class="input" colspan="12" rowspan="6"><span>&nbsp;<br>&nbsp;<br>&nbsp;<br></span></td>
+				<td></td>
+				<td class="input" colspan="12" rowspan="6"><span>&nbsp;<br>&nbsp;<br>&nbsp;<br></span></td>
+			</tr>
+		</table>
+	</div>
+
+	<table class="formSection">
+		<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+		<tr>
+			<td colspan="5">Kontaktní osoba</td>
+			<td class="input" colspan="17"><span>{{data.properties.all.e10-CZ-TR-sestavil-e10-CZ-TR-jmeno}} {{data.properties.all.e10-CZ-TR-sestavil-e10-CZ-TR-prijmeni}}</span></td>
+			<td class="r" colspan="3">Telefon</td>
+			<td class="input" colspan="8"><span>{{data.properties.all.e10-CZ-TR-sestavil-e10-CZ-TR-telefon}}</span></td>
+		</tr>
+	</table>
+
+
+
+
+
+
+
 
 
 	<div class="pageNumber">1</div>
