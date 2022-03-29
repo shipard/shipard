@@ -12,7 +12,8 @@
 					{"id": "pr1e_sl_2", "type": "long", "name": "Celková výše daňové ztráty vyměřené nebo přiznávané za období"},
 					{"id": "pr1e_sl_3", "type": "long", "name": "Část daňové ztráty ze sl. 2 odečtená v předcházejících zdaňovacích obdobích"},
 					{"id": "pr1e_sl_4", "type": "long", "name": "Část daňové ztráty ze sl. 2 odečtená v daném zdaňovacím období"},
-					{"id": "pr1e_sl_5", "type": "long", "name": "Část daňové ztráty ze sl. 2 kterou lze odečíst v následujících zdaňovacích obdobích"}
+					{"id": "pr1e_sl_5", "type": "long", "name": "Část daňové ztráty ze sl. 2 kterou lze odečíst v následujících zdaňovacích obdobích"},
+					{"id": "pr1e_sl_6", "type": "long", "name": "Identifikační číslo obchodní korporace, od které je daňová ztráta dle § 23a a § 23c zákona převzata"}
 				]
 			}
 		],
@@ -27,10 +28,11 @@
 							"pr1e_sl_1_od": "Zdaňovací období nebo období, za které se podává daňové přiznání, v němž daňová ztráta vznikla od – do",
 							"pr1e_sl_2": "Celková výše daňové ztráty vyměřené nebo přiznávané za období uvedené ve sl. 1",
 							"pr1e_sl_3": "Část daňové ztráty ze sl. 2",
+							"pr1e_sl_6": "Identifikační číslo obchodní korporace, od které je daňová ztráta dle § 23a a § 23c zákona převzata",
 							"_options": {
 								"colSpan": {"pr1e_sl_1_od": 2, "pr1e_sl_3": 3},
-								"rowSpan": {"#": 3, "pr1e_sl_1_od": 2, "pr1e_sl_1_do": 2, "pr1e_sl_2": 2},
-								"cellClasses": {"pr1e_sl_1_od": "center", "pr1e_sl_2": "center", "pr1e_sl_3": "center"}
+								"rowSpan": {"#": 3, "pr1e_sl_1_od": 2, "pr1e_sl_1_do": 2, "pr1e_sl_2": 2, "pr1e_sl_6": 2},
+								"cellClasses": {"pr1e_sl_1_od": "center", "pr1e_sl_2": "center", "pr1e_sl_3": "center", "pr1e_sl_6": "center"}
 							}
 						},
 						{
@@ -48,8 +50,9 @@
 							"pr1e_sl_3": "3",
 							"pr1e_sl_4": "4",
 							"pr1e_sl_5": "5",
+							"pr1e_sl_6": "6",
 							"_options": {
-								"cellClasses": {"pr1e_sl_1_od": "center", "pr1e_sl_1_do": "center", "pr1e_sl_2": "center", "pr1e_sl_3": "center", "pr1e_sl_4": "center", "pr1e_sl_5": "center"}
+								"cellClasses": {"pr1e_sl_1_od": "center", "pr1e_sl_1_do": "center", "pr1e_sl_2": "center", "pr1e_sl_3": "center", "pr1e_sl_4": "center", "pr1e_sl_5": "center", "pr1e_sl_6": "center"}
 							}
 						}
 					],
@@ -59,7 +62,8 @@
 						"pr1e_sl_2": " qwe",
 						"pr1e_sl_3": " aaa",
 						"pr1e_sl_4": " bbb",
-						"pr1e_sl_5": " ccc"
+						"pr1e_sl_5": " ccc",
+						"pr1e_sl_6": " ddd"
 					}
 				}
 			}

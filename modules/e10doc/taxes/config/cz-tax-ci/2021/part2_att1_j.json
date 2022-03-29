@@ -24,10 +24,6 @@
 			{"id": "pr1j_sl_3_r5", "type": "long", "name": "Částka připadající na komandisty"},
 			{"id": "pr1j_sl_4_r5", "type": "long", "name": "Částka za komanditní společnost jako celek (sl. 2 + 3)"},
 
-			{"id": "pr1j_sl_2_r6", "type": "long", "name": "Částka připadající na komplementáře"},
-			{"id": "pr1j_sl_3_r6", "type": "long", "name": "Částka připadající na komandisty"},
-			{"id": "pr1j_sl_4_r6", "type": "long", "name": "Částka za komanditní společnost jako celek (sl. 2 + 3)"},
-
 			{"id": "pr1j_sl_2_r7", "type": "long", "name": "Částka připadající na komplementáře"},
 			{"id": "pr1j_sl_3_r7", "type": "long", "name": "Částka připadající na komandisty"},
 			{"id": "pr1j_sl_4_r7", "type": "long", "name": "Částka za komanditní společnost jako celek (sl. 2 + 3)"},
@@ -83,8 +79,7 @@
 							"c2": {"scInput": "pr1j_sl_2_r5"}, "c3": {"scInput": "pr1j_sl_3_r5"}, "c4": {"scInput": "pr1j_sl_4_r5"}
 						},
 						{
-							"c0": "6", "c1": "Ze ř. 5 hodnota bezúplatných plnění ve výši uplatněných slev na dílčím odvodu z loterií a jiných podobných her",
-							"c2": {"scInput": "pr1j_sl_2_r6"}, "c3": {"scInput": "pr1j_sl_3_r6"}, "c4": {"scInput": "pr1j_sl_4_r6"}
+							"c0": "6", "c1": "(neobsazeno)"
 						},
 						{
 							"c0": "7", "c1": "Celkový nárok na slevy na dani podle § 35 odst. 1 zákona (ř. 4 tabulky H)",

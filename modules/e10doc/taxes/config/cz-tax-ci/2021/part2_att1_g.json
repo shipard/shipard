@@ -4,8 +4,7 @@
 
 	"fields": {
 		"columns": [
-			{"id": "pr1g_1", "type": "long", "name": "Celková hodnota bezúplatných plnění poskytnutých na účely vymezené v § 20 odst. 8 zákona pro odečet ze základu daně sníženého podle § 34 zákona, vč. částky ze ř. 2"},
-			{"id": "pr1g_2", "type": "long", "name": "Ze ř. 1 hodnota bezúplatných plnění ve výši uplatněných slev na dílčím odvodu z loterií a jiných podobných her"}
+			{"id": "pr1g_1", "type": "long", "name": "Celková hodnota bezúplatných plnění poskytnutých na účely vymezené v § 20 odst. 8 zákona pro odečet ze základu daně sníženého podle § 34 zákona, vč. částky ze ř. 2"}
 		],
 
 		"layout": [
@@ -17,7 +16,7 @@
 					],
 					"rows": [
 						{"rn": "1", "text": {"scLabel": "pr1g_1"}, "value": {"scInput": "pr1g_1"}},
-						{"rn": "2", "text": {"scLabel": "pr1g_2"}, "value": {"scInput": "pr1g_2"}}
+						{"rn": "2", "text": "(neobsazeno)"}
 					]
 				}
 			}

@@ -12,7 +12,10 @@
 			{"id": "kc_ii50_40", "type": "long", "src": "nonTaxCostsTotal", "name": "Výdaje (náklady) neuznávané za výdaje (náklady) vynaložené k dosažení, zajištění a udržení příjmů (§ 25 nebo 24 zákona), pokud jsou zahrnuty ve výsledku hospodaření nebo v rozdílu mezi příjmy a výdaji na ř. 10"},
 			{"id": "kc_ii60_50", "type": "long", "src": "propertyDeps.diffTaxAcc", "name": "Rozdíl, o který odpisy hmotného a nehmotného majetku (§ 26 a § 32a zákona) uplatněné v účetnictví převyšují odpisy tohoto majetku stanovené podle § 26 až 33 zákona"},
 			{"id": "kc_ii71_61", "type": "long", "name": "Úprava základu daně podle § 23 odst. 8 zákona v případě zrušení poplatníka s likvidací"},
-			{"id": "kc_ii80_70", "type": "long", "name": "Mezisoučet (ř. 20 + 30 + 40 + 50 + 61 + 62)", "sum": "kc_ii30_20 kc_ii40_30 kc_ii50_40 kc_ii60_50 kc_ii71_61"},
+			{"id": "kc_ii72_62", "type": "long", "name": ""},
+			{"id": "text_ii72_62", "type": "string", "len": 60, "name": ""},
+			{"id": "kc_ii_63", "type": "long", "name": "Částky, o které se podle § 23e, § 23g, § 23h a § 38fa zákona zvyšuje výsledek hospodaření nebo rozdíl mezi příjmy a výdaji (ř. 10)"},
+			{"id": "kc_ii80_70", "type": "long", "name": "Mezisoučet (ř. 20 + 30 + 40 + 50 + 61 + 62 + 63)", "sum": "kc_ii30_20 kc_ii40_30 kc_ii50_40 kc_ii60_50 kc_ii71_61 kc_ii72_62 kc_ii_63"},
 
 			{"id": "kc_ii110_100", "type": "long", "name": "Příjmy, které nejsou předmětem daně podle § 18 odst. 2 zákona, pokud jsou zahrnuty ve výsledku hospodaření nebo v rozdílu mezi příjmy a výdaji (ř. 10)"},
 			{"id": "kc_ii111_101", "type": "long", "name": "Příjmy, jež u veřejně prospěšných poplatníků, nejsou předmětem daně podle § 18a odst. 1 zákona, pokud jsou zahrnuty ve výsledku hospodaření nebo v rozdílu mezi příjmy a výdaji (ř. 10)"},
@@ -27,9 +30,10 @@
 			{"id": "kc_ii180_160", "type": "long", "name": "Souhrn jednotlivých rozdílů, o které částky výdajů (nákladů) vynaložených na dosažení, zajištění a udržení příjmů převyšují náklady uplatněné v účetnictví"},
 			{"id": "kc_ii181_161", "type": "long", "name": "Úprava základu daně podle § 23 odst. 8 zákona v případě zrušení poplatníka s likvidací"},
 			{"id": "kc_ii182_162", "type": "long", "name": ""},
-			{"id": "kc_ii182_162_text", "type": "string", "len": 60, "name": ""},
-			{"id": "kc_ii190_170", "type": "long", "name": "Mezisoučet (ř. 100 + 101 + 109 + 110 + 111 + 112 + 120 + 130 + 140 + 150 + 160 + 161 + 162)",
-				"sum": "kc_ii110_100 kc_ii111_101 kc_ii_109 kc_ii120_110 kc_ii_111 kc_ii_112 kc_ii130_120 kc_ii140_130 kc_ii150_140 kc_ii170_150 kc_ii180_160 kc_ii181_161 kc_ii182_162"},
+			{"id": "text_ii182_162", "type": "string", "len": 60, "name": ""},
+			{"id": "kc_ii_163", "type": "long", "name": "Částky, o které se podle § 23e, § 23g a § 38fa zákona snižuje výsledek hospodaření nebo rozdíl mezi příjmy a výdaji (ř. 10)"},
+			{"id": "kc_ii190_170", "type": "long", "name": "Mezisoučet (ř. 100 + 101 + 109 + 110 + 111 + 112 + 120 + 130 + 140 + 150 + 160 + 161 + 162 + 163)",
+				"sum": "kc_ii110_100 kc_ii111_101 kc_ii_109 kc_ii120_110 kc_ii_111 kc_ii_112 kc_ii130_120 kc_ii140_130 kc_ii150_140 kc_ii170_150 kc_ii180_160 kc_ii181_161 kc_ii182_162 kc_ii_163"},
 
 			{"id": "kc_ii200_200", "type": "long", "name": "Základ daně před úpravou o část základu daně (daňové ztráty) připadající na komplementáře a o příjmy podléhající zdanění v zahraničí, u nichž je uplatňováno vynětí, a před snížením o položky podle § 34 a § 20 odst. 7 nebo odst. 8 zákona, nebo daňová ztráta před úpravou o část základu daně (daňové ztráty) připadající na komplementáře a o příjmy podléhající zdanění v zahraničí, u nichž je uplatňováno vynětí (ř. 10 + 70 - 170) 3)"},
 			{"id": "kc_ii201_201", "type": "long", "name": "Část základu daně nebo daňové ztráty připadající na komplementáře 3),4)"},
@@ -37,8 +41,10 @@
 			{"id": "kc_ii_220", "type": "long", "name": "Základ daně po úpravě o část základu daně (daňové ztráty) připadající na komplementáře a o příjmy podléhající zdanění v zahraničí, u nichž je uplatňováno vynětí, před snížením o položky podle § 34 a § 20 odst. 7 nebo odst. 8 zákona 5) nebo daňová ztráta po úpravě o část základu daně (daňové ztráty) připadající na komplementáře a o příjmy podléhající zdanění v zahraničí, u nichž je uplatňováno vynětí (ř. 200 - 201 - 210) 3)"},
 
 			{"id": "kc_ii210_230", "type": "long", "name": "Odečet daňové ztráty podle § 34 odst. 1 zákona 5)"},
-			{"id": "kc_ii220_240", "type": "long", "name": "Odečet dosud neuplatněného nároku, vzniklého v předchozích zdaňovacích obdobích podle § 34 odst. 3 až 10 a 12 zákona, ve znění platném do 31. prosince 2004"},
-			{"id": "kc_ii221_241", "type": "long", "name": "nevyplňovat"},
+			{"id": "kc_ii220_240", "type": "long", "name": ""},
+			{"id": "text_ii220_240", "type": "string", "len": 60, "name": ""},
+			{"id": "kc_ii221_241", "type": "long", "name": ""},
+			{"id": "text_ii221_241", "type": "string", "len": 60, "name": ""},
 			{"id": "kc_ii_242", "type": "long", "name": "Odečet nároku na odpočet na podporu výzkumu a vývoje podle § 34 odst. 4 a § 34a až § 34e zákona, včetně odečtu dosud neuplatněných výdajů (nákladů) při realizaci projektů výzkumu a vývoje ve znění zákona platném do 31. 12. 2013"},
 			{"id": "kc_ii_243", "type": "long", "name": "Odečet nároku na odpočet na podporu odborného vzdělávání podle § 34 odst. 4 a § 34f až § 34h zákona"},
 			{"id": "kc_ii230_250", "type": "long", "name": "Základ daně po úpravě o část základu daně (daňové ztráty) připadající na komplementáře a o příjmy podléhající zdanění v zahraničí, u nichž je uplatňováno vynětí, snížený o položky podle § 34, před snížením o položky podle § 20 odst. 7 nebo odst. 8 zákona5) (ř. 220 - 230 - 240 - 241 - 242 - 243)"},
@@ -51,9 +57,12 @@
 			{"id": "kc_ii280_290", "type": "long", "name": "Daň (ř. 270 x ř. 280) / 100"},
 
 			{"id": "kc_ii290_300", "type": "long", "name": "Slevy na dani podle § 35 odst. 1 a § 35a nebo § 35b zákona (nejvýše do částky na ř. 290) 5)"},
-			{"id": "kc_ii291_301", "type": "long", "name": "nevyplňovat"},
+			{"id": "kc_ii291_301", "type": "long", "name": ""},
+			{"id": "text_ii291_301", "type": "string", "len": 60, "name": ""},
 			{"id": "kc_ii300_310", "type": "long", "name": "Daň upravená o položky uvedené na ř. 300 a 301 (ř. 290 - 300 ± 301) 5)"},
 
+			{"id": "kc_ii_319", "type": "long", "name": "Snížení daně podle § 38fa odst. 9 zákona"},
+			{"id": "kc_ii_319a", "type": "long", "name": "Snížení daně podle § 38fa odst. 10 zákona"},
 			{"id": "kc_ii310_320", "type": "long", "name": "Zápočet daně zaplacené v zahraničí na daň uvedenou na ř. 310 5) (nejvýše do částky uvedené na ř. 310)"},
 			{"id": "kc_ii320_330", "type": "long", "name": "Daň po zápočtu na ř. 320 (ř. 310 - 320), zaokrouhlená na celé Kč nahoru 5)"},
 
@@ -91,6 +100,8 @@
 						{"rn": "40", "text": {"scLabel": "kc_ii50_40"}, "value": {"scInput": "kc_ii50_40"}},
 						{"rn": "50", "text": {"scLabel": "kc_ii60_50"}, "value": {"scInput": "kc_ii60_50"}},
 						{"rn": "61", "text": {"scLabel": "kc_ii71_61"}, "value": {"scInput": "kc_ii71_61"}},
+						{"rn": "62", "text": {"scInput": "text_ii72_62"}, "value": {"scInput": "kc_ii72_62"}},
+						{"rn": "63", "text": {"scLabel": "kc_ii_63"}, "value": {"scInput": "kc_ii_63"}},
 						{"rn": "70", "text": {"scLabel": "kc_ii80_70"}, "value": {"scInput": "kc_ii80_70"}},
 
 						{"rn": "", "_options": {"class": "separator", "colSpan": {"rn": 3}, "cellClasses": {"rn": "e10-bg-none"}}},
@@ -106,7 +117,8 @@
 						{"rn": "150", "text": {"scLabel": "kc_ii170_150"}, "value": {"scInput": "kc_ii170_150"}},
 						{"rn": "160", "text": {"scLabel": "kc_ii180_160"}, "value": {"scInput": "kc_ii180_160"}},
 						{"rn": "161", "text": {"scLabel": "kc_ii181_161"}, "value": {"scInput": "kc_ii181_161"}},
-						{"rn": "162", "text": {"scInput": "kc_ii182_162_text"}, "value": {"scInput": "kc_ii182_162"}},
+						{"rn": "162", "text": {"scInput": "text_ii182_162"}, "value": {"scInput": "kc_ii182_162"}},
+						{"rn": "163", "text": {"scLabel": "kc_ii_163"}, "value": {"scInput": "kc_ii_163"}},
 						{"rn": "170", "text": {"scLabel": "kc_ii190_170"}, "value": {"scInput": "kc_ii190_170"}},
 
 						{"rn": "", "_options": {"class": "separator", "colSpan": {"rn": 3}, "cellClasses": {"rn": "e10-bg-none"}}},
@@ -124,8 +136,8 @@
 					"cols": {"rn": " Řád.", "text": "Název položky", "value": " Částka"},
 					"rows": [
 						{"rn": "230", "text": {"scLabel": "kc_ii210_230"}, "value": {"scInput": "kc_ii210_230"}},
-						{"rn": "240", "text": {"scLabel": "kc_ii220_240"}, "value": {"scInput": "kc_ii220_240"}},
-						{"rn": "241", "text": {"scLabel": "kc_ii221_241"}, "value": {"scInput": "kc_ii221_241"}},
+						{"rn": "240", "text": {"scInput": "text_ii220_240"}, "value": {"scInput": "kc_ii220_240"}},
+						{"rn": "241", "text": {"scInput": "text_ii221_241"}, "value": {"scInput": "kc_ii221_241"}},
 						{"rn": "242", "text": {"scLabel": "kc_ii_242"}, "value": {"scInput": "kc_ii_242"}},
 						{"rn": "243", "text": {"scLabel": "kc_ii_243"}, "value": {"scInput": "kc_ii_243"}},
 						{"rn": "250", "text": {"scLabel": "kc_ii230_250"}, "value": {"scInput": "kc_ii230_250"}}
@@ -159,7 +171,7 @@
 					"cols": {"rn": " Řád.", "text": "Název položky", "value": " Částka"},
 					"rows": [
 						{"rn": "300", "text": {"scLabel": "kc_ii290_300"}, "value": {"scInput": "kc_ii290_300"}},
-						{"rn": "301", "text": {"scLabel": "kc_ii291_301"}, "value": {"scInput": "kc_ii291_301"}},
+						{"rn": "301", "text": {"scInput": "text_ii291_301"}, "value": {"scInput": "kc_ii291_301"}},
 						{"rn": "310", "text": {"scLabel": "kc_ii300_310"}, "value": {"scInput": "kc_ii300_310"}}
 					]
 				}
@@ -169,6 +181,8 @@
 				"table": {
 					"cols": {"rn": " Řád.", "text": "Název položky", "value": " Částka"},
 					"rows": [
+						{"rn": "319", "text": {"scLabel": "kc_ii_319"}, "value": {"scInput": "kc_ii_319"}},
+						{"rn": "319a", "text": {"scLabel": "kc_ii_319a"}, "value": {"scInput": "kc_ii_319a"}},
 						{"rn": "320", "text": {"scLabel": "kc_ii310_320"}, "value": {"scInput": "kc_ii310_320"}},
 						{"rn": "330", "text": {"scLabel": "kc_ii320_330"}, "value": {"scInput": "kc_ii320_330"}}
 					]
