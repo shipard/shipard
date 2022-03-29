@@ -1,6 +1,6 @@
 {
-	"name": "Odečet daňové ztráty od základu daně podle § 34 odst. 1 až 3 zákona5) nebo snížení základu daně podílového fondu o záporný rozdíl mezi jeho příjmy a výdaji podle § 20 odst. 3 zákona, ve znění platném do 14. července 2011",
-	"title": "Odečet daňové ztráty od základu daně podle § 34 odst. 1 až 3 zákona5) nebo snížení základu daně podílového fondu o záporný rozdíl mezi jeho příjmy a výdaji podle § 20 odst. 3 zákona, ve znění platném do 14. července 2011",
+	"name": "Odečet daňové ztráty od základu daně podle § 34 odst. 1 až 3 zákona⁵⁾",
+	"title": "Odečet daňové ztráty od základu daně podle § 34 odst. 1 až 3 zákona⁵⁾",
 
 	"fields": {
 		"columns": [
@@ -36,9 +36,9 @@
 							}
 						},
 						{
-							"pr1e_sl_3": "odečtená v předcházejících zdaňovacích obdobích",
+							"pr1e_sl_3": "již odečtená",
 							"pr1e_sl_4": "odečtená v daném zdaňovacím období",
-							"pr1e_sl_5": "kterou lze odečíst v následujících zdaňovacích obdobích",
+							"pr1e_sl_5": "kterou lze odečíst",
 							"_options": {
 								"cellClasses": {"pr1e_sl_3": "center", "pr1e_sl_4": "center", "pr1e_sl_5": "center"}
 							}

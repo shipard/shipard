@@ -17,7 +17,7 @@
 			{
 				"recordSetTable": {
 					"recordSetColumn": "table_P1A",
-					"cols": {"#": " Řádek", "naz_uc_skup": "Název účtové skupiny", "kc_1a": " Částka"}
+					"cols": {"#": " Řádek", "naz_uc_skup": "Název účtové skupiny (včetně číselného označení)", "kc_1a": " Částka"}
 				}
 			}
 		]

@@ -12,7 +12,7 @@
 			{"id": "kc_dpp_b_6odsk", "type": "long", "src": "propertyDeps.kc_dpp_b_6odsk", "name": "Odpisy hmotného majetku zařazeného do odpisové skupiny 6"},
 			{"id": "kc_dpp_b6", "type": "long", "name": "Odpisy hmotného majetku podle § 30 odst. 4 zákona, ve znění účinném do 31. prosince 2007"},
 			{"id": "kc_dpp_b_ohm_30_6", "type": "long", "name": "Odpisy hmotného majetku podle § 30 odst. 4 až 6 § 30b zákona"},
-			{"id": "kc_dpp_b_onm", "type": "long", "src": "propertyDeps.kc_dpp_b_onm", "name": "Odpisy nehmotného majetku podle § 32a zákona, zaevidovaného do majetku poplatníka ve zdaňovacích obdobích započatých v roce 2004 a později"},
+			{"id": "kc_dpp_b_onm", "type": "long", "src": "propertyDeps.kc_dpp_b_onm", "name": "Odpisy nehmotného majetku podle § 32a zákona, ve znění účinném do 31. prosince 2020"},
 			{"id": "kc_dppb6_b8", "type": "long", "sum": "kc_dppb1 kc_dppb2 kc_dppb3 kc_dppb4 kc_dppb5 kc_dpp_b_6odsk kc_dpp_b6 kc_dpp_b_ohm_30_6 kc_dpp_b_onm",
 				"name": "Daňové odpisy hmotného a nehmotného majetku celkem"},
 			{"id": "kc_dpp_b10", "type": "long", "name": "Účetní odpisy, s výjimkou uvedenou v § 25 odst. 1 písm. zg) zákona, u hmotného majetku, který není vymezen pro účely zákona jako hmotný majetek, a nehmotného majetku, který se neodepisuje podle tohoto zákona, uplatněné podle § 24 odst. 2 písm. v) zákona jako výdaj (náklad) k dosažení, zajištění a udržení zdanitelných příjmů. Pro nehmotný majetek zaevidovaný do majetku poplatníka do 31. prosince 2000 se použije zákon ve znění platném do uvedeného data, a to až do doby jeho vyřazení z majetku poplatníka"}

@@ -1,6 +1,6 @@
 {
-	"name": "I. Zápočet daně zaplacené v zahraničí 5)",
-	"title": "I. Zápočet daně zaplacené v zahraničí 5)",
+	"name": "I. Zápočet daně zaplacené v zahraničí⁵⁾",
+	"title": "I. Zápočet daně zaplacené v zahraničí⁵⁾",
 
 	"fields": {
 		"columns": [
@@ -19,9 +19,9 @@
 						{"rn": "Řád.", "text": "Název položky", "value": "Částka"}
 					],
 					"rows": [
-						{"rn": "1", "text": {"scLabel": "pr1i_1"}, "value": {"scInput": "pr1i_1"}},
-						{"rn": "2", "text": {"scLabel": "pr1i_2"}, "value": {"scInput": "pr1i_2"}},
-						{"rn": "3", "text": {"scLabel": "pr1i_3"}, "value": {"scInput": "pr1i_3"}},
+						{"rn": "1⁸⁾", "text": {"scLabel": "pr1i_1"}, "value": {"scInput": "pr1i_1"}},
+						{"rn": "2⁹⁾", "text": {"scLabel": "pr1i_2"}, "value": {"scInput": "pr1i_2"}},
+						{"rn": "3⁹⁾", "text": {"scLabel": "pr1i_3"}, "value": {"scInput": "pr1i_3"}},
 						{"rn": "4", "text": {"scLabel": "pr1i_4"}, "value": {"scInput": "pr1i_4"}},
 						{"rn": "5", "text": {"scLabel": "kc_dppd17_g17"}, "value": {"scInput": "kc_dppd17_g17"}}
 					]

@@ -27,8 +27,8 @@
 			{"id": "kc_dpp_c_5a3", "type": "long", "name": "Opravné položky k nepromlčeným pohledávkám z úvěrů poskytnutých fyzickým osobám na základě smlouvy o úvěru, vytvořené podle § 5a odst. 4 zákona o rezervách za dané zdaňovací období"},
 			{"id": "kc_dpp_c_5a4", "type": "long", "name": "Stav zákonných opravných položek k nepromlčeným pohledávkám z úvěrů poskytnutých fyzickým osobám na základě smlouvy o úvěru (§ 5a odst. 4 zákona o rezervách) ke konci zdaňovacího období"},
 
-			{"id": "kc_dpp_c16", "type": "long", "name": "Rezervy v pojišťovnictví vytvořené podle § 6 zákona o rezervách v daném období, za které se podává daňové přiznání"},
-			{"id": "kc_dpp_c17", "type": "long", "name": "Stav rezerv v pojišťovnictví (§ 6 zákona o rezervách) ke konci období, za které se podává daňové přiznání"},
+			{"id": "kc_dpp_c16", "type": "long", "name": "Rozdíl mezi výší upravených rezerv v pojišťovnictví na konci období, za které se podává daňové přiznání a výší upravených rezerv v pojišťovnictví na začátku období, za které se podává daňové přiznání (§ 6 zákona o rezervách)"},
+			{"id": "kc_dpp_c17", "type": "long", "name": "Stav upravených rezerv v pojišťovnictví (§ 6 zákona o rezervách) ke konci období, za které se podává daňové přiznání"},
 
 			{"id": "kc_dpp_c18", "type": "long", "name": "Rezerva na opravy hmotného majetku vytvořená podle § 7 zákona o rezervách v daném zdaňovacím období"},
 			{"id": "kc_dpp_c19", "type": "long", "name": "Stav rezerv na opravy hmotného majetku (§ 7 zákona o rezervách) ke konci zdaňovacího období"},
@@ -70,10 +70,10 @@
 					"header": [{"rn": "Řád.", "text": "Název položky", "value": "Částka"}],
 					"rows": [
 						{"rn": "13", "text": {"scLabel": "kc_dpp_c9"}, "value": {"scInput": "kc_dpp_c9"}},
-						{"rn": "14", "text": {"scLabel": "kc_dpp_c10"}, "value": {"scInput": "kc_dpp_c10"}},
+						{"rn": "14⁸⁾", "text": {"scLabel": "kc_dpp_c10"}, "value": {"scInput": "kc_dpp_c10"}},
 						{"rn": "15", "text": {"scLabel": "kc_dpp_c11"}, "value": {"scInput": "kc_dpp_c11"}},
 						{"rn": "16", "text": {"scLabel": "kc_dpp_c12"}, "value": {"scInput": "kc_dpp_c12"}},
-						{"rn": "17", "text": {"scLabel": "kc_dpp_c13"}, "value": {"scInput": "kc_dpp_c13"}},
+						{"rn": "17⁸⁾", "text": {"scLabel": "kc_dpp_c13"}, "value": {"scInput": "kc_dpp_c13"}},
 						{"rn": "18", "text": {"scLabel": "kc_dpp_c14"}, "value": {"scInput": "kc_dpp_c14"}}
 					]
 				}
@@ -86,7 +86,7 @@
 					"rows": [
 						{"rn": "19", "text": {"scLabel": "kc_dpp_c_5a1"}, "value": {"scInput": "kc_dpp_c_5a1"}},
 						{"rn": "20", "text": {"scLabel": "kc_dpp_c_5a2"}, "value": {"scInput": "kc_dpp_c_5a2"}},
-						{"rn": "21", "text": {"scLabel": "kc_dpp_c_5a3"}, "value": {"scInput": "kc_dpp_c_5a3"}},
+						{"rn": "21⁸⁾", "text": {"scLabel": "kc_dpp_c_5a3"}, "value": {"scInput": "kc_dpp_c_5a3"}},
 						{"rn": "22", "text": {"scLabel": "kc_dpp_c_5a4"}, "value": {"scInput": "kc_dpp_c_5a4"}}
 					]
 				}
@@ -121,7 +121,7 @@
 					"rows": [
 						{"rn": "27", "text": {"scLabel": "kc_dpp_c20"}, "value": {"scInput": "kc_dpp_c20"}},
 						{"rn": "28", "text": {"scLabel": "kc_dpp_c21"}, "value": {"scInput": "kc_dpp_c21"}},
-						{"rn": "29", "text": {"scLabel": "kc_dpp_c22"}, "value": {"scInput": "kc_dpp_c22"}}
+						{"rn": "29⁸⁾", "text": {"scLabel": "kc_dpp_c22"}, "value": {"scInput": "kc_dpp_c22"}}
 					]
 				}
 			},

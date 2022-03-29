@@ -1,10 +1,10 @@
 {
-	"name": "G. Celková hodnota bezúplatných plnění, kterou lze podle § 20 odst. 8 zákona uplatnit jako odečet od základu daně sníženého podle § 34 zákona5)",
-	"title": "G. Celková hodnota bezúplatných plnění, kterou lze podle § 20 odst. 8 zákona uplatnit jako odečet od základu daně sníženého podle § 34 zákona5)",
+	"name": "G. Celková hodnota bezúplatných plnění, kterou lze podle § 20 odst. 8 zákona uplatnit jako odečet od základu daně sníženého podle § 34 zákona⁵⁾",
+	"title": "G. Celková hodnota bezúplatných plnění, kterou lze podle § 20 odst. 8 zákona uplatnit jako odečet od základu daně sníženého podle § 34 zákona⁵⁾",
 
 	"fields": {
 		"columns": [
-			{"id": "pr1g_1", "type": "long", "name": "Celková hodnota bezúplatných plnění poskytnutých na účely vymezené v § 20 odst. 8 zákona pro odečet ze základu daně sníženého podle § 34 zákona, vč. částky ze ř. 2"}
+			{"id": "pr1g_1", "type": "long", "name": "Celková hodnota bezúplatných plnění poskytnutých na účely vymezené v § 20 odst. 8 zákona pro odečet ze základu daně sníženého podle § 34 zákona"}
 		],
 
 		"layout": [
