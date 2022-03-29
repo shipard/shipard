@@ -400,7 +400,7 @@ class TaxCIReport extends \e10doc\taxes\TaxReportReport
 		$v = [];
 
 		$this->addXmlVItem('part2_att1_g', 'pr1g_1', $v);
-		$this->addXmlVItem('part2_att1_g', 'pr1g_2', $v);
+		//$this->addXmlVItem('part2_att1_g', 'pr1g_2', $v); // valid to 2016
 
 		$this->addXmlRow('VetaL', $v);
 	}
@@ -440,7 +440,7 @@ class TaxCIReport extends \e10doc\taxes\TaxReportReport
 		$this->addXmlVItem('part2_att1_j', 'pr1j_sl_2_r3', $v);
 		$this->addXmlVItem('part2_att1_j', 'pr1j_sl_2_r4', $v);
 		$this->addXmlVItem('part2_att1_j', 'pr1j_sl_2_r5', $v);
-		$this->addXmlVItem('part2_att1_j', 'pr1j_sl_2_r6', $v);
+		//$this->addXmlVItem('part2_att1_j', 'pr1j_sl_2_r6', $v); // valid to 2016
 		$this->addXmlVItem('part2_att1_j', 'pr1j_sl_2_r7', $v);
 		$this->addXmlVItem('part2_att1_j', 'pr1j_sl_2_r9', $v);
 		$this->addXmlVItem('part2_att1_j', 'pr1j_sl_3_r1', $v);
@@ -448,7 +448,7 @@ class TaxCIReport extends \e10doc\taxes\TaxReportReport
 		$this->addXmlVItem('part2_att1_j', 'pr1j_sl_3_r3', $v);
 		$this->addXmlVItem('part2_att1_j', 'pr1j_sl_3_r4', $v);
 		$this->addXmlVItem('part2_att1_j', 'pr1j_sl_3_r5', $v);
-		$this->addXmlVItem('part2_att1_j', 'pr1j_sl_3_r6', $v);
+		//$this->addXmlVItem('part2_att1_j', 'pr1j_sl_3_r6', $v); // valid to 2016
 		$this->addXmlVItem('part2_att1_j', 'pr1j_sl_3_r7', $v);
 		$this->addXmlVItem('part2_att1_j', 'pr1j_sl_3_r9', $v);
 		$this->addXmlVItem('part2_att1_j', 'pr1j_sl_4_r1', $v);
@@ -456,7 +456,7 @@ class TaxCIReport extends \e10doc\taxes\TaxReportReport
 		$this->addXmlVItem('part2_att1_j', 'pr1j_sl_4_r3', $v);
 		$this->addXmlVItem('part2_att1_j', 'pr1j_sl_4_r4', $v);
 		$this->addXmlVItem('part2_att1_j', 'pr1j_sl_4_r5', $v);
-		$this->addXmlVItem('part2_att1_j', 'pr1j_sl_4_r6', $v);
+		//$this->addXmlVItem('part2_att1_j', 'pr1j_sl_4_r6', $v); // valid to 2016
 		$this->addXmlVItem('part2_att1_j', 'pr1j_sl_4_r7', $v);
 		$this->addXmlVItem('part2_att1_j', 'pr1j_sl_4_r9', $v);
 
