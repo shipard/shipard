@@ -1,0 +1,34 @@
+{
+    "name": "IV. ODDÍL – dodatečné daňové přiznání",
+    "title": "IV. ODDÍL – dodatečné daňové přiznání",
+
+    "fields": {
+		"columns": [
+			{"id": "kc_dppiv2", "type": "long", "name": "Poslední známá daň"},
+			{"id": "kc_dppiv1", "type": "long", "name": "Nově zjištěná daň (ř. 340 II. oddílu)"},
+			{"id": "kc_dppiv3", "type": "long", "name": "Zvýšení (+), snížení (-) daně (ř. 2 - ř. 1)"},
+			{"id": "kc_dppiv5", "type": "long", "name": "Poslední známá daňová ztráta"},
+			{"id": "kc_dppiv4", "type": "long", "name": "Nově zjištěná daňová ztráta (ř. 220 II. oddílu)"},
+            {"id": "kc_dppiv6", "type": "long", "name": "Zvýšení (+), snížení (-) daňové ztráty (ř. 5 - ř. 4)"}
+		],
+
+		"layout": [
+			{
+				"table": {
+					"cols": {"rn": " číslo řádku", "text": "popis", "value": " hodnota"},
+					"header": [
+						{"rn": "Řád.", "text": "Název položky", "value": "Částka"}
+					],
+					"rows": [
+						{"rn": "1", "text": {"scLabel": "kc_dppiv2"}, "value": {"scInput": "kc_dppiv2"}},
+						{"rn": "2", "text": {"scLabel": "kc_dppiv1"}, "value": {"scInput": "kc_dppiv1"}},
+						{"rn": "3", "text": {"scLabel": "kc_dppiv3"}, "value": {"scInput": "kc_dppiv3"}},
+						{"rn": "4", "text": {"scLabel": "kc_dppiv5"}, "value": {"scInput": "kc_dppiv5"}},
+						{"rn": "5", "text": {"scLabel": "kc_dppiv4"}, "value": {"scInput": "kc_dppiv4"}},
+                        {"rn": "6", "text": {"scLabel": "kc_dppiv6"}, "value": {"scInput": "kc_dppiv6"}}
+					]
+				}
+			}
+		]
+	}
+}

@@ -206,7 +206,7 @@
 				"parts": [
 					"part1", "part2", "part2_att1_a", "part2_att1_b",
 					"part2_att1_c", "part2_att1_e", "part2_att1_f", "part2_att1_g", "part2_att1_h", "part2_att1_i",
-					"part2_att1_j", "part2_att1_k",
+					"part2_att1_j", "part2_att1_k", "part4", "part5",
 					"att_balanceSheet", "att_statement"
 				],
 				"partsGroups": {
@@ -220,6 +220,8 @@
 					"2i": {"title": "I", "parts": ["part2_att1_i"]},
 					"2j": {"title": "J", "parts": ["part2_att1_j"]},
 					"2k": {"title": "K", "parts": ["part2_att1_k"]},
+					"4": {"title": "IV.", "parts": ["part4"]},
+					"5": {"title": "V.", "parts": ["part5"]},
 					"att_bal": {"title": "ROZ", "parts": ["att_balanceSheet"]},
 					"att_sta": {"title": "VÝS", "parts": ["att_statement"]}
 				},

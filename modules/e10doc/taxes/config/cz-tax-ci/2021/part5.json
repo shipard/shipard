@@ -1,0 +1,30 @@
+{
+    "name": "V. ODDÍL – placení daně",
+    "title": "V. ODDÍL – placení daně",
+
+    "fields": {
+		"columns": [
+			{"id": "kc_v_1", "type": "long", "name": "Na zálohách (§ 38a zákona) zaplaceno"},
+			{"id": "kc_v_2", "type": "long", "name": "Na zajištění daně sraženo plátcem (§ 38e zákona)"},
+			{"id": "kc_v_3", "type": "long", "name": "Uplatňovaný zápočet daně vybrané srážkou (§ 36 odst. 7 zákona)"},
+			{"id": "kc_v_4", "type": "long", "name": "Nedoplatek (-) (ř. 1 + ř. 2 + ř. 3 - ř. 340 II. oddílu) < 0, Přeplatek (+) (ř. 1 + ř. 2 + ř. 3 - ř. 340 II. oddílu) > 0"}
+		],
+
+		"layout": [
+			{
+				"table": {
+					"cols": {"rn": " číslo řádku", "text": "popis", "value": " hodnota"},
+					"header": [
+						{"rn": "Řád.", "text": "Název položky", "value": "Částka"}
+					],
+					"rows": [
+						{"rn": "1", "text": {"scLabel": "kc_v_1"}, "value": {"scInput": "kc_v_1"}},
+						{"rn": "2⁸⁾", "text": {"scLabel": "kc_v_2"}, "value": {"scInput": "kc_v_2"}},
+						{"rn": "3⁸⁾", "text": {"scLabel": "kc_v_3"}, "value": {"scInput": "kc_v_3"}},
+						{"rn": "4", "text": {"scLabel": "kc_v_4"}, "value": {"scInput": "kc_v_4"}}
+					]
+				}
+			}
+		]
+	}
+}
