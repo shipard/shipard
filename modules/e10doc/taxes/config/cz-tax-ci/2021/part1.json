@@ -41,10 +41,14 @@
 			{"id": "zdobd_do", "name": "Konec zdaňovacího období", "type": "date"},
 
 			{"id": "audit", "group": "dp", "type": "logical", "name": "Zákonná povinnost ověření účetní závěrky auditorem"},
+			{"id": "uz_dle_mus", "group": "dp", "type": "logical", "name": "Zákonná povinnost sestavení účetní závěrky dle mezinárodních účetních standardů upravených právem Evropské unie"},
 			{"id": "dan_por", "group": "dp", "type": "logical", "name": "Přiznání zpracoval a předložil daňový poradce", "options": ["saveOnChange"]},
 
-			{"id": "dapdpp_forma", "group": "dp", "name": "Forma daňového přiznání", "type": "enumString", "len": 1,
+			{"id": "dapdpp_forma", "group": "dp", "name": "Forma daňového přiznání", "type": "enumString", "len": 1, "options": ["saveOnChange"],
 				"enumValues": {"B": "Řádné", "O": "Řádné - opravné", "D": "Dodatečné", "E": "Dodatečné - opravné"}},
+
+			{"id": "d_zjist", "group": "dp", "type": "date", "name": "Důvody pro podání dodatečného daňového přiznání zjištěny dne", "enabled": {"dapdpp_forma": "D"}},
+
 			{"id": "typ_dapdpp", "group": "dp", "name": "Typ daňového přiznání", "type": "enumString", "len": 1,
 				"enumValues": {
 					"A": "A. za zdaňovací období",
@@ -88,6 +92,8 @@
 				}
 			},
 
+			{"id": "zakl_if", "group": "dp", "type": "logical", "name": "Základní investiční fond podle § 17b zákona"},
+
 			{"id": "uv_vyhl", "group": "dp", "name": "Vyhláška č.", "type": "enumString", "len": 3,
 				"enumValues": {
 					"500": "500 - podnikatelé, podvojné účetnictví",
@@ -103,23 +109,23 @@
 
 			{"id": "spoj_zahr", "group": "dp", "name": "Transakce uskutečněné se spojenými osobami", "type": "enumString", "len": 1,
 				"enumValues": {
-					"N": "žádné uskutečněné transakce se spojenou osobou",
-					"T": "transakce uskutečněné s tuzemskou spojenou osobou",
-					"Z": "transakce uskutečněné se zahraniční spojenou osobou",
-					"A": "transakce uskutečněné s tuzemskou i zahraniční spojenou osobou"
+					"N": "N - žádné uskutečněné transakce se spojenou osobou",
+					"T": "T - transakce uskutečněné s tuzemskou spojenou osobou",
+					"Z": "Z - transakce uskutečněné se zahraniční spojenou osobou",
+					"A": "A - transakce uskutečněné s tuzemskou i zahraniční spojenou osobou"
 				}
 			},
 
 			{"id": "typ_zo", "group": "dp", "name": "Zdaňovací období podle § 21a písm.", "type": "enumString", "len": 1,
 				"enumValues": {
-					"A": "Kalendářní rok",
-					"B": "Hospodářský rok",
-					"C": "Období od rozhodného dne fúze nebo rozdělení korporace nebo převodu jmění do konce kalendářního roku nebo hosp. roku, ve kterém se přeměna nebo převod jmění staly účinnými",
-					"D": "Účetní období, pokud je toto účetní období delší než 12 měsíců."
+					"A": "A - Kalendářní rok",
+					"B": "B - Hospodářský rok",
+					"C": "C - Období od rozhodného dne fúze nebo rozdělení korporace nebo převodu jmění do konce kalendářního roku nebo hosp. roku, ve kterém se přeměna nebo převod jmění staly účinnými",
+					"D": "D - Účetní období, pokud je toto účetní období delší než 12 měsíců."
 				}
 			},
 
-			{"id": "uc_zav", "name": "Účetní závěrka přiložena", "type": "enumString", "len": 1,
+			{"id": "uc_zav", "group": "dp", "name": "Účetní závěrka přiložena", "type": "enumString", "len": 1,
 				"enumValues": {"A": "Ano", "N": "Ne"}},
 			{"id": "uv_rozsah", "group": "dp", "name": "Rozsah údajů účetních výkazů", "type": "enumString", "len": 1,
 				"enumValues": {"P": "Plný", "Z": "Zkrácený pro malé ÚJ", "M": "Zkrácený pro mikro ÚJ"}},

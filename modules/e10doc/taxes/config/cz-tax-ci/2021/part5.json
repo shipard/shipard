@@ -7,7 +7,7 @@
 			{"id": "kc_v_1", "type": "long", "name": "Na zálohách (§ 38a zákona) zaplaceno"},
 			{"id": "kc_v_2", "type": "long", "name": "Na zajištění daně sraženo plátcem (§ 38e zákona)"},
 			{"id": "kc_v_3", "type": "long", "name": "Uplatňovaný zápočet daně vybrané srážkou (§ 36 odst. 7 zákona)"},
-			{"id": "kc_v_4", "type": "long", "name": "Nedoplatek (-) (ř. 1 + ř. 2 + ř. 3 - ř. 340 II. oddílu) < 0, Přeplatek (+) (ř. 1 + ř. 2 + ř. 3 - ř. 340 II. oddílu) > 0"}
+			{"id": "kc_v_4", "type": "long", "name": "Nedoplatek (-) (ř. 1 + ř. 2 + ř. 3 - ř. 340 II. oddílu) < 0<br>Přeplatek (+) (ř. 1 + ř. 2 + ř. 3 - ř. 340 II. oddílu) > 0"}
 		],
 
 		"layout": [

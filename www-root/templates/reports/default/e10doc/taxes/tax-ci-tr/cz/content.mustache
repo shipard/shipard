@@ -1,31 +1,104 @@
 <div class="newPage"></div>
 <div class='e10-tax-report' style="font-size:80%;">
+	{{{data.partsDef.part2.title}}}
 	{{{data.partsTables.part2}}}
 </div>
 
 <div class="newPage"></div>
 <div class='e10-tax-report' style="font-size:80%;">
-	<h4>{{data.partsDef.part2_att1_a.title}}</h4>
+	<div class="subtitle">{{data.partsDef.part2_att1_a.title}}</div>
 	{{{data.partsTables.part2_att1_a}}}
 
-	<h4>{{data.partsDef.part2_att1_b.title}}</h4>
+	<div class="subtitle">{{data.partsDef.part2_att1_b.title}}</div>
 	{{{data.partsTables.part2_att1_b}}}
+
+	<div class="subtitle">{{data.partsDef.part2_att1_c.title}}</div>
+	{{{data.partsTables.part2_att1_c}}}
 </div>
 
 <div class="newPage"></div>
 <div class='e10-tax-report' style="font-size:80%;">
-	<h4>{{data.partsDef.part2_att1_c.title}}</h4>
-	{{{data.partsTables.part2_att1_c}}}
-	
+	<div class="subtitle">{{data.partsDef.part2_att1_e.title}}</div>
 	{{{data.partsTables.part2_att1_e}}}
+
+	<div class="subtitle">{{data.partsDef.part2_att1_f.title}}</div>
 	{{{data.partsTables.part2_att1_f}}}
+
+	<div class="subtitle">{{data.partsDef.part2_att1_g.title}}</div>
+	{{{data.partsTables.part2_att1_g}}}
+
+	<div class="subtitle">{{data.partsDef.part2_att1_h.title}}</div>
+	{{{data.partsTables.part2_att1_h}}}
+
+	<div class="subtitle">{{data.partsDef.part2_att1_i.title}}</div>
+	{{{data.partsTables.part2_att1_i}}}
+
+	<div class="subtitle">{{data.partsDef.part2_att1_j.title}}</div>
+	{{{data.partsTables.part2_att1_j}}}
+
+	<div class="subtitle">{{data.partsDef.part2_att1_k.title}}</div>
+	{{{data.partsTables.part2_att1_k}}}
 </div>
 
 <div class="newPage"></div>
+<div class='e10-tax-report' style="font-size:80%;">
+	<div class="subtitle">{{data.partsDef.part4.title}}</div>
+	{{{data.partsTables.part4}}}
 
-{{{data.partsTables.part2_att1_g}}}
-{{{data.partsTables.part2_att1_h}}}
-{{{data.partsTables.part2_att1_i}}}
-{{{data.partsTables.part2_att1_j}}}
-{{{data.partsTables.part2_att1_k}}}
+	<div class="subtitle">{{data.partsDef.part5.title}}</div>
+	{{{data.partsTables.part5}}}
 
+	<div class="bigFrame">
+		<table class="formSection">
+			<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+			<tr>
+				<td colspan=9><b>Údaje o podepisující osobě:</b></td>
+				<td colspan=10>Kód podepisující osoby:</td>
+			</tr>
+			<tr>
+				<td colspan="9"></td>
+				<td class="input c" colspan="2"><span>{{data.parts.part1.zast_kod}}</span></td>
+				<td colspan="22"></td>
+			</tr>
+			<tr>
+				<td colspan=33>Jméno(-a) a příjmení / Název právnické osoby</td>
+			</tr>
+			<tr>
+				<td class="input c" colspan="33"><span>{{data.parts.part1.zast_jmeno}} {{data.parts.part1.zast_prijmeni}} {{data.parts.part1.zast_nazev}}</span></td>
+			</tr>
+			<tr>
+				<td colspan=33>Datum narození / Evidenční číslo osvědčení daňového poradce / IČ právnické osoby</td>
+			</tr>
+			<tr>
+				<td class="input c" colspan="33"><span>{{data.parts.part1.zast_dat_nar}} {{data.parts.part1.zast_ev_cislo}} {{data.parts.part1.zast_ic}}</span></td>
+			</tr>
+			<tr>
+				<td colspan=33><b>Fyzická osoba oprávněná k podpisu</b> (je-li daňový subjekt či zástupce právnickou osobou),<br/><b>s uvedením vztahu k právnické osobě</b> (např. jednatel, pověřený pracovník apod.)</td>
+			</tr>
+			<tr>
+				<td colspan=33>Jméno(-a) a příjmení / Vztah k právnické osobě</td>
+			</tr>
+			<tr>
+				<td class="input c" colspan="33"><span>{{data.parts.part1.zast_jmeno}} {{data.parts.part1.zast_prijmeni}} {{data.parts.part1.opr_postaveni}}</span></td>
+			</tr>
+			
+		</table>
+	</div>
+
+	<div class="bigFrame">
+		<table class="formSection">
+			<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+			<tr>
+				<td colspan="33"><b>Osoba oprávněná k podpisu</b></td>
+			</tr>
+			<tr>
+				<td colspan="20">Datum</td>
+				<td class="c" colspan="13">Vlastnoruční podpis osoby oprávněné k podpisu</td>
+			</tr>
+			<tr>
+				<td class="input c" colspan="8"><span></span></td>
+				<td class="c" colspan="12">Otisk<br>razítka</td>
+				<td class="input c" colspan="13" rowspan="6"><span><br><br><br></span></td>
+			</tr>
+	</table>
+</div>

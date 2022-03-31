@@ -28,12 +28,14 @@ table.formSection td.c {text-align: center;}
 table.formSection td.l {text-align: left;}
 table.formSection td.r {text-align: right; padding-right: 3pt;}
 
-div.bigFrame {border: 1px solid black; padding: 6pt; margin: 0;}
+div.bigFrame {border: 1px solid black; padding: 6pt; margin-top: 3pt;}
 
 
 
 
-
+table.e10-dataSet-table {
+	margin-bottom: 1ex !important;
+}
 
 table.tableSection {width: 100%; background-color: white; border-collapse: collapse; }
 table.tableSection td {padding: 2pt 1pt; background-color: white; font-size: 7pt; height: 9pt; border: 1px solid black;}
@@ -58,19 +60,26 @@ div.pageNumber {text-align: center; font-size: 8pt; padding-top: 10pt;}
 div.title1 {
 	text-align: center;
 	font-weight: bold;
-	font-size: 18pt;
+	font-size: 20pt;
 	letter-spacing: 4pt;
-	padding: 6pt;
+	padding-top: 6pt;
 }
 
 div.title2 {
 	text-align: center;
-	font-size: 12pt;
+	font-size: 14pt;
+	font-weight: bold;
+	padding: 3pt;
 }
 
-div.subTitle {
-	text-align: center; font-weight: bold; font-size: 7.5pt;
-	padding: 6pt 0;
+div.title3 {
+	text-align: center;
+	font-size: 12pt;
+	font-weight: bold;
+}
+
+div.subtitle {
+	text-align: left; font-weight: bold; font-size: 9pt;
 }
 
 div.e10-tax-report-tmpdis {width: 100%; display: inline-block;}

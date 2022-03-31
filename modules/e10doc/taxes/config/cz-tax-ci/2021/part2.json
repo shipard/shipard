@@ -90,7 +90,7 @@
 					"params": {"colClasses": {"rn": "e10-bg-t8", "c1": "e10-row-info", "c2": "e10-bg-white width10em"}}
 				}
 			},
-
+			
 			{
 				"table": {
 					"cols": {"rn": " Řád.", "text": "Název položky", "value": " Částka"},
@@ -119,9 +119,16 @@
 						{"rn": "161⁸⁾", "text": {"scLabel": "kc_ii181_161"}, "value": {"scInput": "kc_ii181_161"}},
 						{"rn": "162⁸⁾", "text": {"scInput": "text_ii182_162"}, "value": {"scInput": "kc_ii182_162"}},
 						{"rn": "163", "text": {"scLabel": "kc_ii_163"}, "value": {"scInput": "kc_ii_163"}},
-						{"rn": "170", "text": {"scLabel": "kc_ii190_170"}, "value": {"scInput": "kc_ii190_170"}},
+						{"rn": "170", "text": {"scLabel": "kc_ii190_170"}, "value": {"scInput": "kc_ii190_170"}}
+					],
+					"params": {"colClasses": {"rn": "e10-bg-t8", "text": "e10-row-info", "value": "e10-bg-white width10em"}}
+				}
+			},
 
-						{"rn": "", "_options": {"class": "separator", "colSpan": {"rn": 3}, "cellClasses": {"rn": "e10-bg-none"}}},
+			{
+				"table": {
+					"cols": {"rn": " Řád.", "text": "Název položky", "value": " Částka"},
+					"rows": [
 						{"rn": "200", "text": {"scLabel": "kc_ii200_200"}, "value": {"scInput": "kc_ii200_200"}},
 						{"rn": "201", "text": {"scLabel": "kc_ii201_201"}, "value": {"scInput": "kc_ii201_201"}},
 						{"rn": "210⁸⁾", "text": {"scLabel": "kc_ii250_210"}, "value": {"scInput": "kc_ii250_210"}},
@@ -140,59 +147,29 @@
 						{"rn": "241", "text": {"scInput": "text_ii221_241"}, "value": {"scInput": "kc_ii221_241"}},
 						{"rn": "242", "text": {"scLabel": "kc_ii_242"}, "value": {"scInput": "kc_ii_242"}},
 						{"rn": "243", "text": {"scLabel": "kc_ii_243"}, "value": {"scInput": "kc_ii_243"}},
-						{"rn": "250", "text": {"scLabel": "kc_ii230_250"}, "value": {"scInput": "kc_ii230_250"}}
-					]
-				}
-			},
+						{"rn": "250", "text": {"scLabel": "kc_ii230_250"}, "value": {"scInput": "kc_ii230_250"}},
 
-			{
-				"table": {
-					"cols": {"rn": " Řád.", "text": "Název položky", "value": " Částka"},
-					"rows": [
+						{"rn": "", "_options": {"class": "separator", "colSpan": {"rn": 3}, "cellClasses": {"rn": "e10-bg-none"}}},
 						{"rn": "251", "text": {"scLabel": "kc_ii231_251"}, "value": {"scInput": "kc_ii231_251"}},
 						{"rn": "260", "text": {"scLabel": "kc_ii240_260"}, "value": {"scInput": "kc_ii240_260"}},
-						{"rn": "270", "text": {"scLabel": "kc_ii260_270"}, "value": {"scInput": "kc_ii260_270"}}
-					]
-				}
-			},
+						{"rn": "270", "text": {"scLabel": "kc_ii260_270"}, "value": {"scInput": "kc_ii260_270"}},
 
-			{
-				"table": {
-					"cols": {"rn": " Řád.", "text": "Název položky", "value": " Částka"},
-					"rows": [
+						{"rn": "", "_options": {"class": "separator", "colSpan": {"rn": 3}, "cellClasses": {"rn": "e10-bg-none"}}},
 						{"rn": "280", "text": {"scLabel": "kc_ii270_280"}, "value": {"scInput": "kc_ii270_280"}},
-						{"rn": "290", "text": {"scLabel": "kc_ii280_290"}, "value": {"scInput": "kc_ii280_290"}}
-					]
-				}
-			},
+						{"rn": "290", "text": {"scLabel": "kc_ii280_290"}, "value": {"scInput": "kc_ii280_290"}},
 
-			{
-				"table": {
-					"cols": {"rn": " Řád.", "text": "Název položky", "value": " Částka"},
-					"rows": [
+						{"rn": "", "_options": {"class": "separator", "colSpan": {"rn": 3}, "cellClasses": {"rn": "e10-bg-none"}}},
 						{"rn": "300", "text": {"scLabel": "kc_ii290_300"}, "value": {"scInput": "kc_ii290_300"}},
 						{"rn": "301", "text": {"scInput": "text_ii291_301"}, "value": {"scInput": "kc_ii291_301"}},
-						{"rn": "310", "text": {"scLabel": "kc_ii300_310"}, "value": {"scInput": "kc_ii300_310"}}
-					]
-				}
-			},
+						{"rn": "310", "text": {"scLabel": "kc_ii300_310"}, "value": {"scInput": "kc_ii300_310"}},
 
-			{
-				"table": {
-					"cols": {"rn": " Řád.", "text": "Název položky", "value": " Částka"},
-					"rows": [
+						{"rn": "", "_options": {"class": "separator", "colSpan": {"rn": 3}, "cellClasses": {"rn": "e10-bg-none"}}},
 						{"rn": "319⁹⁾", "text": {"scLabel": "kc_ii_319"}, "value": {"scInput": "kc_ii_319"}},
 						{"rn": "319a", "text": {"scLabel": "kc_ii_319a"}, "value": {"scInput": "kc_ii_319a"}},
 						{"rn": "320", "text": {"scLabel": "kc_ii310_320"}, "value": {"scInput": "kc_ii310_320"}},
-						{"rn": "330", "text": {"scLabel": "kc_ii320_330"}, "value": {"scInput": "kc_ii320_330"}}
-					]
-				}
-			},
+						{"rn": "330", "text": {"scLabel": "kc_ii320_330"}, "value": {"scInput": "kc_ii320_330"}},
 
-			{
-				"table": {
-					"cols": {"rn": " Řád.", "text": "Název položky", "value": " Částka"},
-					"rows": [
+						{"rn": "", "_options": {"class": "separator", "colSpan": {"rn": 3}, "cellClasses": {"rn": "e10-bg-none"}}},
 						{"rn": "331⁸⁾", "text": {"scLabel": "kc_ii_331"}, "value": {"scInput": "kc_ii_331"}},
 						{"rn": "332", "text": {"scLabel": "kc_ii_332"}, "value": {"scInput": "kc_ii_332"}},
 						{"rn": "333", "text": {"scLabel": "kc_ii_333"}, "value": {"scInput": "kc_ii_333"}},
@@ -204,7 +181,9 @@
 
 						{"rn": "", "_options": {"class": "separator"}},
 						{"rn": "360", "text": {"scLabel": "kc_ii_360"}, "value": {"scInput": "kc_ii_360"}}
-					]
+					],
+					"params": {"colClasses": {"rn": "e10-bg-t8", "text": "e10-row-info", "value": "e10-bg-white width10em"}}
+
 				}
 			}
 		]
