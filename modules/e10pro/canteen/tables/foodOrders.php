@@ -51,7 +51,7 @@ class TableFoodOrders extends DbTable
 	public function subColumnsInfo ($recData, $columnId)
 	{
 		$canteenCfg = $this->app()->cfgItem ('e10pro.canteen.canteens.'.$recData['canteen'], NULL);
-		if ($canteenCfg && isset($canteenCfg['addFoods']) && count($canteenCfg['addFoods']))
+		if ($canteenCfg && isset($canteenCfg['addFoods']) && count($canteenCfg['addFoods']))
 		{
 			$sci = ['columns' => []];
 			foreach ($canteenCfg['addFoods'] as $afNdx => $af)
