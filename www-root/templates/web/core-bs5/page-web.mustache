@@ -17,7 +17,7 @@
 	{{#page.params.recaptcha-v3-site-key}}<script src='https://www.google.com/recaptcha/api.js?render={{page.params.recaptcha-v3-site-key}}'></script>{{/page.params.recaptcha-v3-site-key}}
 </head>
 
-<body{{page.bodyEditParams}} class="{{page.bodyClasses}}{{#serverInfo.templateParams.topMenuFixedTop}} top-menu-fixed-top{{/serverInfo.templateParams.topMenuFixedTop}}">
+<body{{{page.bodyEditParams}}} class="{{page.bodyClasses}}{{#serverInfo.templateParams.topMenuFixedTop}} top-menu-fixed-top{{/serverInfo.templateParams.topMenuFixedTop}}">
 
 <header>
 	<nav class="navbar navbar-expand-{{serverInfo.templateParams.desktopMenuFrom}}{{#serverInfo.templateParams.topMenuFixedTop}} fixed-top{{/serverInfo.templateParams.topMenuFixedTop}} {{serverInfo.templateParams.topMenuStyle}}">
@@ -28,7 +28,7 @@
 						{{#serverInfo.templateParams.headerTitle}} <span class='d-{{serverInfo.templateParams.desktopMenuFrom}}'>{{serverInfo.templateParams.headerTitle}}</span>{{/serverInfo.templateParams.headerTitle}}
 					</a>
 				</span>
-			<button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+			<button class="navbar-toggler navbar-toggler-right" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
 				<span class="navbar-toggler-icon"></span>
 			</button>
 

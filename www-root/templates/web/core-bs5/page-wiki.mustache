@@ -44,7 +44,7 @@
 </head>
 
 
-<body{{page.bodyEditParams}} class="page-type-{{data.page.pageType}}{{page.bodyClasses}}{{#serverInfo.templateParams.topMenuFixedTop}} top-menu-fixed-top{{/serverInfo.templateParams.topMenuFixedTop}}">
+<body{{{page.bodyEditParams}}} class="page-type-{{data.page.pageType}}{{page.bodyClasses}}{{#serverInfo.templateParams.topMenuFixedTop}} top-menu-fixed-top{{/serverInfo.templateParams.topMenuFixedTop}}">
 
 <header>
 	{{^serverInfo.templateParams.topMenuFixedTop}}<div class="container col-sm-12 ml-md-auto mr-md-auto col-md-8" style="padding-left: 0;padding-right: 0;">{{/serverInfo.templateParams.topMenuFixedTop}}
@@ -58,7 +58,7 @@
 					{{#serverInfo.templateParams.headerTitle}}<span>{{serverInfo.templateParams.headerTitle}}</span>{{/serverInfo.templateParams.headerTitle}}
 				</a>
 			</span>
-		<button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+		<button class="navbar-toggler navbar-toggler-right" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 		</button>
 
