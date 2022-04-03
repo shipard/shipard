@@ -2,10 +2,11 @@
   "id": "services.persons",
   "name": "Persons services",
 	"modules": ["e10/base"],
-  "tables": ["persons"],
+  "tables": ["persons", "ids", "address", "regsData"],
   "config": [
 	  {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
 	  {"id": "+registeredClasses", "file": "registeredClasses.json"},
-	  {"id": "+services.personsRegisters", "file": "personsRegisters.json"}
+	  {"id": "+services.persons.registers", "file": "personsRegisters.json"},
+		{"id": "+services.persons.addressTypes", "file": "addressTypes.json"}
   ]
 }

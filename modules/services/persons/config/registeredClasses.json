@@ -2,6 +2,9 @@
 	"feed": {
 		"validate-person": {
 			"classId": "services.persons.PersonValidator"
+		},
+		"person-info": {
+			"classId": "services.persons.libs.PersonInfo"
 		}
 	},
 	"services-person-registers": {

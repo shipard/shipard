@@ -2,7 +2,7 @@
 
 namespace services\persons;
 
-use \E10\utils, \E10\TableView, \E10\TableForm, \E10\DbTable, \e10\TableViewDetail;
+use \Shipard\Utils\Utils, \E10\TableView, \E10\TableForm, \E10\DbTable, \e10\TableViewDetail, \Shipard\Utils\Str;
 
 
 /**
@@ -21,16 +21,14 @@ class TablePersons extends DbTable
 	{
 		$hdr = parent::createHeader ($recData, $options);
 
-		$registers = $this->app()->cfgItem('services.personsRegisters', []);
-		$registerInfo = [
-				['text' => $registers[$recData['register']]['name'], 'class' => 'label label-info'],
-				['text' => utils::datef($recData['updated'], '%D, %T'), 'class' => ''],
-		];
-
-		$hdr ['info'][] = ['class' => 'info', 'value' => $registerInfo];
-
-		$hdr ['info'][] = ['class' => 'info', 'value' => $recData ['id']];
+		$hdr ['info'][] = ['class' => 'info', 'value' => $recData ['oid']];
 		$hdr ['info'][] = ['class' => 'title', 'value' => $recData ['fullName']];
+
+		$registerInfo = [
+			['text' => Utils::dateFromTo($recData['validFrom'], $recData['validTo'], NULL), 'class' => ($recData['valid'] ? 'label label-success' : 'label label-danger')],
+			['text' => utils::datef($recData['updated'], '%D, %T'), 'class' => 'label label-default', 'icon' => 'system/iconImport'],
+		];
+		$hdr ['info'][] = ['class' => 'info', 'value' => $registerInfo];
 
 		return $hdr;
 	}
@@ -47,6 +45,7 @@ class ViewPersons extends TableView
 
 	public function init()
 	{
+		$this->disableIncrementalSearch = TRUE;
 		parent::init();
 		$this->registers = $this->app()->cfgItem('services.personsRegisters', []);
 	}
@@ -55,11 +54,11 @@ class ViewPersons extends TableView
 	{
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['t1'] = $item['fullName'];
-		$listItem ['t2'] = $item['id'];
-		$listItem ['i2'] = [
-				['text' => $this->registers[$item['register']]['name'], 'class' => 'label label-info'],
-				['text' => utils::datef($item['updated'], '%D, %T'), 'class' => ''],
-		];
+		$listItem ['t2'] = $item['oid'];
+
+		if (!$item['valid'])
+			$listItem['class'] = 'e10-warning1';
+
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
 		return $listItem;
@@ -73,13 +72,45 @@ class ViewPersons extends TableView
 		array_push ($q, ' WHERE 1');
 
 		// -- fulltext
+		/*
 		if ($fts != '')
 		{
+			$ascii = TRUE;
+			if(preg_match('/[^\x20-\x7f]/', $fts))
+				$ascii = FALSE;
+
 			array_push ($q, ' AND (');
-			array_push ($q,
-					' [fullName] LIKE %s', '%'.$fts.'%',
-					' OR [id] LIKE %s', '%'.$fts.'%'
-			);
+			array_push ($q, ' [fullName] LIKE %s', '%'.$fts.'%');
+					
+			if ($ascii)
+				array_push ($q,' OR [oid] LIKE %s', '%'.$fts.'%');
+			
+			array_push ($q, ')');
+		}
+		*/
+
+		if ($fts != '')
+		{
+			array_push ($q, ' AND (1 ');
+
+			$words = preg_split('/[\s-]+/', $fts);
+			$fullTextQuery = '';
+			foreach ($words as $w)
+			{
+				if (Str::strlen($w) < 4)
+					continue;
+				if ($fullTextQuery !== '')
+					$fullTextQuery .= ' ';
+				$fullTextQuery .= '+'.$w;
+			}
+
+			if ($fullTextQuery !== '')
+				array_push ($q, ' AND MATCH([fullName]) AGAINST (%s IN BOOLEAN MODE)', $fullTextQuery);
+			else
+			{
+				if (Str::strlen($fts) > 2)
+					array_push($q, ' AND [fullName] LIKE %s', $fts . '%');
+			}
 			array_push ($q, ')');
 		}
 
@@ -102,22 +133,34 @@ class FormPerson extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
 		$this->openForm ();
-			$this->addColumnInput ('id');
+			$this->addColumnInput ('country');
+			$this->addColumnInput ('oid');
 			$this->addColumnInput ('fullName');
+			$this->addColumnInput ('validFrom');
+			$this->addColumnInput ('validTo');
+			$this->addColumnInput ('valid');
 		$this->closeForm ();
 	}
 }
 
-
 /**
  * Class ViewDetailPerson
- * @package services\persons
  */
 class ViewDetailPerson extends TableViewDetail
 {
 	public function createDetailContent ()
 	{
-		$txt = $this->item['result'];
-		$this->addContent(['type' => 'text', 'subtype' => 'plain', 'text' => $txt]);
+		$this->addDocumentCard('services.persons.libs.DocumentCardPerson');
+	}
+}
+
+/**
+ * Class ViewDetailPersonRegsData
+ */
+class ViewDetailPersonRegsData extends TableViewDetail
+{
+	public function createDetailContent ()
+	{
+		$this->addDocumentCard('services.persons.libs.DocumentCardPersonRegsData');
 	}
 }

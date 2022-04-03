@@ -1,0 +1,22 @@
+{
+  "id": "services.persons.address", "sql": "services_persons_address", "name": "Adresy",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "person", "name": "Osoba", "type": "int"},
+	 
+		{"id": "type", "name": "Druh adresy", "type": "enumInt",
+		  "enumCfg": {"cfgItem": "services.persons.addressTypes", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "specification", "name": "Upřesnění", "type": "string", "len": 160},
+    {"id": "street", "name": "Ulice", "type": "string", "len": 250},
+    {"id": "city", "name": "Město", "type": "string", "len": 90},
+    {"id": "zipcode", "name": "PSČ", "type": "string", "len": 20},
+    {"id": "country", "name": "Země", "type": "int", "reference": "e10.world.countries"}
+  ],
+	"forms": [
+		{"id": "default", "class": "services.persons.FormAddress"}
+	],
+	"indexes": [
+		{"id": "s1", "columns": ["person"]}
+	]
+}

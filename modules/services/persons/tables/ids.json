@@ -1,0 +1,18 @@
+{
+  "id": "services.persons.ids", "sql": "services_persons_ids", "name": "ID",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "person", "name": "Osoba", "type": "int"},
+	 
+		{"id": "idType", "name": "Druh ID", "type": "enumInt",
+		  "enumCfg": {"cfgItem": "services.persons.idTypes", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "id", "name": "ID", "type": "string", "len": 20}
+  ],
+	"forms": [
+		{"id": "default", "class": "services.persons.FormID"}
+	],
+	"indexes": [
+		{"id": "s1", "columns": ["person"]}
+	]
+}

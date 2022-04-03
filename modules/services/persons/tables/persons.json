@@ -2,13 +2,15 @@
 	"id": "services.persons.persons", "sql": "services_persons_persons", "name": "Osoby",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
-		{"id": "id", "name": "id", "type": "string", "len": 20},
-		{"id": "register", "name": "Register", "type": "enumInt",
-			"enumCfg": {"cfgItem": "services.personsRegisters", "cfgValue": "", "cfgText": "name"}},
-		{"id": "fullName", "name": "Název", "type": "string", "len": 140},
-		{"id": "valid", "name": "V pořádku", "type": "logical"},
-		{"id": "result", "name": "Data", "type": "memo"},
-
+		{"id": "country", "sql": "country", "name": "Země", "type": "int", "reference": "e10.world.countries"},
+		{"id": "oid", "name": "id", "type": "string", "len": 20, "options": ["ascii"]},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 240},
+		{"id": "originalName", "name": "Originální název", "type": "string", "len": 240},
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+		{"id": "valid", "name": "Platné", "type": "logical"},
+		{"id": "importState", "name": "Stav", "type": "enumInt",
+			"enumValues": {"0": "Základní import", "1": "Zkontrolovat", "2": "Zkontrolováno"}},
 		{"id": "created", "name": "Vytvořeno", "type": "timestamp"},
 		{"id": "updated", "name": "Poslední kontrola", "type": "timestamp"}
 	],
@@ -16,12 +18,17 @@
 		"default": {
 			"id": "default", "class": "services.persons.ViewPersons",
 			"details": {
-				"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "services.persons.ViewDetailPerson"}
+				"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "services.persons.ViewDetailPerson"},
+				"regData": {"title": "Registry", "icon": "system/detailDetail", "type": "detail", "order":  100, "class": "services.persons.ViewDetailPersonRegsData"}
 			}
 		}
 	},
 	"forms": [
 		{"id": "default", "class": "services.persons.FormPerson"}
 	],
-	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"indexes": [
+		{"id": "s1", "columns": ["oid"]},
+		{"id": "fts", "fullText": 1, "columns": ["fullName"]}
+	]
 }

@@ -1,0 +1,21 @@
+{
+  "id": "services.persons.regsData", "sql": "services_persons_regsData", "name": "Data Osob z registrů",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "person", "name": "Osoba", "type": "int"},
+		{"id": "regType", "name": "Registr", "type": "enumInt", "len": 2,
+		  "enumCfg": {"cfgItem": "services.persons.registers", "cfgValue": "", "cfgText": "name"}},
+		{"id": "subId", "name": "ID", "type": "string", "len": 20, "options": ["ascii"]},
+		{"id": "srcData", "name": "Zdrojová data", "type": "memo"},
+
+		{"id": "imported", "name": "Naimportováno", "type": "logical"},
+		{"id": "timeUpdated", "name": "Poslední aktualizace", "type": "timestamp"},
+
+		{"id": "srcDataCheckSum", "name": "Kontrolní součet stažených dat", "type": "string", "len": 40, "options": ["ascii"]},
+		{"id": "importedCheckSum", "name": "Kontrolní součet importovaných dat", "type": "string", "len": 40, "options": ["ascii"]}
+  ],
+	"options": ["systemTable"],
+	"indexes": [
+		{"id": "s1", "columns": ["person"]}
+	]
+}

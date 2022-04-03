@@ -1,6 +1,10 @@
 {
 	"0": {"name": "---"},
-	"1": {"name": "EU VIES"},
-	"2": {"name": "CZ ARES"}
+	"1": {"name": "CZ Ares Init"},
+	"2": {"name": "CZ RES Init"},
+	"3": {"name": "CZ Ares Core"},
+	"4": {"name": "CZ Ares RŽP"},
+	"5": {"name": "CZ RŽP"},
+	"6": {"name": "CZ VAT"}
 }
 
