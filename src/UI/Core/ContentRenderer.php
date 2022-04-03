@@ -210,11 +210,11 @@ class ContentRenderer extends \Shipard\Base\BaseObject
 				$crr->content = $cp['content'];
 				$c .= $crr->createCode();
 			}
-			if (isset($cp['details']))
-				$c .= '</details>';
-
 			if (isset($cp['pane']))
 				$c .= '</div>';
+
+			if (isset($cp['details']))
+				$c .= '</details>';
 
 			if (isset ($cp['closeCell']))
 				$c .= '</div>';
