@@ -35,7 +35,7 @@ class PersonValidator extends Utility
 
 	var $onlineToolsDef;
 
-	protected function clear()
+	public function clear()
 	{
 		$this->personNames = [];
 		$this->msg = [];
@@ -272,7 +272,7 @@ class PersonValidator extends Utility
 		{
 			if ($r['valueString'] === '')
 				continue;
-			$this->checkOid[$r['valueString']] = ['valid' => 0];
+			$this->addOid($r['valueString']);
 		}
 	}
 
@@ -289,6 +289,11 @@ class PersonValidator extends Utility
 				continue;
 			$this->checkVat[$r['valueString']] = ['valid' => 0];
 		}
+	}
+
+	public function addOID($oid)
+	{
+		$this->checkOid[$oid] = ['valid' => 0];
 	}
 
 	protected function doIt ($checkType)
@@ -341,12 +346,15 @@ class PersonValidator extends Utility
 
 	public function onlineTools ($personRecData)
 	{
-		$this->clear();
-		$this->personRecData = $personRecData;
+		if ($personRecData !== NULL)
+		{
+			$this->clear();
+			$this->personRecData = $personRecData;
 
-		$this->loadPersonAddress();
-		$this->loadPersonOid();
-		$this->loadPersonVat();
+			$this->loadPersonAddress();
+			$this->loadPersonOid();
+			$this->loadPersonVat();
+		}
 
 		$tools = [];
 		$this->onlineToolsDef = $this->loadCfgFile(__SHPD_MODULES_DIR__.'e10/persons/config/e10.persons.onlineTools.json');

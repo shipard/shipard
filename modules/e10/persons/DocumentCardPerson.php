@@ -257,19 +257,20 @@ class DocumentCardPerson extends \e10\DocumentCard
 				}
 			}
 
-			$ve = new \e10\persons\PersonValidator($this->app());
-			$tools = $ve->onlineTools($this->recData);
-			if ($tools)
-			{
-				$line[] = ['text' => '', 'class' => 'break padd5'];
-				foreach ($tools as $t)
-				{
-					$t['class'] = 'btn btn-default btn-sm';
-					$t['icon'] = 'system/iconLink';
-					$line[] = $t;
-				}
-			}
 			$this->validity['class'] = 'e10-warning1';
+		}
+		
+		$ve = new \e10\persons\PersonValidator($this->app());
+		$tools = $ve->onlineTools($this->recData);
+		if ($tools)
+		{
+			$line[] = ['text' => '', 'class' => 'break padd5'];
+			foreach ($tools as $t)
+			{
+				$t['class'] = 'btn btn-default btn-sm';
+				$t['icon'] = 'system/iconLink';
+				$line[] = $t;
+			}
 		}
 
 		$this->validity['content'] = $line;
