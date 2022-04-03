@@ -257,7 +257,7 @@ class Utils
 			return $d;
 		if (is_string($d))
 		{
-			if ($d == '0000-00-00')
+			if ($d == '0000-00-00' || $d == '')
 				return NULL;
 			return new \DateTime ($d);
 		}
@@ -702,7 +702,7 @@ class Utils
 			if ($dayEnd === $dayBegin)
 				$txt .= utils::datef($end, '%T');
 			elseif ($dayEnd !== '')
-				$txt .= utils::datef($end, '%D%t');
+				$txt .= ' '.utils::datef($end, '%D%t');
 			return $txt;
 		}
 
