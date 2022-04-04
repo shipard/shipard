@@ -3,6 +3,7 @@
 namespace wkf\core\libs;
 use Shipard\Utils\Utils;
 use \e10\base\libs\UtilsBase;
+use \wkf\core\TableIssues;
 
 class ContactForm extends \Shipard\Base\WebForm
 {
