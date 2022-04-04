@@ -59,6 +59,13 @@ class ViewPersons extends TableView
 		if (!$item['valid'])
 			$listItem['class'] = 'e10-warning1';
 
+		$flags = [];
+		if ($item['newDataAvailable'])
+			$flags[] = ['text' => 'Nová data', 'class' => 'label label-default'];
+
+		if (count($flags))	
+			$listItem ['i2'] = $flags;
+
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
 		return $listItem;
@@ -112,6 +119,14 @@ class ViewPersons extends TableView
 					array_push($q, ' AND [fullName] LIKE %s', $fts . '%');
 			}
 			array_push ($q, ')');
+			/*
+			$ascii = TRUE;
+			if(preg_match('/[^\x20-\x7f]/', $fts))
+				$ascii = FALSE;
+
+			if ($ascii)
+				array_push ($q,' OR [oid] = %s', $fts);
+			*/	
 		}
 
 		array_push ($q, ' ORDER BY fullName');
@@ -122,8 +137,7 @@ class ViewPersons extends TableView
 
 
 /**
- * Class FormCamera
- * @package terminals\base
+ * Class FormPerson
  */
 class FormPerson extends TableForm
 {

@@ -55,8 +55,6 @@ class PersonData extends Utility
   public function load()
   {
     $this->loadCoreData();
-
-    print_r($this->data);
   }
 }
 

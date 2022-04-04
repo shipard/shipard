@@ -29,20 +29,30 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		return TRUE;
 	}
 
-	public function cliOnlinePersonUpdate ()
+	public function cliOnlinePersonRegsDownload ()
 	{
-		//$this->installDataPackages();
+		$e = new \services\persons\libs\OnlinePersonRegsDownloadService($this->app);
 
-		$e = new \services\persons\libs\OnlinePersonUpdateEngine($this->app);
+		$debug = $this->app->arg('debug');
+		if ($debug)
+			$e->debug = 1;
 
 		$countryId = $this->app->arg('country');
 		if ($countryId === FALSE)
 			$countryId = 'cz';
 		$personId = $this->app->arg('personId');
-		$e->setPersonId($countryId, $personId);
-		
-		//$e->debug = 1;
-		$e->run();
+		if ($personId !== FALSE)
+		{
+			$e->setPersonId($countryId, $personId);
+			$e->downloadOnePerson();
+		}
+		else
+		{
+			$maxDuration = intval($this->app->arg('max-duration'));
+			if ($maxDuration)
+				$e->maxDuration = $maxDuration;
+			$e->downloadBlock();
+		}
 
 		return TRUE;
 	}
@@ -52,7 +62,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		switch ($actionId)
 		{
 			case 'initial-import-cz': return $this->cliInitialImportCZ();
-			case 'online-person-update': return $this->cliOnlinePersonUpdate();
+			case 'online-person-regs-download': return $this->cliOnlinePersonRegsDownload();
 		}
 
 		parent::onCliAction($actionId);

@@ -14,6 +14,8 @@ class OnlinePersonRegsDownloader extends Utility
 	var $personId = '';
   var $debug = 0;
 
+  var $cntUpdates = 0;
+
   var $srcData = [];
 
   var ?\services\persons\libs\PersonData $personData = NULL;

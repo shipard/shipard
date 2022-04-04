@@ -108,12 +108,18 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
   function loadVAT()
   {
     $vatId = $this->srcData['aresCore']['vatId'] ?? '';
-    if ($vatId === '')
+    if ($vatId === '' || $vatId === 'Skupinove_DPH')
       return;
 
-    $client = new \SoapClient('http://adisrws.mfcr.cz/adistc/axis2/services/rozhraniCRPDPH.rozhraniCRPDPHSOAP?wsdl');
-		$response = $client->__soapCall('getStatusNespolehlivyPlatce', [0 => [$vatId]]);
-
+    try {
+      $client = new \SoapClient('http://adisrws.mfcr.cz/adistc/axis2/services/rozhraniCRPDPH.rozhraniCRPDPHSOAP?wsdl');
+      $response = $client->__soapCall('getStatusNespolehlivyPlatce', [0 => [$vatId]]);
+    } 
+    catch (\Exception $e)
+    {
+      error_log("ERROR `loadVAT` for `$vatId`: ".$e->getMessage());
+      return;
+    }
     $vatData = json_decode(json_encode($response), TRUE);
 
     if (!isset($vatData['statusPlatceDPH']))
@@ -225,9 +231,9 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
 
   function addAddress ($src, &$dest)
   {
-    $street = $src['NU'];
+    $street = $src['NU'] ?? '';
     if ($street === '')
-      $street = $src['NU'];
+      $street = $src['NU'] ?? '';
      if (isset($src['CD'])) 
       $dest['street'] = $street . ' ' . $src['CD'];
      else
@@ -236,17 +242,20 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
       $dest['street'] .= '/' . $src['CO'];
 
     $dest['city']= $src['N'];
-    $dest['zipcode']= $src['PSC'];
+    $dest['zipcode']= $src['PSC'] ?? '';
   }
 
   function loadFromRegisters ()
   {
-     $this->loadARESCore();
-     $this->loadARESRzp();
-     $this->loadRZP();
-     $this->loadVAT();
+    $this->loadARESCore();
+    $this->loadARESRzp();
+    $this->loadRZP();
+    $this->loadVAT();
 
-     print_r($this->srcData);
+    if ($this->cntUpdates)
+    {
+      $this->db()->query('UPDATE [services_persons_persons] SET [newDataAvailable] = %i', 1, ' WHERE [ndx] = %i', $this->personData->data['ndx']);
+    }
   }
 
   protected function saveRegisterData ($personNdx, $regType, string $regData, string $checkSum, string $subId)
@@ -279,19 +288,7 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
       $this->db()->query ('UPDATE [services_persons_regsData] SET ', $update, ' WHERE [ndx] = %i', $exist['ndx']);
     }
 
-    /*
-    {"id": "person", "name": "Osoba", "type": "int"},
-		{"id": "regType", "name": "Registr", "type": "enumInt", "len": 2,
-		  "enumCfg": {"cfgItem": "services.persons.registers", "cfgValue": "", "cfgText": "name"}},
-		{"id": "subId", "name": "ID", "type": "string", "len": 20, "options": ["ascii"]},
-		{"id": "srcData", "name": "Zdrojová data", "type": "memo"},
-
-		{"id": "imported", "name": "Naimportováno", "type": "logical"},
-		{"id": "timeUpdated", "name": "Poslední aktualizace", "type": "timestamp"},
-
-		{"id": "srcDataCheckSum", "name": "Kontrolní součet stažených dat", "type": "string", "len": 40, "options": ["ascii"]},
-		{"id": "importedCheckSum", "name": "Kontrolní součet importovaných dat", "type": "string", "len": 40, "options": ["ascii"]}
-    */
+    $this->cntUpdates++;
   }
 
   public function run()

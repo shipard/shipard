@@ -10,9 +10,10 @@
 		{"id": "validTo", "name": "Platné do", "type": "date"},
 		{"id": "valid", "name": "Platné", "type": "logical"},
 		{"id": "importState", "name": "Stav", "type": "enumInt",
-			"enumValues": {"0": "Základní import", "1": "Zkontrolovat", "2": "Zkontrolováno"}},
+			"enumValues": {"0": "Základní import", "1": "Úplný import"}},
+		{"id": "newDataAvailable", "name": "K dispozici jsou nová data", "type": "logical"},
 		{"id": "created", "name": "Vytvořeno", "type": "timestamp"},
-		{"id": "updated", "name": "Poslední kontrola", "type": "timestamp"}
+		{"id": "updated", "name": "Poslední aktualizace dat", "type": "timestamp"}
 	],
 	"views": {
 		"default": {
@@ -29,6 +30,7 @@
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
 	"indexes": [
 		{"id": "s1", "columns": ["oid"]},
-		{"id": "fts", "fullText": 1, "columns": ["fullName"]}
+		{"id": "fts", "fullText": 1, "columns": ["fullName"]},
+		{"id": "o1", "columns": ["fullName"]}
 	]
 }
