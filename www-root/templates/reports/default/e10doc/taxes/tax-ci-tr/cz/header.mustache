@@ -28,7 +28,7 @@
 		<tr><td colspan="18">01 Daňové identifikační číslo</td></tr>
 		<tr><td class="input" colspan="13"><span>CZ{{data.parts.part1.dic}}</span></td><td colspan="5"></td></tr>
 		<tr><td colspan="18">02 Identifikační číslo</td></tr>
-		<tr><td class="input" colspan="18"><span>12345678</span></td></tr>
+		<tr><td class="input" colspan="18"><span>{{data.parts.part1.rod_c}}</span></td></tr>
 
 		<tr><td colspan="18">03 Daňové přiznání¹⁾</td></tr>
 		<tr>
@@ -43,15 +43,15 @@
 		</tr>
 		<tr>
 			<td colspan="11">Důvody pro podání dodatečného<br>daňového přiznání zjištěny dne</td>
-			<td class="input c" colspan="7"><span>{{data.parts.part1.d_zjist}}</span></td>
+			<td class="input" colspan="7"><span>{{data.parts.part1.d_zjist}}</span></td>
 			<td colspan="6"></td>
 			<td colspan="7">Počet zvláštních příloh⁸⁾</td>
 			<td class="input" colspan="2"><span>xxx</span></td>
 		</tr>
 		<tr>
 			<td colspan="11">04 Kód rozlišení typu přiznání</td>
-			<td class="input c" colspan="2"><span>{{data.parts.part1.typ_dapdpp}}</span></td>
-			<td colspan="11"></td>
+			<td class="input" colspan="7"><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{data.parts.part1.typ_dapdpp}}</span></td>
+			<td colspan="6"></td>
 			<td colspan="7">Počet samostatných příloh⁹⁾</td>
 			<td class="input" colspan="2"><span>xxx</span></td>
 		</tr>
@@ -63,8 +63,8 @@
 		</tr>
 		<tr>
 			<td colspan="1"></td>
-			<td colspan="11">Zdaňovací období podle § 21a písm.</td>
-			<td class="input" colspan="2"><span>{{data.parts.part1.typ_zo}})</span></td>
+			<td colspan="10">Zdaňovací období podle § 21a písm.</td>
+			<td class="input" colspan="7"><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{data.parts.part1.typ_zo}}</span></td>
 			<td colspan="1"></td>
 			<td colspan="5">zákona</td>
 		</tr>
@@ -80,9 +80,9 @@
 		<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
 		<tr>
 			<td class="r" colspan="11">od</td>
-			<td class="input c" colspan="4"><span>{{data.parts.part1.zdobd_od}}</span></td>
+			<td class="input" colspan="4"><span>{{data.parts.part1.zdobd_od}}</span></td>
 			<td class="r" colspan="3">do</td>
-			<td class="input c" colspan="4"><span>{{data.parts.part1.zdobd_do}}</span></td>
+			<td class="input" colspan="4"><span>{{data.parts.part1.zdobd_do}}</span></td>
 			<td colspan="14"></td>
 		</tr>
 		<tr><td colspan="33"><div class="separator"></div></td></tr>
@@ -130,8 +130,7 @@
 
 		<tr>
 			<td colspan="25">07 Kategorie účetní jednotky</td>
-			<td colspan="2">Kód</td>
-			<td class="input" colspan="6"><span>{{data.parts.part1.kat_uj}}</span></td>
+			<td class="input" colspan="8"><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{data.parts.part1.kat_uj}}</span></td>
 		</tr>
 		<tr>
 			<td colspan="27">08 Přiznání podal poradce¹⁾</td>
@@ -150,9 +149,8 @@
 			<td class="input" colspan="6"><span>{{data.parts.part1.uc_zav}}</span></td>
 		</tr>
 		<tr>
-			<td colspan="25">12 Transakce uskutečněné se spojenými osobami⁹⁾</td>
-			<td colspan="2">Kód</td>
-			<td class="input" colspan="6"><span>{{data.parts.part1.spoj_zahr}}</span></td>
+			<td colspan="18">12 Transakce uskutečněné se spojenými osobami⁹⁾</td>
+			<td class="input" colspan="15"><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{data.parts.part1.spoj_zahr}}</span></td>
 		</tr>
 		<tr>
 			<td colspan="33">13 Hlavní (převažující) činnost</td>
