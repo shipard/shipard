@@ -14,12 +14,14 @@
 
 	<div class="subtitle">{{data.partsDef.part2_att1_c.title}}</div>
 	{{{data.partsTables.part2_att1_c}}}
+
+	<div class="subtitle">{{data.partsDef.part2_att1_e.title}}</div>
+	{{{data.partsTables.part2_att1_e}}}
+
 </div>
 
 <div class="newPage"></div>
 <div class='e10-tax-report' style="font-size:80%;">
-	<div class="subtitle">{{data.partsDef.part2_att1_e.title}}</div>
-	{{{data.partsTables.part2_att1_e}}}
 
 	<div class="subtitle">{{data.partsDef.part2_att1_f.title}}</div>
 	{{{data.partsTables.part2_att1_f}}}
@@ -29,7 +31,10 @@
 
 	<div class="subtitle">{{data.partsDef.part2_att1_h.title}}</div>
 	{{{data.partsTables.part2_att1_h}}}
+</div>
 
+<div class="newPage"></div>
+<div class='e10-tax-report' style="font-size:80%;">
 	<div class="subtitle">{{data.partsDef.part2_att1_i.title}}</div>
 	{{{data.partsTables.part2_att1_i}}}
 
@@ -52,25 +57,22 @@
 		<table class="formSection">
 			<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
 			<tr>
-				<td colspan=9><b>Údaje o podepisující osobě:</b></td>
-				<td colspan=10>Kód podepisující osoby:</td>
-			</tr>
-			<tr>
-				<td colspan="9"></td>
-				<td class="input c" colspan="2"><span>{{data.parts.part1.zast_kod}}</span></td>
-				<td colspan="22"></td>
+				<td colspan=13><b>Údaje o podepisující osobě:</b></td>
+				<td colspan=6>Kód podepisující osoby:</td>
+				<td class="input" colspan="14"><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{data.parts.part1.zast_kod}}</span></td>
+
 			</tr>
 			<tr>
 				<td colspan=33>Jméno(-a) a příjmení / Název právnické osoby</td>
 			</tr>
 			<tr>
-				<td class="input c" colspan="33"><span>{{data.parts.part1.zast_jmeno}} {{data.parts.part1.zast_prijmeni}} {{data.parts.part1.zast_nazev}}</span></td>
+				<td class="input" colspan="33"><span>{{data.parts.part1.zast_jmeno}} {{data.parts.part1.zast_prijmeni}} {{data.parts.part1.zast_nazev}}</span></td>
 			</tr>
 			<tr>
 				<td colspan=33>Datum narození / Evidenční číslo osvědčení daňového poradce / IČ právnické osoby</td>
 			</tr>
 			<tr>
-				<td class="input c" colspan="33"><span>{{data.parts.part1.zast_dat_nar}} {{data.parts.part1.zast_ev_cislo}} {{data.parts.part1.zast_ic}}</span></td>
+				<td class="input" colspan="33"><span>{{data.parts.part1.zast_dat_nar}} {{data.parts.part1.zast_ev_cislo}} {{data.parts.part1.zast_ic}}</span></td>
 			</tr>
 			<tr>
 				<td colspan=33><b>Fyzická osoba oprávněná k podpisu</b> (je-li daňový subjekt či zástupce právnickou osobou),<br/><b>s uvedením vztahu k právnické osobě</b> (např. jednatel, pověřený pracovník apod.)</td>
@@ -79,7 +81,7 @@
 				<td colspan=33>Jméno(-a) a příjmení / Vztah k právnické osobě</td>
 			</tr>
 			<tr>
-				<td class="input c" colspan="33"><span>{{data.parts.part1.zast_jmeno}} {{data.parts.part1.zast_prijmeni}} {{data.parts.part1.opr_postaveni}}</span></td>
+				<td class="input" colspan="33"><span>{{data.parts.part1.zast_jmeno}} {{data.parts.part1.zast_prijmeni}} {{data.parts.part1.opr_postaveni}}</span></td>
 			</tr>
 			
 		</table>
