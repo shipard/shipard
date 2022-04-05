@@ -22,6 +22,9 @@ footer.page-footer {
 
 .page-footer {
   color: $e10w-footer-text;
+  padding-top: 0;
+  padding-bottom: 0;
+
   a, a:visited {
     color: #eee;
   }
