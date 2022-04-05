@@ -112,6 +112,10 @@ class WebTemplateLook extends Utility
 			$dstCssFileName = $this->destPath.'/'.$this->templateLookRecData['lookId'].'-'.$styleId.'.css';
 
 			$styleContent = $this->skinVariables."\n\n";
+
+			if ($this->templateLookRecData['lookStyleVars'] !== '')
+				$styleContent .= $this->templateLookRecData['lookStyleVars']."\n\n";
+
 			$styleContent .= "@import \"../../www-root/templates/web/".$this->options['id']."/sass/{$styleId}.scss\";\n";
 
 			$styleContent .= $this->templateLookRecData['lookStyleExt'];

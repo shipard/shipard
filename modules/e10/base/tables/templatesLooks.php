@@ -252,7 +252,8 @@ class FormTemplateLook extends TableForm
 		$this->openForm ();
 			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
-			$tabs ['tabs'][] = ['text' => 'Rozšíření stylů', 'icon' => 'formStylesExtension'];
+			$tabs ['tabs'][] = ['text' => 'Rozšíření stylu', 'icon' => 'formStylesExtension'];
+			$tabs ['tabs'][] = ['text' => 'Nastavení stylu', 'icon' => 'formStylesExtension'];
 			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
@@ -267,6 +268,9 @@ class FormTemplateLook extends TableForm
 
 				$this->openTab (TableForm::ltNone);
 					$this->addInputMemo ('lookStyleExt', NULL, TableForm::coFullSizeY, DataModel::ctCode);
+				$this->closeTab ();
+				$this->openTab (TableForm::ltNone);
+					$this->addInputMemo ('lookStyleVars', NULL, TableForm::coFullSizeY, DataModel::ctCode);
 				$this->closeTab ();
 
 				$this->openTab (TableForm::ltNone);

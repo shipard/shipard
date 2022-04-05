@@ -15,6 +15,7 @@
 		{"id": "lookParams", "name": "Parametry šablony", "type": "subColumns"},
 
 		{"id": "lookStyleExt", "name": "Rozšíření stylů", "type": "memo"},
+		{"id": "lookStyleVars", "name": "Nastavení stylu", "type": "memo"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
