@@ -105,10 +105,6 @@ div.e10-sc-check-box.check-box-off {
 
 @media (max-width: 1024px) {
   .e10-sc-row-title {
-    .title {
-      width: 60%;
-      float: left;
-    }
     .title-small {
       position: absolute;
       bottom: 0;
@@ -117,9 +113,10 @@ div.e10-sc-check-box.check-box-off {
     .e10-sc-item-btn {
       width: 40%;
       float: right;
-      height:100%;
+      //height:100%;
       text-align: center;
       padding: .5rem;
+      margin: .4rem;
     }
   }
 
@@ -129,4 +126,34 @@ div.e10-sc-check-box.check-box-off {
     }
   }
 
+  div.e10-sc-container {
+    padding: .3rem;
+  }
+
+  div.e10-sc-title {
+    margin-bottom: .5rem;
+  }
+
+  div.e10-sc-row {
+    margin-bottom: 1rem;
+
+    background-color: #FAFAFA;
+    border: 1px solid rgba(0,0,0,.3);
+    border-radius: 2px;
+
+    .e10-sc-cell-content {
+      padding-bottom: 4px;
+    }
+
+    div.title {
+      font-weight: bold;
+      font-size: 111%;
+      padding-top: .4rem;
+      padding-bottom: .4rem;
+      margin-left: calc(-1 * var(--bs-gutter-x)/2);
+      margin-right: calc(-1 * var(--bs-gutter-x)/2);
+      padding-left: .5rem;
+      background-color: #DDD;
+    }
+  }
 }
