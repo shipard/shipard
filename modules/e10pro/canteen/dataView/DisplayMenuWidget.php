@@ -148,6 +148,7 @@ class DisplayMenuWidget extends DataView
 				if ($dayOff && $this->emailMode)
 					continue;
 
+				$firstFood = NULL;	
 				foreach ($dayFoods as $foodIndex => $food)
 				{
 					$foodOrder = ($dayFoodStat !== NULL && isset($dayFoodStat['foods'][$food['ndx']])) ? $dayFoodStat['foods'][$food['ndx']]['order'] : 100;
@@ -161,6 +162,9 @@ class DisplayMenuWidget extends DataView
 						$ordersTotal = isset($canteenEngine->datesStats[$menuNdx][$dayId]['totalCnt']) ? $canteenEngine->datesStats[$menuNdx][$dayId]['totalCnt'] : 0;
 
 					$rowId = $dayId.'-'.$foodIndex;
+
+					if ($foodIndex === 1)	
+						$firstFood = $food;
 
 					if (!isset($table[$rowId]) && $foodIndex == 1)
 					{
@@ -248,6 +252,7 @@ class DisplayMenuWidget extends DataView
 
 				if (isset($canteenEngine->canteenCfg['addFoods']))
 				{
+					$food = $firstFood;
 					foreach ($canteenEngine->canteenCfg['addFoods'] as $afNdx => $af)
 					{
 						$thisRowId = $dayId.'-X-A-'.$afNdx;
