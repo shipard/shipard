@@ -194,7 +194,7 @@ class DisplayMenuWidget extends DataView
 
 
 						if ($dayId === $todayId)
-							$table[$thisRowId]['_options']['cellClasses']['day'] = 'e10-display-cm-rest';
+							$table[$thisRowId]['_options']['cellClasses']['day'] = 'e10-display-cm-panelHandle active';
 						else
 							$table[$thisRowId]['_options']['cellClasses']['day'] = 'e10-display-cm-panelHandle';
 

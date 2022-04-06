@@ -60,6 +60,8 @@
 		"e10-display-cm-panelSubTitle-text": "#FFFFFF",
 		"e10-display-cm-panelHandle-bg": "#bec0c2",
 		"e10-display-cm-panelHandle-text": "#242424",
+		"e10-display-cm-panelHandleActive-bg": "#f39b3e",
+		"e10-display-cm-panelHandleActive-text": "#000000",
 		"e10-display-cm-percentage-rest": "#f39b3e",
 		"e10-display-cm-rest-bg": "#f39b3e",
 		"e10-display-cm-rest-text": "#000",
