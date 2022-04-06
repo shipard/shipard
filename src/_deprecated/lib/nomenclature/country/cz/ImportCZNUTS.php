@@ -25,8 +25,8 @@ class ImportCZNUTS extends ImportNomenclature
 
 	protected function importNUTS3 ()
 	{
-		// http://apl.czso.cz/iSMS/cisdata.jsp?kodcis=108
-		$url = 'http://apl.czso.cz/iSMS/cisexp.jsp?kodcis=108&typdat=0&cisvaz=80007&datpohl=08.07.2016&cisjaz=203&format=0';
+		// https://apl.czso.cz/iSMS/cisdata.jsp?kodcis=108
+		$url = 'https://apl.czso.cz/iSMS/cisexp.jsp?kodcis=108&typdat=0&cisvaz=80007&datpohl=06.04.2022&cisjaz=203&format=0';
 		if (!$this->downloadFile($url, 'nomenc-cz-nuts3.xml'))
 			return;
 
@@ -71,8 +71,8 @@ class ImportCZNUTS extends ImportNomenclature
 
 	protected function importNUTS4 ()
 	{
-		// http://apl.czso.cz/iSMS/cisdata.jsp?kodcis=118
-		$url = 'http://apl.czso.cz/iSMS/cisexp.jsp?kodcis=118&typdat=0&cisvaz=108&datpohl=08.07.2016&cisjaz=203&format=0';
+		// https://apl.czso.cz/iSMS/cisdata.jsp?kodcis=118
+		$url = 'https://apl.czso.cz/iSMS/cisexp.jsp?kodcis=118&typdat=0&cisvaz=108&datpohl=06.04.2022&cisjaz=203&format=0';
 		if (!$this->downloadFile($url, 'nomenc-cz-nuts4.xml'))
 			return;
 

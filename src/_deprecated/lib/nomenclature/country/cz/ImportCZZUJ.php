@@ -11,7 +11,7 @@ use \lib\nomenclature\ImportNomenclature, \e10\json;
  */
 class ImportCZZUJ extends ImportNomenclature
 {
-	var $srcUrl = 'http://apl.czso.cz/iSMS/cisexp.jsp?kodcis=51&typdat=1&cisvaz=109&datpohl=23.03.2017&cisjaz=203&format=0';
+	var $srcUrl = 'https://apl.czso.cz/iSMS/cisexp.jsp?kodcis=51&typdat=1&cisvaz=109&datpohl=06.04.2022&cisjaz=203&format=0';
 	var $nomecTypeNdx = 0;
 	var $nutsTypeNdx;
 	

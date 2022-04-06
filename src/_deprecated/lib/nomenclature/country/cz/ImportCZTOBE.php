@@ -24,8 +24,8 @@ class ImportCZTOBE extends ImportNomenclature
 
 	protected function import()
 	{
-		// http://apl.czso.cz/iSMS/cisdata.jsp?kodcis=56
-		$url = 'http://apl.czso.cz/iSMS/cisexp.jsp?kodcis=56&typdat=0&cisvaz=149&datpohl=08.07.2016&cisjaz=203&format=0';
+		// https://apl.czso.cz/iSMS/cisdata.jsp?kodcis=56
+		$url = 'https://apl.czso.cz/iSMS/cisexp.jsp?kodcis=56&typdat=0&cisvaz=149&datpohl=06.04.2022&cisjaz=203&format=0';
 		if (!$this->downloadFile($url, 'nomenc-cz-tobe.xml'))
 			return;
 

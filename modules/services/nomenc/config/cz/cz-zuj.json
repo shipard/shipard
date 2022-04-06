@@ -1,0 +1,9 @@
+{
+	"name": "Nomenklatura CZ-ZUJ",
+  "classImport": "lib.nomenclature.country.cz.ImportCZZUJ",
+  "typeId": "cz-zuj",
+  "nomencTypeDef": {
+    "fullName":"Základní územní jednotky",
+    "shortName":"CZ ZUJ"
+  }
+}

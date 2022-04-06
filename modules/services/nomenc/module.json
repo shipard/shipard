@@ -1,0 +1,8 @@
+{
+  "id": "services.nomenc",
+  "name": "Nomenclature services",
+	"modules": ["e10/base"],
+  "tables": [],
+  "config": [
+  ]
+}

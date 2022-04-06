@@ -1,0 +1,9 @@
+{
+	"name": "Nomenklatura CZ-NACE",
+  "classImport": "lib.nomenclature.country.cz.ImportCZNACE",
+  "typeId": "cz-nace",
+  "nomencTypeDef": {
+    "fullName":"Klasifikace ekonomických činností",
+    "shortName":"CZ NACE"
+  }
+}

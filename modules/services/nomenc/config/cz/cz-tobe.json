@@ -1,0 +1,9 @@
+{
+	"name": "Nomenklatura CZ - Právní formy organizací",
+  "classImport": "lib.nomenclature.country.cz.ImportCZTOBE",
+  "typeId": "cz-tobe",
+  "nomencTypeDef": {
+    "fullName":"Právní forma organizace",
+    "shortName":"CZ PFO"
+  }
+}

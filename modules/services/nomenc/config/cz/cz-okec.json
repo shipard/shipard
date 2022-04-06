@@ -1,0 +1,9 @@
+{
+	"name": "Nomenklatura CZ-OKEČ",
+  "classImport": "lib.nomenclature.country.cz.ImportCZOKEC",
+  "typeId": "cz-okec",
+  "nomencTypeDef": {
+    "fullName":"Odvětvová klasifikace ekonomických činností (OKEČ)",
+    "shortName":"CZ OKEČ"
+  }
+}

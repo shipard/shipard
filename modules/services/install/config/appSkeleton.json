@@ -11,6 +11,12 @@
 			"items": [
 				{"t1": "Kurzy", "object": "viewer", "table": "services.money.exchangeRatesLists", "viewer": "default", "order": 100000}
 			]
+		},
+		"nomenclature": {
+			"url": "/app/srv-nomenclature", "objectType": "panel", "zone": "sec", "name": "Nomenklatura", "order": 980000, "cntBigIcons": 6,
+			"items": {
+				"nomenclature": {"t1": "Nomenklatura", "object": "viewer", "table": "e10.base.nomencTypes", "viewer": "default", "order": 4994000}
+			}
 		}
 	}
 }

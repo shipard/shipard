@@ -11,7 +11,7 @@ use \lib\nomenclature\ImportNomenclature, \e10\str;
  */
 class ImportCZNACE extends ImportNomenclature
 {
-	var $srcUrl = 'http://apl.czso.cz/iSMS/cisexp.jsp?kodcis=80004&typdat=0&cisvaz=5103&cisjaz=203&format=0';
+	var $srcUrl = 'https://apl.czso.cz/iSMS/cisexp.jsp?kodcis=80004&typdat=0&cisvaz=5103&cisjaz=203&format=0';
 	var $nomecTypeNdx = 0;
 
 	public function run()

@@ -16,7 +16,7 @@ class ImportNomenclature extends Utility
 	protected function downloadFile ($url, $baseDestFileName)
 	{
 		$today = new \DateTime();
-		$this->destFileName = '/var/lib/e10/tmp/'.$today->format('Y-m-d').'_'.$baseDestFileName;
+		$this->destFileName = 'tmp/'.$today->format('Y-m-d').'_'.$baseDestFileName;
 		if (is_readable($this->destFileName))
 			return TRUE;
 

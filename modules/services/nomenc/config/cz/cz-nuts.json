@@ -1,0 +1,9 @@
+{
+	"name": "Nomenklatura CZ-NUTS",
+  "classImport": "lib.nomenclature.country.cz.ImportCZNUTS",
+  "typeId": "cz-nuts",
+  "nomencTypeDef": {
+    "fullName":"Klasifikace územních statistických jednotek",
+    "shortName":"CZ NUTS"
+  }
+}
