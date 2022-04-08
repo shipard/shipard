@@ -195,7 +195,10 @@ class TagManager extends DataView
 			if ($r['fullName'] == '')
 				continue;
 
-			$asciiFullName = strtoupper(strtr($r['fullName'], utils::$transDiacritic));
+			if ($r['company'])	
+				$asciiFullName = strtoupper(strtr($r['fullName'], utils::$transDiacritic));
+			else
+				$asciiFullName = strtoupper(strtr($r['lastName'], utils::$transDiacritic));	
 			$firstLetter = $asciiFullName[0];
 
 			if (isset($displayGroupsLettes[$firstLetter]))
