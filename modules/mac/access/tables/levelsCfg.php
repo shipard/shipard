@@ -115,7 +115,7 @@ class ViewLevelsCfg extends TableViewGrid
 
 		array_push ($q, ' [gates].fullName AS gateName');
 		array_push ($q, ' FROM [mac_access_levelsCfg] AS [cfgs]');
-		array_push ($q, ' LEFT JOIN [mac_iot_things] AS [gates] ON [cfgs].[gate] = [gates].ndx');
+		array_push ($q, ' LEFT JOIN [mac_iot_setups] AS [gates] ON [cfgs].[gate] = [gates].ndx');
 
 		array_push ($q, ' WHERE 1');
 		array_push ($q, ' AND cfgs.[accessLevel] = %i', $this->accessLevelNdx);
