@@ -318,11 +318,28 @@ class AccessGateCheck extends Utility
 
 		$this->logInfo['person'] = $this->personNdx;
 
+		// -- access levels based on users groups
+		$usersGroups = $this->db()->query ('SELECT [group] FROM [e10_persons_personsgroups] WHERE [person] = %i', $this->personNdx)->fetchPairs(NULL, 'group');		
+		$groupsAccessLevels = [];
+		if (count($usersGroups))
+		{
+			$groupsAccessLevels = $this->db()->query ('SELECT srcRecId FROM [e10_base_doclinks]', 
+													' WHERE [linkId] = %s', 'mac-acccess-levels-pg', 
+													' AND [srcTableId] = %s', 'mac.access.levels', ' AND [dstTableId] = %s', 'e10.persons.groups',
+													' AND [dstRecId] IN %in', $usersGroups)->fetchPairs(NULL, 'srcRecId');
+		}										
+
 		// -- access level
 		$q[] = 'SELECT accessLevels.* FROM [mac_access_personsAccessLevels] AS [accessLevels]';
 		array_push($q, ' LEFT JOIN [mac_access_personsAccess] AS [personsAccess] ON [accessLevels].personAccess = [personsAccess].ndx');
 		array_push($q, ' WHERE 1');
-		array_push($q, ' AND personsAccess.person = %i', $this->personNdx);
+		
+		array_push($q, ' AND (');
+		array_push($q, ' personsAccess.person = %i', $this->personNdx);
+		if (count($groupsAccessLevels))
+			array_push($q, ' OR accessLevels.ndx IN %in', $groupsAccessLevels);
+		array_push($q, ')');
+
 		array_push($q, ' AND personsAccess.docState = %i', 4000);
 		array_push($q, ' AND (accessLevels.validFrom IS NULL OR accessLevels.validFrom = %s', '0000-00-00 00:00:00', ' OR accessLevels.validFrom < %t)', $this->now);
 		array_push($q, ' AND (accessLevels.validTo IS NULL OR accessLevels.validTo = %s', '0000-00-00 00:00:00', ' OR accessLevels.validTo > %t)', $this->now);
@@ -335,7 +352,7 @@ class AccessGateCheck extends Utility
 		}
 
 		if (!count($this->personAccessLevels))
-			return $this->setResult('No access levels for person ['.$this->personNdx.']');
+			return $this->setResult('No access levels for person ['.$this->personNdx.'] or user groups '.json_encode($usersGroups));
 
 		return TRUE;
 	}
