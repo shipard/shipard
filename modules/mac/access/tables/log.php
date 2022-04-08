@@ -3,7 +3,7 @@
 namespace mac\access;
 require_once __SHPD_MODULES_DIR__ . 'e10/base/base.php';
 
-use \e10\TableForm, \e10\DbTable, \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewPanel, \e10\utils, \e10\str;
+use \Shipard\Form\TableForm, \Shipard\Table\DbTable, \Shipard\Viewer\TableView, \Shipard\Utils\Utils, \Shipard\Utils\Str;
 
 
 /**
@@ -13,7 +13,7 @@ use \e10\TableForm, \e10\DbTable, \Shipard\Viewer\TableView, \Shipard\Viewer\Tab
 class TableLog extends DbTable
 {
 	CONST lsAccessGranted = 0, lsAccessDenied = 1, lsWarning =  2, lsError = 3, lsBadRequest = 4;
-	static $icons = ['system/iconCheck', 'icon-times', 'icon-exclamation', 'system/iconWarning', 'icon-flash'];
+	static $icons = ['system/iconCheck', 'system/iconStop', 'user/exclamation', 'system/iconWarning', 'user/exclamation'];
 
 	public function __construct ($dbmodel)
 	{
@@ -62,7 +62,7 @@ class ViewLog extends \e10\TableViewGrid
 		$this->enableToolbar = FALSE;
 
 		$g = [
-			'id' => 'id',
+			'id' => ' id',
 			'created' => 'Datum',
 			'gate' => 'Brána',
 			'key' => 'Klíč',
@@ -76,37 +76,37 @@ class ViewLog extends \e10\TableViewGrid
 	{
 		$listItem ['pk'] = $item ['ndx'];
 
-		$listItem ['id'] = $item['ndx'];
-		$listItem ['created'] = utils::datef($item['created'], '%d, %T');
+		$listItem ['id'] = '#'.$item['ndx'];
+		$listItem ['created'] = Utils::datef($item['created'], '%d, %T');
 		if ($item['iotSetupName'])
 			$listItem['gate'] = $item['iotSetupName'];
 
-		if ($item['keyValue'] === $item['tagKeyValue'])
+		if (Str::strcasecmp($item['keyValue'], $item['tagKeyValue']) === 0)
 		{
-			$listItem['key'] = ['text' => $item['keyValue'], 'class' => '', 'icon' => $this->tagTypes[$item['tagType']]['icon'].' fa-fw'];
+			$listItem['key'] = ['text' => $item['keyValue'], 'class' => '', 'icon' => $this->tagTypes[$item['tagType']]['icon']];
 		}
 		else
 		{
 			$keys = [];
 			if ($item['keyValue'] !== '')
-				$keys[] = ['text' => $item['keyValue'], 'class' => 'e10-error', 'icon' => $this->tagTypes[$item['tagType']]['icon'].' fa-fw'];
+				$keys[] = ['text' => $item['keyValue'], 'class' => 'e10-error', 'icon' => $this->tagTypes[$item['tagType']]['icon']];
 			if ($item['tagKeyValue'] && $item['tagKeyValue'] !== '')
-				$keys[] = ['text' => $item['tagKeyValue'], 'class' => 'e10-error block', 'icon' => $this->tagTypes[$item['tagType']]['icon'].' fa-fw'];
+				$keys[] = ['text' => $item['tagKeyValue'], 'class' => 'e10-error block', 'icon' => $this->tagTypes[$item['tagType']]['icon']];
 
 			$listItem['key'] = $keys;
 		}
 
 		if ($item['iotControlName'])
-			$listItem['key'] = ['text' => $item['iotControlName'], 'icon' => 'icon-toggle-on fa-fw'];
+			$listItem['key'] = ['text' => $item['iotControlName'], 'icon' => 'user/toggleOn'];
 
 		$listItem['info'] = [];
 		if ($item['personName'])
-			$listItem['info'][] = ['text' => $item['personName'], 'icon' => 'icon-user fa-fw'];
+			$listItem['info'][] = ['text' => $item['personName'], 'icon' => 'system/iconUser', 'class' => ''];
 		elseif ($item['placeName'])
-			$listItem['info'][] = ['text' => $item['placeName'], 'icon' => 'icon-map-marker fa-fw'];
+			$listItem['info'][] = ['text' => $item['placeName'], 'icon' => 'tables/e10.base.places', 'class' => ''];
 
 		if ($item['msg'] && $item['msg'] !== '')
-			$listItem ['info'][] = ['text' => $item['msg'], 'icon' => 'icon-exclamation-triangle fa-fw', 'class' => ''];
+			$listItem ['info'][] = ['text' => $item['msg'], 'icon' => 'system/iconFile', 'class' => 'e10-me'];
 
 
 		if ($item['state'])
@@ -129,7 +129,7 @@ class ViewLog extends \e10\TableViewGrid
 		array_push ($q, ' [iotControls].[fullName] AS [iotControlName],');
 		array_push ($q, ' [iotSetups].[fullName] AS [iotSetupName]');
 		array_push ($q, ' FROM [mac_access_log] AS [log]');
-		array_push ($q, ' LEFT JOIN [mac_iot_things] AS [gates] ON [log].[gate] = [gates].ndx');
+		array_push ($q, ' LEFT JOIN [mac_iot_setups] AS [gates] ON [log].[gate] = [gates].ndx');
 		array_push ($q, ' LEFT JOIN [mac_access_tags] AS [tags] ON [log].[tag] = [tags].ndx');
 		array_push ($q, ' LEFT JOIN [e10_persons_persons] AS [persons] ON [log].[person] = [persons].ndx');
 		array_push ($q, ' LEFT JOIN [e10_base_places] AS [places] ON [log].[place] = [places].ndx');

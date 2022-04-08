@@ -10,7 +10,7 @@
 		{"id": "tagType", "name": "Druh klíče", "type": "enumInt",
 			"enumCfg": {"cfgItem": "mac.access.tagTypes", "cfgValue": "", "cfgText": "name"}},
 		{"id": "keyDevice", "name": "Zařízení", "type": "int", "reference": "mac.lan.devices"},
-		{"id": "gate", "name": "Brána/dveře", "type": "int", "reference": "mac.iot.things"},
+		{"id": "gate", "name": "Brána/dveře", "type": "int", "reference": "mac.iot.setups"},
 		{"id": "tagAssignType", "name": "Přiřazeno k", "type": "enumInt",
 			"enumCfg": {"cfgItem": "mac.access.assignTypes", "cfgValue": "", "cfgText": "name"}},
 		{"id": "personAccess", "name": "Osoba", "type": "int", "reference": "mac.access.personsAccess"},
