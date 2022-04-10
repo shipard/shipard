@@ -207,7 +207,10 @@ class InitialImportPersonsCZ extends InitialImportPersons
 		}
 
 		if (isset($person['address']))
+		{
+			$person['address']['addressId'] = 'P'.$person['base']['oid'];
 			$this->saveAddress($personNdx, $person['address']);
+		}	
 
 		$insert = [
 			'person' => $personNdx, 

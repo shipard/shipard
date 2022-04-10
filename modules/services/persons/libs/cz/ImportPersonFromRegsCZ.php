@@ -4,7 +4,7 @@ namespace services\persons\libs\cz;
 
 use services\persons\libs\ImportPersonFromRegs;
 use \Shipard\Utils\Utils ,\Shipard\Utils\Str;
-
+use \services\persons\libs\LogRecord;
 
 /**
  * @class ImportPersonFromRegsCZ
@@ -114,6 +114,12 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
     $el = $data->children($ns['D'])->Vypis_RZP;
 		$rzpData = json_decode (json_encode($el), TRUE);
 
+    if (!isset($rzpData['Adresy']))
+    {
+      echo "invalid ARES-RZP data!\n";
+      return;
+    }
+
     // -- primary address
     foreach ($rzpData['Adresy'] as $addrId => $addr)
     {
@@ -172,9 +178,10 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
     {
       foreach ($rzpData['PodnikatelVypis']['PodnikatelDetail']['Provozovny'] as $pp)
       {
+        $officesList = [];
         if (isset($pp['Provozovna']['IdentifikacniCisloProvozovny']))
           $officesList = [$pp['Provozovna']];
-        else
+        elseif (isset($pp['Provozovna']))
           $officesList = $pp['Provozovna'];
           
         foreach ($officesList as $p)
@@ -306,7 +313,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
 
   public function saveChanges()
   {
-    $this->personDataCurrent->saveChanges($this->personDataImport);
+    $this->personDataCurrent->saveChanges($this->personDataImport, $this->logRecord);
   }
 
   public function run()
@@ -315,8 +322,11 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
 
     $this->doImport();
 
-    print_r($this->personDataImport->data);
+    //print_r($this->personDataImport->data);
 
     $this->saveChanges();
+
+    $this->logRecord->setStatus(LogRecord::lstInfo);
+    $this->logRecord->save();
   }
 }

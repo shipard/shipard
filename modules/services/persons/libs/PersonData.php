@@ -96,13 +96,14 @@ class PersonData extends \services\persons\libs\CoreObject
 		$this->data	['ids'][] = $id;
 	}
 
-	function recordUpdate(array $old, array $new, array &$updateRec)
+	function recordUpdate(array $old, array $new, array &$updateRec, array &$changes)
 	{
 		foreach ($new as $key => $value)
 		{
 			if (!isset($old[$key]) || $value !== $old[$key])
 			{
 				$updateRec[$key] = $value;
+				$changes[$key] = ['from' => $old[$key] ?? '', 'to' => $value];
 			}
 		}
 	}
@@ -110,12 +111,13 @@ class PersonData extends \services\persons\libs\CoreObject
 	public function saveChanges_Core (PersonData $changedPerson)
 	{
 		$update = [];
-		$this->recordUpdate($this->data['person'], $changedPerson->data['person'], $update);
+		$changes = [];
+		$this->recordUpdate($this->data['person'], $changedPerson->data['person'], $update, $changes);
 
 		if (count($update))
 		{
-
 			$this->db()->query('UPDATE [services_persons_persons] SET ', $update, ' WHERE [ndx] = %i', $this->personNdx);
+			$this->logRecord->addItem('update-person-core', '', ['update' => ['tableId' => 'services.persons.persons', 'changes' => $changes]]);
 		}
 	}
 
@@ -131,10 +133,11 @@ class PersonData extends \services\persons\libs\CoreObject
 			{
 				$usedIdNdxs[] = $existedId['ndx'];
 				$update = [];
-				$this->recordUpdate($existedId->toArray(), $oneId, $update);
+				$changes = [];
+				$this->recordUpdate($existedId->toArray(), $oneId, $update, $changes);
 				if (count($update))
 				{
-
+					$this->logRecord->addItem('update-person-id', $oneId['id'], ['update' => ['tableId' => 'services.persons.ids', 'changes' => $changes]]);
 					$this->db()->query('UPDATE [services_persons_ids] SET ', $update, ' WHERE [ndx] = %i', $existedId['ndx']);
 				}
 			}
@@ -148,8 +151,10 @@ class PersonData extends \services\persons\libs\CoreObject
 
 				$this->db()->query('INSERT INTO [services_persons_ids]', $insert);
 				$newNdx = intval ($this->db()->getInsertId ());
+
 				$usedIdNdxs[] = $newNdx;
-				//echo " ---> new id #{$newNdx}: ".json_encode($insert)."\n";
+
+				$this->logRecord->addItem('new-person-id', $oneId['id'], ['update' => ['tableId' => 'services.persons.ids', 'recId' => $newNdx, 'values' => $insert]]);
 			}
 		}
 	}
@@ -166,11 +171,13 @@ class PersonData extends \services\persons\libs\CoreObject
 			{
 				$usedAddrNdxs[] = $existedAddr['ndx'];
 				$update = [];
-				$this->recordUpdate($existedAddr->toArray(), $oneAddr, $update);
+				$changes = [];
+				$this->recordUpdate($existedAddr->toArray(), $oneAddr, $update, $changes);
 				if (count($update))
 				{
 
 					$this->db()->query('UPDATE [services_persons_address] SET ', $update, ' WHERE [ndx] = %i', $existedAddr['ndx']);
+					$this->logRecord->addItem('update-person-address', '', ['update' => ['tableId' => 'services.persons.address', 'recId' => $existedAddr['ndx'], 'changes' => $changes]]);
 				}
 			}
 			else
@@ -191,6 +198,8 @@ class PersonData extends \services\persons\libs\CoreObject
 				$this->db()->query('INSERT INTO [services_persons_address]', $insert);
 				$newNdx = intval ($this->db()->getInsertId ());
 				$usedAddrNdxs[] = $newNdx;
+
+				$this->logRecord->addItem('new-person-address', '', ['update' => ['tableId' => 'services.persons.address', 'recId' => $newNdx, 'values' => $insert]]);
 			}
 		}
 	}
@@ -198,41 +207,44 @@ class PersonData extends \services\persons\libs\CoreObject
 	function saveChanges_BankAccounts (PersonData $changedPerson)
 	{
 		$usedNdxs = [];
-
-		foreach ($changedPerson->data['bankAccounts'] as $oneItem)
+		if (isset($changedPerson->data['bankAccounts']))
 		{
-			$existed = $this->db()->query('SELECT * FROM [services_persons_bankAccounts] WHERE [person] = %i', $this->personNdx, 
-																		' AND [bankAccount] = %s', $oneItem['bankAccount'])->fetch();
-			if ($existed)
+			foreach ($changedPerson->data['bankAccounts'] as $oneItem)
 			{
-				$usedNdxs[] = $existed['ndx'];
-				$update = [];
-				$this->recordUpdate($existed->toArray(), $oneItem, $update);
-				if (count($update))
+				$existed = $this->db()->query('SELECT * FROM [services_persons_bankAccounts] WHERE [person] = %i', $this->personNdx, 
+																			' AND [bankAccount] = %s', $oneItem['bankAccount'])->fetch();
+				if ($existed)
 				{
+					$usedNdxs[] = $existed['ndx'];
+					$update = [];
+					$changes = [];
+					$this->recordUpdate($existed->toArray(), $oneItem, $update, $changes);
+					if (count($update))
+					{
+						$this->db()->query('UPDATE [services_persons_bankAccounts] SET ', $update, ' WHERE [ndx] = %i', $existed['ndx']);
+						$this->logRecord->addItem('update-person-bank-account', $oneItem['bankAccount'], ['update' => ['tableId' => 'services.persons.bankAccounts', 'recId' => $existed['ndx'], 'changes' => $changes]]);
+					}
+				}
+				else
+				{
+					$insert = [
+						'person' => $this->personNdx,
+						'bankAccount' => $oneItem['bankAccount'],
+						'validFrom' => $oneItem['validFrom'],
+					];
 
-					$this->db()->query('UPDATE [services_persons_bankAccounts] SET ', $update, ' WHERE [ndx] = %i', $existed['ndx']);
+					$this->db()->query('INSERT INTO [services_persons_bankAccounts]', $insert);
+					$newNdx = intval ($this->db()->getInsertId ());
+					$usedNdxs[] = $newNdx;
+					$this->logRecord->addItem('new-person-bank-account', $oneItem['bankAccount'], ['update' => ['tableId' => 'services.persons.bankAccounts', 'recId' => $newNdx, 'values' => $insert]]);
 				}
 			}
-			else
-			{
-				$insert = [
-					'person' => $this->personNdx,
-					'bankAccount' => $oneItem['bankAccount'],
-					'validFrom' => $oneItem['validFrom'],
-				];
-
-				$this->db()->query('INSERT INTO [services_persons_bankAccounts]', $insert);
-				$newNdx = intval ($this->db()->getInsertId ());
-				$usedNdxs[] = $newNdx;
-				//echo " ---> new id #{$newNdx}: ".json_encode($insert)."\n";
-			}
-		}
+		}	
 	}
 
-	public function saveChanges (PersonData $changedPerson)
+	public function saveChanges (PersonData $changedPerson, \services\persons\libs\LogRecord $logRecord)
 	{
-		$this->logRecord = new \services\persons\libs\LogRecord($this->app());
+		$this->logRecord = $logRecord;
 
 		$this->saveChanges_Core($changedPerson);
 		$this->saveChanges_Ids($changedPerson);

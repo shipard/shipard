@@ -38,6 +38,7 @@ final class OnlinePersonRegsDownloadService extends Utility
       array_push($q, ' AND [importState] = %i', 0);
       array_push($q, ' AND [newDataAvailable] = %i', 0);
       array_push($q, ' AND [valid] = %i', 1);
+      array_push($q, ' ORDER BY [iid]');
       array_push($q, ' LIMIT 10');
       $rows = $this->db()->query($q);
       foreach ($rows as $r)

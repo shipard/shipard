@@ -2,13 +2,18 @@
 
 namespace services\persons\libs;
 use \services\persons\libs\PersonData;
+use \services\persons\libs\LogRecord;
 
+/**
+ * @class ImportPersonFromRegs
+ */
 class ImportPersonFromRegs extends \services\persons\libs\CoreObject
 {
   var $personNdx = 0;
   var ?\services\persons\libs\PersonData $personDataCurrent = NULL;
   var ?\services\persons\libs\PersonData $personDataImport = NULL;
   var $debug = 0;
+  var \services\persons\libs\LogRecord $logRecord;
 
   var array $regsData = [];
 
@@ -52,6 +57,9 @@ class ImportPersonFromRegs extends \services\persons\libs\CoreObject
 
   public function run()
   {
+    $this->logRecord = $this->log->newLogRecord();
+    $this->logRecord->init(LogRecord::liImportRegisterData, 'services.persons.persons', $this->personNdx);
+
     $this->loadRegsData();
   }
 }
