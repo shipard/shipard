@@ -7,12 +7,17 @@
 		{"id": "idType", "name": "Druh ID", "type": "enumInt",
 		  "enumCfg": {"cfgItem": "services.persons.idTypes", "cfgValue": "", "cfgText": "name"}},
 
-		{"id": "id", "name": "ID", "type": "string", "len": 20}
+		{"id": "id", "name": "ID", "type": "string", "len": 20},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"}
   ],
 	"forms": [
 		{"id": "default", "class": "services.persons.FormID"}
 	],
+	"options": ["systemTable"],
 	"indexes": [
-		{"id": "s1", "columns": ["person"]}
+		{"id": "s1", "columns": ["person"]},
+		{"id": "s2", "columns": ["id", "person"]}
 	]
 }

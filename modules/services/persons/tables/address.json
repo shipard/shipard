@@ -3,6 +3,7 @@
   "columns": [
     {"id": "ndx", "name": "id", "type": "int_ai"},
     {"id": "person", "name": "Osoba", "type": "int"},
+    {"id": "addressId", "name": "Technické ID", "type": "string", "len": 30, "options": ["ascii"]},
 	 
 		{"id": "type", "name": "Druh adresy", "type": "enumInt",
 		  "enumCfg": {"cfgItem": "services.persons.addressTypes", "cfgValue": "", "cfgText": "name"}},
@@ -11,8 +12,11 @@
     {"id": "street", "name": "Ulice", "type": "string", "len": 250},
     {"id": "city", "name": "Město", "type": "string", "len": 90},
     {"id": "zipcode", "name": "PSČ", "type": "string", "len": 20},
-    {"id": "country", "name": "Země", "type": "int", "reference": "e10.world.countries"}
+    {"id": "country", "name": "Země", "type": "int", "reference": "e10.world.countries"},
+
+    {"id": "natId", "name": "Národní ID", "type": "string", "len": 20}
   ],
+  "options": ["systemTable"],
 	"forms": [
 		{"id": "default", "class": "services.persons.FormAddress"}
 	],

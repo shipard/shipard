@@ -21,7 +21,19 @@ class TablePersons extends DbTable
 	{
 		$hdr = parent::createHeader ($recData, $options);
 
-		$hdr ['info'][] = ['class' => 'info', 'value' => $recData ['oid']];
+		$idsLabels = [['text' => $recData ['oid'], 'class' => 'label label-info']];
+		$idsRows = $this->db()->query('SELECT * FROM [services_persons_ids] WHERE [person] = %i', $recData['ndx']);
+		foreach ($idsRows as $id)
+		{
+			$idsLabels[] = ['text' => $id['id'], 'class' => 'label label-default'];
+		}
+
+		$idsLabels[] = ['text' => '#'.$recData ['ndx'], 'class' => 'label label-primary pull-right'];
+
+		$hdr ['info'][] = [
+			'class' => 'info', 
+			'value' => $idsLabels,
+		];
 		$hdr ['info'][] = ['class' => 'title', 'value' => $recData ['fullName']];
 
 		$registerInfo = [
@@ -41,6 +53,7 @@ class TablePersons extends DbTable
  */
 class ViewPersons extends TableView
 {
+	var $personsIds = [];
 	var $registers;
 
 	public function init()
@@ -54,14 +67,15 @@ class ViewPersons extends TableView
 	{
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['t1'] = $item['fullName'];
-		$listItem ['t2'] = $item['oid'];
+		$listItem ['t2'] = [['text' => $item['oid'], 'class' => 'label label-info']];
 
 		if (!$item['valid'])
 			$listItem['class'] = 'e10-warning1';
 
 		$flags = [];
+		$flags[] = ['text' => '@'.$item['iid'], 'class' => ''];
 		if ($item['newDataAvailable'])
-			$flags[] = ['text' => 'Nová data', 'class' => 'label label-default'];
+			$flags[] = ['text' => 'Nová data', 'class' => 'label label-warning'];
 
 		if (count($flags))	
 			$listItem ['i2'] = $flags;
@@ -75,27 +89,11 @@ class ViewPersons extends TableView
 	{
 		$fts = $this->fullTextSearch ();
 
-		$q [] = 'SELECT * FROM [services_persons_persons]';
+		$q [] = 'SELECT persons.* ';
+		array_push ($q, ' FROM [services_persons_persons] AS persons');
 		array_push ($q, ' WHERE 1');
 
 		// -- fulltext
-		/*
-		if ($fts != '')
-		{
-			$ascii = TRUE;
-			if(preg_match('/[^\x20-\x7f]/', $fts))
-				$ascii = FALSE;
-
-			array_push ($q, ' AND (');
-			array_push ($q, ' [fullName] LIKE %s', '%'.$fts.'%');
-					
-			if ($ascii)
-				array_push ($q,' OR [oid] LIKE %s', '%'.$fts.'%');
-			
-			array_push ($q, ')');
-		}
-		*/
-
 		if ($fts != '')
 		{
 			array_push ($q, ' AND (1 ');
@@ -119,20 +117,47 @@ class ViewPersons extends TableView
 					array_push($q, ' AND [fullName] LIKE %s', $fts . '%');
 			}
 			array_push ($q, ')');
-			/*
+			
 			$ascii = TRUE;
 			if(preg_match('/[^\x20-\x7f]/', $fts))
 				$ascii = FALSE;
 
 			if ($ascii)
-				array_push ($q,' OR [oid] = %s', $fts);
-			*/	
+			{
+				array_push ($q, 'UNION SELECT persons.* ');
+				array_push ($q, ' FROM [services_persons_persons] AS persons');
+				array_push ($q, " WHERE EXISTS (SELECT ndx FROM services_persons_ids WHERE persons.ndx = services_persons_ids.person AND [id] = %s)", $fts);
+			}
 		}
 
 		array_push ($q, ' ORDER BY fullName');
 		array_push ($q, $this->sqlLimit());
 		$this->runQuery ($q);
 	}
+
+	public function selectRows2 ()
+	{
+		if (!count($this->pks))
+			return;
+
+		$ids = $this->db()->query('SELECT * FROM [services_persons_ids] WHERE [person] IN %in', $this->pks);
+		foreach ($ids as $id)
+		{
+			$this->personsIds[$id['person']][] = $id->toArray();
+		}
+	}
+
+	function decorateRow (&$item)
+	{
+		if (isset ($this->personsIds[$item ['pk']]))
+		{
+			foreach ($this->personsIds[$item ['pk']] as $id)
+			{
+				$item ['t2'][] = ['text' => $id['id'], 'class' => 'label label-default'];
+			}	
+		}
+	}
+
 }
 
 

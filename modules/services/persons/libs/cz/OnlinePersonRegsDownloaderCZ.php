@@ -2,165 +2,138 @@
 
 namespace services\persons\libs\cz;
 use \Shipard\Utils\Json, \Shipard\Utils\Utils;
+use \services\persons\libs\LogRecord;
 
+/**
+ * @class OnlinePersonRegsDownloaderCZ
+ */
 class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRegsDownloader
 {
+  var $primaryVATID = '';
+  var $newDataAvailable = 2;
+
   function loadARESCore()
   {
-		$downloadUrl = 'http://wwwinfo.mfcr.cz/cgi-bin/ares/darv_bas.cgi?ico=';
-		$file = @file_get_contents ($downloadUrl . $this->personId);
+    $logRecord = $this->log->newLogRecord();
+    $logRecord->init(LogRecord::liDownloadRegisterData, 'services.persons.persons', $this->personNdx);
 
-		if ($file)
-			$xml = @simplexml_load_string ($file);
-		if (isset($xml) && $xml)
-		{
-			$ns = $xml->getDocNamespaces();
-			$data = $xml->children($ns['are']);
-			$el = $data->children($ns['D'])->VBAS;
-			if (strval($el->ICO) == $this->personId)
-			{
-				$this->srcData['aresCore']['personId'] = strval ($el->ICO);
-				$this->srcData['aresCore']['vatId'] = strval ($el->DIC);
-				$this->srcData['aresCore']['fullName'] = strval ($el->OF);
-        $aresData = json_decode (json_encode($el), TRUE);
-        $this->addAddress($aresData['AA'], $this->srcData['aresCore']);
-				$this->srcData['aresCore']['state'] = 'ok';
+		$downloadUrl = 'https://wwwinfo.mfcr.cz/cgi-bin/ares/darv_bas.cgi?ico='.$this->personData->personId;
+    $logRecord->addItem('ares-download-init', '', ['url' => $downloadUrl]);
 
-        $this->saveRegisterData ($this->personData->data['ndx'], self::prtCZAresCore, $file, sha1($file), $this->personId);
-			}
-			else
-			{
-				$this->srcData['aresCore']['state'] = 'nonex';
-			}
-		}
+    $file = @file_get_contents ($downloadUrl);
+
+    if (!$file)
+    {
+      $logRecord->addItem('ares-download-failed', '', ['result' => $file]);
+    }
 		else
-		{
-			$this->srcData['aresCore']['state'] = 'error';
-		}
+    {
+			$xml = @simplexml_load_string ($file);
+
+      if ($xml)
+      {
+        $ns = $xml->getDocNamespaces();
+        $data = $xml->children($ns['are']);
+        $el = $data->children($ns['D'])->VBAS;
+        if (strval($el->ICO) == $this->personData->personId)
+        {
+          $this->primaryVATID = strval ($el->DIC);
+          $this->saveRegisterData ($this->personNdx, self::prtCZAresCore, $file, sha1($file), $this->personData->personId);
+          $logRecord->setStatus(LogRecord::lstInfo);
+        }
+        else
+        {
+          $logRecord->addItem('ares-download-invalid-id', '', ['xml-text' => $file]);
+          $logRecord->setStatus(LogRecord::lstError);
+        }
+      }
+      else
+      {
+        $logRecord->addItem('ares-download-parse-error', '', ['xml-text' => $file]);
+        $logRecord->setStatus(LogRecord::lstError);
+      }
+    }  
+    $logRecord->save();
   }
 
   function loadARESRzp()
   {
-    $url = 'https://wwwinfo.mfcr.cz/cgi-bin/ares/darv_rzp.cgi?rozsah=2';
-    $url .= '&ico='.$this->personId;
+    $logRecord = $this->log->newLogRecord();
+    $logRecord->init(LogRecord::liDownloadRegisterData, 'services.persons.persons', $this->personNdx);
 
+    $url = 'https://wwwinfo.mfcr.cz/cgi-bin/ares/darv_rzp.cgi?rozsah=2';
+    $url .= '&ico='.$this->personData->personId;
+
+    $logRecord->addItem('ares-rzp-download-init', '', ['url' => $url]);
     $file = @file_get_contents ($url);
 
 		if (!$file)
     {
-      echo "load error!\n";
-      $this->srcData['RZP']['state'] = 'error';
+      $logRecord->addItem('ares-rzp-download-failed', '', ['result' => $file]);
+      $logRecord->setStatus(LogRecord::lstError, TRUE);
       return;
     }
 		
     $xml = @simplexml_load_string ($file);
 		if (!$xml)
 		{
-      echo "parse error!\n";
-      $this->srcData['RZP']['state'] = 'error';
+      $logRecord->addItem('ares-rzp-download-parse-error', '', ['xml-text' => $file]);
+      $logRecord->setStatus(LogRecord::lstError, TRUE);
       return;
     }
 
-    $this->saveRegisterData ($this->personData->data['ndx'], self::prtCZAresRZP, $file, sha1($file), $this->personId);
+    $this->saveRegisterData ($this->personNdx, self::prtCZAresRZP, $file, sha1($file), $this->personData->personId);
 
-    /*
-    $ns = $xml->getDocNamespaces();
-    $data = $xml->children($ns['are']);
-    $el = $data->children($ns['D'])->Vypis_RZP;
-		$rzpData = json_decode (json_encode($el), TRUE);
-
-
-    //echo Json::lint($rzpData)."\n";
-    //print_r ($srcData);
-
-
-    $this->srcData['RZP']['fullName'] = $rzpData['ZAU']['OF'];
-
-    // -- address
-    foreach ($rzpData['Adresy'] as $addrId => $addr)
-    {
-      $this->addAddress ($addr, $this->srcData['RZP']);
-      break;
-    }
-
-    // -- provozovny
-    foreach ($rzpData['ZI']['Z'] as $aaId => $aa)
-    {
-      foreach ($aa['PRY'] as $bbId => $bb)
-      {
-        //  {"Zahajeni":"2015-01-05","Typ_provozovny":"6","AP":{"IDA":"40613897","N":"Zl\u00edn","NCO":"Pr\u0161tn\u00e9","NU":"Jate\u010dn\u00ed","PSC":"76001"},"ICP":"1010063481"}
-        //echo " ### ".json_encode($bb)."\n";
-        $office = [];
-        $officeId = $bb['ICP'] ?? $bbId;
-        if (isset($this->srcData['RZP']['offices'][$officeId]))
-          continue;
-        $this->addAddress ($bb['AP'], $office);
-        if (isset($bb['ICP']))
-          $office['natId'] = $bb['ICP'];
-        if (isset($bb['Zahajeni']))
-          $office['validFrom'] = $bb['Zahajeni'];
-        $this->srcData['RZP']['offices'][$officeId] = $office;
-      }
-    }
-    */
+    $logRecord->setStatus(LogRecord::lstInfo, TRUE);
   }
 
   function loadVAT()
   {
-    $vatId = $this->srcData['aresCore']['vatId'] ?? '';
+    $vatId = $this->primaryVATID;
     if ($vatId === '' || $vatId === 'Skupinove_DPH')
       return;
 
+    $logRecord = $this->log->newLogRecord();
+    $logRecord->init(LogRecord::liDownloadRegisterData, 'services.persons.persons', $this->personNdx);
+    $logRecord->addItem('cz-vat-download-init', '', []);
+
     try {
-      $client = new \SoapClient('http://adisrws.mfcr.cz/adistc/axis2/services/rozhraniCRPDPH.rozhraniCRPDPHSOAP?wsdl');
+      $client = new \SoapClient('https://adisrws.mfcr.cz/adistc/axis2/services/rozhraniCRPDPH.rozhraniCRPDPHSOAP?wsdl');
       $response = $client->__soapCall('getStatusNespolehlivyPlatce', [0 => [$vatId]]);
     } 
     catch (\Exception $e)
     {
-      error_log("ERROR `loadVAT` for `$vatId`: ".$e->getMessage());
+      $logRecord->addItem('cz-vat-download-failed', '', ['msg' => $e->getMessage()]);
+      $logRecord->setStatus(LogRecord::lstError, TRUE);
+
       return;
     }
     $vatData = json_decode(json_encode($response), TRUE);
 
     if (!isset($vatData['statusPlatceDPH']))
     {
+      $logRecord->addItem('cz-vat-invalid-content', '', ['data' => $vatData]);
+      $logRecord->setStatus(LogRecord::lstError, TRUE);
       return;
     }
 
     $jsonDataStr = Json::lint($vatData);
-    $this->saveRegisterData ($this->personData->data['ndx'], self::prtCZVAT, $jsonDataStr, sha1($jsonDataStr), $this->personId);
+    $this->saveRegisterData ($this->personNdx, self::prtCZVAT, $jsonDataStr, sha1($jsonDataStr), $this->personData->personId);
 
-    /*
-    $this->srcData['VAT']['vatId'] = $vatData['statusPlatceDPH']['dic'];
-    $this->srcData['VAT']['nespolehlivyPlatce'] = intval($vatData['statusPlatceDPH']['nespolehlivyPlatce'] !== 'NE');
-
-    foreach ($vatData['statusPlatceDPH']['zverejneneUcty']['ucet'] as $ba)
-    {
-      echo ' ==> '.json_encode($ba)."\n";
-      //==> {"standardniUcet":{"cislo":"6220012","kodBanky":"0800"},"datumZverejneni":"2014-10-21"}
-      //==> {"nestandardniUcet":{"cislo":"CZ7920100000002801278933"},"datumZverejneni":"2017-09-05"}
-
-      $bankAccount = ['validFrom' => $ba['datumZverejneni']];
-      if (isset($ba['nestandardniUcet']))
-        $bankAccount['bankAccount'] = $ba['nestandardniUcet']['cislo'];
-       elseif (isset($ba['standardniUcet']))
-        $bankAccount['bankAccount'] = $ba['standardniUcet']['cislo'].'/'.$ba['standardniUcet']['kodBanky'];
-       else
-        continue; 
-
-      $this->srcData['VAT']['bankAccounts'][] = $bankAccount;  
-    }
-    */
-    //print_r($vatData);
+    $logRecord->setStatus(LogRecord::lstInfo, TRUE);
   }
 
   function loadRZP()
   {
+    $logRecord = $this->log->newLogRecord();
+    $logRecord->init(LogRecord::liDownloadRegisterData, 'services.persons.persons', $this->personNdx);
+    $logRecord->addItem('rzp-download-init', '', []);
+
     $qryString = "";
     $qryString .= "<?xml version=\"1.0\" encoding=\"ISO-8859-2\"?>\n";
     $qryString .="<VerejnyWebDotaz \n xmlns=\"urn:cz:isvs:rzp:schemas:VerejnaCast:v1\" \n version=\"2.8\">\n";
     $qryString .= "<Kriteria>\n";
-    $qryString .= "<IdentifikacniCislo>".$this->personId."</IdentifikacniCislo>\n";
+    $qryString .= "<IdentifikacniCislo>".$this->personData->personId."</IdentifikacniCislo>\n";
     $qryString .= "<PlatnostZaznamu>0</PlatnostZaznamu>\n";
     $qryString .= "</Kriteria>\n";
     $qryString .= "</VerejnyWebDotaz>\n";
@@ -192,6 +165,8 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
     $podnikatelID = $xmlData['PodnikatelSeznam']['PodnikatelID'] ?? '';
     if ($podnikatelID === '')
     {
+      $logRecord->addItem('rzp-invalid-content', 'Invalid `podnikatelID` value', ['xml-data' => $result]);
+      $logRecord->setStatus(LogRecord::lstError, TRUE);
       return;
     }
     //echo "TEST: !$podnikatelID! `\n".Json::lint($xmlData)."`\n";
@@ -226,7 +201,9 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
     $xmlData = json_decode(json_encode($xml), TRUE);
     $jsonDataStr = Json::lint($xmlData);
 
-    $this->saveRegisterData ($this->personData->data['ndx'], self::prtCZRZP, $jsonDataStr, sha1($jsonDataStr), $this->personId);
+    $this->saveRegisterData ($this->personNdx, self::prtCZRZP, $jsonDataStr, sha1($jsonDataStr), $this->personData->personId);
+
+    $logRecord->setStatus(LogRecord::lstInfo, TRUE);
   }
 
   function addAddress ($src, &$dest)
@@ -254,7 +231,7 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
 
     if ($this->cntUpdates)
     {
-      $this->db()->query('UPDATE [services_persons_persons] SET [newDataAvailable] = %i', 1, ' WHERE [ndx] = %i', $this->personData->data['ndx']);
+      $this->db()->query('UPDATE [services_persons_persons] SET [newDataAvailable] = %i', $this->newDataAvailable, ' WHERE [ndx] = %i', $this->personData->data['ndx']);
     }
   }
 

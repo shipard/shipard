@@ -1,20 +1,23 @@
 <?php
 
 namespace services\persons\libs;
-use \Shipard\Base\Utility, \Shipard\Utils\Json;
+use \Shipard\Utils\Json;
 
-class PersonData extends Utility
+class PersonData extends \services\persons\libs\CoreObject
 {
+	var $personNdx = '';
 	var $personId = '';
   var $countryId = '';
   var $debug = 0;
 
   var $data = NULL;
 
-  public function setPersonId($countryId, $personId)
+	var ?\services\persons\libs\LogRecord $logRecord = NULL;
+
+
+  public function setPersonNdx($personNdx)
   {
-    $this->countryId;
-    $this->personId = $personId;
+    $this->personNdx = $personNdx;
   }
 
   protected function loadCoreData()
@@ -22,12 +25,14 @@ class PersonData extends Utility
 		$q = [];
 		array_push ($q, 'SELECT * FROM [services_persons_persons]');
 		array_push ($q, ' WHERE 1');
-		array_push ($q, ' AND [oid] = %s', $this->personId);
+		array_push ($q, ' AND [ndx] = %s', $this->personNdx);
 
 		$rows = $this->db()->query($q);
 
 		foreach ($rows as $r)
 		{
+			$this->personId = $r['oid'];
+
 			$p = ['ndx' => $r['ndx'], 'person' => $r->toArray(), 'address' => [], 'ids' => []];
 			Json::polish($p['person']);
 			// -- address
@@ -56,5 +61,182 @@ class PersonData extends Utility
   {
     $this->loadCoreData();
   }
-}
 
+	function setCoreInfo(array $data)
+  {
+		if (isset($data['originalName']))
+		{
+			$this->data	['person']['originalName'] = $data['originalName'];
+		}
+
+		if (isset($data['fullName']))
+		{
+			$this->data	['person']['fullName'] = $data['fullName'];
+		}
+
+		if (isset($data['oid']))
+		{
+			$this->data	['person']['oid'] = $data['oid'];
+		}
+	}
+
+	function addAddress(array $address)
+	{
+		$aid = $address['addressId'];
+		$this->data	['address'][$aid] = $address;
+	}
+
+	function addBankAccount(array $bankAccount)
+	{		
+		$this->data	['bankAccounts'][] = $bankAccount;
+	}
+
+	function addID (array $id)
+	{
+		$this->data	['ids'][] = $id;
+	}
+
+	function recordUpdate(array $old, array $new, array &$updateRec)
+	{
+		foreach ($new as $key => $value)
+		{
+			if (!isset($old[$key]) || $value !== $old[$key])
+			{
+				$updateRec[$key] = $value;
+			}
+		}
+	}
+
+	public function saveChanges_Core (PersonData $changedPerson)
+	{
+		$update = [];
+		$this->recordUpdate($this->data['person'], $changedPerson->data['person'], $update);
+
+		if (count($update))
+		{
+
+			$this->db()->query('UPDATE [services_persons_persons] SET ', $update, ' WHERE [ndx] = %i', $this->personNdx);
+		}
+	}
+
+	function saveChanges_Ids (PersonData $changedPerson)
+	{
+		$usedIdNdxs = [];
+
+		foreach ($changedPerson->data['ids'] as $oneId)
+		{
+			$existedId = $this->db()->query('SELECT * FROM [services_persons_ids] WHERE [person] = %i', $this->personNdx, 
+																			' AND [idType] = %i', $oneId['idType'], ' AND [id] = %s', $oneId['id'])->fetch();
+			if ($existedId)
+			{
+				$usedIdNdxs[] = $existedId['ndx'];
+				$update = [];
+				$this->recordUpdate($existedId->toArray(), $oneId, $update);
+				if (count($update))
+				{
+
+					$this->db()->query('UPDATE [services_persons_ids] SET ', $update, ' WHERE [ndx] = %i', $existedId['ndx']);
+				}
+			}
+			else
+			{
+				$insert = [
+					'person' => $this->personNdx,
+					'idType' => $oneId['idType'], 
+					'id' => $oneId['id']
+				];
+
+				$this->db()->query('INSERT INTO [services_persons_ids]', $insert);
+				$newNdx = intval ($this->db()->getInsertId ());
+				$usedIdNdxs[] = $newNdx;
+				//echo " ---> new id #{$newNdx}: ".json_encode($insert)."\n";
+			}
+		}
+	}
+
+	function saveChanges_Address (PersonData $changedPerson)
+	{
+		$usedAddrNdxs = [];
+
+		foreach ($changedPerson->data['address'] as $oneAddr)
+		{
+			$existedAddr = $this->db()->query('SELECT * FROM [services_persons_address] WHERE [person] = %i', $this->personNdx, 
+																				' AND [addressId] = %s', $oneAddr['addressId'])->fetch();
+			if ($existedAddr)
+			{
+				$usedAddrNdxs[] = $existedAddr['ndx'];
+				$update = [];
+				$this->recordUpdate($existedAddr->toArray(), $oneAddr, $update);
+				if (count($update))
+				{
+
+					$this->db()->query('UPDATE [services_persons_address] SET ', $update, ' WHERE [ndx] = %i', $existedAddr['ndx']);
+				}
+			}
+			else
+			{
+				$insert = [
+					'addressId' => $oneAddr['addressId'],
+					'person' => $this->personNdx,
+					'type' => $oneAddr['type'], 
+
+					'street' => $oneAddr['street'],
+					'city' => $oneAddr['city'],
+					'zipcode' => $oneAddr['zipcode'],
+					'country' => $oneAddr['country'],
+				];
+				if (isset($oneAddr['natId']))
+					$insert['natId'] = $oneAddr['natId'];
+
+				$this->db()->query('INSERT INTO [services_persons_address]', $insert);
+				$newNdx = intval ($this->db()->getInsertId ());
+				$usedAddrNdxs[] = $newNdx;
+			}
+		}
+	}
+
+	function saveChanges_BankAccounts (PersonData $changedPerson)
+	{
+		$usedNdxs = [];
+
+		foreach ($changedPerson->data['bankAccounts'] as $oneItem)
+		{
+			$existed = $this->db()->query('SELECT * FROM [services_persons_bankAccounts] WHERE [person] = %i', $this->personNdx, 
+																		' AND [bankAccount] = %s', $oneItem['bankAccount'])->fetch();
+			if ($existed)
+			{
+				$usedNdxs[] = $existed['ndx'];
+				$update = [];
+				$this->recordUpdate($existed->toArray(), $oneItem, $update);
+				if (count($update))
+				{
+
+					$this->db()->query('UPDATE [services_persons_bankAccounts] SET ', $update, ' WHERE [ndx] = %i', $existed['ndx']);
+				}
+			}
+			else
+			{
+				$insert = [
+					'person' => $this->personNdx,
+					'bankAccount' => $oneItem['bankAccount'],
+					'validFrom' => $oneItem['validFrom'],
+				];
+
+				$this->db()->query('INSERT INTO [services_persons_bankAccounts]', $insert);
+				$newNdx = intval ($this->db()->getInsertId ());
+				$usedNdxs[] = $newNdx;
+				//echo " ---> new id #{$newNdx}: ".json_encode($insert)."\n";
+			}
+		}
+	}
+
+	public function saveChanges (PersonData $changedPerson)
+	{
+		$this->logRecord = new \services\persons\libs\LogRecord($this->app());
+
+		$this->saveChanges_Core($changedPerson);
+		$this->saveChanges_Ids($changedPerson);
+		$this->saveChanges_Address($changedPerson);
+		$this->saveChanges_BankAccounts($changedPerson);
+	}
+}

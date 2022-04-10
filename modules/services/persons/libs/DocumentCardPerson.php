@@ -69,13 +69,41 @@ class DocumentCardPerson extends \Shipard\Base\DocumentCard
 		}
 
 		$h = ['#' => '#', 'city' => 'Město', 'zipcode' => 'PSČ', 'street' => 'Ulice'];
-		$this->addContent ('body', ['pane' => 'e10-pane e10-pane-table', 'header' => $h, 'table' => $t]);
+		$this->addContent ('body', [
+			'pane' => 'e10-pane e10-pane-table', 'header' => $h, 'table' => $t,
+			'paneTitle' => ['text' => 'Adresy', 'class' => 'h1', 'icon' => 'tables/e10.base.places'],
+		]);
+	}
+
+	function addBankAccounts()
+	{
+		$t = [];
+
+		$q = [];
+		array_push($q, 'SELECT * FROM [services_persons_bankAccounts]');
+		array_push($q, ' WHERE [person] = %i', $this->recData['ndx']);
+
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$t[] = [
+				'bankAccount' => $r['bankAccount'],
+				'validFrom' => Utils::datef($r['validFrom'], '%d'),
+			];
+		}
+
+		$h = ['#' => '#', 'bankAccount' => 'Účet', 'validFrom' => 'Platné od'];
+		$this->addContent ('body', [
+			'pane' => 'e10-pane e10-pane-table', 'header' => $h, 'table' => $t, 
+			'paneTitle' => ['text' => 'Bankovní účty', 'class' => 'h1', 'icon' => 'docType/bank'],
+		]);
 	}
 
 	public function createContentBody ()
 	{
-		$this->addRegsData();
 		$this->addAddresses();
+		$this->addBankAccounts();
+		$this->addRegsData();
 
 		$line = [];
 		$ve = new \e10\persons\PersonValidator($this->app());
@@ -99,10 +127,7 @@ class DocumentCardPerson extends \Shipard\Base\DocumentCard
 		$h = ['#' => '#', 'text' => 'Popis', 'debit' => ' Vyplaceno', 'credit' => ' Přijato', 'balance' => ' Zůstatek'];
 		return ['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'title' => ['icon' => 'system/iconList', 'text' => 'Řádky dokladu'], 'header' => $h, 'table' => $list];
 		*/
-	}
-
-
-	
+	}	
 
 	public function createContent ()
 	{

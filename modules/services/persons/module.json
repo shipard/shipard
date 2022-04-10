@@ -2,11 +2,14 @@
   "id": "services.persons",
   "name": "Persons services",
 	"modules": ["e10/base"],
-  "tables": ["persons", "ids", "address", "regsData"],
+  "tables": ["persons", "ids", "address", "bankAccounts", "regsData", "log"],
   "config": [
 	  {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
 	  {"id": "+registeredClasses", "file": "registeredClasses.json"},
 	  {"id": "+services.persons.registers", "file": "personsRegisters.json"},
-		{"id": "+services.persons.addressTypes", "file": "addressTypes.json"}
+		{"id": "+services.persons.addressTypes", "file": "addressTypes.json"},
+    {"id": "services.persons.idTypes", "file": "services.persons.idTypes.json"},
+    {"id": "services.persons.logItemTypes", "file": "services.persons.logItemTypes.json"},
+    {"id": "services.persons.logItemResultStatuses", "file": "services.persons.logItemResultStatuses.json"}
   ]
 }

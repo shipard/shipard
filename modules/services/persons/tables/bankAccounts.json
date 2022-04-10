@@ -1,0 +1,14 @@
+{
+  "id": "services.persons.bankAccounts", "sql": "services_persons_bankAccounts", "name": "Bankovní účty",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "person", "name": "Osoba", "type": "int"},
+	 	{"id": "bankAccount", "name": "Bankovní účet", "type": "string", "len": 40},
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"}
+  ],
+  "options": ["systemTable"],
+	"indexes": [
+		{"id": "s1", "columns": ["person"]}
+	]
+}

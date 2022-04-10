@@ -4,6 +4,7 @@
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "country", "sql": "country", "name": "Země", "type": "int", "reference": "e10.world.countries"},
 		{"id": "oid", "name": "id", "type": "string", "len": 20, "options": ["ascii"]},
+		{"id": "iid", "name": "Interní ID", "type": "string", "len": 8, "options": ["ascii"]},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 240},
 		{"id": "originalName", "name": "Originální název", "type": "string", "len": 240},
 		{"id": "validFrom", "name": "Platné od", "type": "date"},
@@ -11,7 +12,8 @@
 		{"id": "valid", "name": "Platné", "type": "logical"},
 		{"id": "importState", "name": "Stav", "type": "enumInt",
 			"enumValues": {"0": "Základní import", "1": "Úplný import"}},
-		{"id": "newDataAvailable", "name": "K dispozici jsou nová data", "type": "logical"},
+		{"id": "newDataAvailable", "name": "K dispozici jsou nová data", "type": "enumInt",
+			"enumValues": {"0": "none", "1": "import-now", "2": "import-batch", "3": "incomplete"}},
 		{"id": "created", "name": "Vytvořeno", "type": "timestamp"},
 		{"id": "updated", "name": "Poslední aktualizace dat", "type": "timestamp"}
 	],

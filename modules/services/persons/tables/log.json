@@ -1,0 +1,22 @@
+{
+  "id": "services.persons.log", "sql": "services_persons_log", "name": "Log",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "logItemType", "name": "Druh záznamu", "type": "enumInt",
+		  "enumCfg": {"cfgItem": "services.persons.logItemTypes", "cfgValue": "", "cfgText": "name"}},
+    {"id": "logResultStatus", "name": "Stav výsledku", "type": "enumInt",
+      "enumCfg": {"cfgItem": "services.persons.logItemResultStatuses", "cfgValue": "", "cfgText": "name"}},
+  
+    {"id": "tableId", "name": "Tabulka", "type": "string", "len": 48, "options": ["ascii"]},
+    {"id": "recId", "name": "Osoba", "type": "int"},
+	 
+		{"id": "logData", "name": "Zpráva", "type": "memo"},
+
+    {"id": "created", "name": "Vytvořeno", "type": "timestamp"},
+    {"id": "timeLen", "name": "Délka operace", "type": "int"}
+  ],
+  "options": ["systemTable"],
+	"indexes": [
+		{"id": "s1", "columns": ["tableId", "recId"]}
+	]
+}

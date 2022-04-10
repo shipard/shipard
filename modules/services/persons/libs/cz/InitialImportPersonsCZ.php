@@ -2,11 +2,11 @@
 
 namespace services\persons\libs\cz;
 
-use services\persons\libs\ImportPersons;
-use \Shipard\Utils\Utils;
+use services\persons\libs\InitialImportPersons;
+use \Shipard\Utils\Utils, \Shipard\Utils\Str;
 
 
-class InitialImportPersonsCZ extends ImportPersons
+class InitialImportPersonsCZ extends InitialImportPersons
 {
 	public function initialImportARES()
 	{
@@ -64,8 +64,8 @@ class InitialImportPersonsCZ extends ImportPersons
 
 				if ($cnt % 10000 === 0)
 					echo ' '.$cnt;
-				//if ($cnt > 50000)
-				//	break;
+				if ($this->maxCount && $cnt > $this->maxCount)
+					break;
 			}
 			fclose($file);
 
@@ -128,8 +128,8 @@ class InitialImportPersonsCZ extends ImportPersons
 				if ($cnt % 10000 === 0)
 					echo ' '.$cnt;
 
-				//if ($cnt > 50000)
-				//	break;
+				if ($this->maxCount && $cnt > $this->maxCount)
+					break;
 			}
 			fclose($file);
 
@@ -160,6 +160,7 @@ class InitialImportPersonsCZ extends ImportPersons
 
 	function savePerson($person, string $srcData, int $regType)
 	{
+		$this->db()->begin();
 		$qe = [];
 		array_push($qe, 'SELECT * FROM [services_persons_persons]');
 		array_push($qe, ' WHERE [oid] = %s', $person['base']['oid']);
@@ -170,13 +171,23 @@ class InitialImportPersonsCZ extends ImportPersons
 		if ($exist)
 		{
 			$personNdx = $exist['ndx'];
+			if ($exist['originalName'] !== '' && $exist['originalName'][0] === '-' && $person['base']['originalName'] !== '' && $person['base']['originalName'][0] !== '-')
+			{
+				$update = [
+					'originalName' => $person['base']['originalName'],
+					'fullName' => $this->checkName($person['base']['originalName']),
+				];
+				$this->db()->query('UPDATE [services_persons_persons] SET ', $update, ' WHERE [ndx] = %i', $personNdx);
+			}
 		}
 		else
 		{
+			$iid = Utils::createToken(8, FALSE, TRUE);
 			$insert = $person['base'];
 			$insert['fullName'] = $this->checkName($insert['originalName']);
 			$insert['created'] = $now;
 			$insert['updated'] = $now;
+			$insert['iid'] = $iid;
 			$insert['valid'] = TRUE;
 			if (!Utils::dateIsBlank($person['base']['validTo'] ?? NULL) && $person['base']['validTo'] < $now)
 			{
@@ -185,6 +196,14 @@ class InitialImportPersonsCZ extends ImportPersons
 
 			$this->db()->query('INSERT INTO [services_persons_persons]', $insert);
 			$personNdx = $this->db()->getInsertId ();
+
+			// -- insert id
+			$insertId = [
+				'person' => $personNdx,
+				'idType' => 2, 
+				'id' => $person['base']['oid']
+			];
+			$this->db()->query('INSERT INTO [services_persons_ids]', $insertId);
 		}
 
 		if (isset($person['address']))
@@ -201,13 +220,53 @@ class InitialImportPersonsCZ extends ImportPersons
 			'importedCheckSum' => sha1($srcData),
 		];
 		$this->db()->query ('INSERT INTO [services_persons_regsData]', $insert);
+
+		$this->db()->commit();
 	}
 
 	function checkName ($name)
 	{
 		$s = str_replace('"', '', $name);
 		$s = str_replace("'", '', $s);
+		$s = preg_replace("/ {4,}/", " ", $s);
+
+		if (str_starts_with($s, ',,'))
+			$s = substr($s, 2);
+		if (str_ends_with($s, ",,"))
+			$s = substr($s, 0, -2);
+		if (str_ends_with($s, "´´"))
+			$s = Str::substr($s, 0, -2);
 		$s = trim ($s);
+
+		// -- check words with spaces
+		$newString = '';
+		
+		$wp = mb_str_split($s, 1, 'UTF-8');
+		$pos = 0;
+		$len = count($wp);
+		$disableSpaceCheck = 0;
+		while ($pos < $len)
+		{
+			if (isset($wp[5]) && $wp[5] === ' ')
+			{
+				if (!$disableSpaceCheck && isset($wp[$pos + 3]) && $wp[$pos + 1] === ' ' && $wp[$pos + 3] === ' ')
+				{
+					$newString .= $wp[$pos];
+					$newString .= $wp[$pos + 2];
+					if ($wp[$pos + 2] === ',')
+						$newString .= ' ';
+					$pos += 4;
+					continue;
+				}
+			}
+	
+			$disableSpaceCheck = 1;
+			$newString .= $wp[$pos];
+			$pos++;
+		}
+		$s = str_replace("-", '', $s);
+		$s = preg_replace("/ {2,}/", " ", $newString);
+		$s = trim($s);
 
 		return $s;
 	}
@@ -232,7 +291,6 @@ class InitialImportPersonsCZ extends ImportPersons
 			//echo json_encode($insert)."\n";
 
 			$this->db()->query('INSERT INTO [services_persons_address]', $insert);
-
 		}
 	}
 

@@ -1,20 +1,16 @@
 <?php
 
 namespace services\persons;
-
+use \Shipard\Utils\Utils;
 
 /**
  * Class ModuleServices
- * @package services\subjects
  */
 class ModuleServices extends \E10\CLI\ModuleServices
 {
 	public function cliInitialImportCZ ()
 	{
-		//$this->installDataPackages();
-
 		echo "cliInitialImportCZ \n";
-
 
 		$ip = new \services\persons\libs\cz\InitialImportPersonsCZ($this->app);
 
@@ -23,9 +19,22 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		{
 			$ip->companyId = $companyId;
 			$ip->debug = 1;
-		}	
-		$ip->initialImport();
+		}
 
+		$maxCount = intval($this->app->arg('maxCount'));
+		if ($maxCount)
+		{
+			$ip->maxCount = $maxCount;
+		}
+
+		$begin = new \DateTime();
+		echo "### START: ".$begin->format('Y-m-d H:i:s')."\n";
+		$ip->initialImport();
+		$end = new \DateTime();
+		echo "### END: ".$end->format('Y-m-d H:i:s')."\n";
+
+		$len = Utils::dateDiffShort($begin, $end);
+		echo "### TOTAL LEN: ".$len."\n";
 		return TRUE;
 	}
 
@@ -37,13 +46,10 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		if ($debug)
 			$e->debug = 1;
 
-		$countryId = $this->app->arg('country');
-		if ($countryId === FALSE)
-			$countryId = 'cz';
-		$personId = $this->app->arg('personId');
-		if ($personId !== FALSE)
+		$personNdx = intval($this->app->arg('personNdx'));
+		if ($personNdx)
 		{
-			$e->setPersonId($countryId, $personId);
+			$e->setPersonNdx($personNdx);
 			$e->downloadOnePerson();
 		}
 		else
@@ -57,12 +63,39 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		return TRUE;
 	}
 
+	public function cliPersonRegsImport ()
+	{
+		$e = new \services\persons\libs\PersonRegsImportService($this->app);
+
+		$debug = $this->app->arg('debug');
+		if ($debug)
+			$e->debug = 1;
+
+		$personNdx = intval($this->app->arg('personNdx'));
+		if ($personNdx)
+		{
+			$e->personNdx = $personNdx;
+			$e->importOnePerson();
+		}
+		else
+		{
+			$maxDuration = intval($this->app->arg('max-duration'));
+			if ($maxDuration)
+				$e->maxDuration = $maxDuration;
+
+			$e->importBlock();
+		}
+	
+		return TRUE;
+	}
+
 	public function onCliAction ($actionId)
 	{
 		switch ($actionId)
 		{
 			case 'initial-import-cz': return $this->cliInitialImportCZ();
 			case 'online-person-regs-download': return $this->cliOnlinePersonRegsDownload();
+			case 'person-regs-import': return $this->cliPersonRegsImport();
 		}
 
 		parent::onCliAction($actionId);
