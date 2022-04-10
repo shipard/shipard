@@ -1,0 +1,9 @@
+[mysqld]
+innodb_flush_log_at_trx_commit = 2
+ft_min_word_len = 2
+innodb_ft_min_token_size = 2
+
+#key_buffer_size		= 460M
+#query_cache_limit	= 2M
+#query_cache_size  = 26M
+max_connections   = 300
