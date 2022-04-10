@@ -387,7 +387,7 @@ class Utils
 		return $id;
 	}
 
-	static function createToken($len, $passwdMode = FALSE)
+	static function createToken($len, $passwdMode = FALSE, $safeMode = FALSE)
 	{
 		$passwdChars = '_.,%@^';
 		$id = '';
@@ -407,7 +407,16 @@ class Utils
 						$id .= $part[$i];
 				}
 				else
-					$id .= $part[$i];
+				{
+					if ($safeMode)
+					{
+					 	if ($part[$i] === '0' || $part[$i] === 'o' || $part[$i] === 'i' || $part[$i] === 'l' || $part[$i] === 'j')
+							continue;
+						$id .= $part[$i];	
+					}
+					else	
+						$id .= $part[$i];
+				}	
 				if (strlen ($id) === $len)
 					return $id;
 			}
