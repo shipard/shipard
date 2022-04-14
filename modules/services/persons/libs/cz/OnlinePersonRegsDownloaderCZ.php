@@ -9,11 +9,18 @@ use \services\persons\libs\LogRecord;
  */
 class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRegsDownloader
 {
-  var $primaryVATID = '';
+  var $primaryTAXID = '';
   var $newDataAvailable = 2;
 
+  CONST vatNone = 0, vatStandard = 1, vatGroup = 2;
+  var $useVAT = self::vatNone;
+  var $useRZP = 0;
+
+  /**
+   * https://wwwinfo.mfcr.cz/ares/ares_xml_basic.html.cz
+   */
   function loadARESCore()
-  {
+  { 
     $logRecord = $this->log->newLogRecord();
     $logRecord->init(LogRecord::liDownloadRegisterData, 'services.persons.persons', $this->personNdx);
 
@@ -37,7 +44,20 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
         $el = $data->children($ns['D'])->VBAS;
         if (strval($el->ICO) == $this->personData->personId)
         {
-          $this->primaryVATID = strval ($el->DIC);
+          $flags = strval ($el->PSU);
+          if ($flags[3] === 'A')
+            $this->useRZP = 1;
+          if ($flags[3] === 'A')
+            $this->useRZP = 1;
+          if ($flags[5] === 'A')
+            $this->useVAT = self::vatStandard;
+          elseif ($flags[5] === 'S')
+            $this->useVAT = self::vatGroup;
+
+          $this->primaryTAXID = strval ($el->DIC);
+          if ($this->useVAT === self::vatGroup)
+            $this->primaryTAXID = 'CZ'.$this->personData->personId;
+
           $this->saveRegisterData ($this->personNdx, self::prtCZAresCore, $file, sha1($file), $this->personData->personId);
           $logRecord->setStatus(LogRecord::lstInfo);
         }
@@ -58,6 +78,8 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
 
   function loadARESRzp()
   {
+    if (!$this->useRZP)
+      return;
     $logRecord = $this->log->newLogRecord();
     $logRecord->init(LogRecord::liDownloadRegisterData, 'services.persons.persons', $this->personNdx);
 
@@ -87,11 +109,22 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
     $logRecord->setStatus(LogRecord::lstInfo, TRUE);
   }
 
+
+  /** 
+   * https://adisspr.mfcr.cz/pmd/dokumentace/webove-sluzby-spolehlivost-platcu
+   */
   function loadVAT()
   {
-    $vatId = $this->primaryVATID;
-    if ($vatId === '' || $vatId === 'Skupinove_DPH')
+    if ($this->useVAT === self::vatNone)
       return;
+
+    $vatId = $this->primaryTAXID;
+    if ($this->useVAT === self::vatGroup)
+    {
+      $vatId = $this->personData->data['person']['vatID'];
+      if ($vatId === '')
+        return;
+    }  
 
     $logRecord = $this->log->newLogRecord();
     $logRecord->init(LogRecord::liDownloadRegisterData, 'services.persons.persons', $this->personNdx);
@@ -99,8 +132,10 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
 
     try {
       $client = new \SoapClient('https://adisrws.mfcr.cz/adistc/axis2/services/rozhraniCRPDPH.rozhraniCRPDPHSOAP?wsdl');
-      $response = $client->__soapCall('getStatusNespolehlivyPlatce', [0 => [$vatId]]);
-    } 
+      $response = $client->__soapCall('getStatusNespolehlivyPlatceRozsireny', [0 => [$vatId]]);
+
+      //print_r($response);
+    }
     catch (\Exception $e)
     {
       $logRecord->addItem('cz-vat-download-failed', '', ['msg' => $e->getMessage()]);
@@ -125,6 +160,9 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
 
   function loadRZP()
   {
+    if (!$this->useRZP)
+      return;
+
     $logRecord = $this->log->newLogRecord();
     $logRecord->init(LogRecord::liDownloadRegisterData, 'services.persons.persons', $this->personNdx);
     $logRecord->addItem('rzp-download-init', '', []);

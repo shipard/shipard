@@ -1306,7 +1306,16 @@ class TableView extends \Shipard\Base\BaseObject
 
 		if (isset ($listItem ['txt']))
 			$codeLine .= "<div class='txt'>{$listItem ['txt']}</div>";
+		
+		if (isset($listItem['content']))
+		{
+			if (!$this->contentRenderer)
+				$this->contentRenderer = new ContentRenderer($this->app());
 
+			$this->contentRenderer->setContent ($listItem ['content']);
+			$codeLine .= "<div class='content'>".$this->contentRenderer->createCode ()."</div>";;
+		}
+	
 		$codeLine .= "</td>";
 
 		//if ($this->inlineDetailClass != '')

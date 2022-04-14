@@ -1,5 +1,6 @@
 {
-	"0": {"name": "core import"},
-	"1": {"name": "download register data"},
-	"2": {"name": "import person from registers"}
+	"0": {"name": "Neznámé"},
+	"1": {"name": "Úvodní import"},
+	"2": {"name": "Stažení dat z registrů"},
+	"3": {"name": "Import dat z registrů"}
 }

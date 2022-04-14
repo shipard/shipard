@@ -55,22 +55,34 @@ class ViewPersons extends TableView
 {
 	var $personsIds = [];
 	var $registers;
+	var $vatStates;
+
 
 	public function init()
 	{
 		$this->disableIncrementalSearch = TRUE;
 		parent::init();
 		$this->registers = $this->app()->cfgItem('services.personsRegisters', []);
+		$this->vatStates = $this->app()->cfgItem('services.persons.vatPayerStates', []);
 	}
 
 	public function renderRow ($item)
 	{
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['t1'] = $item['fullName'];
-		$listItem ['t2'] = [['text' => $item['oid'], 'class' => 'label label-info']];
 
+		$listItem ['t2'] = [['text' => $item['oid'], 'class' => 'label label-info']];
+		$vs = $this->vatStates[$item['vatState']];
+		if ($item['vatState'])
+		{
+			$vatLabel = ['text' => $vs['label'], 'class' => 'label label-default', 'icon' => 'tables/e10doc.base.taxRegs'];
+			if ($item['vatID'] !== '')
+				$vatLabel['suffix'] = $item['vatID'];
+			$listItem ['t2'][] = $vatLabel;
+		}
 		if (!$item['valid'])
 			$listItem['class'] = 'e10-warning1';
+
 
 		$flags = [];
 		$flags[] = ['text' => '@'.$item['iid'], 'class' => ''];
@@ -102,7 +114,7 @@ class ViewPersons extends TableView
 			$fullTextQuery = '';
 			foreach ($words as $w)
 			{
-				if (Str::strlen($w) < 4)
+				if (Str::strlen($w) < 3)
 					continue;
 				if ($fullTextQuery !== '')
 					$fullTextQuery .= ' ';
@@ -178,6 +190,7 @@ class FormPerson extends TableForm
 			$this->addColumnInput ('validFrom');
 			$this->addColumnInput ('validTo');
 			$this->addColumnInput ('valid');
+			$this->addColumnInput ('vatID');
 		$this->closeForm ();
 	}
 }
@@ -201,5 +214,16 @@ class ViewDetailPersonRegsData extends TableViewDetail
 	public function createDetailContent ()
 	{
 		$this->addDocumentCard('services.persons.libs.DocumentCardPersonRegsData');
+	}
+}
+
+/**
+ * Class ViewDetailPersonLog
+ */
+class ViewDetailPersonLog extends TableViewDetail
+{
+	public function createDetailContent ()
+	{
+		$this->addDocumentCard('services.persons.libs.DocumentCardPersonLog');
 	}
 }

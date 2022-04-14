@@ -1,0 +1,18 @@
+{
+	"0": {
+		"name": "Neplátce",
+		"label": ""
+	},
+	"1": {
+		"name": "Plátce",
+		"label": "DPH"
+	},
+	"2": {
+		"name": "Skupinové DPH",
+		"label": "SK-DPH"
+	},
+	"99": {
+		"name": "Neznámý stav",
+		"label": "? DPH ?"
+	}
+}

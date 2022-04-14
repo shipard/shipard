@@ -7,9 +7,13 @@
 		{"id": "iid", "name": "Interní ID", "type": "string", "len": 8, "options": ["ascii"]},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 240},
 		{"id": "originalName", "name": "Originální název", "type": "string", "len": 240},
+		{"id": "cleanedName", "name": "Začištěné jméno", "type": "logical"},
 		{"id": "validFrom", "name": "Platné od", "type": "date"},
 		{"id": "validTo", "name": "Platné do", "type": "date"},
 		{"id": "valid", "name": "Platné", "type": "logical"},
+		{"id": "vatState", "name": "Plátce DPH", "type": "enumInt",
+			"enumCfg": {"cfgItem": "services.persons.vatPayerStates", "cfgValue": "", "cfgText": "name"}},
+		{"id": "vatID", "name": "VAT ID", "type": "string", "len": 20, "options": ["ascii"]},
 		{"id": "importState", "name": "Stav", "type": "enumInt",
 			"enumValues": {"0": "Základní import", "1": "Úplný import"}},
 		{"id": "newDataAvailable", "name": "K dispozici jsou nová data", "type": "enumInt",
@@ -22,7 +26,8 @@
 			"id": "default", "class": "services.persons.ViewPersons",
 			"details": {
 				"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "services.persons.ViewDetailPerson"},
-				"regData": {"title": "Registry", "icon": "system/detailDetail", "type": "detail", "order":  100, "class": "services.persons.ViewDetailPersonRegsData"}
+				"regData": {"title": "Registry", "icon": "system/detailDetail", "type": "detail", "order":  100, "class": "services.persons.ViewDetailPersonRegsData"},
+				"log": {"title": "Log", "icon": "system/detailDetail", "type": "detail", "order":  100, "class": "services.persons.ViewDetailPersonLog"}
 			}
 		}
 	},

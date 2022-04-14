@@ -11,7 +11,7 @@ class CoreObject extends Utility
   var ?\services\persons\libs\Log $log = NULL;
 
   CONST prtCZAresInit = 1, prtCZRZPInit = 2, prtCZAresCore = 3, prtCZAresRZP = 4, prtCZRZP = 5, prtCZVAT = 6;
-  CONST idtVATPrimary = 0, idtVATSecondary = 1, idtOIDPrimary = 2;
+  CONST idtVATPrimary = 0, idtVATSecondary = 1, idtOIDPrimary = 2, idtTAXPrimary = 3;
 
   public function __construct ($app)
 	{

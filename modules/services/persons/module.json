@@ -10,6 +10,7 @@
 		{"id": "+services.persons.addressTypes", "file": "addressTypes.json"},
     {"id": "services.persons.idTypes", "file": "services.persons.idTypes.json"},
     {"id": "services.persons.logItemTypes", "file": "services.persons.logItemTypes.json"},
-    {"id": "services.persons.logItemResultStatuses", "file": "services.persons.logItemResultStatuses.json"}
+    {"id": "services.persons.logItemResultStatuses", "file": "services.persons.logItemResultStatuses.json"},
+    {"id": "services.persons.vatPayerStates", "file": "services.persons.vatPayerStates.json"}
   ]
 }

@@ -14,8 +14,6 @@ final class PersonRegsImportService extends Utility
 
   public function importOnePerson()
   {
-    echo "test ".$this->personNdx."\n";
-
     $e = new \services\persons\libs\cz\ImportPersonFromRegsCZ($this->app());
     $e->setPersonNdx($this->personNdx);
     $e->run();

@@ -176,7 +176,11 @@ class InitialImportPersonsCZ extends InitialImportPersons
 				$update = [
 					'originalName' => $person['base']['originalName'],
 					'fullName' => $this->checkName($person['base']['originalName']),
+					'cleanedName' => 0,
 				];
+				if ($update['fullName'] !== $update['originalName'])
+					$update['cleanedName'] = 1;
+
 				$this->db()->query('UPDATE [services_persons_persons] SET ', $update, ' WHERE [ndx] = %i', $personNdx);
 			}
 		}
@@ -188,6 +192,12 @@ class InitialImportPersonsCZ extends InitialImportPersons
 			$insert['created'] = $now;
 			$insert['updated'] = $now;
 			$insert['iid'] = $iid;
+			$insert['vatState'] = 99;
+
+			$insert['cleanedName'] = 0;
+			if ($insert['fullName'] !== $insert['originalName'])
+				$insert['cleanedName'] = 1;
+
 			$insert['valid'] = TRUE;
 			if (!Utils::dateIsBlank($person['base']['validTo'] ?? NULL) && $person['base']['validTo'] < $now)
 			{

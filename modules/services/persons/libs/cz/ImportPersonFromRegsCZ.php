@@ -11,7 +11,13 @@ use \services\persons\libs\LogRecord;
  */
 class ImportPersonFromRegsCZ extends ImportPersonFromRegs
 {
-  var string $primaryVATId = '';
+  var string $primaryVATID = '';
+  var string $primaryTAXID = '';
+
+  CONST vatNone = 0, vatStandard = 1, vatGroup = 2, vatUnknown = 99;
+
+  var $useVAT = self::vatNone;
+  var $useRZP = 0;
 
   function fillAddress(array $data, array &$dest)
   {
@@ -56,11 +62,31 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
 			if (strval($el->ICO) == $this->personDataCurrent->personId)
 			{
         $oid = strval ($el->ICO);
-        $this->personDataImport->setCoreInfo([
+        $corePersonInfo = [
           'oid' => $oid,
           'originalName' => strval ($el->OF),
           'fullName' => $this->clearFullName(strval ($el->OF)),
-        ]);
+        ];
+
+        $flags = strval ($el->PSU);
+        if ($flags[3] === 'A')
+          $this->useRZP = 1;
+        if ($flags[3] === 'A')
+          $this->useRZP = 1;
+        if ($flags[5] === 'A')
+          $this->useVAT = self::vatStandard;
+        elseif ($flags[5] === 'S')
+          $this->useVAT = self::vatGroup;
+
+        $this->primaryTAXID = strval($el->DIC);
+        if ($this->useVAT === self::vatGroup)
+          $this->primaryTAXID = 'CZ'.$oid;
+
+        $corePersonInfo['vatState'] = $this->useVAT;
+        if ($this->useVAT === self::vatStandard)
+          $corePersonInfo['vatID'] = strval($el->DIC);
+
+        $this->personDataImport->setCoreInfo($corePersonInfo);
 
         $this->personDataImport->addID(['idType' => self::idtOIDPrimary, 'id' => $oid]);
 
@@ -78,14 +104,6 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
 
         $this->personDataImport->addAddress($primaryAddress);
 
-
-
-        $vatId = strval ($el->DIC);
-        if ($vatId !== '' && $vatId !== 'Skupinove_DPH')
-        {
-          $this->personDataImport->addID(['idType' => self::idtVATPrimary, 'id' => $vatId]);
-          $this->primaryVATId = $vatId;
-        }
 			}
       else
       {
@@ -96,6 +114,9 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
 
   function doImport_ARES_RZP()
   {
+    if (!$this->useRZP)
+      return;
+
     $regData = $this->regData(self::prtCZAresRZP, $this->personDataCurrent->personId);
     if (!$regData)
     {
@@ -116,7 +137,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
 
     if (!isset($rzpData['Adresy']))
     {
-      echo "invalid ARES-RZP data!\n";
+      //echo "invalid ARES-RZP data!\n";
       return;
     }
 
@@ -161,6 +182,9 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
 
   function doImport_RZP()
   {
+    if (!$this->useRZP)
+      return;
+    
     $regData = $this->regData(self::prtCZRZP, $this->personDataCurrent->personId);
     if (!$regData)
     {
@@ -210,7 +234,10 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
   
   function doImport_VAT()
   {
-    if ($this->primaryVATId === '')
+    if ($this->useVAT === self::vatNone)
+      return;
+
+    if ($this->useVAT === self::vatGroup && $this->personDataCurrent->data['person']['vatID'] === '')
       return;
 
     $regData = $this->regData(self::prtCZVAT, $this->personDataCurrent->personId);
@@ -225,9 +252,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
       return;
     }
 
-
-    $vatId = $vatData['statusPlatceDPH']['dic'];
-    $this->srcData['VAT']['nespolehlivyPlatce'] = intval($vatData['statusPlatceDPH']['nespolehlivyPlatce'] !== 'NE');
+    //$this->srcData['VAT']['nespolehlivyPlatce'] = intval($vatData['statusPlatceDPH']['nespolehlivyPlatce'] !== 'NE');
     
     /*
     $primaryVatIDRec = $this->personDataImport->data['ids'][1] ?? NULL;
@@ -237,7 +262,8 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
     }
     */
 
-    foreach ($vatData['statusPlatceDPH']['zverejneneUcty']['ucet'] as $ba)
+    $bankAccounts = isset($vatData['statusPlatceDPH']['zverejneneUcty']['ucet']['datumZverejneni']) ? [$vatData['statusPlatceDPH']['zverejneneUcty']['ucet']] : $vatData['statusPlatceDPH']['zverejneneUcty']['ucet'];
+    foreach ($bankAccounts as $ba)
     {
       $bankAccount = ['validFrom' => $ba['datumZverejneni']];
       if (isset($ba['nestandardniUcet']))
@@ -254,6 +280,10 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
       
       $this->personDataImport->addBankAccount($bankAccount);
     }
+
+    $regVatId = $vatData['statusPlatceDPH']['dic'] ?? '';
+    if ($regVatId !== '')
+      $this->personDataImport->addID(['idType' => self::idtVATPrimary, 'id' => $regVatId]);
   }
 
   function clearFullName ($originalName)

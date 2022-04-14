@@ -64,20 +64,11 @@ class PersonData extends \services\persons\libs\CoreObject
 
 	function setCoreInfo(array $data)
   {
-		if (isset($data['originalName']))
-		{
-			$this->data	['person']['originalName'] = $data['originalName'];
-		}
+		if (!$this->data)
+			$this->data = ['person' => []];
 
-		if (isset($data['fullName']))
-		{
-			$this->data	['person']['fullName'] = $data['fullName'];
-		}
-
-		if (isset($data['oid']))
-		{
-			$this->data	['person']['oid'] = $data['oid'];
-		}
+		foreach ($data as $k => $v)
+			$this->data	['person'][$k] = $v;
 	}
 
 	function addAddress(array $address)
@@ -98,6 +89,9 @@ class PersonData extends \services\persons\libs\CoreObject
 
 	function recordUpdate(array $old, array $new, array &$updateRec, array &$changes)
 	{
+		Json::polish($old);
+		Json::polish($new);
+
 		foreach ($new as $key => $value)
 		{
 			if (!isset($old[$key]) || $value !== $old[$key])
@@ -154,7 +148,7 @@ class PersonData extends \services\persons\libs\CoreObject
 
 				$usedIdNdxs[] = $newNdx;
 
-				$this->logRecord->addItem('new-person-id', $oneId['id'], ['update' => ['tableId' => 'services.persons.ids', 'recId' => $newNdx, 'values' => $insert]]);
+				$this->logRecord->addItem('new-person-id', $oneId['id'], ['insert' => ['tableId' => 'services.persons.ids', 'recId' => $newNdx, 'values' => $insert]]);
 			}
 		}
 	}
@@ -175,7 +169,6 @@ class PersonData extends \services\persons\libs\CoreObject
 				$this->recordUpdate($existedAddr->toArray(), $oneAddr, $update, $changes);
 				if (count($update))
 				{
-
 					$this->db()->query('UPDATE [services_persons_address] SET ', $update, ' WHERE [ndx] = %i', $existedAddr['ndx']);
 					$this->logRecord->addItem('update-person-address', '', ['update' => ['tableId' => 'services.persons.address', 'recId' => $existedAddr['ndx'], 'changes' => $changes]]);
 				}
@@ -199,7 +192,7 @@ class PersonData extends \services\persons\libs\CoreObject
 				$newNdx = intval ($this->db()->getInsertId ());
 				$usedAddrNdxs[] = $newNdx;
 
-				$this->logRecord->addItem('new-person-address', '', ['update' => ['tableId' => 'services.persons.address', 'recId' => $newNdx, 'values' => $insert]]);
+				$this->logRecord->addItem('new-person-address', '', ['insert' => ['tableId' => 'services.persons.address', 'recId' => $newNdx, 'values' => $insert]]);
 			}
 		}
 	}
@@ -236,7 +229,7 @@ class PersonData extends \services\persons\libs\CoreObject
 					$this->db()->query('INSERT INTO [services_persons_bankAccounts]', $insert);
 					$newNdx = intval ($this->db()->getInsertId ());
 					$usedNdxs[] = $newNdx;
-					$this->logRecord->addItem('new-person-bank-account', $oneItem['bankAccount'], ['update' => ['tableId' => 'services.persons.bankAccounts', 'recId' => $newNdx, 'values' => $insert]]);
+					$this->logRecord->addItem('new-person-bank-account', $oneItem['bankAccount'], ['insert' => ['tableId' => 'services.persons.bankAccounts', 'recId' => $newNdx, 'values' => $insert]]);
 				}
 			}
 		}	
@@ -250,5 +243,7 @@ class PersonData extends \services\persons\libs\CoreObject
 		$this->saveChanges_Ids($changedPerson);
 		$this->saveChanges_Address($changedPerson);
 		$this->saveChanges_BankAccounts($changedPerson);
+
+		$this->db()->query('UPDATE [services_persons_persons] SET [newDataAvailable] = %i', 0, ' WHERE [ndx] = %i', $this->personNdx);
 	}
 }
