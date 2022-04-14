@@ -10,8 +10,8 @@
 	  {"id": "+help.index", "file": "help.json"}
   ],
   "modules": ["e10pro/install/docs-core",
-              "e10doc/invoicesOut", "e10doc/proformaout", "e10doc/cash",
-              "e10doc/contracts/sale", "e10doc/proformaout", "e10doc/orderin", "e10doc/deliveryNotes",
+              "e10doc/invoicesOut", "e10doc/proformasOut", "e10doc/cash",
+              "e10doc/contracts/sale", "e10doc/orderin", "e10doc/deliveryNotes",
 							"e10doc/sale", "e10pro/reports/finance_takings", "e10pro/reports/sale_items", "e10pro/reports/sale_customers"
 	]
 }
