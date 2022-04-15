@@ -86,7 +86,12 @@ class TablePages extends DbTable
 			if ($row['url'] == '')
 				continue;
 
-			if ($row['pageMode'] !== 'web')
+			if ($row['pageMode'] === 'web' || $row['pageMode'] === 'textPlain')
+			{
+				if ($row['includeSubUrl'])
+					$this->pagesInfo['forcedUrls'][] = $row['url'];
+			}
+			elseif ($row['pageMode'] !== 'web')
 			{
 				$this->pagesInfo['forcedUrls'][] = $row['url'];
 				if ($row['pageModeParams'] !== '')
@@ -374,7 +379,9 @@ class FormPagesPage extends TableForm
 				$this->addColumnInput('pageMode');
 				if ($this->recData['pageMode'] === 'wiki')
 					$this->addColumnInput('wiki');
-
+				if ($this->recData['pageMode'] === 'web')
+					$this->addColumnInput('includeSubUrl');
+					
 				$this->addList ('doclinks', '', TableForm::loAddToFormLayout);
 			$this->closeTab ();
 

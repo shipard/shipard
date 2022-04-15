@@ -218,7 +218,13 @@ class WebPages extends \E10\utility
 		}
 
 		$this->template->setPage ($this->page);
-		if (isset ($this->page ['forceSubtemplate']))
+		if (isset ($this->template->data ['forceCode']))
+		{
+			$this->page ['code'] = $this->template->data ['forceCode'];
+			if (isset ($this->template->data ['forceMimeType']))
+				$this->page ['mimeType'] = $this->template->data ['forceMimeType'];
+		}
+		elseif (isset ($this->page ['forceSubtemplate']))
 		{
 			$c = $this->template->renderSubtemplate ($this->page ['forceSubtemplate']);
 			$this->page ['code'] = $c;
@@ -532,7 +538,7 @@ class WebPages extends \E10\utility
 					$isForcedUrl = 1;
 					break;
 				}
-				if ($forcedUrl !== '/')
+				if (!str_ends_with($forcedUrl, '/'))
 					$forcedUrl .= '/';
 				$forcedUrl .= $this->app()->requestPath[$i];
 			}

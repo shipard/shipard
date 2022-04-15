@@ -20,6 +20,7 @@
 			"enumCfg": {"cfgItem": "e10.web.pageModes", "cfgValue": "", "cfgText": "name"}},
 		{"id": "pageModeParams", "name": "Parametry", "type": "string", "len": 60},
 		{"id": "wiki", "name": "Wiki", "type": "int", "reference": "e10pro.kb.wikies"},
+		{"id": "includeSubUrl", "name": "Včetně podstránek", "type": "logical"},
 
 		{"id": "author", "name": "Autor", "type": "int", "reference": "e10.persons.persons"},
 		{"id": "dateCreate", "name": "Datum vzniku", "type": "timestamp"},
