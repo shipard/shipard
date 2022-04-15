@@ -241,14 +241,25 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
           $addressId = 'O'.$officeId;
           $addrParts = explode(',', $p['ZmenaAdresy']['TextAdresy']);
 
+          if (count($addrParts) === 2)
+          {
+            $city = $addrParts[1] ?? '';
+            $zipcode = $addrParts[0] ?? '';
+          }
+          else
+          {
+            $street = $addrParts[0] ?? '';
+            $city = $addrParts[2] ?? '';
+            $zipcode = $addrParts[1] ?? '';
+          }  
           $officeAddress = [];
           $this->fillAddress ([
               'addressId' => $addressId,
-              'street' => $addrParts[0] ?? '',
+              'street' => $street,
               'streetNumber' => '',
               'streetNumber2' => '',
-              'city' => $addrParts[2] ?? '',
-              'zipcode' => $addrParts[1] ?? '',
+              'city' => $city,
+              'zipcode' => Str::upToLen($zipcode, 20),
               'specification' => $p['NazevProvozovny'] ?? '',
             ], $officeAddress);
           
@@ -260,6 +271,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
         } 
       }
     }
+    //print_r($this->personDataImport->data['address']);
   }
   
   function doImport_VAT()
