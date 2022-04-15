@@ -328,9 +328,14 @@ class PersonData extends \services\persons\libs\CoreObject
 					'city' => $oneAddr['city'],
 					'zipcode' => $oneAddr['zipcode'],
 					'country' => $oneAddr['country'],
+					'specification' => $oneAddr['specification'] ?? '',
 				];
 				if (isset($oneAddr['natId']))
 					$insert['natId'] = $oneAddr['natId'];
+				if (isset($oneAddr['validFrom']))
+					$insert['validFrom'] = $oneAddr['validFrom'];
+				if (isset($oneAddr['validTo']))
+					$insert['validTo'] = $oneAddr['validTo'];
 
 				$this->db()->query('INSERT INTO [services_persons_address]', $insert);
 				$newNdx = intval ($this->db()->getInsertId ());
