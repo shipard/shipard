@@ -168,7 +168,7 @@ class PersonData extends \services\persons\libs\CoreObject
 
 	function prepareDataExport()
 	{
-		$this->dataExport = $this->data;
+		$this->dataExport = array_merge(['status' => 1], $this->data);
 		unset ($this->dataExport['ndx']);
 		unset ($this->dataExport['person']['ndx']);
 		unset ($this->dataExport['person']['created']);
