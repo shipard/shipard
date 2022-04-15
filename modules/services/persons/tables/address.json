@@ -14,7 +14,10 @@
     {"id": "zipcode", "name": "PSČ", "type": "string", "len": 20},
     {"id": "country", "name": "Země", "type": "int", "reference": "e10.world.countries"},
 
-    {"id": "natId", "name": "Národní ID", "type": "string", "len": 20}
+    {"id": "natId", "name": "Národní ID", "type": "string", "len": 20},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"}
   ],
   "options": ["systemTable"],
 	"forms": [

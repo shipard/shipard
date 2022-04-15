@@ -18,4 +18,19 @@ class CoreObject extends Utility
 		parent::__construct($app);
     $this->log = new \services\persons\libs\Log($this->app());
 	}
+
+  static function addressText(array $address)
+	{
+		$parts = [];
+		if ($address['specification'] !== '')
+			$parts[] = $address['specification'];
+		if ($address['street'] !== '')
+			$parts[] = $address['street'];
+		if ($address['city'] !== '')
+			$parts[] = $address['city'];
+		if ($address['zipcode'] !== '')
+			$parts[] = $address['zipcode'];
+
+		return implode(', ', $parts);
+	}
 }

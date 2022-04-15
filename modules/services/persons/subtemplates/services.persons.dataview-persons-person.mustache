@@ -1,0 +1,50 @@
+<h2>{{data.dataView.person.person.fullName}}</h2>
+<span class="badge bg-light text-dark fs-6 fw-normal">{{{@icon;icon:system/iconHome}}} {{data.dataView.person.person.primaryAddressText}}</span> 
+{{#data.dataView.person.person.titleIds}}
+  <span class="badge bg-light text-dark fs-6 fw-normal">{{prefix}}{{#id}}: {{id}}{{/id}}</span>
+{{/data.dataView.person.person.titleIds}}
+
+<ul class="nav nav-tabs pt-5" id="information-tabs" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="information-tab" data-bs-toggle="tab" data-bs-target="#information" type="button" role="tab" aria-controls="information" aria-selected="true">Informace</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="json-tab" data-bs-toggle="tab" data-bs-target="#json" type="button" role="tab" aria-controls="json" aria-selected="false">JSON</button>
+  </li>
+</ul>
+<div class="tab-content" data-id="information-content">
+  <div class="tab-pane fade show active" id="information" role="tabpanel" aria-labelledby="information-tab">
+    {{#data.dataView.person.address.0}}
+    <h4 class="pt-3 ps-1">{{{@icon;icon:system/iconMapMarker}}} Adresy</h4>
+    <ol class="list-group list-group-numbered">
+    {{#data.dataView.person.address}}
+      <li class="list-group-item d-flex justify-content-between align-items-start">
+        <div class="ms-2 me-auto">
+          <div class="fw-bold">{{addressText}}</div>
+          {{#addressFlags}}
+            <span class="badge bg-light text-dark fs-6 fw-normal">{{prefix}}{{#id}}: {{id}}{{/id}}</span>
+          {{/addressFlags}}
+        </div>
+      </li>
+    {{/data.dataView.person.address}}
+    </ol>
+    {{/data.dataView.person.address.0}}
+
+    {{#data.dataView.person.bankAccounts.0}}
+    <h4 class="pt-3 ps-1">{{{@icon;icon:docType/bank}}} Bankovní účty</h4>
+    <ol class="list-group list-group-numbered">
+    {{#data.dataView.person.bankAccounts}}
+      <li class="list-group-item d-flex justify-content-between align-items-start">
+        <div class="ms-2 me-auto">
+          <div class="fw-bold">{{bankAccount}}</div>
+          Platné od: {{validFromH}}
+        </div>
+      </li>
+    {{/data.dataView.person.bankAccounts}}
+    </ol>
+    {{/data.dataView.person.bankAccounts.0}}
+  </div>
+  <div class="tab-pane fade pageText" id="json" role="tabpanel" aria-labelledby="json-tab">
+    <pre><code>{{data.dataView.person.json}}</code></pre>
+  </div>
+</div>

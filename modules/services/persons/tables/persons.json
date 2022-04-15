@@ -2,9 +2,10 @@
 	"id": "services.persons.persons", "sql": "services_persons_persons", "name": "Osoby",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
-		{"id": "country", "sql": "country", "name": "Země", "type": "int", "reference": "e10.world.countries"},
+		{"id": "country", "name": "Země", "type": "int", "reference": "e10.world.countries"},
 		{"id": "oid", "name": "id", "type": "string", "len": 20, "options": ["ascii"]},
 		{"id": "iid", "name": "Interní ID", "type": "string", "len": 8, "options": ["ascii"]},
+		{"id": "natLegalType", "name": "Národní právní forma", "type": "int", "reference": "e10.base.nomencItems"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 240},
 		{"id": "originalName", "name": "Originální název", "type": "string", "len": 240},
 		{"id": "cleanedName", "name": "Začištěné jméno", "type": "logical"},
@@ -38,6 +39,8 @@
 	"indexes": [
 		{"id": "s1", "columns": ["oid"]},
 		{"id": "fts", "fullText": 1, "columns": ["fullName"]},
-		{"id": "o1", "columns": ["fullName"]}
+		{"id": "o1", "columns": ["fullName"]},
+		{"id": "vat", "columns": ["vatState", "vatID"]},
+		{"id": "cleanedName", "columns": ["cleanedName"]}
 	]
 }

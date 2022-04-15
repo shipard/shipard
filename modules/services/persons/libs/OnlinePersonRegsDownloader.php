@@ -11,6 +11,7 @@ class OnlinePersonRegsDownloader extends \services\persons\libs\CoreObject
 	var $personNdx = '';
   var $debug = 0;
   var $cntUpdates = 0;
+  var $newDataAvailable = 2;
   var $srcData = [];
 
   var ?\services\persons\libs\PersonData $personData = NULL;

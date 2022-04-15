@@ -3,7 +3,7 @@
 namespace services\persons;
 
 use \Shipard\Utils\Utils, \E10\TableView, \E10\TableForm, \E10\DbTable, \e10\TableViewDetail, \Shipard\Utils\Str;
-
+use \Shipard\Viewer\TableViewPanel;
 
 /**
  * Class TablePersons
@@ -64,6 +64,7 @@ class ViewPersons extends TableView
 		parent::init();
 		$this->registers = $this->app()->cfgItem('services.personsRegisters', []);
 		$this->vatStates = $this->app()->cfgItem('services.persons.vatPayerStates', []);
+		$this->setPanels (TableView::sptQuery);
 	}
 
 	public function renderRow ($item)
@@ -105,6 +106,20 @@ class ViewPersons extends TableView
 		array_push ($q, ' FROM [services_persons_persons] AS persons');
 		array_push ($q, ' WHERE 1');
 
+		// -- special queries
+		$qv = $this->queryValues ();
+
+		$groupVAT = isset ($qv['vat']['groupVAT']);
+		$isVATPayer = isset ($qv['vat']['isVATPayer']);
+		if ($groupVAT)
+			array_push($q, ' AND [vatState] = %i', 2);
+		if ($isVATPayer)
+			array_push($q, ' AND [vatState] IN %in', [1, 2]);
+
+		$cleanedName = isset ($qv['others']['cleanedName']);
+		if ($cleanedName)	
+			array_push($q, ' AND [cleanedName] = %i', 1);
+
 		// -- fulltext
 		if ($fts != '')
 		{
@@ -126,7 +141,7 @@ class ViewPersons extends TableView
 			else
 			{
 				if (Str::strlen($fts) > 2)
-					array_push($q, ' AND [fullName] LIKE %s', $fts . '%');
+					array_push($q, ' AND persons.[fullName] LIKE %s', $fts . '%');
 			}
 			array_push ($q, ')');
 			
@@ -170,6 +185,28 @@ class ViewPersons extends TableView
 		}
 	}
 
+	public function createPanelContentQry (TableViewPanel $panel)
+	{
+		$qry = [];
+
+		$chbxVAT = [
+			'isVATPayer' => ['title' => 'Plátci DPH', 'id' => 'isVATPayer'],
+			'groupVAT' => ['title' => 'Skupinové DPH', 'id' => 'groupVAT'],
+		];
+		$paramsVAT = new \Shipard\UI\Core\Params ($this->app());
+		$paramsVAT->addParam ('checkboxes', 'query.vat', ['items' => $chbxVAT]);
+		$qry[] = ['id' => 'vat', 'style' => 'params', 'title' => ['text' => 'DPH', 'icon' => 'tables/e10doc.base.taxRegs'], 'params' => $paramsVAT];
+
+		// others
+		$chbxOthers = [
+			'cleanedName' => ['title' => 'Začištěné jméno', 'id' => 'cleanedName'],
+		];
+		$paramsOthers = new \Shipard\UI\Core\Params ($this->app());
+		$paramsOthers->addParam ('checkboxes', 'query.others', ['items' => $chbxOthers]);
+		$qry[] = ['id' => 'others', 'style' => 'params', 'title' => ['text' => 'Ostatní', 'icon' => 'system/iconCogs'], 'params' => $paramsOthers];
+
+		$panel->addContent(array ('type' => 'query', 'query' => $qry));
+	}
 }
 
 

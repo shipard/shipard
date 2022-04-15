@@ -10,7 +10,6 @@ use \services\persons\libs\LogRecord;
 class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRegsDownloader
 {
   var $primaryTAXID = '';
-  var $newDataAvailable = 2;
 
   CONST vatNone = 0, vatStandard = 1, vatGroup = 2;
   var $useVAT = self::vatNone;

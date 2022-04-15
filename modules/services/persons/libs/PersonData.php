@@ -1,8 +1,15 @@
 <?php
 
 namespace services\persons\libs;
-use \Shipard\Utils\Json;
 
+use Monolog\Handler\Curl\Util;
+use \Shipard\Utils\Json;
+use \Shipard\Utils\World;
+use \Shipard\Utils\Utils;
+
+/**
+ * @class PersonData
+ */
 class PersonData extends \services\persons\libs\CoreObject
 {
 	var $personNdx = '';
@@ -11,6 +18,8 @@ class PersonData extends \services\persons\libs\CoreObject
   var $debug = 0;
 
   var $data = NULL;
+	var $dataShow = NULL;
+	var $dataExport = NULL;
 
 	var ?\services\persons\libs\LogRecord $logRecord = NULL;
 
@@ -19,6 +28,35 @@ class PersonData extends \services\persons\libs\CoreObject
   {
     $this->personNdx = $personNdx;
   }
+
+	public function loadById (string $countryCode, string $personId)
+	{
+		$countryNdx = 60;
+		$exist = $this->db()->query('SELECT [ndx], [importState], [valid] FROM [services_persons_persons] WHERE [oid] = %s', $personId, 
+																' AND [country] = %i', $countryNdx)->fetch();
+		if ($exist)
+		{
+			if ($exist['importState'] === 0 && $exist['valid'])
+				$this->refreshImport($exist['ndx']);
+			
+			$this->setPersonNdx($exist['ndx']);
+			$this->load();
+		}
+	}
+
+	protected function refreshImport($personNdx)
+	{
+		// -- download
+		$downloadEngine = new \services\persons\libs\OnlinePersonRegsDownloadService($this->app);
+		$downloadEngine->setPersonNdx($personNdx);
+		$downloadEngine->newDataAvailable = 1;
+		$downloadEngine->downloadOnePerson();
+
+		// -- import
+		$importEngine = new \services\persons\libs\PersonRegsImportService($this->app);
+		$importEngine->personNdx = $personNdx;
+		$importEngine->importOnePerson();
+	}
 
   protected function loadCoreData()
   {
@@ -51,6 +89,14 @@ class PersonData extends \services\persons\libs\CoreObject
 				Json::polish($rida);
 				$p['ids'][] = $rida;
 			}
+			// -- bank accounts
+			$rowsIds = $this->db()->query ('SELECT * FROM [services_persons_bankAccounts] WHERE [person] = %i', $r['ndx']);
+			foreach ($rowsIds as $rid)
+			{
+				$rba = $rid->toArray();
+				Json::polish($rba);
+				$p['bankAccounts'][] = $rba;
+			}
 
 			$this->data = $p;
 			break;
@@ -61,6 +107,104 @@ class PersonData extends \services\persons\libs\CoreObject
   {
     $this->loadCoreData();
   }
+
+	function prepareDataShow()
+	{
+		$this->dataShow = $this->data;
+
+		$this->dataShow['person']['country'] = World::countryId($this->app, $this->dataExport['person']['country']);
+		$this->dataShow['person']['validFromH'] = Utils::datef($this->dataShow['person']['validFrom'], '%d');
+		$this->dataShow['person']['validToH'] = Utils::datef($this->dataShow['person']['validTo'], '%d');
+		if (isset($this->dataShow['address']))
+		{
+			foreach($this->dataShow['address'] as $itemId => &$item)
+			{
+				$item['country'] = World::countryId($this->app, $item['country']);
+				$item['addressText'] = self::addressText($item);
+				if ($item['type'] === 0)
+				{
+					$this->dataShow['person']['primaryAddressText'] = self::addressText($item);
+					$item['addressFlags'][] = ['prefix' => 'Sídlo'];
+				}
+				if ($item['type'] === 1)
+					$item['addressFlags'][] = ['prefix' => 'Provozovna'];
+
+				if ($item['natId'] !== '')	
+					$item['addressFlags'][] = ['prefix' => 'IČP', 'id' => $item['natId']];	
+			}
+		}
+
+		if (isset($this->dataShow['ids']))
+		{
+			foreach($this->dataShow['ids'] as $itemId => &$item)
+			{
+				unset($item['ndx']);
+				unset($item['person']);
+
+				if ($item['idType'] === self::idtOIDPrimary)
+				{
+					$this->dataShow['person']['titleIds'][] = ['id' => $item['id'], 'prefix' => 'IČ'];
+				}
+				elseif ($item['idType'] === self::idtVATPrimary)
+				{
+					$this->dataShow['person']['titleIds'][] = ['id' => $item['id'], 'prefix' => 'DIČ'];
+				}
+			}
+
+			if ($this->dataShow['person']['vatState'] === 0)
+				$this->dataShow['person']['titleIds'][] = ['id' => '', 'prefix' => 'Neplátce DPH'];
+		}
+
+		if (isset($this->dataShow['bankAccounts']))
+		{
+			foreach($this->dataShow['bankAccounts'] as $itemId => &$item)
+			{
+				$item['validFromH'] = Utils::datef($item['validFrom'], '%d');
+				unset($item['ndx']);
+				unset($item['person']);
+			}
+		}
+	}
+
+	function prepareDataExport()
+	{
+		$this->dataExport = $this->data;
+		unset ($this->dataExport['ndx']);
+		unset ($this->dataExport['person']['ndx']);
+		unset ($this->dataExport['person']['created']);
+		unset ($this->dataExport['person']['newDataAvailable']);
+		unset ($this->dataExport['person']['importState']);
+		$this->dataExport['person']['country'] = World::countryId($this->app, $this->dataExport['person']['country']);
+
+		if (isset($this->dataExport['address']))
+		{
+			foreach($this->dataExport['address'] as $itemId => &$item)
+			{
+				unset($item['ndx']);
+				unset($item['person']);
+				unset($item['addressId']);
+				$item['country'] = World::countryId($this->app, $item['country']);
+			}
+		}
+
+		if (isset($this->dataExport['ids']))
+		{
+			foreach($this->dataExport['ids'] as $itemId => &$item)
+			{
+				unset($item['ndx']);
+				unset($item['person']);
+			}
+		}
+
+		if (isset($this->dataExport['bankAccounts']))
+		{
+			foreach($this->dataExport['bankAccounts'] as $itemId => &$item)
+			{
+				unset($item['ndx']);
+				unset($item['person']);
+			}
+		}
+	}
 
 	function setCoreInfo(array $data)
   {
@@ -244,6 +388,7 @@ class PersonData extends \services\persons\libs\CoreObject
 		$this->saveChanges_Address($changedPerson);
 		$this->saveChanges_BankAccounts($changedPerson);
 
-		$this->db()->query('UPDATE [services_persons_persons] SET [newDataAvailable] = %i', 0, ' WHERE [ndx] = %i', $this->personNdx);
+		$this->db()->query('UPDATE [services_persons_persons] SET [newDataAvailable] = %i', 0, 
+												', [importState] = 1 WHERE [ndx] = %i', $this->personNdx);
 	}
 }

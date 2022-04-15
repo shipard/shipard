@@ -1,0 +1,20 @@
+<div class="row">
+	<form style="width: 100%;">
+		<div class="form-group" data-style="padding: 0.5rem 1rem; ">
+			<input type="search" name="q" class="form-control" placeholder="Zadejte IČ, DIČ nebo pár slov z názvu a stiskněte ⏎" autofocus value="{{data.dataView.queryText}}">
+		</div>
+	</form>
+</div>
+
+<ol class="list-group list-group-numbered pt-5" style="font-size: 120%;">
+	{{#data.dataView.search}}
+	<li class="list-group-item d-flex justify-content-between align-items-start{{^valid}} bg-light{{/valid}}">
+		<div class="ms-2 me-auto">
+			<div class="fw-bold"><a href="{{urlRoot}}/persons/cz/{{oid}}">{{fullName}}</a></div>
+			<span class="badge bg-light text-dark fs-6 fw-normal">{{{@icon;icon:system/iconHome}}} {{primaryAddressText}}</span> 
+			<span class="badge bg-light text-dark fs-6 fw-normal">IČ: {{oid}}</span>
+			{{^valid}}<span class="badge bg-danger  fs-6 fw-normal">Ukončeno {{validToH}}</span>{{/valid}}
+		</div>
+	</li>
+	{{/data.dataView.search}}
+</ol>

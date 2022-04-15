@@ -56,6 +56,11 @@ class ContentRenderer extends \Shipard\Base\BaseObject
 		$this->content = $widget->content;
 	}
 
+	public function setContent ($content)
+	{
+		$this->content = $content;
+	}
+
 	public function elementActionParams ($element, &$class)
 	{
 		$t = Utils::elementActionParams($element, $class);

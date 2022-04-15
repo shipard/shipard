@@ -41,6 +41,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
     $dest['street'] = trim($street);
     $dest['city'] = trim($data['city'] ?? '');
     $dest['zipcode']= trim($data['zipcode'] ?? '');
+    $dest['specification'] = trim($data['specification'] ?? '');
 
     $dest['country'] = $data['country'] ?? 60; // CZ
   }
@@ -85,6 +86,11 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
         $corePersonInfo['vatState'] = $this->useVAT;
         if ($this->useVAT === self::vatStandard)
           $corePersonInfo['vatID'] = strval($el->DIC);
+
+        $legalTypeStr = strval($el->PF->KPF);
+        $legalTypeRecData = $this->db()->query('SELECT * FROM [e10_base_nomencItems] WHERE [id] = %s', 'cz-tobe-'.$legalTypeStr)->fetch();
+        if ($legalTypeRecData)
+          $corePersonInfo['natLegalType'] = $legalTypeRecData['ndx'];
 
         $this->personDataImport->setCoreInfo($corePersonInfo);
 
@@ -153,28 +159,37 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
     {
       if (isset($aa['PRY']))
       {
-        foreach ($aa['PRY'] as $bbId => $bb)
+        foreach ($aa['PRY'] as $bbId_1 => $bb_1)
         {
-          $officeId = $bb['ICP'] ?? $bbId;
+          foreach ($bb_1 as $bbId => $bb)
+          {
+            if (!isset($bb['ICP']) || $bb['ICP'] === '')
+              continue;
+            $officeId = $bb['ICP'] ?? $bbId;
 
-          $officeAddress = [];
-          $this->fillAddress ([
-              'addressId' => 'O'.$officeId,
-              'street' => $bb['AP']['NU'] ?? '',
-              'streetNumber' => $bb['AP']['CD'] ?? '',
-              'streetNumber2' => $bb['AP']['CO'] ?? '',
-              'city' => $bb['AP']['N'] ?? '',
-              'zipcode' => $bb['AP']['PSC'] ?? '',
-            ], $officeAddress);
-            
-          $officeAddress['type'] = 1;
+            $officeAddress = [];
+            $this->fillAddress ([
+                'addressId' => 'O'.$officeId,
+                'street' => $bb['AP']['NU'] ?? '',
+                'streetNumber' => $bb['AP']['CD'] ?? '',
+                'streetNumber2' => $bb['AP']['CO'] ?? '',
+                'city' => $bb['AP']['N'] ?? '',
+                'zipcode' => $bb['AP']['PSC'] ?? '',
+                'specification' => $bb['AP']['NPR'] ?? '',
+              ], $officeAddress);
 
-          if (isset($bb['ICP']))
-            $officeAddress['natId'] = $bb['ICP'];
-          if (isset($bb['Zahajeni']))
-            $officeAddress['validFrom'] = $bb['Zahajeni'];
+            $officeAddress['type'] = 1;
 
-          $this->personDataImport->addAddress($officeAddress);
+            if (isset($bb['ICP']))
+              $officeAddress['natId'] = $bb['ICP'];
+
+            if (isset($bb['Zahajeni']))
+              $officeAddress['validFrom'] = $bb['Zahajeni'];
+            if (isset($bb['Ukonceni']))
+              $officeAddress['validTo'] = $bb['Ukonceni'];
+
+            $this->personDataImport->addAddress($officeAddress);
+          } 
         }
       }  
     }
@@ -211,22 +226,25 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
         foreach ($officesList as $p)
         {
           $officeId = $p['IdentifikacniCisloProvozovny'];
+          $addressId = 'O'.$officeId;
           $addrParts = explode(',', $p['ZmenaAdresy']['TextAdresy']);
 
           $officeAddress = [];
           $this->fillAddress ([
-              'addressId' => 'O'.$officeId,
+              'addressId' => $addressId,
               'street' => $addrParts[0] ?? '',
               'streetNumber' => '',
               'streetNumber2' => '',
               'city' => $addrParts[2] ?? '',
               'zipcode' => $addrParts[1] ?? '',
+              'specification' => $p['NazevProvozovny'] ?? '',
             ], $officeAddress);
           
           $officeAddress['natId'] = $officeId;
           $officeAddress['type'] = 1;
 
-          $this->personDataImport->addAddress($officeAddress);
+          if (!isset($this->personDataImport->data['address']['addressId']))
+            $this->personDataImport->addAddress($officeAddress);
         } 
       }
     }

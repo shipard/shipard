@@ -9,6 +9,7 @@ final class OnlinePersonRegsDownloadService extends Utility
 
   var $timeStart = 0;
   var $maxDuration = 120;
+  var $newDataAvailable = 2;
 
   var $debug = 0;
 
@@ -21,6 +22,7 @@ final class OnlinePersonRegsDownloadService extends Utility
   {
     $e = new \services\persons\libs\cz\OnlinePersonRegsDownloaderCZ($this->app());
     $e->setPersonNdx($this->personNdx);
+    $e->newDataAvailable = $this->newDataAvailable;
     $e->run();
   }
 
