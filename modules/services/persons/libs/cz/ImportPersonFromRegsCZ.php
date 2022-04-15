@@ -157,6 +157,11 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
     // -- provozovny
     foreach ($rzpData['ZI']['Z'] as $aaId => $aa)
     {
+      if (isset($aa['PRY']['PR']['ICP']))
+      {
+        $this->doImport_ARES_RZP_Provozovna($aa['PRY']['PR']);
+        continue;
+      }
       if (isset($aa['PRY']))
       {
         foreach ($aa['PRY'] as $bbId_1 => $bb_1)
@@ -165,34 +170,39 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
           {
             if (!isset($bb['ICP']) || $bb['ICP'] === '')
               continue;
-            $officeId = $bb['ICP'] ?? $bbId;
-
-            $officeAddress = [];
-            $this->fillAddress ([
-                'addressId' => 'O'.$officeId,
-                'street' => $bb['AP']['NU'] ?? '',
-                'streetNumber' => $bb['AP']['CD'] ?? '',
-                'streetNumber2' => $bb['AP']['CO'] ?? '',
-                'city' => $bb['AP']['N'] ?? '',
-                'zipcode' => $bb['AP']['PSC'] ?? '',
-                'specification' => $bb['AP']['NPR'] ?? '',
-              ], $officeAddress);
-
-            $officeAddress['type'] = 1;
-
-            if (isset($bb['ICP']))
-              $officeAddress['natId'] = $bb['ICP'];
-
-            if (isset($bb['Zahajeni']))
-              $officeAddress['validFrom'] = $bb['Zahajeni'];
-            if (isset($bb['Ukonceni']))
-              $officeAddress['validTo'] = $bb['Ukonceni'];
-
-            $this->personDataImport->addAddress($officeAddress);
+            $this->doImport_ARES_RZP_Provozovna($bb);
           } 
         }
       }  
     }
+  }
+
+  protected function doImport_ARES_RZP_Provozovna($bb)
+  {
+    $officeId = strval($bb['ICP']);
+
+    $officeAddress = [];
+    $this->fillAddress ([
+        'addressId' => 'O'.$officeId,
+        'street' => $bb['AP']['NU'] ?? '',
+        'streetNumber' => $bb['AP']['CD'] ?? '',
+        'streetNumber2' => $bb['AP']['CO'] ?? '',
+        'city' => $bb['AP']['N'] ?? '',
+        'zipcode' => $bb['AP']['PSC'] ?? '',
+        'specification' => $bb['NPR'] ?? '',
+      ], $officeAddress);
+
+    $officeAddress['type'] = 1;
+
+    if (isset($bb['ICP']))
+      $officeAddress['natId'] = $bb['ICP'];
+
+    if (isset($bb['Zahajeni']))
+      $officeAddress['validFrom'] = $bb['Zahajeni'];
+    if (isset($bb['Ukonceni']))
+      $officeAddress['validTo'] = $bb['Ukonceni'];
+
+    $this->personDataImport->addAddress($officeAddress);
   }
 
   function doImport_RZP()
@@ -220,9 +230,11 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
         $officesList = [];
         if (isset($pp['Provozovna']['IdentifikacniCisloProvozovny']))
           $officesList = [$pp['Provozovna']];
+        elseif (isset($pp['IdentifikacniCisloProvozovny']))
+          $officesList = [$pp];
         elseif (isset($pp['Provozovna']))
           $officesList = $pp['Provozovna'];
-          
+
         foreach ($officesList as $p)
         {
           $officeId = $p['IdentifikacniCisloProvozovny'];
