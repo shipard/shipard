@@ -7,7 +7,9 @@ use \Shipard\Utils\Json;
 use \lib\dataView\DataView;
 
 
-
+/**
+ * @class DataViewPersons
+ */
 class DataViewPersons extends DataView
 {
 	var $maxCount = 10;
@@ -23,7 +25,8 @@ class DataViewPersons extends DataView
 	protected function init()
 	{
 		parent::init();
-		$this->requestParams['showAs'] = $this->app()->requestPath(3);
+
+		$this->requestParams['showAs'] = strval($this->app()->requestPath(3));
 		if ($this->requestParams['showAs'] === '')
 			$this->requestParams['showAs'] = 'html';
 
@@ -31,6 +34,7 @@ class DataViewPersons extends DataView
 		{
 			$this->data['errors'][] = ['msg' => 'Nepodporovaný formát `'.$this->requestParams['showAs'].'`'];
 			$this->viewType = self::vtError;
+			$this->requestParams['showAs'] = 'html';
 			return;
 		}
 
@@ -58,8 +62,6 @@ class DataViewPersons extends DataView
 
 	protected function loadData()
 	{
-		//$this->data['test'] = ['AHOJ' => 'POKUS'];
-
 		if ($this->viewType === self::vtSearchResults)
 			$this->loadData_searchResults();
 		elseif ($this->viewType === self::vtPerson)
@@ -136,8 +138,8 @@ class DataViewPersons extends DataView
 			}
 		}
 
-
-		$this->data['search'] = array_values($this->data['search']);
+		if (isset($this->data['search']))
+			$this->data['search'] = array_values($this->data['search']);
 	}
 
 	protected function loadData_person()
@@ -151,11 +153,14 @@ class DataViewPersons extends DataView
 			$personData->prepareDataShow();
 			$this->data['person'] = $personData->dataShow;
 			$this->data['person']['json'] = Json::lint($personData->dataExport);
-		}	
+		}
 		else
 		{
 			$this->viewType = self::vtError;
 			$this->data['errors'][] = ['msg' => 'IČ `'.$this->requestParams['personId'].'` není platné...'];
+
+			$data = array_merge(['status' => 0], ['errors' => array_values($this->data['errors'])]);
+			$this->data['person']['json'] = Json::lint($data);
 		}
 	}
 
@@ -190,7 +195,13 @@ class DataViewPersons extends DataView
 
 	protected function renderDataAsJson()
 	{
-		$this->template->data['forceCode'] = $this->data['person']['json'];
+		if (isset($this->data['person']['json']))
+			$this->template->data['forceCode'] = $this->data['person']['json'];
+		else
+		{
+			$data = array_merge(['status' => 0], ['errors' => array_values($this->data['errors'])]);
+			$this->template->data['forceCode'] = Json::lint($data);
+		}	
 		$this->template->data['forceMimeType'] = 'application/json';
 	}
 }
