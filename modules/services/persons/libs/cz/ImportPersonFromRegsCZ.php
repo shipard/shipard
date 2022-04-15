@@ -243,7 +243,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
           $officeAddress['natId'] = $officeId;
           $officeAddress['type'] = 1;
 
-          if (!isset($this->personDataImport->data['address']['addressId']))
+          if (!isset($this->personDataImport->data['address'][$addressId]))
             $this->personDataImport->addAddress($officeAddress);
         } 
       }
