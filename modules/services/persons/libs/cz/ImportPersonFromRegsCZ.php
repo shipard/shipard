@@ -232,6 +232,8 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
           $officesList = [$pp['Provozovna']];
         elseif (isset($pp['IdentifikacniCisloProvozovny']))
           $officesList = [$pp];
+        elseif (isset($pp[0]['IdentifikacniCisloProvozovny']))
+          $officesList = $pp;
         elseif (isset($pp['Provozovna']))
           $officesList = $pp['Provozovna'];
 
@@ -245,13 +247,23 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
           {
             $city = $addrParts[1] ?? '';
             $zipcode = $addrParts[0] ?? '';
+            $street = '';
           }
           else
           {
             $street = $addrParts[0] ?? '';
             $city = $addrParts[2] ?? '';
             $zipcode = $addrParts[1] ?? '';
-          }  
+          }
+
+          $specification = $p['NazevProvozovny'] ?? '';
+          if (isset($p['UmisteniProvozovny']) && $p['UmisteniProvozovny'] !== '')
+          {
+            if ($specification !== '')
+              $specification .= ' - ';
+            $specification .= $p['UmisteniProvozovny'];  
+          }
+
           $officeAddress = [];
           $this->fillAddress ([
               'addressId' => $addressId,
@@ -260,7 +272,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
               'streetNumber2' => '',
               'city' => $city,
               'zipcode' => Str::upToLen($zipcode, 20),
-              'specification' => $p['NazevProvozovny'] ?? '',
+              'specification' => Str::upToLen($specification, 160),
             ], $officeAddress);
           
           $officeAddress['natId'] = $officeId;
