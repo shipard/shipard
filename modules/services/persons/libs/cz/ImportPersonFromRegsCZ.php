@@ -65,8 +65,8 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
         $oid = strval ($el->ICO);
         $corePersonInfo = [
           'oid' => $oid,
-          'originalName' => strval ($el->OF),
-          'fullName' => $this->clearFullName(strval ($el->OF)),
+          'originalName' => Str::upToLen(strval ($el->OF), 240),
+          'fullName' => Str::upToLen($this->clearFullName(strval ($el->OF)), 240),
         ];
 
         $flags = strval ($el->PSU);
