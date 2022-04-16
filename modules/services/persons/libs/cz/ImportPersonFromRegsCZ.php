@@ -316,25 +316,27 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
     }
     */
 
-    $bankAccounts = isset($vatData['statusPlatceDPH']['zverejneneUcty']['ucet']['datumZverejneni']) ? [$vatData['statusPlatceDPH']['zverejneneUcty']['ucet']] : $vatData['statusPlatceDPH']['zverejneneUcty']['ucet'];
-    foreach ($bankAccounts as $ba)
+    if (isset($vatData['statusPlatceDPH']['zverejneneUcty']))
     {
-      $bankAccount = ['validFrom' => $ba['datumZverejneni']];
-      if (isset($ba['nestandardniUcet']))
-        $bankAccount['bankAccount'] = $ba['nestandardniUcet']['cislo'];
-      elseif (isset($ba['standardniUcet']))
+      $bankAccounts = isset($vatData['statusPlatceDPH']['zverejneneUcty']['ucet']['datumZverejneni']) ? [$vatData['statusPlatceDPH']['zverejneneUcty']['ucet']] : $vatData['statusPlatceDPH']['zverejneneUcty']['ucet'];
+      foreach ($bankAccounts as $ba)
       {
-        $bankAccount['bankAccount'] = '';
-        if (isset($ba['standardniUcet']['predcisli']) && $ba['standardniUcet']['predcisli'] !== '')
-          $bankAccount['bankAccount'] .= $ba['standardniUcet']['predcisli'].'-';
-        $bankAccount['bankAccount'] .= $ba['standardniUcet']['cislo'].'/'.$ba['standardniUcet']['kodBanky'];
+        $bankAccount = ['validFrom' => $ba['datumZverejneni']];
+        if (isset($ba['nestandardniUcet']))
+          $bankAccount['bankAccount'] = $ba['nestandardniUcet']['cislo'];
+        elseif (isset($ba['standardniUcet']))
+        {
+          $bankAccount['bankAccount'] = '';
+          if (isset($ba['standardniUcet']['predcisli']) && $ba['standardniUcet']['predcisli'] !== '')
+            $bankAccount['bankAccount'] .= $ba['standardniUcet']['predcisli'].'-';
+          $bankAccount['bankAccount'] .= $ba['standardniUcet']['cislo'].'/'.$ba['standardniUcet']['kodBanky'];
+        }
+        else
+          continue; 
+        
+        $this->personDataImport->addBankAccount($bankAccount);
       }
-      else
-        continue; 
-      
-      $this->personDataImport->addBankAccount($bankAccount);
-    }
-
+    }  
     $regVatId = $vatData['statusPlatceDPH']['dic'] ?? '';
     if ($regVatId !== '')
       $this->personDataImport->addID(['idType' => self::idtVATPrimary, 'id' => $regVatId]);
