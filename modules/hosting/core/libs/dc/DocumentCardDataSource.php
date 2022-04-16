@@ -108,6 +108,8 @@ class DocumentCardDataSource extends \Shipard\Base\DocumentCard
 						['text' => Utils::snf($this->statsRecData['usageTotal']), 'icon' => 'quantityTypeDataAmount', 'class' => '', 'title' => 'Celková velikost'],
 						['text' => Utils::snf($this->statsRecData['usageDb']), 'icon' => 'system/iconDatabase', 'class' => '', 'title' => 'Databáze'],
 						['text' => Utils::snf($this->statsRecData['usageFiles']), 'icon' => 'system/formAttachments', 'class' => '', 'title' => 'Přílohy'],
+
+						['text' => Utils::datef($this->statsRecData['dateUpdate'], '%d, %t'), 'icon' => 'system/iconClock', 'class' => 'id pull-right', 'title' => 'Poslední aktualizace'],
 					]
 				];
 

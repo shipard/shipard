@@ -146,7 +146,7 @@ class CronApp extends Application
 
 	public function dataSourceStatsCreate ()
 	{
-		$dsid = intval ($this->cfgItem('dsid'));
+		$dsid = $this->cfgItem('dsid');
 
 		$dsStats = new \lib\hosting\DataSourceStats($this);
 		$dsStats->loadFromFile();
