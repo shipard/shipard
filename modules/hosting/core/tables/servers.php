@@ -1,8 +1,7 @@
 <?php
 
 namespace hosting\core;
-
-use \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \Shipard\Utils\Utils, \E10\DbTable;
+use \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Utils\Utils, \Shipard\Table\DbTable;
 
 
 /**
@@ -60,15 +59,23 @@ class ViewServers extends TableView
 	{
 		$fts = $this->fullTextSearch ();
 
-		$q[] = 'SELECT [servers].*, [owners].[fullName] AS [ownerFullName]';
+		$q[] = 'SELECT [servers].*, [owners].[fullName] AS [ownerFullName],';
+		array_push($q, ' CONCAT(COALESCE([hwServers].name, [servers].name), [servers].name) AS serverOrder');
 		array_push($q, ' FROM [hosting_core_servers] AS [servers]');
 		array_push($q, ' LEFT JOIN [e10_persons_persons] AS [owners] ON [servers].[owner] = [owners].[ndx]');
+		array_push($q, ' LEFT JOIN [hosting_core_servers] AS [hwServers] ON [servers].[hwServer] = [hwServers].[ndx]');
 		array_push($q, ' WHERE 1');
 
 		if ($fts != '')
+		{
 			array_push ($q, ' AND ([servers].[name] LIKE %s OR [servers].[fqdn] LIKE %s)', '%'.$fts.'%', '%'.$fts.'%');
-
-		$this->queryMain ($q, '[servers].', ['[servers].[name]', '[servers].[ndx]']);
+			$this->queryMain ($q, '[servers].', ['[servers].[name]', '[servers].[ndx]']);
+		}
+		else
+		{
+			$this->queryMain ($q, '[servers].', ['serverOrder', '[servers].[ndx]']);
+		}
+		
 		$this->runQuery ($q);
 	}
 
@@ -92,8 +99,12 @@ class ViewServers extends TableView
 		$listItem ['t1'] = [['text' => $item['name'], 'class' => ''], ];
 		$listItem ['t2'] = [
 				['text' => $item['id'], 'class' => 'label label-default'],
-
 		];
+
+		$fts = $this->fullTextSearch ();
+
+		if ($item['hwMode'] && $fts === '')
+			$listItem['level'] = 1;
 
 		if ($item['creatingDataSources'] === 1)
 			$listItem ['t2'][] = ['text' => 'Svoje', 'icon' => 'system/iconDatabase', 'class' => 'label label-info'];
@@ -110,7 +121,6 @@ class ViewServers extends TableView
 
 		if (count($props3))
 			$listItem ['t3'] = $props3;
-
 
 		return $listItem;
 	}
@@ -131,10 +141,49 @@ class ViewServers extends TableView
 
 
 /**
- * Class ViewDetailServers
+ * Class ViewDetailServer
  */
-class ViewDetailServers extends TableViewDetail
+class ViewDetailServer extends TableViewDetail
 {
+}
+
+
+/**
+ * Class ViewDetailServerUpdownIo
+ */
+class ViewDetailServerUpdownIo extends TableViewDetail
+{
+	public function createDetailContent ()
+	{
+		if ($this->item['updownIOId'] !== '')
+		{
+			$url = 'https://updown.io/'.$this->item['updownIOId'];
+			$this->addContent(['type' => 'url', 'url' => $url, 'fullsize' => 1]);
+		}
+		else
+		{
+			$this->addContent(['type' => 'line', 'line' => ['text' => 'Monitoring není nastaven...']]);
+		}
+	}
+}
+
+/**
+ * Class ViewDetailServerNetdata
+ */
+class ViewDetailServerNetdata extends TableViewDetail
+{
+	public function createDetailContent ()
+	{
+		if ($this->item['netdataUrl'] !== '')
+		{
+			$url = $this->item['netdataUrl'];
+			$this->addContent(['type' => 'url', 'url' => $url, 'fullsize' => 1]);
+		}
+		else
+		{
+			$this->addContent(['type' => 'line', 'line' => ['text' => 'Monitoring není nastaven...']]);
+		}
+	}
 }
 
 
@@ -153,9 +202,26 @@ class FormServer extends TableForm
 			$this->addColumnInput ('id');
 			$this->addColumnInput ('gid');
 			$this->addColumnInput ('creatingDataSources');
+
+			$this->addSeparator(self::coH3);
 			$this->addColumnInput ('ipv4');
 			$this->addColumnInput ('ipv6');
+
+			$this->addSeparator(self::coH3);
+			$this->addColumnInput ('hwMode');
+			if ($this->recData['hwMode'])
+			{
+				$this->addColumnInput ('hwServer');
+				$this->addColumnInput ('vmId');
+			}	
+
+			$this->addSeparator(self::coH3);
+			$this->addColumnInput ('updownIOId');
+			$this->addColumnInput ('netdataUrl');
+
+			$this->addSeparator(self::coH3);
 			$this->addColumnInput ('owner');
+
 		$this->closeForm ();
 	}
 }

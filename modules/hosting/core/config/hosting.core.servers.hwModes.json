@@ -1,0 +1,11 @@
+{
+	"0": {
+		"fn": "Fyzický HW"
+	},
+	"2": {
+		"fn": "LXC kontejner"
+	},
+	"1": {
+		"fn": "Virtuální stroj"
+	}
+}

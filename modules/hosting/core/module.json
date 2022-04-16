@@ -18,7 +18,8 @@
 		{"id": "+widgets", "file": "widgets.json"},
 		{"id": "+dashboards", "file": "dashboards.json"},
 		{"id": "+e10.base.clsfGroups", "file": "clsfGroups.json"},
-		{"id": "+registeredClasses", "file": "registeredClasses.json"}
+		{"id": "+registeredClasses", "file": "registeredClasses.json"},
+		{"id": "hosting.core.servers.hwModes", "file": "hosting.core.servers.hwModes.json"}
 	],
 	"extensions": ["persons"],
 	"modules": [

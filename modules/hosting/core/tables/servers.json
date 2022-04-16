@@ -9,8 +9,17 @@
 	  {"id": "creatingDataSources", "name": "Zakládat zdroje dat", "type": "enumInt",
 		  "enumValues": {"0": "Ne", "1": "Ano, ale pouze pro tento server", "2": "Ano, všechny zdroje dat"}
 	  },
-	  {"id": "ipv4", "name": "IP adresa", "type": "string", "len": 16, "options": ["ascii"]},
-		{"id": "ipv6", "name": "IP adresa", "type": "string", "len": 45, "options": ["ascii"]},
+
+	  {"id": "ipv4", "name": "IPv4 adresa", "type": "string", "len": 16, "options": ["ascii"]},
+		{"id": "ipv6", "name": "IPv6 adresa", "type": "string", "len": 45, "options": ["ascii"]},
+
+		{"id": "hwMode", "name": "Mód HW", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "hosting.core.servers.hwModes", "cfgValue": "", "cfgText": "fn"}},	
+    {"id": "hwServer", "name": "Server", "type": "int", "reference": "hosting.core.servers"},
+    {"id": "vmId", "name": "ID kontejneru / VM", "type": "string", "len": 40},
+  
+    {"id": "updownIOId", "name": "updown.io Id", "type": "string", "len": 8},
+    {"id": "netdataUrl", "name": "Netdata URL", "type": "string", "len": 180},
 
 	  {"id": "owner", "name": "Vlastník", "type": "int", "reference": "e10.persons.persons"},
 
@@ -19,7 +28,13 @@
   ],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
   "views": [
-    {"id": "default", "class": "hosting.core.ViewServers", "detail": "hosting.core.ViewDetailServers"}
+    {"id": "default", "class": "hosting.core.ViewServers", 
+      "details": {
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "hosting.core.ViewDetailServer"},
+        "updown": {"title": "updown.io", "icon": "system/detailDetail", "type": "detail", "class": "hosting.core.ViewDetailServerUpdownIo"},
+        "netdata": {"title": "Netdata", "icon": "system/detailDetail", "type": "detail", "class": "hosting.core.ViewDetailServerNetdata"}
+			}
+    }
   ],
   "forms": [
     {"id": "default", "class": "hosting.core.FormServer"}
