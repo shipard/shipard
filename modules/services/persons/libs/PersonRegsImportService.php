@@ -31,7 +31,7 @@ final class PersonRegsImportService extends Utility
       array_push($q, 'SELECT * FROM [services_persons_persons]');
       array_push($q, ' WHERE 1');
       array_push($q, ' AND [importState] = %i', 0);
-      array_push($q, ' AND [newDataAvailable] = %i', 1);
+      array_push($q, ' AND [newDataAvailable] = %i', 2);
       array_push($q, ' AND [valid] = %i', 1);
       array_push($q, ' LIMIT 10');
       $rows = $this->db()->query($q);
@@ -41,7 +41,7 @@ final class PersonRegsImportService extends Utility
       {
         if ($this->debug)
           echo "# ".$r['oid'].': '.$r['fullName']."\n";
-        //$this->setPersonId('cz', $r['oid']);
+        $this->personNdx = $r['ndx'];
         $this->importOnePerson();
 
         $cnt++;
@@ -56,8 +56,6 @@ final class PersonRegsImportService extends Utility
       
       if ($runLen > $this->maxDuration)
         break;
-
-      break;  
     }
     $now = new \DateTime();
     if ($this->debug)
