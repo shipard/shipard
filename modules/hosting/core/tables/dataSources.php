@@ -508,17 +508,12 @@ class ViewDataSources extends TableView
 
 	public function createPanelContentReview (TableViewPanel $panel)
 	{
-		//$panel->setContent('e10pro.hosting.server.HostingReviewDataSources');
-
-		///** @var \e10pro\hosting\server\HostingReviewDataSources $o */
-
-		/*
-		$o = new \e10pro\hosting\server\HostingReviewDataSources($this->app());//$this->table->app()->createObject($classId);
+		/** @var \hosting\core\libs\HostingReviewDataSources $o */
+		$o = new \hosting\core\libs\HostingReviewDataSources($this->app());//$this->table->app()->createObject($classId);
 		$o->partner = $this->partner;
 		$o->create();
 		foreach ($o->content['body'] as $cp)
 			$panel->addContent($cp);
-		*/	
 	}
 }
 
