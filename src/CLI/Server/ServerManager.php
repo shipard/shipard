@@ -190,11 +190,6 @@ class ServerManager extends Utility
 		/*
 		foreach ($hostingCfg as $hcId => $hc)
 		{
-			if (!isset($hc['hostingServerUrl']) || !isset($hc['moncServerUrl']))
-			{
-				$this->msg("invalid 'hostingServerUrl' or 'moncServerUrl' option at /etc/e10-hosting.cfg#{$hcId}");
-				continue;
-			}
 
 			if (!is_dir('/var/lib/e10/upload/apiaccess-'.$hcId))
 				mkdir('/var/lib/e10/upload/apiaccess-'.$hcId, 0770, TRUE);
@@ -220,7 +215,6 @@ class ServerManager extends Utility
 			$this->checkHostService ('e10-services', '/var/www/e10-server/e10/server/etc/services');
 			$this->checkHostService ('e10-service-cache', '/var/www/e10-server/e10/server/etc/services');
 			$this->checkHostService ('e10-ds-cmds', '/var/www/e10-server/e10/server/etc/services');
-			$this->checkHostService ('e10-monc-node-upload', '/var/www/e10-server/monc/node/systemd-scripts');
 		}
 		*/
 
@@ -329,6 +323,9 @@ class ServerManager extends Utility
 
 		// -- app-upgrade
 		passthru ('shpd-server app-walk app-upgrade');
+
+		// -- server info
+		passthru ('shpd-server server-info');
 	}
 
 	protected function serverUpgrade_Channel(string $channelId, array $channel)

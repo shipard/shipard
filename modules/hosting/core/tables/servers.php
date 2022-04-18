@@ -9,8 +9,6 @@ use \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\Ta
  */
 class TableServers extends DbTable
 {
-	public static $defaultIconSet = ['icon-server', 'system/iconSitemap', 'x-server'];
-
 	public function __construct ($dbmodel)
 	{
 		parent::__construct ($dbmodel);
@@ -35,9 +33,12 @@ class TableServers extends DbTable
 		return $hdr;
 	}
 
-	public function tableIconXXX ($recData, $options = NULL)
+	public function tableIcon ($recData, $options = NULL)
 	{
-		return self::$defaultIconSet [$recData['serverType']];
+		$icon = $this->app->cfgItem('hosting.core.servers.serverRoles.'.$recData['serverRole'].'.icon', '');
+		if ($icon !== '')
+			return $icon;
+		return parent::tableIcon ($recData, $options);
 	}
 }
 
@@ -83,13 +84,6 @@ class ViewServers extends TableView
 	{
 		if (!count ($this->pks))
 			return;
-
-		// -- server stats
-		/*
-		$serverStats = $this->db()->query ('SELECT * FROM hosting_server_serversStats WHERE server IN %in', $this->pks);
-		foreach ($serverStats as $r)
-			$this->serverStats[$r['server']] = $r->toArray();
-		*/	
 	}
 
 	public function renderRow ($item)
@@ -106,12 +100,18 @@ class ViewServers extends TableView
 		if ($item['hwMode'] && $fts === '')
 			$listItem['level'] = 1;
 
+		if ($item['osVerId'] !== '')
+			$listItem ['t2'][] = ['text' => $item['osVerId'], 'class' => 'label label-default'];
+
+		if ($item['shipardServerVerId'] !== '')
+			$listItem ['t2'][] = ['text' => $item['shipardServerVerId'], 'class' => 'label label-default'];
+
 		if ($item['creatingDataSources'] === 1)
 			$listItem ['t2'][] = ['text' => 'Svoje', 'icon' => 'system/iconDatabase', 'class' => 'label label-info'];
 		elseif ($item['creatingDataSources'] === 2)
 			$listItem ['t2'][] = ['text' => 'Všechny', 'icon' => 'system/iconDatabase', 'class' => 'label label-success'];
 
-		$listItem ['t2'][] = ['text' => $item['fqdn'], 'class' => '', 'suffix' => $item['ipv4']];
+		//$listItem ['t2'][] = ['text' => $item['fqdn'], 'class' => '', 'suffix' => $item['ipv4']];
 
 		$listItem ['i1'] = ['text' => '#'.$item['gid'], 'class' => 'id', 'suffix' => $item['ndx']];
 
@@ -127,15 +127,6 @@ class ViewServers extends TableView
 
 	function decorateRow (&$item)
 	{
-		if (isset($this->serverStats[$item ['pk']]))
-		{
-			$percents = round(($this->serverStats[$item ['pk']]['diskFreeSpace'] / $this->serverStats[$item ['pk']]['diskTotalSpace'])*100, 1);
-			$labelClass = ($percents < 20.0) ? 'label-danger' : 'label-primary';
-			$item ['i2'][] = [
-					'text' => utils::memf($this->serverStats[$item ['pk']]['diskUsedSpace']).' / '.utils::memf($this->serverStats[$item ['pk']]['diskTotalSpace']),
-					'class' => 'pull-right label '.$labelClass, 'icon' => 'icon-hdd-o'
-			];
-		}
 	}
 }
 
@@ -145,6 +136,10 @@ class ViewServers extends TableView
  */
 class ViewDetailServer extends TableViewDetail
 {
+	public function createDetailContent ()
+	{
+		$this->addDocumentCard('hosting.core.libs.dc.DocumentCardServer');
+	}
 }
 
 
@@ -199,6 +194,7 @@ class FormServer extends TableForm
 
 		$this->openForm ();
 			$this->addColumnInput ('name');
+			$this->addColumnInput ('serverRole');
 			$this->addColumnInput ('id');
 			$this->addColumnInput ('gid');
 			$this->addColumnInput ('creatingDataSources');

@@ -3,8 +3,12 @@
   "columns": [
     {"id": "ndx", "name": "id", "type": "int_ai"},
     {"id": "name", "name": "Název", "type": "string", "len": 40},
-    {"id": "fqdn", "name": "Doménové jméno", "type": "string", "len": 70},
+
+		{"id": "serverRole", "name": "Role serveru", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "hosting.core.servers.serverRoles", "cfgValue": "", "cfgText": "fn"}},
+
 		{"id": "id", "name": "ID", "type": "string", "len": 10},
+    {"id": "fqdn", "name": "Doménové jméno", "type": "string", "len": 70},
 		{"id": "gid", "name": "GID", "type": "string", "len": 20},
 	  {"id": "creatingDataSources", "name": "Zakládat zdroje dat", "type": "enumInt",
 		  "enumValues": {"0": "Ne", "1": "Ano, ale pouze pro tento server", "2": "Ano, všechny zdroje dat"}
@@ -22,6 +26,10 @@
     {"id": "netdataUrl", "name": "Netdata URL", "type": "string", "len": 180},
 
 	  {"id": "owner", "name": "Vlastník", "type": "int", "reference": "e10.persons.persons"},
+
+    {"id": "osVerId", "name": "Verze OS", "type": "string", "len": "60"},
+    {"id": "shipardServerVerId", "name": "Verze Shipard Server", "type": "string", "len": "60"},
+    {"id": "nodeServerVerId", "name": "Verze Shipard Node", "type": "string", "len": "60"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

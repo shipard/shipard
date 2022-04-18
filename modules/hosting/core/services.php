@@ -20,13 +20,6 @@ class ModuleServices extends \Shipard\CLI\ModuleServices
 			symlink (__SHPD_MODULES_DIR__.'hosting/core/users.php', 'users.php');
 	}
 
-	public function onCronMorning ()
-	{
-		// -- get servers statistics
-		//$tableServerStats = $this->app->table('hosting.core.serversStats');
-		//$tableServerStats->downloadStats();
-	}
-
 	public function onCronEver ()
 	{
 	}
@@ -35,7 +28,6 @@ class ModuleServices extends \Shipard\CLI\ModuleServices
 	{
 		switch ($cronType)
 		{
-			case 'morning': $this->onCronMorning(); break;
 			case 'ever': $this->onCronEver(); break;
 		}
 		return TRUE;

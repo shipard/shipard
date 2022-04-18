@@ -2,7 +2,7 @@
   "id": "hosting.core",
   "name": "Hosting",
 	"tables": [
-		"hostings", "servers", 		
+		"hostings", "servers", "serversInfo",
 		"partners", "partnersPersons", 
 		"dataSources", "dsStats", "dsUsers", "dsUsersOptions", "dsUsersSummary"
 	],
@@ -19,7 +19,8 @@
 		{"id": "+dashboards", "file": "dashboards.json"},
 		{"id": "+e10.base.clsfGroups", "file": "clsfGroups.json"},
 		{"id": "+registeredClasses", "file": "registeredClasses.json"},
-		{"id": "hosting.core.servers.hwModes", "file": "hosting.core.servers.hwModes.json"}
+		{"id": "hosting.core.servers.hwModes", "file": "hosting.core.servers.hwModes.json"},
+		{"id": "hosting.core.servers.serverRoles", "file": "hosting.core.servers.serverRoles.json"}
 	],
 	"extensions": ["persons"],
 	"modules": [

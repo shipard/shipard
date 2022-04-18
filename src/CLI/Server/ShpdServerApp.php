@@ -1214,6 +1214,14 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		return $sm->serverUpgrade();
 	}
 
+	public function serverInfo ()
+	{
+		$ssc = new \hosting\core\libs\ServerInfoCreator($this);
+		$ssc->run();
+
+		return TRUE;
+	}
+
 	public function serverAfterPkgsUpgrade()
 	{
 		$cmd = "/usr/sbin/service shpd-headless-browser restart";
@@ -1360,6 +1368,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 			case	"server-check":							return $this->serverCheck ();
 			case	"server-cleanup":						return $this->serverCleanup ();
 			case	"server-upgrade":						return $this->serverUpgrade();
+			case	"server-info":							return $this->serverInfo ();
 			case  "server-after-pkgs-upgrade":return $this->serverAfterPkgsUpgrade();
 			case  "server-get-hosting-info":	return $this->getHostingInfo();
 			case	'netdata-alarm':						return $this->netDataAlarm();

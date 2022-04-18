@@ -1,0 +1,14 @@
+{
+  "0": {
+    "fn": "Zdroje dat",
+    "icon": "tables/hosting.core.dataSources"
+  },
+  "1": {
+    "fn": "Kontejnery",
+    "icon": "tables/hosting.core.servers"
+  },
+  "2": {
+    "fn": "Servisní Node server",
+    "icon": "system/iconCogs"
+  }
+}

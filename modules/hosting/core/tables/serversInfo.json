@@ -1,0 +1,11 @@
+{
+	"id": "hosting.core.serversInfo", "sql": "hosting_core_serversInfo", "name": "Informace ze serverů",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "server", "name": "Server", "type": "int", "reference": "hosting.core.servers"},
+
+		{"id": "dataCore", "name": "Základní informace", "type": "memo"},
+		{"id": "dataCoreLastUpdate", "name": "Datum a čas aktualizace základních informací", "type": "timestamp"}
+	],
+	"options": ["systemTable"]
+}
