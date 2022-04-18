@@ -15,6 +15,9 @@
 			"mac.inet.domainsAccounts": {"default": 2},
 			"mac.inet.domains": {"default": 2},
 			"mac.inet.certs": {"default": 2}
+		},
+		"widgets": {
+			"hosting.core.libs.WidgetHostingOverview": 2
 		}
 	},
 	"hstngcd": {

@@ -3,6 +3,7 @@
 		"hosting": {
 			"url": "/app/hosting", "zone": "sec", "objectType": "panel", "name": "Hosting", "order": 1700000,
 			"items": [
+				{"#": "dashboard", "t1": "Hosting", "object": "widget", "class": "e10.widgetDashboard", "subclass": "shipard-hosting", "icon": "system/filterOverview", "order": 5000},
 				{"#": "dataSources", "t1": "Zdroje dat", "object": "viewer", "table": "hosting.core.dataSources", "viewer": "default", "order": 100000},
 				{"#": "persons", "t1": "Uživatelé", "object": "viewer", "table": "e10.persons.persons", "viewer": "hostingUsers", "order": 110000},
 				{"#": "partners", "t1": "Partneři", "object": "viewer", "table": "hosting.core.partners", "viewer": "default", "order": 290000},
@@ -15,6 +16,14 @@
 				{"#": "hostings", "t1": "Hostingy", "object": "viewer", "table": "hosting.core.hostings", "viewer": "default", "order": 9909100}
 			]
     },
+		"hosting-dashboard": {
+			"url": "/app/hosting-dashboard", "objectType": "panel", "zone": "sec", "order": 99100000, "mainWidgetMode": 1, "hidden": 1, "disableRightMenu": 1,
+			"items": {
+				"monitor": {
+					"t1": "Přehled", "object": "widget", "class": "e10.widgetDashboard", "subclass": "shipard-hosting", "order": 1000
+				}
+			}
+		},
 		"redirToDataSource": {"urlRegExp": "/^\\/\\d{8,14}(\\/app|\\/intra)?$/", "objectType": "function", "allow": "all",
 													"function": "e10pro.hosting.server.redirectToDataSource", "order": 10000}
 	}

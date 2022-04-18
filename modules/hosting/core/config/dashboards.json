@@ -11,5 +11,18 @@
 				"rows": {"main": {"order": 10000}}
 			}
 		}
+	},
+	"shipard-hosting": {
+		"name": "Hosting",
+		"disableTopToolbar": 1,
+		"panels": {
+			"overview": {
+				"name": "Přehled", 
+				"icon": "system/detailOverview",
+				"order": 10000,
+				"fullsize": 1,
+				"rows": {"main": {"order": 10000}}
+			}
+		}
 	}
 }

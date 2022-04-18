@@ -2,5 +2,9 @@
 	{
 		"class": "hosting.core.libs.HomePageWidget",
 		"dashboard": "shipard-app", "panel": "ds", "order": 5000, "row": "main", "width": 12, "type": "lans"
+	},
+	{
+		"class": "hosting.core.libs.WidgetHostingOverview",
+		"dashboard": "shipard-hosting", "panel": "overview", "order": 5000, "row": "main", "width": 12, "type": "lans"
 	}
 ]
