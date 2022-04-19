@@ -22,6 +22,27 @@ class ModuleServices extends \Shipard\CLI\ModuleServices
 
 	public function onCronEver ()
 	{
+		$this->cliUpdateServersUpdownIO();
+
+		return TRUE;
+	}
+
+	protected function cliUpdateServersUpdownIO()
+	{
+		$e = new \hosting\core\libs\ServersUpdateUpdownIO($this->app());
+		$e->run();
+
+		return TRUE;
+	}
+
+	public function onCliAction ($actionId)
+	{
+		switch ($actionId)
+		{
+			case 'update-servers-updown-io': return $this->cliUpdateServersUpdownIO();
+		}
+
+		return parent::onCliAction($actionId);
 	}
 
 	public function onCron ($cronType)

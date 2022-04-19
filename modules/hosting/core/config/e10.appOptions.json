@@ -10,7 +10,8 @@
 					"0": "Ne",
 					"1": "Ano"
 				}
-			}
+			},
+			{"cfgKey": "updownIOROApiKey", "cfgName": "updown.io read/only API klíč"}
 		]
 	}
 }

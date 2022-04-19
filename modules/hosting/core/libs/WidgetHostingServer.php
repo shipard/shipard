@@ -2,6 +2,7 @@
 
 namespace hosting\core\libs;
 use \mac\data\libs\SensorsBadges;
+use \Shipard\Utils\Utils;
 
 
 /**
@@ -12,6 +13,7 @@ class WidgetHostingServer extends \Shipard\UI\Core\WidgetPane
   var $mainServerNdx = 0;
   var $mainServerRecData = NULL;
   var $mainServerBadges = [];
+  var $mainServerInfo = [];
 
   var $subServersTable = [];
   var $subServersHeader;
@@ -32,17 +34,27 @@ class WidgetHostingServer extends \Shipard\UI\Core\WidgetPane
       $useNetdata = 1;
     }
 
+    $b = $this->updownIOBadge($this->mainServerRecData);
+    if ($b !== '')
+      $this->mainServerInfo[] = $b;
+
     if ($useNetdata)
     {
       $bc = $this->sensorsBadges->netdataBadgeImg(
+        'main-server-netdata', 'CPU', 'system.cpu', 
+        ['before' => '-60', 'after' => '-60', 'units' => '%', 'precision' => 2, 'value_color' => 'COLOR:null|orange>50|red>90|00A000>=0', 'badgeClass' => 'pl1 pb1'],
+      );
+      $this->mainServerBadges[] = $bc;
+
+      $bc = $this->sensorsBadges->netdataBadgeImg(
         'main-server-netdata', 'load15', 'system.load', 
-        ['dimensions' => 'load15', 'units' => ' ', 'precision' => 2, 'value_color' => 'COLOR:null|orange>3|red>6|00A000>=0', 'badgeClass' => 'pl1 pb1 pr1'],
+        ['dimensions' => 'load15', 'units' => ' ', 'precision' => 2, 'value_color' => 'COLOR:null|orange>1|red>4|00A000>=0', 'badgeClass' => 'pl1 pb1 pr1'],
       );
       $this->mainServerBadges[] = $bc;
 
       $bc = $this->sensorsBadges->netdataBadgeImg(
         'main-server-netdata', 'uptime', 'system.uptime', 
-        ['dimensions' => 'uptime', 'precision' => 2, 'value_color' => 'COLOR:null|orange>7776000|red>15552000|00A000>=0', 'badgeClass' => 'pb1 pr1'],
+        ['dimensions' => 'uptime', 'value_color' => 'COLOR:null|orange>3888000|red>15552000|00A000>=0', 'badgeClass' => 'pb1 pr1'],
       );
       $this->mainServerBadges[] = $bc;
     }
@@ -77,12 +89,15 @@ class WidgetHostingServer extends \Shipard\UI\Core\WidgetPane
         $srv['server'][] = ['code' => $bc];
       }
 
+      $b = $this->updownIOBadge($r);
+      if ($b !== '')
+        $srv['server'][] = ['code' => $b];
+
       $this->subServersTable[] = $srv;
     }
 
     $this->subServersHeader = ['icon' => 'i', 'server' => 's'];
   }
-
 
   public function createContent ()
 	{
@@ -98,9 +113,14 @@ class WidgetHostingServer extends \Shipard\UI\Core\WidgetPane
 
     $mainServerLine = [];
     $mainServerLine [] = ['text' => $this->mainServerRecData['name'], 'class' => 'e10-widget-big-number', 'icon' => $this->tableServers->tableIcon($this->mainServerRecData)];
-    foreach ($this->mainServerBadges as $mbc)
+    foreach ($this->mainServerInfo as $mbc)
     {
       $mainServerLine [] = ['code' => $mbc, 'class' => 'pl1'];
+    }
+    $mainServerLine [] = ['text' => '', 'class' => 'break'];
+    foreach ($this->mainServerBadges as $mbc)
+    {
+      $mainServerLine [] = ['code' => $mbc/*, 'class' => 'pl1'*/];
     }
     $mainServerLine [] = ['text' => '', 'class' => 'break bb1 block'];
 
@@ -109,6 +129,56 @@ class WidgetHostingServer extends \Shipard\UI\Core\WidgetPane
       'table' => $this->subServersTable, 'header' => $this->subServersHeader,
       'params' => ['hideHeader' => 1, 'forceTableClass' => 'dcInfo fullWidth']
     ]);
+  }
+
+	public function setDefinition ($d)
+	{
+		$this->definition = ['class' => 'e10-pane POKUS1', 'type' => 'hosting-server'];
+	}
+
+  protected function updownIOBadge($recData)
+  {
+    if ($recData['updownIOId'] === '')
+      return '';
+
+    $uptimeVal = $recData['updownIOUptime'];
+    $ssl = $recData['updownIOSSLValid'];
+    $httpStatus = intval($recData['updownIOStatus']);
+    
+    $url = 'https://updown.io/'.$recData['updownIOId'];
+    $b = '';
+    $b .= "<span class='df2-action-trigger shp-badge mb1' data-url-download='$url' data-with-shift='tab' data-action='open-link' data-popup-id='updownio'>";
+    $b .= "<span class='e10-bg-bt'>";
+
+    $sensorIcon = 'system/iconGlobe';
+    $b .= $this->app()->ui()->icon($sensorIcon).' ';
+    //$b .= Utils::es('UP');
+    $b .= '</span>';
+
+    $color = $uptimeVal < 100 ? 'orange' : '#00AA00';
+    $b .= "<span class='value' style='background-color: $color;'> ";
+    $b .= strval($uptimeVal).'% ';
+    $b .= "</span>";
+
+    if ($ssl !== 2)
+    {
+      $b .= "<span class='e10-bg-bt'>" . '&nbsp;SSL ' . "</span>";
+
+      $color = $ssl ? '#00AA00' : '#CC0000';
+      $b .= "<span class='value' style='background-color: $color;'> ";
+      $b .= ($ssl) ? 'OK' : 'INVALID';
+      $b .= "</span>";
+
+      $b .= "<span class='e10-bg-bt'>" . '&nbsp;HTTP ' . "</span>";
+
+      $color = ($httpStatus === 200) ? '#00AA00' : '#CC0000';
+      $b .= "<span class='value' style='background-color: $color'> ";
+      $b .= ($httpStatus === 200) ? '200 OK' : '!!!'.$httpStatus;
+      $b .= "</span>";
+    }  
+    $b .= "</span>";
+
+    return $b;
   }
 
 	public function title()
