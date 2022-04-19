@@ -1226,6 +1226,8 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 	{
 		$cmd = "/usr/sbin/service shpd-headless-browser restart";
 		passthru($cmd);
+		$cmd = "shpd-server server-info";
+		passthru($cmd);
 	}
 
 	public function hostingCfg ($requiredFields = NULL)
