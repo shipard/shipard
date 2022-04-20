@@ -758,14 +758,18 @@ class TaxCIReport extends \e10doc\taxes\TaxReportReport
 	{
 		if (!$this->partsDefs)
 			return NULL;
+		
+		if (!isset($this->partsData[$partId][$partKey]))
+			return NULL;
+
 		$value = $this->partsData[$partId][$partKey] ?? NULL;
 
 		$colDef = utils::searchArray($this->partsDefs[$partId]['fields']['columns'], 'id', $partKey);
 
 		$colType = ($colDef) ? $colDef['type'] : '';
 
-		//if ($colType === 'long' && $excludeBlank && $value == 0)
-		//	return NULL;
+		if ($colType === 'long' && $excludeBlank && $value == 0)
+			return NULL;
 		if ($colType === 'long')
 			return intval($value);
 
