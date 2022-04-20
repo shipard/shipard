@@ -11,7 +11,7 @@ class UpdownIO extends Utility
 {
   var $apiKey = '';
 
-  var $curl;
+  var $curl = NULL;
 
   public function setApiKey(string $apiKey)
   {
@@ -47,6 +47,7 @@ class UpdownIO extends Utility
 
   public function close()
   {
-    curl_close ($this->curl);
+		if ($this->curl)
+    	curl_close ($this->curl);
   }
 }

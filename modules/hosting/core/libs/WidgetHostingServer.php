@@ -73,25 +73,30 @@ class WidgetHostingServer extends \Shipard\UI\Core\WidgetPane
         'server' => [['text' => $r['name'], 'class' => 'e10-widget-big-text']],
       ];
 
+      $updownIOBadge = $this->updownIOBadge($r);
+      if ($updownIOBadge !== '')
+      {
+        $srv['server'][] = ['code' => $updownIOBadge];
+      }
+
       if ($r['vmId'] !== '')
       {
+        //if ($updownIOBadge !== '')
+        //  $srv['server'][] = ['text' => '', 'class' => 'break block pb05'];
+
         $vmId = $r['vmId'];
         $bc = $this->sensorsBadges->netdataBadgeImg(
           'main-server-netdata', 'CPU', 'cgroup_'.$vmId.'.cpu_limit', 
-          ['dimensions' => 'used', 'units' => '%', 'precision' => 1, 'value_color' => 'COLOR:null|orange>50|red>90|00A000>=0', 'badgeClass' => 'pl1 pb1 pr1'],
+          ['dimensions' => 'used', 'units' => '%', 'precision' => 1, 'value_color' => 'COLOR:null|orange>50|red>90|00A000>=0', 'badgeClass' => 'pr1 pl1'],
         );
         $srv['server'][] = ['code' => $bc];
 
         $bc = $this->sensorsBadges->netdataBadgeImg(
           'main-server-netdata', 'MEM', 'cgroup_'.$vmId.'.mem_usage_limit', 
-          ['dimensions' => 'used', 'precision' => 1, 'value_color' => 'COLOR:null|orange>4000|red>8000|00A000>=0', 'badgeClass' => 'pr1 pb1'],
+          ['dimensions' => 'used', 'precision' => 1, 'value_color' => 'COLOR:null|orange>4000|red>8000|00A000>=0', 'badgeClass' => 'pr1'],
         );
         $srv['server'][] = ['code' => $bc];
       }
-
-      $b = $this->updownIOBadge($r);
-      if ($b !== '')
-        $srv['server'][] = ['code' => $b];
 
       $this->subServersTable[] = $srv;
     }
@@ -147,34 +152,39 @@ class WidgetHostingServer extends \Shipard\UI\Core\WidgetPane
     
     $url = 'https://updown.io/'.$recData['updownIOId'];
     $b = '';
-    $b .= "<span class='df2-action-trigger shp-badge mb1' data-url-download='$url' data-with-shift='tab' data-action='open-link' data-popup-id='updownio'>";
-    $b .= "<span class='e10-bg-bt'>";
+    $b .= "<span class='df2-action-trigger shp-badge ml1' data-url-download='$url' data-with-shift='tab' data-action='open-link' data-popup-id='updownio' style='white-space: pre; font-size:.85rem; display: inline-block; border-radius: 2px; border:none;'>";
+    $b .= "<span class='e10-bg-bt' style='border-top-left-radius: 3px;border-bottom-left-radius: 3px;'>";
 
     $sensorIcon = 'system/iconGlobe';
-    $b .= $this->app()->ui()->icon($sensorIcon).' ';
+    $b .= $this->app()->ui()->icon($sensorIcon);
     //$b .= Utils::es('UP');
     $b .= '</span>';
 
-    $color = $uptimeVal < 100 ? 'orange' : '#00AA00';
-    $b .= "<span class='value' style='background-color: $color;'> ";
+    $color = $uptimeVal < 99.99 ? 'orange' : '#00AA00';
+    $b .= "<span class='value' style='background-color: $color; border-top-right-radius: 3px; border-bottom-right-radius: 3px;'> ";
     $b .= strval($uptimeVal).'% ';
     $b .= "</span>";
 
     if ($ssl !== 2)
     {
-      $b .= "<span class='e10-bg-bt'>" . '&nbsp;SSL ' . "</span>";
+      if (!$ssl)
+      {
+        $b .= "<span class='e10-bg-bt'>" . '&nbsp;SSL ' . "</span>";
 
-      $color = $ssl ? '#00AA00' : '#CC0000';
-      $b .= "<span class='value' style='background-color: $color;'> ";
-      $b .= ($ssl) ? 'OK' : 'INVALID';
-      $b .= "</span>";
+        $color = $ssl ? '#00AA00' : '#CC0000';
+        $b .= "<span class='value' style='background-color: $color;'> ";
+        $b .= ($ssl) ? 'OK&nbsp;&nbsp;' : 'INVALID';
+        $b .= "</span>";
+      }
 
-      $b .= "<span class='e10-bg-bt'>" . '&nbsp;HTTP ' . "</span>";
-
-      $color = ($httpStatus === 200) ? '#00AA00' : '#CC0000';
-      $b .= "<span class='value' style='background-color: $color'> ";
-      $b .= ($httpStatus === 200) ? '200 OK' : '!!!'.$httpStatus;
-      $b .= "</span>";
+      if ($httpStatus !== 200)
+      {
+        $b .= "<span class='e10-bg-bt'>" . '&nbsp;HTTP ' . "</span>";
+        $color = ($httpStatus === 200) ? '#00AA00' : '#CC0000';
+        $b .= "<span class='value' style='background-color: $color; border-top-right-radius: 3px; border-bottom-right-radius: 3px;'> ";
+        $b .= ($httpStatus === 200) ? '200 OK' : '!!!'.$httpStatus;
+        $b .= "</span>";
+      }
     }  
     $b .= "</span>";
 
