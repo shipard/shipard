@@ -6,13 +6,13 @@
 				{"#": "dashboard", "t1": "Hosting", "object": "widget", "class": "e10.widgetDashboard", "subclass": "shipard-hosting", "icon": "system/filterOverview", "order": 5000},
 				{"#": "dataSources", "t1": "Zdroje dat", "object": "viewer", "table": "hosting.core.dataSources", "viewer": "default", "order": 100000},
 				{"#": "persons", "t1": "Uživatelé", "object": "viewer", "table": "e10.persons.persons", "viewer": "hostingUsers", "order": 110000},
-				{"#": "partners", "t1": "Partneři", "object": "viewer", "table": "hosting.core.partners", "viewer": "default", "order": 290000},
 				{"#": "servers", "t1": "Servery", "object": "viewer", "table": "hosting.core.servers", "viewer": "default", "order": 310000},
+				{"#": "reports", "t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "hosting", "icon": "system/iconReports", "order": 300000},
+				{"#": "partners", "t1": "Partneři", "object": "viewer", "table": "hosting.core.partners", "viewer": "default", "order": 320000},
 				{"#": "requests", "t1": "Požadavky", "object": "viewer", "table": "e10.persons.requests", "viewer": "default", "order": 380000},
 				{"#": "domainsAccounts", "t1": "Doménové účty", "object": "viewer", "table": "mac.inet.domainsAccounts", "viewer": "default", "order": 8390000},
 				{"#": "domains", "t1": "Domény", "object": "viewer", "table": "mac.inet.domains", "viewer": "default", "order": 395000},
 				{"#": "certs", "t1": "Certifikáty", "object": "viewer", "table": "mac.inet.certs", "viewer": "default", "order": 396000},
-				{"#": "reports", "t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10pro-hosting", "icon": "system/iconReports", "order": 9909000},
 				{"#": "hostings", "t1": "Hostingy", "object": "viewer", "table": "hosting.core.hostings", "viewer": "default", "order": 9909100}
 			]
     },

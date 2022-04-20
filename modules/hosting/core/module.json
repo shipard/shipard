@@ -23,7 +23,8 @@
 		{"id": "hosting.core.servers.serverRoles", "file": "hosting.core.servers.serverRoles.json"},
 		{"id": "hosting.core.dsTypes", "file": "hosting.core.dsTypes.json"},
 		{"id": "hosting.core.dsConditions", "file": "hosting.core.dsConditions.json"},
-		{"id": "hosting.core.invoicingTo", "file": "hosting.core.invoicingTo.json"}
+		{"id": "hosting.core.invoicingTo", "file": "hosting.core.invoicingTo.json"},
+		{"id": "+reports", "file": "reports.json"}
 	],
 	"extensions": ["persons"],
 	"modules": [

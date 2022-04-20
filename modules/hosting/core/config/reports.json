@@ -1,0 +1,6 @@
+[
+	{
+		"name": "Partneři", "class": "hosting.core.libs.ReportPartnersDS",
+		"icon": "system/iconDatabase", "group": "hosting", "order": 1000
+	}
+]
