@@ -57,12 +57,17 @@ class ReportPartnersDS extends \Shipard\Report\GlobalReport
 
     $this->loadDataPart([
       'title' => 'Databáze v ostrém provozu BEZ FAKTURACE',
-      'query' => ['invoicingTo' => 3, 'dsType' => 0]
+      'query' => ['invoicingTo' => 3, 'dsType' => 0, 'dsDemo' => 0]
     ]);
 
     $this->loadDataPart([
       'title' => 'Zkušební databáze',
       'query' => ['dsType' => 1]
+    ]);
+
+    $this->loadDataPart([
+      'title' => 'DEMO a testovací databáze',
+      'query' => ['invoicingTo' => 3, 'dsType' => 0, 'dsDemo' => 1]
     ]);
 
     $this->loadDataPart([
