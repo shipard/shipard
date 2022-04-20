@@ -17,6 +17,7 @@ class DocumentCardDataSource extends \Shipard\Base\DocumentCard
 
 	var $tablePersons;
 	var $ownerRecData = NULL;
+	var $adminRecData = NULL;
 
 	var $tableDataSourcesStats;
 	var $statsRecData;
@@ -39,6 +40,10 @@ class DocumentCardDataSource extends \Shipard\Base\DocumentCard
 		if ($this->recData['owner'])
 		{
 			$this->ownerRecData = $this->tablePersons->loadItem ($this->recData['owner']);
+		}
+		if ($this->recData['admin'])
+		{
+			$this->adminRecData = $this->tablePersons->loadItem ($this->recData['admin']);
 		}
 
 
@@ -87,6 +92,8 @@ class DocumentCardDataSource extends \Shipard\Base\DocumentCard
 		$info[] = ['p1' => 'URL', 't1' => $i['urlApp']];
 
 		// -- persons
+		if ($this->adminRecData)
+			$info[] = ['p1' => 'Správce', 't1' => ['text' => $this->adminRecData['fullName'], 'icon' => $this->tablePersons->tableIcon($this->adminRecData)]];
 		if ($this->partnerRecData)
 		{
 			$info[] = ['p1' => 'Partner', 't1' => ['text' => $this->partnerRecData['name'], 'icon' => $this->tablePartners->tableIcon($this->partnerRecData)]];

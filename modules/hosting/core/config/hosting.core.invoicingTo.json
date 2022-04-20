@@ -1,0 +1,14 @@
+{
+  "0": {
+    "fn": "Partner", "sn": "PAR"
+  },
+  "1": {
+    "fn": "Koncový zákazník", "sn": "ZÁK"
+  },
+  "2": {
+    "fn": "Smlouva", "sn": "SML"
+  },
+  "3": {
+    "fn": "Nefakturuje se", "sn": "NE"
+  }
+}

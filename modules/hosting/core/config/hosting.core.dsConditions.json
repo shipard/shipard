@@ -1,0 +1,20 @@
+{
+  "0": {
+    "fn": "Čeká na založení", "sn": "Čeká na založení", "icon": "system/actionPlay", "labelClass": "label-warning"
+  },
+  "1": {
+    "fn": "Zkušební lhůta", "sn": "Zkušební lhůta", "icon": "system/docStateUnknown", "labelClass": "label-default"
+  },
+  "2": {
+    "fn": "Ostrý provoz", "sn": "Ostrý provoz", "icon": "system/iconCheck", "labelClass": "label-success"
+  },
+  "3": {
+    "fn": "Expirováno", "sn": "Expirováno", "icon": "system/iconWarning", "labelClass": "label-danger"
+  },
+  "4": {
+    "fn": "Pozastaveno / Archív", "sn": "Archív", "icon": "system/iconStop", "labelClass": "label-info"
+  },
+  "5": {
+    "fn": "Smazáno", "sn": "Smazáno", "icon": "system/actionDelete", "labelClass": "label-danger"
+  }
+}

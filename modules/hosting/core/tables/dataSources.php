@@ -40,6 +40,9 @@ use \e10\base\libs\UtilsBase;
 			}
 		}
 
+		if ($recData['dsType'] != 0)
+			$recData['dsDemo'] = 0;
+
 		parent::checkBeforeSave($recData, $ownerData);
 	}
 
@@ -97,42 +100,64 @@ use \e10\base\libs\UtilsBase;
 	{
 		$labels = [];
 
-		$dsTypes = $this->columnInfoEnum('dsType', 'cfgText');
-		$dsTypesClasses = ['label-default', 'label-warning', 'label-primary', 'label-primary', 'label-default'];
-		$labels['dsType'] = ['text' => $dsTypes[$recData['dsType']], 'class' => 'label ' . $dsTypesClasses[$recData['dsType']], 'icon' => $this->tableIcon($recData)];
+		$dsTypes = $this->app()->cfgItem('hosting.core.dsTypes');
+		$dsType = $dsTypes[$recData['dsType']] ?? ['sn' => 'invalid dsType `'.$recData['dsType'].'`', 'icon' => 'system/iconWarning', 'labelClass' => 'label-danger'];
+		$labels['dsType'] = ['text' => $dsType['sn'], 'class' => 'label ' . $dsType['labelClass'], 'icon' => $dsType['icon']];
+
+		$dsConditions = $this->app()->cfgItem('hosting.core.dsConditions');
+		$dsCondition = $dsConditions[$recData['condition']] ?? ['sn' => 'invalid condition `'.$recData['condition'].'`', 'icon' => 'system/iconWarning', 'labelClass' => 'label-danger'];
+	
+
+		$today = utils::today();
+		if ($recData['condition'] === 1)
+		{
+			$lc = [
+				'text' => $dsCondition['sn'], 'class' => 'label ' . $dsCondition['labelClass'],
+				'icon' => $dsCondition['icon'], 'suffix' => utils::datef($recData['dateTrialEnd'], '%S'),
+			];	
+
+			if (utils::dateIsBlank($recData['dateTrialEnd']))
+			{
+				$lc['suffix'] = 'Vadné datum';
+				$lc['class'] = 'label label-danger';
+				$lc['icon'] = 'system/iconWarning';
+			}	
+			elseif (!utils::dateIsBlank($recData['dateTrialEnd']) && $recData['dateTrialEnd'] < $today)
+			{
+				$lc['class'] = 'label label-danger';
+			}	
+			$labels['condition'][] = $lc;	
+		}
+		else
+		{
+			$labels['condition'][] = [
+				'text' => $dsCondition['sn'], 'class' => 'label ' . $dsCondition['labelClass'],
+				'icon' => $dsCondition['icon']
+			];	
+		}
+
+		if ($recData['dsDemo'] !== 0)
+		{
+			$labels['condition'][] = ['text' => 'Demo', 'class' => 'label label-primary', 'icon' => 'user/paintBrush'];
+		}
+
+		$installModule = $this->app()->cfgItem('hosting.core.installModules.'.$recData['installModule'], NULL);
+		if ($installModule)
+		{
+			$labels['condition'][] = ['text' => $installModule['sn'], 'class' => 'label label-info', 'icon' => 'tables/e10.install.modules'];
+		}
+		else
+			$labels['condition'][] = ['text' => 'Vadný modul', 'class' => 'label label-warning', 'icon' => 'system/iconWarning'];
 
 		if ($recData['shpGeneration'] !== 0)
 		{
 			$generations = $this->columnInfoEnum('shpGeneration', 'cfgText');
-			$labels['condition'][] = ['text' => $generations[$recData['shpGeneration']], 'class' => 'label label-info'];
-		}	
+			$labels['generation'][] = ['text' => $generations[$recData['shpGeneration']], 'class' => 'label label-info'];
+		}
 
-		//"enumValues": {"0": "Čeká na založení", "1": "Zkušební lhůta", "2": "Ostrý provoz", "3": "Expirováno", "4": "Pozastaveno", "5": "Smazáno"}},
-		$conditions = $this->columnInfoEnum('condition', 'cfgText');
-		$conditionsClasses = [
-			0 => 'label-warning',
-			1 => 'label-warning',
-			2 => 'label-default',
-			3 => 'label-danger',
-			4 => 'label-info',
-			5 => 'label-info'
-		];
-		$conditionsIcons = [
-			0 => 'system/iconWarning',
-			1 => 'system/docStateUnknown',
-			2 => 'system/iconCheck',
-			3 => 'system/iconWarning',
-			4 => 'icon-pause-circle-o',
-			5 => 'icon-refresh'
-		];
-		$labels['condition'][] = [
-			'text' => $conditions[$recData['condition']], 'class' => 'label ' . $conditionsClasses[$recData['condition']],
-			'icon' => $conditionsIcons[$recData['condition']]
-		];
-
-		$today = utils::today();
-		if ($recData['condition'] === 0 && !utils::dateIsBlank($recData['dateTrialEnd']) && $recData['dateTrialEnd'] < $today)
-			$labels['condition'][] = ['text' => utils::datef($recData['dateTrialEnd']), 'class' => 'label label-danger', 'icon' => 'system/iconWarning'];
+		$itTypes = $this->app()->cfgItem('hosting.core.invoicingTo');
+		$itType = $itTypes[$recData['invoicingTo']] ?? ['sn' => 'invalid invoicing `'.$recData['invoicingTo'].'`', 'icon' => 'system/iconWarning', 'labelClass' => 'label-danger'];
+		$labels['invoicing'][] = ['text' => $itType['sn'], 'class' => 'label label-default', 'icon' => 'system/iconMoney'];
 
 		return $labels;
 	}
@@ -319,21 +344,21 @@ class ViewDataSources extends TableView
 		if ($item['appWarning'] != 0)
 			$listItem ['class'] = 'e10-row-minus';
 
-		$props = [];
 		$props3 = [];
 
-		$stateLabels = $this->table->dsStateLabels($item);
-		$props3 [] = $stateLabels['condition'];
+		$props = $this->table->dsStateLabels($item);
 
 		$listItem ['i2'] = [];
 
-		if ($item['partnerName'])
-			$listItem ['i2'][] = ['icon' => 'tables/hosting.core.partners', 'text' => $item['partnerName'], 'class' => ''];
+		//if ($item['partnerName'])
+		//	$listItem ['i2'][] = ['icon' => 'tables/hosting.core.partners', 'text' => $item['partnerName'], 'class' => ''];
 
+		/*
 		if ($item['serverName'])
 			$listItem ['i2'][] = ['icon' => 'tables/hosting.core.servers', 'text' => $item['serverName'], 'class' => ''];
 		else
 			$listItem ['i2'][] = ['icon' => 'tables/hosting.core.servers', 'text' => '---', 'class' => 'e10-warning2'];
+		*/
 
 		if ($item['dsId1'] !== '')
 		{
@@ -341,8 +366,7 @@ class ViewDataSources extends TableView
 
 			if (($item['dsId2'] !== ''))
 				$dsId['suffix'] = $item['dsId2'];
-
-			$props[] = $dsId;
+			$listItem ['i2'][] = $dsId;
 		}
 
 		if (count($props))
@@ -442,12 +466,38 @@ class ViewDataSources extends TableView
 			array_push ($q, ' AND [condition] IN %in', array_keys($qv['conditions']));
 		if (isset($qv['pricePlanKind']))
 			array_push ($q, ' AND [pricePlanKind] IN %in', array_keys($qv['pricePlanKind']));
+		if (isset($qv['installModule']))
+			array_push ($q, ' AND [installModule] IN %in', array_keys($qv['installModule']));
 		if (isset($qv['invoicingTo']))
 			array_push ($q, ' AND [invoicingTo] IN %in', array_keys($qv['invoicingTo']));
 		if (isset($qv['dsTypes']))
 			array_push ($q, ' AND [dsType] IN %in', array_keys($qv['dsTypes']));
 		if (isset($qv['installModules']))
 			array_push ($q, ' AND [installModule] IN %in', array_keys($qv['installModules']));
+
+
+		$dsDemo = isset ($qv['others']['dsDemo']);
+		if ($dsDemo)
+			array_push($q, ' AND [dsDemo] = %i', 1);
+	
+		$toBeExpired = isset ($qv['others']['toBeExpired']);
+		if ($toBeExpired)
+			array_push($q, ' AND [condition] = %i', 1, ' AND (dateTrialEnd IS NOT NULL AND dateTrialEnd < %d)', $today);
+			
+		$badExpiredData = isset ($qv['others']['badExpiredData']);
+		if ($badExpiredData)
+			array_push($q, ' AND [condition] = %i', 1, ' AND dateTrialEnd IS NULL');
+
+		$badCondition = isset ($qv['others']['badCondition']);
+		if ($badCondition)
+			array_push($q, ' AND [condition] > %i', 5);
+
+		$badInstallModule = isset ($qv['others']['badInstallModule']);
+		if ($badInstallModule)
+		{
+			$installModules = $this->app()->cfgItem('hosting.core.installModules');
+			array_push($q, ' AND [installModule] NOT IN %in', array_keys($installModules));
+		}
 
 		if ($mainQuery == 'all')
 			array_push ($q, ' ORDER BY ds.[name]' . $this->sqlLimit());
@@ -496,12 +546,22 @@ class ViewDataSources extends TableView
 		$servers = $this->db()->query ('SELECT ndx, name FROM hosting_core_servers WHERE docStateMain <= 2 ORDER BY name')->fetchPairs ('ndx', 'name');
 		$this->qryPanelAddCheckBoxes($panel, $qry, $servers, 'servers', 'Servery');
 
-		// -- modules
-		/*
-		$modules = $this->db()->query ('SELECT ndx, name FROM hosting_core_modules WHERE docStateMain != 4')->fetchPairs ('ndx', 'name');
-		$modules['0'] = 'Žádný';
-		$this->qryPanelAddCheckBoxes($panel, $qry, $modules, 'installModules', 'Instalační moduly');
-		*/
+		// -- installModules
+		$installModules = $this->table->columnInfoEnum('installModule');
+		$this->qryPanelAddCheckBoxes($panel, $qry, $installModules, 'installModule', 'Instalační moduly');
+
+		// -- others
+		$chbxOthers = [
+			'dsDemo' => ['title' => 'Demo', 'id' => 'dsDemo'],
+			'toBeExpired' => ['title' => 'K expiraci', 'id' => 'toBeExpired'],
+			'badExpiredData' => ['title' => 'Chybný stav expirace', 'id' => 'badExpiredData'],
+			'badCondition' => ['title' => 'Vadný stav', 'id' => 'badCondition'],
+			'badInstallModule' => ['title' => 'Chybný instalační modul', 'id' => 'badInstallModule'],
+		];
+		$paramsOthers = new \Shipard\UI\Core\Params ($this->app());
+		$paramsOthers->addParam ('checkboxes', 'query.others', ['items' => $chbxOthers]);
+		$qry[] = ['id' => 'others', 'style' => 'params', 'title' => ['text' => 'Ostatní', 'icon' => 'system/iconCogs'], 'params' => $paramsOthers];
+
 
 		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}
@@ -515,6 +575,32 @@ class ViewDataSources extends TableView
 		foreach ($o->content['body'] as $cp)
 			$panel->addContent($cp);
 	}
+
+	/*
+	public function createToolbar()
+	{
+		$tlbr = [];
+
+		if ($this->app()->hasRole('hstngdb'))
+		{
+			$addButton = [
+				'text' => 'Nová databáze',
+				'type' => 'action',
+				'action' => 'addwizard', 'icon' => 'system/iconDatabase', 
+				'data-class' => 'hosting.core.libs.WizardNewDatasource',
+				'btnClass' => 'btn btn-primary',
+				'data-srcobjecttype' => 'viewer', 'data-srcobjectid' => $this->vid,
+			];
+			$tlbr[] = $addButton;
+		}
+
+		$pb = parent::createToolbar();
+		if (count($pb))
+			$tlbr = array_merge($tlbr, $pb);
+
+		return $tlbr;
+	}
+	*/
 }
 
 
@@ -580,6 +666,8 @@ class FormDataSource extends TableForm
 					$this->addColumnInput ('admin');
 					$this->addSeparator(self::coH2);
 					$this->addColumnInput ('dsType');
+					if ($this->recData['dsType'] === 0)
+						$this->addColumnInput ('dsDemo');
 					$this->addColumnInput ('condition');
 					$this->addColumnInput ('appWarning');
 					$this->addSeparator(self::coH2);

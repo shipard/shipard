@@ -12,6 +12,9 @@ class ModuleServices extends \Shipard\CLI\ModuleServices
 	public function onAppUpgrade ()
 	{
 		$this->checkSymlinks();
+
+		$s [] = ['end' => '2022-04-30', 'sql' => "UPDATE hosting_core_dataSources SET dsType = 1 WHERE dsType > 2"];
+		$this->doSqlScripts ($s);
 	}
 
 	public function checkSymlinks ()

@@ -35,13 +35,14 @@
 			"enumCfg": {"cfgItem": "hosting.core.shipardGenerations", "cfgValue": "", "cfgText": "fn"}},
 
 		{"id": "dsType", "name": "Typ", "type": "enumInt",
-			"enumValues": {"0": "Ostrý zdroj dat", "1": "Zkušební zdroj dat", "3": "Interní", "4": "Ostatní"}},
+			"enumCfg": {"cfgItem": "hosting.core.dsTypes", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "dsDemo", "name": "Demonstrační zdroj dat", "type": "logical"},
 
 		{"id": "condition", "name": "Stav", "type": "enumInt",
-			"enumValues": {"0": "Čeká na založení", "1": "Zkušební lhůta", "2": "Ostrý provoz", "3": "Expirováno", "4": "Pozastaveno", "5": "Smazáno"}},
+			"enumCfg": {"cfgItem": "hosting.core.dsConditions", "cfgValue": "", "cfgText": "fn"}},
 
 		{"id": "invoicingTo", "name": "Fakturovat", "type": "enumInt",
-			"enumValues": {"0": "Partner", "1": "Koncový zákazník", "2": "Smlouva", "3": "Nefakturuje se"}},
+			"enumCfg": {"cfgItem": "hosting.core.invoicingTo", "cfgValue": "", "cfgText": "fn"}},
 
 	  {"id": "imageUrl", "name": "URL obrázku", "type": "string", "len": 160},
 	  {"id": "dsIconServerUrl", "name": "Ikona - URL serveru", "type": "string", "len": 60},

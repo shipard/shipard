@@ -1,11 +1,11 @@
 {
 	"install/apps/shipard-economy": {
-		"fn": "Ekonomika"
+		"fn": "Ekonomika", "sn": "economy"
 	},
 	"install/apps/shipard-core": {
-		"fn": "Základní prázdný systém"
+		"fn": "Základní prázdný systém", "sn": "blank"
 	},
 	"install/apps/shipard-mac": {
-		"fn": "Počítačové sítě a IoT"
+		"fn": "Počítačové sítě a IoT", "sn": "mac/lan"
 	}
 }

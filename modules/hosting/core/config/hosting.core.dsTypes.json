@@ -1,0 +1,11 @@
+{
+  "0": {
+    "fn": "Ostrý zdroj dat", "sn": "Ostrý", "icon": "system/iconCheck", "labelClass": "label-success"
+  },
+  "1": {
+    "fn": "Zkušební zdroj dat", "sn": "Zkušební", "icon": "system/iconLaboratory", "labelClass": "label-primary"
+  },
+  "2": {
+    "fn": "Vývojářský zdroj dat", "sn": "Vývoj", "icon": "system/iconCogs", "labelClass": "label-danger"
+  }
+}

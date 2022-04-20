@@ -20,7 +20,10 @@
 		{"id": "+e10.base.clsfGroups", "file": "clsfGroups.json"},
 		{"id": "+registeredClasses", "file": "registeredClasses.json"},
 		{"id": "hosting.core.servers.hwModes", "file": "hosting.core.servers.hwModes.json"},
-		{"id": "hosting.core.servers.serverRoles", "file": "hosting.core.servers.serverRoles.json"}
+		{"id": "hosting.core.servers.serverRoles", "file": "hosting.core.servers.serverRoles.json"},
+		{"id": "hosting.core.dsTypes", "file": "hosting.core.dsTypes.json"},
+		{"id": "hosting.core.dsConditions", "file": "hosting.core.dsConditions.json"},
+		{"id": "hosting.core.invoicingTo", "file": "hosting.core.invoicingTo.json"}
 	],
 	"extensions": ["persons"],
 	"modules": [
