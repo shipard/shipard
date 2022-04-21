@@ -1,0 +1,4469 @@
+{
+    "01": {
+        "name": "Odpady z geologického průzkumu, těžby, úpravy a dalšího fyzikálního a chemického zpracování nerostů a kamene"
+    },
+    "0101": {
+        "name": "Odpady z těžby nerostů",
+        "parent": "01"
+    },
+    "010101": {
+        "name": "Odpady z těžby rudných nerostů",
+        "parent": "0101"
+    },
+
+    "010102": {
+        "name": "Odpady z těžby nerudných nerostů",
+        "parent": "0101"
+    },
+    "0103": {
+        "name": "Odpady z fyzikálního a chemického zpracování nerostů",
+        "parent": "01"
+    },
+    "010304": {
+        "name": "Hlušina ze zpracování sulfidické rudy obsahující kyseliny nebo kyselinotvorné látky",
+        "parent": "0103",
+        "danger": "1"
+    },
+    "010305": {
+        "name": "Jiná hlušina obsahující nebezpečné látky 01 03 06 Jiná hlušina neuvedená pod čísly 01 03 04 a 01 03 05",
+        "parent": "0103",
+        "danger": "1"
+    },
+    "010307": {
+        "name": "Jiné odpady z fyzikálního a chemického zpracování rudných nerostů obsahující nebezpečné látky",
+        "parent": "0103",
+        "danger": "1"
+    },
+    "010308": {
+        "name": "Rudný prach neuvedený pod číslem 01 03 07",
+        "parent": "0103"
+    },
+    "010309": {
+        "name": "Červený kal z výroby oxidu hlinitého neuvedený pod číslem 01 03 10",
+        "parent": "0103"
+    },
+    "010310": {
+        "name": "Červený kal z výroby oxidu hlinitého obsahující nebezpečné látky neuvedený pod číslem 01 03 07",
+        "parent": "0103",
+        "danger": "1"
+    },
+    "010399": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0103"
+    },
+    "0104": {
+        "name": "Odpady z fyzikálního a chemického zpracování nerudných nerostů",
+        "parent": "01"
+    },
+    "010407": {
+        "name": "Odpady z fyzikálního a chemického zpracování nerudných nerostů obsahující nebezpečné látky",
+        "parent": "0104",
+        "danger": "1"
+    },
+    "010408": {
+        "name": "Odpadní štěrk a kamenivo neuvedené pod číslem 01 04 07",
+        "parent": "0104"
+    },
+    "010409": {
+        "name": "Odpadní písek a jíl",
+        "parent": "0104"
+    },
+    "010410": {
+        "name": "Nerudný prach neuvedený pod číslem 01 04 07",
+        "parent": "0104"
+    },
+    "010411": {
+        "name": "Odpady ze zpracování potaše a kamenné soli neuvedené pod číslem 01 04 07",
+        "parent": "0104"
+    },
+    "010412": {
+        "name": "Hlušina a další odpady z praní a čištění nerostů neuvedené pod čísly 01 04 07 a 01 04 11",
+        "parent": "0104"
+    },
+    "010413": {
+        "name": "Odpady z řezání a broušení kamene neuvedené pod číslem 01 04 07",
+        "parent": "0104"
+    },
+    "010499": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0104"
+    },
+    "0105": {
+        "name": "Vrtné kaly a jiné vrtné odpady",
+        "parent": "01"
+    },
+    "010504": {
+        "name": "Vrtné kaly a odpady obsahující sladkou vodu",
+        "parent": "0105"
+    },
+    "010505": {
+        "name": "Vrtné kaly a odpady obsahující ropné látky",
+        "parent": "0105",
+        "danger": "1"
+    },
+    "010506": {
+        "name": "Vrtné kaly a další vrtné odpady obsahující nebezpečné látky",
+        "parent": "0105",
+        "danger": "1"
+    },
+    "010507": {
+        "name": "Vrtné kaly a odpady obsahující baryt neuvedené pod čísly 01 05 05 a 01 05 06",
+        "parent": "0105"
+    },
+    "010508": {
+        "name": "Vrtné kaly a odpady obsahující chloridy neuvedené pod čísly 01 05 05 a 01 05 06",
+        "parent": "0105"
+    },
+    "010599": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0105"
+    },
+
+    "02": {
+        "name": "Odpady ze zemědělství, zahradnictví, rybářství, lesnictví, myslivosti a z výroby a zpracování potravin"
+    },
+    "0201": {
+        "name": "Odpady ze zemědělství, zahradnictví, rybářství, lesnictví a myslivosti",
+        "parent": "02"
+    },
+    "020101": {
+        "name": "Kaly z praní a z čištění",
+        "parent": "0201"
+    },
+    "020102": {
+        "name": "Odpad živočišných tkání",
+        "parent": "0201"
+    },    
+    "020103": {
+        "name": "Odpad rostlinných pletiv",
+        "parent": "0201"
+    },
+    "020104": {
+        "name": "Odpadní plasty (kromě obalů)",
+        "parent": "0201"
+    },
+    "020106": {
+        "name": "Zvířecí trus, moč a hnůj (včetně znečištěné slámy), kapalné odpady, soustřeďované odděleně a zpracovávané mimo místo vzniku",
+        "parent": "0201"
+    },    
+    "020107": {
+        "name": "Odpady z lesnictví",
+        "parent": "0201"
+    },
+    "020108": {
+        "name": "Agrochemické odpady obsahující nebezpečné látky",
+        "parent": "0201",
+        "danger": "1"
+    },
+    "020109": {
+        "name": "Agrochemické odpady neuvedené pod číslem 02 01 08",
+        "parent": "0201"
+    },    
+    "020110": {
+        "name": "Kovové odpady",
+        "parent": "0201"
+    },
+    "020199": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0201"
+    },
+    "0202": {
+        "name": "Odpady z výroby a zpracování masa, ryb a jiných potravin živočišného původu",
+        "parent": "02"
+    },
+    "020201": {
+        "name": "Kaly z praní a z čištění",
+        "parent": "0202"
+    },
+    "020202": {
+        "name": "Odpad živočišných tkání",
+        "parent": "0202"
+    },
+    "020203": {
+        "name": "Suroviny nevhodné ke spotřebě nebo zpracování",
+        "parent": "0202"
+    },
+    "020204": {
+        "name": "Kaly z čištění odpadních vod v místě jejich vzniku",
+        "parent": "0202"
+    },
+    "020299": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0202"
+    },
+    "0203": {
+        "name": "Odpady z výroby a ze zpracování ovoce, zeleniny, obilovin, jedlých olejů, kakaa, kávy, čaje a tabáku; odpady z konzervárenského průmyslu z výroby droždí a kvasničného extraktu, z přípravy a kvašení melasy",
+        "parent": "02"
+    },
+    "020301": {
+        "name": "Kaly z praní, čištění, loupání, odstřeďování a separace",
+        "parent": "0203"
+    },
+    "020302": {
+        "name": "Odpady konzervačních činidel",
+        "parent": "0203"
+    },
+    "020303": {
+        "name": "Odpady z extrakce rozpouštědly",
+        "parent": "0203"
+    },
+    "020304": {
+        "name": "Suroviny nevhodné ke spotřebě nebo zpracování",
+        "parent": "0203"
+    },
+    "020305": {
+        "name": "Kaly z čištění odpadních vod v místě jejich vzniku",
+        "parent": "0203"
+    },
+    "020399": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0203"
+    },
+    "0204": {
+        "name": "Odpady z výroby cukru",
+        "parent": "02"
+    },
+    "020401": {
+        "name": "Zemina z čištění a praní řepy",
+        "parent": "0204"
+    },
+    "020402": {
+        "name": "Odpad uhličitanu vápenatého",
+        "parent": "0204"
+    },
+    "020403": {
+        "name": "Kaly z čištění odpadních vod v místě jejich vzniku",
+        "parent": "0204"
+    },
+    "020499": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0204"
+    },
+    "0205": {
+        "name": "Odpady z mlékárenského průmyslu",
+        "parent": "02"
+    },
+    "020501": {
+        "name": "Suroviny nevhodné ke spotřebě nebo zpracování",
+        "parent": "0205"
+    },
+    "020502": {
+        "name": "Kaly z čištění odpadních vod v místě jejich vzniku",
+        "parent": "0205"
+    },
+    "020599": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0205"
+    },    
+    "0206": {
+        "name": "Odpady z pekáren a výroby cukrovinek",
+        "parent": "02"
+    },
+    "020601": {
+        "name": "Suroviny nevhodné ke spotřebě nebo zpracování",
+        "parent": "0206"
+    },
+    "020602": {
+        "name": "Odpady konzervačních činidel",
+        "parent": "0206"
+    },
+    "020603": {
+        "name": "Kaly z čištění odpadních vod v místě jejich vzniku",
+        "parent": "0206"
+    },
+    "020699": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0206"
+    },
+    "0207": {
+        "name": "Odpady z výroby alkoholických a nealkoholických nápojů (s výjimkou kávy, čaje a kakaa)",
+        "parent": "02"
+    },
+    "020701": {
+        "name": "Odpady z praní, čištění a mechanického zpracování surovin",
+        "parent": "0207"
+    },
+    "020702": {
+        "name": "Odpady z destilace lihovin",
+        "parent": "0207"
+    },
+    "020703": {
+        "name": "Odpady z chemického zpracování",
+        "parent": "0207"
+    },
+    "020704": {
+        "name": "Suroviny nevhodné ke spotřebě nebo zpracování",
+        "parent": "0207"
+    },
+    "020705": {
+        "name": "Kaly z čištění odpadních vod v místě jejich vzniku",
+        "parent": "0207"
+    },
+    "020799": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0207"
+    },
+
+    "03": {
+        "name": "Odpady ze zpracování dřeva a výroby desek, nábytku, celulózy, papíru a lepenky"
+    },
+    "0301": {
+        "name": "Odpady ze zpracování dřeva a výroby desek a nábytku",
+        "parent": "03"
+    },
+    "030101": {
+        "name": "Odpadní kůra a korek",
+        "parent": "0301"
+    },
+    "030104": {
+        "name": "Piliny, hobliny, odřezky, dřevo, dřevotřískové desky a dýhy obsahující nebezpečné látky",
+        "parent": "0301",
+        "danger": "1"
+    },
+    "030105": {
+        "name": "Piliny, hobliny, odřezky, dřevo, dřevotřískové desky a dýhy, neuvedené pod číslem 03 01 04",
+        "parent": "0301"
+    },
+    "030199": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0301"
+    },
+    "0302": {
+        "name": "Odpady z impregnace dřeva",
+        "parent": "03"
+    },
+    "030201": {
+        "name": "Nehalogenovaná organická činidla k impregnaci dřeva",
+        "parent": "0302",
+        "danger": "1"
+    },
+    "030202": {
+        "name": "Chlorovaná organická činidla k impregnaci dřeva",
+        "parent": "0302",
+        "danger": "1"
+    },
+    "030203": {
+        "name": "Organokovová činidla k impregnaci dřeva",
+        "parent": "0302",
+        "danger": "1"
+    },
+    "030204": {
+        "name": "Anorganická činidla k impregnaci dřeva",
+        "parent": "0302",
+        "danger": "1"
+    },
+    "030205": {
+        "name": "Jiná činidla k impregnaci dřeva obsahující nebezpečné látky",
+        "parent": "0302",
+        "danger": "1"
+    },
+    "030299": {
+        "name": "Činidla k impregnaci dřeva jinak blíže neurčená",
+        "parent": "0302"
+    },
+    "0303": {
+        "name": "Odpady z výroby a zpracování celulózy, papíru a lepenky",
+        "parent": "03"
+    },
+    "030301": {
+        "name": "Odpadní kůra a dřevo",
+        "parent": "0303"
+    },
+    "030302": {
+        "name": "Kaly zeleného louhu (ze zpracování černého louhu)",
+        "parent": "0303"
+    },
+    "030305": {
+        "name": "Kaly z odstraňování tiskařské černi při recyklaci papíru",
+        "parent": "0303"
+    },
+    "030307": {
+        "name": "Mechanicky oddělený výmět z rozvlákňování odpadního papíru a lepenky",
+        "parent": "0303"
+    },
+    "030308": {
+        "name": "Odpady ze třídění papíru a lepenky určené k recyklaci",
+        "parent": "0303"
+    },
+    "030309": {
+        "name": "Odpadní kaustifikační kal",
+        "parent": "0303"
+    },
+    "030310": {
+        "name": "Výmětová vlákna, kaly z mechanického oddělování obsahující vlákna, výplně a povrchové vrstvy z mechanického třídění",
+        "parent": "0303"
+    },
+    "030311": {
+        "name": "Kaly z čištění odpadních vod v místě jejich vzniku neuvedené pod číslem 03 03 10",
+        "parent": "0303"
+    },
+    "030399": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0303"
+    },
+
+    "04": {
+        "name": "Odpady z kožedělného, kožešnického a textilního průmyslu"
+    },
+    "0401": {
+        "name": "Odpady z kožedělného a kožešnického průmyslu",
+        "parent": "04"
+    },
+    "040101": {
+        "name": "Odpadní klihovka a štípenka",
+        "parent": "0401"
+    },
+    "040102": {
+        "name": "Odpad z loužení",
+        "parent": "0401"
+    },
+    "040103": {
+        "name": "Odpady z odmašťování obsahující rozpouštědla bez kapalné fáze",
+        "parent": "0401",
+        "danger": "1"
+    },
+    "040104": {
+        "name": "Činící břečka obsahující chrom",
+        "parent": "0401"
+    },
+    "040105": {
+        "name": "Činící břečka neobsahující chrom",
+        "parent": "0401"
+    },
+    "040106": {
+        "name": "Kaly obsahující chrom, zejména kaly z čištění odpadních vod v místě jejich vzniku",
+        "parent": "0401"
+    },
+    "040107": {
+        "name": "Kaly neobsahující chrom, zejména kaly z čištění odpadních vod v místě jejich vzniku",
+        "parent": "0401"
+    },
+    "040108": {
+        "name": "Odpady z usní (odpadní holina, postružiny, odřezky, prach z broušení) obsahující chrom",
+        "parent": "0401"
+    },
+    "040109": {
+        "name": "Odpady z úpravy a apretace",
+        "parent": "0401"
+    },
+    "040199": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0401"
+    },
+    "0402": {
+        "name": "Odpady z textilního průmyslu",
+        "parent": "04"
+    },
+    "040209": {
+        "name": "Odpady z kompozitních tkanin (impregnované tkaniny, elastomer, plastomer)",
+        "parent": "0402"   
+    },
+    "040210": {
+        "name": "Organické hmoty z přírodních produktů (např. tuk, vosk)",
+        "parent": "0402"
+    },
+    "040214": {
+        "name": "Odpady z apretace obsahující organická rozpouštědla",
+        "parent": "0402",
+        "danger": "1"
+    },
+    "040215": {
+        "name": "Jiné odpady z apretace neuvedené pod číslem 04 02 14",
+        "parent": "0402"
+    },
+    "040216": {
+        "name": "Barviva a pigmenty obsahující nebezpečné látky",
+        "parent": "0402",
+        "danger": "1"
+    },
+    "040217": {
+        "name": "Jiná barviva a pigmenty neuvedené pod číslem 04 02 16",
+        "parent": "0402"
+    },
+    "040219": {
+        "name": "Kaly z čištění odpadních vod v místě jejich vzniku obsahující nebezpečné látky",
+        "parent": "0402",
+        "danger": "1"        
+    },
+    "040220": {
+        "name": "Jiné kaly z čištění odpadních vod v místě jejich vzniku neuvedené pod číslem 04 02 19",
+        "parent": "0402"
+    },
+    "040221": {
+        "name": "Odpady z nezpracovaných textilních vláken",
+        "parent": "0402"
+    },
+    "040222": {
+        "name": "Odpady ze zpracovaných textilních vláken",
+        "parent": "0402"
+    },
+    "040299": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0402"
+    },
+
+    "05": {
+        "name": "Odpady ze zpracování ropy, čištění zemního plynu a z pyrolytického zpracování uhlí"
+    },
+    "0501": {
+        "name": "Odpady ze zpracování ropy",
+        "parent": "05"
+    },
+    "050102": {
+        "name": "Kaly z odsolovacích zařízení",
+        "parent": "0501",
+        "danger": "1"
+    },
+    "050103": {
+        "name": "Kaly ze dna nádrží na ropné látky",
+        "parent": "0501",
+        "danger": "1"
+    },
+    "050104": {
+        "name": "Kyselé alkylové kaly",
+        "parent": "0501",
+        "danger": "1"
+    },
+    "050105": {
+        "name": "Uniklé (rozlité) ropné látky",
+        "parent": "0501",
+        "danger": "1"
+    },
+    "050106": {
+        "name": "Ropné kaly z údržby zařízení",
+        "parent":"0501",
+        "danger": "1"
+    },
+    "050107": {
+        "name": "Kyselé dehty",
+        "parent": "0501",
+        "danger": "1"
+    },
+    "050108": {
+        "name": "Jiné dehty",
+        "parent": "0501",
+        "danger": "1"
+    },
+    "050109": {
+        "name": "Kaly z čištění odpadních vod v místě jejich vzniku obsahující nebezpečné látky",
+        "parent": "0501",
+        "danger": "1"
+    },
+    "050110": {
+        "name": "Jiné kaly z čištění odpadních vod v místě jejich vzniku neuvedené pod číslem 05 01 09",
+        "parent": "0501"
+    },
+    "050111": {
+        "name": "Odpady z čištění pohonných hmot pomocí zásad",
+        "parent": "0501",
+        "danger": "1"
+    },
+    "050112": {
+        "name": "Ropa obsahující kyseliny",
+        "parent": "0501",
+        "danger": "1"
+    },
+    "050113": {
+        "name": "Kaly z napájecí vody pro kotle",
+        "parent": "0501"
+    },
+    "050114": {
+        "name": "Odpad z chladicích kolon",
+        "parent": "0501"
+    },
+    "050115": {
+        "name": "Upotřebené filtrační hlinky",
+        "parent": "0501",
+        "danger": "1"
+    },
+    "050116": {
+        "name": "Odpady obsahující síru z odsiřování ropy",
+        "parent": "0501"
+    },
+    "050117": {
+        "name": "Asfalt",
+        "parent": "0501"
+    },
+    "050199": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0501"
+    },
+    "0506": {
+        "name": "Odpady z pyrolytického zpracování uhlí",
+        "parent": "05"
+    },
+    "050601": {
+        "name": "Kyselé dehty",
+        "parent": "0506",
+        "danger": "1"
+    },
+    "050603": {
+        "name": "Jiné dehty",
+        "parent": "0506",
+        "danger": "1"
+    },
+    "050604": {
+        "name": "Odpad z chladicích kolon",
+        "parent": "0506"
+    },
+    "050699": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0506"
+    },
+    "0507": {
+        "name": "Odpady z čištění a z přepravy zemního plynu",
+        "parent": "05"
+    },
+    "050701": {
+        "name": "Odpady obsahující rtuť",
+        "parent": "0507",
+        "danger": "1"
+    },
+    "050702": {
+        "name": "Odpady obsahující síru",
+        "parent": "0507"
+    },
+    "050799": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0507"
+    },
+    
+    "06": {
+        "name": "Odpady z anorganických chemických procesů"
+    },
+    "0601": {
+        "name": "Odpady z výroby, zpracování, distribuce a používání kyselin",
+        "parent": "06"
+    },
+    "060101": {
+        "name": "Kyselina sírová a kyselina siřičitá",
+        "parent": "0601",
+        "danger": "1"
+    },
+    "060102": {
+        "name": "Kyselina chlorovodíková",
+        "parent": "0601",
+        "danger": "1"
+    },
+    "060103": {
+        "name": "Kyselina fluorovodíková",
+        "parent": "0601",
+        "danger": "1"
+    },
+    "060104": {
+        "name": "Kyselina fosforečná a kyselina fosforitá",
+        "parent": "0601",
+        "danger": "1"
+    },
+    "060105": {
+        "name": "Kyselina dusičná a kyselina dusitá",
+        "parent": "0601",
+        "danger": "1"
+    },
+    "060106": {
+        "name": "Jiné kyseliny",
+        "parent": "0601",
+        "danger": "1"
+    },
+    "060199": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0601"
+    },
+    "0602": {
+        "name": "Odpady z výroby, zpracování, distribuce a používání alkálií",
+        "parent": "06"
+    },
+    "060201": {
+        "name": "Hydroxid vápenatý",
+        "parent": "0602",
+        "danger": "1"
+    },
+    "060203": {
+        "name": "Hydroxid amonný",
+        "parent": "0602",
+        "danger": "1"
+    },
+    "060204": {
+        "name": "Hydroxid sodný a hydroxid draselný",
+        "parent": "0602",
+        "danger": "1"
+    },
+    "060205": {
+        "name": "Jiné alkálie",
+        "parent": "0602",
+        "danger": "1"
+    },
+    "060299": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0602"
+    },
+    "0603": {
+        "name": "Odpady z výroby, zpracování, distribuce a používání solí a jejich roztoků a oxidů kovů",
+        "parent": "06"
+    },
+    "060311": {
+        "name": "Pevné soli a roztoky obsahující kyanidy",
+        "parent": "0603",
+        "danger": "1"
+    },
+    "060313": {
+        "name": "Pevné soli a roztoky obsahující těžké kovy",
+        "parent": "0603",
+        "danger": "1"
+    },
+    "060314": {
+        "name": "Pevné soli a roztoky neuvedené pod čísly 06 03 11 a 06 03 13",
+        "parent": "0603"
+    },
+    "060315": {
+        "name": "Oxidy kovů obsahující těžké kovy",
+        "parent": "0603",
+        "danger": "1"
+    },
+    "060316": {
+        "name": "Oxidy kovů neuvedené pod číslem 06 03 15",
+        "parent": "0603"
+    },
+    "060399": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0603"
+    },
+    "0604": {
+        "name": "Odpady obsahující kovy neuvedené pod číslem 06 03",
+        "parent": "06"
+    },
+    "060403": {
+        "name": "Odpady obsahující arsen",
+        "parent": "0604",
+        "danger": "1"
+    },
+    "060404": {
+        "name": "Odpady obsahující rtuť",
+        "parent": "0604",
+        "danger": "1"
+    },
+    "06040401": {
+        "name": "Kovová rtuť",
+        "parent": "060404",
+        "danger": "1"
+    },
+    "060405": {
+        "name": "Odpady obsahující jiné těžké kovy",
+        "parent": "0604",
+        "danger": "1"
+    },
+    "060499": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0604"
+    },
+    "0605": {
+        "name": "Kaly z čištění odpadních vod v místě jejich vzniku",
+        "parent": "06"
+    },
+    "060502": {
+        "name": "Kaly z čištění odpadních vod v místě jejich vzniku obsahující nebezpečné látky",
+        "parent": "0605",
+        "danger": "1"
+    },
+    "060503": {
+        "name": "Jiné kaly z čištění odpadních vod v místě jejich vzniku neuvedené pod číslem 06 05 02",
+        "parent": "0605"
+    },
+    "0606": {
+        "name": "Odpady z výroby, zpracování, distribuce a používání sirných sloučenin, z chemických procesů výroby a zpracování síry a z odsiřovacích procesů",
+        "parent": "06"
+    },
+    "060602": {
+        "name": "Odpady obsahující nebezpečné sulfidy",
+        "parent": "0606",
+        "danger": "1"
+    },
+    "060603": {
+        "name": "Odpady obsahující jiné sulfidy neuvedené pod číslem 06 06 02",
+        "parent": "0606"
+    },
+    "060699": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0606"
+    },
+    "0607": {
+        "name": "Odpady z výroby, zpracování, distribuce a používání halogenů a z chemických procesů zpracování halogenů",
+        "parent": "06"
+    },
+    "060701": {
+        "name": "Odpady obsahující azbest z elektrolýzy",
+        "parent": "0607",
+        "danger": "1"
+    },
+    "060702": {
+        "name": "Aktivní uhlí z výroby chlóru",
+        "parent": "0607",
+        "danger": "1"
+    },
+    "060703": {
+        "name": "Kaly síranu barnatého obsahující rtuť",
+        "parent": "0607",
+        "danger": "1"
+    },
+    "060704": {
+        "name": "Roztoky a kyseliny, např. vyčerpaná kyselina",
+        "parent": "0607",
+        "danger": "1"
+    },
+    "060799": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0607"
+    },
+    "0608": {
+        "name": "Odpady z výroby, zpracování, distribuce a používání křemíku a jeho derivátů",
+        "parent": "06"
+    },
+    "060802": {
+        "name": "Odpady obsahující nebezpečné chlorsilany",
+        "parent": "0608",
+        "danger": "1"
+    },
+    "060899": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0608"
+    },
+    "0609": {
+        "name": "Odpady z výroby, zpracování, distribuce a používání sloučenin fosforu a z chemických procesů zpracování fosforu",
+        "parent": "06"
+    },
+    "060902": {
+        "name": "Struska obsahující fosfor",
+        "parent": "0609"
+    },
+    "060903": {
+        "name": "Reakční odpady na bázi vápníku obsahující nebo znečištěné nebezpečnými látkami",
+        "parent": "0609",
+        "danger": "1"    
+    },
+    "060904": {
+        "name": "Jiné reakční odpady na bázi vápníku neuvedené pod číslem 06 09 03",
+        "parent": "0609"
+    },
+    "060999": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0609"
+    },
+    "0610": {
+        "name": "Odpady z výroby, zpracování, distribuce a používání dusíkatých sloučenin z chemických procesů zpracování dusíku a z výroby hnojiv",
+        "parent": "06"
+    },
+    "061002": {
+        "name": "Odpady obsahující nebezpečné látky",
+        "parent": "0610",
+        "danger": "1"
+    },
+    "061099": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0610"
+    },
+    "0611": {
+        "name": "Odpady z výroby anorganických pigmentů a kalidel",
+        "parent": "06"
+    },
+    "061101": {
+        "name": "Odpady na bázi vápníku z výroby oxidu titaničitého",
+        "parent": "0611"
+    },
+    "061199": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0611"
+    },
+    "0613": {
+        "name": "Odpady z jiných anorganických chemických procesů",
+        "parent": "06"
+    },
+    "061301": {
+        "name": "Anorganické pesticidy, činidla k impregnaci dřeva a další biocidy",
+        "parent": "0613",
+        "danger": "1"
+    },
+    "061302": {
+        "name": "Upotřebené aktivní uhlí (kromě odpadu uvedeného pod číslem 06 07 02)",
+        "parent": "0613",
+        "danger": "1"
+    },
+    "061303": {
+        "name": "Saze průmyslově vyráběné",
+        "parent": "0613"
+    },
+    "061304": {
+        "name": "Odpady ze zpracování azbestu",
+        "parent": "0613",
+        "danger": "1"
+    },
+    "061305": {
+        "name": "Saze",
+        "parent": "0613",
+        "danger": "1"
+    },
+    "061399": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0613"
+    },
+
+    "07": {
+        "name": "Odpady z organických chemických procesů"
+    },
+    "0701": {
+        "name": "Odpady z výroby, zpracování, distribuce a používání základních organických sloučenin",
+        "parent": "07"
+    },
+    "070101": {
+        "name": "Promývací vody a matečné louhy",
+        "parent": "0701",
+        "danger": "1"
+    },
+    "070103": {
+        "name": "Organická halogenovaná rozpouštědla, promývací kapaliny a matečné louhy",
+        "parent": "0701",
+        "danger": "1"
+    },
+    "070104": {
+        "name": "Jiná organická rozpouštědla, promývací kapaliny a matečné louhy",
+        "parent": "0701",
+        "danger": "1"
+    },
+    "070107": {
+        "name": "Halogenované destilační a reakční zbytky",
+        "parent": "0701",
+        "danger": "1"    
+    },
+    "070108": {
+        "name": "Jiné destilační a reakční zbytky",
+        "parent": "0701",
+        "danger": "1"
+    },
+    "070109": {
+        "name": "Halogenované filtrační koláče, upotřebená absorpční činidla",
+        "parent": "0701",
+        "danger": "1"   
+    },
+    "070110": {
+        "name": "Jiné filtrační koláče, upotřebená absorpční činidla",
+        "parent": "0701",
+        "danger": "1"
+    },
+    "070111": {
+        "name": "Kaly z čištění odpadních vod v místě jejich vzniku obsahující nebezpečné látky",
+        "parent": "0701",
+        "danger": "1"
+    },
+    "070112": {
+        "name": "Jiné kaly z čištění odpadních vod v místě jejich vzniku neuvedené pod číslem 07 01 11",
+        "parent": "0701"
+    },
+    "070199": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0701"
+    },
+    "0702": {
+        "name": "Odpady z výroby, zpracování, distribuce a používání plastů, syntetického kaučuku a syntetických vláken",
+        "parent": "07"
+    },
+    "070201": {
+        "name": "Promývací vody a matečné louhy",
+        "parent": "0702",
+        "danger": "1"
+    },
+    "070203": {
+        "name": "Organická halogenovaná rozpouštědla, promývací kapaliny a matečné louhy",
+        "parent": "0702",
+        "danger": "1"
+    },
+    "070204": {
+        "name": "Jiná organická rozpouštědla, promývací kapaliny a matečné louhy",
+        "parent": "0702",
+        "danger": "1"
+    },
+    "070207": {
+        "name": "Halogenované destilační a reakční zbytky",
+        "parent": "0702",
+        "danger": "1"
+    },
+    "070208": {
+        "name": "Jiné destilační a reakční zbytky",
+        "parent": "0702",
+        "danger": "1"
+    },
+    "070209": {
+        "name": "Halogenované filtrační koláče a upotřebená absorpční činidla",
+        "parent": "0702",
+        "danger": "1"
+    },
+    "070210": {
+        "name": "Jiné filtrační koláče a upotřebená absorpční činidla",
+        "parent": "0702",
+        "danger": "1"
+    },
+    "070211": {
+        "name": "Kaly z čištění odpadních vod v místě jejich vzniku obsahující nebezpečné látky",
+        "parent": "0702",
+        "danger": "1"
+    },
+    "070212": {
+        "name": "Jiné kaly z čištění odpadních vod v místě jejich vzniku neuvedené pod číslem 07 02 11",
+        "parent": "0702"
+    },
+    "070213": {
+        "name": "Plastový odpad",
+        "parent": "0702"
+    },
+    "070214": {
+        "name": "Odpady přísad obsahující nebezpečné látky",
+        "parent": "0702",
+        "danger": "1"
+    },
+    "070215": {
+        "name": "Odpady přísad neuvedené pod číslem 07 02 14",
+        "parent": "0702"
+    },
+    "070216": {
+        "name": "Odpady obsahující nebezpečné silikony",
+        "parent": "0702",
+        "danger": "1"
+    },
+    "070217": {
+        "name": "Odpady obsahující silikony neuvedené pod číslem 07 02 16",
+        "parent": "0702"
+    },
+    "070299": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0702"
+    },
+    "07029901": {
+        "name": "Pryžový odpad",
+        "parent": "070299"
+    },
+    "0703": {
+        "name": "Odpady z výroby, zpracování, distribuce a používání organických barviv a pigmentů (kromě odpadů uvedených v podskupině 06 11)",
+        "parent": "07"
+    },
+    "070301": {
+        "name": "Promývací vody a matečné louhy",
+        "parent": "0703",
+        "danger": "1"
+    },
+    "070303": {
+        "name": "Organická halogenovaná rozpouštědla, promývací kapaliny a matečné louhy",
+        "parent": "0703",
+        "danger": "1"
+    },
+    "070304": {
+        "name": "Jiná organická rozpouštědla, promývací kapaliny a matečné louhy",
+        "parent": "0703",
+        "danger": "1"
+    },
+    "070307": {
+        "name": "Halogenované destilační a reakční zbytky",
+        "parent": "0703",
+        "danger": "1"
+    },
+    "070308": {
+        "name": "Jiné destilační a reakční zbytky",
+        "parent": "0703",
+        "danger": "1"
+    },
+    "070309": {
+        "name": "Halogenované filtrační koláče a upotřebená absorpční činidla",
+        "parent": "0703",
+        "danger": "1"
+    },
+    "070310": {
+        "name": "Jiné filtrační koláče a upotřebená absorpční činidla",
+        "parent": "0703",
+        "danger": "1"
+    },
+    "070311": {
+        "name": "Kaly z čištění odpadních vod v místě jejich vzniku obsahující nebezpečné látky",
+        "parent": "0703",
+        "danger": "1"
+    },
+    "070312": {
+        "name": "Jiné kaly z čištění odpadních vod v místě jejich vzniku neuvedené pod číslem 07 03 11",
+        "parent": "0703"
+    },
+    "070399": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0703"
+    },
+    "0704": {
+        "name": "Odpady z výroby, zpracování, distribuce a používání organických pesticidů (kromě odpadů uvedených pod čísly 02 01 08 a 02 01 09), činidel k impregnaci dřeva (kromě odpadů uvedených v podskupině 03 02) a dalších biocidů",
+        "parent": "07"
+    },
+    "070401": {
+        "name": "Promývací vody a matečné louhy",
+        "parent": "0704",
+        "danger": "1"
+    },
+    "070403": {
+        "name": "Organická halogenovaná rozpouštědla, promývací kapaliny a matečné louhy",
+        "parent": "0704",
+        "danger": "1"
+    },
+    "070404": {
+        "name": "Jiná organická rozpouštědla, promývací kapaliny a matečné louhy",
+        "parent": "0704",
+        "danger": "1"
+    },
+    "070407": {
+        "name": "Halogenované destilační a reakční zbytky",
+        "parent": "0704",
+        "danger": "1"
+    },
+    "070408": {
+        "name": "Jiné destilační a reakční zbytky",
+        "parent": "0704",
+        "danger": "1"
+    },
+    "070409": {
+        "name": "Halogenované filtrační koláče a upotřebená absorpční činidla",
+        "parent": "0704",
+        "danger": "1"
+    },
+    "070410": {
+        "name": "Jiné filtrační koláče a upotřebená absorpční činidla",
+        "parent": "0704",
+        "danger": "1"
+    },
+    "070411": {
+        "name": "Kaly z čištění odpadních vod v místě jejich vzniku obsahující nebezpečné látky",
+        "parent": "0704",
+        "danger": "1"
+    },
+    "070412": {
+        "name": "Jiné kaly z čištění odpadních vod v místě jejich vzniku neuvedené pod číslem 07 04 11",
+        "parent": "0704"
+    },
+    "070413": {
+        "name": "Pevné odpady obsahující nebezpečné látky",
+        "parent": "0704",
+        "danger": "1"
+    },
+    "070499": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0704"
+    },
+    "0705": {
+        "name": "Odpady z výroby, zpracování, distribuce a používání farmaceutických výrobků",
+        "parent": "07"
+    },
+    "070501": {
+        "name": "Promývací vody a matečné louhy",
+        "parent": "0705",
+        "danger": "1"
+    },
+    "070503": {
+        "name": "Organická halogenovaná rozpouštědla, promývací kapaliny a matečné louhy",
+        "parent": "0705",
+        "danger": "1"
+    },
+    "070504": {
+        "name": "Jiná organická rozpouštědla, promývací kapaliny a matečné louhy",
+        "parent": "0705",
+        "danger": "1"
+    },
+    "070507": {
+        "name": "Halogenované destilační a reakční zbytky",
+        "parent": "0705",
+        "danger": "1"
+    },
+    "070508": {
+        "name": "Jiné destilační a reakční zbytky",
+        "parent": "0705",
+        "danger": "1"
+    },
+    "070509": {
+        "name": "Halogenované filtrační koláče a upotřebená absorpční činidla",
+        "parent": "0705",
+        "danger": "1"
+    },
+    "070510": {
+        "name": "Jiné filtrační koláče a upotřebená absorpční činidla",
+        "parent": "0705",
+        "danger": "1"
+    },
+    "070511": {
+        "name": "Kaly z čištění odpadních vod v místě jejich vzniku obsahující nebezpečné látky",
+        "parent": "0705",
+        "danger": "1"
+    },
+    "070512": {
+        "name": "Jiné kaly z čištění odpadních vod v místě jejich vzniku neuvedené pod číslem 07 05 11",
+        "parent": "0705"
+    },
+    "070513": {
+        "name": "Pevné odpady obsahující nebezpečné látky",
+        "parent": "0705",
+        "danger": "1"
+    },
+    "070514": {
+        "name": "Pevné odpady neuvedené pod číslem 07 05 13",
+        "parent": "0705"
+    },
+    "070599": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0705"
+    },
+    "0706": {
+        "name": "Odpady z výroby, zpracování, distribuce a používání tuků, maziv, mýdel, detergentů, dezinfekčních prostředků a kosmetiky",
+        "parent": "07"
+    },
+    "070601": {
+        "name": "Promývací vody a matečné louhy",
+        "parent": "0706",
+        "danger": "1"
+    },
+    "070603": {
+        "name": "Organická halogenovaná rozpouštědla, promývací kapaliny a matečné louhy",
+        "parent": "0706",
+        "danger": "1"
+    },
+    "070604": {
+        "name": "Jiná organická rozpouštědla, promývací kapaliny a matečné louhy",
+        "parent": "0706",
+        "danger": "1"
+    },
+    "070607": {
+        "name": "Halogenované destilační a reakční zbytky",
+        "parent": "0706",
+        "danger": "1"
+    },
+    "070608": {
+        "name": "Ostatní destilační a reakční zbytky",
+        "parent": "0706",
+        "danger": "1"
+    },
+    "070609": {
+        "name": "Halogenované filtrační koláče a upotřebená absorpční činidla",
+        "parent": "0706",
+        "danger": "1"
+    },
+    "070610": {
+        "name": "Jiné filtrační koláče a upotřebená absorpční činidla",
+        "parent": "0706",
+        "danger": "1"
+    },
+    "070611": {
+        "name": "Kaly z čištění odpadních vod v místě jejich vzniku obsahující nebezpečné látky",
+        "parent": "0706",
+        "danger": "1"
+    },
+    "070612": {
+        "name": "Jiné kaly z čištění odpadních vod v místě jejich vzniku neuvedené pod číslem 07 06 11",
+        "parent": "0706"
+    },
+    "070699": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0706"
+    },
+    "0707": {
+        "name": "Odpady z výroby, zpracování, distribuce a používání čistých chemických látek a blíže nespecifikovaných chemických výrobků",
+        "parent": "07"
+    },
+    "070701": {
+        "name": "Promývací vody a matečné louhy",
+        "parent": "0707",
+        "danger": "1"
+    },
+    "070703": {   
+        "name": "Organická halogenovaná rozpouštědla, promývací kapaliny a matečné louhy",
+        "parent": "0707",
+        "danger": "1"
+    },
+    "070704": {
+        "name": "Jiná organická rozpouštědla, promývací kapaliny a matečné louhy",
+        "parent": "0707",
+        "danger": "1"
+    },
+    "070707": {
+        "name": "Halogenované destilační a reakční zbytky",
+        "parent": "0707",
+        "danger": "1"
+    },
+    "070708": {
+        "name": "Jiné destilační a reakční zbytky",
+        "parent": "0707",
+        "danger": "1"
+    },
+    "070709": {
+        "name": "Halogenované filtrační koláče a upotřebená absorpční činidla",
+        "parent": "0707",
+        "danger": "1"
+    },
+    "070710": {
+        "name": "Jiné filtrační koláče a upotřebená absorpční činidla",
+        "parent": "0707",
+        "danger": "1"
+    },
+    "070711": {
+        "name": "Kaly z čištění odpadních vod v místě jejich vzniku obsahující nebezpečné látky",
+        "parent": "0707",
+        "danger": "1"
+    },
+    "070712": {
+        "name": "Jiné kaly z čištění odpadních vod v místě jejich vzniku neuvedené pod číslem 07 07 11",
+        "parent": "0707"
+    },
+    "070799": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0707"
+    },
+
+    "08": {
+        "name": "Odpady z výroby, zpracování, distribuce a používání nátěrových hmot (barev, laků a smaltů), lepidel, těsnicích materiálů a tiskařských barev"
+    },
+    "0801": {
+        "name": "Odpady z výroby, zpracování, distribuce, používání a odstraňování barev a laků",
+        "parent": "08"
+    },
+    "080111": {
+        "name": "Odpadní barvy a laky obsahující organická rozpouštědla nebo jiné nebezpečné látky",
+        "parent": "0801",
+        "danger": "1"
+    },
+    "080112": {
+        "name": "Jiné odpadní barvy a laky neuvedené pod číslem 08 01 11",
+        "parent": "0801"
+    },
+    "080113": {
+        "name": "Kaly z barev nebo z laků obsahující organická rozpouštědla nebo jiné nebezpečné látky",
+        "parent": "0801",
+        "danger": "1"
+    },
+    "080114": {
+        "name": "Jiné kaly z barev nebo z laků neuvedené pod číslem 08 01 13",
+        "parent": "0801"
+    },
+    "080115": {
+        "name": "Vodné kaly obsahující barvy nebo laky s obsahem organických rozpouštědel nebo jiných nebezpečných látek",
+        "parent": "0801",
+        "danger": "1"
+    },
+    "080116": {
+        "name": "Jiné vodné kaly obsahující barvy nebo laky neuvedené pod číslem 08 01 15",
+        "parent": "0801"
+    },
+    "080117": {
+        "name": "Odpady z odstraňování barev nebo laků obsahujících organická rozpouštědla nebo jiné nebezpečné látky",
+        "parent": "0801",
+        "danger": "1"
+    },
+    "080118": {
+        "name": "Jiné odpady z odstraňování barev nebo laků neuvedené pod číslem 08 01 17",
+        "parent": "0801"
+    },
+    "080119": {
+        "name": "Vodné suspenze obsahující barvy nebo laky s obsahem organických rozpouštědel nebo jiných nebezpečných látek",
+        "parent": "0801",
+        "danger": "1"
+    },
+    "080120": {
+        "name": "Jiné vodné suspenze obsahující barvy nebo laky neuvedené pod číslem 08 01 19",
+        "parent": "0801"
+    },
+    "080121": {
+        "name": "Odpadní odstraňovače barev nebo laků 08 01 99 Odpady jinak blíže neurčené",
+        "parent": "0801",
+        "danger": "1"
+    },
+    "0802": {
+        "name": "Odpady z výroby, zpracování, distribuce a používání ostatních nátěrových hmot (včetně keramických materiálů)",
+        "parent": "08"
+    },
+    "080201": {
+        "name": "Odpadní práškové nátěrové barvy",
+        "parent": "0802"
+    },
+    "080202": {
+        "name": "Vodné kaly obsahující keramické materiály",
+        "parent": "0802"
+    },
+    "080203": {
+        "name": "Vodné suspenze obsahující keramické materiály",
+        "parent": "0802"
+    },
+    "080299": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0802"
+    },
+    "0803": {
+        "name": "Odpady z výroby, zpracování, distribuce a používání tiskařských barev",
+        "parent": "08"
+    },
+    "080307": {
+        "name": "Vodné kaly obsahující tiskařské barvy",
+        "parent": "0803"
+    },
+    "080308": {
+        "name": "Vodné kapalné odpady obsahující tiskařské barvy",
+        "parent": "0803"
+    },
+    "080312": {
+        "name": "Odpadní tiskařské barvy obsahující nebezpečné látky",
+        "parent": "0803",
+        "danger": "1"
+    },
+    "080313": {
+        "name": "Odpadní tiskařské barvy neuvedené pod číslem 08 03 12",
+        "parent": "0803"
+    },
+    "080314": {
+        "name": "Kaly tiskařských barev obsahující nebezpečné látky",
+        "parent": "0803",
+        "danger": "1"
+    },
+    "080315": {
+        "name": "Kaly tiskařských barev neuvedené pod číslem 08 03 14",
+        "parent": "0803"
+    },
+    "080316": {
+        "name": "Odpadní leptací roztoky",
+        "parent": "0803",
+        "danger": "1"
+    },
+    "080317": {
+        "name": "Odpadní tiskařský toner obsahující nebezpečné látky",
+        "parent": "0803",
+        "danger": "1"
+    },
+    "080318": {
+        "name": "Odpadní tiskařský toner neuvedený pod číslem 08 03 17",
+        "parent": "0803"
+    },
+    "080319": {
+        "name": "Disperzní olej",
+        "parent": "0803",
+        "danger": "1"
+    },
+    "080399": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0803"
+    },
+    "0804": {
+        "name": "Odpady z výroby, zpracování, distribuce a používání lepidel a těsnicích materiálů (včetně vodotěsnicích výrobků)",
+        "parent": "08"
+    },
+    "080409": {
+        "name": "Odpadní lepidla a těsnicí materiály obsahující organická rozpouštědla nebo jiné nebezpečné látky",
+        "parent": "0804",
+        "danger": "1"
+    },
+    "080410": {
+        "name": "Jiná odpadní lepidla a těsnicí materiály neuvedené pod číslem 08 04 09",
+        "parent": "0804"
+    },
+    "080411": {
+        "name": "Kaly z lepidel a těsnicích materiálů obsahující organická rozpouštědla nebo jiné nebezpečné látky",
+        "parent": "0804",
+        "danger": "1"
+    },
+    "080412": {
+        "name": "Jiné kaly z lepidel a těsnicích materiálů neuvedené pod číslem 08 04 11",
+        "parent": "0804"
+    },
+    "080413": {
+        "name": "Vodné kaly s obsahem lepidel nebo těsnicích materiálů obsahující organická rozpouštědla nebo jiné nebezpečné látky",
+        "parent": "0804",
+        "danger": "1"
+    },
+    "080414": {
+        "name": "Jiné vodné kaly s obsahem lepidel nebo těsnicích materiálů neuvedené pod číslem 08 04 13",
+        "parent": "0804"
+    },
+    "080415": {
+        "name": "Odpadní vody obsahující lepidla nebo těsnicí materiály s organickými rozpouštědly nebo s jinými nebezpečnými látkami",
+        "parent": "0804",
+        "danger": "1"
+    },
+    "080416": {
+        "name": "Jiné odpadní vody obsahující lepidla nebo těsnicí materiály neuvedené pod číslem 08 04 15",
+        "parent": "0804"
+    },
+    "080417": {
+        "name": "Kalafunový olej",
+        "parent": "0804",
+        "danger": "1"
+    },
+    "080499": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0804"
+    },
+    "0805": {
+        "name": "Odpady jinak blíže neurčené ve skupině 08",
+        "parent": "08"
+    },
+    "080501": {
+        "name": "Odpadní isokyanáty",
+        "parent": "0804",
+        "danger": "1"
+    },
+
+    "09": {
+        "name": "Odpady z fotografického průmyslu"
+    },
+    "0901": {
+        "name": "Odpady z fotografického průmyslu",
+        "parent": "09"
+    },
+    "090101": {
+        "name": "Vodné roztoky vývojek a aktivátorů",
+        "parent": "0901",
+        "danger": "1"
+    },
+    "090102": {
+        "name": "Vodné roztoky vývojek ofsetových desek",
+        "parent": "0901",
+        "danger": "1"
+    },
+    "090103": {
+        "name": "Roztoky vývojek v rozpouštědlech",
+        "parent": "0901",
+        "danger": "1"
+    },
+    "090104": {
+        "name": "Roztoky ustalovačů",
+        "parent": "0901",
+        "danger": "1"
+    },
+    "090105": {
+        "name": "Bělicí roztoky a roztoky bělicích ustalovačů",
+        "parent": "0901",
+        "danger": "1"
+    },
+    "090106": {
+        "name": "Odpady obsahující stříbro ze zpracování fotografického odpadu v místě jeho vzniku",
+        "parent": "0901",
+        "danger": "1"
+    },
+    "090107": {
+        "name": "Fotografický film a papír obsahující stříbro nebo sloučeniny stříbra",
+        "parent": "0901"
+    },
+    "090108": {
+        "name": "Fotografický film a papír neobsahující stříbro nebo sloučeniny stříbra",
+        "parent": "0901"
+    },
+    "090110": {
+        "name": "Fotoaparáty najedno použití bez baterií",
+        "parent": "0901"
+    },
+    "090111": {
+        "name": "Fotoaparáty na jedno použití obsahující baterie uvedené pod čísly 16 06 01, 16 06 02 nebo 16 06 03",
+        "parent": "0901",
+        "danger": "1"
+    },
+    "090112": {
+        "name": "Fotoaparáty na jedno použití obsahující jiné baterie neuvedené pod číslem 09 01 11",
+        "parent": "0901"
+    },
+    "090113": {
+        "name": "Odpadní vody ze zpracování stříbra v místě jeho vzniku neuvedené pod číslem 09 01 06",
+        "parent": "0901",
+        "danger": "1"
+    },
+    "090199": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "0901"
+    },
+
+    "10": {
+        "name": "Odpady z tepelných procesů"
+    },
+    "1001": {
+        "name": "Odpady z elektráren a jiných spalovacích zařízení (kromě odpadů uvedených v podskupině 19)",
+        "parent": "10"
+    },
+    "100101": {
+        "name": "Škvára, struska a kotelní prach (kromě kotelního prachu uvedeného pod číslem 10 01 04)",
+        "parent": "1001"
+    },
+    "100102": {
+        "name": "Popílek ze spalování uhlí",
+        "parent": "1001"
+    },
+    "100103": {
+        "name": "Popílek ze spalování rašeliny a neošetřeného dřeva",
+        "parent": "1001"
+    },
+    "100104": {
+        "name": "Popílek a kotelní prach ze spalování ropných produktů",
+        "parent": "1001",
+        "danger": "1"
+    },
+    "100105": {
+        "name": "Pevné reakční produkty na bázi vápníku z odsiřování spalin",
+        "parent": "1001"
+    },
+    "100107": {
+        "name": "Reakční produkty z odsiřování spalin na bázi vápníku ve formě kalů",
+        "parent": "1001"
+    },
+    "100109": {
+        "name": "Kyselina sírová",
+        "parent": "1001",
+        "danger": "1"
+    },
+    "100113": {
+        "name": "Popílek z emulgovaných uhlovodíků použitých způsobem obdobným palivu",
+        "parent": "1001",
+        "danger": "1"
+    },
+    "100114": {
+        "name": "Škvára, struska a kotelní prach ze spoluspalování odpadu obsahující nebezpečné látky",
+        "parent": "1001",
+        "danger": "1"
+    },
+    "100115": {
+        "name": "Škvára, struska a kotelní prach ze spoluspalování odpadu neuvedené pod číslem 10 01 14",
+        "parent": "1001"
+    },
+    "100116": {
+        "name": "Popílek ze spoluspalování odpadu obsahující nebezpečné látky",
+        "parent": "1001",
+        "danger": "1"
+    },
+    "100117": {
+        "name": "Popílek ze spoluspalování odpadu neuvedený pod číslem 10 01 16",
+        "parent": "1001"
+    },
+    "100118": {
+        "name": "Odpady z čištění odpadních plynů obsahující nebezpečné látky",
+        "parent": "1001",
+        "danger": "1"
+    },
+    "100119": {
+        "name": "Odpady z čištění odpadních plynů neuvedené pod čísly 10 01 05, 10 01 07 a 1001 18",
+        "parent": "1001"
+    },
+    "100120": {
+        "name": "Kaly z čištění odpadních vod v místě jejich vzniku obsahující nebezpečné látky",
+        "parent": "1001",
+        "danger": "1"
+    },
+    "100121": {
+        "name": "Jiné kaly z čištění odpadních vod v místě jejich vzniku neuvedené pod číslem 10 01 20",
+        "parent": "1001"
+    },
+    "100122": {
+        "name": "Vodné kaly z čištění kotlů obsahující nebezpečné látky",
+        "parent": "1001",
+        "danger": "1"
+    },
+    "100123": {
+        "name": "Vodné kaly z čištění kotlů neuvedené pod číslem 10 01 22",
+        "parent": "1001"
+    },
+    "100124": {
+        "name": "Písky z fluidních loží",
+        "parent": "1001"
+    },
+    "100125": {
+        "name": "Odpady ze skladování a z přípravy paliva pro tepelné elektrárny",
+        "parent": "1001"
+    },
+    "100126": {
+        "name": "Odpady z čištění chladicí vody",
+        "parent": "1001"
+    },
+    "100199": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1001"
+    },
+    "1002": {
+        "name": "Odpady z průmyslu železa a oceli",
+        "parent": "10"
+    },
+    "100201": {
+        "name": "Odpady ze zpracování strusky",
+        "parent": "1002"
+    },
+    "100202": {
+        "name": "Nezpracovaná struska",
+        "parent": "1002"
+    },
+    "100207": {
+        "name": "Pevné odpady z čištění plynů obsahující nebezpečné látky",
+        "parent": "1002"
+    },
+    "100208": {
+        "name": "Jiné pevné odpady z čištění plynů neuvedené pod číslem 10 02 07",
+        "parent": "1002"
+    },
+    "100210": {
+        "name": "Okuje z válcování",
+        "parent": "1002"
+    },
+    "100211": {
+        "name": "Odpady z čištění chladicí vody obsahující ropné látky",
+        "parent": "1002",
+        "danger": "1"
+    },
+    "100212": {
+        "name": "Jiné odpady z čištění chladicí vody neuvedené pod číslem 10 02 11",
+        "parent": "1002"
+    },
+    "100213": {
+        "name": "Kaly a filtrační koláče z čištění plynu obsahující nebezpečné látky",
+        "parent": "1002",
+        "danger": "1"
+    },
+    "100214": {
+        "name": "Kaly a filtrační koláče z čištění plynu neuvedené pod číslem 10 02 13",
+        "parent": "1002"
+    },
+    "100215": {
+        "name": "Jiné kaly a filtrační koláče",
+        "parent": "1002"
+    },
+    "100299": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1002"
+    },
+    "1003": {
+        "name": "Odpady z pyrometalurgie hliníku",
+        "parent": "10"
+    },
+    "100302": {
+        "name": "Odpadní anody",
+        "parent": "1003"
+    },
+    "100304": {
+        "name": "Strusky z prvního tavení",
+        "parent": "1003",
+        "danger": "1"
+    },
+    "100305": {
+        "name": "Odpadní oxid hlinitý",
+        "parent": "1003"
+    },
+    "100308": {
+        "name": "Solné strusky z druhého tavení",
+        "parent": "1003",
+        "danger": "1"
+    },
+    "100309": {
+        "name": "Černé stery z druhého tavení",
+        "parent": "1003",
+        "danger": "1"
+    },
+    "100315": {
+        "name": "Stery, které jsou hořlavé nebo při styku s vodou uvolňují hořlavé plyny v nebezpečných množstvích",
+        "parent": "1003",
+        "danger": "1"
+    },
+    "100316": {
+        "name": "Jiné stery neuvedené pod číslem 10 03 15",
+        "parent": "1003"
+    },
+    "100317": {
+        "name": "Odpady obsahující dehet z výroby anod",
+        "parent": "1003",
+        "danger": "1"
+    },
+    "100318": {
+        "name": "Odpady obsahující uhlík z výroby anod neuvedené pod číslem 10 03 17",
+        "parent": "1003"
+    },
+    "100319": {
+        "name": "Prach ze spalin obsahující nebezpečné látky",
+        "parent": "1003",
+        "danger": "1"
+    },
+    "100320": {
+        "name": "Prach ze spalin neuvedený pod číslem 10 03 19",
+        "parent": "1003"
+    },
+    "100321": {
+        "name": "Jiný úlet a prach (včetně prachu z kulových mlýnů) obsahující nebezpečné látky",
+        "parent": "1003",
+        "danger": "1"
+    },
+    "100322": {
+        "name": "Jiný úlet a prach (včetně prachu z kulových mlýnů) neuvedené pod číslem 10 03 21",
+        "parent": "1003"
+    },
+    "100323": {
+        "name": "Pevné odpady z čištění plynů obsahující nebezpečné látky",
+        "parent": "1003",
+        "danger": "1"
+    },
+    "100324": {
+        "name": "Pevné odpady z čištění plynů neuvedené pod číslem 10 03 23",
+        "parent": "01"
+    },
+    "100325": {
+        "name": "Kaly a filtrační koláče z čištění plynu obsahující nebezpečné látky",
+        "parent": "1003",
+        "danger": "1"
+    },
+    "100326": {
+        "name": "Kaly a filtrační koláče z čištění plynu neuvedené pod číslem 10 03 25",
+        "parent": "1003"
+    },
+    "100327": {
+        "name": "Odpady z čištění chladicí vody obsahující ropné látky",
+        "parent": "1003",
+        "danger": "1"
+    },
+    "100328": {
+        "name": "Jiné odpady z čištění chladicí vody neuvedené pod číslem 10 03 27",
+        "parent": "1003"
+    },
+    "100329": {
+        "name": "Odpady z úpravy solných strusek a černých stěrů obsahující nebezpečné látky",
+        "parent": "1003",
+        "danger": "1"
+    },
+    "100330": {
+        "name": "Odpady z úpravy solných strusek a černých stěrů neuvedené pod číslem 10 03 29",
+        "parent": "1003"
+    },
+    "100399": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1003"
+    },
+    "1004": {
+        "name": "Odpady z pyrometalurgie olova",
+        "parent": "10"
+    },
+    "100401": {
+        "name": "Strusky (z prvního a druhého tavení)",
+        "parent": "1004",
+        "danger": "1"
+    },
+    "100402": {
+        "name": "Pěna a stery (z prvního a druhého tavení)",
+        "parent": "1004",
+        "danger": "1"
+    },
+    "100403": {
+        "name": "Arzeničnan vápenatý",
+        "parent": "1004",
+        "danger": "1"
+    },
+    "100404": {
+        "name": "Prach z čištění spalin",
+        "parent": "1004",
+        "danger": "1"
+    },
+    "100405": {
+        "name": "Jiný úlet a prach",
+        "parent": "1004",
+        "danger": "1"
+    },
+    "100406": {
+        "name": "Pevný odpad z čištění plynu",
+        "parent": "1004",
+        "danger": "1"
+    },
+    "100407": {
+        "name": "Kaly a filtrační koláče z čištění plynu",
+        "parent": "1004",
+        "danger": "1"
+    },
+    "100409": {
+        "name": "Odpady z čištění chladicí vody obsahující ropné látky",
+        "parent": "1004",
+        "danger": "1"
+    },
+    "100410": {
+        "name": "Jiné odpady z čištění chladicí vody neuvedené pod číslem 10 04 09",
+        "parent": "1004"
+    },
+    "100499": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1004"
+    },
+    "1005": {
+        "name": "Odpady z pyrometalurgie zinku",
+        "parent": "10"
+    },
+    "100501": {
+        "name": "Strusky (z prvního a druhého tavení)",
+        "parent": "1005"
+    },
+    "100503": {
+        "name": "Prach z čištění spalin",
+        "parent": "1005",
+        "danger": "1"
+    },
+    "100504": {
+        "name": "Jiný úlet a prach",
+        "parent": "1005"
+    },
+    "100505": {
+        "name": "Pevné odpady z čištění plynu",
+        "parent": "1005",
+        "danger": "1"
+    },
+    "100506": {
+        "name": "Kaly a filtrační koláče z čištění plynu",
+        "parent": "1005",
+        "danger": "1"
+    },
+    "100508": {
+        "name": "Odpady z čištění chladicí vody obsahující ropné látky",
+        "parent": "1005",
+        "danger": "1"
+    },
+    "100509": {
+        "name": "Ostatní odpady z čištění chladicí vody neuvedené pod číslem 10 05 08",
+        "parent": "1005"
+    },
+    "100510": {
+        "name": "Stery a pěny, které jsou hořlavé nebo při styku s vodou uvolňují hořlavé plyny v nebezpečných množstvích",
+        "parent": "1005",
+        "danger": "1"
+    },
+    "100511": {
+        "name": "Jiné stery a pěny neuvedené pod číslem 10 05 10",
+        "parent": "1005"
+    },
+    "100599": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1005"
+    },
+    "1006": {
+        "name": "Odpady z pyrometalurgie mědi",
+        "parent": "10"
+    },
+    "100601": {
+        "name": "Strusky (z prvního a druhého tavení)",
+        "parent": "1006"
+    },
+    "100602": {
+        "name": "Pěna a stery (z prvního a druhého tavení)",
+        "parent": "1006"
+    },
+    "100603": {
+        "name": "Prach z čištění spalin",
+        "parent": "1006",
+        "danger": "1"
+    },
+    "100604": {
+        "name": "Jiný úlet a prach",
+        "parent": "1006"
+    },
+    "100606": {
+        "name": "Pevný odpad z čištění plynu",
+        "parent": "1006",
+        "danger": "1"
+    },
+    "100607": {
+        "name": "Kaly a filtrační koláče z čištění plynu",
+        "parent": "1006",
+        "danger": "1"
+    },
+    "100609": {
+        "name": "Odpady z čištění chladicí vody obsahující ropné látky",
+        "parent": "1006",
+        "danger": "1"
+    },
+    "100610": {
+        "name": "Jiné odpady z čištění chladicí vody neuvedené pod číslem 10 06 09",
+        "parent": "1006"
+    },
+    "100699": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1006"
+    },
+    "1007": {
+        "name": "Odpady z pyrometalurgie stříbra, zlata a platiny",
+        "parent": "10"
+    },
+    "100701": {
+        "name": "Strusky (z prvního a druhého tavení)",
+        "parent": "1007"
+    },
+    "100702": {
+        "name": "Pěna a stery (z prvního a druhého tavení)",
+        "parent": "1007"
+    },
+    "100703": {
+        "name": "Pevný odpad z čištění plynu",
+        "parent": "1007"
+    },
+    "100704": {
+        "name": "Jiný úlet a prach",
+        "parent": "1007"
+    },
+    "100705": {
+        "name": "Kaly a filtrační koláče z čištění plynu",
+        "parent": "1007"
+    },
+    "100707": {
+        "name": "Odpady z čištění chladicí vody obsahující ropné látky",
+        "parent": "1007",
+        "danger": "1"
+    },
+    "100708": {
+        "name": "Jiné odpady z čištění chladicí vody neuvedené pod číslem 10 07 07",
+        "parent": "1007"
+    },
+    "100799": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1007"
+    },
+    "1008": {
+        "name": "Odpady z pyrometalurgie jiných neželezných kovů",
+        "parent": "10"
+    },
+    "100804": {
+        "name": "Úlet a prach",
+        "parent": "1008"
+    },
+    "100808": {
+        "name": "Solné strusky z prvního a druhého tavení",
+        "parent": "1008",
+        "danger": "1"
+    },
+    "100809": {
+        "name": "Jiné strusky",
+        "parent": "1008",
+        "danger": "1"
+    },
+    "100810": {
+        "name": "Stery a pěny, které jsou hořlavé nebo při styku s vodou uvolňují hořlavé plyny v nebezpečných množstvích",
+        "parent": "1008",
+        "danger": "1"
+    },
+    "100811": {
+        "name": "Jiné stery a pěny neuvedené pod číslem 10 08 10",
+        "parent": "1008"
+    },
+    "100812": {
+        "name": "Odpady obsahující dehet z výroby anod",
+        "parent": "1008",
+        "danger": "1"
+    },
+    "100813": {
+        "name": "Odpady obsahující uhlík z výroby anod neuvedené pod číslem 10 08 12",
+        "parent": "1008"
+    },
+    "100814": {
+        "name": "Odpadní anody",
+        "parent": "1008"
+    },
+    "100815": {
+        "name": "Prach z čištění spalin obsahující nebezpečné látky",
+        "parent": "1008",
+        "danger": "1"
+    },
+    "100816": {
+        "name": "Prach z čištění spalin neuvedený pod číslem 10 08 15",
+        "parent": "1008"
+    },
+    "100817": {
+        "name": "Kaly a filtrační koláče z čištění spalin obsahující nebezpečné látky",
+        "parent": "1008",
+        "danger": "1"
+    },
+    "100818": {
+        "name": "Kaly a filtrační koláče z čištění spalin neuvedené pod číslem 10 08 17",
+        "parent": "1008"
+    },
+    "100819": {
+        "name": "Odpady z čištění chladicí vody obsahující ropné látky",
+        "parent": "1008",
+        "danger": "1"
+    },
+    "100820": {
+        "name": "Jiné odpady z čištění chladicí vody neuvedené pod číslem 10 08 19",
+        "parent": "1008"
+    },
+    "100899": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1008"
+    },
+    "1009": {
+        "name": "Odpady ze slévání železných odlitků",
+        "parent": "10"
+    },
+    "100903": {
+        "name": "Pecní struska",
+        "parent": "1009"
+    },
+    "100905": {
+        "name": "Licí formy a jádra nepoužitá k odlévání obsahující nebezpečné látky",
+        "parent": "1009",
+        "danger": "1"
+    },
+    "100906": {
+        "name": "Licí formy a jádra nepoužitá k odlévání neuvedená pod číslem 10 09 05",
+        "parent": "1009"
+    },
+    "100907": {
+        "name": "Licí formy a jádra použitá k odlévání obsahující nebezpečné látky",
+        "parent": "1009",
+        "danger": "1"
+    },
+    "100908": {
+        "name": "Licí formy a jádra použitá k odlévání neuvedená pod číslem 10 09 07",
+        "parent": "1009"
+    },
+    "100909": {
+        "name": "Prach z čištění spalin obsahující nebezpečné látky",
+        "parent": "1009",
+        "danger": "1"
+    },
+    "100910": {
+        "name": "Prach z čištění spalin neuvedený pod číslem 10 09 09",
+        "parent": "1009"
+    },
+    "100911": {
+        "name": "Jiný úlet obsahující nebezpečné látky",
+        "parent": "1009",
+        "danger": "1"
+    },
+    "100912": {
+        "name": "Jiný úlet neuvedený pod číslem 10 09 11",
+        "parent": "1009"
+    },
+    "100913": {
+        "name": "Odpadní pojiva obsahující nebezpečné látky",
+        "parent": "1009",
+        "danger": "1"
+    },
+    "100914": {
+        "name": "Odpadní pojiva neuvedená pod číslem 10 09 13",
+        "parent": "1009"
+    },
+    "100915": {
+        "name": "Odpadní činidla na indikaci prasklin obsahující nebezpečné látky",
+        "parent": "1009",
+        "danger": "1"
+    },
+    "100916": {
+        "name": "Odpadní činidla na indikaci prasklin neuvedená pod číslem 10 09 15",
+        "parent": "1009"
+    },
+    "100999": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1009"
+    },
+    "1010": {
+        "name": "Odpady ze slévání odlitků neželezných kovů",
+        "parent": "10"
+    },
+    "101003": {
+        "name": "Pecní struska",
+        "parent": "1010"
+    },
+    "101005": {
+        "name": "Licí formy a jádra nepoužitá k odlévání obsahující nebezpečné látky",
+        "parent": "1010",
+        "danger": "1"
+    },
+    "101006": {
+        "name": "Licí formy a jádra nepoužitá k odlévání neuvedená pod číslem 10 10 05",
+        "parent": "1010"
+    },
+    "101007": {
+        "name": "Licí formy a jádra použitá k odlévání obsahující nebezpečné látky",
+        "parent": "1010",
+        "danger": "1"
+    },
+    "101008": {
+        "name": "Licí formy a jádra použitá k odlévání neuvedená pod číslem 10 10 07",
+        "parent": "1010"
+    },
+    "101009": {
+        "name": "Prach z čištění spalin obsahující nebezpečné látky",
+        "parent": "1010",
+        "danger": "1"
+    },
+    "101010": {
+        "name": "Prach z čištění spalin neuvedený pod číslem 10 10 09",
+        "parent": "1010"
+    },
+    "101011": {
+        "name": "Jiný úlet obsahující nebezpečné látky",
+        "parent": "1010",
+        "danger": "1"
+    },
+    "101012": {
+        "name": "Jiný úlet neuvedený pod číslem 10 10 11",
+        "parent": "1010"
+    },
+    "101013": {
+        "name": "Odpadní pojiva obsahující nebezpečné látky",
+        "parent": "1010",
+        "danger": "1"
+    },
+    "101014": {
+        "name": "Odpadní pojiva neuvedená pod číslem 10 10 13",
+        "parent": "1010"
+    },
+    "101015": {
+        "name": "Odpadní činidla na indikaci prasklin obsahující nebezpečné látky",
+        "parent": "1010",
+        "danger": "1"
+    },
+    "101016": {
+        "name": "Odpadní činidla na indikaci prasklin neuvedená pod číslem 10 10 15",
+        "parent": "1010"
+    },
+    "101099": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1010"
+    },
+    "1011": {
+        "name": "Odpady z výroby skla a skleněných výrobků",
+        "parent": "10"
+    },
+    "101103": {
+        "name": "Odpadní materiály na bázi skelných vláken",
+        "parent": "1011"
+    },
+    "101105": {
+        "name": "Úlet a prach",
+        "parent": "1011"
+    },
+    "101109": {
+        "name": "Odpadní sklářský kmen před tepelným zpracováním obsahující nebezpečné látky",
+        "parent": "1011",
+        "danger": "1"
+    },
+    "101110": {
+        "name": "Odpadní sklářský kmen před tepelným zpracováním neuvedený pod číslem 10 11 09",
+        "parent": "1011"
+    },
+    "101111": {
+        "name": "Odpadní sklo v malých částicích a skelný prach obsahující těžké kovy (např. z obrazovek)",
+        "parent": "1011",
+        "danger": "1"
+    },
+    "101112": {
+        "name": "Odpadní sklo neuvedené pod číslem 10 11 11",
+        "parent": "1011"
+    },
+    "101113": {
+        "name": "Kaly z leštění a broušení skla obsahující nebezpečné látky",
+        "parent": "1011",
+        "danger": "1"
+    },
+    "101114": {
+        "name": "Kaly z leštění a broušení skla neuvedené pod číslem 10 11 13",
+        "parent": "1011"
+    },
+    "101115": {
+        "name": "Pevné odpady z čištění spalin obsahující nebezpečné látky",
+        "parent": "1011",
+        "danger": "1"
+    },
+    "101116": {
+        "name": "Pevné odpady z čištění spalin neuvedené pod číslem 10 11 15",
+        "parent": "1011"
+    },
+    "101117": {
+        "name": "Kaly a filtrační koláče z čištění spalin obsahující nebezpečné látky",
+        "parent": "1011",
+        "danger": "1"
+    },
+    "101118": {
+        "name": "Kaly a filtrační koláče z čištění spalin neuvedené pod číslem 10 11 17",
+        "parent": "1011"
+    },
+    "101119": {
+        "name": "Pevné odpady z čištění odpadních vod v místě jejich vzniku obsahující nebezpečné látky",
+        "parent": "1011",
+        "danger": "1"
+    },
+    "101120": {
+        "name": "Pevné odpady z čištění odpadních vod v místě jejich vzniku neuvedené pod číslem 10 11 19",
+        "parent": "1011"
+    },
+    "101199": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1011"
+    },
+    "1012": {
+        "name": "Odpady z výroby keramického zboží, cihel, tašek a staviv",
+        "parent": "10"
+    },
+    "101201": {
+        "name": "Odpadní keramické hmoty před tepelným zpracováním",
+        "parent": "1012"
+    },
+    "101203": {
+        "name": "Úlet a prach",
+        "parent": "1012"
+    },
+    "101205": {
+        "name": "Kaly a filtrační koláče z čištění plynů",
+        "parent": "1012"
+    },
+    "101206": {
+        "name": "Vyřazené formy",
+        "parent": "1012"
+    },
+    "101208": {
+        "name": "Odpadní keramické zboží, cihly, tašky a staviva (po tepelném zpracování)",
+        "parent": "1012"
+    },
+    "101209": {
+        "name": "Pevné odpady z čištění plynu obsahující nebezpečné látky",
+        "parent": "1012",
+        "danger": "1"
+    },
+    "101210": {
+        "name": "Pevné odpady z čištění plynu neuvedené pod číslem 10 12 09",
+        "parent": "1012"
+    },
+    "101211": {
+        "name": "Odpady z glazování obsahující těžké kovy",
+        "parent": "1012",
+        "danger": "1"
+    },
+    "101212": {
+        "name": "Odpady z glazování neuvedené pod číslem 10 12 11",
+        "parent": "1012"
+    },
+    "101213": {
+        "name": "Kaly z čištění odpadních vod v místě jejich vzniku",
+        "parent": "1012"
+    },
+    "101299": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1012"
+    },
+    "1013": {
+        "name": "Odpady z výroby cementu, vápna a sádry a předmětů a výrobků z nich vyráběných",
+        "parent": "10"
+    },
+    "101301": {
+        "name": "Odpad surovin před tepelným zpracováním",
+        "parent": "1013"
+    },
+    "101304": {   
+        "name": "Odpady z kalcinace a hašení vápna",
+        "parent": "1013"
+    },
+    "101306": {
+        "name": "Úlet a prach (kromě odpadů uvedených pod čísly 10 13 12a 10 13 13)",
+        "parent": "1013"
+    },
+    "101307": {
+        "name": "Kaly a filtrační koláče z čištění plynu",
+        "parent": "1013"
+    },
+    "101309": {
+        "name": "Odpady z výroby azbestocementu obsahující azbest",
+        "parent": "1013",
+        "danger": "1"
+    },
+    "101310": {
+        "name": "Odpady z výroby azbestocementu neuvedené pod číslem 10 13 09",
+        "parent": "1013"
+    },
+    "101311": {
+        "name": "Odpady z jiných směsných materiálů na bázi cementu neuvedené pod čísly 10 13 09 a 10 13 10",
+        "parent": "1013"
+    },
+    "101312": {
+        "name": "Pevné odpady z čištění plynu obsahující nebezpečné látky",
+        "parent": "1013",
+        "danger": "1"
+    },
+    "101313": {
+        "name": "Pevné odpady z čištění plynu neuvedené pod číslem 10 13 12",
+        "parent": "1013"
+    },
+    "101314": {
+        "name": "Odpadní beton a betonový kal",
+        "parent": "1013"
+    },
+    "101399": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1013"
+    },
+    "1014": {
+        "name": "Odpady z krematorií",
+        "parent": "10"
+    },
+    "101401": {
+        "name": "Odpad z čištění plynu obsahující rtuť",
+        "parent": "1013",
+        "danger": "1"
+    },
+
+    "11": {
+        "name": "Odpady z chemických povrchových úprav, z povrchových úprav kovů a jiných materiálů a z hydrometalurgie neželezných kovů"
+    },
+    "1101": {
+        "name": "Odpady z chemických povrchových úprav, z povrchových úprav kovů a jiných materiálů (např. galvanizace, zinkování, moření, leptání, fosfátování, alkalické odmašťování, anodická oxidace)",
+        "parent": "11"
+    },
+    "110105": {
+        "name": "Kyselé mořicí roztoky",
+        "parent": "1101",
+        "danger": "1"
+    },
+    "110106": {
+        "name": "Kyseliny blíže nespecifikované",
+        "parent": "1101",
+        "danger": "1"
+    },
+    "110107": {
+        "name": "Alkalické mořicí roztoky",
+        "parent": "1101",
+        "danger": "1"
+    },
+    "110108": {
+        "name": "Kaly z fosfátování",
+        "parent": "1101",
+        "danger": "1"
+    },
+    "110109": {
+        "name": "Kaly a filtrační koláče obsahující nebezpečné látky",
+        "parent": "1101",
+        "danger": "1"
+    },
+    "110110": {
+        "name": "Kaly a filtrační koláče neuvedené pod číslem 11 01 09",
+        "parent": "1101"
+    },
+    "110111": {
+        "name": "Oplachové vody obsahující nebezpečné látky",
+        "parent": "1101",
+        "danger": "1"
+    },
+    "110112": {
+        "name": "Oplachové vody neuvedené pod číslem 11 01 11",
+        "parent": "1101"
+    },
+    "110113": {
+        "name": "Odpady z odmašťování obsahující nebezpečné látky",
+        "parent": "1101",
+        "danger": "1"
+    },
+    "110114": {
+        "name": "Odpady z odmašťování neuvedené pod číslem 11 01 13",
+        "parent": "1101"
+    },
+    "110115": {
+        "name": "Výluhy a kaly z membránových systémů nebo ze systémů iontoměničů obsahující nebezpečné látky",
+        "parent": "1101",
+        "danger": "1"
+    },
+    "110116": {
+        "name": "Nasycené nebo upotřebené pryskyřice iontoměničů",
+        "parent": "1101",
+        "danger": "1"
+    },
+    "110198": {
+        "name": "Jiné odpady obsahující nebezpečné látky",
+        "parent": "1101",
+        "danger": "1"
+    },
+    "110199": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1101"
+    },
+    "1102": {
+        "name": "Odpady z hydrometalurgie neželezných kovů",
+        "parent": "11"
+    },
+    "110202": {
+        "name": "Kaly z hydrometalurgie zinku (včetně jarositu a goethitu)",
+        "parent": "1102",
+        "danger": "1"
+    },
+    "110203": {
+        "name": "Odpady z výroby anod pro vodné elektrolytické procesy",
+        "parent": "1102"
+    },
+    "110205": {
+        "name": "Odpady z hydrometalurgie mědi obsahující nebezpečné látky",
+        "parent": "1102",
+        "danger": "1"
+    },
+    "110206": {
+        "name": "Odpady z hydrometalurgie mědi neuvedené pod číslem 11 02 05",
+        "parent": "1102"
+    },
+    "110207": {
+        "name": "Jiné odpady obsahující nebezpečné látky",
+        "parent": "1102",
+        "danger": "1"
+    },
+    "110299": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1102"
+    },
+    "1103": {
+        "name": "Kaly a pevné odpady z popouštěcích procesů",
+        "parent": "11"
+    },
+    "110301": {
+        "name": "Odpady obsahující kyanidy",
+        "parent": "1103",
+        "danger": "1"
+    },
+    "110302": {
+        "name": "Jiné odpady",
+        "parent": "1103",
+        "danger": "1"
+    },
+    "1105": {
+        "name": "Odpady ze žárového zinkování",
+        "parent": "11"
+    },
+    "110501": {
+        "name": "Tvrdý zinek",
+        "parent": "1105"
+    },
+    "110502": {
+        "name": "Zinkový popel",
+        "parent": "1105"
+    },
+    "110503": {
+        "name": "Pevné odpady z čištění plynu",
+        "parent": "1105",
+        "danger": "1"
+    },
+    "110504": {
+        "name": "Upotřebené tavidlo",
+        "parent": "1105",
+        "danger": "1"
+    },
+    "110599": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1105"
+    },
+
+    "12": {
+        "name": "Odpady z tváření a z fyzikální a mechanické úpravy povrchu kovů a plastů"
+    },
+    "1201": {
+        "name": "Odpady z tváření a z fyzikální a mechanické povrchové úpravy kovů a plastů",
+        "parent": "12"
+    },
+    "120101": {
+        "name": "Piliny a třísky železných kovů",
+        "parent": "1201"
+    },
+    "120102": {
+        "name": "Úlet železných kovů",
+        "parent": "1201"
+    },
+    "120103": {
+        "name": "Piliny a třísky neželezných kovů",
+        "parent": "1201"
+    },
+    "12010301": {
+        "name": "Měď, bronz a mosaz",
+        "parent": "120103"
+    },
+    "12010302": {
+        "name": "Hliník",
+        "parent": "120103"
+    },
+    "12010303": {
+        "name": "Olovo",
+        "parent": "120103"
+    },
+    "12010304": {
+        "name": "Zinek",
+        "parent": "120103"
+    },
+    "12010306": {
+        "name": "Cín",
+        "parent": "120103"
+    },
+    "120104": {
+        "name": "Úlet neželezných kovů",
+        "parent": "1201"
+    },
+    "120105": {
+        "name": "Plastové hobliny a třísky",
+        "parent": "1201"
+    },
+    "120106": {
+        "name": "Odpadní minerální řezné oleje obsahující halogeny (kromě emulzí a roztoků)",
+        "parent": "1201",
+        "danger": "1"
+    },
+    "120107": {
+        "name": "Odpadní minerální řezné oleje neobsahující halogeny (kromě emulzí a roztoků)",
+        "parent": "1201",
+        "danger": "1"
+    },
+    "120108": {
+        "name": "Odpadní řezné emulze a roztoky obsahující halogeny",
+        "parent": "1201",
+        "danger": "1"
+    },
+    "120109": {
+        "name": "Odpadní řezné emulze a roztoky neobsahující halogeny",
+        "parent": "1201",
+        "danger": "1"
+    },
+    "120110": {
+        "name": "Syntetické řezné oleje",
+        "parent": "1201",
+        "danger": "1"
+    },
+    "120112": {
+        "name": "Upotřebené vosky a tuky",
+        "parent": "1201",
+        "danger": "1"
+    },
+    "120113": {
+        "name": "Odpady ze svařování",
+        "parent": "1201"
+    },
+    "120114": {
+        "name": "Kaly z obrábění obsahující nebezpečné látky",
+        "parent": "1201",
+        "danger": "1"
+    },
+    "120115": {
+        "name": "Jiné kaly z obrábění neuvedené pod číslem 12 01 14",
+        "parent": "1201"
+    },
+    "120116": {
+        "name": "Odpadní materiál z otryskávání obsahující nebezpečné látky",
+        "parent": "1201",
+        "danger": "1"
+    },
+    "120117": {
+        "name": "Odpadní materiál z otryskávání neuvedený pod číslem 12 01 16",
+        "parent": "1201"
+    },
+    "120118": {
+        "name": "Kovový kal (brusný kal, honovací kal a kal z lapování) obsahující olej",
+        "parent": "1201",
+        "danger": "1"
+    },
+    "120119": {
+        "name": "Snadno biologicky rozložitelný řezný olej",
+        "parent": "1201",
+        "danger": "1"
+    },
+    "120120": {
+        "name": "Upotřebené brusné nástroje a brusné materiály obsahující nebezpečné látky",
+        "parent": "1201",
+        "danger": "1"
+    },
+    "120121": {
+        "name": "Upotřebené brusné nástroje a brusné materiály neuvedené pod číslem 12 01 20",
+        "parent": "1201"
+    },
+    "120199": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1201"
+    },
+    "1203": {
+        "name": "Odpady z procesů odmašťování vodou a vodní parou (kromě odpadů uvedených ve skupině 11)",
+        "parent": "12"
+    },
+    "120301": {
+        "name": "Prací vody",
+        "parent": "1203",
+        "danger": "1"
+    },
+    "120302": {
+        "name": "Odpady z odmašťování vodní parou",
+        "parent": "1203",
+        "danger": "1"
+    },
+
+    "13": {
+        "name": "Odpady olejů a odpady kapalných paliv (kromě jedlých olejů a odpadů uvedených ve skupinách 05 a 12)"
+    },
+    "1301": {
+        "name": "Odpadní hydraulické oleje",
+        "parent": "13"
+    },
+    "130101": {
+        "name": "Hydraulické oleje obsahující PCB",
+        "parent": "1301",
+        "danger": "1"
+    },
+    "130104": {
+        "name": "Chlorované emulze",
+        "parent": "1301",
+        "danger": "1"
+    },
+    "130105": {   
+        "name": "Nechlorované emulze",
+        "parent": "1301",
+        "danger": "1"
+    },
+    "130109": {
+        "name": "Chlorované hydraulické minerální oleje",
+        "parent": "1301",
+        "danger": "1"
+    },
+    "130110": {
+        "name": "Nechlorované hydraulické minerální oleje",
+        "parent": "1301",
+        "danger": "1"
+    },
+    "130111": {
+        "name": "Syntetické hydraulické oleje",
+        "parent": "1301",
+        "danger": "1"
+    },
+    "130112": {
+        "name": "Snadno biologicky rozložitelné hydraulické oleje",
+        "parent": "1301",
+        "danger": "1"
+    },
+    "130113": {
+        "name": "Jiné hydraulické oleje",
+        "parent": "1301",
+        "danger": "1"
+    },
+    "1302": {
+        "name": "Odpadní motorové, převodové a mazací oleje",
+        "parent": "13"
+    },
+    "130204": {
+        "name": "Chlorované minerální motorové, převodové a mazací oleje",
+        "parent": "1302",
+        "danger": "1"
+    },
+    "130205": {
+        "name": "Nechlorované minerální motorové, převodové a mazací oleje",
+        "parent": "1302",
+        "danger": "1"
+    },
+    "130206": {
+        "name": "Syntetické motorové, převodové a mazací oleje",
+        "parent": "1302",
+        "danger": "1"
+    },
+    "130207": {
+        "name": "Snadno biologicky rozložitelné motorové, převodové a mazací oleje",
+        "parent": "1302",
+        "danger": "1"
+    },
+    "130208": {
+        "name": "Jiné motorové, převodové a mazací oleje",
+        "parent": "1302",
+        "danger": "1"
+    },
+    "1303": {
+        "name": "Odpadní izolační a teplonosné oleje",
+        "parent": "13"
+    },
+    "130301": {
+        "name": "Odpadní izolační nebo teplonosné oleje s obsahem PCB",
+        "parent": "1303",
+        "danger": "1"
+    },
+    "130306": {
+        "name": "Minerální chlorované izolační a teplonosné oleje neuvedené pod číslem 13 03 01",
+        "parent": "1303",
+        "danger": "1"
+    },
+    "130307": {
+        "name": "Minerální nechlorované izolační a teplonosné oleje",
+        "parent": "1303",
+        "danger": "1"
+    },
+    "130308": {
+        "name": "Syntetické izolační a teplonosné oleje",
+        "parent": "1303",
+        "danger": "1"
+    },
+    "130309": {
+        "name": "Snadno biologicky rozložitelné izolační a teplonosné oleje",
+        "parent": "1303",
+        "danger": "1"
+    },
+    "130310": {
+        "name": "Jiné izolační a teplonosné oleje",
+        "parent": "1303",
+        "danger": "1"
+    },
+    "1304": {
+        "name": "Oleje z lodního dna",
+        "parent": "13"
+    },
+    "130401": {
+        "name": "Oleje ze dna lodí vnitrozemské plavby",
+        "parent": "1304",
+        "danger": "1"
+    },
+    "130402": {
+        "name": "Oleje z kanalizace přístavních mol",
+        "parent": "1304",
+        "danger": "1"
+    },
+    "130403": {
+        "name": "Oleje ze dna jiných lodí",
+        "parent": "1304",
+        "danger": "1"
+    },
+    "1305": {
+        "name": "Odpady z odlučovačů oleje",
+        "parent": "13"
+    },
+    "130501": {
+        "name": "Pevný podíl z lapáků písku a odlučovačů oleje",
+        "parent": "1305",
+        "danger": "1"
+    },
+    "130502": {
+        "name": "Kaly z odlučovačů oleje",
+        "parent": "1305",
+        "danger": "1"
+    },
+    "130503": {
+        "name": "Kaly z lapáků nečistot",
+        "parent": "1305",
+        "danger": "1"
+    },
+    "130506": {
+        "name": "Olej z odlučovačů oleje",
+        "parent": "1305",
+        "danger": "1"
+    },
+    "130507": {
+        "name": "Zaolejovaná voda z odlučovačů oleje",
+        "parent": "1305",
+        "danger": "1"
+    },
+    "130508": {
+        "name": "Směsi odpadů z lapáku písku a z odlučovačů oleje",
+        "parent": "1305",
+        "danger": "1"
+    },
+    "1307": {
+        "name": "Odpady kapalných paliv",
+        "parent": "13"
+    },
+    "130701": {
+        "name": "Topný olej a motorová nafta",
+        "parent": "1307",
+        "danger": "1"
+    },
+    "130702": {
+        "name": "Motorový benzín",
+        "parent": "1307",
+        "danger": "1"
+    },
+    "130703": {
+        "name": "Jiná paliva (včetně směsí)",
+        "parent": "1307",
+        "danger": "1"
+    },
+    "1308": {
+        "name": "Odpadní oleje blíže nespecifikované",
+        "parent": "13"
+    },
+    "130801": {
+        "name": "Odsolené kaly nebo emulze",
+        "parent": "1308",
+        "danger": "1"
+    },
+    "130802": {
+        "name": "Jiné emulze",
+        "parent": "1308",
+        "danger": "1"
+    },
+    "130899": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1308",
+        "danger": "1"
+    },
+
+    "14": {
+        "name": "Odpady organických rozpouštědel, chladiv a hnacích médií (kromě odpadů uvedených ve skupinách 07 a 08)"
+    },
+    "1406": {
+        "name": "Odpadní organická rozpouštědla, chladicí média a hnací média rozprašovačů pěn a aerosolů",
+        "parent": "14"
+    },
+    "140601": {
+        "name": "Chlorofluorouhlovodíky, hydrochlorofluorouhlovodíky (HCFC), hydrofluorouhlovodíky (HFC)",
+        "parent": "1406",
+        "danger": "1"
+    },
+    "14060101": {
+        "name": "Jiná chladící a hnací média",
+        "parent": "140601",
+        "danger": "1"
+    },
+    "140602": {
+        "name": "Jiná halogenovaná rozpouštědla a směsi rozpouštědel",
+        "parent": "1406",
+        "danger": "1"
+    },
+    "140603": {
+        "name": "Jiná rozpouštědla a směsi rozpouštědel",
+        "parent": "1406",
+        "danger": "1"
+    },
+    "140604": {
+        "name": "Kaly nebo pevné odpady obsahující halogenovaná rozpouštědla",
+        "parent": "1406",
+        "danger": "1"
+    },
+    "140605": {
+        "name": "Kaly nebo pevné odpady obsahující ostatní rozpouštědla",
+        "parent": "1406",
+        "danger": "1"
+    },
+
+    "15": {
+        "name": "Odpadní obaly, absorpční činidla, čisticí tkaniny, filtrační materiály a ochranné oděvy jinak neurčené"
+    },
+    "1501": {
+        "name": "Obaly",
+        "parent": "15"
+    },
+    "150101": {
+        "name": "Papírové a lepenkové obaly",
+        "parent": "1501"
+    },
+    "150102": {
+        "name": "Plastové obaly",
+        "parent": "1501"
+    },
+    "150103": {
+        "name": "Dřevěné obaly",
+        "parent": "1501"
+    },
+    "150104": {
+        "name": "Kovové obaly",
+        "parent": "1501"
+    },
+    "150105": {
+        "name": "Kompozitní obaly",
+        "parent": "1501"
+    },
+    "150106": {
+        "name": "Směsné obaly",
+        "parent": "1501"
+    },
+    "150107": {
+        "name": "Skleněné obaly",
+        "parent": "1501"
+    },
+    "150109": {
+        "name": "Textilní obaly",
+        "parent": "1501"
+    },
+    "150110": {
+        "name": "Obaly obsahující zbytky nebezpečných látek nebo obaly těmito látkami znečištěné",
+        "parent": "1501",
+        "danger": "1"
+    },
+    "150111": {
+        "name": "Kovové obaly obsahující nebezpečnou výplňovou hmotu (např. azbest) včetně prázdných tlakových nádob",
+        "parent": "1501",
+        "danger": "1"
+    },
+    "1502": {
+        "name": "Absorpční činidla, filtrační materiály, čisticí tkaniny a ochranné oděvy",
+        "parent": "15"
+    },
+    "150202": {
+        "name": "Absorpční činidla, filtrační materiály (včetně olejových filtrů jinak blíže neurčených), čisticí tkaniny a ochranné oděvy znečištěné nebezpečnými látkami",
+        "parent": "1502",
+        "danger": "1"
+    },
+    "150203": {
+        "name": "Absorpční činidla, filtrační materiály, čisticí tkaniny a ochranné oděvy neuvedené pod číslem 15 02 02",
+        "parent": "1502"
+    },
+
+    "16": {
+        "name": "Odpady v tomto katalogu jinak neurčené"
+    },
+    "1601": {
+        "name": "Vyřazená vozidla s ukončenou životností z různých druhů dopravy (včetně stavebních strojů) a odpady z demontáže těchto vozidel a z jejich údržby (kromě odpadů uvedených ve skupinách 13,14 a v podskupinách 16 06 a 16 08)",
+        "parent": "16"
+    },
+    "160103": {
+        "name": "Pneumatiky",
+        "parent": "1601"
+    },
+    "160104": {
+        "name": "Vyřazená vozidla s ukončenou životností",
+        "parent": "1601",
+        "danger": "1"
+    },
+    "16010401": {
+        "name": "Vyřazené dopravní prostředky z různých druhů dopravy a stroje",
+        "parent": "160104",
+        "danger": "1"
+    },
+    "160106": {
+        "name": "Vyřazená vozidla s ukončenou životností zbavené kapalin a jiných nebezpečných součástí",
+        "parent": "1601"
+    },
+    "16010601": {
+        "name": "Vyřazené dopravní prostředky z různých druhů dopravy a stroje zbavené kapalin a jiných nebezpečných součástí",
+        "parent": "160106"
+    },
+    "160107": {
+        "name": "Olejové filtry",
+        "parent": "1601",
+        "danger": "1"
+    },
+    "160108": {
+        "name": "Součástky obsahující rtuť",
+        "parent": "1601",
+        "danger": "1"
+    },
+    "160109": {
+        "name": "Součástky obsahující PCB",
+        "parent": "1601",
+        "danger": "1"
+    },
+    "160110": {
+        "name": "Výbušné součásti (např. airbagy)",
+        "parent": "1601",
+        "danger": "1"
+    },
+    "160111": {
+        "name": "Brzdové destičky obsahující azbest",
+        "parent": "1601",
+        "danger": "1"
+    },
+    "160112": {
+        "name": "Brzdové destičky neuvedené pod číslem 16 01 11",
+        "parent": "1601"
+    },
+    "160113": {
+        "name": "Brzdové kapaliny",
+        "parent": "1601",
+        "danger": "1"
+    },
+    "160114": {
+        "name": "Nemrznoucí kapaliny obsahující nebezpečné látky",
+        "parent": "1601",
+        "danger": "1"
+    },
+    "160115": {
+        "name": "Nemrznoucí kapaliny neuvedené pod číslem 16 01 14",
+        "parent": "1601"
+    },
+    "160116": {
+        "name": "Nádrže na zkapalněný plyn",
+        "parent": "1601"
+    },
+    "160117": {
+        "name": "Železné kovy",
+        "parent": "1601"
+    },
+    "160118": {
+        "name": "Neželezné kovy",
+        "parent": "1601"
+    },
+    "160119": {
+        "name": "Plasty",
+        "parent": "1601"
+    },
+    "160120": {
+        "name": "Sklo",
+        "parent": "1601"
+    },
+    "160121": {
+        "name": "Nebezpečné součástky neuvedené pod čísly 16 01 07 až 16 01 11 a 16 01 13 a 16 01 14",
+        "parent": "1601",
+        "danger": "1"
+    },
+    "160122": {
+        "name": "Součástky jinak blíže neurčené",
+        "parent": "1601"
+    },
+    "160199": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1601"
+    },
+    "1602": {
+        "name": "Odpady z elektrického a elektronického zařízení",
+        "parent": "16"
+    },
+    "160209": {
+        "name": "Transformátory a kondenzátory obsahující PCB",
+        "parent": "1602",
+        "danger": "1"
+    },
+    "160210": {
+        "name": "Jiná vyřazená zařízení obsahující PCB nebo těmito látkami znečištěná neuvedená pod číslem 16 02 09",
+        "parent": "1602",
+        "danger": "1"
+    },
+    "160211": {
+        "name": "Vyřazená zařízení obsahující chlorofluorouhlovodíky, hydrochlorofluorouhlovodíky (HCFC) a hydrofluorouhlovodíky (HFC)",
+        "parent": "1602",
+        "danger": "1"
+    },
+    "160212": {
+        "name": "Vyřazená zařízení obsahující volný azbest",
+        "parent": "1602",
+        "danger": "1"
+    },
+    "160213": {
+        "name": "Vyřazená zařízení obsahující nebezpečné složky neuvedená pod čísly 16 02 09 až 16 02 12",
+        "parent": "1602"
+    },
+    "16021301": {
+        "name": "Tiskařské tonerové kazety mající nebezpečné vlastnosti",
+        "parent": "160213"
+    },
+    "160214": {
+        "name": "Vyřazená zařízení neuvedená pod čísly 16 02 09 až 16 02 13",
+        "parent": "1602"
+    },
+    "16021401": {
+        "name": "Tiskařské tonerové kazety nezařazené pod 16 02 13 01",
+        "parent": "160214"
+    },
+    "160215": {
+        "name": "Nebezpečné složky odstraněné z vyřazených zařízení",
+        "parent": "1602",
+        "danger": "1"
+    },
+    "160216": {
+        "name": "Jiné složky odstraněné z vyřazených zařízení neuvedené pod číslem 16 02 15",
+        "parent": "1602"
+    },
+    "1603": {
+        "name": "Vadné šarže a nepoužité výrobky",
+        "parent": "16"
+    },
+    "160303": {
+        "name": "Anorganické odpady obsahující nebezpečné látky",
+        "parent": "1603",
+        "danger": "1"
+    },
+    "160304": {
+        "name": "Anorganické odpady neuvedené pod číslem 16 03 03",
+        "parent": "1603"
+    },
+    "160305": {
+        "name": "Organické odpady obsahující nebezpečné látky",
+        "parent": "1603",
+        "danger": "1"
+    },
+    "160306": {
+        "name": "Organické odpady neuvedené pod číslem 16 03 05",
+        "parent": "1603"
+    },
+    "160307": {
+        "name": "Kovová rtuť",
+        "parent": "1603",
+        "danger": "1"
+    },
+    "1604": {
+        "name": "Odpady výbušných materiálů",
+        "parent": "16"
+    },
+    "160401": {
+        "name": "Odpadní munice a střelivo",
+        "parent": "1604",
+        "danger": "1"
+    },
+    "160402": {
+        "name": "Odpad z pyrotechnických výrobků",
+        "parent": "1604",
+        "danger": "1"
+    },
+    "160403": {
+        "name": "Odpad z jiných výbušných materiálů",
+        "parent": "1604",
+        "danger": "1"
+    },
+    "1605": {
+        "name": "Chemické látky a plyny v tlakových nádobách a vyřazené chemikálie",
+        "parent": "16"
+    },
+    "160504": {
+        "name": "Plyny v tlakových nádobách (včetně halonů) obsahující nebezpečné látky",
+        "parent": "1605",
+        "danger": "1"
+    },
+    "160505": {
+        "name": "Jiné plyny v tlakových nádobách (včetně halonů) neuvedené pod číslem 16 05 04",
+        "parent": "1605"
+    },
+    "160506": {
+        "name": "Laboratorní chemikálie a jejich směsi, které jsou nebo obsahují nebezpečné látky",
+        "parent": "1605",
+        "danger": "1"
+    },
+    "160507": {
+        "name": "Vyřazené anorganické chemikálie, které jsou nebo obsahují nebezpečné látky",
+        "parent": "1605",
+        "danger": "1"
+    },
+    "160508": {
+        "name": "Vyřazené organické chemikálie, které jsou nebo obsahují nebezpečné látky",
+        "parent": "1605",
+        "danger": "1"
+    },
+    "160509": {
+        "name": "Vyřazené chemikálie neuvedené pod čísly 16 05 06, 16 05 07 nebo 16 05 08",
+        "parent": "1605"
+    },
+    "1606": {
+        "name": "Baterie a akumulátory",
+        "parent": "16"
+    },
+    "160601": {   
+        "name": "Olověné akumulátory",
+        "parent": "1606",
+        "danger": "1"
+    },
+    "160602": {
+        "name": "Nikl-kadmiové baterie a akumulátory",
+        "parent": "1606",
+        "danger": "1"
+    },
+    "160603": {
+        "name": "Baterie obsahující rtuť",
+        "parent": "1606",
+        "danger": "1"
+    },
+    "160604": {
+        "name": "Alkalické baterie (kromě baterií uvedených pod číslem 16 06 03)",
+        "parent": "1606"
+    },
+    "160605": {
+        "name": "Jiné baterie a akumulátory",
+        "parent": "1606"
+    },
+    "16060501": {
+        "name": "Baterie a akumulátory obsahující lithium",
+        "parent": "160605"
+    },
+    "160606": {
+        "name": "Odděleně soustřeďované elektrolyty z baterií a akumulátorů",
+        "parent": "1606",
+        "danger": "1"
+    },
+    "1607": {
+        "name": "Odpady z čištění přepravních a skladovacích nádrží a sudů (kromě odpadů uvedených ve skupinách 05 a 12)",
+        "parent": "16"
+    },
+    "160708": {
+        "name": "Odpady obsahující ropné látky",
+        "parent": "1607",
+        "danger": "1"
+    },
+    "160709": {
+        "name": "Odpady obsahující jiné nebezpečné látky",
+        "parent": "1607",
+        "danger": "1"
+    },
+    "160799": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1607"
+    },
+    "1608": {
+        "name": "Upotřebené katalyzátory",
+        "parent": "16"
+    },
+    "160801": {
+        "name": "Upotřebené katalyzátory obsahující zlato, stříbro, rhenium, rhodium, paladium, iridium nebo platinu (kromě odpadu uvedeného pod číslem 16 08 07)",
+        "parent": "1608"
+    },
+    "160802": {
+        "name": "Upotřebené katalyzátory obsahující nebezpečné přechodné kovy nebo jejich sloučeniny",
+        "parent": "1608",
+        "danger": "1"
+    },
+    "160803": {
+        "name": "Upotřebené katalyzátory obsahující jiné přechodné kovy nebo sloučeniny přechodných kovů jinak blíže neurčené",
+        "parent": "1608"
+    },
+    "160804": {
+        "name": "Upotřebené tekuté katalyzátory z katalytického krakování (kromě odpadu uvedeného pod číslem 16 08 07)",
+        "parent": "1608"
+    },
+    "160805": {
+        "name": "Upotřebené katalyzátory obsahující kyselinu fosforečnou",
+        "parent": "1608",
+        "danger": "1"
+    },
+    "160806": {
+        "name": "Upotřebené kapaliny použité jako katalyzátory",
+        "parent": "1608",
+        "danger": "1"
+    },
+    "160807": {
+        "name": "Upotřebené katalyzátory znečištěné nebezpečnými látkami",
+        "parent": "1608",
+        "danger": "1"
+    },
+    "1609": {
+        "name": "Oxidační činidla",
+        "parent": "16"
+    },
+    "160901": {
+        "name": "Manganistany, např. manganistan draselný",
+        "parent": "1609",
+        "danger": "1"
+    },
+    "160902": {
+        "name": "Chromany, např. chroman draselný, dichroman draselný nebo sodný",
+        "parent": "1609",
+        "danger": "1"
+    },
+    "160903": {
+        "name": "Peroxidy, např. peroxid vodíku",
+        "parent": "1609",
+        "danger": "1"
+    },
+    "160904": {
+        "name": "Oxidační činidla jinak blíže neurčená",
+        "parent": "1609",
+        "danger": "1"
+    },
+    "1610": {
+        "name": "Odpadní vody určené k úpravě mimo místo vzniku",
+        "parent": "16"
+    },
+    "161001": {
+        "name": "Odpadní vody obsahující nebezpečné látky",
+        "parent": "1610",
+        "danger": "1"
+    },
+    "161002": {
+        "name": "Odpadní vody neuvedené pod číslem 16 10 01",
+        "parent": "1610"
+    },
+    "161003": {
+        "name": "Vodné koncentráty obsahující nebezpečné látky",
+        "parent": "1610",
+        "danger": "1"
+    },
+    "161004": {
+        "name": "Vodné koncentráty neuvedené pod číslem 16 10 03",
+        "parent": "1610"
+    },
+    "1611": {
+        "name": "Odpadní vyzdívky a žáruvzdorné materiály",
+        "parent": "16"
+    },
+    "161101": {
+        "name": "Vyzdívky na bázi uhlíku a žáruvzdorné materiály z metalurgických procesů obsahující nebezpečné látky",
+        "parent": "1611",
+        "danger": "1"
+    },
+    "161102": {
+        "name": "Jiné vyzdívky na bázi uhlíku a žáruvzdorné materiály z metalurgických procesů neuvedené pod číslem 16 11 01",
+        "parent": "1611"
+    },
+    "161103": {
+        "name": "Jiné vyzdívky a žáruvzdorné materiály z metalurgických procesů obsahující nebezpečné látky",
+        "parent": "1611",
+        "danger": "1"
+    },
+    "161104": {
+        "name": "Jiné vyzdívky a žáruvzdorné materiály z metalurgických procesů neuvedené pod číslem 16 11 03",
+        "parent": "1611"
+    },
+    "161105": {
+        "name": "Vyzdívky a žáruvzdorné materiály z nemetalurgických procesů obsahující nebezpečné látky",
+        "parent": "1611",
+        "danger": "1"
+    },
+    "161106": {
+        "name": "Vyzdívky a žáruvzdorné materiály z nemetalurgických procesů neuvedené pod číslem 16 11 05",
+        "parent": "1611"
+    },
+
+    "17": {
+        "name": "Stavební a demoliční odpady (včetně vytěžené zeminy z kontaminovaných míst)"
+    },
+    "1701": {
+        "name": "Beton, cihly, tašky a keramika",
+        "parent": "17"
+    },
+    "170101": {
+        "name": "Beton",
+        "parent": "1701"
+    },
+    "170102": {
+        "name": "Cihly",
+        "parent": "1701"
+    },
+    "170103": {
+        "name": "Tašky a keramické výrobky",
+        "parent": "1701"
+    },
+    "170106": {
+        "name": "Směsi nebo oddělené frakce betonu, cihel, tašek a keramických výrobků obsahující nebezpečné látky",
+        "parent": "1701",
+        "danger": "1"
+    },
+    "170107": {
+        "name": "Směsi nebo oddělené frakce betonu, cihel, tašek a keramických výrobků neuvedené pod číslem 17 01 06",
+        "parent": "1701"
+    },
+    "1702": {
+        "name": "Dřevo, sklo a plasty",
+        "parent": "17"
+    },
+    "170201": {
+        "name": "Dřevo",
+        "parent": "1702"
+    },
+    "170202": {
+        "name": "Sklo",
+        "parent": "1702"
+    },
+    "170203": {
+        "name": "Plasty",
+        "parent": "1702"
+    },
+    "170204": {
+        "name": "Sklo, plasty a dřevo obsahující nebezpečné látky nebo nebezpečnými látkami znečištěné",
+        "parent": "1702",
+        "danger": "1"
+    },
+    "1703": {
+        "name": "Asfaltové směsi, dehet a výrobky z dehtu",
+        "parent": "17"
+    },
+    "170301": {
+        "name": "Asfaltové směsi obsahující dehet",
+        "parent": "1703",
+        "danger": "1"
+    },
+    "170302": {
+        "name": "Asfaltové směsi neuvedené pod číslem 17 03 01",
+        "parent": "1703"
+    },
+    "170303": {
+        "name": "Uhelný dehet a výrobky z dehtu",
+        "parent": "1703",
+        "danger": "1"
+    },
+    "1704": {
+        "name": "Kovy (včetně jejich slitin)",
+        "parent": "17"
+    },
+    "170401": {
+        "name": "Měď, bronz, mosaz",
+        "parent": "1704"
+    },
+    "170402": {
+        "name": "Hliník",
+        "parent": "1704"
+    },
+    "170403": {
+        "name": "Olovo",
+        "parent": "1704"
+    },
+    "170404": {
+        "name": "Zinek",
+        "parent": "1704"
+    },
+    "170405": {
+        "name": "Železo a ocel",
+        "parent": "1704"
+    },
+    "170406": {
+        "name": "Cín",
+        "parent": "1704"
+    },
+    "170407": {
+        "name": "Směsné kovy",
+        "parent": "1704"
+    },
+    "170409": {
+        "name": "Kovový odpad znečištěný nebezpečnými látkami",
+        "parent": "1704",
+        "danger": "1"
+    },
+    "170410": {
+        "name": "Kabely obsahující ropné látky, uhelný dehet a jiné nebezpečné látky",
+        "parent": "1704",
+        "danger": "1"
+    },
+    "170411": {
+        "name": "Kabely neuvedené pod číslem 17 04 10",
+        "parent": "1704"
+    },
+    "1705": {
+        "name": "Zemina (včetně vytěžené zeminy z kontaminovaných míst), kamení, vytěžená jalová hornina a hlušina",
+        "parent": "17"
+    },
+    "170503": {
+        "name": "Zemina a kamení obsahující nebezpečné látky",
+        "parent": "1705",
+        "danger": "1"
+    },
+    "170504": {
+        "name": "Zemina a kamení neuvedené pod číslem 17 05 03",
+        "parent": "1705"
+    },
+    "17050401": {
+        "name": "Sedimenty vytěžené z koryt vodních toků a vodních nádrží",
+        "parent": "170504"
+    },
+    "170505": {
+        "name": "Vytěžená jalová hornina a hlušina obsahující nebezpečné látky",
+        "parent": "1705",
+        "danger": "1"
+    },
+    "170506": {
+        "name": "Vytěžená jalová hornina a hlušina neuvedená pod číslem 17 05 05",
+        "parent": "1705"
+    },
+    "170507": {
+        "name": "Štěrk ze železničního svršku obsahující nebezpečné látky",
+        "parent": "1705",
+        "danger": "1"
+    },
+    "170508": {
+        "name": "Štěrk ze železničního svršku neuvedený pod číslem 17 05 07",
+        "parent": "1705"
+    },
+    "1706": {
+        "name": "Izolační materiály a stavební materiály s obsahem azbestu",
+        "parent": "17"
+    },
+    "170601": {
+        "name": "Izolační materiál s obsahem azbestu",
+        "parent": "1706",
+        "danger": "1"
+    },
+    "170603": {
+        "name": "Jiné izolační materiály, které jsou nebo obsahují nebezpečné látky",
+        "parent": "1706",
+        "danger": "1"
+    },
+    "17060301": {
+        "name": "Izolační materiály na bázi polystyrenu obsahující nebezpečné látky",
+        "parent": "170603",
+        "danger": "1"
+    },
+    "170604": {
+        "name": "Izolační materiály neuvedené pod čísly 17 06 01 a 17 06 03",
+        "parent": "1706"
+    },
+    "17060401": {
+        "name": "Izolační materiály na bázi polystyrenu s obsahem POPs vyžadující specifický způsob nakládání s ohledem na nařízení o POPs",
+        "parent": "170604"
+    },
+    "17060402": {
+        "name": "Izolační materiály na bázi polystyrenu",
+        "parent": "170604"
+    },
+    "170605": {
+        "name": "Stavební materiály obsahující azbest",
+        "parent": "1706",
+        "danger": "1"
+    },
+    "1708": {
+        "name": "Stavební materiál na bázi sádry",
+        "parent": "17"
+    },
+    "170801": {
+        "name": "Stavební materiály na bázi sádry znečištěné nebezpečnými látkami",
+        "parent": "1708",
+        "danger": "1"
+    },
+    "170802": {
+        "name": "Stavební materiály na bázi sádry neuvedené pod číslem 17 08 01",
+        "parent": "1708"
+    },
+    "1709": {
+        "name": "Jiné stavební a demoliční odpady",
+        "parent": "17"
+    },
+    "170901": {
+        "name": "Stavební a demoliční odpady obsahující rtuť",
+        "parent": "1709",
+        "danger": "1"
+    },
+    "170902": {
+        "name": "Stavební a demoliční odpady obsahující PCB (např. těsnící materiály obsahující PCB, podlahoviny na bázi pryskyřic obsahující PCB, utěsněné zasklené dílce obsahující PCB, kondenzátory obsahující PCB)",
+        "parent": "1709",
+        "danger": "1"
+    },
+    "170903": {
+        "name": "Jiné stavební a demoliční odpady (včetně směsných stavebních a demoličních odpadů) obsahující nebezpečné látky",
+        "parent": "1709",
+        "danger": "1"
+    },
+    "170904": {
+        "name": "Směsné stavební a demoliční odpady neuvedené pod čísly 17 09 01, 17 09 02 a 17 09 03",
+        "parent": "1709"
+    },
+
+    "18": {
+        "name": "Odpady ze zdravotní nebo veterinární péče a /nebo z výzkumu s nimi souvisejícího (s výjimkou kuchyňských odpadů a odpadů ze stravovacích zařízení, které bezprostředně nesouvisejí se zdravotní péčí)"
+    },
+    "1801": {   
+        "name": "Odpady z porodnické péče, z diagnostiky, z léčení nebo prevence nemocí lidí",
+        "parent": "18"
+    },
+    "180101": {
+        "name": "Ostré předměty (kromě čísla 18 01 03)",
+        "parent": "1801"
+    },
+    "180102": {
+        "name": "Části těla a orgány včetně krevních vaků a krevních konzerv (kromě čísla 18 01 03)",
+        "parent": "1801"
+    },
+    "180103": {
+        "name": "Odpady, na jejichž sběr a odstraňování jsou kladeny zvláštní požadavky s ohledem na prevenci infekce",
+        "parent": "1801",
+        "danger": "1"
+    },
+    "18010301": {
+        "name": "Ostré předměty, na jejichž sběr a odstraňování jsou kladeny zvláštní požadavky s ohledem na prevenci infekce",
+        "parent": "180103",
+        "danger": "1"
+    },
+    "18010302": {
+        "name": "Části těla a orgány včetně krevních vaků a krevních konzerv",
+        "parent": "180103",
+        "danger": "1"
+    },
+    "180104": {
+        "name": "Odpady, na jejichž sběr a odstraňování nejsou kladeny zvláštní požadavky s ohledem na prevenci infekce",
+        "parent": "1801"
+    },
+    "180106": {
+        "name": "Chemikálie, které jsou nebo obsahují nebezpečné látky",
+        "parent": "1801",
+        "danger": "1"
+    },
+    "180107": {
+        "name": "Chemikálie neuvedené pod číslem 18 01 06",
+        "parent": "1801"
+    },
+    "180108": {
+        "name": "Nepoužitelná cytostatika",
+        "parent": "1801",
+        "danger": "1"
+    },
+    "180109": {
+        "name": "Jiná nepoužitelná léčiva neuvedená pod číslem 18 01 08",
+        "parent": "1801",
+        "danger": "1"
+    },
+    "180110": {
+        "name": "Odpadní amalgám ze stomatologické péče",
+        "parent": "1801",
+        "danger": "1"
+    },
+    "1802": {
+        "name": "Odpady z výzkumu, diagnostiky, léčení nebo prevence nemocí zvířat",
+        "parent": "18"
+    },
+    "180201": {   
+        "name": "Ostré předměty",
+        "parent": "1802"
+    },
+    "180202": {
+        "name": "Odpady, na jejichž sběr a odstraňování jsou kladeny zvláštní požadavky s ohledem na prevenci infekce",
+        "parent": "1802",
+        "danger": "1"
+    },
+    "18020201": {
+        "name": "Ostré předměty, na jejichž sběr a odstraňování jsou kladeny zvláštní požadavky s ohledem na prevenci infekce",
+        "parent": "180202",
+        "danger": "1" 
+    },
+    "180203": {
+        "name": "Odpady, na jejichž sběr a odstraňování nejsou kladeny zvláštní požadavky s ohledem na prevenci infekce",
+        "parent": "1802"
+    },
+    "180205": {
+        "name": "Chemikálie sestávající z nebezpečných látek nebo tyto látky obsahující",
+        "parent": "1802",
+        "danger": "1"
+    },
+    "180206": {
+        "name": "Jiné chemikálie neuvedené pod číslem 18 02 05",
+        "parent": "1802"
+    },
+    "180207": {
+        "name": "Nepoužitelná cytostatika",
+        "parent": "1802",
+        "danger": "1"
+    },
+    "180208": {
+        "name": "Jiná nepoužitelná léčiva neuvedená pod číslem 18 02 07",
+        "parent": "1802",
+        "danger": "1"
+    },
+
+    "19": {
+        "name": "Odpady ze zařízení na zpracování (využívání a odstraňování) odpadu, z čistíren odpadních vod pro čištění těchto vod mimo místo jejich vzniku a z výroby vody pro spotřebu lidí a vody pro průmyslové účely"
+    },
+    "1901": {
+        "name": "Odpady ze spalování nebo z pyrolýzy odpadů",
+        "parent": "19"
+    },
+    "190102": {
+        "name": "Železné materiály získané z pevných zbytků po spalování",
+        "parent": "1901"
+    },
+    "190105": {
+        "name": "Filtrační koláče z čištění odpadních plynů",
+        "parent": "1901",
+        "danger": "1"
+    },
+    "190106": {
+        "name": "Odpadní vody z čištění odpadních plynů a jiné odpadní vody",
+        "parent": "1901",
+        "danger": "1"        
+    },
+    "190107": {
+        "name": "Pevné odpady z čištění odpadních plynů",
+        "parent": "1901",
+        "danger": "1"
+    },
+    "190110": {
+        "name": "Upotřebené aktivní uhlí z čištění spalin",
+        "parent": "1901",
+        "danger": "1"
+    },
+    "190111": {
+        "name": "Popel a struska obsahující nebezpečné látky",
+        "parent": "1901",
+        "danger": "1"
+    },
+    "190112": {
+        "name": "Jiný popel a struska neuvedené pod číslem 19 01 11",
+        "parent": "1901"
+    },
+    "190113": {
+        "name": "Popílek obsahující nebezpečné látky",
+        "parent": "1901",
+        "danger": "1"
+    },
+    "190114": {
+        "name": "Jiný popílek neuvedený pod číslem 19 01 13",
+        "parent": "1901"
+    },
+    "190115": {
+        "name": "Kotelní prach obsahující nebezpečné látky",
+        "parent": "1901",
+        "danger": "1"
+    },
+    "190116": {
+        "name": "Kotelní prach neuvedený pod číslem 19 01 15",
+        "parent": "1901"
+    },
+    "190117": {
+        "name": "Odpad z pyrolýzy obsahující nebezpečné látky",
+        "parent": "1901",
+        "danger": "1"
+    },
+    "190118": {
+        "name": "Odpad z pyrolýzy neuvedený pod číslem 19 01 17",
+        "parent": "1901"
+    },
+    "190119": {
+        "name": "Odpadní písky z fluidních loží",
+        "parent": "1901"
+    },
+    "190199": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1901"
+    },
+    "1902": {
+        "name": "Odpady z fyzikálně-chemických úprav odpadů (např. odstraňování chrómu či kyanidů, neutralizace)",
+        "parent": "19"
+    },
+    "190203": {
+        "name": "Upravené směsi odpadů obsahující pouze odpady nehodnocené jako nebezpečné",
+        "parent": "1902"
+    },
+    "190204": {
+        "name": "Upravené směsi odpadů, které obsahují nejméně jeden odpad hodnocený jako nebezpečný",
+        "parent": "1902",
+        "danger": "1"
+    },
+    "190205": {
+        "name": "Kaly z fyzikálně-chemického zpracování obsahující nebezpečné látky",
+        "parent": "1902",
+        "danger": "1"
+    },
+    "190206": {
+        "name": "Kaly z fyzikálně-chemického zpracování neuvedené pod číslem 19 02 05",
+        "parent": "1902"
+    },
+    "190207": {
+        "name": "Olej a koncentráty ze separace",
+        "parent": "1902",
+        "danger": "1"
+    },
+    "190208": {
+        "name": "Kapalné hořlavé odpady obsahující nebezpečné látky",
+        "parent": "1902",
+        "danger": "1"
+    },
+    "190209": {
+        "name": "Pevné hořlavé odpady obsahující nebezpečné látky",
+        "parent": "1902",
+        "danger": "1"
+    },
+    "190210": {   
+        "name": "Hořlavé odpady neuvedené pod čísly 19 02 08 a 19 02 09",
+        "parent": "1902"
+    },
+    "190211": {
+        "name": "Jiné odpady obsahující nebezpečné látky",
+        "parent": "1902",
+        "danger": "1"
+    },
+    "190299": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1902"
+    },
+    "1903": {   
+        "name": "Stabilizované/ solidifikované odpady",
+        "parent": "19"
+    },
+    "190304": {
+        "name": "Odpad hodnocený jako nebezpečný, částečně stabilizovaný, neuvedený pod číslem 19 03 08",
+        "parent": "1903",
+        "danger": "1"
+    },
+    "190305": {
+        "name": "Stabilizovaný odpad neuvedený pod číslem 19 03 04",
+        "parent": "1903"
+    },
+    "190306": {
+        "name": "Solidifikovaný odpad hodnocený jako nebezpečný",
+        "parent": "1903",
+        "danger": "1"
+    },
+    "190307": {
+        "name": "Solidifikovaný odpad neuvedený pod číslem 19 03 06",
+        "parent": "1903"
+    },
+    "190308": {
+        "name": "Částečně stabilizovaná rtuť",
+        "parent": "1903",
+        "danger": "1"
+    },
+    "1904": {
+        "name": "Vitrifikovaný odpad a odpad z vitrifikace",
+        "parent": "19"
+    },
+    "190401": {
+        "name": "Vitrifikovaný odpad",
+        "parent": "1904"
+    },
+    "190402": {
+        "name": "Popílek a jiný odpad z čištění spalin",
+        "parent": "1904",
+        "danger": "1"
+    },
+    "190403": {
+        "name": "Nevitrifikovaná pevná fáze",
+        "parent": "1904",
+        "danger": "1"
+    },
+    "190404": {
+        "name": "Chladící voda z ochlazování vitrifikovaného odpadu",
+        "parent": "1904"
+    },
+    "1905": {
+        "name": "Odpady z aerobního zpracování pevných odpadů",
+        "parent": "19"
+    },
+    "190501": {
+        "name": "Nezkompostovaný podíl komunálního nebo podobného odpadu",
+        "parent": "1905"
+    },
+    "190502": {
+        "name": "Nezkompostovaný podíl odpadů živočišného a rostlinného původu",
+        "parent": "1905"
+    },
+    "190503": {
+        "name": "Kompost nevyhovující jakosti",
+        "parent": "1905"
+    },
+    "190599": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1905"
+    },
+    "1906": {
+        "name": "Odpady z anaerobního zpracování odpadu",
+        "parent": "19"
+    },
+    "190603": {
+        "name": "Extrakty z anaerobního zpracování komunálního odpadu",
+        "parent": "1906"
+    },
+    "190604": {
+        "name": "Produkty vyhnívání z anaerobního zpracování komunálního odpadu",
+        "parent": "1906"
+    },
+    "190605": {
+        "name": "Extrakty z anaerobního zpracování odpadů živočišného a rostlinného původu",
+        "parent": "1906"
+    },
+    "190606": {
+        "name": "Produkty vyhnívání z anaerobního zpracování živočišného a rostlinného odpadu",
+        "parent": "1906"
+    },
+    "190699": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1906"
+    },
+    "1907": {
+        "name": "Průsaková voda ze skládek",
+        "parent": "19"
+    },
+    "190702": {
+        "name": "Průsaková voda ze skládek obsahující nebezpečné látky",
+        "parent": "1907",
+        "danger": "1"
+    },
+    "190703": {
+        "name": "Průsaková voda ze skládek neuvedená pod číslem 19 07 02",
+        "parent": "1907"
+    },
+    "1908": {
+        "name": "Odpady z čistíren odpadních vod jinde neuvedené",
+        "parent": "19"
+    },
+    "190801": {
+        "name": "Shrabky z česlí",
+        "parent": "1908"
+    },
+    "190802": {
+        "name": "Odpady z lapáků písku",
+        "parent": "1908"
+    },
+    "190805": {
+        "name": "Kaly z čištění komunálních odpadních vod",
+        "parent": "1908"
+    },
+    "190806": {
+        "name": "Nasycené nebo upotřebené pryskyřice iontoměničů",
+        "parent": "1908",
+        "danger": "1"
+    },
+    "190807": {
+        "name": "Roztoky a kaly z regenerace iontoměničů",
+        "parent": "1908",
+        "danger": "1"
+    },
+    "190808": {
+        "name": "Odpad z membránového systému obsahující těžké kovy",
+        "parent": "1908",
+        "danger": "1"
+    },
+    "190809": {
+        "name": "Směs tuků a olejů z odlučovače tuků obsahující pouze jedlé oleje a jedlé tuky",
+        "parent": "1908"
+    },
+    "190810": {
+        "name": "Směs tuků a olejů z odlučovače tuků neuvedená pod číslem 19 08 09",
+        "parent": "1908",
+        "danger": "1"
+    },
+    "190811": {
+        "name": "Kaly z biologického čištění průmyslových odpadních vod obsahující nebezpečné látky",
+        "parent": "1908",
+        "danger": "1"
+    },
+    "190812": {
+        "name": "Kaly z biologického čištění průmyslových odpadních vod neuvedené pod číslem 19 08 11",
+        "parent": "1908"
+    },
+    "190813": {
+        "name": "Kaly z jiných způsobů čištění průmyslových odpadních vod obsahující nebezpečné látky",
+        "parent": "1908",
+        "danger": "1"
+    },
+    "190814": {
+        "name": "Kaly z jiných způsobů čištění průmyslových odpadních vod neuvedené pod číslem 19 08 13",
+        "parent": "1908"
+    },
+    "190899": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1908"
+    },
+    "1909": {
+        "name": "Odpady z výroby vody pro spotřebu lidí nebo vody pro průmyslové účely",
+        "parent": "19"
+    },
+    "190901": {
+        "name": "Pevné odpady z primárního čištění (z česlí a filtrů)",
+        "parent": "1909"
+    },
+    "190902": {
+        "name": "Kaly z čiření vody",
+        "parent": "1909"
+    },
+    "190903": {
+        "name": "Kaly z dekarbonizace",
+        "parent": "1909"
+    },
+    "190904": {
+        "name": "Upotřebené aktivní uhlí",
+        "parent": "1909"
+    },
+    "190905": {
+        "name": "Nasycené nebo upotřebené pryskyřice iontoměničů",
+        "parent": "1909"
+    },
+    "190906": {
+        "name": "Roztoky a kaly z regenerace iontoměničů",
+        "parent": "1909"
+    },
+    "190999": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1909"
+    },
+    "1910": {
+        "name": "Odpady z drcení odpadu obsahujícího kovy",
+        "parent": "19"
+    },
+    "191001": {
+        "name": "Železný a ocelový odpad",
+        "parent": "1910"
+    },
+    "191002": {
+        "name": "Neželezný odpad",
+        "parent": "1910"
+    },
+    "191003": {
+        "name": "Lehké frakce a prach obsahující nebezpečné látky",
+        "parent": "1910",
+        "danger": "1"
+    },
+    "191004": {
+        "name": "Lehké frakce a prach neuvedené pod číslem 19 10 03",
+        "parent": "1910"
+    },
+    "191005": {
+        "name": "Jiné frakce obsahující nebezpečné látky",
+        "parent": "1910",
+        "danger": "1"
+    },
+    "191006": {
+        "name": "Jiné frakce neuvedené pod číslem 19 10 05",
+        "parent": "1910"
+    },
+    "1911": {
+        "name": "Odpady z regenerace olejů",
+        "parent": "19"
+    },
+    "191101": {
+        "name": "Upotřebené filtrační hlinky",
+        "parent": "1911",
+        "danger": "1"
+    },
+    "191102": {
+        "name": "Kyselé dehty",
+        "parent": "1911",
+        "danger": "1"
+    },
+    "191103": {
+        "name": "Odpadní voda z regenerace olejů",
+        "parent": "1911",
+        "danger": "1"
+    },
+    "191104": {
+        "name": "Odpady z čištění paliv pomocí zásad",
+        "parent": "1911",
+        "danger": "1"
+    },
+    "191105": {
+        "name": "Kaly z čištění odpadních vod v místě jejich vzniku obsahující nebezpečné látky",
+        "parent": "1911",
+        "danger": "1"
+    },
+    "191106": {
+        "name": "Kaly z čištění odpadních vod v místě jejich vzniku neuvedené pod číslem 19 11 05",
+        "parent": "1911"
+    },
+    "191107": {
+        "name": "Odpady z čištění spalin",
+        "parent": "1911",
+        "danger": "1"
+    },
+    "191199": {
+        "name": "Odpady jinak blíže neurčené",
+        "parent": "1911"
+    },
+    "1912": {
+        "name": "Odpady z úpravy odpadů jinde neuvedené (např. třídění, drcení, lisování, peletizace)",
+        "parent": "19"
+    },
+    "191201": {
+        "name": "Papír a lepenka",
+        "parent": "1912"
+    },
+    "19120101": {
+        "name": "Kompozitní a nápojové kartony",
+        "parent": "1912"
+    },
+    "191202": {
+        "name": "Železné kovy",
+        "parent": "1912"
+    },
+    "191203": {
+        "name": "Neželezné kovy",
+        "parent": "1912"
+    },
+    "19120301": {
+        "name": "Měď, bronz, mosaz",
+        "parent": "191203"
+    },
+    "19120302": {
+        "name": "Hliník",
+        "parent": "191203"
+    },
+    "19120303": {
+        "name": "Olovo",
+        "parent": "191203"
+    },
+    "19120304": {
+        "name": "Zinek",
+        "parent": "191203"
+    },
+    "19120306": {
+        "name": "Cín",
+        "parent": "191203"
+    },
+    "191204": {
+        "name": "Plasty a kaučuk",
+        "parent": "1912"
+    },
+    "191205": {
+        "name": "Sklo",
+        "parent": "1912"
+    },
+    "191206": {
+        "name": "Dřevo obsahující nebezpečné látky",
+        "parent": "1912",
+        "danger": "1"
+    },
+    "191207": {   
+        "name": "Dřevo neuvedené pod číslem 19 12 06",
+        "parent": "1912"
+    },
+    "191208": {
+        "name": "Textil",
+        "parent": "1912"
+    },
+    "191209": {
+        "name": "Nerosty (např. písek, kameny)",
+        "parent": "1912"
+    },
+    "191210": {
+        "name": "Spalitelný odpad (palivo vyrobené z odpadu)",
+        "parent": "1912"
+    },
+    "191211": {
+        "name": "Jiné odpady (včetně směsí materiálů) z mechanické úpravy odpadu obsahujícího nebezpečné látky",
+        "parent": "1912",
+        "danger": "1"
+    },
+    "191212": {
+        "name": "Jiné odpady (včetně směsí materiálů) z mechanické úpravy odpadu neuvedené pod číslem 19 12 11",
+        "parent": "1912"
+    },
+    "1913": {
+        "name": "Odpady ze sanace zeminy a podzemní vody",
+        "parent": "19"
+    },
+    "191301": {
+        "name": "Pevné odpady ze sanace zeminy obsahující nebezpečné látky",
+        "parent": "1913",
+        "danger": "1"
+    },
+    "191302": {
+        "name": "Pevné odpady ze sanace zeminy neuvedené pod číslem 19 13 01",
+        "parent": "1913"
+    },
+    "191303": {
+        "name": "Kaly ze sanace zeminy obsahující nebezpečné látky",
+        "parent": "1913",
+        "danger": "1"
+    },
+    "191304": {
+        "name": "Kaly ze sanace zeminy neuvedené pod číslem 19 13 03",
+        "parent": "1913"
+    },
+    "191305": {
+        "name": "Kaly ze sanace podzemní vody obsahující nebezpečné látky",
+        "parent": "1913",
+        "danger": "1"
+    },
+    "191306": {
+        "name": "Kaly ze sanace podzemní vody neuvedené pod číslem 19 13 05",
+        "parent": "1913"
+    },
+    "191307": {
+        "name": "Jiný kapalný odpad ze sanace podzemní vody obsahující nebezpečné látky",
+        "parent": "1913",
+        "danger": "1"
+    },
+    "191308": {
+        "name": "Jiný kapalný odpad ze sanace podzemní vody neuvedený pod číslem 19 13 07",
+        "parent": "1913"
+    },
+
+    "20": {
+        "name": "Komunální odpady (odpady z domácností a podobné živnostenské, průmyslové odpady a odpady z úřadů) včetně složek z odděleného sběru"
+    },
+    "2001": {
+        "name": "Složky z odděleného sběru",
+        "parent": "20"
+    },
+    "200101": {
+        "name": "Papír a lepenka",
+        "parent": "2001"
+    },
+    "20010101": {   
+        "name": "Kompozitní a nápojové kartony",
+        "parent": "200101"
+    },
+    "200102": {   
+        "name": "Sklo",
+        "parent": "2001"
+    },
+    "200108": {
+        "name": "Biologicky rozložitelný odpad z kuchyní a stravoven",
+        "parent": "2001"
+    },
+    "20010801": {
+        "name": "Biologicky rozložitelný odpad z kuchyní a stravoven rostlinného původu",
+        "parent": "200108"
+    },
+    "200110": {
+        "name": "Oděvy",
+        "parent": "2001"
+    },
+    "200111": {
+        "name": "Textilní materiály",
+        "parent": "2001"
+    },
+    "200113": {
+        "name": "Rozpouštědla",
+        "parent": "2001",
+        "danger": "1"
+    },
+    "200114": {
+        "name": "Kyseliny",
+        "parent": "2001",
+        "danger": "1"
+    },
+    "200115": {
+        "name": "Zásady",
+        "parent": "2001",
+        "danger": "1"
+    },
+    "200117": {
+        "name": "Fotochemikálie",
+        "parent": "2001",
+        "danger": "1"
+    },
+    "200119": {
+        "name": "Pesticidy",
+        "parent": "2001",
+        "danger": "1"
+    },
+    "200121": {
+        "name": "Zářivky a jiný odpad obsahující rtuť",
+        "parent": "2001",
+        "danger": "1"
+    },
+    "200123": {
+        "name": "Vyřazená zařízení obsahující chlorofluorouhlovodíky",
+        "parent": "2001",
+        "danger": "1"
+    },
+    "200125": {
+        "name": "Jedlý olej a tuk",
+        "parent": "2001"
+    },
+    "200126": {
+        "name": "Olej a tuk neuvedený pod číslem 20 01 25",
+        "parent": "2001",
+        "danger": "1"
+    },
+    "200127": {
+        "name": "Barvy, tiskařské barvy, lepidla a pryskyřice obsahující nebezpečné látky",
+        "parent": "2001",
+        "danger": "1"
+    },
+    "200128": {
+        "name": "Barvy, tiskařské barvy, lepidla a pryskyřice neuvedené pod číslem 20 01 27",
+        "parent": "2001"
+    },
+    "200129": {
+        "name": "Detergenty obsahující nebezpečné látky",
+        "parent": "2001",
+        "danger": "1"
+    },
+    "200130": {   
+        "name": "Detergenty neuvedené pod číslem 20 01 29",
+        "parent": "2001"
+    },
+    "200131": {
+        "name": "Nepoužitelná cytostatika",
+        "parent": "2001",
+        "danger": "1"
+    },
+    "200132": {
+        "name": "Jiná nepoužitelná léčiva neuvedená pod číslem 20 01 31",
+        "parent": "2001",
+        "danger": "1"
+    },
+    "200133": {
+        "name": "Baterie a akumulátory, zařazené pod čísly 16 06 01, 16 06 02 nebo pod číslem 16 06 03 a netříděné baterie a akumulátory obsahující tyto baterie",
+        "parent": "2001",
+        "danger": "1"
+    },
+    "200134": {
+        "name": "Baterie a akumulátory neuvedené pod číslem 20 01 33",
+        "parent": "2001"
+    },
+    "200135": {
+        "name": "Vyřazené elektrické a elektronické zařízení obsahující nebezpečné látky neuvedené pod čísly 20 01 21 a 20 01 23",
+        "parent": "2001",
+        "danger": "1"
+    },
+    "20013501": {
+        "name": "Vyřazené motorové stroje, přístroje a zařízení obsahující nebezpečné látky určené k použití v domácnosti",
+        "parent": "200135",
+        "danger": "1"
+    },
+    "20013502": {
+        "name": "Tiskařské tonerové kazety mající nebezpečné vlastnosti",
+        "parent": "200135",
+        "danger": "1"
+    },
+    "200136": {
+        "name": "Vyřazené elektrické a elektronické zařízení neuvedené pod čísly 20 01 21, 20 01 23 a 20 01 35",
+        "parent": "2001"
+    },
+    "20013601": {
+        "name": "Vyřazené motorové stroje, přístroje a zařízení určené k použití v domácnosti neuvedené pod číslem 20 01 35 01",
+        "parent": "200136"
+    },
+    "20013602": {
+        "name": "Tiskařské tonerové kazety neuvedené pod číslem 20 01 35 02",
+        "parent": "200136"
+    },
+    "200137": {
+        "name": "Dřevo obsahující nebezpečné látky",
+        "parent": "2001",
+        "danger": "1"
+    },
+    "200138": {
+        "name": "Dřevo neuvedené pod číslem 20 01 37",
+        "parent": "2001"
+    },
+    "200139": {
+        "name": "Plasty",
+        "parent": "2001"
+    },
+    "200140": {
+        "name": "Kovy",
+        "parent": "2001"
+    },
+    "20014001": {
+        "name": "Měď, bronz, mosaz",
+        "parent": "200140"
+    },
+    "20014002": {
+        "name": "Hliník",
+        "parent": "200140"
+    },
+    "20014003": {
+        "name": "Olovo",
+        "parent": "200140"
+    },
+    "20014004": {
+        "name": "Zinek",
+        "parent": "200140"
+    },
+    "20014005": {
+        "name": "Železo a ocel",
+        "parent": "200140"
+    },
+    "20014006": {
+        "name": "Cín",
+        "parent": "200140"
+    },
+    "200141": {
+        "name": "Odpady z čištění komínů",
+        "parent": "2001"
+    },
+    "200199": {
+        "name": "Další frakce jinak blíže neurčené",
+        "parent": "2001"
+    },
+    "2002": {
+        "name": "Odpady ze zahrad a parků (včetně hřbitovního odpadu)",
+        "parent": "20"
+    },
+    "200201": {
+        "name": "Biologicky rozložitelný odpad",
+        "parent": "2002"
+    },
+    "200202": {
+        "name": "Zemina a kameny",
+        "parent": "2002"
+    },
+    "200203": {
+        "name": "Jiný biologicky nerozložitelný odpad",
+        "parent": "2002"
+    },
+    "2003": {
+        "name": "Ostatní komunální odpady",
+        "parent": "20"
+    },
+    "200301": {
+        "name": "Směsný komunální odpad",
+        "parent": "2003"
+    },
+    "20030101": {
+        "name": "Odděleně soustřeďovaný popel z domácností",
+        "parent": "200301"
+    },
+    "200302": {
+        "name": "Odpad z tržišť",
+        "parent": "2003"
+    },
+    "200303": {
+        "name": "Uliční smetky",
+        "parent": "2003"
+    },
+    "200304": {
+        "name": "Kal ze septiků a žump",
+        "parent": "2003"
+    },
+    "200306": {
+        "name": "Odpad z čištění kanalizace",
+        "parent": "2003"
+    },
+    "200307": {
+        "name": "Objemný odpad",
+        "parent": "2003"
+    },
+    "200399": {
+        "name": "Komunální odpady jinak blíže neurčené",
+        "parent": "2003"
+    }
+
+
+
+
+
+    
+
+
+}
