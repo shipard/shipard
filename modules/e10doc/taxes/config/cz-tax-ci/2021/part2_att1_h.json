@@ -23,7 +23,8 @@
 						{"rn": "3", "text": "(neobsazeno)", "value": ""},
 						{"rn": "4", "text": {"scLabel": "kc_dpp_f4"}, "value": {"scInput": "kc_dpp_f4"}},
 						{"rn": "5⁹⁾", "text": {"scLabel": "kc_dpp_h1_35ab"}, "value": {"scInput": "kc_dpp_h1_35ab"}}
-					]
+					],
+					"params": {"colClasses": {"rn": "e10-bg-t8"}}
 				}
 			}
 		]

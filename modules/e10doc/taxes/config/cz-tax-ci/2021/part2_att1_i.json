@@ -24,7 +24,8 @@
 						{"rn": "3⁹⁾", "text": {"scLabel": "pr1i_3"}, "value": {"scInput": "pr1i_3"}},
 						{"rn": "4", "text": {"scLabel": "pr1i_4"}, "value": {"scInput": "pr1i_4"}},
 						{"rn": "5", "text": {"scLabel": "kc_dppd17_g17"}, "value": {"scInput": "kc_dppd17_g17"}}
-					]
+					],
+					"params": {"colClasses": {"rn": "e10-bg-t8", "text": "e10-row-info", "value": "e10-bg-white width10em"}}
 				}
 			}
 		]

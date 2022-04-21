@@ -92,7 +92,8 @@
 							"c0": "9", "c1": "Úhrn daně zaplacené v zahraničí, kterou lze započíst metodou úplného a prostého zápočtu (ř. 4 tabulky I)",
 							"c2": {"scInput": "pr1j_sl_2_r9"}, "c3": {"scInput": "pr1j_sl_3_r9"}, "c4": {"scInput": "pr1j_sl_4_r9"}
 						}
-					]
+					],
+					"params": {"colClasses": {"c0": "e10-bg-t8", "c1": "e10-row-info", "c2": "e10-bg-white width10em", "c3": "e10-bg-white width10em", "c4": "e10-bg-white width10em"}}
 				}
 			}
 		]

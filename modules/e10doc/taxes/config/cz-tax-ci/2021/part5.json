@@ -22,7 +22,8 @@
 						{"rn": "2⁸⁾", "text": {"scLabel": "kc_v_2"}, "value": {"scInput": "kc_v_2"}},
 						{"rn": "3⁸⁾", "text": {"scLabel": "kc_v_3"}, "value": {"scInput": "kc_v_3"}},
 						{"rn": "4", "text": {"scLabel": "kc_v_4"}, "value": {"scInput": "kc_v_4"}}
-					]
+					],
+					"params": {"colClasses": {"rn": "e10-bg-t8", "text": "e10-row-info", "value": "e10-bg-white width10em"}}
 				}
 			}
 		]

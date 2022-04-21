@@ -17,7 +17,8 @@
 			{
 				"recordSetTable": {
 					"recordSetColumn": "table_P1A",
-					"cols": {"#": " Řádek", "naz_uc_skup": "Název účtové skupiny (včetně číselného označení)", "kc_1a": " Částka"}
+					"cols": {"#": " Řádek", "naz_uc_skup": "Název účtové skupiny (včetně číselného označení)", "kc_1a": " Částka"},
+					"params": {"colClasses": {"#": "e10-bg-t8", "naz_uc_skup": "e10-row-info", "kc_1a": "e10-bg-white width10em"}}
 				}
 			}
 		]
