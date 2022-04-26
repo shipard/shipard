@@ -60,8 +60,9 @@
 						{"rn": "10", "text": {"scLabel": "kc_op8c"}, "value": {"scInput": "kc_op8c"}},
 						{"rn": "11", "text": {"scLabel": "kc_sop8c"}, "value": {"scInput": "kc_sop8c"}},
 						{"rn": "12", "text": {"scLabel": "kc_dpp_c8"}, "value": {"scInput": "kc_dpp_c8"}}
-					]
-				}
+					],
+					"params": {"colClasses": {"rn": "e10-bg-t8", "text": "e10-row-info", "value": "e10-bg-white width10em"}}
+				}				
 			},
 			{
 				"table": {
@@ -75,7 +76,8 @@
 						{"rn": "16", "text": {"scLabel": "kc_dpp_c12"}, "value": {"scInput": "kc_dpp_c12"}},
 						{"rn": "17⁸⁾", "text": {"scLabel": "kc_dpp_c13"}, "value": {"scInput": "kc_dpp_c13"}},
 						{"rn": "18", "text": {"scLabel": "kc_dpp_c14"}, "value": {"scInput": "kc_dpp_c14"}}
-					]
+					],
+					"params": {"colClasses": {"rn": "e10-bg-t8", "text": "e10-row-info", "value": "e10-bg-white width10em"}}
 				}
 			},
 			{
@@ -88,7 +90,8 @@
 						{"rn": "20", "text": {"scLabel": "kc_dpp_c_5a2"}, "value": {"scInput": "kc_dpp_c_5a2"}},
 						{"rn": "21⁸⁾", "text": {"scLabel": "kc_dpp_c_5a3"}, "value": {"scInput": "kc_dpp_c_5a3"}},
 						{"rn": "22", "text": {"scLabel": "kc_dpp_c_5a4"}, "value": {"scInput": "kc_dpp_c_5a4"}}
-					]
+					],
+					"params": {"colClasses": {"rn": "e10-bg-t8", "text": "e10-row-info", "value": "e10-bg-white width10em"}}
 				}
 			},
 			{
@@ -99,7 +102,8 @@
 					"rows": [
 						{"rn": "23", "text": {"scLabel": "kc_dpp_c16"}, "value": {"scInput": "kc_dpp_c16"}},
 						{"rn": "24", "text": {"scLabel": "kc_dpp_c17"}, "value": {"scInput": "kc_dpp_c17"}}
-					]
+					],
+					"params": {"colClasses": {"rn": "e10-bg-t8", "text": "e10-row-info", "value": "e10-bg-white width10em"}}
 				}
 			},
 			{
@@ -110,7 +114,8 @@
 					"rows": [
 						{"rn": "25", "text": {"scLabel": "kc_dpp_c18"}, "value": {"scInput": "kc_dpp_c18"}},
 						{"rn": "26", "text": {"scLabel": "kc_dpp_c19"}, "value": {"scInput": "kc_dpp_c19"}}
-					]
+					],
+					"params": {"colClasses": {"rn": "e10-bg-t8", "text": "e10-row-info", "value": "e10-bg-white width10em"}}
 				}
 			},
 			{
@@ -122,7 +127,8 @@
 						{"rn": "27", "text": {"scLabel": "kc_dpp_c20"}, "value": {"scInput": "kc_dpp_c20"}},
 						{"rn": "28", "text": {"scLabel": "kc_dpp_c21"}, "value": {"scInput": "kc_dpp_c21"}},
 						{"rn": "29⁸⁾", "text": {"scLabel": "kc_dpp_c22"}, "value": {"scInput": "kc_dpp_c22"}}
-					]
+					],
+					"params": {"colClasses": {"rn": "e10-bg-t8", "text": "e10-row-info", "value": "e10-bg-white width10em"}}
 				}
 			},
 			{
@@ -133,7 +139,8 @@
 					"rows": [
 						{"rn": "30", "text": {"scLabel": "kc_dpp_c30"}, "value": {"scInput": "kc_dpp_c30"}},
 						{"rn": "31", "text": {"scLabel": "kc_dpp_c31"}, "value": {"scInput": "kc_dpp_c31"}}
-					]
+					],
+					"params": {"colClasses": {"rn": "e10-bg-t8", "text": "e10-row-info", "value": "e10-bg-white width10em"}}
 				}
 			}
 		]

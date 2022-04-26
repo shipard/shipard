@@ -26,7 +26,8 @@
 						{"rn": "4", "text": {"scLabel": "kc_dppiv5"}, "value": {"scInput": "kc_dppiv5"}},
 						{"rn": "5", "text": {"scLabel": "kc_dppiv4"}, "value": {"scInput": "kc_dppiv4"}},
                         {"rn": "6", "text": {"scLabel": "kc_dppiv6"}, "value": {"scInput": "kc_dppiv6"}}
-					]
+					],
+					"params": {"colClasses": {"rn": "e10-bg-t8", "text": "e10-row-info", "value": "e10-bg-white width10em"}}
 				}
 			}
 		]

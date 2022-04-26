@@ -15,7 +15,8 @@
 					"rows": [
 						{"c0": "1", "c1": {"scLabel": "kc_dpp_i1"}, "c2": "Kč", "c3": {"scInput": "kc_dpp_i1"}},
 						{"c0": "2", "c1": {"scLabel": "poc_zam"}, "c2": "osoby", "c3": {"scInput": "poc_zam"}}
-					]
+					],
+					"params": {"colClasses": {"c0": "e10-bg-t8", "c1": "e10-row-info", "c2": "e10-bg-white width10em", "c3": "e10-bg-white width10em"}}
 				}
 			}
 		]

@@ -38,7 +38,8 @@
 						{"rn": "9", "text": {"scLabel": "kc_dpp_b_ohm_30_6"}, "value": {"scInput": "kc_dpp_b_ohm_30_6"}},
 						{"rn": "10", "text": {"scLabel": "kc_dpp_b_onm"}, "value": {"scInput": "kc_dpp_b_onm"}},
 						{"rn": "11", "text": {"scLabel": "kc_dppb6_b8"}, "value": {"scInput": "kc_dppb6_b8"}}
-					]
+					],
+					"params": {"colClasses": {"rn": "e10-bg-t8", "text": "e10-row-info", "value": "e10-bg-white width10em"}}
 				}
 			},
 			{
@@ -50,7 +51,8 @@
 					],
 					"rows": [
 						{"rn": "12", "text": {"scLabel": "kc_dpp_b10"}, "value": {"scInput": "kc_dpp_b10"}}
-					]
+					],
+					"params": {"colClasses": {"rn": "e10-bg-t8", "text": "e10-row-info", "value": "e10-bg-white width10em"}}
 				}
 			}
 		]

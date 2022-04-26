@@ -107,7 +107,8 @@
 							"c0": "4", "c1od": {"scInput": "pr1f_sl_1_r4_od"}, "c1do": {"scInput": "pr1f_sl_1_r4_do"},
 							"c2": {"scInput": "pr1f_sl_2_r4"}, "c3": {"scInput": "pr1f_sl_3_r4"}, "c4": {"scInput": "pr1f_sl_4_r4"}, "c5": {"scInput": "pr1f_sl_5_r4"}
 						}
-					]
+					],
+					"params": {"colClasses": {"c0": "e10-bg-t8"}}
 				}
 			},
 
@@ -161,7 +162,8 @@
 							"c0": "4", "c1od": {"scInput": "pr1fc_sl_1_r4_od"}, "c1do": {"scInput": "pr1fc_sl_1_r4_do"},
 							"c2": {"scInput": "pr1fc_sl_2_r4"}, "c3": {"scInput": "pr1fc_sl_3_r4"}, "c4": {"scInput": "pr1fc_sl_4_r4"}, "c5": {"scInput": "pr1fc_sl_5_r4"}
 						}
-					]
+					],
+					"params": {"colClasses": {"c0": "e10-bg-t8"}}
 				}
 			}
 

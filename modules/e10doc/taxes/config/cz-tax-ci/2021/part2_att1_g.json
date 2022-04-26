@@ -17,7 +17,9 @@
 					"rows": [
 						{"rn": "1", "text": {"scLabel": "pr1g_1"}, "value": {"scInput": "pr1g_1"}},
 						{"rn": "2", "text": "(neobsazeno)"}
-					]
+					],
+					"params": {"colClasses": {"rn": "e10-bg-t8"}}
+
 				}
 			}
 		]

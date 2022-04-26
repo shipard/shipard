@@ -64,7 +64,8 @@
 						"pr1e_sl_4": " bbb",
 						"pr1e_sl_5": " ccc",
 						"pr1e_sl_6": " ddd"
-					}
+					},
+					"params": {"colClasses": {"#": "e10-bg-t8"}}
 				}
 			}
 		]
