@@ -24,6 +24,9 @@
 		{"id": "hosting.core.dsTypes", "file": "hosting.core.dsTypes.json"},
 		{"id": "hosting.core.dsConditions", "file": "hosting.core.dsConditions.json"},
 		{"id": "hosting.core.invoicingTo", "file": "hosting.core.invoicingTo.json"},
+		{"id": "hosting.core.dsCreateModes", "file": "hosting.core.dsCreateModes.json"},
+		{"id": "hosting.core.dsCreateDemoTypes", "file": "hosting.core.dsCreateDemoTypes.json"},
+		{"id": "hosting.core.serverCreateDSTypes", "file": "hosting.core.serverCreateDSTypes.json"},
 		{"id": "+reports", "file": "reports.json"}
 	],
 	"extensions": ["persons"],

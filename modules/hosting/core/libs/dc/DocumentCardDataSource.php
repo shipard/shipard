@@ -213,6 +213,8 @@ class DocumentCardDataSource extends \Shipard\Base\DocumentCard
 			}
 		}
 
+		$this->addCreateRequest($info);
+
 		$info[0]['_options']['cellClasses']['p1'] = 'width30';
 		$h = ['p1' => ' ', 't1' => ''];
 
@@ -220,6 +222,25 @@ class DocumentCardDataSource extends \Shipard\Base\DocumentCard
 			'pane' => 'e10-pane e10-pane-table', 'type' => 'table',
 			'header' => $h, 'table' => $info, 'params' => ['hideHeader' => 1, 'forceTableClass' => 'properties fullWidth']
 		]);
+	}
+
+	protected function addCreateRequest(&$destTable)
+	{
+		if (!$this->recData['createRequest'] || $this->recData['createRequest'] === '')
+			return;
+		
+		$destTable[] = ['p1' => 'Požadavek na vytvoření', '_options' => ['class' => 'e10-bg-t6 bb1']];
+
+		$createRequest = json_decode($this->recData['createRequest'], TRUE);
+		if (!$createRequest)
+		{
+			return;
+		}
+
+		foreach ($createRequest as $key => $value)
+		{
+			$destTable[] = ['p1' => $key, 't1' => $value];
+		}
 	}
 
 	public function createContent ()

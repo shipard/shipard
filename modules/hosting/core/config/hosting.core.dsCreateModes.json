@@ -1,0 +1,14 @@
+{
+  "demo": {
+    "name": "Demonstrační databáze",
+    "inputLabel": [
+      {"text":  "Pokusná demo databáze", "class": "h2 block"}
+    ]
+  },
+  "production": {
+    "name": "Ostrá databáze",
+    "inputLabel": [
+      {"text":  "Ostrá databáze", "class": "h2 block"}
+    ]
+  }
+}

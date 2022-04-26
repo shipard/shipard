@@ -18,6 +18,7 @@
 		{"id": "urlApp", "name": "URL aplikace", "type": "string", "len": 100},
 		{"id": "installModule", "name": "Instalační modul", "type": "enumString", "len": 64,
 			"enumCfg": {"cfgItem": "hosting.core.installModules", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "createRequest", "name": "Požadavek na vytvoření", "type": "memo"},
 
 		{"id": "dateCreated", "name": "Vytvořeno", "type": "timestamp"},
 		{"id": "dateStart", "name": "Datum zahájení", "type": "date"},
@@ -34,10 +35,12 @@
 		{"id": "shpGeneration", "name": "Generace Shipardu", "type": "enumInt",
 			"enumCfg": {"cfgItem": "hosting.core.shipardGenerations", "cfgValue": "", "cfgText": "fn"}},
 
-		{"id": "dsType", "name": "Typ", "type": "enumInt",
+		{"id": "dsType", "name": "Typ", "type": "enumInt", "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "hosting.core.dsTypes", "cfgValue": "", "cfgText": "fn"}},
-		{"id": "dsDemo", "name": "Demonstrační zdroj dat", "type": "logical"},
-
+		{"id": "dsDemo", "name": "Demonstrační zdroj dat", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "dsCreateDemoType", "name": "Typ demonstračních dat", "type": "enumString", "len": 30, 
+			"enumCfg": {"cfgItem": "hosting.core.dsCreateDemoTypes", "cfgValue": "", "cfgText": "name"}},
+		
 		{"id": "condition", "name": "Stav", "type": "enumInt",
 			"enumCfg": {"cfgItem": "hosting.core.dsConditions", "cfgValue": "", "cfgText": "fn"}},
 

@@ -50,9 +50,13 @@ class ViewServers extends TableView
 {
 	var $serverStats = [];
 
+	var $serverCreateDSTypes;
+
 	public function init ()
 	{
+		$this->serverCreateDSTypes = $this->app()->cfgItem('hosting.core.serverCreateDSTypes');
 		parent::init();
+
 		$this->setMainQueries();
 	}
 
@@ -106,10 +110,17 @@ class ViewServers extends TableView
 		if ($item['shipardServerVerId'] !== '')
 			$listItem ['t2'][] = ['text' => $item['shipardServerVerId'], 'class' => 'label label-default'];
 
-		if ($item['creatingDataSources'] === 1)
-			$listItem ['t2'][] = ['text' => 'Svoje', 'icon' => 'system/iconDatabase', 'class' => 'label label-info'];
-		elseif ($item['creatingDataSources'] === 2)
-			$listItem ['t2'][] = ['text' => 'Všechny', 'icon' => 'system/iconDatabase', 'class' => 'label label-success'];
+
+		if ($item['dsCreateDemo'] != 0)
+		{
+			$cds = $this->serverCreateDSTypes[$item['dsCreateDemo']];
+			$listItem ['t2'][] = ['text' => 'DEMO: '.$cds['fn'], 'icon' => 'system/iconDatabase', 'class' => 'label label-info'];	
+		}
+		if ($item['dsCreateProduction'] != 0)
+		{
+			$cds = $this->serverCreateDSTypes[$item['dsCreateProduction']];
+			$listItem ['t2'][] = ['text' => 'PROD: '.$cds['fn'], 'icon' => 'system/iconDatabase', 'class' => 'label label-info'];	
+		}
 
 		//$listItem ['t2'][] = ['text' => $item['fqdn'], 'class' => '', 'suffix' => $item['ipv4']];
 
@@ -197,7 +208,10 @@ class FormServer extends TableForm
 			$this->addColumnInput ('serverRole');
 			$this->addColumnInput ('id');
 			$this->addColumnInput ('gid');
-			$this->addColumnInput ('creatingDataSources');
+
+			$this->addSeparator(self::coH3);
+			$this->addColumnInput ('dsCreateDemo');
+			$this->addColumnInput ('dsCreateProduction');
 
 			$this->addSeparator(self::coH3);
 			$this->addColumnInput ('ipv4');

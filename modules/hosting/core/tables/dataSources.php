@@ -170,25 +170,24 @@ use \e10\base\libs\UtilsBase;
 
 	public function getPlan($data)
 	{
-		$plans = $this->app()->cfgItem('e10pro.hosting.pricePlans');
+		$plans = $this->app()->cfgItem('hosting.core.pricePlans');
 		$statsData = json::decode ($data['data']);
 		if (!$statsData)
 			$statsData = [];
 
-		$totalSize = $data['usageTotal'];
-		$cntDocs12m = $data['cntDocuments12m'];
-		$cntCashRegs12m = $data['cntCashRegs12m'];
+		$totalSize = $data['usageTotal'] ?? 0;
+		$cntDocs12m = $data['cntDocuments12m'] ?? 0;
+		$cntCashRegs12m = $data['cntCashRegs12m'] ?? 0;
 		$cntDocs = $cntDocs12m - $cntCashRegs12m + intval($cntCashRegs12m / 10);
 
 		$plan = NULL;
 
 		foreach ($plans as $p)
 		{
-			if ($cntDocs >= $p['docs'])
-			{
-				$plan = $p;
-				break;
-			}
+			if ($cntDocs > $p['maxDocs'])
+				continue;
+			$plan = $p;
+			break;
 		}
 
 		$plan['extModulesPoints'] = 0;
@@ -223,22 +222,22 @@ use \e10\base\libs\UtilsBase;
 			//$info[] = ['p1' => 'Rozšíření', 't1' => $extModulesLabels];
 		}
 
-
-
+		$plan['numberUserdDocs'] = $cntDocs;
 		$plan['priceDocs'] = $plan['price'];
 		$plan['priceUsage'] = 0;
-		$usageLimit = $plan['maxUsage'];
-		$usageBlockPrice = 100;
-		$usageBlockSize = 10;
+		$usageLimit = $plan['maxSpaceUsage'];
+		$usageBlockPrice = $plan['extraSpaceBlockPrice'] ?? 0;
+		$usageBlockSize = $plan['extraSpaceBlockSize'] ?? 0;
 		$usageNow = round($data['usageTotal'] / (1024 * 1024 * 1024), 1);
 		if ($usageNow > $usageLimit)
 		{
 			$usageBlocksToPay = intval(($usageNow - $usageLimit) / $usageBlockSize + 1);
 			$plan['priceUsage'] = $usageBlockPrice * $usageBlocksToPay;
+			$plan['priceUsageLegend'] = $usageBlocksToPay.' × '.$usageBlockPrice.' Kč / '.$usageBlockSize.' GB';
 		}
 
 		$plan['extModulesPrice'] = $plan['extModulesPoints'] * 10;
-		$plan['priceTotal'] = $plan['priceDocs'] + $plan['priceUsage'] + $plan['extModulesPrice'];
+		$plan['priceTotal'] = $plan['priceDocs'] + $plan['priceUsage'] /*+ $plan['extModulesPrice']*/;
 
 		return $plan;
 	}
@@ -247,24 +246,20 @@ use \e10\base\libs\UtilsBase;
 	{
 		$t = [];
 
-		$plans = $this->app()->cfgItem('e10pro.hosting.pricePlans');
+		$plans = $this->app()->cfgItem('hosting.core.pricePlans');
 
 		$prevPlan = NULL;
 		foreach ($plans as $p)
 		{
-			$docs = utils::nf($p['docs']) . ' a více';
-
-
-			if ($prevPlan)
-				$docs = utils::nf($p['docs']) . ' až ' . utils::nf($prevPlan['docs'] - 1);
-
+			$prevMaxDocs = isset($prevPlan['maxDocs']) ? $prevPlan['maxDocs'] + 1 : 0;
+			$docs = utils::nf($prevMaxDocs).' až '.utils::nf($p['maxDocs']);
 
 			$item = [
 				'title' => $p['title'],
 				'maxDocs' => $docs, //$p['docs'],
 				'price' => $p['price'],
-				'maxUsage' => $p['maxUsage'],
-				'usageBlockPrice' => 100,
+				'maxUsage' => $p['maxSpaceUsage'],
+				'usageBlockPrice' => $p['extraSpaceBlockPrice'],
 			];
 			$t[] = $item;
 
@@ -281,7 +276,7 @@ use \e10\base\libs\UtilsBase;
 			'usageBlockPrice' => ' Příplatek za každých 10 GB',
 		];
 
-		return ['table' => \e10\sortByOneKey($t, 'title'), 'header' => $h];
+		return ['table' => $t, 'header' => $h];
 	}
 }
 
@@ -667,7 +662,11 @@ class FormDataSource extends TableForm
 					$this->addSeparator(self::coH2);
 					$this->addColumnInput ('dsType');
 					if ($this->recData['dsType'] === 0)
+					{
 						$this->addColumnInput ('dsDemo');
+						if ($this->recData['dsDemo'] == 1)
+							$this->addColumnInput ('dsCreateDemoType');
+					}	
 					$this->addColumnInput ('condition');
 					$this->addColumnInput ('appWarning');
 					$this->addSeparator(self::coH2);

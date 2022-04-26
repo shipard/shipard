@@ -10,10 +10,16 @@
 		{"id": "id", "name": "ID", "type": "string", "len": 10},
     {"id": "fqdn", "name": "Doménové jméno", "type": "string", "len": 70},
 		{"id": "gid", "name": "GID", "type": "string", "len": 20},
-	  {"id": "creatingDataSources", "name": "Zakládat zdroje dat", "type": "enumInt",
+
+    {"id": "creatingDataSources", "name": "Zakládat zdroje dat", "type": "enumInt",
 		  "enumValues": {"0": "Ne", "1": "Ano, ale pouze pro tento server", "2": "Ano, všechny zdroje dat"}
 	  },
 
+		{"id": "dsCreateDemo", "name": "Zakládat demonstrační zdroje dat", "type": "enumInt",
+			"enumCfg": {"cfgItem": "hosting.core.serverCreateDSTypes", "cfgValue": "", "cfgText": "fn"}},
+    {"id": "dsCreateProduction", "name": "Zakládat ostré zdroje dat", "type": "enumInt",
+      "enumCfg": {"cfgItem": "hosting.core.serverCreateDSTypes", "cfgValue": "", "cfgText": "fn"}},	
+    
 	  {"id": "ipv4", "name": "IPv4 adresa", "type": "string", "len": 16, "options": ["ascii"]},
 		{"id": "ipv6", "name": "IPv6 adresa", "type": "string", "len": 45, "options": ["ascii"]},
 

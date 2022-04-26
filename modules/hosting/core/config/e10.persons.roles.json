@@ -18,6 +18,9 @@
 		},
 		"widgets": {
 			"hosting.core.libs.WidgetHostingOverview": 2
+		},
+		"reports": {
+			"hosting.core.libs.ReportPartnersDS": 2
 		}
 	},
 	"hstngcd": {

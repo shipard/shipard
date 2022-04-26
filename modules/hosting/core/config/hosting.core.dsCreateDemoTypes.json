@@ -1,0 +1,16 @@
+{
+  "blank": {
+    "name": "Žádná demonstrační data",
+    "inputLabel": [
+      {"text":  "Prázdná databáze", "class": "h2 block"},
+      {"text":  "Databáze nebude obsahovat žádná ukázková data (doklady, položky apod.)", "class": ""}
+    ]
+  },
+  "economy-core-vat": {
+    "name": "Základní demo data",
+    "inputLabel": [
+      {"text":  "Plátce DPH", "class": "h2 block"},
+      {"text":  "Ukázková data malé firmy, která je plátcem DPH", "class": ""}
+    ]
+  }
+}

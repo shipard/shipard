@@ -48,36 +48,51 @@ class ReportPartnersDS extends \Shipard\Report\GlobalReport
 
   function loadData()
 	{
-    $this->sumTotals = ['usageTotal' => 0, 'cntCashRegs12m' => 0, 'cntDocuments12m' => 0];
+    $this->sumTotals = ['usageTotal' => 0, 'cntCashRegs12m' => 0, 'cntDocuments12m' => 0, 'priceTotal' => 0];
 
     $this->loadDataPart([
       'title' => 'Fakturované databáze v ostrém provozu',
+      'headerClass' => 'e10-bg-t7',
       'query' => ['invoicingTo' => 0, 'dsType' => 0]
     ]);
 
     $this->loadDataPart([
       'title' => 'Databáze v ostrém provozu BEZ FAKTURACE',
+      'subTitle' => 'Máme vás rádi...',
+      'headerClass' => 'e10-bg-t6',
       'query' => ['invoicingTo' => 3, 'dsType' => 0, 'dsDemo' => 0]
     ]);
 
     $this->loadDataPart([
-      'title' => 'Zkušební databáze',
-      'query' => ['dsType' => 1]
+      'title' => 'Databáze fakturované přímo zákazníkovi',
+      'subTitle' => 'Poskytujete podporu, ale faktura za provoz jde zákazníkovi od nás',
+      'headerClass' => 'e10-bg-t1',
+      'query' => ['invoicingTo' => 1, 'dsType' => 0]
     ]);
 
     $this->loadDataPart([
       'title' => 'DEMO a testovací databáze',
+      'subTitle' => 'Databáze pro prezentace, studium, nebo na hraní',
+      'headerClass' => 'e10-bg-t4',
       'query' => ['invoicingTo' => 3, 'dsType' => 0, 'dsDemo' => 1]
     ]);
 
     $this->loadDataPart([
+      'title' => 'Zkušební databáze',
+      'subTitle' => 'Obvykle se jedná o kopie ostrých databází k testovacím účelům',
+      'headerClass' => 'e10-bg-t3',
+      'query' => ['dsType' => 1]
+    ]);
+
+    $this->loadDataPart([
       'title' => 'Ostatní',
+      'subTitle' => 'Tady by nemělo nic být - prosím kontaktujte nás...',
       'partType' => 'others'
     ]);
 
     $this->sumTotals['_options'] = ['class' => 'sumtotal', 'beforeSeparator' => 'separator', 'colSpan' => ['dsid' => 2]];
     $this->sumTotals['usageTotal'] = Utils::memf($this->sumTotals['usageTotal']);
-    $this->sumTotals['dsid'] = 'Celkem za všechny databáze :';
+    $this->sumTotals['dsid'] = 'Celkem za všechny databáze:';
     $this->data [] = $this->sumTotals;
   }
 
@@ -112,14 +127,14 @@ class ReportPartnersDS extends \Shipard\Report\GlobalReport
 		$rows = $this->db()->query ($q);
 		foreach ($rows as $r)
 		{
-			//$plan = $this->tableDataSources->getPlan($r);
+			$plan = $this->tableDataSources->getPlan($r);
 
 			$item = [
 				'dsid' => ($this->disableEdit) ? ['text' => substr($r['gid'], 0, 4).'...'.substr($r['gid'], -4)] : [
 					'text' => substr($r['gid'], 0, 4).'...'.substr($r['gid'], -4),
 					'docAction' => 'edit', 'pk' => $r['dataSource'], 'table' => 'hosting.core.dataSources'
 				],
-				'name' => ($r['dsShortName'] === '') ? $r['dsName'] : $r['dsShortName'],
+				'name' => (($r['dsShortName'] === '') ? $r['dsName'] : $r['dsShortName'])/*.json_encode($r)*/,
 				'partner' => $r['partnerName'],
 				'usageDb' => Utils::memf($r['usageDb']),
 				'usageFiles' => Utils::memf($r['usageFiles']),
@@ -130,19 +145,33 @@ class ReportPartnersDS extends \Shipard\Report\GlobalReport
 				'cntCashRegs12m' => $r['cntCashRegs12m'],
 				//'cntUsersAll1m' => $r['cntUsersAll1m'],
 				//'extModulesPoints' => $plan['extModulesPoints'],
-				//'plan' => $plan['title'],
+				'plan' => $plan['title'],
+
+				//'extModulesPrice' => $plan['extModulesPrice'],
+        'priceDocs' => $plan['priceDocs'],
 				
-        //'priceDocs' => $plan['priceDocs'],
-				//'priceUsage' => $plan['priceUsage'],
-				//'priceTotal' => $plan['priceTotal'],
+				'priceTotal' => $plan['priceTotal'],
 			];
+
+			if ($plan['priceUsage'])
+			{
+				$item['priceUsage'] = ['text' => Utils::nf($plan['priceUsage']), 'prefix' => $plan['priceUsageLegend'].' ='];
+			}
+
+      if (isset($partDef['headerClass']))
+        $item['_options']['cellClasses']['#'] = $partDef['headerClass'];
+
       $totals['usageTotal'] += $r['usageTotal'];
 			$totals['cntDocuments12m'] += $r['cntDocuments12m'];
       $totals['cntCashRegs12m'] += $r['cntCashRegs12m'];
+      $totals['priceDocs'] += $item['priceDocs'] ?? 0;
+      $totals['priceTotal'] += $item['priceTotal'] ?? 0;
 
       $this->sumTotals['usageTotal'] += $r['usageTotal'];
 			$this->sumTotals['cntDocuments12m'] += $r['cntDocuments12m'];
       $this->sumTotals['cntCashRegs12m'] += $r['cntCashRegs12m'];
+      $this->sumTotals['priceDocs'] += $item['priceDocs'] ?? 0;
+      $this->sumTotals['priceTotal'] += $item['priceTotal'] ?? 0;
 
       $this->allPks[] = $r['dataSource'];
 
@@ -152,23 +181,27 @@ class ReportPartnersDS extends \Shipard\Report\GlobalReport
     if (count($data))
     {
       $itemHeader = [
-        'dsid' => $partDef['title'],
+        'dsid' => [['text' => $partDef['title'], 'class' => 'e10-bold block h2']],
+        
         'cntDocuments12m' => ' Doklady/rok',
         'cntCashRegs12m' => ' Prodejky/rok',
   			'usageTotal' => ' Velikost',
         '_options' => [
-          'class' => 'subheader', 'beforeSeparator' => 'separator', 
+          'noIncRowNum' => 1,
+          'class' => $partDef['headerClass'] ?? 'e10-bg-t9', 'beforeSeparator' => 'separator', 
           'colSpan' => ['dsid' => 2],
-          'cellCss' => ['cntDocuments12m' => 'font-size: 90%;', 'cntCashRegs12m' => 'font-size: 90%;', 'usageTotal' => 'font-size: 90%;']
         ],
       ];
+      if (isset($partDef['subTitle']))
+        $itemHeader['dsid'][] = ['text' => $partDef['subTitle'], 'class' => ''];
+
       $this->data[] = $itemHeader;
 
       $this->data = array_merge($this->data, $data);
 
       $totals['_options'] = ['class' => 'subtotal', /*'afterSeparator' => 'separator',*/ 'colSpan' => ['dsid' => 2]];
       $totals['usageTotal'] = Utils::memf($totals['usageTotal']);
-      $totals['dsid'] = 'CELKEM:';//.json_encode($data);
+      $totals['dsid'] = 'CELKEM:';
 
       $this->data[] = $totals;
     }
@@ -186,12 +219,12 @@ class ReportPartnersDS extends \Shipard\Report\GlobalReport
 			'cntCashRegs12m' => ' Prodejky',
 			//'cntIssues12m' => '+Zprávy',
 
-			//'plan' => '|Tarif',
-			//'priceDocs' => '+Základní cena',
 			'usageTotal' => ' Velikost',
-			//'priceUsage' => '+Příplatek',
-			//'extModulesPoints' => '+Rozšíření',
-			//'priceTotal' => '+CELKEM',
+			'plan' => 'Tarif',
+			'priceDocs' => ' Základní cena',
+			'priceUsage' => ' Příplatek za místo',
+			//'extModulesPrice' => ' Rozšíření',
+			'priceTotal' => ' Cena celkem',
 		];
 
 		if ($this->partnerNdx)
@@ -199,7 +232,7 @@ class ReportPartnersDS extends \Shipard\Report\GlobalReport
 
 		$this->addContent (['type' => 'table', 'header' => $h, 'table' => $this->data, 'main' => TRUE, 'params' => ['tableClass' => 'e10-print-small']]);
 
-		//$this->addPlansLegend();
+		$this->addPlansLegend();
 	}
 
 	protected function addPlansLegend()
@@ -217,7 +250,7 @@ class ReportPartnersDS extends \Shipard\Report\GlobalReport
 		array_push($q, ' WHERE partners.docState = 4000');
 		array_push($q, ' ORDER BY partners.name, partners.ndx');
 
-		$enum = ['0' => 'Vše'];
+		$enum = [/*'0' => 'Vše'*/];
 		$enum += $this->db()->query($q)->fetchPairs();
 		$this->addParam('switch', 'partner', ['title' => 'Partner', 'switch' => $enum]);
 	}

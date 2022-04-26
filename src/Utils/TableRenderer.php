@@ -212,7 +212,7 @@ class TableRenderer extends \Shipard\Base\BaseObject
 			if ($cn == '#')
 			{
 				if (!isset ($r ['_options']['class']) ||
-						($r ['_options']['class'] != 'subheader' && $r ['_options']['class'] != 'subtotal' && (substr($r ['_options']['class'], 0, 3) != 'sum')))
+						($r ['_options']['class'] != 'subheader' && $r ['_options']['class'] != 'subtotal' && (substr($r ['_options']['class'], 0, 3) != 'sum') && !isset($r['_options']['noIncRowNum'])))
 							$cv = ($tablePart === 0) ? $this->lineNumber.'.' : $ch;
 				else
 					$cv = isset($r[$cn]) ? $r[$cn] :'';
@@ -350,7 +350,7 @@ class TableRenderer extends \Shipard\Base\BaseObject
 		}
 		if ($tablePart === 0 &&
 			(!isset ($r ['_options']['class']) ||
-				($r ['_options']['class'] != 'subheader' && $r ['_options']['class'] != 'subtotal' && $r ['_options']['class'] != 'sumtotal' && $r ['_options']['class'] != 'sum')))
+				($r ['_options']['class'] != 'subheader' && $r ['_options']['class'] != 'subtotal' && $r ['_options']['class'] != 'sumtotal' && $r ['_options']['class'] != 'sum' && !isset($r['_options']['noIncRowNum']))))
 					$this->lineNumber++;
 		$c .= "</tr>";
 
