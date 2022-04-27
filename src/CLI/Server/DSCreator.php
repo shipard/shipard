@@ -58,7 +58,6 @@ class DSCreator extends Utility
     if ($this->cfgServer['hostingDomain'] === '')
       return false;
 
-      
     $this->hostingDomain = $this->cfgServer ['hostingDomain'];
   
     return true;  
@@ -185,6 +184,10 @@ class DSCreator extends Utility
     $this->logMsg('* exec: '.$cmd);
     passthru($cmd);
 
+    $cmd = 'shpd-server app-cron --type=stats --quiet';
+    $this->logMsg('* exec: '.$cmd);
+    passthru($cmd);
+
     $this->logMsg('--- DONE: createNewDataSource ----');
   }
 
@@ -207,6 +210,10 @@ class DSCreator extends Utility
     passthru($cmd);
 
     $cmd = 'shpd-server app-fullupgrade';
+    $this->logMsg('* exec: '.$cmd);
+    passthru($cmd);
+
+    $cmd = 'tar xf /var/lib/shipard/tmp/demo/'.$request['createRequest']['dsCreateDemoType'].'-'.$today.'.tar';
     $this->logMsg('* exec: '.$cmd);
     passthru($cmd);
   }

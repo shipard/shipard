@@ -48,17 +48,14 @@ class DocumentCardDataSource extends \Shipard\Base\DocumentCard
 
 
 		$this->tableDataSourcesStats = $this->app()->table ('hosting.core.dsStats');
-		if ($this->recData['owner'])
+		$this->statsRecData = $this->db()->query('SELECT * FROM [hosting_core_dsStats] WHERE [dataSource] = %i', $this->recData['ndx'])->fetch();
+		if ($this->statsRecData)
 		{
-			$this->statsRecData = $this->db()->query('SELECT * FROM [hosting_core_dsStats] WHERE [dataSource] = %i', $this->recData['ndx'])->fetch();
-			if ($this->statsRecData)
-			{
-				$this->statsRecData = $this->statsRecData->toArray();
-				$this->statsRecData['data'] = Json::decode ($this->statsRecData['data']);
-			}
-			else
-				$this->statsRecData = NULL;
+			$this->statsRecData = $this->statsRecData->toArray();
+			$this->statsRecData['data'] = Json::decode ($this->statsRecData['data']);
 		}
+		else
+			$this->statsRecData = NULL;
 	}
 
 	public function createContentHeader ()
