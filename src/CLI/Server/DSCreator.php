@@ -60,7 +60,6 @@ class DSCreator extends Utility
 
       
     $this->hostingDomain = $this->cfgServer ['hostingDomain'];
-    $this->hostingDomain = 'dev-sebik.shpd.dev/32966902970458/';
   
     return true;  
   }
