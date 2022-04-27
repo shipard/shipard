@@ -127,6 +127,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 
 	public function onCreateDataSource ()
 	{
+		$this->checkCoreOptions();
 		$this->installDataPackages();
 		return TRUE;
 	}
@@ -270,5 +271,24 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$this->app->db()->query('DELETE FROM ['.$srcTableSqlName.']');
 
 		$this->app->db()->query ('UPDATE [e10_base_docslog] SET tableId = %s', $dstTableId, ' WHERE tableid = %s', $srcTableId);
+	}
+
+	public function checkCoreOptions ()
+	{
+		if (isset($this->initConfig ['createRequest']['name']))
+		{
+			$o ['ownerFullName'] = $this->initConfig ['createRequest']['name'];
+			$o ['ownerShortName'] = $this->initConfig ['createRequest']['name'];
+			$o ['ownerPerson'] = 2;
+		}
+		else
+		{
+			$o ['ownerFullName'] = 'Test s.r.o.';
+			$o ['ownerShortName'] = 'Test';
+		}
+
+		$o ['country'] = $this->initConfig ['createRequest']['country'];
+
+		file_put_contents (__APP_DIR__ . '/config/appOptions.core.json', json_encode ($o));
 	}
 }

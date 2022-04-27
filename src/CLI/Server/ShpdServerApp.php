@@ -837,6 +837,18 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		$database->repairModel($run);
 	}
 
+	public function dbBackup ()
+	{
+		$dsid = $this->manager->cfgItem ('dsid');
+
+		$dstPath = $this->arg ('path', 'tmp/');		
+		$dstFileName = $this->arg ('filename', $dsid.'-'.date ("Y-m-d").'.sql');
+
+		$backupDbFileName = $dstPath.$dstFileName;
+		$cmd = "mysqldump --default-character-set=utf8mb4 -u {$this->manager->cfgItem ('db.login')} -p{$this->manager->cfgItem ('db.password')} {$this->manager->cfgItem ('db.database')} -r $backupDbFileName";
+		exec ($cmd);
+	}
+
 	public function dbRestore ()
 	{
 		$fileName = $this->arg ('file');
@@ -1230,6 +1242,15 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		passthru($cmd);
 	}
 
+	public function serverCreateHostingDataSources()
+	{
+		$dsCreator = new \Shipard\CLI\Server\DSCreator($this);
+		$dsCreator->debug = intval($this->arg('debug'));
+		$dsCreator->run();
+
+		return TRUE;
+	}
+
 	public function hostingCfg ($requiredFields = NULL)
 	{
 		if (!is_file('/etc/e10-hosting.cfg'))
@@ -1373,6 +1394,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 			case	"server-info":							return $this->serverInfo ();
 			case  "server-after-pkgs-upgrade":return $this->serverAfterPkgsUpgrade();
 			case  "server-get-hosting-info":	return $this->getHostingInfo();
+			case  "server-create-hosting-ds":	return $this->serverCreateHostingDataSources();
 			case	'netdata-alarm':						return $this->netDataAlarm();
 		}
 
@@ -1398,6 +1420,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 			case	"app-upgrade":		return $this->appUpgrade ();
 
 
+			case	"db-backup":			return $this->dbBackup ();
 			case	"db-check":				return $this->manager->dbCheck ();
 			case	"db-optimize":		return $this->dbOptimize ();
 			case	"db-repair":			return $this->dbRepair ();

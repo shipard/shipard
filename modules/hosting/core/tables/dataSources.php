@@ -571,7 +571,6 @@ class ViewDataSources extends TableView
 			$panel->addContent($cp);
 	}
 
-	/*
 	public function createToolbar()
 	{
 		$tlbr = [];
@@ -595,7 +594,6 @@ class ViewDataSources extends TableView
 
 		return $tlbr;
 	}
-	*/
 }
 
 

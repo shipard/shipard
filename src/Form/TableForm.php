@@ -788,9 +788,16 @@ class TableForm
 			foreach ($a as $val => $txt)
 			{
 				if (is_array($txt) && isset($txt['enumLabelOnly']))
+				{
 					$inputCode .= $this->app()->ui()->composeTextLine($txt).'<br/>';
+				}	
 				else
-					$inputCode .= "<input type='radio' class='e10-inputRadio' id='{$colId}_$val' name='$ip{$columnId}' value='$val' data-fid='{$this->fid}'> <label for='{$colId}_$val'>" . $this->app()->ui()->composeTextLine($txt) . "</label><br/>";
+				{
+					$inputCode .= "<div class='padd5'>";
+					$inputCode .= "<input type='radio' class='e10-inputRadio' id='{$colId}_$val' name='$ip{$columnId}' value='$val' data-fid='{$this->fid}'> ";
+					$inputCode .= "<label for='{$colId}_$val' style='vertical-align: top;'>" . $this->app()->ui()->composeTextLine($txt) . "</label><br/>";
+					$inputCode .= "</div>";
+				}
 			}
 		}
 		if ($style == self::INPUT_STYLE_OPTION)

@@ -54,7 +54,7 @@ class E10_App extends Application
 		$cfgString = file_get_contents ('config/createApp.json');
 		$initConfig = json_decode ($cfgString, TRUE);
 
-		$installModuleId = str_replace ('.', '/', $initConfig['installModule']);
+		$installModuleId = str_replace ('.', '/', $initConfig['createRequest']['installModule']);
 		$installModulePath = __SHPD_MODULES_DIR__ . $installModuleId;
 		$cfgString = file_get_contents ($installModulePath . '/' . 'module.json');
 		if (!$cfgString)
@@ -284,6 +284,49 @@ class E10_App extends Application
 		$installer->setFileName($fullFileName);
 		$installer->run();
 	}	// installDataPackage
+
+	public function initRestoredDemo()
+	{
+		$request = $this->loadCfgFile('config/createApp.json');
+		if (!$request)
+		{
+			return $this->err ('File `config/createApp.json` is invalid');
+		}
+		
+    $this->db()->query('DELETE FROM [e10_persons_sessions]');
+    $this->db()->query('DELETE FROM [e10_persons_userspasswords]');
+
+    $updateAdmin = [
+      'fullName' => $request['admin']['fullName'],
+      'complicatedName' => $request['admin']['complicatedName'],
+      'beforeName' => $request['admin']['beforeName'],
+      'firstName' => $request['admin']['firstName'],
+      'middleName' => $request['admin']['middleName'],
+      'lastName' => $request['admin']['lastName'],
+      'afterName' => $request['admin']['afterName'],
+      'login' => $request['admin']['login'],
+      'loginHash' => md5(strtolower(trim($request['admin']['login']))),
+    ];
+    $this->db()->query('UPDATE [e10_persons_persons] SET ', $updateAdmin, ' WHERE [ndx] = %i', 1);
+
+
+		$coreOptions = $this->loadCfgFile('config/appOptions.core.json');
+		if ($coreOptions)
+		{
+			$coreOptions['ownerPhone'] = '+420 123 456 789';
+			$coreOptions['ownerEmail'] = 'info@example.com';
+			$coreOptions['ownerWeb'] = 'shipard.org';
+			$coreOptions['ownerVATID'] = $request['createRequest']['vatId'];
+			$coreOptions['firstFiscalYearMonth'] = 1;
+			$coreOptions['vatPeriod'] = 1;
+			$coreOptions['ownerBankAccount'] = '1234567/8901';
+			$coreOptions['ownerLegalRegInfo'] = 'Registrace u Rejstříkového soudu v Praze, značka DEMO-1234-ABCDE';
+
+			file_put_contents('config/appOptions.core.json', Json::lint($coreOptions));
+		}
+
+		return TRUE;
+	}
 
 	public function localAccount ()
 	{
@@ -1203,6 +1246,8 @@ class E10_App extends Application
 			case	"moduleService":								return $this->runModuleServices ();
 			case	"rebuildTemplates":							return $this->rebuildTemplates ();
 			case	"refreshWebPages":							return $this->refreshWebPages ();
+
+			case	'initRestoredDemo':							return $this->initRestoredDemo ();
 
 			case	"addLocalAccount":							return $this->addLocalAccount ();
 			case	"localAccount":									return $this->localAccount ();

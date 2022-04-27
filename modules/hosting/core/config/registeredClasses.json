@@ -1,7 +1,9 @@
 {
 	"objectsCalls": {
 		"hosting-user-summary-upload": {"classId": "hosting.core.libs.HostingUserSummaryUpload"},
-		"hosting-server-info-upload": {"classId": "hosting.core.libs.ServerInfoReceiver"}
+		"hosting-server-info-upload": {"classId": "hosting.core.libs.ServerInfoReceiver"},
+		"get-new-data-source-request": {"classId": "hosting.core.libs.api.GetNewDataSourceResponse"},
+		"confirm-new-data-source-request": {"classId": "hosting.core.libs.api.ConfirmNewDataSourceResponse"}
 	},
 	"feed": {
 		"loginScreen": {

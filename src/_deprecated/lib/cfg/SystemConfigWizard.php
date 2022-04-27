@@ -31,7 +31,7 @@ class SystemConfigWizard extends \E10\Wizard
 		if (!$this->initConfig)
 			return;
 
-		$installModuleId = str_replace ('.', '/', $this->initConfig['installModule']);
+		$installModuleId = str_replace ('.', '/', $this->initConfig['createRequest']['installModule']);
 		$installModulePath = __SHPD_MODULES_DIR__ . $installModuleId;
 		$cfgString = file_get_contents ($installModulePath . '/' . 'module.json');
 		if (!$cfgString)
@@ -40,7 +40,8 @@ class SystemConfigWizard extends \E10\Wizard
 		$this->installModule = json_decode ($cfgString, TRUE);
 		if (!isset ($this->installModule['demoData']))
 			return;
-
+		
+		$this->recData['installType'] = 'none';
 		foreach ($this->installModule['demoData'] as $ddId => $dd)
 		{
 			$this->demoData[$ddId] = $dd;

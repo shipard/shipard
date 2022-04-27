@@ -4,80 +4,6 @@ namespace E10\Persons;
 use \Shipard\Utils\Utils;
 use \Shipard\Utils\World;
 
-function createNewPerson2 ($app, $personData)
-{
-	$newPerson = array ();
-
-	$personHead = $personData ['person'];
-	Utils::addToArray ($newPerson, $personHead, 'firstName');
-	Utils::addToArray ($newPerson, $personHead, 'lastName');
-	Utils::addToArray ($newPerson, $personHead, 'fullName', '');
-	Utils::addToArray ($newPerson, $personHead, 'company', 0);
-	Utils::addToArray ($newPerson, $personHead, 'accountType', 2);
-
-	if ($newPerson ['company'] == 0)
-		$newPerson ['fullName'] = $newPerson ['firstName'].' '.$newPerson ['lastName'];
-
-	if (isset ($personHead ['roles']))
-		$newPerson ['roles'] = $personHead ['roles'];
-	if (isset ($personHead ['login']))
-	{
-		$newPerson ['login'] = $personHead ['login'];
-		$newPerson ['loginHash'] = md5(strtolower(trim($personHead ['login'])));
-		$newPerson ['accountState'] = 1;
-	}
-
-	$newPerson ['docState'] = 4000;
-	$newPerson ['docStateMain'] = 2;
-
-	$app->db->query ("INSERT INTO [e10_persons_persons]", $newPerson);
-	$newPersonNdx = intval ($app->db->getInsertId ());
-
-	// -- contactInfo
-	if (isset($personData ['contacts']))
-	{
-		forEach ($personData ['contacts'] as $contact)
-		{
-			$newContact = array ('property' => $contact ['type'], 'group' => 'contacts', 'tableid' => 'e10.persons.persons', 'recid' => $newPersonNdx,
-													'valueString' => $contact ['value'], 'created' => new \DateTime ());
-			$app->db->query ("INSERT INTO [e10_base_properties]", $newContact);
-		}
-	}
-
-	// -- address
-	if (isset ($personData ['address']))
-	{
-		forEach ($personData ['address'] as $address)
-		{
-			$newAddress = array ('tableid' => 'e10.persons.persons', 'recid' => $newPersonNdx);
-			Utils::addToArray ($newAddress, $address, 'specification', '');
-			Utils::addToArray ($newAddress, $address, 'street', '');
-			Utils::addToArray ($newAddress, $address, 'city', '');
-			Utils::addToArray ($newAddress, $address, 'zipcode', '');
-			Utils::addToArray ($newAddress, $address, 'country', $app->cfgItem ('options.core.ownerDomicile', 'cz'));
-
-			Utils::addToArray ($newAddress, $address, 'worldCountry', 0);
-			if ($newAddress['worldCountry'] === 0) // TODO: for compatibility with old hosting
-				$newAddress['worldCountry'] = World::countryNdx($app, $newAddress['country']);
-
-			$app->db->query ("INSERT INTO [e10_persons_address]", $newAddress);
-		}
-	}
-
-	// -- identification
-	if (isset ($personData ['ids']))
-	{
-		forEach ($personData ['ids'] as $id)
-		{
-			if ($id ['type'] === 'birthdate')
-				continue;
-			$newId = array ('property' => $id ['type'], 'group' => 'ids', 'tableid' => 'e10.persons.persons', 'recid' => $newPersonNdx,
-											'valueString' => $id ['value'], 'created' => new \DateTime ());
-			$app->db->query ("INSERT INTO [e10_base_properties]", $newId);
-		}
-	}
-	return $newPersonNdx;
-} // createNewPerson2
 
 
 class ModuleServices extends \E10\CLI\ModuleServices
@@ -86,16 +12,126 @@ class ModuleServices extends \E10\CLI\ModuleServices
 	{
 		if ($this->initConfig)
 		{
-			$admin = $this->initConfig ['admin']['xf'];
+			// -- admin
+			$admin = ['person' => $this->initConfig ['admin']];
+			$admin ['person']['company'] = 0;
 			$admin ['person']['roles'] = 'admin.all';
-			createNewPerson2 ($this->app, $admin);
+			$this->createNewPerson ($admin);
 
-			if (isset($this->initConfig ['owner']))
+			// -- owner
+			$owner = [
+				'person' => [
+					'company' => 1,
+					'fullName' => $this->initConfig ['createRequest']['companyName'],
+				],
+				'address' => [
+					[
+						'street' => $this->initConfig ['createRequest']['street'],
+						'city' => $this->initConfig ['createRequest']['city'],
+						'zipcode' => $this->initConfig ['createRequest']['zipcode'],
+						'country' => $this->initConfig ['createRequest']['country'],
+						'country' => $this->initConfig ['createRequest']['country'],
+						'worldCountry' => World::countryNdx($this->app(), $this->initConfig ['createRequest']['country']),
+					]
+				],
+				'ids' => [
+					['type' => 'oid', 'value' => $this->initConfig ['createRequest']['companyId']],
+				],
+				'contacts' => [
+					['type' => 'email', 'value' => $this->initConfig ['admin']['login']],
+				],
+			];
+			if (isset($this->initConfig ['createRequest']['companyId']) && $this->initConfig ['createRequest']['companyId'] !== '')
+				$owner['ids'][] = 	['type' => 'taxid', 'value' => $this->initConfig ['createRequest']['vatId']];
+
+			$this->createNewPerson ($owner);
+		}
+	}
+
+	protected function createNewPerson ($personData)
+	{
+		/** @var \e10\persons\TablePersons $tablePersons */
+		$tablePersons = $this->app()->table('e10.persons.persons');
+		$newPerson = [];
+	
+		$personHead = $personData ['person'];
+		Utils::addToArray ($newPerson, $personHead, 'firstName');
+		Utils::addToArray ($newPerson, $personHead, 'lastName');
+		Utils::addToArray ($newPerson, $personHead, 'fullName', '');
+		Utils::addToArray ($newPerson, $personHead, 'company', 0);
+		Utils::addToArray ($newPerson, $personHead, 'accountType', 2);
+	
+		if ($newPerson ['company'] == 0)
+			$newPerson ['fullName'] = $newPerson ['firstName'].' '.$newPerson ['lastName'];
+	
+		if (isset ($personHead ['roles']))
+			$newPerson ['roles'] = $personHead ['roles'];
+		if (isset ($personHead ['login']))
+		{
+			$newPerson ['login'] = $personHead ['login'];
+			$newPerson ['loginHash'] = md5(strtolower(trim($personHead ['login'])));
+			$newPerson ['accountState'] = 1;
+		}
+	
+		$newPerson ['docState'] = 4000;
+		$newPerson ['docStateMain'] = 2;
+	
+		$newPersonNdx = $tablePersons->dbInsertRec($newPerson);
+	
+		// -- contactInfo
+		if (isset($personData ['contacts']))
+		{
+			forEach ($personData ['contacts'] as $contact)
 			{
-				$owner = $this->initConfig ['owner']['xf'];
-				createNewPerson2 ($this->app, $owner);
+				$newContact = [
+					'property' => $contact ['type'], 'group' => 'contacts', 
+					'tableid' => 'e10.persons.persons', 'recid' => $newPersonNdx,
+					'valueString' => $contact ['value'], 'created' => new \DateTime (),
+				];
+				$this->db()->query ("INSERT INTO [e10_base_properties]", $newContact);
 			}
 		}
+	
+		// -- address
+		if (isset ($personData ['address']))
+		{
+			forEach ($personData ['address'] as $address)
+			{
+				$newAddress = ['tableid' => 'e10.persons.persons', 'recid' => $newPersonNdx];
+				Utils::addToArray ($newAddress, $address, 'specification', '');
+				Utils::addToArray ($newAddress, $address, 'street', '');
+				Utils::addToArray ($newAddress, $address, 'city', '');
+				Utils::addToArray ($newAddress, $address, 'zipcode', '');
+				Utils::addToArray ($newAddress, $address, 'country', $this->app()->cfgItem ('options.core.ownerDomicile', 'cz'));
+	
+				Utils::addToArray ($newAddress, $address, 'worldCountry', 0);
+				if ($newAddress['worldCountry'] === 0) // TODO: for compatibility with old hosting
+					$newAddress['worldCountry'] = World::countryNdx($this->app(), $newAddress['country']);
+	
+				$this->db()->query ("INSERT INTO [e10_persons_address]", $newAddress);
+			}
+		}
+	
+		// -- identification
+		if (isset ($personData ['ids']))
+		{
+			forEach ($personData ['ids'] as $id)
+			{
+				if ($id ['type'] === 'birthdate')
+					continue;
+				$newId = [
+					'property' => $id ['type'], 'group' => 'ids', 
+					'tableid' => 'e10.persons.persons', 'recid' => $newPersonNdx,
+					'valueString' => $id ['value'], 'created' => new \DateTime (),
+				];
+				$this->db()->query ("INSERT INTO [e10_base_properties]", $newId);
+			}
+		}
+
+		$newPersonsRecData = $tablePersons->loadItem($newPersonNdx);
+		$tablePersons->checkAfterSave2 ($newPersonsRecData);
+
+		return $newPersonNdx;
 	}
 
 	public function onAppUpgrade ()
