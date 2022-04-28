@@ -3371,6 +3371,13 @@ function e10FormNeedSave (element, saveType)
 	{
 		e10SaveOnChange (element);
 	}
+
+	if (element.is('input') && element.attr('type') === 'radio')
+	{
+		element.parent().parent().find('>div.active').removeClass('active');
+		if (element[0].checked)
+			element.parent().addClass('active');
+	}
 }
 
 function e10FormRowAction (event, button)
@@ -6741,6 +6748,11 @@ function e10WizardNext (input)
 							initViewer (viewerId);
 				});
 			}
+
+			if (data.flags.autofocus === undefined)
+				$("#" + id + " input[type='text']:visible,textarea:visible,div.e10-inputDocLink:visible").first().focus();
+			else
+				$("#" + id + " input.autofocus").first().focus();
 
 			if (data.stepResult && data.stepResult.close == 1)
 			{

@@ -785,6 +785,7 @@ class TableForm
 		$a = $enums;
 		if ($style == self::INPUT_STYLE_RADIO)
 		{
+			$active = ' active';
 			foreach ($a as $val => $txt)
 			{
 				if (is_array($txt) && isset($txt['enumLabelOnly']))
@@ -793,10 +794,11 @@ class TableForm
 				}	
 				else
 				{
-					$inputCode .= "<div class='padd5'>";
+					$inputCode .= "<div class='padd5 e10-selectable-radio$active'>";
 					$inputCode .= "<input type='radio' class='e10-inputRadio' id='{$colId}_$val' name='$ip{$columnId}' value='$val' data-fid='{$this->fid}'> ";
 					$inputCode .= "<label for='{$colId}_$val' style='vertical-align: top;'>" . $this->app()->ui()->composeTextLine($txt) . "</label><br/>";
 					$inputCode .= "</div>";
+					$active = '';
 				}
 			}
 		}

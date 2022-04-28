@@ -878,7 +878,7 @@ viewerId=searchParentAttr(e,'data-viewer');var
 requestParams={};requestParams['object-class-id']=e.attr('data-object-class-id');requestParams['action-type']=e.attr('data-action-type');elementPrefixedAttributes(e,'data-action-param-',requestParams);if(e.attr('data-pk')!==undefined)requestParams['pk']=e.attr('data-pk');e10.server.api(requestParams,function(data){if(data.reloadNotifications===1)e10NCReset();viewerRefresh($('#'+viewerId));});}function
 e10InlineAction(e){if(e.attr('data-object-class-id')===undefined)return;var
 requestParams={};requestParams['object-class-id']=e.attr('data-object-class-id');requestParams['action-type']=e.attr('data-action-type');elementPrefixedAttributes(e,'data-action-param-',requestParams);if(e.attr('data-pk')!==undefined)requestParams['pk']=e.attr('data-pk');e10.server.api(requestParams,function(data){if(data.reloadNotifications===1)e10NCReset();if(e.parent().hasClass('btn-group')){e.parent().find('>button.active').removeClass('active');e.addClass('active');}});}function
-e10FormNeedSave(element,saveType){e10FormSetAsModified(element);if(saveType===-1){e10SaveOnChange(element);}}function
+e10FormNeedSave(element,saveType){e10FormSetAsModified(element);if(saveType===-1){e10SaveOnChange(element);}if(element.is('input')&&element.attr('type')==='radio'){element.parent().parent().find('>div.active').removeClass('active');if(element[0].checked)element.parent().addClass('active');}}function
 e10FormRowAction(event,button){var
 action=button.attr('data-action');if(action==="delete"){e10FormRowActionDelete(button);return;}if(action==="insert"){e10FormRowActionInsert(button);return;}if(action==="up"){e10FormRowActionUp(button);return;}if(action==="down"){e10FormRowActionDown(button);return;}alert("e10FormRowAction: "+action);}function
 e10FormRowActionDelete(button){var
@@ -1624,7 +1624,8 @@ sidebar=$("#"+id+'Sidebar');var
 header=$("#"+id+'Header');header.html(data.htmlHeader);var
 buttons=$("#"+id+'Buttons');buttons.show();buttons.html(data.buttonsCode);df2FormsSetData(id,data);var
 form=$("#"+id);e10DecorateFormWidgets(form);e10doSizeHints(form);if(data.sidebarCode!=null){sidebar.html(data.sidebarCode);sidebar.find('div.df2-viewer').each(function(){var
-viewerId=$(this).attr("id");initViewer(viewerId);});}if(data.stepResult&&data.stepResult.close==1){var
+viewerId=$(this).attr("id");initViewer(viewerId);});}if(data.flags.autofocus===undefined)$("#"+id+" input[type='text']:visible,textarea:visible,div.e10-inputDocLink:visible").first().focus();else
+$("#"+id+" input.autofocus").first().focus();if(data.stepResult&&data.stepResult.close==1){var
 modalElement=$('#'+id+'Form');var
 srcObjectType=modalElement.attr('data-srcObjectType');var
 srcObjectId=modalElement.attr('data-srcObjectId');e10ViewerCancelForm(form);if(srcObjectType==='viewer'){if(srcObjectId==='default')srcObjectId=$('#mainBrowserContent div.e10-mainViewer').attr('id');if(data.stepResult&&data.stepResult.refreshDetail==1){var
