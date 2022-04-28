@@ -6,12 +6,12 @@
                     <div class="e10-gs-col e10-gs-col10 e10-gs-offset1" title="{{name}}">
 						{{#original}}
                             <a class="thumbnail" href="{{dsRoot}}/att/{{fileName}}" target="new">
-                                <img src="{{dsRoot}}/imgs/-w1200/att/{{fileName}}" class="img-responsive" title="{{name}}"/>
+                                <img src="{{dsRoot}}/imgs/-w1980/att/{{fileName}}" class="img-responsive" title="{{name}}"/>
                             </a>
 						{{/original}}
 						{{^original}}
                             <a class="thumbnail gallery" href="{{dsRoot}}/imgs/-w1980/att/{{fileName}}">
-                                <img src="{{dsRoot}}/imgs/-w1200/att/{{fileName}}" class="img-responsive" title="{{name}}"/>
+                                <img src="{{dsRoot}}/imgs/-w1980/att/{{fileName}}" class="img-responsive" title="{{name}}"/>
                             </a>
 						{{/original}}
                     </div>
@@ -23,7 +23,7 @@
 		{{#data.gallery.rows}}
 			{{#images}}
                 <span class="thumb thumb-{{data.gallery.style}}">
-            <img src="{{dsRoot}}/imgs/-w1200/att/{{fileName}}"{{#data.gallery.imgcss}} style='{{data.gallery.imgcss}}'{{/data.gallery.imgcss}} title="{{name}}"/>
+            <img src="{{dsRoot}}/imgs/-w1980/att/{{fileName}}"{{#data.gallery.imgcss}} style='{{data.gallery.imgcss}}'{{/data.gallery.imgcss}} title="{{name}}"/>
 					</span>
 			{{/images}}
 		{{/data.gallery.rows}}
@@ -42,12 +42,12 @@
 			{{#cnt1}}<div class="e10-gs-col e10-gs-col12" title="{{name}}">{{/cnt1}}
 			{{#original}}
                     <a class="thumbnail" href="{{dsRoot}}/att/{{fileName}}" target="new">
-                        <img src="{{dsRoot}}/imgs/-w1200/att/{{fileName}}" class="img-responsive"/>
+                        <img src="{{dsRoot}}/imgs/-w1980/att/{{fileName}}" class="img-responsive"/>
                     </a>
 			{{/original}}
 			{{^original}}
                     <a class="thumbnail gallery" href="{{dsRoot}}/imgs/-w1980/att/{{fileName}}">
-                        <img src="{{dsRoot}}/imgs/-w1200/att/{{fileName}}" class="img-responsive"/>
+                        <img src="{{dsRoot}}/imgs/-w1980/att/{{fileName}}" class="img-responsive"/>
                     </a>
 			{{/original}}
             </div>

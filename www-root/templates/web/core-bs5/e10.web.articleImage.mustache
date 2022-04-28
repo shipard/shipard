@@ -6,13 +6,13 @@
 					<div class="col-sm-12 col-md-12 ml-lg-auto mr-lg-auto col-lg-12" title="{{name}}">
 						{{#original}}
 							<a class="thumbnail" href="{{dsRoot}}/{{folder}}{{fileName}}" target="new">
-								{{^svg}}<img src="{{dsRoot}}/imgs/-w1200/{{folder}}{{fileName}}" class="img-responsive" title="{{name}}"/>{{/svg}}
+								{{^svg}}<img src="{{dsRoot}}/imgs/-w1980/{{folder}}{{fileName}}" class="img-responsive" title="{{name}}"/>{{/svg}}
 								{{#svg}}<img src="{{dsRoot}}/{{folder}}{{fileName}}" class="img-responsive" title="{{name}}"/>{{/svg}}
 							</a>
 						{{/original}}
 						{{^original}}
 							<a class="thumbnail gallery" data-fancybox="{{id}}" href="{{dsRoot}}/imgs/-w1980/{{folder}}{{fileName}}">
-								{{^svg}}<img src="{{dsRoot}}/imgs/-w1200/{{folder}}{{fileName}}" class="img-responsive" title="{{name}}"/>{{/svg}}
+								{{^svg}}<img src="{{dsRoot}}/imgs/-w1980/{{folder}}{{fileName}}" class="img-responsive" title="{{name}}"/>{{/svg}}
 								{{#svg}}<img src="{{dsRoot}}/{{folder}}{{fileName}}" class="img-responsive" title="{{name}}"/>{{/svg}}
 							</a>
 						{{/original}}
@@ -25,7 +25,7 @@
 		{{#data.gallery.rows}}
 			{{#images}}
 				<span class="thumb thumb-{{data.gallery.style}}">
-            <img src="{{dsRoot}}/imgs/-w1200/{{folder}}{{fileName}}"{{#data.gallery.imgcss}} style='{{data.gallery.imgcss}}'{{/data.gallery.imgcss}} title="{{name}}"/>
+            <img src="{{dsRoot}}/imgs/-w1980/{{folder}}{{fileName}}"{{#data.gallery.imgcss}} style='{{data.gallery.imgcss}}'{{/data.gallery.imgcss}} title="{{name}}"/>
 					</span>
 			{{/images}}
 		{{/data.gallery.rows}}
@@ -44,13 +44,13 @@
 			{{#cnt1}}<div class="col-sm-12 col-md-12 col-lg-12" title="{{name}}">{{/cnt1}}
 			{{#original}}
 					<a class="thumbnail" href="{{dsRoot}}/{{folder}}{{fileName}}" target="new">
-						{{^svg}}<img src="{{dsRoot}}/imgs/-w1200/{{folder}}{{fileName}}" class="img-responsive"/>{{/svg}}
+						{{^svg}}<img src="{{dsRoot}}/imgs/-w1980/{{folder}}{{fileName}}" class="img-responsive"/>{{/svg}}
 						{{#svg}}<img src="{{dsRoot}}/{{folder}}{{fileName}}" class="img-responsive"/>{{/svg}}
 					</a>
 			{{/original}}
 			{{^original}}
 					<a class="thumbnail gallery" href="{{dsRoot}}/imgs/-w1980/{{folder}}{{fileName}}" data-fancybox="{{data.gallery.id}}">
-						{{^svg}}<img src="{{dsRoot}}/imgs/-w1200/{{folder}}{{fileName}}" class="img-responsive"/>{{/svg}}
+						{{^svg}}<img src="{{dsRoot}}/imgs/-w1980/{{folder}}{{fileName}}" class="img-responsive"/>{{/svg}}
 						{{#svg}}<img src="{{dsRoot}}/{{folder}}{{fileName}}" class="img-responsive"/>{{/svg}}
 					</a>
 			{{/original}}
