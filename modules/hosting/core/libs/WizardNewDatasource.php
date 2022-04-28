@@ -90,7 +90,7 @@ class WizardNewDatasource extends Wizard
 		}
 
 		$this->openForm (self::ltVertical);
-			$this->addInput('dataSourceName', 'Název databáze', self::INPUT_STYLE_STRING, self::coFocus, 100, FALSE, 'První testovací s.r.o.');
+			$this->addInput('dataSourceName', 'Název databáze', self::INPUT_STYLE_STRING, self::coFocus, 100, FALSE, 'Naše firma s.r.o.');
 			$this->addInputEnum2('dsCreateDemoTypeId', ' ', $enum, TableForm::INPUT_STYLE_RADIO);
 			$this->addInput('partner', 'Partner', self::INPUT_STYLE_STRING, TableForm::coHidden, 20);
 			$this->addInput('dsCreateModeId', 'dsCreateModeId', self::INPUT_STYLE_STRING, TableForm::coHidden, 80);
@@ -134,6 +134,9 @@ class WizardNewDatasource extends Wizard
 		$isDemo = 0;
 		$dataSourceName = '';
 		$dsCreateDemoType = '';
+
+		if ($this->recData['dataSourceName'] === '')
+			$this->recData['dataSourceName'] = 'Naše firma s.r.o.';
 
 		if ($this->recData['dsCreateModeId'] === 'demo')
 		{
@@ -191,9 +194,6 @@ class WizardNewDatasource extends Wizard
 					$createRequest[$key] = $value;
 			}
 		}
-
-		if ($createRequest['companyName'] === '')
-			$createRequest['companyName'] = 'První testovací s.r.o.';
 
 		Json::polish($createRequest);
 
