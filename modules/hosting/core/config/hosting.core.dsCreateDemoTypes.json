@@ -17,6 +17,7 @@
   },
   "blank": {
     "name": "Žádná demonstrační data",
+    "disabled": 1,
     "inputLabel": [
       {"text":  "Prázdná databáze", "class": "h2 block"},
       {"text":  "Databáze nebude obsahovat žádná ukázková data (doklady, položky apod.)", "class": ""}

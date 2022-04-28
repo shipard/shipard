@@ -82,16 +82,18 @@ class WizardNewDatasource extends Wizard
 		$dsDemoTypes = $this->app()->cfgItem('hosting.core.dsCreateDemoTypes');
 		foreach ($dsDemoTypes as $dsDemoTypeId => $dsDemoType)
 		{
+			if (isset($dsDemoType['disabled']))
+				continue;
 			$enum[$dsDemoTypeId] = $dsDemoType['inputLabel'];
 			if (!isset($this->recData['dsCreateDemoTypeId']))
 				$this->recData['dsCreateDemoTypeId'] = $dsDemoTypeId;
 		}
 
 		$this->openForm (self::ltVertical);
+			$this->addInput('dataSourceName', 'Název databáze', self::INPUT_STYLE_STRING, self::coFocus, 100, FALSE, 'První testovací s.r.o.');
+			$this->addInputEnum2('dsCreateDemoTypeId', ' ', $enum, TableForm::INPUT_STYLE_RADIO);
 			$this->addInput('partner', 'Partner', self::INPUT_STYLE_STRING, TableForm::coHidden, 20);
 			$this->addInput('dsCreateModeId', 'dsCreateModeId', self::INPUT_STYLE_STRING, TableForm::coHidden, 80);
-			$this->addInput('dataSourceName', 'Název databáze', self::INPUT_STYLE_STRING, 0, 100, FALSE, 'První testovací s.r.o.');
-			$this->addInputEnum2('dsCreateDemoTypeId', ' ', $enum, TableForm::INPUT_STYLE_RADIO);
 		$this->closeForm ();		
 	}
 
@@ -189,6 +191,9 @@ class WizardNewDatasource extends Wizard
 					$createRequest[$key] = $value;
 			}
 		}
+
+		if ($createRequest['companyName'] === '')
+			$createRequest['companyName'] = 'První testovací s.r.o.';
 
 		Json::polish($createRequest);
 

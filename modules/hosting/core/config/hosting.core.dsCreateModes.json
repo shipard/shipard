@@ -2,13 +2,20 @@
   "demo": {
     "name": "Demonstrační databáze",
     "inputLabel": [
-      {"text":  "Pokusná demo databáze", "class": "h2 block"}
+      {"text":  "Pokusná demo databáze", "class": "h2 block"},
+      {"text":  "• Tuto možnost zvolte pro testování aplikace.", "class": "block"},
+      {"text":  "• Databáze bude obsahovat data malé firmy, která je plátcem DPH.", "class": "block"},
+      {"text":  "• Databáze bude fungovat 30 dnů a provoz je zdarma.", "class": "block"}
     ]
   },
   "production": {
     "name": "Ostrá databáze",
     "inputLabel": [
-      {"text":  "Ostrá databáze", "class": "h2 block"}
+      {"text":  "Ostrá databáze", "class": "h2 block"},
+      {"text":  "• Tuto možnost zvolte, pokud chcete začít s aplikací, která již bude nastavena s vašimi údaji.", "class": "block"},
+      {"text":  "• Databáze bude připravena na ostrý provoz.", "class": "block"},
+      {"text":  "• Po vytvoření databáze máte prvních 30 dní na její vyzkoušení zdarma.", "class": "block"},
+      {"text":  "• Údaje o Vaší firmě nastavíte v dalším kroku.", "class": "block"}
     ]
   }
 }
