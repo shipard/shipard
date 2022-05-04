@@ -45,11 +45,23 @@ class InvoicesGenerator extends \e10\Utility
 			if (!isset($personInfo['detail']))
 				continue;
 
-			echo '   * '.$personInfo['personName'] ." \n";
+			echo '   * '.$personInfo['personName'];
 			$invoiceData = [
 				'personNdx' => $personNdx, 'personName' => $personInfo['personName'],
 				'rows' => []
 			];
+
+			$linkId = 'cntn-'.$this->canteenNdx.'-'.$relationId.'-'.$this->periodBegin->format('y-m');
+			echo " / ".$linkId;
+			$invoiceExist = $this->db()->query('SELECT * FROM [e10doc_core_heads] WHERE [docType] = %s', 'invno', 
+						' AND [person] = %i', $personNdx, ' AND [linkId] = %s', $linkId)->fetch();
+			if ($invoiceExist)
+			{
+				echo "; faktura existuje: ".$invoiceExist['docNumber']."\n";
+				continue;
+			}
+
+			echo "\n";
 
 			if (isset($personInfo['detail']['main']))
 			{
