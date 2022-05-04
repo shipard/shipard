@@ -86,7 +86,7 @@ class Params extends \Shipard\Base\BaseObject
 			];
 			if (!isset($pc['defaultValue']))
 			{
-				$pc['defaultValue'] = $valId;
+				//$pc['defaultValue'] = $valId;
 			}
 			$this->createCalendarMonthParam ($pc);
 		}
