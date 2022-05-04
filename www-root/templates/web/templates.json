@@ -6,5 +6,9 @@
     "700300": {
         "id": "core-bs5",
         "name": "Základní šablona BS5"
+    },
+    "780100": {
+        "id": "unify-31",
+        "name": "Unify 3.1"
     }
 }

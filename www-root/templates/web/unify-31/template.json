@@ -1,0 +1,29 @@
+{
+	"name": "Unify 3.1",
+	"version": "0.8.1", "id": "unify-31", "ndx": "780100",
+	"styles": ["web", "wiki", "app", "display"],
+	"extensions": [],
+
+	"templateParams": {
+		"columns": [
+			{"id": "defaultTemplateType", "name": "Výchozí typ šablony", "type": "enumString", "len": 40,
+				"enumValues": {
+					"web": "Webové stránky",
+					"wiki": "Wiki"
+				}
+			},
+
+			{"id": "headerLogo", "name": "Logo pro hlavičku", "type": "int", "reference": "e10.base.attachments", "comboViewer": "images"},
+			{"id": "headerTitle", "name": "Titulek pro hlavičku", "type": "string", "len": 40},
+			{"id": "footerLogo", "name": "Logo pro patičku", "type": "int", "reference": "e10.base.attachments", "comboViewer": "images"}
+		]
+	},
+	"lookParams": {
+		"columns": [
+			{"id": "primary", "group": "body", "name": "Hlavní barva", "type": "string", "subtype": "color", "cssType": "color", "len": 20}
+		],
+		"groups": [
+			{"id": "body", "title": "Tělo stránky"}
+		]
+	}
+}

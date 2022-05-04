@@ -40,5 +40,11 @@
         "name": "Tmavý",
         "themeColor": "#00508a",
         "template": "core-bs5"
+    },
+    "780101": {
+        "id": "780101-default",
+        "name": "Výchozí vzhled",
+        "themeColor": "#00508a",
+        "template": "unify-31"
     }
 }

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>{{page.pageTitle}}</title>
+	{{{headMetaTags}}}
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+	<link href="{{dsRoot}}{{serverInfo.templateStylePath}}/{{serverInfo.look}}-web.css?v={{serverInfo.lookVersion.web}}" rel="stylesheet">
+  <link rel="stylesheet" href="{{dsRoot}}{{templateUrlRoot}}/unify-v3.1/dist/assets/vendor/hs-mega-menu/dist/hs-mega-menu.min.css">
+  <link rel="stylesheet" href="{{dsRoot}}{{templateUrlRoot}}/unify-v3.1/dist/assets/vendor/swiper/swiper-bundle.min.css">
+
+	<link rel="stylesheet" type="text/css" href="{{scRoot}}/icons/bsi/1.7/font/bootstrap-icons.css">
+</head>
+
+<body>
+	{{#page.headerFull}}{{{page.headerFull}}}{{/page.headerFull}}
+	{{^page.headerFull}}
+  <header id="header" class="navbar navbar-expand-lg navbar-end navbar-light navbar-absolute-top navbar-show-hide"
+          data-hs-header-options='{
+            "fixMoment": 0,
+            "fixEffect": "slide"
+          }'>
+    <div class="container">
+      <nav class="js-mega-menu navbar-nav-wrap">
+        <!-- Default Logo -->
+        <a class="navbar-brand" href="{{urlRoot}}/" aria-label="Home page">
+					{{#serverInfo.images.template.headerLogo}}<img class="navbar-brand-logo" src="{{dsRoot}}{{serverInfo.images.template.headerLogo}}"/>{{/serverInfo.images.template.headerLogo}}
+					{{#serverInfo.templateParams.headerTitle}} <span class='d-{{serverInfo.templateParams.desktopMenuFrom}}'>{{serverInfo.templateParams.headerTitle}}</span>{{/serverInfo.templateParams.headerTitle}}
+        </a>
+        <!-- End Default Logo -->
+
+        <!-- Toggler -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-default">
+            <i class="bi-list"></i>
+          </span>
+          <span class="navbar-toggler-toggled">
+            <i class="bi-x"></i>
+          </span>
+        </button>
+        <!-- End Toggler -->
+      
+        <!-- Collapse -->
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+          <div class="navbar-absolute-top-scroller">
+            <ul class="navbar-nav nav-pills">
+							{{#menu.items}}
+								<li class='nav-item'>
+									<a class="nav-link{{#active}} active{{/active}}" href="{{urlRoot}}{{url}}">{{title}}</a>
+								</li>
+							{{/menu.items}}
+            </ul>
+          </div>
+        </div>
+        <!-- End Collapse -->
+      </nav>
+    </div>
+  </header>
+	{{/page.headerFull}}
+  
+
+  <main id="content" role="main">
+	{{#page.params.myMain}}
+	  {{{pageText}}}
+	{{/page.params.myMain}}
+	{{^page.params.myMain}}
+		<div class="container content-space-t-3">
+		{{{pageText}}}
+		</div>
+	{{/page.params.myMain}}
+
+  </main>
+  
+	{{#page.footerFull}}{{{page.footerFull}}}{{/page.footerFull}}
+	{{^page.footerFull}}
+		<footer class="bg-dark">
+			<div class="container">
+				<div class="row align-items-center pt-8">
+					<div class="col-12">
+						{{#serverInfo.images.template.footerLogo}}<img src="{{dsRoot}}{{serverInfo.images.template.footerLogo}}" style="max-width: 70%; max-height: 10rem; padding: 0; margin: 1rem;"/><br>{{/serverInfo.images.template.footerLogo}}
+					</div>
+					<!-- End Col -->
+				</div>
+				<!-- End Row -->
+			</div>
+		</footer>
+	{{/page.footerFull}}
+
+
+  <!-- Go To -->
+  <a class="js-go-to go-to position-fixed" href="javascript:;" style="visibility: hidden;"
+     data-hs-go-to-options='{
+       "offsetTop": 700,
+       "position": {
+         "init": {
+           "right": "2rem"
+         },
+         "show": {
+           "bottom": "2rem"
+         },
+         "hide": {
+           "bottom": "-2rem"
+         }
+       }
+     }'>
+    <i class="bi-chevron-up"></i>
+  </a>
+
+	<script type="text/javascript" src="{{scRoot}}/bs/5.1/dist/js/bootstrap.bundle.min.js?v511"></script>
+  <script src="{{dsRoot}}{{templateUrlRoot}}/unify-v3.1/dist/assets/vendor/hs-header/dist/hs-header.min.js"></script>
+  <script src="{{dsRoot}}{{templateUrlRoot}}/unify-v3.1/dist/assets/vendor/hs-mega-menu/dist/hs-mega-menu.min.js"></script>
+  <script src="{{dsRoot}}{{templateUrlRoot}}/unify-v3.1/dist/assets/vendor/hs-go-to/dist/hs-go-to.min.js"></script>
+  <script src="{{dsRoot}}{{templateUrlRoot}}/unify-v3.1/dist/assets/vendor/swiper/swiper-bundle.min.js"></script>
+
+	<script src="{{dsRoot}}{{templateUrlRoot}}/unify-v3.1/dist/assets/js/theme.min.js"></script>
+
+  <script>
+    (function() {
+      new HSHeader('#header').init()
+      const megaMenu = new HSMegaMenu('.js-mega-menu', {
+        desktop: {position: 'left'}
+      })
+      new HSGoTo('.js-go-to')
+      var swiper = new Swiper('.js-swiper-clients',{
+        slidesPerView: 2,
+        breakpoints: {
+          380: {
+            slidesPerView: 3,
+            spaceBetween: 15,
+          },
+          768: {
+            slidesPerView: 4,
+            spaceBetween: 15,
+          },
+          1024: {
+            slidesPerView: 5,
+            spaceBetween: 15,
+          },
+        },
+      });
+    })()
+  </script>
+</body>
+</html>
