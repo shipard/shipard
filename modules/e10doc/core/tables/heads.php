@@ -3300,7 +3300,7 @@ class FormHeads extends TableForm
 						$this->addColumnInput ('taxManual', TableForm::coRight);
 				$this->closeRow ();
 
-				if ($this->recData['taxPayer'] && $this->recData['taxManual'] != 0)
+				if ($this->recData['taxPayer'] && isset($this->recData['taxManual']) && $this->recData['taxManual'] != 0)
 					$this->addList ('taxes');
 				else
 					$this->addStatic($this->table->summaryVAT ($this->recData));
@@ -3527,6 +3527,8 @@ class FormHeads extends TableForm
 		$newRows = [];
 		forEach ($newTaxes as $newTax)
 		{
+			if ($newTax['taxCode'] === '')
+				$newTax['taxCode'] = 'EUCZ000';
 			$cfgTaxCode = $docTaxCodes[$newTax['taxCode']];
 			$zeroTax = 0;
 			if (isset ($cfgTaxCode ['zeroTax']) && ($cfgTaxCode ['zeroTax'] == 1))

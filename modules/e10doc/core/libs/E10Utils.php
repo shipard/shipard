@@ -550,6 +550,8 @@ class E10Utils
 
 	static function docTaxCountryId($app, $docHeadRecData)
 	{
+		if ($docHeadRecData['taxCountry'] === '')
+			return 'cz';
 		return $docHeadRecData['taxCountry'];
 	}
 
@@ -557,7 +559,7 @@ class E10Utils
 	{
 		$taxReg = $app->cfgItem('e10doc.base.taxRegs.'.$docHeadRecData['vatReg'], NULL);
 		if (!$taxReg)
-			return '';
+			return 'eu';
 
 		return $taxReg['taxArea'];
 	}
@@ -599,15 +601,19 @@ class E10Utils
 	static function taxCodeForDocRow ($app, $docHeadRecData, $dirTax, $taxRate)
 	{
 		$taxes = self::docTaxCodes($app, $docHeadRecData);
-		$taxCode = '';
-		forEach ($taxes as $itmid => $itm) {
-			if ($itm ['dir'] != $dirTax)
-				continue;
-			if ($itm ['rate'] != $taxRate)
-				continue;
-			$taxCode = $itmid;
-			break;
-		}
+		$taxCode = 'EUCZ000';
+		if ($taxes)
+		{
+			forEach ($taxes as $itmid => $itm) 
+			{
+				if ($itm ['dir'] != $dirTax)
+					continue;
+				if ($itm ['rate'] != $taxRate)
+					continue;
+				$taxCode = $itmid;
+				break;
+			}
+		}	
 		return $taxCode;
 	}
 
