@@ -5,7 +5,7 @@
 		{"id": "title", "name": "Název", "type": "string", "len": 120},
 		{"id": "url", "name": "Url", "type": "string", "len": 100},
 		{"id": "decorationType", "name": "Typ", "type": "enumInt",
-			"enumValues": {"0": "levý sloupec", "1": "pravý sloupec", "2": "rozšířená patička", "3": "patička", "4": "Rozšíření menu"}},
+			"enumValues": {"0": "levý sloupec", "1": "pravý sloupec", "2": "rozšířená patička", "3": "patička", "4": "Rozšíření menu", "5": "Kompletní menu"}},
 		{"id": "useOnThisUrl", "name": "Použít pro toto url", "type": "logical"},
 		{"id": "useOnSubUrls", "name": "Použít pro vnořená url", "type": "logical"},
 		{"id": "order", "name": "Pořadí", "type": "int"},

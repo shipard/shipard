@@ -21,10 +21,6 @@ use \Texy, \E10\utils, \e10\AppLog, \e10\Application, \e10\web\WebPages, \e10\we
 \E10\Application::RegisterFunction ('template', 'setParams', 'e10.web.setParams');
 
 
-const urlDecorationLeftColumn = 0, urlDecorationRightColumn = 1, urlDecorationFooterExtended = 2,
-			urlDecorationFooterFull = 3, urlDecorationHeaderExt = 4;
-
-
 
 /**
  * E10Texy

@@ -16,6 +16,8 @@ use e10pro\kb\WikiEngine;
 class WebPages extends \E10\utility
 {
 	const wptWebSecure = 1, wptSystemLogin = 3, wptWeb = 4, wptExtranet = 5, wptWiki = 6;
+	const urlDecorationLeftColumn = 0, urlDecorationRightColumn = 1, urlDecorationFooterExtended = 2,
+				urlDecorationFooterFull = 3, urlDecorationHeaderExt = 4, urlDecorationHeaderFull = 5;
 	var $webPageType = 0;
 	protected $page = NULL;
 	var $serverInfo = NULL;
@@ -370,20 +372,23 @@ class WebPages extends \E10\utility
 
 					switch ($udc['type'])
 					{
-						case urlDecorationLeftColumn:
+						case self::urlDecorationLeftColumn:
 							$did = 'textLeftSidebar'; break;
-						case urlDecorationRightColumn:
+						case self::urlDecorationRightColumn:
 							$did = 'textRightSidebar'; break;
-						case urlDecorationFooterExtended:
+						case self::urlDecorationFooterExtended:
 							$did = 'footerExtension'; break;
 							break;
-						case urlDecorationFooterFull:
+						case self::urlDecorationFooterFull:
 							$did = 'footerFull'; break;
 							break;
-						case urlDecorationHeaderExt:
+						case self::urlDecorationHeaderExt:
 							$did = 'headerExt'; break;
 							break;
-					}
+						case self::urlDecorationHeaderFull:
+							$did = 'headerFull'; break;
+							break;
+						}
 
 					if (!isset ($this->page [$did]))
 					{

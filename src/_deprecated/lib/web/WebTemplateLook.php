@@ -75,7 +75,8 @@ class WebTemplateLook extends Utility
 		if (is_dir($this->destPath) === FALSE)
 			Utils::mkDir ($this->destPath, 0775);
 
-		$this->skinVariables = '// based on template version: '.$this->options['version'].' / '.$this->templateStyleVerCheckSum."\n\n";
+		$this->skinVariables = 	"@charset \"UTF-8\";\n\n";
+		$this->skinVariables .= '// based on template version: '.$this->options['version'].' / '.$this->templateStyleVerCheckSum."\n\n";
 
 		foreach ($this->options['lookParams']['columns'] as $oneCol)
 		{
@@ -133,7 +134,7 @@ class WebTemplateLook extends Utility
 
 			file_put_contents($dstFileName, $styleContent);
 
-			$cmd = "cd {$this->destPath} && sass $dstFileName $dstCssFileName --style compressed --sourcemap=none 2>&1";
+			$cmd = "export LC_ALL=en_US.UTF.8 && cd {$this->destPath} && sass $dstFileName $dstCssFileName --style compressed --sourcemap=none 2>&1";
 
 			$output = '';
 			$fp = popen($cmd, 'r');
