@@ -1,8 +1,20 @@
 @import "../unify-v3.1/src/assets/scss/theme.scss";
+@import "look-variables.scss";
+@import "_typography.scss";
+@import "_images.scss";
 
 .navbar-brand-logo {
   width: auto !important;
   min-width: auto !important;
-  max-width: 6rem;
-  max-height: 3rem;
+  max-width: 10rem;
+  max-height: 2.1rem;
+  min-height: 2.1rem;
+}
+
+.e10-wiki.e10-sidebar-left {
+  padding-top: .5rem;
+  > .sticky-top {
+    z-index: 20;
+    top: 5rem;
+  }
 }
