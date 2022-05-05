@@ -61,27 +61,26 @@
   </header>
 	{{/page.headerFull}}
   
-
-  <main id="content" role="main">
-    {{#page.params.myMain}}
-      {{{pageText}}}
-    {{/page.params.myMain}}
-    {{^page.params.myMain}}
-      {{#page.layoutSidebarNone}}
-        <div class="container content-space-t-2">
-          {{{pageText}}}
+  {{#page.params.myMain}}
+    {{{pageText}}}
+  {{/page.params.myMain}}
+  {{^page.params.myMain}}
+    <main id="contentXYZ" role="main">
+    {{#page.layoutSidebarNone}}
+      <div class="container content-space-t-2">
+        {{{pageText}}}
+      </div>
+    {{/page.layoutSidebarNone}}
+    {{#page.layoutSidebarLeft}}
+      <div class="container content-space-t-2">
+        <div class="row">
+          <div class="e10w-top-element sidebar left e10w-sb-start col-md-3 col-lg-3 e10-text">{{{textLeftSidebar}}}</div>
+          <div class="e10w-top-element col-md-9 main-text pageText e10w-content col-lg-9 {{page.mainTextClass}}">{{{pageText}}}</div>
         </div>
-      {{/page.layoutSidebarNone}}
-      {{#page.layoutSidebarLeft}}
-        <div class="container content-space-t-2">
-          <div class="row">
-            <div class="e10w-top-element sidebar left e10w-sb-start col-md-3 col-lg-3 e10-text">{{{textLeftSidebar}}}</div>
-            <div class="e10w-top-element col-md-9 main-text pageText e10w-content col-lg-9 {{page.mainTextClass}}">{{{pageText}}}</div>
-          </div>
-        </div>
-      {{/page.layoutSidebarLeft}}
-    {{/page.params.myMain}}
-  </main>
+      </div>
+    {{/page.layoutSidebarLeft}}
+    </main>
+  {{/page.params.myMain}}
   
 	{{#page.footerFull}}{{{page.footerFull}}}{{/page.footerFull}}
 	{{^page.footerFull}}
@@ -134,23 +133,6 @@
         desktop: {position: 'left'}
       })
       new HSGoTo('.js-go-to')
-      var swiper = new Swiper('.js-swiper-clients',{
-        slidesPerView: 2,
-        breakpoints: {
-          380: {
-            slidesPerView: 3,
-            spaceBetween: 15,
-          },
-          768: {
-            slidesPerView: 4,
-            spaceBetween: 15,
-          },
-          1024: {
-            slidesPerView: 5,
-            spaceBetween: 15,
-          },
-        },
-      });
     })();
 
 (function(window, document, undefined) {
@@ -188,5 +170,8 @@
   }
 })(window, document);
   </script>
+
+
+{{#page.javascript}}{{{page.javascript}}}{{/page.javascript}}
 </body>
 </html>

@@ -17,7 +17,7 @@ class WebPages extends \E10\utility
 {
 	const wptWebSecure = 1, wptSystemLogin = 3, wptWeb = 4, wptExtranet = 5, wptWiki = 6;
 	const urlDecorationLeftColumn = 0, urlDecorationRightColumn = 1, urlDecorationFooterExtended = 2,
-				urlDecorationFooterFull = 3, urlDecorationHeaderExt = 4, urlDecorationHeaderFull = 5;
+				urlDecorationFooterFull = 3, urlDecorationHeaderExt = 4, urlDecorationHeaderFull = 5, urlDecorationJavascript = 6;
 	var $webPageType = 0;
 	protected $page = NULL;
 	var $serverInfo = NULL;
@@ -378,17 +378,15 @@ class WebPages extends \E10\utility
 							$did = 'textRightSidebar'; break;
 						case self::urlDecorationFooterExtended:
 							$did = 'footerExtension'; break;
-							break;
 						case self::urlDecorationFooterFull:
 							$did = 'footerFull'; break;
-							break;
 						case self::urlDecorationHeaderExt:
 							$did = 'headerExt'; break;
-							break;
 						case self::urlDecorationHeaderFull:
 							$did = 'headerFull'; break;
-							break;
-						}
+						case self::urlDecorationJavascript:
+							$did = 'javascript'; break;
+					}
 
 					if (!isset ($this->page [$did]))
 					{
