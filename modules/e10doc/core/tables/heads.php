@@ -3016,7 +3016,7 @@ class ViewHeads extends TableView
 				$cnt++;
 				if ($cnt <= $max || (!$plusCnt && ($totalCnt - $cnt) == 0))
 				{
-					$docNumber = ['text' => $docNumber, 'title' => $wo['title'], 'class' => 'tag tag-small '.$wo['docStateClass'], 'icon' => 'icon-industry'];
+					$docNumber = ['text' => $docNumber, 'title' => $wo['title'], 'class' => 'tag tag-small '.$wo['docStateClass'], 'icon' => 'tables/e10mnf.core.workOrders'];
 					if (isset($wo['refId1']))
 						$docNumber['suffix'] = $wo['refId1'];
 					$inv[] = $docNumber;
@@ -3024,7 +3024,7 @@ class ViewHeads extends TableView
 				else
 				{
 					if ($plus === NULL)
-						$plus = ['class' => 'label label-info pull-right', 'icon' => 'icon-industry', 'amount' => 0.0];
+						$plus = ['class' => 'tag tag-small tag-info', 'icon' => 'tables/e10mnf.core.workOrders', 'amount' => 0.0];
 					$plus['amount'] += $wo['amount'];
 					$plusCnt++;
 				}
@@ -3032,7 +3032,7 @@ class ViewHeads extends TableView
 			if ($plus)
 			{
 				$plus['text'] = '+ '.$plusCnt.' dalších';
-				$item['t2'][] = $plus;
+				$inv[] = $plus;
 			}
 			$item['t2'] = array_merge($item['t2'], $inv);
 		}
