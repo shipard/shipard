@@ -84,23 +84,6 @@ class AccessGateCheck extends Utility
 
 	function checkRequestParams()
 	{
-/*
- 				$eventData = [
-					'type' => 'vd',
-					'gate' => $gateId,
-					'cam' => intval($parts[0]),
-					'value' => $parts[2],
-					'img' => $imgFileName,
-				];
-
-{
-  setup: 4,
-  request: 'open',
-  srcPayload: { _payload: '815CDE628E0504' },
-  srcTopic: 'shp/readers/test-poe1/rfid'
-}
- */
-
 		if (!$this->requestParams)
 			return $this->setResult('Missing request params');
 
@@ -111,6 +94,11 @@ class AccessGateCheck extends Utility
 		{
 			$this->requestParams['type'] = 'rfid';
 			$this->requestParams['value'] = $this->requestParams['srcPayload']['_payload'];
+		}
+		elseif (isset($this->requestParams['srcPayload']['action']) && $this->requestParams['srcPayload']['action'] === 'call')
+		{
+			$this->requestParams['type'] = 'call';
+			$this->requestParams['value'] = $this->requestParams['srcPayload']['number'] ?? '!!!';
 		}
 		elseif (isset($this->requestParams['srcTopicInfo']['type']) && $this->requestParams['srcTopicInfo']['type'] === 'device')
 		{
