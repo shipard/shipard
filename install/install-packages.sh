@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 apt --assume-yes --quiet update
 apt --assume-yes --quiet upgrade
