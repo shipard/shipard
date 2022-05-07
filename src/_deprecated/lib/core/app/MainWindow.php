@@ -101,10 +101,12 @@ class MainWindow extends \Shipard\Base\BaseObject
 			}
 
 			// -- web socket servers
-			$wss = $this->app->webSocketServers();
-
-			$userInfo .= $this->wssCode($wss);
-
+			if ($isWorkplace)
+			{
+				$wss = $this->app->webSocketServers();
+				$userInfo .= $this->wssCode($wss);
+			}
+	
 			$userInfo .= "<li><span>".$this->app()->ui()->icon('system/iconOwner');
 			$ownerName = $this->app->cfgItem ('options.core.ownerShortName', '');
 			if ($ownerName == '')
@@ -722,11 +724,15 @@ class MainWindow extends \Shipard\Base\BaseObject
 		}
 		else
 		{
-			$icon = $listItem['icon'] ?? '';
-			if ($icon === '' && isset($listItem['table']))
-				$icon = 'tables/' . $listItem['table'];
-			$codeLine .= $this->app()->ui()->icons()->icon($icon, 'i', 'div');
-
+			if (isset ($listItem ['icontxt']))
+				$codeLine .= "<div class='i'>{$listItem ['icontxt']}</div> ";
+			else
+			{	
+				$icon = $listItem['icon'] ?? '';
+				if ($icon === '' && isset($listItem['table']))
+					$icon = 'tables/' . $listItem['table'];
+				$codeLine .= $this->app()->ui()->icons()->icon($icon, 'i', 'div');
+			}	
 			if (!$small && !$panelMode && isset($listItem ['t1']))
 				$codeLine .= "<div class='t'>".utils::es ($listItem ['t1']).'</div>';
 		}

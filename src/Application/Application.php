@@ -868,54 +868,7 @@ class Application extends \Shipard\Application\ApplicationCore
 
 	public function webSocketServers ()
 	{
-		//$wssAll = $this->cfgItem ('e10.terminals.servers', []);
-
-		//if (!count($wssAll))
-			return $this->webSocketServersNew ();
-
-		/*	
-		$wss = [];
-		forEach ($wssAll as $ws)
-		{
-			if ($ws['wsUrl'] === '')
-				continue;
-			$enabled = FALSE;
-			forEach ($ws['allowedFrom'] as $af)
-			{
-				if ($af === substr ($_SERVER['REMOTE_ADDR'], 0, strlen($af)))
-				{
-					$enabled = TRUE;
-					break;
-				}
-			}
-			if ($enabled === FALSE)
-				continue;
-
-			$camList = array();
-			if (isset($ws['cameras']))
-			{
-				forEach ($ws['cameras'] as $camId => $camDef)
-					$camList[] = $camId;
-			}
-			if (count($camList) !== 0)
-				$ws['camList'] = implode (',', $camList);
-
-			$ws['icon'] = 'icon-flag';
-
-			$wss [] = $ws;
-		}
-
-		return $wss;
-		*/
-	}
-
-	public function wss ()
-	{
-		$wss = $this->cfgItem ('e10.terminals.servers', []);
-		$r = new Response ($this, "");
-		$r->add ("objectType", "wss");
-		$r->add ("object", $wss);
-		return $r;
+		return $this->webSocketServersNew ();
 	}
 
 	public function webSocketServersNew ()
@@ -1526,11 +1479,6 @@ class Application extends \Shipard\Application\ApplicationCore
 			if (isset ($this->requestPath [2]))
 				$functionName = $this->requestPath [2];
 			$response = $this->callFunction ($functionName);
-			return $response;
-		}
-		if ($object == "wss")
-		{
-			$response = $this->wss ();
 			return $response;
 		}
 		if ($object == "widget")
