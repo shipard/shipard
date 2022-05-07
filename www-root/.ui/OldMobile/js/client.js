@@ -619,15 +619,15 @@ cntErrors=e10client.prototype.widgets.macLan.setOverviewBadgesGroup($(this).attr
 badge=$(this).find('>span.e10-ntf-badge');if(cntErrors){badge.text(cntErrors).show();}else{badge.hide();}});};e10client.prototype.widgets.macLan.setOverviewBadgesGroup=function(groupId){var
 cntErrors=0;var
 contentElement=$('#'+groupId);contentElement.find('>table>tbody>tr').each(function(){var
-state=$(this).attr("data-device-state");if(state!==undefined){if(parseInt(state)===0)cntErrors++;}});return cntErrors;};e10client.prototype.widgets.macLan.reloadBadges=function(){var
-overviewElement=$('#e10-lan-overview');if(!overviewElement.length)return;overviewElement.find('div>table>tbody>tr>td img.e10-auto-reload').each(function(){var
+state=$(this).attr("data-device-state");if(state!==undefined){if(parseInt(state)===0)cntErrors++;}});return cntErrors;};e10client.prototype.widgets.macLan.reloadBadges=function(elementId){e10.widgets.macLan.reloadBadgesElement('e10-lan-overview');e10.widgets.macLan.reloadBadgesElement('e10-lan-overviewsrv');e10.widgets.macLan.badgesTimer=setTimeout(e10.widgets.macLan.reloadBadges,10000);};e10client.prototype.widgets.macLan.reloadBadgesElement=function(elementId){var
+overviewElement=$('#'+elementId);if(!overviewElement.length)return;overviewElement.find('div>table>tbody>tr>td img.e10-auto-reload').each(function(){var
 idd=new
 Date().valueOf();var
 url=$(this).attr('data-src')+'?xyz='+idd;$(this).attr('src',url);});var
 alertsElement=$('#e10-lan-alerts');alertsElement.find('>div img.e10-auto-reload').each(function(){var
 idd=new
 Date().valueOf();var
-url=$(this).attr('data-src')+'?xyz='+idd;$(this).attr('src',url);});e10.widgets.macLan.badgesTimer=setTimeout(e10.widgets.macLan.reloadBadges,10000);};e10client.prototype.widgets.macLan.reloadAlerts=function(){if(e10.widgets.macLan.alertsTimer){clearTimeout(e10.widgets.macLan.alertsTimer);}var
+url=$(this).attr('data-src')+'?xyz='+idd;$(this).attr('src',url);});};e10client.prototype.widgets.macLan.reloadAlerts=function(){if(e10.widgets.macLan.alertsTimer){clearTimeout(e10.widgets.macLan.alertsTimer);}var
 urlPath="/api/objects/call/mac-lan-alerts-download";e10.server.get(urlPath,function(data){e10.widgets.macLan.setAlerts(data);});e10.widgets.macLan.alertsTimer=setTimeout(e10.widgets.macLan.reloadAlerts,65000);};e10client.prototype.widgets.macLan.setAlerts=function(data){var
 alertsElement=$('#e10-lan-alerts');alertsElement.find('>div').each(function(){var
 scopeId=$(this).attr('data-scope-id');var

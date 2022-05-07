@@ -210,8 +210,15 @@ e10client.prototype.widgets.macLan.setOverviewBadgesGroup = function (groupId) {
 	return cntErrors;
 };
 
-e10client.prototype.widgets.macLan.reloadBadges = function () {
-	var overviewElement = $('#e10-lan-overview');
+e10client.prototype.widgets.macLan.reloadBadges = function (elementId) {
+	e10.widgets.macLan.reloadBadgesElement('e10-lan-overview');
+	e10.widgets.macLan.reloadBadgesElement('e10-lan-overviewsrv');
+
+	e10.widgets.macLan.badgesTimer = setTimeout(e10.widgets.macLan.reloadBadges, 10000);
+};
+
+e10client.prototype.widgets.macLan.reloadBadgesElement = function (elementId) {
+	var overviewElement = $('#'+elementId);
 	if (!overviewElement.length)
 		return;
 
@@ -227,8 +234,6 @@ e10client.prototype.widgets.macLan.reloadBadges = function () {
 		var url = $(this).attr('data-src') + '?xyz='+idd;
 		$(this).attr('src', url);
 	});
-
-	e10.widgets.macLan.badgesTimer = setTimeout(e10.widgets.macLan.reloadBadges, 10000);
 };
 
 e10client.prototype.widgets.macLan.reloadAlerts = function () {

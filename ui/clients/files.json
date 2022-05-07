@@ -1,16 +1,16 @@
 {
     "OldDesktop": {
         "client.js": {
-            "sha384": "6e1e80020ec2a531dc6c61c60db5e6fdba04577d7f292a8f1025e7417987537ee8380a7050475e18cb36d87ce06760d3",
-            "integrity": "sha384-bh6AAg7CpTHcbGHGDbXm/boEV31/KSqPECXnQXmHU37oOApwUEdeGMs22HzgZ2DT",
-            "ver": "0641a8ba1794610b32fb9887ea28ba2c"
+            "sha384": "d23ebf17ef479230bb7c08a1f43c206d33da1d713e19d02fdb792e2611040988056b79df6e4d5faf860214e89222c580",
+            "integrity": "sha384-0j6/F+9HkjC7fAih9DwgbTPaHXE+GdAv23kuJhEECYgFa3nfbk1fr4YCFOiSIsWA",
+            "ver": "7e73f189e84e2bf9b292a3e9224139c4"
         }
     },
     "OldMobile": {
         "client.js": {
-            "sha384": "68fb4e3a81e6d460ee0245f7ff84e8e1416186294eeff7791f083274cdeb4b75f0cf9c54c06e0ae5c1c275451fa34b89",
-            "integrity": "sha384-aPtOOoHm1GDuAkX3/4To4UFhhilO7/d5HwgydM3rS3Xwz5xUwG4K5cHCdUUfo0uJ",
-            "ver": "1d83d71265bdd3357341cd4b4bd582d5"
+            "sha384": "6336e7576d1adda27a0a3af0a1b84805bf757085e62b8a3b087fe901f0f0f4df33bdb97d0dcac2c8d5d14038a9019d1e",
+            "integrity": "sha384-YzbnV20a3aJ6CjrwobhIBb91cIXmK4o7CH/pAfDw9N8zvbl9DcrCyNXRQDipAZ0e",
+            "ver": "c2611f14a6181e9493735f72e0236beb"
         }
     }
 }
