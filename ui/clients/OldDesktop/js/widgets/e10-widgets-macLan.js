@@ -167,11 +167,12 @@ e10client.prototype.widgets.macLan.setOverviewDevices = function () {
 		indicatorElement.parent().parent().attr('data-device-state', isUp);
 	}
 
-	e10.widgets.macLan.setOverviewBadges();
+	e10.widgets.macLan.setOverviewBadges('e10-lan-overview');
+	e10.widgets.macLan.setOverviewBadges('e10-lan-overviewsrv');
 };
 
-e10client.prototype.widgets.macLan.setOverviewBadges = function () {
-	var overviewElement = $('#e10-lan-overview');
+e10client.prototype.widgets.macLan.setOverviewBadges = function (elementId) {
+	var overviewElement = $('#'+elementId);
 	if (!overviewElement.length)
 		return;
 

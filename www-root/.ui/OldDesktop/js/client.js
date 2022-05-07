@@ -136,8 +136,8 @@ deviceInfo){var
 ipIsUp=deviceInfo[ipIdx];isUp+=ipIsUp;}var
 indicatorId='#e10-lan-do-'+deviceNdx;var
 indicatorElement=$(indicatorId);if(!indicatorElement.length){continue;}if(isUp)indicatorElement.removeClass('e10-error').addClass('e10-success');else
-indicatorElement.removeClass('e10-success').addClass('e10-error');indicatorElement.parent().parent().attr('data-device-state',isUp);}e10.widgets.macLan.setOverviewBadges();};e10client.prototype.widgets.macLan.setOverviewBadges=function(){var
-overviewElement=$('#e10-lan-overview');if(!overviewElement.length)return;var
+indicatorElement.removeClass('e10-success').addClass('e10-error');indicatorElement.parent().parent().attr('data-device-state',isUp);}e10.widgets.macLan.setOverviewBadges('e10-lan-overview');e10.widgets.macLan.setOverviewBadges('e10-lan-overviewsrv');};e10client.prototype.widgets.macLan.setOverviewBadges=function(elementId){var
+overviewElement=$('#'+elementId);if(!overviewElement.length)return;var
 tabs=overviewElement.find('ul.e10-static-tabs');var
 content=overviewElement.find('div.e10-static-tab-content');tabs.find('>li').each(function(){var
 cntErrors=e10client.prototype.widgets.macLan.setOverviewBadgesGroup($(this).attr('data-content-id'));$(this).attr("data-cnt-errors",cntErrors);var

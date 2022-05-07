@@ -38,33 +38,42 @@ class Overview extends Content
 
 	public function createContentOverview()
 	{
-		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => "<div class='e10-gs-row'>"]);
+		$changesNodeServers = $this->createContentOverview_Changes('nodeServers');
+		$changesLanControl = $this->createContentOverview_Changes('lanControl');
 
+		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => "<div class='e10-gs-row'>"]);
 			$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => "<div class='e10-gs-col e10-gs-half'>"]);
+				if ($changesNodeServers)
+					$this->addContent($changesNodeServers);
+				$this->ccLanOverview('srv');
+			$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => "</div>"]);
+			$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => "<div class='e10-gs-col e10-gs-half'>"]);
+				if ($changesLanControl)
+					$this->addContent($changesLanControl);
 				$this->ccLanOverview();
 			$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => "</div>"]);
-
-			$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => "<div class='e10-gs-col e10-gs-half'>"]);
-				$this->ccAlerts();
-			$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => "</div>"]);
-
 		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => "</div>"]);
 	}
 
-	protected function ccLanOverview()
+	protected function ccLanOverview($deviceGroup = '')
 	{
+		$baseElementId = 'e10-lan-overview'.$deviceGroup;
 		$c = '';
-		$c .= "<div class='e10-static-tabs e10-pane' id='e10-lan-overview' style='height: 100%;'>";
+		$c .= "<div class='e10-static-tabs e10-pane e10-pane-info' id='{$baseElementId}' style='height: 100%;'>";
 
 		// -- tabs
 		$active = ' active';
 		$c .= "<ul class='e10-static-tabs tabs'>";
 		foreach ($this->overviewData->dgCfg as $dgId => $dg)
 		{
+			if ($deviceGroup !== '' && $deviceGroup !== $dgId)
+				continue;
+			if ($deviceGroup === '' && $dgId === 'srv')
+				continue;
 			if (!isset($this->overviewData->dgData[$dgId]['devices']) || !count($this->overviewData->dgData[$dgId]['devices']))
 				continue;
 
-			$c .= "<li class='e10-static-tab tab$active' data-content-id='lan-overview-{$dgId}' style='border-right: 1px solid rgba(0,0,0,.3);'>";
+			$c .= "<li class='e10-static-tab tab$active' data-content-id='{$baseElementId}-{$dgId}' style='border-right: 1px solid rgba(0,0,0,.3);'>";
 			$c .= "&nbsp;";
 			$c .= $this->app()->ui()->icon($dg['icon']).' ';
 			$c .= "<span class='e10-ntf-badge'>?</span>";
@@ -79,10 +88,14 @@ class Overview extends Content
 		$c .= "<div class='e10-static-tab-content' style='overflow-y: auto;'>";
 		foreach ($this->overviewData->dgCfg as $dgId => $dg)
 		{
+			if ($deviceGroup !== '' && $deviceGroup !== $dgId)
+				continue;
+			if ($deviceGroup === '' && $dgId === 'srv')
+				continue;
 			if (!isset($this->overviewData->dgData[$dgId]['devices']) || !count($this->overviewData->dgData[$dgId]['devices']))
 				continue;
 
-			$c .= "<div class='$active' id='lan-overview-{$dgId}'>";
+			$c .= "<div class='$active' id='{$baseElementId}-{$dgId}'>";
 			if ($dgId == OverviewData::dgiLan)
 				$c .= $this->createContentOverview_LanTree();
 			else
@@ -112,12 +125,12 @@ class Overview extends Content
 			$c .= "<tr data-overview-group='e10-lan-do-{$dgId}'>";
 
 			$treeLevel = ($deviceInfo['treeLevel']) ? ('padding-left: '.($deviceInfo['treeLevel'] * 2).'em;') : '';
-			$c .= "<td style='vertical-align: top; white-space: pre !important;$treeLevel' class='width20'>";
+			$c .= "<td style='vertical-align: top; line-height: 1.8; padding-top: 1px; white-space: pre !important;$treeLevel' class='width20'>";
 			$c .= "<span class='indicator' id='e10-lan-do-{$deviceNdx}'>".$this->app()->ui()->icon('system/iconCheck')."</span> ";
 			$c .= $this->app()->ui()->renderTextLine(['text' => $device['title'], 'icon' => $device['icon']/*, 'suffix' => $device['deviceId']*/]);
 			$c .= "</td>";
 
-			$c .= "<td style='vertical-align: middle; padding-left: 1em;'>";
+			$c .= "<td style='vertical-align: middle; padding-left: 1em; line-height: 1.8;padding-top: 1px;'>";
 
 			if (isset($device['lanBadges']))
 			{
@@ -149,7 +162,6 @@ class Overview extends Content
 		$c .= "</table>";
 
 		return $c;
-
 	}
 
 	protected function createContentOverview_LanTree()
@@ -165,12 +177,12 @@ class Overview extends Content
 
 			$c .= "<tr data-overview-group='e10-lan-do-lan'>";
 
-			$c .= "<td style='vertical-align: top; white-space: pre !important;' class='width20'>";
+			$c .= "<td style='vertical-align: top; white-space: pre !important; line-height: 1.8;padding-top: 1px;' class='width20'>";
 			$c .= "<span class='indicator' id='e10-lan-do-{$treeItemNdx}'>".$this->app()->ui()->icon('system/iconCheck')."</span> ";
 			$c .= utils::es($treeItem['title']);
 			$c .= "</td>";
 
-			$c .= "<td style='vertical-align: middle; padding-left: 1em;'>";
+			$c .= "<td style='vertical-align: middle; padding-left: 1em; line-height: 1.8;padding-top: 1px;'>";
 			if (isset($this->overviewData->devices[$treeItemNdx]['uplinkPortsBadges']))
 			{
 				foreach ($this->overviewData->devices[$treeItemNdx]['uplinkPortsBadges'] as $sb)
@@ -232,12 +244,12 @@ class Overview extends Content
 
 			//$rack = $this->lanTree->racks[$treeItem['rackNdx']];
 
-			$c .= "<td style='vertical-align: middle;  padding-left: {$level}em; white-space: pre !important;' class='width20'>";
+			$c .= "<td style='vertical-align: middle;  padding-left: {$level}em; padding-top: 1px; white-space: pre !important; line-height: 1.8;' class='width20'>";
 			$c .= "<span class='indicator' id='e10-lan-do-{$treeItemNdx}'>".$this->app()->ui()->icon('system/iconCheck')."</span> ";
 			$c .= utils::es($treeItem['title']);
 			$c .= "</td>";
-
-			$c .= "<td style='vertical-align: middle; padding-left: 1em;'>";
+			
+			$c .= "<td style='vertical-align: middle; padding-left: 1em; line-height: 1.8; padding-top: 1px;'>";
 			if (isset($this->overviewData->devices[$treeItemNdx]['uplinkPortsBadges']))
 			{
 				foreach ($this->overviewData->devices[$treeItemNdx]['uplinkPortsBadges'] as $sb)
@@ -313,61 +325,71 @@ class Overview extends Content
 		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $c]);
 	}
 
-	protected function createContentOverview_Changes()
+	protected function createContentOverview_Changes($changesType = '')
 	{
-		if (isset($this->overviewData->lanChanges['nodeServers']))
+		if ($changesType === 'nodeServers')
 		{
-			$title = $this->overviewData->lanChanges['nodeServers']['title'];
-			$title[] = [
-				'type' => 'action', 'action' => 'addwizard', 'data-class' => 'mac.lan.libs.NodeServerCfgWizard',
-				'text' => 'Potvrdit změny', 'icon' => 'system/iconCheck', 'class' => 'btn-sm pull-right', 'btnClass' => 'btn-primary',
-				'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widget->widgetId,
-			];
-			$title[] = ['text' => '', 'class' => 'block'];
-			$title[] = ['code' => '<hr style="margin-bottom: 1ex">'];
-
-			$this->addContent([
-				'type' => 'line', 'pane' => 'e10-pane e10-pane-table',
-				'line' => $this->overviewData->lanChanges['nodeServers']['labels'],
-				'paneTitle' => $title
-			]);
-		}
-
-		if (isset($this->overviewData->lanChanges['lanControl']))
-		{
-			$title = $this->overviewData->lanChanges['lanControl']['title'];
-			$title[] = [
-				'type' => 'action', 'action' => 'addwizard', 'data-class' => 'mac.lan.libs.LanControlCfgWizard',
-				'text' => 'Potvrdit změny', 'icon' => 'system/iconCheck', 'class' => 'btn-sm pull-right', 'btnClass' => 'btn-primary',
-				'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widget->widgetId,
-			];
-			$title[] = ['text' => '', 'class' => 'block'];
-			$title[] = ['code' => '<hr style="margin-bottom: 1ex">'];
-
-			$c = '';
-			$c .= $this->app()->ui()->composeTextLine($this->overviewData->lanChanges['lanControl']['labels']);
-
-			$c .= "<details class='pt1'>";
-			$c .= "<summary class='pb1'>".utils::es('Přehled změn');
-			$c .= "</summary>";
-			$c .= "<div class='content2'>";
-
-			foreach ($this->overviewData->lanChanges['lanControl']['table'] as $changes)
+			if (isset($this->overviewData->lanChanges['nodeServers']))
 			{
-				$c .= $this->app()->ui()->renderTextLine(['text' => $changes['changes']['title'], 'class' => 'h2 block']);
-				$c .= "<div style='display: overflow-x: auto; border: 1px solid rgba(0,0,0,.25); background-color: #F0F0F0; margin-bottom: 2ex; padding: 2px;'><pre><code>".$changes['changes']['text'].'</code></pre></div>';
+				$title = $this->overviewData->lanChanges['nodeServers']['title'];
+				$title[] = [
+					'type' => 'action', 'action' => 'addwizard', 'data-class' => 'mac.lan.libs.NodeServerCfgWizard',
+					'text' => 'Potvrdit změny', 'icon' => 'system/iconCheck', 'class' => 'btn-sm pull-right', 'btnClass' => 'btn-primary',
+					'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widget->widgetId,
+				];
+				$title[] = ['text' => '', 'class' => 'block'];
+				$title[] = ['code' => '<hr style="margin-bottom: 1ex">'];
+
+				return [
+					'type' => 'line', 'pane' => 'e10-pane-core e10-pane-info pa1 e10-bg-t2',
+					'line' => $this->overviewData->lanChanges['nodeServers']['labels'],
+					'paneTitle' => $title
+				];
 			}
-
-			$c .= "</div>";
-			$c .= "</details>";
-
-			$this->addContent([
-				'type' => 'text', 'subtype' => 'rawhtml',
-				'pane' => 'e10-pane e10-pane-table',
-				'text' => $c,
-				'paneTitle' => $title
-			]);
+			return NULL;
 		}
+
+		if ($changesType === 'lanControl')
+		{
+			if (isset($this->overviewData->lanChanges['lanControl']))
+			{
+				$title = $this->overviewData->lanChanges['lanControl']['title'];
+				$title[] = [
+					'type' => 'action', 'action' => 'addwizard', 'data-class' => 'mac.lan.libs.LanControlCfgWizard',
+					'text' => 'Potvrdit změny', 'icon' => 'system/iconCheck', 'class' => 'btn-sm pull-right', 'btnClass' => 'btn-primary',
+					'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widget->widgetId,
+				];
+				$title[] = ['text' => '', 'class' => 'block'];
+				$title[] = ['code' => '<hr style="margin-bottom: 1ex">'];
+
+				$c = '';
+				$c .= $this->app()->ui()->composeTextLine($this->overviewData->lanChanges['lanControl']['labels']);
+
+				$c .= "<details class='pt1'>";
+				$c .= "<summary class='pb1'>".utils::es('Přehled změn');
+				$c .= "</summary>";
+				$c .= "<div class='content2'>";
+
+				foreach ($this->overviewData->lanChanges['lanControl']['table'] as $changes)
+				{
+					$c .= $this->app()->ui()->renderTextLine(['text' => $changes['changes']['title'], 'class' => 'h2 block']);
+					$c .= "<div style='display: overflow-x: auto; border: 1px solid rgba(0,0,0,.25); background-color: #F0F0F0; margin-bottom: 2ex; padding: 2px;'><pre><code>".$changes['changes']['text'].'</code></pre></div>';
+				}
+
+				$c .= "</div>";
+				$c .= "</details>";
+
+				return [
+					'type' => 'text', 'subtype' => 'rawhtml',
+					'pane' => 'e10-pane-core e10-pane-info pa1 e10-bg-t2',
+					'text' => $c,
+					'paneTitle' => $title
+				];
+			}
+			return NULL;
+		}	
+
+		return NULL;
 	}
 
 	function macDataSourceSensorHelper($dsNdx)
