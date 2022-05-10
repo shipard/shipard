@@ -43,6 +43,21 @@ function wssSetState (serverIndex, socketState)
 	var ws = webSocketServers[serverIndex];
 	var serverIcon = $('#wss-'+ws.id);
 	serverIcon.attr('class','e10-wss e10-wss-'+socketState);
+
+	if (socketState === 'open')
+	{
+		ws.connected = 1;
+		if (ws.sendData !== null)
+		{
+			for (let i = 0; i < ws.sendData.length; i++) 
+			{
+				mqttPublish(0, ws.sendData[i].topic, ws.sendData[i].payload);
+			}
+			ws.sendData = null;
+		}
+	}
+	else
+		ws.connected = 0;
 }
 
 function wssOnMessage (serverIndex, stringData)
@@ -105,6 +120,9 @@ function mqttStartClient (serverIndex, disableMessage)
 		return;
 
 	ws.retryTimer = 0;
+	ws.connected = 0;
+	if (ws.sendData === undefined)
+		ws.sendData = null;
 
 	ws.mqttClient = new Paho.MQTT.Client(ws.fqdn, ws.port, deviceId+"-"+Math.random().toString(36));
 
@@ -136,11 +154,39 @@ function mqttSubscribeAll (serverIndex)
 	}
 }
 
+function mqttSubscribe (serverIndex, topic)
+{
+	if (!serverIndex)
+		serverIndex = 1;
+	var ws = webSocketServers[serverIndex];
+	
+	ws.mqttClient.subscribe(topic);
+}
+
 function mqttOnMessage (serverIndex, data)
 {
-	console.log("onMessageArrived: `"+data.destinationName+"` "+data.payloadString);
+	//console.log("onMessageArrived: `"+data.destinationName+"` "+data.payloadString);
 
 	var ws = webSocketServers[serverIndex];
+
+	if (data.payloadString[0] === '{')	
+	{ // JSON DATA
+		var payloadData = JSON.parse(data.payloadString);
+
+		if (payloadData.cmd)
+		{
+			if (payloadData.cmd === 'reload-remote-element')
+			{
+				for (var i in payloadData.elements)
+				{
+					var elementId = payloadData.elements[i];
+					webActionReloadElement($('#'+elementId));
+				}
+			}
+			return;
+		}	
+	}
+
 	if (ws.topics === undefined)
 		return;
 	if (ws.topics[data.destinationName] === undefined)
@@ -182,4 +228,28 @@ function mqttOnMessage (serverIndex, data)
 				currentInput.parent().submit();
 		}
 	}
+}
+
+function mqttPublish (serverIndex, topic, payload)
+{
+	if (!serverIndex)
+		serverIndex = 1;
+
+	var ws = webSocketServers[serverIndex];
+	if (ws.connected === 1)
+	{
+		ws.mqttClient.send(topic, payload);
+	}
+	else
+	{
+		if (ws.sendData === undefined || ws.sendData === null)
+			ws.sendData = [];
+
+		ws.sendData.push({'topic': topic, 'payload': payload});
+	}
+}
+
+function mqttPublishData (serverIndex, topic, payloadData)
+{
+	mqttPublish(serverIndex, topic, JSON.stringify (payloadData));
 }

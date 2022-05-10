@@ -1,1 +1,9 @@
-{"app":{"client.js":{"sha384":"26fbdc912c3e60cee84a13335946bc851fa29e6df5a9ea54e3db7d1b924d33d070e00e23c4a6b5749b5dc8862d41333b","integrity":"sha384-JvvckSw+YM7oShMzWUa8hR+inm31qepU49t9G5JNM9Bw4A4jxKa1dJtdyIYtQTM7","ver":"a7acc229e6f1bbb9ca68b787ce203983"}}}
+{
+    "app": {
+        "client.js": {
+            "sha384": "0ac6726becd40739b331386093b3c341a7b7825b6cdda10cc7cc9e7aa90c36cce5482e269a832fcd1529bde4477ec03b",
+            "integrity": "sha384-CsZya+zUBzmzMThgk7PDQae3glts3aEMx8yeeqkMNszlSC4mmoMvzRUpveRHfsA7",
+            "ver": "28ffa41a2a8bad2cf2a6ab73b7e25d41"
+        }
+    }
+}
