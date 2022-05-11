@@ -789,7 +789,7 @@ class WebPages extends \E10\utility
 
 		if (($this->loginRequired && $this->serverInfo['mode'] === 'app') || $this->serverInfo['mode'] === 'display')
 		{
-			$url = '/manifest.webmanifest';
+			$url = $this->app()->urlRoot.'/manifest.webmanifest';
 			if ($this->authenticator && $this->authenticator->session && $this->authenticator->session['loginType'] === 2)
 				$url .= '?k='.$this->authenticator->session['loginKeyValue'];
 		}
@@ -844,6 +844,7 @@ class WebPages extends \E10\utility
 		elseif ($this->serverInfo['mode'] === 'display')
 		{
 			$useNewWebsockets = 1;
+
 			$wss = $this->app()->webSocketServersNew();
 			$c .= "\t<script type=\"text/javascript\">\n";
 			$c .= "var remoteHostAddress = '{$_SERVER ['REMOTE_ADDR']}'; e10ClientType = " . json_encode ($this->app()->clientType) . ";\n";
@@ -851,19 +852,19 @@ class WebPages extends \E10\utility
 			$c .= "var g_useMqtt = {$useNewWebsockets};";
 			$c .= "var deviceId = '{$this->app()->deviceId}';";
 			$c .= "</script>\n";
-
+			$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/libs/js/mqttws/mqttws31.min.js\"></script>\n";
 			if ($this->app->cfgItem('develMode', 0) === 0)
 			{ // production
-				$files = unserialize (file_get_contents(__APP_DIR__.'/e10-modules/.cfg/filesWebDisplay.data'));
-				$checkSum = $files['web/e10-web-display.js']['sha256'];
-				$c .= "<script type=\"text/javascript\" src=\"{$this->urlRoot}/e10-modules/.cfg/web/e10-web-display.js?v".$checkSum."\"></script>\n";
-			} else
+				$files = unserialize (file_get_contents(__SHPD_ROOT_DIR__.'/ui/web-apps/files.data'));
+				$c .= "<script type='text/javascript' integrity='{$files['app']['client.js']['integrity']}' src='{$this->app->dsRoot}/www-root/.web-apps/app/js/client.js?v=".$files['app']['client.js']['ver']."'></script>\n";
+			}
+			else
 			{ // development
-				$jsFiles = utils::loadCfgFile(__APP_DIR__ . '/e10-client/packaging/e10-web-display-js.json');
+				$jsFiles = utils::loadCfgFile(__APP_DIR__ . '/www-root/ui-dev/web-apps/app/js/package.json');
 				foreach ($jsFiles['srcFiles'] as $sf)
 				{
-					$checkSum = md5_file(__APP_DIR__."/e10-client/{$sf['fileName']}");
-					$c .= "<script type=\"text/javascript\" src=\"{$this->app->urlRoot}/e10-client/{$sf['fileName']}?v=$checkSum\"></script>\n";
+					$checkSum = md5_file(__APP_DIR__."/www-root/ui-dev/web-apps/app/js/{$sf['fileName']}");
+					$c .= "<script type=\"text/javascript\" src=\"{$this->app->dsRoot}/www-root/ui-dev/web-apps/app/js/{$sf['fileName']}?v=$checkSum\"></script>\n";
 				}
 			}
 		}
