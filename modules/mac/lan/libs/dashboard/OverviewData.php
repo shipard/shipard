@@ -204,7 +204,7 @@ class OverviewData extends Utility
 
 				if ($r['hwMode'] === 2 && $r['hwServer'] && $r['deviceVMId'] !== '')
 				{ 
-					$VMIDND = preg_replace(['~[^0-9a-zA-Z]~i'], '_', $r['deviceVMId']);
+					$VMIDND = preg_replace(['~[^0-9a-zA-Z\-]~i'], '_', $r['deviceVMId']);
 					$badgeQuantityId = 'cgroup_'.$VMIDND.'.cpu_limit';
 					$this->devices[$deviceNdx]['lanBadges'][] = [
 						'label' => 'CPU',
