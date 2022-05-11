@@ -10,41 +10,73 @@
 	{{{headMetaTags}}}
 
 	<link href="{{scRoot}}/bs/5.1/dist/css/bootstrap.min.css?v511" rel="stylesheet">
-	<link href="{{scRoot}}/icons/fa/4.7/css/font-awesome.min.css" rel="stylesheet">
-	<link href="{{dsRoot}}/{{serverInfo.templateStylePath}}{{serverInfo.look}}-display.css?v={{serverInfo.lookVersion.display}}" rel="stylesheet">
+	{{{htmlCodeIcons}}}
+	<link href="{{scRoot}}/libs/js/fancybox/3/jquery.fancybox.min.css" rel="stylesheet">
+	<link href="{{dsRoot}}{{serverInfo.templateStylePath}}/{{serverInfo.look}}-app.css?v={{serverInfo.lookVersion.app}}" rel="stylesheet">
+	<script src="{{scRoot}}/libs/js/jquery/jquery-3.5.1.min.js"></script>
+
+	<style>
+
+		html, body {
+			width: 100%;
+			height: 100%;
+		}
+
+		div.app {
+			height: 100%;
+			display: grid;
+			grid-template-rows: auto 1fr auto;
+			grid-template-columns: 100%;
+		}
+
+		main {
+			overflow-y: auto;
+		}
+	</style>
 </head>
 
-<body class="{{page.bodyClasses}}{{#serverInfo.templateParams.topMenuFixedTop}} top-menu-fixed-top{{/serverInfo.templateParams.topMenuFixedTop}}">
+<body{{{page.bodyEditParams}}} class="{{page.bodyClasses}}{{#serverInfo.templateParams.topMenuFixedTop}} top-menu-fixed-top{{/serverInfo.templateParams.topMenuFixedTop}}">
 
+<div class="app">
 <header>
 	<nav class="navbar navbar-expand-{{serverInfo.templateParams.desktopMenuFrom}}{{#serverInfo.templateParams.topMenuFixedTop}} fixed-top{{/serverInfo.templateParams.topMenuFixedTop}} {{serverInfo.templateParams.topMenuStyle}}">
 		<div class="container-fluid">
 			<span class="navbar-brand">
 				<a href="{{urlRoot}}/">
 					{{#serverInfo.images.template.headerLogo}}<img src="{{dsRoot}}{{serverInfo.images.template.headerLogo}}"/>{{/serverInfo.images.template.headerLogo}}
+					{{^userAuthenticated}}{{serverInfo.templateParams.headerTitle}}{{/userAuthenticated}}
 				</a>
 			</span>
+			{{#userAuthenticated}}
+				<span class="navbar-brand" style="font-size: 75%;">
+							<div class="test655555"><i class="fa fa-user-circle-o"></i> {{userName}}</div>
+							<div>{{serverInfo.templateParams.headerTitle}}</div>
+				</span>
+			{{/userAuthenticated}}
 
 			{{#webModeTerminal}}
-				<div class="collapse navbar-collapse flex-column align-items-end ml-lg-0 ml-" id="XXX_navbarCollapse">
+				<span class="flex-column" id="XXXX_navbarCollapse" style="flex-grow: 1; padding-right: 2rem;">
 					<a class="btn btn-success pull-right" href="{{@urlUser;type:logout}}">Hotovo</a>
-				</div>
+				</span>
 			{{/webModeTerminal}}
 
+
 			{{#menu.items.0}}
-				<button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+				<button class="navbar-toggler navbar-toggler-right" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
 					<span class="navbar-toggler-icon"></span>
 				</button>
 			{{/menu.items.0}}
 
+
 			{{#menu.items.0}}
-				<div class="collapse navbar-collapse flex-column align-items-end " id="navbarCollapse">
+				<div class="collapse navbar-collapse flex-column align-items-end ml-lg-0 ml-" id="navbarCollapse">
+					{{#page.headerExt}}{{{page.headerExt}}}{{/page.headerExt}}
 					<ul class="nav navbar-nav menu-top-main">
-							{{#menu.items}}
-								<li class='nav-item{{#active}} active{{/active}}'>
-									<a class="nav-link" href="{{urlRoot}}{{url}}">{{title}}</a>
-								</li>
-							{{/menu.items}}
+						{{#menu.items}}
+							<li class='nav-item{{#active}} active{{/active}}'>
+								<a class="nav-link" href="{{urlRoot}}{{url}}">{{title}}</a>
+							</li>
+						{{/menu.items}}
 					</ul>
 				</div>
 			{{/menu.items.0}}
@@ -52,12 +84,12 @@
 	</nav>
 </header>
 
-<main>
+<main class="e10w-top-element">
 	<div class="container-fluid">
-		{{^page.params.webLayout}}
+		{{#page.params.myLayout}}
 			{{{pageText}}}
-		{{/page.params.webLayout}}
-		{{#page.params.webLayout}}
+		{{/page.params.myLayout}}
+		{{^page.params.myLayout}}
 			<div class="row">
 				{{#page.layoutSidebarNone}}
 					<div class="col-sm-12 {{page.mainTextClass}}">
@@ -78,36 +110,52 @@
 					<div class="sidebar right col-lg-3">{{{textRightSidebar}}}</div>
 				{{/page.layoutSidebarBoth}}
 			</div>
-		{{/page.params.webLayout}}
+		{{/page.params.myLayout}}
 	</div>
 	{{#page.footerExtension}}{{{page.footerExtension}}}{{/page.footerExtension}}
 </main>
 
-<footer id="pageFooter" class="page-footer footer-fixed">
+<footer id="pageFooter" class="page-footer" style="position: absolute; bottom: 0; width: 100%;">
 	<div class="container-fluid">
+		{{#page.buttons.0}}
+			<div class="row">
+				<div class="col-md-12 text-lg-center mt-3 pb-1">
+				{{#page.buttons}}
+					<button class="e10-document-trigger btn btn-primary btn-xs"{{#attr}} data-{{k}}="{{v}}"{{/attr}} title="{{text}}">
+						{{{@icon;dataItem:icon}}}"></i> {{text}}
+					</button>
+				{{/page.buttons}}
+					<hr>
+				</div>
+			</div>
+		{{/page.buttons.0}}
+
 		{{#page.footerFull}}{{{page.footerFull}}}{{/page.footerFull}}
 		{{^page.footerFull}}
 			<div class="row">
-				<div class="col-6" style="text-align: left;">
+				<div class="col-6 mt-2 pb-2" style="text-align: left;">
 					{{#webSocketServers}}
-						<span class="e10-wss-connect" id="wss-{{id}}" title="{{id}}/{{name}}"><i class="fa fa-circle"></i></span>
+						<span class="e10-wss-connect" id="wss-{{id}}" title="{{id}}/{{name}}">{{{@icon;dataItem:icon}}}</span>
 					{{/webSocketServers}}
+
+					{{#serverInfo.images.template.footerLogo}}<img src="{{dsRoot}}{{serverInfo.images.template.footerLogo}}" style="height: 1.4rem; "/><br>{{/serverInfo.images.template.footerLogo}}
 				</div>
-				<div class="col-6" style="text-align: right;">
-					<img style="height: 1.2rem; opacity: .25;" src="{{urlRoot}}/e10-modules/e10templates/web/shipard1/files/shipard/logo-white-web.svg">
+				<div class="col-6 mt-2 pb-2" style="text-align: right;">
+					<img style="height: 1.4rem; opacity: .25;" src="{{scRoot}}/shipard/graphics/logo-white-web.svg">
 				</div>
 			</div>
 		{{/page.footerFull}}
 	</div>
 </footer>
 
-
-<script src="{{scRoot}}/libs/js/jquery/jquery-3.5.1.min.js"></script>
+</div>
 
 <script type="text/javascript">var httpApiRootPath = '{{urlRoot}}'; var httpServerRootPath = '{{urlServer}}';</script>
-{{#serverInfo.secureWebPage}}<script src="{{dsRoot}}/e10-modules/e10/server/js/e10web.js?ver=22"></script>{{/serverInfo.secureWebPage}}
+{{#serverInfo.secureWebPage}}<script src="{{dsRoot}}/www-root/templates/web/libs/e10web.js?ver=22"></script>{{/serverInfo.secureWebPage}}
 <script type="text/javascript" src="{{scRoot}}/libs/js/popperjs/popper.min.js"></script>
 <script type="text/javascript" src="{{scRoot}}/bs/5.1/dist/js/bootstrap.min.js?v511"></script>
+<script type="text/javascript" src="{{scRoot}}/libs/js/fancybox/3/jquery.fancybox.min.js"></script>
+<script type="text/javascript" src="{{dsRoot}}/www-root/templates/web/libs/default.js?v=3"></script>
 {{{jsLibs}}}
 </body>
 </html>
