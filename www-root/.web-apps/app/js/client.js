@@ -42,7 +42,7 @@ containerElement=searchParentWithClass(el,'e10-sc-container');if(!containerEleme
 callParams={};callParams['action']=containerElement.attr('data-web-action');elementPrefixedAttributes(containerElement,'data-web-action-',callParams);elementPrefixedAttributes(parentRow,'data-web-action-',callParams);elementPrefixedAttributes(el,'data-web-action-',callParams);callWebAction(callParams,callWebActionSucceeded);}}function
 selectableCellsCheckBox(event,el){let
 valueAttr=el.attr('data-check-box-value-attr');if(valueAttr===undefined)return;if(el.hasClass('check-box-off')){el.removeClass('check-box-off').addClass('check-box-on');el.attr(valueAttr,'1');selectableCellsDoIt(el);}else
-if(el.hasClass('check-box-on')){el.removeClass('check-box-on').addClass('check-box-off');el.attr(valueAttr,'0');selectableCellsDoIt(el);}}$(function(){initSelectableCells();});$(function(){$('#authKey').hide().show().focus().prop('type','password');$('#authKey').on('focus',function(){$(this).prop('type','password');});$('#e10-lf-authKey').on('submit',function(){$('#authKey').hide().prop('type','text');});wssInit();initMQTT();});function
+if(el.hasClass('check-box-on')){el.removeClass('check-box-on').addClass('check-box-off');el.attr(valueAttr,'0');selectableCellsDoIt(el);}}$(function(){initSelectableCells();});$(function(){$('#authKey').hide().show().focus().prop('type','password');$('#authKey').on('focus',function(){$(this).prop('type','password');});$('#e10-lf-authKey').on('submit',function(){$('#authKey').hide().prop('type','text');});wssInit();initMQTT();initWebActions();});function
 wssInit(){if(g_useMqtt)return;for(var
 i
 in

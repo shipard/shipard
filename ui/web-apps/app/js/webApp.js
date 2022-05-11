@@ -27,4 +27,5 @@ $(function()
 
 	wssInit();
 	initMQTT ();
+	initWebActions();
 });

@@ -1,9 +1,9 @@
 {
     "app": {
         "client.js": {
-            "sha384": "0ac6726becd40739b331386093b3c341a7b7825b6cdda10cc7cc9e7aa90c36cce5482e269a832fcd1529bde4477ec03b",
-            "integrity": "sha384-CsZya+zUBzmzMThgk7PDQae3glts3aEMx8yeeqkMNszlSC4mmoMvzRUpveRHfsA7",
-            "ver": "28ffa41a2a8bad2cf2a6ab73b7e25d41"
+            "sha384": "056345e5f402c1ebe0dab97bf90c82c71f7f6c39613aaf45f0ca6c72a1757be73c7ffa2fb1e1940f0fe55678f8f1466c",
+            "integrity": "sha384-BWNF5fQCwevg2rl7+QyCxx9/bDlhOq9F8MpscqF1e+c8f/ovseGUDw/lVnj48UZs",
+            "ver": "56c3f9875ddaab63686c61cae2afbf46"
         }
     }
 }
