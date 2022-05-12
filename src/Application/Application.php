@@ -1156,7 +1156,7 @@ class Application extends \Shipard\Application\ApplicationCore
 
 			if ($useNewWebsockets)
 			{
-				if ($this->testGetParam('lagacyBrowser') === '')
+				if ($this->testGetParam('legacyBrowser') === '')
 					$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/libs/js/mqttws/mqttws31.min.js\"></script>\n";
 			}
 

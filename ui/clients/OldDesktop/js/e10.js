@@ -656,7 +656,7 @@ function e10setProgressIndicator (objectId, state)
 			return;
 		i.attr ('data-run', '1');
 		i.data ('oldState', i.html());
-		let spinnerUrl = httpApiRootPath + '/www-root/sc/shipard/spinner-bars.svg';
+		var spinnerUrl = httpApiRootPath + '/www-root/sc/shipard/spinner-bars.svg';
 		i.html("<img style='width: 1em; height: 1em;' src='"+spinnerUrl+"'></img>");
 	}
 	else
@@ -6340,7 +6340,7 @@ function e10refreshReport (setTabs)
 	var browserPanel = $("#e10reportWidget >div.e10-wr-content >div.e10-wr-params >div.params");
 
 	browserContent.find("*:first").remove();
-	let spinnerUrl = httpApiRootPath + '/www-root/sc/shipard/spinner-bars.svg';
+	var spinnerUrl = httpApiRootPath + '/www-root/sc/shipard/spinner-bars.svg';
 	browserContent.html ("<div class='e10-reportContent'><img style='width: 2em; height: 2em;' src='"+spinnerUrl+"'></img>&nbsp;Přehled se připravuje, čekejte prosím...<br/></div>");
 	var jqxhr = $.getJSON(urlPath, function(data) {
 		browserContent.find("*:first").remove();
@@ -6627,11 +6627,11 @@ function mqttOnMessage (serverIndex, data)
 	if (ws.topics[data.destinationName] === undefined)
 		return;
 
-	let sensorInfo = ws.topics[data.destinationName];
+	var sensorInfo = ws.topics[data.destinationName];
 	//console.log(sensorInfo);
 
-	let mainMenuElementId = 'mqtt-sensor-' + sensorInfo['sensorId'];
-	let mainMenuElement = $('#' + mainMenuElementId);
+	var mainMenuElementId = 'mqtt-sensor-' + sensorInfo['sensorId'];
+	var mainMenuElement = $('#' + mainMenuElementId);
 	if (mainMenuElement.length)
 	{
 		mainMenuElement.find('span.value').text(data.payloadString);
@@ -6659,7 +6659,7 @@ function mqttOnMessage (serverIndex, data)
 	// --- kbd emulation
 	if (sensorInfo.flags['kbd'] !== undefined && sensorInfo.flags['kbd'])
 	{
-		let currentInput = $('#' + g_focusedInputId);
+		var currentInput = $('#' + g_focusedInputId);
 		if (!currentInput.length)
 			currentInput = $(':focus');
 

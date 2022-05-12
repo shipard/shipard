@@ -321,7 +321,7 @@ viewerId=$(this).attr("id");initViewer(viewerId);});}}function
 e10setProgress(e,progress){if(progress)e.css({'color':'rgba(0,0,0,.2)'});else
 e.css({'color':'rgba(0,0,0,1)'});}function
 e10setProgressIndicator(objectId,state){var
-i=$('#'+objectId+'Progress');if(!i[0])return;if(state){if(i.attr('data-run')==='1')return;i.attr('data-run','1');i.data('oldState',i.html());let
+i=$('#'+objectId+'Progress');if(!i[0])return;if(state){if(i.attr('data-run')==='1')return;i.attr('data-run','1');i.data('oldState',i.html());var
 spinnerUrl=httpApiRootPath+'/www-root/sc/shipard/spinner-bars.svg';i.html("<img style='width: 1em; height: 1em;' src='"+spinnerUrl+"'></img>");}else{i.attr('data-run','0');i.html(i.data('oldState'));}}function
 e10userSettingsMenu(){var
 userMenu=$('#e10-tm-user-m');userMenuBtn=userMenu.parent();if(userMenu.hasClass('active')){userMenu.removeClass('active');userMenuBtn.removeClass('active');}else{userMenuBtn.addClass('active');userMenu.addClass('active');userMenu.css({top:$('#e10-panel-topmenu').height()+2});}}var
@@ -1530,7 +1530,7 @@ params=df2collectFormData(paramsElement);params+=df2collectFormData($('#e10-repo
 reportClass=activeReport.attr('data-class');var
 urlPath=httpApiRootPath+"/api/report/"+reportClass+"/widget"+'?'+activeSubReportId+'&'+params;var
 browserContent=$("#e10reportWidget >div.e10-wr-content >div.e10-wr-data");var
-browserPanel=$("#e10reportWidget >div.e10-wr-content >div.e10-wr-params >div.params");browserContent.find("*:first").remove();let
+browserPanel=$("#e10reportWidget >div.e10-wr-content >div.e10-wr-params >div.params");browserContent.find("*:first").remove();var
 spinnerUrl=httpApiRootPath+'/www-root/sc/shipard/spinner-bars.svg';browserContent.html("<div class='e10-reportContent'><img style='width: 2em; height: 2em;' src='"+spinnerUrl+"'></img>&nbsp;Přehled se připravuje, čekejte prosím...<br/></div>");var
 jqxhr=$.getJSON(urlPath,function(data){browserContent.find("*:first").remove();browserContent.html(data.object.mainCode);$('#e10-tm-viewerbuttonbox').html(data.object.htmlCodeToolbarViewer);browserPanel.html(data.object.htmlCodeReportPanel);if(setTabs===1)$('#mainBrowserRightBarDetails').html(data.object.htmlCodeDetails);}).error(function(){alert("error 27: content not loaded ("+urlPath+")");});}function
 e10reportChangeTab(e,event){e.parent().find('li.active').removeClass('active');e.addClass('active');e10refreshReport(0);}function
@@ -1596,14 +1596,14 @@ topic
 in
 ws.topics){ws.mqttClient.subscribe(topic);}}function
 mqttOnMessage(serverIndex,data){var
-ws=webSocketServers[serverIndex];if(ws.topics===undefined)return;if(ws.topics[data.destinationName]===undefined)return;let
-sensorInfo=ws.topics[data.destinationName];let
-mainMenuElementId='mqtt-sensor-'+sensorInfo['sensorId'];let
+ws=webSocketServers[serverIndex];if(ws.topics===undefined)return;if(ws.topics[data.destinationName]===undefined)return;var
+sensorInfo=ws.topics[data.destinationName];var
+mainMenuElementId='mqtt-sensor-'+sensorInfo['sensorId'];var
 mainMenuElement=$('#'+mainMenuElementId);if(mainMenuElement.length){mainMenuElement.find('span.value').text(data.payloadString);if(sensorInfo.flags['qt']!==undefined&&sensorInfo.flags['qt']===20){if(g_openModals.length!==0){var
 modalId=g_openModals[g_openModals.length-1];var
 modalElement=$('#'+modalId);var
 receiveSensors=modalElement.attr('data_receivesensors');if(receiveSensors!==undefined){var
-sids=receiveSensors.split(' ');for(i=0;i<sids.length;i++){$('#'+sids[i]).text(data.payloadString);}}}}if(g_camerasBarTimer!==0){clearTimeout(g_camerasBarTimer);g_camerasBarTimer=0;camerasReload();}}if(sensorInfo.flags['kbd']!==undefined&&sensorInfo.flags['kbd']){let
+sids=receiveSensors.split(' ');for(i=0;i<sids.length;i++){$('#'+sids[i]).text(data.payloadString);}}}}if(g_camerasBarTimer!==0){clearTimeout(g_camerasBarTimer);g_camerasBarTimer=0;camerasReload();}}if(sensorInfo.flags['kbd']!==undefined&&sensorInfo.flags['kbd']){var
 currentInput=$('#'+g_focusedInputId);if(!currentInput.length)currentInput=$(':focus');if(currentInput.length){currentInput.val(data.payloadString);currentInput.trigger('change');if(currentInput.hasClass('e10-viewer-search'))viewerIncSearch(currentInput,null,1);}}}function
 e10WizardNext(input){var
 id=input.attr('data-form');var
