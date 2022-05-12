@@ -1581,7 +1581,8 @@ queryParams=viewer.attr("data-queryparams");if(queryParams)urlPath+='&'+queryPar
 ap=viewer.attr('data-addparams');if(ap!='')urlPath+="&"+ap;var
 jqxhr=$.getJSON(urlPath,function(data){var
 viewerLines=$('#'+viewerId+'Items');viewerLines.prepend(data.object.htmlItems);if(viewerLines.find('>li').length>70)viewerLines.find('>li:last').detach();}).error(function(){alert("error 18: content not loaded ("+urlPath+")");});}function
-initMQTT(){for(var
+initMQTT(){if(typeof
+Paho=='undefined')return;for(var
 i
 in
 webSocketServers){mqttStartClient(i);}}function

@@ -1155,8 +1155,10 @@ class Application extends \Shipard\Application\ApplicationCore
 			$c .= "<link rel='stylesheet' type='text/css' href='{$scRoot}/{$iconsCfg['styleLink']}'>\n";
 
 			if ($useNewWebsockets)
-				$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/libs/js/mqttws/mqttws31.min.js\"></script>\n";
-				//$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/libs/js/mqttjs/mqtt.min.js\"></script>\n";
+			{
+				if ($this->testGetParam('lagacyBrowser') === '')
+					$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/libs/js/mqttws/mqttws31.min.js\"></script>\n";
+			}
 
 			$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/libs/js/codemirror/codemirror-4.7.1-min.js\"></script>\n";
 			$c .= "<link rel=\"stylesheet\" type=\"text/css\" href=\"{$scRoot}/libs/js/chosen/chosen.css\">\n";

@@ -6560,6 +6560,9 @@ function viewerAddRowFromSensor (viewer, sensorType, sensorValue)
 // -- mqtt clients
 function initMQTT ()
 {
+	if (typeof Paho == 'undefined')
+		return;
+
 	for (var i in webSocketServers)
 	{
 		mqttStartClient (i);
