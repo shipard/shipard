@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="{{dsRoot}}{{templateUrlRoot}}/unify-v3.1/dist/assets/vendor/hs-mega-menu/dist/hs-mega-menu.min.css">
   <link rel="stylesheet" href="{{dsRoot}}{{templateUrlRoot}}/unify-v3.1/dist/assets/vendor/swiper/swiper-bundle.min.css">
 	<link rel="stylesheet" type="text/css" href="{{scRoot}}/icons/bsi/1.7/font/bootstrap-icons.css">
+  {{#page.params.recaptcha-v3-site-key}}<script src='https://www.google.com/recaptcha/api.js?render={{page.params.recaptcha-v3-site-key}}'></script>{{/page.params.recaptcha-v3-site-key}}
 </head>
 
 <body>
@@ -192,17 +193,28 @@
 {{{webAnalytics}}}
 {{#page.params.recaptcha-v3-site-key}}
 	<script>
-		$('form').show();
-		$('form').submit(function(event) {
-			event.preventDefault();
-			grecaptcha.ready(function() {
-				grecaptcha.execute('{{page.params.recaptcha-v3-site-key}}', {action: 'contact_form'}).then(function(token) {
-					var recaptchaResponse = document.getElementById('recaptcha-response');
-					recaptchaResponse.value = token;
-					$('form').unbind('submit').submit();
-				});
-			});
-		});
+    var contactFormSubmitted = false;
+    var forms = document.getElementsByTagName('form');
+    for (var i = 0; i < forms.length; i++) 
+    {
+      let form = forms[i];
+      form.style.display = 'block';
+      form.addEventListener("submit", function (event) {
+        if (!contactFormSubmitted)
+        {
+          contactFormSubmitted = true;
+          event.preventDefault();
+          grecaptcha.ready(function() {
+            grecaptcha.execute('{{page.params.recaptcha-v3-site-key}}', {action: 'contact_form'}).then(function(token) {
+              var recaptchaResponse = document.getElementById('recaptcha-response');
+              recaptchaResponse.value = token;
+              form.submit();
+            });
+          });
+        }
+      });
+      break;
+    }
 	</script>
 {{/page.params.recaptcha-v3-site-key}}
 
