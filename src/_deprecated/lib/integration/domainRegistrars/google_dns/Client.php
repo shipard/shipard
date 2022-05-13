@@ -59,6 +59,15 @@ class Client extends \lib\integration\domainRegistrars\Client
 		$this->deleteAuthKey();
 	}
 
+	protected function zoneId($domain)
+	{
+		$zid = str_replace('.', '-', $domain);
+		if (is_numeric(substr($zid, 0, 1)))
+			$zid = 'zone-'.$zid;
+
+		return $zid;	
+	}
+
 	public function domainsList ()
 	{
 		$list = [];
@@ -88,7 +97,7 @@ class Client extends \lib\integration\domainRegistrars\Client
 	public function dnsRecords ($domainAsciiName)
 	{
 		$list = [];
-		$managedZone = str_replace('.', '-', $domainAsciiName);
+		$managedZone = $this->zoneId($domainAsciiName);
 
 		$optParams = [];
 
@@ -136,7 +145,7 @@ class Client extends \lib\integration\domainRegistrars\Client
 
 	public function addDnsRecord ($domain, $dnsRec)
 	{
-		$managedZone = str_replace('.', '-', $domain);
+		$managedZone = $this->zoneId($domain);
 
 		$change = new \Google_Service_Dns_Change();
 
@@ -164,7 +173,7 @@ class Client extends \lib\integration\domainRegistrars\Client
 
 	public function deleteDnsRecord ($domain, $dnsRec)
 	{
-		$managedZone = str_replace('.', '-', $domain);
+		$managedZone = $this->zoneId($domain);
 
 		$change = new \Google_Service_Dns_Change();
 
