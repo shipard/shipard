@@ -65,23 +65,39 @@
     {{{pageText}}}
   {{/page.params.myMain}}
   {{^page.params.myMain}}
-    <main id="contentXYZ" role="main">
-    {{#page.layoutSidebarNone}}
-      <div class="container content-space-t-2">
+    <main id="content" role="main">
+      {{#page.params.myLayout}}
         {{{pageText}}}
-      </div>
-    {{/page.layoutSidebarNone}}
-    {{#page.layoutSidebarLeft}}
-      <div class="container content-space-t-2">
-        <div class="row">
-          <div class="e10w-top-element sidebar left e10w-sb-start col-md-3 col-lg-3 e10-text">{{{textLeftSidebar}}}</div>
-          <div class="e10w-top-element col-md-9 main-text pageText e10w-content col-lg-9 {{page.mainTextClass}}">{{{pageText}}}</div>
+      {{/page.params.myLayout}}
+      {{^page.params.myLayout}}
+        <div class="container content-space-t-2">
+          {{#page.layoutSidebarNone}}
+            {{{pageText}}}
+          {{/page.layoutSidebarNone}}
+          {{#page.layoutSidebarLeft}}
+            <div class="row">
+              <div class="e10w-top-element sidebar left e10w-sb-start col-md-3 col-lg-3 e10-text">{{{textLeftSidebar}}}</div>
+              <div class="e10w-top-element col-md-9 main-text pageText e10w-content col-lg-9 {{page.mainTextClass}}">{{{pageText}}}</div>
+            </div>
+          {{/page.layoutSidebarLeft}}
+          {{#page.layoutSidebarRight}}
+            <div class="row">
+              <div class="e10w-top-element col-lg-9 main-text pageText e10w-content {{page.mainTextClass}}">{{{pageText}}}</div>
+              <div class="e10w-top-element sidebar right e10w-sb-end col-lg-3">{{{textRightSidebar}}}</div>
+            </div>
+          {{/page.layoutSidebarRight}}
+          {{#page.layoutSidebarBoth}}
+            <div class="row">
+              <div class="e10w-top-element sidebar left e10w-sb-start col-lg-3">{{{textLeftSidebar}}}</div>
+              <div class="e10w-top-element col-lg-6 main-text pageText e10w-content {{page.mainTextClass}}">{{{pageText}}}</div>
+              <div class="e10w-top-element sidebar right e10w-sb-end col-lg-3">{{{textRightSidebar}}}</div>
+            </div>
+          {{/page.layoutSidebarBoth}}
         </div>
-      </div>
-    {{/page.layoutSidebarLeft}}
+      {{/page.params.myLayout}}
     </main>
   {{/page.params.myMain}}
-  
+ 
 	{{#page.footerFull}}{{{page.footerFull}}}{{/page.footerFull}}
 	{{^page.footerFull}}
 		<footer class="bg-dark">
@@ -173,5 +189,22 @@
 
 
 {{#page.javascript}}{{{page.javascript}}}{{/page.javascript}}
+{{{webAnalytics}}}
+{{#page.params.recaptcha-v3-site-key}}
+	<script>
+		$('form').show();
+		$('form').submit(function(event) {
+			event.preventDefault();
+			grecaptcha.ready(function() {
+				grecaptcha.execute('{{page.params.recaptcha-v3-site-key}}', {action: 'contact_form'}).then(function(token) {
+					var recaptchaResponse = document.getElementById('recaptcha-response');
+					recaptchaResponse.value = token;
+					$('form').unbind('submit').submit();
+				});
+			});
+		});
+	</script>
+{{/page.params.recaptcha-v3-site-key}}
+
 </body>
 </html>
