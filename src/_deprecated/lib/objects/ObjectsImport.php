@@ -338,8 +338,11 @@ class ObjectsImport extends Service
 			$colDef = $table->column ($colId);
 			if (!$colDef)
 			{
-				error_log("INVALID COLUMN: `{$colId}` in table `".$table->tableId()."`");
-				$this->result ['errors'][] = "INVALID COLUMN: column {$colId}";
+				if ($colId[0] !== '_')
+				{
+					error_log("INVALID COLUMN: `{$colId}` in table `".$table->tableId()."`");
+					$this->result ['errors'][] = "INVALID COLUMN/objectsImport: column {$colId}";
+				}
 				continue;
 			}
 			if ($colDef['type'] !== DataModel::ctInt && $colDef['type'] !== DataModel::ctEnumInt && $colId !== 'ndx')
