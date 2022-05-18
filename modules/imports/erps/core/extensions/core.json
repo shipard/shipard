@@ -1,0 +1,65 @@
+[
+	{
+		"table": "e10doc.base.cashboxes",
+		"columns": [
+			{"id": "impId", "name": "Import ID", "type": "string", "len": 5}
+		]
+	},
+	{
+		"table": "e10doc.base.warehouses",
+		"columns": [
+			{"id": "impId", "name": "Import ID", "type": "string", "len": 6}
+		]
+	},
+	{
+		"table": "e10.persons.persons",
+		"columns": [
+			{"id": "impNdx", "name": "Import PK", "type": "int"},
+			{"id": "impId", "name": "Import ID", "type": "string", "len": 15}
+		]
+	},
+	{
+		"table": "e10.persons.relations",
+		"columns": [
+			{"id": "impNdx", "name": "Import PK", "type": "int"}
+		]
+	},
+	{
+		"table": "e10.witems.items",
+		"columns": [
+			{"id": "impNdx", "name": "Import PK", "type": "int"},
+			{"id": "impId", "name": "Import ID", "type": "string", "len": 25}
+		],
+		"indexes": [
+			{"id": "impNdx", "columns": ["impNdx"]},
+			{"id": "impId", "columns": ["impId"]}
+		]
+	},
+	{
+		"table": "e10doc.core.heads",
+		"columns": [
+			{"id": "impNdx", "name": "Import PK", "type": "int"},
+			{"id": "impId", "name": "Import ID", "type": "string", "len": 20}
+		],
+		"indexes": [
+			{"id": "impId", "columns": ["impId"]}
+		]
+	},
+	{
+		"table": "e10doc.debs.accounts",
+		"columns": [
+			{"id": "impNdx", "name": "Import PK", "type": "int"},
+			{"id": "impId", "name": "Import ID", "type": "string", "len": 22}
+		]
+	},
+	{
+		"table": "e10mnf.core.workOrders",
+		"columns": [
+			{"id": "impNdx", "name": "Import PK", "type": "int"},
+			{"id": "impId", "name": "Import ID", "type": "string", "len": 20}
+		],
+		"indexes": [
+			{"id": "impId", "columns": ["impId"]}
+		]
+	}
+]

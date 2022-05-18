@@ -1,0 +1,7 @@
+{
+	"id": "imports.erps.core",
+	"name": "Import ERPs",
+	"tables": [],
+	"extensions": ["core"],
+	"modules": []
+}
