@@ -38,7 +38,7 @@
 	  {"id": "+mac.iot.things.itemsTypes", "file": "mac.iot.things.itemsTypes.json"},
 	  {"id": "+mac.iot.topicTypes", "file": "mac.iot.topicTypes.json"},
 	  {"id": "+mac.iot.sensorKbdEmulation", "file": "mac.iot.sensorKbdEmulation.json"},
-	  {"id": "+mac.iot.controlTargetsTypes", "file": "mac.iot.controlTargetsTypes.json"},
+	  {"id": "+mac.iot.controlTypes", "file": "mac.iot.controlTypes.json"},
 	  {"id": "+mac.iot.scPlacements.targets", "file": "mac.iot.scPlacements.targets.json"},
 	  {"id": "+mac.iot.scPlacements.mainMenu", "file": "mac.iot.scPlacements.mainMenu.json"},
 	  {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},

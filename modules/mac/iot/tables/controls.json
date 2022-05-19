@@ -3,21 +3,29 @@
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "uid", "name": "UID", "type": "string", "len": 20, "options": ["ascii"]},
-
-		{"id": "lan", "name": "Síť", "type": "int", "reference": "mac.lan.lans"},
-		{"id": "targetType", "name": "Cíl ovládacího prvku", "type": "enumInt", "options": ["saveOnChange"],
-			"enumCfg": {"cfgItem": "mac.iot.controlTargetsTypes", "cfgValue": "", "cfgText": "fn"}},
-
-		{"id": "dstIOPort", "name": "Zařízení", "type": "int", "reference": "mac.lan.devicesIOPorts", "options": ["saveOnChange"]},
-
-		{"id": "dstIoTThing", "name": "IoT prvek", "type": "int", "reference": "mac.iot.things", "options": ["saveOnChange"]},
-		{"id": "dstIoTThingAction", "name": "Akce", "type": "enumString", "len": 40},
-		{"id": "mqttTopic", "name": "MQTT topic", "type": "string", "len": 120},
-		{"id": "mqttPayloadClick", "name": "MQTT zpráva", "type": "string", "len": 120},
-
 		{"id": "fullName", "name": "Úplný název", "type": "string", "len": 120},
 		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
 		{"id": "idName", "name": "ID", "type": "string", "len": 80},
+
+		{"id": "lan", "name": "Síť", "type": "int", "reference": "mac.lan.lans"},
+		{"id": "controlType", "name": "Typ ovládacího prvku", "type": "enumString", "len": "20", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.iot.controlTypes", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "iotDevice", "name": "Cílové zařízení", "type": "int", "reference": "mac.iot.devices", "options": ["saveOnChange"]},
+		{"id": "useGroup", "name": "Použít skupinu", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "iotDevicesGroup", "name": "Cílová skupina", "type": "int", "reference": "mac.iot.devicesGroups", "options": ["saveOnChange"]},
+		{"id": "iotDeviceProperty", "name": "Nastavení", "type": "enumString", "len": "60", "options": ["saveOnChange"], 
+			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "iotDevicePropertyValueEnum", "name": "Hodnota", "type": "enumString", "len": "60",
+			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "iotDevicePropertyValue", "name": "Hodnota události text", "type": "string", "len": "60"},
+
+		{"id": "iotSetup", "name": "Sestava", "type": "int", "reference": "mac.iot.setups", "options": ["saveOnChange"]},
+		{"id": "iotSetupRequest", "name": "Požadavek", "type": "enumString", "len": "40", "options": ["saveOnChange"], 
+			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "mqttTopic", "name": "Zdrojový MQTT topic", "type": "string", "len": "100"},
+		{"id": "mqttTopicPayloadValue", "name": "Hodnota", "type": "memo"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

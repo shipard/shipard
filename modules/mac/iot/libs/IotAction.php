@@ -40,12 +40,8 @@ class IotAction extends E10ApiObject
 	{
 		$this->userNdx = $this->app()->userNdx();
 		$this->tableControls = $this->app()->table('mac.iot.controls');
-		//$this->tableThings = $this->app()->table('mac.iot.things');
 		$this->tableLans = $this->app()->table('mac.lan.lans');
 		$this->tableDevices = $this->app()->table('mac.lan.devices');
-
-
-		//error_log("@@@ IOT-ACTION: ".json_encode($this->requestParams));
 
 		$this->actionType = $this->requestParam ('action-type', '');
 		if ($this->actionType === '')
@@ -53,35 +49,6 @@ class IotAction extends E10ApiObject
 
 			return;
 		}
-
-		/*
-		if ($this->actionType === 'thing-action')
-		{
-			$this->controlRecData = $this->tableControls->loadRecData('@uid:'.$this->requestParam('control', '---'));
-			if (!$this->controlRecData)
-				return;
-
-			$this->thingRecData = $this->tableThings->loadRecData('@uid:'.$this->requestParam('thing', '---'));
-			if (!$this->thingRecData)
-				return;
-
-			$this->thingKindCfg = $this->app()->cfgItem('mac.iot.things.kinds.'.$this->thingRecData['thingKind'], NULL);
-			if (!$this->thingKindCfg)
-				return;
-
-			$thingAction = $this->requestParam('thing-action');
-			if ($thingAction == '')
-				return;
-
-			$this->lanNdx = $this->controlRecData['lan'];
-
-			$this->requestData = [
-				'actionType' => $this->actionType,
-				'iotControl' => $this->controlRecData['uid'],
-				'thing' => $this->thingRecData['id'],
-				'thingAction' => $thingAction
-			];
-		}*/
 
 		if ($this->actionType === 'set-scene')
 		{
@@ -110,7 +77,51 @@ class IotAction extends E10ApiObject
 				'mqttPayload' => json_encode($payloadData),
 			];
 		}
+		if ($this->actionType === 'set-device-property')
+		{
+			$this->controlRecData = $this->tableControls->loadRecData('@uid:'.$this->requestParam('control', '---'));
+			if (!$this->controlRecData)
+				return;
 
+			$iotDevicesUtils = new \mac\iot\libs\IotDevicesUtils($this->app());
+			$ddm = $iotDevicesUtils->deviceDataModel($this->controlRecData['iotDevice']);
+			$deviceTopic = $ddm['deviceTopic'];
+			$deviceTopic .= '/set';
+
+			$setData = [$this->controlRecData['iotDeviceProperty'] => $this->controlRecData['iotDevicePropertyValueEnum']];
+
+			$this->lanNdx = $this->controlRecData['lan'];
+			$this->requestData = [
+				'actionType' => 'mqtt-publish',
+				'mqttTopic' => $deviceTopic,
+				'mqttPayload' => json_encode($setData),
+			];
+		}	
+		elseif ($this->actionType === 'send-setup-request')
+		{
+			/*
+			$this->lanNdx = $this->controlRecData['lan'];
+			$this->requestData = [
+				'actionType' => 'mqtt-publish',
+				'mqttTopic' => $setupTopic.'/set',
+				'mqttPayload' => json_encode($payloadData),
+			];
+			*/
+			return;
+		}
+		elseif ($this->actionType === 'send-mqtt-msg')
+		{
+			$this->controlRecData = $this->tableControls->loadRecData('@uid:'.$this->requestParam('control', '---'));
+			if (!$this->controlRecData)
+				return;
+
+			$this->lanNdx = $this->controlRecData['lan'];
+			$this->requestData = [
+				'actionType' => 'mqtt-publish',
+				'mqttTopic' => $this->controlRecData['mqttTopic'],
+				'mqttPayload' => trim($this->controlRecData['mqttTopicPayloadValue']),
+			];
+		}
 		$this->loadLanIfo();
 
 		$this->paramsError = 0;

@@ -1,0 +1,11 @@
+{
+	"setDeviceProperty": {
+		"fn": "Vlastnost zařízení"
+	},
+	"sendSetupRequest": {
+		"fn": "Odeslat požadavek na IoT sestavu"
+	},
+	"sendMqttMsg": {
+		"fn": "Odeslat MQTT zprávu"
+	}
+}

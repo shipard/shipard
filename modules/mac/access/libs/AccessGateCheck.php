@@ -105,6 +105,12 @@ class AccessGateCheck extends Utility
 			$this->requestParams['type'] = 'device';
 			$this->requestParams['value'] = $this->requestParams['srcTopic'];
 		}
+		elseif (isset($this->requestParams['srcPayload']['action']) && $this->requestParams['srcPayload']['action'] === 'control')
+		{
+			$this->requestParams['type'] = 'control';
+			$this->requestParams['iotControl'] = $this->requestParams['srcPayload']['iotControl'];
+			$this->requestParams['value'] = $this->requestParams['srcTopic'];
+		}
 
 		if (!isset($this->requestTypes[$this->requestParams['type']]))
 			return $this->setResult('Wrong `type` param');

@@ -45,7 +45,7 @@ class Control extends Utility
 			'text' => $this->controlRecData['shortName'],
 
 			'action' => 'inline-action',
-			//'class' => 'pull-right',
+			'class' => 'pl1',
 
 			'icon' => 'system/iconCheck',
 			'btnClass' => 'btn-primary',
@@ -55,11 +55,19 @@ class Control extends Utility
 			'data-action-param-control' => $this->controlRecData['uid']
 		];
 
-		if ($this->controlRecData['targetType'] === TableControls::cttIoTThingAction)
+		if ($this->controlRecData['controlType'] === 'setDeviceProperty')
 		{
-			$controlButton['data-action-param-action-type'] = 'thing-action';
-			$controlButton['data-action-param-thing'] = $this->thingRecData['uid'];
-			$controlButton['data-action-param-thing-action'] = $this->controlRecData['dstIoTThingAction'];
+			$controlButton['data-action-param-action-type'] = 'set-device-property';
+		}
+		elseif ($this->controlRecData['controlType'] === 'sendSetupRequest')
+		{
+			$controlButton['data-action-param-action-type'] = 'send-setup-request';
+			$controlButton['data-action-param-setup'] = $this->controlRecData['iotSetup'];
+			$controlButton['data-action-param-setup-request'] = $this->controlRecData['iotSetupRequest'];
+		}
+		elseif ($this->controlRecData['controlType'] === 'sendMqttMsg')
+		{
+			$controlButton['data-action-param-action-type'] = 'send-mqtt-msg';
 		}
 
 		$c = $this->app()->ui()->renderTextLine($controlButton);

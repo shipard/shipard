@@ -22,7 +22,7 @@ class TableSensors extends DbTable
 	{
 		parent::checkBeforeSave($recData, $ownerData);
 
-		if (!isset($recData['uid']) && $recData['uid'] === '')
+		if (!isset($recData['uid']) || $recData['uid'] === '')
 			$recData['uid'] = Utils::createToken(20);
 
 		if (isset($recData['ndx']) && $recData['ndx'])

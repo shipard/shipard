@@ -484,10 +484,19 @@ class WidgetLive extends WidgetBoard
 
 		if (count($this->iotSC))
 		{
+			$c .= "<span class='pl1'>";
+			foreach ($this->iotSC as $sc)
+			{
+				if ($sc['type'] === 1)
+					$c .= $sc['code'];
+			}
+			$c .= '</span>';
+
 			$c .= "<span class='pull-right'>";
 			foreach ($this->iotSC as $sc)
 			{
-				$c .= $sc['code'];
+				if ($sc['type'] === 0)
+					$c .= $sc['code'];
 			}
 			$c .= '</span>';
 		}

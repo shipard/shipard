@@ -2,7 +2,7 @@
 
 namespace mac\iot;
 
-use \e10\TableForm, \e10\DbTable, \e10\TableView, \e10\utils, \e10\TableViewDetail, \mac\data\libs\SensorHelper;
+use \Shipard\Form\TableForm, \Shipard\Table\DbTable, \e10\TableView, \e10\utils, \e10\TableViewDetail, \mac\data\libs\SensorHelper;
 
 
 /**
@@ -56,6 +56,7 @@ class TableControls extends DbTable
 		return parent::tableIcon($recData, $options);
 	}
 
+	/*
 	public function columnInfoEnumSrc ($columnId, $form)
 	{
 		if ($columnId === 'dstIoTThingAction')
@@ -88,6 +89,73 @@ class TableControls extends DbTable
 
 		return parent::columnInfoEnumSrc ($columnId, $form);
 	}
+	*/
+
+	public function columnInfoEnum ($columnId, $valueType = 'cfgText', TableForm $form = NULL)
+	{
+		$iotDevicesUtils = new \mac\iot\libs\IotDevicesUtils($this->app());
+
+		if ($columnId === 'iotDeviceProperty')
+		{
+			if ($form->recData['useGroup'])
+				$events = $iotDevicesUtils->devicesGroupProperties($form->recData['iotDevicesGroup']);
+			else
+				$events = $iotDevicesUtils->deviceProperties($form->recData['iotDevice']);
+			if (!$events)
+				return [];
+
+			$enum = [];
+			foreach ($events as $key => $value)
+				$enum[$key] = $key;
+
+			return $enum;
+		}
+
+		if ($columnId === 'iotDevicePropertyValueEnum')
+		{
+			if ($form->recData['useGroup'])
+				$events = $iotDevicesUtils->devicesGroupProperties($form->recData['iotDevicesGroup']);
+			else
+				$events = $iotDevicesUtils->deviceProperties($form->recData['iotDevice']);
+
+			if (!$events)
+				return [];
+
+			$event = $events[$form->recData['iotDeviceProperty']] ?? NULL;	
+			if (!$event)
+				return [];
+
+			$enum = [];
+			if (isset($event['enumSet']))
+			{
+				foreach ($event['enumSet'] as $key => $value)
+					$enum[$key] = $key;
+			}
+			elseif (isset($event['enum']))
+			{
+				foreach ($event['enum'] as $key => $value)
+					$enum[$key] = $key;
+			}
+
+			return $enum;
+		}
+
+		if ($columnId === 'iotSetupRequest')
+		{
+			$enum = [];
+
+			$requests = $iotDevicesUtils->iotSetupRequests($form->recData['iotSetup']);
+			foreach ($requests as $requestId => $req)
+			{
+				$enum[$requestId] = $req['fn'];
+			}
+
+			return $enum;
+		}
+
+		return parent::columnInfoEnum ($columnId, $valueType, $form);
+	}
+
 }
 
 
@@ -126,7 +194,7 @@ class ViewControls extends TableView
 		$listItem ['t1'] = $item['fullName'];
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
-
+		/*
 		if ($item['targetType'] == TableControls::cttIotBoxIOPort)
 		{
 			if ($item['ioPortDeviceFullName'])
@@ -141,29 +209,10 @@ class ViewControls extends TableView
 			$listItem ['t2'][] = $ioPortId;
 
 		}
-		elseif ($item['targetType'] == TableControls::cttIoTThingAction)
-		{
-			if ($item['thingName'])
-				$listItem ['t2'][] = ['text' => $item ['thingName'], 'class' => 'label label-default', 'icon' => $this->tableThings->tableIcon([/*'icon' => $item['thingIcon'],*/ 'thingKind' => $item['thingKind']])];
-
-			$actionLabel = ['text' => '', 'class' => 'label label-default'];
-			$thingKindCfg = $this->app()->cfgItem('mac.iot.things.kinds.'.$item['thingKind'], NULL);
-			if ($thingKindCfg)
-			{
-				$thingTypeCfg = $this->app()->cfgItem('mac.iot.things.types.'.$thingKindCfg['thingType'], NULL);
-				if ($thingTypeCfg && isset($thingTypeCfg['actions']) && isset($thingTypeCfg['actions']))
-				{
-					$action = $thingTypeCfg['actions'][$item['dstIoTThingAction']];
-					$actionLabel['text'] = $action['fn'];
-				}
-			}
-
-			$listItem ['t2'][] = $actionLabel;
-		}
 		elseif ($item['targetType'] == TableControls::cttMQTTTopic)
 		{
 		}
-
+*/
 		return $listItem;
 	}
 
@@ -171,12 +220,12 @@ class ViewControls extends TableView
 	{
 		$fts = $this->fullTextSearch ();
 
-		$q [] = 'SELECT [controls].*, ';
-		array_push ($q, ' ioPortsDevices.fullName AS [ioPortDeviceFullName], ioPortsDevices.deviceKind AS [ioPortDeviceKind],');
-		array_push ($q, ' ioPorts.portId AS [ioPortId], ioPorts.fullName AS [ioPortFullName]');
+		$q [] = 'SELECT [controls].* ';
+		//array_push ($q, ' ioPortsDevices.fullName AS [ioPortDeviceFullName], ioPortsDevices.deviceKind AS [ioPortDeviceKind],');
+		//array_push ($q, ' ioPorts.portId AS [ioPortId], ioPorts.fullName AS [ioPortFullName]');
 		array_push ($q, ' FROM [mac_iot_controls] AS [controls]');
-		array_push ($q, ' LEFT JOIN [mac_lan_devicesIOPorts] AS ioPorts ON [controls].dstIOPort = ioPorts.ndx');
-		array_push ($q, ' LEFT JOIN [mac_lan_devices] AS ioPortsDevices ON ioPorts.device = ioPortsDevices.ndx');
+		//array_push ($q, ' LEFT JOIN [mac_lan_devicesIOPorts] AS ioPorts ON [controls].dstIOPort = ioPorts.ndx');
+		//array_push ($q, ' LEFT JOIN [mac_lan_devices] AS ioPortsDevices ON ioPorts.device = ioPortsDevices.ndx');
 		array_push ($q, ' WHERE 1');
 
 		// -- fulltext
@@ -207,26 +256,50 @@ class FormControl  extends TableForm
 		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
+		$iotDevicesUtils = new \mac\iot\libs\IotDevicesUtils($this->app());
+
+
 		$this->openForm ();
 			$this->openTabs ($tabs);
 				$this->openTab ();
-					$this->addColumnInput ('targetType');
-					$this->addSeparator(self::coH2);
+					$this->addColumnInput ('controlType');
 
-					if ($this->recData['targetType'] == TableControls::cttIotBoxIOPort)
+					if ($this->recData['controlType'] === 'setDeviceProperty')
 					{
-						$this->addColumnInput('dstIOPort');
+						if ($this->recData['useGroup'])
+							$this->addColumnInput ('iotDevicesGroup');
+						else
+							$this->addColumnInput ('iotDevice');
+
+						$this->addColumnInput ('iotDeviceProperty');
+
+						if ($this->recData['useGroup'])
+							$properties = $iotDevicesUtils->devicesGroupProperties($this->recData['iotDevicesGroup']);
+						else
+							$properties = $iotDevicesUtils->deviceProperties($this->recData['iotDevice']);
+
+						$dp = $properties[$this->recData['iotDeviceProperty']] ?? NULL;
+						if ($dp)
+						{
+							if ($dp['data-type'] === 'binary' || $dp['data-type'] === 'enum')
+								$this->addColumnInput ('iotDevicePropertyValueEnum');
+							else
+								$this->addColumnInput ('iotDevicePropertyValue');
+
+							$this->addSubColumns('eventValueCfg');
+						}
 					}
-					elseif ($this->recData['targetType'] == TableControls::cttIoTThingAction)
+					elseif ($this->recData['controlType'] === 'sendSetupRequest')
 					{
-						$this->addColumnInput('dstIoTThing');
-						$this->addColumnInput('dstIoTThingAction');
+						$this->addColumnInput ('iotSetup');
+						$this->addColumnInput ('iotSetupRequest');
 					}
-					elseif ($this->recData['targetType'] == TableControls::cttMQTTTopic)
+					elseif ($this->recData['controlType'] === 'sendMqttMsg')
 					{
-						$this->addColumnInput('mqttTopic');
-						$this->addColumnInput('mqttPayloadClick');
+						$this->addColumnInput ('mqttTopic');
+						$this->addColumnInput ('mqttTopicPayloadValue');
 					}
+
 
 					$this->addSeparator(self::coH2);
 
