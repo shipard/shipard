@@ -13,24 +13,15 @@ class Control extends Utility
 {
 	var $controlNdx = 0;
 	var $controlRecData = NULL;
-	var $thingRecData = NULL;
 
 	/** @var \mac\iot\TableControls */
 	var $tableControls;
-	/** @var \mac\iot\TableThings */
-	var $tableThings;
 
 	function load()
 	{
 		$this->tableControls = $this->app()->table('mac.iot.controls');
-		$this->tableThings = $this->app()->table('mac.iot.things');
 
 		$this->controlRecData = $this->tableControls->loadItem($this->controlNdx);
-
-		if ($this->controlRecData['targetType'] === TableControls::cttIoTThingAction)
-		{
-			$this->thingRecData = $this->tableThings->loadItem($this->controlRecData['dstIoTThing']);
-		}
 	}
 
 	public function setControl($controlNdx)
