@@ -62,6 +62,11 @@ class IotDevicePayloadValueIotBox extends Utility
 			return 'breath:0:'.$colorActive.':'.$colorBg;
 		}
 
+		if ($enumId === 'manual-settings')
+		{
+			return trim($this->eventValueCfg['payload']);
+		}
+
 		return '';
 	}
 

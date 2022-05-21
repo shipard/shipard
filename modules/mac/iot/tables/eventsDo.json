@@ -16,7 +16,7 @@
 		{"id": "iotDevicesGroup", "name": "Cílová skupina", "type": "int", "reference": "mac.iot.devicesGroups", "options": ["saveOnChange"]},
 		{"id": "iotDeviceProperty", "name": "Nastavení", "type": "enumString", "len": "60", "options": ["saveOnChange"], 
 			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": "fn"}},
-		{"id": "iotDevicePropertyValueEnum", "name": "Hodnota", "type": "enumString", "len": "60",
+		{"id": "iotDevicePropertyValueEnum", "name": "Hodnota", "type": "enumString", "len": "60",  "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": "fn"}},
 		{"id": "iotDevicePropertyValue", "name": "Hodnota události text", "type": "string", "len": "60"},
 

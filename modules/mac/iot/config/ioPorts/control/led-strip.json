@@ -77,6 +77,14 @@
 						{"id": "colorBg", "name": "Barva podkladu", "type": "string", "len": 20, "subtype": "color"}
 					]
 				}
+			},
+			"manual-settings": {
+				"title": "manual-settings",
+				"fields": {
+					"columns": [
+						{"id": "payload", "name": "Nastavení", "type": "string", "len": 200}
+					]
+				}
 			}
 		},
 		"enumGet": {
