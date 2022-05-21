@@ -111,6 +111,12 @@ class AccessGateCheck extends Utility
 			$this->requestParams['iotControl'] = $this->requestParams['srcPayload']['iotControl'];
 			$this->requestParams['value'] = $this->requestParams['srcTopic'];
 		}
+		elseif (isset($this->requestParams['srcPayload']['action']) && $this->requestParams['srcPayload']['action'] === 'vd')
+		{
+			$this->requestParams['type'] = 'vd';
+			$this->requestParams['cam'] = $this->requestParams['srcPayload']['cam'];
+			$this->requestParams['value'] = $this->requestParams['srcPayload']['lp'];
+		}
 
 		if (!isset($this->requestTypes[$this->requestParams['type']]))
 			return $this->setResult('Wrong `type` param');
@@ -129,7 +135,7 @@ class AccessGateCheck extends Utility
 			if (!isset($this->requestParams['value']))
 				return $this->setResult('Missing `value` param');
 			if (!is_string($this->requestParams['value']))
-				return $this->setResult('Bad `value` param');
+				return $this->setResult('Bad `value` param `'.json_encode($this->requestParams['value']).'`');
 			if ($this->requestParams['value'] === '')
 				return $this->setResult('Blank `value` param');
 		}
@@ -158,14 +164,17 @@ class AccessGateCheck extends Utility
 		}
 
 		if (!$this->checkGate1())
+		{
 			return FALSE;
-
+		}	
 		$this->logInfo['state'] = TableLog::lsAccessDenied;
 
 		if ($this->mainKeyType == 0)
 		{
 			if (!$this->checkKey())
+			{
 				return FALSE;
+			}	
 
 			if ($this->tagAssignmentRecData['assignType'] === 0)
 			{

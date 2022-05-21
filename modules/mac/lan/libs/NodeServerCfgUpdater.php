@@ -264,21 +264,8 @@ class NodeServerCfgUpdater extends Utility
 
 			if (isset($macDeviceCfg['enableVehicleDetect']) && $macDeviceCfg['enableVehicleDetect'])
 			{ // make camera mqtt topic
-				$tiq[] = 'SELECT [ti].*, [things].id AS thingId';
-				array_push($tiq, ' FROM [mac_iot_thingsItems] AS [ti]');
-				array_push($tiq, ' LEFT JOIN [mac_iot_things] AS [things] ON ti.thing = things.ndx');
-				array_push($tiq, ' WHERE 1');
-				array_push($tiq, ' AND [ti].camera = %i', $r['ndx']);
-				array_push($tiq, ' AND [ti].[itemType] IN %in', ['gate-vehicleDetect-in', 'gate-vehicleDetect-out']);
-				array_push($tiq, ' AND [things].docState = %i', 4000);
-
-				$thingItem = $this->db()->query($tiq)->fetch();
-
-				if ($thingItem)
-				{
-					$topic = $this->tableIOPorts->mqttTopicBegin().'sensors/'.$thingItem['thingId'].'/'.'cam'.$r['ndx'];
-					$cam['cfg']['vdTopic'] = $topic;
-				}
+				$topic = $this->tableIOPorts->mqttTopicBegin().'readers/vd/camera-'.$r['ndx'];
+				$cam['cfg']['vdTopic'] = $topic;
 			}
 
 			$cameras [$r['ndx']] = $cam;
