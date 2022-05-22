@@ -39,7 +39,7 @@ class TableSpdAccounts extends DbTable
 		}
 		else
 		{
-			$coreFileName = 'e10-modules/'.implode ('/', $parts).'/spreadsheets/'.$shortId;
+			$coreFileName = __SHPD_MODULES_DIR__.implode ('/', $parts).'/spreadsheets/'.$shortId;
 			$fullFileName = $coreFileName.'.json';
 		}
 
