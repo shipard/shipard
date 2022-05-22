@@ -42,6 +42,7 @@ class Inventory
 class reportInventoryStates extends \e10doc\core\libs\reports\GlobalReport
 {
 	public $fiscalYear = 0;
+	var $endDate = NULL;
 	public $warehouse = 0;
 	protected $reportType = 'normal';
 	protected $units;
@@ -49,7 +50,9 @@ class reportInventoryStates extends \e10doc\core\libs\reports\GlobalReport
 
 	function init ()
 	{
-		$this->setParams ('fiscalYear warehouse');
+		$this->addParam ('fiscalPeriod', 'fiscalPeriod', ['flags' => ['years'], 'defaultValue' => e10utils::todayFiscalMonth($this->app)]);
+		$this->addParam ('warehouse');
+
 		if ($this->reportType == 'normal')
 		{
 			$this->addParamItemsBrands ();
@@ -62,10 +65,14 @@ class reportInventoryStates extends \e10doc\core\libs\reports\GlobalReport
 		$this->tableItems = $this->app->table ('e10.witems.items');
 
 		$this->warehouse = $this->reportParams ['warehouse']['value'];
+		$fpValue = $this->reportParams ['fiscalPeriod']['values'][$this->reportParams ['fiscalPeriod']['value']];
 		if (!$this->fiscalYear)
-			$this->fiscalYear = $this->reportParams ['fiscalYear']['value'];
+		{
+			$this->fiscalYear = $fpValue['fiscalYear'];
+			$this->endDate = utils::createDateTime($fpValue['dateEnd']);
+		}
 
-		$this->setInfo('param', 'Rok', $this->reportParams ['fiscalYear']['activeTitle']);
+		$this->setInfo('param', 'Období', $this->reportParams ['fiscalPeriod']['activeTitle']);
 		$this->setInfo('param', 'Sklad', $this->reportParams ['warehouse']['activeTitle']);
 		if ($this->reportType == 'normal')
 		{
@@ -106,6 +113,8 @@ class reportInventoryStates extends \e10doc\core\libs\reports\GlobalReport
 							LEFT JOIN e10_witems_items AS items ON inv.item = items.ndx";
 
 		array_push($q, " WHERE [fiscalYear] = %i", $this->fiscalYear);
+		if ($this->endDate !== NULL)
+			array_push($q, ' AND [date] <= %d', $this->endDate);
 		if ($this->warehouse)
 			array_push($q, " AND [warehouse] = %i", $this->warehouse);
 		if ($this->reportType == 'normal')
@@ -152,7 +161,7 @@ class reportInventoryStates extends \e10doc\core\libs\reports\GlobalReport
 		{
 			$this->setInfo('icon', 'e10doc-inventory/minus');
 			$this->setInfo('title', 'Záporné stavy položek');
-			$title = 'Záporné stavy ke konci roku';
+			$title = 'Záporné stavy ke konci období';
 		} else
 		if ($this->reportType == 'troubles')
 		{
