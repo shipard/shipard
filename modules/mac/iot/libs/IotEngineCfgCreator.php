@@ -119,30 +119,53 @@ class IotEngineCfgCreator extends Utility
 			$this->cfg['eventsOn'][$topic] = [];
 		}
 
+		$item = [];
+
 		if ($additionalField)
 		{
 			foreach ($additionalField as $key => $value)
-				$this->cfg['eventsOn'][$topic][$key] = $value;
+				$item[$key] = $value;
 		}
+
 		if ($eo['eventType'] === 'deviceAction')
 		{
-			$item = ['type' => 0, 'dataItem' => $eo['iotDeviceEvent'], 'dataValue' => $eo['iotDeviceEventValueEnum'], 'do' => []];
+			//$item = ['type' => 0, 'dataItem' => $eo['iotDeviceEvent'], 'dataValue' => $eo['iotDeviceEventValueEnum'], 'do' => []];
+			$item['type'] = 0;
+			$item['dataItem'] = $eo['iotDeviceEvent'];
+			$item['dataValue'] = $eo['iotDeviceEventValueEnum'];
 		}
 		elseif ($eo['eventType'] === 'setupAction')
 		{
-			$item = ['type' => 4, 'dataItem' => 'action', 'dataValue' => $eo['iotSetupEvent'], 'do' => []];
+			//$item = ['type' => 4, 'dataItem' => 'action', 'dataValue' => $eo['iotSetupEvent'], 'do' => []];
+			$item['type'] = 3;
+			$item['dataItem'] = 'action';
+			$item['dataValue'] = $eo['iotSetupEvent'];
 		}
 		elseif ($eo['eventType'] === 'readerValue')
 		{
-			$item = ['type' => 2, 'do' => []];
+			//$item = ['type' => 2, 'do' => []];
+			$item['type'] = 2;
 		}
 		elseif ($eo['eventType'] === 'mqttMsg')
 		{
 			if ($eo['mqttTopicPayloadItemId'] === '')
-				$item = ['type' => 1, 'dataItem' => '', 'dataValue' => $eo['mqttTopicPayloadValue'], 'do' => []];
+			{
+			//	$item = ['type' => 1, 'dataItem' => '', 'dataValue' => $eo['mqttTopicPayloadValue'], 'do' => []];
+				$item['type'] = 1;
+				$item['dataItem'] = '';
+				$item['dataValue'] = $eo['mqttTopicPayloadValue'];
+			}	
 			else
-				$item = ['type' => 0, 'dataItem' => $eo['mqttTopicPayloadItemId'], 'dataValue' => $eo['mqttTopicPayloadValue'], 'do' => []];
+			{
+				//$item = ['type' => 0, 'dataItem' => $eo['mqttTopicPayloadItemId'], 'dataValue' => $eo['mqttTopicPayloadValue'], 'do' => []];
+				$item['type'] = 0;
+				$item['dataItem'] = $eo['mqttTopicPayloadItemId'];
+				$item['dataValue'] = $eo['mqttTopicPayloadValue'];
+			}	
 		}
+
+		$item['do'] = [];
+
 		$this->addEventsDo('mac.iot.eventsOn', $eo['ndx'], $item['do'], $topic, $eo);
 		$this->cfg['eventsOn'][$topic]['on'][] = $item;
 	}
@@ -373,7 +396,7 @@ class IotEngineCfgCreator extends Utility
 		
 		$this->cfg['topics'][$setupTopic]['scenes'][] = $topic;
 
-		$this->addEventsOn('mac.iot.scenes', $sceneRecData['ndx'], ['scene' => $topic, 'setup' => $setupTopic]);
+		$this->addEventsOn('mac.iot.scenes', $sceneRecData['ndx'], ['setup' => $setupTopic, 'scene' => $topic]);
 
 		$scene['do'] = [];
 		$this->addEventsDo('mac.iot.scenes', $sceneRecData['ndx'], $scene['do']);
