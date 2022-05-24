@@ -21,5 +21,6 @@
 			"ext19": {"title": "ext 19 / GND", "hwnr": 0, "flags": ["gnd"]},
 			"ext20": {"title": "ext 20 / 5V", "hwnr": 0, "flags": ["pwr", "5v"]}
 		}
-	}	
+	},
+	"fwId": "iot-box-lan-core-esp32-gateway"
 }

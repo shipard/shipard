@@ -140,6 +140,8 @@ class IotDeviceCfgUpdaterIotBox extends \mac\iot\libs\IotDeviceCfgUpdater
 			'deviceId' => $this->iotDeviceRecData['friendlyId'],
 			'deviceType' => $this->iotDeviceRecData['deviceModel'],
 		];
+		if (isset($this->iotDeviceCfg['fwId']))
+			$this->iotBoxCfg['fwId'] = $this->iotDeviceCfg['fwId'];
 
 		$gpioLayout = $this->iotDeviceCfg['io'];
 

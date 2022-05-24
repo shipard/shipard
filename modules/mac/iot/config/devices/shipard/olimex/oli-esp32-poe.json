@@ -52,5 +52,6 @@
 			"portId": "esp-now",
 			"_portDisabled": {"espNowServerEnabled": 0}
 		}
-	}
+	},
+	"fwId": "iot-box-lan-core-esp32-poe"
 }

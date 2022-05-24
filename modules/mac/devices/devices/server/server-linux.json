@@ -14,7 +14,8 @@
 			{"id": "httpsPort", "group": "websrv", "name": "HTTPS port", "type": "int", "placeholder": "443", "enabled": {"enableWebSrv": 1}},
 
 			{"id": "wssAllowedFrom", "group": "lc", "name": "Povolit WSS z IP adres", "type": "string", "len": 160, "enabled": {"enableLC": 1}},
-			{"id": "mqttHostAddress", "group": "lc", "name": "Adresa MQTT serveru", "type": "string", "len":  60, "placeholder":  "IP adresa nebo DNS jméno", "enabled": {"enableLC": 1}},
+			{"id": "mqttServerIPV4", "group": "lc", "name": "IPV4 adresa MQTT serveru", "type": "string", "len":  60, "placeholder":  "IP adresa", "enabled": {"enableLC": 1}},
+			{"id": "mqttServerFQDN", "group": "lc", "name": "DNS jméno MQTT serveru", "type": "string", "len":  60, "placeholder":  "DNS adresa", "enabled": {"enableLC": 1}},
 			{"id": "enableWebsockets", "group": "lc", "name": "Používat websockety", "type": "logical", "options": ["saveOnChange"], "enabled": {"enableLC": 1}},
 			{"id": "wssPort", "group": "lc", "name": "Port pro WSS", "type": "int", "placeholder":  "9883", "enabled": {"enableLC": 1, "enableWebsockets": 1}},
 

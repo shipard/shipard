@@ -102,6 +102,7 @@ class NodeServerCfgUpdater extends Utility
 				'lanNdx' => $r['lan'],
 				'domain' => $lanDomain,
 				'mqttServerHost' => '',
+				'mqttServerIPV4' => '',
 				'alertsDeliveryTarget' => $r['alertsDeliveryTarget'],
 				'alertsDeliveryEmail' => ($r['alertsDeliveryTarget'] !== '') ? $this->app()->cfgItem('dsid', 0) . '--'.$r['alertsDeliveryTarget'].'@shipard.email' : '',
 				'lanCfgVer' => $lanCfg->cfgVer,
@@ -116,10 +117,12 @@ class NodeServerCfgUpdater extends Utility
 
 			if ($r['mainServerIot'] && isset($mainServers[$r['mainServerIot']]))
 			{
-				if (isset($mainServers[$r['mainServerIot']]['macDeviceCfgX']['mqttHostAddress']) && $mainServers[$r['mainServerIot']]['macDeviceCfgX']['mqttHostAddress'] !== '')
-					$s['mqttServerHost'] = $mainServers[$r['mainServerIot']]['macDeviceCfgX']['mqttHostAddress'];
+				if (isset($mainServers[$r['mainServerIot']]['macDeviceCfgX']['mqttServerFQDN']) && $mainServers[$r['mainServerIot']]['macDeviceCfgX']['mqttServerFQDN'] !== '')
+					$s['mqttServerHost'] = $mainServers[$r['mainServerIot']]['macDeviceCfgX']['mqttServerFQDN'];
 				else
 					$s['mqttServerHost'] = $mainServers[$r['mainServerIot']]['macDeviceCfgX']['serverFQDN'];
+
+				$s['mqttServerIPV4'] = $mainServers[$r['mainServerIot']]['macDeviceCfgX']['mqttServerIPV4'] ?? '';	
 			}
 
 			$cfgData = $s;
@@ -280,35 +283,6 @@ class NodeServerCfgUpdater extends Utility
 
 		$iotBoxes = [];
 
-		/*
-		$q[] = 'SELECT devices.*, ibCfg.iotBoxCfgData FROM [mac_lan_devices] AS [devices]';
-		array_push($q, ' LEFT JOIN [mac_lan_devicesCfgIoTBoxes] AS ibCfg ON [devices].ndx = ibCfg.[device]');
-		array_push($q, ' WHERE [deviceKind] = 75 AND [docState] != 9800');
-
-		if ($isDefaultServer)
-			array_push ($q,'AND (localServer = %i', $serverNdx, ' OR (localServer = %i', 0, ' AND lan = %i))', $lanNdx);
-		else
-			array_push ($q,'AND localServer = %i', $serverNdx);
-
-		array_push ($q,'ORDER BY [id], [fullName], [ndx]');
-		$rows = $this->app()->db->query ($q);
-
-		foreach ($rows as $r)
-		{
-			$iotBoxCfg = json_decode($r['iotBoxCfgData'], TRUE);
-			if (!$iotBoxCfg)
-				continue;
-
-			$iotBox = [
-				'ndx' => $r['ndx'], 'id' => $r['id'], 'name' => $r ['fullName'], 'localServer' => $serverNdx,
-				'mac' => isset($this->devicesMacs[$r['ndx']]) ? $this->devicesMacs[$r['ndx']] : [],
-				'cfg' => $iotBoxCfg
-			];
-
-			$iotBoxes [$r['ndx']] = $iotBox;
-		}
-		*/
-
 		$q[] = 'SELECT iotDevices.*, ibCfg.cfgData FROM [mac_iot_devices] AS [iotDevices]';
 		array_push($q, ' LEFT JOIN [mac_iot_devicesCfg] AS ibCfg ON [iotDevices].ndx = ibCfg.[iotDevice]');
 		array_push($q, ' WHERE [deviceType] = %s', 'shipard', ' AND [docState] != 9800');
@@ -323,7 +297,10 @@ class NodeServerCfgUpdater extends Utility
 				continue;
 
 			$iotBox = [
-				'ndx' => $r['ndx'], 'id' => $r['friendlyId'], 'name' => $r ['fullName'], 'localServer' => $serverNdx,
+				'ndx' => $r['ndx'],
+				'id' => $r['friendlyId'],
+				'name' => $r ['fullName'],
+				'localServer' => $serverNdx,
 				'mac' => [strtolower($r['hwId'])],
 				'cfg' => $iotBoxCfg
 			];
