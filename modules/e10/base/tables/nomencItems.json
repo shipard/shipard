@@ -2,8 +2,8 @@
 	"id": "e10.base.nomencItems", "sql": "e10_base_nomencItems", "name": "Položky nomenklatury",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
-		{"id": "fullName", "name": "Úplný název", "type": "string", "len": 160},
-		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 140},
+		{"id": "fullName", "name": "Úplný název", "type": "string", "len": 240},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 240},
 		{"id": "itemId", "name": "Zkratka", "type": "string", "len": 40},
 
 		{"id": "nomencType", "name": "Typ", "type": "int", "reference": "e10.base.nomencTypes"},

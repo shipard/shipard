@@ -1,0 +1,9 @@
+{
+	"name": "Kódy odpadů",
+  "classImport": "lib.nomenclature.country.cz.ImportCZWaste",
+  "typeId": "cz-waste",
+  "nomencTypeDef": {
+    "fullName":"CZ Kódy odpadů",
+    "shortName":"CZ Odpady"
+  }
+}
