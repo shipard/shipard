@@ -236,6 +236,22 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$e->run();
 	}
 
+	function installNomenclature()
+	{
+		$nomencId = $this->app->arg('id');
+		if (!$nomencId)
+		{
+			echo "Param `id` not found";
+			return FALSE;
+		}
+
+		$e = new \lib\nomenclature\InstallNomenclature($this->app);
+		$e->nomencId = $nomencId;
+		$e->run();
+
+		return TRUE;
+	}
+
 	public function onCliAction ($actionId)
 	{
 		switch ($actionId)
@@ -244,6 +260,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'att-meta-data': return $this->attMetaData();
 			case 'att-doc-data-files': return $this->attDocDataFiles();
 			case 'create-users-summary': return $this->createUsersSummary();
+			case 'install-nomenclature': return $this->installNomenclature();
 		}
 
 		parent::onCliAction($actionId);
