@@ -899,6 +899,8 @@ class FormItems extends TableForm
 		$debsGroups = $this->app()->cfgItem ('e10debs.groups', FALSE);
 		$isset = (isset($this->recData['isSet']) && $this->recData['isSet']) ? 1 : 0;
 		$salePricesType = intval($this->app()->cfgItem ('options.e10doc-sale.witemsSalePricesType', 0));
+		$codeKinds = $this->app()->cfgItem('e10.witems.codesKinds', []);
+		$useItemCodes = (count($codeKinds) !== 0);
 
 		$useSuppliers = 0;
 		if ($itemKind === 1)
@@ -924,6 +926,8 @@ class FormItems extends TableForm
 			$tabs ['tabs'][] = ['text' => $mi ['text'], 'icon' => $mi ['icon']];
 		if ($isset)
 			$tabs ['tabs'][] = ['text' => 'Sada', 'icon' => 'formSet'];
+		if ($useItemCodes)
+			$tabs ['tabs'][] = ['text' => 'Kódy', 'icon' => 'user/hashtag'];
 		if ($useSuppliers)
 			$tabs ['tabs'][] = ['text' => 'Dodavatelé', 'icon' => 'formSuppliers'];
 		if ($useRelated)
@@ -986,6 +990,13 @@ class FormItems extends TableForm
 			{
 				$this->openTab (TableForm::ltNone);
 					$this->addList ('set');
+				$this->closeTab ();
+			}
+
+			if ($useItemCodes)
+			{
+				$this->openTab (TableForm::ltNone);
+					$this->addList ('codes');
 				$this->closeTab ();
 			}
 

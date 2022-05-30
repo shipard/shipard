@@ -3,7 +3,7 @@
   "name": "Položky",
   "tables": [
 		"items", "itemsets", "itemtypes", "itemcategories", "itemcategoriesqry", "itemSuppliers",
-		"brands", "units", "relatedKinds", "itemRelated"
+		"brands", "units", "relatedKinds", "itemRelated", "codesKinds", "itemCodes"
 	],
   "config": [
 		{"id": "e10.witems.docStates", "file": "e10.witems.docStates.json"},
@@ -17,6 +17,8 @@
 		{"id": "+appOptions", "file": "e10.appOptions.json"},
 	  {"id": "+e10.appOptions.groups", "file": "e10.appOptionsGroups.json"},
     {"id": "+e10.base.doclinks", "file": "e10.witems.docLinks.json"},
-		{"id": "+e10.base.clsfGroups", "file": "e10.items.clsfGroups.json"}
+		{"id": "+e10.base.clsfGroups", "file": "e10.items.clsfGroups.json"},
+    {"id": "+e10.witems.codeTypes", "file": "e10.witems.codeTypes.json"},
+    {"id": "+e10.witems.codeDirs", "file": "e10.witems.codeDirs.json"}
   ]
 }

@@ -11,10 +11,12 @@ use E10\utils;
 class Item extends \e10\DocumentCard
 {
 	var $dataSuppliers = [];
+	var $dataCodes = [];
 	var $relatedItems = [];
 
 	public function createContentBody ()
 	{
+		$this->createContentBody_Codes();
 		$this->createContentBody_Suppliers();
 		$this->createContentBody_Related();
 		$this->addContent ('body', \E10\Base\getPropertiesDetail ($this->table, $this->recData));
@@ -75,6 +77,55 @@ class Item extends \e10\DocumentCard
 			'type' => 'table', 'table' => $t, 'header' => $h,
 			'params' => ['hideHeader' => 1]
 		]);
+	}
+
+	public function createContentBody_Codes ()
+	{
+		$q[] = 'SELECT itemCodes.*,';
+		array_push($q, ' persons.fullName AS personName,');
+		array_push($q, ' nomenc.fullName AS nomencName');
+		array_push($q, ' FROM [e10_witems_itemCodes] AS itemCodes');
+		array_push($q, ' LEFT JOIN [e10_persons_persons] AS persons ON itemCodes.person = persons.ndx');
+		array_push($q, ' LEFT JOIN [e10_base_nomencItems] AS nomenc ON itemCodes.itemCodeNomenc = nomenc.ndx');
+		array_push($q, ' WHERE itemCodes.[item] = %i', $this->recData['ndx']);
+		array_push($q, ' ORDER BY itemCodes.rowOrder, itemCodes.ndx');
+
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$codeKind = $this->app()->cfgItem('e10.witems.codesKinds.'.$r['codeKind']);
+			$codeDir = $this->app()->cfgItem('e10.witems.codeDirs.'.$r['codeDir']);
+			$refType = $codeKind['refType'] ?? 0;
+			$askDir = $codeKind['askDir'] ?? 0;
+			$askPerson = $codeKind['askPerson'] ?? 0;
+	
+			$item = [
+				'code' => [
+					['text' => $r['itemCodeText'], 'class' => 'e10-bold block'],
+					['text' => $codeKind['sn'], 'class' => 'e10-small'],
+				],
+				'info' => [],
+			];
+			if ($r['person'])
+				$item['info'][] = ['text' => $r['personName'], 'class' => 'block'];
+			if($askDir)
+				$item['info'][] = ['text' => $codeDir['sn'] ?? '!!!', 'class' => 'block'];
+			if($refType === 1)
+				$item['info'][] = ['text' => $r['nomencName'] ?? '!!!', 'class' => 'block e10-small'];
+
+			$this->dataCodes[] = $item;
+		}
+
+		if (count($this->dataCodes))
+		{
+			$h = ['code' => 'Kód', 'info' => 'Informace',];
+
+			$title = [['text' => 'Kódy položek', 'class' => 'h1']];
+			$this->addContent ('body', [
+				'pane' => 'e10-pane e10-pane-table', 'paneTitle' => $title,
+				'type' => 'table', 'table' => $this->dataCodes, 'header' => $h
+			]);
+		}
 	}
 
 	public function createContentBody_Suppliers ()

@@ -50,8 +50,9 @@
 		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"},
 		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"},
 	  {"id": "set", "class": "e10.base.ListRows", "name": "Položky sady", "table": "e10.witems.itemsets", "queryColumn": "itemOwner"},
-		{"id": "suppliers", "class": "e10.base.ListRows", "name": "Položky sady", "table": "e10.witems.itemSuppliers", "queryColumn": "item", "orderColumn": "rowOrder"},
-		{"id": "related", "class": "e10.base.ListRows", "name": "Související položky", "table": "e10.witems.itemRelated", "queryColumn": "srcItem", "orderColumn": "rowOrder"}
+		{"id": "suppliers", "class": "e10.base.ListRows", "name": "Dodavatelé", "table": "e10.witems.itemSuppliers", "queryColumn": "item", "orderColumn": "rowOrder"},
+		{"id": "related", "class": "e10.base.ListRows", "name": "Související položky", "table": "e10.witems.itemRelated", "queryColumn": "srcItem", "orderColumn": "rowOrder"},
+		{"id": "codes", "class": "e10.base.ListRows", "name": "Kódy", "table": "e10.witems.itemCodes", "queryColumn": "item", "orderColumn": "rowOrder"}
   ],
   "views": {
     "default": {"id": "default", "class": "e10.witems.ViewItems", "help": "prirucka/212",

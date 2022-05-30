@@ -1,0 +1,19 @@
+{
+  "0": {
+    "name": "Ostatní"
+  },
+  "1": {
+    "name": "EAN"
+  },
+  "2": {
+    "name": "Kód výrobce"
+  },
+  "31": {
+    "name": "Kód odpadu",
+    "cfg": {
+      "refType": 1,
+      "askPerson": 1,
+      "askDir": 1
+    }
+  }
+}

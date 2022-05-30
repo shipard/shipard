@@ -23,6 +23,12 @@
 		"table": "e10.witems.units",
 		"viewer": "default"
 	},
+	"witemsCodesKinds": {
+		"name": "Druhy kódů položek", "order": 36000, "group": "witems",
+		"type": "viewer",
+		"table": "e10.witems.codesKinds",
+		"viewer": "default"
+	},
 	"witemsRelatedKinds": {
 		"name": "Druhy souvisejících položek", "order": 37000, "group": "witems",
 		"type": "viewer",

@@ -1,0 +1,26 @@
+{
+	"id": "e10.witems.itemCodes", "sql": "e10_witems_itemCodes", "name": "Kódy položek",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "item", "name": "Položka", "type": "int", "reference": "e10.witems.items"},
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+
+		{"id": "codeKind", "name": "Typ kódu", "type": "enumInt",
+      "enumCfg": {"cfgItem": "e10.witems.codesKinds", "cfgValue": "", "cfgText": "sn"}},
+		
+		{"id": "itemCodeText", "name": "Kód", "type": "string", "len": 60},
+		{"id": "itemCodeNomenc", "name": "Kód", "type": "int", "reference": "e10.base.nomencItems", "comboViewer": "combo"},
+
+		{"id": "codeDir", "name": "Směr pohybu", "type": "enumInt",
+      "enumCfg": {"cfgItem": "e10.witems.codeDirs", "cfgValue": "", "cfgText": "sn"}},
+		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "url", "name": "Web", "type": "string", "len": 110},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10.witems.FormItemCode"}
+	],
+	"options": ["systemTable"]
+}
