@@ -14,6 +14,32 @@ class TableItemCodes extends DbTable
 		parent::__construct ($dbmodel);
 		$this->setName ('e10.witems.itemCodes', 'e10_witems_itemCodes', 'Kódy položek');
 	}
+
+  public function checkBeforeSave (&$recData, $ownerData = NULL)
+	{
+		parent::checkBeforeSave ($recData, $ownerData);
+
+    $codeKind = $this->app()->cfgItem('e10.witems.codesKinds.'.$recData['codeKind']);
+    $refType = $codeKind['refType'] ?? 0;
+    $askDir = $codeKind['askDir'] ?? 0;
+    $askPerson = $codeKind['askPerson'] ?? 0;
+
+    if ($refType == 1)
+    {
+      $ni = $this->db()->query('SELECT * FROM [e10_base_nomencItems] WHERE [ndx] = %i', $recData['itemCodeNomenc'])->fetch();
+      if ($ni)
+      {
+        $recData['itemCodeText'] = $ni['itemId'];
+      }
+    }
+    else
+      $recData['itemCodeNomenc'] = 0;
+
+    if (!$askPerson)
+      $recData['person'] = 0;
+    if (!$askDir)
+      $recData['codeDir'] = 0;
+	}
 }
 
 

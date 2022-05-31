@@ -81,6 +81,7 @@
 			"e10.witems.items": {"default": 2, "combo": 2, "byCategories": 2},
 			"e10.witems.brands": {"default": 2},
 			"e10.witems.relatedKinds": {"default": 2},
+			"e10.witems.codesKinds": {"default": 2},
 			"e10.witems.itemtypes": {"combo": 1}
 		}
 	},

@@ -5,7 +5,7 @@
 		{"id": "item", "name": "Položka", "type": "int", "reference": "e10.witems.items"},
 		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
 
-		{"id": "codeKind", "name": "Typ kódu", "type": "enumInt",
+		{"id": "codeKind", "name": "Typ kódu", "type": "enumInt", "options": ["saveOnChange"],
       "enumCfg": {"cfgItem": "e10.witems.codesKinds", "cfgValue": "", "cfgText": "sn"}},
 		
 		{"id": "itemCodeText", "name": "Kód", "type": "string", "len": 60},
