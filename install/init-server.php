@@ -76,6 +76,7 @@ class Installation
 		$serverConfig = [
 			'serverDomain' => 'localhost.shpd.dev',
 			'serverId' => '',
+			'serverGID' => '',
 
 			'channels' => [
 				$defaultChannelId => ['path' => __SHPD_ROOT_DIR__],
