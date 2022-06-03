@@ -101,8 +101,10 @@ class ViewPersons extends TableView
 	public function selectRows ()
 	{
 		$fts = $this->fullTextSearch ();
-
-		$q [] = 'SELECT persons.* ';
+		
+		$q = [];
+		array_push ($q, ' SELECT * FROM (');
+		array_push ($q, ' SELECT 2 AS selectPart, persons.* ');
 		array_push ($q, ' FROM [services_persons_persons] AS persons');
 		array_push ($q, ' WHERE 1');
 
@@ -123,41 +125,68 @@ class ViewPersons extends TableView
 		// -- fulltext
 		if ($fts != '')
 		{
-			array_push ($q, ' AND (1 ');
+			$doExtraLIKE = 1;
 
 			$words = preg_split('/[\s-]+/', $fts);
+			$cntUsedWords = 0;
 			$fullTextQuery = '';
 			foreach ($words as $w)
 			{
 				if (Str::strlen($w) < 3)
 					continue;
+				if (substr_count($w, '.') > 1)
+				{
+					$cntUsedWords++;
+					continue;
+				}	
+				if ($w[0] === '+')
+					continue;
 				if ($fullTextQuery !== '')
 					$fullTextQuery .= ' ';
 				$fullTextQuery .= '+'.$w;
+				$cntUsedWords++;
 			}
 
 			if ($fullTextQuery !== '')
+			{
+//				array_push ($q, ' AND (1 ');
 				array_push ($q, ' AND MATCH([fullName]) AGAINST (%s IN BOOLEAN MODE)', $fullTextQuery);
+				if (count($words) === $cntUsedWords)
+					$doExtraLIKE = 0;
+//				array_push ($q, ')');
+			}	
 			else
 			{
-				if (Str::strlen($fts) > 2)
+				//if (Str::strlen($fts) > 2)
 					array_push($q, ' AND persons.[fullName] LIKE %s', $fts . '%');
+					$doExtraLIKE = 0;
 			}
-			array_push ($q, ')');
 			
 			$ascii = TRUE;
 			if(preg_match('/[^\x20-\x7f]/', $fts))
 				$ascii = FALSE;
-
+			
 			if ($ascii)
 			{
-				array_push ($q, 'UNION SELECT persons.* ');
+				array_push ($q, 'UNION DISTINCT SELECT 1 AS selectPart, persons.* ');
 				array_push ($q, ' FROM [services_persons_persons] AS persons');
 				array_push ($q, " WHERE EXISTS (SELECT ndx FROM services_persons_ids WHERE persons.ndx = services_persons_ids.person AND [id] = %s)", $fts);
 			}
-		}
 
-		array_push ($q, ' ORDER BY fullName');
+			$spaceParts = explode(' ', $fts);
+			if (count($spaceParts) < 5 && $doExtraLIKE)
+			{
+				array_push ($q, 'UNION DISTINCT SELECT 1 AS selectPart, persons.* ');
+				array_push ($q, ' FROM [services_persons_persons] AS persons');
+				array_push ($q, ' WHERE persons.[fullName] LIKE %s', $fts . '%');
+			}
+		}
+		array_push ($q, ') AS ALL_PERSONS');
+
+		if ($fts !== '')
+			array_push ($q, ' ORDER BY selectPart, valid DESC, fullName');
+		else
+			array_push ($q, ' ORDER BY selectPart, fullName');	
 		array_push ($q, $this->sqlLimit());
 		$this->runQuery ($q);
 	}
