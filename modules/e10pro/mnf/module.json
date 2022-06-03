@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.mnt",
+	"id": "e10pro.mnf",
 	"name": "Manufacturing",
 	"modules": ["e10doc/mnf"],
 	"config": [

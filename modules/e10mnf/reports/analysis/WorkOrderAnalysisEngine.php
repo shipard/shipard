@@ -258,7 +258,7 @@ class WorkOrderAnalysisEngine extends Utility
 				$docItem = [
 						'date' => $a['date'], 'docNumber' => $a['docNumber'], 'docTitle' => $a['docTitle'],
 						'personName' => $a['personName'], 'text' => $a['text'], 'amountHc' => $a['amountHc'],
-						'docNdx' => $a['docNdx'], 'docType' => $a['docType']
+						'docNdx' => $a['docNdx'] ?? 0, 'docType' => $a['docType']
 				];
 				$docItem ['partId'] = $partId;
 				$docItem ['partSign'] = $partSign;

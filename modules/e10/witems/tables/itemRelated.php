@@ -1,12 +1,11 @@
 <?php
 
 namespace e10\witems;
-use \E10\Application, \E10\utils, \E10\TableForm, \E10\DbTable;
+use \Shipard\Form\TableForm, \Shipard\Table\DbTable;
 
 
 /**
  * Class TableItemRelated
- * @package e10\witems
  */
 class TableItemRelated extends DbTable
 {
@@ -20,7 +19,6 @@ class TableItemRelated extends DbTable
 
 /**
  * Class FormItemRelated
- * @package e10\witems
  */
 class FormItemRelated extends TableForm
 {

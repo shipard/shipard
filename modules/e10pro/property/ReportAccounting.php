@@ -297,7 +297,7 @@ class ReportAccounting extends \e10pro\property\ReportDepreciations
 	{
 		$this->accounting ['increase']['totals'] = ['moneyDr' => 0.0, 'moneyCr' => 0];
 
-		if (isset($this->dataIncrease['lt']) && count($this->dataIncrease['lt']))
+		if (isset($this->dataIncrease['lt']) && count($this->dataIncrease['lt']))
 		{
 			foreach ($this->dataIncrease['lt'] as $p)
 			{
