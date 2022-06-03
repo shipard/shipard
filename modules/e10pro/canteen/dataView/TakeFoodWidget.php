@@ -187,14 +187,16 @@ class TakeFoodWidget extends DataView
 
 		$c .= '</div>';
 
-		$c .= '<script>setTimeout (function(){wssSendMessage(0, {"cmd": "reload-remote-element", "elements": ["e10pro-canteen-ServingFoodStatsWidget", "e10pro-canteen-ServingFoodQueueWidget"]})}, 250);</script>';
+		$c .= '<script>
+		setTimeout (function(){mqttPublishData(0, "/shpd/canteen-take-food/'.$this->canteenNdx.'", {"cmd": "reload-remote-element", "elements": ["e10pro-canteen-ServingFoodStatsWidget", "e10pro-canteen-ServingFoodQueueWidget"]})}, 250);
+		</script>';
 
 		$logoutTimeoutSec = $this->canteen['timeoutLogoutTakeTerminal'];
 		if (!$logoutTimeoutSec)
 			$logoutTimeoutSec = 30;
 
 		$logoutTimeout = intval ($logoutTimeoutSec * 1000);
-		$c .= '<script>setTimeout (function(){location.href = "/user/logout-check";}, '.$logoutTimeout.');</script>';
+		$c .= '<script>setTimeout (function(){location.href = "'.$this->app()->urlRoot.'/user/logout-check";}, '.$logoutTimeout.');</script>';
 
 		return $c;
 	}

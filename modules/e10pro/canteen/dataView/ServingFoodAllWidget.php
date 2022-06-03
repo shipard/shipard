@@ -16,6 +16,8 @@ class ServingFoodAllWidget extends DataView
 	/** @var \e10pro\canteen\dataView\ServingFoodStatsWidget */
 	var $widgetStats = NULL;
 
+	var $canteenNdx = 1;
+
 	protected function init()
 	{
 		$this->requestParams['showAs'] = 'webAppWidget';
@@ -57,6 +59,10 @@ class ServingFoodAllWidget extends DataView
 		$c .= '</div>';
 
 		$c .= '</div>';
+
+		$c .= '<script>
+		setTimeout (function(){mqttSubscribe(0, "/shpd/canteen-take-food/'.$this->canteenNdx.'")}, 1000);
+		</script>';
 
 		return $c;
 	}
