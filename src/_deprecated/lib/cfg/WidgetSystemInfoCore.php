@@ -35,7 +35,7 @@ class WidgetSystemInfoCore extends \Shipard\UI\Core\WidgetPane
 			$ds[] = ['text' => 'POZOR: tato volba smaže všechna stávající data!', 'class' => 'block info'];
 		}
 		else
-		if ($dsInfo['condition'] === 1)
+		if ($dsInfo['condition'] === 2)
 		{
 			$ds[] = ['text' => 'Tato databáze je v ostrém provozu', 'class' => 'block padd5'];
 		}
