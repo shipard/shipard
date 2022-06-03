@@ -2,7 +2,7 @@
 
 namespace mac\iot;
 
-use \Shipard\Form\TableForm, \Shipard\Table\DbTable, \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail;
+use \Shipard\Form\TableForm, \Shipard\Table\DbTable, \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Utils\Utils;
 
 
 /**
@@ -266,9 +266,13 @@ class ViewEventsDoForm extends TableView
 
 		$listItem ['i1'] = ['text' => '#'.$item['ndx'], 'class' => 'id'];
 		$listItem ['t1'] = $item['fullName'];
+		
 
 		$listItem ['t2'] = [];
 		$this->table->getEventLabels($item, $listItem ['t2']);
+
+		if ($item['rowOrder'])
+			$listItem ['i2'] = ['text' => utils::nf($item['rowOrder']), 'icon' => 'system/iconOrder', 'class' => 'label label-default'];
 
 		return $listItem;
 	}
@@ -390,6 +394,9 @@ class FormEventDo extends TableForm
 						$this->addColumnInput ('mqttTopic');
 						$this->addColumnInput ('mqttTopicPayloadValue');
 					}
+
+					$this->addSeparator(self::coH4);
+					$this->addColumnInput ('rowOrder');
 				$this->closeTab ();
 			$this->closeTabs ();
 		$this->closeForm ();

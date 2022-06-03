@@ -179,6 +179,7 @@ class IotEngineCfgCreator extends Utility
 		array_push ($q, ' AND [eventsDo].[tableId] = %s', $tableId);
 		array_push ($q, ' AND [eventsDo].[recId] = %i', $recId);
 		array_push ($q, ' AND [eventsDo].[docStateMain] <= %i', 2);
+		array_push ($q, ' ORDER BY [eventsDo].[rowOrder], [eventsDo].[ndx]');
 
 		$rows = $this->db()->query($q);
 		

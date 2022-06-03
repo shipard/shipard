@@ -3,7 +3,7 @@
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 
-		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+		{"id": "rowOrder", "name": "Pořadí", "type": "int"},
     {"id": "tableId", "name": "Tabulka", "type": "string", "len": 48, "options": ["ascii"]},
     {"id": "recId", "name": "Řádek", "type": "int"},
 

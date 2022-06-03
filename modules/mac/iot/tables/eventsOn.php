@@ -238,6 +238,7 @@ class ViewEventsOnForm extends TableView
 		array_push ($q, ' AND [eventsDo].[tableId] = %s', 'mac.iot.eventsOn');
 		array_push ($q, ' AND [eventsDo].[recId] IN %in', $this->pks);
 		array_push ($q, ' AND [eventsDo].[docStateMain] <= %i', 2);
+		array_push ($q, ' ORDER BY [eventsDo].[rowOrder], [eventsDo].[ndx]');
 
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
