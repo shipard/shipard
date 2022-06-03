@@ -72,7 +72,8 @@ class IssueFiltering extends Utility
 
 		if (!$this->testStringValue('subject', $filter['qrySubjectType'], $filter['qrySubjectValue'], $this->issueRecData['subject']))
 			return FALSE;
-		if (!$this->testStringValue('text', $filter['qryTextType'], $filter['qryTextValue'], $this->issueRecData['text']))
+		if (!$this->testStringValue('text', $filter['qryTextType'], $filter['qryTextValue'], $this->issueRecData['text']) &&
+				!$this->testStringValue('text', $filter['qryTextType'], $filter['qryTextValue'], $this->issueRecData['body']))
 			return FALSE;
 
 		// -- emails
