@@ -3,6 +3,7 @@
 namespace lib\ebanking\transactions;
 
 use e10\utils, e10\Utility, e10pro\wkf\TableMessages;
+use wkf\core\TableIssues;
 
 
 /**
@@ -16,7 +17,7 @@ class DownloadBankTransactionsInbox extends \lib\ebanking\transactions\DownloadB
 	protected function downloadTransactions ()
 	{
 		$q[] = 'SELECT * FROM [e10pro_wkf_messages] as msgs';
-		array_push($q, ' WHERE [msgType] = %i', TableMessages::mtInbox);
+		array_push($q, ' WHERE [msgType] = %i', TableIssues::mtInbox);
 		array_push($q, ' AND [docState] = %i', 1000);
 
 		if (isset($this->inboxQueryParams['subject']))
