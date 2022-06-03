@@ -281,7 +281,7 @@ class DbTable
 			$inputCode .= "<input type='text' name='$inputPrefix{$srcColumnId}' id='{$form->fid}_inp_refid_$ip{$srcColumnId}' class='e10-inputRefId e10-viewer-search$editInputClass' data-column='$srcColumnId' data-srctable='$srcTableId' data-sid='{$form->fid}Sidebar' autocomplete='off'$inputParams$editInputParams/>";
 
 		$inputCode .= "<span class='btns' style='display:none;'>";
-		if (!($options & TableForm::coReadOnly))
+		if (!($options & TableForm::coReadOnly) && !($options & TableForm::coInfoText))
 		{
 			$inputCode .= $this->app()->ui()->icon('system/actionClose', 'e10-inputReference-clearItem').'&nbsp;';
 			$inputCode .= $this->app()->ui()->icon('system/actionOpen', 'e10-inputReference-editItem', 'i', " data-table='$thisTableId' data-pk='0'").'&nbsp;';

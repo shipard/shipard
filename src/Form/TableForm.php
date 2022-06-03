@@ -875,7 +875,8 @@ class TableForm
 			return;
 
 		$input = $refTable->columnRefInput ($this, $this->table, $columnId, $options, $label, $ip);
-		$this->appendElement ($input ['inputCode'], $input ['labelCode']);
+		$hints = $this->columnOptionsHints ($options, $columnId);
+		$this->appendElement ($input ['inputCode'], $input ['labelCode'], $hints);
 	}
 
 	function addInputMemo ($columnId, $label, $options = NULL, $columnType = DataModel::ctMemo, $colDef = NULL)
