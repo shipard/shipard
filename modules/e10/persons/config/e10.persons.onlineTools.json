@@ -6,5 +6,9 @@
 	{
 		"type": "oid", "country": "cz", "name": "justice.cz",
 		"weburl": "https://or.justice.cz/ias/ui/rejstrik-$firma?ico=@ID"
+	},
+	{
+		"type": "oid", "country": "cz", "name": "Shipard",
+		"weburl": "https://data.shipard.org/persons/cz/@ID"
 	}
 ]
