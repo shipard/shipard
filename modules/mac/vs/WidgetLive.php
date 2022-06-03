@@ -364,15 +364,8 @@ class WidgetLive extends WidgetBoard
 				$badgesBig .= "<div class='e10-cam-sensor-display' style='position: absolute; $posStyle'>";
 				foreach ($placeContent['sensors'] as $sensor)
 				{
-
-					$sh = new SensorHelper($this->app());
-					$sh->setSensorInfo($sensor['info']);
-					$badgeCode = $sh->badgeCode();
-					if ($badgeCode !== '')
-					{
-						$badgesSmall .= ' '.$badgeCode;
-						$badgesBig .= ' '.$badgeCode;
-					}
+					$badgesSmall .= $sensor['code'];
+					$badgesBig .= $sensor['code'];
 				}
 				$badgesSmall .= "</div>";
 				$badgesBig .= "</div>";
@@ -449,7 +442,7 @@ class WidgetLive extends WidgetBoard
 
 		$this->createContent_Toolbar ();
 		$this->createGridDefinition();
-		//$this->loadSensors();
+		$this->loadSensors();
 
 		if (substr ($this->activeTopTab, 0, 8) === 'subzone-')
 		{
@@ -651,12 +644,9 @@ class WidgetLive extends WidgetBoard
 
 	function loadSensors()
 	{
-		$q [] = 'SELECT sensorsToShow.*, ';
-		array_push ($q, ' sensors.fullName AS sensorFullName, sensors.srcDataSourceQuantityId, sensors.srcDataSourceValuesIds, sensors.sensorBadgeLabel, sensors.sensorBadgeUnits,');
-		array_push ($q, ' dataSources.fullName AS dsFullName, dataSources.url AS srcDataSourceUrl');
+		$q [] = 'SELECT sensorsToShow.*';
 		array_push ($q, ' FROM [mac_lan_devicesSensorsShow] AS sensorsToShow');
 		array_push ($q, ' LEFT JOIN [mac_iot_sensors] AS sensors ON sensorsToShow.sensor = sensors.ndx');
-		array_push ($q, ' LEFT JOIN [mac_data_sources] AS dataSources ON sensors.srcDataSource = dataSources.ndx');
 		array_push ($q, ' LEFT JOIN [mac_lan_devices] AS devices ON sensorsToShow.device = devices.ndx');
 		array_push ($q, ' WHERE 1');
 		array_push ($q, ' AND sensorsToShow.[device] IN %in', $this->zone['cameras']);
@@ -665,14 +655,18 @@ class WidgetLive extends WidgetBoard
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
-			$placeId = $r['camPosH'].'-'.$r['camPosH'];
+			$placeId = $r['camPosH'].'-'.$r['camPosV'];
+
+			$sh = new SensorHelper($this->app());
+			$sh->setSensor($r['sensor']);
+			$sensorCode = $sh->badgeCode(1);
 
 			if (!isset($this->sensors[$r['device']][$placeId]))
 			{
 				$this->sensors[$r['device']][$placeId] = ['camPosH' => $r['camPosH'], 'camPosV' => $r['camPosV'], 'sensors' => []];
 			}
 
-			$sensor = ['info' => $r->toArray()];
+			$sensor = ['info' => $r->toArray(), 'code' => $sensorCode];
 			$this->sensors[$r['device']][$placeId]['sensors'][] = $sensor;
 		}
 	}
