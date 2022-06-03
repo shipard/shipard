@@ -94,7 +94,7 @@ class Widget extends \Shipard\Base\BaseObject
 
 		forEach ($userRoles as $roleId)
 		{
-			$r = $allRoles[$roleId];
+			$r = $allRoles[$roleId] ?? [];
 			if (!isset ($r['widgets'][$wc]))
 				continue;
 			if ($r['widgets'][$wc] > $accessLevel)

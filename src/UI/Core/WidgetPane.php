@@ -11,6 +11,7 @@ class WidgetPane extends \Shipard\UI\Core\Widget
 	var $reportParams;
 	var $widgetAction = '';
 	var $widgetMainClass = 'e10-widget-pane';
+	var $widgetContentClass = '';
 	var $widgetSystemParams = [];
 
 	var $content = [];
@@ -129,7 +130,7 @@ class WidgetPane extends \Shipard\UI\Core\Widget
 
 		$c .= $this->renderContentTitle();
 
-		$c .= "<div class='e10-widget-content e10-widget-".$this->widgetType()."'>";
+		$c .= "<div class='e10-widget-content e10-widget-".$this->widgetType()." {$this->widgetContentClass}'>";
 		$cr = new ContentRenderer ($this->app);
 		$cr->setWidget($this);
 		$c .= $cr->createCode();
