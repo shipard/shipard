@@ -27,12 +27,12 @@ class UploadOrdersFio extends \lib\ebanking\upload\UploadOrders
 	protected function upload ()
 	{
 		$uploadUrl = 'https://www.fio.cz/ib_api/rest/import/';
-		$post = ['type' => 'abo', 'token' => $this->bankAccountRec['apiTokenUploads'], 'file' => curl_file_create($this->fileNameData)];
+		$post = ['type' => 'abo', 'token' => $this->bankAccountRec['apiTokenUploads'], 'file' => curl_file_create($this->fileNameData, 'text/plain', 'prikaz.abo')];
 
 		$ch = curl_init();
 		curl_setopt ($ch, CURLOPT_HEADER, 0);
 		curl_setopt ($ch, CURLOPT_VERBOSE, 0);
-		curl_setopt ($ch, CURLOPT_HTTPHEADER, ['Content-Type: multipart/form-data; charset=utf-8;']);
+		curl_setopt ($ch, CURLOPT_HTTPHEADER, ['Content-Type: multipart/form-data']);
 		curl_setopt ($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt ($ch, CURLOPT_POST, 1);
 		curl_setopt ($ch, CURLOPT_POSTFIELDS, $post);
@@ -41,7 +41,7 @@ class UploadOrdersFio extends \lib\ebanking\upload\UploadOrders
 		$result = curl_exec ($ch);
 		curl_close ($ch);
 
-		$this->fileNameResult = utils::tmpFileName('xml');
+		$this->fileNameResult = utils::tmpFileName('xml', 'fio-bank-order-upload');
 		file_put_contents($this->fileNameResult, $result);
 
 		$this->checkResult($result);
