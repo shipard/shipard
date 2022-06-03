@@ -73,12 +73,12 @@
 						<tr>
 							<td style="width: 50%;">
 								{{#data.page.prevNextButtons.prev.id}}
-									<a href="{{data.page.prevNextButtons.prev.id}}"><button role="button" class="btn btn-outline-secondary text-left"><i class="fa fa-arrow-circle-left"></i> {{data.page.prevNextButtons.prev.title}}</button></a>
+									<a href="{{data.page.prevNextButtons.prev.id}}"><button role="button" class="btn btn-outline-secondary text-left">{{{@icon;icon:system/actionBack}}} {{data.page.prevNextButtons.prev.title}}</button></a>
 								{{/data.page.prevNextButtons.prev.id}}
 							</td>
 							<td style="width: 50%; text-align: right;">
 								{{#data.page.prevNextButtons.next.id}}
-									<a href="{{data.page.prevNextButtons.next.id}}"><button role="button" class="btn btn-outline-secondary text-right">{{data.page.prevNextButtons.next.title}} <i class="fa fa-arrow-circle-right"></i></button></a>
+									<a href="{{data.page.prevNextButtons.next.id}}"><button role="button" class="btn btn-outline-secondary text-right">{{data.page.prevNextButtons.next.title}} {{{@icon;icon:system/actionMove}}}</button></a>
 								{{/data.page.prevNextButtons.next.id}}
 							</td>
 						</tr>
