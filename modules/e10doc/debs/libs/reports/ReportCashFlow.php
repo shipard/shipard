@@ -2,10 +2,8 @@
 
 namespace e10doc\debs\libs\reports;
 
-require_once __SHPD_MODULES_DIR__ . 'e10doc/core/core.php';
-require_once __SHPD_MODULES_DIR__ . 'e10doc/cmnbkp/cmnbkp.php';
-
-use \e10\uiutils, \e10\utils, e10doc\core\e10utils;
+use \e10\uiutils, \e10\utils;
+use \e10doc\core\libs\E10Utils;
 use \e10doc\debs\libs\AccDataConnector;
 use \e10doc\debs\libs\spreadsheets\SpdCashFlow;
 
@@ -57,8 +55,8 @@ class ReportCashFlow extends \e10doc\core\libs\reports\GlobalReport
 
 	function autoDetectVersion ()
 	{
-		$fp = uiutils::detectParamValue('fiscalPeriod', e10utils::todayFiscalMonth($this->app()));
-		$interval = e10utils::fiscalPeriodDateInterval($this->app(), $fp, TRUE);
+		$fp = uiutils::detectParamValue('fiscalPeriod', E10Utils::todayFiscalMonth($this->app()));
+		$interval = E10Utils::fiscalPeriodDateInterval($this->app(), $fp, TRUE);
 		$date = $interval['begin']->format ('Y-m-d');
 		foreach ($this->cashFlows as $cfId => $cfDef)
 		{
@@ -78,21 +76,21 @@ class ReportCashFlow extends \e10doc\core\libs\reports\GlobalReport
 
 		// initStateFiscalPeriod je období poč. stavu aktuálního období
 		$dateBeginThis = $this->reportParams ['fiscalPeriod']['values'][$this->reportParams ['fiscalPeriod']['value']]['dateBegin'];
-		$fp = e10utils::todayFiscalYear($this->app(), $dateBeginThis, TRUE);
+		$fp = E10Utils::todayFiscalYear($this->app(), $dateBeginThis, TRUE);
 		$fpBeginDate = utils::createDateTime($fp['begin']);
-		$initStateFiscalPeriod = e10utils::todayFiscalMonth($this->app(), $fpBeginDate, 1);
+		$initStateFiscalPeriod = E10Utils::todayFiscalMonth($this->app(), $fpBeginDate, 1);
 
 		// minulé období
-		$prevFiscalPeriod = e10utils::prevFiscalPeriodYear($this->app(), $this->fiscalPeriod);
+		$prevFiscalPeriod = E10Utils::prevFiscalPeriodYear($this->app(), $this->fiscalPeriod);
 
 	  // initStatePrevFiscalPeriod je období poč. stavu minulého období
 		$initStatePrevFiscalPeriod = 0;
 		if ($prevFiscalPeriod)
 		{
 			$dateBeginThis = $this->reportParams ['fiscalPeriod']['values'][$prevFiscalPeriod]['dateBegin'];
-			$fp = e10utils::todayFiscalYear($this->app(), $dateBeginThis, TRUE);
+			$fp = E10Utils::todayFiscalYear($this->app(), $dateBeginThis, TRUE);
 			$fpBeginDate = utils::createDateTime($fp['begin']);
-			$initStatePrevFiscalPeriod = e10utils::todayFiscalMonth($this->app(), $fpBeginDate, 1);
+			$initStatePrevFiscalPeriod = E10Utils::todayFiscalMonth($this->app(), $fpBeginDate, 1);
 		}
 
 		$this->spd = $this->createSpreadsheet();

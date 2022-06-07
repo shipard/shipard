@@ -71,7 +71,7 @@ class SpdCashFlow extends \lib\spreadsheets\Spreadsheet
 		// -- cashFlow - prev fiscal period
 		$spd = new SpdCashFlow ($this->app);
 		$spd->spreadsheetId = $this->spreadsheetId;
-		if ($this->balanseSheetSpreadsheetId !== '')
+		if ($this->balanceSheetSpreadsheetId !== '')
 			$spd->balanceSheetSpreadsheetId = $this->balanceSheetSpreadsheetId;
 		if ($this->statementSpreadsheetId !== '')
 			$spd->statementSpreadsheetId = $this->statementSpreadsheetId;
