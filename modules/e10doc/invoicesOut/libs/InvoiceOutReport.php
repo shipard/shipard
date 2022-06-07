@@ -11,7 +11,7 @@ class InvoiceOutReport extends \e10doc\core\libs\reports\DocReport
 	{
 		parent::init();
 
-		$this->setReportId('reports.default.e10doc.invoiceOut.invoice');
+		$this->setReportId('e10doc.invoiceOut.invoice');
 	}
 
 	public function loadData ()
