@@ -165,7 +165,7 @@
 					["C.","I.",	"4.",		"",	"Mladá a ostatní zvířata a jejich skupiny", 							"044", "124",                                           "-195",                                         "=[{SUM;G44;-H44}]",                            "=[{SUM;prev!AKTIVA:I44}]"],
 					["C.","I.",	"5.",		"",	"Poskytnuté zálohy na zásoby", 														"045", "151 152 153",                                   "-197 -198 -199",                               "=[{SUM;G45;-H45}]",                            "=[{SUM;prev!AKTIVA:I45}]"],
 
-          ["C.","II.","",			"",	"Pohledávky",  		                         								"046", "=[{SUM;G47;G57}]",                              "=[{SUM;H47;H57}]",                             "=[{SUM;I47;I57}]",                             "=[{SUM;J47;J57}]"],
+          ["C.","II.","",			"",	"Pohledávky",  		                         								"046", "=[{SUM;G47;G57;G68}]",                          "=[{SUM;H47;H57;H68}]",                         "=[{SUM;I47;I57;I68}]",                         "=[{SUM;J47;J57;J68}]"],
 
           ["C.","II.","1.",		"",	"Dlouhodobé pohledávky",            											"047", "=[{SUM;G48;G49;G50;G51;G52}]",                  "=[{SUM;H48;H49;H50;H51;H52}]",                 "=[{SUM;I48;I49;I50;I51;I52}]",                 "=[{SUM;J48;J49;J50;J51;J52}]"],
 					["C.","II.","1.1.", "",	"Pohledávky z obchodních vztahů", 												"048", "",                                              "",                                             "=[{SUM;G48;-H48}]",                            "=[{SUM;prev!AKTIVA:I48}]"],
@@ -346,7 +346,7 @@
 					["B.",	"",		"3.", 	"Rezervy podle zvláštních právních předpisů", 		      "108", "-451",                                                  "=[{SUM;prev!PASIVA:F108}]"],
 					["B.",	"",		"4.", 	"Ostatní rezervy", 																			"109", "-459",                                                  "=[{SUM;prev!PASIVA:F109}]"],
 
-          ["C.",	"",	"",				"Závazky",                                           		"110", "=[{SUM;F111;F126}]",                                    "=[{SUM;G111;G126}]"],
+          ["C.",	"",	"",				"Závazky",                                           		"110", "=[{SUM;F111;F126;F144}]",                               "=[{SUM;G111;G126;G144}]"],
 
 					["C.",	"I.",	"",			"Dlouhodobé závazky",                 									"111", "=[{SUM;F112;F115;F116;F117;F118;F119;F120;F121;F122}]", "=[{SUM;G112;G115;G116;G117;G118;G119;G120;G121;G122}]"],
 
