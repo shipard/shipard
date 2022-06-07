@@ -1,0 +1,28 @@
+{{textMode}}{{@dict;Dobrý den}},
+
+{{@dict;v příloze Vám zasíláme daňový doklad za poskytované služby}}: {{data.head.title}}.
+
+{{@dict;Zákazník}}: {{{data.person.fullName}}}
+{{#data.head.datePeriodBegin}}
+{{@dict;Účtované období}}: {{data.head.datePeriodBegin}} {{@dict;až}} {{data.head.datePeriodEnd}}
+{{/data.head.datePeriodBegin}}
+{{@dict;Celkem k úhradě}}: {{data.head.print.toPay}} {{data.head.print.currency}}
+{{@dict;Variabilní symbol}}: {{data.head.symbol1}}
+{{#data.head.symbol2}}
+{{@dict;Specifický symbol}}: {{data.head.symbol2}}
+{{/data.head.symbol2}}
+{{@dict;Bankovní spojení}}: {{data.myBankAccount.bankAccount}}
+{{#data.myBankAccount.iban}}
+{{@dict;IBAN}}: {{data.myBankAccount.iban}}
+{{/data.myBankAccount.iban}}
+
+
+{{@dict;Děkujeme za včasnou úhradu}}.
+
+{{@dict;S pozdravem}}
+
+--
+ {{data.owner.fullName}}
+{{#data.owner_contacts}}
+ {{name}}: {{value}}
+{{/data.owner_contacts}}

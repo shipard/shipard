@@ -4,8 +4,9 @@ namespace e10doc\core\libs\reports;
 
 require_once __SHPD_MODULES_DIR__ . 'e10doc/core/core.php';
 
-use \e10\FormReport;
+use \Shipard\Report\FormReport;
 use \Shipard\Utils\World;
+
 
 /**
  * Class DocReportBase
@@ -26,15 +27,33 @@ class DocReportBase extends FormReport
 		parent::init();
 	}
 
-	public function setReportId($reportId)
+	public function setReportId($baseReportId)
 	{
+
+		if (str_starts_with($baseReportId, 'reports.default.'))
+		{
+			$reportId = $baseReportId;
+		}
+		else
+		{
+			$reportType = $this->app()->cfgItem ('options.experimental.docReportsType', 'default');
+			$reportIdBegin = 'reports.'.$reportType.'.';
+			$reportId = $reportIdBegin.$baseReportId;
+
+			$parts = explode ('.', $reportId);
+			$tfn = array_pop ($parts);
+			$templateRoot = __SHPD_ROOT_DIR__.__SHPD_TEMPLATE_SUBDIR__.'/'.implode ('/', $parts).'/'.$tfn.'/';
+			$templateMainFile = $templateRoot.'page.mustache';
+			if (!is_readable($templateMainFile))
+			{
+				$reportType = 'default';
+				$reportIdBegin = 'reports.'.$reportType.'.';
+				$reportId = $reportIdBegin.$baseReportId;	
+			}
+		}
+
 		$this->reportId = $reportId;
 		$this->reportTemplate = $reportId;
-
-		//if ($this->reportMode !== FormReport::rmDefault)
-		//	return;
-		//
-		//$this->reportTemplate .= '-default';
 	}
 
 	public function loadData()

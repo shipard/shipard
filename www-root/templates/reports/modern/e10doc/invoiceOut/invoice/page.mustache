@@ -1,0 +1,348 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+	<title>test</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/default/style-default.css" type="text/css"/>
+
+	<style>
+			{{#data.owner.logo.logo-nadpis.filename}}
+			#supplier-address-hdr {
+				background-image: url("{{dsUrl}}att/{{data.owner.logo.logo-nadpis.path}}{{data.owner.logo.logo-nadpis.filename}}");
+				background-position: bottom right;
+				background-size: auto 60%;
+				background-repeat: no-repeat;
+			}
+			{{/data.owner.logo.logo-nadpis.filename}}
+			{{#data.owner.logo.logo-vpravo.filename}}
+			#supplier-address-box {
+				background-image: url("{{dsUrl}}att/{{data.owner.logo.logo-vpravo.path}}{{data.owner.logo.logo-vpravo.filename}}");
+				background-position: top right;
+				background-size: auto 80%;
+				background-repeat: no-repeat;
+			}
+			{{/data.owner.logo.logo-vpravo.filename}}
+			{{#data.owner.logo.logo-vlevo.filename}}
+			#supplier-address-box {
+				background-image: url("{{dsUrl}}att/{{data.owner.logo.logo-vlevo.path}}{{data.owner.logo.logo-vlevo.filename}}");
+				background-position: top left;
+				background-size: 5em;
+				background-repeat: no-repeat;
+
+				padding-left: 6em;
+			}
+			{{/data.owner.logo.logo-vlevo.filename}}
+	</style>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/sc/icons/fa/5/css/all.min.css">
+</head>
+<body>
+
+<table id='head'>
+	<tr>
+		<td class='supplier'>
+			<span class='hdr' id="supplier-address-hdr">{{@dict;Dodavatel}}:</span>
+			{{#data.reportTexts.supplierAndContacts}}{{{data.reportTexts.supplierAndContacts}}}{{/data.reportTexts.supplierAndContacts}}
+			{{^data.reportTexts.supplierAndContacts}}
+				<span class='address' id="supplier-address-box">
+						{{#data.reportTexts.supplier}}{{{data.reportTexts.supplier}}}{{/data.reportTexts.supplier}}
+					{{^data.reportTexts.supplier}}
+						<span class='title'>{{data.owner.fullName}}</span>
+						{{#data.owner.address.specification}}
+							{{data.owner.address.specification}}<br/>
+						{{/data.owner.address.specification}}
+						{{data.owner.address.street}}<br/>
+						{{^data.flags.foreignCountry}}
+							{{data.owner.address.zipcode}} {{data.owner.address.city}}<br/>
+						{{/data.flags.foreignCountry}}
+						{{#data.flags.foreignCountry}}
+							{{data.owner.address.countryNameSC2}}-{{data.owner.address.zipcode}} {{data.owner.address.city}}<br/>
+							{{data.owner.address.countryNameEng}}
+						{{/data.flags.foreignCountry}}
+						<br/>
+					{{/data.reportTexts.supplier}}
+					</span>
+				{{#data.reportTexts.contacts}}{{{data.reportTexts.contacts}}}{{/data.reportTexts.contacts}}
+				{{^data.reportTexts.contacts}}
+					{{#data.owner_identifiers}}
+						<b>{{@dict;dataItem:name}}:</b> {{value}}<br/>
+					{{/data.owner_identifiers}}
+
+					{{#data.flags.foreignPayment}}
+						{{#data.myBankPerson.fullName}}
+							<b>{{@dict;Banka}}:</b> {{data.myBankPerson.fullName}} <br/>
+						{{/data.myBankPerson.fullName}}
+						{{#data.myBankAccount.swift}}
+							<b>{{@dict;SWIFT}}:</b> {{data.myBankAccount.swift}} <br/>
+						{{/data.myBankAccount.swift}}
+					{{/data.flags.foreignPayment}}
+
+					<b>{{@dict;Bankovní spojení}}:</b> {{data.myBankAccount.bankAccount}} <br/>
+					{{#data.myBankAccount.iban}}
+						<b>{{@dict;IBAN}}:</b> {{data.myBankAccount.iban}} <br/>
+					{{/data.myBankAccount.iban}}
+					{{#data.owner_contacts}}
+						<b>{{name}}:</b> {{value}}<br/>
+					{{/data.owner_contacts}}
+					<small>{{cfgItem.options.core.ownerLegalRegInfo}}</small>
+				{{/data.reportTexts.contacts}}
+			{{/data.reportTexts.supplierAndContacts}}
+		</td>
+
+		<td class='customer'>
+			<div class='hdr'>{{@dict;Odběratel}}:<small class='pull-right'>#{{data.person.id}}</small></div>
+			<span class='title'>{{data.person.fullName}}</span>
+			<span class='address'>
+					{{data.person.address.specification}}<br/>
+				{{data.person.address.street}}<br/>
+				{{^data.flags.foreignCountry}}
+					{{data.person.address.zipcode}} {{data.person.address.city}}<br/>
+				{{/data.flags.foreignCountry}}
+				{{#data.flags.foreignCountry}}
+					{{data.person.address.countryNameSC2}}-{{data.person.address.zipcode}} {{data.person.address.city}}<br/>
+					{{data.person.address.countryNameEng}}
+				{{/data.flags.foreignCountry}}
+
+				</span>
+
+			{{#data.person_identifiers}}
+				<b>{{@dict;dataItem:name}}:</b> {{value}}
+			{{/data.person_identifiers}}
+
+			<span class='dates'>{{@dict;Datumy a platební údaje}}:</span>
+			<table id='documentDetails'>
+				<tr>
+					<td class='label'>{{@dict;Způsob úhrady}}:</td><td class='value'><b>{{@dict;dataItem:data.head.print.paymentMethod}}</b></td>
+				</tr>
+				<tr>
+					<td class='label'>{{@dict;Variabilní symbol}}:</td><td class='value'><b>{{data.head.symbol1}}</b></td>
+				</tr>
+				{{#data.head.symbol2}}
+					<tr>
+						<td class='label'>{{@dict;Specifický symbol}}:</td><td class='value'><b>{{data.head.symbol2}}</b></td>
+					</tr>
+				{{/data.head.symbol2}}
+				<tr>
+					<td class='label'>{{@dict;Datum vystavení}}:</td><td class='value'>{{data.head.dateIssue}}</td>
+				</tr>
+				{{#data.flags.taxDocument}}
+					<tr>
+						<td class='label'>{{@dict;Datum u.zd.plnění}}:</td><td class='value'>{{data.head.dateTax}}</td>
+					</tr>
+				{{/data.flags.taxDocument}}
+				<tr>
+					<td class='label'>{{@dict;Datum splatnosti}}:</td><td class='value'><b>{{data.head.dateDue}}</b></td>
+				</tr>
+				{{#data.head.datePeriodBegin}}
+					<tr>
+						<td class='label'>{{@dict;Účtované období}}:</td><td class='value'>{{data.head.datePeriodBegin}} {{@dict;až}} {{data.head.datePeriodEnd}}</td>
+					</tr>
+				{{/data.head.datePeriodBegin}}
+			</table>
+
+		</td>
+	</tr>
+</table>
+
+{{#data.flags.rosCZ}}
+	<table class='rosInfo'>
+		<tr>
+			<td>{{@dict;EET}}: {{@dict;dataItem:data.ros.type}}</td>
+			<td>{{@dict;Datum a čas}}: {{data.ros.datePay}}</td>
+			<td>{{@dict;Provozovna}}: {{data.ros.placeId1}}</td>
+			<td>{{@dict;Pokladna}}: {{data.ros.placeId2}}</td>
+		</tr>
+		<tr>
+			{{#data.ros.fik}}
+				<td colspan="2">{{@dict;FIK}}:{{data.ros.fik}}</td>
+			{{/data.ros.fik}}
+			{{^data.ros.fik}}
+				<td colspan="2">{{@dict;PKP}}: {{data.ros.pkp}}</td>
+			{{/data.ros.fik}}
+			<td colspan="2">{{@dict;BKP}}: {{data.ros.bkp}}</td>
+		</tr>
+	</table>
+{{/data.flags.rosCZ}}
+
+{{#data.reportTexts.subHeader}}<div class='reportTextHeader'>{{{data.reportTexts.subHeader}}}</div>{{/data.reportTexts.subHeader}}
+
+{{@latestNews;print:1;cnt:1;dateVar:data.head.dateAccounting}}
+{{#data.latestNews.all}}
+	<div class="news">
+		{{{htmlPaperDoc}}}
+	</div>
+{{/data.latestNews.all}}
+
+
+<div class='docNote'>
+	{{#data.docs_properties.notes.note-ext}}
+		{{{value}}}
+	{{/data.docs_properties.notes.note-ext}}
+</div>
+
+
+<table id='rows'>
+	<thead>
+	<tr>
+		<th class='itemID'>{{@dict;ID}}</th>
+		<th>{{@dict;Položka}}</th>
+		<th class='number'>{{@dict;Množství}}</th>
+		<th>{{@dict;Jed.}}</th>
+		{{#data.head.taxPayer}}
+			<th class='number'>% {{@dict;DPH}}</th>
+		{{/data.head.taxPayer}}
+		<th class='number'>{{@dict;Cena/jed.}}</th>
+		<th class='number'>{{@dict;Cena celkem}}</th>
+	</tr>
+	</thead>
+	{{#data.rows}}
+		<tr>
+			<td class='itemID'>{{itemID}}</td>
+			<td>{{text}}{{#additionsMarks}}<sup> {{additionsMarks}}</sup>{{/additionsMarks}}</td>
+			<td class='number'>{{quantity}}</td>
+			<td>{{@dict;dataItem:print.unit}}</td>
+			{{#data.head.taxPayer}}
+				<td class='number'>{{taxPercents}}</td>
+			{{/data.head.taxPayer}}
+			<td class='number'>{{print.priceItem}}</td>
+			<td class='number'>{{print.priceAll}}</td>
+		</tr>
+	{{/data.rows}}
+</table>
+
+
+<table class='paymentInfo'>
+	<tr>
+		<td class='qrPayment'>
+			{{#data.spayd}}
+				<div id='spayd'>
+					<img src="{{spaydQRCodeURL}}"/>
+					{{@dict;QR platba}}
+				</div>
+			{{/data.spayd}}
+		</td>
+		<td class='taxInfo'>
+			{{#data.head.taxPayer}}
+				<div id='sum'>
+            <span>
+            <table>
+              <thead>
+                {{#data.flags.foreignCurrency}}
+									<tr>
+                    <th rowspan="2">{{@dict;Sazba}}</th>
+                    <th rowspan="2" class='number'>% {{@dict;DPH}}</th>
+
+                    <th class='number' colspan="3" style="text-align: center !important;">{{data.head.print.currency}}</th>
+                    <th class='number' colspan="3" style="text-align: center !important;">{{data.head.print.homeCurrency}}</th>
+                  </tr>
+                  <tr>
+
+                    <th class='number'>{{@dict;Základ}}</th>
+                    <th class='number'>{{@dict;Daň}}</th>
+                    <th class='number'>{{@dict;Celkem}}</th>
+
+                    <th class='number'>{{@dict;Základ}}</th>
+                    <th class='number'>{{@dict;Daň}}</th>
+                    <th class='number'>{{@dict;Celkem}}</th>
+                  </tr>
+								{{/data.flags.foreignCurrency}}
+
+								{{^data.flags.foreignCurrency}}
+									<tr>
+                    <th>{{@dict;Sazba}}</th>
+                    <th class='number'>% {{@dict;DPH}}</th>
+                    <th class='number'>{{@dict;Základ}}</th>
+                    <th class='number'>{{@dict;Daň}}</th>
+                    <th class='number'>{{@dict;Celkem}}</th>
+                  </tr>
+								{{/data.flags.foreignCurrency}}
+              </thead>
+							{{#data.taxes}}
+								<tr>
+                  {{#data.flags.foreignCurrency}}
+										<td class='label'>{{@dict;dataItem:print.taxCode}}{{#noteMark}}<b><sup>{{noteMark}})</sup></b>{{/noteMark}}</td>
+                    <td class='number'>{{taxPercents}} %</td>
+
+                    <td class='number'>{{print.sumBase}}</td>
+                    <td class='number'>{{print.sumTax}}</td>
+                    <td class='number'>{{print.sumTotal}}</td>
+
+                    <td class='number'>{{print.sumBaseHc}}</td>
+                    <td class='number'>{{print.sumTaxHc}}</td>
+                    <td class='number'>{{print.sumTotalHc}}</td>
+									{{/data.flags.foreignCurrency}}
+
+									{{^data.flags.foreignCurrency}}
+										<td class='label'>{{@dict;dataItem:print.taxCode}}{{#noteMark}}<b><sup>{{noteMark}})</sup></b>{{/noteMark}}</td>
+                    <td class='number'>{{taxPercents}} %</td>
+                    <td class='number'>{{print.sumBase}}</td>
+                    <td class='number'>{{print.sumTax}}</td>
+                    <td class='number'>{{print.sumTotal}}</td>
+									{{/data.flags.foreignCurrency}}
+                </tr>
+							{{/data.taxes}}
+							<tr>
+                {{#data.flags.foreignCurrency}}
+									<td class='label' colspan='2' style="font-weight: bold;">{{@dict;Celkem}}</td>
+								{{/data.flags.foreignCurrency}}
+								{{^data.flags.foreignCurrency}}
+									<td class='label' colspan='2'>{{@dict;Celkem}} {{data.head.print.currency}}</td>
+								{{/data.flags.foreignCurrency}}
+
+								<td class='number'>{{data.head.print.sumBase}}</td>
+                <td class='number'>{{data.head.print.sumTax}}</td>
+                <td class='number'>{{data.head.print.sumTotal}}</td>
+
+								{{#data.flags.foreignCurrency}}
+									<td class='number'>{{data.head.print.sumBaseHc}}</td>
+                  <td class='number'>{{data.head.print.sumTaxHc}}</td>
+                  <td class='number'>{{data.head.print.sumTotalHc}}</td>
+								{{/data.flags.foreignCurrency}}
+
+              </tr>
+							{{#data.head.rounding}}
+								<tr>
+                  <td class='label' colspan='4'>{{@dict;Zaokrouhlení}} {{data.head.print.currency}}</td>
+                  <td class='number'>{{data.head.print.rounding}}</td>
+									{{#data.flags.foreignCurrency}}
+										<td class='label' colspan='3'></td>
+									{{/data.flags.foreignCurrency}}
+                </tr>
+							{{/data.head.rounding}}
+            </table>
+            <div class='foreignCurrency'>
+							{{#data.flags.foreignCurrency}}
+								1 {{data.head.print.currency}} = {{data.head.print.exchangeRate}} {{data.head.print.homeCurrency}}
+							{{/data.flags.foreignCurrency}}
+						</div>
+            </span>
+					<br/>
+					{{#data.taxNotes}}
+						<b><sup>{{mark}})</sup></b> {{@dict;dataItem:text}}<br/>
+					{{/data.taxNotes}}
+				</div>
+			{{/data.head.taxPayer}}
+
+			<div class='pay'>
+				{{@dict;Celkem k úhradě}}: {{data.head.print.toPay}} {{data.head.print.currency}}
+			</div>
+		</td>
+	</tr>
+</table>
+
+<div class='footerNotes'>
+	{{#data.additionsExists}}
+		<h4>Poznámky</h4>
+		{{#data.additions}}
+			{{mark}}: {{labelPrefix}} {{identifier}}<br>
+		{{/data.additions}}
+		<br/>
+	{{/data.additionsExists}}
+</div>
+
+<div class='reportTextFooter'>
+	{{#data.reportTexts.subFooter}}{{{data.reportTexts.subFooter}}}{{/data.reportTexts.subFooter}}
+</div>
+
+</body>
+</html>
+
