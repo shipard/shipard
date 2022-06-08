@@ -191,14 +191,23 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 			$cfgServer = $this->cfgServer;
 			// -- createApp.json
 			$createApp = [];
-			$createApp ['request']['name'] = $appName;
-			$createApp ['admin']['xf']['person'] = [
+			$createApp ['createRequest'] = [
+				'name' => $appName,
+				'installModule' => $moduleName,
+				'companyName' => 'První testovací s.r.o.',
+				'street' => 'Pokusná 7',
+				'city' => 'Praha',
+				'zipcode' => '11000',
+				'country' => 'cz',
+				'companyId' => '012345678X',
+				'vatId' => 'CZ012345678X',
+			];
+			$createApp ['admin'] = [
 				'firstName' => $cfgServer['userFirstName'],
 				'lastName' => $cfgServer['userLastName'],
-				'login' => $cfgServer['userEmail']
+				'login' => $cfgServer['userEmail'],
 			];
-			$createApp ['admin']['xf']['contacts'][] = ['type' => 'email', 'value' => $cfgServer['userEmail']];
-			$createApp ['installModule'] = $moduleName;
+			
 			file_put_contents ($appDir . '/config/createApp.json', json_encode ($createApp, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
 
 			// -- dataSourceInfo.json
