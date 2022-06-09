@@ -362,6 +362,12 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		return TRUE;
 	}
 
+	protected function cliValidatePersons()
+	{
+		$e = new \e10doc\core\libs\PersonValidator($this->app);
+		$e->batchCheck();
+	}
+
 	public function onCliAction ($actionId)
 	{
 		switch ($actionId)
@@ -370,6 +376,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'docs-checks': return $this->cliDocsChecks();
 			case 'docs-checks-wrong-journal': return $this->cliDocsChecksWrongJournal();
 			case 'copy-witems': return $this->cliCopyWitems();
+			case 'validate-persons': return $this->cliValidatePersons();
 		}
 
 		parent::onCliAction($actionId);
