@@ -309,6 +309,7 @@ class TemplateCore extends \Mustache
 		switch ($tagName)
 		{
 			case	'icon' 						: return $this->resolveCmd_Icon($params);
+			case	'imgData' 				: return $this->resolveCmd_ImgData($params);
 			case	'include' 				: return $this->resolveCmd_Include($params);
 			case	'dict' 						: return $this->dict($params);
 			case	'composeTextLine' : return $this->resolveCmd_ComposeTextLine($params);
@@ -389,6 +390,22 @@ class TemplateCore extends \Mustache
 			$icn = $params['icon'];
 
 		return $this->app->ui()->icon($icn);
+	}
+
+	function resolveCmd_ImgData ($params)
+	{
+		if (!isset ($params['dataItem']))
+			return 'no dataItem';
+		$fn = $this->getVar($params['dataItem']);
+
+		if (is_readable($fn['rfn']))
+		{
+			$imgSrcData = file_get_contents($fn['rfn']);
+			$type = mime_content_type($fn['rfn']);
+			$data = 'data:' . $type . ';base64,' . base64_encode($imgSrcData);
+			return $data;
+		}
+		return 'file not found';
 	}
 
 	function resolveCmd_ComposeTextLine ($params)
