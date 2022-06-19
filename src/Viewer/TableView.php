@@ -403,6 +403,13 @@ class TableView extends \Shipard\Base\BaseObject
 				$c .= ' data-combo-'.$csKey."='".$csValue."'";
 		}
 
+		if ($fullCode)
+		{
+			$flowParams = $this->flowParams();
+			if ($flowParams)
+				$c .= " data-flow-params='".base64_encode(json_encode($flowParams))."'";
+		}
+
 		$c .= ">";
 
 		// -- toolbar?

@@ -1298,8 +1298,8 @@ class ViewItemsInventory extends \E10\TableViewGrid
 
 	public function init ()
 	{
-		$this->rowsPageSize = 250;
-		$this->rowsFirst = $this->rowsPageNumber * $this->rowsPageSize;
+		//$this->rowsPageSize = 250;
+		//$this->rowsFirst = $this->rowsPageNumber * $this->rowsPageSize;
 
 		$this->objectSubType = TableView::vsDetail;
 		$this->enableDetailSearch = TRUE;
@@ -1331,8 +1331,10 @@ class ViewItemsInventory extends \E10\TableViewGrid
 		$this->setInfo('title', 'Pohyby zásoby');
 		$this->setInfo('icon', 'icon-cubes');
 
+		$this->restQuantity = 0.0;
+		$this->restPrice = 0.0;
 		$fp = $this->app()->testGetParam('viewerFlowParams');
-		if ($fp !== '')
+		if ($fp !== '' && $this->rowsPageNumber)
 		{
 			$fpData = json_decode(base64_decode($fp), TRUE);
 			if (isset($fpData['restQuantity']))
