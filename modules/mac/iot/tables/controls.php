@@ -307,6 +307,8 @@ class FormControl  extends TableForm
 					$this->addColumnInput ('shortName');
 					$this->addColumnInput ('idName');
 					$this->addColumnInput ('lan');
+					if ($this->recData['controlType'] !== 'sendSetupRequest')
+						$this->addColumnInput ('iotSetup');
 				$this->closeTab ();
 
 				$this->openTab (TableForm::ltNone);
