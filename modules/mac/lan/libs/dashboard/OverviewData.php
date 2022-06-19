@@ -4,7 +4,7 @@ namespace mac\lan\libs\dashboard;
 
 
 
-use \Shipard\Base\Utility, \Shipard\Utils\Utils;
+use \Shipard\Base\Utility, \Shipard\Utils\Utils, \mac\data\libs\SensorHelper;
 
 
 /**
@@ -288,6 +288,7 @@ class OverviewData extends Utility
 		}
 
 		$this->loadDevicesPorts();
+		$this->loadDevicesSensors();
 	}
 
 	function loadDevicesPorts()
@@ -388,6 +389,31 @@ class OverviewData extends Utility
 						],
 				];
 			}
+		}
+	}
+
+	function loadDevicesSensors()
+	{
+		$q [] = 'SELECT sensorsToShow.*';
+		array_push ($q, ' FROM [mac_lan_devicesSensorsShow] AS sensorsToShow');
+		array_push ($q, ' LEFT JOIN [mac_iot_sensors] AS sensors ON sensorsToShow.sensor = sensors.ndx');
+		array_push ($q, ' LEFT JOIN [mac_lan_devices] AS devices ON sensorsToShow.device = devices.ndx');
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND sensorsToShow.[device] IN %in', $this->devicesPks);
+		array_push ($q, ' ORDER BY sensorsToShow.[rowOrder]');
+
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$deviceNdx = $r['device'];
+
+			$sh = new SensorHelper($this->app());
+			$sh->setSensor($r['sensor']);
+			$sensorCode = $sh->badgeCode(1);
+
+			$this->devices[$deviceNdx]['sensors'][] = [
+				'code' => $sensorCode,
+			];
 		}
 	}
 

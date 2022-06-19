@@ -153,6 +153,15 @@ class Overview extends Content
 					$c .= ' '.$bc;
 				}
 			}
+
+			if (isset($device['sensors']))
+			{
+				foreach ($device['sensors'] as $sb)
+				{
+					$c .= ' ' . $sb['code'];
+				}
+			}
+
 			$c .= "</td>";
 
 
@@ -213,6 +222,14 @@ class Overview extends Content
 				if ($sh)
 				{
 					$bc = $sh->dsBadgeImg($sb['label'], $sb['badgeQuantityId'], $sb['badgeParams']);
+				}
+			}
+
+			if (isset($device['sensors']))
+			{
+				foreach ($device['sensors'] as $sb)
+				{
+					$c .= '&nbsp;' . $sb['code'];
 				}
 			}
 

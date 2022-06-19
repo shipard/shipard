@@ -238,7 +238,7 @@ class LanOverviewRenderer extends Content
 				if ($sh)
 				{
 					$bc = $sh->dsBadgeCode($sb['label'], $sb['badgeQuantityId'], $sb['badgeParams']);
-					$sbCode .= ' '.$bc;
+					$sbCode .= $bc;
 				}
 			}
 
@@ -248,8 +248,16 @@ class LanOverviewRenderer extends Content
 					$sh = $this->macDataSourceSensorHelper($sb['badgeDataSource']);
 					if ($sh) {
 						$bc = $sh->dsBadgeCode($sb['label'], $sb['badgeQuantityId'], $sb['badgeParams']);
-						$sbCode .= ' ' . $bc;
+						$sbCode .= $bc;
 					}
+				}
+			}
+
+			if (isset($dev['sensors']))
+			{
+				foreach ($dev['sensors'] as $sb)
+				{
+					$sbCode .= ' ' . $sb['code'];
 				}
 			}
 
