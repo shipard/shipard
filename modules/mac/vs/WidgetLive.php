@@ -756,6 +756,7 @@ class WidgetLive extends WidgetBoard
 		array_push($q, ' LEFT JOIN mac_iot_setups AS setups ON scenes.setup = setups.ndx');
 		array_push($q, ' WHERE 1');
 		array_push($q, ' AND setup IN %in', $setups);
+		array_push($q, ' ORDER BY [scenes].[order]');
 
 		$scenes = [];
 		$rows = $this->db()->query($q);
