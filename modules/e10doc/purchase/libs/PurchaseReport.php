@@ -51,6 +51,7 @@ class PurchaseReport extends \e10doc\core\libs\reports\DocReport
 		if ($this->recData ['paymentMethod'] !== 8) // likvidační protokol
 			$this->data ['flags']['enablePrice'] = 1;
 
+		/*
 		$rowNumber = 1;
 		forEach ($this->data ['rows'] as &$row)
 		{
@@ -58,5 +59,6 @@ class PurchaseReport extends \e10doc\core\libs\reports\DocReport
 			$rowNumber++;
 			$row ['rowItemProperties'] = \E10\Base\getPropertiesTable ($this->table->app(), 'e10.witems.items', $row['item']);
 		}
+		*/
 	}
 } // class PurchaseReport

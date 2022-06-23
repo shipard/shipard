@@ -265,6 +265,65 @@ class DocReport extends DocReportBase
 		// -- texts
 		$tableReportsTexts = $this->app()->table('e10doc.base.reportsTexts');
 		$this->data ['reportTexts'] = $tableReportsTexts->loadReportTexts($this->recData, $this->reportMode);
+
+		// -- items codes
+		$this->data ['itemCodesHeader'] = [];
+		$rowNumber = 1;
+		forEach ($this->data ['rows'] as &$row)
+		{
+			$row ['rowNumber'] = $rowNumber;
+			$rowNumber++;
+			$row ['rowItemProperties'] = \E10\Base\getPropertiesTable ($this->table->app(), 'e10.witems.items', $row['item']);
+			$this->loadDocRowItemsCodes($row);
+		}
+
+		if (count($this->data ['itemCodesHeader']))
+		{
+			forEach ($this->data ['rows'] as &$row)
+			{
+				$row ['rowItemCodes'] = [];
+				foreach ($this->data ['itemCodesHeader'] as $ckNdx => $icData)
+					$row ['rowItemCodes'][$ckNdx] = ['itemCodeText' => ''];
+
+				foreach ($row ['rowItemCodesData'] as $ckNdx => $icData)
+				{
+					$row ['rowItemCodes'][$ckNdx] = $icData;
+				}
+
+				$row ['rowItemCodes'] = array_values($row ['rowItemCodes']);
+			}
+		
+			$this->data ['itemCodesHeader'] = array_values($this->data ['itemCodesHeader']);
+		}	
+	}
+
+	protected function loadDocRowItemsCodes(array &$row)
+	{
+		$codesKinds = $this->app()->cfgItem('e10.witems.codesKinds', []);
+
+		$q = [];
+		array_push ($q, 'SELECT [codes].*');
+		array_push ($q, ' FROM [e10_witems_itemCodes] AS [codes]');
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND [codes].[item] = %i', $row['item']);
+
+
+		$codes = [];
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$ckNdx = $r['codeKind'];
+			$ck = $codesKinds[$ckNdx];
+
+			if (!isset($this->data ['itemCodesHeader'][$ckNdx]))
+			{
+				$this->data ['itemCodesHeader'][$ckNdx] = $ck;
+			}
+
+			$irc = $r->toArray();
+			$codes[$ckNdx] = $irc;
+		}
+		$row ['rowItemCodesData'] = $codes;
 	}
 
 	public function checkDocumentInfo (&$documentInfo)
