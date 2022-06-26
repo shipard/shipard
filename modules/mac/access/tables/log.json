@@ -21,9 +21,14 @@
 		{"id": "tag", "name": "Tag", "type": "int", "reference": "mac.access.tags"},
 		{"id": "msg", "name": "Zpráva", "type": "memo"}
 	],
-	"views": [
-		{"id": "default", "class": "mac.access.ViewLog", "detail": "mac.access.ViewDetailLog"}
-	],
+	"views": {
+		"default": {
+			"id": "default", "class": "mac.access.ViewLog", 
+			"details": {
+				"default": {"title": "Detail", "icon": "system/detailDetail", "type": "detail", "order": 10, "class": "mac.access.ViewDetailLog"}
+			}	
+		}
+	},
 	"forms": [
 		{"id": "default", "class": "mac.access.FormLog"}
 	]
