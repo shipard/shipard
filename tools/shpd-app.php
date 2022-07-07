@@ -384,7 +384,7 @@ class E10_App extends Application
 
 		$userRec = [
 			'lastName' => $name, 'fullName' => $name, 'personType' => 1, 'accountType' => 1, 'roles' => 'user',
-			'login' => $email, 'loginHash' => 1, 'docState' => 4000, 'docStateMain' => 2, 'accountState' => 1
+			'login' => $email, 'loginHash' => $loginHash, 'docState' => 4000, 'docStateMain' => 2, 'accountState' => 1
 			];
 		$this->db()->query ('INSERT INTO [e10_persons_persons]', $userRec);
 		$userNdx = intval ($this->db()->getInsertId ());
