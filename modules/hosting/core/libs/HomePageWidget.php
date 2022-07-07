@@ -43,8 +43,9 @@ class HomePageWidget extends WidgetBoard
 		array_push($qf, ' INNER JOIN [hosting_core_dsUsers] AS dsUsers ON dsOptions.uds = dsUsers.ndx');
 		array_push($qf, ' INNER JOIN [hosting_core_dataSources] AS dataSources ON dsUsers.dataSource = dataSources.ndx');
 		array_push($qf, ' WHERE 1');
+		array_push($qf, ' AND dataSources.[docState] IN %in', [4000, 8000]);
 		array_push($qf, ' AND dsUsers.[user] = %i', $this->app()->userNdx());
-		array_push($qf, ' AND dsUsers.[docStateMain] = 2');
+		array_push($qf, ' AND dsUsers.[docStateMain] = %i', 2);
 		array_push($qf, ' AND dsOptions.[addToToolbar] <= %i', 1);
 		
 		array_push($qf, ' ORDER BY dsOptions.[addToToolbar] DESC, dsOptions.[toolbarOrder], dataSources.[name]');		
@@ -79,8 +80,9 @@ class HomePageWidget extends WidgetBoard
 		array_push($qf, ' INNER JOIN [hosting_core_dsUsers] AS dsUsers ON dsOptions.uds = dsUsers.ndx');
 		array_push($qf, ' INNER JOIN [hosting_core_dataSources] AS dataSources ON dsUsers.dataSource = dataSources.ndx');
 		array_push($qf, ' WHERE 1');
+		array_push($qf, ' AND dataSources.[docState] IN %in', [4000, 8000]);
 		array_push($qf, ' AND dsUsers.[user] = %i', $this->app()->userNdx());
-		array_push($qf, ' AND dsUsers.[docStateMain] = 2');
+		array_push($qf, ' AND dsUsers.[docStateMain] = %i', 2);
 		array_push($qf, ' AND dsOptions.[addToDashboard] != %i', 9);		
 		array_push($qf, ' ORDER BY dsOptions.[addToDashboard] DESC, dsOptions.[dashboardOrder], dataSources.[name]');		
 		array_push($qf, ' LIMIT 0, %i', $maxDashboardCnt);
