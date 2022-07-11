@@ -1,0 +1,101 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+	<title>Výdejka {{data.head.docNumber}}</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?11" type="text/css"/>
+</head>
+<body>
+
+<table class="mainInfo">
+	<tr>
+		<td class='label'>{{@dict;Datum vystavení}}:</td><td class='value'>{{data.head.dateIssue}}</td>
+	</tr>
+	<tr>
+		<td class='label'>{{@dict;Účetní datum}}:</td><td class='value'>{{data.head.dateAccounting}}</td>
+	</tr>
+	<tr>
+		<td class='label'>{{@dict;Variabilní symbol}}:</td><td class='value'><b>{{data.head.docNumber}}</b></td>
+	</tr>
+</table>
+
+<table class="infoSecondary">
+	<tr>
+		<td class='supplier'>
+			<div class='hdr'>{{@dict;Odběratel}}:<small class='pull-right'>#{{data.person.id}}</small></div>
+			{{#data.reportTexts.supplierAndContacts}}{{{data.reportTexts.supplierAndContacts}}}{{/data.reportTexts.supplierAndContacts}}
+			{{^data.reportTexts.supplierAndContacts}}
+				<span class='address' id="supplier-address-box">
+						{{#data.reportTexts.supplier}}{{{data.reportTexts.supplier}}}{{/data.reportTexts.supplier}}
+					{{^data.reportTexts.supplier}}
+						<span class='title'>{{data.person.fullName}}</span>
+						{{data.person.address.street}}<br/>
+						{{data.person.address.city}} {{data.person.address.zipcode}}<br/>
+					{{/data.reportTexts.supplier}}
+					</span>
+				{{#data.reportTexts.contacts}}{{{data.reportTexts.contacts}}}{{/data.reportTexts.contacts}}
+			{{/data.reportTexts.supplierAndContacts}}
+		</td>	
+	</tr>
+</table>
+
+{{#data.reportTexts.subHeader}}<div class='reportTextHeader'>{{{data.reportTexts.subHeader}}}</div>{{/data.reportTexts.subHeader}}
+
+<table class="rows">
+	<thead>
+		<tr>
+			<th class='itemID'>{{@dict;ID}}</th>
+			{{^data.flags.multiLineRows}}
+				<th>{{@dict;Položka}}</th>
+			{{/data.flags.multiLineRows}}
+			{{#data.itemCodesHeader}}
+				<th class='number'>{{sn}}</th>
+			{{/data.itemCodesHeader}}
+			<th class='number'>{{@dict;Množství}}</th>
+			<th>{{@dict;Jed.}}</th>
+		</tr>
+	</thead>
+
+	{{^data.flags.multiLineRows}}
+		{{#data.invrows}}
+			<tr>
+				<td class='number'>{{itemID}}</td>
+				<td>{{text}}</td>
+				<td class='number'>{{quantity}}</td>
+				<td>{{@dict;dataItem:print.unit}}</td>
+			</tr>
+		{{/data.invrows}}
+	{{/data.flags.multiLineRows}}
+	{{#data.flags.multiLineRows}}
+		{{#data.invrows}}
+			<tr>
+				<td class="itemRow" colspan="8" style="font-weight: semi-bold;">{{text}}</td>
+			</tr>
+			<tr class="rowInfo">
+				<td class='itemID'>{{itemID}}</td>
+				<td class='number'>{{quantity}}</td>
+				<td>{{@dict;dataItem:print.unit}}</td>
+			</tr>
+		{{/data.invrows}}
+	{{/data.flags.multiLineRows}}
+</table>
+
+<div id='sign'>
+		<span class='logoImg'>
+			<img style='max-width:80mm;max-height:30mm;' src='file://{{appDir}}/reports/logo-razitko.svg'/>
+		</span>
+	<span class='signImg'>
+		{{#data.author.signature.filename}}
+			<img src='file://{{appDir}}/att/{{data.author.signature.path}}{{data.author.signature.filename}}'/>
+		{{/data.author.signature.filename}}
+	</span>
+	<br/>
+	<span class='name'>{{@dict;Vystavil}}: {{data.author.fullName}}</span>
+</div>
+
+<div class='reportTextFooter'>
+	{{#data.reportTexts.subFooter}}{{{data.reportTexts.subFooter}}}{{/data.reportTexts.subFooter}}
+</div>
+
+</body>
+</html>

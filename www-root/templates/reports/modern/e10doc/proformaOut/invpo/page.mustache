@@ -3,8 +3,7 @@
 <head>
 	<title>test</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v254" type="text/css"/>
-	<link rel="stylesheet" href="{{dsUrl}}www-root/sc/icons/fa/5/css/all.min.css">
+	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v11" type="text/css"/>
 </head>
 <body>
 
@@ -195,10 +194,7 @@
 				<td class="itemRow" colspan="8" style="font-weight: semi-bold;">{{text}}{{#additionsMarks}}<sup> {{additionsMarks}}</sup>{{/additionsMarks}}</td>
 			</tr>
 			<tr class="rowInfo">
-				<td class='itemID'>{{itemID}}</td>
-				{{#rowItemCodes}}
-					<td class='number'>{{itemCodeText}}</td>
-				{{/rowItemCodes}}
+				<td class='itemID'>{{itemID}}</td>				
 				<td class='number'>{{quantity}}</td>
 				<td>{{@dict;dataItem:print.unit}}</td>
 				{{#data.head.taxPayer}}

@@ -14,12 +14,6 @@
 	span.docName {
 		text-transform: uppercase;
 	}
-
-	td.supplierLogo {
-		text-align: right;
-		font-size: 10pt;
-		font-weight: bold;
-	}	
 </style>
 
 <table class='header'>
@@ -45,11 +39,6 @@
 			</span>
 			<br>
 			{{@dict;číslo}}: <b>{{data.head.docNumber}}</b>
-		</td>
-		<td class="supplierLogo">
-			{{#data.owner.logo.logo-nadpis.filename}}
-				<img style="height:24pt;" src='{{{@imgData;dataItem:data.owner.logo.logo-nadpis}}}'>
-			{{/data.owner.logo.logo-nadpis.filename}}
 		</td>
 	</tr>
 </table>

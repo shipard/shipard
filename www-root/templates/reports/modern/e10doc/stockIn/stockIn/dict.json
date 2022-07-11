@@ -1,15 +1,7 @@
 {
-  "Faktura - daňový doklad": {
-    "de": "Rechnung",
-    "en": "Invoice",
-    "it": "Fattura",
-    "sk": "Faktúra - daňový doklad"
-  },
-  "Faktura - neplátce DPH": {
-    "de": "Rechnung",
-    "en": "Invoice",
-    "it": "Fattura",
-    "sk": "Faktúra"
+  "Příjemka": {
+    "en": "Receiving record",
+    "sk": "Príjemka"
   },
   "číslo": {
     "de": "nr.",
@@ -88,6 +80,12 @@
     "en": "Payment date",
     "it": "Data di scadenza",
     "sk": "Dátum splatnosti"
+  },
+  "Účetní datum": {
+    "de": "Abrechnungsdatum",
+    "en": "Accounting date",
+    "it": "Data di contabile",
+    "sk": "Účtovný dátum"
   },
   "Telefon": {
     "de": "Telefon",
@@ -339,22 +337,12 @@
     "en": "Greetings",
     "sk": "Dobrý deň"
   },
-  "v příloze Vám zasíláme daňový doklad za poskytované služby": {
-    "en": "in attachments below you will find your invoice for provided services",
-    "sk": "v prílohe Vám zasielame daňový doklad za poskytované služby"
-  },
-  "Děkujeme za včasnou úhradu": {
-    "en": "Thank you for your in-time payment",
-    "sk": "Ďakujeme za včasnú úhradu"
+  "v příloze Vám zasíláme příjemku": {
+    "en": "in attachments below you will find your receiving record",
+    "sk": "v prílohe Vám zasielame príjemku"
   },
   "S pozdravem": {
     "en": "Best wishes",
     "sk": "S pozdravom"
-  },
-  "Faktura": {
-    "de": "Rechnung",
-    "en": "Invoice",
-    "it": "Fattura",
-    "sk": "Faktúra"
   }
 }

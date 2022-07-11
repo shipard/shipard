@@ -10,7 +10,7 @@ class StockOutReport extends \e10doc\core\libs\reports\DocReport
 	{
 		parent::init();
 
-		$this->setReportId('reports.default.e10doc.stockOut.stockOut');
+		$this->setReportId('e10doc.stockOut.stockOut');
 	}
 
 	public function loadData ()
