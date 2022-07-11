@@ -98,6 +98,8 @@ class TagManager extends DataView
 		if ($useReservationTypes)
 			array_push($q, ' AND [bt].[assignTags] = %i', 1);
 
+		array_push($q, ' AND [places].[docState] IN %in', [4000, 8000]);
+
 		if ($useReservationTypes)
 			array_push($q, ' ORDER BY [bt].[shortName], [parentPlaces].[id], [places].[id], [places].[ndx]');
 		else

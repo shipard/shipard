@@ -120,7 +120,7 @@ class WorkOrdersAnalysisReport extends \e10doc\core\libs\reports\GlobalReport
 			$this->setInfo('param', 'Garant', $this->reportParams ['admin']['activeTitle']);
 		}
 
-		array_push ($q, ' ORDER BY workOrders.dateClosed');
+		array_push ($q, ' ORDER BY workOrders.docNumber');
 
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
