@@ -717,7 +717,8 @@ class FormWorkOrder extends TableForm
 						$this->addList ('doclinks', '', TableForm::loAddToFormLayout/*|TableForm::coColW12*/);
 						$this->addList ('clsf', '', TableForm::loAddToFormLayout);
 					//$this->layoutClose ();
-				$this->closeTab ();
+						$this->addColumnInput ('parentWorkOrder');
+					$this->closeTab ();
 				if (!$dko['disableRows'])
 				{
 					$this->openTab();

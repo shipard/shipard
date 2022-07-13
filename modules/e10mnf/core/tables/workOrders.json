@@ -26,6 +26,7 @@
 		{"id": "centre", "name": "Středisko", "type": "int", "reference": "e10doc.base.centres"},
 		{"id": "project", "name": "Projekt", "type": "int", "reference": "e10pro.wkf.projects", "module": "e10pro.wkf"},
 		{"id": "wkfProject", "name": "Projekt", "type": "int", "reference": "wkf.base.projects", "module": "wkf.base"},
+		{"id": "parentWorkOrder", "name": "Nadřazená zakázka", "label": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
 
 		{"id": "currency", "name": "Měna", "type": "enumString", "len": 3, "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
