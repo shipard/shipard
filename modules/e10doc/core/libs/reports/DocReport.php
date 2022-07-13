@@ -295,6 +295,7 @@ class DocReport extends DocReportBase
 		
 			$this->data ['itemCodesHeader'] = array_values($this->data ['itemCodesHeader']);
 		}	
+		$this->data ['flags']['multiLineRows'] = 1;
 	}
 
 	protected function loadDocRowItemsCodes(array &$row)

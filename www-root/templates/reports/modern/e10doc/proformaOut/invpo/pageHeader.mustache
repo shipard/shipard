@@ -25,25 +25,7 @@
 <table class='header'>
 	<tr>
 		<td class='docInfo'>
-			<span class="docName">
-				{{#data.head.taxPayer}}
-					{{#data.head.correctiveDoc}}
-						{{@dict;Opravný daňový doklad}}
-					{{/data.head.correctiveDoc}}
-					{{^data.head.correctiveDoc}}
-						{{@dict;Faktura - daňový doklad}}
-					{{/data.head.correctiveDoc}}
-				{{/data.head.taxPayer}}
-				{{^data.head.taxPayer}}
-					{{#data.head.correctiveDoc}}
-						Dobropis - neplátce DPH
-					{{/data.head.correctiveDoc}}
-					{{^data.head.correctiveDoc}}
-						{{@dict;Faktura - neplátce DPH}}
-					{{/data.head.correctiveDoc}}
-				{{/data.head.taxPayer}}
-			</span>
-			<br>
+			<span class="docName">{{@dict;Zálohová faktura}}</span><br>
 			{{@dict;číslo}}: <b>{{data.head.docNumber}}</b>
 		</td>
 		<td class="supplierLogo">

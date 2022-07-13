@@ -9,7 +9,7 @@ class CashReport extends \e10doc\core\libs\reports\DocReport
 	{
 		parent::init();
 
-		$this->setReportId('reports.default.e10doc.cash.cash');
+		$this->setReportId('e10doc.cash.cash');
 	}
 
 	public function loadData ()
