@@ -1,0 +1,13 @@
+[
+	{
+		"table": "e10mnf.core.workOrders",
+		"views": {
+			"condo": {
+				"id": "condo", "class": "e10pro.condo.libs.ViewFlats",
+				"details": {
+					"condoDetail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.condo.libs.ViewDetailFlat"}
+				}
+			}
+		}
+	}
+]

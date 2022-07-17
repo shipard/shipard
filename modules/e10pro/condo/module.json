@@ -1,0 +1,10 @@
+{
+	"id": "e10pro.condo",
+	"name": "Společenství vlastníků",
+	"tables": [],
+	"extensions": ["condo"],
+	"modules": ["e10/base", "e10pro/meters"],
+	"config": [
+		{"id": "+appSkeleton", "file": "appSkeleton.json"}
+	]
+}

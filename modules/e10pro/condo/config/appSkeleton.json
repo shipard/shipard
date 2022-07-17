@@ -1,0 +1,15 @@
+{
+	"panels": {
+		"condo": {
+			"url": "/app/condo", "objectType": "panel", "zone": "sec", "name": "SVJ", "order": 5000,
+			"items": {
+				"workOrders": {"t1": "Byty", "object": "viewer", "table": "e10mnf.core.workOrders", "viewer": "condo", "order": 200000},
+				"metersValues": {"t1": "Odečty", "object": "viewer", "table": "e10pro.meters.values", "viewer": "readings", "order": 400000},
+				"reports": {"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10mnf-reports", "icon": "system/iconReports", "order": 700000}
+			},
+			"smallItems": [
+				{"t1": "Osoby", "object": "viewer", "table": "e10.persons.persons", "viewer": "default", "order": 100000}
+			]
+		}
+	}
+}
