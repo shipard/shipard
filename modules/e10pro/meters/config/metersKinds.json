@@ -1,0 +1,17 @@
+{
+  "0": {
+    "sn": "Ostatní", "fn": "Ostatní", "qsn": "---"
+  },
+  "1": {
+    "sn": "Elektroměr", "fn": "Elektroměr", "qsn": "Elektřina"
+  },
+  "2": {
+    "sn": "Plynoměr", "fn": "Plynoměr", "qsn": "Plyn"
+  },
+  "3": {
+    "sn": "Vodoměr - studená voda", "fn": "Vodoměr SV", "qsn": "SV"
+  },
+  "4": {
+    "sn": "Vodoměr - teplá voda", "fn": "Vodoměr TUV", "qsn": "TUV"
+  }
+}

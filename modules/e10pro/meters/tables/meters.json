@@ -5,9 +5,19 @@
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
 		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
 		{"id": "id", "name": "ID", "type": "string", "len": 15},
+		{"id": "sn", "name": "Výrobní číslo", "type": "string", "len": 25},
+		{"id": "place", "name": "Místo", "type": "int", "reference": "e10.base.places"},
+		{"id": "placeDesc", "name": "Poznámk k umístění", "type": "string", "len": 80},
+
+		{"id": "meterKind", "name": "Druh", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10pro.meters.kinds", "cfgValue": "", "cfgText": "fn"}},
 
 		{"id": "unit", "name": "Jednotka", "type": "enumString", "len": 8,
 			"enumCfg": {"cfgItem": "e10.witems.units", "cfgValue": "", "cfgText": "text"}},
+
+		{"id": "parentMeter", "name": "Nadřazený měřič", "type": "int", "reference": "e10pro.meters.meters"},
+
+		{"id": "workOrder", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

@@ -8,6 +8,7 @@
 		{"id": "+appOptions", "file": "e10.appOptions.json"},
 		{"id": "+e10.base.doclinks", "file": "e10.meters.docLinks.json"},
 	  {"id": "+dashboards", "file": "dashboards.json"},
-	  {"id": "+widgets", "file": "widgets.json"}
+	  {"id": "+widgets", "file": "widgets.json"},
+    {"id": "+e10pro.meters.kinds", "file": "metersKinds.json"}
   ]
 }
