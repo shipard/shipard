@@ -24,6 +24,7 @@
 		"t":		{"text": "Tuna", "shortcut": "t", "kind": "weight", "coef": 1000},
 
 		"kwh":	{"text": "Kilowathodina", "shortcut": "kWh"},
+		"mwh":	{"text": "Megawathodina", "shortcut": "mWh"},
 
 		"gj":		{"text": "Gigajoule", "shortcut": "GJ"},
 
