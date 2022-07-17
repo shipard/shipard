@@ -212,7 +212,7 @@ class TableView extends \Shipard\Base\BaseObject
 
 	public function addGroupHeader ($name)
 	{
-		$this->objectData ['dataItems'][] = array ('groupName' => $name);
+		$this->objectData ['dataItems'][] = ['groupName' => $name];
 	}
 
 	public function addListItem ($listItem)
@@ -815,8 +815,20 @@ class TableView extends \Shipard\Base\BaseObject
 
 		$h = "";
 
+		$activeTab = 0;
+		$idx = 0;
+		forEach ($this->bottomTabs as $q)
+		{
+			if ($q['active'])
+			{
+				$activeTab = $idx;
+				break;
+			}
+			$idx++;
+		}
+
 		$h .= "<div class='viewerBottomTabs'>";
-		$h .= "<input name='bottomTab' type='hidden' value='{$this->bottomTabs[0]['id']}'/>";
+		$h .= "<input name='bottomTab' type='hidden' value='{$this->bottomTabs[$activeTab]['id']}'/>";
 
 		$activeTab = 0;
 		$idx = 0;
@@ -1208,7 +1220,7 @@ class TableView extends \Shipard\Base\BaseObject
 				$codeLine .= " data-url-download='".Utils::es($listItem ['data-url-download'])."'";
 				$codeLine .= " data-action='open-link'";
 		}
-	
+
 		$codeLine .= ">";
 
 		$codeLine .= $this->rowHtmlContent ($listItem);
@@ -1313,7 +1325,7 @@ class TableView extends \Shipard\Base\BaseObject
 
 		if (isset ($listItem ['txt']))
 			$codeLine .= "<div class='txt'>{$listItem ['txt']}</div>";
-		
+
 		if (isset($listItem['content']))
 		{
 			if (!$this->contentRenderer)
@@ -1322,7 +1334,7 @@ class TableView extends \Shipard\Base\BaseObject
 			$this->contentRenderer->setContent ($listItem ['content']);
 			$codeLine .= "<div class='content'>".$this->contentRenderer->createCode ()."</div>";;
 		}
-	
+
 		$codeLine .= "</td>";
 
 		//if ($this->inlineDetailClass != '')
