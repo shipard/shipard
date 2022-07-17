@@ -1,7 +1,7 @@
 {
 	"panels": {
 		"e10mnf": {
-			"url": "/app/mnf", "objectType": "panel", "zone": "sec", "name": "Výroba", "order": 333000, "enabledCfgItem": "usePanelMnf",
+			"url": "/app/mnf", "objectType": "panel", "zone": "sec", "name": "Výroba", "order": 333000, "enabledCfgItem": "options.e10doc-commerce.usePanelMnf",
 			"items": {
 				"workOrders": {"t1": "Zakázky", "object": "viewer", "table": "e10mnf.core.workOrders", "viewer": "default", "order": 200000},
 				"ordersOut": {"t1": "Objednávky", "object": "viewer", "table": "e10doc.core.heads", "viewer": "orderOut", "order": 300000},
