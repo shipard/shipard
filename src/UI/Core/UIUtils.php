@@ -59,7 +59,7 @@ class UIUtils
 		return $cr->createCode();
 	}
 
-	static function renderSubColumns ($app, $data, $sci)
+	static function renderSubColumns ($app, $data, $sci, $returnData = FALSE)
 	{
 		$content = [];
 		if (isset ($sci['groups']))
@@ -171,10 +171,18 @@ class UIUtils
 		else
 		{
 			$t = [];
-			$h = ['txt' => 'Název', 'val' => ' HodnotaX'];
+			$h = ['txt' => 'Název', 'val' => ' Hodnota'];
 			foreach ($sci['columns'] as $col)
-				$t[] = ['txt' => $col['name'], 'val' => $app->subColumnValue ($col, $data[$col['id']])];
+			{
+				if (isset($data[$col['id']]))
+					$t[] = ['txt' => $col['name'], 'val' => $app->subColumnValue ($col, $data[$col['id']])];
+			}
 			$content[] = ['type' => 'table', 'table' => $t, 'header' => $h];
+		}
+
+		if ($returnData)
+		{
+			return $content;
 		}
 
 		$cr = new ContentRenderer($app);
