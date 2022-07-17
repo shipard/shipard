@@ -8,7 +8,7 @@
 		{"id": "docNumber", "name": "Číslo zakázky", "type": "string", "len": 20},
 		{"id": "docKind", "name": "Druh zakázky", "type": "enumInt", "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "e10mnf.workOrders.kinds", "cfgValue": "ndx", "cfgText": "fullName"}},
-		{"id": "title", "name": "Text dokladu", "type": "string", "len": 120},
+		{"id": "title", "name": "Název zakázky", "label": "Název", "type": "string", "len": 120},
 
 		{"id": "owner", "name": "Vlastní adresa", "type": "int", "reference": "e10.persons.persons"},
 
@@ -26,7 +26,7 @@
 		{"id": "centre", "name": "Středisko", "type": "int", "reference": "e10doc.base.centres"},
 		{"id": "project", "name": "Projekt", "type": "int", "reference": "e10pro.wkf.projects", "module": "e10pro.wkf"},
 		{"id": "wkfProject", "name": "Projekt", "type": "int", "reference": "wkf.base.projects", "module": "wkf.base"},
-		{"id": "parentWorkOrder", "name": "Nadřazená zakázka", "label": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
+		{"id": "parentWorkOrder", "name": "Nadřazená zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
 
 		{"id": "currency", "name": "Měna", "type": "enumString", "len": 3, "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
@@ -51,11 +51,14 @@
 		{"id": "rgAmountHc", "name": "Částka zádržného [MD]", "type": "money"},
 		{"id": "rgPercent", "name": "Procento zádržného", "type": "number", "dec": 1},
 
+		{"id": "vdsData", "name": "Data", "type": "subColumns"},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
 	"lists": [
 		{"id": "rows", "class": "e10.base.ListRows", "name": "Řádky", "table": "e10mnf.core.workOrdersRows", "queryColumn": "workOrder", "orderColumn": "rowOrder"},
+		{"id": "persons", "class": "e10.base.ListRows", "name": "Osoby", "table": "e10mnf.core.workOrdersPersons", "queryColumn": "workOrder", "orderColumn": "rowOrder"},
 		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"},
 		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"},
 		{"id": "address", "class": "e10.persons.ListAddress", "name": "Adresy"}

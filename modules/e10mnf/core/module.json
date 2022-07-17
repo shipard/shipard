@@ -2,7 +2,7 @@
 	"id": "e10mnf.core",
 	"name": "Výroba",
 	"tables": [
-		"workOrders", "workOrdersRows", "workRecs", "workRecsRows"
+		"workOrders", "workOrdersRows", "workOrdersPersons", "workRecs", "workRecsRows"
 	],
 	"extensions": ["mnf"],
 	"modules": ["e10doc/buy", "e10mnf/base", "e10doc/orderout"],

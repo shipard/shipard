@@ -14,6 +14,8 @@ use \e10doc\core\libs\GlobalParams;
  */
 class TableWorkOrders extends DbTable
 {
+	CONST wotMnf = 0, wotAcc = 1;
+
 	public function __construct ($dbmodel)
 	{
 		parent::__construct ($dbmodel);
@@ -179,6 +181,11 @@ class TableWorkOrders extends DbTable
 
 	public function makeDocNumber (&$recData)
 	{
+		$dbCounter = $this->app()->cfgItem ('e10mnf.workOrders.dbCounters.'.$recData['dbCounter'], FALSE);
+		$manualNumbering = $dbCounter['manualNumbering'] ?? 0;
+		if ($manualNumbering)
+			return;
+
 		$formula = '';
 
 		if ($formula == '')
@@ -250,6 +257,28 @@ class TableWorkOrders extends DbTable
 		$e = $this->app()->createObject($aeClassId);
 		return $e;
 	}
+
+	public function subColumnsInfo ($recData, $columnId)
+	{
+		if ($columnId === 'vdsData')
+		{
+			$wok = $this->app()->cfgItem ('e10mnf.workOrders.kinds.'.$recData['docKind'], NULL);
+			if (!$wok || !isset($wok['vds']) || !$wok['vds'])
+				return FALSE;
+
+			$vds = $this->db()->query ('SELECT * FROM [vds_base_defs] WHERE [ndx] = %i', $wok['vds'])->fetch();
+			if (!$vds)
+				return FALSE;
+
+			$sc = json_decode($vds['structure'], TRUE);
+			if (!$sc || !isset($sc['fields']))
+				return FALSE;
+
+			return $sc['fields'];
+		}
+
+		return parent::subColumnsInfo ($recData, $columnId);
+	}
 }
 
 
@@ -263,8 +292,11 @@ class ViewWorkOrders extends TableView
 	var $tableDocsHeads;
 	var $invoices = [];
 	var $invoicesAmounts = [];
+	var $personsLists = [];
 	var $classification;
 	var $dbCounters;
+
+	CONST vptCustomer = 0, vptDocNumber = 1, vptTitle = 2;
 
 	public function init ()
 	{
@@ -359,32 +391,51 @@ class ViewWorkOrders extends TableView
 		if ($mainQuery === 'trash')
 			array_push ($q, ' AND workOrders.[docStateMain] = 4');
 
+		$this->qryOrder($q);
 
-		if ($mainQuery === 'all')
-			array_push($q, ' ORDER BY workOrders.[dateIssue] ' . $this->sqlLimit());
-		else
-			array_push($q, ' ORDER BY workOrders.[docStateMain], workOrders.[dateIssue] DESC, workOrders.[ndx] DESC' . $this->sqlLimit());
+		array_push($q, $this->sqlLimit());
 
 		$this->runQuery ($q);
 	}
 
+	protected function qryOrder(&$q)
+	{
+		$mainQuery = $this->mainQueryId ();
+
+		if ($mainQuery === 'all')
+			array_push($q, ' ORDER BY workOrders.[dateIssue] ');
+		else
+			array_push($q, ' ORDER BY workOrders.[docStateMain], workOrders.[dateIssue] DESC, workOrders.[ndx] DESC');
+	}
+
 	public function renderRow ($item)
 	{
+		$dko = $this->table->docKindOptions($item);
+		$vpt = $dko['viewerPrimaryTitle'] ?? 0;
+
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['icon'] = $this->table->tableIcon ($item);
-		$listItem ['t1'] = $item ['customerFullName'];
+
+		if ($vpt === self::vptDocNumber)
+			$listItem ['t1'] = $item ['docNumber'];
+		elseif ($vpt === self::vptTitle)
+			$listItem ['t1'] = $item ['title'];
+		else
+			$listItem ['t1'] = $item ['customerFullName'];
+
 		$listItem ['dbCounter'] = $item ['dbCounter'];
 		$listItem ['currency'] = $item ['currency'];
 		$listItem ['sumPrice'] = $item ['sumPrice'];
 
-		$i1 = ['text' => utils::nf ($item['sumPrice'], 2), 'prefix' => $this->currencies[$item ['currency']]['shortcut']];
-		$listItem ['i1'] = $i1;
-		//$i2 = ['text' => utils::nf ($item['sumPriceHc'], 2), 'prefix' => $this->currencies[$item ['homeCurrency']]['shortcut']];
-		//$listItem ['i2'] = $i2;
+		if ($dko['workOrderType'] === TableWorkOrders::wotMnf)
+		{
+			$i1 = ['text' => utils::nf ($item['sumPrice'], 2), 'prefix' => $this->currencies[$item ['currency']]['shortcut']];
+			$listItem ['i1'] = $i1;
+		}
 
 		if ($item ['intTitle'] !== '')
 			$listItem ['t3'] = $item ['intTitle'];
-		else
+		elseif ($vpt !== self::vptTitle)
 			$listItem ['t3'] = $item ['title'];
 
 		$props = [];
@@ -393,16 +444,19 @@ class ViewWorkOrders extends TableView
 			$docNumber['suffix'] = $item['refId1'];
 		$props[] = $docNumber;
 
-		if ($item['dateIssue'])
-			$props[] = ['icon' => 'system/iconDateOfOrigin', 'text' => utils::datef ($item ['dateIssue'], '%d'), 'class' => ''];
+		if ($dko['workOrderType'] === TableWorkOrders::wotMnf)
+		{
+			if ($item['dateIssue'])
+				$props[] = ['icon' => 'system/iconDateOfOrigin', 'text' => utils::datef ($item ['dateIssue'], '%d'), 'class' => ''];
 
-		if ($item['dateDeadlineConfirmed'])
-			$props[] = ['icon' => 'system/iconCalendar', 'text' => utils::datef ($item ['dateDeadlineConfirmed'], '%d'), 'class' => ''];
-		elseif ($item['dateDeadlineRequested'])
-			$props[] = ['icon' => 'system/iconCalendar', 'text' => utils::datef ($item ['dateDeadlineRequested'], '%d'), 'class' => ''];
+			if ($item['dateDeadlineConfirmed'])
+				$props[] = ['icon' => 'system/iconCalendar', 'text' => utils::datef ($item ['dateDeadlineConfirmed'], '%d'), 'class' => ''];
+			elseif ($item['dateDeadlineRequested'])
+				$props[] = ['icon' => 'system/iconCalendar', 'text' => utils::datef ($item ['dateDeadlineRequested'], '%d'), 'class' => ''];
 
-		if ($item['dateClosed'])
-			$props[] = ['icon' => 'system/iconStop', 'text' => utils::datef ($item ['dateClosed'], '%d'), 'class' => ''];
+			if ($item['dateClosed'])
+				$props[] = ['icon' => 'system/iconStop', 'text' => utils::datef ($item ['dateClosed'], '%d'), 'class' => ''];
+		}
 
 		$listItem ['t2'] = $props;
 
@@ -418,6 +472,8 @@ class ViewWorkOrders extends TableView
 
 		$loadInvoices = 1;
 		$bottomTabId = intval($this->bottomTabId());
+		if (!$bottomTabId && $this->dbCounters !== FALSE)
+			$bottomTabId = key ($this->dbCounters);
 
 		if ($bottomTabId && $this->dbCounters[$bottomTabId]['invoicesInViewer'] === 0)
 			$loadInvoices = 0;
@@ -452,6 +508,25 @@ class ViewWorkOrders extends TableView
 					$this->invoicesAmounts[$woNdx][$hc] = 0.0;
 				if ($r['docDocStateMain'] === 2 && $r['docDocState'] !== 4100)
 					$this->invoicesAmounts[$woNdx][$hc] += $r['priceAll'];
+			}
+		}
+
+		$loadPersonsList = 0;
+		if ($bottomTabId && ($this->dbCounters[$bottomTabId]['personsInViewer']))
+			$loadPersonsList = 1;
+		if ($loadPersonsList)
+		{
+			$q = [];
+			array_push ($q, 'SELECT woPersons.*, persons.fullName AS personFullName');
+			array_push ($q, ' FROM [e10mnf_core_workOrdersPersons] AS woPersons');
+			array_push ($q, ' LEFT JOIN [e10_persons_persons] AS persons ON woPersons.person = persons.ndx');
+			array_push ($q, ' WHERE woPersons.workOrder IN %in', $this->pks);
+			array_push ($q, ' ORDER BY persons.lastName');
+			$rows = $this->db()->query($q);
+			foreach ($rows as $r)
+			{
+				$pl = ['text' => $r['personFullName'], 'class' => 'label label-default', 'icon' => 'system/iconUser'];
+				$this->personsLists[$r['workOrder']][] = $pl;
 			}
 		}
 	}
@@ -526,6 +601,11 @@ class ViewWorkOrders extends TableView
 					$item['t2'][] = $plus;
 				}
 			}
+		}
+
+		if (isset($this->personsLists[$item ['pk']]))
+		{
+			$item['t2'] = array_merge($item['t2'], $this->personsLists[$item ['pk']]);
 		}
 	}
 
@@ -651,6 +731,9 @@ class FormWorkOrder extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 		$this->setFlag ('maximize', 1);
 
+		$dbCounter = $this->app()->cfgItem ('e10mnf.workOrders.dbCounters.'.$this->recData['dbCounter'], NULL);
+		$manualNumbering = $dbCounter['manualNumbering'] ?? 0;
+
 		$useDocKinds = $this->useDocKinds();
 		$this->dko = $this->table->docKindOptions ($this->recData);
 		$dko = $this->dko;
@@ -659,6 +742,8 @@ class FormWorkOrder extends TableForm
 			$tabs ['tabs'][] = ['text' => 'Záhlaví', 'icon' => 'system/formHeader'];
 			if (!$dko['disableRows'])
 				$tabs ['tabs'][] = ['text' => 'Řádky', 'icon' => 'system/formRows'];
+			if ($dko['usePersonsList'])
+				$tabs ['tabs'][] = ['text' => 'Osoby', 'icon' => 'tables/e10.persons.persons'];
 			if ($dko['useDescription'])
 				$tabs ['tabs'][] = ['text' => 'Popis', 'icon' => 'formDescription'];
 			if ($dko['useAddress'])
@@ -667,62 +752,80 @@ class FormWorkOrder extends TableForm
 
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
-					$this->layoutOpen (TableForm::ltHorizontal);
-						$this->layoutOpen (TableForm::ltForm);
-							$this->addColumnInput ('customer');
-							if ($useDocKinds === 2)
-								$this->addColumnInput ('docKind');
-							if ($dko['useDateIssue'])
-								$this->addColumnInput ('dateIssue');
-							if ($dko['useRefId1'])
-								$this->addColumnInput ('refId1');
-							if ($dko['useRefId2'])
-								$this->addColumnInput ('refId2');
-							if ($dko['useDateContract'])
-								$this->addColumnInput ('dateContract');
-							if ($dko['useDateDeadlineRequested'])
-								$this->addColumnInput ('dateDeadlineRequested');
-							if ($dko['useDateBegin'])
-								$this->addColumnInput ('dateBegin');
-							if ($dko['useDateDeadlineConfirmed'])
-								$this->addColumnInput ('dateDeadlineConfirmed');
-						$this->layoutClose ('width50');
+					if ($manualNumbering)
+						$this->addColumnInput ('docNumber');
 
-						$this->layoutOpen (TableForm::ltForm);
-							if ($dko['priceOnHead'])
-								$this->addColumnInput ('sumPrice');
-							$this->addColumnInput ('currency');
-							if ($this->recData ['currency'] !== $this->recData ['homeCurrency'])
-								$this->addColumnInput ('exchangeRate');
+					$this->addColumnInput ('customer');
+					$this->addColumnInput ('currency');
+					$this->addColumnInput ('title');
 
-							if ($dko['useRetentionGuarantees'] || $this->recData['retentionGuarantees'] != 0)
-							{
-								$this->addColumnInput ('retentionGuarantees');
-								if ($this->recData['retentionGuarantees'] == 1)
-									$this->addColumnInput ('rgAmount');
-								elseif ($this->recData['retentionGuarantees'] == 2)
-									$this->addColumnInput ('rgPercent');
-							}
+					if ($dko['workOrderType'] === TableWorkOrders::wotMnf)
+					{
+						$this->layoutOpen (TableForm::ltHorizontal);
+							$this->layoutOpen (TableForm::ltForm);
+								if ($useDocKinds === 2)
+									$this->addColumnInput ('docKind');
+								if ($dko['useDateIssue'])
+									$this->addColumnInput ('dateIssue');
+								if ($dko['useRefId1'])
+									$this->addColumnInput ('refId1');
+								if ($dko['useRefId2'])
+									$this->addColumnInput ('refId2');
+								if ($dko['useDateContract'])
+									$this->addColumnInput ('dateContract');
+								if ($dko['useDateDeadlineRequested'])
+									$this->addColumnInput ('dateDeadlineRequested');
+								if ($dko['useDateBegin'])
+									$this->addColumnInput ('dateBegin');
+								if ($dko['useDateDeadlineConfirmed'])
+									$this->addColumnInput ('dateDeadlineConfirmed');
+							$this->layoutClose ('width50');
 
-							if ($this->table->app()->cfgItem ('options.core.useCentres', 0))
-								$this->addColumnInput ('centre');
-							if ($this->table->app()->cfgItem ('options.core.useProjects', 0))
-								$this->addColumnInput ('project');
+							$this->layoutOpen (TableForm::ltForm);
+								if ($dko['priceOnHead'])
+									$this->addColumnInput ('sumPrice');
+								if ($this->recData ['currency'] !== $this->recData ['homeCurrency'])
+									$this->addColumnInput ('exchangeRate');
+
+								if ($dko['useRetentionGuarantees'] || $this->recData['retentionGuarantees'] != 0)
+								{
+									$this->addColumnInput ('retentionGuarantees');
+									if ($this->recData['retentionGuarantees'] == 1)
+										$this->addColumnInput ('rgAmount');
+									elseif ($this->recData['retentionGuarantees'] == 2)
+										$this->addColumnInput ('rgPercent');
+								}
+
+								if ($this->table->app()->cfgItem ('options.core.useCentres', 0))
+									$this->addColumnInput ('centre');
+								if ($this->table->app()->cfgItem ('options.core.useProjects', 0))
+									$this->addColumnInput ('project');
+							$this->layoutClose ();
 						$this->layoutClose ();
-					$this->layoutClose ();
+					}
 					//$this->layoutOpen (TableForm::ltForm/*TableForm::ltGrid*/);
-						$this->addColumnInput ('title'/*, TableForm::coColW12*/);
 						if ($dko['useIntTitle'])
 							$this->addColumnInput ('intTitle'/*, TableForm::coColW12*/);
 						$this->addList ('doclinks', '', TableForm::loAddToFormLayout/*|TableForm::coColW12*/);
 						$this->addList ('clsf', '', TableForm::loAddToFormLayout);
 					//$this->layoutClose ();
+
+						$this->addSeparator(self::coH4);
+						$this->addSubColumns('vdsData');
+						$this->addSeparator(self::coH4);
+
 						$this->addColumnInput ('parentWorkOrder');
 					$this->closeTab ();
 				if (!$dko['disableRows'])
 				{
 					$this->openTab();
 						$this->addList('rows');
+					$this->closeTab();
+				}
+				if ($dko['usePersonsList'])
+				{
+					$this->openTab();
+						$this->addList('persons');
 					$this->closeTab();
 				}
 				if ($dko['useDescription'])

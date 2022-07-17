@@ -14,6 +14,8 @@
 					"options": {"0": "ne", "1": "ano"}},
 				{"cfgKey": "usePanelCommerce", "cfgName": "Používat panel Obchod",
 					"options": {"0": "ne", "1": "ano"}},
+				{"cfgKey": "usePanelMnf", "cfgName": "Používat panel Výroba",
+					"options": {"0": "ne", "1": "ano"}},
 				{"cfgKey": "useWorkOrdersOnPanelCommerce", "cfgName": "Výkazy práce na panelu Obchod",
 					"options": {"0": "ne", "1": "ano"}}
 			]

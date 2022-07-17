@@ -2,7 +2,7 @@
 
 namespace e10mnf\core;
 
-use \e10\utils, \e10\TableFormShow, \e10\TableForm;
+use \e10\utils, \Shipard\Form\TableFormShow, \e10\TableForm;
 
 
 /**

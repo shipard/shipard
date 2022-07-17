@@ -1,0 +1,17 @@
+{
+	"id": "e10mnf.core.workOrdersPersons", "sql": "e10mnf_core_workOrdersPersons", "name": "Osoby zakázek",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "workOrder", "name": "Zakázka", "type": "int"},
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+
+		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+
+		{"id": "validFrom", "name": "Platnost od", "type": "date"},
+		{"id": "validTo", "name": "Platnost do", "type": "date"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10mnf.core.FormPerson"}
+	],
+	"options": ["systemTable"]
+}

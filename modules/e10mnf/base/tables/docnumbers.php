@@ -28,8 +28,10 @@ class TableDocNumbers extends DbTable
 					'ndx' => $r['ndx'], 'docKeyId' => $r ['docKeyId'],
 					'name' => $r ['fullName'], 'shortName' => $r ['shortName'],
 					'tabName' => $r ['tabName'],
+					'manualNumbering' => $r ['manualNumbering'],
 					'useDocKinds' => $r['useDocKinds'], 'docKind' => $r['docKind'],
 					'invoicesInViewer' => $r ['invoicesInViewer'],
+					'personsInViewer' => $r ['personsInViewer'],
 			];
 		}
 
@@ -132,7 +134,9 @@ class FormDocNumber extends TableForm
 		$this->openForm ();
 			$this->addColumnInput ('fullName');
 			$this->addColumnInput ('shortName');
-			$this->addColumnInput ('docKeyId');
+			$this->addColumnInput ('manualNumbering');
+			if (!$this->recData['manualNumbering'])
+				$this->addColumnInput ('docKeyId');
 			$this->addColumnInput ('tabName');
 			$this->addColumnInput ('order');
 			$this->addColumnInput ('useDocKinds');
@@ -141,7 +145,7 @@ class FormDocNumber extends TableForm
 				$this->addColumnInput ('docKind');
 
 			$this->addColumnInput ('invoicesInViewer');
-
+			$this->addColumnInput ('personsInViewer');
 		$this->closeForm ();
 	}
 }

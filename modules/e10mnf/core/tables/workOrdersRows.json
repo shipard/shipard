@@ -21,7 +21,19 @@
 		{"id": "priceItem", "name": "Jednotková cena", "label": "Cena/jed", "type": "number", "dec": 4, "options": ["saveOnChange"]},
 		{"id": "priceItemHc", "name": "Jednotková cena [MD]", "type": "number", "dec": 4},
 		{"id": "priceAll", "name": "Cena celkem", "type": "number", "dec": 4, "options": ["saveOnChange"]},
-		{"id": "priceAllHc", "name": "Cena celkem [MD]", "type": "number", "dec": 4, "options": ["saveOnChange"]}
+		{"id": "priceAllHc", "name": "Cena celkem [MD]", "type": "number", "dec": 4, "options": ["saveOnChange"]},
+
+		{"id": "refId1", "name": "Interní číslo zakázky", "type": "string", "len": 30},
+		{"id": "refId2", "name": "Objednávka / HS", "type": "string", "len": 30},
+		{"id": "refId3", "name": "Referenční kód 3", "type": "string", "len": 30},
+		{"id": "refId4", "name": "Referenční kód 4", "type": "string", "len": 30},
+
+		{"id": "dateDeadlineRequested", "name": "Požadovaný termín", "type": "date"},
+		{"id": "dateDeadlineConfirmed", "name": "Potvrzený termín", "type": "date"},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"}
+
 	],
 	"forms": [
 		{"id": "default", "class": "e10mnf.core.FormRow"}

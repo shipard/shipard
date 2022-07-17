@@ -5,6 +5,7 @@
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
 		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 40},
 		{"id": "tabName", "name": "Titulek záložky prohlížeče", "type": "string", "len": 40},
+		{"id": "manualNumbering", "name": "Ruční číslování", "type": "logical", "options": ["saveOnChange"]},
 		{"id": "docKeyId", "name": "Kód pro číslo zakázky", "type": "string", "len": 5},
 		{"id": "order", "name": "Pořadí", "type": "int"},
 
@@ -15,6 +16,8 @@
 
 		{"id": "invoicesInViewer", "name": "Zobrazovat faktury v prohlížeči", "type": "enumInt",
 			"enumValues": {"0": "Ne", "1": "Jen celkovou částku", "2": "Seznam faktur"}},
+		{"id": "personsInViewer", "name": "Zobrazovat Osoby v prohlížeči", "type": "enumInt",
+			"enumValues": {"0": "Ne", "1": "Ano"}},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

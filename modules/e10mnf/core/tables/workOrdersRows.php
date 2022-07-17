@@ -60,9 +60,14 @@ class TableWorkOrdersRows extends DbTable
  */
 class FormRow extends TableForm
 {
+	var $dko = NULL;
+
 	public function renderForm ()
 	{
 		$ownerRecData = $this->option ('ownerRecData');
+		$this->dko =  $this->app()->cfgItem ('e10mnf.workOrders.kinds.'.$ownerRecData['docKind'], NULL);
+		if (!$this->dko)
+			$this->dko =  $this->app()->cfgItem ('e10mnf.workOrders.kinds.0', NULL);
 
 		$this->openForm (TableForm::ltGrid);
 
@@ -80,7 +85,49 @@ class FormRow extends TableForm
 			$this->addColumnInput ('priceItem', TableForm::coColW4);
 		$this->closeRow ();
 
+		$neededCols = [];
+		if ($this->dko['useRowDateDeadlineRequested'])
+			$neededCols[] = 'dateDeadlineRequested';
+		if ($this->dko['useRowDateDeadlineConfirmed'])
+			$neededCols[] = 'dateDeadlineConfirmed';
+		if ($this->dko['useRowRefId1'])
+			$neededCols[] = 'refId1';
+		if ($this->dko['useRowRefId2'])
+			$neededCols[] = 'refId2';
+		if ($this->dko['useRowRefId3'])
+			$neededCols[] = 'refId3';
+		if ($this->dko['useRowRefId4'])
+			$neededCols[] = 'refId4';
 
+		$cols = 2;
+		$width = TableForm::coColW6;
+		$rowOpen = 0;
+		$colCnt = 0;
+		foreach ($neededCols as $ncid)
+		{
+			if (!$rowOpen)
+			{
+				$rowOpen = 1;
+				$this->openRow ();
+			}
+			$this->addColumnInput ($ncid, $width);
+			$colCnt++;
+			if ($colCnt === $cols)
+			{
+				$this->closeRow ();
+				$rowOpen = 0;
+			}
+		}
+		if ($rowOpen)
+			$this->closeRow ();
+
+		if ($this->dko['useRowValidFromTo'])
+		{
+			$this->openRow ();
+				$this->addColumnInput ('validFrom', TableForm::coColW6);
+				$this->addColumnInput ('validTo', TableForm::coColW6);
+			$this->closeRow ();
+		}
 
 		$this->closeForm ();
 	}

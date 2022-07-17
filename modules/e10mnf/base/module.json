@@ -7,6 +7,8 @@
 	  {"id": "+appOptions", "file": "e10.appOptions.json"},
     {"id": "+e10.base.doclinks", "name": "Vazby dokumentů", "file": "doclinks.json"},
     {"id": "+e10mnf.workRecs.wrTypes", "file": "wrTypes.json"},
+    {"id": "+e10mnf.workOrders.woTypes", "file": "woTypes.json"},
+    {"id": "+e10mnf.workOrders.woFrequency", "file": "woFrequency.json"},
     {"id": "+e10mnf.workOrders.woDetailParts", "file": "woDetailParts.json"}
   ]
 }

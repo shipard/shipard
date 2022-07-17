@@ -7,10 +7,13 @@
 		{"id": "order", "name": "Pořadí", "type": "int"},
 
 		{"id": "workOrderType", "name": "Druh zakázky", "type": "enumInt", "options": ["saveOnChange"],
-			"enumValues": {"0": "Běžná", "1": "Režijní"}},
+			"enumCfg": {"cfgItem": "e10mnf.workOrders.woTypes", "cfgValue": "", "cfgText": "sn"}},
+		{"id": "workOrderFrequency", "name": "Časovost", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10mnf.workOrders.woFrequency", "cfgValue": "", "cfgText": "sn"}},
 		{"id": "disableRows", "name": "Nepoužívat řádky zákazky", "type": "logical"},
 		{"id": "priceOnHead", "name": "Zadávat cenu na hlavičce", "type": "logical"},
 		{"id": "useDescription", "name": "Použít textový popis zakázky", "type": "logical"},
+		{"id": "usePersonsList", "name": "Používat Osoby na Zakázce", "type": "logical"},
 
 		{"id": "useDateIssue", "name": "Používat Datum vystavení", "type": "logical"},
 		{"id": "labelDateIssue", "name": "Popisek", "type": "string", "len": 40},
@@ -27,19 +30,46 @@
 		{"id": "useDateDeadlineConfirmed", "name": "Používat Potvrzený termín", "type": "logical"},
 		{"id": "labelDateDeadlineConfirmed", "name": "Popisek", "type": "string", "len": 40},
 
-		{"id": "useRefId1", "name": "Používat Interní číslo zakázky", "type": "logical"},
+		{"id": "useRefId1", "name": "Používat Číslo objednávky / HS", "type": "logical"},
 		{"id": "labelRefId1", "name": "Popisek", "type": "string", "len": 40},
 
-		{"id": "useRefId2", "name": "Používat Číslo objednávky / HS", "type": "logical"},
+		{"id": "useRefId2", "name": "Používat Interní číslo zakázky", "type": "logical"},
 		{"id": "labelRefId2", "name": "Popisek", "type": "string", "len": 40},
 
 		{"id": "useIntTitle", "name": "Používat Interní název zakázky", "type": "logical"},
 		{"id": "useRetentionGuarantees", "name": "Používat Zádržné", "type": "logical"},
 
+		{"id": "useRowValidFromTo", "name": "Používat v řádcích Datum platnosti", "type": "logical"},
+
+		{"id": "useRowDateDeadlineRequested", "name": "Používat Požadovaný termín", "type": "logical"},
+		{"id": "labelRowDateDeadlineRequested", "name": "Popisek", "type": "string", "len": 40},
+
+		{"id": "useRowDateDeadlineConfirmed", "name": "Používat Potvrzený termín", "type": "logical"},
+		{"id": "labelRowDateDeadlineConfirmed", "name": "Popisek", "type": "string", "len": 40},
+
+		{"id": "useRowRefId1", "name": "Používat v řádcích Číslo objednávky / HS", "type": "logical"},
+		{"id": "labelRowRefId1", "name": "Popisek", "type": "string", "len": 40},
+
+		{"id": "useRowRefId2", "name": "Používat v řádcích Interní kód 2", "type": "logical"},
+		{"id": "labelRowRefId2", "name": "Popisek", "type": "string", "len": 40},
+
+		{"id": "useRowRefId3", "name": "Používat v řádcích Interní kód 3", "type": "logical"},
+		{"id": "labelRowRefId3", "name": "Popisek", "type": "string", "len": 40},
+
+		{"id": "useRowRefId4", "name": "Používat v řádcích Interní kód 4", "type": "logical"},
+		{"id": "labelRowRefId4", "name": "Popisek", "type": "string", "len": 40},
+
+
 		{"id": "useAddress", "name": "Zadávat adresy", "type": "enumInt",
 			"enumValues": {"0": "Ne", "1": "Ano"}},
+
+
 		{"id": "invoicesInDetail", "name": "Zobrazovat faktury v detailu", "type": "enumInt",
 			"enumValues": {"1": "Jen celkovou částku", "2": "Seznam faktur", "0": "Ne"}},
+		{"id": "viewerPrimaryTitle", "name": "Hlavní titulek v prohlížeči", "type": "enumInt",
+			"enumValues": {"0": "Zákazník", "1": "Číslo zakázky", "2": "Název zakázky"}},
+
+		{"id": "vds", "name": "Rozšíření struktury", "type": "int", "reference":  "vds.base.defs"},
 
 		{"id": "useDetailMainSettings", "name": "Vlastní nastavení detailu prohlížeče", "type": "logical", "options": ["saveOnChange"]},
 		{"id": "detailMainPart1", "name": "Obsah detailu zakázky - pozice 1", "type": "enumInt",
