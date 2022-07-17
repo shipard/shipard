@@ -10,6 +10,7 @@ use \Shipard\UI\Core\UIUtils;
 class WorkOrderInfo extends Utility
 {
   var $recData = NULL;
+	var $forPrint = 0;
 
   var $vdsData;
   var $scDef;
@@ -88,7 +89,12 @@ class WorkOrderInfo extends Utility
 		$list = [];
 		forEach ($rows as $r)
 		{
-			$item = ['personName' => $r['personFullName']];
+			$item = [];
+			if ($this->forPrint)
+				$item['personName'] = $r['personFullName'];
+			else
+				$item['personName'] = ['text' => $r['personFullName'], 'docAction' => 'edit', 'pk' => $r['person'], 'table' => 'e10.persons.persons'];
+
 			$this->loadProperties ('e10.persons.persons', $r['person'], $item, $h);
 			$list[] = $item;
 		}
@@ -107,7 +113,6 @@ class WorkOrderInfo extends Utility
 	protected function loadProperties ($tableId, $recNdx, &$dstRow, &$tableHeader)
 	{
 		$props = \e10\base\getPropertiesTable ($this->app, $tableId, $recNdx);
-
 
 		foreach ($props as $groupId => $properties)
 		{
