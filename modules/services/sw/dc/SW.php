@@ -129,7 +129,7 @@ class SW extends \e10\DocumentCard
 			'name' => 'Název',
 			'lifeCycle' => 'Stav',
 			'dateRelease' => 'Zveřejněno',
-			'dateObsolete' => 'Zastará',
+			'dateObsolete' => 'Zastaralé',
 			'dateEnd' => 'Ukončeno',
 		];
 

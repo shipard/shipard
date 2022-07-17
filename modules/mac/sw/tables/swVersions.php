@@ -84,7 +84,7 @@ class ViewSWVersions extends TableViewGrid
 			'name' => 'Název',
 			'lifeCycle' => 'Stav',
 			'dateRelease' => 'Zveřejneno',
-			'dateObsolete' => 'Zastará',
+			'dateObsolete' => 'Zastaralé',
 			'dateEnd' => 'Ukončeno',
 		];
 		$this->setGrid ($g);
