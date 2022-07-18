@@ -1,17 +1,13 @@
 <?php
 
 namespace lib\cfg;
-
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
-
-use E10Doc\Core\e10utils, E10\TableForm;
+use \e10doc\core\libs\E10Utils;
 
 
 /**
  * Class AddFiscalYearWizard
- * @package lib\cfg
  */
-class AddFiscalYearWizard extends \E10\Wizard
+class AddFiscalYearWizard extends \Shipard\Form\Wizard
 {
 	public function doStep ()
 	{
@@ -37,7 +33,7 @@ class AddFiscalYearWizard extends \E10\Wizard
 		$this->setFlag ('formStyle', 'e10-formStyleWizard');
 
 		$this->openForm ();
-			$this->addInput ('fiscalYear', 'Rok', TableForm::INPUT_STYLE_INT);
+			$this->addInput ('fiscalYear', 'Rok', self::INPUT_STYLE_INT);
 		$this->closeForm ();
 	}
 
@@ -50,7 +46,7 @@ class AddFiscalYearWizard extends \E10\Wizard
 			return FALSE;
 		}
 
-		$exist = e10utils::todayFiscalYear($this->app(), "$year-01-01");
+		$exist = E10Utils::todayFiscalYear($this->app(), "$year-01-01");
 		if ($exist)
 		{
 			$this->addMessage("Fiskální rok $year již existuje.");
