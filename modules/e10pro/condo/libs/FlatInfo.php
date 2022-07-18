@@ -44,7 +44,7 @@ class FlatInfo extends \e10mnf\core\libs\WorkOrderInfo
     $rows = $this->db()->query($q);
     foreach ($rows as $r)
     {
-      $rowId = $r['datetime']->format('|-m-d');
+      $rowId = $r['datetime']->format('Y-m-d');
       $meterId = 'M'.$r['meter'];
 
       if (!isset($h[$meterId]))
