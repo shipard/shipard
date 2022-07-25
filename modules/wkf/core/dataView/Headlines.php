@@ -16,6 +16,7 @@ class Headlines extends DataView
 	/** @var \lib\core\texts\Renderer */
 	var $textRenderer;
 	var $maxCnt = 10;
+	var $pinned = 0;
 
 	protected function init()
 	{
@@ -28,6 +29,11 @@ class Headlines extends DataView
 			$this->maxCnt = intval($this->requestParams['maxCnt']);
 			if (!$this->maxCnt)
 				$this->maxCnt = 10;
+		}
+
+		if (isset($this->requestParams['pinned']))
+		{
+			$this->pinned = intval($this->requestParams['pinned']);
 		}
 	}
 
@@ -43,6 +49,8 @@ class Headlines extends DataView
 		array_push ($q, ' AND headlines.docStateMain < %i', 3);
 		array_push ($q, ' AND (headlines.dateFrom IS NULL OR headlines.dateFrom = %t', '0000-00-00 00:00:00', ' OR headlines.dateFrom <= %t)', $now);
 		array_push ($q, ' AND (headlines.dateTo IS NULL OR headlines.dateTo = %t', '0000-00-00 00:00:00', ' OR headlines.dateTo >= %t)', $now);
+		if ($this->pinned)
+			array_push ($q, ' AND headlines.onTop != %i', 0);
 		$this->extendQuery($q);
 		array_push ($q, ' ORDER BY headlines.[onTop] DESC, headlines.[order], headlines.[dateFrom] DESC');
 		array_push ($q, ' LIMIT 0, %i', $this->maxCnt);
