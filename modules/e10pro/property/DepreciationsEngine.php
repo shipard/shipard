@@ -1252,7 +1252,7 @@ class DepreciationsEngine extends Utility
 		$this->info['accDT'] = $this->accDepTypes[$this->dataProperty['accDepType']]['fullName'];
 		$this->info['taxDT'] = $this->depTypes[$this->dataProperty['depreciationType']]['fullName'];
 		$this->info['accDTClass'] = ($this->dataProperty['accDepType'] === '') ? ' e10-error' : '';
-		
+
 		// -- property deps info
 		$t = [];
 
@@ -1456,13 +1456,20 @@ class DepreciationsEngine extends Utility
 
 		if (isset($dg['intangible']))
 		{
-			$depLength = $ap['depLength'];
-			if ($ap['depLengthUnit'] === 'Y')
+			$depLength = $ap['depLength'] ?? 0;
+			if (isset($ap['depLengthUnit']) && $ap['depLengthUnit'] === 'Y')
 				$depLength *= 12;
 
 			//$fd = utils::createDateTime($periodEnd);
 			//$months = $fd->format('m') - $periodBegin->format('m') + 1 + ($fd->format('Y') - $periodBegin->format('Y')) * 12;
-			$deprecation = $purchasePrice / $depLength * $months;
+			if ($depLength * $months)
+			{
+				$deprecation = $purchasePrice / $depLength * $months;
+			}
+			else
+			{
+				$deprecation = 0;
+			}
 			$calcFormula = "$purchasePrice / $depLength * $months";
 
 			return doubleval(min(ceil($deprecation), $taxBalance));
