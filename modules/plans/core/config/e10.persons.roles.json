@@ -1,0 +1,14 @@
+{
+	"admin": {
+		"viewers": {
+			"plans.core.plans": {"default": 2},
+			"plans.core.items": {"default": 2},
+			"plans.core.itemStates": {"default": 2}
+		}
+	},
+	"user": {
+		"widgets": {
+			"plans.core.libs.Dashboard": 2
+		}
+	}
+}

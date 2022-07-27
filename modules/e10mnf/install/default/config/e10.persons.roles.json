@@ -8,7 +8,10 @@
 	  "reports": {
 		  "e10mnf.reports.analysis.WorkOrdersAnalysisReport": 2,
 			"e10mnf.core.libs.WorkedHoursReport": 2
-	  }
+	  },
+		"widgets": {
+			"e10mnf.core.libs.DashboardWorkOrdersWithoutPlan": 2
+		}
 	},
 	"admin": {
 		"viewers": {

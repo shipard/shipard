@@ -1,0 +1,16 @@
+{
+	"plans_main": {
+		"disableTopToolbar": 1,
+		"panels": {
+			"plans_default": {
+				"name": "Plánování",
+				"icon": "system/rightSubmenuToDo",
+				"order": 1301,
+				"fullsize": 1,
+				"rows": {
+					"main": {"order": 10000, "class": "full"}
+				}
+			}
+		}
+	}
+}

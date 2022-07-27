@@ -1,0 +1,18 @@
+{
+  "id": "plans.core",
+  "name": "Planning - Core",
+  "tables": ["plans", "items", "itemsParts", "itemStates"],
+  "modules": ["wkf/core"],
+
+  "config": [
+    {"id": "+appSkeleton", "file": "appSkeleton.json"},
+    {"id": "+e10.appOptions.groups", "file": "e10.appOptionsGroups.json"},
+    {"id": "+appOptions", "file": "appOptions.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+		{"id": "+dashboards", "file": "dashboards.json"},
+		{"id": "+widgets", "file": "widgets.json"},
+    {"id": "+plans.planViewTypes", "file": "planViewTypes.json"},
+    {"id": "+plans.itemStatesLifeCycle", "file": "itemStatesLifeCycle.json"},
+    {"id": "+e10.base.clsfGroups", "file": "e10.items.clsfGroups.json"}
+  ]
+}

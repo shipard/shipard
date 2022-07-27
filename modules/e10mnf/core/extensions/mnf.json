@@ -7,14 +7,27 @@
 	},
 	{
 		"table": "e10doc.core.rows",
+		"views": {
+      "cash": {
+				"id": "comboPlanWorkOrdersRowsViewer", "class": "e10mnf.core.libs.ComboPlanWorkOrdersRowsViewer",
+				"details": {
+					"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.cash.libs.ViewDetailCashDoc"}
+				}
+			}
+		},
 		"indexes": [
 			{"id": "workOrder", "columns": ["workOrder"]}
 		]
 	},
 	{
-		"table": "e10pro.wkf.messages", "module": "e10pro.wkf",
-		"columns": [
-			{"id": "workOrder", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"}
-		]
+		"table": "e10mnf.core.workOrdersRows",
+		"views": {
+      "cash": {
+				"id": "comboPlanWorkOrdersRowsViewer", "class": "e10mnf.core.libs.ComboPlanWorkOrdersRowsViewer",
+				"details": {
+					"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.cash.libs.ViewDetailCashDoc"}
+				}
+			}
+		}
 	}
 ]

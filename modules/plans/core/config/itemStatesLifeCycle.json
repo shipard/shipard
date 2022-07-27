@@ -1,0 +1,22 @@
+{
+  "0": {
+    "sn": "Koncept",
+    "icon": "system/docStateConcept"
+  },
+  "10": {
+    "sn": "Zařazeno",
+    "icon": "system/docStateConfirmed"
+  },
+  "20": {
+    "sn": "Probíhá",
+    "icon": "system/actionPlay"
+  },
+  "30": {
+    "sn": "Hotovo",
+    "icon": "system/docStateDone"
+  },
+  "40": {
+    "sn": "Zrušeno",
+    "icon": "system/docStateCancel"
+  }
+}

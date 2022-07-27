@@ -1,0 +1,52 @@
+{
+	"id": "plans.core.items", "sql": "plans_core_items", "name": "Položky plánu",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "iid", "name": "Interní ID", "type": "string", "len": 6, "options": ["ascii"]},
+		{"id": "subject", "name": "Předmět", "type": "string", "len": 120},
+		{"id": "note", "name": "Poznámka", "type": "string", "len": 240},
+		{"id": "text", "name": "Text", "type": "memo", "comboClass": "lib.web.WebTextSidebarWiki"},
+
+    {"id": "plan", "name": "Plán", "type": "int", "reference": "plans.core.plans"},
+    {"id": "itemState", "name": "Stav", "type": "enumInt",
+			"enumCfg": {"cfgItem": "plans.itemStates", "cfgValue": "", "cfgText": "sn"}},
+
+    {"id": "personCustomer", "name": "Zákazník", "type": "int", "reference": "e10.persons.persons"},
+
+    {"id": "workOrder", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
+    {"id": "workOrderParent", "name": "Nadřazená zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
+
+    {"id": "projectId", "name": "ID projektu", "type": "string", "len": 20},
+
+		{"id": "datePlanBegin", "name": "Datum zahájení plánování", "type": "date"},
+		{"id": "dateDeadline", "name": "Termín", "type": "date"},
+		{"id": "dateClosed", "name": "Datum uzavření", "type": "date"},
+
+		{"id": "price", "name": "Cena", "type": "money"},
+		{"id": "currency", "name": "Měna", "type": "int", "reference": "e10.world.currencies"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "itemsParts", "class": "e10.base.ListRows", "name": "Části", "table": "plans.core.itemsParts", "queryColumn": "parentItem", "orderColumn": "rowOrder"},
+		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"}
+	],
+	"views": [
+		{
+      "id": "default", "class": "plans.core.ViewItems",
+			"details": {
+				"preview": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "plans.core.ViewDetailItem"}
+			}
+		},
+		{
+      "id": "grid", "class": "plans.core.libs.ViewItemsGrid",
+			"detail": "plans.core.ViewDetailItem"
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "plans.core.FormItem"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "subject"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

@@ -1,0 +1,8 @@
+{
+	"witemsTags": {
+		"name": "Plánování",
+		"label": "Štítky",
+		"tables": ["plans.core.items"],
+		"icon":"tables/plans.core.items"
+	}
+}

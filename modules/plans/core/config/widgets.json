@@ -1,0 +1,6 @@
+[
+	{
+		"name": "Start", "class": "plans.core.libs.Dashboard",
+		"dashboard": "plans_main", "panel": "plans_default", "order": 1001, "row": "main", "width": 12, "type": "wkfWall"
+	}
+]

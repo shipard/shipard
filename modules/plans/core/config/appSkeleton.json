@@ -1,0 +1,12 @@
+{
+	"panels": {
+		"agendy": {
+			"items": {
+				"plans": {
+					"t1": "Plánování", "object": "widget", "class": "e10.widgetDashboard", "subclass": "plans_main", "icon": "user/checkCircle",
+					"order": 5850
+				}
+			}
+		}
+	}
+}

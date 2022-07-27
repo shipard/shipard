@@ -1,0 +1,19 @@
+{
+	"id": "plans.core.itemsParts", "sql": "plans_core_itemsParts", "name": "Části položek plánu",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "parentItem", "name": "Položka", "type": "int"},
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+		{"id": "subject", "name": "Předmět", "type": "string", "len": 120},
+
+    {"id": "workOrder", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
+		{
+			"id": "refId3", "name": "Referenční kód 3", "type": "string", "len": 30,
+			"comboViewer": "comboPlanWorkOrdersRowsViewer", "comboTable": "e10mnf.core.workOrdersRows"
+		}
+  ],
+	"forms": [
+		{"id": "default", "class": "plans.core.FormItemPart"}
+	],
+  "options": ["systemTable"]
+}

@@ -9,7 +9,7 @@ use \e10\uiutils;
 
 class TableView extends \Shipard\Base\BaseObject
 {
-	/** @var \Shipard\Base\DbTable */
+	/** @var \Shipard\Table\DbTable */
 	var $table;
 
 	protected $db;
