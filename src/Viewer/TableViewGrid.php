@@ -61,13 +61,21 @@ class TableViewGrid extends \Shipard\Viewer\TableView
 
 	public function rowHtml ($listItem)
 	{
+		/*
 		if (isset ($listItem ['groupName']))
 		{
 			$codeLine = '<'.$this->htmlRowElement." class='g'>" . \E10\es ($listItem ['groupName']) . '</'.$this->htmlRowElement.'>';
 			return $codeLine;
-		}
+		}*/
 
-		$class = 'r';
+		/*
+		if (isset ($listItem ['groupName']))
+		{
+			$codeLine = '<'.$this->htmlRowElement." class='g'>" . $this->app()->ui()->renderTextLine($listItem ['groupName']) . '</'.$this->htmlRowElement.'>';
+			return $codeLine;
+		}*/
+
+		$class = isset ($listItem ['groupName']) ? 'g' : 'r';
 		if (isset ($listItem['class']))
 			$class .= " {$listItem['class']}";
 		if ($this->gridEditable)
@@ -91,6 +99,26 @@ class TableViewGrid extends \Shipard\Viewer\TableView
 
 		$r = $listItem;
 		$colSpan = 0;
+
+		if (isset ($listItem ['groupName']))
+		{
+			if ($this->gridEditable)
+			{
+				$c .= "<td class='e10-icon";
+				if (isset ($listItem['class']))
+					$c .= ' '.$listItem['class'];
+				$c .= "'>";
+
+				if ((isset ($listItem ['icon'])) && ($listItem ['icon'] !== ''))
+				{
+					$c .= $this->app()->ui()->icon($listItem ['icon']);
+				}
+				$c .= '</td>';
+			}
+
+			$c .= "<td class='g' colspan='".(count($this->gridStruct))."'>" . $this->app()->ui()->renderTextLine($listItem ['groupName']) . '</td>';
+			return $c;
+		}
 
 		if ($this->gridEditable)
 		{
@@ -139,14 +167,18 @@ class TableViewGrid extends \Shipard\Viewer\TableView
 			if (isset ($r ['_options']) && isset ($r ['_options']['cellClasses'][$cn]))
 				$cellClass .= ' '.$r ['_options']['cellClasses'][$cn];
 
+			$cellCss = '';
+			if (isset ($r ['_options']) && isset ($r ['_options']['cellCss'][$cn]))
+				$cellCss .= " style='".$r ['_options']['cellCss'][$cn]."'";
+
 			if (isset ($r ['_options']) && isset ($r ['_options']['colSpan'][$cn]))
 			{
 				$colSpan = $r ['_options']['colSpan'][$cn];
-				$c .= "<td class='$cellClass' colspan='$colSpan'>$ct</td>";
+				$c .= "<td class='$cellClass'$cellCss colspan='$colSpan'>$ct</td>";
 				$colSpan--;
 			}
 			else
-				$c .= "<td class='$cellClass'>$ct</td>";
+				$c .= "<td class='$cellClass'$cellCss>$ct</td>";
 		}
 
 		return $c;
