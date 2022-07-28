@@ -470,7 +470,9 @@ class TemplateCore extends \Mustache
 		$qrCodeGenerator = new \lib\tools\qr\QRCodeGenerator($this->app);
 		$qrCodeGenerator->textData = $qrData;
 		$qrCodeGenerator->createQRCode();
-		return $qrCodeGenerator->fullFileName;
+
+		$url = 'https://'.$this->app->cfgItem('hostingCfg.serverDomain').'/'.$this->app->cfgItem('dsid').'/tmp/'.basename($qrCodeGenerator->fullFileName);
+		return $url;
 	}
 
 	function resolveCmd_Script ($params)
