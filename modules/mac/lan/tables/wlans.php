@@ -155,8 +155,8 @@ class ReportWlanSticker extends FormReport
 {
 	function init ()
 	{
-		$this->reportId = 'mac.lan.wlanSticker';
-		$this->reportTemplate = 'mac.lan.wlanSticker';
+		$this->reportId = 'reports.default.mac.lan.wlanSticker';
+		$this->reportTemplate = 'reports.default.mac.lan.wlanSticker';
 	}
 
 	public function loadData ()
