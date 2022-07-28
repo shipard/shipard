@@ -3,8 +3,8 @@
 <head>
 		<title>wlan sticker</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-		<link rel="stylesheet" href="file://{{fsRoot}}/e10-modules/wwwlibs/fa/4.7/less/font-awesome-local.css">
-		<link rel="stylesheet" href="file://{{templateRoot}}style.css" type="text/css"/>
+		<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/default/style-default.css" type="text/css"/>
+		<link rel="stylesheet" href="{{dsUrl}}www-root/sc/icons/fa/5/css/all.min.css">
 </head>
 <body>
 
@@ -22,7 +22,7 @@
 						{{data.head.wpaPassphrase}}<br>
 				</td>
 				<td style="text-align: right;">
-						<img src="file://{{@qrCode;dataItem:data.qrCodeData}}" style="height: 11em;">
+						<img src="{{@qrCode;dataItem:data.qrCodeData}}" style="height: 11em;">
 				</td>
 		</tr>
 </table>
