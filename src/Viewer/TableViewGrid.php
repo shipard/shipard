@@ -61,20 +61,6 @@ class TableViewGrid extends \Shipard\Viewer\TableView
 
 	public function rowHtml ($listItem)
 	{
-		/*
-		if (isset ($listItem ['groupName']))
-		{
-			$codeLine = '<'.$this->htmlRowElement." class='g'>" . \E10\es ($listItem ['groupName']) . '</'.$this->htmlRowElement.'>';
-			return $codeLine;
-		}*/
-
-		/*
-		if (isset ($listItem ['groupName']))
-		{
-			$codeLine = '<'.$this->htmlRowElement." class='g'>" . $this->app()->ui()->renderTextLine($listItem ['groupName']) . '</'.$this->htmlRowElement.'>';
-			return $codeLine;
-		}*/
-
 		$class = isset ($listItem ['groupName']) ? 'g' : 'r';
 		if (isset ($listItem['class']))
 			$class .= " {$listItem['class']}";

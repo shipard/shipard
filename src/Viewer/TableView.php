@@ -1837,7 +1837,7 @@ class TableView extends \Shipard\Base\BaseObject
 			}
 			else
 				$ct = $ch;
-			$this->gridTableHeaderCode .= "<th class='{$this->gridColClasses [$cn]}'>" . utils::es ($ct) . "</th>";
+			$this->gridTableHeaderCode .= "<th class='{$this->gridColClasses [$cn]}'>".$this->app()->ui()->composeTextLine($ct).'</th>';
 		}
 		$this->gridTableHeaderCode .= '</tr></thead>';
 	}
