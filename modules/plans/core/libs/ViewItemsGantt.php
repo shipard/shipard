@@ -2,16 +2,15 @@
 
 namespace plans\core\libs;
 
+use DateTime;
 use \Shipard\Viewer\TableViewGrid, \Shipard\Utils\World, \Shipard\Utils\Utils;
 use \e10\base\libs\UtilsBase;
-use \Shipard\Viewer\TableViewPanel;
-
 
 
 /**
- * class ViewItemsGrid
+ * class ViewItemsGantt
  */
-class ViewItemsGrid extends TableViewGrid
+class ViewItemsGantt extends TableViewGrid
 {
 	var $planNdx = 0;
 	var $planCfg = NULL;
@@ -24,6 +23,10 @@ class ViewItemsGrid extends TableViewGrid
 	var $lastGroupId = '';
 
 	var $showPrevItemInMonth = 1;
+
+  var $dateFirst = NULL;
+  var $dateLast = NULL;
+  var $firstDay = NULL;
 
 	var $annots = [];
 	var $classification = [];
@@ -56,94 +59,69 @@ class ViewItemsGrid extends TableViewGrid
     $this->fullWidthToolbar = TRUE;
 		$this->gridEditable = TRUE;
 		$this->enableToolbar = TRUE;
+    $this->objectSubType = self::vsDetail;
 
-		if ($this->useViewDetail)
-		{
-			$this->objectSubType = self::vsMain;
-			$this->linesWidth = 65;
-			$this->setPanels (self::sptQuery);
-		}
-		else
-		{
-			$this->objectSubType = self::vsDetail;
-		}
+    $this->getFirstLastDate();
 
-
-		$this->createBottomTabs();
-
-		$g = [
-			'iid' => 'ID',
-		];
-		if ($this->useWorkOrders)
-		{
-			$g['woParent'] = 'Zakázka';
-			$g['wo'] = 'VP';
-		}
-
-
-		if ($this->useProjectId)
-			$g['prjId'] = 'Ev.č.';
+		$g = [];
 
 		$g['subject'] = 'Název';
-		if ($this->useCustomer)
-			$g['personCust'] = 'Zákazník';
-		$g['begin'] = 'Zahájení';
-		$g['deadline'] = 'Termín';
-		$g['price'] = ' Cena';
-		$g['currency'] = 'Měna';
-		$g['note'] = 'Pozn.';
+
+
+
+		$weekDate = clone $this->firstDay;
+    while (1)
+    {
+      $weekYear = intval($weekDate->format('o'));
+      $weekYearShort = $weekYear - 2000;
+      $weekNumber = intval($weekDate->format('W'));
+
+      $colId = 'W-'.$weekYear.'-'.sprintf('%02d', $weekNumber);
+      $colTitle = [
+        ['text' => $weekNumber/*.'/'.$weekYearShort*/, 'class' => 'e10-small block', 'css' => 'text-align: center;'],
+        ['text' => $weekDate->format('d.m'), 'class' => 'id', 'css' => 'font-weight: normal;']
+      ];
+
+      $g[$colId] = $colTitle;
+      $weekDate->add (new \DateInterval('P7D'));
+
+      if ($weekDate > $this->dateLast)
+        break;
+    }
 
 		$this->setGrid ($g);
 
-		$this->setMainQueries ();
+		//$this->setMainQueries ();
 	}
 
-	public function createBottomTabs ()
-	{
-		$thisYear = 2022;
-		$thisMonth = 7;
+  protected function getFirstLastDate()
+  {
+    $inProgressIS = array_merge($this->lifeCycleItemStates[20] ?? [], $this->lifeCycleItemStates[10] ?? []);
+		$q = [];
+		array_push ($q, ' SELECT MIN([items].[datePlanBegin]) AS [dateFirst], MAX([items].[dateDeadline]) AS [dateLast]');
+		array_push ($q, ' FROM [plans_core_items] AS [items]');
+		array_push ($q, ' WHERE 1');
 
-		$startMonths = [-1 => 12, 0 => 1, 1 => 1];
-		$stopMonths = [-1 => 12, 0 => 12, 1 => 5];
+		if ($this->planNdx)
+			array_push ($q, ' AND [plan] = %i', $this->planNdx);
 
-		$anyActiveTab = 0;
-		$bt = [];
+    array_push ($q, ' AND [datePlanBegin] IS NOT NULL');
+    array_push ($q, ' AND [dateDeadline] IS NOT NULL');
 
-		$nbt = ['id' => '!', 'title' => '☆','active' => 0,];
-		$bt [] = $nbt;
-		$nbt = ['id' => '', 'title' => '★','active' => 0,];
-		$bt [] = $nbt;
+    $data = $this->db()->query($q)->fetch();
+    if ($data)
+    {
+      $this->dateFirst = $data['dateFirst'];
+      $this->dateLast = $data['dateLast'];
 
-		if ($this->useTableViewTabsMonths)
-		{
-			for ($yearIndex = -1; $yearIndex < 2; $yearIndex++)
-			{
-				$year = $thisYear + $yearIndex;
-				$nbt = [
-					'id' => 'Y'.$year, 'title' => strval($year),
-					'active' => 0,
-				];
-				$bt [] = $nbt;
-				for ($month = $startMonths[$yearIndex]; $month <= $stopMonths[$yearIndex]; $month++)
-				{
-					$isActive = ($thisMonth === $month && $thisYear === $year);
-					$nbt = [
-						'id' => $year.$month, 'title' => ($thisYear === $year) ? Utils::$monthNames[$month-1] : Utils::$monthSc3[$month-1].($year-2000),
-						'active' => $isActive,
-					];
-					$bt [] = $nbt;
+      $today = Utils::today();
+      if ($today > $this->dateFirst)
+        $this->dateFirst = $today;
 
-					if ($isActive)
-						$anyActiveTab = 1;
-				}
-			}
-		}
-
-		if (!$anyActiveTab && isset($bt[0]))
-			$bt[0]['active'] = 1;
-
-		$this->setBottomTabs ($bt);
-	}
+      $this->firstDay = new DateTime($this->dateFirst->format('Y-m-d'));
+      $this->firstDay->modify(('Monday' === $this->firstDay->format('l')) ? 'monday this week' : 'last monday');
+    }
+  }
 
 	public function renderRow ($item)
 	{
@@ -151,17 +129,6 @@ class ViewItemsGrid extends TableViewGrid
 
 		$listItem ['pk'] = $item ['ndx'];
 
-		if ($this->useWorkOrders)
-		{
-			if ($item['workOrder'])
-				$listItem ['wo'] = ['docAction' => 'show', 'text' => $item['woDocNumber'], 'table' => 'e10mnf.core.workOrders', 'pk' => $item['workOrder']];
-
-			if ($item['workOrderParent'])
-				$listItem ['woParent'] = ['docAction' => 'edit', 'text' => $item['woParentDocNumber'], 'table' => 'e10mnf.core.workOrders', 'pk' => $item['workOrderParent']];
-		}
-
-		if ($item['personCustomer'])
-			$listItem ['personCust'] = $item['personCustName'];
 
 		$listItem ['subject'] = $item['subject'];
 
@@ -186,23 +153,34 @@ class ViewItemsGrid extends TableViewGrid
 			$listItem['_options']['cellCss'] = ['subject' => $css];
 		}
 
-		if ($this->useTableViewTabsMonths)
-		{
-			if (!Utils::dateIsBlank($item['dateDeadline']))
-				$groupId = $item['dateDeadline']->format('Y-m');
-			else
-				$groupId = '---';
-			if ($this->lastGroupId !== $groupId)
-			{
-				$headerTitle = '_____';
-				if (!Utils::dateIsBlank($item['dateDeadline']))
-					$headerTitle.= $item['dateDeadline']->format('Y-m');
-				$this->addGroupHeader ($headerTitle);
-				$this->lastGroupId = $groupId;
-			}
-		}
 
-		$listItem['_options']['cellCss']['note'] = 'line-height: 1.5;';
+    $weekYearBegin = intval($item['datePlanBegin']->format('o'));
+    $weekNumberBegin = intval($item['datePlanBegin']->format('W'));
+    $colIdBegin = 'W-'.$weekYearBegin.'-'.sprintf('%02d', $weekNumberBegin);
+
+    $weekYearEnd = intval($item['dateDeadline']->format('o'));
+    $weekNumberEnd = intval($item['dateDeadline']->format('W'));
+    $colIdEnd = 'W-'.$weekYearEnd.'-'.sprintf('%02d', $weekNumberEnd);
+
+    $colSpanCnt = 0;
+    $colSpanCol = '';
+    foreach ($this->gridStruct as $gridColId => $gridColInfo)
+    {
+      if ($gridColId[0] !== 'W')
+        continue;
+      if ($gridColId < $colIdBegin)
+        continue;
+      if ($gridColId > $colIdEnd)
+        break;
+
+      $listItem['_options']['cellCss'][$gridColId] = 'background-color: #445566B0;';
+      if ($colSpanCol === '')
+        $colSpanCol = $gridColId;
+      $colSpanCnt++;
+    }
+
+    if ($colSpanCnt > 1)
+      $listItem['_options']['colSpan'][$colSpanCol] = $colSpanCnt;
 
 		return $listItem;
 	}
@@ -259,63 +237,8 @@ class ViewItemsGrid extends TableViewGrid
 		if ($this->planNdx)
 			array_push ($q, ' AND [plan] = %i', $this->planNdx);
 
-		if ($bottomTabId !== '')
-		{
-			$dateBegin = '';
-			$dateEnd = '';
-			$showInProgressOnly = 0;
-			if ($bottomTabId === '!')
-			{
-				$showInProgressOnly = 1;
-			}
-			elseif ($bottomTabId[0] === 'Y')
-			{
-				$year = intval(substr($bottomTabId, 1));
-				if ($year)
-				{
-					$dateBegin = $year.'-01-01';
-					$dateEnd = $year.'-12-31';
-					//array_push ($q, ' AND ([items].[dateDeadline] >= %d', $dateBegin, ' AND [items].[dateDeadline] <= %d)', $dateEnd);
-				}
-			}
-			else
-			{
-				$year = intval(substr($bottomTabId, 0, 4));
-				$month = intval(substr($bottomTabId, 4));
-				$dateBegin = $year.sprintf('-%02d-01', $month);
-				$dateBeginDate = Utils::createDateTime($dateBegin);
-				$dateEnd = $dateBeginDate->format('Y-m-t');
-				//array_push ($q, ' AND ([items].[dateDeadline] >= %d', $dateBegin, ' AND [items].[dateDeadline] <= %d)', $dateEnd);
-			}
-
-			if ($showInProgressOnly)
-			{
-				$inProgressIS = array_merge($this->lifeCycleItemStates[20] ?? [], $this->lifeCycleItemStates[10] ?? []);
-
-				if (count($inProgressIS))
-					array_push ($q, ' AND [itemState] IN %in', $inProgressIS);
-				if ($dateBegin !== '')
-					array_push ($q, ' AND [items].[dateDeadline] >= %d', $dateBegin);
-				if ($dateEnd !== '')
-					array_push ($q, ' AND [items].[dateDeadline] <= %d', $dateEnd);
-			}
-			else
-			{
-					//array_push ($q, ' AND ([items].[dateDeadline] >= %d', $dateBegin, ' AND [items].[dateDeadline] <= %d)', $dateEnd);
-					array_push ($q, ' AND ([items].[dateDeadline] >= %d', $dateBegin, ' OR [itemState] != %i)', 2);
-					array_push ($q, ' AND [items].[dateDeadline] <= %d', $dateEnd);
-			}
-		}
-
-		// -- special queries
-		$qv = $this->queryValues ();
-		if (isset($qv['clsf']))
-		{
-			array_push ($q, ' AND EXISTS (SELECT ndx FROM e10_base_clsf WHERE items.ndx = recid AND tableId = %s', $this->table->tableId());
-			foreach ($qv['clsf'] as $grpId => $grpItems)
-				array_push ($q, ' AND ([group] = %s', $grpId, ' AND [clsfItem] IN %in', array_keys($grpItems), ')');
-			array_push ($q, ')');
-		}
+    array_push ($q, ' AND [datePlanBegin] IS NOT NULL');
+    array_push ($q, ' AND [dateDeadline] IS NOT NULL');
 
 		// -- fulltext
 		if ($fts != '')
@@ -334,7 +257,9 @@ class ViewItemsGrid extends TableViewGrid
 			array_push ($q, ')');
 		}
 
-		$this->queryMain ($q, 'items.', ['!ISNULL([dateDeadline]) DESC', '[dateDeadline]', '[datePlanBegin]', '[ndx]']);
+    array_push ($q, 'ORDER BY items.[datePlanBegin], items.[dateDeadline], items.[ndx]');
+    array_push ($q, $this->sqlLimit());
+
 		$this->runQuery ($q);
 	}
 
@@ -373,15 +298,5 @@ class ViewItemsGrid extends TableViewGrid
 		}
 
 		$this->classification = UtilsBase::loadClassification ($this->table->app(), $this->table->tableId(), $this->pks);
-	}
-
-	public function createPanelContentQry (TableViewPanel $panel)
-	{
-		$qry = [];
-
-		// -- tags
-		UtilsBase::addClassificationParamsToPanel($this->table, $panel, $qry);
-
-		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}
 }

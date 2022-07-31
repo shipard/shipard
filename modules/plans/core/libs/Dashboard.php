@@ -42,40 +42,12 @@ class Dashboard extends WidgetBoard
     //$this->addContent(['type' => 'line', 'line' => ['text' => 'nazdar']]);
 
     $parts = explode ('-', $this->activeTopTab);
-    $this->addContentViewer('plans.core.items', /*'plans.core.ViewItems'*/'plans.core.libs.ViewItemsGrid', ['plan' => $parts[1], 'viewerMode' => $viewerMode]);
 
-    return;
-		if (substr ($this->activeTopTab, 0, 8) === 'section-')
-		{
-			$parts = explode ('-', $this->activeTopTab);
+		if ($viewerMode === 'gantt')
+			$this->addContentViewer('plans.core.items', /*'plans.core.ViewItems'*/'plans.core.libs.ViewItemsGantt', ['plan' => $parts[1], 'viewerMode' => $viewerMode]);
+		else
+			$this->addContentViewer('plans.core.items', /*'plans.core.ViewItems'*/'plans.core.libs.ViewItemsGrid', ['plan' => $parts[1], 'viewerMode' => $viewerMode]);
 
-			$section = $this->usersSections['top'][$parts[1]];
-			if ($section['sst'] == 10)
-				$this->addContentViewer('wkf.core.issues', 'wkf.core.viewers.DashboardBBoard', ['section' => $parts[1], 'viewerMode' => $viewerMode]);
-			else
-				$this->addContentViewer('wkf.core.issues', 'wkf.core.viewers.DashboardIssuesSection', ['section' => $parts[1], 'viewerMode' => $viewerMode, 'help' => $this->help]);
-		}
-		elseif (substr ($this->activeTopTab, 0, 6) === 'board-')
-		{
-			$parts = explode ('-', $this->activeTopTab);
-			$this->addContentViewer('wkf.core.issues', 'wkf.core.viewers.IssuesBoardColumns', ['board' => $parts[1], 'viewerMode' => $viewerMode]);
-		}
-		elseif ($this->activeTopTab === 'marked')
-		{
-			$this->addContentViewer('wkf.core.issues', 'wkf.core.viewers.DashboardIssuesMarked', ['viewerMode' => $viewerMode]);
-		}
-		elseif ($this->activeTopTab === 'search')
-		{
-			$this->addContentViewer('wkf.core.issues', 'wkf.core.viewers.DashboardIssuesSearch', ['viewerMode' => $viewerMode]);
-		}
-		elseif ($this->activeTopTab === 'user')
-		{
-			$this->addContentViewer('wkf.core.issues', 'wkf.core.viewers.DashboardIssuesUser', ['viewerMode' => $viewerMode]);
-		}
-		elseif ($this->activeTopTab === 'documents')
-		{
-			$this->addContentViewer('e10pro.wkf.documents', 'lib.wkf.ViewerDocumentsAll', ['viewerMode' => $viewerMode]);
-		}
 	}
 
 	public function init ()
@@ -159,45 +131,15 @@ class Dashboard extends WidgetBoard
 		$this->addPlansTabs($tabs);
 		$this->addBoardsTabs($tabs);
 
-    /*
-		$tabs['marked'] = ['icon' => 'system/iconStar', 'text' => '', 'title' => 'Označené', 'action' => 'load-marked'];
-		$tabs['user'] = ['icon' => 'icon-user-circle-o', 'text' => '', 'title' => $this->app->user()->data('name'), 'action' => 'load-user'];
-		$tabs['search'] = ['icon' => 'icon-search', 'text' => '', 'title' => 'Hledat', 'action' => 'load-search'];
-    */
 		$this->toolbar = ['tabs' => $tabs];
 	}
 
 	protected function initRightTabs ()
 	{
-		$testDIV = intval($this->app()->cfgItem ('options.experimental.testWkfViewerInDashboard', 0));
-
-		if ($testDIV)
-		{
-			$rt = [
-				'viewer-mode-2' => ['text' => '', 'icon' => 'system/dashboardModeRows', 'action' => 'viewer-mode-1'],
-				'viewer-mode-5' => ['text' =>'', 'icon' => 'system/dashboardModeViewer', 'action' => 'viewer-mode-5'],
-			];
-		}
-		else
-		{
-			$rt = [
-				'viewer-mode-1' => ['text' => '', 'icon' => 'system/dashboardModeRows', 'action' => 'viewer-mode-1'],
-				'viewer-mode-2' => ['text' => '', 'icon' => 'system/dashboardModeTilesSmall', 'action' => 'viewer-mode-2'],
-				//'viewer-mode-3' => ['text' => '', 'icon' => 'system/dashboardModeTilesBig', 'action' => 'viewer-mode-3'],
-				'viewer-mode-0' => ['text' => '', 'icon' => 'system/dashboardModeTilesBig', 'action' => 'viewer-mode-0'],
-			];
-		}
-
-		if (substr ($this->activeTopTab, 0, 8) === 'section-')
-		{
-			$parts = explode('-', $this->activeTopTab);
-			$topSectionCfg = $this->usersSections['top'][$parts[1]];
-
-			//if ($topSectionCfg['useStatuses'])
-			//	$rt['viewer-mode-6'] = ['text' => '', 'icon' => 'icon-tasks', 'action' => 'viewer-mode-6'];
-			//if ($topSectionCfg['useTargets'])
-			//	$rt['viewer-mode-7'] = ['text' => '', 'icon' => 'icon-flag-checkered', 'action' => 'viewer-mode-7'];
-		}
+		$rt = [
+			'viewer-mode-table' => ['text' => '', 'icon' => 'system/dashboardModeRows', 'action' => 'viewer-mode-table'],
+			'viewer-mode-gantt' => ['text' => '', 'icon' => 'system/iconCalendar', 'action' => 'viewer-mode-gantt'],
+		];
 
 		$this->toolbar['rightTabs'] = $rt;
 	}
