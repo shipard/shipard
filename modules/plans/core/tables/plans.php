@@ -38,6 +38,7 @@ class TablePlans extends DbTable
 				'primaryViewType' => intval($r['primaryViewType']),
 				'useViewDetail' => intval($r['useViewDetail']),
 				'useWorkOrders' => intval($r['useWorkOrders']),
+				'useCustomer' => intval($r['useCustomer']),
 				'useProjectId' => intval($r['useProjectId']),
 				'usePrice' => intval($r['usePrice']),
 				'useText' => intval($r['useText']),
@@ -153,6 +154,7 @@ class FormPlan extends TableForm
 					$this->addColumnInput ('primaryViewType');
 					$this->addColumnInput ('useViewDetail');
 					$this->addColumnInput ('useWorkOrders');
+					$this->addColumnInput ('useCustomer');
 					$this->addColumnInput ('useProjectId');
 					$this->addColumnInput ('usePrice');
 					$this->addColumnInput ('useText');

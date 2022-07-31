@@ -19,6 +19,7 @@ class ViewItemsGrid extends TableViewGrid
 	var $lifeCycleItemStates = NULL;
 	var $useTableViewTabsMonths = 0;
 	var $useWorkOrders = 0;
+	var $useCustomer = 0;
 	var $useProjectId = 0;
 	var $lastGroupId = '';
 
@@ -39,6 +40,7 @@ class ViewItemsGrid extends TableViewGrid
 			if ($this->planCfg)
 			{
 				$this->useWorkOrders = $this->planCfg['useWorkOrders'] ?? 0;
+				$this->useCustomer = $this->planCfg['useCustomer'] ?? 0;
 				$this->useProjectId = $this->planCfg['useProjectId'] ?? 0;
 				$this->useTableViewTabsMonths = $this->planCfg['useTableViewTabsMonths'] ?? 0;
 				$this->useViewDetail = $this->planCfg['useViewDetail'] ?? 0;
@@ -83,7 +85,8 @@ class ViewItemsGrid extends TableViewGrid
 			$g['prjId'] = 'Ev.č.';
 
 		$g['subject'] = 'Název';
-		$g['personCust'] = 'Zákazník';
+		if ($this->useCustomer)
+			$g['personCust'] = 'Zákazník';
 		$g['begin'] = 'Zahájení';
 		$g['deadline'] = 'Termín';
 		$g['price'] = ' Cena';
@@ -198,6 +201,8 @@ class ViewItemsGrid extends TableViewGrid
 				$this->lastGroupId = $groupId;
 			}
 		}
+
+		$listItem['_options']['cellCss']['note'] = 'line-height: 1.5;';
 
 		return $listItem;
 	}
@@ -329,7 +334,7 @@ class ViewItemsGrid extends TableViewGrid
 			array_push ($q, ')');
 		}
 
-		$this->queryMain ($q, 'items.', ['ISNULL([dateDeadline]) DESC', '[dateDeadline]', '[ndx]']);
+		$this->queryMain ($q, 'items.', ['!ISNULL([dateDeadline]) DESC', '[dateDeadline]', '[ndx]']);
 		$this->runQuery ($q);
 	}
 
@@ -367,8 +372,6 @@ class ViewItemsGrid extends TableViewGrid
 			$this->annots[$r['docRecNdx']][] = $item;
 		}
 
-
-		//$this->classification = \E10\Base\loadClassification ($this->app(), $this->table->tableId(), $this->pks);
 		$this->classification = UtilsBase::loadClassification ($this->table->app(), $this->table->tableId(), $this->pks);
 	}
 
@@ -381,5 +384,4 @@ class ViewItemsGrid extends TableViewGrid
 
 		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}
-
 }
