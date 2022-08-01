@@ -1,7 +1,7 @@
 <?php
 
 namespace Shipard\CLI\Server;
-use \Shipard\Utils\Utils;
+use \Shipard\Utils\Utils, \Shipard\Utils\Str;
 use \Shipard\CLI\Server\ServerManager;
 use \Shipard\CLI\Server\DSManager;
 
@@ -133,7 +133,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 				'bkpFileName' => $finalBkpFileName,
 				'bkpFileSize' => $backupFileSize,
 				'bkpSHA256' => $backupCheckSum,
-				'syncAttachments' => $syncAttachments, 
+				'syncAttachments' => $syncAttachments,
 			];
 			$dsBackupInfo ['dataSources'][] = $dsbi;
 			file_put_contents ($dsBackupInfoFileName, json_encode($dsBackupInfo, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
@@ -207,7 +207,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 				'lastName' => $cfgServer['userLastName'],
 				'login' => $cfgServer['userEmail'],
 			];
-			
+
 			file_put_contents ($appDir . '/config/createApp.json', json_encode ($createApp, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
 
 			// -- dataSourceInfo.json
@@ -236,11 +236,11 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 
 		// -- install/apps/shipard-core
 		$dsid = '03'.mt_rand(10000000, 88888888).'777';
-		
+
 		if (strstr($appType, '/') == FALSE)
 			$module = 'install/apps/shipard-'.$appType;
 		else
-			$module = $appType;	
+			$module = $appType;
 
 		if (!is_dir(__SHPD_MODULES_DIR__.$module))
 			return $this->err ('ERROR: invalid argument --type; module `'.$module.'` not found. use core, economy or mac');
@@ -470,7 +470,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		$cfg .= "\tssl_certificate /var/lib/shipard/certs/$certId/chain.pem;\n";
 		$cfg .= "\tssl_certificate_key /var/lib/shipard/certs/$certId/privkey.pem;\n";
 		$cfg .= "\tssl_trusted_certificate /var/lib/shipard/certs/$certId/chain.pem;\n";
-		
+
 		if (is_readable('/etc/ssl/dhparam.pem'))
 			$cfg .= "\tssl_dhparam /etc/ssl/dhparam.pem;\n";
 
@@ -494,7 +494,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 
 		if (!is_dir($dstPath))
 			Utils::mkDir ($dstPath, 0750);
-		$dstPath .= '/certs';			
+		$dstPath .= '/certs';
 		if (!is_dir($dstPath))
 			Utils::mkDir ($dstPath, 0750);
 
@@ -683,14 +683,14 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 
 		if (!$e10channel)
 		{
-			$e10channel = isset($this->cfgServer['defaultChannel']) ? $this->cfgServer['defaultChannel'] : NULL;			
+			$e10channel = isset($this->cfgServer['defaultChannel']) ? $this->cfgServer['defaultChannel'] : NULL;
 			if (!$e10channel)
 			{
 				echo(json_encode($this->cfgServer))."\n----\n";
 				return $this->err("ERROR: Invalid default channel...");
 			}
 		}
-		
+
 		$this->msg("set shpdChannel to $e10channel");
 
 		$channelCfg = isset($this->cfgServer['channels'][$e10channel]) ? $this->cfgServer['channels'][$e10channel] : NULL;
@@ -702,7 +702,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		$cfg = [
 			'serverInfo' => ['channelId' => $e10channel, 'channelPath' => $channelCfg['path']],
 		];
-		
+
 		file_put_contents($channelConfigFileName, json_encode($cfg, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
 
 		$this->appUpgrade_DetectVersion();
@@ -788,7 +788,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 	public function dbConnect ()
 	{
 		$db = NULL;
-		
+
 		$dbPassword = $this->cfgServer['dbPassword'];
 		$dbUser = $this->cfgServer['dbUser'];
 
@@ -850,7 +850,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 	{
 		$dsid = $this->manager->cfgItem ('dsid');
 
-		$dstPath = $this->arg ('path', 'tmp/');		
+		$dstPath = $this->arg ('path', 'tmp/');
 		$dstFileName = $this->arg ('filename', $dsid.'-'.date ("Y-m-d").'.sql');
 
 		$backupDbFileName = $dstPath.$dstFileName;
@@ -943,7 +943,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 
 		$dsm = new DSManager($this);
 		$dsm->init();
-		
+
 		if ($moveMode)
 			return $dsm->moveFrom($params);
 		else
@@ -954,7 +954,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 	{
 		$dsm = new DSManager($this);
 		$dsm->init();
-		
+
 		return $dsm->fixPerms();
 	}
 
@@ -970,7 +970,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 
 			$cfg = utils::loadCfgFile($appDir.'/config/config.json');
 			$dsInfo = utils::loadCfgFile($appDir.'/config/dataSourceInfo.json');
-			$channelInfo = utils::loadCfgFile($appDir.'/config/_e10_channelInfo.json');
+			$channelInfo = utils::loadCfgFile($appDir.'/config/_server_channelInfo.json');
 			$statusData = FALSE;
 			if (is_file ($appDir.'/config/status.data'))
 				$statusData = file_get_contents($appDir.'/config/status.data');
@@ -979,15 +979,16 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 
 			if ($dsInfo)
 			{
-				$ds['name'] = $dsInfo['name'];
-				switch ($dsInfo['condition'])
+				$ds['name'] = $dsInfo['name'] ?? '---';
+				switch ($dsInfo['condition'] ?? 99)
 				{
-					case 0 : $ds['condition'] = 'trial '.utils::dateage2(new \DateTime($dsInfo['created'])); break;
-					case 1 : $ds['condition'] = ''; break;
-					case 2 : $ds['condition'] = 'demo'; break;
+					case 1 : $ds['condition'] = 'trial '.utils::dateage2(new \DateTime($dsInfo['created'])); break;
+					case 2 : $ds['condition'] = 'production'; break;
 					case 3 : $ds['condition'] = 'expired'; break;
-					case 4 : $ds['condition'] = 'internal'; break;
-					default: $ds['condition'] = '???';
+					case 4 : $ds['condition'] = 'stopped'; break;
+					case 5 : $ds['condition'] = 'deleted'; break;
+					case 99 : $ds['condition'] = '--no-info--'; break;
+					default: $ds['condition'] = '--unknown--';
 				}
 			}
 			else
@@ -1002,34 +1003,34 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 				$ds['status'] = '';
 
 			if ($channelInfo)
-				$ds ['channelName'] = $channelInfo['serverInfo']['e10channelName'];
+				$ds ['channelName'] = $channelInfo['serverInfo']['channelId'];
 			else
 				$ds ['channelName'] = '???';
 
 			if ($dsInfo && isset($dsInfo['supportName']))
 				$ds ['siteName'] = $dsInfo['supportName'];
 			else
-				$ds ['siteName'] = '???';
+				$ds ['siteName'] = '';
 
 			$dsList[] = $ds;
 		}
 
 		usort ($dsList, function ($a, $b){return strcasecmp($a['name'], $b['name']);});
 
-		$fp=popen("resize", "r");
+		$fp=popen('stty size', 'r');
 		$b=stream_get_contents($fp);
-		preg_match("/COLUMNS=([0-9]+)/", $b, $matches);$columns = $matches[1];
-		preg_match("/LINES=([0-9]+)/", $b, $matches);$rows = $matches[1];
+		$sizes = explode(' ', $b);
+		$columns = intval($sizes[1] ?? 80);
 		pclose($fp);
 
 		echo (str_repeat('-', $columns)."\n");
 		$row = sprintf('%6s', '# | ');
 		$row .= sprintf('%20s', 'dsid');
-		$row .= ' | '.str::setWidth('name', 80);
-		$row .= ' | '.str::setWidth('channel', 12);
-		$row .= ' | '.str::setWidth('site', 20);
-		$row .= ' | '.str::setWidth('condition', 20);
-		$row .= ' | '.str::setWidth('status', 10);
+		$row .= ' | '.Str::setWidth('name', 80);
+		$row .= ' | '.Str::setWidth('channel', 12);
+		$row .= ' | '.Str::setWidth('support', 20);
+		$row .= ' | '.Str::setWidth('condition', 20);
+		$row .= ' | '.Str::setWidth('status', 10);
 		echo $row."\n";
 		echo (str_repeat('-', $columns)."\n");
 
@@ -1038,11 +1039,11 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		{
 			$row = sprintf('%3d', $ndx);
 			$row .= ' | '.sprintf('%20s', $ds['dsid']);
-			$row .= ' | '.str::setWidth($ds['name'], 80);
-			$row .= ' | '.str::setWidth($ds['channelName'], 12);
-			$row .= ' | '.str::setWidth($ds['siteName'], 20);
-			$row .= ' | '.str::setWidth($ds['condition'], 20);
-			$row .= ' | '.str::setWidth($ds['status'], 10);
+			$row .= ' | '.Str::setWidth($ds['name'], 80);
+			$row .= ' | '.Str::setWidth($ds['channelName'], 12);
+			$row .= ' | '.Str::setWidth($ds['siteName'], 20);
+			$row .= ' | '.Str::setWidth($ds['condition'], 20);
+			$row .= ' | '.Str::setWidth($ds['status'], 10);
 
 			echo $row."\n";
 			$ndx++;
@@ -1111,7 +1112,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		$channelCfg = $this->cfgServer['channels'][$defaultChannelId] ?? NULL;
 		if ($channelCfg)
 			return $channelCfg['path'];
-		
+
 		return '/usr/lib/shipard';
 	}
 
@@ -1362,7 +1363,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 				return $this->err('User last name not set [userLastName]');
 			if (!isset($this->cfgServer['userEmail']) || $this->cfgServer['userEmail'] === '')
 				return $this->err('User email not set [userEmail]');
-		}	
+		}
 
 		return TRUE;
 	}
@@ -1395,7 +1396,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 			case	"ds-fix-perms":			return $this->dsFixPerms ();
 
 			case	"help":             return $this->help ();
-			
+
 			case	"server-backup":						return $this->serverBackup ();
 			case	"server-check":							return $this->serverCheck ();
 			case	"server-cleanup":						return $this->serverCleanup ();
