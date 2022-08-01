@@ -339,6 +339,7 @@ class ViewAttachmentsImages extends ViewAttachmentsAll
 			array_push($q,
 				' EXISTS (SELECT ndx FROM wkf_docs_documents WHERE att.recid = ndx AND tableId = %s', 'wkf.docs.documents',
 				' AND wkf_docs_documents.[folder] IN %in', array_keys($usersFolders['all']),
+				' AND wkf_docs_documents.[docState] IN %in', [1000, 4000, 8000],
 				')');
 			array_push ($q, ' OR ');
 		}
