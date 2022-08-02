@@ -2,11 +2,14 @@
 	"admin": {
 		"viewers": {
 			"plans.core.plans": {"default": 2},
-			"plans.core.items": {"default": 2},
+			"plans.core.items": {"default": 2, "grid": 2},
 			"plans.core.itemStates": {"default": 2}
 		}
 	},
-	"user": {
+	"pwuser": {
+		"viewers": {
+			"plans.core.items": {"default": 2, "grid": 2}
+		},
 		"widgets": {
 			"plans.core.libs.Dashboard": 2
 		}
