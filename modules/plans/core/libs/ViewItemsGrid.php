@@ -22,6 +22,7 @@ class ViewItemsGrid extends TableViewGrid
 	var $useCustomer = 0;
 	var $useProjectId = 0;
 	var $lastGroupId = '';
+	var $fixedMainQuery = NULL;
 
 	var $showPrevItemInMonth = 1;
 
@@ -95,7 +96,8 @@ class ViewItemsGrid extends TableViewGrid
 
 		$this->setGrid ($g);
 
-		$this->setMainQueries ();
+		if (!$this->fixedMainQuery)
+			$this->setMainQueries ();
 	}
 
 	public function createBottomTabs ()

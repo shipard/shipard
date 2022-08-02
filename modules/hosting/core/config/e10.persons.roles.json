@@ -11,6 +11,7 @@
 			"hosting.core.hostings": {"default": 2},
 			"hosting.core.partners": {"default": 2},
 			"hosting.core.partnersPersons": {"default": 2},
+			"plans.core.items": {"hosting.core.libs.ViewerProjectsGrid": 2, "hosting.core.libs.ViewerProjectsGantt": 2},
 
 			"mac.inet.domainsAccounts": {"default": 2},
 			"mac.inet.domains": {"default": 2},
@@ -25,13 +26,19 @@
 	},
 	"hstngcd": {
 		"name": "Hosting Partner",
-		"roles": ["hstngdb"],
+		"roles": ["pwuser"],
+		"viewers": {
+			"plans.core.items": {"hosting.core.libs.ViewerProjectsGrid": 1, "hosting.core.libs.ViewerProjectsGantt": 1}
+		},
 		"widgets": {
 			"lib.hosting.DataSourcesWallWidget": 2
 		}
 	},
 	"hstngdb": {
-		"name": "Zakládání databází"
+		"name": "Zakládání databází",
+		"viewers": {
+			"plans.core.items": {"hosting.core.libs.ViewerProjectsGrid": 1, "hosting.core.libs.ViewerProjectsGantt": 1}
+		}
 	},
 	"user": {
 		"widgets": {

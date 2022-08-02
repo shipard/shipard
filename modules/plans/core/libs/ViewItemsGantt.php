@@ -239,6 +239,7 @@ class ViewItemsGantt extends TableViewGrid
 
     array_push ($q, ' AND [datePlanBegin] IS NOT NULL');
     array_push ($q, ' AND [dateDeadline] IS NOT NULL');
+		array_push ($q, ' AND [items].[docState] IN %in', [1000, 4000, 8000]);
 
 		// -- fulltext
 		if ($fts != '')
