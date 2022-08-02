@@ -9,5 +9,14 @@
 				}
 			}
 		}
+	},
+	{
+		"table": "plans.core.items",
+		"views": {
+			"hostingProjectTable": {
+				"id": "hostingProjectTable", "class": "hosting.core.libs.ViewerProjectsGrid", "title": "Náhled",
+				"detail": "plans.core.ViewDetailItem"
+			}
+		}
 	}
 ]

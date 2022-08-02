@@ -3,7 +3,7 @@
   "name": "Hosting",
 	"tables": [
 		"hostings", "servers", "serversInfo",
-		"partners", "partnersPersons", 
+		"partners", "partnersPersons",
 		"dataSources", "dsStats", "dsUsers", "dsUsersOptions", "dsUsersSummary"
 	],
 	"config": [
@@ -29,7 +29,7 @@
 		{"id": "hosting.core.serverCreateDSTypes", "file": "hosting.core.serverCreateDSTypes.json"},
 		{"id": "+reports", "file": "reports.json"}
 	],
-	"extensions": ["persons"],
+	"extensions": ["hosting"],
 	"modules": [
 		"integrations/core", "mac/inet", "e10settings/base"
 	]
