@@ -25,7 +25,7 @@ class GetNewDataSourceResponse extends Utility
       return;
     }
 
-    $serverItem = NULL;  
+    $serverItem = NULL;
     $serverItem = $this->db()->query ('SELECT * FROM [hosting_core_servers] WHERE [docState] = 4000 AND [gid] = %s', $serverGID)->fetch ();
 
     if (!$serverItem)
@@ -33,15 +33,15 @@ class GetNewDataSourceResponse extends Utility
       $this->result['error']['msg'][] = ['Server `'.$serverGID.'` not found'];
       return;
     }
-  
-    if (!$serverItem['creatingDataSources'] === 0)
+
+    if (!$serverItem['dsCreateDemo'] && !$serverItem['dsCreateProduction'])
     {
       $this->result['error']['msg'][] = ['Creating data sources for server `'.$serverGID.'` is not enabled'];
       return;
-    }  
-  
+    }
+
     $data = [];
-    
+
     $q[] = 'SELECT * FROM [hosting_core_dataSources]';
     array_push ($q, ' WHERE [docState] = %i', 1100);
     array_push ($q, ' AND [inProgress] = %i', 0);
@@ -55,7 +55,7 @@ class GetNewDataSourceResponse extends Utility
         array_push ($q, ' AND [server] = %i', $serverItem['ndx']);
       else // all servers
         array_push ($q, ' AND ([server] = %i', 0, ' OR [server] = %i)', $serverItem['ndx']);
-      array_push ($q, ')');  
+      array_push ($q, ')');
     }
     if ($serverItem['dsCreateProduction'] > 0) // -- DEMO
     {
@@ -69,7 +69,7 @@ class GetNewDataSourceResponse extends Utility
         array_push ($q, ' AND [server] = %i', $serverItem['ndx']);
       else // all servers
         array_push ($q, ' AND ([server] = %i', 0, ' OR [server] = %i)', $serverItem['ndx']);
-      array_push ($q, ')');  
+      array_push ($q, ')');
     }
     array_push ($q, ')');
 
@@ -84,7 +84,7 @@ class GetNewDataSourceResponse extends Utility
       if (!$createRequest)
       {
         $this->result['error']['msg'][] = ['Invalid request data for data source `'.$request['gid'].'`; please contact support'];
-        return;  
+        return;
       }
 
       $data ['gid'] = $request['gid'];
@@ -92,7 +92,7 @@ class GetNewDataSourceResponse extends Utility
       $data ['createRequest'] = $createRequest;
 
       $tablePersons = new \E10\Persons\TablePersons ($this->app());
-      
+
       $adminDoc = $tablePersons->loadDocument ($request ['admin']);
       $data ['admin'] = [
         'fullName' => $adminDoc['recData']['fullName'],
