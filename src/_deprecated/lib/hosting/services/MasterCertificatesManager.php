@@ -136,8 +136,8 @@ class MasterCertificatesManager extends Utility
 
 	function createDataSourcesPacks()
 	{
-		$q [] = 'SELECT certs.*, ds.gid AS dsGid FROM [e10pro_hosting_server_certs] AS certs';
-		array_push ($q, ' LEFT JOIN [e10pro_hosting_server_datasources] AS ds ON certs.dataSource = ds.ndx');
+		$q [] = 'SELECT certs.*, ds.gid AS dsGid FROM [mac_inet_certs] AS certs';
+		array_push ($q, ' LEFT JOIN [hosting_core_dataSources] AS ds ON certs.dataSource = ds.ndx');
 		array_push ($q, ' WHERE 1');
 		array_push ($q, ' AND certs.[docState] = %i', 4000);
 		array_push ($q, ' AND ds.[docState] = %i', 4000);
