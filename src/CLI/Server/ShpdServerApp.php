@@ -624,7 +624,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		$this->checkFilesystem (__APP_DIR__ . '/');
 
 		$this->appUpgrade_ServerInfo ();
-		$this->appUpgrade_ChannelInfo ();
+		$channelChanged = $this->appUpgrade_ChannelInfo ();
 		$this->appUpgrade_DetectVersion();
 
 		if ($this->manager->appCompileConfig ())
@@ -639,6 +639,12 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		$this->createDSNginxConfigs();
 
 		$this->createDSIcons();
+
+		if ($channelChanged)
+		{
+			passthru($this->shpdAppCmd.' cfgUpdate');
+			passthru($this->shpdServerCmd.' app-upgrade');
+		}
 	}
 
 	public function appUpgradeFull ()
@@ -660,14 +666,14 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		file_put_contents(__APP_DIR__ . '/config/_serverInfo.json', json_encode($cfg, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
 	}
 
-	public function appUpgrade_ChannelInfo ($appDir = '')
+	public function appUpgrade_ChannelInfo ()
 	{
-		if ($appDir === '')
-			$appDir = __APP_DIR__;
+		$appDir = __APP_DIR__;
 
 		$channelConfigFileName = $appDir . '/config/_server_channelInfo.json';
 
 		$doIt = FALSE;
+		$channelChanged = 0;
 
 		if (!is_file($channelConfigFileName))
 			$doIt = TRUE;
@@ -676,10 +682,11 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		if ($e10channel)
 		{
 			$doIt = TRUE;
+			$channelChanged = 1;
 		}
 
 		if (!$doIt)
-			return;
+			return 0;
 
 		if (!$e10channel)
 		{
@@ -687,7 +694,8 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 			if (!$e10channel)
 			{
 				echo(json_encode($this->cfgServer))."\n----\n";
-				return $this->err("ERROR: Invalid default channel...");
+				$this->err("ERROR: Invalid default channel...");
+				return 0;
 			}
 		}
 
@@ -696,7 +704,8 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		$channelCfg = isset($this->cfgServer['channels'][$e10channel]) ? $this->cfgServer['channels'][$e10channel] : NULL;
 		if (!$channelCfg)
 		{
-			return $this->err("ERROR: Invalid channel...");
+			$this->err("ERROR: Invalid channel...");
+			return 0;
 		}
 
 		$cfg = [
@@ -707,7 +716,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 
 		$this->appUpgrade_DetectVersion();
 
-		return TRUE;
+		return $channelChanged;
 	}
 
 	public function appUpgrade_DetectVersion ()
