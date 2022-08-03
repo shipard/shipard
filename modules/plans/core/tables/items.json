@@ -30,7 +30,8 @@
 	],
 	"lists": [
 		{"id": "itemsParts", "class": "e10.base.ListRows", "name": "Části", "table": "plans.core.itemsParts", "queryColumn": "parentItem", "orderColumn": "rowOrder"},
-		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"}
+		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"},
+		{"id": "doclinksPersons", "class": "e10.base.ListDocLinks", "name": "Vazby na Osoby"}
 	],
 	"views": [
 		{

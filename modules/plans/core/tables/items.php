@@ -4,6 +4,7 @@ namespace plans\core;
 
 use \e10\TableForm, \e10\DbTable, \e10\TableView, e10\TableViewDetail;
 use Shipard\Utils\Utils;
+use \e10\base\libs\UtilsBase;
 
 /**
  * Class TableItems
@@ -22,6 +23,15 @@ class TableItems extends DbTable
 
 		$hdr ['info'][] = ['class' => 'info', 'value' => $recData ['subject']];
 
+		$ndx = $recData['ndx'] ?? 0;
+		if ($ndx)
+		{
+			$linkedPersons = UtilsBase::linkedPersons ($this->app(), $this, $ndx);
+			if (isset($linkedPersons[$ndx]) && count($linkedPersons[$ndx]))
+			{
+				$hdr ['info'][] = ['class' => 'info', 'value' => $linkedPersons[$ndx]];
+			}
+		}
 		return $hdr;
 	}
 
@@ -149,6 +159,7 @@ class FormItem extends TableForm
 					$this->addColumnInput ('dateDeadline');
 
 					$this->addColumnInput ('itemState');
+					$this->addList ('doclinksPersons', '', TableForm::loAddToFormLayout);
 					$this->addList ('clsf', '', TableForm::loAddToFormLayout);
 				$this->closeTab ();
 

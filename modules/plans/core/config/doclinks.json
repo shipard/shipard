@@ -1,0 +1,18 @@
+{
+	"plans.core.items": {
+		"plans-items-assigned": {
+			"linkid": "plans-items-assigned", "name": "Přiřazeno", "icon": "docLinkAssigned",
+			"sources": [
+				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			],
+			"listId": "doclinksPersons"
+		},
+		"plans-items-notify": {
+			"linkid": "plans-items-notify", "name": "Na vědomí", "icon": "docLinkNotify",
+			"sources": [
+				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			],
+			"listId": "doclinksPersons"
+		}
+	}
+}
