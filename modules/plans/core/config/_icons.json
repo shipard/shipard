@@ -1,0 +1,14 @@
+{
+    "tables/plans.core.plans":{
+        "fa5":"fa-clipboard-check",
+        "fa6pro":"fa-clipboard-check",
+        "bsi":"bi-clipboard-check",
+        "mdi":"inventory"
+    },
+    "tables/plans.core.items":{
+        "fa5": "fa-check-circle",
+		"fa6pro": "fa-check-circle",
+		"bsi": "bi-check-circle",
+		"mdi": "check_circle"
+    }
+}

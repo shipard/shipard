@@ -2,8 +2,8 @@
 
 namespace plans\core;
 
-use \e10\TableForm, \e10\DbTable, \e10\TableView, e10\TableViewDetail, \e10\utils, \e10\str;
-
+use \Shipard\Form\TableForm, \Shipard\Table\DbTable, \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Utils\Utils;
+use \e10\base\libs\UtilsBase;
 
 /**
  * Class TablePlans
@@ -47,19 +47,19 @@ class TablePlans extends DbTable
 				'useAnnots' => intval($r['useAnnots']),
 				'plansWorkOrdersRows' => intval($r['plansWorkOrdersRows']),
 
-        //'icon' => $r['icon'],
-        //'dp' => intval($r['dashboardPlace'])
+        'icon' => $r['icon'],
+        'order' => intval($r['order']),
+        'addToDashboardHome' => intval($r['addToDashboardHome']),
+				'addToDashboardMnf' => intval($r['addToDashboardMnf']),
 			];
 
-
-
 			$cntPeoples = 0;
-      /*
-			$cntPeoples += $this->saveConfigList ($wiki, 'admins', 'e10.persons.persons', 'e10pro-kb-wikies-admins', $r ['ndx']);
-			$cntPeoples += $this->saveConfigList ($wiki, 'adminsGroups', 'e10.persons.groups', 'e10pro-kb-wikies-admins', $r ['ndx']);
-			$cntPeoples += $this->saveConfigList ($wiki, 'users', 'e10.persons.persons', 'e10pro-kb-wikies-users', $r ['ndx']);
-			$cntPeoples += $this->saveConfigList ($wiki, 'usersGroups', 'e10.persons.groups', 'e10pro-kb-wikies-users', $r ['ndx']);
-      */
+
+			$cntPeoples += $this->docLinksConfigList ($plan, 'makers', 'e10.persons.persons', 'plans-plans-makers', $r ['ndx']);
+			$cntPeoples += $this->docLinksConfigList ($plan, 'makersGroups', 'e10.persons.groups', 'plans-plans-makers', $r ['ndx']);
+			$cntPeoples += $this->docLinksConfigList ($plan, 'visibility', 'e10.persons.persons', 'plans-plans-visibility', $r ['ndx']);
+			$cntPeoples += $this->docLinksConfigList ($plan, 'visibilityGroups', 'e10.persons.groups', 'plans-plans-visibility', $r ['ndx']);
+
 			$plan['allowAllUsers'] = ($cntPeoples) ? 0 : 1;
 
 			$plans [$r['ndx']] = $plan;
@@ -69,9 +69,59 @@ class TablePlans extends DbTable
 		file_put_contents(__APP_DIR__ . '/config/_plans.plans.json', utils::json_lint (json_encode ($cfg)));
 	}
 
-  public function usersPlans()
+	function docLinksConfigList (&$item, $key, $dstTableId, $listId, $activityTypeNdx)
+	{
+		$list = [];
+
+		$rows = $this->app()->db->query (
+			'SELECT doclinks.dstRecId FROM [e10_base_doclinks] AS doclinks',
+			' WHERE doclinks.linkId = %s', $listId, ' AND dstTableId = %s', $dstTableId,
+			' AND doclinks.srcRecId = %i', $activityTypeNdx
+		);
+		foreach ($rows as $r)
+		{
+			$list[] = $r['dstRecId'];
+		}
+
+		if (count($list))
+		{
+			$item[$key] = $list;
+			return count($list);
+		}
+
+		return 0;
+	}
+
+  public function usersPlans($enabledCfgItem = '')
   {
-    $plans = $this->app()->cfgItem('plans.plans');
+    $allPlans = $this->app()->cfgItem('plans.plans', NULL);
+		$plans = [];
+		if ($allPlans === NULL)
+			return $plans;
+
+		$userNdx = $this->app()->userNdx();
+		$userGroups = $this->app()->userGroups();
+
+		foreach ($allPlans as $itemNdx => $i)
+		{
+			if ($enabledCfgItem !== '' && !($i[$enabledCfgItem] ?? 0))
+				continue;
+
+			$enabled = 0;
+			if (!isset($i['allowAllUsers'])) $enabled = 1;
+			elseif ($i['allowAllUsers']) $enabled = 1;
+			elseif (isset($i['makers']) && in_array($userNdx, $i['makers'])) $enabled = 2;
+			elseif (isset($i['makersGroups']) && count($userGroups) && count(array_intersect($userGroups, $i['makersGroups'])) !== 0) $enabled = 2;
+			elseif (in_array($userNdx, $i['visibility'] ?? [])) $enabled = 1;
+			elseif (count($userGroups) && count(array_intersect($userGroups, $i['visibityGroups'] ?? [])) !== 0) $enabled = 1;
+
+			if (!$enabled)
+				continue;
+
+			$plans[$itemNdx] = $i;
+			$plans[$itemNdx]['accessLevel'] = $enabled;
+		}
+
     return $plans;
   }
 }
@@ -82,6 +132,8 @@ class TablePlans extends DbTable
  */
 class ViewPlans extends TableView
 {
+	var $linkedPersons = [];
+
 	public function init ()
 	{
 		parent::init();
@@ -106,6 +158,14 @@ class ViewPlans extends TableView
 		return $listItem;
 	}
 
+	function decorateRow (&$item)
+	{
+		if (isset ($this->linkedPersons [$item ['pk']]))
+		{
+			$item ['t2'] = $this->linkedPersons [$item ['pk']];
+		}
+	}
+
 	public function selectRows ()
 	{
 		$fts = $this->fullTextSearch ();
@@ -125,6 +185,15 @@ class ViewPlans extends TableView
 		$this->queryMain ($q, '', ['[order]', '[fullName]', '[ndx]']);
 		$this->runQuery ($q);
 	}
+
+	public function selectRows2 ()
+	{
+		if (!count($this->pks))
+			return;
+
+		$this->linkedPersons = UtilsBase::linkedPersons ($this->app(), $this->table, $this->pks);
+	}
+
 }
 
 
@@ -148,7 +217,13 @@ class FormPlan extends TableForm
 				$this->openTab ();
 					$this->addColumnInput ('fullName');
 					$this->addColumnInput ('shortName');
+					$this->addList ('doclinksPersons', '', TableForm::loAddToFormLayout);
+					$this->addSeparator(self::coH4);
+					$this->addColumnInput ('addToDashboardHome');
+					$this->addColumnInput ('addToDashboardMnf');
+					$this->addSeparator(self::coH4);
 					$this->addColumnInput ('order');
+					$this->addColumnInput ('icon');
 				$this->closeTab ();
 				$this->openTab ();
 					$this->addColumnInput ('primaryViewType');

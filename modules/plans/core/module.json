@@ -13,6 +13,7 @@
 		{"id": "+widgets", "file": "widgets.json"},
     {"id": "+plans.planViewTypes", "file": "planViewTypes.json"},
     {"id": "+plans.itemStatesLifeCycle", "file": "itemStatesLifeCycle.json"},
-    {"id": "+e10.base.clsfGroups", "file": "e10.items.clsfGroups.json"}
+    {"id": "+e10.base.clsfGroups", "file": "e10.items.clsfGroups.json"},
+    {"id": "+e10.base.doclinks", "file": "doclinks.json"}
   ]
 }

@@ -25,6 +25,8 @@
 		{"id": "price", "name": "Cena", "type": "money"},
 		{"id": "currency", "name": "Měna", "type": "int", "reference": "e10.world.currencies"},
 
+		{"id": "isPrivate", "name": "Soukromé", "type": "logical"},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],

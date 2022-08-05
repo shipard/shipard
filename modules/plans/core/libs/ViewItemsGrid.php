@@ -165,7 +165,7 @@ class ViewItemsGrid extends TableViewGrid
 		if ($item['personCustomer'])
 			$listItem ['personCust'] = $item['personCustName'];
 
-		$listItem ['subject'] = $item['subject'];
+		$listItem ['subject'] = $item['isPrivate'] ? ['text' => $item['subject'], 'icon' => 'system/iconLocked'] : $item['subject'];
 
 		$listItem ['iid'] = $item['iid'];
 		$listItem ['prjId'] = $item['projectId'];

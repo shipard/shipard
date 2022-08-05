@@ -160,6 +160,7 @@ class FormItem extends TableForm
 
 					$this->addColumnInput ('itemState');
 					$this->addList ('doclinksPersons', '', TableForm::loAddToFormLayout);
+					$this->addColumnInput ('isPrivate');
 					$this->addList ('clsf', '', TableForm::loAddToFormLayout);
 				$this->closeTab ();
 
