@@ -99,7 +99,8 @@ class TableForm
 				coRight					= 0x80000000,
 				coBold					= 0x100000000,
 				coH3						= 0x200000000,
-				coH4						= 0x400000000;
+				coH4						= 0x400000000,
+				coRightCheckbox	= 0x800000000;
 
 
 	const loAddToFormLayout = 0x1000, loWidgetParts = 0x2000, loRowsDisableMove = 0x4000;
@@ -378,7 +379,7 @@ class TableForm
 		$inputCode = "<input type='checkbox' name='$ip{$columnId}' id='$colId' class='e10-inputLogical$class' value='{$valueForTrue}' data-fid='{$this->fid}'$inputParams/>";
 		$hints = $this->columnOptionsHints ($options);
 
-		if ($options & TableForm::coRight)
+		if ($options & TableForm::coRight || $options & TableForm::coRightCheckbox)
 			$this->appendElement ($labelCode, $inputCode, $hints);
 		else
 			$this->appendElement ($inputCode, $labelCode, $hints);
@@ -791,7 +792,7 @@ class TableForm
 				if (is_array($txt) && isset($txt['enumLabelOnly']))
 				{
 					$inputCode .= $this->app()->ui()->composeTextLine($txt).'<br/>';
-				}	
+				}
 				else
 				{
 					$inputCode .= "<div class='padd5 e10-selectable-radio$active'>";
