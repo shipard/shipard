@@ -15,6 +15,7 @@ use \e10doc\core\libs\GlobalParams;
 class TableWorkOrders extends DbTable
 {
 	CONST wotMnf = 0, wotAcc = 1;
+	CONST wofOneTime = 0, wofContinuous = 1, wofPeriodic = 2;
 
 	public function __construct ($dbmodel)
 	{
@@ -806,6 +807,13 @@ class FormWorkOrder extends TableForm
 					//$this->layoutOpen (TableForm::ltForm/*TableForm::ltGrid*/);
 						if ($dko['useIntTitle'])
 							$this->addColumnInput ('intTitle'/*, TableForm::coColW12*/);
+
+						if ($dko['workOrderFrequency'] === TableWorkOrders::wofPeriodic)
+						{
+							$this->addColumnInput ('symbol1');
+							//$this->addColumnInput ('symbol2');
+						}
+
 						$this->addList ('doclinks', '', TableForm::loAddToFormLayout/*|TableForm::coColW12*/);
 						$this->addList ('clsf', '', TableForm::loAddToFormLayout);
 					//$this->layoutClose ();
