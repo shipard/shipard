@@ -131,7 +131,7 @@ class Utils
 		else
 		if ($defaultValue !== NULL)
 			$dest [$key] = $defaultValue;
-	}	
+	}
 
 	static function addToTree (&$dest, $key, $value)
 	{
@@ -246,6 +246,17 @@ class Utils
 				if ($app->cfgItem($item['disabledCfgItem'], $defaultValue) == 1)
 					return FALSE;
 			}
+		}
+
+		if (isset($item['allowAccessClass']))
+		{
+			$o = $app->createObject($item['allowAccessClass']);
+			if ($o)
+			{
+				if ($o->allowAccess($item))
+					return TRUE;
+			}
+			return FALSE;
 		}
 
 		return TRUE;
@@ -412,11 +423,11 @@ class Utils
 					{
 					 	if ($part[$i] === '0' || $part[$i] === 'o' || $part[$i] === 'i' || $part[$i] === 'l' || $part[$i] === 'j')
 							continue;
-						$id .= $part[$i];	
-					}
-					else	
 						$id .= $part[$i];
-				}	
+					}
+					else
+						$id .= $part[$i];
+				}
 				if (strlen ($id) === $len)
 					return $id;
 			}
@@ -1537,12 +1548,12 @@ class Utils
 	static function checkFilePermissions ($fullFileName)
 	{
 		$fp = substr(sprintf('%o', fileperms($fullFileName)), -4);
-		if ($fp !== '0660')	
+		if ($fp !== '0660')
 		{
 			if (!chmod ($fullFileName, 0660))
 				error_log("chmod failed on `$fullFileName` [$fp]");
 		}
-		
+
 		$fg = posix_getgrgid(filegroup($fullFileName));
 		if ($fg['name'] !== self::wwwGroup())
 		{
