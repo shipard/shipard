@@ -550,7 +550,7 @@ class E10Utils
 
 	static function docTaxCountryId($app, $docHeadRecData)
 	{
-		if ($docHeadRecData['taxCountry'] === '')
+		if (!isset($docHeadRecData['taxCountry']) || $docHeadRecData['taxCountry'] === '')
 			return 'cz';
 		return $docHeadRecData['taxCountry'];
 	}
@@ -582,7 +582,7 @@ class E10Utils
 		$country = $app->cfgItem('e10doc.base.taxAreas.'.$taxRegCfg['taxArea'].'.countries.'.$taxCountryId, NULL);
 		if (!$country)
 			return 'eur';
-	
+
 		return $country['currency'];
 	}
 
@@ -604,7 +604,7 @@ class E10Utils
 		$taxCode = 'EUCZ000';
 		if ($taxes)
 		{
-			forEach ($taxes as $itmid => $itm) 
+			forEach ($taxes as $itmid => $itm)
 			{
 				if ($itm ['dir'] != $dirTax)
 					continue;
@@ -613,7 +613,7 @@ class E10Utils
 				$taxCode = $itmid;
 				break;
 			}
-		}	
+		}
 		return $taxCode;
 	}
 
@@ -651,12 +651,12 @@ class E10Utils
 		$enum = [];
 		foreach ($ta['countries'] as $countryId => $country)
 		{
-			if ($fullConfig)	
+			if ($fullConfig)
 				$enum[$countryId] = $country;
 			else
 				$enum[$countryId] = $country['fn'];
 		}
-		
+
 		return $enum;
 	}
 
@@ -740,7 +740,7 @@ class E10Utils
 				}
 			}
 		}
-	
+
 		// -- nedaňový doklad
 		if ($itemRecData['priceSellTotal'] != 0.0)
 			return $itemRecData['priceSellTotal'];
@@ -759,7 +759,7 @@ class E10Utils
 			return NULL;
 
 		$k = key($taxRegs);
-		
+
 		return $taxRegs[$k];
 	}
 }
