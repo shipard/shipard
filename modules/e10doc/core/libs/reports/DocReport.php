@@ -259,7 +259,7 @@ class DocReport extends DocReportBase
 				if (isset($acc['accRowsHeader']['#']))
 					unset($acc['accRowsHeader']['#']);
 				$this->data['accounting'] = ['table' => $acc['accRows'], 'header' => $acc['accRowsHeader']];
-			}	
+			}
 		}
 
 		// -- texts
@@ -292,10 +292,10 @@ class DocReport extends DocReportBase
 
 				$row ['rowItemCodes'] = array_values($row ['rowItemCodes']);
 			}
-		
+
 			$this->data ['itemCodesHeader'] = array_values($this->data ['itemCodesHeader']);
-		}	
-		$this->data ['flags']['multiLineRows'] = 1;
+		}
+		$this->data ['flags']['multiLineRows'] = count($this->data ['itemCodesHeader']);//1;
 	}
 
 	protected function loadDocRowItemsCodes(array &$row)
