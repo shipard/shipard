@@ -760,70 +760,63 @@ class FormWorkOrder extends TableForm
 					$this->addColumnInput ('currency');
 					$this->addColumnInput ('title');
 
-					if ($dko['workOrderType'] === TableWorkOrders::wotMnf)
+					if ($useDocKinds === 2)
+						$this->addColumnInput ('docKind');
+					if ($dko['useDateIssue'])
+						$this->addColumnInput ('dateIssue');
+					if ($dko['useRefId1'])
+						$this->addColumnInput ('refId1');
+					if ($dko['useRefId2'])
+						$this->addColumnInput ('refId2');
+					if ($dko['useDateContract'])
+						$this->addColumnInput ('dateContract');
+					if ($dko['useDateDeadlineRequested'])
+						$this->addColumnInput ('dateDeadlineRequested');
+					if ($dko['useDateBegin'])
 					{
-						$this->layoutOpen (TableForm::ltHorizontal);
-							$this->layoutOpen (TableForm::ltForm);
-								if ($useDocKinds === 2)
-									$this->addColumnInput ('docKind');
-								if ($dko['useDateIssue'])
-									$this->addColumnInput ('dateIssue');
-								if ($dko['useRefId1'])
-									$this->addColumnInput ('refId1');
-								if ($dko['useRefId2'])
-									$this->addColumnInput ('refId2');
-								if ($dko['useDateContract'])
-									$this->addColumnInput ('dateContract');
-								if ($dko['useDateDeadlineRequested'])
-									$this->addColumnInput ('dateDeadlineRequested');
-								if ($dko['useDateBegin'])
-									$this->addColumnInput ('dateBegin');
-								if ($dko['useDateDeadlineConfirmed'])
-									$this->addColumnInput ('dateDeadlineConfirmed');
-							$this->layoutClose ('width50');
-
-							$this->layoutOpen (TableForm::ltForm);
-								if ($dko['priceOnHead'])
-									$this->addColumnInput ('sumPrice');
-								if ($this->recData ['currency'] !== $this->recData ['homeCurrency'])
-									$this->addColumnInput ('exchangeRate');
-
-								if ($dko['useRetentionGuarantees'] || $this->recData['retentionGuarantees'] != 0)
-								{
-									$this->addColumnInput ('retentionGuarantees');
-									if ($this->recData['retentionGuarantees'] == 1)
-										$this->addColumnInput ('rgAmount');
-									elseif ($this->recData['retentionGuarantees'] == 2)
-										$this->addColumnInput ('rgPercent');
-								}
-
-								if ($this->table->app()->cfgItem ('options.core.useCentres', 0))
-									$this->addColumnInput ('centre');
-								if ($this->table->app()->cfgItem ('options.core.useProjects', 0))
-									$this->addColumnInput ('project');
-							$this->layoutClose ();
-						$this->layoutClose ();
+						$this->addColumnInput ('dateBegin');
+						$this->addColumnInput ('dateClosed');
 					}
-					//$this->layoutOpen (TableForm::ltForm/*TableForm::ltGrid*/);
-						if ($dko['useIntTitle'])
-							$this->addColumnInput ('intTitle'/*, TableForm::coColW12*/);
+					if ($dko['useDateDeadlineConfirmed'])
+						$this->addColumnInput ('dateDeadlineConfirmed');
 
-						if ($dko['workOrderFrequency'] === TableWorkOrders::wofPeriodic)
-						{
-							$this->addColumnInput ('symbol1');
-							//$this->addColumnInput ('symbol2');
-						}
+					if ($dko['priceOnHead'])
+						$this->addColumnInput ('sumPrice');
+					if ($this->recData ['currency'] !== $this->recData ['homeCurrency'])
+						$this->addColumnInput ('exchangeRate');
 
+					if ($dko['useRetentionGuarantees'] || $this->recData['retentionGuarantees'] != 0)
+					{
+						$this->addColumnInput ('retentionGuarantees');
+						if ($this->recData['retentionGuarantees'] == 1)
+							$this->addColumnInput ('rgAmount');
+						elseif ($this->recData['retentionGuarantees'] == 2)
+							$this->addColumnInput ('rgPercent');
+					}
+
+					if ($this->table->app()->cfgItem ('options.core.useCentres', 0))
+						$this->addColumnInput ('centre');
+					if ($this->table->app()->cfgItem ('options.core.useProjects', 0))
+						$this->addColumnInput ('project');
+
+					if ($dko['useIntTitle'])
+						$this->addColumnInput ('intTitle'/*, TableForm::coColW12*/);
+
+					if ($dko['useHeadSymbol1'])
+						$this->addColumnInput ('symbol1');
+					//$this->addColumnInput ('symbol2');
+
+					if ($dko['useMembers'])
 						$this->addList ('doclinks', '', TableForm::loAddToFormLayout/*|TableForm::coColW12*/);
-						$this->addList ('clsf', '', TableForm::loAddToFormLayout);
-					//$this->layoutClose ();
+					$this->addList ('clsf', '', TableForm::loAddToFormLayout);
 
-						$this->addSeparator(self::coH4);
-						$this->addSubColumns('vdsData');
+					$this->addSeparator(self::coH4);
+					if ($this->addSubColumns('vdsData'))
 						$this->addSeparator(self::coH4);
 
-						$this->addColumnInput ('parentWorkOrder');
-					$this->closeTab ();
+					if ($dko['useMembers'])
+						$this->addColumnInput ('useOwnerWorkOrder');
+				$this->closeTab ();
 				if (!$dko['disableRows'])
 				{
 					$this->openTab();

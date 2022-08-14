@@ -1015,7 +1015,7 @@ class TableForm
 	{
 		$sci = $this->subColumnInfo($columnId);
 		if (!$sci)
-			return;
+			return 0;
 
 		$this->subColumnInfo = $sci;
 
@@ -1149,6 +1149,8 @@ class TableForm
 		}
 
 		$this->setOption('inputPrefix', $oldInputPrefix);
+
+		return 1;
 	}
 
 	function subColumnInfo ($columnId)
@@ -1721,6 +1723,8 @@ class TableForm
 						];
 						if (isset($gotoState['icon']))
 							$b['icon'] = $gotoState['icon'];
+						if (isset($gotoState['side']))
+							$b['side'] = $gotoState['side'];
 						if (isset($gotoState['buttonClass']))
 							$b['buttonClass'] = $gotoState['buttonClass'];
 						if (isset ($gotoState['focus']) && $gotoState['focus'])

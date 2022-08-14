@@ -8,8 +8,8 @@
 		"stateStyle": "confirmed", "mainState": 1, "readOnly": 1, "enablePrint": 1, "goto": [4000, 4100, 8000]
 	},
 	"4000": {
-		"stateName": "Hotovo", "actionName": "Uzavřít",
-		"stateStyle": "done", "mainState": 2, "readOnly": 1, "enablePrint": 1, "goto": [8000]
+		"stateName": "Uzavřeno", "actionName": "Uzavřít",
+		"stateStyle": "done", "mainState": 2, "readOnly": 1, "enablePrint": 1, "side": 1, "goto": [8000]
 	},
 	"4100": {
 		"stateName": "Stornováno", "actionName": "Stornovat",

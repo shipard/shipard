@@ -43,7 +43,9 @@ class TableDocKinds extends DbTable
 				'useRetentionGuarantees' => $r ['useRetentionGuarantees'],
 				'useAddress' => $r ['useAddress'], 'invoicesInDetail' => $r ['invoicesInDetail'],
 				'viewerPrimaryTitle' => $r ['viewerPrimaryTitle'],
-
+				'useMembers' => $r ['useMembers'],
+				'useHeadSymbol1' => $r ['useHeadSymbol1'],
+				'useOwnerWorkOrder' => $r ['useOwnerWorkOrder'],
 				'useRowValidFromTo' => $r ['useRowValidFromTo'],
 				'useRowDateDeadlineRequested' => $r ['useRowDateDeadlineRequested'], 'labelRowDateDeadlineRequested' => $r ['labelRowDateDeadlineRequested'],
 				'useRowDateDeadlineConfirmed' => $r ['useRowDateDeadlineConfirmed'], 'labelRowDateDeadlineConfirmed' => $r ['labelRowDateDeadlineConfirmed'],
@@ -220,6 +222,9 @@ class FormDocKind extends TableForm
 					$this->addColumnInput ('usePersonsList');
 					$this->addColumnInput ('invoicesInDetail');
 					$this->addColumnInput ('viewerPrimaryTitle');
+					$this->addColumnInput ('useMembers');
+					$this->addColumnInput ('useHeadSymbol1');
+					$this->addColumnInput ('useOwnerWorkOrder');
 					$this->addColumnInput ('order');
 					$this->addList ('doclinks', '', TableForm::loAddToFormLayout);
 				$this->closeTab ();

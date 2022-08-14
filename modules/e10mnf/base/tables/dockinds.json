@@ -14,6 +14,9 @@
 		{"id": "priceOnHead", "name": "Zadávat cenu na hlavičce", "type": "logical"},
 		{"id": "useDescription", "name": "Použít textový popis zakázky", "type": "logical"},
 		{"id": "usePersonsList", "name": "Používat Osoby na Zakázce", "type": "logical"},
+		{"id": "useMembers", "name": "Používat Členy a Správce", "type": "logical"},
+		{"id": "useHeadSymbol1", "name": "Používat Variabilní symbol", "type": "logical"},
+		{"id": "useOwnerWorkOrder", "name": "Používat Nadřazenou zakázku", "type": "logical"},
 
 		{"id": "useDateIssue", "name": "Používat Datum vystavení", "type": "logical"},
 		{"id": "labelDateIssue", "name": "Popisek", "type": "string", "len": 40},

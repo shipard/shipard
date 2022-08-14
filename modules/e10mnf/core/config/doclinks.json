@@ -1,14 +1,18 @@
 {
 	"e10mnf.core.workOrders": {
-		"e10mnf-workRecs-admins": {"linkid": "e10mnf-workRecs-admins", "name": "Správci zakázky", "icon": "system/iconAdmin",
+		"e10mnf-workRecs-admins": {
+			"linkid": "e10mnf-workRecs-admins", "name": "Správci zakázky", "icon": "system/iconAdmin",
 			"sources": [
 				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
-			]
+			],
+			"listId": "doclinksMembers"
 		},
-		"e10mnf-workRecs-members": {"linkid": "e10mnf-workRecs-members", "name": "Členové zakázky", "icon": "system/iconUser",
+		"e10mnf-workRecs-members": {
+			"linkid": "e10mnf-workRecs-members", "name": "Členové zakázky", "icon": "system/iconUser",
 			"sources": [
 				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
-			]
+			],
+			"listId": "doclinksMembers"
 		}
 	}
 }

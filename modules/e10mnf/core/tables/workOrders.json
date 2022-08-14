@@ -23,7 +23,7 @@
 		{"id": "dateBegin", "name": "Datum zahájení", "type": "date"},
 		{"id": "dateDeadlineRequested", "name": "Požadovaný termín", "type": "date"},
 		{"id": "dateDeadlineConfirmed", "name": "Potvrzený termín", "type": "date"},
-		{"id": "dateClosed", "name": "Datum uzavření", "type": "date"},
+		{"id": "dateClosed", "name": "Datum ukončení", "type": "date"},
 
 		{"id": "centre", "name": "Středisko", "type": "int", "reference": "e10doc.base.centres"},
 		{"id": "project", "name": "Projekt", "type": "int", "reference": "e10pro.wkf.projects", "module": "e10pro.wkf"},
@@ -61,7 +61,8 @@
 	"lists": [
 		{"id": "rows", "class": "e10.base.ListRows", "name": "Řádky", "table": "e10mnf.core.workOrdersRows", "queryColumn": "workOrder", "orderColumn": "rowOrder"},
 		{"id": "persons", "class": "e10.base.ListRows", "name": "Osoby", "table": "e10mnf.core.workOrdersPersons", "queryColumn": "workOrder", "orderColumn": "rowOrder"},
-		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"},
+		{"id": "doclinksMembers", "class": "e10.base.ListDocLinks", "name": "Členové zakázky"},
+		{"id": "doclinksPlaces", "class": "e10.base.ListDocLinks", "name": "Místa"},
 		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"},
 		{"id": "address", "class": "e10.persons.ListAddress", "name": "Adresy"}
 	],
