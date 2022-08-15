@@ -730,9 +730,9 @@ class docAccounting extends Utility
 		else
 		{
 			$taxHomeCountry = E10Utils::docTaxHomeCountryId($this->app(), $this->docHead);
-			$taxRegCountry = $this->docTaxRegCfg['taxCountry'];
+			$taxRegCountry = $this->docTaxRegCfg['taxCountry'] ?? 'cz';
 
-			if ($taxHomeCountry === $taxRegCountry && $this->docTaxRegCfg['payerKind'] === 0)
+			if ($taxHomeCountry === $taxRegCountry && ($this->docTaxRegCfg['payerKind'] ?? 0) === 0)
 				$newRow ['accountId'] = $step['cat'].substr($row['taxCode'], 4);
 			else
 				$newRow ['accountId'] = $step['cat'].substr($row['taxCode'], 2);
@@ -749,7 +749,7 @@ class docAccounting extends Utility
 
 		if ($exist)
 			return;
-		
+
 		$taxCode = E10Utils::taxCodeCfg($this->app, $taxCodeId);
 		$docTaxCountryId = E10Utils::docTaxCountryId($this->app(), $this->docHead);
 		$taxHomeCountry = E10Utils::docTaxHomeCountryId($this->app(), $this->docHead);
