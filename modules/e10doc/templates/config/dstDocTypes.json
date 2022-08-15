@@ -1,0 +1,5 @@
+{
+	"invno": {"fn":  "Faktura vydaná běžná (daňový doklad)"},
+	"invpo": {"fn":  "Faktura vydaná zálohová"},
+  "cmnbkp": {"fn":  "Účetní doklad"}
+}

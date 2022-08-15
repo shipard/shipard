@@ -1,0 +1,8 @@
+[
+	{
+		"table": "e10doc.core.heads",
+		"columns": [
+			{"id": "template", "name": "Šablona", "type": "int", "reference": "e10doc.templates.heads"}
+		]
+	}
+]

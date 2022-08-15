@@ -5,7 +5,7 @@ use \Shipard\Utils\Utils;
 use \Shipard\UI\Core\UIUtils;
 use \Shipard\UI\Core\ContentRenderer;
 
-class TemplateMustache extends \e10\TemplateCore
+class TemplateMustache extends \Shipard\Utils\TemplateCore
 {
 	protected $templateBaseName;
 	public $binMode = FALSE;
@@ -189,10 +189,6 @@ class TemplateMustache extends \e10\TemplateCore
 			case	'write'					: return $this->write ($params);
 		}
 
-		$res = $this->app->callRegisteredFunction ('template', $tagName, $params);
-		if ($res !== NULL)
-			return $res;
-
 		return parent::resolveCmd ($tagCode, $tagName, $params);
 	}
 
@@ -330,7 +326,7 @@ class TemplateMustache extends \e10\TemplateCore
 		switch ($command)
 		{
 			case 'nl': return "\n";
-			case 'crlf': return "\r\n";			
+			case 'crlf': return "\r\n";
 			case 'dp': return ":";
 			case 'sp': return " ";
 			case 'reset': return chr(27).chr(64);

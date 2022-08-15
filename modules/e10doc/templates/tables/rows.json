@@ -1,0 +1,27 @@
+{
+  "id": "e10doc.templates.rows", "sql": "e10doc_templates_rows", "name": "Řádky šablon dokladů",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "template", "name": "Šablona", "type": "int"},
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+
+    {"id": "item", "name": "Položka", "type": "int", "reference": "e10.witems.items", "options": ["saveOnChange"]},
+    {"id": "text", "name": "Text", "type": "string", "len": 120},
+
+    {"id": "quantity", "name": "Množství", "label": "Množ.", "type": "number", "dec": 3, "options": ["saveOnChange"]},
+		{"id": "unit", "name": "Jednotka", "type": "enumString", "len": 8,
+			"enumCfg": {"cfgItem": "e10.witems.units", "cfgValue": "", "cfgText": "shortcut"}},
+
+    {"id": "priceItem", "name": "Jednotková cena", "label": "Cena/jed", "type": "money", "options": ["saveOnChange"]},
+    {"id": "priceAll", "name": "Cena celkem", "type": "money"},
+
+		{"id": "centre", "name": "Středisko", "type": "int", "reference": "e10doc.base.centres"},
+
+    {"id": "validFrom", "name": "Platnost od", "type": "date"},
+    {"id": "validTo", "name": "Platnost do", "type": "date"}
+  ],
+	"forms": [
+		{"id": "default", "class": "e10doc.templates.FormRow"}
+	],
+	"options": ["systemTable"]
+}

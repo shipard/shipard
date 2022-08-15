@@ -1,0 +1,82 @@
+{
+  "id": "e10doc.templates.heads", "sql": "e10doc_templates_heads", "name": "Šablony dokladů",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+
+    {"id": "templateType", "name": "Typ šablony", "type": "enumInt", "options": ["saveOnChange"],
+	    "enumCfg": {"cfgItem": "e10doc.templates.templateTypes", "cfgValue": "", "cfgText": "fn"}},
+
+    {"id": "docType", "name": "Typ dokladu", "type": "enumString", "len": 10,
+	    "enumCfg": {"cfgItem": "e10.docs.types", "cfgValue": "", "cfgText": "fullName"}},
+		{"id": "title", "name": "Název", "type": "string", "len": 120},
+
+    {"id": "validFrom", "name": "Platnost od", "type": "date", "options": ["saveOnChange"]},
+    {"id": "validTo", "name": "Platnost do", "type": "date", "options": ["saveOnChange"]},
+
+    {"id": "person", "name": "Odběratel", "type": "int", "reference": "e10.persons.persons", "options": ["saveOnChange"]},
+    {"id": "period", "name": "Periodicita plateb", "label": "Periodicita", "type": "enumInt",
+			"enumValues": {"0": "---", "1": "měsíc", "2": "čtvrtletí", "3": "pololetí", "4": "rok"}},
+
+		{"id": "creatingDay", "name": "Vystavit na", "type": "enumInt",
+			"enumValues": {"0": "počátku období", "1": "konci období"}},
+
+	  {"id": "createOffsetValue", "name": "Posun data vystavení faktury", "type": "int"},
+	  {"id": "createOffsetUnit", "name": "Jednotka", "type": "enumInt",
+		  "enumValues": {"0": "dny", "1": "měsíce"}},
+	  {"id": "dstDocType", "name": "Vystavený Typ dokladu", "type": "enumString", "len": 10, "options": ["saveOnChange"],
+		  "enumCfg": {"cfgItem": "e10doc.templates.dstDocTypes", "cfgValue": "", "cfgText": "fn"}},
+	  {"id": "dstDocKind", "name": "Vystavený Druh dokladu", "type": "enumInt",
+		  "enumCfg": {"cfgItem": "e10.docs.kinds", "cfgValue": "ndx", "cfgText": "fullName"}},
+		{"id": "dstDbCounter", "name": "Číselná řada", "type": "enumInt"},
+	  {"id": "taxCalc", "name": "Výpočet daně", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "ceny jsou bez DPH", "1": "ceny jsou s DPH"}},
+    {"id": "docText", "name": "Text dokladu", "type": "string", "len": 220},
+    {"id": "currency", "name": "Měna", "type": "enumString", "len": 3, "options": ["saveOnChange"],
+	    "enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
+		{"id": "headSymbol1", "name": "Variabilní symbol Hlavička", "type": "string", "len": 80},
+		{"id": "headSymbol2", "name": "Specifický symbol Hlavička", "type": "string", "len": 80},
+		{"id": "rowsSymbol1", "name": "Variabilní symbol Řádky", "type": "string", "len": 80},
+		{"id": "rowsSymbol2", "name": "Specifický symbol Řádky", "type": "string", "len": 80},
+
+		{"id": "docNote", "name": "Poznámka na doklad", "type": "memo"},
+
+	  {"id": "srcWorkOrderKind", "name": "Druh zakázky", "type": "enumInt",
+		  "enumCfg": {"cfgItem": "e10mnf.workOrders.kinds", "cfgValue": "", "cfgText": "fullName"}},
+		{"id": "srcWorkOrderDbCounter", "name": "Číselná řada zakázek", "type": "enumInt",
+		  "enumCfg": {"cfgItem": "e10mnf.workOrders.dbCounters", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "srcDocOrigin", "name": "Zdrojový doklad", "type": "int", "reference": "e10doc.core.heads"},
+		{"id": "srcDocLast", "name": "Poslední použitý zdrojový doklad", "type": "int", "reference": "e10doc.core.heads"},
+
+    {"id": "paymentMethod", "name": "Způsob úhrady", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10.docs.paymentMethods", "cfgValue": "", "cfgText": "title"}},
+	  {"id": "myBankAccount", "name": "Vlastní bankovní spojení", "type": "int", "reference": "e10doc.base.bankaccounts"},
+    {"id": "dueDays", "name": "Splatnost", "label": "Dny splatnosti", "type": "int"},
+
+	  {"id": "dstDocState", "name": "Stav vystaveného dokladu", "type": "enumInt", "options": ["saveOnChange"],
+		  "enumCfg": {"cfgItem": "e10doc.dstDocStates", "cfgValue": "", "cfgText": "fn"}},
+	  {"id": "dstDocAutoSend", "name": "Automaticky odesílat vystavené doklady", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10doc.templates.docAutoSendModes", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "centre", "name": "Středisko", "type": "int", "reference": "e10doc.base.centres"},
+		{"id": "project", "name": "Projekt", "type": "int", "reference": "e10pro.wkf.projects", "module": "e10pro.wkf"},
+		{"id": "wkfProject", "name": "Projekt", "type": "int", "reference": "wkf.base.projects", "module": "wkf.base"},
+	  {"id": "workOrder", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+ ],
+  "lists": [
+    {"id": "rows", "class": "e10.base.ListRows", "name": "Řádky", "table": "e10doc.templates.rows", "queryColumn": "template"},
+	  {"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"}
+  ],
+	"views": [
+		{"id": "default", "class": "e10doc.templates.ViewHeads", "detail": "e10doc.templates.ViewDetailHead"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.templates.FormHead"}
+	],
+
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "docNumber"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

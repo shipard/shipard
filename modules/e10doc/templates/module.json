@@ -1,0 +1,12 @@
+{
+  "id": "e10doc.templates",
+  "name": "Šablony dokladů",
+  "tables": ["heads", "rows"],
+	"extensions": ["templates"],
+  "config": [
+    {"id": "+appSkeleton", "file": "appSkeleton.json"},
+	  {"id": "e10doc.templates.templateTypes", "file": "templateTypes.json"},
+    {"id": "e10doc.templates.dstDocTypes", "file": "dstDocTypes.json"},
+    {"id": "e10doc.templates.docAutoSendModes", "file": "docAutoSendModes.json"}
+  ]
+}

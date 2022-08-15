@@ -1,0 +1,15 @@
+{
+	"panels": {
+		"sale": {
+			"items": {
+				"settings": {
+					"subMenu": {
+						"items": {
+							"templates": {"t1": "Šablony", "object": "viewer", "table": "e10doc.templates.heads", "viewer": "default", "icon": "tables/e10doc.templates.heads", "order": 700000}
+						}
+					}
+				}
+			}
+		}
+	}
+}
