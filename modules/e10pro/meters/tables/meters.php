@@ -1,15 +1,11 @@
 <?php
 
 namespace E10Pro\Meters;
-
-require_once __DIR__ . '/../../../e10/base/base.php';
-
-use \E10\utils, \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\HeaderData, \E10\DbTable;
+use \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
 
 
 /**
  * Class TableMeters
- * @package E10Pro\Meters
  */
 class TableMeters extends DbTable
 {
@@ -23,7 +19,6 @@ class TableMeters extends DbTable
 
 /**
  * Class ViewMeters
- * @package E10Pro\Meters
  */
 class ViewMeters extends TableView
 {
@@ -39,7 +34,28 @@ class ViewMeters extends TableView
 		$this->enableDetailSearch = TRUE;
 		$this->setMainQueries ();
 
+		$this->createBottomTabs();
+
 		parent::init();
+	}
+
+	public function createBottomTabs()
+	{
+		$rows = $this->db()->query ('SELECT * FROM [e10pro_meters_groups] WHERE [docState] != 9800 ORDER BY [order], [fullName]');
+		$bt = [];
+		$active = 1;
+		foreach ($rows as $r)
+		{
+			$addParams = ['metersGroup' => $r['ndx']];
+			$bt [] = ['id' => $r['ndx'], 'title' => $r['shortName'], 'active' => $active, 'addParams' => $addParams];
+			$active = 0;
+		}
+		$bt[] = ['id' => '0', 'title' => 'Vše', 'active' => 0];
+
+		if (count($bt))
+			$this->setBottomTabs($bt);
+		elseif (isset($bt[0]['addParams']['metersGroup']))
+			$this->addAddParam ('lan', $bt[0]['addParams']['metersGroup']);
 	}
 
 	public function renderRow ($item)
@@ -77,6 +93,7 @@ class ViewMeters extends TableView
 	public function selectRows ()
 	{
 		$fts = $this->fullTextSearch ();
+		$bottomTabId = intval($this->bottomTabId());
 
 		$q = [];
 		array_push($q, 'SELECT [meters].*,');
@@ -88,6 +105,9 @@ class ViewMeters extends TableView
 		array_push($q, ' LEFT JOIN [e10mnf_core_workOrders] AS [wo] ON [meters].[workOrder] = [wo].[ndx]');
 		array_push($q, ' LEFT JOIN [e10pro_meters_meters] AS [parents] ON [meters].[parentMeter] = [parents].[ndx]');
 		array_push($q, ' WHERE 1');
+
+		if ($bottomTabId)
+			array_push($q, ' AND [meters].[metersGroup] = %i', $bottomTabId);
 
 		// -- fulltext
 		if ($fts != '')
@@ -110,7 +130,6 @@ class ViewMeters extends TableView
 
 /**
  * Class ViewDetailMeter
- * @package E10Pro\Meters
  */
 class ViewDetailMeter extends TableViewDetail
 {
@@ -119,7 +138,6 @@ class ViewDetailMeter extends TableViewDetail
 
 /**
  * Class FormMeter
- * @package E10Pro\Meters
  */
 class FormMeter extends TableForm
 {
@@ -143,6 +161,7 @@ class FormMeter extends TableForm
 					$this->addColumnInput ('place');
 					$this->addColumnInput ('placeDesc');
 					$this->addColumnInput ('workOrder');
+					$this->addColumnInput ('metersGroup');
 					$this->addColumnInput ('parentMeter');
 				$this->closeTab ();
 				$this->openTab (TableForm::ltNone);

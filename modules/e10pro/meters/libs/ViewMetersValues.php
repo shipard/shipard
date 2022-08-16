@@ -32,7 +32,26 @@ class ViewMetersValues extends TableViewGrid
 
 		$this->setGrid ($g);
 
+
+		$this->createBottomTabs();
+
 		$this->setMainQueries ();
+	}
+
+	public function createBottomTabs()
+	{
+		$rows = $this->db()->query ('SELECT * FROM [e10pro_meters_groups] WHERE [docState] != 9800 ORDER BY [order], [fullName]');
+		$bt = [];
+		$active = 1;
+		foreach ($rows as $r)
+		{
+			$bt [] = ['id' => $r['ndx'], 'title' => $r['shortName'], 'active' => $active];
+			$active = 0;
+		}
+		$bt[] = ['id' => '0', 'title' => 'Vše', 'active' => 0];
+
+		if (count($bt))
+			$this->setBottomTabs($bt);
 	}
 
 	public function renderRow ($item)
@@ -51,6 +70,7 @@ class ViewMetersValues extends TableViewGrid
 	public function selectRows ()
 	{
 		$fts = $this->fullTextSearch ();
+		$bottomTabId = intval($this->bottomTabId());
 
 		$q = [];
     array_push($q, 'SELECT vals.*,');
@@ -58,6 +78,9 @@ class ViewMetersValues extends TableViewGrid
     array_push($q, ' FROM [e10pro_meters_values] AS [vals]');
     array_push($q, ' LEFT JOIN [e10pro_meters_meters] AS [meters] ON [vals].[meter] = [meters].[ndx]');
 		array_push($q, ' WHERE 1');
+
+		if ($bottomTabId)
+			array_push($q, ' AND [meters].[metersGroup] = %i', $bottomTabId);
 
 		// -- fulltext
 		if ($fts != '')

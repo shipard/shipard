@@ -2,12 +2,11 @@
 
 namespace E10Pro\Meters;
 
-use \E10\TableView, \E10\utils, \E10\TableForm, \E10\DbTable;
+use \Shipard\Viewer\TableView, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
 
 
 /**
  * Class TableGroups
- * @package E10Pro\Meters
  */
 class TableGroups extends DbTable
 {
@@ -31,7 +30,6 @@ class TableGroups extends DbTable
 
 /**
  * Class ViewGroups
- * @package E10Pro\Meters
  */
 class ViewGroups extends TableView
 {
@@ -76,7 +74,6 @@ class ViewGroups extends TableView
 
 /**
  * Class FormGroup
- * @package E10Pro\Meters
  */
 class FormGroup extends TableForm
 {

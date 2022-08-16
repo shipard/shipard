@@ -11,6 +11,7 @@
 
 		{"id": "meterKind", "name": "Druh", "type": "enumInt",
 			"enumCfg": {"cfgItem": "e10pro.meters.kinds", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "metersGroup", "name": "Skupina", "type": "int", "reference": "e10pro.meters.groups"},
 
 		{"id": "unit", "name": "Jednotka", "type": "enumString", "len": 8,
 			"enumCfg": {"cfgItem": "e10.witems.units", "cfgValue": "", "cfgText": "text"}},
