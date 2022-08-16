@@ -122,6 +122,9 @@ class GeneratorWorkOrders extends \e10doc\templates\libs\Generator
       if ($item['itemKind'] == 2 && $this->invHead ['docType'] === 'invno')
         $r['operation'] = 1099998;
 
+      $this->variables->setDataItem('docRow', $r);
+      $this->variables->setDataItem('docRowItem', $item);
+
       if ($item['useBalance'])
       {
         $tt = trim($this->variables->resolve($this->templateRecData['rowsSymbol1']));
