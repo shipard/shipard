@@ -1,0 +1,9 @@
+{
+	"panels": {
+		"agendy": {
+			"items": {
+				"ofre": {"t1": "Kanceláře", "object": "viewer", "table": "e10mnf.core.workOrders", "viewer": "ofre", "order": 200000}
+			}
+		}
+	}
+}

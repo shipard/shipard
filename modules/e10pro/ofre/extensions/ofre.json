@@ -1,0 +1,13 @@
+[
+	{
+		"table": "e10mnf.core.workOrders",
+		"views": {
+			"ofre": {
+				"id": "ofre", "class": "e10pro.ofre.libs.ViewOffices",
+				"details": {
+					"ofreDetail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.ofre.libs.ViewDetailOffice"}
+				}
+			}
+		}
+	}
+]

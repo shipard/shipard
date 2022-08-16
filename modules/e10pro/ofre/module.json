@@ -1,0 +1,10 @@
+{
+	"id": "e10pro.ofre",
+	"name": "Pronájem kanceláří",
+	"tables": [],
+	"extensions": ["ofre"],
+	"modules": ["e10/base"],
+	"config": [
+		{"id": "+appSkeleton", "file": "appSkeleton.json"}
+	]
+}
