@@ -19,7 +19,7 @@ class HostingUserSummaryUpload extends Utility
 		if (!isset($data['dsId']) || !isset($data['loginHash']))
 			return;
 
-		$dsId = intval($data['dsId']);
+		$dsId = strval($data['dsId']);
 		$loginHash = $data['loginHash'];
 
 		if (!$dsId || $loginHash === '')
