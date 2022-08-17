@@ -22,7 +22,7 @@ class HostingUserSummaryUpload extends Utility
 		$dsId = strval($data['dsId']);
 		$loginHash = $data['loginHash'];
 
-		if (!$dsId || $loginHash === '')
+		if ($dsId === '' || $loginHash === '')
 			return;
 
 		$userRecData = $this->db()->query ('SELECT * FROM [e10_persons_persons] WHERE loginHash = %s', $loginHash,
