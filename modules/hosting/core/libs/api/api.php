@@ -70,68 +70,9 @@ function confirmNewDataSource ($app)
 
 
 /**
- * getNewDataSource
- *
- */
-function getNewDataSource ($app)
-{
-	$serverId = $app->testGetParam ('serverId');
-
-	$doIt = TRUE;
-	$serverItem = NULL;
-
-	if ($serverId != '')
-		$serverItem = $app->db()->query ('SELECT * FROM [hosting_core_servers] WHERE [docState] = 4000 AND [ndx] = %i', $serverId)->fetch ();
-
-	if (!$serverItem || $serverItem['creatingDataSources'] === 0)
-		$doIt = FALSE;
-
-	$data = ['count' => 0];
-
-	$r = new \Shipard\Application\Response ($app);
-	$r->setMimeType('application/json');
-	$r->add ('objectType', 'call');
-
-	if ($doIt)
-	{
-		$q[] = 'SELECT * FROM [hosting_core_dataSources]';
-		array_push ($q, ' WHERE [docState] = %i', 1100);
-		array_push ($q, ' AND [inProgress] = %i', 0);
-
-		if ($serverItem['creatingDataSources'] === 2) // all
-			array_push ($q, ' AND ([server] = %i', 0, ' OR [server] = %i)', $serverItem['ndx']);
-		elseif ($serverItem['creatingDataSources'] === 1) // own only
-			array_push ($q, ' AND [server] = %i', $serverItem['ndx']);
-
-		array_push ($q, ' ORDER BY [ndx] LIMIT 0, 1');
-
-		$request = $app->db()->query ($q)->fetch ();
-
-		if ($request)
-		{
-			$app->db()->query ('UPDATE [hosting_core_dataSources] SET [inProgress] = %i', $serverItem['ndx'], ' WHERE [ndx] = %i', $request['ndx']);
-
-			$data ['count'] = 1;
-			$data ['request'] = $request;
-
-			$data ['installModule'] = $request ['installModule'];
-
-			$tablePersons = new \E10\Persons\TablePersons ($app);
-			$data ['admin'] = $tablePersons->loadDocument ($request ['admin']);
-			$data ['owner'] = $tablePersons->loadDocument ($request ['owner']);
-		}
-	}
-
-	$r->add ('data', $data);
-
-	return $r;
-}
-
-
-/**
  * Funtion getDataSourceInfo
- * @param mixed $app 
- * @return Response 
+ * @param mixed $app
+ * @return Response
  */
 function getDataSourceInfo ($app)
 {
@@ -158,17 +99,6 @@ function getDataSourceInfo ($app)
 		$partnerInfo = $tablePartners->partnerInfo ($partnerNdx);
 		$portalInfo = ['supportPhone' => '+420 774 020 522', 'supportEmail' => 'podpora@shipard.cz', 'supportUrl' => 'https://shipard.cz/', 'name' => 'Shipard'];//$app->cfgItem ('e10pro.hosting.portals.portals.'.$partnerInfo['portal']);
 
-		$supportKind = ['name' => 'Nedostupné', 'forumLevel' => 0];
-		if ($r['supportKind'])
-		{
-			$sk = $app->loadItem($r['supportKind'], 'e10pro.hosting.server.supportsKinds');
-			if ($sk)
-			{
-				$supportKind['name'] = $sk['name'];
-				$supportKind['forumLevel'] = $sk['forumLevel'];
-			}
-		}
-
 		$image = UtilsBase::getAttachmentDefaultImage ($app, 'hosting.core.dataSources', $r ['ndx']);
 		$newds = [
 			'dsid' => strval($r['gid']),
@@ -180,11 +110,10 @@ function getDataSourceInfo ($app)
 			'created' => Utils::dateIsBlank($r['created']) ? NULL : $r['created']->format ('Y-m-d'),
 
 			'supportName' => ($partnerInfo['name'] !== '') ? $partnerInfo['name'] : $portalInfo['name'],
-			
+
 			'supportPhone' => ($partnerInfo['supportPhone'] !== '') ? $partnerInfo['supportPhone'] : $portalInfo['supportPhone'],
 			'supportEmail' => ($partnerInfo['supportEmail'] !== '') ? $partnerInfo['supportEmail'] : $portalInfo['supportEmail'],
 			'supportEmail' => ($partnerInfo['webUrl'] !== '') ? $partnerInfo['webUrl'] : $portalInfo['supportEmail'],
-			'supportKind' => $supportKind,
 			'supportSection' => $r['supportSection'],
 
 			'dsIconServerUrl' => $r['dsIconServerUrl'], 'dsIconFileName' => $r['dsIconFileName'],
@@ -234,9 +163,9 @@ function getDataSourceInfo ($app)
 
 /**
  * Function getHostingInfo
- * 
- * @param mixed $app 
- * @return Response 
+ *
+ * @param mixed $app
+ * @return Response
  */
 function getHostingInfo ($app)
 {

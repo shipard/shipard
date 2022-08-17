@@ -210,7 +210,7 @@ class RegistrationForm extends \Shipard\Base\WebForm
 		{
 			$c .= "<input type='hidden' id='recaptcha-response' name='webFormReCaptchtaResponse' value=''/>";
 		}
-	
+
 		$c .= "<fieldset>";
 
 		$c .= $this->addInputBox ('Jméno a příjmení', 'text', 'regName');
@@ -711,7 +711,7 @@ class Authenticator extends \Shipard\Application\Authenticator
 
 			if (!$resultData || !isset($resultData['data']['success']) || !$resultData['data']['success'])
 			{
-				error_log ("### authenticateSession: Remote session authorization from `$url` failed: ".json_encode($resultCode));
+				//error_log ("### authenticateSession: Remote session authorization from `$url` failed: ".json_encode($resultCode));
 				return FALSE;
 			}
 			$user = $app->db->fetch(

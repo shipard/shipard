@@ -36,7 +36,6 @@ class TablePartners extends DbTable
 			'webUrl' => $recData['webUrl'],
 			'supportEmail' => $recData['supportEmail'],
 			'supportPhone' => $recData['supportPhone'],
-			'portal' => $recData['portal'],
 			'logoPartner' => $this->partnerLogo('logo', $recData['logoPartner']),
 			'logoIcon' => $this->partnerLogo('icon', $recData['logoIcon']),
 		];
