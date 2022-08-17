@@ -120,6 +120,9 @@ class IssueCore2 extends TableForm
 								if ($askDeadline === self::askYes)
 									$this->addColumnInput('dateDeadline', $askDeadlineOptions);
 							}
+							if ($askWorkOrder === self::askYes && $this->app()->cfgItem ('options.e10doc-commerce.useWorkOrders', 0))
+								$this->addColumnInput('workOrder');
+
 							$this->addSubColumns('data');
 							$this->addTextInput2($bigTextMode);
 						$this->layoutClose('width40');
@@ -149,6 +152,10 @@ class IssueCore2 extends TableForm
 		}
 		$this->openTab();
 		$this->addList('doclinksAssignment', '', TableForm::loAddToFormLayout);
+
+		if ($askWorkOrder === self::askSettings && $this->app()->cfgItem ('options.e10doc-commerce.useWorkOrders', 0))
+			$this->addColumnInput('workOrder');
+
 		$this->addList('clsf', '', TableForm::loAddToFormLayout);
 		if ($askDateIncoming === self::askSettings || $askDeadline === self::askSettings)
 		{

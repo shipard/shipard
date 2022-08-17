@@ -29,5 +29,11 @@
 				}
 			}
 		}
+	},
+	{
+		"table": "wkf.core.issues",
+		"columns": [
+			{"id": "workOrder", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"}
+		]
 	}
 ]
