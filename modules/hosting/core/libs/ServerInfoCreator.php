@@ -12,16 +12,19 @@ class ServerInfoCreator extends Utility
   var $infoData = [];
   var ?array $cfgServer = NULL;
 
+  var $showOnly = 0;
+
   protected function init()
   {
     $this->infoData['type'] = 'core';
     $this->infoData['created'] = Utils::now('Y-m-d H:i:s');
+    $this->infoData['shpGen'] = 'ng';
 
 		$cfgServer = $this->loadCfgFile(__SHPD_ETC_DIR__.'/server.json');
 		if (!$cfgServer)
       return;
     $this->cfgServer = $cfgServer;
-    
+
     $this->infoData['serverId'] = $this->cfgServer['serverId'];
   }
 
@@ -64,6 +67,14 @@ class ServerInfoCreator extends Utility
         $this->infoData['os'] = $osInfo;
       }
     }
+
+    $this->infoData['os']['kernel'] = php_uname('r');
+    $this->infoData['os']['platform'] = php_uname('m');
+
+    $virtInfo = [];
+    exec ('systemd-detect-virt', $virtInfo);
+    $this->infoData['os']['virt'] = $virtInfo[0] ?? '-';
+
     if (is_readable('/etc/timezone'))
     {
       $tz = file_get_contents('/etc/timezone');
@@ -94,19 +105,55 @@ class ServerInfoCreator extends Utility
     }
   }
 
+  public function detectDataSources()
+  {
+    $this->infoData['dataSources'] = [];
+
+		forEach (glob ('/var/lib/shipard/data-sources/*', GLOB_ONLYDIR) as $appDir)
+		{
+			if (is_link ($appDir))
+				continue;
+			if (!is_file ($appDir.'/config/config.json'))
+				continue;
+
+			$cfg = utils::loadCfgFile($appDir.'/config/config.json');
+			$dsInfo = utils::loadCfgFile($appDir.'/config/dataSourceInfo.json');
+			$channelInfo = utils::loadCfgFile($appDir.'/config/_server_channelInfo.json');
+			$statusData = 'RUN';
+			if (is_file ($appDir.'/config/status.data'))
+				$statusData = file_get_contents($appDir.'/config/status.data');
+
+			$ds = [
+        'dsid' => $cfg['dsid'],
+        'name' => $dsInfo['name'] ?? '---',
+        'status' => trim($statusData),
+        'channelId' => $channelInfo['serverInfo']['channelId'] ?? '-',
+      ];
+
+			$this->infoData['dataSources'][] = $ds;
+		}
+  }
+
   public function run()
   {
     $this->init();
     $this->detectOSVersion();
     $this->detectShipardVersions();
     $this->detectMainSWVersions();
+    $this->detectDataSources();
 
     file_put_contents(__SHPD_VAR_DIR__.'tmp/__server_info'.'.json', Json::lint($this->infoData));
-    //echo Json::lint($this->infoData)."\n";
 
-    $url = 'https://'.$this->cfgServer['hostingDomain'].'/api/objects/call/hosting-server-info-upload';
-    $ce = new \lib\objects\ClientEngine($this->app());
-    $ce->apiKey = $this->cfgServer['hostingApiKey'];
-    $ce->apiCall($url, $this->infoData);
+    if (!$this->showOnly)
+    {
+      $url = 'https://'.$this->cfgServer['hostingDomain'].'/api/objects/call/hosting-server-info-upload';
+      $ce = new \lib\objects\ClientEngine($this->app());
+      $ce->apiKey = $this->cfgServer['hostingApiKey'];
+      $ce->apiCall($url, $this->infoData);
+    }
+    else
+    {
+      echo Json::lint($this->infoData)."\n";
+    }
   }
 }

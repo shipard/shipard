@@ -1247,7 +1247,11 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 
 	public function serverInfo ()
 	{
+		$showOnly = intval($this->arg ('show-only'));
+
 		$ssc = new \hosting\core\libs\ServerInfoCreator($this);
+		if ($showOnly)
+			$ssc->showOnly = $showOnly;
 		$ssc->run();
 
 		return TRUE;
