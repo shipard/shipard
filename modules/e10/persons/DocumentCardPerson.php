@@ -73,7 +73,7 @@ class DocumentCardPerson extends \e10\DocumentCard
 		{
 			if (!count($a))
 				continue;
-			$address = ['text' => $a['text'], 'class' => 'block'];
+			$address = ['text' => $a['text'], 'class' => 'block', 'icon' => $a['icon'], 'typeTitle' => $a['typeTitle']];
 
 			$this->addresses[] = $address;
 		}
@@ -108,7 +108,7 @@ class DocumentCardPerson extends \e10\DocumentCard
 		{
 			foreach ($this->properties[$this->recData['ndx']]['contacts'] as &$p)
 			{
-				$p['class'] = 'label label-default';
+				$p['class'] = 'e10-tag e10-bg-t1';
 			}
 
 			$this->contacts = $this->properties[$this->recData['ndx']]['contacts'];
@@ -259,7 +259,7 @@ class DocumentCardPerson extends \e10\DocumentCard
 
 			$this->validity['class'] = 'e10-warning1';
 		}
-		
+
 		$ve = new \e10\persons\PersonValidator($this->app());
 		$tools = $ve->onlineTools($this->recData);
 		if ($tools)
@@ -277,6 +277,15 @@ class DocumentCardPerson extends \e10\DocumentCard
 	}
 
 	public function createContentBody ()
+	{
+		$contentContacts = $this->contentContacts();
+		$this->addContent('body', $contentContacts);
+
+		$this->addDiaryPinnedContent();
+		$this->loadDataPersonInfo ();
+	}
+
+	public function contentContacts ()
 	{
 		$t = [];
 
@@ -302,11 +311,20 @@ class DocumentCardPerson extends \e10\DocumentCard
 		// -- address
 		if (count($this->addresses))
 		{
+			/*
 			$t [] = [
 				'c1' => ['icon' => 'system/iconHome', 'text' => ''],
 				'c2' => $this->addresses,
 				'_options' => ['cellTitles' => ['c1' => 'Poštovní adresa']]
 			];
+			*/
+			foreach ($this->addresses as $a)
+			{
+				$t [] = [
+					'c1' => ['icon' => $a['icon'], 'text' => ''],
+					'c2' => [['text' => $a['text'], 'class' => ''], ['text' => $a['typeTitle'], 'class' => 'e10-small pull-right']],
+				];
+			}
 		}
 
 		if ($this->privacy)
@@ -327,13 +345,10 @@ class DocumentCardPerson extends \e10\DocumentCard
 
 
 		$h = ['c1' => 'c1', 'c2' => 'c2'];
-		$this->addContent('body', [
+		return [
 			'pane' => 'e10-pane e10-pane-top', 'type' => 'table', 'table' => $t, 'header' => $h,
 			'params' => ['forceTableClass' => 'dcInfo fullWidth', 'hideHeader' => 1]
-		]);
-
-		$this->addDiaryPinnedContent();
-		$this->loadDataPersonInfo ();
+		];
 	}
 
 	public function createContentHeader ()

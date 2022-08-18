@@ -160,6 +160,8 @@ class TableAddress extends DbTable
 			{
 				$a = $r->toArray();
 				$a['text'] = $txt;
+				$a['icon'] = $addrTypes[$r['type']]['icon'] ?? 'system/iconWarning';
+				$a['typeTitle'] = $addrTypes[$r['type']]['name'] ?? '!!!';
 			}
 
 			if ($multipleRecs)
@@ -210,7 +212,7 @@ class FormAddress extends TableForm
 	{
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
-		
+
 		$this->openForm ();
 			$this->addColumnInput ('type');
 			$this->addColumnInput ('specification');
