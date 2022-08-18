@@ -32,7 +32,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			$msg->setBody($message);
 
 			$msg->sendMail();
-			*/	
+			*/
 			return TRUE;
 		}
 	}
@@ -166,6 +166,11 @@ class ModuleServices extends \E10\CLI\ModuleServices
 
 		// -- modules
 		$dsStats->data['modules'] = utils::loadCfgFile(__APP_DIR__.'/config/modules.json');
+
+		// -- channel & version
+		$si = $this->app->cfgItem ('serverInfo', NULL);
+		if ($si)
+			$dsStats->data['shipardVersion'] = ['channelId' => $si['channelId'], 'version' => __E10_VERSION__, 'commit' => $si['e10commit']];
 
 		$dsStats->saveToFile();
 	}
