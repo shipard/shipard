@@ -1,7 +1,7 @@
 <?php
 
 define ('__E10_VERSION_ID__', 64);
-define ('__E10_VERSION__', '202.1');
+define ('__E10_VERSION__', '203.1');
 
 if (!defined ('__SHPD_MODULES_DIR__'))
 	define ('__SHPD_MODULES_DIR__', __SHPD_ROOT_DIR__.'/modules/');
@@ -17,7 +17,7 @@ if (!defined('__SHPD_ETC_DIR__'))
 
 if (!defined('__SHPD_SERVER_ROOT_DIR__'))
 	define('__SHPD_SERVER_ROOT_DIR__', '/usr/lib/shipard/');
-	
+
 define ('__SHPD_TEMPLATE_SUBDIR__', '/www-root/templates/');
 
 define ('DIR_VENDOR', __SHPD_ROOT_DIR__.'/extlibs/vendor');
