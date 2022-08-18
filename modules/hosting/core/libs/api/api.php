@@ -107,14 +107,14 @@ function getDataSourceInfo ($app)
 			'hosting' => $hostingGid, 'hostingDomain' => $hostingDomain,
 
 			'dsType' => $r['dsType'], 'condition' => $r['condition'],
-			'created' => Utils::dateIsBlank($r['created']) ? NULL : $r['created']->format ('Y-m-d'),
+			'created' => Utils::dateIsBlank($r['dateCreated']) ? NULL : $r['dateCreated']->format ('Y-m-d'),
 
 			'supportName' => ($partnerInfo['name'] !== '') ? $partnerInfo['name'] : $portalInfo['name'],
 
 			'supportPhone' => ($partnerInfo['supportPhone'] !== '') ? $partnerInfo['supportPhone'] : $portalInfo['supportPhone'],
 			'supportEmail' => ($partnerInfo['supportEmail'] !== '') ? $partnerInfo['supportEmail'] : $portalInfo['supportEmail'],
 			'supportEmail' => ($partnerInfo['webUrl'] !== '') ? $partnerInfo['webUrl'] : $portalInfo['supportEmail'],
-			'supportSection' => $r['supportSection'],
+			'supportSection' => 0,
 
 			'dsIconServerUrl' => $r['dsIconServerUrl'], 'dsIconFileName' => $r['dsIconFileName'],
 
