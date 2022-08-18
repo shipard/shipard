@@ -1,27 +1,26 @@
 <?php
 
-namespace wkf\core\dataView;
-
-use \lib\dataView\DataView, \e10\utils;
+namespace wkf\bboard\libs\dataView;
+use \lib\dataView\DataView, \Shipard\Utils\Utils;
 
 
 /**
- * Class Headlines
- * @package wkf\core\dataView
+ * Class BBoard
  */
-class Headlines extends DataView
+class BBoard extends DataView
 {
-	/** @var \wkf\core\TableHeadlines */
-	var $tableHeadlines;
+	/** @var \wkf\bboard\TableMsgs */
+	var $tableMsgs;
 	/** @var \lib\core\texts\Renderer */
 	var $textRenderer;
+	var $bboardNdx = 0;
 	var $maxCnt = 10;
 	var $pinned = 0;
 
 	protected function init()
 	{
 		parent::init();
-		$this->tableHeadlines = $this->app()->table('wkf.core.headlines');
+		$this->tableMsgs = $this->app()->table('wkf.bboard.msgs');
 		$this->textRenderer = new \lib\core\texts\Renderer($this->app());
 
 		if (isset($this->requestParams['maxCnt']))
@@ -29,6 +28,11 @@ class Headlines extends DataView
 			$this->maxCnt = intval($this->requestParams['maxCnt']);
 			if (!$this->maxCnt)
 				$this->maxCnt = 10;
+		}
+
+		if (isset($this->requestParams['bboard']))
+		{
+			$this->bboardNdx = intval($this->requestParams['bboard']);
 		}
 
 		if (isset($this->requestParams['pinned']))
@@ -41,18 +45,19 @@ class Headlines extends DataView
 	{
 		$now = new \DateTime();
 
-		$q [] = 'SELECT headlines.*,';
+		$q [] = 'SELECT msgs.*,';
 		array_push ($q, ' attCoverImages.path AS coverImagePath, attCoverImages.fileName AS coverImageFileName');
-		array_push ($q, ' FROM [wkf_core_headlines] AS [headlines]');
-		array_push ($q, ' LEFT JOIN e10_attachments_files AS attCoverImages ON headlines.image = attCoverImages.ndx');
+		array_push ($q, ' FROM [wkf_bboard_msgs] AS [msgs]');
+		array_push ($q, ' LEFT JOIN e10_attachments_files AS attCoverImages ON msgs.image = attCoverImages.ndx');
 		array_push ($q, ' WHERE 1');
-		array_push ($q, ' AND headlines.docStateMain < %i', 3);
-		array_push ($q, ' AND (headlines.dateFrom IS NULL OR headlines.dateFrom = %t', '0000-00-00 00:00:00', ' OR headlines.dateFrom <= %t)', $now);
-		array_push ($q, ' AND (headlines.dateTo IS NULL OR headlines.dateTo = %t', '0000-00-00 00:00:00', ' OR headlines.dateTo >= %t)', $now);
+		array_push ($q, ' AND [msgs].[bboard] = %i', $this->bboardNdx);
+		array_push ($q, ' AND msgs.docStateMain = %i', 2);
+		array_push ($q, ' AND (msgs.dateFrom IS NULL OR msgs.dateFrom = %t', '0000-00-00 00:00:00', ' OR msgs.dateFrom <= %t)', $now);
+		array_push ($q, ' AND (msgs.dateTo IS NULL OR msgs.dateTo = %t', '0000-00-00 00:00:00', ' OR msgs.dateTo >= %t)', $now);
 		if ($this->pinned)
-			array_push ($q, ' AND headlines.onTop != %i', 0);
+			array_push ($q, ' AND msgs.onTop != %i', 0);
 		$this->extendQuery($q);
-		array_push ($q, ' ORDER BY headlines.[onTop] DESC, headlines.[order], headlines.[dateFrom] DESC');
+		array_push ($q, ' ORDER BY msgs.[onTop] DESC, msgs.[order], msgs.[dateFrom] DESC');
 		array_push ($q, ' LIMIT 0, %i', $this->maxCnt);
 
 		$t = [];
@@ -88,57 +93,57 @@ class Headlines extends DataView
 	{
 		$c = '';
 
-		$c .= "<div class='container e10w-headlines'>";
-		foreach ($this->data['table'] as $headline)
+		$c .= "<div class='container e10w-bboard'>";
+		foreach ($this->data['table'] as $msg)
 		{
-			$c .= $this->renderHeadlineAsHtml($headline);
+			$c .= $this->renderMessageAsHtml($msg);
 		}
 		$c .= '</div>';
 
 		return $c;
 	}
 
-	protected function renderHeadlineAsHtml($headline)
+	protected function renderMessageAsHtml($msg)
 	{
 		$widthColumns = 12;
-		if (isset($headline['imgPath']) && $headline['useImageAs'] <= 1)
+		if (isset($msg['imgPath']) && $msg['useImageAs'] <= 1)
 			$widthColumns = 10;
 
 		$rowStyle = '';
 		$rowClass = '';
-		if (isset($headline['imgPath']) && $headline['useImageAs'] == 2)
+		if (isset($msg['imgPath']) && $msg['useImageAs'] == 2)
 		{
-			$rowStyle = " style='background-image:url({$headline['imgPath']});'";
+			$rowStyle = " style='background-image:url({$msg['imgPath']});'";
 			$rowClass = ' e10w-background-image';
 		}
 
 		$c = '';
 		$c .= "<div class='row mb-2 border p-2$rowClass'$rowStyle>";
 
-		if (isset($headline['imgPath']) && $headline['useImageAs'] == 0)
+		if (isset($msg['imgPath']) && $msg['useImageAs'] == 0)
 		{
 			$c .= "<div class='col-2'>";
-				$c .= "<img style='width:100%;' src='{$headline['imgPath']}'>";
+				$c .= "<img style='width:100%;' src='{$msg['imgPath']}'>";
 			$c .= '</div>';
 		}
 
 		$c .= "<div class='col-$widthColumns'>";
-			$c .= '<h4>'.utils::es($headline['title']).'</h4>';
-			if (isset($headline['htmlText']))
-				$c .= $headline['htmlText'];
+			$c .= '<h4>'.Utils::es($msg['title']).'</h4>';
+			if (isset($msg['htmlText']))
+				$c .= $msg['htmlText'];
 		$c .= "</div>";
 
-		if (isset($headline['imgPath']) && $headline['useImageAs'] == 1)
+		if (isset($msg['imgPath']) && $msg['useImageAs'] == 1)
 		{
 			$c .= "<div class='col-2'>";
-			$c .= "<img style='width:100%;' src='{$headline['imgPath']}'>";
+			$c .= "<img style='width:100%;' src='{$msg['imgPath']}'>";
 			$c .= '</div>';
 		}
 
-		if ($headline['linkToUrl'] !== '')
+		if ($msg['linkToUrl'] !== '')
 		{
 			$c .= "<div>";
-			$c .= "<a href='".utils::es($headline['linkToUrl'])."'>".utils::es('Více informací').'</a>';
+			$c .= "<a href='".Utils::es($msg['linkToUrl'])."'>".Utils::es('Více informací').'</a>';
 			$c .= "</div>";
 		}
 

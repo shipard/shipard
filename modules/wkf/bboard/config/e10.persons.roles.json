@@ -1,0 +1,16 @@
+{
+	"pwuser": {
+		"viewers": {
+			"wkf.bboard.msgs": {"default": 2},
+			"wkf.bboard.msgsAgenda": {"default": 2}
+		}
+	},
+	"admin": {
+		"viewers": {
+			"wkf.bboard.bboards": {"default": 2}
+		},
+		"widgets": {
+			"wkf.bboard.libs.WidgetBBoards": 2
+		}
+	}
+}

@@ -13,11 +13,6 @@
 	},
 
 	{
-		"class": "wkf.core.widgets.Headlines", "dashboard": "main_new", "panel": "headlines",
-		"order": 3101, "row": "main", "width": 12, "type": "wkfWall", "enabledCfgItem": "options.wkfn.useHeadlines"
-	},
-
-	{
 		"name": "Database Info", "class": "lib.cfg.WidgetSystemInfoCore", "icon": "system/iconDatabase", "align": "left",
 		"dashboard": "srvcfg", "panel": "issues", "order": 30000, "row": "info", "type": "systemInfo"
 	}

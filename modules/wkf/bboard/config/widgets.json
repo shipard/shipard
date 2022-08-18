@@ -1,0 +1,6 @@
+[
+	{
+		"class": "wkf.bboard.libs.WidgetBBoards", "dashboard": "main_new", "panel": "bboards",
+		"order": 3101, "row": "main", "width": 12, "type": "wkfWall"
+	}
+]

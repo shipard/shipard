@@ -1,0 +1,11 @@
+{
+	"wkf.bboard.msgs": {
+		"wkf-bboard-msgs-notify": {
+			"linkid": "wkf-bboard-msgs-notify", "name": "Na vědomí", "icon": "docLinkNotify",
+			"sources": [
+				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			],
+			"listId": "doclinksPersons"
+		}
+	}
+}

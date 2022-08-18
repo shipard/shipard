@@ -2,7 +2,7 @@
   "id": "wkf.core",
   "name": "workflow - core",
   "tables": [
-		"comments", "issues", "issuesConnections", "filters", "headlines"
+		"comments", "issues", "issuesConnections", "filters"
 	],
 	"modules": ["wkf/base", "wkf/docs", "wkf/reports", "integrations/ntf"],
   "config": [

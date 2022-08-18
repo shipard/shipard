@@ -1,0 +1,6 @@
+{
+	"wkfBBoardsTags": {
+		"name": "Nástěnka", "label": "Štítky", "icon":"tables/wkf.bboard.bboards",
+		"tables": ["wkf.bboard.msgs"]
+	}
+}

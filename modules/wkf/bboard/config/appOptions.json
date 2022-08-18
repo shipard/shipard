@@ -1,0 +1,6 @@
+{
+	"wkfnBBoards": {
+		"name": "Nástěnky", "order": 181000, "group": "workflow",
+		"type": "viewer", "table": "wkf.bboard.bboards", "viewer": "default"
+	}
+}

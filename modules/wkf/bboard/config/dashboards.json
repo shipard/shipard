@@ -1,0 +1,13 @@
+{
+	"main_new": {
+		"panels": {
+			"bboards": {
+				"name": "Nástěnky",
+				"icon": "homeThumbTack",
+				"order": 2011,
+				"fullsize": 1,
+				"rows": {"main": {"order": 10000, "class": "full"}}
+			}
+		}
+	}
+}

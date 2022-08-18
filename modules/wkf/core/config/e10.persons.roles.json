@@ -2,8 +2,7 @@
 	"user": {
 		"viewers": {
 			"wkf.core.comments": {"default": 2},
-			"wkf.core.issues": {"default": 2},
-			"wkf.core.headlines": {"default": 2}
+			"wkf.core.issues": {"default": 2}
 		},
 		"widgets": {
 			"wkf.core.widgets.DashboardForum": 2,
