@@ -283,7 +283,7 @@ class LanOverviewData extends Utility
 		if (!count($this->devicesPks))
 		{
 			return;
-		}	
+		}
 		$addrTypes = $this->app->cfgItem('mac.lan.ifacesAddrTypes');
 
 		$q[] = 'SELECT ports.*, ';
@@ -307,10 +307,10 @@ class LanOverviewData extends Utility
 				$label = $r['note'];
 				if ($label === '')
 					$label = 'internet';
-				$badgeValueId = 'maclan_'.$this->devices[$deviceNdx]['lan'].'_D'.$deviceNdx.'.bandwidth_port'.$r['portNumber'];
+				$badgeValueId = 'snmp_'.$this->devices[$deviceNdx]['deviceId'].'.bandwidth_port'.$r['portNumber'];
 				$this->dgData[self::dgiLan]['dpInfo'][] = [
 					'label' => $label, 'ndx' => $r['portNdx'],
-					'badgeDataSource' => 0, 
+					'badgeDataSource' => 0,
 					'badgeQuantityId' => $badgeValueId,
 					'badgeParams' => ['dimensions' => 'in|out', 'options' => 'abs', 'units' => 'Mb/s', 'divide' => '1024', 'precision' => 2, 'value_color' => 'COLOR:null|lightgray<1|red>100|orange>75|#00A000>5'],
 				];
@@ -320,10 +320,10 @@ class LanOverviewData extends Utility
 				if (!isset($this->devices[$deviceNdx]['uplinkPortsBadges']))
 					$this->devices[$deviceNdx]['uplinkPortsBadges'] = [];
 
-				$badgeValueId = 'maclan_'.$this->devices[$deviceNdx]['lan'].'_D'.$deviceNdx.'.bandwidth_port'.$r['portNumber'];
+				$badgeValueId = 'snmp_'.$this->devices[$deviceNdx]['deviceId'].'.bandwidth_port'.$r['portNumber'];
 				$this->devices[$deviceNdx]['uplinkPortsBadges'][] = [
 					'label' => $r['portId'],
-					'badgeDataSource' => 0, 
+					'badgeDataSource' => 0,
 					'badgeQuantityId' => $badgeValueId,
 					'badgeParams' => ['dimensions' => 'in|out', 'label_color' => '#2C3539', 'options' => 'abs', 'units' => 'Mb/s', 'divide' => '1024', 'precision' => 2, 'value_color' => 'COLOR:null|lightgray<1|red>100|orange>75|#00A000>5'],
 				];
@@ -335,10 +335,10 @@ class LanOverviewData extends Utility
 				{ // video
 					if ($r['portNumber'] == 2)
 					{
-						$badgeQuantityId = 'maclan_'.$this->devices[$deviceNdx]['lan'].'_D'.$r['connectedToDevice'].'.bandwidth_port'.$r['connectedPortNumber'];
+						$badgeQuantityId = 'snmp_'.$this->devices[$deviceNdx]['deviceId'].'.bandwidth_port'.$r['connectedPortNumber'];
 						$this->dgData[self::dgiCamera]['dpInfo'][] = [
 							'label' => 'Provoz',
-							'badgeDataSource' => $this->devices[$r['connectedToDevice']]['macDataSource'], 
+							'badgeDataSource' => $this->devices[$r['connectedToDevice']]['macDataSource'],
 							'badgeQuantityId' => $badgeQuantityId,
 							'badgeParams' => ['dimensions' => 'in|out', 'options' => 'abs', 'units' => 'Mb/s', 'divide' => '1024', 'precision' => 2, 'value_color' => 'COLOR:null|red<5|red>700|orange>500|#00A000>5'],
 						];

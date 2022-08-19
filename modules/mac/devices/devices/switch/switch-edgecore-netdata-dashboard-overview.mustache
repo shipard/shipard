@@ -6,7 +6,7 @@
 			<span class="label label-primary">#{{num}}: {{portId}}</span> &nbsp; &nbsp; {{{@composeTextLine;dataItem:connectedTo}}}
 		</div>
 
-		<div data-netdata='maclan_{{data.device.recData.lan}}_D{{deviceNdx}}.bandwidth_port{{num}}'
+		<div data-netdata='snmp_{{data.device.recData.id}}.bandwidth_port_{{num}}'
 				 data-dimensions-xxx='user' data-chart-library='dygraph' data-width='100%' data-points='10' data-before='0'
 				 data-after='-300' data-height='10em' data-colors='#FF5555'>
 		</div>

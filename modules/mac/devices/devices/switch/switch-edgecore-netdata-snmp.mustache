@@ -1,31 +1,38 @@
 {
+	"name": "{{data.device.recData.id}}",
 	"hostname": "{{data.device.managementIp}}",
-		"community": "public",
-		"update_every": 30,
-		"options": { "timeout": 20000 },
-		"charts": {
-		"maclan_{{data.device.recData.lan}}_D{{data.device.recData.ndx}}.bandwidth_port": {
-			"title": "{{data.device.recData.id}} port ",
+	"community": "public",
+	"update_every": 30,
+	"options": {
+		"timeout": 20000,
+		"version": 1
+	},
+	"charts": [
+		{
+			"id": "bandwidth_port",
+			"title": "Bandwidth for port ",
 			"titleoid":"1.3.6.1.2.1.2.2.1.2.",
 			"units": "kilobits/s",
 			"type": "area",
 			"priority": 1,
 			"family": "ports",
-			"multiply_range": [1, {{data.device.cntPortsPhysical}}],
-			"dimensions": {
-				"in": {
+			"multiply_range": [1, {{data.device.cntPortsPhysical}} ],
+			"dimensions": [
+				{
+					"name": "in",
 					"oid": "1.3.6.1.2.1.2.2.1.10.",
 					"algorithm": "incremental",
 					"multiplier": 8,
 					"divisor": 1024
 				},
-				"out": {
+				{
+					"name": "out",
 					"oid": "1.3.6.1.2.1.2.2.1.16.",
 					"algorithm": "incremental",
 					"multiplier": -8,
 					"divisor": 1024
 				}
-			}
+			]
 		}
-	}
+	]
 }

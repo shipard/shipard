@@ -1,8 +1,7 @@
 <?php
 
 namespace mac\lan\libs;
-
-use e10\Utility, \e10\Application;
+use e10\Utility;
 
 
 /**
@@ -13,22 +12,24 @@ class GetLanMonitoringSnmp extends Utility
 {
 	public $result = ['success' => 0];
 	var $lanCfg = NULL;
+	var $serverNdx = 0;
 
 	public function run ()
 	{
-		$serverNdx = intval($this->app->requestPath(4));
-		if (!$serverNdx)
+		if (!$this->serverNdx)
+			$this->serverNdx = intval($this->app->requestPath(4));
+		if (!$this->serverNdx)
 		{
 			$this->result['msg'][] = "server param missing in url";
 			return;
-		}	
-		$serverRecData = $this->db()->query ('SELECT * FROM [mac_lan_devices] WHERE ndx = %i', $serverNdx)->fetch();
+		}
+		$serverRecData = $this->db()->query ('SELECT * FROM [mac_lan_devices] WHERE ndx = %i', $this->serverNdx)->fetch();
 		if (!$serverRecData)
 		{
 			$this->result['msg'][] = "invalid server id";
 			return;
-		}	
-		
+		}
+
 		$lanNdx = $serverRecData['lan'];
 		$snmpData = [];
 
@@ -55,7 +56,14 @@ class GetLanMonitoringSnmp extends Utility
 				$snmpData[] = $data;
 		}
 
-		$this->result ['cfg']['realtime'] = $snmpData;
+		$netdataCfg = "# netdata go.d.plugin configuration for snmp\n";
+		$netdataCfg .= "# shipard-node; cfg-v-1;\n";
+		$netdataCfg .= "\n";
+		$netdataCfg .= "jobs:\n";
+		$netdataCfg .= substr(yaml_emit($snmpData), 4, -4);
+		$netdataCfg .= "\n\n";
+
+		$this->result ['netdataCfgFile'] = $netdataCfg;
 		$this->result ['success'] = 1;
 	}
 }

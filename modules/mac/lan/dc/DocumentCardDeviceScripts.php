@@ -128,6 +128,9 @@ class DocumentCardDeviceScripts extends \e10\DocumentCard
 			// -- node linux
 			$this->createContentBody_NodeServerLinux($tabs);
 
+			// -- node linux SNMP all
+			$this->createContentBody_NodeServerSNMP($tabs);
+
 			$cnt++;
 		}
 	}
@@ -216,6 +219,23 @@ class DocumentCardDeviceScripts extends \e10\DocumentCard
 
 		// -- tab
 		$title = ['text' => 'Linux', 'icon' => 'icon-wrench', 'class' => ''];
+		$tabs[] = ['title' => $title, 'content' => $content];
+	}
+
+	function createContentBody_NodeServerSNMP(&$tabs)
+	{
+		$content = [];
+
+		$snmpEngine = new \mac\lan\libs\GetLanMonitoringSnmp($this->app());
+		$snmpEngine->serverNdx = $this->recData['ndx'];
+		$snmpEngine->run();
+
+		$codeSNMP = '';
+		$codeSNMP .= $snmpEngine->result['netdataCfgFile'];
+		$content[] = ['pane' => 'e10-pane e10-pane-table', 'type' => 'text', 'subtype' => 'code', 'text' => $codeSNMP];
+
+		// -- tab
+		$title = ['text' => 'SNMP', 'icon' => 'icon-wrench', 'class' => ''];
 		$tabs[] = ['title' => $title, 'content' => $content];
 	}
 
