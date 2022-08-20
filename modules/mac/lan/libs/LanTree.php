@@ -103,6 +103,7 @@ class LanTree extends Utility
 		array_push ($q, ' LEFT JOIN [mac_lan_racks] AS connectedDevicesRacks ON connectedDevices.rack = connectedDevicesRacks.ndx');
 
 		array_push ($q, ' WHERE ports.device = %i', $deviceNdx);
+		array_push ($q, ' AND connectedDevices.docStateMain <= %i', 2);
 		if ($level)
 			array_push ($q, ' AND ports.portRole = %i', 30);
 		array_push ($q, ' ORDER BY connectedDevicesRacks.fullName, portDevices.id, ports.[portNumber], ports.[ndx]');
