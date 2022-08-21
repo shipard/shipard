@@ -151,7 +151,7 @@ class TemplateCore extends \Mustache
 		{
 			$parts = explode ('.', $subtemplateId);
 			$t = array_pop ($parts);
-			$fullSubTemplateName = $this->app->cfgItem ('modulesPath') . strtolower(implode ('/', $parts)) . '/subtemplates/'.$subtemplateId.'.mustache';
+			$fullSubTemplateName = __SHPD_MODULES_DIR__ . strtolower(implode ('/', $parts)) . '/subtemplates/'.$subtemplateId.'.mustache';
 		}
 
 		$this->subTemplate = file_get_contents ($fullSubTemplateName);

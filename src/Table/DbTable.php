@@ -944,18 +944,18 @@ class DbTable
 			foreach ($subColumns as $key => $value)
 			{
 				$data[$key] = $value;
-			}	
+			}
 			$sci = $this->subColumnsInfo($saveData ['recData'], $columnId);
 			if ($sci !== FALSE)
 				$this->app()->subColumnsCalc($data, $sci);
 
-			if ($sci)	
+			if ($sci)
 			{
-				$dataClean = [];	
+				$dataClean = [];
 				foreach ($sci['columns'] as $colCfg)
 				{
 					$key = $colCfg['id'];
-					
+
 					if (isset($data[$key]))
 						$dataClean[$key] = $data[$key];
 				}
@@ -1224,7 +1224,7 @@ class DbTable
 		{
 			$parts = explode ('.', $class);
 			$className = array_pop ($parts);
-			$moduleFileName = $this->app()->cfgItem ('modulesPath') . '/' . strtolower(implode ('/', $parts)) . '/' . end($parts) . '.php';
+			$moduleFileName = __SHPD_MODULES_DIR__ . strtolower(implode ('/', $parts)) . '/' . end($parts) . '.php';
 			if (is_file ($moduleFileName))
 				include_once ($moduleFileName);
 		}
