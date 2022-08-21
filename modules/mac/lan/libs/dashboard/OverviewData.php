@@ -198,7 +198,7 @@ class OverviewData extends Utility
 						'label' => 'uptime',
 						'badgeQuantityId' => $badgeQuantityId,
 						'lanBadgesUrl' => $this->devices[$deviceNdx]['lanBadgesUrl'],
-						'badgeParams' => ['dimensions' => 'uptime', 'precision' => 2, 'value_color' => 'COLOR:null|orange>7776000|red>15552000|00A000>=0'],
+						'badgeParams' => ['dimensions' => 'uptime', 'units' => 'hours', 'divide' => 3600, 'value_color' => 'COLOR:null|orange>1200|red>2400|00A000>=0'],
 					];
 				}
 
