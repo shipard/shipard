@@ -154,6 +154,19 @@ class Overview extends Content
 				}
 			}
 
+			if (isset($device['infoBadges']))
+			{
+				$c .= '<br/>';
+				foreach ($device['infoBadges'] as $sb)
+				{
+					$sh = $this->lanSensorHelper($device['lan']);
+					if ($sh) {
+						$bc = $sh->lanBadgeImg($sb['label'], $sb['badgeQuantityId'], $sb['badgeParams'], $sb['lanBadgesUrl'] ?? '');
+						$c .= ' ' . "<span>".$bc."</span>";
+					}
+				}
+			}
+
 			if (isset($device['sensors']))
 			{
 				foreach ($device['sensors'] as $sb)

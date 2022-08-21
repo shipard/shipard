@@ -224,21 +224,29 @@ class OverviewData extends Utility
 
 				if (isset($this->devices[$deviceNdx]['macDeviceCfg']) && $this->devices[$deviceNdx]['macDeviceCfg']['enableCams'])
 				{ // video
-					/*
-					$badgeQuantityId = 'shn_video.filessize';
-					$this->dgData[self::dgiCamera]['dpInfo'][] = [
-						'label' => 'Archiv',
-						'badgeDataSource' => $this->devices[$deviceNdx]['macDataSource'], 'badgeQuantityId' => $badgeQuantityId,
-						'badgeParams' => ['units' => 'TB', 'divide' => 1024, 'precision' => 2, 'value_color' => 'COLOR:null|red<1|red>700|orange>500|00A000>1', 'refresh' => 120],
+					$badgeQuantityId = 'statsd_cameras.archive.diskusage_gauge';
+					$this->devices[$deviceNdx]['infoBadges'][] = [
+						'label' => 'Video',
+						'badgeQuantityId' => $badgeQuantityId,
+						'lanBadgesUrl' => $this->devices[$deviceNdx]['lanBadgesUrl'],
+						'badgeParams' => ['units' => 'TB', 'precision' => 3, 'divide' => 1024, 'value_color' => 'COLOR:null|red<1|red>700|orange>500|00A000>1'],
 					];
 
-					$badgeQuantityId = 'shn_video.archivedhours';
-					$this->dgData[self::dgiCamera]['dpInfo'][] = [
-						'label' => 'Historie',
-						'badgeDataSource' => $this->devices[$deviceNdx]['macDataSource'], 'badgeQuantityId' => $badgeQuantityId,
-						'badgeParams' => ['precision' => 1, 'value_color' => 'COLOR:null|red<96|orange<168|00A000>=0', 'refresh' => 120],
+					$badgeQuantityId = 'statsd_cameras.archive.filescount_gauge';
+					$this->devices[$deviceNdx]['infoBadges'][] = [
+						'label' => 'Soubory',
+						'lanBadgesUrl' => $this->devices[$deviceNdx]['lanBadgesUrl'],
+						'badgeQuantityId' => $badgeQuantityId,
+						'badgeParams' => ['precision' => 0, 'units' => 'empty', 'value_color' => 'COLOR:null|red<96|orange<168|00A000>=0'],
 					];
-					*/
+
+					$badgeQuantityId = 'statsd_cameras.archive.len_gauge';
+					$this->devices[$deviceNdx]['infoBadges'][] = [
+						'label' => 'Doba',
+						'lanBadgesUrl' => $this->devices[$deviceNdx]['lanBadgesUrl'],
+						'badgeQuantityId' => $badgeQuantityId,
+						'badgeParams' => ['precision' => 0, 'units' => 'hours', 'value_color' => 'COLOR:null|red<96|orange<168|#00A000>=0'],
+					];
 				}
 			}
 			elseif ($deviceKind === 30)
