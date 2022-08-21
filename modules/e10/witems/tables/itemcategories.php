@@ -1,15 +1,11 @@
 <?php
 
-namespace E10\Witems;
-
-require_once __DIR__ . '/../../base/base.php';
-
-use \E10\Application, \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\DbTable, \E10\utils;
+namespace e10\witems;
+use \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Table\DbTable, \Shipard\Utils\Utils;
 
 
 /**
- * Class TableItemCategories
- * @package E10\Witems
+ * class TableItemCategories
  */
 class TableItemCategories extends DbTable
 {
@@ -124,7 +120,7 @@ class TableItemCategories extends DbTable
 		// save categories to file
 		$cfg ['e10']['witems']['categories']['tree'] = $treeCats;
 		$cfg ['e10']['witems']['categories']['list'] = $listCats;
-		file_put_contents(__APP_DIR__ . '/config/_e10.witems.categories.json', utils::json_lint(json_encode ($cfg)));
+		file_put_contents(__APP_DIR__ . '/config/_e10.witems.categories.json', Utils::json_lint(json_encode ($cfg)));
 	}
 
 	public function saveConfigCheckTree (&$allCats, $ownerNdx, $ownerCat)
@@ -180,11 +176,9 @@ class TableItemCategories extends DbTable
 }
 
 
-/*
- * ViewItemCategories
- *
+/**
+ * class ViewItemCategories
  */
-
 class ViewItemCategories extends TableView
 {
 	public $queries;
@@ -244,14 +238,12 @@ class ViewItemCategories extends TableView
 
 		$this->runQuery ($q);
 	}
-} // class ViewItemTypes
+}
 
 
-/*
- * FormItemCategories
- *
+/**
+ * class FormItemCategories
  */
-
 class FormItemCategories extends TableForm
 {
 	public function renderForm ()
@@ -322,12 +314,11 @@ class FormItemCategories extends TableForm
 
 		return parent::comboParams ($srcTableId, $srcColumnId, $allRecData, $recData);
 	}
-} // class FormItemCategories
+}
 
 
 /**
- * Class ViewItemCategoriesEditor
- * @package E10\Witems
+ * class ViewItemCategoriesEditor
  */
 class ViewItemCategoriesEditor extends ViewItemCategories
 {
@@ -418,8 +409,7 @@ function itemCategoryQuery ($cat, &$query, $itemsSqlName = 'e10_witems_items')
 
 
 /**
- * Class ViewDetailItemCategory
- * @package E10\Witems
+ * class ViewDetailItemCategory
  */
 class ViewDetailItemCategory extends TableViewDetail
 {

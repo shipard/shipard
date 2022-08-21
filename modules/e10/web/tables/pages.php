@@ -1,17 +1,13 @@
 <?php
 
 namespace e10\web;
-
-include_once __DIR__ . '/../web.php';
-include_once __DIR__ . '/../../base/base.php';
-
-use \E10\DataModel, \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \E10\TableForm, \Shipard\Viewer\TableViewPanel,
-		\E10\DbTable, \E10\utils, \e10\FormSidebar;
+use \Shipard\Application\DataModel, \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail;
+use \Shipard\Form\TableForm, \Shipard\Viewer\TableViewPanel;
+use \Shipard\Table\DbTable, \Shipard\Utils\Utils;
 
 
 /**
- * Class TablePages
- * @package e10\web
+ * class TablePages
  */
 class TablePages extends DbTable
 {
@@ -65,12 +61,12 @@ class TablePages extends DbTable
 
 		$webMap = $this->checkTree ($recData['server'], '', '', 0, NULL);
 		$cfg ['e10']['web']['menu'][strval($recData['server'])]['items'] = $webMap;
-		file_put_contents(__APP_DIR__ . "/config/_e10.web.menu{$recData['server']}.json", utils::json_lint (json_encode ($cfg)));
+		file_put_contents(__APP_DIR__ . "/config/_e10.web.menu{$recData['server']}.json", Utils::json_lint (json_encode ($cfg)));
 
 
 		$cfg = [];
 		$cfg ['e10']['web']['pages'][strval($recData['server'])] = $this->pagesInfo;
-		file_put_contents(__APP_DIR__ . "/config/_e10.web.pages{$recData['server']}.json", utils::json_lint (json_encode ($cfg)));
+		file_put_contents(__APP_DIR__ . "/config/_e10.web.pages{$recData['server']}.json", Utils::json_lint (json_encode ($cfg)));
 
 		\E10\compileConfig ();
 	}
@@ -140,7 +136,7 @@ class TablePages extends DbTable
 	{
 		parent::checkNewRec ($recData);
 		$recData ['author'] = $this->app()->user()->data ('id');
-		$recData ['datePub'] = utils::today();
+		$recData ['datePub'] = Utils::today();
 		$recData ['pageMode'] = 'web';
 	}
 
@@ -172,8 +168,7 @@ class TablePages extends DbTable
 
 
 /**
- * Class ViewPages
- * @package e10\web
+ * class ViewPages
  */
 class ViewPages extends TableView
 {
@@ -304,12 +299,11 @@ class ViewPages extends TableView
 		$qry[] = ['style' => 'params', 'params' => $this->websParam];
 		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}
-} // class ViewPages
+}
 
 
 /**
- * Class ViewDetailPageText
- * @package e10\web
+ * class ViewDetailPageText
  */
 class ViewDetailPageText extends TableViewDetail
 {
@@ -321,8 +315,7 @@ class ViewDetailPageText extends TableViewDetail
 
 
 /**
- * Class ViewDetailPagePreview
- * @package e10\web
+ * class ViewDetailPagePreview
  */
 class ViewDetailPagePreview extends TableViewDetail
 {
@@ -335,8 +328,7 @@ class ViewDetailPagePreview extends TableViewDetail
 
 
 /**
- * Class FormPagesPage
- * @package e10\web
+ * class FormPagesPage
  */
 class FormPagesPage extends TableForm
 {
@@ -381,7 +373,7 @@ class FormPagesPage extends TableForm
 					$this->addColumnInput('wiki');
 				if ($this->recData['pageMode'] === 'web')
 					$this->addColumnInput('includeSubUrl');
-					
+
 				$this->addList ('doclinks', '', TableForm::loAddToFormLayout);
 			$this->closeTab ();
 

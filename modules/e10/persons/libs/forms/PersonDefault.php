@@ -1,14 +1,11 @@
 <?php
 
 namespace e10\persons\libs\forms;
-require_once __DIR__ . '/../../../base/base.php';
-
-use \e10\TableForm, \e10\TableView;
+use \Shipard\Form\TableForm, \Shipard\Viewer\TableView;
 
 
 /**
- * Class PersonDefault
- * @package e10\persons\libs\forms
+ * class PersonDefault
  */
 class PersonDefault extends TableForm
 {

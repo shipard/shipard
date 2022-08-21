@@ -42,9 +42,9 @@ class TableJournal extends DbTable
 } // class TableAccounts
 
 
-/* 
+/*
  * ViewJournalAll
- * 
+ *
  */
 
 class ViewJournalAll extends \E10\TableViewGrid
@@ -184,7 +184,7 @@ class ViewJournalAll extends \E10\TableViewGrid
 			array_push ($q, " OR ");
 			array_push ($q, "journal.[docNumber] LIKE %s", $fts.'%');
 			array_push ($q, " OR ");
-			array_push ($q, "[symbol1] LIKE %s", $fts.'%');
+			array_push ($q, "journal.[symbol1] LIKE %s", $fts.'%');
 			array_push ($q, " OR ");
 			array_push ($q, "persons.[fullName] LIKE %s", '%'.$fts.'%');
 
@@ -486,9 +486,9 @@ class ViewDetailJournal extends TableViewDetail
 }
 
 
-/* 
+/*
  * FormJournal
- * 
+ *
  */
 
 class FormJournal extends TableForm

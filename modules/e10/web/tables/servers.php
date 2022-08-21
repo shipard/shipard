@@ -1,15 +1,11 @@
 <?php
 
 namespace e10\web;
-
-require_once __DIR__ . '/../../base/base.php';
-
-use \e10\utils, \e10\json, \e10\TableView, \e10\TableViewDetail, \e10\TableForm, \e10\DbTable;
+use \Shipard\Utils\Utils, \Shipard\Utils\Json, \e10\TableView, \e10\TableViewDetail, \e10\TableForm, \e10\DbTable;
 
 
 /**
- * Class TableServers
- * @package e10\web
+ * class TableServers
  */
 class TableServers extends DbTable
 {
@@ -143,7 +139,7 @@ class TableServers extends DbTable
 				'urlStart' => $urlStart, 'urlStartSec' => str_replace('/', '-', $urlStart),
 				'template' => $r['template'], 'look' => $r['templateLook'], 'lookNdx' => $r['templateLookNdx'], 'templateStylePath' => $r['templateStylePath'],
 				'templateParams' => $templateParams, 'themeColor' => '#00508a',
-				'gaid' => $r['gaid'], 'mtmSiteId' => $r['mtmSiteId'], 'mtmUrl' => $r['mtmUrl'], 
+				'gaid' => $r['gaid'], 'mtmSiteId' => $r['mtmSiteId'], 'mtmUrl' => $r['mtmUrl'],
 				'authType' => $r['authType'],
 			];
 
@@ -195,7 +191,7 @@ class TableServers extends DbTable
 		$cfg ['e10']['web']['servers']['hosts'] = $hosts;
 		$cfg ['e10']['web']['servers']['nonAppsHosts'] = $nonAppsHosts;
 
-		file_put_contents(__APP_DIR__ . '/config/_e10.web.servers.json', utils::json_lint (json_encode ($cfg)));
+		file_put_contents(__APP_DIR__ . '/config/_e10.web.servers.json', Utils::json_lint (json_encode ($cfg)));
 
 		$this->createNginxConfigs();
 	}
@@ -225,7 +221,7 @@ class TableServers extends DbTable
 
 	function createNginxConfigs()
 	{
-		$webServers = utils::loadCfgFile(__APP_DIR__ . '/config/_e10.web.servers.json');
+		$webServers = Utils::loadCfgFile(__APP_DIR__ . '/config/_e10.web.servers.json');
 		if (!$webServers)
 			return;
 
@@ -348,7 +344,7 @@ class TableServers extends DbTable
 
 		// -- template images
 		$sci = $this->subColumnsInfo ($recData, '');
-		$templateParams = json::decode($recData['templateParams']);
+		$templateParams = Json::decode($recData['templateParams']);
 		if ($sci && isset($sci['columns']) && $templateParams)
 		{
 
@@ -436,8 +432,7 @@ class TableServers extends DbTable
 
 
 /**
- * Class ViewServers
- * @package e10\web
+ * class ViewServers
  */
 class ViewServers extends TableView
 {
@@ -519,8 +514,7 @@ class ViewServers extends TableView
 
 
 /**
- * Class ViewDetailServer
- * @package e10\web
+ * class ViewDetailServer
  */
 class ViewDetailServer extends TableViewDetail
 {
@@ -590,7 +584,7 @@ class FormServer extends TableForm
 				$this->openTab ();
 					$this->addColumnInput ('excludeFromDashboard');
 					$this->addColumnInput ('order');
-					
+
 					$this->addColumnInput ('gaid');
 					$this->addColumnInput ('mtmSiteId');
 					$this->addColumnInput ('mtmUrl');

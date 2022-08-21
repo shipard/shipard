@@ -1,23 +1,17 @@
 <?php
 
-namespace E10Pro\Property;
-
-require_once __DIR__ . '/../../../e10/base/base.php';
-
-
-use \E10\utils, \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\HeaderData, \E10\DbTable;
+namespace e10pro\property;
+use \Shipard\Utils\Utils, \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
 
 /**
- * Class TableTypes
- * @package E10Pro\Property
+ * class TableTypes
  */
-
 class TableTypes extends DbTable
 {
 	public function __construct ($dbmodel)
 	{
 		parent::__construct ($dbmodel);
-		$this->setName ("e10pro.property.types", "e10pro_property_types", "Typy majetku");
+		$this->setName ('e10pro.property.types', 'e10pro_property_types', 'Typy majetku');
 	}
 
 	public function createHeader ($recData, $options)
@@ -35,16 +29,14 @@ class TableTypes extends DbTable
 		// -- properties
 		$tablePropDefs = new \E10\Base\TablePropdefs($this->app());
 		$cfg ['e10pro']['property']['properties'] = $tablePropDefs->propertiesConfig($this->tableId());
-		file_put_contents(__APP_DIR__ . '/config/_e10pro.property.properties.json', utils::json_lint(json_encode ($cfg)));
+		file_put_contents(__APP_DIR__ . '/config/_e10pro.property.properties.json', Utils::json_lint(json_encode ($cfg)));
 	}
 }
 
 
 /**
- * Class ViewTypes
- * @package E10Pro\Property
+ * class ViewTypes
  */
-
 class ViewTypes extends TableView
 {
 	var $groups;
@@ -137,22 +129,19 @@ class ViewTypes extends TableView
 		forEach ($ptxt as $groupId => $groups)
 			$this->propgroups [$groupId] = implode (', ', $groups);
 	}
-} // class ViewTypes
+}
 
 
 /**
- * Class ViewDetailType
- * @package E10Pro\Property
+ * class ViewDetailType
  */
-
 class ViewDetailType extends TableViewDetail
 {
 }
 
 
 /**
- * Class FormType
- * @package E10Pro\Property
+ * class FormType
  */
 class FormType extends TableForm
 {
@@ -164,10 +153,10 @@ class FormType extends TableForm
 		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 
 		$this->openForm ();
-			$this->addColumnInput ("fullName");
-			$this->addColumnInput ("shortName");
-			$this->addColumnInput ("id");
-			$this->addColumnInput ("propertyKind");
+			$this->addColumnInput ('fullName');
+			$this->addColumnInput ('shortName');
+			$this->addColumnInput ('id');
+			$this->addColumnInput ('propertyKind');
 
 			$this->openTabs ($tabs);
 				$this->openTab ();

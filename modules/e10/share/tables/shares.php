@@ -1,15 +1,11 @@
 <?php
 
-namespace E10\Share;
-
-include_once __DIR__ . '/../../base/base.php';
-
-use \E10\utils, \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\HeaderData, \E10\DbTable;
+namespace e10\share;
+use \Shipard\Utils\Utils, \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
 
 
 /**
- * Class TableShares
- * @package E10\Share
+ * class TableShares
  */
 class TableShares extends DbTable
 {
@@ -43,8 +39,7 @@ class TableShares extends DbTable
 
 
 /**
- * Class ViewShares
- * @package E10\Share
+ * class ViewShares
  */
 class ViewShares extends TableView
 {
@@ -66,7 +61,7 @@ class ViewShares extends TableView
 		$listItem ['icon'] = $this->table->tableIcon($item);
 		$listItem ['t1'] = $item['name'];
 		$listItem ['t2'] = $item['id'];
-		$listItem ['i2'] = utils::datef ($item['dateCreate'], '%d, %T');
+		$listItem ['i2'] = Utils::datef ($item['dateCreate'], '%d, %T');
 
 		return $listItem;
 	}
@@ -98,13 +93,12 @@ class ViewShares extends TableView
 		array_push($q, $this->sqlLimit ());
 
 		$this->runQuery ($q);
-	} // selectRows
+	}
 }
 
 
 /**
- * Class ViewDetailShare
- * @package E10\Share
+ * class ViewDetailShare
  */
 class ViewDetailShare extends TableViewDetail
 {
@@ -117,8 +111,7 @@ class ViewDetailShare extends TableViewDetail
 
 
 /**
- * Class FormShare
- * @package E10\Share
+ * class FormShare
  */
 class FormShare extends TableForm
 {

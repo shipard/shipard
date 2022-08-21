@@ -1,11 +1,9 @@
 <?php
 
-namespace E10\Witems;
+namespace e10\witems;
 
-require_once __DIR__ . '/../../base/base.php';
-
-
-use \E10\Application, \E10\utils, \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\DbTable;
+require_once __SHPD_MODULES_DIR__ . 'e10/base/base.php';
+use \E10\utils, \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\DbTable;
 
 /**
  * Class TableItemTypes

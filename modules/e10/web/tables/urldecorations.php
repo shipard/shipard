@@ -1,16 +1,11 @@
 <?php
 
 namespace e10\web;
-
-include_once __DIR__ . '/../web.php';
-include_once __DIR__ . '/../../base/base.php';
-
-use \E10\Application, \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\HeaderData, \E10\DbTable, \E10\utils;
+use \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
 
 
 /**
- * Class TableUrlDecorations
- * @package e10\web
+ * class TableUrlDecorations
  */
 class TableUrlDecorations extends DbTable
 {
@@ -99,8 +94,7 @@ class TableUrlDecorations extends DbTable
 
 
 /**
- * Class ViewUrlDecorations
- * @package e10\web
+ * class ViewUrlDecorations
  */
 class ViewUrlDecorations extends TableView
 {
@@ -138,8 +132,7 @@ class ViewUrlDecorations extends TableView
 
 
 /**
- * Class ViewDetailUrlDecorations
- * @package e10\web
+ * class ViewDetailUrlDecorations
  */
 class ViewDetailUrlDecorations extends TableViewDetail
 {
@@ -151,8 +144,7 @@ class ViewDetailUrlDecorations extends TableViewDetail
 
 
 /**
- * Class FormUrlDecoration
- * @package e10\web
+ * class FormUrlDecoration
  */
 class FormUrlDecoration extends TableForm
 {

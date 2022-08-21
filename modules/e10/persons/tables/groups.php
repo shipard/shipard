@@ -1,23 +1,18 @@
 <?php
 
-namespace E10\Persons;
-
-require_once __DIR__ . '/../../base/base.php';
-
-
-use \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\DbTable, \E10\utils;
+namespace e10\persons;
+use \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Table\DbTable, \Shipard\Utils\Utils;
 
 
 /**
  * Class TableGroups
- * @package E10\Persons
  */
 class TableGroups extends DbTable
 {
 	public function __construct ($dbmodel)
 	{
 		parent::__construct ($dbmodel);
-		$this->setName ("e10.persons.groups", "e10_persons_groups", "Skupiny osob");
+		$this->setName ('e10.persons.groups', 'e10_persons_groups', 'Skupiny osob');
 	}
 
 	public function createHeader ($recData, $options)
@@ -37,7 +32,7 @@ class TableGroups extends DbTable
 		$rows = $this->app()->db->query ('SELECT * FROM [e10_persons_groups] WHERE docState != 9800 ORDER BY [name]');
 		forEach ($rows as $r)
 		{
-			$groups [$r['ndx']] = array ('id' => $r['ndx'], 'name' => $r ['name'], 'sg' => $r ['systemGroup']);
+			$groups [$r['ndx']] = ['id' => $r['ndx'], 'name' => $r ['name'], 'sg' => $r ['systemGroup']];
 			if ($r['systemGroup'] != '-')
 				$systemMap [$r['systemGroup']] = $r ['ndx'];
 		}
@@ -51,14 +46,13 @@ class TableGroups extends DbTable
 		unset ($cfg);
 		$tablePropDefs = new \E10\Base\TablePropdefs($this->app());
 		$cfg ['e10']['persons']['groupsProperties'] = $tablePropDefs->propertiesConfig($this->tableId());
-		file_put_contents(__APP_DIR__ . '/config/_e10.persons.groupsProperties.json', utils::json_lint(json_encode ($cfg)));
+		file_put_contents(__APP_DIR__ . '/config/_e10.persons.groupsProperties.json', Utils::json_lint(json_encode ($cfg)));
 	}
 }
 
 
 /**
  * Class ViewGroups
- * @package E10\Persons
  */
 class ViewGroups extends TableView
 {
@@ -120,8 +114,7 @@ class ViewGroups extends TableView
 
 
 /**
- * Class ViewDetailGroups
- * @package E10\Persons
+ * class ViewDetailGroups
  */
 class ViewDetailGroups extends TableViewDetail
 {
@@ -129,8 +122,7 @@ class ViewDetailGroups extends TableViewDetail
 
 
 /**
- * Class FormGroups
- * @package E10\Persons
+ * class FormGroups
  */
 class FormGroups extends TableForm
 {
@@ -146,5 +138,4 @@ class FormGroups extends TableForm
 		$this->closeForm ();
 	}
 
-} // class FormGroups
-
+}

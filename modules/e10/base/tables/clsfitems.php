@@ -1,9 +1,7 @@
 <?php
 
-namespace E10\Base;
-
-require_once __DIR__ . '/../../base/base.php';
-use \e10\utils, \e10\TableView, \e10\TableViewDetail, \e10\TableForm, \e10\DbTable;
+namespace e10\base;
+use \Shipard\Utils\Utils, \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
 
 
 /**
@@ -97,8 +95,7 @@ class TableClsfItems extends DbTable
 
 
 /**
- * Class ViewClsfItems
- * @package E10\Base
+ * class ViewClsfItems
  */
 class ViewClsfItems extends TableView
 {
@@ -136,7 +133,7 @@ class ViewClsfItems extends TableView
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['t1'] = $item['fullName'];
 		//$listItem ['i1'] = ['text' => '#'.$item['group'].'.'.$item['ndx'], 'class' => 'id'];
-		$listItem ['icon'] = $this->table->icon ($item);
+		$listItem ['icon'] = $this->table->tableIcon ($item);
 
 		$labelText = ($item['id'] !== '') ? $item['id'] : $item['fullName'];
 
@@ -149,7 +146,7 @@ class ViewClsfItems extends TableView
 			$listItem ['t2'] = ['text' => $labelText, 'class' => 'label label-default'];
 
 		if ($item['order'])
-			$listItem ['i2'] = ['text' => utils::nf($item['order']), 'icon' => 'system/iconOrder', 'class' => 'label label-default'];
+			$listItem ['i2'] = ['text' => Utils::nf($item['order']), 'icon' => 'system/iconOrder', 'class' => 'label label-default'];
 
 		return $listItem;
 	}
@@ -157,8 +154,7 @@ class ViewClsfItems extends TableView
 
 
 /**
- * Class ViewDetailClsfItems
- * @package E10\Base
+ * class ViewDetailClsfItems
  */
 class ViewDetailClsfItems extends TableViewDetail
 {
@@ -171,8 +167,7 @@ class ViewDetailClsfItems extends TableViewDetail
 
 
 /**
- * Class FormClsfItems
- * @package E10\Base
+ * class FormClsfItems
  */
 class FormClsfItems extends TableForm
 {
@@ -188,12 +183,6 @@ class FormClsfItems extends TableForm
 			$this->addColumnInput ('order');
 			$this->addList ('doclinks', '', TableForm::loAddToFormLayout);
 		$this->closeForm ();
-	}
-
-	public function createHeaderCode ()
-	{
-		$hdr = $this->table->createHeaderInfo ($this->recData);
-		return $this->defaultHedearCode ($hdr);
 	}
 }
 

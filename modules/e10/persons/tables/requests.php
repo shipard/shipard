@@ -1,29 +1,22 @@
 <?php
 
-namespace E10\Persons;
-
-require_once __DIR__ . '/../../base/base.php';
-
-
-use \E10\Application, \E10\utils;
-use \E10\TableView;
-use \E10\TableViewDetail;
-use \E10\TableForm;
-use \E10\HeaderData;
-use \E10\DbTable;
+namespace e10\persons;
+use \Shipard\Utils\Utils;
+use \Shipard\Viewer\TableView;
+use \Shipard\Viewer\TableViewDetail;
+use \Shipard\Form\TableForm;
+use \Shipard\Table\DbTable;
 
 
 /**
- * Tabulka Požadavky
- *
+ * class TableRequests
  */
-
 class TableRequests extends DbTable
 {
 	public function __construct ($dbmodel)
 	{
 		parent::__construct ($dbmodel);
-		$this->setName ("e10.persons.requests", "e10_persons_requests", "Požadavky na správu osob");
+		$this->setName ('e10.persons.requests', 'e10_persons_requests', 'Požadavky na správu osob');
 	}
 
 	public function createHeader ($recData, $options)
@@ -38,9 +31,8 @@ class TableRequests extends DbTable
 }
 
 
-/** 
- * Základní pohled na Požadavky
- * 
+/**
+ * class ViewRequests
  */
 
 class ViewRequests extends TableView
@@ -112,31 +104,26 @@ class ViewRequests extends TableView
 			array_push ($q, ' ORDER BY heads.[docStateMain], [ndx]' . $this->sqlLimit());
 
 		$this->runQuery ($q);
-	} // selectRows
-
-
-} // class ViewRequests
-
-
-/**
- * Základní detail Požadavku
- *
- */
-
-class ViewDetailRequest extends TableViewDetail
-{
-	public function createDetailContent()
-	{
-		$this->addContent(array ('type' => 'text', 'subtype' => 'code', 'text' => utils::json_lint ($this->item['requestData'])));
 	}
 }
 
 
-/* 
- * FormRequest
- * 
+/**
+ * class ViewDetailRequest
  */
+class ViewDetailRequest extends TableViewDetail
+{
+	public function createDetailContent()
+	{
+		$this->addContent(array ('type' => 'text', 'subtype' => 'code', 'text' => Utils::json_lint ($this->item['requestData'])));
+	}
+}
 
+
+/*
+ * class FormRequest
+ *
+ */
 class FormRequest extends TableForm
 {
 	public function renderForm ()
@@ -144,9 +131,8 @@ class FormRequest extends TableForm
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 
 		$this->openForm ();
-			$this->addColumnInput ("subject");
-			$this->addColumnInput ("requestData");
+			$this->addColumnInput ('subject');
+			$this->addColumnInput ('requestData');
 		$this->closeForm ();
 	}
-} // class FormGroups
-
+}

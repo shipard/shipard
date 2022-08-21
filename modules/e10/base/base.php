@@ -297,7 +297,7 @@ class ListProperties implements \E10\IDocumentList
 			{
 				if (isset($this->recData [$this->listDefinition ['srcCfgKeyColumn2']]))
 					$this->myProperties = array_merge($this->myProperties, $this->table->app()->cfgItem($this->listDefinition ['propertiesCfgList2'].'.'.$this->recData [$this->listDefinition ['srcCfgKeyColumn2']], array()));
-			}	
+			}
 			else
 				$this->myProperties = array_merge($this->myProperties, $this->table->app()->cfgItem($this->listDefinition ['propertiesCfgList2'], []));
 		}
@@ -705,7 +705,7 @@ function searchPropertyRecId ($app, $tableId, $propertyId, $propertyValue)
 {
 	$sql = "SELECT * FROM [e10_base_properties] where [tableid] = %s AND [property] = %s AND [valueString] = %s ORDER BY [ndx] LIMIT 0, 1";
 	$rec = $app->db()->query ($sql, $tableId, $propertyId, $propertyValue)->fetch ();
-	if (!rec)
+	if (!$rec)
 		return 0;
 
 	return $rec ['recid'];

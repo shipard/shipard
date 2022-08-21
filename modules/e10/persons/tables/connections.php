@@ -1,29 +1,24 @@
 <?php
 
-namespace E10\Persons;
-require_once __DIR__ . '/../../base/base.php';
-use \E10\DbTable, \E10\TableForm;
+namespace e10\persons;
+use \Shipard\Table\DbTable, \Shipard\Form\TableForm;
 
 
 /**
- * Tabulka Vazby Osob
- *
+ * class TableConnections
  */
-
 class TableConnections extends DbTable
 {
 	public function __construct ($dbmodel)
 	{
 		parent::__construct ($dbmodel);
-		$this->setName ("e10.persons.connections", "e10_persons_connections", "Vazby osob");
+		$this->setName ('e10.persons.connections', 'e10_persons_connections', 'Vazby osob');
 	}
 }
 
 /*
- * FormConnection
- *
+ * class FormConnection
  */
-
 class FormConnection extends TableForm
 {
 	public function renderForm ()

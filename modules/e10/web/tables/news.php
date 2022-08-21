@@ -1,11 +1,7 @@
 <?php
 
-namespace E10\Web;
-
-include_once __DIR__ . '/../web.php';
-include_once __DIR__ . '/../../base/base.php';
-
-use \E10\utils, \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\HeaderData, \E10\DbTable;
+namespace e10\web;
+use \Shipard\Utils\Utils, \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
 
 
 /**
@@ -28,14 +24,14 @@ class TableNews extends DbTable
 
 		$fromTo = '';
 		if ($recData['date_from'])
-			$fromTo = "od " . utils::datef ($recData['date_from']);
+			$fromTo = "od " . Utils::datef ($recData['date_from']);
 		if ($recData['date_to'])
-			$fromTo .= " do " . utils::datef ($recData['date_to']);
+			$fromTo .= " do " . Utils::datef ($recData['date_to']);
 		if ($fromTo !== '')
 			$props[] = ['text' => $fromTo, 'icon' => 'system/iconCalendar'];
 
 		if ($recData['order'] != 0)
-			$props[] = ['text' => utils::nf ($recData['order']), 'icon' => 'system/iconOrder', 'class' => 'pull-right'];
+			$props[] = ['text' => Utils::nf ($recData['order']), 'icon' => 'system/iconOrder', 'class' => 'pull-right'];
 		if ($recData['to_paper_docs'])
 			$props[] = ['text' => '', 'icon' => 'system/actionPrint', 'class' => 'pull-right'];
 		if ($recData['to_top'])
@@ -46,12 +42,11 @@ class TableNews extends DbTable
 
 		return $hdr;
 	}
-} // class TableNews
+}
 
 
 /**
- * Class ViewNews
- * @package E10\Web
+ * class ViewNews
  */
 class ViewNews extends TableView
 {
@@ -76,9 +71,9 @@ class ViewNews extends TableView
 
 		$t2 = '';
 		if ($item['date_from'])
-			$t2 = "od " . utils::datef ($item['date_from']);
+			$t2 = "od " . Utils::datef ($item['date_from']);
 		if ($item['date_to'])
-			$t2 .= " do " . utils::datef ($item['date_to']);
+			$t2 .= " do " . Utils::datef ($item['date_to']);
 		$listItem ['t2'] = $t2;
 
 		$props = [];
@@ -87,7 +82,7 @@ class ViewNews extends TableView
 		if ($item['to_paper_docs'])
 			$props[] = ['text' => '', 'icon' => 'system/actionPrint'];
 		if ($item['order'] != 0)
-			$props[] = ['text' => utils::nf ($item['order']), 'icon' => 'system/iconOrder'];
+			$props[] = ['text' => Utils::nf ($item['order']), 'icon' => 'system/iconOrder'];
 
 		if (count($props))
 			$listItem ['i2'] = $props;
@@ -130,21 +125,19 @@ class ViewNews extends TableView
 		array_push($q, $this->sqlLimit ());
 
 		$this->runQuery ($q);
-	} // selectRows
-} // class ViewNews
+	}
+}
 
 
 /**
- * Základní detail Novinek
- *
+ * class ViewDetailNews
  */
-
 class ViewDetailNews extends TableViewDetail
 {
 	public function createDetailContent ()
 	{
 		$page = $this->item;
-		renderPage ($this->app (), $page, FALSE);
+		//renderPage ($this->app (), $page, FALSE);
 
 		// -- main text
 		if ($this->item['text'] !== '')
@@ -178,8 +171,7 @@ class ViewDetailNews extends TableViewDetail
 
 
 /**
- * Class FormNews
- * @package E10\Web
+ * class FormNews
  */
 class FormNews extends TableForm
 {

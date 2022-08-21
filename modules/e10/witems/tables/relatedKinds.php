@@ -1,14 +1,11 @@
 <?php
 
 namespace e10\witems;
-
-require_once __DIR__ . '/../../base/base.php';
-use \e10\TableView, \e10\TableViewDetail, \e10\TableForm, \e10\DbTable, \e10\utils;
+use \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Table\DbTable, \Shipard\Utils\Utils;
 
 
 /**
- * Class TableRelatedKinds
- * @package e10\witems
+ * class TableRelatedKinds
  */
 class TableRelatedKinds extends DbTable
 {
@@ -38,8 +35,7 @@ class TableRelatedKinds extends DbTable
 
 
 /**
- * Class ViewRelatedKinds
- * @package e10\witems
+ * class ViewRelatedKinds
  */
 class ViewRelatedKinds extends TableView
 {
@@ -76,7 +72,7 @@ class ViewRelatedKinds extends TableView
 
 		$props = [];
 		if ($item ['order'] != 0)
-			$props [] = ['icon' => 'icon-sortsystem/iconOrder', 'text' => utils::nf ($item ['order'], 0)];
+			$props [] = ['icon' => 'icon-sortsystem/iconOrder', 'text' => Utils::nf ($item ['order'], 0)];
 		if (count($props))
 			$listItem ['i2'] = $props;
 
@@ -89,8 +85,7 @@ class ViewRelatedKinds extends TableView
 
 
 /**
- * Class ViewDetailRelatedKind
- * @package e10\witems
+ * class ViewDetailRelatedKind
  */
 class ViewDetailRelatedKind extends TableViewDetail
 {
@@ -98,8 +93,7 @@ class ViewDetailRelatedKind extends TableViewDetail
 
 
 /**
- * Class FormRelatedKind
- * @package e10\witems
+ * class FormRelatedKind
  */
 class FormRelatedKind extends TableForm
 {

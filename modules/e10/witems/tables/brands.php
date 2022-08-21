@@ -1,22 +1,20 @@
 <?php
 
-namespace E10\Witems;
+namespace e10\witems;
+use \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail;
+use \Shipard\Form\TableForm;
+use \shipard\Table\DbTable;
 
-require_once __DIR__ . '/../../base/base.php';
 
-
-use \E10\Application, \E10\utils;
-use \E10\TableView, \E10\TableViewDetail;
-use \E10\TableForm;
-use \E10\HeaderData;
-use \E10\DbTable;
-
+/**
+ * class TableBrands
+ */
 class TableBrands extends DbTable
 {
 	public function __construct ($dbmodel)
 	{
 		parent::__construct ($dbmodel);
-		$this->setName ("e10.witems.brands", "e10_witems_brands", "Značky výrobků");
+		$this->setName ('e10.witems.brands', 'e10_witems_brands', 'Značky výrobků');
 	}
 
 	public function createHeader ($recData, $options)
@@ -27,14 +25,12 @@ class TableBrands extends DbTable
 
 		return $hdr;
 	}
-} // class TableItems
+}
 
 
-/*
- * ViewBrands
- *
+/**
+ * class ViewBrands
  */
-
 class ViewBrands extends TableView
 {
 	public function init ()
@@ -97,12 +93,11 @@ class ViewBrands extends TableView
 
 		return $listItem;
 	}
-} // class ViewBrands
+}
 
 
 /**
- * Class ViewDetailBrand
- * @package E10\Witems
+ * class ViewDetailBrand
  */
 class ViewDetailBrand extends TableViewDetail
 {
@@ -144,11 +139,9 @@ class ViewDetailBrand extends TableViewDetail
 }
 
 
-/*
- * FormBrand
- *
+/**
+ * class FormBrand
  */
-
 class FormBrand extends TableForm
 {
 	public function renderForm ()
@@ -174,5 +167,5 @@ class FormBrand extends TableForm
 
 		$this->closeForm ();
 	}
-} // class FormBrand
+}
 

@@ -1,30 +1,28 @@
 <?php
 
-namespace E10\Base;
+namespace e10\base;
+use \Shipard\Utils\Utils;
+use \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail;
+use \Shipard\Form\TableForm;
+use \Shipard\Table\DbTable;
 
-require_once __DIR__ . '/../../base/base.php';
-require_once __DIR__ . '/clsfitems.php';
 
-
-use \E10\Application, \e10\utils;
-use \E10\TableView, \E10\TableViewDetail;
-use \E10\TableForm;
-use \E10\HeaderData;
-use \E10\DbTable;
-
+/**
+ * class TableClsfGroups
+ */
 class TableClsfGroups extends DbTable
 {
 	public function __construct ($dbmodel)
 	{
 		parent::__construct ($dbmodel);
-		$this->setName ("e10.base.clsfgroups", "e10_base_clsfgroups", "Skupiny zatřídění");
+		$this->setName ('e10.base.clsfgroups', 'e10_base_clsfgroups', 'Skupiny zatřídění');
 	}
 
 	public function icon ($item)
 	{
 		if (isset($item ['icon']) && $item ['icon'] !== '')
 			return $item ['icon'];
-		
+
 		if (isset($item['tables']))
 		{
 			$firstTableId = $item['tables'][0];
@@ -32,7 +30,7 @@ class TableClsfGroups extends DbTable
 			if ($table)
 				return $table->tableIcon([]);
 		}
-		return 'system/iconOther';	
+		return 'system/iconOther';
 	}
 
 	public function loadItem ($ndx, $table = NULL)
@@ -53,16 +51,15 @@ class TableClsfGroups extends DbTable
 			return $hdr;
 
 		$ndx = $recData ['ndx'];
-		$hdr ['title'] = \E10\es ($recData ['fullName']);
+		$hdr ['title'] = Utils::es ($recData ['fullName']);
 
 		return $hdr;
 	}
-} // class TableClsfGroups
+}
 
 
 /**
- * Class ViewClsfGroups
- * @package E10\Base
+ * class ViewClsfGroups
  */
 class ViewClsfGroups extends TableView
 {
@@ -82,7 +79,7 @@ class ViewClsfGroups extends TableView
 		{
 			if ($fts != '')
 			{
-				$nd = strtr($group['name'], utils::$transDiacritic);
+				$nd = strtr($group['name'], Utils::$transDiacritic);
 				if (mb_stristr($group['name'], $fts, FALSE, 'UTF-8') === FALSE && mb_stristr($nd, $fts, FALSE, 'UTF-8') === FALSE)
 						continue;
 			}
@@ -94,7 +91,7 @@ class ViewClsfGroups extends TableView
 	{
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['t1'] = $item['fullName'];
-		$listItem ['icon'] = $this->table->icon ($item);
+		$listItem ['icon'] = $this->table->tableIcon ($item);
 
 		return $listItem;
 	}
@@ -107,10 +104,8 @@ class ViewClsfGroups extends TableView
 
 
 /**
- * Základní detail Položek zatřídění
- *
+ * class ViewDetailClsfGroups
  */
-
 class ViewDetailClsfGroups extends TableViewDetail
 {
 	public function createHeaderCode ()
@@ -128,15 +123,13 @@ class ViewDetailClsfGroups extends TableViewDetail
 	{
 		$toolbar = array ();
 		return $toolbar;
-	} // createToolbar
+	}
 }
 
 
-/* 
- * FormClsfGroups
- * 
+/**
+ * class FormClsfGroups
  */
-
 class FormClsfGroups extends TableForm
 {
 	public function renderForm ()
@@ -147,11 +140,5 @@ class FormClsfGroups extends TableForm
 			$this->addColumnInput ("fullName");
 		$this->closeForm ();
 	}
-
-	public function createHeaderCode ()
-	{
-		$hdr = $this->table->createHeaderInfo ($this->recData);
-		return $this->defaultHedearCode ($hdr);
-	}
-} // class FormClsfGroups
+}
 

@@ -1,33 +1,25 @@
 <?php
 
-namespace E10\Persons;
-
-require_once __DIR__ . '/../../base/base.php';
-
-
-use \E10\utils, \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\DbTable;
+namespace e10\persons;
+use \Shipard\Utils\Utils, \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
 
 
 /**
- * Klíče
- *
+ * class TableKeys
  */
-
 class TableKeys extends DbTable
 {
 	public function __construct ($dbmodel)
 	{
 		parent::__construct ($dbmodel);
-		$this->setName ("e10.persons.keys", "e10_persons_keys", "Přístupové klíče");
+		$this->setName ('e10.persons.keys', 'e10_persons_keys', 'Přístupové klíče');
 	}
 }
 
 
 /**
- * ViewKeys
- *
+ * class ViewKeys
  */
-
 class ViewKeys extends TableView
 {
 	protected $keyType;
@@ -125,9 +117,8 @@ class ViewDetailKey extends TableViewDetail
 }
 
 
-/*
- * FormKey
- *
+/**
+ * class FormKey
  */
 
 class FormKey extends TableForm
@@ -138,10 +129,10 @@ class FormKey extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
 		$this->openForm ();
-			$this->addColumnInput ("keyType");
-			$this->addColumnInput ("person");
-			$this->addColumnInput ("key");
-			$this->addColumnInput ("number");
+			$this->addColumnInput ('keyType');
+			$this->addColumnInput ('person');
+			$this->addColumnInput ('key');
+			$this->addColumnInput ('number');
 		$this->closeForm ();
 	}
 }
