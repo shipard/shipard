@@ -171,7 +171,7 @@ class OverviewData extends Utility
 					$this->devices[$deviceNdx]['lanBadges'][] = [
 						'label' => 'load15',
 						'badgeQuantityId' => $badgeQuantityId,
-						'badgeParams' => ['dimensions' => 'load15', 'units' => ' ', 'value_color' => 'COLOR:null|red>5|orange>2|00A000>=0'],
+						'badgeParams' => ['dimensions' => 'load15', 'units' => ' ', 'value_color' => 'COLOR:null|red>6|orange>3|00A000>=0'],
 					];
 
 					$this->devices[$deviceNdx]['lanBadges'][] = [
@@ -190,7 +190,7 @@ class OverviewData extends Utility
 						'label' => 'load15',
 						'badgeQuantityId' => $badgeQuantityId,
 						'lanBadgesUrl' => $this->devices[$deviceNdx]['lanBadgesUrl'],
-						'badgeParams' => ['dimensions' => 'load15', 'units' => ' ', 'precision' => 2, 'value_color' => 'COLOR:null|orange>3|red>6|00A000>=0'],
+						'badgeParams' => ['dimensions' => 'load15', 'units' => 'empty', 'precision' => 2, 'value_color' => 'COLOR:null|red>7|orange>4|00A000>=0'],
 					];
 
 					$badgeQuantityId = 'system.uptime';
@@ -198,7 +198,7 @@ class OverviewData extends Utility
 						'label' => 'uptime',
 						'badgeQuantityId' => $badgeQuantityId,
 						'lanBadgesUrl' => $this->devices[$deviceNdx]['lanBadgesUrl'],
-						'badgeParams' => ['dimensions' => 'uptime', 'units' => 'hours', 'divide' => 3600, 'value_color' => 'COLOR:null|orange>1200|red>2400|00A000>=0'],
+						'badgeParams' => ['dimensions' => 'uptime', 'units' => 'hours', 'divide' => 3600, 'value_color' => 'COLOR:null|red>2400|orange>1200|00A000>=0'],
 					];
 				}
 
@@ -210,7 +210,7 @@ class OverviewData extends Utility
 						'label' => 'CPU',
 						'badgeQuantityId' => $badgeQuantityId,
 						'lanBadgesUrl' => $this->devices[$r['hwServer']]['lanBadgesUrl'],
-						'badgeParams' => ['dimensions' => 'used', 'units' => '%', 'precision' => 1, 'value_color' => 'COLOR:null|orange>50|red>90|00A000>=0'],
+						'badgeParams' => ['dimensions' => 'used', 'units' => '%', 'precision' => 1, 'value_color' => 'COLOR:null|red>20|orange>10|00A000>=0'],
 					];
 
 					$badgeQuantityId = 'cgroup_'.$VMIDND.'.mem_usage_limit';
@@ -218,7 +218,7 @@ class OverviewData extends Utility
 						'label' => 'MEM',
 						'badgeQuantityId' => $badgeQuantityId,
 						'lanBadgesUrl' => $this->devices[$r['hwServer']]['lanBadgesUrl'],
-						'badgeParams' => ['dimensions' => 'used', 'precision' => 1, 'value_color' => 'COLOR:null|orange>4000|red>8000|00A000>=0'],
+						'badgeParams' => ['dimensions' => 'used', 'precision' => 1, 'value_color' => 'COLOR:null|red>8000|orange>4000|00A000>=0'],
 					];
 				}
 
