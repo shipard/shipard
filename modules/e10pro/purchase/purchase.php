@@ -1,6 +1,7 @@
 <?php
 
 namespace E10Pro\Purchase;
+require_once __SHPD_MODULES_DIR__ . 'e10/base/base.php';
 
 use \Shipard\Viewer\TableViewDetail, \Shipard\Viewer\TableViewPanel, \E10\TableForm, \E10\DbTable, \E10\utils, \E10\Widget, \E10\Application;
 
