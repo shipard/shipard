@@ -73,7 +73,8 @@ class OverviewData extends Utility
 	{
 		$q[] = 'SELECT devices.ndx AS deviceNdx, devices.fullName AS deviceFullName, devices.deviceKind, devices.id AS deviceId, devices.uid AS deviceUid, devices.hideFromDR, devices.monitored, devices.vmId AS deviceVMId,';
 		array_push ($q, ' devices.alerts, devices.lan, devices.place, devices.rack, devices.macDataSource, devices.macDeviceCfg, devices.macDeviceType, devices.lan AS deviceLan,');
-		array_push ($q, ' devices.hwMode, devices.hwServer, parentDevices.id AS parentDeviceId');
+		array_push ($q, ' devices.hwMode, devices.hwServer, parentDevices.id AS parentDeviceId,');
+		array_push ($q, ' lans.mainServerCameras');
 		array_push ($q, ' FROM [mac_lan_devices] AS devices');
 		array_push ($q, ' LEFT JOIN e10_base_places AS places ON devices.place = places.ndx');
 		array_push ($q, ' LEFT JOIN mac_lan_lans AS lans ON devices.lan = lans.ndx');
@@ -83,7 +84,7 @@ class OverviewData extends Utility
 		if ($this->lanNdx)
 			array_push ($q, ' AND devices.lan = %i', $this->lanNdx);
 
-		array_push ($q, ' ORDER BY lans.[order], lans.[fullName], devices.hwMode, devices.id');
+		array_push ($q, ' ORDER BY lans.[order], lans.[fullName], devices.hwMode, devices.deviceKind, devices.id');
 		$rows = $this->app->db()->query($q);
 		$counter = 0;
 		foreach ($rows as $r)
@@ -163,7 +164,26 @@ class OverviewData extends Utility
 				$this->dgData[$dgId]['devices'][$deviceNdx] = ['ndx' => $deviceNdx, 'treeOrder' => $treeOrder, 'treeLevel' => $treeLevel];
 			}
 
-			if ($deviceKind === 11)
+			if ($deviceKind === 10)
+			{ // camera
+				$camServerNdx = $r['mainServerCameras'];
+				$badgeQuantityId = 'statsd_cameras.diskusage.'.$deviceNdx.'_gauge';
+				$this->devices[$deviceNdx]['infoBadges'][] = [
+					'label' => 'Video',
+					'lanBadgesUrl' => $this->devices[$camServerNdx]['lanBadgesUrl'],
+					'badgeQuantityId' => $badgeQuantityId,
+					'badgeParams' => ['units' => 'GB', 'precision' => 1, '_title' => 'Celková velikost video archívu této kamery'],
+				];
+
+				$badgeQuantityId = 'statsd_cameras.avgimgsize.'.$deviceNdx.'_gauge';
+				$this->devices[$deviceNdx]['infoBadges'][] = [
+					'label' => '1 obrázek',
+					'lanBadgesUrl' => $this->devices[$camServerNdx]['lanBadgesUrl'],
+					'badgeQuantityId' => $badgeQuantityId,
+					'badgeParams' => ['units' => 'KB', 'divide' => 1024, 'precision' => 0, '_title' => 'Průměrná velikost jednoho obrázku z této kamery'],
+				];
+			}
+			elseif ($deviceKind === 11)
 			{ // NAS
 				if ($this->devices[$deviceNdx]['macDeviceType'] === 'nas-synology')
 				{
@@ -171,7 +191,7 @@ class OverviewData extends Utility
 					$this->devices[$deviceNdx]['lanBadges'][] = [
 						'label' => 'load15',
 						'badgeQuantityId' => $badgeQuantityId,
-						'badgeParams' => ['dimensions' => 'load15', 'units' => ' ', 'value_color' => 'COLOR:null|red>6|orange>3|00A000>=0'],
+						'badgeParams' => ['dimensions' => 'load15', 'units' => 'empty', 'value_color' => 'COLOR:null|red>6|orange>3|00A000>=0'],
 					];
 
 					$this->devices[$deviceNdx]['lanBadges'][] = [
@@ -229,7 +249,11 @@ class OverviewData extends Utility
 						'label' => 'Video',
 						'badgeQuantityId' => $badgeQuantityId,
 						'lanBadgesUrl' => $this->devices[$deviceNdx]['lanBadgesUrl'],
-						'badgeParams' => ['units' => 'TB', 'precision' => 3, 'divide' => 1024, 'value_color' => 'COLOR:null|red<1|red>700|orange>500|00A000>1'],
+						'badgeParams' => [
+							'units' => 'TB', 'precision' => 3, 'divide' => 1024,
+							'value_color' => 'COLOR:null|red<1|red>700|orange>500|00A000>1',
+							'_title' => 'Celková velikost souborů video archívu'
+						],
 					];
 
 					$badgeQuantityId = 'statsd_cameras.archive.filescount_gauge';
@@ -237,7 +261,10 @@ class OverviewData extends Utility
 						'label' => 'Soubory',
 						'lanBadgesUrl' => $this->devices[$deviceNdx]['lanBadgesUrl'],
 						'badgeQuantityId' => $badgeQuantityId,
-						'badgeParams' => ['precision' => 0, 'units' => 'empty', 'value_color' => 'COLOR:null|red<96|orange<168|00A000>=0'],
+						'badgeParams' => [
+							'precision' => 0, 'units' => 'empty', 'value_color' => 'COLOR:null|red<96|orange<168|00A000>=0',
+							'_title' => 'Počet souborů ve video archívu'
+						],
 					];
 
 					$badgeQuantityId = 'statsd_cameras.archive.len_gauge';
@@ -245,7 +272,10 @@ class OverviewData extends Utility
 						'label' => 'Doba',
 						'lanBadgesUrl' => $this->devices[$deviceNdx]['lanBadgesUrl'],
 						'badgeQuantityId' => $badgeQuantityId,
-						'badgeParams' => ['precision' => 0, 'units' => 'hours', 'value_color' => 'COLOR:null|red<96|orange<168|#00A000>=0'],
+						'badgeParams' => [
+							'precision' => 0, 'units' => 'hours', 'value_color' => 'COLOR:null|red<96|orange<168|#00A000>=0',
+							'_title' => 'Celková doba, kterou video archív pokrývá'
+						],
 					];
 				}
 			}

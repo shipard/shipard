@@ -132,14 +132,17 @@ class Overview extends Content
 
 			$c .= "<td style='vertical-align: middle; padding-left: 1em; line-height: 1.8;padding-top: 1px;'>";
 
+			$cntBadges = 0;
 			if (isset($device['lanBadges']))
 			{
 				foreach ($device['lanBadges'] as $sb)
 				{
 					$sh = $this->lanSensorHelper($device['lan']);
-					if ($sh) {
+					if ($sh)
+					{
 						$bc = $sh->lanBadgeImg($sb['label'], $sb['badgeQuantityId'], $sb['badgeParams'], $sb['lanBadgesUrl'] ?? '');
 						$c .= ' ' . "<span>".$bc."</span>";
+						$cntBadges++;
 					}
 				}
 			}
@@ -151,25 +154,30 @@ class Overview extends Content
 				{
 					$bc = $sh->dsBadgeImg($sb['label'], $sb['badgeQuantityId'], $sb['badgeParams']);
 					$c .= ' '.$bc;
+					$cntBadges++;
 				}
 			}
 
 			if (isset($device['infoBadges']))
 			{
-				$c .= '<br/>';
+				if ($cntBadges > 1)
+					$c .= '<br/>';
 				foreach ($device['infoBadges'] as $sb)
 				{
 					$sh = $this->lanSensorHelper($device['lan']);
-					if ($sh) {
+					if ($sh)
+					{
 						$bc = $sh->lanBadgeImg($sb['label'], $sb['badgeQuantityId'], $sb['badgeParams'], $sb['lanBadgesUrl'] ?? '');
 						$c .= ' ' . "<span>".$bc."</span>";
+						$cntBadges++;
 					}
 				}
 			}
 
 			if (isset($device['sensors']) && count(($device['sensors'])))
 			{
-				$c .= '<br/>';
+				if ($cntBadges > 1)
+					$c .= '<br/>';
 				foreach ($device['sensors'] as $sb)
 				{
 					$c .= ' ' . $sb['code'];
