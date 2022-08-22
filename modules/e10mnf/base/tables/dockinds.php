@@ -75,9 +75,9 @@ class TableDocKinds extends DbTable
 			if ($dk['labelRowRefId2'] === '')
 				$dk['labelRowRefId2'] = 'Kód 2';
 			if ($dk['labelRowRefId3'] === '')
-				$dk['labelRowRefId3'] = 'Kód 2';
+				$dk['labelRowRefId3'] = 'Kód 3';
 			if ($dk['labelRowRefId4'] === '')
-				$dk['labelRowRefId4'] = 'Kód 2';
+				$dk['labelRowRefId4'] = 'Kód 4';
 
 			if ($r['useDetailMainSettings'])
 			{
@@ -295,7 +295,7 @@ class FormDocKind extends TableForm
 						$this->closeRow ();
 						$this->openRow ();
 							$this->addColumnInput ('useRowRefId3', TableForm::coColW5);
-							$this->addColumnInput ('labelRowRefId4', TableForm::coColW7);
+							$this->addColumnInput ('labelRowRefId3', TableForm::coColW7);
 						$this->closeRow ();
 						$this->openRow ();
 							$this->addColumnInput ('useRowRefId4', TableForm::coColW5);

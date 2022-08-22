@@ -131,4 +131,18 @@ class FormRow extends TableForm
 
 		$this->closeForm ();
 	}
+
+	function columnLabel ($colDef, $options)
+	{
+		$dko = $this->dko;
+		switch ($colDef ['sql'])
+		{
+			case'refId1': return $dko['labelRowRefId1'];
+			case'refId2': return $dko['labelRowRefId2'];
+			case'refId3': return $dko['labelRowRefId3'];
+			case'refId4': return $dko['labelRowRefId4'];
+		}
+
+		return parent::columnLabel ($colDef, $options);
+	}
 }
