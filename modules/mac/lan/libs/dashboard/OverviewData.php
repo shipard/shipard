@@ -172,7 +172,11 @@ class OverviewData extends Utility
 					'label' => 'Video',
 					'lanBadgesUrl' => $this->devices[$camServerNdx]['lanBadgesUrl'],
 					'badgeQuantityId' => $badgeQuantityId,
-					'badgeParams' => ['units' => 'GB', 'precision' => 1, '_title' => 'Celková velikost video archívu této kamery'],
+					'badgeParams' => [
+						'units' => 'GB', 'precision' => 1,
+						'_title' => 'Celková velikost video archívu této kamery',
+						'value_color' => 'COLOR:null|368BC1>0',
+					],
 				];
 
 				$badgeQuantityId = 'statsd_cameras.avgimgsize.'.$deviceNdx.'_gauge';
@@ -180,7 +184,11 @@ class OverviewData extends Utility
 					'label' => '1 obrázek',
 					'lanBadgesUrl' => $this->devices[$camServerNdx]['lanBadgesUrl'],
 					'badgeQuantityId' => $badgeQuantityId,
-					'badgeParams' => ['units' => 'KB', 'divide' => 1024, 'precision' => 0, '_title' => 'Průměrná velikost jednoho obrázku z této kamery'],
+					'badgeParams' => [
+						'units' => 'KB', 'divide' => 1024, 'precision' => 0,
+						'_title' => 'Průměrná velikost jednoho obrázku z této kamery',
+						'value_color' => 'COLOR:null|368BC1>0',
+					],
 				];
 			}
 			elseif ($deviceKind === 11)
@@ -244,6 +252,27 @@ class OverviewData extends Utility
 
 				if (isset($this->devices[$deviceNdx]['macDeviceCfg']) && $this->devices[$deviceNdx]['macDeviceCfg']['enableCams'])
 				{ // video
+					$badgeQuantityId = 'system.cpu';
+					$this->devices[$deviceNdx]['lanBadges'][] = [
+						'label' => 'iowait',
+						'badgeQuantityId' => $badgeQuantityId,
+						'lanBadgesUrl' => $this->devices[$deviceNdx]['lanBadgesUrl'],
+						'badgeParams' => [
+							'dimensions' => 'iowait', 'units' => '%', 'precision' => 2, 'after' => -300,
+							'value_color' => 'COLOR:null|red>10|orange>2|00A000>=0'
+						],
+					];
+					$badgeQuantityId = 'system.cpu';
+					$this->devices[$deviceNdx]['lanBadges'][] = [
+						'label' => 'softirq',
+						'badgeQuantityId' => $badgeQuantityId,
+						'lanBadgesUrl' => $this->devices[$deviceNdx]['lanBadgesUrl'],
+						'badgeParams' => [
+							'dimensions' => 'softirq', 'units' => '%', 'precision' => 2, 'after' => -300,
+							'value_color' => 'COLOR:null|red>8|orange>3|00A000>=0'
+						],
+					];
+
 					$badgeQuantityId = 'statsd_cameras.archive.diskusage_gauge';
 					$this->devices[$deviceNdx]['infoBadges'][] = [
 						'label' => 'Video',
