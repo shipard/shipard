@@ -1,10 +1,13 @@
 <?php
 
 namespace Shipard\Utils;
-use \e10\str;
-use \e10\uiutils;
+use \Shipard\Utils\Str;
+use \Shipard\Application\DataModel;
 
 
+/**
+ * class Utils
+ */
 class Utils
 {
 	static $dayShortcuts = ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'];
@@ -1685,7 +1688,7 @@ class Utils
 		if (!is_dir($dirName))
 			mkdir($dirName, 0770, true);
 
-		$sn = str::substr($recData['firstName'], 0, 1).str::substr($recData['lastName'], 0, 1);
+		$sn = Str::substr($recData['firstName'], 0, 1).Str::substr($recData['lastName'], 0, 1);
 		$colorId = substr($recData['ndx'], 0, 1);
 		$baseFileName = bin2hex ($sn).'_'.$colorId.'.svg';
 		$fullFileName = $dirName.$baseFileName;

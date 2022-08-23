@@ -190,10 +190,6 @@ class CfgManager
 		else
 			$newConfig ['appSkeleton'] = $appSkeleton;
 
-
-		if (!isset ($newConfig ['modulesPath']))
-			$newConfig ['modulesPath'] = __SHPD_MODULES_DIR__;
-
 		// -- check unset critical options
 		$newConfig['systemConfig']['unconfigured'] = 0;
 		foreach ($newConfig['appOptions'] as $i1 => $o1)
@@ -246,7 +242,7 @@ class CfgManager
 		$hosting = [];
 		$hosting['hostingDomain'] = $cfgServer['hostingDomain'];
 		$hosting['serverDomain'] = $cfgServer['serverDomain'];
-		
+
 		$cfgServer['useHosting'] = $cfgServer['useHosting'];
 
 		$newConfig['hostingCfg'] = $hosting;
@@ -269,7 +265,7 @@ class CfgManager
 				$newConfig ['dsMode'] = Application::dsmDevel;
 			elseif (isset($newConfig ['dsi']['dsType']) && $newConfig ['dsi']['dsType'] === 1)
 				$newConfig ['dsMode'] = Application::dsmTesting;
-			else	
+			else
 				$newConfig ['dsMode'] = Application::dsmProduction;
 		}
 
@@ -1146,8 +1142,8 @@ class CfgManager
 		if (!$cfgString)
 			return FALSE;
 		$this->appCfg = json_decode ($cfgString, true);
-		if (!isset ($this->appCfg ['modulesPath']))
-			$this->appCfg ['modulesPath'] = __SHPD_MODULES_DIR__;
+		//if (!isset ($this->appCfg ['modulesPath']))
+		//	$this->appCfg ['modulesPath'] = __SHPD_MODULES_DIR__;
 		return TRUE;
 	}
 

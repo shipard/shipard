@@ -5,7 +5,7 @@ use \Shipard\Utils\Utils;
 
 
 
-class WidgetDashboard extends \E10\Widget
+class WidgetDashboard extends \Shipard\UI\Core\Widget
 {
 	var $allWidgets;
 	var $dashboard;
