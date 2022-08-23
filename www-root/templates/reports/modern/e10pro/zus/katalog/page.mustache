@@ -1,0 +1,93 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+    <title>Katalog o průběhu vzdělávání</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v8" type="text/css"/>
+
+		<style>
+			table.katalogHead {
+					font-size: 8pt;
+					width: 100%;
+			}
+
+			table.ethHours {width: 100%; border-collapse: collapse; line-height: 1.2; font-size: 8pt;}
+			table.ethHours th {text-align: left; padding: 3pt; border: 1px solid black; background-color: #eee;}
+			table.ethHours tr td {padding: 2pt; border: 1px solid black; vertical-align: baseline;}
+
+			table.e10-print-small {
+					font-size: 8pt;
+			}
+			table.e10-print-small td {padding: 1.5pt 2pt;}
+
+			div.etkHoursNotes {
+					padding-top: 6pt;
+					font-size: 8pt;
+			}
+
+			div.etkStudijniPlan {
+					font-size: 8pt;
+			}
+
+			div.etkUcinkovani {
+					font-size: 8pt;
+			}
+
+			p {
+					padding: 0;
+					margin: 0;
+			}
+
+			table td.unusedCell {
+					background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' preserveAspectRatio='none' viewBox='0 0 50 50'><path d='M0,50 L50,0' stroke='#aaa' stroke-width='1pt'/></svg>");
+					background-repeat:no-repeat;
+					background-position:center center;
+					background-size: 100% 100%, auto;
+			}
+		</style>
+
+
+</head>
+<body>
+
+<div class='etkHeadSchoolName'>{{cfgItem.options.core.ownerFullName}}</div>
+<div class='h1' style="font-size: 16pt; font-weight: bold;">Katalog o průběhu vzdělávání - obor {{data.head.print.svpObor}}</div>
+<div class="h2">{{data.svpOddeleni}}: {{data.head.print.svpOddeleni}} Stupeň studia: {{data.stupen}} </div>
+
+<table class='katalogHead fullWidth default' style="margin-top: 6pt;">
+	<tr>
+		<td>Příjmení a jméno žáka:</td><td colspan="5">{{data.student.lastName}} {{data.student.firstName}}</td>
+	</tr>
+	<tr>
+		<td>Datum narození:</td><td>{{{data.birthDate}}}</td>
+		<td>Rodné číslo:</td><td>{{{data.rodneCislo}}}</td>
+		<td>Státní občanství:</td><td>{{{data.stObcan}}}</td>
+	</tr>
+	<tr>
+		<td>Trvalý pobyt:</td>
+		<td colspan="3">
+			{{data.student.lists.address.0.street}}{{#data.student.lists.address.0.street}}, {{/data.student.lists.address.0.street}}
+					{{data.student.lists.address.0.city}}{{#data.student.lists.address.0.city}}, {{/data.student.lists.address.0.city}}
+					{{data.student.lists.address.0.zipcode}}
+		</td>
+		<td>Zák. zástupce:</td><td> {{{data.zz1_jmeno}}}</td>
+	</tr>
+	<tr>
+		<td>Do školy nastoupil(a) dne:</td><td>{{data.nastup1.datum}}</td>
+		<td>Do:</td><td colspan="3">{{data.nastup1.text}}</td>
+	</tr>
+</table>
+
+
+
+<h3 style="text-align: center; padding-top: 6pt;padding-bottom: 6pt; margin: 0pt;">Přehled o prospěchu žáka / žákyně</h3>
+
+{{{@renderContent;dataItem:data.prehledOProspechu}}}
+
+{{#data.ukonceniStudia}}
+	<div style="text-align: center; padding-top: 1em;">Studium ukončeno ke dni {{data.ukonceniStudia}}</div>
+{{/data.ukonceniStudia}}
+
+</body>
+
+</html>

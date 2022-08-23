@@ -1,0 +1,70 @@
+<div class='etkHeadSchoolName'>{{cfgItem.options.core.ownerFullName}}</div>
+<div class='h1'>Třídní kniha pro individuální výuku</div>
+
+<table class='etkHead'>
+	<tr>
+		<td>
+			<table>
+				<tr><td>Školní rok:</td><td>{{data.head.print.skolniRok}}</td></tr>
+				{{! <tr><td>Obor:</td><td>{ {data.head.print.svpObor} }</td></tr>!}}
+				<tr><td>{{data.svpOddeleni}}:</td><td>{{data.head.print.svpOddeleni}}</td></tr>
+				<tr><td>Vyučovací předmět:</td><td>{{data.predmet.nazev}}</td></tr>
+				<tr><td>Ročník:</td><td>{{data.head.print.rocnik}}</td></tr>
+				<tr><td>Učitel/ka:</td><td>{{data.ucitel.fullName}}</td></tr>
+				<tr><td>Studium:</td><td>{{data.studium.poradoveCislo}}</td></tr>
+			</table>
+		</td>
+		<td>
+			<table>
+				<tr><td>Jméno a příjmení žáka:</td><td>{{data.student.firstName}} {{data.student.lastName}}</td></tr>
+					<tr><td>Škola:</td><td>{{{data.head.studentSkola}}}</td></tr>
+					<tr><td>Datum narození:</td><td>{{{data.birthDate}}}</td></tr>
+					<tr><td>Adresa trvalého bydliště:</td><td>{{data.student.lists.address.0.street}}{{#data.student.lists.address.0.street}}, {{/data.student.lists.address.0.street}}
+					{{data.student.lists.address.0.city}}{{#data.student.lists.address.0.city}}, {{/data.student.lists.address.0.city}}
+					{{data.student.lists.address.0.zipcode}}</td></tr>
+				<tr><td>Zák. zástupce:</td><td>{{{data.zz1_jmeno}}}</td></tr>
+				<tr><td>Telefon:</td><td>{{#data.zz1_telefon}}{{data.zz1_telefon}}{{/data.zz1_telefon}}{{^data.zz1_telefon}}{{data.telefon}}{{/data.zz1_telefon}}</td></tr>
+			</table>
+		</td>
+	</tr>
+</table>
+
+
+<div class='h2'>Roční studijní plán</div>
+<div class='etkStudijniPlan'>
+	{{{data.studijniPlan}}}
+</div>
+
+
+<div class='h2'>Vyučovací hodiny</div>
+<table class='ethHours'>
+	<thead>
+	<tr>
+		<th>Dat.</th>
+		<th>P</th>
+		<th>Probíraná látka</th>
+		<th>Z</th>
+	</tr>
+	</thead>
+	{{#data.hodiny}}
+		<tr>
+			<td>{{datum}}</td>
+			<td>{{pritomnost}}</td>
+			<td>{{probiranaLatka}}</td>
+			<td>{{znamka}}</td>
+		</tr>
+	{{/data.hodiny}}
+</table>
+
+<div class="etkHoursNotes">
+	<b>P</b>řítomnost: <b>P</b>:&nbsp;Přítomen, <b>NO</b>:&nbsp;Nepřítomen&nbsp;-&nbsp;omluven, <b>NN</b>:&nbsp;Nepřítomen&nbsp;-&nbsp;neomluven, <b>SS</b>:&nbsp;Státní&nbsp;svátek, <b>PR</b>:&nbsp;Prázdniny, <b>ŘV</b>:&nbsp;Ředitelské&nbsp;volno, <b>V</b>:&nbsp;Volno<br>
+	<b>Z</b>námka: 1 - 4, <b>-</b> Nehodnoceno<br>
+</div>
+
+
+{{#data.head.ucinkovani}}
+	<div class='h2'>Účinkování</div>
+	<div class='etkUcinkovani'>
+	{{data.head.ucinkovani}}
+	</div>
+{{/data.head.ucinkovani}}

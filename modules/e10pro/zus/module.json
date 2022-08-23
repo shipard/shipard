@@ -1,0 +1,36 @@
+{
+  "id": "e10pro.zus",
+  "name": "ZUŠ",
+  "tables": [
+		"obory", "oddeleni", "predmety", "svp", "stupne", "rocniky", "teachplanheads", "teachplanrows", "roky",
+		"vysvedceni", "znamky", "akce", "programakci",
+		"prihlasky", "studium", "studiumpre",
+		"vyuky", "vyukystudenti", "vyukyrozvrh", "hodiny", "hodinydochazka", "hodnoceni"
+	],
+	"modules": ["e10/persons"],
+	"extensions": ["persons"],
+  "config": [
+    {"id": "+appSkeleton", "name": "Rozšíření menu aplikace", "file": "zus.appSkeleton.json"},
+		{"id": "+appOptions", "name": "Nastavení aplikace", "file": "zus.appOptions.json"},
+	  {"id": "+e10.appOptions.groups", "file": "e10.appOptionsGroups.json"},
+		{"id": "+e10.base.doclinks", "file": "docLinks.json"},
+    {"id": "zus.znamky", "name": "Známky", "file": "zus.znamky.json"},
+	  {"id": "zus.pritomnost", "file": "zus.pritomnost.json"},
+    {"id": "+zus", "file": "zus.json"},
+    {"id": "zus.statniObcanstvi", "name": "Státní občanství", "file": "zus.statniObcanstvi.json"},
+    {"id": "+e10.persons.roles", "name": "Role uživatelů", "file": "e10.zus.roles.json"},
+    {"id": "+e10.persons.systemGroups", "name": "Systémové skupiny osob", "file": "e10.persons.groups.json"},
+		{"id": "zus.stavyStudium", "name": "Stavy informací o studiu", "file": "zus.stavyStudium.json"},
+		{"id": "zus.stavyVysvedceni", "name": "Stavy vysvědčení", "file": "zus.stavyVysvedceni.json"},
+		{"id": "zus.stavyVyuky", "file": "zus.stavyVyuky.json"},
+		{"id": "zus.stavyHodiny", "file": "e10pro.zus.hodiny.docStates.json"},
+		{"id": "e10pro.zus.docStatesEntries", "file": "e10pro.zus.docStatesEntries.json"},
+		{"id": "+e10.base.clsfGroups", "name": "Skupiny zatřídění", "file": "e10.base.clsfGroups.json"},
+		{"id": "e10pro.zus.akce.docStates", "name": "Stavy akcí", "file": "e10pro.zus.akce.docStates.json"},
+		{"id": "e10pro.zus.skolniRoky.docStates", "file": "zus.roky.docStates.json"},
+    {"id": "+reports", "name": "Výstupy", "file": "e10pro.zus.reports.json"},
+		{"id": "+dashboards", "file": "dashboards.json"},
+		{"id": "+widgets", "file": "widgets.json"},
+		{"id": "+e10.persons.virtualGroups", "file": "e10.persons.virtualGroups.json"}
+  ]
+}

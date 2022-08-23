@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+{{xmlMode}}
+
+
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
+<fo:layout-master-set>
+	<fo:simple-page-master margin-left="0cm" margin-right="0cm" margin-bottom="0cm" margin-top="0cm" master-name="first">
+		<fo:region-body margin-top="9mm" margin-bottom="0cm"></fo:region-body>
+	</fo:simple-page-master>
+	<fo:simple-page-master margin-left="0cm" margin-right="0cm" margin-bottom="0cm" margin-top="0cm" master-name="second">
+		<fo:region-body margin-top="7mm" margin-bottom="0cm"></fo:region-body>
+	</fo:simple-page-master>
+</fo:layout-master-set>
+
+<fo:page-sequence master-reference="first">
+
+<fo:flow flow-name="xsl-region-body" font-family="Georgia" font-size='11pt'>
+
+	<!-- Název školy -->
+	<fo:block-container height="17mm" width="163mm" top="22mm" left="23mm" position="absolute" text-align="center" display-align="after" font-size='21pt'>
+		<fo:block>{{cfgItem.options.core.ownerFullName}}</fo:block>
+	</fo:block-container>
+
+	<!-- IZO -->
+	<fo:block-container height="10mm" width="100mm" top="36mm" left="35mm" position="absolute" text-align="start" display-align="after">
+		<fo:block>{{cfgItem.options.core.zusIzo}}</fo:block>
+	</fo:block-container>
+
+	<!-- obor / školní rok -->
+	<fo:block-container height="10mm" width="58mm" top="48mm" left="25mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.head.print.svpObor}}</fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" width="32mm" top="48mm" left="155mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.head.print.skolniRok}}</fo:block>
+	</fo:block-container>
+
+	<!-- oddělení / pořadové číslo -->
+	<fo:block-container height="10mm" width="52mm" top="60mm" left="42mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.head.print.svpOddeleni}}</fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" width="25mm" top="60mm" left="162mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.head.print.poradoveCislo}}</fo:block>
+	</fo:block-container>
+
+	<!-- jméno a příjmení -->
+	<fo:block-container height="10mm" width="94mm" top="92mm" left="59mm" position="absolute" text-align="center" display-align="after">
+		<fo:block font-size='17pt' font-weight="bold">{{data.student.firstName}} {{data.student.lastName}}</fo:block>
+	</fo:block-container>
+
+	<!-- datum narození / rodné číslo -->
+	<fo:block-container height="10mm" width="50mm" top="105mm" left="55mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{{data.birthDate}}}</fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" width="55mm" top="105mm" left="132mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.rodneCislo}}</fo:block>
+	</fo:block-container>
+
+	<!-- státní občanství -->
+	<fo:block-container height="10mm" width="130mm" top="117mm" left="57mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.stObcan}}</fo:block>
+	</fo:block-container>
+
+	<!-- hodnocení za -->
+	<fo:block-container height="10mm" width="28mm" top="130mm" left="75mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.head.print.rocnik}}</fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" width="28mm" top="130mm" left="119mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.head.print.stupen}}</fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" width="113mm" top="143mm" left="48mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.head.print.urovenStudia}}</fo:block>
+	</fo:block-container>
+
+
+	<!-- známky -->
+	<fo:block-container height="89mm" width="164mm" top="172mm" left="23mm" position="absolute" text-align="center">
+		<fo:table table-layout="fixed">
+			<fo:table-column column-width="63mm"/>
+			<fo:table-column column-width="50mm"/>
+			<fo:table-column column-width="50mm"/>
+
+			<fo:table-body>
+				{{#data.rows}}
+					<fo:table-row>
+							<fo:table-cell text-align="start" height='18pt' padding-left='6pt' display-align="center">
+								<fo:block>{{print.svpPredmet}}</fo:block>
+							</fo:table-cell>
+							<fo:table-cell text-align="center" height='18pt' display-align="center">
+								<fo:block>{{print.znamka1p}}</fo:block>
+							</fo:table-cell>
+							<fo:table-cell text-align="center" height='18pt' display-align="center">
+								<fo:block>{{print.znamka2p}}</fo:block>
+							</fo:table-cell>
+					</fo:table-row>
+				{{/data.rows}}
+				<!-- celkové hodnocení -->
+				<fo:table-row>
+					<fo:table-cell text-align="start" height='32pt' display-align="center">
+						<fo:block></fo:block>
+					</fo:table-cell>
+					<fo:table-cell text-align="center" height='32pt' display-align="after">
+						<fo:block>{{data.hodnoceni1p}}</fo:block>
+					</fo:table-cell>
+					<fo:table-cell text-align="center" height='32pt' display-align="after">
+						<fo:block>{{data.hodnoceni2p}}</fo:block>
+					</fo:table-cell>
+				</fo:table-row>
+			</fo:table-body>
+		</fo:table>
+	</fo:block-container>
+
+</fo:flow>
+
+</fo:page-sequence>
+
+
+<fo:page-sequence master-reference="second">
+
+<fo:flow flow-name="xsl-region-body" font-family="Georgia" font-size='11pt'>
+
+	<!-- DRUHÁ STRANA -->
+	<!--
+	<fo:block page-break-after="always"/>
+	-->
+	<!-- zameškané hodiny omluvené -->
+	<fo:block-container height="10mm" width="52mm" top="17mm" left="47mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.head.print.zamHodinyOml1p}}</fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" width="52mm" top="17mm" left="130mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.head.print.zamHodinyOml2p}}</fo:block>
+	</fo:block-container>
+
+	<!-- zameškané hodiny neomluvené -->
+	<fo:block-container height="10mm" width="52mm" top="23mm" left="47mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.head.print.zamHodinyNeo1p}}</fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" width="52mm" top="23mm" left="130mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.head.print.zamHodinyNeo2p}}</fo:block>
+	</fo:block-container>
+
+
+	<!-- místo a datum vystavení -->
+	<fo:block-container height="10mm" width="65mm" top="36mm" left="37mm" position="absolute" text-align="start" display-align="after">
+		<fo:block>{{cfgItem.options.core.zusMistoVysvedceni}}</fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" width="65mm" top="36mm" left="118mm" position="absolute" text-align="start" display-align="after">
+		<fo:block>{{cfgItem.options.core.zusMistoVysvedceni}}</fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" width="65mm" top="43mm" left="37mm" position="absolute" text-align="start" display-align="after">
+		<fo:block>{{data.datumVystaveni1pol}}</fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" width="65mm" top="43mm" left="118mm" position="absolute" text-align="start" display-align="after">
+		<fo:block>{{data.datumVystaveni2pol}}</fo:block>
+	</fo:block-container>
+
+	<!-- ředitel/učitel 
+	<fo:block-container height="10mm" width="55mm" top="56mm" left="45mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{cfgItem.options.core.zusReditel}}</fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" width="55mm" top="56mm" left="127mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{cfgItem.options.core.zusReditel}}</fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" width="55mm" top="68.5mm" left="45mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.ucitel.fullName}}</fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" width="55mm" top="68.5mm" left="127mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.ucitel.fullName}}</fo:block>
+	</fo:block-container>
+	-->
+</fo:flow>
+
+</fo:page-sequence>
+
+</fo:root>

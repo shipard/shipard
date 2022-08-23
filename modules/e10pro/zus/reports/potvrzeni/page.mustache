@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+{{xmlMode}}
+
+
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
+<fo:layout-master-set>
+	<fo:simple-page-master margin-left="0cm" margin-right="0cm" margin-bottom="0cm" margin-top="0cm" master-name="first">
+		<fo:region-body margin-top="9mm" margin-bottom="0cm"></fo:region-body>
+	</fo:simple-page-master>
+	<fo:simple-page-master margin-left="0cm" margin-right="0cm" margin-bottom="0cm" margin-top="0cm" master-name="second">
+		<fo:region-body margin-top="7mm" margin-bottom="0cm"></fo:region-body>
+	</fo:simple-page-master>
+</fo:layout-master-set>
+
+<fo:page-sequence master-reference="first">
+
+<fo:flow flow-name="xsl-region-body" font-family="Georgia" font-size='11pt'>
+
+	<!-- Název školy -->
+	<fo:block-container height="17mm" width="163mm" top="21mm" left="23mm" position="absolute" text-align="center" display-align="after" font-size='21pt'>
+		<fo:block>{{cfgItem.options.core.ownerFullName}}</fo:block>
+	</fo:block-container>
+
+	<!-- jméno a příjmení -->
+	<fo:block-container height="10mm" width="94mm" top="97mm" left="59mm" position="absolute" text-align="center" display-align="after">
+		<fo:block font-size='17pt' font-weight="bold">{{data.student.firstName}} {{data.student.lastName}}</fo:block>
+	</fo:block-container>
+
+	<!-- datum narození / rodné číslo -->
+	<fo:block-container height="10mm" width="50mm" top="110mm" left="55mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{{data.birthDate}}}</fo:block>
+	</fo:block-container>
+
+	<!-- státní občanství -->
+	<fo:block-container height="10mm" width="50mm" top="122mm" left="55mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.stObcan}}</fo:block>
+	</fo:block-container>
+
+	<!-- školní rok -->
+	<fo:block-container height="10mm" width="30mm" top="141mm" left="107mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.head.print.skolniRok}}</fo:block>
+	</fo:block-container>
+
+	<!-- obor -->
+	<fo:block-container height="10mm" width="90mm" top="153mm" left="61mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.oborPotvrzeni}}</fo:block>
+	</fo:block-container>
+
+
+
+	<!-- místo a datum vystavení -->
+	<fo:block-container height="10mm" width="50mm" top="187mm" left="50mm" position="absolute" text-align="start" display-align="after">
+		<fo:block>{{cfgItem.options.core.zusMistoVysvedceni}}</fo:block>
+	</fo:block-container>
+
+
+	<fo:block-container height="10mm" width="55mm" top="187mm" left="112mm" position="absolute" text-align="start" display-align="after">
+		<fo:block>{{data.datumVystaveni2pol}}</fo:block>
+	</fo:block-container>
+
+
+</fo:flow>
+
+</fo:page-sequence>
+
+<fo:page-sequence master-reference="second">
+	<fo:flow flow-name="xsl-region-body" font-family="Georgia" font-size='11pt'>
+		<fo:block-container height="10mm" width="10mm" top="30mm" left="30mm" position="absolute" text-align="center" display-align="after">
+			<fo:block></fo:block>
+		</fo:block-container>
+	</fo:flow>
+</fo:page-sequence>
+
+
+</fo:root>

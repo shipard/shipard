@@ -1,0 +1,30 @@
+{
+  "id": "e10pro.zus.predmety", "sql": "e10pro_zus_predmety", "name": "Předměty", "icon": "icon-microphone",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "nazev", "name": "Název", "type": "string", "len": 120},
+	{"id": "nazevZkraceny", "name": "Zkrácený název", "type": "string", "len": 120},
+    {"id": "svp", "name": "ŠVP", "type": "int", "reference": "e10pro.zus.svp"},
+    {"id": "obor", "name": "Obor", "type": "int", "reference": "e10pro.zus.obory"},
+    {"id": "oddeleni", "name": "Oddělení", "type": "int", "reference": "e10pro.zus.oddeleni"},
+    {"id": "id", "name": "ID", "type": "string", "len": 20},
+    {"id": "pos", "name": "Pořadí", "type": "int"},
+	{"id": "typVyuky", "name": "Typ výuky", "type": "enumInt",
+			"enumValues": {"0": "Kolektivní", "1": "Individuální"}},
+
+	{"id": "docState", "name": "Stav", "type": "int"},
+	{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"views": [
+		{"id": "default", "class": "e10pro.zus.ViewPredmety"}
+	],
+  "forms": [
+    {"id": "default", "class": "e10pro.zus.FormPredmety"}
+  ],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"options": ["configSource"],
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "nazev"}
+}

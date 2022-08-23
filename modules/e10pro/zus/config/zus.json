@@ -1,0 +1,30 @@
+{
+	"typyVysvedceni": {
+		"0": "Vysvědčení",
+		"1": "Závěrečné vysvědčení",
+		"2": "Potvrzení"
+	},
+	"hodnoceni": {
+	 "0": {"nazev": "---", "m": "", "z": "", "zkr": ""},
+	 "1": {"nazev": "prospěl(a) s vyznamenáním", "m": "prospěl s vyznamenáním", "z": "prospěla s vyznamenáním", "zkr": "V"},
+	 "2": {"nazev": "prospěl(a)", "m": "prospěl", "z": "prospěla", "zkr": "P"},
+	 "3": {"nazev": "neprospěl(a)", "m": "neprospěl", "z": "neprospěla", "zkr": "N"}
+	},
+	"urovenStudia": {
+			"1": {"nazev": "základní", "tisk": "základního studia"},
+			"2": {"nazev": "rozšířené", "tisk": "rozšířeného studia"},
+			"3": {"nazev": "pro dospělé", "tisk": "studia pro dospělé"}
+	},
+	"povinnostPredmetu": {
+			"0": {"nazev": "povinný"},
+			"1": {"nazev": "nepovinný"}
+	},
+
+	"znamkyHodnoceni": {
+		"": {"nazev": "---", "sc": "-"},
+		"1": {"nazev": "1", "sc": "1"},
+		"2": {"nazev": "2", "sc": "2"},
+		"3": {"nazev": "3", "sc": "3"},
+		"4": {"nazev": "4", "sc": "4"}
+	}
+}

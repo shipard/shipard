@@ -1,0 +1,3 @@
+{
+	"zus-skolne": {"name": "Školné", "icon": "x-creditcard", "tables": ["e10.persons.persons"], "groups": [1]}
+}

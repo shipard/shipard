@@ -1,0 +1,27 @@
+{
+	"1000": {
+		"stateName": "Naplánováno", "actionName": "Uložit rozpracované",
+		"mainState": 2, "stateStyle": "concept",  "goto": [4000, 4100]
+	},
+	"1200": {
+		"stateName": "Zahájeno", "actionName": "Zahájit hodinu",
+		"mainState": 1, "stateStyle": "halfdone",  "goto": [4000, 4100]
+	},
+	"4000": {
+		"stateName": "V pořádku", "actionName": "Uzavřít",
+		"mainState": 3, "stateStyle": "done", "readOnly": 1, "goto": [8000, 9800]
+	},
+	"4100": {
+		"stateName": "Zrušeno", "actionName": "Zrušit",
+		"mainState": 3, "stateStyle": "cancel", "readOnly": 1, "enablePrint": 1, "goto": [8000]
+	},
+	"8000": {
+		"stateName": "V opravě", "actionName": "Opravit",
+		"mainState": 0, "stateStyle": "edit", "goto": [4000, 4100, 9800]
+	},
+	"9800": {
+		"stateName": "Smazáno", "actionName": "Smazat",
+		"mainState": 5, "stateStyle": "delete", "readOnly": 1, "goto": [8000]
+	}
+}
+

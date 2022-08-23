@@ -1,0 +1,33 @@
+{
+	"e10pro-zus-Students": {
+		"name": "Aktuální studenti",
+		"queryColumns": {
+			"virtualGroupItem": "Pobočka",
+			"virtualGroupItem2": "Učitel",
+			"virtualGroupItem3": "Obor",
+			"virtualGroupItem4": "Ročník",
+			"virtualGroupItem5": "Předmět"
+		},
+		"classId": "e10pro.zus.PersonsVGStudents"
+	},
+	"e10pro-zus-Teachers": {
+		"name": "Učitelé",
+		"queryColumns": {
+			"virtualGroupItem": "Pobočka",
+			"virtualGroupItem2": "Obor",
+			"virtualGroupItem3": "Ročník",
+			"virtualGroupItem4": "Předmět"
+		},
+		"classId": "e10pro.zus.PersonsVGTeachers"
+	},
+	"e10pro-zus-StudentsTeacher": {
+		"name": "Studenti učitele",
+		"queryColumns": {"virtualGroupItem": "Učitel"},
+		"classId": "e10pro.zus.PersonsVGStudentTeacher"
+	},
+	"e10pro-zus-StudentsOffice": {
+		"name": "Studenti na pobočce",
+		"queryColumns": {"virtualGroupItem": "Pobočka", "virtualGroupItem2": "Učitel"},
+		"classId": "e10pro.zus.PersonsVGStudentOffice"
+	}
+}

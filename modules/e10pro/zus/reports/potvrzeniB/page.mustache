@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+{{xmlMode}}
+
+
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
+<fo:layout-master-set>
+	<fo:simple-page-master margin-left="0cm" margin-right="0cm" margin-bottom="0cm" margin-top="0cm" master-name="first">
+		<fo:region-body margin-top="9mm" margin-bottom="0cm"></fo:region-body>
+	</fo:simple-page-master>
+	<fo:simple-page-master margin-left="0cm" margin-right="0cm" margin-bottom="0cm" margin-top="0cm" master-name="second">
+		<fo:region-body margin-top="7mm" margin-bottom="0cm"></fo:region-body>
+	</fo:simple-page-master>
+</fo:layout-master-set>
+
+<fo:page-sequence master-reference="first">
+
+<fo:flow flow-name="xsl-region-body" font-family="Georgia" font-size='11pt'>
+	<!-- Česká republika -->
+	<fo:block-container height="10mm" width="163mm" top="3mm" left="23mm" position="absolute" text-align="center" display-align="after" font-size='13pt'>
+		<fo:block>Č E S K Á &#160; R E P U B L I K A</fo:block>
+	</fo:block-container>
+
+	<!-- Název školy -->
+	<fo:block-container height="17mm" width="163mm" top="11mm" left="23mm" position="absolute" text-align="center" display-align="after" font-size='21pt' border-bottom-style="dotted">
+		<fo:block>
+      {{cfgItem.options.core.ownerFullName}}
+    </fo:block>
+	</fo:block-container>
+	<fo:block-container height="17mm" width="163mm" top="23mm" left="23mm" position="absolute" text-align="center" display-align="after" font-size='21pt' border-bottom-style="dotted">
+		<fo:block>
+    </fo:block>
+	</fo:block-container>
+
+	<!-- IZO -->
+	<fo:block-container height="11mm" width="163mm" top="31mm" left="23mm" position="absolute" text-align="start" display-align="after" border-bottom-style="solid">
+		<fo:block></fo:block>
+	</fo:block-container>
+
+	<!-- Potvrzení -->
+	<fo:block-container height="12mm" width="163mm" top="70mm" left="23mm" position="absolute" text-align="center" display-align="after">
+		<fo:block font-size='31pt' font-weight="bold" letter-spacing.precedence="0" letter-spacing.optimum="1mm"
+letter-spacing.minimum="1mm" letter-spacing.maximum="1mm">POTVRZENÍ</fo:block>
+	</fo:block-container>
+
+	<!-- A jméno a příjmení -->
+	<fo:block-container height="10mm" width="163mm" top="102mm" left="23mm" position="absolute" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+		<fo:block><fo:inline border-bottom-style="solid" border-width="thick" border-color="white">Jméno a příjmení:</fo:inline></fo:block>
+	</fo:block-container>
+
+	<!-- B jméno a příjmení -->
+	<fo:block-container height="10mm" width="94mm" top="100mm" left="59mm" position="absolute" text-align="center" display-align="after">
+		<fo:block font-size='17pt' font-weight="bold">{{data.student.firstName}} {{data.student.lastName}}</fo:block>
+	</fo:block-container>
+
+	<!-- A datum narození / rodné číslo -->
+	<fo:block-container height="10mm" width="163mm" top="115mm" left="23mm" position="absolute" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+		<fo:block><fo:inline border-bottom-style="solid" border-width="thick" border-color="white">Datum narození:</fo:inline></fo:block>
+	</fo:block-container>
+
+  <!-- B datum narození / rodné číslo -->
+	<fo:block-container height="10mm" width="50mm" top="113mm" left="55mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{{data.birthDate}}}</fo:block>
+	</fo:block-container>
+
+	<!-- A státní občanství -->
+	<fo:block-container height="10mm" width="163mm" top="127mm" left="23mm" position="absolute" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+		<fo:block><fo:inline border-bottom-style="solid" border-width="thick" border-color="white">Státní občanství:</fo:inline></fo:block>
+	</fo:block-container>
+
+	<!-- B státní občanství -->
+	<fo:block-container height="10mm" width="50mm" top="125mm" left="55mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.stObcan}}</fo:block>
+	</fo:block-container>
+
+	<!-- A Žák(yně) navštěvoval(a) -->
+	<fo:block-container height="10mm" width="115mm" top="147mm" left="30mm" position="absolute" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+		<fo:block><fo:inline border-bottom-style="solid" border-width="thick" border-color="white">Žák(yně) navštěvoval(a) ve školním roce &#160;</fo:inline></fo:block>
+	</fo:block-container>
+
+	<!-- školní rok -->
+	<fo:block-container height="10mm" width="50mm" top="145mm" left="97mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.head.print.skolniRok}}</fo:block>
+	</fo:block-container>
+
+	<!-- Přípravné studium -->
+	<fo:block-container height="10mm" width="40mm" top="147mm" left="148mm" position="absolute" display-align="after" border-bottom-style="none" padding-bottom="-1pt">
+		<fo:block>přípravné studium</fo:block>
+	</fo:block-container>
+
+	<!-- A obor -->
+	<fo:block-container height="10mm" width="108mm" top="160mm" left="58mm" position="absolute" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+		<fo:block text-align="end"><fo:inline border-bottom-style="solid" border-width="thick" border-color="white">oboru.</fo:inline></fo:block>
+	</fo:block-container>
+
+	<!-- B obor -->
+	<fo:block-container height="10mm" width="90mm" top="158mm" left="61mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.oborPotvrzeni}}</fo:block>
+	</fo:block-container>
+
+
+	<!-- A místo  -->
+	<fo:block-container height="10mm" width="54mm" top="190mm" left="44mm" position="absolute" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+		<fo:block><fo:inline border-bottom-style="solid" border-width="thick" border-color="white">V &#160;</fo:inline></fo:block>
+	</fo:block-container>
+
+	<!-- B místo  -->
+	<fo:block-container height="10mm" width="50mm" top="188mm" left="53mm" position="absolute" text-align="start" display-align="after">
+		<fo:block>{{cfgItem.options.core.zusMistoVysvedceni}}</fo:block>
+	</fo:block-container>
+
+
+	<!-- A dne -->
+	<fo:block-container height="10mm" width="67mm" top="190mm" left="101mm" position="absolute" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+		<fo:block><fo:inline border-bottom-style="solid" border-width="thick" border-color="white">dne &#160;</fo:inline></fo:block>
+	</fo:block-container>
+
+	<!-- B dne -->
+	<fo:block-container height="10mm" width="55mm" top="188mm" left="120mm" position="absolute" text-align="start" display-align="after">
+		<fo:block>{{data.datumVystaveni2pol}}</fo:block>
+	</fo:block-container>
+
+  <!-- razítko -->
+	<fo:block-container height="10mm" font-size="7pt" width="163mm" top="206mm" left="23mm" position="absolute" text-align="center">
+    <fo:block>
+      <fo:instream-foreign-object content-width="25mm" scaling="uniform">
+        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="240" width="200">
+             <circle cx="100" cy="150" r="76" stroke="black" stroke-width="0.6" fill="white"/>
+         </svg>
+      </fo:instream-foreign-object>
+    </fo:block>
+	</fo:block-container>
+
+	<!-- ředitel/učitel {{cfgItem.options.core.zusReditel}} / {{data.ucitel.fullName}} -->
+	<fo:block-container height="10mm" font-size="7pt" width="55mm" top="246mm" left="23mm" position="absolute" 
+            text-align="center" display-align="top" border-top-style="dotted" padding-top="1mm">
+		<fo:block>ředitel(ka)</fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" font-size="7pt" width="55mm" top="246mm" left="132mm" position="absolute"
+            text-align="center" display-align="top" border-top-style="dotted" padding-top="1mm">
+		<fo:block>učitel(ka)</fo:block>
+	</fo:block-container>
+
+
+</fo:flow>
+
+</fo:page-sequence>
+
+<fo:page-sequence master-reference="second">
+	<fo:flow flow-name="xsl-region-body" font-family="Georgia" font-size='11pt'>
+		<fo:block-container height="10mm" width="10mm" top="30mm" left="30mm" position="absolute" text-align="center" display-align="after">
+			<fo:block></fo:block>
+		</fo:block-container>
+	</fo:flow>
+</fo:page-sequence>
+
+
+
+</fo:root>

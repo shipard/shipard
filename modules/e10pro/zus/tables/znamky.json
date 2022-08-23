@@ -1,0 +1,21 @@
+{
+  "id": "e10pro.zus.znamky", "sql": "e10pro_zus_znamky", "name": "Známky na vysvědčení",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "vysvedceni", "name": "Vysvědčení", "type": "int"},
+
+    {"id": "svpPredmet", "name": "Předmět", "type": "enumInt", "len": 2, "options": ["saveOnChange"],
+	    "enumCfg": {"cfgItem": "e10pro.zus.predmety", "cfgValue": "id", "cfgText": "nazev"}},
+    {"id": "predmet", "name": "Předmět", "type": "enumString", "len": 15,
+			"enumCfg": {"cfgItem": "zus.predmety", "cfgValue": "", "cfgText": ""}},
+
+    {"id": "znamka1p", "name": "Známka 1. pol.", "type": "enumInt",
+			"enumCfg": {"cfgItem": "zus.znamky", "cfgValue": "", "cfgText": ""}},
+    {"id": "znamka2p", "name": "Známka 2. pol.", "type": "enumInt",
+			"enumCfg": {"cfgItem": "zus.znamky", "cfgValue": "", "cfgText": ""}}
+  ],
+	"options": ["systemTable"],
+	"forms": [
+      {"id": "default", "class": "e10pro.zus.FormRadekVysvedceni"}
+	]
+}

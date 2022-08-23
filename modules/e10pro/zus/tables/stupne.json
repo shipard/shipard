@@ -1,0 +1,21 @@
+{
+	"id": "e10pro.zus.stupne", "sql": "e10pro_zus_stupne", "name": "Vzdělávací stupně", "icon": "icon-level-up",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "nazev", "name": "Název", "type": "string", "len": 100},
+		{"id": "tisk", "name": "Tisknout na vysvědčení", "type": "string", "len": 100},
+		{"id": "poradi", "name": "Pořadí", "type": "int"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "e10pro.zus.ViewStupne"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.zus.FormStupen"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "nazev"}
+}

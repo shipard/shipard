@@ -1,0 +1,25 @@
+{
+	"id": "e10pro.zus.hodnoceni", "sql": "e10pro_zus_hodnoceni", "name": "Hodnocení",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "hodina", "name": "Hodina", "type": "int", "reference": "e10pro.zus.hodiny"},
+		{"id": "student", "name": "Student", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "vyuka", "name": "Výuka", "type": "int", "reference": "e10pro.zus.vyuky"},
+		{"id": "ucitel", "name": "Učitel", "type": "int", "reference": "e10.persons.persons", "comboViewer": "teachers"},
+		{"id": "predmet", "name": "Předmět", "type": "int", "reference": "e10pro.zus.predmety"},
+
+		{"id": "znamka", "name": "Známka", "type": "enumString", "len": 3,
+			"enumCfg": {"cfgItem": "zus.znamkyHodnoceni", "cfgValue": "", "cfgText": "nazev"}},
+		{"id": "poznamka", "name": "poznámka", "type": "string", "len": "80"},
+
+
+		{"id": "stav", "name": "Stav", "type": "int"},
+		{"id": "stavHlavni", "name": "Hlavní stav", "type": "int"}
+	],
+	"options": ["systemTable"],
+	"states": {"stateColumn": "stav", "mainStateColumn": "stavHlavni", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"forms": [
+		{"id": "default", "class": "e10pro.zus.FormHodnoceni"}
+	]
+}

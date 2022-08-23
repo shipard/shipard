@@ -1,0 +1,13 @@
+[
+	{"name": "Studium", "class": "e10pro.zus.reportStudium", "group": "e10pro-zus"},
+	{"name": "Školné", "class": "e10pro.zus.ReportFees", "group": "e10pro-zus"},
+	{"name": "Učební plány", "class": "e10pro.zus.reportTeachPlan", "group": "e10pro-zus"},
+	{"name": "Výkaz o ZUŠ", "class": "e10pro.zus.reportVykazZus", "group": "e10pro-zus"},
+	{"name": "Rozvrhy", "class": "e10pro.zus.ReportPlan", "group": "e10pro-zus"},
+	{"name": "Tisk vysvědčení", "class": "e10pro.zus.SchoolReportsPrintReport", "group": "e10pro-zus"},
+	{"name": "Faktury", "class": "e10pro.zus.ReportInvoices", "group": "e10pro-zus"},
+	{"name": "Zahájená/ukončená studia", "class": "e10pro.zus.ReportBeginEndStudies", "group": "e10pro-zus"},
+	{"name": "Faktury 384", "class": "e10pro.zus.ReportInvoicesDeferredRevenue", "group": "e10doc-finance", "order": 980000},
+
+	{"name": "Kontrola ETK", "class": "e10pro.zus.libs.ReportKontrolaETK", "group": "e10pro-zus", "order": 990100}
+]

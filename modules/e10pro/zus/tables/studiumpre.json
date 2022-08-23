@@ -1,0 +1,14 @@
+{
+  "id": "e10pro.zus.studiumpre", "sql": "e10pro_zus_studiumpre", "name": "Předměty studia",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "studium", "name": "Studium", "type": "int"},
+    {"id": "svpPredmet", "name": "Předmět", "len": 2, "type": "enumInt", "options": ["saveOnChange"], "reference": "e10pro.zus.predmety",
+	    "enumCfg": {"cfgItem": "e10pro.zus.predmety", "cfgValue": "id", "cfgText": "nazev"}},
+    {"id": "ucitel", "name": "Učitel", "type": "int", "reference": "e10.persons.persons", "comboViewer": "teachers"}
+  ],
+	"options": ["systemTable"],
+	"forms": [
+      {"id": "default", "class": "e10pro.zus.FormRadekPredmetStudia"}
+	]
+}

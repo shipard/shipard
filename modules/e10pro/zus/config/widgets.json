@@ -1,0 +1,31 @@
+[
+	{
+		"name": "i", "class": "e10pro.wkf.widgetDashboardTitle", "icon": "icon-user", "align": "left",
+		"dashboard": "school", "panel": "teacher-tmp", "order": 100, "row": "topInfo", "width": 12, "type": "infoTitle"
+	},
+	{
+		"name": "Nástěnka", "class": "wkf.bboard.libs.WidgetBBoardOverview", "icon": "x-inbox",
+		"dashboard": "school", "panel": "teacher", "order": 1000, "row": "docViewers", "width": 5, "maxwidth": 6, "type": "docViewer"
+	},
+	{
+		"name": "Rozvrh na dnešní den", "class": "e10pro.zus.WidgetPlanTeacherSmall", "icon": "icon-table",
+		"dashboard": "school", "panel": "teacher", "order": 2000, "row": "docViewers", "width": 7, "maxwidth": 6, "type": "docViewer"
+	},
+	{
+		"name": "Škola", "class": "e10pro.zus.SchoolDayDashboardWidget", "icon": "icon-eye",
+		"dashboard": "school", "panel": "schoolDay", "order": 1000, "row": "main", "width": 12, "type": "fullsize"
+	},
+	{
+		"name": "Škola", "class": "e10pro.zus.WidgetPlanTeacher", "icon": "icon-eye",
+		"dashboard": "school", "panel": "plan", "order": 1000, "row": "main", "width": 12, "type": "fullsize"
+	},
+
+	{
+		"name": "Rozvrh", "class": "e10pro.zus.WidgetPlan", "icon": "icon-table",
+		"dashboard": "zustimetable", "panel": "plan", "order": 1000, "row": "main", "width": 12, "type": "fullsize"
+	},
+	{
+		"class": "e10pro.zus.WidgetPlanTeacher",
+		"dashboard": "zustimetable", "panel": "teacher", "order": 2000, "row": "main", "width": 12, "type": "fullsize"
+	}
+]

@@ -1,0 +1,190 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+		<title>test</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+		<link rel="stylesheet" href="file://{{templateRoot}}style.css" type="text/css"/>
+
+        <style>
+                {{#data.owner.logo.logo-nadpis.filename}}
+                #supplier-address-hdr {
+                    background-image: url("file://{{appDir}}/att/{{data.owner.logo.logo-nadpis.path}}{{data.owner.logo.logo-nadpis.filename}}");
+                    background-position: bottom right;
+                    background-size: auto 60%;
+                    background-repeat: no-repeat;
+                }
+                {{/data.owner.logo.logo-nadpis.filename}}
+                {{#data.owner.logo.logo-vpravo.filename}}
+                #supplier-address-box {
+                    background-image: url("file://{{appDir}}/att/{{data.owner.logo.logo-vpravo.path}}{{data.owner.logo.logo-vpravo.filename}}");
+                    background-position: top right;
+                    background-size: auto 80%;
+                    background-repeat: no-repeat;
+                }
+                {{/data.owner.logo.logo-vpravo.filename}}
+                {{#data.owner.logo.logo-vlevo.filename}}
+                #supplier-address-box {
+                    background-image: url("file://{{appDir}}/att/{{data.owner.logo.logo-vlevo.path}}{{data.owner.logo.logo-vlevo.filename}}");
+                    background-position: top left;
+                    background-size: 5em;
+                    background-repeat: no-repeat;
+
+                    padding-left: 6em;
+                }
+                {{/data.owner.logo.logo-vlevo.filename}}
+        </style>
+</head>
+<body style="font-size: 10pt;">
+
+	<div style="text-align: center; padding-bottom: 4pt;
+	{{#data.owner.logo.logo-nadpis.filename}}
+		background-image: url('file://{{appDir}}/att/{{data.owner.logo.logo-nadpis.path}}{{data.owner.logo.logo-nadpis.filename}}');
+		background-position: center left;
+		background-size: auto 80%;
+		background-repeat: no-repeat;
+	{{/data.owner.logo.logo-nadpis.filename}}
+	">
+		<h2 style='padding-bottom: 2pt; margin: 0;'>Přihláška</h2>
+		<h4 style='padding-top: 1pt; margin:0; font-weight: normal;'>{{cfgItem.options.core.ownerFullName}}</h4>
+	</div>
+	<table class="default" style="font-size: 10pt !important;">
+		<tr>
+			<td class='' colspan='1'>Jméno a příjmení žáka:</td><td colspan="3">{{data.head.fullNameS}}</td>
+		</tr>
+		<tr>
+			<td class=''>Datum narození:</td><td>{{data.head.datumNarozeni}}</td>
+			<td class=''>Místo narození:</td><td>{{data.head.mistoNarozeni}}</td>
+		</tr>
+		<tr>
+			<td>Rodné číslo:</td><td>{{data.head.rodneCislo}}</td>
+			<td>Státní příslušnost:</td><td>{{data.head.statniPrislusnost}}</td>
+		</tr>
+		<tr>
+			<td>Bydliště:</td><td colspan="3">{{data.head.street}}, {{data.head.city}}, {{data.head.zipcode}}</td>
+		</tr>
+		<tr>
+			<td colspan="4">
+			Od 1. září školního roku <b>{{data.head.print.skolniRok}}</b> bude žákem / žákyní <b>{{data.head.skolaTrida}}.</b> třídy ZŠ, SŠ nebo jiného zařízení:<br>
+			{{data.head.skolaNazev}}
+			</td>
+		</tr>
+	</table>
+
+	<br/>
+
+	<table class="default" style="font-size: 10pt !important;">
+		<tr>
+			<td><b>Pobočka</b><br/><small>(místo požadovaného poskytovaného vzdělávání):</td><td>{{data.pobocka.fullName}}</small></td>
+		</tr>
+		<tr>
+			<td>Obor:</td><td>{{data.obor.nazev}}</td>
+		</tr>
+		<tr>
+			<td>Studijní zaměření:</td><td>{{data.oddeleni.nazev}}</td>
+		</tr>
+	</table>
+
+
+	<br/>
+
+	<table class="default" style="font-size: 10pt !important;">
+		<tr>
+			<td style="font-weight: bold; background-color: #FAFAFA;" colspan="2">Zákonný zástupce 1</td>
+		</tr>
+		<tr>
+			<td>Jméno</td><td>{{data.head.fullNameM}}</small></td>
+		</tr>
+		<tr>
+			<td>E-mail:</td><td>{{data.head.emailM}}</td>
+		</tr>
+		<tr>
+			<td>Telefon:</td><td>{{data.head.phoneM}}</td>
+		</tr>
+		<tr>
+			<td>Adresa:</td><td colspan="3">
+				{{#data.head.useAddressM}}{{data.head.streetM}}, {{data.head.cityM}}, {{data.head.zipcodeM}}{{/data.head.useAddressM}}
+				{{^data.head.useAddressM}}{{data.head.street}}, {{data.head.city}}, {{data.head.zipcode}}{{/data.head.useAddressM}}
+			</td>
+		</tr>
+		<tr>
+			<td style="font-weight: bold; background-color: #FAFAFA;" colspan="2">Zákonný zástupce 2</td>
+		</tr>
+		<tr>
+			<td>Jméno</td><td>{{data.head.fullNameF}}</small></td>
+		</tr>
+		<tr>
+			<td>E-mail:</td><td>{{data.head.emailF}}</td>
+		</tr>
+		<tr>
+			<td>Telefon:</td><td>{{data.head.phoneF}}</td>
+		</tr>
+		<tr>
+			<td>Adresa:</td><td colspan="3">
+				{{#data.head.useAddressF}}{{data.head.streetF}}, {{data.head.cityF}}, {{data.head.zipcodeF}}{{/data.head.useAddressF}}
+				{{^data.head.useAddressF}}{{data.head.street}}, {{data.head.city}}, {{data.head.zipcode}}{{/data.head.useAddressF}}
+				</td>
+		</tr>
+	</table>
+
+	<br/>
+	<table class="default" style="font-size: 10pt !important;">
+		<tr>
+			<td>
+				<b>Zdravotní znevýhodnění a postižení žáka/žákyně:</b>
+				{{#data.head.print.zdravotniPostizeni}}<br/>{{data.head.print.zdravotniPostizeniPopis}}{{/data.head.print.zdravotniPostizeni}}
+			</td>
+			<td>
+				{{#data.head.print.zdravotniPostizeni}}Ano{{/data.head.print.zdravotniPostizeni}}
+				{{^data.head.print.zdravotniPostizeni}}Ne{{/data.head.print.zdravotniPostizeni}}
+			</td>
+		</tr>
+	</table>
+
+	<br/>
+	Přihláška byla odeslána dne {{data.webSentDate}} pomocí webového formuláře.
+
+
+	<table class="fullWidth" style="padding-top: 72pt;">
+		<tr>
+			<td style="text-align: center; vertical-align: top;">
+				Ve: ..............................
+				
+			</td>
+			<td style="text-align: center; vertical-align: top;">
+				Dne: .........................
+				
+			</td>
+			<td style="text-align: center; vertical-align: top;">
+				.................................................................<br>
+				Jméno a podpis zákonného zástupce
+			</td>
+		</tr>
+	</table>
+
+
+	<div style="font-size: 70%; margin-top: 30pt; padding-top: 4pt; border-top: 1px solid black;
+		{{#data.owner.logo.logo-nadpis.filename}}
+			background-image: url('file://{{appDir}}/att/{{data.owner.logo.logo-nadpis.path}}{{data.owner.logo.logo-nadpis.filename}}');
+			background-position: center right;
+			background-size: auto 80%;
+			background-repeat: no-repeat;
+		{{/data.owner.logo.logo-nadpis.filename}}
+	">
+		<span class=''>{{data.owner.fullName}}</span><br>
+		{{#data.owner.address.specification}}
+			{{data.owner.address.specification}}, 
+		{{/data.owner.address.specification}}
+		{{data.owner.address.street}}, 
+		{{^data.flags.foreignCountry}}
+			{{data.owner.address.zipcode}} {{data.owner.address.city}}, 
+		{{/data.flags.foreignCountry}}
+		{{#data.flags.foreignCountry}}
+			{{data.owner.address.countryNameSC2}}-{{data.owner.address.zipcode}} {{data.owner.address.city}}, 
+			{{data.owner.address.countryNameEng}}
+		{{/data.flags.foreignCountry}}
+		<br>
+ 		telefon: {{cfgItem.options.core.ownerPhone}} e-mail: {{cfgItem.options.core.ownerEmail}}
+	</div>
+</body>
+</html>
+

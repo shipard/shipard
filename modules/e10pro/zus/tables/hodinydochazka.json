@@ -1,0 +1,22 @@
+{
+	"id": "e10pro.zus.hodinydochazka", "sql": "e10pro_zus_hodinydochazka", "name": "hodinydochazka", "icon": "icon-clock",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "hodina", "name": "Hodina", "type": "int", "reference": "e10pro.zus.hodiny"},
+		{"id": "student", "name": "Student", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "studium", "name": "Studium", "type": "int", "reference": "e10pro.zus.studium", "comboViewer": "combo"},
+
+		{"id": "pritomnost", "name": "Přítomnost", "type": "enumInt",
+			"enumValues": {"0": "---", "1": "Přítomen", "2": "Nepřítomen - omluven", "3": "Nepřítomen neomluven", "4": "Státní svátek", "5": "Prázdniny", "6": "Ředitelské volno", "7": "Volno"}},
+
+		{"id": "klasifikaceZnamka", "name": "Známka", "type": "enumString", "len": 3,
+			"enumCfg": {"cfgItem": "zus.znamkyHodnoceni", "cfgValue": "", "cfgText": "nazev"}}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.zus.FormHodinyDochazka"}
+	],
+	"options": ["systemTable"],
+	"indexes": [
+		{"id": "hodina", "columns": ["hodina"]}
+	]}

@@ -1,0 +1,80 @@
+{
+	"id": "e10pro.zus.prihlasky", "sql": "e10pro_zus_prihlasky", "name": "Přihlášky ke studiu", "icon": "icon-child",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "skolniRok", "name": "Školní rok", "type": "enumString", "len": 10,
+			"enumCfg": {"cfgItem": "e10pro.zus.roky", "cfgValue": "", "cfgText": "nazev", "cfgPrint": "tisk"}},
+		{"id": "svp", "name": "ŠVP", "label": "Studium podle", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10pro.zus.svp", "cfgValue": "id", "cfgText": "nazev"}},
+		{"id": "svpObor", "name": "Obor", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10pro.zus.obory", "cfgValue": "id", "cfgText": "nazev"}},
+		{"id": "svpOddeleni", "name": "Oddělení", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10pro.zus.oddeleni", "cfgValue": "id", "cfgText": "nazev"}},
+		{"id": "misto", "name": "Pobočka", "type": "int", "reference": "e10.base.places"},
+		{"id": "stupen", "name": "Stupeň", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10pro.zus.stupne", "cfgValue": "", "cfgText": "nazev", "cfgPrint": "tisk"}},
+		{"id": "rocnik", "name": "Ročník", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10pro.zus.rocniky", "cfgValue": "", "cfgText": "nazev", "cfgPrint": "tisk"}},
+
+		{"id": "datumPrihlasky", "name": "Datum přihlášky", "type": "date"},
+
+		{"id": "datumNarozeni", "name": "Datum narození", "type": "date"},
+		{"id": "rodneCislo", "name": "Rodné číslo", "type": "string", "len": 15},
+		{"id": "skolaTrida", "name": "Třída školy", "type": "string", "len": 10},
+		{"id": "skolaNazev", "name": "Název školy", "type": "string", "len": 80},
+		{"id": "mistoNarozeni", "name": "Místo narození", "type": "string", "len": 80},
+		{"id": "statniPrislusnost", "name": "Státní příslušnost", "type": "string", "len": 80},
+
+		{"id": "complicatedNameS", "name": "Zadat úplné jméno", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "beforeNameS", "name": "Před jménem", "label": "titul", "type": "string", "len": 20},
+		{"id": "firstNameS", "name": "Jméno", "type": "string", "len": 60},
+		{"id": "middleNameS", "name": "Druhé jméno", "label": "prostřední jm.", "type": "string", "len": 60},
+		{"id": "lastNameS", "name": "Příjmení", "type": "string", "len": 80},
+		{"id": "afterNameS", "name": "Za jménem", "label": "titul", "type": "string", "len": 20},
+		{"id": "fullNameS", "name": "Jméno studenta", "type": "string", "len": 140},
+
+		{"id": "street", "name": "Ulice", "type": "string", "len": 250},
+		{"id": "city", "name": "Město", "type": "string", "len": 90},
+		{"id": "zipcode", "name": "PSČ", "type": "string", "len": 20},
+
+		{"id": "fullNameM", "name": "Jméno 1. zák. zástupce", "label": "Jméno a příjmení", "type": "string", "len": 140},
+		{"id": "phoneM", "name": "Telefon", "type": "string", "len": 60},
+		{"id": "emailM", "name": "E-mail", "type": "string", "len": 60},
+		{"id": "useAddressM", "name": "Jiná adresa", "type": "logical"},
+		{"id": "streetM", "name": "Ulice", "type": "string", "len": 250},
+		{"id": "cityM", "name": "Město", "type": "string", "len": 90},
+		{"id": "zipcodeM", "name": "PSČ", "type": "string", "len": 20},
+
+		{"id": "fullNameF", "name": "Jméno 2. zák. zástupce", "label": "Jméno a příjmení", "type": "string", "len": 140},
+		{"id": "phoneF", "name": "Telefon", "type": "string", "len": 60},
+		{"id": "emailF", "name": "E-mail", "type": "string", "len": 60},
+		{"id": "useAddressF", "name": "Jiná adresa", "type": "logical"},
+		{"id": "streetF", "name": "Ulice", "type": "string", "len": 250},
+		{"id": "cityF", "name": "Město", "type": "string", "len": 90},
+		{"id": "zipcodeF", "name": "PSČ", "type": "string", "len": 20},
+
+		{"id": "zdravotniPostizeni", "name": "Zdravotní postižení", "type": "logical"},
+		{"id": "zdravotniPostizeniPopis", "name": "Popis zdravotního postižení", "type": "string", "len": 160},
+
+		{"id": "note", "name": "Poznámka", "type": "memo"},
+
+		{"id": "webSentDate", "name": "Datum a čas odeslání přihlášky z webu", "type": "timestamp"},
+		{"id": "confirmEmailDone", "name": "Potvrzovací email odeslán", "type": "logical"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "e10pro.zus.ViewPrihlasky", "detail": "e10pro.zus.ViewDetailPrihlaska"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.zus.FormPrihlaska"}
+	],
+	"reports": [
+		{"id": "prihlaska", "name": "Přihláška", "class": "e10pro.zus.libs.ReportPrihlaska"}
+	],
+	"options": ["timelineSource"],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10pro.zus.docStatesEntries"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullNameS"},
+	"ndx": 1216
+}

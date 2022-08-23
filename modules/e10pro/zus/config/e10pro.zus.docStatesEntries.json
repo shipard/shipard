@@ -1,0 +1,26 @@
+{
+	"1000": {
+		"stateName": "Nově rozpracováno", "actionName": "Uložit rozpracované", 
+		"stateStyle": "concept",  "mainState": 0, "goto": [1200, 9800]
+	},
+
+	"1200": {
+		"stateName": "Nezpracovaná přihláška", "actionName": "Nezpracovaná přihláška", "mainState": 1,
+		"stateStyle": "halfdone", "enablePrint": 1, "goto": [4000, 8000]
+	},
+
+	"4000": {
+		"stateName": "Potvrzeno", "actionName": "Potvrdit", "mainState": 2,
+		"stateStyle": "done",  "readOnly": 1, "enablePrint": 1, "goto": [8000]
+	},
+
+	"8000": {
+		"stateName": "V opravě", "actionName": "Opravit", "mainState": 0,
+		"stateStyle": "edit", "goto": [1200, 4000, 9800]
+	},
+
+	"9800": {
+		"stateName": "Smazáno", "actionName": "Smazat", "stateStyle": "delete",
+		"mainState": 4, "readOnly": 1, "goto": [8000]
+	}
+}

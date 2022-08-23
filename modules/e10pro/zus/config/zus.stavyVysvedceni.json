@@ -1,0 +1,23 @@
+{
+	"1000": {
+		"stateName": "Nově rozpracováno", "actionName": "Uložit rozpracované",
+		"mainState": 0, "stateStyle": "concept", "goto": [1200, 9800]
+	},
+	"1200": {
+		"stateName": "1. pololetí uzavřeno", "actionName": "Uzavřít 1. pololetí", "stateStyle": "halfdone",
+		"mainState": 1, "enablePrint": 1, "goto": [4000, 8000]
+	},
+	"4000": {
+		"stateName": "Hotovo", "actionName": "Uzavřít 2. pololetí", "stateStyle": "done",
+		"mainState": 2, "readOnly": 1, "enablePrint": 1, "goto": [8000]
+	},
+	"8000": {
+		"stateName": "V opravě", "actionName": "Opravit", "stateStyle": "edit",
+		"mainState": 0, "goto": [1200, 4000, 9800]
+	},
+	"9800": {
+		"stateName": "Smazáno", "actionName": "Smazat", "stateStyle": "delete",
+		"mainState": 4, "readOnly": 1, "goto": [8000], "roles": ["zusadm"]
+	}
+}
+

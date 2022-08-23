@@ -1,0 +1,49 @@
+{
+	"id": "e10pro.zus.hodiny", "sql": "e10pro_zus_hodiny", "name": "hodiny", "icon": "icon-clock",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "vyuka", "name": "Výuka", "type": "int", "reference": "e10pro.zus.vyuky"},
+		{"id": "rozvrh", "name": "Rozvrh", "type": "int", "reference": "e10pro.zus.vyukyrozvrh"},
+		{"id": "ucitel", "name": "Učitel", "type": "int", "reference": "e10.persons.persons", "comboViewer": "teachers"},
+
+		{"id": "probiranaLatka", "name": "Probíraná látka", "type": "memo", "comboViewer": "combo", "comboTable": "e10pro.zus.hodiny"},
+
+		{"id": "datum", "name": "Datum", "type": "date"},
+		{"id": "zacatek", "name": "Začátek", "type": "time"},
+		{"id": "konec", "name": "Konec", "type": "time"},
+		{"id": "pobocka", "name": "Pobočka", "type": "int", "reference": "e10.base.places", "comboViewer": "e10.base.ViewPlacesComboLocalOffices"},
+		{"id": "ucebna", "name": "Učebna", "type": "int", "reference": "e10.base.places", "comboViewer": "e10pro.zus.ViewPlacesComboUcebny"},
+
+		{"id": "klasifikaceZnamka", "name": "Známka", "type": "enumString", "len": 3,
+			"enumCfg": {"cfgItem": "zus.znamkyHodnoceni", "cfgValue": "", "cfgText": "nazev"}},
+		{"id": "klasifikacePoznamka", "name": "Poznámka", "type": "string", "len": "80"},
+		{"id": "pritomnost", "name": "Přítomnost", "type": "enumInt",
+			"enumValues": {"0": "---", "1": "Přítomen", "2": "Nepřítomen - omluven", "3": "Nepřítomen neomluven", "4": "Státní svátek", "5": "Prázdniny", "6": "Ředitelské volno", "7": "Volno"}},
+		{"id": "hromadnaPritomnost", "name": "Hromadné nastavení přítomnosti", "label": "Hromadně nastavit přítomnost na", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "---", "1": "Přítomen", "2": "Nepřítomen - omluven", "3": "Nepřítomen neomluven", "4": "Státní svátek", "5": "Prázdniny", "6": "Ředitelské volno", "7": "Volno"}},
+
+		{"id": "stav", "name": "Stav", "type": "int"},
+		{"id": "stavHlavni", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{
+			"id": "default", "class": "e10pro.zus.ViewHodiny", "detail": "e10pro.zus.ViewDetailHodina"
+		},
+		{
+			"id": "combo", "class": "e10pro.zus.ViewHodinyCombo", "detail": "e10pro.zus.ViewDetailHodina"
+		}
+	],
+	"lists": [
+		{"id": "dochazka", "class": "e10.base.ListRows", "name": "Docházka", "table": "e10pro.zus.hodinydochazka", "queryColumn": "hodina", "disableAddButton":  1, "disableDeleteButton":  1},
+		{"id": "hodnoceni", "class": "e10.base.ListRows", "name": "Známky", "table": "e10pro.zus.hodnoceni", "queryColumn": "hodina"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.zus.FormHodina"}
+	],
+	"states": {"stateColumn": "stav", "mainStateColumn": "stavHlavni", "statesCfg": "zus.stavyHodiny"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "nazev"},
+	"indexes": [
+		{"id": "vyuka", "columns": ["vyuka", "datum"]}
+	]
+}

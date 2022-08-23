@@ -1,0 +1,73 @@
+{
+  "id": "e10pro.zus.vysvedceni", "sql": "e10pro_zus_vysvedceni", "name": "Vysvědčení", "icon": "e10pro-zus-vysvedceni",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+
+	{"id": "studium", "name": "Studium", "type": "int", "reference": "e10pro.zus.studium"},
+	{"id": "student", "name": "Student", "type": "int", "options": ["saveOnChange"], "reference": "e10.persons.persons", "comboViewer": "students"},
+
+    {"id": "jmeno", "name": "Jméno", "type": "string", "len": 120},
+    {"id": "datumNarozeni", "name": "Dat. nar.", "type": "string", "len": 14},
+	{"id": "rodneCislo", "name": "Rodné číslo", "type": "string", "len": 12},
+	{"id": "statniObcanstvi", "name": "St. obč.", "type": "enumString", "len": 2,
+			"enumCfg": {"cfgItem": "zus.statniObcanstvi", "cfgValue": "", "cfgText": ""}},
+    {"id": "typVysvedceni", "name": "Typ vysvědčení", "type": "enumInt",
+			"enumCfg": {"cfgItem": "zus.typyVysvedceni", "cfgValue": "", "cfgText": ""}},
+	{"id": "skolniRok", "name": "Školní rok", "type": "enumString", "len": 10,
+			"enumCfg": {"cfgItem": "e10pro.zus.roky", "cfgValue": "", "cfgText": "nazev", "cfgPrint": "tisk"}},
+	{"id": "poradoveCislo", "name": "Poř. číslo", "type": "int"},
+    {"id": "svp", "name": "ŠVP", "type": "enumInt", "options": ["saveOnChange"],
+	    "enumCfg": {"cfgItem": "e10pro.zus.svp", "cfgValue": "id", "cfgText": "nazev"}},
+    {"id": "svpObor", "name": "Obor", "type": "enumInt", "options": ["saveOnChange"],
+	    "enumCfg": {"cfgItem": "e10pro.zus.obory", "cfgValue": "id", "cfgText": "nazev"}},
+    {"id": "svpOddeleni", "name": "Oddělení", "type": "enumInt", "options": ["saveOnChange"],
+	    "enumCfg": {"cfgItem": "e10pro.zus.oddeleni", "cfgValue": "id", "cfgText": "nazev", "cfgPrint": "tisk"}},
+	{"id": "obor", "name": "Obor", "type": "enumString", "len": 5,
+			"enumCfg": {"cfgItem": "zus.obor", "cfgValue": "", "cfgText": "nazev"}},
+	{"id": "oddeleni", "name": "Oddělení", "type": "enumString", "len": 5,
+			"enumCfg": {"cfgItem": "zus.oddeleni", "cfgValue": "", "cfgText": ""}},
+	{"id": "rocnik", "name": "Ročník", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10pro.zus.rocniky", "cfgValue": "", "cfgText": "nazev", "cfgPrint": "tisk"}},
+	{"id": "stupen", "name": "Stupeň", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10pro.zus.stupne", "cfgValue": "", "cfgText": "nazev", "cfgPrint": "tisk"}},
+	{"id": "urovenStudia", "name": "Úroveň studia", "type": "enumInt",
+			"enumCfg": {"cfgItem": "zus.urovenStudia", "cfgValue": "", "cfgText": "nazev", "cfgPrint": "tisk"}},
+
+	{"id": "zamHodinyOml1p", "name": "Zam. hod. oml. 1p", "type": "int"},
+	{"id": "zamHodinyOml2p", "name": "Zam. hod. oml. 2p", "type": "int"},
+	{"id": "zamHodinyNeo1p", "name": "Zam. hod. neoml. 1p", "type": "int"},
+	{"id": "zamHodinyNeo2p", "name": "Zam. hod. neoml. 2p", "type": "int"},
+    {"id": "hodnoceni1p", "name": "Hodnocení 1. pol.", "type": "enumInt",
+			"enumCfg": {"cfgItem": "zus.hodnoceni", "cfgValue": "", "cfgText": "nazev"}},
+    {"id": "hodnoceni2p", "name": "Hodnocení 2. pol.", "type": "enumInt",
+			"enumCfg": {"cfgItem": "zus.hodnoceni", "cfgValue": "", "cfgText": "nazev"}},
+
+	{"id": "ucitel", "name": "Učitel", "type": "int", "reference": "e10.persons.persons", "comboViewer": "teachers"},
+	{"id": "smazano", "name": "Smazáno", "type": "logical"},
+
+	{"id": "stav", "name": "Stav", "type": "int"},
+	{"id": "stavHlavni", "name": "Hlavní stav", "type": "int"}
+  ],
+  "lists": [
+    {"id": "znamky", "class": "e10.base.ListRows", "name": "Známky", "table": "e10pro.zus.znamky", "queryColumn": "vysvedceni"}
+  ],
+	"views": [
+		{
+		  "id": "default", "class": "e10pro.zus.ViewVysvedceni",
+		  "addWizard": [
+			{"class": "e10pro.zus.GenerovaniVysvedceniWizard", "icon": "icon-legal", "text": "Generování vysvědčení"}
+		  ],
+		  "detail": "e10pro.zus.ViewDetailVysvedceni"
+		},
+		{"id": "vsvStudenta", "class": "e10pro.zus.WidgetVysvedceniStudenta2"}
+	],
+  "forms": [
+    {"id": "default", "class": "e10pro.zus.FormVysvedceni"}
+  ],
+	"options": ["timelineSource"],
+	"states": {"stateColumn": "stav", "mainStateColumn": "stavHlavni", "statesCfg": "zus.stavyVysvedceni"},
+	"reports": [
+	  {"id": "opis", "name": "Výpis", "class": "e10pro.zus.VysvedceniReportOpis"},
+	  {"id": "vysvedceniB", "name": "Vysvědčení", "class": "e10pro.zus.VysvedceniBReportTisk"}
+	]
+}

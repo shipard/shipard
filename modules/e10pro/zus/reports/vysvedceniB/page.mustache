@@ -1,0 +1,503 @@
+<?xml version="1.0" encoding="utf-8"?>
+{{xmlMode}}
+
+
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
+<fo:layout-master-set>
+	<fo:simple-page-master margin-left="0cm" margin-right="0cm" margin-bottom="0cm" margin-top="0cm" master-name="first">
+		<fo:region-body margin-top="9mm" margin-bottom="0cm"></fo:region-body>
+	</fo:simple-page-master>
+	<fo:simple-page-master margin-left="0cm" margin-right="0cm" margin-bottom="0cm" margin-top="0cm" master-name="second">
+		<fo:region-body margin-top="7mm" margin-bottom="0cm"></fo:region-body>
+	</fo:simple-page-master>
+</fo:layout-master-set>
+
+<fo:page-sequence master-reference="first">
+
+<fo:flow flow-name="xsl-region-body" font-family="Georgia" font-size='11pt'>
+	<!-- Česká republika -->
+	<fo:block-container height="10mm" width="163mm" top="3mm" left="23mm" position="absolute" text-align="center" display-align="after" font-size='13pt'>
+		<fo:block>Č E S K Á &#160; R E P U B L I K A</fo:block>
+	</fo:block-container>
+
+	<!-- Název školy -->
+	<fo:block-container height="17mm" width="163mm" top="11mm" left="23mm" position="absolute" text-align="center" display-align="after" font-size='21pt' border-bottom-style="dotted">
+		<fo:block>
+      {{cfgItem.options.core.ownerFullName}}
+    </fo:block>
+	</fo:block-container>
+	<fo:block-container height="17mm" width="163mm" top="23mm" left="23mm" position="absolute" text-align="center" display-align="after" font-size='21pt' border-bottom-style="dotted">
+		<fo:block>
+    </fo:block>
+	</fo:block-container>
+
+	<!-- IZO -->
+	<fo:block-container height="11mm" width="163mm" top="37mm" left="23mm" position="absolute" text-align="start" display-align="after" border-bottom-style="solid">
+		<fo:block>IZO &#160; {{cfgItem.options.core.zusIzo}}</fo:block>
+	</fo:block-container>
+
+	<!-- obor / školní rok -->
+<!--
+	<fo:block-container height="10mm" width="58mm" top="47mm" left="35mm" position="absolute" text-align="start" display-align="after" padding-bottom="0pt" border-bottom-style="dotted">
+  <fo:block>&#160;{{data.head.print.svpObor}}</fo:block>
+	</fo:block-container>
+</fo:inline><fo:inline padding-left="2mm" border-bottom-style="dotted">
+-->
+	<fo:block-container height="10mm" width="85mm" top="51mm" left="23mm" position="absolute" text-align="start" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+		<fo:block><fo:inline border-bottom-style="solid" border-width="thick" border-color="white">Obor:</fo:inline> &#160; <fo:inline baseline-shift="super">{{data.head.print.svpObor}}</fo:inline></fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" width="53mm" top="51mm" left="134mm" position="absolute" text-align="start" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+		<fo:block><fo:inline border-bottom-style="solid" border-width="thick" border-color="white">Školní rok:</fo:inline> &#160; <fo:inline baseline-shift="super">{{data.head.print.skolniRok}}</fo:inline></fo:block>
+	</fo:block-container>
+
+	<!-- oddělení / pořadové číslo -->
+	<fo:block-container height="10mm" width="85mm" top="63mm" left="23mm" position="absolute" text-align="start" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+		<fo:block><fo:inline border-bottom-style="solid" border-width="thick" border-color="white">{{data.svpOddeleni}}:</fo:inline> &#160; <fo:inline baseline-shift="super">{{data.head.print.svpOddeleni}}</fo:inline></fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" width="53mm" top="63mm" left="134mm" position="absolute" text-align="start" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+		<fo:block><fo:inline border-bottom-style="solid" border-width="thick" border-color="white">Pořadové číslo:</fo:inline> &#160; <fo:inline baseline-shift="super">{{data.head.print.poradoveCislo}}</fo:inline></fo:block>
+	</fo:block-container>
+
+	<!-- Vysvědčení {{data.head.print.typVysvedceni}} -->
+	<fo:block-container height="12mm" width="163mm" top="81mm" left="23mm" position="absolute" text-align="center" display-align="after">
+		<fo:block font-size='31pt' font-weight="bold" letter-spacing.precedence="0" letter-spacing.optimum="1mm"
+letter-spacing.minimum="1mm" letter-spacing.maximum="1mm">{{data.typVysvedceni}}</fo:block>
+	</fo:block-container>
+
+	<!-- A jméno a příjmení -->
+	<fo:block-container height="10mm" width="163mm" top="95mm" left="23mm" position="absolute" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+		<fo:block><fo:inline border-bottom-style="solid" border-width="thick" border-color="white">Jméno a příjmení:</fo:inline></fo:block>
+	</fo:block-container>
+
+	<!-- B jméno a příjmení -->
+	<fo:block-container height="10mm" width="94mm" top="94mm" left="59mm" position="absolute" text-align="center" display-align="after">
+		<fo:block font-size='17pt' font-weight="bold">{{data.student.firstName}} {{data.student.lastName}}</fo:block>
+	</fo:block-container>
+
+	<!-- A datum narození / rodné číslo -->
+	<fo:block-container height="10mm" width="82mm" top="108mm" left="23mm" position="absolute" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+		<fo:block><fo:inline border-bottom-style="solid" border-width="thick" border-color="white">Datum narození:</fo:inline></fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" width="78mm" top="108mm" left="108mm" position="absolute" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+		<fo:block><fo:inline border-bottom-style="solid" border-width="thick" border-color="white">Rodné číslo:</fo:inline></fo:block>
+	</fo:block-container>
+
+	<!-- B datum narození / rodné číslo -->
+	<fo:block-container height="10mm" width="50mm" top="106mm" left="55mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{{data.birthDate}}}</fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" width="55mm" top="106mm" left="130mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.rodneCislo}}</fo:block>
+	</fo:block-container>
+
+	<!-- A státní občanství -->
+	<fo:block-container height="10mm" width="163mm" top="120mm" left="23mm" position="absolute" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+		<fo:block><fo:inline border-bottom-style="solid" border-width="thick" border-color="white">Státní občanství:</fo:inline></fo:block>
+	</fo:block-container>
+
+	<!-- B státní občanství -->
+	<fo:block-container height="10mm" width="94mm" top="118mm" left="57mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.stObcan}}</fo:block>
+	</fo:block-container>
+
+	<!-- A hodnocení za -->
+	<fo:block-container height="10mm" width="55mm" top="133mm" left="48mm" position="absolute" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+		<fo:block><fo:inline border-bottom-style="solid" border-width="thick" border-color="white">Hodnocení za &#160;</fo:inline></fo:block>
+	</fo:block-container>
+
+	<!-- B hodnocení za -->
+	<fo:block-container height="10mm" width="28mm" top="131mm" left="75mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.head.print.rocnik}}</fo:block>
+	</fo:block-container>
+
+	<!-- A ročník/stupně -->
+	<fo:block-container height="10mm" width="41mm" top="133mm" left="105mm" position="absolute" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+		<fo:block><fo:inline border-bottom-style="solid" border-width="thick" border-color="white">ročník &#160;</fo:inline></fo:block>
+	</fo:block-container>
+
+	<!-- B stupně/stupně -->
+	<fo:block-container height="10mm" width="28mm" top="131mm" left="118mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.head.print.stupen}}</fo:block>
+	</fo:block-container>
+
+	<!-- A stupně -->
+	<fo:block-container height="10mm" width="15mm" top="133mm" left="148mm" position="absolute" display-align="after" border-bottom-style="none" padding-bottom="-1pt">
+		<fo:block>stupně</fo:block>
+	</fo:block-container>
+
+	<!-- A úroveň studia -->
+	<fo:block-container height="10mm" width="112mm" top="145mm" left="48mm" position="absolute" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+		<fo:block></fo:block>
+	</fo:block-container>
+
+	<!-- B úroveň studia -->
+	<fo:block-container height="10mm" width="112mm" top="143mm" left="48mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.head.print.urovenStudia}}</fo:block>
+	</fo:block-container>
+
+	<!-- známky -->
+	<fo:block-container height="88mm" width="164mm" top="161mm" left="23mm" position="absolute" text-align="center">
+		<fo:table table-layout="fixed" border-style="solid" border-width="1pt">
+			<fo:table-column column-width="64mm"/>
+			<fo:table-column column-width="50mm"/>
+			<fo:table-column column-width="50mm"/>
+
+			<fo:table-body>
+					<fo:table-row border-bottom-style="solid" border-bottom-width="1pt">
+							<fo:table-cell text-align="start" height='17pt' padding-left='6pt' display-align="center">
+								<fo:block></fo:block>
+							</fo:table-cell>
+							<fo:table-cell text-align="center" height='17pt' display-align="center" border-left-style="solid" border-left-width="1pt"
+                font-size="10pt" font-family="ArialBlack" font-weight="bold" letter-spacing.precedence="0" letter-spacing.optimum="0.5mm" letter-spacing.minimum="0.5mm" letter-spacing.maximum="0.5mm">
+								<fo:block>I. pololetí</fo:block>
+							</fo:table-cell>
+							<fo:table-cell text-align="center" height='17pt' display-align="center" border-left-style="solid" border-left-width="1pt"
+                font-size="10pt" font-family="ArialBlack" font-weight="bold" letter-spacing.precedence="0" letter-spacing.optimum="0.5mm" letter-spacing.minimum="0.5mm" letter-spacing.maximum="0.5mm">
+								<fo:block>II. pololetí</fo:block>
+							</fo:table-cell>
+					</fo:table-row>
+
+					<fo:table-row border-bottom-style="solid" border-bottom-width="1pt">
+							<fo:table-cell text-align="center" height='17pt' padding-left='6pt' display-align="center" number-columns-spanned="3"
+                font-size="10pt" font-weight="bold" letter-spacing.precedence="0" letter-spacing.optimum="0.5mm" letter-spacing.minimum="0.5mm" letter-spacing.maximum="0.5mm">
+								<fo:block>Prospěch</fo:block>
+							</fo:table-cell>
+					</fo:table-row>
+
+				{{#data.rows}}
+					<fo:table-row border-bottom-style="solid" border-bottom-width="1pt">
+							<fo:table-cell text-align="start" height='17pt' padding-left='6pt' display-align="center">
+								<fo:block>{{print.svpPredmet}}</fo:block>
+							</fo:table-cell>
+							<fo:table-cell text-align="center" height='17pt' display-align="center" border-left-style="solid" border-left-width="1pt">
+								<fo:block>{{print.znamka1p}}</fo:block>
+							</fo:table-cell>
+							<fo:table-cell text-align="center" height='17pt' display-align="center" border-left-style="solid" border-left-width="1pt">
+								<fo:block>{{print.znamka2p}}</fo:block>
+							</fo:table-cell>
+					</fo:table-row>
+				{{/data.rows}}
+				<!-- celkové hodnocení -->
+				<fo:table-row>
+					<fo:table-cell text-align="start" height='30pt' display-align="after" padding-bottom="1mm">
+						<fo:block font-style="italic" text-indent="4mm">Celkové hodnocení</fo:block>
+					</fo:table-cell>
+					<fo:table-cell text-align="center" height='30pt' display-align="after" padding-bottom="1mm" border-left-style="solid" border-left-width="1pt">
+						<fo:block>{{data.hodnoceni1p}}</fo:block>
+					</fo:table-cell>
+					<fo:table-cell text-align="center" height='30pt' display-align="after" padding-bottom="1mm" border-left-style="solid" border-left-width="1pt">
+						<fo:block>{{data.hodnoceni2p}}</fo:block>
+					</fo:table-cell>
+				</fo:table-row>
+			</fo:table-body>
+		</fo:table>
+	</fo:block-container>
+
+	<!-- ZUŠ klasifikace -->
+	<fo:block-container height="7mm" width="76mm" top="262mm" left="110mm" position="absolute" display-align="after">
+		<fo:block font-size='8pt' text-align="end">ZUŠ klasifikace</fo:block>
+	</fo:block-container>
+  
+</fo:flow>
+
+</fo:page-sequence>
+
+
+<fo:page-sequence master-reference="second">
+
+<fo:flow flow-name="xsl-region-body" font-family="Georgia" font-size='11pt'>
+
+	<!-- DRUHÁ STRANA -->
+	<!--
+	<fo:block page-break-after="always"/>
+	-->
+
+	<!-- tabulka s podpisy -->
+	<fo:block-container height="30mm" width="165mm" top="18mm" left="23.5mm" position="absolute" text-align="center" font-size="9pt">
+		<fo:table table-layout="fixed" border-style="solid" border-width="1pt">
+			<fo:table-column column-width="82mm"/>
+			<fo:table-column column-width="82mm"/>
+
+			<fo:table-body>
+					<fo:table-row border-bottom-style="solid" border-bottom-width="1pt" height='19.5mm'>
+							<fo:table-cell text-align="center" padding-top='1mm' display-align="top" border-left-style="solid" border-left-width="1pt">
+								<fo:block>Zameškané hodiny:</fo:block>
+                <fo:block>
+                  <fo:table table-layout="fixed">
+                    <fo:table-column column-width="25mm"/>
+                    <fo:table-column column-width="52mm"/>
+                    <fo:table-body>
+                      <fo:table-row height='7mm'>
+                        <fo:table-cell text-align="start" padding-left='5mm' display-align="after">
+                          <fo:block>omluvené</fo:block>
+                        </fo:table-cell>
+                        <fo:table-cell text-align="start" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+                          <fo:block></fo:block>
+                        </fo:table-cell>
+                      </fo:table-row>
+                      <fo:table-row height='6.5mm'>
+                        <fo:table-cell text-align="start" padding-left='5mm' display-align="after">
+                          <fo:block>neomluvené</fo:block>
+                        </fo:table-cell>
+                        <fo:table-cell text-align="start" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+                          <fo:block></fo:block>
+                        </fo:table-cell>
+                      </fo:table-row>
+                    </fo:table-body>
+                  </fo:table>
+                </fo:block>
+							</fo:table-cell>
+
+							<fo:table-cell text-align="center" padding-top='1mm' display-align="top" border-left-style="solid" border-left-width="1pt">
+								<fo:block>Zameškané hodiny:</fo:block>
+                <fo:block>
+                  <fo:table table-layout="fixed">
+                    <fo:table-column column-width="25mm"/>
+                    <fo:table-column column-width="52mm"/>
+                    <fo:table-body>
+                      <fo:table-row height='7mm'>
+                        <fo:table-cell text-align="start" padding-left='5mm' display-align="after">
+                          <fo:block>omluvené</fo:block>
+                        </fo:table-cell>
+                        <fo:table-cell text-align="start" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+                          <fo:block></fo:block>
+                        </fo:table-cell>
+                      </fo:table-row>
+                      <fo:table-row height='6.5mm'>
+                        <fo:table-cell text-align="start" padding-left='5mm' display-align="after">
+                          <fo:block>neomluvené</fo:block>
+                        </fo:table-cell>
+                        <fo:table-cell text-align="start" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+                          <fo:block></fo:block>
+                        </fo:table-cell>
+                      </fo:table-row>
+                    </fo:table-body>
+                  </fo:table>
+                </fo:block>
+							</fo:table-cell>
+					</fo:table-row>
+
+					<fo:table-row height='48.5mm'>
+							<fo:table-cell text-align="start" display-align="bottom" border-left-style="solid" border-left-width="1pt">
+                <fo:block padding-top="3mm">
+                  <fo:table table-layout="fixed">
+                    <fo:table-column column-width="11mm"/>
+                    <fo:table-column column-width="66mm"/>
+                    <fo:table-body>
+                      <fo:table-row height='7mm'>
+                        <fo:table-cell text-align="start" padding-left='5mm' display-align="after">
+                          <fo:block>V</fo:block>
+                        </fo:table-cell>
+                        <fo:table-cell text-align="start" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+                          <fo:block></fo:block>
+                        </fo:table-cell>
+                      </fo:table-row>
+                      <fo:table-row height='7mm'>
+                        <fo:table-cell text-align="start" padding-left='5mm' display-align="after">
+                          <fo:block>dne</fo:block>
+                        </fo:table-cell>
+                        <fo:table-cell text-align="start" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+                          <fo:block></fo:block>
+                        </fo:table-cell>
+                      </fo:table-row>
+                    </fo:table-body>
+                  </fo:table>
+                </fo:block>
+                <fo:block>
+                    <fo:instream-foreign-object content-width="25mm" scaling="uniform">
+                      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="240" width="200">
+                           <circle cx="100" cy="150" r="70" stroke="black" stroke-width="0.5" fill="white"/>
+                       </svg>
+                    </fo:instream-foreign-object>
+                </fo:block>
+							</fo:table-cell>
+
+							<fo:table-cell text-align="start" display-align="bottom" border-left-style="solid" border-left-width="1pt">
+                <fo:block padding-top="3mm">
+                  <fo:table table-layout="fixed">
+                    <fo:table-column column-width="10mm"/>
+                    <fo:table-column column-width="66mm"/>
+                    <fo:table-body>
+                      <fo:table-row height='7mm'>
+                        <fo:table-cell text-align="start" padding-left='5mm' display-align="after">
+                          <fo:block>V</fo:block>
+                        </fo:table-cell>
+                        <fo:table-cell text-align="start" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+                          <fo:block></fo:block>
+                        </fo:table-cell>
+                      </fo:table-row>
+                      <fo:table-row height='7mm'>
+                        <fo:table-cell text-align="start" padding-left='5mm' display-align="after">
+                          <fo:block>dne</fo:block>
+                        </fo:table-cell>
+                        <fo:table-cell text-align="start" display-align="after" border-bottom-style="dotted" padding-bottom="-1pt">
+                          <fo:block></fo:block>
+                        </fo:table-cell>
+                      </fo:table-row>
+                    </fo:table-body>
+                  </fo:table>
+                </fo:block>
+                <fo:block>
+                    <fo:instream-foreign-object content-width="25mm" scaling="uniform">
+                      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="240" width="200">
+                           <circle cx="100" cy="150" r="70" stroke="black" stroke-width="0.5" fill="white"/>
+                       </svg>
+                    </fo:instream-foreign-object>
+                </fo:block>
+							</fo:table-cell>
+					</fo:table-row>
+			</fo:table-body>
+		</fo:table>
+	</fo:block-container>
+
+	<!-- zameškané hodiny omluvené -->
+	<fo:block-container height="10mm" width="52mm" top="20mm" left="47mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.head.print.zamHodinyOml1p}}</fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" width="52mm" top="20mm" left="130mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.head.print.zamHodinyOml2p}}</fo:block>
+	</fo:block-container>
+
+	<!-- zameškané hodiny neomluvené -->
+	<fo:block-container height="10mm" width="52mm" top="26.5mm" left="47mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.head.print.zamHodinyNeo1p}}</fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" width="52mm" top="26.5mm" left="130mm" position="absolute" text-align="center" display-align="after">
+		<fo:block>{{data.head.print.zamHodinyNeo2p}}</fo:block>
+	</fo:block-container>
+
+
+	<!-- místo a datum vystavení -->
+	<fo:block-container height="10mm" width="65mm" top="38.5mm" left="37mm" position="absolute" text-align="start" display-align="after">
+		<fo:block>{{cfgItem.options.core.zusMistoVysvedceni}}</fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" width="65mm" top="38.5mm" left="118mm" position="absolute" text-align="start" display-align="after">
+		<fo:block>{{cfgItem.options.core.zusMistoVysvedceni}}</fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" width="65mm" top="45.5mm" left="37mm" position="absolute" text-align="start" display-align="after">
+		<fo:block>{{data.datumVystaveni1pol}}</fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" width="65mm" top="45.5mm" left="118mm" position="absolute" text-align="start" display-align="after">
+		<fo:block>{{data.datumVystaveni2pol}}</fo:block>
+	</fo:block-container>
+
+	<!-- ředitel/učitel {{cfgItem.options.core.zusReditel}} / {{data.ucitel.fullName}} -->
+	<fo:block-container height="10mm" font-size="7pt" width="55mm" top="70mm" left="45mm" position="absolute" 
+            text-align="center" display-align="top" border-top-style="dotted" padding-top="1mm">
+		<fo:block>ředitel(ka) školy</fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" font-size="7pt" width="55mm" top="70mm" left="127mm" position="absolute"
+            text-align="center" display-align="top" border-top-style="dotted" padding-top="1mm">
+		<fo:block>řediel(ka) školy</fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" font-size="7pt" width="55mm" top="82.5mm" left="45mm" position="absolute"
+            text-align="center" display-align="top" border-top-style="dotted" padding-top="1mm">
+		<fo:block>učitel(ka)</fo:block>
+	</fo:block-container>
+
+	<fo:block-container height="10mm" font-size="7pt" width="55mm" top="82.5mm" left="127mm" position="absolute"
+            text-align="center" display-align="top" border-top-style="dotted" padding-top="1mm">
+		<fo:block>učitel(ka)</fo:block>
+	</fo:block-container>
+
+	<!-- nadpis STUPNĚ HODNOCENÍ 
+	<fo:block-container height="10mm" width="163mm" top="229mm" left="23mm" position="absolute" text-align="center" display-align="after"
+      letter-spacing.precedence="0" letter-spacing.optimum="0.5mm" letter-spacing.minimum="0.5mm" letter-spacing.maximum="0.5mm">
+		<fo:block>STUPNĚ HODNOCENÍ</fo:block>
+	</fo:block-container>
+-->
+
+	<!-- tabulka STUPNĚ HODNOCENÍ puvodně top=241-->
+	<fo:block-container height="30mm" width="164mm" top="229mm" left="23.5mm" position="absolute" text-align="center" font-size="9pt">
+		<fo:table table-layout="fixed" border-style="solid" border-width="1pt">
+			<fo:table-column column-width="31.5mm"/>
+			<fo:table-column column-width="33mm"/>
+			<fo:table-column column-width="33mm"/>
+			<fo:table-column column-width="33mm"/>
+			<fo:table-column column-width="33mm"/>
+
+			<fo:table-body>
+					<fo:table-row border-bottom-style="solid" border-bottom-width="0.5pt" height='9mm'>
+							<fo:table-cell number-columns-spanned="5" text-align="center" padding-left='6pt' display-align="center">
+                <fo:block>STUPNĚ HODNOCENÍ</fo:block>
+							</fo:table-cell>
+					</fo:table-row>
+					<fo:table-row border-bottom-style="solid" border-bottom-width="0.5pt" height='9mm'>
+							<fo:table-cell text-align="start" padding-left='6pt' display-align="center">
+								<fo:block margin-left="3mm">Stupeň</fo:block>
+							</fo:table-cell>
+							<fo:table-cell text-align="center" display-align="center" border-left-style="solid" border-left-width="1pt">
+								<fo:block font-size="10pt">1</fo:block>
+							</fo:table-cell>
+							<fo:table-cell text-align="center" display-align="center" border-left-style="solid" border-left-width="0.5pt">
+								<fo:block font-size="10pt">2</fo:block>
+							</fo:table-cell>
+							<fo:table-cell text-align="center" display-align="center" border-left-style="solid" border-left-width="0.5pt">
+								<fo:block font-size="10pt">3</fo:block>
+							</fo:table-cell>
+							<fo:table-cell text-align="center" display-align="center" border-left-style="solid" border-left-width="0.5pt">
+								<fo:block font-size="10pt">4</fo:block>
+							</fo:table-cell>
+					</fo:table-row>
+
+					<fo:table-row border-bottom-style="solid" border-bottom-width="0.5pt" height='9mm'>
+							<fo:table-cell text-align="start" padding-left='6pt' display-align="center">
+								<fo:block margin-left="3mm">Prospěch</fo:block>
+							</fo:table-cell>
+							<fo:table-cell text-align="center" display-align="center" border-left-style="solid" border-left-width="1pt">
+								<fo:block>výborný</fo:block>
+							</fo:table-cell>
+							<fo:table-cell text-align="center" display-align="center" border-left-style="solid" border-left-width="0.5pt">
+								<fo:block>chvalitebný</fo:block>
+							</fo:table-cell>
+							<fo:table-cell text-align="center" display-align="center" border-left-style="solid" border-left-width="0.5pt">
+								<fo:block>uspokojivý</fo:block>
+							</fo:table-cell>
+							<fo:table-cell text-align="center" display-align="center" border-left-style="solid" border-left-width="0.5pt">
+								<fo:block>neuspokojivý</fo:block>
+							</fo:table-cell>
+					</fo:table-row>
+
+					<fo:table-row border-bottom-style="solid" border-bottom-width="1pt" height='9mm'>
+							<fo:table-cell text-align="start" padding-left='6pt' display-align="center">
+								<fo:block margin-left="3mm">Celkové<fo:block/>hodnocení</fo:block>
+							</fo:table-cell>
+							<fo:table-cell text-align="center" display-align="center" border-left-style="solid" border-left-width="1pt">
+								<fo:block>prospěl(a)<fo:block/>s vyznamenáním</fo:block>
+							</fo:table-cell>
+							<fo:table-cell text-align="center" display-align="center" border-left-style="solid" border-left-width="0.5pt">
+								<fo:block>prospěl(a)</fo:block>
+							</fo:table-cell>
+							<fo:table-cell text-align="center" display-align="center" border-left-style="solid" border-left-width="0.5pt">
+								<fo:block>neprospěl(a)</fo:block>
+							</fo:table-cell>
+							<fo:table-cell text-align="center" display-align="center" border-left-style="solid" border-left-width="0.5pt">
+								<fo:block>-</fo:block>
+							</fo:table-cell>
+					</fo:table-row>
+			</fo:table-body>
+		</fo:table>
+	</fo:block-container>
+
+	<!-- Patisk zakázán
+	<fo:block-container height="10mm" width="163mm" top="265mm" left="23mm" position="absolute" text-align="center" display-align="after"
+      font-size="9pt">
+		<fo:block>Patisk zakázán</fo:block>
+	</fo:block-container>
+  -->
+</fo:flow>
+
+</fo:page-sequence>
+
+</fo:root>

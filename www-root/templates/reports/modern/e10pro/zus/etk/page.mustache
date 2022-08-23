@@ -1,0 +1,46 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+    <title>ETK</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v8" type="text/css"/>
+
+    <style>
+        table.etkHead {
+            font-size: 9pt;
+            width: 100%;
+        }
+        table.etkHead tr td {vertical-align: top;}
+
+        table.ethHours {width: 100%; border-collapse: collapse; line-height: 1.2; font-size: 8pt;}
+        table.ethHours th {text-align: left; padding: 3pt; border: 1px solid black; background-color: #eee;}
+        table.ethHours tr { }
+        table.ethHours tr td {padding: 2pt; border: 1px solid black; vertical-align: baseline;}
+
+        div.etkHoursNotes {
+                padding-top: 6pt;
+            font-size: 8pt;
+        }
+
+        div.etkStudijniPlan {
+            font-size: 8pt;
+        }
+
+        div.etkUcinkovani {
+            font-size: 8pt;
+        }
+
+        p {
+            padding: 0;
+            margin: 0;
+        }
+    </style>
+
+</head>
+<body>
+
+{{#data.individual}}{{{&individual}}}{{/data.individual}}
+{{^data.individual}}{{{&collective}}}{{/data.individual}}
+</body>
+
+</html>

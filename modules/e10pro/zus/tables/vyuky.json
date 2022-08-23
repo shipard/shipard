@@ -1,0 +1,66 @@
+{
+	"id": "e10pro.zus.vyuky", "sql": "e10pro_zus_vyuky", "name": "Výuky", "icon": "icon-bullhorn",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "typ", "name": "Typ třídní knihy", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"1": "Individuální", "0": "Kolektivní", "2": "Korepetice"}},
+
+		{"id": "student", "name": "Student", "type": "int", "reference": "e10.persons.persons", "comboViewer": "students"},
+		{"id": "studium", "name": "Studium", "type": "int", "options": ["saveOnChange"], "reference": "e10pro.zus.studium", "comboViewer": "combo"},
+		{"id": "ucitel", "name": "Učitel", "type": "int", "reference": "e10.persons.persons", "comboViewer": "teachers"},
+		{"id": "ucitel2", "name": "Učitel", "type": "int", "reference": "e10.persons.persons", "comboViewer": "teachers"},
+		{"id": "misto", "name": "Pobočka", "type": "int", "reference": "e10.base.places", "comboViewer": "e10.base.ViewPlacesComboLocalOffices"},
+
+		{"id": "id", "name": "Kód", "type": "string", "len": 20},
+		{"id": "nazev", "name": "Název", "type": "string", "len": 80},
+
+		{"id": "studijniPlan", "name": "Studijní plán", "type": "memo"},
+		{"id": "ucinkovani", "name": "Účinkování", "type": "memo"},
+
+		{"id": "studentSkola", "name": "Škola", "type": "string", "len": 80},
+		{"id": "studentZP", "name": "Zdravotní pojišťovna", "type": "string", "len": 80},
+
+		{"id": "skolniRok", "name": "Školní rok", "type": "enumString", "len": 10,
+			"enumCfg": {"cfgItem": "e10pro.zus.roky", "cfgValue": "", "cfgText": "nazev", "cfgPrint": "tisk"}},
+		{"id": "svp", "name": "ŠVP", "label": "Studium podle", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10pro.zus.svp", "cfgValue": "id", "cfgText": "nazev"}},
+		{"id": "svpObor", "name": "Obor", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10pro.zus.obory", "cfgValue": "id", "cfgText": "nazev"}},
+		{"id": "svpOddeleni", "name": "Oddělení", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10pro.zus.oddeleni", "cfgValue": "id", "cfgText": "nazev"}},
+		{"id": "svpPredmet", "name": "Předmět", "type": "int", "reference": "e10pro.zus.predmety", "comboViewer": "e10pro.zus.ViewPredmetyCombo"},
+		{"id": "svpPredmet2", "name": "Předmět", "type": "int", "reference": "e10pro.zus.predmety", "comboViewer": "e10pro.zus.ViewPredmetyCombo"},
+		{"id": "svpPredmet3", "name": "Předmět", "type": "int", "reference": "e10pro.zus.predmety", "comboViewer": "e10pro.zus.ViewPredmetyCombo"},
+		{"id": "rocnik", "name": "Ročník", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10pro.zus.rocniky", "cfgValue": "", "cfgText": "nazev"}},
+
+		{"id": "datumZahajeni", "name": "Datum zahájení", "type": "date"},
+		{"id": "datumUkonceni", "name": "Datum ukončení", "type": "date"},
+
+		{"id": "stav", "name": "Stav", "type": "int"},
+		{"id": "stavHlavni", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "studenti", "class": "e10.base.ListRows", "name": "Studenti", "table": "e10pro.zus.vyukystudenti", "queryColumn": "vyuka"},
+		{"id": "rozvrh", "class": "e10.base.ListRows", "name": "Rozvrh", "table": "e10pro.zus.vyukyrozvrh", "queryColumn": "vyuka"}
+	],
+	"views": {
+		"default": {
+			"id": "default", "class": "e10pro.zus.ViewVyuky",
+			"detail": "e10pro.zus.ViewDetailVyuka"
+		},
+		"etk": {
+			"id": "etk", "class": "e10pro.zus.ViewVyukyETK", "title": "Elektronická třídní kniha",
+			"detail": "e10pro.zus.ViewDetailVyuka"
+		}
+	},
+	"forms": [
+		{"id": "default", "class": "e10pro.zus.FormVyuka"}
+	],
+	"reports": [
+		{"id": "etk", "name": "ETK", "class": "e10pro.zus.ReportETK"}
+	],
+	"states": {"stateColumn": "stav", "mainStateColumn": "stavHlavni", "statesCfg": "zus.stavyVyuky"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "nazev"},
+	"ndx": 1219
+}

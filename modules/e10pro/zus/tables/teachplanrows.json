@@ -1,0 +1,15 @@
+{
+	"id": "e10pro.zus.teachplanrows", "sql": "e10pro_zus_teachplanrows", "name": "Předměty učebních plánů", "icon": "icon-magnet",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "plan", "name": "Učební plán", "type": "int", "reference": "e10pro.zus.teachplanheads"},
+		{"id": "subject", "name": "Předmět", "type": "int", "reference": "e10pro.zus.predmety"},
+		{"id": "hours", "name": "Počet hodin", "type": "number", "dec": 1},
+        {"id": "povinnost", "name": "Povinnost", "type": "enumInt",
+            "enumCfg": {"cfgItem": "zus.povinnostPredmetu", "cfgValue": "", "cfgText": "nazev"}}
+	],
+	"options": ["systemTable"],
+	"forms": [
+		{"id": "default", "class": "e10pro.zus.FormTeachPlanRow"}
+	]
+}

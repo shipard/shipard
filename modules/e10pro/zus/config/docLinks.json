@@ -1,0 +1,17 @@
+{
+	"e10pro.zus.predmety": {
+		"zus-predmety-podobne": {"linkid": "zus-predmety-podobne", "name": "Podobné předměty", "icon": "icon-chevron-left",
+			"sources": [
+				{"table": "e10pro.zus.predmety", "viewer": "e10pro.zus.ViewPredmety", "id": "predmety"}
+			]
+		}
+	},
+	"e10.persons.persons": {
+		"zus-ucitele-predmety": {"linkid": "zus-ucitele-predmety", "name": "Předměty", "icon": "icon-chevron-left",
+			"systemGroup": "e10pro-zus-groups-teachers",
+			"sources": [
+				{"table": "e10pro.zus.predmety", "viewer": "e10pro.zus.ViewPredmety", "id": "predmety"}
+			]
+		}
+	}
+}

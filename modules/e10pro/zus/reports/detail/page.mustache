@@ -1,0 +1,123 @@
+<div style='width: 100%; text-align: center; font-family: Georgia; background-color: white; padding-bottom: 2em; border: 1px solid #555; box-shadow: 1px 1px 3px #333;'>
+<div style='width: 90%; text-align: left; display: inline-block;'>
+
+<table class='hlavicka'>
+	<tr>
+		<td colspan='2' class='stat'>{{data.stat}}</td>
+	</tr>
+	<tr>
+		<td colspan='2' class='nazevSkoly'>{{cfgItem.options.core.ownerFullName}}</td>
+	</tr>
+	<tr>
+		<td colspan='2' class='IZO'><span class='popisek'>IZO:</span> {{cfgItem.options.core.zusIzo}}</td>
+	</tr>
+	<tr>
+		<td><span class='popisek'>Obor:</span> {{data.head.print.svpObor}}</td>
+		<td class='doprava'><span class='popisek'>Školní rok:</span> {{data.head.print.skolniRok}}</td>
+	</tr>
+	<tr>
+		<td>
+			<span class='popisek'>{{data.svpOddeleni}}:</span>
+			{{#data.head.print.svpOddeleni}}
+				{{data.head.print.svpOddeleni}}
+			{{/data.head.print.svpOddeleni}}
+			{{^data.head.print.svpOddeleni}}
+				<span class='bezPredmetu'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+			{{/data.head.print.svpOddeleni}}
+		</td>
+		<td class='doprava'><span class='popisek'>Pořadové číslo:</span> {{data.head.print.poradoveCislo}}</td>
+	</tr>
+	<tr>
+		<td colspan='2' class='vypisVysvedceni'>{{data.head.print.typVysvedceni}}</td>
+	</tr>
+	<tr>
+		<td colspan='2' class='zaPrvniPololeti'>za {{data.pololeti}} pololetí</td>
+	</tr>
+	<tr>
+		<td colspan='2'><span class='popisek'>Jméno a příjmení:</span> <span class='jmeno'>{{data.student.firstName}}</span> <span class='jmeno'>{{data.student.lastName}}</span></td>
+	</tr>
+	<tr>
+		<td><span class='popisek'>Datum narození:</span> {{{data.birthDate}}}</td>
+		<td class='doprava'><span class='popisek'>Rodné číslo:</span> {{data.rodneCislo}}</td>
+	</tr>
+	<tr>
+		<td colspan='2'><span class='popisek'>Státní občanství:</span> <span class='jmeno'>{{data.stObcan}}</span></td>
+	</tr>
+	<tr>
+		<td colspan='2' class='hodnoceniZa'>Hodnocení za <b>{{data.head.print.rocnik}}</b> ročník <b>{{data.head.print.stupen}}</b> stupně</td>
+	</tr>
+	<tr>
+		<td colspan='2' class='hodnoceniUroven'>{{data.head.print.urovenStudia}}</td>
+	</tr>
+</table>
+
+
+<table class='znamky'>
+{{#data.rows}}
+	<tr>
+			{{#znamka1p}}
+				<td class='znamkaPredmet'>
+					{{print.svpPredmet}}
+				</td>
+			{{/znamka1p}}
+			{{^znamka1p}}
+				<td class='znamkaPredmet' style='text-align: center;'>
+					<span class='bezPredmetu'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+				</td>
+			{{/znamka1p}}
+		<td class='znamka1p'>
+			{{#znamka1p}}
+				{{print.znamka1p}}
+			{{/znamka1p}}
+			{{^znamka1p}}
+				<span class='bezPredmetu'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+			{{/znamka1p}}
+		</td>
+		<td class='znamka2p'>
+			{{#znamka2p}}
+				{{print.znamka2p}}
+			{{/znamka2p}}
+			{{^znamka2p}}
+				<span class='bezPredmetu'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+			{{/znamka2p}}
+		</td>
+	</tr>
+{{/data.rows}}
+</table>
+
+	<table class='paticka'>
+		<tr>
+			<td class='nadpis' style='width: 34%;'>Celkové hodnocení</td>
+			<td style='width: 33%;'>{{data.hodnoceni1p}}</td>
+			<td style='width: 33%;'>{{data.hodnoceni2p}}</td>
+		</tr>
+		<tr>
+			<td class='nadpis'>Zameškané hodiny</td>
+			<td>
+				<span class='zameskaneHodiny'>omluvené: {{data.head.print.zamHodinyOml1p}}</span>
+				<span class='zameskaneHodiny'>neomluvené: {{data.head.print.zamHodinyNeo1p}}</span>
+			</td>
+			<td>
+				<span class='zameskaneHodiny'>omluvené: {{data.head.print.zamHodinyOml2p}}</span>
+				<span class='zameskaneHodiny'>neomluvené: {{data.head.print.zamHodinyNeo2p}}</span>
+			</td>
+		</tr>
+	</table>
+
+	<table class='paticka'>
+		<tr>
+			<td class='nadpis' colspan='2'>V{{cfgItem.options.core.zusMistoVysvedceni}} dne {{data.datumVystaveni1pol}}</td>
+		</tr>
+		<tr>
+			<td class='podpis' style='border-right: none;'>
+				<div>Ředitel(ka) školy: {{cfgItem.options.core.zusReditel}}</div>
+			</td>
+			<td class='podpis' style='border-left: none;'>
+				<div>Učitel(ka): {{data.ucitel.fullName}}</div>
+			</td>
+		</tr>
+	</table>
+
+</div>
+</div>
+

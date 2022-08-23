@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="1000"
+   height="1000"
+   id="svg3016"
+   version="1.1"
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="x-doors.svg">
+  <defs
+     id="defs5498">
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath42">
+      <path
+         inkscape:connector-curvature="0"
+         d="m 224,461 4,0 0,1 -4,0 0,-1 z"
+         id="path44" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath46">
+      <path
+         inkscape:connector-curvature="0"
+         d="m 224,461 4,0 0,1 -4,0 0,-1 z"
+         id="path48" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath4318">
+      <path
+         inkscape:connector-curvature="0"
+         d="m 308,309 4,0 0,4 -4,0 0,-4 z"
+         id="path4320" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath4322">
+      <path
+         inkscape:connector-curvature="0"
+         d="m 308.001,309 3.999,0 0,4 -3.999,0 0,-4 z"
+         id="path4324" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath4350">
+      <path
+         inkscape:connector-curvature="0"
+         d="m 314,313 7,0 0,2 -7,0 0,-2 z"
+         id="path4352" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath4354">
+      <path
+         inkscape:connector-curvature="0"
+         d="m 314.001,313 6.999,0 0,2 -6.999,0 0,-2 z"
+         id="path4356" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath746">
+      <path
+         inkscape:connector-curvature="0"
+         d="m 118,685 4,0 0,8 -4,0 0,-8 z"
+         id="path748" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath750">
+      <path
+         inkscape:connector-curvature="0"
+         d="m 118.001,685 3.999,0 0,8 -3.999,0 0,-8 z"
+         id="path752" />
+    </clipPath>
+  </defs>
+  <sodipodi:namedview
+     inkscape:window-height="816"
+     inkscape:window-width="1204"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     borderopacity="1.0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     id="base"
+     showgrid="false"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:zoom="0.454"
+     inkscape:cx="954.08185"
+     inkscape:cy="480.17621"
+     inkscape:window-x="2262"
+     inkscape:window-y="161"
+     inkscape:current-layer="layer1"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata5594">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g3150"
+       transform="matrix(9.3375544,0,0,9.3375544,-13.112053,-162.209)"
+       style="fill:#000000">
+      <polygon
+         transform="translate(5.2599545,21.272727)"
+         id="polygon3"
+         points="86.571,100 86.571,26.389 86.571,20.833 47.682,20.833 47.682,26.389 81.016,26.389 81.016,94.444 31.016,94.444 31.016,38.984 25.459,36.846 25.459,94.444 25.459,100 81.016,100 "
+         style="fill:#000000" />
+      <polygon
+         transform="translate(5.2599545,21.272727)"
+         id="polygon5"
+         points="31.016,34.022 43.516,29.212 43.516,18.811 31.016,23.62 18.516,18.811 18.516,29.212 "
+         style="fill:#000000" />
+      <polygon
+         transform="translate(5.2599545,21.272727)"
+         id="polygon7"
+         points="9.961,12.728 9.944,12.72 9.942,12.721 8.577,12.197 8.553,12.185 8.544,12.202 0,27.19 3.932,28.712 10.182,17.698 10.182,31.094 14.349,32.706 14.349,14.416 "
+         style="fill:#000000" />
+      <polygon
+         transform="translate(5.2599545,21.272727)"
+         id="polygon9"
+         points="14.371,14.41 31.016,20.833 58.099,10.417 31.016,0 3.932,10.417 8.565,12.177 25.212,5.751 31.016,7.983 "
+         style="fill:#000000" />
+      <rect
+         id="rect11"
+         height="2.777"
+         width="25"
+         y="60.161728"
+         x="41.830956"
+         style="fill:#000000" />
+      <rect
+         id="rect13"
+         height="2.777"
+         width="25"
+         y="71.272728"
+         x="41.830956"
+         style="fill:#000000" />
+      <rect
+         id="rect15"
+         height="2.779"
+         width="25"
+         y="82.382729"
+         x="41.830956"
+         style="fill:#000000" />
+      <rect
+         id="rect17"
+         height="2.777"
+         width="25"
+         y="93.495728"
+         x="41.830956"
+         style="fill:#000000" />
+      <rect
+         id="rect19"
+         height="2.777"
+         width="25"
+         y="104.60573"
+         x="41.830956"
+         style="fill:#000000" />
+      <polygon
+         transform="translate(5.2599545,21.272727)"
+         id="polygon21"
+         points="72.682,36.111 69.904,36.111 69.904,38.889 67.126,38.889 67.126,41.667 69.904,41.667 69.904,44.444 72.682,44.444 72.682,41.667 75.459,41.667 75.459,38.889 72.682,38.889 "
+         style="fill:#000000" />
+      <rect
+         id="rect23"
+         height="2.777"
+         width="8.3330002"
+         y="71.272728"
+         x="72.385956"
+         style="fill:#000000" />
+      <polygon
+         transform="translate(5.2599545,21.272727)"
+         id="polygon25"
+         points="67.126,61.11 67.126,63.89 69.904,63.89 69.904,66.667 72.682,66.667 72.682,63.89 75.459,63.89 75.459,61.11 72.682,61.11 72.682,58.333 69.904,58.333 69.904,61.11 "
+         style="fill:#000000" />
+      <rect
+         id="rect27"
+         height="2.777"
+         width="8.3330002"
+         y="93.495728"
+         x="72.385956"
+         style="fill:#000000" />
+      <polygon
+         transform="translate(5.2599545,21.272727)"
+         id="polygon29"
+         points="67.126,83.333 67.126,86.11 69.904,86.11 69.904,88.89 72.682,88.89 72.682,86.11 75.459,86.11 75.459,83.333 72.682,83.333 72.682,80.556 69.904,80.556 69.904,83.333 "
+         style="fill:#000000" />
+    </g>
+  </g>
+</svg>

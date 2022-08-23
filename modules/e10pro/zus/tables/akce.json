@@ -1,0 +1,20 @@
+{
+  "id": "e10pro.zus.akce", "sql": "e10pro_zus_akce", "name": "Akce",
+  "columns": [
+    {"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "nazev", "sql": "nazev", "name": "Název", "type": "string", "len": 120, "options": ["saveOnChange"]},
+    {"id": "datum", "sql": "datum", "name": "Datum", "type": "date"},
+    {"id": "cas", "sql": "cas", "name": "Čas", "type": "string", "len": 40},
+		{"id": "misto", "sql": "misto", "name": "Místo", "type": "string", "len": 90},
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+	"views": [
+		{"id": "default", "class": "e10pro.zus.ViewAkce", "detail": "e10pro.zus.ViewDetailAkce"}
+	],
+  "forms": [
+    {"id": "default", "class": "e10pro.zus.FormAkce"}
+  ],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10pro.zus.akce.docStates"},
+	"ndx": 1214
+}

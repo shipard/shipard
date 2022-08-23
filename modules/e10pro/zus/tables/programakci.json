@@ -1,0 +1,20 @@
+{
+  "id": "e10pro.zus.programakci", "sql": "e10pro_zus_programakci", "name": "Programy akcí",
+  "columns": [
+    {"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "akce", "sql": "akce", "name": "Akce", "type": "int"},
+		{"id": "poradi", "sql": "poradi", "name": "Pořadí", "type": "int"},
+		{"id": "co", "sql": "co", "name": "Co", "type": "memo"},
+		{"id": "kdo", "sql": "kdo", "name": "Kdo", "type": "memo"},
+		{"id": "poznamka", "sql": "poznamka", "name": "Poznámka", "type": "memo"},
+		{"id": "smazano", "sql": "smazano", "name": "Smazáno", "type": "logical"}
+  ],
+	"options": ["systemTable"],
+	"views": [
+		{"id": "programAkce", "class": "e10pro.zus.WidgetProgramAkce"}
+	],
+	"trash": {"column": "smazano"},
+	"forms": [
+      {"id": "default", "class": "e10pro.zus.FormRadekAkce"}
+	]
+}

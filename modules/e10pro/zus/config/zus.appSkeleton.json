@@ -1,0 +1,52 @@
+{
+	"panels": {
+		"zus": {
+			"url": "/app/skola", "zone": "sec", "objectType": "panel", "name": "Škola", "cntBigIcons": 7,
+			"items": [
+				{"t1": "Nástěnka", "object": "widget", "class": "e10.widgetDashboard", "subclass": "school", "icon": "e10pro-wkf-bboard", "order": 5000},
+				{"t1": "Akce", "object": "viewer", "table": "e10pro.zus.akce", "viewer": "default", "icon": "e10pro-zus-akce", "order": 6000},
+				{"t1": "Studenti", "object": "viewer", "table": "e10.persons.persons", "viewer": "students", "icon": "x-student", "order": 12000},
+				{"t1": "Studium", "object": "viewer", "table": "e10pro.zus.studium", "viewer": "default", "icon": "icon-asterisk", "order": 15000},
+				{"t1": "Vysvědčení", "object": "viewer", "table": "e10pro.zus.vysvedceni", "viewer": "default", "icon": "e10pro-zus-vysvedceni", "order": 18000},
+				{"t1": "Rozvrh", "object": "widget", "class": "e10.widgetDashboard", "subclass": "zustimetable", "icon": "icon-clock-o", "order": 20000},
+        {"t1": "ETK", "object": "viewer", "table": "e10pro.zus.vyuky", "viewer": "etk", "icon": "icon-book", "order": 30000},
+        {"t1": "Přehledy", "object": "widget", "class": "e10.widgetReports", "subclass": "e10pro-zus", "icon": "x-flipchart", "order": 700000}
+			],
+			"smallItems": [
+				{
+					"t1": "Hromadná pošta", "object": "viewer", "table": "e10pro.bume.bulkEmails", "viewer": "default",
+					"icon": "icon-envelope-open", "order": 800000, "enabledCfgItem": "options.experimental.bulkEmails"
+				},
+				{"t1": "Učitelé", "object": "viewer", "table": "e10.persons.persons", "viewer": "teachers", "icon": "x-teacher", "order": 850000},
+				{"t1": "Přihlášky", "enabledCfgItem": "options.e10-pro-zus.pouzivatPrihlasky", "object": "viewer", "table": "e10pro.zus.prihlasky", "viewer": "default", "icon": "icon-child", "order": 100000}
+			]
+		}
+	},
+	"mobileui": {
+		"records": {
+			"groups": {
+				"zus": {
+					"name": "Škola", "order": 600000,
+					"items": {
+						"students": {
+							"t1": "Studenti", "object": "viewer", "table": "e10.persons.persons", "viewer": "students", "icon": "x-student", "order": 300000
+						}
+					}
+				}
+			}
+		},
+		"zusetk": {
+			"name": "ETK", "order": 130000, "type": "menu", "role": "uctl",
+			"groups": {
+				"test": {
+					"order": 300,
+					"items": {
+						"dashboard": {
+							"t1": "Rozvrh", "object": "dashboard", "dashboard": "zusteacherplan", "icon": "icon-dashboard", "order": 100
+						}
+					}
+				}
+			}
+		}
+	}
+}

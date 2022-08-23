@@ -1,0 +1,13 @@
+{
+	"id": "e10pro.zus.vyukystudenti", "sql": "e10pro_zus_vyukystudenti", "name": "Studenti ve výuce",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "vyuka", "name": "Výuka", "type": "int"},
+	  {"id": "studium", "name": "Studium", "type": "int", "reference": "e10pro.zus.studium", "comboViewer": "combo"},
+		{"id": "student", "name": "Student", "type": "int", "reference": "e10.persons.persons", "comboViewer": "students"}
+	],
+	"options": ["systemTable"],
+	"forms": [
+		{"id": "default", "class": "e10pro.zus.FormVyukyStudent"}
+	]
+}

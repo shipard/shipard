@@ -1,0 +1,29 @@
+{
+	"id": "e10pro.zus.teachplanheads", "sql": "e10pro_zus_teachplanheads", "name": "Učební plány", "icon": "icon-magnet",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "eduprogram", "name": "ŠVP", "label": "Studium podle", "type": "enumInt", "len": 4, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10pro.zus.svp", "cfgValue": "id", "cfgText": "nazev"}},
+		{"id": "year", "name": "Ročník", "type": "enumInt", "len": 4,
+			"enumCfg": {"cfgItem": "e10pro.zus.rocniky", "cfgValue": "id", "cfgText": "nazev"}},
+
+        {"id": "svpObor", "name": "Obor", "type": "enumInt", "options": ["saveOnChange"], "reference": "e10pro.zus.obory",
+            "enumCfg": {"cfgItem": "e10pro.zus.obory", "cfgValue": "id", "cfgText": "nazev"}},
+        {"id": "svpOddeleni", "name": "Oddělení", "type": "enumInt", "options": ["saveOnChange"], "reference": "e10pro.zus.oddeleni",
+            "enumCfg": {"cfgItem": "e10pro.zus.oddeleni", "cfgValue": "id", "cfgText": "nazev"}},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"lists": [
+		{"id": "rows", "class": "e10.base.ListRows", "name": "Předměty", "table": "e10pro.zus.teachplanrows", "queryColumn": "plan"}
+	],
+	"views": [
+		{"id": "default", "class": "e10pro.zus.ViewTeachPlans"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.zus.FormTeachPlan"}
+	]
+}

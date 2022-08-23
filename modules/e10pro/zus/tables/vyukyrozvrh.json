@@ -1,0 +1,29 @@
+{
+	"id": "e10pro.zus.vyukyrozvrh", "sql": "e10pro_zus_vyukyrozvrh", "name": "Rozvrh výuky", "icon": "icon-clock-o",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "vyuka", "name": "Výuka", "type": "int", "reference": "e10pro.zus.vyuky", "comboViewer": "e10pro.zus.ViewVyukyCombo", "options": ["saveOnChange"]},
+		{"id": "den", "name": "Den", "type": "enumInt",
+			"enumValues": {"0": "Pondělí", "1": "Úterý", "2": "Středa", "3": "Čtvrtek", "4": "Pátek", "5": "Sobota", "6": "Neděle"}},
+		{"id": "zacatek", "name": "Začátek", "type": "time", "options": ["saveOnChange"]},
+		{"id": "konec", "name": "Konec", "type": "time"},
+	  {"id": "delka", "name": "Délka", "type": "int"},
+
+		{"id": "ucitel", "name": "Učitel", "type": "int", "reference": "e10.persons.persons", "comboViewer": "teachers"},
+		{"id": "predmet", "name": "Předmět", "type": "enumInt", "len": 2, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10pro.zus.predmety", "cfgValue": "id", "cfgText": "nazev"}},
+
+		{"id": "pobocka", "name": "Pobočka", "type": "int", "reference": "e10.base.places", "comboViewer": "e10.base.ViewPlacesComboLocalOffices"},
+		{"id": "ucebna", "name": "Učebna", "type": "int", "reference": "e10.base.places", "comboViewer": "e10pro.zus.ViewPlacesComboUcebny"},
+
+		{"id": "stav", "name": "Stav", "type": "int"},
+		{"id": "stavHlavni", "name": "Hlavní stav", "type": "int"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.zus.FormVyukyRozvrh"}
+	],
+	"states": {"stateColumn": "stav", "mainStateColumn": "stavHlavni", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"indexes": [
+		{"id": "vyuka", "columns": ["vyuka"]}
+	]
+}
