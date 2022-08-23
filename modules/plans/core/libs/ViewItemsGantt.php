@@ -129,8 +129,7 @@ class ViewItemsGantt extends TableViewGrid
 
 		$listItem ['pk'] = $item ['ndx'];
 
-
-		$listItem ['subject'] = $item['subject'];
+		$listItem ['subject'] = $item['isPrivate'] ? [['text' => $item['subject'], 'class' => ''], ['text' => '', 'icon' => 'system/iconLocked', 'class' => 'e10-me']] : $item['subject'];
 
 		$listItem ['iid'] = $item['iid'];
 		$listItem ['prjId'] = $item['projectId'];
@@ -257,6 +256,18 @@ class ViewItemsGantt extends TableViewGrid
 
 			array_push ($q, ')');
 		}
+
+		// -- public/private item
+		$thisUserId = $this->app()->userNdx();
+		array_push ($q, ' AND (');
+		array_push ($q, ' [items].isPrivate = %i', 0);
+		array_push ($q, ' OR ([items].isPrivate = %i', 1);
+		array_push ($q, ' AND EXISTS (SELECT ndx FROM [e10_base_doclinks] WHERE [items].ndx = srcRecId',
+			' AND srcTableId = %s','plans.core.items',
+			' AND dstTableId = %s', 'e10.persons.persons',
+			' AND dstRecId = %i', $thisUserId, ')');
+		array_push ($q, ')');
+		array_push ($q, ')');
 
     array_push ($q, 'ORDER BY items.[datePlanBegin], items.[dateDeadline], items.[ndx]');
     array_push ($q, $this->sqlLimit());
