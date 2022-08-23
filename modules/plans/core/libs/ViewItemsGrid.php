@@ -28,6 +28,7 @@ class ViewItemsGrid extends TableViewGrid
 
 	var $annots = [];
 	var $classification = [];
+	var $linkedPersons = [];
 
 	public function init ()
 	{
@@ -180,10 +181,10 @@ class ViewItemsGrid extends TableViewGrid
 		$curr = World::currency($this->app(), $item ['currency']);
 		$listItem ['currency'] = strtoupper($curr['i']);
 
-		$listItem ['icon'] = $itemState['icon'];//$this->table->tableIcon ($item);
-
 		if ($itemState)
 		{
+			$listItem ['icon'] = $itemState['icon'] ?? '';//$this->table->tableIcon ($item);
+
 			$css = "background-color: ".$itemState['colorbg'].'; color: '.$itemState['colorfg'];
 			$listItem['_options']['cellCss'] = ['subject' => $css];
 		}
@@ -309,6 +310,18 @@ class ViewItemsGrid extends TableViewGrid
 			}
 		}
 
+		// -- public/private item
+		$thisUserId = $this->app()->userNdx();
+		array_push ($q, ' AND (');
+		array_push ($q, ' [items].isPrivate = %i', 0);
+		array_push ($q, ' OR ([items].isPrivate = %i', 1);
+		array_push ($q, ' AND EXISTS (SELECT ndx FROM [e10_base_doclinks] WHERE [items].ndx = srcRecId',
+			' AND srcTableId = %s','plans.core.items',
+			' AND dstTableId = %s', 'e10.persons.persons',
+			' AND dstRecId = %i', $thisUserId, ')');
+		array_push ($q, ')');
+		array_push ($q, ')');
+
 		// -- special queries
 		$qv = $this->queryValues ();
 		if (isset($qv['clsf']))
@@ -375,6 +388,7 @@ class ViewItemsGrid extends TableViewGrid
 		}
 
 		$this->classification = UtilsBase::loadClassification ($this->table->app(), $this->table->tableId(), $this->pks);
+		$this->linkedPersons = UtilsBase::linkedPersons ($this->app(), $this->table, $this->pks);
 	}
 
 	public function createPanelContentQry (TableViewPanel $panel)
