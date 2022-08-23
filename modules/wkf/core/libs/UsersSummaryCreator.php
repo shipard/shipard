@@ -274,6 +274,9 @@ class UsersSummaryCreator extends Utility
 
 	function upload()
 	{
+		if ($this->app->cfgItem ('dsMode', 1) !== 0)
+			return;
+
 		$ce = NULL;
 
 		$q[] = 'SELECT [us].*, [users].[loginHash], [users].[fullName] FROM [e10_base_usersSummary] AS [us]';
