@@ -5,6 +5,7 @@
 	"extensions": ["ofre"],
 	"modules": ["e10/base"],
 	"config": [
-		{"id": "+appSkeleton", "file": "appSkeleton.json"}
+		{"id": "+appSkeleton", "file": "appSkeleton.json"},
+		{"id": "+e10.persons.roles", "file": "e10pro.persons.roles.json"}
 	]
 }

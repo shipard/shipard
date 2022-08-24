@@ -63,10 +63,20 @@ class FlatInfo extends \e10mnf\core\libs\WorkOrderInfo
 
 		if (count ($t))
 		{
-			$this->data['rowsMetersReadings'] = [
+      $addBtn = [
+        'type' => 'action', 'action' => 'addwizard', 'text' => 'Nový odečet', 'icon' => 'system/actionAdd',
+        'data-table' => 'e10.persons.persons', 'data-class' => 'e10pro.meters.libs.AddMetersValuesWorkOrder',
+        'data-addparams' => 'workOrder='.$this->recData['ndx'],
+        'actionClass' => 'btn-xs', 'class' => 'pull-right',
+      ];
+
+      $title = [['icon' => 'tables/e10pro.meters.values', 'text' => 'Poslední odečty', 'class' => 'h3']];
+      $title[] = $addBtn;
+
+      $this->data['rowsMetersReadings'] = [
         'pane' => 'e10-pane e10-pane-table',
         'type' => 'table',
-        'title' => ['icon' => 'tables/e10pro.meters.values', 'text' => 'Poslední odečty'],
+        'title' => $title,
         'header' => $h, 'table' => $t
       ];
 		}

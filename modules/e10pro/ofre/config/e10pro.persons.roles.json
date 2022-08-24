@@ -1,0 +1,8 @@
+{
+  "pwuser": {
+		"viewers": {
+			"e10mnf.core.workOrders": {"ofre": 2},
+			"e10pro.meters.values": {"readings": 2}
+		}
+	}
+}

@@ -3,7 +3,7 @@
   "columns": [
     {"id": "ndx", "name": "id", "type": "int_ai"},
     {"id": "meter", "name": "Měřič", "type": "int", "reference": "e10pro.meters.meters"},
-    {"id": "value", "name": "Hodnota", "type": "number", "dec": 1},
+    {"id": "value", "name": "Hodnota", "type": "number", "dec": 3},
 
     {"id": "created", "name": "Okamžik pořízení", "type": "timestamp"},
 		{"id": "datetime", "name": "Datum a čas měření", "type": "timestamp"},

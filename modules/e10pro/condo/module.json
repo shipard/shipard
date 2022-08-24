@@ -5,6 +5,7 @@
 	"extensions": ["condo"],
 	"modules": ["e10/base", "e10pro/meters"],
 	"config": [
-		{"id": "+appSkeleton", "file": "appSkeleton.json"}
+		{"id": "+appSkeleton", "file": "appSkeleton.json"},
+		{"id": "+e10.persons.roles", "file": "e10pro.persons.roles.json"}
 	]
 }
