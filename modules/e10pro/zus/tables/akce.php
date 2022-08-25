@@ -86,7 +86,7 @@ class ViewAkce extends TableView
 	public function renderRow ($item)
 	{
 		$listItem ['pk'] = $item ['ndx'];
-		$listItem ['icon'] = "e10pro-zus-akce";
+		$listItem ['icon'] = "tables/e10pro.zus.akce";
 		$listItem ['t1'] = \E10\es ($item['nazev']);
 		$listItem ['t2'] = \E10\es ($item ['misto']);
 		$listItem ['i1'] = \E10\df ($item ['datum'], '%D');
@@ -141,15 +141,15 @@ class FormAkce extends TableForm
 			$this->layoutClose ();
 		$this->layoutClose ();
 
-		$tabs ['tabs'][] = array ('text' => 'Program', 'icon' => 'x-properties');
-		$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'x-attachments');
+		$tabs ['tabs'][] = array ('text' => 'Program', 'icon' => 'system/formHeader');
+		$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'system/formAttachments');
 		$this->openTabs ($tabs);
 			$this->openTab (TableForm::ltNone);
 				$this->addViewerWidget ('e10pro.zus.programakci', 'e10pro.zus.WidgetProgramAkce', array ('akce' => $this->recData ['ndx']));
 			$this->closeTab ();
 
 			$this->openTab (TableForm::ltNone);
-				\E10\Base\addAttachmentsWidget ($this);
+				$this->addAttachmentsViewer ();
 			$this->closeTab ();
 
 		$this->closeTabs ();

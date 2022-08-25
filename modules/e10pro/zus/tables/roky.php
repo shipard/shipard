@@ -50,11 +50,11 @@ class TableRoky extends DbTable
 	{
 		switch ($recData['docState'])
 		{
-			case 1000: return 'icon-star-o';
-			case 9000: return 'icon-lock';
-			case 8000: return 'icon-edit';
-			case 4000: return 'icon-check-circle';
-			case 9800: return 'icon-trash-o';
+			case 1000: return 'system/docStateConfirmed';
+			case 9000: return 'system/iconLocked';
+			case 8000: return 'system/docStateEdit';
+			case 4000: return 'system/docStateDone';
+			case 9800: return 'system/docStateDelete';
 		}
 		return parent::tableIcon($recData, $options);
 	}

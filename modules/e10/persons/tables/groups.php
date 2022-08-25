@@ -2,6 +2,7 @@
 
 namespace e10\persons;
 use \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Table\DbTable, \Shipard\Utils\Utils;
+use \e10\base\libs\UtilsBase;
 
 
 /**
@@ -99,7 +100,7 @@ class ViewGroups extends TableView
 		if (!count ($this->pks))
 			return;
 
-		$this->linkedPersons = \E10\Base\linkedPersons ($this->table->app(), $this->table, $this->pks);
+		$this->linkedPersons = UtilsBase::linkedPersons ($this->table->app(), $this->table, $this->pks);
 	}
 
 	function decorateRow (&$item)

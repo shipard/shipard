@@ -1116,7 +1116,7 @@ class reportStudium extends \E10\GlobalReport
 
 		parent::init();
 
-		$this->setInfo('icon', 'icon-asterisk');
+		$this->setInfo('icon', 'tables/e10pro.zus.studium');
 		$this->setInfo('title', 'Přehled studií');
 	}
 
@@ -1260,7 +1260,7 @@ class reportTeachPlan extends \E10\GlobalReport
 
 		parent::init();
 
-		$this->setInfo('icon', 'icon-magnet');
+		$this->setInfo('icon', 'reportStudyPlan');
 		$this->setInfo('title', 'Učební plán');
 
 		$this->setInfo('param', $this->reportParams ['eduprogram']['title'], $this->reportParams ['eduprogram']['activeTitle']);
@@ -1353,7 +1353,7 @@ class reportVykazZus extends \E10\GlobalReport
 
 		parent::init();
 
-		$this->setInfo('icon', 'icon-asterisk');
+		$this->setInfo('icon', 'system/iconFile');
 		$this->setInfo('title', 'VÝKAZ o základní umělecké škole');
 	}
 

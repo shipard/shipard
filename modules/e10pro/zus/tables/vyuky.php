@@ -23,7 +23,7 @@ class TableVyuky extends DbTable
 
 	public function tableIcon ($recData, $options = NULL)
 	{
-		static $icons = ['icon-group', 'icon-user', 'icon-music'];
+		static $icons = ['iconGroupClass', 'system/iconUser', 'iconRehearsalsClass'];
 		if (isset($recData['typ']) && isset($icons[$recData['typ']]))
 			return $icons[$recData['typ']];
 		return parent::tableIcon ($recData, $options);
@@ -562,15 +562,15 @@ class FormVyuka extends TableForm
 		$this->openForm (TableForm::ltNone);
 
 
-		$tabs ['tabs'][] = ['text' => 'ETK', 'icon' => 'x-content'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 		if ($this->recData['typ'] === 0)
-			$tabs ['tabs'][] = ['text' => 'Studenti', 'icon' => 'icon-user'];
-		$tabs ['tabs'][] = ['text' => 'Rozvrh', 'icon' => 'icon-clock-o'];
-		$tabs ['tabs'][] = ['text' => 'Studijní plán', 'icon' => 'icon-map-o'];
+			$tabs ['tabs'][] = ['text' => 'Studenti', 'icon' => 'iconStudents'];
+		$tabs ['tabs'][] = ['text' => 'Rozvrh', 'icon' => 'e10.widgetDashboard/timeTable'];
+		$tabs ['tabs'][] = ['text' => 'Studijní plán', 'icon' => 'reportStudyPlan'];
 		if ($this->recData['typ'] === 1)
-			$tabs ['tabs'][] = ['text' => 'Účinkování', 'icon' => 'icon-microphone'];
-		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-wrench'];
-		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-attachments'];
+			$tabs ['tabs'][] = ['text' => 'Účinkování', 'icon' => 'formPerforming'];
+		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 		$this->openTabs ($tabs, TRUE);
 
 		$this->openTab (TableForm::ltForm);
@@ -636,7 +636,7 @@ class FormVyuka extends TableForm
 		$this->closeTab ();
 
 		$this->openTab (TableForm::ltNone);
-			\E10\Base\addAttachmentsWidget ($this);
+			$this->addAttachmentsViewer ();
 		$this->closeTab ();
 
 		$this->closeTabs ();

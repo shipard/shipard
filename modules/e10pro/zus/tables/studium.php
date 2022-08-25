@@ -15,8 +15,6 @@ use \Shipard\Form\TableForm, \Shipard\Table\DbTable;
  */
 class TableStudium extends DbTable
 {
-	public static $defaultIconSet = array ('x-company', 'x-boy', 'x-girl');
-
 	public function __construct ($dbmodel)
 	{
 		parent::__construct ($dbmodel);
@@ -102,7 +100,7 @@ class TableStudium extends DbTable
 
 
 		$student = $tablePersons->loadItem ($recData['student']);
-		$hdr ['icon'] = $tablePersons->icon ($student, self::$defaultIconSet);
+		$hdr ['icon'] = $tablePersons->tableIcon ($student);
 		$hdr ['info'][] = [
 			'class' => 'title',
 			'value' => [
@@ -153,19 +151,6 @@ class TableStudium extends DbTable
 
 	public function tableIcon ($recData, $options = NULL)
 	{
-		if (isset($recData ['studentCompany']) && $recData ['studentCompany'])
-			return self::$defaultIconSet [0];
-
-		if (isset($recData['studentGender']) && $recData['studentGender'] != 0)
-			return self::$defaultIconSet [$recData['studentGender']];
-
-		if (isset($recData['studentLastName']))
-		{
-			if (mb_substr($recData['studentLastName'], -1, 1, 'UTF-8') == 'á')
-				return self::$defaultIconSet [2];
-			return self::$defaultIconSet [1];
-		}
-
 		return parent::tableIcon($recData, $options);
 	}
 }
@@ -887,9 +872,9 @@ class FormStudium extends TableForm
 		if ($ro)
 			$co = TableForm::coReadOnly;
 
-		$tabs ['tabs'][] = ['text' => 'Studium', 'icon' => 'x-report-card'];
-		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'x-wrench'];
-		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-attachments'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 		$this->openTabs ($tabs, TRUE);
 			$this->openTab ();
 				$this->addColumnInput ('ucitel', $co);

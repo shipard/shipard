@@ -3,20 +3,20 @@
 		"disableTopToolbar": 1,
 		"panels": {
 			"teacher": {
-				"name": "Já", "icon": "icon-user", "order": 1000,
+				"name": "Já", "icon": "system/iconUser", "order": 1000,
 				"rows": {
 					"topInfo": {"order": 10000, "align": "right"},
 					"docViewers": {"order": 20000, "align": "left"}
 				}
 			},
 			"schoolDay": {
-				"name": "Aktuálně", "icon": "icon-eye", "order": 2000, "fullsize": 1,
+				"name": "Aktuálně", "icon": "iconCurrently", "order": 2000, "fullsize": 1,
 				"rows": {
 					"main": {"order": 10000, "align": "right"}
 				}
 			},
 			"plan": {
-				"name": "ETK", "icon": "icon-clock-o", "order": 1500, "fullsize": 1,
+				"name": "ETK", "icon": "tables/e10pro.zus.vyuky", "order": 1500, "fullsize": 1,
 				"rows": {
 					"main": {"order": 10000, "align": "right"}
 				}
@@ -27,13 +27,13 @@
 		"disableTopToolbar": 1,
 		"panels": {
 			"plan": {
-				"name": "Škola", "icon": "icon-institution", "order": 3000, "fullsize": 1,
+				"name": "Škola", "icon": "detailSchool", "order": 3000, "fullsize": 1,
 				"rows": {
 					"main": {"order": 10000, "align": "right"}
 				}
 			},
 			"teacher": {
-				"name": "Já", "icon": "icon-user", "order": 3000, "fullsize": 1,
+				"name": "Já", "icon": "system/iconUser", "order": 3000, "fullsize": 1,
 				"rows": {
 					"main": {"order": 10000, "align": "right"}
 				}

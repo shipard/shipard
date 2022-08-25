@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.zus.roky", "sql": "e10pro_zus_roky", "name": "Školní roky", "icon": "icon-calendar-o",
+	"id": "e10pro.zus.roky", "sql": "e10pro_zus_roky", "name": "Školní roky",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "nazev", "name": "Název", "type": "string", "len": 30},

@@ -17,7 +17,7 @@ class ReportKontrolaETK extends \E10\GlobalReport
 
 		parent::init();
 
-		$this->setInfo('icon', 'icon-book');
+		$this->setInfo('icon', 'tables/e10pro.zus.vyuky');
 		$this->setInfo('title', 'Kontrola ETK');
 	}
 

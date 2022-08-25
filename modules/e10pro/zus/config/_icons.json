@@ -1,0 +1,198 @@
+{
+  "e10.widgetDashboard/board":{
+    "fa5":"fa-clipboard",
+    "fa6pro":"fa-clipboard",
+    "bsi":"bi-clipboard",
+    "mdi":"content_paste"
+  },
+  "tables/e10pro.zus.akce":{
+    "fa5":"fa-theater-masks",
+    "fa6pro":"fa-theater-masks",
+    "bsi":"bi-calendar-event",
+    "mdi":"theater_comedy"
+  },
+  "tables/e10pro.zus.studium":{
+    "fa5":"fa-chalkboard-teacher",
+    "fa6pro":"fa-chalkboard-teacher",
+    "bsi":"bi-person-workspace",
+    "mdi":"history_edu"
+  },
+  "tables/e10pro.zus.vysvedceni":{
+    "fa5":"fa-file-alt",
+    "fa6pro":"fa-file-certificate",
+    "bsi":"bi-file-earmark-medical",
+    "mdi":"description"
+  },
+  "e10.widgetDashboard/timeTable":{
+    "fa5":"fa-calendar-alt",
+    "fa6pro":"fa-calendar-alt",
+    "bsi":"bi-calendar-week",
+    "mdi":"date_range"
+  },
+  "tables/e10pro.zus.vyuky":{
+    "fa5":"fa-book",
+    "fa6pro":"fa-book",
+    "bsi":"bi-book",
+    "mdi":"import_contacts"
+  },
+  "tables/e10pro.zus.prihlasky":{
+    "fa5":"fa-child",
+		"fa6pro":"fa-child",
+		"bsi":"bi-person-badge",
+		"mdi":"emoji_people"
+  },
+  "tables/e10pro.zus.predmety":{
+    "fa5": "fa-microphone",
+		"fa6pro": "fa-microphone",
+		"bsi": "bi-mic",
+		"mdi": "mic"
+  },
+  "tables/e10pro.zus.roky":{
+    "fa5": "fa-calendar",
+		"fa6pro": "fa-calendar",
+		"bsi": "bi-calendar",
+		"mdi": "calendar_today"
+  },
+  "tables/e10pro.zus.stupne":{
+    "fa5": "fa-level-up-alt",
+		"fa6pro": "fa-calendar",
+		"bsi": "bi-arrow-90deg-up",
+		"mdi": "arrow_upward"
+  },
+  "tables/e10pro.zus.rocniky":{
+    "fa5": "fa-list-ol",
+		"fa6pro": "fa-list-ol",
+		"bsi": "bi-list-ol",
+		"mdi": "format_list_numbered"
+  },
+  "tables/e10pro.zus.svp":{
+		"fa5": "fa-cogs",
+		"fa6pro": "fa-cogs",
+		"bsi": "bi-gear",
+		"mdi": "settings"
+  },
+  "tables/e10pro.zus.obory":{
+		"fa5": "fa-briefcase",
+		"fa6pro": "fa-briefcase",
+		"bsi": "bi-briefcase",
+		"mdi": "business_center"
+  },
+  "tables/e10pro.zus.oddeleni":{
+    "fa5":"fa-chalkboard-teacher",
+    "fa6pro":"fa-chalkboard-teacher",
+    "bsi":"bi-person-workspace",
+    "mdi":"history_edu"
+  },
+  "tables/e10pro.zus.teachplanheads":{
+    "fa5":"fa-file-alt",
+    "fa6pro":"fa-file-alt",
+    "bsi":"bi-file-earmark-text",
+    "mdi":"description"
+  },
+
+  "iconStudents":{
+    "fa5":"fa-user-graduate",
+		"fa6pro":"fa-user-graduate",
+		"bsi":"bi-mortarboard-fill",
+		"mdi":"school"
+  },
+  "iconTeachers":{
+    "fa5":"fa-user-graduate",
+		"fa6pro":"fa-user-graduate",
+		"bsi":"bi-mortarboard-fill",
+		"mdi":"school"
+  },
+  "iconCurrently":{
+    "fa5":"fa-eye",
+		"fa6pro":"fa-eye",
+		"bsi":"bi-eye",
+		"mdi":"visibility"
+  },
+  "iconGenerateCertificates":{
+    "fa5":"fa-gavel",
+    "fa6pro":"fa-gavel",
+    "bsi":"bi-journal-text",
+    "mdi":"gavel"
+  },
+  "iconGroupClass":{
+		"fa5": "fa-users",
+		"fa6pro": "fa-users",
+		"bsi": "bi-people",
+		"mdi": "groups"
+	},
+  "iconRehearsalsClass":{
+		"fa5": "fa-music",
+		"fa6pro": "fa-music",
+		"bsi": "bi-music-note-beamed",
+		"mdi": "music_note"
+	},
+  "iconMusic":{
+		"fa5": "fa-music",
+		"fa6pro": "fa-music",
+		"bsi": "bi-music-note-beamed",
+		"mdi": "music_note"
+	},
+
+  "detailSchool":{
+    "fa5":"fa-school",
+    "fa6pro":"fa-school",
+    "bsi":"bi-bank",
+    "mdi":"account_balance"
+  },
+  "detailTimeTable":{
+    "fa5":"fa-calendar-alt",
+    "fa6pro":"fa-calendar-alt",
+    "bsi":"bi-calendar-week",
+    "mdi":"date_range"
+  },
+  "detailTeachers":{
+    "fa5":"fa-user-graduate",
+		"fa6pro":"fa-user-graduate",
+		"bsi":"bi-mortarboard-fill",
+		"mdi":"school"
+  },
+  "detailBranch":{
+    "fa5":"fa-user-graduate",
+		"fa6pro":"fa-user-graduate",
+		"bsi":"bi-mortarboard-fill",
+		"mdi":"school"
+  },
+  "detailSchoolRoom":{
+    "fa5":"fa-chalkboard-teacher",
+    "fa6pro":"fa-chalkboard-teacher",
+    "bsi":"bi-person-workspace",
+    "mdi":"history_edu"
+  },
+
+  "reportStudyPlan":{
+    "fa5":"fa-file-alt",
+    "fa6pro":"fa-file-alt",
+    "bsi":"bi-file-earmark-text",
+    "mdi":"description"
+  },
+  "reportTimeTable":{
+    "fa5":"fa-calendar-alt",
+    "fa6pro":"fa-calendar-alt",
+    "bsi":"bi-calendar-week",
+    "mdi":"date_range"
+  },
+  "reportPrintCertificates":{
+    "fa5":"fa-file-alt",
+    "fa6pro":"fa-file-certificate",
+    "bsi":"bi-file-earmark-medical",
+    "mdi":"description"
+  },
+  "reportInvoices":{
+    "fa5": "fa-file",
+		"fa6pro": "fa-file",
+		"bsi": "bi-file-earmark",
+		"mdi": "insert_drive_file"
+  },
+
+  "formPerforming":{
+    "fa5": "fa-microphone",
+		"fa6pro": "fa-microphone",
+		"bsi": "bi-mic",
+		"mdi": "mic"
+  }
+}

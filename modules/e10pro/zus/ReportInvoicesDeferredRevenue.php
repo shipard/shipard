@@ -36,7 +36,7 @@ class ReportInvoicesDeferredRevenue extends GlobalReport
 		if ($this->academicYearDef)
 			$this->academicYearNumber = intval(substr($this->academicYearDef['zacatek'], 0, 4));
 
-		$this->setInfo('icon', 'icon-asterisk');
+		$this->setInfo('icon', 'reportInvoices');
 
 		if ($this->reportParams ['viewType']['value'] === 'school')
 			$this->setInfo('title', 'Faktury za školné - výnosy příštích období');

@@ -24,7 +24,7 @@ class TablePredmety extends DbTable
 
 		//$hdr ['info'][] = ['class' => 'info', 'value' => $recData ['shortName']];
 		$hdr ['info'][] = ['class' => 'title', 'value' => $recData ['nazev']];
-		$hdr ['icon'] = ($recData['typVyuky'] === 0) ? 'icon-group' : 'icon-user';;
+		$hdr ['icon'] = ($recData['typVyuky'] === 0) ? 'iconGroupClass' : 'system/iconUser';;
 
 		return $hdr;
 	}
@@ -80,7 +80,7 @@ class ViewPredmety extends TableView
 	{
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['t1'] = $item ['nazev'];
-		$listItem ['icon'] = ($item['typVyuky'] === 0) ? 'icon-group' : 'icon-user';;
+		$listItem ['icon'] = ($item['typVyuky'] === 0) ? 'iconGroupClass' : 'system/iconUser';;
 
 		if ($item ['svp'])
 			$listItem ['t2'][] = ['text' => $this->app()->cfgItem ("e10pro.zus.svp.{$item ['svp']}.nazev")];

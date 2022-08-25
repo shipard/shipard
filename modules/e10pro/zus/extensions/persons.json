@@ -5,15 +5,15 @@
       "students": 
 			{"id": "students", "class": "e10pro.zus.ViewStudents", "title": "Studenti",
 				"details": {
-					"overview": {"title": "Student", "icon": "x-student", "type": "detail", "class": "e10pro.zus.ViewDetailStudent", "order": 10},
-					"timeline": {"title": "Přehled", "icon": "icon-dashboard", "type": "detail", "class": "e10.persons.ViewDetailPersons", "order": 20},
-					"studium": {"title": "Studium", "icon": "icon-asterisk", "type": "detail", "class": "e10pro.zus.ViewDetailStudentStudium", "order": 30},
-					"vysvedceni": {"title": "Vysvědčení", "icon": "e10pro-zus-vysvedceni", "type": "detail", "class": "e10pro.zus.ViewDetailStudentVysvedceni", "order": 40}
+					"overview": {"title": "Student", "icon": "iconStudents", "type": "detail", "class": "e10pro.zus.ViewDetailStudent", "order": 10},
+					"timeline": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10.persons.ViewDetailPersons", "order": 20},
+					"studium": {"title": "Studium", "icon": "tables/e10pro.zus.studium", "type": "detail", "class": "e10pro.zus.ViewDetailStudentStudium", "order": 30},
+					"vysvedceni": {"title": "Vysvědčení", "icon": "tables/e10pro.zus.vysvedceni", "type": "detail", "class": "e10pro.zus.ViewDetailStudentVysvedceni", "order": 40}
 				}
 			},
 			"teachers": {"id": "teachers", "class": "e10pro.zus.ViewTeachers",
 				"details": {
-					"vysvedceni": {"title": "Vysvědčení", "icon": "e10pro-zus-vysvedceni", "type": "detail", "class": "e10pro.zus.ViewDetailTeachers"}
+					"vysvedceni": {"title": "Vysvědčení", "icon": "tables/e10pro.zus.vysvedceni", "type": "detail", "class": "e10pro.zus.ViewDetailTeachers"}
 				}
 			}
 		}

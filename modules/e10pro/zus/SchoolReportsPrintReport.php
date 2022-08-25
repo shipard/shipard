@@ -26,7 +26,7 @@ class SchoolReportsPrintReport extends GlobalReport
 
 		parent::init();
 
-		$this->setInfo('icon', 'icon-asterisk');
+		$this->setInfo('icon', 'reportPrintCertificates');
 		$this->setInfo('title', 'Hromadný tisk vysvědčení');
 	}
 
@@ -75,7 +75,7 @@ class SchoolReportsPrintReport extends GlobalReport
 	public function createToolbarSaveAs (&$printButton)
 	{
 		$printButton['dropdownMenu'][] = [
-				'text' => 'Uložit jako PDF soubor', 'icon' => 'icon-download',
+				'text' => 'Uložit jako PDF soubor', 'icon' => 'system/actionSave',
 				'type' => 'reportaction', 'action' => 'print', 'class' => 'e10-print', 'data-format' => 'xpdf',
 				'data-filename' => $this->saveAsFileName('xpdf')
 		];

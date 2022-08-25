@@ -56,7 +56,7 @@ class ReportPlan extends \E10\GlobalReport
 		if ($this->subReportId === 'weekly')
 			$this->paperFormat = $this->reportParams ['paperFormat']['value'];
 
-		$this->setInfo('icon', 'icon-clock-o');
+		$this->setInfo('icon', 'reportTimeTable');
 		$this->setInfo('title', 'Rozvrh hodin');
 	}
 
@@ -545,10 +545,10 @@ class ReportPlan extends \E10\GlobalReport
 
 	public function subReportsList ()
 	{
-		$d[] = ['id' => 'weekly', 'icon' => 'icon-calendar', 'title' => 'Vše'];
-		$d[] = ['id' => 'teachers', 'icon' => 'x-teacher', 'title' => 'Učitelé'];
-		$d[] = ['id' => 'offices', 'icon' => 'icon-building', 'title' => 'Pobočky'];
-		$d[] = ['id' => 'rooms', 'icon' => 'icon-sign-in', 'title' => 'Učebny'];
+		$d[] = ['id' => 'weekly', 'icon' => 'detailTimeTable', 'title' => 'Vše'];
+		$d[] = ['id' => 'teachers', 'icon' => 'detailTeachers', 'title' => 'Učitelé'];
+		$d[] = ['id' => 'offices', 'icon' => 'detailSchool', 'title' => 'Pobočky'];
+		$d[] = ['id' => 'rooms', 'icon' => 'detailSchoolRoom', 'title' => 'Učebny'];
 
 		return $d;
 	}

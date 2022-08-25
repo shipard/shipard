@@ -213,9 +213,9 @@ class FormPrihlaska extends TableForm
 
 		$this->openForm (TableForm::ltNone);
 
-		$tabs ['tabs'][] = array ('text' => 'Přihláška', 'icon' => 'x-content');
-		$tabs ['tabs'][] = array ('text' => 'Poznámka', 'icon' => 'x-content');
-		$tabs ['tabs'][] = array ('text' => 'Přííílohy', 'icon' => 'x-attachments');
+		$tabs ['tabs'][] = array ('text' => 'Základní', 'icon' => 'system/formHeader');
+		$tabs ['tabs'][] = array ('text' => 'Poznámka', 'icon' => 'system/formNote');
+		$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'system/formAttachments');
 		$this->openTabs ($tabs, TRUE);
 			$this->openTab ();
 				$this->layoutOpen(TableForm::ltForm);

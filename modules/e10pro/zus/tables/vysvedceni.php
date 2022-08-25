@@ -322,9 +322,9 @@ class FormVysvedceni extends TableForm
 			$ppco2 = TableForm::coReadOnly;
     }
 
-		$tabs ['tabs'][] = array ('text' => 'Známky', 'icon' => 'x-properties');
-		$tabs ['tabs'][] = array ('text' => 'Nastavení', 'icon' => 'x-wrench');
-		$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'x-attachments');
+		$tabs ['tabs'][] = array ('text' => 'Základní', 'icon' => 'system/formHeader');
+		$tabs ['tabs'][] = array ('text' => 'Nastavení', 'icon' => 'system/formSettings');
+		$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'system/formAttachments');
 		$this->openTabs ($tabs, TRUE);
 			$this->openTab ();
 		$this->prehledDochazky();

@@ -66,7 +66,7 @@ class ViewOddeleni extends TableView
 	{
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['t1'] = $item ['nazev'];
-		$listItem ['icon'] = 'x-cog';
+		$listItem ['icon'] = 'tables/e10pro.zus.oddeleni';
 
 		if ($item ['svp'])
 			$listItem ['t2'][] = ['text' => $this->app()->cfgItem ("e10pro.zus.svp.{$item ['svp']}.nazev")];

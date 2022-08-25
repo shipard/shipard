@@ -52,8 +52,8 @@
 		{
 		  "id": "default", "class": "e10pro.zus.ViewStudium",
 		  "addWizard": [
-				{"class": "e10pro.zus.GenerovaniFakturSkolneWizard", "icon": "icon-legal", "text": "Generování faktur Školné"},
-			  {"class": "e10pro.zus.GenerovaniFakturPujcovneWizard", "icon": "icon-legal", "text": "Generování faktur Půjčovné"}
+				{"class": "e10pro.zus.GenerovaniFakturSkolneWizard", "icon": "iconGenerateCertificates", "text": "Generování faktur Školné"},
+			  {"class": "e10pro.zus.GenerovaniFakturPujcovneWizard", "icon": "iconGenerateCertificates", "text": "Generování faktur Půjčovné"}
 			],
 		  "detail": "e10pro.zus.ViewDetailStudium"
 		},

@@ -10,7 +10,7 @@
 
 	"e10-pro-zus": {
 		"name": "ZUŠ", "order": 11000, "group": "e10zus",
-		"icon": "icon-music",
+		"icon": "iconMusic",
 		"type": "cfgFile",
 		"options":
 		[
@@ -20,47 +20,43 @@
 	},
 
 	"zus-roky": {
-		"name": "Školní roky", "icon": "icon-calendar-o", "order": 180000, "group": "e10zus",
+		"name": "Školní roky", "order": 180000, "group": "e10zus",
 		"type": "viewer", "table": "e10pro.zus.roky", "viewer": "default"
 	},
 	"zus-stupne": {
-		"name": "Stupně školy", "icon": "icon-level-up", "order": 181000, "group": "e10zus",
+		"name": "Stupně školy", "order": 181000, "group": "e10zus",
 		"type": "viewer", "table": "e10pro.zus.stupne", "viewer": "default"
 	},
 	"zus-rocniky": {
-		"name": "Ročníky školy", "icon": "icon-leaf", "order": 182000, "group": "e10zus",
+		"name": "Ročníky školy", "order": 182000, "group": "e10zus",
 		"type": "viewer", "table": "e10pro.zus.rocniky", "viewer": "default"
 	},
 	"svp": {
 		"name": "ŠVP", "order": 183000, "group": "e10zus",
-		"icon": "x-cog",
 		"type": "viewer",
 		"table": "e10pro.zus.svp",
 		"viewer": "default"
 	},
 	"obory": {
 		"name": "Obory", "order": 184000, "group": "e10zus",
-		"icon": "x-cog",
 		"type": "viewer",
 		"table": "e10pro.zus.obory",
 		"viewer": "default"
 	},
     "oddeleni": {
 		"name": "Oddělení / Studijní zaměření", "order": 185000, "group": "e10zus",
-		"icon": "x-cog",
 		"type": "viewer",
 		"table": "e10pro.zus.oddeleni",
 		"viewer": "default"
 	},
     "predmety": {
 		"name": "Předměty", "order": 186000, "group": "e10zus",
-		"icon": "x-cog",
 		"type": "viewer",
 		"table": "e10pro.zus.predmety",
 		"viewer": "default"
 	},
     "teachPlans": {
-        "name": "Učební plány", "order": 187000, "group": "e10zus", "icon": "icon-magnet",
+        "name": "Učební plány", "order": 187000, "group": "e10zus",
         "type": "viewer", "table": "e10pro.zus.teachplanheads", "viewer": "default"
     }
 

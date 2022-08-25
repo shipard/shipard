@@ -53,6 +53,12 @@
         "bsi":"bi-building",
         "mdi":"business"
     },
+    "tables/e10.witems.codesKinds":{
+        "fa5":"fa-barcode",
+        "fa6pro":"fa-barcode",
+        "bsi":"bi-upc",
+        "mdi":"barcode"
+    },
 
 
 

@@ -41,7 +41,7 @@ class ReportInvoices extends GlobalReport
 
 		$this->halfYear = $this->reportParams ['pololeti']['value'];
 
-		$this->setInfo('icon', 'icon-asterisk');
+		$this->setInfo('icon', 'reportInvoices');
 		$this->setInfo('title', 'Faktury '.$this->reportParams ['pololeti']['activeTitle']);
 	}
 
@@ -111,7 +111,7 @@ class ReportInvoices extends GlobalReport
 	public function createToolbarSaveAs (&$printButton)
 	{
 		$printButton['dropdownMenu'][] = [
-				'text' => 'Uložit jako PDF soubor', 'icon' => 'icon-download',
+				'text' => 'Uložit jako PDF soubor', 'icon' => 'system/actionSave',
 				'type' => 'reportaction', 'action' => 'print', 'class' => 'e10-print', 'data-format' => 'xpdf',
 				'data-filename' => $this->saveAsFileName('xpdf')
 		];

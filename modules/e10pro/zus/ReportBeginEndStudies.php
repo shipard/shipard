@@ -45,7 +45,7 @@ class ReportBeginEndStudies extends GlobalReport
 
 		parent::init();
 
-		$this->setInfo('icon', 'icon-asterisk');
+		$this->setInfo('icon', 'tables/e10pro.zus.studium');
 		$this->setInfo('title', 'Zahájená a ukončená studia ');
 	}
 

@@ -55,7 +55,7 @@
 		{
 		  "id": "default", "class": "e10pro.zus.ViewVysvedceni",
 		  "addWizard": [
-			{"class": "e10pro.zus.GenerovaniVysvedceniWizard", "icon": "icon-legal", "text": "Generování vysvědčení"}
+			{"class": "e10pro.zus.GenerovaniVysvedceniWizard", "icon": "iconGenerateCertificates", "text": "Generování vysvědčení"}
 		  ],
 		  "detail": "e10pro.zus.ViewDetailVysvedceni"
 		},

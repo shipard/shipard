@@ -57,7 +57,7 @@ class ViewTeachPlans extends TableView
 
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['t1'] = $item ['yearName'];
-		$listItem ['t2'] =  \E10\Application::cfgItem ("e10pro.zus.obory.{$item ['svpObor']}.zkratka")
+		$listItem ['t2'] =  $this->app()->cfgItem ("e10pro.zus.obory.{$item ['svpObor']}.zkratka")
                       . ", " .  $oddeleni[$item ['svpOddeleni']]['nazev'] . "  (" . $oddeleni[$item ['svpOddeleni']]['oznaceni'] . ")";
 
 		$listItem ['icon'] = $this->table->tableIcon ($item);
