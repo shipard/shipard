@@ -284,7 +284,7 @@ class WidgetPlanTeacher extends \Shipard\UI\Core\WidgetPane
 		//$this->teacher = 6;
 
 		$this->today = utils::today();
-		$this->today = new \DateTime('2022-09-05');
+		//$this->today = new \DateTime('2022-09-05');
 
 		$this->firstDay = clone $this->today;
 		$this->firstDay = $this->firstDay->modify(('Monday' === $this->firstDay->format('l')) ? 'monday this week' : 'last monday');
