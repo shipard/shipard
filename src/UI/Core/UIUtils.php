@@ -215,6 +215,10 @@ class UIUtils
 
 		if (isset($col['readOnly']))
 		{
+			if (is_numeric($col['readOnly']) && intval($col['readOnly']) === 1)
+				return 1;
+			else
+				return FALSE;
 			foreach ($col['readOnly'] as $key => $value)
 			{
 				$dataValue = (isset($data[$key])) ? $data[$key] : NULL;
