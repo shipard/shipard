@@ -227,13 +227,13 @@ class FormHodina extends TableForm
 
 		$this->openForm (TableForm::ltNone);
 
-		$tabs ['tabs'][] = ['text' => 'Látka', 'icon' => 'icon-edit'];
+		$tabs ['tabs'][] = ['text' => 'Látka', 'icon' => 'system/formHeader'];
 
 		//$tabs ['tabs'][] = ['text' => 'Známky', 'icon' => 'icon-star'];
 		if ($vyuka['typ'] === 0)
-			$tabs ['tabs'][] = ['text' => 'Docházka', 'icon' => 'icon-user'];
-		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'icon-wrench'];
-		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'x-attachments'];
+			$tabs ['tabs'][] = ['text' => 'Docházka', 'icon' => 'system/iconUser'];
+		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 		$this->openTabs ($tabs, TRUE);
 
 		$this->openTab (TableForm::ltNone);

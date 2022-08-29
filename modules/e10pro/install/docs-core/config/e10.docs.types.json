@@ -8,7 +8,7 @@
 				"outboxDocKind": "outbox-doctype-invno", "outboxSystemKind": 121, "outboxSystemSection": 121
 		},
     "invni": {
-				"fullName": "Faktura přijatá běžná", "shortName": "Přijatá faktura", "icon": "docType/invoicesIn", "pluralName": "Přijaté faktury",
+				"fullName": "Faktura přijatá běžná", "shortName": "Přijatá faktura", "icon": "docTypeInvoicesIn", "pluralName": "Přijaté faktury",
 	      "shortcut": "FPB", "classId": "invoicesIn", "docIdCode": "2",
 				"taxDir": 0, "tradeDir": 2, "docDir": 1,
         "useTax": 1, "taxDocument": 1, "acc": 1, "timeline": "in", "timelineSum": "def", "docNumbers": 1,

@@ -48,7 +48,7 @@ class TeachersDashboardWidget extends \E10\widgetPane
 				$item ['_options']['cellClasses']['pritomnost'] = 'e10-off';
 				break;
 			case 1:
-				$cell['icon'] = 'icon-check';
+				$cell['icon'] = 'system/iconCheck';
 				$item ['_options']['cellClasses']['pritomnost'] = 'e10-row-plus';
 				break;
 			case 2:
@@ -107,7 +107,7 @@ class TeachersDashboardWidget extends \E10\widgetPane
 
 			if ($hodina['stav'] === 1200)
 				$sb['hodnoceni'][] = [
-					'docAction' => 'new', 'table' => 'e10pro.zus.hodnoceni', 'icon' => 'icon-plus-circle',
+					'docAction' => 'new', 'table' => 'e10pro.zus.hodnoceni', 'icon' => 'system/actionAdd',
 					'text' => 'Známka', 'type' => 'button', 'actionClass' => 'btn btn-xs btn-success',
 					'class' => 'pull-right',
 					'addParams' => '__student='.$d['student'].'&__predmet='.$hodina['predmet'].'&__ucitel='.$this->app->user()->data ('id').
@@ -132,7 +132,7 @@ class TeachersDashboardWidget extends \E10\widgetPane
 		if ($hodina['stav'] === 1000)
 		{
 			$btns[] = [
-				'type' => 'widget', 'action' => 'zahajitHodinu-'.$hodina['ndx'], 'text' => 'Zahájit hodinu', 'icon' => 'icon-check',
+				'type' => 'widget', 'action' => 'zahajitHodinu-'.$hodina['ndx'], 'text' => 'Zahájit hodinu', 'icon' => 'system/iconCheck',
 				'actionClass' => 'btn btn-success', 'class' => ''
 			];
 		}
@@ -140,7 +140,7 @@ class TeachersDashboardWidget extends \E10\widgetPane
 		if ($hodina['stav'] === 1200 || $hodina['stav'] === 4000)
 		{
 			$btns[] = ['text' => 'Otevřít', 'docAction' => 'edit', 'table' => 'e10pro.zus.hodiny', 'pk' => $hodina['ndx'],
-					'class' => '', 'type' => 'button', 'actionClass' => 'btn btn-primary', 'icon' => 'icon-edit',
+					'class' => '', 'type' => 'button', 'actionClass' => 'btn btn-primary', 'icon' => 'system/actionOpen',
 					'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId];
 		}
 
@@ -148,7 +148,7 @@ class TeachersDashboardWidget extends \E10\widgetPane
 		if ($hodina['stav'] === 1200)
 		{
 			$btns[] = [
-				'type' => 'widget', 'action' => 'ukoncitHodinu-'.$hodina['ndx'], 'text' => 'Ukončit hodinu', 'icon' => 'icon-check',
+				'type' => 'widget', 'action' => 'ukoncitHodinu-'.$hodina['ndx'], 'text' => 'Ukončit hodinu', 'icon' => 'system/iconCheck',
 				'actionClass' => 'btn btn-success', 'class' => ''
 			];
 		}
@@ -203,7 +203,7 @@ class TeachersDashboardWidget extends \E10\widgetPane
 				'rocnik' => zusutils::rocnikVRozvrhu($this->app, $r['rocnik'], $r['typVyuky'], 'zkratka'),
 			];
 
-			$item['vyukaIcon'] = ($r['typVyuky'] === 0) ? 'icon-group' : 'icon-user';
+			$item['vyukaIcon'] = ($r['typVyuky'] === 0) ? 'iconGroupClass' : 'system/iconUser';
 
 			$this->timetableVyukyPks[] = $r['vyuka'];
 			$this->timetable[$itemId] = $item;
@@ -213,7 +213,7 @@ class TeachersDashboardWidget extends \E10\widgetPane
 				if ($smallTt !== FALSE)
 					$this->smallTimeTable[] = $smallTt;
 				$smallTt = [
-					'zacatek' => $r['zacatek'], 'konec' => $r['konec'], 'pobocka' => $r['pobocka'], 'icon' => 'icon-clock-o'
+					'zacatek' => $r['zacatek'], 'konec' => $r['konec'], 'pobocka' => $r['pobocka'], 'icon' => 'system/iconClock'
 				];
 			}
 			else
@@ -267,7 +267,7 @@ class TeachersDashboardWidget extends \E10\widgetPane
 				'content' => []
 			];
 
-			$item['vyukaIcon'] = ($r['typVyuky'] === 0) ? 'icon-group' : 'icon-user';
+			$item['vyukaIcon'] = ($r['typVyuky'] === 0) ? 'iconGroupClass' : 'system/iconUser';
 
 			$docState = $this->tableHodiny->getDocumentState ($r);
 			$docStateStyle = $this->tableHodiny->getDocumentStateInfo ($docState ['states'], $r, 'styleClass');
@@ -310,7 +310,7 @@ class TeachersDashboardWidget extends \E10\widgetPane
 
 			$title[] = ['class' => 'block', 'text' => ''];
 			if ($item['pobockaId'])
-				$title[] = ['class' => 'e10-small', 'text' => $item['pobockaId'], 'icon' => 'icon-building-o'];
+				$title[] = ['class' => 'e10-small', 'text' => $item['pobockaId'], 'icon' => 'system/iconOwner'];
 			if ($item['ucebnaNazev'])
 				$title[] = ['class' => 'e10-small', 'text' => $item['ucebnaNazev'], 'icon' => 'icon-sign-in'];
 
@@ -318,7 +318,7 @@ class TeachersDashboardWidget extends \E10\widgetPane
 			{
 				if (!$this->app->mobileMode)
 					$title[] = ['text' => 'Opravit hodinu v ETK', 'docAction' => 'edit', 'table' => 'e10pro.zus.hodiny', 'pk' => $item['existedHour']['ndx'],
-						'class' => 'pull-right break', 'type' => 'button', 'actionClass' => 'btn btn-sm btn-primary', 'icon' => 'icon-edit',
+						'class' => 'pull-right break', 'type' => 'button', 'actionClass' => 'btn btn-sm btn-primary', 'icon' => 'system/actionOpen',
 						'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId];
 			}
 			else
@@ -331,7 +331,7 @@ class TeachersDashboardWidget extends \E10\widgetPane
 
 				if (!$this->app->mobileMode)
 					$title[] = ['text' => 'Zadat hodinu do ETK', 'docAction' => 'new', 'table' => 'e10pro.zus.hodiny', //'pk' => $hodina['ndx'],
-						'class' => 'pull-right', 'type' => 'button', 'actionClass' => 'btn btn-sm btn-success', 'icon' => 'icon-plus-circle',
+						'class' => 'pull-right', 'type' => 'button', 'actionClass' => 'btn btn-sm btn-success', 'icon' => 'system/actionAdd',
 						'addParams' => $addParams,
 						'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId];
 			}
@@ -373,7 +373,7 @@ class TeachersDashboardWidget extends \E10\widgetPane
 			$addParams .= '&__pobocka='.$item['pobocka'].'&__ucebna='.$item['ucebna'];
 
 			$btns[] = ['text' => 'Zadat hodinu do ETK', 'docAction' => 'new', 'table' => 'e10pro.zus.hodiny', //'pk' => $hodina['ndx'],
-				'class' => 'pull-right XXclear', 'type' => 'button', 'actionClass' => 'btn btn-sm btn-success', 'icon' => 'icon-plus-circle',
+				'class' => 'pull-right XXclear', 'type' => 'button', 'actionClass' => 'btn btn-sm btn-success', 'icon' => 'system/actionAdd',
 				'addParams' => $addParams,
 				'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId];
 
@@ -426,7 +426,7 @@ class TeachersDashboardWidget extends \E10\widgetPane
 
 
 		//$this->teacherNdx = 11; // březíková olga: 6 // -- hradilová: 1196 // ambrůzová: 5 //černoch petr: 9 // davidová: 684 // gerych tomáš: 11
-		//$this->today = new \DateTime('2015-03-31');
+		//$this->today = new \DateTime('2022-09-05');
 
 		$this->todayYear = intval($this->today->format('Y'));
 		$this->todayMonth = intval($this->today->format('m'));

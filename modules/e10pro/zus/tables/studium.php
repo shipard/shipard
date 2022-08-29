@@ -85,7 +85,7 @@ class TableStudium extends DbTable
 
 		if (!$recData || !isset ($recData ['ndx']) || $recData ['ndx'] == 0)
 		{
-			$hdr ['icon'] = 'icon-asterisk';
+			$hdr ['icon'] = 'personBirthDate';
 
 			$hdr ['info'][] = ['class' => 'info', 'value' => ' '];
 			$hdr ['info'][] = ['class' => 'title', 'value' => ' '];
@@ -121,10 +121,10 @@ class TableStudium extends DbTable
 
 		$place = $tablePlaces->loadItem ($recData['misto']);
 		if ($place)
-			$leftInfo[] = ['icon' => 'icon-map-marker', 'text' => $place['fullName']];
+			$leftInfo[] = ['icon' => 'system/iconMapMarker', 'text' => $place['fullName']];
 		$teacher = $tablePersons->loadItem ($recData['ucitel']);
 		if ($teacher)
-			$leftInfo [] = ['icon' => 'x-teacher', 'text' => $teacher['fullName']];
+			$leftInfo [] = ['icon' => 'iconTeachers', 'text' => $teacher['fullName']];
 
 		$leftInfo [] = ['text' => $skolniRoky [$recData['skolniRok']]['nazev'], 'class' => 'pull-right', 'prefix' => ' '];
 
@@ -139,7 +139,7 @@ class TableStudium extends DbTable
 			$periodInfo .= utils::datef($recData['datumUkonceniSkoly']);
 		}
 		if ($periodInfo !== '')
-			$leftInfo [] = ['text' => $periodInfo, 'class' => 'pull-right label label-info', 'prefix' => ' ', 'icon' => 'icon-calendar'];
+			$leftInfo [] = ['text' => $periodInfo, 'class' => 'pull-right label label-info', 'prefix' => ' ', 'icon' => 'system/iconCalendar'];
 
 		$hdr ['info'][] = [
 			'class' => 'info',
@@ -369,9 +369,9 @@ class ViewStudium extends TableView
                       . ": " . */ $this->app()->cfgItem ("e10pro.zus.oddeleni.{$item ['svpOddeleni']}.nazev");
 		$listItem ['i2'] = $rocniky [$item['rocnik']]['nazev'];
 
-		$listItem ['t3'][] = ['icon' => 'x-teacher', 'text' => $item ['ucitelFullName']];
+		$listItem ['t3'][] = ['icon' => 'iconTeachers', 'text' => $item ['ucitelFullName']];
 		if ($item ['placeName'])
-			$listItem ['t3'][] = ['icon' => 'icon-map-marker', 'text' => $item ['placeName']];
+			$listItem ['t3'][] = ['icon' => 'system/iconMapMarker', 'text' => $item ['placeName']];
 		$listItem ['t3'][] = ['text' => $skolniRoky [$item['skolniRok']]['nazev'], 'class' => 'pull-right'];
 
 		return $listItem;
@@ -622,15 +622,15 @@ class ViewDetailStudium extends TableViewDetail
 			' WHERE studiumpre.studium = %i ORDER BY studiumpre.ndx';
 		$rows = $this->db()->query($q, $this->item['ndx'])->fetchAll();
 
-		$title = [['icon' => 'icon-microphone', 'text' => 'Předměty']];
+		$title = [['icon' => 'tables/e10pro.zus.predmety', 'text' => 'Předměty']];
 
 		$vysvedceni = $this->db()->query('SELECT * FROM e10pro_zus_vysvedceni WHERE studium = %i', $this->item['ndx'])->fetch();
 		if ($vysvedceni)
 			$title[] = ['text' => 'Vysvědčení', 'docAction' => 'edit', 'table' => 'e10pro.zus.vysvedceni', 'pk'=> $vysvedceni['ndx'],
-				'class' => 'pull-right', 'type' => 'button', 'actionClass' => 'btn btn-xs btn-primary', 'icon' => 'icon-edit'];
+				'class' => 'pull-right', 'type' => 'button', 'actionClass' => 'btn btn-xs btn-primary', 'icon' => 'system/actionOpen'];
 		else
 			$title[] = ['text' => 'Nové vysvědčení', 'docAction' => 'new', 'table' => 'e10pro.zus.vysvedceni', 'addParams' => '__studium='.$this->item['ndx'],
-				'class' => 'pull-right', 'type' => 'button', 'actionClass' => 'btn btn-xs btn-success', 'icon' => 'icon-plus-circle'];
+				'class' => 'pull-right', 'type' => 'button', 'actionClass' => 'btn btn-xs btn-success', 'icon' => 'system/actionAdd'];
 
 		if (count($rows))
 		{
@@ -741,9 +741,9 @@ class ViewDetailStudium extends TableViewDetail
 			$skolne[] = $p3;
 		}
 
-		$title = [['icon' => 'icon-money', 'text' => 'Školné a půjčovné']];
+		$title = [['icon' => 'system/iconMoney', 'text' => 'Školné a půjčovné']];
 		if ($item['bezDotace'])
-			$title[] = ['icon' => 'icon-exclamation', 'text' => 'bez dotace', 'class' => 'pull-right'];
+			$title[] = ['icon' => 'system/iconWarning', 'text' => 'bez dotace', 'class' => 'pull-right'];
 		$this->addContent ([
 			'pane' => 'e10-pane e10-pane-table', 'type' => 'table',
 			'header' => ['p' => 'Pol.', 'castka' => ' Částka', 'fv' => 'Faktura', 'stav' => 'Stav'],
@@ -787,7 +787,7 @@ class ViewDetailStudium extends TableViewDetail
 
 			$itm = [
 				'den' => [
-					['icon' => 'icon-edit', 'text' => '', 'docAction' => 'edit', 'table' => 'e10pro.zus.vyuky', 'pk'=> $r['vyuka'],
+					['icon' => 'system/actionOpen', 'text' => '', 'docAction' => 'edit', 'table' => 'e10pro.zus.vyuky', 'pk'=> $r['vyuka'],
 						'type' => 'button', 'actionClass' => 'e10-off'],
 					['text' => ' '.$nazvyDnu[$r['den']]]
 				],

@@ -1,6 +1,6 @@
 {
 	"51": {
-		"fullName": "Přijatá faktura", "shortName": "Přijatá faktura", "icon": "docType/invoicesIn", "order": 105100, "issueType": 1,
+		"fullName": "Přijatá faktura", "shortName": "Přijatá faktura", "icon": "docTypeInvoicesIn", "order": 105100, "issueType": 1,
 		"askKind": 1, "askPersons":1, "askDeadline": 1, "askDateIncoming": 1
 	},
 	"52": {

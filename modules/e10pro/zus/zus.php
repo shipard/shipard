@@ -539,7 +539,7 @@ class ViewStudents extends \e10\persons\ViewPersonsBase
 
 		$rows = $this->table->db()->query ($qc);
 		forEach ($rows as $r)
-			$this->studia [$r ['studentNdx']][] = ['text' => $r['cisloStudia'], 'class' => 'label label-info id', 'icon' => 'icon-asterisk'];
+			$this->studia [$r ['studentNdx']][] = ['text' => $r['cisloStudia'], 'class' => 'label label-info id', 'icon' => 'personBirthDate'];
 	}
 
 	public function createToolbar ()
@@ -613,9 +613,9 @@ class ViewDetailStudent extends \E10\Persons\ViewDetailPersons
 			$docStateStyle = $tableStudia->getDocumentStateInfo ($docState ['states'], $item, 'styleClass');
 
 			$st = ['class' => 'title '.$docStateStyle, 'value' => [
-					['icon' => 'icon-asterisk', 'class' => 'h1', 'text' => $this->app()->cfgItem ("e10pro.zus.oddeleni.{$item ['svpOddeleni']}.nazev")],
+					['icon' => 'personBirthDate', 'class' => 'h1', 'text' => $this->app()->cfgItem ("e10pro.zus.oddeleni.{$item ['svpOddeleni']}.nazev")],
 					['text' => $item['cisloStudia'], 'docAction' => 'edit', 'table' => 'e10pro.zus.studium', 'pk'=> $item['ndx'],
-					 'class' => 'pull-right', 'type' => 'button', 'actionClass' => 'btn btn-xs btn-primary', 'icon' => 'icon-edit'],
+					 'class' => 'pull-right', 'type' => 'button', 'actionClass' => 'btn btn-xs btn-primary', 'icon' => 'system/actionOpen'],
 					['class' => 'h2 pull-right','text' => $skolniRoky [$item['skolniRok']]['nazev']],
 					['class' => 'block clearfix', 'text' => '']
 				]
@@ -631,9 +631,9 @@ class ViewDetailStudent extends \E10\Persons\ViewDetailPersons
 												'class' => 'pull-right clear'];
 
 			$st['value'][] = ['class' => 'block', 'text' => ''];
-			$st['value'][] = ['icon' => 'x-teacher', 'text' => $item ['ucitelFullName'], 'class' => ''];
+			$st['value'][] = ['icon' => 'iconTeachers', 'text' => $item ['ucitelFullName'], 'class' => ''];
 			if ($item ['placeName'])
-				$st['value'][] = ['icon' => 'icon-map-marker', 'text' => $item ['placeName']];
+				$st['value'][] = ['icon' => 'system/iconMapMarker', 'text' => $item ['placeName']];
 
 			$s['info'][] = $st;
 
@@ -657,15 +657,15 @@ class ViewDetailStudent extends \E10\Persons\ViewDetailPersons
 		foreach ($this->db()->query($q, $studiumNdx) as $r)
 			$rows[] = $r->toArray();
 
-		$title = [['icon' => 'icon-microphone', 'text' => 'Předměty', 'class' => 'h1']];
+		$title = [['icon' => 'tables/e10pro.zus.predmety', 'text' => 'Předměty', 'class' => 'h1']];
 
 		$vysvedceni = $this->db()->query('SELECT * FROM e10pro_zus_vysvedceni WHERE studium = %i', $studiumNdx)->fetch();
 		if ($vysvedceni)
 			$title[] = ['text' => 'Vysvědčení', 'docAction' => 'edit', 'table' => 'e10pro.zus.vysvedceni', 'pk'=> $vysvedceni['ndx'],
-				'class' => 'pull-right', 'type' => 'button', 'actionClass' => 'btn btn-xs btn-primary', 'icon' => 'icon-edit'];
+				'class' => 'pull-right', 'type' => 'button', 'actionClass' => 'btn btn-xs btn-primary', 'icon' => 'system/actionOpen'];
 		else
 			$title[] = ['text' => 'Nové vysvědčení', 'docAction' => 'new', 'table' => 'e10pro.zus.vysvedceni', 'addParams' => '__studium='.$studiumNdx,
-				'class' => 'pull-right', 'type' => 'button', 'actionClass' => 'btn btn-xs btn-success', 'icon' => 'icon-plus-circle'];
+				'class' => 'pull-right', 'type' => 'button', 'actionClass' => 'btn btn-xs btn-success', 'icon' => 'system/actionAdd'];
 
 		if (count($rows))
 		{
@@ -765,9 +765,9 @@ class ViewDetailStudent extends \E10\Persons\ViewDetailPersons
 			$skolne[] = $p3;
 
 
-		$title = [['icon' => 'icon-money', 'text' => 'Školné a půjčovné', 'class' => 'h1']];
+		$title = [['icon' => 'system/iconMoney', 'text' => 'Školné a půjčovné', 'class' => 'h1']];
 		if ($item['bezDotace'])
-			$title[] = ['icon' => 'icon-exclamation', 'text' => 'bez dotace', 'class' => 'pull-right label label-info'];
+			$title[] = ['icon' => 'system/iconWarning', 'text' => 'bez dotace', 'class' => 'pull-right label label-info'];
 
 		return [
 			'class' => 'info width50 padd5',
@@ -810,7 +810,7 @@ class ViewDetailStudent extends \E10\Persons\ViewDetailPersons
 
 			$itm = [
 				'den' => [
-					['icon' => 'icon-edit', 'text' => '', 'docAction' => 'edit', 'table' => 'e10pro.zus.vyuky', 'pk'=> $r['vyuka'],
+					['icon' => 'system/actionOpen', 'text' => '', 'docAction' => 'edit', 'table' => 'e10pro.zus.vyuky', 'pk'=> $r['vyuka'],
 						'type' => 'button', 'actionClass' => 'e10-off'],
 					['text' => ' '.$nazvyDnu[$r['den']]]
 				],
@@ -943,7 +943,7 @@ class ViewTeachers extends \E10\Persons\ViewPersons
 		$rows = $this->table->db()->query ($qp);
 
 		forEach ($rows as $r)
-			$this->predmety [$r ['srcRecId']][] = ['text' => $r['nazevPredmetu'], 'class' => 'label label-info', 'icon' => 'icon-microphone'];
+			$this->predmety [$r ['srcRecId']][] = ['text' => $r['nazevPredmetu'], 'class' => 'label label-info', 'icon' => 'tables/e10pro.zus.predmety'];
 	}
 
 	public function qryPanel (array &$q)

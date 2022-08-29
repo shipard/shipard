@@ -105,7 +105,7 @@ class PlanDailyTeachers extends Utility
 					'content' => []
 			];
 
-			$item['vyukaIcon'] = ($r['typVyuky'] === 0) ? 'icon-group' : 'icon-user';
+			$item['vyukaIcon'] = ($r['typVyuky'] === 0) ? 'iconGroupClass' : 'system/iconUser';
 			$item['delkaMin'] = $item['konecMin'] - $item['zacatekMin'];
 
 			$docState = $this->tableHodiny->getDocumentState ($r);
@@ -362,7 +362,7 @@ divs.on( 'scroll', sync);
 			$addParams = "__vyuka={$r['vyuka']}&__pobocka={$r['vyukaPobocka']}&__den={$this->todayDow}&__ucitel={$r['vyukaUcitel']}";
 			$c .= "<div class='e10-pane-plan-missing e10-document-trigger' data-action='new' data-table='e10pro.zus.vyukyrozvrh' data-addparams='$addParams' data-srcobjecttype='widget' data-srcobjectid='{$this->widgetId}'>";
 
-			$c .= $this->app()->ui()->composeTextLine(['text' => $r['vyukaNazev'], 'icon' => ($r['vyukaTyp'] === 0) ? 'icon-group' : 'icon-user', 'class' => 't1 block']);
+			$c .= $this->app()->ui()->composeTextLine(['text' => $r['vyukaNazev'], 'icon' => ($r['vyukaTyp'] === 0) ? 'iconGroupClass' : 'system/iconUser', 'class' => 't1 block']);
 			$c .= $this->app()->ui()->composeTextLine(['text' => $r['predmetNazev'], 'suffix' => $naplanovano.' min z '.$this->ucebniPlanPredpis[$teachPlanId], 'class' => 'block']);
 			$c .= $this->app()->ui()->composeTextLine(['text' => $r['ucitelJmeno'], 'class' => 'e10-small block']);
 

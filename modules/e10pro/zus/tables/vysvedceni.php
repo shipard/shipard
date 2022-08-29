@@ -216,7 +216,7 @@ class ViewVysvedceni extends TableView
 		$skolniRoky = $this->app()->cfgItem ('e10pro.zus.roky');
 
 		$listItem ['pk'] = $item ['ndx'];
-		$listItem ['icon'] = "e10pro-zus-vysvedceni";
+		$listItem ['icon'] = "tables/e10pro.zus.vysvedceni";
 		$listItem ['t1'] = $item['personFullName'];
 
 		$listItem ['t2'] = [['text' => $item ['datumNarozeni'], 'class' => '']];

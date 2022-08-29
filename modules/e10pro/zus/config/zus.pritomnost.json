@@ -1,6 +1,6 @@
 {
-	"0": {"name": "-- nezadáno --", "sc": "?",  "icon": "icon-exclamation-triangle", "labelClass": "label-warning", "showRecap": 1},
-	"1": {"name": "Přítomen", "sc": "P", "icon": "icon-check", "labelClass": "label-success", "showRecap": 0},
-	"2": {"name": "Nepřítomen - omluven", "sc": "O", "icon": "icon-check-circle", "labelClass": "label-info", "showRecap": 1},
-	"3": {"name": "Nepřítomen neomluven", "sc": "N", "icon": "icon-exclamation", "labelClass": "label-danger", "showRecap": 1}
+	"0": {"name": "-- nezadáno --", "sc": "?",  "icon": "attendanceNoInput", "labelClass": "label-warning", "showRecap": 1},
+	"1": {"name": "Přítomen", "sc": "P", "icon": "attendancePresent", "labelClass": "label-success", "showRecap": 0},
+	"2": {"name": "Nepřítomen - omluven", "sc": "O", "icon": "attendanceExcused", "labelClass": "label-info", "showRecap": 1},
+	"3": {"name": "Nepřítomen neomluven", "sc": "N", "icon": "attendanceNotExcused", "labelClass": "label-danger", "showRecap": 1}
 }

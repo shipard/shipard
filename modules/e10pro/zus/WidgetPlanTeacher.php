@@ -90,7 +90,7 @@ class WidgetPlanTeacher extends \Shipard\UI\Core\WidgetPane
 				'content' => []
 			];
 
-			$item['vyukaIcon'] = ($r['typVyuky'] === 0) ? 'icon-group' : 'icon-user';
+			$item['vyukaIcon'] = ($r['typVyuky'] === 0) ? 'iconGroupClass' : 'system/iconUser';
 
 			$docState = $this->tableHodiny->getDocumentState ($r);
 			$docStateStyle = $this->tableHodiny->getDocumentStateInfo ($docState ['states'], $r, 'styleClass');
@@ -180,7 +180,7 @@ class WidgetPlanTeacher extends \Shipard\UI\Core\WidgetPane
 						if (!$this->app->mobileMode)
 						{
 							$rt[] = [
-								'text' => '', 'docAction' => 'edit', 'icon' => 'icon-edit',
+								'text' => '', 'docAction' => 'edit', 'icon' => 'system/actionOpen',
 								'table' => 'e10pro.zus.hodiny', 'pk' => $this->dataExistedHours[$itemId]['ndx'],
 								'actionClass' => 'btn btn-sm btn-default width90',
 								'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId
@@ -191,7 +191,7 @@ class WidgetPlanTeacher extends \Shipard\UI\Core\WidgetPane
 							$rt[] = [
 								'text' => '', 'action' => 'form', 'data-table' => 'e10pro.zus.hodiny', 'data-pk' => $this->dataExistedHours[$itemId]['ndx'],
 								'data-classId' => 'e10pro.zus.MobileFormETK', 'data-operation' => 'open',
-								'type' => 'button', 'actionClass' => 'btn btn-sm btn-default width90 e10-trigger-action', 'icon' => 'icon-edit',
+								'type' => 'button', 'actionClass' => 'btn btn-sm btn-default width90 e10-trigger-action', 'icon' => 'system/actionOpen',
 								'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId
 							];
 						}
@@ -208,7 +208,7 @@ class WidgetPlanTeacher extends \Shipard\UI\Core\WidgetPane
 						{
 							$rt[] = [
 								'text' => '', 'docAction' => 'new', 'table' => 'e10pro.zus.hodiny',
-								'type' => 'button', 'actionClass' => 'btn btn-sm btn-success width90', 'icon' => 'icon-plus-circle',
+								'type' => 'button', 'actionClass' => 'btn btn-sm btn-success width90', 'icon' => 'system/actionAdd',
 								'addParams' => $addParams,
 								'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId];
 						}
@@ -217,7 +217,7 @@ class WidgetPlanTeacher extends \Shipard\UI\Core\WidgetPane
 							$rt[] = [
 								'text' => '', 'action' => 'form', 'data-table' => 'e10pro.zus.hodiny',
 								'data-classId' => 'e10pro.zus.MobileFormETK', 'data-operation' => 'new',
-								'type' => 'button', 'actionClass' => 'btn btn-sm btn-default width90 e10-trigger-action', 'icon' => 'icon-plus-circle',
+								'type' => 'button', 'actionClass' => 'btn btn-sm btn-default width90 e10-trigger-action', 'icon' => 'system/actionAdd',
 								'data-addParams' => $addParams,
 								'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId];
 						}
@@ -284,7 +284,7 @@ class WidgetPlanTeacher extends \Shipard\UI\Core\WidgetPane
 		//$this->teacher = 6;
 
 		$this->today = utils::today();
-		//$this->today = new \DateTime('2021-02-04');
+		$this->today = new \DateTime('2022-09-05');
 
 		$this->firstDay = clone $this->today;
 		$this->firstDay = $this->firstDay->modify(('Monday' === $this->firstDay->format('l')) ? 'monday this week' : 'last monday');

@@ -3,7 +3,7 @@
 		"buy": {"url": "/app/buy", "objectType": "panel", "zone": "sec", "name": "Nákup", "order": 300000, 
 			"items": {
 				"invni": {"t1": "Faktury přijaté", "object": "viewer", "table": "e10doc.core.heads", "viewer": "invoicesIn",
-					"icon": "docType/invoicesIn", "order": 200000},
+					"icon": "docTypeInvoicesIn", "order": 200000},
 				"ordersOut": {"t1": "Vydané objednávky", "object": "viewer", "table": "e10buy.orders.orders", "viewer": "default",
 					"enabledCfgItem": "options.e10doc-commerce.useOrdersOut", "order": 220000},
 				"cashBox": {"t1": "Pokladna", "object": "viewer", "table": "e10doc.core.heads", "viewer": "cash",

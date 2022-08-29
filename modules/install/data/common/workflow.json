@@ -18,7 +18,7 @@
 				},
 				{
 					"rec": {
-						"fullName":"Přijatá faktura","shortName":"Přijatá faktura","msgType":1,"order":102000, "id":"inbox-doctype-invni", "icon":"docType/invoicesIn",
+						"fullName":"Přijatá faktura","shortName":"Přijatá faktura","msgType":1,"order":102000, "id":"inbox-doctype-invni", "icon":"docTypeInvoicesIn",
 						"systemItem": 1, "askKind": 1, "askPrice":1, "askPersons":1, "askDeadline": 1, "askDateIncoming": 1
 					}
 				},

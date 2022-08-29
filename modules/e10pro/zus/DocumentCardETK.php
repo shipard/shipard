@@ -45,13 +45,13 @@ class DocumentCardETK extends \e10\DocumentCard
 		if (count($rozvrh)) {
 			$hr = ['#' => '#', 'den' => 'Den', 'doba' => 'Od - do', 'ucitel' => 'Učitel', 'predmet' => 'Předmět'];
 			$this->addContent('body', ['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'header' => $hr, 'table' => $rozvrh,
-					'title' => ['icon' => 'icon-clock-o', 'text' => 'Rozvrh'], 'params' => ['hideHeader' => 1]]);
+					'title' => ['icon' => 'system/iconClock', 'text' => 'Rozvrh'], 'params' => ['hideHeader' => 1]]);
 			$this->timeTableIsSet = TRUE;
 		}
 		else
 		{
 			$this->addContent('body', ['pane' => 'e10-pane e10-pane-table e10-warning2', 'type' => 'line',
-					'line' => ['icon' => 'icon-clock-o', 'text' => 'Rozvrh není zadán', 'class' => 'h2']]);
+					'line' => ['icon' => 'system/iconClock', 'text' => 'Rozvrh není zadán', 'class' => 'h2']]);
 		}
 
 
@@ -68,7 +68,7 @@ class DocumentCardETK extends \e10\DocumentCard
 		{
 			$hr = ['#' => '#', 'date' => ' Datum', 'msg' => 'Problém', ];
 			$this->addContent('body', ['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'header' => $hr, 'table' => $k->troubles,
-					'title' => ['icon' => 'icon-exclamation-triangle', 'text' => 'Problémy', 'class' => 'h1 e10-error'], 'params' => ['__hideHeader' => 1]]);
+					'title' => ['icon' => 'system/iconExclamation', 'text' => 'Problémy', 'class' => 'h1 e10-error'], 'params' => ['__hideHeader' => 1]]);
 		}
 
 	}
@@ -87,7 +87,7 @@ class DocumentCardETK extends \e10\DocumentCard
 			$nh = $this->hoursPlanGenerator->newHours[0];
 
 			$etkTitle[] = [
-					'text' => utils::datef($nh['date']), 'icon' => 'icon-plus-circle', 'action' => 'new', 'data-table' => 'e10pro.zus.hodiny',
+					'text' => utils::datef($nh['date']), 'icon' => 'system/actionAdd', 'action' => 'new', 'data-table' => 'e10pro.zus.hodiny',
 					'class' => 'pull-right', 'xelement' => 'span', 'xxbtnClass' => 'btn-sm',
 					'data-addParams' => '__vyuka='.$this->recData['ndx'].'&__rozvrh='.$nh['rozvrh']['ndx'].'&__ucitel='.$nh['rozvrh']['ucitel'].
 							'&__datum='.$nh['date']->format('Y-m-d').'&__zacatek='.$nh['rozvrh']['zacatek'].'&__konec='.$nh['rozvrh']['konec'].
@@ -95,11 +95,11 @@ class DocumentCardETK extends \e10\DocumentCard
 			];
 		}
 
-		$etkTitle[] = ['text' => 'Hodiny', 'icon' => 'icon-book', 'class' => 'h2'];
+		$etkTitle[] = ['text' => 'Hodiny', 'icon' => 'system/iconBook', 'class' => 'h2'];
 		if ($this->hoursPlanGenerator->messages())
 		{
 			foreach ($this->hoursPlanGenerator->messages() as $msg)
-				$etkTitle[] = ['text' => $msg['text'], 'class' => 'e10-error block', 'icon' => 'icon-exclamation-triangle'];
+				$etkTitle[] = ['text' => $msg['text'], 'class' => 'e10-error block', 'icon' => 'system/iconExclamation'];
 		}
 		if ($this->hoursPlanGenerator->datumPredcasnehoUkonceni)
 		{

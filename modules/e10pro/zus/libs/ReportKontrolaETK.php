@@ -63,7 +63,7 @@ class ReportKontrolaETK extends \E10\GlobalReport
 					$hr = ['#' => '#', 'date' => ' Datum', 'msg' => 'Problém', ];
 					$this->addContent(['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'header' => $hr, 'table' => $k->troubles,
 							'title' => [
-								['text' => $r['nazev'], 'docAction' => 'edit', 'table' => 'e10pro.zus.vyuky', 'pk' => $r['ndx'], 'icon' => 'icon-exclamation-triangle', 'class' => 'h1 e10-error'],
+								['text' => $r['nazev'], 'docAction' => 'edit', 'table' => 'e10pro.zus.vyuky', 'pk' => $r['ndx'], 'icon' => 'system/iconWarning', 'class' => 'h1 e10-error'],
 								['text' => '#'.utils::nf($counter), 'class' => 'break'],
 								['text' => $r['pobockaNazev'], 'class' => '', 'icon' => 'icon-map-marker'],
 								['text' => $r['ucitelJmeno'], 'class' => '', 'icon' => 'x-teacher'],
@@ -84,7 +84,7 @@ class ReportKontrolaETK extends \E10\GlobalReport
 					$hr = ['#' => '#', 'date' => ' Datum', 'msg' => 'Problém', ];
 					$this->addContent(['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'header' => $hr, 'table' => $k->troubles,
 							'title' => [
-								['text' => $r['nazev'], 'docAction' => 'edit', 'table' => 'e10pro.zus.vyuky', 'pk' => $r['ndx'], 'icon' => 'icon-exclamation-triangle', 'class' => 'h1 e10-error'],
+								['text' => $r['nazev'], 'docAction' => 'edit', 'table' => 'e10pro.zus.vyuky', 'pk' => $r['ndx'], 'icon' => 'system/iconWarning', 'class' => 'h1 e10-error'],
 								['text' => '#'.utils::nf($counter), 'class' => 'break'],
 								['text' => $r['pobockaNazev'], 'class' => '', 'icon' => 'icon-map-marker'],
 								['text' => $r['ucitelJmeno'], 'class' => '', 'icon' => 'x-teacher'],

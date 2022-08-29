@@ -51,7 +51,7 @@ class reportListInvoicesIn extends \e10doc\core\libs\reports\GlobalReport
 		$data [] = $total;
 
 		$this->setInfo('title', 'Kniha přijatých faktur');
-		$this->setInfo('icon', 'docType/invoicesIn');
+		$this->setInfo('icon', 'docTypeInvoicesIn');
 
 		if ($this->reportParams ['fiscalPeriod']['value'])
 			$this->setInfo('param', 'Účetní období', $this->reportParams ['fiscalPeriod']['activeTitle']);

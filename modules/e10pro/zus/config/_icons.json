@@ -194,5 +194,30 @@
 		"fa6pro": "fa-microphone",
 		"bsi": "bi-mic",
 		"mdi": "mic"
+  },
+
+  "attendanceNoInput":{
+		"fa5": "fa-exclamation-triangle",
+		"fa6pro": "fa-exclamation-triangle",
+		"bsi": "bi-exclamation-triangle",
+		"mdi": "warning_amber"
+  },
+  "attendancePresent":{
+    "fa5": "fa-microphone",
+		"fa6pro": "fa-microphone",
+		"bsi": "bi-mic",
+		"mdi": "mic"
+  },
+  "attendanceExcused":{
+		"fa5": "fa-check-circle",
+		"fa6pro": "fa-check-circle",
+		"bsi": "bi-check-circle",
+		"mdi": "check_circle"
+  },
+  "attendanceNotExcused":{
+		"fa5": "fa-exclamation",
+		"fa6pro": "fa-exclamation",
+		"bsi": "bi-exclamation",
+		"mdi": "priority_high"
   }
 }

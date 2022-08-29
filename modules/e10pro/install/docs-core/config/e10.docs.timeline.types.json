@@ -4,7 +4,7 @@
 				"icon": "docType/invoicesOut"},
     "docs-invni": {
 				"fullName": "Faktura přijatá běžná", "shortName": "Přijatá faktura", "shortcut": "FPB", "pluralName": "Přijaté faktury",
-				"icon": "docType/invoicesIn"},
+				"icon": "docTypeInvoicesIn"},
     "docs-cash": {
 				"fullName": "Pokladní doklad", "shortName": "Pokladna", "shortcut": "POK", "pluralName": "Pokladní doklady",
 				"icon": "docType/cash"},

@@ -7,7 +7,7 @@
     },
     
     
-    "docType/invoicesIn":{
+    "docTypeInvoicesIn":{
         "fa5":"fa-file-download",
         "fa6pro":"fa-file-download",
         "bsi":"bi-file-earmark-arrow-down-fill",

@@ -184,10 +184,10 @@ class HoursPlanGenerator extends Utility
 				}
 			}
 
-			$item['title'][] = ['text' => utils::datef($r['datum'], '%d'), 'suffix' => $hourLenMinutes.' min', 'icon' => 'icon-clock-o', 'class' => 'h2'];
+			$item['title'][] = ['text' => utils::datef($r['datum'], '%d'), 'suffix' => $hourLenMinutes.' min', 'icon' => 'system/iconClock', 'class' => 'h2'];
 			if (utils::dateIsBlank($r['datum']))
 			{
-				$item['title'][] = ['text' => 'Není zadáno datum hodiny', 'class' => 'label label-danger', 'icon' => 'icon-exclamation-triangle'];
+				$item['title'][] = ['text' => 'Není zadáno datum hodiny', 'class' => 'label label-danger', 'icon' => 'system/iconWarning'];
 				$this->addMessage('Vyučovací hodina bez datumu');
 			}
 			$this->halfYears[$hy]['attendance']['ALL']['cnt'] += $hourLen;
@@ -211,13 +211,13 @@ class HoursPlanGenerator extends Utility
 					}
 					elseif ($r['pritomnost'] > 3)
 					{
-						$p = ['text' => $this->hourAttendanceTypes[$r['pritomnost']], 'icon' => 'icon-check', 'class' => 'label pull-right ' . 'label-default'];
+						$p = ['text' => $this->hourAttendanceTypes[$r['pritomnost']], 'icon' => 'system/iconCheck', 'class' => 'label pull-right ' . 'label-default'];
 						$item['title'][] = $p;
 					}
 					if ($r['klasifikaceZnamka'] != 0)
 					{
 						//$hodnoceni = $this->znamkyHodnoceni[$r['klasifikaceZnamka']];
-						$z = ['text' => strval($r['klasifikaceZnamka']), 'class' => 'label label-primary pull-right', 'icon' => 'icon-star-o'];
+						$z = ['text' => strval($r['klasifikaceZnamka']), 'class' => 'label label-primary pull-right', 'icon' => 'system/iconStar'];
 						if ($r['klasifikacePoznamka'] !== '')
 							$z['suffix'] = $r['klasifikacePoznamka'];
 						$item['title'][] = $z;
@@ -273,7 +273,7 @@ class HoursPlanGenerator extends Utility
 				if (isset($this->halfYears[$hyId]['grading']) && $this->halfYears[$hyId]['grading']['cnt'])
 				{
 					$gradingAvg = $this->halfYears[$hyId]['grading']['sum'] / $this->halfYears[$hyId]['grading']['cnt'];
-					$hyTitle['title'][] = ['text' => 'Průměr: '.round($gradingAvg, 1), 'icon' => 'icon-star-o', 'class' => 'padd5 pull-right label label-primary'];
+					$hyTitle['title'][] = ['text' => 'Průměr: '.round($gradingAvg, 1), 'icon' => 'system/iconStar', 'class' => 'padd5 pull-right label label-primary'];
 				}
 			}
 
@@ -564,14 +564,14 @@ class HoursPlanGenerator extends Utility
 		$hourId = strftime('%V_%g_', $item['date']->format('U')).$item['rozvrh']['vyuka'];
 		$newHourItem = [
 			"class" => "e10-warning1",
-			'title' =>[['text' => $item['date']->format ('d.m.Y'), 'icon' => 'icon-clock-o', 'class'=>'h2']],
+			'title' =>[['text' => $item['date']->format ('d.m.Y'), 'icon' => 'system/iconClock', 'class'=>'h2']],
 			'info' => [['text' => 'Hodina není zadána', 'class' => 'padd5 e10-off']],
 			'order' => $item['date']->format ('Ymd')
 		];
 
 
 		$newHourItem['title'][] = [
-			'text' => ' ', 'icon' => 'icon-plus-circle', 'action' => 'new', 'data-table' => 'e10pro.zus.hodiny',
+			'text' => ' ', 'icon' => 'system/actionAdd', 'action' => 'new', 'data-table' => 'e10pro.zus.hodiny',
 			'class' => 'pull-right', 'CCCbtnClass' => 'btn-sm',
 			'data-addParams' => '__vyuka='.$item['rozvrh']['vyuka'].'&__rozvrh='.$item['rozvrh']['ndx'].'&__ucitel='.$item['rozvrh']['ucitel'].
 				'&__datum='.$item['date']->format('Y-m-d').'&__zacatek='.$item['rozvrh']['zacatek'].'&__konec='.$item['rozvrh']['konec'].
