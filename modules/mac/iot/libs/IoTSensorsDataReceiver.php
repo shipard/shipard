@@ -66,7 +66,7 @@ class IoTSensorsDataReceiver extends Utility
 			if ($needInsert)
 			{
 				$newSensor = [
-					'valueStyle' => 0,
+					'quantityType' => 0,
 					'srcLan' => $srv['lan'],
 					'srcMqttTopic' => $sensorData['topic'],
 					'docState' => 1000, 'docStateMain' => 0,
