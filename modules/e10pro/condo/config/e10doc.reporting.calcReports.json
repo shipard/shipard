@@ -1,0 +1,88 @@
+{
+  "condo-flats-settlement": {
+    "title": "Vyúčtování bytů",
+    "engine": "e10pro.condo.libs.FlatsSettlementEngine",
+    "settings":
+    {
+      "fields": {
+        "columns": [
+          {"id": "heatingWaterType", "type": "enumInt", "name": "Způsob ohřevu teplé vody",
+            "enumValues": {"0": "Neřeší se (vlastní ohřev v bytech)", "1": "Společný bojler", "3": "Dodávka vody z teplárny"}},
+          {"id": "flatConsumptionAdvancesType", "type": "enumInt", "name": "Zálohy na spotřeby v bytech jsou",
+            "enumValues": {"0": "Jednotlivě za každý druh spotřeby zvlášť", "1": "Dohromady"}}
+        ]
+      }
+    },
+    "srcHeaderData":
+    {
+      "fields": {
+        "columns": [
+          {"id": "all_water_cold_costs", "type": "money", "name": "Částka SV", "group": "water_cold"},
+          {"id": "all_water_cold_quantity_supplier", "type": "number", "dec": 3, "name": "Množství SV [m3] od dodavatele", "group": "water_cold"},
+          {"id": "all_water_cold_quantity_meters", "type": "number", "dec": 3, "name": "Množství SV [m3] z vodoměrů", "group": "water_cold"},
+
+          {"id": "all_water_warm_quantity", "type": "number", "dec": 3, "name": "Množství TUV [m3]", "group": "water_warm", "readOnly": 1},
+
+          {"id": "all_water_heating_costs_gas", "type": "money", "name": "Částka Ohřev vody (plyn)", "group": "water_warm"},
+          {"id": "all_water_heating_quantity_gas_m3", "type": "number", "dec": 3, "name": "Množství plyn [m3]", "group": "water_warm"},
+          {"id": "all_water_heating_quantity_gas_kwh", "type": "number", "dec": 3, "name": "Množství plyn [kWh]", "group": "water_warm"},
+
+          {"id": "all_electricity_common_costs", "type": "money", "name": "Částka elektřina (společná)", "group": "electricity_common"},
+          {"id": "all_electricity_common_quantity", "type": "number", "dec": 3, "name": "Množství elektřina [MWh]", "group": "electricity_common"},
+
+          {"id": "all_insurance_costs", "type": "money", "name": "Pojištění domu", "group": "services"},
+          {"id": "all_administration_costs", "type": "money", "name": "Správa domu", "group": "services"}
+        ],
+        "groups": [
+          {"id": "water_cold", "title": "Studená voda"},
+          {"id": "water_warm", "title": "Teplá voda"},
+          {"id": "electricity_common", "title": "Společná elektřina"},
+          {"id": "services", "title": "Služby"}
+        ]
+      }
+    },
+    "srcRowData":
+    {
+      "fields": {
+        "columns": [
+          {"id": "flat_water_cold_advance", "type": "money", "name": "Zálohy SV", "group": "water_cold"},
+          {"id": "flat_water_cold_quantity", "type": "number", "dec": 3, "name": "Množství SV [m3]", "group": "water_cold"},
+
+          {"id": "flat_water_cold_warm_advance", "type": "money", "name": "Zálohy SV v TUV", "group": "water_warm"},
+          {"id": "flat_water_warm_quantity", "type": "number", "dec": 3, "name": "Množství TUV [m3]", "group": "water_warm"},
+
+          {"id": "flat_water_heating_advance", "type": "money", "name": "Zálohy Ohřev vody (plyn)", "group": "water_warm"},
+
+          {"id": "flat_consumption_total_advance", "type": "money", "name": "Celková záloha za spotřebu bytu", "group": "water_warm"},
+
+          {"id": "flat_electricity_common_advance", "type": "money", "name": "Zálohy na elektřinu (společná)", "group": "electricity_common"},
+
+          {"id": "flat_insurance_advance", "type": "money", "name": "Pojištění domu", "group": "services"},
+          {"id": "flat_administration_advance", "type": "money", "name": "Zálohy na správu domu", "group": "services"},
+
+          {"id": "flat_common_services_total_advance", "type": "money", "name": "Zálohy na provoz domu", "group": "services"}
+        ],
+        "groups": [
+          {"id": "water_cold", "title": "Studená voda"},
+          {"id": "water_warm", "title": "Teplá voda"},
+          {"id": "electricity_common", "title": "Společná elektřina"},
+          {"id": "services", "title": "Služby"}
+        ]
+      }
+    },
+    "resRowData":
+    {
+      "fields": {
+        "columns": [
+          {"id": "res_flat_water_cold_cost", "type": "money", "name": "Cena SV"},
+          {"id": "res_flat_water_cold_quantity", "type": "number", "dec": 3, "name": "Množství SV [m3]"},
+
+          {"id": "res_flat_water_cold_warm_cost", "type": "money", "name": "Cena SV v TUV"},
+          {"id": "res_flat_water_warm_quantity", "type": "number", "dec": 3, "name": "Množství TUV [m3]"},
+
+          {"id": "res_flat_water_heating_advance", "type": "money", "name": "Cena za ohřev vody (plyn)"}
+        ]
+      }
+    }
+  }
+}

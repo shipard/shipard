@@ -9,5 +9,23 @@
 				}
 			}
 		}
+	},
+	{
+		"table": "e10doc.reporting.calcReportsResults",
+		"views": {
+			"condo": {
+				"id": "condo", "class": "e10pro.condo.libs.ViewFlatsSettlements",
+				"details": {
+					"condoDetail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.reporting.ViewDetailCalcReportResult"}
+				}
+			}
+		},
+		"reports": [
+			{
+				"id": "condo", "name": "Vyúčtování", "class": "e10pro.condo.libs.ReportFlatSettlement",
+				"email": 1, "dropdown": 1
+			}
+		]
+
 	}
 ]
