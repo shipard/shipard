@@ -1,0 +1,28 @@
+{
+	"id": "e10doc.reporting.calcReports", "sql": "e10doc_reporting_calcReports", "name": "Vyúčtování",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "title", "name": "Název", "type": "string", "len": 180},
+
+		{"id": "calcReportType", "name": "Typ", "type": "enumString", "len": 40, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.reporting.calcReports", "cfgValue": "", "cfgText": "title"}},
+		{"id": "calcReportCfg", "name": "Nastavení", "type": "int", "reference": "e10doc.reporting.calcReportsCfgs"},
+
+		{"id": "dateBegin", "name": "Datum od", "type": "date"},
+		{"id": "dateEnd", "name": "Datum do", "type": "date"},
+		{"id": "fiscalYear", "name": "Účetní období", "type": "int", "reference": "e10doc.base.fiscalyears"},
+
+		{"id": "srcHeaderData", "name": "Zdrojová data Hlavička", "type": "subColumns"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "e10doc.reporting.ViewCalcReports", "detail": "e10doc.reporting.ViewDetailCalcReport"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.reporting.FormCalcReport"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "title"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

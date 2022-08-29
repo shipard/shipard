@@ -1,0 +1,12 @@
+{
+  "acc": {
+		"viewers": {
+			"e10doc.reporting.analysis": {"default": 2},
+			"e10doc.reporting.analysisGroups": {"default": 2},
+			"e10doc.reporting.analysisItems": {"default": 2},
+
+			"e10doc.reporting.calcReports": {"default": 2},
+			"e10doc.reporting.calcReportsCfgs": {"default": 2}
+		}
+	}
+}

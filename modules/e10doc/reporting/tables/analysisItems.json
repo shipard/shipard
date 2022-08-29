@@ -1,0 +1,21 @@
+{
+	"id": "e10doc.reporting.analysisItems", "sql": "e10doc_reporting_analysisItems", "name": "Položky Skupin Analýz účetního deníku",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "analysisGroup", "name": "Skupina", "type": "int", "reference": "e10doc.reporting.analysisGroups"},
+		{"id": "debsAccountId", "name": "Účet", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+		{"id": "note", "name": "Název", "type": "string", "len": 180},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "form", "class": "e10doc.reporting.ViewAnalysisItems", "detail": "e10doc.reporting.ViewDetailAnalysisItems"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.reporting.FormAnalysisItem"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "debsAccountId"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

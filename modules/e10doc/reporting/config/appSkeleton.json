@@ -1,0 +1,17 @@
+{
+	"panels": {
+		"accounting": {
+			"items": {
+				"settings": {
+					"subMenu": {
+						"items": {
+							"journalAnalysis": {"t1": "Analýzy deníku", "object": "viewer", "table": "e10doc.reporting.analysis", "viewer": "default", "icon": "tables/e10doc.reporting.analysis", "order": 400000},
+							"calcReports": {"t1": "Vyúčtování", "object": "viewer", "table": "e10doc.reporting.calcReports", "viewer": "default", "icon": "tables/e10doc.reporting.calcreports", "order": 410000},
+							"calcReportsCfgs": {"t1": "konfigurace", "object": "viewer", "table": "e10doc.reporting.calcReportsCfgs", "viewer": "default", "icon": "tables/e10doc.reporting.calcreports", "order": 420000}
+						}
+					}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,21 @@
+{
+	"id": "e10doc.reporting.analysisGroups", "sql": "e10doc_reporting_analysisGroups", "name": "Skupiny Analýz účetního deníku",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 180},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 100},
+
+		{"id": "analysis", "name": "Analýza", "type": "int", "reference": "e10doc.debs.analysis"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "form", "class": "e10doc.reporting.ViewAnalysisGroups", "detail": "e10doc.reporting.ViewDetailAnalysisGroups"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.reporting.FormAnalysisGroup"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

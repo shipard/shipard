@@ -1,0 +1,24 @@
+{
+	"id": "e10doc.reporting.calcReportsResults", "sql": "e10doc_reporting_calcReportsResults", "name": "Výsledky Vyúčtování",
+	"columns": [
+      {"id": "ndx", "name": "id", "type": "int_ai"},
+      {"id": "report", "name": "Přehled", "type": "int", "reference": "e10doc.reporting.calcReports"},
+      {"id": "rowOrder", "name": "Pořadí", "type": "int"},
+
+			{"id": "resType", "name": "Druh výsledku", "type": "int"},
+
+			{"id": "title", "name": "Název", "type": "string", "len": 120},
+			{"id": "workOrder", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
+
+      {"id": "resData", "name": "Data", "type": "subColumns"},
+			{"id": "resContent", "name": "Obsah pro vizualizaci", "type": "memo"}
+  ],
+	"views": [
+		{"id": "default", "class": "e10doc.reporting.ViewCalcReportsResults", "detail": "e10doc.reporting.ViewDetailCalcReportResult"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.reporting.FormCalcReportResult"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "title"},
+	"options": ["systemTable"]
+}

@@ -1,0 +1,22 @@
+{
+	"id": "e10doc.reporting.calcReportsRowsSD", "sql": "e10doc_reporting_calcReportsRowsSD", "name": "Řádkové podklady pro Vyúčtování",
+	"columns": [
+      {"id": "ndx", "name": "id", "type": "int_ai"},
+      {"id": "report", "name": "Přehled", "type": "int", "reference": "e10doc.reporting.calcReports"},
+      {"id": "rowOrder", "name": "Pořadí", "type": "int"},
+
+			{"id": "title", "name": "Název", "type": "string", "len": 120},
+
+			{"id": "workOrder", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
+
+      {"id": "srcRowData", "name": "Data", "type": "subColumns"}
+  ],
+	"views": [
+		{"id": "default", "class": "e10doc.reporting.ViewCalcReportsRowsSD", "detail": "e10doc.reporting.ViewDetailCalcReportRowsSD"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.reporting.FormCalcReportRowSD"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "title"},
+	"options": ["systemTable"]
+}

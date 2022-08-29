@@ -1,0 +1,11 @@
+{
+  "id": "e10doc.reporting",
+  "name": "Debs reporting",
+  "tables": [
+		"analysis", "analysisGroups", "analysisItems", "calcReports", "calcReportsRowsSD", "calcReportsResults", "calcReportsCfgs"
+	],
+  "config": [
+		{"id": "+appSkeleton", "file": "appSkeleton.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"}
+  ]
+}
