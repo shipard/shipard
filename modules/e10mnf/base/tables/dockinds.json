@@ -10,6 +10,7 @@
 			"enumCfg": {"cfgItem": "e10mnf.workOrders.woTypes", "cfgValue": "", "cfgText": "sn"}},
 		{"id": "workOrderFrequency", "name": "Časovost", "type": "enumInt", "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "e10mnf.workOrders.woFrequency", "cfgValue": "", "cfgText": "sn"}},
+		{"id": "useInvoicingPeriodicity", "name": "Povolit nastavení periodicity fakturace", "type": "logical"},
 		{"id": "disableRows", "name": "Nepoužívat řádky zákazky", "type": "logical"},
 		{"id": "priceOnHead", "name": "Zadávat cenu na hlavičce", "type": "logical"},
 		{"id": "useDescription", "name": "Použít textový popis zakázky", "type": "logical"},

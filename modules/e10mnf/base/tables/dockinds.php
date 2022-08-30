@@ -28,6 +28,7 @@ class TableDocKinds extends DbTable
 				'ndx' => $r ['ndx'],
 				'fullName' => $r ['fullName'], 'shortName' => $r ['shortName'],
 				'workOrderType' => $r ['workOrderType'], 'workOrderFrequency' => $r ['workOrderFrequency'],
+				'useInvoicingPeriodicity' => $r['useInvoicingPeriodicity'],
 				'disableRows' => $r ['disableRows'], 'priceOnHead' => $r ['priceOnHead'],
 				'vds' => $r ['vds'],
 				'useDescription' => $r ['useDescription'],
@@ -86,12 +87,15 @@ class TableDocKinds extends DbTable
 				];
 			}
 
+			if ($dk['workOrderFrequency'] != 2)
+				$dk['useInvoicingPeriodicity'] = 0;
+
 			$docKinds [strval($r['ndx'])] = $dk;
 		}
 
 		$docKinds ['0'] = [
 			'ndx' => 0, 'fullName' => '', 'shortName' => '',
-			'workOrderType' => 0, 'workOrderFrequency' => 0,
+			'workOrderType' => 0, 'workOrderFrequency' => 0, 'useInvoicingPeriodicity' => 0,
 			'disableRows' => 0, 'priceOnHead' => 0,
 			'viewerPrimaryTitle' => 0,
 			'useDescription' => 0,
@@ -216,6 +220,8 @@ class FormDocKind extends TableForm
 					$this->addColumnInput ('shortName');
 					$this->addColumnInput ('workOrderType');
 					$this->addColumnInput ('workOrderFrequency');
+					if ($this->recData['workOrderFrequency'] == 2)
+						$this->addColumnInput ('useInvoicingPeriodicity');
 					$this->addColumnInput ('priceOnHead');
 					$this->addColumnInput ('useDescription');
 					$this->addColumnInput ('useAddress');

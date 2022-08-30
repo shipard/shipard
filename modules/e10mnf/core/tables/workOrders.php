@@ -457,6 +457,12 @@ class ViewWorkOrders extends TableView
 
 			if ($item['dateClosed'])
 				$props[] = ['icon' => 'system/iconStop', 'text' => utils::datef ($item ['dateClosed'], '%d'), 'class' => ''];
+
+			if ($dko['useInvoicingPeriodicity'] && $item['invoicingPeriod'])
+			{
+				$ip = $this->table->columnInfoEnum ('invoicingPeriod', 'cfgText');
+				$props[] = ['icon' => 'docType/invoicesOut', 'text' => $ip[$item['invoicingPeriod']], 'class' => 'label label-info'];
+			}
 		}
 
 		$listItem ['t2'] = $props;
@@ -777,6 +783,10 @@ class FormWorkOrder extends TableForm
 						$this->addColumnInput ('dateBegin');
 						$this->addColumnInput ('dateClosed');
 					}
+
+					if ($dko['useInvoicingPeriodicity'])
+						$this->addColumnInput ('invoicingPeriod');
+
 					if ($dko['useDateDeadlineConfirmed'])
 						$this->addColumnInput ('dateDeadlineConfirmed');
 
