@@ -693,7 +693,7 @@ class FormVyuka extends TableForm
  * Class ReportETK
  * @package E10Pro\Zus
  */
-class ReportETK extends FormReport
+class ReportETK extends \e10doc\core\libs\reports\DocReportBase
 {
 	function init ()
 	{
@@ -703,6 +703,9 @@ class ReportETK extends FormReport
 
 	public function loadData ()
 	{
+    parent::loadData();
+		$this->loadData_DocumentOwner ();
+
 		$texy = new \E10\Web\E10Texy ($this->app());
 
 		$skolniRok = $this->app->cfgItem ('e10pro.zus.roky.'.$this->recData ['skolniRok']);

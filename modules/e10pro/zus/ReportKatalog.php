@@ -7,7 +7,7 @@ require_once __SHPD_MODULES_DIR__ . 'e10/base/base.php';
 require_once __SHPD_MODULES_DIR__ . 'e10pro/zus/zus.php';
 
 
-use e10\FormReport, e10\utils, e10\Utility, e10\uiutils, e10pro\zus\zusutils, e10\str;
+use e10\utils, e10\Utility, e10\uiutils, e10pro\zus\zusutils, e10\str;
 use function E10\sortByOneKey;
 
 
@@ -15,7 +15,7 @@ use function E10\sortByOneKey;
  * Class ReportKatalog
  * @package e10pro\zus
  */
-class ReportKatalog extends FormReport
+class ReportKatalog extends \e10doc\core\libs\reports\DocReportBase
 {
 	var $vysvedceni = [];
 	var $stupneStudia = [];
@@ -29,6 +29,9 @@ class ReportKatalog extends FormReport
 
 	public function loadData ()
 	{
+    parent::loadData();
+		$this->loadData_DocumentOwner ();
+
 		$this->data ['svpOddeleni'] = $this->app()->cfgItem ("e10pro.zus.svp.{$this->recData ['svp']}.pojmenovani");
 
 		// student

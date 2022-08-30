@@ -48,7 +48,7 @@ class DocReportBase extends FormReport
 			{
 				$reportType = 'default';
 				$reportIdBegin = 'reports.'.$reportType.'.';
-				$reportId = $reportIdBegin.$baseReportId;	
+				$reportId = $reportIdBegin.$baseReportId;
 			}
 		}
 
@@ -74,7 +74,7 @@ class DocReportBase extends FormReport
 			$this->data [$columnId]['lists'] = $this->tablePersons->loadLists($this->data [$columnId]);
 			if (isset($this->data [$columnId]['lists']['address'][0]))
 				$this->data [$columnId]['address'] = $this->data [$columnId]['lists']['address'][0];
-			
+
 			// persons country / language
 			World::setCountryInfo($this->app(), $this->data [$columnId]['lists']['address'][0]['worldCountry'], $this->data [$columnId]['address']);
 			if ($this->lang == '' && isset($this->data [$columnId]['address']['countryLangSC2']))
@@ -128,7 +128,7 @@ class DocReportBase extends FormReport
 
 	function loadData_DocumentOwner ()
 	{
-		$this->ownerNdx = $this->recData ['owner'];
+		$this->ownerNdx = $this->recData ['owner'] ?? 0;
 		if ($this->ownerNdx == 0)
 			$this->ownerNdx = intval($this->app()->cfgItem('options.core.ownerPerson', 0));
 		if ($this->ownerNdx)
