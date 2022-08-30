@@ -1,0 +1,25 @@
+{
+	"plans_mnf": {
+		"disableTopToolbar": 1,
+		"panels": {
+			"plans_default": {
+				"name": "Plánování",
+				"icon": "system/rightSubmenuToDo",
+				"order": 1000,
+				"fullsize": 1,
+				"rows": {
+					"main": {"order": 10000, "class": "full"}
+				}
+			},
+			"plans_woWithoutPlan": {
+				"name": "Zakázky bez plánu",
+				"icon": "system/rightSubmenuToDo",
+				"order": 2000,
+				"fullsize": 1,
+				"rows": {
+					"main": {"order": 10000, "class": "full"}
+				}
+			}
+		}
+	}
+}

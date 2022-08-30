@@ -1,0 +1,9 @@
+{
+  "id": "e10mnf.plans",
+  "name": "Plánování Výroby",
+  "config": [
+    {"id": "+appSkeleton", "file": "appSkeleton.json"},
+		{"id": "+dashboards", "file": "dashboards.json"},
+		{"id": "+widgets", "file": "widgets.json"}
+  ]
+}

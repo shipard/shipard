@@ -1,0 +1,10 @@
+[
+	{
+		"class": "plans.core.libs.Dashboard",
+		"dashboard": "plans_mnf", "panel": "plans_default", "order": 1001, "row": "main", "width": 12, "type": "wkfWall"
+	},
+	{
+		"class": "e10mnf.core.libs.DashboardWorkOrdersWithoutPlan",
+		"dashboard": "plans_mnf", "panel": "plans_woWithoutPlan", "order": 2000, "row": "main", "width": 12, "type": "wkfWall"
+	}
+]

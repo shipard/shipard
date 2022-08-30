@@ -1,0 +1,12 @@
+{
+	"panels": {
+		"e10mnf": {
+			"items": {
+				"plans": {
+					"t1": "Plánování", "object": "widget", "class": "e10.widgetDashboard", "subclass": "plans_mnf", "icon": "user/checkCircle",
+					"order": 5900
+				}
+			}
+		}
+	}
+}
