@@ -3,7 +3,7 @@
 	"name": "Společenství vlastníků",
 	"tables": [],
 	"extensions": ["condo"],
-	"modules": ["e10/base", "e10pro/meters"],
+	"modules": ["e10/base", "e10pro/meters", "e10doc/reporting"],
 	"config": [
 		{"id": "+appSkeleton", "file": "appSkeleton.json"},
 		{"id": "+e10.persons.roles", "file": "e10pro.persons.roles.json"},

@@ -18,6 +18,12 @@ class FlatsSettlementEngine extends \e10doc\reporting\libs\CalcReportEngine
 
   var $rowContents = [];
 
+  var $flatWorkOrderRecData;
+  var $flatWorkOrderRecDataCfg;
+  var $flatAreaRatio = '';
+  var $flatAreaRatioFlat = 0;
+  var $flatAreaRatioBuilding = 0;
+
   var $partMarks = [
     'flat_info' => 'A',
     'flat_persons' => 'B',
@@ -247,6 +253,19 @@ class FlatsSettlementEngine extends \e10doc\reporting\libs\CalcReportEngine
     ];
 
     //$resRowData['resData']['amount_cost_SV'] = 123.45;
+
+
+    $this->flatWorkOrderRecData = $this->app()->loadItem($rowSDRecData['workOrder'], 'e10mnf.core.workOrders');
+    $this->flatWorkOrderRecDataCfg = Json::decode($this->flatWorkOrderRecData['vdsData']);
+
+    $this->flatAreaRatio = $this->flatWorkOrderRecDataCfg['totalAreaRatio'];
+    $this->flatAreaRatioFlat = 9999999;
+    $this->flatAreaRatioBuilding = 9999999;
+
+    $fap = explode('/', $this->flatAreaRatio);
+    $this->flatAreaRatioFlat = intval($fap[0] ?? 999999);
+    $this->flatAreaRatioBuilding = intval($fap[1] ?? 999999);
+
 
     $this->numbers->addSection('res_flat', 'Vyúčtování bytu');
 
@@ -494,7 +513,12 @@ class FlatsSettlementEngine extends \e10doc\reporting\libs\CalcReportEngine
   {
     $flatsCount = 12;
 
-    $this->numbers->addSectionPart('res_flat', 'warm_water', $this->partMarks['warm_water'], 'Teplá voda');
+    $this->numbers->addSectionPart('res_flat', 'warm_water', $this->partMarks['warm_water'], 'Teplá voda ');
+
+    if (1)
+    {
+      $this->numbers->addString('res_flat_water_area_ration', 'res_flat', 'warm_water', 'Podíl podlahové plochy', $this->flatAreaRatio);
+    }
 
     $this->numbers->addNumber('res_flat_water_warm_quantity', 'res_flat', 'warm_water', 'Odebrané množství teplé vody v bytě', $srcRowData['flat_water_warm_quantity'], $this->unitM3, 3);
     $this->numbers->addNumber('res_all_water_cold_quantity_ww', 'res_flat', 'warm_water', 'Odebrané množství vody v celém domě', $this->srcHeaderData['all_water_cold_quantity_meters'], $this->unitM3, 3);
@@ -536,10 +560,20 @@ class FlatsSettlementEngine extends \e10doc\reporting\libs\CalcReportEngine
     $this->numbers->addNumberNote('res_all_water_heating_consumption_cost',
         '[(res_all_water_heating_cost)] - [(res_all_water_heating_base_cost)] = [(res_all_water_heating_consumption_cost)]');
 
-    $costBaseFlat = round($costBaseAll / $flatsCount, 2);
-    $this->numbers->addMoney('res_flat_water_heating_base_cost', 'res_flat', 'warm_water', 'Cena za základní složku', $costBaseFlat);
-    $this->numbers->addNumberNote('res_flat_water_heating_base_cost',
-        '[(res_all_water_heating_base_cost)] / '.$flatsCount.' = [(res_flat_water_heating_base_cost)]');
+    if (0)
+    {
+      $costBaseFlat = round($costBaseAll / $flatsCount, 2);
+      $this->numbers->addMoney('res_flat_water_heating_base_cost', 'res_flat', 'warm_water', 'Cena za základní složku', $costBaseFlat);
+      $this->numbers->addNumberNote('res_flat_water_heating_base_cost',
+          '[(res_all_water_heating_base_cost)] / '.$flatsCount.' = [(res_flat_water_heating_base_cost)]');
+    }
+    else
+    {
+      $costBaseFlat = round($costBaseAll * ($this->flatAreaRatioFlat / $this->flatAreaRatioBuilding), 2);
+      $this->numbers->addMoney('res_flat_water_heating_base_cost', 'res_flat', 'warm_water', 'Cena za základní složku', $costBaseFlat);
+      $this->numbers->addNumberNote('res_flat_water_heating_base_cost',
+          '[(res_all_water_heating_base_cost)] × ([(res_flat_water_area_ration)]) = [(res_flat_water_heating_base_cost)]');
+    }
 
     $costConsumptionFlat = round(($srcRowData['flat_water_warm_quantity'] / $this->srcHeaderData['all_water_warm_quantity']) * $costConsumptionAll, 2);
     $this->numbers->addMoney('res_flat_water_heating_consumption_cost', 'res_flat', 'warm_water', 'Cena za spotřební složku', $costConsumptionFlat);

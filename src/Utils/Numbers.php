@@ -62,11 +62,15 @@ class Numbers extends Utility
     $this->addNumber($numberId, $sectionId, $partId, $title, $value, $this->moneyUnit, 2);
   }
 
+  public function addString ($numberId, $sectionId, $partId, $title, $value)
+  {
+    $this->addNumber($numberId, $sectionId, $partId, $title, $value, '', 0);
+  }
+
   public function addNumberNote($numberId, $note)
   {
     if (!isset($this->data[$numberId]['notes']))
       $this->data[$numberId]['notes'] = [];
-
 
     $esNote = Utils::es($note);
     $noteCode = $this->resolveFormula($esNote);
@@ -110,9 +114,14 @@ class Numbers extends Utility
 
       $rowId = $this->sections[$sectionId]['parts'][$partId]['mark'].$number['partRowId'];
 
+      if (is_string($number['value']))
+        $value = $number['value'];
+      else
+        $value = Utils::nf($number['value'], $number['dec']);
+
       $contentItem = [
         'rowId' => $rowId,
-        'pv' => Utils::nf($number['value'], $number['dec']),
+        'pv' => $value,
 
         'unit' => $number['unit'],
       ];
@@ -175,7 +184,10 @@ class Numbers extends Utility
     }
 
     $number = $this->data[$varId];
-    $value = Utils::nf($number['value'], $number['dec']);
+    if (is_string($number['value']))
+      $value = $number['value'];
+    else
+      $value = Utils::nf($number['value'], $number['dec']);
 
     $sectionId = $number['sectionId'];
     $partId = $number['partId'];
