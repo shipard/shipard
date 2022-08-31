@@ -3,7 +3,7 @@
 <head>
     <title>Katalog o průběhu vzdělávání</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v8" type="text/css"/>
+    <link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v22" type="text/css"/>
 
 		<style>
 			table.katalogHead {
@@ -39,10 +39,15 @@
 			}
 
 			table td.unusedCell {
-					background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' preserveAspectRatio='none' viewBox='0 0 50 50'><path d='M0,50 L50,0' stroke='#aaa' stroke-width='1pt'/></svg>");
+					/*background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' preserveAspectRatio='none' viewBox='0 0 50 50'><path d='M0,50 L50,0' stroke='#aaa' stroke-width='1pt'/></svg>");
 					background-repeat:no-repeat;
 					background-position:center center;
 					background-size: 100% 100%, auto;
+					width: 300px;*/
+				background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPCFET0NUWVBFIHN2ZyBQVUJMSUMgIi0vL1czQy8vRFREIFNWRyAxLjEvL0VOIiAiaHR0cDovL3d3dy53My5vcmcvR3JhcGhpY3MvU1ZHLzEuMS9EVEQvc3ZnMTEuZHRkIj4KPHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjAiIHk9IjAiIHdpZHRoPSIyODMuNDY1IiBoZWlnaHQ9IjI4LjM0NiIgdmlld0JveD0iMCwgMCwgMjgzLjQ2NSwgMjguMzQ2Ij4KICA8ZyBpZD0iQmFja2dyb3VuZCI+CiAgICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMjgzLjQ2NSIgaGVpZ2h0PSIyOC4zNDYiIGZpbGw9IiMwMDAwMDAiIGZpbGwtb3BhY2l0eT0iMCIvPgogIDwvZz4KICA8ZyBpZD0iTGF5ZXJfMSI+CiAgICA8cGF0aCBkPSJNMC41LDI4Ljg0NiBMMjgzLjk2NSwwLjUiIGZpbGwtb3BhY2l0eT0iMCIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8L2c+Cjwvc3ZnPgo=);
+				background-size: 100% 100%, auto;
+				background-repeat: no-repeat;
+				background-position: center center;
 			}
 		</style>
 
@@ -50,37 +55,47 @@
 </head>
 <body>
 
-<div class='etkHeadSchoolName'>{{cfgItem.options.core.ownerFullName}}</div>
-<div class='h1' style="font-size: 16pt; font-weight: bold;">Katalog o průběhu vzdělávání - obor {{data.head.print.svpObor}}</div>
-<div class="h2">{{data.svpOddeleni}}: {{data.head.print.svpOddeleni}} Stupeň studia: {{data.stupen}} </div>
-
-<table class='katalogHead fullWidth default' style="margin-top: 6pt;">
+<table class="mainInfo">
 	<tr>
-		<td>Příjmení a jméno žáka:</td><td colspan="5">{{data.student.lastName}} {{data.student.firstName}}</td>
-	</tr>
-	<tr>
-		<td>Datum narození:</td><td>{{{data.birthDate}}}</td>
-		<td>Rodné číslo:</td><td>{{{data.rodneCislo}}}</td>
-		<td>Státní občanství:</td><td>{{{data.stObcan}}}</td>
-	</tr>
-	<tr>
-		<td>Trvalý pobyt:</td>
-		<td colspan="3">
-			{{data.student.lists.address.0.street}}{{#data.student.lists.address.0.street}}, {{/data.student.lists.address.0.street}}
-					{{data.student.lists.address.0.city}}{{#data.student.lists.address.0.city}}, {{/data.student.lists.address.0.city}}
-					{{data.student.lists.address.0.zipcode}}
+		<td class="info">
+			<table class="dates">
+				<tr>
+					<td class='label'>Příjmení a jméno žáka::</td><td class='value'><b>{{data.student.lastName}} {{data.student.firstName}}</b></td>
+				</tr>
+				<tr>
+					<td class='label'>Datum narození:</td><td class='value'>{{{data.birthDate}}}</td>
+				</tr>
+				<tr>
+					<td class='label'>Rodné číslo:</td><td class='value'>{{{data.rodneCislo}}}</td>
+				</tr>
+				<tr>
+					<td class='label'>Státní občanství:</td><td class='value'>{{{data.stObcan}}}</td>
+				</tr>	
+			</table>
 		</td>
-		<td>Zák. zástupce:</td><td> {{{data.zz1_jmeno}}}</td>
-	</tr>
-	<tr>
-		<td>Do školy nastoupil(a) dne:</td><td>{{data.nastup1.datum}}</td>
-		<td>Do:</td><td colspan="3">{{data.nastup1.text}}</td>
+
+		<td class="info">
+			<table class="docInfo">
+				<tr>
+					<td class='label'>Trvalý pobyt:</td><td class='value'>{{data.student.lists.address.0.street}}{{#data.student.lists.address.0.street}}, {{/data.student.lists.address.0.street}}
+					{{data.student.lists.address.0.city}}{{#data.student.lists.address.0.city}}, {{/data.student.lists.address.0.city}}
+					{{data.student.lists.address.0.zipcode}}</td>
+				</tr>
+				<tr>
+					<td class='label'>Zák. zástupce:</td><td class='value'>{{{data.zz1_jmeno}}}</td>
+				</tr>
+				<tr>
+					<td class='label'>Do školy nastoupil(a) dne:</td><td class='value'>{{data.nastup1.datum}}</td>
+				</tr>
+				<tr>
+					<td class='label'>Do:</td><td class='value'>{{data.nastup1.text}}</td>
+				</tr>
+			</table>				
+		</td>
 	</tr>
 </table>
 
-
-
-<h3 style="text-align: center; padding-top: 6pt;padding-bottom: 6pt; margin: 0pt;">Přehled o prospěchu žáka / žákyně</h3>
+<div class='heading'>Přehled o prospěchu žáka / žákyně</div>
 
 {{{@renderContent;dataItem:data.prehledOProspechu}}}
 
