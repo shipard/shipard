@@ -1,35 +1,41 @@
-<div class='etkHeadSchoolName'>{{cfgItem.options.core.ownerFullName}}</div>
-<div class='h1'>Třídní kniha pro kolektivní výuku</div>
+<div class='h1'>pro kolektivní výuku</div>
 
-<table class='etkHead'>
+<table class="mainInfo">
 	<tr>
-		<td>
-			<table>
-				<tr><td>Školní rok:</td><td>{{data.head.print.skolniRok}}</td></tr>
-				<tr><td>Obor:</td><td>{{data.head.print.svpObor}}</td></tr>
-				<tr><td>Učitel/ka:</td><td>{{data.ucitel.fullName}}</td></tr>
+		<td class="info">
+			<table class="dates">
+				<tr>
+					<td class='label'>Školní rok:</td><td class='value'><b>{{data.head.print.skolniRok}}</b></td>
+				</tr>
+				<tr>
+					<td class='label'>Obor:</td><td class='value'>{{data.head.print.svpObor}}</td>
+				</tr>
+				<tr>
+					<td class='label'>Učitel/ka:</td><td class='value'>{{data.ucitel.fullName}}</td>
+				</tr>
 			</table>
 		</td>
-		<td>
-			<table>
-				<tr><td>Vyučovací předměty:</td>
-					<td>
-						{{data.predmet.nazev}}
-						{{#data.predmet2.nazev}}<br>{{data.predmet2.nazev}}{{/data.predmet2.nazev}}
-					</td>
+
+		<td class="info">
+			<table class="docInfo">
+				<tr>
+					<td class='label'>Vyučovací předměty:</td><td class='value'>{{data.predmet.nazev}}
+						{{#data.predmet2.nazev}}<br>{{data.predmet2.nazev}}{{/data.predmet2.nazev}}</td>
 				</tr>
-				<tr><td>Ročníky:</td><td>{{data.rocnikyText}}</td></tr>
-			</table>
+				<tr>
+					<td class='label'>Ročníky:</td><td class='value'>{{data.rocnikyText}}</td>
+				</tr>
+			</table>				
 		</td>
 	</tr>
 </table>
 
-<div class='h2'>Roční studijní plán</div>
+<div class='headingAlt'>Roční studijní plán</div>
 <div class='etkStudijniPlan'>
 	{{{data.studijniPlan}}}
 </div>
 
-<div class='h2'>Vyučovací hodiny</div>
+<div class='headingAlt'>Vyučovací hodiny</div>
 <table class='ethHours'>
 	<thead>
 	<tr>

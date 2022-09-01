@@ -1,42 +1,66 @@
-<div class='etkHeadSchoolName'>{{cfgItem.options.core.ownerFullName}}</div>
-<div class='h1'>Třídní kniha pro individuální výuku</div>
+<div class='h1'>pro individuální výuku</div>
 
-<table class='etkHead'>
+
+<table class="mainInfo">
 	<tr>
-		<td>
-			<table>
-				<tr><td>Školní rok:</td><td>{{data.head.print.skolniRok}}</td></tr>
+		<td class="info">
+			<table class="dates">
+				<tr>
+					<td class='label'>Školní rok:</td><td class='value'><b>{{data.head.print.skolniRok}}</b></td>
+				</tr>
 				{{! <tr><td>Obor:</td><td>{ {data.head.print.svpObor} }</td></tr>!}}
-				<tr><td>{{data.svpOddeleni}}:</td><td>{{data.head.print.svpOddeleni}}</td></tr>
-				<tr><td>Vyučovací předmět:</td><td>{{data.predmet.nazev}}</td></tr>
-				<tr><td>Ročník:</td><td>{{data.head.print.rocnik}}</td></tr>
-				<tr><td>Učitel/ka:</td><td>{{data.ucitel.fullName}}</td></tr>
-				<tr><td>Studium:</td><td>{{data.studium.poradoveCislo}}</td></tr>
+				<tr>
+					<td class='label'>{{data.svpOddeleni}}:</td><td class='value'>{{data.head.print.svpOddeleni}}</td>
+				</tr>
+				<tr>
+					<td class='label'>Vyučovací předmět:</td><td class='value'>{{data.predmet.nazev}}</td>
+				</tr>
+				<tr>
+					<td class='label'>Ročník:</td><td class='value'>{{data.head.print.rocnik}}</td>
+				</tr>
+				<tr>
+					<td class='label'>Učitel/ka:</td><td class='value'>{{data.ucitel.fullName}}</td>
+				</tr>
+				<tr>
+					<td class='label'>Studium:</td><td class='value'>{{data.studium.poradoveCislo}}</td>
+				</tr>	
 			</table>
 		</td>
-		<td>
-			<table>
-				<tr><td>Jméno a příjmení žáka:</td><td>{{data.student.firstName}} {{data.student.lastName}}</td></tr>
-					<tr><td>Škola:</td><td>{{{data.head.studentSkola}}}</td></tr>
-					<tr><td>Datum narození:</td><td>{{{data.birthDate}}}</td></tr>
-					<tr><td>Adresa trvalého bydliště:</td><td>{{data.student.lists.address.0.street}}{{#data.student.lists.address.0.street}}, {{/data.student.lists.address.0.street}}
+
+		<td class="info">
+			<table class="docInfo">
+				<tr>
+					<td class='label'>Jméno a příjmení žáka:</td><td class='value'><b>{{data.student.firstName}} {{data.student.lastName}}</b></td>
+				</tr>
+				<tr>
+					<td class='label'>Škola:</td><td class='value'>{{{data.head.studentSkola}}}</td>
+				</tr>
+				<tr>
+					<td class='label'>Datum narození:</td><td class='value'>{{{data.birthDate}}}</td>
+				</tr>
+				<tr>
+					<td class='label'>Adresa trvalého bydliště:</td><td class='value'>{{data.student.lists.address.0.street}}{{#data.student.lists.address.0.street}}, {{/data.student.lists.address.0.street}}
 					{{data.student.lists.address.0.city}}{{#data.student.lists.address.0.city}}, {{/data.student.lists.address.0.city}}
-					{{data.student.lists.address.0.zipcode}}</td></tr>
-				<tr><td>Zák. zástupce:</td><td>{{{data.zz1_jmeno}}}</td></tr>
-				<tr><td>Telefon:</td><td>{{#data.zz1_telefon}}{{data.zz1_telefon}}{{/data.zz1_telefon}}{{^data.zz1_telefon}}{{data.telefon}}{{/data.zz1_telefon}}</td></tr>
-			</table>
+					{{data.student.lists.address.0.zipcode}}</td>
+				</tr>
+				<tr>
+					<td class='label'>Zák. zástupce:</td><td class='value'>{{{data.zz1_jmeno}}}</td>
+				</tr>
+				<tr>
+					<td class='label'>Telefon:</td><td class='value'>{{#data.zz1_telefon}}{{data.zz1_telefon}}{{/data.zz1_telefon}}{{^data.zz1_telefon}}{{data.telefon}}{{/data.zz1_telefon}}</td>
+				</tr>
+			</table>				
 		</td>
 	</tr>
 </table>
 
-
-<div class='h2'>Roční studijní plán</div>
+<div class='headingAlt'>Roční studijní plán</div>
 <div class='etkStudijniPlan'>
 	{{{data.studijniPlan}}}
 </div>
 
 
-<div class='h2'>Vyučovací hodiny</div>
+<div class='headingAlt'>Vyučovací hodiny</div>
 <table class='ethHours'>
 	<thead>
 	<tr>
