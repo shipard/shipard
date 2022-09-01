@@ -44,10 +44,10 @@ table.mainInfo td.info{
 }
 
 table.mainInfo {
-	border-top: 2pt solid lightgray;
+	/*border-top: 2pt solid lightgray;*/
 	width: 100%;
 	padding-bottom: 3pt;
-	border-bottom: 2pt solid lightgray;
+	border-bottom: 1pt solid lightgray;
 	border-collapse: collapse;
 }
 
@@ -61,7 +61,7 @@ table.infoSecondary {
 	width: 100%;
 	margin-top: 3pt;
 	padding-bottom: 3pt;
-	border-bottom: 2pt solid lightgray;
+	border-bottom: 1pt solid lightgray;
 	padding-left: 0pt;
 	margin-left: 0pt;
 	border-collapse: collapse;
@@ -91,10 +91,14 @@ div.hdr {padding-top: 3pt; font-size: 14pt; padding-bottom: 3pt;}
 span.title {display: block; font-weight: bold;}
 span.address { display: block; padding-bottom: 5pt;}
 
+div.heading {font-weight: bold; font-size: 14pt; padding-top: 8pt; padding-bottom: 5pt; text-align: center;}
+
+div.headingAlt {font-weight: bold; font-size: 14pt; padding-top: 8pt; padding-bottom: 5pt; text-align: left;}
+
 /*eet*/
 table.rosInfo, table#documentDetails {width: 100%; }
 table#documentDetails td.label {vertical-align: bottom;}
-table#documentDetails td.value {text-align: right;vertical-align: bottom;}
+table#documentDetails td.value {text-align: right; vertical-align: bottom;}
 
 table.rosInfo {font-size: 8pt; margin-bottom: 8pt; border: 1pt solid rgba(0, 0, 0, 0.4); border-radius: 5px; border-style: hidden; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);}
 table.rosInfo tr {text-align: right;}
@@ -187,10 +191,6 @@ td.partner {border-bottom: .8pt solid rgba(0, 0, 0, 0.2);}
 
 /*pokladní lístek*/
 #sum {margin-top: 5pt;}
-
-
-
-
 
 /*** universal app styles */
 
