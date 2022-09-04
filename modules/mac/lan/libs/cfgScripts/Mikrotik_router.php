@@ -63,7 +63,7 @@ class Mikrotik_router extends \mac\lan\libs\cfgScripts\Mikrotik
 		];
 
 		$this->rootsInfo ['/ip dhcp-server'] = [
-			'mandatoryColumns' => ['address-pool', 'name', 'interface', 'disabled'],
+			'mandatoryColumns' => ['address-pool', 'name', 'interface'/*, 'disabled' - removed in ROS7 */],
 			'updateColumns' => ['authoritative', 'comment', 'lease-time']
 		];
 
