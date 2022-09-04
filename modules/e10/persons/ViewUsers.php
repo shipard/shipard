@@ -42,6 +42,15 @@ class ViewUsers extends \e10\persons\ViewPersons
 			array_push ($q, ' AND [personType] != %i', 3);
 	}
 
+	public function qryFullTextExt (array &$q)
+	{
+		$fts = $this->fullTextSearch ();
+		if ($fts !== '')
+		{
+			array_push ($q, ' OR [persons].[login] LIKE %s', '%'.$fts.'%');
+		}
+	}
+
 	public function renderRow ($item)
 	{
 		$listItem = parent::renderRow($item);

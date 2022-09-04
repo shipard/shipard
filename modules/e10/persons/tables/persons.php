@@ -554,10 +554,13 @@ class ViewPersonsBase extends TableView
 			{
 				if ($selectLevel === 0)
 				{
-					array_push ($q, '(([lastName] LIKE %s', $searchValue.'%');
+					array_push ($q, '(');
+					array_push ($q, '([lastName] LIKE %s', $searchValue.'%');
 					array_push ($q, ' OR [firstName] LIKE %s', $searchValue.'%');
 					array_push ($q, ')');
-					array_push ($q, ' OR ([lastName] LIKE %s', '%'.$searchValue.'%', ' AND [company] = 1)', ')');
+					array_push ($q, ' OR ([lastName] LIKE %s', '%'.$searchValue.'%', ' AND [company] = 1)');
+					$this->qryFullTextExt ($q);
+					array_push ($q, ')');
 				}
 				else
 				if ($selectLevel === 1)
@@ -605,6 +608,10 @@ class ViewPersonsBase extends TableView
 			array_push ($q, ' ORDER BY [docStateMain], [lastName], [firstName] ' . $this->sqlLimit ());
 
 		return $q;
+	}
+
+	public function qryFullTextExt (array &$q)
+	{
 	}
 
 	public function qryPanel (array &$q)
