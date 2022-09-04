@@ -141,7 +141,7 @@ class TableDevices extends DbTable
 			$cfg['io']['pins'] = $gplCfg['io']['pins'];
 		}
 
-		if ($withExtraPins && $iotDeviceNdx)	
+		if ($withExtraPins && $iotDeviceNdx)
 			$this->addGpioLayoutExtraPins($iotDeviceNdx, $cfg['io']);
 
 		return $cfg;
@@ -192,7 +192,7 @@ class TableDevices extends DbTable
 	{
 		if ($columnId === 'deviceSettings')
 		{
-			$iotDeviceCfg = $this->iotDeviceCfgFromRecData($recData);	
+			$iotDeviceCfg = $this->iotDeviceCfgFromRecData($recData);
 			if ($iotDeviceCfg && isset($iotDeviceCfg['fields']))
 				return $iotDeviceCfg['fields'];
 
@@ -304,7 +304,7 @@ class FormDevice  extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
 		$deviceTypeCfg = $this->app()->cfgItem('mac.iot.devices.types.'.$this->recData['deviceType']);
-		$useIOPorts = $deviceTypeCfg['useIOPorts'] ?? 0;
+		$useIOPorts = 0;//$deviceTypeCfg['useIOPorts'] ?? 0;
 
 		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 		if ($useIOPorts)
@@ -317,7 +317,7 @@ class FormDevice  extends TableForm
 					$this->addColumnInput ('deviceType');
 					$this->addColumnInput ('deviceVendor');
 					$this->addColumnInput ('deviceModel');
-					
+
 					$this->addSeparator(self::coH2);
 
 					$this->addColumnInput ('fullName');
@@ -327,7 +327,7 @@ class FormDevice  extends TableForm
 					$this->addColumnInput ('lan');
 
 					$this->addSeparator(self::coH2);
-					$this->addSubColumns('deviceSettings');			
+					$this->addSubColumns('deviceSettings');
 				$this->closeTab ();
 
 				if ($useIOPorts)

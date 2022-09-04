@@ -218,7 +218,7 @@ class IotBoxCfgUpdater extends Utility
 	function createCfg()
 	{
 		//$this->loadDeviceSensors();
-		$this->loadIOPortsThings();
+		//$this->loadIOPortsThings();
 
 		$this->iotBoxCfg = [
 			'deviceNdx' => $this->deviceRecData['ndx'],
@@ -300,6 +300,7 @@ class IotBoxCfgUpdater extends Utility
 		$this->iotBoxCfg['configVersion'] = $ver;
 	}
 
+	/*
 	function loadIOPortsThings()
 	{
 		$this->iotIOPortsThings = [];
@@ -332,6 +333,7 @@ class IotBoxCfgUpdater extends Utility
 			$this->iotIOPortsThings[$ioPortNdx][] = $item;
 		}
 	}
+	*/
 
 	/*
 	function loadDeviceSensors()
