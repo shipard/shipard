@@ -17,6 +17,9 @@ class ModuleServices extends \e10\cli\ModuleServices
 		$debug = intval($this->app->arg('debug'));
 		$o->debug = $debug;
 
+		$resetOutbox = intval($this->app->arg('reset-outbox'));
+		$o->resetOutbox = $resetOutbox;
+
 		$today = $this->app->arg('today');
 		if ($today !== FALSE)
 		{

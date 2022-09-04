@@ -32,6 +32,7 @@ class TemplatesScheduler extends Utility
 	var $checkDirection = -1;
 	var $debug = 0;
 	var $save = 0;
+	var $resetOutbox = 0;
 	var $cntGeneratedDocs = 0;
 
 	var $reviewData = [];

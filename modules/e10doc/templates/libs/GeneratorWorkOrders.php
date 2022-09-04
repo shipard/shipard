@@ -59,12 +59,12 @@ class GeneratorWorkOrders extends \e10doc\templates\libs\Generator
 
     $this->invHead ['dbCounter'] = $this->templateRecData['dstDbCounter'];
 
-		$this->docNote = $this->variables->resolve($this->templateRecData['docNote']);
-
     $this->variables->setDataItem('docHead', $this->invHead);
     $this->variables->setDataItem('woHead', $workOrderRecData);
 
     // -- resolve variables
+    $this->docNote = $this->variables->resolve($this->templateRecData['docNote']);
+
     $tt = trim($this->variables->resolve($this->templateRecData['docText']));
     if ($tt !== '')
       $this->invHead ['title'] = Str::upToLen($tt, 120);

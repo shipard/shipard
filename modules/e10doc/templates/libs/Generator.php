@@ -111,6 +111,7 @@ class Generator extends Utility
 
     $this->tableDocsHeads->checkAfterSave2 ($f->recData);
 
+    $this->db()->query ('DELETE FROM [e10_base_properties] WHERE [tableid] = %s', 'e10doc.core.heads', ' AND [recid] = %i', $docNdx);
 		if ($this->docNote !== '')
 		{
 			$newProp = [
@@ -127,6 +128,12 @@ class Generator extends Utility
 
   public function send($documentNdx)
   {
+    if ($this->scheduler->resetOutbox)
+    {
+      $update = ['docState' => 9800, 'docStateMain' => 4,];
+      $this->db()->query ('UPDATE [wkf_core_issues] SET ', $update, ' WHERE [recNdx] = %i', $documentNdx, ' AND [tableNdx] = %i', $this->tableDocsHeads->ndx);
+    }
+
     $formReportEngine = new \Shipard\Report\FormReportEngine($this->app());
     $formReportEngine->setParam('documentTable', 'e10doc.core.heads');
     $formReportEngine->setParam('reportClass', 'e10doc.invoicesOut.libs.InvoiceOutReport');
