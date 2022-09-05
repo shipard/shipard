@@ -72,8 +72,8 @@ class TableIssuesKinds extends DbTable
 					$dt = $this->app()->cfgItem ('wkf.issues.types.'.$r['issueType'], FALSE);
 					if ($dt)
 						$icon = $dt['icon'];
-				}		
-			}	
+				}
+			}
 
 			$item = [
 				'ndx' => $r ['ndx'], 'fn' => $r ['fullName'], 'sn' => $r ['shortName'],
@@ -87,6 +87,8 @@ class TableIssuesKinds extends DbTable
 				'askDateIncoming' => $r['askDateIncoming'],
 				'enableConnectedIssues' => $r['enableConnectedIssues'],
 				'enableProjects' => $r['enableProjects'], 'enableTargets' => $r['enableTargets'],
+				'enableEmailForward' => $r['enableEmailForward'], 'emailForwardOnFirstConfirm' => $r['emailForwardOnFirstConfirm'],
+				'emailForwardSubjectPrefix' => $r['emailForwardSubjectPrefix'], 'emailForwardBody' => $r['emailForwardBody'],
 				'addOrder' => $msgTypes[$r ['issueType']]['addOrder'].sprintf('%07d', $r['order']),
 				'aa' => $r['analyzeAttachments'],
 				'vds' => $r['vds'],
@@ -256,6 +258,12 @@ class FormIssueKind extends TableForm
 					$this->closeRow();
 					$this->addColumnInput ('askDateIncoming');
 					$this->addColumnInput ('enableConnectedIssues');
+					$this->addSeparator(self::coH4);
+					$this->addColumnInput ('enableEmailForward');
+					$this->addColumnInput ('emailForwardOnFirstConfirm');
+					$this->addColumnInput ('emailForwardSubjectPrefix');
+					$this->addColumnInput ('emailForwardBody');
+					$this->addSeparator(self::coH4);
 					$this->addColumnInput ('vds');
 				$this->closeTab();
 				$this->openTab ();

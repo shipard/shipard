@@ -57,6 +57,8 @@ class DashboardIssuesCore extends TableView
 	var $showProjectsParts = TRUE;
 	var $showProjectsFolders = TRUE;
 
+	var $useWorkOrders = 0;
+
 	var $help = '';
 
 	CONST dvsPanes = 0, dvsPanesMini = 2, dvsPanesOneCol = 3, dvsRows = 1, dvsPanesMicro = 7, dvsViewer = 5;
@@ -81,6 +83,8 @@ class DashboardIssuesCore extends TableView
 		$this->objectSubType = TableView::vsDetail;
 		//$this->usePanelRight = 1;
 		$this->enableDetailSearch = TRUE;
+
+		$this->useWorkOrders = intval($this->app()->cfgItem ('options.e10doc-commerce.useWorkOrders', 0));
 
 		$this->initMainQueries();
 
@@ -271,7 +275,7 @@ class DashboardIssuesCore extends TableView
 				['code' => "<span class='e10-ntf-badge' id='ntf-badge-wkf-s{$us}' style='display:none;'></span>"],
 			];
 
-			if (!count($sectionCfg['subSections']))
+			if (!isset($sectionCfg['subSections']) || !count($sectionCfg['subSections']))
 			{
 				$nv = isset($marks->marks[$us]) ? $marks->marks[$us] : 0;
 				if (!isset($marks->markCfg['states'][$nv]))
@@ -281,7 +285,7 @@ class DashboardIssuesCore extends TableView
 					['text' => '', 'icon' => $marks->markCfg['states'][$nv]['icon'], 'title' => $nt, 'class' => 'pull-right e10-small', 'css' => 'position: absolute; right:0; padding-right: 4px;'];
 			}
 
-			if ($sectionCfg['subSections'])
+			if (isset($sectionCfg['subSections']))
 			{
 				foreach ($sectionCfg['ess'] as $ss)
 				{
@@ -362,10 +366,24 @@ class DashboardIssuesCore extends TableView
 		array_push ($q, ' persons.fullName AS authorFullName, ');
 		array_push ($q, ' targets.shortName AS targetName,');
 		array_push ($q, ' statuses.[order] AS statusOrder');
+
+		if ($this->useWorkOrders)
+		{
+			array_push($q, ', wo.[title] AS woTitle, wo.[docNumber] AS woDocNumber');
+			array_push($q, ', woCusts.[fullName] AS woCustName');
+		}
+
 		array_push ($q, ' FROM [wkf_core_issues] AS issues');
 		array_push ($q, ' LEFT JOIN e10_persons_persons as persons ON issues.author = persons.ndx');
 		array_push ($q, ' LEFT JOIN wkf_base_targets AS [targets] ON issues.target = targets.ndx');
 		array_push ($q, ' LEFT JOIN wkf_base_issuesStatuses AS [statuses] ON issues.status = statuses.ndx');
+
+		if ($this->useWorkOrders)
+		{
+			array_push($q, ' LEFT JOIN [e10mnf_core_workOrders] AS wo ON [issues].workOrder = wo.ndx');
+			array_push($q, ' LEFT JOIN [e10_persons_persons] AS woCusts ON [wo].customer = woCusts.ndx');
+		}
+
 		array_push ($q, ' WHERE 1');
 
 		$this->qrySection($q, $selectPart);
@@ -405,7 +423,7 @@ class DashboardIssuesCore extends TableView
 			if ($selectPart === 'concept')
 			{
 				array_push($q, ' AND (',
-					' (issues.[docStateMain] = %i', 0, ' AND [author] IN %in', [0, $this->thisUserId], ')',
+					' (issues.[docStateMain] = %i', 0, ' AND [issues].[author] IN %in', [0, $this->thisUserId], ')',
 					' OR (issues.[docStateMain] = %i', 0, ' AND issues.docState = %i', 1001, ')',
 					' OR issues.[docState] = 8000',
 					')'
@@ -426,7 +444,7 @@ class DashboardIssuesCore extends TableView
 				array_push($q, 'issues.[docStateMain] = %i', 1);
 			else
 				array_push($q, ' issues.[docStateMain] IN %in', [1, 2, 5]);
-			array_push($q,' OR (issues.[docStateMain] = %i', 0, ' AND [author] IN %in', [0, $this->thisUserId], ')',
+			array_push($q,' OR (issues.[docStateMain] = %i', 0, ' AND [issues].[author] IN %in', [0, $this->thisUserId], ')',
 				' OR (issues.[docStateMain] = %i', 0, ' AND issues.docState = %i', 1001, ')',
 				' OR issues.[docState] = 8000'
 				);
@@ -444,7 +462,7 @@ class DashboardIssuesCore extends TableView
 		if ($mqId === 'all')
 		{
 			array_push($q, ' AND (issues.[docStateMain] != %i', 0,
-				' OR (issues.[docStateMain] = %i', 0, ' AND [author] IN %in', [0, $this->thisUserId], ')',
+				' OR (issues.[docStateMain] = %i', 0, ' AND [issues].[author] IN %in', [0, $this->thisUserId], ')',
 				')');
 		}
 	}
@@ -722,6 +740,8 @@ class DashboardIssuesCore extends TableView
 
 		$ndx = $item ['ndx'];
 
+		$issueKindCfg = $this->app()->cfgItem ('wkf.issues.kinds.'.$item['issueKind'], NULL);
+
 		$item['pk'] = $ndx;
 		$item ['pane'] = ['title' => [], 'body' => [], 'class' => $this->paneClass.' e10-att-target'];
 		if (!$this->withBody)
@@ -779,6 +799,14 @@ class DashboardIssuesCore extends TableView
 				$title[] = $this->linkedPersons [$ndx]['wkf-issues-from'];
 			elseif ($item['issueType'] === TableIssues::mtOutbox && isset ($this->linkedPersons [$ndx]['wkf-issues-to']))
 				$title[] = $this->linkedPersons [$ndx]['wkf-issues-to'];
+
+			if ($item['workOrder'])
+			{
+				$woTitle = $item['woTitle'];
+				if ($woTitle === '')
+					$woTitle = $item['woCustName'];
+				$title[] = ['text' => $woTitle, 'class' => 'label label-default', 'icon' => 'tables/e10mnf.core.workOrders'];
+			}
 		}
 
 		$this->addDeadlineDate ($item, $title);
@@ -862,6 +890,20 @@ class DashboardIssuesCore extends TableView
 		{
 			$title[] = ['icon' => 'icon-comment-o', 'class' => 'pull-right e10-off', 'text' => utils::nf(count($this->comments[$ndx]))];
 		}
+
+		// -- email forward
+		/*
+		if ($issueKindCfg['enableEmailForward'] ?? 0)
+		{
+			$title[] = [
+				'text' => 'Přeposlat',
+				'type' => 'action', 'action' => 'addwizard', 'table' => 'wkf.core.issues', 'pk' => $ndx,
+				'data-class' => 'e10pro.purchase.addWizard',
+				'icon' => 'user/envelope', 'btnClass' => 'btn-success btn-xs', 'class' => 'pull-right',
+
+			];
+		}
+		*/
 
 		if (isset($this->atts[$ndx]))
 			$title[] = ['text' => utils::nf($this->atts[$ndx]['count']), 'icon' => 'system/formAttachments', 'class' => 'e10-off pull-right'];
@@ -975,6 +1017,19 @@ class DashboardIssuesCore extends TableView
 				if (isset($this->atts[$item ['ndx']]))
 				{
 					$links = $this->attLinks($item ['ndx']);
+
+					// -- email forward
+					if ($issueKindCfg['enableEmailForward'] ?? 0)
+					{
+						$links[] = [
+							'text' => 'Přeposlat',
+							'type' => 'action', 'action' => 'addwizard', 'table' => 'wkf.core.issues',
+							'data-class' => 'wkf.core.libs.IssueEmailForwardWizard',
+							'icon' => 'user/envelope', 'btnClass' => 'btn-success btn-xs', 'class' => 'pull-right',
+							'data-addparams' => 'focusedPK=' . $ndx,
+						];
+					}
+
 					if (count($links))
 						$item ['pane']['body'][] = ['value' => $links, 'class' => 'padd5'];
 				}

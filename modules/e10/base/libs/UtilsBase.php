@@ -9,20 +9,20 @@ class UtilsBase
 	static function classificationParams (\Shipard\Table\DbTable $table)
 	{
 		$clsfItems = $table->app()->cfgItem ('e10.base.clsf');
-	
+
 		$params = [];
 		$groups = $table->app()->cfgItem ('e10.base.clsfGroups', []);
 		forEach ($groups as $key => $group)
 		{
 			if (isset ($group ['tables']) && !in_array ($table->tableId(), $group ['tables']))
 				continue;
-	
+
 			$p = ['id' => $key, 'name' => isset($group['label']) ? $group['label'] : $group['name'], 'items' => []];
 			$grpItems = $table->app()->cfgItem ('e10.base.clsf.'.$key, []);
 			foreach ($grpItems as $itmNdx => $itm)
 			{
 				$clsfItem = $clsfItems [$key][$itmNdx];
-	
+
 				$p['items'][$itmNdx] = ['id' => $itmNdx, 'title' => $itm ['name']];
 				if (isset($clsfItem['css']))
 					$p['items'][$itmNdx]['css'] = $clsfItem['css'];
@@ -57,7 +57,7 @@ class UtilsBase
 		}
 		$clsfGroups = $app->cfgItem ('e10.base.clsfGroups');
 		$clsfItems = $app->cfgItem ('e10.base.clsf');
-	
+
 		$query = $app->db->query ("SELECT * from [e10_base_clsf] where [tableid] = %s AND [recid] IN ($recIds)", $tableId);
 		forEach ($query as $r)
 		{
@@ -69,24 +69,24 @@ class UtilsBase
 				$i ['id'] = $clsfItem['id'];
 			if ($withIds === 'text')
 				$i ['text'] = $clsfItem['id'];
-	
+
 			if (isset($clsfItem['css']))
 				$i['css'] = $clsfItem['css'];
-	
+
 			$c [$r['recid']][$r['group']][] = $i;
 		}
-	
+
 		return $c;
 	}
-	
+
 	static function loadAttachments ($app, $ids, $tableId = FALSE)
 	{
 		static $imgFileTypes = array ('pdf', 'jpg', 'jpeg', 'png', 'gif', 'svg');
-	
+
 		$files = array ();
 		if (count($ids) == 0)
 			return $files;
-	
+
 		if ($tableId)
 		{
 			$sql = "SELECT * FROM [e10_attachments_files] where [recid] IN %in AND tableid = %s AND [deleted] = 0 ORDER BY defaultImage DESC, [order], name";
@@ -144,20 +144,20 @@ class UtilsBase
 					$files ['files'][] = $img;
 			}
 		}
-	
+
 		return $files;
 	}
 
 	static function getAttachmentDefaultImage ($app, $toTableId, $toRecId, $enableAnyImage = FALSE)
 	{
 		$img = array ();
-	
+
 		$q[] = 'SELECT * FROM [e10_attachments_files]';
 		array_push($q, ' WHERE [tableid] = %s AND [recid] = %i AND [deleted] = 0', $toTableId, $toRecId);
 		if (!$enableAnyImage)
 			array_push($q, ' AND [defaultImage] = 1');
 		array_push($q, ' ORDER BY defaultImage DESC, [order], name LIMIT 0, 1');
-	
+
 		$mainImage = $app->db->query ($q)->fetch ();
 		if ($mainImage)
 		{
@@ -165,18 +165,18 @@ class UtilsBase
 			$img ['smallImage'] = self::getAttachmentUrl ($app, $mainImage, 196, 196);
 			$img ['fileName'] = $mainImage['path'] . $mainImage['filename'];
 		}
-	
+
 		return $img;
 	}
-	
+
 	static function getAttachmentUrl ($app, $attachment, $thumbWidth = 0, $thumbHeight = 0, $fullUrl = FALSE, $params = FALSE)
 	{
 		$absUrl = '';
 		if ($fullUrl || (isset($app->clientType [1]) && $app->clientType [1] === 'cordova'))
 			$absUrl = $app->urlProtocol . $_SERVER['HTTP_HOST'];
-	
+
 		$url = '';
-	
+
 		if ($thumbWidth || $thumbHeight)
 		{
 			if ($attachment ['attplace'] === TableAttachments::apLocal)
@@ -217,23 +217,43 @@ class UtilsBase
 		return $url;
 	}
 
+	static function getDocAttachments ($app, $toTableId, $toRecId)
+	{
+		$files = [];
+
+		$q = [];
+		array_push ($q, 'SELECT * FROM [e10_attachments_files]');
+		array_push ($q, ' WHERE [tableid] = %s', $toTableId, '  AND [recid] = %i', $toRecId);
+		array_push ($q, ' AND [deleted] = %i', 0);
+		array_push ($q, ' ORDER BY defaultImage DESC, [order], name');
+
+
+		$query = $app->db->query ($q);
+		foreach ($query as $row)
+		{
+			$f = $row->toArray();
+			$files [] = $f;
+		}
+		return $files;
+	}
+
 	static function linkedPersons ($app, $table, $toRecId, $elementClass = '')
 	{
 		if (is_string($table))
 			$tableId = $table;
 		else
 			$tableId = $table->tableId ();
-	
+
 		$links = $app->cfgItem ('e10.base.doclinks', NULL);
-	
+
 		if (!$links)
 			return array();
 		if (!isset($links [$tableId]))
 			return array();
 		$allLinks = $links [$tableId];
-	
+
 		$lp = array ();
-	
+
 		if (is_array($toRecId))
 		{
 			if (count($toRecId) === 0)
@@ -258,9 +278,9 @@ class UtilsBase
 							"LEFT JOIN e10_persons_groups as groups ON links.dstRecId = groups.ndx " .
 							"where srcTableId = %s AND dstTableId = 'e10.persons.groups' AND links.srcRecId = $recId)";
 		}
-	
+
 		$query = $app->db->query ($sql, $tableId, $tableId);
-	
+
 		foreach ($query as $r)
 		{
 			$icon = 'icon-sign-blank';
@@ -273,7 +293,7 @@ class UtilsBase
 			if ($r['dstRecId'])
 				$lp [$r['srcRecId']][$r['linkId']][0]['pndx'][] = $r['dstRecId'];
 		}
-	
+
 		return $lp;
 	}
 
@@ -283,18 +303,18 @@ class UtilsBase
 			$tableId = $table;
 		else
 			$tableId = $table->tableId ();
-	
+
 		$links = $app->cfgItem ('e10.base.doclinks', NULL);
 		$tablePersons = $app->table ('e10.persons.persons');
-	
+
 		if (!$links)
 			return array();
 		if (!isset($links [$tableId]))
 			return array();
 		$allLinks = $links [$tableId];
-	
+
 		$lp = [];
-	
+
 		if (is_array($toRecId))
 		{
 			if (count($toRecId) === 0)
@@ -319,9 +339,9 @@ class UtilsBase
 				"LEFT JOIN e10_persons_groups as groups ON links.dstRecId = groups.ndx " .
 				"where srcTableId = %s AND dstTableId = 'e10.persons.groups' AND links.srcRecId = $recId)";
 		}
-	
+
 		$query = $app->db->query ($sql, $tableId, $tableId);
-	
+
 		foreach ($query as $r)
 		{
 			$linkId = $r['linkId'];
@@ -329,31 +349,31 @@ class UtilsBase
 			{
 				$lp [$r['srcRecId']][$linkId] = ['icon' => $allLinks[$linkId]['icon'], 'name' => $allLinks[$linkId]['name'], 'labels' => []];
 			}
-	
+
 			$icon = 'system/iconCheck';
 			if ($r['dstTableId'] === 'e10.persons.persons')
 				$icon = $tablePersons->tableIcon ($r);
 			elseif ($r['dstTableId'] === 'e10.persons.groups')
 				$icon = 'icon-users';
-	
+
 			$personLabel = [
 				'text' => $r ['fullName'],
 				'icon' => $icon,
 				'class' => $elementClass,
 				'ndx' => $r['dstRecId'],
 			];
-	
+
 			$lp [$r['srcRecId']][$linkId]['labels'][] = $personLabel;
 		}
-	
+
 		return $lp;
 	}
-	
+
 	static function sendEmail ($app, $subject, $message, $fromAdress, $toAdress, $fromName = '', $toName = '', $html = FALSE)
 	{
 		if ($app->cfgItem ('develMode', 0) !== 0)
 			return;
-	
+
 		if ($fromName == '')
 			$fromName = $fromAdress;
 		if ($toName == '')
@@ -367,5 +387,5 @@ class UtilsBase
 		$header .= "From: =?UTF-8?B?".base64_encode($fromName)."?=<".$fromAdress.">\n";
 		$header .= "To: =?UTF-8?B?".base64_encode($toName)."?=<".$toAdress.">\n";
 		return mail ("", $subjectEncoded, $message, $header);
-	}	
+	}
 }

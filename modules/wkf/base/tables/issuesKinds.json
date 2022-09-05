@@ -33,6 +33,11 @@
 		{"id": "enableProjects", "name": "Používat Projekty", "type": "logical"},
 		{"id": "enableTargets", "name": "Používat Cíle", "type": "logical"},
 
+		{"id": "enableEmailForward", "name": "Povolit přeposílání e-mailem", "type": "logical"},
+		{"id": "emailForwardOnFirstConfirm", "name": "Přeposlat při prvním potvrzení", "type": "logical"},
+		{"id": "emailForwardSubjectPrefix", "name": "Začátek předmětu zprávy", "type": "string", "len": 60},
+		{"id": "emailForwardBody", "name": "Tělo zprávy", "type": "memo"},
+
 		{"id": "analyzeAttachments", "name": "Analyzovat přílohy", "type": "enumInt",
 			"enumValues": {"0": "Výchozí nastavení (ne)", "1": "Podle sekce", "9":  "Ne", "10": "Ihned", "11": "Co nejdříve", "12": "Časem"}},
 

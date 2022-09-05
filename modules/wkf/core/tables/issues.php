@@ -147,6 +147,15 @@ class TableIssues extends DbTable
 			'docType' => $recData['issueType'], 'docTypeName' => $issueType['name']
 		];
 
+		if (isset($recData['workOrder']) && $recData['workOrder'])
+		{
+			$woRecData = $this->app()->loadItem($recData['workOrder'], 'e10mnf.core.workOrders');
+			if ($woRecData && isset($woRecData['customer']) && $woRecData['customer'])
+				$info ['persons']['to'][] = $woRecData['customer'];
+		}
+
+		$info ['persons']['from'][] = intval($this->app()->cfgItem ('options.core.ownerPerson', 0));
+
 		return $info;
 	}
 
