@@ -2,6 +2,7 @@
 
 namespace e10\persons;
 use \Shipard\Utils\Utils;
+use \Shipard\Utils\Json;
 use \Shipard\Viewer\TableView;
 use \Shipard\Viewer\TableViewDetail;
 use \Shipard\Form\TableForm;
@@ -113,9 +114,21 @@ class ViewRequests extends TableView
  */
 class ViewDetailRequest extends TableViewDetail
 {
+	public function createToolbar ()
+	{
+		$toolbar = parent::createToolbar ();
+
+		$toolbar [] = [
+				'type' => 'action', 'action' => 'addwizard', 'data-table' => 'e10.persons.requests',
+				'text' => 'Odeslat znovu', 'data-class' => 'e10.persons.libs.ResendRequestWizard', 'icon' => 'user/envelope'
+		];
+
+		return $toolbar;
+	}
+
 	public function createDetailContent()
 	{
-		$this->addContent(array ('type' => 'text', 'subtype' => 'code', 'text' => Utils::json_lint ($this->item['requestData'])));
+		$this->addContent(['pane' => 'e10-pane e10-pane-table', 'type' => 'text', 'subtype' => 'code', 'text' => Json::lint (Json::decode($this->item['requestData']))]);
 	}
 }
 
