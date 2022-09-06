@@ -22,6 +22,8 @@ class DocumentDiff extends Utility
 
 	function prepareArray(&$data)
 	{
+		if (!is_array($data))
+			return;
 		foreach ($data as $k => $v)
 		{
 			if (is_array($v) && isset($v['timezone']))
@@ -94,7 +96,7 @@ class DocumentDiff extends Utility
 			}
 		}
 
-		if (count($t))
+		if (is_array($t) && count($t))
 			$this->diffContent[] = ['table' => $t, 'header' => $h];
 	}
 
@@ -212,12 +214,12 @@ class DocumentDiff extends Utility
 		$usedOld = [];
 
 		// -- changed
-		foreach ($this->oldDocData['lists'][$listId] as $row)
+		foreach ($this->oldDocData['lists'][$listId] ?? [] as $row)
 		{
 			$oldRowNdx = $row['ndx'];
 			$usedOld[] = $oldRowNdx;
 
-			if (is_array($row['value']))
+			if (isset($row['value']) && is_array($row['value']))
 				continue;
 
 			$newRow = searchArray($this->newDocData['lists'][$listId], 'ndx', $oldRowNdx);
@@ -247,7 +249,7 @@ class DocumentDiff extends Utility
 		}
 
 		// -- new
-		foreach ($this->newDocData['lists'][$listId] as $newRow)
+		foreach ($this->newDocData['lists'][$listId] ?? [] as $newRow)
 		{
 			$newRowNdx = $newRow['ndx'];
 			if (in_array($newRowNdx, $usedOld))
