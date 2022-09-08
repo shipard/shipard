@@ -154,6 +154,8 @@ class ViewJournalAll extends \E10\TableViewGrid
 		if (isset ($qv['sortAccountId']))
 			$this->sortByAccountId = TRUE;
 
+		$propertyIdParam = $this->queryParam('propertyId');
+
 		$q [] = 'SELECT journal.*, persons.fullName as personName';
 
 		if ($this->useWorkOrders)
@@ -169,6 +171,9 @@ class ViewJournalAll extends \E10\TableViewGrid
 
 		if ($this->useWorkOrders)
 			array_push ($q, ' LEFT JOIN e10mnf_core_workOrders AS wo ON journal.workOrder = wo.ndx ');
+
+		if ($propertyIdParam !== FALSE && $propertyIdParam !== '')
+			array_push ($q, ' LEFT JOIN e10pro_property_property AS property ON journal.property = property.ndx ');
 
 		if (isset ($qv['accountKinds']))
 			array_push ($q, ' LEFT JOIN e10doc_debs_accounts AS accounts ON journal.accountId = accounts.id ');
@@ -278,6 +283,11 @@ class ViewJournalAll extends \E10\TableViewGrid
 		if (isset ($qv['docsTypes']))
 			array_push ($q, ' AND journal.docType IN %in', array_keys($qv['docsTypes']));
 
+		if ($propertyIdParam !== FALSE && $propertyIdParam !== '')
+		{
+			array_push($q, ' AND property.[propertyId] LIKE %s', '%'.$propertyIdParam.'%');
+		}
+
 		// -- order
 		if ($this->sortByAccountId)
 			array_push ($q, ' ORDER BY [accountId], [dateAccounting], [docNumber], [ndx]');
@@ -324,6 +334,12 @@ class ViewJournalAll extends \E10\TableViewGrid
 		$paramsDocsTypes->addParam ('checkboxes', 'query.docsTypes', ['items' => $chbxDocsTypes]);
 		$qry[] = ['style' => 'params', 'title' => 'Typy dokladů', 'params' => $paramsDocsTypes];
 		$paramsDocsTypes->detectValues();
+
+		// -- property
+		$paramsProperty = new \e10doc\core\libs\GlobalParams ($panel->table->app());
+		$paramsProperty->addParam ('string', 'propertyId', ['title' => 'Inv. č. majetku']);
+		$paramsProperty->detectValues();
+		$qry[] = ['style' => 'params', 'title' => 'Majetek', 'params' => $paramsProperty];
 
 		// -- other
 		$otherOptions = [
