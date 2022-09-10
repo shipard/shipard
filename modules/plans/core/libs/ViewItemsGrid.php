@@ -309,6 +309,13 @@ class ViewItemsGrid extends TableViewGrid
 					array_push ($q, ' AND [items].[dateDeadline] <= %d', $dateEnd);
 			}
 		}
+		elseif ($this->fixedMainQuery === 'active')
+		{
+			$inProgressIS = array_merge($this->lifeCycleItemStates[20] ?? [], $this->lifeCycleItemStates[10] ?? []);
+
+			if (count($inProgressIS))
+				array_push ($q, ' AND [itemState] IN %in', $inProgressIS);
+		}
 
 		// -- public/private item
 		$thisUserId = $this->app()->userNdx();

@@ -240,6 +240,10 @@ class ViewItemsGantt extends TableViewGrid
     array_push ($q, ' AND [dateDeadline] IS NOT NULL');
 		array_push ($q, ' AND [items].[docState] IN %in', [1000, 4000, 8000]);
 
+		$inProgressIS = array_merge($this->lifeCycleItemStates[20] ?? [], $this->lifeCycleItemStates[10] ?? []);
+		if (count($inProgressIS))
+			array_push ($q, ' AND [itemState] IN %in', $inProgressIS);
+
 		// -- fulltext
 		if ($fts != '')
 		{
