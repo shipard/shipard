@@ -2,7 +2,6 @@
 
 namespace e10pro\condo\libs;
 use \Shipard\Utils\Json;
-use \Shipard\Utils\World;
 
 
 /**
@@ -10,10 +9,6 @@ use \Shipard\Utils\World;
  */
 class ReportFlatSettlement extends \e10doc\core\libs\reports\DocReportBase
 {
-	/** @var \e10\persons\TablePersons $tablePersons */
-	var $tablePersons;
-	var $allProperties;
-
 	function init ()
 	{
 		$this->reportId = 'e10pro.condo.flatsettlement';
@@ -23,17 +18,23 @@ class ReportFlatSettlement extends \e10doc\core\libs\reports\DocReportBase
 	public function loadData ()
 	{
     parent::loadData();
-
-		$this->tablePersons = $this->app()->table('e10.persons.persons');
-		$this->allProperties = $this->app()->cfgItem('e10.base.properties', []);
-
+		$this->loadData_DocumentOwner ();
 
 		$this->data['calcReport'] = $this->app()->loadItem($this->recData['report'], 'e10doc.reporting.calcReports');
 		$this->data['workOrder'] = $this->app()->loadItem($this->recData['workOrder'], 'e10mnf.core.workOrders');
 		$this->data['person'] = $this->app()->loadItem($this->data['workOrder']['customer'], 'e10.persons.persons');
 
+		$this->data['overpaid'] = 0;
+		$this->data['underpaid'] = 0;
 
-		$this->loadData_DocumentOwner ();
+		if ($this->recData['finalAmount'] < 0.0)
+		{
+			$this->data['underpaid'] = 1;
+		}
+		elseif ($this->recData['finalAmount'] > 0.0)
+		{
+			$this->data['overpaid'] = 1;
+		}
 
     $resContent = Json::decode($this->recData['resContent']);
 

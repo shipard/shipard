@@ -10,6 +10,8 @@
 			{"id": "title", "name": "Název", "type": "string", "len": 120},
 			{"id": "workOrder", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
 
+			{"id": "finalAmount", "name": "Výsledná částka", "type": "money"},
+
       {"id": "resData", "name": "Data", "type": "subColumns"},
 			{"id": "resContent", "name": "Obsah pro vizualizaci", "type": "memo"}
   ],

@@ -46,6 +46,25 @@ class TableCalcReportsResults extends DbTable
 
 		return parent::subColumnsInfo ($recData, $columnId);
 	}
+
+	public function getRecordInfo ($recData, $options = 0)
+	{
+		//$calcReport = $this->app()->loadItem($recData['report'], 'e10doc.reporting.calcReports');
+		$info = [
+			'title' => $recData['title'], 'docID' => '#'.$recData['ndx'],
+		];
+
+		if (isset($recData['workOrder']) && $recData['workOrder'])
+		{
+			$woRecData = $this->app()->loadItem($recData['workOrder'], 'e10mnf.core.workOrders');
+			if ($woRecData && isset($woRecData['customer']) && $woRecData['customer'])
+				$info ['persons']['to'][] = $woRecData['customer'];
+		}
+
+		$info ['persons']['from'][] = intval($this->app()->cfgItem ('options.core.ownerPerson', 0));
+
+		return $info;
+	}
 }
 
 

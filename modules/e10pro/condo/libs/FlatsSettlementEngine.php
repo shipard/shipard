@@ -283,6 +283,7 @@ class FlatsSettlementEngine extends \e10doc\reporting\libs\CalcReportEngine
     $resRowData['resContent'][] = $this->rowContents['flat_info'];
     $resRowData['resContent'][] = $this->rowContents['flat_persons'];
     $resRowData['resContent'][] = $this->rowContents['flat_recap'];
+    $resRowData['resContent'][] = $this->rowContents['flat_recap_pay'];
 
     $resRowData['resContent'][] = $this->rowContents['recap_meters'];
     $resRowData['resContent'][] = $this->rowContents['cold_water'];
@@ -325,6 +326,8 @@ class FlatsSettlementEngine extends \e10doc\reporting\libs\CalcReportEngine
 
   protected function makeResultsRow_FlatRecap($rowSDRecData, $srcRowData, &$resRowData)
   {
+    $finalAmount = 0;
+
     $ct = [];
 
     $r = [
@@ -335,6 +338,7 @@ class FlatsSettlementEngine extends \e10doc\reporting\libs\CalcReportEngine
       'flat_balance' => $this->numbers->getMoney('res_flat_water_cold_balance'),
     ];
     $ct [] = $r;
+    $finalAmount += $r['flat_balance'];
 
 
     $r = [
@@ -345,7 +349,7 @@ class FlatsSettlementEngine extends \e10doc\reporting\libs\CalcReportEngine
       'flat_balance' => $this->numbers->getMoney('res_flat_water_warm_cold_balance'),
     ];
     $ct [] = $r;
-
+    $finalAmount += $r['flat_balance'];
 
     $r = [
       'mark' => $this->partMarks['warm_water'].'₂',
@@ -355,7 +359,7 @@ class FlatsSettlementEngine extends \e10doc\reporting\libs\CalcReportEngine
       'flat_balance' => $this->numbers->getMoney('res_flat_water_heating_balance'),
     ];
     $ct [] = $r;
-
+    $finalAmount += $r['flat_balance'];
 
     $r = [
       'mark' => $this->partMarks['electricity_common'],
@@ -365,6 +369,7 @@ class FlatsSettlementEngine extends \e10doc\reporting\libs\CalcReportEngine
       'flat_balance' => $this->numbers->getMoney('res_flat_electricity_common_balance'),
     ];
     $ct [] = $r;
+    $finalAmount += $r['flat_balance'];
 
     $r = [
       'mark' => $this->partMarks['insurance'],
@@ -374,6 +379,7 @@ class FlatsSettlementEngine extends \e10doc\reporting\libs\CalcReportEngine
       'flat_balance' => $this->numbers->getMoney('res_flat_insurance_balance'),
     ];
     $ct [] = $r;
+    $finalAmount += $r['flat_balance'];
 
     $r = [
       'mark' => $this->partMarks['administration'],
@@ -383,6 +389,9 @@ class FlatsSettlementEngine extends \e10doc\reporting\libs\CalcReportEngine
       'flat_balance' => $this->numbers->getMoney('res_flat_administration_balance'),
     ];
     $ct [] = $r;
+    $finalAmount += $r['flat_balance'];
+
+    $resRowData['recData']['finalAmount'] = $finalAmount;
 
     $contentTitle = ['text' => $this->partMarks['flat_recap'].'. '.'Rekapitulace vyúčtování služeb a energií', 'class' => 'h3'];
     $contentHeader = [
@@ -394,10 +403,29 @@ class FlatsSettlementEngine extends \e10doc\reporting\libs\CalcReportEngine
     ];
     $content = [
       'type' => 'table', 'table' => $ct, 'header' => $contentHeader, 'title' => $contentTitle,
-      'params' => ['tableClass' => 'pageBreakAfter'],
+      //'params' => ['tableClass' => 'pageBreakAfter'],
     ];
 
     $this->rowContents['flat_recap'] = $content;
+
+
+    $info = [];
+    $info[] = ['code' => "<div style='margin-top: 20pt; padding: 4pt; border-left: 4pt solid black;' class='pageBreakAfter'>"];
+    if ($finalAmount < 0.0)
+		{
+      $bankAccountNdx = key($this->app()->cfgItem ('e10doc.bankAccounts'));
+      $bankAccount = $this->app()->cfgItem ('e10doc.bankAccounts.'.$bankAccountNdx);
+			$info[] = ['text' => 'Výsledný nedoplatek ve výši '.Utils::nf(abs($finalAmount), 2).' prosím uhraďte:', 'class' => 'block'];
+      $info[] = ['text' => '- bankovní účet: '.$bankAccount['bankAccount'], 'class' => 'block'];
+      $info[] = ['text' => '- variabilní symbol: '.$this->flatWorkOrderRecData['symbol1'], 'class' => 'block'];
+    }
+		elseif ($finalAmount > 0.0)
+		{
+			$info[] = ['text' => 'Výsledný přeplatek ve výši '.Utils::nf($finalAmount, 2).' Vám bude uhrazen během několika dnů.', 'class' => ''];
+		}
+    $info[] = ['code' => "</div>"];
+    $contentPay = ['type' => 'line', 'line' => $info, 'class' => 'pageBreakAfter'];
+    $this->rowContents['flat_recap_pay'] = $contentPay;
   }
 
   protected function makeResultsRow_Meters($rowSDRecData, $srcRowData, &$resRowData)

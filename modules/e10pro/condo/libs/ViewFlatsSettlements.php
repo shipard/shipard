@@ -60,6 +60,9 @@ class ViewFlatsSettlements extends TableView
 
 		$listItem ['t1'] = $item['customerName'];//;
 
+		$listItem ['i1'] = Utils::nf($item['finalAmount'], 2);
+		$listItem ['t1'] = $item['title'];
+
     $props = [];
     $props[] = ['text' => $item['reportTitle'], 'class' => 'label label-default', 'icon' => 'user/moneyBill'];
     $props[] = ['text' => $item['woTitle'], 'class' => 'label label-default', 'icon' => 'tables/e10mnf.core.workOrders'];

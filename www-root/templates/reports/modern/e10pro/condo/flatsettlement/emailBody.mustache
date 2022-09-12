@@ -1,0 +1,15 @@
+{{textMode}}{{@dict;Dobrý den}},
+
+{{@dict;v příloze Vám zasíláme}} {{data.calcReport.title}} za {{data.workOrder.title}}.
+
+{{@dict;Odběratel}}: {{{data.person.fullName}}}
+{{@dict;Účtované období}}: {{data.calcReport.dateBegin}} {{@dict;až}} {{data.calcReport.dateEnd}}
+
+
+{{@dict;S pozdravem}}
+
+--
+ {{data.owner.fullName}}
+{{#data.owner_contacts}}
+ {{name}}: {{value}}
+{{/data.owner_contacts}}
