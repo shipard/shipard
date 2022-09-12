@@ -60,7 +60,7 @@ class IotEngineCfgCreator extends Utility
 		elseif ($eo['eventType'] === 'setupAction')
 		{
 			return $this->iotDevicesUtils->iotSetupTopic($eo['iotSetup']);
-		}	
+		}
 		elseif ($eo['eventType'] === 'readerValue')
 		{
 			$dm = $this->iotDeviceDataModel($eo['iotDevice']);
@@ -74,6 +74,12 @@ class IotEngineCfgCreator extends Utility
 		elseif ($eo['eventType'] === 'mqttMsg')
 		{
 			return $eo['mqttTopic'];
+		}
+		elseif ($eo['eventType'] === 'sensorValue')
+		{
+			$sensorRecData = $this->app()->loadItem($eo['iotSensor'], 'mac.iot.sensors');
+			if ($sensorRecData)
+				return $sensorRecData['srcMqttTopic'];
 		}
 
 		return $t;
@@ -129,39 +135,40 @@ class IotEngineCfgCreator extends Utility
 
 		if ($eo['eventType'] === 'deviceAction')
 		{
-			//$item = ['type' => 0, 'dataItem' => $eo['iotDeviceEvent'], 'dataValue' => $eo['iotDeviceEventValueEnum'], 'do' => []];
 			$item['type'] = 0;
 			$item['dataItem'] = $eo['iotDeviceEvent'];
 			$item['dataValue'] = $eo['iotDeviceEventValueEnum'];
 		}
 		elseif ($eo['eventType'] === 'setupAction')
 		{
-			//$item = ['type' => 4, 'dataItem' => 'action', 'dataValue' => $eo['iotSetupEvent'], 'do' => []];
 			$item['type'] = 3;
 			$item['dataItem'] = 'action';
 			$item['dataValue'] = $eo['iotSetupEvent'];
 		}
 		elseif ($eo['eventType'] === 'readerValue')
 		{
-			//$item = ['type' => 2, 'do' => []];
 			$item['type'] = 2;
 		}
 		elseif ($eo['eventType'] === 'mqttMsg')
 		{
 			if ($eo['mqttTopicPayloadItemId'] === '')
 			{
-			//	$item = ['type' => 1, 'dataItem' => '', 'dataValue' => $eo['mqttTopicPayloadValue'], 'do' => []];
 				$item['type'] = 1;
 				$item['dataItem'] = '';
 				$item['dataValue'] = $eo['mqttTopicPayloadValue'];
-			}	
+			}
 			else
 			{
-				//$item = ['type' => 0, 'dataItem' => $eo['mqttTopicPayloadItemId'], 'dataValue' => $eo['mqttTopicPayloadValue'], 'do' => []];
 				$item['type'] = 0;
 				$item['dataItem'] = $eo['mqttTopicPayloadItemId'];
 				$item['dataValue'] = $eo['mqttTopicPayloadValue'];
-			}	
+			}
+		}
+		elseif ($eo['eventType'] === 'sensorValue')
+		{
+			$item['type'] = 9;
+			$item['sensorValueFrom'] = $eo['iotSensorValueFrom'];
+			$item['sensorValueTo'] = $eo['iotSensorValueTo'];
 		}
 
 		$item['do'] = [];
@@ -182,7 +189,7 @@ class IotEngineCfgCreator extends Utility
 		array_push ($q, ' ORDER BY [eventsDo].[rowOrder], [eventsDo].[ndx]');
 
 		$rows = $this->db()->query($q);
-		
+
 		foreach ($rows as $r)
 		{
 			if ($r['eventType'] === 'sendMqttMsg')
@@ -222,9 +229,9 @@ class IotEngineCfgCreator extends Utility
 						if ($dp['data-type'] === 'binary' || $dp['data-type'] === 'enum')
 						{
 							$enumSetValue = $dp['enumSet'][$r['iotDevicePropertyValueEnum']] ?? NULL;
-							
+
 							$dst['setProperties'][$destTopic]['data'][$r['iotDeviceProperty']] = $this->enumSetValue ($r, $dp, $enumSetValue);
-						}	
+						}
 						elseif ($dp['data-type'] === 'numeric')
 							$dst['setProperties'][$destTopic]['data'][$r['iotDeviceProperty']] = intval($r['iotDevicePropertyValue']);
 						/*else
@@ -244,14 +251,14 @@ class IotEngineCfgCreator extends Utility
 						$loopId = $srcTopic.'.'.$srcEvent['iotDeviceEvent'].'.'.$srcDeviceActionEnum['stopAction'];
 						if (!isset($dst['startLoop']))
 							$dst['startLoop'] = [
-								'id' => $loopId, 
-								'stopTopic' => $srcTopic, 
-								'stopProperty' => $srcEvent['iotDeviceEvent'], 
-								'stopPropertyValue' => $srcDeviceActionEnum['stopAction'], 
+								'id' => $loopId,
+								'stopTopic' => $srcTopic,
+								'stopProperty' => $srcEvent['iotDeviceEvent'],
+								'stopPropertyValue' => $srcDeviceActionEnum['stopAction'],
 								'op' => $r['eventType'] === 'decDeviceProperty' ? '-' : '+',
-								'properties' => [], 
-						]; 
-							
+								'properties' => [],
+						];
+
 						$dst['startLoop']['properties'][] = [
 							'property' => $r['iotDeviceProperty'],
 							'value-min' => $dp['value-min'] ?? 0,
@@ -261,7 +268,7 @@ class IotEngineCfgCreator extends Utility
 						];
 					}
 				}
-			}	
+			}
 		}
 
 		/*
@@ -280,10 +287,10 @@ class IotEngineCfgCreator extends Utility
 			$o = $this->app()->createObject($deviceProperty['valueClass']);
 			if ($o)
 			{
-				$value = $o->enumValue ($eventRecData, $deviceProperty, $enumSetValue);	
+				$value = $o->enumValue ($eventRecData, $deviceProperty, $enumSetValue);
 				if ($value !== '')
 					return $value;
-			}	
+			}
 		}
 
 		if ($enumSetValue && isset($enumSetValue['value']))
@@ -298,7 +305,7 @@ class IotEngineCfgCreator extends Utility
 	protected function doSetups()
 	{
 		$q [] = 'SELECT [iotSetups].*,';
-		array_push ($q, ' places.fullName AS placeName');				
+		array_push ($q, ' places.fullName AS placeName');
 		array_push ($q, ' FROM [mac_iot_setups] AS [iotSetups]');
 		array_push ($q, ' LEFT JOIN [e10_base_places] AS places ON iotSetups.place = places.ndx');
 		array_push ($q, ' WHERE 1');
@@ -391,10 +398,10 @@ class IotEngineCfgCreator extends Utility
 		$topic = $this->iotDevicesUtils->sceneTopic($sceneRecData['ndx']);
 		$setupTopic = $this->iotDevicesUtils->iotSetupTopic($sceneRecData['setup']);
 		$this->addTopic($topic, ['type' => 'scene', 'ndx' => $sceneRecData['ndx'], 'setup' => $setupTopic]);
-		
+
 		$scene = [];
 		$scene['setup'] = $setupTopic;
-		
+
 		$this->cfg['topics'][$setupTopic]['scenes'][] = $topic;
 
 		$this->addEventsOn('mac.iot.scenes', $sceneRecData['ndx'], ['setup' => $setupTopic, 'scene' => $topic]);

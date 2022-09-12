@@ -75,7 +75,7 @@ class TableEventsOn extends DbTable
 			if (!$events)
 				return [];
 
-			$event = $events[$form->recData['iotDeviceEvent']] ?? NULL;	
+			$event = $events[$form->recData['iotDeviceEvent']] ?? NULL;
 			if (!$event)
 				return [];
 
@@ -117,6 +117,25 @@ class TableEventsOn extends DbTable
 			//$this->addColumnInput ('mqttTopic');
 			//$this->addColumnInput ('mqttTopicPayloadItemId');
 			//$this->addColumnInput ('mqttTopicPayloadValue');
+		}
+		elseif ($eventRow['eventType'] === 'sensorValue')
+		{
+			if (!$eventRow['iotSensor'])
+			{
+				$dest[] = ['text' => 'senzor není vybrán', 'class' => 'label label-warning'];
+			}
+			else
+			{
+				$sensorRecData = $this->app()->loadItem($eventRow['iotSensor'], 'mac.iot.sensors');
+				if ($sensorRecData)
+				{
+					$dest[] = ['text' => $sensorRecData['fullName'].':', 'class' => 'label label-default'];
+					$dest[] = ['text' => $eventRow['iotSensorValueFrom'].' až '.$eventRow['iotSensorValueTo'], 'class' => 'label label-default'];
+				}
+				else
+				{
+					$dest[] = ['text' => 'unknown sensor #'.$eventRow['iotSensor'], 'class' => 'label label-warning'];				}
+			}
 		}
 	}
 }
@@ -182,7 +201,7 @@ class ViewEventsOnForm extends TableView
 			foreach ($this->eventsDo [$item ['pk']] as $ed)
 			{
 				$this->tableEventsDo->getEventLabels($ed, $item ['t2'], ['text' => ' ➜ ', 'class' => 'clear break']);
-			}	
+			}
 		}
 	}
 
@@ -288,6 +307,12 @@ class FormEventOn extends TableForm
 						$this->addColumnInput ('mqttTopic');
 						$this->addColumnInput ('mqttTopicPayloadItemId');
 						$this->addColumnInput ('mqttTopicPayloadValue');
+					}
+					elseif ($this->recData['eventType'] === 'sensorValue')
+					{
+						$this->addColumnInput ('iotSensor');
+						$this->addColumnInput ('iotSensorValueFrom');
+						$this->addColumnInput ('iotSensorValueTo');
 					}
 
 					$this->addViewerWidget ('mac.iot.eventsDo', 'form', ['dstTableId' => 'mac.iot.eventsOn', 'dstRecId' => $this->recData['ndx']], TRUE);

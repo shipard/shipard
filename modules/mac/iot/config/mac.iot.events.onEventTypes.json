@@ -11,6 +11,10 @@
 		"fn": "Akce ze sestavy"
 	},
 
+	"sensorValue": {
+		"fn": "Hodnota senzoru"
+	},
+
 	"mqttMsg": {
 		"fn": "MQTT zpráva"
 	}
