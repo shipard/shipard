@@ -13,7 +13,7 @@
     {"id": "deviceKind", "name": "Druh zařízení", "type": "enumInt",
       "enumCfg": {"cfgItem": "mac.lan.devices.kinds", "cfgValue": "", "cfgText": "name"}},
 		{"id": "hwMode", "name": "Mód HW", "type": "enumInt", "options": ["saveOnChange"],
-			"enumCfg": {"cfgItem": "mac.lan.devices.hwModes", "cfgValue": "", "cfgText": "fn"}},	
+			"enumCfg": {"cfgItem": "mac.lan.devices.hwModes", "cfgValue": "", "cfgText": "fn"}},
 		{"id": "hwServer", "name": "Server", "type": "int", "reference": "mac.lan.devices"},
 		{"id": "vmId", "name": "ID kontejneru / VM", "type": "string", "len": 40},
 		{"id": "nodeSupport", "name": "Shipard Node", "type": "logical"},

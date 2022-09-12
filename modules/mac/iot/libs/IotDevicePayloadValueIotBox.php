@@ -19,9 +19,16 @@ class IotDevicePayloadValueIotBox extends Utility
 			$interval = intval($this->eventValueCfg['interval']);
 			if (!$interval)
 				$interval = 50;
-			return 'P'.$interval;	
+			return 'P'.$interval;
 		}
-		
+		if ($enumId === 'unpush')
+		{
+			$interval = intval($this->eventValueCfg['interval']);
+			if (!$interval)
+				$interval = 50;
+			return 'U'.$interval;
+		}
+
 		return '';
 	}
 
@@ -75,7 +82,7 @@ class IotDevicePayloadValueIotBox extends Utility
 		$color = $this->eventValueCfg[$id] ?? $defaultValue;
 		if ($color === '')
 			$color = $defaultValue;
-		if ($color[0] === '#')	
+		if ($color[0] === '#')
 			$color = substr($color, 1);
 		$color = strtolower($color);
 
@@ -93,6 +100,6 @@ class IotDevicePayloadValueIotBox extends Utility
 		if (isset($deviceProperty['ioPortType']) && $deviceProperty['ioPortType'] === 'control/binary')
 			return $this->binaryValue($eventRecData['iotDevicePropertyValueEnum']);
 
-		return '';	
+		return '';
 	}
 }

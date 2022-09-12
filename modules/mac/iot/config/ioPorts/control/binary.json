@@ -27,6 +27,14 @@
 					]
 				}
 			},
+			"unpush": {
+				"title": "UNPUSH",
+				"fields": {
+					"columns": [
+						{"id": "interval", "name": "Doba trvání [ms]", "type": "int"}
+					]
+				}
+			},
 			"disable": {"title": "DISABLE"},
 			"enable": {"title": "ENABLE"},
 			"1_disable": {"title": "ON + DISABLE"},

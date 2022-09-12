@@ -67,19 +67,19 @@ class TableDevices extends DbTable
 		if ($macDeviceCfg)
 		{
 			if ($recData['deviceKind'] == 7)
-			{	
+			{
 				if (
 					(isset($macDeviceCfg['enableLC']) && $macDeviceCfg['enableLC'])	||
 					(isset($macDeviceCfg['enableCams']) && $macDeviceCfg['enableCams'])	||
 					(isset($macDeviceCfg['enableRack']) && $macDeviceCfg['enableRack'])	||
 					(isset($macDeviceCfg['enableOthers']) && $macDeviceCfg['enableOthers'])
-				)	
+				)
 				{
 					$recData['nodeSupport'] = 1;
 				}
-			}	
-			
-			if ((isset($macDeviceCfg['monNetdataEnabled']) && $macDeviceCfg['monNetdataEnabled']))	
+			}
+
+			if ((isset($macDeviceCfg['monNetdataEnabled']) && $macDeviceCfg['monNetdataEnabled']))
 			{
 				$recData['monitored'] = 1;
 			}
@@ -849,6 +849,7 @@ class FormDevice extends TableForm
 		//	return;
 
 		$isMacDevice = 0;
+		$macDeviceCfg = NULL;
 		$deviceKind = $this->app()->cfgItem ('mac.lan.devices.kinds.'.$this->recData['deviceKind'], NULL);
 		if ($deviceKind && isset($deviceKind['isMacDevice']))
 			$isMacDevice = 1;
@@ -857,8 +858,8 @@ class FormDevice extends TableForm
 		if ($isMacDevice && $this->recData['macDeviceType'] !== '')
 		{
 			$macDeviceCfg = $this->app()->cfgItem ('mac.devices.types.'.$this->recData['macDeviceType'], NULL);
-			if ($macDeviceCfg && isset($macDeviceCfg['useIOPorts']))
-				$useIOPorts = 1;
+			//if ($macDeviceCfg && isset($macDeviceCfg['useIOPorts']))
+			//	$useIOPorts = 1;
 		}
 
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
@@ -901,7 +902,7 @@ class FormDevice extends TableForm
 					{
 						$this->addColumnInput ('hwServer');
 						$this->addColumnInput ('vmId');
-					}	
+					}
 				}
 
 				$this->addSeparator(TableForm::coH3);

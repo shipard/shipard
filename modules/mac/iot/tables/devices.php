@@ -304,7 +304,7 @@ class FormDevice  extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
 		$deviceTypeCfg = $this->app()->cfgItem('mac.iot.devices.types.'.$this->recData['deviceType']);
-		$useIOPorts = 0;//$deviceTypeCfg['useIOPorts'] ?? 0;
+		$useIOPorts = $deviceTypeCfg['useIOPorts'] ?? 0;
 
 		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 		if ($useIOPorts)
