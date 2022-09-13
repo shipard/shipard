@@ -36,6 +36,11 @@ class OfficeCore extends DocumentCard
     if (isset($this->officeInfo->data['rowsContent']))
       $this->addContent('body', $this->officeInfo->data['rowsContent']);
 
+    if (isset($this->officeInfo->data['issues']))
+    {
+      $this->addContent('body', $this->officeInfo->data['issues']);
+    }
+
     if (isset($this->officeInfo->data['rowsMetersReadings']))
       $this->addContent('body', $this->officeInfo->data['rowsMetersReadings']);
   }
