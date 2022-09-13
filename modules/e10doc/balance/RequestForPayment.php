@@ -21,8 +21,36 @@ class RequestForPayment extends FormReport
 
 	function init ()
 	{
-		$this->reportId = 'reports.default.e10doc.balance.requestForPayment';
-		$this->reportTemplate = 'reports.default.e10doc.balance.requestForPayment';
+		parent::init();
+		$this->setReportId('e10doc.balance.requestForPayment');
+	}
+
+	public function setReportId($baseReportId)
+	{
+		if (str_starts_with($baseReportId, 'reports.default.'))
+		{
+			$reportId = $baseReportId;
+		}
+		else
+		{
+			$reportType = $this->app()->cfgItem ('options.experimental.docReportsType', 'default');
+			$reportIdBegin = 'reports.'.$reportType.'.';
+			$reportId = $reportIdBegin.$baseReportId;
+
+			$parts = explode ('.', $reportId);
+			$tfn = array_pop ($parts);
+			$templateRoot = __SHPD_ROOT_DIR__.__SHPD_TEMPLATE_SUBDIR__.'/'.implode ('/', $parts).'/'.$tfn.'/';
+			$templateMainFile = $templateRoot.'page.mustache';
+			if (!is_readable($templateMainFile))
+			{
+				$reportType = 'default';
+				$reportIdBegin = 'reports.'.$reportType.'.';
+				$reportId = $reportIdBegin.$baseReportId;
+			}
+		}
+
+		$this->reportId = $reportId;
+		$this->reportTemplate = $reportId;
 	}
 
 	public function checkDocumentInfo (&$documentInfo)
