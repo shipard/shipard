@@ -1,0 +1,17 @@
+{{textMode}}{{@dict;Dobrý den}},
+
+{{@dict;dovolujeme si Vás upozornit, že ke dni}} {{data.today}} {{@dict;stále evidujeme pohledávky}}
+{{@dict;v celkové výši}}{{#data.totals}} {{print.restAmount}} {{curr}}{{/data.totals}}.
+
+{{@dict;Přesný rozpis dlužných částek naleznete v příloze této zprávy. Žádáme Vás zdvořile o kontrolu a provedení úhrady}}.
+
+{{@dict;Děkujeme}}.
+
+
+{{@dict;S pozdravem}}
+
+--
+ {{data.owner.fullName}}
+{{#data.owner_contacts}}
+ {{name}}: {{value}}
+{{/data.owner_contacts}}

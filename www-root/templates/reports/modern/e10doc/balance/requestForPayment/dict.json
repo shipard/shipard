@@ -1,0 +1,360 @@
+{
+  "Upomínka": {
+    "de": "Zahlungsanfrage",
+    "en": "Request for payment",
+    "it": "richiesta di pagamento",
+    "sk": "Upomienka"
+  },
+  "Ev. číslo": {
+    "de": "Nr.",
+    "en": "No.",
+    "it": "Num.",
+    "sk": "Číslo"
+  },
+  "Dodavatel": {
+    "de": "Lieferant",
+    "en": "Supplier",
+    "it": "Imprenditore",
+    "sk": "Dodávateľ"
+  },
+  "Odběratel": {
+    "de": "Kunde",
+    "en": "Customer",
+    "it": "Abbonato",
+    "sk": "Odberateľ"
+  },
+  "IČ": {
+    "de": "Steuer-Nr",
+    "en": "Reg. No.",
+    "it": "N.id.org.",
+    "sk": "IČO"
+  },
+  "DIČ": {
+    "de": "USt-IdNr.",
+    "en": "VAT No.",
+    "it": "P.IVA",
+    "sk": "DIČ"
+  },
+  "Banka": {
+    "de": "Bank",
+    "en": "Bank",
+    "it": "Banca",
+    "sk": "Banka"
+  },
+  "Bankovní spojení": {
+    "de": "Konto Nr.",
+    "en": "Account No.",
+    "it": "Conto bancario",
+    "sk": "Bankové spojenie"
+  },
+  "Způsob úhrady": {
+    "de": "Zahlungsart",
+    "en": "Payment Method",
+    "it": "Metodo di pagamento",
+    "sk": "Spôsob úhrady"
+  },
+  "VS": {
+    "de": "Zahlungsreferenz",
+    "en": "Payment ID",
+    "it": "Simbolo variabile",
+    "sk": "VS"
+  },
+  "SS": {
+    "de": "Referenz Nr.",
+    "en": "Ref. ID",
+    "it": "",
+    "sk": "ŠS"
+  },
+  "Splatnost": {
+    "de": "Fälligkeitsdatum",
+    "en": "Payment date",
+    "it": "Data di scadenza",
+    "sk": "Dátum splatnosti"
+  },
+  "Telefon": {
+    "de": "Telefon",
+    "en": "Phone",
+    "it": "Numero di telefono",
+    "sk": "Telefón"
+  },
+  "Položka": {
+    "de": "Artikel",
+    "en": "Item",
+    "it": "Descrizione della voce",
+    "sk": "Položka"
+  },
+  "Předpis": {
+    "de": "Betrag",
+    "en": "Amount",
+    "it": "Somma",
+    "sk": "Čiastka"
+  },
+  "Uhrazeno": {
+    "de": "Bezahlt",
+    "en": "Payed",
+    "it": "Pagato",
+    "sk": "Čiastka"
+  },
+  "Měna": {
+    "de": "Menge",
+    "en": "Quantity",
+    "it": "Quantitá",
+    "sk": "Množstvo"
+  },
+  "K úhradě": {
+    "de": "Zur Zahlung",
+    "en": "To pay",
+    "it": "Da pagare",
+    "sk": "Celkom"
+  },
+  "CELKOVÁ dlužná částka": {
+    "de": "Rechnungsbetrag",
+    "en": "Total to be paid",
+    "it": "Da pagare",
+    "sk": "CELKOVÁ dlžná čiastka"
+  },
+  "Vystavil": {
+    "de": "Ausgestellt von",
+    "en": "Issued by",
+    "it": "Responsabile",
+    "sk": "Vystavil"
+  },
+  "Převodním příkazem": {
+    "de": "Zahlungsauftrag",
+    "en": "Bank transfer",
+    "it": "Bonifico",
+    "sk": "Prevodný príkaz"
+  },
+  "Hotově": {
+    "de": "In bar",
+    "en": "Cash",
+    "it": "Contanti",
+    "sk": "V hotovosti"
+  },
+  "Pokladním lístkem": {
+    "de": "Kassenbeleg auschecken",
+    "en": "Checkout receipt",
+    "it": "Ricevuta di pagamento",
+    "sk": "Pokladničným lístkom"
+  },
+  "Platební brána": {
+    "de": "Payment Gateway",
+    "en": "Payment Gateway",
+    "it": "Payment Gateway",
+    "sk": "Platobná brána"
+  },
+  "Základ": {
+    "de": "Basis",
+    "en": "Tax Base",
+    "it": "Base fiscale",
+    "sk": "Základ"
+  },
+  "Daň": {
+    "de": "MWSt.",
+    "en": "Tax",
+    "it": "Imposta",
+    "sk": "Daň"
+  },
+  "Celkem": {
+    "de": "Gesamt",
+    "en": "Total",
+    "it": "Totale",
+    "sk": "Celkom"
+  },
+  "DPH": {
+    "de": "MWSt.",
+    "en": "VAT",
+    "it": "IVA",
+    "sk": "DPH"
+  },
+  "Zaokrouhlení": {
+    "de": "Abrundung",
+    "en": "Rounding",
+    "it": "Arrotondamento",
+    "sk": "Zaokrúhlenie"
+  },
+  "Datumy a platební údaje": {
+    "de": "Zahlungsbedingungen",
+    "en": "Payment conditions",
+    "it": "Condizioni di pagamento",
+    "sk": "Dátumy a platobné údaje"
+  },
+  "Účtované období": {
+    "de": "Rechnungszeitraum",
+    "en": "Period",
+    "it": "Stagione",
+    "sk": "Účtované obdobie"
+  },
+  "Sazba": {
+    "de": "Satz",
+    "en": "Rate",
+    "it": "Tasso",
+    "sk": "Sadzba"
+  },
+  "Základní": {
+    "de": "Grundsteuer",
+    "en": "Basic tax",
+    "it": "Primario",
+    "sk": "Základná"
+  },
+  "Snížená": {
+    "de": "Ermäßigte Steuer",
+    "en": "Reduced tax",
+    "it": "Ridotta",
+    "sk": "Znížená"
+  },
+  "První snížená": {
+    "de": "Ermäßigte Steuer",
+    "en": "Reduced tax",
+    "it": "Ridotta",
+    "sk": "Prvá znížená"
+  },
+  "Druhá snížená": {
+    "de": "Ermäßigte Steuer",
+    "en": "Reduced tax",
+    "it": "Ridotta",
+    "sk": "Druhá znížená"
+  },
+  "Osvobozeno": {
+    "de": "Steuerbefreit",
+    "en": "Tax-exempt",
+    "it": "Esente",
+    "sk": "Oslobodené"
+  },
+  "Bez daně": {
+    "de": "Steuerfrei",
+    "en": "Free of tax",
+    "it": "Senza tasse",
+    "sk": "Bez dane"
+  },
+  "EU/Služby": {
+    "de": "EU/Dienstleistungen",
+    "en": "EU/Services",
+    "it": "EU/Servizio",
+    "sk": "EU/Služby"
+  },
+  "EU/Zboží": {
+    "de": "EU/Ware",
+    "en": "EU/Wares",
+    "it": "EU/Merce",
+    "sk": "EU/Tovar"
+  },
+  "ks": {
+    "de": "stk",
+    "en": "pcs",
+    "it": "pezzo",
+    "sk": "ks"
+  },
+  "rok": {
+    "de": "jahr",
+    "en": "year",
+    "it": "anno",
+    "sk": "rok"
+  },
+  "měs": {
+    "de": "monat",
+    "en": "month",
+    "it": "mese",
+    "sk": "mes"
+  },
+  "den": {
+    "de": "tag",
+    "en": "day",
+    "it": "giorno",
+    "sk": "deň"
+  },
+  "NS": {
+    "de": "NS",
+    "en": "SP",
+    "it": "PdS",
+    "sk": "NS"
+  },
+  "slovo": {
+    "de": "wort",
+    "en": "word",
+    "it": "parola",
+    "sk": "slovo"
+  },
+  "až": {
+    "de": "bis",
+    "en": "to",
+    "it": "quando",
+    "sk": "až"
+  },
+  "Daň odvede zákazník": {
+    "de": "Steuerschuldnerschaft des Leistungsempfängers",
+    "en": "Reverse charge",
+    "it": "Cliente prelievo fiscale",
+    "sk": "Dodanie podlieha preneseniu daňovej povinnosti"
+  },
+  "QR platba": {
+    "de": "QR-Code",
+    "en": "QR code",
+    "it": "Codice QR",
+    "sk": "QR kód"
+  },
+  "Vystaveno v aplikaci": {
+    "de": "Gedrückt mit",
+    "en": "Printed in",
+    "it": "Stampato da",
+    "sk": "Vystavené v aplikácii"
+  },
+  "Zákazník": {
+    "de": "Klient",
+    "en": "Customer",
+    "it": "Cliente",
+    "sk": "Zákazník"
+  },
+  "Strana": {
+    "de": "Seite",
+    "en": "Page",
+    "it": "Pagina",
+    "sk": "Strana"
+  },
+  "z": {
+    "de": "von",
+    "en": "of",
+    "it": "di",
+    "sk": "z"
+  },
+  "Dobrý den": {
+    "en": "Greetings",
+    "sk": "Dobrý deň"
+  },
+  "S pozdravem": {
+    "en": "Best wishes",
+    "sk": "S pozdravom"
+  },
+  "Vážený zákazníku":{
+    "en": "Dear customer",
+    "sk": "Vážený zákazník"
+  },
+  "dovolujeme si Vás upozornit, že ke dni":{
+    "en": "we would like to remind you that as of",
+    "sk": "dovoľujeme si Vás upozorniť, že ku dňu"
+  },
+  "stále evidujeme následující pohledávky":{
+    "en": "we still record the following receivables",
+    "sk": "stále evidujeme nasledujúce pohľadávky"
+  },
+  "stále evidujeme pohledávky":{
+    "en": "we still record receivables",
+    "sk": "stále evidujeme pohľadávky"
+  },
+  "v celkové výši":{
+    "en": "in the total amount of",
+    "sk": "v celkovej výške"
+  },
+  "Prosíme Vás o co nejrychlejší kontrolu a úhradu dlužných částek":{
+    "en": "We ask you to check and pay the amount as soon as possible",
+    "sk": "Prosíme Vás o čo najrýchlejšie kontrolu a úhradu dlžných súm"
+  },
+  "Děkujeme":{
+    "en": "Thank you",
+    "sk": "Ďakujeme"
+  },
+  "Přesný rozpis dlužných částek naleznete v příloze této zprávy. Žádáme Vás zdvořile o kontrolu a provedení úhrady":{
+    "en": "You can find the exact breakdown of the amounts in attachments below. We ask you to check and pay the amount as soon as possible",
+    "sk": "Presný rozpis dlžných súm nájdete v prílohe k tejto správe. Žiadame Vás zdvorilo o kontrolu a vykonanie úhrady"
+  }
+}

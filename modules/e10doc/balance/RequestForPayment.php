@@ -141,6 +141,7 @@ class RequestForPayment extends FormReport
 			foreach ($ownerAtt as $oa)
 			{
 				$this->data ['owner']['logo'][$oa['name']] = $oa;
+				$this->data ['owner']['logo'][$oa['name']]['rfn'] = 'att/'.$oa['path'].$oa['filename'];
 			}
 		}
 
