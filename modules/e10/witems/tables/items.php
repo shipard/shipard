@@ -81,7 +81,11 @@ class TableItems extends DbTable
 
 	public function columnRefInputTitle ($form, $srcColumnId, $inputPrefix)
 	{
-		$pk = isset ($form->recData [$srcColumnId]) ? $form->recData [$srcColumnId] : 0;
+		$prefixParts = explode ('.', $inputPrefix);
+		if (isset($prefixParts[0]) && $prefixParts[0] === 'subColumns')
+			$pk = isset($form->subColumnsData[$prefixParts[1]][$srcColumnId]) ? intval($form->subColumnsData[$prefixParts[1]][$srcColumnId]) : 0;
+		else
+			$pk = isset ($form->recData [$srcColumnId]) ? $form->recData [$srcColumnId] : 0;
 		if (!$pk)
 			return '';
 
@@ -102,7 +106,7 @@ class TableItems extends DbTable
 
 	public function columnInfoEnum ($columnId, $valueType = 'cfgText', TableForm $form = NULL)
 	{
-		if ($columnId === 'vatRate')	
+		if ($columnId === 'vatRate')
 		{
 			$enum = [];
 			$taxRates = $this->app()->cfgItem('e10doc.taxes.eu.cz.taxRates', []);
@@ -114,7 +118,7 @@ class TableItems extends DbTable
 			return $enum;
 		}
 
-		return parent::columnInfoEnum ($columnId, $valueType = 'cfgText', $form);	
+		return parent::columnInfoEnum ($columnId, $valueType = 'cfgText', $form);
 	}
 
 	function copyDocumentRecord ($srcRecData, $ownerRecord = NULL)
