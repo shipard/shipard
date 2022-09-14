@@ -12,6 +12,8 @@
 
 			{"id": "finalAmount", "name": "Výsledná částka", "type": "money"},
 
+			{"id": "docInvoiceOut", "name": "Faktura vydaná", "type": "int", "reference": "e10doc.core.heads"},
+
       {"id": "resData", "name": "Data", "type": "subColumns"},
 			{"id": "resContent", "name": "Obsah pro vizualizaci", "type": "memo"}
   ],

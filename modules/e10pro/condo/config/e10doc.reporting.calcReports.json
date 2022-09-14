@@ -2,14 +2,33 @@
   "condo-flats-settlement": {
     "title": "Vyúčtování bytů",
     "engine": "e10pro.condo.libs.FlatsSettlementEngine",
+
+    "useRowInvoiceOut": 1,
+    "rowInvoiceOutGenerator": "e10pro.condo.libs.FlatSettlementInvoiceGenerator",
+
     "settings":
     {
       "fields": {
         "columns": [
-          {"id": "heatingWaterType", "type": "enumInt", "name": "Způsob ohřevu teplé vody",
+          {"id": "heatingWaterType", "type": "enumInt", "name": "Způsob ohřevu teplé vody", "group": "base",
             "enumValues": {"0": "Neřeší se (vlastní ohřev v bytech)", "1": "Společný bojler", "3": "Dodávka vody z teplárny"}},
-          {"id": "flatConsumptionAdvancesType", "type": "enumInt", "name": "Zálohy na spotřeby v bytech jsou",
-            "enumValues": {"0": "Jednotlivě za každý druh spotřeby zvlášť", "1": "Dohromady"}}
+          {"id": "flatConsumptionAdvancesType", "type": "enumInt", "name": "Zálohy na spotřeby v bytech jsou", "group": "base",
+            "enumValues": {"0": "Jednotlivě za každý druh spotřeby zvlášť", "1": "Dohromady"}},
+
+          {"id": "acc_item_advance_water_cold", "type": "int", "name": "Záloha na studenou vodu", "reference": "e10.witems.items", "group": "items_adv"},
+          {"id": "acc_item_advance_water_cold_warm", "type": "int", "name": "Záloha na studenou vodu v teplé vodě", "reference": "e10.witems.items", "group": "items_adv"},
+          {"id": "acc_item_advance_water_heating", "type": "int", "name": "Záloha na ohřev vody", "reference": "e10.witems.items", "group": "items_adv"},
+          {"id": "acc_item_advance_electricity_common", "type": "int", "name": "Záloha na společnou elektřinu", "reference": "e10.witems.items", "group": "items_adv"},
+          {"id": "acc_item_advance_insurance", "type": "int", "name": "Záloha na pojištění", "reference": "e10.witems.items", "group": "items_adv"},
+          {"id": "acc_item_advance_administration", "type": "int", "name": "Záloha na správu domu", "reference": "e10.witems.items", "group": "items_adv"},
+
+          {"id": "dbCounterInvoiceOut", "type": "int", "name": "Číselná řada pro vydané faktury", "reference": "e10doc.base.docnumbers", "group": "invoices"},
+          {"id": "invoiceDueDays", "type": "int", "name": "Počet dnů splatnosti", "group": "invoices"}
+        ],
+        "groups": [
+          {"id": "base", "title": "Základní nastavení"},
+          {"id": "items_adv", "title": "Položky pro Zálohy"},
+          {"id": "invoices", "title": "Fakturace"}
         ]
       }
     },

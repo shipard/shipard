@@ -535,6 +535,8 @@ class FlatsSettlementEngine extends \e10doc\reporting\libs\CalcReportEngine
 
     $content = $this->numbers->partContentTable('res_flat', 'cold_water');
     $this->rowContents['cold_water'] = $content;
+
+    $resRowData['resData']['res_flat_water_cold_balance'] = $flatWaterBalance;
   }
 
   protected function makeResultsRow_WaterWarm($rowSDRecData, $srcRowData, &$resRowData)
@@ -628,6 +630,9 @@ class FlatsSettlementEngine extends \e10doc\reporting\libs\CalcReportEngine
     $content['params']['tableClass'] = 'pageBreakAfter';
 
     $this->rowContents['warm_water'] = $content;
+
+    $resRowData['resData']['res_flat_water_warm_cold_balance'] = $flatWaterBalance;
+    $resRowData['resData']['res_flat_water_heating_balance'] = $flatWaterHeatingBalance;
   }
 
   protected function makeResultsRow_ElectricityCommon($rowSDRecData, $srcRowData, &$resRowData)
@@ -652,6 +657,8 @@ class FlatsSettlementEngine extends \e10doc\reporting\libs\CalcReportEngine
 
     $content = $this->numbers->partContentTable('res_flat', 'electricity_common');
     $this->rowContents['electricity_common'] = $content;
+
+    $resRowData['resData']['res_flat_electricity_common_balance'] = $flatBalance;
   }
 
   protected function makeResultsRow_Insurance($rowSDRecData, $srcRowData, &$resRowData)
@@ -674,6 +681,8 @@ class FlatsSettlementEngine extends \e10doc\reporting\libs\CalcReportEngine
 
     $content = $this->numbers->partContentTable('res_flat', 'insurance');
     $this->rowContents['insurance'] = $content;
+
+    $resRowData['resData']['res_flat_insurance_balance'] = $flatBalance;
   }
 
   protected function makeResultsRow_Administration($rowSDRecData, $srcRowData, &$resRowData)
@@ -698,6 +707,8 @@ class FlatsSettlementEngine extends \e10doc\reporting\libs\CalcReportEngine
     $content['params']['tableClass'] = 'pageBreakAfter';
 
     $this->rowContents['administration'] = $content;
+
+    $resRowData['resData']['res_flat_administration_balance'] = $flatBalance;
   }
 
   public function doRebuild()
