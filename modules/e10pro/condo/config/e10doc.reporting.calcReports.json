@@ -6,6 +6,10 @@
     "useRowInvoiceOut": 1,
     "rowInvoiceOutGenerator": "e10pro.condo.libs.FlatSettlementInvoiceGenerator",
 
+    "useRowAccDoc": 1,
+    "rowAccDocGenerator": "e10pro.condo.libs.FlatSettlementAccDocGenerator",
+
+
     "settings":
     {
       "fields": {
@@ -22,13 +26,33 @@
           {"id": "acc_item_advance_insurance", "type": "int", "name": "Záloha na pojištění", "reference": "e10.witems.items", "group": "items_adv"},
           {"id": "acc_item_advance_administration", "type": "int", "name": "Záloha na správu domu", "reference": "e10.witems.items", "group": "items_adv"},
 
+
+          {"id": "acc_item_water_costs", "type": "int", "name": "Náklady na vodu", "reference": "e10.witems.items", "group": "items_costs"},
+          {"id": "acc_item_water_profit", "type": "int", "name": "Výnosy z vody", "reference": "e10.witems.items", "group": "items_costs"},
+
+          {"id": "acc_item_water_heating_costs", "type": "int", "name": "Náklady na ohřev vody (plyn)", "reference": "e10.witems.items", "group": "items_costs"},
+          {"id": "acc_item_water_heating_profit", "type": "int", "name": "Výnosy z ohřevu vody (plyn)", "reference": "e10.witems.items", "group": "items_costs"},
+
+          {"id": "acc_item_electricity_costs", "type": "int", "name": "Náklady na elektřinu", "reference": "e10.witems.items", "group": "items_costs"},
+          {"id": "acc_item_electricity_profit", "type": "int", "name": "Výnosy z elektřiny", "reference": "e10.witems.items", "group": "items_costs"},
+
+          {"id": "acc_item_insurance_costs", "type": "int", "name": "Náklady na pojištění", "reference": "e10.witems.items", "group": "items_costs"},
+          {"id": "acc_item_insurance_profit", "type": "int", "name": "Výnosy z pojištění", "reference": "e10.witems.items", "group": "items_costs"},
+
+          {"id": "acc_item_administration_costs", "type": "int", "name": "Náklady na správu domu", "reference": "e10.witems.items", "group": "items_costs"},
+          {"id": "acc_item_administration_profit", "type": "int", "name": "Výnosy ze správy domu", "reference": "e10.witems.items", "group": "items_costs"},
+
           {"id": "dbCounterInvoiceOut", "type": "int", "name": "Číselná řada pro vydané faktury", "reference": "e10doc.base.docnumbers", "group": "invoices"},
-          {"id": "invoiceDueDays", "type": "int", "name": "Počet dnů splatnosti", "group": "invoices"}
+          {"id": "invoiceDueDays", "type": "int", "name": "Počet dnů splatnosti", "group": "invoices"},
+
+          {"id": "dbCounterAccDoc", "type": "int", "name": "Číselná řada pro účetní doklady", "reference": "e10doc.base.docnumbers", "group": "acc"}
         ],
         "groups": [
           {"id": "base", "title": "Základní nastavení"},
           {"id": "items_adv", "title": "Položky pro Zálohy"},
-          {"id": "invoices", "title": "Fakturace"}
+          {"id": "items_costs", "title": "Položky pro Náklady a Výnosy"},
+          {"id": "invoices", "title": "Fakturace"},
+          {"id": "acc", "title": "Zaúčtování"}
         ]
       }
     },

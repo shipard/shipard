@@ -536,6 +536,7 @@ class FlatsSettlementEngine extends \e10doc\reporting\libs\CalcReportEngine
     $content = $this->numbers->partContentTable('res_flat', 'cold_water');
     $this->rowContents['cold_water'] = $content;
 
+    $resRowData['resData']['res_flat_water_cold_cost'] = $flatWaterCost;
     $resRowData['resData']['res_flat_water_cold_balance'] = $flatWaterBalance;
   }
 
@@ -631,7 +632,10 @@ class FlatsSettlementEngine extends \e10doc\reporting\libs\CalcReportEngine
 
     $this->rowContents['warm_water'] = $content;
 
+    $resRowData['resData']['res_flat_water_warm_cold_cost'] = $flatWaterCost;
     $resRowData['resData']['res_flat_water_warm_cold_balance'] = $flatWaterBalance;
+
+    $resRowData['resData']['res_flat_water_heating_cost'] = $costHeatingFlat;
     $resRowData['resData']['res_flat_water_heating_balance'] = $flatWaterHeatingBalance;
   }
 
@@ -658,6 +662,7 @@ class FlatsSettlementEngine extends \e10doc\reporting\libs\CalcReportEngine
     $content = $this->numbers->partContentTable('res_flat', 'electricity_common');
     $this->rowContents['electricity_common'] = $content;
 
+    $resRowData['resData']['res_flat_electricity_common_cost'] = $costFlat;
     $resRowData['resData']['res_flat_electricity_common_balance'] = $flatBalance;
   }
 
@@ -682,6 +687,7 @@ class FlatsSettlementEngine extends \e10doc\reporting\libs\CalcReportEngine
     $content = $this->numbers->partContentTable('res_flat', 'insurance');
     $this->rowContents['insurance'] = $content;
 
+    $resRowData['resData']['res_flat_insurance_cost'] = $costFlat;
     $resRowData['resData']['res_flat_insurance_balance'] = $flatBalance;
   }
 
@@ -708,6 +714,7 @@ class FlatsSettlementEngine extends \e10doc\reporting\libs\CalcReportEngine
 
     $this->rowContents['administration'] = $content;
 
+    $resRowData['resData']['res_flat_administration_cost'] = $costFlat;
     $resRowData['resData']['res_flat_administration_balance'] = $flatBalance;
   }
 

@@ -22,6 +22,7 @@ class CalcReportsResults extends DocumentCard
 
     // -- documents
     $this->createContent_invoiceOut();
+    $this->createContent_accDoc();
 
     // -- visualize contents
     $this->addContent('body', ['type' => 'line', 'line' => ['code' => "<div class='e10-pane e10-pane-table'>"]]);
@@ -42,11 +43,7 @@ class CalcReportsResults extends DocumentCard
     if (!$this->calcReportTypeCfg['useRowInvoiceOut'] ?? 0)
       return;
 
-    $this->createContent_doc($this->recData['docInvoiceOut'], 'invno');
-  }
-
-  protected function createContent_doc($docNdx, $docType)
-  {
+    $docNdx = $this->recData['docInvoiceOut'];
     $title = [];
     $title[] = ['text' => 'Faktura s vyúčtováním', 'class' => 'h2', 'icon' => 'docType/invoicesOut'];
 
@@ -58,8 +55,8 @@ class CalcReportsResults extends DocumentCard
 
       $title [] = [
 				'type' => 'action', 'action' => 'addwizard',
-				'text' => 'Vystavit', 'data-class' => 'e10doc.reporting.libs.CalcReportGenerateDocWizard',
-        'icon' => 'cmnbkpRegenerateOpenedPeriod',
+				'text' => 'Vystavit', 'data-class' => 'e10doc.reporting.libs.CalcReportGenerateRowInvoiceOutWizard',
+        'icon' => 'system/actionAdd',
         'class' => 'pull-right'
 		  ];
     }
@@ -67,7 +64,7 @@ class CalcReportsResults extends DocumentCard
     {
       $title [] = [
 				'type' => 'action', 'action' => 'addwizard',
-				'text' => 'Přegenerovat', 'data-class' => 'e10doc.reporting.libs.CalcReportGenerateDocWizard',
+				'text' => 'Přegenerovat', 'data-class' => 'e10doc.reporting.libs.CalcReportGenerateRowInvoiceOutWizard',
         'icon' => 'cmnbkpRegenerateOpenedPeriod',
         'class' => 'pull-right'
 		  ];
@@ -82,11 +79,57 @@ class CalcReportsResults extends DocumentCard
 
       $docState = $this->tableDocsHeads->getDocumentState ($docRecData);
 			$docStateStyle = ' e10-ds '.$this->tableDocsHeads->getDocumentStateInfo ($docState ['states'], $docRecData, 'styleClass');
-
     }
     $title[] = ['text' => '', 'class' => 'block'];
 
     $this->addContent('body', ['pane' => 'e10-pane e10-pane-table'.$docStateStyle, 'paneTitle' => $title, 'type' => 'line', 'line' => $body]);
+  }
+
+  protected function createContent_accDoc()
+  {
+    if (!$this->calcReportTypeCfg['useRowAccDoc'] ?? 0)
+      return;
+
+      $docNdx = $this->recData['docAcc'];
+      $title = [];
+      $title[] = ['text' => 'Účetní doklad', 'class' => 'h2', 'icon' => 'docType/accDocs'];
+
+      $docStateStyle = '';
+      $body = [];
+      if ($docNdx === 0)
+      {
+        $body[] = ['text' => 'Doklad zatím není vystaven', 'class' => 'e10-error'];
+
+        $title [] = [
+          'type' => 'action', 'action' => 'addwizard',
+          'text' => 'Vystavit', 'data-class' => 'e10doc.reporting.libs.CalcReportGenerateRowAccDocWizard',
+          'icon' => 'system/actionAdd',
+          'class' => 'pull-right'
+        ];
+      }
+      else
+      {
+        $title [] = [
+          'type' => 'action', 'action' => 'addwizard',
+          'text' => 'Přegenerovat', 'data-class' => 'e10doc.reporting.libs.CalcReportGenerateRowAccDocWizard',
+          'icon' => 'cmnbkpRegenerateOpenedPeriod',
+          'class' => 'pull-right'
+        ];
+
+        $docRecData = $this->tableDocsHeads->loadItem($docNdx);
+        $title [] = [
+          'docAction' => 'edit', 'table' => 'e10doc.core.heads', 'pk' => $docNdx,
+          'text' => $docRecData['docNumber'],
+          'icon' => $this->tableDocsHeads->tableIcon($docRecData),
+          'class' => 'pull-right', 'actionClass' => 'btn btn-primary', 'type' => 'button'
+        ];
+
+        $docState = $this->tableDocsHeads->getDocumentState ($docRecData);
+        $docStateStyle = ' e10-ds '.$this->tableDocsHeads->getDocumentStateInfo ($docState ['states'], $docRecData, 'styleClass');
+      }
+      $title[] = ['text' => '', 'class' => 'block'];
+
+      $this->addContent('body', ['pane' => 'e10-pane e10-pane-table'.$docStateStyle, 'paneTitle' => $title, 'type' => 'line', 'line' => $body]);
   }
 
   public function createContent ()

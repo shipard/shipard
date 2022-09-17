@@ -6,9 +6,9 @@ use \Shipard\Form\TableForm, \Shipard\Form\Wizard;
 
 
 /**
- * class CalcReportGenerateDocWizard
+ * class CalcReportGenerateRowAccDocWizard
  */
-class CalcReportGenerateDocWizard extends Wizard
+class CalcReportGenerateRowAccDocWizard extends Wizard
 {
 	var $tableCalcReports;
 	var $tableCalcReportsResults;
@@ -59,7 +59,7 @@ class CalcReportGenerateDocWizard extends Wizard
 	{
 		$this->init();
 
-		$crdgEngine = $this->app()->createObject($this->calcReportTypeCfg['rowInvoiceOutGenerator']);
+		$crdgEngine = $this->app()->createObject($this->calcReportTypeCfg['rowAccDocGenerator']);
 		$crdgEngine->setCalcReportResult($this->calcReportResultNdx);
 		$crdgEngine->generateDoc();
 
@@ -74,7 +74,7 @@ class CalcReportGenerateDocWizard extends Wizard
 		$hdr = [];
 		$hdr ['icon'] = 'icon-refresh';
 
-		$hdr ['info'][] = ['class' => 'title', 'value' => 'Vystavit fakturu za '.$this->calcReportResultRecData['title']];
+		$hdr ['info'][] = ['class' => 'title', 'value' => 'Vystavit účetní doklad pro '.$this->calcReportResultRecData['title']];
 		//$hdr ['info'][] = ['class' => 'info', 'value' => $this->calcReportTypeCfg['rowInvoiceOutGenerator']];
 
 		return $hdr;
