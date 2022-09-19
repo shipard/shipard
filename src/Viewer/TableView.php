@@ -538,7 +538,7 @@ class TableView extends \Shipard\Base\BaseObject
 		if (!$this->fullWidthToolbar)
 			$c .= $this->createTopMenuSearchCode ();
 
-		$c .= "<{$this->htmlRowsElement} class='df2-viewer-list e10-viewer-list$listClass' id='{$this->vid}Items' data-rowspagenumber='0'".
+		$c .= "<{$this->htmlRowsElement} style='z-index: 499;' class='df2-viewer-list e10-viewer-list$listClass' id='{$this->vid}Items' data-rowspagenumber='0'".
 					"data-viewer='$this->vid' data-rowelement='{$this->htmlRowElement}'>";
 		$c .= $this->rows ();
 		$c .= "</{$this->htmlRowsElement}>";
@@ -602,8 +602,7 @@ class TableView extends \Shipard\Base\BaseObject
 
 		if ($this->accessLevel === 2 || $this->accessLevel === 30)
 		{
-			$toolbar [] = ['type' => 'action', 'action' => 'newform', 'text' => DictSystem::text(DictSystem::diBtn_Insert)];
-			$this->createToolbarAddButton ($toolbar[0]);
+			$this->createToolbarAddButton ($toolbar);
 		}
 
 		if ($this->accessLevel === 2 || $this->accessLevel === 30)
@@ -632,8 +631,9 @@ class TableView extends \Shipard\Base\BaseObject
 		return $toolbar;
 	} // createToolbar
 
-	public function createToolbarAddButton (&$button)
+	public function createToolbarAddButton (&$toolbar)
 	{
+		$toolbar [] = ['type' => 'action', 'action' => 'newform', 'text' => DictSystem::text(DictSystem::diBtn_Insert)];
 	}
 
 	public function createToolbar_addWizard (&$toolbar, $addWizard)
@@ -726,7 +726,10 @@ class TableView extends \Shipard\Base\BaseObject
 													if (isset ($btn ['table']))
 														$dataTable = "data-table='{$btn ['table']}' ";
 													break;
-				}
+					case '':				$class .= 'btn btn-success';
+													$icon = $this->app()->ui()->icon($btn['icon'] ?? 'system/actionAddWizard');
+													break;
+			}
 				$btnParams = '';
 				if (isset ($btn['data-class']))
 					$btnParams .= "data-class='{$btn['data-class']}' ";
@@ -738,7 +741,11 @@ class TableView extends \Shipard\Base\BaseObject
 
 				if (isset ($btn['subButtons']) || isset ($btn['dropdownMenu']))
 					$c .= "<div class='btn-group'>";
-				$c .= "<button class='btn {$btnClass}$class df2-{$btn['type']}-trigger e10-sv-tlbr-btn-{$btn['action']}' {$dataTable}data-action='{$btn['action']}' data-viewer='{$this->vid}' $btnParams>{$icon}&nbsp;{$btnText}</button>";
+
+				if ($btn['action'] === '')
+					$c .= "<button type='button' class='$class $btnClass dropdown-toggle' data-toggle='dropdown'>{$icon}&nbsp;{$btnText}&nbsp;<span class='caret'></span></button>";
+				else
+					$c .= "<button class='btn {$btnClass}$class df2-{$btn['type']}-trigger e10-sv-tlbr-btn-{$btn['action']}' {$dataTable}data-action='{$btn['action']}' data-viewer='{$this->vid}' $btnParams>{$icon}&nbsp;{$btnText}</button>";
 				if (isset ($btn['subButtons']))
 				{
 					foreach($btn['subButtons'] as $subbtn)
@@ -746,10 +753,11 @@ class TableView extends \Shipard\Base\BaseObject
 				}
 				if (isset ($btn['dropdownMenu']))
 				{
-					$c .= '
-					<button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown">
-						<span class="caret"></span>
- 					</button>';
+					if ($btn['action'] != '')
+						$c .= '
+							<button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown">
+								<span class="caret"></span>
+							</button>';
 
 					$c .= '<ul class="dropdown-menu" role="menu">';
 
@@ -975,7 +983,7 @@ class TableView extends \Shipard\Base\BaseObject
 				if ($this->toolbarTitle)
 					$h .= "<td class='pr1'>".$this->app()->ui()->composeTextLine($this->toolbarTitle).'</td>';
 
-				$h .= "<td id='{$this->toolbarElementId}__Main' style='white-space: pre;right: 2rem; max-width: 70%;'>";
+				$h .= "<td id='{$this->toolbarElementId}__Main' style='right: 2rem; max-width: 70%;'>";
 				$h .= $this->createToolbarCode ();
 				$h .= "<div id='{$this->toolbarElementId}' style='display: inline-block; padding-left: 1em; padding-right: 1em;'>";
 				$h .= '</div>';
@@ -1193,8 +1201,8 @@ class TableView extends \Shipard\Base\BaseObject
 		}
 
 		$class = "r";
-		if (isset ($listItem ['txt']))
-			$class .= " t";
+		//if (isset ($listItem ['txt']))
+		//	$class .= " t";
 		if (isset ($listItem['class']))
 			$class .= " {$listItem['class']}";
 		if ($this->htmlRowElementClass !== '')
@@ -1324,7 +1332,7 @@ class TableView extends \Shipard\Base\BaseObject
 			$codeLine .= "<div class='df2-list-item-t3'>" . $this->app()->ui()->composeTextLine ($listItem['t3']) . '</div>';
 
 		if (isset ($listItem ['txt']))
-			$codeLine .= "<div class='txt'>{$listItem ['txt']}</div>";
+			$codeLine .= "<div class='pageText'>{$listItem ['txt']}</div>";
 
 		if (isset($listItem['content']))
 		{
