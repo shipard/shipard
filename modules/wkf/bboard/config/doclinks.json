@@ -1,4 +1,18 @@
 {
+	"wkf.bboard.bboards": {
+		"wkf-bboard-makers": {
+			"linkid": "wkf-bboard-makers", "name": "Mohou psát zprávy", "icon": "system/iconAdmin",
+			"sources": [
+				{"id": "users", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			]
+		},
+		"wkf-bboards-visibility": {
+			"linkid": "wkf-bboards-visibility", "name": "Mohou pouze prohlížet", "icon": "system/iconUser",
+			"sources": [
+				{"id": "users", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			]
+		}
+	},
 	"wkf.bboard.msgs": {
 		"wkf-bboard-msgs-notify": {
 			"linkid": "wkf-bboard-msgs-notify", "name": "Na vědomí", "icon": "docLinkNotify",

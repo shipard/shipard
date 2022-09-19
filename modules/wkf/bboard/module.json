@@ -2,7 +2,7 @@
   "id": "wkf.bboard",
   "name": "workflow - bboards",
   "tables": [
-		"bboards", "msgs", "msgsAgenda"
+		"bboards", "msgs"
 	],
 	"modules": ["wkf/base"],
   "config": [

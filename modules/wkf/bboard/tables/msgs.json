@@ -8,18 +8,15 @@
 		{"id": "text", "name": "Text", "type": "memo"},
 
 		{"id": "author", "name": "Autor", "type": "int", "reference": "e10.persons.persons"},
-		{"id": "dateFrom", "name": "Datum platnosti od", "label": "Zveřejnit od", "type": "timestamp"},
-		{"id": "dateTo", "name": "Datum platnosti do", "label": "do", "type": "timestamp"},
-		{"id": "onTop", "name": "Přišpendlit nahoru", "type": "logical"},
+		{"id": "publishFrom", "name": "Datum platnosti od", "label": "Zveřejnit od", "type": "timestamp"},
+		{"id": "publishTo", "name": "Datum platnosti do", "label": "do", "type": "timestamp"},
+		{"id": "pinned", "name": "Přišpendlit nahoru", "type": "logical"},
 		{"id": "order", "sql": "order", "name": "Pořadí", "type": "int"},
 
 		{"id": "image", "name": "Ilustrační obrázek", "type": "int", "reference": "e10.base.attachments", "comboViewer": "images"},
+
 		{"id": "useImageAs", "name": "Použít obrázek jako", "type": "enumInt",
 			"enumValues": {"0": "Vlevo", "1": "Vpravo", "2": "Podklad"}},
-
-		{"id": "isEvent", "name": "Jedná se o událost", "type": "logical", "options": ["saveOnChange"]},
-		{"id": "eventBegin", "name": "Začátek", "type": "timestamp"},
-		{"id": "eventEnd", "name": "Konec", "type": "timestamp"},
 
 		{"id": "linkToUrl", "name": "Odkaz na", "type": "string", "len": 120},
 
@@ -33,7 +30,8 @@
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"views": [
 		{"id": "default", "class": "wkf.bboard.ViewMsgs", "detail": "wkf.bboard.ViewDetailMsg"},
-		{"id": "dashboardMsgs", "class": "wkf.bboard.libs.ViewerMsgsOnDahboard"}
+		{"id": "dashboardMsgs", "class": "wkf.bboard.libs.ViewerMsgsOnDahboard"},
+		{"id": "msgsAll", "class": "wkf.bboard.libs.ViewerMsgsAll"}
 	],
 	"forms": [
 		{"id": "default", "class": "wkf.bboard.FormBBoardMsg"}

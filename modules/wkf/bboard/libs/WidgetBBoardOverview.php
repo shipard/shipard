@@ -25,7 +25,7 @@ class WidgetBBoardOverview extends WidgetBoard
 		$parts = explode ('-', $this->activeTopTab);
 
 		$this->addContentViewer('wkf.bboard.msgs',
-				'dashboardMsgs', ['widgetId' => $this->widgetId, 'bboard' => $parts[1], 'viewerMode' => $viewerMode]);
+				'msgsAll', ['widgetId' => $this->widgetId, 'bboard' => $parts[1], 'viewerMode' => $viewerMode]);
 	}
 
 	public function init ()
@@ -40,7 +40,7 @@ class WidgetBBoardOverview extends WidgetBoard
 
 	function createTabs ()
 	{
-		if (!$this->usersBBoards || !count($this->usersBBoards))
+		//if (!$this->usersBBoards || !count($this->usersBBoards))
 		{
 			return;
 		}

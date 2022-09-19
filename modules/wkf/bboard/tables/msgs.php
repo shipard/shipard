@@ -24,6 +24,26 @@ class TableMsgs extends DbTable
 
 		return $hdr;
 	}
+
+	public function checkNewRec (&$recData)
+	{
+		parent::checkNewRec ($recData);
+
+		if (!isset($recData ['author']) || $recData ['author'] == 0)
+			$recData ['author'] = $this->app()->userNdx();
+	}
+
+	public function checkBeforeSave (&$recData, $ownerData = NULL)
+	{
+		parent::checkBeforeSave ($recData, $ownerData);
+
+		if ($recData['docState'] === 4000)
+		{
+			if (Utils::dateIsBlank($recData['publishFrom']))
+				$recData['publishFrom'] = new \DateTime();
+		}
+
+	}
 }
 
 
@@ -156,49 +176,30 @@ class FormBBoardMsg extends TableForm
 
 		$tabs ['tabs'][] = ['text' => 'Text', 'icon' => 'formText'];
 		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
-
-		if ($this->recData['isEvent'])
-		{
-			$tabs ['tabs'][] = ['text' => 'Událost', 'icon' => 'user/calendar'];
-			$tabs ['tabs'][] = ['text' => 'Program', 'icon' => 'system/iconList'];
-		}
-
 		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		$this->openForm ();
 			$this->addColumnInput ('title');
 			$this->addList ('doclinksPersons', '', self::loAddToFormLayout);
-			$this->openRow();
-				$this->addColumnInput ('onTop', self::coRightCheckbox);
-				$this->addColumnInput ('isEvent', self::coRightCheckbox);
-			$this->closeRow();
 			$this->openTabs ($tabs);
 				$this->openTab (self::ltNone);
 					$this->addInputMemo('text', NULL, TableForm::coFullSizeY);
 				$this->closeTab();
 				$this->openTab();
+					$this->addColumnInput ('pinned', self::coRightCheckbox);
 					$this->addList ('clsf', '', TableForm::loAddToFormLayout);
-					$this->addSeparator(self::coH3);
-					$this->addColumnInput ('dateFrom');
-					$this->addColumnInput ('dateTo');
-					$this->addSeparator(self::coH3);
+					$this->addSeparator(self::coH4);
+					$this->addColumnInput ('publishFrom');
+					$this->addColumnInput ('publishTo');
+					$this->addSeparator(self::coH4);
 					$this->addColumnInput ('image');
 					$this->addColumnInput ('useImageAs');
-					$this->addSeparator(self::coH3);
+					$this->addSeparator(self::coH4);
 					$this->addColumnInput ('linkToUrl');
 					$this->addColumnInput ('order');
 					$this->addColumnInput ('bboard');
+					$this->addColumnInput ('author');
 				$this->closeTab();
-				if ($this->recData['isEvent'])
-				{
-					$this->openTab();
-						$this->addColumnInput ('eventBegin');
-						$this->addColumnInput ('eventEnd');
-					$this->closeTab();
-					$this->openTab(TableForm::ltNone);
-						$this->addViewerWidget ('wkf.bboard.msgsAgenda', 'default', ['msg' => $this->recData['ndx']], TRUE);
-					$this->closeTab();
-				}
 				$this->openTab(TableForm::ltNone);
 					$this->addAttachmentsViewer();
 				$this->closeTab();

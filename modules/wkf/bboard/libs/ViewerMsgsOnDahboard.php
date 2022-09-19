@@ -50,12 +50,12 @@ class ViewerMsgsOnDahboard extends TableView
 		$listItem ['t1'] = $item['title'];
 
 		$dates = [];
-		if ($item['onTop'])
+		if ($item['pinned'])
 			$dates[] = ['text' => '', 'icon' => 'system/iconPinned', 'class' => ''];
-		if ($item['dateFrom'])
-			$dates[] = ['text' => Utils::datef($item['dateFrom'], '%D'), 'icon' => 'system/actionPlay', 'class' => ''];
-		if ($item['dateTo'])
-			$dates[] = ['text' => Utils::datef($item['dateTo'], '%D'), 'icon' => 'system/actionStop', 'class' => ''];
+		if ($item['publishFrom'])
+			$dates[] = ['text' => Utils::datef($item['publishFrom'], '%D'), 'icon' => 'system/actionPlay', 'class' => ''];
+		if ($item['publishTo'])
+			$dates[] = ['text' => Utils::datef($item['publishTo'], '%D'), 'icon' => 'system/actionStop', 'class' => ''];
 		if (count($dates))
 			$listItem ['i2'] = $dates;
 

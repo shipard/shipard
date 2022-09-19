@@ -43,8 +43,17 @@ class TableBBoards extends DbTable
 		{
 			$item = [
 				'ndx' => $r ['ndx'], 'fn' => $r ['fullName'], 'sn' => $r ['shortName'],
-				'icon' => ($r['icon'] === '') ? 'icon-file': $r['icon'],
+				'icon' => ($r['icon'] === '') ? 'system/iconFile': $r['icon'],
 			];
+
+			$cntPeoples = 0;
+
+			$cntPeoples += $this->docLinksConfigList ($item, 'makers', 'e10.persons.persons', 'wkf-bboard-makers', $r ['ndx']);
+			$cntPeoples += $this->docLinksConfigList ($item, 'makersGroups', 'e10.persons.groups', 'wkf-bboard-makers', $r ['ndx']);
+			$cntPeoples += $this->docLinksConfigList ($item, 'visibility', 'e10.persons.persons', 'wkf-bboard-visibility', $r ['ndx']);
+			$cntPeoples += $this->docLinksConfigList ($item, 'visibilityGroups', 'e10.persons.groups', 'wkf-bboard-visibility', $r ['ndx']);
+
+			$item['allowAllUsers'] = ($cntPeoples) ? 0 : 1;
 
 			$list [$r['ndx']] = $item;
 		}
@@ -54,10 +63,61 @@ class TableBBoards extends DbTable
 		file_put_contents(__APP_DIR__ . '/config/_wkf.bboard.bboards.json', Utils::json_lint (json_encode ($cfg)));
 	}
 
-	public function usersBBoards()
+	function docLinksConfigList (&$item, $key, $dstTableId, $listId, $activityTypeNdx)
+	{
+		$list = [];
+
+		$rows = $this->app()->db->query (
+			'SELECT doclinks.dstRecId FROM [e10_base_doclinks] AS doclinks',
+			' WHERE doclinks.linkId = %s', $listId, ' AND dstTableId = %s', $dstTableId,
+			' AND doclinks.srcRecId = %i', $activityTypeNdx
+		);
+		foreach ($rows as $r)
+		{
+			$list[] = $r['dstRecId'];
+		}
+
+		if (count($list))
+		{
+			$item[$key] = $list;
+			return count($list);
+		}
+
+		return 0;
+	}
+
+	public function usersBBoards($enabledCfgItem = '')
 	{
 		$allBBoards = $this->app()->cfgItem('wkf.bboard.bboards', NULL);
-		return $allBBoards;
+
+		$bboards = [];
+		if ($allBBoards === NULL)
+			return $bboards;
+
+		$userNdx = $this->app()->userNdx();
+		$userGroups = $this->app()->userGroups();
+
+		foreach ($allBBoards as $itemNdx => $i)
+		{
+			if ($enabledCfgItem !== '' && !($i[$enabledCfgItem] ?? 0))
+				continue;
+
+			$enabled = 0;
+			if (!isset($i['allowAllUsers'])) $enabled = 1;
+			elseif ($i['allowAllUsers']) $enabled = 1;
+			elseif (isset($i['makers']) && in_array($userNdx, $i['makers'])) $enabled = 2;
+			elseif (isset($i['makersGroups']) && count($userGroups) && count(array_intersect($userGroups, $i['makersGroups'])) !== 0) $enabled = 2;
+			elseif (in_array($userNdx, $i['visibility'] ?? [])) $enabled = 1;
+			elseif (count($userGroups) && count(array_intersect($userGroups, $i['visibityGroups'] ?? [])) !== 0) $enabled = 1;
+
+			if (!$enabled)
+				continue;
+
+			$bboards[$itemNdx] = $i;
+			$bboards[$itemNdx]['accessLevel'] = $enabled;
+		}
+
+    return $bboards;
 	}
 }
 
@@ -147,6 +207,8 @@ class FormBBoard extends TableForm
 				$this->openTab ();
 					$this->addColumnInput('fullName');
 					$this->addColumnInput('shortName');
+					$this->addSeparator(self::coH4);
+					$this->addList ('doclinks', '', self::loAddToFormLayout);
 				$this->closeTab();
 				$this->openTab ();
 					$this->addColumnInput('icon');
