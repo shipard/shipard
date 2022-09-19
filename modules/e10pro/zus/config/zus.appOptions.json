@@ -15,7 +15,9 @@
 		"options":
 		[
 			{"cfgKey": "pouzivatPrihlasky", "cfgName": "Používat Přihlášky",
-				"options": {"0": "Ne", "1": "Ano"}}
+				"options": {"0": "Ne", "1": "Ano"}},
+			{"cfgKey": "dbCounterInvoicesFeeSchool", "cfgName": "Číselná řada pro faktury za Školné", "reference": "e10doc.base.docnumbers"},
+			{"cfgKey": "dbCounterInvoicesFeeLending", "cfgName": "Číselná řada pro faktury za Půjčovné", "reference": "e10doc.base.docnumbers"}
 		]
 	},
 

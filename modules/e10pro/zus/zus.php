@@ -1900,7 +1900,7 @@ class GenerovaniFakturSkolneEngine extends \E10\Utility
 		$this->invHead ['docKind'] = 2;
 
 		$this->invHead ['docType'] = 'invno';
-		$this->invHead ['dbCounter'] = 3; // TODO: nějaké nastavení
+		$this->invHead ['dbCounter'] = $this->app->cfgItem('options.e10-pro-zus.dbCounterInvoicesFeeSchool');
 		$this->invHead ['datePeriodBegin'] = $this->periodBegin;
 		$this->invHead ['datePeriodEnd'] = $this->periodEnd;
 
@@ -1908,7 +1908,7 @@ class GenerovaniFakturSkolneEngine extends \E10\Utility
 		$this->invHead ['symbol1'] = $row['cisloStudia'];
 		$this->invHead ['centre'] = $row['pobocka'];
 
-		$oddeleni = \E10\Application::cfgItem ("e10pro.zus.oddeleni.{$row ['svpOddeleni']}.nazev");
+		$oddeleni = $this->app->cfgItem ("e10pro.zus.oddeleni.{$row ['svpOddeleni']}.nazev");
 
 		$nextYear = $this->aktSkolniRok;
 		$nextYear++;
@@ -1935,7 +1935,7 @@ class GenerovaniFakturSkolneEngine extends \E10\Utility
 		$r = array ();
 		$tableRows->checkNewRec($r);
 
-		$oddeleni = \E10\Application::cfgItem ("e10pro.zus.oddeleni.{$row ['svpOddeleni']}.nazev");
+		$oddeleni = $this->app->cfgItem ("e10pro.zus.oddeleni.{$row ['svpOddeleni']}.nazev");
 
 		$nextYear = zusutils::aktualniSkolniRok ();
 		$nextYear++;
@@ -2151,7 +2151,7 @@ class GenerovaniFakturPujcovneEngine extends \E10\Utility
 {
 	var $schoolYear;
 	var $teacher;
-	var $dbCounterNdx = 4;
+	var $dbCounterNdx = 0;
 
 	var $invHead = array ();
 	var $invRows = array ();
@@ -2180,7 +2180,7 @@ class GenerovaniFakturPujcovneEngine extends \E10\Utility
 		$this->invHead ['symbol1'] = $row['cisloStudia'];
 		$this->invHead ['centre'] = $row['pobocka'];
 
-		$oddeleni = \E10\Application::cfgItem ("e10pro.zus.oddeleni.{$row ['svpOddeleni']}.nazev");
+		$oddeleni = $this->app->cfgItem ("e10pro.zus.oddeleni.{$row ['svpOddeleni']}.nazev");
 
 		$nextYear = $this->aktSkolniRok;
 		$nextYear++;
@@ -2207,7 +2207,7 @@ class GenerovaniFakturPujcovneEngine extends \E10\Utility
 		$r = array ();
 		$tableRows->checkNewRec($r);
 
-		$oddeleni = \E10\Application::cfgItem ("e10pro.zus.oddeleni.{$row ['svpOddeleni']}.nazev");
+		$oddeleni = $this->app->cfgItem ("e10pro.zus.oddeleni.{$row ['svpOddeleni']}.nazev");
 
 		$nextYear = zusutils::aktualniSkolniRok ();
 		$nextYear++;
@@ -2316,6 +2316,7 @@ class GenerovaniFakturPujcovneEngine extends \E10\Utility
 	function run()
 	{
 		$today = new \DateTime();
+		$this->dbCounterNdx = $this->app->cfgItem('options.e10-pro-zus.dbCounterInvoicesFeeLending');
 		$this->tvorbaFaktur ($today);
 	}
 }
