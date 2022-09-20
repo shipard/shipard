@@ -648,6 +648,7 @@ class ViewDetailStudent extends \E10\Persons\ViewDetailPersons
 
 	public function predmetyStudia ($studiumNdx)
 	{
+		$rows = [];
 		$q =
 			'SELECT predmety.nazev as predmet, ucitele.fullName as ucitel ' .
 			' FROM [e10pro_zus_studiumpre] as studiumpre  '.
