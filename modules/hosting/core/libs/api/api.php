@@ -97,7 +97,7 @@ function getDataSourceInfo ($app)
 
 		$partnerNdx = ($r['partner']) ? $r ['partner'] : 1;
 		$partnerInfo = $tablePartners->partnerInfo ($partnerNdx);
-		$portalInfo = ['supportPhone' => '+420 774 020 522', 'supportEmail' => 'podpora@shipard.cz', 'supportUrl' => 'https://shipard.cz/', 'name' => 'Shipard'];//$app->cfgItem ('e10pro.hosting.portals.portals.'.$partnerInfo['portal']);
+		$portalInfo = ['supportPhone' => '+420 774 020 522', 'supportEmail' => 'podpora@shipard.cz', 'supportUrl' => 'https://shipard.cz/', 'name' => 'Shipard'];
 
 		$image = UtilsBase::getAttachmentDefaultImage ($app, 'hosting.core.dataSources', $r ['ndx']);
 		$newds = [
@@ -113,7 +113,7 @@ function getDataSourceInfo ($app)
 
 			'supportPhone' => ($partnerInfo['supportPhone'] !== '') ? $partnerInfo['supportPhone'] : $portalInfo['supportPhone'],
 			'supportEmail' => ($partnerInfo['supportEmail'] !== '') ? $partnerInfo['supportEmail'] : $portalInfo['supportEmail'],
-			'supportEmail' => ($partnerInfo['webUrl'] !== '') ? $partnerInfo['webUrl'] : $portalInfo['supportEmail'],
+			'supportUrl' => ($partnerInfo['webUrl'] !== '') ? $partnerInfo['webUrl'] : $portalInfo['supportUrl'],
 			'supportSection' => 0,
 
 			'dsIconServerUrl' => $r['dsIconServerUrl'], 'dsIconFileName' => $r['dsIconFileName'],
