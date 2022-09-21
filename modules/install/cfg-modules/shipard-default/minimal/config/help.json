@@ -1,7 +1,7 @@
 {
 	"header": [
-		{"title": "Obsah", "url": "prirucka", "icon": "iconContent"},
-		{"title": "Ovládání aplikace", "url": "prirucka/s3", "icon": "iconAppControling"}
+		{"title": "Obsah", "url": "prirucka", "icon": "user/fileText"},
+		{"title": "Ovládání aplikace", "url": "prirucka/501", "icon": "system/iconAppControling"}
 	],
 	"panels": {
 		"/app/srvcfg": [

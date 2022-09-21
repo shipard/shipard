@@ -36,13 +36,6 @@
 			},
 			"wikies": {
 				"creatorClass": "e10pro.kb.WikiDashboardPanelsCreator", "order": 1800
-			},
-			"helpdesk": {
-				"name": "Podpora",
-				"icon": "system/rightSubmenuSupport",
-				"order": 800100,
-				"fullsize": 1,
-				"rows": {"main": {"order": 10000, "class": "full"}}
 			}
 		}
 	}

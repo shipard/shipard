@@ -106,7 +106,7 @@ class MainWindow extends \Shipard\Base\BaseObject
 				$wss = $this->app->webSocketServers();
 				$userInfo .= $this->wssCode($wss);
 			}
-	
+
 			$userInfo .= "<li><span>".$this->app()->ui()->icon('system/iconOwner');
 			$ownerName = $this->app->cfgItem ('options.core.ownerShortName', '');
 			if ($ownerName == '')
@@ -282,11 +282,13 @@ class MainWindow extends \Shipard\Base\BaseObject
 		$userInfo = $this->app->user()->data();
 		$userImg = $this->app->user()->data('picture');
 
-		$portalDomain =  $this->app->cfgItem ('dsi.portalInfo.portalDomain', '');
-		$bottomImg =  $this->app->cfgItem ('dsi.portalInfo.logoPortal.fileName', '');
+		//$portalDomain =  $this->app->cfgItem ('dsi.portalInfo.portalDomain', '');
+		$supportImg =  $this->app->cfgItem ('dsi.portalInfo.logoPortal.fileName', '');
 		$partnerImg =  $this->app->cfgItem ('dsi.partner.logoPartner.fileName', '');
 		if ($partnerImg !== '')
-			$bottomImg = $partnerImg;
+			$supportImg = $partnerImg;
+
+		$bottomImgUrl = 'https://org.shipard.app/att/2021/05/05/wkf.docs.documents/logo-header-web-light-206ry0b.svg';
 
 		$c = "<div id='mainBrowserMM' class='e10-mm close'>";
 
@@ -350,12 +352,13 @@ class MainWindow extends \Shipard\Base\BaseObject
 		// -- support
 		if ($dsMode)
 		{
-			$supportUrl = 'https://' . $portalDomain . '/';
+			//$supportUrl = 'https://' . $portalDomain . '/';
 			$c .= "<ul class='e10-mm-list'>";
 			$c .= "<li style='width: 5em; text-align: center;'><img src='".$this->app()->scRoot()."/shipard/graphics/icon-page-support.svg' style='width: 80%; padding-top: 1ex;'></li>";
 			$c .= "<li style='line-height: 1.8;'>";
-			$c .= "<div class='h2'>" . utils::es('Podpora') . "</div>";
+			//$c .= "<div class='h2'>" . utils::es('Podpora') . "</div>";
 
+			/*
 			if (isset($dsi['supportSection']) && $dsi['supportSection'])
 			{
 				$supportUrl = 'https://system.shipard.app/';
@@ -365,26 +368,31 @@ class MainWindow extends \Shipard\Base\BaseObject
 				$c .= "<button class='btn btn-primary e10-document-trigger' data-action='new' data-table='wkf.core.issues' data-open-as='1' data-open-url-prefix='$supportUrl' data-addparams='$newIssueAddParams' onclick='$(\"#e10-mm-button\").click();'><i class='fa fa-bug'></i> Nahlásit problém</button>";
 				//$c .= " <a class='btn btn-info' href='$supportUrl' target='_blank'><i class='fa fa-bullhorn'></i> Fórum podpory</a>";
 			}
-			else
+			else*/
 			{
+				/*
 				$reportProblemButtons = $this->app->cfgItem('wkf.reportProblemButtons', []);
 				foreach ($reportProblemButtons as $rp)
 				{
 					$addParams = '__section=' . $rp['section'] . '&__issueKind=' . $rp['issueKind'] . '&__issueType=' . $rp['issueType'];
 					$c .= "<button class='btn df2-button-trigger btn btn-primary e10-document-trigger btn-primary' data-action='new' data-table='wkf.core.issues' data-addparams='$addParams' onclick='$(\"#e10-mm-button\").click();'><i class='fa-fw fa fa-bug'></i> Nahlásit problém</button>";
 				}
+				*/
 			}
 			$c .= "<div class='h2'>" . utils::es('O vaši podporu se stará') . '</div>';
-			$c .= "<span class='nowrap'>".$this->app()->ui()->icon('system/iconOwner'). ' ' . utils::es($dsi['supportName']) . "</span>&nbsp;<br>";
-			$c .= "<span class='nowrap'><i class='fa fa-envelope'></i> <a href='mailto:{$dsi['supportEmail']}'>" . utils::es($dsi['supportEmail']) . "</a></span>&nbsp;";
-			$c .= "<span class='nowrap'><i class='fa fa-phone'></i> " . utils::es($dsi['supportPhone']) . "</span>";
+			$c .= "<span class='nowrap'>".$this->app()->ui()->icon('system/iconOwner'). " <a href='{$dsi['supportUrl']}' target='_blank'>" . utils::es($dsi['supportName']) ."</a></span>&nbsp;<br>";
+			$c .= "<span class='nowrap'>".$this->app()->ui()->icon('user/envelope')." <a href='mailto:{$dsi['supportEmail']}'>" . utils::es($dsi['supportEmail']) . "</a></span>&nbsp;";
+			$c .= "<span class='nowrap'>".$this->app()->ui()->icon('system/iconPhone') . utils::es($dsi['supportPhone']) . "</span>";
+			if ($dsi['supportName'] !== 'Shipard')
+				$c .= "<img src='https://shipard.app/att/$supportImg' style='width:100%; max-height: 5em; text-align: center; margin-top: 1ex; margin-bottom: .5ex;'>";
 
 			$c .= '</li>';
 			$c .= '</ul>';
 		}
 
 		$c .= "<div class='e10-mm-dsInfo'>";
-		$c .= "<img src='https://shipard.app/att/$bottomImg' style='width:100%; max-height: 4em; text-align: center; margin-top: 1ex;'>";
+		$c .= "<small'>" . utils::es('powered by') . '</small>';
+		$c .= "<a href='https://shipard.org/' target='_blank'><img src='$bottomImgUrl' style='width:100%; max-height: 1.8em; text-align: center; margin-top: .2ex;'></a>";
 		$c .= "<small>";
 		$c .= utils::es('Verze '.__E10_VERSION__.'.'.$si['e10commit']);
 		$c .= ($this->app->mobileMode) ? '.m' : '.d';
@@ -727,12 +735,12 @@ class MainWindow extends \Shipard\Base\BaseObject
 			if (isset ($listItem ['icontxt']))
 				$codeLine .= "<div class='i'>{$listItem ['icontxt']}</div> ";
 			else
-			{	
+			{
 				$icon = $listItem['icon'] ?? '';
 				if ($icon === '' && isset($listItem['table']))
 					$icon = 'tables/' . $listItem['table'];
 				$codeLine .= $this->app()->ui()->icons()->icon($icon, 'i', 'div');
-			}	
+			}
 			if (!$small && !$panelMode && isset($listItem ['t1']))
 				$codeLine .= "<div class='t'>".utils::es ($listItem ['t1']).'</div>';
 		}
