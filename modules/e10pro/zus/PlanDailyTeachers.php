@@ -432,7 +432,7 @@ divs.on( 'scroll', sync);
 		}
 
 
-		foreach ($this->timetable[$pobockaId]['rows'][$ucitel] as $rowId => &$row)
+		foreach ($this->timetable[$pobockaId]['rows'][$ucitel] ?? [] as $rowId => &$row)
 		{
 			$nalezeno = 0;
 			foreach ($row as &$h)

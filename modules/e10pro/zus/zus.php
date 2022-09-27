@@ -1941,7 +1941,7 @@ class GenerovaniFakturSkolneEngine extends \E10\Utility
 		$nextYear = zusutils::aktualniSkolniRok ();
 		$nextYear++;
 
-		$r['item'] = 26;
+		$r['item'] = $this->app->cfgItem('options.e10-pro-zus.itemInvoicesFeeSchool', 0);
 		$r['text'] =  'Školné ' . $pololeti . '.pololetí ' . $this->aktSkolniRok . '/' . $nextYear . ' - odd. ' . $oddeleni;
 		$r['quantity'] = 1;
 		$r['operation'] = 1010001;
@@ -2213,7 +2213,7 @@ class GenerovaniFakturPujcovneEngine extends \E10\Utility
 		$nextYear = zusutils::aktualniSkolniRok ();
 		$nextYear++;
 
-		$r['item'] = 27;
+		$r['item'] = $this->app->cfgItem('options.e10-pro-zus.itemInvoicesFeeLending', 0);
 		$r['text'] =  'Půjčovné ' . $this->aktSkolniRok . '/' . $nextYear . ' - odd. ' . $oddeleni;
 		$r['quantity'] = 1;
 		$r['operation'] = 1010001;
