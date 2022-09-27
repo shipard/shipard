@@ -315,7 +315,7 @@ class Utils
 	{
 		if ($time == '' || !$time)
 			return 0;
-		$timeParts = explode (':', $time);
+		$timeParts = preg_split ('/[\:,\.,\-]/', $time);
 		$len = intval ($timeParts[0]) * 60 + intval ($timeParts[1]);
 		return $len;
 	}
