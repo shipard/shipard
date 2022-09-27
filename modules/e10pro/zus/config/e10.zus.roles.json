@@ -22,7 +22,8 @@
 			"e10pro.zus.WidgetPlan": 2,
 			"e10pro.zus.TeachersDashboardWidget": 2,
 			"e10pro.zus.WidgetPlanTeacher": 2,
-			"e10pro.zus.WidgetPlanTeacherSmall": 2
+			"e10pro.zus.WidgetPlanTeacherSmall": 2,
+			"wkf.bboard.libs.WidgetBBoardOverview": 2
 		},
 	  "reports": {
 		  "e10pro.zus.SchoolReportsPrintReport": 2,

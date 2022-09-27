@@ -8,7 +8,7 @@ class Upgrade extends Utility
 {
 	protected function upgradeWorld()
 	{
-		$this->upgradeWorldCountries();	
+		$this->upgradeWorldCountries();
 	}
 
 	protected function upgradeWorldCountries()
@@ -39,7 +39,7 @@ class Upgrade extends Utility
 			$oldCountryId = $r[$oldColumnId];
 			$newCountryNdx = ($oldCountryId === '') ? 0 : World::countryNdx($this->app(), $oldCountryId);
 			$update = [$newColumnId => $newCountryNdx];
-			
+
 			$this->db()->query('UPDATE ['.$table->sqlName().'] SET ', $update, ' WHERE ['.$oldColumnId.'] = %s', $oldCountryId);
 			echo " * ".\Dibi::$sql."\n";
 		}
@@ -83,13 +83,13 @@ class Upgrade extends Utility
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
-			$accDoc = $this->db()->query ('SELECT * FROM [e10doc_core_heads] WHERE [docType] = %s', 'cmnbkp', 
+			$accDoc = $this->db()->query ('SELECT * FROM [e10doc_core_heads] WHERE [docType] = %s', 'cmnbkp',
 				' AND [dbCounter] = %i AND [taxPeriod] = %i', $dbCounter['ndx'], $r['taxPeriod'])->fetch();
 
 			if (!$accDoc)
 				continue;
 
-			// -- taxReport	
+			// -- taxReport
 			$this->db()->query ('UPDATE [e10doc_taxes_reports] SET [accDocument] = %i', $accDoc['ndx'], ' WHERE [ndx] = %i', $r['ndx']);
 
 			$qf = [];
@@ -122,7 +122,7 @@ class Upgrade extends Utility
 
 		if (!$rows || !count($rows))
 			return;
-	
+
 		foreach ($rows as $r)
 		{
 			if (strlen($r[$columnId]) === 7)
@@ -134,8 +134,8 @@ class Upgrade extends Utility
 			}
 			else {
 				$newTaxCode = 'EUCZ'.trim($r[$columnId]);
-				if ($newTaxCode === 'EUCZ0' || $newTaxCode == '' || $newTaxCode == 'EUCZ')	
-					$newTaxCode = 'EUCZ000';					
+				if ($newTaxCode === 'EUCZ0' || $newTaxCode == '' || $newTaxCode == 'EUCZ')
+					$newTaxCode = 'EUCZ000';
 			}
 
 			echo "* ".json_encode($r[$columnId]) .' -> '.$newTaxCode;
@@ -143,6 +143,57 @@ class Upgrade extends Utility
 			$update = [$columnId => $newTaxCode];
 			$this->db()->query('UPDATE ['.$table->sqlName().'] SET ', $update, ' WHERE ['.$columnId.'] = %s', $r[$columnId]);
 			echo " - ".\Dibi::$sql;
+
+			echo "\n";
+		}
+	}
+
+	public function upgradeOldBBoard()
+	{
+		echo "bboard import 2...\n";
+
+		$q = [];
+		array_push ($q, 'SELECT msgs.*');
+		array_push ($q, ' FROM [e10pro_wkf_messages] AS [msgs]');
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND msgs.[msgType] = %i', 3);
+		array_push ($q, ' AND msgs.[subject] != %s', '');
+
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			echo $r['ndx'].' ['.$r['docState'].'] '.$r['subject'].' '.json_encode($r['dateCreate']).' --> ';
+
+			$item = [
+				'ndx' => $r['ndx'], 'bboard' => 1,
+				'title' => $r['subject'],'text' => $r['text'],
+				'author' => $r['author'],
+
+				'publishFrom' => $r['dateCreate'],
+
+				'docState' => $r['docState'], 'docStateMain' => $r['docStateMain']
+			];
+
+			if ($r['docState'] === 4000)
+				$item['docStateMain'] = 2;
+
+			$exist = $this->db()->query('SELECT * FROM [wkf_bboard_msgs] WHERE [ndx] = %i', $r['ndx'])->fetch();
+			if (!$exist)
+			{
+				echo 'INSERT ';
+				$this->db()->query('INSERT INTO [wkf_bboard_msgs] ', $item);
+			}
+			else
+			{
+				echo 'UPDATE ';
+				$this->db()->query('UPDATE [wkf_bboard_msgs] SET ', $item, ' WHERE [ndx] = %i', $r['ndx']);
+			}
+
+			$this->db()->query('UPDATE [e10_base_doclinks] SET [srcTableId] = %s', 'wkf.bboard.msgs',
+													', linkId = %s', 'wkf-bboard-msgs-notify',
+													' WHERE [srcTableId] = %s', 'e10pro.wkf.messages', ' AND [linkId] = %s', 'e10pro-wkf-message-notify',
+													' AND [srcRecId] = %i', $r['ndx']
+			);
 
 			echo "\n";
 		}

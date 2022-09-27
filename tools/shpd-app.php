@@ -11,14 +11,14 @@ if ($argv[1] !== 'app-walk')
 	{
 		echo "ERROR: file `config/_server_channelInfo.json` not found.\n";
 		exit(100);
-	}	
+	}
 	$cfgServer = json_decode ($cfgServerString, true);
 	if (!$cfgServer)
 	{
 		echo "ERROR: file `config/_server_channelInfo.json` is not valid.\n";
 		exit(101);
 	}
-		
+
 	define('__SHPD_ROOT_DIR__', $cfgServer['serverInfo']['channelPath']);
 }
 
@@ -79,7 +79,7 @@ class E10_App extends Application
 				passthru('shpd-server app-fullupgrade');
 				passthru('shpd-app appDemo --type='.$demoPackage);
 				return;
-			}	
+			}
 			$generateDemoData = 1;
 		}
 
@@ -292,7 +292,7 @@ class E10_App extends Application
 		{
 			return $this->err ('File `config/createApp.json` is invalid');
 		}
-		
+
     $this->db()->query('DELETE FROM [e10_persons_sessions]');
     $this->db()->query('DELETE FROM [e10_persons_userspasswords]');
 
@@ -1201,6 +1201,14 @@ class E10_App extends Application
 		$u->run();
 	}
 
+	public function importOldBBoard()
+	{
+		$u = new \Shipard\Upgrade\OldE10\Upgrade($this);
+		$u->upgradeOldBBoard();
+
+		return TRUE;
+	}
+
 	public function tests()
 	{
 		$this->robotLogin();
@@ -1278,6 +1286,7 @@ class E10_App extends Application
 			case	"repairDocNumbers":							return $this->repairDocNumbers();
 
 			case	"upgradeOldE10":								return $this->upgradeOldE10();
+			case	"importOldBBoard": 							return $this->importOldBBoard();
 
 			case	"tests":												return $this->tests();
 		}

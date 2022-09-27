@@ -86,7 +86,7 @@ class ViewerMsgsAll extends TableView
 		];
 
 		$item ['pane']['body'][] = [
-			'type' => 'text', 'subtype' => 'rawhtml', 'class' => 'padd5 bt1 e10-fs1r',
+			'type' => 'text', 'subtype' => 'rawhtml', 'class' => 'padd5 bt1 e10-fs1r pageText',
 			'text' => $this->textRenderer->code,
 		];
   }
