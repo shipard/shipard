@@ -268,7 +268,7 @@ class Utils
 	static function createDateTime ($d, $isTimestamp = FALSE)
 	{
 		if ($d instanceof \DateTimeInterface)
-			return $d;
+			return new \DateTime ($isTimestamp ? $d->format('Y-m-d H:i:s') : $d->format('Y-m-d'));
 		if (is_string($d))
 		{
 			if ($d == '0000-00-00' || $d == '')
