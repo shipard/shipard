@@ -7,7 +7,7 @@ require_once __SHPD_MODULES_DIR__ . 'e10/base/base.php';
 require_once __SHPD_MODULES_DIR__ . 'e10doc/core/core.php';
 
 
-use \e10\utils, \e10\Application;
+use \e10\utils;
 
 
 /**
@@ -58,7 +58,7 @@ class reportFees extends \E10\GlobalReport
 
 		parent::init();
 
-		$this->setInfo('icon', 'icon-asterisk');
+		$this->setInfo('icon', 'system/iconFile');
 		$this->setInfo('title', 'Přehled školného');
 
 		if ($this->subReportId !== 'overview')
@@ -267,7 +267,7 @@ class reportFees extends \E10\GlobalReport
 
 		$this->addContent (['type' => 'table', 'header' => $headerTeachers, 'table' => $tableTeachers]);
 
-		$this->setInfo('icon', 'icon-asterisk');
+		$this->setInfo('icon', 'system/iconFile');
 		$this->setInfo('title', 'Přehled školného podle učitelů');
 		$this->setInfo('param', $this->reportParams ['viewType']['title'], $this->reportParams ['viewType']['activeTitle']);
 	}
@@ -374,15 +374,15 @@ class reportFees extends \E10\GlobalReport
 			}
 
 			// -- request for payment button
-			if (!Application::$printMode && $r['amountRest'] > 0.0)
+			if (!$this->app()->printMode && $r['amountRest'] > 0.0)
 			{
 				$btn = [
-						'type' => 'action', 'action' => 'print', 'style' => 'print', 'icon' => 'icon-exclamation-circle', 'text' => '', 'title' => 'Upomínka',
+						'type' => 'action', 'action' => 'print', 'style' => 'print', 'icon' => 'system/actionPrint', 'text' => '', 'title' => 'Upomínka',
 						'data-report' => 'e10doc.balance.RequestForPayment',
 						'data-table' => 'e10.persons.persons', 'data-pk' => $r['studentNdx'], 'actionClass' => 'btn-xs btn-primary', 'class' => 'pull-right'];
 				$btn['subButtons'] = [];
 				$btn['subButtons'][] = [
-						'type' => 'action', 'action' => 'addwizard', 'icon' => 'icon-envelope-o', 'title' => 'Odeslat emailem', 'btnClass' => 'btn-primary btn-xs',
+						'type' => 'action', 'action' => 'addwizard', 'icon' => 'system/iconEmail', 'title' => 'Odeslat emailem', 'btnClass' => 'btn-primary btn-xs',
 						'data-table' => 'e10.persons.persons', 'data-pk' => $r['studentNdx'], 'data-class' => 'e10.SendFormReportWizard',
 						'data-addparams' => 'reportClass=' . 'e10doc.balance.RequestForPayment' . '&documentTable=' . 'e10.persons.persons'
 				];
@@ -582,20 +582,20 @@ class reportFees extends \E10\GlobalReport
 		if (!count($this->heads))
 			return;
 
-		$q[] = 'SELECT * FROM [e10pro_wkf_messages] ';
-		array_push ($q, ' WHERE tableid = %s', 'e10doc.core.heads');
-		array_push ($q, ' AND recid IN %in', $this->heads);
+		$q[] = 'SELECT * FROM [wkf_core_issues] ';
+		array_push ($q, ' WHERE tableNdx = %i', 1078);
+		array_push ($q, ' AND recNdx IN %in', $this->heads);
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
-			$docNdx = $r['recid'];
+			$docNdx = $r['recNdx'];
 
 			if (!isset($this->outbox[$docNdx]))
 				$this->outbox[$docNdx] = [];
 
 			$item = [
-					'icon' => 'icon-paper-plane', 'text' => utils::datef($r['dateCreate']), 'class' => 'label',
-					'docAction' => 'edit', 'table' => 'e10pro.wkf.messages', 'pk' => $r['ndx']
+					'icon' => 'user/paperPlane', 'text' => utils::datef($r['dateCreate']), 'class' => 'label label-default',
+					'docAction' => 'edit', 'table' => 'wkf.core.issues', 'pk' => $r['ndx']
 			];
 			$this->outbox[$docNdx][] = $item;
 		}
@@ -603,29 +603,30 @@ class reportFees extends \E10\GlobalReport
 
 	function loadDemandsForPay ()
 	{
-		$tableMessages = $this->app()->table ('e10pro.wkf.messages');
-		$demandForPayNdx = $tableMessages->msgKindById ('outbox-other-demandForPay', TRUE);
+		/** @var \wkf\core\TableIssues */
+		$tableIssues = $this->app()->table ('wkf.core.issues');
+		$demandForPaySectionNdx = $tableIssues->defaultSection (121);
 
-		$q[] = 'SELECT * FROM [e10pro_wkf_messages] ';
-		array_push($q, ' WHERE tableid = %s', 'e10.persons.persons');
-		array_push($q, ' AND msgKind = %i', $demandForPayNdx);
+		$q[] = 'SELECT * FROM [wkf_core_issues] ';
+		array_push($q, ' WHERE tableNdx = %i', 1000);
+		array_push($q, ' AND section = %i', $demandForPaySectionNdx);
 		array_push($q, ' AND dateCreate > %d', $this->minDate);
-		array_push($q, ' AND recid IN %in', $this->persons);
-		array_push($q, ' ORDER BY [date]');
+		array_push($q, ' AND recNdx IN %in', $this->persons);
+		array_push($q, ' ORDER BY [dateCreate]');
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
-			$docNdx = $r['recid'];
+			$docNdx = $r['recNdx'];
 
 			if (!isset($this->demandsForPay[$docNdx]))
 				$this->demandsForPay[$docNdx] = [];
 
 			$item = [
-					'icon' => 'icon-exclamation-circle', 'text' => utils::datef($r['dateCreate']), 'class' => 'label label-info',
-					'docAction' => 'edit', 'table' => 'e10pro.wkf.messages', 'pk' => $r['ndx']
+					'icon' => 'balanceAlerts', 'text' => utils::datef($r['dateCreate']), 'class' => 'label label-info',
+					'docAction' => 'edit', 'table' => 'wkf.core.issues', 'pk' => $r['ndx']
 			];
 			$this->demandsForPay[$docNdx][] = $item;
-			$this->demandsForPayDates[$docNdx] = $r['date'];
+			$this->demandsForPayDates[$docNdx] = $r['dateCreate'];
 		}
 
 		// -- prepare persons to demand
@@ -643,9 +644,9 @@ class reportFees extends \E10\GlobalReport
 
 	public function subReportsList ()
 	{
-		$d[] = ['id' => 'overview', 'icon' => 'icon-eye', 'title' => 'Přehled'];
-		$d[] = ['id' => 'all', 'icon' => 'icon-table', 'title' => 'Seznam'];
-		$d[] = ['id' => 'teachers', 'icon' => 'icon-graduation-cap', 'title' => 'Učitelé'];
+		$d[] = ['id' => 'overview', 'icon' => 'system/detailDetail', 'title' => 'Přehled'];
+		$d[] = ['id' => 'all', 'icon' => 'detailReportAnalytic', 'title' => 'Seznam'];
+		$d[] = ['id' => 'teachers', 'icon' => 'iconTeachers', 'title' => 'Učitelé'];
 
 		return $d;
 	}
@@ -654,7 +655,7 @@ class reportFees extends \E10\GlobalReport
 	{
 		$buttons = parent::createToolbar();
 		$buttons[] = [
-				'text' => 'Rozeslat upomínky', 'icon' => 'icon-exclamation-circle',
+				'text' => 'Rozeslat upomínky', 'icon' => 'system/iconEmail',
 				'type' => 'action', 'action' => 'addwizard', 'data-class' => 'e10pro.zus.RequestForPaymentWizard',
 				'data-table' => 'e10.persons.persons', 'data-pk' => '0',
 				'class' => 'btn-primary'
