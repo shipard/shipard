@@ -390,60 +390,69 @@ class ReportPlan extends \E10\GlobalReport
 	public function loadTimetable_Teachers ()
 	{
 		$today = utils::today();
-		$q[] = 'SELECT rozvrh.*, pobocky.shortName as pobockaId, vyuky.nazev as vyukaNazev, vyuky.typ as typVyuky, vyuky.rocnik as rocnik, predmety.nazev as predmetNazev, ucebny.shortName as ucebnaNazev';
-		array_push ($q, ' FROM [e10pro_zus_vyukyrozvrh] AS rozvrh');
-		array_push ($q, ' LEFT JOIN e10_base_places AS pobocky ON rozvrh.pobocka = pobocky.ndx');
-		array_push ($q, ' LEFT JOIN e10_base_places AS ucebny ON rozvrh.ucebna = ucebny.ndx');
-		array_push ($q, ' LEFT JOIN e10pro_zus_vyuky AS vyuky ON rozvrh.vyuka = vyuky.ndx');
-		array_push ($q, ' LEFT JOIN e10pro_zus_predmety AS predmety ON rozvrh.predmet = predmety.ndx');
-		array_push ($q, ' LEFT JOIN e10_persons_persons AS ucitele ON rozvrh.ucitel = ucitele.ndx');
-
-		array_push ($q, ' WHERE 1');
-
+		$tpks = [];
+		$teachersNdxs = [];
 		if ($this->teacher)
+			$teachersNdxs[] = $this->teacher;
+		else
 		{
-			array_push ($q, ' AND (rozvrh.ucitel = %i', $this->teacher,
-														' OR vyuky.ucitel2 = %i', $this->teacher,
-											')');
+			$enum = zusutils::ucitele($this->app, FALSE);
+			$teachersNdxs = array_keys($enum);
 		}
 
-		array_push ($q, ' AND vyuky.skolniRok = %s', $this->year);
-		array_push ($q, ' AND rozvrh.stavHlavni <= 2');
-
-		array_push ($q, ' AND (vyuky.datumUkonceni IS NULL OR vyuky.datumUkonceni > %t)', $today);
-		array_push ($q, ' AND (vyuky.datumZahajeni IS NULL OR vyuky.datumZahajeni <= %t)', $today);
-
-		array_push ($q, ' ORDER BY ucitele.lastName, ucitele.firstName, rozvrh.den, rozvrh.zacatek, rozvrh.ndx');
-
-		$lastTimeBegin = '_';
-		$lastSameDayIndex = 0;
-		$dayIndex = 0;
-		$lastDay = 0;
-		$tpks = [];
-		$rows = $this->db()->query ($q);
-		foreach ($rows as $r)
+		foreach ($teachersNdxs as $teacherNdx)
 		{
-			$teacherNdx = $r['ucitel'];
+			$q = [];
+			$q[] = 'SELECT rozvrh.*, pobocky.shortName as pobockaId, vyuky.nazev as vyukaNazev, vyuky.typ as typVyuky, vyuky.rocnik as rocnik, predmety.nazev as predmetNazev, ucebny.shortName as ucebnaNazev';
+			array_push ($q, ' FROM [e10pro_zus_vyukyrozvrh] AS rozvrh');
+			array_push ($q, ' LEFT JOIN e10_base_places AS pobocky ON rozvrh.pobocka = pobocky.ndx');
+			array_push ($q, ' LEFT JOIN e10_base_places AS ucebny ON rozvrh.ucebna = ucebny.ndx');
+			array_push ($q, ' LEFT JOIN e10pro_zus_vyuky AS vyuky ON rozvrh.vyuka = vyuky.ndx');
+			array_push ($q, ' LEFT JOIN e10pro_zus_predmety AS predmety ON rozvrh.predmet = predmety.ndx');
+			array_push ($q, ' LEFT JOIN e10_persons_persons AS ucitele ON rozvrh.ucitel = ucitele.ndx');
 
-			if ($r['zacatek'] === $lastTimeBegin && $r['den'] === $lastDay)
-				$this->dataTeachers[$teacherNdx][$r['den']][$lastSameDayIndex]['sameRows']++;
-			else
-				$lastSameDayIndex = $dayIndex;
+			array_push ($q, ' WHERE 1');
 
-			$item = [
-				'ndx' => $r['ndx'], 'pobocka' => $r['pobocka'], 'pobockaId' => $r['pobockaId'], 'ucebnaNazev' => $r['ucebnaNazev'],
-				'zacatek' => $r['zacatek'], 'konec' => $r['konec'], 'vyukaNazev' => $r['vyukaNazev'], 'predmetNazev' => $r['predmetNazev'],
-				'rocnik' => zusutils::rocnikVRozvrhu($this->app, $r['rocnik'], $r['typVyuky'], 'zkratka'),
-				'sameRows' => 0,
-			];
-			$this->dataTeachers[$teacherNdx][$r['den']][$dayIndex] = $item;
+			array_push ($q, ' AND (rozvrh.ucitel = %i', $teacherNdx,
+														' OR vyuky.ucitel2 = %i', $teacherNdx,
+											')');
 
-			if ($teacherNdx && !in_array($teacherNdx, $tpks))
-				$tpks[] = $teacherNdx;
+			array_push ($q, ' AND vyuky.skolniRok = %s', $this->year);
+			array_push ($q, ' AND rozvrh.stavHlavni <= 2');
 
-			$dayIndex++;
-			$lastTimeBegin = $r['zacatek'];
-			$lastDay = $r['den'];
+			array_push ($q, ' AND (vyuky.datumUkonceni IS NULL OR vyuky.datumUkonceni > %t)', $today);
+			array_push ($q, ' AND (vyuky.datumZahajeni IS NULL OR vyuky.datumZahajeni <= %t)', $today);
+
+			array_push ($q, ' ORDER BY rozvrh.den, rozvrh.zacatek, rozvrh.ndx');
+
+			$lastTimeBegin = '_';
+			$lastSameDayIndex = 0;
+			$dayIndex = 0;
+			$lastDay = 0;
+
+			$rows = $this->db()->query ($q);
+			foreach ($rows as $r)
+			{
+				if ($r['zacatek'] === $lastTimeBegin && $r['den'] === $lastDay)
+					$this->dataTeachers[$teacherNdx][$r['den']][$lastSameDayIndex]['sameRows']++;
+				else
+					$lastSameDayIndex = $dayIndex;
+
+				$item = [
+					'ndx' => $r['ndx'], 'pobocka' => $r['pobocka'], 'pobockaId' => $r['pobockaId'], 'ucebnaNazev' => $r['ucebnaNazev'],
+					'zacatek' => $r['zacatek'], 'konec' => $r['konec'], 'vyukaNazev' => $r['vyukaNazev'], 'predmetNazev' => $r['predmetNazev'],
+					'rocnik' => zusutils::rocnikVRozvrhu($this->app, $r['rocnik'], $r['typVyuky'], 'zkratka'),
+					'sameRows' => 0,
+				];
+				$this->dataTeachers[$teacherNdx][$r['den']][$dayIndex] = $item;
+
+				if ($teacherNdx && !in_array($teacherNdx, $tpks))
+					$tpks[] = $teacherNdx;
+
+				$dayIndex++;
+				$lastTimeBegin = $r['zacatek'];
+				$lastDay = $r['den'];
+			}
 		}
 
 		if (count($tpks))
