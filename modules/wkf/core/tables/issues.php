@@ -712,7 +712,7 @@ class TableIssues extends DbTable
 		return parent::subColumnsInfo ($recData, $columnId);
 	}
 
-	public function addIssue($issue)
+	public function addIssue($issue, $moveAttachments = true)
 	{
 		$recData = $issue['recData'];
 
@@ -752,7 +752,7 @@ class TableIssues extends DbTable
 		if (isset($issue['attachments']) && count($issue['attachments']))
 		{
 			foreach ($issue['attachments'] as $att)
-				\E10\Base\addAttachments($this->app(), 'wkf.core.issues', $issueNdx, $att['fullFileName'], '', true);
+				\E10\Base\addAttachments($this->app(), 'wkf.core.issues', $issueNdx, $att['fullFileName'], '', $moveAttachments);
 		}
 
 		$this->checkAfterSave2($recData);

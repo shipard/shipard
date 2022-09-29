@@ -137,7 +137,7 @@ class MailMessage extends \Shipard\Base\Utility
 		if ($this->reportPrinted)
 			$issue['systemInfo']['printed'] = ['status' => 1];
 
-		$tableIssues->addIssue($issue);
+		$tableIssues->addIssue($issue, FALSE);
 	}
 
 	public function sendMail ()
