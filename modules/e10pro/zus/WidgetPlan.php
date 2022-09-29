@@ -246,7 +246,9 @@ class PlanTeacher extends Plan
 		array_push ($q, ' LEFT JOIN e10pro_zus_predmety AS predmety ON rozvrh.predmet = predmety.ndx');
 
 		array_push ($q, ' WHERE 1');
-		array_push ($q, ' AND rozvrh.ucitel = %i', $this->teacher);
+		array_push ($q, ' AND (rozvrh.ucitel = %i', $this->teacher,
+													' OR vyuky.ucitel2 = %i', $this->teacher,
+										')');
 		array_push ($q, ' AND vyuky.skolniRok = %s', $this->year);
 		array_push ($q, ' AND rozvrh.stavHlavni <= 2');
 
@@ -336,7 +338,7 @@ class PlanTeacher extends Plan
 	{
 		$c = "<div class='padd5'>";
 		$c .= "<div style='overflow-y: scroll; margin: .5ex;'>";
-		$cols = [/*'edit' => '', */'pobockaId' => 'Pobočka', 'zacatek' => 'Od', 'konec' => 'Do', 'vyukaNazev' => 'Výuka', 'predmetNazev' => 'Předmět', 'rocnik' => 'Ročník', 'ucebnaNazev' => 'Učebna'];
+		$cols = [/*'edit' => '', */'pobockaId' => 'Pobočka', 'zacatek' => 'Od', 'konec' => 'Do', 'vyukaNazev' => 'Výuka', 'predmetNazev' => 'Předmět', 'rocnik' => 'Ročník', 'ucebnaNazev' => 'Učebna2'];
 		$c .= $this->app->ui()->renderTableFromArray ($this->data, $cols);
 		$c .= '</div>';
 		$c .= '</div>';

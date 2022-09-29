@@ -401,7 +401,11 @@ class ReportPlan extends \E10\GlobalReport
 		array_push ($q, ' WHERE 1');
 
 		if ($this->teacher)
-			array_push ($q, ' AND rozvrh.ucitel = %i', $this->teacher);
+		{
+			array_push ($q, ' AND (rozvrh.ucitel = %i', $this->teacher,
+														' OR vyuky.ucitel2 = %i', $this->teacher,
+											')');
+		}
 
 		array_push ($q, ' AND vyuky.skolniRok = %s', $this->year);
 		array_push ($q, ' AND rozvrh.stavHlavni <= 2');
