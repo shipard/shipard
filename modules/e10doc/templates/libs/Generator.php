@@ -56,6 +56,10 @@ class Generator extends Utility
     else
     {
       $exist = $this->db()->query('SELECT * FROM [e10doc_core_heads] WHERE [docType] = %s', $this->invHead['docType'], ' AND [linkId] = %s', $this->invHead['linkId'])->fetch();
+
+      if ($exist && $this->scheduler->save !== 2)
+        return 0; // exist, rewrite is disabled
+
       if ($exist)
       {
         $docNdx = $exist['ndx'];
@@ -128,6 +132,9 @@ class Generator extends Utility
 
   public function send($documentNdx)
   {
+    if (!$documentNdx)
+      return;
+
     if ($this->scheduler->resetOutbox)
     {
       $update = ['docState' => 9800, 'docStateMain' => 4,];

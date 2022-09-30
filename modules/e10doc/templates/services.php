@@ -53,12 +53,10 @@ class ModuleServices extends \e10\cli\ModuleServices
 
 	public function onCron ($cronType)
 	{
-    /*
 		switch ($cronType)
 		{
 			case 'morning': $this->templatesDocsGenerator(1); break;
 		}
-    */
 
 		return parent::onCron($cronType);
 	}

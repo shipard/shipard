@@ -150,7 +150,7 @@ class GeneratorWorkOrders extends \e10doc\templates\libs\Generator
 
       $docNdx = $this->saveDocument($this->templateRecData);
 
-      if ($this->templateRecData['dstDocAutoSend'] !== TableHeads::asmNone)
+      if ($docNdx && $this->templateRecData['dstDocAutoSend'] !== TableHeads::asmNone)
         $this->send($docNdx);
     }
   }
