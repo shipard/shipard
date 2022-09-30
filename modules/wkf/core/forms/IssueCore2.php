@@ -143,6 +143,10 @@ class IssueCore2 extends TableForm
 							$this->addColumnInput('dateIncoming');
 						if ($askDeadline === self::askYes)
 							$this->addColumnInput('dateDeadline', $askDeadlineOptions);
+						if ($askWorkOrder === self::askYes && $this->app()->cfgItem ('options.e10doc-commerce.useWorkOrders', 0))
+						{
+							$this->addColumnInput('workOrder');
+						}
 					}
 					$this->addSubColumns('data');
 					$this->addTextInput2($bigTextMode);
