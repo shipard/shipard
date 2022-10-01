@@ -40,8 +40,7 @@ class TableLog extends DbTable
 
 
 /**
- * Class ViewLog
- * @package mac\access
+ * Class ViewLog2
  */
 class ViewLog2 extends \e10\TableViewGrid
 {
@@ -152,6 +151,9 @@ class ViewLog2 extends \e10\TableViewGrid
 	}
 }
 
+/**
+ * class ViewLog
+ */
 class ViewLog extends TableView
 {
 	static $stateClasses = ['e10-row-play', 'e10-row-info', 'e10-warning1', 'e10-warning2', 'e10-warning3'];
@@ -174,6 +176,8 @@ class ViewLog extends TableView
 
 		if ($item['personName'])
 			$listItem['t1'] = ['text' => $item['personName'], 'icon' => 'system/iconUser', 'class' => ''];
+		elseif ($item['placeName'])
+			$listItem['t1'] = ['text' => $item['placeName'], 'icon' => 'system/iconHome', 'class' => ''];
 
 		$listItem['t2'] = [];
 
@@ -205,7 +209,7 @@ class ViewLog extends TableView
 		if ($item['state'])
 			$listItem ['class'] = self::$stateClasses[$item['state']];
 
-		if ($item['state'] === 0)	
+		if ($item['state'] === 0)
 			$listItem ['icon'] = $this->tagTypes[$item['tagType']]['icon'];
 		else
 			$listItem ['icon'] = $this->table->tableIcon ($item);
@@ -253,12 +257,12 @@ class ViewLog extends TableView
 		{
 			array_push ($q, " AND ([log].[mainKeyType] = %i", 2);
 			array_push ($q, " AND [log].[iotControl] IN %in", array_keys($qv['iotControls']), ')');
-		}	
+		}
 		if (isset ($qv['iotBoxes']))
 		{
 			array_push ($q, " AND ([log].[mainKeyType] = %i", 3, ' AND (');
 			$first = 1;
-			foreach ($qv['iotBoxes'] as $ibNdx => $ibId) 
+			foreach ($qv['iotBoxes'] as $ibNdx => $ibId)
 			{
 				if (!$first)
 					array_push($q, ' OR ');
@@ -283,7 +287,7 @@ class ViewLog extends TableView
 		forEach ($this->tagTypes as $ttId => $tt)
 			$chbxTagTypes[$ttId] = ['title' => $tt['name'], 'id' => $ttId];
 
-		// -- iotControls	
+		// -- iotControls
 		$chbxIotControls = [];
 		$iotControlsQry = 'SELECT * FROM [mac_iot_controls] WHERE docStateMain < 5 ORDER BY shortName, ndx';
 		$iotControlsRows = $this->table->db()->query ($iotControlsQry);
@@ -296,11 +300,11 @@ class ViewLog extends TableView
 		// -- iotBoxes
 		$chbxIotBoxes = [];
 		$iotBoxesQry = [];
-		array_push ($iotBoxesQry, 'SELECT ports.*, devices.fullName AS deviceName, devices.friendlyId AS deviceId ', 
-			' FROM [mac_iot_devicesIOPorts] AS [ports]', 
+		array_push ($iotBoxesQry, 'SELECT ports.*, devices.fullName AS deviceName, devices.friendlyId AS deviceId ',
+			' FROM [mac_iot_devicesIOPorts] AS [ports]',
 			' RIGHT JOIN [mac_iot_devices] AS [devices] ON [ports].iotDevice = [devices].[ndx]',
 			' WHERE [ports].portType = %s', 'input/binary',
-			' AND [ports].valueStyle = %i', 1, 
+			' AND [ports].valueStyle = %i', 1,
 		 	' ORDER BY [ports].fullName, [ports].ndx'
 		);
 		$iotBoxesRows = $this->table->db()->query ($iotBoxesQry);
