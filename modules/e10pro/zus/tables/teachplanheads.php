@@ -111,7 +111,7 @@ class FormTeachPlan extends TableForm
 			$this->addColumnInput ('svpOddeleni');
 			$this->addColumnInput ('year');
 
-			$tabs ['tabs'][] = ['text' => 'Předměty', 'icon' => 'icon-headphones'];
+			$tabs ['tabs'][] = ['text' => 'Předměty', 'icon' => 'tables/e10pro.zus.predmety'];
 			$this->openTabs ($tabs);
 				$this->openTab (TableForm::ltNone);
 					$this->addList ('rows');
