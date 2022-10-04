@@ -46,7 +46,7 @@ class ViewTeachPlans extends TableView
 			$this->setBottomTabs ($bt);
 		}
 		else
-			$this->addAddParam ('dbCounter', $activeEduProgram);
+			$this->addAddParam ('eduprogram', $activeEduProgram);
 
 		parent::init();
 	}
