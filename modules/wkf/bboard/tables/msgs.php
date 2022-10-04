@@ -191,11 +191,11 @@ class FormBBoardMsg extends TableForm
 					$this->addSeparator(self::coH4);
 					$this->addColumnInput ('publishFrom');
 					$this->addColumnInput ('publishTo');
+					//$this->addSeparator(self::coH4);
+					//$this->addColumnInput ('image');
+					//$this->addColumnInput ('useImageAs');
 					$this->addSeparator(self::coH4);
-					$this->addColumnInput ('image');
-					$this->addColumnInput ('useImageAs');
-					$this->addSeparator(self::coH4);
-					$this->addColumnInput ('linkToUrl');
+					//$this->addColumnInput ('linkToUrl');
 					$this->addColumnInput ('order');
 					$this->addColumnInput ('bboard');
 					$this->addColumnInput ('author');
