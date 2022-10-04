@@ -15,7 +15,7 @@ class ReportDeviceLabelCable extends \mac\lan\libs\ReportDeviceLabelDevice
 	{
 		parent::init();
 
-		$this->reportId = 'mac.lan.devicelabelcable';
-		$this->reportTemplate = 'mac.lan.devicelabelcable';
+		$this->reportId = 'reports.default.mac.lan.devicelabelcable';
+		$this->reportTemplate = 'reports.default.mac.lan.devicelabelcable';
 	}
 }

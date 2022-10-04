@@ -14,8 +14,8 @@ class ReportRackLabelDevices extends FormReport
 	function init ()
 	{
 		$this->reportMode = FormReport::rmLabels;
-		$this->reportId = 'mac.lan.racklabeldevices';
-		$this->reportTemplate = 'mac.lan.racklabeldevices';
+		$this->reportId = 'reports.default.mac.lan.racklabeldevices';
+		$this->reportTemplate = 'reports.default.mac.lan.racklabeldevices';
 
 		$this->mimeType = 'application/x-octet-stream';
 
