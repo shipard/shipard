@@ -23,8 +23,12 @@ class ViewerMsgsAll extends TableView
 	var $linkedPersons = [];
 	var $classification = [];
 
+	var $thisUserId = 0;
+
 	public function init ()
 	{
+		$this->thisUserId = $this->app()->userNdx();
+
     $this->setPaneMode();
 
     $this->tableBBoards = $this->app->table ('wkf.bboard.bboards');
@@ -125,6 +129,8 @@ class ViewerMsgsAll extends TableView
       $forceArchive = 1;
 		}
 
+		$this->qryForLinkedPersons ($q);
+
 		if ($mainQuery === 'active' || $mainQuery === '')
 		{
       array_push($q, ' AND (');
@@ -155,6 +161,50 @@ class ViewerMsgsAll extends TableView
     array_push ($q, $this->sqlLimit());
 
     $this->runQuery ($q);
+	}
+
+	function qryForLinkedPersons (&$q, $linkId = FALSE)
+	{
+		array_push ($q, ' AND (');
+
+		array_push ($q, ' EXISTS (',
+				'SELECT docLinks.dstRecId FROM [e10_base_doclinks] as docLinks',
+				' WHERE msgs.ndx = srcRecId AND srcTableId = %s', 'wkf.bboard.msgs',
+				' AND dstTableId = %s', 'e10.persons.persons',
+				' AND docLinks.dstRecId = %i', $this->thisUserId);
+		if ($linkId !== FALSE)
+		{
+			if (is_array($linkId))
+				array_push($q, ' AND docLinks.linkId IN %in', $linkId);
+			else
+				array_push($q, ' AND docLinks.linkId = %s', $linkId);
+		}
+		array_push ($q, ')');
+
+		$ug = $this->app()->userGroups ();
+		if (count ($ug) !== 0)
+		{
+			array_push ($q, ' OR ');
+			array_push ($q, ' EXISTS (',
+					'SELECT docLinks.dstRecId FROM [e10_base_doclinks] as docLinks',
+					' WHERE msgs.ndx = srcRecId AND srcTableId = %s', 'wkf.bboard.msgs',
+					' AND dstTableId = %s', 'e10.persons.groups',
+					' AND docLinks.dstRecId IN %in', $ug);
+			if ($linkId !== FALSE)
+			{
+				if (is_array($linkId))
+					array_push($q, ' AND docLinks.linkId IN %in', $linkId);
+				else
+					array_push($q, ' AND docLinks.linkId = %s', $linkId);
+			}
+			array_push ($q, ')');
+		}
+
+		// -- my new issues
+		array_push ($q, ' OR ');
+		array_push ($q, ' (msgs.author = %i', $this->thisUserId, ' AND msgs.docStateMain = 0)');
+
+		array_push ($q, ')');
 	}
 
 	function decorateRow (&$item)
