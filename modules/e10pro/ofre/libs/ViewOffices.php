@@ -9,6 +9,6 @@ class ViewOffices extends \e10mnf\core\ViewWorkOrders
 {
 	protected function qryOrder(&$q)
 	{
-    array_push($q, ' ORDER BY workOrders.[docNumber]');
+    array_push($q, ' ORDER BY customers.fullName, workOrders.[docNumber]');
 	}
 }
