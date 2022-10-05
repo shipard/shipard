@@ -73,19 +73,20 @@ class SaveDocumentAsPdf extends Utility
 		$cntAttachments = 0;
 
 		$tableId = 'e10doc.core.heads';
+		$tableNdx = 1078;
 
 		// -- outbox
 		if ($docType === 'invno')
 		{
-			$q[] = 'SELECT * FROM e10pro_wkf_messages WHERE 1';
-			array_push($q, 'AND tableid = %s', $tableId, ' AND recid = %i', $recNdx);
+			$q[] = 'SELECT * FROM wkf_core_issues  WHERE 1';
+			array_push($q, 'AND tableNdx = %i', $tableNdx, ' AND recNdx = %i', $recNdx);
 			array_push($q, 'AND [docStateMain] = 2');
 			array_push($q, ' ORDER BY ndx DESC');
 			$rows = $this->db()->query ($q);
 			$cntAdded = 0;
 			foreach ($rows as $r)
 			{
-				$cntAdded = $this->addDocumentAttachments ('e10pro.wkf.messages', $r['ndx']);
+				$cntAdded = $this->addDocumentAttachments ('wkf.core.issues', $r['ndx']);
 				$cntAttachments += $cntAdded;
 				break;
 			}
@@ -106,13 +107,13 @@ class SaveDocumentAsPdf extends Utility
 			// -- attachments from inbox messages
 			$q[] = 'SELECT * FROM e10_base_doclinks WHERE 1';
 			array_push($q, ' AND srcTableId = %s', 'e10doc.core.heads', ' AND srcRecId = %i', $recNdx);
-			array_push($q, ' AND dstTableId = %s', 'e10pro.wkf.messages', 'AND [linkId] = %s', 'e10doc-inbox');
+			array_push($q, ' AND dstTableId = %s', 'wkf.core.issues', 'AND [linkId] = %s', 'e10docs-inbox');
 			array_push($q, ' ORDER BY ndx');
 			$rows = $this->db()->query ($q);
 			$cntAdded = 0;
 			foreach ($rows as $r)
 			{
-				$cntAdded += $this->addDocumentAttachments ('e10pro.wkf.messages', $r['dstRecId']);
+				$cntAdded += $this->addDocumentAttachments ('wkf.core.issues', $r['dstRecId']);
 				$cntAttachments += $cntAdded;
 			}
 		}
