@@ -135,7 +135,7 @@ function createSharePage ($app, $params = NULL)
 function createShare ($app, $params = NULL)
 {
 	$engine = new \e10\web\WebPages($app);
-	$engine->setServerInfo (['templateId' => 'e10.share.template', 'function' => 'e10.share.createSharePage', 'urlStart' => '']);
+	$engine->setServerInfo (['templateId' => 'app.shares', 'function' => 'e10.share.createSharePage', 'urlStart' => '']);
 	$engine->setPageType (webPages::wptExtranet);
 	return $engine->run();
 }
