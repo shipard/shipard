@@ -19,5 +19,18 @@
 					"options": {"0": "Ne", "1": "Ano"}
 				}
 			]
+	},
+	"appearanceDocs": {
+		"name": "Doklady", "order": 12000, "group": "appearance",
+		"icon": "settigns/sale",
+		"type": "cfgFile",
+		"options": [
+			{
+				"cfgKey": "docReportsType", "cfgName": "Vzhled výstupních sestav dokladů",
+				"options": {"default": "Standardní","modern": "Moderní"},
+				"preHeader": {"text": "Výstupní sestavy", "class": "h2 padd5 block"}
+			},
+			{"cfgKey": "docReportsPersonsSigns", "cfgName": "Dávat na sestavy podpis osoby", "options": {"0": "Ne","1": "Ano"}}
+		]
 	}
 }

@@ -120,7 +120,7 @@ function json_minify($json) {
  * @package E10
  */
 
-/* 
+/*
 class CfgItemTable extends DbTable
 {
 	public function __construct($dbmodel)
@@ -151,7 +151,7 @@ class CfgItemTable extends DbTable
  * @package E10
  */
 
-/* 
+/*
 class CfgItemViewer extends TableView
 {
 	var $cfgItemPath;
@@ -497,13 +497,13 @@ class ViewAppOptions extends TableView
 					$vd = $table->viewDefinition ('default');
 				if ($vd && isset($vd['help']))
 					$help = $vd ['help'];
-				if ($icon === '')	
+				if ($icon === '')
 					$icon = $table->tableIcon([]);
 			}
 			elseif (isset($c['help']))
 				$help = $c['help'];
 
-			if ($icon === '')	
+			if ($icon === '')
 				$icon = 'system/iconFile';
 
 			$this->queryRows [] = [
@@ -697,6 +697,11 @@ class FormAppOptions extends TableForm
 		$columnOptions = 0;
 		if ($hideHidden && isset ($o['hidden']))
 			$columnOptions = TableForm::coHidden;
+
+		if (isset($o['preHeader']))
+		{
+			$form->addStatic($o['preHeader']);
+		}
 
 		if (isset ($o ['cfgItem']))
 		{

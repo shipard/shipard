@@ -6,6 +6,7 @@ require_once __SHPD_MODULES_DIR__ . 'e10doc/core/core.php';
 
 use \Shipard\Report\FormReport;
 use \Shipard\Utils\World;
+use \Shipard\Utils\Utils;
 
 
 /**
@@ -29,14 +30,13 @@ class DocReportBase extends FormReport
 
 	public function setReportId($baseReportId)
 	{
-
 		if (str_starts_with($baseReportId, 'reports.default.'))
 		{
 			$reportId = $baseReportId;
 		}
 		else
 		{
-			$reportType = $this->app()->cfgItem ('options.experimental.docReportsType', 'default');
+			$reportType = $this->app()->cfgItem ('options.appearanceDocs.docReportsType', 'default');
 			$reportIdBegin = 'reports.'.$reportType.'.';
 			$reportId = $reportIdBegin.$baseReportId;
 
@@ -62,6 +62,8 @@ class DocReportBase extends FormReport
 
 		$this->tablePersons = $this->app()->table('e10.persons.persons');
 		$this->allProperties = $this->app()->cfgItem('e10.base.properties', []);
+
+		$this->data['options']['docReportsPersonsSigns'] = intval($this->app()->cfgItem ('options.appearanceDocs.docReportsPersonsSigns', 0));
 	}
 
 	function loadData_MainPerson($columnId)
@@ -120,7 +122,9 @@ class DocReportBase extends FormReport
 		$this->data ['author']['lists'] = $this->tablePersons->loadLists($this->data ['author']);
 
 		$authorAtt = \E10\Base\getAttachments($this->table->app(), 'e10.persons.persons', $this->recData ['author'], TRUE);
-		$this->data ['author']['signature'] = \E10\searchArray($authorAtt, 'name', 'podpis');
+		$this->data ['author']['signature'] = Utils::searchArray($authorAtt, 'name', 'podpis');
+		if (isset($this->data ['author']['signature']))
+			$this->data ['author']['signature']['rfn'] = 'att/'.$this->data ['author']['signature']['path'].$this->data ['author']['signature']['filename'];
 
 		if (isset($this->data ['author']['lists']['address'][0]))
 			$this->data ['author']['address'] = $this->data ['author']['lists']['address'][0];
