@@ -3,7 +3,7 @@
 <head>
 	<title>test</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/default/style-default.css" type="text/css"/>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/default/style-default.css?v1" type="text/css"/>
 
 	<style>
 			{{#data.owner.logo.logo-nadpis.filename}}
@@ -342,6 +342,27 @@
 <div class='reportTextFooter'>
 	{{#data.reportTexts.subFooter}}{{{data.reportTexts.subFooter}}}{{/data.reportTexts.subFooter}}
 </div>
+
+{{#data.options.docReportsPersonsSigns}}
+	{{#data.author.signature.rfn}}
+		<table class="signed">
+			<tr>
+				<td class="empty">
+				<td>
+				<td>
+					<img src='{{dsRoot}}/{{data.author.signature.rfn}}'>
+				</td>				
+			</tr>
+			<tr>
+				<td class="empty">
+				<td>
+				<td>
+					<span>Vystavil</span>
+				</td>
+			</tr>	
+		</table>
+	{{/data.author.signature.rfn}}
+{{/data.options.docReportsPersonsSigns}}
 
 </body>
 </html>

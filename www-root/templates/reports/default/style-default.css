@@ -239,6 +239,12 @@ div#sign span.logoImg {position: absolute; right: 0mm; text-align: center; width
 div#sign span.name {display: inline-block; width: 80mm; text-align: center; border-top: 1pt solid #5B7F8C; padding-top: 2pt;}
 /**/
 
+table.signed {width: 100%; text-align: center; margin-top: 36pt; font-size: 10pt; border-collapse: collapse;}
+table.signed td.empty {width:60%;}
+table.signed tr td {vertical-align: top;}
+table.signed tr td span {text-align: center; border-top: .8pt solid black;  padding: 3pt;  display: block;}
+table.signed tr td img { height: 40pt;}
+
 /*konec univerzálního css*/
 
 
