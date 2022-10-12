@@ -63,7 +63,8 @@ class TableForm
 	var $dirtyColsReferences;
 
 	const INPUT_STYLE_RADIO = 1, INPUT_STYLE_OPTION = 2, INPUT_STYLE_MONEY = 3, INPUT_STYLE_DATE = 4, INPUT_STYLE_STRING = 5,
-				INPUT_STYLE_DOUBLE = 6, INPUT_STYLE_INT = 7, INPUT_STYLE_DATETIME = 8, INPUT_STYLE_TIME = 9, INPUT_STYLE_TIMELEN = 10;
+				INPUT_STYLE_DOUBLE = 6, INPUT_STYLE_INT = 7, INPUT_STYLE_DATETIME = 8, INPUT_STYLE_TIME = 9, INPUT_STYLE_TIMELEN = 10,
+				INPUT_STYLE_STRING_COLOR = 11;
 	const SIDEBAR_POS_NONE = 0, SIDEBAR_POS_LEFT = 1, SIDEBAR_POS_RIGHT = 2, SIDEBAR_POS_PARENT_FORM = 3;
 	const ltForm = 1, ltHorizontal = 2, ltVertical = 3, ltDocMain = 4, ltDocRows = 5, ltNone = 6, ltGrid = 7, ltRenderedTable = 99;
 
@@ -534,6 +535,12 @@ class TableForm
 										}
 										if ($colDef && isset($colDef['subtype']))
 											$inputType = $colDef['subtype'];
+										break;
+			case self::INPUT_STYLE_STRING_COLOR:
+										$inputClass = 'e10-inputString';
+										if ($len)
+											$inputParams .= " maxlength='$len'";
+										$inputType = 'color';
 										break;
 		}
 

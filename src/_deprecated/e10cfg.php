@@ -717,12 +717,12 @@ class FormAppOptions extends TableForm
 			}
 			$form->addInputEnum2 ($prefixKey.$o ['cfgKey'], $o ['cfgName'], $options, $style = self::INPUT_STYLE_OPTION);
 		}
-		else
-		if (isset ($o ['options']))
+		elseif (isset ($o ['options']))
 			$form->addInputEnum2 ($prefixKey.$o ['cfgKey'], $o ['cfgName'], $o ['options'], $style = self::INPUT_STYLE_OPTION);
-		else
-		if (isset ($o ['reference']))
+		elseif (isset ($o ['reference']))
 			$form->addInputIntRef ($prefixKey.$o ['cfgKey'], $o ['reference'], $o ['cfgName']);
+		elseif (isset ($o ['subtype']) && $o ['subtype'] === 'color')
+			$form->addInput ($prefixKey.$o ['cfgKey'], $o ['cfgName'], TableForm::INPUT_STYLE_STRING_COLOR, $columnOptions, 100, FALSE, utils::cfgItem($o, 'placeholder', ''));
 		else
 			$form->addInput ($prefixKey.$o ['cfgKey'], $o ['cfgName'], TableForm::INPUT_STYLE_STRING, $columnOptions, 100, FALSE, utils::cfgItem($o, 'placeholder', ''));
 	}

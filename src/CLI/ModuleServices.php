@@ -48,11 +48,48 @@ class ModuleServices
 		}
 	}
 
+	protected function upgradeAppOption ($oldId, $newId)
+	{
+		$oldIdParts = explode('.', $oldId);
+		$oldIdFileName = 'config/appOptions.'.$oldIdParts[1].'.json';
+		$oldIdData = Utils::loadCfgFile($oldIdFileName);
+		if (!$oldIdData)
+		{
+			error_log("upgradeAppOption: old file `$oldIdFileName` not found or has syntax error.");
+			return;
+		}
+
+		$newIdParts = explode('.', $newId);
+		$newIdFileName = 'config/appOptions.'.$newIdParts[1].'.json';
+		$newIdData = Utils::loadCfgFile($newIdFileName);
+		if (!$newIdData)
+			$newIdData = [];
+
+		if (!isset($oldIdData[$oldIdParts[2]]))
+		{
+			return;
+		}
+
+		$needSave = FALSE;
+
+		if (!isset($newIdData[$newIdParts[2]])/* || $oldIdData[$oldIdParts[2]] !== $oldIdData[$newIdParts[2]]*/)
+		{
+			$newIdData[$newIdParts[2]] = $oldIdData[$newIdParts[2]];
+			$needSave = TRUE;
+		}
+
+		if ($needSave)
+		{
+			file_put_contents($newIdFileName, json_encode($newIdData));
+		}
+	}
+
 	public function app() {return $this->app;}
 	public function db() {return $this->app->db;}
 
 	public function onAnonymize () {return TRUE;}
 	public function onAppPublish () {return TRUE;}
+	public function onBeforeAppUpgrade () {return TRUE;}
 	public function onAppUpgrade () {return TRUE;}
 	public function onCreateDataSource () {return TRUE;}
 	public function onCheckSystemData () {return TRUE;}

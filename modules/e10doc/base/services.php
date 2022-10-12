@@ -12,6 +12,11 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			$this->checkClosePeriodsDocs2();
 	}
 
+	public function onBeforeAppUpgrade ()
+	{
+		$this->upgradeAppOption ('options.experimental.docReportsType', 'options.appearanceDocs.docReportsType');
+	}
+
 	public function checkSystemSettings ($docType, $settings)
 	{
 		// -- dockinds

@@ -623,6 +623,8 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 			return;
 		$this->checkFilesystem (__APP_DIR__ . '/');
 
+		$this->runModuleServices ('onBeforeAppUpgrade');
+
 		$this->appUpgrade_ServerInfo ();
 		$channelChanged = $this->appUpgrade_ChannelInfo ();
 		$this->appUpgrade_DetectVersion();
@@ -1474,6 +1476,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 			switch ($serviceType)
 			{
 				case 'onAppPublish' : $moduleService->onAppPublish (); break;
+				case 'onBeforeAppUpgrade' : $moduleService->onBeforeAppUpgrade (); break;
 				case 'onAppUpgrade' : $moduleService->onAppUpgrade (); break;
 				case 'onCreateDataSource' : $moduleService->onCreateDataSource (); break;
 			}

@@ -50,6 +50,13 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$this->upgradeTemplateLooks();
 	}
 
+	public function onBeforeAppUpgrade ()
+	{
+		$this->upgradeAppOption ('options.experimental.appTheme', 'options.appearanceApp.appTheme');
+		$this->upgradeAppOption ('options.experimental.iconsTheme', 'options.appearanceApp.iconsTheme');
+		$this->upgradeAppOption ('options.experimental.mobileuiTheme', 'options.appearanceApp.mobileuiTheme');
+	}
+
 	function checkNewPlaces()
 	{
 		if ($this->app->model()->module('e10doc.base') === FALSE)

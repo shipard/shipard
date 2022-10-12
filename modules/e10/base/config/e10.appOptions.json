@@ -26,6 +26,25 @@
 	"devices": {
 		"name": "Zařízení", "order": 91000, "group": "system",
 		"type": "viewer", "table": "e10.base.devices", "viewer": "default"
+	},
+	"appearanceApp": {
+		"name": "Vzhled aplikace", "order": 1000, "group": "appearance",
+		"icon": "settigns/lab",
+		"type": "cfgFile",
+		"options":
+			[
+				{"cfgKey": "appTheme", "cfgName": "Téma aplikace", "cfgItem": "e10settings.themes.desktop", "oldId": "options.experimental.appTheme"},
+				{"cfgKey": "iconsTheme", "cfgName": "Ikony", "cfgItem": "ui.app.icons.types"},
+				{"cfgKey": "mobileuiTheme", "cfgName": "Vzhled mobilního rozhraní",
+					"options": {
+						"md-bluegray": "Modrošedá",
+						"md-indigo": "Indigo",
+						"md-lime": "Limetka",
+						"md-default": "Růžová",
+						"md-teal": "Modrozelená"
+					}
+				}
+			]
 	}
 }
 

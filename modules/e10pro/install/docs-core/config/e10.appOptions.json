@@ -30,7 +30,8 @@
 				"options": {"default": "Standardní","modern": "Moderní"},
 				"preHeader": {"text": "Výstupní sestavy", "class": "h2 padd5 block"}
 			},
-			{"cfgKey": "docReportsPersonsSigns", "cfgName": "Dávat na sestavy podpis osoby", "options": {"0": "Ne","1": "Ano"}}
+			{"cfgKey": "docReportsPersonsSigns", "cfgName": "Dávat na sestavy podpis osoby", "options": {"0": "Ne","1": "Ano"}},
+			{"cfgKey": "accentColor", "cfgName": "Barva zvýraznění", "subtype": "color"}
 		]
 	}
 }

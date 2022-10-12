@@ -801,6 +801,7 @@ class E10_App extends Application
 			switch ($serviceType)
 			{
 				case 'appPublish'				: $moduleService->onAppPublish (); break;
+				case 'beforeAppUpgrade'	: $moduleService->onBeforeAppUpgrade (); break;
 				case 'appUpgrade'				: $moduleService->onAppUpgrade (); break;
 				case 'checkSystemData'	: $moduleService->onCheckSystemData (); break;
 				case 'createDataSource' : $moduleService->onCreateDataSource (); break;
