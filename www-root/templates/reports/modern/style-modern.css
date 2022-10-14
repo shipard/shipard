@@ -198,6 +198,22 @@ td.partner {border-bottom: .8pt solid rgba(0, 0, 0, 0.2);}
 /*pokladní lístek*/
 #sum {margin-top: 5pt;}
 
+/* výkup */
+div.vkp-vykup-cena-a-zaok {text-align: right; font-size: 7pt; margin-top: 10pt;}
+table.vkp-vykup-celkem {width: 100%;}
+td.vkp-vykup-celkem-cena {text-align: right; font-size: 18pt; font-weight: bold; padding-top: 0pt;}
+td.vkp-vykup-celkem-info {text-align: left; font-size: 10pt; vertical-align: bottom;}
+
+table.authorSigned {width: 100%; border-collapse: collapse; text-align: center; margin-top: 10pt; margin-bottom: 20pt;}
+table.authorSigned td.main {width: 50%;}
+table.authorSigned tr td.empty {width: 0%;}
+table.authorSigned tr td.author {padding-right: 5pt;}
+
+table.purchaseSigned {border-collapse: collapse; border: 3pt solid black;}
+table.purchaseSigned td {padding: 5pt;}
+div.vkp-vykup-podpis-dod-prevzal {height: 95pt; font-size: 10pt;}
+div.vkp-vykup-podpis-dod-podpis {border-top: 2pt dotted black; border-collapse: collapse; font-size: 9pt; text-align: center;}
+
 /*** universal app styles */
 
 .suf {padding-left: .4em; font-size: 80%; font-weight: normal;}

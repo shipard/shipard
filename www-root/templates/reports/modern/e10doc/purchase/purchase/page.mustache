@@ -1,0 +1,223 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+    <title>test</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v70" type="text/css"/>
+</head>
+<body>
+
+<table class="infoSecondary">
+    <tr>
+        <td class="customer">
+            <span class='hdr' id="supplier-address-hdr">{{@dict;Odběratel}}:</span>
+			{{#data.reportTexts.supplierAndContacts}}{{{data.reportTexts.supplierAndContacts}}}{{/data.reportTexts.supplierAndContacts}}
+				{{^data.reportTexts.supplierAndContacts}}
+				<span class='address' id="supplier-address-box">
+					{{#data.reportTexts.supplier}}{{{data.reportTexts.supplier}}}<br>{{/data.reportTexts.supplier}}
+					{{^data.reportTexts.supplier}}
+						<span class='title'>{{data.owner.fullName}}</span>
+						{{#data.owner.address.specification}}
+							{{data.owner.address.specification}}<br/>
+						{{/data.owner.address.specification}}
+						{{data.owner.address.street}}<br/>
+						{{^data.flags.foreignCountry}}
+							{{data.owner.address.zipcode}} {{data.owner.address.city}}<br/>
+						{{/data.flags.foreignCountry}}
+						{{#data.flags.foreignCountry}}
+							{{data.owner.address.countryNameSC2}}-{{data.owner.address.zipcode}} {{data.owner.address.city}}<br/>
+							{{data.owner.address.countryNameEng}}
+						{{/data.flags.foreignCountry}}
+						
+						</span>
+					{{/data.reportTexts.supplier}}					
+						{{#data.reportTexts.contacts}}{{{data.reportTexts.contacts}}}{{/data.reportTexts.contacts}}
+						{{^data.reportTexts.contacts}}
+							{{#data.owner_identifiers}}
+								<b>{{@dict;dataItem:name}}:</b> {{value}}
+							{{/data.owner_identifiers}}<br>
+						
+							<small>{{cfgItem.options.core.ownerLegalRegInfo}}</small>
+						{{/data.reportTexts.contacts}}
+					{{/data.reportTexts.supplierAndContacts}}
+        </td>
+
+        <td class="supplier">
+        	<div class='hdr'>{{@dict;Dodavatel}}:<small class='pull-right'>#{{data.person.id}}</small></div>
+			<span class='title'>{{data.person.fullName}}</span>
+			<span class='address'>
+				{{#data.owner.address.specification}}
+					{{data.owner.address.specification}}<br/>
+				{{/data.owner.address.specification}}
+				{{data.person.address.street}}<br/>
+				{{^data.flags.foreignCountry}}
+					{{data.person.address.zipcode}} {{data.person.address.city}}<br/>
+				{{/data.flags.foreignCountry}}
+				{{#data.flags.foreignCountry}}
+					{{data.person.address.countryNameSC2}}-{{data.person.address.zipcode}} {{data.person.address.city}}<br/>
+					{{data.person.address.countryNameEng}}
+				{{/data.flags.foreignCountry}}
+			</span>
+
+			{{#data.person_identifiers}}
+				<b>{{@dict;dataItem:name}}:</b> {{value}}
+			{{/data.person_identifiers}}
+        </td>
+    </tr>
+</table>
+
+{{#data.reportTexts.subHeader}}{{{data.reportTexts.subHeader}}}{{/data.reportTexts.subHeader}}
+
+<table class="rows">
+	<thead>
+		<tr>
+			<th class='itemID'>{{@dict;ID}}</th>
+			{{^data.flags.multiLineRows}}
+				<th>{{@dict;Položka}}</th>
+			{{/data.flags.multiLineRows}}
+			{{#data.itemCodesHeader}}
+				<th class='number'>{{sn}}</th>
+			{{/data.itemCodesHeader}}
+			<th class='number'>{{@dict;Množství}}</th>
+			<th>{{@dict;Jed.}}</th>
+			{{#data.head.taxPayer}}
+				<th class='number'>% {{@dict;DPH}}</th>
+			{{/data.head.taxPayer}}
+			<th class='number'>{{@dict;Cena/jed.}}</th>
+			<th class='number'>{{@dict;Cena celkem}}</th>
+		</tr>
+	</thead>
+
+	{{^data.flags.multiLineRows}}
+		{{#data.rows}}
+			<tr>
+				<td class='itemID'>{{itemID}}</td>
+				<td>{{text}}{{#additionsMarks}}<sup> {{additionsMarks}}</sup>{{/additionsMarks}}</td>
+				<td class='number'>{{quantity}}</td>
+				<td>{{@dict;dataItem:print.unit}}</td>
+				{{#data.head.taxPayer}}
+					<td class='number'>{{taxPercents}}</td>
+				{{/data.head.taxPayer}}
+				<td class='number'>{{print.priceItem}}</td>
+				<td class='number'>{{print.priceAll}}</td>
+			</tr>
+		{{/data.rows}}
+	{{/data.flags.multiLineRows}}
+	{{#data.flags.multiLineRows}}
+		{{#data.rows}}
+			<tr>
+				<td class="itemRow" colspan="8" style="font-weight: semi-bold;">{{text}}{{#additionsMarks}}<sup> {{additionsMarks}}</sup>{{/additionsMarks}}</td>
+			</tr>
+			<tr class="rowInfo">
+				<td class='itemID'>{{itemID}}</td>
+				{{#rowItemCodes}}
+					<td class='number'>{{itemCodeText}}</td>
+				{{/rowItemCodes}}
+				<td class='number'>{{quantity}}</td>
+				<td>{{@dict;dataItem:print.unit}}</td>
+				{{#data.head.taxPayer}}
+					<td class='number'>{{taxPercents}}</td>
+				{{/data.head.taxPayer}}
+				<td class='number'>{{print.priceItem}}</td>
+				<td class='number'>{{print.priceAll}}</td>
+			</tr>
+		{{/data.rows}}
+	{{/data.flags.multiLineRows}}
+</table>
+
+{{#data.flags.enablePrice}}
+    <div class='vkp-vykup-cena-a-zaok'>celkem: {{data.head.print.sumTotal}} {{data.head.print.currency}} zaokrouhlení: {{data.head.print.rounding}} {{data.head.print.currency}}</div>
+{{/data.flags.enablePrice}}
+
+<table class='vkp-vykup-celkem'>
+    <tr>
+        <td class='vkp-vykup-celkem-info'>
+            {{#data.flags.payInvoice}}
+                Částka bude uhrazena na základě Vaší faktury.<br/>
+                Režim přenesení daňové povinnosti - §92a-92e.<br/>
+                Materiál podléhá základní sazbě DPH.<br/>
+            {{/data.flags.payInvoice}}
+            {{#data.flags.payBatch}}
+                Částka za tento výkup bude uhrazena v hotovosti,<br/>
+                v termínu na základě vzájemné dohody.<br/>
+            {{/data.flags.payBatch}}
+            {{#data.flags.payBankOrder}}
+								Částka bude uhrazena bezhotovostně na účet {{data.head.bankAccount}},<br/>
+                variabilní symbol {{data.head.symbol1}}.<br/>
+            {{/data.flags.payBankOrder}}
+        </td>
+        <td class='vkp-vykup-celkem-cena'>
+            {{#data.flags.enablePrice}}
+                {{#data.flags.payCash}}
+                    k úhradě
+                {{/data.flags.payCash}}
+                {{#data.flags.payInvoice}}
+                    k fakturaci
+                {{/data.flags.payInvoice}}
+                {{#data.flags.payBatch}}
+                    k vyúčtování
+                {{/data.flags.payBatch}}
+
+                {{data.head.print.toPay}} {{data.head.print.currency}}
+            {{/data.flags.enablePrice}}
+        </td>
+    </tr>
+</table>
+
+{{#data.additionsExists}}
+	<h4>Poznámky</h4>
+  {{#data.additions}}
+		{{#data.additionsMoreRowsMarks}}{{mark}}. {{/data.additionsMoreRowsMarks}}{{labelPrefix}} {{identifier}}<br>
+  {{/data.additions}}
+{{/data.additionsExists}}
+
+<table class="authorSigned">
+    <tr>
+        <td class="main">
+            {{#data.options.docReportsPersonsSigns}}
+                {{#data.author.signature.rfn}}                
+                    <table class="signed">
+                        <tr>
+                            <td class="empty">
+                            <td>
+                            <td class="author">
+                                <img src='{{dsRoot}}/{{data.author.signature.rfn}}'>
+                            </td>				
+                        </tr>
+                        <tr>
+                            <td class="empty">
+                            <td>
+                            <td class="author">
+                                <span>Vystavil</span>
+                            </td>
+                        </tr>	
+                    </table>
+                {{/data.author.signature.rfn}}
+            {{/data.options.docReportsPersonsSigns}}
+        </td>
+        <td class="main">
+            {{#data.flags.payCash}}
+                <table class='purchaseSigned'>
+                    <tr>
+                        <td>
+                            <div class='vkp-vykup-podpis-dod-prevzal'>
+                                Úhradu v hotovosti převzal:<br/>                                    
+                                {{data.person.hotovostPrevzalJmeno}}<br/>
+                                OP: {{data.person.hotovostPrevzalOP}}                          
+                            </div>
+                            <div class='vkp-vykup-podpis-dod-podpis'>zde se prosím podepište</div>
+                        </td>                        
+                    </tr>    
+                </table>
+            {{/data.flags.payCash}}            
+        </td>
+    </tr>
+</table>
+
+
+<div class='reportTextFooter'>
+	{{#data.reportTexts.subFooter}}{{{data.reportTexts.subFooter}}}{{/data.reportTexts.subFooter}}
+</div>
+
+</body>
+</html>

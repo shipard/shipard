@@ -1,0 +1,130 @@
+{{{@write;binMode:1}}}
+{{{@write;codePage:CP852}}}
+
+{{{@write;cmd:cp852}}}
+
+--- hlavička
+
+{{{@write;var:data.owner.fullName;width:42;align:center}}}
+{{{@write;cmd:nl}}}
+
+{{{@write;var:data.owner.address.street;width:42;align:center}}}
+{{{@write;cmd:nl}}}
+
+{{{@write;var:data.owner.address.city;width:42;align:center}}}
+{{{@write;cmd:nl}}}
+
+{{#data.owner_identifiers}}
+    {{{@write;var:name;width:6;align:right}}}{{{@write;var:value;width:14;align:right}}}
+{{/data.owner_identifiers}}
+{{{@write;cmd:nl}}}
+
+{{{@write;var:cfgItem.options.core.ownerLegalRegInfo;width:42;align:center}}}
+{{{@write;cmd:nl}}}
+
+{{{@write;cmd:nl}}}
+{{{@write;cmd:nl}}}
+
+{{{@write;text:__________________________________________;width:42;align:center}}}{{{@write;cmd:nl}}}
+
+{{{@write;text:Přejímací list}}}
+{{{@write;var:data.head.docNumber;width:28;align:right}}}
+{{{@write;cmd:nl}}}
+
+{{{@write;var:data.flags.reportTitle;width:30}}}
+{{{@write;var:data.head.dateIssue;width:12;align:right}}}
+{{{@write;cmd:nl}}}
+
+
+{{{@write;text:Dodavatel}}}
+{{{@write;cmd:nl}}}
+{{{@write;var:data.person.fullName}}}
+{{{@write;cmd:nl}}}
+
+{{{@write;var:data.person.address.street}}}
+{{{@write;text:,}}}{{{@write;cmd:sp}}}
+{{{@write;var:data.person.address.zipcode}}}
+{{{@write;cmd:sp}}}
+{{{@write;var:data.person.address.city}}}
+
+{{{@write;cmd:nl}}}
+
+{{#data.person_identifiers}}
+    {{{@write;var:name}}} {{{@write;cmd:sp}}} {{{@write;var:value}}} {{{@write;cmd:sp}}}
+{{/data.person_identifiers}}
+{{{@write;cmd:nl}}}
+
+
+{{{@write;text:__________________________________________;width:42;align:center}}}{{{@write;cmd:nl}}}
+{{{@write;cmd:nl}}}
+
+
+--- řádky
+
+{{#data.rows}}
+    {{{@write;var:text}}}
+    {{{@write;cmd:nl}}}
+
+    {{{@write;var:print.priceItem;width:6;align:right}}}
+    {{{@write;text:Kč/;width:2;align:left}}}
+    {{{@write;var:print.unit;width:4;align:left}}}
+
+    {{{@write;var:quantity;width:10;align:right}}}
+    {{{@write;var:print.unit;width:4;align:left}}}
+    {{{@write;var:print.priceAll;width:15;align:right}}}
+    {{{@write;cmd:nl}}}
+{{/data.rows}}
+
+--- patička
+
+{{{@write;text:__________________________________________;width:42;align:center}}}
+{{{@write;cmd:nl}}}
+
+{{{@write;text:Celkem k úhradě;width:25;align:left}}}
+{{{@write;var:data.head.print.toPay;width:14;align:right}}}
+{{{@write;text:Kč;width:3;align:right}}}
+{{{@write;cmd:nl}}}
+
+
+{{#data.flags.payInvoice}}
+    {{{@write;text:Částka bude uhrazena na základě Vaší faktury.}}}{{{@write;cmd:nl}}}
+    {{{@write;text:Režim přenesení daňové povinnosti - §92a-92e.}}}{{{@write;cmd:nl}}}
+    {{{@write;text:Materiál podléhá základní sazbě DPH.}}}{{{@write;cmd:nl}}}
+{{/data.flags.payInvoice}}
+{{#data.flags.payBankOrder}}
+    {{{@write;text:Částka bude uhrazena bezhotovostně na účet}}}{{{@write;cmd:nl}}}
+    {{{@write;var:data.head.bankAccount}}}{{{@write;cmd:sp}}}
+    {{{@write;text:VS}}}{{{@write;cmd:sp}}}{{{@write;var:data.head.symbol1}}}
+    {{{@write;cmd:nl}}}
+{{/data.flags.payBankOrder}}
+
+
+{{{@write;text:__________________________________________;width:42;align:center}}}
+{{{@write;cmd:nl}}}
+
+
+
+{{#data.owner_contacts}}
+    {{{@write;var:name;width:12;align:left}}}{{{@write;var:value;width:30;align:right}}}
+    {{{@write;cmd:nl}}}
+{{/data.owner_contacts}}
+
+{{{@write;text:DĚKUJEME A PŘEJEME PĚKNÝ DEN;width:42;align:center}}}
+{{{@write;cmd:nl}}}
+
+{{{@write;text:__________________________________________;width:42;align:center}}}
+{{{@write;cmd:nl}}}
+
+{{{@write;cmd:nl}}}
+{{{@write;cmd:nl}}}
+{{{@write;cmd:nl}}}
+{{{@write;cmd:nl}}}
+{{{@write;cmd:nl}}}
+{{{@write;cmd:nl}}}
+{{{@write;cmd:nl}}}
+{{{@write;cmd:nl}}}
+{{{@write;cmd:nl}}}
+{{{@write;cmd:nl}}}
+
+{{{@write;cmd:cutPaper}}}
+{{{@write;cmd:openCashDrawer}}}

@@ -1,0 +1,58 @@
+<style>
+	/*table.header {
+		font-family: Arial, Helvetica, sans-serif;
+		width: 100%;
+		margin-left: 1cm;
+		margin-right: 1cm;
+	}*/
+
+	body, html {
+		margin: 0;
+		padding: 0;
+		box-sizing: border-box;
+	}
+
+	table.header {
+		margin: 0;
+		padding: 0;
+		font-family: Arial, Helvetica, sans-serif;
+		width: 100%;
+		margin-left: 25.4pt;
+		margin-right: 25.4pt;		
+		border-left: 6pt solid {{data.options.accentColor}};
+		border-bottom: 1px solid {{data.options.accentColor}};
+	}
+
+	td.docInfo {
+		text-align: left;
+		font-size: 12pt;
+	}
+
+	span.docName {
+		text-transform: uppercase;
+	}
+
+	td.supplierLogo {
+		text-align: right;
+		font-size: 10pt;
+		font-weight: bold;
+	}	
+</style>
+
+<table class='header'>
+	<tr>
+		<td class='docInfo'>
+			<span class="docName">
+				PŘEJÍMACÍ LIST <br>
+			</span>
+			{{@dict;dataItem:data.flags.reportTitle}}
+			<br>
+			číslo <b>{{data.head.docNumber}}</b>, datum <b>{{data.head.dateIssue}}</b>
+		</td>
+		<td class="supplierLogo">
+			{{#data.owner.logo.logo-nadpis.filename}}
+				<img style="height:36pt; max-width: 5cm;" src='{{{@imgData;dataItem:data.owner.logo.logo-nadpis}}}'>
+			{{/data.owner.logo.logo-nadpis.filename}}
+		</td>
+	</tr>
+</table>
