@@ -7,6 +7,7 @@ require_once __SHPD_MODULES_DIR__ . 'e10doc/core/tables/heads.php';
 
 use \E10\Application, \E10\utils, \E10\TableForm, \E10\TableView, E10\Utility, E10\Base\ListRows, \e10\uiutils, \e10\world;
 use \e10doc\core\libs\Aggregate;
+use \Shipard\Utils\Json;
 
 class e10utils extends \e10doc\core\libs\E10Utils {}
 
@@ -475,6 +476,26 @@ class DocListRows extends ListRows
 		{
 			if ($this->rowsTableOrderCol && (!isset($row[$this->rowsTableOrderCol]) || !$row[$this->rowsTableOrderCol]))
 				$row[$this->rowsTableOrderCol] = $lastRowOrder + 100;
+
+			// -- subColumns
+			$delKeys = [];
+			$subColumns = [];
+			foreach ($row as $rk => $rv)
+			{
+				if (str_starts_with($rk, 'subColumns_'))
+				{
+					$delKeys[] = $rk;
+					$rkParts = explode('_', $rk);
+					$subColumns[$rkParts[1]][$rkParts[2]] = $rv;
+				}
+			}
+			foreach ($subColumns as $skk => $skv)
+			{
+				Json::polish($skv);
+				$row[$skk] = Json::lint($skv);
+			}
+			foreach ($delKeys as $dk)
+				unset($row[$dk]);
 
 			$row [$this->rowsTableQueryCol] = $this->recData ['ndx'];
 			if (!isset ($row ['ndx']) || $row ['ndx'] == 0 || $row ['ndx'] == '')

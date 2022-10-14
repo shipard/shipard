@@ -7,6 +7,8 @@ require_once __SHPD_MODULES_DIR__ . 'e10/web/web.php';
 
 use \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\DbTable, \E10\utils, \E10\str, \E10\uiutils;
 use \Shipard\Form\FormSidebar;
+use \Shipard\Utils\Json;
+use \Shipard\Application\DataModel;
 
 
 /* ----------
@@ -1304,7 +1306,26 @@ class ListRows implements \E10\IDocumentList
 			$rows = $this->rowsTable->app()->db ()->query ($q);
 
 			forEach ($rows as $r)
+			{
+				//-- subColumns
+				$columns = $this->rowsTable->columns();
+				foreach ($columns as $columnId => $column)
+				{
+					if ($column['type'] !== DataModel::ctSubColumns || !isset($r[$columnId]))
+						continue;
+
+					$scData = json_decode ($r[$columnId], TRUE);
+					if (!$scData)
+						continue;
+
+					foreach ($scData as $scKey => $scValue)
+					{
+						$r['subColumns_'.$columnId.'_'.$scKey] = $scValue;
+					}
+				}
+
 				$this->data [] = $r;
+			}
 		}
 		if ($this->formData)
 			$this->formData->checkLoadedList ($this);

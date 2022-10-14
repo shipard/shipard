@@ -90,6 +90,9 @@
 		{"id": "workOrder", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
 		{"id": "property", "name": "Majetek", "type": "int", "reference": "e10pro.property.property"},
 
+		{"id": "rowVds", "name": "Rozšíření struktury", "type": "int", "reference": "vds.base.defs"},
+		{"id": "rowData", "name": "Data řádku", "type": "subColumns"},
+
     {"id": "invDirection", "name": "Směr skladového pohybu", "type": "enumInt",
 			"enumValues": {"0": "žádný", "1": "příjem", "-1": "výdej"}},
     {"id": "invPrice", "name": "Skladová cena", "type": "money"},

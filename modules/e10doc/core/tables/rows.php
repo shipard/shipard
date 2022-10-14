@@ -408,13 +408,13 @@ class TableRows extends DbTable
 
 	public function columnInfoEnum ($columnId, $valueType = 'cfgText', TableForm $form = NULL)
 	{
-		if ($columnId === 'operation' && $form)	
+		if ($columnId === 'operation' && $form)
 			return $this->columnInfoEnumOperations ($form->recData, $form->option ('ownerRecData'));
 
 		if ($columnId === 'taxCode' && $form)
 			return $this->columnInfoEnumTaxCodes($form->recData, $form->option ('ownerRecData'), $form);
 
-		return parent::columnInfoEnum ($columnId, $valueType = 'cfgText', $form);	
+		return parent::columnInfoEnum ($columnId, $valueType = 'cfgText', $form);
 	}
 
 	public function columnInfoEnumOperations ($recData, $ownerRecData)
@@ -576,6 +576,16 @@ class TableRows extends DbTable
 			return $head->toArray();
 
 		return parent::ownerRecData ($recData, $suggestedOwnerRecData);
+	}
+
+	public function subColumnsInfo ($recData, $columnId)
+	{
+		if ($columnId === 'rowData')
+		{
+			return FALSE;
+		}
+
+		return parent::subColumnsInfo ($recData, $columnId);
 	}
 }
 
