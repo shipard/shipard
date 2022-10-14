@@ -6,8 +6,9 @@ class PurchaseReport extends \e10doc\core\libs\reports\DocReport
 {
 	function init ()
 	{
-		$this->reportId = 'e10doc.purchase.purchase';
-		$this->reportTemplate = 'e10doc.purchase.purchase';
+		parent::init();
+
+		$this->setReportId('e10doc.purchase.purchase');
 	}
 
 	public function loadData ()

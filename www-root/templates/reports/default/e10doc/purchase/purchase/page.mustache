@@ -3,14 +3,15 @@
 <head>
     <title>test</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <link rel="stylesheet" href="file://{{templateRoot}}style.css" type="text/css"/>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/default/style-default.css?v1" type="text/css"/>
+    <link rel="stylesheet" href="{{templateUrlRoot}}style.css?v2" type="text/css"/>
 </head>
 <body>
 
 
 <table class='vkp-vykup-header'>
     <tr>
-        <td class='vkp-vykup-qr'>{{!<img src='file:///Users/sebik/sw/vykupna.cz/tmp/qr.png'/>!}}</td>
+        <td class='vkp-vykup-qr'></td>
         <td class='vkp-vykup-docheader'>
             <h1>PŘEJÍMACÍ LIST</h1>
             <h2>{{@dict;dataItem:data.flags.reportTitle}}</h2>
@@ -20,13 +21,11 @@
 </table>
 <table class='vkp-vykup-odbdod'>
     <tr>
-        <td class='vkp-vykup-odb' style='background-image: url("file://{{appDir}}/reports/logo-razitko.svg"); background-repeat: no-repeat; background-position: top left; background-size: auto 36pt;'><b>{{data.owner.fullName}}</b><br/>
+        <td class='vkp-vykup-odb' style='background-image: url("https://vykupna.shipard.app/att/2021/02/04/wkf.docs.documents/text-no-shadow-1fuiupm.svg"); background-repeat: no-repeat; background-position: top left; background-size: auto 36pt;'><b>{{data.owner.fullName}}</b><br/>
             {{data.owner.address.street}}, {{data.owner.address.city}} {{data.owner.address.zipcode}} <br/>
             {{#data.owner_identifiers}}
                 <b>{{@dict;dataItem:name}}:</b> {{value}}
             {{/data.owner_identifiers}}
-            <br/><br/>
-            {{cfgItem.options.core.ownerLegalRegInfo}}
         </td>
         <td class='vkp-vykup-dod'>{{@dict;dodavatel}}:<small class='pull-right'>#{{data.person.id}}</small><br/><b>{{data.person.fullName}}</b><br/>
             {{data.person.address.street}},
@@ -38,7 +37,18 @@
             <br/>
         </td>
     </tr>
+    <tr>
+        <td class='vkp-vykup-odb-spec' colspan='2'>
+            {{#data.owner.address.specification}}
+                <b>{{data.owner.address.specification}}</b> <br/>
+            {{/data.owner.address.specification}}
+            {{cfgItem.options.core.ownerLegalRegInfo}}
+        </td>
+    </tr>
 </table>
+
+
+{{#data.reportTexts.subHeader}}{{{data.reportTexts.subHeader}}}{{/data.reportTexts.subHeader}}
 
 
 <table class='vkp-vykup-radky'>
@@ -87,8 +97,11 @@
 
         <tr class='vkp-vykup-radky2 small'>
             <td class='vkp-vykup-radky-cislo'>&nbsp;</td>
-            <td class='vkp-vykup-radky-kod'>{{rowItemProperties.odpady.kododp.0.value}}</td>
-            <td class='vkp-vykup-radky-hspoz'>{{rowItemProperties.odpady.hspoz.0.value}}</td>
+            <td class='vkp-vykup-radky-kod'>{{rowItemProperties.odpad.kododp.0.value}}</td>
+            <td class='vkp-vykup-radky-hspoz'>
+							{{rowItemProperties.odpad.hspoz.0.value}}
+							{{#data.additionsMoreRowsMarks}} {{additionsMarks}}{{/data.additionsMoreRowsMarks}}
+						</td>
             <td class='vkp-vykup-radky-cislomat'></td>
             <td></td>
             {{#data.flags.enablePrice}}
@@ -114,6 +127,10 @@
                 Částka za tento výkup bude uhrazena v hotovosti,<br/>
                 v termínu na základě vzájemné dohody.<br/>
             {{/data.flags.payBatch}}
+            {{#data.flags.payBankOrder}}
+								Částka bude uhrazena bezhotovostně na účet {{data.head.bankAccount}},<br/>
+                variabilní symbol {{data.head.symbol1}}.<br/>
+            {{/data.flags.payBankOrder}}
         </td>
         <td class='vkp-vykup-celkem-cena'>
             {{#data.flags.enablePrice}}
@@ -133,12 +150,20 @@
     </tr>
 </table>
 
+{{#data.additionsExists}}
+	<h4>Poznámky</h4>
+  {{#data.additions}}
+		{{#data.additionsMoreRowsMarks}}{{mark}}. {{/data.additionsMoreRowsMarks}}{{labelPrefix}} {{identifier}}<br>
+  {{/data.additions}}
+{{/data.additionsExists}}
+
+
 <table class='vkp-vykup-podpis'>
     <tr>
         <td class='vkp-vykup-podpis-dod-vlevo'></td>
         <td class='vkp-vykup-podpis-odb'>
             {{#data.author.signature.filename}}
-                <img src='file://{{appDir}}/att/{{data.author.signature.path}}{{data.author.signature.filename}}'/>
+                <img src='https://vykupna.shipard.app/att/{{data.author.signature.path}}{{data.author.signature.filename}}'/>
             {{/data.author.signature.filename}}
             <div>Vystavil: {{data.author.fullName}}</div>
         </td>
@@ -161,13 +186,16 @@
         <td class='vkp-vykup-podpis-dod-sipka'>&lsaquo;</td>
     </tr>
 </table>
-<div class='vkp-paticka'>informace: 777 770 680 &bull; objednávky kontejnerů, kancelář: 777 770 683 &bull;
+<div class='vkp-paticka'>
+
+<br/>
+informace, objednávky kontejnerů, kancelář: 777 770 683 &bull;
     info@vykupna.cz &bull; www.vykupna.cz<br/>
-    Provozní doba: Po - Pá: 7-12 13-17 &nbsp; So, Ne: 9-11
+    Provozní doba: Po - Pá: 7 - 17 &nbsp; So: 9 - 12
+		Státní svátky zavřeno. Aktuální informace naleznete vždy na vykupna.cz
 </div>
 
 
 
 </body>
 </html>
-
