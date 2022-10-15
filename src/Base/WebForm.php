@@ -34,17 +34,26 @@ class WebForm
 	public function createFormCode () {return '';}
 
 	/**
-	 * @param mixed $labelTxt 
-	 * @param mixed $type 
-	 * @param mixed $inputName 
-	 * @param mixed $options 
-	 * @param mixed $value 
-	 * @return string 
+	 * @param mixed $labelTxt
+	 * @param mixed $type
+	 * @param mixed $inputName
+	 * @param mixed $options
+	 * @param mixed $value
+	 * @return string
 	 * @deprecated
 	 */
 	public function addFormInput ($labelTxt, $type, $inputName, $options = NULL, $value = NULL)
 	{
 		$label = $this->dictText($labelTxt);
+
+		if (isset($options['mandatory']))
+			$label .= ' *';
+
+		$inputClass = isset($options['inputClass']) ? ' '.$options['inputSlass'] : '';
+		$inputStyle = isset($options['inputStyle']) ? ' style="'.$options['inputStyle'].'"' : '';
+		$inputId = $inputName;
+		if (isset($options['id']))
+			$inputId = $options['id'];
 
 		$c = '';
 		if ($value !== NULL)
@@ -54,41 +63,60 @@ class WebForm
 
 		if ($this->recapitulation)
 		{
-			$c .= "<input type='hidden' id='$inputName' name='$inputName' value='$inputValue'>";
+			$checkBoxState = intval($inputValue) ? "checked" : '';
+			$c .= "<input type='hidden' id='$inputName' name='$inputName' $checkBoxState>";
 			return $c;
 		}
 
 		if ($type == 'checkbox')
 		{
-			$c .= "<div class='form-group'>";
-			$c .= "<div class='col-sm-offset-3 col-sm-9'>";
+			//$c .= "<div class='form-group'>";
+			//$c .= "<div class='col-sm-offset-3 col-sm-9'>";
+			$c .= "<div class='md-form'>";
 
 			$c .= "<div class='checkbox'>";
 			$c .= "<input type='checkbox' class='input-xlarge' id='$inputName' value='1' name='$inputName'/>";
-			$c .= "<label for='$inputName'>" . Utils::es ($label) . '</label>';
+			$c .= "&nbsp;<label for='$inputName'>" . Utils::es ($label) . '</label>';
 			$c .= '</div>';
 
 			$c .= '</div>';
-			$c .= '</div>';
+			//$c .= '</div>';
 			return $c;
 		}
 
 		if ($type == 'select')
 		{
-			$c .= "<div class='form-group'><label class='col-sm-2 control-label' for='$inputName'>" . Utils::es ($label) . '</label>';
-			$c .= "<div class='col-xs-5'>";
-
-			$c .= "<select class='form-control' name='$inputName' id='$inputName'>";
+			if ($labelTxt !== '')
+			{
+				if (isset($options['labelAbove']))
+				{
+					$c .= "<div class='md-form'><label class='col-sm-12 xxx_control-label' for='$inputName'>" . Utils::es ($label) . '</label>';
+					//$c .= "<div class='col-sm-12'>";
+				}
+				else
+				{
+					$c .= "<div class='md-form'><label class='col-sm-2 control-label' for='$inputName'>" . Utils::es ($label) . '</label>';
+					$c .= "<div class='col-xs-5'>";
+				}
+			}
+			$c .= "<select class='form-control{$inputClass}' name='$inputName' id='$inputId'{$inputStyle}>";
 			foreach ($options ['select'] as $itemId => $item)
 			{
 				$selected = '';
 				if (isset ($options ['selected']) && $options ['selected'] == $itemId)
 					$selected = " selected='selected'";
+				elseif ($inputValue == $itemId)
+					$selected = " selected='selected'";
 				$c .= "<option value='$itemId'$selected>" . Utils::es ($item) . "</option>";
 			}
 			$c .= '</select>';
-			$c .= '</div>';
-			$c .= '</div>';
+			if ($labelTxt !== '')
+			{
+				if (!isset($options['labelAbove']))
+					$c .= '</div>';
+			}
+			if ($labelTxt !== '')
+				$c .= '</div>';
 			return $c;
 		}
 
@@ -138,13 +166,12 @@ class WebForm
 		if ($this->fw === 'bs4')
 		{
 			$c .= "<div class='md-form'>";
+			$c .= "<label for='$inputName'>" . Utils::es($label) . '</label>';
 			if (isset($options ['icon']))
 				$c .= "<i class='".$this->app->ui()->icons()->cssClass($options ['icon'])." prefix'></i>";
 			$c .= "<input type='$type' class='form-control' id='$inputName'	name='$inputName' value='$inputValue'$autofocus/>";
 			if ($inputError !== '')
 				$c .= "<label for='$inputName'  class='e10-form-input-error'>" . Utils::es($inputError) . '</label>';
-			else
-				$c .= "<label for='$inputName'>" . Utils::es($label) . '</label>';
 			$c .= '</div>';
 		}
 		else
@@ -177,7 +204,7 @@ class WebForm
 	public function addInputBox ($labelTxt, $type, $inputName, $options = NULL, $value = NULL)
 	{
 		$c = '';
-		
+
 		$c .= "<div class='mb-3'>";
 		$c .= $this->addInput($labelTxt, $type, $inputName, $options, $value);
 		$c .= '</div>';
@@ -238,7 +265,7 @@ class WebForm
 			{
 				if (isset ($options ['selected']) && $options ['selected'] == $itemId)
 					$selected = " checked";
-				
+
 					$c .= "<div class='form-check'>";
 					$c .= "<input class='form-check-input' type='radio' name='$inputName' id='{$inputName}_{$itemId}' value='$itemId'{$selected}>";
 					$c .= "<label class='form-check-label' for='{$inputName}_{$itemId}'>".Utils::es ($item).'</label>';
@@ -277,7 +304,7 @@ class WebForm
 
 			return $c;
 		}
-		
+
 		$c .= "<label class='form-label' for='$inputName'>".Utils::es($label).'</label>';
 
 		if (isset($options ['icon']))
@@ -285,7 +312,6 @@ class WebForm
 		$c .= "<input type='$type' class='form-control' id='$inputName'	name='$inputName' value='$inputValue'$autofocus/>";
 		if ($inputError !== '')
 			$c .= "<div class='form-text e10-form-input-error'>" . Utils::es($inputError) . '</div>';
-		
 
 		$this->firstInput = FALSE;
 		return $c;
