@@ -139,7 +139,7 @@ class TableServers extends DbTable
 				'urlStart' => $urlStart, 'urlStartSec' => str_replace('/', '-', $urlStart),
 				'template' => $r['template'], 'look' => $r['templateLook'], 'lookNdx' => $r['templateLookNdx'], 'templateStylePath' => $r['templateStylePath'],
 				'templateParams' => $templateParams, 'themeColor' => '#00508a',
-				'gaid' => $r['gaid'], 'mtmSiteId' => $r['mtmSiteId'], 'mtmUrl' => $r['mtmUrl'],
+				'gaid' => $r['gaid'], 'mtmSiteId' => $r['mtmSiteId'], 'mtmUrl' => $r['mtmUrl'], 'gmApiKey' => $r['gmApiKey'],
 				'authType' => $r['authType'],
 			];
 
@@ -588,6 +588,8 @@ class FormServer extends TableForm
 					$this->addColumnInput ('gaid');
 					$this->addColumnInput ('mtmSiteId');
 					$this->addColumnInput ('mtmUrl');
+
+					$this->addColumnInput ('gmApiKey');
 
 					$this->addColumnInput ('templateMainScript');
 				$this->closeTab ();

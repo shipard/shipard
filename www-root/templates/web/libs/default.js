@@ -5,7 +5,7 @@ $(function() {
 
 function e10w_responsiveVideo() {
 	var $allVideos = $("iframe[src^='https://player.vimeo.com'], iframe[src^='https://www.youtube.com'], object, embed");
-	
+
 	$allVideos.each(function() {
 		$(this)
 			.attr('data-aspectRatio', this.height / this.width)
@@ -29,7 +29,7 @@ function e10w_embeddedMaps() {
 		return;
 
 	var script = document.createElement('script');
-	script.src = '//maps.googleapis.com/maps/api/js?key=AIzaSyD3vQ9ZMqd9YrNiRUEuQTA1qGsupBgNT8M&callback=e10w_initEmbeddedMap';
+	script.src = '//maps.googleapis.com/maps/api/js?key='+googleMapsApiKey+'&callback=e10w_initEmbeddedMap';
 	document.body.appendChild(script);
 }
 

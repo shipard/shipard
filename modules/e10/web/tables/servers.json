@@ -27,6 +27,8 @@
 		{"id": "mtmSiteId", "name": "Matomo/Piwik ID", "type": "string", "len": 25},
 		{"id": "mtmUrl", "name": "Matomo URL", "type": "string", "len": 80},
 
+		{"id": "gmApiKey", "name": "Google Maps API Key", "type": "string", "len": 80},
+
 		{"id": "authType", "name": "Způsob přihlášení", "type": "enumInt", "options": ["saveOnChange"],
 			"enumValues": {"0": "Bez možnosti přihlášení", "1": "Uživatelé webu", "2": "Aplikace"}},
 		{"id": "loginRequired", "name": "Vyžadovat přihlášení", "type": "enumInt",
