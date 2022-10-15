@@ -1,7 +1,7 @@
 <?php
 
 namespace e10pro\zus\dataView;
-require_once __APP_DIR__ . '/e10-modules/e10pro/zus/zus.php';
+require_once __SHPD_MODULES_DIR__ . 'e10pro/zus/zus.php';
 
 use e10pro\zus\zusutils;
 
