@@ -1,11 +1,11 @@
 <?php
 
 namespace e10pro\zus\libs;
-require_once __APP_DIR__ . '/e10-modules/e10pro/zus/zus.php';
+require_once __SHPD_MODULES_DIR__ . 'e10pro/zus/zus.php';
 use E10Pro\Zus\zusutils, \e10\utils, \e10\str;
 
 
-class WebFormPrihlaska extends \E10\WebForm
+class WebFormPrihlaska extends \Shipard\Base\WebForm
 {
 	var $valid = FALSE;
 
@@ -120,7 +120,7 @@ class WebFormPrihlaska extends \E10\WebForm
 		$c .= $this->addFormInput ('Ulice a číslo popisné', 'text', 'streetM');
 		$c .= $this->addFormInput ('Obec', 'text', 'cityM');
 		$c .= $this->addFormInput ('PSČ', 'text', 'zipcodeM');
-		
+
 		$c.= "</div>";
 		$c.= "<div class='col col-6 zus-prihlaska-zz-2'>";
 		$c .= "<h4>".'Zákonný zástupce 2'.'</h4>';
@@ -131,7 +131,7 @@ class WebFormPrihlaska extends \E10\WebForm
 		$c .= $this->addFormInput ('Ulice a číslo popisné', 'text', 'streetF');
 		$c .= $this->addFormInput ('Obec', 'text', 'cityF');
 		$c .= $this->addFormInput ('PSČ', 'text', 'zipcodeF');
-		
+
 		$c.= "</div>";
 		$c.= "</div>";
 
@@ -147,7 +147,7 @@ class WebFormPrihlaska extends \E10\WebForm
 				$c .= $this->addFormInput ('Popis', 'text', 'zdravotniPostizeniPopis', ['mandatory' => 1]);
 			$c.= "</div>";
 		$c.= "</div>";
-		
+
 		$c .= "<br><small>Údaje označené * jsou povinné.</small><br>";
 
 		$c .= "
@@ -156,7 +156,7 @@ class WebFormPrihlaska extends \E10\WebForm
 		<ul>
 			<li>Vzdělávání v Základní umělecké škole upravuje zákon č. 561/2004 Sb., o předškolním, základním, středním, vyšším odborném a jiném vzdělávání v platném znění
 				(Školský zákon), vyhláška č. 71/2005 Sb. o základním uměleckém vzdělávání v platném znění, Školní řád ZUŠ Morava a Školní vzdělávací program ZUŠ Morava.
-			<li>Základní umělecká škola Morava se řídí platnými zákonnými předpisy souvisejícími se zajištěním výuky a s předpisy o ochraně osobních údajů. Odesláním 
+			<li>Základní umělecká škola Morava se řídí platnými zákonnými předpisy souvisejícími se zajištěním výuky a s předpisy o ochraně osobních údajů. Odesláním
 					přihlášky souhlasím s ustanoveními dokumentu Zpracování osobních údajů v ZUŠ Morava, uveřejněným na webu www.zusmorava.cz, nebo v kanceláři školy.
 			<li>Studium v základní umělecké škole může být ukončeno z těchto důvodů:
 				<ol>
@@ -168,7 +168,7 @@ class WebFormPrihlaska extends \E10\WebForm
 				<li>Beru na vědomí, že zaplatím úplatu za vzdělání (školné) v termínech, které určí škola. (do 30. 10. za 1. pololetí, do 31. 3. za 2. pololetí)
 				<li>Dle §22 odst. 3 zákona č. 561/2004 Sb. v platném znění jsou zákonní zástupci dětí a nezletilých žáků povinni informovat školu o změně zdravotní způsobilosti, zdravotních obtížích
 						dítěte a jiných závažných skutečnostech, které by mohly mít vliv na průběh vzdělávání.
-		</ul>		
+		</ul>
 		</div>
 		";
 
@@ -185,8 +185,8 @@ class WebFormPrihlaska extends \E10\WebForm
 				if ($('#zdravotniPostizeni').val() != '1')
 					$('#zdravotniPostizeniPopis').parent().css({'display': 'none'});
 			 }, false);
-		 
-		
+
+
 			function prihlaska(event, element)
 			{
 				if (element.attr('id') === 'svpObor')
@@ -194,16 +194,16 @@ class WebFormPrihlaska extends \E10\WebForm
 					/*
 					if (element.val() === '4')
 						$('#svpOddeleni').parent().css({'display': 'none'});
-					else	
+					else
 						$('#svpOddeleni').parent().css({'display': 'block'});
-					*/	
+					*/
 				}
 
 				if (element.attr('id') === 'zdravotniPostizeni')
 				{
 					if (element.val() === '0')
 						$('#zdravotniPostizeniPopis').parent().css({'display': 'none'});
-					else	
+					else
 						$('#zdravotniPostizeniPopis').parent().css({'display': 'block'});
 				}
 
@@ -303,7 +303,7 @@ class WebFormPrihlaska extends \E10\WebForm
 		$tablePrihlasky = $this->app->table('e10pro.zus.prihlasky');
 
 		$newRegistration = [
-			'datumPrihlasky' => utils::today(), 
+			'datumPrihlasky' => utils::today(),
 			'skolniRok' => $this->data['skolniRok'],
 
 			'svpObor' => intval($this->data['svpObor']),
@@ -353,7 +353,7 @@ class WebFormPrihlaska extends \E10\WebForm
 		return TRUE;
 	}
 
-	public function successMsg ()	
+	public function successMsg ()
 	{
 		return $this->dictText('Hotovo. Během několika minut Vám pošleme e-mail s potvrzením.');
 	}
