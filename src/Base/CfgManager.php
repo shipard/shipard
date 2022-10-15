@@ -214,9 +214,9 @@ class CfgManager
 		// theme
 		if (!isset ($newConfig ['appTheme']) || $newConfig ['appTheme'] === '')
 			$newConfig ['appTheme'] = 'elegant';
-		if (isset ($newConfig ['options']['experimental']['appTheme']))
-			if ($newConfig ['options']['experimental']['appTheme'] !== '')
-				$newConfig ['appTheme'] = $newConfig ['options']['experimental']['appTheme'];
+		if (isset ($newConfig ['options']['appearanceApp']['appTheme']))
+			if ($newConfig ['options']['appearanceApp']['appTheme'] !== '')
+				$newConfig ['appTheme'] = $newConfig ['options']['appearanceApp']['appTheme'];
 
 		// ad data model to config
 		$newConfig ['dataModel'] = $this->dataModel->model;

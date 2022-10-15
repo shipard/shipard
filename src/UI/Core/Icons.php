@@ -18,7 +18,7 @@ class Icons extends BaseObject
 
 	public function init()
 	{
-		$this->iconsId = $this->app()->cfgItem ('options.experimental.iconsTheme', 'fa5');
+		$this->iconsId = $this->app()->cfgItem ('options.appearanceApp.iconsTheme', 'fa5');
 		$this->iconsCfg = $this->app()->cfgItem ('ui.app.icons.types.'.$this->iconsId, []);
 	}
 
@@ -38,7 +38,7 @@ class Icons extends BaseObject
 			$this->modulesIcons = unserialize (file_get_contents(__APP_DIR__.'/config/icons-'.$this->iconsId.'.data'));
 		}
 		$icon = isset($this->modulesIcons[$i]) ? $this->modulesIcons[$i] : ['t' => 0, 'v' => ''];
-		
+
 		return $this->createIconElement($icon, $addClass, $element, $params);
 	}
 
@@ -62,7 +62,7 @@ class Icons extends BaseObject
 			$c .= $icon['v'];
 			$c .= "</{$element}>";
 		}
-		
+
 		return $c;
 	}
 
@@ -70,7 +70,7 @@ class Icons extends BaseObject
 	{
 		if (!$this->modulesIcons)
 		{
-			$this->modulesIcons = unserialize (file_get_contents(__APP_DIR__.'/config/icons-'.$this->iconsId.'.data'));			
+			$this->modulesIcons = unserialize (file_get_contents(__APP_DIR__.'/config/icons-'.$this->iconsId.'.data'));
 		}
 
 		return isset($this->modulesIcons[$i]);
