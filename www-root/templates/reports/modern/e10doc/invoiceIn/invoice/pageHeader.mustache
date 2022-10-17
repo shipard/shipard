@@ -12,13 +12,29 @@
 		width: 100%;
 		margin-left: 25.4pt;
 		margin-right: 25.4pt;
-		border-left: 6pt solid {{data.options.accentColor}};
-		border-bottom: 1px solid {{data.options.accentColor}};
+
+		{{#data.options.docReportsHeadLogoRight}}
+			border-left: 6pt solid {{data.options.accentColor}};
+			border-bottom: 1px solid {{data.options.accentColor}};	
+		{{/data.options.docReportsHeadLogoRight}}
+
+		{{^data.options.docReportsHeadLogoRight}}
+			border-right: 6pt solid {{data.options.accentColor}};
+			border-bottom: 1px solid {{data.options.accentColor}};
+		{{/data.options.docReportsHeadLogoRight}}
 	}
 
 	td.docInfo {
-		text-align: left;
-		font-size: 12pt;		
+		font-size: 12pt;
+
+		{{#data.options.docReportsHeadLogoRight}}
+			text-align: left;			
+		{{/data.options.docReportsHeadLogoRight}}
+
+		{{^data.options.docReportsHeadLogoRight}}
+			text-align: right;
+			padding-right: 2pt;
+		{{/data.options.docReportsHeadLogoRight}}
 	}
 
 	span.docName {
@@ -28,26 +44,24 @@
 
 <table class='header'>
 	<tr>
-		<td class='docInfo'>
-			<span class="docName">
-				{{#data.head.taxPayer}}
-					{{#data.head.correctiveDoc}}
-						{{@dict;Opravný daňový doklad}}
-					{{/data.head.correctiveDoc}}
-					{{^data.head.correctiveDoc}}
-						{{@dict;Faktura - daňový doklad}}
-					{{/data.head.correctiveDoc}}
-				{{/data.head.taxPayer}}
-				{{^data.head.taxPayer}}
-					{{#data.head.correctiveDoc}}
-						Dobropis - neplátce DPH
-					{{/data.head.correctiveDoc}}
-					{{^data.head.correctiveDoc}}
-						{{@dict;Faktura - neplátce DPH}}
-					{{/data.head.correctiveDoc}}
-				{{/data.head.taxPayer}}
-			</span>
-			<br>
+		<td class='docInfo'>			
+			{{#data.head.taxPayer}}
+				{{#data.head.correctiveDoc}}
+					<span class="docName">{{@dict;Opravný daňový doklad}}</span><br>
+				{{/data.head.correctiveDoc}}
+				{{^data.head.correctiveDoc}}
+					<span class="docName">{{@dict;Faktura - daňový doklad}}</span><br>
+				{{/data.head.correctiveDoc}}
+			{{/data.head.taxPayer}}
+			{{^data.head.taxPayer}}
+				{{#data.head.correctiveDoc}}
+					<span class="docName">Dobropis - neplátce DPH</span><br>
+				{{/data.head.correctiveDoc}}
+				{{^data.head.correctiveDoc}}
+					<span class="docName">{{@dict;Faktura - neplátce DPH}}</span><br>
+				{{/data.head.correctiveDoc}}
+			{{/data.head.taxPayer}}
+							
 			{{@dict;číslo}}: <b>{{data.head.docNumber}}</b>
 		</td>
 	</tr>
