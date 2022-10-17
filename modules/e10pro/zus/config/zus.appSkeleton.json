@@ -10,7 +10,7 @@
 				{"t1": "Vysvědčení", "object": "viewer", "table": "e10pro.zus.vysvedceni", "viewer": "default", "order": 18000},
 				{"t1": "Rozvrh", "object": "widget", "class": "e10.widgetDashboard", "subclass": "zustimetable", "icon": "e10.widgetDashboard/timeTable", "order": 20000},
         {"t1": "ETK", "object": "viewer", "table": "e10pro.zus.vyuky", "viewer": "etk", "order": 30000},
-        {"t1": "Přehledy", "object": "widget", "class": "e10.widgetReports", "subclass": "e10pro-zus", "icon": "system/iconReports", "order": 700000}
+        {"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10pro-zus", "icon": "system/iconReports", "order": 700000}
 			],
 			"smallItems": [
 				{
