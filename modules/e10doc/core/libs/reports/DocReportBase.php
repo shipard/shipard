@@ -64,6 +64,8 @@ class DocReportBase extends FormReport
 		$this->allProperties = $this->app()->cfgItem('e10.base.properties', []);
 
 		$this->data['options']['docReportsPersonsSigns'] = intval($this->app()->cfgItem ('options.appearanceDocs.docReportsPersonsSigns', 0));
+		$this->data['options']['docReportsHeadLogoRight'] = intval($this->app()->cfgItem ('options.appearanceDocs.docReportsHeadLogoPlace', 0));
+		$this->data['options']['docReportsTablesRoundedCorners'] = intval($this->app()->cfgItem ('options.appearanceDocs.docReportsTablesCorners', 1));
 		$this->data['options']['accentColor'] = $this->app()->cfgItem ('options.appearanceDocs.accentColor', '');
 		if ($this->data['options']['accentColor'] === '')
 			$this->data['options']['accentColor'] = '#CFECEC';

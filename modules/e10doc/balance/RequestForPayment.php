@@ -157,9 +157,11 @@ class RequestForPayment extends FormReport
 			$this->data ['author']['address'] = $this->data ['author']['lists']['address'][0];
 
 		$this->data['options']['accentColor'] = $this->app()->cfgItem ('options.appearanceDocs.accentColor', '');
+		$this->data['options']['docReportsHeadLogoRight'] = intval($this->app()->cfgItem ('options.appearanceDocs.docReportsHeadLogoPlace', 0));
+		$this->data['options']['docReportsTablesRoundedCorners'] = intval($this->app()->cfgItem ('options.appearanceDocs.docReportsTablesCorners', 1));
 		if ($this->data['options']['accentColor'] === '')
 			$this->data['options']['accentColor'] = '#CFECEC';
-	
+
 		$this->loadData_Documents ();
 	}
 
