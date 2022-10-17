@@ -200,9 +200,9 @@ class ViewerMsgsAll extends TableView
 			array_push ($q, ')');
 		}
 
-		// -- my new issues
+		// -- my messages
 		array_push ($q, ' OR ');
-		array_push ($q, ' (msgs.author = %i', $this->thisUserId, ' AND msgs.docStateMain = 0)');
+		array_push ($q, ' (msgs.author = %i)', $this->thisUserId);
 
 		array_push ($q, ')');
 	}
