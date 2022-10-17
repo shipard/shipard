@@ -3,7 +3,7 @@
 <head>
 		<title>test</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-		<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v2" type="text/css"/>
+		<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v4" type="text/css"/>
 		<link rel="stylesheet" href="{{dsUrl}}www-root/sc/icons/fa/5/css/all.min.css">
 
 </head>
@@ -74,7 +74,7 @@
 	<p>{{@dict;dovolujeme si Vás upozornit, že ke dni}} {{data.today}} {{@dict;stále evidujeme následující pohledávky}}:
 	</p>
 
-	<table class='rows' class="default">
+	<table class="rows {{#data.options.docReportsTablesRoundedCorners}} rounded{{/data.options.docReportsTablesRoundedCorners}}">
 		<thead>
 		<tr>
 			<th>{{@dict;VS}}</th>

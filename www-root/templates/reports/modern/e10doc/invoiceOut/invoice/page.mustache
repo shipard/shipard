@@ -3,7 +3,7 @@
 <head>
 	<title>test</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v278" type="text/css"/>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v287" type="text/css"/>
 	<link rel="stylesheet" href="{{dsUrl}}www-root/sc/icons/fa/5/css/all.min.css">
 </head>
 <body>
@@ -154,7 +154,7 @@
 </div>
 
 
-<table class="rows">
+<table class="rows{{#data.options.docReportsTablesRoundedCorners}} rounded{{/data.options.docReportsTablesRoundedCorners}}">
 	<thead>
 		<tr>
 			<th class='itemID'>{{@dict;ID}}</th>
@@ -226,7 +226,7 @@
 		</td>
 		<td class='taxInfo'>
 			{{#data.head.taxPayer}}
-				<table class="taxDescr">
+				<table class="taxDescr {{#data.options.docReportsTablesRoundedCorners}} rounded{{/data.options.docReportsTablesRoundedCorners}}">
 					<thead>
 						{{#data.flags.foreignCurrency}}
 							<tr>

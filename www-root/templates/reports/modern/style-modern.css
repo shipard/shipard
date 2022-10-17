@@ -114,12 +114,16 @@ table.rosInfo tr {text-align: right;}
 
 
 table.rows {width: 100%;
-	border: 1pt solid lightgray; border-radius: 5px; border-style: hidden; box-shadow: 0 0 0 1px lightgray; border-collapse: collapse;
+	border: 1pt solid lightgray; border-collapse: collapse;
 	line-height: 1.4; margin-top: 10pt; text-align: left; margin-bottom: 5pt;}
 
+table.rows.rounded {
+	border: 1pt solid lightgray; border-style: hidden; border-radius: 5px; border-style: hidden; box-shadow: 0 0 0 1px lightgray; border-collapse: collapse;
+	}	
+
 table.rows th {padding-left: 6pt; border-left: 1pt solid lightgray; padding-right: 3pt; background-color: rgba(0, 0, 0, 0.1);}
-table.rows th:first-child {border-radius: 5px 0px 0px 0px;}
-table.rows th:last-child {border-radius: 0px 5px 0px 0px;}
+table.rows.rounded th:first-child {border-radius: 5px 0px 0px 0px;}
+table.rows.rounded th:last-child {border-radius: 0px 5px 0px 0px;}
 
 table.rows tr {padding-top: 3pt; padding-bottom: 2pt; border-bottom: 1pt solid lightgray;}
 table.rows tr td {padding-left: 6pt; border-left: 1pt solid lightgray; padding-right: 3pt; border-color: lightgray}
@@ -144,12 +148,20 @@ table.paymentInfo td.taxInfo {text-align: right; width:50%; padding-left: 3pt;}
 table.paymentInfo div.foreignCurrency {padding-top: 3pt;}
 
 table.taxDescr {
-	border: 1pt solid lightgray; border-radius: 5px; border-style: hidden; box-shadow: 0 0 0 1px lightgray; border-collapse: collapse;
+	border: 1pt solid lightgray; border-collapse: collapse;
 	width:100%; margin-top: 10pt;
 }
-table.taxDescr th {padding-left: 6pt; border-left: 1pt solid lightgray; padding-right: 3pt;}
+
+table.taxDescr.rounded {
+	border-radius: 5px; border-style: hidden; box-shadow: 0 0 0 1px lightgray;
+}
+
+table.taxDescr th {padding-left: 6pt; border-left: 1pt solid lightgray; padding-right: 3pt; background-color: rgba(0, 0, 0, 0.1);}
 table.taxDescr tr {border-bottom: 1pt solid lightgray; }
 table.taxDescr tr td {padding-left: 6pt; border-left: 1pt solid lightgray; padding-right: 3pt;}
+
+table.taxDescr.rounded th:first-child {border-radius: 5px 0px 0px 0px;}
+table.taxDescr.rounded th:last-child {border-radius: 0px 5px 0px 0px;}
 
 
 div#spayd {position: relative; display: inline-block; width: 35mm; height: 35mm; float:left; text-align: center; border: .8pt solid black;}

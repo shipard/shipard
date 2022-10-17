@@ -3,7 +3,7 @@
 <head>
     <title>test</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v70" type="text/css"/>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v75" type="text/css"/>
 </head>
 <body>
 
@@ -68,7 +68,7 @@
 
 {{#data.reportTexts.subHeader}}{{{data.reportTexts.subHeader}}}{{/data.reportTexts.subHeader}}
 
-<table class="rows">
+<table class="rows {{#data.options.docReportsTablesRoundedCorners}} rounded{{/data.options.docReportsTablesRoundedCorners}}">
 	<thead>
 		<tr>
 			<th class='itemID'>{{@dict;ID}}</th>

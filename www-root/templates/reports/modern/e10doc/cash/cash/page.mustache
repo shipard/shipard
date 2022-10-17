@@ -3,7 +3,7 @@
 <head>
 	<title>test</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v9" type="text/css"/>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v11" type="text/css"/>
 	
 </head>
 <body>
@@ -110,7 +110,7 @@
 	{{{value}}}
 {{/data.docs_properties.notes.note-ext}}
 
-<table class="rows">
+<table class="rows {{#data.options.docReportsTablesRoundedCorners}} rounded{{/data.options.docReportsTablesRoundedCorners}}">
 	<thead>
 		<tr>
 			<th class='itemID'>{{@dict;ID}}</th>
@@ -170,7 +170,7 @@
 		</td>
 		<td class="taxInfo">
 			{{#data.flags.taxDocument}}
-				<table class="taxDescr">
+				<table class="taxDescr {{#data.options.docReportsTablesRoundedCorners}} rounded{{/data.options.docReportsTablesRoundedCorners}}">
 					<thead>
 						<tr>
 							<th>Sazba</th>
