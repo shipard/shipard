@@ -390,19 +390,6 @@ class ContentRenderer extends \Shipard\Base\BaseObject
 				$mimeType = mime_content_type('att/'.$a['path'].$a['filename']);
 				$thumbTitle = \E10\es ($a ['name']);
 
-				if ($app->printMode)
-				{
-					$fullFileName = __APP_DIR__.'/att/'.$a['path'].$a['filename'];
-
-					$imgResizer = new \e10\Resizer($app);
-					$fullImagePath = $imgResizer->resizeLocalImage($fullFileName);
-					$fullUrl = 'file://'.$fullImagePath;
-
-					$c .= "<span class='$itemClass'>".
-							"<img src='$fullUrl' title=\"$thumbTitle\" style='width:27%; padding: 1em;'>".
-							'</span>';
-				}
-				else
 				if ($this->mobile)
 				{
 					$c .= "<span class='$itemClass'>".
