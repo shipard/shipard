@@ -55,9 +55,9 @@ class BBoard extends DataView
 		array_push ($q, ' AND (msgs.publishFrom IS NULL OR msgs.publishFrom = %t', '0000-00-00 00:00:00', ' OR msgs.publishFrom <= %t)', $now);
 		array_push ($q, ' AND (msgs.publishTo IS NULL OR msgs.publishTo = %t', '0000-00-00 00:00:00', ' OR msgs.publishTo >= %t)', $now);
 		if ($this->pinned)
-			array_push ($q, ' AND msgs.onTop != %i', 0);
+			array_push ($q, ' AND msgs.pinned != %i', 0);
 		$this->extendQuery($q);
-		array_push ($q, ' ORDER BY msgs.[onTop] DESC, msgs.[order], msgs.[publishFrom] DESC');
+		array_push ($q, ' ORDER BY msgs.[pinned] DESC, msgs.[order], msgs.[publishFrom] DESC');
 		array_push ($q, ' LIMIT 0, %i', $this->maxCnt);
 
 		$t = [];
