@@ -2178,7 +2178,7 @@ class TableHeads extends DbTable
 	function resetRowItem_Vds($headRecData, &$rowRecData, $itemRecData, $docType)
 	{
 		$q = [];
-		array_push($q, 'SELECT * FROM [e10doc_base_docRowsVDSCfg] WHERE 1');
+		array_push ($q, 'SELECT * FROM [e10doc_base_docRowsVDSCfg] WHERE 1');
 		array_push ($q, ' AND [docStateMain] IN %in', [0, 2]);
 		array_push ($q, ' AND ([docType] = %s', $headRecData ['docType'], ' OR [docType] = %s)', '');
 		array_push ($q, ' AND ([docKind] = %i', $headRecData ['docKind'], ' OR [docKind] = 0)');
@@ -2188,7 +2188,7 @@ class TableHeads extends DbTable
 
 		$vds = $this->db()->query($q)->fetch();
 		if ($vds)
-			$rowRecData ['rowVds'] = $vds['ndx'];
+			$rowRecData ['rowVds'] = $vds['vds'];
 	}
 
 	public function rowItemHistoryPrice ($headRecData, &$rowRecData, $itemRecData, $docType)
