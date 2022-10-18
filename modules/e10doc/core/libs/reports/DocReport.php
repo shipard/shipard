@@ -16,9 +16,14 @@ use \Shipard\Utils\Json;
  */
 class DocReport extends DocReportBase
 {
+	CONST icmNone = 0, icmSingleLineList = 1, icmSingleLineInline = 2, icmMuliLineCols = 3;
+	var $docReportsItemCodesMode = self::icmNone;
+
 	public function loadData()
 	{
 		parent::loadData();
+
+		$this->docReportsItemCodesMode = intval($this->app()->cfgItem ('options.appearanceDocs.docReportsItemCodes', 0));
 
 		$this->data['hasAdvance'] = 0;
 		$this->data['hasTaxAdvance'] = 0;
@@ -306,7 +311,19 @@ class DocReport extends DocReportBase
 
 			$this->data ['itemCodesHeader'] = array_values($this->data ['itemCodesHeader']);
 		}
-		$this->data ['flags']['multiLineRows'] = count($this->data ['itemCodesHeader']);//1;
+
+		$this->data ['flags']['multiLineRows'] = 0;
+		$this->data ['flags']['itemCodesList'] = 0;
+		$this->data ['flags']['itemCodesInline'] = 0;
+		if ($this->docReportsItemCodesMode == self::icmMuliLineCols && count($this->data ['itemCodesHeader']))
+			$this->data ['flags']['multiLineRows'] = 1;
+		if ($this->docReportsItemCodesMode == self::icmSingleLineList && count($this->data ['itemCodesHeader']))
+			$this->data ['flags']['itemCodesList'] = 1;
+		if ($this->docReportsItemCodesMode == self::icmSingleLineInline && count($this->data ['itemCodesHeader']))
+		{
+			$this->data ['flags']['itemCodesList'] = 1;
+			$this->data ['flags']['itemCodesInline'] = 1;
+		}
 	}
 
 	protected function loadDocRowItemsCodes(array &$row)
@@ -333,6 +350,7 @@ class DocReport extends DocReportBase
 			}
 
 			$irc = $r->toArray();
+			$irc['itemCodeName'] = $ck['fn'];
 			$codes[$ckNdx] = $irc;
 		}
 		$row ['rowItemCodesData'] = $codes;

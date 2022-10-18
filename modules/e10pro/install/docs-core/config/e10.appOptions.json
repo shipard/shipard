@@ -33,7 +33,16 @@
 			{"cfgKey": "docReportsPersonsSigns", "cfgName": "Dávat na sestavy podpis osoby", "options": {"0": "Ne","1": "Ano"}},
 			{"cfgKey": "docReportsHeadLogoPlace", "cfgName": "Umístění loga v hlavičce", "options": {"1": "Vpravo","0": "Vlevo"}},
 			{"cfgKey": "docReportsTablesCorners", "cfgName": "Rohy tabulek", "options": {"1": "Kulaté","0": "Hranaté"}},
-			{"cfgKey": "accentColor", "cfgName": "Barva zvýraznění", "subtype": "color"}
+			{"cfgKey": "accentColor", "cfgName": "Barva zvýraznění", "subtype": "color"},
+			{
+				"cfgKey": "docReportsItemCodes", "cfgName": "Kódy položek",
+				"options": {
+					"0": "Nezobrazovat",
+					"1": "Pod názvem položky - odrážky",
+					"2": "Pod názvem položky - v jednom řádku",
+					"3": "Ve sloupcích - dvouřádkový mód"
+				}
+			}
 		]
 	}
 }
