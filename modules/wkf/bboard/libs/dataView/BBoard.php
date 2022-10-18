@@ -52,12 +52,12 @@ class BBoard extends DataView
 		array_push ($q, ' WHERE 1');
 		array_push ($q, ' AND [msgs].[bboard] = %i', $this->bboardNdx);
 		array_push ($q, ' AND msgs.docStateMain = %i', 2);
-		array_push ($q, ' AND (msgs.dateFrom IS NULL OR msgs.dateFrom = %t', '0000-00-00 00:00:00', ' OR msgs.dateFrom <= %t)', $now);
-		array_push ($q, ' AND (msgs.dateTo IS NULL OR msgs.dateTo = %t', '0000-00-00 00:00:00', ' OR msgs.dateTo >= %t)', $now);
+		array_push ($q, ' AND (msgs.publishFrom IS NULL OR msgs.publishFrom = %t', '0000-00-00 00:00:00', ' OR msgs.publishFrom <= %t)', $now);
+		array_push ($q, ' AND (msgs.publishTo IS NULL OR msgs.publishTo = %t', '0000-00-00 00:00:00', ' OR msgs.publishTo >= %t)', $now);
 		if ($this->pinned)
 			array_push ($q, ' AND msgs.onTop != %i', 0);
 		$this->extendQuery($q);
-		array_push ($q, ' ORDER BY msgs.[onTop] DESC, msgs.[order], msgs.[dateFrom] DESC');
+		array_push ($q, ' ORDER BY msgs.[onTop] DESC, msgs.[order], msgs.[publishFrom] DESC');
 		array_push ($q, ' LIMIT 0, %i', $this->maxCnt);
 
 		$t = [];
