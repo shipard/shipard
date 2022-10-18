@@ -1913,9 +1913,9 @@ class TableHeads extends DbTable
 			$taxReg = $this->app()->cfgItem('e10doc.base.taxRegs.'.$form->recData['vatReg'], NULL);
 			if ($taxReg)
 				return E10Utils::taxCountries ($this->app(), $taxReg['taxArea']);
-			return [];	
+			return [];
 		}
-		return parent::columnInfoEnum ($columnId, $valueType = 'cfgText', $form);	
+		return parent::columnInfoEnum ($columnId, $valueType = 'cfgText', $form);
 	}
 
 	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, TableForm $form = NULL)
@@ -2032,7 +2032,7 @@ class TableHeads extends DbTable
 					'base' => $r['sumBaseHc'], 'tax' => $r['sumTaxHc'], 'total' => $r['sumTotalHc'],
 					'_options' => ['cellClasses' => $cellClasses]
 				];
-			}	
+			}
 		}
 
 		// -- total
@@ -2091,12 +2091,16 @@ class TableHeads extends DbTable
 	public function resetRowItem ($headRecData, &$rowRecData, $itemRecData, $docType)
 	{
 		$rowRecData ['itemType'] = '';
+		$rowRecData ['rowVds'] = 0;
 		if (!$itemRecData)
+		{
 			return;
-
+		}
 		$rowRecData ['text'] = $itemRecData['fullName'];
 		$rowRecData ['taxRate'] = $itemRecData['vatRate'];
 		$rowRecData ['unit'] = $itemRecData['defaultUnit'];
+
+		$this->resetRowItem_Vds($headRecData, $rowRecData, $itemRecData, $docType);
 
 		switch ($docType ['tradeDir'])
 		{
@@ -2130,7 +2134,6 @@ class TableHeads extends DbTable
 
 	function resetRowItem_PriceSell($headRecData, $rowRecData, $itemRecData, $docType)
 	{
-		error_log("__1__");
 		if ($headRecData['taxCalc'] == 1)
 		{ // ze základu
 			if ($itemRecData['priceSellBase'] != 0.0)
@@ -2170,6 +2173,22 @@ class TableHeads extends DbTable
 			return $itemRecData ['priceSell'];
 
 		return 0.0;
+	}
+
+	function resetRowItem_Vds($headRecData, &$rowRecData, $itemRecData, $docType)
+	{
+		$q = [];
+		array_push($q, 'SELECT * FROM [e10doc_base_docRowsVDSCfg] WHERE 1');
+		array_push ($q, ' AND [docStateMain] IN %in', [0, 2]);
+		array_push ($q, ' AND ([docType] = %s', $headRecData ['docType'], ' OR [docType] = %s)', '');
+		array_push ($q, ' AND ([docKind] = %i', $headRecData ['docKind'], ' OR [docKind] = 0)');
+		array_push ($q, ' AND ([docDbCounter] = %i', $headRecData ['dbCounter'], ' OR [docDbCounter] = 0)');
+		array_push ($q, ' AND ([witem] = %i', $itemRecData ['ndx'], ' OR [witem] = 0)');
+		array_push ($q, ' ORDER BY [systemOrder], [order], [ndx]');
+
+		$vds = $this->db()->query($q)->fetch();
+		if ($vds)
+			$rowRecData ['rowVds'] = $vds['ndx'];
 	}
 
 	public function rowItemHistoryPrice ($headRecData, &$rowRecData, $itemRecData, $docType)
@@ -3160,9 +3179,9 @@ class ViewHeads extends TableView
 				if ($taxReg['payerKind'] === 0)
 					$taxRegLabel = ['text' => strtoupper($taxReg['taxCountry']), 'class' => 'label label-default', 'icon' => 'tables/e10doc.base.taxRegs'];
 				else
-					$taxRegLabel = ['text' => 'OSS', 'suffix' => strtoupper($item['taxCountry']), 'class' => 'label label-default', 'icon' => 'tables/e10doc.base.taxRegs'];	
+					$taxRegLabel = ['text' => 'OSS', 'suffix' => strtoupper($item['taxCountry']), 'class' => 'label label-default', 'icon' => 'tables/e10doc.base.taxRegs'];
 
-				$props [] = $taxRegLabel;	
+				$props [] = $taxRegLabel;
 			}
 		}
 

@@ -7,7 +7,7 @@
 		"exchangeRatesLists", "exchangeRatesValues",
 		"statsPersonDocType", "statsItemDocType", "statsPersonItemDocType",
 		"transports", "additionsTypes", "additions", "reportsTexts",
-	  "whPlaces"
+	  "whPlaces", "docRowsVDSCfg"
   ],
   "config": [
 		{"id": "+appOptions", "name": "Nastavení položek", "file": "e10.appOptions.json"},

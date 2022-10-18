@@ -1,0 +1,33 @@
+{
+	"id": "e10doc.base.docRowsVDSCfg", "sql": "e10doc_base_docRowsVDSCfg", "name": "Nastavení VDS na řádcích dokladu",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "note", "name": "Poznámka", "type": "string", "len": 120},
+
+		{"id": "docType", "name": "Typ dokladu", "type": "enumString", "len": 10,
+			"enumCfg": {"cfgItem": "e10.docs.types", "cfgValue": "", "cfgText": "fullName"}},
+
+		{"id": "docDbCounter", "name": "Číselná řada", "type": "int", "reference": "e10doc.base.docnumbers"},
+
+		{"id": "docKind", "name": "Druh dokladu", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10.docs.kinds", "cfgValue": "ndx", "cfgText": "fullName"}},
+
+		{"id": "witem", "name": "Položka", "type": "int", "reference": "e10.witems.items"},
+
+		{"id": "vds", "name": "Rozšíření struktury", "type": "int", "reference": "vds.base.defs"},
+
+		{"id": "order", "name": "Pořadí", "type": "int"},
+		{"id": "systemOrder", "name": "Systémové pořadí", "type": "int"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "e10doc.base.ViewDocRowsVDSCfg", "detail": "e10doc.base.ViewDetaildocRowsVDSCfg"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.base.FormDocRowsVDSCfg"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "note"}
+}

@@ -69,6 +69,10 @@
 		"name": "Typy dodatků dokladů", "order": 10220000, "group": "docs",
 		"type": "viewer", "table": "e10doc.base.additionsTypes", "viewer": "default"
 	},
+	"docRowsVDSCfg": {
+		"name": "Nastavení VDS na řádcích dokladů", "order": 10440000, "group": "docs",
+		"type": "viewer", "table": "e10doc.base.docRowsVDSCfg", "viewer": "default"
+	},
 	"experimental": {
 		"options": [
 			{"cfgKey": "testAttInDocEditForms", "cfgName": "Testovat přílohy při editaci dokladů", "options": {"0": "Ne","1": "Ano"}},

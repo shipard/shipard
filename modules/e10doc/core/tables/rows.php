@@ -98,6 +98,18 @@ class TableRows extends DbTable
 			}
 		}
 
+		// -- subColumns
+		if ($recData['rowVds'])
+		{
+			$sci = $this->subColumnsInfo ($recData, 'rowData');
+			if ($sci && isset($sci['computeClass']))
+			{
+				$cc = $this->app()->createObject($sci['computeClass']);
+				if ($cc)
+					$cc->checkBeforeSave($recData, $ownerData, $sci);
+			}
+		}
+
 		// Výpočet cen v řádku...
 		$recData ['taxBaseHcCorr'] = 0;
 		if ($recData ['priceSource'] === 0)
@@ -582,7 +594,18 @@ class TableRows extends DbTable
 	{
 		if ($columnId === 'rowData')
 		{
-			return FALSE;
+			if (!isset($recData['rowVds']) || !$recData['rowVds'])
+				return FALSE;
+
+			$vds = $this->db()->query ('SELECT * FROM [vds_base_defs] WHERE [ndx] = %i', $recData['rowVds'])->fetch();
+			if (!$vds)
+				return FALSE;
+
+			$sc = json_decode($vds['structure'], TRUE);
+			if (!$sc || !isset($sc['fields']))
+				return FALSE;
+
+			return $sc['fields'];
 		}
 
 		return parent::subColumnsInfo ($recData, $columnId);
