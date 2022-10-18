@@ -233,8 +233,8 @@ class UIUtils
 			$tco |= TableForm::coReadOnly;
 		if (isset($col['coHidden']) && intval($col['coHidden']))
 			$tco |= TableForm::coHidden;
-		//if (isset($col['coDisabled']) && intval($col['coDisabled']))
-		//	$tco |= TableForm::coDisabled;
+		if (isset($col['coDisabled']) && intval($col['coDisabled']))
+			$tco |= TableForm::coDisabled;
 
 		if (!$tco)
 			return TRUE;

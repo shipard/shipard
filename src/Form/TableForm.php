@@ -101,7 +101,8 @@ class TableForm
 				coBold					= 0x100000000,
 				coH3						= 0x200000000,
 				coH4						= 0x400000000,
-				coRightCheckbox	= 0x800000000;
+				coRightCheckbox	= 0x800000000,
+				coDisabled			= 0x1000000000;
 
 
 	const loAddToFormLayout = 0x1000, loWidgetParts = 0x2000, loRowsDisableMove = 0x4000;
@@ -581,8 +582,12 @@ class TableForm
 		if ($options & TableForm::coRight)
 			$rightLayout = TRUE;
 
-		if ($options & TableForm::coReadOnly)
+		if ($options & TableForm::coDisabled && $options & TableForm::coReadOnly)
+			$inputParams .= " readonly='readonly' disabled";
+		elseif ($options & TableForm::coReadOnly)
 			$inputParams .= " readonly='readonly'";
+		elseif ($options & TableForm::coDisabled)
+			$inputParams .= " readonly='readonly' disabled";
 
 		if ($options & TableForm::coFocus)
 		{
