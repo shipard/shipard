@@ -1,6 +1,11 @@
 [
 	{
-		"class": "wkf.bboard.libs.WidgetBBoards", "dashboard": "main_new", "panel": "bboards",
+		"class": "wkf.bboard.libs.WidgetBBoards", "dashboard": "main_new_none", "panel": "bboards",
 		"order": 3101, "row": "main", "width": 12, "type": "wkfWall", "enabledCfgItem": "none_DISABLED"
+	},
+	{
+		"name": "Nástěnka", "class": "wkf.bboard.libs.WidgetBBoardOverview", "icon": "x-inbox",
+		"dashboard": "main_new", "panel": "bboards", "order": 1000,
+		"row": "main", "width": 12, "maxwidth": 12, "type": "docViewer"
 	}
 ]

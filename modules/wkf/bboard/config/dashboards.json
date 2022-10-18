@@ -2,7 +2,7 @@
 	"main_new": {
 		"panels": {
 			"bboards": {
-				"name": "Nástěnky",
+				"name": "Nástěnka",
 				"icon": "homeThumbTack",
 				"order": 2011,
 				"fullsize": 1,
