@@ -6,6 +6,8 @@ require_once __SHPD_MODULES_DIR__ . 'e10doc/core/core.php';
 
 use \e10doc\core\libs\reports\DocReportBase;
 use \e10doc\core\libs\E10Utils;
+use \Shipard\UI\Core\UIUtils;
+use \Shipard\Utils\Json;
 
 
 /**
@@ -126,6 +128,15 @@ class DocReport extends DocReportBase
 
 			if (!in_array($addsMarksId, $usedAdditionsMarksIds))
 				$usedAdditionsMarksIds[] = $addsMarksId;
+
+			// -- rowData / subColumns
+			if ($r['rowVds'])
+			{
+				$sci = $tableDocRows->subColumnsInfo ($r, 'rowData');
+				$scData = Json::decode($r['rowData']);
+				$scCode = UIUtils::renderSubColumns ($this->app(), $scData, $sci);
+				$r['rowDataHtmlCode'] = $scCode;
+			}
 
 			$r['rowNumberAll'] = $rowNumberAll;
 
