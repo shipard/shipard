@@ -378,6 +378,12 @@ class TableRenderer extends \Shipard\Base\BaseObject
 			if (isset ($this->params ['tableClass']))
 				$tableClass .= ' ' . $this->params ['tableClass'];
 
+		if ($this->app()->printMode)
+		{
+			if (isset ($this->params ['forceTableClassPrint']))
+				$tableClass = $this->params ['forceTableClassPrint'];
+		}
+
 		$c = "<table class='$tableClass'";
 		if (isset ($this->params ['tableCss']))
 			$c .= ' style="' . $this->params ['tableCss'] . '"';

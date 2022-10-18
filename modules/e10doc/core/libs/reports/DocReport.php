@@ -21,6 +21,8 @@ class DocReport extends DocReportBase
 
 	public function loadData()
 	{
+		$this->app()->printMode = TRUE;
+
 		parent::loadData();
 
 		$this->docReportsItemCodesMode = intval($this->app()->cfgItem ('options.appearanceDocs.docReportsItemCodes', 0));
