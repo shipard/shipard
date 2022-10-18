@@ -2,7 +2,7 @@
 
 namespace Shipard\UI\Core;
 use \Shipard\Utils\Utils;
-
+use \Shipard\Form\TableForm;
 
 class UIUtils
 {
@@ -81,7 +81,7 @@ class UIUtils
 					if (!isset($col['group']) || $col['group'] !== $group['id'])
 						continue;
 
-					if (!uiutils::subColumnEnabled ($col, $data))
+					if (uiutils::subColumnEnabled ($col, $data) === FALSE)
 						continue;
 
 					$t[] = ['txt' => $col['name'], 'val' => $app->subColumnValue ($col, $data[$col['id']] ?? '')];
@@ -213,21 +213,43 @@ class UIUtils
 			}
 		}
 
+		$tco = 0;
 		if (isset($col['readOnly']))
 		{
 			if (is_numeric($col['readOnly']) && intval($col['readOnly']) === 1)
-				return 1;
-			else
-				return FALSE;
-			foreach ($col['readOnly'] as $key => $value)
+				$tco |= TableForm::coReadOnly;
+			elseif (is_array($col['readOnly']))
 			{
-				$dataValue = (isset($data[$key])) ? $data[$key] : NULL;
-				if ((!is_array($value) && $dataValue == $value) || (is_array($value) && in_array($dataValue, $value)))
-					return 1;
+				foreach ($col['readOnly'] as $key => $value)
+				{
+					$dataValue = (isset($data[$key])) ? $data[$key] : NULL;
+					if ((!is_array($value) && $dataValue == $value) || (is_array($value) && in_array($dataValue, $value)))
+						return 1;
+				}
 			}
 		}
 
-		return TRUE;
+		if (isset($col['coReadOnly']) && intval($col['coReadOnly']))
+			$tco |= TableForm::coReadOnly;
+		if (isset($col['coHidden']) && intval($col['coHidden']))
+			$tco |= TableForm::coHidden;
+		//if (isset($col['coDisabled']) && intval($col['coDisabled']))
+		//	$tco |= TableForm::coDisabled;
+
+		if (!$tco)
+			return TRUE;
+
+		return $tco;
+	}
+
+	static function subColumnInputParams ($col, $data)
+	{
+		$params = [];
+
+		if (isset($col['defaultValue']))
+			$params['value'] = $col['defaultValue'];
+
+		return $params;
 	}
 
 	static function addScanToDocumentInputCode ($tableId, $recId)

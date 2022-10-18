@@ -82,7 +82,7 @@ class WebTemplateLook extends Utility
 		{
 			if (!isset ($oneCol['cssType']))
 				continue;
-			if (!uiutils::subColumnEnabled ($oneCol, $this->lookParams))
+			if (uiutils::subColumnEnabled ($oneCol, $this->lookParams) === FALSE)
 				continue;
 			if ($oneCol['cssType'] === 'color')
 			{

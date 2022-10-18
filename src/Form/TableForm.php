@@ -855,9 +855,11 @@ class TableForm
 		if ($options & TableForm::coFocus)
 			$this->setFlag ('autofocus', 1);
 
+		$hidden = $options & TableForm::coHidden;
+
 		$colDef = $this->inputColDef($columnId, $columnPath);
 
-		if (isset ($colDef ['reference']))
+		if (isset ($colDef ['reference']) && !$hidden)
 		{
 			$ip = $this->option ('inputPrefix', '');
 
@@ -1018,7 +1020,7 @@ class TableForm
 		$this->addContent($content, 0, FALSE, 0);
 	}
 
-	public function addSubColumns ($columnId)
+	public function addSubColumns ($columnId, $isRowMode = 0)
 	{
 		$sci = $this->subColumnInfo($columnId);
 		if (!$sci)
@@ -1027,7 +1029,10 @@ class TableForm
 		$this->subColumnInfo = $sci;
 
 		$oldInputPrefix = $this->option('inputPrefix', '');
-		$this->setOption('inputPrefix', 'subColumns.'.$columnId.'.');
+		if ($isRowMode)
+			$this->setOption('inputPrefix', $oldInputPrefix.'subColumns_'.$columnId.'_');
+		else
+			$this->setOption('inputPrefix', 'subColumns.'.$columnId.'.');
 
 		if (isset ($sci['groups']))
 		{
@@ -1038,13 +1043,9 @@ class TableForm
 				{
 					if (!isset($col['group']) || $col['group'] !== $group['id'])
 						continue;
-					$sce = uiutils::subColumnEnabled ($col, $this->subColumnsData[$columnId]);
-					if ($sce === FALSE)
+					$sco = uiutils::subColumnEnabled ($col, $this->subColumnsData[$columnId]);
+					if ($sco === FALSE)
 						continue;
-
-					$sco = 0;
-					if ($sce === 1)
-						$sco = self::coReadOnly;
 
 					if (!$groupAdded && isset($group['title']))
 					{
@@ -1148,10 +1149,11 @@ class TableForm
 		{
 			foreach ($sci['columns'] as $col)
 			{
-				if (!uiutils::subColumnEnabled ($col, $this->subColumnsData[$columnId]))
+				$sco = uiutils::subColumnEnabled ($col, $this->subColumnsData[$columnId]);
+				if ($sco === FALSE)
 					continue;
-
-				$this->addColumnInput($col['id'], 0, FALSE, $columnId);
+				$params = uiutils::subColumnInputParams($col, $this->subColumnsData[$columnId] ?? []);
+				$this->addColumnInput($col['id'], $sco, $params, $columnId);
 			}
 		}
 
