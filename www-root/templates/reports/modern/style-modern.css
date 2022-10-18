@@ -113,13 +113,19 @@ table.rosInfo tr {text-align: right;}
 /*řádky faktury*/
 
 
-table.rows {width: 100%;
+table.rows {
+	width: 100%;
 	border: 1pt solid lightgray; border-collapse: collapse;
-	line-height: 1.4; margin-top: 10pt; text-align: left; margin-bottom: 5pt;}
+	line-height: 1.4; margin-top: 10pt; text-align: left; margin-bottom: 5pt;
+}
+
+table.rows table.rows {
+	margin-top: 4pt !important; font-size: 80% !important;
+}
 
 table.rows.rounded {
 	border: 1pt solid lightgray; border-style: hidden; border-radius: 5px; border-style: hidden; box-shadow: 0 0 0 1px lightgray; border-collapse: collapse;
-	}	
+	}
 
 table.rows th {padding-left: 6pt; border-left: 1pt solid lightgray; padding-right: 3pt; background-color: rgba(0, 0, 0, 0.1);}
 table.rows.rounded th:first-child {border-radius: 5px 0px 0px 0px;}
@@ -140,6 +146,11 @@ table.rows thead th.itemID {text-align: right;}
 table.rows td.itemID {text-align: right;}
 
 table.rows tr.rowInfo {border-bottom: 2pt solid #bdbdbd;}
+
+
+ul.itemCodesList {margin-top: 0; padding-left: 12pt; font-size: 80%; margin-bottom: 0;}
+ul.itemCodesList.itemCodesListInline {padding-left: 5pt;}
+ul.itemCodesList.itemCodesListInline li {list-style: none; margin-left: 0; display: inline-block; padding-right: 8pt;}
 
 /*shrnutí daně*/
 table.paymentInfo {width: 100%; }

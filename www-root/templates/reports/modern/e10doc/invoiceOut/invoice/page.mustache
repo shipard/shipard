@@ -3,7 +3,7 @@
 <head>
 	<title>test</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v287" type="text/css"/>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v289" type="text/css"/>
 	<link rel="stylesheet" href="{{dsUrl}}www-root/sc/icons/fa/5/css/all.min.css">
 </head>
 <body>
@@ -153,17 +153,18 @@
 	{{/data.docs_properties.notes.note-ext}}
 </div>
 
-
-<table class="rows{{#data.options.docReportsTablesRoundedCorners}} rounded{{/data.options.docReportsTablesRoundedCorners}}">
+<table class="rows {{#data.options.docReportsTablesRoundedCorners}} rounded{{/data.options.docReportsTablesRoundedCorners}}">
 	<thead>
 		<tr>
 			<th class='itemID'>{{@dict;ID}}</th>
 			{{^data.flags.multiLineRows}}
 				<th>{{@dict;Položka}}</th>
 			{{/data.flags.multiLineRows}}
-			{{#data.itemCodesHeader}}
-				<th class='number'>{{sn}}</th>
-			{{/data.itemCodesHeader}}
+			{{#data.flags.multiLineRows}}
+				{{#data.itemCodesHeader}}
+					<th class='number'>{{sn}}</th>
+				{{/data.itemCodesHeader}}
+			{{/data.flags.multiLineRows}}
 			<th class='number'>{{@dict;Množství}}</th>
 			<th>{{@dict;Jed.}}</th>
 			{{#data.head.taxPayer}}
@@ -178,7 +179,17 @@
 		{{#data.rows}}
 			<tr>
 				<td class='itemID'>{{itemID}}</td>
-				<td>{{text}}{{#additionsMarks}}<sup> {{additionsMarks}}</sup>{{/additionsMarks}}</td>
+				<td>
+					{{text}}{{#additionsMarks}}<sup> {{additionsMarks}}</sup>{{/additionsMarks}}
+					{{#data.flags.itemCodesList}}
+						<ul class="itemCodesList{{#data.flags.itemCodesInline}} itemCodesListInline{{/data.flags.itemCodesInline}}">
+							{{#rowItemCodes}}
+								{{#itemCodeText}}<li>{{itemCodeName}}: {{itemCodeText}}</li>{{/itemCodeText}}
+							{{/rowItemCodes}}
+						</ul>
+					{{/data.flags.itemCodesList}}
+					{{#rowDataHtmlCode}}<div>{{{rowDataHtmlCode}}}</div>{{/rowDataHtmlCode}}
+				</td>
 				<td class='number'>{{quantity}}</td>
 				<td>{{@dict;dataItem:print.unit}}</td>
 				{{#data.head.taxPayer}}
@@ -192,7 +203,10 @@
 	{{#data.flags.multiLineRows}}
 		{{#data.rows}}
 			<tr>
-				<td class="itemRow" colspan="8" style="font-weight: semi-bold;">{{text}}{{#additionsMarks}}<sup> {{additionsMarks}}</sup>{{/additionsMarks}}</td>
+				<td class="itemRow" colspan="8" style="font-weight: semi-bold;">
+					{{text}}{{#additionsMarks}}<sup> {{additionsMarks}}</sup>{{/additionsMarks}}
+					{{#rowDataHtmlCode}}<div>{{{rowDataHtmlCode}}}</div>{{/rowDataHtmlCode}}
+				</td>
 			</tr>
 			<tr class="rowInfo">
 				<td class='itemID'>{{itemID}}</td>
@@ -210,6 +224,10 @@
 		{{/data.rows}}
 	{{/data.flags.multiLineRows}}
 </table>
+
+
+
+
 
 
 <table class='paymentInfo'>

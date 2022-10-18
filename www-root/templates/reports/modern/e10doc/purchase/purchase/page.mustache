@@ -3,7 +3,7 @@
 <head>
     <title>test</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v75" type="text/css"/>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v106" type="text/css"/>
 </head>
 <body>
 
@@ -28,15 +28,15 @@
 							{{data.owner.address.countryNameSC2}}-{{data.owner.address.zipcode}} {{data.owner.address.city}}<br/>
 							{{data.owner.address.countryNameEng}}
 						{{/data.flags.foreignCountry}}
-						
+
 						</span>
-					{{/data.reportTexts.supplier}}					
+					{{/data.reportTexts.supplier}}
 						{{#data.reportTexts.contacts}}{{{data.reportTexts.contacts}}}{{/data.reportTexts.contacts}}
 						{{^data.reportTexts.contacts}}
 							{{#data.owner_identifiers}}
 								<b>{{@dict;dataItem:name}}:</b> {{value}}
 							{{/data.owner_identifiers}}<br>
-						
+
 							<small>{{cfgItem.options.core.ownerLegalRegInfo}}</small>
 						{{/data.reportTexts.contacts}}
 					{{/data.reportTexts.supplierAndContacts}}
@@ -75,14 +75,13 @@
 			{{^data.flags.multiLineRows}}
 				<th>{{@dict;Položka}}</th>
 			{{/data.flags.multiLineRows}}
-			{{#data.itemCodesHeader}}
-				<th class='number'>{{sn}}</th>
-			{{/data.itemCodesHeader}}
+			{{#data.flags.multiLineRows}}
+				{{#data.itemCodesHeader}}
+					<th class='number'>{{sn}}</th>
+				{{/data.itemCodesHeader}}
+			{{/data.flags.multiLineRows}}
 			<th class='number'>{{@dict;Množství}}</th>
 			<th>{{@dict;Jed.}}</th>
-			{{#data.head.taxPayer}}
-				<th class='number'>% {{@dict;DPH}}</th>
-			{{/data.head.taxPayer}}
 			<th class='number'>{{@dict;Cena/jed.}}</th>
 			<th class='number'>{{@dict;Cena celkem}}</th>
 		</tr>
@@ -92,12 +91,19 @@
 		{{#data.rows}}
 			<tr>
 				<td class='itemID'>{{itemID}}</td>
-				<td>{{text}}{{#additionsMarks}}<sup> {{additionsMarks}}</sup>{{/additionsMarks}}</td>
+				<td>
+					{{text}}{{#additionsMarks}}<sup> {{additionsMarks}}</sup>{{/additionsMarks}}
+					{{#data.flags.itemCodesList}}
+						<ul class="itemCodesList{{#data.flags.itemCodesInline}} itemCodesListInline{{/data.flags.itemCodesInline}}">
+							{{#rowItemCodes}}
+								{{#itemCodeText}}<li>{{itemCodeName}}: {{itemCodeText}}</li>{{/itemCodeText}}
+							{{/rowItemCodes}}
+						</ul>
+					{{/data.flags.itemCodesList}}
+					{{#rowDataHtmlCode}}<div>{{{rowDataHtmlCode}}}</div>{{/rowDataHtmlCode}}
+				</td>
 				<td class='number'>{{quantity}}</td>
 				<td>{{@dict;dataItem:print.unit}}</td>
-				{{#data.head.taxPayer}}
-					<td class='number'>{{taxPercents}}</td>
-				{{/data.head.taxPayer}}
 				<td class='number'>{{print.priceItem}}</td>
 				<td class='number'>{{print.priceAll}}</td>
 			</tr>
@@ -106,7 +112,10 @@
 	{{#data.flags.multiLineRows}}
 		{{#data.rows}}
 			<tr>
-				<td class="itemRow" colspan="8" style="font-weight: semi-bold;">{{text}}{{#additionsMarks}}<sup> {{additionsMarks}}</sup>{{/additionsMarks}}</td>
+				<td class="itemRow" colspan="7" style="font-weight: semi-bold;">
+					{{text}}{{#additionsMarks}}<sup> {{additionsMarks}}</sup>{{/additionsMarks}}
+					{{#rowDataHtmlCode}}<div>{{{rowDataHtmlCode}}}</div>{{/rowDataHtmlCode}}
+				</td>
 			</tr>
 			<tr class="rowInfo">
 				<td class='itemID'>{{itemID}}</td>
@@ -115,9 +124,6 @@
 				{{/rowItemCodes}}
 				<td class='number'>{{quantity}}</td>
 				<td>{{@dict;dataItem:print.unit}}</td>
-				{{#data.head.taxPayer}}
-					<td class='number'>{{taxPercents}}</td>
-				{{/data.head.taxPayer}}
 				<td class='number'>{{print.priceItem}}</td>
 				<td class='number'>{{print.priceAll}}</td>
 			</tr>
@@ -175,14 +181,14 @@
     <tr>
         <td class="main">
             {{#data.options.docReportsPersonsSigns}}
-                {{#data.author.signature.rfn}}                
+                {{#data.author.signature.rfn}}
                     <table class="signed">
                         <tr>
                             <td class="empty">
                             <td>
                             <td class="author">
                                 <img src='{{dsRoot}}/{{data.author.signature.rfn}}'>
-                            </td>				
+                            </td>
                         </tr>
                         <tr>
                             <td class="empty">
@@ -190,7 +196,7 @@
                             <td class="author">
                                 <span>Vystavil</span>
                             </td>
-                        </tr>	
+                        </tr>
                     </table>
                 {{/data.author.signature.rfn}}
             {{/data.options.docReportsPersonsSigns}}
@@ -201,15 +207,15 @@
                     <tr>
                         <td>
                             <div class='vkp-vykup-podpis-dod-prevzal'>
-                                Úhradu v hotovosti převzal:<br/>                                    
+                                Úhradu v hotovosti převzal:<br/>
                                 {{data.person.hotovostPrevzalJmeno}}<br/>
-                                OP: {{data.person.hotovostPrevzalOP}}                          
+                                OP: {{data.person.hotovostPrevzalOP}}
                             </div>
                             <div class='vkp-vykup-podpis-dod-podpis'>zde se prosím podepište</div>
-                        </td>                        
-                    </tr>    
+                        </td>
+                    </tr>
                 </table>
-            {{/data.flags.payCash}}            
+            {{/data.flags.payCash}}
         </td>
     </tr>
 </table>
