@@ -8,12 +8,12 @@
         "styleLink": "icons/fa/5/css/all.min.css"
     },
     "bsi": {
-        "fullName": "Bootstrap Icons 1.7",
-        "shortName": "BSI 1.7",
-        "scPath": "icons/bsi/1.7",
+        "fullName": "Bootstrap Icons 1.9",
+        "shortName": "BSI 1.9",
+        "scPath": "icons/bsi/1.9",
         "type": 0,
         "cssBaseClass": "bi ",
-        "styleLink": "icons/bsi/1.7/font/bootstrap-icons.css"
+        "styleLink": "icons/bsi/1.9/font/bootstrap-icons.css"
     },
     "mdi": {
         "fullName": "Material Design Icons",
