@@ -31,7 +31,7 @@ class ViewerMsgsAll extends TableView
 		$this->thisUserId = $this->app()->userNdx();
 		$this->allBBoards = $this->app()->cfgItem('wkf.bboard.bboards', []);
 
-    $this->setPaneMode(1);
+    $this->setPaneMode();
 
     $this->tableBBoards = $this->app->table ('wkf.bboard.bboards');
 		$this->usersBBoards = $this->tableBBoards->usersBBoards();
