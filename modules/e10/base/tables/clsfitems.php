@@ -132,7 +132,7 @@ class ViewClsfItems extends TableView
 	{
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['t1'] = $item['fullName'];
-		//$listItem ['i1'] = ['text' => '#'.$item['group'].'.'.$item['ndx'], 'class' => 'id'];
+		$listItem ['i1'] = ['text' => '#'.$item['ndx'], 'class' => 'id'];
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
 		$labelText = ($item['id'] !== '') ? $item['id'] : $item['fullName'];
