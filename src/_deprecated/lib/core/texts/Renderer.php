@@ -3,7 +3,7 @@
 namespace lib\core\texts;
 
 use e10\utils, \e10\Utility;
-
+use \e10\web\WebTemplateMustache;
 
 /**
  * Class Renderer
@@ -137,6 +137,15 @@ class Renderer extends Utility
 		$text2 = $this->replaceHashtags ($text2);
 
 		$this->code = $this->texy->process($text2);
+	}
+
+	public function renderAsArticle($text, $ownerTable)
+	{
+		$template = new WebTemplateMustache ($this->app());
+		$page = ['tableId' => $ownerTable->tableId()];
+		$this->setOwner ($page);
+		$this->render($text);
+		$this->code = $template->renderPagePart('content', $this->code);
 	}
 }
 

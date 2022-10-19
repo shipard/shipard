@@ -44,6 +44,8 @@ class TableBBoards extends DbTable
 			$item = [
 				'ndx' => $r ['ndx'], 'fn' => $r ['fullName'], 'sn' => $r ['shortName'],
 				'icon' => ($r['icon'] === '') ? 'system/iconFile': $r['icon'],
+				'usePerex' => $r ['usePerex'], 'useImage' => $r ['useImage'], 'useLinkToUrl' => $r ['useLinkToUrl'],
+				'usePersonsNotify' => $r ['usePersonsNotify'],
 			];
 
 			$cntPeoples = 0;
@@ -211,6 +213,10 @@ class FormBBoard extends TableForm
 					$this->addList ('doclinks', '', self::loAddToFormLayout);
 				$this->closeTab();
 				$this->openTab ();
+					$this->addColumnInput('usePerex');
+					$this->addColumnInput('useImage');
+					$this->addColumnInput('useLinkToUrl');
+					$this->addColumnInput('usePersonsNotify');
 					$this->addColumnInput('icon');
 					$this->addColumnInput('order');
 				$this->closeTab ();

@@ -19,6 +19,7 @@ class ViewerMsgsAll extends TableView
 	/** @var  \wkf\bboard\TableBBoards */
 	var $tableBBoards;
 	var $usersBBoards = NULL;
+	var $allBBoards = NULL;
 
 	var $linkedPersons = [];
 	var $classification = [];
@@ -28,6 +29,7 @@ class ViewerMsgsAll extends TableView
 	public function init ()
 	{
 		$this->thisUserId = $this->app()->userNdx();
+		$this->allBBoards = $this->app()->cfgItem('wkf.bboard.bboards', []);
 
     $this->setPaneMode(1);
 
@@ -65,7 +67,8 @@ class ViewerMsgsAll extends TableView
 
   function renderPane (&$item)
 	{
-    $this->textRenderer->render ($item ['text']);
+		$ndx = $item['ndx'];
+    $this->textRenderer->renderAsArticle ($item ['text'], $this->table);
 
     $item ['pane'] = ['class' => '__padd5 e10-pane e10-pane-row', 'title' => [], 'body' => []];
     $item ['pane']['class'] .= ' e10-ds '.$item ['docStateClass'];
@@ -74,7 +77,15 @@ class ViewerMsgsAll extends TableView
 		if ($item['pinned'])
 			$title[] = ['class' => 'id pull-right e10-success', 'text' => '', 'icon' => 'system/iconPinned'];
 
+		if (isset ($this->classification [$ndx]))
+		{
+			forEach ($this->classification [$ndx] as $clsfGroup)
+				$title[] = $clsfGroup;
+		}
+
     $title[] = ['class' => 'df2-list-item-t1 h1 block', 'text' => $item['title'], 'icon' => /*$this->table->tableIcon($item)*/'system/iconFile'];
+    if ($item['perex'] && $item['perex'] !== '')
+			$title[] = ['class' => 'block', 'text' => $item['perex']];
 
     if (!Utils::dateIsBlank($item['publishFrom']))
       $title[] = ['text' => utils::datef ($item['publishFrom'], '%D, %T'), '_icon' => 'system/iconUser', 'class' => 'label label-default'];
@@ -82,11 +93,16 @@ class ViewerMsgsAll extends TableView
     if ($item['author'])
       $title[] = ['text' => $item['authorName'], 'icon' => 'system/iconUser', 'class' => 'label label-default'];
 
+		if (isset ($this->linkedPersons [$ndx]))
+		{
+			$title[] = $this->linkedPersons [$ndx];
+		}
+
 		$titleClass = '';
 		$item ['pane']['title'][] = [
 			'class' => $titleClass,
 			'value' => $title,
-      'pk' => $item['ndx'], 'docAction' => 'edit', 'data-table' => 'wkf.bboard.msgs'
+      'pk' => $ndx, 'docAction' => 'edit', 'data-table' => 'wkf.bboard.msgs'
 		];
 
 		$item ['pane']['body'][] = [
@@ -108,14 +124,8 @@ class ViewerMsgsAll extends TableView
     array_push ($q, ' LEFT JOIN [e10_persons_persons] AS [authors] ON [msgs].[author] = [authors].[ndx]');
 		array_push ($q, ' WHERE 1');
 
-		if (count($this->usersBBoards))
-		{
-			array_push ($q, ' AND [msgs].[bboard] IN %in', array_keys($this->usersBBoards));
-		}
-		else
-		{
+		if (!count($this->usersBBoards))
 			array_push ($q, ' AND [msgs].[bboard] = %i', -1);
-		}
 
 		// -- fulltext
 		if ($fts != '')
@@ -165,31 +175,31 @@ class ViewerMsgsAll extends TableView
 
 	function qryForLinkedPersons (&$q, $linkId = FALSE)
 	{
-		array_push ($q, ' AND (');
-
-		array_push ($q, ' EXISTS (',
-				'SELECT docLinks.dstRecId FROM [e10_base_doclinks] as docLinks',
-				' WHERE msgs.ndx = srcRecId AND srcTableId = %s', 'wkf.bboard.msgs',
-				' AND dstTableId = %s', 'e10.persons.persons',
-				' AND docLinks.dstRecId = %i', $this->thisUserId);
-		if ($linkId !== FALSE)
+		$bboardsNotifyYes = [];
+		$bboardsNotifyNo = [];
+		foreach ($this->usersBBoards as $ubbNdx => $ubbCfg)
 		{
-			if (is_array($linkId))
-				array_push($q, ' AND docLinks.linkId IN %in', $linkId);
+			if ($ubbCfg['usePersonsNotify'] ?? 0)
+				$bboardsNotifyYes[] = $ubbNdx;
 			else
-				array_push($q, ' AND docLinks.linkId = %s', $linkId);
+				$bboardsNotifyNo[] = $ubbNdx;
 		}
-		array_push ($q, ')');
+		//	$this->allBBoards
 
-		$ug = $this->app()->userGroups ();
-		if (count ($ug) !== 0)
+
+		array_push ($q, ' AND (');
+		// -- my messages
+		array_push ($q, ' (msgs.author = %i)', $this->thisUserId);
+
+		if (count($bboardsNotifyYes))
 		{
-			array_push ($q, ' OR ');
-			array_push ($q, ' EXISTS (',
+			array_push ($q, ' OR (');
+			array_push ($q, ' [msgs].[bboard] IN %in', $bboardsNotifyYes);
+			array_push ($q, ' AND EXISTS (',
 					'SELECT docLinks.dstRecId FROM [e10_base_doclinks] as docLinks',
 					' WHERE msgs.ndx = srcRecId AND srcTableId = %s', 'wkf.bboard.msgs',
-					' AND dstTableId = %s', 'e10.persons.groups',
-					' AND docLinks.dstRecId IN %in', $ug);
+					' AND dstTableId = %s', 'e10.persons.persons',
+					' AND docLinks.dstRecId = %i', $this->thisUserId);
 			if ($linkId !== FALSE)
 			{
 				if (is_array($linkId))
@@ -198,11 +208,32 @@ class ViewerMsgsAll extends TableView
 					array_push($q, ' AND docLinks.linkId = %s', $linkId);
 			}
 			array_push ($q, ')');
-		}
 
-		// -- my messages
-		array_push ($q, ' OR ');
-		array_push ($q, ' (msgs.author = %i)', $this->thisUserId);
+			$ug = $this->app()->userGroups ();
+			if (count ($ug) !== 0)
+			{
+				array_push ($q, ' OR ');
+				array_push ($q, ' EXISTS (',
+						'SELECT docLinks.dstRecId FROM [e10_base_doclinks] as docLinks',
+						' WHERE msgs.ndx = srcRecId AND srcTableId = %s', 'wkf.bboard.msgs',
+						' AND dstTableId = %s', 'e10.persons.groups',
+						' AND docLinks.dstRecId IN %in', $ug);
+				if ($linkId !== FALSE)
+				{
+					if (is_array($linkId))
+						array_push($q, ' AND docLinks.linkId IN %in', $linkId);
+					else
+						array_push($q, ' AND docLinks.linkId = %s', $linkId);
+				}
+				array_push ($q, ')');
+			}
+			array_push ($q, ')');
+		}
+		if (count($bboardsNotifyNo))
+		{
+			array_push ($q, ' OR ');
+			array_push ($q, ' [msgs].[bboard] IN %in', $bboardsNotifyNo);
+		}
 
 		array_push ($q, ')');
 	}
@@ -229,8 +260,8 @@ class ViewerMsgsAll extends TableView
 		if (!count($this->pks))
 			return;
 
-		$this->classification = UtilsBase::loadClassification ($this->table->app(), $this->table->tableId(), $this->pks);
-		$this->linkedPersons = UtilsBase::linkedPersons ($this->app(), $this->table, $this->pks);
+		$this->classification = UtilsBase::loadClassification ($this->table->app(), $this->table->tableId(), $this->pks, 'pull-right label label-info');
+		$this->linkedPersons = UtilsBase::linkedPersons ($this->app(), $this->table, $this->pks, 'label label-default lh16');
 	}
 
 	public function createToolbarAddButton (&$toolbar)

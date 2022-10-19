@@ -6,6 +6,7 @@
 
 		{"id": "title", "name": "Titulek", "type": "string", "len": 120},
 		{"id": "text", "name": "Text", "type": "memo"},
+		{"id": "perex", "name": "Perex", "type": "memo"},
 
 		{"id": "author", "name": "Autor", "type": "int", "reference": "e10.persons.persons"},
 		{"id": "publishFrom", "name": "Datum platnosti od", "label": "Zveřejnit od", "type": "timestamp"},

@@ -170,32 +170,54 @@ class FormBBoardMsg extends TableForm
 {
 	public function renderForm ()
 	{
+		$bboard = $this->app()->cfgItem('wkf.bboard.bboards.'.$this->recData['bboard'], []);
+		$usePerex = $bboard['usePerex'] ?? 0;
+		$useImage = $bboard['useImage'] ?? 0;
+		$useLinkToUrl = $bboard['useLinkToUrl'] ?? 0;
+		$usePersonsNotify = $bboard['usePersonsNotify'] ?? 0;
+
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 		$this->setFlag ('maximize', 1);
 
 		$tabs ['tabs'][] = ['text' => 'Text', 'icon' => 'formText'];
+		if ($usePerex)
+			$tabs ['tabs'][] = ['text' => 'Perex', 'icon' => 'formText'];
 		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		$this->openForm ();
 			$this->addColumnInput ('title');
-			$this->addList ('doclinksPersons', '', self::loAddToFormLayout);
+			if ($usePersonsNotify)
+				$this->addList ('doclinksPersons', '', self::loAddToFormLayout);
 			$this->openTabs ($tabs);
 				$this->openTab (self::ltNone);
 					$this->addInputMemo('text', NULL, TableForm::coFullSizeY);
 				$this->closeTab();
+				if ($usePerex)
+				{
+					$this->openTab (self::ltNone);
+						$this->addInputMemo('perex', NULL, TableForm::coFullSizeY);
+					$this->closeTab();
+				}
 				$this->openTab();
 					$this->addColumnInput ('pinned', self::coRightCheckbox);
 					$this->addList ('clsf', '', TableForm::loAddToFormLayout);
 					$this->addSeparator(self::coH4);
 					$this->addColumnInput ('publishFrom');
 					$this->addColumnInput ('publishTo');
-					//$this->addSeparator(self::coH4);
-					//$this->addColumnInput ('image');
-					//$this->addColumnInput ('useImageAs');
-					$this->addSeparator(self::coH4);
-					//$this->addColumnInput ('linkToUrl');
+					if ($useImage)
+					{
+						$this->addSeparator(self::coH4);
+						$this->addColumnInput ('image');
+						$this->addColumnInput ('useImageAs');
+					}
+					if ($useLinkToUrl)
+					{
+						$this->addSeparator(self::coH4);
+						$this->addColumnInput ('linkToUrl');
+						$this->addSeparator(self::coH4);
+					}
 					$this->addColumnInput ('order');
 					$this->addColumnInput ('bboard');
 					$this->addColumnInput ('author');

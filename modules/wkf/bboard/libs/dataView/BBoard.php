@@ -39,6 +39,9 @@ class BBoard extends DataView
 		{
 			$this->pinned = intval($this->requestParams['pinned']);
 		}
+
+		$this->checkRequestParamsList('withLabels');
+		$this->checkRequestParamsList('withoutLabels');
 	}
 
 	protected function loadData()
@@ -56,6 +59,22 @@ class BBoard extends DataView
 		array_push ($q, ' AND (msgs.publishTo IS NULL OR msgs.publishTo = %t', '0000-00-00 00:00:00', ' OR msgs.publishTo >= %t)', $now);
 		if ($this->pinned)
 			array_push ($q, ' AND msgs.pinned != %i', 0);
+
+		if (isset($this->requestParams['withLabels']) && count($this->requestParams['withLabels']))
+		{
+			array_push ($q, ' AND EXISTS (',
+				'SELECT ndx FROM e10_base_clsf WHERE msgs.ndx = recid AND tableId = %s', 'wkf.bboard.msgs',
+				' AND [clsfItem] IN %in', $this->requestParams['withLabels'],
+				')');
+		}
+		if (isset($this->requestParams['withoutLabels']) && count($this->requestParams['withoutLabels']))
+		{
+			array_push ($q, ' AND NOT EXISTS (',
+				'SELECT ndx FROM e10_base_clsf WHERE msgs.ndx = recid AND tableId = %s', 'wkf.bboard.msgs',
+				' AND [clsfItem] IN %in', $this->requestParams['withoutLabels'],
+				')');
+		}
+
 		$this->extendQuery($q);
 		array_push ($q, ' ORDER BY msgs.[pinned] DESC, msgs.[order], msgs.[publishFrom] DESC');
 		array_push ($q, ' LIMIT 0, %i', $this->maxCnt);
@@ -71,9 +90,15 @@ class BBoard extends DataView
 				$item['imgPath'] = $imgPath;
 			}
 
-			$this->textRenderer->render ($item ['text']);
+			$this->textRenderer->renderAsArticle ($item ['text'], $this->tableMsgs);
 			$item['htmlText'] = $this->textRenderer->code;
 
+			$item['htmlPerex'] = '';
+			if ($item ['perex'] !== '')
+			{
+				$this->textRenderer->renderAsArticle ($item ['perex'], $this->tableMsgs);
+				$item['htmlPerex'] = $this->textRenderer->code;
+			}
 			$t[] = $item;
 		}
 

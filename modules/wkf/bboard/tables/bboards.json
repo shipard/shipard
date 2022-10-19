@@ -6,6 +6,11 @@
 		{"id": "fullName", "name": "Název", "type": "string", "len": 100},
 		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 60},
 
+		{"id": "usePerex", "name": "Používat perex", "type": "logical"},
+		{"id": "useImage", "name": "Používat ilustrační obrázek", "type": "logical"},
+		{"id": "useLinkToUrl", "name": "Používat Odkaz na více informací", "type": "logical"},
+		{"id": "usePersonsNotify", "name": "Používat osoby Na vědomí", "type": "logical"},
+
 		{"id": "order", "name": "Pořadí", "type": "int"},
 		{"id": "icon", "name": "Ikona", "type": "string", "len": 50},
 
