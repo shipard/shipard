@@ -107,6 +107,12 @@
 		"bsi": "bi-gear",
 		"mdi": "settings"
     },
+    "tables/e10doc.base.docRowsVDSCfg":{
+        "fa5":"fa-code",
+        "fa6pro":"fa-code",
+        "bsi":"bi-code-slash",
+        "mdi":"code"
+    },
 
 
     "formMonths":{

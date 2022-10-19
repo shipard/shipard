@@ -260,6 +260,12 @@
 		"bsi":"bi-star",
 		"mdi":"grade"
     },
+    "iconAppTheme":{
+        "fa5":"fa-swatchbook",
+        "fa6pro":"fa-swatchbook",
+        "bsi":"bi-palette2",
+        "mdi":"collections"
+    },
 
 
     "dataTypesTextContent":{

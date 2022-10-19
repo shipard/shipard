@@ -29,7 +29,7 @@
 	},
 	"appearanceApp": {
 		"name": "Vzhled aplikace", "order": 1000, "group": "appearance",
-		"icon": "settigns/lab",
+		"icon": "iconAppTheme",
 		"type": "cfgFile",
 		"options":
 			[

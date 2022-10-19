@@ -22,7 +22,7 @@
 	},
 	"appearanceDocs": {
 		"name": "Doklady", "order": 12000, "group": "appearance",
-		"icon": "settigns/sale",
+		"icon": "system/iconFile",
 		"type": "cfgFile",
 		"options": [
 			{
