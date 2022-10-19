@@ -12,7 +12,7 @@
 	<link href="{{dsRoot}}{{serverInfo.templateStylePath}}/{{serverInfo.look}}-web.css?v={{serverInfo.lookVersion.web}}" rel="stylesheet">
   <link rel="stylesheet" href="{{dsRoot}}{{templateUrlRoot}}/unify-v3.1/dist/assets/vendor/hs-mega-menu/dist/hs-mega-menu.min.css">
   <link rel="stylesheet" href="{{dsRoot}}{{templateUrlRoot}}/unify-v3.1/dist/assets/vendor/swiper/swiper-bundle.min.css">
-	<link rel="stylesheet" type="text/css" href="{{scRoot}}/icons/bsi/1.7/font/bootstrap-icons.css">
+	<link rel="stylesheet" type="text/css" href="{{scRoot}}/icons/bsi/1.9/font/bootstrap-icons.css">
   {{#page.params.recaptcha-v3-site-key}}<script src='https://www.google.com/recaptcha/api.js?render={{page.params.recaptcha-v3-site-key}}'></script>{{/page.params.recaptcha-v3-site-key}}
 </head>
 
@@ -43,7 +43,7 @@
           </span>
         </button>
         <!-- End Toggler -->
-      
+
         <!-- Collapse -->
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
           <div class="navbar-absolute-top-scroller">
@@ -61,7 +61,7 @@
     </div>
   </header>
 	{{/page.headerFull}}
-  
+
   {{#page.params.myMain}}
     {{{pageText}}}
   {{/page.params.myMain}}
@@ -98,7 +98,7 @@
       {{/page.params.myLayout}}
     </main>
   {{/page.params.myMain}}
- 
+
 	{{#page.footerFull}}{{{page.footerFull}}}{{/page.footerFull}}
 	{{^page.footerFull}}
 		<footer class="bg-dark">
@@ -156,7 +156,7 @@
   var players = ['iframe[src*="youtube.com"]', 'iframe[src*="vimeo.com"]'];
   var fitVids = document.querySelectorAll(players.join(","));
   if (fitVids.length) {
-    for (var i = 0; i < fitVids.length; i++) 
+    for (var i = 0; i < fitVids.length; i++)
     {
       // Get Video Information
       var fitVid = fitVids[i];
@@ -195,7 +195,7 @@
 	<script>
     var contactFormSubmitted = false;
     var forms = document.getElementsByTagName('form');
-    for (var i = 0; i < forms.length; i++) 
+    for (var i = 0; i < forms.length; i++)
     {
       let form = forms[i];
       form.style.display = 'block';
