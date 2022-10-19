@@ -9,14 +9,22 @@
 					"order": 200000, "enabledCfgItem": "options.webcomm.useArticles"},
 				"web": {"t1": "Web", "object": "widget", "class": "e10.widgetDashboard", "subclass": "webPanel", "icon": "e10.widgetDashboard/web",
 					"order": 250000, "enabledCfgItem": "options.experimental.testNewWebEdit"},
-				"pages": {"t1": "Stránky", "object": "viewer", "table": "e10.web.pages", "viewer": "default",
-					"order": 300000},
-				"blocks": {"t1": "Bloky", "object": "viewer", "table": "e10.web.blocks", "viewer": "default",
-					"order": 400000},
-				"decorations": {"t1": "Dekorace", "object": "viewer", "table": "e10.web.urldecorations", "viewer": "default",
-					"order": 500000},
+				"pages": {"t1": "Stránky", "object": "viewer", "table": "e10.web.pages", "viewer": "default","order": 300000},
+				"decorations": {"t1": "Dekorace", "object": "viewer", "table": "e10.web.urldecorations", "viewer": "default","order": 500000},
 				"templates": {"t1": "Šablony", "object": "viewer", "table": "e10.base.templates", "viewer": "web", "order": 900000},
-				"looks": {"t1": "Vzhledy", "object": "viewer", "table": "e10.base.templatesLooks", "viewer": "web", "order": 900000}
+				"looks": {"t1": "Vzhledy", "object": "viewer", "table": "e10.base.templatesLooks", "viewer": "web", "order": 900000},
+
+				"settings": {
+					"t1": "Nastavení", "object": "subMenu", "icon": "system/iconSettings",
+					"order": 990000,
+					"subMenu": {
+						"items": {
+							"webScripts": {"t1": "Skripty", "object": "viewer", "table": "e10.web.scripts", "viewer": "default", "order": 100000},
+							"webServers": {"t1": "Servery", "object": "viewer", "table": "e10.web.servers", "viewer": "default", "order": 200000},
+							"blocks": {"t1": "Bloky - nepoužívat", "object": "viewer", "table": "e10.web.blocks", "viewer": "default","order": 900000}
+						}
+					}
+				}
 			}
 		}
 	}
