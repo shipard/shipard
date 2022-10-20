@@ -1,6 +1,9 @@
 <?php
 
 namespace Shipard\Report;
+
+require_once __SHPD_MODULES_DIR__ . 'e10/base/base.php';
+
 use \Shipard\Utils\Utils;
 use \Shipard\Utils\Str;
 
