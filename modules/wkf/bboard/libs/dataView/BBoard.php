@@ -88,8 +88,9 @@ class BBoard extends DataView
 			$item['first'] = $first;
 			if ($item['coverImagePath'])
 			{
-				$imgPath = $this->app()->dsRoot . '/att/' . $item['coverImagePath'] . $item['coverImageFileName'];
-				$item['imgPath'] = $imgPath;
+				$imgPath = 'att/' . $item['coverImagePath'] . $item['coverImageFileName'];
+				$item['imgPath'] = $this->app()->dsRoot . '/' .$imgPath;
+				$item['imgPathRel'] = $imgPath;
 			}
 
 			$this->textRenderer->renderAsArticle ($item ['text'], $this->tableMsgs);
