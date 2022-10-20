@@ -81,9 +81,11 @@ class BBoard extends DataView
 
 		$t = [];
 		$rows = $this->db()->query($q);
+		$first = 1;
 		foreach ($rows as $r)
 		{
 			$item = $r->toArray();
+			$item['first'] = $first;
 			if ($item['coverImagePath'])
 			{
 				$imgPath = $this->app()->dsRoot . '/att/' . $item['coverImagePath'] . $item['coverImageFileName'];
@@ -100,6 +102,8 @@ class BBoard extends DataView
 				$item['htmlPerex'] = $this->textRenderer->code;
 			}
 			$t[] = $item;
+
+			$first = 0;
 		}
 
 		$this->data['header'] = ['#' => '#', 'title' => 'Titulek', 'htmlText' => 'Text'];
