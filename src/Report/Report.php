@@ -197,6 +197,33 @@ class Report extends \Shipard\Base\BaseObject
 
 
 		$t->setData ($this);
+
+		if (isset($this->data ['_subtemplatesItems']))
+		{
+			foreach ($this->data ['_subtemplatesItems'] as $stId)
+			{
+				foreach ($t->data [$stId] as $textId => $textData)
+				{
+					$t->data [$stId][$textId] = trim($t->render($textData));
+				}
+			}
+		}
+		if (isset($this->data ['_textRenderItems']))
+		{
+			$texy = new \Texy();
+			//$texy->allowed['link/url'] = FALSE;
+			$texy->allowed['link/email'] = FALSE;
+
+			foreach ($this->data ['_subtemplatesItems'] as $stId)
+			{
+				foreach ($t->data [$stId] as $textId => $textData)
+				{
+					if ($t->data [$stId][$textId] !== '')
+						$t->data [$stId][$textId] = $texy->processLine($t->data [$stId][$textId]);
+				}
+			}
+		}
+
 		$this->createAttachments ($t);
 		$res = $t->renderTemplate ();
 		return $res;

@@ -95,9 +95,6 @@ class TableReportsTexts extends DbTable
 	public function loadReportTexts ($docRecData, $reportMode)
 	{
 		$res = [];
-		$texy = new \Texy();
-		$texy->allowed['link/url'] = FALSE;
-		$texy->allowed['link/email'] = FALSE;
 
 		$q[] = 'SELECT * FROM [e10doc_base_reportsTexts] WHERE 1';
 
@@ -117,9 +114,7 @@ class TableReportsTexts extends DbTable
 
 			if ($reportMode === FormReport::rmDefault)
 			{
-				$root = 'file://' . __APP_DIR__;
-				$txt = str_replace('<%root%>', $root, $r['text']);
-				$txt = $texy->processLine($txt);
+				$txt = $r['text'];
 			}
 			elseif ($reportMode === FormReport::rmPOS)
 			{
@@ -143,7 +138,7 @@ class TableReportsTexts extends DbTable
 				case FormReport::rmDefault: return 'icon-file-text-o';
 				case FormReport::rmPOS: return 'x-request';
 			}
-		}	
+		}
 		return parent::tableIcon($recData, $options);
 	}
 
