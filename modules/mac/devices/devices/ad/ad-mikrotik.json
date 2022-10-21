@@ -2,14 +2,14 @@
 	"name": "AD Mikrotik",
 	"title": "AD Mikrotik",
 	"fields": {
-		"columns": [			
+		"columns": [
 			{"id": "router", "name": "Router", "type": "logical", "options": ["saveOnChange"]},
-			{"id": "vlanFiltering", "name": "Filtrování VLAN", "type": "enumInt", "enabled": {"router": 1},
+			{"id": "vlanFiltering", "name": "Filtrování VLAN", "type": "enumInt",
 				"enumValues": {"0": "SW", "1": "HW"}},
-			
+
 			{"id": "capsmanServer", "name": "Zapnout CAPSMAN server", "type": "logical"},
 			{"id": "capsmanClient", "name": "Zapnout CAPSMAN klienta (AP Mode)", "type": "logical"},
-			
+
 			{"id": "userLogin", "name": "Uživatel", "type": "string", "len": 30},
 			{"id": "managementWWWAddrList", "name": "Povolené adresy pro správu přes WWW", "type": "int", "reference": "mac.lan.ipAddressLists"},
 			{"id": "managementSSHAddrList", "name": "Povolené adresy pro správu přes SSH", "type": "int", "reference": "mac.lan.ipAddressLists"}
@@ -20,6 +20,88 @@
 		"realtime-summary": {
 			"title": "Přehled",
 			"template": "mac/devices/devices/router/router-mikrotik-netdata-dashboard-overview.mustache"
+		}
+	},
+	"families": {
+		"mkt-rb-rb": {
+			"title": "RB xxxx",
+			"types": {
+				"mkt-rb1100-ahx4": {"title": "RB1100AHx4 / RB1100AHx4 Dude Edition"},
+				"mkt-rb2011-il": {"title": "RB2011iL-IN / RB2011iL-RM"},
+				"mkt-rb2011-uias": {"title": "RB2011UiAS-IN / RB2011UiAS-RM"},
+				"mkt-rb3011-uias": {"title": "RB3011UiAS-RM"},
+				"mkt-rb4011-igs": {"title": "RB4011iGS+RM"},
+				"mkt-rb5009-upr-s-in": {"title": "RB5009UPr+S+IN"},
+				"mkt-rb5009-ug-s-in": {"title": "RB5009UG+S+IN"}
+			}
+		},
+		"mkt-rb-xap": {
+			"title": "*AP / Audience",
+			"sgClassId": "mac.lan.libs.cfgScripts.MikrotikAD_SwitchChip",
+			"types": {
+				"mkt-xap_cap": {"title": "cAP"},
+				"mkt-xap_cap-ac": {"title": "cAP ac"},
+				"mkt-xap_cap-xl-ac": {"title": "cAP XL ac"},
+				"mkt-xap_cap-lite": {"title": "cAP lite"},
+
+				"mkt-xap_hap": {"title": "hAP"},
+				"mkt-xap_hap-ax2": {"title": "hAP ax²"},
+				"mkt-xap_hap-ax3": {"title": "hAP ax³"},
+				"mkt-xap_hap-mini": {"title": "hAP mini"},
+				"mkt-xap_hap-lite": {"title": "hAP lite / hAP lite TC"},
+				"mkt-xap_hap-ac2": {"title": "hAP ac²"},
+				"mkt-xap_hap-ac3": {"title": "hAP ac³"},
+				"mkt-xap_hap-ac-lite": {"title": "hAP ac lite / hAP ac lite TC"},
+
+				"mkt-xap_map-lite": {"title": "mAP lite"},
+				"mkt-xap_map": {"title": "mAP"},
+
+				"mkt-xap_wap": {"title": "wAP / wAP BE"},
+
+				"mkt-xap_wap-r": {"title": "wAP R"},
+				"mkt-xap_wap-ac": {"title": "wAP ac / wAP ac BE"},
+
+				"mkt-xap_audience": {"title": "Audience"}
+			}
+		},
+		"mkt-rb-hex": {
+			"title": "hEX",
+			"types": {
+				"mkt-hex": {"title": "hEX"},
+				"mkt-hex-lite": {"title": "hEX lite"},
+				"mkt-hex-poe": {"title": "hEX PoE"},
+				"mkt-hex-poe-lite": {"title": "hEX PoE lite"},
+				"mkt-hex-s": {"title": "hEX S"}
+			}
+		},
+		"mkt-rb-ccr": {
+			"title": "CCR",
+			"types": {
+				"mkt-ccr1009_7g-1c-pc": {"title": "CCR1009-7G-1C-PC"},
+				"mkt-ccr1009_7g-1c-1s-pc": {"title": "CCR1009-7G-1C-1S+PC"},
+				"mkt-ccr1009_7g-1c-1s": {"title": "CCR1009-7G-1C-1S+"},
+
+				"mkt-ccr1036_8g-2S": {"title": "CCR1036-8G-2S+ / CCR1036-8G-2S+EM"},
+				"mkt-ccr1036_12g-4S": {"title": "CCR1036-12G-4S / CCR1036-12G-4S-EM"},
+
+				"mkt-ccr2004_1g-12S-2xs": {"title": "CCR2004-1G-12S+2XS"},
+				"mkt-ccr2004_16g-2S": {"title": "CCR2004-16G-2S+"},
+				"mkt-ccr2004_16g-2S-pc": {"title": "CCR2004-16G-2S+PC"}
+			}
+		},
+		"mkt-rb-crs": {
+			"title": "CRS",
+			"types": {
+				"mkt-crs106-1c-5s": {"title": "CRS106-1C-5S"},
+				"mkt-crs112-8g-4s": {"title": "CRS112-8G-4S-IN"},
+				"mkt-crs112-8p-4s": {"title": "CRS112-8P-4S-IN"},
+				"mkt-crs125-24g-1s-2hnd": {"title": "CRS125-24G-1S-2HnD-IN"},
+				"mkt-crs309-1g-8s": {"title": "CRS309-1G-8S+IN"},
+				"mkt-crs310-1g-5s-4s": {"title": "CRS310-1G-5S-4S+IN"},
+				"mkt-crs326-24s-2q": {"title": "CRS326-24S+2Q+RM"},
+				"mkt-crs326-24g-2s": {"title": "CRS326-24G-2S+IN / CRS326-24G-2S+RM"},
+				"mkt-crs354-48p-4s-2q": {"title": "CRS354-48P-4S+2Q+RM"}
+			}
 		}
 	}
 }

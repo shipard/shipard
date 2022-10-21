@@ -56,10 +56,7 @@ class LanCfgDeviceScriptGenerator extends Utility
 			$this->lanCfgCreator->load();
 		}
 
-		$macDeviceType = $this->app()->cfgItem('mac.devices.types.'.$this->deviceRecData['macDeviceType'], NULL);
-		if ($macDeviceType && isset($macDeviceType['sgClassId']))
-			$this->sgClassId = $macDeviceType['sgClassId'];
-
+		$this->sgClassId = $this->tableDevices->sgClassId($this->deviceRecData)	;
 		if ($this->sgClassId !== '')
 		{
 			$this->dsg = $this->app()->createObject ($this->sgClassId);

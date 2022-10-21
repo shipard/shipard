@@ -36,10 +36,7 @@ class LanControlCfgRCParser extends Utility
 			return;
 		}
 
-		$sgClassId = '';
-		$macDeviceType = $this->app()->cfgItem('mac.devices.types.'.$this->deviceRecData['macDeviceType'], NULL);
-		if ($macDeviceType && isset($macDeviceType['sgClassId']))
-			$sgClassId = $macDeviceType['sgClassId'];
+		$sgClassId = $this->tableDevices->sgClassId($this->deviceRecData);
 
 		if ($sgClassId !== '')
 		{

@@ -511,7 +511,7 @@ class LanCfgCreator extends Utility
 		$q [] = 'SELECT devices.*';
 		array_push($q, ' FROM [mac_lan_devices] AS [devices]');
 		array_push($q, ' WHERE 1');
-		array_push($q, ' AND devices.[deviceKind] = %i', 15);
+		array_push($q, ' AND devices.[deviceKind] IN %in', [14, 15]); // active device / [OLD] AP
 		array_push($q, ' AND devices.[lan] = %i', $this->lanNdx);
 		array_push($q, ' AND devices.[docStateMain] <= %i', 2);
 		array_push($q, ' ORDER BY devices.ndx');
@@ -520,6 +520,18 @@ class LanCfgCreator extends Utility
 		$rows = $this->db()->query ($q);
 		foreach ($rows as $r)
 		{
+			$enabled = 0;
+			if ($r['deviceKind'] == 15)
+				$enabled = 1;
+			else
+			{
+				$macDeviceCfg = json_decode($r['macDeviceCfg'], TRUE);
+				if (isset($macDeviceCfg['capsmanClient']) && intval($macDeviceCfg['capsmanClient']))
+					$enabled = 1;
+			}
+			if (!$enabled)
+				continue;
+
 			$item = ['ndx' => $r['ndx']];
 
 			foreach ($wlans as $wlanNdx => $wlan)

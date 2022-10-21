@@ -9,17 +9,24 @@ use e10\Utility;
  * Class Mikrotik
  * @package mac\lan\libs\cfgScripts
  */
-class Mikrotik extends \mac\lan\libs\cfgScripts\CoreCfgScript
+class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 {
-
+	var $scriptModeSignature = ' -- !!! UNCONFIGURED !!! --';
 	var $userLogin = 'admin';
+
+	var $isRouter = 0;
 
 	public function setDevice($deviceRecData, $lanCfg)
 	{
 		parent::setDevice($deviceRecData, $lanCfg);
+
+		//{"router":0,"vlanFiltering":"1","capsmanServer":0,"capsmanClient":1,"userLogin":"","managementWWWAddrList":"1","managementSSHAddrList":"1"}
+
 		if (isset ($this->deviceCfg['userLogin']))
 			if (strlen ($this->deviceCfg['userLogin']))
 				$this->userLogin = $this->deviceCfg['userLogin'];
+
+		$this->isRouter = intval($this->deviceCfg['router'] ?? 0);
 	}
 
 	function createData_Init_Identity()
@@ -96,6 +103,12 @@ class Mikrotik extends \mac\lan\libs\cfgScripts\CoreCfgScript
 			$item = ['type' => 'set','params' => ['ssh' => NULL, 'disabled' => 'yes',]];
 			$this->cfgData[$root][] = $item;
 		}
+	}
+
+	function createScript_ScriptMode()
+	{
+		$this->script .= "### script mode: {$this->scriptModeSignature} / ".get_class($this)." ###\n";
+		$this->script .= "\n";
 	}
 
 	function createScript_Init_Identity()
@@ -243,5 +256,4 @@ class Mikrotik extends \mac\lan\libs\cfgScripts\CoreCfgScript
 	{
 		return new \mac\lan\libs\cfgScripts\parser\Mikrotik($this->app());
 	}
-
 }

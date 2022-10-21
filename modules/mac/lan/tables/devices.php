@@ -108,6 +108,50 @@ class TableDevices extends DbTable
 		return parent::columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, $form);
 	}
 
+	public function columnInfoEnumSrc ($columnId, $form)
+	{
+		if ($columnId === 'mdtFamily' || $columnId === 'mdtType')
+		{
+			if (!$form)
+				return NULL;
+
+			$recData = $form->recData;
+
+			$deviceKind = $this->app()->cfgItem('mac.lan.devices.kinds.' . $recData['deviceKind'], NULL);
+			if (!$deviceKind || !isset($deviceKind['isMacDevice']))
+				return NULL;
+
+			$macDeviceTypeId = $recData['macDeviceType'];
+			$macDeviceTypeCfg = $this->app()->cfgItem('mac.devices.types.' . $macDeviceTypeId, NULL);
+			if (!$macDeviceTypeCfg || !isset($macDeviceTypeCfg['cfg']))
+				return FALSE;
+			$cfgFileName = __SHPD_MODULES_DIR__.'mac/devices/devices/'.$macDeviceTypeCfg['cfg'].'.json';
+			$cfg = utils::loadCfgFile($cfgFileName);
+			if (!$cfg)
+				return NULL;
+
+			$enum = [];
+			if ($columnId === 'mdtFamily')
+			{
+				if (!isset($cfg['families']))
+					return NULL;
+				foreach ($cfg['families'] as $familyId => $familyCfg)
+					$enum[$familyId] = $familyCfg['title'];
+			}
+			elseif ($columnId === 'mdtType')
+			{
+				$familyCfg = $cfg['families'][$recData['mdtFamily']] ?? NULL;
+				if (!$familyCfg || !isset($familyCfg['types']))
+					return NULL;
+				foreach ($familyCfg['types'] as $typeId => $typeCfg)
+					$enum[$typeId] = $typeCfg['title'];
+			}
+			return $enum;
+		}
+
+		return parent::columnInfoEnumSrc ($columnId, $form);
+	}
+
 	public function createDeviceFromType ($data)
 	{
 		$newDevice = ['fullName' => $data['fullName'], 'deviceType' => $data['deviceType'], 'docState' => 1000, 'docStateMain' => 0];
@@ -363,6 +407,25 @@ class TableDevices extends DbTable
 		return $cfg;
 	}
 
+	function sgClassId($deviceRecData)
+	{
+		$sgClassId = '';
+
+		$macDeviceType = $this->app()->cfgItem('mac.devices.types.'.$deviceRecData['macDeviceType'], NULL);
+		if ($macDeviceType && isset($macDeviceType['sgClassId']))
+			$sgClassId = $macDeviceType['sgClassId'];
+
+		$macDeviceTypeCfg = $this->macDeviceTypeCfg($deviceRecData['macDeviceType']);
+		$mdtFamilyCfg = $macDeviceTypeCfg['families'][$deviceRecData['mdtFamily']] ?? [];
+		if (isset($mdtFamilyCfg['sgClassId']))
+			$sgClassId = $mdtFamilyCfg['sgClassId'];
+
+		$mdtTypeCfg = $mdtFamilyCfg['types'][$deviceRecData['mdtType']] ?? [];
+		if (isset($mdtTypeCfg['sgClassId']))
+			$sgClassId = $mdtTypeCfg['sgClassId'];
+
+		return $sgClassId;
+	}
 }
 
 
@@ -854,12 +917,9 @@ class FormDevice extends TableForm
 		if ($deviceKind && isset($deviceKind['isMacDevice']))
 			$isMacDevice = 1;
 
-		$useIOPorts = 0;
 		if ($isMacDevice && $this->recData['macDeviceType'] !== '')
 		{
 			$macDeviceCfg = $this->app()->cfgItem ('mac.devices.types.'.$this->recData['macDeviceType'], NULL);
-			//if ($macDeviceCfg && isset($macDeviceCfg['useIOPorts']))
-			//	$useIOPorts = 1;
 		}
 
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
@@ -872,9 +932,6 @@ class FormDevice extends TableForm
 		if ($isMacDevice)
 		{
 			$tabs ['tabs'][] = ['text' => $deviceKind['name'], 'icon' => $deviceKind['icon']];
-
-			if ($useIOPorts)
-				$tabs ['tabs'][] = ['text' => 'IO', 'icon' => 'icon-dot-circle-o'];
 		}
 
 		$tabs ['tabs'][] = ['text' => 'Adresy', 'icon' => 'formAddresses'];
@@ -897,6 +954,12 @@ class FormDevice extends TableForm
 						$this->addColumnInput ('macDeviceType');
 						if ($macDeviceCfg && isset($macDeviceCfg['useHWMode']))
 							$this->addColumnInput ('hwMode', self::coNoLabel);
+
+						if ($macDeviceCfg && isset($macDeviceCfg['useFamily']))
+						{
+							$this->addColumnInput ('mdtFamily', self::coNoLabel);
+							$this->addColumnInput ('mdtType', self::coNoLabel);
+						}
 					$this->closeRow();
 					if ($this->recData['hwMode'])
 					{
@@ -921,12 +984,6 @@ class FormDevice extends TableForm
 					$this->addSubColumns('macDeviceCfg');
 					//$this->addColumnInput ('localServer');
 				$this->closeTab ();
-				if ($useIOPorts)
-				{
-					$this->openTab(TableForm::ltNone);
-						$this->addListViewer('ioPorts', 'formList');
-					$this->closeTab();
-				}
 			}
 
 			$this->openTab (TableForm::ltNone);

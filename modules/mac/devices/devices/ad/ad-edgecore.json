@@ -1,0 +1,41 @@
+{
+	"name": "EdgeCore",
+	"title": "EdgeCore",
+	"fields": {
+		"columns": [
+      {"id": "userLogin", "name": "Uživatel", "type": "string", "len": 30},
+			{"id": "sshMode", "name": "SSH klíče", "type": "enumInt",
+				"enumValues": {"0": "DSA (starý FW)", "1": "RSA (nový FW)"}}
+		]
+	},
+	"snmpTemplateRealtime": "mac/devices/devices/router/router-mikrotik-netdata-snmp.mustache",
+	"dashboards": {
+		"realtime-summary": {
+			"title": "Přehled",
+			"template": "mac/devices/devices/router/router-mikrotik-netdata-dashboard-overview.mustache"
+		}
+	},
+	"families": {
+		"ecs2100": {
+			"title": "2100",
+			"types": {
+				"ECS2100-10T": {"title": "2100-10T"},
+        "ECS2100-10P": {"title": "2100-10P"},
+				"ECS2100-28T": {"title": "2100-10T"},
+        "ECS2100-28P": {"title": "2100-10P"}
+      }
+		},
+		"ecs3510": {
+			"title": "3510",
+			"types": {
+				"ECS3510-52T": {"title": "3510-52T"}
+			}
+		},
+		"ecs4510": {
+			"title": "4510",
+			"types": {
+				"ECS4510-28F": {"title": "4510-28F"}
+			}
+		}
+	}
+}

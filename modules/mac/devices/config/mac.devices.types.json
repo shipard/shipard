@@ -24,7 +24,10 @@
 		"dk": 8, "fn": "Mikrotik", "cfg": "router/router-mikrotik", "sgClassId": "mac.lan.libs.cfgScripts.Mikrotik_router"
 	},
 	"ad-mikrotik": {
-		"dk": 14, "fn": "AD Mikrotik", "cfg": "ad/ad-mikrotik", "sgClassId": "mac.lan.libs.cfgScripts.Mikrotik_router"
+		"dk": 14, "fn": "Mikrotik", "cfg": "ad/ad-mikrotik", "sgClassId": "mac.lan.libs.cfgScripts.MikrotikAD_SW", "useFamily": 1
+	},
+	"ad-edgecore": {
+		"dk": 14, "fn": "EdgeCore", "cfg": "ad/ad-edgecore", "sgClassId": "mac.lan.libs.cfgScripts.EdgeCore", "useFamily": 1
 	},
 	"server-linux": {
 		"dk": 7, "fn": "Linux", "cfg": "server/server-linux", "useHWMode": 1

@@ -35,6 +35,8 @@
 
 		{"id": "macDeviceType", "name": "Upřesnění typu", "type": "enumString", "len": 30, "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "mac.devices.types", "cfgValue": "", "cfgText": "fn"}},
+    {"id": "mdtFamily", "name": "Řada", "type": "enumString", "len": 30, "options": ["saveOnChange"]},
+    {"id": "mdtType", "name": "Typ", "type": "enumString", "len": 30, "options": ["saveOnChange"]},
 		{"id": "macDeviceCfg", "name": "Nastavení MAC zařízení", "type": "subColumns"},
 		{"id": "localServer", "name": "Místní server", "type": "int", "reference": "mac.lan.devices", "comboViewer": "shipardNodes"},
 
