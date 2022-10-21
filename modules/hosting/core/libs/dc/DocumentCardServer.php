@@ -25,7 +25,7 @@ class DocumentCardServer extends \Shipard\Base\DocumentCard
     if (!$this->serverInfoCore)
     {
       $this->addContent ('body', [
-        'pane' => 'e10-pane e10-pane-table', 'type' => 'line', 'line' => ['text' => 'informace zatím nejsou k dipozici']
+        'pane' => 'e10-pane e10-pane-table', 'type' => 'line', 'line' => ['text' => 'informace zatím nejsou k dispozici']
       ]);
       return;
     }
