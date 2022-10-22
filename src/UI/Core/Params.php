@@ -303,7 +303,10 @@ class Params extends \Shipard\Base\BaseObject
 				}
 			}
 
-			$c .= '<li>';
+			if (isset($pc['title'][0]['unselectable']) && $pc['title'][0]['unselectable'])
+				$c .= '<li>';
+			else
+				$c .= "<li class='selectable'>";
 			$c .= "<div data-value='$pid' data-addparams='$addParams' class='$class'>";
 			if ($level)
 				$c .= $this->app()->ui()->composeTextLine($pc);

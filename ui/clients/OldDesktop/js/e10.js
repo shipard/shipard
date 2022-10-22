@@ -129,7 +129,7 @@ function searchObjectId (e, objectType)
     if (!p.length)
       break;
   }
-	
+
   return '';
 }
 
@@ -247,7 +247,7 @@ function mainBrowserInit (id)
 
 	var mainBrowser = $("#" + id);
   mainBrowserRefreshLayout (id);
-	
+
   $("#mainBrowser").delegate ("#mainBrowserLeftMenu.e10-app-lb-icons li", CLICK_EVENT, function(event) {
     menuItemClick ($(this), event);
   });
@@ -288,7 +288,7 @@ function mainBrowserInit (id)
 		e10ReportChangeParam ($(this));
 	});
 
-	$("body").on (CLICK_EVENT, "div.e10-param-list div.title", function(event) {
+	$("body").on (CLICK_EVENT, "div.e10-param-list li.selectable div.title", function(event) {
 		e10ListParamToggle ($(this));
 	});
 
@@ -471,7 +471,7 @@ function menuItemClick (e, event)
 	}
 
 	e10CloseModals ();
-	
+
 	$("#mainListViewMenu li").removeClass ("activeMainItem");
 	$("#smallPanelMenu li").removeClass ("activeMainItem");
 	e.addClass ("activeMainItem");
@@ -555,7 +555,7 @@ function setPageTitle (title)
 function e10doSizeHints (e, viewersRefreshLayout)
 {
 	e.find ('.e10-wsh-h2b').each (
-		function () 
+		function ()
 		{
 			var thisEl = $(this);
 			var sizer = searchObjectAttr (thisEl, 'data-e10mxw');
@@ -773,7 +773,7 @@ function e10Help (e)
 	var leftOffset = 0;
 	helpEnv.css ({left: 0, top: 0, width: mainBrowser.width (), height: mainBrowser.height()});
 	help.css ({left: mainBrowser.width () - help.width(), top: 0, height: mainBrowser.height()});
-	
+
 	var url = httpApiRootPath + '/api/help';
 
   var jqxhr = $.getJSON (url, function(data) {
@@ -1729,12 +1729,12 @@ function viewerRefreshLayout (id, h)
   var viewer = $('#' + id);
 	var viewerId = viewer.attr ('data-viewer');
 	var viewerType = viewer.attr ('data-viewertype');
-	
+
 	var linesWidth = parseInt (viewer.attr ('data-lineswidth'));
 
 	var totalSizeY = viewer.parent().height ()|0;
   var totalSizeX = viewer.parent().width()|0;
-	
+
 	viewer.width (totalSizeX);
 	viewer.height (totalSizeY);
 
@@ -1810,7 +1810,7 @@ function viewerRefreshLayout (id, h)
 
 		viewerDetailReport.width (detailSizeX - 10);
 		viewerDetailReport.height (totalSizeY);
-		
+
 		viewerDetailReport.show ();
 
 		var panelsTabsSizeY = 0;
@@ -1842,7 +1842,7 @@ function viewerRefreshLayoutListDetail (e)
 	var viewerId = searchObjectId (e, 'viewer');
 	var viewerDetailList = $("#" + viewerId + "Details");
 	var sizeY = viewerDetailList.height ();
-	
+
 	var viewerDetailListHeader	= viewerDetailList.find ('div.e10-mv-ld-header');
 	var viewerDetailListContent = viewerDetailList.find ('div.e10-mv-ld-content');
 	var viewerDetailListTabs	= viewerDetailList.find ('div.e10-mv-ld-tabs');
@@ -1858,7 +1858,7 @@ function viewerRefreshLayoutListDetail (e)
 			      var viewerId = $(this).attr ("id");
 						initViewer (viewerId);
   });*/
-	
+
 	e10doSizeHints (viewerDetailListContent);
 
 	viewerDetailListContent.find('table.default.main').floatThead({
@@ -1904,7 +1904,7 @@ function e10viewerLineDetail (id, visibility)
 	else
 	if (!visibility && !viewerDetailList.is (':visible'))
 		return;
-	
+
 	var viewer = $('#' + id);
 	var viewerLinesContainer = $("#" + id + " >div.e10-sv-body");
 	var totalSizeX = viewer.parent().width();
@@ -1913,7 +1913,7 @@ function e10viewerLineDetail (id, visibility)
 	if (visibility)
 	{
 		$('#mainViewerDetailMenu').show ();
-		
+
 		viewerDetailList.show ();
 		viewerRefreshLayoutListDetail (viewerDetailList);
 	}
@@ -2004,7 +2004,7 @@ function e10viewerNavPath (viewer, tableName, docPK, listItem)
 			detailId = activeDetail.attr ('data-detail');
 	}
 	var apiPath = "/api/detail/" + tableName + "/" + viewerId + '/' + detailId + "/" + docPK + '?mismatch=1';
-	
+
 	return apiPath;
 }
 
@@ -2060,7 +2060,7 @@ function viewerMenuLoadViewer (e)
 
 		return;
 	}
-	
+
 	if (objectType == 'widget')
 	{
 		var className = e.attr ("data-class");
@@ -2148,7 +2148,7 @@ function viewerItemClick (e)
 
 	//if (callUiHook ("viewerItemClick", tableName, $(e)))
 	//	return;
-	
+
 	if (e.hasClass ('active'))
 	{
 		$('#'+toolbarId+' *').remove ();
@@ -2161,7 +2161,7 @@ function viewerItemClick (e)
 		e10viewerLineDetail (viewerId, false);
 		return;
 	}
-	
+
   $('#' + viewerId + 'Items '+rowElement).removeClass ("active");
   e.addClass ("active");
 
@@ -2197,7 +2197,7 @@ function e10viewerSetDetail (viewerId, listItem, toolbarOnly)
 
   var viewer = $("#" + viewerId);
   var tableName = searchParentAttr (listItem, 'data-table');
-	
+
   var detail = $('#' + viewerId + 'Details');
 	var detailHeader = detail.find ('div.e10-mv-ld-header');
 	var detailContent = detail.find ('div.e10-mv-ld-content');
@@ -2592,7 +2592,7 @@ function viewerIncSearch(e, event, force)
 		g_incSearchTimer = setTimeout (function () {viewerIncSearch (e)}, 100);
 		return;
 	}
-	
+
 	if (g_incSearchTimer)
 	{
 		clearTimeout (g_incSearchTimer);
@@ -3044,7 +3044,7 @@ function e10AppendFormProperty (button)
 	var propertyId = button.attr ('data-propid');
 	var groupId = button.attr ('data-groupid');
 
-	var url = httpApiRootPath + "/api/list/" + table + '/' + list + '/append/' + pk  + 
+	var url = httpApiRootPath + "/api/list/" + table + '/' + list + '/append/' + pk  +
 							"?callback=?&rowNumber=" + rowNumber + '&propId=' + propertyId + '&groupId=' + groupId +
 							'&formElementId=' + formElementId;
 
@@ -3538,9 +3538,9 @@ function e10SaveOnChange (input, saveOptions)
 		formData.softChangeInput = 1;
 
 	var focusedId = input.attr ('id');
-	
+
 	var table = e.attr ("data-table");
-	
+
 	var url = "/api/form/" + table + "/save?callback=?&newFormId=" + id;
 	url += "&viewPortWidth="+document.documentElement.clientWidth;
 	e10.server.post(url, formData, function(data)
@@ -3987,7 +3987,7 @@ function df2ViewerDoClick (event, e)
     {
       event.stopPropagation();
       event.preventDefault();
-      showDocLink (e); 
+      showDocLink (e);
       return true;
     }
     return false;
@@ -3997,7 +3997,7 @@ function df2ViewerDoClick (event, e)
   {
       event.stopPropagation();
       event.preventDefault();
-    showDocLink (e); 
+    showDocLink (e);
     return true;
   }
 
@@ -4005,7 +4005,7 @@ function df2ViewerDoClick (event, e)
   {
       event.stopPropagation();
       event.preventDefault();
-    df2saveForm (e); 
+    df2saveForm (e);
     return true;
   }
 
@@ -4038,7 +4038,7 @@ function df2saveForm (srcEl, successFunction)
 	formData.postData = e10DocumentData();
 
 	var table = e.attr ("data-table");
-	
+
 	var url = "/api/form/" + table + "/save?callback=?&newFormId=" + id;
 	url += "&viewPortWidth="+document.documentElement.clientWidth;
 
@@ -4358,7 +4358,7 @@ function df2collectEditFormData (form, data)
 		}
 		else
 		if (thisInput.hasClass ("e10-inputDocLink"))
-		{			
+		{
 			thisInputValue = {};
 			var listItems = thisInput.find ('ul li');
 			for (var ii = 0; ii < listItems.length; ii++)
@@ -4380,7 +4380,7 @@ function df2collectEditFormData (form, data)
 		}
 		else
 			thisInputValue = thisInput.val ();
-		
+
 		if (thisInputValue === null)
 			continue;
 
@@ -4473,7 +4473,7 @@ function df2collectEditFormData (form, data)
 	}
 
 	//alert ("getData2: " + JSON.stringify (newData.recData));
-	
+
 	return newData;
 } // df2collectEditFormData
 
@@ -4483,8 +4483,8 @@ function df2collectEditFormData (form, data)
 
 function initTabs (id)
 {
-  $("#" + id + " >li").each (function () { 
-		
+  $("#" + id + " >li").each (function () {
+
 			      var tabId = $(this).attr ("id");
 						//alert (tabId);
 						var tabContentId = tabId + '-tc';
@@ -5124,9 +5124,9 @@ function e10FormsTabClick (e)
   {
     var activeTab = e.parent().find ("li.active").first();
     activeTab.removeClass ("active");
-    
+
     $("#" + activeTab.attr ('id') + '-tc').hide();
-    
+
     e.addClass ("active");
     $("#" + pageid + '-tc').show();
 
@@ -5142,7 +5142,7 @@ function e10FormsTabClick (e)
 
     return true;
   }
-  
+
   return false;
 }
 
@@ -5574,10 +5574,10 @@ function df2FillViewerLines (viewerId, url, focusPK, appendLines)
 
 /* attachments */
 
-function e10AttWidgetFileSelected (input) 
+function e10AttWidgetFileSelected (input)
 {
 	var infoPanel = $(input).parent().find ('div.e10-att-input-files');
-	
+
 	var info = '<table>';
 	for (var i = 0; i < input.files.length; i++)
 	{
@@ -5592,16 +5592,16 @@ function e10AttWidgetFileSelected (input)
 	info += '</table>';
 	infoPanel.html (info);
 }
-			
 
-function e10AttWidgetUploadFile (button) 
+
+function e10AttWidgetUploadFile (button)
 {
 	var table = searchParentAttr (button, 'data-table');
 	if (table === null)
 		table = '_tmp';
 
 	var pk = searchParentAttr (button, 'data-pk');
-	
+
 	var infoPanel = button.parent().parent().find ('div.e10-att-input-files');
 	var input = button.parent().parent().find ('input:first').get(0);
 	infoPanel.attr ('data-fip', input.files.length);
@@ -5621,26 +5621,26 @@ function e10AttWidgetUploadOneFile (url, file, infoPanel, idx)
 	//xhr.upload.addEventListener ("load", function (e) {e10AttWidgetUploadDone (e, infoPanel, idx);}, false);
 	xhr.onload = function (e) {e10AttWidgetUploadDone (e, infoPanel, idx);};
 	xhr.open ("POST", url);
-	xhr.setRequestHeader ("Cache-Control", "no-cache");  
+	xhr.setRequestHeader ("Cache-Control", "no-cache");
 	xhr.setRequestHeader ("Content-Type", "application/octet-stream");
-	xhr.send(file);  
+	xhr.send(file);
 
 	/*
-req.upload.addEventListener("progress", updateProgress, false);  
-req.upload.addEventListener("load", transferComplete, false);  
-req.upload.addEventListener("error", transferFailed, false);  
-req.upload.addEventListener("abort", transferCanceled, false);  
-	*/	
+req.upload.addEventListener("progress", updateProgress, false);
+req.upload.addEventListener("load", transferComplete, false);
+req.upload.addEventListener("error", transferFailed, false);
+req.upload.addEventListener("abort", transferCanceled, false);
+	*/
 
 }
 
-function e10AttWidgetUploadDone (e, infoPanel, idx) 
+function e10AttWidgetUploadDone (e, infoPanel, idx)
 {
 	var cell = infoPanel.find ('table tr:eq('+idx+') td:eq(2)');
 	cell.css ({"background-color": "green"}).attr('data-ufn', e.target.responseText);
 	var fip = parseInt (infoPanel.attr ('data-fip')) - 1;
 	infoPanel.attr ('data-fip', fip);
-	
+
 	if (fip == 0)
 	{
 		if (infoPanel.parent().attr('data-table'))
@@ -5655,9 +5655,9 @@ function e10AttWidgetUploadDone (e, infoPanel, idx)
 	}
 }
 
-function e10AttWidgetUploadProgress (e, infoPanel, idx) 
+function e10AttWidgetUploadProgress (e, infoPanel, idx)
 {
-	if (e.lengthComputable) 
+	if (e.lengthComputable)
 	{
 		var percentage = Math.round((e.loaded * 100) / e.total);
 		var cell = infoPanel.find ('table tr:eq('+idx+') td:eq(2)');
@@ -6128,7 +6128,7 @@ function e10NCSetButton (data)
 	{
 		if (data.ntfBadges[badgeId])
 			g_activeNtfBadges[badgeId] = data.ntfBadges[badgeId];
-		setNotificationBadge(badgeId);	
+		setNotificationBadge(badgeId);
 	}
 }
 
@@ -6596,7 +6596,7 @@ function mqttStartClient (serverIndex, disableMessage)
 		useSSL: true
 		}
 		);
-	
+
 	/*
 	ws.mqttClient = new mqtt.connect('wss://' + ws.fqdn + ':' + portNumber);
 	ws.mqttClient.on("connect", function(){wsSetState (serverIndex, 'open'); mqttSubscribeAll (serverIndex);});

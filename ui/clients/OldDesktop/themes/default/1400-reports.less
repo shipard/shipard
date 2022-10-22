@@ -217,7 +217,6 @@ div.e10-param-list {
 		li {
 			>.title {
 				position: relative;
-				cursor: pointer;
 				padding: .5ex 1ex;
 
 				span.e10-ntf-badge {
@@ -228,13 +227,18 @@ div.e10-param-list {
 				}
 			}
 		}
+		li.selectable {
+			>.title {
+				cursor: pointer;
+			}
+		}
 
-		>li>div.title.active, >li>div.title.active:hover {
+		>li.selectable>div.title.active, >li.selectable>div.title.active:hover {
 			/*background-color: @viewerFulltextSearchBackground; color: #eee;*/
 			background-color: @appMenuFocusedItemBackground; color: @appMenuTextColor;
 
 		}
-		>li>div.title:hover {
+		>li.selectable>div.title:hover {
 			/*background-color: @viewerFocusedRowBackground; color: white;*/
 			color: @appMenuHoveredItemText;background-color: @appMenuHoveredItemBackground;
 		}
