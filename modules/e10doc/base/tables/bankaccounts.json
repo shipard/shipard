@@ -10,10 +10,12 @@
     {"id": "swift", "name": "SWIFT", "type": "string", "len": 30},
 		{"id": "id", "name": "ID", "type": "string", "len": 10},
     {"id": "ebankingId", "name": "ID pro ebanking", "type": "string", "len": 80},
-    {"id": "currency", "name": "Měna", "type": "enumString", "len": 3, 
+    {"id": "currency", "name": "Měna", "type": "enumString", "len": 3,
 	    "enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
 		{"id": "exclFromDashboard", "name": "Nedávat do Přehledu", "type": "logical"},
 		{"id": "order", "name": "Pořadí", "type": "int"},
+
+    {"id": "bankAccountsGroup", "name": "Skupina účtů", "type": "int", "reference": "e10doc.base.bankAccountsGroups"},
 
 		{"id": "downloadStatements", "name": "Automatické stahování výpisů", "type": "enumString", "len": 20,
 			"enumCfg": {"cfgItem": "ebanking.downloads", "cfgValue": "", "cfgText": "title"}},

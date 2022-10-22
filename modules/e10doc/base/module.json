@@ -2,7 +2,7 @@
   "id": "e10doc.base",
   "name": "Číselníky",
   "tables": [
-		"cashboxes", "bankaccounts", "warehouses", "warehousesoptions", "fiscalyears", "fiscalmonths",
+		"cashboxes", "bankaccounts", "bankAccountsGroups", "warehouses", "warehousesoptions", "fiscalyears", "fiscalmonths",
 		"taxperiods", "taxRegs", "centres", "docnumbers", "dockinds",
 		"exchangeRatesLists", "exchangeRatesValues",
 		"statsPersonDocType", "statsItemDocType", "statsPersonItemDocType",

@@ -11,6 +11,12 @@
 		"table": "e10doc.base.bankaccounts",
 		"viewer": "default"
 	},
+	"bankAccountsGroups": {
+		"name": "Skupiny Vlastních bankovních spojení", "order": 88000, "group": "codebase",
+		"type": "viewer",
+		"table": "e10doc.base.bankAccountsGroups",
+		"viewer": "default"
+	},
 	"centres": {
 		"name": "Střediska", "order": 17000, "group": "codebase",
 		"type": "viewer",

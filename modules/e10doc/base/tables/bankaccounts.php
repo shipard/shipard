@@ -82,6 +82,7 @@ class TableBankAccounts extends DbTable
 				'bank' => $r['bank'], 'bankAccount' => $r['bankAccount'],
 				'debsAccountId' => isset ($r['debsAccountId']) ? $r['debsAccountId'] : '',
 				'curr' => $r['currency'], 'efd' => $r['exclFromDashboard'],
+				'group' => $r['bankAccountsGroup'],
 				'ds' => $r['downloadStatements'], 'us' => $r['uploadStatements'], 'dt' => $r['downloadTransactions'],
 			];
 
@@ -124,7 +125,10 @@ class ViewBankAccounts extends TableView
 	{
 		$fts = $this->fullTextSearch ();
 
-		$q [] = 'SELECT * FROM [e10doc_base_bankaccounts]';
+		$q = [];
+		array_push ($q, 'SELECT [accounts].*, [accountsGroups].[fullName] AS [accountGroupFullName]');
+		array_push ($q, ' FROM [e10doc_base_bankaccounts] AS [accounts]');
+		array_push ($q, ' LEFT JOIN [e10doc_base_bankAccountsGroups] AS [accountsGroups] ON [accounts].[bankAccountsGroup] = [accountsGroups].ndx');
 		array_push ($q, ' WHERE 1');
 
 		// -- fulltext
@@ -132,13 +136,14 @@ class ViewBankAccounts extends TableView
 		{
 			array_push ($q, ' AND (');
 			array_push ($q,
-				' [fullName] LIKE %s', '%'.$fts.'%', ' OR [shortName] LIKE %s', '%'.$fts.'%',
-				' OR [bankAccount] LIKE %s', '%'.$fts.'%'
+				' [accounts].[fullName] LIKE %s', '%'.$fts.'%',
+				' OR [accounts].[shortName] LIKE %s', '%'.$fts.'%',
+				' OR [accounts].[bankAccount] LIKE %s', '%'.$fts.'%'
 			);
 			array_push ($q, ')');
 		}
 
-		$this->queryMain ($q, '', ['[order]', '[id]', '[ndx]']);
+		$this->queryMain ($q, '[accounts].', ['[accounts].[order]', '[id]', '[accounts].[ndx]']);
 		$this->runQuery ($q);
 	}
 
@@ -147,9 +152,12 @@ class ViewBankAccounts extends TableView
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['t1'] = $item['fullName'];
 		$listItem ['i1'] = $item['id'];
-		$listItem ['t2'] = $item['bankAccount'];
+		$listItem ['t2'] = [['text' => $item['bankAccount'], 'class' => '']];
 		$listItem ['i2'] = $item['iban'];
 		$listItem ['icon'] = $this->table->tableIcon($item);
+
+		if ($item['bankAccountsGroup'])
+			$listItem ['t2'][] = ['text' => $item['accountGroupFullName'], 'class' => 'label label-info', 'icon' => 'iconFolder'];
 
 		$props = [];
 		if ($item['downloadStatements'] !== '' && $item['downloadStatements'] !== 'none')
@@ -207,6 +215,7 @@ class FormBankAccounts extends TableForm
 					$this->addColumnInput ('debsAccountId');
 					$this->addColumnInput ('order');
 					$this->addColumnInput ('exclFromDashboard');
+					$this->addColumnInput ('bankAccountsGroup');
 				$this->closeTab();
 				$this->openTab ();
 					$this->addColumnInput ('ebankingId');

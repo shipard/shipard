@@ -1,29 +1,119 @@
 <?php
 
 namespace e10doc\bank\libs;
+use \Shipard\Utils\Utils;
+use \Shipard\Viewer\TableViewPanel;
 
 
+/**
+ * class ViewBankDocs
+ */
 class ViewBankDocs extends \e10doc\core\ViewHeads
 {
+	var $bankAccountsParam = NULL;
+	var $bankAccounts = NULL;
+	var $bankAccountGroups = NULL;
+	var $bankAccountNdx = 0;
+
+
 	public function init ()
 	{
+		$this->bankAccounts = $this->table->app()->cfgItem ('e10doc.bankAccounts', []);
+		$this->bankAccountsGroups = $this->table->app()->cfgItem ('e10doc.bankAccountsGroups', []);
+
+		if (count($this->bankAccounts) > 6 || count($this->bankAccountsGroups))
+		{
+			$this->usePanelLeft = TRUE;
+		}
+
 		$this->docType = 'bank';
 		parent::init();
 
-		$this->bankAccounts = $this->table->app()->cfgItem ('e10doc.bankAccounts', array());
-		$activeBankAccount = key($this->bankAccounts);
-		forEach ($this->bankAccounts as $bankAccountNdx => $r)
+		if ($this->usePanelLeft)
 		{
-			$bt [] = array ('id' => $bankAccountNdx, 'title' => $r['shortName'], 'active' => ($bankAccountNdx == $activeBankAccount),
-											'addParams' => array ('person' => $r['bank'], 'myBankAccount' => $bankAccountNdx, 'currency' => $r['curr']));
+			$enum = [];
+
+			forEach ($this->bankAccounts as $bankAccountNdx => $r)
+			{
+				if ($r['group'] ?? 0)
+					continue;
+
+				$addParams = ['person' => $r['bank'], 'myBankAccount' => $bankAccountNdx, 'currency' => $r['curr']];
+
+				$enum[$bankAccountNdx] = ['text' => $r['shortName'], 'addParams' => $addParams, 'class' => ''];
+
+				if (!$this->bankAccountNdx)
+					$this->bankAccountNdx = intval($bankAccountNdx);
+			}
+
+			foreach ($this->bankAccountsGroups as $bagNdx => $bagCfg)
+			{
+				if (!isset($bagCfg['accounts']) || !count($bagCfg['accounts']))
+					continue;
+				$enum['G'.$bagNdx] = [
+					['text' => $bagCfg['sn'], 'class' => '', 'icon' => $bagCfg['icon'], 'unselectable' => 1, 'subItems' => []],
+				];
+			}
+
+			forEach ($this->bankAccounts as $bankAccountNdx => $r)
+			{
+				$addParams = ['person' => $r['bank'], 'myBankAccount' => $bankAccountNdx, 'currency' => $r['curr']];
+
+				if ($r['group'] ?? 0)
+				{
+					$enum['G'.$r['group']][0]['subItems'][$bankAccountNdx] = [
+						['text' => $r['shortName'], 'addParams' => $addParams, 'class' => '']
+					];
+				}
+				else
+					continue;
+
+				if (!$this->bankAccountNdx)
+					$this->bankAccountNdx = intval($bankAccountNdx);
+			}
+
+			if (isset($_POST['bankAccount']))
+				$this->bankAccountNdx = intval($_POST['bankAccount']);
+
+			$this->bankAccountsParam = new \Shipard\UI\Core\Params ($this->app);
+			$this->bankAccountsParam->addParam('switch', 'bankAccount', ['title' => '', 'defaultValue' => strval($this->bankAccountNdx), 'switch' => $enum, 'list' => 1]);
+			$this->bankAccountsParam->detectValues();
 		}
-		$this->setBottomTabs ($bt);
+		else
+		{
+			$activeBankAccount = key($this->bankAccounts);
+			forEach ($this->bankAccounts as $bankAccountNdx => $r)
+			{
+				$bt [] = [
+					'id' => $bankAccountNdx, 'title' => $r['shortName'], 'active' => ($bankAccountNdx == $activeBankAccount),
+					'addParams' => ['person' => $r['bank'], 'myBankAccount' => $bankAccountNdx, 'currency' => $r['curr']]
+				];
+			}
+			$this->setBottomTabs ($bt);
+		}
+	}
+
+	public function createPanelContentLeft (TableViewPanel $panel)
+	{
+		if (!$this->bankAccountsParam)
+			return;
+
+		$qry = [];
+		$qry[] = ['style' => 'params', 'params' => $this->bankAccountsParam];
+		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}
 
 	public function selectRows ()
 	{
 		$mainQuery = $this->mainQueryId ();
-		$myBankAccount = intval($this->bottomTabId ());
+		$myBankAccount = 0;
+
+		if ($this->bankAccountNdx)
+			$myBankAccount = $this->bankAccountNdx;
+		elseif ($this->bankAccountsParam)
+			$myBankAccount = intval($this->bankAccountsParam->detectValues()['bankAccount']['value']);
+		else
+			$myBankAccount = intval($this->bottomTabId ());
 
 		$q [] = 'SELECT';
 		array_push ($q, ' heads.ndx, [docNumber], [title], [initBalance], [balance], [debit], [credit], [docOrderNumber],');
@@ -67,18 +157,18 @@ class ViewBankDocs extends \e10doc\core\ViewHeads
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['icon'] = $this->icon;
 		$listItem ['t1'] = strval($item['docOrderNumber']);
-		$listItem ['i1'] = \E10\nf ($item['initBalance'], 2) . $moneySep . \E10\nf ($item['balance'], 2);
+		$listItem ['i1'] = Utils::nf ($item['initBalance'], 2) . $moneySep . Utils::nf ($item['balance'], 2);
 
-		$dc = array();
+		$dc = [];
 		if ($item['debit'] != 0.0)
-			$dc [] = array ('icon' => 'system/iconMinusSquare', 'text' => \E10\nf ($item['debit'], 2));
+			$dc [] = ['icon' => 'system/iconMinusSquare', 'text' => Utils::nf ($item['debit'], 2)];
 		if ($item['credit'] != 0.0)
-			$dc [] = array ('icon' => 'system/iconPlusSquare', 'text' => \E10\nf ($item['credit'], 2));
+			$dc [] = ['icon' => 'system/iconPlusSquare', 'text' => Utils::nf ($item['credit'], 2)];
 		$listItem ['i2'] = $dc;
 
 		$listItem ['t3'] = $item ['title'];
 
-		$props [] = ['icon' => 'system/iconCalendar', 'text' => \E10\df ($item['dateAccounting'], '%D'), 'class' => ''];
+		$props [] = ['icon' => 'system/iconCalendar', 'text' => Utils::datef ($item['dateAccounting'], '%D'), 'class' => ''];
 
 		$docNumber = ['icon' => 'system/iconFile', 'text' => $item ['docNumber'], 'class' => ''];
 		if (isset($item['docStateAcc']) && $item['docStateAcc'] == 9)
@@ -89,4 +179,3 @@ class ViewBankDocs extends \e10doc\core\ViewHeads
 		return $listItem;
 	}
 }
-

@@ -1,0 +1,23 @@
+{
+  "id": "e10doc.base.bankAccountsGroups", "sql": "e10doc_base_bankAccountsGroups", "name": "Skupiny Vlastních bankovních spojení",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "fullName", "name": "Název", "type": "string", "len": 120},
+    {"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 40},
+
+		{"id": "order", "name": "Pořadí", "type": "int"},
+		{"id": "icon", "name": "Ikona", "type": "string", "len": 50},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+  "views": [
+    {"id": "default", "class": "e10doc.base.ViewBankAccountsGroups"}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10doc.base.FormBankAccountsGroup"}
+  ],
+	"options": ["configSource"],
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}
