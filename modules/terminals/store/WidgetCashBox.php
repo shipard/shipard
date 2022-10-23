@@ -16,6 +16,8 @@ class WidgetCashBox extends WidgetPane
 	var $products = [];
 	var $units;
 
+	var $embeddMode = 0;
+
 	var $today = NULL;
 
 	var $disablePaymentCards = 0;
@@ -158,7 +160,11 @@ class WidgetCashBox extends WidgetPane
 
 		$c .= '</div>';
 		$c .= "<div>";
-		$c .= "<button class='link btn btn-info' id='e10-back-button' data-path='#start'>".$this->app()->ui()->icon('system/actionBack')." Konec</button>";
+
+
+		if (!$this->embeddMode)
+			$c .= "<button class='link btn btn-info' id='e10-back-button' data-path='#start'>".$this->app()->ui()->icon('system/actionBack')." Konec	</button>";
+
 		$c .= "<button class='btn btn-info pull-right e10-terminal-action' data-action='print-retry' id='terminal-print-retry'>".$this->app()->ui()->icon('system/actionPrint')."</button>";
 		$c .= '</div>';
 		$c .= '<b>'.utils::es('Můžete prodávat').'</b><br/>';
@@ -492,6 +498,10 @@ class WidgetCashBox extends WidgetPane
 
 	public function createContent ()
 	{
+		$emp = $this->app()->testGetParam('embeddMode');
+		if ($emp === '1')
+			$this->embeddMode = 1;
+
 		$this->today = new \DateTime();
 
 		$this->disablePaymentCards = intval($this->app->cfgItem ('options.e10doc-sale.cashregMobileDisablePaymentCards', 0));
