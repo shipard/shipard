@@ -24,6 +24,7 @@
 			"e10doc.base.whPlaces": {"default": 2, "tree":  2},
 			"e10doc.base.centres": {"default": 2},
 			"e10doc.base.bankaccounts": {"default": 2},
+			"e10doc.base.bankAccountsGroups": {"default": 2},
 			"e10doc.base.cashboxes": {"default": 2},
 			"e10doc.base.transports": {"default": 2},
 			"e10doc.base.taxRegs": {"default": 2},
