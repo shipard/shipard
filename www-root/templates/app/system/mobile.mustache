@@ -9,12 +9,12 @@
 
     <meta name="robots" content="noindex, nofollow">
     <title>{{page.pageTitle}}</title>
-    {{#cfgItem.options.experimental.mobileuiTheme}}
-        <link href="{{dsRoot}}/www-root/.ui/OldMobile/themes/{{cfgItem.options.experimental.mobileuiTheme}}/style.css?v={{cfgItem.cfgID}}" rel="stylesheet">
-    {{/cfgItem.options.experimental.mobileuiTheme}}
-    {{^cfgItem.options.experimental.mobileuiTheme}}
+    {{#cfgItem.options.appearanceApp.mobileuiTheme}}
+        <link href="{{dsRoot}}/www-root/.ui/OldMobile/themes/{{cfgItem.options.appearanceApp.mobileuiTheme}}/style.css?v={{cfgItem.cfgID}}" rel="stylesheet">
+    {{/cfgItem.options.appearanceApp.mobileuiTheme}}
+    {{^cfgItem.options.appearanceApp.mobileuiTheme}}
         <link href="{{dsRoot}}/www-root/.ui/OldMobile/themes/md-teal/style.css?v={{cfgItem.cfgID}}" rel="stylesheet">
-    {{/cfgItem.options.experimental.mobileuiTheme}}
+    {{/cfgItem.options.appearanceApp.mobileuiTheme}}
 
     <style>
         .col-xs-10>input {height: 30px; font-size: 16px;}

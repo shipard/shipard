@@ -37,7 +37,7 @@ class PageObject extends Utility
 
 		if ($this->appMode)
 		{
-			$mobileuiTheme = $this->app->cfgItem ('options.experimental.mobileuiTheme', 'md-teal');
+			$mobileuiTheme = $this->app->cfgItem ('options.appearanceApp.mobileuiTheme', 'md-teal');
 			if ($mobileuiTheme === '')
 				$mobileuiTheme = 'md-teal';
 
@@ -104,7 +104,7 @@ class PageObject extends Utility
 		$absUrl = '';
 		$cfgID = $this->app->cfgItem ('cfgID');
 
-		$mobileuiTheme = $this->app->cfgItem ('options.experimental.mobileuiTheme', 'md-default');
+		$mobileuiTheme = $this->app->cfgItem ('options.appearanceApp.mobileuiTheme', 'md-default');
 		if ($mobileuiTheme === '')
 			$mobileuiTheme = 'md-default';
 		$themeStatusColor = self::$themeStatusColor[$mobileuiTheme];

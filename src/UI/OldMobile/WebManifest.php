@@ -18,7 +18,7 @@ class WebManifest extends \Shipard\UI\OldMobile\PageObject
 
 	public function createPageCode()
 	{
-		$mobileuiTheme = $this->app->cfgItem ('options.experimental.mobileuiTheme', 'md-teal');
+		$mobileuiTheme = $this->app->cfgItem ('options.appearanceApp.mobileuiTheme', 'md-teal');
 		if ($mobileuiTheme === '')
 			$mobileuiTheme = 'md-teal';
 		$themeStatusColor = self::$themeStatusColor[$mobileuiTheme];
