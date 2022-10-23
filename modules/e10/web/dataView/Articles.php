@@ -62,10 +62,16 @@ class Articles extends DataView
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
-			$item = ['ndx' => $r['ndx'], 'title' => $r['title'], 'datePub' => $r['datePub']];
+			$item = [
+				'ndx' => $r['ndx'],
+				'title' => $r['title'],
+				'author' => $r['authorFullName'],
+				'datePub' => $r['datePub'],
+			];
 
 			$texy->setOwner($r, 'e10.web.articles');
 			$item['perex'] = $this->template->renderPagePart('content', $texy->process ($r['perex']));
+			$item['htmlText'] = $this->template->renderPagePart('content', $texy->process ($r['text']));
 			if ($this->urlPrefix !== '')
 				$item['url'] = $this->urlPrefix.'/'.$r['ndx'];
 
