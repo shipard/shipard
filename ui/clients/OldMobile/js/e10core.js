@@ -157,16 +157,16 @@ function e10client () {
 	{
 		if (e.attr('data-object-class-id') === undefined)
 			return;
-	
+
 		var requestParams = {};
 		requestParams['object-class-id'] = e.attr('data-object-class-id');
 		requestParams['action-type'] = e.attr('data-action-type');
 		elementPrefixedAttributes (e, 'data-action-param-', requestParams);
 		if (e.attr('data-pk') !== undefined)
 			requestParams['pk'] = e.attr('data-pk');
-	
+
 			e10.server.api(requestParams, function(data) {
-	
+
 			if (e.parent().hasClass('btn-group'))
 			{
 				e.parent().find('>button.active').removeClass('active');
@@ -485,7 +485,7 @@ function e10client () {
 
 		$("body").on (e10.CLICK_EVENT, "li.e10-static-tab", function(event) {
 			e10StaticTab ($(this), event);
-		});	
+		});
 
 		$("body").on ('keydown', function(event) {
 			e10.keyDown(event, $(this));
@@ -576,6 +576,9 @@ e10client.prototype.loadPage = function (dataPath, successFunction, errorFunctio
 		url += '?app=1';
 	else
 		url += dataPath + '?app=1';
+
+	if (typeof g_initDataPath !== 'undefined' && window['g_UserInfo'] !== undefined && g_initDataPath !== '')
+		url += '&embeddMode=1';
 
 	if (e10.standaloneApp)
 		url += '&standaloneApp='+e10.standaloneApp;

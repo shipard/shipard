@@ -21,6 +21,7 @@ class PageObject extends Utility
 	protected $definition = NULL;
 
 	var $appMode = FALSE;
+	var $embeddMode = 0;
 	var $dsMode = 1;
 	var $wss = [];
 
@@ -28,6 +29,10 @@ class PageObject extends Utility
 
 	public function createPageCode ()
 	{
+		$firstUrlPart = $this->app->requestPath(1);
+		if ($firstUrlPart === '!')
+			$this->embeddMode = 1;
+
 		$c = '';
 
 		if ($this->appMode)
@@ -133,7 +138,7 @@ class PageObject extends Utility
 
 			$c .= "<meta name=\"generator\" content=\"E10 ".__E10_VERSION__."\">\n";
 			$c .= "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n";
-			
+
 			$themeUrl = "$absUrl{$this->app->urlRoot}/www-root/.ui/OldMobile/themes/" . $mobileuiTheme . "/$style?vv={$cfgID}";
 			$c .= "<link rel='stylesheet' type='text/css' href='$themeUrl'/>\n";
 
@@ -254,7 +259,9 @@ class PageObject extends Utility
 
 		$c .= "<div id='e10-page-header' class='e10mui pageHeader'>";
 
-		$lmb = $this->leftPageHeaderButton();
+		$lmb = NULL;
+		if (!$this->embeddMode)
+			$lmb = $this->leftPageHeaderButton();
 		if ($lmb)
 		{
 			$c .= "<span ";
@@ -284,7 +291,9 @@ class PageObject extends Utility
 		$c .= "<h2>".utils::es($this->title2())."</h2>";
 		$c .= '</div>';
 
-		$rmbs = $this->rightPageHeaderButtons();
+		$rmbs = NULL;
+		if (!$this->embeddMode)
+			$rmbs = $this->rightPageHeaderButtons();
 		if ($rmbs)
 		{
 			$c .= "<span class='rmbs'>";
@@ -322,9 +331,24 @@ class PageObject extends Utility
 			}
 			$c .= '</span>';
 		}
-		$c .= $this->createPageCodeHeaderTabs();
+		if (!$this->embeddMode)
+			$c .= $this->createPageCodeHeaderTabs();
 		$c .= "</div>";
 
+		if ($this->embeddMode)
+		{
+			$embeddParts = [];
+			for($epi = 2; $epi < 6; $epi++)
+			{
+				$up = $this->app->requestPath($epi);
+				if ($up === '')
+					break;
+				$embeddParts[] = $up;
+			}
+
+			if (count($embeddParts))
+				$c .= "<script>const g_initDataPath = '".implode('/', $embeddParts)."';</script>";
+		}
 		return $c;
 	}
 

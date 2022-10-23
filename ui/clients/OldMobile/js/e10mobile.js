@@ -19,6 +19,12 @@ $(function () {
 
 	e10.options.loadAppSettings();
 	e10.server.setHttpServerRoot(httpApiRootPath);
+
+	if (typeof g_initDataPath !== 'undefined' && window['g_UserInfo'] !== undefined && g_initDataPath !== '')
+	{
+		e10.loadPage(g_initDataPath);
+	}
+
 	e10.wss.init();
 
 	if ('serviceWorker' in navigator && e10ServiceWorkerURL !== undefined) {

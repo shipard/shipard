@@ -96,7 +96,7 @@ class Router extends Utility
 
 			touch (__APP_DIR__.'/tmp/api/access/'.$this->app->user->data ['id'].'_'.$_SERVER ['REMOTE_ADDR'].'_'.$this->app->deviceId);
 
-			if ($first === '')
+			if ($first === '' || $first === '!')
 				$object = $this->app->createObject('Shipard.UI.OldMobile.StartMenu');
 			else
 			if ($first === 'widget')
