@@ -13,6 +13,19 @@
 			"items": {
 				"cashReg": {"t1": "Prodejky", "disabledCfgItem": "options.e10doc-sale.disableCashreg", "object": "viewer", "table": "e10doc.core.heads", "viewer": "cashregisterall", "icon": "docType/cashReg", "order": 151000}
 			}
+		},
+		"agendy": {
+			"items": {
+				"cashRegTouch": {
+					"t1": "Kasa", "object": "widget", "class": "e10.widgetDashboard",
+					"subclass": "storeCashRegister", "icon": "iconCashBox",
+					"order": 860000, "role": "store", "enabledCfgItem": "options.e10doc-sale.cashregOnDesktopAppHome"
+				},
+				"defaulters": {
+					"t1": "Dlužníci", "object": "viewer", "table": "e10.persons.persons", "viewer": "defaulters",
+					"icon": "detailDeptors", "order": 940000, "role": "store", "enabledCfgItem": "options.e10doc-sale.debtorsOnDesktopAppHome"
+				}
+			}
 		}
 	},
 	"mobileui": {

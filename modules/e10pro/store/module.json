@@ -10,6 +10,8 @@
 	  {"id": "+e10.dashboardInfo", "file": "dashboardInfo.json"},
 		{"id": "+reports", "file": "reports.json"},
 		{"id": "+e10.balance", "name": "Saldo", "file": "balance.json"},
-	  {"id": "+appCache", "file": "appCache.json"}
+	  {"id": "+appCache", "file": "appCache.json"},
+    {"id": "+widgets", "file": "widgets.json"},
+		{"id": "+dashboards", "file": "dashboards.json"}
  ]
 }

@@ -11,6 +11,9 @@
 				{"docType": ["cashreg", "orderin", "invno", "invpo"], "_access": 2, "_name": "Prodejky, Faktury a Objednávky přijaté"}
 			]
 		},
+		"widgets": {
+			"e10pro.store.libs.WidgetCashRegister": 2
+		},
 		"reports": {"e10pro.reports.terminal_daily.reportDaily": 1, "e10pro.store.reportBalanceSalesInvoice": 2}
 	},
 	"sale": {

@@ -1,6 +1,8 @@
 {
 	"e10doc-sale": {
 		"options": [
+			{"cfgKey": "debtorsOnDesktopAppHome", "cfgName": "Povolit Dlužníky v Domečku",
+				"options": {"0": "ne", "1": "ano"}},
 			{"cfgKey": "disableCashreg", "cfgName": "Vypnout Prodejky a maloobchodní kasu",
 				"options": {"0": "ne", "1": "ano"}},
 			{"cfgKey": "cashRegSalePricesType", "cfgName": "Prodejní ceny na prodejkách jsou",
@@ -16,6 +18,8 @@
 			{"cfgKey": "cashregMobileDisablePaymentCards", "cfgName": "V mobilní kase zakázat úhrady kartou",
 				"options": {"0": "ne", "1": "ano"}},
 			{"cfgKey": "cashregMobileEnablePaymentButtons", "cfgName": "V mobilní kase povolit tlačítka pro úhradu",
+				"options": {"0": "ne", "1": "ano"}},
+			{"cfgKey": "cashregOnDesktopAppHome", "cfgName": "Povolit mobilní kasu v Domečku",
 				"options": {"0": "ne", "1": "ano"}},
 			{"cfgKey": "cashregItemOtherTaxRate1", "cfgName": "Položka 'Ostatní prodej' základní sazba", "reference": "e10.witems.items"},
 			{"cfgKey": "cashregItemOtherTaxRate2", "cfgName": "Položka 'Ostatní prodej' snížená sazba", "reference": "e10.witems.items"},

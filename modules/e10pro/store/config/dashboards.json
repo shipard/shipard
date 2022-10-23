@@ -1,0 +1,15 @@
+{
+	"storeCashRegister": {
+		"name": "Kasa",
+		"disableTopToolbar": 1,
+		"panels": {
+			"cashRegister": {
+				"name": "Kasa",
+				"icon": "iconCashBox",
+				"order": 1000,
+				"fullsize": 1,
+				"rows": {"main": {"order": 10000, "class": "full"}}
+			}
+		}
+	}
+}
