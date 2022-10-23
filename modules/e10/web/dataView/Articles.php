@@ -17,6 +17,8 @@ class Articles extends DataView
 	var $urlPrefix = '';
 	var $today;
 
+	var $buttonText = '';
+
 	protected function init()
 	{
 		parent::init();
@@ -24,6 +26,8 @@ class Articles extends DataView
 
 		$this->maxCount = $this->requestParam ('maxCount', 6);
 		$this->urlPrefix = $this->requestParam('urlPrefix');
+		$this->buttonText = $this->requestParam('buttonText', 'Přečíst');
+
 		$this->checkRequestParamsList('section');
 
 		$this->today = utils::today('Y-m-d');
@@ -144,7 +148,7 @@ class Articles extends DataView
 			if (isset($article['url']))
 			{
 				$c .= "<a href='{$article['url']}' class='btn btn-primary'>";
-				$c .= utils::es('Přečíst');
+				$c .= utils::es($this->buttonText);
 				$c .= '</a>';
 			}
 
