@@ -32,6 +32,12 @@ class PageObject extends Utility
 		$firstUrlPart = $this->app->requestPath(1);
 		if ($firstUrlPart === '!')
 			$this->embeddMode = 1;
+		else
+		{
+			$emp = $this->app()->testGetParam('embeddMode');
+			if ($emp === '1')
+				$this->embeddMode = 1;
+		}
 
 		$c = '';
 

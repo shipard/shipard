@@ -46,6 +46,9 @@ class Viewer extends \Shipard\UI\OldMobile\PageObject
 
 	public function leftPageHeaderButton ()
 	{
+		if ($this->embeddMode)
+			return NULL;
+
 		$parts = explode ('.', $this->definition['itemId']);
 		$lmb = ['icon' => PageObject::backIcon, 'path' => '#'.$parts['0'], 'backButton' => 1];
 		return $lmb;
