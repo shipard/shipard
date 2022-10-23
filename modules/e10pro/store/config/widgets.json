@@ -4,5 +4,11 @@
 		"dashboard": "storeCashRegister",
 		"panel": "cashRegister", "order": 1001, "row": "main", "width": 12,
 		"type": "wkfWall"
+	},
+	{
+		"class": "e10pro.store.libs.WidgetDefaulters",
+		"dashboard": "storeCashRegister",
+		"panel": "defaulters", "order": 1001, "row": "main", "width": 12,
+		"type": "wkfWall"
 	}
 ]

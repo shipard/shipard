@@ -9,6 +9,13 @@
 				"order": 1000,
 				"fullsize": 1,
 				"rows": {"main": {"order": 10000, "class": "full"}}
+			},
+			"defaulters": {
+				"name": "Dlužníci",
+				"icon": "detailDeptors",
+				"order": 2000,
+				"fullsize": 1,
+				"rows": {"main": {"order": 10000, "class": "full"}}
 			}
 		}
 	}
