@@ -2,13 +2,14 @@
 
 v příloze Vám zasíláme výkupní lístek č. {{data.head.docNumber}} ze dne {{data.head.dateAccounting}}.
 
-Žádáme Vás o vystavení daňového dokladu a jeho zaslání na naši adresu.
+{{#data.flags.payInvoice}}
+Žádáme Vás o vystavení daňového dokladu a jeho zaslání elektronicky na naši e-mailovou adresu.
 Materiál spadá do základní sazby DPH a daňový doklad musí být v režimu
 přenesení daňové povinnosti (§92a-92e).
 
+
 Dodavatel: {{data.person.fullName}}
 {{@dict;Celkem k úhradě}}: {{data.head.print.toPay}} {{data.head.print.currency}}
-
 
 Odběratel:
 {{data.owner.fullName}}
@@ -21,6 +22,14 @@ Odběratel:
 
 
 Děkujeme a těšíme se na další spolupráci.
+{{/data.flags.payInvoice}}
+
+{{#data.flags.payBankOrder}}
+Částka {{data.head.print.toPay}} {{data.head.print.currency}} bude převedena ještě dnes na Váš účet číslo {{data.head.bankAccount}}, peníze budete mít na účtu nejpozději další pracovní den ráno.
+
+
+Děkujeme a těšíme se na Vaši další návštěvu.
+{{/data.flags.payBankOrder}}
 
 S pozdravem
 
