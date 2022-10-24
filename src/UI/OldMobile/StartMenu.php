@@ -67,9 +67,6 @@ class StartMenu extends \Shipard\UI\OldMobile\PageObject
 				unset($this->content[$tabId]['groups']);
 			if (isset($this->content[$tabId]['items']) && !count($this->content[$tabId]['items']))
 				unset($this->content[$tabId]['items']);
-
-			if (!isset($this->content[$tabId]['groups']) && !isset($this->content[$tabId]['items']))
-				unset ($this->content[$tabId]);
 		}
 
 		// -- start tiles
@@ -190,7 +187,7 @@ class StartMenu extends \Shipard\UI\OldMobile\PageObject
 					{
 						if (isset($btn['native']) && $this->app->clientType [1] !== 'cordova')
 							continue;
-						
+
 						$c .= "<li class='right e10-trigger-action'";
 						$c .= utils::dataAttrs ($btn);
 						$c .= '>';
@@ -351,7 +348,12 @@ class StartMenu extends \Shipard\UI\OldMobile\PageObject
 
 		foreach ($this->content as $tabId => $tabContent)
 		{
-			$tabs[$tabId] = ['text' => isset($tabContent['name']) ? $tabContent['name'] : 'Q', 'icon' => 'system/iconFile'];
+			if ((!isset($tabContent['groups']) || !count($tabContent['groups'])) && (!isset($tabContent['items'])||!count($tabContent['items'])))
+				continue;
+
+			$tabs[$tabId] = [
+				'text' => isset($tabContent['name']) ? $tabContent['name'] : 'QAA:'.json_encode($tabContent),
+				'icon' => 'system/iconFile'];
 		}
 
 		return $tabs;
