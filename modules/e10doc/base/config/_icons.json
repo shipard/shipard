@@ -113,6 +113,12 @@
         "bsi":"bi-code-slash",
         "mdi":"code"
     },
+    "tables/e10doc.base.bankAccountsGroups":{
+        "fa5":"fa-credit-card",
+        "fa6pro":"fa-credit-card",
+        "bsi":"bi-credit-card-fill",
+        "mdi":"credit_card"
+    },
 
 
     "formMonths":{
