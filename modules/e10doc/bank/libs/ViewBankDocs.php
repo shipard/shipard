@@ -127,7 +127,7 @@ class ViewBankDocs extends \e10doc\core\ViewHeads
 
 		// -- myBankAccount
 		if ($myBankAccount)
-      array_push ($q, ' AND heads.[myBankAccount] = %s', $myBankAccount);
+      array_push ($q, ' AND heads.[myBankAccount] = %i', $myBankAccount);
 
     // -- aktuální
 		if ($mainQuery == 'active' || $mainQuery == '')
