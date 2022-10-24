@@ -21,7 +21,7 @@
 			]
 	},
 	"appearanceDocs": {
-		"name": "Doklady", "order": 12000, "group": "appearance",
+		"name": "Doklady", "order": 12000, "group": "appearance", "help": "prirucka/542",
 		"icon": "system/iconFile",
 		"type": "cfgFile",
 		"options": [

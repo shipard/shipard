@@ -28,7 +28,8 @@
 		"type": "viewer", "table": "e10.base.devices", "viewer": "default"
 	},
 	"appearanceApp": {
-		"name": "Vzhled aplikace", "order": 1000, "group": "appearance",
+		"name": "Vzhled aplikace", "order": 1000, "group": "appearance", "help": "prirucka/541",
+
 		"icon": "iconAppTheme",
 		"type": "cfgFile",
 		"options":
