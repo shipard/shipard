@@ -35,6 +35,16 @@ class CalcVDSMultiItemRow extends Utility
       $colIDItemPriceUnit = $colIDBase.'price-unit';
       $colIDItemPriceAll = $colIDBase.'price-all';
 
+      if ($rowData[$colIDItemPriceUnit] < 0.0)
+      {
+        if ($rowData[$colIDItemNdx] ?? 0)
+        {
+          $item = $this->db()->query('SELECT * FROM [e10_witems_items] WHERE [ndx] = %i', $rowData[$colIDItemNdx])->fetch();
+          if ($item)
+            $rowData[$colIDItemPriceUnit] = $item['priceBuy'];
+        }
+      }
+
       $colDef = Utils::searchArray($sci['columns'], 'id', $colIDItemNdx);
       if (!$colDef)
         break;
