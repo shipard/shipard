@@ -352,7 +352,7 @@ class StartMenu extends \Shipard\UI\OldMobile\PageObject
 				continue;
 
 			$tabs[$tabId] = [
-				'text' => isset($tabContent['name']) ? $tabContent['name'] : 'QAA:'.json_encode($tabContent),
+				'text' => isset($tabContent['name']) ? $tabContent['name'] : 'Q:',
 				'icon' => 'system/iconFile'];
 		}
 
