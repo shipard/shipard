@@ -7,14 +7,17 @@
 
 		{"id": "codeKind", "name": "Typ kódu", "type": "enumInt", "options": ["saveOnChange"],
       "enumCfg": {"cfgItem": "e10.witems.codesKinds", "cfgValue": "", "cfgText": "sn"}},
-		
+
 		{"id": "itemCodeText", "name": "Kód", "type": "string", "len": 60},
 		{"id": "itemCodeNomenc", "name": "Kód", "type": "int", "reference": "e10.base.nomencItems", "comboViewer": "combo"},
 
 		{"id": "codeDir", "name": "Směr pohybu", "type": "enumInt",
       "enumCfg": {"cfgItem": "e10.witems.codeDirs", "cfgValue": "", "cfgText": "sn"}},
 		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "personsGroup", "name": "Skupina Osob", "type": "int", "reference": "e10.persons.groups"},
 		{"id": "url", "name": "Web", "type": "string", "len": 110},
+
+		{"id": "systemOrder", "name": "Systémové pořadí", "type": "int"},
 
 		{"id": "validFrom", "name": "Platné od", "type": "date"},
 		{"id": "validTo", "name": "Platné do", "type": "date"}

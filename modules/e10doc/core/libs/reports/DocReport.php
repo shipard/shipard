@@ -300,7 +300,7 @@ class DocReport extends DocReportBase
 			$row ['rowNumber'] = $rowNumber;
 			$rowNumber++;
 			$row ['rowItemProperties'] = \E10\Base\getPropertiesTable ($this->table->app(), 'e10.witems.items', $row['item']);
-			$this->loadDocRowItemsCodes($row);
+			$this->table->loadDocRowItemsCodes($this->recData, $row, NULL, $row, $this->data);
 		}
 
 		if (count($this->data ['itemCodesHeader']))
@@ -334,36 +334,6 @@ class DocReport extends DocReportBase
 			$this->data ['flags']['itemCodesList'] = 1;
 			$this->data ['flags']['itemCodesInline'] = 1;
 		}
-	}
-
-	protected function loadDocRowItemsCodes(array &$row)
-	{
-		$codesKinds = $this->app()->cfgItem('e10.witems.codesKinds', []);
-
-		$q = [];
-		array_push ($q, 'SELECT [codes].*');
-		array_push ($q, ' FROM [e10_witems_itemCodes] AS [codes]');
-		array_push ($q, ' WHERE 1');
-		array_push ($q, ' AND [codes].[item] = %i', $row['item']);
-
-
-		$codes = [];
-		$rows = $this->db()->query($q);
-		foreach ($rows as $r)
-		{
-			$ckNdx = $r['codeKind'];
-			$ck = $codesKinds[$ckNdx];
-
-			if (!isset($this->data ['itemCodesHeader'][$ckNdx]))
-			{
-				$this->data ['itemCodesHeader'][$ckNdx] = $ck;
-			}
-
-			$irc = $r->toArray();
-			$irc['itemCodeName'] = $ck['fn'];
-			$codes[$ckNdx] = $irc;
-		}
-		$row ['rowItemCodesData'] = $codes;
 	}
 
 	public function checkDocumentInfo (&$documentInfo)

@@ -51,7 +51,7 @@ class Detail extends \e10\DocumentCard
 			else
 			{
 				$line[] = ['text' => '', 'icon' => 'system/iconCheck', 'class' => 'e10-linePart h1'];
-				$partialAmount = (isset($this->recData['toPay']) && $this->recData['toPay']) ? ($bi->paymentTotal / $this->recData['toPay']) * 100 : 0;	
+				$partialAmount = (isset($this->recData['toPay']) && $this->recData['toPay']) ? ($bi->paymentTotal / $this->recData['toPay']) * 100 : 0;
 				$line[] = ['text' => 'ČÁSTEČNĚ UHRAZENO', 'prefix' => utils::nf($partialAmount, 0).' %', 'class' => 'e10-none'];
 			}
 
@@ -388,17 +388,50 @@ class Detail extends \e10\DocumentCard
 
 	public function docsRows ()
 	{
-		$q = "SELECT [rows].text AS rText, [rows].quantity AS rQuantity, [rows].unit AS rUnit, [rows].priceItem AS rPriceItem, [rows].priceAll AS rPriceAll
-          FROM [e10doc_core_rows] AS [rows] WHERE [rows].document = %i ORDER BY rowOrder, ndx";
+		$q = [];
+		array_push($q, 'SELECT [rows].text AS rText, [rows].quantity AS rQuantity, [rows].unit AS rUnit, [rows].priceItem AS rPriceItem,');
+		array_push($q, ' [rows].priceAll AS rPriceAll, [rows].item,');
+		array_push($q, ' [items].[id] AS [itemId]');
+		array_push($q, ' FROM [e10doc_core_rows] AS [rows] ');
+		array_push($q, ' LEFT JOIN [e10_witems_items] AS [items] ON [rows].[item] = [items].[ndx]');
+		array_push($q, ' WHERE [rows].document = %i', $this->recData ['ndx']);
+		array_push($q, ' AND [rowType] = %i', 0);
+		array_push($q, ' ORDER BY [rows].rowOrder, [rows].ndx');
 
+		$itemCodesInfo = [];
 		$cfgUnits = $this->app->cfgItem ('e10.witems.units');
-		$rows = $this->table->db()->query($q, $this->recData ['ndx']);
+		$rows = $this->table->db()->query($q);
 		$list = [];
 		$totalPriceAll = 0.0;
 		forEach ($rows as $r)
 		{
 			$unit = (isset($cfgUnits[$r['rUnit']])) ? $cfgUnits[$r['rUnit']]['shortcut'] : '';
-			$list[] = ['text' => $r['rText'], 'quantity' => $r['rQuantity'], 'unit' => $unit, 'priceItem' => $r['rPriceItem'], 'priceAll' => $r['rPriceAll']];
+			$rowItem = [
+				'text' => [['text' => $r['rText'], 'class' => 'block']],
+				'item' => ['text' => $r['itemId'], 'docAction' => 'edit', 'pk' => $r['item'], 'table' => 'e10.witems.items'],
+				'quantity' => $r['rQuantity'],
+				'unit' => $unit,
+				'priceItem' => $r['rPriceItem'],
+				'priceAll' => $r['rPriceAll']
+			];
+
+			$this->table->loadDocRowItemsCodes($this->recData, $r->toArray(), NULL, $rowItem, $itemCodesInfo);
+
+			if (isset($rowItem['rowItemCodesData']))
+			{
+				foreach ($rowItem['rowItemCodesData'] as $rci)
+				{
+					$icl = ['text' => $rci['itemCodeName'].': '.$rci['itemCodeText'], 'class' => 'label label-default'];
+					if (isset($rci['itemCodeTitle']))
+						$icl['title'] = $rci['itemCodeTitle'];
+					$rowItem['text'][] = $icl;
+					//$rowItem['text'][] = ['text' => json_encode ($rci)];
+				}
+			}
+
+			//$rowItem['text'][] = ['text' => 'AHOJ!'];
+
+			$list[] = $rowItem;
 			$totalPriceAll += $r['rPriceAll'];
 		}
 
@@ -406,7 +439,15 @@ class Detail extends \e10\DocumentCard
 		{
 			//if ($withPrices)
 			{
-				$h = ['#' => '#', 'text' => 'Text řádku', 'quantity' => ' Množství', 'unit' => 'Jedn.', 'priceItem' => ' Cena/Jedn.', 'priceAll' => ' Cena celkem'];
+				$h = [
+					'#' => '#',
+					'item' => 'Pol.',
+					'text' => 'Text řádku',
+					'quantity' => ' Množství',
+					'unit' => 'Jedn.',
+					'priceItem' => ' Cena/Jedn.',
+					'priceAll' => ' Cena celkem',
+				];
 				if (count ($list) > 1)
 				{
 					$list[] = ['text' => 'Celkem', 'priceAll' => $totalPriceAll, '_options' => ['class' => 'sum']];

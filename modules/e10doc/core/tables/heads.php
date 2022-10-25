@@ -1651,6 +1651,56 @@ class TableHeads extends DbTable
 		return implode (', ', $emailsRows);
 	}
 
+	public function loadDocRowItemsCodes(array $headRecData, array $rowRecData, ?array $personGroups, array &$rowDestData, &$destData)
+	{
+		$codesKinds = $this->app()->cfgItem('e10.witems.codesKinds', []);
+		if (!$personGroups)
+			$personGroups = E10Utils::personGroups($this->app(), $headRecData['person']);
+
+		$rowDir = E10Utils::docRowDir ($this->app(), $rowRecData, $headRecData);
+
+		$q = [];
+		array_push ($q, 'SELECT [codes].*, [nomencItems].fullName AS nomencName');
+		array_push ($q, ' FROM [e10_witems_itemCodes] AS [codes]');
+		array_push ($q, ' LEFT JOIN  [e10_base_nomencItems] AS [nomencItems] ON [codes].[itemCodeNomenc] = [nomencItems].[ndx]');
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND [codes].[item] = %i', $rowRecData['item']);
+		array_push ($q, ' AND ([codes].[codeDir] = %i', $rowDir, ' OR [codes].[codeDir] = %i)', 0);
+		array_push ($q, ' AND ([codes].[person] = %i', $headRecData['person'], ' OR [codes].[person] = %i)', 0);
+
+		array_push ($q, ' AND (');
+		if (count($personGroups))
+			array_push ($q, ' [codes].[personsGroup] IN %in', $personGroups, ' OR ');
+		array_push ($q, ' [codes].[personsGroup] = %i', 0);
+		array_push ($q, ')');
+
+		array_push ($q, ' ORDER BY [codes].systemOrder');
+
+		$codes = [];
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$ckNdx = $r['codeKind'];
+			$ck = $codesKinds[$ckNdx];
+
+			if (isset($codes[$ckNdx]))
+				continue;
+
+			if (!isset($destData ['itemCodesHeader'][$ckNdx]))
+			{
+				$destData ['itemCodesHeader'][$ckNdx] = $ck;
+			}
+
+			$irc = $r->toArray();
+			$irc['itemCodeName'] = $ck['fn'];
+			if ($r['nomencName'])
+				$irc['itemCodeTitle'] = $r['nomencName'];
+
+			$codes[$ckNdx] = $irc;
+		}
+		$rowDestData ['rowItemCodesData'] = $codes;
+	}
+
 	public function printAfterConfirm (&$printCfg, &$recData, $docState, $saveData = NULL)
 	{
 		if (isset($docState['printAfterConfirm']) && is_array($docState['printAfterConfirm']))

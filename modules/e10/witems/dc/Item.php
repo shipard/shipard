@@ -82,10 +82,11 @@ class Item extends \e10\DocumentCard
 	public function createContentBody_Codes ()
 	{
 		$q[] = 'SELECT itemCodes.*,';
-		array_push($q, ' persons.fullName AS personName,');
+		array_push($q, ' persons.fullName AS personName, personsGroups.name AS groupName,');
 		array_push($q, ' nomenc.fullName AS nomencName');
 		array_push($q, ' FROM [e10_witems_itemCodes] AS itemCodes');
 		array_push($q, ' LEFT JOIN [e10_persons_persons] AS persons ON itemCodes.person = persons.ndx');
+		array_push($q, ' LEFT JOIN [e10_persons_groups] AS personsGroups ON itemCodes.personsGroup = personsGroups.ndx');
 		array_push($q, ' LEFT JOIN [e10_base_nomencItems] AS nomenc ON itemCodes.itemCodeNomenc = nomenc.ndx');
 		array_push($q, ' WHERE itemCodes.[item] = %i', $this->recData['ndx']);
 		array_push($q, ' ORDER BY itemCodes.rowOrder, itemCodes.ndx');
@@ -98,7 +99,7 @@ class Item extends \e10\DocumentCard
 			$refType = $codeKind['refType'] ?? 0;
 			$askDir = $codeKind['askDir'] ?? 0;
 			$askPerson = $codeKind['askPerson'] ?? 0;
-	
+
 			$item = [
 				'code' => [
 					['text' => $r['itemCodeText'], 'class' => 'e10-bold block'],
@@ -107,7 +108,9 @@ class Item extends \e10\DocumentCard
 				'info' => [],
 			];
 			if ($r['person'])
-				$item['info'][] = ['text' => $r['personName'], 'class' => 'block'];
+				$item['application'][] = ['text' => $r['personName'], 'class' => 'block', 'icon' => 'tables/e10.persons.persons'];
+			if ($r['personsGroup'])
+				$item['application'][] = ['text' => $r['groupName'], 'class' => 'block', 'icon' => 'tables/e10.persons.groups'];
 			if($askDir)
 				$item['info'][] = ['text' => $codeDir['sn'] ?? '!!!', 'class' => 'block'];
 			if($refType === 1)
@@ -118,7 +121,7 @@ class Item extends \e10\DocumentCard
 
 		if (count($this->dataCodes))
 		{
-			$h = ['code' => 'Kód', 'info' => 'Informace',];
+			$h = ['code' => 'Kód', 'info' => 'Informace', 'application' => 'Uplatňuje se'];
 
 			$title = [['text' => 'Kódy položek', 'class' => 'h1']];
 			$this->addContent ('body', [

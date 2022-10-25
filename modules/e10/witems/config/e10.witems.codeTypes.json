@@ -13,6 +13,7 @@
     "cfg": {
       "refType": 1,
       "askPerson": 1,
+      "askPersonsGroup": 1,
       "askDir": 1
     }
   }

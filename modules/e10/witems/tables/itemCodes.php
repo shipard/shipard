@@ -23,6 +23,7 @@ class TableItemCodes extends DbTable
     $refType = $codeKind['refType'] ?? 0;
     $askDir = $codeKind['askDir'] ?? 0;
     $askPerson = $codeKind['askPerson'] ?? 0;
+    $askPersonsGroup = $codeKind['askPersonsGroup'] ?? 0;
 
     if ($refType == 1)
     {
@@ -39,7 +40,20 @@ class TableItemCodes extends DbTable
       $recData['person'] = 0;
     if (!$askDir)
       $recData['codeDir'] = 0;
-	}
+    if (!$askPersonsGroup)
+      $recData['personsGroup'] = 0;
+
+    $recData ['systemOrder'] = 99;
+
+    if ($recData['codeDir'])
+      $recData ['systemOrder']--;
+
+    if ($recData['person'])
+      $recData ['systemOrder']--;
+
+    if ($recData['personsGroup'] != 0)
+      $recData ['systemOrder']--;
+  }
 }
 
 
@@ -56,6 +70,7 @@ class FormItemCode extends TableForm
     $refType = $codeKind['refType'] ?? 0;
     $askDir = $codeKind['askDir'] ?? 0;
     $askPerson = $codeKind['askPerson'] ?? 0;
+    $askPersonsGroup = $codeKind['askPersonsGroup'] ?? 1;
 
 		$this->openForm (TableForm::ltGrid);
 			$this->openRow();
@@ -68,12 +83,18 @@ class FormItemCode extends TableForm
           $this->addColumnInput ('itemCodeText', self::coColW8);
 			$this->closeRow();
 
-      if ($askDir || $askPerson)
+      if ($askDir || $askPerson || $askPersonsGroup)
       {
-        if ($askDir && $askPerson)
+        if ($askDir && $askPerson && $askPersonsGroup)
         {
-          $this->addColumnInput ('codeDir', self::coColW4);
-          $this->addColumnInput ('person', self::coColW8);
+          $this->addColumnInput ('codeDir', self::coColW2);
+          $this->addColumnInput ('personsGroup', self::coColW5);
+          $this->addColumnInput ('person', self::coColW5);
+        }
+        elseif ($askDir && $askPerson)
+        {
+          $this->addColumnInput ('codeDir', self::coColW2);
+          $this->addColumnInput ('person', self::coColW10);
         }
         elseif ($askDir && !$askPerson)
         {
@@ -81,12 +102,9 @@ class FormItemCode extends TableForm
         }
         elseif (!$askDir && $askPerson)
         {
-          
           $this->addColumnInput ('person', self::coColW12);
         }
       }
 		$this->closeForm ();
-
-    // function addInputIntRef ($columnId, $refTableId, $label, $options = 0)
 	}
 }

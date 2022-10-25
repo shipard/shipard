@@ -8,6 +8,8 @@ class ModuleServices extends \E10\CLI\ModuleServices
 {
 	public function onAppUpgrade ()
 	{
+		$s [] = ['end' => '2022-11-15', 'sql' => "UPDATE e10_witems_itemCodes SET systemOrder = 99 where systemOrder = 0"];
+
 		$s [] = ['end' => '2021-03-30', 'sql' => "update e10_witems_items set itemKind2 = itemKind where isSet = 0"];
 
 		$s [] = ['end' => '2020-03-30', 'sql' => "update e10doc_base_dockinds set docState = 4000, docStateMain = 2 where docState = 0"];
@@ -129,7 +131,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 				$existedAccounts[$id] = 1;
 			else
 				$existedAccounts[$id]++;
-			
+
 			if ($existedAccounts[$id] > 1)
 				$recsToRemove[] = $r['ndx'];
 		}

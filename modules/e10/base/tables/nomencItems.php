@@ -29,6 +29,25 @@ class TableNomencItems extends DbTable
 
 		return $hdr;
 	}
+
+	public function columnRefInputTitle ($form, $srcColumnId, $inputPrefix)
+	{
+		$prefixParts = explode ('.', $inputPrefix);
+		if (isset($prefixParts[0]) && $prefixParts[0] === 'subColumns')
+			$pk = isset($form->subColumnsData[$prefixParts[1]][$srcColumnId]) ? intval($form->subColumnsData[$prefixParts[1]][$srcColumnId]) : 0;
+		else
+			$pk = isset ($form->recData [$srcColumnId]) ? $form->recData [$srcColumnId] : 0;
+		if (!$pk)
+			return '';
+
+		$q[] = 'SELECT [fullName], [itemId] ';
+		array_push($q, ' FROM [' . $this->sqlName () . '] WHERE [ndx] = %i', intval ($pk));
+
+		$refRec = $this->app()->db()->query ($q)->fetch ();
+		$refTitle = ['prefix' => '#'.$refRec ['itemId'], 'text' => $refRec ['fullName']];
+
+		return $refTitle;
+	}
 }
 
 

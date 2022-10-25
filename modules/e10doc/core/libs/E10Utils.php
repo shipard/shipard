@@ -444,6 +444,42 @@ class E10Utils
 		return FALSE;
 	}
 
+	static function personGroups ($app, $personNdx)
+	{
+		$groups = [];
+		if (!$personNdx)
+			return $groups;
+		$rows = $app->db()->query('SELECT [group] FROM e10_persons_personsgroups WHERE person = %i', $personNdx);
+		foreach ($rows as $r)
+			$groups[] = $r['group'];
+		return $groups;
+	}
+
+	static function docRowDir ($app, $rowRecData, $headRecData)
+	{
+		$docType = $app->cfgItem ('e10.docs.types.' . $headRecData['docType']);
+		if (isset ($docType ['docDir']) && $docType ['docDir'] != 0)
+			return $docType ['docDir'];
+
+		if ($headRecData['docType'] == 'cash')
+		{
+			if ($headRecData ['cashBoxDir'] == 1) // příjem
+				return 2;
+			return 1;
+		}
+
+		if ($headRecData['docType'] === 'bank' || $headRecData['docType'] === 'cmnbkp')
+		{
+			if ($rowRecData ['debit'] != 0.0)
+				return 1;
+			if ($rowRecData ['credit'] != 0.0)
+				return 2;
+			return FALSE;
+		}
+
+		return 0;
+	}
+
 	static function balanceOverDueClass ($app, $overDueDays)
 	{
 		if ($overDueDays > 90)
