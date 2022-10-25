@@ -1,0 +1,149 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+	<title>test</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v11" type="text/css"/>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/sc/icons/fa/5/css/all.min.css">
+
+</head>
+<body>
+
+<table class="mainInfo">
+	<tr>
+		<td class="info">
+			<table class="dates">
+				<tr>
+					<td class='label'>{{@dict;Účetní datum}}:</td><td class='value'>{{data.head.dateAccounting}}</td>
+				</tr>
+			</table>
+		<td>
+
+		<td class="info">
+			<table class="docInfo">
+				{{#data.flags.taxDocument}}
+					<tr>
+						<td class='label'>{{@dict;DUZP}}:</td><td class='value'>{{data.head.dateTax}}</td>
+					</tr>
+				{{/data.flags.taxDocument}}
+			</table>
+		</td>
+	</tr>
+</table>
+
+<table class="infoSecondary">
+	<tr>
+		<td class="supplier">
+			<span class='hdr' id="supplier-address-hdr">{{@dict;Účetní jednotka}}:</span>
+			{{#data.reportTexts.supplierAndContacts}}{{{data.reportTexts.supplierAndContacts}}}{{/data.reportTexts.supplierAndContacts}}
+				{{^data.reportTexts.supplierAndContacts}}
+				<span class='address' id="supplier-address-box">
+					{{#data.reportTexts.supplier}}{{{data.reportTexts.supplier}}}<br>{{/data.reportTexts.supplier}}
+					{{^data.reportTexts.supplier}}
+						<span class='title'>{{data.owner.fullName}}</span>
+						{{#data.owner.address.specification}}
+							{{data.owner.address.specification}}<br/>
+						{{/data.owner.address.specification}}
+						{{data.owner.address.street}}<br/>
+						{{^data.flags.foreignCountry}}
+							{{data.owner.address.zipcode}} {{data.owner.address.city}}<br/>
+						{{/data.flags.foreignCountry}}
+						{{#data.flags.foreignCountry}}
+							{{data.owner.address.countryNameSC2}}-{{data.owner.address.zipcode}} {{data.owner.address.city}}<br/>
+							{{data.owner.address.countryNameEng}}
+						{{/data.flags.foreignCountry}}
+
+						</span>
+					{{/data.reportTexts.supplier}}
+						{{#data.reportTexts.contacts}}{{{data.reportTexts.contacts}}}{{/data.reportTexts.contacts}}
+						{{^data.reportTexts.contacts}}
+							{{#data.owner_identifiers}}
+								<b>{{@dict;dataItem:name}}:</b> {{value}}
+							{{/data.owner_identifiers}}<br>
+
+							<small>{{cfgItem.options.core.ownerLegalRegInfo}}</small>
+						{{/data.reportTexts.contacts}}
+					{{/data.reportTexts.supplierAndContacts}}
+		</td>
+
+		<td class="customer">
+			<div class='hdr'>{{@dict;Odběratel}}:<small class='pull-right'>#{{data.person.id}}</small></div>
+			<span class='title'>{{data.person.fullName}}</span>
+			<span class='address'>
+				{{#data.owner.address.specification}}
+					{{data.owner.address.specification}}<br/>
+				{{/data.owner.address.specification}}
+				{{data.person.address.street}}<br/>
+				{{^data.flags.foreignCountry}}
+					{{data.person.address.zipcode}} {{data.person.address.city}}<br/>
+				{{/data.flags.foreignCountry}}
+				{{#data.flags.foreignCountry}}
+					{{data.person.address.countryNameSC2}}-{{data.person.address.zipcode}} {{data.person.address.city}}<br/>
+					{{data.person.address.countryNameEng}}
+				{{/data.flags.foreignCountry}}
+			</span>
+
+			{{#data.person_identifiers}}
+				<b>{{@dict;dataItem:name}}:</b> {{value}}
+			{{/data.person_identifiers}}
+		</td>
+	</tr>
+</table>
+
+{{#data.docs_properties.notes.note-ext}}
+	{{{value}}}
+{{/data.docs_properties.notes.note-ext}}
+{{#data.flags.taxDocument}}
+	<h3>Rekapitulace DPH</h3>
+
+	{{#data.reportTexts.subHeader}}<div class='reportTextHeader'>{{{data.reportTexts.subHeader}}}</div>{{/data.reportTexts.subHeader}}
+
+	<table class="taxDescr {{#data.options.docReportsTablesRoundedCorners}} rounded{{/data.options.docReportsTablesRoundedCorners}}">
+		<thead>
+			<tr>
+				<th>Sazba</th>
+				<th class='number'>% DPH</th>
+				<th class='number'>Základ</th>
+				<th class='number'>Daň</th>
+				<th class='number'>Celkem</th>
+			</tr>
+		</thead>
+		{{#data.taxes}}
+			<tr>
+				<td class='label'>{{print.taxCode}}</td>
+				<td class='number'>{{taxPercents}} %</td>
+				<td class='number'>{{print.sumBase}}</td>
+				<td class='number'>{{print.sumTax}}</td>
+				<td class='number'>{{print.sumTotal}}</td>
+			</tr>
+		{{/data.taxes}}
+		<tr>
+			<td class='label' colspan='2'>Celkem {{data.head.print.currency}}</td>
+			<td class='number'>{{data.head.print.sumBase}}</td>
+			<td class='number'>{{data.head.print.sumTax}}</td>
+			<td class='number'>{{data.head.print.sumTotal}}</td>
+		</tr>
+		{{#data.head.rounding}}
+			<tr>
+				<td class='label' colspan='4'>Zaokrouhlení {{data.head.print.currency}}</td>
+				<td class='number'>{{data.head.print.rounding}}</td>
+			</tr>
+		{{/data.head.rounding}}
+	</table>
+{{/data.flags.taxDocument}}
+
+<h3>Zaúčtování</h3>
+{{{@renderTable;dataItem:data.accounting;forcedTableClass:rows}}}
+
+{{^data.disableSigns}}
+	<table class="signs">
+		<tr>
+			<td><span>{{@dict;Zaúčtoval}}:<br/>{{data.author.fullName}}</span></td>
+			<td><span>Schválil</span></td>
+			<td><span>Zkontroloval</span></td>
+		</tr>
+	</table>
+{{/data.disableSigns}}
+
+</body>
+</html>

@@ -9,7 +9,7 @@ class CmnBkp_Acc_Report extends \e10doc\core\libs\reports\DocReport
 	{
 		parent::init();
 
-		$this->setReportId('reports.default.e10doc.cmnbkp.acc');
+		$this->setReportId('e10doc.cmnbkp.acc');
 	}
 
 	public function createToolbarSaveAs (&$printButton)
