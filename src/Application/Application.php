@@ -1133,7 +1133,7 @@ class Application extends \Shipard\Application\ApplicationCore
 				//$c .= "<meta name='apple-mobile-web-app-status-bar-style' content='black-translucent'>\n";
 			}
 
-			$themeStatusColor = '#123456';//$theme['statusColor'];
+			$themeStatusColor = '#3c3c3c';//$theme['statusColor'];
 			$c .= "<meta name='theme-color' content='$themeStatusColor'>\n";
 			$c .= "<link rel=\"manifest\" href=\"{$this->urlRoot}/manifest.webmanifest\">\n";
 
