@@ -4,133 +4,133 @@
 		"fa6pro": "fa-plus-circle",
 		"bsi": "bi-plus-circle",
 		"mdi": "add_circle_outline"
-	},	
+	},
 	"actionCalendar": {
 		"fa5": "fa-calendar-alt",
 		"fa6pro": "fa-calendar-alt",
 		"bsi": "bi-calendar",
 		"mdi": "calendar_today"
-	},	
+	},
 	"actionClose": {
 		"fa5": "fa-times-circle",
 		"fa6pro": "fa-times-circle",
 		"bsi": "bi-x-circle",
 		"mdi": "highlight_off"
-	},	
+	},
 	"actionCopy": {
 		"fa5": "fa-copy",
 		"fa6pro": "fa-copy",
 		"bsi": "bi-files",
 		"mdi": "file_copy"
-	},	
+	},
 	"actionDatabaseName": {
 		"fa5": "fa-building",
 		"fa6pro": "fa-building",
 		"bsi": "bi-building",
 		"mdi": "business"
-	},	
+	},
 	"actionHomePage": {
 		"fa5": "fa-home",
 		"fa6pro": "fa-home",
 		"bsi": "bi-house-door-fill",
 		"mdi": "home"
-	},	
+	},
 	"actionLogout": {
 		"fa5": "fa-power-off",
 		"fa6pro": "fa-power-off",
 		"bsi": "bi-power",
 		"mdi": "power"
-	},	
+	},
 	"actionNotifications": {
 		"fa5": "fa-bell",
 		"fa6pro": "fa-bell",
 		"bsi": "bi-bell",
 		"mdi": "notifications"
-	},	
+	},
 	"actionOpen": {
 		"fa5": "fa-edit",
 		"fa6pro": "fa-edit",
 		"bsi": "bi-pencil-square",
 		"mdi": "edit"
-	},	
+	},
 	"actionPrint": {
 		"fa5": "fa-print",
 		"fa6pro": "fa-print",
 		"bsi": "bi-printer",
 		"mdi": "print"
-	},	
+	},
 	"actionSave": {
 		"fa5": "fa-download",
 		"fa6pro": "fa-download",
 		"bsi": "bi-download",
 		"mdi": "file_download"
-	},	
+	},
 	"actionRegenerate": {
 		"fa5": "fa-cogs",
 		"fa6pro": "fa-cogs",
 		"bsi": "bi-gear-fill",
 		"mdi": "settings"
-	},	
+	},
 	"actionMoveDown": {
 		"fa5": "fa-arrow-down",
 		"fa6pro": "fa-arrow-down",
 		"bsi": "bi-arrow-down",
 		"mdi": "arrow_downward"
-	},	
+	},
 	"actionMoveUp": {
 		"fa5": "fa-arrow-up",
 		"fa6pro": "fa-arrow-up",
 		"bsi": "bi-arrow-up",
 		"mdi": "arrow_upward"
-	},	
+	},
 	"actionDelete": {
 		"fa5": "fa-trash",
 		"fa6pro": "fa-trash",
 		"bsi": "bi-trash",
 		"mdi": "delete"
-	},	
+	},
 	"actionExpandOpen": {
 		"fa5": "fa-plus-square",
 		"fa6pro": "fa-plus-square",
 		"bsi": "bi-plus-square",
 		"mdi": "add_circle_outline"
-	},	
+	},
 	"actionExpandClose": {
 		"fa5": "fa-minus-square",
 		"fa6pro": "fa-minus-square",
 		"bsi": "bi-dash-square",
 		"mdi": "remove_circle_outline"
-	},	
+	},
 	"actionSupport": {
 		"fa5":"fa-life-ring",
         "fa6pro":"fa-life-ring",
         "bsi":"bi-life-preserver",
         "mdi":"support"
-	},	
+	},
 	"actionAddWizard": {
 		"fa5":"fa-play",
         "fa6pro":"fa-play",
         "bsi":"bi-play",
         "mdi":"play_arrow"
-	},	
+	},
 	"actionInputPlus": {
 		"fa5": "fa-plus-square",
 		"fa6pro": "fa-plus-square",
 		"bsi": "bi-plus-square",
 		"mdi": "add_circle"
-	},	
+	},
 	"actionInputMinus": {
 		"fa5":"fa-minus-square",
         "fa6pro":"fa-minus-square",
         "bsi":"bi-dash-square",
         "mdi":"remove_circle"
-	},	
+	},
 	"actionInputClear": {
 		"fa5":"fa-times",
         "fa6pro":"fa-times",
         "bsi":"bi-x-lg",
         "mdi":"close"
-	},	
+	},
 	"actionInputSearch": {
 		"fa5":"fa-search",
 		"fa6pro":"fa-search",
@@ -190,6 +190,12 @@
 		"fa6pro": "fa-wrench",
 		"bsi": "bi-wrench",
 		"mdi": "build_circle"
+	},
+	"actionSplit": {
+		"fa5": "fa-code-branch",
+		"fa6pro": "fa-split",
+		"bsi": "bi-list-nested",
+		"mdi": "axis_arrow"
 	},
 	"actionRecycle": {
 		"fa5": "fa-recycle",
@@ -470,151 +476,151 @@
         "fa6pro":"fa-check",
         "bsi":"bi-check-lg",
         "mdi":"check"
-	},	
+	},
 	"iconCalendar": {
 		"fa5": "fa-calendar-alt",
 		"fa6pro": "fa-calendar-alt",
 		"bsi": "bi-calendar",
 		"mdi": "calendar_today"
-	},	
+	},
 	"iconAngleRight": {
 		"fa5": "fa-angle-right",
 		"fa6pro": "fa-angle-right",
 		"bsi": "bi-chevron-right",
 		"mdi": "chevron_right"
-	},	
+	},
 	"iconLink": {
 		"fa5": "fa-external-link-alt",
 		"fa6pro": "fa-external-link-alt",
 		"bsi": "bi-box-arrow-up-right",
 		"mdi": "link"
-	},	
+	},
 	"iconCutlery": {
 		"fa5": "fa-utensils",
 		"fa6pro": "fa-utensils-alt",
 		"bsi": "bi-shop-window",
 		"mdi": "dining"
-	},	
+	},
 	"iconDelivery": {
 		"fa5":"fa-truck",
       	"fa6pro":"fa-truck",
       	"bsi":"bi-truck",
       	"mdi":"local_shipping"
-	},	
+	},
 	"iconIdBadge": {
 		"fa5":"fa-id-badge",
         "fa6pro":"fa-id-badge",
         "bsi":"bi-person-badge-fill",
         "mdi":"badge"
-	},	
+	},
 	"iconHome": {
 		"fa5": "fa-home",
 		"fa6pro": "fa-home",
 		"bsi": "bi-house-door-fill",
 		"mdi": "home"
-	},	
+	},
 	"iconPaperPlane": {
 		"fa5":"fa-paper-plane",
         "fa6pro":"fa-paper-plane",
         "bsi":"bi-envelope",
         "mdi":"send"
-	},	
+	},
 	"iconStar": {
 		"fa5":"fa-star",
 		"fa6pro":"fa-star",
 		"bsi":"bi-star",
 		"mdi":"grade"
-	},	
+	},
 	"iconList": {
 		"fa5": "fa-list",
 		"fa6pro": "fa-list",
 		"bsi": "bi-list-ul",
 		"mdi": "list"
-	},	
+	},
 	"iconCheckSquare": {
 		"fa5":"fa-check-square",
         "fa6pro":"fa-check-square",
         "bsi":"bi-check-square",
         "mdi":"check_box"
-	},	
+	},
 	"iconPencil": {
 		"fa5": "fa-pencil-alt",
 		"fa6pro": "fa-pencil-alt",
 		"bsi": "bi-pencil",
 		"mdi": "edit"
-	},	
+	},
 	"iconInfo": {
 		"fa5": "fa-info",
 		"fa6pro": "fa-info",
 		"bsi": "bi-info-lg",
 		"mdi": "info"
-	},	
+	},
 	"iconHashtag": {
 		"fa5": "fa-hashtag",
 		"fa6pro": "fa-hashtag",
 		"bsi": "bi-hash",
 		"mdi": "tag"
-	},	
+	},
 	"iconDateOfOrigin": {
 		"fa5":"fa-play-circle",
         "fa6pro":"fa-play-circle",
         "bsi":"bi-play-circle-fill",
         "mdi":"play_circle_filled"
-	},	
+	},
 	"iconExchange": {
 		"fa5":"fa-exchange-alt",
         "fa6pro":"fa-exchange-alt",
         "bsi":"bi-arrow-left-right",
         "mdi":"sync_alt"
-	},	
+	},
 	"iconPaperclip": {
 		"fa5": "fa-paperclip",
 		"fa6pro": "fa-paperclip",
 		"bsi": "bi-paperclip",
 		"mdi": "attach_file"
-	},	
+	},
 	"iconPlusSquare": {
 		"fa5": "fa-plus-square",
 		"fa6pro": "fa-plus-square",
 		"bsi": "bi-plus-square",
 		"mdi": "add_circle"
-	},	
+	},
 	"iconMinusSquare": {
 		"fa5":"fa-minus-square",
         "fa6pro":"fa-minus-square",
         "bsi":"bi-dash-square",
         "mdi":"remove_circle"
-	},	
+	},
 	"iconStop": {
 		"fa5":"fa-stop",
         "fa6pro":"fa-stop",
         "bsi":"bi-stop",
         "mdi":"stop"
-	},	
+	},
 	"iconCube": {
 		"fa5": "fa-cube",
 		"fa6pro": "fa-cube",
 		"bsi":"bi-bank",
         "mdi":"account_balance"
-	},	
+	},
 	"iconClock": {
 		"fa5": "fa-clock",
 		"fa6pro": "fa-clock",
 		"bsi": "bi-clock",
 		"mdi": "schedule"
-	},	
+	},
 	"iconMoney": {
 		"fa5":"fa-money-bill-alt",
         "fa6pro":"fa-money-bill-alt",
         "bsi":"bi-cash",
         "mdi":"payments"
-	},	
+	},
 	"iconLocalMenu": {
 		"fa5": "fa-ellipsis-v",
 		"fa6pro": "fa-ellipsis-v",
 		"bsi": "bi-three-dots-vertical",
 		"mdi": "more_vert"
-	},	
+	},
 	"iconWikiStart": {
 		"fa5": "fa-rocket",
 		"fa6pro": "fa-rocket-launch",
@@ -657,7 +663,7 @@
 		"bsi": "bi-currency-dollar",
 		"mdi": "monetization_on"
 	},
-	
+
 
 
 	"rightSubmenuToDo":{
@@ -843,13 +849,13 @@
 		"fa6pro": "fa-edit",
 		"bsi": "bi-pencil-square",
 		"mdi": "edit_note"
-	},	
+	},
 	"issueImportant": {
 		"fa5": "fa-exclamation",
 		"fa6pro": "fa-exclamation",
 		"bsi": "bi-exclamation",
 		"mdi": "priority_high"
-	},	
+	},
 	"issueNotImportant": {
 		"fa5": "fa-snowflake",
 		"fa6pro": "fa-snowflake",
@@ -1099,7 +1105,7 @@
 		"mdi": "help_outline"
 	},
 
-	
+
 	"formHeader":{
 		"fa5": "fa-edit",
 		"fa6pro": "fa-edit",

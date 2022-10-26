@@ -1030,6 +1030,17 @@ class DashboardIssuesCore extends TableView
 						];
 					}
 
+					if (count($links) > 1)
+					{
+						$splitButton = [
+							'type' => 'action', 'action' => 'addwizard', 'data-table' => 'wkf.core.issues', 'data-pk' => strval($ndx),
+							'text' => '', 'title' => 'Rozdělit na jednotlivé zprávy podle příloh',
+							'data-class' => 'wkf.core.libs.SplitIssueByAttachmentsWizard', 'icon' => 'system/actionSplit',
+							'element' => 'span', 'class' => 'pull-right', 'actionClass' => '', 'btnClass' => '',
+						];
+						$links[] = $splitButton;
+					}
+
 					if (count($links))
 						$item ['pane']['body'][] = ['value' => $links, 'class' => 'padd5'];
 				}
