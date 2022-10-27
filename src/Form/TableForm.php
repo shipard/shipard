@@ -794,7 +794,7 @@ class TableForm
 		if ($label)
 			$labelCode = "<label for='$colId'>" . $this->app()->ui()->composeTextLine($label) . "</label>";
 		$inputCode = "";
-
+		$oneInputCClass = '';
 		$a = $enums;
 		if ($style == self::INPUT_STYLE_RADIO)
 		{
@@ -803,11 +803,12 @@ class TableForm
 			{
 				if (is_array($txt) && isset($txt['enumLabelOnly']))
 				{
-					$inputCode .= $this->app()->ui()->composeTextLine($txt).'<br/>';
+					$inputCode .= $this->app()->ui()->composeTextLine($txt);
+					$oneInputCClass = ' ml1';
 				}
 				else
 				{
-					$inputCode .= "<div class='padd5 e10-selectable-radio$active'>";
+					$inputCode .= "<div class='padd5 e10-selectable-radio$active$oneInputCClass'>";
 					$inputCode .= "<input type='radio' class='e10-inputRadio' id='{$colId}_$val' name='$ip{$columnId}' value='$val' data-fid='{$this->fid}'> ";
 					$inputCode .= "<label for='{$colId}_$val' style='vertical-align: top;'>" . $this->app()->ui()->composeTextLine($txt) . "</label><br/>";
 					$inputCode .= "</div>";
