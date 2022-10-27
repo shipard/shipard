@@ -1,10 +1,12 @@
 <?php
 
 namespace wkf\core\forms;
+use \e10\base\libs\UtilsBase;
 
-use \e10\utils, \E10\TableForm;
 
-
+/**
+ * class SmartEdit
+ */
 class SmartEdit extends \E10\Wizard
 {
 	/** @var \wkf\core\TableIssues $tableIssues */
@@ -16,6 +18,8 @@ class SmartEdit extends \E10\Wizard
 	var $srcDocNdx = 0;
 	var $srcDocRecData = NULL;
 	var $hdrIcon = 'icon-magic';
+
+	var $atts = NULL;
 
 	public function doStep ()
 	{
@@ -51,11 +55,17 @@ class SmartEdit extends \E10\Wizard
 
 			$this->layoutOpen(self::ltVertical);
 				$this->addInputLabels();
+				if (isset($this->atts[$this->srcDocNdx]['images']) && count($this->atts[$this->srcDocNdx]['images']) > 1)
+				{
+					$this->layoutOpen(self::ltGrid);
+						$this->addCheckBox('splitIssueByAttachments', 'Rozdělit na jednotlivé zprávy podle příloh', '1', self::coRightCheckbox|self::coColW12);
+					$this->layoutClose();
+				}
 			$this->layoutClose('width30 e10-bg-t9 padd5');
 
-		$this->layoutOpen(self::ltHorizontal);
-			//$this->addInputLabels();
-			$this->addInputMemo('addFastComment', 'Rychlý komentář');
+			$this->layoutOpen(self::ltVertical);
+				//$this->addInputLabels();
+				$this->addInputMemo('addFastComment', 'Rychlý komentář');
 			$this->layoutClose('width40 e10-bg-t5 padd5');
 		$this->closeForm ();
 	}
@@ -81,6 +91,7 @@ class SmartEdit extends \E10\Wizard
 		$this->srcDocRecData = $this->tableIssues->loadItem ($this->srcDocNdx);
 		$this->hdrIcon = $this->tableIssues->tableIcon($this->srcDocRecData);
 
+		$this->atts = UtilsBase::loadAttachments ($this->app(), [$this->srcDocNdx], 'wkf.core.issues');
 		//$this->recData['newSection'] = $this->srcDocRecData['section'];
 	}
 
@@ -90,13 +101,13 @@ class SmartEdit extends \E10\Wizard
 		$usersSections = $this->tableSections->usersSections();
 		foreach ($usersSections['top'] as $topSectionNdx => $topSectionCfg)
 		{
-			$enum[$topSectionNdx] = ['text' => $topSectionCfg['fn'], 'icon' => $topSectionCfg['icon'], 'class' => 'h3', 'enumLabelOnly' => 1];
+			$enum[$topSectionNdx] = ['text' => $topSectionCfg['fn'], 'icon' => $topSectionCfg['icon'], 'class' => 'h3 e10-bold pt1 block', 'enumLabelOnly' => 1];
 			if (isset($topSectionCfg['subSections']) && count($topSectionCfg['subSections']))
 			{
 				foreach ($topSectionCfg['subSections'] as $ssNdx)
 				{
 					$s = $sectionsAll[$ssNdx];
-					$enum[$ssNdx] = ['text' => $s['fn'], 'icon' => $s['icon'], 'class' => 'pl1'];
+					$enum[$ssNdx] = ['text' => $s['fn'], 'icon' => $s['icon'], 'class' => ''];
 				}
 			}
 			else
@@ -104,7 +115,7 @@ class SmartEdit extends \E10\Wizard
 				$enum[$topSectionNdx] = ['text' => $topSectionCfg['fn'], 'icon' => $topSectionCfg['icon']];
 			}
 		}
-		$this->addInputEnum2('newSection', ['text' => 'Přesunout do sekce', 'class' => 'h2'], $enum, TableForm::INPUT_STYLE_RADIO);
+		$this->addInputEnum2('newSection', ['text' => 'Přesunout do sekce', 'class' => 'h2'], $enum, self::INPUT_STYLE_RADIO);
 	}
 
 	function addInputLabels()
@@ -141,6 +152,8 @@ class SmartEdit extends \E10\Wizard
 			}
 
 			$this->appendElement($checkBoxesCode);
+			if (count($clsf))
+				$this->addSeparator(self::coH4);
 		}
 	}
 
@@ -261,6 +274,13 @@ class SmartEdit extends \E10\Wizard
 		if ($anyChange)
 		{
 			$this->tableIssues->docsLog($this->srcDocNdx);
+		}
+
+		if (isset($this->recData['splitIssueByAttachments']) && intval($this->recData['splitIssueByAttachments']))
+		{
+			$sie = new \wkf\core\libs\SplitIssueByAttachmentsEngine($this->app());
+			$sie->setIssueNdx($this->srcDocNdx);
+			$sie->run();
 		}
 
 		return TRUE;
