@@ -7,7 +7,7 @@ require_once __SHPD_MODULES_DIR__ . 'e10doc/core/core.php';
 use \Shipard\Report\FormReport;
 use \Shipard\Utils\World;
 use \Shipard\Utils\Utils;
-
+use \e10doc\core\libs\E10Utils;
 
 /**
  * Class DocReportBase
@@ -83,7 +83,10 @@ class DocReportBase extends FormReport
 				$this->data [$columnId]['address'] = $this->data [$columnId]['lists']['address'][0];
 
 			// persons country / language
-			World::setCountryInfo($this->app(), $this->data [$columnId]['lists']['address'][0]['worldCountry'], $this->data [$columnId]['address']);
+			$this->data [$columnId]['lists']['address'] = [];
+			$taxHomeCountryId = E10Utils::docTaxHomeCountryId($this->app(), $this->docHead);
+			$taxHomeCountryNdx = World::countryNdx($this->app(), $taxHomeCountryId);
+			World::setCountryInfo($this->app(), $this->data [$columnId]['lists']['address'][0]['worldCountry'] ?? $taxHomeCountryNdx, $this->data [$columnId]['address']);
 			if ($this->lang == '' && isset($this->data [$columnId]['address']['countryLangSC2']))
 				$this->lang = $this->data [$columnId]['address']['countryLangSC2'];
 
