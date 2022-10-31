@@ -1290,7 +1290,10 @@ class TableForm
 	{
 		$hints = $this->columnOptionsHints ($options);
 
-		if (is_string($content) || ((isset ($content['text']) || isset ($content[0]['text'])) && !isset ($content['type'])))
+		if (
+			is_string($content)
+			|| ((isset ($content['text']) || isset ($content[0]['text']) || isset ($content[0][0]['text'])) && !isset ($content['type']))
+		)
 		{
 			$class = 'e10-ef-label';
 			if ($options & TableForm::coH1)
@@ -1301,7 +1304,7 @@ class TableForm
 				$class .= ' e10-right block';
 			if ($options & TableForm::coBold)
 				$class .= ' e10-bold';
-			$c = "<span class='$class'>".$this->app()->ui()->composeTextLine($content).'</span>';
+			$c = "<span class='$class AHOJ'>".$this->app()->ui()->composeTextLine($content).'</span>';
 			$this->appendElement ($c, NULL, $hints);
 			return;
 		}
@@ -1309,6 +1312,8 @@ class TableForm
 		{
 			if (isset($content['type']))
 				$this->appendElement (uiutils::renderContentPart ($this->app(), $content), NULL, $hints);
+			//else
+			//	$this->appendElement ('INVALID-CONTENT: '.json_encode ($content));
 		}
 	}
 
