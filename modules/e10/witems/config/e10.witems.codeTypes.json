@@ -12,8 +12,9 @@
     "name": "Kód odpadu",
     "cfg": {
       "refType": 1,
-      "askPerson": 1,
+      "askPerson": 0,
       "askPersonsGroup": 1,
+      "askAddressLabel": 1,
       "askDir": 1
     }
   }

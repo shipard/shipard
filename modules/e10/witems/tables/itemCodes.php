@@ -24,6 +24,7 @@ class TableItemCodes extends DbTable
     $askDir = $codeKind['askDir'] ?? 0;
     $askPerson = $codeKind['askPerson'] ?? 0;
     $askPersonsGroup = $codeKind['askPersonsGroup'] ?? 0;
+    $askAddressLabel = $codeKind['askAddressLabel'] ?? 0;
 
     if ($refType == 1)
     {
@@ -42,6 +43,8 @@ class TableItemCodes extends DbTable
       $recData['codeDir'] = 0;
     if (!$askPersonsGroup)
       $recData['personsGroup'] = 0;
+    if (!$askAddressLabel)
+      $recData['addressLabel'] = 0;
 
     $recData ['systemOrder'] = 99;
 
@@ -52,6 +55,9 @@ class TableItemCodes extends DbTable
       $recData ['systemOrder']--;
 
     if ($recData['personsGroup'] != 0)
+      $recData ['systemOrder']--;
+
+    if ($recData['addressLabel'] != 0)
       $recData ['systemOrder']--;
   }
 }
@@ -71,6 +77,7 @@ class FormItemCode extends TableForm
     $askDir = $codeKind['askDir'] ?? 0;
     $askPerson = $codeKind['askPerson'] ?? 0;
     $askPersonsGroup = $codeKind['askPersonsGroup'] ?? 1;
+    $askAddressLabel = $codeKind['askAddressLabel'] ?? 0;
 
 		$this->openForm (TableForm::ltGrid);
 			$this->openRow();
@@ -83,13 +90,19 @@ class FormItemCode extends TableForm
           $this->addColumnInput ('itemCodeText', self::coColW8);
 			$this->closeRow();
 
-      if ($askDir || $askPerson || $askPersonsGroup)
+      if ($askDir || $askPerson || $askPersonsGroup || $askAddressLabel)
       {
         if ($askDir && $askPerson && $askPersonsGroup)
         {
           $this->addColumnInput ('codeDir', self::coColW2);
           $this->addColumnInput ('personsGroup', self::coColW5);
           $this->addColumnInput ('person', self::coColW5);
+        }
+        elseif ($askDir && $askAddressLabel && $askPersonsGroup)
+        {
+          $this->addColumnInput ('codeDir', self::coColW2);
+          $this->addColumnInput ('addressLabel', self::coColW5);
+          $this->addColumnInput ('personsGroup', self::coColW5);
         }
         elseif ($askDir && $askPerson)
         {

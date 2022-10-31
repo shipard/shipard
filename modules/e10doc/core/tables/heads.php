@@ -1657,6 +1657,19 @@ class TableHeads extends DbTable
 		if (!$personGroups)
 			$personGroups = E10Utils::personGroups($this->app(), $headRecData['person']);
 
+		$addressColumn = 'otherAddress1';
+		$addressNdx = intval($headRecData[$addressColumn] ?? 0);
+		$addressLabels = [];
+		if ($addressNdx)
+		{
+			$labelsRows = $this->db()->query ('SELECT * FROM [e10_base_clsf] WHERE [tableid] = %s', 'e10.persons.address',
+																				' AND [recid] = %i', $addressNdx);
+			forEach ($labelsRows as $lr)
+			{
+				$addressLabels[] = $lr['clsfItem'];
+			}
+		}
+
 		$rowDir = E10Utils::docRowDir ($this->app(), $rowRecData, $headRecData);
 
 		$q = [];
@@ -1667,6 +1680,13 @@ class TableHeads extends DbTable
 		array_push ($q, ' AND [codes].[item] = %i', $rowRecData['item']);
 		array_push ($q, ' AND ([codes].[codeDir] = %i', $rowDir, ' OR [codes].[codeDir] = %i)', 0);
 		array_push ($q, ' AND ([codes].[person] = %i', $headRecData['person'], ' OR [codes].[person] = %i)', 0);
+
+		if (count($addressLabels))
+		{
+			array_push ($q, ' AND ([codes].[addressLabel] IN %in', $addressLabels, ' OR [codes].[addressLabel] = %i)', 0);
+		}
+		else
+			array_push ($q, ' AND ([codes].[addressLabel] = %i)', 0);
 
 		array_push ($q, ' AND (');
 		if (count($personGroups))
