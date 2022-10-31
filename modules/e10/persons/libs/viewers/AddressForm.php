@@ -1,18 +1,18 @@
 <?php
 
 namespace e10\persons\libs\viewers;
-use \e10\TableView, e10\utils;
-
+use \Shipard\Viewer\TableView;
+use \e10\base\libs\UtilsBase;
 
 /**
- * Class AddressForm
- * @package e10\persons\libs\viewers
+ * class AddressForm
  */
 class AddressForm extends TableView
 {
 	var $dstRecId = 0;
 	var $dstTableId = '';
 	var $addressTypes;
+	var $classification = [];
 
 	public function init ()
 	{
@@ -59,6 +59,14 @@ class AddressForm extends TableView
 		$this->runQuery ($q);
 	}
 
+	public function selectRows2 ()
+	{
+		if (!count ($this->pks))
+			return;
+
+		$this->classification = UtilsBase::loadClassification ($this->table->app(), $this->table->tableId(), $this->pks);
+	}
+
 	public function renderRow ($item)
 	{
 		$at = $this->addressTypes[$item['type']];
@@ -73,5 +81,15 @@ class AddressForm extends TableView
 		$listItem ['t2'][] = ['text' => $at['name'], 'class' => 'label label-default'];
 
 		return $listItem;
+	}
+
+	function decorateRow (&$item)
+	{
+		if (isset ($this->classification [$item ['pk']]))
+		{
+
+			forEach ($this->classification [$item ['pk']] as $clsfGroup)
+				$item ['t2'] = array_merge ($item ['t2'], $clsfGroup);
+		}
 	}
 }

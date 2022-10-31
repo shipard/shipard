@@ -2,5 +2,9 @@
 	"personsTags": {
 		"name": "Osoby", "label": "Štítky", "icon":"system/iconUser",
 		"tables": ["e10.persons.persons"]
+	},
+	"addressTags": {
+		"name": "Adresy", "label": "Štítky", "icon":"table/e10.persons.address",
+		"tables": ["e10.persons.address"]
 	}
 }

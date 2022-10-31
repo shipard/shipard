@@ -220,6 +220,8 @@ class FormAddress extends TableForm
 			$this->addColumnInput ('city');
 			$this->addColumnInput ('zipcode');
 			$this->addColumnInput ('worldCountry');
+
+			$this->addList ('clsf', '', TableForm::loAddToFormLayout);
 		$this->closeForm ();
 	}
 }

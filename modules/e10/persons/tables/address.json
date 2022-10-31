@@ -24,6 +24,9 @@
 	  {"id": "docState", "name": "Stav", "type": "int"},
 	  {"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
   ],
+  "lists": [
+		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"}
+  ],
 	"views": {
 		"default": {
 			"id": "default", "class": "e10.persons.libs.viewers.AddressDefault"
