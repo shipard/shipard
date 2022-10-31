@@ -95,6 +95,15 @@ class SplitIssueByAttachmentsWizard extends Wizard
 				$links[] = $l;
 			}
 		}
+		if (isset($attachments['files']))
+		{
+			foreach ($attachments['files'] as $a)
+			{
+				$icon = 'system/iconFile';
+				$l = ['text' => $a['name'], 'icon' => $icon, 'class' => '_label _label-default e10-tag lh16', '___prefix' => ''];
+				$links[] = $l;
+			}
+		}
 
 		return $links;
 	}

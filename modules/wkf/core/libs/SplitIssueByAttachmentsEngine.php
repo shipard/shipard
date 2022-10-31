@@ -28,13 +28,14 @@ class SplitIssueByAttachmentsEngine extends Utility
 		$this->atts = UtilsBase::loadAttachments ($this->app(), [$this->issueNdx], 'wkf.core.issues');
   }
 
-  protected function doOne($att)
+  protected function doOne($att, $idx)
   {
+    $subjectSuffix = ' ['.$idx.']';
     $issueRecData = [
       'section' => $this->issueRecData['section'],
       'issueKind' => $this->issueRecData['issueKind'],
       'issueType' => $this->issueRecData['issueType'],
-      'subject' => Str::upToLen($att['name'], 99),
+      'subject' => Str::upToLen($this->issueRecData['subject'], 99 - strlen($subjectSuffix)).$subjectSuffix,
       'source' => 0,
       'docState' => 1001, 'docStateMain' => 0
     ];
@@ -59,8 +60,18 @@ class SplitIssueByAttachmentsEngine extends Utility
         $cnt++;
         if ($cnt === 1)
           continue;
-        $this->doOne($a);
+        $this->doOne($a, $cnt);
 			}
+		}
+		if (isset($attachments['files']))
+		{
+			foreach ($attachments['files'] as $a)
+			{
+        $cnt++;
+        if ($cnt === 1)
+          continue;
+        $this->doOne($a, $cnt);
+      }
 		}
   }
 }
