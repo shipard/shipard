@@ -6,6 +6,7 @@ namespace e10doc\purchase\libs;
 use e10doc\core\e10utils;
 use E10\utils;
 use \Shipard\Application\DataModel;
+use \e10\base\libs\UtilsBase;
 
 
 class FormPurchaseDocs extends \e10doc\core\FormHeads
@@ -290,7 +291,8 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 		// -- bank accounts
 		if ($this->readOnly)
 		{
-			$this->addStatic(['text' => $this->recData['bankAccount'], 'icon' => 'tables/e10doc.base.bankaccounts']);
+			if ($this->recData['bankAccount'] !== '')
+				$this->addStatic(['text' => $this->recData['bankAccount'], 'icon' => 'tables/e10doc.base.bankaccounts']);
 		}
 		else
 		{
@@ -321,8 +323,12 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 		$addressesOther1 = [];
 		$other1Address = 0;
 
-		$q = 'SELECT * FROM [e10_persons_address] WHERE tableid = %s AND recid = %i';
-		$rows = $this->table->db()->query ($q, 'e10.persons.persons', $personNdx);
+		$q = [];
+		array_push($q, 'SELECT * FROM [e10_persons_address]');
+		array_push($q, ' WHERE tableid = %s ', 'e10.persons.persons', ' AND recid = %i', $personNdx);
+		array_push($q, ' AND [docState] != %i', 9800);
+
+		$rows = $this->table->db()->query ($q);
 		foreach ($rows as $r)
 		{
 			$title = [];
@@ -334,14 +340,26 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 
 			if ($r['type'] !== 99)
 			{
-				$addresses[$r['ndx']] = $title;
+				$addresses[$r['ndx']] = [$title];
 				if ($r['type'] == 4)
 					$deliveryAddress = $r['ndx'];
 			}
 			if ($r['type'] === 99)
 			{
-				$addressesOther1[$r['ndx']] = $title;
+				$addressesOther1[$r['ndx']] = [$title];
 				$other1Address = $r['ndx'];
+			}
+
+			$classification = UtilsBase::loadClassification ($this->table->app(), 'e10.persons.address', [$r['ndx']], 'ml1 label');
+			if (isset ($classification [$r['ndx']]))
+			{
+				forEach ($classification [$r['ndx']] as $clsfGroup)
+				{
+					if ($r['type'] == 99)
+						$addressesOther1[$r['ndx']] = array_merge ($addressesOther1[$r['ndx']], $clsfGroup);
+					if ($r['type'] != 99)
+						$addresses[$r['ndx']] = array_merge ($addresses[$r['ndx']], $clsfGroup);
+				}
 			}
 		}
 		$this->addFormPersonInfo_Address ($addresses, 'deliveryAddress', $deliveryAddress, 'Doručovací adresa');
@@ -354,8 +372,8 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 		{
 			if ($this->recData[$columnId])
 			{
+				$this->addStatic(['text' => $labelText, 'icon' => 'system/iconHome', 'class' => 'block']);
 				$a = $addresses[$this->recData[$columnId]];
-				$a[0]['icon'] = 'system/iconHome';
 				$this->addStatic($a);
 			}
 		}
@@ -367,4 +385,4 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 				$this->recData[$columnId] = ($suggestedAddressNdx) ? $suggestedAddressNdx : key($addresses);
 		}
 	}
-} // class FormPurchaseDocs
+}
