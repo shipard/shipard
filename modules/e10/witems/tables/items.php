@@ -354,6 +354,10 @@ class ViewItems extends TableView
 				array_push ($q, "[items].[fullName] LIKE %s", '%'.$dotaz.'%');
 				array_push ($q, " OR [items].[shortName] LIKE %s", '%'.$dotaz.'%');
 				array_push ($q, " OR [items].[id] LIKE %s", $dotaz.'%');
+
+				if ($this->table->app()->model()->table ('e10doc.debs.accounts') !== FALSE)
+					array_push ($q, ' OR [items].[debsAccountId] LIKE %s', $dotaz.'%');
+
 				array_push ($q, " OR EXISTS (SELECT ndx FROM e10_base_properties WHERE items.ndx = e10_base_properties.recid AND valueString LIKE %s AND tableid = %s)", '%'.$dotaz.'%', 'e10.witems.items');
 			}
 			else
