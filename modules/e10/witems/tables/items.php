@@ -942,7 +942,7 @@ class FormItems extends TableForm
 			$this->openTab ();
 				$this->addColumnInput ("shortName");
 				$this->addColumnInput ("id");
-
+				$this->addColumnInput ('description');
 				if ($itemKind === 0)
 				{ // service
 					$this->addList ('doclinks', '', TableForm::loAddToFormLayout);

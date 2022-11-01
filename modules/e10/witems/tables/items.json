@@ -5,6 +5,7 @@
     {"id": "fullName", "name": "Název", "type": "string", "len": 120},
 		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
 		{"id": "id", "name": "Kód položky", "type": "string", "len": 25},
+		{"id": "description", "name": "Popis", "type": "string", "len": 200},
 		{"id": "itemType", "name": "Typ položky", "type": "int", "reference": "e10.witems.itemtypes"},
 		{"id": "itemKind", "name": "Druh položky", "type": "enumInt",
 			"enumValues": {"0": "Služba", "1": "Zásoba", "2": "Účetní položka", "3": "Ostatní"}},
