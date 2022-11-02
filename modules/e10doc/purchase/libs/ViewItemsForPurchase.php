@@ -2,14 +2,14 @@
 
 namespace e10doc\purchase\libs;
 
-
-use e10doc\core\e10utils;
 use E10\utils;
-
+use \e10\base\libs\UtilsBase;
 
 
 class ViewItemsForPurchase extends \e10\witems\ViewItems
 {
+	var $purchItemComboImages = 0;
+
 	public function init ()
 	{
 		parent::init();
@@ -25,12 +25,17 @@ class ViewItemsForPurchase extends \e10\witems\ViewItems
 
 		$comboByCats = intval($this->table->app()->cfgItem ('options.e10doc-buy.purchItemComboCats', 0));
 		$defaultCat = intval($this->table->app()->cfgItem ('options.e10doc-buy.purchItemDefaultComboCat', 0));
+		$purchItemComboAll = intval($this->table->app()->cfgItem ('options.e10doc-buy.purchItemComboAll', 1));
+
+		$this->purchItemComboImages = intval($this->table->app()->cfgItem ('options.e10doc-buy.purchItemComboImages', 0));
 
 		$allId = '';
 		if ($comboByCats)
 			$allId = 'c'.$comboByCats;
 
-		$bt [] = ['id' => $allId, 'title' => 'Vše', 'active' => ($defaultCat === 0) ? 1 : 0];
+		if ($purchItemComboAll == 1)
+			$bt [] = ['id' => $allId, 'title' => 'Vše', 'active' => ($defaultCat === 0) ? 1 : 0];
+
 		$comboByTypes = intval($this->table->app()->cfgItem ('options.e10doc-buy.purchItemComboByTypes', 0));
 		if ($comboByTypes)
 		{
@@ -54,6 +59,9 @@ class ViewItemsForPurchase extends \e10\witems\ViewItems
 				$bt [] = ['id' => 'c'.$cat['ndx'], 'title' => $cat['shortName'], 'active' => ($defaultCat == $cat['ndx']) ? 1 : 0];
 			}
 		}
+
+		if ($purchItemComboAll == 2)
+			$bt [] = ['id' => $allId, 'title' => 'Vše', 'active' => ($defaultCat === 0) ? 1 : 0];
 
 		if (count ($bt) > 1)
 			$this->setTopTabs ($bt);
@@ -110,6 +118,8 @@ class ViewItemsForPurchase extends \e10\witems\ViewItems
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['tt'] = $item['shortName'];
 		$listItem ['icon'] = $this->table->icon ($item);
+		$listItem ['t2'] = $item['description'];
+		$listItem ['i1'] = $item['id'];
 
 		if ($thisItemType['kind'] !== 2)
 		{
@@ -144,6 +154,16 @@ class ViewItemsForPurchase extends \e10\witems\ViewItems
 
 		if ($item['groupCashRegister'] !== '' && $this->activeCategory !== FALSE && $this->activeCategory['si'] === 'cashreg')
 			$this->addGroupHeader ($item['groupCashRegister']);
+
+		if ($this->purchItemComboImages)
+		{
+			$image = UtilsBase::getAttachmentDefaultImage ($this->app(), $this->table->tableId(), $item['ndx'], TRUE);
+			if (isset($image ['smallImage']))
+			{
+				$listItem ['image'] = $image ['smallImage'];
+				unset($listItem ['icon']);
+			}
+		}
 
 		return $listItem;
 	}
