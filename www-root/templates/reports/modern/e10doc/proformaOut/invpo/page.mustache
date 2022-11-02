@@ -33,17 +33,17 @@
 		<td class="info">
 			<table class="docInfo">
 				<tr>
-					<td class='label'>{{@dict;Způsob úhrady}}:</td><td class='value'>{{@dict;dataItem:data.head.print.paymentMethod}}</td>		
+					<td class='label'>{{@dict;Způsob úhrady}}:</td><td class='value'>{{@dict;dataItem:data.head.print.paymentMethod}}</td>
 				</tr>
 				<tr>
 					<td>{{@dict;Bankovní spojení}}:</td><td>{{data.myBankAccount.bankAccount}}</td>
-				</tr>			
+				</tr>
 				{{#data.myBankAccount.iban}}
 					<tr>
 						<td>{{@dict;IBAN}}:</td><td> {{data.myBankAccount.iban}} <br/></td>
 					</tr>
 					{{/data.myBankAccount.iban}}
-					
+
 				<tr>
 					<td class='label'>{{@dict;Variabilní symbol}}:</td><td class='value'><b>{{data.head.symbol1}}</b></td>
 				</tr>
@@ -52,7 +52,7 @@
 						<td class='label'>{{@dict;Specifický symbol}}:</td><td class='value'><b>{{data.head.symbol2}}</b></td>
 					</tr>
 				{{/data.head.symbol2}}
-			</table>			
+			</table>
 		</td>
 	</tr>
 </table>
@@ -78,15 +78,15 @@
 							{{data.owner.address.countryNameSC2}}-{{data.owner.address.zipcode}} {{data.owner.address.city}}<br/>
 							{{data.owner.address.countryNameEng}}
 						{{/data.flags.foreignCountry}}
-						
+
 						</span>
-					{{/data.reportTexts.supplier}}					
+					{{/data.reportTexts.supplier}}
 						{{#data.reportTexts.contacts}}{{{data.reportTexts.contacts}}}{{/data.reportTexts.contacts}}
 						{{^data.reportTexts.contacts}}
 							{{#data.owner_identifiers}}
 								<b>{{@dict;dataItem:name}}:</b> {{value}}
 							{{/data.owner_identifiers}}<br>
-						
+
 							<small>{{cfgItem.options.core.ownerLegalRegInfo}}</small>
 						{{/data.reportTexts.contacts}}
 					{{/data.reportTexts.supplierAndContacts}}
@@ -194,7 +194,7 @@
 				<td class="itemRow" colspan="8" style="font-weight: semi-bold;">{{text}}{{#additionsMarks}}<sup> {{additionsMarks}}</sup>{{/additionsMarks}}</td>
 			</tr>
 			<tr class="rowInfo">
-				<td class='itemID'>{{itemID}}</td>				
+				<td class='itemID'>{{itemID}}</td>
 				<td class='number'>{{quantity}}</td>
 				<td>{{@dict;dataItem:print.unit}}</td>
 				{{#data.head.taxPayer}}
@@ -251,7 +251,7 @@
 							</tr>
 						{{/data.flags.foreignCurrency}}
 					</thead>
-								
+
 					{{#data.taxes}}
 						<tr>
 							{{#data.flags.foreignCurrency}}
@@ -272,14 +272,14 @@
 								<td class='number'>{{print.sumTax}}</td>
 								<td class='number'>{{print.sumTotal}}</td>
 							{{/data.flags.foreignCurrency}}
-						</tr>								
+						</tr>
 					{{/data.taxes}}
 
-					<tr>							
-						{{#data.flags.foreignCurrency}}							
+					<tr>
+						{{#data.flags.foreignCurrency}}
 							<td class='label' colspan='2' style="font-weight: bold;">{{@dict;Celkem}}</td>
 						{{/data.flags.foreignCurrency}}
-										
+
 						{{^data.flags.foreignCurrency}}
 							<td class='label' colspan='2'>{{@dict;Celkem}} {{data.head.print.currency}}</td>
 						{{/data.flags.foreignCurrency}}
@@ -345,8 +345,8 @@
 				<td class="empty">
 				<td>
 				<td>
-					<img src='{{dsRoot}}/{{data.author.signature.rfn}}'>
-				</td>				
+					<img src='{{dsUrl}}{{data.author.signature.rfn}}'>
+				</td>
 			</tr>
 			<tr>
 				<td class="empty">
@@ -354,7 +354,7 @@
 				<td>
 					<span>Vystavil</span>
 				</td>
-			</tr>	
+			</tr>
 		</table>
 	{{/data.author.signature.rfn}}
 {{/data.options.docReportsPersonsSigns}}
