@@ -15,21 +15,26 @@ class FileArchiveExtractor extends Utility
 	/** @var \ZipArchive */
 	var $zipArchive;
 
+	var $filesList = [];
+
 	public function setFileName ($fileName)
 	{
 		$this->fileName = $fileName;
 		$this->zipArchive = new \ZipArchive();
 	}
 
-	public function extractAsAttachments ($toTableId, $toRecId)
+	public function extractAsAttachments ($toTableId, $toRecId, ?array $filesToExtract = NULL)
 	{
 		$this->zipArchive->open($this->fileName);
 
 		$dstPath = __APP_DIR__ . '/tmp/';
 
-		for($i = 0; $i < $this->zipArchive->numFiles; $i++)
+		for ($i = 0; $i < $this->zipArchive->numFiles; $i++)
 		{
-			$zipFileName = $this->zipArchive->getNameIndex($i);
+			if ($filesToExtract && !in_array($i, $filesToExtract))
+				continue;
+
+				$zipFileName = $this->zipArchive->getNameIndex($i);
 			$srcFileInfo = pathinfo($zipFileName);
 
 			$tmpFileName = $dstPath.$srcFileInfo['basename'];
@@ -39,5 +44,24 @@ class FileArchiveExtractor extends Utility
 		}
 
 		$this->zipArchive->close();
+	}
+
+	public function getFilesList()
+	{
+		$this->zipArchive->open($this->fileName);
+
+		for($i = 0; $i < $this->zipArchive->numFiles; $i++)
+		{
+			$zipFileName = $this->zipArchive->getNameIndex($i);
+
+			if (substr($zipFileName, -1) === '/')
+				continue;
+
+			$srcFileInfo = pathinfo($zipFileName);
+			if ($srcFileInfo['dirname'] === '__MACOSX')
+				continue;
+
+			$this->filesList[] = ['fileName' => $zipFileName, 'ndx' => $i, 'info' => $srcFileInfo];
+		}
 	}
 }

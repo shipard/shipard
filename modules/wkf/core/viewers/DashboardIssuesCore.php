@@ -1342,6 +1342,27 @@ class DashboardIssuesCore extends TableView
 			}
 		}
 
+		if (isset($attachments['files']))
+		{
+			foreach ($attachments['files'] as $a)
+			{
+				$suffix = strtolower(substr($a['filename'], -3));
+				if ($suffix !== 'zip')
+					continue;
+
+				$icon = 'system/iconFile';
+
+				$unzipButton = [
+					'text' => 'ZIP: '.$a['filename'], 'type' => 'action', 'action' => 'addwizard', 'icon' => $icon,
+					'btnClass' => 'btn-xs btn-primary', 'class' => '_pull-right',
+					'data-class' => 'wkf.core.libs.UnzipIssueAttachmentWizard',
+					'data-addparams' => 'issueNdx='.$ndx.'&attachmentNdx='.$a['ndx'],
+				];
+
+				$links[] = $unzipButton;
+			}
+		}
+
 		return $links;
 	}
 
