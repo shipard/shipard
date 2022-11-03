@@ -55,6 +55,18 @@ class PdfCreator extends Utility
 			$this->options['footerTemplate'] = $report->pageFooter;
 	}
 
+	public function setUrl($srcFileName, $srcUrl, $dstFileName)
+	{
+		$this->srcFileName = $srcFileName;
+		$this->srcURL = $srcUrl;
+		$this->dstFileName = $dstFileName;
+		$this->options['paperOrientation'] = 'portrait';
+		$this->options['paperMarginLeft'] = '1.6cm';
+		$this->options['paperMarginRight'] = '1.6cm';
+		$this->options['paperMarginTop'] = '2cm';
+		$this->options['paperMarginBottom'] = '1.6cm';
+	}
+
 	public function createPdf()
 	{
 		$this->createPdfCore();
