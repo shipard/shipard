@@ -38,6 +38,9 @@ class PurchasePriceList extends DataView
       if ($categoryItem)
         $this->mainCategoryNdx = $categoryItem['ndx'];
     }
+
+		$this->checkRequestParamsList('withLabels');
+		$this->checkRequestParamsList('withoutLabels');
 	}
 
 	protected function loadData()
@@ -59,6 +62,21 @@ class PurchasePriceList extends DataView
                       ' AND e10_base_doclinks.dstRecId = %i)', $this->mainCategoryNdx
                     );
     }
+
+		if (isset($this->requestParams['withLabels']) && count($this->requestParams['withLabels']))
+		{
+			array_push ($q, ' AND EXISTS (',
+				'SELECT ndx FROM e10_base_clsf WHERE items.ndx = recid AND tableId = %s', 'e10.witems.items',
+				' AND [clsfItem] IN %in', $this->requestParams['withLabels'],
+				')');
+		}
+		if (isset($this->requestParams['withoutLabels']) && count($this->requestParams['withoutLabels']))
+		{
+			array_push ($q, ' AND NOT EXISTS (',
+				'SELECT ndx FROM e10_base_clsf WHERE items.ndx = recid AND tableId = %s', 'e10.witems.items',
+				' AND [clsfItem] IN %in', $this->requestParams['withoutLabels'],
+				')');
+		}
 
     array_push ($q, ' ORDER BY items.orderCashRegister, items.fullName');
 
