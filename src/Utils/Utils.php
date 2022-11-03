@@ -1521,9 +1521,12 @@ class Utils
 		return $cfg;
 	}
 
-	static function tmpFileName ($fileExt, $baseName = 'x')
+	static function tmpFileName ($fileExt, $baseName = 'x', $relative = 0)
 	{
-		$tmpFileName = __APP_DIR__ .'/tmp/'.$baseName.'-' . time() . '-' . mt_rand (1000000, 999999999) . '.' . $fileExt;
+		if ($relative)
+			$tmpFileName = 'tmp/'.$baseName.'-' . time() . '-' . mt_rand (1000000, 999999999) . '.' . $fileExt;
+		else
+			$tmpFileName = __APP_DIR__ .'/tmp/'.$baseName.'-' . time() . '-' . mt_rand (1000000, 999999999) . '.' . $fileExt;
 		return $tmpFileName;
 	}
 

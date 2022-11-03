@@ -760,6 +760,16 @@ class DashboardIssuesCore extends TableView
 
 		if (($this->sectionCfg && $this->sectionCfg['isAdmin']) || $section && $section['isAdmin'])
 		{
+			if (!isset($this->atts[$item ['ndx']]) && $item['source'] == TableIssues::msEmail)
+			{
+				$sab = [
+					'type' => 'action', 'action' => 'addwizard', 'data-table' => 'wkf.core.issues', 'data-pk' => strval($ndx),
+					'text' => '', 'title' => 'Uložit text zprávy jako přílohu', 'data-class' => 'wkf.core.libs.SaveIssueBodyWizard', 'icon' => 'system/iconFilePdf',
+					'element' => 'span', 'class' => 'pull-right e10-small', 'actionClass' => '', 'btnClass' => '',
+				];
+				$title[] = $sab;
+			}
+
 			$seb = [
 				'type' => 'action', 'action' => 'addwizard', 'data-table' => 'wkf.core.issues', 'data-pk' => strval($ndx),
 				'text' => '', 'title' => 'Rychlé úpravy', 'data-class' => 'wkf.core.forms.SmartEdit', 'icon' => 'system/actionSettings',
