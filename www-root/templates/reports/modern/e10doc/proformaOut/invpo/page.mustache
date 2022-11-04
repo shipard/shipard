@@ -96,9 +96,9 @@
 			<div class='hdr'>{{@dict;Odběratel}}:<small class='pull-right'>#{{data.person.id}}</small></div>
 			<span class='title'>{{data.person.fullName}}</span>
 			<span class='address'>
-				{{#data.owner.address.specification}}
-					{{data.owner.address.specification}}<br/>
-				{{/data.owner.address.specification}}
+				{{#data.person.address.specification}}
+					{{data.person.address.specification}}<br/>
+				{{/data.person.address.specification}}
 				{{data.person.address.street}}<br/>
 				{{^data.flags.foreignCountry}}
 					{{data.person.address.zipcode}} {{data.person.address.city}}<br/>

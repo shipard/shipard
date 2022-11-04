@@ -30,15 +30,15 @@
 								{{data.owner.address.countryNameSC2}}-{{data.owner.address.zipcode}} {{data.owner.address.city}}<br/>
 								{{data.owner.address.countryNameEng}}
 							{{/data.flags.foreignCountry}}
-							
+
 							</span>
-						{{/data.reportTexts.supplier}}					
+						{{/data.reportTexts.supplier}}
 							{{#data.reportTexts.contacts}}{{{data.reportTexts.contacts}}}{{/data.reportTexts.contacts}}
 							{{^data.reportTexts.contacts}}
 								{{#data.owner_identifiers}}
 									<b>{{@dict;dataItem:name}}:</b> {{value}}
 								{{/data.owner_identifiers}}<br>
-							
+
 								<small>{{cfgItem.options.core.ownerLegalRegInfo}}</small>
 							{{/data.reportTexts.contacts}}
 						{{/data.reportTexts.supplierAndContacts}}
@@ -48,9 +48,9 @@
 				<div class='hdr'>{{@dict;Odběratel}}:<small class='pull-right'>#{{data.person.id}}</small></div>
 				<span class='title'>{{data.person.fullName}}</span>
 				<span class='address'>
-					{{#data.owner.address.specification}}
-						{{data.owner.address.specification}}<br/>
-					{{/data.owner.address.specification}}
+					{{#data.person.address.specification}}
+						{{data.person.address.specification}}<br/>
+					{{/data.person.address.specification}}
 					{{data.person.address.street}}<br/>
 					{{^data.flags.foreignCountry}}
 						{{data.person.address.zipcode}} {{data.person.address.city}}<br/>
@@ -68,7 +68,7 @@
 		</tr>
 	</table>
 
-	
+
 
 	<p>{{@dict;Vážený zákazníku}},</p>
 	<p>{{@dict;dovolujeme si Vás upozornit, že ke dni}} {{data.today}} {{@dict;stále evidujeme následující pohledávky}}:
