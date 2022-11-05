@@ -6,6 +6,9 @@ use E10\utils;
 use \e10\base\libs\UtilsBase;
 
 
+/**
+ * class ViewItemsForPurchase
+ */
 class ViewItemsForPurchase extends \e10\witems\ViewItems
 {
 	var $purchItemComboImages = 0;
@@ -116,41 +119,30 @@ class ViewItemsForPurchase extends \e10\witems\ViewItems
 		$thisItemType = $this->table->itemType ($item, TRUE);
 
 		$listItem ['pk'] = $item ['ndx'];
-		$listItem ['tt'] = $item['shortName'];
-		$listItem ['icon'] = $this->table->icon ($item);
+		$listItem ['t1'] = $item['shortName'];
+		//$listItem ['icon'] = $this->table->icon ($item);
 		$listItem ['t2'] = $item['description'];
-		$listItem ['i1'] = $item['id'];
+		$listItem ['i2'] = $item['id'];
 
 		if ($thisItemType['kind'] !== 2)
 		{
-			$listItem ['i2'] = ['text' => ''];
+			$listItem ['i1'] = ['text' => ''];
 
 			if ($this->showPrice === self::PRICE_SALE)
 			{
 				if ($item['priceSell'])
-					$listItem ['i2'] = ['text' => utils::nf($item['priceSell'], 2)];
+					$listItem ['i1'] = ['text' => utils::nf($item['priceSell'], 2)];
 			}
 			else
 			if ($this->showPrice === self::PRICE_BUY)
 			{
 				if ($item['priceBuy'])
-					$listItem ['i2'] = ['text' => utils::nf($item['priceBuy'], 2)];
+					$listItem ['i1'] = ['text' => utils::nf($item['priceBuy'], 2)];
 			}
 
 			if ($item['defaultUnit'] !== '')
-				$listItem ['i2']['prefix'] = $this->units[$item['defaultUnit']]['shortcut'];
+				$listItem ['i1']['prefix'] = $this->units[$item['defaultUnit']]['shortcut'];
 		}
-/*
-		if (!isset ($this->defaultType))
-		{
-			$listItem ['t2'] = $this->table->itemType ($item);
-			if ($item['useFor'] !== 0)
-			{
-				$useFor = $this->table->columnInfoEnum ('useFor', 'cfgText');
-				$listItem ['t2'] .= ' / '.$useFor [$item ['useFor']];
-			}
-		}
-*/
 
 		if ($item['groupCashRegister'] !== '' && $this->activeCategory !== FALSE && $this->activeCategory['si'] === 'cashreg')
 			$this->addGroupHeader ($item['groupCashRegister']);
@@ -161,7 +153,7 @@ class ViewItemsForPurchase extends \e10\witems\ViewItems
 			if (isset($image ['smallImage']))
 			{
 				$listItem ['image'] = $image ['smallImage'];
-				unset($listItem ['icon']);
+				//unset($listItem ['icon']);
 			}
 		}
 
@@ -178,5 +170,5 @@ class ViewItemsForPurchase extends \e10\witems\ViewItems
 					(isset($item ['i2']['text']) ? ' / '.$item ['i2']['text'] : '');
 	}
 
-} // class ViewItemsForPurchase
+}
 
