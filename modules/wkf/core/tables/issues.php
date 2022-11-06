@@ -38,6 +38,18 @@ class TableIssues extends DbTable
 			$this->app()->db()->query ("UPDATE [wkf_core_issues] SET [issueId] = %s WHERE [ndx] = %i", $recData['issueId'], $recData['ndx']);
 		}
 
+		$ik = $this->app()->cfgItem ('wkf.issues.kinds.'.$recData['issueKind'], NULL);
+		if ($ik && $recData['docState'] === 4000 && $recData['activateCnt'] === 1)
+		{
+			$emailForwardOnFirstConfirm = intval($ik['emailForwardOnFirstConfirm'] ?? 0);
+			if ($emailForwardOnFirstConfirm)
+			{
+				$ife = new \wkf\core\libs\IssueEmailForwardEngine($this->app());
+				$ife->setIssueNdx($recData['ndx']);
+				$ife->send();
+			}
+		}
+
 		// -- add mark to notified/assigned users
 		/*
 		if ($recData['docStateMain'] === 1)
