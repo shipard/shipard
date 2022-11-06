@@ -718,16 +718,23 @@ class DashboardIssuesCore extends TableView
 			$dstId= 't3';
 		if ($item['tableNdx'])
 		{
-			$docTable = $this->app()->tableByNdx($item['tableNdx']);
-			$docRecData = $docTable->loadItem ($item['recNdx']);
-			$docInfo = $docTable->getRecordInfo ($docRecData);
+			$showDocumentLabel = 1;
+			if ($item['tableNdx'] === 1120 && $item['recNdx'] === $item['workOrder'])
+				$showDocumentLabel = 0;
 
-			$docItem = [
-				'icon' => $docTable->tableIcon ($docRecData), 'text' => $docInfo['docID'],
-				'docAction' => 'edit', 'table' => $docTable->tableId(), 'pk' => $docRecData['ndx'], 'title' => $docInfo['title'],
-				'class' => '', 'actionClass' => 'label label-info', 'type' => 'span'];
+			if ($showDocumentLabel)
+			{
+				$docTable = $this->app()->tableByNdx($item['tableNdx']);
+				$docRecData = $docTable->loadItem ($item['recNdx']);
+				$docInfo = $docTable->getRecordInfo ($docRecData);
 
-			$item[$dstId][] = $docItem;
+				$docItem = [
+					'icon' => $docTable->tableIcon ($docRecData), 'text' => $docInfo['docID'],
+					'docAction' => 'edit', 'table' => $docTable->tableId(), 'pk' => $docRecData['ndx'], 'title' => $docInfo['title'],
+					'class' => '', 'actionClass' => 'label label-info', 'type' => 'span'];
+
+				$item[$dstId][] = $docItem;
+			}
 		}
 		if (isset ($this->docLinksDocs [$ndx]))
 			$item[$dstId] = array_merge($item[$dstId], $this->docLinksDocs [$ndx]);
@@ -809,6 +816,8 @@ class DashboardIssuesCore extends TableView
 				$title[] = $this->linkedPersons [$ndx]['wkf-issues-from'];
 			elseif ($item['issueType'] === TableIssues::mtOutbox && isset ($this->linkedPersons [$ndx]['wkf-issues-to']))
 				$title[] = $this->linkedPersons [$ndx]['wkf-issues-to'];
+			if (isset ($this->linkedPersons [$ndx]['wkf-issues-notify']))
+				$title[] = $this->linkedPersons [$ndx]['wkf-issues-notify'];
 
 			if ($item['workOrder'])
 			{
@@ -875,16 +884,23 @@ class DashboardIssuesCore extends TableView
 
 		if ($item['tableNdx'])
 		{
-			$docTable = $this->app()->tableByNdx($item['tableNdx']);
-			$docRecData = $docTable->loadItem ($item['recNdx']);
-			$docInfo = $docTable->getRecordInfo ($docRecData);
+			$showDocumentLabel = 1;
+			if ($item['tableNdx'] === 1120 && $item['recNdx'] === $item['workOrder'])
+				$showDocumentLabel = 0;
 
-			$docItem = [
-				'icon' => $docTable->tableIcon ($docRecData), 'text' => $docInfo['docID'],
-				'docAction' => 'edit', 'table' => $docTable->tableId(), 'pk' => $docRecData['ndx'], 'title' => $docInfo['title'],
-				'class' => '', 'actionClass' => 'label label-info', 'type' => 'span'];
+			if ($showDocumentLabel)
+			{
+				$docTable = $this->app()->tableByNdx($item['tableNdx']);
+				$docRecData = $docTable->loadItem ($item['recNdx']);
+				$docInfo = $docTable->getRecordInfo ($docRecData);
 
-			$title[] = $docItem;
+				$docItem = [
+					'icon' => $docTable->tableIcon ($docRecData), 'text' => $docInfo['docID'],
+					'docAction' => 'edit', 'table' => $docTable->tableId(), 'pk' => $docRecData['ndx'], 'title' => $docInfo['title'],
+					'class' => '', 'actionClass' => 'label label-info', 'type' => 'span'];
+
+				$title[] = $docItem;
+			}
 		}
 		if (isset ($this->docLinksDocs [$ndx]))
 			$title = array_merge($title, $this->docLinksDocs [$ndx]);
