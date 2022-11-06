@@ -77,55 +77,64 @@ class OfficeInfo extends \e10mnf\core\libs\WorkOrderInfo
 
   public function loadIssues ()
 	{
-    $tiles = [];
-
 		$q = [];
     array_push ($q, 'SELECT issues.*');
     array_push ($q, ' FROM [wkf_core_issues] AS issues');
     array_push ($q, ' WHERE 1');
-		array_push ($q, ' AND [docState] = %i', 1200);
+		array_push ($q, ' AND [docState] = %i', 4000);
 		array_push ($q, ' AND [workOrder] = %i', $this->recData['ndx']);
 		array_push ($q, ' ORDER BY [dateCreate] DESC, [ndx] DESC');
 
+    $t = [];
     $pks = [];
     $rows = $this->db()->query($q);
     foreach ($rows as $r)
     {
       $title = [
-        ['text' => $r['subject'], 'class' => 'h3'],
-      ];
-      $body = [
+        ['text' => $r['subject'], 'class' => 'h2 block'],
         ['text' => Utils::datef($r['dateIncoming']), 'class' => 'label label-default'],
+        ['text' => ' ', 'class' => 'block'],
       ];
 
-			$tiles[$r['ndx']] = [
-        'class' => 'e10-pane',
-        'title' => [['class' => 'h2', 'value' => $title]],
-        'body' => [['class' => 'padd5', 'value' => $body]],
-        //'t1' => $r['subject'],
-        //'t2' => '',
-        //'docAction' => 'edit', 'table' => 'e10doc.core.heads', 'pk' => $r['ndx'],
-        //'coverImage' => $coverImage,
-        //'badge-lt' => $row ['title']
+      $i = [
+        'issue' => $title,
+        '_options' => ['cellClasses' => ['pict' => 'width20']]
       ];
 
+      $t[$r['ndx']] = $i;
       $pks[] = $r['ndx'];
     }
 
 		$this->atts = UtilsBase::loadAttachments ($this->app(), $pks, 'wkf.core.issues');
-    foreach ($this->atts as $attNdx => $att)
+    foreach ($this->atts as $issueNdx => $att)
     {
-      $tiles[$attNdx]['body'][]= ['class' => 'attBoxSmall', 'attachments' => $this->atts[$attNdx], 'fullSizeTreshold' => 2];
-      //$links = $this->attLinks($attNdx);
-      //$tiles [$attNdx]['body'][] = ['value' => $links, 'class' => 'padd5'];
+      $links = $this->attLinks($issueNdx);
+
+      if (count($links))
+        $t [$issueNdx]['issue'] = array_merge($t [$issueNdx]['issue'], $links);
+      if (!isset($t[$issueNdx]['pict']) && isset($links[0]['data']['url-preview']))
+      {
+        $t[$issueNdx]['pict'] = [
+          'code' => "<img src='{$links[0]['data']['url-preview']}'style='max-width: 100%;'/>",
+        ];
+      }
     }
 
-    if (count($tiles))
+    if (count($t))
     {
-      $title = ['text' => 'Pošta k předání', 'class' => 'h2 padd5 pb1 block', 'icon' => 'user/envelope'];
+      $h = ['pict' => 'Test', 'issue' => 'Zpráva'];
+      $title = [['text' => 'Pošta k předání', 'class' => 'h2 padd5 pb1', 'icon' => 'user/envelope']];
+
+      $title[] = [
+        'type' => 'action', 'action' => 'addwizard',
+        'text' => 'Předat vše', 'data-class' => 'e10pro.ofre.libs.HandOverPostWizard', 'icon' => 'system/actionUpload',
+        'actionClass' => 'btn btn-primary', 'class' => 'pb1 pull-right',
+      ];
+
+
       $this->data['issues'] = [
         'pane' => 'e10-pane e10-pane-table', 'paneTitle' => $title,
-        'type' => 'tiles', 'tiles' => $tiles, 'class' => 'panes'
+        'type' => 'table', 'table' => $t, 'header' => $h, 'params' => ['hideHeader' => 1,],
       ];
     }
   }
