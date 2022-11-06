@@ -122,6 +122,16 @@ class TableIssues extends DbTable
 			return $states;
 		}
 
+		$specialDocStates = $this->app()->cfgItem('wkf.issues.docStates.kind'.$recData['issueKind'], NULL);
+		if ($specialDocStates)
+		{
+			$states = $this->app()->model()->tableProperty ($this, 'states');
+			if ($states)
+				$states ['states'] = $specialDocStates;
+
+			return $states;
+		}
+
 		return parent::documentStates($recData);
 	}
 
