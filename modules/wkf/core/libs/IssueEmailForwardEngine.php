@@ -3,6 +3,7 @@ namespace wkf\core\libs;
 
 use Shipard\Base\Utility;
 use \Shipard\Report\MailMessage;
+use \Shipard\Utils\Utils;
 
 
 /**
@@ -75,6 +76,41 @@ class IssueEmailForwardEngine extends Utility
 
     $this->msg->sendMail();
 		$this->msg->saveToOutbox();
+
+    $update = [];
+    if ($this->issueRecData['docState'] !== 4000)
+    {
+      $update['docState'] = 4000;
+      $update['docStateMain'] = 2;
+    }
+
+    if (!$this->issueRecData['tableNdx'])
+    {
+      $update['tableNdx'] = 1120;
+      $update['recNdx'] = $this->issueRecData['workOrder'];
+
+      if (isset($this->documentInfo['persons']['to']) && count($this->documentInfo['persons']['to']))
+      {
+        foreach ($this->documentInfo['persons']['to'] as $personNdx)
+        {
+          $newLink = [
+            'linkId' => 'wkf-issues-notify',
+            'srcTableId' => 'wkf.core.issues', 'srcRecId' => $this->issueNdx,
+            'dstTableId' => 'e10.persons.persons', 'dstRecId' => $personNdx
+          ];
+          $this->db()->query ('INSERT INTO [e10_base_doclinks] ', $newLink);
+        }
+      }
+    }
+
+    // -- update issue
+    if (count($update))
+    {
+      $update ['dateTouch'] = Utils::now();
+      $this->db()->query ('UPDATE [wkf_core_issues] SET', $update, ' WHERE ndx = %i', $this->issueNdx);
+
+      $this->tableIssues->docsLog ($this->issueNdx);
+    }
   }
 }
 
