@@ -90,6 +90,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		switch ($actionId)
 		{
 			case 'download-inbox-bank-statements': $this->downloadBankStatements(TRUE); return TRUE;
+			case 'download-all-bank-statements': $this->downloadBankStatements(); return TRUE;
 		}
 
 		parent::onCliAction($actionId);
