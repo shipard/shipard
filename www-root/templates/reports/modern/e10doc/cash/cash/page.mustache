@@ -137,9 +137,9 @@
 				<td>{{text}}</td>
 				<td class='number'>{{quantity}}</td>
 				<td>{{@dict;dataItem:print.unit}}</td>
-				{{#data.head.taxPayer}}
+				{{#data.flags.taxDocument}}
 					<td class='number'>{{taxPercents}}</td>
-				{{/data.head.taxPayer}}
+				{{/data.flags.taxDocument}}
 				<td class='number'>{{print.priceItem}}</td>
 				<td class='number'>{{print.priceAll}}</td>
 			</tr>
