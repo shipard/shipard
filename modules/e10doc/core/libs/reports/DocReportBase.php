@@ -84,7 +84,7 @@ class DocReportBase extends FormReport
 
 			// persons country / language
 			$this->data [$columnId]['lists']['address'] = [];
-			$taxHomeCountryId = E10Utils::docTaxHomeCountryId($this->app(), $this->docHead);
+			$taxHomeCountryId = E10Utils::docTaxHomeCountryId($this->app(), $this->recData);
 			$taxHomeCountryNdx = World::countryNdx($this->app(), $taxHomeCountryId);
 			if (isset($this->data [$columnId]['address']))
 				World::setCountryInfo($this->app(), $this->data [$columnId]['lists']['address'][0]['worldCountry'] ?? $taxHomeCountryNdx, $this->data [$columnId]['address']);
