@@ -27,12 +27,15 @@
 
 <table class="infoSecondary">
 	<tr>
-		<td class="supplier">
-			<span class='hdr' id="supplier-address-hdr">{{@dict;Dodavatel / přijal}}:</span>
+		<td class='supplier'>
+			<span class='hdr' id="supplier-address-hdr">
+				{{#data.flags.cashDirIn}}Dodavatel / přijal:{{/data.flags.cashDirIn}}
+				{{#data.flags.cashDirOut}}Odběratel / vydal:{{/data.flags.cashDirOut}}
+			</span>
 			{{#data.reportTexts.supplierAndContacts}}{{{data.reportTexts.supplierAndContacts}}}{{/data.reportTexts.supplierAndContacts}}
-				{{^data.reportTexts.supplierAndContacts}}
+			{{^data.reportTexts.supplierAndContacts}}
 				<span class='address' id="supplier-address-box">
-					{{#data.reportTexts.supplier}}{{{data.reportTexts.supplier}}}<br>{{/data.reportTexts.supplier}}
+						{{#data.reportTexts.supplier}}{{{data.reportTexts.supplier}}}{{/data.reportTexts.supplier}}
 					{{^data.reportTexts.supplier}}
 						<span class='title'>{{data.owner.fullName}}</span>
 						{{#data.owner.address.specification}}
@@ -46,22 +49,26 @@
 							{{data.owner.address.countryNameSC2}}-{{data.owner.address.zipcode}} {{data.owner.address.city}}<br/>
 							{{data.owner.address.countryNameEng}}
 						{{/data.flags.foreignCountry}}
-
-						</span>
 					{{/data.reportTexts.supplier}}
-						{{#data.reportTexts.contacts}}{{{data.reportTexts.contacts}}}{{/data.reportTexts.contacts}}
-						{{^data.reportTexts.contacts}}
-							{{#data.owner_identifiers}}
-								<b>{{@dict;dataItem:name}}:</b> {{value}}
-							{{/data.owner_identifiers}}<br>
+				</span>
 
-							<small>{{cfgItem.options.core.ownerLegalRegInfo}}</small>
-						{{/data.reportTexts.contacts}}
-					{{/data.reportTexts.supplierAndContacts}}
+				{{#data.reportTexts.contacts}}{{{data.reportTexts.contacts}}}{{/data.reportTexts.contacts}}
+				{{^data.reportTexts.contacts}}
+					{{#data.owner_identifiers}}
+						<b>{{@dict;dataItem:name}}:</b> {{value}}
+					{{/data.owner_identifiers}}<br>
+
+					<small>{{cfgItem.options.core.ownerLegalRegInfo}}</small>
+				{{/data.reportTexts.contacts}}
+			{{/data.reportTexts.supplierAndContacts}}
 		</td>
 
-		<td class="customer">
-			<div class='hdr'>{{@dict;Odběratel / vydal}}:<small class='pull-right'>#{{data.person.id}}</small></div>
+		<td class='customer'>
+			<div class='hdr'>
+				{{#data.flags.cashDirIn}}Odběratel / vydal:{{/data.flags.cashDirIn}}
+				{{#data.flags.cashDirOut}}Dodavatel / přijal:{{/data.flags.cashDirOut}}
+				<small class='pull-right'>#{{data.person.id}}</small>
+			</div>
 			<span class='title'>{{data.person.fullName}}</span>
 			<span class='address'>
 				{{#data.person.address.specification}}
@@ -78,7 +85,7 @@
 			</span>
 
 			{{#data.person_identifiers}}
-				<b>{{@dict;dataItem:name}}:</b> {{value}}
+				<b>{{name}}:</b> {{value}}
 			{{/data.person_identifiers}}
 		</td>
 	</tr>
