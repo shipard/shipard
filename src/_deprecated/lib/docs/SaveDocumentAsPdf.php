@@ -75,6 +75,13 @@ class SaveDocumentAsPdf extends Utility
 		$tableId = 'e10doc.core.heads';
 		$tableNdx = 1078;
 
+		if ($docType === 'cmnbkp')
+		{
+			$report = $this->tableHeads->getReportData ('e10doc.cmnbkp.libs.CmnBkp_Acc_Report', $recNdx);
+			$report->data['disableSigns'] = 1;
+			$this->addItemReport($report);
+		}
+
 		// -- outbox
 		if ($docType === 'invno')
 		{
@@ -122,9 +129,12 @@ class SaveDocumentAsPdf extends Utility
 		$this->addDocumentAttachments ($tableId, $recNdx);
 
 		// -- accounting report
-		$report = $this->tableHeads->getReportData ('e10doc.cmnbkp.libs.CmnBkp_Acc_Report', $recNdx);
-		$report->data['disableSigns'] = 1;
-		$this->addItemReport($report);
+		if ($docType !== 'cmnbkp')
+		{
+			$report = $this->tableHeads->getReportData ('e10doc.cmnbkp.libs.CmnBkp_Acc_Report', $recNdx);
+			$report->data['disableSigns'] = 1;
+			$this->addItemReport($report);
+		}
 	}
 
 	public function setDocument ($ndx)
