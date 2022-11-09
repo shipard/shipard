@@ -1278,9 +1278,12 @@ class TableView extends \Shipard\Base\BaseObject
 			$codeLine .= "<td class='df2-list-item-icon'>{$icon}</span></td>";
 		}
 		else
-		if ((isset ($listItem ['image'])) && ($listItem ['image'] !== ''))
+		if (isset ($listItem ['image']))
 		{
-			$codeLine .= "<td class='df2-list-item-image'><img src='{$listItem ['image']}'></td>";
+			$codeLine .= "<td class='df2-list-item-image'>";
+			if ($listItem ['image'] !== '')
+				$codeLine .= "<img src='{$listItem ['image']}'>";
+			$codeLine .= '</td>';
 		}
 		elseif ((isset ($listItem ['emoji'])))
 		{
@@ -1345,8 +1348,22 @@ class TableView extends \Shipard\Base\BaseObject
 
 		$codeLine .= "</td>";
 
-		//if ($this->inlineDetailClass != '')
-		//	$codeLine .= "<td class='df2-list-item-idb'></td>";
+		if (isset ($listItem ['rightImage']))
+		{
+			$imgCellClass = $listItem ['rightImage']['cellClass'] ?? 'df2-list-item-image';
+
+			$params = '';
+			if (isset($listItem['rightImage']['image']))
+			{
+				$params = " data-action='open-popup' data-popup-id='XYZ' data-popup-url='{$listItem['rightImage']['image']}' with-shift='tab'";
+				$imgCellClass .= ' df2-action-trigger';
+			}
+
+			$codeLine .= "<td class='$imgCellClass' $params>";
+			if (isset($listItem ['rightImage']['thumb']))
+				$codeLine .= "<img src='{$listItem ['rightImage']['thumb']}' style='max-width: 100%; margin-left: 6px; padding: 2px;'>";
+			$codeLine .= '</td>';
+		}
 
 		$codeLine .= "</tr>";
 		$codeLine .= "</table>";
