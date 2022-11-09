@@ -17,7 +17,7 @@
 				{"cfgKey": "purchItemComboAll", "cfgName": "U Výkupů povolit v položkách Vše",
 					"options": {"0": "ne", "1": "vlevo", "2": "vpravo"}},
 				{"cfgKey": "purchItemComboImages", "cfgName": "U Výkupů povolit v položkách obrázky",
-					"options": {"0": "ne", "1": "ano"}},
+					"options": {"0": "ne", "1": "vpravo", "2": "vlevo"}},
 				{"cfgKey": "purchItemComboCats", "cfgName": "Kategorie položek pro výkup", "reference": "e10.witems.itemcategories"},
 				{"cfgKey": "purchItemDefaultComboCat", "cfgName": "Výchozí kategorie položek pro výkup", "reference": "e10.witems.itemcategories"}
 			]

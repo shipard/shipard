@@ -152,8 +152,17 @@ class ViewItemsForPurchase extends \e10\witems\ViewItems
 			$image = UtilsBase::getAttachmentDefaultImage ($this->app(), $this->table->tableId(), $item['ndx'], TRUE);
 			if (isset($image ['smallImage']))
 			{
-				$listItem ['image'] = $image ['smallImage'];
-				//unset($listItem ['icon']);
+				if ($this->purchItemComboImages === 1)
+					$listItem ['rightImage'] = ['thumb' => $image ['smallImage'], 'image' => $image ['originalImage'], 'cellClass' => 'width15'];
+				elseif ($this->purchItemComboImages === 2)
+					$listItem ['image'] = $image ['smallImage'];
+			}
+			else
+			{
+				if ($this->purchItemComboImages === 1)
+					$listItem ['rightImage'] = ['cellClass' => 'width15'];
+				elseif ($this->purchItemComboImages === 2)
+					$listItem ['image'] = '';
 			}
 		}
 
