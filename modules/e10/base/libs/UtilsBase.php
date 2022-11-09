@@ -162,7 +162,7 @@ class UtilsBase
 		if ($mainImage)
 		{
 			$img ['originalImage'] = self::getAttachmentUrl ($app, $mainImage);
-			$img ['smallImage'] = self::getAttachmentUrl ($app, $mainImage, 196, 196);
+			$img ['smallImage'] = self::getAttachmentUrl ($app, $mainImage, 384, 384);
 			$img ['fileName'] = $mainImage['path'] . $mainImage['filename'];
 		}
 
