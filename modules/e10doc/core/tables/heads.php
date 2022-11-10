@@ -1651,7 +1651,7 @@ class TableHeads extends DbTable
 		return implode (', ', $emailsRows);
 	}
 
-	public function loadDocRowItemsCodes(array $headRecData, array $rowRecData, ?array $personGroups, array &$rowDestData, &$destData)
+	public function loadDocRowItemsCodes(array $headRecData, $personType, array $rowRecData, ?array $personGroups, array &$rowDestData, &$destData)
 	{
 		$codesKinds = $this->app()->cfgItem('e10.witems.codesKinds', []);
 		if (!$personGroups)
@@ -1680,6 +1680,11 @@ class TableHeads extends DbTable
 		array_push ($q, ' AND [codes].[item] = %i', $rowRecData['item']);
 		array_push ($q, ' AND ([codes].[codeDir] = %i', $rowDir, ' OR [codes].[codeDir] = %i)', 0);
 		array_push ($q, ' AND ([codes].[person] = %i', $headRecData['person'], ' OR [codes].[person] = %i)', 0);
+
+		if ($personType == 1) // human
+			array_push ($q, ' AND ([codes].[personType] = %i', 2, ' OR [codes].[personType] = %i)', 0);
+		elseif ($personType == 2) // company
+			array_push ($q, ' AND ([codes].[personType] = %i', 1, ' OR [codes].[personType] = %i)', 0);
 
 		if (count($addressLabels))
 		{

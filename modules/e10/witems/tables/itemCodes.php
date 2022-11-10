@@ -25,6 +25,7 @@ class TableItemCodes extends DbTable
     $askPerson = $codeKind['askPerson'] ?? 0;
     $askPersonsGroup = $codeKind['askPersonsGroup'] ?? 0;
     $askAddressLabel = $codeKind['askAddressLabel'] ?? 0;
+    $askPersonType = $codeKind['askPersonType'] ?? 0;
 
     if ($refType == 1)
     {
@@ -39,6 +40,8 @@ class TableItemCodes extends DbTable
 
     if (!$askPerson)
       $recData['person'] = 0;
+    if (!$askPersonType)
+      $recData['personType'] = 0;
     if (!$askDir)
       $recData['codeDir'] = 0;
     if (!$askPersonsGroup)
@@ -49,6 +52,9 @@ class TableItemCodes extends DbTable
     $recData ['systemOrder'] = 99;
 
     if ($recData['codeDir'])
+      $recData ['systemOrder']--;
+
+    if ($recData['personType'])
       $recData ['systemOrder']--;
 
     if ($recData['person'])
@@ -78,6 +84,7 @@ class FormItemCode extends TableForm
     $askPerson = $codeKind['askPerson'] ?? 0;
     $askPersonsGroup = $codeKind['askPersonsGroup'] ?? 1;
     $askAddressLabel = $codeKind['askAddressLabel'] ?? 0;
+    $askPersonType = $codeKind['askPersonType'] ?? 0;
 
 		$this->openForm (TableForm::ltGrid);
 			$this->openRow();
@@ -90,13 +97,20 @@ class FormItemCode extends TableForm
           $this->addColumnInput ('itemCodeText', self::coColW8);
 			$this->closeRow();
 
-      if ($askDir || $askPerson || $askPersonsGroup || $askAddressLabel)
+      if ($askDir || $askPerson || $askPersonsGroup || $askAddressLabel || $askPersonType)
       {
         if ($askDir && $askPerson && $askPersonsGroup)
         {
           $this->addColumnInput ('codeDir', self::coColW2);
           $this->addColumnInput ('personsGroup', self::coColW5);
           $this->addColumnInput ('person', self::coColW5);
+        }
+        elseif ($askDir && $askAddressLabel && $askPersonsGroup && $askPersonType)
+        {
+          $this->addColumnInput ('codeDir', self::coColW2);
+          $this->addColumnInput ('personType', self::coColW2);
+          $this->addColumnInput ('addressLabel', self::coColW4);
+          $this->addColumnInput ('personsGroup', self::coColW4);
         }
         elseif ($askDir && $askAddressLabel && $askPersonsGroup)
         {

@@ -14,6 +14,8 @@
 		{"id": "codeDir", "name": "Směr pohybu", "type": "enumInt",
       "enumCfg": {"cfgItem": "e10.witems.codeDirs", "cfgValue": "", "cfgText": "sn"}},
 		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "personType", "name": "Typ osoby", "type": "enumInt",
+			"enumValues": {"0": "Lidé i firmy", "1": "Firmy", "2": "Lidé"}},
 		{"id": "personsGroup", "name": "Skupina Osob", "type": "int", "reference": "e10.persons.groups"},
 		{"id": "addressLabel", "name": "Štítek adresy", "type": "int", "reference": "e10.base.clsfitems"},
 		{"id": "url", "name": "Web", "type": "string", "len": 110},

@@ -415,7 +415,7 @@ class Detail extends \e10\DocumentCard
 				'priceAll' => $r['rPriceAll']
 			];
 
-			$this->table->loadDocRowItemsCodes($this->recData, $r->toArray(), NULL, $rowItem, $itemCodesInfo);
+			$this->table->loadDocRowItemsCodes($this->recData, $this->personRecData['personType'], $r->toArray(), NULL, $rowItem, $itemCodesInfo);
 
 			if (isset($rowItem['rowItemCodesData']))
 			{

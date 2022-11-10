@@ -81,6 +81,13 @@ class Item extends \e10\DocumentCard
 
 	public function createContentBody_Codes ()
 	{
+		/** @var \e10\witems\TableItemCodes */
+		$tableItemCodes = $this->app()->table('e10.witems.itemCodes');
+		$personTypes = $tableItemCodes->columnInfoEnum ('personType', 'cfgText');
+
+		$lastCodeKind = -1;
+		$rowIndex = 0;
+
 		$q[] = 'SELECT itemCodes.*,';
 		array_push($q, ' persons.fullName AS personName, personsGroups.name AS groupName,');
 		array_push($q, ' nomenc.fullName AS nomencName');
@@ -89,7 +96,7 @@ class Item extends \e10\DocumentCard
 		array_push($q, ' LEFT JOIN [e10_persons_groups] AS personsGroups ON itemCodes.personsGroup = personsGroups.ndx');
 		array_push($q, ' LEFT JOIN [e10_base_nomencItems] AS nomenc ON itemCodes.itemCodeNomenc = nomenc.ndx');
 		array_push($q, ' WHERE itemCodes.[item] = %i', $this->recData['ndx']);
-		array_push($q, ' ORDER BY itemCodes.rowOrder, itemCodes.ndx');
+		array_push($q, ' ORDER BY itemCodes.codeKind, itemCodes.systemOrder, itemCodes.ndx');
 
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
@@ -99,6 +106,7 @@ class Item extends \e10\DocumentCard
 			$refType = $codeKind['refType'] ?? 0;
 			$askDir = $codeKind['askDir'] ?? 0;
 			$askPerson = $codeKind['askPerson'] ?? 0;
+			$askPersonType = $codeKind['askPersonType'] ?? 0;
 
 			$item = [
 				'code' => [
@@ -111,11 +119,26 @@ class Item extends \e10\DocumentCard
 				$item['application'][] = ['text' => $r['personName'], 'class' => 'block', 'icon' => 'tables/e10.persons.persons'];
 			if ($r['personsGroup'])
 				$item['application'][] = ['text' => $r['groupName'], 'class' => 'block', 'icon' => 'tables/e10.persons.groups'];
+			if ($askPersonType)
+				$item['application'][] = ['text' => $personTypes[$r['personType']] ?? '!!!', 'class' => 'block', 'icon' => 'tables/e10.persons.persons'];
+			if ($r['addressLabel'])
+			{
+				$label = $this->app()->cfgItem('e10.base.clsf.addressTags.'.$r['addressLabel'], NULL);
+				if ($label)
+					$item['application'][] = ['text' => $label['name'], 'class' => 'label', 'icon' => 'tables/e10.base.clsfgroups', 'css' => $label['css']];
+			}
 			if($askDir)
 				$item['info'][] = ['text' => $codeDir['sn'] ?? '!!!', 'class' => 'block'];
 			if($refType === 1)
 				$item['info'][] = ['text' => $r['nomencName'] ?? '!!!', 'class' => 'block e10-small'];
 
+			if ($lastCodeKind != $r['codeKind'] && $rowIndex)
+			{
+				$item['_options'] = ['beforeSeparator' => 'separator'];
+			}
+
+			$lastCodeKind = $r['codeKind'];
+			$rowIndex++;
 			$this->dataCodes[] = $item;
 		}
 

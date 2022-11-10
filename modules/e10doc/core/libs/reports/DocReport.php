@@ -300,7 +300,7 @@ class DocReport extends DocReportBase
 			$row ['rowNumber'] = $rowNumber;
 			$rowNumber++;
 			$row ['rowItemProperties'] = \E10\Base\getPropertiesTable ($this->table->app(), 'e10.witems.items', $row['item']);
-			$this->table->loadDocRowItemsCodes($this->recData, $row, NULL, $row, $this->data);
+			$this->table->loadDocRowItemsCodes($this->recData, $this->data ['person']['personType'], $row, NULL, $row, $this->data);
 		}
 
 		if (count($this->data ['itemCodesHeader']))

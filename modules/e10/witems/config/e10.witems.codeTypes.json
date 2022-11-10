@@ -15,6 +15,7 @@
       "askPerson": 0,
       "askPersonsGroup": 1,
       "askAddressLabel": 1,
+      "askPersonType": 1,
       "askDir": 1
     }
   }
