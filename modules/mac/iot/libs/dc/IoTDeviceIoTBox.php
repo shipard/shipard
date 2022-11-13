@@ -68,7 +68,7 @@ class IoTDeviceIoTBox extends \mac\iot\libs\dc\IoTDevice
       $portTitle = [];
       $portTitleBgClass = 'e10-bg-t9';
 
-      $portTitle[] = ['text' => $portType['name'], 'class' => 'h3'];
+      $portTitle[] = ['text' => $item['portId'], 'class' => 'h2'];
       if ($item['disabled'])
       {
         $portTitle[] = ['text' => 'Zakázáno', 'class' => 'label label-danger pull-right'];
@@ -77,7 +77,7 @@ class IoTDeviceIoTBox extends \mac\iot\libs\dc\IoTDevice
 
 
       $portTitle[] = ['text' => '', 'class' => 'break'];
-      $portTitle[] = ['text' => $item['portId'], 'class' => 'e10-bold'];
+      $portTitle[] = ['text' => $portType['name'], 'class' => 'e10-small'];
 
       if ($item['fullName'] !== '')
         $portTitle[] = ['text' => $item['fullName'], 'class' => 'e10-small'];
@@ -155,8 +155,6 @@ class IoTDeviceIoTBox extends \mac\iot\libs\dc\IoTDevice
         }
         else
         {
-          $settingsProps[] = ['text' => $portTypeCfgColumn['name'].':', 'class' => ''];
-
           $showValue = $value;
           if (isset($portTypeCfgColumn['enumCfg']['cfgItem']))
           {
@@ -164,14 +162,19 @@ class IoTDeviceIoTBox extends \mac\iot\libs\dc\IoTDevice
             if ($cfgItem && isset($cfgItem[$portTypeCfgColumn['enumCfg']['cfgText']]))
               $showValue = $cfgItem[$portTypeCfgColumn['enumCfg']['cfgText']];
           }
+          elseif ($portTypeCfgColumn['type'] === 'logical' && $value == 0)
+          {
+            $showValue = NULL;
+          }
 
-          $settingsProps[] = ['text' => strval($showValue), 'class' => ''];
-          $settingsProps[] = ['text' => '', 'class' => 'break'];
+          if ($showValue !== NULL)
+          {
+            $settingsProps[] = ['text' => $portTypeCfgColumn['name'].':', 'class' => ''];
+            $settingsProps[] = ['text' => strval($showValue), 'class' => ''];
+            $settingsProps[] = ['text' => '', 'class' => 'break'];
+          }
         }
-
-
       }
-
 
       if (count($pinsLabels))
       {
