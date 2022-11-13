@@ -22,7 +22,8 @@
 		{"id": "+mac.iot.ioPorts.types", "file": "ioPorts/ioPorts.json"},
 		{"id": "+mac.iot.ioPorts.i2cIOExpanders", "file": "ioPorts/i2cIOExpanders.json"},
 		{"id": "+mac.iot.ioPorts.i2cIOExpandersDirs", "file": "ioPorts/i2cIOExpandersDirs.json"},
-		
+		{"id": "+mac.iot.ioPorts.rs485IOExpanders", "file": "ioPorts/rs485Expanders.json"},
+
 		{"id": "+mac.iot.ioPorts.serialLineSpeed", "file": "ioPorts/serialLineSpeed.json"},
 		{"id": "+mac.iot.ioPorts.serialLineMode", "file": "ioPorts/serialLineMode.json"},
 

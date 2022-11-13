@@ -1,0 +1,28 @@
+{
+	"1": {
+		"name":  "eletechsup 8 Channel RS485 Relay",
+		"pins": [
+			{"id": "REL1", "hwnr": 1, "flags": ["d", "out"]},
+			{"id": "REL2", "hwnr": 2, "flags": ["d", "out"]},
+			{"id": "REL3", "hwnr": 3, "flags": ["d", "out"]},
+			{"id": "REL4", "hwnr": 4, "flags": ["d", "out"]},
+			{"id": "REL5", "hwnr": 5, "flags": ["d", "out"]},
+			{"id": "REL6", "hwnr": 6, "flags": ["d", "out"]},
+			{"id": "REL7", "hwnr": 7, "flags": ["d", "out"]},
+			{"id": "REL8", "hwnr": 8, "flags": ["d", "out"]}
+		]
+	},
+	"2": {
+		"name":  "Waveshare Modbus RTU Relay 8 Channel",
+		"pins": [
+			{"id": "CH1", "hwnr": 1, "flags": ["d", "out"]},
+			{"id": "CH2", "hwnr": 2, "flags": ["d", "out"]},
+			{"id": "CH3", "hwnr": 3, "flags": ["d", "out"]},
+			{"id": "CH4", "hwnr": 4, "flags": ["d", "out"]},
+			{"id": "CH5", "hwnr": 5, "flags": ["d", "out"]},
+			{"id": "CH6", "hwnr": 6, "flags": ["d", "out"]},
+			{"id": "CH7", "hwnr": 7, "flags": ["d", "out"]},
+			{"id": "CH8", "hwnr": 8, "flags": ["d", "out"]}
+		]
+	}
+}

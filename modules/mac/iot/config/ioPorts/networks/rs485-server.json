@@ -1,0 +1,11 @@
+{
+	"name": "RS-485 Server",
+	"title": "RS-485 Server",
+	"fields": {
+		"columns": [
+			{
+				"id": "busPortId", "name": "RS-485 sběrnice", "type": "enumString", "len": 30, "enumCfgFlags": {"type": "ioPortId"}
+			}
+		]
+	}
+}

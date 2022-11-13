@@ -62,9 +62,15 @@
 	"bus/1wire": {
 		"name": "1-Wire"
 	},
+	"bus/rs485": {
+		"name": "RS-485"
+	},
 
 	"gpio-expander/i2c": {
 		"name": "GPIO expander I2C"
+	},
+	"gpio-expander/rs485": {
+		"name": "GPIO expander RS485"
 	},
 
 	"signal/gsm": {
@@ -73,5 +79,13 @@
 
 	"networks/esp-now-server": {
 		"name": "ESP-NOW server", "dataType": "none"
+	},
+
+	"networks/rs485-server": {
+		"name": "RS-485 server", "dataType": "none"
+	},
+
+	"cam/esp32": {
+		"name": "ESP32-CAM"
 	}
 }
