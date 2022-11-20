@@ -4,7 +4,7 @@ namespace mac\inet;
 
 
 use \e10\TableView, \e10\TableViewDetail, \e10\TableForm, \e10\DbTable, \Shipard\Viewer\TableViewPanel, \e10\utils;
-
+use \e10\base\libs\UtilsBase;
 
 /**
  * Class TableDomains
@@ -135,7 +135,7 @@ class ViewDomains extends TableView
 		if (!count ($this->pks))
 			return;
 
-		$this->classification = \E10\Base\loadClassification ($this->table->app(), $this->table->tableId(), $this->pks);
+		$this->classification = UtilsBase::loadClassification ($this->table->app(), $this->table->tableId(), $this->pks);
 	}
 
 	public function createPanelContentQry (TableViewPanel $panel)
@@ -166,7 +166,7 @@ class ViewDomains extends TableView
 		$qry = [];
 
 		// -- tags
-		$clsf = \E10\Base\classificationParams ($this->table);
+		$clsf = UtilsBase::classificationParams ($this->table);
 		foreach ($clsf as $cg)
 		{
 			$params = new \E10\Params ($panel->table->app());
