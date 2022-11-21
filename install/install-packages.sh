@@ -29,7 +29,7 @@ if [ "$NAME" = "Ubuntu" ]; then
     if [ "$currentVersion" -lt "$min81Version" ]; then
         add-apt-repository --yes ppa:ondrej/php
         apt --assume-yes --quiet update
-        apt --assume-yes --quiet upgrade	
+        apt --assume-yes --quiet upgrade
     fi
 else
     sudo wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
@@ -128,3 +128,8 @@ adduser --disabled-password --gecos "" --home /home/shpd shpd
 adduser www-data shpd
 systemctl restart nginx
 systemctl restart php8.1-fpm
+
+#
+# optional: fop - https://xmlgraphics.apache.org/fop/
+#
+## apt-get install fop libservlet3.1-java msttcorefonts

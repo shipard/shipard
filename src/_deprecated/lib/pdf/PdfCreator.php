@@ -97,7 +97,7 @@ class PdfCreator extends Utility
 		}
 		elseif ($fileExt === '.fo')
 		{
-			exec ("fop -c " . __APP_DIR__ . "/e10-modules/e10/server/etc/fop/fop-config-e10.xml $this->srcFileName {$this->dstFileName}");
+			exec ("fop -c " . __SHPD_ROOT_DIR__ . "/etc/fop/fop-config-e10.xml $this->srcFileName {$this->dstFileName}");
 		}
 	}
 
