@@ -485,8 +485,8 @@ class VysvedceniReportOpis extends FormReport
 
 	function init ()
 	{
-		$this->reportId = 'e10pro.zus.opis';
-		$this->reportTemplate = 'e10pro.zus.opis';
+		$this->reportId = 'reports.modern.e10pro.zus.opis';
+		$this->reportTemplate = 'reports.modern.e10pro.zus.opis';
 	}
 
 	public function datum ($d)
@@ -595,8 +595,8 @@ class VysvedceniReportDetail extends VysvedceniReportOpis
 {
 	function init ()
 	{
-		$this->reportId = 'e10pro.zus.detail';
-		$this->reportTemplate = 'e10pro.zus.detail';
+		$this->reportId = 'reports.modern.e10pro.zus.detail';
+		$this->reportTemplate = 'reports.modern.e10pro.zus.detail';
 	}
 }
 
@@ -612,11 +612,11 @@ class VysvedceniReportTisk extends VysvedceniReportOpis
 {
 	function init ()
 	{
-		$this->reportId = 'e10pro.zus.vysvedceni';
+		$this->reportId = 'reports.modern.e10pro.zus.vysvedceni';
 		if ($this->recData ['typVysvedceni'] == 2)
-			$this->reportTemplate = 'e10pro.zus.potvrzeni';
+			$this->reportTemplate = 'reports.modern.e10pro.zus.potvrzeni';
 		else
-			$this->reportTemplate = 'e10pro.zus.vysvedceni';
+			$this->reportTemplate = 'reports.modern.e10pro.zus.vysvedceni';
 		$this->srcFileExtension = 'fo';
 	}
 }
@@ -633,11 +633,11 @@ class VysvedceniBReportTisk extends VysvedceniReportOpis
 {
 	function init ()
 	{
-		$this->reportId = 'e10pro.zus.vysvedceniB';
+		$this->reportId = 'reports.modern.e10pro.zus.vysvedceniB';
 		if ($this->recData ['typVysvedceni'] == 2)
-			$this->reportTemplate = 'e10pro.zus.potvrzeniB';
+			$this->reportTemplate = 'reports.modern.e10pro.zus.potvrzeniB';
 		else
-			$this->reportTemplate = 'e10pro.zus.vysvedceniB';
+			$this->reportTemplate = 'reports.modern.e10pro.zus.vysvedceniB';
 		$this->srcFileExtension = 'fo';
 	}
 
