@@ -1,52 +1,13 @@
 <!DOCTYPE HTML>
 <html lang="cs">
 <head>
-		<title>test</title>
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-		<link rel="stylesheet" href="file://{{templateRoot}}style.css" type="text/css"/>
+	<title>test</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v24" type="text/css"/>
 
-        <style>
-                {{#data.owner.logo.logo-nadpis.filename}}
-                #supplier-address-hdr {
-                    background-image: url("file://{{appDir}}/att/{{data.owner.logo.logo-nadpis.path}}{{data.owner.logo.logo-nadpis.filename}}");
-                    background-position: bottom right;
-                    background-size: auto 60%;
-                    background-repeat: no-repeat;
-                }
-                {{/data.owner.logo.logo-nadpis.filename}}
-                {{#data.owner.logo.logo-vpravo.filename}}
-                #supplier-address-box {
-                    background-image: url("file://{{appDir}}/att/{{data.owner.logo.logo-vpravo.path}}{{data.owner.logo.logo-vpravo.filename}}");
-                    background-position: top right;
-                    background-size: auto 80%;
-                    background-repeat: no-repeat;
-                }
-                {{/data.owner.logo.logo-vpravo.filename}}
-                {{#data.owner.logo.logo-vlevo.filename}}
-                #supplier-address-box {
-                    background-image: url("file://{{appDir}}/att/{{data.owner.logo.logo-vlevo.path}}{{data.owner.logo.logo-vlevo.filename}}");
-                    background-position: top left;
-                    background-size: 5em;
-                    background-repeat: no-repeat;
-
-                    padding-left: 6em;
-                }
-                {{/data.owner.logo.logo-vlevo.filename}}
-        </style>
 </head>
 <body style="font-size: 10pt;">
 
-	<div style="text-align: center; padding-bottom: 4pt;
-	{{#data.owner.logo.logo-nadpis.filename}}
-		background-image: url('file://{{appDir}}/att/{{data.owner.logo.logo-nadpis.path}}{{data.owner.logo.logo-nadpis.filename}}');
-		background-position: center left;
-		background-size: auto 80%;
-		background-repeat: no-repeat;
-	{{/data.owner.logo.logo-nadpis.filename}}
-	">
-		<h2 style='padding-bottom: 2pt; margin: 0;'>Přihláška</h2>
-		<h4 style='padding-top: 1pt; margin:0; font-weight: normal;'>{{cfgItem.options.core.ownerFullName}}</h4>
-	</div>
 	<table class="default" style="font-size: 10pt !important;">
 		<tr>
 			<td class='' colspan='1'>Jméno a příjmení žáka:</td><td colspan="3">{{data.head.fullNameS}}</td>
@@ -144,15 +105,15 @@
 	Přihláška byla odeslána dne {{data.webSentDate}} pomocí webového formuláře.
 
 
-	<table class="fullWidth" style="padding-top: 72pt;">
+	<table class="fullWidth" style="margin-top: 72pt;">
 		<tr>
 			<td style="text-align: center; vertical-align: top;">
 				Ve: ..............................
-				
+
 			</td>
 			<td style="text-align: center; vertical-align: top;">
 				Dne: .........................
-				
+
 			</td>
 			<td style="text-align: center; vertical-align: top;">
 				.................................................................<br>
@@ -161,30 +122,6 @@
 		</tr>
 	</table>
 
-
-	<div style="font-size: 70%; margin-top: 30pt; padding-top: 4pt; border-top: 1px solid black;
-		{{#data.owner.logo.logo-nadpis.filename}}
-			background-image: url('file://{{appDir}}/att/{{data.owner.logo.logo-nadpis.path}}{{data.owner.logo.logo-nadpis.filename}}');
-			background-position: center right;
-			background-size: auto 80%;
-			background-repeat: no-repeat;
-		{{/data.owner.logo.logo-nadpis.filename}}
-	">
-		<span class=''>{{data.owner.fullName}}</span><br>
-		{{#data.owner.address.specification}}
-			{{data.owner.address.specification}}, 
-		{{/data.owner.address.specification}}
-		{{data.owner.address.street}}, 
-		{{^data.flags.foreignCountry}}
-			{{data.owner.address.zipcode}} {{data.owner.address.city}}, 
-		{{/data.flags.foreignCountry}}
-		{{#data.flags.foreignCountry}}
-			{{data.owner.address.countryNameSC2}}-{{data.owner.address.zipcode}} {{data.owner.address.city}}, 
-			{{data.owner.address.countryNameEng}}
-		{{/data.flags.foreignCountry}}
-		<br>
- 		telefon: {{cfgItem.options.core.ownerPhone}} e-mail: {{cfgItem.options.core.ownerEmail}}
-	</div>
 </body>
 </html>
 
