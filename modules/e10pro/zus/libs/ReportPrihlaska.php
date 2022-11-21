@@ -1,7 +1,7 @@
 <?php
 
 namespace e10pro\zus\libs;
-require_once __APP_DIR__ . '/e10-modules/e10pro/zus/zus.php';
+require_once __SHPD_MODULES_DIR__ . 'e10pro/zus/zus.php';
 use E10Pro\Zus\zusutils, \e10\utils, \e10\str, \E10\FormReport;
 
 
@@ -17,8 +17,8 @@ class ReportPrihlaska extends FormReport
 
 	function init ()
 	{
-		$this->reportId = 'e10pro.zus.prihlaska';
-		$this->reportTemplate = 'e10pro.zus.prihlaska';
+		$this->reportId = 'reports.modern.e10pro.zus.prihlaska';
+		$this->reportTemplate = 'reports.modern.e10pro.zus.prihlaska';
 
 		parent::init();
 	}
@@ -38,15 +38,15 @@ class ReportPrihlaska extends FormReport
     $obor = $this->app()->loadItem($this->recData['svpObor'], 'e10pro.zus.obory');
     if ($obor)
       $this->data ['obor'] = $obor;
-  
+
     $oddeleni = $this->app()->loadItem($this->recData['svpOddeleni'], 'e10pro.zus.oddeleni');
     if ($oddeleni)
       $this->data ['oddeleni'] = $oddeleni;
 
 
 		$this->data ['webSentDate'] = utils::datef($this->recData['webSentDate'], '%d, %T');
-        
-		$this->loadData_DocumentOwner();	
+
+		$this->loadData_DocumentOwner();
 	}
 
 	function loadData_DocumentOwner ()
