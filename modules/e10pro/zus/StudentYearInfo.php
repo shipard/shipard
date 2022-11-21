@@ -154,14 +154,14 @@ class StudentYearInfo extends Utility
 				$at = $this->attendanceType($ah['pritomnost']);
 				$this->info[$hyId]['predmety'][$predmetNdx]['att'][$at] += $hourLen;
 
-				if ($ah['klasifikaceZnamka'] != 0)
+				if (intval($ah['klasifikaceZnamka']) != 0)
 				{
 					$this->info[$hyId]['predmety'][$predmetNdx]['grading']['sum'] += intval($ah['klasifikaceZnamka']);
 					$this->info[$hyId]['predmety'][$predmetNdx]['grading']['cnt']++;
 				}
 			}
 
-			if ($r['klasifikaceZnamka'] != 0)
+			if (intval($r['klasifikaceZnamka']) != 0)
 			{
 				$this->info[$hyId]['predmety'][$predmetNdx]['grading']['sum'] += intval($r['klasifikaceZnamka']);
 				$this->info[$hyId]['predmety'][$predmetNdx]['grading']['cnt']++;
@@ -192,7 +192,7 @@ class StudentYearInfo extends Utility
 		{
 			$row = [
 				'predmet' => $hyId.'. pololetí',
-				'P' => 'P', 'O' => 'O', 'N' => 'N', 'G' => '∅',
+				'P' => 'P', 'O' => 'O', 'N' => 'N', 'G' => 'průměr',
 				'_options' => ['class' => 'subheader']
 			];
 
@@ -283,8 +283,8 @@ class StudentYearInfo extends Utility
 				]
 			],
 			[
-				'P1' => 'P', 'O1' => 'O', 'N1' => 'N', 'G1' => '∅',
-				'P2' => 'P', 'O2' => 'O', 'N2' => 'N', 'G2' => '∅',
+				'P1' => 'P', 'O1' => 'O', 'N1' => 'N', 'G1' => 'průměr',
+				'P2' => 'P', 'O2' => 'O', 'N2' => 'N', 'G2' => 'průměr',
 				'_options' => [
 					'cellClasses' => ['P1' => 'center', 'P2' => 'center', 'O1' => 'center', 'O2' => 'center',
 						'N1' => 'center', 'N2' => 'center', 'G1' => 'center', 'G2' => 'center']

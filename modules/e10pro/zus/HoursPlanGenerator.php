@@ -214,7 +214,7 @@ class HoursPlanGenerator extends Utility
 						$p = ['text' => $this->hourAttendanceTypes[$r['pritomnost']], 'icon' => 'system/iconCheck', 'class' => 'label pull-right ' . 'label-default'];
 						$item['title'][] = $p;
 					}
-					if ($r['klasifikaceZnamka'] != 0)
+					if (intval($r['klasifikaceZnamka']) != 0)
 					{
 						//$hodnoceni = $this->znamkyHodnoceni[$r['klasifikaceZnamka']];
 						$z = ['text' => strval($r['klasifikaceZnamka']), 'class' => 'label label-primary pull-right', 'icon' => 'system/iconStar'];
