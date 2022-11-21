@@ -80,7 +80,7 @@ class DocumentDetail extends \Shipard\UI\OldMobile\PageObject
 
 	public function leftPageHeaderButton ()
 	{
-		$lmb = ['icon' => PageObject::backIcon, 'path' => $this->definition['itemId']];
+		$lmb = ['icon' => self::backIcon, 'path' => $this->definition['itemId']];
 		return $lmb;
 	}
 

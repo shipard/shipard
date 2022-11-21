@@ -22,7 +22,7 @@ class DocumentCard extends Content
 
 	var $response;
 
-	/** @var \E10\DbTable */
+	/** @var \Shipard\Table\DbTable $table */
 	var $table;
 
 	public function addItem ($partId, $item)
@@ -280,7 +280,9 @@ class DocumentCard extends Content
 		$this->response->add ('codeTitle', $cr->createCode('title'));
 		$this->response->add ('codeSubTitle', $cr->createCode('subTitle'));
 
-		$this->response->add ('codeFooter', "<div class='e10-page-end'><i class='fa fa-chevron-up'></i></div>");
+		$attCode = $this->app()->ui()->addAttachmentsInputCodeMobile($this->table->tableId(), $this->recData['ndx'], '');
+
+		$this->response->add ('codeFooter', $attCode."<div class='e10-page-end'><i class='fa fa-chevron-up'></i></div>");
 	}
 
 	public function response ()

@@ -13,6 +13,9 @@ span.e10-attbox-item {
 	border: 1px solid @defaultBorderColor;  margin: 1ex;
 	display: inline-block;
 	border-radius: 2px;
+	> img {
+		width: 100%;
+	}
 }
 
 span.e10-attbox-one {
@@ -31,6 +34,27 @@ div.e10-attbox {
 	padding: 1px;
 }
 
+div.e10-att-input-grid {width: 100%; overflow: auto; -moz-box-sizing: border-box; box-sizing: border-box;}
+div.e10-att-input-detail {width: 100%; overflow: auto; -moz-box-sizing: border-box; box-sizing: border-box;}
+div.e10-att-input-upload {width: 100%; overflow: auto; -moz-box-sizing: border-box; box-sizing: border-box;}
+div.e10-att-input-upload input.e10-att-input-file {-moz-box-sizing: border-box; box-sizing: border-box;}
+div.e10-att-input-send {-moz-box-sizing: border-box; box-sizing: border-box;}
+
+div.e10-att-input-upload {
+			border: 1px solid @defaultBorderColor;
+			background-color: #e0eefa;
+			padding: 1ex;
+}
+
+div.e10-att-input-upload input.e10-att-input-file {width: 100%;  }
+div.e10-att-input-upload div.e10-att-input-send {width: 100%; }
+
+div.e10-att-input-files {padding-top: 1ex; padding-bottom: 1ex;}
+
+div.e10-att-input-files table {width: 100%;border-collapse: collapse !important; border: 1px solid @defaultBorderColor;}
+div.e10-att-input-files table tr:nth-child(even) {background-color: #F0F0F0 !important; border-top: 1px solid @defaultBorderColor; border-bottom: 1px solid @defaultBorderColor; }
+div.e10-att-input-files table tr:nth-child(odd) {background-color: #FAFAFA !important;}
+div.e10-att-input-files table td {padding: 3px !important; }
 
 
 div.e10-pane-header {
