@@ -26,7 +26,7 @@ class ListData
 		$listObject = $this->table->app()->createObject ($listDefinition ['class']);
 		//$listObject->setRecord ('attachments', $formData);
 
-		$listObject->setRecData ($this->table, $this->table->app()->requestPath (3), $this->table->loadItem ($pk));
+		$listObject->setRecData ($this->table, $this->table->app()->requestPath (3), $this->table->loadItem (intval($pk)));
 
 		switch ($this->listOp)
 		{
