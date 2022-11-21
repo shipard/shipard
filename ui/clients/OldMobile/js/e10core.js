@@ -336,7 +336,7 @@ function e10client () {
 		}
 		info += '</table>';
 		infoPanel.html(info);
-	}
+	};
 
 
 	this.e10AttWidgetUploadFile = function (button) {
@@ -354,7 +354,7 @@ function e10client () {
 			var url = e10.httpServerRoot + "/upload/e10.base.attachments/" + table + '/' + pk + '/' + file.name;
 			e10.e10AttWidgetUploadOneFile(url, file, infoPanel, i);
 		}
-	}
+	};
 
 
 	this.e10AttWidgetUploadOneFile = function (url, file, infoPanel, idx) {
@@ -378,7 +378,7 @@ function e10client () {
 		 req.upload.addEventListener("abort", transferCanceled, false);
 		 */
 
-	}
+	};
 
 	this.e10AttWidgetUploadDone = function (e, infoPanel, idx) {
 		var cell = infoPanel.find('table tr:eq(' + idx + ') td:eq(2)');
@@ -396,7 +396,7 @@ function e10client () {
 		var pk = e10.searchParentAttr(infoPanel, 'data-pk');
 
 		e10.reloadDetail(table, pk);
-	}
+	};
 
 	this.e10AttWidgetUploadProgress = function (e, infoPanel, idx) {
 		if (e.lengthComputable) {
@@ -404,7 +404,7 @@ function e10client () {
 			var cell = infoPanel.find('table tr:eq(' + idx + ') td:eq(2)');
 			cell.text(percentage + ' % ');
 		}
-	}
+	};
 
 	this.init = function () {
 		//if ($.browser.chrome || $.browser.safari)
@@ -505,7 +505,7 @@ function e10client () {
 		this.pageTabsInit();
 		this.widgetTabsInit();
 	}
-}
+};
 
 
 
