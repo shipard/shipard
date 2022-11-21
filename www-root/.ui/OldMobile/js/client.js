@@ -114,7 +114,7 @@ table=e10.searchParentAttr(e,'data-table');var
 url='/api/d/'+table+'/'+pk;e10.g_formId++;var
 newElementId="docPopup"+e10.g_formId;e10.server.get(url,function(data){e10.createDocument(data,newElementId);e10.setProgress(0);});};e10client.prototype.reloadDetail=function(table,pk){e10.closeModal();e10.setProgress(1);e10.openModal();var
 url='/api/d/'+table+'/'+pk;e10.g_formId++;var
-newElementId="docPopup"+e10.g_formId;e10.server.get(url,function(data){e10.createDocument(data,newElementId);e10.setProgress(0);});}e10client.prototype.createDocument=function(data,id){var
+newElementId="docPopup"+e10.g_formId;e10.server.get(url,function(data){e10.createDocument(data,newElementId);e10.setProgress(0);});};e10client.prototype.createDocument=function(data,id){var
 c='';c+="<div id='e10-page-header' class='e10mui pageHeader docHeader'></div>";c+="<div class='e10-doc' id='"+id+"' data-object='document'>";c+="</div>";$("#e10-page-body").html(c);var
 tc="";tc+="<span class='lmb e10-trigger-action' data-action='modal-close' id='e10-back-button'><i class='fa fa-times'></i></span>"+"<div class='pageTitle'><h1>"+data.codeTitle+"</h1>";if(data.codeSubTitle!=='')tc+="<span class='subTitle'>"+data.codeSubTitle+"</span>";tc+="</div>";if(e10.app){tc+="<ul class='rb'>";tc+="<li class='e10-trigger-action' data-action='detail-add-photo' data-table='"+data.table+"' data-pk='"+data.pk+"'><i class='fa fa-camera'></i></li>";tc+="</ul>";}var
 toolbar=$('#e10-page-header');var

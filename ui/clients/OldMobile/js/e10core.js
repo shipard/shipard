@@ -814,7 +814,7 @@ e10client.prototype.reloadDetail = function (table, pk) {
 		e10.createDocument(data, newElementId);
 		e10.setProgress(0);
 	});
-}
+};
 
 e10client.prototype.createDocument = function (data, id) {
 	var c = '';
