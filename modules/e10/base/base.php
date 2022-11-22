@@ -1423,9 +1423,10 @@ class ListRows implements \E10\IDocumentList
 		}
 
 		$disableButton = isset($this->listDefinition ['disableAddButton']) ? intval($this->listDefinition ['disableAddButton']) : 0;
+		if ($this->rowsTable->app()->hasRole('root'))
+			$disableButton = 0;
 		if (!$this->formData->readOnly && !$disableButton)
 		{
-
 			$c .= "<li class='e10-rows-append'>";
 			if ($this->formData->appendListRow ($this->listId))
 				$c .= "<button class='btn btn-default' data-list='{$this->listId}' data-row='$rowNumber' data-fid='{$this->fid}'>".$this->formData->app()->ui()->icon('system/actionAdd')." Přidat další řádek</button>";
@@ -1450,6 +1451,8 @@ class ListRows implements \E10\IDocumentList
 			$rowsAppendId = "id='{$this->fid}FormMainRowsAppend' ";
 
 		$disableButton = isset($this->listDefinition ['disableAddButton']) ? intval($this->listDefinition ['disableAddButton']) : 0;
+		if ($this->rowsTable->app()->hasRole('root'))
+			$disableButton = 0;
 		if (!$disableButton)
 			$c .= "<li class='e10-rows-append'><button {$rowsAppendId}data-list='{$this->listId}' data-row='$rowNumber' data-fid='{$this->fid}'>Přidat další řádek1_{$this->listDefinition ['id']}</button></li>";
 

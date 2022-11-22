@@ -1304,7 +1304,7 @@ class TableForm
 				$class .= ' e10-right block';
 			if ($options & TableForm::coBold)
 				$class .= ' e10-bold';
-			$c = "<span class='$class AHOJ'>".$this->app()->ui()->composeTextLine($content).'</span>';
+			$c = "<span class='$class'>".$this->app()->ui()->composeTextLine($content).'</span>';
 			$this->appendElement ($c, NULL, $hints);
 			return;
 		}
@@ -2031,6 +2031,9 @@ class TableForm
 			$h .= "<div class='e10-row-btns'>";
 			if (!$this->readOnly)
 			{
+				$disableDeleteButton = $list->listDefinition ['disableDeleteButton'] ?? 0;
+				if ($this->app()->hasRole('root'))
+					$disableDeleteButton = 0;
 				if ($list && $list->rowsTableOrderCol && !($layoutOptions & TableForm::loRowsDisableMove))
 				{
 					$rowOrderForInsert = $this->option ('rowOrderForInsert', 0);
@@ -2038,7 +2041,8 @@ class TableForm
 
 					$h .= "<div class='e10-row-menu'>".$this->app()->ui()->icon('system/iconHamburgerMenu');
 					$h .= "<div class='e10-row-menu-btns' style='float: left;'>";
-					$h .= "<button tabindex='-1' class='e10-row-action' data-action='delete' title='Smazat řádek'>".$this->app()->ui()->icon('system/actionDelete')."</button>";
+					if (!$disableDeleteButton)
+						$h .= "<button tabindex='-1' class='e10-row-action' data-action='delete' title='Smazat řádek'>".$this->app()->ui()->icon('system/actionDelete')."</button>";
 					if ($rowNumber !== 0)
 						$h .= "<button tabindex='-1' class='e10-row-action' data-action='up' title='Posunout nahoru'>".$this->app()->ui()->icon('system/actionMoveUp')."</button>";
 					if (!$isLastRow)
@@ -2049,7 +2053,8 @@ class TableForm
 				}
 				else
 				{
-					$h .= "<button tabindex='-1' class='e10-row-action' data-action='delete' title='Smazat řádek'>".$this->app()->ui()->icon('system/actionDelete')."</button>";
+					if (!$disableDeleteButton)
+						$h .= "<button tabindex='-1' class='e10-row-action' data-action='delete' title='Smazat řádek'>".$this->app()->ui()->icon('system/actionDelete')."</button>";
 				}
 			}
 			$h .= "<div style='font-size:60%;'>".($rowNumber+1).'</div>';
