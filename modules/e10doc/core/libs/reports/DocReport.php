@@ -54,7 +54,7 @@ class DocReport extends DocReportBase
 
 		// -- rows
 		$q = [];
-		array_push($q, 'SELECT [rows].*, items.fullName as itemFullName, items.id as itemID');
+		array_push($q, 'SELECT [rows].*, items.fullName AS itemFullName, items.id AS itemID, items.description AS itemDecription');
 		array_push($q, ' FROM [e10doc_core_rows] as [rows]');
 		array_push($q, ' LEFT JOIN e10_witems_items as items ON [rows].item = items.ndx');
 		array_push($q, ' WHERE [document] = %i', $this->recData ['ndx']);

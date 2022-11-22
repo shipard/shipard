@@ -92,7 +92,7 @@
 			<tr>
 				<td class='itemID'>{{itemID}}</td>
 				<td>
-					{{text}}{{#additionsMarks}}<sup> {{additionsMarks}}</sup>{{/additionsMarks}}
+					{{text}}{{#additionsMarks}}<sup> {{additionsMarks}}</sup>{{/additionsMarks}}{{#itemDecription}}<div style="font-size: 80%; color: #777;">{{itemDecription}}</div>{{/itemDecription}}
 					{{#data.flags.itemCodesList}}
 						<ul class="itemCodesList{{#data.flags.itemCodesInline}} itemCodesListInline{{/data.flags.itemCodesInline}}">
 							{{#rowItemCodes}}
