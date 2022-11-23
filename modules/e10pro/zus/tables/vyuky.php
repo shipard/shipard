@@ -250,8 +250,12 @@ class TableVyuky extends DbTable
 
 class ViewVyuky extends TableView
 {
+	var $today;
+
 	public function init ()
 	{
+		$this->today = Utils::today();
+
 		if ($this->app->hasRole('zusadm'))
 		{
 			$mq [] = ['id' => 'aktualni', 'title' => 'Aktuální', 'side' => 'left'];
@@ -278,7 +282,9 @@ class ViewVyuky extends TableView
 		$qv = $this->queryValues();
 
 		$q [] = 'SELECT vyuky.*, ucitele.fullName as jmenoUcitele, pobocky.fullName as pobocka,';
-		array_push($q, ' studium.cisloStudia as cisloStudia, studium.rocnik as studiumRocnik, obory.id as idOboru');
+		array_push($q, ' studium.cisloStudia as cisloStudia, studium.rocnik as studiumRocnik,');
+		array_push($q, ' studium.stavHlavni as studiumStavHlavni, studium.datumUkonceniSkoly as studiumDatumUkonceniSkoly,');
+		array_push($q, ' obory.id as idOboru');
 		array_push($q, ' FROM [e10pro_zus_vyuky] as vyuky ');
 		array_push($q, ' LEFT JOIN e10_persons_persons AS ucitele ON vyuky.ucitel = ucitele.ndx');
 		array_push($q, ' LEFT JOIN e10_base_places AS pobocky ON vyuky.misto = pobocky.ndx');
@@ -337,6 +343,14 @@ class ViewVyuky extends TableView
 		if ($withoutPlan)
 			array_push ($q, 'AND (vyuky.studijniPlan IS NULL OR LENGTH(vyuky.studijniPlan) < %i', 30, ')');
 
+		$nonEnded = isset ($qv['errors']['nonEnded']);
+		if ($nonEnded)
+		{
+			array_push ($q, 'AND (vyuky.datumUkonceni IS NULL AND studium.datumUkonceniSkoly IS NOT NULL',
+														' AND vyuky.[typ] = %i', 1,
+											')');
+		}
+
 		array_push ($q, ' ORDER BY vyuky.[stavHlavni], vyuky.nazev, vyuky.[skolniRok] DESC' . $this->sqlLimit ());
 
 		$this->runQuery ($q);
@@ -379,13 +393,17 @@ class ViewVyuky extends TableView
 		$listItem ['icon'] = $this->table->tableIcon($item);
 
 		$listItem ['t1'] = $item['nazev'];
-		$listItem ['i1'] = strval ($item['cisloStudia']); //$skolniRoky [$item['skolniRok']]['nazev'];
+		$listItem ['t2'] = [];
+
+		if ($item['typ'] == 1)
+		{ // individual
+			$listItem ['i1'] = strval ($item['cisloStudia']);
+		}
 
 		if ($item['studiumRocnik'])
 			$listItem ['i2'] = $rocniky [$item['studiumRocnik']]['nazev']; //['icon' => 'x-teacher', 'text' => $item['jmenoUcitele']];
 
 		//$listItem ['t2'] = $this->app()->cfgItem ("e10pro.zus.oddeleni.{$item['svpOddeleni']}.nazev");
-		$listItem ['t2'] = [];
 		$listItem ['t2'][] = ['text' => $item['idOboru'].' / '.$this->app()->cfgItem ("e10pro.zus.predmety.{$item['svpPredmet']}.nazev"), 'class' => ''];
 
 		if (!utils::dateIsBlank($item['datumZahajeni']))
@@ -437,6 +455,7 @@ class ViewVyuky extends TableView
 				'withoutStudents' => ['title' => 'Skupinové výuky bez studentů', 'id' => 'withoutStudents'],
 				'withoutHours' => ['title' => 'Chybí zápisy hodin', 'id' => 'withoutHours'],
 				'withoutPlan' => ['title' => 'Není studijní plán', 'id' => 'withoutPlan'],
+				'nonEnded' => ['title' => 'Neukončené ETK s ukončeným studiem', 'id' => 'nonEnded'],
 			];
 			$paramsErrors = new \E10\Params ($this->app());
 			$paramsErrors->addParam('checkboxes', 'query.errors', ['items' => $chbxErrors]);
