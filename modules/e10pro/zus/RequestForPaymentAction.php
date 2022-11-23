@@ -2,13 +2,8 @@
 
 namespace e10pro\zus;
 
-require_once __APP_DIR__ . '/e10-modules/e10/base/base.php';
-require_once __APP_DIR__ . '/e10-modules/e10doc/core/core.php';
-
-
 /**
- * Class RequestForPaymentAction
- * @package e10pro\zus
+ * class RequestForPaymentAction
  */
 class RequestForPaymentAction extends \e10doc\balance\RequestForPaymentAction
 {
