@@ -147,7 +147,7 @@ class TablePersons extends DbTable
 
 		$q = "SELECT [fullName] FROM [e10_persons_persons] WHERE [ndx] = " . intval ($pk);
 		$refRec = $this->app()->db()->query ($q)->fetch ();
-		$refTitle = $refRec [$titleColumn];
+		$refTitle = $refRec [$titleColumn] ?? '';
 
 		$thisTableId = $this->tableId();
 		$srcTableId = $srcTable->tableId ();
@@ -176,12 +176,14 @@ class TablePersons extends DbTable
 
 		$inputCode .= "<span class='e10-refinp-infotext'>" .$refTitle . '</span>';
 
-		$clsf = \E10\Base\ListClassification::referenceWidget($form, $this, $pk);
-		if ($clsf['html'] !== '')
+		if (intval($pk))
 		{
-			$inputCode .= "<div style='padding: 2px; clear: both; margin: 4px; '>".$clsf['html'].'</div>';
+			$clsf = \E10\Base\ListClassification::referenceWidget($form, $srcColumnId, $this, $pk);
+			if ($clsf['html'] !== '')
+			{
+				$inputCode .= "<div style='padding: 2px; clear: both; margin: 4px; '>".$clsf['html'].'</div>';
+			}
 		}
-
 		$inputCode .= '</div>';
 
 		$info ['widgetCode'] = NULL;

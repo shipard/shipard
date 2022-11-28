@@ -914,12 +914,15 @@ class DbTable
 				case 'clsf':
 					foreach ($values as $group => $items)
 					{
-						foreach ($items as $itemNdx => $itemValue) {
+						$groupParts = explode(':', $group);
+						$groupId = $groupParts[0];
+						foreach ($items as $itemNdx => $itemValue)
+						{
 							$vp = explode(':', $itemValue);
 							if (count($vp) === 1)
 								continue;
 							$this->db()->query("INSERT INTO [e10_base_clsf] ([tableid], [recid], [clsfItem], [group]) VALUES (%s, %i, %s, %s)",
-								$vp[0], isset($vp[1]) ? intval($vp[1]) : 0, $itemNdx, $group);
+								$vp[0], isset($vp[1]) ? intval($vp[1]) : 0, $itemNdx, $groupId);
 						}
 					}
 					break;

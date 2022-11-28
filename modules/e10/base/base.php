@@ -1782,7 +1782,7 @@ class ListClassification implements \E10\IDocumentList
 		return $sideBar->createHtmlCode();
 	}
 
-	static function referenceWidget ($form, $table, $recId)
+	static function referenceWidget ($form, $srcColumnId, $table, $recId)
 	{
 		$listObject = new ListClassification($table->app());
 		$listObject->setRecData ($table, 'clsf', array ('ndx'=>$recId));
@@ -1820,7 +1820,7 @@ class ListClassification implements \E10\IDocumentList
 				{
 					if (isset ($result['itemsOn'][$key][$clsfItemOff['ndx']]))
 						continue;
-					$inputName = "extra.clsf.$key.".$clsfItemOff['ndx'];
+					$inputName = "extra.clsf.$key:$srcColumnId.".$clsfItemOff['ndx'];
 					$inputId = str_replace ('.', '-', "{$form->fid}_$inputName");
 					$inputValue = $table->tableId().':'.$recId;
 					$result['html'] .= "<span style='border: 1px solid #aaa; background-color: #eee!important;padding: 3px; display: inline-block;'><input type='checkbox' class='e10-inputLogical' name='$inputName' id='$inputId' data-fid='$form->fid' value='$inputValue'/><label for='$inputId'> ".$clsfItemOff['name'].'</label></span>';
