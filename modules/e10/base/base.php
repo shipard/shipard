@@ -1784,6 +1784,8 @@ class ListClassification implements \E10\IDocumentList
 
 	static function referenceWidget ($form, $srcColumnId, $table, $recId)
 	{
+		$today = Utils::today('Y-m-d');
+
 		$listObject = new ListClassification($table->app());
 		$listObject->setRecData ($table, 'clsf', array ('ndx'=>$recId));
 		$listObject->loadData();
@@ -1820,10 +1822,12 @@ class ListClassification implements \E10\IDocumentList
 				{
 					if (isset ($result['itemsOn'][$key][$clsfItemOff['ndx']]))
 						continue;
+					if (isset($clsfItemOff['validTo']) && $clsfItemOff['validTo'] < $today)
+						continue;
 					$inputName = "extra.clsf.$key:$srcColumnId.".$clsfItemOff['ndx'];
 					$inputId = str_replace ('.', '-', "{$form->fid}_$inputName");
 					$inputValue = $table->tableId().':'.$recId;
-					$result['html'] .= "<span style='border: 1px solid #aaa; background-color: #eee!important;padding: 3px; display: inline-block;'><input type='checkbox' class='e10-inputLogical' name='$inputName' id='$inputId' data-fid='$form->fid' value='$inputValue'/><label for='$inputId'> ".$clsfItemOff['name'].'</label></span>';
+					$result['html'] .= "<span style='border: 1px solid #aaa; background-color: #eee!important;padding: 3px; display: inline-block;'><input type='checkbox' class='e10-inputLogical' name='$inputName' id='$inputId' data-fid='$form->fid' value='$inputValue'/><label for='$inputId'> ".Utils::es($clsfItemOff['name']).'</label></span>';
 				}
 			}
 		}

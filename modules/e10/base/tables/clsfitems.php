@@ -1,7 +1,9 @@
 <?php
 
 namespace e10\base;
+
 use \Shipard\Utils\Utils, \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
+use \Shipard\Utils\Json;
 
 
 /**
@@ -83,13 +85,19 @@ class TableClsfItems extends DbTable
 					'name' => $r ['fullName'], 'id' => $iid, 'ndx' => $r ['ndx'],
 					'colorbg' => $r ['colorbg'], 'colorfg' => $r ['colorfg']
 			];
+
 			if ($r['colorbg'] !== '')
 				$ci['css'] = 'color: ' . $r['colorfg'] . '; background-color: ' . $r['colorbg'];
+
+			if (!Utils::dateIsBlank($r['validFrom']))
+				$ci['validFrom'] = $r['validFrom']->format('Y-m-d');
+			if (!Utils::dateIsBlank($r['validTo']))
+				$ci['validTo'] = $r['validTo']->format('Y-m-d');
 
 			$clsfItems ['e10']['base']['clsf'][$r['group']][$r ['ndx']] = $ci;
 		}
 
-		file_put_contents ($fileName, json_encode ($clsfItems));
+		file_put_contents ($fileName, Json::lint ($clsfItems));
 	}
 }
 
@@ -137,13 +145,18 @@ class ViewClsfItems extends TableView
 
 		$labelText = ($item['id'] !== '') ? $item['id'] : $item['fullName'];
 
+		$listItem ['t2'] = [];
 		if ($item['colorbg'] !== '')
 		{
 			$css = 'color: '.$item['colorfg'].'; background-color: '.$item['colorbg'];
-			$listItem ['t2'] = ['text' => $labelText, 'css' => $css, 'class' => 'label'];
+			$listItem ['t2'][] = ['text' => $labelText, 'css' => $css, 'class' => 'label'];
 		}
 		else
-			$listItem ['t2'] = ['text' => $labelText, 'class' => 'label label-default'];
+			$listItem ['t2'][] = ['text' => $labelText, 'class' => 'label label-default'];
+
+		$ft = utils::dateFromTo($item['validFrom'], $item['validTo'], NULL);
+		if ($ft !== '')
+			$listItem['t2'][] = ['text' => $ft, 'class' => 'label label-default'];
 
 		if ($item['order'])
 			$listItem ['i2'] = ['text' => Utils::nf($item['order']), 'icon' => 'system/iconOrder', 'class' => 'label label-default'];
@@ -177,11 +190,21 @@ class FormClsfItems extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
 		$this->openForm ();
-			$this->addColumnInput ('fullName');
-			$this->addColumnInput ('id');
-			$this->addColumnInput ('colorbg');
-			$this->addColumnInput ('order');
-			$this->addList ('doclinks', '', TableForm::loAddToFormLayout);
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
+			$this->openTabs ($tabs, TRUE);
+				$this->openTab ();
+					$this->addColumnInput ('fullName');
+					$this->addColumnInput ('id');
+					$this->addColumnInput ('colorbg');
+					$this->addColumnInput ('order');
+					$this->addList ('doclinks', '', TableForm::loAddToFormLayout);
+				$this->closeTab ();
+				$this->openTab ();
+					$this->addColumnInput ('validFrom');
+					$this->addColumnInput ('validTo');
+				$this->closeTab ();
+			$this->closeTabs();
 		$this->closeForm ();
 	}
 }
