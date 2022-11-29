@@ -302,9 +302,9 @@ class TemplatesScheduler extends Utility
 		$this->tableTemplatesHeads = $this->app()->table('e10doc.templates.heads');
 
 		if ($this->today === NULL)
-			$today = new \DateTime();
-		else
-			$today = $this->today;
+			$this->today = Utils::today();
+
+		$today = $this->today;
 		$cntTry = 0;
 		while (1)
 		{
