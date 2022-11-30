@@ -106,7 +106,7 @@ function getDataSourceInfo ($app)
 			'domain' => $r['dsId1'], 'dsId1' => $r['dsId1'],
 			'hosting' => $hostingGid, 'hostingDomain' => $hostingDomain,
 
-			'dsType' => $r['dsType'], 'condition' => $r['condition'],
+			'dsType' => $r['dsType'], 'condition' => $r['condition'], 'helpdeskMode' => $r['helpdeskMode'],
 			'created' => Utils::dateIsBlank($r['dateCreated']) ? NULL : $r['dateCreated']->format ('Y-m-d'),
 
 			'supportName' => ($partnerInfo['name'] !== '') ? $partnerInfo['name'] : $portalInfo['name'],

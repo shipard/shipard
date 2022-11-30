@@ -9,7 +9,7 @@
 	  {"id": "dsId2", "name": "Zastaralé ID zdroje dat", "type": "string", "len": 40, "options": ["ascii"]},
 
 		{"id": "server", "name": "Server", "type": "int", "reference": "hosting.core.servers"},
-		
+
 		{"id": "owner", "name": "Majitel", "type": "int", "reference": "e10.persons.persons"},
 		{"id": "admin", "name": "Technický správce", "type": "int", "reference": "e10.persons.persons"},
 		{"id": "payer", "name": "Plátce", "type": "int", "reference": "e10.persons.persons"},
@@ -31,16 +31,23 @@
 			  "4": "Zkušební lhůta - Upozornění", "3": "Zkušební lhůta - Poslední šance"
 		  }
 	  },
-		
+
+		{"id": "helpdeskMode", "name": "Mód helpdesku", "type": "enumInt",
+		  "enumValues": {
+			  "0": "Není",
+			  "1": "Hosting"
+		  }
+	  },
+
 		{"id": "shpGeneration", "name": "Generace Shipardu", "type": "enumInt",
 			"enumCfg": {"cfgItem": "hosting.core.shipardGenerations", "cfgValue": "", "cfgText": "fn"}},
 
 		{"id": "dsType", "name": "Typ", "type": "enumInt", "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "hosting.core.dsTypes", "cfgValue": "", "cfgText": "fn"}},
 		{"id": "dsDemo", "name": "Demonstrační zdroj dat", "type": "logical", "options": ["saveOnChange"]},
-		{"id": "dsCreateDemoType", "name": "Typ demonstračních dat", "type": "enumString", "len": 30, 
+		{"id": "dsCreateDemoType", "name": "Typ demonstračních dat", "type": "enumString", "len": 30,
 			"enumCfg": {"cfgItem": "hosting.core.dsCreateDemoTypes", "cfgValue": "", "cfgText": "name"}},
-		
+
 		{"id": "condition", "name": "Stav", "type": "enumInt",
 			"enumCfg": {"cfgItem": "hosting.core.dsConditions", "cfgValue": "", "cfgText": "fn"}},
 

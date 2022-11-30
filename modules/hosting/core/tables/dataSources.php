@@ -106,7 +106,7 @@ use \e10\base\libs\UtilsBase;
 
 		$dsConditions = $this->app()->cfgItem('hosting.core.dsConditions');
 		$dsCondition = $dsConditions[$recData['condition']] ?? ['sn' => 'invalid condition `'.$recData['condition'].'`', 'icon' => 'system/iconWarning', 'labelClass' => 'label-danger'];
-	
+
 
 		$today = utils::today();
 		if ($recData['condition'] === 1)
@@ -114,26 +114,26 @@ use \e10\base\libs\UtilsBase;
 			$lc = [
 				'text' => $dsCondition['sn'], 'class' => 'label ' . $dsCondition['labelClass'],
 				'icon' => $dsCondition['icon'], 'suffix' => utils::datef($recData['dateTrialEnd'], '%S'),
-			];	
+			];
 
 			if (utils::dateIsBlank($recData['dateTrialEnd']))
 			{
 				$lc['suffix'] = 'Vadné datum';
 				$lc['class'] = 'label label-danger';
 				$lc['icon'] = 'system/iconWarning';
-			}	
+			}
 			elseif (!utils::dateIsBlank($recData['dateTrialEnd']) && $recData['dateTrialEnd'] < $today)
 			{
 				$lc['class'] = 'label label-danger';
-			}	
-			$labels['condition'][] = $lc;	
+			}
+			$labels['condition'][] = $lc;
 		}
 		else
 		{
 			$labels['condition'][] = [
 				'text' => $dsCondition['sn'], 'class' => 'label ' . $dsCondition['labelClass'],
 				'icon' => $dsCondition['icon']
-			];	
+			];
 		}
 
 		if ($recData['dsDemo'] !== 0)
@@ -474,11 +474,11 @@ class ViewDataSources extends TableView
 		$dsDemo = isset ($qv['others']['dsDemo']);
 		if ($dsDemo)
 			array_push($q, ' AND [dsDemo] = %i', 1);
-	
+
 		$toBeExpired = isset ($qv['others']['toBeExpired']);
 		if ($toBeExpired)
 			array_push($q, ' AND [condition] = %i', 1, ' AND (dateTrialEnd IS NOT NULL AND dateTrialEnd < %d)', $today);
-			
+
 		$badExpiredData = isset ($qv['others']['badExpiredData']);
 		if ($badExpiredData)
 			array_push($q, ' AND [condition] = %i', 1, ' AND dateTrialEnd IS NULL');
@@ -580,7 +580,7 @@ class ViewDataSources extends TableView
 			$addButton = [
 				'text' => 'Nová databáze',
 				'type' => 'action',
-				'action' => 'addwizard', 'icon' => 'system/iconDatabase', 
+				'action' => 'addwizard', 'icon' => 'system/iconDatabase',
 				'data-class' => 'hosting.core.libs.WizardNewDatasource',
 				'btnClass' => 'btn btn-primary',
 				'data-srcobjecttype' => 'viewer', 'data-srcobjectid' => $this->vid,
@@ -664,10 +664,11 @@ class FormDataSource extends TableForm
 						$this->addColumnInput ('dsDemo');
 						if ($this->recData['dsDemo'] == 1)
 							$this->addColumnInput ('dsCreateDemoType');
-					}	
+					}
 					$this->addColumnInput ('condition');
 					$this->addColumnInput ('appWarning');
 					$this->addSeparator(self::coH2);
+					$this->addColumnInput ('helpdeskMode');
 					$this->addColumnInput ('pricePlanKind');
 					$this->addColumnInput ('invoicingTo');
 				$this->closeTab ();
