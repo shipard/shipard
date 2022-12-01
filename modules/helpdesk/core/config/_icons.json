@@ -1,0 +1,8 @@
+{
+    "tables/helpdesk.core.tickets":{
+		"fa5": "fa-clipboard-list",
+		"fa6pro": "fa-clipboard-list",
+		"bsi": "bi-clipboard2-check",
+		"mdi": "filter_alt"
+	}
+}

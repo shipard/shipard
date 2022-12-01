@@ -1,0 +1,6 @@
+{
+	"helpdeskTopicsTags": {
+		"name": "Helpdesk", "label": "Helpdesk", "icon":"tables/wkf.bboard.bboards",
+		"tables": ["helpdesk.core.tickets"]
+	}
+}

@@ -1,0 +1,27 @@
+{
+	"1000": {
+		"stateName": "Nově rozpracováno", "actionName": "Uložit rozpracované", "logName": "koncept",
+		"stateStyle": "concept", "mainState": 0, "goto": [1200, 9800],
+		"icon": "system/docStateConcept"
+	},
+	"1200": {
+		"stateName": "K řešení", "actionName": "K řešení", "logName": "popžadavek k řešení", "notify": 2,
+		"stateStyle": "confirmed", "mainState": 1, "readOnly": 1, "goto": [4000, 8000, 9800],
+		"icon": "system/docStateConfirmed"
+	},
+	"4000": {
+		"stateName": "Uzavřeno", "actionName": "Uzavřeno", "logName": "požadavek je uzavřen", "notify": 3,
+		"stateStyle": "done",  "mainState": 2, "readOnly": 1, "goto": [8000, 9800],
+		"icon": "system/docStateDone"
+	},
+	"8000": {
+		"stateName": "V opravě", "actionName": "Opravit", "logName": "editace problému",
+		"stateStyle": "edit",  "mainState": 0, "goto": [1200, 4000, 9000, 9800],
+		"icon": "system/docStateEdit"
+	},
+	"9800": {
+		"stateName": "Smazáno", "actionName": "Smazat", "logName": "smazání problému", "notify": 4,
+		"stateStyle": "delete",  "mainState": 4, "readOnly": 1, "goto": [8000],
+		"icon": "docStateDelete"
+	}
+}

@@ -253,6 +253,23 @@ class HomePageWidget extends WidgetBoard
 			return;
 		}
 
+		// -- hedelpDesk
+		if ($this->activeTopTab === 'viewer-mode-helpdesk')
+		{
+			if ($this->app()->hasRole('hstngha'))
+			{
+				$viewerMode = '1';
+				$vmp = explode ('-', $this->activeTopTabRight);
+				if (isset($vmp[2]))
+					$viewerMode = $vmp[2];
+
+				$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => '<div style="float: right; width: calc(100% - 1px); height: calc(100% - 2.4rem); position: absolute; left: 0;">']);
+				$this->addContentViewer('helpdesk.core.tickets', 'hosting.core.libs.ViewerHelpdeskAdmins', ['viewerMode' => $viewerMode]);
+				$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => '</div>']);
+			}
+			return;
+		}
+
 		// -- overview
 		if ($this->activeTopTab === 'viewer-mode-home')
 		{
@@ -308,6 +325,10 @@ class HomePageWidget extends WidgetBoard
 		$tabs['viewer-mode-dbs'] = ['text' => ' Databáze', 'icon' => 'system/iconDatabase', 'action' => 'viewer-mode-dbs'];
 		if ($this->projectsAccessLevel)
 			$tabs['viewer-mode-devProjects'] = ['text' => ' Projekty', 'icon' => 'user/code', 'action' => 'viewer-mode-devProjects'];
+
+		if ($this->app()->hasRole('hstngha'))
+			$tabs['viewer-mode-helpdesk'] = ['text' => 'Helpdesk', 'icon' => 'tables/helpdesk.core.tickets', 'action' => 'viewer-mode-helpdesk'];
+
 		$tabs['viewer-mode-user'] = ['text' => ' '.$userInfo['name'], 'icon' => 'system/iconUser', 'action' => 'viewer-mode-user'];
 
 		$this->toolbar = ['tabs' => $tabs];

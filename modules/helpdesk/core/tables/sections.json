@@ -1,0 +1,30 @@
+{
+	"id": "helpdesk.core.sections", "sql": "helpdesk_core_sections", "name": "Sekce helpdesku",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 60},
+
+		{"id": "icon", "name": "Ikona", "type": "string", "len": 50},
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "doclinksPersons", "class": "e10.base.ListDocLinks", "name": "Vazby na Osoby"}
+	],
+	"views": [
+		{"id": "default", "class": "helpdesk.core.ViewSections",
+			"details": {
+				"preview": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "helpdesk.core.ViewDetailSection"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "helpdesk.core.FormSection"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"options": ["configSource"],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

@@ -1,0 +1,6 @@
+[
+	{
+		"name": "Start123", "class": "helpdesk.core.libs.Dashboard",
+		"dashboard": "helpdesk_main", "panel": "helpdesk_default", "order": 1001, "row": "main", "width": 12, "type": "wkfWall"
+	}
+]

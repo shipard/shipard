@@ -95,16 +95,10 @@
 		"all": 2,
 		"documents": {"*": [{"_access": 2}]}
 	},
-	"hdus": {
-		"name": "Přístup k helpdesku",
+	"hdhstng": {
+		"name": "Helpdesk Shipard",
 		"widgets": {
-			"lib.wkf.WidgetHelpDesk": 2
-		}
-	},
-	"hdue": {
-		"name": "Přístup k rozšířenému helpdesku",
-		"widgets": {
-			"lib.wkf.WidgetHelpDesk": 2
+			"lib.helpdesk.WidgetHelpDeskShipard": 2
 		}
 	},
 	"admusr": {

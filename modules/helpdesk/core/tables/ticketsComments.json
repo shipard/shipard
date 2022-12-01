@@ -1,0 +1,24 @@
+{
+	"id": "helpdesk.core.ticketsComments", "sql": "helpdesk_core_ticketsComments", "name": "Komentáře k požadavkům",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "ticket", "name": "Požadavek", "type": "int", "reference": "helpdesk.core.tickets"},
+		{"id": "systemComment", "name": "Systémový komentář", "type": "logical"},
+		{"id": "text", "name": "Text", "type": "memo"},
+		{"id": "author", "name": "Autor", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "dateCreate", "name": "Datum vzniku", "type": "timestamp"},
+		{"id": "dateTouch", "name": "Datum poslední aktivity", "type": "timestamp"},
+
+		{"id": "activateCnt", "name": "Počet aktivací", "type": "int"},
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "wkf.comments.docStates.default"},
+	"views": [
+		{"id": "default", "class": "helpdesk.core.ViewTicketsComments"}
+	],
+	"forms": [
+		{"id": "default", "class": "helpdesk.core.FormTicketComment"}
+	]
+}

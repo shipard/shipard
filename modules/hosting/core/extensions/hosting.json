@@ -18,5 +18,11 @@
 				"detail": "plans.core.ViewDetailItem"
 			}
 		}
+	},
+	{
+		"table": "helpdesk.core.tickets",
+		"columns": [
+			{"id": "dataSource", "name": "Databáze", "type": "int", "reference": "hosting.core.dataSources"}
+		]
 	}
 ]

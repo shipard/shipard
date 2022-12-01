@@ -7,7 +7,6 @@
 		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
 		{"id": "+e10.persons.connectionTypes", "file": "e10.persons.connectionTypes.json"},
 		{"id": "+dashboards", "file": "dashboards.json"},
-		{"id": "+widgets", "file": "widgets.json"},
 		{"id": "+e10.persons.systemGroups", "file": "e10.persons.groups.json"},
 		{"id": "+help.index", "file": "help.json"}
 	]

@@ -40,6 +40,18 @@
 			"plans.core.items": {"hosting.core.libs.ViewerProjectsGrid": 1, "hosting.core.libs.ViewerProjectsGantt": 1}
 		}
 	},
+	"hstngha": {
+		"name": "Helpdesk Admin",
+		"viewers": {
+			"plans.core.items": {"hosting.core.libs.ViewerHelpdeskAdmins": 2}
+		}
+	},
+	"hstnghu": {
+		"name": "Helpdesk User",
+		"viewers": {
+			"plans.core.items": {"hosting.core.libs.ViewerHelpdeskRemote": 2}
+		}
+	},
 	"user": {
 		"widgets": {
 			"hosting.core.libs.HomePageWidget": 2

@@ -1,0 +1,16 @@
+{
+	"admin": {
+		"viewers": {
+			"helpdesk.core.sections": {"default": 2}
+		}
+	},
+	"pwuser": {
+		"viewers": {
+			"helpdesk.core.tickets": {"default": 2},
+			"helpdesk.core.ticketsComments": {"default": 2}
+		},
+		"widgets": {
+			"helpdesk.core.libs.Dashboard": 2
+		}
+	}
+}

@@ -1,0 +1,6 @@
+{
+	"helpdeskSections": {
+		"name": "Sekce", "order": 101000, "group": "helpdesk",
+		"type": "viewer", "table": "helpdesk.core.sections", "viewer": "default"
+	}
+}

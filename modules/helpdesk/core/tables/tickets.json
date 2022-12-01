@@ -1,0 +1,35 @@
+{
+	"id": "helpdesk.core.tickets", "sql": "helpdesk_core_tickets", "name": "Požadavky",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "ticketId", "name": "ID", "type": "string", "len": 20, "options": ["ascii"]},
+		{"id": "helpdeskSection", "name": "Sekce", "type": "int", "reference": "helpdesk.core.sections"},
+
+		{"id": "subject", "name": "Předmět", "type": "string", "len": 140},
+		{"id": "text", "name": "Text", "type": "memo"},
+
+		{"id": "author", "name": "Autor", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "dateCreate", "name": "Datum vzniku", "type": "timestamp"},
+		{"id": "dateTouch", "name": "Datum poslední aktivity", "type": "timestamp"},
+
+		{"id": "priority", "name": "Důležitost", "type": "enumInt",
+			"enumValues": {"10": "Běžná", "5": "Vysoká", "15": "Nízká"}},
+		{"id": "activateCnt", "name": "Počet aktivací", "type": "int"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "helpdesk.tickets.docStates"},
+	"views": [
+		{"id": "default", "class": "helpdesk.core.libs.ViewTicketsGrid", "detail": "helpdesk.core.ViewDetailTicket"}
+	],
+	"forms": [
+		{"id": "default", "class": "helpdesk.core.FormTicket"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "subject"},
+	"___options": ["notifications"]
+}

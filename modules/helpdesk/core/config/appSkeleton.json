@@ -1,0 +1,12 @@
+{
+	"panels": {
+		"agendy": {
+			"items": {
+				"plans": {
+					"t1": "Požadavky", "object": "widget", "class": "e10.widgetDashboard", "subclass": "helpdesk_main", "icon": "user/checkCircle",
+					"order": 5950, "allowAccessClass": "helpdesk.core.libs.AllowAccesToDashboards"
+				}
+			}
+		}
+	}
+}

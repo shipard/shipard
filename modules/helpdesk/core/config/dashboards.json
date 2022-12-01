@@ -1,0 +1,16 @@
+{
+	"helpdesk_main": {
+		"disableTopToolbar": 1,
+		"panels": {
+			"helpdesk_default": {
+				"name": "Požadavky",
+				"icon": "system/rightSubmenuToDo",
+				"order": 1701,
+				"fullsize": 1,
+				"rows": {
+					"main": {"order": 10000, "class": "full"}
+				}
+			}
+		}
+	}
+}

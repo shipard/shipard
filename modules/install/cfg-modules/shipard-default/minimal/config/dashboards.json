@@ -36,6 +36,9 @@
 			},
 			"wikies": {
 				"creatorClass": "e10pro.kb.WikiDashboardPanelsCreator", "order": 1800
+			},
+			"helpdeskShipard": {
+				"creatorClass": "lib.helpdesk.WidgetHelpDeskShipardPanelsCreator", "order": 800100
 			}
 		}
 	}
