@@ -1692,6 +1692,13 @@ class TableView extends \Shipard\Base\BaseObject
 			return;
 		}
 
+		if ($this->paneMode && $this->rowsPageNumber === 0)
+		{
+			$zrc = $this->zeroRowCode();
+			if ($zrc !== '')
+				$this->addHtmlItem($zrc);
+		}
+
 		$this->rowsLoadNext = 0;
 		$this->lineRowNumber = 0;
 		foreach ($this->queryRows as $item)
