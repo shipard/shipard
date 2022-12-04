@@ -2,5 +2,9 @@
 	"helpdeskSections": {
 		"name": "Sekce", "order": 101000, "group": "helpdesk",
 		"type": "viewer", "table": "helpdesk.core.sections", "viewer": "default"
+	},
+	"helpdeskTicketStates": {
+		"name": "Stavy požadavků", "order": 102000, "group": "helpdesk",
+		"type": "viewer", "table": "helpdesk.core.ticketStates", "viewer": "default"
 	}
 }

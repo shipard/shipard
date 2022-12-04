@@ -1,7 +1,7 @@
 {
   "id": "helpdesk.core",
   "name": "Helpdesk - Core",
-  "tables": ["sections", "tickets", "ticketsComments"],
+  "tables": ["sections", "ticketStates", "tickets", "ticketsComments"],
   "modules": ["wkf/core"],
   "config": [
     {"id": "+appSkeleton", "file": "appSkeleton.json"},
@@ -12,6 +12,8 @@
     {"id": "+dashboards", "file": "dashboards.json"},
 		{"id": "+widgets", "file": "widgets.json"},
     {"id": "+e10.base.doclinks", "file": "doclinks.json"},
+    {"id": "+helpdesk.ticketStatesLifeCycle", "file": "ticketStatesLifeCycle.json"},
+    {"id": "+helpdesk.ticketPriorities", "file": "ticketPriorities.json"},
     {"id": "helpdesk.tickets.docStates", "file": "helpdesk.tickets.docStates.json"}
   ]
 }

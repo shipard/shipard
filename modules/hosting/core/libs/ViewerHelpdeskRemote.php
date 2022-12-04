@@ -50,13 +50,12 @@ class ViewerHelpdeskRemote extends TableViewGrid
     $this->addAddParam ('helpdeskSection', 1);
 
 		$g = [
-			'ticketId' => 'ID',
+			'ticketId' => '#',
 		];
 
+		$g['priority'] = '*P';
 		$g['subject'] = 'Předmět';
-		//$g['author'] = 'Autor';
-		//$g['date'] = 'Datum';
-		//$g['note'] = 'Pozn.';
+		$g['stateInfo'] = 'Stav';
 
 		$this->setGrid ($g);
 	}
@@ -66,11 +65,27 @@ class ViewerHelpdeskRemote extends TableViewGrid
 		$listItem ['pk'] = $item ['ndx'];
 
 		$listItem ['subject'] = [['text' => $item['subject'], 'class' => 'block']];
-		$listItem ['author'] = $item['authorName'];
-		$listItem ['date'] = Utils::datef($item['dateCreate'], '%S%t');
+		//$listItem ['author'] = $item['authorName'];
+		//$listItem ['date'] = Utils::datef($item['dateCreate'], '%S%t');
+
+		$listItem ['stateInfo'] = [];
+		$this->table->ticketStateInfo($item, $listItem ['stateInfo']);
+
 		$listItem ['ticketId'] = $item['ticketId'];
 
-    $listItem ['ds'] = $item['dsName'];
+
+		$ticketState = $this->app()->cfgItem('helpdesk.ticketStates.'.$item['ticketState'], NULL);
+		if ($ticketState)
+			$listItem ['icon'] = $ticketState['icon'];
+
+		$ticketPriority = $this->app()->cfgItem('helpdesk.ticketPriorities.'.$item['priority'], NULL);
+		if ($ticketPriority)
+		{
+			if (isset($ticketPriority['icon']))
+				$listItem ['priority'] = ['text' => '', 'title' => $ticketPriority['fn'], 'icon' => $ticketPriority['icon'], ];
+			else
+				$listItem ['priority'] = ['text' => '', 'title' => $ticketPriority['fn'], ];
+		}
 
 		return $listItem;
 	}
@@ -117,10 +132,11 @@ class ViewerHelpdeskRemote extends TableViewGrid
 			array_push ($q, ' AND (');
 			array_push ($q, ' [tickets].[subject] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ' OR [text] LIKE %s', '%'.$fts.'%');
+			array_push ($q, ' OR [tickets].[ticketId] LIKE %s', $fts.'%');
 			array_push ($q, ')');
 		}
 
-		$this->queryMain ($q, 'tickets.', ['[ndx]']);
+		$this->queryMain ($q, 'tickets.', ['[proposedDeadline]', '[priority]', '[dateTouch]']);
 
 		$this->runQuery ($q);
 	}

@@ -1,0 +1,13 @@
+{
+  "10": {
+    "sn": "Běžná"
+  },
+  "5": {
+    "sn": "Vysoká",
+    "icon": "system/issueImportant"
+  },
+  "20": {
+    "sn": "Nízká",
+    "icon": "system/issueNotImportant"
+  }
+}

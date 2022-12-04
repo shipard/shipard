@@ -178,7 +178,7 @@ class ViewTicketsComments extends TableView
     $item ['pane']['class'] .= ' e10-ds '.$item ['docStateClass'];
 		$title = [];
 
-    $title[] = ['text' => $item['authorName'].$item ['docStateClass'], 'icon' => 'system/iconUser', 'class' => 'label label-default'];
+    $title[] = ['text' => $item['authorName'], 'icon' => 'system/iconUser', 'class' => 'label label-default'];
     $title[] = ['text' => Utils::datef($item['dateCreate'], '%S%t'), 'icon' => 'system/iconClock', 'class' => 'label label-default'];
 
 		$titleClass = '';

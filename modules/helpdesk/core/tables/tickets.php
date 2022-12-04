@@ -4,6 +4,7 @@ namespace helpdesk\core;
 use \Shipard\Form\TableForm, \Shipard\Table\DbTable;
 use \Shipard\Viewer\TableViewDetail;
 use \Shipard\Utils\Utils;
+use \e10\base\libs\UtilsBase;
 
 
 /**
@@ -11,6 +12,8 @@ use \Shipard\Utils\Utils;
  */
 class TableTickets extends DbTable
 {
+	CONST ewlNone = 0, ewlHours = 1, ewlDays = 2;
+
 	public function __construct ($dbmodel)
 	{
 		parent::__construct ($dbmodel);
@@ -29,6 +32,20 @@ class TableTickets extends DbTable
 
 		if (!isset($recData ['author']) || !$recData ['author'])
 			$recData ['author'] = $this->app()->userNdx();
+
+		if ($this->recData['estimatedWorkLen'] === TableTickets::ewlNone)
+		{
+			$recData['estimatedManHours'] = 0;
+			$recData['estimatedManDays'] = 0;
+		}
+		elseif ($this->recData['estimatedWorkLen'] === TableTickets::ewlHours)
+		{
+			$recData['estimatedManDays'] = intval($recData['estimatedManHours'] / 8) + 1;
+		}
+		elseif ($this->recData['estimatedWorkLen'] === TableTickets::ewlDays)
+		{
+			$recData['estimatedManHours'] = intval($recData['estimatedManDays'] * 8);
+		}
 
 		parent::checkBeforeSave ($recData, $ownerData);
 	}
@@ -53,16 +70,22 @@ class TableTickets extends DbTable
 			$recData['activateCnt'] = 0;
 		if ($recData['docStateMain'] >= 1)
 			$recData['activateCnt']++;
-
-
 	}
-
 
 	public function createHeader ($recData, $options)
 	{
 		$hdr = parent::createHeader ($recData, $options);
 
-		$hdr ['info'][] = ['class' => 'title', 'value' => $recData ['subject']];
+		$ndx = $recData['ndx'] ?? 0;
+
+		$subject = ['text' => $recData ['subject']];
+		$ticketPriority = $this->app()->cfgItem('helpdesk.ticketPriorities.'.$recData['priority'], NULL);
+		if ($ticketPriority)
+		{
+			if (isset($ticketPriority['icon']))
+				$subject ['icon'] = $ticketPriority['icon'];
+		}
+		$hdr ['info'][] = ['class' => 'title', 'value' => $subject];
 
 		$subInfo = [];
 		if (isset($recData['author']) && $recData['author'])
@@ -75,17 +98,74 @@ class TableTickets extends DbTable
 		if (isset($recData['dateCreate']))
 		{
 			$subInfo [] = ['text' => Utils::datef($recData['dateCreate'], '%S%t'), 'icon' => 'system/iconClock', 'class' => 'label label-default'];
-
 		}
 
-		$hdr ['info'][] = ['class' => 'info', 'value' => $subInfo];
+		$responseInfo = [];
+		$this->ticketStateInfo($recData, $responseInfo);
+
+		$classification = UtilsBase::loadClassification ($this->app(), $this->tableId(), $ndx);
+		if (isset ($classification [$ndx]))
+		{
+			forEach ($classification [$ndx] as $clsfGroup)
+				$responseInfo = array_merge ($responseInfo, $clsfGroup);
+		}
+
+		$linkedPersons = UtilsBase::linkedPersons ($this->app(), $this, [$ndx]);
+		if (isset ($linkedPersons [$ndx]['helpdesk-tickets-assigned']))
+		{
+			$responseInfo = array_merge ($responseInfo, $linkedPersons [$ndx]['helpdesk-tickets-assigned']);
+		}
+		if (isset ($linkedPersons [$ndx]['helpdesk-tickets-notify']))
+		{
+			$subInfo = array_merge ($subInfo, $linkedPersons [$ndx]['helpdesk-tickets-notify']);
+		}
+
+		if (count($subInfo))
+			$hdr ['info'][] = ['class' => 'info lh16', 'value' => $subInfo];
+
+		if (count($responseInfo))
+			$hdr ['info'][] = ['class' => 'info lh16', 'value' => $responseInfo];
 
 		return $hdr;
 	}
 
+	public function ticketStateInfo($recData, &$info)
+	{
+		$ticketState = $this->app()->cfgItem('helpdesk.ticketStates.'.$recData['ticketState'], NULL);
+		if ($ticketState)
+		{
+			$tsl = ['text' => $ticketState['sn'], 'icon' => $ticketState['icon'], 'class' => 'label label-default'];
+
+			$css = '';
+			if ($ticketState['colorbg'])
+				$css .= 'background-color: '.$ticketState['colorbg'].';';
+			if ($ticketState['colorfg'])
+				$css .= 'color: '.$ticketState['colorfg'];
+			if ($css !== '')
+				$tsl['css'] = $css;
+			$info [] = $tsl;
+		}
+
+		if ($recData['estimatedWorkLen'] === TableTickets::ewlHours)
+		{
+			$info [] = ['text' => Utils::nf($recData['estimatedManHours'], 0).' hodin', 'title' => 'Odhadovaná náročnost v hodinách', 'icon' => 'user/keyboard', 'class' => 'label label-warning'];
+		}
+		elseif ($recData['estimatedWorkLen'] === TableTickets::ewlDays)
+		{
+			$info [] = ['text' => Utils::nf($recData['estimatedManDays'], 0).' dnů', 'title' => 'Odhadovaná náročnost v hodinách', 'icon' => 'user/keyboard', 'class' => 'label label-warning'];
+		}
+
+		if ($recData['proposedPrice'] > 0.0)
+			$info [] = ['text' => Utils::nf($recData['proposedPrice'], 0), 'icon' => 'system/iconMoney', 'class' => 'label label-primary'];
+
+		if (!Utils::dateIsBlank($recData['proposedDeadline']))
+		{
+			$info [] = ['text' => Utils::datef($recData['proposedDeadline']), 'icon' => 'system/iconCheckSquare', 'title' => 'Navrhovaný termín řešení', 'class' => 'label label-info'];
+		}
+	}
+
 	public function addSystemComment($ticketNdx, $data)
 	{
-
 	}
 }
 
@@ -109,6 +189,7 @@ class FormTicket extends TableForm
 		$this->setFlag ('maximize', 1);
 
 		$tabs ['tabs'][] = ['text' => 'Text', 'icon' => 'formText'];
+		$tabs ['tabs'][] = ['text' => 'Reakce', 'icon' => 'user/reply'];
 		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
@@ -121,7 +202,24 @@ class FormTicket extends TableForm
 
 				$this->openTab ();
 					$this->addList ('clsf', '', TableForm::loAddToFormLayout);
+					$this->addList ('doclinksPersons', '', TableForm::loAddToFormLayout);
+					$this->addSeparator(self::coH4);
+					$this->addColumnInput ('priority');
+					$this->addColumnInput ('ticketState');
+					$this->addSeparator(self::coH4);
+					$this->addColumnInput ('proposedPrice');
+					$this->addColumnInput ('proposedDeadline');
+					$this->addSeparator(self::coH4);
+					$this->openRow();
+						$this->addColumnInput ('estimatedWorkLen');
+						if ($this->recData['estimatedWorkLen'] === TableTickets::ewlHours)
+							$this->addColumnInput ('estimatedManHours');
+						elseif ($this->recData['estimatedWorkLen'] === TableTickets::ewlDays)
+							$this->addColumnInput ('estimatedManDays');
+					$this->closeRow();
+				$this->closeTab ();
 
+				$this->openTab ();
 					$this->addColumnInput ('author');
 					$this->addColumnInput ('helpdeskSection');
 					$this->addColumnInput ('dataSource');
@@ -155,6 +253,17 @@ class FormTicket extends TableForm
 			$this->closeTabs ();
 		$this->closeForm ();
 	}
+
+	function columnLabel ($colDef, $options)
+  {
+    switch ($colDef ['sql'])
+    {
+      case	'estimatedManHours': return '';
+			case	'estimatedManDays': return '';
+    }
+
+    return parent::columnLabel ($colDef, $options);
+  }
 }
 
 
@@ -165,8 +274,6 @@ class ViewDetailTicket extends TableViewDetail
 {
 	public function createDetailContent ()
 	{
-		//$this->addDocumentCard('helpdesk.core.libs.dc.HelpdeskTicketCore');
-
 		$this->addContent ([
 			'type' => 'viewer', 'table' => 'helpdesk.core.ticketsComments',
 			'viewer' => 'default', 'params' => ['ticketNdx' => $this->item['ndx']],

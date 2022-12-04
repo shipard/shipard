@@ -1852,6 +1852,11 @@ class TableView extends \Shipard\Base\BaseObject
 				$ct = substr ($ch, 1);
 				$this->gridColClasses [$cn] = 'number';
 			}
+			else if ($ch [0] == '*')
+			{
+				$ct = substr ($ch, 1);
+				$this->gridColClasses [$cn] = 'e10-icon';
+			}
 			else if ($ch [0] == ' ')
 			{
 				$ct = substr ($ch, 1);

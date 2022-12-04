@@ -12,5 +12,21 @@
 				{"id": "users", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
 			]
 		}
+	},
+	"helpdesk.core.tickets": {
+		"helpdesk-tickets-assigned": {
+			"linkid": "helpdesk-tickets-assigned", "name": "Přiřazeno", "icon": "docLinkAssigned",
+			"sources": [
+				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			],
+			"listId": "doclinksPersons"
+		},
+		"helpdesk-tickets-notify": {
+			"linkid": "helpdesk-tickets-notify", "name": "Na vědomí", "icon": "docLinkNotify",
+			"sources": [
+				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			],
+			"listId": "doclinksPersons"
+		}
 	}
 }

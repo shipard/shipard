@@ -13,15 +13,27 @@
 		{"id": "dateCreate", "name": "Datum vzniku", "type": "timestamp"},
 		{"id": "dateTouch", "name": "Datum poslední aktivity", "type": "timestamp"},
 
+		{"id": "ticketState", "name": "Stav", "type": "enumInt",
+			"enumCfg": {"cfgItem": "helpdesk.ticketStates", "cfgValue": "", "cfgText": "sn"}},
+
 		{"id": "priority", "name": "Důležitost", "type": "enumInt",
-			"enumValues": {"10": "Běžná", "5": "Vysoká", "15": "Nízká"}},
+			"enumCfg": {"cfgItem": "helpdesk.ticketPriorities", "cfgValue": "", "cfgText": "sn"}},
 		{"id": "activateCnt", "name": "Počet aktivací", "type": "int"},
+
+		{"id": "proposedPrice", "name": "Cena", "type": "money"},
+		{"id": "proposedDeadline", "name": "Navrhovaný termín řešení", "type": "date"},
+
+		{"id": "estimatedWorkLen", "name": "Odhadovaná délka řešení", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "Není", "1": "Hodiny", "2": "Dny"}},
+		{"id": "estimatedManHours", "name": "Odhadovaná časová náročnost v hodinách", "type": "int"},
+		{"id": "estimatedManDays", "name": "Odhadovaná časová náročnost ve dnech", "type": "int"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
 	"lists": [
-		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"}
+		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"},
+		{"id": "doclinksPersons", "class": "e10.base.ListDocLinks", "name": "Vazby na Osoby"}
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "helpdesk.tickets.docStates"},
 	"views": [

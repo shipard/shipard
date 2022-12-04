@@ -50,16 +50,14 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 
     $this->addAddParam ('helpdeskSection', 1);
 
-		//$this->createBottomTabs();
-
 		$g = [
-			'ticketId' => 'IDdd',
+			'ticketId' => '#',
 		];
 
+		$g['priority'] = '*P';
     $g['ds'] = 'Databáze';
 		$g['subject'] = 'Předmět';
-		//$g['author'] = 'Autor';
-		//$g['date'] = 'Datum';
+		$g['stateInfo'] = 'Stav';
 
 		$this->setGrid ($g);
 	}
@@ -67,13 +65,30 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 	public function renderRow ($item)
 	{
 		$listItem ['pk'] = $item ['ndx'];
+    $listItem ['ds'] = $item['dsName'];
 
 		$listItem ['subject'] = [['text' => $item['subject'], 'class' => 'block']];
-		$listItem ['author'] = $item['authorName'];
-		$listItem ['date'] = Utils::datef($item['dateCreate'], '%S%t');
+		//$listItem ['author'] = $item['authorName'];
+		//$listItem ['date'] = Utils::datef($item['dateCreate'], '%S%t');
+
+		$listItem ['stateInfo'] = [];
+		$this->table->ticketStateInfo($item, $listItem ['stateInfo']);
+
 		$listItem ['ticketId'] = $item['ticketId'];
 
-    $listItem ['ds'] = $item['dsName'];
+
+		$ticketState = $this->app()->cfgItem('helpdesk.ticketStates.'.$item['ticketState'], NULL);
+		if ($ticketState)
+			$listItem ['icon'] = $ticketState['icon'];
+
+		$ticketPriority = $this->app()->cfgItem('helpdesk.ticketPriorities.'.$item['priority'], NULL);
+		if ($ticketPriority)
+		{
+			if (isset($ticketPriority['icon']))
+				$listItem ['priority'] = ['text' => '', 'title' => $ticketPriority['fn'], 'icon' => $ticketPriority['icon'], ];
+			else
+				$listItem ['priority'] = ['text' => '', 'title' => $ticketPriority['fn'], ];
+		}
 
 		return $listItem;
 	}
@@ -121,12 +136,12 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 		{
 			array_push ($q, ' AND (');
 			array_push ($q, ' [tickets].[subject] LIKE %s', '%'.$fts.'%');
-			array_push ($q, ' OR [text] LIKE %s', '%'.$fts.'%');
+			array_push ($q, ' OR [tickets].[text] LIKE %s', '%'.$fts.'%');
+			array_push ($q, ' OR [tickets].[ticketId] LIKE %s', $fts.'%');
 			array_push ($q, ')');
 		}
 
-		//$this->queryMain ($q, 'items.', ['!ISNULL([dateDeadline]) DESC', '[dateDeadline]', '[datePlanBegin]', '[ndx]']);
-		$this->queryMain ($q, 'tickets.', ['[ndx]']);
+		$this->queryMain ($q, 'tickets.', ['[proposedDeadline]', '[priority]', '[dateTouch]']);
 
 		$this->runQuery ($q);
 	}
@@ -137,7 +152,7 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 			return;
 
 		$this->classification = UtilsBase::loadClassification ($this->table->app(), $this->table->tableId(), $this->pks);
-		//$this->linkedPersons = UtilsBase::linkedPersons ($this->app(), $this->table, $this->pks);
+		$this->linkedPersons = UtilsBase::linkedPersons ($this->app(), $this->table, $this->pks);
 	}
 
 	public function createPanelContentQry (TableViewPanel $panel)

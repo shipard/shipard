@@ -1,7 +1,8 @@
 {
 	"admin": {
 		"viewers": {
-			"helpdesk.core.sections": {"default": 2}
+			"helpdesk.core.sections": {"default": 2},
+			"helpdesk.core.ticketStates": {"default": 2}
 		}
 	},
 	"pwuser": {
