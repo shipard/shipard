@@ -5,8 +5,8 @@
     "icons":"glyphish",
     "css":"ordinary",
     "integrity":{
-      "sha384":"72cc77eb95a043f7796059588be01d85e951ace3600ebfd6bfe383d5b3c12d71ca8bb903890afb967c1c2eaeda1a723d",
-      "md5":"c823f8f91894fc01990529f95ade3e1f"
+      "sha384":"ff471629304ec52c52c92a648c11b076590d5cf7e721f2459545fb30578050c8c64357870226e7b6286d85dfa705aacf",
+      "md5":"41c02397459d617b7e3c538cfd9b191e"
     }
   },
   "carbon-fibre":{
@@ -15,8 +15,8 @@
     "icons":"glyphish",
     "css":"carbon-fibre",
     "integrity":{
-      "sha384":"84f2dbdce3c95cad4d01c413d47216296935afe6f3220daa7f0d7d94829fb08696dbeaec63c9ad437fa048b8059b9be1",
-      "md5":"d73c69671039133a6c5e5d610c7126f2"
+      "sha384":"c415384b7922115fa85e0068066f108695d1d81d70a537cf5a8f322cd9bb65d2b1f2c4d525819ba72b26b1d8ea54a365",
+      "md5":"6d35361d32b39c62c93b34e94cf2d4d2"
     }
   },
   "elegant":{
@@ -25,8 +25,8 @@
     "icons":"glyphish",
     "css":"elegant",
     "integrity":{
-      "sha384":"69a9e23fbb1f41f756ed46cf8dbabe70d6d68dbb66bc1c416873dd3fc3d86f8b1e0f8437179530c177aae761f8222331",
-      "md5":"153866962a29d32eb64ab948435c86b9"
+      "sha384":"df3063b6745acb703d82d6f926e3b5fbb84c454c3bc222afde62c11712aeb7f6f61f3084318e83caa0e31e7700401b67",
+      "md5":"525f7f2eb8dcdfcd3113205b0930c188"
     }
   },
   "elegant-1969":{
@@ -35,8 +35,8 @@
     "icons":"glyphish",
     "css":"elegant-1969",
     "integrity":{
-      "sha384":"5ae031b9819d23609c247dad5bc21c7ac7d421a17d549bef5810662d0edcd12dd4298b2b21978e22b06a9df81dcfb034",
-      "md5":"3a464ef86a21ddc0e129326ae56ae755"
+      "sha384":"322c1ef09c2a9a2316cd68a45f6a97803d619469ebb73197594db4c0e443bed1d3b97deaa25c89035376f5fb33568ea9",
+      "md5":"8749542930dc1a0bf8949e89fd92e7cb"
     }
   },
   "elegant-raptors":{
@@ -45,8 +45,8 @@
     "icons":"glyphish",
     "css":"elegant-raptors",
     "integrity":{
-      "sha384":"3f6f4df4aceabb5ed7e5959c6a6123c041991339a0407534e4ad93ccc6033aa8956bfdcec96db76a9db90740acd6fe9f",
-      "md5":"dd24b66b7852f92f912477d35f626367"
+      "sha384":"f1323ae5199d20759902ece472364351798b279ff36017f4792507fafeadadb09ab347a52ccb5ebf9014e5a74e1f01b7",
+      "md5":"25b47ac5464939cf391b31615d8cf897"
     }
   },
   "metro":{
@@ -55,8 +55,8 @@
     "icons":"glyphish",
     "css":"metro",
     "integrity":{
-      "sha384":"0c00723cbd59df6fbc1321d803be8df2727a2c936fcb29ca5f0cb7ba192d49211306768ffc338a85a461fac1aa8f4751",
-      "md5":"686bcfc916247ed28a5af34e96b22c45"
+      "sha384":"8a3bf696316aadee205317045c448989de589f0e3e962c3481ca300bb25e3a2e2a1d44ea82ffb6c422b289dbaf1e9a3e",
+      "md5":"655f8d61bf8dee3603d3d4c35de32fc0"
     }
   },
   "rainbow6":{
@@ -65,8 +65,8 @@
     "icons":"glyphish",
     "css":"rainbow6",
     "integrity":{
-      "sha384":"3d203bff67f90a4254267794122f6d5bb855d02180e7d82afa03b07b59e15568884da85a2ac213a11e09676aad729071",
-      "md5":"8f758c96b093609208db2429ff310dd2"
+      "sha384":"358d24e46c3c7737e05f08ec1ce43741c1ca8348455b3c9e9ee76f96d2ad65e7deada309072282a7e2c1c2c2a27cef8a",
+      "md5":"11f6a0b0bd032ece24d9bd862397a8a4"
     }
   },
   "shipard":{
@@ -75,8 +75,8 @@
     "icons":"glyphish",
     "css":"shipard",
     "integrity":{
-      "sha384":"4666a2231398ed84017875d8ff33b5adc0a8bf7cb626ec675695f1ac5b26dc6b99b4afc65d7323748e4337f28bf1e2cb",
-      "md5":"7d210be39a5b3d5b06550197ee4f23be"
+      "sha384":"2264cbc9ef8655698fecdfbf62e5ebfb83174aca0c727a82968d32eb4fc46c56fe98f24e2a6e88385c3a5c15bd7346ad",
+      "md5":"46a7f679895ea1805312a7a6bf0311a2"
     }
   },
   "shipard1":{
@@ -85,8 +85,8 @@
     "icons":"glyphish",
     "css":"shipard1",
     "integrity":{
-      "sha384":"71a962548fc72a89d6f029a1ac636dce4cae96c6d77a6c5cbf92b70adfdf6a8e4db18cb6502652608530c9e6d020b887",
-      "md5":"6873f37ce5940fde64ea4a514ec6bd19"
+      "sha384":"3a648b7ba0007ebbc679972f3b0a10e896b23d64f0c7c74fa29eef5565b9e33103dad2c7a7c263e12fbf37baa9a420e5",
+      "md5":"6d3f92bee955783a8d3f31441eee3773"
     }
   },
   "md-default":{
@@ -103,8 +103,8 @@
     "icons":"glyphish",
     "css":"lime",
     "integrity":{
-      "sha384":"a5fe294713076aec7c23f6511fb5513854440509881294d0e1bc0253ab91a6c811eebdc6400b16f0372237e018d66de1",
-      "md5":"241b834c455e35cec320bdb465f37442"
+      "sha384":"a95f6f76e4dafc7722f4e29fde2c4ce439886cf846c35fc3ded3a2642aae915508324a15d788670f5aa9418ed6d1c0f7",
+      "md5":"d97fb32b2e0a8e1b7d730877c426b342"
     }
   },
   "md-bluegray":{

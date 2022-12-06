@@ -202,7 +202,15 @@ table.default thead tr th {text-align: left; border: 1px solid #909090; padding:
 table.stripped tbody tr:nth-child(even) {background-color: #F0F0F0 !important;}
 table.stripped tbody tr:nth-child(odd) {background-color: #FAFAFA !important;}
 
-td.e10-icon, th.e10-icon {width: 2em; text-align: center !important;}
+td.e10-icon, th.e10-icon {width: 2em; text-align: center !important; white-space: pre;}
+
+td.e10-icon {
+	>span>span.e10-ntf-badge {
+		position: absolute;
+		margin-left: -1ex;
+		margin-top: -0.9rem;
+	}
+}
 
 table.compact {
 	border-collapse: collapse;

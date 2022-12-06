@@ -118,6 +118,9 @@ class TableViewGrid extends \Shipard\Viewer\TableView
 				$c .= $this->app()->ui()->icon($listItem ['icon']);
 			}
 
+			if (isset ($listItem['rowNtfBadge']))
+				$c .= ' '.$listItem['rowNtfBadge'];
+
 			$c .= '</td>';
 		}
 
