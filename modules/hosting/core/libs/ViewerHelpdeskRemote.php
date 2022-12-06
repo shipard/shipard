@@ -21,6 +21,8 @@ class ViewerHelpdeskRemote extends TableViewGrid
 	var $linkedPersons = [];
 	var $notifications = [];
 
+	var $dataSourceNdx = 0;
+
 	public function init ()
 	{
 		parent::init();
@@ -44,7 +46,10 @@ class ViewerHelpdeskRemote extends TableViewGrid
     {
       $dsRecData = $this->db()->query('SELECT * FROM [hosting_core_dataSources] WHERE [gid] = %s', $dsId)->fetch();
       if ($dsRecData)
+			{
         $this->addAddParam ('dataSource', $dsRecData['ndx']);
+				$this->dataSourceNdx = $dsRecData['ndx'];
+			}
     }
 
     $this->tableSections = $this->app->table ('helpdesk.core.sections');
@@ -122,6 +127,9 @@ class ViewerHelpdeskRemote extends TableViewGrid
 		array_push ($q, ' FROM [helpdesk_core_tickets] AS [tickets]');
 		array_push ($q, ' LEFT JOIN [e10_persons_persons] AS [authors] ON [tickets].[author] = [authors].ndx');
 		array_push ($q, ' WHERE 1');
+
+		// -- data source
+		array_push ($q, ' AND [tickets].[dataSource] = %i', $this->dataSourceNdx);
 
 		// -- special queries
 		$qv = $this->queryValues ();
