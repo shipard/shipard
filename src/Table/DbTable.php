@@ -726,8 +726,11 @@ class DbTable
 		if (isset ($recInfo['recidOwner']))
 			$logEvent['recidOwner'] = $recInfo['recidOwner'];
 
-		$logData = array ('recData' => $recData,
-			'lists' => $this->loadLists ($recData));
+		$logData = [
+			'recData' => $recData,
+			'lists' => $this->loadLists ($recData)
+		];
+		Json::polish($logData['recData']);
 		$logEvent ['eventData'] = json_encode ($logData);
 
 		$this->dbmodel->db->query ('INSERT INTO [e10_base_docslog]', $logEvent);
