@@ -19,11 +19,13 @@ class ViewerHelpdeskRemote extends TableViewGrid
 
 	var $classification = [];
 	var $linkedPersons = [];
-
+	var $notifications = [];
 
 	public function init ()
 	{
 		parent::init();
+
+		$this->loadNotifications ();
 
 		$this->enableDetailSearch = TRUE;
     $this->type = 'form';
@@ -64,6 +66,11 @@ class ViewerHelpdeskRemote extends TableViewGrid
 	{
 		$listItem ['pk'] = $item ['ndx'];
 
+		if (isset($this->notifications[$item ['ndx']]))
+		{
+			$listItem['rowNtfBadge'] = "<span style='display: relative'><span class='e10-ntf-badge' style='display: inline;'>".count($this->notifications[$item ['ndx']])."</span></span>";
+		}
+
 		$listItem ['subject'] = [['text' => $item['subject'], 'class' => 'block']];
 		//$listItem ['author'] = $item['authorName'];
 		//$listItem ['date'] = Utils::datef($item['dateCreate'], '%S%t');
@@ -82,9 +89,9 @@ class ViewerHelpdeskRemote extends TableViewGrid
 		if ($ticketPriority)
 		{
 			if (isset($ticketPriority['icon']))
-				$listItem ['priority'] = ['text' => '', 'title' => $ticketPriority['fn'], 'icon' => $ticketPriority['icon'], ];
+				$listItem ['priority'] = ['text' => '', 'title' => $ticketPriority['sn'], 'icon' => $ticketPriority['icon'], ];
 			else
-				$listItem ['priority'] = ['text' => '', 'title' => $ticketPriority['fn'], ];
+				$listItem ['priority'] = ['text' => '', 'title' => $ticketPriority['sn'], ];
 		}
 
 		return $listItem;
@@ -189,4 +196,14 @@ class ViewerHelpdeskRemote extends TableViewGrid
 
     $toolbar[] = $addButton;
   }
+
+	protected function loadNotifications ()
+	{
+		$q = 'SELECT * FROM e10_base_notifications WHERE state = 0 AND personDest = %i AND tableId = %s';
+		$rows = $this->db()->query ($q, $this->app()->userNdx(), $this->table->tableId());
+		foreach ($rows as $r)
+		{
+			$this->notifications[$r['recIdMain']][] = $r->toArray();
+		}
+	}
 }

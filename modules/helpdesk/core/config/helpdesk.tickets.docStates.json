@@ -5,7 +5,7 @@
 		"icon": "system/docStateConcept"
 	},
 	"1200": {
-		"stateName": "K řešení", "actionName": "K řešení", "logName": "popžadavek k řešení", "notify": 2,
+		"stateName": "K řešení", "actionName": "K řešení", "logName": "požadavek k řešení", "notify": 2,
 		"stateStyle": "confirmed", "mainState": 1, "readOnly": 1, "goto": [4000, 8000, 9800],
 		"icon": "system/docStateConfirmed"
 	},
@@ -16,7 +16,7 @@
 	},
 	"8000": {
 		"stateName": "V opravě", "actionName": "Opravit", "logName": "editace problému",
-		"stateStyle": "edit",  "mainState": 0, "goto": [1200, 4000, 9000, 9800],
+		"stateStyle": "edit",  "mainState": 0, "goto": [1200, 4000, 9800],
 		"icon": "system/docStateEdit"
 	},
 	"9800": {

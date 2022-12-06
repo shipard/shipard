@@ -4,8 +4,9 @@ namespace helpdesk\core;
 use \Shipard\Form\TableForm, \Shipard\Table\DbTable;
 use \Shipard\Viewer\TableViewDetail;
 use \Shipard\Utils\Utils;
+use \Shipard\Utils\Json;
 use \e10\base\libs\UtilsBase;
-
+use \translation\dicts\e10\base\system\DictSystem;
 
 /**
  * class TableTickets
@@ -13,6 +14,7 @@ use \e10\base\libs\UtilsBase;
 class TableTickets extends DbTable
 {
 	CONST ewlNone = 0, ewlHours = 1, ewlDays = 2;
+	CONST chiChangedColumns = 'changedColumns', chiLabelRemove = 'labelRemove', chiLabelAdd = 'labelAdd';
 
 	public function __construct ($dbmodel)
 	{
@@ -27,22 +29,22 @@ class TableTickets extends DbTable
 			$recData['ticketId'] = Utils::createToken(5, FALSE, TRUE);
 		}
 
-		if (!isset($recData ['dateTouch']) || utils::dateIsBlank($recData ['dateTouch']) || !isset($recData['activateCnt']) || !$recData['activateCnt'])
+		if (!isset($recData ['dateTouch']) || Utils::dateIsBlank($recData ['dateTouch']) || !isset($recData['activateCnt']) || !$recData['activateCnt'])
 			$recData ['dateTouch'] = new \DateTime();
 
 		if (!isset($recData ['author']) || !$recData ['author'])
 			$recData ['author'] = $this->app()->userNdx();
 
-		if ($this->recData['estimatedWorkLen'] === TableTickets::ewlNone)
+		if ($recData['estimatedWorkLen'] === TableTickets::ewlNone)
 		{
 			$recData['estimatedManHours'] = 0;
 			$recData['estimatedManDays'] = 0;
 		}
-		elseif ($this->recData['estimatedWorkLen'] === TableTickets::ewlHours)
+		elseif ($recData['estimatedWorkLen'] === TableTickets::ewlHours)
 		{
 			$recData['estimatedManDays'] = intval($recData['estimatedManHours'] / 8) + 1;
 		}
-		elseif ($this->recData['estimatedWorkLen'] === TableTickets::ewlDays)
+		elseif ($recData['estimatedWorkLen'] === TableTickets::ewlDays)
 		{
 			$recData['estimatedManHours'] = intval($recData['estimatedManDays'] * 8);
 		}
@@ -164,8 +166,115 @@ class TableTickets extends DbTable
 		}
 	}
 
-	public function addSystemComment($ticketNdx, $data)
+	public function docsLog ($ndx)
 	{
+		$recData = parent::docsLog($ndx);
+		if ($recData['activateCnt'] === 1)
+			$this->doNotify($recData, 0, NULL);
+		else
+			$this->addSystemComment($ndx, $recData);
+		return $recData;
+	}
+
+	public function doNotify($docRecData, $reason = 0, $commentRecData = NULL)
+	{
+		$ain = new \helpdesk\core\libs\AddTicketNotification($this->app());
+		$ain->setDocument($this, $docRecData, $reason, $commentRecData);
+		$ain->run();
+	}
+
+	public function addSystemComment($ticketNdx, $recData)
+	{
+		if ($recData['docState'] === 8000)
+			return; // edit is disable
+
+		$q = [];
+		array_push($q, 'SELECT * FROM [e10_base_docslog]');
+		array_push($q, ' WHERE [tableid] = %s', $this->tableId());
+		array_push($q, ' AND [recid] = %i', $ticketNdx);
+		array_push($q, ' AND [eventType] = %i', 0);
+		array_push($q, ' ORDER BY ndx DESC');
+		array_push($q, ' LIMIT 2');
+
+		$lastEvent = NULL;
+		$prevEvent =
+		$first = 1;
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			if ($first)
+				$lastEvent = $r->toArray();
+			else
+				$prevEvent = $r->toArray();
+			$first = 0;
+		}
+
+		if (!$lastEvent || !$prevEvent)
+			return;
+
+		$lastEventData = Json::decode($lastEvent['eventData']);
+		$prevEventData = Json::decode($prevEvent['eventData']);
+
+		$eventData = [
+			'changes' => [],
+			'prevEventNdx' => $prevEvent['ndx'], 'lastEventNdx' => $lastEvent['ndx'],
+			'prevEvent' => $prevEventData, 'lastEvent' => $lastEventData,
+		];
+
+		$newComment = [
+			'ticket' => $ticketNdx, 'systemComment' => 1,
+			'author' => $this->app()->userNdx(),
+			'dateCreate' => new \DateTime(), 'dateTouch' => new \DateTime(),
+			'activateCnt' => 1,
+			'docState' => 4000, 'docStateMain' => 2,
+		];
+
+		$this->checkChanges($prevEventData, $lastEventData, $eventData['changes']);
+
+		if (!count($eventData['changes']))
+			return;
+
+		$newComment ['text'] = Json::lint($eventData);
+
+		$this->db()->query('INSERT INTO [helpdesk_core_ticketsComments] ', $newComment);
+		$newCommentNdx = intval ($this->db()->getInsertId ());
+		$commentRecData = $this->app()->loadItem($newCommentNdx, 'helpdesk.core.ticketsComments');
+		$this->doNotify($recData, 1, $commentRecData);
+	}
+
+	protected function checkChanges($prev, $last, &$changes)
+	{
+		// -- columns
+		$ignoredCols = [
+			'ndx', 'ticketId', 'dateCreate', 'dateTouch', 'activateCnt', 'docStateMain',
+		];
+		foreach ($last['recData'] as $colId => $colValue)
+		{
+			if (!isset($prev['recData'][$colId]))
+				continue;
+			if (in_array($colId, $ignoredCols))
+				continue;
+			if ($colValue != $prev['recData'][$colId])
+			{
+				$changes[self::chiChangedColumns][$colId] = ['valueFrom' => $prev['recData'][$colId], 'valueTo' => $colValue];
+			}
+		}
+
+		// -- labels
+		foreach ($prev['lists']['clsf']['helpdeskTopicsTags'] as $oldLabel)
+		{ // removed
+			$exist = Utils::searchArray($last['lists']['clsf']['helpdeskTopicsTags'], 'dstRecId', $oldLabel['dstRecId']);
+			if ($exist)
+				continue;
+			$changes[self::chiLabelRemove][] = ['ndx' => $oldLabel['dstRecId'], 'title' => $oldLabel['title']];
+		}
+		foreach ($last['lists']['clsf']['helpdeskTopicsTags'] as $newLabel)
+		{ // new
+			$exist = Utils::searchArray($prev['lists']['clsf']['helpdeskTopicsTags'], 'dstRecId', $newLabel['dstRecId']);
+			if ($exist)
+				continue;
+			$changes[self::chiLabelAdd][] = ['ndx' => $newLabel['dstRecId'], 'title' => $newLabel['title']];
+		}
 	}
 }
 
@@ -264,6 +373,22 @@ class FormTicket extends TableForm
 
     return parent::columnLabel ($colDef, $options);
   }
+
+	public function createToolbar ()
+	{
+		if (!$this->readOnly && $this->recData['source'] == 0)
+			return parent::createToolbar();
+
+		$b = [
+			'type' => 'action', 'action' => 'saveform', 'text' => DictSystem::text(DictSystem::diBtn_Seen), 'docState' => '99000',
+			'style' => 'stateSave', 'stateStyle' => 'done', 'icon' => 'icon-eye', 'buttonClass' => 'btn-default'
+		];
+
+		$toolbar [] = $b;
+
+		$toolbar = array_merge ($toolbar, parent::createToolbar());
+		return $toolbar;
+	}
 }
 
 
