@@ -69,6 +69,8 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 		$listItem ['pk'] = $item ['ndx'];
     $listItem ['ds'] = $item['dsName'];
 
+		$listItem ['_options']['cellClasses']['stateInfo'] = 'lh16';
+
 		if (isset($this->notifications[$item ['ndx']]))
 		{
 			$listItem['rowNtfBadge'] = "<span style='display: relative'><span class='e10-ntf-badge' style='display: inline;'>".count($this->notifications[$item ['ndx']])."</span></span>";
@@ -137,6 +139,14 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 			array_push ($q, ')');
 		}
 
+		// -- priority
+		if (isset($qv['ticketPriority']))
+			array_push ($q, ' AND [tickets].[priority] IN %in', array_keys($qv['ticketPriority']));
+
+		// -- data sources
+		if (isset($qv['ds']))
+			array_push ($q, ' AND [tickets].[dataSource] IN %in', array_keys($qv['ds']));
+
 		// -- fulltext
 		if ($fts != '')
 		{
@@ -147,7 +157,7 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 			array_push ($q, ')');
 		}
 
-		$this->queryMain ($q, 'tickets.', ['[proposedDeadline]', '[priority]', '[dateTouch]']);
+		$this->queryMain ($q, 'tickets.', ['-[proposedDeadline] DESC', '[priority]', '[dateTouch]']);
 
 		$this->runQuery ($q);
 	}
@@ -167,6 +177,17 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 
 		// -- tags
 		UtilsBase::addClassificationParamsToPanel($this->table, $panel, $qry);
+
+		// -- priority
+		$ticketPriorities = $this->table->columnInfoEnum('priority');
+		$this->qryPanelAddCheckBoxes($panel, $qry, $ticketPriorities, 'ticketPriority', 'Důležitost');
+
+		// -- data sources
+		$qds[] = 'SELECT * FROM hosting_core_dataSources AS ds';
+		array_push ($qds, ' WHERE [helpdeskMode] != %i', 0);
+		array_push ($qds, ' ORDER BY ds.shortName');
+		$dss = $this->db()->query ($qds)->fetchPairs ('ndx', 'shortName');
+		$this->qryPanelAddCheckBoxes($panel, $qry, $dss, 'ds', 'Databáze');
 
 		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}

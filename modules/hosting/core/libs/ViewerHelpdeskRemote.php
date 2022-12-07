@@ -71,6 +71,8 @@ class ViewerHelpdeskRemote extends TableViewGrid
 	{
 		$listItem ['pk'] = $item ['ndx'];
 
+		$listItem ['_options']['cellClasses']['stateInfo'] = 'lh16';
+
 		if (isset($this->notifications[$item ['ndx']]))
 		{
 			$listItem['rowNtfBadge'] = "<span style='display: relative'><span class='e10-ntf-badge' style='display: inline;'>".count($this->notifications[$item ['ndx']])."</span></span>";
@@ -141,6 +143,11 @@ class ViewerHelpdeskRemote extends TableViewGrid
 			array_push ($q, ')');
 		}
 
+		// -- priority
+		if (isset($qv['ticketPriority']))
+			array_push ($q, ' AND [tickets].[priority] IN %in', array_keys($qv['ticketPriority']));
+
+
 		// -- fulltext
 		if ($fts != '')
 		{
@@ -151,7 +158,7 @@ class ViewerHelpdeskRemote extends TableViewGrid
 			array_push ($q, ')');
 		}
 
-		$this->queryMain ($q, 'tickets.', ['[proposedDeadline]', '[priority]', '[dateTouch]']);
+		$this->queryMain ($q, 'tickets.', ['-[proposedDeadline] DESC', '[priority]', '[dateTouch]']);
 
 		$this->runQuery ($q);
 	}
@@ -171,6 +178,10 @@ class ViewerHelpdeskRemote extends TableViewGrid
 
 		// -- tags
 		UtilsBase::addClassificationParamsToPanel($this->table, $panel, $qry);
+
+		// -- priority
+		$ticketPriorities = $this->table->columnInfoEnum('priority');
+		$this->qryPanelAddCheckBoxes($panel, $qry, $ticketPriorities, 'ticketPriority', 'Důležitost');
 
 		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}

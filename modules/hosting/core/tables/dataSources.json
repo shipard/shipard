@@ -35,7 +35,8 @@
 		{"id": "helpdeskMode", "name": "Mód helpdesku", "type": "enumInt",
 		  "enumValues": {
 			  "0": "Není",
-			  "1": "Hosting"
+			  "1": "Hosting",
+				"2": "Interní"
 		  }
 	  },
 
