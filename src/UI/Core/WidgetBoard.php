@@ -144,6 +144,10 @@ class WidgetBoard extends \Shipard\UI\Core\WidgetPane
 						if ($tab['text'] !== '')
 							$c .= '<span>' . '&nbsp;' . utils::es($tab['text']) . '</span>';
 					}
+
+					if (isset($tab['ntfBadgeId']))
+						$c .= "<span class='e10-ntf-badge' id='{$tab['ntfBadgeId']}' style='display:none; left: auto;'></span>";
+
 					$c .= '</li>';
 				}
 				$c .= '</ul>';

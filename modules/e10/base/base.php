@@ -2386,6 +2386,7 @@ class NotificationCentre extends \Shipard\UI\Core\WidgetPane
 		// -- hosting - TODO: move to better place
 		if ($this->app->model()->module ('hosting.core') !== FALSE)
 		{
+			// -- data sources
 			$badges['ntf-badge-hosting-dbs'] = 0;
 
 			$q = [];
@@ -2401,6 +2402,15 @@ class NotificationCentre extends \Shipard\UI\Core\WidgetPane
 				$badges['ntf-badge-unread-ds-'.$r['gid']] = $r['cntUnread'];
 				$badges['ntf-badge-todo-ds-'.$r['gid']] = $r['cntTodo'];
 			}
+
+			// -- helpdesk - total
+			$q = [];
+			$q[] = 'SELECT COUNT(*) AS [cnt] ';
+			array_push($q, ' FROM e10_base_notifications AS ntf');
+			array_push($q, ' WHERE tableId = %s', 'helpdesk.core.tickets', ' AND state = 0 AND ntf.personDest = %s', $this->app()->userNdx());
+			$hdc = $this->db()->query($q)->fetch();
+
+			$badges['ntf-badge-hhdsk-total'] = intval($hdc['cnt'] ?? 0);
 		}
 
 		return $badges;

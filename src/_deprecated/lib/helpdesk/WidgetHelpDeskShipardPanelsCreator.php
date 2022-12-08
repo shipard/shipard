@@ -21,7 +21,8 @@ class WidgetHelpDeskShipardPanelsCreator extends \Shipard\Base\BaseObject
     $p = [
       'name' => 'Helpdesk Shipard', 'icon' => $icon, 'order' => $order,
       'fullsize' => 1,
-      'rows' => ['main' => ['order' => 1], 'class' => 'full']
+      'rows' => ['main' => ['order' => 1], 'class' => 'full'],
+      "ntfBadgeId" => "ntf-badge-hhdsk-total",
     ];
     $dashboard['panels'][$panelId] = $p;
 
