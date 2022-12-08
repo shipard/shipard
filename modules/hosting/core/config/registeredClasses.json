@@ -3,7 +3,8 @@
 		"hosting-user-summary-upload": {"classId": "hosting.core.libs.HostingUserSummaryUpload"},
 		"hosting-server-info-upload": {"classId": "hosting.core.libs.ServerInfoReceiver"},
 		"get-new-data-source-request": {"classId": "hosting.core.libs.api.GetNewDataSourceResponse"},
-		"confirm-new-data-source-request": {"classId": "hosting.core.libs.api.ConfirmNewDataSourceResponse"}
+		"confirm-new-data-source-request": {"classId": "hosting.core.libs.api.ConfirmNewDataSourceResponse"},
+		"hosting-helpdesk-notifications": {"classId": "hosting.core.libs.api.GetHelpdeskNotifications"}
 	},
 	"feed": {
 		"loginScreen": {

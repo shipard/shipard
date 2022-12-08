@@ -154,7 +154,7 @@ class TableTickets extends DbTable
 		}
 		elseif ($recData['estimatedWorkLen'] === TableTickets::ewlDays)
 		{
-			$info [] = ['text' => Utils::nf($recData['estimatedManDays'], 0).' dnů', 'title' => 'Odhadovaná náročnost v hodinách', 'icon' => 'user/keyboard', 'class' => 'label label-warning'];
+			$info [] = ['text' => Utils::nf($recData['estimatedManDays'], 0).' dnů', 'title' => 'Odhadovaná náročnost ve dnech', 'icon' => 'user/keyboard', 'class' => 'label label-warning'];
 		}
 
 		if ($recData['proposedPrice'] > 0.0)

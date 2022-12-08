@@ -353,10 +353,13 @@ class ViewTicketsComments extends TableView
 	{
 		$c = '';
 
-		$c .= "<div class='e10-pane e10-pane-info e10-pane-table pageText'>";
-		$this->textRenderer->renderAsArticle ($this->ticketRecData ['text'], $this->table);
-		$c .= $this->textRenderer->code;
-		$c .= '</div>';
+		if ($this->ticketRecData ['text'] !== '')
+		{
+			$c .= "<div class='e10-pane e10-pane-info e10-pane-table pageText'>";
+			$this->textRenderer->renderAsArticle ($this->ticketRecData ['text'], $this->table);
+			$c .= $this->textRenderer->code;
+			$c .= '</div>';
+		}
 
     $addButtons = [];
 
@@ -370,7 +373,7 @@ class ViewTicketsComments extends TableView
       'data-addParams' => $addParams,
     ];
 
-    $c .= "<div class='bb1 bt1 padd5 e10-bg-t6 pt1 pb1 mb1'>";
+    $c .= "<div class='e10-pane-core e10-pane-info padd5 e10-bg-t6 pt1 pb1 mb1'>";
     $c .= $this->app()->ui()->composeTextLine($addButtons);
     $c .= '</div>';
 

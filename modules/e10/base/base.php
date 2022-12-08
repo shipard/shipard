@@ -2412,8 +2412,40 @@ class NotificationCentre extends \Shipard\UI\Core\WidgetPane
 
 			$badges['ntf-badge-hhdsk-total'] = intval($hdc['cnt'] ?? 0);
 		}
+		else
+		{ // hosting helpdesk notifications
+			if ($this->app()->hasRole('hdhstng'))
+				$this->getHostingHelpdeskNotifications($badges);
+		}
 
 		return $badges;
+	}
+
+	function getHostingHelpdeskNotifications(&$badges)
+	{
+		$cfgServer = Utils::loadCfgFile(__SHPD_ETC_DIR__.'/server.json');
+		if (!$cfgServer)
+      return;
+
+		$dsId = $this->app()->cfgItem ('dsid', 0);
+		$userLoginHash = md5(strtolower(trim($this->app()->user()->data('login'))));
+
+		$url = 'https://'.$cfgServer['hostingDomain'].'/api/objects/call/hosting-helpdesk-notifications?dsId='.$dsId.'&userLoginHash='.$userLoginHash;
+
+		$ce = new \lib\objects\ClientEngine($this->app());
+		$ce->apiKey = $cfgServer['hostingApiKey'];
+		$result = $ce->apiCall($url);
+
+		if (isset($result['success']) && $result['success'] === 1)
+		{
+			if (isset($result['badges']))
+			{
+				foreach ($result['badges'] as $bk => $bv)
+				{
+					$badges[$bk] = $bv;
+				}
+			}
+		}
 	}
 }
 
