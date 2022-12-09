@@ -1,8 +1,32 @@
 {
-    "tables/helpdesk.core.tickets":{
+  "tables/helpdesk.core.tickets": {
 		"fa5": "fa-clipboard-list",
 		"fa6pro": "fa-clipboard-list",
 		"bsi": "bi-clipboard2-check",
 		"mdi": "filter_alt"
+	},
+  "tickets/stateConcept": {
+		"fa5": "fa-download",
+		"fa6pro": "fa-download",
+		"bsi": "bi-download",
+		"mdi": "download"
+	},
+  "tickets/stateValid": {
+		"fa5": "fa-sync-alt",
+		"fa6pro": "fa-sync-alt",
+		"bsi": "bi-arrow-repeat",
+		"mdi": "cycle"
+	},
+  "tickets/stateDone": {
+		"fa5": "fa-check-square",
+		"fa6pro": "fa-check-square",
+		"bsi": "bi-check-square",
+		"mdi": "task_alt"
+	},
+  "tickets/stateDeleted": {
+		"fa5": "fa-trash",
+		"fa6pro": "fa-trash",
+		"bsi": "bi-trash",
+		"mdi": "delete"
 	}
 }

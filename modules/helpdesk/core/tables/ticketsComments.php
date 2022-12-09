@@ -207,7 +207,7 @@ class ViewTicketsComments extends TableView
 			{
 				$old = $this->app()->cfgItem('helpdesk.ticketStates.'.$data['changes']['changedColumns']['ticketState']['valueFrom']);
 				$new = $this->app()->cfgItem('helpdesk.ticketStates.'.$data['changes']['changedColumns']['ticketState']['valueTo']);
-				$c .= '- Změna stavu požadavku z **'.$old['sn'].'**'.' na **'.$new['sn'].'**'."\n";
+				$c .= '- Změna stavu požadavku z **'.($old['sn'] ?? '---') .'**'.' na **'.($new['sn'] ?? '').'**'."\n";
 			}
 			if (isset($data['changes']['changedColumns']['priority']))
 			{

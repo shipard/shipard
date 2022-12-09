@@ -62,6 +62,7 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 		$g['stateInfo'] = 'Stav';
 
 		$this->setGrid ($g);
+		$this->setMainQueries ();
 	}
 
 	public function renderRow ($item)
@@ -84,10 +85,13 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 
 		$listItem ['ticketId'] = $item['ticketId'];
 
-
-		$ticketState = $this->app()->cfgItem('helpdesk.ticketStates.'.$item['ticketState'], NULL);
-		if ($ticketState)
-			$listItem ['icon'] = $ticketState['icon'];
+		if (!$this->docState)
+			$this->docState = $this->table->getDocumentState ($item);
+		if ($this->docState)
+		{
+			$docStateIcon = $this->table->getDocumentStateInfo ($this->docState ['states'], $item, 'styleIcon');
+			$listItem ['icon'] = $docStateIcon;
+		}
 
 		$ticketPriority = $this->app()->cfgItem('helpdesk.ticketPriorities.'.$item['priority'], NULL);
 		if ($ticketPriority)

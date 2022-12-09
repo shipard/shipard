@@ -233,6 +233,11 @@ class TableTickets extends DbTable
 
 		if (!count($eventData['changes']))
 			return;
+		if (count($eventData['changes']) === 1 &&
+				isset($eventData['changes']['changedColumns']['docState']) &&
+				count($eventData['changes']['changedColumns']) === 1 &&
+				$eventData['changes']['changedColumns']['docState']['valueTo'] === 4000)
+			return;
 
 		$newComment ['text'] = Json::lint($eventData);
 
