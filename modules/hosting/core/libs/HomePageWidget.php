@@ -327,7 +327,7 @@ class HomePageWidget extends WidgetBoard
 			$tabs['viewer-mode-devProjects'] = ['text' => ' Projekty', 'icon' => 'user/code', 'action' => 'viewer-mode-devProjects'];
 
 		if ($this->app()->hasRole('hstngha'))
-			$tabs['viewer-mode-helpdesk'] = ['text' => 'Helpdesk', 'icon' => 'tables/helpdesk.core.tickets', 'action' => 'viewer-mode-helpdesk'];
+			$tabs['viewer-mode-helpdesk'] = ['text' => 'Helpdesk', 'icon' => 'tables/helpdesk.core.tickets', 'action' => 'viewer-mode-helpdesk', 'ntfBadgeId' => "ntf-badge-hhdsk-total",];
 
 		$tabs['viewer-mode-user'] = ['text' => ' '.$userInfo['name'], 'icon' => 'system/iconUser', 'action' => 'viewer-mode-user'];
 
