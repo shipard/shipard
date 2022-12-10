@@ -2,7 +2,7 @@
 	"name": "{{data.device.recData.id}}",
 	"hostname": "{{data.device.managementIp}}",
 	"community": "public",
-	"update_every": 10,
+	"update_every": 30,
 	"options": {
 		"timeout": 20000,
 		"version": 1
@@ -32,6 +32,17 @@
 					"multiplier": -8,
 					"divisor": 1024
 				}
+			]
+		},
+		{
+			"id": "uptime",
+			"title": "{{data.device.recData.id}} Uptime",
+			"units": "seconds",
+			"type": "gauge",
+			"family": "uptime",
+			"priority": 6,
+			"dimensions": [
+				{"name": "uptime", "divisor": 100, "oid": "1.3.6.1.2.1.1.3.0"}
 			]
 		}
 	]

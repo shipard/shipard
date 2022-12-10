@@ -33,6 +33,17 @@
 					"divisor": 1024
 				}
 			]
+		},
+		{
+			"id": "uptime",
+			"title": "{{data.device.recData.id}} Uptime",
+			"units": "seconds",
+			"type": "gauge",
+			"family": "uptime",
+			"priority": 6,
+			"dimensions": [
+				{"name": "uptime", "divisor": 100, "oid": "1.3.6.1.2.1.1.3.0"}
+			]
 		}
 	]
 }

@@ -191,6 +191,15 @@ class OverviewData extends Utility
 					],
 				];
 			}
+			elseif ($deviceKind === 8 || $deviceKind === 9)
+			{ // switch / router
+				$badgeQuantityId = 'snmp_'.$this->devices[$deviceNdx]['deviceId'].'.uptime';
+				$this->devices[$deviceNdx]['deviceBadges'][] = [
+					'label' => 'uptime',
+					'badgeQuantityId' => $badgeQuantityId,
+					'badgeParams' => ['dimensions' => 'uptime', 'units' => 'hours', 'divide' => 3600, 'value_color' => 'COLOR:null|red>2400|orange>1200|00A000>=0'],
+				];
+			}
 			elseif ($deviceKind === 11)
 			{ // NAS
 				if ($this->devices[$deviceNdx]['macDeviceType'] === 'nas-synology')
@@ -200,6 +209,13 @@ class OverviewData extends Utility
 						'label' => 'load15',
 						'badgeQuantityId' => $badgeQuantityId,
 						'badgeParams' => ['dimensions' => 'load15', 'units' => 'empty', 'value_color' => 'COLOR:null|red>6|orange>3|00A000>=0'],
+					];
+
+					$badgeQuantityId = 'snmp_'.$this->devices[$deviceNdx]['deviceId'].'.uptime';
+					$this->devices[$deviceNdx]['lanBadges'][] = [
+						'label' => 'uptime',
+						'badgeQuantityId' => $badgeQuantityId,
+						'badgeParams' => ['dimensions' => 'uptime', 'units' => 'hours', 'divide' => 3600, 'value_color' => 'COLOR:null|red>2400|orange>1200|00A000>=0'],
 					];
 
 					$this->devices[$deviceNdx]['lanBadges'][] = [

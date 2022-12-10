@@ -238,6 +238,18 @@ class Overview extends Content
 				}
 			}
 
+			if (isset($this->overviewData->devices[$treeItemNdx]['deviceBadges']))
+			{
+				foreach ($this->overviewData->devices[$treeItemNdx]['deviceBadges'] as $sb)
+				{
+					$sh = $this->lanSensorHelper($device['lan']);
+					if ($sh) {
+						$bc = $sh->lanBadgeImg($sb['label'], $sb['badgeQuantityId'], $sb['badgeParams'], $sb['lanBadgesUrl'] ?? '');
+						$c .= ' ' . "<span>".$bc."</span>";
+					}
+				}
+			}
+
 			foreach ($device['sensorsBadges'] as $sb)
 			{
 				$sh = $this->macDataSourceSensorHelper($sb['badgeDataSource']);
@@ -300,6 +312,19 @@ class Overview extends Content
 					}
 				}
 			}
+
+			if (isset($this->overviewData->devices[$treeItemNdx]['deviceBadges']))
+			{
+				foreach ($this->overviewData->devices[$treeItemNdx]['deviceBadges'] as $sb)
+				{
+					$sh = $this->lanSensorHelper($device['lan']);
+					if ($sh) {
+						$bc = $sh->lanBadgeImg($sb['label'], $sb['badgeQuantityId'], $sb['badgeParams']);
+						$c .= ' ' . "<span>".$bc."</span>";
+					}
+				}
+			}
+
 			$c .= "</td>";
 
 			$c .= "</tr>";
