@@ -270,8 +270,18 @@ class EdgeCore extends \mac\lan\libs\cfgScripts\CoreCfgScript
 		$this->script .= "\n";
 		$this->script .= "copy tftp public-key\n";
 		$this->script .= $this->lanCfg['mainServerLanControlIp']."\n";
-		$this->script .= "2\n";
-		$this->script .= "shn_ssh_key_dsa.pub\n";
+
+		$sshMode = intval($this->deviceCfg['sshMode'] ?? 0);
+		if ($sshMode === 0)
+		{ // old DSA mode
+			$this->script .= "2\n";
+			$this->script .= "shn_ssh_key_dsa.pub\n";
+		}
+		else
+		{ // new RSA mode
+			$this->script .= "shn_ssh_key_rsa2048_ec.pub_ec\n";
+		}
+
 		$this->script .= $user."\n";
 		$this->script .= "\n";
 		$this->script .= "\n";
