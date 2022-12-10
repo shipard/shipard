@@ -3,7 +3,9 @@
 	"title": "Switch EdgeCore",
 	"fields": {
 		"columns": [
-			{"id": "userLogin", "name": "Uživatel", "type": "string", "len": 30}
+			{"id": "userLogin", "name": "Uživatel", "type": "string", "len": 30},
+			{"id": "sshMode", "name": "SSH klíče", "type": "enumInt",
+				"enumValues": {"0": "DSA (starý FW)", "1": "RSA (nový FW)"}}
 		]
 	},
 	"snmpTemplateRealtime": "mac/devices/devices/switch/switch-edgecore-netdata-snmp.mustache",
