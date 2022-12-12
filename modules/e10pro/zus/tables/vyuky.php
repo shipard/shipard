@@ -72,6 +72,12 @@ class TableVyuky extends DbTable
 		if ($recData['stav'] !== 4000 || $recData['typ'] != 0)
 			return;
 
+		if ($recData ['typ'] == 0) // kolektivní
+		{
+			$this->db()->query('DELETE FROM [e10pro_zus_vyukystudenti] WHERE [studium] = %i', 0, ' AND [vyuka] = %i', $recData['ndx']);
+		}
+
+
 		$this->checkHoursAttendance($recData);
 	}
 
