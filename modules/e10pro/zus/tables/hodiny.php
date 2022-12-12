@@ -328,6 +328,11 @@ class FormHodina extends TableForm
 				array_push($q, ' AND (studia.datumNastupuDoSkoly IS NULL OR studia.datumNastupuDoSkoly <= %d', $this->recData['datum'], ')');
 				array_push($q, ')');
 
+				array_push($q, ' AND (');
+				array_push($q, '(studenti.platnostDo IS NULL OR studenti.platnostDo >= %d', $this->recData['datum'], ')');
+				array_push($q, ' AND (studenti.platnostOd IS NULL OR studenti.platnostOd <= %d', $this->recData['datum'], ')');
+				array_push($q, ')');
+
 				$studenti = $this->table->db()->query ($q);
 				foreach ($studenti as $r)
 				{

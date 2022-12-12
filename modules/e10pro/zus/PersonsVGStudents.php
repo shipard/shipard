@@ -97,6 +97,8 @@ class PersonsVGStudents extends \lib\persons\PersonsVirtualGroup
 		array_push ($q, ' AND studia.stavHlavni = %i', 1);
 		array_push ($q, ' AND (studia.datumUkonceniSkoly IS NULL OR studia.datumUkonceniSkoly > %t)', $today);
 		array_push ($q, ' AND (studia.datumNastupuDoSkoly IS NULL OR studia.datumNastupuDoSkoly <= %t)', $today);
+		array_push ($q, ' AND (studenti.platnostDo IS NULL OR studenti.platnostDo >= %d', $today, ')');
+		array_push ($q, ' AND (studenti.platnostOd IS NULL OR studenti.platnostOd <= %d', $today, ')');
 
 		$rows = $this->db()->query ($q);
 		foreach ($rows as $r)

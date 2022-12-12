@@ -170,6 +170,10 @@ class MobileFormETK extends FormDocumentSimple
 		array_push ($q, ' (studia.datumUkonceniSkoly IS NULL OR studia.datumUkonceniSkoly >= %d', $datum, ')');
 		array_push ($q, ' AND (studia.datumNastupuDoSkoly IS NULL OR studia.datumNastupuDoSkoly <= %d', $datum, ')');
 		array_push ($q, ')');
+		array_push($q, ' AND (');
+		array_push($q, '(studenti.platnostDo IS NULL OR studenti.platnostDo >= %d', $datum, ')');
+		array_push($q, ' AND (studenti.platnostOd IS NULL OR studenti.platnostOd <= %d', $datum, ')');
+		array_push($q, ')');
 
 		$studentsRows = $this->db()->query($q);
 		foreach ($studentsRows as $s)

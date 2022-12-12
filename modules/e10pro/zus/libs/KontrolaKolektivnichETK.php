@@ -142,6 +142,16 @@ class KontrolaKolektivnichETK extends Utility
 				{
 					continue;
 				}
+
+				if ($studentETK['platnostDo'] && $studentETK['platnostDo'] < $hodina['datum'])
+				{
+					continue;
+				}
+				if ($studentETK['planostOd'] && $studentETK['platnostOd'] > $hodina['datum'])
+				{
+					continue;
+				}
+
 				$this->troubles[] = [
 					'msg' => 'V hodině '.utils::datef($hodina['datum']).' chybí student patřící do ETK: '.$studentETK['studiumNazev']/*.json_encode($r->toArray())*/,
 					'date' => ['text' => utils::datef($hodina['datum']), 'docAction' => 'edit', 'table' => 'e10pro.zus.hodiny', 'pk' => $hodina['ndx']],
@@ -157,12 +167,28 @@ class KontrolaKolektivnichETK extends Utility
 						'date' => ['text' => utils::datef($hodina['datum']), 'docAction' => 'edit', 'table' => 'e10pro.zus.hodiny', 'pk' => $hodina['ndx']],
 					];
 				}
-
 				$daysBefore = utils::dateDiff($hodina['datum'], $studentETK['datumNastupuDoSkoly']);
 				if ($daysBefore > 60)
 				{
 					$this->troubles[] = [
 						'msg' => 'V hodině je student, který zahájil studium až '.utils::datef($studentETK['datumNastupuDoSkoly']).' ('.$daysBefore.' dnů): '.$studentETK['studiumNazev']/*.json_encode($r->toArray())*/,
+						'date' => ['text' => utils::datef($hodina['datum']), 'docAction' => 'edit', 'table' => 'e10pro.zus.hodiny', 'pk' => $hodina['ndx']],
+					];
+				}
+
+				$daysAfter = utils::dateDiff($studentETK['platnostDo'], $hodina['datum']);
+				if ($daysAfter > 0)
+				{
+					$this->troubles[] = [
+						'msg' => 'V hodině je student, který ukončil přítomnost v výuce k '.utils::datef($studentETK['platnostDo']).' ('.$daysAfter.' dnů): '.$studentETK['studiumNazev'],
+						'date' => ['text' => utils::datef($hodina['datum']), 'docAction' => 'edit', 'table' => 'e10pro.zus.hodiny', 'pk' => $hodina['ndx']],
+					];
+				}
+				$daysBefore = utils::dateDiff($hodina['datum'], $studentETK['platnostOd']);
+				if ($daysBefore > 0)
+				{
+					$this->troubles[] = [
+						'msg' => 'V hodině je student, který zahájil přítomnost ve výuce  '.utils::datef($studentETK['platnostOd']).' ('.$daysBefore.' dnů): '.$studentETK['studiumNazev'],
 						'date' => ['text' => utils::datef($hodina['datum']), 'docAction' => 'edit', 'table' => 'e10pro.zus.hodiny', 'pk' => $hodina['ndx']],
 					];
 				}

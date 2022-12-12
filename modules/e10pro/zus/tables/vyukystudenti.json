@@ -4,7 +4,10 @@
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "vyuka", "name": "Výuka", "type": "int"},
 	  {"id": "studium", "name": "Studium", "type": "int", "reference": "e10pro.zus.studium", "comboViewer": "combo"},
-		{"id": "student", "name": "Student", "type": "int", "reference": "e10.persons.persons", "comboViewer": "students"}
+		{"id": "student", "name": "Student", "type": "int", "reference": "e10.persons.persons", "comboViewer": "students"},
+		{"id": "platnost", "name": "Platnost", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "platnostOd", "name": "Platnost OD", "type": "date"},
+		{"id": "platnostDo", "name": "Platnost DO", "type": "date"}
 	],
 	"options": ["systemTable"],
 	"forms": [

@@ -30,9 +30,14 @@ class FormVyukyStudent extends TableForm
 	{
 		$this->openForm (TableForm::ltGrid);
 			$this->openRow ();
-				$this->addColumnInput ('studium', TableForm::coColW12);
-//				$this->addColumnInput ('student', TableForm::coColW12);
+				$this->addColumnInput ('studium', TableForm::coColW11);
+				$this->addColumnInput ('platnost', TableForm::coColW1);
 			$this->closeRow();
+			if ($this->recData['platnost'])
+			{
+				$this->addColumnInput ('platnostOd', TableForm::coColW4);
+				$this->addColumnInput ('platnostDo', TableForm::coColW4);
+			}
 		$this->closeForm ();
 	}
 }
