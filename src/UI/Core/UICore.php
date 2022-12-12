@@ -66,8 +66,8 @@ class UICore extends \Shipard\Base\BaseObject
 		$c .= ">";
 
 		$c .= "<h4>Přidat přílohu</h4>";
-//		$c .= "<input class='e10-att-input-file' type='file' onchange='e10.e10AttWidgetFileSelected(this)' accept='image/*' multiple='multiple'/>";
-		$c .= "<input class='e10-att-input-file' type='file' onchange='e10.e10AttWidgetFileSelected(this)' accept='image/*' capture/>";
+		$c .= "<input class='e10-att-input-file' type='file' onchange='e10.e10AttWidgetFileSelected(this)' accept='image/*' multiple='multiple'/>";
+//		$c .= "<input class='e10-att-input-file' type='file' onchange='e10.e10AttWidgetFileSelected(this)' accept='image/*' capture/>";
 		$c .= "<div class='e10-att-input-files'>Tlačítkem Vybrat soubor můžete vyfotit obrázek a tlačítkem Odeslat ho přidat.</div>";
 		$c .= "<div class='e10-att-input-send'><input type='button' onclick='e10.e10AttWidgetUploadFile($(this))' value='Odeslat'/></div>";
 		$c .= "</div></div>";
