@@ -198,7 +198,13 @@ class TableVyuky extends DbTable
 			'LEFT JOIN [e10pro_zus_studium] AS studia ON studenti.studium = studia.ndx',
 			' WHERE studenti.[vyuka] = %i', $recData['ndx']);
 		foreach ($studentsRows as $s)
-			$students[] = ['student' => $s['studentNdx'], 'studium' => $s['studium'], 'zahajeniStudia' => $s['zahajeniStudia'], 'ukonceniStudia' => $s['ukonceniStudia']];
+		{
+			$students[] = [
+				'student' => $s['studentNdx'], 'studium' => $s['studium'],
+				'zahajeniStudia' => $s['zahajeniStudia'], 'ukonceniStudia' => $s['ukonceniStudia'],
+				'platnostOd' => $s['platnostOd'], 'platnostDo' => $s['platnostDo']
+			];
+		}
 
 		// check & insert
 		$q[] = 'SELECT * FROM [e10pro_zus_hodiny] ';
@@ -220,6 +226,11 @@ class TableVyuky extends DbTable
 				if ($studentInfo['zahajeniStudia'] && $r['datum'] < $studentInfo['zahajeniStudia'])
 					continue;
 				if ($studentInfo['ukonceniStudia'] && $r['datum'] > $studentInfo['ukonceniStudia'])
+					continue;
+
+				if ($studentInfo['platnostOd'] && $r['datum'] < $studentInfo['platnostOd'])
+					continue;
+				if ($studentInfo['platnostDo'] && $r['datum'] > $studentInfo['platnostDo'])
 					continue;
 
 				$newItem = ['hodina' => $r['ndx'], 'student' => $studentNdx, 'studium' => $studiumNdx, 'pritomnost' => 1];
