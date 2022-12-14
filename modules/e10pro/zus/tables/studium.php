@@ -610,6 +610,17 @@ class ViewDetailStudium extends TableViewDetail
 		$this->addPredmety();
 		// -- rozvrh
 		$this->addRozvrh();
+		// -- kontrola
+		$ks = new \e10pro\zus\libs\KontrolaStudia($this->app());
+		$ks->setStudium($this->item['ndx']);
+		$ks->run();
+
+		if (count($ks->troubles))
+		{
+			$hr = ['#' => '#', 'msg' => 'Problém', ];
+			$this->addContent(['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'header' => $hr, 'table' => $ks->troubles,
+					'title' => ['icon' => 'system/iconWarning', 'text' => 'Problémy', 'class' => 'h1 e10-error'], 'params' => ['__hideHeader' => 1]]);
+		}
 	}
 
 	public function addPredmety ()
@@ -758,7 +769,7 @@ class ViewDetailStudium extends TableViewDetail
 		$rozvrh = [];
 		$vyukyStudenta = $this->vyukyStudenta ($this->item['ndx']);
 
-		$title = [['icon' => 'icon-clock-o', 'text' => 'Rozvrh', 'class' => 'h2']];
+		$title = [['icon' => 'system/iconClock', 'text' => 'Rozvrh', 'class' => 'h2']];
 
 		if (!count($vyukyStudenta))
 			return;
@@ -775,7 +786,7 @@ class ViewDetailStudium extends TableViewDetail
 		array_push($q, ' LEFT JOIN e10_base_places AS places ON rozvrh.pobocka = places.ndx');
 		array_push($q, ' LEFT JOIN e10_base_places AS ucebny ON rozvrh.ucebna = ucebny.ndx');
 
-		array_push($q, ' WHERE rozvrh.vyuka IN %in', $vyukyStudenta);
+		array_push($q, ' WHERE rozvrh.vyuka IN %in', array_keys($vyukyStudenta));
 		array_push($q, ' AND rozvrh.stavHlavni < %i', 4);
 		array_push($q, ' AND vyuky.skolniRok = %s', zusutils::aktualniSkolniRok());
 		array_push($q, ' ORDER BY rozvrh.den, rozvrh.zacatek');
@@ -793,7 +804,7 @@ class ViewDetailStudium extends TableViewDetail
 				],
 				'doba' => $r['zacatek'].' - '.$r['konec'],
 				'ucitel' => $r['personFullName'],
-				'predmet' => ['icon' => $ikonaPredmet, 'text' => $r['predmet']],
+				'predmet' => ['icon' => $ikonaPredmet, 'text' => ($r['predmet']) ? $r['predmet'] : '--- BEZ PŘEDMĚTU ---'],
 				'rocnik' => zusutils::rocnikVRozvrhu($this->app(), $r['rocnik'], $r['typVyuky']),
 				'pobocka' => $r['placeName'],
 				'ucebna' => $r['ucebnaName']
@@ -832,22 +843,26 @@ class ViewDetailStudium extends TableViewDetail
 		array_push($q, 'WHERE typ = 1 AND studium = %i', $studiumNdx);
 		$rows = $this->db()->query($q);
 		foreach($rows as $r)
-			if (!in_array($r['ndx'], $vyuky))
-				$vyuky[] = $r['ndx'];
-
+		{
+			if (!isset($vyuky[$r['ndx']]))
+				$vyuky[$r['ndx']] = $r->toArray();
+		}
 		// -- kolektivní
 		unset ($q);
 		$q[] = ' SELECT vyuka FROM e10pro_zus_vyukystudenti studenti';
-		array_push($q, ' LEFT JOIN e10pro_zus_vyuky AS vyuky ON studenti.vyuka = vyuky.ndx',
-			' WHERE vyuky.typ = 0 AND studenti.studium = %i', $studiumNdx);
+		array_push($q, ' LEFT JOIN e10pro_zus_vyuky AS vyuky ON studenti.vyuka = vyuky.ndx');
+		array_push($q, ' WHERE vyuky.typ = 0 AND studenti.studium = %i', $studiumNdx);
+
+
 		$rows = $this->db()->query($q);
 		foreach($rows as $r)
-			if (!in_array($r['vyuka'], $vyuky))
-				$vyuky[] = $r['vyuka'];
+		{
+			if (!isset($vyuky[$r['vyuka']]))
+				$vyuky[$r['vyuka']] = $r->toArray();//$r['vyuka'];
+		}
 
 		return $vyuky;
 	}
-
 }
 
 

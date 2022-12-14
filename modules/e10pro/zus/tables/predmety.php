@@ -50,7 +50,7 @@ class TablePredmety extends DbTable
 			foreach ($ppRows as $pl)
 			{
 				$predmet ['podobne'][] = $pl['dstRecId'];
-				$ca [$pl['dstRecId']]['podobne'][] = $predmetNdx;
+				//$ca [$pl['dstRecId']]['podobne'][] = $predmetNdx;
 			}
 		}
 
