@@ -94,6 +94,18 @@ class KontrolaStudia extends Utility
     {
       $predmetNdx = $this->predmetNdx($r['svpPredmet']);
       $etkList [$predmetNdx][] = $r->toArray();
+
+      if ($r['svpPredmet2'])
+      {
+        $predmetNdx = $this->predmetNdx($r['svpPredmet2']);
+        $etkList [$predmetNdx][] = $r->toArray();
+      }
+
+      if ($r['svpPredmet3'])
+      {
+        $predmetNdx = $this->predmetNdx($r['svpPredmet3']);
+        $etkList [$predmetNdx][] = $r->toArray();
+      }
     }
 
     foreach ($this->predmetyStudia as $predmetNdx => $predmet)
