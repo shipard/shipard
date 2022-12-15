@@ -135,7 +135,10 @@ class HoursPlanGenerator extends Utility
 		array_push($q, ' LEFT JOIN e10_persons_persons AS [ucitele] ON hodiny.ucitel = ucitele.ndx');
 		array_push($q, ' WHERE 1');
 		array_push($q, ' AND hodiny.vyuka = %i', $this->params['etkNdx']);
-		array_push($q, ' AND hodiny.stav != %i', 9800);
+
+		if (!$this->app()->hasRole('root'))
+			array_push($q, ' AND hodiny.stav != %i', 9800);
+
 		array_push($q, ' ORDER BY hodiny.[datum], hodiny.[zacatek]');
 		$rows = $this->app->db()->query ($q);
 		foreach ($rows as $r)
