@@ -12,5 +12,8 @@
 	"options": ["systemTable"],
 	"forms": [
 		{"id": "default", "class": "e10pro.zus.FormVyukyStudent"}
+	],
+	"indexes": [
+		{"id": "s1", "columns": ["vyuka", "studium"]}
 	]
 }

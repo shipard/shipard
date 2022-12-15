@@ -119,7 +119,7 @@ class KontrolaKolektivnichETK extends Utility
 				];
 			}
 
-			if ($dochazka[$r['studium']])
+			if (isset($dochazka[$r['studium']]))
 			{
 				$this->troubles[] = [
 					'msg' => 'V hodině je vícekrát stejné studium: '.$r['nazevStudia'],
@@ -147,7 +147,7 @@ class KontrolaKolektivnichETK extends Utility
 				{
 					continue;
 				}
-				if ($studentETK['planostOd'] && $studentETK['platnostOd'] > $hodina['datum'])
+				if ($studentETK['platnostOd'] && $studentETK['platnostOd'] > $hodina['datum'])
 				{
 					continue;
 				}

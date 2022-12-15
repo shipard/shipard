@@ -205,7 +205,8 @@ class ViewVysvedceni extends TableView
 			array_push ($q, " AND vysvedceni.[typVysvedceni] = %i", $qv['typVysvedceni']['']);
 		if (isset($qv['skolniRok']['']) && $qv['skolniRok'][''] != '0')
 			array_push ($q, " AND vysvedceni.[skolniRok] = %i", $qv['skolniRok']['']);
-
+		if (isset($qv['predmet']['']) && $qv['predmet'][''] != 0)
+			array_push ($q, " AND EXISTS (SELECT * FROM [e10pro_zus_znamky] as vysvpre WHERE (vysvpre.[vysvedceni] = vysvedceni.[ndx] AND vysvpre.[svpPredmet] = %i))", $qv ['predmet']['']);
 
 		array_push ($q, ' ORDER BY vysvedceni.[stavHlavni], persons.lastName, vysvedceni.[skolniRok] DESC' . $this->sqlLimit ());
 		$this->runQuery ($q);
@@ -255,6 +256,8 @@ class ViewVysvedceni extends TableView
 		$paramsRows->addParam ('switch', 'query.typVysvedceni', ['title' => 'Typ vysvědčení', 'place' => 'panel', 'cfg' => 'zus.typyVysvedceni',
 			'enableAll' => ['99' => ['title' => 'Vše']]]);
 		$paramsRows->addParam ('switch', 'query.skolniRok', ['title' => 'Školní rok', 'switch' => zusutils::skolniRoky($this->app)]);
+		$paramsRows->addParam ('switch', 'query.predmet', ['title' => 'Předmět', 'place' => 'panel', 'cfg' => 'e10pro.zus.predmety', 'titleKey' => 'nazev',
+			'enableAll' => ['0' => ['title' => 'Vše']]]);
 
 		$paramsRows->detectValues();
 

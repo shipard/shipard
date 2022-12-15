@@ -46,6 +46,7 @@ class StudentYearInfo extends Utility
 				$pDef = $this->app()->cfgItem ('e10pro.zus.predmety.'.$ppNdx, FALSE);
 				if ($pDef !== FALSE && isset($pDef['podobne']))
 				{
+					$this->povolenePredmety[] = $ppNdx;
 					foreach ($pDef['podobne'] as $ppNdx2)
 						$this->povolenePredmety[] = $ppNdx2;
 				}

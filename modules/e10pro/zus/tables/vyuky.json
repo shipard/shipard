@@ -62,5 +62,8 @@
 	],
 	"states": {"stateColumn": "stav", "mainStateColumn": "stavHlavni", "statesCfg": "zus.stavyVyuky"},
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "nazev"},
+	"indexes": [
+		{"id": "s1", "columns": ["typ", "skolniRok", "studium"]}
+	],
 	"ndx": 1219
 }

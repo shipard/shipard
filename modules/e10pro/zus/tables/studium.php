@@ -794,7 +794,8 @@ class ViewDetailStudium extends TableViewDetail
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
-			$ikonaPredmet = ($r['typVyuky'] === 0) ? 'icon-group' : 'icon-user';
+			$vk = $vyukyStudenta[$r['vyuka']];
+			$ikonaPredmet = ($r['typVyuky'] === 0) ? 'user/group' : 'system/iconUser';
 
 			$itm = [
 				'den' => [
@@ -802,7 +803,7 @@ class ViewDetailStudium extends TableViewDetail
 						'type' => 'button', 'actionClass' => 'e10-off'],
 					['text' => ' '.$nazvyDnu[$r['den']]]
 				],
-				'doba' => $r['zacatek'].' - '.$r['konec'],
+				'doba' => [['text' => $r['zacatek'].' - '.$r['konec'], 'class' => '']],
 				'ucitel' => $r['personFullName'],
 				'predmet' => ['icon' => $ikonaPredmet, 'text' => ($r['predmet']) ? $r['predmet'] : '--- BEZ PŘEDMĚTU ---'],
 				'rocnik' => zusutils::rocnikVRozvrhu($this->app(), $r['rocnik'], $r['typVyuky']),
@@ -811,9 +812,32 @@ class ViewDetailStudium extends TableViewDetail
 			];
 
 			if (!utils::dateIsBlank($r['datumUkonceni']) && $r['datumUkonceni'] < $today)
+			{
 				$itm['_options']['class'] = 'e10-bg-t9 e10-off';
+
+			}
 			elseif (!utils::dateIsBlank($r['datumZahajeni']) && $r['datumZahajeni'] > $today)
+			{
 				$itm['_options']['class'] = 'e10-bg-t9 e10-off';
+			}
+
+			if (isset($vk['platnostDo']) && !utils::dateIsBlank($vk['platnostDo']) && $vk['platnostDo'] < $today)
+			{
+				$itm['_options']['class'] = 'e10-bg-t9 e10-off';
+			}
+			elseif (isset($vk['platnostOd']) && !utils::dateIsBlank($vk['platnostOd']) && $vk['platnostOd'] > $today)
+			{
+				$itm['_options']['class'] = 'e10-bg-t9 e10-off';
+			}
+
+			if (isset($vk['platnostOd']) && !utils::dateIsBlank($vk['platnostOd']))
+			{
+				$itm['doba'][] = ['text' => 'od '.utils::datef($vk['platnostOd'], '%S'), 'class' => 'block e10-small'];
+			}
+			if (isset($vk['platnostDo']) && !utils::dateIsBlank($vk['platnostDo']))
+			{
+				$itm['doba'][] = ['text' => 'do '.utils::datef($vk['platnostDo'], '%S'), 'class' => 'block e10-small'];
+			}
 
 			$rozvrh[] = $itm;
 		}
@@ -821,7 +845,7 @@ class ViewDetailStudium extends TableViewDetail
 		if (count($rozvrh))
 			$this->addContent([
 				'pane' => 'e10-pane e10-pane-table',
-				'header' => ['den' => 'Den', 'doba' => 'Čas', 'predmet' => 'Předmět', 'rocnik' => 'Ročník', 'ucitel' => 'Učitel', 'pobocka' => 'Pobočka', 'ucebna' => 'Učebna'],
+				'header' => ['den' => '_Den', 'doba' => '_Čas', 'predmet' => '_Předmět', 'rocnik' => 'Ročník', 'ucitel' => 'Učitel', 'pobocka' => 'Pobočka', 'ucebna' => 'Učebna'],
 				'table' => $rozvrh, 'title' => $title, 'params' => ['hideHeader' => 1]
 			]);
 		/*
@@ -849,7 +873,7 @@ class ViewDetailStudium extends TableViewDetail
 		}
 		// -- kolektivní
 		unset ($q);
-		$q[] = ' SELECT vyuka FROM e10pro_zus_vyukystudenti studenti';
+		$q[] = ' SELECT vyuka, platnostOd, platnostDo FROM e10pro_zus_vyukystudenti studenti';
 		array_push($q, ' LEFT JOIN e10pro_zus_vyuky AS vyuky ON studenti.vyuka = vyuky.ndx');
 		array_push($q, ' WHERE vyuky.typ = 0 AND studenti.studium = %i', $studiumNdx);
 
@@ -858,7 +882,7 @@ class ViewDetailStudium extends TableViewDetail
 		foreach($rows as $r)
 		{
 			if (!isset($vyuky[$r['vyuka']]))
-				$vyuky[$r['vyuka']] = $r->toArray();//$r['vyuka'];
+				$vyuky[$r['vyuka']] = $r->toArray();
 		}
 
 		return $vyuky;
