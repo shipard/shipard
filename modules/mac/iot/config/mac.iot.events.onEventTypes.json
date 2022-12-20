@@ -15,7 +15,15 @@
 		"fn": "Hodnota senzoru"
 	},
 
+	"sensorValueChange": {
+		"fn": "Změna hodnoty senzoru"
+	},
+
 	"mqttMsg": {
 		"fn": "MQTT zpráva"
+	},
+
+	"mqttTopic": {
+		"fn": "MQTT zpráva bez ohledu na hodnotu"
 	}
 }
