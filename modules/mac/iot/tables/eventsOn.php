@@ -114,9 +114,14 @@ class TableEventsOn extends DbTable
 		}
 		elseif ($eventRow['eventType'] === 'mqttMsg')
 		{
-			//$this->addColumnInput ('mqttTopic');
-			//$this->addColumnInput ('mqttTopicPayloadItemId');
-			//$this->addColumnInput ('mqttTopicPayloadValue');
+			$dest[] = ['text' => $eventRow['mqttTopic'].':', 'class' => 'label label-default'];
+			$dest[] = ['text' => '[\''.$eventRow['mqttTopicPayloadItemId'].'\']', 'class' => 'label label-default'];
+			$dest[] = ['text' => ' = ', 'class' => 'label label-default'];
+			$dest[] = ['text' => '`'.$eventRow['mqttTopicPayloadValue'].'`', 'class' => 'label label-info'];
+		}
+		elseif ($eventRow['eventType'] === 'mqttTopic')
+		{
+			$dest[] = ['text' => $eventRow['mqttTopic'], 'class' => 'label label-default'];
 		}
 		elseif ($eventRow['eventType'] === 'sensorValue')
 		{
@@ -131,6 +136,24 @@ class TableEventsOn extends DbTable
 				{
 					$dest[] = ['text' => $sensorRecData['fullName'].':', 'class' => 'label label-default'];
 					$dest[] = ['text' => $eventRow['iotSensorValueFrom'].' až '.$eventRow['iotSensorValueTo'], 'class' => 'label label-default'];
+				}
+				else
+				{
+					$dest[] = ['text' => 'unknown sensor #'.$eventRow['iotSensor'], 'class' => 'label label-warning'];				}
+			}
+		}
+		elseif ($eventRow['eventType'] === 'sensorValueChange')
+		{
+			if (!$eventRow['iotSensor'])
+			{
+				$dest[] = ['text' => 'senzor není vybrán', 'class' => 'label label-warning'];
+			}
+			else
+			{
+				$sensorRecData = $this->app()->loadItem($eventRow['iotSensor'], 'mac.iot.sensors');
+				if ($sensorRecData)
+				{
+					$dest[] = ['text' => $sensorRecData['fullName'], 'class' => 'label label-default'];
 				}
 				else
 				{
@@ -313,6 +336,10 @@ class FormEventOn extends TableForm
 						$this->addColumnInput ('iotSensor');
 						$this->addColumnInput ('iotSensorValueFrom');
 						$this->addColumnInput ('iotSensorValueTo');
+					}
+					elseif ($this->recData['eventType'] === 'sensorValueChange')
+					{
+						$this->addColumnInput ('iotSensor');
 					}
 
 					$this->addViewerWidget ('mac.iot.eventsDo', 'form', ['dstTableId' => 'mac.iot.eventsOn', 'dstRecId' => $this->recData['ndx']], TRUE);

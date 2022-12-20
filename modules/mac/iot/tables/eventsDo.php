@@ -40,7 +40,7 @@ class TableEventsDo extends DbTable
 					$properties = $iotDevicesUtils->devicesGroupProperties($recData['iotDevicesGroup']);
 				else
 					$properties = $iotDevicesUtils->deviceProperties($recData['iotDevice']);
-			
+
 				$dp = $properties[$recData['iotDeviceProperty']] ?? NULL;
 				if ($dp)
 				{
@@ -76,7 +76,7 @@ class TableEventsDo extends DbTable
 			{
 				$enumSetValue = $dp['enumSet'][$recData['iotDevicePropertyValueEnum']] ?? NULL;
 
-				if (isset($enumSetValue['fields']))	
+				if (isset($enumSetValue['fields']))
 					return $enumSetValue['fields'];
 
 
@@ -141,7 +141,7 @@ class TableEventsDo extends DbTable
 			if (!$events)
 				return [];
 
-			$event = $events[$form->recData['iotDeviceProperty']] ?? NULL;	
+			$event = $events[$form->recData['iotDeviceProperty']] ?? NULL;
 			if (!$event)
 				return [];
 
@@ -183,6 +183,8 @@ class TableEventsDo extends DbTable
 
 		if ($eventRow['eventType'] === 'sendMqttMsg')
 		{
+			$dest[] = ['text' => $eventRow['mqttTopic'], 'class' => 'label label-default', '__icon' => 'tables/mac.iot.setups'];
+			$dest[] = ['text' => $eventRow['mqttTopicPayloadValue'], 'class' => 'label label-info'];
 			//$this->addColumnInput ('mqttTopic');
 			//$this->addColumnInput ('mqttTopicPayloadValue');
 
@@ -194,7 +196,7 @@ class TableEventsDo extends DbTable
 			$dest[] = ['text' => $eventRow['iotSetupRequest'], 'class' => 'label label-info'];
 			return;
 		}
-	
+
 		if ($eventRow['useGroup'])
 		{
 			$dest[] = ['text' => $eventRow['devicesGroupName'], 'class' => 'label label-primary'];
@@ -266,7 +268,7 @@ class ViewEventsDoForm extends TableView
 
 		$listItem ['i1'] = ['text' => '#'.$item['ndx'], 'class' => 'id'];
 		$listItem ['t1'] = $item['fullName'];
-		
+
 
 		$listItem ['t2'] = [];
 		$this->table->getEventLabels($item, $listItem ['t2']);
