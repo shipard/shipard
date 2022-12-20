@@ -8,7 +8,8 @@
 					"condoDetail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.condo.libs.ViewDetailFlat"}
 				}
 			}
-		}
+		},
+		"reports": [{"id": "flatRecordSheet", "name": "Evidenční list", "class": "e10pro.condo.libs.ReportFlatRecordSheet", "email": 1}]
 	},
 	{
 		"table": "e10doc.reporting.calcReportsResults",
