@@ -4,11 +4,22 @@ namespace mac\iot\libs;
 
 use e10\Utility, \e10\utils, \e10\json, e10\uiutils;
 
+
+enum OnEventType: int {
+	case deviceAction = 0;
+	case mqttMsg = 1;
+	case readerValue = 2;
+	case setupAction = 3;
+	case sensorValue = 9;
+	case sensorValueChange = 10;
+}
+
 /**
  * Class IotEngineCfgCreator
  */
 class IotEngineCfgCreator extends Utility
 {
+
 	var $siteNdx = 0;
 
 	var \mac\iot\libs\IotDevicesUtils $iotDevicesUtils;
@@ -75,7 +86,17 @@ class IotEngineCfgCreator extends Utility
 		{
 			return $eo['mqttTopic'];
 		}
+		elseif ($eo['eventType'] === 'mqttTopic')
+		{
+			return $eo['mqttTopic'];
+		}
 		elseif ($eo['eventType'] === 'sensorValue')
+		{
+			$sensorRecData = $this->app()->loadItem($eo['iotSensor'], 'mac.iot.sensors');
+			if ($sensorRecData)
+				return $sensorRecData['srcMqttTopic'];
+		}
+		elseif ($eo['eventType'] === 'sensorValueChange')
 		{
 			$sensorRecData = $this->app()->loadItem($eo['iotSensor'], 'mac.iot.sensors');
 			if ($sensorRecData)
@@ -135,38 +156,44 @@ class IotEngineCfgCreator extends Utility
 
 		if ($eo['eventType'] === 'deviceAction')
 		{
-			$item['type'] = 0;
+			$item['type'] = OnEventType::deviceAction;
 			$item['dataItem'] = $eo['iotDeviceEvent'];
 			$item['dataValue'] = $eo['iotDeviceEventValueEnum'];
 		}
 		elseif ($eo['eventType'] === 'setupAction')
 		{
-			$item['type'] = 3;
+			$item['type'] = OnEventType::setupAction;
 			$item['dataItem'] = 'action';
 			$item['dataValue'] = $eo['iotSetupEvent'];
 		}
 		elseif ($eo['eventType'] === 'readerValue')
 		{
-			$item['type'] = 2;
+			$item['type'] = OnEventType::readerValue;
 		}
 		elseif ($eo['eventType'] === 'mqttMsg')
 		{
 			if ($eo['mqttTopicPayloadItemId'] === '')
 			{
-				$item['type'] = 1;
+				$item['type'] = OnEventType::mqttMsg;
 				$item['dataItem'] = '';
 				$item['dataValue'] = $eo['mqttTopicPayloadValue'];
 			}
 			else
 			{
-				$item['type'] = 0;
+				$item['type'] = OnEventType::deviceAction;
 				$item['dataItem'] = $eo['mqttTopicPayloadItemId'];
 				$item['dataValue'] = $eo['mqttTopicPayloadValue'];
 			}
 		}
 		elseif ($eo['eventType'] === 'sensorValue')
 		{
-			$item['type'] = 9;
+			$item['type'] = OnEventType::sensorValue;
+			$item['sensorValueFrom'] = $eo['iotSensorValueFrom'];
+			$item['sensorValueTo'] = $eo['iotSensorValueTo'];
+		}
+		elseif ($eo['eventType'] === 'sensorValueChange')
+		{
+			$item['type'] = OnEventType::sensorValueChange;
 			$item['sensorValueFrom'] = $eo['iotSensorValueFrom'];
 			$item['sensorValueTo'] = $eo['iotSensorValueTo'];
 		}
@@ -195,7 +222,7 @@ class IotEngineCfgCreator extends Utility
 			if ($r['eventType'] === 'sendMqttMsg')
 			{
 				$destTopic = $this->eventDoTopic($r);
-				$dst['sendMqtt'][$destTopic]['payload'] = $r['mqttTopicPayloadValue'];
+				$dst['sendMqtt'][$destTopic]['payloads'][] = $r['mqttTopicPayloadValue'];
 				continue;
 			}
 			if ($r['eventType'] === 'sendSetupRequest')
