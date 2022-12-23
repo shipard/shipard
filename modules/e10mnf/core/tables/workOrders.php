@@ -159,9 +159,13 @@ class TableWorkOrders extends DbTable
 		$dk = $this->app()->cfgItem ('e10mnf.workOrders.kinds.'.$recData['docKind'], FALSE);
 		$title = $recData['title'];
 		$info = [
-			'title' => $title, 'docType' => $recData['docKind'], 'docTypeName' => $dk['sn'],
+			'title' => $title, 'docType' => $recData['docKind'], 'docTypeName' => $dk['sn'] ?? '',
 			'docID' => $recData['docNumber']/*, 'money' => $recData['toPay'], 'currency' => $recData['currency'*/
 		];
+
+		if (isset($recData['customer']) && $recData['customer'])
+			$info ['persons']['to'][] = $recData['customer'];
+		$info ['persons']['from'][] = intval($this->app()->cfgItem ('options.core.ownerPerson', 0));
 
 		return $info;
 	}
