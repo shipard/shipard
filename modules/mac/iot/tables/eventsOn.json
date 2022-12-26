@@ -24,8 +24,21 @@
 		{"id": "mqttTopicPayloadItemId", "name": "Položka zprávy", "type": "string", "len": "100"},
 		{"id": "mqttTopicPayloadValue", "name": "Hodnota", "type": "string", "len": "100"},
 		{"id": "iotSensor", "name": "Zdrojový senzor", "type": "int", "reference": "mac.iot.sensors", "options": ["saveOnChange"]},
-    {"id": "iotSensorValueFrom", "name": "Hodnota od", "type": "number", "dec": 2},
-		{"id": "iotSensorValueTo", "name": "Hodnota od", "type": "number", "dec": 2},
+
+		{"id": "iotSensorValueFromType", "name": "Od", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.iot.valueSrcTypes", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "iotSensorValueFrom", "name": "Hodnota od", "type": "number", "dec": 2},
+		{"id": "iotSensorValueFromParam", "name": "Parametr", "type": "int", "reference": "mac.iot.params"},
+		{"id": "iotSensorValueFromTemplate", "name": "Hodnota od", "type": "string", "len": 80},
+
+		{"id": "iotSensorValueToType", "name": "Do", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.iot.valueSrcTypes", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "iotSensorValueTo", "name": "Hodnota do", "type": "number", "dec": 2},
+		{"id": "iotSensorValueToParam", "name": "Parametr", "type": "int", "reference": "mac.iot.params"},
+		{"id": "iotSensorValueToTemplate", "name": "Hodnota do", "type": "string", "len": 80},
+
+		{"id": "rowOrder", "name": "Pořadí", "type": "int"},
+		{"id": "disabled", "name": "Zakázáno", "type": "logical"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

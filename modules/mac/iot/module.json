@@ -5,6 +5,7 @@
 		"devices", "devicesIOPorts", "devicesCfg", "devicesGroups", "devicesGroupsItems",
 		"eventsOn", "eventsDo",
 		"setups", "setupsStates",
+		"params",
 
 	  "topics", "sensors", "sensorsValues",
 	  "controls", "scPlacements",
@@ -31,6 +32,7 @@
 		
 		{"id": "+mac.iot.events.onEventTypes", "file": "mac.iot.events.onEventTypes.json"},
 		{"id": "+mac.iot.events.doEventTypes", "file": "mac.iot.events.doEventTypes.json"},
+		{"id": "+mac.iot.events.onWhenTypes", "file": "mac.iot.events.onWhenTypes.json"},
 
 		{"id": "+mac.iot.devices.kinds", "file": "mac.iot.devices.kinds.json"},
 		{"id": "+mac.iot.devices.vendors.shipard", "file": "devices/shipard/vendors.json"},
@@ -40,6 +42,8 @@
 	  {"id": "+mac.iot.topicTypes", "file": "mac.iot.topicTypes.json"},
 	  {"id": "+mac.iot.sensorKbdEmulation", "file": "mac.iot.sensorKbdEmulation.json"},
 	  {"id": "+mac.iot.controlTypes", "file": "mac.iot.controlTypes.json"},
+		{"id": "+mac.iot.paramsTypes", "file": "mac.iot.paramsTypes.json"},
+		{"id": "+mac.iot.valueSrcTypes", "file": "mac.iot.valueSrcTypes.json"},
 	  {"id": "+mac.iot.scPlacements.targets", "file": "mac.iot.scPlacements.targets.json"},
 	  {"id": "+mac.iot.scPlacements.mainMenu", "file": "mac.iot.scPlacements.mainMenu.json"},
 	  {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},

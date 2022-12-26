@@ -5,6 +5,7 @@
 			"mac.iot.sensors": {"default": 2},
 			"mac.iot.controls": {"default": 2},
 			"mac.iot.setups": {"default": 2},
+			"mac.iot.params": {"default": 2},
 			"mac.iot.devicesGroups": {"default": 2},
 			"mac.iot.scPlacements": {"default": 2},
 			"mac.iot.scenes": {"default": 2},

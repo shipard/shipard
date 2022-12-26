@@ -51,6 +51,8 @@
 							"controls": {"t1": "Ovládací prvky", "object": "viewer", "table": "mac.iot.controls", "viewer": "default", "order": 30200},
 							"scPlacements": {"t1": "Zařazení", "object": "viewer", "table": "mac.iot.scPlacements", "viewer": "default", "order": 30400},
 
+							"params": {"t1": "Parametry", "object": "viewer", "table": "mac.iot.params", "viewer": "default", "order": 41000, "beforeSeparator": 1},
+
 							"users": {"t1": "Uživatelé", "object": "viewer", "table": "mac.iot.users", "viewer": "default", "order": 90100, "beforeSeparator": 1}
 						}
 					}

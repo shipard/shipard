@@ -14,20 +14,26 @@
 		{"id": "iotDevice", "name": "Cílové zařízení", "type": "int", "reference": "mac.iot.devices", "options": ["saveOnChange"]},
 		{"id": "useGroup", "name": "Použít skupinu", "type": "logical", "options": ["saveOnChange"]},
 		{"id": "iotDevicesGroup", "name": "Cílová skupina", "type": "int", "reference": "mac.iot.devicesGroups", "options": ["saveOnChange"]},
-		{"id": "iotDeviceProperty", "name": "Nastavení", "type": "enumString", "len": "60", "options": ["saveOnChange"], 
+		{"id": "iotDeviceProperty", "name": "Nastavení", "type": "enumString", "len": "60", "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": "fn"}},
 		{"id": "iotDevicePropertyValueEnum", "name": "Hodnota", "type": "enumString", "len": "60",  "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": "fn"}},
 		{"id": "iotDevicePropertyValue", "name": "Hodnota události text", "type": "string", "len": "60"},
 
 		{"id": "iotSetup", "name": "Sestava", "type": "int", "reference": "mac.iot.setups", "options": ["saveOnChange"]},
-		{"id": "iotSetupRequest", "name": "Požadavek", "type": "enumString", "len": "40", "options": ["saveOnChange"], 
+		{"id": "iotSetupRequest", "name": "Požadavek", "type": "enumString", "len": "40", "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": "fn"}},
 
 		{"id": "eventValueCfg", "name": "Nastavení události", "type": "subColumns"},
 
 		{"id": "mqttTopic", "name": "Zdrojový MQTT topic", "type": "string", "len": "100"},
 		{"id": "mqttTopicPayloadValue", "name": "Hodnota", "type": "memo"},
+
+		{"id": "when", "name": "Když", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "whenType", "name": "Co", "type": "enumString", "len": "20", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.iot.events.onWhenTypes", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "whenSensor", "name": "Senzor", "type": "int", "reference": "mac.iot.sensors", "options": ["saveOnChange"]},
+		{"id": "whenSensorValue", "name": "Hodnota senzoru", "type": "string", "len": 20},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

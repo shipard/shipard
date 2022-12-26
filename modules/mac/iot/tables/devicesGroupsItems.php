@@ -85,13 +85,7 @@ class ViewDevicesGroupsItemsFormList extends \e10\TableViewGrid
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['icon'] = 'system/iconCogs';
 
-		$listItem ['type'] = [];
-
-		//$itemType = $this->itemsTypes[$item['itemType']];
-
-		//$listItem ['type'][] = ['text' => $itemType['fullName'], 'class' => 'break e10-bold'];
-
-
+		$listItem ['device'] = $item['iotDeviceName'];
 		$listItem ['note'] = '';
 
 		return $listItem;
@@ -105,25 +99,26 @@ class ViewDevicesGroupsItemsFormList extends \e10\TableViewGrid
 	{
 		$fts = $this->fullTextSearch ();
 
-		$q [] = 'SELECT groupsItems.*';
+		$q [] = 'SELECT groupsItems.*, iotDevices.fullName AS iotDeviceName';
 		array_push ($q, ' FROM [mac_iot_devicesGroupsItems] AS [groupsItems]');
 		array_push ($q, ' LEFT JOIN [mac_iot_devicesGroups] AS devicesGroups ON groupsItems.devicesGroup = devicesGroups.ndx');
+		array_push ($q, ' LEFT JOIN [mac_iot_devices] AS iotDevices ON groupsItems.iotDevice = iotDevices.ndx');
 
 		array_push ($q, ' WHERE 1');
 		array_push ($q, ' AND groupsItems.[devicesGroup] = %i', $this->deviceGroupNdx);
 
 		// -- fulltext
-		/*
 		if ($fts != '')
 		{
 			array_push ($q, ' AND (');
 			array_push ($q,
-				' ports.[fullName] LIKE %s', '%'.$fts.'%',
-				' OR devices.[fullName] LIKE %s', '%'.$fts.'%'
+				' iotDevices.[fullName] LIKE %s', '%'.$fts.'%',
+				' OR iotDevices.[friendlyId] LIKE %s', '%'.$fts.'%',
+				' OR iotDevices.[hwId] LIKE %s', '%'.$fts.'%'
 			);
 			array_push ($q, ')');
 		}
-		*/
+
 		array_push ($q, ' ORDER BY groupsItems.[rowOrder] ' . $this->sqlLimit ());
 
 		$this->runQuery ($q);

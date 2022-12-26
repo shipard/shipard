@@ -111,10 +111,10 @@ class ViewSetups extends TableView
 		$fts = $this->fullTextSearch ();
 
 		$q [] = 'SELECT [iotSetups].*,';
-		array_push ($q, ' places.fullName AS placeName');				
+		array_push ($q, ' places.fullName AS placeName');
 		array_push ($q, ' FROM [mac_iot_setups] AS [iotSetups]');
 		array_push ($q, ' LEFT JOIN [e10_base_places] AS places ON iotSetups.place = places.ndx');
-		
+
 		array_push ($q, ' WHERE 1');
 
 		// -- fulltext
@@ -168,6 +168,10 @@ class FormSetup extends TableForm
  */
 class ViewDetailSetup extends TableViewDetail
 {
+	public function createDetailContent ()
+	{
+		$this->addDocumentCard('mac.iot.libs.dc.DCSetup');
+	}
 }
 
 /**

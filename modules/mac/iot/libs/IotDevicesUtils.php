@@ -51,7 +51,7 @@ class IotDevicesUtils extends Utility
 			return NULL;
 
 		$model['id'] = $modelId1;
-		
+
 		return $model;
 	}
 
@@ -99,7 +99,7 @@ class IotDevicesUtils extends Utility
 	public function deviceEvents($deviceNdx, $eventType)
 	{
 		$dataModel = $this->deviceDataModel($deviceNdx);
-		
+
 		$events = [];
 
 		if (!$dataModel || !isset($dataModel['properties']))
@@ -114,13 +114,13 @@ class IotDevicesUtils extends Utility
 			$events[$pid] = $p;
 		}
 
-		return $events;	
+		return $events;
 	}
 
 	public function deviceProperties($deviceNdx)
 	{
 		$dataModel = $this->deviceDataModel($deviceNdx);
-		
+
 		$events = [];
 
 		if (!$dataModel || !isset($dataModel['properties']))
@@ -134,7 +134,7 @@ class IotDevicesUtils extends Utility
 			$events[$pid] = $p;
 		}
 
-		return $events;	
+		return $events;
 	}
 
 	public function devicesGroupProperties($devicesGroupNdx)
@@ -160,18 +160,39 @@ class IotDevicesUtils extends Utility
 				$events[$pid] = $p;
 			}
 		}
-		return $events;	
+		return $events;
 	}
 
 
 	public function deviceProperty($deviceNdx, $propertyId)
 	{
 		$properties = $this->deviceProperties($deviceNdx);
-		
+
 		if (!$properties)
 			return NULL;
 
-		return $properties[$propertyId] ?? NULL;	
+		return $properties[$propertyId] ?? NULL;
+	}
+
+	public function deviceSetPropertyValue ($eventRecData, $deviceProperty)
+	{
+		$enumSetValue = $deviceProperty['enumSet'][$eventRecData['iotDevicePropertyValueEnum']] ?? NULL;
+
+		if (isset($deviceProperty['valueClass']))
+		{
+			$o = $this->app()->createObject($deviceProperty['valueClass']);
+			if ($o)
+			{
+				$value = $o->enumValue ($eventRecData, $deviceProperty, $enumSetValue);
+				if ($value !== '')
+					return $value;
+			}
+		}
+
+		if ($enumSetValue && isset($enumSetValue['value']))
+			return $enumSetValue['value'];
+		else
+			return $eventRecData['iotDevicePropertyValueEnum'];
 	}
 
 	public function deviceModel($deviceRecData)
@@ -180,7 +201,7 @@ class IotDevicesUtils extends Utility
 		if (isset($models[$deviceRecData['deviceModel']]))
 			return $models[$deviceRecData['deviceModel']];
 
-		return NULL;	
+		return NULL;
 	}
 
 	public function sceneTopic($sceneNdx)
