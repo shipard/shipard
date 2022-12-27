@@ -27,12 +27,20 @@
 		{"id": "rack", "name": "Rack", "type": "int", "reference": "mac.lan.racks"},
 		{"id": "zone", "name": "Zóna", "type": "int", "reference": "mac.base.zones"},
 
+		{"id": "saveToDb", "name": "Ukládat do databáze", "type": "logical"},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"views": [
-		{"id": "default", "class": "mac.iot.ViewSensors", "detail": "mac.iot.ViewDetailSensor"}
+		{
+			"id": "default", "class": "mac.iot.ViewSensors",
+			"details": {
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.iot.ViewDetailSensor", "order": 1000},
+				"valuesHistory": {"title": "Hodnoty", "icon": "detailReportStates", "type": "detail", "class": "mac.iot.ViewDetailSensorValuesHistory", "order": 2000}
+			}
+		}
 	],
 	"forms": [
 		{"id": "default", "class": "mac.iot.FormSensor"}

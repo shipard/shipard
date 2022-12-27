@@ -7,7 +7,7 @@
 		"setups", "setupsStates",
 		"params",
 
-	  "topics", "sensors", "sensorsValues",
+	  "topics", "sensors", "sensorsValues", "sensorsValuesHistory",
 	  "controls", "scPlacements",
 	  "scenes", 
 		"scenariosSchedule", "scenariosActions",

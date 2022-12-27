@@ -1,0 +1,19 @@
+{
+	"id": "mac.iot.sensorsValuesHistory", "sql": "mac_iot_sensorsValuesHistory", "name": "Historie hodnot senzorů",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "sensor", "name": "Senzor", "type": "int", "reference": "mac.iot.sensors"},
+		{"id": "valueNum", "name": "Hodnota", "type": "number", "dec": 3},
+		{"id": "valueInt", "name": "Hodnota", "type": "int"},
+		{"id": "time","name": "Čas změření hodnoty", "type": "timestamp"},
+    {"id": "year", "name": "Rok", "type": "int"},
+    {"id": "month", "name": "Měsíc", "type": "short"},
+    {"id": "day", "name": "Den", "type": "short"},
+    {"id": "hour", "name": "Hodina", "type": "short"},
+    {"id": "valueChanged", "name": "Změna hodnoty", "type": "logical"}
+	],
+	"views": [
+		{"id": "default", "class": "mac.iot.ViewSensorsValuesHistory"}
+	],
+	"options": ["systemTable"]
+}

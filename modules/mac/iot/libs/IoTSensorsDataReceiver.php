@@ -28,14 +28,49 @@ class IoTSensorsDataReceiver extends Utility
 			return;
 
 		$now = new \DateTime();
+		$ltz = date_default_timezone_get();
+		$localTimezone = new \DateTimeZone($ltz);
 
 		foreach ($data['sensorsData'] as $sensorData)
 		{
-			if (isset($sensorData['ndx']))
+			if (isset($sensorData['sensorNdx']))
 			{
+				$sensorRecData = $this->app()->loadItem($sensorData['sensorNdx'], 'mac.iot.sensors');
+				if (!$sensorRecData)
+				{
+					error_log("__SENSOR `{$sensorData['sensorNdx']}` NOT FOUND ___");
+					continue;
+				}
+				$valueFloat = floatval($sensorData['value']);
+
 				$this->db()->query('UPDATE [mac_iot_sensorsValues] SET [value] = %f', $sensorData['value'],
 					', [time] = %t', $now, ', [counter] = [counter] + 1',
-					' WHERE [ndx] = %i', $sensorData['ndx']);
+					' WHERE [ndx] = %i', $sensorData['sensorNdx']);
+
+				if ($sensorRecData['saveToDb'])
+				{
+					$ts = new \DateTime('@'.$sensorData['time'] / 1000);
+					$ts->setTimezone($localTimezone);
+
+					$valueChanged = 1;
+					$lastValue = $this->db()->query('SELECT * FROM [mac_iot_sensorsValuesHistory] WHERE [sensor] = %i', $sensorData['sensorNdx'],
+																					' ORDER BY ndx DESC LIMIT 1')->fetch();
+					if ($lastValue && $lastValue['valueNum'] == $valueFloat)
+						$valueChanged = 0;
+
+					$valueInt = intval($sensorData['value']);
+					$newValue = [
+						'sensor' => $sensorData['sensorNdx'],
+						'valueNum' => $valueFloat, 'valueInt' => $valueInt,
+						'time' => $ts,
+						'year' => intval($ts->format('Y')), 'month' => intval($ts->format('m')),
+						'day' => intval($ts->format('d')), 'hour' => intval($ts->format('H')),
+						'valueChanged' => $valueChanged,
+					];
+
+					$this->db()->query('INSERT INTO [mac_iot_sensorsValuesHistory]', $newValue);
+				}
+
 				continue;
 			}
 

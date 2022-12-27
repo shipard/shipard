@@ -218,6 +218,7 @@ class FormSensor extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
 		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		$quantityCfg =  $this->app()->cfgItem ('mac.data.quantityTypes.'.$this->recData['quantityType'], NULL);
@@ -253,6 +254,10 @@ class FormSensor extends TableForm
 					$this->addColumnInput('srcLan');
 				$this->closeTab ();
 
+				$this->openTab ();
+					$this->addColumnInput('saveToDb');
+				$this->closeTab ();
+
 				$this->openTab (TableForm::ltNone);
 					$this->addAttachmentsViewer();
 				$this->closeTab ();
@@ -263,10 +268,20 @@ class FormSensor extends TableForm
 
 
 /**
- * Class ViewDetailSensor
- * @package mac\iot
+ * class ViewDetailSensor
  */
 class ViewDetailSensor extends TableViewDetail
 {
+}
+
+/**
+ * class ViewDetailSensorValuesHistory
+ */
+class ViewDetailSensorValuesHistory extends TableViewDetail
+{
+	public function createDetailContent ()
+	{
+		$this->addContentViewer ('mac.iot.sensorsValuesHistory', 'default', ['sensorNdx' => $this->item ['ndx']]);
+	}
 }
 
