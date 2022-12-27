@@ -1,7 +1,7 @@
 {
 	"cz": {
 		"name": "EET Česká republika",
-		"country": ["cz"], "validFrom": "2016-01-10", "validTo": "0000-00-00",
+		"country": ["cz"], "validFrom": "2016-01-10", "validTo": "2022-12-31",
 		"docTypes": ["invno", "cash", "cashreg"], "paymentMethods": [1, 2],
 		"cashInOperations": [1010001, 1010002, 1010099, 1020102, 1020103, 1030001],
 		"engine": "lib.ros.cz.RosEngine"
