@@ -142,6 +142,28 @@ class ReportTest extends \e10doc\core\libs\reports\GlobalReport
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
+			$rosTypeCfg = $this->app()->cfgItem('terminals.ros.types.'.$r['rosType'], NULL);
+			if (!$rosTypeCfg)
+			{
+				$newItem = ['title' => $r['title'], 'vatId' => $r['vatIdPrimary']];
+				$newItem['status'] = 'Chybný typ registrace EET';
+				$this->badRegs[] = $newItem;
+				continue;
+			}
+
+			if ($rosTypeCfg['validTo'] !== '0000-00-00')
+			{
+				$rtValidTo = Utils::createDateTime($rosTypeCfg['validTo']);
+				if (Utils::dateIsBlank($r['validTo']) || $r['validTo'] < $rtValidTo)
+				{
+					$newItem = ['title' => $r['title'], 'vatId' => $r['vatIdPrimary']];
+					$newItem['status'] = "Typ EET `{$rosTypeCfg['name']}` je ukončen k  ".Utils::datef($rtValidTo, '%d').'. Ukončete platnost registrace.';
+					$newItem['_options'] = ['cellClasses' => ['status' => 'e10-warning1']];
+					$this->badRegs[] = $newItem;
+					continue;
+				}
+			}
+
 			$ci = $tableRosRegs->certificateInfo($r);
 			if (isset($ci['status']) && $ci['status'])
 				continue;
