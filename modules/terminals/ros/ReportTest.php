@@ -154,7 +154,7 @@ class ReportTest extends \e10doc\core\libs\reports\GlobalReport
 			if ($rosTypeCfg['validTo'] !== '0000-00-00')
 			{
 				$rtValidTo = Utils::createDateTime($rosTypeCfg['validTo']);
-				if (Utils::dateIsBlank($r['validTo']) || $r['validTo'] < $rtValidTo)
+				if (Utils::dateIsBlank($r['validTo']) || $r['validTo'] > $rtValidTo)
 				{
 					$newItem = ['title' => $r['title'], 'vatId' => $r['vatIdPrimary']];
 					$newItem['status'] = "Typ EET `{$rosTypeCfg['name']}` je ukončen k  ".Utils::datef($rtValidTo, '%d').'. Ukončete platnost registrace.';
