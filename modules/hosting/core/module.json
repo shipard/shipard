@@ -4,7 +4,7 @@
 	"tables": [
 		"hostings", "servers", "serversInfo",
 		"partners", "partnersPersons",
-		"dataSources", "dsStats", "dsUsers", "dsUsersOptions", "dsUsersSummary"
+		"dataSources", "dsStats", "dsUsers", "dsPersons", "dsUsersOptions", "dsUsersSummary"
 	],
 	"config": [
 		{"id": "+appSkeleton", "file": "hosting.appSkeleton.json"},

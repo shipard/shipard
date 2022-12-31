@@ -5,6 +5,7 @@
 		"viewers": {
 			"e10.persons.persons": {"hostingUsers": 2},
 			"hosting.core.dataSources": {"default": 2, "dashboard": 1},
+			"hosting.core.dsPersons": {"default": 2},
 			"hosting.core.servers": {"default": 2},
 			"hosting.core.requests": {"default": 2},
 			"hosting.core.dsUsers": {"default": 2, "e10pro.hosting.server.ViewUsersDataSources": 2},

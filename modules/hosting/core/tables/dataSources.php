@@ -278,6 +278,87 @@ use \e10\base\libs\UtilsBase;
 
 		return ['table' => $t, 'header' => $h];
 	}
+
+	public function getUsersHelpdeskDataSources()
+	{
+		$dataSources = [];
+
+		// -- partners persons
+		$partnersNdxs = [];
+		$qpp = [];
+		array_push($qpp, 'SELECT * FROM [hosting_core_partnersPersons]');
+		array_push($qpp, ' WHERE [person] = %i', $this->app()->userNdx());
+		array_push($qpp, ' AND [docState] = %i', 4000);
+		array_push($qpp, ' AND [isSupport] = %i', 1);
+		$rows = $this->db()->query($qpp);
+		foreach ($rows as $r)
+		{
+			if (!in_array($r['partner'], $partnersNdxs))
+				$partnersNdxs[] = $r['partner'];
+		}
+
+		// partners datasources
+		$qpds = [];
+		array_push($qpds, 'SELECT * FROM [hosting_core_dataSources]');
+		array_push($qpds, ' WHERE [partner] IN %in', $partnersNdxs);
+		array_push($qpds, ' AND [docState] = %i', 4000);
+		$rows = $this->db()->query($qpds);
+		foreach ($rows as $r)
+		{
+			$dataSources[$r['ndx']] = 2;
+		}
+
+		// persons datasources
+		$qpds = [];
+		array_push($qpds, 'SELECT * FROM [hosting_core_dsPersons]');
+		array_push($qpds, ' WHERE [person] = %i', $this->app()->userNdx());
+		array_push($qpds, ' AND [docState] = %i', 4000);
+		array_push($qpds, ' AND [isSupport] = %i', 1);
+		$rows = $this->db()->query($qpds);
+		foreach ($rows as $r)
+		{
+			$dataSources[$r['dataSource']] = 2;
+		}
+
+		return $dataSources;
+	}
+
+	public function getHelpdeskDataSourcePersons($dsNdx)
+	{
+		$persons = [];
+
+		$dataSourceRecData = $this->app()->loadItem($dsNdx, 'hosting.core.dataSources');
+		if (!$dataSourceRecData)
+			return $persons;
+
+		// -- dataSource partner persons
+		$qpp = [];
+		array_push($qpp, 'SELECT * FROM [hosting_core_partnersPersons]');
+		array_push($qpp, ' WHERE [partner] = %i', $dataSourceRecData['partner']);
+		array_push($qpp, ' AND [docState] = %i', 4000);
+		array_push($qpp, ' AND [isSupport] = %i', 1);
+		$rows = $this->db()->query($qpp);
+		foreach ($rows as $r)
+		{
+			if (!in_array($r['person'], $persons))
+				$persons[] = $r['person'];
+		}
+
+		// -- dataSource persons
+		$qpds = [];
+		array_push($qpds, 'SELECT * FROM [hosting_core_dsPersons]');
+		array_push($qpds, ' WHERE [dataSource] = %i', $dsNdx);
+		array_push($qpds, ' AND [docState] = %i', 4000);
+		array_push($qpds, ' AND [isSupport] = %i', 1);
+		$rows = $this->db()->query($qpds);
+		foreach ($rows as $r)
+		{
+			if (!in_array($r['person'], $persons))
+				$persons[] = $r['person'];
+		}
+
+		return $persons;
+	}
 }
 
 
@@ -628,6 +709,19 @@ class ViewDetailDataSourceUsers extends TableViewDetail
 	{
 		$this->addContentViewer ('hosting.core.dsUsers', 'hosting.core.ViewDSUsers',
 														 array ('dataSource' => $this->item ['ndx']));
+	}
+}
+
+
+/**
+ * class ViewDetailDataSourcePersons
+ */
+class ViewDetailDataSourcePersons extends TableViewDetail
+{
+	public function createDetailContent ()
+	{
+		$this->addContentViewer ('hosting.core.dsPersons', 'hosting.core.ViewDSPersons',
+			['dataSource' => $this->item ['ndx']]);
 	}
 }
 

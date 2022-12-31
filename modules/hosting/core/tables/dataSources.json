@@ -70,7 +70,8 @@
     {"id": "default", "class": "hosting.core.ViewDataSources",
 			"details": {
 				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "hosting.core.ViewDetailDataSources"},
-				"users": {"title": "Uživatelé", "icon": "system/iconUser", "type": "detail", "class": "hosting.core.ViewDetailDataSourceUsers"}
+				"users": {"title": "Uživatelé", "icon": "system/iconUser", "type": "detail", "class": "hosting.core.ViewDetailDataSourceUsers"},
+				"persons": {"title": "Osoby", "icon": "detailPersons", "type": "detail", "class": "hosting.core.ViewDetailDataSourcePersons"}
 			}
 		},
 		{"id": "dashboard", "class": "e10pro.hosting.client.libs.DataSourcesDashboardViewer2",

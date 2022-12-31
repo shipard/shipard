@@ -117,7 +117,8 @@ class AddTicketNotification extends Utility
 	function loadPersonsToNotify(&$persons)
 	{
 		$this->loadPersonsToNotify_thisDoc ($persons);
-		$this->loadPersonsToNotify_Section($this->docRecData['helpdeskSection'],$persons);
+		$this->loadPersonsToNotify_Section($this->docRecData['helpdeskSection'], $persons);
+		$this->loadPersonsToNotify_DS($persons);
 	}
 
 	public function loadPersonsToNotify_thisDoc (&$persons)
@@ -146,9 +147,24 @@ class AddTicketNotification extends Utility
 		}
 	}
 
+	public function loadPersonsToNotify_DS (&$persons)
+	{
+		if (!($this->docRecData['dataSource'] ?? 0))
+			return;
+
+		/** @var \hosting\core\TableDataSources $tableDataSources */
+		$tableDataSources = $this->app()->table('hosting.core.dataSources');
+		if ($tableDataSources)
+		{
+			$dsPersons = $tableDataSources->getHelpdeskDataSourcePersons($this->docRecData['dataSource']);
+			foreach ($dsPersons as $pndx)
+				$persons[$pndx] = 1;
+		}
+	}
+
 	public function run()
 	{
-		if ($this->docRecData['docState'] == 1000 || $this->docRecData['docState'] == 4000)
+		if ($this->docRecData['docState'] == 1000 || ($this->docRecData['docState'] == 4000 && $this->docRecData['activateCnt'] > 1))
 			return; // concept / edit
 
 		$this->createUsersNotifications();
