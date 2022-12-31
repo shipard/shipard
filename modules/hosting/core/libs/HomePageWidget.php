@@ -20,8 +20,14 @@ class HomePageWidget extends WidgetBoard
 	var $today;
 	var $mobileMode;
 
+	var $helpdeskDataSources = NULL;
+
 	public function init ()
 	{
+		/** @var \hosting\core\TableDataSources */
+		$tableDataSources = $this->app()->table('hosting.core.dataSources');
+		$this->helpdeskDataSources = $tableDataSources->getUsersHelpdeskDataSources();
+
 		$this->activeTabId = $this->app()->testGetParam ('e10-widget-dashboard-tab-id');
 		$this->projectsAccessLevel = $this->app()->checkAccess (['object' => 'viewer', 'table' => 'plans.core.items', 'viewer' => 'hosting.core.libs.ViewerProjectsGrid']);
 
@@ -256,7 +262,7 @@ class HomePageWidget extends WidgetBoard
 		// -- hedelpDesk
 		if ($this->activeTopTab === 'viewer-mode-helpdesk')
 		{
-			if ($this->app()->hasRole('hstngha'))
+			if (count($this->helpdeskDataSources))
 			{
 				$viewerMode = '1';
 				$vmp = explode ('-', $this->activeTopTabRight);
@@ -326,7 +332,7 @@ class HomePageWidget extends WidgetBoard
 		if ($this->projectsAccessLevel)
 			$tabs['viewer-mode-devProjects'] = ['text' => ' Projekty', 'icon' => 'user/code', 'action' => 'viewer-mode-devProjects'];
 
-		if ($this->app()->hasRole('hstngha'))
+		if (count($this->helpdeskDataSources))
 			$tabs['viewer-mode-helpdesk'] = ['text' => 'Helpdesk', 'icon' => 'tables/helpdesk.core.tickets', 'action' => 'viewer-mode-helpdesk', 'ntfBadgeId' => "ntf-badge-hhdsk-total",];
 
 		$tabs['viewer-mode-user'] = ['text' => ' '.$userInfo['name'], 'icon' => 'system/iconUser', 'action' => 'viewer-mode-user'];

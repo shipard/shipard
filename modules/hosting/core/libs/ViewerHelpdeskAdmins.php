@@ -17,6 +17,10 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 	var $usersSections = NULL;
 	var $allSections = NULL;
 
+	/** @var \hosting\core\TableDataSources */
+	var $tableDataSources;
+	var $helpdeskDataSources;
+
 	var $classification = [];
 	var $linkedPersons = [];
 	var $notifications = [];
@@ -24,6 +28,9 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 	public function init ()
 	{
 		parent::init();
+
+		$this->tableDataSources = $this->app()->table('hosting.core.dataSources');
+		$this->helpdeskDataSources = $this->tableDataSources->getUsersHelpdeskDataSources();
 
 		$this->loadNotifications ();
 
@@ -132,6 +139,7 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 		array_push ($q, ' LEFT JOIN [e10_persons_persons] AS [authors] ON [tickets].[author] = [authors].ndx');
     array_push ($q, ' LEFT JOIN [hosting_core_dataSources] AS [ds] ON [tickets].[dataSource] = [ds].ndx');
 		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND [tickets].[dataSource] IN %in', array_keys($this->helpdeskDataSources));
 
 		// -- special queries
 		$qv = $this->queryValues ();
@@ -188,7 +196,10 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 
 		// -- data sources
 		$qds[] = 'SELECT * FROM hosting_core_dataSources AS ds';
-		array_push ($qds, ' WHERE [helpdeskMode] != %i', 0);
+		array_push ($qds, ' WHERE 1');
+		array_push ($qds, ' AND [helpdeskMode] != %i', 0);
+		array_push ($qds, ' AND [ndx] IN %in', array_keys($this->helpdeskDataSources));
+		array_push ($qds, ' AND [docState] = %i', 4000);
 		array_push ($qds, ' ORDER BY ds.shortName');
 		$dss = $this->db()->query ($qds)->fetchPairs ('ndx', 'shortName');
 		$this->qryPanelAddCheckBoxes($panel, $qry, $dss, 'ds', 'Databáze');
