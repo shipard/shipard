@@ -17,6 +17,7 @@ class SumTable extends E10ApiObject
 	var $code = '';
 	var $renderAll = 0;
 	var $queryParams = [];
+	var $options = [];
 	var $bgLevels = [];
 	var $colClasses = [];
 
@@ -24,6 +25,8 @@ class SumTable extends E10ApiObject
 	var $formId = '';
 	var $columnId = '';
 	var $finalColumnName = '';
+	var $hideHeader = 1;
+	var $extraHeader = NULL;
 
 	public function init ()
 	{
@@ -46,6 +49,12 @@ class SumTable extends E10ApiObject
 			$this->queryParams[$key] = $value;
 	}
 
+	public function setOptions($options)
+	{
+		foreach ($options as $key => $value)
+			$this->options[$key] = $value;
+	}
+
 	public function setColumnId($formId, $columnId, $finalColumnName)
 	{
 		$this->formId = $formId;
@@ -58,7 +67,12 @@ class SumTable extends E10ApiObject
 	{
 		$c = '';
 
-		$params = ['hideHeader' => 1];
+		$params = [];
+		if ($this->hideHeader)
+			$params['hideHeader'] = 1;
+		$params['tableClass'] = 'main e10-pane e10-pane-table';
+		if ($this->extraHeader)
+			$params['header'] = $this->extraHeader;
 		if ($this->bgLevels !== NULL)
 			$params['bgLevels'] = $this->bgLevels;
 		if (count($this->colClasses))

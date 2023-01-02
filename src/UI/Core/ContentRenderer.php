@@ -327,11 +327,18 @@ class ContentRenderer extends \Shipard\Base\BaseObject
 		$o->renderAll = 1;
 		if (isset($cp['sumTable']['queryParams']))
 			$o->setQueryParams($cp['sumTable']['queryParams']);
+		if (isset($cp['sumTable']['options']))
+			$o->setOptions($cp['sumTable']['options']);
 		$o->init();
 		$o->loadData();
 		$o->renderCode();
 
-		return $o->code;
+		$c = '';
+		if (isset($cp['title']) && $cp['title'])
+		$c .= '<div class="subtitle">'.$this->app()->ui()->composeTextLine($cp['title']).'</div>';
+		$c .= $o->code;
+
+		return $c;
 	}
 
 	public function createCodeAttachments ($cp, $app)
