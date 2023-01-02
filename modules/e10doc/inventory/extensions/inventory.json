@@ -8,7 +8,8 @@
 					"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10.witems.ViewDetailItems", "order": 1000},
 					"inventory": {"title": "Zásoby", "icon": "system/detailStock", "type": "detail", "class": "e10doc.inventory.ViewDetailItemsInventory", "order": 5800},
 					"journal": {"title": "Pohyby", "icon": "system/detailMovement", "type": "detail", "class": "e10doc.core.ViewDetailItemsJournal", "order": 6000},
-					"using": {"title": "Použití", "icon": "system/detailUsage", "type": "detail", "class": "e10.witems.ViewDetailUsing", "order": 8000}
+					"using": {"title": "Použití", "icon": "system/detailUsage", "type": "detail", "class": "e10.witems.ViewDetailUsing", "order": 8000},
+					"analysis": {"title": "Analýza", "icon": "system/detailMovement", "type": "detail", "class": "e10doc.core.ViewDetailItemsAnalysis", "order": 9000}
 				}
 			},
 			"default": {
@@ -19,7 +20,8 @@
 			"byCategories": {
 				"details": {
 					"inventory": {"title": "Zásoby", "icon": "system/detailStock", "type": "detail", "class": "e10doc.inventory.ViewDetailItemsInventory", "order": 5800},
-					"journal": {"title": "Pohyby", "icon": "system/detailMovement", "type": "detail", "class": "e10doc.core.ViewDetailItemsJournal", "order": 6000}
+					"journal": {"title": "Pohyby", "icon": "system/detailMovement", "type": "detail", "class": "e10doc.core.ViewDetailItemsJournal", "order": 6000},
+					"analysis": {"title": "Analýza", "icon": "system/detailMovement", "type": "detail", "class": "e10doc.core.ViewDetailItemsAnalysis", "order": 9000}
 				}
 			}
 		}

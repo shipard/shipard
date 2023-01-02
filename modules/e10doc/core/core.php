@@ -273,6 +273,16 @@ class ViewDetailItemsJournal extends \E10\TableViewDetail
 	}
 }
 
+/**
+ * class ViewDetailItemsAnalysis
+ */
+class ViewDetailItemsAnalysis extends \E10\TableViewDetail
+{
+	public function createDetailContent ()
+	{
+		$this->addDocumentCard('e10doc.core.libs.dc.DCWitemAnalysis');
+	}
+}
 
 /**
  * Prohlížeč pohybů položky
