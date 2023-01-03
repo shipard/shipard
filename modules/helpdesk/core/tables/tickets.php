@@ -128,6 +128,36 @@ class TableTickets extends DbTable
 		if (count($responseInfo))
 			$hdr ['info'][] = ['class' => 'info lh16', 'value' => $responseInfo];
 
+		// -- notifications
+		if ($recData['docState'] !== 1000 && $recData['ndx'])
+		{
+			$q = [];
+
+			array_push ($q, 'SELECT ntfs.*, [persons].[fullName] AS [personName]');
+			array_push ($q, ' FROM [e10_base_notifications] AS [ntfs]');
+			array_push ($q, ' LEFT JOIN [e10_persons_persons] AS [persons] ON [ntfs].[personDest] = [persons].[ndx]');
+			array_push ($q, ' WHERE 1');
+			array_push ($q, 'AND tableId = %s', 'helpdesk.core.tickets');
+			array_push ($q, 'AND recId = %i', $recData['ndx']);
+			$rows = $this->db()->query ($q);
+
+			$addTitle = 1;
+			$ntfs = [];
+			foreach ($rows as $r)
+			{
+				if ($addTitle)
+					$ntfs[] = ['text' => 'Přečetli:', 'class' => 'lh16'];
+				if ($r['state'])
+					$ntfs[] = ['text' => $r['personName'], 'class' => 'label label-default lh16', 'icon' => 'system/iconCheck'];
+				else
+					$ntfs[] = ['text' => $r['personName'], 'class' => 'label label-info lh16', 'icon' => 'user/ban'];
+
+				$addTitle = 0;
+			}
+			if (count($ntfs))
+				$hdr ['info'][] = ['class' => 'info lh16', 'value' => $ntfs];
+		}
+
 		return $hdr;
 	}
 
@@ -170,7 +200,10 @@ class TableTickets extends DbTable
 	{
 		$recData = parent::docsLog($ndx);
 		if ($recData['activateCnt'] === 1)
+		{
 			$this->doNotify($recData, 0, NULL);
+			//$this->addSystemComment($ndx, $recData);
+		}
 		else
 			$this->addSystemComment($ndx, $recData);
 		return $recData;

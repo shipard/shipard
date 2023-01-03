@@ -117,6 +117,7 @@ class ViewTicketsComments extends TableView
   var \lib\core\texts\Renderer $textRenderer;
 
 	var $notifyPks = [];
+	var $othersNotifications = [];
 
 	public function init ()
 	{
@@ -171,6 +172,18 @@ class ViewTicketsComments extends TableView
 				'data-srcobjecttype' => 'viewer', 'data-srcobjectid' => $this->vid,
 				'class' => 'pull-right'
 			];
+		}
+
+		if (isset($this->othersNotifications[$ndx]))
+		{
+			$title[] = ['text' => 'Přečetli:', 'class' => ''];
+			foreach ($this->othersNotifications[$ndx] as $urn)
+			{
+				if ($urn['state'])
+					$title[] = ['text' => $urn['personName'], 'class' => 'label label-default lh16', 'icon' => 'system/iconCheck'];
+				else
+					$title[] = ['text' => $urn['personName'], 'class' => 'label label-info lh16', 'icon' => 'user/ban'];
+			}
 		}
 
 		$item ['pane']['title'][] = [
@@ -346,6 +359,7 @@ class ViewTicketsComments extends TableView
 			return;
 
 		$this->loadNotifications();
+		$this->loadOthersNotifications();
 		//$this->atts = \E10\Base\loadAttachments ($this->app(), $this->pks, 'wkf.core.comments');
 	}
 
@@ -391,6 +405,29 @@ class ViewTicketsComments extends TableView
 
 		foreach ($rows as $r)
 			$this->notifyPks[] = $r['recId'];
+	}
+
+	protected function loadOthersNotifications ()
+	{
+		$q = [];
+
+		array_push ($q, 'SELECT ntfs.*, [persons].[fullName] AS [personName]');
+		array_push ($q, ' FROM [e10_base_notifications] AS [ntfs]');
+		array_push ($q, ' LEFT JOIN [e10_persons_persons] AS [persons] ON [ntfs].[personDest] = [persons].[ndx]');
+		array_push ($q, ' WHERE 1');
+		array_push ($q, 'AND tableId = %s', 'helpdesk.core.tickets');
+		array_push ($q, 'AND recIdMain = %i', $this->ticketNdx);
+		array_push ($q, 'AND recId IN %in', $this->pks);
+		$rows = $this->db()->query ($q);
+
+		foreach ($rows as $r)
+		{
+			$this->othersNotifications[$r['recId']][] = [
+				'personNdx' => $r['personDest'],
+				'personName' => $r['personName'],
+				'state' => $r['state'],
+			];
+		}
 	}
 }
 
