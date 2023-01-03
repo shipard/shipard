@@ -111,7 +111,7 @@ class Item extends \e10\DocumentCard
 			$item = [
 				'code' => [
 					['text' => $r['itemCodeText'], 'class' => 'e10-bold block'],
-					['text' => $codeKind['sn'], 'class' => 'e10-small'],
+					['text' => $codeKind['sn'] ?? '-- chybný kód položky --', 'class' => 'e10-small'],
 				],
 				'info' => [],
 			];
