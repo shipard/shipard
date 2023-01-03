@@ -5,7 +5,7 @@
 			"helpdesk.core.ticketStates": {"default": 2}
 		}
 	},
-	"pwuser": {
+	"user": {
 		"viewers": {
 			"helpdesk.core.tickets": {"default": 2},
 			"helpdesk.core.ticketsComments": {"default": 2}
