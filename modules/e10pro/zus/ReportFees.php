@@ -383,7 +383,7 @@ class reportFees extends \E10\GlobalReport
 				$btn['subButtons'] = [];
 				$btn['subButtons'][] = [
 						'type' => 'action', 'action' => 'addwizard', 'icon' => 'system/iconEmail', 'title' => 'Odeslat emailem', 'btnClass' => 'btn-primary btn-xs',
-						'data-table' => 'e10.persons.persons', 'data-pk' => $r['studentNdx'], 'data-class' => 'e10.SendFormReportWizard',
+						'data-table' => 'e10.persons.persons', 'data-pk' => $r['studentNdx'], 'data-class' => 'Shipard.Report.SendFormReportWizard',
 						'data-addparams' => 'reportClass=' . 'e10doc.balance.RequestForPayment' . '&documentTable=' . 'e10.persons.persons'
 				];
 				$invoices[] = $btn;
