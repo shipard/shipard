@@ -34,17 +34,17 @@
 		<td class="info">
 		<table class="docInfo">
 			<tr>
-				<td class='label'>{{@dict;Způsob úhrady}}:</td><td class='value'>{{@dict;dataItem:data.head.print.paymentMethod}}</td>		
+				<td class='label'>{{@dict;Způsob úhrady}}:</td><td class='value'>{{@dict;dataItem:data.head.print.paymentMethod}}</td>
 			</tr>
 			<tr>
 				<td>{{@dict;Bankovní spojení}}:</td><td>{{data.myBankAccount.bankAccount}}</td>
-			</tr>			
+			</tr>
 			{{#data.myBankAccount.iban}}
 				<tr>
 					<td>{{@dict;IBAN}}:</td><td> {{data.myBankAccount.iban}} <br/></td>
 				</tr>
 				{{/data.myBankAccount.iban}}
-				
+
 			<tr>
 				<td class='label'>{{@dict;Variabilní symbol}}:</td><td class='value'><b>{{data.head.symbol1}}</b></td>
 			</tr>
@@ -53,7 +53,7 @@
 					<td class='label'>{{@dict;Specifický symbol}}:</td><td class='value'><b>{{data.head.symbol2}}</b></td>
 				</tr>
 			{{/data.head.symbol2}}
-		</table>			
+		</table>
 		</td>
 		</tr>
 	</table>
@@ -72,7 +72,7 @@
 						{{data.owner.address.zipcode}} {{data.owner.address.city}}<br/>
 					{{/data.flags.foreignCountry}}
 					{{#data.flags.foreignCountry}}
-						{{data.owner.address.countryNameSC2}}-{{data.owner.address.zipcode}} {{data.owner.address.city}}<br/>
+						{{data.owner.address.zipcode}} {{data.owner.address.city}}<br/>
 						{{data.owner.address.countryNameEng}}
 					{{/data.flags.foreignCountry}}
 					<br/>
@@ -92,7 +92,7 @@
 						{{data.person.address.zipcode}} {{data.person.address.city}}<br/>
 					{{/data.flags.foreignCountry}}
 					{{#data.flags.foreignCountry}}
-						{{data.person.address.countryNameSC2}}-{{data.person.address.zipcode}} {{data.person.address.city}}<br/>
+						{{data.person.address.zipcode}} {{data.person.address.city}}<br/>
 						{{data.person.address.countryNameEng}}
 					{{/data.flags.foreignCountry}}
 
@@ -142,9 +142,9 @@
 
 	<table class='paymentInfo'>
 		<tr>
-			<td class='qrPayment'>			
+			<td class='qrPayment'>
 			</td>
-			
+
 			<td class='taxInfo'>
 				{{#data.head.taxPayer}}
 					<table class="taxDescr {{#data.options.docReportsTablesRoundedCorners}} rounded{{/data.options.docReportsTablesRoundedCorners}}">
@@ -176,7 +176,7 @@
 								</tr>
 							{{/data.flags.foreignCurrency}}
 						</thead>
-									
+
 						{{#data.taxes}}
 							<tr>
 								{{#data.flags.foreignCurrency}}
@@ -197,14 +197,14 @@
 									<td class='number'>{{print.sumTax}}</td>
 									<td class='number'>{{print.sumTotal}}</td>
 								{{/data.flags.foreignCurrency}}
-							</tr>								
+							</tr>
 						{{/data.taxes}}
 
-						<tr>							
-							{{#data.flags.foreignCurrency}}							
+						<tr>
+							{{#data.flags.foreignCurrency}}
 								<td class='label' colspan='2' style="font-weight: bold;">{{@dict;Celkem}}</td>
 							{{/data.flags.foreignCurrency}}
-											
+
 							{{^data.flags.foreignCurrency}}
 								<td class='label' colspan='2'>{{@dict;Celkem}} {{data.head.print.currency}}</td>
 							{{/data.flags.foreignCurrency}}
