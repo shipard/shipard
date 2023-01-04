@@ -11,8 +11,12 @@ use \e10\base\libs\UtilsBase;
 
 class FormPurchaseDocs extends \e10doc\core\FormHeads
 {
+	var $testNewPersons = 0;
+
 	public function renderForm ()
 	{
+		$this->testNewPersons = intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
+
 		$this->checkInfoPanelAttachments('20vw');
 
 		$taxPayer = $this->recData['taxPayer'];
@@ -297,19 +301,35 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 		else
 		{
 			$bankAccounts = [];
-			if (isset($properties[$personNdx]['payments']))
+
+			if ($this->testNewPersons)
 			{
-				foreach ($properties[$personNdx]['payments'] as $ba)
+				$qba [] = 'SELECT [ba].* ';
+				array_push ($qba, ' FROM [e10_persons_personsBA] AS [ba]');
+				array_push ($qba, ' WHERE 1');
+				array_push ($qba, ' AND [ba].[person] = %i', $personNdx);
+				$baRows = $this->app()->db()->query($qba);
+				foreach ($baRows as $ba)
 				{
-					$bankAccounts[$ba['text']] = ['text' => $ba['text']];
-					if (isset($ba['prefix']))
-						$bankAccounts[$ba['text']]['suffix'] = $ba['prefix'];
+					$bankAccounts[$ba['bankAccount']] = ['text' => $ba['bankAccount']];
 				}
-				if ($this->recData['bankAccount'] === '')
-					$this->recData['bankAccount'] = key($bankAccounts);
-				if (!isset($bankAccounts[$this->recData['bankAccount']]))
-					$bankAccounts[$this->recData['bankAccount']] = $this->recData['bankAccount'];
 			}
+			else
+			{
+				if (isset($properties[$personNdx]['payments']))
+				{
+					foreach ($properties[$personNdx]['payments'] as $ba)
+					{
+						$bankAccounts[$ba['text']] = ['text' => $ba['text']];
+						if (isset($ba['prefix']))
+							$bankAccounts[$ba['text']]['suffix'] = $ba['prefix'];
+					}
+				}
+			}
+			if ($this->recData['bankAccount'] === '')
+			$this->recData['bankAccount'] = key($bankAccounts);
+			if (!isset($bankAccounts[$this->recData['bankAccount']]))
+				$bankAccounts[$this->recData['bankAccount']] = $this->recData['bankAccount'];
 			if (count($bankAccounts))
 			{
 				$this->addStatic(['text' => 'Účet pro úhradu:', 'icon' => 'tables/e10doc.base.bankaccounts', 'class' => 'block']);
@@ -318,52 +338,91 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 		}
 
 		// -- address
-		$addresses = [];
-		$deliveryAddress = 0;
-		$addressesOther1 = [];
-		$other1Address = 0;
-
-		$q = [];
-		array_push($q, 'SELECT * FROM [e10_persons_address]');
-		array_push($q, ' WHERE tableid = %s ', 'e10.persons.persons', ' AND recid = %i', $personNdx);
-		array_push($q, ' AND [docState] != %i', 9800);
-
-		$rows = $this->table->db()->query ($q);
-		foreach ($rows as $r)
+		if ($this->testNewPersons)
 		{
-			$title = [];
-			if ($r['specification'] !== '')
-				$title[] = ['text' => $r['specification']];
-			if ($r['street'] !== '')
-				$title[] = ['text' => $r['street']];
-			$title[] = ['text' => $r['city'].' '.$r['zipcode']];
+			$addrPosts = [];
+			$addrOffices = [];
+			$suggestedAddrPost = 0;
+			$suggestedAddrOffice = 0;
 
-			if ($r['type'] !== 99)
+			$q = [];
+			array_push($q, 'SELECT [addrs].*');
+			array_push($q, ' FROM [e10_persons_personsContacts] AS [addrs]');
+			array_push($q, ' WHERE [addrs].[person] = %i', $personNdx);
+			array_push($q, ' AND [addrs].[docState] = %i', 4000);
+			array_push($q, ' AND [addrs].[flagAddress] = %i', 1);
+			$rows = $this->app()->db()->query($q);
+			foreach ($rows as $r)
 			{
-				$addresses[$r['ndx']] = [$title];
-				if ($r['type'] == 4)
-					$deliveryAddress = $r['ndx'];
-			}
-			if ($r['type'] === 99)
-			{
-				$addressesOther1[$r['ndx']] = [$title];
-				$other1Address = $r['ndx'];
-			}
+				$title = [];
+				if ($r['addrSpecification'] !== '')
+					$title[] = ['text' => $r['adrSpecification']];
+				if ($r['adrStreet'] !== '')
+					$title[] = ['text' => $r['adrStreet']];
+				$title[] = ['text' => $r['adrCity'].' '.$r['adrZipCode']];
 
-			$classification = UtilsBase::loadClassification ($this->table->app(), 'e10.persons.address', [$r['ndx']], 'ml1 label');
-			if (isset ($classification [$r['ndx']]))
-			{
-				forEach ($classification [$r['ndx']] as $clsfGroup)
+				$addrPosts[$r['ndx']] = [$title];
+				$suggestedAddrPost = $r['ndx'];
+
+				if ($r['flagOffice'])
 				{
-					if ($r['type'] == 99)
-						$addressesOther1[$r['ndx']] = array_merge ($addressesOther1[$r['ndx']], $clsfGroup);
-					if ($r['type'] != 99)
-						$addresses[$r['ndx']] = array_merge ($addresses[$r['ndx']], $clsfGroup);
+					$title[] = ['text' => 'IČP: '.$r['id1']];
+					$addrOffices[$r['ndx']] = [$title];
+					$suggestedAddrOffice = $r['ndx'];
 				}
 			}
+			$this->addFormPersonInfo_Address ($addrPosts, 'deliveryAddress', $suggestedAddrPost, 'Doručovací adresa');
+			$this->addFormPersonInfo_Address ($addrOffices, 'otherAddress1', $suggestedAddrOffice, 'Provozovna');
 		}
-		$this->addFormPersonInfo_Address ($addresses, 'deliveryAddress', $deliveryAddress, 'Doručovací adresa');
-		$this->addFormPersonInfo_Address ($addressesOther1, 'otherAddress1', $other1Address, 'Provozovna');
+		else
+		{
+			$addresses = [];
+			$deliveryAddress = 0;
+			$addressesOther1 = [];
+			$other1Address = 0;
+
+			$q = [];
+			array_push($q, 'SELECT * FROM [e10_persons_address]');
+			array_push($q, ' WHERE tableid = %s ', 'e10.persons.persons', ' AND recid = %i', $personNdx);
+			array_push($q, ' AND [docState] != %i', 9800);
+
+			$rows = $this->table->db()->query ($q);
+			foreach ($rows as $r)
+			{
+				$title = [];
+				if ($r['specification'] !== '')
+					$title[] = ['text' => $r['specification']];
+				if ($r['street'] !== '')
+					$title[] = ['text' => $r['street']];
+				$title[] = ['text' => $r['city'].' '.$r['zipcode']];
+
+				if ($r['type'] !== 99)
+				{
+					$addresses[$r['ndx']] = [$title];
+					if ($r['type'] == 4)
+						$deliveryAddress = $r['ndx'];
+				}
+				if ($r['type'] === 99)
+				{
+					$addressesOther1[$r['ndx']] = [$title];
+					$other1Address = $r['ndx'];
+				}
+
+				$classification = UtilsBase::loadClassification ($this->table->app(), 'e10.persons.address', [$r['ndx']], 'ml1 label');
+				if (isset ($classification [$r['ndx']]))
+				{
+					forEach ($classification [$r['ndx']] as $clsfGroup)
+					{
+						if ($r['type'] == 99)
+							$addressesOther1[$r['ndx']] = array_merge ($addressesOther1[$r['ndx']], $clsfGroup);
+						if ($r['type'] != 99)
+							$addresses[$r['ndx']] = array_merge ($addresses[$r['ndx']], $clsfGroup);
+					}
+				}
+			}
+			$this->addFormPersonInfo_Address ($addresses, 'deliveryAddress', $deliveryAddress, 'Doručovací adresa');
+			$this->addFormPersonInfo_Address ($addressesOther1, 'otherAddress1', $other1Address, 'Provozovna');
+		}
 	}
 
 	public function addFormPersonInfo_Address ($addresses, $columnId, $suggestedAddressNdx, $labelText)
