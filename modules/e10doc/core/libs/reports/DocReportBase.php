@@ -23,9 +23,12 @@ class DocReportBase extends FormReport
 	var $ownerCountry = FALSE;
 	var $country = FALSE;
 
+	var $testNewPersons = 0;
+
 	function init ()
 	{
 		parent::init();
+		$this->testNewPersons = intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
 	}
 
 	public function setReportId($baseReportId)
@@ -58,6 +61,8 @@ class DocReportBase extends FormReport
 
 	public function loadData()
 	{
+		$this->testNewPersons = intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
+
 		parent::loadData();
 
 		$this->tablePersons = $this->app()->table('e10.persons.persons');
@@ -79,15 +84,22 @@ class DocReportBase extends FormReport
 		{
 			$this->lang = $this->data [$columnId]['language'];
 			$this->data [$columnId]['lists'] = $this->tablePersons->loadLists($this->data [$columnId]);
-			if (isset($this->data [$columnId]['lists']['address'][0]))
-				$this->data [$columnId]['address'] = $this->data [$columnId]['lists']['address'][0];
 
+			if ($this->testNewPersons)
+			{
+				$this->data [$columnId]['address'] = $this->loadPersonAddress($personNdx, mainAddress: 1);
+			}
+			else
+			{
+				if (isset($this->data [$columnId]['lists']['address'][0]))
+					$this->data [$columnId]['address'] = $this->data [$columnId]['lists']['address'][0];
+			}
 			// persons country / language
 			$this->data [$columnId]['lists']['address'] = [];
 			$taxHomeCountryId = E10Utils::docTaxHomeCountryId($this->app(), $this->recData);
 			$taxHomeCountryNdx = World::countryNdx($this->app(), $taxHomeCountryId);
 			if (isset($this->data [$columnId]['address']))
-				World::setCountryInfo($this->app(), $this->data [$columnId]['lists']['address'][0]['worldCountry'] ?? $taxHomeCountryNdx, $this->data [$columnId]['address']);
+				World::setCountryInfo($this->app(), $this->data [$columnId]['address']['worldCountry'] ?? $taxHomeCountryNdx, $this->data [$columnId]['address']);
 			if ($this->lang == '' && isset($this->data [$columnId]['address']['countryLangSC2']))
 				$this->lang = $this->data [$columnId]['address']['countryLangSC2'];
 
@@ -147,15 +159,24 @@ class DocReportBase extends FormReport
 		if ($this->ownerNdx)
 		{
 			$this->data ['owner'] = $this->tablePersons->loadItem($this->ownerNdx);
-			$this->data ['owner']['lists'] = $this->tablePersons->loadLists($this->data ['owner']);
-			$this->ownerCountry = FALSE;
-			if (isset($this->data ['owner']['lists']['address'][0]))
+
+			if ($this->testNewPersons)
 			{
-				$this->data ['owner']['address'] = $this->data ['owner']['lists']['address'][0];
-				World::setCountryInfo($this->app(), $this->data ['owner']['lists']['address'][0]['worldCountry'], $this->data ['owner']['address']);
-				if (isset($this->data ['owner']['address']['countryNameSC2']))
-					$this->ownerCountry = $this->data ['owner']['address']['countryNameSC2'];
+				$this->data ['owner']['address'] = $this->loadPersonAddress($this->ownerNdx, mainAddress: 1);
 			}
+			else
+			{
+				$this->data ['owner']['lists'] = $this->tablePersons->loadLists($this->data ['owner']);
+				$this->ownerCountry = FALSE;
+				if (isset($this->data ['owner']['lists']['address'][0]))
+				{
+					$this->data ['owner']['address'] = $this->data ['owner']['lists']['address'][0];
+				}
+			}
+			World::setCountryInfo($this->app(), $this->data ['owner']['address']['worldCountry'], $this->data ['owner']['address']);
+			if (isset($this->data ['owner']['address']['countryNameSC2']))
+				$this->ownerCountry = $this->data ['owner']['address']['countryNameSC2'];
+
 			foreach ($this->data ['owner']['lists']['properties'] as $iii)
 			{
 				if ($iii['group'] == 'ids')
@@ -190,21 +211,62 @@ class DocReportBase extends FormReport
 		}
 	}
 
+	function loadPersonAddress($personNdx, $mainAddress = 0)
+	{
+		if (!$personNdx)
+			return [];
+
+		$q = [];
+		array_push($q, 'SELECT [addrs].*');
+		array_push($q, ' FROM [e10_persons_personsContacts] AS [addrs]');
+		array_push($q, ' WHERE [addrs].[person] = %i', $personNdx);
+		array_push($q, ' AND [addrs].[docState] = %i', 4000);
+
+		array_push($q, ' AND [addrs].[flagAddress] = %i', 1);
+		if ($mainAddress)
+			array_push($q, ' AND [addrs].[flagMainAddress] = %i', 1);
+
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$addr = [
+        'ndx' => $r['ndx'],
+        'recid' => $r['person'],
+        'specification' => $r['adrSpecification'],
+        'street' => $r['adrStreet'],
+        'city' => $r['adrCity'],
+        'zipcode' => $r['adrZipCode'],
+        'worldCountry' => $r['adrCountry'],
+			];
+
+			return $addr;
+		}
+	}
+
 	function loadDataPerson ($columnId)
 	{
 		if (!isset($this->recData [$columnId]) || !$this->recData [$columnId])
 			return;
-
+		$personNdx = $this->data [$columnId] ?? 0;
 		$tablePersons = $this->app->table ('e10.persons.persons');
 		$this->data [$columnId] = $this->table->loadItem ($this->recData [$columnId], 'e10_persons_persons');
 		$this->lang = $this->data [$columnId]['language'];
+
 		$this->data [$columnId]['lists'] = $tablePersons->loadLists ($this->data [$columnId]);
-		if (isset($this->data [$columnId]['lists']['address'][0]))
-			$this->data [$columnId]['address'] = $this->data [$columnId]['lists']['address'][0];
-		// persons country
-		if (isset ($this->data [$columnId]['lists']['address']) && isset ($this->data [$columnId]['lists']['address'][0]))
+
+		if ($this->testNewPersons)
 		{
-			World::setCountryInfo($this->app(), $this->data [$columnId]['lists']['address'][0]['worldCountry'], $this->data [$columnId]['address']);
+			$this->data [$columnId]['address'] = $this->loadPersonAddress($personNdx ?? 0, mainAddress: 1);
+		}
+		else
+		{
+			if (isset($this->data [$columnId]['lists']['address'][0]))
+				$this->data [$columnId]['address'] = $this->data [$columnId]['lists']['address'][0];
+		}
+		// persons country
+		if (isset ($this->data [$columnId]['address']) && isset ($this->data [$columnId]['address']['worldCountry']))
+		{
+			World::setCountryInfo($this->app(), $this->data [$columnId]['address']['worldCountry'], $this->data [$columnId]['address']);
 			if ($this->lang == '' && isset($this->data [$columnId]['address']['countryLangSC2']))
 				$this->lang = $this->data [$columnId]['address']['countryLangSC2'];
 		}

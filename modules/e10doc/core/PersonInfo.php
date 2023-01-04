@@ -126,6 +126,20 @@ class PersonInfo extends \lib\persons\PersonInfo
 	public function createInfo ($personNdx, $card, $options = [])
 	{
 		parent::createInfo($personNdx, $card, $options);
+
+		$testNewPersons = intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
+		if ($testNewPersons)
+		{
+			$this->card->addContent ('body', [
+				'sumTable' => [
+					'objectId' => 'e10doc.core.libs.SumTablePersonAnalysis',
+					'queryParams' => ['person_ndx' => $this->personNdx]
+				]
+			]);
+
+			return;
+		}
+
 		$this->init();
 		$this->doIt();
 	}

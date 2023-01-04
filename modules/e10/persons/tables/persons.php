@@ -212,6 +212,12 @@ class TablePersons extends DbTable
 
 	public function formId ($recData, $ownerRecData = NULL, $operation = 'edit')
 	{
+		$testNewPersons = intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
+		if ($testNewPersons)
+		{
+			return 'personNew';
+		}
+
 		if (isset($recData['personType']) && $recData['personType'] == 3)
 			return 'robot';
 
@@ -832,7 +838,11 @@ class ViewDetailPersons extends TableViewDetail
 {
 	public function createDetailContent ()
 	{
-		$this->addDocumentCard('e10.persons.DocumentCardPerson');
+		$testNewPersons = intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
+		if ($testNewPersons)
+			$this->addDocumentCard('e10.persons.libs.dc.DCPersonOverview');
+		else
+			$this->addDocumentCard('e10.persons.DocumentCardPerson');
 	}
 
 	public function createToolbar ()

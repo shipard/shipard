@@ -1,0 +1,52 @@
+{
+  "id": "e10.persons.personsContacts", "sql": "e10_persons_personsContacts", "name": "Adresy Osob",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "person", "name": "Vlastník", "type": "int"},
+
+    {"id": "flagAddress", "name": "Adresa", "type": "logical", "options": ["saveOnChange"]},
+    {"id": "flagMainAddress", "name": "Sídlo", "type": "logical", "options": ["saveOnChange"]},
+    {"id": "flagPostAddress", "name": "Korespondenční adresa", "type": "logical"},
+    {"id": "flagOffice", "name": "Pobočka", "type": "logical", "options": ["saveOnChange"]},
+
+    {"id": "adrSpecification", "name": "Upřesnění", "type": "string", "len": 160},
+    {"id": "adrStreet", "name": "Ulice", "type": "string", "len": 250},
+    {"id": "adrCity", "name": "Město", "type": "string", "len": 90},
+    {"id": "adrZipCode", "name": "PSČ", "type": "string", "len": 20},
+    {"id": "adrCountry", "name": "Země", "type": "int", "reference": "e10.world.countries", "options": ["saveOnChange"]},
+
+		{"id": "flagContact", "name": "Kontakt", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "contactName", "name": "Jméno", "type": "string", "len": 110},
+		{"id": "contactRole", "name": "Funkce", "type": "string", "len": 70},
+		{"id": "contactEmail", "name": "E-mail", "type": "string", "len": 80},
+		{"id": "contactPhone", "name": "Telefon", "type": "string", "len": 80},
+
+		{"id": "id1", "name": "ID1", "type": "string", "len": 30},
+
+	  {"id": "adrLocLat", "name": "Zeměpisná šířka", "type": "number", "dec": 7},
+	  {"id": "adrLocLon", "name": "Zeměpisná délka", "type": "number", "dec": 7},
+	  {"id": "adrLocState", "name": "Stav zaměření na mapě", "type": "enumInt",
+		  "enumValues": {"0": "Nezaměřeno", "1": "Zaměřeno", "2": "Nelze zaměřit"}},
+	  {"id": "adrLocTime", "name": "Okamžik zaměření", "type": "timestamp"},
+	  {"id": "adrLocHash", "name": "Hash adresy", "type": "string", "len": 32, "options": ["ascii"]},
+
+	  {"id": "docState", "name": "Stav", "type": "int"},
+	  {"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+  "lists": [
+		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"}
+  ],
+	"views": {
+		"default": {
+			"id": "default", "class": "e10.persons.libs.viewers.PersonsContactsDefault"
+		},
+		"form": {
+			"id": "form", "class": "e10.persons.libs.viewers.ViewPersonContacts"
+		}
+	},
+	"forms": [
+		{"id": "default", "class": "e10.persons.FormPersonContact"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "adrCity"}
+}

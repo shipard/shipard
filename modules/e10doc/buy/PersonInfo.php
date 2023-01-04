@@ -14,6 +14,7 @@ class PersonInfo extends \e10doc\core\PersonInfo
 		if (!$this->tileMode)
 			return;
 
-		$this->createTimeLine('docsBuy', ['title' => 'Nákup', 'icon' => 'e10-docs-invoices-in', 'orderId' => 100,]);
+		// @TODO: remove
+		// $this->createTimeLine('docsBuy', ['title' => 'Nákup', 'icon' => 'e10-docs-invoices-in', 'orderId' => 100,]);
 	}
 }

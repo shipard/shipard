@@ -10,5 +10,19 @@
 	"e10PersonsRelations": {
 		"name": "Vztahy osob", "order": 17000, "group": "persons",
 		"type": "viewer", "table": "e10.persons.relations", "viewer": "default"
+	},
+	"persons": {
+		"name": "Nastavení Osob", "order": 1000, "group": "persons",
+		"icon": "tables/e10.persons.persons",
+		"type": "cfgFile",
+		"options":
+			[
+				{"cfgKey": "testNewPersons", "cfgName": "Testovat nové Osoby (NEZAPÍNAT)",
+					"options": {
+						"0": "Ne",
+						"1": "Ano"
+					}
+				}
+			]
 	}
 }

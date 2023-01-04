@@ -1,0 +1,10 @@
+{
+  "cz": {
+    "company": {
+      "id1": {
+        "fn": "Identifikační číslo provozovny",
+        "label": "IČP"
+      }
+    }
+  }
+}

@@ -13,7 +13,7 @@ class PersonInfo extends \e10doc\core\PersonInfo
 	{
 		if (!$this->tileMode)
 			return;
-
-		$this->createTimeLine('docsSale', ['title' => 'Prodej', 'icon' => 'e10-docs-invoices-out', 'orderId' => 200,]);
+		// @TODO: remove
+		// $this->createTimeLine('docsSale', ['title' => 'Prodej', 'icon' => 'e10-docs-invoices-out', 'orderId' => 200,]);
 	}
 }

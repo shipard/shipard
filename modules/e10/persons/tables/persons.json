@@ -62,7 +62,8 @@
   "forms": [
     {"id": "default", "class": "e10.persons.FormPersons", "help": "prirucka/202"},
 	  {"id": "robot", "class": "e10.persons.FormPersonsRobot"},
-		{"id": "personDefault", "class": "e10.persons.libs.forms.PersonDefault", "help": "prirucka/202"}
+		{"id": "personDefault", "class": "e10.persons.libs.forms.PersonDefault", "help": "prirucka/202"},
+		{"id": "personNew", "class": "e10.persons.libs.forms.PersonNew"}
   ],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.persons.docStates"},
 	"documentCard": "e10.persons.DocumentCardPerson",
