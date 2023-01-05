@@ -313,12 +313,15 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 					foreach ($baRows as $ba)
 					{
 						$bankAccounts[$ba['bankAccount']] = [['text' => $ba['bankAccount']]];
-						$bankAccounts[$ba['bankAccount']][] = [
-							'text' => '', 'class' => 'pull-right', 'docAction' => 'edit',
-							'_actionClass' => 'pull-right', 'type' => 'span', 'icon' => 'system/actionOpen',
-							'table' => 'e10.persons.personsBA', 'pk' => $ba['ndx'],
-							'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid
-						];
+						if (!$this->readOnly)
+						{
+							$bankAccounts[$ba['bankAccount']][] = [
+								'text' => '', 'class' => 'pull-right', 'docAction' => 'edit',
+								'_actionClass' => 'pull-right', 'type' => 'span', 'icon' => 'system/actionOpen',
+								'table' => 'e10.persons.personsBA', 'pk' => $ba['ndx'],
+								'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid
+							];
+						}
 					}
 				}
 				else
@@ -382,13 +385,15 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 
 				if ($r['flagOffice'])
 					$title[] = ['text' => 'IČP: '.$r['id1']];
-
-				$title[] = [
-						'text' => '', 'class' => 'pull-right', 'docAction' => 'edit',
-						'_actionClass' => 'pull-right', 'type' => 'span', 'icon' => 'system/actionOpen',
-						'table' => 'e10.persons.personsContacts', 'pk' => $r['ndx'],
-						'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid
-				];
+				if (!$this->readOnly)
+				{
+					$title[] = [
+							'text' => '', 'class' => 'pull-right', 'docAction' => 'edit',
+							'_actionClass' => 'pull-right', 'type' => 'span', 'icon' => 'system/actionOpen',
+							'table' => 'e10.persons.personsContacts', 'pk' => $r['ndx'],
+							'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid
+					];
+				}
 				$addrPosts[$r['ndx']] = [$title];
 				$suggestedAddrPost = $r['ndx'];
 
@@ -400,31 +405,44 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 			}
 			if ($this->recData['personType'] == 1)
 			{
-				$addrTitle = [
-					['text' => 'Doručovací adresa:', 'icon' => 'system/iconHome', 'class' => 'h4'],
-					[
-						'text' => '', 'class' => 'pull-right', 'docAction' => 'new',
-						'type' => 'span', 'icon' => 'system/actionAdd',
-						'table' => 'e10.persons.personsContacts',
-						'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid,
-						'addParams' => '__person='.$this->recData['person'].'&__flagAddress=1&__flagPostAddress=1'
-					]
-				];
-
+				if ($this->readOnly)
+				{
+					$addrTitle = 'Doručovací adresa';
+				}
+				else
+				{
+					$addrTitle = [
+						['text' => 'Doručovací adresa:', 'icon' => 'system/iconHome', 'class' => 'h4'],
+						[
+							'text' => '', 'class' => 'pull-right', 'docAction' => 'new',
+							'type' => 'span', 'icon' => 'system/actionAdd',
+							'table' => 'e10.persons.personsContacts',
+							'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid,
+							'addParams' => '__person='.$this->recData['person'].'&__flagAddress=1&__flagPostAddress=1'
+						]
+					];
+				}
 				$this->addFormPersonInfo_Address ($addrPosts, 'deliveryAddress', $suggestedAddrPost, $addrTitle);
 			}
 			if ($this->recData['personType'] == 2)
 			{
-				$addrTitle = [
-					['text' => 'Provozovna:', 'icon' => 'system/iconHome', 'class' => 'h4'],
-					[
-						'text' => '', 'class' => 'pull-right', 'docAction' => 'new',
-						'type' => 'span', 'icon' => 'system/actionAdd',
-						'table' => 'e10.persons.personsContacts',
-						'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid,
-						'addParams' => '__person='.$this->recData['person'].'&__flagAddress=1&__flagOffice=1'
-					]
-				];
+				if ($this->readOnly)
+				{
+					$addrTitle = 'Provozovna';
+				}
+				else
+				{
+					$addrTitle = [
+						['text' => 'Provozovna:', 'icon' => 'system/iconHome', 'class' => 'h4'],
+						[
+							'text' => '', 'class' => 'pull-right', 'docAction' => 'new',
+							'type' => 'span', 'icon' => 'system/actionAdd',
+							'table' => 'e10.persons.personsContacts',
+							'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid,
+							'addParams' => '__person='.$this->recData['person'].'&__flagAddress=1&__flagOffice=1'
+						]
+					];
+				}
 				$this->addFormPersonInfo_Address ($addrOffices, 'otherAddress1', $suggestedAddrOffice, $addrTitle);
 			}
 		}
@@ -485,7 +503,10 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 		{
 			if ($this->recData[$columnId])
 			{
-				$this->addStatic(['text' => $labelText, 'icon' => 'system/iconHome', 'class' => 'block']);
+				if (is_string($labelText))
+					$this->addStatic(['text' => $labelText, 'icon' => 'system/iconHome', 'class' => 'block']);
+				else
+					$this->addStatic($labelText);
 				$a = $addresses[$this->recData[$columnId]];
 				$this->addStatic($a);
 			}
