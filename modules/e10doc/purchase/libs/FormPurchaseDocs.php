@@ -70,39 +70,37 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 						$this->addColumnInput ("person", DataModel::coSaveOnChange|self::coHeader);
 					$this->layoutClose ();
 
-					$regTitle = [['text' => 'Registrace', 'icon' => 'system/iconUser', 'class' => 'h2']];
-					$regTitle[] = [
-						'text' => 'Tisk', 'class' => 'pull-right', 'type' => 'action', 'action' => 'printdirect', 'printer' => '1',
-						'data-report' => 'e10pro.custreg.RegistrationListReport', 'actionClass' => 'btn-sm',
-						'data-table' => 'e10.persons.persons', 'data-pk' => $this->recData['person']
-					];
-					if (!$this->readOnly)
-						$regTitle[] = [
-								'text' => 'Upravit', 'class' => 'pull-right', 'docAction' => 'edit',
-								'actionClass' => 'btn btn-primary btn-sm', 'type' => 'button', 'icon' => 'system/actionOpen',
-								'table' => 'e10.persons.persons', 'pk' => $this->recData['person'],
-								'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid
-						];
-
-					$this->layoutOpen (self::ltForm, 'xxe10-row-info default stripped');
-						$this->addStatic($regTitle, self::coHeader);
-						//$this->table->addFormPersonProperties ($this);
-						$this->addFormPersonInfo();
-					$this->layoutClose ();
-					/*$this->addStatic('Adresa', self::coHeader);
-					$this->layoutOpen (self::ltGrid);
-						$this->table->addFormPersonAddress ($this);
-					$this->layoutClose ();
-*/
-
-					if ($this->recData['personType'] == 2)
+					if ($this->recData['person'])
 					{
-						$this->addSeparator(self::coH2);
-							$this->layoutOpen(self::ltVertical);
-							$this->addColumnInput ('personHandover', self::coHeader);
-							$this->addColumnInput ('cashPersonName', self::coColW12);
-							$this->addColumnInput ('cashPersonID', self::coColW12);
-						$this->layoutClose();
+						$regTitle = [['text' => 'Registrace', 'icon' => 'system/iconUser', 'class' => 'h2']];
+						$regTitle[] = [
+							'text' => 'Tisk', 'class' => 'pull-right', 'type' => 'action', 'action' => 'printdirect', 'printer' => '1',
+							'data-report' => 'e10pro.custreg.RegistrationListReport', 'actionClass' => 'btn-sm',
+							'data-table' => 'e10.persons.persons', 'data-pk' => $this->recData['person']
+						];
+						if (!$this->readOnly)
+						{
+							$regTitle[] = [
+									'text' => 'Upravit', 'class' => 'pull-right', 'docAction' => 'edit',
+									'actionClass' => 'btn btn-primary btn-sm', 'type' => 'button', 'icon' => 'system/actionOpen',
+									'table' => 'e10.persons.persons', 'pk' => $this->recData['person'],
+									'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid
+							];
+						}
+						$this->layoutOpen (self::ltForm, 'xxe10-row-info default stripped');
+							$this->addStatic($regTitle, self::coHeader);
+							$this->addFormPersonInfo();
+						$this->layoutClose ();
+
+						if ($this->recData['personType'] == 2)
+						{
+							$this->addSeparator(self::coH2);
+								$this->layoutOpen(self::ltVertical);
+								$this->addColumnInput ('personHandover', self::coHeader);
+								$this->addColumnInput ('cashPersonName', self::coColW12);
+								$this->addColumnInput ('cashPersonID', self::coColW12);
+							$this->layoutClose();
+						}
 					}
 				$this->layoutClose ();
       $this->closeTab ();
@@ -292,48 +290,69 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 			$this->addStatic($properties[$personNdx]['contacts']);
 		if (isset($properties[$personNdx]['ids']))
 			$this->addStatic($properties[$personNdx]['ids']);
-		// -- bank accounts
-		if ($this->readOnly)
-		{
-			if ($this->recData['bankAccount'] !== '')
-				$this->addStatic(['text' => $this->recData['bankAccount'], 'icon' => 'tables/e10doc.base.bankaccounts']);
-		}
-		else
-		{
-			$bankAccounts = [];
 
-			if ($this->testNewPersons)
+		// -- bank accounts
+		if ($this->recData['personType'] == 1)
+		{ // people
+			if ($this->readOnly)
 			{
-				$qba [] = 'SELECT [ba].* ';
-				array_push ($qba, ' FROM [e10_persons_personsBA] AS [ba]');
-				array_push ($qba, ' WHERE 1');
-				array_push ($qba, ' AND [ba].[person] = %i', $personNdx);
-				$baRows = $this->app()->db()->query($qba);
-				foreach ($baRows as $ba)
-				{
-					$bankAccounts[$ba['bankAccount']] = ['text' => $ba['bankAccount']];
-				}
+				if ($this->recData['bankAccount'] !== '')
+					$this->addStatic(['text' => $this->recData['bankAccount'], 'icon' => 'tables/e10doc.base.bankaccounts']);
 			}
 			else
 			{
-				if (isset($properties[$personNdx]['payments']))
+				$bankAccounts = [];
+
+				if ($this->testNewPersons)
 				{
-					foreach ($properties[$personNdx]['payments'] as $ba)
+					$qba [] = 'SELECT [ba].* ';
+					array_push ($qba, ' FROM [e10_persons_personsBA] AS [ba]');
+					array_push ($qba, ' WHERE 1');
+					array_push ($qba, ' AND [ba].[person] = %i', $personNdx);
+					$baRows = $this->app()->db()->query($qba);
+					foreach ($baRows as $ba)
 					{
-						$bankAccounts[$ba['text']] = ['text' => $ba['text']];
-						if (isset($ba['prefix']))
-							$bankAccounts[$ba['text']]['suffix'] = $ba['prefix'];
+						$bankAccounts[$ba['bankAccount']] = [['text' => $ba['bankAccount']]];
+						$bankAccounts[$ba['bankAccount']][] = [
+							'text' => '', 'class' => 'pull-right', 'docAction' => 'edit',
+							'_actionClass' => 'pull-right', 'type' => 'span', 'icon' => 'system/actionOpen',
+							'table' => 'e10.persons.personsBA', 'pk' => $ba['ndx'],
+							'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid
+						];
 					}
 				}
-			}
-			if ($this->recData['bankAccount'] === '')
-			$this->recData['bankAccount'] = key($bankAccounts);
-			if (!isset($bankAccounts[$this->recData['bankAccount']]))
-				$bankAccounts[$this->recData['bankAccount']] = $this->recData['bankAccount'];
-			if (count($bankAccounts))
-			{
-				$this->addStatic(['text' => 'Účet pro úhradu:', 'icon' => 'tables/e10doc.base.bankaccounts', 'class' => 'block']);
-				$this->addInputEnum2('bankAccount', NULL, $bankAccounts);
+				else
+				{
+					if (isset($properties[$personNdx]['payments']))
+					{
+						foreach ($properties[$personNdx]['payments'] as $ba)
+						{
+							$bankAccounts[$ba['text']] = ['text' => $ba['text']];
+							if (isset($ba['prefix']))
+								$bankAccounts[$ba['text']]['suffix'] = $ba['prefix'];
+						}
+					}
+				}
+				if ($this->recData['bankAccount'] === '')
+					$this->recData['bankAccount'] = key($bankAccounts);
+				if (!isset($bankAccounts[$this->recData['bankAccount']]))
+					$bankAccounts[$this->recData['bankAccount']] = $this->recData['bankAccount'];
+				if (count($bankAccounts))
+				{
+					$this->addStatic(
+						[
+							['text' => 'Účet pro úhradu:', 'icon' => 'tables/e10doc.base.bankaccounts', 'class' => 'h4'],
+							[
+								'text' => '', 'class' => 'pull-right', 'docAction' => 'new',
+								'type' => 'span', 'icon' => 'system/actionAdd',
+								'table' => 'e10.persons.personsBA',
+								'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid,
+								'addParams' => '__person='.$this->recData['person']
+							]
+						]
+					);
+					$this->addInputEnum2('bankAccount', NULL, $bankAccounts);
+				}
 			}
 		}
 
@@ -361,18 +380,53 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 					$title[] = ['text' => $r['adrStreet']];
 				$title[] = ['text' => $r['adrCity'].' '.$r['adrZipCode']];
 
+				if ($r['flagOffice'])
+					$title[] = ['text' => 'IČP: '.$r['id1']];
+
+				$title[] = [
+						'text' => '', 'class' => 'pull-right', 'docAction' => 'edit',
+						'_actionClass' => 'pull-right', 'type' => 'span', 'icon' => 'system/actionOpen',
+						'table' => 'e10.persons.personsContacts', 'pk' => $r['ndx'],
+						'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid
+				];
 				$addrPosts[$r['ndx']] = [$title];
 				$suggestedAddrPost = $r['ndx'];
 
 				if ($r['flagOffice'])
 				{
-					$title[] = ['text' => 'IČP: '.$r['id1']];
 					$addrOffices[$r['ndx']] = [$title];
 					$suggestedAddrOffice = $r['ndx'];
 				}
 			}
-			$this->addFormPersonInfo_Address ($addrPosts, 'deliveryAddress', $suggestedAddrPost, 'Doručovací adresa');
-			$this->addFormPersonInfo_Address ($addrOffices, 'otherAddress1', $suggestedAddrOffice, 'Provozovna');
+			if ($this->recData['personType'] == 1)
+			{
+				$addrTitle = [
+					['text' => 'Doručovací adresa:', 'icon' => 'system/iconHome', 'class' => 'h4'],
+					[
+						'text' => '', 'class' => 'pull-right', 'docAction' => 'new',
+						'type' => 'span', 'icon' => 'system/actionAdd',
+						'table' => 'e10.persons.personsContacts',
+						'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid,
+						'addParams' => '__person='.$this->recData['person'].'&__flagAddress=1&__flagPostAddress=1'
+					]
+				];
+
+				$this->addFormPersonInfo_Address ($addrPosts, 'deliveryAddress', $suggestedAddrPost, $addrTitle);
+			}
+			if ($this->recData['personType'] == 2)
+			{
+				$addrTitle = [
+					['text' => 'Provozovna:', 'icon' => 'system/iconHome', 'class' => 'h4'],
+					[
+						'text' => '', 'class' => 'pull-right', 'docAction' => 'new',
+						'type' => 'span', 'icon' => 'system/actionAdd',
+						'table' => 'e10.persons.personsContacts',
+						'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid,
+						'addParams' => '__person='.$this->recData['person'].'&__flagAddress=1&__flagOffice=1'
+					]
+				];
+				$this->addFormPersonInfo_Address ($addrOffices, 'otherAddress1', $suggestedAddrOffice, $addrTitle);
+			}
 		}
 		else
 		{
@@ -438,7 +492,10 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 		}
 		else
 		{
-			$this->addStatic(['text' => $labelText, 'icon' => 'system/iconHome', 'class' => 'block']);
+			if (is_string($labelText))
+				$this->addStatic(['text' => $labelText, 'icon' => 'system/iconHome', 'class' => 'block']);
+			else
+				$this->addStatic($labelText);
 			$this->addInputEnum2($columnId, NULL, $addresses);
 			if ($this->recData[$columnId] === 0 || !isset($addresses[$this->recData[$columnId]]))
 				$this->recData[$columnId] = ($suggestedAddressNdx) ? $suggestedAddressNdx : key($addresses);
