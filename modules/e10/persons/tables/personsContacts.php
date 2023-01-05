@@ -23,6 +23,17 @@ class TablePersonsContacts extends DbTable
 
 	}
 
+	public function checkNewRec (&$recData)
+	{
+		parent::checkNewRec($recData);
+
+		if (!isset($recData['adrCountry']) || $recData['adrCountry'] == 0)
+		{
+			$thc = $this->app()->cfgItem ('options.core.ownerDomicile', 'cz');
+			$recData['adrCountry'] = World::countryNdx($this->app(), $thc);
+		}
+	}
+
 	public function columnRefInputTitle ($form, $srcColumnId, $inputPrefix)
 	{
 		$pk = isset ($form->recData [$srcColumnId]) ? $form->recData [$srcColumnId] : 0;
