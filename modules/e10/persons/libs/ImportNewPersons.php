@@ -41,6 +41,12 @@ class ImportNewPersons extends Utility
         'docStateMain' => $r['docStateMain'],
       ];
 
+      if ($newAddress['docState'] < 1000)
+      {
+        $newAddress['docState'] = 4000;
+        $newAddress['docStateMain'] = 2;
+      }
+
       $oldAddressType = intval($r['type']);
       /*
         "0": {"name": "", "icon":  "address"},
