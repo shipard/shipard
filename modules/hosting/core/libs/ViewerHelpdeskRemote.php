@@ -191,36 +191,6 @@ class ViewerHelpdeskRemote extends TableViewGrid
 		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}
 
-	public function createToolbarAddButton (&$toolbar)
-	{
-    if (!$this->usersSections || !count($this->usersSections))
-      return;
-
-    if (count($this->usersSections) === 1)
-    {
-      parent::createToolbarAddButton ($toolbar);
-      return;
-    }
-
-		$addButton = [
-			'icon' => 'system/actionAdd', 'action' => '',
-			'text' => 'Přidat', 'type' => 'button',
-			'class' => 'pull-right-absolute',
-			'dropdownMenu' => []
-		];
-
-		foreach ($this->usersSections as $sectionNdx => $s)
-		{
-			$addButton['dropdownMenu'][] = [
-				'type' => 'action', 'action' => 'newform', 'text' => $s['fn'],
-				'icon' => ($s['icon'] === '') ? : $s['icon'],
-				'data-addParams' => '__helpdeskSection='.$sectionNdx,
-			];
-		}
-
-    $toolbar[] = $addButton;
-  }
-
 	protected function loadNotifications ()
 	{
 		$q = 'SELECT * FROM e10_base_notifications WHERE state = 0 AND personDest = %i AND tableId = %s';
