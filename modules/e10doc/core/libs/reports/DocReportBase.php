@@ -159,6 +159,7 @@ class DocReportBase extends FormReport
 		if ($this->ownerNdx)
 		{
 			$this->data ['owner'] = $this->tablePersons->loadItem($this->ownerNdx);
+			$this->data ['owner']['lists'] = $this->tablePersons->loadLists($this->data ['owner']);
 
 			if ($this->testNewPersons)
 			{
@@ -166,14 +167,13 @@ class DocReportBase extends FormReport
 			}
 			else
 			{
-				$this->data ['owner']['lists'] = $this->tablePersons->loadLists($this->data ['owner']);
 				$this->ownerCountry = FALSE;
 				if (isset($this->data ['owner']['lists']['address'][0]))
 				{
 					$this->data ['owner']['address'] = $this->data ['owner']['lists']['address'][0];
 				}
 			}
-			World::setCountryInfo($this->app(), $this->data ['owner']['address']['worldCountry'], $this->data ['owner']['address']);
+			World::setCountryInfo($this->app(), intval($this->data ['owner']['address']['worldCountry']), $this->data ['owner']['address']);
 			if (isset($this->data ['owner']['address']['countryNameSC2']))
 				$this->ownerCountry = $this->data ['owner']['address']['countryNameSC2'];
 
@@ -247,16 +247,16 @@ class DocReportBase extends FormReport
 	{
 		if (!isset($this->recData [$columnId]) || !$this->recData [$columnId])
 			return;
-		$personNdx = $this->data [$columnId] ?? 0;
+		$personNdx = $this->recData [$columnId] ?? 0;
 		$tablePersons = $this->app->table ('e10.persons.persons');
-		$this->data [$columnId] = $this->table->loadItem ($this->recData [$columnId], 'e10_persons_persons');
+		$this->data [$columnId] = $this->table->loadItem ($personNdx, 'e10_persons_persons');
 		$this->lang = $this->data [$columnId]['language'];
 
 		$this->data [$columnId]['lists'] = $tablePersons->loadLists ($this->data [$columnId]);
 
 		if ($this->testNewPersons)
 		{
-			$this->data [$columnId]['address'] = $this->loadPersonAddress($personNdx ?? 0, mainAddress: 1);
+			$this->data [$columnId]['address'] = $this->loadPersonAddress($personNdx, mainAddress: 1);
 		}
 		else
 		{

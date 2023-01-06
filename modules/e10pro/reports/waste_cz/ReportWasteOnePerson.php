@@ -1,19 +1,16 @@
 <?php
-
 namespace e10pro\reports\waste_cz;
 
-
-use \Shipard\Report\FormReport;
 use \e10doc\core\libs\E10Utils;
 use \Shipard\Utils\Utils;
 
 /**
- * Class ReportWasteOnePerson
- * @package e10pro\reports\waste_cz
+ * class ReportWasteOnePerson
  */
-class ReportWasteOnePerson extends FormReport
+class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 {
 	public $calendarYear = 0;
+	var $fiscalYear = 0;
 	var $wasteCodes;
 	var $itemWasteCodes = [];
 	protected $inventory;
@@ -30,8 +27,8 @@ class ReportWasteOnePerson extends FormReport
 
 	function init ()
 	{
-		$this->reportId = 'reports.default.e10pro.reports.waste_cz.reportWasteOnePerson';
-		$this->reportTemplate = 'reports.default.e10pro.reports.waste_cz.reportWasteOnePerson';
+		parent::init();
+		$this->setReportId('e10pro.reports.waste_cz.reportWasteOnePerson');
 	}
 
 	public function setOutsideParam ($param, $value)
@@ -86,6 +83,10 @@ class ReportWasteOnePerson extends FormReport
 
 	public function loadData2 ()
 	{
+		$this->loadData_DocumentOwner ();
+		$this->recData['person'] = $this->recData['ndx'];
+		$this->loadDataPerson('person');
+
 		//$this->inventory = ($this->app->model()->table ('e10doc.inventory.journal') !== FALSE);
 		$this->inventory = FALSE;
 		$fn = __SHPD_MODULES_DIR__.'/e10pro/reports/waste_cz/config/wastecodes.json';
@@ -103,10 +104,11 @@ class ReportWasteOnePerson extends FormReport
 		$this->currencies = $this->app->cfgItem ('e10.base.currencies');
 
 		$allProperties = $this->app()->cfgItem ('e10.base.properties', []);
-
-
-		// person
 		$tablePersons = $this->app->table ('e10.persons.persons');
+
+
+		/*
+		// person
 		$this->data ['person'] = $this->table->loadItem ($this->recData ['ndx'], 'e10_persons_persons');
 		$this->data ['person']['lists'] = $tablePersons->loadLists ($this->data ['person']);
 		$this->data ['person']['address'] = $this->data ['person']['lists']['address'][0];
@@ -132,9 +134,10 @@ class ReportWasteOnePerson extends FormReport
 
 			$this->data ['person_identifiers'][] = array ('name'=> $name, 'value' => $iii['value']);
 		}
-
+		*/
 
 		// owner
+		/*
 		$ownerNdx = intval($this->app->cfgItem ('options.core.ownerPerson', 0));
 		if ($ownerNdx)
 		{
@@ -174,6 +177,7 @@ class ReportWasteOnePerson extends FormReport
 				}
 			}
 		}
+		*/
 
 		// author
 		$authorNdx = $this->app->user()->data ('id');
