@@ -377,7 +377,7 @@ class TableForm
 		$colId = str_replace('.', '_', $this->fid . "_inp_$ip{$columnId}");
 		$labelCode = NULL;
 		if ($label)
-			$labelCode = "<label$labelClass for='$colId'>" . $this->app()->ui()->renderTextLine($label) . "</label>";
+			$labelCode = "<label$labelClass for='$colId'>" . $this->app()->ui()->composeTextLine($label) . "</label>";
 		$inputCode = "<input type='checkbox' name='$ip{$columnId}' id='$colId' class='e10-inputLogical$class' value='{$valueForTrue}' data-fid='{$this->fid}'$inputParams/>";
 		$hints = $this->columnOptionsHints ($options);
 
@@ -810,7 +810,7 @@ class TableForm
 				{
 					$inputCode .= "<div class='padd5 e10-selectable-radio$active$oneInputCClass'>";
 					$inputCode .= "<input type='radio' class='e10-inputRadio' id='{$colId}_$val' name='$ip{$columnId}' value='$val' data-fid='{$this->fid}'> ";
-					$inputCode .= "<label for='{$colId}_$val' style='vertical-align: top;'>" . $this->app()->ui()->composeTextLine($txt) . "</label><br/>";
+					$inputCode .= "<label for='{$colId}_$val' style='vertical-align: top; display: inline;'>" . $this->app()->ui()->composeTextLine($txt) . "</label>";
 					$inputCode .= "</div>";
 					$active = '';
 				}

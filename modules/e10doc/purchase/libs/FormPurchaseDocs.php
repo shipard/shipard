@@ -377,7 +377,7 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 			foreach ($rows as $r)
 			{
 				$title = [];
-				if ($r['addrSpecification'] !== '')
+				if ($r['adrSpecification'] !== '')
 					$title[] = ['text' => $r['adrSpecification']];
 				if ($r['adrStreet'] !== '')
 					$title[] = ['text' => $r['adrStreet']];
@@ -437,11 +437,34 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 						[
 							'text' => '', 'class' => 'pull-right', 'docAction' => 'new',
 							'type' => 'span', 'icon' => 'system/actionAdd',
+							'class' => 'pull-right',
 							'table' => 'e10.persons.personsContacts',
 							'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid,
 							'addParams' => '__person='.$this->recData['person'].'&__flagAddress=1&__flagOffice=1'
-						]
+						],
 					];
+
+					if (1)
+					{
+						$companyIds = Utils::searchArray($properties[$personNdx]['ids'], 'pid', 'oid');
+						$companyId = '';
+						if (isset($companyIds['text']))
+							$companyId = trim($companyIds['text']);
+						if ($companyId !== '')
+						{
+							$addrTitle[] = [
+								'text' => '', 'type' => 'action', 'action' => 'addwizard', 'icon' => 'user/wifi',
+								'title' => 'Načíst pobočky',
+								'class' => 'pull-right',
+								'element' => 'span',
+								'btnClass' => 'pull-right',
+								'data-class' => 'e10.persons.libs.register.AddOfficesWizard',
+								'table' => 'e10.persons.persons',
+								'data-addparams' => 'personId='.$companyId.'&personNdx='.$personNdx,
+								'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid,
+							];
+						}
+					}
 				}
 				$this->addFormPersonInfo_Address ($addrOffices, 'otherAddress1', $suggestedAddrOffice, $addrTitle);
 			}
