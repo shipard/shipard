@@ -6783,6 +6783,10 @@ function e10WizardNext (input)
 				else
 				if (srcObjectType === 'widget')
 					e10WidgetAction (null, null, srcObjectId);
+				else if (srcObjectType == 'form-to-save')
+				{
+					e10SaveOnChange ($('#'+srcObjectId));
+				}
 
 				if (data.stepResult.addDocument == 1)
 					e10DocumentAdd (0, data.stepResult.params);

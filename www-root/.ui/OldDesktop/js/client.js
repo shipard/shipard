@@ -1632,7 +1632,8 @@ srcObjectType=modalElement.attr('data-srcObjectType');var
 srcObjectId=modalElement.attr('data-srcObjectId');e10ViewerCancelForm(form);if(srcObjectType==='viewer'){if(srcObjectId==='default')srcObjectId=$('#mainBrowserContent div.e10-mainViewer').attr('id');if(data.stepResult&&data.stepResult.refreshDetail==1){var
 activeItem=$("#"+srcObjectId+"Items li.active");if(activeItem.is('LI')){viewerItemClick(activeItem);viewerItemClick(activeItem);}}else
 viewerRefresh($('#'+srcObjectId),data.recData['ndx']);}else
-if(srcObjectType==='widget')e10WidgetAction(null,null,srcObjectId);if(data.stepResult.addDocument==1)e10DocumentAdd(0,data.stepResult.params);else
+if(srcObjectType==='widget')e10WidgetAction(null,null,srcObjectId);else
+if(srcObjectType=='form-to-save'){e10SaveOnChange($('#'+srcObjectId));}if(data.stepResult.addDocument==1)e10DocumentAdd(0,data.stepResult.params);else
 if(data.stepResult.editDocument==1)e10DocumentEdit(0,data.stepResult.params);}else
 if(data.stepResult&&data.stepResult.restartApp==1){e10CloseModals();location.replace(httpApiRootPath+'/app/dashboard');}else
 if(data.stepResult&&data.stepResult.reloadPage==1){e10CloseModals();location.reload();}$('#'+focusedId).focusNextInputField();});}var
