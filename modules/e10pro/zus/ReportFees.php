@@ -606,10 +606,15 @@ class reportFees extends \E10\GlobalReport
 		/** @var \wkf\core\TableIssues */
 		$tableIssues = $this->app()->table ('wkf.core.issues');
 		$demandForPaySectionNdx = $tableIssues->defaultSection (121);
+		$demandForPaySectionSecNdx = $tableIssues->defaultSection (20);
 
 		$q[] = 'SELECT * FROM [wkf_core_issues] ';
 		array_push($q, ' WHERE tableNdx = %i', 1000);
-		array_push($q, ' AND section = %i', $demandForPaySectionNdx);
+		if ($demandForPaySectionNdx && $demandForPaySectionSecNdx)
+			array_push($q, ' AND section IN %in', [$demandForPaySectionNdx, $demandForPaySectionSecNdx]);
+		else
+			array_push($q, ' AND section = %i', $demandForPaySectionNdx);
+
 		array_push($q, ' AND dateCreate > %d', $this->minDate);
 		array_push($q, ' AND recNdx IN %in', $this->persons);
 		array_push($q, ' ORDER BY [dateCreate]');
