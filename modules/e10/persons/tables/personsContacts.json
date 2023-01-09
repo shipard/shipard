@@ -38,10 +38,13 @@
   ],
 	"views": {
 		"default": {
-			"id": "default", "class": "e10.persons.libs.viewers.PersonsContactsDefault"
+			"id": "default", "class": "e10.persons.ViewPersonsContactsDefault"
 		},
 		"form": {
 			"id": "form", "class": "e10.persons.libs.viewers.ViewPersonContacts"
+		},
+		"combo": {
+			"id": "combo", "class": "e10.persons.ViewPersonsContactsCombo"
 		}
 	},
 	"forms": [

@@ -21,7 +21,8 @@ class PersonRegister extends Utility
   var $personRecData = NULL;
   var $personOffices = [];
   var $missingOffices = [];
-
+  var $personBA = [];
+  var $missingBA = [];
 
   public function setPersonNdx($personNdx)
   {
@@ -29,10 +30,12 @@ class PersonRegister extends Utility
     $this->personRecData = $this->app()->loadItem($this->personNdx, 'e10.persons.persons');
     $this->loadPersonOid();
     $this->loadContacts();
+    $this->loadBA();
 
     $this->loadByOid($this->personOid);
 
     $this->checkOffices();
+    $this->checkBA();
   }
 
   public function loadByOid($id)
@@ -66,8 +69,10 @@ class PersonRegister extends Utility
     $this->registerData = $data;
   }
 
-  protected function loadPersonOid ()
+  public function loadPersonOid ($forcePersonNdx = 0)
 	{
+    $personNdx = ($forcePersonNdx) ? $forcePersonNdx : $this->personRecData['ndx'];
+
 		$q[] = 'SELECT * FROM [e10_base_properties] AS props';
 		array_push ($q, ' WHERE [recid] = %i', $this->personRecData['ndx']);
 		array_push ($q, ' AND [tableid] = %s', 'e10.persons.persons', 'AND [group] = %s', 'ids', ' AND property = %s', 'oid');
@@ -80,6 +85,8 @@ class PersonRegister extends Utility
 			$this->personOid = trim($r['valueString']);
       break;
 		}
+
+    return $this->personOid;
 	}
 
   protected function loadContacts()
@@ -111,6 +118,21 @@ class PersonRegister extends Utility
       }
     }
   }
+
+  protected function loadBA()
+  {
+    $q [] = 'SELECT [ba].* ';
+		array_push ($q, ' FROM [e10_persons_personsBA] AS [ba]');
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND [ba].[person] = %i', $this->personNdx);
+    $rows = $this->db()->query($q);
+    foreach ($rows as $r)
+    {
+      $this->personBA[$r['ndx']] = $r->toArray();
+      $this->personBA[$r['ndx']]['baText'] = $r['bankAccount'];
+    }
+  }
+
 
   protected function checkOffices()
   {
@@ -171,6 +193,46 @@ class PersonRegister extends Utility
       ];
 
       $this->db()->query('INSERT INTO e10_persons_personsContacts', $newAddress);
+    }
+  }
+
+  protected function checkBA()
+  {
+    foreach ($this->registerData['bankAccounts'] as $ba)
+    {
+      $existedBA = Utils::searchArray($this->personBA, 'bankAccount', $ba['bankAccount']);
+      if ($existedBA)
+      {
+      }
+      else
+      {
+        $this->missingBA[] = $ba;
+      }
+    }
+  }
+
+  public function addBankAccounts($baIds)
+  {
+    foreach ($baIds as $baId)
+    {
+      $baData = Utils::searchArray($this->registerData['bankAccounts'], 'bankAccount', $baId);
+      if (!$baData)
+        continue;
+
+      $newBA = [
+        'person' => $this->personNdx,
+        'bankAccount' => $baData['bankAccount'],
+
+        'docState' => 4000,
+        'docStateMain' => 2,
+      ];
+
+      if (!Utils::dateIsBlank($baData['validFrom']))
+        $newBA['validFrom'] = $baData['validFrom'];
+      if (!Utils::dateIsBlank($baData['validTo']))
+        $newBA['validFrom'] = $baData['validTo'];
+
+      $this->db()->query('INSERT INTO e10_persons_personsBA', $newBA);
     }
   }
 }

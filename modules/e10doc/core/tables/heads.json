@@ -13,13 +13,14 @@
     {"id": "docOrderNumber", "name": "Pořadové číslo", "type": "int"},
     {"id": "title", "name": "Text dokladu", "type": "string", "len": 120},
 
-    {"id": "owner", "name": "Vlastní adresa", "type": "int", "reference": "e10.persons.persons"},
+    {"id": "owner", "name": "Vlastní Osoba", "type": "int", "reference": "e10.persons.persons"},
+    {"id": "ownerOffice", "name": "Vlastní Pobočka", "type": "int", "reference": "e10.persons.personsContacts", "comboViewer": "combo"},
 
 	  {"id": "vatReg", "name": "Registrace DPH", "type": "enumInt", "options": ["saveOnChange"],
 		  "enumCfg": {"cfgItem": "e10doc.base.taxRegs", "cfgValue": "ndx", "cfgText": "title"}},
     {"id": "taxCountry", "name": "Země plnění", "type": "enumString", "len": 2, "options": ["saveOnChange"],
       "enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": ""}},
-    
+
     {"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons", "options": ["saveOnChange"]},
 		{"id": "personType", "name": "Typ osoby", "type": "enumInt",
 			"enumValues": {"0": "", "1": "Člověk", "2": "Firma"}},

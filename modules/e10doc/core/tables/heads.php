@@ -3971,6 +3971,15 @@ class FormHeads extends TableForm
 			return $cp;
 		}
 
+		if ($srcTableId === 'e10doc.core.heads' && $srcColumnId === 'ownerOffice')
+		{
+			$cp = [
+				'personNdx' => strval ($allRecData ['recData']['owner'])
+			];
+
+			return $cp;
+		}
+
 		return parent::comboParams ($srcTableId, $srcColumnId, $allRecData, $recData);
 	}
 

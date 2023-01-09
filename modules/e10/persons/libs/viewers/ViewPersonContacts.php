@@ -132,4 +132,29 @@ class ViewPersonContacts extends TableView
 				$item ['t2'] = array_merge ($item ['t2'], $clsfGroup);
 		}
 	}
+
+	public function createToolbar ()
+	{
+		$toolbar = parent::createToolbar();
+
+		$reg = new \e10\persons\libs\register\PersonRegister($this->app());
+		$companyId = $reg->loadPersonOid($this->personNdx);
+
+		if ($companyId !== 0)
+		{
+			$toolbar[] = [
+				'text' => 'Pobočky', 'type' => 'action', 'action' => 'addwizard', 'icon' => 'user/wifi',
+				'title' => 'Načíst pobočky z registrů',
+				'class' => 'pull-right',
+				'element' => 'span',
+				'btnClass' => 'pull-right',
+				'data-class' => 'e10.persons.libs.register.AddOfficesWizard',
+				'table' => 'e10.persons.persons',
+				'data-addparams' => 'personId='.$companyId.'&personNdx='.$this->personNdx,
+				'data-srcobjecttype' => 'viewer', 'data-srcobjectid' => $this->vid,
+			];
+		}
+
+		return $toolbar;
+	}
 }

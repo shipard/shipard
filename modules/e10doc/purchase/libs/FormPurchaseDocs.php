@@ -116,7 +116,7 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 				$this->addColumnInput ('myBankAccount');
 
 
-		if ($taxPayer)
+				if ($taxPayer)
 				{
 					$this->addColumnInput ("dateTax");
 					$this->addColumnInput ("taxCalc");
@@ -131,6 +131,8 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
         $this->addColumnInput ("warehouse");
 				$this->addColumnInput ("author");
 				$this->addList ('clsf', '', self::loAddToFormLayout);
+				$this->addColumnInput ('owner');
+				$this->addColumnInput ('ownerOffice');
 			$this->closeTab ();
 
       $this->closeTabs ();
@@ -336,25 +338,30 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 						}
 					}
 				}
-				if ($this->recData['bankAccount'] === '')
+				if ($this->recData['bankAccount'] === '' || !isset($bankAccounts[$this->recData['bankAccount']]))
+				{
 					$this->recData['bankAccount'] = key($bankAccounts);
-				if (!isset($bankAccounts[$this->recData['bankAccount']]))
-					$bankAccounts[$this->recData['bankAccount']] = $this->recData['bankAccount'];
+					if (!$this->recData['bankAccount'])
+						$this->recData['bankAccount'] = '';
+				}
+				$baLabel = [['text' => 'Účet pro úhradu:', 'icon' => 'tables/e10doc.base.bankaccounts', 'class' => 'h4']];
+				if ($this->testNewPersons)
+				$baLabel[] = [
+					'text' => '', 'class' => 'pull-right', 'docAction' => 'new',
+					'type' => 'span', 'icon' => 'system/actionAdd',
+					'table' => 'e10.persons.personsBA',
+					'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid,
+					'addParams' => '__person='.$this->recData['person']
+				];
 				if (count($bankAccounts))
 				{
-					$this->addStatic(
-						[
-							['text' => 'Účet pro úhradu:', 'icon' => 'tables/e10doc.base.bankaccounts', 'class' => 'h4'],
-							[
-								'text' => '', 'class' => 'pull-right', 'docAction' => 'new',
-								'type' => 'span', 'icon' => 'system/actionAdd',
-								'table' => 'e10.persons.personsBA',
-								'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid,
-								'addParams' => '__person='.$this->recData['person']
-							]
-						]
-					);
+					$this->addStatic($baLabel);
 					$this->addInputEnum2('bankAccount', NULL, $bankAccounts);
+				}
+				else
+				{
+					$baLabel[] = ['text' => 'Není zadán žádný účet', 'icon' => 'system/iconWarning', 'class' => 'e10-error break'];
+					$this->addStatic($baLabel);
 				}
 			}
 		}
