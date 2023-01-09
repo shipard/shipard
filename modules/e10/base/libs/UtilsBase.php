@@ -385,7 +385,7 @@ class UtilsBase
 		else
 			$header .= "Content-Type: text/plain; charset=utf-8\n";
 		$header .= "From: =?UTF-8?B?".base64_encode($fromName)."?=<".$fromAdress.">\n";
-		$header .= "To: =?UTF-8?B?".base64_encode($toName)."?=<".$toAdress.">\n";
-		return mail ("", $subjectEncoded, $message, $header);
+		//$header .= "To: =?UTF-8?B?".base64_encode($toName)."?=<".$toAdress.">\n";
+		return mail ($toAdress, $subjectEncoded, $message, $header);
 	}
 }
