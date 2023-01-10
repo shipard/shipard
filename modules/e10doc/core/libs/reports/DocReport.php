@@ -24,6 +24,8 @@ class DocReport extends DocReportBase
 		$this->app()->printMode = TRUE;
 
 		parent::loadData();
+		if ($this->testNewPersons)
+			$this->loadAddresses();
 
 		$this->docReportsItemCodesMode = intval($this->app()->cfgItem ('options.appearanceDocs.docReportsItemCodes', 0));
 
@@ -345,5 +347,29 @@ class DocReport extends DocReportBase
 			$documentInfo['outboxSystemKind'] = $docType['outboxSystemKind'];
 		if (isset($docType['outboxSystemSection']))
 			$documentInfo['outboxSystemSection'] = $docType['outboxSystemSection'];
+	}
+
+	public function loadAddresses()
+	{
+		$this->data['personsAddress'] = [];
+
+		if ($this->recData['ownerOffice'])
+		{
+			$this->data['personsAddress']['ownerOffice'] = $this->loadPersonAddress(0, 0, $this->recData['ownerOffice']);
+			$this->data ['flags']['useAddressOwnerOffice'] = 1;
+			$this->data ['flags']['usePersonsAddress'] = 1;
+		}
+		if ($this->recData['deliveryAddress'])
+		{
+			$this->data['personsAddress']['deliveryAddress'] = $this->loadPersonAddress(0, 0, $this->recData['deliveryAddress']);
+			$this->data ['flags']['useAddressPersonDelivery'] = 1;
+			$this->data ['flags']['usePersonsAddress'] = 1;
+		}
+		if ($this->recData['otherAddress1'])
+		{
+			$this->data['personsAddress']['personOffice'] = $this->loadPersonAddress(0, 0, $this->recData['otherAddress1']);
+			$this->data ['flags']['useAddressPersonOffice'] = 1;
+			$this->data ['flags']['usePersonsAddress'] = 1;
+		}
 	}
 }

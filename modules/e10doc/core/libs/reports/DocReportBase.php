@@ -211,20 +211,27 @@ class DocReportBase extends FormReport
 		}
 	}
 
-	function loadPersonAddress($personNdx, $mainAddress = 0)
+	function loadPersonAddress($personNdx, $mainAddress = 0, $addressNdx = 0)
 	{
-		if (!$personNdx)
+		if (!$personNdx && !$addressNdx)
 			return [];
 
 		$q = [];
 		array_push($q, 'SELECT [addrs].*');
 		array_push($q, ' FROM [e10_persons_personsContacts] AS [addrs]');
-		array_push($q, ' WHERE [addrs].[person] = %i', $personNdx);
-		array_push($q, ' AND [addrs].[docState] = %i', 4000);
+		array_push($q, ' WHERE 1');
+		if ($personNdx)
+		{
+			array_push($q, ' AND [addrs].[person] = %i', $personNdx);
+			array_push($q, ' AND [addrs].[docState] = %i', 4000);
+		}
 
 		array_push($q, ' AND [addrs].[flagAddress] = %i', 1);
 		if ($mainAddress)
 			array_push($q, ' AND [addrs].[flagMainAddress] = %i', 1);
+
+		if ($addressNdx)
+			array_push($q, ' AND [addrs].[ndx] = %i', $addressNdx);
 
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
@@ -237,7 +244,12 @@ class DocReportBase extends FormReport
         'city' => $r['adrCity'],
         'zipcode' => $r['adrZipCode'],
         'worldCountry' => $r['adrCountry'],
+
+				'ids' => [],
 			];
+
+			if ($r['id1'])
+				$addr['ids'] = ['title' => 'IČP', 'value' => $r['id1']];
 
 			return $addr;
 		}
