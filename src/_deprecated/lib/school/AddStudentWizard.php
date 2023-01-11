@@ -11,7 +11,7 @@ use \E10\TableForm;
  * Class AddStudentWizard
  * @package lib\School
  */
-class AddStudentWizard extends \E10\Persons\AddWizardFromID
+class AddStudentWizard extends \e10\persons\libs\AddWizardFromID
 {
 	public function addParams ()
 	{

@@ -16,6 +16,9 @@ class PersonRegister extends Utility
   var $registerData = NULL;
   var $generalFailure = FALSE;
 
+  /** @var \e10\persons\TablePersonsContacts */
+  var $tablePersonsContact;
+
   var $personOid = '';
   var $personNdx = 0;
   var $personRecData = NULL;
@@ -26,6 +29,8 @@ class PersonRegister extends Utility
 
   public function setPersonNdx($personNdx)
   {
+    $this->tablePersonsContact = $this->app()->table('e10.persons.personsContacts');
+
     $this->personNdx = $personNdx;
     $this->personRecData = $this->app()->loadItem($this->personNdx, 'e10.persons.persons');
     $this->loadPersonOid();
@@ -74,7 +79,7 @@ class PersonRegister extends Utility
     $personNdx = ($forcePersonNdx) ? $forcePersonNdx : $this->personRecData['ndx'];
 
 		$q[] = 'SELECT * FROM [e10_base_properties] AS props';
-		array_push ($q, ' WHERE [recid] = %i', $this->personRecData['ndx']);
+		array_push ($q, ' WHERE [recid] = %i', $personNdx);
 		array_push ($q, ' AND [tableid] = %s', 'e10.persons.persons', 'AND [group] = %s', 'ids', ' AND property = %s', 'oid');
 
 		$rows = $this->db()->query ($q);
@@ -191,7 +196,7 @@ class PersonRegister extends Utility
         'docState' => 4000,
         'docStateMain' => 2,
       ];
-
+      $this->tablePersonsContact->checkBeforeSave($newAddress);
       $this->db()->query('INSERT INTO e10_persons_personsContacts', $newAddress);
     }
   }

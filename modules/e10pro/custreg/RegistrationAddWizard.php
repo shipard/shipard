@@ -11,7 +11,7 @@ use \E10\TableForm;
  * Class RegistrationAddWizard
  * @package e10pro\custreg
  */
-class RegistrationAddWizard extends \E10\Persons\AddWizardFromID
+class RegistrationAddWizard extends \e10\persons\libs\AddWizardFromID
 {
 	public function addParams ()
 	{

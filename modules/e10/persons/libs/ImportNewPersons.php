@@ -12,6 +12,8 @@ class ImportNewPersons extends Utility
 {
   public function importAddress()
   {
+    /** @var \e10\persons\TablePersonsContacts */
+    $tablePersonsContact = $this->app()->table('e10.persons.personsContacts');
     $this->db()->query('DELETE FROM e10_persons_personsContacts');
 
     $q = [];
@@ -71,6 +73,7 @@ class ImportNewPersons extends Utility
         $newAddress['adrSpecification'] = '';
       }
 
+      $tablePersonsContact->checkBeforeSave($newAddress);
       echo sprintf('%5d', $cntr).': '.json_encode($newAddress)."\n";
       $this->db()->query('INSERT INTO e10_persons_personsContacts', $newAddress);
 
@@ -123,16 +126,6 @@ class ImportNewPersons extends Utility
 
       $cntr++;
     }
-
-
-    //	"bankaccount": {"name": "Číslo účtu", "type": "text", "icon": "x-bank", "icontxt": "$", "multi": 1, "note": 1}
-    /*
-	"payments": {
-		"name": "Platební údaje",
-		"id": "payments",
-		"properties": ["bankaccount"]
-
-    */
   }
 
 	public function run ()

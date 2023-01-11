@@ -4,6 +4,10 @@
       "id1": {
         "fn": "Identifikační číslo provozovny",
         "label": "IČP"
+      },
+      "id2": {
+        "fn": "Identifikační číslo zařízení",
+        "label": "IČZ"
       }
     }
   }

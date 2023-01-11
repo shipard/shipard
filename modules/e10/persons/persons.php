@@ -2,7 +2,7 @@
 
 namespace E10\Persons;
 
-use \Shipard\Application\Application, E10\TableForm, E10\Wizard, E10\utils, e10\str, \translation\dicts\e10\base\system\DictSystem;
+use \Shipard\Application\Application, E10\TableForm, E10\utils, e10\str, \translation\dicts\e10\base\system\DictSystem;
 use \Shipard\Utils\World;
 use \Shipard\Utils\Email;
 use \e10\base\libs\UtilsBase;
@@ -12,6 +12,10 @@ CONST rqtUserSelfRegistration = 0, rqtLostPassword = 1, rqtFirstLogin = 2, rqtIn
 
 function createNewPerson (\Shipard\Application\Application $app, $personData)
 {
+	$testNewPersons = intval($app->cfgItem ('options.persons.testNewPersons', 0));
+	if ($testNewPersons)
+		return createNewPersonNew ($app, $personData);
+
 	/** @var \e10\persons\TablePersons $tablePersons */
 	$tablePersons = $app->table('e10.persons.persons');
 	$newPerson = [];
@@ -133,6 +137,145 @@ function createNewPerson (\Shipard\Application\Application $app, $personData)
 
 	return $newPersonNdx;
 } // createNewPerson
+
+
+function createNewPersonNew (\Shipard\Application\Application $app, $personData)
+{
+	/** @var \e10\persons\TablePersons $tablePersons */
+	$tablePersons = $app->table('e10.persons.persons');
+	$newPerson = [];
+
+	$personHead = $personData ['person'];
+	utils::addToArray ($newPerson, $personHead, 'firstName');
+	utils::addToArray ($newPerson, $personHead, 'lastName');
+	utils::addToArray ($newPerson, $personHead, 'fullName', '');
+	utils::addToArray ($newPerson, $personHead, 'company', 0);
+	utils::addToArray ($newPerson, $personHead, 'accountType', 0);
+
+	$newPerson ['personType'] = 1;
+
+	if ($newPerson ['company'] == 0)
+		$newPerson ['fullName'] = $newPerson ['lastName'].' '.$newPerson ['firstName'];
+	else {
+		$newPerson ['lastName'] = $newPerson ['fullName'];
+		$newPerson ['personType'] = 2;
+	}
+
+	if (isset ($personHead ['roles']))
+		$newPerson ['roles'] = $personHead ['roles'];
+
+	if (isset ($personHead ['login']))
+	{
+		$newPerson ['login'] = $personHead ['login'];
+		$newPerson ['loginHash'] = md5(strtolower(trim($personHead ['login'])));
+		$newPerson ['accountState'] = 1;
+	}
+
+	utils::addToArray ($newPerson, $personHead, 'docState', 4000);
+	utils::addToArray ($newPerson, $personHead, 'docStateMain', 2);
+
+	$newPersonNdx = $tablePersons->dbInsertRec($newPerson);
+
+	// -- contactInfo
+	if (isset($personData ['contacts']))
+	{
+		forEach ($personData ['contacts'] as $contact)
+		{
+			$newContact = [
+				'property' => $contact ['type'], 'group' => 'contacts', 'tableid' => 'e10.persons.persons', 'recid' => $newPersonNdx,
+				'valueString' => $contact ['value'], 'created' => new \DateTime ()
+			];
+			$app->db->query ("INSERT INTO [e10_base_properties]", $newContact);
+		}
+	}
+
+	// -- address
+	if (isset ($personData ['address']))
+	{
+		/** @var \e10\persons\TablePersonsContacts */
+		$tablePersonsContact = $app->table('e10.persons.personsContacts');
+
+		forEach ($personData ['address'] as $address)
+		{
+			$newAddress = [
+        'person' => $newPersonNdx,
+        'adrSpecification' => $address['specification'] ?? '',
+        'adrStreet' => $address['street'] ?? '',
+        'adrCity' => $address['city'] ?? '',
+        'adrZipCode' => $address['zipcode'] ?? '',
+        'adrCountry' => World::countryNdx($app, $app->cfgItem ('options.core.ownerDomicile', 'cz')),
+        'flagAddress' => 1,
+        'docState' => 4000, 'docStateMain' => 2,
+      ];
+			$tablePersonsContact->checkBeforeSave($newAddress);
+			$app->db->query ('INSERT INTO [e10_persons_personsContacts]', $newAddress);
+		}
+	}
+
+	// -- identification
+	if (isset ($personData ['ids']))
+	{
+		forEach ($personData ['ids'] as $id)
+		{
+			$newId = [
+				'property' => $id ['type'], 'group' => 'ids', 'tableid' => 'e10.persons.persons', 'recid' => $newPersonNdx,
+				'valueString' => $id ['value'], 'created' => new \DateTime ()
+			];
+			if ($id ['type'] === 'birthdate')
+			{
+				$newId['valueDate'] = $id ['value'];
+			}
+			$app->db->query ('INSERT INTO [e10_base_properties]', $newId);
+		}
+	}
+
+	// -- groups
+	if (isset ($personData ['groups']))
+	{
+		forEach ($personData ['groups'] as $gid)
+		{
+			$gidNdx = $gid;
+			if ($gid[0] === '@')
+			{
+				$gndx = $app->db()->query ('SELECT * FROM e10_persons_groups WHERE systemGroup = %s', substr($gid, 1))->fetch();
+				if ($gndx)
+					$gidNdx = $gndx['ndx'];
+			}
+
+			$app->db()->query ('INSERT INTO [e10_persons_personsgroups] ([person], [group]) VALUES (%i, %i)', $newPersonNdx, $gidNdx);
+		}
+	}
+
+	// -- paymentInfo
+	if (isset($personData ['payments']))
+	{
+		forEach ($personData ['payments'] as $contact)
+		{
+      $newBA = [
+        'person' => $newPersonNdx,
+        'bankAccount' => $contact ['value'],
+        'docState' => 4000, 'docStateMain' => 2,
+      ];
+      $app->db()->query('INSERT INTO e10_persons_personsBA', $newBA);
+		}
+	}
+
+	// -- password
+	if (isset ($personData['password']))
+	{
+		$newPassword = [
+			'person' => $newPersonNdx, 'emailHash' => $newPerson ['loginHash'],
+			'salt' => $personData['password']['salt'], 'password' => $personData['password']['password'], 'pwType' => 0, 'version' => 1,
+		];
+		$app->db()->query ('INSERT INTO [e10_persons_userspasswords]', $newPassword);
+	}
+
+	$personRecData = $tablePersons->loadItem($newPersonNdx);
+	$tablePersons->checkAfterSave2 ($personRecData);
+	$tablePersons->docsLog($newPersonNdx);
+
+	return $newPersonNdx;
+}
 
 
 /**
@@ -1840,112 +1983,5 @@ class AddWizard extends \Shipard\Form\Wizard
 		$this->stepResult ['close'] = 1;
 		$this->stepResult ['editDocument'] = 1;
 		$this->stepResult ['params'] = ['table' => 'e10.persons.persons', 'pk' => $newPersonNdx];
-	}
-}
-
-
-/**
- * Class AddWizardFromID
- * @package E10\Persons
- */
-class AddWizardFromID extends Wizard
-{
-	protected $newPersonNdx = 0;
-	protected $tablePersons;
-
-	public function doStep ()
-	{
-		if ($this->pageNumber === 1)
-		{
-			$this->tablePersons = $this->app()->table ('e10.persons.persons');
-			$this->savePerson();
-		}
-	}
-
-	public function renderForm ()
-	{
-		switch ($this->pageNumber)
-		{
-			case 0: $this->renderFormWelcome (); break;
-			case 1: $this->renderFormDone (); break;
-		}
-	}
-
-	public function addParams ()
-	{
-		$addToGroups = $this->app->testGetParam('addToGroups');
-		$this->recData['addToGroups'] = $addToGroups;
-		$this->addInput('addToGroups', '', self::INPUT_STYLE_STRING, TableForm::coHidden, 120);
-	}
-
-	public function renderFormWelcome_AddOnePerson ($sfx, $fields = FALSE)
-	{
-		$this->addInput('lastName'.$sfx, 'Příjmení', self::INPUT_STYLE_STRING, 0, 80);
-		$this->addInput('firstName'.$sfx, 'Jméno', self::INPUT_STYLE_STRING, 0, 60);
-		$this->addInput('birthdate'.$sfx, 'Datum narození', self::INPUT_STYLE_DATE);
-		$this->addInput('idcn'.$sfx, 'Čislo OP', self::INPUT_STYLE_STRING, 0, 30);
-		$this->addInput('street'.$sfx, 'Ulice', self::INPUT_STYLE_STRING, 0, 250);
-		$this->addInput('city'.$sfx, 'Město', self::INPUT_STYLE_STRING, 0, 90);
-		$this->addInput('zipcode'.$sfx, 'PSČ', self::INPUT_STYLE_STRING, 0, 20);
-
-		if ($fields === FALSE || in_array('email', $fields))
-			$this->addInput('email'.$sfx, 'E-mail', self::INPUT_STYLE_STRING, 0, 60);
-		if ($fields === FALSE || in_array('phone', $fields))
-			$this->addInput('phone'.$sfx, 'Telefon', self::INPUT_STYLE_STRING, 0, 20);
-		if ($fields === FALSE || in_array('bankacount', $fields))
-			$this->addInput('bankaccount'.$sfx, 'Číslo účtu', self::INPUT_STYLE_STRING, 0, 30);
-	}
-
-	public function renderFormWelcome ()
-	{
-		$this->setFlag ('formStyle', 'e10-formStyleSimple');
-
-		$this->openForm ();
-			$this->renderFormWelcome_AddOnePerson ('');
-			$this->addParams();
-		$this->closeForm ();
-	}
-
-	public function savePerson ()
-	{
-		$this->saveOnePerson ('');
-		$this->stepResult ['close'] = 1;
-	}
-
-	public function saveOnePerson ($sfx)
-	{
-		$newPerson ['person'] = [];
-		$newPerson ['person']['company'] = 0;
-		$newPerson ['person']['firstName'] = $this->recData['firstName'.$sfx];
-		$newPerson ['person']['lastName'] = $this->recData['lastName'.$sfx];
-		$newPerson ['person']['fullName'] = $this->recData['lastName'.$sfx].' '.$this->recData['firstName'.$sfx];
-
-		$newAddress = [];
-		$newAddress ['street'] = $this->recData ['street'.$sfx];
-		$newAddress ['city'] = $this->recData ['city'.$sfx];
-		$newAddress ['zipcode'] = $this->recData ['zipcode'.$sfx];
-		$newAddress ['country'] = $this->app()->cfgItem ('options.core.ownerDomicile', 'cz');
-		$newAddress ['worldCountry'] = World::countryNdx($this->app(), $this->app()->cfgItem ('options.core.ownerDomicile', 'cz'));
-
-		$newPerson ['address'][] = $newAddress;
-
-		if ($this->recData ['idcn'] !== '')
-			$newPerson ['ids'][] = ['type' => 'idcn', 'value' => $this->recData ['idcn'.$sfx]];
-		if ($this->recData ['birthdate'] !== '0000-00-00')
-			$newPerson ['ids'][] = ['type' => 'birthdate', 'value' => $this->recData ['birthdate'.$sfx]];
-		if (isset($this->recData ['email']) && $this->recData ['email'] !== '')
-			$newPerson ['contacts'][] = ['type' => 'email', 'value' => $this->recData ['email'.$sfx]];
-		if (isset($this->recData ['phone']) && $this->recData ['phone'] !== '')
-			$newPerson ['contacts'][] = ['type' => 'phone', 'value' => $this->recData ['phone'.$sfx]];
-		if (isset($this->recData ['bankaccount']) && $this->recData ['bankaccount'] !== '')
-			$newPerson ['payments'][] = ['type' => 'bankaccount', 'value' => $this->recData ['bankaccount'.$sfx]];
-
-		if ($this->recData['addToGroups'] != '')
-			$newPerson ['groups'] = explode (',', $this->recData['addToGroups']);
-
-		$this->newPersonNdx = \E10\Persons\createNewPerson ($this->app, $newPerson);
-		$this->tablePersons->docsLog ($this->newPersonNdx);
-
-		return $this->newPersonNdx;
 	}
 }

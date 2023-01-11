@@ -23,6 +23,11 @@ class TablePersonsContacts extends DbTable
 	{
 		parent::checkBeforeSave ($recData, $ownerData);
 
+		$recData['systemOrder'] = 99;
+		if ($recData['flagMainAddress'])
+			$recData['systemOrder'] = 1;
+		elseif ($recData['flagOffice'])
+			$recData['systemOrder'] = 20;
 	}
 
 	public function checkNewRec (&$recData)
@@ -227,10 +232,13 @@ class FormPersonContact extends TableForm
 						$this->addColumnInput ('adrZipCode');
 						$this->addColumnInput ('adrCountry');
 
-						if ($this->idsOptions && isset($this->idsOptions['id1']))
+						if ($this->idsOptions && (isset($this->idsOptions['id1']) || isset($this->idsOptions['id2'])))
 						{
 							$this->addSeparator(self::coH4);
-							$this->addColumnInput ('id1');
+							if (isset($this->idsOptions['id1']))
+								$this->addColumnInput ('id1');
+							if (isset($this->idsOptions['id2']))
+								$this->addColumnInput ('id2');
 							$needSep = 1;
 						}
 					}
@@ -280,6 +288,7 @@ class FormPersonContact extends TableForm
     switch ($colDef ['sql'])
     {
       case	'id1': if ($this->idsOptions && isset($this->idsOptions['id1'])) return $this->idsOptions['id1']['label']; break;
+      case	'id2': if ($this->idsOptions && isset($this->idsOptions['id2'])) return $this->idsOptions['id2']['label']; break;
     }
 
 		return parent::columnLabel ($colDef, $options);

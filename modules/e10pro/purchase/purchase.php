@@ -3,7 +3,7 @@
 namespace E10Pro\Purchase;
 require_once __SHPD_MODULES_DIR__ . 'e10/base/base.php';
 
-use \Shipard\Viewer\TableViewDetail, \Shipard\Viewer\TableViewPanel, \E10\TableForm, \E10\DbTable, \E10\utils, \E10\Widget, \E10\Application;
+use \Shipard\Viewer\TableViewPanel;
 
 require_once __SHPD_MODULES_DIR__ . 'e10/persons/tables/persons.php';
 require_once __SHPD_MODULES_DIR__ . 'e10doc/balance/balance.php';
@@ -302,19 +302,3 @@ class reportBalancePurchasesInvoice extends \E10Doc\Balance\reportBalance
 		parent::init();
 	}
 }
-
-/**
- * AddWizardFromID
- *
- */
-
-class AddWizardFromID extends \E10\Persons\AddWizardFromID
-{
-	public function savePerson ()
-	{
-		parent::savePerson ();
-		$this->stepResult ['addDocument'] = 1;
-		$this->stepResult ['params'] = array('table' => 'e10doc.core.heads', 'addparams' => "__docType=purchase&__person={$this->newPersonNdx}");
-	}
-}
-

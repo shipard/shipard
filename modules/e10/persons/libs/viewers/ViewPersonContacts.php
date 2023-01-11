@@ -46,7 +46,7 @@ class ViewPersonContacts extends TableView
 			array_push ($q, ')');
 		}
 
-		$this->queryMain ($q, '[contacts].', ['[adrCity]', '[ndx]']);
+		$this->queryMain ($q, '[contacts].', ['[systemOrder], [adrCity]', '[ndx]']);
 		$this->runQuery ($q);
 
 		$this->runQuery ($q);
@@ -62,8 +62,6 @@ class ViewPersonContacts extends TableView
 
 	public function renderRow ($item)
 	{
-		$at = $this->addressTypes[$item['type']];
-
 		$listItem ['pk'] = $item ['ndx'];
 		//$listItem ['icon'] = $this->table->tableIcon ($item);
 
@@ -97,6 +95,8 @@ class ViewPersonContacts extends TableView
 
       if ($item['id1'] !== '')
         $addressFlags[] = ['text' => 'IČP: '.$item['id1'], 'class' => 'label label-default'];
+			if ($item['id2'] !== '')
+        $addressFlags[] = ['text' => 'IČZ: '.$item['id2'], 'class' => 'label label-default'];
 
       $listItem['t1'] = $address;
 
@@ -140,7 +140,7 @@ class ViewPersonContacts extends TableView
 		$reg = new \e10\persons\libs\register\PersonRegister($this->app());
 		$companyId = $reg->loadPersonOid($this->personNdx);
 
-		if ($companyId !== 0)
+		if ($companyId !== '')
 		{
 			$toolbar[] = [
 				'text' => 'Pobočky', 'type' => 'action', 'action' => 'addwizard', 'icon' => 'user/wifi',

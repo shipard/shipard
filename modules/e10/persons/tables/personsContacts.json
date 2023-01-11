@@ -22,6 +22,7 @@
 		{"id": "contactPhone", "name": "Telefon", "type": "string", "len": 80},
 
 		{"id": "id1", "name": "ID1", "type": "string", "len": 30},
+		{"id": "id2", "name": "ID2", "type": "string", "len": 30},
 
 	  {"id": "adrLocLat", "name": "Zeměpisná šířka", "type": "number", "dec": 7},
 	  {"id": "adrLocLon", "name": "Zeměpisná délka", "type": "number", "dec": 7},
@@ -29,6 +30,8 @@
 		  "enumValues": {"0": "Nezaměřeno", "1": "Zaměřeno", "2": "Nelze zaměřit"}},
 	  {"id": "adrLocTime", "name": "Okamžik zaměření", "type": "timestamp"},
 	  {"id": "adrLocHash", "name": "Hash adresy", "type": "string", "len": 32, "options": ["ascii"]},
+
+		{"id": "systemOrder", "name": "Systémové pořadí", "type": "short"},
 
 	  {"id": "docState", "name": "Stav", "type": "int"},
 	  {"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

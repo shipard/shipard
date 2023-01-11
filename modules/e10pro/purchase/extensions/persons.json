@@ -4,7 +4,7 @@
     "views": {
       "suppliers":
 			{"id": "suppliers", "class": "e10pro.purchase.ViewSuppliers",
-				"addWizard": {"class": "e10pro.purchase.AddWizardFromID", "icon": "paymentMethodCard"},
+				"addWizard": {"class": "e10doc.purchase.libs.AddWizardFromID", "icon": "paymentMethodCard"},
 				"details": {
 					"purchases": {"title": "Výkupy", "icon": "docTypePurchaseTicket", "type": "detail", "class": "e10pro.purchase.ViewDetailSupplier"}
 				}

@@ -85,7 +85,7 @@ class ViewPersonBA extends TableView
 		$reg = new \e10\persons\libs\register\PersonRegister($this->app());
 		$companyId = $reg->loadPersonOid($this->personNdx);
 
-		if ($companyId !== 0)
+		if ($companyId !== '')
 		{
 			$toolbar[] = [
 				'text' => 'Účty', 'type' => 'action', 'action' => 'addwizard', 'icon' => 'user/wifi',
