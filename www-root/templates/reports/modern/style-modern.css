@@ -237,6 +237,17 @@ table.purchaseSigned td {padding: 5pt;}
 div.vkp-vykup-podpis-dod-prevzal {height: 95pt; font-size: 10pt;}
 div.vkp-vykup-podpis-dod-podpis {border-top: 2pt dotted black; border-collapse: collapse; font-size: 9pt; text-align: center;}
 
+table.additionalAddresses {font-size: 8pt; border-bottom: 2pt solid lightgray; padding-bottom: 3pt; margin-bottom: 3pt;}
+
+table.additionalAddresses td {width: 33.3%; padding-bottom: 5pt; vertical-align: top;}
+
+table.additionalAddresses td span.hdr {font-size: 10pt;}
+
+table.additionalAddresses td.deliveryAddress div.hdr {font-size: 10pt;}
+
+table.additionalAddresses td div.hdr {font-size: 10pt;}
+
+
 /*** universal app styles */
 
 .suf {padding-left: .4em; font-size: 80%; font-weight: normal;}
