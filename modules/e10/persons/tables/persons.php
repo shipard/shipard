@@ -270,6 +270,55 @@ class TablePersons extends DbTable
 
 	public function loadAddresses ($pkeys, $asRecs = FALSE)
 	{
+		$testNewPersons = intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
+		if ($testNewPersons)
+		{
+			$addresses = [];
+			if (count($pkeys))
+			{
+				$q = [];
+				array_push($q, 'SELECT addrs.*');
+				array_push($q, ' FROM [e10_persons_personsContacts] AS [addrs]');
+				array_push($q, ' WHERE 1');
+				array_push($q, ' AND [person] IN %in', $pkeys);
+				array_push($q, ' AND flagAddress = %i', 1);
+				array_push($q, ' AND docState = %i', 4000);
+				array_push($q, ' ORDER BY systemOrder');
+
+				$addrs = $this->db()->query ($q);
+				if ($asRecs)
+				{
+					forEach ($addrs as $a)
+						$addresses [$a ['recid']][] = $a;
+				}
+				else
+				{
+					forEach ($addrs as $item)
+					{
+						$ap = [];
+
+						if ($item['adrSpecification'] != '')
+							$ap[] = $item['adrSpecification'];
+						if ($item['adrStreet'] != '')
+							$ap[] = $item['adrStreet'];
+						if ($item['adrCity'] != '')
+							$ap[] = $item['adrCity'];
+						if ($item['adrZipCode'] != '')
+							$ap[] = $item['adrZipCode'];
+
+						//$country = World::country($this->app(), $item['adrCountry']);
+						//$ap[] = /*$country['f'].' '.*/$country['t'];
+						$addressText = implode(', ', $ap);
+
+
+						$addresses [$item ['person']][] = ['text' => $addressText, 'icon' => 'system/iconMapMarker', 'class' => 'nowrap'];
+					}
+				}
+			}
+
+			return $addresses;
+		}
+
 		$addresses = [];
 		if (count($pkeys))
 		{
