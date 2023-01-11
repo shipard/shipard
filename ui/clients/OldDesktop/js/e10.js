@@ -5226,9 +5226,13 @@ function e10FormsRefInputComboOpen (input)
 	}
 	else
 	{
+		var form = $("#" + formId + 'Form');
 		sideBarType = 'main';
 		var sidebarViewer = $("#" + formId + 'Sidebar').find ("div.df2-viewer");
-		if (sidebarViewer.is ('DIV') && sidebarViewer.attr ('data-combo-rows-target') === 'rows')
+
+		var sidebarRefresh = form.attr('data-flag-sidebarrefresh');
+
+		if (sidebarViewer.is ('DIV') && sidebarViewer.attr ('data-combo-rows-target') === 'rows' && sidebarRefresh !== 'always')
 			return;
 	}
 

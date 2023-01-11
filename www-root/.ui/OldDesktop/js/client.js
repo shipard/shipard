@@ -1291,8 +1291,10 @@ listGroup='';var
 sideBarType='column';if(e.attr('data-column'))columnId=e.attr('data-column');else
 if(e.attr('data-listid')){sideBarType='list';listId=e.attr('data-listid');listGroup=e.attr('data-listgroup');refInputId=e.attr('id');}else
 if(e.attr('data-sidebar-remote')){var
-sidebar=$("#"+formId+'Sidebar');if(sidebar.length){if(sidebar.attr('data-sidebar-local-column-target')===e.attr('id'))return;}sideBarType='remote';columnId=e.attr('data-column');refInputId=e.attr('id');}else{sideBarType='main';var
-sidebarViewer=$("#"+formId+'Sidebar').find("div.df2-viewer");if(sidebarViewer.is('DIV')&&sidebarViewer.attr('data-combo-rows-target')==='rows')return;}var
+sidebar=$("#"+formId+'Sidebar');if(sidebar.length){if(sidebar.attr('data-sidebar-local-column-target')===e.attr('id'))return;}sideBarType='remote';columnId=e.attr('data-column');refInputId=e.attr('id');}else{var
+form=$("#"+formId+'Form');sideBarType='main';var
+sidebarViewer=$("#"+formId+'Sidebar').find("div.df2-viewer");var
+sidebarRefresh=form.attr('data-flag-sidebarrefresh');if(sidebarViewer.is('DIV')&&sidebarViewer.attr('data-combo-rows-target')==='rows'&&sidebarRefresh!=='always')return;}var
 columnName=e.attr('name');var
 srcTableId=e.attr('data-srctable');var
 url='';if(table)url="/api/form/"+table+"/sidebar/"+pk+'/'+sideBarType+'/'+srcTableId+'/';else{var
