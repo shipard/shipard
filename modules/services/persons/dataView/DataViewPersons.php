@@ -27,6 +27,10 @@ class DataViewPersons extends DataView
 		parent::init();
 
 		$this->requestParams['showAs'] = strval($this->app()->requestPath(3));
+
+		if ($this->requestParams['showAs'] === '' && $this->app()->testGetParam('showAs') !== '')
+			$this->requestParams['showAs'] = $this->app()->testGetParam('showAs');
+
 		if ($this->requestParams['showAs'] === '')
 			$this->requestParams['showAs'] = 'html';
 
@@ -49,7 +53,6 @@ class DataViewPersons extends DataView
 			return;
 		}
 
-		
 		if ($this->requestParams['country'] === '' && $this->requestParams['personId'] === '' && $this->data['queryText'] === '')
 			$this->viewType = self::vtSearch;
 		elseif ($this->requestParams['country'] === '' && $this->requestParams['personId'] === '' && $this->data['queryText'] !== '')
@@ -92,7 +95,7 @@ class DataViewPersons extends DataView
 					continue;
 				if (substr_count($w, '.') > 1)
 					continue;
-				if ($w[0] === '+')	
+				if ($w[0] === '+')
 					continue;
 				if ($fullTextQuery !== '')
 					$fullTextQuery .= ' ';
@@ -107,18 +110,18 @@ class DataViewPersons extends DataView
 				if (count($words) === $cntUsedWords)
 					$doExtraLIKE = 0;
 //				array_push ($q, ')');
-			}	
+			}
 			else
 			{
 				//if (Str::strlen($fts) > 2)
 					array_push($q, ' AND persons.[fullName] LIKE %s', $fts . '%');
 					$doExtraLIKE = 0;
 			}
-			
+
 			$ascii = TRUE;
 			if(preg_match('/[^\x20-\x7f]/', $fts))
 				$ascii = FALSE;
-			
+
 			if ($ascii)
 			{
 				array_push ($q, 'UNION DISTINCT SELECT 1 AS selectPart, persons.* ');
@@ -139,8 +142,8 @@ class DataViewPersons extends DataView
 		if ($fts !== '')
 			array_push ($q, ' ORDER BY selectPart, valid DESC, fullName');
 		else
-			array_push ($q, ' ORDER BY selectPart, fullName');	
-		
+			array_push ($q, ' ORDER BY selectPart, fullName');
+
 		array_push ($q, ' LIMIT 20');
 
 		$pks = [];
@@ -222,13 +225,34 @@ class DataViewPersons extends DataView
 
 	protected function renderDataAsJson()
 	{
-		if (isset($this->data['person']['json']))
-			$this->template->data['forceCode'] = $this->data['person']['json'];
-		else
+		if ($this->viewType == self::vtPerson)
 		{
-			$data = array_merge(['status' => 0], ['errors' => array_values($this->data['errors'])]);
-			$this->template->data['forceCode'] = Json::lint($data);
-		}	
-		$this->template->data['forceMimeType'] = 'application/json';
+			if (isset($this->data['person']['json']))
+				$this->template->data['forceCode'] = $this->data['person']['json'];
+			else
+			{
+				$data = array_merge(['status' => 0], ['errors' => array_values($this->data['errors'] ?? [])]);
+				$this->template->data['forceCode'] = Json::lint($data);
+			}
+			$this->template->data['forceMimeType'] = 'application/json';
+		}
+		elseif ($this->viewType == self::vtSearchResults)
+		{
+			if (isset($this->data['search']))
+			{
+				$data = [
+					'status' => 1,
+					'queryText' => $this->data['queryText'],
+					'results' => $this->data['search'] ?? [],
+				];
+				$this->template->data['forceCode'] = Json::lint($data);
+			}
+			else
+			{
+				$data = array_merge(['status' => 0], ['errors' => array_values($this->data['errors'] ?? [])]);
+				$this->template->data['forceCode'] = Json::lint($data);
+			}
+			$this->template->data['forceMimeType'] = 'application/json';
+		}
 	}
 }
