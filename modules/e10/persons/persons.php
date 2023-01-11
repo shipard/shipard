@@ -194,7 +194,7 @@ function createNewPersonNew (\Shipard\Application\Application $app, $personData)
 	{
 		/** @var \e10\persons\TablePersonsContacts */
 		$tablePersonsContact = $app->table('e10.persons.personsContacts');
-
+		$cntAddr = 0;
 		forEach ($personData ['address'] as $address)
 		{
 			$newAddress = [
@@ -207,8 +207,13 @@ function createNewPersonNew (\Shipard\Application\Application $app, $personData)
         'flagAddress' => 1,
         'docState' => 4000, 'docStateMain' => 2,
       ];
+
+			if ($cntAddr === 0)
+				$newAddress['flagMainAddress'] = 1;
+
 			$tablePersonsContact->checkBeforeSave($newAddress);
 			$app->db->query ('INSERT INTO [e10_persons_personsContacts]', $newAddress);
+			$cntAddr++;
 		}
 	}
 
