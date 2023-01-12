@@ -68,7 +68,14 @@
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.persons.docStates"},
 	"documentCard": "e10.persons.DocumentCardPerson",
   "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
-	"addWizard": {"class": "e10.persons.AddWizard"},
+	"addWizard": [
+		{"class": "e10.persons.AddWizard", "disabledCfgItem": "options.persons.testNewPersons"},
+		{
+			"text": "Nová firma",
+			"class": "e10.persons.libs.register.AddWizardCompany",
+			"enabledCfgItem": "options.persons.testNewPersons", "icon": "user/wifi"
+		}
+	],
   "order": [{"column": "fullName", "order": "ASC"}],
   "fullText": ["fullName"],
 	"ndx": 1000,

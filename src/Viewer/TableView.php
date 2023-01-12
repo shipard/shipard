@@ -640,17 +640,17 @@ class TableView extends \Shipard\Base\BaseObject
 	{
 		if ($addWizard)
 		{
-			$newItem = array ('type' => 'action', 'action' => 'addwizard', 'text' => '', 'data-class' => $addWizard ['class']);
+			$newItem = ['type' => 'action', 'action' => 'addwizard', 'text' => '', 'data-class' => $addWizard ['class']];
 			if (isset ($addWizard['icon']))
 				$newItem['icon'] = $addWizard['icon'];
 			if (isset ($addWizard['text']))
 				$newItem['text'] = $addWizard['text'];
 
+			if (!utils::enabledCfgItem ($this->app, $addWizard))
+				return;
+
 			if (isset($addWizard['place']))
 			{
-				if (isset ($addWizard['enabledCfgItem']) && $this->app()->cfgItem($addWizard['enabledCfgItem'], 0) == 0)
-					return;
-
 				$toolbar [0]['dropdownMenu'][] = $newItem;
 			}
 			else
@@ -1454,7 +1454,7 @@ class TableView extends \Shipard\Base\BaseObject
 				if (count ($details) === 0)
 					$details ['default'] = [
 						'title' => 'Detail', 'icon' => 'system/detailDetail', 'order' => 1,
-						'class' => $this->viewerDefinition ['detail']
+						'class' => $this->viewerDefinition ['detail'] ?? ''
 					];
 
 				$details [$gdid] = $gd;

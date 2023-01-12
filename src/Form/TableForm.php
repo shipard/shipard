@@ -1368,7 +1368,7 @@ class TableForm
 		$c = '';
 
 		/** @var \e10\TableView $v */
-		$v = $this->table->app()->table ($tableId)->getTableView ($viewClass, $options);
+		$v = $this->app()->table ($tableId)->getTableView ($viewClass, $options);
 		$v->type = 'form';
 		$v->renderViewerData ('');
 

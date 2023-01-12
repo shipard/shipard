@@ -27,9 +27,14 @@ class PersonRegister extends Utility
   var $personBA = [];
   var $missingBA = [];
 
-  public function setPersonNdx($personNdx)
+  protected function init()
   {
     $this->tablePersonsContact = $this->app()->table('e10.persons.personsContacts');
+  }
+
+  public function setPersonNdx($personNdx)
+  {
+    $this->init();
 
     $this->personNdx = $personNdx;
     $this->personRecData = $this->app()->loadItem($this->personNdx, 'e10.persons.persons');
@@ -41,6 +46,49 @@ class PersonRegister extends Utility
 
     $this->checkOffices();
     $this->checkBA();
+  }
+
+  public function addPerson($personId)
+  {
+    $this->init();
+
+    $this->loadByOid($personId);
+    if (!$this->registerData)
+    {
+
+      return;
+    }
+
+    $this->addPerson_saveBase();
+
+    // -- address
+    foreach ($this->registerData['address'] as $addr)
+    {
+      $this->addAddress($addr);
+    }
+
+    // -- bank accounts
+    $baIds = [];
+    foreach ($this->registerData['bankAccounts'] as $ba)
+      $baIds[] = $ba['bankAccount'];
+    $this->addBankAccounts($baIds);
+  }
+
+  protected function addPerson_saveBase()
+  {
+    $newPerson = [];
+		$newPerson ['person'] = [];
+		$newPerson ['person']['company'] = 1;
+		$newPerson ['person']['fullName'] = $this->registerData['person']['fullName'];
+		$newPerson ['person']['docState'] = 1000;
+		$newPerson ['person']['docStateMain'] = 0;
+
+		$newPerson ['ids'][] = ['type' => 'oid', 'value' => $this->registerData['person']['oid']];
+    if (isset($this->registerData['person']['vatID']) && $this->registerData['person']['vatID'] !== '')
+		  $newPerson ['ids'][] = ['type' => 'taxid', 'value' => $this->registerData['person']['vatID']];
+
+    $this->personNdx = \E10\Persons\createNewPerson ($this->app, $newPerson);
+    $this->personRecData = $this->app()->loadItem($this->personNdx, 'e10.persons.persons');
   }
 
   public function loadByOid($id)
@@ -138,7 +186,6 @@ class PersonRegister extends Utility
     }
   }
 
-
   protected function checkOffices()
   {
     foreach ($this->registerData['address'] as &$a)
@@ -180,25 +227,35 @@ class PersonRegister extends Utility
       if (!$officeData)
         continue;
 
-      $newAddress = [
-        'person' => $this->personNdx,
-        'adrSpecification' => $officeData['specification'],
-        'adrStreet' => $officeData['street'],
-        'adrCity' => $officeData['city'],
-        'adrZipCode' => $officeData['zipcode'],
-        'adrCountry' => World::countryNdx($this->app(), $officeData['country']),
-
-        'flagAddress' => 1,
-        'flagOffice' => 1,
-
-        'id1' => $officeData['natId'],
-
-        'docState' => 4000,
-        'docStateMain' => 2,
-      ];
-      $this->tablePersonsContact->checkBeforeSave($newAddress);
-      $this->db()->query('INSERT INTO e10_persons_personsContacts', $newAddress);
+      $this->addAddress($officeData);
     }
+  }
+
+  protected function addAddress($addressData, $flags = NULL)
+  {
+    $newAddress = [
+      'person' => $this->personNdx,
+      'adrSpecification' => $addressData['specification'],
+      'adrStreet' => $addressData['street'],
+      'adrCity' => $addressData['city'],
+      'adrZipCode' => $addressData['zipcode'],
+      'adrCountry' => World::countryNdx($this->app(), $addressData['country']),
+
+      'flagAddress' => 1,
+
+      'id1' => $addressData['natId'],
+
+      'docState' => 4000,
+      'docStateMain' => 2,
+    ];
+
+    if ($addressData['type'] === 0)
+      $newAddress['flagMainAddress'] = 1;
+    elseif ($addressData['type'] === 1)
+      $newAddress['flagOffice'] = 1;
+
+    $this->tablePersonsContact->checkBeforeSave($newAddress);
+    $this->db()->query('INSERT INTO e10_persons_personsContacts', $newAddress);
   }
 
   protected function checkBA()

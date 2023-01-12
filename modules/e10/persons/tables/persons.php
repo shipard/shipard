@@ -831,7 +831,7 @@ class ViewPersonsBase extends TableView
 		{
 			$chbxPersonCountries = [];
 			forEach ($countriesRows as $r)
-				$chbxPersonCountries[$r['country']] = ['title' => $countriesCfg[$r['country']]['name'], 'id' => $r['country']];
+				$chbxPersonCountries[$r['country']] = ['title' => $countriesCfg[$r['country']]['name'] ?? '---', 'id' => $r['country']];
 
 			$paramsPersonCountries->addParam ('checkboxes', 'query.personCountries', ['items' => $chbxPersonCountries]);
 			$qry[] = array ('id' => 'personCountries', 'style' => 'params', 'title' => 'Zeměpis', 'params' => $paramsPersonCountries);

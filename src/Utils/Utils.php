@@ -904,7 +904,8 @@ class Utils
 			[
 				'http'=> [
 					'method'=>'GET',
-					'timeout' => 30
+					'timeout' => 30,
+					'header'=> "Connection: close\r\n"
 				]
 			]
 		);
