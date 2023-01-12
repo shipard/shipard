@@ -4893,7 +4893,7 @@ function df2FormsSetData (id, data)
 		if (nameParts.length == 2)
 			thisInputValue = data [dataMainPart][dataColumnPart];
 		else
-		if (nameParts.length == 3)
+		if (nameParts.length == 3 && data [dataMainPart] !== undefined)
 			thisInputValue = data [dataMainPart][dataSubPart][dataColumnPart];
 		else
 		if (nameParts.length == 4)
@@ -6685,6 +6685,7 @@ function e10WizardNext (input)
   var id = input.attr ('data-form');
 	var form = $("#" + id);
 	var uploadedFiles = [];
+	var viewersPks = [];
 
 	var fileInput = form.find (':input.e10-att-input-file').first();
 	if (fileInput)
@@ -6712,6 +6713,12 @@ function e10WizardNext (input)
 				});
 	}
 
+	// -- viewers
+	form.find ('ul.df2-viewer-list >li.active').each (function () {
+		if ($(this).attr ("data-pk"))
+			viewersPks.push ($(this).attr ("data-pk"));
+	});
+
 	var e = $("#" + id);
 	var codeTarget = e.parent().parent();
   //var formElement = document.getElementById (id);
@@ -6724,6 +6731,7 @@ function e10WizardNext (input)
 
   var formData = df2collectEditFormData (e, $.myFormsData [id]);
 	formData ['recData']['uploadedFiles'] = uploadedFiles;
+	formData ['recData']['viewersPks'] = viewersPks;
 	var focusedId = input.attr ('id');
 
 	var btns = $("#" + id + 'Buttons');
