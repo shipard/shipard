@@ -102,22 +102,37 @@ class ViewPersonContacts extends TableView
 
       if (count($addressFlags))
         $listItem['t2'] = $addressFlags;
-    }
 
-    if ($item['flagContact'])
+			if ($item['flagContact'])
+			{
+				$cf = [];
+				if ($item['contactName'] != '')
+					$cf[] = ['text' => $item['contactName'], 'class' => 'label label-default'];
+				if ($item['contactRole'] != '')
+					$cf[] = ['text' => $item['contactRole'], 'class' => 'label label-default'];
+				if ($item['contactEmail'] != '')
+					$cf[] = ['text' => $item['contactEmail'], 'class' => 'label label-default', 'icon' => 'system/iconEmail'];
+				if ($item['contactPhone'] != '')
+					$cf[] = ['text' => $item['contactPhone'], 'class' => 'label label-default', 'icon' => 'system/iconPhone'];
+
+				if (count($cf))
+					$listItem['t3'] = $cf;
+			}
+		}
+		elseif ($item['flagContact'])
     {
-      $cf = [];
-      if ($item['contactName'] != '')
-        $cf[] = ['text' => $item['contactName'], 'class' => 'label label-default'];
-      if ($item['contactRole'] != '')
+			$listItem['t1'] = $item['contactName'];
+
+			$cf = [];
+			if ($item['contactRole'] != '')
         $cf[] = ['text' => $item['contactRole'], 'class' => 'label label-default'];
       if ($item['contactEmail'] != '')
         $cf[] = ['text' => $item['contactEmail'], 'class' => 'label label-default', 'icon' => 'system/iconEmail'];
       if ($item['contactPhone'] != '')
         $cf[] = ['text' => $item['contactPhone'], 'class' => 'label label-default', 'icon' => 'system/iconPhone'];
 
-      if (count($addressFlags))
-        $listItem['t3'] = $cf;
+      if (count($cf))
+        $listItem['t2'] = $cf;
     }
 
 		return $listItem;
