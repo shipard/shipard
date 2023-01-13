@@ -728,6 +728,14 @@ class ViewPersonsBase extends TableView
 		$unused = isset ($qv['others']['unused']);
 		if ($unused)
 			array_push($q, ' AND persons.lastUseDate IS NULL');
+
+		$withoutMainAddress = isset ($qv['others']['withoutMainAddress']);
+		if ($withoutMainAddress)
+		{
+			array_push ($q, ' AND NOT EXISTS (SELECT ndx FROM e10_persons_personsContacts WHERE persons.ndx = person ');
+			array_push ($q, ' AND e10_persons_personsContacts.flagAddress = 1 AND e10_persons_personsContacts.flagMainAddress = 1');
+			array_push ($q, ')');
+		}
 	}
 
 	public function selectRows2 ()
@@ -844,10 +852,18 @@ class ViewPersonsBase extends TableView
 		UtilsBase::addClassificationParamsToPanel($this->table, $panel, $qry);
 
 		// -- others
+		$testNewPersons = intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
+
 		$chbxOthers = [
 				'withError' => ['title' => 'S chybou', 'id' => 'withError'],
-				'unused' => ['title' => 'Nepoužité', 'id' => 'unused']
+				'unused' => ['title' => 'Nepoužité', 'id' => 'unused'],
 		];
+
+		if ($testNewPersons)
+		{
+			$chbxOthers['withoutMainAddress'] = ['title' => 'Bez sídla', 'id' => 'unused'];
+		}
+
 		$paramsOthers = new \E10\Params ($this->app());
 		$paramsOthers->addParam ('checkboxes', 'query.others', ['items' => $chbxOthers]);
 		$qry[] = ['id' => 'errors', 'style' => 'params', 'title' => 'Ostatní', 'params' => $paramsOthers];
