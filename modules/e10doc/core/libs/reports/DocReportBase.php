@@ -248,8 +248,10 @@ class DocReportBase extends FormReport
 				'ids' => [],
 			];
 
-			if ($r['id1'])
-				$addr['ids'] = ['title' => 'IČP', 'value' => $r['id1']];
+			if ($r['id1'] !== '')
+				$addr['ids'][] = ['title' => 'IČP', 'value' => $r['id1']];
+			if ($r['id2'] !== '')
+				$addr['ids'][] = ['title' => 'IČZ', 'value' => $r['id2']];
 
 			return $addr;
 		}
