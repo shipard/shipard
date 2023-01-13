@@ -13,6 +13,9 @@ class AddWizardFromID extends Wizard
 	protected $newPersonNdx = 0;
 	protected $tablePersons;
 
+	var $docState = 4000;
+	var $docStateMain = 2;
+
 	public function doStep ()
 	{
 		if ($this->pageNumber === 1)
@@ -81,6 +84,8 @@ class AddWizardFromID extends Wizard
 		$newPerson ['person']['firstName'] = $this->recData['firstName'.$sfx];
 		$newPerson ['person']['lastName'] = $this->recData['lastName'.$sfx];
 		$newPerson ['person']['fullName'] = $this->recData['lastName'.$sfx].' '.$this->recData['firstName'.$sfx];
+		$newPerson ['person']['docState'] = $this->docState;
+		$newPerson ['person']['docMain'] = $this->docStateMain;
 
 		$newAddress = [];
 		$newAddress ['street'] = $this->recData ['street'.$sfx];
@@ -89,7 +94,8 @@ class AddWizardFromID extends Wizard
 		$newAddress ['country'] = $this->app()->cfgItem ('options.core.ownerDomicile', 'cz');
 		$newAddress ['worldCountry'] = World::countryNdx($this->app(), $this->app()->cfgItem ('options.core.ownerDomicile', 'cz'));
 
-		$newPerson ['address'][] = $newAddress;
+		if ($newAddress ['street'] !== '' || $newAddress ['city'] !== '' || $newAddress ['zipcode'] !== '')
+			$newPerson ['address'][] = $newAddress;
 
 		if ($this->recData ['idcn'] !== '')
 			$newPerson ['ids'][] = ['type' => 'idcn', 'value' => $this->recData ['idcn'.$sfx]];

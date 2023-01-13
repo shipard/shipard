@@ -71,6 +71,11 @@
 	"addWizard": [
 		{"class": "e10.persons.AddWizard", "disabledCfgItem": "options.persons.testNewPersons"},
 		{
+			"text": "Nový člověk",
+			"class": "e10.persons.libs.AddWizardHuman",
+			"enabledCfgItem": "options.persons.testNewPersons", "icon": "system/iconUser"
+		},
+		{
 			"text": "Nová firma",
 			"class": "e10.persons.libs.register.AddWizardCompany",
 			"enabledCfgItem": "options.persons.testNewPersons", "icon": "user/wifi"

@@ -1573,7 +1573,7 @@ class TableForm
 		$class = '';
 		$icon = '';
 		$iconClass = 'e10-docstyle-off';
-		if ($this->docState)
+		if ($this->docState && $this->table)
 		{
 			$docStateClass = $this->table->getDocumentStateInfo ($this->docState ['states'], $this->recData, 'styleClass');
 			if ($docStateClass)
