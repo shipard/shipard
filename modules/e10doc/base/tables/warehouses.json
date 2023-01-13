@@ -5,6 +5,9 @@
     {"id": "fullName", "name": "Název", "type": "string", "len": 120},
     {"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 40},
 		{"id": "id", "name": "ID", "type": "string", "len": 10},
+
+    {"id": "ownerOffice", "name": "Vlastní Pobočka", "type": "int", "reference": "e10.persons.personsContacts", "comboViewer": "combo"},
+
     {"id": "street", "name": "Ulice", "type": "string", "len": 250},
     {"id": "city", "name": "Město", "type": "string", "len": 90},
     {"id": "zipcode", "name": "PSČ", "type": "string", "len": 20},

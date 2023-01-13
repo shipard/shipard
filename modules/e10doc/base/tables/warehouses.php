@@ -40,8 +40,12 @@ class TableWarehouses extends DbTable
 		$rows = $this->app()->db->query ('SELECT * FROM [e10doc_base_warehouses] WHERE [docState] != 9800 ORDER BY [order], [id]');
 
 		foreach ($rows as $r)
-			$warehouses [$r ['ndx']] = array ('ndx' => $r ['ndx'], 'fullName' => $r ['fullName'], 'shortName' => $r ['shortName']);
-
+		{
+			$warehouses [$r ['ndx']] = [
+				'ndx' => $r ['ndx'], 'fullName' => $r ['fullName'], 'shortName' => $r ['shortName'],
+				'ownerOffice' => $r ['ownerOffice'],
+			];
+		}
 		// save to file
 		$cfg ['e10doc']['warehouses'] = $warehouses;
 		file_put_contents(__APP_DIR__ . '/config/_e10doc.warehouses.json', utils::json_lint (json_encode ($cfg)));
@@ -71,7 +75,7 @@ class ViewWarehouses extends TableView
 		$listItem ['t1'] = $item['fullName'];
 		$listItem ['i1'] = $item['id'];
 		$listItem ['icon'] = $this->table->tableIcon ($item);
-		
+
 		return $listItem;
 	}
 
@@ -122,6 +126,8 @@ class FormWarehouses extends TableForm
 				$this->addColumnInput ('id');
 				$this->addColumnInput ('order');
 
+				$this->addColumnInput ('ownerOffice');
+
 				$this->addColumnInput ('street');
 				$this->addColumnInput ('city');
 				$this->addColumnInput ('zipcode');
@@ -132,6 +138,20 @@ class FormWarehouses extends TableForm
 				$this->closeTab ();
 			$this->closeTabs ();
 		$this->closeForm ();
-	}	
+	}
+
+	public function comboParams ($srcTableId, $srcColumnId, $allRecData, $recData)
+	{
+		if ($srcTableId === 'e10doc.base.warehouses' && $srcColumnId === 'ownerOffice')
+		{
+			$cp = [
+				'personNdx' => strval(intval($this->app()->cfgItem ('options.core.ownerPerson', 0)))
+			];
+
+			return $cp;
+		}
+
+		return parent::comboParams ($srcTableId, $srcColumnId, $allRecData, $recData);
+	}
 }
 

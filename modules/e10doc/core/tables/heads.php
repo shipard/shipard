@@ -842,6 +842,17 @@ class TableHeads extends DbTable
 		else
 			$this->recData ['paymentMethod'] = 0;
 
+		// -- owner office
+		if (!isset($recData['ownerOffice']) || !$recData['ownerOffice'])
+		{
+			if ($recData['warehouse'])
+			{
+				$whCfg =  $this->app()->cfgItem('e10doc.warehouses.'.$recData['warehouse'], NULL);
+				if ($whCfg && isset($whCfg['ownerOffice']) && $whCfg['ownerOffice'])
+					$recData['ownerOffice'] = $whCfg['ownerOffice'];
+			}
+		}
+
 		$this->checkColumnsSettings($recData);
 	}
 
