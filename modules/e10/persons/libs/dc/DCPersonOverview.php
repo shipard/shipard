@@ -73,6 +73,7 @@ class DCPersonOverview extends \Shipard\Base\DocumentCard
 		array_push ($q, ' FROM [e10_persons_personsContacts] AS [contacts]');
 		array_push ($q, ' WHERE 1');
 		array_push ($q, ' AND [contacts].[person] = %i', $this->recData['ndx']);
+		array_push ($q, ' ORDER BY [contacts].[systemOrder]');
     $rows = $this->db()->query($q);
     foreach ($rows as $item)
     {
@@ -354,19 +355,23 @@ class DCPersonOverview extends \Shipard\Base\DocumentCard
 		// -- address
 		if (count($this->addresses))
 		{
-			/*
-			$t [] = [
-				'c1' => ['icon' => 'system/iconHome', 'text' => ''],
-				'c2' => $this->addresses,
-				'_options' => ['cellTitles' => ['c1' => 'Poštovní adresa']]
-			];
-			*/
+			$cnt = 0;
 			foreach ($this->addresses as $a)
 			{
 				$t [] = [
 					'c1' => ['icon' => $a['icon'], 'text' => ''],
-					'c2' => $a['c2']//[['text' => $a['text'], 'class' => ''], ['text' => $a['typeTitle'], 'class' => 'e10-small pull-right']],
+					'c2' => $a['c2'],
 				];
+				$cnt++;
+				if ($cnt > 10)
+				{
+					$t [] = [
+						'c1' => ['icon' => 'system/iconPlusSquare', 'text' => ''],
+						'c2' => '... (zatím nefunguje)',
+					];
+
+					break;
+				}
 			}
 		}
 
