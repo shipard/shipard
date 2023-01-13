@@ -418,6 +418,7 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 				}
 				else
 				{
+					$this->recData['otherAddress1'] = 0;
 					$addrTitle = [
 						['text' => 'Doručovací adresa:', 'icon' => 'system/iconHome', 'class' => 'h4'],
 						[
@@ -439,6 +440,7 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 				}
 				else
 				{
+					$this->recData['deliveryAddress'] = 0;
 					$addrTitle = [
 						['text' => 'Provozovna:', 'icon' => 'system/iconHome', 'class' => 'h4'],
 						[
@@ -550,6 +552,20 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 			$this->addInputEnum2($columnId, NULL, $addresses);
 			if ($this->recData[$columnId] === 0 || !isset($addresses[$this->recData[$columnId]]))
 				$this->recData[$columnId] = ($suggestedAddressNdx) ? $suggestedAddressNdx : key($addresses);
+		}
+	}
+
+	public function checkBeforeSave (&$saveData)
+	{
+		parent::checkBeforeSave($saveData);
+
+		if ($saveData ['recData']['personType'] == 1)
+		{ // human
+			$saveData ['recData']['otherAddress1'] = 0;
+		}
+		elseif ($saveData ['recData']['personType'] == 2)
+		{ // company
+			$saveData ['recData']['deliveryAddress'] = 0;
 		}
 	}
 }
