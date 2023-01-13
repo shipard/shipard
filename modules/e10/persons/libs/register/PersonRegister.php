@@ -148,6 +148,7 @@ class PersonRegister extends Utility
 		array_push ($q, ' FROM [e10_persons_personsContacts] AS [contacts]');
 		array_push ($q, ' WHERE 1');
 		array_push ($q, ' AND [contacts].[person] = %i', $this->personNdx);
+    array_push ($q, ' AND [contacts].[docState] != %i', 9800);
     $rows = $this->db()->query($q);
     foreach ($rows as $r)
     {
@@ -178,6 +179,7 @@ class PersonRegister extends Utility
 		array_push ($q, ' FROM [e10_persons_personsBA] AS [ba]');
 		array_push ($q, ' WHERE 1');
 		array_push ($q, ' AND [ba].[person] = %i', $this->personNdx);
+    array_push ($q, ' AND [ba].[docState] != %i', 9800);
     $rows = $this->db()->query($q);
     foreach ($rows as $r)
     {
