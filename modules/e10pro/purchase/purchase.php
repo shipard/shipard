@@ -120,14 +120,17 @@ class ViewSuppliers extends \e10\persons\ViewPersons
 	public function createToolbar ()
 	{
 		$toolbar = parent::createToolbar ();
+		if ($this->objectSubType !== self::vsMain)
+			return $toolbar;
 
 		$addParams = '__docType=purchase&__person={pk}';
-		$toolbar [] = array ('type' => 'document', 'action' => 'new', 'table' => 'e10doc.core.heads', 'doubleClick' => 1,
-												 'data-addparams' => $addParams, 'text' => 'Nový výkup');
+		$toolbar [] = [
+			'type' => 'document', 'action' => 'new', 'table' => 'e10doc.core.heads', 'doubleClick' => 1,
+			'data-addparams' => $addParams, 'text' => 'Nový výkup2'
+		];
 		return $toolbar;
-	} // createToolbar
-
-} // class ViewSuppliers
+	}
+}
 
 
 /**
