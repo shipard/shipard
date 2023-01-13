@@ -43,9 +43,9 @@ class AddWizardFromID extends Wizard
 
 	public function renderFormWelcome_AddOnePerson ($sfx, $fields = FALSE)
 	{
-		$this->addInput('idcn'.$sfx, 'Čislo OP', self::INPUT_STYLE_STRING, 0, 30);
 		$this->addInput('lastName'.$sfx, 'Příjmení', self::INPUT_STYLE_STRING, 0, 80);
 		$this->addInput('firstName'.$sfx, 'Jméno', self::INPUT_STYLE_STRING, 0, 60);
+		$this->addInput('idcn'.$sfx, 'Čislo OP', self::INPUT_STYLE_STRING, 0, 30);
 		$this->addInput('birthdate'.$sfx, 'Datum narození', self::INPUT_STYLE_DATE);
 		$this->addInput('street'.$sfx, 'Ulice', self::INPUT_STYLE_STRING, 0, 250);
 		$this->addInput('city'.$sfx, 'Město', self::INPUT_STYLE_STRING, 0, 90);
