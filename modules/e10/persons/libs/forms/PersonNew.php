@@ -115,7 +115,8 @@ class PersonNew extends TableForm
 				$this->closeTab ();
 
 				$this->openTab (TableForm::ltNone);
-          $this->addViewerWidget ('e10.persons.personsBA', 'form', ['personNdx' => $this->recData['ndx']], TRUE);
+					if (isset($this->recData['ndx']) && $this->recData['ndx'])
+						$this->addViewerWidget ('e10.persons.personsBA', 'form', ['personNdx' => $this->recData['ndx']], TRUE);
 				$this->closeTab ();
 
 				/*
