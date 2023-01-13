@@ -84,11 +84,12 @@
 								{{data.personsAddress.ownerOffice.zipcode}} {{data.personsAddress.ownerOffice.city}}<br/>
 								{{data.personsAddress.ownerOffice.countryNameEng}}
 							{{/data.flags.foreignCountry}}
-
-							{{#data.personsAddress.ownerOffice.ids}}
-								{{title}}: {{value}}
-							{{/data.personsAddress.ownerOffice.ids}}
 					</span>
+
+					{{#data.personsAddress.ownerOffice.ids}}
+						<b>{{title}}:</b> {{value}}
+					{{/data.personsAddress.ownerOffice.ids}}
+
 				</td>
 			{{/data.flags.useAddressOwnerOffice}}
 
@@ -126,11 +127,12 @@
 							{{data.personsAddress.personOffice.zipcode}} {{data.personsAddress.personOffice.city}}<br/>
 							{{data.personsAddress.personOffice.countryNameEng}}
 						{{/data.flags.foreignCountry}}
-
-						{{#data.personsAddress.personOffice.ids}}
-							{{title}}: {{value}}
-						{{/data.personsAddress.personOffice.ids}}
 					</span>
+
+					{{#data.personsAddress.personOffice.ids}}
+						<b>{{title}}:</b> {{value}}
+					{{/data.personsAddress.personOffice.ids}}
+
 				</td>
 			{{/data.flags.useAddressPersonOffice}}
 		{{/data.flags.usePersonsAddress}}
