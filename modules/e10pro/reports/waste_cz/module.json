@@ -1,6 +1,7 @@
 {
 	"id": "e10pro.reports.waste_cz",
 	"name": "Hlášení o odpadech",
+	"tables": ["returnRows"],
 	"config": [
 		{"id": "+reports", "file": "reports.json"},
 		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"}
