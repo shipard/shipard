@@ -4,6 +4,7 @@ namespace helpdesk\core;
 use \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
 use \Shipard\Utils\Utils;
 use \Shipard\Utils\Json;
+use \translation\dicts\e10\base\system\DictSystem;
 
 
 /**
@@ -184,6 +185,25 @@ class ViewTicketsComments extends TableView
 				else
 					$title[] = ['text' => $urn['personName'], 'class' => 'label label-info lh16', 'icon' => 'user/ban'];
 			}
+		}
+
+		if (in_array($item['ndx'], $this->notifyPks))
+		{
+			$readButton = [
+				'text' => DictSystem::text(DictSystem::diBtn_Seen),
+
+				'action' => 'viewer-inline-action',
+				'class' => 'pull-right',
+
+				'icon' => 'user/eye',
+				'btnClass' => 'btn-xs',
+				'actionClass' => 'df2-action-trigger',
+				'data-object-class-id' => 'helpdesk.core.libs.TicketsBulkAction',
+				'data-action-type' => 'markCommentAsRead',
+				'data-action-param-comment-ndx' => $item['ndx'],
+				'data-action-param-ticket-ndx' => $item['ticket'],
+			];
+			$title[] = $readButton;
 		}
 
 		$item ['pane']['title'][] = [
@@ -385,6 +405,7 @@ class ViewTicketsComments extends TableView
       'text' => 'Nový komentář', 'type' => 'button', 'actionClass' => 'btn btn-xs',
       'class' => 'pull-right', 'btnClass' => 'btn-success',
       'data-addParams' => $addParams,
+			'data-srcobjecttype' => 'viewer', 'data-srcobjectid' => $this->vid,
     ];
 
     $c .= "<div class='e10-pane-core e10-pane-info padd5 e10-bg-t6 pt1 pb1 mb1'>";
