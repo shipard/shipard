@@ -164,8 +164,8 @@ class AddTicketNotification extends Utility
 
 	public function run()
 	{
-		if ($this->docRecData['docState'] == 1000 || ($this->docRecData['docState'] == 4000 && $this->docRecData['activateCnt'] > 1))
-			return; // concept / edit
+		if ($this->docRecData['docState'] == 1000 || ($this->docRecData['docState'] == 4000 && $this->docRecData['activateCnt'] > 1 && $this->reason === 0))
+			return; // concept / edit - only on tickets
 
 		$this->createUsersNotifications();
 	}
