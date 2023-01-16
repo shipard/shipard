@@ -25,6 +25,9 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 	var $linkedPersons = [];
 	var $notifications = [];
 
+	CONST cmMulti = 0, cmSingle = 1;
+	var $colsMode = self::cmSingle;
+
 	public function init ()
 	{
 		parent::init();
@@ -66,7 +69,9 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 		$g['priority'] = '*P';
     $g['ds'] = 'Databáze';
 		$g['subject'] = 'Předmět';
-		$g['stateInfo'] = 'Stav';
+
+		if ($this->colsMode === self::cmMulti)
+			$g['stateInfo'] = 'Stav';
 
 		$this->setGrid ($g);
 		$this->setMainQueries ();
@@ -83,12 +88,21 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 		{
 			$listItem['rowNtfBadge'] = "<span style='display: relative'><span class='e10-ntf-badge' style='display: inline;'>".count($this->notifications[$item ['ndx']])."</span></span>";
 		}
+
 		$listItem ['subject'] = [['text' => $item['subject'], 'class' => 'block']];
 		//$listItem ['author'] = $item['authorName'];
 		//$listItem ['date'] = Utils::datef($item['dateCreate'], '%S%t');
 
-		$listItem ['stateInfo'] = [];
-		$this->table->ticketStateInfo($item, $listItem ['stateInfo']);
+		if ($this->colsMode === self::cmMulti)
+		{
+			$listItem ['stateInfo'] = [];
+			$this->table->ticketStateInfo($item, $listItem ['stateInfo']);
+		}
+		else
+		{
+			//$listItem ['subject'][0]['class'] .= ' e10-bold lh16';
+			$this->table->ticketStateInfo($item, $listItem ['subject']);
+		}
 
 		$listItem ['ticketId'] = $item['ticketId'];
 
@@ -116,10 +130,10 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 	{
 		if (isset ($this->classification [$item ['pk']]))
 		{
-			if (!isset($item ['subject']))
-				$item ['subject'] = [];
-			else
-				$item ['subject'][0]['class'] .= ' e10-bold';
+			//if (!isset($item ['subject']))
+			//	$item ['subject'] = [];
+			//else
+			//	$item ['subject'][0]['class'] .= ' e10-bold';
 
 			forEach ($this->classification [$item ['pk']] as $clsfGroup)
 				$item ['subject'] = array_merge ($item ['subject'], $clsfGroup);
@@ -169,7 +183,7 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 			array_push ($q, ')');
 		}
 
-		$this->queryMain ($q, 'tickets.', ['-[proposedDeadline] DESC', '[priority]', '[dateTouch]']);
+		$this->queryMain ($q, 'tickets.', ['[priority]', '-[proposedDeadline] DESC', '[dateTouch]']);
 
 		$this->runQuery ($q);
 	}
