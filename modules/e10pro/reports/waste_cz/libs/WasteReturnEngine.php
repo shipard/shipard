@@ -18,6 +18,8 @@ class WasteReturnEngine extends Utility
 
   var $wasteItemCodeNdx = 1;
 
+  var $documentNdx = 0;
+
 
   public function resetYear()
   {
@@ -48,6 +50,9 @@ class WasteReturnEngine extends Utility
     array_push ($q, ' AND [heads].dateAccounting >= %d', $this->dateBegin);
     array_push ($q, ' AND [heads].dateAccounting <= %d', $this->dateEnd);
 
+    if ($this->documentNdx)
+      array_push ($q, ' AND [rows].[document] = %i', $this->documentNdx);
+
     array_push ($q, ' ORDER BY [heads].[docNumber]');
 
     $cnt = 0;
@@ -62,11 +67,11 @@ class WasteReturnEngine extends Utility
 
       if (!isset($rowDestData['rowItemCodesData'][$this->wasteItemCodeNdx]))
       {
-        // echo '! '.$r['docNumber'].': '.json_encode($rowDestData['rowItemCodesData'])."\n";
+        //echo "\n".'! '.$r['docNumber'].': '.json_encode($rowDestData['rowItemCodesData'])."\n";
         continue;
       }
       //else
-      //  echo '* '.$r['docNumber'].': '.json_encode($rowDestData['rowItemCodesData'][$this->wasteItemCodeNdx])."\n";
+      //  echo "\n".'* '.$r['docNumber'].': '.json_encode($rowDestData['rowItemCodesData'][$this->wasteItemCodeNdx])."\n";
 
       $newRow = [
         'calendarYear' => $this->year,
@@ -91,16 +96,19 @@ class WasteReturnEngine extends Utility
         $newRow['personOffice'] = intval($r['deliveryAddress']);
       }
 
+      //if (!$newRow['wasteCodeText'] || $newRow['wasteCodeText'] === '')
+      //  echo "\n".'! '.$r['docNumber'].': '.json_encode($rowDestData['rowItemCodesData'])."\n";
+
       $this->db()->query('INSERT INTO [e10pro_reports_waste_cz_returnRows]', $newRow);
 
       $cnt++;
 
-      if ($cnt % 1000 === 0)
-        echo ". ".$cnt;
+      //if ($cnt % 1000 === 0)
+      //  echo ". ".$cnt;
       //if ($cnt > 10000)
       //  break;
     }
-    echo "\n".$cnt." rows\n";
+    //echo "\n".$cnt." rows\n";
   }
 
 	protected function quantityKG ($quantity, $unit)
@@ -113,6 +121,20 @@ class WasteReturnEngine extends Utility
 		}
 		return 0;
 	}
+
+  public function resetDocument($documentNdx)
+  {
+    $this->documentNdx = $documentNdx;
+    $this->year = 2022;
+
+    $this->dateBegin = $this->year.'-01-01';
+    $this->dateEnd = $this->year.'-12-31';
+
+    $this->tableHeads = $this->app->table ('e10doc.core.heads');
+
+    $this->db()->query('DELETE FROM [e10pro_reports_waste_cz_returnRows] WHERE [calendarYear] = %i', $this->year, ' AND [document] = %i', $this->documentNdx);
+    $this->addPurchases();
+  }
 
   public function run()
   {

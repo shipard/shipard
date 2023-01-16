@@ -182,7 +182,7 @@ class TableForm
 
 		$this->docState = $this->table->getDocumentState ($this->recData);
 		if ($this->docState)
-			$this->readOnly = $this->docState ['readOnly'];
+			$this->readOnly = $this->docState ['readOnly'] ?? 0;
 		$this->lockState = $this->table->getDocumentLockState ($this->recData, $this);
 		if ($this->lockState !== FALSE)
 			$this->readOnly = TRUE;
@@ -1363,7 +1363,7 @@ class TableForm
 		$this->appendElement ($widget->createHtmlCode (), NULL);
 	}
 
-	function addViewerWidget ($tableId, $viewClass, $options = NULL, $embedd = FALSE)
+	function addViewerWidget ($tableId, $viewClass, $options = NULL, $embedd = FALSE, $forceRefresh = FALSE)
 	{
 		$c = '';
 
@@ -1377,6 +1377,9 @@ class TableForm
 		$c .= $v->createViewerCode ('', TRUE);
 		if ($embedd)
 			$c .= "</div>";
+
+		if ($forceRefresh)
+			$c .= "<script>setTimeout (function () {viewerRefresh ($('#{$v->vid}'));}, 100);</script>";
 
 		$this->appendElement ($c, NULL);
 	}

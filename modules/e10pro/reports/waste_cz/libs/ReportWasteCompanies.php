@@ -11,7 +11,9 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 
 	public function init ()
 	{
-    $this->addParam ('calendarMonth', 'calendarPeriod', ['flags' => ['enableAll', 'quarters', 'halfs', 'years'], /*'years' => $this->tableProperty->propertyYears()*/]);
+    $today = Utils::today();
+    $defaultYear = 'Y'.(intval($today->format('Y')) - 1);
+    $this->addParam ('calendarMonth', 'calendarPeriod', ['flags' => ['quarters', 'halfs', 'years'], 'defaultValue' => $defaultYear]);
 
 		parent::init();
 
@@ -82,7 +84,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
     array_push ($q, 'SELECT [rows].person, [rows].personOffice, [rows].wasteCodeNomenc, SUM([rows].quantityKG) as quantityKG,');
     array_push ($q, ' nomencItems.fullName, nomencItems.itemId,');
     array_push ($q, ' persons.fullName AS personFullName,');
-    array_push ($q, ' addrs.adrCity, addrs.id1');
+    array_push ($q, ' addrs.adrCity, addrs.adrStreet, addrs.id1');
 		array_push ($q, ' FROM e10pro_reports_waste_cz_returnRows AS [rows]');
     array_push ($q, ' LEFT JOIN [e10_base_nomencItems] AS nomencItems ON [rows].wasteCodeNomenc = nomencItems.ndx');
     array_push ($q, ' LEFT JOIN [e10_persons_personsContacts] AS addrs ON [rows].personOffice = addrs.ndx');
@@ -105,11 +107,35 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
       if ($r['person'] != $lastPerson)
       {
         $header = [
-          'wasteCode' => ['text' => $r['personFullName'], 'docAction' => 'edit', 'pk' => $r['person'], 'table' => 'e10.persons.persons'],
+          'wasteCode' => [
+            ['text' => $r['personFullName'], 'docAction' => 'edit', 'pk' => $r['person'], 'table' => 'e10.persons.persons']
+          ]  ,
           '_options' => [
             'colSpan' => ['wasteCode' => 4],
             'class' => 'subheader',
           ]
+        ];
+
+        $header['wasteCode'][] = [
+          'text' => 'Načíst provozovny', 'type' => 'action', 'action' => 'addwizard', 'icon' => 'user/wifi',
+          'title' => 'Načíst pobočky',
+          'class' => 'pull-right',
+          'btnClass' => 'btn btn-xs btn-primary pull-right',
+          'data-class' => 'e10.persons.libs.register.AddOfficesWizard',
+          'table' => 'e10.persons.persons',
+          'data-addparams' => 'personNdx='.$r['person'],
+          //'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid,
+        ];
+
+        $header['wasteCode'][] = [
+          'text' => 'Nastavit provozovnu', 'type' => 'action', 'action' => 'addwizard', 'icon' => 'system/personCompany',
+          'title' => 'Načíst pobočky',
+          'class' => 'pull-right',
+          'btnClass' => 'btn btn-xs btn-success pull-right',
+          'data-class' => 'e10pro.reports.waste_cz.libs.SetOfficeWizard',
+          'table' => 'e10.persons.persons',
+          'data-addparams' => 'personNdx='.$r['person'],
+          //'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid,
         ];
 
         $header['_options']['beforeSeparator'] = 'separator';
@@ -123,8 +149,10 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
       ];
 
       if ($r['id1'] && $r['id1'] !== '')
+      {
         $item['id1'] = ['text' => $r['id1'], 'docAction' => 'edit', 'pk' => $r['personOffice'], 'table' => 'e10.persons.personsContacts'];
-
+        $item['id1']['prefix'] = $r['adrStreet'].', '.$r['adrCity'];
+      }
 			$data[] = $item;
 
       $lastPerson = $r['person'];
