@@ -173,7 +173,7 @@ class DbTable
 				if ($textKey == "")
 					$thisText = $item;
 				else
-					$thisText = $item [$textKey];
+					$thisText = $item [$textKey] ?? '';
 
 				$thisValue = "";
 				if ($valueKey == "")

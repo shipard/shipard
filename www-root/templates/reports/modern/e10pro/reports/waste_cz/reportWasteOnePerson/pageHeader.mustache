@@ -59,7 +59,7 @@
 		{{#data.options.docReportsHeadLogoRight}}
 			<td class='docInfo'>
 				<span class='docName'>{{@dict;Přehled odebraných odpadů}}</span><br>
-				{{@dict;Rok}}: {{data.calendarYear}}
+				<span class='documentNumber'>{{@dict;dataItem:data.periodName}}: {{data.periodValue}}</span>
 			</td>
 			<td class="supplierLogo">
 				{{#data.owner.logo.logo-nadpis.filename}}

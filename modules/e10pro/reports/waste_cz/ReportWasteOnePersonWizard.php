@@ -4,8 +4,7 @@ namespace e10pro\reports\waste_cz;
 
 
 /**
- * Class ReportWasteOnePersonWizard
- * @package e10pro\reports\waste_cz
+ * class ReportWasteOnePersonWizard
  */
 class ReportWasteOnePersonWizard extends \lib\docs\DocumentActionWizard
 {

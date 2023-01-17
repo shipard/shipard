@@ -4,10 +4,15 @@ namespace e10pro\reports\waste_cz\libs;
 use \Shipard\Utils\Utils;
 
 
+/**
+ * class ReportWasteCompanies
+ */
 class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 {
   var $periodBegin = NULL;
   var $periodEnd = NULL;
+  var $calendarYear = 0;
+  var $persons = [];
 
 	public function init ()
 	{
@@ -29,7 +34,10 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
       $this->periodEnd = Utils::createDateTime(substr($cpBegin['calendarYear'], 1).'-12-31');
 
     $this->setInfo('icon', 'reportMonthlyReport');
-		$this->setInfo('param', 'Období', $this->reportParams ['calendarPeriod']['activeTitle']);
+    $this->setInfo('param', 'Období', $this->reportParams ['calendarPeriod']['activeTitle']);
+
+    if (is_string($cpBegin['calendarYear']) && $cpBegin['calendarYear'][0] === 'Y')
+      $this->calendarYear = intval(substr($cpBegin['calendarYear'], 1));
   }
 
   function createContent ()
@@ -104,6 +112,9 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 		$data = [];
 		forEach ($rows as $r)
 		{
+      if (!in_array($r['person'], $this->persons))
+        $this->persons[] = $r['person'];
+
       if ($r['person'] != $lastPerson)
       {
         $header = [
@@ -138,6 +149,27 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
           //'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid,
         ];
 
+        // -- print button
+        $btn = ['type' => 'action', 'action' => 'print', 'style' => 'print', 'icon' => 'system/actionPrint', 'text' => 'Přehled',
+          'data-report' => 'e10pro.reports.waste_cz.ReportWasteOnePerson',
+          'data-table' => 'e10.persons.persons', 'data-pk' => $r['person'],
+          'data-param-period-begin' => $this->periodBegin->format('Y-m-d'),
+          'data-param-period-end' => $this->periodEnd->format('Y-m-d'),
+          'data-param-calendar-year' => strval($this->calendarYear),
+          'actionClass' => 'btn-xs', 'class' => 'pull-right'];
+        $btn['subButtons'] = [];
+        $btn['subButtons'][] = [
+          'type' => 'action', 'action' => 'addwizard', 'icon' => 'system/iconEmail', 'title' => 'Odeslat emailem', 'btnClass' => 'btn-default btn-xs',
+          'data-table' => 'e10.persons.persons', 'data-pk' => $r['person'],
+          'data-param-period-begin' => $this->periodBegin->format('Y-m-d'),
+          'data-param-period-end' => $this->periodEnd->format('Y-m-d'),
+          'data-param-calendar-year' => strval($this->calendarYear),
+          'data-class' => 'Shipard.Report.SendFormReportWizard',
+          'data-addparams' => 'reportClass=' . 'e10pro.reports.waste_cz.ReportWasteOnePerson' . '&documentTable=' . 'e10.persons.persons'
+        ];
+        $header['wasteCode'][] = $btn;
+
+
         $header['_options']['beforeSeparator'] = 'separator';
 
         $data[] = $header;
@@ -170,5 +202,20 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
     $d[] = ['id' => 'persons', 'icon' => 'system/personCompany', 'title' => 'Firmy'];
 
 		return $d;
+	}
+
+	public function createToolbar ()
+	{
+		$buttons = parent::createToolbar();
+		$buttons[] = [
+			'text' => 'Rozeslat hromadně emailem', 'icon' => 'system/iconEmail',
+			'type' => 'action', 'action' => 'addwizard', 'data-class' => 'e10pro.reports.waste_cz.ReportWasteOnePersonWizard',
+      'data-param-period-begin' => $this->periodBegin->format('Y-m-d'),
+      'data-param-period-end' => $this->periodEnd->format('Y-m-d'),
+      'data-param-calendar-year' => strval($this->calendarYear),
+      'data-table' => 'e10.persons.persons', 'data-pk' => '0',
+			'class' => 'btn-primary'
+		];
+		return $buttons;
 	}
 }
