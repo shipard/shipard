@@ -463,7 +463,7 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 						{
 							$addrTitle[] = [
 								'text' => '', 'type' => 'action', 'action' => 'addwizard', 'icon' => 'user/wifi',
-								'title' => 'Načíst pobočky',
+								'title' => 'Načíst provozovny',
 								'class' => 'pull-right',
 								'element' => 'span',
 								'btnClass' => 'pull-right',

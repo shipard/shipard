@@ -129,7 +129,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 
         $header['wasteCode'][] = [
           'text' => 'Načíst provozovny', 'type' => 'action', 'action' => 'addwizard', 'icon' => 'user/wifi',
-          'title' => 'Načíst pobočky',
+          'title' => 'Načíst provozovny',
           'class' => 'pull-right',
           'btnClass' => 'btn btn-xs btn-primary pull-right',
           'data-class' => 'e10.persons.libs.register.AddOfficesWizard',
@@ -140,7 +140,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 
         $header['wasteCode'][] = [
           'text' => 'Nastavit provozovnu', 'type' => 'action', 'action' => 'addwizard', 'icon' => 'system/personCompany',
-          'title' => 'Načíst pobočky',
+          'title' => 'Načíst provozovny',
           'class' => 'pull-right',
           'btnClass' => 'btn btn-xs btn-success pull-right',
           'data-class' => 'e10pro.reports.waste_cz.libs.SetOfficeWizard',

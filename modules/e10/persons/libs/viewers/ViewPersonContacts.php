@@ -158,8 +158,8 @@ class ViewPersonContacts extends TableView
 		if ($companyId !== '')
 		{
 			$toolbar[] = [
-				'text' => 'Pobočky', 'type' => 'action', 'action' => 'addwizard', 'icon' => 'user/wifi',
-				'title' => 'Načíst pobočky z registrů',
+				'text' => 'Provozovny', 'type' => 'action', 'action' => 'addwizard', 'icon' => 'user/wifi',
+				'title' => 'Načíst provozovny z registrů',
 				'class' => 'pull-right',
 				'element' => 'span',
 				'btnClass' => 'pull-right',
