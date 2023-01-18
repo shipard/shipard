@@ -22,11 +22,11 @@ class SetOfficeWizard extends Wizard
 		$hdr = [];
 		$hdr ['icon'] = 'system/actionPlay';
 
-		$hdr ['info'][] = ['class' => 'title', 'value' => 'Načíst provozovny'];
+		$hdr ['info'][] = ['class' => 'title', 'value' => 'Nastavit provozovnu'];
 
 
-		$hdr ['info'][] = ['class' => 'info', 'value' => 'TEST1'];
-		$hdr ['info'][] = ['class' => 'info', 'value' => 'IČ: '.'TEST2'];
+		//$hdr ['info'][] = ['class' => 'info', 'value' => 'TEST1'];
+		//$hdr ['info'][] = ['class' => 'info', 'value' => 'IČ: '.'TEST2'];
 
 		return $hdr;
 	}
@@ -48,6 +48,7 @@ class SetOfficeWizard extends Wizard
 
 		$this->openForm ();
 			$this->addInput('personNdx', '', self::INPUT_STYLE_STRING, self::coHidden, 30);
+			$this->addCheckBox('resetAllPurchases', 'Nastavit na VŠECH výkupech, nejen na těch BEZ provozovny', '1', self::coRightCheckbox);
 			$this->initWelcome();
 		$this->closeForm ();
 	}
@@ -62,6 +63,7 @@ class SetOfficeWizard extends Wizard
 	public function doIt ()
 	{
 		$personNdx = intval($this->recData['personNdx']);
+		$resetAllPurchases = intval($this->recData['resetAllPurchases'] ?? 0);
 		$officeNdx = intval($this->recData['viewersPks'][0] ?? 0);
 
     if (!$personNdx || !$officeNdx)
@@ -75,7 +77,8 @@ class SetOfficeWizard extends Wizard
     array_push($q, ' WHERE [person] = %i', $personNdx);
     array_push($q, ' AND [dateAccounting] >= %d', '2022-01-01');
     array_push($q, ' AND [docType] IN %in', ['purchase']);
-    array_push($q, ' AND ([otherAddress1] IS NULL OR [otherAddress1] = %i)', 0);
+		if (!$resetAllPurchases)
+    	array_push($q, ' AND ([otherAddress1] IS NULL OR [otherAddress1] = %i)', 0);
     $rows = $this->app()->db()->query($q);
     foreach ($rows as $r)
     {
