@@ -736,6 +736,15 @@ class ViewPersonsBase extends TableView
 			array_push ($q, ' AND e10_persons_personsContacts.flagAddress = 1 AND e10_persons_personsContacts.flagMainAddress = 1');
 			array_push ($q, ')');
 		}
+
+		$withMoreMainAddress = isset ($qv['others']['withMoreMainAddress']);
+		if ($withMoreMainAddress)
+		{
+			array_push ($q, ' AND persons.ndx IN ');
+			array_push ($q, ' (select * FROM (');
+			array_push ($q, ' SELECT person FROM e10_persons_personsContacts WHERE flagAddress = 1 AND flagMainAddress = 1 AND docState = 4000 GROUP BY person HAVING count(*) > 1');
+			array_push ($q, ' ) AS [persMainAddrDups] )');
+		}
 	}
 
 	public function selectRows2 ()
@@ -861,7 +870,8 @@ class ViewPersonsBase extends TableView
 
 		if ($testNewPersons)
 		{
-			$chbxOthers['withoutMainAddress'] = ['title' => 'Bez sídla', 'id' => 'unused'];
+			$chbxOthers['withoutMainAddress'] = ['title' => 'Bez sídla', 'id' => 'withoutMainAddress'];
+			$chbxOthers['withMoreMainAddress'] = ['title' => 'S více sídly', 'id' => 'withMoreMainAddress'];
 		}
 
 		$paramsOthers = new \E10\Params ($this->app());
