@@ -6,7 +6,7 @@ use \E10\TableViewDetail, \E10\TableForm, \E10\DbTable, \E10\utils, \E10\Widget,
 
 
 
-function webPriceListPurchase ($app, $params)
+function webPriceListPurchaseXXX ($app, $params)
 {
 	$r = new priceListPurchase ($app);
 	if (isset($params['mailMode']))
@@ -31,7 +31,7 @@ function webPriceListPurchase ($app, $params)
  *
  */
 
-class priceList extends \E10\GlobalReport
+class priceList extends \Shipard\Report\GlobalReport
 {
 	var $byProperty = FALSE;
 	var $units;
@@ -126,8 +126,8 @@ class priceList extends \E10\GlobalReport
 					$i['_options'] = ['colSpan' => ['name' => 3]];
 					$data [$r['ndx'].'G'] = $i;
 				}
-				$i = ['name' => $r['fullName'], 'unit' => $this->units[$r['defaultUnit']]['shortcut'], 'item' => 1];
-				$i['_options'] = ['cellClasses' => ['unit' => 'unit']];
+				$i = ['id' => $r['id'], 'name' => $r['fullName'], 'unit' => $this->units[$r['defaultUnit']]['shortcut'], 'item' => 1];
+				$i['_options'] = ['cellClasses' => ['id' => 'itemId', 'unit' => 'unit']];
 
 				$i['price'] = $r['priceBuy'];
 				$pks[] = $r['ndx'];
@@ -144,10 +144,10 @@ class priceList extends \E10\GlobalReport
 			if (count($data) !== 0)
 				$this->data['prices'][] = ['title' => $cat['fullName'], 'rows' => $data];
 
-			$h = ['name' => $cat['fullName'], 'price' => ' Cena', 'unit' => 'Jedn.'];
+			$h = ['id' => 'ID', 'name' => $cat['fullName'], 'price' => ' Cena', 'unit' => 'Jedn.'];
 			$title = $cat['fullName'];
 
-			$this->addContent (array ('type' => 'table', 'title' => $title, 'header' => $h, 'table' => $data));
+			$this->addContent (['type' => 'table', 'title' => $title, 'header' => $h, 'table' => $data]);
 		}
 	}
 
