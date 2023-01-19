@@ -9,7 +9,6 @@
 	}
 
 	td.ownerInfo {text-align: left; line-height: 1.5;}
-	td.author {text-align: right; vertical-align: bottom;}
 	td.logo {text-align: left; width: 50%;}
 	img.logo {height: 1.10em;  position: relative; bottom: -0.3em; padding-left: .7rem}
 	td.page {text-align: right; width: 50%;}
@@ -17,13 +16,10 @@
 
 <table class='footer'>
 	<tr>
-		<td class="ownerInfo">
+		<td class="ownerInfo" colspan="2">
 			{{#data.owner_contacts}}
 				<span style="white-space: pre;"><b>{{name}}:</b> {{value}}</span>
 			{{/data.owner_contacts}}
-		</td>
-		<td class="author">
-			{{@dict;Vystavil}}: {{data.author.fullName}}
 		</td>
 	</tr>
 	<tr>
