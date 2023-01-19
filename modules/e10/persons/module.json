@@ -6,6 +6,7 @@
 		"personsValidity", "personsLastUse", "categories", "relations", "contacts",
 		"personsContacts", "personsBA"
 	],
+	"extensions": ["persons"],
 	"modules": ["e10/world"],
   "config": [
 		{"id": "+appSkeleton", "file": "appSkeleton.panel.srvcfg.json"},
