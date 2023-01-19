@@ -92,6 +92,8 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 							$this->addFormPersonInfo();
 						$this->layoutClose ();
 
+						$this->addColumnInput('personNomencCity');
+
 						if ($this->recData['personType'] == 2)
 						{
 							$this->addSeparator(self::coH2);
