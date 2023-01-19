@@ -1,0 +1,9 @@
+{
+	"name": "Nomenklatura CZ-ORP",
+  "classImport": "lib.nomenclature.country.cz.ImportCZORP",
+  "typeId": "cz-orp",
+  "nomencTypeDef": {
+    "fullName":"Obce a Obce s rozšířenou působností",
+    "shortName":"CZ ORP"
+  }
+}
