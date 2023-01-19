@@ -39,7 +39,7 @@
 			"e10.persons.requests": {"default": 2},
 
 			"e10.base.nomencTypes": {"default": 2},
-			"e10.base.nomencItems": {"default": 2, "combo": 2},
+			"e10.base.nomencItems": {"default": 2, "combo": 2, "addressNomencCity": 2},
 
 			"e10.witems.units": {"default": 2},
 

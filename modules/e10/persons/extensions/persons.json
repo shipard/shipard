@@ -1,0 +1,10 @@
+[
+  {
+    "table": "e10.base.nomencItems",
+    "views": {
+      "addressNomencCity": {
+				"id": "addressNomencCity", "class": "e10.persons.libs.viewers.ViewAddressNomencCity"
+			}
+		}
+  }
+]
