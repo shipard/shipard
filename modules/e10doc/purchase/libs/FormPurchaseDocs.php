@@ -394,11 +394,17 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 			foreach ($rows as $r)
 			{
 				$title = [];
+				$ap = [];
 				if ($r['adrSpecification'] !== '')
-					$title[] = ['text' => $r['adrSpecification']];
+					$ap[] = $r['adrSpecification'];
 				if ($r['adrStreet'] !== '')
-					$title[] = ['text' => $r['adrStreet']];
-				$title[] = ['text' => $r['adrCity'].' '.$r['adrZipCode'], 'class' => ''];
+					$ap[] = $r['adrStreet'];
+				if ($r['adrCity'] !== '')
+					$ap[] = $r['adrCity'];
+				if ($r['adrZipCode'] !== '')
+					$ap[] = $r['adrZipCode'];
+
+				$title[] = ['text' => implode(', ', $ap), 'class' => ''];
 
 				if ($r['flagOffice'])
 					$title[] = ['text' => 'IČP: '.$r['id1'], 'class' => 'label label-default'];
@@ -487,12 +493,14 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 						}
 					}
 				}
+				if (count($addrOffices) > 1)
+					array_shift($addrOffices);
 				$this->addFormPersonInfo_Address ($addrOffices, 'otherAddress1', $suggestedAddrOffice, $addrTitle);
 			}
 		}
 		else
 		{
-			$this->addColumnInput('personNomencCity');
+			$this->addColumnInput('personNomencCity', self::coNoLabel);
 		}
 	}
 
