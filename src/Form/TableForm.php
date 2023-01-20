@@ -102,7 +102,8 @@ class TableForm
 				coH3						= 0x200000000,
 				coH4						= 0x400000000,
 				coRightCheckbox	= 0x800000000,
-				coDisabled			= 0x1000000000;
+				coDisabled			= 0x1000000000,
+				coInline				= 0x2000000000;
 
 
 	const loAddToFormLayout = 0x1000, loWidgetParts = 0x2000, loRowsDisableMove = 0x4000;
@@ -748,8 +749,9 @@ class TableForm
 			$a = $this->table->columnInfoEnum ($columnId, 'cfgText', $this);
 		if ($style == self::INPUT_STYLE_RADIO)
 		{
+			$inputClass = $this->columnOptionsClass ($options);
 			foreach ($a as $val => $txt)
-				$inputCode .= " <input type='radio' class='e10-inputRadio' id='{$colId}_$val' name='$finalColumnName' value='$val'> <label for='inp_$ip{$columnId}_$val'>" . self::e ($txt) . "</label>";
+				$inputCode .= " <input type='radio' class='e10-inputRadio $inputClass' id='{$colId}_$val' name='$finalColumnName' value='$val'> <label for='inp_$ip{$columnId}_$val'>" . self::e ($txt) . "</label>";
 		}
 		if ($style == self::INPUT_STYLE_OPTION)
 		{
@@ -798,6 +800,8 @@ class TableForm
 		$a = $enums;
 		if ($style == self::INPUT_STYLE_RADIO)
 		{
+			$baseElement = ($options & self::coInline) ? 'span' : 'div';
+			$inputClass = $this->columnOptionsClass ($options);
 			$active = ' active';
 			foreach ($a as $val => $txt)
 			{
@@ -808,10 +812,10 @@ class TableForm
 				}
 				else
 				{
-					$inputCode .= "<div class='padd5 e10-selectable-radio$active$oneInputCClass'>";
-					$inputCode .= "<input type='radio' class='e10-inputRadio' id='{$colId}_$val' name='$ip{$columnId}' value='$val' data-fid='{$this->fid}'> ";
+					$inputCode .= "<$baseElement class='padd5 e10-selectable-radio$active$oneInputCClass'>";
+					$inputCode .= "<input type='radio' class='e10-inputRadio $inputClass' id='{$colId}_$val' name='$ip{$columnId}' value='$val' data-fid='{$this->fid}'> ";
 					$inputCode .= "<label for='{$colId}_$val' style='vertical-align: top; display: inline;'>" . $this->app()->ui()->composeTextLine($txt) . "</label>";
-					$inputCode .= "</div>";
+					$inputCode .= "</$baseElement>";
 					$active = '';
 				}
 			}
