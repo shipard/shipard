@@ -92,8 +92,6 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 							$this->addFormPersonInfo();
 						$this->layoutClose ();
 
-						$this->addColumnInput('personNomencCity');
-
 						if ($this->recData['personType'] == 2)
 						{
 							$this->addSeparator(self::coH2);
@@ -368,8 +366,17 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 			}
 		}
 
+		if ($this->recData['personType'] == 1)
+		{ // human
+			$this->recData['otherAddress1Mode'] = 0;
+		}
+		else
+		{
+			$this->addInputEnum2('otherAddress1Mode', NULL, ['0' => 'Provozovna', '1' => 'ORP'], self::INPUT_STYLE_RADIO, DataModel::coSaveOnChange|self::coInline);
+		}
+
 		// -- address
-		if ($this->testNewPersons)
+		if ($this->recData['otherAddress1Mode'] == 0)
 		{
 			$addrPosts = [];
 			$addrOffices = [];
@@ -382,6 +389,7 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 			array_push($q, ' WHERE [addrs].[person] = %i', $personNdx);
 			array_push($q, ' AND [addrs].[docState] = %i', 4000);
 			array_push($q, ' AND [addrs].[flagAddress] = %i', 1);
+			array_push($q, ' ORDER BY [addrs].[systemOrder], [addrs].[adrCity]');
 			$rows = $this->app()->db()->query($q);
 			foreach ($rows as $r)
 			{
@@ -390,10 +398,12 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 					$title[] = ['text' => $r['adrSpecification']];
 				if ($r['adrStreet'] !== '')
 					$title[] = ['text' => $r['adrStreet']];
-				$title[] = ['text' => $r['adrCity'].' '.$r['adrZipCode']];
+				$title[] = ['text' => $r['adrCity'].' '.$r['adrZipCode'], 'class' => ''];
 
 				if ($r['flagOffice'])
-					$title[] = ['text' => 'IČP: '.$r['id1']];
+					$title[] = ['text' => 'IČP: '.$r['id1'], 'class' => 'label label-default'];
+				if ($r['flagMainAddress'])
+					$title[] = ['text' => 'Sídlo', 'class' => 'label label-default'];
 				if (!$this->readOnly)
 				{
 					$title[] = [
@@ -406,7 +416,7 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 				$addrPosts[$r['ndx']] = [$title];
 				$suggestedAddrPost = $r['ndx'];
 
-				if ($r['flagOffice'])
+				if ($r['flagOffice'] || $r['flagMainAddress'])
 				{
 					$addrOffices[$r['ndx']] = [$title];
 					$suggestedAddrOffice = $r['ndx'];
@@ -482,52 +492,7 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 		}
 		else
 		{
-			$addresses = [];
-			$deliveryAddress = 0;
-			$addressesOther1 = [];
-			$other1Address = 0;
-
-			$q = [];
-			array_push($q, 'SELECT * FROM [e10_persons_address]');
-			array_push($q, ' WHERE tableid = %s ', 'e10.persons.persons', ' AND recid = %i', $personNdx);
-			array_push($q, ' AND [docState] != %i', 9800);
-
-			$rows = $this->table->db()->query ($q);
-			foreach ($rows as $r)
-			{
-				$title = [];
-				if ($r['specification'] !== '')
-					$title[] = ['text' => $r['specification']];
-				if ($r['street'] !== '')
-					$title[] = ['text' => $r['street']];
-				$title[] = ['text' => $r['city'].' '.$r['zipcode']];
-
-				if ($r['type'] !== 99)
-				{
-					$addresses[$r['ndx']] = [$title];
-					if ($r['type'] == 4)
-						$deliveryAddress = $r['ndx'];
-				}
-				if ($r['type'] === 99)
-				{
-					$addressesOther1[$r['ndx']] = [$title];
-					$other1Address = $r['ndx'];
-				}
-
-				$classification = UtilsBase::loadClassification ($this->table->app(), 'e10.persons.address', [$r['ndx']], 'ml1 label');
-				if (isset ($classification [$r['ndx']]))
-				{
-					forEach ($classification [$r['ndx']] as $clsfGroup)
-					{
-						if ($r['type'] == 99)
-							$addressesOther1[$r['ndx']] = array_merge ($addressesOther1[$r['ndx']], $clsfGroup);
-						if ($r['type'] != 99)
-							$addresses[$r['ndx']] = array_merge ($addresses[$r['ndx']], $clsfGroup);
-					}
-				}
-			}
-			$this->addFormPersonInfo_Address ($addresses, 'deliveryAddress', $deliveryAddress, 'Doručovací adresa');
-			$this->addFormPersonInfo_Address ($addressesOther1, 'otherAddress1', $other1Address, 'Provozovna');
+			$this->addColumnInput('personNomencCity');
 		}
 	}
 
