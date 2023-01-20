@@ -30,7 +30,10 @@
     {"id": "deliveryAddress", "name": "Doručovací adresa", "type": "int", "reference": "e10.persons.address"},
 	  {"id": "otherAddress1", "name": "Další adresa 1", "type": "int", "reference": "e10.persons.address"},
 	  {"id": "otherAddress2", "name": "Další adresa 2", "type": "int", "reference": "e10.persons.address"},
-		{"id": "personNomencCity", "name": "Obec", "type": "int", "reference": "e10.base.nomencItems", "comboViewer": "addressNomencCity"},
+
+		{"id": "otherAddress1Mode", "name": "Mód další adresy 1", "type": "enumInt",
+			"enumValues": {"0": "Provozovna", "1": "ORP"}},
+    {"id": "personNomencCity", "name": "Obec", "type": "int", "reference": "e10.base.nomencItems", "comboViewer": "addressNomencCity"},
 
     {"id": "personVATIN", "name": "DIČ osoby", "type": "string", "len": 14},
 
