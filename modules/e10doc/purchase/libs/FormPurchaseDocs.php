@@ -394,6 +394,15 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 			foreach ($rows as $r)
 			{
 				$title = [];
+				if (!$this->readOnly)
+				{
+					$title[] = [
+							'text' => '', 'class' => 'pull-right', 'docAction' => 'edit',
+							'_actionClass' => 'pull-right', 'type' => 'span', 'icon' => 'system/actionOpen',
+							'table' => 'e10.persons.personsContacts', 'pk' => $r['ndx'],
+							'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid
+					];
+				}
 				$ap = [];
 				if ($r['adrSpecification'] !== '')
 					$ap[] = $r['adrSpecification'];
@@ -410,15 +419,7 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 					$title[] = ['text' => 'IČP: '.$r['id1'], 'class' => 'label label-default'];
 				if ($r['flagMainAddress'])
 					$title[] = ['text' => 'Sídlo', 'class' => 'label label-default'];
-				if (!$this->readOnly)
-				{
-					$title[] = [
-							'text' => '', 'class' => 'pull-right', 'docAction' => 'edit',
-							'_actionClass' => 'pull-right', 'type' => 'span', 'icon' => 'system/actionOpen',
-							'table' => 'e10.persons.personsContacts', 'pk' => $r['ndx'],
-							'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid
-					];
-				}
+
 				$addrPosts[$r['ndx']] = [$title];
 				$suggestedAddrPost = $r['ndx'];
 
@@ -524,7 +525,7 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 				$this->addStatic(['text' => $labelText, 'icon' => 'system/iconHome', 'class' => 'block']);
 			else
 				$this->addStatic($labelText);
-			$this->addInputEnum2($columnId, NULL, $addresses);
+			$this->addInputEnum2($columnId, NULL, $addresses, self::INPUT_STYLE_RADIO, self::coBorder);
 			if ($this->recData[$columnId] === 0 || !isset($addresses[$this->recData[$columnId]]))
 				$this->recData[$columnId] = ($suggestedAddressNdx) ? $suggestedAddressNdx : key($addresses);
 		}
