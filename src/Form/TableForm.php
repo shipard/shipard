@@ -103,7 +103,8 @@ class TableForm
 				coH4						= 0x400000000,
 				coRightCheckbox	= 0x800000000,
 				coDisabled			= 0x1000000000,
-				coInline				= 0x2000000000;
+				coInline				= 0x2000000000,
+				coBorder				= 0x4000000000;
 
 
 	const loAddToFormLayout = 0x1000, loWidgetParts = 0x2000, loRowsDisableMove = 0x4000;
@@ -802,6 +803,7 @@ class TableForm
 		{
 			$baseElement = ($options & self::coInline) ? 'span' : 'div';
 			$inputClass = $this->columnOptionsClass ($options);
+			$baseElementClass = ($options & self::coBorder) ? ' bb1' : '';
 			$active = ' active';
 			foreach ($a as $val => $txt)
 			{
@@ -812,7 +814,7 @@ class TableForm
 				}
 				else
 				{
-					$inputCode .= "<$baseElement class='padd5 e10-selectable-radio$active$oneInputCClass'>";
+					$inputCode .= "<$baseElement class='padd5 e10-selectable-radio$active$oneInputCClass$baseElementClass'>";
 					$inputCode .= "<input type='radio' class='e10-inputRadio $inputClass' id='{$colId}_$val' name='$ip{$columnId}' value='$val' data-fid='{$this->fid}'> ";
 					$inputCode .= "<label for='{$colId}_$val' style='vertical-align: top; display: inline;'>" . $this->app()->ui()->composeTextLine($txt) . "</label>";
 					$inputCode .= "</$baseElement>";
