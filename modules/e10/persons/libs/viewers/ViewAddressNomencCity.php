@@ -9,12 +9,17 @@ use \Shipard\Viewer\TableView;
 class ViewAddressNomencCity extends TableView
 {
   var $nomecTypeNdx = 0;
+	var $level = 2;
+
 	public function init ()
 	{
 		parent::init();
 
     $test = $this->db()->query('SELECT * FROM [e10_base_nomencTypes] WHERE [id] = %s', 'cz-orp')->fetch();
     $this->nomecTypeNdx = $test['ndx'];
+
+		if ($this->queryParam('level'))
+			$this->level = intval($this->queryParam('level'));
 
 		$this->setMainQueries ();
 	}
@@ -43,7 +48,7 @@ class ViewAddressNomencCity extends TableView
     array_push($q, ' LEFT JOIN [e10_base_nomencItems] AS parentCities ON allCities.ownerItem = parentCities.ndx');
     array_push($q, ' WHERE 1');
     array_push($q, ' AND allCities.nomencType = %i', $this->nomecTypeNdx);
-    array_push($q, ' AND allCities.level = %i', 2);
+    array_push($q, ' AND allCities.level = %i', $this->level);
 
 		$this->qryDefault ($q);
 

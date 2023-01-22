@@ -3991,6 +3991,15 @@ class FormHeads extends TableForm
 			return $cp;
 		}
 
+		if ($srcTableId === 'e10doc.core.heads' && $srcColumnId === 'personNomencCity')
+		{
+			$level = ($recData['docType'] === 'purchase' && $recData['personType'] == 2) ? 1 : 2;
+			$cp = [
+				'level' => strval ($level),
+			];
+			return $cp;
+		}
+
 		return parent::comboParams ($srcTableId, $srcColumnId, $allRecData, $recData);
 	}
 
