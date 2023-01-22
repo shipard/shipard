@@ -77,33 +77,49 @@ class DCPersonOverview extends \Shipard\Base\DocumentCard
     $rows = $this->db()->query($q);
     foreach ($rows as $item)
     {
-      $ap = [];
+			if ($item['flagAddress'])
+			{
+				$ap = [];
 
-      if ($item['adrSpecification'] != '')
-        $ap[] = $item['adrSpecification'];
-      if ($item['adrStreet'] != '')
-        $ap[] = $item['adrStreet'];
-      if ($item['adrCity'] != '')
-        $ap[] = $item['adrCity'];
-      if ($item['adrZipCode'] != '')
-        $ap[] = $item['adrZipCode'];
+				if ($item['adrSpecification'] != '')
+					$ap[] = $item['adrSpecification'];
+				if ($item['adrStreet'] != '')
+					$ap[] = $item['adrStreet'];
+				if ($item['adrCity'] != '')
+					$ap[] = $item['adrCity'];
+				if ($item['adrZipCode'] != '')
+					$ap[] = $item['adrZipCode'];
 
-      $country = World::country($this->app(), $item['adrCountry']);
-      $ap[] = /*$country['f'].' '.*/$country['t'];
-      $addressText = implode(', ', $ap);
+				$country = World::country($this->app(), $item['adrCountry']);
+				$ap[] = /*$country['f'].' '.*/$country['t'];
+				$addressText = implode(', ', $ap);
 
-      $address = [
-        'icon' => 'system/iconHome',
-        'c2' => []
-      ];
-      $address['c2'][] = ['text' => $addressText, 'class' => ''];
+				$address = [
+					'icon' => 'system/iconHome',
+					'c2' => []
+				];
+				$address['c2'][] = ['text' => $addressText, 'class' => ''];
+			}
+			else
+			{
+				$address = [
+					'icon' => 'user/idCard',
+					'c2' => []
+				];
+				//$address['c2'][] = ['text' => $addressText, 'class' => ''];
+			}
+
+			$address['isContact'] = $item['flagContact'];
+
+			$address['c2'][] = ['text' => '', 'docAction' => 'edit', 'table' => 'e10.persons.personsContacts', 'pk' => $item['ndx'], 'class' => 'pull-right', 'icon' => 'system/actionOpen'];
+
 
       if ($item['flagMainAddress'])
-        $address['c2'][] = ['text' => 'Sídlo', 'class' => 'label label-default pull-right'];
+        $address['c2'][] = ['text' => 'Sídlo', 'class' => 'label label-default'];
       if ($item['flagPostAddress'])
-        $address['c2'][] = ['text' => 'Korespondenční', 'class' => 'label label-default pull-right'];
+        $address['c2'][] = ['text' => 'Korespondenční', 'class' => 'label label-default'];
       if ($item['flagOffice'])
-        $address['c2'][] = ['text' => 'Provozovna', 'class' => 'label label-default pull-right'];
+        $address['c2'][] = ['text' => 'Provozovna', 'class' => 'label label-default'];
 
       if ($item['flagContact'])
       {
@@ -119,8 +135,29 @@ class DCPersonOverview extends \Shipard\Base\DocumentCard
           $address['c2'][] = ['text' => $item['contactPhone'], 'class' => 'label label-default', 'icon' => 'system/iconPhone'];
       }
 
-			$this->addresses[] = $address;
+			$this->addresses[$item['ndx']] = $address;
     }
+
+		$pks = array_keys($this->addresses);
+		if (count($pks))
+		{
+			$classification = UtilsBase::loadClassification ($this->table->app(), 'e10.persons.personsContacts', $pks);
+			foreach ($classification as $pcNdx => $cls)
+			{
+				forEach ($cls as $clsfGroup)
+					$this->addresses[$pcNdx]['c2'] = array_merge ($this->addresses[$pcNdx]['c2'], $clsfGroup);
+			}
+
+			$sendReports = UtilsBase::linkedSendReports($this->app(), 'e10.persons.personsContacts', $pks);
+			foreach ($sendReports as $pcNdx => $sr)
+			{
+				if ($this->addresses[$pcNdx]['isContact'])
+				{
+					$this->addresses[$pcNdx]['c2'][] = ['text' => '', 'class' => 'e10-me break', 'icon' => 'system/iconPaperPlane'];
+					$this->addresses[$pcNdx]['c2'] = array_merge ($this->addresses[$pcNdx]['c2'], $sr);
+				}
+			}
+		}
 	}
 
 	public function loadDataPersonInfo ()

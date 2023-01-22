@@ -275,6 +275,8 @@ class FormPersonContact extends TableForm
 						$this->addColumnInput ('contactRole');
 						$this->addColumnInput ('contactEmail');
 						$this->addColumnInput ('contactPhone');
+						$this->addSeparator(self::coH4);
+						$this->addList ('sendReports', '', TableForm::loAddToFormLayout);
 					}
 
 					$this->addSeparator(self::coH4);

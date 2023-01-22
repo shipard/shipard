@@ -8,5 +8,12 @@
 				{"table": "e10.base.propgroups"}
 			]
 		}
+	},
+	"e10.persons.personsContacts": {
+		"e10-persons-contactSendReports": {
+			"linkid": "e10-persons-contactSendReports", "name": "Zasílat výstupní sestavy", "icon": "system/actionPrint",
+			"sources": [{"table": "e10.reports.reports"}],
+			"listId": "sendReports"
+		}
 	}
 }

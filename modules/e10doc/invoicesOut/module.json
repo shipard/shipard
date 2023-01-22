@@ -1,5 +1,8 @@
 {
   "id": "e10doc.invoicesOut",
   "name": "InvoicesOut",
-  "extensions": ["invoicesout"]
+  "extensions": ["invoicesout"],
+  "config": [
+    {"id": "+e10.reports.sendReports", "file": "sendReports.json"}
+  ]
 }

@@ -12,6 +12,7 @@ class ViewPersonContacts extends TableView
 {
 	var $personNdx = 0;
 	var $classification = [];
+	var $sendReports;
 
 	public function init ()
 	{
@@ -58,6 +59,8 @@ class ViewPersonContacts extends TableView
 			return;
 
 		$this->classification = UtilsBase::loadClassification ($this->table->app(), $this->table->tableId(), $this->pks);
+
+		$this->sendReports = UtilsBase::linkedSendReports($this->app(), $this->table, $this->pks);
 	}
 
 	public function renderRow ($item)
@@ -145,6 +148,12 @@ class ViewPersonContacts extends TableView
 
 			forEach ($this->classification [$item ['pk']] as $clsfGroup)
 				$item ['t2'] = array_merge ($item ['t2'], $clsfGroup);
+		}
+
+		if (isset ($this->sendReports [$item ['pk']]))
+		{
+			$item ['t2'][] = ['text' => '', 'class' => '', 'icon' => 'system/iconPaperPlane'];
+			$item ['t2'] = array_merge ($item ['t2'], $this->sendReports [$item ['pk']]);
 		}
 	}
 
