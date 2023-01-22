@@ -5,6 +5,6 @@
 	},
 	"addressTags": {
 		"name": "Adresy", "label": "Štítky", "icon":"table/e10.persons.address",
-		"tables": ["e10.persons.address"]
+		"tables": ["e10.persons.address", "e10.persons.personsContacts"]
 	}
 }

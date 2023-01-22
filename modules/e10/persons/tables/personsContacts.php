@@ -276,6 +276,9 @@ class FormPersonContact extends TableForm
 						$this->addColumnInput ('contactEmail');
 						$this->addColumnInput ('contactPhone');
 					}
+
+					$this->addSeparator(self::coH4);
+					$this->addList ('clsf', '', TableForm::loAddToFormLayout);
 				$this->closeTab ();
 				$this->openTab ();
 				$this->closeTab ();
