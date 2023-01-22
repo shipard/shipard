@@ -495,7 +495,11 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 					}
 				}
 				if (count($addrOffices) > 1)
-					array_shift($addrOffices);
+				{
+					$fk = key($addrOffices);
+					unset($addrOffices[$fk]);
+				}
+
 				$this->addFormPersonInfo_Address ($addrOffices, 'otherAddress1', $suggestedAddrOffice, $addrTitle);
 			}
 		}
@@ -507,6 +511,15 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 
 	public function addFormPersonInfo_Address ($addresses, $columnId, $suggestedAddressNdx, $labelText)
 	{
+		$classification = UtilsBase::loadClassification ($this->table->app(), 'e10.persons.personsContacts', array_keys($addresses), 'ml1 label');
+		foreach ($classification as $pcNdx => $clsf)
+		{
+			forEach ($clsf as $clsfGroup)
+			{
+				$addresses[$pcNdx] = array_merge ($addresses[$pcNdx], $clsfGroup);
+			}
+		}
+
 		if ($this->readOnly)
 		{
 			if ($this->recData[$columnId])
