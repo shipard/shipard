@@ -4,7 +4,9 @@ namespace e10pro\reports\waste_cz\libs;
 use \Shipard\Base\Utility;
 
 
-
+/*
+ * class WasteReturnEngine
+ */
 class WasteReturnEngine extends Utility
 {
   var $year = 0;
@@ -20,6 +22,9 @@ class WasteReturnEngine extends Utility
 
   var $documentNdx = 0;
 
+  CONST rowDirIn = 0, rowDirOut = 1;
+  CONST personTypeHuman = 1, personTypeCompany = 2;
+
 
   public function resetYear()
   {
@@ -27,9 +32,10 @@ class WasteReturnEngine extends Utility
 
 
     $this->addPurchases();
+    $this->addInvoicesOut();
   }
 
-  public function addPurchases()
+  public function addDocuments($docType, $rowDir)
   {
 		$q = [];
 
@@ -45,7 +51,7 @@ class WasteReturnEngine extends Utility
 		array_push ($q, ' WHERE  1');
 
     array_push ($q, ' AND [rows].rowType = %i', 0);
-    array_push ($q, ' AND [heads].docType = %s', 'purchase');
+    array_push ($q, ' AND [heads].docType = %s', $docType);
     array_push ($q, ' AND [heads].docState = %i', 4000);
     array_push ($q, ' AND [heads].dateAccounting >= %d', $this->dateBegin);
     array_push ($q, ' AND [heads].dateAccounting <= %d', $this->dateEnd);
@@ -76,7 +82,7 @@ class WasteReturnEngine extends Utility
       $newRow = [
         'calendarYear' => $this->year,
         'item' => $r['item'],
-        'dir' => 0,
+        'dir' => $rowDir,
         'wasteCodeText' => $rowDestData['rowItemCodesData'][$this->wasteItemCodeNdx]['itemCodeText'],
         'wasteCodeNomenc' => $rowDestData['rowItemCodesData'][$this->wasteItemCodeNdx]['itemCodeNomenc'],
         'price' => $r['taxBase'],
@@ -111,6 +117,16 @@ class WasteReturnEngine extends Utility
     //echo "\n".$cnt." rows\n";
   }
 
+  public function addPurchases()
+  {
+    $this->addDocuments('purchase', self::rowDirIn);
+  }
+
+  public function addInvoicesOut()
+  {
+    $this->addDocuments('invno', self::rowDirOut);
+  }
+
 	protected function quantityKG ($quantity, $unit)
 	{
 		switch ($unit)
@@ -133,6 +149,7 @@ class WasteReturnEngine extends Utility
     $this->tableHeads = $this->app->table ('e10doc.core.heads');
 
     $this->db()->query('DELETE FROM [e10pro_reports_waste_cz_returnRows] WHERE [calendarYear] = %i', $this->year, ' AND [document] = %i', $this->documentNdx);
+
     $this->addPurchases();
   }
 
@@ -142,7 +159,6 @@ class WasteReturnEngine extends Utility
     $this->dateEnd = $this->year.'-12-31';
 
     $this->tableHeads = $this->app->table ('e10doc.core.heads');
-
 
     $this->resetYear();
   }

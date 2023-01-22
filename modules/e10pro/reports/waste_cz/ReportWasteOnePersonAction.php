@@ -78,7 +78,7 @@ class ReportWasteOnePersonAction extends DocumentAction
 	public function run ()
 	{
 		$report = new \e10pro\reports\waste_cz\libs\ReportWasteCompanies($this->app());
-		$report->subReportId = 'persons';
+		$report->subReportId = 'companiesIn';
 		$report->calendarYear = intval($this->params['data-param-calendar-year']);
 		$report->periodBegin = $this->params['data-param-period-begin'];
 		$report->periodEnd = $this->params['data-param-period-end'];

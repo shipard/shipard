@@ -1,8 +1,10 @@
 <?php
 
 namespace e10pro\reports\waste_cz\libs;
-use \Shipard\Utils\Utils;
 
+
+use \Shipard\Utils\Utils;
+use \e10pro\reports\waste_cz\libs\WasteReturnEngine;
 
 /**
  * class ReportWasteCompanies
@@ -46,7 +48,10 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 		{
 			case '':
 			case 'sum': $this->createContent_Sum (); break;
-			case 'persons': $this->createContent_Persons (); break;
+			case 'companiesIn': $this->createContent_CompaniesIn (); break;
+			case 'companiesOut': $this->createContent_CompaniesOut (); break;
+			case 'citizensSum': $this->createContent_CitizensSum (); break;
+			case 'citizensCities': $this->createContent_CitizensCities (); break;
 		}
 	}
 
@@ -54,42 +59,78 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
   {
     $q = [];
 
-    array_push ($q, 'SELECT [rows].wasteCodeNomenc, SUM([rows].quantityKG) as quantityKG,');
+    array_push ($q, 'SELECT [rows].wasteCodeNomenc, SUM([rows].quantityKG) as quantityKG, [rows].[dir], [rows].personType,');
     array_push ($q, ' nomencItems.fullName, nomencItems.itemId');
 		array_push ($q, ' FROM e10pro_reports_waste_cz_returnRows AS [rows]');
     array_push ($q, ' LEFT JOIN [e10_base_nomencItems] AS nomencItems ON [rows].wasteCodeNomenc = nomencItems.ndx');
 		array_push ($q, ' WHERE 1');
-		array_push ($q, ' AND [rows].personType = %i', 2);
-    array_push ($q, ' AND [rows].[dir] = %i', 0);
     if ($this->periodBegin)
       array_push ($q, ' AND [rows].[dateAccounting] >= %d', $this->periodBegin);
     if ($this->periodEnd)
       array_push ($q, ' AND [rows].[dateAccounting] <= %d', $this->periodEnd);
-		array_push ($q, ' GROUP BY wasteCodeNomenc');
+		array_push ($q, ' GROUP BY wasteCodeNomenc, [rows].[dir], [rows].personType');
 
 		$rows = $this->app->db()->query ($q);
 		$data = [];
 		forEach ($rows as $r)
 		{
-      $item = [
-        'wasteCode' => $r['itemId'],
-        'wasteName' => $r['fullName'],
-        'quantity' => $r['quantityKG'],
-      ];
-			$data[] = $item;
+      $wcId = 'W'.$r['wasteCodeNomenc'];
+
+      if (!isset($data[$wcId]))
+      {
+        $data[$wcId] = [
+          'wasteCode' => $r['itemId'],
+          'wasteName' => $r['fullName'],
+        ];
+      }
+
+      if ($r['dir'] == WasteReturnEngine::rowDirIn)
+      {
+        if ($r['personType'] == WasteReturnEngine::personTypeHuman)
+          $data[$wcId]['quantityInH'] = $r['quantityKG'];
+        elseif ($r['personType'] == WasteReturnEngine::personTypeCompany)
+          $data[$wcId]['quantityInC'] = $r['quantityKG'];
+
+        $data[$wcId]['quantityIn'] ??= 0.0;
+        $data[$wcId]['quantityIn'] += $r['quantityKG'];
+      }
+      elseif ($r['dir'] == WasteReturnEngine::rowDirOut)
+        $data[$wcId]['quantityOut'] = $r['quantityKG'];
+
+			//$data[] = $item;
 		}
 
-		$h = ['wasteCode' => ' Kód odpadu', 'wasteName' => 'Text', 'quantity' => ' Množství [kg]'];
+		$h = [
+      'wasteCode' => ' Kód odpadu',
+      'wasteName' => 'Text',
+      'quantityInH' => '+Příjem Občané',
+      'quantityInC' => '+Příjem Firmy',
+      'quantityIn' => '+Příjem CELKEM',
+      'quantityOut' => '+Výdej',
+    ];
 		$this->addContent (['type' => 'table', 'header' => $h, 'table' => $data]);
 
-		$this->setInfo('title', 'Celkové odběry odpadů od firem');
+		$this->setInfo('title', 'Celkový přehled o pohybu odpadů');
+    $this->setInfo('note', '1', 'Všechna množství jsou v kilogramech');
   }
 
-  public function createContent_Persons()
+  public function createContent_CompaniesIn()
+  {
+    $this->createContent_Companies(WasteReturnEngine::rowDirIn);
+    $this->setInfo('title', 'Odběr odpadů od firem');
+  }
+
+  public function createContent_CompaniesOut()
+  {
+    $this->createContent_Companies(WasteReturnEngine::rowDirOut);
+    $this->setInfo('title', 'Prodej odpadů');
+  }
+
+  public function createContent_Companies($dir)
   {
     $q = [];
 
-    array_push ($q, 'SELECT [rows].person, [rows].personOffice, [rows].wasteCodeNomenc, SUM([rows].quantityKG) as quantityKG,');
+    array_push ($q, 'SELECT [rows].person, [rows].personOffice, [rows].wasteCodeNomenc, [rows].[dir], SUM([rows].quantityKG) as quantityKG,');
     array_push ($q, ' nomencItems.fullName, nomencItems.itemId,');
     array_push ($q, ' persons.fullName AS personFullName,');
     array_push ($q, ' addrs.adrCity, addrs.adrStreet, addrs.id1');
@@ -99,12 +140,12 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
     array_push ($q, ' LEFT JOIN [e10_persons_persons] AS persons ON [rows].person = persons.ndx');
 		array_push ($q, ' WHERE 1');
 		array_push ($q, ' AND [rows].personType = %i', 2);
-    array_push ($q, ' AND [rows].[dir] = %i', 0);
+    array_push ($q, ' AND [rows].[dir] = %i', $dir);
     if ($this->periodBegin)
       array_push ($q, ' AND [rows].[dateAccounting] >= %d', $this->periodBegin);
     if ($this->periodEnd)
       array_push ($q, ' AND [rows].[dateAccounting] <= %d', $this->periodEnd);
-		array_push ($q, ' GROUP BY [rows].person, [rows].personOffice, wasteCodeNomenc');
+		array_push ($q, ' GROUP BY [rows].person, [rows].personOffice, [rows].[dir], wasteCodeNomenc');
     array_push ($q, ' ORDER BY persons.fullName, addrs.id1, wasteCodeNomenc');
 
     $lastPerson = -1;
@@ -149,57 +190,176 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
           //'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid,
         ];
 
-        // -- print button
-        $btn = ['type' => 'action', 'action' => 'print', 'style' => 'print', 'icon' => 'system/actionPrint', 'text' => 'Přehled',
-          'data-report' => 'e10pro.reports.waste_cz.ReportWasteOnePerson',
-          'data-table' => 'e10.persons.persons', 'data-pk' => $r['person'],
-          'data-param-period-begin' => $this->periodBegin->format('Y-m-d'),
-          'data-param-period-end' => $this->periodEnd->format('Y-m-d'),
-          'data-param-calendar-year' => strval($this->calendarYear),
-          'actionClass' => 'btn-xs', 'class' => 'pull-right'];
-        $btn['subButtons'] = [];
-        $btn['subButtons'][] = [
-          'type' => 'action', 'action' => 'addwizard', 'icon' => 'system/iconEmail', 'title' => 'Odeslat emailem', 'btnClass' => 'btn-default btn-xs',
-          'data-table' => 'e10.persons.persons', 'data-pk' => $r['person'],
-          'data-param-period-begin' => $this->periodBegin->format('Y-m-d'),
-          'data-param-period-end' => $this->periodEnd->format('Y-m-d'),
-          'data-param-calendar-year' => strval($this->calendarYear),
-          'data-class' => 'Shipard.Report.SendFormReportWizard',
-          'data-addparams' => 'reportClass=' . 'e10pro.reports.waste_cz.ReportWasteOnePerson' . '&documentTable=' . 'e10.persons.persons'
-        ];
-        $header['wasteCode'][] = $btn;
 
+        // -- print button
+        if ($dir === WasteReturnEngine::rowDirIn)
+        {
+          $btn = ['type' => 'action', 'action' => 'print', 'style' => 'print', 'icon' => 'system/actionPrint', 'text' => 'Přehled',
+            'data-report' => 'e10pro.reports.waste_cz.ReportWasteOnePerson',
+            'data-table' => 'e10.persons.persons', 'data-pk' => $r['person'],
+            'data-param-period-begin' => $this->periodBegin->format('Y-m-d'),
+            'data-param-period-end' => $this->periodEnd->format('Y-m-d'),
+            'data-param-calendar-year' => strval($this->calendarYear),
+            'actionClass' => 'btn-xs', 'class' => 'pull-right'];
+          $btn['subButtons'] = [];
+          $btn['subButtons'][] = [
+            'type' => 'action', 'action' => 'addwizard', 'icon' => 'system/iconEmail', 'title' => 'Odeslat emailem', 'btnClass' => 'btn-default btn-xs',
+            'data-table' => 'e10.persons.persons', 'data-pk' => $r['person'],
+            'data-param-period-begin' => $this->periodBegin->format('Y-m-d'),
+            'data-param-period-end' => $this->periodEnd->format('Y-m-d'),
+            'data-param-calendar-year' => strval($this->calendarYear),
+            'data-class' => 'Shipard.Report.SendFormReportWizard',
+            'data-addparams' => 'reportClass=' . 'e10pro.reports.waste_cz.ReportWasteOnePerson' . '&documentTable=' . 'e10.persons.persons'
+          ];
+          $header['wasteCode'][] = $btn;
+        }
+
+        $header['_options']['beforeSeparator'] = 'separator';
+
+        $data[] = $header;
+      }
+
+      $wcId = 'W-'.$r['person'].'-'.$r['wasteCodeNomenc'];
+
+      if (!isset($data[$wcId]))
+      {
+        $data[$wcId] = [
+          'wasteCode' => $r['itemId'],
+          'wasteName' => $r['fullName'],
+        ];
+      }
+
+      if ($r['dir'] == WasteReturnEngine::rowDirIn)
+        $data[$wcId]['quantityIn'] = $r['quantityKG'];
+      elseif ($r['dir'] == WasteReturnEngine::rowDirOut)
+        $data[$wcId]['quantityOut'] = $r['quantityKG'];
+
+      if ($r['id1'] && $r['id1'] !== '')
+      {
+        $data[$wcId]['id1'] = [
+          ['text' => 'IČP: ', 'class' => ''],
+          ['text' => $r['id1'], 'docAction' => 'edit', 'pk' => $r['personOffice'], 'table' => 'e10.persons.personsContacts', 'class' => ''],
+        ];
+        $data[$wcId]['id1'][1]['suffix'] = $r['adrStreet'].', '.$r['adrCity'];
+      }
+			//$data[] = $item;
+
+      $lastPerson = $r['person'];
+		}
+
+		$h = [
+      'wasteCode' => 'Kód odpadu',
+      'wasteName' => 'Text',
+      'id1' => 'Místo',
+      'quantityIn' => ' Příjem [kg]',
+      'quantityOut' => ' Výdej [kg]',
+    ];
+    if ($dir === WasteReturnEngine::rowDirIn)
+      unset($h['quantityOut']);
+    elseif ($dir === WasteReturnEngine::rowDirOut)
+      unset($h['quantityIn']);
+
+		$this->addContent (['type' => 'table', 'header' => $h, 'table' => $data, 'main' => TRUE]);
+  }
+
+  public function createContent_CitizensSum()
+  {
+    $q = [];
+
+    array_push ($q, 'SELECT [rows].wasteCodeNomenc, SUM([rows].quantityKG) as quantityKG,');
+    array_push ($q, ' nomencItems.fullName, nomencItems.itemId');
+		array_push ($q, ' FROM e10pro_reports_waste_cz_returnRows AS [rows]');
+    array_push ($q, ' LEFT JOIN [e10_base_nomencItems] AS nomencItems ON [rows].wasteCodeNomenc = nomencItems.ndx');
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND [rows].personType = %i', 1);
+    array_push ($q, ' AND [rows].[dir] = %i', 0);
+    if ($this->periodBegin)
+      array_push ($q, ' AND [rows].[dateAccounting] >= %d', $this->periodBegin);
+    if ($this->periodEnd)
+      array_push ($q, ' AND [rows].[dateAccounting] <= %d', $this->periodEnd);
+		array_push ($q, ' GROUP BY wasteCodeNomenc');
+
+		$rows = $this->app->db()->query ($q);
+		$data = [];
+		forEach ($rows as $r)
+		{
+      $item = [
+        'wasteCode' => $r['itemId'],
+        'wasteName' => $r['fullName'],
+        'quantity' => $r['quantityKG'],
+      ];
+			$data[] = $item;
+		}
+
+		$h = ['wasteCode' => ' Kód odpadu', 'wasteName' => 'Text', 'quantity' => ' Množství [kg]'];
+		$this->addContent (['type' => 'table', 'header' => $h, 'table' => $data]);
+
+		$this->setInfo('title', 'Odběr odpadů od občanů');
+  }
+
+  public function createContent_CitizensCities()
+  {
+    $q = [];
+
+    array_push ($q, 'SELECT [rows].wasteCodeNomenc, SUM([rows].quantityKG) as quantityKG,');
+    array_push ($q, ' nomencItems.fullName, nomencItems.itemId,');
+    array_push ($q, ' addrs.adrCity');
+		array_push ($q, ' FROM e10pro_reports_waste_cz_returnRows AS [rows]');
+    array_push ($q, ' LEFT JOIN [e10_base_nomencItems] AS nomencItems ON [rows].wasteCodeNomenc = nomencItems.ndx');
+    array_push ($q, ' LEFT JOIN [e10_persons_personsContacts] AS addrs ON [rows].personOffice = addrs.ndx');
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND [rows].personType = %i', 1);
+    array_push ($q, ' AND [rows].[dir] = %i', 0);
+    if ($this->periodBegin)
+      array_push ($q, ' AND [rows].[dateAccounting] >= %d', $this->periodBegin);
+    if ($this->periodEnd)
+      array_push ($q, ' AND [rows].[dateAccounting] <= %d', $this->periodEnd);
+		array_push ($q, ' GROUP BY addrs.adrCity, wasteCodeNomenc');
+
+    $lastCity = '______';
+		$rows = $this->app->db()->query ($q);
+		$data = [];
+		forEach ($rows as $r)
+		{
+      if ($r['adrCity'] !== $lastCity)
+      {
+        $header = [
+          'wasteCode' => ($r['adrCity'] == '') ? '-- NEUVEDENO --' : $r['adrCity'],
+          '_options' => [
+            'colSpan' => ['wasteCode' => 3],
+            'class' => 'subheader',
+
+          ]
+        ];
 
         $header['_options']['beforeSeparator'] = 'separator';
 
         $data[] = $header;
       }
       $item = [
+
         'wasteCode' => $r['itemId'],
         'wasteName' => $r['fullName'],
         'quantity' => $r['quantityKG'],
       ];
-
-      if ($r['id1'] && $r['id1'] !== '')
-      {
-        $item['id1'] = ['text' => $r['id1'], 'docAction' => 'edit', 'pk' => $r['personOffice'], 'table' => 'e10.persons.personsContacts'];
-        $item['id1']['prefix'] = $r['adrStreet'].', '.$r['adrCity'];
-      }
 			$data[] = $item;
 
-      $lastPerson = $r['person'];
+      $lastCity = $r['adrCity'];
 		}
 
-		$h = ['wasteCode' => 'Kód odpadu', 'wasteName' => 'Text', 'id1' => ' IČP', 'quantity' => ' Množství [kg]'];
+		$h = ['wasteCode' => 'Kód odpadu', 'wasteName' => 'Text', 'quantity' => ' Množství [kg]'];
 		$this->addContent (['type' => 'table', 'header' => $h, 'table' => $data]);
 
-		$this->setInfo('title', 'Odběr odpadů od firem');
+		$this->setInfo('title', 'Odběr odpadů od občanů za obce');
   }
 
   public function subReportsList ()
 	{
 		$d[] = ['id' => 'sum', 'icontxt' => '∑', 'title' => 'Sumárně'];
-    $d[] = ['id' => 'persons', 'icon' => 'system/personCompany', 'title' => 'Firmy'];
+    $d[] = ['id' => 'companiesIn', 'icon' => 'system/personCompany', 'title' => 'Firmy Příjem'];
+    $d[] = ['id' => 'companiesOut', 'icon' => 'system/iconDelivery', 'title' => 'Firmy Výdej'];
+    $d[] = ['id' => 'citizensSum', 'icon' => 'system/personHuman', 'title' => 'Občané'];
+    $d[] = ['id' => 'citizensCities', 'icon' => 'system/iconMapMarker', 'title' => 'Občané podle obcí'];
 
 		return $d;
 	}
@@ -207,15 +367,18 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 	public function createToolbar ()
 	{
 		$buttons = parent::createToolbar();
-		$buttons[] = [
-			'text' => 'Rozeslat hromadně emailem', 'icon' => 'system/iconEmail',
-			'type' => 'action', 'action' => 'addwizard', 'data-class' => 'e10pro.reports.waste_cz.ReportWasteOnePersonWizard',
-      'data-param-period-begin' => $this->periodBegin->format('Y-m-d'),
-      'data-param-period-end' => $this->periodEnd->format('Y-m-d'),
-      'data-param-calendar-year' => strval($this->calendarYear),
-      'data-table' => 'e10.persons.persons', 'data-pk' => '0',
-			'class' => 'btn-primary'
-		];
+    if ($this->subReportId === 'companiesIn')
+    {
+      $buttons[] = [
+        'text' => 'Rozeslat hromadně emailem', 'icon' => 'system/iconEmail',
+        'type' => 'action', 'action' => 'addwizard', 'data-class' => 'e10pro.reports.waste_cz.ReportWasteOnePersonWizard',
+        'data-param-period-begin' => $this->periodBegin->format('Y-m-d'),
+        'data-param-period-end' => $this->periodEnd->format('Y-m-d'),
+        'data-param-calendar-year' => strval($this->calendarYear),
+        'data-table' => 'e10.persons.persons', 'data-pk' => '0',
+        'class' => 'btn-primary'
+      ];
+    }
 		return $buttons;
 	}
 }
