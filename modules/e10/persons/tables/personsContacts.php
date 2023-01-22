@@ -61,6 +61,30 @@ class TablePersonsContacts extends DbTable
 
 		return $refTitle;
 	}
+
+	public function createHeader ($recData, $options)
+	{
+		$hdr = parent::createHeader ($recData, $options);
+
+		/** @var \e10\persons\TablePersons $tablePersons */
+		$tablePersons = $this->app()->table('e10.persons.persons');
+		$personRecData = $tablePersons->loadItem($recData['person']);
+
+		if ($personRecData)
+		{
+			$hdr ['info'][] = ['class' => 'title', 'value' => [
+				[
+					'text' => ($personRecData ['fullName'] !== '') ? $personRecData ['fullName'] : '!!!'.$recData['person'],
+					'icon' => $tablePersons->tableIcon($personRecData),
+					'docAction' => 'edit', 'table' => 'e10.persons.persons', 'pk' => strval($recData['person'])
+				],
+				['text' => '#'.$personRecData['id'], 'class' => 'pull-right']
+			],
+		];
+		}
+
+		return $hdr;
+	}
 }
 
 

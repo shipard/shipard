@@ -48,6 +48,12 @@
 		},
 		"combo": {
 			"id": "combo", "class": "e10.persons.ViewPersonsContactsCombo"
+		},
+		"technicalAddress": {
+			"id": "technicalAddress", "class": "e10.persons.libs.viewers.ViewAddressTechnical",
+			"details": {
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "e10.persons.libs.viewers.ViewAddressTechnicalDetail"}
+			}
 		}
 	},
 	"forms": [
