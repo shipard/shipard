@@ -1,0 +1,14 @@
+{
+	"id": "e10.reports.reports", "sql": "e10_reports_reports", "name": "Výstupní sestavy",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80}
+	],
+
+	"views": [
+		{"id": "default", "class": "e10.reports.ViewReports", "detail": "e10.reports.ViewDetailReport"}
+	],
+  "options": ["systemTable"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

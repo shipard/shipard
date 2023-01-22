@@ -7,7 +7,7 @@
 		"personsContacts", "personsBA"
 	],
 	"extensions": ["persons"],
-	"modules": ["e10/world"],
+	"modules": ["e10/world", "e10/reports"],
   "config": [
 		{"id": "+appSkeleton", "file": "appSkeleton.panel.srvcfg.json"},
 	  {"id": "+e10.persons.addressTypes", "file": "e10.persons.addressTypes.json"},

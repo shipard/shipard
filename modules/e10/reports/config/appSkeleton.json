@@ -1,0 +1,19 @@
+{
+	"panels": {
+		"srvcfg": {
+			"items": {
+				"technical": {
+					"subMenu": {
+						"items": {
+							"sendReports": {
+								"t1": "Výst. sestavy", "object": "viewer",
+								"table": "e10.reports.reports", "viewer": "default",
+								"order": 900000
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

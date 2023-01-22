@@ -1,0 +1,7 @@
+{
+	"admin": {
+		"viewers": {
+			"e10.reports.reports": {"default": 2}
+		}
+	}
+}

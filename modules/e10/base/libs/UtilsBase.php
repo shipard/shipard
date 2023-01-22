@@ -61,7 +61,9 @@ class UtilsBase
 		$query = $app->db->query ("SELECT * from [e10_base_clsf] where [tableid] = %s AND [recid] IN ($recIds)", $tableId);
 		forEach ($query as $r)
 		{
-			$clsfItem = $clsfItems [$r['group']][$r['clsfItem']];
+			$clsfItem = $clsfItems [$r['group']][$r['clsfItem']] ?? NULL;
+			if (!$clsfItem)
+				continue;
 			$i = ['text' => $clsfItem['name'], 'class' => $class, 'clsfItem' => $r['clsfItem']];
 			if ($withIcons)
 				$i ['icon'] = $clsfGroups [$r['group']]['icon'];
@@ -367,6 +369,47 @@ class UtilsBase
 		}
 
 		return $lp;
+	}
+
+	static function linkedSendReports ($app, $table, $toRecId, $elementClass = '')
+	{
+		$list = [];
+		if (is_array($toRecId) && !count($toRecId))
+			return $list;
+
+		if (is_string($table))
+			$tableId = $table;
+		else
+			$tableId = $table->tableId ();
+
+		$q = [];
+		array_push($q, 'SELECT links.ndx, links.linkId as linkId, links.dstTableId, links.srcRecId, links.dstRecId,');
+		array_push($q, ' [reports].fullName AS fullName');
+		array_push($q, ' FROM [e10_base_doclinks] AS [links] ');
+		array_push($q, ' LEFT JOIN [e10_reports_reports] AS [reports] ON [links].[dstRecId] = [reports].[ndx]');
+		array_push($q, ' WHERE [links].[srcTableId] = %s', $tableId);
+		array_push($q, ' AND [dstTableId] = %s', 'e10.reports.reports');
+
+		if (is_array($toRecId))
+			array_push($q, ' AND links.srcRecId IN %in', $toRecId);
+		else
+			array_push($q, ' AND links.srcRecId = %i', $toRecId);
+
+		$rows = $app->db->query ($q);
+		foreach ($rows as $r)
+		{
+			$label = ['text' => $r['fullName'], 'class' => 'label label-default'];
+			if (is_array($toRecId))
+			{
+				$list[$r['srcRecId']][] = $label;
+			}
+			else
+			{
+				$list[] = $label;
+			}
+		}
+
+		return $list;
 	}
 
 	static function sendEmail ($app, $subject, $message, $fromAdress, $toAdress, $fromName = '', $toName = '', $html = FALSE)

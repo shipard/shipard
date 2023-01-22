@@ -1,0 +1,36 @@
+{
+	"id": "e10.reports.reportsTexts", "sql": "e10_reports_reportsTexts", "name": "Texty na výstupních sestavách",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "note", "name": "Poznámka", "type": "string", "len": 120},
+
+		{"id": "reportPlace", "name": "Umístění textu", "type": "enumString", "len": "25",
+			"enumValues": {
+				"supplier": "Dodavatel",
+				"contacts": "Kontaktní údaje",
+				"supplierAndContacts": "Dodavatel + Kontaktní údaje",
+				"subHeader": "Záhlaví nad řádky",
+				"subFooter": "Zápatí na konci sestavy"
+			}
+		},
+
+		{"id": "text", "name": "Text", "type": "memo"},
+
+		{"id": "order", "name": "Pořadí", "type": "int"},
+		{"id": "systemOrder", "name": "Systémové pořadí", "type": "int"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "reports", "class": "e10.base.ListDocLinks", "name": "Sestavy"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "e10.reports.ViewReportsTexts", "detail": "e10.reports.ViewDetailReportsTexts"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10.reports.FormReportText"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "note"}
+}

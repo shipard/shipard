@@ -1,0 +1,11 @@
+{
+  "id": "e10.reports",
+  "name": "reports",
+  "tables": ["reports", "reportsTexts"],
+  "config": [
+    {"id": "+appSkeleton", "file": "appSkeleton.json"},
+		{"id": "+appOptions", "file": "e10.appOptions.json"},
+    {"id": "+e10.persons.roles", "file": "roles.json"},
+    {"id": "+e10.base.doclinks", "file": "doclinks.json"}
+	]
+}

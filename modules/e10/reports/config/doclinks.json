@@ -1,0 +1,9 @@
+{
+	"e10.reports.reportsTexts": {
+		"e10-reportsTexts-reports": {
+			"linkid": "e10-reportsTexts-reports", "name": "Sestavy", "icon": "docLinkTo",
+			"sources": [{"table": "e10.reports.reports"}],
+			"listId": "reports"
+		}
+	}
+}

@@ -1,0 +1,8 @@
+{
+	"reportsTexts2": {
+		"name": "Texty výstupních sestav", "order": 30000, "group": "appearance",
+		"type": "viewer",
+		"table": "e10.reports.reportsTexts",
+		"viewer": "default"
+	}
+}
