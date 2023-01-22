@@ -1673,7 +1673,7 @@ class TableHeads extends DbTable
 		$addressLabels = [];
 		if ($addressNdx)
 		{
-			$labelsRows = $this->db()->query ('SELECT * FROM [e10_base_clsf] WHERE [tableid] = %s', 'e10.persons.address',
+			$labelsRows = $this->db()->query ('SELECT * FROM [e10_base_clsf] WHERE [tableid] = %s', 'e10.persons.personsContacts',
 																				' AND [recid] = %i', $addressNdx);
 			forEach ($labelsRows as $lr)
 			{
