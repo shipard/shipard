@@ -5,7 +5,17 @@
 				"labels": {"t1": "Štítky", "object": "viewer", "table": "e10.base.clsfgroups", "viewer": "default", "order": 300000},
 				"history": {"t1": "Historie", "object": "viewer", "table": "e10.base.docslog", "viewer": "all", "icon": "system/iconHistory", "order": 330000},
 				"nomenclature": {"t1": "Nomenklatura", "object": "viewer", "table": "e10.base.nomencTypes", "viewer": "default", "order": 4994000},
-				"tasks": {"t1": "Úlohy", "object": "viewer", "table": "e10.base.tasks", "viewer": "default", "order": 4999900},
+
+				"technical": {
+					"t1": "Technické", "object": "subMenu", "icon": "user/lock",
+					"order": 4994010,
+					"subMenu": {
+						"items": {
+							"tasks": {"t1": "Úlohy", "object": "viewer", "table": "e10.base.tasks", "viewer": "default", "order": 900000}
+						}
+					}
+				},
+
 				"authLog": {"t1": "Informace o přihlašování", "object": "viewer", "table": "e10.base.authLog", "viewer": "default", "order": 4999990}
 			}
 		}
