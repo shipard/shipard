@@ -1794,6 +1794,9 @@ class TableHeads extends DbTable
 	{
 		$this->checkPrepayment($recData);
 
+		/** @var \e10\persons\TablePersons */
+		$tablePersons = $this->app()->table('e10.persons.persons');
+
 		foreach ($docState['printAfterConfirm'] as $r)
 		{
 			if (isset($r['ask']) && !isset($saveData['extra']['confirm']))
@@ -1856,7 +1859,9 @@ class TableHeads extends DbTable
 				$documentInfo = $formReportTable->getRecordInfo($formReportRecData);
 				$emails = '';
 				if (isset($documentInfo['persons']['to']))
-					$emails = $this->loadEmails($documentInfo['persons']['to']);
+				{
+					$emails = $tablePersons->loadEmailsForReport($documentInfo['persons']['to'], $r['class']);
+				}
 				//if ($emails !== '')
 				{
 					$msgSubject = $formReport->createReportPart('emailSubject');

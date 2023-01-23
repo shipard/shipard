@@ -42,7 +42,9 @@ class SendFormReportWizard extends \Shipard\Form\Wizard
 
 	public function renderFormWelcome ()
 	{
-		$testNewPersons = intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
+		/** @var \e10\persons\TablePersons */
+		$tablePersons = $this->app()->table('e10.persons.persons');
+
 		$this->table = $this->app->table ('e10.witems.items');
 
 		//$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
@@ -70,10 +72,7 @@ class SendFormReportWizard extends \Shipard\Form\Wizard
 		$documentInfo = $documentTable->getRecordInfo ($item);
 		if (isset($documentInfo['persons']['to']))
 		{
-			if ($testNewPersons)
-				$this->recData['to'] = $this->loadEmailsForReport($documentInfo['persons']['to'], $this->recData['reportClass']);
-			else
-				$this->recData['to'] = $this->loadEmails($documentInfo['persons']['to']);
+			$this->recData['to'] = $tablePersons->loadEmailsForReport($documentInfo['persons']['to'], $this->recData['reportClass']);
 		}
 
 		$this->recData['emailFromAddress'] = $this->app->cfgItem ('options.core.ownerEmail');
@@ -191,42 +190,6 @@ class SendFormReportWizard extends \Shipard\Form\Wizard
 	{
 		if (!count($persons))
 			return '';
-
-		$sql = 'SELECT valueString FROM [e10_base_properties] where [tableid] = %s AND [recid] IN %in AND [property] = %s AND [group] = %s ORDER BY ndx';
-		$emailsRows = $this->app()->db()->query ($sql, 'e10.persons.persons', $persons, 'email', 'contacts')->fetchPairs ();
-		return implode (', ', $emailsRows);
-	}
-
-	public function loadEmailsForReport ($persons, $reportClass)
-	{
-		if (!count($persons))
-			return '';
-
-		$allSendReports = $this->app()->cfgItem('e10.reports.sendReports', []);
-		$sendReportCfg = Utils::searchArray($allSendReports, 'classId', $reportClass);
-
-		if ($sendReportCfg)
-		{
-			$emails = [];
-			$q = [];
-			array_push($q, 'SELECT links.ndx, links.linkId as linkId, links.dstTableId, links.srcRecId, links.dstRecId,');
-			array_push($q, ' [contacts].contactEmail');
-			array_push($q, ' FROM [e10_base_doclinks] AS [links] ');
-			array_push($q, ' LEFT JOIN [e10_persons_personsContacts] AS [contacts] ON [links].[srcRecId] = [contacts].[ndx]');
-			array_push($q, ' WHERE [links].[srcTableId] = %s', 'e10.persons.personsContacts');
-			array_push($q, ' AND [dstTableId] = %s', 'e10.reports.reports');
-			array_push($q, ' AND links.dstRecId = %i', $sendReportCfg['ndx']);
-			array_push($q, ' AND [contacts].[person] IN %in', $persons);
-
-			$rows = $this->app()->db()->query($q);
-			foreach ($rows as $r)
-			{
-				$emails[] = $r['contactEmail'];
-			}
-
-			if (count($emails))
-				return implode (', ', $emails);
-		}
 
 		$sql = 'SELECT valueString FROM [e10_base_properties] where [tableid] = %s AND [recid] IN %in AND [property] = %s AND [group] = %s ORDER BY ndx';
 		$emailsRows = $this->app()->db()->query ($sql, 'e10.persons.persons', $persons, 'email', 'contacts')->fetchPairs ();

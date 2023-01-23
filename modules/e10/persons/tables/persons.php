@@ -394,6 +394,47 @@ class TablePersons extends DbTable
 		return $properties;
 	}
 
+	public function loadEmailsForReport ($persons, $reportClass)
+	{
+		if (!count($persons))
+			return '';
+
+		$testNewPersons = intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
+
+		if ($testNewPersons)
+		{
+			$allSendReports = $this->app()->cfgItem('e10.reports.sendReports', []);
+			$sendReportCfg = Utils::searchArray($allSendReports, 'classId', $reportClass);
+
+			if ($sendReportCfg)
+			{
+				$emails = [];
+				$q = [];
+				array_push($q, 'SELECT links.ndx, links.linkId as linkId, links.dstTableId, links.srcRecId, links.dstRecId,');
+				array_push($q, ' [contacts].contactEmail');
+				array_push($q, ' FROM [e10_base_doclinks] AS [links] ');
+				array_push($q, ' LEFT JOIN [e10_persons_personsContacts] AS [contacts] ON [links].[srcRecId] = [contacts].[ndx]');
+				array_push($q, ' WHERE [links].[srcTableId] = %s', 'e10.persons.personsContacts');
+				array_push($q, ' AND [dstTableId] = %s', 'e10.reports.reports');
+				array_push($q, ' AND links.dstRecId = %i', $sendReportCfg['ndx']);
+				array_push($q, ' AND [contacts].[person] IN %in', $persons);
+
+				$rows = $this->db()->query($q);
+				foreach ($rows as $r)
+				{
+					$emails[] = $r['contactEmail'];
+				}
+
+				if (count($emails))
+					return implode (', ', $emails);
+			}
+		}
+
+		$sql = 'SELECT valueString FROM [e10_base_properties] where [tableid] = %s AND [recid] IN %in AND [property] = %s AND [group] = %s ORDER BY ndx';
+		$emailsRows = $this->db()->query ($sql, 'e10.persons.persons', $persons, 'email', 'contacts')->fetchPairs ();
+		return implode (', ', $emailsRows);
+	}
+
 	public function createHeader ($recData, $options)
 	{
 		$hdr ['icon'] = $this->icon ($recData);
