@@ -3,6 +3,7 @@
     "fn": "Faktura vydaná běžná",
     "cn": "Faktura vydaná",
     "sc": "FV",
-    "classId": "e10doc.invoicesOut.libs.InvoiceOutReport"
+    "classId": "e10doc.invoicesOut.libs.InvoiceOutReport",
+    "ndx": 2000
   }
 }

@@ -3,12 +3,14 @@
     "fn": "Výkupní lístek",
     "cn": "Výkupní lístek",
     "sc": "PKP",
-    "classId": "e10doc.purchase.libs.PurchaseReport"
+    "classId": "e10doc.purchase.libs.PurchaseReport",
+    "ndx": 2501
   },
   "2700": {
     "fn": "Přehled odebraných odpadů",
     "cn": "Přehled odebraných odpadů",
     "sc": "POO",
-    "classId": "e10pro.reports.waste_cz.reportWasteOnePerson"
+    "classId": "e10pro.reports.waste_cz.ReportWasteOnePerson",
+    "ndx": 2700
   }
 }
