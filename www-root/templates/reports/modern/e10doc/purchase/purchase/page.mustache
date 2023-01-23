@@ -135,6 +135,17 @@
 
 				</td>
 			{{/data.flags.useAddressPersonOffice}}
+
+			{{#data.flags.useORP}}
+				<td>
+					<span class='hdr'>{{@dict;Původ odpadu}}:</span>
+					<span class='address'>
+						<b>ORP: </b>{{data.ORP.code}}<br/>
+						<b>Obec: </b>{{data.ORP.name}}<br/>
+					</span>
+				</td>
+			{{/data.flags.useORP}}
+
 		{{/data.flags.usePersonsAddress}}
 	</tr>
 </table>

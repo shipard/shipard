@@ -52,14 +52,15 @@ class PurchaseReport extends \e10doc\core\libs\reports\DocReport
 		if ($this->recData ['paymentMethod'] !== 8) // likvidační protokol
 			$this->data ['flags']['enablePrice'] = 1;
 
-		/*
-		$rowNumber = 1;
-		forEach ($this->data ['rows'] as &$row)
-		{
-			$row ['rowNumber'] = $rowNumber;
-			$rowNumber++;
-			$row ['rowItemProperties'] = \E10\Base\getPropertiesTable ($this->table->app(), 'e10.witems.items', $row['item']);
+		if ($this->recData ['otherAddress1Mode'] == 1)
+		{ // city & code
+			$nomencCityRecData = $this->app()->loadItem($this->recData ['personNomencCity'], 'e10.base.nomencItems');
+
+			$this->data ['flags']['useORP'] = 1;
+			$this->data ['ORP']['code'] = substr($nomencCityRecData['itemId'], 2);
+			$this->data ['ORP']['name'] = $nomencCityRecData['fullName'];
+			$this->data ['flags']['useAddressPersonOffice'] = 0;
+			$this->data ['flags']['usePersonsAddress'] = 1;
 		}
-		*/
 	}
-} // class PurchaseReport
+}
