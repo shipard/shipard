@@ -5,6 +5,7 @@
 	"config": [
 		{"id": "+wkf.issues.systemKinds", "file": "wkf.issues.systemKinds.json"},
 		{"id": "+e10.base.doclinks", "file": "docLinks.json"},
-		{"id": "+e10.reports.sendReports", "file": "sendReports.json"}
+		{"id": "+e10.reports.sendReports", "file": "sendReports.json"},
+		{"id": "+e10.persons.virtualGroups", "file": "e10.persons.virtualGroups.json"}
 	]
 }

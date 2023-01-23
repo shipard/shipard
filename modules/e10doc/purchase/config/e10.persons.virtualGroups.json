@@ -1,0 +1,9 @@
+{
+	"e10doc-wasteSuppliers": {
+		"name": "Dodavatelé odpadů",
+		"queryColumns": {
+			"virtualGroupItem": "Rok"
+		},
+		"classId": "e10doc.purchase.libs.PersonsVGWasteSuppliers"
+	}
+}
