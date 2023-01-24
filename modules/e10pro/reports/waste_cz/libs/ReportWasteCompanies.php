@@ -216,7 +216,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 
         $header['_options']['beforeSeparator'] = 'separator';
 
-        $data[] = $header;
+        $data['HDR_'.$r['person']] = $header;
       }
 
       $wcId = 'W-'.$r['person'].'-'.$r['wasteCodeNomenc'];
@@ -246,6 +246,8 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 
       $lastPerson = $r['person'];
 		}
+
+    $this->loadSendedReports ($data, $dir);
 
 		$h = [
       'wasteCode' => 'Kód odpadu',
@@ -352,6 +354,43 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 
 		$this->setInfo('title', 'Odběr odpadů od občanů za obce');
   }
+
+  function loadSendedReports (&$data, $dir)
+	{
+    if ($dir !== WasteReturnEngine::rowDirIn)
+      return;
+
+    $linkId = 'waste-suppliers-'.$this->calendarYear;
+
+		/** @var \wkf\core\TableIssues */
+		$tableIssues = $this->app()->table ('wkf.core.issues');
+		$demandForPaySectionNdx = $tableIssues->defaultSection (121);
+		$demandForPaySectionSecNdx = $tableIssues->defaultSection (20);
+
+		$q[] = 'SELECT * FROM [wkf_core_issues] ';
+		array_push($q, ' WHERE tableNdx = %i', 1000);
+		if ($demandForPaySectionNdx && $demandForPaySectionSecNdx)
+			array_push($q, ' AND section IN %in', [$demandForPaySectionNdx, $demandForPaySectionSecNdx]);
+		else
+			array_push($q, ' AND section = %i', $demandForPaySectionNdx);
+
+		array_push($q, ' AND linkId = %s', $linkId);
+		array_push($q, ' AND recNdx IN %in', $this->persons);
+		array_push($q, ' ORDER BY [dateCreate]');
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$item = [
+					'icon' => 'system/iconPaperPlane', 'text' => utils::datef($r['dateCreate']),
+          'class' => 'pull-right',
+          'type' => 'button',
+          'title' => $r['subject'],
+          'actionClass' => 'btn btn-info btn-xs',
+					'docAction' => 'edit', 'table' => 'wkf.core.issues', 'pk' => $r['ndx']
+			];
+      $data['HDR_'.$r['recNdx']]['wasteCode'][] = $item;
+		}
+	}
 
   public function subReportsList ()
 	{
