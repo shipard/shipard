@@ -107,7 +107,7 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
     array_push ($q, 'SELECT [rows].person, [rows].personOffice, [rows].wasteCodeNomenc, SUM([rows].quantityKG) as quantityKG,');
     array_push ($q, ' nomencItems.fullName, nomencItems.itemId,');
     array_push ($q, ' persons.fullName AS personFullName,');
-    array_push ($q, ' addrs.adrCity, addrs.adrStreet, addrs.id1,');
+    array_push ($q, ' addrs.adrSpecification, addrs.adrCity, addrs.adrZipCode, addrs.adrStreet, addrs.id1,');
 		array_push ($q, ' [heads].docNumber, [heads].dateAccounting');
 		array_push ($q, ' FROM e10pro_reports_waste_cz_returnRows AS [rows]');
     array_push ($q, ' LEFT JOIN [e10_base_nomencItems] AS nomencItems ON [rows].wasteCodeNomenc = nomencItems.ndx');
@@ -144,13 +144,29 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 					$id_icp_our = $di['identifier'];
 			}
 
-			$id_icp_theirs = ($r['id1'] != '') ? $r['id1'] : '1';
+			$ap = [];
+			if ($r['adrSpecification'] != '')
+				$ap[] = $r['adrSpecification'];
+			if ($r['adrStreet'] != '')
+				$ap[] = $r['adrStreet'];
+			if ($r['adrCity'] != '')
+				$ap[] = $r['adrCity'];
+			if ($r['adrZipCode'] != '')
+				$ap[] = $r['adrZipCode'];
+
+				$id_icp_theirs = ($r['id1'] != '') ? $r['id1'] : '1';
+				$id_icp_theirs_text = [
+					['text' => 'IČP: '.$id_icp_theirs, 'class' => ''],
+					['text' => implode(', ', $ap), 'class' => 'e10-small break']
+				];
+
 			$sumRowId = $wasteCode.'-'.$id_icp_our.'-'.$id_icz_our.'-'.$id_icp_theirs;
 			if (!isset($this->sumData[$sumRowId]))
 			{
 				$this->sumData[$sumRowId] = [
 					'weight' => 0, 'code' => $wasteCode, 'title' => $wasteName,
-					'icp_our' => $id_icp_our, 'icz_our' => $id_icz_our, 'icp_theirs' => $id_icp_theirs
+					'icp_our' => $id_icp_our, 'icz_our' => $id_icz_our,
+					'icp_theirs' => $id_icp_theirs_text
 				];
 			}
 			$this->sumData[$sumRowId]['weight'] += $quantity;
@@ -167,7 +183,7 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 		}
 
 		$headerSum = [
-			'icp_our' => 'Naše IČP', 'icz_our' => 'Naše IČZ', 'icp_theirs' => 'VAŠE IČP',
+			'icp_our' => 'Naše IČP', 'icz_our' => 'Naše IČZ', 'icp_theirs' => 'VAŠE IČP/ORP',
 			'code' => 'Kód odpadu', 'title' => 'Název', 'weight' => '+Hmotnost [t]'
 		];
 
