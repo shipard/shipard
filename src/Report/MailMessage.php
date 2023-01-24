@@ -31,6 +31,9 @@ class MailMessage extends \Shipard\Base\Utility
 	var $emailSent = FALSE;
 	var $reportPrinted = FALSE;
 
+	var $outboxLinkId = '';
+
+
 	public function addAttachment ($fullFileName, $baseFileName, $mimetype)
 	{
 		$this->attachments[] = ['fullFileName' => $fullFileName, 'baseFileName' => $baseFileName, 'mimetype' => $mimetype];
@@ -111,6 +114,7 @@ class MailMessage extends \Shipard\Base\Utility
 			'structVersion' => $tableIssues->currentStructVersion,
 			'source' => 1,
 			'section' => $sectionNdx, 'issueKind' => $issueKindNdx,
+			'linkId' => $this->outboxLinkId,
 			'docState' => 4000, 'docStateMain' => 2,
 		];
 

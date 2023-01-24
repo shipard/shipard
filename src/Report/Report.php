@@ -54,6 +54,8 @@ class Report extends \Shipard\Base\BaseObject
 	public $paperOrientation = 'portrait';
 	public $paperMargin = '1cm';
 
+	var $outboxLinkId = '';
+
 	protected $registeredImages = [];
 
 	public $info = [];
