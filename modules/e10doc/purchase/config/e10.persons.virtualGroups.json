@@ -5,5 +5,12 @@
 			"virtualGroupItem": "Rok"
 		},
 		"classId": "e10doc.purchase.libs.PersonsVGWasteSuppliers"
+	},
+	"e10doc-wasteCustomers": {
+		"name": "Odběratelé odpadů",
+		"queryColumns": {
+			"virtualGroupItem": "Rok"
+		},
+		"classId": "e10doc.purchase.libs.PersonsVGWasteCustomers"
 	}
 }
