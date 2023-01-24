@@ -110,6 +110,7 @@ class SendFormReportWizard extends \Shipard\Form\Wizard
 	{
 		$documentTable = $this->app()->table ($this->recData['documentTable']);
 
+		/** @var \Shipard\Report\FormReport */
 		$report = $documentTable->getReportData ($this->recData['reportClass'], $this->recData['documentNdx']);
 		foreach ($this->recData as $param => $value)
 		{
@@ -128,6 +129,7 @@ class SendFormReportWizard extends \Shipard\Form\Wizard
 		$msg->setSubject($this->recData['subject']);
 		$msg->setBody($this->recData['text']);
 		$msg->setDocument ($this->recData['documentTable'], $this->recData['documentNdx'], $report);
+		$msg->outboxLinkId = $report->outboxLinkId;
 
 		$attachmentFileName = utils::safeChars($report->createReportPart ('fileName'));
 		if ($attachmentFileName === '')
