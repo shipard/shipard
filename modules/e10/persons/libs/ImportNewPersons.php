@@ -101,8 +101,6 @@ class ImportNewPersons extends Utility
     $this->db()->query('DELETE FROM e10_persons_personsBA');
 
 
-    $sql = "SELECT * FROM [e10_base_properties] where [tableid] = %s AND [property] = %s AND [valueString] = %s ORDER BY [ndx] LIMIT 0, 1";
-
     $q = [];
     array_push($q, 'SELECT * FROM [e10_base_properties]');
     array_push($q, ' WHERE tableid = %s', 'e10.persons.persons');
@@ -128,8 +126,31 @@ class ImportNewPersons extends Utility
     }
   }
 
+  public function cleanOldBankAccounts()
+  {
+    $q = [];
+    array_push($q, 'DELETE FROM [e10_base_properties]');
+    array_push($q, ' WHERE tableid = %s', 'e10.persons.persons');
+    array_push($q, ' AND [property] = %s', 'bankaccount');
+    $this->db()->query($q);
+  }
+
 	public function run ()
 	{
     $this->importAddress();
 	}
+
+  public function postUpdateConfig(&$newConfig)
+  {
+    // $testNewPersons = intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
+    $doIt = intval($newConfig ['options']['persons']['testNewPersons'] ?? 0);
+    if (!$doIt)
+      return;
+
+    $newConfig ['dataModel']['tables']['e10doc.core.heads']['cols']['otherAddress1']['reference'] = 'e10.persons.personsContacts';
+    $newConfig ['dataModel']['tables']['e10doc.core.heads']['cols']['otherAddress1']['comboViewer'] = 'combo';
+
+    unset($newConfig ['e10']['base']['propertiesGroups']['payments']);
+    unset($newConfig ['e10']['base']['properties']['bankaccount']);
+  }
 }

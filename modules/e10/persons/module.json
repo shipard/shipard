@@ -27,6 +27,7 @@
 		{"id": "+e10.persons.keyTypes", "file": "e10.persons.keyTypes.json"},
 		{"id": "+e10.persons.categories.types", "file": "e10.persons.categoriesTypes.json"},
 		{"id": "+e10.persons.accountTypes", "file": "accountTypes.json"},
-		{"id": "+e10.persons.contactsIds", "file": "contactsIds.json"}
+		{"id": "+e10.persons.contactsIds", "file": "contactsIds.json"},
+		{"id": "+system.postUpdateConfig", "file": "postUpdateConfig.json"}
   ]
 }
