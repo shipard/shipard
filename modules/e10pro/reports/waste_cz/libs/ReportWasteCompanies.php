@@ -130,7 +130,8 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
   {
     $q = [];
 
-    array_push ($q, 'SELECT [rows].person, [rows].personOffice, [rows].wasteCodeNomenc, [rows].[dir], SUM([rows].quantityKG) as quantityKG,');
+    array_push ($q, 'SELECT [rows].person, [rows].personOffice, [rows].wasteCodeNomenc, [rows].[dir], [rows].[addressMode], [rows].[nomencCity],');
+    array_push ($q, ' SUM([rows].quantityKG) as quantityKG,');
     array_push ($q, ' nomencItems.fullName, nomencItems.itemId,');
     array_push ($q, ' persons.fullName AS personFullName,');
     array_push ($q, ' addrs.adrCity, addrs.adrStreet, addrs.id1');
@@ -145,8 +146,15 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
       array_push ($q, ' AND [rows].[dateAccounting] >= %d', $this->periodBegin);
     if ($this->periodEnd)
       array_push ($q, ' AND [rows].[dateAccounting] <= %d', $this->periodEnd);
-		array_push ($q, ' GROUP BY [rows].person, [rows].personOffice, [rows].[dir], wasteCodeNomenc');
+		array_push ($q, ' GROUP BY [rows].person, [rows].addressMode, [rows].personOffice, [rows].nomencCity, [rows].[dir], wasteCodeNomenc');
     array_push ($q, ' ORDER BY persons.fullName, addrs.id1, wasteCodeNomenc');
+
+
+/*
+		{"id": "addressMode", "name": "Typ adresy", "type": "enumInt",
+			"enumValues": {"0": "Provozovna", "1": "ORP"}},
+    {"id": "nomencCity", "name": "Obec", "type": "int", "reference": "e10.base.nomencItems", "comboViewer": "addressNomencCity"}
+*/
 
     $lastPerson = -1;
 		$rows = $this->app->db()->query ($q);
@@ -234,15 +242,25 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
       elseif ($r['dir'] == WasteReturnEngine::rowDirOut)
         $data[$wcId]['quantityOut'] = $r['quantityKG'];
 
-      if ($r['id1'] && $r['id1'] !== '')
-      {
-        $data[$wcId]['id1'] = [
-          ['text' => 'IČP: ', 'class' => ''],
-          ['text' => $r['id1'], 'docAction' => 'edit', 'pk' => $r['personOffice'], 'table' => 'e10.persons.personsContacts', 'class' => ''],
-        ];
-        $data[$wcId]['id1'][1]['suffix'] = $r['adrStreet'].', '.$r['adrCity'];
+      if ($r['addressMode'] === 0)
+      { // office
+        if ($r['id1'] && $r['id1'] !== '')
+        {
+          $data[$wcId]['id1'] = [
+            ['text' => 'IČP: ', 'class' => ''],
+            ['text' => $r['id1'], 'docAction' => 'edit', 'pk' => $r['personOffice'], 'table' => 'e10.persons.personsContacts', 'class' => ''],
+          ];
+          $data[$wcId]['id1'][1]['suffix'] = $r['adrStreet'].', '.$r['adrCity'];
+        }
       }
-			//$data[] = $item;
+      else
+      { // city
+        $nomencCityRecData = $this->app()->loadItem($r['nomencCity'], 'e10.base.nomencItems');
+        $data[$wcId]['id1'] = [
+          ['text' => 'ORP: '.substr($nomencCityRecData['itemId'], 2), 'class' => ''],
+        ];
+        $data[$wcId]['id1'][0]['suffix'] = $nomencCityRecData['fullName'];
+      }
 
       $lastPerson = $r['person'];
 		}

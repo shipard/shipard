@@ -43,13 +43,13 @@ class WasteReturnEngine extends Utility
 
 		array_push ($q, ' [rows].item AS item, [rows].unit AS unit, [rows].quantity, [rows].itemType, [rows].taxBase, [rows].document,');
 		array_push ($q, ' heads.docNumber as docNumber, heads.dateAccounting as dateAccounting, heads.warehouse as warehouse,');
-    array_push ($q, ' heads.docType AS docType, heads.cashBoxDir AS cashBoxDir, heads.personType, heads.person, heads.otherAddress1, heads.deliveryAddress');
+    array_push ($q, ' heads.docType AS docType, heads.cashBoxDir AS cashBoxDir, heads.personType, heads.person,');
+    array_push ($q, ' heads.otherAddress1,  heads.otherAddress1Mode, heads.deliveryAddress, heads.personNomencCity');
 		array_push ($q, ' FROM e10doc_core_rows AS [rows]');
 		array_push ($q, ' LEFT JOIN e10doc_core_heads AS heads ON [rows].document = heads.ndx');
 		array_push ($q, ' LEFT JOIN e10_persons_persons AS persons ON heads.person = persons.ndx');
 		array_push ($q, ' LEFT JOIN e10_persons_personsContacts AS offices ON heads.otherAddress1 = offices.ndx');
 		array_push ($q, ' WHERE  1');
-
     array_push ($q, ' AND [rows].rowType = %i', 0);
     array_push ($q, ' AND [heads].docType = %s', $docType);
     array_push ($q, ' AND [heads].docState = %i', 4000);
@@ -94,12 +94,19 @@ class WasteReturnEngine extends Utility
 
         'person' => $r['person'],
         'personType' => $r['personType'],
-        'personOffice' => intval($r['otherAddress1']),
+        'addressMode' => $r['otherAddress1Mode'],
       ];
 
       if ($newRow['personType'] === 1)
       { // human
         $newRow['personOffice'] = intval($r['deliveryAddress']);
+      }
+      else
+      { // company
+        if ($r['otherAddress1Mode'] === 0)
+          $newRow['personOffice'] = intval($r['otherAddress1']); // office
+        else
+          $newRow['nomencCity'] = intval($r['personNomencCity']); // city
       }
 
       //if (!$newRow['wasteCodeText'] || $newRow['wasteCodeText'] === '')

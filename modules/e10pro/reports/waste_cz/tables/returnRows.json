@@ -21,7 +21,10 @@
 		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
     {"id": "personOffice", "name": "Provozovna", "type": "int", "reference": "e10.persons.personsContacts"},
 		{"id": "personType", "name": "Typ osoby", "type": "enumInt",
-			"enumValues": {"0": "", "1": "Člověk", "2": "Firma"}}
+			"enumValues": {"0": "", "1": "Člověk", "2": "Firma"}},
+		{"id": "addressMode", "name": "Typ adresy", "type": "enumInt",
+			"enumValues": {"0": "Provozovna", "1": "ORP"}},
+    {"id": "nomencCity", "name": "Obec", "type": "int", "reference": "e10.base.nomencItems", "comboViewer": "addressNomencCity"}
 	],
 	"options": ["systemTable"]
 }

@@ -64,7 +64,6 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 			$this->data['periodNameL'] = 'období';
 			$this->data['periodValue'] = Utils::datef($this->periodBegin, '%d').' - '.Utils::datef($this->periodEnd, '%d');
 		}
-
 	}
 
 	public function loadData ()
@@ -108,7 +107,8 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
     array_push ($q, ' nomencItems.fullName, nomencItems.itemId,');
     array_push ($q, ' persons.fullName AS personFullName,');
     array_push ($q, ' addrs.adrSpecification, addrs.adrCity, addrs.adrZipCode, addrs.adrStreet, addrs.id1,');
-		array_push ($q, ' [heads].docNumber, [heads].dateAccounting');
+		array_push ($q, ' [rows].[addressMode], [rows].[nomencCity],');
+		array_push ($q, ' [heads].docNumber, [heads].dateAccounting, [heads].otherAddress1Mode, [heads].personNomencCity');
 		array_push ($q, ' FROM e10pro_reports_waste_cz_returnRows AS [rows]');
     array_push ($q, ' LEFT JOIN [e10_base_nomencItems] AS nomencItems ON [rows].wasteCodeNomenc = nomencItems.ndx');
     array_push ($q, ' LEFT JOIN [e10_persons_personsContacts] AS addrs ON [rows].personOffice = addrs.ndx');
@@ -122,7 +122,7 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
       array_push ($q, ' AND [rows].[dateAccounting] >= %d', $this->periodBegin);
     if ($this->periodEnd)
       array_push ($q, ' AND [rows].[dateAccounting] <= %d', $this->periodEnd);
-		array_push ($q, ' GROUP BY [heads].docNumber, [rows].person, [rows].personOffice, wasteCodeNomenc');
+		array_push ($q, ' GROUP BY [heads].docNumber, [rows].person, [rows].[addressMode], [rows].personOffice, [rows].nomencCity, wasteCodeNomenc');
     array_push ($q, ' ORDER BY persons.fullName, addrs.id1, wasteCodeNomenc');
 
 		$rows = $this->app->db()->query ($q);
@@ -154,11 +154,23 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 			if ($r['adrZipCode'] != '')
 				$ap[] = $r['adrZipCode'];
 
+			if ($r['addressMode'] === 0)
+			{ // office
 				$id_icp_theirs = ($r['id1'] != '') ? $r['id1'] : '1';
 				$id_icp_theirs_text = [
 					['text' => 'IČP: '.$id_icp_theirs, 'class' => ''],
 					['text' => implode(', ', $ap), 'class' => 'e10-small break']
 				];
+			}
+			else
+			{ // city
+        $nomencCityRecData = $this->app()->loadItem($r['nomencCity'], 'e10.base.nomencItems');
+				$id_icp_theirs = $nomencCityRecData['itemId'];
+				$id_icp_theirs_text = [
+					['text' => 'ORP: '.substr($nomencCityRecData['itemId'], 2), 'class' => ''],
+					['text' => $nomencCityRecData['fullName'], 'class' => 'e10-small break']
+				];
+			}
 
 			$sumRowId = $wasteCode.'-'.$id_icp_our.'-'.$id_icz_our.'-'.$id_icp_theirs;
 			if (!isset($this->sumData[$sumRowId]))

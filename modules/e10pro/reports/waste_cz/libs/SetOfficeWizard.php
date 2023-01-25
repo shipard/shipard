@@ -77,6 +77,7 @@ class SetOfficeWizard extends Wizard
     array_push($q, ' WHERE [person] = %i', $personNdx);
     array_push($q, ' AND [dateAccounting] >= %d', '2022-01-01');
     array_push($q, ' AND [docType] IN %in', ['purchase']);
+		array_push($q, ' AND [otherAddress1Mode] = %i', 0);
 		if (!$resetAllPurchases)
     	array_push($q, ' AND ([otherAddress1] IS NULL OR [otherAddress1] = %i)', 0);
     $rows = $this->app()->db()->query($q);
@@ -91,4 +92,3 @@ class SetOfficeWizard extends Wizard
 		$this->stepResult ['close'] = 1;
 	}
 }
-
