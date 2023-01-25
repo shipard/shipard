@@ -227,7 +227,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
         $data['HDR_'.$r['person']] = $header;
       }
 
-      $wcId = 'W-'.$r['person'].'-'.$r['wasteCodeNomenc'];
+      $wcId = 'W-'.$r['person'].'-'.$r['wasteCodeNomenc'].'-'.$r['addressMode'].'-'.$r['personOffice'].'-'.$r['nomencCity'];
 
       if (!isset($data[$wcId]))
       {

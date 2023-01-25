@@ -97,13 +97,16 @@ class WasteReturnEngine extends Utility
         'addressMode' => $r['otherAddress1Mode'],
       ];
 
+      if ($rowDir === self::rowDirOut)
+        $newRow['addressMode'] = 0;
+
       if ($newRow['personType'] === 1)
       { // human
         $newRow['personOffice'] = intval($r['deliveryAddress']);
       }
       else
       { // company
-        if ($r['otherAddress1Mode'] === 0)
+        if ($r['otherAddress1Mode'] == 0)
           $newRow['personOffice'] = intval($r['otherAddress1']); // office
         else
           $newRow['nomencCity'] = intval($r['personNomencCity']); // city
