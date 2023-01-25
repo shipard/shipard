@@ -62,6 +62,32 @@ class CfgManager
 		$this->dataModel = new \Shipard\Application\DataModel();
 	}
 
+	public function createObject ($class)
+	{
+		$fullClassName = $class;
+		if (strstr ($class, '.') !== FALSE)
+		{
+			$parts = explode ('.', $class);
+			$className = array_pop ($parts);
+			$moduleFileName = __SHPD_MODULES_DIR__ . implode ('/', $parts) . '/' . end($parts) . '.php';
+			if (!is_file ($moduleFileName))
+				$moduleFileName = __SHPD_MODULES_DIR__ . strtolower(implode('/', $parts)) . '/' . end($parts) . '.php';
+
+			if (is_file ($moduleFileName))
+				include_once ($moduleFileName);
+			$fullClassName = '\\' . implode ('\\', $parts) . '\\' . $className;
+		}
+
+		if (class_exists ($fullClassName))
+		{
+			$o = new $fullClassName ($this);
+			return $o;
+		}
+
+		error_log ('createObject failed for class ' . $class);
+		return NULL;
+	}
+
 	public function appCompileConfig ()
 	{
 		$this->createDataModel ();
@@ -267,6 +293,16 @@ class CfgManager
 				$newConfig ['dsMode'] = Application::dsmTesting;
 			else
 				$newConfig ['dsMode'] = Application::dsmProduction;
+		}
+
+
+		// -- post compile ops
+		if (isset($newConfig['system']['postUpdateConfig']))
+		{
+			foreach ($newConfig['system']['postUpdateConfig'] as $ucc)
+			$o = $this->createObject($ucc['classId']);
+			if ($o)
+				$o->postUpdateConfig($newConfig);
 		}
 
 		// -- base config dir
