@@ -376,6 +376,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 
 		array_push($q, ' AND linkId = %s', $linkId);
 		array_push($q, ' AND recNdx IN %in', $this->persons);
+    array_push($q, ' AND docStateMain = %i', 2);
 		array_push($q, ' ORDER BY [dateCreate]');
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
