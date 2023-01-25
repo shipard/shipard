@@ -91,7 +91,7 @@ class SumTablePersonAnalysis extends SumTable
 	{
 		$personNdx = intval($this->queryParams['person_ndx']);
 
-		$fyscalYears = $this->app->cfgItem ('e10doc.acc.periods');
+		$fyscalYears = array_reverse($this->app->cfgItem ('e10doc.acc.periods'), TRUE);
 		foreach ($fyscalYears as $fpId => $fp)
 		{
 			$fiscalYear = intval($fpId);
