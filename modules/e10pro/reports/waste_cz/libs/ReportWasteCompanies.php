@@ -178,7 +178,6 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 
         $header['wasteCode'][] = [
           'text' => 'Načíst provozovny', 'type' => 'action', 'action' => 'addwizard', 'icon' => 'user/wifi',
-          'title' => 'Načíst provozovny',
           'class' => 'pull-right',
           'btnClass' => 'btn btn-xs btn-primary pull-right',
           'data-class' => 'e10.persons.libs.register.AddOfficesWizard',
@@ -189,12 +188,11 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 
         $header['wasteCode'][] = [
           'text' => 'Nastavit provozovnu', 'type' => 'action', 'action' => 'addwizard', 'icon' => 'system/personCompany',
-          'title' => 'Načíst provozovny',
           'class' => 'pull-right',
           'btnClass' => 'btn btn-xs btn-success pull-right',
           'data-class' => 'e10pro.reports.waste_cz.libs.SetOfficeWizard',
           'table' => 'e10.persons.persons',
-          'data-addparams' => 'personNdx='.$r['person'],
+          'data-addparams' => 'personNdx='.$r['person'].'&dir='.$r['dir'],
           //'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid,
         ];
 
@@ -396,10 +394,10 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 
   function loadSendedReports (&$data, $dir)
 	{
-    if ($dir !== WasteReturnEngine::rowDirIn)
-      return;
-
-    $linkId = 'waste-suppliers-'.$this->calendarYear;
+    if ($dir == WasteReturnEngine::rowDirIn)
+      $linkId = 'waste-suppliers-'.$this->calendarYear;
+    else
+      $linkId = 'waste-cust-'.$this->calendarYear;
 
 		/** @var \wkf\core\TableIssues */
 		$tableIssues = $this->app()->table ('wkf.core.issues');

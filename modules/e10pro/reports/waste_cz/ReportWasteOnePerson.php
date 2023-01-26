@@ -85,7 +85,11 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 		$this->loadDataPerson('person');
 
 		$this->initParams();
-		$this->outboxLinkId = 'waste-suppliers-'.$this->calendarYear;
+
+		if ($this->dir === WasteReturnEngine::rowDirIn)
+			$this->outboxLinkId = 'waste-suppliers-'.$this->calendarYear;
+		else
+			$this->outboxLinkId = 'waste-cust-'.$this->calendarYear;
 
 		$tablePersons = $this->app->table ('e10.persons.persons');
 

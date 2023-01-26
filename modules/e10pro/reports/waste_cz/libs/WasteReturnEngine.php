@@ -53,12 +53,14 @@ class WasteReturnEngine extends Utility
     array_push ($q, ' AND [rows].rowType = %i', 0);
     array_push ($q, ' AND [heads].docType = %s', $docType);
     array_push ($q, ' AND [heads].docState = %i', 4000);
-    array_push ($q, ' AND [heads].dateAccounting >= %d', $this->dateBegin);
-    array_push ($q, ' AND [heads].dateAccounting <= %d', $this->dateEnd);
 
     if ($this->documentNdx)
       array_push ($q, ' AND [rows].[document] = %i', $this->documentNdx);
-
+    else
+    {
+      array_push ($q, ' AND [heads].dateAccounting >= %d', $this->dateBegin);
+      array_push ($q, ' AND [heads].dateAccounting <= %d', $this->dateEnd);
+    }
     array_push ($q, ' ORDER BY [heads].[docNumber]');
 
     $cnt = 0;
@@ -80,7 +82,7 @@ class WasteReturnEngine extends Utility
       //  echo "\n".'* '.$r['docNumber'].': '.json_encode($rowDestData['rowItemCodesData'][$this->wasteItemCodeNdx])."\n";
 
       $newRow = [
-        'calendarYear' => $this->year,
+        'calendarYear' => intval($r['dateAccounting']->format('Y')),
         'item' => $r['item'],
         'dir' => $rowDir,
         'wasteCodeText' => $rowDestData['rowItemCodesData'][$this->wasteItemCodeNdx]['itemCodeText'],
@@ -151,9 +153,6 @@ class WasteReturnEngine extends Utility
   public function resetDocument($documentNdx)
   {
     $this->documentNdx = $documentNdx;
-
-    $this->dateBegin = $this->year.'-01-01';
-    $this->dateEnd = $this->year.'-12-31';
 
     $this->tableHeads = $this->app->table ('e10doc.core.heads');
 
