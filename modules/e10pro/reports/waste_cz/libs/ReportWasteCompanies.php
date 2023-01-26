@@ -221,6 +221,27 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
           ];
           $header['wasteCode'][] = $btn;
         }
+        elseif ($dir === WasteReturnEngine::rowDirOut)
+        {
+          $btn = ['type' => 'action', 'action' => 'print', 'style' => 'print', 'icon' => 'system/actionPrint', 'text' => 'Přehled',
+            'data-report' => 'e10pro.reports.waste_cz.ReportWasteOnePersonOut',
+            'data-table' => 'e10.persons.persons', 'data-pk' => $r['person'],
+            'data-param-period-begin' => $this->periodBegin->format('Y-m-d'),
+            'data-param-period-end' => $this->periodEnd->format('Y-m-d'),
+            'data-param-calendar-year' => strval($this->calendarYear),
+            'actionClass' => 'btn-xs', 'class' => 'pull-right'];
+          $btn['subButtons'] = [];
+          $btn['subButtons'][] = [
+            'type' => 'action', 'action' => 'addwizard', 'icon' => 'system/iconEmail', 'title' => 'Odeslat emailem', 'btnClass' => 'btn-default btn-xs',
+            'data-table' => 'e10.persons.persons', 'data-pk' => $r['person'],
+            'data-param-period-begin' => $this->periodBegin->format('Y-m-d'),
+            'data-param-period-end' => $this->periodEnd->format('Y-m-d'),
+            'data-param-calendar-year' => strval($this->calendarYear),
+            'data-class' => 'Shipard.Report.SendFormReportWizard',
+            'data-addparams' => 'reportClass=' . 'e10pro.reports.waste_cz.ReportWasteOnePersonOut' . '&documentTable=' . 'e10.persons.persons'
+          ];
+          $header['wasteCode'][] = $btn;
+        }
 
         $header['_options']['beforeSeparator'] = 'separator';
 

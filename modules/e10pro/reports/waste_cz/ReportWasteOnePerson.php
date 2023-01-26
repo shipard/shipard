@@ -2,6 +2,7 @@
 namespace e10pro\reports\waste_cz;
 
 use \Shipard\Utils\Utils;
+use \e10pro\reports\waste_cz\libs\WasteReturnEngine;
 
 /**
  * class ReportWasteOnePerson
@@ -12,8 +13,13 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 	var $periodBegin = NULL;
   var $periodEnd = NULL;
 
+	var $dir = WasteReturnEngine::rowDirIn;
+
 	var $sumData = [];
 	var $itemsData = [];
+
+	var $periodTitleYearBegin = 'Celková množství odpadů, které jsme odebrali v roce ';
+	var $periodTitlePeriodBegin = 'Celková množství odpadů, které jsme odebrali od ';
 
 	function init ()
 	{
@@ -116,7 +122,7 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 		array_push ($q, ' LEFT JOIN [e10doc_core_heads] AS heads ON [rows].document = heads.ndx');
 		array_push ($q, ' WHERE 1');
 		array_push ($q, ' AND [rows].personType = %i', 2);
-    array_push ($q, ' AND [rows].[dir] = %i', 0);
+    array_push ($q, ' AND [rows].[dir] = %i', $this->dir);
 		array_push ($q, ' AND [rows].[person] = %i', $this->recData ['ndx']);
     if ($this->periodBegin)
       array_push ($q, ' AND [rows].[dateAccounting] >= %d', $this->periodBegin);
@@ -202,11 +208,11 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 		$periodTitle = '';
 		if ($this->calendarYear)
 		{
-			$periodTitle = 'Celková množství odpadů, které jsme odebrali v roce '.$this->calendarYear;
+			$periodTitle = $this->periodTitleYearBegin.$this->calendarYear;
 		}
 		else
 		{
-			$periodTitle = 'Celková množství odpadů, které jsme odebrali od '.Utils::datef($this->periodBegin, '%d').' do '.Utils::datef($this->periodEnd, '%d');
+			$periodTitle = $this->periodTitlePeriodBegin.Utils::datef($this->periodBegin, '%d').' do '.Utils::datef($this->periodEnd, '%d');
 		}
 
 		$this->data['sumRows'] = [
