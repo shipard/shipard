@@ -28,7 +28,7 @@
 		{"id": "linkId", "name": "Spojovací Id", "type": "string", "len": 40},
 		{"id": "personRequest", "name": "ID požadavku", "type": "int", "reference": "e10.persons.requests"},
     {"id": "deliveryAddress", "name": "Doručovací adresa", "type": "int", "reference": "e10.persons.address"},
-	  {"id": "otherAddress1", "name": "Další adresa 1", "type": "int", "reference": "e10.persons.address"},
+	  {"id": "otherAddress1", "name": "Provozovna", "type": "int", "reference": "e10.persons.address"},
 	  {"id": "otherAddress2", "name": "Další adresa 2", "type": "int", "reference": "e10.persons.address"},
 
 		{"id": "otherAddress1Mode", "name": "Mód další adresy 1", "type": "enumInt",

@@ -3996,6 +3996,15 @@ class FormHeads extends TableForm
 			return $cp;
 		}
 
+		if ($srcTableId === 'e10doc.core.heads' && $srcColumnId === 'otherAddress1')
+		{
+			$cp = [
+				'personNdx' => strval ($allRecData ['recData']['person'])
+			];
+
+			return $cp;
+		}
+
 		if ($srcTableId === 'e10doc.core.heads' && $srcColumnId === 'personNomencCity')
 		{
 			$level = ($recData['docType'] === 'purchase' && $recData['personType'] == 2) ? 1 : 2;
