@@ -324,6 +324,9 @@ class TableHeads extends DbTable
 		if ($this->app()->model()->table ('e10doc.debs.journal') !== FALSE)
 			$this->doAccounting ($recData);
 
+		if ($this->app()->model()->table ('e10pro.reports.waste_cz.returnRows') !== FALSE)
+			$this->doWaste ($recData);
+
 		$this->doTaxReports($recData);
 		$this->doRos($recData);
 		$this->doInbox($recData);
@@ -1216,6 +1219,16 @@ class TableHeads extends DbTable
 
 		$rosEngine = $this->app()->createObject($rosType['engine']);
 		$rosEngine->doDocument ($rosRegNdx, $recData);
+	}
+
+	public function doWaste (&$recData)
+	{
+		if ($recData['docType'] !== 'purchase' && $recData['docType'] !== 'invno')
+			return;
+
+		$wre = new \e10pro\reports\waste_cz\libs\WasteReturnEngine($this->app);
+		$wre->year = intval(Utils::createDateTime($recData['dateAccounting'])->format('Y'));
+		$wre->resetDocument($recData['ndx']);
 	}
 
 	public function documentStates ($recData)

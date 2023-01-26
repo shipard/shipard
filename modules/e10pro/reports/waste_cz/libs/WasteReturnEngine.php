@@ -151,16 +151,16 @@ class WasteReturnEngine extends Utility
   public function resetDocument($documentNdx)
   {
     $this->documentNdx = $documentNdx;
-    $this->year = 2022;
 
     $this->dateBegin = $this->year.'-01-01';
     $this->dateEnd = $this->year.'-12-31';
 
     $this->tableHeads = $this->app->table ('e10doc.core.heads');
 
-    $this->db()->query('DELETE FROM [e10pro_reports_waste_cz_returnRows] WHERE [calendarYear] = %i', $this->year, ' AND [document] = %i', $this->documentNdx);
+    $this->db()->query('DELETE FROM [e10pro_reports_waste_cz_returnRows] WHERE [document] = %i', $this->documentNdx);
 
     $this->addPurchases();
+    $this->addInvoicesOut();
   }
 
   public function run()

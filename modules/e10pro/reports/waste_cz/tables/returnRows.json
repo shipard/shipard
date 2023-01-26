@@ -26,5 +26,8 @@
 			"enumValues": {"0": "Provozovna", "1": "ORP"}},
     {"id": "nomencCity", "name": "Obec", "type": "int", "reference": "e10.base.nomencItems", "comboViewer": "addressNomencCity"}
 	],
-	"options": ["systemTable"]
+	"options": ["systemTable"],
+	"indexes": [
+		{"id": "doc", "columns": ["document"]}
+	]
 }
