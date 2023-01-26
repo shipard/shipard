@@ -3,7 +3,7 @@
 <head>
 	<title>test</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v289" type="text/css"/>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v291" type="text/css"/>
 	<link rel="stylesheet" href="{{dsUrl}}www-root/sc/icons/fa/5/css/all.min.css">
 </head>
 <body>
@@ -114,6 +114,80 @@
 				<b>{{@dict;dataItem:name}}:</b> {{value}}
 			{{/data.person_identifiers}}
 		</td>
+	</tr>
+</table>
+
+<table class="additionalAddresses">
+	<tr>
+		{{#data.flags.usePersonsAddress}}
+			{{#data.flags.useAddressOwnerOffice}}
+				<td>
+					<span class='hdr'>{{@dict;Provozovna dodavatele}}:</span>
+					<span class='address'>
+							{{#data.personsAddress.ownerOffice.specification}}
+								{{data.personsAddress.ownerOffice.specification}}<br/>
+							{{/data.personsAddress.ownerOffice.specification}}
+							{{data.personsAddress.ownerOffice.street}}<br/>
+							{{^data.flags.foreignCountry}}
+								{{data.personsAddress.ownerOffice.zipcode}} {{data.personsAddress.ownerOffice.city}}<br/>
+							{{/data.flags.foreignCountry}}
+							{{#data.flags.foreignCountry}}
+								{{data.personsAddress.ownerOffice.zipcode}} {{data.personsAddress.ownerOffice.city}}<br/>
+								{{data.personsAddress.ownerOffice.countryNameEng}}
+							{{/data.flags.foreignCountry}}
+					</span>
+
+					{{#data.personsAddress.ownerOffice.ids}}
+						<b>{{title}}:</b> {{value}}
+					{{/data.personsAddress.ownerOffice.ids}}
+
+				</td>
+			{{/data.flags.useAddressOwnerOffice}}
+
+			{{#data.flags.useAddressPersonDelivery}}
+				<td>
+					<span class='hdr'>{{@dict;Doručovací adresa}}:</span>
+					<span class='address'>
+						{{#data.personsAddress.deliveryAddress.specification}}
+							{{data.personsAddress.deliveryAddress.specification}}<br/>
+						{{/data.personsAddress.deliveryAddress.specification}}
+						{{data.personsAddress.deliveryAddress.street}}<br/>
+						{{^data.flags.foreignCountry}}
+							{{data.personsAddress.deliveryAddress.zipcode}} {{data.personsAddress.deliveryAddress.city}}<br/>
+						{{/data.flags.foreignCountry}}
+						{{#data.flags.foreignCountry}}
+							{{data.personsAddress.deliveryAddress.zipcode}} {{data.personsAddress.deliveryAddress.city}}<br/>
+							{{data.personsAddress.deliveryAddress.countryNameEng}}
+						{{/data.flags.foreignCountry}}
+					</span>
+				</td>
+			{{/data.flags.useAddressPersonDelivery}}
+
+			{{#data.flags.useAddressPersonOffice}}
+				<td>
+					<span class='hdr'>{{@dict;Provozovna odběratele}}:</span>
+					<span class='address'>
+						{{#data.personsAddress.personOffice.specification}}
+							{{data.personsAddress.personOffice.specification}}<br/>
+						{{/data.personsAddress.personOffice.specification}}
+						{{data.personsAddress.personOffice.street}}<br/>
+						{{^data.flags.foreignCountry}}
+							{{data.personsAddress.personOffice.zipcode}} {{data.personsAddress.personOffice.city}}<br/>
+						{{/data.flags.foreignCountry}}
+						{{#data.flags.foreignCountry}}
+							{{data.personsAddress.personOffice.zipcode}} {{data.personsAddress.personOffice.city}}<br/>
+							{{data.personsAddress.personOffice.countryNameEng}}
+						{{/data.flags.foreignCountry}}
+					</span>
+
+					{{#data.personsAddress.personOffice.ids}}
+						<b>{{title}}:</b> {{value}}
+					{{/data.personsAddress.personOffice.ids}}
+
+				</td>
+			{{/data.flags.useAddressPersonOffice}}
+
+		{{/data.flags.usePersonsAddress}}
 	</tr>
 </table>
 
