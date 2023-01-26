@@ -15,6 +15,9 @@
 		{"id": "activitiesGroup", "name": "Skupina činností", "type": "enumString", "len": 10},
 	  {"id": "order", "name": "Pořadí", "type": "int"},
 
+		{"id": "usePersonsOffice", "name": "Zadávat provozovnu", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "Automaticky", "1": "Ne", "2": "Ano"}},
+
 		{"id": "emailSender", "name": "Odesílatel pro email", "type": "enumInt", "options": ["saveOnChange"],
 			"enumValues": {"0": "Výchozí nastavení", "1": "Osoba, která vystavila doklad", "2": "Konkrétní emailová adresa"}},
 		{"id": "emailFromAddress", "name": "Email odesílatele", "type": "string", "len": 60},

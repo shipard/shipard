@@ -55,7 +55,8 @@ class TableDocNumbers extends DbTable
 			$dbc = [
 					'ndx' => $r['ndx'], 'docKeyId' => $r ['docKeyId'], 'useDocKinds' => $r['useDocKinds'], 'docKind' => $r['docKind'],
 					'activitiesGroup' => $r['activitiesGroup'], 'name' => $r ['fullName'], 'shortName' => $r ['shortName'],
-					'tabName' => $r ['tabName'], 'emailSender' => $r['emailSender']
+					'tabName' => $r ['tabName'], 'emailSender' => $r['emailSender'],
+					'usePersonsOffice' => $r['usePersonsOffice']
 			];
 			if ($r['firstNumberSet'])
 			{
@@ -227,6 +228,7 @@ class FormDocNumber extends TableForm
 					if (isset($this->recData['useDocKinds']) && $this->recData['useDocKinds'] !== 0)
 						$this->addColumnInput ('docKind');
 					$this->addColumnInput ('activitiesGroup');
+					$this->addColumnInput ('usePersonsOffice');
 					$this->addColumnInput ('order');
 					$this->addColumnInput ('emailSender');
 					if (isset($this->recData['emailSender']) && $this->recData['emailSender'] == 2)

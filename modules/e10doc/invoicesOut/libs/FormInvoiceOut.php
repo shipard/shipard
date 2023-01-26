@@ -13,6 +13,9 @@ class FormInvoiceOut extends \E10Doc\Core\FormHeads
 		$paymentMethod = $this->table->app()->cfgItem ('e10.docs.paymentMethods.' . $this->recData['paymentMethod'], 0);
 		$useDocKinds = $this->useDocKinds();
 
+		$dbCounter = $this->table->app()->cfgItem ('e10.docs.dbCounters.'.$this->recData['docType'].'.'.$this->recData['dbCounter'], FALSE);
+		$usePersonOffice = intval($dbCounter['usePersonsOffice'] ?? 0);
+
 		$this->setFlag ('maximize', 1);
 		$this->setFlag ('sidebarPos', self::SIDEBAR_POS_RIGHT);
 
@@ -34,6 +37,8 @@ class FormInvoiceOut extends \E10Doc\Core\FormHeads
 
 						$this->layoutOpen (self::ltForm);
 							$this->addColumnInput ("person");
+							if ($usePersonOffice)
+								$this->addColumnInput ('otherAddress1');
 							$this->addColumnInput ("paymentMethod");
 
 							if ($paymentMethod ['cash'] || $this->recData['paymentMethod'] == 2)
