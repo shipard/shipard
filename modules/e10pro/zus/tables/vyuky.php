@@ -603,8 +603,7 @@ class FormVyuka extends TableForm
 			$tabs ['tabs'][] = ['text' => 'Studenti', 'icon' => 'iconStudents'];
 		$tabs ['tabs'][] = ['text' => 'Rozvrh', 'icon' => 'e10.widgetDashboard/timeTable'];
 		$tabs ['tabs'][] = ['text' => 'Studijní plán', 'icon' => 'reportStudyPlan'];
-		if ($this->recData['typ'] === 1)
-			$tabs ['tabs'][] = ['text' => 'Účinkování', 'icon' => 'formPerforming'];
+		$tabs ['tabs'][] = ['text' => 'Účinkování', 'icon' => 'formPerforming'];
 		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 		$this->openTabs ($tabs, TRUE);
@@ -659,12 +658,9 @@ class FormVyuka extends TableForm
 			$this->addInputMemo ('studijniPlan', NULL, TableForm::coFullSizeY);
 		$this->closeTab ();
 
-		if ($this->recData['typ'] === 1)
-		{
-			$this->openTab (TableForm::ltNone);
-				$this->addInputMemo ('ucinkovani', NULL, TableForm::coFullSizeY);
-			$this->closeTab ();
-		}
+		$this->openTab (TableForm::ltNone);
+			$this->addInputMemo ('ucinkovani', NULL, TableForm::coFullSizeY);
+		$this->closeTab ();
 
 		$this->openTab ();
 			$this->addColumnInput ('datumZahajeni');
