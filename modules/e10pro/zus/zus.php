@@ -2229,7 +2229,7 @@ class GenerovaniFakturPujcovneEngine extends \E10\Utility
 
 		$this->dateDue = sprintf ("%04d-10-31", $todayYear);
 		$beginDateStr = sprintf ("%04d-09-01", $todayYear);
-		$endDateStr = sprintf ("%04d-06-30", $todayYear + 1);
+		$endDateStr = sprintf ("%04d-08-31", $todayYear + 1);
 
 		$this->periodBegin = new \DateTime ($beginDateStr);
 		$this->periodEnd = new \DateTime ($endDateStr);
