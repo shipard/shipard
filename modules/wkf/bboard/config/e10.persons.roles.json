@@ -1,5 +1,5 @@
 {
-	"pwuser": {
+	"user": {
 		"viewers": {
 			"wkf.bboard.msgs": {"default": 2, "dashboardMsgs": 2, "msgsAll": 2},
 			"wkf.bboard.msgsAgenda": {"default": 2}
@@ -10,7 +10,8 @@
 			"wkf.bboard.bboards": {"default": 2}
 		},
 		"widgets": {
-			"wkf.bboard.libs.WidgetBBoards": 2
+			"wkf.bboard.libs.WidgetBBoards": 2,
+			"wkf.bboard.libs.WidgetBBoardOverview": 2
 		}
 	}
 }
