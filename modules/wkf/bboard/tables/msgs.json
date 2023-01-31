@@ -5,7 +5,7 @@
 		{"id": "bboard", "name": "Nástěnka", "type": "int", "reference": "wkf.bboard.bboards"},
 
 		{"id": "title", "name": "Titulek", "type": "string", "len": 120},
-		{"id": "text", "name": "Text", "type": "memo"},
+		{"id": "text", "name": "Text", "type": "memo", "comboClass": "lib.web.WebTextSidebar"},
 		{"id": "perex", "name": "Perex", "type": "memo"},
 
 		{"id": "author", "name": "Autor", "type": "int", "reference": "e10.persons.persons"},
