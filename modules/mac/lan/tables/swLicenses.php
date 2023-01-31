@@ -12,8 +12,6 @@ use \e10\base\libs\UtilsBase;
  */
 class TableSwLicenses extends DbTable
 {
-	var $classification;
-
 	public function __construct ($dbmodel)
 	{
 		parent::__construct ($dbmodel);
@@ -49,6 +47,7 @@ class TableSwLicenses extends DbTable
  */
 class ViewSwLicenses extends TableView
 {
+	var $classification;
 
 	public function init ()
 	{
@@ -141,7 +140,7 @@ class ViewSwLicenses extends TableView
 		if (!count ($this->pks))
 			return;
 
-		$this->classification = \E10\Base\loadClassification ($this->table->app(), $this->table->tableId(), $this->pks, 'label label-info pull-right');
+		$this->classification = UtilsBase::loadClassification ($this->table->app(), $this->table->tableId(), $this->pks, 'label label-info pull-right');
 	}
 
 	public function createPanelContentQry (TableViewPanel $panel)

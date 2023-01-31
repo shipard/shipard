@@ -127,7 +127,7 @@ class ViewSwApplications extends TableView
 		if (!count ($this->pks))
 			return;
 
-		$this->classification = \E10\Base\loadClassification ($this->table->app(), $this->table->tableId(), $this->pks, 'label label-info pull-right');
+		$this->classification = UtilsBase::loadClassification ($this->table->app(), $this->table->tableId(), $this->pks, 'label label-info pull-right');
 
 		// -- app install counters
 		$q = [];

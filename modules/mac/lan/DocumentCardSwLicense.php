@@ -1,8 +1,7 @@
 <?php
 
 namespace mac\lan;
-
-
+use \e10\base\libs\UtilsBase;
 use \e10\utils;
 
 /**
@@ -56,7 +55,7 @@ class DocumentCardSwLicense extends \e10\DocumentCard
 			$table[] = ['property' => 'Licenční číslo', 'value' => $this->recData['licenseNumber']];
 
 		// -- users
-		$linkedPersons = \E10\Base\linkedPersons ($this->app, $this->table, $this->recData['ndx']);
+		$linkedPersons = UtilsBase::linkedPersons ($this->app, $this->table, $this->recData['ndx']);
 		if (count($linkedPersons))
 			$table[] = ['property' => 'Uživatelé', 'value' => $linkedPersons];
 
