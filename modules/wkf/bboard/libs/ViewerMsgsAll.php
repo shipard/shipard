@@ -68,7 +68,6 @@ class ViewerMsgsAll extends TableView
   function renderPane (&$item)
 	{
 		$ndx = $item['ndx'];
-    $this->textRenderer->renderAsArticle ($item ['text'], $this->table);
 
     $item ['pane'] = ['class' => '__padd5 e10-pane e10-pane-row', 'title' => [], 'body' => []];
     $item ['pane']['class'] .= ' e10-ds '.$item ['docStateClass'];
@@ -85,7 +84,10 @@ class ViewerMsgsAll extends TableView
 
     $title[] = ['class' => 'df2-list-item-t1 h1 block', 'text' => $item['title'], 'icon' => /*$this->table->tableIcon($item)*/'system/iconFile'];
     if ($item['perex'] && $item['perex'] !== '')
-			$title[] = ['class' => 'block', 'text' => $item['perex']];
+		{
+			$this->textRenderer->renderAsArticle ($item ['perex'], $this->table);
+			$title[] = ['class' => 'block', 'code' => $this->textRenderer->code];
+		}
 
     if (!Utils::dateIsBlank($item['publishFrom']))
       $title[] = ['text' => utils::datef ($item['publishFrom'], '%D, %T'), '_icon' => 'system/iconUser', 'class' => 'label label-default'];
@@ -105,10 +107,22 @@ class ViewerMsgsAll extends TableView
       'pk' => $ndx, 'docAction' => 'edit', 'data-table' => 'wkf.bboard.msgs'
 		];
 
+		// -- render text
+		$this->textRenderer->renderAsArticle ($item ['text'], $this->table, $item['ndx']);
 		$item ['pane']['body'][] = [
 			'type' => 'text', 'subtype' => 'rawhtml', 'class' => 'padd5 bt1 e10-fs1r pageText',
 			'text' => $this->textRenderer->code,
 		];
+
+		// -- download
+		$files = \E10\Base\loadAttachments ($this->table->app(), [$ndx], $this->table->tableId());
+		if (isset($files[$ndx]) && $files[$ndx]['hasDownload'])
+		{
+			$item ['pane']['body'][] = [
+				'type' => 'attachments', 'attachments' => $files[$ndx], 'downloadOnly' => 1,
+				'downloadTitle' => 'Soubory ke stažení:', 'downloadClass' => 'mt1 padd5',
+			];
+		}
   }
 
 	public function selectRows ()
