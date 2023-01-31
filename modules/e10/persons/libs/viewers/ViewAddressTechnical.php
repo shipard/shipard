@@ -4,6 +4,7 @@ namespace e10\persons\libs\viewers;
 use \Shipard\Viewer\TableView;
 use \e10\base\libs\UtilsBase;
 use \Shipard\Utils\World;
+use \Shipard\Viewer\TableViewPanel;
 
 
 /**
@@ -25,6 +26,7 @@ class ViewAddressTechnical extends TableView
 		$this->setMainQueries();
 
 		parent::init();
+		$this->setPanels (TableView::sptQuery);
 	}
 
 	public function selectRows ()
@@ -49,6 +51,11 @@ class ViewAddressTechnical extends TableView
 			array_push ($q, ' OR [contacts].adrSpecification LIKE %s', '%'.$fts.'%');
 			array_push ($q, ')');
 		}
+
+		// -- query panel
+		$qv = $this->queryValues();
+		if (isset ($qv['fiscalPeriods']))
+			array_push ($q, ' AND EXISTS (SELECT ndx FROM e10doc_core_heads WHERE contacts.person = e10doc_core_heads.person AND [fiscalYear] IN %in', array_keys($qv['fiscalPeriods']), ')');
 
 		$this->queryMain ($q, '[contacts].', ['[systemOrder], [adrCity]', '[ndx]']);
 		$this->runQuery ($q);
@@ -148,5 +155,21 @@ class ViewAddressTechnical extends TableView
 	public function createToolbar ()
 	{
 		return [];
+	}
+
+	public function createPanelContentQry (TableViewPanel $panel)
+	{
+		$qry = [];
+
+		$periods = $this->app->cfgItem ('e10doc.acc.periods');
+		$periodsEnum = [];
+		forEach ($periods as $periodNdx => $periodCfg)
+			$periodsEnum[$periodNdx] = ['title' => $periodCfg['fullName'], 'id' => $periodNdx];
+
+		$paramsFiscalPeriods = new \E10\Params ($panel->table->app());
+		$paramsFiscalPeriods->addParam ('checkboxes', 'query.fiscalPeriods', ['items' => $periodsEnum]);
+		$qry[] = ['id' => 'fiscalPeriods', 'style' => 'params', 'title' => 'Použito ve fiskálním období', 'params' => $paramsFiscalPeriods];
+
+		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}
 }
