@@ -2,6 +2,7 @@
 
 namespace Shipard\UI\Core;
 use \Shipard\Utils\Utils;
+use \Shipard\Utils\Json;
 use \Shipard\Viewer\TableView;
 
 
@@ -352,7 +353,11 @@ class ContentRenderer extends \Shipard\Base\BaseObject
 		// -- files
 		if (isset ($attachments['hasDownload']))
 		{
-			$c .= "<div class='e10-pane e10-pane-table mt1'>";
+			if (isset($cp['downloadClass']))
+				$c .= "<div class='{$cp['downloadClass']}'>";
+			else
+				$c .= "<div class='e10-pane e10-pane-table mt1'>";
+
 			if (isset($cp['downloadTitle']) && $cp['downloadTitle'])
 			{
 				$c .= '<div class="subtitle">' . $this->app()->ui()->composeTextLine($cp['downloadTitle']) . '</div>';
@@ -372,6 +377,9 @@ class ContentRenderer extends \Shipard\Base\BaseObject
 			$c .= '</div>';
 			$c .= '</div>';
 		}
+
+		if (isset ($cp['downloadOnly']))
+			return $c;
 
 		// -- images
 		$fullSizeTreshhold = 4;
@@ -962,14 +970,20 @@ class ContentRenderer extends \Shipard\Base\BaseObject
 		{
 			if ($this->app->clientType [1] === 'cordova')
 			{
-				$c .= "<script src='js/d3.min.js'></script>";
-				$c .= "<script src='js/c3.min.js'></script>";
+				//$c .= "<script src='js/d3.min.js'></script>";
+	//			$c .= "<script src='https://d3js.org/d3.v7.min.js'></script>";
+
+				//$c .= "<script src='js/c3.min.js'></script>";
+//				$c .= "<script src='https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.20/c3.min.js'></script>";
 			}
 			else
 			{
 				$beginUrl = ($this->app()->remote !== '') ? 'https://' . $this->app()->remote : $this->app()->scRoot();
 				$c .= "<script src='{$beginUrl}/libs/js/d3/d3.min.js'></script>";
 				$c .= "<script src='{$beginUrl}/libs/js/c3/c3.min.js'></script>";
+
+				//$c .= "<script src='https://d3js.org/d3.v7.min.js'></script>";
+				//$c .= "<script src='https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.20/c3.min.js'></script>";
 			}
 
 			if (isset($cp['title']))
@@ -998,7 +1012,7 @@ class ContentRenderer extends \Shipard\Base\BaseObject
 			if (isset ($cp['cullingX']))
 				$cullingX = $cp['cullingX'];
 			if ($cullingX !== 0)
-				$graphDefinition['axis']['x']['tick'] = ['culling' => ['max' => 12]];
+		$graphDefinition['axis']['x']['tick'] = ['culling' => ['max' => 6]];
 			$graphDefinition['axis']['y']['ticks'] = 5;
 
 			$graphDefinition['axis']['y']['tick'] = [];
@@ -1015,7 +1029,7 @@ class ContentRenderer extends \Shipard\Base\BaseObject
 
 					if ($colId === $cp['XKey'])
 					{
-						$graphDefinition['axis']['x']['categories'][] = $oneRow[$colId];
+						//$graphDefinition['axis']['x']['categories'][] = $oneRow[$colId];
 						continue;
 					}
 
@@ -1042,11 +1056,14 @@ class ContentRenderer extends \Shipard\Base\BaseObject
 		if (isset($cp['graphColors']))
 			$graphDefinition['data']['colors'] = $cp['graphColors'];
 
-		$c .= "\n<script>\n";
-		$c .= "var g{$gid}"." = ".json_encode($graphDefinition, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)."\n";
+		$graphDefinition['data']['point'] = ['show' => 0];
 
-		if ($cp['graphType'] === 'bar' || $cp['graphType'] === 'line' || $cp['graphType'] === 'spline')
-			$c .= "g{$gid}".".axis.y.tick.format = e10nf;";
+		$c .= "\n<script>\n";
+//		$c .= "var g{$gid}"." = ".json_encode($graphDefinition, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)."\n";
+		$c .= "var g{$gid}"." = ".Json::lint($graphDefinition)."\n";
+
+		//if ($cp['graphType'] === 'bar' || $cp['graphType'] === 'line' || $cp['graphType'] === 'spline')
+		//	$c .= "g{$gid}".".axis.y.tick.format = e10nf;";
 
 		$c .= "setTimeout (function () {c3.generate (g".$gid.");}, 150);";
 
