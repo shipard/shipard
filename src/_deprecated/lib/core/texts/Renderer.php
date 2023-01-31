@@ -139,10 +139,10 @@ class Renderer extends Utility
 		$this->code = $this->texy->process($text2);
 	}
 
-	public function renderAsArticle($text, $ownerTable)
+	public function renderAsArticle($text, $ownerTable, $recNdx = 0)
 	{
 		$template = new WebTemplateMustache ($this->app());
-		$page = ['tableId' => $ownerTable->tableId()];
+		$page = ['tableId' => $ownerTable->tableId(), 'ndx' => $recNdx];
 		$this->setOwner ($page);
 		$this->render($text);
 		$this->code = $template->renderPagePart('content', $this->code);
