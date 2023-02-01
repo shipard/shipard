@@ -74,6 +74,8 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 
 	public function loadData ()
 	{
+		$this->sendReportNdx = 2700;
+
 		parent::loadData();
 		$this->loadData_DocumentOwner ();
 		$this->initParams();

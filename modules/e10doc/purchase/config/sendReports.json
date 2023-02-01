@@ -12,5 +12,12 @@
     "sc": "POO",
     "classId": "e10pro.reports.waste_cz.ReportWasteOnePerson",
     "ndx": 2700
+  },
+  "2701": {
+    "fn": "Přehled dodaných odpadů",
+    "cn": "Přehled dodaných odpadů",
+    "sc": "POO",
+    "classId": "e10pro.reports.waste_cz.ReportWasteOnePersonIn",
+    "ndx": 2700
   }
 }

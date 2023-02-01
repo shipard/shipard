@@ -18,4 +18,10 @@ class ReportWasteOnePersonOut extends \e10pro\reports\waste_cz\ReportWasteOnePer
     $this->periodTitleYearBegin = 'Celková množství odpadů, které jsme dodali v roce ';
     $this->periodTitlePeriodBegin = 'Celková množství odpadů, které jsme dodali od ';
 	}
+
+	public function loadData ()
+	{
+		$this->sendReportNdx = 2701;
+		parent::loadData();
+	}
 }
