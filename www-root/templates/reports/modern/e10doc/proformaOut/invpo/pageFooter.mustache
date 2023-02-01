@@ -14,15 +14,18 @@
 	img.logo {height: 1.10em;  position: relative; bottom: -0.3em; padding-left: .7rem}
 	td.page {text-align: right; width: 33.3%;}
 	td.isdocLogo {text-align: center; width: 33.3%;}
-	img.isdoc {height: 1.10em;  position: relative; bottom: -0.22em;}	
+	img.isdoc {height: 1.10em;  position: relative; bottom: -0.22em;}
 </style>
 
 <table class='footer'>
 	<tr>
 		<td class="ownerInfo" colspan="2">
-			{{#data.owner_contacts}}
-				<span style="white-space: pre;"><b>{{name}}:</b> {{value}}</span>
-			{{/data.owner_contacts}}
+			{{#data.reportTexts.contactsFooter}}{{{data.reportTexts.contactsFooter}}}{{/data.reportTexts.contactsFooter}}
+			{{^data.reportTexts.contactsFooter}}
+				{{#data.owner_contacts}}
+					<span style="white-space: pre;"><b>{{name}}:</b> {{value}}</span>
+				{{/data.owner_contacts}}
+			{{/data.reportTexts.contactsFooter}}
 		</td>
 		<td class="author">
 			{{@dict;Vystavil}}: {{data.author.fullName}}

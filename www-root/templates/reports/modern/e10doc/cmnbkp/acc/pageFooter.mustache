@@ -18,9 +18,12 @@
 <table class='footer'>
 	<tr>
 		<td class="ownerInfo">
-			{{#data.owner_contacts}}
-				<span style="white-space: pre;"><b>{{name}}:</b> {{value}}</span>
-			{{/data.owner_contacts}}
+			{{#data.reportTexts.contactsFooter}}{{{data.reportTexts.contactsFooter}}}{{/data.reportTexts.contactsFooter}}
+			{{^data.reportTexts.contactsFooter}}
+				{{#data.owner_contacts}}
+					<span style="white-space: pre;"><b>{{name}}:</b> {{value}}</span>
+				{{/data.owner_contacts}}
+			{{/data.reportTexts.contactsFooter}}
 		</td>
 		<td class="author">
 			{{@dict;Vystavil}}: {{data.author.fullName}}

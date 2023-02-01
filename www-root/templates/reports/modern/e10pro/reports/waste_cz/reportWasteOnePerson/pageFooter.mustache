@@ -14,12 +14,16 @@
 	td.page {text-align: right; width: 50%;}
 </style>
 
+
 <table class='footer'>
 	<tr>
 		<td class="ownerInfo" colspan="2">
-			{{#data.owner_contacts}}
-				<span style="white-space: pre;"><b>{{name}}:</b> {{value}}</span>
-			{{/data.owner_contacts}}
+			{{#data.reportTexts.contactsFooter}}{{{data.reportTexts.contactsFooter}}}{{/data.reportTexts.contactsFooter}}
+			{{^data.reportTexts.contactsFooter}}
+				{{#data.owner_contacts}}
+					<span style="white-space: pre;"><b>{{name}}:</b> {{value}}</span>
+				{{/data.owner_contacts}}
+			{{/data.reportTexts.contactsFooter}}
 		</td>
 	</tr>
 	<tr>
@@ -28,7 +32,8 @@
 		</td>
 
 		<td class='page'>
-		{{@dict;Strana}} <span class="pageNumber"></span> {{@dict;z}} <span class="totalPages"></span>
+			{{@dict;Strana}} <span class="pageNumber"></span> {{@dict;z}} <span class="totalPages"></span>
 		</td>
 	</tr>
 </table>
+

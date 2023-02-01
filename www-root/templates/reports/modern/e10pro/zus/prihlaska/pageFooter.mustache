@@ -29,12 +29,15 @@
 	</tr>
 	<tr>
 		<td class="ownerInfo">
-			{{#data.owner_identifiers}}
-				<span style="white-space: pre;"><b>{{name}}:</b> {{value}}</span>
-			{{/data.owner_identifiers}}
-			{{#data.owner_contacts}}
-				<span style="white-space: pre;"><b>{{name}}:</b> {{value}}</span>
-			{{/data.owner_contacts}}
+			{{#data.reportTexts.contactsFooter}}{{{data.reportTexts.contactsFooter}}}{{/data.reportTexts.contactsFooter}}
+			{{^data.reportTexts.contactsFooter}}
+				{{#data.owner_identifiers}}
+					<span style="white-space: pre;"><b>{{name}}:</b> {{value}}</span>
+				{{/data.owner_identifiers}}
+				{{#data.owner_contacts}}
+					<span style="white-space: pre;"><b>{{name}}:</b> {{value}}</span>
+				{{/data.owner_contacts}}
+			{{/data.reportTexts.contactsFooter}}
 		</td>
 
 		<td class='logo'>
