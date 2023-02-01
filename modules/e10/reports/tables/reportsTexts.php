@@ -63,6 +63,7 @@ class TableReportsTexts extends DbTable
 		array_push ($q, ' AND (onAllReports = %i', 1, ' OR EXISTS ');
 		array_push ($q, ' (SELECT ndx FROM [e10_base_doclinks] ');
 		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND e10_reports_reportsTexts.ndx = srcRecId');
 		array_push ($q, ' AND dstRecId = %i', $report->sendReportNdx);
 		array_push ($q, ' AND [srcTableId] = %s', 'e10.reports.reportsTexts');
 		array_push ($q, ' AND [dstTableId] = %s', 'e10.reports.reports');
