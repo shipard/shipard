@@ -8,11 +8,9 @@
 
 		{"id": "reportPlace", "name": "Umístění textu", "type": "enumString", "len": "25",
 			"enumValues": {
-				"supplier": "Dodavatel",
-				"contacts": "Kontaktní údaje",
-				"supplierAndContacts": "Dodavatel + Kontaktní údaje",
 				"subHeader": "Záhlaví nad řádky",
-				"subFooter": "Zápatí na konci sestavy"
+				"subFooter": "Zápatí na konci sestavy",
+				"contactsFooter": "Kontaktní údaje v patičce"
 			}
 		},
 
