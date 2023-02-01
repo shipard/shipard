@@ -21,7 +21,7 @@ table {
 }
 
 div.reportTextHeader {font-size: 90%; padding-bottom: 2pt;}
-div#reportTextFooter {font-size: 90%; padding-bottom: 2pt; text-align: right; margin-top: 10pt;}
+div.reportTextFooter {font-size: 90%; padding-bottom: 2pt; margin-top: 10pt;}
 div.latestNews{font-size: 40%; }
 
 div.news {
