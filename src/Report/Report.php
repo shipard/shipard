@@ -55,6 +55,7 @@ class Report extends \Shipard\Base\BaseObject
 	public $paperMargin = '1cm';
 
 	var $outboxLinkId = '';
+	var $sendReportNdx = 0;
 
 	protected $registeredImages = [];
 

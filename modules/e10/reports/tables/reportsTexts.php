@@ -4,6 +4,7 @@
 namespace e10\reports;
 use \Shipard\Viewer\TableView, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
 use \e10\base\libs\UtilsBase;
+use \Shipard\Utils\Utils;
 
 
 /**
@@ -53,10 +54,31 @@ class TableReportsTexts extends DbTable
 			$title = $enumPlaces[$recData['reportPlace']];
 	}
 
-	public function loadReportTexts ($docRecData, $reportMode)
+	public function loadReportTexts ($report, &$dest)
 	{
-		$res = [];
-		return $res;
+		$q[] = 'SELECT * FROM [e10_reports_reportsTexts]';
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND [docStateMain] IN %in', [0, 2]);
+
+		array_push ($q, ' AND (onAllReports = %i', 1, ' OR EXISTS ');
+		array_push ($q, ' (SELECT ndx FROM [e10_base_doclinks] ');
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND dstRecId = %i', $report->sendReportNdx);
+		array_push ($q, ' AND [srcTableId] = %s', 'e10.reports.reportsTexts');
+		array_push ($q, ' AND [dstTableId] = %s', 'e10.reports.reports');
+		array_push ($q, '))');
+		array_push ($q, ' ORDER BY [systemOrder], [order], [ndx]');
+
+		$rows = $this->db()->query ($q);
+		foreach ($rows as $r)
+		{
+			if (isset($dest[$r['reportPlace']]))
+				continue;
+
+			$txt = $r['text'];
+
+			$dest[$r['reportPlace']] = $txt;
+		}
 	}
 }
 
@@ -151,7 +173,9 @@ class FormReportText extends TableForm
 			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
-					$this->addList ('reports', '', TableForm::loAddToFormLayout);
+					$this->addColumnInput ('onAllReports');
+					if (!$this->recData['onAllReports'])
+						$this->addList ('reports', '', TableForm::loAddToFormLayout);
 					$this->addColumnInput ('reportPlace');
 					$this->addColumnInput ('note');
 				$this->closeTab ();

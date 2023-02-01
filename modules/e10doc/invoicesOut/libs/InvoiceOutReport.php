@@ -16,6 +16,8 @@ class InvoiceOutReport extends \e10doc\core\libs\reports\DocReport
 
 	public function loadData ()
 	{
+		$this->sendReportNdx = 2000;
+
 		parent::loadData();
 
 		$spayd = new ShortPaymentDescriptor($this->app);

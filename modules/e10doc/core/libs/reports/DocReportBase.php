@@ -74,6 +74,21 @@ class DocReportBase extends FormReport
 		$this->data['options']['accentColor'] = $this->app()->cfgItem ('options.appearanceDocs.accentColor', '');
 		if ($this->data['options']['accentColor'] === '')
 			$this->data['options']['accentColor'] = '#CFECEC';
+
+		// -- texts
+		/** @var \e10\reports\TableReportsTexts */
+		$tableReportsTexts = $this->app()->table('e10.reports.reportsTexts');
+		$this->data ['reportTexts'] ??= [];
+		$tableReportsTexts->loadReportTexts($this, $this->data ['reportTexts']);
+		if (count($this->data ['reportTexts']))
+		{
+			$this->data ['_subtemplatesItems'] ??= [];
+			if (!count($this->data ['_subtemplatesItems']))
+				$this->data ['_subtemplatesItems'][] = 'reportTexts';
+			$this->data ['_textRenderItems'] ??= [];
+			if (!count($this->data ['_textRenderItems']))
+				$this->data ['_textRenderItems'][] = 'reportTexts';
+		}
 	}
 
 	function loadData_MainPerson($columnId)
@@ -244,6 +259,8 @@ class DocReportBase extends FormReport
         'city' => $r['adrCity'],
         'zipcode' => $r['adrZipCode'],
         'worldCountry' => $r['adrCountry'],
+
+
 
 				'ids' => [],
 			];

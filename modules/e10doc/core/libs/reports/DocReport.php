@@ -285,13 +285,16 @@ class DocReport extends DocReportBase
 		// -- texts
 		/** @var \e10doc\base\TableReportsTexts */
 		$tableReportsTexts = $this->app()->table('e10doc.base.reportsTexts');
-		$this->data ['reportTexts'] = $tableReportsTexts->loadReportTexts($this->recData, $this->reportMode);
+		$this->data ['reportTexts'] ??= [];
+		$tableReportsTexts->loadReportTexts($this->recData, $this->reportMode, $this->data ['reportTexts']);
 		if (count($this->data ['reportTexts']))
 		{
 			$this->data ['_subtemplatesItems'] ??= [];
-			$this->data ['_subtemplatesItems'][] = 'reportTexts';
+			if (!count($this->data ['_subtemplatesItems']))
+				$this->data ['_subtemplatesItems'][] = 'reportTexts';
 			$this->data ['_textRenderItems'] ??= [];
-			$this->data ['_textRenderItems'][] = 'reportTexts';
+			if (!count($this->data ['_textRenderItems']))
+				$this->data ['_textRenderItems'][] = 'reportTexts';
 		}
 
 		// -- items codes

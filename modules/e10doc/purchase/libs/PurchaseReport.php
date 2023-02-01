@@ -13,6 +13,8 @@ class PurchaseReport extends \e10doc\core\libs\reports\DocReport
 
 	public function loadData ()
 	{
+		$this->sendReportNdx = 2501;
+
 		parent::loadData();
 
 		if ($this->recData ['paymentMethod'] === 4) // fakturace

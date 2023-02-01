@@ -4,6 +4,8 @@
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "note", "name": "Poznámka", "type": "string", "len": 120},
 
+		{"id": "onAllReports", "name": "Dát na všechny sestavy", "type": "logical", "options": ["saveOnChange"]},
+
 		{"id": "reportPlace", "name": "Umístění textu", "type": "enumString", "len": "25",
 			"enumValues": {
 				"supplier": "Dodavatel",

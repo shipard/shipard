@@ -92,10 +92,8 @@ class TableReportsTexts extends DbTable
 			$title = $enumPlaces[$recData['place']];
 	}
 
-	public function loadReportTexts ($docRecData, $reportMode)
+	public function loadReportTexts ($docRecData, $reportMode, &$dest)
 	{
-		$res = [];
-
 		$q[] = 'SELECT * FROM [e10doc_base_reportsTexts] WHERE 1';
 
 		array_push ($q, ' AND [docStateMain] IN %in', [0, 2]);
@@ -109,7 +107,7 @@ class TableReportsTexts extends DbTable
 		$rows = $this->db()->query ($q);
 		foreach ($rows as $r)
 		{
-			if (isset($res[$r['place']]))
+			if (isset($dest[$r['place']]))
 				continue;
 
 			if ($reportMode === FormReport::rmDefault)
@@ -123,10 +121,8 @@ class TableReportsTexts extends DbTable
 			else
 				$txt = '!!!error!!!';
 
-			$res[$r['place']] = $txt;
+			$dest[$r['place']] = $txt;
 		}
-
-		return $res;
 	}
 
 	public function tableIcon ($recData, $options = NULL)
