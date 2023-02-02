@@ -17,6 +17,8 @@ class ReportFlatSettlement extends \e10doc\core\libs\reports\DocReportBase
 
 	public function loadData ()
 	{
+		$this->sendReportNdx = 2801;
+
     parent::loadData();
 		$this->loadData_DocumentOwner ();
 

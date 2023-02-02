@@ -19,6 +19,8 @@ class ReportFlatRecordSheet extends \e10doc\core\libs\reports\DocReportBase
 
 	public function loadData ()
 	{
+    $this->sendReportNdx = 2800;
+
     parent::loadData();
 		$this->loadData_DocumentOwner ();
 

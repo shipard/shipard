@@ -7,6 +7,7 @@
 	"config": [
 		{"id": "+appSkeleton", "file": "appSkeleton.json"},
 		{"id": "+e10.persons.roles", "file": "e10pro.persons.roles.json"},
-		{"id": "+e10doc.reporting.calcReports", "file": "e10doc.reporting.calcReports.json"}
+		{"id": "+e10doc.reporting.calcReports", "file": "e10doc.reporting.calcReports.json"},
+		{"id": "+e10.reports.sendReports", "file": "sendReports.json"}
 	]
 }

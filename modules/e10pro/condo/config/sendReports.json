@@ -1,0 +1,16 @@
+{
+  "2800": {
+    "fn": "Evidenční list SVJ",
+    "cn": "Evidenční list",
+    "sc": "EVL",
+    "classId": "e10pro.condo.libs.ReportFlatRecordSheet",
+    "ndx": 2800
+  },
+  "2801": {
+    "fn": "Vyúčtování SVJ",
+    "cn": "Vyúčtování",
+    "sc": "VYU",
+    "classId": "e10pro.condo.libs.ReportFlatSettlement",
+    "ndx": 2800
+  }
+}
