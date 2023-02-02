@@ -104,6 +104,7 @@ class ViewReportsTexts extends TableView
 	public function renderRow ($item)
 	{
 		$listItem ['pk'] = $item ['ndx'];
+		$listItem ['onAllReports'] = $item ['onAllReports'];
 
 		$props = [];
 		$t1 = '';
@@ -141,9 +142,16 @@ class ViewReportsTexts extends TableView
 
 	function decorateRow (&$item)
 	{
-		if (isset ($this->toReports [$item ['pk']]))
+		if ($item ['onAllReports'])
 		{
-			$item ['t2'] = $this->toReports [$item ['pk']];
+			$item ['t2'] = ['text' => 'Bude na všech sestavách', 'class' => 'label label-info'];
+		}
+		else
+		{
+			if (isset ($this->toReports [$item ['pk']]))
+			{
+				$item ['t2'] = $this->toReports [$item ['pk']];
+			}
 		}
 	}
 
