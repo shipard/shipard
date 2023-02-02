@@ -2,14 +2,13 @@
 
 
 namespace E10Doc\Balance;
-use \e10\FormReport, \e10doc\core\libs\E10Utils, \e10\utils;
+use \e10doc\core\libs\E10Utils, \e10\utils;
 use \Shipard\Utils\World;
 
 /**
- * Class RequestForPayment
- * @package E10Doc\Balance
+ * class RequestForPayment
  */
-class RequestForPayment extends FormReport
+class RequestForPayment extends \e10doc\core\libs\reports\DocReportBase
 {
 	public $fiscalYear;
 	var $currencies;
@@ -23,34 +22,6 @@ class RequestForPayment extends FormReport
 	{
 		parent::init();
 		$this->setReportId('e10doc.balance.requestForPayment');
-	}
-
-	public function setReportId($baseReportId)
-	{
-		if (str_starts_with($baseReportId, 'reports.default.'))
-		{
-			$reportId = $baseReportId;
-		}
-		else
-		{
-			$reportType = $this->app()->cfgItem ('options.experimental.docReportsType', 'default');
-			$reportIdBegin = 'reports.'.$reportType.'.';
-			$reportId = $reportIdBegin.$baseReportId;
-
-			$parts = explode ('.', $reportId);
-			$tfn = array_pop ($parts);
-			$templateRoot = __SHPD_ROOT_DIR__.__SHPD_TEMPLATE_SUBDIR__.'/'.implode ('/', $parts).'/'.$tfn.'/';
-			$templateMainFile = $templateRoot.'page.mustache';
-			if (!is_readable($templateMainFile))
-			{
-				$reportType = 'default';
-				$reportIdBegin = 'reports.'.$reportType.'.';
-				$reportId = $reportIdBegin.$baseReportId;
-			}
-		}
-
-		$this->reportId = $reportId;
-		$this->reportTemplate = $reportId;
 	}
 
 	public function checkDocumentInfo (&$documentInfo)
