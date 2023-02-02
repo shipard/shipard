@@ -11,7 +11,8 @@
 				"subHeader": "Záhlaví nad řádky",
 				"subFooter": "Zápatí na konci sestavy",
 				"contactsFooter": "Kontaktní údaje v patičce",
-				"emailBody": "Tělo e-mailu"
+				"emailBody": "Tělo e-mailu",
+				"emailSubject": "Předmět e-mailu"
 			}
 		},
 
