@@ -10,7 +10,8 @@
 			"enumValues": {
 				"subHeader": "Záhlaví nad řádky",
 				"subFooter": "Zápatí na konci sestavy",
-				"contactsFooter": "Kontaktní údaje v patičce"
+				"contactsFooter": "Kontaktní údaje v patičce",
+				"emailBody": "Tělo e-mailu"
 			}
 		},
 

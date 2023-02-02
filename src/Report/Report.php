@@ -207,6 +207,8 @@ class Report extends \Shipard\Base\BaseObject
 			{
 				foreach ($t->data [$stId] as $textId => $textData)
 				{
+					if ($textId === 'emailBody')
+						continue;
 					$t->data [$stId][$textId] = trim($t->render($textData));
 				}
 			}
@@ -221,6 +223,8 @@ class Report extends \Shipard\Base\BaseObject
 			{
 				foreach ($t->data [$stId] as $textId => $textData)
 				{
+					if ($textId === 'emailBody')
+						continue;
 					if ($t->data [$stId][$textId] !== '')
 						$t->data [$stId][$textId] = $texy->processLine($t->data [$stId][$textId]);
 				}
