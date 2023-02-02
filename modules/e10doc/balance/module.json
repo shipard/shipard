@@ -6,7 +6,8 @@
   "config": [
     {"id": "+reports", "name": "Výstupy", "file": "reports.json"},
     {"id": "+e10.balance", "name": "Saldo", "file": "balance.json"},
-		{"id": "+e10.base.doclinks", "file": "docLinks.json"}
+		{"id": "+e10.base.doclinks", "file": "docLinks.json"},
+    {"id": "+e10.reports.sendReports", "file": "sendReports.json"}
   ],
   "modules": ["e10pro/install/docs-core"]
 }

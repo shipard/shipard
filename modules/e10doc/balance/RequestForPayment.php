@@ -62,6 +62,8 @@ class RequestForPayment extends FormReport
 
 	public function loadData ()
 	{
+		$this->sendReportNdx = 2100;
+
 		$this->fiscalYear = E10Utils::todayFiscalYear($this->app);
 		$this->tablePersons = $this->app->table('e10.persons.persons');
 		$this->tableDocHeads = $this->app->table('e10doc.core.heads');

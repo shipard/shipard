@@ -1,0 +1,9 @@
+{
+  "2100": {
+    "fn": "Upomínka",
+    "cn": "Upomínka",
+    "sc": "UPO",
+    "classId": "e10doc.balance.RequestForPayment",
+    "ndx": 2100
+  }
+}
