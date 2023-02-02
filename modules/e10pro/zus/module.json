@@ -31,6 +31,7 @@
     {"id": "+reports", "name": "Výstupy", "file": "e10pro.zus.reports.json"},
 		{"id": "+dashboards", "file": "dashboards.json"},
 		{"id": "+widgets", "file": "widgets.json"},
-		{"id": "+e10.persons.virtualGroups", "file": "e10.persons.virtualGroups.json"}
+		{"id": "+e10.persons.virtualGroups", "file": "e10.persons.virtualGroups.json"},
+		{"id": "+e10.reports.sendReports", "file": "sendReports.json"}
   ]
 }

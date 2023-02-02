@@ -1,0 +1,9 @@
+{
+  "2900": {
+    "fn": "Přihláška do ZUŠ",
+    "cn": "Přihláška",
+    "sc": "PRIZ",
+    "classId": "e10doc.purchase.libs.PurchaseReport",
+    "ndx": 2900
+  }
+}

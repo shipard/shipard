@@ -25,6 +25,8 @@ class ReportPrihlaska extends \e10doc\core\libs\reports\DocReportBase
 
 	public function loadData ()
 	{
+		$this->sendReportNdx = 2900;
+
 		parent::loadData();
 		$this->loadData_DocumentOwner ();
 
