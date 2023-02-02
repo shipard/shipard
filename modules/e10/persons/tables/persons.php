@@ -418,6 +418,7 @@ class TablePersons extends DbTable
 				array_push($q, ' AND [dstTableId] = %s', 'e10.reports.reports');
 				array_push($q, ' AND links.dstRecId = %i', $sendReportCfg['ndx']);
 				array_push($q, ' AND [contacts].[person] IN %in', $persons);
+				array_push($q, ' AND [contacts].[docState] = %i', 4000);
 
 				$rows = $this->db()->query($q);
 				foreach ($rows as $r)
