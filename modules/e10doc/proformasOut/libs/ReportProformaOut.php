@@ -17,6 +17,8 @@ class ReportProformaOut extends \e10doc\core\libs\reports\DocReport
 
 	public function loadData ()
 	{
+		$this->sendReportNdx = 2001;
+
 		parent::loadData();
 
 		$spayd = new \e10doc\core\ShortPaymentDescriptor($this->app);

@@ -1,0 +1,9 @@
+{
+  "2001": {
+    "fn": "Faktura vydaná zálohová",
+    "cn": "Faktura vydaná zálohová",
+    "sc": "FVZ",
+    "classId": "e10doc.proformasOut.libs.ReportProformaOut",
+    "ndx": 2001
+  }
+}

@@ -1,5 +1,8 @@
 {
   "id": "e10doc.proformasOut",
   "name": "ProformasOut",
-  "extensions": ["proformasOut"]
+  "extensions": ["proformasOut"],
+  "config": [
+    {"id": "+e10.reports.sendReports", "file": "sendReports.json"}
+  ]
 }
