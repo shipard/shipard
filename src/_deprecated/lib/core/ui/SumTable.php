@@ -68,9 +68,12 @@ class SumTable extends E10ApiObject
 		$c = '';
 
 		$params = [];
+		$params['tableClass'] = 'e10-pane e10-pane-table';
 		if ($this->hideHeader)
 			$params['hideHeader'] = 1;
-		$params['tableClass'] = 'main e10-pane e10-pane-table';
+		else
+			$params['tableClass'] .= ' main';
+
 		if ($this->extraHeader)
 			$params['header'] = $this->extraHeader;
 		if ($this->bgLevels !== NULL)
