@@ -208,8 +208,9 @@ class Report extends \Shipard\Base\BaseObject
 				foreach ($t->data [$stId] as $textId => $textData)
 				{
 					if ($textId === 'emailBody')
-						continue;
-					$t->data [$stId][$textId] = trim($t->render($textData));
+						$t->data [$stId][$textId] = $t->render($textData);
+					else
+						$t->data [$stId][$textId] = trim($t->render($textData));
 				}
 			}
 		}
