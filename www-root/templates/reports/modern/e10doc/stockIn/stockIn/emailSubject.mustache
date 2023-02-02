@@ -1,1 +1,4 @@
-{{textMode}}{{@dict;Příjemka}}: {{data.head.title}}
+{{textMode}}{{#data.reportTexts.emailSubject}}{{{data.reportTexts.emailSubject}}}{{/data.reportTexts.emailSubject}}
+{{^data.reportTexts.emailSubject}}
+{{@dict;Příjemka}}: {{data.head.title}}
+{{/data.reportTexts.emailSubject}}

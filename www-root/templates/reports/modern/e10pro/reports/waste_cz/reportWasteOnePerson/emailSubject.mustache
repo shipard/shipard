@@ -1,1 +1,4 @@
-{{textMode}}Přehled odebraných odpadů za {{data.periodNameL}} {{data.periodValue}}
+{{textMode}}{{#data.reportTexts.emailSubject}}{{{data.reportTexts.emailSubject}}}{{/data.reportTexts.emailSubject}}
+{{^data.reportTexts.emailSubject}}
+Přehled odebraných odpadů za {{data.periodNameL}} {{data.periodValue}}
+{{/data.reportTexts.emailSubject}}

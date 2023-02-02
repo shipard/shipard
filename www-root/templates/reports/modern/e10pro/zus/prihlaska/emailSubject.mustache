@@ -1,1 +1,4 @@
-{{textMode}}Potvrzení přihlášky: {{data.head.fullNameS}}
+{{textMode}}{{#data.reportTexts.emailSubject}}{{{data.reportTexts.emailSubject}}}{{/data.reportTexts.emailSubject}}
+{{^data.reportTexts.emailSubject}}
+Potvrzení přihlášky: {{data.head.fullNameS}}
+{{/data.reportTexts.emailSubject}}

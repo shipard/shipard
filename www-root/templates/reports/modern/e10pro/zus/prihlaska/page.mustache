@@ -8,6 +8,8 @@
 </head>
 <body style="font-size: 10pt;">
 
+	{{#data.reportTexts.subHeader}}<div class='reportTextHeader'>{{{data.reportTexts.subHeader}}}</div>{{/data.reportTexts.subHeader}}
+
 	<table class="default" style="font-size: 10pt !important;">
 		<tr>
 			<td class='' colspan='1'>Jméno a příjmení žáka:</td><td colspan="3">{{data.head.fullNameS}}</td>
@@ -122,6 +124,7 @@
 		</tr>
 	</table>
 
+	{{#data.reportTexts.subFooter}}<div class='reportTextFooter'>{{{data.reportTexts.subFooter}}}</div>{{/data.reportTexts.subFooter}}
 </body>
 </html>
 

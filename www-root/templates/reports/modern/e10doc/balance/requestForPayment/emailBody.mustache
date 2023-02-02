@@ -1,4 +1,6 @@
-{{textMode}}{{@dict;Dobrý den}},
+{{textMode}}{{textMode}}{{#data.reportTexts.emailBody}}{{{data.reportTexts.emailBody}}}{{/data.reportTexts.emailBody}}
+{{^data.reportTexts.emailBody}}
+{{@dict;Dobrý den}},
 
 {{@dict;dovolujeme si Vás upozornit, že ke dni}} {{data.today}} {{@dict;stále evidujeme pohledávky}}
 {{@dict;v celkové výši}}{{#data.totals}} {{print.restAmount}} {{curr}}{{/data.totals}}.
@@ -11,7 +13,8 @@
 {{@dict;S pozdravem}}
 
 --
- {{data.owner.fullName}}
+{{data.owner.fullName}}
 {{#data.owner_contacts}}
- {{name}}: {{value}}
+{{name}}: {{value}}
 {{/data.owner_contacts}}
+{{/data.reportTexts.emailBody}}

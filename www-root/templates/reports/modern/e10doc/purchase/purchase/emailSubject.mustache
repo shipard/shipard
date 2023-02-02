@@ -1,1 +1,4 @@
-{{textMode}}Výkupní lístek {{data.head.docNumber}}
+{{textMode}}{{#data.reportTexts.emailSubject}}{{{data.reportTexts.emailSubject}}}{{/data.reportTexts.emailSubject}}
+{{^data.reportTexts.emailSubject}}
+Výkupní lístek {{data.head.docNumber}}
+{{/data.reportTexts.emailSubject}}
