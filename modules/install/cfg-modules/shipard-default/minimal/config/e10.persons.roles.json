@@ -39,6 +39,8 @@
 			"e10.persons.keys": {"default": 2},
 			"e10.persons.requests": {"default": 2},
 
+			"e10.reports.reportsTexts": {"default": 2},
+
 			"e10.base.nomencTypes": {"default": 2},
 			"e10.base.nomencItems": {"default": 2, "combo": 2, "addressNomencCity": 2},
 
