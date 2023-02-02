@@ -15,6 +15,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
   var $periodEnd = NULL;
   var $calendarYear = 0;
   var $persons = [];
+  var $sendStatus = '';
 
 	public function init ()
 	{
@@ -22,7 +23,13 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
     $defaultYear = 'Y'.(intval($today->format('Y')) - 1);
     $this->addParam ('calendarMonth', 'calendarPeriod', ['flags' => ['quarters', 'halfs', 'years'], 'defaultValue' => $defaultYear]);
 
+    if ($this->subReportId === 'companiesIn')
+      $this->addParam('switch', 'sendStatus', ['title' => 'Stav', 'switch' => ['all' => 'Vše', 'toSend' => 'Neodeslané', 'sent' => 'Odeslané'], 'radioBtn' => 1, 'defaultValue' => 'all']);
+
 		parent::init();
+
+    if ($this->sendStatus === '')
+      $this->sendStatus = $this->reportParams ['sendStatus']['value'] ?? 'all';
 
     $cpBegin = $this->reportParams ['calendarPeriod']['values'][$this->reportParams ['calendarPeriod']['value']];
     if (isset($cpBegin['dateBegin']))
@@ -128,6 +135,16 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 
   public function createContent_Companies($dir)
   {
+    if ($dir == WasteReturnEngine::rowDirIn)
+      $linkId = 'waste-suppliers-'.$this->calendarYear;
+    else
+      $linkId = 'waste-cust-'.$this->calendarYear;
+
+		/** @var \wkf\core\TableIssues */
+		$tableIssues = $this->app()->table ('wkf.core.issues');
+		$demandForPaySectionNdx = $tableIssues->defaultSection (121);
+		$demandForPaySectionSecNdx = $tableIssues->defaultSection (20);
+
     $q = [];
 
     array_push ($q, 'SELECT [rows].person, [rows].personOffice, [rows].wasteCodeNomenc, [rows].[dir], [rows].[addressMode], [rows].[nomencCity],');
@@ -147,14 +164,28 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
     if ($this->periodEnd)
       array_push ($q, ' AND [rows].[dateAccounting] <= %d', $this->periodEnd);
 		array_push ($q, ' GROUP BY [rows].person, [rows].addressMode, [rows].personOffice, [rows].nomencCity, [rows].[dir], wasteCodeNomenc');
+
+    if ($this->sendStatus !== 'all')
+    {
+      if ($this->sendStatus === 'toSend')
+        array_push($q, ' HAVING NOT EXISTS ');
+      else
+        array_push($q, ' HAVING EXISTS ');
+
+      array_push($q, '(SELECT ndx FROM [wkf_core_issues] ');
+      array_push($q, ' WHERE tableNdx = %i', 1000);
+      if ($demandForPaySectionNdx && $demandForPaySectionSecNdx)
+        array_push($q, ' AND section IN %in', [$demandForPaySectionNdx, $demandForPaySectionSecNdx]);
+      else
+        array_push($q, ' AND section = %i', $demandForPaySectionNdx);
+
+      array_push($q, ' AND linkId = %s', $linkId);
+      array_push($q, ' AND wkf_core_issues.recNdx = [rows].person');
+      array_push($q, ' AND docStateMain = %i', 2);
+      array_push($q, ')');
+    }
+
     array_push ($q, ' ORDER BY persons.fullName, addrs.id1, wasteCodeNomenc');
-
-
-/*
-		{"id": "addressMode", "name": "Typ adresy", "type": "enumInt",
-			"enumValues": {"0": "Provozovna", "1": "ORP"}},
-    {"id": "nomencCity", "name": "Obec", "type": "int", "reference": "e10.base.nomencItems", "comboViewer": "addressNomencCity"}
-*/
 
     $lastPerson = -1;
 		$rows = $this->app->db()->query ($q);
