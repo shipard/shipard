@@ -1,1 +1,4 @@
-{{textMode}}{{@dict;Upomínka}}
+{{textMode}}{{#data.reportTexts.emailSubject}}{{{data.reportTexts.emailSubject}}}{{/data.reportTexts.emailSubject}}
+{{^data.reportTexts.emailSubject}}
+{{@dict;Upomínka}}
+{{/data.reportTexts.emailSubject}}

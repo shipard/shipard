@@ -1,4 +1,6 @@
-{{textMode}}Dobrý den,
+{{textMode}}{{#data.reportTexts.emailBody}}{{{data.reportTexts.emailBody}}}{{/data.reportTexts.emailBody}}
+{{^data.reportTexts.emailBody}}
+Dobrý den,
 
 zasíláme vám přehled dodaných odpadů za {{data.periodNameL}} {{data.periodValue}}.
 Pokud se nám do 5-ti dnů neozvete, považujeme tyto údaje za schválené.
@@ -6,7 +8,8 @@ Pokud se nám do 5-ti dnů neozvete, považujeme tyto údaje za schválené.
 S pozdravem
 
 --
- {{data.owner.fullName}}
+{{data.owner.fullName}}
 {{#data.owner_contacts}}
- {{name}}: {{value}}
+{{name}}: {{value}}
 {{/data.owner_contacts}}
+{{/data.reportTexts.emailBody}}

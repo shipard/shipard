@@ -12,8 +12,11 @@
 </head>
 <body>
 
+{{#data.reportTexts.subHeader}}<div class='reportTextHeader'>{{{data.reportTexts.subHeader}}}</div>{{/data.reportTexts.subHeader}}
+
 {{{@renderContent;dataItem:data.contents}}}
 
+{{#data.reportTexts.subFooter}}<div class='reportTextFooter'>{{{data.reportTexts.subFooter}}}</div>{{/data.reportTexts.subFooter}}
 
 </body>
 

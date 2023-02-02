@@ -1,11 +1,14 @@
-{{textMode}}Dobrý den,
+{{textMode}}{{#data.reportTexts.emailBody}}{{{data.reportTexts.emailBody}}}{{/data.reportTexts.emailBody}}
+{{^data.reportTexts.emailBody}}
+Dobrý den,
 
 v příloze Vám zasíláme potvrzení přihlášky ke studiu.
 
 S pozdravem
 
 --
- {{data.owner.fullName}}
+{{data.owner.fullName}}
 {{#data.owner_contacts}}
- {{name}}: {{value}}
+{{name}}: {{value}}
 {{/data.owner_contacts}}
+{{/data.reportTexts.emailBody}}

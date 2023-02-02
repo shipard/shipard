@@ -1,1 +1,4 @@
-{{textMode}}{{data.calcReport.title}} za {{data.workOrder.title}}
+{{textMode}}{{#data.reportTexts.emailSubject}}{{{data.reportTexts.emailSubject}}}{{/data.reportTexts.emailSubject}}
+{{^data.reportTexts.emailSubject}}
+{{data.calcReport.title}} za {{data.workOrder.title}}
+{{/data.reportTexts.emailSubject}}

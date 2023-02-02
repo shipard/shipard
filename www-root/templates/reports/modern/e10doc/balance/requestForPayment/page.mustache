@@ -68,11 +68,12 @@
 		</tr>
 	</table>
 
-
-
-	<p>{{@dict;Vážený zákazníku}},</p>
-	<p>{{@dict;dovolujeme si Vás upozornit, že ke dni}} {{data.today}} {{@dict;stále evidujeme následující pohledávky}}:
-	</p>
+	{{#data.reportTexts.subHeader}}<div class='reportTextHeader'>{{{data.reportTexts.subHeader}}}</div>{{/data.reportTexts.subHeader}}
+	{{^data.reportTexts.subHeader}}
+		<p>{{@dict;Vážený zákazníku}},</p>
+		<p>{{@dict;dovolujeme si Vás upozornit, že ke dni}} {{data.today}} {{@dict;stále evidujeme následující pohledávky}}:
+		</p>
+	{{/data.reportTexts.subHeader}}
 
 	<table class="rows {{#data.options.docReportsTablesRoundedCorners}} rounded{{/data.options.docReportsTablesRoundedCorners}}">
 		<thead>
@@ -108,8 +109,12 @@
 		{{/data.totals}}
 	</table>
 
-	<p>{{@dict;Prosíme Vás o co nejrychlejší kontrolu a úhradu dlužných částek}}.</p>
-	<p>{{@dict;Děkujeme}}</p>
+
+	{{#data.reportTexts.subFooter}}<div class='reportTextFooter'>{{{data.reportTexts.subFooter}}}</div>{{/data.reportTexts.subFooter}}
+	{{^data.reportTexts.subFooter}}
+		<p>{{@dict;Prosíme Vás o co nejrychlejší kontrolu a úhradu dlužných částek}}.</p>
+		<p>{{@dict;Děkujeme}}</p>
+	{{/data.reportTexts.subFooter}}
 
 </body>
 </html>

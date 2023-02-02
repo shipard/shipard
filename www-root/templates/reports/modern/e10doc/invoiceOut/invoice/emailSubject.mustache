@@ -1,1 +1,4 @@
-{{textMode}}{{@dict;Faktura}}: {{data.head.title}}
+{{textMode}}{{#data.reportTexts.emailSubject}}{{{data.reportTexts.emailSubject}}}{{/data.reportTexts.emailSubject}}
+{{^data.reportTexts.emailSubject}}
+{{@dict;Faktura}}: {{data.head.title}}
+{{/data.reportTexts.emailSubject}}

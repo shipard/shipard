@@ -1,4 +1,6 @@
-{{textMode}}Dobrý den,
+{{textMode}}{{#data.reportTexts.emailBody}}{{{data.reportTexts.emailBody}}}{{/data.reportTexts.emailBody}}
+{{^data.reportTexts.emailBody}}
+Dobrý den,
 
 v příloze Vám zasíláme výkupní lístek č. {{data.head.docNumber}} ze dne {{data.head.dateAccounting}}.
 
@@ -34,7 +36,8 @@ Děkujeme a těšíme se na Vaši další návštěvu.
 S pozdravem
 
 --
- {{data.owner.fullName}}
+{{data.owner.fullName}}
 {{#data.owner_contacts}}
- {{name}}: {{value}}
+{{name}}: {{value}}
 {{/data.owner_contacts}}
+{{/data.reportTexts.emailBody}}
