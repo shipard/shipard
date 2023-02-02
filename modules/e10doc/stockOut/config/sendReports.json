@@ -1,0 +1,9 @@
+{
+  "2010": {
+    "fn": "Výdejka zásob",
+    "cn": "Výdejka",
+    "sc": "VZ",
+    "classId": "e10doc.stockOut.libs.StockOutReport",
+    "ndx": 2010
+  }
+}

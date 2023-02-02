@@ -15,6 +15,8 @@ class StockOutReport extends \e10doc\core\libs\reports\DocReport
 
 	public function loadData ()
 	{
+		$this->sendReportNdx = 2010;
+
 		parent::loadData();
 
 		// rows

@@ -1,5 +1,8 @@
 {
   "id": "e10doc.stockOut",
   "name": "StockOut",
-  "extensions": ["stockout"]
+  "extensions": ["stockout"],
+  "config": [
+    {"id": "+e10.reports.sendReports", "file": "sendReports.json"}
+  ]
 }
