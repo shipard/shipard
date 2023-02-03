@@ -23,6 +23,8 @@ class DocReport extends DocReportBase
 	{
 		$this->app()->printMode = TRUE;
 
+		$this->loadData_MainPerson('person');
+
 		parent::loadData();
 		if ($this->testNewPersons)
 			$this->loadAddresses();
@@ -206,7 +208,6 @@ class DocReport extends DocReportBase
 		$this->data ['taxNotes'] = array_values($this->data ['taxNotes']);
 
 		// -- person
-		$this->loadData_MainPerson('person');
 		$this->loadDataPerson('personHandover');
 
 		// delivery address

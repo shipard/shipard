@@ -5,7 +5,8 @@
 		{"id": "note", "name": "Poznámka", "type": "string", "len": 120},
 
 		{"id": "onAllReports", "name": "Dát na všechny sestavy", "type": "logical", "options": ["saveOnChange"]},
-
+	  {"id": "language", "name": "Jazyk", "type": "enumString", "len": 5,
+		  "enumCfg": {"cfgItem": "e10.base.languages", "cfgValue": "", "cfgText": "name"}},
 		{"id": "reportPlace", "name": "Umístění textu", "type": "enumString", "len": "25",
 			"enumValues": {
 				"subHeader": "Záhlaví nad řádky",

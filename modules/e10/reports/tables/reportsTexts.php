@@ -22,15 +22,18 @@ class TableReportsTexts extends DbTable
 	{
 		$recData ['systemOrder'] = 99;
 
-		/*
-		if ($recData['qryDocDbCounter'])
+		if ($recData['language'] !== '')
 			$recData ['systemOrder']--;
-
-		if ($recData['qryDocKind'] != 0)
-			$recData ['systemOrder']--;
-		*/
 
 		parent::checkBeforeSave ($recData, $ownerData);
+	}
+
+	public function checkNewRec (&$recData)
+	{
+		parent::checkNewRec ($recData);
+
+		if (!isset($recData['language']) || $recData['language'] === '')
+			$recData['language'] = 'cs';
 	}
 
 	public function createHeader ($recData, $options)
@@ -54,12 +57,16 @@ class TableReportsTexts extends DbTable
 			$title = $enumPlaces[$recData['reportPlace']];
 	}
 
-	public function loadReportTexts ($report, &$dest)
+	public function loadReportTexts (\Shipard\Report\Report $report, &$dest)
 	{
+		$lang = $report->lang;
+		if ($lang === FALSE || $lang == '')
+			$lang = 'cs';
+
 		$q[] = 'SELECT * FROM [e10_reports_reportsTexts]';
 		array_push ($q, ' WHERE 1');
 		array_push ($q, ' AND [docStateMain] IN %in', [0, 2]);
-
+		array_push ($q, ' AND ([language] = %s', $report->lang, ' OR [language] = %s)', '');
 		array_push ($q, ' AND (onAllReports = %i', 1, ' OR EXISTS ');
 		array_push ($q, ' (SELECT ndx FROM [e10_base_doclinks] ');
 		array_push ($q, ' WHERE 1');
@@ -103,6 +110,8 @@ class ViewReportsTexts extends TableView
 
 	public function renderRow ($item)
 	{
+		$langCfg = $this->app()->cfgItem('e10.base.languages.'.$item['language'], NULL);
+
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['onAllReports'] = $item ['onAllReports'];
 
@@ -112,6 +121,9 @@ class ViewReportsTexts extends TableView
 
 		$listItem ['t1'] = $t1;
 		$listItem ['t2'] = $props;
+
+		if ($langCfg)
+			$listItem['t2'][] = ['text' => $langCfg['name'], 'class' => 'label label-info'];
 
 		if ($item['note'] !== '')
 			$listItem['t3'] = $item['note'];
@@ -144,13 +156,13 @@ class ViewReportsTexts extends TableView
 	{
 		if ($item ['onAllReports'])
 		{
-			$item ['t2'] = ['text' => 'Bude na všech sestavách', 'class' => 'label label-info'];
+			$item ['t2'][] = ['text' => 'Bude na všech sestavách', 'class' => 'label label-info'];
 		}
 		else
 		{
 			if (isset ($this->toReports [$item ['pk']]))
 			{
-				$item ['t2'] = $this->toReports [$item ['pk']];
+				$item ['t2'] = array_merge($item ['t2'], $this->toReports [$item ['pk']]);
 			}
 		}
 	}
@@ -185,6 +197,7 @@ class FormReportText extends TableForm
 					$this->addColumnInput ('onAllReports');
 					if (!$this->recData['onAllReports'])
 						$this->addList ('reports', '', TableForm::loAddToFormLayout);
+					$this->addColumnInput ('language');
 					$this->addColumnInput ('reportPlace');
 					$this->addColumnInput ('note');
 				$this->closeTab ();

@@ -16,7 +16,7 @@ use \e10doc\core\libs\E10Utils;
 class DocReportBase extends FormReport
 {
 	/** @var \e10\persons\TablePersons $tablePersons */
-	var $tablePersons;
+	var $tablePersons = NULL;
 	var $allProperties;
 
 	var $ownerNdx = 0;
@@ -61,12 +61,14 @@ class DocReportBase extends FormReport
 
 	public function loadData()
 	{
+		if (!$this->tablePersons)
+			$this->tablePersons = $this->app()->table('e10.persons.persons');
+
 		$this->testNewPersons = intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
+		$this->allProperties = $this->app()->cfgItem('e10.base.properties', []);
 
 		parent::loadData();
 
-		$this->tablePersons = $this->app()->table('e10.persons.persons');
-		$this->allProperties = $this->app()->cfgItem('e10.base.properties', []);
 
 		$this->data['options']['docReportsPersonsSigns'] = intval($this->app()->cfgItem ('options.appearanceDocs.docReportsPersonsSigns', 0));
 		$this->data['options']['docReportsHeadLogoRight'] = intval($this->app()->cfgItem ('options.appearanceDocs.docReportsHeadLogoPlace', 1));
@@ -93,6 +95,9 @@ class DocReportBase extends FormReport
 
 	function loadData_MainPerson($columnId)
 	{
+		if (!$this->tablePersons)
+			$this->tablePersons = $this->app()->table('e10.persons.persons');
+
 		$personNdx = $this->recData [$columnId];
 		$this->data [$columnId] = $this->tablePersons->loadItem($personNdx);
 		if ($personNdx)
