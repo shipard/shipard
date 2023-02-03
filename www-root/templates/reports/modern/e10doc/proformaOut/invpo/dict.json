@@ -312,11 +312,15 @@
     "sk": "Strana"
   },
   "Dobrý den": {
+    "de": "Hallo",
     "en": "Greetings",
+    "it": "Buongiorno",
     "sk": "Dobrý deň"
   },
   "v příloze Vám zasíláme zálohovou fakturu": {
+    "de": "beiliegend finden Sie eine Vorschussrechnung",
     "en": "in attachments below you will find your proforma invoice",
+    "it": "si allega fattura anticipata",
     "sk": "v prílohe Vám zasielame zálohovú faktúru"
   },
   "Zákazník": {
@@ -326,11 +330,15 @@
     "sk": "Zákazník"
   },
   "Děkujeme za včasnou úhradu": {
+    "de": "Vielen Dank für die pünktliche Zahlung",
     "en": "Thank you for your in-time payment",
+    "it": "Grazie per il pagamento tempestivo",
     "sk": "Ďakujeme za včasnú úhradu"
   },
   "S pozdravem": {
+    "de": "Mit freundlichen Grüßen",
     "en": "Best wishes",
+    "it": "Cordiali saluti",
     "sk": "S pozdravom"
   }
 }

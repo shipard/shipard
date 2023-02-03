@@ -336,19 +336,27 @@
     "sk": "z"
   },
   "Dobrý den": {
+    "de": "Hallo",
     "en": "Greetings",
+    "it": "Buongiorno",
     "sk": "Dobrý deň"
   },
-  "v příloze Vám zasíláme daňový doklad za poskytované služby": {
+  "v příloze Vám zasíláme fakturu za poskytované služby": {
+    "de": "in der Anlage finden Sie eine Rechnung für die erbrachten Leistungen",
     "en": "in attachments below you will find your invoice for provided services",
+    "it": "si allega fattura per i servizi forniti",
     "sk": "v prílohe Vám zasielame daňový doklad za poskytované služby"
   },
   "Děkujeme za včasnou úhradu": {
+    "de": "Vielen Dank für die pünktliche Zahlung",
     "en": "Thank you for your in-time payment",
+    "it": "Grazie per il pagamento tempestivo",
     "sk": "Ďakujeme za včasnú úhradu"
   },
   "S pozdravem": {
+    "de": "Mit freundlichen Grüßen",
     "en": "Best wishes",
+    "it": "Cordiali saluti",
     "sk": "S pozdravom"
   },
   "Faktura": {

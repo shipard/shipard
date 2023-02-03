@@ -2,7 +2,7 @@
   "Upomínka": {
     "de": "Zahlungsanfrage",
     "en": "Request for payment",
-    "it": "richiesta di pagamento",
+    "it": "Richiesta di pagamento",
     "sk": "Upomienka"
   },
   "Ev. číslo": {
@@ -318,43 +318,63 @@
     "sk": "z"
   },
   "Dobrý den": {
+    "de": "Hallo",
     "en": "Greetings",
+    "it": "Buongiorno",
     "sk": "Dobrý deň"
   },
   "S pozdravem": {
+    "de": "Mit freundlichen Grüßen",
     "en": "Best wishes",
+    "it": "Cordiali saluti",
     "sk": "S pozdravom"
   },
   "Vážený zákazníku":{
+    "de": "Lieber Klient",
     "en": "Dear customer",
+    "it": "Gentile cliente",
     "sk": "Vážený zákazník"
   },
   "dovolujeme si Vás upozornit, že ke dni":{
+    "de": "wir möchten Sie darüber informieren, dass ab dem",
     "en": "we would like to remind you that as of",
+    "it": "desideriamo informarvi che a partire da",
     "sk": "dovoľujeme si Vás upozorniť, že ku dňu"
   },
   "stále evidujeme následující pohledávky":{
+    "de": "verbuchen wir noch die folgenden Forderungen",
     "en": "we still record the following receivables",
+    "it": "registriamo ancora i seguenti crediti",
     "sk": "stále evidujeme nasledujúce pohľadávky"
   },
   "stále evidujeme pohledávky":{
+    "de": "wir sind noch dabei, Forderungen zu registrieren",
     "en": "we still record receivables",
+    "it": "stiamo ancora registrando i crediti",
     "sk": "stále evidujeme pohľadávky"
   },
   "v celkové výši":{
+    "de": "in der Gesamthöhe von",
     "en": "in the total amount of",
+    "it": "nell'importo totale di",
     "sk": "v celkovej výške"
   },
   "Prosíme Vás o co nejrychlejší kontrolu a úhradu dlužných částek":{
+    "de": "Bitte prüfen Sie die fälligen Beträge und zahlen Sie sie so bald wie möglich",
     "en": "We ask you to check and pay the amount as soon as possible",
+    "it": "Si prega di controllare e pagare gli importi dovuti il prima possibile",
     "sk": "Prosíme Vás o čo najrýchlejšie kontrolu a úhradu dlžných súm"
   },
   "Děkujeme":{
+    "de": "Dankeschön",
     "en": "Thank you",
+    "it": "Grazie",
     "sk": "Ďakujeme"
   },
   "Přesný rozpis dlužných částek naleznete v příloze této zprávy. Žádáme Vás zdvořile o kontrolu a provedení úhrady":{
+    "de": "Eine detaillierte Aufschlüsselung der fälligen Beträge findet sich im Anhang zu diesem Bericht. Wir bitten Sie, zu prüfen und zu bezahlen",
     "en": "You can find the exact breakdown of the amounts in attachments below. We ask you to check and pay the amount as soon as possible",
+    "it": "La ripartizione dettagliata degli importi dovuti è riportata nell'allegato alla presente relazione. Vi chiediamo gentilmente di controllare ed effettuare il pagamento",
     "sk": "Presný rozpis dlžných súm nájdete v prílohe k tejto správe. Žiadame Vás zdvorilo o kontrolu a vykonanie úhrady"
   }
 }

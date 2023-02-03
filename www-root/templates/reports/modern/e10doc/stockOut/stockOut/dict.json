@@ -1,6 +1,8 @@
 {
   "Výdejka": {
+    "de": "Aktienfreigabemitteilung",
     "en": "Stock release note",
+    "it": "Nota di rilascio delle azioni",
     "sk": "Výdajka"
   },
   "Ev. číslo": {
@@ -334,15 +336,21 @@
     "sk": "z"
   },
   "Dobrý den": {
+    "de": "Hallo",
     "en": "Greetings",
+    "it": "Buongiorno",
     "sk": "Dobrý deň"
   },
   "v příloze Vám zasíláme výdejku": {
+    "de": "Anbei senden wir Ihnen eine Quittung",
     "en": "in attachments below you will find your stock release note",
+    "it": "in allegato vi inviamo una ricevuta",
     "sk": "v prílohe Vám zasielame výdajku"
   },
   "S pozdravem": {
+    "de": "Mit freundlichen Grüßen",
     "en": "Best wishes",
+    "it": "Cordiali saluti",
     "sk": "S pozdravom"
   }
 }

@@ -1,6 +1,8 @@
 {
   "Příjemka": {
     "en": "Receiving record",
+    "de": "Empfangsbeleg",
+    "it": "Registro di ricezione",
     "sk": "Príjemka"
   },
   "číslo": {
@@ -334,15 +336,21 @@
     "sk": "z"
   },
   "Dobrý den": {
+    "de": "Hallo",
     "en": "Greetings",
+    "it": "Buongiorno",
     "sk": "Dobrý deň"
   },
   "v příloze Vám zasíláme příjemku": {
+    "de": "in den Anhängen unten finden Sie Ihren Empfangsbeleg",
     "en": "in attachments below you will find your receiving record",
+    "it": "negli allegati sottostanti troverete il vostro record di ricezione",
     "sk": "v prílohe Vám zasielame príjemku"
   },
   "S pozdravem": {
+    "de": "Mit freundlichen Grüßen",
     "en": "Best wishes",
+    "it": "Cordiali saluti",
     "sk": "S pozdravom"
   }
 }
