@@ -21,6 +21,8 @@ class ViewOffices extends \e10mnf\core\ViewWorkOrders
 		if (!count ($this->pks))
 			return;
 
+		$this->classification = UtilsBase::loadClassification ($this->table->app(), $this->table->tableId(), $this->pks);
+
 		$issuesPks = [];
 
 		$q = [];
@@ -45,9 +47,15 @@ class ViewOffices extends \e10mnf\core\ViewWorkOrders
 
 	function decorateRow (&$item)
 	{
+		if (isset ($this->classification [$item ['pk']]))
+		{
+			forEach ($this->classification [$item ['pk']] as $clsfGroup)
+				$item ['t2'] = array_merge ($item ['t2'], $clsfGroup);
+		}
+
 		if (isset ($this->issues[$item ['pk']]))
 		{
-			$item['t2'][] = ['text' => strval(count($this->issues[$item ['pk']])), 'icon' => 'user/envelope', 'class' => 'label label-danger'];
+			$item['i2'] = ['text' => strval(count($this->issues[$item ['pk']])), 'icon' => 'user/envelope', 'class' => 'label label-danger'];
 
 			/*
 			foreach ($this->issues[$item ['pk']] as $issue)
