@@ -150,11 +150,15 @@ class ViewDetailSupplier extends \E10\Persons\ViewDetailPersons
 			'data-addparams' => $addParams, 'text' => 'Nový výkup'
 		];
 
-		$addParams = '__docType=cashreg&__person='.$this->item['ndx'];
-		$toolbar [] = [
-			'type' => 'document', 'action' => 'new', 'data-table' => 'e10doc.core.heads',
-			'data-addparams' => $addParams, 'text' => 'Nová prodejka'
-		];
+		if (isset ($this->app()->workplace['cashBox']))
+		{
+			$cbNdx = $this->app()->workplace['cashBox'];
+			$addParams = '__docType=cashreg&__person='.$this->item['ndx'].'&__cashBox='.$cbNdx;
+			$toolbar [] = [
+				'type' => 'document', 'action' => 'new', 'data-table' => 'e10doc.core.heads',
+				'data-addparams' => $addParams, 'text' => 'Nová prodejka'
+			];
+		}
 
 		return $toolbar;
 	} // createToolbar
