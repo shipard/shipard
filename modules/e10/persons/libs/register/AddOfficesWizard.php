@@ -52,15 +52,30 @@ class AddOfficesWizard extends Wizard
 		$this->openForm ();
       $this->addInput('personNdx', '', self::INPUT_STYLE_STRING, self::coHidden, 120);
       $this->addInput('personId', '', self::INPUT_STYLE_STRING, self::coHidden, 120);
-      foreach ($reg->missingOffices as $mo)
-      {
-        $addrId = 'AO_'.$mo['natId'];
-        $label = [
-          ['text' => $mo['addressText'], 'class' => ''],
-          ['text' => 'IČP: '.$mo['natId'], 'class' => 'label label-default'],
-        ];
-        $this->addCheckBox($addrId, $label, '1', self::coRightCheckbox);
-      }
+
+			if (count($reg->missingOffices))
+			{
+				foreach ($reg->missingOffices as $mo)
+				{
+					$addrId = 'AO_'.$mo['natId'];
+					$label = [
+						['text' => $mo['addressText'], 'class' => ''],
+						['text' => 'IČP: '.$mo['natId'], 'class' => 'label label-default'],
+					];
+					$this->addCheckBox($addrId, $label, '1', self::coRightCheckbox);
+				}
+			}
+			else
+			{
+				if (count($reg->registerData['address']) < 2)
+				{
+					$this->addStatic(['text' => 'Firma nemá žádné provozovny...', 'class' => 'padd5']);
+				}
+				else
+				{
+					$this->addStatic(['text' => 'Všechny provozovny již máte přidány...', 'class' => 'padd5']);
+				}
+			}
   		$this->closeForm ();
 	}
 
@@ -92,10 +107,24 @@ class AddOfficesWizard extends Wizard
 		$this->init();
 
 		$hdr = [];
-		$hdr ['icon'] = 'user/envelope';
+		$hdr ['icon'] = 'user/home';
+		$hdr ['info'][] = ['class' => 'title', 'value' => 'Načíst provozovny '/*.$this->requestRecData['subject']*/];
 
-    $hdr ['info'][] = ['class' => 'title', 'value' => 'Načíst pobočky '/*.$this->requestRecData['subject']*/];
-		//$hdr ['info'][] = ['class' => 'info', 'value' => Json::encode($this->requestData['person']['login'])];
+		/** @var \e10\persons\TablePersons $tablePersons */
+		$tablePersons = $this->app()->table('e10.persons.persons');
+		$personRecData = $tablePersons->loadItem($this->personNdx);
+
+		if ($personRecData)
+		{
+			$hdr ['info'][] = ['class' => 'info', 'value' => [
+				[
+					'text' => ($personRecData ['fullName'] !== '') ? $personRecData ['fullName'] : '!!!'.$this->personNdx,
+					'icon' => $tablePersons->tableIcon($personRecData),
+				],
+				['text' => '#'.$personRecData['id'], 'class' => 'pull-right']
+			],
+			];
+		}
 
 		return $hdr;
 	}
