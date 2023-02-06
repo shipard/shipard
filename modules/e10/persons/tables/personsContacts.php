@@ -232,6 +232,8 @@ class FormPersonContact extends TableForm
 
 	public function renderForm ()
 	{
+		$useOfficesIds = intval($this->app()->cfgItem ('options.persons.useOfficesIds', 0));
+
 		$this->loadContactIdsOptions();
 
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
@@ -261,7 +263,7 @@ class FormPersonContact extends TableForm
 						$this->addColumnInput ('adrZipCode');
 						$this->addColumnInput ('adrCountry');
 
-						if ($this->idsOptions && (isset($this->idsOptions['id1']) || isset($this->idsOptions['id2'])))
+						if ($useOfficesIds && $this->idsOptions && (isset($this->idsOptions['id1']) || isset($this->idsOptions['id2'])))
 						{
 							$this->addSeparator(self::coH4);
 							if (isset($this->idsOptions['id1']))
