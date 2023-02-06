@@ -205,6 +205,7 @@ function createNewPersonNew (\Shipard\Application\Application $app, $personData)
         'adrZipCode' => $address['zipcode'] ?? '',
         'adrCountry' => World::countryNdx($app, $app->cfgItem ('options.core.ownerDomicile', 'cz')),
         'flagAddress' => 1,
+				'onTop' => 99,
         'docState' => 4000, 'docStateMain' => 2,
       ];
 

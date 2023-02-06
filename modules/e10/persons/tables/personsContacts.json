@@ -24,6 +24,9 @@
 		{"id": "id1", "name": "ID1", "type": "string", "len": 30},
 		{"id": "id2", "name": "ID2", "type": "string", "len": 30},
 
+		{"id": "onTop", "name": "Přišpendlit nahoru", "type": "enumInt",
+			"enumValues": {"99": "Ne", "50": "Ano"}},
+
 	  {"id": "adrLocLat", "name": "Zeměpisná šířka", "type": "number", "dec": 7},
 	  {"id": "adrLocLon", "name": "Zeměpisná délka", "type": "number", "dec": 7},
 	  {"id": "adrLocState", "name": "Stav zaměření na mapě", "type": "enumInt",

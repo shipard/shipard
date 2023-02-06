@@ -39,6 +39,8 @@ class ImportNewPersons extends Utility
 
         'flagAddress' => 1,
 
+        'onTop' => 99,
+
         'docState' => $r['docState'],
         'docStateMain' => $r['docStateMain'],
       ];

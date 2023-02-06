@@ -139,6 +139,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$s = [];
 		$s [] = ['end' => '2022-12-31', 'sql' => "update e10_persons_address set docState = 4000, docStateMain = 2 where docState = 0"];
 		$s [] = ['end' => '2022-12-31', 'sql' => "update e10_persons_address set docState = 4000, docStateMain = 2 where docState = 2"];
+		$s [] = ['end' => '2023-06-01', 'sql' => "update e10_persons_personsContacts set onTop = 99 where onTop = 0"];
 		$this->doSqlScripts ($s);
 
 		// check owner persons properties

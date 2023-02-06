@@ -28,6 +28,9 @@ class TablePersonsContacts extends DbTable
 			$recData['systemOrder'] = 1;
 		elseif ($recData['flagOffice'])
 			$recData['systemOrder'] = 20;
+
+		if ($recData['onTop'] == 0)
+			$recData['onTop'] = 99;
 	}
 
 	public function checkNewRec (&$recData)
@@ -39,6 +42,8 @@ class TablePersonsContacts extends DbTable
 			$thc = $this->app()->cfgItem ('options.core.ownerDomicile', 'cz');
 			$recData['adrCountry'] = World::countryNdx($this->app(), $thc);
 		}
+		if (!isset($recData['onTop']) || $recData['onTop'] == 0)
+			$recData['onTop'] = 99;
 	}
 
 	public function columnRefInputTitle ($form, $srcColumnId, $inputPrefix)
@@ -281,6 +286,7 @@ class FormPersonContact extends TableForm
 
 					$this->addSeparator(self::coH4);
 					$this->addList ('clsf', '', TableForm::loAddToFormLayout);
+					$this->addColumnInput ('onTop');
 				$this->closeTab ();
 				$this->openTab ();
 				$this->closeTab ();

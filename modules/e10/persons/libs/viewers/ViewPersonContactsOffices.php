@@ -49,7 +49,7 @@ class ViewPersonContactsOffices extends TableView
 			array_push ($q, ')');
 		}
 
-		$this->queryMain ($q, '[contacts].', ['[systemOrder], [adrCity]', '[ndx]']);
+		$this->queryMain ($q, '[contacts].', ['[onTop]', '[systemOrder]', '[adrCity]', '[ndx]']);
 		$this->runQuery ($q);
 
 		$this->runQuery ($q);

@@ -47,7 +47,7 @@ class ViewPersonContacts extends TableView
 			array_push ($q, ')');
 		}
 
-		$this->queryMain ($q, '[contacts].', ['[systemOrder], [adrCity]', '[ndx]']);
+		$this->queryMain ($q, '[contacts].', ['[onTop]', '[systemOrder]', '[adrCity]', '[ndx]']);
 		$this->runQuery ($q);
 
 		$this->runQuery ($q);
@@ -70,6 +70,9 @@ class ViewPersonContacts extends TableView
 
     $address = '';
     $addressFlags = [];
+
+		if ($item['onTop'] != 99)
+			$listItem['i1'] = ['text' => '', 'icon' => 'system/iconPinned', 'class' => 'id'];
 
     if ($item['flagAddress'])
     {
