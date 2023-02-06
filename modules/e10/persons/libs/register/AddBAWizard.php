@@ -52,16 +52,30 @@ class AddBAWizard extends Wizard
 		$this->openForm ();
       $this->addInput('personNdx', '', self::INPUT_STYLE_STRING, self::coHidden, 120);
       $this->addInput('personId', '', self::INPUT_STYLE_STRING, self::coHidden, 120);
-      foreach ($reg->missingBA as $mba)
-      {
-        $baId = 'BA_'.$mba['bankAccount'];
-        $label = [
-          ['text' => $mba['bankAccount'], 'class' => ''],
-          //['text' => 'IČP: '.$mo['natId'], 'class' => 'label label-default'],
-        ];
-        $this->addCheckBox($baId, $label, '1', self::coRightCheckbox);
-        $this->recData[$baId] = 1;
-      }
+			if (count($reg->missingBA))
+			{
+				foreach ($reg->missingBA as $mba)
+				{
+					$baId = 'BA_'.$mba['bankAccount'];
+					$label = [
+						['text' => $mba['bankAccount'], 'class' => ''],
+					];
+					$this->addCheckBox($baId, $label, '1', self::coRightCheckbox);
+					$this->recData[$baId] = 1;
+				}
+			}
+			else
+			{
+				if (count($reg->personBA) < 1)
+				{
+					$this->addStatic(['text' => 'Firma nemá žádné zveřejněné bankovní účty...', 'class' => 'padd5']);
+				}
+				else
+				{
+					$this->addStatic(['text' => 'Všechny bankovní účty již máte přidány...', 'class' => 'padd5']);
+				}
+			}
+
   		$this->closeForm ();
 	}
 
@@ -94,9 +108,23 @@ class AddBAWizard extends Wizard
 
 		$hdr = [];
 		$hdr ['icon'] = 'docType/bank';
-
     $hdr ['info'][] = ['class' => 'title', 'value' => 'Načíst bankovní účty '/*.$this->requestRecData['subject']*/];
-		//$hdr ['info'][] = ['class' => 'info', 'value' => Json::encode($this->requestData['person']['login'])];
+
+		/** @var \e10\persons\TablePersons $tablePersons */
+		$tablePersons = $this->app()->table('e10.persons.persons');
+		$personRecData = $tablePersons->loadItem($this->personNdx);
+
+		if ($personRecData)
+		{
+			$hdr ['info'][] = ['class' => 'info', 'value' => [
+				[
+					'text' => ($personRecData ['fullName'] !== '') ? $personRecData ['fullName'] : '!!!'.$this->personNdx,
+					'icon' => $tablePersons->tableIcon($personRecData),
+				],
+				['text' => '#'.$personRecData['id'], 'class' => 'pull-right']
+			],
+			];
+		}
 
 		return $hdr;
 	}
