@@ -151,7 +151,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
     array_push ($q, ' SUM([rows].quantityKG) as quantityKG,');
     array_push ($q, ' nomencItems.fullName, nomencItems.itemId,');
     array_push ($q, ' persons.fullName AS personFullName,');
-    array_push ($q, ' addrs.adrCity, addrs.adrStreet, addrs.id1');
+    array_push ($q, ' addrs.adrCity, addrs.adrStreet, addrs.id1, addrs.id2');
 		array_push ($q, ' FROM e10pro_reports_waste_cz_returnRows AS [rows]');
     array_push ($q, ' LEFT JOIN [e10_base_nomencItems] AS nomencItems ON [rows].wasteCodeNomenc = nomencItems.ndx');
     array_push ($q, ' LEFT JOIN [e10_persons_personsContacts] AS addrs ON [rows].personOffice = addrs.ndx');
@@ -294,13 +294,27 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 
       if ($r['addressMode'] === 0)
       { // office
-        if ($r['id1'] && $r['id1'] !== '')
+        if (($r['id1'] && $r['id1'] !== '') || ($r['id2'] && $r['id2'] !== ''))
         {
-          $data[$wcId]['id1'] = [
-            ['text' => 'IČP: ', 'class' => ''],
-            ['text' => $r['id1'], 'docAction' => 'edit', 'pk' => $r['personOffice'], 'table' => 'e10.persons.personsContacts', 'class' => ''],
-          ];
-          $data[$wcId]['id1'][1]['suffix'] = $r['adrStreet'].', '.$r['adrCity'];
+          $data[$wcId]['id1'] = [];
+          if ($r['id2'] && $r['id2'] !== '')
+          {
+            $data[$wcId]['id1'][] = [
+              ['text' => 'IČZ: ', 'class' => ''],
+              ['text' => $r['id2'], 'class' => ''],
+            ];
+          }
+          if ($r['id1'] && $r['id1'] !== '')
+          {
+            $data[$wcId]['id1'][] = [
+              ['text' => 'IČP: ', 'class' => ''],
+              [
+                'text' => $r['id1'], 'docAction' => 'edit', 'pk' => $r['personOffice'],
+                'table' => 'e10.persons.personsContacts', 'class' => '',
+                'suffix' => $r['adrStreet'].', '.$r['adrCity'],
+              ],
+            ];
+          }
         }
       }
       else

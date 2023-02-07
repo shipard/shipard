@@ -119,7 +119,7 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
     array_push ($q, 'SELECT [rows].person, [rows].personOffice, [rows].wasteCodeNomenc, SUM([rows].quantityKG) as quantityKG,');
     array_push ($q, ' nomencItems.fullName, nomencItems.itemId,');
     array_push ($q, ' persons.fullName AS personFullName,');
-    array_push ($q, ' addrs.adrSpecification, addrs.adrCity, addrs.adrZipCode, addrs.adrStreet, addrs.id1,');
+    array_push ($q, ' addrs.adrSpecification, addrs.adrCity, addrs.adrZipCode, addrs.adrStreet, addrs.id1, addrs.id2,');
 		array_push ($q, ' [rows].[addressMode], [rows].[nomencCity],');
 		array_push ($q, ' [heads].docNumber, [heads].dateAccounting, [heads].otherAddress1Mode, [heads].personNomencCity');
 		array_push ($q, ' FROM e10pro_reports_waste_cz_returnRows AS [rows]');
@@ -136,7 +136,7 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
     if ($this->periodEnd)
       array_push ($q, ' AND [rows].[dateAccounting] <= %d', $this->periodEnd);
 		array_push ($q, ' GROUP BY [heads].docNumber, [rows].person, [rows].[addressMode], [rows].personOffice, [rows].nomencCity, wasteCodeNomenc');
-    array_push ($q, ' ORDER BY persons.fullName, addrs.id1, wasteCodeNomenc');
+    array_push ($q, ' ORDER BY persons.fullName, addrs.id1, addrs.id2, wasteCodeNomenc');
 
 		$rows = $this->app->db()->query ($q);
 		forEach ($rows as $r)
@@ -174,6 +174,14 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 					['text' => 'IČP: '.$id_icp_theirs, 'class' => ''],
 					['text' => implode(', ', $ap), 'class' => 'e10-small break']
 				];
+				if ($r['id2'] != '')
+					$id_icp_theirs .= '-'.$r['id2'];
+				if ($r['id2'] != '')
+				{
+					$id_icp_theirs_text[] = [
+						['text' => 'IČZ: '.$r['id2'], 'class' => 'break'],
+					];
+				}
 			}
 			else
 			{ // city
