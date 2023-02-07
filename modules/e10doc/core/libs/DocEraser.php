@@ -15,10 +15,10 @@ class DocEraser extends \lib\docs\utils\DocEraserCore
 	{
 		$this->docNdx = $docNdx;
 
-		$this->eraseAttachments('wkf.core.issues', $docNdx);
-		$this->eraseClassification('wkf.core.issues', $docNdx);
-		$this->eraseDocLinks('wkf.core.issues', $docNdx);
-		$this->eraseHistory('wkf.core.issues', $docNdx);
+		$this->eraseAttachments('e10doc.core.heads', $docNdx);
+		$this->eraseClassification('e10doc.core.heads', $docNdx);
+		$this->eraseDocLinks('e10doc.core.heads', $docNdx);
+		$this->eraseHistory('e10doc.core.heads', $docNdx);
 
 		$this->eraseRows();
 		$this->eraseRowsTaxes();
