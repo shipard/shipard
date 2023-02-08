@@ -200,10 +200,10 @@ table#head3 {clear: both; width: 100%; border-collapse: collapse; margin-bottom:
 
 table#rows2 {width: 100%; border-collapse: collapse; line-height: 1.4;}
 table#rows2:not(:last-child) {margin-bottom: 10pt;}
-table#rows2 th {text-align: left; padding-left: 6pt; padding-right: 6pt; font-size: 12pt; padding-bottom: 3pt;}
+table#rows2 th {text-align: left; font-size: 12pt; padding-bottom: 3pt;}
 table#rows2 td {border: 1pt solid #5B7F8C; padding-left: 6pt; padding-right: 6pt;}
 
-table#sign2 {text-align: center; width: 100%; padding-top: 3.5cm; background-repeat: no-repeat; background-size: contain;}
+table#sign2 {text-align: center; width: 100%; margin-top: 1.5cm; background-repeat: no-repeat; background-size: contain;}
 table#sign2 td.name {width: 50%; text-align: center;  vertical-align: top; padding: 10pt;}
 table#sign2 td.name div {border-top: 1pt solid #5B7F8C; padding-top: 3pt;}
 
