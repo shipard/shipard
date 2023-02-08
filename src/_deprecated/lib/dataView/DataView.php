@@ -18,7 +18,7 @@ class DataView extends Utility
 	var $requestParams = NULL;
 	var $data = [];
 	var $debugLevel = 0;
-	/** @var \e10\TemplateMustache */
+	/** @var \Shipard\Report\TemplateMustache */
 	var $template = NULL;
 	var $secure = 0;
 
@@ -43,7 +43,7 @@ class DataView extends Utility
 	protected function init()
 	{
 		if ($this->template)
-			$this->secure = $this->template->serverInfo['secureWebPage'];
+			$this->secure = $this->template->serverInfo['secureWebPage'] ?? 0;
 		if ($this->secure)
 			$this->debugLevel = $this->requestParam ('debug', 0);
 	}

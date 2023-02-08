@@ -315,6 +315,7 @@ class TemplateCore extends \Mustache
 			case	'composeTextLine' : return $this->resolveCmd_ComposeTextLine($params);
 			case	'qrCode' 					: return $this->resolveCmd_QrCode($params);
 			case	'script' 					: return $this->resolveCmd_Script($params);
+			case	'var' 						: return $this->resolveCmd_Var($params);
 		}
 
 		$res = $this->app->callRegisteredFunction ('template', $tagName, $params);
@@ -485,6 +486,16 @@ class TemplateCore extends \Mustache
 		$script->setScriptId($scriptId);
 		$script->runScript($this->data);
 		return $script->resultCode;
+	}
+
+	function resolveCmd_Var ($params)
+	{
+		if (isset($params['text']) && $params['text'] != '')
+		{
+			return Utils::cfgItem($this->data, $params['text'], '');
+		}
+
+		return '';
 	}
 }
 
