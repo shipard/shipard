@@ -340,5 +340,23 @@
     "en": "Best wishes",
     "it": "Cordiali saluti",
     "sk": "S pozdravom"
+  },
+  "Provozovna dodavatele": {
+    "de": "Niederlassung des Lieferanten",
+    "en": "Supplier's establishment",
+    "it": "Ramo del fornitore",
+    "sk": "Prevádzkareň dodávateľa"
+  },
+  "Doručovací adresa": {
+    "de": "Lieferadresse",
+    "en": "Delivery address",
+    "it": "Indirizzo di consegna",
+    "sk": "Dodacia adresa"
+  },
+  "Provozovna odběratele": {
+    "de": "Niederlassung des Kunden",
+    "en": "Customer's establishment",
+    "it": "Ramo del cliente",
+    "sk": "Prevádzkareň zákazníka"
   }
 }

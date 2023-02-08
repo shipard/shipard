@@ -352,5 +352,11 @@
     "en": "Best wishes",
     "it": "Cordiali saluti",
     "sk": "S pozdravom"
+  },
+  "Provozovna odběratele": {
+    "de": "Niederlassung des Kunden",
+    "en": "Customer's establishment",
+    "it": "Ramo del cliente",
+    "sk": "Prevádzkareň zákazníka"
   }
 }
