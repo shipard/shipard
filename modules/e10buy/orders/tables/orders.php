@@ -161,6 +161,10 @@ class TableOrders extends DbTable
 			'docID' => $recData['docNumber'],
 		];
 
+		if (isset($recData['supplier']) && $recData['supplier'])
+			$info ['persons']['to'][] = $recData['supplier'];
+		$info ['persons']['from'][] = intval($this->app()->cfgItem ('options.core.ownerPerson', 0));
+
 		return $info;
 	}
 

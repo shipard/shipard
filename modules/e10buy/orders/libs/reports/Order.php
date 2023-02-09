@@ -45,5 +45,7 @@ class Order extends DocReportBase
 
 			$this->data ['rows'][] = $r;
 		}
+
+		$this->data ['flags']['foreignCountry'] = $this->ownerCountry !== $this->country;
 	}
 }
