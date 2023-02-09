@@ -1,0 +1,185 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+	<title>Vzájemný zápočet {{data.head.docNumber}}</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v22" type="text/css"/>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/sc/icons/fa/5/css/all.min.css">
+</head>
+<body>
+
+<table class="mainInfo">
+	<tr>
+		<td class="info">
+			<table class="dates">
+				<tr>
+					<td class='label'>{{@dict;Uzavřeno dne}}:</td><td class='value'>{{data.head.dateIssue}}</td>
+				</tr>
+				<tr>
+					<td class='label'>{{@dict;Platné ke dni}}:</td><td class='value'>{{data.head.dateAccounting}}</td>
+				</tr>
+			</table>
+		<td>
+
+		<td class="info">
+			<table class="docInfo">
+				<tr>
+					<td class='label'>{{@dict;Evidenční číslo}}:</td><td class='value'>{{data.head.docNumber}}</td>
+				</tr>
+				<tr>
+					<td class='label'>{{@dict;Měna}}:</td><td class='value'>{{data.head.print.currency}}</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
+
+<table class="infoSecondary">
+	<tr>
+		<td class="supplier">
+			<span class='hdr' id="supplier-address-hdr">{{@dict;Navrhovatel}}:</span>
+			{{#data.reportTexts.supplierAndContacts}}{{{data.reportTexts.supplierAndContacts}}}{{/data.reportTexts.supplierAndContacts}}
+				{{^data.reportTexts.supplierAndContacts}}
+				<span class='address' id="supplier-address-box">
+					{{#data.reportTexts.supplier}}{{{data.reportTexts.supplier}}}<br>{{/data.reportTexts.supplier}}
+					{{^data.reportTexts.supplier}}
+						<span class='title'>{{data.owner.fullName}}</span>
+						{{#data.owner.address.specification}}
+							{{data.owner.address.specification}}<br/>
+						{{/data.owner.address.specification}}
+						{{data.owner.address.street}}<br/>
+						{{^data.flags.foreignCountry}}
+							{{data.owner.address.zipcode}} {{data.owner.address.city}}<br/>
+						{{/data.flags.foreignCountry}}
+						{{#data.flags.foreignCountry}}
+							{{data.owner.address.zipcode}} {{data.owner.address.city}}<br/>
+							{{data.owner.address.countryNameEng}}
+						{{/data.flags.foreignCountry}}
+
+						</span>
+					{{/data.reportTexts.supplier}}
+						{{#data.reportTexts.contacts}}{{{data.reportTexts.contacts}}}{{/data.reportTexts.contacts}}
+						{{^data.reportTexts.contacts}}
+							{{#data.owner_identifiers}}
+								<b>{{@dict;dataItem:name}}:</b> {{value}}
+							{{/data.owner_identifiers}}<br>
+
+							<small>{{cfgItem.options.core.ownerLegalRegInfo}}</small>
+						{{/data.reportTexts.contacts}}
+					{{/data.reportTexts.supplierAndContacts}}
+		</td>
+
+		<td class="customer">
+			<div class='hdr'>{{@dict;Partner}}:<small class='pull-right'>#{{data.person.id}}</small></div>
+			<span class='title'>{{data.person.fullName}}</span>
+			<span class='address'>
+				{{#data.person.address.specification}}
+					{{data.person.address.specification}}<br/>
+				{{/data.person.address.specification}}
+				{{data.person.address.street}}<br/>
+				{{^data.flags.foreignCountry}}
+					{{data.person.address.zipcode}} {{data.person.address.city}}<br/>
+				{{/data.flags.foreignCountry}}
+				{{#data.flags.foreignCountry}}
+					{{data.person.address.zipcode}} {{data.person.address.city}}<br/>
+					{{data.person.address.countryNameEng}}
+				{{/data.flags.foreignCountry}}
+			</span>
+
+			{{#data.person_identifiers}}
+				<b>{{@dict;dataItem:name}}:</b> {{value}}
+			{{/data.person_identifiers}}
+		</td>
+	</tr>
+</table>
+
+<table id='head2'>
+	<tr>
+		<td>
+			Účastníci dnešního dne započítávají vzájemně splatné i nesplatné pohledávky dohodou.
+		</td>
+	</tr>
+</table>
+
+<table id='rows2'>
+	<thead>
+	<tr>
+		<th colspan="4">Pohledávky {{data.owner.fullName}}</th>
+	</tr>
+	<tr>
+		<td><b>Variabilní symbol</b></td>
+		<td><b>Specifický symbol</b></td>
+		<td><b>Datum splatnosti</b></td>
+		<td class='number'><b>Započteno</b></td>
+	</tr>
+	</thead>
+	{{#data.rows}}
+		{{#credit}}
+			<tr>
+				<td>{{symbol1}}</td>
+				<td>{{symbol2}}</td>
+				<td>{{dateDue}}</td>
+				<td class='number'>{{print.priceAll}}</td>
+			</tr>
+		{{/credit}}
+	{{/data.rows}}
+</table>
+
+
+<table id='rows2'>
+	<thead>
+	<tr>
+		<th colspan=4>Pohledávky {{data.person.fullName}}</th>
+	</tr>
+	<tr>
+		<td><b>Variabilní symbol</b></td>
+		<td><b>Specifický symbol</b></td>
+		<td><b>Datum splatnosti</b></td>
+		<td class='number'><b>Započteno</b></td>
+	</tr>
+	</thead>
+	{{#data.rows}}
+		{{#debit}}
+			<tr>
+				<td>{{symbol1}}</td>
+				<td>{{symbol2}}</td>
+				<td>{{dateDue}}</td>
+				<td class='number'>{{print.priceAll}}</td>
+			</tr>
+		{{/debit}}
+	{{/data.rows}}
+</table>
+
+
+<table id='head3'>
+	<tr>
+		<td>
+			<br/>
+			Smluvní strany se dohodly na vzájemném zápočtu uvedených pohledávek.
+
+			Dohoda je ve dvou vyhotoveních, z nichž každá strana obdrží po jednom vyhotovení.
+
+			Podpisem této dohody obě strany prohlašují, že tímto způsobem jsou jejich vzájemné výše uvedené pohledávky vyrovnány.
+		</td>
+	</tr>
+</table>
+
+
+<table id='sign2'>
+	<tr>
+		<td class='name'>
+			<div>
+				za {{data.owner.fullName}}
+			</div>
+		</td>
+
+		<td class='name'>
+			<div>
+				za {{data.person.fullName}}
+			</div>
+		</td>
+	</tr>
+</table>
+
+</body>
+</html>

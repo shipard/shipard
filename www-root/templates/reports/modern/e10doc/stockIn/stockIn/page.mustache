@@ -39,6 +39,35 @@
 	</tr>
 </table>
 
+<table class="additionalAddresses">
+	<tr>
+		{{#data.flags.usePersonsAddress}}
+			{{#data.flags.useAddressPersonOffice}}
+				<td>
+					<span class='hdr'>{{@dict;Provozovna odběratele}}:</span>
+					<span class='address'>
+						{{#data.personsAddress.personOffice.specification}}
+							{{data.personsAddress.personOffice.specification}}<br/>
+						{{/data.personsAddress.personOffice.specification}}
+						{{data.personsAddress.personOffice.street}}<br/>
+						{{^data.flags.foreignCountry}}
+							{{data.personsAddress.personOffice.zipcode}} {{data.personsAddress.personOffice.city}}<br/>
+						{{/data.flags.foreignCountry}}
+						{{#data.flags.foreignCountry}}
+							{{data.personsAddress.personOffice.zipcode}} {{data.personsAddress.personOffice.city}}<br/>
+							{{data.personsAddress.personOffice.countryNameEng}}
+						{{/data.flags.foreignCountry}}
+					</span>
+
+					{{#data.personsAddress.personOffice.ids}}
+						<b>{{title}}:</b> {{value}}
+					{{/data.personsAddress.personOffice.ids}}
+
+				</td>
+			{{/data.flags.useAddressPersonOffice}}
+		{{/data.flags.usePersonsAddress}}
+	</tr>
+</table>
 
 {{#data.reportTexts.subHeader}}<div class='reportTextHeader'>{{{data.reportTexts.subHeader}}}</div>{{/data.reportTexts.subHeader}}
 
