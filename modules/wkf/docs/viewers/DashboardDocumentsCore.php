@@ -415,7 +415,7 @@ class DashboardDocumentsCore extends TableView
 		$this->linkedPersons = UtilsBase::linkedPersons ($this->table->app(), $this->table, $this->pks, 'e10-small');
 		$this->atts = UtilsBase::loadAttachments ($this->app(), $this->pks, $this->table->tableId());
 
-		$this->classification = \E10\Base\loadClassification ($this->app(), $this->table->tableId(), $this->pks);
+		$this->classification = UtilsBase::loadClassification ($this->app(), $this->table->tableId(), $this->pks);
 
 		/*
 		$this->issuesMarks = new \lib\docs\Marks($this->app());
