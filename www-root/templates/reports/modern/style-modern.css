@@ -247,6 +247,9 @@ table.additionalAddresses td.deliveryAddress div.hdr {font-size: 10pt;}
 
 table.additionalAddresses td div.hdr {font-size: 10pt;}
 
+/* Objednávky */
+div.orderDescription {margin-top: 5pt;}
+
 
 /*** universal app styles */
 

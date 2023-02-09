@@ -69,7 +69,7 @@
 		{"id": "show", "class": "e10buy.orders.OrderShow"}
 	],
 	"reports": [
-		{"id": "buyOrder", "name": "Objednávka", "class": "e10buy.orders.libs.reports.Order"}
+		{"id": "buyOrder", "name": "Objednávka", "class": "e10buy.orders.libs.reports.Order", "email": 1}
 	],
 	"documentCard": "e10buy.orders.Order",
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "title"},

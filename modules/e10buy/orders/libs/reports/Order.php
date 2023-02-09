@@ -13,9 +13,8 @@ class Order extends DocReportBase
 {
 	function init ()
 	{
-		$this->reportId = 'e10buy.orders.order';
-		$this->reportTemplate = 'e10buy.orders.order';
-		$this->paperOrientation = 'portrait';
+		parent::init();
+		$this->setReportId('e10buy.orders.order');
 	}
 
 	public function loadData ()

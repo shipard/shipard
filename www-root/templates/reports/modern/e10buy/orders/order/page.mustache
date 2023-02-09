@@ -1,0 +1,184 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+		<title>test</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+		<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v12" type="text/css"/>
+		<link rel="stylesheet" href="{{dsUrl}}www-root/sc/icons/fa/5/css/all.min.css">
+</head>
+<body>
+
+	<table class="infoSecondary">
+		<tr>
+			<td class="supplier">
+				<span class='hdr' id="supplier-address-hdr">{{@dict;Odběratel}}:</span>
+				{{#data.reportTexts.supplierAndContacts}}{{{data.reportTexts.supplierAndContacts}}}{{/data.reportTexts.supplierAndContacts}}
+					{{^data.reportTexts.supplierAndContacts}}
+					<span class='address' id="supplier-address-box">
+						{{#data.reportTexts.supplier}}{{{data.reportTexts.supplier}}}<br>{{/data.reportTexts.supplier}}
+						{{^data.reportTexts.supplier}}
+							<span class='title'>{{data.owner.fullName}}</span>
+							{{#data.owner.address.specification}}
+								{{data.owner.address.specification}}<br/>
+							{{/data.owner.address.specification}}
+							{{data.owner.address.street}}<br/>
+							{{^data.flags.foreignCountry}}
+								{{data.owner.address.zipcode}} {{data.owner.address.city}}<br/>
+							{{/data.flags.foreignCountry}}
+							{{#data.flags.foreignCountry}}
+								{{data.owner.address.zipcode}} {{data.owner.address.city}}<br/>
+								{{data.owner.address.countryNameEng}}
+							{{/data.flags.foreignCountry}}
+
+							</span>
+						{{/data.reportTexts.supplier}}
+							{{#data.reportTexts.contacts}}{{{data.reportTexts.contacts}}}{{/data.reportTexts.contacts}}
+							{{^data.reportTexts.contacts}}
+								{{#data.owner_identifiers}}
+									<b>{{@dict;dataItem:name}}:</b> {{value}}
+								{{/data.owner_identifiers}}<br>
+
+								<small>{{cfgItem.options.core.ownerLegalRegInfo}}</small>
+							{{/data.reportTexts.contacts}}
+						{{/data.reportTexts.supplierAndContacts}}
+			</td>
+
+			<td class="customer">
+				<div class='hdr'>{{@dict;Dodavatel}}:<small class='pull-right'>#{{data.supplier.id}}</small></div>
+				<span class='title'>{{data.supplier.fullName}}</span>
+				<span class='address'>
+					{{#data.supplier.address.specification}}
+						{{data.person.address.specification}}<br/>
+					{{/data.supplier.address.specification}}
+					{{data.supplier.address.street}}<br/>
+					{{^data.flags.foreignCountry}}
+						{{data.supplier.address.zipcode}} {{data.supplier.address.city}}<br/>
+					{{/data.flags.foreignCountry}}
+					{{#data.flags.foreignCountry}}
+						{{data.supplier.address.zipcode}} {{data.supplier.address.city}}<br/>
+						{{data.supplier.address.countryNameEng}}
+					{{/data.flags.foreignCountry}}
+				</span>
+
+				{{#data.supplier_identifiers}}
+					<b>{{@dict;dataItem:name}}:</b> {{value}}
+				{{/data.supplier_identifiers}}
+			</td>
+		</tr>
+	</table>
+
+	{{#data.reportTexts.subHeader}}{{{data.reportTexts.subHeader}}}{{/data.reportTexts.subHeader}}
+
+    {{#data.docs_properties.notes.note-ext}}
+			{{{value}}}
+    {{/data.docs_properties.notes.note-ext}}
+
+
+	<div class="orderDescription">
+		{{data.head.print.description}}
+	</div>
+
+	<table class="rows {{#data.options.docReportsTablesRoundedCorners}} rounded{{/data.options.docReportsTablesRoundedCorners}}">
+		<thead>
+			<tr>
+				{{^data.flags.multiLineRows}}
+					<th>{{@dict;Položka}}</th>
+				{{/data.flags.multiLineRows}}
+				{{#data.flags.multiLineRows}}
+					{{#data.itemCodesHeader}}
+						<th class='number'>{{sn}}</th>
+					{{/data.itemCodesHeader}}
+				{{/data.flags.multiLineRows}}
+				<th class='number'>{{@dict;Množství}}</th>
+				<th>{{@dict;Jed.}}</th>
+				{{#data.head.taxPayer}}
+					<th class='number'>% {{@dict;DPH}}</th>
+				{{/data.head.taxPayer}}
+				<th class='number'>{{@dict;Cena/jed.}}</th>
+				<th class='number'>{{@dict;Cena celkem}}</th>
+			</tr>
+		</thead>
+
+		{{^data.flags.multiLineRows}}
+			{{#data.rows}}
+				<tr>
+					<td>
+						{{text}}{{#additionsMarks}}<sup> {{additionsMarks}}</sup>{{/additionsMarks}}
+						{{#data.flags.itemCodesList}}
+							<ul class="itemCodesList{{#data.flags.itemCodesInline}} itemCodesListInline{{/data.flags.itemCodesInline}}">
+								{{#rowItemCodes}}
+									{{#itemCodeText}}<li>{{itemCodeName}}: {{itemCodeText}}</li>{{/itemCodeText}}
+								{{/rowItemCodes}}
+							</ul>
+						{{/data.flags.itemCodesList}}
+						{{#rowDataHtmlCode}}<div>{{{rowDataHtmlCode}}}</div>{{/rowDataHtmlCode}}
+					</td>
+					<td class='number'>{{quantity}}</td>
+					<td>{{@dict;dataItem:print.unit}}</td>
+					{{#data.head.taxPayer}}
+						<td class='number'>{{taxPercents}}</td>
+					{{/data.head.taxPayer}}
+					<td class='number'>{{print.priceItem}}</td>
+					<td class='number'>{{print.priceAll}}</td>
+				</tr>
+			{{/data.rows}}
+		{{/data.flags.multiLineRows}}
+		{{#data.flags.multiLineRows}}
+			{{#data.rows}}
+				<tr>
+					<td class="itemRow" colspan="8" style="font-weight: semi-bold;">
+						{{text}}{{#additionsMarks}}<sup> {{additionsMarks}}</sup>{{/additionsMarks}}
+						{{#rowDataHtmlCode}}<div>{{{rowDataHtmlCode}}}</div>{{/rowDataHtmlCode}}
+					</td>
+				</tr>
+				<tr class="rowInfo">
+					<td class='itemID'>{{itemID}}</td>
+					{{#rowItemCodes}}
+						<td class='number'>{{itemCodeText}}</td>
+					{{/rowItemCodes}}
+					<td class='number'>{{quantity}}</td>
+					<td>{{@dict;dataItem:print.unit}}</td>
+					{{#data.head.taxPayer}}
+						<td class='number'>{{taxPercents}}</td>
+					{{/data.head.taxPayer}}
+					<td class='number'>{{print.priceItem}}</td>
+					<td class='number'>{{print.priceAll}}</td>
+				</tr>
+			{{/data.rows}}
+		{{/data.flags.multiLineRows}}
+	</table>
+
+	<div class='pay'>
+		{{@dict;Celkem k úhradě}}: <b>{{data.head.print.sumPrice}} {{data.head.print.currency}}</b>
+	</div>
+
+	{{#data.additionsExists}}
+		<h4>Poznámky</h4>
+		{{#data.additions}}
+			{{mark}}: {{labelPrefix}} {{identifier}}<br>
+		{{/data.additions}}
+		<br/>
+	{{/data.additionsExists}}
+
+	<table class="signed">
+		<tr>
+			<td class="empty">
+			<td>
+			<td>
+				<img src='{{dsUrl}}{{data.author.signature.rfn}}'>
+			</td>
+		</tr>
+		<tr>
+			<td class="empty">
+			<td>
+			<td>
+				<span>{{@dict;Vystavil}}</span>
+			</td>
+		</tr>
+	</table>
+
+	{{#data.reportTexts.subFooter}}{{{data.reportTexts.subFooter}}}{{/data.reportTexts.subFooter}}
+
+</body>
+</html>
+
