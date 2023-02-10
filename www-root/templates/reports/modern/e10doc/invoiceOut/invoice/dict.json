@@ -382,5 +382,11 @@
     "en": "Customer's establishment",
     "it": "Ramo del cliente",
     "sk": "Prevádzkareň zákazníka"
+  },
+  "faktura": {
+    "de": "rechnung",
+    "en": "invoice",
+    "it": "fattura",
+    "sk": "faktura"
   }
 }

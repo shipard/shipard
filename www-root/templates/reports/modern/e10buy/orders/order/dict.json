@@ -346,5 +346,11 @@
     "en": "Best wishes",
     "it": "Cordiali saluti",
     "sk": "S pozdravom"
+  },
+  "objednavka": {
+    "de": "bestellung",
+    "en": "order",
+    "it": "ordine",
+    "sk": "objednavka"
   }
 }
