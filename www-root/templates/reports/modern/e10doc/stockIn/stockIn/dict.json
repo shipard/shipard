@@ -358,5 +358,11 @@
     "en": "Customer's establishment",
     "it": "Ramo del cliente",
     "sk": "Prevádzkareň zákazníka"
+  },
+  "prijemka": {
+    "en": "receiving-record",
+    "de": "empfangsbeleg",
+    "it": "registro-di-ricezione",
+    "sk": "prijemka"
   }
 }

@@ -376,5 +376,11 @@
     "en": "You can find the exact breakdown of the amounts in attachments below. We ask you to check and pay the amount as soon as possible",
     "it": "La ripartizione dettagliata degli importi dovuti è riportata nell'allegato alla presente relazione. Vi chiediamo gentilmente di controllare ed effettuare il pagamento",
     "sk": "Presný rozpis dlžných súm nájdete v prílohe k tejto správe. Žiadame Vás zdvorilo o kontrolu a vykonanie úhrady"
+  },
+  "upominka": {
+    "de": "zahlungsanfrage",
+    "en": "request-for-payment",
+    "it": "richiesta-di-pagamento",
+    "sk": "upomienka"
   }
 }

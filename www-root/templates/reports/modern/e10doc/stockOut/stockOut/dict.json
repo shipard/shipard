@@ -2,7 +2,7 @@
   "Výdejka": {
     "de": "Aktienfreigabemitteilung",
     "en": "Stock release note",
-    "it": "Nota di rilascio delle azioni",
+    "it": "Nota di rilascio",
     "sk": "Výdajka"
   },
   "Ev. číslo": {
@@ -358,5 +358,11 @@
     "en": "Customer's establishment",
     "it": "Ramo del cliente",
     "sk": "Prevádzkareň zákazníka"
+  },
+  "vydejka": {
+    "de": "aktienfreigabemitteilung",
+    "en": "stock-release-note",
+    "it": "nota-di-rilascio",
+    "sk": "vydajka"
   }
 }

@@ -358,5 +358,11 @@
     "en": "Customer's establishment",
     "it": "Ramo del cliente",
     "sk": "Prevádzkareň zákazníka"
+  },
+  "zalohova-faktura": {
+    "de": "proforma-rechnung",
+    "en": "proforma-invoice",
+    "it": "fattura-proforma",
+    "sk": "zalohova-faktura"
   }
 }
