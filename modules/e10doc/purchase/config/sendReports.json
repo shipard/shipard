@@ -17,7 +17,7 @@
     "fn": "Přehled dodaných odpadů",
     "cn": "Přehled dodaných odpadů",
     "sc": "POO",
-    "classId": "e10pro.reports.waste_cz.ReportWasteOnePersonIn",
-    "ndx": 2700
+    "classId": "e10pro.reports.waste_cz.ReportWasteOnePersonOut",
+    "ndx": 2701
   }
 }
