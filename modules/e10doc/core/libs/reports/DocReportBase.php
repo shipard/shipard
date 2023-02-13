@@ -138,6 +138,7 @@ class DocReportBase extends FormReport
 				$name = '';
 				if ($iii['property'] == 'taxid') $name = 'DIČ';
 				else if ($iii['property'] == 'oid') $name = 'IČ';
+				else if ($iii['property'] == 'cz_icob') $name = 'IČOB';
 				else if ($iii['property'] == 'idcn') $name = 'OP';
 				else if ($iii['property'] == 'birthdate') $name = 'DN';
 				else if ($iii['property'] == 'pid') $name = 'RČ';
@@ -312,6 +313,7 @@ class DocReportBase extends FormReport
 			$name = '';
 			if ($iii['property'] == 'taxid') $name = 'DIČ';
 			else if ($iii['property'] == 'oid') $name = 'IČ';
+			else if ($iii['property'] == 'cz_icob') $name = 'IČOB';
 			else if ($iii['property'] == 'idcn') $name = 'OP';
 			else if ($iii['property'] == 'birthdate') $name = 'DN';
 			else if ($iii['property'] == 'pid') $name = 'RČ';
