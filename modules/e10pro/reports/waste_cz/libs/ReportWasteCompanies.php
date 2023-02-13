@@ -16,6 +16,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
   var $calendarYear = 0;
   var $persons = [];
   var $sendStatus = '';
+  var $showUnits = 0;
 
 	public function init ()
 	{
@@ -26,10 +27,15 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
     if ($this->subReportId === 'companiesIn')
       $this->addParam('switch', 'sendStatus', ['title' => 'Stav', 'switch' => ['all' => 'Vše', 'toSend' => 'Neodeslané', 'sent' => 'Odeslané'], 'radioBtn' => 1, 'defaultValue' => 'all']);
 
+    if ($this->subReportId === 'report')
+      $this->addParam('switch', 'showUnits', ['title' => 'Jednotka', 'switch' => ['1' => 'Tuny', '0' => 'kg'], 'radioBtn' => 1, 'defaultValue' => '1']);
+
 		parent::init();
 
     if ($this->sendStatus === '')
       $this->sendStatus = $this->reportParams ['sendStatus']['value'] ?? 'all';
+
+    $this->showUnits = intval($this->reportParams ['showUnits']['value'] ?? '0');
 
     $cpBegin = $this->reportParams ['calendarPeriod']['values'][$this->reportParams ['calendarPeriod']['value']];
     if (isset($cpBegin['dateBegin']))
@@ -59,6 +65,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 			case 'companiesOut': $this->createContent_CompaniesOut (); break;
 			case 'citizensSum': $this->createContent_CitizensSum (); break;
 			case 'citizensCities': $this->createContent_CitizensCities (); break;
+			case 'report': $this->createContent_Report (); break;
 		}
 	}
 
@@ -346,6 +353,227 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 		$this->addContent (['type' => 'table', 'header' => $h, 'table' => $data, 'main' => TRUE]);
   }
 
+  public function createContent_Report()
+  {
+    $data = [];
+    $this->createContent_Report_Load(2, $data); // companies
+    $this->createContent_Report_Load(1, $data); // humans
+
+    $data = \e10\sortByOneKey($data, 'order');
+
+    $t = [];
+    $sum = [
+      'wc' => ['in' => 0.0, 'out' => 0.0],
+      'total' => ['in' => 0.0, 'out' => 0.0],
+    ];
+    $lastWasteCode = '___';
+    foreach ($data as $row)
+    {
+      if ($row['wasteCode'] !== $lastWasteCode)
+      {
+        if ($lastWasteCode !== '___')
+        {
+          $sumRow = [
+            'wasteCode' => 'CELKEM', 'quantityIn' => $sum['wc']['in'], 'quantityOut' => $sum['wc']['out'],
+            '_options' => ['class' => 'subtotal',]
+          ];
+          $t[] = $sumRow;
+
+          $sum['wc']['in'] = 0.0;
+          $sum['wc']['out'] = 0.0;
+        }
+
+        $header = [
+          'wasteCode' => $row['wasteCode'].': '.$row['wasteName'],
+          '_options' => [
+            'colSpan' => ['wasteCode' => 6],
+            'class' => 'subheader',
+          ]
+        ];
+        $header['_options']['beforeSeparator'] = 'separator';
+        $t[] = $header;
+      }
+
+      if (isset($row['quantityIn']))
+      {
+        $sum['total']['in'] += $row['quantityIn'];
+        $sum['wc']['in'] += $row['quantityIn'];
+      }
+      if (isset($row['quantityOut']))
+      {
+        $sum['total']['out'] += $row['quantityOut'];
+        $sum['wc']['out'] += $row['quantityOut'];
+      }
+
+
+      $t [] = $row;
+      $lastWasteCode = $row['wasteCode'];
+    }
+    $sumRow = [
+      'wasteCode' => 'CELKEM', 'quantityIn' => $sum['wc']['in'], 'quantityOut' => $sum['wc']['out'],
+      '_options' => ['class' => 'subtotal',]
+    ];
+    $t[] = $sumRow;
+
+    $sumRow = [
+      'wasteCode' => 'CELKEM', 'quantityIn' => $sum['total']['in'], 'quantityOut' => $sum['total']['out'],
+      '_options' => ['class' => 'sumtotal', 'beforeSeparator' => 'separator']
+    ];
+    $t[] = $sumRow;
+
+		$h = [
+      'wasteCode' => 'Kód odp.',
+      'quantityIn' => ' Příjem '.(($this->showUnits === 1) ? '[t]' : '[kg]'),
+      'quantityOut' => ' Výdej '.(($this->showUnits === 1) ? '[t]' : '[kg]'),
+      'oid' => 'IČ',
+      'pn' => 'Firma',
+      'id1' => 'IČP',
+      'id2' => 'IČZ',
+      'id3' => 'IČOB',
+      'street' => 'Ulice',
+      'city' => 'Město',
+      'zipCode' => 'PSČ',
+    ];
+		$this->addContent (
+      [
+        'type' => 'table', 'header' => $h, 'table' => $t, 'main' => TRUE,
+        'params' => ['tableClass' => 'e10-print-small default', 'precision' => ($this->showUnits === 1) ? 3 : 2]
+      ]);
+
+    $this->setInfo('title', 'Roční hlášení o produkci a nakládání s odpady');
+    $this->paperOrientation = 'landscape';
+  }
+
+  public function createContent_Report_Load($personType, &$data)
+  {
+    $q = [];
+
+    if ($personType === 2) // companies
+    {
+      array_push ($q, 'SELECT [rows].person, [rows].personOffice, [rows].wasteCodeNomenc, [rows].[dir], [rows].[addressMode], [rows].[nomencCity],');
+      array_push ($q, ' SUM([rows].quantityKG) as quantityKG,');
+      array_push ($q, ' nomencItems.fullName, nomencItems.itemId,');
+      array_push ($q, ' persons.fullName AS personFullName,');
+      array_push ($q, ' addrs.adrCity, addrs.adrStreet, addrs.adrZipCode, addrs.id1, addrs.id2');
+      array_push ($q, ' FROM e10pro_reports_waste_cz_returnRows AS [rows]');
+      array_push ($q, ' LEFT JOIN [e10_base_nomencItems] AS nomencItems ON [rows].wasteCodeNomenc = nomencItems.ndx');
+      array_push ($q, ' LEFT JOIN [e10_persons_personsContacts] AS addrs ON [rows].personOffice = addrs.ndx');
+      array_push ($q, ' LEFT JOIN [e10_persons_persons] AS persons ON [rows].person = persons.ndx');
+    }
+    else
+    { // citizens
+      array_push ($q, 'SELECT [rows].wasteCodeNomenc, [rows].[dir],');
+      array_push ($q, ' SUM([rows].quantityKG) as quantityKG,');
+      array_push ($q, ' nomencItems.fullName, nomencItems.itemId');
+      array_push ($q, ' FROM e10pro_reports_waste_cz_returnRows AS [rows]');
+      array_push ($q, ' LEFT JOIN [e10_base_nomencItems] AS nomencItems ON [rows].wasteCodeNomenc = nomencItems.ndx');
+    }
+
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND [rows].personType = %i', $personType);
+
+    if ($this->periodBegin)
+      array_push ($q, ' AND [rows].[dateAccounting] >= %d', $this->periodBegin);
+    if ($this->periodEnd)
+      array_push ($q, ' AND [rows].[dateAccounting] <= %d', $this->periodEnd);
+
+    if ($personType === 2)
+    { // companies
+		  array_push ($q, ' GROUP BY wasteCodeNomenc, [rows].person, [rows].addressMode, [rows].personOffice, [rows].nomencCity, [rows].[dir]');
+      array_push ($q, ' ORDER BY [rows].wasteCodeNomenc, persons.fullName');
+    }
+    else
+    { // citizens
+      array_push ($q, ' GROUP BY wasteCodeNomenc, [rows].[dir]');
+      array_push ($q, ' ORDER BY [rows].wasteCodeNomenc');
+    }
+
+    $cnt = 0;
+		$rows = $this->app->db()->query ($q);
+		forEach ($rows as $r)
+		{
+      $personOid = '';
+      $personICOB = '';
+      $pn = '';
+      $order = $r['itemId'].'_';
+
+      if ($personType === 2)
+      { // companies
+        $personOid = $this->personOid($r['person']);
+        $personICOB = $this->personICOB($r['person']);
+        $pn = $r['personFullName'];
+        $order .= sprintf('%09d', $cnt);
+      }
+      else
+      {
+        $pn = 'OBČANÉ';
+        $order .= '999999999';
+      }
+
+      $item = [
+        'wasteCode' => $r['itemId'],
+        'wasteName' => $r['fullName'],
+        'oid' => $personOid,
+        'pn' => $pn,
+        'order' => $order,
+        'id3' => $personICOB,
+      ];
+
+      if ($r['dir'] == WasteReturnEngine::rowDirIn)
+      {
+        if ($this->showUnits === 1)
+          $item['quantityIn'] = round($r['quantityKG'] / 1000, 3);
+        else
+          $item['quantityIn'] = $r['quantityKG'];
+      }
+      elseif ($r['dir'] == WasteReturnEngine::rowDirOut)
+      {
+        if ($this->showUnits === 1)
+          $item['quantityOut'] = round($r['quantityKG'] / 1000, 3);
+        else
+        $item['quantityOut'] = $r['quantityKG'];
+      }
+      if ($personType === 2)
+      {
+        if ($r['addressMode'] === 0)
+        { // office
+          if ($r['personOffice'])
+          {
+            $item['city'] = $r['adrCity'];
+            $item['street'] = $r['adrStreet'];
+            $item['zipCode'] = str_replace(' ', '', $r['adrZipCode']);
+
+            if (($r['id1'] && $r['id1'] !== ''))
+              $item['id1'] = $r['id1'];
+            if (($r['id2'] && $r['id2'] !== ''))
+              $item['id2'] = $r['id2'];
+          }
+          else
+          {
+            $addr = $this->personMainAddress($r['person']);
+            if ($addr)
+            {
+              $item['city'] = $addr['adrCity'];
+              $item['street'] = $addr['adrStreet'];
+              $item['zipCode'] = str_replace(' ', '', $addr['adrZipCode']);
+            }
+          }
+        }
+        else
+        { // city
+          $nomencCityRecData = $this->app()->loadItem($r['nomencCity'], 'e10.base.nomencItems');
+          $item['id1'] = [
+            ['text' => 'ORP: '.substr($nomencCityRecData['itemId'], 2), 'class' => ''],
+          ];
+          $item['id1'][0]['suffix'] = $nomencCityRecData['fullName'];
+        }
+      }
+
+      $data[] = $item;
+      $cnt++;
+		}
+  }
+
   public function createContent_CitizensSum()
   {
     $q = [];
@@ -482,6 +710,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
     $d[] = ['id' => 'companiesOut', 'icon' => 'system/iconDelivery', 'title' => 'Firmy Výdej'];
     $d[] = ['id' => 'citizensSum', 'icon' => 'system/personHuman', 'title' => 'Občané'];
     $d[] = ['id' => 'citizensCities', 'icon' => 'system/iconMapMarker', 'title' => 'Občané podle obcí'];
+    $d[] = ['id' => 'report', 'icon' => 'system/iconFile', 'title' => 'Hlášení'];
 
 		return $d;
 	}
@@ -503,4 +732,61 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
     }
 		return $buttons;
 	}
+
+  protected function personOid($personNdx)
+  {
+		$q = [];
+    array_push ($q, 'SELECT * FROM [e10_base_properties] AS props');
+		array_push ($q, ' WHERE [recid] = %i', $personNdx);
+		array_push ($q, ' AND [tableid] = %s', 'e10.persons.persons', 'AND [group] = %s', 'ids', ' AND property = %s', 'oid');
+
+    $rows = $this->db()->query ($q);
+		foreach ($rows as $r)
+		{
+			if ($r['valueString'] === '')
+				continue;
+			$oid = trim($r['valueString']);
+      return $oid;
+		}
+
+    return '';
+  }
+
+  protected function personICOB($personNdx)
+  {
+		$q = [];
+    array_push ($q, 'SELECT * FROM [e10_base_properties] AS props');
+		array_push ($q, ' WHERE [recid] = %i', $personNdx);
+		array_push ($q, ' AND [tableid] = %s', 'e10.persons.persons', 'AND [group] = %s', 'ids', ' AND property = %s', 'cz_icob');
+
+    $rows = $this->db()->query ($q);
+		foreach ($rows as $r)
+		{
+			if ($r['valueString'] === '')
+				continue;
+			$id = trim($r['valueString']);
+      return $id;
+		}
+
+    return '';
+  }
+
+  protected function personMainAddress($personNdx)
+  {
+    $q = [];
+    array_push($q, 'SELECT addrs.*');
+    array_push($q, ' FROM [e10_persons_personsContacts] AS [addrs]');
+    array_push($q, ' WHERE 1');
+    array_push($q, ' AND [person] = %i', $personNdx);
+    array_push($q, ' AND flagAddress = %i', 1);
+    array_push($q, ' AND flagMainAddress = %i', 1);
+    array_push($q, ' AND docState = %i', 4000);
+    array_push($q, ' LIMIT 1');
+
+    $address = $this->db()->query($q)->fetch();
+    if ($address)
+      return $address->toArray();
+
+    return NULL;
+  }
 }
