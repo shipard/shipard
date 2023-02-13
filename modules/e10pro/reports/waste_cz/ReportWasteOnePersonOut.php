@@ -12,6 +12,7 @@ class ReportWasteOnePersonOut extends \e10pro\reports\waste_cz\ReportWasteOnePer
 	function init ()
 	{
 		parent::init();
+		$this->sendReportNdx = 2701;
 		$this->setReportId('e10pro.reports.waste_cz.reportWasteOnePersonOut');
 
     $this->dir = WasteReturnEngine::rowDirOut;

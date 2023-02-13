@@ -41,6 +41,8 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 		{
 			$this->calendarYear = intval($value);
 			$this->data['calendarYear'] = strval ($this->calendarYear);
+			$this->periodBegin = $this->data['calendarYear'].'-01-01';
+			$this->periodEnd = $this->data['calendarYear'].'-12-31';
 		}
 	}
 
