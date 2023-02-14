@@ -205,12 +205,66 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		echo "\n------TOTAL: $cnt \n\n";
 	}
 
+	protected function repairFees()
+	{
+		$yearParam = $this->app()->arg('year');
+		if (!$yearParam)
+		{
+			echo "Missing `--year` param!\n";
+			return FALSE;
+		}
+
+		$halfParam = intval($this->app()->arg('half'));
+		if ($halfParam !== 1 && $halfParam !== 2)
+		{
+			echo "Missing / bad `--half` param!\n";
+			return FALSE;
+		}
+
+		$addFeeParam = intval($this->app()->arg('addFee'));
+
+		$e = new \e10pro\zus\libs\RepairFeesEngine($this->app());
+		$e->schoolYear = $yearParam;
+		$e->half = $halfParam;
+		$e->addFee = $addFeeParam;
+		$e->run();
+
+		return TRUE;
+	}
+
+	protected function repairInvoices()
+	{
+		$yearParam = $this->app()->arg('year');
+		if (!$yearParam)
+		{
+			echo "Missing `--year` param!\n";
+			return FALSE;
+		}
+
+		$halfParam = intval($this->app()->arg('half'));
+		if ($halfParam !== 1 && $halfParam !== 2)
+		{
+			echo "Missing / bad `--half` param!\n";
+			return FALSE;
+		}
+
+		$e = new \e10pro\zus\libs\RepairInvoicesEngine($this->app());
+		$e->schoolYear = $yearParam;
+		$e->half = $halfParam;
+		$e->run();
+
+		return TRUE;
+	}
+
+
 	public function onCliAction ($actionId)
 	{
 		switch ($actionId)
 		{
 			case 'upgrade-skupinove-dochazky': return $this->upgradeSkupinoveDochazky();
 			case 'send-entries-emails': return $this->sendEntriesEmails();
+			case 'repair-fees': return $this->repairFees();
+			case 'repair-invoices': return $this->repairInvoices();
 		}
 
 		parent::onCliAction($actionId);

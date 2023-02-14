@@ -178,6 +178,31 @@ class DocsChecks extends Utility
 			$this->tableHeads->dbUpdateRec ($f->recData);
 	}
 
+	function recalcDocument2($ndx)
+	{
+		$this->tableHeads->documentOpen($ndx);
+		$this->tableHeads->docsLog ($ndx);
+
+		$f = $this->tableHeads->getTableForm ('edit', $ndx);
+
+		$q = "SELECT * FROM [e10doc_core_rows] WHERE [document] = %i ORDER BY ndx";
+		$rows = $this->db()->query ($q, $f->recData ['ndx']);
+		forEach ($rows as $row)
+		{
+			$r = $row->toArray();
+			$this->tableRows->dbUpdateRec ($r, $f->recData);
+		}
+
+		$f->recData ['docState'] = 4000;
+		$f->recData ['docStateMain'] = 2;
+		$this->tableHeads->checkDocumentState ($f->recData);
+		$f->checkAfterSave();
+		$this->tableHeads->dbUpdateRec ($f->recData);
+		$this->tableHeads->checkAfterSave2 ($f->recData);
+
+		$this->tableHeads->docsLog ($ndx);
+	}
+
 	function reAccountingDocument($recData)
 	{
 		$this->db()->query ('DELETE FROM [e10doc_debs_journal] WHERE [document] = %i', $recData['ndx']);
