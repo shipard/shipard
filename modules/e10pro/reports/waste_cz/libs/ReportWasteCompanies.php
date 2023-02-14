@@ -495,7 +495,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
       $personOid = '';
       $personICOB = '';
       $pn = '';
-      $order = $r['itemId'].'_';
+      $order = $r['itemId'].'_'.$r['dir'].'_';
 
       if ($personType === 2)
       { // companies
