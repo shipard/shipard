@@ -21,6 +21,8 @@ class DocReport extends DocReportBase
 
 	public function loadData()
 	{
+		$this->testNewPersons = intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
+
 		$this->app()->printMode = TRUE;
 
 		$this->loadData_MainPerson('person');
