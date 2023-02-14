@@ -2014,9 +2014,11 @@ class GenerovaniFakturSkolneEngine extends \E10\Utility
 		$nextYear++;
 		$specSymb = ($nextYear - 2001) * 1000 + ($nextYear - 2000) * 10 + $pololeti;
 
+		$dbCounterNdx = intval($this->app->cfgItem('options.e10-pro-zus.dbCounterInvoicesFeeSchool'));
+
 		$q [] = 'SELECT COUNT(*) as cnt FROM e10doc_core_heads';
 		array_push($q, ' WHERE docType = %s AND docState <= 4000', 'invno');
-    array_push($q, ' AND dbCounter = %i AND symbol1 = %s', 3, $row['cisloStudia']);
+    array_push($q, ' AND dbCounter = %i AND symbol1 = %s', $dbCounterNdx, $row['cisloStudia']);
 		array_push($q, ' AND symbol2 = %s', $specSymb);
 		//array_push($q, ' AND person = %i', $row['student']);
 		array_push($q, 'ORDER BY [ndx]');
