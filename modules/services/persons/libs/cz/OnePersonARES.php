@@ -50,7 +50,7 @@ class OnePersonARES extends OnePerson
 
 		if (isset($aresInfo['Zakladni_udaje']['ICO']) && is_array($aresInfo['Zakladni_udaje']['ICO']))
 			$this->person['base']['oid'] = Str::upToLen($aresInfo['Zakladni_udaje']['ICO'][0] ?? '', 20);
-		else	
+		else
 			$this->person['base']['oid'] = Str::upToLen($aresInfo['Zakladni_udaje']['ICO'] ?? '', 20);
 
 		if (isset($aresInfo['Zakladni_udaje']['ObchodniFirma']) && is_array($aresInfo['Zakladni_udaje']['ObchodniFirma']))
@@ -68,7 +68,7 @@ class OnePersonARES extends OnePerson
 		else
 		{
 			$this->person['base']['country'] = 0;
-		}	
+		}
 
 		if (isset($aresInfo['Zakladni_udaje']['Sidlo']))
 		{
@@ -78,7 +78,7 @@ class OnePersonARES extends OnePerson
 				$street = trim(trim($aresInfo['Zakladni_udaje']['Sidlo']['ulice'])) . ' '.$streetNumber;
 			else
 				$street = trim(trim($aresInfo['Zakladni_udaje']['Sidlo']['obec'] ?? '')) . ' '.$streetNumber; // blank street, use city
-	
+
 			$this->person['address']['type'] = 0;
 			$this->person['address']['street'] = Str::upToLen(trim($street), 250);
 			$this->person['address']['city'] = Str::upToLen(trim($aresInfo['Zakladni_udaje']['Sidlo']['obec'] ?? ''), 90);

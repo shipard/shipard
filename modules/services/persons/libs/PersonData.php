@@ -63,7 +63,7 @@ class PersonData extends \services\persons\libs\CoreObject
 		}
 	}
 
-	protected function refreshImport($personNdx)
+	public function refreshImport($personNdx)
 	{
 		// -- download
 		$downloadEngine = new \services\persons\libs\OnlinePersonRegsDownloadService($this->app);
@@ -270,7 +270,14 @@ class PersonData extends \services\persons\libs\CoreObject
 		$update = [];
 		$changes = [];
 		$this->recordUpdate($this->data['person'], $changedPerson->data['person'], $update, $changes);
-
+		if ($this->debug)
+		{
+			/*
+			echo "--- saveChanges_Core ---\n";
+			echo "  - FROM: ".json_encode($this->data['person'])."\n";
+			echo "  -   TO: ".json_encode($changedPerson->data['person'])."\n";
+			*/
+		}
 		if (count($update))
 		{
 			$this->db()->query('UPDATE [services_persons_persons] SET ', $update, ' WHERE [ndx] = %i', $this->personNdx);

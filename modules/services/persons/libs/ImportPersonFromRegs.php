@@ -20,7 +20,7 @@ class ImportPersonFromRegs extends \services\persons\libs\CoreObject
   public function setPersonNdx($personNdx)
   {
     $this->personNdx = $personNdx;
-    
+
     $this->personDataCurrent = new PersonData($this->app());
     $this->personDataCurrent->setPersonNdx($this->personNdx);
     $this->personDataCurrent->load();
@@ -32,11 +32,11 @@ class ImportPersonFromRegs extends \services\persons\libs\CoreObject
   {
     if (isset($this->regsData[$regType][$subId]))
       return $this->regsData[$regType][$subId];
-    
-    echo "Invalid regData for regType `$regType` and subId `$subId`\n";
+
+    error_log("Invalid regData for regType `$regType` and subId `$subId`");
 
     //print_r($this->regsData);
-    
+
     return NULL;
   }
 

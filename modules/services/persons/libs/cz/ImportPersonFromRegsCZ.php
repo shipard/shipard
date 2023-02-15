@@ -32,7 +32,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
     {
       if ($streetNumber !== '')
         $streetNumber .= '/';
-      $streetNumber .= $data['streetNumber2'];  
+      $streetNumber .= $data['streetNumber2'];
     }
 
     if ($streetNumber != '')
@@ -53,7 +53,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
     {
       return;
     }
-    
+
 		$xml = @simplexml_load_string ($regData['srcData']);
 		if (isset($xml) && $xml)
 		{
@@ -171,9 +171,9 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
             if (!isset($bb['ICP']) || $bb['ICP'] === '')
               continue;
             $this->doImport_ARES_RZP_Provozovna($bb);
-          } 
+          }
         }
-      }  
+      }
     }
   }
 
@@ -209,7 +209,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
   {
     if (!$this->useRZP)
       return;
-    
+
     $regData = $this->regData(self::prtCZRZP, $this->personDataCurrent->personId);
     if (!$regData)
     {
@@ -261,7 +261,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
           {
             if ($specification !== '')
               $specification .= ' - ';
-            $specification .= $p['UmisteniProvozovny'];  
+            $specification .= $p['UmisteniProvozovny'];
           }
 
           $officeAddress = [];
@@ -274,18 +274,18 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
               'zipcode' => Str::upToLen($zipcode, 20),
               'specification' => Str::upToLen($specification, 160),
             ], $officeAddress);
-          
+
           $officeAddress['natId'] = $officeId;
           $officeAddress['type'] = 1;
 
           if (!isset($this->personDataImport->data['address'][$addressId]))
             $this->personDataImport->addAddress($officeAddress);
-        } 
+        }
       }
     }
     //print_r($this->personDataImport->data['address']);
   }
-  
+
   function doImport_VAT()
   {
     if ($this->useVAT === self::vatNone)
@@ -307,12 +307,12 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
     }
 
     //$this->srcData['VAT']['nespolehlivyPlatce'] = intval($vatData['statusPlatceDPH']['nespolehlivyPlatce'] !== 'NE');
-    
+
     /*
     $primaryVatIDRec = $this->personDataImport->data['ids'][1] ?? NULL;
     if ($primaryVatIDRec)
     {
-      $this->personDataImport->data['ids'][1]['validFrom'] = 
+      $this->personDataImport->data['ids'][1]['validFrom'] =
     }
     */
 
@@ -332,11 +332,11 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
           $bankAccount['bankAccount'] .= $ba['standardniUcet']['cislo'].'/'.$ba['standardniUcet']['kodBanky'];
         }
         else
-          continue; 
-        
+          continue;
+
         $this->personDataImport->addBankAccount($bankAccount);
       }
-    }  
+    }
     $regVatId = $vatData['statusPlatceDPH']['dic'] ?? '';
     if ($regVatId !== '')
       $this->personDataImport->addID(['idType' => self::idtVATPrimary, 'id' => $regVatId]);
@@ -358,7 +358,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
 
 		// -- check words with spaces
 		$newString = '';
-		
+
 		$wp = mb_str_split($s, 1, 'UTF-8');
 		$pos = 0;
 		$len = count($wp);
@@ -377,7 +377,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
 					continue;
 				}
 			}
-	
+
 			$disableSpaceCheck = 1;
 			$newString .= $wp[$pos];
 			$pos++;

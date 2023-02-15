@@ -29,9 +29,10 @@ class TablePersons extends DbTable
 		}
 
 		$idsLabels[] = ['text' => '#'.$recData ['ndx'], 'class' => 'label label-primary pull-right'];
+		$idsLabels[] = ['text' => '_'.$recData ['iid'], 'class' => 'label label-primary pull-right'];
 
 		$hdr ['info'][] = [
-			'class' => 'info', 
+			'class' => 'info',
 			'value' => $idsLabels,
 		];
 		$hdr ['info'][] = ['class' => 'title', 'value' => $recData ['fullName']];
@@ -72,6 +73,8 @@ class ViewPersons extends TableView
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['t1'] = $item['fullName'];
 
+		$listItem ['i1'] = '#'.$item['ndx'];
+
 		$listItem ['t2'] = [['text' => $item['oid'], 'class' => 'label label-info']];
 		$vs = $this->vatStates[$item['vatState']];
 		if ($item['vatState'])
@@ -90,7 +93,7 @@ class ViewPersons extends TableView
 		if ($item['newDataAvailable'])
 			$flags[] = ['text' => 'Nová data', 'class' => 'label label-warning'];
 
-		if (count($flags))	
+		if (count($flags))
 			$listItem ['i2'] = $flags;
 
 		$listItem ['icon'] = $this->table->tableIcon ($item);
@@ -101,7 +104,7 @@ class ViewPersons extends TableView
 	public function selectRows ()
 	{
 		$fts = $this->fullTextSearch ();
-		
+
 		$q = [];
 		array_push ($q, ' SELECT * FROM (');
 		array_push ($q, ' SELECT 2 AS selectPart, persons.* ');
@@ -119,7 +122,7 @@ class ViewPersons extends TableView
 			array_push($q, ' AND [vatState] IN %in', [1, 2]);
 
 		$cleanedName = isset ($qv['others']['cleanedName']);
-		if ($cleanedName)	
+		if ($cleanedName)
 			array_push($q, ' AND [cleanedName] = %i', 1);
 
 		// -- fulltext
@@ -138,7 +141,7 @@ class ViewPersons extends TableView
 				{
 					$cntUsedWords++;
 					continue;
-				}	
+				}
 				if ($w[0] === '+')
 					continue;
 				if ($fullTextQuery !== '')
@@ -154,18 +157,18 @@ class ViewPersons extends TableView
 				if (count($words) === $cntUsedWords)
 					$doExtraLIKE = 0;
 //				array_push ($q, ')');
-			}	
+			}
 			else
 			{
 				//if (Str::strlen($fts) > 2)
 					array_push($q, ' AND persons.[fullName] LIKE %s', $fts . '%');
 					$doExtraLIKE = 0;
 			}
-			
+
 			$ascii = TRUE;
 			if(preg_match('/[^\x20-\x7f]/', $fts))
 				$ascii = FALSE;
-			
+
 			if ($ascii)
 			{
 				array_push ($q, 'UNION DISTINCT SELECT 1 AS selectPart, persons.* ');
@@ -186,7 +189,7 @@ class ViewPersons extends TableView
 		if ($fts !== '')
 			array_push ($q, ' ORDER BY selectPart, valid DESC, fullName');
 		else
-			array_push ($q, ' ORDER BY selectPart, fullName');	
+			array_push ($q, ' ORDER BY selectPart, fullName');
 		array_push ($q, $this->sqlLimit());
 		$this->runQuery ($q);
 	}
@@ -210,7 +213,7 @@ class ViewPersons extends TableView
 			foreach ($this->personsIds[$item ['pk']] as $id)
 			{
 				$item ['t2'][] = ['text' => $id['id'], 'class' => 'label label-default'];
-			}	
+			}
 		}
 	}
 
@@ -270,7 +273,22 @@ class ViewDetailPerson extends TableViewDetail
 	{
 		$this->addDocumentCard('services.persons.libs.DocumentCardPerson');
 	}
+
+	public function createToolbar ()
+	{
+		$toolbar = parent::createToolbar ();
+
+		$toolbar [] = [
+				'type' => 'action', 'action' => 'addwizard', 'data-table' => 'services.persons.persons',
+				'text' => 'Obnovit z registrů', 'data-class' => 'services.persons.libs.WizardPersonRefresh',
+				'icon' => 'system/iconSpinner',
+				'data-srcobjecttype' => 'viewer', 'data-srcobjectid' => 'default',
+		];
+
+		return $toolbar;
+	}
 }
+
 
 /**
  * Class ViewDetailPersonRegsData
