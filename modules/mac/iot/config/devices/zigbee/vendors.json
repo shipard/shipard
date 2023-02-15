@@ -2,6 +2,9 @@
 	"ikea": {
 		"fn": "IKEA"
 	},
+	"lidl": {
+		"fn": "Lidl"
+	},
 	"philips": {
 		"fn": "Philips"
 	},
