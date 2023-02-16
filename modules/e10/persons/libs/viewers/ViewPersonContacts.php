@@ -4,6 +4,7 @@ namespace e10\persons\libs\viewers;
 use \Shipard\Viewer\TableView;
 use \e10\base\libs\UtilsBase;
 use \Shipard\Utils\World;
+use \Shipard\Utils\Utils;
 
 /**
  * class ViewPersonContacts
@@ -103,6 +104,9 @@ class ViewPersonContacts extends TableView
         $addressFlags[] = ['text' => 'IČP: '.$item['id1'], 'class' => 'label label-default'];
 			if ($item['id2'] !== '')
         $addressFlags[] = ['text' => 'IČZ: '.$item['id2'], 'class' => 'label label-default'];
+
+			if (!Utils::dateIsBlank($item['validTo']))
+				$addressFlags[] = ['text' => 'Platné do: '.Utils::datef($item['validTo']), 'class' => 'label label-danger'];
 
       $listItem['t1'] = $address;
 

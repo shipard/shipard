@@ -260,6 +260,16 @@ class PersonRegister extends Utility
     elseif ($addressData['type'] === 1)
       $newAddress['flagOffice'] = 1;
 
+    if (!Utils::dateIsBlank($newAddress['validTo']))
+    {
+      $today = Utils::today('Y-m-d');
+      if ($newAddress['validTo'] < $today)
+      {
+        $newAddress['docState'] = 9000;
+        $newAddress['docStateMain'] = 5;
+      }
+    }
+
     $this->tablePersonsContact->checkBeforeSave($newAddress);
     $this->db()->query('INSERT INTO e10_persons_personsContacts', $newAddress);
   }
