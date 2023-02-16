@@ -44,8 +44,8 @@ class DocumentCardPerson extends \Shipard\Base\DocumentCard
     }
 
 		$this->addContent ('body', [
-			'pane' => 'e10-pane e10-pane-table', 
-			'type' => 'content', 'content' => $regsContent, 
+			'pane' => 'e10-pane e10-pane-table',
+			'type' => 'content', 'content' => $regsContent,
 			'paneTitle' => ['text' => 'Data z registrů', 'class' => 'h1 block __bb1 mb1', 'icon' => 'system/iconFile']
 		]);
 	}
@@ -61,14 +61,21 @@ class DocumentCardPerson extends \Shipard\Base\DocumentCard
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
-			$t[] = [
+			$item = [
 				'city' => $r['city'],
 				'zipcode' => $r['zipcode'],
 				'street' => $r['street'],
 			];
+
+			if (!Utils::dateIsBlank($r['validFrom']))
+				$item['validFrom'] = Utils::datef($r['validFrom']);
+			if (!Utils::dateIsBlank($r['validTo']))
+				$item['validTo'] = Utils::datef($r['validTo']);
+
+			$t[] = $item;
 		}
 
-		$h = ['#' => '#', 'city' => 'Město', 'zipcode' => 'PSČ', 'street' => 'Ulice'];
+		$h = ['#' => '#', 'city' => 'Město', 'zipcode' => 'PSČ', 'street' => 'Ulice', 'validFrom' => 'Od', 'validTo' => 'Do'];
 		$this->addContent ('body', [
 			'pane' => 'e10-pane e10-pane-table', 'header' => $h, 'table' => $t,
 			'paneTitle' => ['text' => 'Adresy', 'class' => 'h1', 'icon' => 'tables/e10.base.places'],
@@ -94,7 +101,7 @@ class DocumentCardPerson extends \Shipard\Base\DocumentCard
 
 		$h = ['#' => '#', 'bankAccount' => 'Účet', 'validFrom' => 'Platné od'];
 		$this->addContent ('body', [
-			'pane' => 'e10-pane e10-pane-table', 'header' => $h, 'table' => $t, 
+			'pane' => 'e10-pane e10-pane-table', 'header' => $h, 'table' => $t,
 			'paneTitle' => ['text' => 'Bankovní účty', 'class' => 'h1', 'icon' => 'docType/bank'],
 		]);
 	}
@@ -127,7 +134,7 @@ class DocumentCardPerson extends \Shipard\Base\DocumentCard
 		$h = ['#' => '#', 'text' => 'Popis', 'debit' => ' Vyplaceno', 'credit' => ' Přijato', 'balance' => ' Zůstatek'];
 		return ['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'title' => ['icon' => 'system/iconList', 'text' => 'Řádky dokladu'], 'header' => $h, 'table' => $list];
 		*/
-	}	
+	}
 
 	public function createContent ()
 	{

@@ -44,6 +44,11 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
     $dest['specification'] = trim($data['specification'] ?? '');
 
     $dest['country'] = $data['country'] ?? 60; // CZ
+
+    if (isset($data['validFrom']))
+      $dest['validFrom'] = $data['validFrom'];
+    if (isset($data['validTo']))
+      $dest['validTo'] = $data['validTo'];
   }
 
   function doImport_ARES_Core()
@@ -109,7 +114,6 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
         $primaryAddress['type'] = 0;
 
         $this->personDataImport->addAddress($primaryAddress);
-
 			}
       else
       {
@@ -264,16 +268,30 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
             $specification .= $p['UmisteniProvozovny'];
           }
 
+          $newAddress = [
+            'addressId' => $addressId,
+            'street' => $street,
+            'streetNumber' => '',
+            'streetNumber2' => '',
+            'city' => $city,
+            'zipcode' => Str::upToLen($zipcode, 20),
+            'specification' => Str::upToLen($specification, 160),
+          ];
+
+
+          if (isset($p['ZahajeniProvozovani']))
+          {
+            $dp = explode('.', $p['ZahajeniProvozovani']);
+            $newAddress['validFrom'] = $dp[2].'-'.$dp[1].'-'.$dp[0];
+          }
+          if (isset($p['UkonceniCinnosti']))
+          {
+            $dp = explode('.', $p['UkonceniCinnosti']);
+            $newAddress['validTo'] = $dp[2].'-'.$dp[1].'-'.$dp[0];
+          }
+
           $officeAddress = [];
-          $this->fillAddress ([
-              'addressId' => $addressId,
-              'street' => $street,
-              'streetNumber' => '',
-              'streetNumber2' => '',
-              'city' => $city,
-              'zipcode' => Str::upToLen($zipcode, 20),
-              'specification' => Str::upToLen($specification, 160),
-            ], $officeAddress);
+          $this->fillAddress ($newAddress, $officeAddress);
 
           $officeAddress['natId'] = $officeId;
           $officeAddress['type'] = 1;
@@ -283,7 +301,42 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
         }
       }
     }
-    //print_r($this->personDataImport->data['address']);
+
+
+    // -- ukoncene provozovny
+    foreach ($rzpData['PodnikatelVypis']['PodnikatelDetail']['VyporadaniZavazku'] as $vpz)
+    {
+      foreach ($vpz as $vpzItem)
+      {
+        if (isset($vpzItem['IdentifikacniCisloProvozovny']))
+        {
+          if (isset($vpzItem['UkonceniCinnosti']))
+          {
+            $addressId = 'O'.$vpzItem['IdentifikacniCisloProvozovny'];
+            if (isset($this->personDataImport->data	['address'][$addressId]))
+            {
+              $dp = explode('.', $vpzItem['UkonceniCinnosti']);
+              $this->personDataImport->data	['address'][$addressId]['validTo'] = $dp[2].'-'.$dp[1].'-'.$dp[0];
+            }
+          }
+        }
+        elseif (isset($vpzItem[0]['IdentifikacniCisloProvozovny']))
+        {
+          foreach ($vpzItem as $vpzItem2)
+          {
+            if (!isset($vpzItem2['IdentifikacniCisloProvozovny']) || !isset($vpzItem2['UkonceniCinnosti']))
+              continue;
+
+            $addressId = 'O'.$vpzItem2['IdentifikacniCisloProvozovny'];
+            if (isset($this->personDataImport->data	['address'][$addressId]))
+            {
+              $dp = explode('.', $vpzItem2['UkonceniCinnosti']);
+              $this->personDataImport->data	['address'][$addressId]['validTo'] = $dp[2].'-'.$dp[1].'-'.$dp[0];
+            }
+          }
+        }
+      }
+    }
   }
 
   function doImport_VAT()

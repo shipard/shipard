@@ -85,7 +85,25 @@ class ModuleServices extends \E10\CLI\ModuleServices
 
 			$e->importBlock();
 		}
-	
+
+		return TRUE;
+	}
+
+	public function cliPersonRefresh ()
+	{
+    $e = new \services\persons\libs\PersonData($this->app());
+
+		$debug = $this->app->arg('debug');
+		if ($debug)
+			$e->debug = 1;
+
+		$personNdx = intval($this->app->arg('personNdx'));
+		if ($personNdx)
+		{
+			$e->personNdx = $personNdx;
+			$e->refreshImport($personNdx);
+		}
+
 		return TRUE;
 	}
 
@@ -96,6 +114,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'initial-import-cz': return $this->cliInitialImportCZ();
 			case 'online-person-regs-download': return $this->cliOnlinePersonRegsDownload();
 			case 'person-regs-import': return $this->cliPersonRegsImport();
+			case 'person-refresh': return $this->cliPersonRefresh();
 		}
 
 		parent::onCliAction($actionId);
