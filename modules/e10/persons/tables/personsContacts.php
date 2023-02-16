@@ -291,6 +291,8 @@ class FormPersonContact extends TableForm
 					$this->addColumnInput ('onTop');
 				$this->closeTab ();
 				$this->openTab ();
+					$this->addColumnInput ('validFrom');
+					$this->addColumnInput ('validTo');
 				$this->closeTab ();
 				$this->closeTabs ();
 		$this->closeForm ();

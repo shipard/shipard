@@ -34,6 +34,9 @@
 	  {"id": "adrLocTime", "name": "Okamžik zaměření", "type": "timestamp"},
 	  {"id": "adrLocHash", "name": "Hash adresy", "type": "string", "len": 32, "options": ["ascii"]},
 
+    {"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+
 		{"id": "systemOrder", "name": "Systémové pořadí", "type": "short"},
 
 	  {"id": "docState", "name": "Stav", "type": "int"},

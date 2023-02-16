@@ -243,6 +243,9 @@ class PersonRegister extends Utility
       'adrZipCode' => $addressData['zipcode'],
       'adrCountry' => World::countryNdx($this->app(), $addressData['country']),
 
+      'validFrom' => $addressData['validFrom'] ?? NULL,
+      'validTo' => $addressData['validTo'] ?? NULL,
+
       'flagAddress' => 1,
       'onTop' => 99,
 
