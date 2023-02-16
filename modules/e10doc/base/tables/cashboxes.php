@@ -83,8 +83,16 @@ class ViewCashBoxes extends TableView
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['t1'] = $item['fullName'];
 		$listItem ['i1'] = $item['id'];
+
+		$props = [];
+
+		if ($item['order'])
+			$props[] = ['text' => utils::nf($item['order']), 'icon' => 'system/iconOrder', 'class' => 'pull-right label label-default'];
+
+		$listItem ['t2'] = $props;
+
 		$listItem ['icon'] = $this->table->tableIcon ($item);
-		
+
 		return $listItem;
 	}
 
@@ -129,6 +137,7 @@ class FormCashBoxes extends TableForm
 			$this->addColumnInput ('id');
 			$this->addColumnInput ('currency');
 			$this->addColumnInput ('debsAccountId');
+			$this->addColumnInput ('order');
 			$this->addColumnInput ('exclFromDashboard');
 
 			if ($this->app()->model()->table ('e10doc.inventory.journal') !== FALSE)
@@ -138,6 +147,6 @@ class FormCashBoxes extends TableForm
 
 			$this->addList ('doclinks', '', TableForm::loAddToFormLayout);
 		$this->closeForm ();
-	}	
+	}
 }
 
