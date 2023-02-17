@@ -22,7 +22,7 @@ class PersonRegisterRefreshWizard extends Wizard
     $this->personNdx = intval($this->app()->testGetParam('personNdx'));
     if (!isset($this->recData['personNdx']))
       $this->recData['personNdx'] = $this->personNdx;
-    }
+  }
 
 	public function doStep ()
 	{

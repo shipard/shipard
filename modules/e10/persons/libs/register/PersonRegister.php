@@ -326,6 +326,7 @@ class PersonRegister extends Utility
   {
     $this->makeDiff_Core();
     $this->makeDiff_MainAddress();
+    $this->makeDiff_ExistedOffices();
   }
 
   public function makeDiff_Core()
@@ -366,12 +367,57 @@ class PersonRegister extends Utility
     }
     if ($cma['adrZipCode'] !== $mar['zipcode'])
     {
-      $this->addDiffMsg('Změna PSČ z `'.$cma['adrZipCode'].'` na `'.$mar['zipcode'].'`');
+      $this->addDiffMsg('Změna PSČ sídla z `'.$cma['adrZipCode'].'` na `'.$mar['zipcode'].'`');
       $update['adrZipCode'] = $mar['zipcode'];
     }
 
     if (count($update))
       $this->diff['updates']['e10.persons.personsContacts'][] = ['update' => $update, 'ndx' => $cma['ndx']];
+  }
+
+  public function makeDiff_ExistedOffices()
+  {
+    foreach ($this->personOffices as $cpo)
+    {
+      if (!$cpo['flagOffice'])
+        continue;
+      if ($cpo['id1'] == '')
+        continue;
+
+      $registerOffice = Utils::searchArray($this->registerData['address'], 'natId', $cpo['id1']);
+      if (!$registerOffice)
+        continue;
+
+      $update = [];
+      if ($cpo['adrStreet'] !== $registerOffice['street'])
+      {
+        $this->addDiffMsg('Změna ulice provozovny z `'.$cpo['adrStreet'].'` na `'.$registerOffice['street'].'`');
+        $update['adrStreet'] = $registerOffice['street'];
+      }
+      if ($cpo['adrCity'] !== $registerOffice['city'])
+      {
+        $this->addDiffMsg('Změna města provozovny z `'.$cpo['adrCity'].'` na `'.$registerOffice['city'].'`');
+        $update['adrCity'] = $registerOffice['city'];
+      }
+      if ($cpo['adrZipCode'] !== $registerOffice['zipcode'])
+      {
+        $this->addDiffMsg('Změna PSČ provozovny z `'.$cpo['adrZipCode'].'` na `'.$registerOffice['zipcode'].'`');
+        $update['adrZipCode'] = $registerOffice['zipcode'];
+      }
+
+      $validToPerson = ($cpo['validTo'] ? Utils::createDateTime($cpo['validTo'])->format('Y-m-d') : '');
+      $validToRegister = ($registerOffice['validTo'] ? $registerOffice['validTo'] : '');
+      if ($validToPerson !== $validToRegister)
+      {
+        $this->addDiffMsg('Změna platnosti DO provozovny z `'.$validToPerson.'` na `'.$validToRegister.'`');
+        $update['validTo'] = $validToRegister;
+        $update['docState'] = 9000;
+        $update['docStateMain'] = 5;
+      }
+
+      if (count($update))
+        $this->diff['updates']['e10.persons.personsContacts'][] = ['update' => $update, 'ndx' => $cpo['ndx']];
+    }
   }
 
   protected function addDiffMsg($msg)
