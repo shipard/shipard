@@ -386,7 +386,17 @@ class PersonRegister extends Utility
 
       $registerOffice = Utils::searchArray($this->registerData['address'], 'natId', $cpo['id1']);
       if (!$registerOffice)
+      {
+        if ($cpo['docState'] !== 9000)
+        {
+          $this->addDiffMsg('Provozovna `'.$cpo['id1'].'` neexistuje v registru a bude přesunuta do archívu');
+          $update['docState'] = 9000;
+          $update['docStateMain'] = 5;
+
+          $this->diff['updates']['e10.persons.personsContacts'][] = ['update' => $update, 'ndx' => $cpo['ndx']];
+        }
         continue;
+      }
 
       $update = [];
       if ($cpo['adrStreet'] !== $registerOffice['street'])
