@@ -22,10 +22,13 @@ class PersonRegister extends Utility
   var $personOid = '';
   var $personNdx = 0;
   var $personRecData = NULL;
+  var $personMainAddress = [];
   var $personOffices = [];
   var $missingOffices = [];
   var $personBA = [];
   var $missingBA = [];
+
+  var $diff = ['msgs' => [], 'updates' => []];
 
   protected function init()
   {
@@ -170,6 +173,11 @@ class PersonRegister extends Utility
         $this->personOffices[$r['ndx']] = $r->toArray();
         $this->personOffices[$r['ndx']]['addressText'] = $at;
       }
+      if ($r['flagMainAddress'])
+      {
+        $this->personMainAddress[$r['ndx']] = $r->toArray();
+        $this->personMainAddress[$r['ndx']]['addressText'] = $at;
+      }
     }
   }
 
@@ -311,6 +319,81 @@ class PersonRegister extends Utility
         $newBA['validFrom'] = $baData['validTo'];
 
       $this->db()->query('INSERT INTO e10_persons_personsBA', $newBA);
+    }
+  }
+
+  public function makeDiff()
+  {
+    $this->makeDiff_Core();
+    $this->makeDiff_MainAddress();
+  }
+
+  public function makeDiff_Core()
+  {
+    $update = [];
+    if ($this->registerData['person']['fullName'] !== $this->personRecData['fullName'])
+    {
+      $this->addDiffMsg('Změna názvu z `'.$this->personRecData['fullName'].'` na `'.$this->registerData['person']['fullName'].'`');
+      $update['fullName'] = $this->registerData['person']['fullName'];
+    }
+
+    if (count($update))
+      $this->diff['updates']['e10.persons.persons'][] = ['update' => $update, 'ndx' => $this->personRecData['ndx']];
+  }
+
+  public function makeDiff_MainAddress()
+  {
+    $update = [];
+    $mar = $this->registerData['address'][0];
+    $cma = NULL;
+
+    foreach ($this->personMainAddress as $ma)
+    {
+      if ($ma['docState'] !== 4000)
+        continue;
+      $cma = $ma;
+    }
+
+    if ($cma['adrStreet'] !== $mar['street'])
+    {
+      $this->addDiffMsg('Změna ulice sídla z `'.$cma['adrStreet'].'` na `'.$mar['street'].'`');
+      $update['adrStreet'] = $mar['street'];
+    }
+    if ($cma['adrCity'] !== $mar['city'])
+    {
+      $this->addDiffMsg('Změna města sídla z `'.$cma['adrCity'].'` na `'.$mar['city'].'`');
+      $update['adrCity'] = $mar['city'];
+    }
+    if ($cma['adrZipCode'] !== $mar['zipcode'])
+    {
+      $this->addDiffMsg('Změna PSČ z `'.$cma['adrZipCode'].'` na `'.$mar['zipcode'].'`');
+      $update['adrZipCode'] = $mar['zipcode'];
+    }
+
+    if (count($update))
+      $this->diff['updates']['e10.persons.personsContacts'][] = ['update' => $update, 'ndx' => $cma['ndx']];
+  }
+
+  protected function addDiffMsg($msg)
+  {
+    $this->diff['msgs'][] = $msg;
+  }
+
+  public function applyDiff()
+  {
+    foreach ($this->diff['updates'] as $tableId => $updates)
+    {
+      /** @var \Shipard\Table\DbTable */
+      $table = $this->app()->table($tableId);
+      foreach ($updates as $oneUpdate)
+      {
+        $rec = $table->loadItem($oneUpdate['ndx']);
+        foreach ($oneUpdate['update'] as $key => $value)
+          $rec[$key] = $value;
+
+        $table->dbUpdateRec($rec);
+        $table->docsLog($rec['ndx']);
+      }
     }
   }
 }

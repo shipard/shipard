@@ -304,7 +304,7 @@ class DCPersonOverview extends \Shipard\Base\DocumentCard
 
 		if (!$validity)
 		{
-			$line = ['text' => 'Kontrola zatím nebyla provedena'];
+			$line = [['text' => 'Kontrola zatím nebyla provedena']];
 			$this->validity['class'] = 'e10-row-this';
 			//$this->addContent('body', ['pane' => 'e10-pane e10-pane-table e10-row-this', 'type' => 'line', 'line' => $line]);
 		}
@@ -352,6 +352,13 @@ class DCPersonOverview extends \Shipard\Base\DocumentCard
 				$t['icon'] = 'system/iconLink';
 				$line[] = $t;
 			}
+
+			$line[] = [
+				'text' => 'Zkontrolovat', 'type' => 'action', 'action' => 'addwizard', 'icon' => 'system/actionDownload',
+				'btnClass' => 'btn-primary btn-sm', 'class' => 'pull-right',
+				'data-table' => 'e10.persons.persons', 'data-class' => 'e10.persons.libs.register.PersonRegisterRefreshWizard',
+				'data-addparams' => 'personNdx=' . $this->recData['ndx'],
+			];
 		}
 
 		$this->validity['content'] = $line;
