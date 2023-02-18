@@ -33,7 +33,8 @@
 
 			{"id": "zigbee2MQTTEnabled", "group": "zigbee2mqtt", "name": "Zigbee2MQTT brána", "type": "logical", "options": ["saveOnChange"]},
 			{"id": "zigbee2MQTTUIIPAddress", "group": "zigbee2mqtt", "name": "Zigbee2MQTT IP adresa", "type": "string", "len": 55, "enabled": {"zigbee2MQTTEnabled": 1}},
-			{"id": "zigbee2MQTTUIPort", "group": "zigbee2mqtt", "name": "Zigbee2MQTT port", "placeholder": "8099", "type": "int", "enabled": {"zigbee2MQTTEnabled": 1}}			
+			{"id": "zigbee2MQTTUIPort", "group": "zigbee2mqtt", "name": "Zigbee2MQTT port", "placeholder": "8099", "type": "int", "enabled": {"zigbee2MQTTEnabled": 1}},
+			{"id": "zigbee2MQTTBaseTopic", "group": "zigbee2mqtt", "name": "Zigbee2MQTT topic", "placeholder": "zigbee2mqtt", "type": "string", "len": 70, "enabled": {"zigbee2MQTTEnabled": 1}}
 		],
 		"groups": [
 				{"id": "general", "title": "Základní nastavení"},
