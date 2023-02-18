@@ -48,10 +48,10 @@ class ZigbeeInfoAnalyzer extends Utility
 
 		if (!isset($data['definition']))
 		{
-			error_log("#### definition MISSING");
+			error_log("#### definition MISSING ".json_encode($data));
 			return FALSE;
 		}
-		
+
 
 		if (!isset($data['definition']['vendor']))
 		{
@@ -64,13 +64,13 @@ class ZigbeeInfoAnalyzer extends Utility
 		{
 			error_log("#### Vendor not found: `{$data['definition']['vendor']}`");
 			return FALSE;
-		}	
+		}
 		$model = 	$this->iotDevicesUtils->searchModel ('zigbee', $vendor['id'], $data['definition']['model'] ?? '', $data['model_id'] ?? '');
 		if (!$model)
 		{
 			error_log("#### Model not found: `{$data['model']}`");
 			return FALSE;
-		}	
+		}
 		if ($addToDatabase)
 		{
 			$iotDeviceNdx = 0;
@@ -100,7 +100,7 @@ class ZigbeeInfoAnalyzer extends Utility
 						'deviceType' => 'zigbee',
 						'deviceVendor' => Str::upToLen($vendor['id'] ?? '', 20),
 						'deviceModel' => Str::upToLen($model['id'] ?? '', 40),
-						'docState' => 1000, 'docStateMain' => 0, 
+						'docState' => 1000, 'docStateMain' => 0,
 					];
 
 					//error_log("--NEW: ".json_encode($newItem));
@@ -136,7 +136,7 @@ class ZigbeeInfoAnalyzer extends Utility
 			}
 		}
 
-		return TRUE;	
+		return TRUE;
 	}
 
 	protected function analyze()
@@ -153,10 +153,10 @@ class ZigbeeInfoAnalyzer extends Utility
 			{
 				if (isset($msg['type']) && $msg['type'] === 'Coordinator')
 					continue;
-				
+
 				$this->doEndDevice($msg);
 			}
-		}	
+		}
 
 		return 'OK';
 	}

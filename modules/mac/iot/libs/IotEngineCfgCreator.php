@@ -37,6 +37,7 @@ class IotEngineCfgCreator extends Utility
 		$this->cfg['params'] = [];
 		$this->cfg['topics'] = [];
 		$this->cfg['listenTopics'] = [];
+		$this->cfg['zigbee2mqttTopics'] = [];
 	}
 
 	protected function addTopic($topic, $data)

@@ -48,7 +48,7 @@ class DeviceInfo extends Utility
 
 		$mainServerLanControl = $this->tableDevices->loadItem($this->lanRecData['mainServerLanControl']);
 		if ($mainServerLanControl)
-		{	
+		{
 			$macDeviceCfg = json_decode($mainServerLanControl['macDeviceCfg'], TRUE);
 			if ($macDeviceCfg)
 			{
@@ -83,13 +83,13 @@ class DeviceInfo extends Utility
 		$this->info['addresses'] = [];
 		$this->loadAddresses($this->deviceNdx, $this->info['addresses']);
 
-		// -- zigbee2mqtt		
+		// -- zigbee2mqtt
 		$macDeviceCfg = json_decode($this->deviceRecData['macDeviceCfg'], TRUE);
 		if ($macDeviceCfg)
 		{
 			if (isset($macDeviceCfg['zigbee2MQTTEnabled']) && intval($macDeviceCfg['zigbee2MQTTEnabled']))
 			{
-				$this->zigbee2mqttUrl = $baseUrl.'z2m/z2m-'.Utils::safeChars($mainServerLanControl['id'], TRUE).'-'.$mainServerLanControl['uid'].'/';
+				$this->zigbee2mqttUrl = $baseUrl.'z2m/z2m-'.Utils::safeChars($this->deviceRecData['id'], TRUE).'-'.$this->deviceRecData['uid'].'/';
 			}
 			$this->macDeviceCfg = $macDeviceCfg;
 		}
@@ -107,7 +107,7 @@ class DeviceInfo extends Utility
 		{
 			$source = ['url' => $this->mainMonitoringNetdataUrl,];
 			$this->dataSources[] = $source;
-		}	
+		}
 	}
 
 	public function loadPorts ($deviceNdx, &$dstTable)

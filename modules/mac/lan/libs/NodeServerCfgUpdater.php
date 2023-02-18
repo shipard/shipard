@@ -319,6 +319,13 @@ class NodeServerCfgUpdater extends Utility
 		$iecc = new \mac\iot\libs\IotEngineCfgCreator($this->app());
 		$iecc->init();
 		$iecc->run();
+
+		if (isset($cfgData['zigbee2mqttTopics']))
+		{
+			$iecc->cfg['zigbee2mqttTopics'] = $cfgData['zigbee2mqttTopics'];
+			unset($cfgData['zigbee2mqttTopics']);
+		}
+
 		$cfgData['iotThings'] = $iecc->cfg;
 	}
 
@@ -372,6 +379,7 @@ class NodeServerCfgUpdater extends Utility
 	function nodeServerNginxProxies (&$cfgData, $serverNdx, $lanNdx, $isDefaultServer)
 	{
 		$proxies = [];
+		$zigbee2mqttTopics = [];
 
 		$q [] = 'SELECT devices.*';
 		array_push($q, ' FROM [mac_lan_devices] AS [devices]');
@@ -445,11 +453,15 @@ class NodeServerCfgUpdater extends Utility
 				$idef .= "\t}\n\n";
 				$proxy['insideDef'] = $idef;
 				$proxies[] = $proxy;
+
+				$zigbee2mqttTopics[] = (isset($macDeviceCfg['zigbee2MQTTBaseTopic']) && $macDeviceCfg['zigbee2MQTTBaseTopic'] != '') ? $macDeviceCfg['zigbee2MQTTBaseTopic'] : 'zigbee2mqtt';
 			}
 		}
 
 		if (count($proxies))
 			$cfgData['httpProxies'] = $proxies;
+		if (count($zigbee2mqttTopics))
+			$cfgData['zigbee2mqttTopics'] = $zigbee2mqttTopics;
 	}
 
 	function getNodeServerCfg($serverNdx)
