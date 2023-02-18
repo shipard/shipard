@@ -4,7 +4,7 @@
     {"id": "ndx", "name": "id", "type": "int_ai"},
     {"id": "person", "name": "Osoba", "type": "int"},
     {"id": "addressId", "name": "Technické ID", "type": "string", "len": 30, "options": ["ascii"]},
-	 
+
 		{"id": "type", "name": "Druh adresy", "type": "enumInt",
 		  "enumCfg": {"cfgItem": "services.persons.addressTypes", "cfgValue": "", "cfgText": "name"}},
 
@@ -15,6 +15,7 @@
     {"id": "country", "name": "Země", "type": "int", "reference": "e10.world.countries"},
 
     {"id": "natId", "name": "Národní ID", "type": "string", "len": 20},
+    {"id": "natAddressGeoId", "name": "Národní kód adresy", "type": "int"},
 
 		{"id": "validFrom", "name": "Platné od", "type": "date"},
 		{"id": "validTo", "name": "Platné do", "type": "date"}

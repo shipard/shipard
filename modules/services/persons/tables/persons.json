@@ -37,7 +37,7 @@
 	],
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
 	"indexes": [
-		{"id": "s1", "columns": ["oid"]},
+		{"id": "s1", "columns": ["oid", "country"]},
 		{"id": "fts", "fullText": 1, "columns": ["fullName"]},
 		{"id": "o1", "columns": ["fullName"]},
 		{"id": "vat", "columns": ["vatState", "vatID"]},

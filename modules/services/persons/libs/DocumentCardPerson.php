@@ -72,10 +72,13 @@ class DocumentCardPerson extends \Shipard\Base\DocumentCard
 			if (!Utils::dateIsBlank($r['validTo']))
 				$item['validTo'] = Utils::datef($r['validTo']);
 
+			if ($r['natAddressGeoId'])
+				$item['geoId'] = ['text' => $r['natAddressGeoId'], 'url' => 'https://vdp.cuzk.cz/vdp/ruian/adresnimista/'.$r['natAddressGeoId']];
+
 			$t[] = $item;
 		}
 
-		$h = ['#' => '#', 'city' => 'Město', 'zipcode' => 'PSČ', 'street' => 'Ulice', 'validFrom' => 'Od', 'validTo' => 'Do'];
+		$h = ['#' => '#', 'city' => 'Město', 'zipcode' => 'PSČ', 'street' => 'Ulice', 'geoId' => 'GEO', 'validFrom' => 'Od', 'validTo' => 'Do'];
 		$this->addContent ('body', [
 			'pane' => 'e10-pane e10-pane-table', 'header' => $h, 'table' => $t,
 			'paneTitle' => ['text' => 'Adresy', 'class' => 'h1', 'icon' => 'tables/e10.base.places'],

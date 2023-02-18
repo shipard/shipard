@@ -38,10 +38,19 @@ class OnePersonARES extends OnePerson
 		if (!isset($this->srcData['Odpoved']['Vypis_VREO']['Zakladni_udaje']))
 		{
 			if (isset($this->srcData['Odpoved']['Vypis_VREO']) && is_array($this->srcData['Odpoved']['Vypis_VREO']))
-				$aresInfo = array_pop($this->srcData['Odpoved']['Vypis_VREO']);
+			{
+				//$aresInfo = array_pop($this->srcData['Odpoved']['Vypis_VREO']);
+				foreach ($this->srcData['Odpoved']['Vypis_VREO'] as $oneAI)
+				{
+					$aresInfo = $oneAI;
+					break;
+				}
+			}
 		}
 		else
+		{
 			$aresInfo = $this->srcData['Odpoved']['Vypis_VREO'];
+		}
 
 		if (!$aresInfo)
 		{
@@ -82,8 +91,15 @@ class OnePersonARES extends OnePerson
 			$this->person['address']['type'] = 0;
 			$this->person['address']['street'] = Str::upToLen(trim($street), 250);
 			$this->person['address']['city'] = Str::upToLen(trim($aresInfo['Zakladni_udaje']['Sidlo']['obec'] ?? ''), 90);
-			$this->person['address']['zipcode'] = Str::upToLen(trim($aresInfo['Zakladni_udaje']['Sidlo']['psc'] ?? ''), 20);
+			$this->person['address']['zipcode'] = Str::upToLen(str_replace(' ', '', trim($aresInfo['Zakladni_udaje']['Sidlo']['psc'] ?? '')), 20);
 			$this->person['address']['country'] = 60;
+
+			if (isset($aresInfo['Zakladni_udaje']['Sidlo']['ruianKod']))
+			{
+				$this->person['address']['natAddressGeoId'] = intval($aresInfo['Zakladni_udaje']['Sidlo']['ruianKod']);
+				if ($this->person['address']['natAddressGeoId'] < 10000 || $this->person['address']['natAddressGeoId'] === 999999999)
+					$this->person['address']['natAddressGeoId'] = 0;
+			}
 		}
 
 		return TRUE;

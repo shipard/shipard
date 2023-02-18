@@ -7,6 +7,10 @@
 
 ### Stažení základních sad pro úvodní import
 
+    cd /var/lib/shipard/data-sources/
+    cd data--source--id
+
+    mkdir res
     cd res
     wget https://opendata.czso.cz/data/od_org03/res_data.csv
 

@@ -355,6 +355,7 @@ class PersonData extends \services\persons\libs\CoreObject
 					'zipcode' => $oneAddr['zipcode'],
 					'country' => $oneAddr['country'],
 					'specification' => $oneAddr['specification'] ?? '',
+					'natAddressGeoId' => $oneAddr['natAddressGeoId'] ?? 0,
 				];
 				if (isset($oneAddr['natId']))
 					$insert['natId'] = $oneAddr['natId'];

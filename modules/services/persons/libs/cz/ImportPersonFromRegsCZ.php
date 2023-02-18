@@ -274,7 +274,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
             'streetNumber' => '',
             'streetNumber2' => '',
             'city' => $city,
-            'zipcode' => Str::upToLen($zipcode, 20),
+            'zipcode' => Str::upToLen(str_replace(' ', '', $zipcode), 20),
             'specification' => Str::upToLen($specification, 160),
           ];
 
