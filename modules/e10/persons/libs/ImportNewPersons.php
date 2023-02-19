@@ -137,9 +137,19 @@ class ImportNewPersons extends Utility
     $this->db()->query($q);
   }
 
+  public function cleanOldValidity()
+  {
+    $q = [];
+    array_push($q, 'DELETE FROM [e10_persons_personsValidity]');
+    $this->db()->query($q);
+  }
+
 	public function run ()
 	{
     $this->importAddress();
+    $this->importBankAccounts();
+    $this->cleanOldBankAccounts();
+    $this->cleanOldValidity();
 	}
 
   public function postUpdateConfig(&$newConfig)

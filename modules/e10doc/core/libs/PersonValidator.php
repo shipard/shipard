@@ -4,11 +4,12 @@ namespace e10doc\core\libs;
 use \Shipard\Base\Utility;
 
 /**
- * @class PersonValidator
+ * class PersonValidator
  */
 class PersonValidator extends Utility
 {
-  var $baseServicesURL = 'https://data.shipard.org/';
+  var $maxCount = 5;
+  var $debug = 0;
 
   public function batchCheck()
   {
@@ -21,38 +22,22 @@ class PersonValidator extends Utility
 
     array_push($q, ' AND EXISTS (SELECT person FROM e10doc_core_heads WHERE persons.ndx = person AND dateAccounting > %d', $maxOldDate,
         ' AND docType IN %in', ['invno', 'invni', 'cash', 'cashreg'], ')');
-    
-    array_push($q, ' AND EXISTS (SELECT recid FROM e10_persons_address WHERE persons.ndx = recid',
-        ' AND tableid = %s', 'e10.persons.persons', 
-        ' AND country = %s', 'cz', 
-        ')');
 
-		array_push($q, ' LIMIT 0, 500');
+    array_push($q, ' AND (');
+    array_push($q, ' EXISTS (SELECT ndx FROM e10_persons_personsValidity WHERE persons.ndx = person AND [valid] = %i)', 0);
+    array_push($q, ' OR NOT EXISTS (SELECT ndx FROM e10_persons_personsValidity WHERE persons.ndx = person)');
+    array_push($q, ')');
+		array_push($q, ' LIMIT 0, %i', $this->maxCount);
 
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
-      $oidRecData = $this->db()->query('SELECT [valueString] FROM [e10_base_properties] WHERE [tableid] = %s', 'e10.persons.persons', 
-                            ' AND [recid] = %i', $r['ndx'], 
-                            ' AND  [property] = %s', 'oid', ' AND [group] = %s', 'ids')->fetch();
+      if ($this->debug)
+        echo "* ".$r['fullName']."\n";
+      $pv = new \e10\persons\libs\register\Validator($this->app());
+      $pv->setPersonNdx($r['ndx']);
+      $pv->checkPerson();
 
-      if (!$oidRecData)
-        continue;
-      
-      $oid = $oidRecData['valueString'];
-
-      $url = $this->baseServicesURL.'persons/cz/'.$oid.'/json';
-
-      $resultDataStr = file_get_contents($url);
-      $resultData = json_decode($resultDataStr, TRUE);
-      if (!$resultData || !isset($resultData['status']) || !$resultData['status'])
-      {
-        echo "\n#{$r['ndx']}: `{$oid}` {$r['fullName']} "."\n";
-        echo "  --> ".$url."\n";
-        echo "    ### ERROR ### \n".$resultDataStr."    ### ^^^^^ ### \n\n";
-      }
-
-      echo ".";
       sleep(5);
 		}
   }

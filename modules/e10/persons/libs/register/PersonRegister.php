@@ -284,6 +284,9 @@ class PersonRegister extends Utility
 
   protected function checkBA()
   {
+    if (!isset($this->registerData['bankAccounts']))
+      return;
+
     foreach ($this->registerData['bankAccounts'] as $ba)
     {
       $existedBA = Utils::searchArray($this->personBA, 'bankAccount', $ba['bankAccount']);
@@ -451,5 +454,40 @@ class PersonRegister extends Utility
         $table->docsLog($rec['ndx']);
       }
     }
+    $this->setPersonValidity(1);
+  }
+
+  public function setPersonValidity($setValidValue = -1)
+  {
+    if ($setValidValue === -1)
+    {
+      $valid = 1; // "enumValues": {"0": "Nezkontrolováno", "1": "Ano", "2": "Ne"}},
+      if (count($this->diff['msgs']))
+        $valid = 2;
+    }
+    else
+    {
+      $valid = $setValidValue;
+    }
+
+		$item = [
+      'valid' => $valid,
+      'msg' => json::lint($this->diff['msgs']),
+      'updated' => new \DateTime(),
+      'revalidate' => 0
+    ];
+
+		$exist = $this->db()->query('SELECT * FROM [e10_persons_personsValidity] WHERE [person] = %i', $this->personNdx)->fetch();
+		if ($exist)
+		{
+			$this->db()->query ('UPDATE [e10_persons_personsValidity] SET ', $item, ' WHERE ndx = %i', $exist['ndx']);
+		}
+		else
+		{
+			$item['person'] = $this->personNdx;
+			$item['created'] = new \DateTime();
+
+			$this->db()->query ('INSERT INTO [e10_persons_personsValidity] ', $item);
+		}
   }
 }

@@ -341,7 +341,7 @@ class DCPersonOverview extends \Shipard\Base\DocumentCard
 			$this->validity['class'] = 'e10-warning1';
 		}
 
-		$ve = new \e10\persons\PersonValidator($this->app());
+		$ve = new \e10\persons\libs\register\Validator($this->app());
 		$tools = $ve->onlineTools($this->recData);
 		if ($tools)
 		{

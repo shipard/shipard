@@ -366,7 +366,14 @@ class ModuleServices extends \E10\CLI\ModuleServices
 
 	protected function cliValidatePersons()
 	{
+		$maxCount = intval($this->app->arg('maxCount'));
+		$debug = intval($this->app->arg('debug'));
+
 		$e = new \e10doc\core\libs\PersonValidator($this->app);
+		if ($maxCount)
+			$e->maxCount = $maxCount;
+		if ($debug)
+			$e->debug = $debug;
 		$e->batchCheck();
 	}
 
