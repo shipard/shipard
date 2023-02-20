@@ -53,27 +53,34 @@ class AddOfficesWizard extends Wizard
       $this->addInput('personNdx', '', self::INPUT_STYLE_STRING, self::coHidden, 120);
       $this->addInput('personId', '', self::INPUT_STYLE_STRING, self::coHidden, 120);
 
-			if (count($reg->missingOffices))
+			if ($reg->generalFailure)
 			{
-				foreach ($reg->missingOffices as $mo)
-				{
-					$addrId = 'AO_'.$mo['natId'];
-					$label = [
-						['text' => $mo['addressText'], 'class' => ''],
-						['text' => 'IČP: '.$mo['natId'], 'class' => 'label label-default'],
-					];
-					$this->addCheckBox($addrId, $label, '1', self::coRightCheckbox);
-				}
+				$this->addStatic(['text' => "Selhalo načtení dat z registru - IČ `{$reg->personOid}` neexistuje.", 'class' => 'h2 block ml1 e10-error']);
 			}
 			else
 			{
-				if (count($reg->registerData['address']) < 2)
+				if (count($reg->missingOffices))
 				{
-					$this->addStatic(['text' => 'Firma nemá žádné provozovny...', 'class' => 'padd5']);
+					foreach ($reg->missingOffices as $mo)
+					{
+						$addrId = 'AO_'.$mo['natId'];
+						$label = [
+							['text' => $mo['addressText'], 'class' => ''],
+							['text' => 'IČP: '.$mo['natId'], 'class' => 'label label-default'],
+						];
+						$this->addCheckBox($addrId, $label, '1', self::coRightCheckbox);
+					}
 				}
 				else
 				{
-					$this->addStatic(['text' => 'Všechny provozovny již máte přidány...', 'class' => 'padd5']);
+					if (count($reg->registerData['address']) < 2)
+					{
+						$this->addStatic(['text' => 'Firma nemá žádné provozovny...', 'class' => 'padd5']);
+					}
+					else
+					{
+						$this->addStatic(['text' => 'Všechny provozovny již máte přidány...', 'class' => 'padd5']);
+					}
 				}
 			}
   		$this->closeForm ();
@@ -97,7 +104,8 @@ class AddOfficesWizard extends Wizard
 
     $reg = new \e10\persons\libs\register\PersonRegister($this->app());
 		$reg->setPersonNdx($this->personNdx);
-    $reg->addOfficesByNatIds($addOfficesIds);
+		if (!$reg->generalFailure)
+    	$reg->addOfficesByNatIds($addOfficesIds);
 
 		$this->stepResult ['close'] = 1;
 	}

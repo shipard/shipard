@@ -55,52 +55,59 @@ class PersonRegisterRefreshWizard extends Wizard
       $this->addInput('personNdx', '', self::INPUT_STYLE_STRING, self::coHidden, 120);
       $this->addInput('personId', '', self::INPUT_STYLE_STRING, self::coHidden, 120);
 
-			if (count($reg->diff['msgs']))
+			if ($reg->generalFailure)
 			{
-				$this->addStatic(['text' => 'Přehled změn', 'class' => 'h2 block ml1']);
-				foreach ($reg->diff['msgs'] as $msg)
-				{
-					$this->addStatic('  ● '.$msg);
-				}
+				$this->addStatic(['text' => "Selhalo načtení dat z registru - IČ `{$reg->personOid}` neexistuje.", 'class' => 'h2 block ml1 e10-error']);
 			}
-
-			if (count($reg->missingBA))
+			else
 			{
-				$this->addStatic(['text' => 'Nové bankovní účty', 'class' => 'h2 block ml1']);
-				foreach ($reg->missingBA as $mba)
+				if (count($reg->diff['msgs']))
 				{
-					$baId = 'BA_'.$mba['bankAccount'];
-					$label = [
-						['text' => $mba['bankAccount'], 'class' => ''],
-					];
-					$this->addCheckBox($baId, $label, '1', self::coRightCheckbox);
-					$this->recData[$baId] = 1;
+					$this->addStatic(['text' => 'Přehled změn', 'class' => 'h2 block ml1']);
+					foreach ($reg->diff['msgs'] as $msg)
+					{
+						$this->addStatic('  ● '.$msg);
+					}
 				}
-			}
 
-			if (count($reg->missingOffices))
-			{
-				$this->addStatic(['text' => 'Nové provozovny', 'class' => 'h2 block ml1']);
-				foreach ($reg->missingOffices as $mo)
+				if (count($reg->missingBA))
 				{
-					$addrId = 'AO_'.$mo['natId'];
-					$label = [
-						['text' => $mo['addressText'], 'class' => ''],
-						['text' => 'IČP: '.$mo['natId'], 'class' => 'label label-default'],
-					];
-					$this->addCheckBox($addrId, $label, '1', self::coRightCheckbox);
+					$this->addStatic(['text' => 'Nové bankovní účty', 'class' => 'h2 block ml1']);
+					foreach ($reg->missingBA as $mba)
+					{
+						$baId = 'BA_'.$mba['bankAccount'];
+						$label = [
+							['text' => $mba['bankAccount'], 'class' => ''],
+						];
+						$this->addCheckBox($baId, $label, '1', self::coRightCheckbox);
+						$this->recData[$baId] = 1;
+					}
 				}
-			}
 
-			/*
-      if (count($reg->diff['updates']))
-      {
-        $this->addStatic([
-          'type' => 'line',
-          'line' => ['code' => "<pre class='ml1 mt1 mr1 e10-bg-t6 padd5'>".Utils::es(Json::lint($reg->diff['updates'])).'</pre>']
-        ]);
-      }
-			*/
+				if (count($reg->missingOffices))
+				{
+					$this->addStatic(['text' => 'Nové provozovny', 'class' => 'h2 block ml1']);
+					foreach ($reg->missingOffices as $mo)
+					{
+						$addrId = 'AO_'.$mo['natId'];
+						$label = [
+							['text' => $mo['addressText'], 'class' => ''],
+							['text' => 'IČP: '.$mo['natId'], 'class' => 'label label-default'],
+						];
+						$this->addCheckBox($addrId, $label, '1', self::coRightCheckbox);
+					}
+				}
+
+				/*
+				if (count($reg->diff['updates']))
+				{
+					$this->addStatic([
+						'type' => 'line',
+						'line' => ['code' => "<pre class='ml1 mt1 mr1 e10-bg-t6 padd5'>".Utils::es(Json::lint($reg->diff['updates'])).'</pre>']
+					]);
+				}
+				*/
+			}
 
   		$this->closeForm ();
 	}
@@ -113,35 +120,39 @@ class PersonRegisterRefreshWizard extends Wizard
     $reg = new \e10\persons\libs\register\PersonRegister($this->app());
 		$reg->setPersonNdx($this->personNdx);
     $reg->makeDiff();
-    $reg->applyDiff();
 
-		// -- new bank accounts
-    $addBAIds = [];
-    foreach ($this->recData as $key => $value)
-    {
-      if (!str_starts_with($key, 'BA_'))
-        continue;
-      if ($value != 1)
-        continue;
+		if (!$reg->generalFailure)
+		{
+			$reg->applyDiff();
 
-      $addBAIds[] = substr($key, 3);
-    }
-		if (count($addBAIds))
-			$reg->addBankAccounts($addBAIds);
+			// -- new bank accounts
+			$addBAIds = [];
+			foreach ($this->recData as $key => $value)
+			{
+				if (!str_starts_with($key, 'BA_'))
+					continue;
+				if ($value != 1)
+					continue;
 
-		// -- new offices
-    $addOfficesIds = [];
-    foreach ($this->recData as $key => $value)
-    {
-      if (!str_starts_with($key, 'AO_'))
-        continue;
-      if ($value != 1)
-        continue;
+				$addBAIds[] = substr($key, 3);
+			}
+			if (count($addBAIds))
+				$reg->addBankAccounts($addBAIds);
 
-      $addOfficesIds[] = substr($key, 3);
-    }
-		if (count($addOfficesIds))
-			$reg->addOfficesByNatIds($addOfficesIds);
+			// -- new offices
+			$addOfficesIds = [];
+			foreach ($this->recData as $key => $value)
+			{
+				if (!str_starts_with($key, 'AO_'))
+					continue;
+				if ($value != 1)
+					continue;
+
+				$addOfficesIds[] = substr($key, 3);
+			}
+			if (count($addOfficesIds))
+				$reg->addOfficesByNatIds($addOfficesIds);
+		}
 
 		$this->stepResult ['close'] = 1;
 	}

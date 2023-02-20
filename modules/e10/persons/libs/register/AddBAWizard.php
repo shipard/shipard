@@ -52,27 +52,35 @@ class AddBAWizard extends Wizard
 		$this->openForm ();
       $this->addInput('personNdx', '', self::INPUT_STYLE_STRING, self::coHidden, 120);
       $this->addInput('personId', '', self::INPUT_STYLE_STRING, self::coHidden, 120);
-			if (count($reg->missingBA))
+
+			if ($reg->generalFailure)
 			{
-				foreach ($reg->missingBA as $mba)
-				{
-					$baId = 'BA_'.$mba['bankAccount'];
-					$label = [
-						['text' => $mba['bankAccount'], 'class' => ''],
-					];
-					$this->addCheckBox($baId, $label, '1', self::coRightCheckbox);
-					$this->recData[$baId] = 1;
-				}
+				$this->addStatic(['text' => "Selhalo načtení dat z registru - IČ `{$reg->personOid}` neexistuje.", 'class' => 'h2 block ml1 e10-error']);
 			}
 			else
 			{
-				if (count($reg->personBA) < 1)
+				if (count($reg->missingBA))
 				{
-					$this->addStatic(['text' => 'Firma nemá žádné zveřejněné bankovní účty...', 'class' => 'padd5']);
+					foreach ($reg->missingBA as $mba)
+					{
+						$baId = 'BA_'.$mba['bankAccount'];
+						$label = [
+							['text' => $mba['bankAccount'], 'class' => ''],
+						];
+						$this->addCheckBox($baId, $label, '1', self::coRightCheckbox);
+						$this->recData[$baId] = 1;
+					}
 				}
 				else
 				{
-					$this->addStatic(['text' => 'Všechny bankovní účty již máte přidány...', 'class' => 'padd5']);
+					if (count($reg->personBA) < 1)
+					{
+						$this->addStatic(['text' => 'Firma nemá žádné zveřejněné bankovní účty...', 'class' => 'padd5']);
+					}
+					else
+					{
+						$this->addStatic(['text' => 'Všechny bankovní účty již máte přidány...', 'class' => 'padd5']);
+					}
 				}
 			}
 
@@ -97,7 +105,9 @@ class AddBAWizard extends Wizard
 
     $reg = new \e10\persons\libs\register\PersonRegister($this->app());
 		$reg->setPersonNdx($this->personNdx);
-    $reg->addBankAccounts($addBAIds);
+
+		if (!$reg->generalFailure)
+    	$reg->addBankAccounts($addBAIds);
 
 		$this->stepResult ['close'] = 1;
 	}
