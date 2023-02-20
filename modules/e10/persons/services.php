@@ -261,6 +261,10 @@ class ModuleServices extends \E10\CLI\ModuleServices
 
 	public function personValidator()
 	{
+		$testNewPersons = intval($this->app->cfgItem ('options.persons.testNewPersons', 0));
+		if ($testNewPersons)
+			return;
+
 		if ($this->app->model()->table ('e10doc.debs.journal') === FALSE)
 			return;
 
