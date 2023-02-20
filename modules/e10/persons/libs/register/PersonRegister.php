@@ -44,10 +44,16 @@ class PersonRegister extends Utility
     $this->personNdx = $personNdx;
     $this->personRecData = $this->app()->loadItem($this->personNdx, 'e10.persons.persons');
     $this->loadPersonOid();
+
+    if ($this->generalFailure)
+      return;
+
     $this->loadContacts();
     $this->loadBA();
 
     $this->loadByOid($this->personOid);
+    if ($this->generalFailure)
+      return;
 
     $this->checkOffices();
     $this->checkBA();
@@ -147,6 +153,9 @@ class PersonRegister extends Utility
       break;
 		}
 
+    if ($this->personOid === '')
+      $this->generalFailure = TRUE;
+
     return $this->personOid;
 	}
 
@@ -203,6 +212,9 @@ class PersonRegister extends Utility
 
   protected function checkOffices()
   {
+    if (!isset($this->registerData['address']))
+      return;
+
     foreach ($this->registerData['address'] as &$a)
     {
       $ap = [];

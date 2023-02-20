@@ -47,8 +47,11 @@ class Validator extends Utility
 
     $reg = new \e10\persons\libs\register\PersonRegister($this->app());
 		$reg->setPersonNdx($this->personNdx);
-    $reg->makeDiff();
-    $reg->setPersonValidity();
+		if (!$reg->generalFailure)
+		{
+	    $reg->makeDiff();
+  	  $reg->setPersonValidity();
+		}
 	}
 
 	protected function loadPersonMainAddress()
