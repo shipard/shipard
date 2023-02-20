@@ -513,19 +513,19 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
 
     if (count($addrParts) === 2)
     {
-      $dest['city'] = $addrParts[1] ?? '';
-      $dest['zipcode'] = $addrParts[0] ?? '';
+      $dest['city'] = trim($addrParts[1] ?? '');
+      $dest['zipcode'] = trim($addrParts[0] ?? '');
       $dest['street'] = '';
     }
     else
     {
-      $dest['street'] = $addrParts[0] ?? '';
-      $dest['city'] = $addrParts[2] ?? '';
-      $dest['zipcode'] = $addrParts[1] ?? '';
+      $dest['street'] = trim($addrParts[0] ?? '');
+      $dest['city'] = trim($addrParts[2] ?? '');
+      $dest['zipcode'] = trim($addrParts[1] ?? '');
     }
 
     if (isset($dest['zipcode']))
-      $dest['zipcode'] = str_replace(' ', '', $dest['zipcode']);
+      $dest['zipcode'] = str_replace(' ', '', trim($dest['zipcode']));
   }
 
   protected function doImport()
