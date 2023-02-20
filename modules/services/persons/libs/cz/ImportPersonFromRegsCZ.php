@@ -245,6 +245,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
         {
           $officeId = $p['IdentifikacniCisloProvozovny'];
           $addressId = 'O'.$officeId;
+
           $addrParts = explode(',', $p['ZmenaAdresy']['TextAdresy']);
 
           if (count($addrParts) === 2)
@@ -297,11 +298,13 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
           $officeAddress['type'] = 1;
 
           if (!isset($this->personDataImport->data['address'][$addressId]))
+          {
             $this->personDataImport->addAddress($officeAddress);
+          }
           else
           {
             //if ((!isset($this->personDataImport->data['address'][$addressId]) || $this->personDataImport->data['address'][$addressId]['specification'] === '' && $specification !== ''))
-              $this->personDataImport->data['address'][$addressId]['specification'] = Str::upToLen($specification, 160);
+            $this->personDataImport->data['address'][$addressId]['specification'] = Str::upToLen($specification, 160);
           }
         }
       }
@@ -313,27 +316,44 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
     {
       if (isset($rzpData['PodnikatelVypis']['PodnikatelDetail']['VyporadaniZavazku']['VyporadaniProvozovna']))
       {
-        $vpzItem = $rzpData['PodnikatelVypis']['PodnikatelDetail']['VyporadaniZavazku']['VyporadaniProvozovna'];
-        if (isset($vpzItem['IdentifikacniCisloProvozovny']))
+        if (isset($rzpData['PodnikatelVypis']['PodnikatelDetail']['VyporadaniZavazku']['VyporadaniProvozovna']['IdentifikacniCisloProvozovny']))
+          $list1 = [$rzpData['PodnikatelVypis']['PodnikatelDetail']['VyporadaniZavazku']['VyporadaniProvozovna']];
+        else
+          $list1 = $rzpData['PodnikatelVypis']['PodnikatelDetail']['VyporadaniZavazku']['VyporadaniProvozovna'];
+
+        foreach ($list1 as $vpzItem)
         {
-          if (isset($vpzItem['UkonceniCinnosti']))
+          if (isset($vpzItem['IdentifikacniCisloProvozovny']))
           {
             $addressId = 'O'.$vpzItem['IdentifikacniCisloProvozovny'];
-            if (isset($this->personDataImport->data	['address'][$addressId]))
+            if (!isset($this->personDataImport->data ['address'][$addressId]['addressId']))
             {
-              $dp = explode('.', $vpzItem['UkonceniCinnosti']);
-              $this->personDataImport->data	['address'][$addressId]['validTo'] = $dp[2].'-'.$dp[1].'-'.$dp[0];
+              $this->personDataImport->data	['address'][$addressId]['type'] = 1;
+              $this->personDataImport->data	['address'][$addressId]['addressId'] = $addressId;
+              $this->personDataImport->data	['address'][$addressId]['country'] = 60;
+              $this->personDataImport->data	['address'][$addressId]['natId'] = $vpzItem['IdentifikacniCisloProvozovny'];
+              if (isset($vpzItem['ZmenaAdresy']['TextAdresy']))
+                $this->parseOneLineAddress($vpzItem['ZmenaAdresy']['TextAdresy'], $this->personDataImport->data	['address'][$addressId]);
             }
-          }
-          $specification = $vpzItem['NazevProvozovny'] ?? '';
-          if (isset($vpzItem['UmisteniProvozovny']) && $vpzItem['UmisteniProvozovny'] !== '')
-          {
+
+            if (isset($vpzItem['UkonceniCinnosti']))
+            {
+              if (isset($this->personDataImport->data	['address'][$addressId]))
+              {
+                $dp = explode('.', $vpzItem['UkonceniCinnosti']);
+                $this->personDataImport->data	['address'][$addressId]['validTo'] = $dp[2].'-'.$dp[1].'-'.$dp[0];
+              }
+            }
+            $specification = $vpzItem['NazevProvozovny'] ?? '';
+            if (isset($vpzItem['UmisteniProvozovny']) && $vpzItem['UmisteniProvozovny'] !== '')
+            {
+              if ($specification !== '')
+                $specification .= ' - ';
+              $specification .= $vpzItem['UmisteniProvozovny'];
+            }
             if ($specification !== '')
-              $specification .= ' - ';
-            $specification .= $vpzItem['UmisteniProvozovny'];
+              $this->personDataImport->data	['address'][$addressId]['specification'] = $specification;
           }
-          if ($specification !== '')
-            $this->personDataImport->data	['address'][$addressId]['specification'] = $specification;
         }
       }
       else
@@ -344,9 +364,9 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
           {
             if (isset($vpzItem['IdentifikacniCisloProvozovny']))
             {
+              $addressId = 'O'.$vpzItem['IdentifikacniCisloProvozovny'];
               if (isset($vpzItem['UkonceniCinnosti']))
               {
-                $addressId = 'O'.$vpzItem['IdentifikacniCisloProvozovny'];
                 if (isset($this->personDataImport->data	['address'][$addressId]))
                 {
                   $dp = explode('.', $vpzItem['UkonceniCinnosti']);
@@ -486,6 +506,24 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
 
 		return $s;
 	}
+
+  protected function parseOneLineAddress($addText, &$dest)
+  {
+    $addrParts = explode(',', $addText);
+
+    if (count($addrParts) === 2)
+    {
+      $dest['city'] = $addrParts[1] ?? '';
+      $dest['zipcode'] = $addrParts[0] ?? '';
+      $dest['street'] = '';
+    }
+    else
+    {
+      $dest['street'] = $addrParts[0] ?? '';
+      $dest['city'] = $addrParts[2] ?? '';
+      $dest['zipcode'] = $addrParts[1] ?? '';
+    }
+  }
 
   protected function doImport()
   {
