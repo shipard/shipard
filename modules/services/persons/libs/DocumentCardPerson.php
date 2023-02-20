@@ -65,6 +65,7 @@ class DocumentCardPerson extends \Shipard\Base\DocumentCard
 				'city' => $r['city'],
 				'zipcode' => $r['zipcode'],
 				'street' => $r['street'],
+				'spec' => $r['specification'],
 			];
 
 			if (!Utils::dateIsBlank($r['validFrom']))
@@ -78,7 +79,7 @@ class DocumentCardPerson extends \Shipard\Base\DocumentCard
 			$t[] = $item;
 		}
 
-		$h = ['#' => '#', 'city' => 'Město', 'zipcode' => 'PSČ', 'street' => 'Ulice', 'geoId' => 'GEO', 'validFrom' => 'Od', 'validTo' => 'Do'];
+		$h = ['#' => '#', 'city' => 'Město', 'zipcode' => 'PSČ', 'street' => 'Ulice', 'spec' => 'Upřesnění', 'geoId' => 'GEO', 'validFrom' => 'Od', 'validTo' => 'Do'];
 		$this->addContent ('body', [
 			'pane' => 'e10-pane e10-pane-table', 'header' => $h, 'table' => $t,
 			'paneTitle' => ['text' => 'Adresy', 'class' => 'h1', 'icon' => 'tables/e10.base.places'],
