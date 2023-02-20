@@ -337,6 +337,12 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$e->cleanOldBankAccounts();
 	}
 
+	public function importNewPersonsValidityClean()
+	{
+		$e = new \e10\persons\libs\ImportNewPersons($this->app);
+		$e->cleanOldValidity();
+	}
+
 	public function onCliAction ($actionId)
 	{
 		switch ($actionId)
@@ -347,6 +353,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'import-new-persons': return $this->importNewPersons();
 			case 'import-new-persons-ba': return $this->importNewPersonsBA();
 			case 'import-new-persons-ba-clean': return $this->importNewPersonsBAClean();
+			case 'import-new-persons-validity-clean': return $this->importNewPersonsValidityClean();
 		}
 
 		parent::onCliAction($actionId);
