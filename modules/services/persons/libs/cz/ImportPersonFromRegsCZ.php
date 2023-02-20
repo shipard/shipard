@@ -523,6 +523,9 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
       $dest['city'] = $addrParts[2] ?? '';
       $dest['zipcode'] = $addrParts[1] ?? '';
     }
+
+    if (isset($dest['zipcode']))
+      $dest['zipcode'] = str_replace(' ', '', $dest['zipcode']);
   }
 
   protected function doImport()
