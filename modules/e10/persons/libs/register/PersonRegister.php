@@ -407,6 +407,11 @@ class PersonRegister extends Utility
         $this->addDiffMsg('Změna ulice provozovny z `'.$cpo['adrStreet'].'` na `'.$registerOffice['street'].'`');
         $update['adrStreet'] = $registerOffice['street'];
       }
+      if ($cpo['adrSpecification'] !== $registerOffice['specification'])
+      {
+        $this->addDiffMsg('Změna názvu provozovny z `'.$cpo['adrSpecification'].'` na `'.$registerOffice['specification'].'`');
+        $update['adrSpecification'] = $registerOffice['specification'];
+      }
       if ($cpo['adrCity'] !== $registerOffice['city'])
       {
         $this->addDiffMsg('Změna města provozovny z `'.$cpo['adrCity'].'` na `'.$registerOffice['city'].'`');
