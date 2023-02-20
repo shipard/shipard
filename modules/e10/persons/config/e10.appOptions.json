@@ -18,7 +18,8 @@
 		"options":
 			[
 				{"cfgKey": "testNewPersons", "cfgName": "Testovat nové Osoby (NEZAPÍNAT)", "options": {"0": "Ne", "1": "Ano"}},
-				{"cfgKey": "useOfficesIds", "cfgName": "Používat ID provozoven", "options": {"0": "Ne", "1": "Ano"}}
+				{"cfgKey": "useOfficesIds", "cfgName": "Používat ID provozoven", "options": {"0": "Ne", "1": "Ano"}},
+				{"cfgKey": "useOfficesAutoLoading", "cfgName": "Automaticky načítat provozovny u nových firem", "options": {"0": "Ne", "1": "Ano"}}
 			]
 	}
 }

@@ -15,6 +15,7 @@ class PersonRegister extends Utility
 {
   var $registerData = NULL;
   var $generalFailure = FALSE;
+  var $useOfficesAutoLoading = 0;
 
   /** @var \e10\persons\TablePersonsContacts */
   var $tablePersonsContact;
@@ -32,6 +33,7 @@ class PersonRegister extends Utility
 
   protected function init()
   {
+    $this->useOfficesAutoLoading = intval($this->app()->cfgItem ('options.persons.useOfficesAutoLoading', 0));
     $this->tablePersonsContact = $this->app()->table('e10.persons.personsContacts');
   }
 
@@ -67,6 +69,9 @@ class PersonRegister extends Utility
     // -- address
     foreach ($this->registerData['address'] as $addr)
     {
+      if (!$this->useOfficesAutoLoading && $addr['type'] !== 0)
+        continue;
+
       $this->addAddress($addr);
     }
 
@@ -243,7 +248,7 @@ class PersonRegister extends Utility
 
   protected function addAddress($addressData, $flags = NULL)
   {
-    $newAddress = [
+        $newAddress = [
       'person' => $this->personNdx,
       'adrSpecification' => $addressData['specification'],
       'adrStreet' => $addressData['street'],
