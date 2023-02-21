@@ -40,11 +40,11 @@ function aktualniSkolniRok ()
  */
 class zusutils
 {
-	static function pobocky ($app, $enableAll = TRUE)
+	static function pobocky ($app, $enableAll = TRUE, $enableAllText = 'Vše')
 	{
 		$pobocky = $app->db()->query('SELECT ndx, fullName FROM [e10_base_places] WHERE docStateMain < 4 AND placeType = %s ORDER BY [fullName]', 'lcloffc')->fetchPairs ('ndx', 'fullName');
 		if ($enableAll)
-			return ['0' => 'Vše'] + $pobocky;
+			return ['0' => $enableAllText] + $pobocky;
 		return $pobocky;
 	}
 
