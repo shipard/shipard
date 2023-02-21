@@ -2,17 +2,13 @@
 
 namespace e10doc\inventory\libs;
 
-
-require_once __SHPD_MODULES_DIR__ . 'e10doc/core/core.php';
 require_once __SHPD_MODULES_DIR__ . 'e10doc/inventory/inventory.php';
-require_once __SHPD_MODULES_DIR__ . 'e10/witems/tables/items.php';
 
-use e10\Utility, e10doc\core\e10utils, e10doc\inventory\Inventory;
+use \Shipard\Base\Utility, \e10doc\core\libs\E10Utils, e10doc\inventory\Inventory;
 
 
 /**
- * Class InventoryStatesEngine
- * @package e10doc\inventory\libs
+ * class InventoryStatesEngine
  */
 class InventoryStatesEngine extends Utility
 {
@@ -261,7 +257,7 @@ class InventoryStatesEngine extends Utility
 		$warehouses = $this->app->cfgItem ('e10doc.warehouses', []);
 		foreach ($warehouses as $w)
 		{
-			$options = e10utils::warehouseOptions ($this->app, $w['ndx'], $fiscalYear);
+			$options = E10Utils::warehouseOptions ($this->app, $w['ndx'], $fiscalYear);
 			if ($options['calcPrices'] == 0)
 				$this->recalcPricesAvg($fiscalYear, $w['ndx']);
 			else

@@ -8,23 +8,6 @@ require_once __SHPD_MODULES_DIR__ . 'e10/witems/tables/items.php';
 
 use \E10\utils, \E10Doc\Core\e10utils, \E10\Wizard, \E10\TableForm, \E10\TableView;
 
-
-function inventoryRecalc ($app, $options = NULL)
-{
-	$e = new \e10doc\inventory\libs\InventoryStatesEngine($app);
-	$e->resetAllStates();
-
-	$objectData ['message'] = 'Zásoby jsou přepočítány.';
-	$objectData ['finalAction'] = 'reloadPanel';
-
-	$r = new \E10\Response ($app);
-	$r->add ("objectType", "panelAction");
-	$r->add ("object", $objectData);
-
-	return $r;
-}
-
-
 class Inventory
 {
 	const mtIn = 0, mtOut = 1;
