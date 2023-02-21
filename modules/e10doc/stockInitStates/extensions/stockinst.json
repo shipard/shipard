@@ -2,10 +2,11 @@
   {
     "table": "e10doc.core.heads",
     "views": [
-      {"id": "stockinst", "class": "e10doc.stockInitStates.libs.ViewStockInitStates", 
+      {"id": "stockinst", "class": "e10doc.stockInitStates.libs.ViewStockInitStates",
 				"details": {
 					"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.stockInitStates.libs.ViewDetailStockInitState"},
-					"rows": {"title": "Řádky", "icon": "system/detailRows", "type": "detail", "class": "e10doc.stockInitStates.libs.ViewDetailStockInitStateRows"}
+					"rows": {"title": "Řádky", "icon": "system/detailRows", "type": "detail", "class": "e10doc.stockInitStates.libs.ViewDetailStockInitStateRows"},
+          "accounting": {"title": "Účtování", "icon": "system/detailAccounting", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
 				},
 			 "addWizard": {"class": "e10doc.stockInitStates.libs.AddWizard"}
 			}

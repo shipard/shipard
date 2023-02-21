@@ -9,7 +9,8 @@
 			"mnf": {
 				"id": "mnf", "class": "e10doc.mnf.ViewMnfDocs",
 				"details": {
-					"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.mnf.ViewDetailMnfDocs", "order": 1000}
+					"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.mnf.ViewDetailMnfDocs", "order": 1000},
+          "accounting": {"title": "Účtování", "icon": "system/detailAccounting", "type": "detail", "class": "e10doc.debs.libs.ViewDetailDocAccounting", "order": 6000}
 				}
 			}
 		},
