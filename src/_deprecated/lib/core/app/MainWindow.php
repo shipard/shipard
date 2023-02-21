@@ -614,13 +614,17 @@ class MainWindow extends \Shipard\Base\BaseObject
 			{
 				$c .= $btn['code'];
 			}
-			else
+			elseif (isset($btn['type']) && $btn['type'] === 'panelaction')
 			{
 				$class = '';
 				$icon = (isset($btn['icon'])) ? $this->app()->ui()->icon($btn['icon']).'&nbsp;' : '';
 				$class = (isset($btn['class'])) ? " btn-{$btn['class']}" : '';
 				$btnText = $btn['text'];
 				$c .= "<button class='btn btn-large$class df2-{$btn['type']}-trigger' data-action='{$btn['action']}'>{$icon}{$btnText}</button>";
+			}
+			else
+			{
+				$c .= $this->app()->ui()->composeTextLine($btn);
 			}
 		}
 		return $c;
