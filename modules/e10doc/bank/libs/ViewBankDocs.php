@@ -12,7 +12,7 @@ class ViewBankDocs extends \e10doc\core\ViewHeads
 {
 	var $bankAccountsParam = NULL;
 	var $bankAccounts = NULL;
-	var $bankAccountGroups = NULL;
+	var $bankAccountsGroups = NULL;
 	var $bankAccountNdx = 0;
 
 
