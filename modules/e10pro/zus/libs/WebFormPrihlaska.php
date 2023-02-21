@@ -8,6 +8,8 @@ use E10Pro\Zus\zusutils, \e10\utils, \e10\str;
 class WebFormPrihlaska extends \Shipard\Base\WebForm
 {
 	var $valid = FALSE;
+	var $pobocky;
+	var $oddeleni;
 
 	public function fields ()
 	{
@@ -26,7 +28,7 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 
 	public function createFormCode ($options = 0)
 	{
-		$pobocky = $this->nacistPobocky();
+		$this->nacistPobocky();
 
 		$c = "<form class='form-horizontal zus-prihlaska-form' method='POST'>";
 		$c .= "<input type='hidden' name='webFormState' value='1'/>";
@@ -34,27 +36,25 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 
 		$c.= "<div class='row pt-3 zus-prihlaska-obor'>";
 		$c.= "<div class='col col-4'>";
-		$obory = zusutils::obory($this->app, FALSE);
-
+		$obory = zusutils::obory($this->app, TRUE, '-- Vyberte obor --');
 		$c .= $this->addFormInput ('Obor', 'select', 'svpObor', ['select' => $obory, 'labelAbove' => 1, 'mandatory' => 1]);
 		$c.= "</div>";
+
 		$c.= "<div class='col col-4' id='studijni-zamereni'>";
 		$oddeleni = $this->app->cfgItem ("e10pro.zus.oddeleni");
 		$oddeleniEnum = [];
+		$oddeleniEnum[0] = '-- Vyberte studijní zaměření --';
 		foreach ($oddeleni as $oddeleniNdx => $oddeleniCfg)
 		{
 			if (intval($oddeleniNdx))
 			{
-				if (!isset($oddeleniEnum[$oddeleniCfg['obor']]))
-					$oddeleniEnum[$oddeleniCfg['obor']][0] = '-- Vyberte předmět --';
-				$oddeleniEnum[$oddeleniCfg['obor']][$oddeleniNdx] = $oddeleniCfg['nazev'];
+				$oddeleniEnum[$oddeleniNdx] = $oddeleniCfg['nazev'];
+				$this->oddeleni[$oddeleniCfg['obor']][] = $oddeleniNdx;
 			}
 		}
-		foreach ($oddeleniEnum as $obor => $enm)
-		{
-			$c .= $this->addFormInput ('Studijní zaměření', 'select', 'svpOddeleni', ['select' => $enm, 'labelAbove' => 1, 'mandatory' => 1, 'id' => 'svpOddeleni'.$obor]);
-		}
+		$c .= $this->addFormInput ('Studijní zaměření', 'select', 'svpOddeleni', ['select' => $oddeleniEnum, 'labelAbove' => 1, 'mandatory' => 1]);
 		$c.= "</div>";
+
 		$c.= "<div class='col col-4'>";
 		$c .= $this->addFormInput ('Studium na pobočce', 'select', 'misto', ['select' => zusutils::pobocky($this->app, TRUE, '-- Vyberte pobočku --'), 'labelAbove' => 1, 'mandatory' => 1]);
 		$c.= "</div>";
@@ -184,7 +184,8 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 
 		$c .= "
 			<script>
-			var pobockyNaZamerenich = ".json_encode($pobocky).";
+			var pobockyNaZamerenich = ".json_encode($this->pobocky).";
+			var oddeleniNaOborech = ".json_encode($this->oddeleni).";
 			document.addEventListener('DOMContentLoaded', function() {
 				$('form.form-horizontal').on ('change', 'input, select', function(event) {
 					prihlaska(event, $(this));
@@ -196,16 +197,6 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 
 			function prihlaska(event, element)
 			{
-				if (element.attr('id') === 'svpObor')
-				{
-					/*
-					if (element.val() === '4')
-						$('#svpOddeleni').parent().css({'display': 'none'});
-					else
-						$('#svpOddeleni').parent().css({'display': 'block'});
-					*/
-				}
-
 				if (element.attr('id') === 'zdravotniPostizeni')
 				{
 					if (element.val() === '0')
@@ -219,12 +210,6 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 
 			function nastavitPrihlasku()
 			{
-				var svpObor = $('#svpObor').val();
-				$('#studijni-zamereni').find('select').parent().hide();
-				$('#studijni-zamereni').find('select').prop('disabled', true);
-				$('#svpOddeleni'+svpObor).parent().show();
-				$('#svpOddeleni'+svpObor).prop('disabled', false);
-
 				if ($('#useAddressM').is(':checked'))
 				{
 					$('#streetM').prop('disabled', false);
@@ -259,7 +244,24 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 					$('#zipcodeF').val($('#zipcode').val());
 				}
 
-				var zamereniId = parseInt($('#svpOddeleni'+svpObor).val());
+				var oborId = parseInt($('#svpObor').val());
+				$('#svpOddeleni > option').each(function() {
+					var thisOption = $(this);
+					const oddeleni = parseInt(thisOption.attr('value'));
+					if (oddeleni)
+					{
+						if (oddeleniNaOborech[oborId] === undefined || oddeleniNaOborech[oborId].indexOf(oddeleni) === -1)
+							thisOption.hide();
+						else
+							thisOption.show();
+						}
+				});
+				var oddeleniId = parseInt($('#svpOddeleni').val());
+				if (oddeleniNaOborech[oborId] === undefined || oddeleniNaOborech[oborId].indexOf(oddeleniId) === -1)
+					$('#svpOddeleni').val('0');
+
+
+				var zamereniId = parseInt($('#svpOddeleni').val());
 				$('#misto > option').each(function() {
 					var thisOption = $(this);
 					const pobocka = parseInt(thisOption.attr('value'));
@@ -296,7 +298,8 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 		$this->checkValidField('street', 'Ulice není vyplněna');
 		$this->checkValidField('city', 'Obec není vyplněna');
 		$this->checkValidField('zipcode', 'PSČ není vyplněno');
-		$this->checkValidField('svpOddeleni', 'Nástroj není vyplněn');
+		$this->checkValidField('svpObor', 'Obor není vyplněn');
+		$this->checkValidField('svpOddeleni', 'Studijní zaměření není vyplněno');
 		$this->checkValidField('skolaNazev', 'Název školy není vyplněn');
 		$this->checkValidField('fullNameM', 'Jméno není vyplněno');
 		$this->checkValidField('phoneM', 'Telefon není vyplněn');
@@ -308,17 +311,30 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 
 	public function checkValidField ($id, $msg)
 	{
-		if ($id === 'svpOddeleni')
-		{
-			$svpObor = $this->app->testPostParam ('svpObor');
-			if ($svpObor != '3')
-				return;
-		}
-
 		if ($id === 'misto')
 		{
 			$misto = intval($this->app->testPostParam ('misto'));
 			if (!$misto)
+			{
+				$this->formErrors [$id] = $msg;
+				$this->valid = FALSE;
+				return;
+			}
+		}
+		if ($id === 'svpObor')
+		{
+			$svpObor = intval($this->app->testPostParam ('svpObor'));
+			if (!$svpObor)
+			{
+				$this->formErrors [$id] = $msg;
+				$this->valid = FALSE;
+				return;
+			}
+		}
+		if ($id === 'svpOddeleni')
+		{
+			$svpOddeleni = intval($this->app->testPostParam ('svpOddeleni'));
+			if (!$svpOddeleni)
 			{
 				$this->formErrors [$id] = $msg;
 				$this->valid = FALSE;
@@ -396,7 +412,7 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 
 	protected function nacistPobocky()
 	{
-		$pobocky = [];
+		$this->pobocky = [];
 
 		$q = [];
 		array_push($q, 'SELECT pobocky.*, oddeleni.[stop] AS oddeleniStop FROM [e10pro_zus_oddeleniPobocky] AS pobocky');
@@ -406,9 +422,7 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 		{
 			if ($r['stop'] || $r['oddeleniStop'])
 				continue;
-			$pobocky[$r['oddeleni']][] = $r['pobocka'];
+			$this->pobocky[$r['oddeleni']][] = $r['pobocka'];
 		}
-
-		return $pobocky;
 	}
 }

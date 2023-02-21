@@ -49,6 +49,19 @@ class WebForm
 		if (isset($options['mandatory']))
 			$label .= ' *';
 
+		$inputError = '';
+		$inputErrorClass = '';
+		$autofocus = '';
+		if ((count ($this->formErrors) == 0) && ($this->firstInput) && !$this->disableAutofocus)
+			$autofocus = " autofocus='autofocus'";
+
+		if (isset ($this->formErrors [$inputName]))
+		{
+			$inputError = $this->dictText($this->formErrors [$inputName]);
+			$inputErrorClass = ' has-error has-feedback';
+			$autofocus = " autofocus='autofocus'";
+		}
+
 		$inputClass = isset($options['inputClass']) ? ' '.$options['inputSlass'] : '';
 		$inputStyle = isset($options['inputStyle']) ? ' style="'.$options['inputStyle'].'"' : '';
 		$inputId = $inputName;
@@ -110,6 +123,10 @@ class WebForm
 				$c .= "<option value='$itemId'$selected>" . Utils::es ($item) . "</option>";
 			}
 			$c .= '</select>';
+
+			if ($inputError != '')
+				$c .= "<label for='$inputName'  class='e10-form-input-error'>" . Utils::es($inputError) . '</label>';
+
 			if ($labelTxt !== '')
 			{
 				if (!isset($options['labelAbove']))
@@ -118,19 +135,6 @@ class WebForm
 			if ($labelTxt !== '')
 				$c .= '</div>';
 			return $c;
-		}
-
-		$autofocus = '';
-		if ((count ($this->formErrors) == 0) && ($this->firstInput) && !$this->disableAutofocus)
-			$autofocus = " autofocus='autofocus'";
-
-		$inputError = '';
-		$inputErrorClass = '';
-		if (isset ($this->formErrors [$inputName]))
-		{
-			$inputError = $this->dictText($this->formErrors [$inputName]);
-			$inputErrorClass = ' has-error has-feedback';
-			$autofocus = " autofocus='autofocus'";
 		}
 
 		if ($type == 'memo')

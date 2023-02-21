@@ -97,11 +97,11 @@ class zusutils
 		return $ucitele;
 	}
 
-	static function obory($app, $enableAll = TRUE)
+	static function obory($app, $enableAll = TRUE, $textAll = 'Vše')
 	{
 		$enum = [];
 		if ($enableAll)
-			$enum[0] = 'Vše';
+			$enum[0] = $textAll;
 		$obory = $app->cfgItem('e10pro.zus.obory');
 		foreach ($obory as $oborNdx => $obor)
 		{
