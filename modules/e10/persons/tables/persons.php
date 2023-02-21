@@ -5,7 +5,7 @@ use \Shipard\Viewer\TableViewPanel;
 use \e10\base\libs\UtilsBase;
 use \Shipard\Utils\Utils, \Shipard\Application\DataModel, \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail;
 use \Shipard\Form\TableForm, \Shipard\Table\DbTable;
-
+use \Shipard\Utils\Str;
 
 /**
  * class TablePersons
@@ -109,7 +109,7 @@ class TablePersons extends DbTable
 		else
 		{ // company
 			$recData ['firstName'] = '';
-			$recData ['lastName'] = $recData ['fullName']; // for better order
+			$recData ['lastName'] = Str::upToLen($recData ['fullName'], 80); // for better order
 			$recData ['beforeName'] = '';
 			$recData ['afterName'] = '';
 			$recData ['middleName'] = '';
