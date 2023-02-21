@@ -1,22 +1,15 @@
 <?php
 
-namespace E10Pro\Zus;
+namespace e10pro\zus;
 
-//require_once __APP_DIR__ . '/e10-modules/e10/base/base.php';
-
-
-use \E10\Application;
-use \E10\TableView;
-use \E10\TableForm;
-use \E10\HeaderData;
-use \E10\DbTable;
+use \Shipard\Viewer\TableView;
+use \Shipard\Form\TableForm;
+use \Shipard\Table\DbTable;
 
 
 /**
- * Tabulka Oddělení
- *
+ * class TableOddeleni
  */
-
 class TableOddeleni extends DbTable
 {
 	public function __construct ($dbmodel)
@@ -47,10 +40,8 @@ class TableOddeleni extends DbTable
 
 
 /**
- * Základní pohled na Oddělení
- *
+ * class ViewOddeleni
  */
-
 class ViewOddeleni extends TableView
 {
 	public function init ()
@@ -110,14 +101,12 @@ class ViewOddeleni extends TableView
 
 		$this->runQuery ($q);
 	}
-} // class ViewOddeleni
+}
 
 
-/*
- * FormOddeleni
- *
+/**
+ * class FormOddeleni
  */
-
 class FormOddeleni extends TableForm
 {
 	public function renderForm ()
@@ -126,27 +115,24 @@ class FormOddeleni extends TableForm
     $this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
 		$this->openForm ();
+			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Pobočky', 'icon' => 'system/formSettings'];
+			$this->openTabs ($tabs, TRUE);
+				$this->openTab ();
+					$this->addColumnInput ('svp');
+					$this->addColumnInput ('obor');
+					$this->addColumnInput ('nazev');
+					$this->addColumnInput ('tisk');
+					$this->addColumnInput ('id');
+					$this->addColumnInput ('pos');
 
-		$this->layoutOpen (TableForm::ltHorizontal);
-			$this->layoutOpen (TableForm::ltForm);
-				$this->addColumnInput ("svp");
-				$this->addColumnInput ("obor");
-				$this->addColumnInput ("nazev");
-				$this->addColumnInput ('tisk');
-				$this->addColumnInput ("id");
-				$this->addColumnInput ("pos");
-			$this->layoutClose ();
-		$this->layoutClose ();
-
+					$this->addColumnInput ('stop');
+				$this->closeTab ();
+				$this->openTab ();
+					$this->addList ('pobocky');
+				$this->closeTab ();
+			$this->closeTabs ();
 		$this->closeForm ();
 	}
-
-  public function createHeaderCode ()
-	{
-		$item = $this->recData;
-		$info = '';
-		return $this->defaultHedearCode ("e10pro-zus-oddeleni", $item ['nazev'], $info);
-	}
-} // class FormOddeleni
-
+}
 

@@ -8,9 +8,13 @@
     {"id": "obor", "name": "Obor", "type": "int", "reference": "e10pro.zus.obory"},
     {"id": "id", "name": "ID", "type": "string", "len": 10},
     {"id": "pos", "name": "Pořadí", "type": "int"},
+    {"id": "stop", "name": "Stop stav na přihláškách", "type": "logical"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+  "lists": [
+    {"id": "pobocky", "class": "e10.base.ListRows", "name": "Pobočky", "table": "e10pro.zus.oddeleniPobocky", "queryColumn": "oddeleni"}
   ],
 	"views": [
 		{"id": "default", "class": "e10pro.zus.ViewOddeleni"}

@@ -2,7 +2,7 @@
   "id": "e10pro.zus",
   "name": "ZUŠ",
   "tables": [
-		"obory", "oddeleni", "predmety", "svp", "stupne", "rocniky", "teachplanheads", "teachplanrows", "roky",
+		"obory", "oddeleni", "oddeleniPobocky", "predmety", "svp", "stupne", "rocniky", "teachplanheads", "teachplanrows", "roky",
 		"vysvedceni", "znamky", "akce", "programakci",
 		"prihlasky", "studium", "studiumpre",
 		"vyuky", "vyukystudenti", "vyukyrozvrh", "hodiny", "hodinydochazka", "hodnoceni"

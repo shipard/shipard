@@ -1,0 +1,13 @@
+{
+  "id": "e10pro.zus.oddeleniPobocky", "sql": "e10pro_zus_oddeleniPobocky", "name": "Pobočky oddělení",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "oddeleni", "name": "Oddělení", "type": "int"},
+    {"id": "pobocka", "name": "Pobočka", "type": "int", "reference": "e10.base.places", "comboViewer": "e10.base.ViewPlacesComboLocalOffices"},
+    {"id": "stop", "name": "Stop stav na přihláškách", "type": "logical"}
+  ],
+	"options": ["systemTable"],
+	"forms": [
+      {"id": "default", "class": "e10pro.zus.FormRadekOddeleniPobocka"}
+	]
+}
