@@ -26,6 +26,8 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 
 	public function createFormCode ($options = 0)
 	{
+		$pobocky = $this->nacistPobocky();
+
 		$c = "<form class='form-horizontal zus-prihlaska-form' method='POST'>";
 		$c .= "<input type='hidden' name='webFormState' value='1'/>";
 		$c .= "<input type='hidden' name='webFormId' value='e10pro.zus.libs.WebFormPrihlaska'/>";
@@ -42,7 +44,11 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 		foreach ($oddeleni as $oddeleniNdx => $oddeleniCfg)
 		{
 			if (intval($oddeleniNdx))
+			{
+				if (!isset($oddeleniEnum[$oddeleniCfg['obor']]))
+					$oddeleniEnum[$oddeleniCfg['obor']][0] = '-- Vyberte předmět --';
 				$oddeleniEnum[$oddeleniCfg['obor']][$oddeleniNdx] = $oddeleniCfg['nazev'];
+			}
 		}
 		foreach ($oddeleniEnum as $obor => $enm)
 		{
@@ -50,7 +56,7 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 		}
 		$c.= "</div>";
 		$c.= "<div class='col col-4'>";
-		$c .= $this->addFormInput ('Studium na pobočce', 'select', 'misto', ['select' => zusutils::pobocky($this->app, FALSE), 'labelAbove' => 1, 'mandatory' => 1]);
+		$c .= $this->addFormInput ('Studium na pobočce', 'select', 'misto', ['select' => zusutils::pobocky($this->app, TRUE, '-- Vyberte pobočku --'), 'labelAbove' => 1, 'mandatory' => 1]);
 		$c.= "</div>";
 		$c.= "</div>";
 
@@ -178,6 +184,7 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 
 		$c .= "
 			<script>
+			var pobockyNaZamerenich = ".json_encode($pobocky).";
 			document.addEventListener('DOMContentLoaded', function() {
 				$('form.form-horizontal').on ('change', 'input, select', function(event) {
 					prihlaska(event, $(this));
@@ -252,7 +259,24 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 					$('#zipcodeF').val($('#zipcode').val());
 				}
 
+				var zamereniId = parseInt($('#svpOddeleni'+svpObor).val());
+				$('#misto > option').each(function() {
+					var thisOption = $(this);
+					const pobocka = parseInt(thisOption.attr('value'));
+					if (pobocka)
+					{
+						if (pobockyNaZamerenich[zamereniId] === undefined || pobockyNaZamerenich[zamereniId].indexOf(pobocka) === -1)
+							this.disabled = true;
+						else
+							this.disabled = false;
+					}
+				});
+
+				var mistoId = parseInt($('#misto').val());
+				if (pobockyNaZamerenich[zamereniId] === undefined || pobockyNaZamerenich[zamereniId].indexOf(mistoId) === -1)
+					$('#misto').val('0');
 			}
+
 			nastavitPrihlasku();
 			</script>
 		";
@@ -277,6 +301,7 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 		$this->checkValidField('fullNameM', 'Jméno není vyplněno');
 		$this->checkValidField('phoneM', 'Telefon není vyplněn');
 		$this->checkValidField('emailM', 'E-mail není vyplněn');
+		$this->checkValidField('misto', 'Není vybrána pobočka');
 
 		return $this->valid;
 	}
@@ -288,6 +313,17 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 			$svpObor = $this->app->testPostParam ('svpObor');
 			if ($svpObor != '3')
 				return;
+		}
+
+		if ($id === 'misto')
+		{
+			$misto = intval($this->app->testPostParam ('misto'));
+			if (!$misto)
+			{
+				$this->formErrors [$id] = $msg;
+				$this->valid = FALSE;
+				return;
+			}
 		}
 
 		if ($this->app->testPostParam ($id) == '')
@@ -356,5 +392,23 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 	public function successMsg ()
 	{
 		return $this->dictText('Hotovo. Během několika minut Vám pošleme e-mail s potvrzením.');
+	}
+
+	protected function nacistPobocky()
+	{
+		$pobocky = [];
+
+		$q = [];
+		array_push($q, 'SELECT pobocky.*, oddeleni.[stop] AS oddeleniStop FROM [e10pro_zus_oddeleniPobocky] AS pobocky');
+		array_push($q, ' LEFT JOIN [e10pro_zus_oddeleni] AS oddeleni ON pobocky.oddeleni = oddeleni.ndx');
+		$rows = $this->app()->db()->query($q);
+		foreach ($rows as $r)
+		{
+			if ($r['stop'] || $r['oddeleniStop'])
+				continue;
+			$pobocky[$r['oddeleni']][] = $r['pobocka'];
+		}
+
+		return $pobocky;
 	}
 }
