@@ -4,7 +4,9 @@ namespace E10Pro\Zus;
 
 require_once __SHPD_MODULES_DIR__ . 'e10pro/zus/zus.php';
 
-use \E10\Application, \E10\utils, \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\HeaderData, \E10\DbTable;
+use \Shipard\Utils\Utils, \Shipard\Viewer\TableViewDetail, \E10\TableForm, \Shipard\Table\DbTable;
+use \Shipard\Viewer\TableViewPanel;
+use \Shipard\Viewer\TableView;
 
 
 /**
@@ -90,7 +92,7 @@ class TablePrihlasky extends DbTable
 		$hdr ['info'][] = [
 			'class' => 'info',
 			'value' => [
-				['icon' => 'icon-map-marker', 'text' => $place['fullName']],
+				['icon' => 'tables/e10.base.places', 'text' => $place['fullName']],
 				['text' => isset($skolniRoky [$recData['skolniRok']]) ?$skolniRoky [$recData['skolniRok']]['nazev'] : '', 'class' => 'pull-right', 'prefix' => ' ']
 			]
 		];
@@ -107,56 +109,65 @@ class TablePrihlasky extends DbTable
 
 
 /**
- * Class ViewPrihlasky
- * @package E10Pro\Zus
+ * class ViewPrihlasky
  */
 class ViewPrihlasky extends TableView
 {
+	var $officesParam = NULL;
+	var $offices;
+
 	public function init ()
 	{
 		parent::init();
 
-		$mq [] = array ('id' => 'aktualni', 'title' => 'Aktuální');
-		$mq [] = array ('id' => 'archiv', 'title' => 'Archív');
-		$mq [] = array ('id' => 'vse', 'title' => 'Vše');
-		$mq [] = array ('id' => 'kos', 'title' => 'Koš');
+		$this->offices = [0 => 'Vše'];
+		$this->offices += $this->db()->query('SELECT ndx, shortName FROM [e10_base_places] WHERE docStateMain < 4 AND placeType = %s ORDER BY [fullName]', 'lcloffc')->fetchPairs ('ndx', 'shortName');
 
-		$this->setMainQueries ($mq);
-	} // init
+		if ($this->offices > 1)
+			$this->usePanelLeft = TRUE;
+
+		if ($this->usePanelLeft)
+		{
+			$enum = [];
+			forEach ($this->offices as $officeNdx => $officeName)
+			{
+				$enum[$officeNdx] = ['text' => $officeName, 'addParams' => ['misto' => $officeNdx]];
+			}
+
+			$this->officesParam = new \E10\Params ($this->app);
+			$this->officesParam->addParam('switch', 'office', ['title' => '', 'switch' => $enum, 'list' => 1]);
+			$this->officesParam->detectValues();
+		}
+
+		$this->setMainQueries ();
+	}
 
 	public function selectRows ()
 	{
 		$dotaz = $this->fullTextSearch ();
-		$mainQuery = $this->mainQueryId ();
+
+		$officeNdx = 0;
+		if ($this->officesParam)
+			$officeNdx = intval($this->officesParam->detectValues()['office']['value']);
+
 
 		$q [] = 'SELECT prihlasky.*, places.fullName as nazevPobocky FROM [e10pro_zus_prihlasky] as prihlasky ';
 		array_push ($q, ' LEFT JOIN e10_base_places AS places ON prihlasky.misto = places.ndx ');
 		array_push ($q, ' WHERE 1');
 
+		if ($officeNdx)
+		array_push ($q, ' AND [prihlasky].[misto] = %i', $officeNdx);
+
 		// -- fulltext
 		if ($dotaz != '')
 		{
-			array_push ($q, " AND (");
-			array_push ($q, " [fullNameS] LIKE %s", '%'.$dotaz.'%');
-			array_push ($q, " OR [fullNameM] LIKE %s", '%'.$dotaz.'%');
-			array_push ($q, ")");
+			array_push ($q, ' AND (');
+			array_push ($q, ' [fullNameS] LIKE %s', '%'.$dotaz.'%');
+			array_push ($q, ' OR [fullNameM] LIKE %s', '%'.$dotaz.'%');
+			array_push ($q, ')');
 		}
 
-		// -- aktuální
-		if ($mainQuery == 'aktualni' || $mainQuery == '')
-			array_push ($q, " AND prihlasky.[docStateMain] < %i AND [skolniRok] >= %i", 4, \E10Pro\Zus\aktualniSkolniRok ());
-
-		// -- archív
-		if ($mainQuery == 'archiv')
-			array_push ($q, " AND prihlasky.[docStateMain] < %i AND [skolniRok] < %i", 4, \E10Pro\Zus\aktualniSkolniRok ());
-
-		// -- koš
-		if ($mainQuery == 'kos')
-			array_push ($q, " AND prihlasky.[docStateMain] = %i", 4);
-
-
-		array_push ($q, ' ORDER BY prihlasky.[docStateMain], fullNameS DESC' . $this->sqlLimit ());
-
+		$this->queryMain ($q, 'prihlasky.', ['[webSentDate]', '[fullNameS]']);
 		$this->runQuery ($q);
 	} // selectRows
 
@@ -169,15 +180,29 @@ class ViewPrihlasky extends TableView
 
 		$listItem ['t1'] = $item['fullNameS'];
 
-		$listItem ['t2'] = $this->app()->cfgItem ("e10pro.zus.oddeleni.{$item ['svpOddeleni']}.nazev");
-		$listItem ['i2'] = 'obor '.$this->app()->cfgItem ("e10pro.zus.obory.{$item ['svpObor']}.nazev");
-		$listItem ['t3'] = [
-			['icon' => 'icon-map-marker', 'text' => $item ['nazevPobocky']]
-		];
+		$listItem ['i2'][] = ['icon' => 'system/iconCalendar', 'text' => Utils::datef($item ['webSentDate'], '%D, %T'), 'class' => ''];
+
+		$listItem ['t2'] = [];
+		$listItem ['t2'][] = ['text' => $this->app()->cfgItem ("e10pro.zus.oddeleni.{$item ['svpOddeleni']}.nazev"), 'class' => ''];
+		$listItem ['t2'][] = ['icon' => 'tables/e10.base.places', 'text' => $item ['nazevPobocky'], 'class' => ''];
+
+
+		$listItem ['t3'] = [];
+		$listItem ['t3'][] = 'obor '.$this->app()->cfgItem ("e10pro.zus.obory.{$item ['svpObor']}.nazev");
 		if (isset($skolniRoky [$item['skolniRok']]))
 			$listItem ['t3'][] = ['text' => $skolniRoky [$item['skolniRok']]['nazev'], 'class' => 'pull-right'];
 
 		return $listItem;
+	}
+
+	public function createPanelContentLeft (TableViewPanel $panel)
+	{
+		if (!$this->officesParam)
+			return;
+
+		$qry = [];
+		$qry[] = ['style' => 'params', 'params' => $this->officesParam];
+		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}
 }
 
@@ -188,14 +213,9 @@ class ViewPrihlasky extends TableView
  */
 class ViewDetailPrihlaska extends TableViewDetail
 {
-	public function attachments ()
-	{
-		$this->addContentAttachments ($this->item ['ndx']);
-	}
-
 	public function createDetailContent ()
 	{
-		$this->attachments();
+		$this->addDocumentCard('e10pro.zus.libs.dc.DCPrihlaska');
 	}
 }
 
@@ -339,5 +359,3 @@ class FormPrihlaska extends TableForm
 		zusutils::testValues ($this->recData, $this);
 	}
 }
-
-
