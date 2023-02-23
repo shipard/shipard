@@ -10,8 +10,7 @@ use \Shipard\Viewer\TableView;
 
 
 /**
- * Class TablePrihlasky
- * @package E10Pro\Zus
+ * class TablePrihlasky
  */
 class TablePrihlasky extends DbTable
 {
@@ -38,6 +37,9 @@ class TablePrihlasky extends DbTable
 		$this->createName('S', $recData);
 		//$this->createName('M', $recData);
 		//$this->createName('F', $recData);
+
+		if (!isset($recData['docNumber']) || $recData['docNumber'] === '')
+			$recData['docNumber'] = Utils::today('y').Utils::createToken(4, FALSE, TRUE);
 
 		$rocnik = $this->app()->cfgItem ('e10pro.zus.rocniky.'.$recData['rocnik'], FALSE);
 		if ($rocnik !== FALSE)
@@ -77,7 +79,10 @@ class TablePrihlasky extends DbTable
 		$hdr ['icon'] = $this->tableIcon ($recData);
 		$hdr ['info'][] = [
 			'class' => 'title',
-			'value' => $recData['fullNameS']
+			'value' => [
+				['text' => $recData['fullNameS'], 'class' => ''],
+				['text' => $recData['docNumber'], 'class' => 'pull-right id'],
+			]
 		];
 
 		$hdr ['info'][] = [
@@ -100,7 +105,7 @@ class TablePrihlasky extends DbTable
 		return $hdr;
 	}
 
-	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, TableForm $form = NULL)
+	public function columnInfoEnumTest_Disabled ($columnId, $cfgKey, $cfgItem, TableForm $form = NULL)
 	{
 		$r = zusutils::columnInfoEnumTest ($columnId, $cfgItem, $form);
 		return ($r !== NULL) ? $r : parent::columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, $form);
@@ -119,6 +124,7 @@ class ViewPrihlasky extends TableView
 	public function init ()
 	{
 		parent::init();
+		$this->setPanels (TableView::sptQuery);
 
 		$this->offices = [0 => 'Vše'];
 		$this->offices += $this->db()->query('SELECT ndx, shortName FROM [e10_base_places] WHERE docStateMain < 4 AND placeType = %s ORDER BY [fullName]', 'lcloffc')->fetchPairs ('ndx', 'shortName');
@@ -134,7 +140,7 @@ class ViewPrihlasky extends TableView
 				$enum[$officeNdx] = ['text' => $officeName, 'addParams' => ['misto' => $officeNdx]];
 			}
 
-			$this->officesParam = new \E10\Params ($this->app);
+			$this->officesParam = new \Shipard\UI\Core\Params ($this->app);
 			$this->officesParam->addParam('switch', 'office', ['title' => '', 'switch' => $enum, 'list' => 1]);
 			$this->officesParam->detectValues();
 		}
@@ -167,6 +173,14 @@ class ViewPrihlasky extends TableView
 			array_push ($q, ')');
 		}
 
+		// special queries
+		$qv = $this->queryValues ();
+
+		if (isset ($qv['talentovaZkouska']))
+			array_push ($q, " AND [prihlasky].[talentovaZkouska] IN %in", array_keys($qv['talentovaZkouska']));
+		if (isset ($qv['keStudiu']))
+			array_push ($q, " AND [prihlasky].[keStudiu] IN %in", array_keys($qv['keStudiu']));
+
 		$this->queryMain ($q, 'prihlasky.', ['[webSentDate]', '[fullNameS]']);
 		$this->runQuery ($q);
 	} // selectRows
@@ -178,6 +192,7 @@ class ViewPrihlasky extends TableView
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
+		$listItem ['i1'] = ['text' => $item['docNumber'], 'class' => 'id'];
 		$listItem ['t1'] = $item['fullNameS'];
 
 		$listItem ['i2'][] = ['icon' => 'system/iconCalendar', 'text' => Utils::datef($item ['webSentDate'], '%D, %T'), 'class' => ''];
@@ -188,7 +203,17 @@ class ViewPrihlasky extends TableView
 
 
 		$listItem ['t3'] = [];
-		$listItem ['t3'][] = 'obor '.$this->app()->cfgItem ("e10pro.zus.obory.{$item ['svpObor']}.nazev");
+
+
+		$tz = $this->table->columnInfoEnum ('talentovaZkouska', 'cfgText');
+		$listItem ['t3'][] = ['text' => 'TZ: '.$tz [$item ['talentovaZkouska']], 'class' => 'label label-default'];
+
+		$ks = $this->table->columnInfoEnum ('keStudiu', 'cfgText');
+		$listItem ['t3'][] = ['text' => 'Studium: '.$ks [$item ['keStudiu']], 'class' => 'label label-default'];
+
+		//$listItem ['t3'][] = 'obor '.$this->app()->cfgItem ("e10pro.zus.obory.{$item ['svpObor']}.nazev");
+
+
 		if (isset($skolniRoky [$item['skolniRok']]))
 			$listItem ['t3'][] = ['text' => $skolniRoky [$item['skolniRok']]['nazev'], 'class' => 'pull-right'];
 
@@ -202,6 +227,41 @@ class ViewPrihlasky extends TableView
 
 		$qry = [];
 		$qry[] = ['style' => 'params', 'params' => $this->officesParam];
+		$panel->addContent(['type' => 'query', 'query' => $qry]);
+	}
+
+	public function createToolbar ()
+	{
+		return [];
+	}
+
+	public function createPanelContentQry (TableViewPanel $panel)
+	{
+		$qry = [];
+
+		// -- talentova zkouska
+		$tz = $this->table->columnInfoEnum ('talentovaZkouska', 'cfgText');
+		$chbxTZ = [];
+		forEach ($tz as $tzNdx => $tzName)
+		{
+			$chbxTZ[$tzNdx] = ['title' => $tzName, 'id' => strval($tzNdx)];
+		}
+		$paramsTZ = new \Shipard\UI\Core\Params ($panel->table->app());
+		$paramsTZ->addParam ('checkboxes', 'query.talentovaZkouska', ['items' => $chbxTZ]);
+		$qry[] = ['id' => 'talentovaZkouska', 'style' => 'params', 'title' => 'Talentová zkouška', 'params' => $paramsTZ];
+
+		// -- keStudiu
+		$ks = $this->table->columnInfoEnum ('keStudiu', 'cfgText');
+		$chbxKS = [];
+		forEach ($ks as $ksNdx => $ksName)
+		{
+			$chbxKS[$ksNdx] = ['title' => $ksName, 'id' => strval($ksNdx)];
+		}
+		$paramsKS = new \Shipard\UI\Core\Params ($this->app());
+		$paramsKS->addParam ('checkboxes', 'query.keStudiu', ['items' => $chbxKS]);
+		$qry[] = ['id' => 'keStudiu', 'style' => 'params', 'title' => 'Ke studiu', 'params' => $paramsKS];
+
+
 		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}
 }
@@ -221,8 +281,7 @@ class ViewDetailPrihlaska extends TableViewDetail
 
 
 /**
- * Class FormPrihlaska
- * @package E10Pro\Zus
+ * class FormPrihlaska
  */
 class FormPrihlaska extends TableForm
 {
@@ -233,9 +292,9 @@ class FormPrihlaska extends TableForm
 
 		$this->openForm (TableForm::ltNone);
 
-		$tabs ['tabs'][] = array ('text' => 'Základní', 'icon' => 'system/formHeader');
-		$tabs ['tabs'][] = array ('text' => 'Poznámka', 'icon' => 'system/formNote');
-		$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'system/formAttachments');
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Poznámka', 'icon' => 'system/formNote'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 		$this->openTabs ($tabs, TRUE);
 			$this->openTab ();
 				$this->layoutOpen(TableForm::ltForm);
@@ -353,12 +412,12 @@ class FormPrihlaska extends TableForm
 	public function checkBeforeSave (&$saveData)
 	{
 		parent::checkBeforeSave($saveData);
-		zusutils::testValues ($saveData ['recData'], $this);
+		//zusutils::testValues ($saveData ['recData'], $this);
 	}
 
 	public function checkNewRec ()
 	{
 		parent::checkNewRec();
-		zusutils::testValues ($this->recData, $this);
+		//zusutils::testValues ($this->recData, $this);
 	}
 }

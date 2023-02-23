@@ -2,6 +2,7 @@
 	"id": "e10pro.zus.prihlasky", "sql": "e10pro_zus_prihlasky", "name": "Přihlášky ke studiu", "icon": "icon-child",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "docNumber", "name": "Číslo přihlášky", "type": "string", "len": 12, "options": ["ascii"]},
 		{"id": "skolniRok", "name": "Školní rok", "type": "enumString", "len": 10,
 			"enumCfg": {"cfgItem": "e10pro.zus.roky", "cfgValue": "", "cfgText": "nazev", "cfgPrint": "tisk"}},
 		{"id": "svp", "name": "ŠVP", "label": "Studium podle", "type": "enumInt", "options": ["saveOnChange"],
@@ -61,7 +62,7 @@
 		{"id": "talentovaZkouska", "name": "Talentová zkouška", "type": "enumInt",
 			"enumValues": {"0": "Zatím neproběhla", "1": "Proběhla úspěšně", "99": "Proběhla neúspěšně"}},
 		{"id": "keStudiu", "name": "Přijat/a ke studiu", "type": "enumInt",
-			"enumValues": {"0": "Ne", "1": "Ano", "2": "Na čekací listině"}},
+			"enumValues": {"0": "Nepřijat", "1": "Přijat", "2": "Na čekací listině"}},
 
 		{"id": "webSentDate", "name": "Datum a čas odeslání přihlášky z webu", "type": "timestamp"},
 		{"id": "confirmEmailDone", "name": "Potvrzovací email odeslán", "type": "logical"},
@@ -76,7 +77,7 @@
 		{"id": "default", "class": "e10pro.zus.FormPrihlaska"}
 	],
 	"reports": [
-		{"id": "prihlaska", "name": "Přihláška", "class": "e10pro.zus.libs.ReportPrihlaska"}
+		{"id": "prihlaska", "name": "Přihláška", "class": "e10pro.zus.libs.ReportPrihlaska", "email": 1}
 	],
 	"options": ["timelineSource"],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
