@@ -87,7 +87,7 @@ class InventoryStatesEngine extends Utility
 
 			// výroba - řádky montáž - výdej
 			$q = "INSERT INTO [e10doc_inventory_journal] (moveType, moveTypeOrder, warehouse, item, unit, quantity, price, [date], [fiscalYear], docHead, docRow, docRowOwner)
-				SELECT %i, %i, heads.warehouse, [rows].item, [rows].unit, [rows].quantity*-1, 0, heads.dateAccounting, $year, heads.ndx as ndxHead, [rows].ndx, [rows].ownerRow FROM e10doc_core_rows AS [rows], e10doc_core_heads as heads
+				SELECT %i, %i, heads.warehouse, [rows].item, [rows].unit, [rows].quantity*-1, 0, heads.dateAccounting, $year, heads.ndx as ndxHead, [rows].ndx, [rows].ownerRowMain FROM e10doc_core_rows AS [rows], e10doc_core_heads as heads
 					where [rows].document = heads.ndx $docQry
 					AND heads.docType = 'mnf' AND heads.mnfType = 0 AND [rows].invDirection = -1 AND [rows].quantity > 0
 					AND heads.docState = 4000 AND heads.fiscalYear = %i ORDER BY heads.dateAccounting, [rows].ndx";

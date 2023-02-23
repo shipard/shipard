@@ -142,9 +142,14 @@ class FormMnfDocs extends \E10Doc\Core\FormHeads
 		forEach ($saveData['lists']['rows'] as &$r)
 		{
 			if ($r['operation'] == 1060701) // příjem z výroby
+			{
 				$ownerRow = $r['ndx'];
+				$r['ownerRowMain'] = 0;
+			}
 			else
-				$r['ownerRow'] = $ownerRow;
+			{
+				$r['ownerRowMain'] = $ownerRow;
+			}
 		}
 	}
 

@@ -6,6 +6,7 @@
 	  {"id": "rowType", "name": "Typ řádku", "type": "enumInt",
 		  "enumValues": {"0": "ručně", "1": "automaticky - sada - zásoby", "2": "automaticky - sada - doplňková položka"}},
 		{"id": "ownerRow", "name": "Nadřazený řádek", "type": "int"},
+		{"id": "ownerRowMain", "name": "Nadřazený řádek hlavní", "type": "int"},
 		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
 
     {"id": "operation", "name": "Pohyb", "type": "enumInt", "len": 4, "options": ["saveOnChange"],
