@@ -13,6 +13,7 @@ class Detail extends \e10\DocumentCard
 	protected $linkedAttachments = [];
 	protected $docTypes, $currencies, $balances, $usedNdxs;
 
+	/** @var \e10\persons\TablePersons */
 	var $tablePersons;
 	var $personRecData;
 	var $docType;
@@ -390,7 +391,7 @@ class Detail extends \e10\DocumentCard
 	{
 		$q = [];
 		array_push($q, 'SELECT [rows].text AS rText, [rows].quantity AS rQuantity, [rows].unit AS rUnit, [rows].priceItem AS rPriceItem,');
-		array_push($q, ' [rows].priceAll AS rPriceAll, [rows].item,');
+		array_push($q, ' [rows].priceAll AS rPriceAll, [rows].item, [rows].ownerRowMain, [rows].ownerRow AS rowOwnerRow,');
 		array_push($q, ' [items].[id] AS [itemId]');
 		array_push($q, ' FROM [e10doc_core_rows] AS [rows] ');
 		array_push($q, ' LEFT JOIN [e10_witems_items] AS [items] ON [rows].[item] = [items].[ndx]');
@@ -415,7 +416,7 @@ class Detail extends \e10\DocumentCard
 				'priceAll' => $r['rPriceAll']
 			];
 
-			$this->table->loadDocRowItemsCodes($this->recData, $this->personRecData['personType'], $r->toArray(), NULL, $rowItem, $itemCodesInfo);
+			$this->table->loadDocRowItemsCodes($this->recData, $this->personRecData['personType'] ?? 2, $r->toArray(), NULL, $rowItem, $itemCodesInfo);
 
 			if (isset($rowItem['rowItemCodesData']))
 			{
@@ -498,6 +499,22 @@ class Detail extends \e10\DocumentCard
 		}
 
 		$this->addContent ('body', $this->docsRows ());
+
+		/*
+		if ($this->recData['docType'] === 'mnf')
+		{
+			$mnfDC = new \e10doc\core\dc\Accounting($this->app());
+			$mnfDC->setDocument($this->table, $this->recData);
+			$mnfDC->init();
+			$mnfDC->createInventory($this->recData);
+
+			if (isset($mnfDC->content['body']))
+			{
+				foreach ($mnfDC->content['body'] as $cp)
+					$this->addContent('body', $cp);
+			}
+		}
+		*/
 
 		$this->addDiaryPinnedContent();
 
