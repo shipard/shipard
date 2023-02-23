@@ -10,7 +10,7 @@
 			"enumCfg": {"cfgItem": "e10pro.zus.obory", "cfgValue": "id", "cfgText": "nazev"}},
 		{"id": "svpOddeleni", "name": "Oddělení", "type": "enumInt", "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "e10pro.zus.oddeleni", "cfgValue": "id", "cfgText": "nazev"}},
-		{"id": "misto", "name": "Pobočka", "type": "int", "reference": "e10.base.places"},
+		{"id": "misto", "name": "Pobočka", "type": "int", "reference": "e10.base.places", "comboViewer": "e10.base.ViewPlacesComboLocalOffices"},
 		{"id": "stupen", "name": "Stupeň", "type": "enumInt",
 			"enumCfg": {"cfgItem": "e10pro.zus.stupne", "cfgValue": "", "cfgText": "nazev", "cfgPrint": "tisk"}},
 		{"id": "rocnik", "name": "Ročník", "type": "enumInt",
@@ -58,6 +58,11 @@
 
 		{"id": "note", "name": "Poznámka", "type": "memo"},
 
+		{"id": "talentovaZkouska", "name": "Talentová zkouška", "type": "enumInt",
+			"enumValues": {"0": "Zatím neproběhla", "1": "Proběhla úspěšně", "99": "Proběhla neúspěšně"}},
+		{"id": "keStudiu", "name": "Přijat/a ke studiu", "type": "enumInt",
+			"enumValues": {"0": "Ne", "1": "Ano", "2": "Na čekací listině"}},
+
 		{"id": "webSentDate", "name": "Datum a čas odeslání přihlášky z webu", "type": "timestamp"},
 		{"id": "confirmEmailDone", "name": "Potvrzovací email odeslán", "type": "logical"},
 
@@ -74,7 +79,7 @@
 		{"id": "prihlaska", "name": "Přihláška", "class": "e10pro.zus.libs.ReportPrihlaska"}
 	],
 	"options": ["timelineSource"],
-	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10pro.zus.docStatesEntries"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullNameS"},
 	"ndx": 1216
 }

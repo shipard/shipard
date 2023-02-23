@@ -4,7 +4,7 @@ namespace E10Pro\Zus;
 
 require_once __SHPD_MODULES_DIR__ . 'e10pro/zus/zus.php';
 
-use \Shipard\Utils\Utils, \Shipard\Viewer\TableViewDetail, \E10\TableForm, \Shipard\Table\DbTable;
+use \Shipard\Utils\Utils, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
 use \Shipard\Viewer\TableViewPanel;
 use \Shipard\Viewer\TableView;
 
@@ -100,7 +100,7 @@ class TablePrihlasky extends DbTable
 		return $hdr;
 	}
 
-	public function columnInfoEnumTest_Disabled ($columnId, $cfgKey, $cfgItem, \E10\TableForm $form = NULL)
+	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, TableForm $form = NULL)
 	{
 		$r = zusutils::columnInfoEnumTest ($columnId, $cfgItem, $form);
 		return ($r !== NULL) ? $r : parent::columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, $form);
@@ -283,6 +283,9 @@ class FormPrihlaska extends TableForm
 						$this->layoutClose('width50');
 					$this->layoutClose();
 			$this->layoutClose('padd5');
+			$this->addSeparator(self::coH2);
+			$this->addColumnInput('talentovaZkouska');
+			$this->addColumnInput('keStudiu');
 		$this->closeTab ();
 
 		$this->openTab (TableForm::ltNone);
