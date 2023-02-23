@@ -397,7 +397,7 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 
 			'webSentDate' => new \DateTime(),
 
-			'docState' => 1200, 'docStateMain' => 1
+			'docState' => 1000, 'docStateMain' => 0,
 		];
 		$newNdx = $tablePrihlasky->dbInsertRec($newRegistration);
 		$tablePrihlasky->docsLog($newNdx);
