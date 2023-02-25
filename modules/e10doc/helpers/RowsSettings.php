@@ -24,13 +24,13 @@ class RowsSettings extends Utility
 			return FALSE;
 		//if ($rs['qryOperationType'] == 1 && $docRow['operation'] != $rs['qryOperationValue'])
 		//	return FALSE;
-		if (!$this->testStringValue($rs['qryRowBankAccountType'], $rs['qryRowBankAccountValue'], $docRow['bankAccount']))
+		if (!$this->testStringValue($rs['qryRowBankAccountType'], $rs['qryRowBankAccountValue'], $docRow['bankAccount'] ?? ''))
 			return FALSE;
-		if (!$this->testStringValue($rs['qryRowSymbol1Type'], $rs['qryRowSymbol1Value'], $docRow['symbol1']))
+		if (!$this->testStringValue($rs['qryRowSymbol1Type'], $rs['qryRowSymbol1Value'], $docRow['symbol1'] ?? ''))
 			return FALSE;
-		if (!$this->testStringValue($rs['qryRowSymbol2Type'], $rs['qryRowSymbol2Value'], $docRow['symbol2']))
+		if (!$this->testStringValue($rs['qryRowSymbol2Type'], $rs['qryRowSymbol2Value'], $docRow['symbol2'] ?? ''))
 			return FALSE;
-		if (!$this->testStringValue($rs['qryRowSymbol3Type'], $rs['qryRowSymbol3Value'], $docRow['symbol3']))
+		if (!$this->testStringValue($rs['qryRowSymbol3Type'], $rs['qryRowSymbol3Value'], $docRow['symbol3'] ?? ''))
 			return FALSE;
 		if (!$this->testStringValue($rs['qryRowTextType'], $rs['qryRowTextValue'], $docRow['text']))
 			return FALSE;
