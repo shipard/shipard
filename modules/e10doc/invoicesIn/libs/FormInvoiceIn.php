@@ -129,8 +129,12 @@ class FormInvoiceIn extends \e10doc\core\FormHeads
 	public function checkNewRec ()
 	{
 		parent::checkNewRec ();
-		$this->recData ['dateDue'] = new \DateTime ();
-		$this->recData ['dateDue']->add (new \DateInterval('P' . $this->app()->cfgItem ('e10.options.dueDays', 14) . 'D'));
+
+		if (!isset($this->recData ['dateDue']) || Utils::dateIsBlank($this->recData ['dateDue']))
+		{
+			$this->recData ['dateDue'] = new \DateTime ();
+			$this->recData ['dateDue']->add (new \DateInterval('P' . $this->app()->cfgItem ('e10.options.dueDays', 14) . 'D'));
+		}
 	}
 
   function columnLabel ($colDef, $options)
