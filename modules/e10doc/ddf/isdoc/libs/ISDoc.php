@@ -176,6 +176,8 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 
 	protected function importRow($il)
 	{
+		$negativePrices = intval($this->srcImpData['DocumentType']) === 2; // dobropis
+
 		$row = [];
 
 		if (isset($il['Item']['Description']))
@@ -198,6 +200,9 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 			$row['taxCalc'] = 1;
 		}
 
+		if ($negativePrices && $row['priceItem'] > 0.0)
+			$row['priceItem'] = - $row['priceItem'];
+
 		if (isset($il['ClassifiedTaxCategory']['Percent']))
 			$this->checkVat(floatval($il['ClassifiedTaxCategory']['Percent']),$row);
 		//else
@@ -218,7 +223,7 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 	function checkVat($percents, &$row)
 	{
 		$dateTax = utils::createDateTime ($this->docHead['dateTax']);
-		$percSettings = $this->app()->cfgItem ('e10.base.taxPercents');
+		$percSettings = $this->app->cfgItem ('e10doc.taxes.'.'eu'.'.'.'cz'.'.taxPercents', NULL);
 		forEach ($percSettings as $itm)
 		{
 			if ($itm['value'] != $percents)
