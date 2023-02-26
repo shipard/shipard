@@ -6,7 +6,7 @@ use \Shipard\Utils\Utils;
 
 class ModuleServices
 {
-	/** @var  \lib\base\Application */
+	/** @var \Shipard\Application\Application $app */
 	protected $app;
 	public $initConfig;
 
@@ -52,6 +52,8 @@ class ModuleServices
 	{
 		$oldIdParts = explode('.', $oldId);
 		$oldIdFileName = 'config/appOptions.'.$oldIdParts[1].'.json';
+		if (!is_readable($oldIdFileName))
+			return;
 		$oldIdData = Utils::loadCfgFile($oldIdFileName);
 		if (!$oldIdData)
 		{
