@@ -91,6 +91,7 @@ class ViewSetups extends TableView
 	{
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['t1'] = $item['fullName'];
+		$listItem ['i1'] = ['text' => '#'.$item['ndx'], 'class' => 'id'];
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
 		$t2 = [];
@@ -102,6 +103,8 @@ class ViewSetups extends TableView
 			$t2[] = ['text' => $item['placeName'], 'class' => 'label label-default', 'icon' => 'tables/e10.base.places'];
 
 		$listItem ['t2'] = $t2;
+
+		$listItem ['i2'] = ['text' => $item['id'], 'class' => 'label label-default'];
 
 		return $listItem;
 	}

@@ -68,6 +68,8 @@ class ViewScenes extends TableView
 
 		$listItem['t2']	= $t2;
 
+		$listItem ['i2'] = ['text' => $item['friendlyId'], 'class' => 'label label-default'];
+
 		return $listItem;
 	}
 
