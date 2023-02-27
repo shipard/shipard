@@ -253,8 +253,15 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 						if (oddeleniNaOborech[oborId] === undefined || oddeleniNaOborech[oborId].indexOf(oddeleni) === -1)
 							thisOption.hide();
 						else
+						{
 							thisOption.show();
+
+							if (pobockyNaZamerenich[oddeleni] === undefined || pobockyNaZamerenich[oddeleni].lenght === 0)
+								this.disabled = true;
+							else
+								this.disabled = false;
 						}
+					}
 				});
 				var oddeleniId = parseInt($('#svpOddeleni').val());
 				if (oddeleniNaOborech[oborId] === undefined || oddeleniNaOborech[oborId].indexOf(oddeleniId) === -1)
