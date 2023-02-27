@@ -1,0 +1,8 @@
+{
+	"userInterfaces": {
+		"name": "Uživatelská rozhraní", "order": 90000, "group": "appearance",
+		"type": "viewer",
+		"table": "e10.ui.uis",
+		"viewer": "default"
+	}
+}

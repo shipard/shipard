@@ -5,6 +5,9 @@
 		},
 		"OldMobile": {
 			"title": "Old UI for mobile devices"
+		},
+		"ng": {
+			"title": "next generation ui"
 		}
 	},
 	"web-apps": {

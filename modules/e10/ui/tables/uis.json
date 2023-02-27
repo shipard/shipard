@@ -1,0 +1,27 @@
+{
+	"id": "e10.ui.uis", "sql": "e10_ui_uis", "name": "Uživatelská rozhraní",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+    {"id": "urlId", "name": "ID pro URL", "type": "string", "len": 60},
+
+	  {"id": "uiType", "name": "Typ", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10.ui.uiTypes", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+		{"id": "template", "name": "Šablona", "type": "memo"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "e10.ui.ViewUIs", "detail": "e10.ui.ViewDetailUI"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10.ui.FormUI"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+  "options": ["configSource"]
+}

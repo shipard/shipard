@@ -1,0 +1,10 @@
+{
+  "id": "e10.ui",
+  "name": "ui",
+  "tables": ["uis"],
+  "config": [
+		{"id": "+appOptions", "file": "e10.appOptions.json"},
+    {"id": "+e10.persons.roles", "file": "roles.json"},
+    {"id": "+e10.ui.uiTypes", "file": "uiTypes.json"}
+	]
+}

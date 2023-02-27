@@ -1696,6 +1696,12 @@ class Application extends \Shipard\Application\ApplicationCore
 		return $router->run ();
 	}
 
+	function routeUI ()
+	{
+		$router = $this->createObject ('Shipard.UI.ng.Router');
+		return $router->run ();
+	}
+
 	protected function apiDocumentCard ()
 	{
 		self::$appLog->setTaskType(AppLog::ttHttpApi, AppLog::tkDocumentCard);
@@ -1924,6 +1930,8 @@ class Application extends \Shipard\Application\ApplicationCore
 				return $this->routeApi ();
 			case 'mapp':
 				return $this->routeMobile ();
+			case 'ui':
+				return $this->routeUI ();
 			case 'dspl':
 				return $this->routeDisplay ();
 			case 'feed':

@@ -50,6 +50,7 @@
 	  {"id": "+mac.iot.scenarios.actionsTypes", "file": "mac.iot.scenarios.actionsTypes.json"},
 		{"id": "+mac.iot.usersTypes", "file": "mac.iot.usersTypes.json"},
 	  {"id": "+e10.base.doclinks", "file": "mac.iot.doclinks.json"},
-	  {"id": "+registeredClasses", "file": "registeredClasses.json"}
+	  {"id": "+registeredClasses", "file": "registeredClasses.json"},
+		{"id": "+e10.ui.uiControls", "file": "uiControls.json"}
   ]
 }

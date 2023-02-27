@@ -75,6 +75,8 @@ class Authenticator
 			}
 			if ($referer === '/mapp')
 				header ('Location: ' . $this->app->urlProtocol . $_SERVER['HTTP_HOST'] . $this->app->urlRoot . "/mapp/login?from=1");
+			elseif (str_starts_with($referer, '/ui'))
+				header ('Location: ' . $this->app->urlProtocol . $_SERVER['HTTP_HOST'] . $this->app->urlRoot . "/ui/login?from=1");
 			else
 			{
 				header('Location: ' . $this->app->urlProtocol . $_SERVER['HTTP_HOST'] . $this->app->urlRoot . "/" . $this->option('pathBase') . "/" . $this->option('pathLogin'));
