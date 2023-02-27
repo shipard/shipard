@@ -60,6 +60,11 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 		$c.= "</div>";
 		$c.= "</div>";
 
+		$c.= "<small class='text-mutted' id='stop-stav-info'>";
+		$c.= "tady by mohlo být něco pěkného";
+		$c.= "</small>";
+
+
 		//$c.= "<div class='row'>";
 		$c .= "<h4>".'Osobní údaje žáka'.'</h4>';
 		//$c.= "</div>";
@@ -210,6 +215,9 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 
 			function nastavitPrihlasku()
 			{
+				let stopStav = 0;
+				let stopStavMsg = '';
+
 				if ($('#useAddressM').is(':checked'))
 				{
 					$('#streetM').prop('disabled', false);
@@ -257,7 +265,13 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 							thisOption.show();
 
 							if (pobockyNaZamerenich[oddeleni] === undefined || pobockyNaZamerenich[oddeleni].lenght === 0)
+							{
 								this.disabled = true;
+								stopStav = 1;
+								if (stopStavMsg !== '')
+									stopStavMsg += ', ';
+								stopStavMsg += thisOption.text();
+							}
 							else
 								this.disabled = false;
 						}
@@ -284,6 +298,15 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 				var mistoId = parseInt($('#misto').val());
 				if (pobockyNaZamerenich[zamereniId] === undefined || pobockyNaZamerenich[zamereniId].indexOf(mistoId) === -1)
 					$('#misto').val('0');
+
+				if (stopStav)
+				{
+					$('#stop-stav-info').show().text('U některých studijních zaměření máme bohužel naplněnou kapacitu a nepřijímáme nové žáky: ' + stopStavMsg + '.');
+				}
+				else
+				{
+					$('#stop-stav-info').hide().text('');
+				}
 			}
 
 			nastavitPrihlasku();
