@@ -10,6 +10,7 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 	var $valid = FALSE;
 	var $pobocky;
 	var $oddeleni;
+	var $spamScore = '';
 
 	public function fields ()
 	{
@@ -28,11 +29,30 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 
 	public function createFormCode ($options = 0)
 	{
+		$useReCaptcha = ($this->template && isset($this->template->pageParams['recaptcha-v3-site-key']));
+
 		$this->nacistPobocky();
 
-		$c = "<form class='form-horizontal zus-prihlaska-form' method='POST'>";
+		$c = '';
+
+		if ($useReCaptcha)
+		{
+			$c .= "<noscript><p>";
+			$c .= Utils::es('Kontaktní formulář vyžaduje javascript...');
+			$c .= "</p></noscript>";
+		}
+
+		$c .= "<form class='form-horizontal zus-prihlaska-form' method='POST'";
+		if ($useReCaptcha)
+			$c .= " style='display: none;'";
+
+		$c .= ">";
 		$c .= "<input type='hidden' name='webFormState' value='1'/>";
 		$c .= "<input type='hidden' name='webFormId' value='e10pro.zus.libs.WebFormPrihlaska'/>";
+		if ($useReCaptcha)
+		{
+			$c .= "<input type='hidden' id='recaptcha-response' name='webFormReCaptchtaResponse' value=''/>";
+		}
 
 		$c.= "<div class='row pt-3 zus-prihlaska-obor'>";
 		$c.= "<div class='col col-4'>";
@@ -335,6 +355,37 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 		$this->checkValidField('phoneM', 'Telefon není vyplněn');
 		$this->checkValidField('emailM', 'E-mail není vyplněn');
 		$this->checkValidField('misto', 'Není vybrána pobočka');
+
+		$reCaptchaResponse = $this->app->testPostParam ('webFormReCaptchtaResponse', NULL);
+		if ($reCaptchaResponse !== NULL)
+		{
+			if ($reCaptchaResponse === '')
+			{
+				$this->formErrors ['msg'] = 'Odeslání formuláře se nezdařilo.';
+				return FALSE;
+			}
+
+			$validateUrl = 'https://www.google.com/recaptcha/api/siteverify?secret='.$this->template->pageParams['recaptcha-v3-secret-key'].'&response='.$reCaptchaResponse.'&remoteip='.$_SERVER ['REMOTE_ADDR'];
+			$validateResult =  \E10\http_post ($validateUrl, '');
+			$validateResultData = json_decode($validateResult['content'], TRUE);
+			if ($validateResultData && isset($validateResultData['success']))
+			{
+				if ($validateResultData['success'])
+				{
+					if ($validateResultData['score'] < 0.5)
+					{
+						$this->formErrors ['msg'] = 'Vaše zpráva bohužel vypadá jako SPAM.';
+						return FALSE;
+					}
+					$this->spamScore = strval($validateResultData['score']);
+				}
+				else
+				{
+					$this->formErrors ['msg'] = 'Odeslání formuláře se nezdařilo.';
+					return FALSE;
+				}
+			}
+		}
 
 		return $this->valid;
 	}
