@@ -1,12 +1,12 @@
 {
 	"userInterfaces": {
-		"name": "Uživatelská rozhraní", "order": 90000, "group": "appearance",
+		"name": "Uživatelská rozhraní", "order": 940000, "group": "system",
 		"type": "viewer",
 		"table": "e10.ui.uis",
 		"viewer": "default"
 	},
 	"userInterfacesWidgets": {
-		"name": "Widgety Uživatelských rozhraní", "order": 91000, "group": "appearance",
+		"name": "Widgety Uživatelských rozhraní", "order": 941000, "group": "system",
 		"type": "viewer",
 		"table": "e10.ui.uiWidgets",
 		"viewer": "default"
