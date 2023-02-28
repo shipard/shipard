@@ -86,6 +86,7 @@ class ViewUIs extends TableView
 		$listItem ['pk'] = $item ['ndx'];
 
 		$listItem ['t1'] = $item['fullName'];
+		$listItem ['t2'] = ['text' => $item['urlId'], 'class' => 'label label-default'];
 
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 

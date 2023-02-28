@@ -63,6 +63,7 @@ class ViewUIWidgets extends TableView
 		$listItem ['pk'] = $item ['ndx'];
 
 		$listItem ['t1'] = $item['fullName'];
+		$listItem ['t2'] = ['text' => $item['widgetId'], 'class' => 'label label-default'];
 
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
