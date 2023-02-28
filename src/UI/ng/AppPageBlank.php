@@ -150,9 +150,9 @@ class AppPageBlank extends Utility
 		$c .= "var e10dsIconFileName = '{$dsIcon['fileName']}';\n";
 
 
-		$c .= "var e10ServiceWorkerURL = '$absUrl{$this->app->urlRoot}/sw.js';";
-
-		if ($this->pageInfo['userInfo'])
+		//$c .= "var e10ServiceWorkerURL = '$absUrl{$this->app->urlRoot}/sw.js';";
+		$c .= "var e10ServiceWorkerURL = undefined;";
+		if (isset($this->pageInfo['userInfo']))
 			$c .= "g_UserInfo = ".json_encode($this->pageInfo['userInfo']).";\n";
 
 		$c .= '</script>';

@@ -54,6 +54,8 @@ class Authenticator
 			$this->app->setCookie ($this->app->sessionCookieName (), '', time() - 3600);
 			if ($this->app->testGetParam('m') === '1')
 				header ('Location: ' . $this->app->urlProtocol . $_SERVER['HTTP_HOST'] . $this->app->urlRoot . '/mapp/login');
+			elseif ($this->app->testGetParam('loginUrl') !== '')
+				header ('Location: ' . $this->app->urlProtocol . $_SERVER['HTTP_HOST'] . $this->app->urlRoot . $this->app->testGetParam('loginUrl'));
 			else
 				header ('Location: ' . $this->app->urlProtocol . $_SERVER['HTTP_HOST'] . $this->app->urlRoot . '/' . $this->option ('pathBase') . '/' . $this->option ('pathLogin'));
 			return new Response ($this->app, 'bye...', 302);

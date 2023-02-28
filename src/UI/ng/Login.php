@@ -107,7 +107,7 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 			$c .= "<label for='e10-login-password'>Heslo</label><input type='password' name='password' id='e10-login-password'$passwordValueParam>";
 
 			$referer = $this->loginReferer();
-			$c .= "<input type='text' name='from' value='$referer'>";
+			$c .= "<input type='hidden' name='from' value='$referer'>";
 
 			$c .= "<div class='b'>";
 			$c .= "<button type='submit' class='btn btn-primary'>Přihlásit</button>";

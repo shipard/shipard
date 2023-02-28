@@ -4,5 +4,11 @@
 		"type": "viewer",
 		"table": "e10.ui.uis",
 		"viewer": "default"
+	},
+	"userInterfacesWidgets": {
+		"name": "Widgety Uživatelských rozhraní", "order": 91000, "group": "appearance",
+		"type": "viewer",
+		"table": "e10.ui.uiWidgets",
+		"viewer": "default"
 	}
 }

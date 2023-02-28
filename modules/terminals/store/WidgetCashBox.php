@@ -490,8 +490,8 @@ class WidgetCashBox extends WidgetPane
 
 	protected function composeCodeInitScript ()
 	{
-		$c = "<script>e10.terminal.init ('{$this->widgetId}');</script>";
-
+		//$c = "<script>e10.terminal.init ('{$this->widgetId}');</script>";
+		$c = "<script>$(function () {e10.terminal.init ('{$this->widgetId}');});</script>";
 		return $c;
 	}
 

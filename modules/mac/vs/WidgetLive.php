@@ -266,7 +266,8 @@ class WidgetLive extends WidgetBoard
 		$c .= "<input type='hidden' id='e10-widget-vs-type' value='{$this->viewerMode}'>";
 
 		$serversStr = json_encode($usedLocalServers);
-		$c .= "<script>e10.widgets.macVs.init('{$this->widgetId}', {$serversStr});</script>";
+		//$c .= "<script>e10.widgets.macVs.init('{$this->widgetId}', {$serversStr});</script>";
+		$c .= "<script> $(function () {e10.widgets.macVs.init('{$this->widgetId}', {$serversStr});});</script>";
 
 		$this->code .= $c;
 	}
@@ -295,7 +296,7 @@ class WidgetLive extends WidgetBoard
 					$cellParams .= "id='e10-vs-smart-main' data-active-cam='{$cam['ndx']}' data-call-function='e10.widgets.macVs.zoomMainPicture'";
 				}
 
-				$c .= "<div class='e10-fx-col e10-fx-sm-fw e10-fx-{$cell['width']}{$cellClass}'{$cellParams} style='position: relative;'>";
+				$c .= "<div class='e10-fx-col e10-fx-sm-fw e10-fx-{$cell['width']}{$cellClass}'{$cellParams} style='position: relative; justify-content: flex-start;'>";
 
 				if (isset($cell['rows']))
 				{
@@ -770,7 +771,7 @@ class WidgetLive extends WidgetBoard
 					'type' => 'scene',
 					'order' => $setupsOrders[$r['setup']],
 					'title' => $r['setupShortName'],
-					'paramId' => "set_scene_{$setupNdx}_{$r['ndx']}", 
+					'paramId' => "set_scene_{$setupNdx}_{$r['ndx']}",
 					'enum' => [],
 					'controls' => [],
 				];
@@ -782,11 +783,11 @@ class WidgetLive extends WidgetBoard
 			$btn = [
 				'title' => $r['shortName'],
 				'data' => [
-					'action' => 'inline-action',	
-					'object-class-id' => 'mac.iot.libs.IotAction',	
-					'action-param-action-type' => 'set-scene',	
+					'action' => 'inline-action',
+					'object-class-id' => 'mac.iot.libs.IotAction',
+					'action-param-action-type' => 'set-scene',
 					'action-param-setup' => strval($setupNdx),
-					'action-param-scene' => strval($r['ndx']),	
+					'action-param-scene' => strval($r['ndx']),
 				],
 			];
 
@@ -807,7 +808,7 @@ class WidgetLive extends WidgetBoard
 			$activeValue = $p['defaultValue'];
 
 		$c = '';
-		
+
 		$justified = isset($p['justified']) ? intval($p['justified']) : 0;
 		$grpClass = 'btn-group e10-param-inline';
 		if ($justified)
@@ -833,14 +834,14 @@ class WidgetLive extends WidgetBoard
 				foreach ($pc['data'] as $btnPartId => $btnPartValue)
 					$c .= ' data-'.$btnPartId."='".$btnPartValue."'";
 			}
-	
+
 			$c .= '>' . $this->app()->ui()->composeTextLine($pc['title']);
 			$c .= '</button>';
 			if ($justified)
 				$c .= '</div>';
 		}
 		$c .= '</div>';
-		
+
 		return $c;
 	}
 }

@@ -1,7 +1,8 @@
 {
 	"admin": {
 		"viewers": {
-			"e10.ui.uis": {"default": 2}
+			"e10.ui.uis": {"default": 2},
+			"e10.ui.uiWidgets": {"default": 2}
 		}
 	}
 }
