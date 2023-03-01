@@ -23,7 +23,7 @@ class SendEntriesEmails extends Utility
 
     $emailTo = implode(', ', $emails);
 
-		$msg = new \e10\MailMessage($this->app());
+		$msg = new \Shipard\Report\MailMessage($this->app());
 
 		$emailSubject = $report->createReportPart ('emailSubject');
 		$emailBody = $report->createReportPart ('emailBody');
@@ -52,7 +52,7 @@ class SendEntriesEmails extends Utility
     array_push ($q, 'SELECT * FROM [e10pro_zus_prihlasky]');
     array_push ($q, ' WHERE 1');
     array_push ($q, ' AND [confirmEmailDone] = %i', 0);
-    array_push ($q, ' AND [docState] = %i', 1200);
+    array_push ($q, ' AND [docState] = %i', 1000);
 
     $rows = $this->db()->query($q);
     foreach ($rows as $r)
