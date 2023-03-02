@@ -1,5 +1,8 @@
 {
   "id": "e10doc.cash",
   "name": "Cash",
-  "extensions": ["cash"]
+  "extensions": ["cash"],
+  "config": [
+    {"id": "+e10.reports.sendReports", "file": "sendReports.json"}
+  ]
 }

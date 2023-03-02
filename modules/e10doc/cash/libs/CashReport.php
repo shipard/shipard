@@ -14,6 +14,8 @@ class CashReport extends \e10doc\core\libs\reports\DocReport
 
 	public function loadData ()
 	{
+		$this->sendReportNdx = 2002;
+
 		parent::loadData();
 
 		if ($this->recData ['cashBoxDir'] == 1)
