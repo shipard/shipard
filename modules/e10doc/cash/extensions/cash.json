@@ -15,7 +15,7 @@
 		"reports": [
       {
 	      "id": "cash", "name": "Pokladní lístek", "class": "e10doc.cash.libs.CashReport",
-	      "queryCol": "docType", "queryColValue": "cash"
+	      "queryCol": "docType", "queryColValue": "cash", "email": 1
       },
 			{
 				"id": "cashpos", "name": "Účtenka", "class": "e10doc.cash.libs.CashReportPos", "directPrint": 1, "printerClass": "pos",
