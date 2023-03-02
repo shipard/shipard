@@ -1,0 +1,9 @@
+{
+  "2002": {
+    "fn": "Pokladní lístek",
+    "cn": "Pokladna",
+    "sc": "POK",
+    "classId": "e10doc.cash.libs.CashReport",
+    "ndx": 2002
+  }
+}
