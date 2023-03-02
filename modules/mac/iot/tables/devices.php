@@ -233,16 +233,15 @@ class TableDevices extends DbTable
  */
 class ViewDevices extends TableView
 {
+	var ?\mac\iot\libs\IotDevicesUtils $iotDevicesUtils = NULL;
+
 	public function init ()
 	{
 		parent::init();
 
-		//$this->objectSubType = TableView::vsDetail;
-		$this->enableDetailSearch = TRUE;
+		$this->iotDevicesUtils = new \mac\iot\libs\IotDevicesUtils($this->app());
 
-		//$this->devicesKinds = $this->app()->cfgItem ('mac.lan.devices.kinds');
-		//$this->tableDevices = $this->app()->table('mac.lan.devices');
-		//$this->tableThings = $this->app()->table('mac.iot.things');
+		$this->enableDetailSearch = TRUE;
 
 		$this->setMainQueries ();
 	}
@@ -250,14 +249,28 @@ class ViewDevices extends TableView
 	public function renderRow ($item)
 	{
 		$listItem ['pk'] = $item ['ndx'];
-		$listItem ['i1'] = ['text' => '#'.$item['ndx'] /*.'.'.substr($item['uid'], 0, 3).'...'.substr($item['uid'],-3)*/, 'class' => 'id'];
-		$listItem ['t1'] = $item['fullName'];
-		$listItem ['icon'] = $this->table->tableIcon ($item);
-
-		$flags = [];
+		$icon = $this->table->tableIcon ($item);
 
 		$deviceTypeCfg = $this->app()->cfgItem('mac.iot.devices.types.'.$item['deviceType']);
-		$flags[] = ['text' => $deviceTypeCfg['sn'], 'class' => 'label label-default'];
+		$iotDeviceModel = $this->iotDevicesUtils->deviceModel($item);
+		$iotDeviceType = NULL;
+		$iotDeviceSubType = NULL;
+
+		if (isset($iotDeviceModel['iotType']))
+			$iotDeviceType = $this->app()->cfgItem('mac.iot.devices.types.'.$iotDeviceModel['iotType'], NULL);
+
+		if ($iotDeviceType && isset($iotDeviceModel['iotSubType']))
+			$iotDeviceSubType = $iotDeviceType['subTypes'][$iotDeviceModel['iotSubType']] ?? NULL;
+
+		if ($iotDeviceSubType && isset($iotDeviceSubType['icon']))
+			$icon = $iotDeviceSubType['icon'];
+
+		$listItem ['i1'] = ['text' => '#'.$item['ndx'] /*.'.'.substr($item['uid'], 0, 3).'...'.substr($item['uid'],-3)*/, 'class' => 'id'];
+		$listItem ['t1'] = $item['fullName'];
+		$listItem ['icon'] = $icon;
+
+		//$flags = [];
+		//$flags[] = ['text' => $deviceTypeCfg['sn'].'____', 'class' => 'label label-danger'];
 
 		$t2[] = ['text' => $item['friendlyId'], 'class' => 'label label-default'];
 		if ($item['friendlyId'] !== $item['hwId'])

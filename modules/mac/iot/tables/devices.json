@@ -13,12 +13,12 @@
 			"enumCfg": {"cfgItem": "mac.iot.devices.types", "cfgValue": "", "cfgText": "fn"}},
 		{"id": "deviceKind", "name": "Druh ovládacího prvku", "type": "enumString", "len": 20, "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "mac.iot.devices.kinds", "cfgValue": "", "cfgText": "fn"}},
-	
+
 		{"id": "deviceVendor", "name": "Výrobce", "type": "enumString", "len": 20, "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": ""}},
 		{"id": "deviceModel", "name": "Model", "type": "enumString", "len": 40, "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": ""}},
-	
+
 		{"id": "deviceSettings", "name": "Nastavení", "type": "subColumns"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},

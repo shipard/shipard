@@ -37,6 +37,7 @@
 		{"id": "+mac.iot.devices.kinds", "file": "mac.iot.devices.kinds.json"},
 		{"id": "+mac.iot.devices.vendors.shipard", "file": "devices/shipard/vendors.json"},
 		{"id": "+mac.iot.devices.vendors.zigbee", "file": "devices/zigbee/vendors.json"},
+		{"id": "+mac.iot.devices.types", "file": "iotDeviceTypes.json"},
 	  {"id": "+mac.iot.topics.types", "file": "mac.iot.topics.types.json"},
 	  {"id": "+mac.iot.things.itemsTypes", "file": "mac.iot.things.itemsTypes.json"},
 	  {"id": "+mac.iot.topicTypes", "file": "mac.iot.topicTypes.json"},

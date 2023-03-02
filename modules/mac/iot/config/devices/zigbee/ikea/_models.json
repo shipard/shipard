@@ -1,15 +1,18 @@
 {
 	"LED1836G9": {
 		"fn": "TRADFRI LED bulb E26/E27 806 lumen, dimmable, warm white",
-		"modelID": "TRADFRI bulb E27 WW 806lm"
+		"modelID": "TRADFRI bulb E27 WW 806lm",
+		"iotType": "light", "iotSubType": "lightbulb", "iotOptions": ["br", "ww"]
 	},
 	"LED1936G5": {
 		"fn": "TRADFRI LED globe-bulb E27 470 lumen, dimmable, white spectrum, opal white",
-		"modelID": "TRADFRIbulbG125E27WSopal470lm"
+		"modelID": "TRADFRIbulbG125E27WSopal470lm",
+		"iotType": "light", "iotSubType": "lightbulb", "iotOptions": ["br", "ww"]
 	},
 	"L1529": {
 		"fn": "FLOALT LED light panel, dimmable, white spectrum (60x60 cm)",
-		"modelID": "FLOALT panel WS 60x60"
+		"modelID": "FLOALT panel WS 60x60",
+		"iotType": "light", "iotSubType": "ledPanel", "iotOptions": ["br", "ww"]
 	},
 
 	"E2001/E2002": {
@@ -37,6 +40,7 @@
 
 	"E1757": {
 		"fn": "FYRTUR roller blind",
-		"modelID": "FYRTUR block-out roller blind"
+		"modelID": "FYRTUR block-out roller blind",
+		"iotType": "blind", "iotSubType": "blind", "iotOptions": ["pos"]
 	}
 }

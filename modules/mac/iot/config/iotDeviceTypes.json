@@ -1,0 +1,35 @@
+{
+  "light": {
+    "fn": "Osvětlení",
+    "options": {
+      "br": {
+        "fn": "Jas"
+      },
+      "ct": {
+        "fn": "Barevná teplota"
+      },
+      "rgb": {
+        "fn": "Barva"
+      }
+    },
+    "subTypes": {
+      "lightbulb": {
+        "fn": "Žárovka",
+        "icon": "quantityTypeLighting"
+      },
+      "ledPanel": {
+        "fn": "LED panel",
+        "icon": "quantityTypeLighting"
+      }
+    }
+  },
+  "blind": {
+    "fn": "Roleta",
+    "subTypes": {
+      "blind": {
+        "fn": "Roleta",
+        "icon": "user/cogs"
+      }
+    }
+  }
+}

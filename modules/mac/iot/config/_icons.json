@@ -6,11 +6,11 @@
 		"mdi": "extension"
     },
 		"tables/mac.iot.devices":{
-			"fa5": "fa-lightbulb",
-			"fa6pro": "fa-lightbulb-on",
-			"bsi": "bi-lightbulb",
-			"mdi": "lightbulb"
-		},	
+			"fa5":"fa-microchip",
+			"fa6pro":"fa-microchip",
+			"bsi":"bi-cpu-fill",
+			"mdi":"memory"
+	},
     "tables/mac.iot.scenes": {
 		"fa5": "fa-play-circle",
 		"fa6pro": "fa-play-circle",
