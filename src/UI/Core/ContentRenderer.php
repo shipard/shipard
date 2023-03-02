@@ -420,10 +420,29 @@ class ContentRenderer extends \Shipard\Base\BaseObject
 							'</span>';
 					*/
 					$c.= "<span class='$itemClass'>";
-					$c .= "<span class='df2-action-trigger' data-url-download='$fileUrl' data-action='open-link' data-popup-id='vdatt' data-with-shift='tab'>".
-						"<img src='$thumbUrl' title=\"$thumbTitle\">".
-						'</span>';
-					$c .= '</span>';
+
+					if ($a['fileKind'] === 2 && $itemClass === 'e10-attbox-one' && $a['i3'] > 1)
+					{ // PDF
+						$pgCount = min(3, $a['i3']);
+						for ($pgn = 1; $pgn <= $pgCount; $pgn++)
+						{
+							$thumbUrl = \E10\Base\getAttachmentUrl ($app, $a, $thumbSize, 2 * $thumbSize, FALSE, ['-p'.$pgn]);
+							$c .= "<span class='df2-action-trigger' data-url-download='$fileUrl' data-action='open-link' data-popup-id='vdatt' data-with-shift='tab'>".
+							"<img src='$thumbUrl' title=\"$thumbTitle\">".
+							'</span>';
+							$c .= "<span class='label label-info'>".Utils::es('Strana '.$pgn.' / '.$a['i3']).'</span>';
+							if ($pgn !== $pgCount)
+								$c .= "<hr>";
+						}
+						$c .= '</span>';
+					}
+					else
+					{
+						$c .= "<span class='df2-action-trigger' data-url-download='$fileUrl' data-action='open-link' data-popup-id='vdatt' data-with-shift='tab'>".
+							"<img src='$thumbUrl' title=\"$thumbTitle\">".
+							'</span>';
+						$c .= '</span>';
+					}
 				}
 			}
 			$c .= '</div>';

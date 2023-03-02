@@ -19,6 +19,7 @@ class ImageResizer
 	private $width = 0;
 	private $height = 0;
 	private $icon = 0;
+	private $pageNumber = 0;
 
 	private $convertParams = array ();
 	public $cacheFullFileName;
@@ -87,6 +88,7 @@ class ImageResizer
 				case 'b': $this->badge = substr($p, 2); break;
 				case 'c': $this->backgroundColor = substr($p, 2); break;
 				case 'i': $this->icon = (int) substr($p, 2); break;
+				case 'p': $this->pageNumber = intval(substr($p, 2)); break;
 				case 'v': break;
 			}
 		}
@@ -212,6 +214,9 @@ class ImageResizer
 			elseif ($this->width)
 				$prm .= ' -scale-to ' . $this->width;
 
+			if ($this->pageNumber)
+				$prm .= ' -f '.$this->pageNumber.' -l '.$this->pageNumber;
+
 			$cmd = "pdftocairo -jpeg -singlefile{$prm} $srcFileName " . substr($this->cacheFullFileName, 0, -4);
 		}
 		else
@@ -267,7 +272,7 @@ class ImageResizer
 					$cmd .= "-font helvetica -stroke white -strokewidth 7 ";
 					$cmd .= "-pointsize {$badgePointSize} ";
 					$cmd .= "-draw \"fill white text {$textPosX},{$textPosXEnd} '{$this->badge}' \" ";
-				}	
+				}
 			}
 			$cmd .= "\"{$this->cacheFullFileName}\" ";
 		}
