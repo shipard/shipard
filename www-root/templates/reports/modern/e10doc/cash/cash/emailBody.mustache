@@ -1,0 +1,17 @@
+{{textMode}}{{#data.reportTexts.emailBody}}{{{data.reportTexts.emailBody}}}{{/data.reportTexts.emailBody}}
+{{^data.reportTexts.emailBody}}
+{{@dict;Dobrý den}},
+
+{{@dict;v příloze Vám zasíláme pokladní lístek}}: {{data.head.title}}.
+
+{{@dict;Odběratel}}: {{{data.person.fullName}}}
+{{@dict;Celková částka}}: {{data.head.print.toPay}} {{data.head.print.currency}}
+
+{{@dict;S pozdravem}}
+
+--
+{{data.owner.fullName}}
+{{#data.owner_contacts}}
+{{name}}: {{value}}
+{{/data.owner_contacts}}
+{{/data.reportTexts.emailBody}}
