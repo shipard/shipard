@@ -15,11 +15,11 @@
     "subTypes": {
       "lightbulb": {
         "fn": "Žárovka",
-        "icon": "quantityTypeLighting"
+        "icon": "iotDevices/light"
       },
       "ledPanel": {
         "fn": "LED panel",
-        "icon": "quantityTypeLighting"
+        "icon": "iotDevices/light"
       }
     }
   },
@@ -28,7 +28,52 @@
     "subTypes": {
       "blind": {
         "fn": "Roleta",
-        "icon": "user/cogs"
+        "icon": "iotDevices/blind"
+      }
+    }
+  },
+  "motion": {
+    "fn": "Pohybové čidlo",
+    "subTypes": {
+      "motion": {
+        "fn": "Pohybové čidlo",
+        "icon": "iotDevices/motion"
+      }
+    }
+  },
+  "remote": {
+    "fn": "Dálkový ovladač",
+    "subTypes": {
+      "remote": {
+        "fn": "Dálkový ovladač",
+        "icon": "iotDevices/remote"
+      }
+    }
+  },
+  "encoder": {
+    "fn": "Encoder",
+    "subTypes": {
+      "encoder": {
+        "fn": "Enkodér",
+        "icon": "iotDevices/encoder"
+      }
+    }
+  },
+  "socket": {
+    "fn": "Socket",
+    "subTypes": {
+      "socket": {
+        "fn": "Zásuvka",
+        "icon": "iotDevices/socket"
+      }
+    }
+  },
+  "sensor": {
+    "fn": "Sensor",
+    "subTypes": {
+      "sensor": {
+        "fn": "Senzor",
+        "icon": "iotDevices/sensor"
       }
     }
   }

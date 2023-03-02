@@ -136,6 +136,50 @@
 	},
 
 
+	"iotDevices/light":{
+		"fa5": "fa-lightbulb",
+		"fa6pro": "fa-lightbulb-on",
+		"bsi": "bi-lightbulb",
+		"mdi": "refresh"
+	},
+	"iotDevices/blind":{
+		"fa5": "fa-store",
+		"fa6pro": "fa-blinds",
+		"bsi": "bi-shop-window",
+		"mdi": "refresh"
+	},
+	"iotDevices/motion":{
+		"fa5": "fa-running",
+		"fa6pro": "fa-running",
+		"bsi": "bi-person-exclamation",
+		"mdi": "refresh"
+	},
+	"iotDevices/remote":{
+		"fa5": "fa-rss-square",
+		"fa6pro": "fa-rss-square",
+		"bsi": "bi-dpad-fill",
+		"mdi": "refresh"
+	},
+	"iotDevices/socket":{
+		"fa5": "fa-plug",
+		"fa6pro": "fa-outlet",
+		"bsi": "bi-outlet",
+		"mdi": "refresh"
+	},
+	"iotDevices/encoder":{
+		"fa5": "fa-undo-alt",
+		"fa6pro": "fa-undo-alt",
+		"bsi": "bi-arrow-clockwise",
+		"mdi": "refresh"
+	},
+	"iotDevices/sensor":{
+		"fa5": "fa-thermometer-three-quarters",
+		"fa6pro": "fa-thermometer-three-quarters",
+		"bsi": "bi-thermometer-half",
+		"mdi": "refresh"
+	},
+
+
 	"formDevices":{
 		"fa5": "fa-lightbulb",
 		"fa6pro": "fa-lightbulb-on",

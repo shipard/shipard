@@ -17,25 +17,30 @@
 
 	"E2001/E2002": {
 		"fn": "STYRBAR remote control N2",
-		"modelID": "Remote Control N2"
+		"modelID": "Remote Control N2",
+		"iotType": "remote", "iotSubType": "remote"
 	},
 	"E1812": {
 		"fn": "TRADFRI shortcut button",
-		"modelID": "TRADFRI SHORTCUT Button"
+		"modelID": "TRADFRI SHORTCUT Button",
+		"iotType": "remote", "iotSubType": "remote"
 	},
 	"E1744": {
 		"fn": "SYMFONISK sound controller",
-		"modelID": "SYMFONISK Sound Controller"
+		"modelID": "SYMFONISK Sound Controller",
+		"iotType": "encoder", "iotSubType": "encoder"
 	},
 
 	"E1525/E1745": {
 		"fn": "TRADFRI motion sensor",
-		"modelID": "TRADFRI motion sensor"
+		"modelID": "TRADFRI motion sensor",
+		"iotType": "motion", "iotSubType": "motion"
 	},
 
 	"E1603/E1702/E1708": {
 		"fn": "TRADFRI control outlet",
-		"modelID": "TRADFRI control outlet"
+		"modelID": "TRADFRI control outlet",
+		"iotType": "socket", "iotSubType": "socket"
 	},
 
 	"E1757": {
