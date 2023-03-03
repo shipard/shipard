@@ -1218,6 +1218,61 @@
         "fa6pro":"fa-cloud",
         "bsi":"bi-google",
         "mdi":"cloud"
+	},
+
+	"meteoSunny":{
+		"fa5":"fa-sun",
+        "fa6pro":"fa-sun",
+        "bsi":"bi-sun-fill",
+        "mdi":""
+	},
+	"meteoCloudy":{
+		"fa5":"fa-cloud",
+        "fa6pro":"fa-cloud",
+        "bsi":"bi-cloud-fill",
+        "mdi":""
+	},
+	"meteoPartlyCloudy":{
+		"fa5":"fa-cloud-sun",
+        "fa6pro":"fa-cloud-sun",
+        "bsi":"bi-cloud-sun-fill",
+        "mdi":""
+	},
+	"meteoFoggy":{
+		"fa5":"fa-smog",
+        "fa6pro":"fa-smog",
+        "bsi":"bi-cloud-fog-fill",
+        "mdi":""
+	},
+	"meteoRainy":{
+		"fa5":"fa-cloud-rain",
+        "fa6pro":"fa-cloud-rain",
+        "bsi":"bi-cloud-drizzle",
+        "mdi":""
+	},
+	"meteoHeavyRain":{
+		"fa5":"fa-cloud-rain",
+        "fa6pro":"fa-cloud-rain",
+        "bsi":"bi-cloud-rain-heavy",
+        "mdi":""
+	},
+	"meteoStorm":{
+		"fa5":"fa-bolt",
+        "fa6pro":"fa-bolt",
+        "bsi":"bi-cloud-lightning-rain",
+        "mdi":""
+	},
+	"meteoSnow":{
+		"fa5":"fa-snowflake",
+        "fa6pro":"fa-snowflake",
+        "bsi":"bi-snow",
+        "mdi":""
+	},
+	"meteoWindy":{
+		"fa5":"fa-wind",
+        "fa6pro":"fa-wind",
+        "bsi":"bi-wind",
+        "mdi":""
 	}
 
 }
