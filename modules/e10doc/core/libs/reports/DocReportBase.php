@@ -194,6 +194,10 @@ class DocReportBase extends FormReport
 					$this->data ['owner']['address'] = $this->data ['owner']['lists']['address'][0];
 				}
 			}
+
+			if (!isset($this->data ['owner']['address']))
+				$this->data ['owner']['address'] = ['worldCountry' => 60];
+
 			World::setCountryInfo($this->app(), intval($this->data ['owner']['address']['worldCountry']), $this->data ['owner']['address']);
 			if (isset($this->data ['owner']['address']['countryNameSC2']))
 				$this->ownerCountry = $this->data ['owner']['address']['countryNameSC2'];
