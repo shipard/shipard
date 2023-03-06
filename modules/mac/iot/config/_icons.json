@@ -179,6 +179,19 @@
 		"mdi": "refresh"
 	},
 
+	"iconBrightness":{
+		"fa5": "fa-sun",
+		"fa6pro": "fa-sun",
+		"bsi": "bi-brightness-alt-high-fill",
+		"mdi": ""
+	},
+	"iconColorTemperature":{
+		"fa5": "fa-thermometer-half",
+		"fa6pro": "fa-thermometer-half",
+		"bsi": "bi-thermometer-half",
+		"mdi": ""
+	},
+
 
 	"formDevices":{
 		"fa5": "fa-lightbulb",
