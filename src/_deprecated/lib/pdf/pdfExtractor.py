@@ -10,7 +10,7 @@ from PyPDF4 import PdfFileReader, PdfFileWriter
 def getAttachments(reader):
 	catalog = reader.trailer["/Root"]
 	attachments = {}
-	if ('/Names' in catalog and '/EmbeddedFiles' in catalog['/Names']):
+	if ('/Names' in catalog and '/EmbeddedFiles' in catalog['/Names'] and '/Names' in catalog['/Names']['/EmbeddedFiles']):
 		fileNames = catalog['/Names']['/EmbeddedFiles']['/Names']
 		for f in fileNames:
 			if isinstance(f, str):
