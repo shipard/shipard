@@ -140,9 +140,15 @@
 		"mdi": "check_circle"
 	},
 	"personShortName":{
-		"fa5": "fa-hand-paper",
-		"fa6pro": "fa-hand-paper",
-		"bsi": "bi-hand-index",
-		"mdi": "pan_tool"
+		"fa5": "fa-ellipsis-h",
+		"fa6pro": "fa-ellipsis-h",
+		"bsi": "bi-three-dots",
+		"mdi": ""
+	},
+	"personOldName":{
+		"fa5": "fa-history",
+		"fa6pro": "fa-history",
+		"bsi": "bi-clock-history",
+		"mdi": ""
 	}
 }
