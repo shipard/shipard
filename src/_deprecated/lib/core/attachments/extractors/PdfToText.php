@@ -27,6 +27,7 @@ class PdfToText extends Base
 		}
 		else
 		{ // scanned?
+			/* @TODO: remove
 			$textPdfFileName = $this->tmpFileName.'.pdf';
 			$cmd = "export LC_ALL=C.UTF-8 && export LANG=C.UTF-8 && ocrmypdf -l ces --clean --deskew --remove-background --sidecar {$txtFileName} {$this->attFileName} ".$textPdfFileName.' > '.$txtFileName.'.log 2>&1';
 			exec($cmd);
@@ -35,6 +36,7 @@ class PdfToText extends Base
 			{
 				$this->saveData(self::mdtTextContent, $text);
 			}
+			*/
 		}
 	}
 
