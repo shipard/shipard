@@ -500,7 +500,7 @@ class ListProperties implements \E10\IDocumentList
 					$p = $this->allProperties [$propertyId];
 					if (isset ($p['optionaly']) && $p['optionaly'])
 					{
-						$bntContent = "<i class='fa fa-plus-circle'></i> ".utils::es($p['name']);
+						$bntContent = $this->formData->app()->ui()->icon('system/actionAdd').' '.utils::es($p['name']);
 						$bntTitle = utils::es('Přidat '.$p['name']);
 						$optionalyBtns .= " <button type='button' class='btn btn-default btn-xs e10-row-append' tabindex='-1' title='{$bntTitle}' ".
 															"data-list='{$this->listId}' data-propid='{$propertyId}' data-groupid='{$groupId}'>$bntContent</button>";
@@ -648,7 +648,7 @@ class ListProperties implements \E10\IDocumentList
 						"<input type='text' placeholder='pozn.' name='{$inputPrefix}.note' class='e10-prop-note' id='$inputNoteId' data-fid='{$this->formData->fid}'$readOnlyParam/>";
 
 		if (isset($property ['multi']) && $property ['multi'] && !$this->formData->readOnly)
-			$c .= " <button type='button' class='btn btn-default btn-xs e10-row-append' tabindex='-1' data-list='{$this->listId}' data-propid='{$dataItem ['property']}' data-groupid='{$dataItem ['group']}'><i class='fa fa-plus-circle'></i></button>";
+			$c .= " <button type='button' class='btn btn-default btn-xs e10-row-append' tabindex='-1' data-list='{$this->listId}' data-propid='{$dataItem ['property']}' data-groupid='{$dataItem ['group']}'>".$this->formData->app()->ui()->icon('system/actionAdd')."</button>";
 
 		$c .= "</td></tr>";
 

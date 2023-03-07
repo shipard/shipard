@@ -11,5 +11,6 @@
 	"govDataBox": {"name": "Dat. schránka", "type": "text", "icon": "personDataBox", "note": 1, "optionaly": 1},
 
 	"officialName": {"name": "Oficiální název", "type": "text", "icon": "personOfficialName", "multi": 1, "note": 1, "optionaly": 1},
+	"oldName": {"name": "Starý název", "type": "text", "icon": "personOfficialName", "multi": 1, "note": 1, "optionaly": 1},
 	"shortName": {"name": "Zkrácený název", "type": "text", "icon": "personShortName", "multi": 1, "note": 1, "optionaly": 1}
 }

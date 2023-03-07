@@ -1,4 +1,4 @@
 {
-	"ids": ["oid", "taxid", "pid", "idcn", "birthdate", "officialName", "shortName"],
+	"ids": ["oid", "taxid", "pid", "idcn", "birthdate", "officialName", "oldName", "shortName"],
 	"contacts": ["email", "phone", "skype", "web", "govDataBox"]
 }
