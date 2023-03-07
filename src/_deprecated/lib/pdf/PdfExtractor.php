@@ -70,10 +70,14 @@ class PdfExtractor extends Utility
 		if ($this->pdfInfo === NULL || !isset($this->pdfInfo['attachments']) || !count($this->pdfInfo['attachments']))
 			return;
 
+		$attOrder = 1000;
 		foreach ($this->pdfInfo['attachments'] as $a)
 		{
 			if (is_readable($a['fullFileName']))
-				\E10\Base\addAttachments ($this->app, $toTableId, $toRecId, $a['fullFileName'], '', true, 0, $a['baseFileName']);
+			{
+				\E10\Base\addAttachments ($this->app, $toTableId, $toRecId, $a['fullFileName'], '', true, $attOrder, $a['baseFileName']);
+				$attOrder++;
+			}
 		}
 
 		if (is_readable($this->fileName.'.json'))
