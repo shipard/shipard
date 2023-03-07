@@ -382,7 +382,7 @@ class ContentRenderer extends \Shipard\Base\BaseObject
 			return $c;
 
 		// -- images
-		$fullSizeTreshhold = 4;
+		$fullSizeTreshhold = 10;
 		if (isset ($cp['fullSizeTreshold']))
 			$fullSizeTreshhold = $cp['fullSizeTreshold'];
 		if (isset ($attachments['images']) && count ($attachments['images']))
@@ -423,7 +423,7 @@ class ContentRenderer extends \Shipard\Base\BaseObject
 
 					if ($a['fileKind'] === 2 && $itemClass === 'e10-attbox-one' && $a['i3'] > 1)
 					{ // PDF
-						$pgCount = min(3, $a['i3']);
+						$pgCount = min(10, $a['i3']);
 						for ($pgn = 1; $pgn <= $pgCount; $pgn++)
 						{
 							$thumbUrl = \E10\Base\getAttachmentUrl ($app, $a, $thumbSize, 2 * $thumbSize, FALSE, ['-p'.$pgn]);
