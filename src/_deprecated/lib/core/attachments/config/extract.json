@@ -15,11 +15,11 @@
 		},
 		"photo": {
 			"ndx": 3,
-			"extractors": ["coreFileInfo", "exif", "imageOCR"]
+			"extractors": ["coreFileInfo", "exif"]
 		},
 		"picture": {
 			"ndx": 4,
-			"extractors": ["coreFileInfo", "imageOCR"]
+			"extractors": ["coreFileInfo"]
 		},
 		"txt": {
 			"ndx": 5,
