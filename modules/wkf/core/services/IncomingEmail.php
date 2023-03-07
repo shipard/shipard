@@ -165,17 +165,19 @@ class IncomingEmail extends Utility
 		}
 
 		// -- analyze meta data
-		if ($doAnalyze)
-		{
-			$ee = new \lib\core\attachments\Extract($this->app());
-			$ee->setAttTableDocument ('wkf.core.issues', $newMsgNdx);
-			$ee->run();
-		}
+		// @TODO: remove
+		//if ($doAnalyze)
+		//{
+			//$ee = new \lib\core\attachments\Extract($this->app());
+			//$ee->setAttTableDocument ('wkf.core.issues', $newMsgNdx);
+			//$ee->run();
+		//}
 
 		// -- check docDataFiles
-		$ddfe = new \lib\docDataFiles\AttachmentsUpdater($this->app);
-		$ddfe->init();
-		$ddfe->doTableDocument('wkf.core.issues', $newMsgNdx);
+		// @TODO: remove
+		// $ddfe = new \lib\docDataFiles\AttachmentsUpdater($this->app);
+		// $ddfe->init();
+		// $ddfe->doTableDocument('wkf.core.issues', $newMsgNdx);
 
 		// -- finish
 		$issueRecData = $this->tableIssues->loadItem($newMsgNdx);
@@ -659,7 +661,7 @@ class IncomingEmail extends Utility
 			}
 			return $headers;
 		}
-		
+
 		$headers = [];
 		foreach ($hstr as $oneHeader)
 		{

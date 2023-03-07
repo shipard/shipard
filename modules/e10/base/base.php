@@ -866,6 +866,16 @@ function addAttachments ($app, $toTableId, $toRecId, $fullFileName, $attType, $m
 		$e->extractAsAttachments($toTableId, $toRecId);
 	}
 
+	// -- get metadata
+	$e = new \lib\core\attachments\Extract($app);
+	$e->setAttNdx($newNdx);
+	$e->run();
+
+	// -- analyze data content
+	$ddfe = new \lib\docDataFiles\AttachmentsUpdater($app);
+	$ddfe->init();
+	$ddfe->doOne($newNdx);
+
 	return $newNdx;
 }
 
