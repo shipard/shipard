@@ -3,7 +3,7 @@
 <head>
 	<title>Výdejka {{data.head.docNumber}}</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?16" type="text/css"/>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?18" type="text/css"/>
 </head>
 <body>
 
@@ -129,18 +129,22 @@
 	{{/data.flags.multiLineRows}}
 </table>
 
-<div id='sign'>
-		<span class='logoImg'>
-			<img style='max-width:80mm;max-height:30mm;' src='file://{{appDir}}/reports/logo-razitko.svg'/>
-		</span>
-	<span class='signImg'>
-		{{#data.author.signature.filename}}
-			<img src='file://{{appDir}}/att/{{data.author.signature.path}}{{data.author.signature.filename}}'/>
-		{{/data.author.signature.filename}}
-	</span>
-	<br/>
-	<span class='name'>{{@dict;Vystavil}}: {{data.author.fullName}}</span>
-</div>
+<table class="signed">
+	<tr>
+		<td class="empty">
+		<td>
+		<td>
+			{{#data.author.signature.rfn}}<img src='{{dsUrl}}{{data.author.signature.rfn}}'>{{/data.author.signature.rfn}}
+		</td>
+	</tr>
+	<tr>
+		<td class="empty">
+		<td>
+		<td>
+			<span>{{@dict;Vystavil}}: {{data.author.fullName}}</span>
+		</td>
+	</tr>
+</table>
 
 <div class='reportTextFooter'>
 	{{#data.reportTexts.subFooter}}{{{data.reportTexts.subFooter}}}{{/data.reportTexts.subFooter}}

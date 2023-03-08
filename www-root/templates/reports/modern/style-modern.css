@@ -95,7 +95,7 @@ div.heading {font-weight: bold; font-size: 14pt; padding-top: 8pt; padding-botto
 
 div.headingAlt {font-weight: bold; font-size: 14pt; padding-top: 8pt; padding-bottom: 5pt; text-align: left;}
 
-table.signed {width: 100%; text-align: center; margin-top: 36pt; font-size: 10pt; border-collapse: collapse;}
+table.signed {width: 100%; text-align: center; margin-top: 50pt; font-size: 10pt; border-collapse: collapse;}
 table.signed td.empty {width:60%;}
 table.signed tr td {vertical-align: top;}
 table.signed tr td span {text-align: center; border-top: .8pt solid black;  padding: 3pt;  display: block;}
