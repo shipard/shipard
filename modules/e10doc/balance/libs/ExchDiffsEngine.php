@@ -286,9 +286,10 @@ class ExchDiffsEngine extends \Shipard\Base\Utility
     {
 			$newRow = [];
       $newRow ['operation'] = 1099998;
-      $newRow ['item'] = $this->searchAccItemFromMask('563');
+      $newRow ['item'] = $this->searchAccItemFromMask('663');
+      $newRow ['text'] = 'Kurzové zisky';
+
       $newRow ['credit'] = $sumDebit;
-      $newRow ['text'] = 'Kurzové ztráty - 563.xxx';
 
       $newRows[] = $newRow;
     }
@@ -297,9 +298,10 @@ class ExchDiffsEngine extends \Shipard\Base\Utility
     {
 			$newRow = [];
       $newRow ['operation'] = 1099998;
-      $newRow ['item'] = $this->searchAccItemFromMask('663');
+      $newRow ['item'] = $this->searchAccItemFromMask('563');
+      $newRow ['text'] = 'Kurzové ztráty';
+
       $newRow ['debit'] = $sumCredit;
-      $newRow ['text'] = 'Kurzové zisky - 663.xxx';
 
       $newRows[] = $newRow;
     }
