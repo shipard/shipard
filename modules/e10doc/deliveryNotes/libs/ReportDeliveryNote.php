@@ -7,7 +7,7 @@ class ReportDeliveryNote extends \e10doc\core\libs\reports\DocReport
 {
 	function init ()
 	{
-		$this->reportId 			= 'e10doc.orderout.orderout';
-		$this->reportTemplate = 'e10doc.orderout.orderout';
+		parent::init();
+		$this->setReportId('e10doc.deliveryNote.deliverynote');
 	}
 }
