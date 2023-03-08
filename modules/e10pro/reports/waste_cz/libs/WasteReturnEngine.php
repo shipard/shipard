@@ -18,18 +18,29 @@ class WasteReturnEngine extends Utility
 	/** @var \e10doc\core\TableRows */
 	var $tableRows;
 
-  var $wasteItemCodeNdx = 1;
-
   var $documentNdx = 0;
+
+  var $enabledCodesKinds;
 
   CONST rowDirIn = 0, rowDirOut = 1;
   CONST personTypeHuman = 1, personTypeCompany = 2;
 
 
+  protected function init()
+  {
+    $this->enabledCodesKinds = [];
+    $ack = $this->app()->cfgItem('e10.witems.codesKinds');
+    foreach ($ack as $ackNdx => $ackDef)
+    {
+      if ($ackDef['codeType'] !== 31)
+        continue;
+      $this->enabledCodesKinds[] = $ackNdx;
+    }
+  }
+
   public function resetYear()
   {
     $this->db()->query('DELETE FROM [e10pro_reports_waste_cz_returnRows] WHERE [calendarYear] = %i', $this->year);
-
 
     $this->addPurchases();
     $this->addInvoicesOut();
@@ -73,52 +84,55 @@ class WasteReturnEngine extends Utility
       $row = $r->toArray();
 			$this->tableHeads->loadDocRowItemsCodes($row, $r['personType'], $row, NULL, $rowDestData, $allDestData);
 
-      if (!isset($rowDestData['rowItemCodesData'][$this->wasteItemCodeNdx]))
+      foreach ($this->enabledCodesKinds as $eck)
       {
-        //echo "\n".'! '.$r['docNumber'].': '.json_encode($rowDestData['rowItemCodesData'])."\n";
-        continue;
-      }
-      //else
-      //  echo "\n".'* '.$r['docNumber'].': '.json_encode($rowDestData['rowItemCodesData'][$this->wasteItemCodeNdx])."\n";
+        if (!isset($rowDestData['rowItemCodesData'][$eck]))
+        {
+          //echo "\n".'! '.$r['docNumber'].': '.json_encode($rowDestData['rowItemCodesData'])."\n";
+          continue;
+        }
+        //else
+        //  echo "\n".'* '.$r['docNumber'].': '.json_encode($rowDestData['rowItemCodesData'][$eck])."\n";
 
-      $newRow = [
-        'calendarYear' => intval($r['dateAccounting']->format('Y')),
-        'item' => $r['item'],
-        'dir' => $rowDir,
-        'wasteCodeText' => $rowDestData['rowItemCodesData'][$this->wasteItemCodeNdx]['itemCodeText'],
-        'wasteCodeNomenc' => $rowDestData['rowItemCodesData'][$this->wasteItemCodeNdx]['itemCodeNomenc'],
-        'price' => $r['taxBase'],
-        'unit' => $r['unit'],
-        'quantity' => $r['quantity'],
-        'quantityKG' => $this->quantityKG ($r['quantity'], $r['unit']),
-        'document' => $r['document'],
-        'dateAccounting' => $r['dateAccounting'],
+        $newRow = [
+          'calendarYear' => intval($r['dateAccounting']->format('Y')),
+          'item' => $r['item'],
+          'dir' => $rowDir,
+          'wasteCodeText' => $rowDestData['rowItemCodesData'][$eck]['itemCodeText'],
+          'wasteCodeNomenc' => $rowDestData['rowItemCodesData'][$eck]['itemCodeNomenc'],
+          'wasteCodeKind' => $eck,
+          'price' => $r['taxBase'],
+          'unit' => $r['unit'],
+          'quantity' => $r['quantity'],
+          'quantityKG' => $this->quantityKG ($r['quantity'], $r['unit']),
+          'document' => $r['document'],
+          'dateAccounting' => $r['dateAccounting'],
 
-        'person' => $r['person'],
-        'personType' => $r['personType'],
-        'addressMode' => $r['otherAddress1Mode'],
-      ];
+          'person' => $r['person'],
+          'personType' => $r['personType'],
+          'addressMode' => $r['otherAddress1Mode'],
+        ];
 
-      if ($rowDir === self::rowDirOut)
-        $newRow['addressMode'] = 0;
+        if ($rowDir === self::rowDirOut)
+          $newRow['addressMode'] = 0;
 
-      if ($newRow['personType'] === 1)
-      { // human
-        $newRow['personOffice'] = intval($r['deliveryAddress']);
-      }
-      else
-      { // company
-        if ($r['otherAddress1Mode'] == 0)
-          $newRow['personOffice'] = intval($r['otherAddress1']); // office
+        if ($newRow['personType'] === 1)
+        { // human
+          $newRow['personOffice'] = intval($r['deliveryAddress']);
+        }
         else
-          $newRow['nomencCity'] = intval($r['personNomencCity']); // city
+        { // company
+          if ($r['otherAddress1Mode'] == 0)
+            $newRow['personOffice'] = intval($r['otherAddress1']); // office
+          else
+            $newRow['nomencCity'] = intval($r['personNomencCity']); // city
+        }
+
+        //if (!$newRow['wasteCodeText'] || $newRow['wasteCodeText'] === '')
+        //  echo "\n".'! '.$r['docNumber'].': '.json_encode($rowDestData['rowItemCodesData'])."\n";
+
+        $this->db()->query('INSERT INTO [e10pro_reports_waste_cz_returnRows]', $newRow);
       }
-
-      //if (!$newRow['wasteCodeText'] || $newRow['wasteCodeText'] === '')
-      //  echo "\n".'! '.$r['docNumber'].': '.json_encode($rowDestData['rowItemCodesData'])."\n";
-
-      $this->db()->query('INSERT INTO [e10pro_reports_waste_cz_returnRows]', $newRow);
-
       $cnt++;
 
       //if ($cnt % 1000 === 0)
@@ -152,6 +166,8 @@ class WasteReturnEngine extends Utility
 
   public function resetDocument($documentNdx)
   {
+    $this->init();
+
     $this->documentNdx = $documentNdx;
 
     $this->tableHeads = $this->app->table ('e10doc.core.heads');
@@ -164,6 +180,8 @@ class WasteReturnEngine extends Utility
 
   public function run()
   {
+    $this->init();
+
     $this->dateBegin = $this->year.'-01-01';
     $this->dateEnd = $this->year.'-12-31';
 

@@ -12,6 +12,7 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 	var $calendarYear = 0;
 	var $periodBegin = NULL;
   var $periodEnd = NULL;
+	var $codeKindNdx = 0;
 
 	var $dir = WasteReturnEngine::rowDirIn;
 
@@ -44,6 +45,10 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 			$this->periodBegin = $this->data['calendarYear'].'-01-01';
 			$this->periodEnd = $this->data['calendarYear'].'-12-31';
 		}
+		elseif ($param === 'data-param-code-kind')
+		{
+			$this->codeKindNdx = intval($value);
+		}
 	}
 
 	public function checkDocumentInfo (&$documentInfo)
@@ -59,6 +64,8 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 			$this->setOutsideParam('data-param-period-begin', $this->app()->testGetParam('data-param-period-begin'));
 		if ($this->app()->testGetParam('data-param-period-end') !== '')
 			$this->setOutsideParam('data-param-period-end', $this->app()->testGetParam('data-param-period-end'));
+		if ($this->app()->testGetParam('data-param-code-kind') !== '')
+			$this->setOutsideParam('data-param-code-kind', $this->app()->testGetParam('data-param-code-kind'));
 
 		if ($this->calendarYear)
 		{
@@ -130,6 +137,7 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
     array_push ($q, ' LEFT JOIN [e10_persons_persons] AS persons ON [rows].person = persons.ndx');
 		array_push ($q, ' LEFT JOIN [e10doc_core_heads] AS heads ON [rows].document = heads.ndx');
 		array_push ($q, ' WHERE 1');
+    array_push ($q, ' AND [rows].[wasteCodeKind] = %i', $this->codeKindNdx);
 		array_push ($q, ' AND [rows].personType = %i', 2);
     array_push ($q, ' AND [rows].[dir] = %i', $this->dir);
 		array_push ($q, ' AND [rows].[person] = %i', $this->recData ['ndx']);

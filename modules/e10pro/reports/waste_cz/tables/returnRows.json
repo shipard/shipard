@@ -8,6 +8,7 @@
 			"enumValues": {"0": "Příjem", "1": "Výdej"}},
 		{"id": "wasteCodeText", "name": "Kód", "type": "string", "len": 20},
 		{"id": "wasteCodeNomenc", "name": "Kód", "type": "int", "reference": "e10.base.nomencItems"},
+		{"id": "wasteCodeKind", "name": "Druh kódu", "type": "int", "reference": "e10.witems.codesKinds"},
 		{"id": "price", "name": "Cena", "type": "money"},
     {"id": "quantity", "name": "Množství", "label": "Množ.", "type": "number", "dec": 3},
 		{"id": "unit", "name": "Jednotka", "type": "enumString", "len": 8,

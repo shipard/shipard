@@ -17,6 +17,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
   var $persons = [];
   var $sendStatus = '';
   var $showUnits = 0;
+  var $codeKindNdx = 0;
 
 	public function init ()
 	{
@@ -24,8 +25,13 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
     $defaultYear = 'Y'.(intval($today->format('Y')) - 1);
     $this->addParam ('calendarMonth', 'calendarPeriod', ['flags' => ['quarters', 'halfs', 'years'], 'defaultValue' => $defaultYear]);
 
+    $ckEnum = $this->codesKindEnum();
+    $this->addParam('switch', 'codeKind', ['title' => 'Druh', 'switch' => $ckEnum, 'radioBtn' => 1, '__defaultValue' => 'all']);
+
     if ($this->subReportId === 'companiesIn')
+    {
       $this->addParam('switch', 'sendStatus', ['title' => 'Stav', 'switch' => ['all' => 'Vše', 'toSend' => 'Neodeslané', 'sent' => 'Odeslané'], 'radioBtn' => 1, 'defaultValue' => 'all']);
+    }
 
     if ($this->subReportId === 'report')
       $this->addParam('switch', 'showUnits', ['title' => 'Jednotka', 'switch' => ['1' => 'Tuny', '0' => 'kg'], 'radioBtn' => 1, 'defaultValue' => '1']);
@@ -36,6 +42,9 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
       $this->sendStatus = $this->reportParams ['sendStatus']['value'] ?? 'all';
 
     $this->showUnits = intval($this->reportParams ['showUnits']['value'] ?? '0');
+
+    if (!$this->codeKindNdx)
+      $this->codeKindNdx = intval($this->reportParams ['codeKind']['value']);
 
     $cpBegin = $this->reportParams ['calendarPeriod']['values'][$this->reportParams ['calendarPeriod']['value']];
     if (isset($cpBegin['dateBegin']))
@@ -78,6 +87,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 		array_push ($q, ' FROM e10pro_reports_waste_cz_returnRows AS [rows]');
     array_push ($q, ' LEFT JOIN [e10_base_nomencItems] AS nomencItems ON [rows].wasteCodeNomenc = nomencItems.ndx');
 		array_push ($q, ' WHERE 1');
+    array_push ($q, ' AND [rows].[wasteCodeKind] = %i', $this->codeKindNdx);
     if ($this->periodBegin)
       array_push ($q, ' AND [rows].[dateAccounting] >= %d', $this->periodBegin);
     if ($this->periodEnd)
@@ -166,6 +176,8 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 		array_push ($q, ' WHERE 1');
 		array_push ($q, ' AND [rows].personType = %i', 2);
     array_push ($q, ' AND [rows].[dir] = %i', $dir);
+    array_push ($q, ' AND [rows].[wasteCodeKind] = %i', $this->codeKindNdx);
+
     if ($this->periodBegin)
       array_push ($q, ' AND [rows].[dateAccounting] >= %d', $this->periodBegin);
     if ($this->periodEnd)
@@ -244,6 +256,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
             'data-param-period-begin' => $this->periodBegin->format('Y-m-d'),
             'data-param-period-end' => $this->periodEnd->format('Y-m-d'),
             'data-param-calendar-year' => strval($this->calendarYear),
+            'data-param-code-kind' => strval($this->codeKindNdx),
             'actionClass' => 'btn-xs', 'class' => 'pull-right'];
           $btn['subButtons'] = [];
           $btn['subButtons'][] = [
@@ -252,6 +265,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
             'data-param-period-begin' => $this->periodBegin->format('Y-m-d'),
             'data-param-period-end' => $this->periodEnd->format('Y-m-d'),
             'data-param-calendar-year' => strval($this->calendarYear),
+            'data-param-code-kind' => strval($this->codeKindNdx),
             'data-class' => 'Shipard.Report.SendFormReportWizard',
             'data-addparams' => 'reportClass=' . 'e10pro.reports.waste_cz.ReportWasteOnePerson' . '&documentTable=' . 'e10.persons.persons'
           ];
@@ -265,6 +279,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
             'data-param-period-begin' => $this->periodBegin->format('Y-m-d'),
             'data-param-period-end' => $this->periodEnd->format('Y-m-d'),
             'data-param-calendar-year' => strval($this->calendarYear),
+            'data-param-code-kind' => strval($this->codeKindNdx),
             'actionClass' => 'btn-xs', 'class' => 'pull-right'];
           $btn['subButtons'] = [];
           $btn['subButtons'][] = [
@@ -274,6 +289,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
             'data-param-period-end' => $this->periodEnd->format('Y-m-d'),
             'data-param-calendar-year' => strval($this->calendarYear),
             'data-class' => 'Shipard.Report.SendFormReportWizard',
+            'data-param-code-kind' => strval($this->codeKindNdx),
             'data-addparams' => 'reportClass=' . 'e10pro.reports.waste_cz.ReportWasteOnePersonOut' . '&documentTable=' . 'e10.persons.persons'
           ];
           $header['wasteCode'][] = $btn;
@@ -583,6 +599,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 		array_push ($q, ' FROM e10pro_reports_waste_cz_returnRows AS [rows]');
     array_push ($q, ' LEFT JOIN [e10_base_nomencItems] AS nomencItems ON [rows].wasteCodeNomenc = nomencItems.ndx');
 		array_push ($q, ' WHERE 1');
+    array_push ($q, ' AND [rows].[wasteCodeKind] = %i', $this->codeKindNdx);
 		array_push ($q, ' AND [rows].personType = %i', 1);
     array_push ($q, ' AND [rows].[dir] = %i', 0);
     if ($this->periodBegin)
@@ -620,6 +637,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
     array_push ($q, ' LEFT JOIN [e10_base_nomencItems] AS nomencItems ON [rows].wasteCodeNomenc = nomencItems.ndx');
     array_push ($q, ' LEFT JOIN [e10_persons_personsContacts] AS addrs ON [rows].personOffice = addrs.ndx');
 		array_push ($q, ' WHERE 1');
+    array_push ($q, ' AND [rows].[wasteCodeKind] = %i', $this->codeKindNdx);
 		array_push ($q, ' AND [rows].personType = %i', 1);
     array_push ($q, ' AND [rows].[dir] = %i', 0);
     if ($this->periodBegin)
@@ -788,5 +806,19 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
       return $address->toArray();
 
     return NULL;
+  }
+
+  protected function codesKindEnum()
+  {
+    $enum = [];
+    $ack = $this->app()->cfgItem('e10.witems.codesKinds');
+    foreach ($ack as $ackNdx => $ackDef)
+    {
+      if ($ackDef['codeType'] !== 31)
+        continue;
+
+      $enum[$ackNdx]  = $ackDef['sn'];
+    }
+    return $enum;
   }
 }
