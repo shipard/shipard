@@ -1227,6 +1227,7 @@ class TableView extends \Shipard\Base\BaseObject
 		{
 				$codeLine .= " data-url-download='".Utils::es($listItem ['data-url-download'])."'";
 				$codeLine .= " data-action='open-link'";
+				$codeLine .= " data-popup-id='NEW-TAB'";
 		}
 
 		$codeLine .= ">";
