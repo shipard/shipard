@@ -16,6 +16,7 @@
 			"e10doc.balance.reportBalanceReceivables": 1, "e10doc.balance.reportBalanceObligations": 1,
 			"e10doc.balance.reportBalanceDepositReceived": 1, "e10doc.balance.reportBalanceAdvance": 1,
 			"e10doc.balance.reportBalanceCashInTransit": 1, "e10doc.balance.reportBalanceJournal": 2,
+			"e10doc.balance.libs.ExchDiffsReport": 2,
 			"e10doc.balance.ReportRequestsForPayment": 2,
 			"e10doc.finance.reportCashBook": 2, "e10pro.reports.finance_expenses.reportExpenses": 2,
 			"e10doc.finance.ReportTransactions": 2,
@@ -51,6 +52,7 @@
 			"e10doc.balance.reportBalanceReceivables": 1, "e10doc.balance.reportBalanceObligations": 1,
 			"e10doc.balance.reportBalanceDepositReceived": 1, "e10doc.balance.reportBalanceAdvance": 1,
 			"e10doc.balance.reportBalanceCashInTransit": 1, "e10doc.balance.reportBalanceJournal": 2,
+			"e10doc.balance.libs.ExchDiffsReport": 2,
 			"e10doc.finance.reportCashBook": 2, "e10pro.reports.finance_expenses.reportExpenses": 2
 		}
 	},

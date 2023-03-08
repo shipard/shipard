@@ -17,6 +17,7 @@
 			"e10doc.balance.reportBalanceDepositReceived": 2, "e10doc.balance.reportBalanceAdvance": 2,
 			"e10doc.balance.reportBalanceCashInTransit": 2, "e10doc.balance.reportBalanceJournal": 2,
 			"e10doc.balance.reportBalanceOffsetting": 2, "e10doc.balance.ReportRequestsForPayment": 2,
+			"e10doc.balance.libs.ExchDiffsReport": 2,
 			"e10pro.reports.tests.debs.ReportBadAccounting": 2,
 			"e10pro.reports.tests.items.ReportBadItems": 2
 		}
