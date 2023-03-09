@@ -147,6 +147,13 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 
 		$q = [];
 		array_push ($q, ' SELECT [tickets].*,');
+
+		array_push ($q, ' (SELECT COUNT(*) FROM e10_base_notifications WHERE state = 0',
+		' AND tickets.ndx = recIdMain',
+		' AND personDest = %i', $this->app()->userNdx(),
+		' AND tableId = %s', $this->table->tableId());
+		array_push ($q, ' LIMIT 1) AS [ntf], ');
+
 		array_push ($q, ' authors.fullName AS authorName,');
     array_push ($q, ' ds.shortName AS dsName');
 		array_push ($q, ' FROM [helpdesk_core_tickets] AS [tickets]');
@@ -190,7 +197,7 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 		}
 
 		$tablePrefix = 'tickets.';
-		$order = ['[priority]', '-[proposedDeadline] DESC', '[dateTouch]'];
+		$order = ['[ntf] DESC', '[priority]', '-[proposedDeadline] DESC', '[dateTouch]'];
 		$mainQuery = $this->mainQueryId ();
 
 		// -- active
