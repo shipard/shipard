@@ -58,7 +58,7 @@
 	<tr>
 		{{#data.options.docReportsHeadLogoRight}}
 			<td class='docInfo'>
-				<span class='docName'>{{@dict;Přehled dodaných odpadů}}</span><br>
+				<span class='docName'>{{@dict;dataItem:data.reportTitle}}</span><br>
 				<span class='documentNumber'>{{@dict;dataItem:data.periodName}}: {{data.periodValue}}</span>
 			</td>
 			<td class="supplierLogo">
@@ -75,7 +75,7 @@
 				{{/data.owner.logo.logo-nadpis.filename}}
 			</td>
 			<td class='docInfo'>
-				<span class='docName'>{{@dict;Přehled dodaných odpadů}}</span><br>
+				<span class='docName'>{{@dict;dataItem:data.reportTitle}}</span><br>
 				{{@dict;Rok}}: {{data.calendarYear}}
 			</td>
 		{{/data.options.docReportsHeadLogoRight}}
