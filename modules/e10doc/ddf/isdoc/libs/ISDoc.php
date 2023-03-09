@@ -143,6 +143,44 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 		{
 			$this->importRow($il);
 		}
+
+		if (isset($this->srcImpData['NonTaxedDeposits']))
+		{
+			$nonTaxedDeposits = (isset($this->srcImpData['NonTaxedDeposits']['NonTaxedDeposit'][0])) ? $this->srcImpData['NonTaxedDeposits']['NonTaxedDeposit'] : $this->srcImpData['NonTaxedDeposits'];
+			foreach ($nonTaxedDeposits as $dep)
+			{
+				$row = ['operation' => 1020101, 'taxCode' => 'EUCZ000', 'taxPercents' => 0, 'quantity' => 1];
+				$row['priceItem'] = $this->valueNumber($dep['DepositAmount']);
+				if ($row['priceItem'] > 0)
+					$row['priceItem'] = - $row['priceItem'];
+				$row['taxCalc'] = 0;
+				$row['text'] = 'Odpočet nedaňové zálohy';
+				if (isset($dep['VariableSymbol']))
+					$row['symbol1'] = $this->valueStr($dep['VariableSymbol'], 20);
+				$this->docRows[] = $row;
+			}
+		}
+
+		if (isset($this->srcImpData['TaxedDeposits']))
+		{
+			$taxedDeposits = (isset($this->srcImpData['TaxedDeposits']['TaxedDeposit'][0])) ? $this->srcImpData['TaxedDeposits']['TaxedDeposit'] : $this->srcImpData['TaxedDeposits'];
+			foreach ($taxedDeposits as $dep)
+			{
+				$row = ['operation' => 1020101, 'quantity' => 1];
+				$row['priceItem'] = $this->valueNumber($dep['TaxInclusiveDepositAmount']);
+				if ($row['priceItem'] > 0)
+					$row['priceItem'] = - $row['priceItem'];
+				$row['taxCalc'] = 1;
+				$row['text'] = 'Odpočet daňové zálohy';
+				if (isset($dep['VariableSymbol']))
+					$row['symbol1'] = $this->valueStr($dep['VariableSymbol'], 20);
+
+				if (isset($dep['ClassifiedTaxCategory']['Percent']))
+					$this->checkVat(floatval($dep['ClassifiedTaxCategory']['Percent']), $row);
+
+				$this->docRows[] = $row;
+			}
+		}
 	}
 
 	protected function importPayment()
