@@ -233,10 +233,12 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 		if ($order !== NULL)
 		{
 			if ($mainQuery === 'all')
-				array_push ($q, ' ORDER BY ', implode(', ', $order), $this->sqlLimit ());
+				array_push ($q, ' ORDER BY ', implode(', ', $order));
 			else
-				array_push ($q, " ORDER BY {$tablePrefix}[docStateMain], ", implode(', ', $order), $this->sqlLimit ());
+				array_push ($q, " ORDER BY [ntf] DESC, {$tablePrefix}[docStateMain], [priority], -[proposedDeadline] DESC, [dateTouch]");
 		}
+
+		array_push ($q, $this->sqlLimit ());
 
 		$this->runQuery ($q);
 	}
