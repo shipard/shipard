@@ -105,6 +105,9 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 
 		$tablePersons = $this->app->table ('e10.persons.persons');
 
+		$ckDef = $this->app()->cfgItem('e10.witems.codesKinds.'.$this->codeKindNdx, NULL);
+		$this->data['reportTitle'] = $ckDef['reportPersonTitle'];
+
 		// -- author
 		$authorNdx = $this->app->user()->data ('id');
 		$this->data ['author'] = $this->table->loadItem ($authorNdx, 'e10_persons_persons');
