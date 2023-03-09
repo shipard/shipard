@@ -89,6 +89,9 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 		parent::loadData();
 		$this->loadData_DocumentOwner ();
 		$this->initParams();
+
+		$ckDef = $this->app()->cfgItem('e10.witems.codesKinds.'.$this->codeKindNdx, NULL);
+		$this->data['reportTitle'] = $ckDef['reportPersonTitle'] ?? '';
 	}
 
 	public function loadData2 ()
@@ -106,7 +109,7 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 		$tablePersons = $this->app->table ('e10.persons.persons');
 
 		$ckDef = $this->app()->cfgItem('e10.witems.codesKinds.'.$this->codeKindNdx, NULL);
-		$this->data['reportTitle'] = $ckDef['reportPersonTitle'];
+		$this->data['reportTitle'] = $ckDef['reportPersonTitle'] ?? '';
 
 		// -- author
 		$authorNdx = $this->app->user()->data ('id');
