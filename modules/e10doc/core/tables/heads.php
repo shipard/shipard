@@ -2736,8 +2736,7 @@ class TableHeads extends DbTable
 		array_push($q, 'SELECT * FROM e10doc_base_additions AS a');
 
 		array_push($q, 'WHERE 1');
-
-
+		array_push($q, ' AND docState != %i', 9800);
 
 		if (!utils::dateIsBlank($date))
 		{
