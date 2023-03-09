@@ -49,6 +49,7 @@ class TableCodesKinds extends DbTable
 				'codeType' => $r['codeType'],
 				'reportSwitchTitle' => $r ['reportSwitchTitle'],
 				'reportPersonTitle' => $r ['reportPersonTitle'],
+				'reportPersonOutTitle' => $r ['reportPersonOutTitle'],
 				'showInDocRows' => $r ['showInDocRows'],
 			];
 
@@ -147,6 +148,7 @@ class FormCodeKind extends TableForm
 			$this->addSeparator(self::coH4);
 			$this->addColumnInput ('reportSwitchTitle');
 			$this->addColumnInput ('reportPersonTitle');
+			$this->addColumnInput ('reportPersonOutTitle');
 			$this->addColumnInput ('showInDocRows');
 		$this->closeForm ();
 	}

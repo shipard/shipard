@@ -24,5 +24,15 @@ class ReportWasteOnePersonOut extends \e10pro\reports\waste_cz\ReportWasteOnePer
 	{
 		$this->sendReportNdx = 2701;
 		parent::loadData();
+
+		$ckDef = $this->app()->cfgItem('e10.witems.codesKinds.'.$this->codeKindNdx, NULL);
+		$this->data['reportTitle'] = $ckDef['reportPersonOutTitle'] ?? '';
+	}
+
+	public function loadData2 ()
+	{
+		parent::loadData2();
+		$ckDef = $this->app()->cfgItem('e10.witems.codesKinds.'.$this->codeKindNdx, NULL);
+		$this->data['reportTitle'] = $ckDef['reportPersonOutTitle'] ?? '';
 	}
 }

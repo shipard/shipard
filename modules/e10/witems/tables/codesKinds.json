@@ -12,7 +12,8 @@
 		{"id": "order", "name": "Pořadí", "type": "int"},
 
 		{"id": "reportSwitchTitle", "name": "Titulek pro přepínání v Přehledech", "type": "string", "len": 70},
-		{"id": "reportPersonTitle", "name": "Název přehledu pro zasílání Osobám", "type": "string", "len": 70},
+		{"id": "reportPersonTitle", "name": "Název příjmového přehledu pro zasílání Osobám", "type": "string", "len": 70},
+		{"id": "reportPersonOutTitle", "name": "Název výdejového přehledu pro zasílání Osobám", "type": "string", "len": 70},
 		{"id": "showInDocRows", "name": "Uvádět v řádcích dokladu", "type": "enumInt",
 			"enumValues": {"0": "Ne", "1": "Ano"}},
 
