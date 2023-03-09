@@ -321,6 +321,9 @@ class DocReport extends DocReportBase
 
 				foreach ($row ['rowItemCodesData'] as $ckNdx => $icData)
 				{
+					$ckCfg = $this->app()->cfgItem('e10.witems.codesKinds.'.$ckNdx);
+					if (!isset($ckCfg['showInDocRows']) || $ckCfg['showInDocRows'] === 0)
+						continue;
 					$row ['rowItemCodes'][$ckNdx] = $icData;
 				}
 

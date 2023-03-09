@@ -19,8 +19,8 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 	var $sumData = [];
 	var $itemsData = [];
 
-	var $periodTitleYearBegin = 'Celková množství odpadů, které jsme odebrali v roce ';
-	var $periodTitlePeriodBegin = 'Celková množství odpadů, které jsme odebrali od ';
+	var $periodTitleYearBegin = 'Celková množství, které jsme odebrali v roce ';
+	var $periodTitlePeriodBegin = 'Celková množství, které jsme odebrali od ';
 
 	function init ()
 	{

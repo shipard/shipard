@@ -16,8 +16,8 @@ class ReportWasteOnePersonOut extends \e10pro\reports\waste_cz\ReportWasteOnePer
 		$this->setReportId('e10pro.reports.waste_cz.reportWasteOnePersonOut');
 
     $this->dir = WasteReturnEngine::rowDirOut;
-    $this->periodTitleYearBegin = 'Celková množství odpadů, které jsme dodali v roce ';
-    $this->periodTitlePeriodBegin = 'Celková množství odpadů, které jsme dodali od ';
+    $this->periodTitleYearBegin = 'Celková množství, které jsme dodali v roce ';
+    $this->periodTitlePeriodBegin = 'Celková množství, které jsme dodali od ';
 	}
 
 	public function loadData ()

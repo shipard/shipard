@@ -2,14 +2,19 @@
 	"id": "e10.witems.codesKinds", "sql": "e10_witems_codesKinds", "name": "Druhy kódů položek",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
-		{"id": "shortName", "sql": "shortName", "name": "Zkrácený název", "type": "string", "len": 70},
-		{"id": "fullName", "sql": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 70},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
 
     {"id": "codeType", "name": "Typ kódu", "type": "enumInt",
       "enumCfg": {"cfgItem": "e10.witems.codeTypes", "cfgValue": "", "cfgText": "name"}},
 
 		{"id": "icon", "name": "Ikona", "type": "string", "len": 50},
 		{"id": "order", "name": "Pořadí", "type": "int"},
+
+		{"id": "reportSwitchTitle", "name": "Titulek pro přepínání v Přehledech", "type": "string", "len": 70},
+		{"id": "reportPersonTitle", "name": "Název přehledu pro zasílání Osobám", "type": "string", "len": 70},
+		{"id": "showInDocRows", "name": "Uvádět v řádcích dokladu", "type": "enumInt",
+			"enumValues": {"0": "Ne", "1": "Ano"}},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

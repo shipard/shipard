@@ -817,7 +817,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
       if ($ackDef['codeType'] !== 31)
         continue;
 
-      $enum[$ackNdx]  = $ackDef['sn'];
+      $enum[$ackNdx]  = $ackDef['reportSwitchTitle'];
     }
     return $enum;
   }
