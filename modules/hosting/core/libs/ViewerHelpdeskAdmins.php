@@ -178,6 +178,7 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 			array_push ($q, ' AND [tickets].[dataSource] IN %in', array_keys($qv['ds']));
 
 		// -- fulltext
+		$forceArchive = FALSE;
 		if ($fts != '')
 		{
 			array_push ($q, ' AND (');
@@ -185,9 +186,50 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 			array_push ($q, ' OR [tickets].[text] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ' OR [tickets].[ticketId] LIKE %s', $fts.'%');
 			array_push ($q, ')');
+			$forceArchive = TRUE;
 		}
 
-		$this->queryMain ($q, 'tickets.', ['[priority]', '-[proposedDeadline] DESC', '[dateTouch]']);
+		$tablePrefix = 'tickets.';
+		$order = ['[priority]', '-[proposedDeadline] DESC', '[dateTouch]'];
+		$mainQuery = $this->mainQueryId ();
+
+		// -- active
+		if ($mainQuery === 'active' || $mainQuery === '')
+		{
+			if ($forceArchive)
+			{
+				array_push($q, " AND ({$tablePrefix}[docStateMain] != 4");
+			}
+			else
+			{
+				array_push($q, " AND ({$tablePrefix}[docStateMain] < 4");
+			}
+
+			array_push ($q, ' OR ');
+			array_push ($q, ' EXISTS (SELECT ndx FROM e10_base_notifications WHERE state = 0',
+											' AND tickets.ndx = recIdMain',
+											' AND personDest = %i', $this->app()->userNdx(),
+											' AND tableId = %s', $this->table->tableId());
+			array_push ($q, ')');
+
+			array_push ($q, ')');
+		}
+
+		// -- archive
+		if ($mainQuery === 'archive')
+			array_push ($q, " AND {$tablePrefix}[docStateMain] = %i", 5);
+
+		// trash
+		if ($mainQuery === 'trash')
+			array_push ($q, " AND {$tablePrefix}[docStateMain] = %i", 4);
+
+		if ($order !== NULL)
+		{
+			if ($mainQuery === 'all')
+				array_push ($q, ' ORDER BY ', implode(', ', $order), $this->sqlLimit ());
+			else
+				array_push ($q, " ORDER BY {$tablePrefix}[docStateMain], ", implode(', ', $order), $this->sqlLimit ());
+		}
 
 		$this->runQuery ($q);
 	}
