@@ -153,7 +153,11 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 		array_push ($q, ' LEFT JOIN [e10_persons_persons] AS [authors] ON [tickets].[author] = [authors].ndx');
     array_push ($q, ' LEFT JOIN [hosting_core_dataSources] AS [ds] ON [tickets].[dataSource] = [ds].ndx');
 		array_push ($q, ' WHERE 1');
-		array_push ($q, ' AND [tickets].[dataSource] IN %in', array_keys($this->helpdeskDataSources));
+
+		$enabledDS = array_keys($this->helpdeskDataSources);
+		if ($this->app()->hasRole('admin'))
+			$enabledDS[] = 0;
+		array_push ($q, ' AND [tickets].[dataSource] IN %in', $enabledDS);
 
 		// -- special queries
 		$qv = $this->queryValues ();
@@ -216,6 +220,8 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 		array_push ($qds, ' AND [docState] = %i', 4000);
 		array_push ($qds, ' ORDER BY ds.shortName');
 		$dss = $this->db()->query ($qds)->fetchPairs ('ndx', 'shortName');
+		if ($this->app()->hasRole('admin'))
+			$dss['0'] = 'Bez databáze';
 		$this->qryPanelAddCheckBoxes($panel, $qry, $dss, 'ds', 'Databáze');
 
 		$panel->addContent(['type' => 'query', 'query' => $qry]);
