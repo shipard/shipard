@@ -424,7 +424,7 @@
 	{{#data.additionsExists}}
 		<h4>Poznámky</h4>
 		{{#data.additions}}
-			{{mark}}: {{labelPrefix}} {{identifier}}<br>
+			{{#mark}}{{mark}}: {{/mark}}{{labelPrefix}} {{identifier}}<br>
 		{{/data.additions}}
 		<br/>
 	{{/data.additionsExists}}
