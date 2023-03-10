@@ -113,7 +113,7 @@ class DocReport extends DocReportBase
 			}
 
 			// -- addtions / marks
-			$adds = $this->table->docAdditionsOur($this->recData, $r);
+			$adds = $this->table->docAdditionsOur($this->recData, $r, $this->sendReportNdx);
 			if ($adds !== FALSE)
 			{
 				if (!isset($this->data ['additions']))

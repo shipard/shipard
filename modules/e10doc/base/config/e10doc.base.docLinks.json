@@ -19,6 +19,10 @@
 		},
 		"e10doc-base-additions-itemTypes": {"linkid": "e10doc-base-additions-itemTypes", "name": "Typy položek", "icon": "tables/e10.witems.itemtypes",
 			"sources": [{"table": "e10.witems.itemtypes"}]
+		},
+		"e10doc-base-additions-reports": {
+			"linkid": "e10doc-base-additions-reports", "name": "Povolené výstupní sestavy", "icon": "system/actionPrint",
+			"sources": [{"table": "e10.reports.reports"}]
 		}
 	},
 	"e10.witems.items": {

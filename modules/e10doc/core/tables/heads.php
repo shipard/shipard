@@ -13,6 +13,7 @@ use \Shipard\Form\TableForm;
 use \e10doc\core\libs\DocsModes;
 use \Shipard\Utils\World;
 use \e10doc\core\libs\E10Utils;
+use \e10\base\libs\UtilsBase;
 
 
 CONST docDir_None = 0, docDir_In = 1, docDir_Out = 2;
@@ -2715,7 +2716,7 @@ class TableHeads extends DbTable
 		*/
 	}
 
-	public function docAdditionsOur ($head, $row)
+	public function docAdditionsOur ($head, $row, $sendReportNdx = 0)
 	{
 		$list = [];
 		$allAdditionsTypes = $this->app()->cfgItem ('e10doc.additionsTypes');
@@ -2769,6 +2770,16 @@ class TableHeads extends DbTable
 		foreach ($rows as $r)
 		{
 			$type = $allAdditionsTypes[$r['additionType']];
+
+			if ($sendReportNdx)
+			{
+				$sendReports = UtilsBase::linkedSendReports($this->app(), 'e10doc.base.additions', $r['ndx']);
+				if (count($sendReports))
+				{
+					if (!isset($sendReports[$sendReportNdx]))
+						continue;
+				}
+			}
 
 			$rowMark = $r['rowMark'];
 
