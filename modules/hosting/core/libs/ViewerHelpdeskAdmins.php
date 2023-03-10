@@ -197,7 +197,6 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 		}
 
 		$tablePrefix = 'tickets.';
-		$order = ['[ntf] DESC', '[priority]', '-[proposedDeadline] DESC', '[dateTouch]'];
 		$mainQuery = $this->mainQueryId ();
 
 		// -- active
@@ -230,13 +229,10 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 		if ($mainQuery === 'trash')
 			array_push ($q, " AND {$tablePrefix}[docStateMain] = %i", 4);
 
-		if ($order !== NULL)
-		{
-			if ($mainQuery === 'all')
-				array_push ($q, ' ORDER BY ', implode(', ', $order));
-			else
-				array_push ($q, " ORDER BY [ntf] DESC, {$tablePrefix}[docStateMain], [priority], -[proposedDeadline] DESC, [dateTouch]");
-		}
+		if ($mainQuery === 'all')
+			array_push ($q, " ORDER BY [ntf] DESC, {$tablePrefix}[docStateMain], [priority], -[proposedDeadline] DESC, [dateTouch]");
+		else
+			array_push ($q, " ORDER BY [ntf] DESC, {$tablePrefix}[docStateMain], [priority], -[proposedDeadline] DESC, [dateTouch]");
 
 		array_push ($q, $this->sqlLimit ());
 

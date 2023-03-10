@@ -25,6 +25,7 @@ class ViewerHelpdeskRemote extends TableViewGrid
 
 	public function init ()
 	{
+    $this->fullWidthToolbar = TRUE;
 		parent::init();
 
 		$this->loadNotifications ();
@@ -32,7 +33,6 @@ class ViewerHelpdeskRemote extends TableViewGrid
 		$this->enableDetailSearch = TRUE;
     $this->type = 'form';
 
-    $this->fullWidthToolbar = TRUE;
 		$this->gridEditable = TRUE;
 		$this->enableToolbar = TRUE;
 
@@ -130,6 +130,13 @@ class ViewerHelpdeskRemote extends TableViewGrid
 
 		$q = [];
 		array_push ($q, ' SELECT [tickets].*,');
+
+		array_push ($q, ' (SELECT COUNT(*) FROM e10_base_notifications WHERE state = 0',
+		' AND tickets.ndx = recIdMain',
+		' AND personDest = %i', $this->app()->userNdx(),
+		' AND tableId = %s', $this->table->tableId());
+		array_push ($q, ' LIMIT 1) AS [ntf], ');
+
 		array_push ($q, ' authors.fullName AS authorName');
 		array_push ($q, ' FROM [helpdesk_core_tickets] AS [tickets]');
 		array_push ($q, ' LEFT JOIN [e10_persons_persons] AS [authors] ON [tickets].[author] = [authors].ndx');
@@ -152,8 +159,8 @@ class ViewerHelpdeskRemote extends TableViewGrid
 		if (isset($qv['ticketPriority']))
 			array_push ($q, ' AND [tickets].[priority] IN %in', array_keys($qv['ticketPriority']));
 
-
 		// -- fulltext
+		$forceArchive = FALSE;
 		if ($fts != '')
 		{
 			array_push ($q, ' AND (');
@@ -161,9 +168,48 @@ class ViewerHelpdeskRemote extends TableViewGrid
 			array_push ($q, ' OR [text] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ' OR [tickets].[ticketId] LIKE %s', $fts.'%');
 			array_push ($q, ')');
+			$forceArchive = TRUE;
 		}
 
-		$this->queryMain ($q, 'tickets.', ['-[proposedDeadline] DESC', '[priority]', '[dateTouch]']);
+		$tablePrefix = 'tickets.';
+		$mainQuery = $this->mainQueryId ();
+
+		// -- active
+		if ($mainQuery === 'active' || $mainQuery === '')
+		{
+			if ($forceArchive)
+			{
+				array_push($q, " AND ({$tablePrefix}[docStateMain] != 4");
+			}
+			else
+			{
+				array_push($q, " AND ({$tablePrefix}[docStateMain] < 4");
+			}
+
+			array_push ($q, ' OR ');
+			array_push ($q, ' EXISTS (SELECT ndx FROM e10_base_notifications WHERE state = 0',
+											' AND tickets.ndx = recIdMain',
+											' AND personDest = %i', $this->app()->userNdx(),
+											' AND tableId = %s', $this->table->tableId());
+			array_push ($q, ')');
+
+			array_push ($q, ')');
+		}
+
+		// -- archive
+		if ($mainQuery === 'archive')
+			array_push ($q, " AND {$tablePrefix}[docStateMain] = %i", 5);
+
+		// trash
+		if ($mainQuery === 'trash')
+			array_push ($q, " AND {$tablePrefix}[docStateMain] = %i", 4);
+
+		if ($mainQuery === 'all')
+			array_push ($q, " ORDER BY [ntf] DESC, {$tablePrefix}[docStateMain], [priority], -[proposedDeadline] DESC, [dateTouch]");
+		else
+			array_push ($q, " ORDER BY [ntf] DESC, {$tablePrefix}[docStateMain], [priority], -[proposedDeadline] DESC, [dateTouch]");
+
+		array_push ($q, $this->sqlLimit ());
 
 		$this->runQuery ($q);
 	}
