@@ -398,14 +398,14 @@ class UtilsBase
 		$rows = $app->db->query ($q);
 		foreach ($rows as $r)
 		{
-			$label = ['text' => $r['fullName'], 'class' => 'label label-default'];
+			$label = ['text' => $r['fullName'], 'class' => 'label label-default', 'srNdx' => $r['dstRecId']];
 			if (is_array($toRecId))
 			{
 				$list[$r['srcRecId']][] = $label;
 			}
 			else
 			{
-				$list[] = $label;
+				$list[$r['dstRecId']] = $label;
 			}
 		}
 
