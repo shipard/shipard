@@ -299,6 +299,28 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 			if ($personNdx)
 			{
 				$this->docHead['person'] = $personNdx;
+
+				if ($personNdx)
+					$this->setInboxPersonFrom($personNdx);
+
+				return;
+			}
+
+			// -- create new person
+			$checkIncomingIssues = intval($this->app()->cfgItem('options.experimental.checkIncomingIssues', 0));
+
+			if ($checkIncomingIssues)
+			{
+				$reg = new \e10\persons\libs\register\PersonRegister($this->app());
+				$reg->addDocState = 4000;
+				$reg->addDocStateMain = 2;
+				$reg->addPerson($oid);
+				$personNdx = $reg->personNdx;
+				$this->docHead['person'] = $personNdx;
+
+				if ($personNdx)
+					$this->setInboxPersonFrom($personNdx);
+
 				return;
 			}
 		}
@@ -414,5 +436,29 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 			$tableDocs->dbUpdateRec ($f->recData);
 
 		$this->docRecData = $tableDocs->loadItem($f->recData['ndx']);
+	}
+
+	protected function setInboxPersonFrom($personNdx)
+	{
+		if (!$this->inboxNdx)
+			return;
+
+		$exist = $this->db()->query('SELECT * FROM [e10_base_doclinks] WHERE [srcTableId] = %s', 'wkf.core.issues',
+																' AND [dstTableId] = %s', 'e10.persons.persons',
+																' AND [linkId] = %s', 'wkf-issues-from',
+																' AND [srcRecId] = %i', $this->inboxNdx,
+																' AND [dstRecId] = %i', $personNdx
+																)->fetch();
+
+		if ($exist)
+			return;
+
+		$newLink = [
+			'linkId' => 'wkf-issues-from',
+			'srcTableId' => 'wkf.core.issues', 'srcRecId' => $this->inboxNdx,
+			'dstTableId' => 'e10.persons.persons', 'dstRecId' => $personNdx
+		];
+
+		$this->db()->query ('INSERT INTO e10_base_doclinks ', $newLink);
 	}
 }

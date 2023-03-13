@@ -14,7 +14,6 @@ class Core extends \lib\docDataFiles\DocDataFile
 	var $docHead = [];
 	var $docRows = [];
 	var $replaceDocumentNdx = 0;
-	var $inboxNdx = 0;
 
 
 	protected function date($date)

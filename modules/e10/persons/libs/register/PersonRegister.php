@@ -29,6 +29,9 @@ class PersonRegister extends Utility
   var $personBA = [];
   var $missingBA = [];
 
+  var $addDocState = 1000;
+  var $addDocStateMain = 0;
+
   var $diff = ['msgs' => [], 'updates' => []];
 
   protected function init()
@@ -94,8 +97,8 @@ class PersonRegister extends Utility
 		$newPerson ['person'] = [];
 		$newPerson ['person']['company'] = 1;
 		$newPerson ['person']['fullName'] = $this->registerData['person']['fullName'];
-		$newPerson ['person']['docState'] = 1000;
-		$newPerson ['person']['docStateMain'] = 0;
+		$newPerson ['person']['docState'] = $this->addDocState;
+		$newPerson ['person']['docStateMain'] = $this->addDocStateMain;
 
 		$newPerson ['ids'][] = ['type' => 'oid', 'value' => $this->registerData['person']['oid']];
     if (isset($this->registerData['person']['vatID']) && $this->registerData['person']['vatID'] !== '')

@@ -20,6 +20,8 @@ class DocDataFile extends Utility
 	var $impData = NULL;
 	var $docRecData = NULL;
 
+	var $inboxNdx = 0;
+
 	public function init()
 	{
 	}
