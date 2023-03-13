@@ -195,8 +195,10 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 				$this->docHead['dateDue'] = $this->date($pl['Details']['PaymentDueDate']);
 			if (isset($pl['Details']['VariableSymbol']))
 				$this->docHead['symbol1'] = $this->valueStr($pl['Details']['VariableSymbol'], 20);
-			if (isset($pl['Details']['ConstantSymbol']))
-				$this->docHead['symbol2'] = $this->valueStr($pl['Details']['ConstantSymbol'], 20);
+			if (isset($pl['Details']['SpecificSymbol']))
+				$this->docHead['symbol2'] = $this->valueStr($pl['Details']['SpecificSymbol'], 20);
+			//if (isset($pl['Details']['ConstantSymbol']))
+			//	$this->docHead['symbol3'] = $this->valueStr($pl['Details']['ConstantSymbol'], 20);
 
 			if (isset($pl['Details']['ID']) && isset($pl['Details']['BankCode']))
 				$this->docHead['bankAccount'] = $this->valueStr($pl['Details']['ID'].'/'.$pl['Details']['BankCode'], 20);
