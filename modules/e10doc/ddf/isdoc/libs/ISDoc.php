@@ -336,7 +336,7 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 		return $json;
 	}
 
-	public function createDocument($fromRecData)
+	public function createDocument($fromRecData, $checkNewRec = FALSE)
 	{
 		$this->createImport();
 
@@ -348,6 +348,16 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 
 			$this->docHead = $head;
 		}
+
+		if (!isset($this->docHead['dbCounter']))
+		{
+			$dbCounters = $this->app()->cfgItem ('e10.docs.dbCounters.'.$this->docHead['docType'], ['1' => []]);
+			$this->docHead['dbCounter'] = key($dbCounters);
+		}
+
+		$tableDocs = new \E10Doc\Core\TableHeads ($this->app);
+		if ($checkNewRec)
+			$tableDocs->checkNewRec($this->docHead);
 
 		if (isset($this->docHead['inboxNdx']))
 		{

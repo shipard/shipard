@@ -187,6 +187,14 @@ class IncomingEmail extends Utility
 
 		$this->tableIssues->docsLog ($newMsgNdx);
 
+		$checkIncomingIssues = intval($this->app()->cfgItem('options.experimental.checkIncomingIssues', 0));
+		if ($checkIncomingIssues)
+		{
+			$im = new \wkf\core\libs\CheckIncomingIssue($this->app());
+			$im->setIssue($newMsgNdx);
+			$im->run();
+		}
+
 		return TRUE;
 	}
 

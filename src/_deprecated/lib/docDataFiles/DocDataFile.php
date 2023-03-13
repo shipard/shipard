@@ -70,7 +70,7 @@ class DocDataFile extends Utility
 	{
 	}
 
-	public function createDocument($fromRecData)
+	public function createDocument($fromRecData, $checkNewRec = FALSE)
 	{
 	}
 }

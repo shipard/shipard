@@ -377,6 +377,21 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$e->batchCheck();
 	}
 
+	public function cliNewDocFromAtt()
+	{
+		$paramAttNdx = intval($this->app->arg('attNdx'));
+		if (!$paramAttNdx)
+		{
+			echo "ERROR: missing param `--attNdx`\n";
+			return FALSE;
+		}
+
+		$e = new \e10doc\core\libs\DocFromAttachment($this->app());
+		$e->init();
+		$e->setAttNdx($paramAttNdx);
+		$e->import();
+	}
+
 	public function onCliAction ($actionId)
 	{
 		switch ($actionId)
@@ -386,6 +401,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'docs-checks-wrong-journal': return $this->cliDocsChecksWrongJournal();
 			case 'copy-witems': return $this->cliCopyWitems();
 			case 'validate-persons': return $this->cliValidatePersons();
+			case 'new-doc-from-att': return $this->cliNewDocFromAtt();
 		}
 
 		parent::onCliAction($actionId);
