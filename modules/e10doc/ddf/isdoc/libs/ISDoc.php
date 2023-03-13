@@ -392,6 +392,9 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 			unset($this->docHead['ddfNdx']);
 
 		$this->saveDoc();
+
+		if ($this->inboxNdx && isset($this->docHead['person']) && $this->docHead['person'])
+			$this->setInboxPersonFrom($this->docHead['person']);
 	}
 
 	function saveDoc ()

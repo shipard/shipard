@@ -46,6 +46,7 @@ class CheckIncomingIssue extends Utility
 			$ddfObject = $tableDocDataFiles->ddfObject(NULL, $one['ddfNdx']);
 			if ($ddfObject)
 			{
+        $ddfObject->inboxNdx = $this->issueNdx;
         $nrd = ['inboxNdx' => $this->issueNdx, 'ddfNdx' => $one['ddfNdx'], 'ddfId' => $one['ddfId']];
 				$ddfObject->createDocument($nrd, TRUE);
 			}
