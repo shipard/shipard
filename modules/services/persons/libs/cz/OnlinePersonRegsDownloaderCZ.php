@@ -247,7 +247,7 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
   {
     $street = $src['NU'] ?? '';
     if ($street === '')
-      $street = $src['NU'] ?? '';
+      $street = $src['NCO'] ?? '';
      if (isset($src['CD']))
       $dest['street'] = $street . ' ' . $src['CD'];
      else
