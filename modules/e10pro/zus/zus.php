@@ -443,6 +443,7 @@ class ViewStudents extends \e10\persons\ViewPersonsBase
 			'withoutPID' => ['title' => 'Bez rodného čísla', 'id' => 'withoutPID'],
 			'withoutEmail' => ['title' => 'Bez e-mailu', 'id' => 'withoutEmail'],
 			'badContacts' => ['title' => 'Vadné kontakty', 'id' => 'badContacts'],
+			'withoutContacts' => ['title' => 'Bez kontaktů', 'id' => 'withoutContacts'],
 			'badAddress' => ['title' => 'Vadné adresy', 'id' => 'badAddress'],
 		];
 		$paramsOthers = new \E10\Params ($this->app());
@@ -528,21 +529,32 @@ class ViewStudents extends \e10\persons\ViewPersonsBase
 		$testNewPersons = intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
 		if ($testNewPersons)
 		{
-			if (isset ($qv['others']['badContacts']))
+			if (isset ($qv['others']['withoutContacts']))
 			{
 				array_push ($q, ' AND persons.ndx IN ');
 				array_push ($q, ' (select * FROM (');
 				array_push ($q, ' SELECT person FROM e10_persons_personsContacts WHERE docState = 4000 GROUP BY person HAVING count(*) < 2');
-				array_push ($q, ' ) AS [persMainAddrDups] )');
+				array_push ($q, ' ) AS [persWithoutContacts] )');
 			}
+
+			if (isset ($qv['others']['badContacts']))
+			{
+				array_push ($q, ' AND persons.ndx IN ');
+				array_push ($q, ' (select * FROM (');
+				array_push ($q, ' SELECT person FROM e10_persons_personsContacts WHERE flagContact = 1 ',
+														'AND docState = 4000 AND contactEmail = %s', '', ' AND contactPhone = %s', '',
+														'GROUP BY person HAVING count(*) > 0');
+				array_push ($q, ' ) AS [persBadContacts] )');
+			}
+
 			if (isset ($qv['others']['badAddress']))
 			{
 				array_push ($q, ' AND persons.ndx IN ');
 				array_push ($q, ' (select * FROM (');
 				array_push ($q, ' SELECT person FROM e10_persons_personsContacts WHERE flagAddress = 1 AND flagMainAddress = 1 ',
 														'AND docState = 4000 AND adrStreet = %s', '', ' AND adrCity = %s', '',
-														'GROUP BY person HAVING count(*) < 2');
-				array_push ($q, ' ) AS [persMainAddrDups] )');
+														'GROUP BY person HAVING count(*) > 0');
+				array_push ($q, ' ) AS [persBadAddress] )');
 			}
 		}
 	}
