@@ -62,6 +62,22 @@ class PersonsVirtualGroup extends Utility
 			$emails[] = $r['valueString'];
 		}
 
+		$testNewPersons = intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
+		if ($testNewPersons)
+		{
+			$q = [];
+			array_push($q, 'SELECT contacts.* FROM [e10_persons_personsContacts] AS contacts');
+			array_push($q, ' WHERE [contacts].[person] = %i', $personNdx);
+			array_push($q, ' AND [contacts].[flagContact] = %i', 1);
+			array_push($q, ' AND [contacts].[contactEmail] != %s', '');
+			array_push($q, ' AND [contacts].[docState] = %i', 4000);
+			$rows = $this->db()->query($q);
+			foreach ($rows as $r)
+			{
+				$emails[] = $r['contactEmail'];
+			}
+		}
+
 		return $emails;
 	}
 }
