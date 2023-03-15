@@ -394,6 +394,26 @@ class TablePersons extends DbTable
 		return $properties;
 	}
 
+	public function loadContacts ($personNdx)
+	{
+		$list = [];
+
+		$q = [];
+		array_push($q, 'SELECT contacts.* FROM [e10_persons_personsContacts] AS contacts');
+		array_push($q, ' WHERE [contacts].[person] = %i', $personNdx);
+		array_push($q, ' AND [contacts].[flagContact] = %i', 1);
+		array_push($q, ' AND [contacts].[contactEmail] != %s', '');
+		array_push($q, ' AND [contacts].[docState] = %i', 4000);
+		array_push($q, ' ORDER BY [contacts].[systemOrder], [contacts].[ndx]');
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$list[] = $r->toArray();
+		}
+
+		return $list;
+	}
+
 	public function loadEmailsForReport ($persons, $reportClass)
 	{
 		if (!count($persons))

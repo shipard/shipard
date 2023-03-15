@@ -50,13 +50,29 @@ class MobileFormETK extends FormDocumentSimple
 		if ($this->recDataVyuka['typ'] == 1)
 		{
 			$vyuka = $this->app->loadItem($this->recData['vyuka'], 'e10pro.zus.vyuky');
+			$testNewPersons = intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
+
+			/** @var \e10\persons\TablePersons */
 			$tablePersons = $this->app->table ('e10.persons.persons');
-			$studentProperties = $tablePersons->loadProperties ($vyuka['student']);
 			//$this->addLine(['text' => 'testík => '.json_encode($studentProperties[$vyuka['student']]), 'class' => 'e10-error block padd5']);
 
-			$this->addLine(['text' => 'Kontaktní údaje', 'class' => 'h2 block']);
-			$this->addContactInfo ($studentProperties[$vyuka['student']], 'e10-zus-zz-1', 'e10-zus-zz');
-			$this->addContactInfo ($studentProperties[$vyuka['student']], 'e10-zus-zz-2', 'e10-zus-zz2');
+			if ($testNewPersons)
+			{
+				$contacts = $tablePersons->loadContacts($vyuka['student']);
+				$this->addLine(['text' => 'Kontaktní údaje', 'class' => 'h2 block']);
+				if (isset($contacts[0]))
+					$this->addContactInfo_NP ($contacts[0]);
+				if (isset($contacts[1]))
+					$this->addContactInfo_NP ($contacts[1]);
+			}
+			else
+			{
+				$studentProperties = $tablePersons->loadProperties ($vyuka['student']);
+				$this->addLine(['text' => 'Kontaktní údaje', 'class' => 'h2 block']);
+				$this->addContactInfo ($studentProperties[$vyuka['student']], 'e10-zus-zz-1', 'e10-zus-zz');
+				$this->addContactInfo ($studentProperties[$vyuka['student']], 'e10-zus-zz-2', 'e10-zus-zz2');
+			}
+
 		}
 
 		if ($this->recDataVyuka['typ'] == 0)
@@ -92,6 +108,20 @@ class MobileFormETK extends FormDocumentSimple
 		$this->addLine($line);
 	}
 
+	protected function addContactInfo_NP ($contact)
+	{
+		if ($contact['contactName'] !== '')
+			$line[] = ['text' => $contact['contactName'], 'class' => '', 'icon' => 'system/iconUser'];
+		if ($contact['contactPhone'] !== '')
+			$line[] = ['text' => $contact['contactPhone'], 'class' => '', 'icon' => 'system/iconPhone', 'url' => 'tel:'.$contact['contactPhone']];
+		if ($contact['contactEmail'] !== '')
+			$line[] = ['text' => $contact['contactEmail'], 'class' => '', 'icon' => 'system/iconEmail', 'url' => 'mailto:'.$contact['contactEmail']];
+
+		$line[] = ['text' => '', 'class' => 'block'];
+
+		$this->addLine($line);
+	}
+
 	protected function addContactInfo2 ($properties, $type, $base, &$line)
 	{
 		if (!isset($properties[$type]))
@@ -117,6 +147,16 @@ class MobileFormETK extends FormDocumentSimple
 				$line[] = $cci;
 			}
 		}
+	}
+
+	protected function addContactInfo2_NP ($contact, &$line)
+	{
+		//if ($contact['contactName'] !== '')
+		//	$line[] = ['text' => $contact['contactName'], 'class' => 'pull-right', 'icon' => 'system/iconUser'];
+		if ($contact['contactPhone'] !== '')
+			$line[] = ['text' => $contact['contactPhone'], 'class' => 'pull-right', 'icon' => 'system/iconPhone', 'data-url' => 'tel:'.$contact['contactPhone']];
+		//if ($contact['contactEmail'] !== '')
+		//	$line[] = ['text' => $contact['contactEmail'], 'class' => 'pull-right', 'icon' => 'system/iconEmail', 'data-url' => 'mailto:'.$contact['contactEmail']];
 	}
 
 	protected function addPastHours()
@@ -182,12 +222,21 @@ class MobileFormETK extends FormDocumentSimple
 			$colId = 'kolektivni_pritomnost-'.$studentNdx.'-'.$s['studium'];
 			$this->recData[$colId] = 1;
 
+			$testNewPersons = intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
 
-			$studentProperties = $tablePersons->loadProperties ($studentNdx);
-			$label = [['text' => $s['studentName'/*'studiumNazev'*/], 'icon' => 'icon-user', 'class' => 'e10-bold']];
-			$this->addContactInfo2 ($studentProperties[$studentNdx], 'e10-zus-zz-1', 'e10-zus-zz', $label);
-			//$this->addContactInfo2 ($studentProperties[$studentNdx], 'e10-zus-zz-2', 'e10-zus-zz2', $label);
-
+			if ($testNewPersons)
+			{
+				$contacts = $tablePersons->loadContacts ($studentNdx);
+				$label = [['text' => $s['studentName'/*'studiumNazev'*/], 'icon' => 'icon-user', 'class' => 'e10-bold']];
+				if (isset($contacts[0]))
+					$this->addContactInfo2_NP ($contacts[0], $label);
+			}
+			else
+			{
+				$studentProperties = $tablePersons->loadProperties ($studentNdx);
+				$label = [['text' => $s['studentName'/*'studiumNazev'*/], 'icon' => 'icon-user', 'class' => 'e10-bold']];
+				$this->addContactInfo2 ($studentProperties[$studentNdx], 'e10-zus-zz-1', 'e10-zus-zz', $label);
+			}
 			$this->addInputEnum ($colId, $attEnum, ['label' => $label]);
 		}
 
