@@ -2,7 +2,7 @@
 
 namespace e10doc\cmnbkp\libs;
 use e10\utils;
-
+use \e10doc\core\libs\E10Utils;
 
 /**
  * Class InitStatesBalanceEngine
@@ -78,6 +78,13 @@ class InitStatesBalanceEngine extends \E10\Utility
 		$docH ['linkId'] = $linkId;
 		$docH ['docKind'] = $dk['ndx'];
 		$docH ['activity'] = 'ocpBalInSt';
+
+		$homeCurrency = utils::homeCurrency($this->app(), $docH['dateAccounting']);
+		if ($docH ['currency'] !== $homeCurrency)
+		{
+			$er = E10Utils::exchangeRate($this->app(), $docH['dateAccounting'], $homeCurrency, $docH ['currency']);
+			$docH ['exchangeRate'] = $er;
+		}
 
 		return $docH;
 	}
