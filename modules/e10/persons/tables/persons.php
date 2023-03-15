@@ -404,7 +404,7 @@ class TablePersons extends DbTable
 		array_push($q, ' AND [contacts].[flagContact] = %i', 1);
 		array_push($q, ' AND [contacts].[contactEmail] != %s', '');
 		array_push($q, ' AND [contacts].[docState] = %i', 4000);
-		array_push($q, ' ORDER BY [contacts].[systemOrder], [contacts].[ndx]');
+		array_push($q, ' ORDER BY [contacts].[onTop], [contacts].[systemOrder], [contacts].[ndx]');
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
