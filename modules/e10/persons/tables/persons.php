@@ -433,7 +433,27 @@ class TablePersons extends DbTable
 
 		$sql = 'SELECT valueString FROM [e10_base_properties] where [tableid] = %s AND [recid] IN %in AND [property] = %s AND [group] = %s ORDER BY ndx';
 		$emailsRows = $this->db()->query ($sql, 'e10.persons.persons', $persons, 'email', 'contacts')->fetchPairs ();
-		return implode (', ', $emailsRows);
+		if (count($emailsRows))
+			return implode (', ', $emailsRows);
+
+		if ($testNewPersons)
+		{
+			$q = [];
+			array_push($q, 'SELECT contacts.* FROM [e10_persons_personsContacts] AS contacts');
+			array_push($q, ' WHERE [contacts].[person] IN %in', $persons);
+			array_push($q, ' AND [contacts].[flagContact] = %i', 1);
+			array_push($q, ' AND [contacts].[contactEmail] != %s', '');
+			array_push($q, ' AND [contacts].[docState] = %i', 4000);
+			$rows = $this->db()->query($q);
+			foreach ($rows as $r)
+			{
+				$emails[] = $r['contactEmail'];
+			}
+			if (count($emails))
+				return implode (', ', $emails);
+		}
+
+		return '';
 	}
 
 	public function createHeader ($recData, $options)
