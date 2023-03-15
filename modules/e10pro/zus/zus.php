@@ -441,7 +441,9 @@ class ViewStudents extends \e10\persons\ViewPersonsBase
 		// -- others
 		$chbxOthers = [
 			'withoutPID' => ['title' => 'Bez rodného čísla', 'id' => 'withoutPID'],
-			'withoutEmail' => ['title' => 'Bez e-mailu', 'id' => 'withoutEmail']
+			'withoutEmail' => ['title' => 'Bez e-mailu', 'id' => 'withoutEmail'],
+			'badContacts' => ['title' => 'Vadné kontakty', 'id' => 'badContacts'],
+			'badAddress' => ['title' => 'Vadné adresy', 'id' => 'badAddress'],
 		];
 		$paramsOthers = new \E10\Params ($this->app());
 		$paramsOthers->addParam ('checkboxes', 'query.others', ['items' => $chbxOthers]);
@@ -520,6 +522,28 @@ class ViewStudents extends \e10\persons\ViewPersonsBase
 				'WHERE persons.ndx = e10_base_properties.recid AND tableid = %s', 'e10.persons.persons',
 				' AND [group] = %s', 'ids', ' AND [property] = %s', 'pid',
 				')');
+		}
+
+
+		$testNewPersons = intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
+		if ($testNewPersons)
+		{
+			if (isset ($qv['others']['badContacts']))
+			{
+				array_push ($q, ' AND persons.ndx IN ');
+				array_push ($q, ' (select * FROM (');
+				array_push ($q, ' SELECT person FROM e10_persons_personsContacts WHERE docState = 4000 GROUP BY person HAVING count(*) < 2');
+				array_push ($q, ' ) AS [persMainAddrDups] )');
+			}
+			if (isset ($qv['others']['badAddress']))
+			{
+				array_push ($q, ' AND persons.ndx IN ');
+				array_push ($q, ' (select * FROM (');
+				array_push ($q, ' SELECT person FROM e10_persons_personsContacts WHERE flagAddress = 1 AND flagMainAddress = 1 ',
+														'AND docState = 4000 AND adrStreet = %s', '', ' AND adrCity = %s', '',
+														'GROUP BY person HAVING count(*) < 2');
+				array_push ($q, ' ) AS [persMainAddrDups] )');
+			}
 		}
 	}
 

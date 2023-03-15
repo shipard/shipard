@@ -986,6 +986,8 @@ class ViewDetailPersons extends TableViewDetail
 		$properties = $this->table->loadProperties ($this->item['ndx']);
 		if (isset ($properties[$this->item['ndx']]['contacts']))
 			return $properties[$this->item['ndx']]['contacts'];
+
+		return [];
 	}
 }
 

@@ -4,6 +4,7 @@
 namespace e10\base\libs;
 use \e10\base\TableAttachments;
 
+
 class UtilsBase
 {
 	static function classificationParams (\Shipard\Table\DbTable $table)
@@ -430,5 +431,79 @@ class UtilsBase
 		$header .= "From: =?UTF-8?B?".base64_encode($fromName)."?=<".$fromAdress.">\n";
 		//$header .= "To: =?UTF-8?B?".base64_encode($toName)."?=<".$toAdress.">\n";
 		return mail ($toAdress, $subjectEncoded, $message, $header);
+	}
+
+	static function getPropertiesTable ($app, $toTableId, $toRecId)
+	{
+		$multiple = FALSE;
+		$texy = new \lib\core\texts\Texy ($app);
+
+		if (is_array($toRecId))
+		{
+			if (!count($toRecId))
+				return [];
+			$multiple = TRUE;
+			$recs = implode (', ', $toRecId);
+			$sql = "SELECT * FROM [e10_base_properties] where [tableid] = %s AND [recid] IN ($recs) ORDER BY ndx";
+		}
+		else
+		{
+			$recId = intval($toRecId);
+			$sql = "SELECT * FROM [e10_base_properties] where [tableid] = %s AND [recid] = $recId ORDER BY ndx";
+		}
+
+		$allProperties = $app->cfgItem ('e10.base.properties', array());
+		$properties = array ();
+
+		// --load from table
+		$query = $app->db->query ($sql, $toTableId);
+		foreach ($query as $row)
+		{
+			$loaded = false;
+			$p = $allProperties [$row['property']];
+			if (isset ($p ['type']))
+			{
+				if ($p ['type'] == 'memo')
+				{
+					if ($row ['valueMemo'] === NULL)
+						continue;
+					$texy->setOwner ($row);
+					$txt = $texy->process ($row ['valueMemo']);
+					$oneProp = array ('ndx' => $row ['ndx'], 'property' => $row ['property'], 'group' => $row ['group'], 'value' => $txt, 'type' => 'memo', 'name' => $p ['name']);
+					$loaded = true;
+				}
+				else
+				if ($p ['type'] == 'date')
+				{
+					$oneProp = array ('ndx' => $row ['ndx'], 'property' => $row ['property'], 'group' => $row ['group'], 'value' => $row ['valueDate'], 'type' => 'memo', 'name' => $p ['name']);
+					$loaded = true;
+				}
+				else
+				if ($p ['type'] == 'text')
+				{
+					$oneProp = array ('ndx' => $row ['ndx'], 'property' => $row ['property'], 'group' => $row ['group'], 'value' => $row ['valueString'], 'type' => 'text', 'name' => $p ['name']);
+					$loaded = true;
+				}
+				else
+				if ($p ['type'] == 'enum')
+				{
+					$oneProp = array ('ndx' => $row ['ndx'], 'property' => $row ['property'], 'group' => $row ['group'], 'value' => $p ['enum'][$row ['valueString']]['fullName'],
+							'type' => 'enum', 'name' => $p ['name']);
+					$loaded = true;
+				}
+
+				if ($loaded && $row ['note'] !== '')
+					$oneProp ['note'] = $row ['note'];
+			}
+			if (!$loaded)
+				$oneProp = array ('ndx' => $row ['ndx'], 'property' => $row ['property'], 'group' => $row ['group'], 'value' => $p [$row ['valueString']], 'type' => 'string', 'name' => $p ['name']);
+
+			if ($multiple)
+				$properties [$row ['recid']][$row['group']][$row['property']][] = $oneProp;
+			else
+				$properties [$row['group']][$row['property']][] = $oneProp;
+		}
+
+		return $properties;
 	}
 }

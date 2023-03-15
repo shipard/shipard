@@ -2,7 +2,7 @@
 
 namespace e10pro\zus;
 use \e10\utils;
-
+use \e10\base\libs\UtilsBase;
 
 /**
  * Class ModuleServices
@@ -256,6 +256,89 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		return TRUE;
 	}
 
+	public function importContacts()
+	{
+		$tableContacts = $this->app()->table ('e10.persons.personsContacts');
+
+		$q = [];
+		array_push ($q, 'SELECT * FROM e10_persons_persons');
+		array_push ($q, ' WHERE 1');
+		//array_push ($q, ' AND [ndx] = %i', 2126);
+		array_push ($q, ' ORDER BY [ndx]');
+
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$personNdx = $r['ndx'];
+			echo "* ".$r['fullName']."\n";
+
+			$properties = UtilsBase::getPropertiesTable ($this->app(), 'e10.persons.persons', $personNdx);
+
+			if (isset($properties['e10-zus-zz-1']))
+			{
+				$this->importContactsAdd($tableContacts,
+					$properties['e10-zus-zz-1']['e10-zus-zz-jmeno'][0]['value'] ?? '',
+					$properties['e10-zus-zz-1']['e10-zus-zz-email'][0]['value'] ?? '',
+					$properties['e10-zus-zz-1']['e10-zus-zz-telefon'][0]['value'] ?? '',
+					'zz1',
+					$personNdx
+				);
+			}
+
+			if (isset($properties['e10-zus-zz-2']))
+			{
+				$this->importContactsAdd($tableContacts,
+					$properties['e10-zus-zz-2']['e10-zus-zz2-jmeno'][0]['value'] ?? '',
+					$properties['e10-zus-zz-2']['e10-zus-zz2-email'][0]['value'] ?? '',
+					$properties['e10-zus-zz-2']['e10-zus-zz2-telefon'][0]['value'] ?? '',
+					'zz2',
+					$personNdx
+				);
+			}
+
+			$this->db()->query('DELETE FROM [e10_base_properties] WHERE [tableid] = %s', 'e10.persons.persons',
+												 ' AND [group] IN %in', ['e10-zus-zz-1', 'e10-zus-zz-2'],
+												 ' AND [recid] = %i', $personNdx);
+
+			//print_r($properties);
+		}
+	}
+
+	protected function importContactsAdd(\e10\persons\TablePersonsContacts $tableContacts, $name, $email, $phone, $role, $personNdx)
+	{
+		$newAddress = [
+			'person' => $personNdx,
+
+			'flagAddress' => 0,
+			'flagMainAddress' => 0,
+			'flagOffice' => 0,
+			'onTop' => 0,
+			'flagContact' => 1,
+
+			'contactName' => $name,
+			'contactEmail' => $email,
+			'contactPhone' => $phone,
+
+			'contactRole' => $role,
+
+			'docState' => 4000,
+			'docStateMain' => 2,
+		];
+
+		$tableContacts->dbInsertRec($newAddress);
+
+		if ($name !== '')
+		{
+			$this->db()->query('DELETE FROM [e10_base_properties] WHERE [tableid] = %s', 'e10.persons.persons',
+				' AND [group] = %s', 'contacts', ' AND [property] = %s', 'email',
+				' AND [valueString] = %s', $email,
+				' AND [recid] = %i', $personNdx);
+			$this->db()->query('DELETE FROM [e10_base_properties] WHERE [tableid] = %s', 'e10.persons.persons',
+				' AND [group] = %s', 'contacts', ' AND [property] = %s', 'phone',
+				' AND [valueString] = %s', $phone,
+				' AND [recid] = %i', $personNdx);
+		}
+	}
 
 	public function onCliAction ($actionId)
 	{
@@ -265,6 +348,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'send-entries-emails': return $this->sendEntriesEmails();
 			case 'repair-fees': return $this->repairFees();
 			case 'repair-invoices': return $this->repairInvoices();
+			case 'import-contacts': return $this->importContacts();
 		}
 
 		parent::onCliAction($actionId);
