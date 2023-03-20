@@ -2,6 +2,12 @@
 	"TS0505B": {
 		"fn": "Zigbee RGB+CCT light",
 		"modelID": "TS0505B",
-		"iotType": "light", "iotSubType": "ledPanel", "iotOptions": ["br", "ww", "rgb"]
+		"iotKind": "light", "iotSubKind": "ledPanel", "iotOptions": ["br", "ww", "rgb"]
+	},
+
+	"TS0011": {
+		"fn": "Smart light switch - 1 gang",
+		"modelID": "TS0011",
+		"iotKind": "socket", "iotSubKind": "socket"
 	}
 }
