@@ -454,7 +454,8 @@ class NodeServerCfgUpdater extends Utility
 				$proxy['insideDef'] = $idef;
 				$proxies[] = $proxy;
 
-				$zigbee2mqttTopics[] = (isset($macDeviceCfg['zigbee2MQTTBaseTopic']) && $macDeviceCfg['zigbee2MQTTBaseTopic'] != '') ? $macDeviceCfg['zigbee2MQTTBaseTopic'] : 'zigbee2mqtt';
+				$z2mTopic = (isset($macDeviceCfg['zigbee2MQTTBaseTopic']) && $macDeviceCfg['zigbee2MQTTBaseTopic'] != '') ? $macDeviceCfg['zigbee2MQTTBaseTopic'] : 'zigbee2mqtt';
+				$zigbee2mqttTopics[$z2mTopic] = ['serverNdx' => $r['ndx']];
 			}
 		}
 
