@@ -19,7 +19,7 @@ class ZigbeeInfoAnalyzer extends Utility
 		$this->data = $data;
 	}
 
-	protected function doEndDevice($data, $addToDatabase = TRUE)
+	protected function doEndDevice($serverNdx, $data, $addToDatabase = TRUE)
 	{
 		/*
 		{
@@ -86,6 +86,7 @@ class ZigbeeInfoAnalyzer extends Utility
 						'friendlyId' => Str::upToLen($data['friendly_name'] ?? '', 60),
 						'deviceVendor' => Str::upToLen($vendor['id'] ?? '', 20),
 						'deviceModel' => Str::upToLen($model['id'] ?? '', 40),
+						'nodeServer' => intval($serverNdx),
 					];
 					$this->db()->query('UPDATE [mac_iot_devices] SET ', $update, ' WHERE [ndx] = %i', $iotDeviceNdx);
 					$this->tableIotDevices->docsLog($iotDeviceNdx);
@@ -97,6 +98,7 @@ class ZigbeeInfoAnalyzer extends Utility
 						'friendlyId' => Str::upToLen($data['friendly_name'] ?? '', 60),
 						'hwId' => Str::upToLen($data['ieee_address'] ?? '', 24),
 						'lan' => 0,
+						'nodeServer' => intval($serverNdx),
 						'deviceType' => 'zigbee',
 						'deviceVendor' => Str::upToLen($vendor['id'] ?? '', 20),
 						'deviceModel' => Str::upToLen($model['id'] ?? '', 40),
@@ -105,7 +107,9 @@ class ZigbeeInfoAnalyzer extends Utility
 
 					//error_log("--NEW: ".json_encode($newItem));
 					$iotDeviceNdx = $this->tableIotDevices->dbInsertRec($newItem);
-					$this->tableIotDevices->docsLog($iotDeviceNdx);
+					$newRecData = $this->tableIotDevices->docsLog($iotDeviceNdx);
+
+					$this->tableIotDevices->checkAfterSave2($newRecData);
 				}
 			}
 			else
@@ -154,7 +158,7 @@ class ZigbeeInfoAnalyzer extends Utility
 				if (isset($msg['type']) && $msg['type'] === 'Coordinator')
 					continue;
 
-				$this->doEndDevice($msg);
+				$this->doEndDevice($this->data['serverId'] ?? 0, $msg);
 			}
 		}
 

@@ -1,14 +1,18 @@
 {
 	"oli-esp32-evb": {
-		"fn": "ESP32-EVB"
+		"fn": "ESP32-EVB",
+		"iotKind": "shib", "iotSubKind": "shib"
 	},
 	"oli-esp32-gw-rev-c": {
-		"fn": "ESP32-GW Rev. C"
+		"fn": "ESP32-GW Rev. C",
+		"iotKind": "shib", "iotSubKind": "shib"
 	},
 	"oli-esp32-gw-rev-f": {
-		"fn": "ESP32-GW Rev. F"
+		"fn": "ESP32-GW Rev. F",
+		"iotKind": "shib", "iotSubKind": "shib"
 	},
 	"oli-esp32-poe": {
-		"fn": "ESP32-POE"
+		"fn": "ESP32-POE",
+		"iotKind": "shib", "iotSubKind": "shib"
 	}
 }

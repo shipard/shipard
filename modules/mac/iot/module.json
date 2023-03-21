@@ -9,7 +9,7 @@
 
 	  "topics", "sensors", "sensorsValues", "sensorsValuesHistory",
 	  "controls", "scPlacements",
-	  "scenes", 
+	  "scenes",
 		"scenariosSchedule", "scenariosActions",
 		"users"
   ],
@@ -19,7 +19,7 @@
 	  {"id": "+mac.iot.ioPortValueStyle", "file": "mac.iot.ioPortValueStyle.json"},
 	  {"id": "+mac.iot.values.types", "file": "mac.iot.values.types.json"},
 		{"id": "+mac.iot.devices.types", "file": "mac.iot.devices.types.json"},
-		
+
 		{"id": "+mac.iot.ioPorts.types", "file": "ioPorts/ioPorts.json"},
 		{"id": "+mac.iot.ioPorts.i2cIOExpanders", "file": "ioPorts/i2cIOExpanders.json"},
 		{"id": "+mac.iot.ioPorts.i2cIOExpandersDirs", "file": "ioPorts/i2cIOExpandersDirs.json"},
@@ -29,7 +29,9 @@
 		{"id": "+mac.iot.ioPorts.serialLineMode", "file": "ioPorts/serialLineMode.json"},
 
 	  {"id": "+mac.iot.setups.types", "file": "mac.iot.setups.types.json"},
-		
+
+		{"id": "+mac.iot.cams.types", "file": "mac.iot.cams.types.json"},
+
 		{"id": "+mac.iot.events.onEventTypes", "file": "mac.iot.events.onEventTypes.json"},
 		{"id": "+mac.iot.events.doEventTypes", "file": "mac.iot.events.doEventTypes.json"},
 		{"id": "+mac.iot.events.onWhenTypes", "file": "mac.iot.events.onWhenTypes.json"},
@@ -37,7 +39,6 @@
 		{"id": "+mac.iot.devices.kinds", "file": "mac.iot.devices.kinds.json"},
 		{"id": "+mac.iot.devices.vendors.shipard", "file": "devices/shipard/vendors.json"},
 		{"id": "+mac.iot.devices.vendors.zigbee", "file": "devices/zigbee/vendors.json"},
-		{"id": "+mac.iot.devices.types", "file": "iotDeviceTypes.json"},
 	  {"id": "+mac.iot.topics.types", "file": "mac.iot.topics.types.json"},
 	  {"id": "+mac.iot.things.itemsTypes", "file": "mac.iot.things.itemsTypes.json"},
 	  {"id": "+mac.iot.topicTypes", "file": "mac.iot.topicTypes.json"},

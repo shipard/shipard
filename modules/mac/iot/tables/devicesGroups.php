@@ -87,12 +87,15 @@ class ViewDevicesGroups extends TableView
 	{
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['t1'] = $item['fullName'];
+		$listItem ['i1'] = ['text' => '#'.$item['ndx']];
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
 		$t2 = [];
+		if ($item['id'] !== '')
+			$t2[] = ['text' => $item['id'], 'class' => 'label label-default'];
 		if ($item['placeName'])
 			$t2[] = ['text' => $item['placeName'], 'class' => 'label label-default', 'icon' => 'tables/e10.base.places'];
-		
+
 		$listItem ['t2'] = $t2;
 
 		return $listItem;
@@ -103,7 +106,7 @@ class ViewDevicesGroups extends TableView
 		$fts = $this->fullTextSearch ();
 
 		$q [] = 'SELECT [devicesGroups].*,';
-		array_push ($q, ' places.fullName AS placeName');		
+		array_push ($q, ' places.fullName AS placeName');
 		array_push ($q, ' FROM [mac_iot_devicesGroups] AS [devicesGroups]');
 		array_push ($q, ' LEFT JOIN [e10_base_places] AS places ON devicesGroups.place = places.ndx');
 

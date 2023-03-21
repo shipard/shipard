@@ -9,5 +9,20 @@
 		"fn": "Smart light switch - 1 gang",
 		"modelID": "TS0011",
 		"iotKind": "socket", "iotSubKind": "socket"
+	},
+	"TS0012": {
+		"fn": "Smart light switch - 2 gang",
+		"modelID": "TS0012",
+		"iotKind": "socket", "iotSubKind": "socket"
+	},
+	"TS0042": {
+		"fn": "Wireless switch with 2 buttons",
+		"modelID": "TS0042",
+		"iotKind": "remote", "iotSubKind": "remote"
+	},
+	"TS0044": {
+		"fn": "Wireless switch with 4 buttons",
+		"modelID": "TS0044",
+		"iotKind": "remote", "iotSubKind": "remote"
 	}
 }

@@ -1,6 +1,7 @@
 {
 	"esp32-generic": {
 		"fn": "ESP32",
+		"iotKind": "shib", "iotSubKind": "shib",
 		"io": {
 			"pins": {
 				"p0": {"title": "GPIO0 / ADC2 CH1", "hwnr": 0, "flags": ["d", "in", "out", "hwInt"]},
@@ -29,7 +30,7 @@
 				"p35": {"title": "GPIO35 / ADC1 CH7", "hwnr": 35, "flags": ["d", "in", "hwInt"]},
 				"p36": {"title": "GPIO36 / ADC1 CH0", "hwnr": 36, "flags": ["d", "in", "hwInt"]},
 				"p39": {"title": "GPIO39 / ADC1 CH3", "hwnr": 39, "flags": ["d", "in", "hwInt"]}
-			}		
+			}
 		}
 	}
 }

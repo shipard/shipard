@@ -29,12 +29,15 @@ class IotDeviceCfgUpdater extends Utility
 		$this->iotDevicesUtils = new \mac\iot\libs\IotDevicesUtils($this->app());
 	}
 
-	public function update($iotDeviceRecData)
+	public function update($iotDeviceRecData, &$update)
 	{
 		$this->iotDeviceRecData = $iotDeviceRecData;
 		$this->iotDeviceCfg = $this->tableDevices->iotDeviceCfgFromRecData($iotDeviceRecData, TRUE);
 		$this->deviceSettings = json_decode($this->iotDeviceRecData['deviceSettings'], TRUE);
 		$this->iotDeviceModel = $this->iotDevicesUtils->deviceModel($this->iotDeviceRecData);
 		$this->cfgRecData = $this->iotDevicesUtils->getIotDeviceCfg($iotDeviceRecData['ndx']);
+
+		if ($iotDeviceRecData['deviceKind'] !== $this->iotDeviceModel['iotKind'])
+			$update['deviceKind'] = $this->iotDeviceModel['iotKind'];
 	}
 }

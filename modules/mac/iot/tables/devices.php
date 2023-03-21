@@ -10,13 +10,6 @@ use \Shipard\Form\TableForm, \Shipard\Table\DbTable, \e10\TableView, \e10\utils,
  */
 class TableDevices extends DbTable
 {
-	/*
-	CONST
-		cttIoTThingAction = 0,
-		cttIotBoxIOPort = 4,
-		cttMQTTTopic = 12;
-	*/
-
 	public function __construct ($dbmodel)
 	{
 		parent::__construct ($dbmodel);
@@ -25,27 +18,25 @@ class TableDevices extends DbTable
 
 	public function checkAfterSave2 (&$recData)
 	{
-		/*
-		if ($recData['docState'] == 9800)
-		{ // trash
-			$this->db()->query('DELETE FROM [mac_lan_devicesCfgScripts] WHERE [device] = %i', $recData['ndx']);
-			$this->db()->query('DELETE FROM [mac_lan_devicesCfgNodes] WHERE [device] = %i', $recData['ndx']);
-		}
-		*/
-
 		if ($recData['docStateMain'] >= 0)
 		{
+			$update = [];
 			if ($recData['deviceType'] === 'shipard')
 			{
 				$ibcu = new \mac\iot\libs\IotDeviceCfgUpdaterIotBox($this->app());
 				$ibcu->init();
-				$ibcu->update($recData);
+				$ibcu->update($recData, $update);
 			}
 			elseif ($recData['deviceType'] === 'zigbee')
 			{
 				$ibcu = new \mac\iot\libs\IotDeviceCfgUpdaterZigbee($this->app());
 				$ibcu->init();
-				$ibcu->update($recData);
+				$ibcu->update($recData, $update);
+			}
+
+			if (count($update))
+			{
+				$this->db()->query('UPDATE [mac_iot_devices] SET ', $update, ' WHERE [ndx] = %i', $recData['ndx']);
 			}
 		}
 
@@ -65,14 +56,22 @@ class TableDevices extends DbTable
 		$hdr = parent::createHeader ($recData, $options);
 
 		$hdr ['info'][] = ['class' => 'title', 'value' => $recData ['fullName']];
-		$hdr ['info'][] = ['class' => 'info', 'value' => '#'.$recData['ndx'].'.'.$recData['friendlyId']];
+		$hdr ['info'][] = [
+			'class' => 'info', 'value' =>
+			[
+				['text' => '#'.$recData['ndx'].'.'.$recData['friendlyId'], 'class' => 'pull-right'],
+				['text' => $recData['deviceTopic'], 'class' => 'e10-small'],
+			]
+		];
 
 		return $hdr;
 	}
 
 	public function tableIcon ($recData, $options = NULL)
 	{
-		//return $this->app()->cfgItem ('mac.control.controlsKinds.'.$recData['controlKind'].'.icon', 'x-cog');
+		$icon = $this->app()->cfgItem ('mac.iot.devices.kinds.'.$recData['deviceKind'].'.icon', NULL);
+		if ($icon)
+			return $icon;
 
 		return parent::tableIcon($recData, $options);
 	}
@@ -180,12 +179,12 @@ class TableDevices extends DbTable
 			{
 				$pin = $ep;
 
-				$dir = intval($portCfg['dir']);
+				$dir = intval($portCfg['dir'] ?? 0);
 
 				$pin['flags'][] = ($dir === 0) ? 'out' : 'in';
 				$pin['title'] = /*$portCfg['i2cBusPortId'] . ' → ' .*/ $r['portId'] . ' → ' . $ep['id'];
 				$pin['expPortId'] = $r['portId'];
-				$pinId = $portCfg['i2cBusPortId'] . '.' . $r['portId'] . '.' . $ep['id'];
+				$pinId = /*$portCfg['i2cBusPortId']*/$r['portId'] . '.' . $r['portId'] . '.' . $ep['id'];
 
 				$gpioLayout['pins'][$pinId] = $pin;
 			}
@@ -225,6 +224,21 @@ class TableDevices extends DbTable
 
 		return $res;
 	}
+
+	public function refreshDataModels()
+	{
+		$q [] = 'SELECT [iotDevices].*';
+		array_push ($q, ' FROM [mac_iot_devices] AS [iotDevices]');
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND [docState] != %i', 9800);
+
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$recData = $r->toArray();
+			$this->checkAfterSave2($recData);
+		}
+	}
 }
 
 
@@ -233,13 +247,13 @@ class TableDevices extends DbTable
  */
 class ViewDevices extends TableView
 {
-	var ?\mac\iot\libs\IotDevicesUtils $iotDevicesUtils = NULL;
+	//var ?\mac\iot\libs\IotDevicesUtils $iotDevicesUtils = NULL;
 
 	public function init ()
 	{
 		parent::init();
 
-		$this->iotDevicesUtils = new \mac\iot\libs\IotDevicesUtils($this->app());
+		//$this->iotDevicesUtils = new \mac\iot\libs\IotDevicesUtils($this->app());
 
 		$this->enableDetailSearch = TRUE;
 
@@ -251,26 +265,23 @@ class ViewDevices extends TableView
 		$listItem ['pk'] = $item ['ndx'];
 		$icon = $this->table->tableIcon ($item);
 
-		$deviceTypeCfg = $this->app()->cfgItem('mac.iot.devices.types.'.$item['deviceType']);
-		$iotDeviceModel = $this->iotDevicesUtils->deviceModel($item);
-		$iotDeviceType = NULL;
-		$iotDeviceSubType = NULL;
-
-		if (isset($iotDeviceModel['iotType']))
-			$iotDeviceType = $this->app()->cfgItem('mac.iot.devices.types.'.$iotDeviceModel['iotType'], NULL);
-
-		if ($iotDeviceType && isset($iotDeviceModel['iotSubType']))
-			$iotDeviceSubType = $iotDeviceType['subTypes'][$iotDeviceModel['iotSubType']] ?? NULL;
-
-		if ($iotDeviceSubType && isset($iotDeviceSubType['icon']))
-			$icon = $iotDeviceSubType['icon'];
+		$deviceTypeCfg = $this->app()->cfgItem('mac.iot.devices.types.'.$item['deviceType'], NULL);
+		$deviceKindCfg = $this->app()->cfgItem('mac.iot.devices.kinds.'.$item['deviceKind'], NULL);
 
 		$listItem ['i1'] = ['text' => '#'.$item['ndx'] /*.'.'.substr($item['uid'], 0, 3).'...'.substr($item['uid'],-3)*/, 'class' => 'id'];
 		$listItem ['t1'] = $item['fullName'];
 		$listItem ['icon'] = $icon;
 
-		//$flags = [];
-		//$flags[] = ['text' => $deviceTypeCfg['sn'].'____', 'class' => 'label label-danger'];
+		$dkLabel = NULL;
+		if ($deviceKindCfg)
+		{
+			$dkLabel = ['text' => $deviceKindCfg['fn'], 'class' => 'label label-default'];
+			if ($deviceTypeCfg)
+				$dkLabel['suffix'] = $deviceTypeCfg['sc'];
+		}
+
+		if ($dkLabel)
+			$t2[] = $dkLabel;
 
 		$t2[] = ['text' => $item['friendlyId'], 'class' => 'label label-default'];
 		if ($item['friendlyId'] !== $item['hwId'])
@@ -280,6 +291,12 @@ class ViewDevices extends TableView
 			$t2[] = ['text' => $item['placeName'], 'class' => 'label label-default', 'icon' => 'tables/e10.base.places'];
 
 		$listItem ['t2'] = $t2;
+
+		$listItem ['t3'] = [];
+		if ($item['uiName'] !== '')
+			$listItem ['t3'][] = ['text' => $item['uiName'], 'class' => ''];
+
+		$listItem ['t3'][] = ['text' => $item['deviceTopic'], 'class' => 'e10-off'];
 
 		return $listItem;
 	}
@@ -299,6 +316,7 @@ class ViewDevices extends TableView
 		{
 			array_push ($q, ' AND (');
 			array_push ($q, ' [iotDevices].[fullName] LIKE %s', '%'.$fts.'%');
+			array_push ($q, ' OR [iotDevices].[uiName] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ' OR [iotDevices].[friendlyId] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ' OR [iotDevices].[hwId] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ')');
@@ -338,10 +356,13 @@ class FormDevice  extends TableForm
 					$this->addSeparator(self::coH2);
 
 					$this->addColumnInput ('fullName');
+					$this->addColumnInput ('uiName');
 					$this->addColumnInput ('friendlyId');
 					$this->addColumnInput ('hwId');
 					$this->addColumnInput ('place');
 					$this->addColumnInput ('lan');
+
+					$this->addColumnInput ('nodeServer');
 
 					$this->addSeparator(self::coH2);
 					$this->addSubColumns('deviceSettings');

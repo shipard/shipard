@@ -1,11 +1,13 @@
 {
 	"zigbee": {
 		"fn": "Zigbee",
-		"sn": "Zigbee"
+		"sn": "Zigbee",
+		"sc": "zgb"
 	},
 	"shipard": {
 		"fn": "Shipard IotBox",
 		"sn": "IotBox",
+		"sc": "shib",
 		"useIOPorts": 1
 	}
 }

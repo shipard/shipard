@@ -1,12 +1,97 @@
 {
-	"light": {
-		"fn": "Světlo"
-	},
-
-	"controller": {
-		"fn": "Ovladač"
-	}
-
-
+  "light": {
+    "fn": "Osvětlení",
+    "icon": "iotDevices/light",
+    "options": {
+      "br": {
+        "fn": "Jas"
+      },
+      "ct": {
+        "fn": "Barevná teplota"
+      },
+      "rgb": {
+        "fn": "Barva"
+      }
+    },
+    "subTypes": {
+      "lightbulb": {
+        "fn": "Žárovka",
+        "icon": "iotDevices/light"
+      },
+      "ledPanel": {
+        "fn": "LED panel",
+        "icon": "iotDevices/light"
+      }
+    }
+  },
+  "blind": {
+    "fn": "Roleta",
+    "icon": "iotDevices/blind",
+    "subTypes": {
+      "blind": {
+        "fn": "Roleta",
+        "icon": "iotDevices/blind"
+      }
+    }
+  },
+  "motion": {
+    "fn": "Pohybové čidlo",
+    "icon": "iotDevices/motion",
+    "subTypes": {
+      "motion": {
+        "fn": "Pohybové čidlo",
+        "icon": "iotDevices/motion"
+      }
+    }
+  },
+  "remote": {
+    "fn": "Dálkový ovladač",
+    "icon": "iotDevices/remote",
+    "subTypes": {
+      "remote": {
+        "fn": "Dálkový ovladač",
+        "icon": "iotDevices/remote"
+      }
+    }
+  },
+  "encoder": {
+    "fn": "Encoder",
+    "icon": "iotDevices/encoder",
+    "subTypes": {
+      "encoder": {
+        "fn": "Enkodér",
+        "icon": "iotDevices/encoder"
+      }
+    }
+  },
+  "socket": {
+    "fn": "Socket",
+    "icon": "iotDevices/socket",
+    "subTypes": {
+      "socket": {
+        "fn": "Zásuvka",
+        "icon": "iotDevices/socket"
+      }
+    }
+  },
+  "sensor": {
+    "fn": "Sensor",
+    "icon": "iotDevices/sensor",
+    "subTypes": {
+      "sensor": {
+        "fn": "Senzor",
+        "icon": "iotDevices/sensor"
+      }
+    }
+  },
+  "shib": {
+    "fn": "IoT Box",
+    "icon": "tables/mac.iot.devices",
+    "subTypes": {
+      "shib": {
+        "fn": "IoT Box",
+        "icon": "tables/mac.iot.devices"
+      }
+    }
+  }
 }
-

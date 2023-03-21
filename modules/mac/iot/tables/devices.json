@@ -4,8 +4,11 @@
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 
 		{"id": "fullName", "name": "Úplný název", "type": "string", "len": 120},
+		{"id": "uiName", "name": "Název pro uživatelské rozhraní", "type": "string", "len": 80},
+
 		{"id": "friendlyId", "name": "ID", "type": "string", "len": 60},
 		{"id": "hwId", "name": "HW ID", "type": "string", "len": 24},
+		{"id": "deviceTopic", "name": "MQTT topic", "type": "string", "len": 120},
 
 		{"id": "lan", "name": "Síť", "type": "int", "reference": "mac.lan.lans"},
 		{"id": "place", "name": "Místo", "type": "int", "reference": "e10.base.places"},
@@ -20,6 +23,8 @@
 			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": ""}},
 
 		{"id": "deviceSettings", "name": "Nastavení", "type": "subColumns"},
+
+		{"id": "nodeServer", "name": "Řídící server", "type": "int", "reference": "mac.lan.devices", "comboViewer": "shipardNodes"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

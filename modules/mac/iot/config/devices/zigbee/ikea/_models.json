@@ -2,50 +2,50 @@
 	"LED1836G9": {
 		"fn": "TRADFRI LED bulb E26/E27 806 lumen, dimmable, warm white",
 		"modelID": "TRADFRI bulb E27 WW 806lm",
-		"iotType": "light", "iotSubType": "lightbulb", "iotOptions": ["br", "ww"]
+		"iotKind": "light", "iotSubKind": "lightbulb", "iotOptions": ["br", "ww"]
 	},
 	"LED1936G5": {
 		"fn": "TRADFRI LED globe-bulb E27 470 lumen, dimmable, white spectrum, opal white",
 		"modelID": "TRADFRIbulbG125E27WSopal470lm",
-		"iotType": "light", "iotSubType": "lightbulb", "iotOptions": ["br", "ww"]
+		"iotKind": "light", "iotSubKind": "lightbulb", "iotOptions": ["br", "ww"]
 	},
 	"L1529": {
 		"fn": "FLOALT LED light panel, dimmable, white spectrum (60x60 cm)",
 		"modelID": "FLOALT panel WS 60x60",
-		"iotType": "light", "iotSubType": "ledPanel", "iotOptions": ["br", "ww"]
+		"iotKind": "light", "iotSubKind": "ledPanel", "iotOptions": ["br", "ww"]
 	},
 
 	"E2001/E2002": {
 		"fn": "STYRBAR remote control N2",
 		"modelID": "Remote Control N2",
-		"iotType": "remote", "iotSubType": "remote"
+		"iotKind": "remote", "iotSubKind": "remote"
 	},
 	"E1812": {
 		"fn": "TRADFRI shortcut button",
 		"modelID": "TRADFRI SHORTCUT Button",
-		"iotType": "remote", "iotSubType": "remote"
+		"iotKind": "remote", "iotSubKind": "remote"
 	},
 	"E1744": {
 		"fn": "SYMFONISK sound controller",
 		"modelID": "SYMFONISK Sound Controller",
-		"iotType": "encoder", "iotSubType": "encoder"
+		"iotKind": "encoder", "iotSubKind": "encoder"
 	},
 
 	"E1525/E1745": {
 		"fn": "TRADFRI motion sensor",
 		"modelID": "TRADFRI motion sensor",
-		"iotType": "motion", "iotSubType": "motion"
+		"iotKind": "motion", "iotSubKind": "motion"
 	},
 
 	"E1603/E1702/E1708": {
 		"fn": "TRADFRI control outlet",
 		"modelID": "TRADFRI control outlet",
-		"iotType": "socket", "iotSubType": "socket"
+		"iotKind": "socket", "iotSubKind": "socket"
 	},
 
 	"E1757": {
 		"fn": "FYRTUR roller blind",
 		"modelID": "FYRTUR block-out roller blind",
-		"iotType": "blind", "iotSubType": "blind", "iotOptions": ["pos"]
+		"iotKind": "blind", "iotSubKind": "blind", "iotOptions": ["pos"]
 	}
 }

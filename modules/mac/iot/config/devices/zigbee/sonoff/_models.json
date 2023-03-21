@@ -2,6 +2,6 @@
 	"SNZB-02": {
 		"fn": "Temperature and humidity sensor",
 		"modelID": "SNZB-02",
-		"iotType": "sensor", "iotSubType": "sensor"
+		"iotKind": "sensor", "iotSubKind": "sensor"
 	}
 }

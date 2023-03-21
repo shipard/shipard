@@ -25,7 +25,7 @@ class IotDeviceCfgUpdaterIotBox extends \mac\iot\libs\IotDeviceCfgUpdater
 		$counter = 0;
 		$usedPks = [];
 		if (isset($this->iotDeviceCfg['fixedIOPorts']))
-		{	
+		{
 			foreach ($this->iotDeviceCfg['fixedIOPorts'] as $fpid => $fixedIoPort)
 			{
 				$counter++;
@@ -73,7 +73,7 @@ class IotDeviceCfgUpdaterIotBox extends \mac\iot\libs\IotDeviceCfgUpdater
 		}
 		else
 		{
-			$this->db()->query('DELETE FROM [mac_iot_devicesIOPorts] ', 
+			$this->db()->query('DELETE FROM [mac_iot_devicesIOPorts] ',
 				'WHERE [iotDevice] = %i', $this->iotDeviceRecData['ndx'], '  AND fpid != %s', '');
 		}
 	}
@@ -198,7 +198,7 @@ class IotDeviceCfgUpdaterIotBox extends \mac\iot\libs\IotDeviceCfgUpdater
 					if ($columnEnabled === FALSE)
 					{
 						continue;
-					}	
+					}
 
 					$pinCfg = isset($gpioLayout['pins'][$value]) ? $gpioLayout['pins'][$value] : NULL;
 					if ($pinCfg)
@@ -249,7 +249,7 @@ class IotDeviceCfgUpdaterIotBox extends \mac\iot\libs\IotDeviceCfgUpdater
 			if (isset($ioPortTypeCfg['dataModel']))
 				$ioPortProperties = array_merge($ioPortProperties, $ioPortTypeCfg['dataModel']);
 
-			/*	
+			/*
 			if ($portTypeId === 'input/binary')
 			{
 				$this->dataModel['properties'][$uioPort['portId']] = [
@@ -264,24 +264,27 @@ class IotDeviceCfgUpdaterIotBox extends \mac\iot\libs\IotDeviceCfgUpdater
 			}*/
 
 
-			if ($ioPortProperties['eventType'] === 'readerValue')
+			if (isset($ioPortProperties['eventType']) && $ioPortProperties['eventType'] === 'readerValue')
 			{
 				$ioPortProperties['valueTopic'] = $uioPort['mqttTopic'];
-				
+
 			}
 
 			$this->dataModel['properties'][$uioPort['portId']] = $ioPortProperties;
-		}	
+		}
 	}
 
-	public function update($iotDeviceRecData)
+	public function update($iotDeviceRecData, &$update)
 	{
-		parent::update($iotDeviceRecData);
+		parent::update($iotDeviceRecData, $update);
 
 		$this->checkDeviceIOPorts();
 		$this->updateDeviceIOPortsTopics();
 		$this->createIotBoxCfg();
 		$this->createDataModel();
+
+		if ($iotDeviceRecData['deviceTopic'] !== $this->dataModel['deviceTopic'])
+			$update['deviceTopic'] = $this->dataModel['deviceTopic'];
 
 		$finalCfg = [
 			'dataModel' => $this->dataModel,

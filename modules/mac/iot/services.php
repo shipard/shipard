@@ -38,4 +38,22 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			$tableUsers->dbInsertRec($newItem);
 		}
 	}
+
+	protected function iotDeviceRefreshDM()
+	{
+		/** @var \mac\iot\TableDevices $tableDevices */
+		$tableDevices = $this->app->table('mac.iot.devices');
+		$tableDevices->refreshDataModels();
+	}
+
+	public function onCliAction ($actionId)
+	{
+		switch ($actionId)
+		{
+			case 'iot-devices-refresh-dm': return $this->iotDeviceRefreshDM();
+		}
+
+		parent::onCliAction($actionId);
+	}
+
 }
