@@ -25,6 +25,11 @@
 		"modelID": "TRADFRI SHORTCUT Button",
 		"iotKind": "remote", "iotSubKind": "remote"
 	},
+	"E1766": {
+		"fn": "TRADFRI open/close remote",
+		"modelID": "E1766",
+		"iotKind": "remote", "iotSubKind": "remote"
+	},
 	"E1744": {
 		"fn": "SYMFONISK sound controller",
 		"modelID": "SYMFONISK Sound Controller",

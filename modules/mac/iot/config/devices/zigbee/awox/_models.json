@@ -1,0 +1,7 @@
+{
+	"33943/33944/33946": {
+		"fn": "33943/33944/33946",
+		"modelID": "TLSR82xx",
+		"iotKind": "light", "iotSubKind": "lightbulb", "iotOptions": ["br", "ww"]
+	}
+}
