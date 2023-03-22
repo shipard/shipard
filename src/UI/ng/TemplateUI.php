@@ -7,6 +7,8 @@ namespace Shipard\UI\ng;
  */
 class TemplateUI extends \Shipard\Utils\TemplateCore
 {
+  var $uiData = [];
+
   public function app() {return $this->app;}
 
 	function resolveCmd ($tagCode, $tagName, $params)
@@ -18,7 +20,10 @@ class TemplateUI extends \Shipard\Utils\TemplateCore
       /** @var \Shipard\UI\ng\TemplateUIControl $o */
       $o = $this->app()->createObject($uiControlCfg['classId']);
       if ($o)
+      {
+        $o->uiTemplate = $this;
         return $o->render($tagName, $params);
+      }
     }
 
     if ($tagName === 'uiWidget')

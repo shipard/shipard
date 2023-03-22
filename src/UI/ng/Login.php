@@ -20,23 +20,30 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 	{
 		$this->mode = $this->app->requestPath(2);
 
-		$headers = utils::getAllHeaders();
-
-		if (isset($headers['e10-device-id']))
-			$this->deviceId = $headers['e10-device-id'];
-		else
-			$this->deviceId = $this->app->testCookie ('_shp_did');
-
-		if ($this->deviceId === '')
+		if ($this->mode === 'set-workplace')
 		{
-			return;
+			$workplaceId = $this->app->requestPath(3);
+			$this->app->setCookie ('_shp_gwid', $workplaceId, time() + 10 * 365 * 86400);
+
+			$redirTo = $this->app->urlProtocol . $_SERVER['HTTP_HOST']. $this->app->urlRoot . '/ui/login';
+			$lpid = 4;
+			while ($this->app->requestPath($lpid) !== '')
+				$redirTo .= '/'.$this->app->requestPath($lpid++);
+
+			header ('Location: '.$redirTo);
+			die();
 		}
 
-		$this->workplace = $this->app->searchWorkplace($this->deviceId);
+		$headers = utils::getAllHeaders();
+
+		$workplaceGID = $this->app->testCookie ('_shp_gwid');
+		if ($workplaceGID !== '')
+			$this->workplace = $this->app->searchWorkplaceByGID($workplaceGID);
 
 		if (!$this->workplace)
 			return;
 
+		/*
 		if (isset($this->workplace['users']))
 		{
 			$q[] = 'SELECT persons.fullName, persons.firstName, persons.lastName, persons.login FROM e10_persons_persons AS persons';
@@ -49,12 +56,44 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 				$this->users[] = $r->toArray();
 			}
 		}
+		*/
 
 		// -- user info
 		$this->pageInfo['userInfo'] = [];
 	}
 
 	public function createContentCodeInside ()
+	{
+		if ($this->mode === 'workplace')
+			return $this->createContentCodeInside_Workplace();
+
+		$c = '';
+
+		$userValue = $this->app->cfgItem ('autoLoginUser', FALSE);
+		$userValueParam = ($userValue) ? " value='".utils::es($userValue)."'": '';
+		$passwordValue = $this->app->cfgItem ('autoLoginPassword', FALSE);
+		$passwordValueParam = ($passwordValue) ? " value='".utils::es($passwordValue)."'": '';
+
+		$c .= "<form class='e10-mui-login-form' method='POST' action='{$this->app->urlRoot}/user/login-check/ui'>";
+		if ($this->app->testGetParam ("from", NULL) != NULL)
+			$c .= "<div class='m e10-error'>chybné jméno nebo heslo</div>";
+
+		$c .= "<label for='e10-login-user'>Email</label><input type='email' name='login' id='e10-login-user'$userValueParam>";
+		$c .= "<label for='e10-login-password'>Heslo</label><input type='password' name='password' id='e10-login-password'$passwordValueParam>";
+
+		$referer = $this->loginReferer();
+		$c .= "<input type='hidden' name='from' value='$referer'>";
+
+		$c .= "<div class='b'>";
+		$c .= "<button type='submit' class='btn btn-primary'>Přihlásit</button>";
+		$c .= '</div>';
+
+		$c .= '</form>';
+
+		return $c;
+	}
+
+	public function createContentCodeInside_Workplace ()
 	{
 		$c = '';
 
@@ -68,7 +107,7 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 			$c .= "</div>";
 		}
 		else
-		if (count($this->users))
+		if (count($this->users) > 100)
 		{
 			$c .= "<div class='e10-mui-login-users'>";
 			foreach ($this->users as $user)
@@ -92,29 +131,7 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 
 			$c .= '</div>';
 		}
-		else
-		{
-			$userValue = $this->app->cfgItem ('autoLoginUser', FALSE);
-			$userValueParam = ($userValue) ? " value='".utils::es($userValue)."'": '';
-			$passwordValue = $this->app->cfgItem ('autoLoginPassword', FALSE);
-			$passwordValueParam = ($passwordValue) ? " value='".utils::es($passwordValue)."'": '';
 
-			$c .= "<form class='e10-mui-login-form' method='POST' action='{$this->app->urlRoot}/user/login-check/ui'>";
-			if ($this->app->testGetParam ("from", NULL) != NULL)
-				$c .= "<div class='m e10-error'>chybné jméno nebo heslo</div>";
-
-			$c .= "<label for='e10-login-user'>Email</label><input type='email' name='login' id='e10-login-user'$userValueParam>";
-			$c .= "<label for='e10-login-password'>Heslo</label><input type='password' name='password' id='e10-login-password'$passwordValueParam>";
-
-			$referer = $this->loginReferer();
-			$c .= "<input type='hidden' name='from' value='$referer'>";
-
-			$c .= "<div class='b'>";
-			$c .= "<button type='submit' class='btn btn-primary'>Přihlásit</button>";
-			$c .= '</div>';
-
-			$c .= '</form>';
-		}
 		return $c;
 	}
 

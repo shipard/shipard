@@ -2,6 +2,7 @@
 
 namespace Shipard\UI\ng;
 use \Shipard\Utils\Utils;
+use \Shipard\Utils\Json;
 use \e10\ui\TableUIs;
 
 
@@ -10,9 +11,6 @@ use \e10\ui\TableUIs;
  */
 class AppPageUI extends \Shipard\UI\ng\AppPageBlank
 {
-  var $uiCfg = NULL;
-  var $uiRecData = NULL;
-
   var \e10\ui\TableUIs $tableUIs;
 
   protected function init()
@@ -32,9 +30,22 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
     $template->data['url_path_'.$this->app()->requestPath (2)] = 1;
     $template->data['url_path_'.$this->app()->requestPath (2).'_active'] = ' active';
     $template->data['userImg'] = $this->app()->user()->data('picture');
-
+    $template->data['wss'] = array_values($this->wss);
+    $template->data['wssDefaultNdx'] = intval(key($this->wss));
     $template->loadTemplate ('e10pro.templates.basic', 'page.mustache', $this->uiRecData['template']);
-    return $template->renderTemplate();
+    $c = $template->renderTemplate();
+
+    if (isset($template->uiData['iotElementsMap']))
+      unset($template->uiData['iotElementsMap']);
+    if (isset($template->uiData['iotElementsMapSIDs']))
+      unset($template->uiData['iotElementsMapSIDs']);
+
+    $c .= "<script>";
+    $c .= "var uiData = ".Json::lint($template->uiData).";";
+    $c .= "(() => {shc.iot.initIoT ();})();";
+    $c .= "</script>";
+
+    return $c;
   }
 
   public function createContentCodeInside ()

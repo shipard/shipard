@@ -39,6 +39,7 @@ class TableWorkplaces extends DbTable
 			$w = [
 					'ndx' => $r['ndx'], 'id' => $r['id'], 'name' => $r ['name'], 'users' => [],
 					'cashBox' => $r['cashBox'], 'centre' => $r['centre'], 'useTerminal' => $r['useTerminal'],
+					'gid' => $r['gid'],
 					'printers' => ['default' => $r['printerDefault'], 'pos' => $r['printerPOS'], 'labels' => $r['printerLabels'],
 					'devices' => [], 'allowedFrom' => []]
 			];
@@ -160,6 +161,8 @@ class FormWorkplace extends TableForm
 			$this->addColumnInput ('printerLabels');
 			$this->addList ('doclinks', '', TableForm::loAddToFormLayout);
 			$this->addColumnInput ('allowedFrom');
+
+			$this->addColumnInput ('gid');
 		$this->closeForm ();
 	}
 }

@@ -1,0 +1,15 @@
+{
+	"dstFileName": "test.js",
+	"srcFiles": [
+		{"fileName": "server.js"},
+		{"fileName": "mqtt.js"},
+		{"fileName": "client.js"},
+		{"fileName": "clientIoT.js"},
+
+		{"fileName": "widgets/widget.js"},
+		{"fileName": "widgets/terminals/documentCore.js"},
+		{"fileName": "widgets/terminals/cashBox.js"},
+
+		{"fileName": "main.js"}
+	]
+}

@@ -46,6 +46,8 @@ class Router extends Utility
 
 	public function run ()
 	{
+		$this->app()->ngg = 1;
+
 		header ("Cache-control: no-store");
 
 		$this->app->mobileMode = TRUE;
@@ -78,8 +80,6 @@ class Router extends Utility
 		{
 			if (!$this->app->checkUserRights (NULL, 'user'))
 				return $this->createLoginRequest ();
-
-			//touch (__APP_DIR__.'/tmp/api/access/'.$this->app->user->data ['id'].'_'.$_SERVER ['REMOTE_ADDR'].'_'.$this->app->deviceId);
 
 			$uiCfg = $this->app()->cfgItem('e10.ui.uis.'.$first, NULL);
 			if ($uiCfg)

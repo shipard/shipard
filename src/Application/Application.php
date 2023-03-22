@@ -27,6 +27,7 @@ class Application extends \Shipard\Application\ApplicationCore
 	var $appCfg;
 	var $printMode = FALSE;
 	var $mobileMode = FALSE;
+	var $ngg = 0;
 	var $remote = '';
 	var $appSkeleton;
 	var $requestPath;
@@ -576,6 +577,16 @@ class Application extends \Shipard\Application\ApplicationCore
 
 		if ($this->deviceId !== '')
 			$this->workplace = $this->searchWorkplace ($this->deviceId);
+		else
+		{
+			$workplaceGID = $this->testCookie ('_shp_gwid');
+			if ($workplaceGID !== '')
+			{
+				$wkp = $this->searchWorkplaceByGID($workplaceGID);
+				if ($wkp)
+					$this->workplace = $wkp;
+			}
+		}
 
 		$userParams = $this->testCookie ('e10-user-params');
 		if ($userParams !== '')
@@ -588,6 +599,14 @@ class Application extends \Shipard\Application\ApplicationCore
 
 	public function searchWorkplace ($deviceId)
 	{
+		$workplaceGID = $this->testCookie ('_shp_gwid');
+		if ($workplaceGID !== '')
+		{
+			$wkp = $this->searchWorkplaceByGID($workplaceGID);
+			if ($wkp)
+				return $wkp;
+		}
+
 		$founded = FALSE;
 
 		$workplaces = $this->cfgItem('e10.workplaces', FALSE);
@@ -595,7 +614,7 @@ class Application extends \Shipard\Application\ApplicationCore
 			return FALSE;
 		foreach ($workplaces as $w)
 		{
-			if (isset($w['devices']) && !in_array($deviceId, $w['devices']))
+			if (isset($w['devices']) && count($w['devices']) && !in_array($deviceId, $w['devices']))
 				continue;
 
 			if (isset($w['allowedFrom']) && count($w['allowedFrom']))
@@ -619,6 +638,41 @@ class Application extends \Shipard\Application\ApplicationCore
 		}
 
 		return $founded;
+	}
+
+	public function searchWorkplaceByGID ($gid)
+	{
+		$workplaces = $this->cfgItem('e10.workplaces', NULL);
+		if (!$workplaces)
+			return NULL;
+
+		foreach ($workplaces as $w)
+		{
+			if (!isset($w['gid']) || $w['gid'] !== $gid)
+				continue;
+
+			return $w;
+			/*
+			if (isset($w['allowedFrom']) && count($w['allowedFrom']))
+			{
+				$enabled = FALSE;
+				forEach ($w['allowedFrom'] as $af)
+				{
+					if ($af === substr($_SERVER['REMOTE_ADDR'], 0, strlen($af)))
+					{
+						$enabled = TRUE;
+						break;
+					}
+				}
+				if ($enabled === FALSE)
+					continue;
+
+				return $w;
+			}
+			*/
+		}
+
+		return NULL;
 	}
 
 	public function detectParams ()

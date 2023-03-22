@@ -119,7 +119,9 @@ class WidgetPane extends \Shipard\UI\Core\Widget
 				";
 		if ($fullCode)
 			$c .= '</div>';
-		$c .= "<script>\$(function () {e10WidgetInit('{$this->widgetId}');});</script>";
+
+		if (!$this->app()->ngg)
+			$c .= "<script>\$(function () {e10WidgetInit('{$this->widgetId}');});</script>";
 
 		return $c;
 	}

@@ -9,16 +9,124 @@ use \Shipard\Utils\Json;
  */
 class UIControl extends \Shipard\UI\ng\TemplateUIControl
 {
+  /** @var \mac\iot\TableDevices */
+  var $iotDevicesTable;
+
+  protected function defaultWssNdx()
+  {
+    return strval($this->uiTemplate->data['wssDefaultNdx']);
+  }
+
+  protected function iotDeviceSID($deviceNdx)
+  {
+    return $this->uiTemplate->uiData['iotElementsMap']['DE'.$deviceNdx]['sid'] ?? 'NULL-SID-'.$deviceNdx;
+  }
+
+  protected function registerIotDevice($iotDeviceRecData)
+  {
+    $wssNdx = $this->defaultWssNdx();
+    $deviceNdx = 'DE'.$iotDeviceRecData['ndx'];
+    $deviceTopic = $iotDeviceRecData['deviceTopic'];
+    if (!isset($this->uiTemplate->uiData['iotElementsMap'][$deviceNdx]))
+    {
+      $deviceSID = base_convert(mt_rand(1000, 9999), 10, 36).'_iot';
+      while(isset($this->uiTemplate->uiData['iotElementsMapSIDs'][$deviceSID]))
+        $deviceSID = base_convert(mt_rand(1000, 9999), 10, 36).'_iot';
+
+      $this->uiTemplate->uiData['iotElementsMapSIDs'][$deviceSID] = $deviceNdx;
+      $this->uiTemplate->uiData['iotElementsMap'][$deviceNdx] = [
+        'sid' => $deviceSID,
+        'deviceTopic' => $deviceTopic,
+      ];
+      $this->uiTemplate->uiData['iotSubjects'][$deviceSID] = [
+        'topic' => $deviceTopic, 'wss' => $wssNdx,
+      ];
+
+      $this->uiTemplate->uiData['iotTopicsMap'][$deviceTopic] = ['sid' => $deviceSID, 'type' => 'device', 'wss' => $wssNdx, 'elids' => []];
+    }
+
+    return $this->uiTemplate->uiData['iotElementsMap'][$deviceNdx];
+  }
+
+  protected function registerIotSensor($iotSensorRecData)
+  {
+    $wssNdx = $this->defaultWssNdx();
+    $sensorNdx = 'SN'.$iotSensorRecData['ndx'];
+    $sensorTopic = $iotSensorRecData['srcMqttTopic'];
+    if (!isset($this->uiTemplate->uiData['iotElementsMap'][$sensorNdx]))
+    {
+      $sensorSID = base_convert(mt_rand(1000, 9999), 10, 36).'_iot';
+      while(isset($this->uiTemplate->uiData['iotElementsMapSIDs'][$sensorSID]))
+        $sensorSID = base_convert(mt_rand(1000, 9999), 10, 36).'_iot';
+
+      $this->uiTemplate->uiData['iotElementsMapSIDs'][$sensorSID] = $sensorNdx;
+      $this->uiTemplate->uiData['iotElementsMap'][$sensorNdx] = [
+        'sid' => $sensorSID,
+        'deviceTopic' => $sensorTopic,
+      ];
+      $this->uiTemplate->uiData['iotSubjects'][$sensorSID] = [
+        'topic' => $sensorTopic, 'wss' => $wssNdx,
+      ];
+
+      $this->uiTemplate->uiData['iotTopicsMap'][$sensorTopic] = ['sid' => $sensorSID, 'type' => 'sensor', 'wss' => $wssNdx, 'elids' => []];
+    }
+
+    return $this->uiTemplate->uiData['iotElementsMap'][$sensorNdx];
+  }
+
+  protected function registerIotSetup($iotSetupRecData)
+  { // shp/setups/3d-tisk/set : {"scene":"shp\/scenes\/3d-on"}
+    $wssNdx = $this->defaultWssNdx();
+    $setupNdx = 'ST'.$iotSetupRecData['ndx'];
+    $setupTopic = 'shp/setups/'.$iotSetupRecData['id'];
+    if (!isset($this->uiTemplate->uiData['iotElementsMap'][$setupNdx]))
+    {
+      $setupSID = base_convert(mt_rand(1000, 9999), 10, 36).'_iot';
+      while(isset($this->uiTemplate->uiData['iotElementsMapSIDs'][$setupSID]))
+        $setupSID = base_convert(mt_rand(1000, 9999), 10, 36).'_iot';
+
+      $this->uiTemplate->uiData['iotElementsMapSIDs'][$setupSID] = $setupNdx;
+      $this->uiTemplate->uiData['iotElementsMap'][$setupNdx] = [
+        'sid' => $setupSID,
+        'deviceTopic' => $setupTopic,
+      ];
+      $this->uiTemplate->uiData['iotSubjects'][$setupSID] = [
+        'topic' => $setupTopic, 'wss' => $wssNdx,
+      ];
+
+      $this->uiTemplate->uiData['iotTopicsMap'][$setupTopic] = ['sid' => $setupSID, 'type' => 'scene', 'wss' => $wssNdx, 'elids' => []];
+    }
+
+    return $this->uiTemplate->uiData['iotElementsMap'][$setupNdx];
+  }
+
+  protected function registerTopicMainElement($topic)
+  {
+    if (!isset($this->uiTemplate->uiData['iotTopicsMap'][$topic]))
+      return 'INVALID_TOPIC';
+
+    $elid = 'e'.base_convert(mt_rand(100000, 999900), 10, 36).'_'.count($this->uiTemplate->uiData['iotTopicsMap'][$topic]['elids']);
+    $this->uiTemplate->uiData['iotTopicsMap'][$topic]['elids'][] = $elid;
+
+    return $elid;
+  }
+
   public function renderSetupSceneSwitch(array $params)
   {
     $c = '';
 
     $setupNdx = intval($params['ndx'] ?? 0);
+    $setupRecData = $this->app()->loadItem($setupNdx, 'mac.iot.setups');
+    if (!$setupRecData)
+    {
+      return 'Invalid setup id';
+    }
 
-    $activeSceneNdx = 0;
-    $activeScene = $this->db()->query('SELECT * FROM [mac_iot_setupsStates] WHERE [setup] = %i', $setupNdx)->fetch();
-    if ($activeScene)
-      $activeSceneNdx = intval($activeScene['activeScene'] ?? 0);
+    $setupRegData = $this->registerIotSetup($setupRecData);
+    $setupSID = $setupRegData['sid'];
+    $setupTopic = $setupRegData['deviceTopic'];
+
+    //$activeSceneNdx = 0;
 
 		$q = [];
 		array_push($q, 'SELECT scenes.*, setups.fullName AS setupFullName, setups.shortName AS setupShortName');
@@ -28,18 +136,22 @@ class UIControl extends \Shipard\UI\ng\TemplateUIControl
 		array_push($q, ' AND setup = %i', $setupNdx);
 		array_push($q, ' ORDER BY [scenes].[order]');
 
-    $prefix = 'c'.base_convert(mt_rand(100000, 999999), 10, 36).'_';
+    $id = $this->registerTopicMainElement($setupTopic);
+
     $groupClass = 'btn-group';
     if (isset($params['btnSize']))
       $groupClass .= ' btn-group-'.$params['btnSize'];
-    $c .= "<div class='$groupClass' role='group' aria-label=''>";
+    $c .= "<div class='$groupClass' id='$id' data-shp-family='iot-setup-scene' role='group' aria-label=''";
+    $c .= ">";
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
-      $checked = ($r['ndx'] === $activeSceneNdx) ? ' checked' : '';
-      $paramId = $prefix."set_scene_{$r['setup']}_{$r['ndx']}";
-      $nameId = $prefix."set_scene_setup_".$r['setup'];
-      $c .= "<input type='radio' class='btn-check' name='$nameId' id='$paramId' autocomplete='off'$checked>";
+      $checked = '';//($r['ndx'] === $activeSceneNdx) ? ' checked' : '';
+      $paramId = $id."set_scene_{$r['setup']}_{$r['ndx']}";
+      $nameId = $id."set_scene_setup_".$r['setup'];
+      $c .= "<input type='radio' class='btn-check mac-shp-triggger shp-iot-scene-switch' name='$nameId'".
+            " data-shp-iot-setup='$setupSID'".
+            " id='$paramId' data-shp-scene-id='shp/scenes/".Utils::es($r['friendlyId'])."' autocomplete='off'$checked>";
       $c .= "<label class='btn btn-outline-primary' for='$paramId'>".Utils::es($r['shortName'])."</label>";
     }
     $c .= '</div>';
@@ -81,27 +193,32 @@ class UIControl extends \Shipard\UI\ng\TemplateUIControl
     $deviceCfgRecData = $this->app()->loadItem($deviceNdx, 'mac.iot.devicesCfg');
     $deviceCfgData = json_decode($deviceCfgRecData['cfgData'], TRUE);
 
+    $deviceRegData = $this->registerIotDevice($deviceRecData);
+    $deviceSID = $deviceRegData['sid'];
+
+    $id = $this->registerTopicMainElement($deviceRecData['deviceTopic']);
+
     $useBrightness = isset($deviceCfgData['dataModel']['properties']['brightness']) && !in_array('br', $disabledOptions);
     $useColorTemp = isset($deviceCfgData['dataModel']['properties']['color_temp']) && !in_array('ct', $disabledOptions);;
 
-    $id = 'switch_'.$deviceNdx;
-    $icon = 'tables/mac.iot.devices';
+    $icon = $this->iotDevicesTable->tableIcon($deviceRecData);
+    $title = $deviceRecData['uiName'] === '' ? $deviceRecData['fullName'] : $deviceRecData['uiName'];
 
     $c = "<div class='d-flex align-items-center mt-1 mb-1'";
-    $c .= " data-shp-family='iot-light' data-shp-src='mqtt' data-shp-src-mqtt-topic='".Utils::es($deviceCfgData['dataModel']['deviceTopic'])."'";
+    $c .= " id='$id' data-shp-family='iot-light' data-shp-iot-device='$deviceSID'";
     $c .= ">";
       $c .= "<div class='p-2 align-self-start'>";
-        $c .= "<label class='fs-2' for='onoff_$id'>";
+        $c .= "<label class='fs-2' for='{$id}_onoff'>";
         $c .= $this->app()->ui()->icon($icon);
         $c .= "</label>";
       $c .= "</div>";
       $c .= "<div class='_p-2 flex-grow-1 _ms-2'>";
-        $c .= "<label class='pb-1 fw-semibold' for='onoff_$id'>".Utils::es($deviceRecData['fullName'])."</label>";
+        $c .= "<label class='pb-1 fw-semibold' for='{$id}_onoff'>".Utils::es($title)."</label>";
 
         if ($useBrightness)
         {
-          $c .= "<div class='d-flex flex-grow-1'><span class='pe-2'>Jas: </span>";
-            $c .= "<input type='range' class='form-range flex-grow-1 shp-iot-br-range' min='0' max='255' id='br_$id' >";
+          $c .= "<div class='d-flex flex-grow-1'><span class='pe-2'>".$this->app()->ui()->icon('iconBrightness')."</span>";
+            $c .= "<input type='range' class='form-range flex-grow-1 shp-iot-br-range mac-shp-triggger' data-shp-iot-device='$deviceSID' min='0' max='255' id='br_$id' disabled>";
           $c .= "</div>";
         }
 
@@ -111,18 +228,110 @@ class UIControl extends \Shipard\UI\ng\TemplateUIControl
           $valueMax = intval($deviceCfgData['dataModel']['properties']['color_temp']['value-max']);
           if ($valueMin && $valueMax)
           {
-            $c .= "<div class='d-flex flex-grow-1'><span class='pe-2'>WW: </span>";
-            $c .= "<input type='range' class='form-range flex-grow-1 shp-iot-ct-range' min='$valueMin' max='$valueMax' id='br_$id' >";
+            $c .= "<div class='d-flex flex-grow-1'><span class='pe-2'>".$this->app()->ui()->icon('iconBrightness')."</span>";
+            $c .= "<input type='range' class='form-range flex-grow-1 shp-iot-ct-range mac-shp-triggger' data-shp-iot-device='$deviceSID' min='$valueMin' max='$valueMax' id='br_$id' disabled>";
             $c .= "</div>";
           }
         }
       $c .= "</div>";
       $c .= "<div class='ps-3 fs-3 align-self-start'>";
         $c .= "<div class='form-check form-switch form-switch-right'>";
-          $c .= "<input class='form-check-input shp-iot-primary-switch' type='checkbox' role='switch' id='onoff_$id'>";
+          $c .= "<input class='form-check-input shp-iot-primary-switch mac-shp-triggger' data-shp-iot-device='$deviceSID' type='checkbox' role='switch' id='{$id}_onoff' disabled>";
         $c .= "</div>";
       $c .= "</div>";
     $c .= "</div>";
+
+    return $c;
+  }
+
+  public function renderDevicesGroupSwitch(array $params)
+  {
+    $c = '';
+
+    $groupNdxList = explode(',', $params['ndx'] ?? '');
+
+    if (!count($groupNdxList))
+    {
+      return 'Invalid / missing param `ndx`';
+    }
+
+    $style = 'fullCard';
+
+    $disabledOptions = explode(',', $params['disabledOptions'] ?? '');
+    $enabledOptions = explode(',', $params['enabledOptions'] ?? '');
+
+    foreach ($groupNdxList as $dn)
+    {
+      $deviceGroupNdx = intval($dn);
+      $deviceGroupRecData = $this->app()->loadItem($deviceGroupNdx, 'mac.iot.devicesGroups');
+      if (!$deviceGroupRecData)
+      {
+        $c .= '<pre>Invalid group #'.$deviceGroupNdx.'</pre>';
+        continue;
+      }
+
+      $baseId = 'G'.$deviceGroupNdx;
+      $groupEID = $baseId.'_ABC';
+
+      // -- device in group
+      $devicesNdxs = $this->db()->query ('SELECT ndx, iotDevice FROM [mac_iot_devicesGroupsItems] WHERE [devicesGroup] = %i', $deviceGroupNdx, ' ORDER BY [rowOrder], [ndx]')->fetchPairs ();
+      $oneDeviceParams = ['ndx' => implode(',', array_values($devicesNdxs))];
+      if (isset($params['disabledOptions']))
+        $oneDeviceParams['disabledOptions'] = $params['disabledOptions'];
+      $devicesInGroupCode = $this->renderDeviceSwitch($oneDeviceParams);
+      $devicesInGroupSIDs = [];
+      foreach ($devicesNdxs as $gdndx)
+      {
+        $devicesInGroupSIDs[] = $this->iotDeviceSID($gdndx);
+        $this->uiTemplate->uiData['iotElementsGroups'][$groupEID][] = $this->iotDeviceSID($gdndx);
+      }
+      $devicesInGroupSIDsParam = implode(',', $devicesInGroupSIDs);
+
+      if ($style === 'fullCard')
+      {
+        $c .= "<div class='card' id='$groupEID'>";
+          $c .= "<div class='card-header'>";
+            $c .= "<div class='d-flex align-items-center mt-1 mb-1'";
+            $c .= ">";
+              $c .= "<div class='ps-3 fs-3 align-self-start'>";
+                $c .= "<div class='form-check form-switch form-switch-right'>";
+                  $c .= "<input class='form-check-input mac-shp-triggger shp-iot-group-switch' data-shp-iot-device='$devicesInGroupSIDsParam' type='checkbox' role='switch' id='{$baseId}_onoff' disabled>";
+                $c .= "</div>";
+              $c .= "</div>";
+              $c .= "<div class='_p-2 flex-grow-1 _ms-2'>";
+                $c .= "<label class='pb-1 fw-semibold' for='{$baseId}_onoff'>".Utils::es($deviceGroupRecData['shortName'])."</label>";
+              $c .= "</div>";
+            $c .= "</div>";
+          $c .= "</div>"; // --> card-header
+
+          $c .= "<div class='row g-0'>"; //
+            $c .= "<div class='col pt-2' style='max-width: 4rem !important; text-align: center;'>";
+            $c .= $this->app()->ui()->icon('iconBrightness', 'd-block');
+            $c .= "<input type='range' class='_form-range shp-iot-br-range mac-shp-triggger' orient='vertical'";
+            $c .= " data-shp-iot-device='$devicesInGroupSIDsParam' min='0' max='255'";
+            $c .= " id='{$baseId}_br_range'";
+            $c .= " style='--moz-appearance: slider-vertical; appearance: slider-vertical; margin-top: .3rem; width: 2em; height: 89%;'>";
+            $c .= "</div>";
+
+            $c .= "<div class='col p-2' style='max-width: 4rem !important; text-align: center;'>";
+            $c .= $this->app()->ui()->icon('iconColorTemperature', 'd-block');
+            $c .= "<input type='range' class='_form-range shp-iot-ct-range mac-shp-triggger' orient='vertical'";
+            $c .= " data-shp-iot-device='$devicesInGroupSIDsParam' min='250' max='454'";
+            $c .= " id='{$baseId}_ct_range'";
+            $c .= " style='--moz-appearance: slider-vertical; appearance: slider-vertical; margin-top: .3rem; width: 2em; height: 89%;'>";
+            $c .= "</div>";
+
+            $c .= "<div class='col'>";
+            $c .= $devicesInGroupCode;
+            $c .= "</div>";
+
+          $c .= "</div>";
+        $c .= "</div>"; // --> card
+        continue;
+      }
+
+      //$c .= $this->renderDeviceSwitch_Light($deviceNdx, $deviceRecData, $disabledOptions, $params);
+    }
 
     return $c;
   }
@@ -161,14 +370,17 @@ class UIControl extends \Shipard\UI\ng\TemplateUIControl
 			}
 		}
 
-    $id = 'sensor_'.$sensorNdx;
+    $sensorRegData = $this->registerIotSensor($sensorRecData);
+    $sensorSID = $sensorRegData['sid'];
+    $id = $this->registerTopicMainElement($sensorRecData['srcMqttTopic']);
+
     $mode = 1;
     $asBadge = 1;
 		$mainClass = $asBadge ? 'shp-badge' : '';
 		$titleClass = $asBadge ? 'e10-bg-bt' : 'label';
 		$contentClass = $asBadge ? 'e10-bg-bv-default' : '';
 
-		$c .= "<span class='$mainClass' id='$id' data-shp-family='iot-sensor' data-shp-src='mqtt' data-shp-src-mqtt-topic='".Utils::es($sensorRecData['srcMqttTopic'])."' data-sensorid='".$sensorNdx."'>";
+		$c .= "<span class='$mainClass' id='$id' data-shp-family='iot-sensor'>";
 		$c .= "<span class='$titleClass'>";
 
 		$c .= $this->app()->ui()->icon($icon).' ';
@@ -194,10 +406,13 @@ class UIControl extends \Shipard\UI\ng\TemplateUIControl
       return 'missing param `type`';
     }
 
+    $this->iotDevicesTable = $this->app()->table('mac.iot.devices');
+
     $c = match ($params['type'])
     {
       'setupSceneSwitch' => $this->renderSetupSceneSwitch($params),
       'deviceSwitch' => $this->renderDeviceSwitch($params),
+      'renderDevicesGroupSwitch' => $this->renderDevicesGroupSwitch($params),
       'iotSensor' => $this->renderIoTSensor($params),
       default => ''
     };
