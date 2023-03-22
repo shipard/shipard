@@ -180,19 +180,17 @@ class WidgetCashBoxNG extends WidgetPane
 		$c .= '</div>';
 
     $c .= "<div class='cash-box-pay-buttons'>";
-		if (1 || $this->enablePaymentButtons)
+		if ($this->enablePaymentButtons)
 		{
-			//$c .= "<div class='payButtons'>";
-			if (0 && $this->disablePaymentCards)
+			if ($this->disablePaymentCards)
 			{
-				$c .= "<span class='e10-terminal-action' data-action='do-payment-method' data-pay-method='1'>Zaplatit</span>";
+				$c .= "<button class='btn btn-success shp-widget-action' data-action='terminal-pay' data-pay-method='1'>Zaplatit</button>";
 			}
 			else
 			{
 				$c .= "<button class='btn btn-success shp-widget-action' data-action='terminal-pay' data-pay-method='1'>Hotově</button>";
 				$c .= "<button class='btn btn-success shp-widget-action' data-action='terminal-pay' data-pay-method='2'>Kartou</button>";
 			}
-			//$c .= '</div>';
 		}
     $c .= '</div>';
 
