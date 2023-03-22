@@ -1,6 +1,7 @@
 class ShipardWidget {
   rootElm = null;
   rootId = '';
+  numPad = null;
 
   init (rootElm)
   {
@@ -68,6 +69,19 @@ class ShipardWidget {
   elmShow(e)
   {
 		e.classList.remove('d-none');
+  }
+
+  getNumber (options) {
+    const template = document.createElement('div');
+    template.id = 'widget_123';
+    template.classList.add('fullScreenModal');
+    document.body.appendChild(template);
+
+    var abc = new ShipardTouchNumPad();
+    abc.options = options;
+    abc.init(template);
+
+    this.numPad = abc;
   }
 }
 

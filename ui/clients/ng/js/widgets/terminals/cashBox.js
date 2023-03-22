@@ -48,37 +48,36 @@ class WidgetCashBox extends ShipardWidgetDocumentCore
     //console.log("newRow");
     var askq = parseInt(e.getAttribute('data-askq'));
     var askp = parseInt(e.getAttribute('data-askp'));
-    //if (!askq && !askp)
+    if (!askq && !askp)
     {
       this.addDocumentRow(this.itemFromElement(e));
-      return;
+      return 1;
     }
-    /*
+
     if (askp) {
-      e10.form.getNumber(
+      this.getNumber(
           {
-            title: 'Zadejte cenu ' + '(' + e.attr('data-unit-name') + ')',
-            subtitle: e.attr('data-name'),
+            title: 'Zadejte cenu ' + '(' + e.getAttribute('data-unit-name') + ')',
+            subtitle: e.getAttribute('data-name'),
             srcElement: e,
             askType: 'p',
-            success: e10.terminal.addDocumentRow
+            success: function() {this.addDocumentRow()}.bind(this)
           }
       );
-      return;
+      return 1;
     }
 
     if (askq) {
-      e10.form.getNumber(
+      this.getNumber(
           {
-            title: 'Zadejte množství ' + '(' + e.attr('data-unit-name') + ')',
-            subtitle: e.attr('data-name'),
+            title: 'Zadejte množství ' + '(' + e.getAttribute('data-unit-name') + ')',
+            subtitle: e.getAttribute('data-name'),
             srcElement: e,
             askType: 'q',
-            success: e10.terminal.addDocumentRow
+            success: function() {this.addDocumentRow()}.bind(this)
           }
       );
     }
-    */
 
     return 1;
   }
@@ -88,29 +87,32 @@ class WidgetCashBox extends ShipardWidgetDocumentCore
     var quantity = 1;
     //console.log("addDoucmentRow", item);
 
-    /*
+
     if (!item)
     {
-      e10.form.getNumberClose();
-      item = e10.terminal.itemFromElement(e10.form.gnOptions.srcElement);
+      //e10.form.getNumberClose();
+      item = this.itemFromElement(this.numPad.options.srcElement);
 
-      if (e10.form.gnOptions.askType === 'p')
+      if (this.numPad.options.askType === 'p')
       {
-        var price = e10.parseFloat(e10.form.gnValue);
+        var price = e10.parseFloat(this.numPad.gnValue);
         if (!price)
           price = null;
         if (price !== null)
           item.price = price;
       }
-      else if (!e10.form.gnOptions.askType || e10.form.gnOptions.askType === 'q')
+      else if (!this.numPad.options.askType || this.numPad.options.askType === 'q')
       {
-        quantity = e10.parseFloat(e10.form.gnValue);
+        quantity = this.parseFloat(this.numPad.gnValue);
         if (!quantity)
           quantity = 1;
       }
+
+      this.numPad.rootElm.remove();
+      this.numPad = null;
     }
     else
-    if (item.quantity)*/
+    if (item.quantity)
       quantity = item.quantity;
 
     var priceStr = this.nf(item.price, 2);
@@ -143,8 +145,6 @@ class WidgetCashBox extends ShipardWidgetDocumentCore
     this.docRowsTableElm.innerHTML = row + this.docRowsTableElm.innerHTML;
 
 
-
-    //rows.prepend(row);
     let re = this.docRowsTableElm.rows[0];
     re.setAttribute ('data-unit', item.unit);
     re.setAttribute ('data-unit-name', item.unitName);
