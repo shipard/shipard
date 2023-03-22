@@ -129,6 +129,7 @@ class FormUI extends TableForm
 			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 
       $tabs ['tabs'][] = ['text' => 'Šablona', 'icon' => 'formText'];
+      $tabs ['tabs'][] = ['text' => 'Styl', 'icon' => 'formText'];
 			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
@@ -139,6 +140,9 @@ class FormUI extends TableForm
 				$this->closeTab ();
 				$this->openTab (TableForm::ltNone);
           $this->addInputMemo ('template', NULL, TableForm::coFullSizeY, DataModel::ctCode);
+				$this->closeTab();
+				$this->openTab (TableForm::ltNone);
+          $this->addInputMemo ('style', NULL, TableForm::coFullSizeY, DataModel::ctCode);
 				$this->closeTab();
 				$this->openTab (TableForm::ltNone);
 					$this->addAttachmentsViewer();

@@ -11,6 +11,7 @@
 		{"id": "order", "name": "Pořadí", "type": "int"},
 
 		{"id": "template", "name": "Šablona", "type": "memo"},
+		{"id": "style", "name": "CSS style", "type": "memo"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

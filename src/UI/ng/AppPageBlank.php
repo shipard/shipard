@@ -26,6 +26,17 @@ class AppPageBlank extends Utility
 	var $wss = [];
 
 	var $pageInfo = [];
+  var ?array $uiCfg = NULL;
+  var ?array $uiRecData = NULL;
+
+	protected function createPageCodeEmbedStyle ()
+	{
+		if ($this->uiRecData && $this->uiRecData['style'] !== '')
+		{
+			return "<style>\n".$this->uiRecData['style']."\n</style>\n";
+		}
+		return '';
+	}
 
 	public function createPageCode ()
 	{
@@ -157,7 +168,10 @@ class AppPageBlank extends Utility
 
 		$c .= '</script>';
 
-		$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/libs/js/jquery/jquery-2.2.4.min.js\"></script>";
+		//$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/libs/js/jquery/jquery-3.5.1.min.js\"></script>";
+		$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/bs/5.3/dist/js/bootstrap.bundle.min.js?v530a1\"></script>";
+		$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/libs/js/mqttws/mqttws31.min.js\"></script>\n";
+
 
 		$iconsCfg = $this->app()->ui()->icons()->iconsCfg;
 		$c .= "<link rel='stylesheet' type='text/css' href='{$scRoot}/{$iconsCfg['styleLink']}'>\n";
@@ -166,15 +180,15 @@ class AppPageBlank extends Utility
 		if ($this->dsMode !== Application::dsmDevel)
 		{
 			$files = unserialize (file_get_contents(__SHPD_ROOT_DIR__.'/ui/clients/files.data'));
-			$c .= "\t<script type='text/javascript' integrity='{$files['OldMobile']['client.js']['integrity']}' src='$absUrl{$this->app->urlRoot}/www-root/.ui/OldMobile/js/client.js?v=".$files['OldMobile']['client.js']['ver']."'></script>\n";
+			$c .= "\t<script type='text/javascript' integrity='{$files['ng']['client.js']['integrity']}' src='$absUrl{$this->app->urlRoot}/www-root/.ui/ng/js/client.js?v=".$files['ng']['client.js']['ver']."'></script>\n";
 		}
 		else
 		{
-			$jsFiles = Utils::loadCfgFile(__SHPD_ROOT_DIR__.'/ui/clients/OldMobile/js/package.json');
+			$jsFiles = Utils::loadCfgFile(__SHPD_ROOT_DIR__.'/ui/clients/ng/js/package.json');
 			foreach ($jsFiles['srcFiles'] as $sf)
 			{
-				$cs = md5_file(__APP_DIR__."/www-root/ui-dev/clients/OldMobile/js/{$sf['fileName']}");
-				$c .= "\t<script type=\"text/javascript\" src=\"{$this->app->urlRoot}/www-root/ui-dev/clients/OldMobile/js/{$sf['fileName']}?v=$cs\"></script>\n";
+				$cs = md5_file(__APP_DIR__."/www-root/ui-dev/clients/ng/js/{$sf['fileName']}");
+				$c .= "\t<script type=\"text/javascript\" src=\"{$this->app->urlRoot}/www-root/ui-dev/clients/ng/js/{$sf['fileName']}?v=$cs\"></script>\n";
 			}
 
 		}
@@ -188,7 +202,11 @@ class AppPageBlank extends Utility
 		if ($this->pageTabs)
 			$bodyClass .= ' pageTabs';
 
-		$c .= "</head>\n<body data-app-type='datasource' class='$bodyClass' ";
+		$c .= "</head>\n";
+
+		$c .= $this->createPageCodeEmbedStyle();
+
+		$c .= "<body data-app-type='datasource' class='$bodyClass' ";
 		$c .= $this->createPageBodyParams();
 		$c .= '>';
 
@@ -219,6 +237,7 @@ class AppPageBlank extends Utility
 			$c .=  "<li class='e10-wss e10-wss-none' id='wss-{$srv['id']}' title=\"$title\">";
 			$c .=  '</li>';
 
+			/*
 			forEach ($srv['sensors'] as $sensor)
 			{
 				//if (!in_array ($this->app->deviceId, $sensor['devices']))
@@ -229,6 +248,7 @@ class AppPageBlank extends Utility
 				//	$c .= "<span class='sd' id='e10-sensordisplay-{$sensor['id']}'>---</span>";
 				//$c .= '</div>';
 			}
+			*/
 
 			$srvidx++;
 		}
