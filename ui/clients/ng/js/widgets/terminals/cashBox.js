@@ -208,18 +208,14 @@ class WidgetCashBox extends ShipardWidgetDocumentCore
       this.doc.rows.push(documentRow);
     }
 
-    var totalPriceStr = this.nf(totalPrice, 2);
-
-    //var displayTotal = $('#e10-page-body>div.e10-widget-terminal>div.e10-widget-content>div.e10-wcb-docrows>ul.display>li.total');
-    //displayTotal.text(totalPriceStr);
-
+    const totalPriceStr = this.nf(totalPrice, 2);
     let toPay = (this.doc.rec.roundMethod == 1) ? this.round(totalPrice, 0) : totalPrice;
     this.doc.toPay = toPay;
 
     let displayToPay = this.elmContainerPay.querySelector ('div.paymentAmount>span.money-to-pay');
     displayToPay.innerText = this.nf(toPay, 2);
 
-    this.displayValueElm.innerText = this.nf(toPay, 2);
+    this.displayValueElm.innerText = totalPriceStr;
 
     if (rowsCount) {
       this.elmHide(this.elmIntro);
