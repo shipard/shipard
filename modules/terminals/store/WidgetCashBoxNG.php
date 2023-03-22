@@ -138,10 +138,10 @@ class WidgetCashBoxNG extends WidgetPane
 		$c = '';
 
 
-    $c .= "<div class='cash-box-rows' style='background-color: lightblue;'>";
+    $c .= "<div class='cash-box-rows'>";
 
     // -- DISPLAY
-    $c .= "<div class='cash-box-display' style='background-color: lightgray; height: 5em;'>";
+    $c .= "<div class='cash-box-display'>";
       $c .= "<div class='display d-flex'>";
       $c .= $this->composeCodeSensors();
       $c .= "<div class='e10-terminal-action flex-shrink-1 p-1' data-action='terminal-search-code-manually'>".$this->app()->ui()->icon('system/iconKeyboard')."</div>";
@@ -179,7 +179,7 @@ class WidgetCashBoxNG extends WidgetPane
 
 		$c .= '</div>';
 
-    $c .= "<div class='cash-box-pay-buttons' style='background-color: aquamarine;'>";
+    $c .= "<div class='cash-box-pay-buttons'>";
 		if (1 || $this->enablePaymentButtons)
 		{
 			//$c .= "<div class='payButtons'>";
@@ -261,11 +261,11 @@ class WidgetCashBoxNG extends WidgetPane
 		$c = '';
 
 		$productsClass = 'e10-wcb-products';
-    $c .= "<div class='cash-box-buttons $productsClass' style='background-color: lightgreen;'>";
+    $c .= "<div class='cash-box-buttons $productsClass'>";
 
       // -- tabs
       $cbProductsTabsId = 'cb-products';
-      $c .= "<div class='cash-box-buttons-tabs' style='background-color: orange;'>";
+      $c .= "<div class='cash-box-buttons-tabs'>";
       $tabsCount = count($this->products);
       if ($cntOtherItems)
         $tabsCount++;
