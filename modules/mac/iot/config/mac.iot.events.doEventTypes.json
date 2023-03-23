@@ -3,10 +3,13 @@
 		"fn": "Nastavit vlastnost zařízení"
 	},
 	"incDeviceProperty": {
-		"fn": "Zvyšovat hodnotu vlastnosti zařízení"
+		"fn": "Zvýšit hodnotu vlastnosti zařízení"
 	},
 	"decDeviceProperty": {
-		"fn": "Snižovat hodnotu vlastnosti zařízení"
+		"fn": "Snížit hodnotu vlastnosti zařízení"
+	},
+	"assignDeviceProperty": {
+		"fn": "Přiřadit hodnotu vlastnosti zařízení"
 	},
 	"sendSetupRequest": {
 		"fn": "Odeslat požadavek na IoT sestavu"

@@ -2,7 +2,7 @@
 
 namespace mac\iot\libs;
 
-use e10\Utility, \e10\utils, \e10\json, e10\uiutils;
+use e10\Utility, \Shipard\Utils\Utils, \e10\json, e10\uiutils;
 use \mac\iot\libs\IotDeviceCfgUpdater;
 
 /**
@@ -50,6 +50,20 @@ class IotDeviceCfgUpdaterZigbee extends IotDeviceCfgUpdater
 			}
 
 			$this->createDataModel_DoItem($e, 'properties');
+		}
+
+		if (isset($this->deviceInfo['definition']['options']))
+		{
+			$simulatedBrightnessOption = Utils::searchArray($this->deviceInfo['definition']['options'], 'name', 'simulated_brightness');
+			if ($simulatedBrightnessOption)
+			{
+				$this->dataModel['properties']['action_brightness_delta'] = [
+					'itemType' => 'action',
+					'data-type' => "enum",
+					'enum' => ['__changed__value__' => 'Změna hodnoty'],
+					'order' => 2,
+				];
+			}
 		}
 
 		$this->dataModel['properties'] = \E10\sortByOneKey($this->dataModel['properties'], 'order', TRUE);
@@ -143,7 +157,7 @@ class IotDeviceCfgUpdaterZigbee extends IotDeviceCfgUpdater
 	{
 		$item = ['title' => $actionId];
 
-
+		/*
 		$hints = [
 			'brightness_move_up' => ['loopAction' => 1, 'stopAction' => 'brightness_stop'],
 			'brightness_move_down' => ['loopAction' => 1, 'stopAction' => 'brightness_stop'],
@@ -153,10 +167,7 @@ class IotDeviceCfgUpdaterZigbee extends IotDeviceCfgUpdater
 
 		if (isset($hints[$actionId]))
 			$item = array_merge($item, $hints[$actionId]);
-
-
-		//$item['pokus'] = 'test12';
-		//$this->iotDeviceModel
+		*/
 
 		return $item;
 	}

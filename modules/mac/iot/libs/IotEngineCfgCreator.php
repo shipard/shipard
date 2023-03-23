@@ -113,7 +113,7 @@ class IotEngineCfgCreator extends Utility
 	protected function eventDoTopic($ed, $deviceNdx = 0)
 	{
 		$t = NULL;
-		if ($ed['eventType'] === 'setDeviceProperty' || $ed['eventType'] === 'incDeviceProperty' || $ed['eventType'] === 'decDeviceProperty')
+		if ($ed['eventType'] === 'setDeviceProperty' || $ed['eventType'] === 'incDeviceProperty' || $ed['eventType'] === 'decDeviceProperty' || $ed['eventType'] === 'assignDeviceProperty')
 		{
 			$dm = $this->iotDeviceDataModel($deviceNdx ? $deviceNdx : $ed['iotDevice']);
 			if ($dm)
@@ -305,7 +305,7 @@ class IotEngineCfgCreator extends Utility
 							$dst['setProperties'][$destTopic]['data'][$r['iotDeviceProperty']] = $r['iotDevicePropertyValueEnum'];*/
 					}
 				}
-				elseif ($r['eventType'] === 'incDeviceProperty' || $r['eventType'] === 'decDeviceProperty')
+				elseif ($r['eventType'] === 'incDeviceProperty' || $r['eventType'] === 'decDeviceProperty' || $r['eventType'] === 'assignDeviceProperty')
 				{
 					$srcDeviceDataModel = $this->iotDevicesUtils->deviceDataModel($srcEvent['iotDevice']);
 					$srcDeviceAction = $srcDeviceDataModel['properties'][$srcEvent['iotDeviceEvent']] ?? [];
@@ -315,18 +315,19 @@ class IotEngineCfgCreator extends Utility
 					$dp = $this->iotDevicesUtils->deviceProperty($iotDeviceNdx, $r['iotDeviceProperty']);
 					if ($dp)
 					{
-						$loopId = $srcTopic.'.'.$srcEvent['iotDeviceEvent'].'.'.$srcDeviceActionEnum['stopAction'];
-						if (!isset($dst['startLoop']))
-							$dst['startLoop'] = [
+						$loopId = $srcTopic.'.'.$srcEvent['iotDeviceEvent'];
+						if (!isset($dst['stepValues']))
+							$dst['stepValues'] = [
 								'id' => $loopId,
-								'stopTopic' => $srcTopic,
-								'stopProperty' => $srcEvent['iotDeviceEvent'],
-								'stopPropertyValue' => $srcDeviceActionEnum['stopAction'],
-								'op' => $r['eventType'] === 'decDeviceProperty' ? '-' : '+',
+								'op' => match($r['eventType']) {
+									 				'decDeviceProperty' => '-',
+													'incDeviceProperty' => '+',
+													'assignDeviceProperty' => '=>'
+												},
 								'properties' => [],
 						];
 
-						$dst['startLoop']['properties'][] = [
+						$dst['stepValues']['properties'][] = [
 							'property' => $r['iotDeviceProperty'],
 							'value-min' => $dp['value-min'] ?? 0,
 							'value-max' => $dp['value-max'] ?? 254,

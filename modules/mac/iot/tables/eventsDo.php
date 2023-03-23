@@ -287,6 +287,12 @@ class TableEventsDo extends DbTable
 			$dest[] = ['text' => ' - ', 'class' => 'label label-danger'];
 			$dest[] = ['text' => $eventRow['iotDevicePropertyValue'], 'class' => 'label label-default'];
 		}
+		elseif ($eventRow['eventType'] === 'assignDeviceProperty')
+		{
+			$dest[] = ['text' => $eventRow['iotDeviceProperty'], 'class' => 'label label-warning'];
+			$dest[] = ['text' => ' => ', 'class' => 'label label-danger'];
+			$dest[] = ['text' => $eventRow['iotDevicePropertyValue'], 'class' => 'label label-default'];
+		}
 
 		if ($eventRow['iotDevicePropertyValue'] != $pv)
 			$dest[] = ['text' => $pv, 'class' => 'label label-default'];
@@ -443,7 +449,7 @@ class FormEventDo extends TableForm
 							$this->addSubColumns('eventValueCfg');
 						}
 					}
-					elseif ($this->recData['eventType'] === 'incDeviceProperty' || $this->recData['eventType'] === 'decDeviceProperty')
+					elseif ($this->recData['eventType'] === 'incDeviceProperty' || $this->recData['eventType'] === 'decDeviceProperty' || $this->recData['eventType'] === 'assignDeviceProperty')
 					{
 						if ($this->recData['useGroup'])
 							$this->addColumnInput ('iotDevicesGroup');
