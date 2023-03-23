@@ -11,6 +11,8 @@ class UIControl extends \Shipard\UI\ng\TemplateUIControl
 {
   /** @var \mac\iot\TableDevices */
   var $iotDevicesTable;
+  /** @var \mac\iot\TableCams */
+  var $iotCamsTable;
 
   protected function defaultWssNdx()
   {
@@ -98,6 +100,23 @@ class UIControl extends \Shipard\UI\ng\TemplateUIControl
     }
 
     return $this->uiTemplate->uiData['iotElementsMap'][$setupNdx];
+  }
+
+  protected function registerCamPicture($camPictureInfo)
+  {
+    $deviceNdx = 'CMP'.$camPictureInfo['ndx'];
+    $camServerNdx = intval($camPictureInfo['camServerNdx']);
+
+    if (!isset($this->uiTemplate->uiData['iotCamPictures'][$deviceNdx]))
+      $this->uiTemplate->uiData['iotCamPictures'][$deviceNdx] = ['camServerNdx' => $camServerNdx, 'elms' => []];
+
+    if (!isset($this->uiTemplate->uiData['iotCamServers'][$camServerNdx]))
+      $this->uiTemplate->uiData['iotCamServers'][$camServerNdx] = $camPictureInfo['serverInfo'];
+
+    $deviceSID = $deviceNdx.base_convert(mt_rand(1000, 9999), 10, 36).'_iot';
+    $this->uiTemplate->uiData['iotCamPictures'][$deviceNdx]['elms'][] = $deviceSID;
+
+    return $deviceSID;
   }
 
   protected function registerTopicMainElement($topic)
@@ -399,6 +418,37 @@ class UIControl extends \Shipard\UI\ng\TemplateUIControl
     return $c;
   }
 
+  public function renderCamPicture(array $params)
+  {
+    $c = '';
+
+    $camsNdxList = explode(',', $params['ndx'] ?? '');
+    $pictStyle = $params['pictStyle'] ?? 'preview';
+
+    if (!count($camsNdxList))
+    {
+      return 'Invalid / missing param `ndx`';
+    }
+    $phUrl = $this->app->urlRoot.'/www-root/sc/shipard/ph-image-1920-1080.svg';
+    foreach ($camsNdxList as $cn)
+    {
+      $camNdx = intval($cn);
+      $camInfo = $this->iotCamsTable->camInfo($camNdx);
+      if (!$camInfo)
+      {
+        continue;
+      }
+
+      //$camRecData = $this->app()->loadItem($camNdx, 'mac.iot.cams');
+      $picId = $this->registerCamPicture($camInfo);
+      $c .= "<div class='shp-cam-pict' data-cam-ndx='".$camInfo['camServerNdx']."' data-pict-style='".Utils::es($pictStyle)."' id='{$picId}'>";
+      $c .= "<img src='$phUrl' style='max-width: 100%;'>";
+      $c .= '</div>';
+    }
+
+    return $c;
+  }
+
   public function render(string $tagName, ?array $params)
   {
     if (!isset($params['type']))
@@ -407,6 +457,7 @@ class UIControl extends \Shipard\UI\ng\TemplateUIControl
     }
 
     $this->iotDevicesTable = $this->app()->table('mac.iot.devices');
+    $this->iotCamsTable = $this->app()->table('mac.iot.cams');
 
     $c = match ($params['type'])
     {
@@ -414,6 +465,7 @@ class UIControl extends \Shipard\UI\ng\TemplateUIControl
       'deviceSwitch' => $this->renderDeviceSwitch($params),
       'renderDevicesGroupSwitch' => $this->renderDevicesGroupSwitch($params),
       'iotSensor' => $this->renderIoTSensor($params),
+      'camPicture' => $this->renderCamPicture($params),
       default => ''
     };
 
