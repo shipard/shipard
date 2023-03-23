@@ -1,0 +1,32 @@
+{
+	"id": "mac.iot.cams", "sql": "mac_iot_cams", "name": "Kamery",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+    {"id": "fullName", "name": "Úplný název", "type": "string", "len": 120},
+
+		{"id": "lan", "name": "Síť", "type": "int", "reference": "mac.lan.lans"},
+		{"id": "camType", "name": "Typ kamery", "type": "enumString", "len": "20", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.iot.cams.types", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "iotDevice", "name": "IoT zařízení", "type": "int", "reference": "mac.iot.devices", "options": ["saveOnChange"]},
+		{"id": "lanDevice", "name": "LAN zařízení", "type": "int", "reference": "mac.lan.devices", "options": ["saveOnChange"]},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": {
+		"default": {
+			"id": "default", "class": "mac.iot.ViewCams",
+			"details": {
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.iot.ViewDetailCam"},
+				"cfg": {"title": "Nastavení", "icon": "system/detailDetail", "type": "detail", "class": "mac.iot.ViewDetailCamCfg"}
+			}
+		}
+	},
+	"forms": [
+		{"id": "default", "class": "mac.iot.FormCam"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

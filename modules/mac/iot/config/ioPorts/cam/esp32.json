@@ -1,0 +1,19 @@
+{
+	"name": "esp32cam",
+	"title": "esp32cam",
+	"useValueKind": 0,
+	"fixedValuesTopic": "cams/",
+	"fields": {
+		"columns": [
+			{
+				"id": "shotInterval", "name": "Interval snímkování (milisekundy)", "type": "long", "placeholder": "1 000"
+			},
+			{
+				"id": "httpHost", "name": "Název nebo IP adresa HTTP serveru pro příjem obrázků", "type": "string", "len": 80
+			},
+			{
+				"id": "httpPort", "name": "Port HTTP serveru pro příjem obrázků", "type": "int", "placeholder": "8021"
+			}
+		]
+	}
+}

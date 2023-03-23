@@ -53,6 +53,9 @@
 
 							"params": {"t1": "Parametry", "object": "viewer", "table": "mac.iot.params", "viewer": "default", "order": 41000, "beforeSeparator": 1},
 
+							"cams": {"t1": "Kamery", "object": "viewer", "table": "mac.iot.cams", "viewer": "default", "order": 43000, "beforeSeparator": 1},
+
+
 							"users": {"t1": "Uživatelé", "object": "viewer", "table": "mac.iot.users", "viewer": "default", "order": 90100, "beforeSeparator": 1}
 						}
 					}
@@ -69,7 +72,8 @@
 
 							"tagsAssignments": {"t1": "Přiřazení klíčů", "object": "viewer", "table": "mac.access.tagsAssignments", "viewer": "default", "order": 65100, "beforeSeparator":  1},
 
-							"macZones": {"t1": "Zóny", "object": "viewer", "table": "mac.base.zones", "viewer": "default", "order": 70100, "beforeSeparator":  1}
+							"macZones": {"t1": "Zóny", "object": "viewer", "table": "mac.base.zones", "viewer": "default", "order": 70100, "beforeSeparator":  1},
+							"places": {"t1": "Místa", "object": "viewer", "table": "e10.base.places", "viewer": "default", "order": 88800}
 						}
 					}
 				},

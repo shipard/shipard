@@ -4,7 +4,7 @@
 		{"id": "ndx", "name": "ndx", "type": "int_ai"},
 
 		{"id": "zone", "name": "Zóna", "type": "int", "reference": "mac.base.zones"},
-		{"id": "camera", "name": "Kamera", "type": "int", "reference": "mac.lan.devices", "comboViewer": "cameras"},
+		{"id": "camera", "name": "Kamera", "type": "int", "reference": "mac.iot.cams"},
 
 
 		{"id": "rowOrder", "name": "Pořadí", "type": "int"}

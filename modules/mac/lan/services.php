@@ -14,16 +14,32 @@ class ModuleServices extends \E10\CLI\ModuleServices
 	{
 		$s [] = ['end' => '2019-01-31', 'sql' => "UPDATE mac_lan_devicesPorts SET portRole = 10 WHERE vlan != 0 AND portKind IN (5, 6) AND portRole = 0"];
 		$this->doSqlScripts ($s);
-		$this->repairUID();
+
+		$this->upgradeCameras();
 	}
 
-	function repairUID()
+	protected function upgradeCameras()
 	{
-		$rows = $this->app->db()->query('SELECT ndx FROM mac_lan_devices WHERE [uid] = %s', '');
+		$rows = $this->app->db()->query('SELECT * FROM mac_lan_devices WHERE [deviceKind] = %i', 10);
 		foreach ($rows as $r)
 		{
-			$this->app->db()->query('UPDATE mac_lan_devices SET [uid] = %s', utils::createToken(32),
-				' WHERE ndx = %i', $r['ndx']);
+			//echo $r['ndx']." - ".$r['fullName']."\n";
+
+			$exist = $this->db()->query('SELECT * FROM [mac_iot_cams] WHERE [camType] = %i', 30, ' AND [lanDevice] = %i', $r['ndx'])->fetch();
+			if ($exist)
+				continue;
+
+			$newCam =[
+				'ndx' => $r['ndx'],
+				'camType' => 30,
+				'lan' => $r['lan'],
+				'lanDevice' => $r['ndx'],
+				'fullName' => $r['fullName'],
+				'docState' => $r['docState'], 'docStateMain' => $r['docStateMain'],
+			];
+
+			//echo json_encode($newCam)."\n";
+			$this->app->db()->query('INSERT INTO [mac_iot_cams] ', $newCam);
 		}
 	}
 

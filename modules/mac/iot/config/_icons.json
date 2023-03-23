@@ -11,7 +11,13 @@
 			"bsi":"bi-cpu-fill",
 			"mdi":"memory"
 	},
-    "tables/mac.iot.scenes": {
+	"tables/mac.iot.cams": {
+		"fa5": "fa-video",
+		"fa6pro": "fa-cctv",
+		"bsi": "bi-camera-video",
+		"mdi": "videocam"
+	},
+	"tables/mac.iot.scenes": {
 		"fa5": "fa-play-circle",
 		"fa6pro": "fa-play-circle",
 		"bsi": "bi-play-circle-fill",

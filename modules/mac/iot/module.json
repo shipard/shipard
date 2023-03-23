@@ -6,6 +6,7 @@
 		"eventsOn", "eventsDo",
 		"setups", "setupsStates",
 		"params",
+		"cams",
 
 	  "topics", "sensors", "sensorsValues", "sensorsValuesHistory",
 	  "controls", "scPlacements",
