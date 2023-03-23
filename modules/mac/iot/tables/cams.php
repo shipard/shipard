@@ -54,17 +54,27 @@ class TableCams extends DbTable
 	{
 		$camRecData = $this->loadItem($cameraNdx);
 		if (!$camRecData)
+		{
+			error_log("!!!NO-CAMERA!!!");
 			return NULL;
+		}
+
+    $lanNdx = $camRecData['lan'];
+		$lanRecData = $this->app()->loadItem($lanNdx, 'mac.lan.lans');
+		$camServerNdx = $lanRecData['mainServerCameras'];
 
 		$camInfo = [
 			'ndx' => $cameraNdx,
 			'camRecData' => $camRecData,
-			'camServerNdx' => 7,
+			'camServerNdx' => $camServerNdx,
 		];
 
 		$server = $this->app->cfgItem('mac.localServers.'.$camInfo['camServerNdx'], NULL);
 		if (!$server)
+		{
+			error_log("!!!NO-SERVER!!!");
 			return NULL;
+		}
 
 		$camInfo['serverInfo'] = [
 			'camUrl' => $server['camerasURL']
