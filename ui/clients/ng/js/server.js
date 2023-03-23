@@ -9,10 +9,32 @@ class ShipardServer {
 	{
 		var headers = {};
 		//headers['e10-client-type'] = e10.clientType;
-		headers['e10-device-id'] = deviceId;
+		//headers['e10-device-id'] = deviceId;
 		headers['content-type'] = 'application/json';
 
 		return headers;
+	}
+
+	get (url, f, errorFunction, isFullUrl)
+	{
+		var fullUrl = this.httpServerRoot + url;
+		if (isFullUrl)
+			fullUrl = url;
+
+		var options = {
+			method: "GET",
+			url: fullUrl,
+			headers: this.httpHeaders (),
+		};
+
+		fetch(fullUrl, options)
+			.then((response) => response.json())
+			.then((data) => {
+				f(data);
+			})
+			.catch((error) => {
+				console.error("Error:", error);
+			});
 	}
 
 	post (url, data, f, errorFunction)
@@ -40,8 +62,6 @@ class ShipardServer {
 			.catch((error) => {
 				console.error("Error:", error);
 			});
-
-		//$.ajax(options);
 	}
 
 	postForm = function (url, data, f)
@@ -63,24 +83,6 @@ class ShipardServer {
 		$.ajax(options);
 	}
 
-	get = function (url, f, errorFunction)
-	{
-		var fullUrl = this.httpServerRoot + url;
-
-		var options = {
-			type: "GET",
-			url: fullUrl,
-			success: f,
-			dataType: 'json',
-			data: "",
-			headers: this.httpHeaders (),
-			error: (errorFunction != 'undefined') ? errorFunction : function (data) {
-				console.log("========================ERROR: "+fullUrl);
-			}
-		};
-
-		$.ajax(options);
-	}
 
 	setHttpServerRoot (httpServerRoot)
 	{

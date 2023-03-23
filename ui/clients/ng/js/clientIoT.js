@@ -1,6 +1,14 @@
 class ShipardClientIoT {
+  camPictLoader = null;
+
 	init ()
   {
+    if (uiData['iotCamServers'] !== undefined)
+    {
+      this.camPictLoader = new ShipardCamsPictsLoader();
+      this.camPictLoader.init();
+    }
+
     shc.on ('change', 'input.mac-shp-triggger', function () {shc.iot.mainTrigger(this);});
   }
 

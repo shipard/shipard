@@ -222,7 +222,7 @@ class ShipardMqtt {
     var serverIcon = $('#wss-'+ws.id);
     serverIcon.attr('class','e10-wss e10-wss-'+socketState);
     */
-    console.log(socketState, ws);
+    //console.log(socketState, ws);
   }
 
   publish (serverIndex, topic, payload)

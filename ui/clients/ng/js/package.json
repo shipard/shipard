@@ -3,6 +3,7 @@
 	"srcFiles": [
 		{"fileName": "server.js"},
 		{"fileName": "mqtt.js"},
+		{"fileName": "camPictsLoader.js"},
 		{"fileName": "client.js"},
 		{"fileName": "clientIoT.js"},
 
