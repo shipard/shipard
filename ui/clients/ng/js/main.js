@@ -1,5 +1,2 @@
 var shc = new ShipardClient();
-
- (() => {
-	shc.init ();
-})();
+document.addEventListener('DOMContentLoaded', () => shc.init());

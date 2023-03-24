@@ -20,7 +20,7 @@ class ShipardClient {
 	on(eventType, selector, callback) {
 		document.addEventListener(eventType, function (event) {
 			if (event.target.matches(selector)) {
-				callback.call(event.target);
+				callback.call(event.target, event.target);
 			}
 		});
 	}
@@ -81,22 +81,88 @@ class ShipardClient {
 		return null;
 	};
 
-	init () {
-		//console.log("ShipardClient INIT...");
+  widgetAction(e)
+  {
+    let actionId = e.getAttribute('data-action');
+    this.doAction(actionId, e);
+  }
+
+  doAction (actionId, e)
+  {
+		switch (actionId)
+    {
+      case 'setColorMode': return this.setColorMode(e);
+    }
+
+    return 0;
+  }
+
+	setColorMode(e)
+	{
+		let colorMode = e.getAttribute('data-app-color-mode');
+		localStorage.setItem('shpAppColorMode', colorMode);
+		this.doColorMode(colorMode);
+		return 0;
+	}
+
+	initColorMode(firstCall)
+	{
+		if (firstCall)
+		{
+			window.matchMedia('(prefers-color-scheme: dark)')
+				.addEventListener('change', function() {this.initColorMode()}.bind(this));
+		}
+
+		let colorMode = localStorage.getItem('shpAppColorMode');
+		if (!colorMode || colorMode === 'auto')
+		{
+			const isSystemDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+			if (isSystemDarkMode)
+				colorMode = 'dark';
+			else
+				colorMode = 'light';
+		}
+
+		this.doColorMode(colorMode);
+	}
+
+	doColorMode(colorMode)
+	{
+		if (colorMode === 'light')
+		{
+			document.body.removeAttribute('data-bs-theme');
+		}
+		else if (colorMode === 'dark')
+		{
+			document.body.setAttribute('data-bs-theme', 'dark');
+		}
+		else if (colorMode === 'auto')
+		{
+			this.initColorMode();
+		}
+
+		var uiColorMode = colorMode;
+		let savedColorMode = localStorage.getItem('shpAppColorMode');
+		if (!savedColorMode || savedColorMode === 'auto')
+			uiColorMode = 'auto';
+
+		let colorModeElements = document.querySelectorAll('[data-action="setColorMode"]');
+		for (let idx = 0; idx < colorModeElements.length; idx++)
+		{
+			if (colorModeElements[idx].getAttribute('data-app-color-mode') === uiColorMode)
+				colorModeElements[idx].classList.add('active');
+			else
+				colorModeElements[idx].classList.remove('active');
+		}
+	}
+
+	init ()
+	{
 		this.server.setHttpServerRoot(httpApiRootPath);
-		//console.log("server initialized...");
 
-
+		this.initColorMode(true);
 
 		this.onClick ('a.shp-simple-tabs-item', function () {shc.simpleTabsEvent(this);});
-
-
-
+		this.onClick ('.shp-app-action', function (e) {this.widgetAction(e);}.bind(this));
 	}
 }
-
-
-
-
-
-
