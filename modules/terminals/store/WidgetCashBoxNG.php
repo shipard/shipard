@@ -448,7 +448,7 @@ class WidgetCashBoxNG extends WidgetPane
     $c .= "</div>";
 
     $c .= "<div class='paymentFooter text-end p-3'>";
-      $c .= "<button class='btn btn-warning shp-widget-action' data-action='terminal-sell'>".$this->app()->ui()->icon('system/actionBack')." Zpět do kasy</button>";
+      $c .= "<button class='btn btn-primary shp-widget-action' data-action='terminal-sell'>".$this->app()->ui()->icon('system/actionBack')." Zpět do kasy</button>";
     $c .= "</div>";
 
     $c .= "<div class='paymentAmount'>";
