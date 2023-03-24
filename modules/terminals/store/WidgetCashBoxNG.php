@@ -157,18 +157,22 @@ class WidgetCashBoxNG extends WidgetPane
       //$c .= "<div class='e10-terminal-action icon flex-shrink-1' data-action='terminal-symbol-clear'>".$this->app()->ui()->icon('system/actionInputClear')."</div>";
     $c .= "</div>"; // <-- display
 
-
     $c .= "<div class='cash-box-rows-content'>";
-
-      $c .= "<div class='docTermIntro' style='border: 1px solid red;'>";
-        $c .= $this->app()->ui()->icon('system/iconUser').' '.utils::es($this->app->user()->data ('name'));
+      $c .= "<div class='docTermIntro'>";
+      $c .= "<div class='infoLogin'>";
+        $c .= "<span class='userInfo'>".$this->app()->ui()->icon('system/iconUser').' '.utils::es($this->app->user()->data ('name')).'</span>';
+        $c .= "<span class='workplaceInfo'>";
         if ($this->app->workplace)
           $c .= ' '.$this->app()->ui()->icon('system/iconWorkplace').' '.utils::es($this->app->workplace['name']);
         else
           $c .= ' '.$this->app()->ui()->icon('system/iconWarning').' '.utils::es('Neznámé pracoviště');
-  		//$c .= "<button class='btn btn-info pull-right e10-terminal-action' data-action='print-retry' id='terminal-print-retry'>".$this->app()->ui()->icon('system/actionPrint')."</button>";
-		  $c .= '<br/><b>'.utils::es('Můžete prodávat').'</b><br/>';
+        $c .= "</span>";
+      $c .= "</div>";
+      $c .= "<div class='infoComments'>";
+		  $c .= utils::es('Můžete prodávat');
+      $c .= "</div>";
 		  //$c .= '<div class="e10-small">'.utils::es('Účtenku vytisknete stisknutím částky vpravo nahoře.').'</div>';
+      //$c .= "<button class='btn btn-info pull-right e10-terminal-action' data-action='print-retry' id='terminal-print-retry'>".$this->app()->ui()->icon('system/actionPrint')."</button>";
       $c .= "</div>";
 
 
