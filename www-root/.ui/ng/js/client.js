@@ -32,9 +32,9 @@ elid=topicInfo['elids'][i];let
 mqttItem=document.getElementById(elid);if(!mqttItem){console.log("NOT EXIST",elid);continue;}let
 family=mqttItem.getAttribute('data-shp-family');if(family==='iot-sensor'){let
 valueElement=mqttItem.querySelector('span.value');valueElement.textContent=payload.value;}else
-if(family==='iot-light'){if(payload['state']!==undefined){let
+if(family==='iot-light'){let
 switchElement=mqttItem.getElementsByClassName('shp-iot-primary-switch');if(switchElement.length>0){let
-propertyId=switchElement[0].getAttribute('data-shp-iot-state-id');if(propertyId===null)propertyId='state';if(payload[propertyId]!==undefined){if(switchElement[0].disabled)switchElement[0].disabled=false;switchElement[0].checked=payload[propertyId]==='ON';}}}if(payload['brightness']!==undefined){let
+propertyId=switchElement[0].getAttribute('data-shp-iot-state-id');if(propertyId===null)propertyId='state';if(payload[propertyId]!==undefined){if(switchElement[0].disabled)switchElement[0].disabled=false;switchElement[0].checked=payload[propertyId]==='ON';}}if(payload['brightness']!==undefined){let
 brElement=mqttItem.getElementsByClassName('shp-iot-br-range');if(brElement.length>0){if(brElement[0].disabled)brElement[0].disabled=false;brElement[0].value=payload['brightness'].toString();}}if(payload['color_temp']!==undefined){let
 ctElement=mqttItem.getElementsByClassName('shp-iot-ct-range');if(ctElement.length>0){if(ctElement[0].disabled)ctElement[0].disabled=false;ctElement[0].value=payload['color_temp'].toString();}}setTimeout(function(){shc.mqtt.checkGroups()},100);}else
 if(family==='iot-setup-scene'){if(payload['scene']!==undefined){let
