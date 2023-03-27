@@ -199,7 +199,11 @@ class UIControl extends \Shipard\UI\ng\TemplateUIControl
         $c .= '<pre>Invalid device #'.$deviceNdx.'</pre>';
         continue;
       }
-      $c .= $this->renderDeviceSwitch_Light($deviceNdx, $deviceRecData, $disabledOptions, $params);
+
+      if ($deviceRecData['deviceKind'] === 'light')
+        $c .= $this->renderDeviceSwitch_Light($deviceNdx, $deviceRecData, $disabledOptions, $params);
+      elseif ($deviceRecData['deviceKind'] === 'socket')
+        $c .= $this->renderDeviceSwitch_Socket($deviceNdx, $deviceRecData, $disabledOptions, $params);
     }
 
     //$c .= '<pre>'.Json::lint($deviceCfgData['dataModel']).'</pre>';
@@ -262,6 +266,47 @@ class UIControl extends \Shipard\UI\ng\TemplateUIControl
 
     return $c;
   }
+
+  public function renderDeviceSwitch_Socket($deviceNdx, $deviceRecData, array $disabledOptions, array $params)
+  {
+    $deviceCfgRecData = $this->app()->loadItem($deviceNdx, 'mac.iot.devicesCfg');
+    $deviceCfgData = json_decode($deviceCfgRecData['cfgData'], TRUE);
+
+    $deviceRegData = $this->registerIotDevice($deviceRecData);
+    $deviceSID = $deviceRegData['sid'];
+
+    $id = $this->registerTopicMainElement($deviceRecData['deviceTopic']);
+
+    $icon = $this->iotDevicesTable->tableIcon($deviceRecData);
+    $title = $deviceRecData['uiName'] === '' ? $deviceRecData['fullName'] : $deviceRecData['uiName'];
+
+    foreach ($deviceCfgData['dataModel']['properties'] as $propId => $propCfg)
+    {
+      if (!str_starts_with($propId, 'state'))
+        continue;
+
+      $c = "<div class='d-flex align-items-center mt-1 mb-1'";
+      $c .= " id='$id' data-shp-family='iot-light' data-shp-iot-device='$deviceSID'";
+      $c .= ">";
+        $c .= "<div class='p-2 align-self-start'>";
+          $c .= "<label class='fs-2' for='{$id}_onoff'>";
+          $c .= $this->app()->ui()->icon($icon);
+          $c .= "</label>";
+        $c .= "</div>";
+        $c .= "<div class='_p-2 flex-grow-1 _ms-2'>";
+          $c .= "<label class='pb-1 fw-semibold' for='{$id}_onoff'>".Utils::es($title)."</label>";
+        $c .= "</div>";
+        $c .= "<div class='ps-3 fs-3 align-self-start'>";
+          $c .= "<div class='form-check form-switch form-switch-right'>";
+            $c .= "<input class='form-check-input shp-iot-primary-switch mac-shp-triggger' data-shp-iot-device='$deviceSID' data-shp-iot-state-id='$propId' type='checkbox' role='switch' id='{$id}_onoff' disabled>";
+          $c .= "</div>";
+        $c .= "</div>";
+      $c .= "</div>";
+    }
+
+    return $c;
+  }
+
 
   public function renderDevicesGroupSwitch(array $params)
   {
@@ -436,6 +481,7 @@ class UIControl extends \Shipard\UI\ng\TemplateUIControl
       $camInfo = $this->iotCamsTable->camInfo($camNdx);
       if (!$camInfo)
       {
+        $c .= 'Invalid camera info';
         continue;
       }
 

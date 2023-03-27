@@ -40,7 +40,13 @@ class ShipardClientIoT {
 
     // -- other controls
     if (element.classList.contains('shp-iot-primary-switch') || element.classList.contains('shp-iot-group-switch'))
-      payload['state'] = element.checked ? 'ON' : 'OFF';
+    {
+      let propertyId = element.getAttribute('data-shp-iot-state-id');
+      if (propertyId === null)
+        propertyId = 'state';
+
+      payload[propertyId] = element.checked ? 'ON' : 'OFF';
+    }
     else if (element.classList.contains('shp-iot-br-range'))
       payload['brightness'] = element.value;
     else if (element.classList.contains('shp-iot-ct-range'))

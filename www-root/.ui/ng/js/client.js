@@ -33,7 +33,8 @@ mqttItem=document.getElementById(elid);if(!mqttItem){console.log("NOT EXIST",eli
 family=mqttItem.getAttribute('data-shp-family');if(family==='iot-sensor'){let
 valueElement=mqttItem.querySelector('span.value');valueElement.textContent=payload.value;}else
 if(family==='iot-light'){if(payload['state']!==undefined){let
-switchElement=mqttItem.getElementsByClassName('shp-iot-primary-switch');if(switchElement.length>0){if(switchElement[0].disabled)switchElement[0].disabled=false;switchElement[0].checked=payload['state']==='ON';}}if(payload['brightness']!==undefined){let
+switchElement=mqttItem.getElementsByClassName('shp-iot-primary-switch');if(switchElement.length>0){let
+propertyId=switchElement[0].getAttribute('data-shp-iot-state-id');if(propertyId===null)propertyId='state';if(payload[propertyId]!==undefined){if(switchElement[0].disabled)switchElement[0].disabled=false;switchElement[0].checked=payload[propertyId]==='ON';}}}if(payload['brightness']!==undefined){let
 brElement=mqttItem.getElementsByClassName('shp-iot-br-range');if(brElement.length>0){if(brElement[0].disabled)brElement[0].disabled=false;brElement[0].value=payload['brightness'].toString();}}if(payload['color_temp']!==undefined){let
 ctElement=mqttItem.getElementsByClassName('shp-iot-ct-range');if(ctElement.length>0){if(ctElement[0].disabled)ctElement[0].disabled=false;ctElement[0].value=payload['color_temp'].toString();}}setTimeout(function(){shc.mqtt.checkGroups()},100);}else
 if(family==='iot-setup-scene'){if(payload['scene']!==undefined){let
@@ -107,7 +108,8 @@ ShipardCamsPictsLoader();this.camPictLoader.init();}shc.on('change','input.mac-s
 payload={};if(element.classList.contains('shp-iot-scene-switch')){let
 attrSetupSID=element.getAttribute('data-shp-iot-setup');if(attrSetupSID===undefined){console.log("unknown iot setup");return;}let
 attrSetupSceneId=element.getAttribute('data-shp-scene-id');if(attrSetupSceneId===undefined){console.log("unknown iot setup scene id");return;}payload['scene']=attrSetupSceneId;let
-setTopic=uiData['iotSubjects'][attrSetupSID]['topic']+'/set';shc.mqtt.publish(uiData['iotSubjects'][attrSetupSID]['wss'],setTopic,JSON.stringify(payload));return;}if(element.classList.contains('shp-iot-primary-switch')||element.classList.contains('shp-iot-group-switch'))payload['state']=element.checked?'ON':'OFF';else
+setTopic=uiData['iotSubjects'][attrSetupSID]['topic']+'/set';shc.mqtt.publish(uiData['iotSubjects'][attrSetupSID]['wss'],setTopic,JSON.stringify(payload));return;}if(element.classList.contains('shp-iot-primary-switch')||element.classList.contains('shp-iot-group-switch')){let
+propertyId=element.getAttribute('data-shp-iot-state-id');if(propertyId===null)propertyId='state';payload[propertyId]=element.checked?'ON':'OFF';}else
 if(element.classList.contains('shp-iot-br-range'))payload['brightness']=element.value;else
 if(element.classList.contains('shp-iot-ct-range'))payload['color_temp']=element.value;if(Object.keys(payload).length===0&&payload.constructor===Object)return;let
 attrDeviceSID=element.getAttribute('data-shp-iot-device');if(attrDeviceSID===undefined){console.log("unknown iot device");return;}let

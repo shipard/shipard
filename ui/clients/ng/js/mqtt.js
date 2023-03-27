@@ -117,9 +117,15 @@ class ShipardMqtt {
           let switchElement = mqttItem.getElementsByClassName('shp-iot-primary-switch');
           if (switchElement.length > 0)
           {
-            if (switchElement[0].disabled)
-              switchElement[0].disabled = false;
-            switchElement[0].checked = payload['state'] === 'ON';
+            let propertyId = switchElement[0].getAttribute('data-shp-iot-state-id');
+            if (propertyId === null)
+              propertyId = 'state';
+            if (payload[propertyId] !== undefined)
+            {
+              if (switchElement[0].disabled)
+                switchElement[0].disabled = false;
+              switchElement[0].checked = payload[propertyId] === 'ON';
+            }
           }
         }
         if (payload['brightness'] !== undefined)
