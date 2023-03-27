@@ -146,7 +146,7 @@ class AppPageBlank extends Utility
 		$c .= "<meta name=\"generator\" content=\"E10 ".__E10_VERSION__."\">\n";
 		$c .= "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n";
 
-		$c .= "<link rel='stylesheet' type='text/css' href='{$scRoot}/bs/5.3/dist/css/bootstrap.min.css?v530a1'/>\n";
+		$c .= "<link rel='stylesheet' type='text/css' href='{$scRoot}/bs/5.3/dist/css/bootstrap.min.css?v530a2'/>\n";
 
 		$themeUrl = "$absUrl{$this->app->urlRoot}/www-root/.ui/ng/themes/" . $mobileuiTheme . "/$style?vv={$cfgID}";
 		$c .= "<link rel='stylesheet' type='text/css' href='$themeUrl'/>\n";
@@ -169,7 +169,7 @@ class AppPageBlank extends Utility
 		$c .= '</script>';
 
 		//$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/libs/js/jquery/jquery-3.5.1.min.js\"></script>";
-		$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/bs/5.3/dist/js/bootstrap.bundle.min.js?v530a1\"></script>";
+		$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/bs/5.3/dist/js/bootstrap.bundle.min.js?v530a2\"></script>";
 		$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/libs/js/mqttws/mqttws31.min.js\"></script>\n";
 
 
