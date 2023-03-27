@@ -275,17 +275,18 @@ class UIControl extends \Shipard\UI\ng\TemplateUIControl
     $deviceRegData = $this->registerIotDevice($deviceRecData);
     $deviceSID = $deviceRegData['sid'];
 
-    $id = $this->registerTopicMainElement($deviceRecData['deviceTopic']);
 
     $icon = $this->iotDevicesTable->tableIcon($deviceRecData);
     $title = $deviceRecData['uiName'] === '' ? $deviceRecData['fullName'] : $deviceRecData['uiName'];
+    $c = '';
 
     foreach ($deviceCfgData['dataModel']['properties'] as $propId => $propCfg)
     {
       if (!str_starts_with($propId, 'state'))
         continue;
+      $id = $this->registerTopicMainElement($deviceRecData['deviceTopic']);
 
-      $c = "<div class='d-flex align-items-center mt-1 mb-1'";
+      $c .= "<div class='d-flex align-items-center mt-1 mb-1'";
       $c .= " id='$id' data-shp-family='iot-light' data-shp-iot-device='$deviceSID'";
       $c .= ">";
         $c .= "<div class='p-2 align-self-start'>";
