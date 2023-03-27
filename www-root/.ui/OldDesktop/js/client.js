@@ -838,9 +838,9 @@ e10ViewerPrintDetail(e){var
 table=searchParentAttr(e,"data-table");var
 reportClass=e.attr('data-report');var
 pk=searchParentAttr(e,"data-pk");var
-url=httpApiRootPath+'/api/formreport/'+table+'/'+reportClass+'/'+pk;var
-params=elementAttributes(e,'data-param');if(params)url+='?'+params;if(e.attr('data-saveas')!==undefined){if(params)url+='&';else
-url+='?';url+='saveas='+e.attr('data-saveas');window.location=url;}else{if(e10embedded){window.location=url;}else{var
+url=httpApiRootPath+'/api/formreport/'+table+'/'+reportClass+'/'+pk+'?vvv='+Date.now();var
+params=elementAttributes(e,'data-param');if(params)url+='&'+params;if(e.attr('data-saveas')!==undefined){if(params)url+='&';else
+url+='&';url+='saveas='+e.attr('data-saveas');window.location=url;}else{if(e10embedded){window.location=url;}else{var
 width=(screen.width*0.85)|0;var
 height=(screen.height*0.85)|0;window.open(url,"test","location=no,status=no,resizable,width="+width+",height="+height);}}}function
 e10ViewerPrintDetailDirect(e){var
