@@ -15,5 +15,8 @@
 	"views": [
 		{"id": "default", "class": "mac.iot.ViewSensorsValuesHistory"}
 	],
-	"options": ["systemTable"]
+	"options": ["systemTable"],
+	"indexes": [
+		{"id": "s2", "columns": ["sensor"]}
+	]
 }
