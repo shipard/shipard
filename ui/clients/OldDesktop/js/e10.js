@@ -3210,18 +3210,18 @@ function e10ViewerPrintDetail (e)
 	var reportClass = e.attr ('data-report');
 	var pk = searchParentAttr (e, "data-pk");
 
-	var url = httpApiRootPath + '/api/formreport/' + table + '/' + reportClass + '/' + pk;
+	var url = httpApiRootPath + '/api/formreport/' + table + '/' + reportClass + '/' + pk + '?vvv='+Date.now();
 
 	var params = elementAttributes (e, 'data-param');
 	if (params)
-		url += '?' + params;
+		url += '&' + params;
 
 	if (e.attr ('data-saveas') !== undefined)
 	{
 		if (params)
 			url += '&';
 		else
-			url += '?';
+			url += '&';
 		url += 'saveas=' + e.attr('data-saveas');
 		window.location = url;
 	}
