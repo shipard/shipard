@@ -174,7 +174,7 @@ class IotDeviceCfgUpdaterZigbee extends IotDeviceCfgUpdater
 
 	protected function applyDevicePropertyHints($propertyId, &$property)
 	{
-		if ($propertyId === 'temperature' || $propertyId === 'humidity' || $propertyId === 'occupancy')
+		if ($propertyId === 'temperature' || $propertyId === 'humidity' || $propertyId === 'occupancy' || $propertyId === 'illuminance_lux')
 			$this->dataModel['sensors'][] = $propertyId;
 	}
 

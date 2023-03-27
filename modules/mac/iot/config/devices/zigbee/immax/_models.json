@@ -1,0 +1,7 @@
+{
+	"07502L": {
+		"fn": "4 in 1 multi sensor",
+		"modelID": "07502L",
+		"iotKind": "sensor", "iotSubKind": "sensor"
+	}
+}
