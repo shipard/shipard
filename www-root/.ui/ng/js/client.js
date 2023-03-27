@@ -4,9 +4,9 @@ headers={};headers['content-type']='application/json';return headers;}get(url,f,
 fullUrl=this.httpServerRoot+url;if(isFullUrl)fullUrl=url;var
 options={method:"GET",url:fullUrl,headers:this.httpHeaders(),};fetch(fullUrl,options).then((response)=>response.json()).then((data)=>{f(data);}).catch((error)=>{console.error("Error:",error);});}post(url,data,f,errorFunction){var
 fullUrl=this.httpServerRoot+url;var
-options={method:'POST',url:fullUrl,body:JSON.stringify(data),dataType:'json',headers:this.httpHeaders(),error:(errorFunction!='undefined')?errorFunction:function(data){console.log("========================ERROR: "+fullUrl);}};fetch(fullUrl,options).then((response)=>response.json()).then((data)=>{console.log("Success:",data);f(data);}).catch((error)=>{console.error("Error:",error);});}postForm=function(url,data,f){var
+options={method:'POST',url:fullUrl,body:JSON.stringify(data),dataType:'json',headers:this.httpHeaders(),error:(errorFunction!='undefined')?errorFunction:function(data){console.log("========================ERROR: "+fullUrl);}};fetch(fullUrl,options).then((response)=>response.json()).then((data)=>{console.log("Success:",data);f(data);}).catch((error)=>{console.error("Error:",error);});}postForm(url,data,f){var
 fullUrl=this.httpServerRoot+url;var
-options={type:'POST',url:fullUrl,success:f,data:data,headers:this.httpHeaders(),error:function(data){console.log("========================ERROR: "+fullUrl);}};$.ajax(options);}setHttpServerRoot(httpServerRoot){this.httpServerRoot=httpServerRoot;}}class
+options={type:'POST',url:fullUrl,success:f,data:data,headers:this.httpHeaders(),error:function(data){console.log("========================ERROR: "+fullUrl);}};}setHttpServerRoot(httpServerRoot){this.httpServerRoot=httpServerRoot;}}class
 ShipardMqtt{init(){if(typeof
 Paho=='undefined')return;for(var
 i

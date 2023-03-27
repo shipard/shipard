@@ -64,7 +64,7 @@ class ShipardServer {
 			});
 	}
 
-	postForm = function (url, data, f)
+	postForm (url, data, f)
 	{
 		var fullUrl = this.httpServerRoot + url;
 
@@ -80,16 +80,12 @@ class ShipardServer {
 			}
 		};
 
-		$.ajax(options);
+		//$.ajax(options);
 	}
-
 
 	setHttpServerRoot (httpServerRoot)
 	{
 		this.httpServerRoot = httpServerRoot;
 	}
 }
-
-
-
 
