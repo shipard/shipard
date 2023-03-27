@@ -33,7 +33,13 @@ class IoTSensorsDataReceiver extends Utility
 
 		foreach ($data['sensorsData'] as $sensorData)
 		{
-			if (isset($sensorData['sensorNdx']))
+			$sensorNdx = intval($sensorData['sensorNdx'] ?? 0);
+			if ($sensorData['value'] === true)
+				$sensorData['value'] = 1;
+			elseif ($sensorData['value'] === false)
+				$sensorData['value'] = 0;
+
+			if ($sensorNdx)
 			{
 				$sensorRecData = $this->app()->loadItem($sensorData['sensorNdx'], 'mac.iot.sensors');
 				if (!$sensorRecData)
@@ -43,7 +49,7 @@ class IoTSensorsDataReceiver extends Utility
 				}
 				$valueFloat = floatval($sensorData['value']);
 
-				$this->db()->query('UPDATE [mac_iot_sensorsValues] SET [value] = %f', $sensorData['value'],
+				$this->db()->query('UPDATE [mac_iot_sensorsValues] SET [value] = %f', $valueFloat,
 					', [time] = %t', $now, ', [counter] = [counter] + 1',
 					' WHERE [ndx] = %i', $sensorData['sensorNdx']);
 
