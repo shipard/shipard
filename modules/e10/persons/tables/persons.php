@@ -418,6 +418,8 @@ class TablePersons extends DbTable
 		if (!count($persons))
 			return '';
 
+		$emails = [];
+
 		$testNewPersons = intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
 
 		if ($testNewPersons)
