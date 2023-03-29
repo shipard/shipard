@@ -224,6 +224,7 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 	protected function importRow($il)
 	{
 		$negativePrices = intval($this->srcImpData['DocumentType']) === 2; // dobropis
+		$testDocRowPriceSource = intval($this->app()->cfgItem('options.experimental.testDocRowPriceSource', 0));
 
 		$row = [];
 
@@ -240,11 +241,23 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 		{
 			$row['priceItem'] = $this->valueNumber($il['UnitPriceTaxInclusive']);
 			$row['taxCalc'] = 2;
+
+			if ($testDocRowPriceSource)
+			{
+				$row['priceAll'] = $this->valueNumber($il['LineExtensionAmountTaxInclusive']);
+				$row['priceSource'] = 1;
+			}
 		}
 		else
 		{
 			$row['priceItem'] = $this->valueNumber($il['UnitPrice']);
 			$row['taxCalc'] = 1;
+
+			if ($testDocRowPriceSource)
+			{
+				$row['priceAll'] = $this->valueNumber($il['LineExtensionAmount']);
+				$row['priceSource'] = 1;
+			}
 		}
 
 		if ($negativePrices && $row['priceItem'] > 0.0)
