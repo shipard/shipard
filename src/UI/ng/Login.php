@@ -77,7 +77,7 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 		$passwordValueParam = ($passwordValue) ? " value='".utils::es($passwordValue)."'": '';
 
 		$c .= "<div class='container d-flex justify-content-center align-items-center' style='height: 100vh;'>";
-		$c .= "<div class='card' style='min-width: 35em; max-width: 90vw;'>";
+		$c .= "<div class='card' style='min-width: 90%; max-width: 90vw;'>";
 		$c .= "<div class='card-header'>";
     $c .= Utils::es('Přihlášení');
   	$c .= '</div>';
