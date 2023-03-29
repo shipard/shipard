@@ -58,13 +58,13 @@ class FormInvoiceInRow extends \e10doc\core\libs\FormDocRows
 					$this->addColumnInput ("unit", self::coColW2);
 					if ($this->recData['priceSource'] == 1)
 					{
-						$this->addColumnInput ("priceItem", self::coColW2 | self::coReadOnly | self::coDisabled);
-						$this->addColumnInput ("priceAll", self::coColW2);
+						$this->addColumnInput ("priceItem", self::coColW2|self::coDisabled);
+						$this->addColumnInput ("priceAll", self::coColW2|DataModel::coSaveOnChange);
 					}
 					else
 					{
 						$this->addColumnInput ("priceItem", self::coColW2);
-						$this->addColumnInput ("priceAll", self::coColW2| self::coReadOnly| self::coDisabled);
+						$this->addColumnInput ("priceAll", self::coColW2|self::coDisabled);
 					}
 					if ($ownerRecData && $ownerRecData ['taxPayer'])
 						$this->addColumnInput ("taxCode", self::coColW2|DataModel::coSaveOnChange);

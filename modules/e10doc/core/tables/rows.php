@@ -112,7 +112,7 @@ class TableRows extends DbTable
 
 		// Výpočet cen v řádku...
 		$recData ['taxBaseHcCorr'] = 0;
-		if ($recData ['priceSource'] === 0)
+		if ($recData ['priceSource'] == 0)
 			$recData ['priceAll'] = round ($recData ['priceItem'] * $recData ['quantity'], 2);
 		else
 		{
