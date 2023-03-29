@@ -1,0 +1,85 @@
+:root {
+  --accentColor: #93C572;
+  --navBackground: #E8E8E8;
+  --primaryColumn: whitesmoke;
+  --secondaryColumn: white;
+  --columnSeparator: gainsboro;
+  --numpadBackground: whitesmoke;
+  --numpadColor: #383838;
+  --numpadBorder: silver;
+  --numpadClose: gainsboro;
+  --numpadOk: var(--accentColor);
+  --itemBorder: gainsboro;
+  --cardBackground: white;
+}
+
+body > div.fullScreenModal {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10000;
+  background-color: rgba(16, 16, 16, 0.8156862745);
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  align-content: stretch;
+}
+
+div.shp-numpad-container {
+  width: 25vw;
+  background-color: var(--numpadBackground);
+  border: 4px solid rgba(16, 16, 16, 0.062745098);
+  border-radius: 4px;
+}
+
+table.shp-numpad-keyboard {
+  width: 100%;
+}
+
+table.shp-numpad-keyboard td {
+  padding: 0.6rem;
+  width: 25%;
+  text-align: center;
+  border: 2px solid var(--numpadBorder);
+  background-color: var(--numpadBackground);
+  color: var(--numpadColor);
+}
+
+table.shp-numpad-keyboard td.ok.shp-widget-action {
+  background-color: var(--numpadOk);
+}
+
+table.shp-numpad-keyboard td.c.shp-widget-action {
+  background-color: var(--numpadClose);
+}
+
+table.shp-numpad-keyboard td.d.shp-widget-action {
+  font-size: 200%;
+  line-height: 200%;
+}
+
+table.shp-numpad-keyboard td.b.shp-widget-action {
+  font-size: 200%;
+  line-height: 200%;
+}
+
+table.shp-numpad-keyboard td.n.shp-widget-action {
+  padding: 2rem;
+}
+
+div.shp-workplace-login-users {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3rem;
+  padding: 0.6rem;
+}
+
+div.shp-workplace-login-users > * {
+  flex: 1 1 auto;
+  min-width: 10rem;
+  text-align: center;
+}

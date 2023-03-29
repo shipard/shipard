@@ -14,7 +14,7 @@ class AppPageBlank extends Utility
 	const backIcon = 'system/actionBack';
 
 	static $themeStatusColor =
-			['default' => '#009688'];
+			['default' => '#212529'];
 
 	protected $pageTabs = FALSE;
 	protected $content = [];

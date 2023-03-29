@@ -17,6 +17,8 @@ class ShipardClient {
 
 	userInfo = null;
 
+	numPad = null;
+
 	on(eventType, selector, callback) {
 		document.addEventListener(eventType, function (event) {
 			if (event.target.matches(selector)) {
@@ -92,9 +94,50 @@ class ShipardClient {
 		switch (actionId)
     {
       case 'setColorMode': return this.setColorMode(e);
+			case 'workplaceLogin': return this.workplaceLogin(e);
     }
 
     return 0;
+  }
+
+	workplaceLogin(e)
+	{
+		console.log('workplaceLogin', e.getAttribute('data-login'));
+
+		this.getNumber (
+			{
+				title: 'Zadejte přístupový kód',
+				srcElement: e,
+				userLogin: e.getAttribute('data-login'),
+				success: function() {this.workplaceLoginDoIt()}.bind(this)
+			}
+		);
+
+		return 0;
+	}
+
+	workplaceLoginDoIt(e)
+	{
+		console.log(this.numPad.options.userLogin);
+
+		console.log("__DO_IT__", this.numPad.options.srcElement.getAttribute('data-login'), this.numPad.gnValue);
+
+		document.getElementById('e10-login-user').value =  this.numPad.options.userLogin;//this.numPad.options.srcElement.getAttribute('data-login');
+		document.getElementById('e10-login-pin').value = this.numPad.gnValue;
+		document.forms['e10-mui-login-form'].submit();
+	}
+
+  getNumber (options) {
+    const template = document.createElement('div');
+    template.id = 'widget_123';
+    template.classList.add('fullScreenModal');
+    document.body.appendChild(template);
+
+    var abc = new ShipardTouchNumPad();
+    abc.options = options;
+    abc.init(template);
+
+    this.numPad = abc;
   }
 
 	setColorMode(e)

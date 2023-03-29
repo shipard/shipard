@@ -43,7 +43,7 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 		if (!$this->workplace)
 			return;
 
-		/*
+
 		if (isset($this->workplace['users']))
 		{
 			$q[] = 'SELECT persons.fullName, persons.firstName, persons.lastName, persons.login FROM e10_persons_persons AS persons';
@@ -55,8 +55,10 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 			{
 				$this->users[] = $r->toArray();
 			}
+
+			if (count($this->users))
+				$this->mode = 'workplace';
 		}
-		*/
 
 		// -- user info
 		$this->pageInfo['userInfo'] = [];
@@ -74,13 +76,24 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 		$passwordValue = $this->app->cfgItem ('autoLoginPassword', FALSE);
 		$passwordValueParam = ($passwordValue) ? " value='".utils::es($passwordValue)."'": '';
 
-		$c .= "<form class='e10-mui-login-form' method='POST' action='{$this->app->urlRoot}/user/login-check/ui'>";
+		$c .= "<div class='container d-flex justify-content-center align-items-center' style='height: 100vh;'>";
+		$c .= "<div class='card' style='min-width: 35em; max-width: 90vw;'>";
+		$c .= "<div class='card-header'>";
+    $c .= Utils::es('Přihlášení');
+  	$c .= '</div>';
+		$c .= "<div class='card-body'>";
 		if ($this->app->testGetParam ("from", NULL) != NULL)
-			$c .= "<div class='m e10-error'>chybné jméno nebo heslo</div>";
+			$c .= "<div class='alert alert-danger'>Chybný přihlašovací e-mail nebo heslo</div>";
+		$c .= "<form class='_form-floating _mb-3' method='POST' action='{$this->app->urlRoot}/user/login-check/ui'>";
 
-		$c .= "<label for='e10-login-user'>Email</label><input type='email' name='login' id='e10-login-user'$userValueParam>";
-		$c .= "<label for='e10-login-password'>Heslo</label><input type='password' name='password' id='e10-login-password'$passwordValueParam>";
-
+		$c .=	"<div class='form-floating mb-3'>";
+		$c .= "<input type='email' class='form-control' name='login' placeholder='name@example.com' id='e10-login-user'$userValueParam>\n";
+		$c .= "<label for='e10-login-user'>E-mail</label>\n";
+		$c .= '</div>';
+		$c .=	"<div class='form-floating mb-3'>";
+		$c .= "<input type='password' name='password' class='form-control' placeholder='Heslo' id='e10-login-password'$passwordValueParam>\n";
+		$c .= "<label for='e10-login-password'>Heslo</label>\n";
+		$c .= '</div>';
 		$referer = $this->loginReferer();
 		$c .= "<input type='hidden' name='from' value='$referer'>";
 
@@ -90,6 +103,10 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 
 		$c .= '</form>';
 
+		$c .= '</div>';
+		$c .= '</div>';
+		$c .= '</div>';
+
 		return $c;
 	}
 
@@ -97,40 +114,29 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 	{
 		$c = '';
 
-		if ($this->mode === 'workplace' && !count($this->users))
+		$c .= "<div class='container d-flex justify-content-center align-items-center flex-row flex-wrap: wrap;' style='height: 100vh;'>";
+		$c .= "<div class='shp-workplace-login-users'>";
+		if ($this->app->testGetParam ("from", NULL) != NULL)
+			$c .= "<div class='alert alert-danger flex-grow-1 w-100'>Chybně zadaný PIN</div>";
+
+		foreach ($this->users as $user)
 		{
-			$c .= "<div class='e10-mui-login-users'>";
-
-			$c .= '<p>'.utils::es ('Zařízení není zařazeno k žádnému pracovišti.').'</p>';
-			$c .= '<p>'.utils::es ('ID zařízení: ' . $this->deviceId).'</p>';
-
-			$c .= "</div>";
+			$c .= "<button class='btn btn-lg btn-primary user shp-app-action' data-action='workplaceLogin'";
+			$c .= " data-login='" . utils::es($user['login']) . "'";
+			$c .= '>';
+			$c .= utils::es($user['fullName']);
+			$c .= '</button>';
 		}
-		else
-		if (count($this->users) > 100)
-		{
-			$c .= "<div class='e10-mui-login-users'>";
-			foreach ($this->users as $user)
-			{
-				$c .= "<span class='user e10-trigger-action' data-action='workspace-login'";
-				$c .= " data-login='" . utils::es($user['login']) . "'";
-				$c .= '>';
-				$c .= "<div class='u'>";
-				$c .= "<span class='name'>" . utils::es($user['fullName']) . '</span>';
-				$c .= '</div>';
-				$c .= '</span>';
-			}
 
-			$c .= "<form class='e10-mui-login-form' name='e10-mui-login-form' method='POST' action='{$this->app->urlRoot}/user/login-check/ui' style='display: none;'>";
-				$c .= "<input type='hidden' name='login' id='e10-login-user'>";
-				$c .= "<input type='hidden' name='pin' id='e10-login-pin'>";
-			$c .= '</form>';
+		$c .= "<form class='e10-mui-login-form' name='e10-mui-login-form' method='POST' action='{$this->app->urlRoot}/user/login-check/ui' style='display: none;'>";
+			$c .= "<input type='hidden' name='login' id='e10-login-user'>";
+			$c .= "<input type='hidden' name='pin' id='e10-login-pin'>";
+			$referer = $this->loginReferer();
+			$c .= "<input type='hidden' name='from' value='$referer'>";
+		$c .= '</form>';
 
-			if ($this->app->testGetParam ("from", NULL) != NULL)
-				$c .= "<div class='h1 m e10-error center'>Chybně zadaný PIN</div>";
-
-			$c .= '</div>';
-		}
+		$c .= '</div>';
+		$c .= '</div>';
 
 		return $c;
 	}
