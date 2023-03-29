@@ -38,6 +38,13 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 		 * <Invoice xmlns="http://isdoc.cz/namespace/invoice" version="5.2.3">
 		 */
 
+		$tst = strstr($this->fileContent, '<isdoc:Invoice');
+		if ($tst)
+		{
+			$this->fileContent = str_replace('<isdoc:', '<', $this->fileContent);
+			$this->fileContent = str_replace('</isdoc:', '</', $this->fileContent);
+		}
+
 		$tst = strstr($this->fileContent, '<?xml');
 		if (!$tst)
 			return;
