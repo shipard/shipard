@@ -426,6 +426,9 @@ class TableRows extends DbTable
 		if ($columnId === 'taxCode' && $form)
 			return $this->columnInfoEnumTaxCodes($form->recData, $form->option ('ownerRecData'), $form);
 
+		if ($columnId === 'priceSource' && $form)
+			return [0 => 'cena / jedn.', 1 => 'cena celkem'];
+
 		return parent::columnInfoEnum ($columnId, $valueType = 'cfgText', $form);
 	}
 

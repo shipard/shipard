@@ -12,6 +12,7 @@ class FormInvoiceInRow extends \e10doc\core\libs\FormDocRows
 		$operation = $this->table->app()->cfgItem ('e10.docs.operations.' . $this->recData ['operation'], FALSE);
 		$taxCode = E10Utils::taxCodeCfg($this->app(), $this->recData ['taxCode']);
 		$usePropertyExpenses = $this->table->app()->cfgItem ('options.property.usePropertyExpenses', 0);
+		$testDocRowPriceSource = intval($this->app()->cfgItem('options.experimental.testDocRowPriceSource', 0));
 
 		$this->openForm (self::ltGrid);
 			$this->addColumnInput ('itemType', self::coHidden);
@@ -51,11 +52,32 @@ class FormInvoiceInRow extends \e10doc\core\libs\FormDocRows
 			$this->closeRow ();
 
 			$this->openRow ();
-				$this->addColumnInput ("quantity", self::coColW3);
-				$this->addColumnInput ("unit", self::coColW2);
-				$this->addColumnInput ("priceItem", self::coColW3);
-				if ($ownerRecData && $ownerRecData ['taxPayer'])
-					$this->addColumnInput ("taxCode", self::coColW4|DataModel::coSaveOnChange);
+				if ($testDocRowPriceSource)
+				{
+					$this->addColumnInput ("quantity", self::coColW2);
+					$this->addColumnInput ("unit", self::coColW2);
+					if ($this->recData['priceSource'] == 1)
+					{
+						$this->addColumnInput ("priceItem", self::coColW2 | self::coReadOnly | self::coDisabled);
+						$this->addColumnInput ("priceAll", self::coColW2);
+					}
+					else
+					{
+						$this->addColumnInput ("priceItem", self::coColW2);
+						$this->addColumnInput ("priceAll", self::coColW2| self::coReadOnly| self::coDisabled);
+					}
+					if ($ownerRecData && $ownerRecData ['taxPayer'])
+						$this->addColumnInput ("taxCode", self::coColW2|DataModel::coSaveOnChange);
+					$this->addColumnInput ("priceSource", self::coColW2|DataModel::coSaveOnChange);
+				}
+				else
+				{
+					$this->addColumnInput ("quantity", self::coColW3);
+					$this->addColumnInput ("unit", self::coColW2);
+					$this->addColumnInput ("priceItem", self::coColW3);
+					if ($ownerRecData && $ownerRecData ['taxPayer'])
+						$this->addColumnInput ("taxCode", self::coColW4|DataModel::coSaveOnChange);
+				}
 			$this->closeRow ();
 
 			$this->openRow ();

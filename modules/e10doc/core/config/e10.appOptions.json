@@ -4,7 +4,8 @@
 			{"cfgKey": "testDocRowsSettings", "cfgName": "Testovat Nastavení řádků dokladů", "options": {"0": "Ne","1": "Ano"}},
 			{"cfgKey": "testNewDocRowsEdit", "cfgName": "Testovat nové zadávání řádků dokladů", "options": {"0": "Ne","1": "Ano - NEZAPÍNAT"}},
 			{"cfgKey": "testISDoc", "cfgName": "Testovat ISDoc", "options": {"0": "Ne","1": "Ano"}},
-			{"cfgKey": "checkIncomingIssues", "cfgName": "Testovat automatické pořizování dokladů z došlé pošty", "options": {"0": "Ne","1": "Ano"}}
+			{"cfgKey": "checkIncomingIssues", "cfgName": "Testovat automatické pořizování dokladů z došlé pošty", "options": {"0": "Ne","1": "Ano"}},
+			{"cfgKey": "testDocRowPriceSource", "cfgName": "Testovat přepínání ceny celkem v řádcích dokladů", "options": {"0": "Ne","1": "Ano"}}
 		]
 	}
 }
