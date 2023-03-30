@@ -20,7 +20,7 @@ class DownloadStatementsInbox extends \lib\ebanking\download\DownloadStatements
 		array_push($q, ' AND [docState] IN %in', [1000, 1001]);
 
 		if (isset($this->inboxQueryParams['subject']))
-			array_push($q, ' AND [subject] = %s', $this->inboxQueryParams['subject']);
+			array_push($q, ' AND [subject] LIKE %s', $this->inboxQueryParams['subject'].'%');
 
 		if (isset($this->inboxQueryParams['emailFrom']))
 		{
