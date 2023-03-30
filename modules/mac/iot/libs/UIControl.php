@@ -496,6 +496,59 @@ class UIControl extends \Shipard\UI\ng\TemplateUIControl
     return $c;
   }
 
+	public function renderIoTControlButton(array $params)
+	{
+    $controlsNdxList = explode(',', $params['ndx'] ?? '');
+    if (!count($controlsNdxList))
+    {
+      return 'Invalid / missing param `ndx`';
+    }
+
+    $c = '';
+    foreach ($controlsNdxList as $cn)
+    {
+      $controlNdx = intval($cn);
+      $controlRecData = $this->app()->loadItem($controlNdx, 'mac.iot.controls');
+      if (!$controlRecData)
+      {
+        $c .= '<pre>Invalid control #'.$controlNdx.'</pre>';
+        continue;
+      }
+
+      $controlButton = [
+        'text' => $controlRecData['shortName'],
+
+        'action' => 'inline-action',
+        'class' => 'pl1',
+
+        'icon' => 'system/iconCheck',
+        'btnClass' => 'btn-primary',
+        'actionClass' => 'shp-app-action',
+
+        'data-object-class-id' => 'mac.iot.libs.IotAction',
+        'data-action-param-control' => $controlRecData['uid']
+      ];
+
+      if ($controlRecData['controlType'] === 'setDeviceProperty')
+      {
+        $controlButton['data-action-param-action-type'] = 'set-device-property';
+      }
+      elseif ($controlRecData['controlType'] === 'sendSetupRequest')
+      {
+        $controlButton['data-action-param-action-type'] = 'send-setup-request';
+        $controlButton['data-action-param-setup'] = $controlRecData['iotSetup'];
+        $controlButton['data-action-param-setup-request'] = $controlRecData['iotSetupRequest'];
+      }
+      elseif ($controlRecData['controlType'] === 'sendMqttMsg')
+      {
+        $controlButton['data-action-param-action-type'] = 'send-mqtt-msg';
+      }
+
+      $c .= $this->app()->ui()->renderTextLine($controlButton);
+    }
+		return $c;
+	}
+
   public function render(string $tagName, ?array $params)
   {
     if (!isset($params['type']))
@@ -512,6 +565,7 @@ class UIControl extends \Shipard\UI\ng\TemplateUIControl
       'deviceSwitch' => $this->renderDeviceSwitch($params),
       'renderDevicesGroupSwitch' => $this->renderDevicesGroupSwitch($params),
       'iotSensor' => $this->renderIoTSensor($params),
+      'controlButton' => $this->renderIoTControlButton($params),
       'camPicture' => $this->renderCamPicture($params),
       default => ''
     };

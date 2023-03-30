@@ -1,9 +1,11 @@
 class
-ShipardServer{httpServerRoot='';init(){}httpHeaders(){var
+ShipardServer{httpServerRoot='';init(){}beginUrl(){return this.httpServerRoot;}httpHeaders(){var
 headers={};headers['content-type']='application/json';return headers;}get(url,f,errorFunction,isFullUrl){var
 fullUrl=this.httpServerRoot+url;if(isFullUrl)fullUrl=url;var
 options={method:"GET",url:fullUrl,headers:this.httpHeaders(),};fetch(fullUrl,options).then((response)=>response.json()).then((data)=>{f(data);}).catch((error)=>{console.error("Error:",error);});}post(url,data,f,errorFunction){var
 fullUrl=this.httpServerRoot+url;var
+options={method:'POST',url:fullUrl,body:JSON.stringify(data),dataType:'json',headers:this.httpHeaders(),error:(errorFunction!='undefined')?errorFunction:function(data){console.log("========================ERROR: "+fullUrl);}};fetch(fullUrl,options).then((response)=>response.json()).then((data)=>{console.log("Success:",data);f(data);}).catch((error)=>{console.error("Error:",error);});}api=function(data,f,errorFunction){var
+fullUrl=this.beginUrl()+'/api';var
 options={method:'POST',url:fullUrl,body:JSON.stringify(data),dataType:'json',headers:this.httpHeaders(),error:(errorFunction!='undefined')?errorFunction:function(data){console.log("========================ERROR: "+fullUrl);}};fetch(fullUrl,options).then((response)=>response.json()).then((data)=>{console.log("Success:",data);f(data);}).catch((error)=>{console.error("Error:",error);});}postForm(url,data,f){var
 fullUrl=this.httpServerRoot+url;var
 options={type:'POST',url:fullUrl,success:f,data:data,headers:this.httpHeaders(),error:function(data){console.log("========================ERROR: "+fullUrl);}};}setHttpServerRoot(httpServerRoot){this.httpServerRoot=httpServerRoot;}}class
@@ -77,55 +79,19 @@ camPictElement=document.getElementById(ids[key]);let
 pictStyle=camPictElement.getAttribute('data-pict-style');if(pictStyle==='full')pictUrl=server['camUrl']+'imgs/'+camNdx+'/'+data[camNdx]['image'];else
 pictUrl=server['camUrl']+'imgs/-w960/-q70/'+camNdx+'/'+data[camNdx]['image'];let
 imgElement=camPictElement.querySelector('img');imgElement.src=pictUrl;}}}}class
-ShipardClient{server=new
-ShipardServer();mqtt=new
-ShipardMqtt();iot=new
-ShipardClientIoT();appVersion='2.0.1';CLICK_EVENT='click';g_formId=1;openModals=[];progressCount=0;viewerScroll=0;disableKeyDown=0;userInfo=null;on(eventType,selector,callback){document.addEventListener(eventType,function(event){if(event.target.matches(selector)){callback.call(event.target,event.target);}});}onClick(selector,callback){this.on('click',selector,callback)};simpleTabsEvent(e){let
-tabsId=e.getAttribute('data-tabs');let
-tabsElement=document.getElementById(tabsId+'-tabs');let
-oldActiveTabElement=tabsElement.querySelector('a.active');oldActiveTabElement.classList.remove('active');let
-oldActiveContentId=oldActiveTabElement.getAttribute('data-tab-id');let
-oldActiveContentElement=document.getElementById(oldActiveContentId);oldActiveContentElement.classList.add('d-none');e.classList.add('active');let
-newActiveContentId=e.getAttribute('data-tab-id');let
-newActiveContentElement=document.getElementById(newActiveContentId);newActiveContentElement.classList.remove('d-none');}searchParentAttr(e,attr){var
-p=e;while(p.length){var
-attrValue=p.attr(attr);if(p.attr(attr))return p.attr(attr);p=p.parent();if(!p.length)break;}return null;};searchObjectAttr(e,attr){var
-p=e;while(p.length){if(p.attr(attr))return p;p=p.parent();if(!p.length)break;}return null;};widgetAction(e){let
-actionId=e.getAttribute('data-action');this.doAction(actionId,e);}doAction(actionId,e){switch(actionId){case'setColorMode':return this.setColorMode(e);}return 0;}setColorMode(e){let
-colorMode=e.getAttribute('data-app-color-mode');localStorage.setItem('shpAppColorMode',colorMode);this.doColorMode(colorMode);return 0;}initColorMode(firstCall){if(firstCall){window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(){this.initColorMode()}.bind(this));}let
-colorMode=localStorage.getItem('shpAppColorMode');if(!colorMode||colorMode==='auto'){const
-isSystemDarkMode=window.matchMedia('(prefers-color-scheme: dark)').matches;if(isSystemDarkMode)colorMode='dark';else
-colorMode='light';}this.doColorMode(colorMode);}doColorMode(colorMode){if(colorMode==='light'){document.body.removeAttribute('data-bs-theme');}else
-if(colorMode==='dark'){document.body.setAttribute('data-bs-theme','dark');}else
-if(colorMode==='auto'){this.initColorMode();}var
-uiColorMode=colorMode;let
-savedColorMode=localStorage.getItem('shpAppColorMode');if(!savedColorMode||savedColorMode==='auto')uiColorMode='auto';let
-colorModeElements=document.querySelectorAll('[data-action="setColorMode"]');for(let
-idx=0;idx<colorModeElements.length;idx++){if(colorModeElements[idx].getAttribute('data-app-color-mode')===uiColorMode)colorModeElements[idx].classList.add('active');else
-colorModeElements[idx].classList.remove('active');}}init(){this.server.setHttpServerRoot(httpApiRootPath);this.initColorMode(true);this.onClick('a.shp-simple-tabs-item',function(){shc.simpleTabsEvent(this);});this.onClick('.shp-app-action',function(e){this.widgetAction(e);}.bind(this));}}class
-ShipardClientIoT{camPictLoader=null;init(){if(uiData['iotCamServers']!==undefined){this.camPictLoader=new
-ShipardCamsPictsLoader();this.camPictLoader.init();}shc.on('change','input.mac-shp-triggger',function(){shc.iot.mainTrigger(this);});}mainTrigger(element){let
-payload={};if(element.classList.contains('shp-iot-scene-switch')){let
-attrSetupSID=element.getAttribute('data-shp-iot-setup');if(attrSetupSID===undefined){console.log("unknown iot setup");return;}let
-attrSetupSceneId=element.getAttribute('data-shp-scene-id');if(attrSetupSceneId===undefined){console.log("unknown iot setup scene id");return;}payload['scene']=attrSetupSceneId;let
-setTopic=uiData['iotSubjects'][attrSetupSID]['topic']+'/set';shc.mqtt.publish(uiData['iotSubjects'][attrSetupSID]['wss'],setTopic,JSON.stringify(payload));return;}if(element.classList.contains('shp-iot-primary-switch')||element.classList.contains('shp-iot-group-switch')){let
-propertyId=element.getAttribute('data-shp-iot-state-id');if(propertyId===null)propertyId='state';payload[propertyId]=element.checked?'ON':'OFF';}else
-if(element.classList.contains('shp-iot-br-range'))payload['brightness']=element.value;else
-if(element.classList.contains('shp-iot-ct-range'))payload['color_temp']=element.value;if(Object.keys(payload).length===0&&payload.constructor===Object)return;let
-attrDeviceSID=element.getAttribute('data-shp-iot-device');if(attrDeviceSID===undefined){console.log("unknown iot device");return;}let
-deviceSIDs=attrDeviceSID.split(',');for(const
-deviceSID
-of
-deviceSIDs){if(uiData['iotSubjects']===undefined||uiData['iotSubjects'][deviceSID]===undefined){console.log("Invalid device SID: ",deviceSID);continue;}let
-setTopic=uiData['iotSubjects'][deviceSID]['topic']+'/set';shc.mqtt.publish(uiData['iotSubjects'][deviceSID]['wss'],setTopic,JSON.stringify(payload));}}initIoT(){shc.mqtt.init();shc.iot.init();}}class
 ShipardWidget{rootElm=null;rootId='';numPad=null;init(rootElm){this.rootElm=rootElm;this.rootId=this.rootElm.getAttribute('id');console.log("hello from ShipardWidget",this.rootId);this.on(this,'click','.shp-widget-action',function(e,ownerWidget){ownerWidget.widgetAction(e)});}widgetAction(e){let
-actionId=e.getAttribute('data-action');this.doAction(actionId,e);}doAction(actionId,e){return 0;}on(ownerWidget,eventType,selector,callback){this.rootElm.addEventListener(eventType,function(event){if(event.target.matches(selector)){callback.call(event.target,event.target,ownerWidget);}});}onClick(ownerWidget,selector,callback){this.on(ownerWidget,'click',selector,callback)};nf(n,c){var
+actionId=e.getAttribute('data-action');this.doAction(actionId,e);}doAction(actionId,e){switch(actionId){case'inline-action':return this.inlineAction(e);}return 0;}inlineAction(e){if(e.getAttribute('data-object-class-id')===null)return;var
+requestParams={};requestParams['object-class-id']=e.getAttribute('data-object-class-id');requestParams['action-type']=e.getAttribute('data-action-type');this.elementPrefixedAttributes(e,'data-action-param-',requestParams);if(e.getAttribute('data-pk')!==null)requestParams['pk']=e.getAttribute('data-pk');console.log("__INLINE_ACTION",requestParams);}on(ownerWidget,eventType,selector,callback){this.rootElm.addEventListener(eventType,function(event){if(event.target.matches(selector)){callback.call(event.target,event.target,ownerWidget);}});}onClick(ownerWidget,selector,callback){this.on(ownerWidget,'click',selector,callback)};nf(n,c){var
 c=isNaN(c=Math.abs(c))?2:c,d='.',t=' ',s=n<0?"-":"",i=parseInt(n=Math.abs(+n||0).toFixed(c))+"",j=(j=i.length)>3?j%3:0;return s+(j?i.substr(0,j)+t:"")+i.substr(j).replace(/(\d{3})(?=\d)/g,"$1"+t)+(c?d+Math.abs(n-i).toFixed(c).slice(2):"");}parseFloat(n){var
 str=n.replace(',','.');return parseFloat(str);}round(value,decimals){return Number(Math.round(value+'e'+decimals)+'e-'+decimals);}escapeHtml(str){var
 div=document.createElement('div');div.appendChild(document.createTextNode(str));return div.innerHTML;};elmHide(e){e.classList.add('d-none');}elmShow(e){e.classList.remove('d-none');}getNumber(options){const
 template=document.createElement('div');template.id='widget_123';template.classList.add('fullScreenModal');document.body.appendChild(template);var
 abc=new
-ShipardTouchNumPad();abc.options=options;abc.init(template);this.numPad=abc;}}class
+ShipardTouchNumPad();abc.options=options;abc.init(template);this.numPad=abc;}elementPrefixedAttributes(iel,prefix,data){for(var
+i=0,attrs=iel.attributes,l=attrs.length;i<l;i++){var
+attrName=attrs.item(i).nodeName;if(attrName.substring(0,prefix.length)!==prefix)continue;var
+attrNameShort=attrName.substring(prefix.length);var
+val=attrs.item(i).nodeValue;data[attrNameShort]=val;}}}class
 ShipardTouchNumPad
 extends
 ShipardWidget{elmDisplay=null;gnId='gn1234';gnValue='';options=null;init(rootElm){super.init(rootElm);var
@@ -181,6 +147,55 @@ if(mode==='sell'){this.elmHide(this.elmContainerSave);this.elmHide(this.elmConta
 if(mode==='save'){this.elmHide(this.elmContainerSell);this.elmHide(this.elmContainerPay);this.elmShow(this.elmContainerSave);}return 0;}}function
 initWidgetCashBox(id){let
 e=document.getElementById(id);e.shpWidget=new
-WidgetCashBox();e.shpWidget.init(e);}var
+WidgetCashBox();e.shpWidget.init(e);}class
+ShipardClient{server=new
+ShipardServer();mqtt=new
+ShipardMqtt();iot=new
+ShipardClientIoT();appVersion='2.0.1';CLICK_EVENT='click';g_formId=1;openModals=[];progressCount=0;viewerScroll=0;disableKeyDown=0;userInfo=null;numPad=null;on(eventType,selector,callback){document.addEventListener(eventType,function(event){if(event.target.matches(selector)){callback.call(event.target,event.target);}});}onClick(selector,callback){this.on('click',selector,callback)};simpleTabsEvent(e){let
+tabsId=e.getAttribute('data-tabs');let
+tabsElement=document.getElementById(tabsId+'-tabs');let
+oldActiveTabElement=tabsElement.querySelector('a.active');oldActiveTabElement.classList.remove('active');let
+oldActiveContentId=oldActiveTabElement.getAttribute('data-tab-id');let
+oldActiveContentElement=document.getElementById(oldActiveContentId);oldActiveContentElement.classList.add('d-none');e.classList.add('active');let
+newActiveContentId=e.getAttribute('data-tab-id');let
+newActiveContentElement=document.getElementById(newActiveContentId);newActiveContentElement.classList.remove('d-none');}searchParentAttr(e,attr){var
+p=e;while(p.length){var
+attrValue=p.attr(attr);if(p.attr(attr))return p.attr(attr);p=p.parent();if(!p.length)break;}return null;};searchObjectAttr(e,attr){var
+p=e;while(p.length){if(p.attr(attr))return p;p=p.parent();if(!p.length)break;}return null;};widgetAction(e){let
+actionId=e.getAttribute('data-action');this.doAction(actionId,e);}doAction(actionId,e){switch(actionId){case'setColorMode':return this.setColorMode(e);case'workplaceLogin':return this.workplaceLogin(e);case'inline-action':return this.inlineAction(e);}return 0;}inlineAction(e){if(e.getAttribute('data-object-class-id')===null)return;var
+requestParams={};requestParams['object-class-id']=e.getAttribute('data-object-class-id');requestParams['action-type']=e.getAttribute('data-action-type');this.elementPrefixedAttributes(e,'data-action-param-',requestParams);if(e.getAttribute('data-pk')!==null)requestParams['pk']=e.getAttribute('data-pk');shc.server.api(requestParams,function(data){}.bind(this));}workplaceLogin(e){console.log('workplaceLogin',e.getAttribute('data-login'));this.getNumber({title:'Zadejte přístupový kód',srcElement:e,userLogin:e.getAttribute('data-login'),success:function(){this.workplaceLoginDoIt()}.bind(this)});return 0;}workplaceLoginDoIt(e){console.log(this.numPad.options.userLogin);console.log("__DO_IT__",this.numPad.options.srcElement.getAttribute('data-login'),this.numPad.gnValue);document.getElementById('e10-login-user').value=this.numPad.options.userLogin;document.getElementById('e10-login-pin').value=this.numPad.gnValue;document.forms['e10-mui-login-form'].submit();}getNumber(options){const
+template=document.createElement('div');template.id='widget_123';template.classList.add('fullScreenModal');document.body.appendChild(template);var
+abc=new
+ShipardTouchNumPad();abc.options=options;abc.init(template);this.numPad=abc;}setColorMode(e){let
+colorMode=e.getAttribute('data-app-color-mode');localStorage.setItem('shpAppColorMode',colorMode);this.doColorMode(colorMode);return 0;}initColorMode(firstCall){if(firstCall){window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(){this.initColorMode()}.bind(this));}let
+colorMode=localStorage.getItem('shpAppColorMode');if(!colorMode||colorMode==='auto'){const
+isSystemDarkMode=window.matchMedia('(prefers-color-scheme: dark)').matches;if(isSystemDarkMode)colorMode='dark';else
+colorMode='light';}this.doColorMode(colorMode);}doColorMode(colorMode){if(colorMode==='light'){document.body.removeAttribute('data-bs-theme');}else
+if(colorMode==='dark'){document.body.setAttribute('data-bs-theme','dark');}else
+if(colorMode==='auto'){this.initColorMode();}var
+uiColorMode=colorMode;let
+savedColorMode=localStorage.getItem('shpAppColorMode');if(!savedColorMode||savedColorMode==='auto')uiColorMode='auto';let
+colorModeElements=document.querySelectorAll('[data-action="setColorMode"]');for(let
+idx=0;idx<colorModeElements.length;idx++){if(colorModeElements[idx].getAttribute('data-app-color-mode')===uiColorMode)colorModeElements[idx].classList.add('active');else
+colorModeElements[idx].classList.remove('active');}}elementPrefixedAttributes(iel,prefix,data){for(var
+i=0,attrs=iel.attributes,l=attrs.length;i<l;i++){var
+attrName=attrs.item(i).nodeName;if(attrName.substring(0,prefix.length)!==prefix)continue;var
+attrNameShort=attrName.substring(prefix.length);var
+val=attrs.item(i).nodeValue;data[attrNameShort]=val;}}init(){this.server.setHttpServerRoot(httpApiRootPath);this.initColorMode(true);this.onClick('a.shp-simple-tabs-item',function(){shc.simpleTabsEvent(this);});this.onClick('.shp-app-action',function(e){this.widgetAction(e);}.bind(this));}}class
+ShipardClientIoT{camPictLoader=null;init(){if(uiData['iotCamServers']!==undefined){this.camPictLoader=new
+ShipardCamsPictsLoader();this.camPictLoader.init();}shc.on('change','input.mac-shp-triggger',function(){shc.iot.mainTrigger(this);});}mainTrigger(element){let
+payload={};if(element.classList.contains('shp-iot-scene-switch')){let
+attrSetupSID=element.getAttribute('data-shp-iot-setup');if(attrSetupSID===undefined){console.log("unknown iot setup");return;}let
+attrSetupSceneId=element.getAttribute('data-shp-scene-id');if(attrSetupSceneId===undefined){console.log("unknown iot setup scene id");return;}payload['scene']=attrSetupSceneId;let
+setTopic=uiData['iotSubjects'][attrSetupSID]['topic']+'/set';shc.mqtt.publish(uiData['iotSubjects'][attrSetupSID]['wss'],setTopic,JSON.stringify(payload));return;}if(element.classList.contains('shp-iot-primary-switch')||element.classList.contains('shp-iot-group-switch')){let
+propertyId=element.getAttribute('data-shp-iot-state-id');if(propertyId===null)propertyId='state';payload[propertyId]=element.checked?'ON':'OFF';}else
+if(element.classList.contains('shp-iot-br-range'))payload['brightness']=element.value;else
+if(element.classList.contains('shp-iot-ct-range'))payload['color_temp']=element.value;if(Object.keys(payload).length===0&&payload.constructor===Object)return;let
+attrDeviceSID=element.getAttribute('data-shp-iot-device');if(attrDeviceSID===undefined){console.log("unknown iot device");return;}let
+deviceSIDs=attrDeviceSID.split(',');for(const
+deviceSID
+of
+deviceSIDs){if(uiData['iotSubjects']===undefined||uiData['iotSubjects'][deviceSID]===undefined){console.log("Invalid device SID: ",deviceSID);continue;}let
+setTopic=uiData['iotSubjects'][deviceSID]['topic']+'/set';shc.mqtt.publish(uiData['iotSubjects'][deviceSID]['wss'],setTopic,JSON.stringify(payload));}}initIoT(){shc.mqtt.init();shc.iot.init();}}var
 shc=new
 ShipardClient();document.addEventListener('DOMContentLoaded',()=>shc.init());

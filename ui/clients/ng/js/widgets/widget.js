@@ -20,7 +20,40 @@ class ShipardWidget {
 
   doAction (actionId, e)
   {
+    switch (actionId)
+    {
+      case 'inline-action': return this.inlineAction(e);
+    }
+
     return 0;
+  }
+
+  inlineAction (e)
+  {
+    if (e.getAttribute('data-object-class-id') === null)
+		  return;
+
+	  var requestParams = {};
+	  requestParams['object-class-id'] = e.getAttribute('data-object-class-id');
+	  requestParams['action-type'] = e.getAttribute('data-action-type');
+	  this.elementPrefixedAttributes (e, 'data-action-param-', requestParams);
+	  if (e.getAttribute('data-pk') !== null)
+		  requestParams['pk'] = e.getAttribute('data-pk');
+
+    /*
+		e10.server.api(requestParams, function(data) {
+		if (data.reloadNotifications === 1)
+			e10NCReset();
+
+		if (e.parent().hasClass('btn-group'))
+		{
+			e.parent().find('>button.active').removeClass('active');
+			e.addClass('active');
+		}
+	  });
+    */
+
+    console.log("__INLINE_ACTION", requestParams);
   }
 
 	on(ownerWidget, eventType, selector, callback) {
@@ -82,6 +115,19 @@ class ShipardWidget {
     abc.init(template);
 
     this.numPad = abc;
+  }
+
+  elementPrefixedAttributes (iel, prefix, data)
+  {
+    for (var i = 0, attrs = iel.attributes, l = attrs.length; i < l; i++)
+    {
+      var attrName = attrs.item(i).nodeName;
+      if (attrName.substring(0, prefix.length) !== prefix)
+        continue;
+      var attrNameShort = attrName.substring(prefix.length);
+      var val = attrs.item(i).nodeValue;
+      data[attrNameShort] = val;
+    }
   }
 }
 

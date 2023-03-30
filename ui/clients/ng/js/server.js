@@ -5,6 +5,15 @@ class ShipardServer {
 	{
 	}
 
+	beginUrl ()
+	{
+		/*
+		if (e10.server.remote)
+			return 'https://' + e10.server.remote;
+		*/
+		return this.httpServerRoot;
+	}
+
 	httpHeaders ()
 	{
 		var headers = {};
@@ -52,6 +61,32 @@ class ShipardServer {
 			}
 		};
 
+
+		fetch(fullUrl, options)
+			.then((response) => response.json())
+			.then((data) => {
+				console.log("Success:", data);
+				f(data);
+			})
+			.catch((error) => {
+				console.error("Error:", error);
+			});
+	}
+
+
+	api = function (data, f, errorFunction) {
+		var fullUrl = this.beginUrl() + '/api';
+
+		var options = {
+			method: 'POST',
+			url: fullUrl,
+			body: JSON.stringify(data),
+			dataType: 'json',
+			headers: this.httpHeaders (),
+			error: (errorFunction != 'undefined') ? errorFunction : function (data) {
+				console.log("========================ERROR: "+fullUrl);
+			}
+		};
 
 		fetch(fullUrl, options)
 			.then((response) => response.json())
