@@ -74,7 +74,8 @@ class ShipardServer {
 	}
 
 
-	api = function (data, f, errorFunction) {
+	api (data, f, errorFunction)
+	{
 		var fullUrl = this.beginUrl() + '/api';
 
 		var options = {
