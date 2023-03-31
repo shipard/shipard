@@ -30,16 +30,30 @@ const opts = JSON.parse(fs.readFileSync(optsFileName).toString());
 		path: opts['dstFileName'],
 	};
 
-	const page = await browser.newPage();
-	await page.setViewport({
+	let vpOptions = {
 		width: 2880,
 		height:2160,
 		deviceScaleFactor: 1
-	});
+	};
+
+	if (opts['scOptions']['vpHeight'] !== undefined)
+		vpOptions.height = parseInt(opts['scOptions']['vpHeight']);
+	if (opts['scOptions']['vpWidth'] !== undefined)
+		vpOptions.width = parseInt(opts['scOptions']['vpWidth']);
+
+	const page = await browser.newPage();
+	await page.setViewport(vpOptions);
 
 	await page.goto(opts['url']/*, {waitUntil: 'networkidle0'}*/);
 
-	const pageInfo = await page.$eval('#shp-sc-page-info-result', el => el.value);
+	//const pageInfo = await page.$eval('#shp-sc-page-info-result', el => el.value);
+	const pageInfo = await page.evaluate(() => {
+		const element = document.querySelector('#shp-sc-page-info-result')
+		if (element) {
+			return element.value
+		}
+		return '';
+	});
 	fs.writeFileSync(opts['dstFileNameInfo'], pageInfo);
 
 	await page.screenshot(scOptions);

@@ -26,6 +26,12 @@ class SCCreator extends Utility
 		$this->dstFileName = $dstFileName;
 	}
 
+	public function setViewPort($vpWidth, $vpHeight)
+	{
+		$this->options['vpWidth'] = intval($vpWidth);
+		$this->options['vpHeight'] = intval($vpHeight);
+	}
+
 	public function createSC()
 	{
 		$this->createSCCore();

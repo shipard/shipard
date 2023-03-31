@@ -2,7 +2,7 @@
 
 namespace e10pro\ofre\libs\dataView;
 use \lib\dataView\DataView, \Shipard\Utils\Utils, \Shipard\Utils\Json;
-
+use \e10\base\libs\UtilsBase;
 
 /**
  * class BoardOffices
@@ -97,7 +97,7 @@ class BoardOffices extends DataView
 		}
 
     // -- properties
-    $personsProperties = \E10\Base\getPropertiesTable ($this->app, 'e10.persons.persons', $pks);
+    $personsProperties = UtilsBase::getPropertiesTable ($this->app, 'e10.persons.persons', $pks);
     foreach ($personsProperties as $personNdx => $pp)
     {
       $t[$personNdx]['properties'] = $pp;
@@ -208,7 +208,7 @@ class BoardOffices extends DataView
     $c .= "\n<textarea id='shp-sc-page-info-result' style='display: none;'></textarea>";
 
     $jsScripts = '';
-    $jsScripts .= "<script type='text/javascript' src='/www-root/templates/web/libs/scCreator.js?v=22'></script>";
+    $jsScripts .= "<script type='text/javascript' src='".$this->app()->dsRoot."/www-root/templates/web/libs/scCreator.js?v=22'></script>";
     $this->data['jsScripts'] = $jsScripts;
     $c .= $jsScripts;
 

@@ -14,6 +14,14 @@ class DataViewScreenshot extends \lib\dataView\DataView
 	{
     $sc = new \Shipard\Base\Screenshot ($this->app());
 
+    $vpWidth = intval($this->app()->testGetParam('vpWidth'));
+    if ($vpWidth)
+      $sc->vpWidth = $vpWidth;
+
+    $vpHeight = intval($this->app()->testGetParam('vpHeight'));
+    if ($vpHeight)
+      $sc->vpHeight = $vpHeight;
+
     $sc->url = $this->app()->testGetParam('url');
     $sc->run ();
 
