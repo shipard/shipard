@@ -15,6 +15,12 @@
 		"modelID": "TS0012",
 		"iotKind": "socket", "iotSubKind": "socket"
 	},
+	"TS011F_plug_1": {
+		"fn": "Smart plug (with power monitoring)",
+		"modelID": "TS011F_plug_1",
+		"iotKind": "socket", "iotSubKind": "socket"
+	},
+
 	"TS0042": {
 		"fn": "Wireless switch with 2 buttons",
 		"modelID": "TS0042",
