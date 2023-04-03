@@ -1596,6 +1596,17 @@ class DbTable
 				$btn ['data-table'] = $this->tableId();
 				$btn ['data-pk'] = $recData['ndx'];
 
+				if (utils::param($r, 'rasterPrint', 0))
+				{
+					$btn['subButtons'] = [];
+					$btn['subButtons'][] = [
+						'type' => 'action', 'action' => 'print',
+						'style' => 'print', 'text' => '', 'data-report' => $r ['class'],
+						'data-table' => $this->tableId(), 'data-pk' => $recData['ndx'],
+						'icon' => 'system/iconImage',
+					];
+				}
+
 				if (utils::param($r, 'email', 0))
 				{
 					$btn['subButtons'] = [];

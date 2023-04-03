@@ -60,10 +60,17 @@ class FormReport extends Report
 
 		if ($this->reportMode == FormReport::rmPOS || $this->reportMode == FormReport::rmLabels)
 		{
-			$this->srcFileExtension = 'rawprint';
-
+			if ($this->rasterPrint)
+			{
+				$this->srcFileExtension = 'html';
+				$this->mimeType = 'image/png';
+			}
+			else
+			{
+				$this->srcFileExtension = 'rawprint';
+				$this->mimeType = 'application/x-octet-stream';
+			}
 			$this->objectData ['mainCode'] = $this->renderTemplate ($this->reportTemplate);
-			$this->mimeType = 'application/x-octet-stream';
 		}
 		else
 		{

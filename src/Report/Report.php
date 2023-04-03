@@ -43,6 +43,7 @@ class Report extends \Shipard\Base\BaseObject
 	var $pageFooter = '';
 
 	var $reportMode = self::rmDefault;
+	var $rasterPrint = 0;
 	var $printer = NULL;
 	var $printerDriver = NULL;
 	public $openCashdrawer = FALSE;
@@ -142,6 +143,19 @@ class Report extends \Shipard\Base\BaseObject
 				$pdfCreator->setPdfInfo('Author', $ownerName);
 
 			$pdfCreator->createPdf();
+		}
+		elseif ($this->rasterPrint)
+		{
+			$this->reportSrcFileNameRelative = "tmp/rrp-" . time() . '-' . mt_rand () . '.' . $this->srcFileExtension;
+			$this->reportSrcFileName = __APP_DIR__ . '/' . $this->reportSrcFileNameRelative;
+			$this->reportSrcURL = 'https://'.$this->app()->cfgItem('hostingCfg.serverDomain').'/'.$this->app->cfgItem('dsid') . '/'. $this->reportSrcFileNameRelative;
+			file_put_contents($this->reportSrcFileName, $this->objectData ['mainCode']);
+
+			$this->fullFileName = substr($this->reportSrcFileName, 0, -(strlen($this->srcFileExtension) + 1)) . '.png';
+			$rpiCreator = new \lib\rasterPrint\RPICreator($this->app());
+			$rpiCreator->setReport($this);
+
+			$rpiCreator->createImage();
 		}
 		else
 		{
