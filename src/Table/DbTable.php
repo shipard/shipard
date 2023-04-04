@@ -1535,6 +1535,8 @@ class DbTable
 		{
 			forEach ($reports as $r)
 			{
+				if (!utils::enabledCfgItem($this->app(), $r))
+					continue;
 				if (isset ($r['role']) && !$this->app()->hasRole($r['role']))
 					continue;
 				if (isset ($r['roles']))

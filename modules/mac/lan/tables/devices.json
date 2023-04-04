@@ -98,6 +98,10 @@
 		{
 			"id": "labelCable", "name": "Kabel", "class": "mac.lan.libs.ReportDeviceLabelCable",
 			"directPrint": 1, "printerClass": "labels"
+		},
+		{
+			"id": "labelDeviceNew", "name": "Nálepka NEW", "class": "mac.lan.libs.ReportLanDeviceLabelDevice",
+			"directPrint": 1, "rasterPrint": 1, "printerClass": "labels", "enabledCfgItem": "options.experimental.testRasterPrint"
 		}
 	],
 	"options": ["disableCopyRecords"],

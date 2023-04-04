@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+	<title>test</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		html, body {font-size: 32px; margin: 2px; padding: 1px; font-family: sans-serif; width: 100vw;}
+		table.labels {widht: 100%; border-collapse: collapse;}
+		table.labels td {padding: 1px; margin: 0; vertical-align: top; text-align: left;}
+	</style>
+</head>
+<body>
+	<table class="labels" style="width: 100% !important;">
+		<tr>
+			<td style="width: 40%; ">
+				<img src="{{data.mainQRCodeURL}}" style='width: 100%; max-width: 100%; padding: 0; margin: 0; border: 1px solid black;'>
+			</td>
+			<td data-style='width: 60%;'>
+				<div style='font-size: 180%;'>{{data.head.id}}</div>
+				<h5>{{data.head.fullName}}</h5>
+			</td>
+		</tr>
+	</table>
+</body>
+</html>
+
