@@ -460,6 +460,13 @@ class TablePersons extends DbTable
 			array_push($q, ' AND [contacts].[flagContact] = %i', 1);
 			array_push($q, ' AND [contacts].[contactEmail] != %s', '');
 			array_push($q, ' AND [contacts].[docState] = %i', 4000);
+
+			array_push ($q, ' AND NOT EXISTS (',
+				' SELECT ndx FROM e10_base_doclinks ',
+				' WHERE contacts.ndx = srcRecId AND srcTableId = %s', 'e10.persons.personsContacts',
+				' AND dstTableId = %s', 'e10.reports.reports', ')',
+			);
+
 			$rows = $this->db()->query($q);
 			foreach ($rows as $r)
 			{
