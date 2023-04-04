@@ -4,5 +4,11 @@
 		"type": "viewer",
 		"table": "e10.reports.reportsTexts",
 		"viewer": "default"
+	},
+	"experimental": {
+		"options": [
+			{"cfgKey": "testRasterPrint", "cfgName": "Testovat grafické nálepky a účtenky", "options": {"0": "Ne","1": "Ano"}}
+		]
 	}
+
 }
