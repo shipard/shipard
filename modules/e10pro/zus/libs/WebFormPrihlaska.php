@@ -196,7 +196,7 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 					<li>jestliže zákonný zástupce nezletilého žáka nebo zletilý žák neuhradil úplatu za vzdělání ve stanoveném termínu
 					<li>jestliže o to písemně požádá zákonný zástupce nezletilého žáka nebo zletilý žák
 				</ol>
-				<li>Beru na vědomí, že zaplatím úplatu za vzdělání (školné) v termínech, které určí škola. (do 30. 10. za 1. pololetí, do 31. 3. za 2. pololetí)
+				<li>Beru na vědomí, že zaplatím úplatu za vzdělání (školné) v termínech, které určí škola. (do 31. 8. za 1. pololetí, do 31. 3. za 2. pololetí)
 				<li>Dle §22 odst. 3 zákona č. 561/2004 Sb. v platném znění jsou zákonní zástupci dětí a nezletilých žáků povinni informovat školu o změně zdravotní způsobilosti, zdravotních obtížích
 						dítěte a jiných závažných skutečnostech, které by mohly mít vliv na průběh vzdělávání.
 		</ul>
