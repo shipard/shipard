@@ -11,17 +11,7 @@
 	</style>
 </head>
 <body>
-	<table class="labels" style="width: 100% !important;">
-		<tr>
-			<td style="width: 40%; ">
-				<img src="{{data.mainQRCodeURL}}" style='width: 100%; max-width: 100%; padding: 0; margin: 0; border: 1px solid black;'>
-			</td>
-			<td data-style='width: 60%;'>
-				<div style='font-size: 180%;'>{{data.head.id}}</div>
-				<h5>{{data.head.fullName}}</h5>
-			</td>
-		</tr>
-	</table>
+	<div style='font-size: 180%;'>{{data.head.id}}</div>
+	<img src="{{@barCodeImg;dataItem:data.head.id;codeType:C128}}" style='width: 75%; max-width: 100%; padding-right: 20px; margin: 0;'>
 </body>
 </html>
-

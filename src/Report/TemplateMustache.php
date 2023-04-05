@@ -187,6 +187,7 @@ class TemplateMustache extends \Shipard\Utils\TemplateCore
 			case	'renderContent' : return $this->renderContent ($params);
 			case	'renderTable' 	: return $this->renderTable ($params);
 			case	'write'					: return $this->write ($params);
+			case	'barCodeImg'		: return $this->barCodeImg ($params);
 		}
 
 		return parent::resolveCmd ($tagCode, $tagName, $params);
@@ -355,6 +356,25 @@ class TemplateMustache extends \Shipard\Utils\TemplateCore
 	{
 		$this->_escape = function ($s) {return $s;};
 		return '';
+	}
+
+	public function barCodeImg($params)
+	{
+		$textData = '';
+
+		if (isset ($params['dataItem']))
+			$textData = $this->_getVariable($params['dataItem']);
+		elseif (isset ($params['textData']))
+			$textData = $params['textData'];
+
+		$codeType = 'qr';
+		if (isset ($params['codeType']))
+			$codeType = $params['codeType'];
+
+		$barCodeGenerator = new \lib\tools\bc\BarCodeGenerator($this->app);
+		$barCodeGenerator->textData = $textData;
+		$barCodeGenerator->create($codeType);
+		return $barCodeGenerator->url;
 	}
 }
 
