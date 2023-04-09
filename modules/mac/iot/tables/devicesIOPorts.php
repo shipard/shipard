@@ -103,7 +103,7 @@ class TableDevicesIOPorts extends DbTable
 					continue;
 				if ($r['ndx'] === $form->recData['ndx'])
 					continue;
-				if (isset($column['enumCfgFlags']['ioPortType']) && $column['enumCfgFlags']['ioPortType'] !== $r['portType'])	
+				if (isset($column['enumCfgFlags']['ioPortType']) && $column['enumCfgFlags']['ioPortType'] !== $r['portType'])
 					continue;
 
 				$enum[$r['portId']] = $r['portId'];
@@ -436,7 +436,7 @@ class ViewDevicesIOPortsFormList extends \e10\TableViewGrid
 		$listItem ['portId'][] = ['text' => $item['portId'], 'class' => 'break e10-bold'];
 		if ($item['fullName'] !== '')
 			$listItem ['portId'][] = ['text' => $item['fullName'], 'class' => 'break e10-small'];
-		
+
 		$listItem ['portId'][] = ['text' => $portType['name'], 'class' => 'break e10-small'];
 
 		$listItem ['note'] = [];
@@ -483,7 +483,7 @@ class ViewDevicesIOPortsFormList extends \e10\TableViewGrid
 				}
 				else
 				{
-					$pinsLabels[] = ['text' => 'Chyba v konfiguraci pinu', 'icon' => 'system/iconWarning', 'class' => 'label label-danger'];
+					$pinsLabels[] = ['text' => 'Chyba v konfiguraci pinu `'.$value.'`', 'icon' => 'system/iconWarning', 'class' => 'label label-danger'];
 				}
 			}
 			else

@@ -184,7 +184,7 @@ class TableDevices extends DbTable
 				$pin['flags'][] = ($dir === 0) ? 'out' : 'in';
 				$pin['title'] = /*$portCfg['i2cBusPortId'] . ' → ' .*/ $r['portId'] . ' → ' . $ep['id'];
 				$pin['expPortId'] = $r['portId'];
-				$pinId = /*$portCfg['i2cBusPortId']*/$r['portId'] . '.' . $r['portId'] . '.' . $ep['id'];
+				$pinId = $r['portId'] . '.' . $ep['id'];
 
 				$gpioLayout['pins'][$pinId] = $pin;
 			}

@@ -1,7 +1,7 @@
 <?php
 
 namespace mac\iot\libs\dc;
-use \Shipard\Utils\Utils;
+use \Shipard\Utils\Utils, \Shipard\Utils\Json;
 use \Shipard\UI\Core\UIUtils;
 
 /**
@@ -34,8 +34,45 @@ class IoTDeviceIoTBox extends \mac\iot\libs\dc\IoTDevice
           'type' => 'tiles', 'tiles' => $this->ioPortsTiles, 'class' => 'panes'
         ]
       );
+
+      $this->createContentBody_IotBox();
+
+      $this->addContent('body',
+        [
+          'pane' => 'e10-pane e10-pane-table',
+          'type' => 'text', 'subtype' => 'code', 'text' => Json::lint ($this->iotDeviceCfg),
+          'paneTitle' => ['text' => 'GPIO layout', 'class' => 'subtitle']
+          ]
+      );
+
     }
 	}
+
+	function createContentBody_IotBox()
+	{
+
+		$q[] = 'SELECT * FROM [mac_iot_devicesCfg]';
+		array_push($q, ' WHERE 1');
+		array_push($q, ' AND [iotDevice] = %i', $this->recData['ndx']);
+		array_push($q, ' ORDER BY [ndx]');
+
+		$cnt = 0;
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+      $iotBoxCfg = Json::decode($r['cfgData']);
+      $this->addContent('body',
+        [
+          'pane' => 'e10-pane e10-pane-table',
+          'type' => 'text', 'subtype' => 'code', 'text' => Json::lint($iotBoxCfg['iotBoxCfg']),
+          'paneTitle' => ['text' => 'CFG', 'class' => 'subtitle']
+          ]
+      );
+
+      $cnt++;
+		}
+	}
+
 
 	public function createContent ()
 	{
@@ -149,7 +186,7 @@ class IoTDeviceIoTBox extends \mac\iot\libs\dc\IoTDevice
           }
           else
           {
-            $pinsLabels[] = ['text' => 'Chyba v konfiguraci pinu', 'icon' => 'system/iconWarning', 'class' => 'label label-danger'];
+            $pinsLabels[] = ['text' => 'Chyba v konfiguraci pinu: `'.$value.'`', 'icon' => 'system/iconWarning', 'class' => 'label label-danger'];
 
           }
         }
