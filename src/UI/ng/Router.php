@@ -53,8 +53,9 @@ class Router extends Utility
 		$this->app->mobileMode = TRUE;
 
 		$first = $this->app->requestPath(1);
+		$second = $this->app->requestPath(2);
 
-		if ($first === 'manifest.webmanifest')
+		if ($second === 'manifest.webmanifest')
 		{
 			$object = $this->app->createObject('Shipard.UI.ng.WebManifest');
 			return new Response ($this->app, $object->createPageCode(), 200);

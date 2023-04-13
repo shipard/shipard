@@ -141,7 +141,7 @@ class AppPageBlank extends Utility
 		$c .= "<meta name=\"format-detection\" content=\"telephone=no\">\n";
 		$c .= "<meta name='theme-color' content='$themeStatusColor'>\n";
 
-		$c .= "<link rel=\"manifest\" href=\"{$this->app->urlRoot}/mapp/manifest.webmanifest\">\n";
+		$c .= "<link rel=\"manifest\" href=\"{$this->app->urlRoot}/ui/".$this->app()->requestPath (1)."/manifest.webmanifest\">\n";
 
 		$c .= "<meta name=\"generator\" content=\"E10 ".__E10_VERSION__."\">\n";
 		$c .= "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n";
