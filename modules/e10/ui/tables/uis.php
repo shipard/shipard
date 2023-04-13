@@ -52,6 +52,7 @@ class TableUIs extends DbTable
 				'ndx' => $r['ndx'],
         'uiType' => $r ['uiType'],
 				'fn' => $r ['fullName'],
+				'pwaStartUrlBegin' => $r['pwaStartUrlBegin'],
 			];
 
       $uis [$r['urlId']] = $uiItem;
@@ -137,6 +138,7 @@ class FormUI extends TableForm
           $this->addColumnInput ('uiType');
           $this->addColumnInput ('urlId');
 					$this->addColumnInput ('order');
+					$this->addColumnInput ('pwaStartUrlBegin');
 				$this->closeTab ();
 				$this->openTab (TableForm::ltNone);
           $this->addInputMemo ('template', NULL, TableForm::coFullSizeY, DataModel::ctCode);

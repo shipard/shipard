@@ -18,7 +18,16 @@ class WebManifest extends \Shipard\UI\OldMobile\PageObject
 		$themeStatusColor = '#212529';
 		$dsIcon = $this->app->dsIcon();
 
-		$startUrl = 	$this->app->urlRoot.'/ui/'.$this->app()->requestPath (1).'/'.'overview';
+		$first = $this->app->requestPath(1);
+		$uiCfg = $this->app()->cfgItem('e10.ui.uis.'.$first, NULL);
+
+		$startUrl = 	$this->app->urlRoot.'/ui/'.$this->app()->requestPath (1).'/';
+		$scope = '/ui/'.$this->app()->requestPath (1).'/';
+
+		if ($uiCfg && $uiCfg['pwaStartUrlBegin'] !== '')
+		{
+			$startUrl .= $uiCfg['pwaStartUrlBegin'];
+		}
 
 		$wm = [
 			'name' => $this->app->cfgItem ('options.core.ownerShortName', 'TEST'),
@@ -27,7 +36,7 @@ class WebManifest extends \Shipard\UI\OldMobile\PageObject
 			'display' => 'standalone',
 			'background_color' => $themeStatusColor,
 			'theme_color' => $themeStatusColor,
-			'scope' => '/',
+			'scope' => $scope,
 			'icons' => [],
 		];
 

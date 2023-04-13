@@ -4,6 +4,7 @@
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
     {"id": "urlId", "name": "ID pro URL", "type": "string", "len": 60},
+    {"id": "pwaStartUrlBegin", "name": "Vstupní část URL pro PWA", "type": "string", "len": 60},
 
 	  {"id": "uiType", "name": "Typ", "type": "enumInt", "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "e10.ui.uiTypes", "cfgValue": "", "cfgText": "fn"}},
