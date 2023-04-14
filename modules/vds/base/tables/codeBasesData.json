@@ -1,0 +1,24 @@
+{
+	"id": "vds.base.codeBasesData", "sql": "vds_base_codeBasesData", "name": "Data vlastních číselníků",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len":  120},
+
+		{"id": "codeBaseDef", "name": "Typ", "type": "enumInt", "options": ["saveOnChange"],
+      "enumCfg": {"cfgItem": "vds.codeBasesDefs", "cfgValue": "", "cfgText": "fn"}},
+
+    {"id": "data", "name": "Data", "type": "subColumns"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": {
+		"default": {"id": "default", "class": "vds.base.ViewCodeBasesData"}
+	},
+	"forms": [
+		{"id": "default", "class": "vds.base.FormCodeBaseDataItem"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"ndx": 0
+}

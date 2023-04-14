@@ -2,7 +2,7 @@
   "id": "vds.base",
   "name": "Virtual Data Structures",
   "tables": [
-		"defs"
+		"defs", "codeBasesDefs", "codeBasesData"
 	],
 	"modules": [],
   "config": [

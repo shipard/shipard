@@ -2,5 +2,13 @@
 	"vdsDefs": {
 		"name": "Rozšiřující datové struktury", "order": 890000, "group": "system",
 		"type": "viewer", "table": "vds.base.defs", "viewer": "default"
+	},
+	"vdsCBDefs": {
+		"name": "Definice vlastních číselníků", "order": 891000, "group": "system",
+		"type": "viewer", "table": "vds.base.codeBasesDefs", "viewer": "default"
+	},
+	"vdsCBData": {
+		"name": "Data vlastních číselníků", "order": 892000, "group": "system",
+		"type": "viewer", "table": "vds.base.codeBasesData", "viewer": "default"
 	}
 }
