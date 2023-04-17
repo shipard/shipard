@@ -104,6 +104,11 @@ class FormCodeBaseDataItem extends TableForm
 {
 	public function renderForm ()
 	{
+    $codeBaseDef = $this->app()->cfgItem('vds.codeBasesDefs.' . $this->recData['codeBaseDef'], NULL);
+    $useFullName = intval($codeBaseDef['useFullName'] ?? 0);
+    $useShortName = intval($codeBaseDef['useShortName'] ?? 0);
+    $useDates = intval($codeBaseDef['useDates'] ?? 0);
+
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 		$this->setFlag ('maximize', 1);
@@ -114,8 +119,22 @@ class FormCodeBaseDataItem extends TableForm
 		$this->openForm ();
 			$this->openTabs ($tabs);
 				$this->openTab ();
-					$this->addColumnInput ('fullName');
-					$this->addColumnInput ('codeBaseDef');
+          $this->addColumnInput ('codeBaseDef');
+          if ($useFullName)
+            $this->addColumnInput ('fullName');
+          if ($useShortName)
+					  $this->addColumnInput ('shortName');
+
+          if ($useDates === 1)
+          {
+            $this->addColumnInput ('dateFrom');
+          }
+          elseif ($useDates === 2)
+          {
+            $this->addColumnInput ('dateFrom');
+            $this->addColumnInput ('dateTo');
+          }
+
           $this->addSubColumns ('data');
 				$this->closeTab();
         /*
@@ -126,4 +145,16 @@ class FormCodeBaseDataItem extends TableForm
 			$this->closeTabs();
 		$this->closeForm ();
 	}
+
+	function columnLabel ($colDef, $options)
+  {
+    $codeBaseDef = $this->app()->cfgItem('vds.codeBasesDefs.' . $this->recData['codeBaseDef'], NULL);
+    $useDates = intval($codeBaseDef['useDates'] ?? 0);
+
+    switch ($colDef ['sql'])
+    {
+      case	'dateFrom': return ($useDates === 1) ? 'Datum' : 'Datum OD';
+    }
+    return parent::columnLabel ($colDef, $options);
+  }
 }

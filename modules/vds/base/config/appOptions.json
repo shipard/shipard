@@ -1,14 +1,22 @@
 {
 	"vdsDefs": {
 		"name": "Rozšiřující datové struktury", "order": 890000, "group": "system",
-		"type": "viewer", "table": "vds.base.defs", "viewer": "default"
+		"type": "viewer", "table": "vds.base.defs", "viewer": "default",
+		"enabledCfgItem": "options.experimental.testUsersCodebases"
 	},
 	"vdsCBDefs": {
 		"name": "Definice vlastních číselníků", "order": 891000, "group": "system",
-		"type": "viewer", "table": "vds.base.codeBasesDefs", "viewer": "default"
+		"type": "viewer", "table": "vds.base.codeBasesDefs", "viewer": "default",
+		"enabledCfgItem": "options.experimental.testUsersCodebases"
 	},
 	"vdsCBData": {
 		"name": "Data vlastních číselníků", "order": 892000, "group": "system",
-		"type": "viewer", "table": "vds.base.codeBasesData", "viewer": "default"
+		"type": "viewer", "table": "vds.base.codeBasesData", "viewer": "default",
+		"enabledCfgItem": "options.experimental.testUsersCodebases"
+	},
+	"experimental": {
+		"options": [
+			{"cfgKey": "testUsersCodebases", "cfgName": "Testovat uživatelské číselníky", "options": {"0": "Ne","1": "Ano"}}
+		]
 	}
 }

@@ -6,6 +6,11 @@
 
 		{"id": "vds", "name": "Struktura", "type": "int", "reference":  "vds.base.defs"},
 
+		{"id": "useFullName", "name": "Zadávat název", "type": "logical"},
+		{"id": "useShortName", "name": "Zadávat zkrácený název", "type": "logical"},
+    {"id": "useDates", "name": "Používat datumy", "type": "enumInt",
+			"enumValues": {"0": "Ne", "1": "Datum", "2": "Datum OD - DO"}},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],

@@ -3,6 +3,10 @@
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len":  120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len":  80},
+
+    {"id": "dateFrom", "name": "Datum od", "type": "date"},
+		{"id": "dateTo", "name": "Datum do", "type": "date"},
 
 		{"id": "codeBaseDef", "name": "Typ", "type": "enumInt", "options": ["saveOnChange"],
       "enumCfg": {"cfgItem": "vds.codeBasesDefs", "cfgValue": "", "cfgText": "fn"}},
