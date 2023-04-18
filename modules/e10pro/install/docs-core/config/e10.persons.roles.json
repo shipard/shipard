@@ -3,7 +3,8 @@
 		"name": "Účetnictví",
 		"viewers": {
 			"e10doc.taxes.reports": {"default": 2},
-			"e10doc.taxes.filings": {"default": 2}
+			"e10doc.taxes.filings": {"default": 2},
+			"e10doc.helpers.rowsSettings": {"default": 2}
 		},
 		"reports": {
 			"e10doc.taxes.VatCS.VatCSReportAll": 2,

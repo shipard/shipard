@@ -30,7 +30,9 @@
 						"items": {
 							"cashBoxes": {"t1": "Pokladny", "object": "viewer", "table": "e10doc.base.cashboxes", "viewer": "default", "icon": "tables/e10doc.base.cashboxes", "order": 100000},
 							"bankAccounts": {"t1": "Bankovní účty", "object": "viewer", "table": "e10doc.base.bankaccounts", "viewer": "default", "icon": "tables/e10doc.base.bankaccounts", "order": 200000},
-							"centres": {"t1": "Střediska", "object": "viewer", "table": "e10doc.base.centres", "viewer": "default", "icon": "tables/e10doc.base.centres", "order": 300000}
+							"centres": {"t1": "Střediska", "object": "viewer", "table": "e10doc.base.centres", "viewer": "default", "icon": "tables/e10doc.base.centres", "order": 300000},
+							"rowsSettings": {"t1": "Nast. řádků dokl.", "object": "viewer", "table": "e10doc.helpers.rowsSettings", "viewer": "default", "order": 800000},
+							"bankAccountsGroups": {"t1": "Skup. Bank. účtů", "object": "viewer", "table": "e10doc.base.bankAccountsGroups", "viewer": "default", "order": 801000}
 						}
 					}
 				}
