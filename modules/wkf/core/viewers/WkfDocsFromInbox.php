@@ -451,6 +451,21 @@ class WkfDocsFromInbox extends TableView
 				];
 			}
 		}
+		if ($this->testISDoc && isset($this->atts[$item ['ndx']]['images'][0]))
+		{
+			foreach ($this->atts[$item ['ndx']]['images'] as $attFile)
+			{
+				if (!$attFile['ddfId'])
+					continue;
+
+				$docButtons[] = [
+						'type' => 'action', 'text' => 'Importovat', 'icon' => 'system/actionAdd', 'action' => 'newform', 'data-table' => 'e10doc.core.heads', 'data-pk' => '0',
+						'actionClass' => 'btn btn-primary', 'class' => 'pt1', '__type' => 'button', 'data-viewer' => $this->queryParam ('mainViewerId'),
+						'data-create-params' => '__inboxNdx='.$ndx.'&__ddfId='.$attFile['ddfId'].'&__ddfNdx='.$attFile['ddfNdx'],
+						'data-create-doc' => 1
+				];
+			}
+		}
 
 		$item ['pane']['body'][] = ['value' => $docButtons, 'class' => 'padd5 e10-bg-t6'];
 

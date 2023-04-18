@@ -1,0 +1,8 @@
+{
+	"1001": {
+		"fn": "Document Data Mining",
+		"sn": "Document Data Mining e-faktura",
+		"icon": "e10-docs-invoices-in",
+		"classId": "e10doc.ddf.ddm.libs.DocsDataMining"
+	}
+}

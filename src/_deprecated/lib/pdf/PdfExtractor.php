@@ -35,7 +35,7 @@ class PdfExtractor extends Utility
 		$cmd = "/usr/bin/pdfdetach -list ".$this->fileName;
 		$output = [];
 		exec($cmd, $output);
-		error_log("__O: ".json_encode($output));
+
 		if (count($output) < 2)
 			return;
 

@@ -22,6 +22,6 @@
 		"e10/persons", "e10/witems", "e10/base", "e10/web", "e10doc/core", "e10doc/base",
 		"e10pro/reports/witems", "e10pro/reports/persons", "e10pro/reports/projects", "e10doc/helpers",
 		"e10sync/parts/persons", "e10sync/parts/base", "e10sync/parts/witems",
-		"e10doc/ddf/isdoc"
+		"e10doc/ddf/isdoc", "e10doc/ddf/ddm"
 	]
 }

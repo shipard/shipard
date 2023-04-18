@@ -13,6 +13,8 @@ class Engine extends Utility
 	var $srcText;
 	var $formatItemsTypes;
 
+	var $docHeadSrcItems = [];
+
 	public function setSrcText($srcText)
 	{
 		$this->srcText = $srcText;
@@ -26,16 +28,16 @@ class Engine extends Utility
 
 		$re = '';
 
-		if ($rec['searchPrefix'] !== '')
+		if (isset($rec['searchPrefix']) && $rec['searchPrefix'] !== '')
 		{
-			if ($rec['prefixIsRegExp'])
+			if ($rec['prefixIsRegExp'] ?? 0)
 				$re .= $rec['searchPrefix'];
 			else
 				$re .= preg_quote($rec['searchPrefix'])."\\s+";
 		}
 
 		$reValueBase = '';
-		if ($rec['searchRegExp'] !== '')
+		if (isset($rec['searchRegExp']) && $rec['searchRegExp'] !== '')
 		{
 			$re .= $rec['searchRegExp'];
 			$reValueBase = $rec['searchRegExp'];
@@ -49,7 +51,7 @@ class Engine extends Utility
 			}
 		}
 
-		if ($rec['searchSuffix'] !== '')
+		if (isset($rec['searchSuffix']) && $rec['searchSuffix'] !== '')
 		{
 			if ($rec['prefixIsRegExp'])
 				$re .= $rec['searchSuffix'];
@@ -58,8 +60,8 @@ class Engine extends Utility
 		}
 
 		$re = '/'.$re.'/';
-		$re .= $rec['searchRegExpFlags'];
-		$reValue = '/'.$reValueBase.'/'.$rec['searchRegExpFlags'];
+		$re .= $rec['searchRegExpFlags'] ?? '';
+		$reValue = '/'.$reValueBase.'/'.($rec['searchRegExpFlags'] ?? '');
 
 		$matches = [];
 		$r = preg_match($re, $this->srcText, $matches);
@@ -100,9 +102,95 @@ class Engine extends Utility
 
 			$results[] = $t;
 
+			$this->docHeadSrcItems[$rec['itemType']] = $t;
+
 			break;
 		}
 
 		return $results;
+	}
+
+	public function importDataText($srcText, $formatDef)
+	{
+		$this->srcText = $srcText;
+		$this->formatItemsTypes = $this->app()->cfgItem ('e10doc.ddf.ddm.formatItemsTypes');
+
+		foreach ($formatDef['items'] as $item)
+		{
+			$itemRes = $this->testOne($item);
+			//echo "  -> ".$item['itemType']." = ".json_encode($itemRes)."\n";
+		}
+
+		if (!count($this->docHeadSrcItems))
+			return;
+
+		foreach ($this->docHeadSrcItems as $itemId => $itemTextValue)
+		{
+			$colDef = $this->formatItemsTypes[$itemId] ?? NULL;
+			if (!$colDef)
+				continue;
+			if (!isset($colDef['type']))
+				continue;
+			if ($colDef['type'] === 'date' && isset($formatDef['datesFormat']))
+			{
+				$dd = date_create_from_format ($formatDef['datesFormat'], $itemTextValue);
+				if ($dd !== false)
+				{
+					$dddd = $dd->format('Y-m-d');
+					$this->docHeadSrcItems[$itemId] = $dddd;
+				}
+				else
+					$this->docHeadSrcItems[$itemId] = NULL;
+			}
+			elseif ($colDef['type'] === 'price')
+			{
+				$s1 = str_replace(' ', '', $itemTextValue);
+				$s1 = str_replace(',', '.', $s1);
+				$this->docHeadSrcItems[$itemId] = floatval($s1);
+			}
+		}
+
+		if (isset($this->docHeadSrcItems['bank-account-domestic']))
+		{
+			$bankAccount = str_replace(' ', '', trim($this->docHeadSrcItems['bank-account-domestic']));
+			$this->docHeadSrcItems['bankAccount'] = $bankAccount;
+			unset($this->docHeadSrcItems['bank-account-domestic']);
+		}
+
+		if (isset($this->docHeadSrcItems['payment-symbol1']))
+		{
+			$this->docHeadSrcItems['symbol1'] = $this->docHeadSrcItems['payment-symbol1'];
+			unset($this->docHeadSrcItems['payment-symbol1']);
+		}
+
+		if (isset($this->docHeadSrcItems['date-issue']) && $this->docHeadSrcItems['date-issue'])
+		{
+			$this->docHeadSrcItems['dateIssue'] = $this->docHeadSrcItems['date-issue'];
+			unset($this->docHeadSrcItems['date-issue']);
+		}
+
+		if (isset($this->docHeadSrcItems['date-tax']) && $this->docHeadSrcItems['date-tax'])
+		{
+			$this->docHeadSrcItems['dateTax'] = $this->docHeadSrcItems['date-tax'];
+			unset($this->docHeadSrcItems['date-tax']);
+		}
+
+		if (isset($this->docHeadSrcItems['document-id']))
+		{
+			$this->docHeadSrcItems['documentId'] = $this->docHeadSrcItems['document-id'];
+			unset($this->docHeadSrcItems['document-id']);
+		}
+
+		$this->docHeadSrcItems['person']['country'] = 'cz';
+		if (isset($this->docHeadSrcItems['head-company-id']))
+		{
+			$this->docHeadSrcItems['person']['natId'] = $this->docHeadSrcItems['head-company-id'];
+			unset($this->docHeadSrcItems['head-company-id']);
+		}
+		if (isset($this->docHeadSrcItems['head-vat-id']))
+		{
+			$this->docHeadSrcItems['person']['vatId'] = $this->docHeadSrcItems['head-vat-id'];
+			unset($this->docHeadSrcItems['head-vat-id']);
+		}
 	}
 }

@@ -1,0 +1,82 @@
+{
+	"head-company-id": {
+		"fn": "IČ",
+		"re": "\\d{8}"
+	},
+	"head-vat-id": {
+		"fn": "DIČ",
+		"re": "[a-zA-Z]{2}(| )\\d{7,10}([a-zA-Z]+|)"
+	},
+	"head-payment-method": {
+		"fn": "Způsob úhrady",
+		"re": ".+"
+	},
+	"bank-account-domestic": {
+		"fn": "Bankovní spojení - tuzemsko",
+		"re": "(\\d{2,6}-\\d{1,10}|\\d{1,10})( \\/ |\\/| )\\d{4}"
+	},
+	"bank-account-domestic-an": {
+		"fn": "Bankovní spojení - tuzemsko - číslo účtu",
+		"re": "(\\d{2,6}-\\d{1,10}|\\d{1,10})"
+	},
+	"bank-account-domestic-bc": {
+		"fn": "Bankovní spojení - tuzemsko - kód banky",
+		"re": "\\d{4}"
+	},
+	"bank-account-iban": {
+		"fn": "Bankovní spojení - IBAN",
+		"re": "[a-zA-Z]{2}[\\d, ]{3,37}"
+	},
+	"document-id": {
+		"fn": "Číslo dokladu",
+		"re": "[a-zA-Z\\d]([a-zA-Z]+|)[\\d,\\/,-]+"
+	},
+	"date-issue": {
+		"fn": "Datum vystavení",
+		"re": "\\d{1,2}(\\..|\\.)\\d{1,2}(\\..|\\.)\\d{4}",
+		"type": "date"
+	},
+	"date-due": {
+		"fn": "Datum splatnosti",
+		"re": "\\d{1,2}(\\..|\\.)\\d{1,2}(\\..|\\.)\\d{4}",
+		"type": "date"
+	},
+	"date-tax": {
+		"fn": "DUZP",
+		"re": "\\d{1,2}(\\..|\\.)\\d{1,2}(\\..|\\.)\\d{4}",
+		"type": "date"
+	},
+	"payment-symbol1": {
+		"fn": "Variabilní symbol",
+		"re": "\\d{1,10}"
+	},
+	"payment-symbol2": {
+		"fn": "Specifický symbol",
+		"re": ".\\d{1,10}"
+	},
+	"payment-symbol3": {
+		"fn": "Konstantní symbol",
+		"re": "\\d{1,10}"
+	},
+	"money-to-pay": {
+		"fn": "K úhradě",
+		"re": "[\\d| \\d|\\d]+(,|\\.)\\d+",
+		"type": "price"
+	},
+	"money-total-tax-base": {
+		"fn": "Základ daně",
+		"re": "[\\d| \\d|\\d]+,\\d+"
+	},
+	"contacts-phone": {
+		"fn": "Telefon",
+		"re": "[\\+]*\\d[\\d ]{9,16}"
+	},
+	"contacts-email": {
+		"fn": "E-mail",
+		"re": "[a-zA-Z,-,\\.]+\\@[a-zA-Z,-,\\.]+\\.[a-zA-Z]+"
+	},
+	"contacts-web": {
+		"fn": "Web",
+		"re": "(www\\.|https:\\/\\/|http:\\/\\/www\\.)[a-zA-Z,-]{2,}\\.[a-zA-Z]+"
+	}
+}

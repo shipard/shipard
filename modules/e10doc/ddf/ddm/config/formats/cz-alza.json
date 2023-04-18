@@ -1,0 +1,69 @@
+{
+  "id": "7q3aslunwvd1",
+  "signatureRegExp": "Prodávající: Alza.cz a.s.",
+  "datesFormat": "d.m.Y",
+  "formatEngine": "e10doc.ddf.ddm.formatsEngines.DDMFE_AlzaCZ",
+  "items": [
+      {
+          "itemType": "bank-account-domestic",
+          "searchPrefix": "ČSOB, a.s. (CZK):"
+      },
+      {
+          "itemType": "bank-account-domestic",
+          "searchPrefix": "Raiffeisenbank a.s. (CZK):"
+      },
+      {
+          "itemType": "bank-account-domestic",
+          "searchPrefix": "Česká spořitelna a.s. (CZK):"
+      },
+      {
+          "itemType": "bank-account-domestic",
+          "searchPrefix": "Komerční banka a.s. (CZK):"
+      },
+      {
+          "itemType": "contacts-phone",
+          "searchPrefix": "Telefon:"
+      },
+      {
+          "itemType": "contacts-web",
+          "searchPrefix": "Internet:"
+      },
+      {
+          "itemType": "date-due",
+          "searchPrefix": "Datum splatnosti:"
+      },
+      {
+          "itemType": "date-issue",
+          "searchPrefix": "Datum vystavení:"
+      },
+      {
+          "itemType": "date-tax",
+          "searchPrefix": "Datum uskut. zdaň. plnění:"
+      },
+      {
+          "itemType": "document-id",
+          "searchPrefix": "Faktura - Daňový doklad -"
+      },
+      {
+          "itemType": "head-company-id",
+          "searchPrefix": "IČ:"
+      },
+      {
+          "itemType": "head-payment-method",
+          "searchPrefix": "Způsob úhrady:",
+          "searchRegExp": "[ ]{2}[\\p{L}]+(.[\\p{L}]+|)"
+      },
+      {
+          "itemType": "head-vat-id",
+          "searchPrefix": "DIČ:"
+      },
+      {
+          "itemType": "money-to-pay",
+          "searchPrefix": "Celkem:"
+      },
+      {
+          "itemType": "payment-symbol1",
+          "searchPrefix": "Variabilní symbol:"
+      }
+  ]
+}

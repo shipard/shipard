@@ -1,0 +1,73 @@
+{
+  "id": "u4k949pwbsrz",
+  "signatureRegExp": "Vystaveno softwarem pro internetové obchodování Shoptet.cz",
+  "datesFormat": "d.m.Y",
+  "formatEngine": "e10doc.ddf.ddm.formatsEngines.DDMFE_ShoptetCZ",
+  "items": [
+      {
+          "itemType": "bank-account-domestic",
+          "searchPrefix": "Číslo účtu:"
+      },
+      {
+          "itemType": "bank-account-iban",
+          "searchPrefix": "IBAN:"
+      },
+      {
+          "itemType": "contacts-email",
+          "searchPrefix": "E-mail:"
+      },
+      {
+          "itemType": "contacts-phone",
+          "searchPrefix": "Telefon:"
+      },
+      {
+          "itemType": "contacts-web",
+          "searchRegExp": "(https:\\/\\/www.|www\\.|https:\\/\\/|http:\\/\\/www\\.)[a-zA-Z,-]{2,}\\.[a-zA-Z]+"
+      },
+      {
+          "itemType": "date-due",
+          "searchPrefix": "Datum splatnosti:"
+      },
+      {
+          "itemType": "date-issue",
+          "searchPrefix": "Datum vystavení:"
+      },
+      {
+          "itemType": "date-tax",
+          "searchPrefix": "Datum zdanitelného plnění:"
+      },
+      {
+          "itemType": "document-id",
+          "searchPrefix": "č."
+      },
+      {
+          "itemType": "head-company-id",
+          "searchPrefix": "IČ:"
+      },
+      {
+          "itemType": "head-payment-method",
+          "searchPrefix": "Forma úhrady",
+          "searchRegExp": "[ ]{2}[\\p{L}]+(.[\\p{L}]+|)"
+      },
+      {
+          "itemType": "head-vat-id",
+          "searchPrefix": "DIČ:"
+      },
+      {
+          "itemType": "money-to-pay",
+          "searchPrefix": "K ZAPLACENÍ"
+      },
+      {
+          "itemType": "payment-symbol1",
+          "searchPrefix": "Variabilní symbol:"
+      },
+      {
+          "itemType": "payment-symbol2",
+          "searchPrefix": "Specifický symbol:"
+      },
+      {
+          "itemType": "payment-symbol3",
+          "searchPrefix": "Konstantní symbol:"
+      }
+  ]
+}

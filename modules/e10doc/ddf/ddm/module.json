@@ -1,0 +1,9 @@
+{
+	"id": "e10doc.ddf.ddm",
+	"name": "DocDataMining",
+	"config": [
+		{"id": "+e10.ddf.formats", "file": "ddf.json"},
+		{"id": "+e10.ddf.ddm.formats", "file": "formats.json"},
+		{"id": "+e10doc.ddf.ddm.formatItemsTypes", "file": "formatItemsTypes.json"}
+	]
+}
