@@ -171,7 +171,13 @@ class DDMFE_AlzaCZ extends \e10doc\ddf\ddm\formatsEngines\CoreFE
     // -- price
     $priceItemStr = str_replace(' ', '', $frParts [3]);
     $priceItemStr = str_replace(',', '.', $priceItemStr);
-    $docRow['priceItem'] = floatVal($priceItemStr);
+    //$docRow['priceItem'] = floatVal($priceItemStr);
+
+    $priceAllStr = str_replace(' ', '', $frParts [4]);
+    $priceAllStr = str_replace(',', '.', $priceAllStr);
+    $docRow['priceAll'] = floatVal($priceAllStr);
+    $docRow['priceSource'] = 1;
+
     //$docRow['priceSource'] = 1;
 
     // -- vatPercent
