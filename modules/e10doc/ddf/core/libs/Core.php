@@ -1,7 +1,7 @@
 <?php
 
 namespace e10doc\ddf\core\libs;
-use \e10\json, \e10\utils, e10\str;
+use \e10\json, \e10\utils, \Shipard\Utils\Str;
 use \e10doc\core\libs\E10Utils;
 
 
@@ -36,7 +36,7 @@ class Core extends \lib\docDataFiles\DocDataFile
 	protected function valueStr($value, $maxLen)
 	{
 		if (is_string($value))
-			return str::upToLen($value, $maxLen);
+			return Str::upToLen($value, $maxLen);
 
 		return '';
 	}
@@ -204,5 +204,83 @@ class Core extends \lib\docDataFiles\DocDataFile
 	{
 		$rowsSettings = new \e10doc\helpers\RowsSettings($this->app());
 		$rowsSettings->run ($row, $this->docHead);
+	}
+
+	protected function searchItem($srcRow, &$docRow)
+	{
+		if (isset($srcRow['itemProperties']) && isset($srcRow['itemProperties']['supplierItemCode']))
+		{
+			if ($this->searchItemBySupplierCode($srcRow['itemProperties']['supplierItemCode'], $docRow))
+				return;
+
+			$this->createItemFromRow($srcRow['itemProperties']['supplierItemCode'], $srcRow, $docRow);
+		}
+	}
+
+	protected function searchItemBySupplierCode($code, &$docRow)
+	{
+		$q = [];
+		array_push($q, 'SELECT itemSuppliers.*, witems.itemType, witems.itemKind');
+		array_push($q, ' FROM [e10_witems_itemSuppliers] AS itemSuppliers');
+		array_push($q, ' LEFT JOIN [e10_witems_items] AS witems ON itemSuppliers.[item] = witems.ndx');
+		array_push($q, ' WHERE 1');
+		array_push($q, ' AND itemSuppliers.supplier = %i', $this->docHead['person']);
+		array_push($q, ' AND itemSuppliers.itemId = %s', $code);
+
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$docRow['item'] = $r['item'];
+
+			$itemKind = intval($r['itemKind']);
+			if ($itemKind === 1) // stock
+				$docRow['operation'] = 1010102;
+
+			return 1;
+		}
+
+		return 0;
+	}
+
+	protected function createItemFromRow($code, $srcRow, &$docRow)
+	{
+		/** @var \e10\witems\TableItems */
+		$tableItems = $this->app()->table('e10.witems.items');
+
+		/** @var \e10\witems\TableItemSuppliers */
+		$tableItemSuppliers = $this->app()->table('e10.witems.itemSuppliers');
+
+		$newItem = [];
+
+		if (isset($srcRow['itemFullName']))
+			$newItem['fullName'] = Str::upToLen($srcRow['itemFullName'], 120);
+		if (isset($srcRow['itemShortName']))
+			$newItem['shortName'] = Str::upToLen($srcRow['itemShortName'], 80);
+
+		if (!count($newItem) && isset($row['text']) && $row['text'] !== '')
+			$newItem['fullName'] = Str::upToLen($row['text'], 120);
+
+		if (!count($newItem))
+			return;
+
+		if (isset($srcRow['unit']))
+			$newItem['defaultUnit'] = $srcRow['unit'];
+
+		$newItem['itemKind'] = 1;
+
+		$newItem['docState'] = 1000;
+		$newItem['docStateMain'] = 0;
+
+		$newItemNdx = $tableItems->dbInsertRec($newItem);
+
+		$newItemSupplier = [
+			'item' => $newItemNdx,
+			'supplier' => $this->docHead['person'],
+			'rowOrder' => 1000,
+			'itemId' => $code,
+		];
+		$tableItemSuppliers->dbInsertRec($newItemSupplier);
+
+		$this->searchItemBySupplierCode($code, $docRow);
 	}
 }
