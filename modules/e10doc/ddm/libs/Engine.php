@@ -175,6 +175,12 @@ class Engine extends Utility
 			unset($this->docHeadSrcItems['date-tax']);
 		}
 
+		if (isset($this->docHeadSrcItems['date-due']) && $this->docHeadSrcItems['date-due'])
+		{
+			$this->docHeadSrcItems['dateDue'] = $this->docHeadSrcItems['date-due'];
+			unset($this->docHeadSrcItems['date-due']);
+		}
+
 		if (isset($this->docHeadSrcItems['document-id']))
 		{
 			$this->docHeadSrcItems['documentId'] = $this->docHeadSrcItems['document-id'];

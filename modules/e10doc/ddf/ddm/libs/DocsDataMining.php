@@ -139,6 +139,8 @@ class DocsDataMining extends \e10doc\ddf\core\libs\Core
 			$this->docHead['dateIssue'] = $this->srcImpData['head']['dateIssue'];
 		if (isset($this->srcImpData['head']['dateTax']))
 			$this->docHead['dateTax'] = $this->srcImpData['head']['dateTax'];
+		if (isset($this->srcImpData['head']['dateDue']))
+			$this->docHead['dateDue'] = $this->srcImpData['head']['dateDue'];
 
 		if (isset($this->srcImpData['head']['symbol1']))
 			$this->docHead['symbol1'] = $this->srcImpData['head']['symbol1'];
