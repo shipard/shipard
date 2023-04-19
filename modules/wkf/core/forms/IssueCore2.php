@@ -59,7 +59,6 @@ class IssueCore2 extends TableForm
 		$askDeadline = intval($this->issueKind['askDeadline']);
 		$askDeadlineOptions = 0;
 
-		$askDateIncoming = intval($this->issueKind['askDateIncoming']);
 		$enableConnectedIssues = intval($this->issueKind['enableConnectedIssues']);
 
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
@@ -101,13 +100,10 @@ class IssueCore2 extends TableForm
 						$this->layoutOpen(self::ltForm);
 							$this->addColumnInput('issueKind');
 							$this->addList('doclinksPersons', '', TableForm::loAddToFormLayout);
-							if ($askDateIncoming === self::askYes || $askDeadline === self::askYes)
-							{
-								if ($askDateIncoming === self::askYes)
-									$this->addColumnInput('dateIncoming');
-								if ($askDeadline === self::askYes)
-									$this->addColumnInput('dateDeadline', $askDeadlineOptions);
-							}
+							$this->addColumnInput('dateIncoming');
+							if ($askDeadline === self::askYes)
+								$this->addColumnInput('dateDeadline', $askDeadlineOptions);
+
 							if ($askWorkOrder === self::askYes && $this->app()->cfgItem ('options.e10doc-commerce.useWorkOrders', 0))
 								$this->addColumnInput('workOrder');
 
@@ -121,17 +117,15 @@ class IssueCore2 extends TableForm
 				}
 				else
 				{
+					$this->addColumnInput('issueKind');
 					$this->addList('doclinksPersons', '', TableForm::loAddToFormLayout);
-					if ($askDateIncoming === self::askYes || $askDeadline === self::askYes)
+					$this->addColumnInput('dateIncoming');
+					if ($askDeadline === self::askYes)
+						$this->addColumnInput('dateDeadline', $askDeadlineOptions);
+
+					if ($askWorkOrder === self::askYes && $this->app()->cfgItem ('options.e10doc-commerce.useWorkOrders', 0))
 					{
-						if ($askDateIncoming === self::askYes)
-							$this->addColumnInput('dateIncoming');
-						if ($askDeadline === self::askYes)
-							$this->addColumnInput('dateDeadline', $askDeadlineOptions);
-						if ($askWorkOrder === self::askYes && $this->app()->cfgItem ('options.e10doc-commerce.useWorkOrders', 0))
-						{
-							$this->addColumnInput('workOrder');
-						}
+						$this->addColumnInput('workOrder');
 					}
 					$this->addSubColumns('data');
 					$this->addTextInput2($bigTextMode);
@@ -146,17 +140,6 @@ class IssueCore2 extends TableForm
 			$this->addColumnInput('workOrder');
 
 		$this->addList('clsf', '', TableForm::loAddToFormLayout);
-		if ($askDateIncoming === self::askSettings || $askDeadline === self::askSettings)
-		{
-			if ($askDateIncoming === self::askSettings && $askDeadline === self::askSettings)
-				$this->openRow();
-			if ($askDateIncoming === self::askSettings)
-				$this->addColumnInput('dateIncoming');
-			if ($askDeadline === self::askSettings)
-				$this->addColumnInput('dateDeadline', $askDeadlineOptions);
-			if ($askDateIncoming === self::askSettings && $askDeadline === self::askSettings)
-				$this->closeRow();
-		}
 		$this->addColumnInput('priority');
 		$this->addColumnInput('onTop');
 		$this->addColumnInput('disableComments');

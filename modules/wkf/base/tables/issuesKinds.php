@@ -82,7 +82,6 @@ class TableIssuesKinds extends DbTable
 
 				'askWorkOrder' => $r['askWorkOrder'],
 				'askDeadline' => $r['askDeadline'],
-				'askDateIncoming' => $r['askDateIncoming'],
 				'enableConnectedIssues' => $r['enableConnectedIssues'],
 				'enableProjects' => $r['enableProjects'], 'enableTargets' => $r['enableTargets'],
 				'enableEmailForward' => $r['enableEmailForward'], 'emailForwardOnFirstConfirm' => $r['emailForwardOnFirstConfirm'],
@@ -245,7 +244,6 @@ class FormIssueKind extends TableForm
 				$this->openTab ();
 					$this->addColumnInput ('askWorkOrder');
 					$this->addColumnInput ('askDeadline');
-					$this->addColumnInput ('askDateIncoming');
 				$this->closeTab();
 				$this->openTab ();
 					$this->addColumnInput ('enableProjects');
