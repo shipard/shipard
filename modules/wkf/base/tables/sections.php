@@ -100,7 +100,7 @@ class TableSections extends DbTable
 				'icon' => $r['icon'],
 				'parentSection' => $r['parentSection'], 'subSectionRightsType' => $r['subSectionRightsType'],
 				'sst' => $r['systemSectionType'], 'nia' => $r['newIssuesAllowed'], 'eik' => $r['enabledIssueKinds'],
-				'aa' => $r['analyzeAttachments'], 'orderBy' => $orderBy,
+				'orderBy' => $orderBy,
 				'subSections' => [],
 			];
 
@@ -162,7 +162,7 @@ class TableSections extends DbTable
 			if ($r['systemSectionType'] == 31)
 			{ // helpDesk - report problem button
 				$issueKind = $tableIssues->issueKindDefault (2);
-				
+
 				if ($issueKind)
 				{
 					$reportProblemButtons[] = [
@@ -171,7 +171,7 @@ class TableSections extends DbTable
 					 'section' => $r['ndx'],
 					 'issueKind' => $issueKind['ndx'], 'issueType' => $issueKind['issueType']
 					 ];
-				}		
+				}
 			}
 		}
 
@@ -514,8 +514,6 @@ class FormSection extends TableForm
 					$this->addColumnInput ('systemSectionType');
 					$this->addColumnInput ('newIssuesAllowed');
 					$this->addColumnInput ('orderBy');
-					$this->addSeparator(self::coH2);
-					$this->addColumnInput ('analyzeAttachments');
 				$this->closeTab();
 				if ($this->recData['enabledIssueKinds'] == 1)
 				{

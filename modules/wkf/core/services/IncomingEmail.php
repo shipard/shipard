@@ -152,33 +152,6 @@ class IncomingEmail extends Utility
 		$if->setIssue($issueRecData);
 		$if->applyFilters();
 
-		//-- analyze attachments?
-		$issueRecData = $this->tableIssues->loadItem($newMsgNdx);
-		$doAnalyze = 1;
-		$issueKindCfg = $this->app()->cfgItem ('wkf.issues.kinds.'.$issueRecData['issueKind'], NULL);
-		$sectionCfg = $this->app()->cfgItem ('wkf.sections.all.'.$issueRecData['section'], NULL);
-
-		if ($issueKindCfg && isset($issueKindCfg['aa']) && $sectionCfg && isset($sectionCfg['aa']))
-		{
-			if ($issueKindCfg['aa'] == 9 || $sectionCfg['aa'] == 9)
-				$doAnalyze = 0;
-		}
-
-		// -- analyze meta data
-		// @TODO: remove
-		//if ($doAnalyze)
-		//{
-			//$ee = new \lib\core\attachments\Extract($this->app());
-			//$ee->setAttTableDocument ('wkf.core.issues', $newMsgNdx);
-			//$ee->run();
-		//}
-
-		// -- check docDataFiles
-		// @TODO: remove
-		// $ddfe = new \lib\docDataFiles\AttachmentsUpdater($this->app);
-		// $ddfe->init();
-		// $ddfe->doTableDocument('wkf.core.issues', $newMsgNdx);
-
 		// -- finish
 		$issueRecData = $this->tableIssues->loadItem($newMsgNdx);
 		$this->tableIssues->dbUpdateRec($issueRecData);
