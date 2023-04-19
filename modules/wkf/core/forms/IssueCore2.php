@@ -55,19 +55,13 @@ class IssueCore2 extends TableForm
 		$topSection = $this->table->topSection($this->recData['section']);
 
 		$askPersons = intval($this->issueKind['askPersons']);
-		$askPersonsUsers = intval($this->issueKind['askPersonsUsers']);
 		$askPersonsOptions = 0;
-		if ($askPersons !== self::askNone && $askPersonsUsers === self::askUsersAdmins && $this->userAccessLevel !== 2)
-			$askPersonsOptions = self::coReadOnly;
 
 		$askWorkOrder = intval($this->issueKind['askWorkOrder']);
 		$askKind = intval($this->issueKind['askKind']);
 
 		$askDeadline = intval($this->issueKind['askDeadline']);
-		$askDeadlineUsers = intval($this->issueKind['askDeadlineUsers']);
 		$askDeadlineOptions = 0;
-		if ($askDeadline !== self::askNone && $askDeadlineUsers === self::askUsersAdmins && $this->userAccessLevel !== 2)
-			$askDeadlineOptions = self::coReadOnly;
 
 		$askDateIncoming = intval($this->issueKind['askDateIncoming']);
 		$enableConnectedIssues = intval($this->issueKind['enableConnectedIssues']);
@@ -215,7 +209,7 @@ class IssueCore2 extends TableForm
 
 		$this->content = [];
 
-		if ($this->recData ['text'] !== '' && $this->recData ['text'] !== '0')
+		if (isset($this->recData ['text']) && $this->recData ['text'] !== '' && $this->recData ['text'] !== '0')
 		{
 			if ($this->recData['source'] == TableIssues::msEmail)
 			{

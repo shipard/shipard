@@ -81,9 +81,9 @@ class TableIssuesKinds extends DbTable
 				'icon' => $icon,
 
 				'askWorkOrder' => $r['askWorkOrder'],
-				'askPersons' => $r['askPersons'], 'askPersonsUsers' => $r['askPersonsUsers'],
+				'askPersons' => $r['askPersons'],
 				'askKind' => $r['askKind'],
-				'askDeadline' => $r['askDeadline'], 'askDeadlineUsers' => $r['askDeadlineUsers'],
+				'askDeadline' => $r['askDeadline'],
 				'askDateIncoming' => $r['askDateIncoming'],
 				'enableConnectedIssues' => $r['enableConnectedIssues'],
 				'enableProjects' => $r['enableProjects'], 'enableTargets' => $r['enableTargets'],
@@ -245,17 +245,11 @@ class FormIssueKind extends TableForm
 					$this->addColumnInput ('order');
 				$this->closeTab();
 				$this->openTab ();
-					$this->openRow();
-						$this->addColumnInput ('askPersons');
-						$this->addColumnInput ('askPersonsUsers');
-					$this->closeRow();
+					$this->addColumnInput ('askPersons');
 					$this->addColumnInput ('askWorkOrder');
 
 					$this->addColumnInput ('askKind');
-					$this->openRow();
-						$this->addColumnInput ('askDeadline');
-						$this->addColumnInput ('askDeadlineUsers');
-					$this->closeRow();
+					$this->addColumnInput ('askDeadline');
 					$this->addColumnInput ('askDateIncoming');
 					$this->addColumnInput ('enableConnectedIssues');
 					$this->addColumnInput ('vds');
