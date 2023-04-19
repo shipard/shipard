@@ -268,6 +268,8 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 		//else
 		//	$this->checkVat(0.0, $row);
 
+		$this->checkItem($il, $row);
+
 		$this->applyRowSettings($row);
 
 		if (count($row))

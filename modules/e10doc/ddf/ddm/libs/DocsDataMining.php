@@ -218,6 +218,7 @@ class DocsDataMining extends \e10doc\ddf\core\libs\Core
 
 
 		$this->searchItem($r, $row);
+		$this->checkItem($r, $row);
 
 		$this->applyRowSettings($row);
 

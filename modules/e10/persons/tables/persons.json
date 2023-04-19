@@ -32,8 +32,10 @@
     {"id": "roles", "sql": "roles", "name": "Role", "type": "enumString", "len": 160, "enumMultiple": 1,
 	    "enumCfg": {"cfgItem": "e10.persons.roles", "cfgValue": "", "cfgText": "name"}},
 
-		{"id": "optBuyDocImport", "name": "Automaticky importovat nákupní doklady", "type": "logical"},
+		{"id": "optBuyDocImport", "name": "Automaticky importovat nákupní doklady z došlé pošty", "type": "logical"},
+		{"id": "optBuyDocImportItem", "name": "Výchozí Položka pro řádek dokladu", "type": "int", "reference": "e10.witems.items", "comboViewer": "combo"},
 		{"id": "optBuyItemsImport", "name": "Automaticky importovat Položky", "type": "logical"},
+		{"id": "optBuyItemsImportItemType", "name": "Typ položky", "type": "int", "reference": "e10.witems.itemtypes"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

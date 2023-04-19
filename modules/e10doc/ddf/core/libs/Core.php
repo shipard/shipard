@@ -224,6 +224,15 @@ class Core extends \lib\docDataFiles\DocDataFile
 		$rowsSettings->run ($row, $this->docHead);
 	}
 
+	protected function checkItem($srcRow, &$docRow)
+	{
+		if (isset($docRow['item']) && $docRow['item'])
+			return;
+
+		if ($this->personRecData && $this->personRecData['optBuyDocImportItem'])
+			$docRow['item'] = $this->personRecData['optBuyDocImportItem'];
+	}
+
 	protected function searchItem($srcRow, &$docRow)
 	{
 		if (isset($srcRow['itemProperties']) && isset($srcRow['itemProperties']['supplierItemCode']))
@@ -287,12 +296,23 @@ class Core extends \lib\docDataFiles\DocDataFile
 		if (isset($srcRow['unit']))
 			$newItem['defaultUnit'] = $srcRow['unit'];
 
-		$newItem['itemKind'] = 1;
+		if ($this->personRecData && $this->personRecData['optBuyItemsImportItemType'])
+		{
+			$itemTypeRecData = $this->app()->loadItem($this->personRecData['optBuyItemsImportItemType'], 'e10.witems.itemtypes');
+			if ($itemTypeRecData)
+			{
+				$newItem['itemType'] = $this->personRecData['optBuyItemsImportItemType'];
+				$newItem['type'] = $itemTypeRecData['id'];
+				$newItem['itemKind'] = $itemTypeRecData['type'];
+			}
+		}
 
 		$newItem['docState'] = 1000;
 		$newItem['docStateMain'] = 0;
 
 		$newItemNdx = $tableItems->dbInsertRec($newItem);
+		$newItem = $tableItems->loadItem($newItemNdx);
+		$tableItems->checkAfterSave2 ($newItem);
 
 		$newItemSupplier = [
 			'item' => $newItemNdx,
@@ -301,7 +321,6 @@ class Core extends \lib\docDataFiles\DocDataFile
 			'itemId' => $code,
 		];
 		$tableItemSuppliers->dbInsertRec($newItemSupplier);
-
 		$this->searchItemBySupplierCode($code, $docRow);
 	}
 }
