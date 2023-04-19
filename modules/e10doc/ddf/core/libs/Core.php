@@ -15,7 +15,7 @@ class Core extends \lib\docDataFiles\DocDataFile
 	var $docHead = [];
 	var $docRows = [];
 	var $replaceDocumentNdx = 0;
-
+	var $personRecData = NULL;
 
 	protected function date($date)
 	{
@@ -117,9 +117,27 @@ class Core extends \lib\docDataFiles\DocDataFile
 		}
 	}
 
+	protected function loadPerson()
+	{
+		if ($this->personRecData)
+			return;
+		if (!isset($this->docHead['person']) || !$this->docHead['person'])
+			return;
+		$this->personRecData = $this->app()->loadItem($this->docHead['person'], 'e10.persons.persons');
+	}
+
 	public function createDocument($fromRecData, $checkNewRec = FALSE)
 	{
 		$this->createImport();
+
+		if ($this->automaticImport)
+		{
+			$this->loadPerson();
+			if (!$this->personRecData)
+				return;
+			if (!$this->personRecData['optBuyDocImport'])
+				return;
+		}
 
 		if ($fromRecData)
 		{
@@ -211,6 +229,9 @@ class Core extends \lib\docDataFiles\DocDataFile
 		if (isset($srcRow['itemProperties']) && isset($srcRow['itemProperties']['supplierItemCode']))
 		{
 			if ($this->searchItemBySupplierCode($srcRow['itemProperties']['supplierItemCode'], $docRow))
+				return;
+
+			if (!$this->personRecData || !$this->personRecData['optBuyItemsImport'])
 				return;
 
 			$this->createItemFromRow($srcRow['itemProperties']['supplierItemCode'], $srcRow, $docRow);

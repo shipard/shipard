@@ -116,6 +116,7 @@ class DocsDataMining extends \e10doc\ddf\core\libs\Core
 		$this->docHead['docStateMain'] = 0;
 
 		$this->checkPersons();
+		$this->loadPerson();
 
 		$vat = 0;
 		if (isset($this->srcImpData['head']['vat']) && $this->srcImpData['head']['vat'])

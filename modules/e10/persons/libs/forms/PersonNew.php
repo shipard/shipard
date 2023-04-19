@@ -64,6 +64,8 @@ class PersonNew extends TableForm
 		if (!isset ($this->recData['company']))
 			$this->recData['company'] = 0;
 
+		$checkIncomingIssues = intval($this->app()->cfgItem('options.experimental.checkIncomingIssues', 0));
+
 		$this->openForm ();
 			$this->layoutOpen (TableForm::ltGrid);
 				$this->openRow ('grid-form-tabs');
@@ -158,6 +160,16 @@ class PersonNew extends TableForm
 						}
 					}
 					$this->addColumnInput ('id');
+
+					if ($this->recData['company'] == 1)
+					{
+						if ($checkIncomingIssues)
+						{
+							$this->addSeparator(self::coH1);
+							$this->addColumnInput ('optBuyDocImport');
+							$this->addColumnInput ('optBuyItemsImport');
+						}
+					}
 				$this->closeTab ();
 
 				if ($this->readOnly)

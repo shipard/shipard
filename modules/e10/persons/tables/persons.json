@@ -31,6 +31,10 @@
 	  {"id": "gid", "name": "Globální ID", "type": "long"},
     {"id": "roles", "sql": "roles", "name": "Role", "type": "enumString", "len": 160, "enumMultiple": 1,
 	    "enumCfg": {"cfgItem": "e10.persons.roles", "cfgValue": "", "cfgText": "name"}},
+
+		{"id": "optBuyDocImport", "name": "Automaticky importovat nákupní doklady", "type": "logical"},
+		{"id": "optBuyItemsImport", "name": "Automaticky importovat Položky", "type": "logical"},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
   ],
