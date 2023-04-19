@@ -54,11 +54,7 @@ class IssueCore2 extends TableForm
 		$this->issueKind = $this->app()->cfgItem('wkf.issues.kinds.'.$this->recData['issueKind']);
 		$topSection = $this->table->topSection($this->recData['section']);
 
-		$askPersons = intval($this->issueKind['askPersons']);
-		$askPersonsOptions = 0;
-
 		$askWorkOrder = intval($this->issueKind['askWorkOrder']);
-		$askKind = intval($this->issueKind['askKind']);
 
 		$askDeadline = intval($this->issueKind['askDeadline']);
 		$askDeadlineOptions = 0;
@@ -84,8 +80,8 @@ class IssueCore2 extends TableForm
 		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		$bigTextMode = 0;
-		if ($this->formKind === self::fkDefault && $askPersons !== self::askYes && $askDeadline !== self::askYes && $askDateIncoming !== self::askYes && $askWorkOrder !== self::askYes)
-			$bigTextMode = 1;
+		//if ($this->formKind === self::fkDefault && $askPersons !== self::askYes && $askDeadline !== self::askYes && $askDateIncoming !== self::askYes && $askWorkOrder !== self::askYes)
+		//	$bigTextMode = 1;
 
 		$this->openForm ();
 		$this->addColumnInput ('subject');
@@ -103,10 +99,8 @@ class IssueCore2 extends TableForm
 				{
 					$this->layoutOpen(self::ltHorizontal);
 						$this->layoutOpen(self::ltForm);
-							if ($askKind === self::askYes)
-								$this->addColumnInput('issueKind');
-							if ($askPersons === self::askYes)
-								$this->addList('doclinksPersons', '', TableForm::loAddToFormLayout | $askPersonsOptions);
+							$this->addColumnInput('issueKind');
+							$this->addList('doclinksPersons', '', TableForm::loAddToFormLayout);
 							if ($askDateIncoming === self::askYes || $askDeadline === self::askYes)
 							{
 								if ($askDateIncoming === self::askYes)
@@ -127,10 +121,7 @@ class IssueCore2 extends TableForm
 				}
 				else
 				{
-					if ($askKind === self::askYes)
-						$this->addColumnInput('issueKind');
-					if ($askPersons === self::askYes)
-						$this->addList('doclinksPersons', '', TableForm::loAddToFormLayout | $askPersonsOptions);
+					$this->addList('doclinksPersons', '', TableForm::loAddToFormLayout);
 					if ($askDateIncoming === self::askYes || $askDeadline === self::askYes)
 					{
 						if ($askDateIncoming === self::askYes)
@@ -166,15 +157,9 @@ class IssueCore2 extends TableForm
 			if ($askDateIncoming === self::askSettings && $askDeadline === self::askSettings)
 				$this->closeRow();
 		}
-		if ($askPersons == self::askSettings)
-		{
-			$this->addList('doclinksPersons', '', TableForm::loAddToFormLayout | $askPersonsOptions);
-		}
 		$this->addColumnInput('priority');
 		$this->addColumnInput('onTop');
 		$this->addColumnInput('disableComments');
-		if ($askKind === self::askSettings)
-			$this->addColumnInput('issueKind');
 		$this->addColumnInput('section');
 
 		//if ($topSection['useStatuses'])

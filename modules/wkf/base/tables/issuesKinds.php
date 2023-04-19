@@ -81,8 +81,6 @@ class TableIssuesKinds extends DbTable
 				'icon' => $icon,
 
 				'askWorkOrder' => $r['askWorkOrder'],
-				'askPersons' => $r['askPersons'],
-				'askKind' => $r['askKind'],
 				'askDeadline' => $r['askDeadline'],
 				'askDateIncoming' => $r['askDateIncoming'],
 				'enableConnectedIssues' => $r['enableConnectedIssues'],
@@ -245,19 +243,17 @@ class FormIssueKind extends TableForm
 					$this->addColumnInput ('order');
 				$this->closeTab();
 				$this->openTab ();
-					$this->addColumnInput ('askPersons');
 					$this->addColumnInput ('askWorkOrder');
-
-					$this->addColumnInput ('askKind');
 					$this->addColumnInput ('askDeadline');
 					$this->addColumnInput ('askDateIncoming');
-					$this->addColumnInput ('enableConnectedIssues');
-					$this->addColumnInput ('vds');
 				$this->closeTab();
 				$this->openTab ();
 					$this->addColumnInput ('enableProjects');
 					$this->addColumnInput ('enableTargets');
-					$this->addSeparator(self::coH2);
+					$this->addColumnInput ('enableConnectedIssues');
+					$this->addSeparator(self::coH4);
+					$this->addColumnInput ('vds');
+					$this->addSeparator(self::coH4);
 					$this->addColumnInput ('systemKind');
 				$this->closeTab ();
 				$this->openTab ();

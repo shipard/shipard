@@ -152,12 +152,7 @@ class TableIssues extends DbTable
 		//if ($operation === 'show')
 		//	return 'show';
 
-		// TODO: cleanup
-		//$newForms = intval($this->app()->cfgItem('options.experimental.testNewIssuesForms', 0));
-		//if ($newForms)
-			return 'default2';
-
-		//return 'default';
+		return 'default2';
 	}
 
 	public function getRecordInfo ($recData, $options = 0)
