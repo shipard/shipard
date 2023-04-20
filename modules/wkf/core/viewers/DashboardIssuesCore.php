@@ -3,6 +3,7 @@
 namespace wkf\core\viewers;
 
 use \e10\TableView, \e10\utils, \Shipard\Viewer\TableViewPanel, \e10pro\wkf\TableMessages, \wkf\core\TableIssues;
+use \Shipard\Utils\World;
 
 
 /**
@@ -23,6 +24,8 @@ class DashboardIssuesCore extends TableView
 	protected $useText = FALSE;
 	protected $currencies;
 	protected $treeMode = 0;
+
+	var $docPaymentMethods;
 
 	var $hasProjectsFilter = FALSE;
 
@@ -58,6 +61,7 @@ class DashboardIssuesCore extends TableView
 	var $showProjectsFolders = TRUE;
 
 	var $useWorkOrders = 0;
+	var $useDocColumns = 0;
 
 	var $help = '';
 
@@ -85,6 +89,10 @@ class DashboardIssuesCore extends TableView
 		$this->enableDetailSearch = TRUE;
 
 		$this->useWorkOrders = intval($this->app()->cfgItem ('options.e10doc-commerce.useWorkOrders', 0));
+
+		$this->docPaymentMethods = $this->table->app()->cfgItem ('e10.docs.paymentMethods', NULL);
+		if ($this->docPaymentMethods)
+			$this->useDocColumns = 1;
 
 		$this->initMainQueries();
 
@@ -373,6 +381,12 @@ class DashboardIssuesCore extends TableView
 			array_push($q, ', woCusts.[fullName] AS woCustName');
 		}
 
+		if ($this->useDocColumns)
+		{
+			array_push($q, ', docCentres.[shortName] AS docCentreName');
+			array_push($q, ', docProperty.[fullName] AS docPropertyName');
+		}
+
 		array_push ($q, ' FROM [wkf_core_issues] AS issues');
 		array_push ($q, ' LEFT JOIN e10_persons_persons as persons ON issues.author = persons.ndx');
 		array_push ($q, ' LEFT JOIN wkf_base_targets AS [targets] ON issues.target = targets.ndx');
@@ -382,6 +396,12 @@ class DashboardIssuesCore extends TableView
 		{
 			array_push($q, ' LEFT JOIN [e10mnf_core_workOrders] AS wo ON [issues].workOrder = wo.ndx');
 			array_push($q, ' LEFT JOIN [e10_persons_persons] AS woCusts ON [wo].customer = woCusts.ndx');
+		}
+
+		if ($this->useDocColumns)
+		{
+			array_push($q, ' LEFT JOIN [e10doc_base_centres] AS docCentres ON [issues].docCentre = docCentres.ndx');
+			array_push($q, ' LEFT JOIN [e10pro_property_property] AS docProperty ON [issues].docProperty = docProperty.ndx');
 		}
 
 		array_push ($q, ' WHERE 1');
@@ -956,7 +976,6 @@ class DashboardIssuesCore extends TableView
 			'value' => $title, 'pk' => $item['ndx'], 'docAction' => 'edit', 'data-table' => 'wkf.core.issues'
 		];
 
-
 		// -- body
 		if ($this->withBody)
 		{
@@ -1039,6 +1058,52 @@ class DashboardIssuesCore extends TableView
 					$this->textRenderer->setOwner($item);
 					$item ['pane']['body'][] = $this->messageBodyContent($item);
 				}
+
+				$docProperties = [];
+				if ($this->useDocColumns && $this->viewerStyle == self::dvsRows)
+				{
+					if ($item['docPrice'])
+					{
+						$pl = [
+							'text' => Utils::nf($item['docPrice'], 2),
+							'class' => 'label label-default', 'title' => 'Cena',
+							'icon' => $this->docPaymentMethods[$item['docPaymentMethod']]['icon'] ?? 'system/iconMoney'
+						];
+
+						$curr = World::currency($this->app(), $item ['docCurrency']);
+						$pl ['suffix'] = strtoupper($curr['i']);
+
+						$docProperties[] = $pl;
+					}
+
+					if ($item['docSymbol1'] !== '')
+						$docProperties[] = ['text' => $item['docSymbol1'], 'class' => 'label label-default', 'title' => 'Variabilní symbol', 'icon' => 'system/iconExchange'];
+
+					if ($item['docDateDue'])
+						$docProperties[] = ['text' => Utils::datef($item['docDateDue']), 'class' => 'label label-default', 'title' => 'Datum splatnosti', 'icon' => 'system/iconMoney'];
+					if ($item['docDateTax'])
+					{
+						$ld = ['text' => Utils::datef($item['docDateTax']), 'class' => 'label label-default', 'title' => 'DUZP', 'icon' => 'detailDeferredTax'];
+						if ($item['docDateTaxDuty'] && $item['docDateTax'] !== $item['docDateTaxDuty'])
+						{
+							$ld['suffix'] = Utils::datef($item['docDateTaxDuty']);
+							$ld['title'] .= ' + DPPD';
+						}
+
+						$docProperties[] = $ld;
+					}
+
+					if ($item['workOrder'])
+						$docProperties[] = ['text' => $woTitle, 'class' => 'label label-default', 'icon' => 'tables/e10mnf.core.workOrders'];
+
+					if ($item['docCentre'])
+						$docProperties[] = ['text' => $item['docCentreName'], 'class' => 'label label-default', 'title' => 'Středisko', 'icon' => 'tables/e10doc.base.centres'];
+
+					if ($item['docProperty'])
+						$docProperties[] = ['text' => $item['docPropertyName'], 'class' => 'label label-default', 'title' => 'Majetek', 'icon' => 'tables/e10pro.property.property'];
+				}
+				if (count($docProperties))
+					$item ['pane']['body'][] = ['value' => $docProperties, 'class' => 'padd5'];
 
 				if (isset($this->atts[$item ['ndx']]))
 				{
