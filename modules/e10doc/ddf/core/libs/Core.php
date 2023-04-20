@@ -3,6 +3,7 @@
 namespace e10doc\ddf\core\libs;
 use \e10\json, \e10\utils, \Shipard\Utils\Str;
 use \e10doc\core\libs\E10Utils;
+use \Shipard\Utils\World;
 
 
 /**
@@ -11,7 +12,6 @@ use \e10doc\core\libs\E10Utils;
  */
 class Core extends \lib\docDataFiles\DocDataFile
 {
-	var $srcImpData = NULL;
 	var $docHead = [];
 	var $docRows = [];
 	var $replaceDocumentNdx = 0;
@@ -322,5 +322,38 @@ class Core extends \lib\docDataFiles\DocDataFile
 		];
 		$tableItemSuppliers->dbInsertRec($newItemSupplier);
 		$this->searchItemBySupplierCode($code, $docRow);
+	}
+
+	protected function updateInbox()
+	{
+		if (!$this->inboxNdx || !count($this->docHead))
+			return;
+
+		$inboxRecData = $this->app()->loadItem($this->inboxNdx, 'wkf.core.issues');
+
+		$update = [];
+		if (isset($this->docHead['symbol1']) && $this->docHead['symbol1'] !== '' && $inboxRecData['docSymbol1'] === '')
+			$update['docSymbol1'] = $this->docHead['symbol1'];
+		if (isset($this->docHead['symbol2']) && $this->docHead['symbol2'] !== '' && $inboxRecData['docSymbol2'] === '')
+			$update['docSymbol2'] = $this->docHead['symbol2'];
+
+		if (isset($this->docHead['dateIssue']) && !Utils::dateIsBlank($this->docHead['dateIssue']) && Utils::dateIsBlank($inboxRecData['docDateIssue']))
+			$update['docDateIssue'] = $this->docHead['dateIssue'];
+		if (isset($this->docHead['dateDue']) && !Utils::dateIsBlank($this->docHead['dateDue']) && Utils::dateIsBlank($inboxRecData['docDateDue']))
+			$update['docDateDue'] = $this->docHead['dateDue'];
+		if (isset($this->docHead['dateTax']) && !Utils::dateIsBlank($this->docHead['dateTax']) && Utils::dateIsBlank($inboxRecData['docDateTax']))
+			$update['docDateTax'] = $this->docHead['dateTax'];
+
+		if (isset($this->srcImpData['head']['money-to-pay']) && $this->srcImpData['head']['money-to-pay'] != 0 && $inboxRecData['docPrice'] == 0)
+			$update['docPrice'] = $this->srcImpData['head']['money-to-pay'];
+
+		if (isset($update['docPrice']) && $inboxRecData['docCurrency'] == 0)
+		{
+			$homeCurrency = utils::homeCurrency($this->app(), $this->docHead['dateIssue'] ?? utils::today());
+			$update['docCurrency'] = World::currencyNdx($this->app(), $homeCurrency);
+		}
+
+		if (count($update))
+			$this->db()->query('UPDATE [wkf_core_issues] SET ', $update, ' WHERE [ndx] = %i', $this->inboxNdx);
 	}
 }

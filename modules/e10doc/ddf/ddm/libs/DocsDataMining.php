@@ -107,6 +107,7 @@ class DocsDataMining extends \e10doc\ddf\core\libs\Core
 
 		$this->ddfId = 1001;
 		$this->addFirstContent();
+		$this->updateInbox();
 	}
 
 	protected function importHead()

@@ -59,6 +59,7 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 		$this->ddfId = 1000;
 
 		$this->addFirstContent();
+		$this->updateInbox();
 	}
 
 	public function createContents()
