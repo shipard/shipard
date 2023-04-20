@@ -185,7 +185,7 @@ class IssueCore2 extends TableForm
 			$this->addColumnInput('docDateTaxDuty');
 		}
 
-		if ($askDocColumns)
+		if ($askDocAnalytics)
 		{
 			$this->addSeparator(self::coH4);
 
