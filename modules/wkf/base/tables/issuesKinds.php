@@ -81,6 +81,8 @@ class TableIssuesKinds extends DbTable
 				'icon' => $icon,
 
 				'askWorkOrder' => $r['askWorkOrder'],
+				'askDocColumns' => $r['askDocColumns'],
+				'askDocAnalytics' => $r['askDocAnalytics'],
 				'askDeadline' => $r['askDeadline'],
 				'enableConnectedIssues' => $r['enableConnectedIssues'],
 				'enableProjects' => $r['enableProjects'], 'enableTargets' => $r['enableTargets'],
@@ -228,7 +230,6 @@ class FormIssueKind extends TableForm
 		$this->setFlag ('maximize', 1);
 
 		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
-		$tabs ['tabs'][] = ['text' => 'Údaje', 'icon' => 'formData'];
 		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 		$tabs ['tabs'][] = ['text' => 'Přeposílání', 'icon' => 'user/arrowCircleRight'];
 
@@ -240,8 +241,9 @@ class FormIssueKind extends TableForm
 					$this->addColumnInput ('issueType');
 					$this->addColumnInput ('icon');
 					$this->addColumnInput ('order');
-				$this->closeTab();
-				$this->openTab ();
+					$this->addSeparator(self::coH4);
+					$this->addColumnInput ('askDocColumns');
+					$this->addColumnInput ('askDocAnalytics');
 					$this->addColumnInput ('askWorkOrder');
 					$this->addColumnInput ('askDeadline');
 				$this->closeTab();
@@ -259,7 +261,7 @@ class FormIssueKind extends TableForm
 					$this->addColumnInput ('emailForwardOnFirstConfirm');
 					$this->addColumnInput ('emailForwardSubjectPrefix');
 					$this->addColumnInput ('emailForwardBody');
-					$this->closeTab ();
+				$this->closeTab ();
 			$this->closeTabs();
 		$this->closeForm ();
 	}

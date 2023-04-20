@@ -2,7 +2,7 @@
 	"id": "e10doc.core",
 	"name": "Documents",
 	"tables": ["heads", "rows", "taxes"],
-	"extensions": ["witems"],
+	"extensions": ["witems", "issues"],
 	"config": [
 		{"id": "+e10.base.doclinks", "file": "docLinksNewWorkflow.json", "module":  "wkf.core"},
 		{"id": "e10doc.core.heads.docStates.default", "name": "Stavy dokladů", "file": "e10doc.core.heads.docStates.default.json"},

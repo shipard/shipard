@@ -101,11 +101,10 @@ class IssueCore2 extends TableForm
 							$this->addColumnInput('issueKind');
 							$this->addList('doclinksPersons', '', TableForm::loAddToFormLayout);
 							$this->addColumnInput('dateIncoming');
-							if ($askDeadline === self::askYes)
+							if ($askDeadline)
 								$this->addColumnInput('dateDeadline', $askDeadlineOptions);
 
-							if ($askWorkOrder === self::askYes && $this->app()->cfgItem ('options.e10doc-commerce.useWorkOrders', 0))
-								$this->addColumnInput('workOrder');
+							$this->renderFormReadWrite_DocInputs ();
 
 							$this->addSubColumns('data');
 							$this->addTextInput2($bigTextMode);
@@ -120,13 +119,11 @@ class IssueCore2 extends TableForm
 					$this->addColumnInput('issueKind');
 					$this->addList('doclinksPersons', '', TableForm::loAddToFormLayout);
 					$this->addColumnInput('dateIncoming');
-					if ($askDeadline === self::askYes)
+					if ($askDeadline)
 						$this->addColumnInput('dateDeadline', $askDeadlineOptions);
 
-					if ($askWorkOrder === self::askYes && $this->app()->cfgItem ('options.e10doc-commerce.useWorkOrders', 0))
-					{
-						$this->addColumnInput('workOrder');
-					}
+					$this->renderFormReadWrite_DocInputs ();
+
 					$this->addSubColumns('data');
 					$this->addTextInput2($bigTextMode);
 					$this->addBody();
@@ -159,6 +156,55 @@ class IssueCore2 extends TableForm
 		$this->closeTab();
 		$this->closeTabs ();
 		$this->closeForm ();
+	}
+
+	function renderFormReadWrite_DocInputs ()
+	{
+		$askWorkOrder = intval($this->issueKind['askWorkOrder']);
+		$askDocColumns = intval($this->issueKind['askDocColumns']);
+		$askDocAnalytics = intval($this->issueKind['askDocAnalytics']);
+
+		if ($askWorkOrder && $this->app()->cfgItem ('options.e10doc-commerce.useWorkOrders', 0))
+			$this->addColumnInput('workOrder');
+
+		if ($askDocColumns)
+		{
+			$this->addSeparator(self::coH2);
+			//$this->openRow();
+				$this->addColumnInput('docPrice');
+				$this->addColumnInput('docCurrency');
+			//$this->closeRow();
+
+			$this->addSeparator(self::coH4);
+			$this->addColumnInput('docPaymentMethod');
+			$this->addColumnInput('docSymbol1');
+			$this->addColumnInput('docSymbol2');
+
+			$this->addSeparator(self::coH4);
+			$this->addColumnInput('docDateIssue');
+			$this->addColumnInput('docDateDue');
+			$this->addColumnInput('docDateAccounting');
+			$this->addColumnInput('docDateTax');
+			$this->addColumnInput('docDateTaxDuty');
+		}
+
+		if ($askDocColumns)
+		{
+			$this->addSeparator(self::coH4);
+
+			if ($this->app()->cfgItem ('options.e10doc-commerce.useWorkOrders', 0))
+				$this->addColumnInput('workOrder');
+			if ($this->table->app()->cfgItem ('options.core.useProjects', 0))
+				$this->addColumnInput ('docProject');
+			if ($this->table->app()->cfgItem ('options.core.useCentres', 0))
+				$this->addColumnInput('docCentre');
+			if ($this->table->app()->cfgItem ('options.property.usePropertyExpenses', 0))
+				$this->addColumnInput('docProperty');
+
+			$whs = $this->app()->cfgItem ('e10doc.warehouses', NULL);
+			if ($whs && count($whs))
+				$this->addColumnInput('docWarehouse');
+		}
 	}
 
 	function addTextInput2 ($bigTextMode)

@@ -1,0 +1,25 @@
+[
+  {
+    "table": "wkf.core.issues",
+    "columns": [
+      {"id": "docPrice", "name": "Cena", "type": "money"},
+      {"id": "docCurrency", "name": "Měna", "type": "int", "reference": "e10.world.currencies"},
+      {"id": "docPaymentMethod", "name": "Způsob úhrady", "type": "enumInt", "options": ["saveOnChange"],
+        "enumCfg": {"cfgItem": "e10.docs.paymentMethods", "cfgValue": "", "cfgText": "title"}},
+
+      {"id": "docDateIssue", "name": "Datum vystavení", "type": "date"},
+      {"id": "docDateDue", "name": "Datum splatnosti", "type": "date"},
+      {"id": "docDateAccounting", "name": "Účetní datum", "type": "date"},
+      {"id": "docDateTax", "name": "Datum uskutečnění zdanitelného plnění", "label": "DUZP", "type": "date"},
+      {"id": "docDateTaxDuty", "name": "Datum povinnosti přiznat daň", "label": "DPPD", "type": "date"},
+
+      {"id": "docSymbol1", "name": "Variabilní symbol", "type": "string", "len": 20, "options": ["saveOnChange"]},
+      {"id": "docSymbol2", "name": "Specifický symbol", "label": "Spec. symbol", "type": "string", "len": 20, "options": ["saveOnChange"]},
+
+      {"id": "docCentre", "name": "Středisko", "type": "int", "reference": "e10doc.base.centres"},
+      {"id": "docProject", "name": "Projekt", "type": "int", "reference": "wkf.base.projects", "module": "wkf.base"},
+      {"id": "docProperty", "name": "Majetek", "type": "int", "reference": "e10pro.property.property"},
+      {"id": "docWarehouse", "name": "Sklad", "type": "int", "reference": "e10doc.base.warehouses"}
+    ]
+  }
+]

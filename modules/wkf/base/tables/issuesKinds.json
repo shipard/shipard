@@ -14,20 +14,11 @@
 		{"id": "order", "name": "Pořadí", "type": "int"},
 		{"id": "icon", "name": "Ikona", "type": "string", "len": 50},
 
-		{"id": "askWorkOrder", "name": "Zadávat zakázku", "type": "enumInt",
-			"enumCfg": {"cfgItem": "wkf.issuesKinds.AskEnum", "cfgValue": "", "cfgText": "name"}},
-		{"id": "askPersons", "name": "Zadávat osoby", "type": "enumInt",
-			"enumCfg": {"cfgItem": "wkf.issuesKinds.AskEnum", "cfgValue": "", "cfgText": "name"}},
-		{"id": "askPersonsUsers", "name": "Uživatelé, co mohou zadávat osoby", "label": "Uživatelé", "type": "enumInt",
-			"enumCfg": {"cfgItem": "wkf.issuesKinds.AskEnumUsers", "cfgValue": "", "cfgText": "name"}},
-		{"id": "askKind", "name": "Zadávat druh", "type": "enumInt",
-			"enumCfg": {"cfgItem": "wkf.issuesKinds.AskEnum", "cfgValue": "", "cfgText": "name"}},
-		{"id": "askDeadline", "name": "Zadávat termín", "type": "enumInt",
-			"enumCfg": {"cfgItem": "wkf.issuesKinds.AskEnum", "cfgValue": "", "cfgText": "name"}},
-		{"id": "askDeadlineUsers", "name": "Uživatelé, co mohou zadávat termín", "label": "Uživatelé", "type": "enumInt",
-			"enumCfg": {"cfgItem": "wkf.issuesKinds.AskEnumUsers", "cfgValue": "", "cfgText": "name"}},
-		{"id": "askDateIncoming", "name": "Zadávat datum přijetí", "type": "enumInt",
-			"enumCfg": {"cfgItem": "wkf.issuesKinds.AskEnum", "cfgValue": "", "cfgText": "name"}},
+		{"id": "askDocColumns", "name": "Zadávat údaje Dokladu (datumy, platební údaje atd.)", "type": "logical"},
+		{"id": "askDocAnalytics", "name": "Zadávat analytické členění (středisko, majetek atd.)", "type": "logical"},
+		{"id": "askWorkOrder", "name": "Zadávat zakázku", "type": "logical"},
+		{"id": "askPersons", "name": "Zadávat osoby", "type": "logical"},
+		{"id": "askDeadline", "name": "Zadávat termín", "type": "logical"},
 
 		{"id": "enableConnectedIssues", "name": "Povolit propojení zpráv", "type": "logical"},
 		{"id": "enableProjects", "name": "Používat Projekty", "type": "logical"},
@@ -37,9 +28,6 @@
 		{"id": "emailForwardOnFirstConfirm", "name": "Přeposlat při prvním potvrzení", "type": "logical"},
 		{"id": "emailForwardSubjectPrefix", "name": "Začátek předmětu zprávy", "type": "string", "len": 60},
 		{"id": "emailForwardBody", "name": "Tělo zprávy", "type": "memo"},
-
-		{"id": "analyzeAttachments", "name": "Analyzovat přílohy", "type": "enumInt",
-			"enumValues": {"0": "Výchozí nastavení (ne)", "1": "Podle sekce", "9":  "Ne", "10": "Ihned", "11": "Co nejdříve", "12": "Časem"}},
 
 		{"id": "vds", "name": "Rozšíření struktury", "type": "int", "reference":  "vds.base.defs"},
 
