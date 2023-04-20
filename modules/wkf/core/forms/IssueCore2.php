@@ -133,9 +133,6 @@ class IssueCore2 extends TableForm
 		$this->openTab();
 		$this->addList('doclinksAssignment', '', TableForm::loAddToFormLayout);
 
-		if ($askWorkOrder === self::askSettings && $this->app()->cfgItem ('options.e10doc-commerce.useWorkOrders', 0))
-			$this->addColumnInput('workOrder');
-
 		$this->addList('clsf', '', TableForm::loAddToFormLayout);
 		$this->addColumnInput('priority');
 		$this->addColumnInput('onTop');
@@ -192,7 +189,7 @@ class IssueCore2 extends TableForm
 		{
 			$this->addSeparator(self::coH4);
 
-			if ($this->app()->cfgItem ('options.e10doc-commerce.useWorkOrders', 0))
+			if (!$askWorkOrder && $this->app()->cfgItem ('options.e10doc-commerce.useWorkOrders', 0))
 				$this->addColumnInput('workOrder');
 			if ($this->table->app()->cfgItem ('options.core.useProjects', 0))
 				$this->addColumnInput ('docProject');
