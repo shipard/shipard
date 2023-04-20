@@ -30,6 +30,8 @@ class PdfToText extends Base
 			{
 				$o = new \e10doc\ddf\ddm\libs\DocsDataMining($this->app());
 				$o->init();
+				if ($this->attRecData && $this->attRecData['tableid'] === 'wkf.core.issues')
+					$o->inboxNdx = $this->attRecData['recid'];
 				$o->setFileContent($text, $this->attRecData['ndx']);
 				$o->checkFileContent();
 
