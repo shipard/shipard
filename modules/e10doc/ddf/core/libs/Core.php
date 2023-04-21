@@ -332,6 +332,8 @@ class Core extends \lib\docDataFiles\DocDataFile
 		$inboxRecData = $this->app()->loadItem($this->inboxNdx, 'wkf.core.issues');
 
 		$update = [];
+		if (isset($this->docHead['docId']) && $this->docHead['docId'] !== '' && $inboxRecData['docId'] === '')
+			$update['docId'] = $this->docHead['docId'];
 		if (isset($this->docHead['symbol1']) && $this->docHead['symbol1'] !== '' && $inboxRecData['docSymbol1'] === '')
 			$update['docSymbol1'] = $this->docHead['symbol1'];
 		if (isset($this->docHead['symbol2']) && $this->docHead['symbol2'] !== '' && $inboxRecData['docSymbol2'] === '')

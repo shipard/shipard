@@ -7,6 +7,7 @@
       {"id": "docPaymentMethod", "name": "Způsob úhrady", "type": "enumInt", "options": ["saveOnChange"],
         "enumCfg": {"cfgItem": "e10.docs.paymentMethods", "cfgValue": "", "cfgText": "title"}},
 
+      {"id": "docId", "name": "Ev. číslo dokladu", "type": "string", "len": 40},
       {"id": "docDateIssue", "name": "Datum vystavení", "type": "date"},
       {"id": "docDateDue", "name": "Datum splatnosti", "type": "date"},
       {"id": "docDateAccounting", "name": "Účetní datum", "type": "date"},

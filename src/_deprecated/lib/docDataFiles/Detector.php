@@ -70,6 +70,9 @@ class Detector extends Utility
 				continue;
 			}
 
+			if ($this->attRecData && $this->attRecData['tableid'] === 'wkf.core.issues')
+				$o->inboxNdx = $this->attRecData['recid'];
+
 			$o->init();
 			$o->setFileContent($this->fileContent, $this->attNdx);
 			$o->checkFileContent();

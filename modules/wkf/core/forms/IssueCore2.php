@@ -174,6 +174,7 @@ class IssueCore2 extends TableForm
 
 			$this->addSeparator(self::coH4);
 			$this->addColumnInput('docPaymentMethod');
+			$this->addColumnInput('docId');
 			$this->addColumnInput('docSymbol1');
 			$this->addColumnInput('docSymbol2');
 

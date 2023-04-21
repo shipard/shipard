@@ -1,0 +1,57 @@
+{
+  "id": "li4dly9nlbkt",
+  "signatureRegExp": "Vaše Vodafone Vyúčtování - daňový doklad",
+  "items": [
+      {
+          "itemType": "bank-account-domestic",
+          "searchPrefix": "Číslo účtu / kód banky"
+      },
+      {
+          "itemType": "bank-account-iban",
+          "searchPrefix": "IBAN:"
+      },
+      {
+          "itemType": "date-due",
+          "searchPrefix": "Datum splatnosti částky za\\n\\s+",
+          "prefixIsRegExp": 1
+      },
+      {
+          "itemType": "date-issue",
+          "searchPrefix": "Datum vystavení daňového dokladu"
+      },
+      {
+          "itemType": "date-tax",
+          "searchPrefix": "Datum uskutečnění zdanitelného\\n\\s+",
+          "prefixIsRegExp": 1
+      },
+      {
+          "itemType": "document-id",
+          "searchPrefix": "Daňový doklad číslo"
+      },
+      {
+          "itemType": "head-company-id",
+          "searchPrefix": "IČO:"
+      },
+      {
+          "itemType": "head-payment-method",
+          "searchPrefix": "Způsob platby",
+          "searchRegExp": "[ ]{2,}.+"
+      },
+      {
+          "itemType": "head-vat-id",
+          "searchPrefix": "DIČ:"
+      },
+      {
+          "itemType": "money-to-pay",
+          "searchPrefix": "Celkem k platbě\u0003"
+      },
+      {
+          "itemType": "payment-symbol1",
+          "searchPrefix": "Variabilní symbol"
+      },
+      {
+          "itemType": "payment-symbol2",
+          "searchPrefix": "Specifický symbol"
+      }
+  ]
+}

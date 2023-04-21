@@ -1,0 +1,62 @@
+{
+  "id": "j5fkqyntithm",
+  "signatureRegExp": "Zapsaná do OR: MS v Praze, B.3787",
+  "items": [
+      {
+          "itemType": "bank-account-domestic-an",
+          "searchPrefix": "Bankovní účet"
+      },
+      {
+          "itemType": "bank-account-domestic-bc",
+          "searchPrefix": "Kód banky si můžete vybrat:"
+      },
+      {
+          "itemType": "contacts-email",
+          "searchPrefix": "e-mail:"
+      },
+      {
+          "itemType": "contacts-phone",
+          "searchPrefix": "tel:"
+      },
+      {
+          "itemType": "contacts-web"
+      },
+      {
+          "itemType": "date-due",
+          "searchPrefix": "Datum splatnosti"
+      },
+      {
+          "itemType": "date-issue",
+          "searchPrefix": "Datum vystavení"
+      },
+      {
+          "itemType": "date-tax",
+          "searchPrefix": "Datum uskutečnění zdan. plnění"
+      },
+      {
+          "itemType": "document-id",
+          "searchPrefix": "Daňový doklad číslo"
+      },
+      {
+          "itemType": "head-company-id",
+          "searchRegExp": "\\s+\\d{3} \\d{2} \\d{3}"
+      },
+      {
+          "itemType": "head-payment-method",
+          "searchPrefix": "Způsob úhrady",
+          "searchRegExp": "[ ]{2,}.+"
+      },
+      {
+          "itemType": "head-vat-id",
+          "searchPrefix": "DIČ:"
+      },
+      {
+          "itemType": "money-to-pay",
+          "searchPrefix": "Částka k úhradě"
+      },
+      {
+          "itemType": "payment-symbol1",
+          "searchPrefix": "Variabilní symbol"
+      }
+  ]
+}

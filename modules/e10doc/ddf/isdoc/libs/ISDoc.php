@@ -58,6 +58,8 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 
 		$this->ddfId = 1000;
 
+		$this->createImport();
+
 		$this->addFirstContent();
 		$this->updateInbox();
 	}
@@ -315,7 +317,7 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 
 	function createSrcSimplifiedData()
 	{
-		$simpleXml = simplexml_load_string($this->ddfRecData['srcData']);
+		$simpleXml = simplexml_load_string($this->ddfRecData['srcData'] ?? $this->fileContent);
 		$json = json_decode (json_encode($simpleXml), TRUE);
 
 		$json['ISDocVersion'] = $json['@attributes']['version'];

@@ -1,0 +1,66 @@
+{
+  "id": "1465ws6326in",
+  "signatureRegExp": "Společnost ELFETEX,spol. s r.o. se sídlem",
+  "datesFormat": "d.m.Y",
+  "numbersThousandsSeparator": ".",
+  "items": [
+      {
+          "itemType": "bank-account-domestic",
+          "searchPrefix": "Komerční banka, a.s."
+      },
+      {
+          "itemType": "bank-account-domestic",
+          "searchPrefix": "Česká spořitelna, a.s."
+      },
+      {
+          "itemType": "contacts-email",
+          "searchPrefix": "Email:"
+      },
+      {
+          "itemType": "contacts-phone",
+          "searchPrefix": "Tel:",
+          "prefixIsRegExp": 1,
+          "searchRegExp": "[\\s]*\\d[\\d ]{9,16}"
+      },
+      {
+          "itemType": "date-due",
+          "searchPrefix": "Dat.splatnosti:"
+      },
+      {
+          "itemType": "date-issue",
+          "searchPrefix": "Dat.vystavení:"
+      },
+      {
+          "itemType": "date-tax",
+          "searchPrefix": "Dat.UZP:"
+      },
+      {
+          "itemType": "document-id",
+          "searchPrefix": "Faktura - daňový doklad"
+      },
+      {
+          "itemType": "head-company-id",
+          "searchPrefix": "IČ:"
+      },
+      {
+          "itemType": "head-vat-id",
+          "searchPrefix": "DIČ:"
+      },
+      {
+          "itemType": "money-to-pay",
+          "searchPrefix": "CELKEM K ÚHRADĚ CZK"
+      },
+      {
+          "itemType": "payment-symbol1",
+          "searchPrefix": "Var.symbol:"
+      },
+      {
+          "itemType": "payment-symbol2",
+          "searchPrefix": "Spec.symbol:"
+      },
+      {
+          "itemType": "payment-symbol3",
+          "searchPrefix": "Konst.symbol:"
+      }
+  ]
+}

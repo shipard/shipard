@@ -2,8 +2,17 @@
   "cz-alza": {
     "fn": "Alza"
   },
+  "cz-elfetex": {
+    "fn": "Elfetex"
+  },
   "cz-tme": {
     "fn": "TME Czech Republic"
+  },
+  "cz-tmobile": {
+    "fn": "T-Mobile"
+  },
+  "cz-vodafone": {
+    "fn": "Vodafone"
   },
   "cz-shoptet": {
     "fn": "Shoptet"

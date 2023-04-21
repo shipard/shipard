@@ -131,9 +131,10 @@ class Engine extends Utility
 				continue;
 			if (!isset($colDef['type']))
 				continue;
-			if ($colDef['type'] === 'date' && isset($formatDef['datesFormat']))
+			if ($colDef['type'] === 'date')
 			{
-				$dd = date_create_from_format ($formatDef['datesFormat'], $itemTextValue);
+				$dateFormat = $formatDef['datesFormat'] ?? 'd.m.Y';
+				$dd = date_create_from_format ($dateFormat, $itemTextValue);
 				if ($dd !== false)
 				{
 					$dddd = $dd->format('Y-m-d');
@@ -144,7 +145,8 @@ class Engine extends Utility
 			}
 			elseif ($colDef['type'] === 'price')
 			{
-				$s1 = str_replace(' ', '', $itemTextValue);
+				$numbersThousandsSeparator = $formatDef['numbersThousandsSeparator'] ?? ' ';
+				$s1 = str_replace($numbersThousandsSeparator, '', $itemTextValue);
 				$s1 = str_replace(',', '.', $s1);
 				$this->docHeadSrcItems[$itemId] = floatval($s1);
 			}
@@ -190,12 +192,12 @@ class Engine extends Utility
 		$this->docHeadSrcItems['person']['country'] = 'cz';
 		if (isset($this->docHeadSrcItems['head-company-id']))
 		{
-			$this->docHeadSrcItems['person']['natId'] = $this->docHeadSrcItems['head-company-id'];
+			$this->docHeadSrcItems['person']['natId'] = str_replace (' ', '', $this->docHeadSrcItems['head-company-id']);
 			unset($this->docHeadSrcItems['head-company-id']);
 		}
 		if (isset($this->docHeadSrcItems['head-vat-id']))
 		{
-			$this->docHeadSrcItems['person']['vatId'] = $this->docHeadSrcItems['head-vat-id'];
+			$this->docHeadSrcItems['person']['vatId'] = str_replace(' ', '', $this->docHeadSrcItems['head-vat-id']);
 			unset($this->docHeadSrcItems['head-vat-id']);
 		}
 	}
