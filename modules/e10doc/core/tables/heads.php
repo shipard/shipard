@@ -14,6 +14,7 @@ use \e10doc\core\libs\DocsModes;
 use \Shipard\Utils\World;
 use \e10doc\core\libs\E10Utils;
 use \e10\base\libs\UtilsBase;
+use \Shipard\Utils\Str;
 
 
 CONST docDir_None = 0, docDir_In = 1, docDir_Out = 2;
@@ -876,12 +877,46 @@ class TableHeads extends DbTable
 		if (!$srcIssueRecData)
 			return;
 
-		// -- dates
+		if ($srcIssueRecData['docId'] !== '')
+			$recData['docId'] = Str::upToLen($srcIssueRecData['docId'], 40);
+		if ($srcIssueRecData['docSymbol1'] !== '')
+			$recData['symbol1'] = Str::upToLen($srcIssueRecData['docSymbol1'], 20);
+		if ($srcIssueRecData['docSymbol2'] !== '')
+			$recData['symbol2'] = Str::upToLen($srcIssueRecData['docSymbol2'], 20);
+
+		if (!utils::dateIsBlank($srcIssueRecData['docDateIssue']))
+			$recData['dateIssue'] = $srcIssueRecData['docDateIssue'];
+		if (!utils::dateIsBlank($srcIssueRecData['docDateDue']))
+			$recData['dateDue'] = $srcIssueRecData['docDateDue'];
+		if (!utils::dateIsBlank($srcIssueRecData['docDateAccounting']))
+			$recData['dateAccounting'] = $srcIssueRecData['docDateAccounting'];
+		if (!utils::dateIsBlank($srcIssueRecData['docDateTax']))
+			$recData['dateTax'] = $srcIssueRecData['docDateTax'];
+		if (!utils::dateIsBlank($srcIssueRecData['docDateTaxDuty']))
+			$recData['dateTaxDuty'] = $srcIssueRecData['docDateTaxDuty'];
+
 		if (!utils::dateIsBlank($srcIssueRecData['dateIncoming']))
 		{
-			$recData['dateIssue'] = $srcIssueRecData['dateIncoming'];
-			$recData['dateAccounting'] = $srcIssueRecData['dateIncoming'];
+			if (!isset($recData['dateIssue']) || utils::dateIsBlank($recData['dateIssue']))
+				$recData['dateIssue'] = $srcIssueRecData['dateIncoming'];
+			if (!isset($recData['dateIssue']) || utils::dateIsBlank($recData['dateAccounting']))
+				$recData['dateAccounting'] = $srcIssueRecData['dateIncoming'];
 		}
+
+		if ($srcIssueRecData['docCentre'])
+			$recData['centre'] = $srcIssueRecData['docCentre'];
+
+		if ($srcIssueRecData['docProject'])
+			$recData['wkfProject'] = $srcIssueRecData['docProject'];
+
+		if ($srcIssueRecData['workOrder'])
+			$recData['workOrder'] = $srcIssueRecData['workOrder'];
+
+		if ($srcIssueRecData['docWarehouse'])
+			$recData['warehouse'] = $srcIssueRecData['docWarehouse'];
+
+		if ($srcIssueRecData['docProperty'])
+			$recData['property'] = $srcIssueRecData['docProperty'];
 
 		// -- person
 		$persons = $this->app()->db()->query('SELECT dstRecId FROM [e10_base_doclinks] WHERE srcRecId = %i', $issueNdx,
@@ -2171,7 +2206,7 @@ class TableHeads extends DbTable
 			}
 		}
 
-		if ($fc || $tc)
+		if ($fc /*|| $tc*/)
 			$h = array ('#' => '#', 'title' => 'Sazba', 'percents' => ' %', 'curr' => 'Měna', 'base' => ' Základ', 'tax' => ' Daň', 'total' => ' Celkem');
 		else
 			$h = array ('#' => '#', 'title' => 'Sazba', 'percents' => ' %', 'base' => ' Základ', 'tax' => ' Daň', 'total' => ' Celkem');
