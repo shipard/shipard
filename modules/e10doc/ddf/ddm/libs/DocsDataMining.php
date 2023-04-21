@@ -218,7 +218,25 @@ class DocsDataMining extends \e10doc\ddf\core\libs\Core
 		//	$this->checkVat(0.0, $row);
 
 
-		$this->searchItem($r, $row);
+		$itemInfo = [
+			'supplierCode' => '',
+			'manufacturerCode' => '',
+			'itemFullName' => '',
+			'itemShortName' => '',
+		];
+
+		if (isset($srcRow['itemProperties']) && isset($srcRow['itemProperties']['supplierItemCode']) && $srcRow['itemProperties']['supplierItemCode'] !== '')
+			$itemInfo['supplierCode'] = $srcRow['itemProperties']['supplierItemCode'];
+
+		if (isset($srcRow['itemProperties']) && isset($srcRow['itemProperties']['manufacturerCode']) && $srcRow['itemProperties']['manufacturerCode'] !== '')
+			$itemInfo['manufacturerCode'] = $srcRow['itemProperties']['manufacturerCode'];
+
+		if (isset($srcRow['itemFullName']) && $srcRow['itemFullName'] !== '')
+			$itemInfo['itemFullName'] = $srcRow['itemFullName'];
+		if (isset($srcRow['itemShortName']) && $srcRow['itemShortName'] !== '')
+			$itemInfo['itemShortName'] = $srcRow['itemShortName'];
+
+		$this->searchItem($itemInfo, $r, $row);
 		$this->checkItem($r, $row);
 
 		$this->applyRowSettings($row);

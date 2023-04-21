@@ -233,21 +233,21 @@ class Core extends \lib\docDataFiles\DocDataFile
 			$docRow['item'] = $this->personRecData['optBuyDocImportItem'];
 	}
 
-	protected function searchItem($srcRow, &$docRow)
+	protected function searchItem($itemInfo, $srcRow, &$docRow)
 	{
-		if (isset($srcRow['itemProperties']) && isset($srcRow['itemProperties']['supplierItemCode']))
+		if ($itemInfo['supplierCode'] !== '')
 		{
-			if ($this->searchItemBySupplierCode($srcRow['itemProperties']['supplierItemCode'], $docRow))
+			if ($this->searchItemBySupplierCode($itemInfo, $docRow))
 				return;
 
 			if (!$this->personRecData || !$this->personRecData['optBuyItemsImport'])
 				return;
 
-			$this->createItemFromRow($srcRow['itemProperties']['supplierItemCode'], $srcRow, $docRow);
+			$this->createItemFromRow($itemInfo, $srcRow, $docRow);
 		}
 	}
 
-	protected function searchItemBySupplierCode($code, &$docRow)
+	protected function searchItemBySupplierCode($itemInfo, &$docRow)
 	{
 		$q = [];
 		array_push($q, 'SELECT itemSuppliers.*, witems.itemType, witems.itemKind');
@@ -255,7 +255,7 @@ class Core extends \lib\docDataFiles\DocDataFile
 		array_push($q, ' LEFT JOIN [e10_witems_items] AS witems ON itemSuppliers.[item] = witems.ndx');
 		array_push($q, ' WHERE 1');
 		array_push($q, ' AND itemSuppliers.supplier = %i', $this->docHead['person']);
-		array_push($q, ' AND itemSuppliers.itemId = %s', $code);
+		array_push($q, ' AND itemSuppliers.itemId = %s', $itemInfo['supplierCode']);
 
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
@@ -272,7 +272,7 @@ class Core extends \lib\docDataFiles\DocDataFile
 		return 0;
 	}
 
-	protected function createItemFromRow($code, $srcRow, &$docRow)
+	protected function createItemFromRow($itemInfo, $srcRow, &$docRow)
 	{
 		/** @var \e10\witems\TableItems */
 		$tableItems = $this->app()->table('e10.witems.items');
@@ -282,13 +282,13 @@ class Core extends \lib\docDataFiles\DocDataFile
 
 		$newItem = [];
 
-		if (isset($srcRow['itemFullName']))
-			$newItem['fullName'] = Str::upToLen($srcRow['itemFullName'], 120);
-		if (isset($srcRow['itemShortName']))
-			$newItem['shortName'] = Str::upToLen($srcRow['itemShortName'], 80);
+		if ($itemInfo['manufacturerCode'] !== '')
+			$newItem['manufacturerId'] = Str::upToLen($itemInfo['manufacturerCode'], 40);
 
-		if (!count($newItem) && isset($row['text']) && $row['text'] !== '')
-			$newItem['fullName'] = Str::upToLen($row['text'], 120);
+		if ($itemInfo['itemFullName'] !== '')
+			$newItem['fullName'] = Str::upToLen($itemInfo['itemFullName'], 120);
+		if ($itemInfo['itemShortName'] !== '')
+			$newItem['shortName'] = Str::upToLen($itemInfo['itemShortName'], 80);
 
 		if (!count($newItem))
 			return;
@@ -314,14 +314,21 @@ class Core extends \lib\docDataFiles\DocDataFile
 		$newItem = $tableItems->loadItem($newItemNdx);
 		$tableItems->checkAfterSave2 ($newItem);
 
-		$newItemSupplier = [
-			'item' => $newItemNdx,
-			'supplier' => $this->docHead['person'],
-			'rowOrder' => 1000,
-			'itemId' => $code,
-		];
-		$tableItemSuppliers->dbInsertRec($newItemSupplier);
-		$this->searchItemBySupplierCode($code, $docRow);
+		if ($itemInfo['supplierCode'] !== '')
+		{
+			$newItemSupplier = [
+				'item' => $newItemNdx,
+				'supplier' => $this->docHead['person'],
+				'rowOrder' => 1000,
+				'itemId' => $itemInfo['supplierCode'],
+			];
+			$tableItemSuppliers->dbInsertRec($newItemSupplier);
+			$this->searchItemBySupplierCode($itemInfo, $docRow);
+		}
+		else
+		{
+
+		}
 	}
 
 	protected function updateInbox()

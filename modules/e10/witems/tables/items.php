@@ -946,6 +946,7 @@ class FormItems extends TableForm
 			$this->openTab ();
 				$this->addColumnInput ("shortName");
 				$this->addColumnInput ("id");
+				$this->addColumnInput ('manufacturerId');
 				$this->addColumnInput ('description');
 				if ($itemKind === 0)
 				{ // service

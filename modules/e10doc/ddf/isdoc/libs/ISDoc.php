@@ -115,6 +115,7 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 		$this->docHead['docStateMain'] = 0;
 
 		$this->checkPersons();
+		$this->loadPerson();
 
 		$vat = 0;
 		if (isset($this->srcImpData['VATApplicable']) && strtolower($this->srcImpData['VATApplicable']) === 'true')
@@ -271,6 +272,23 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 		//else
 		//	$this->checkVat(0.0, $row);
 
+		$itemInfo = [
+			'supplierCode' => '',
+			'manufacturerCode' => '',
+			'itemFullName' => '',
+			'itemShortName' => '',
+		];
+
+		if (isset($il['Item']['SellersItemIdentification']['ID']) && $il['Item']['SellersItemIdentification']['ID'] !== '')
+			$itemInfo['supplierCode'] = $il['Item']['SellersItemIdentification']['ID'];
+
+		if (isset($il['Item']['CatalogueItemIdentification']['ID']) && $il['Item']['CatalogueItemIdentification']['ID'] !== '')
+			$itemInfo['manufacturerCode'] = $il['Item']['CatalogueItemIdentification']['ID'];
+
+		if (isset($il['Item']['Description']) && $il['Item']['Description'] !== '')
+			$itemInfo['itemFullName'] = $il['Item']['Description'];
+
+		$this->searchItem($itemInfo, $il, $row);
 		$this->checkItem($il, $row);
 
 		$this->applyRowSettings($row);
