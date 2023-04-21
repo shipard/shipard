@@ -877,6 +877,14 @@ class TableHeads extends DbTable
 		if (!$srcIssueRecData)
 			return;
 
+		$recData['paymentMethod'] = $srcIssueRecData['docPaymentMethod'];
+		if ($srcIssueRecData['docCurrency'])
+		{
+			$ccfg = World::currency($this->app(), $srcIssueRecData['docCurrency']);
+			if ($ccfg)
+				$recData['currency'] = $ccfg['i'];
+		}
+
 		if ($srcIssueRecData['docId'] !== '')
 			$recData['docId'] = Str::upToLen($srcIssueRecData['docId'], 40);
 		if ($srcIssueRecData['docSymbol1'] !== '')
