@@ -1231,6 +1231,19 @@ class E10_App extends Application
 		return TRUE;
 	}
 
+	public function wkfUpgrade23A()
+	{
+		$this->db()->query('UPDATE [wkf_base_issuesKinds] SET [askWorkOrder] = %i', 1, ' WHERE [askWorkOrder] = %i', 0);
+		$this->db()->query('UPDATE [wkf_base_issuesKinds] SET [askWorkOrder] = %i', 0, ' WHERE [askWorkOrder] = %i', 2);
+
+		$this->db()->query('UPDATE [wkf_base_issuesKinds] SET [askPersons] = %i', 1, ' WHERE [askPersons] = %i', 0);
+		$this->db()->query('UPDATE [wkf_base_issuesKinds] SET [askPersons] = %i', 0, ' WHERE [askPersons] = %i', 2);
+
+		$this->db()->query('UPDATE [wkf_base_issuesKinds] SET [askDeadline] = %i', 1, ' WHERE [askDeadline] = %i', 0);
+		$this->db()->query('UPDATE [wkf_base_issuesKinds] SET [askDeadline] = %i', 0, ' WHERE [askDeadline] = %i', 2);
+
+	}
+
 	public function run ()
 	{
 		$this->quiet = $this->arg ('quiet');
@@ -1290,6 +1303,8 @@ class E10_App extends Application
 			case	"importOldBBoard": 							return $this->importOldBBoard();
 
 			case	"tests":												return $this->tests();
+			case	"wkf-upgrade-23A":							return $this->wkfUpgrade23A();
+
 		}
 		echo ("unknown or nothing param...\r\n");
 	}
