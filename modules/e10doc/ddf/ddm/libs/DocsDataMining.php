@@ -225,16 +225,19 @@ class DocsDataMining extends \e10doc\ddf\core\libs\Core
 			'itemShortName' => '',
 		];
 
-		if (isset($srcRow['itemProperties']) && isset($srcRow['itemProperties']['supplierItemCode']) && $srcRow['itemProperties']['supplierItemCode'] !== '')
-			$itemInfo['supplierCode'] = $srcRow['itemProperties']['supplierItemCode'];
+		if (isset($r['itemProperties']) && isset($r['itemProperties']['supplierItemCode']) && $r['itemProperties']['supplierItemCode'] !== '')
+			$itemInfo['supplierCode'] = $r['itemProperties']['supplierItemCode'];
 
-		if (isset($srcRow['itemProperties']) && isset($srcRow['itemProperties']['manufacturerCode']) && $srcRow['itemProperties']['manufacturerCode'] !== '')
-			$itemInfo['manufacturerCode'] = $srcRow['itemProperties']['manufacturerCode'];
+		if (isset($r['itemProperties']) && isset($r['itemProperties']['manufacturerItemCode']) && $r['itemProperties']['manufacturerItemCode'] !== '')
+			$itemInfo['manufacturerCode'] = $r['itemProperties']['manufacturerItemCode'];
 
-		if (isset($srcRow['itemFullName']) && $srcRow['itemFullName'] !== '')
-			$itemInfo['itemFullName'] = $srcRow['itemFullName'];
-		if (isset($srcRow['itemShortName']) && $srcRow['itemShortName'] !== '')
-			$itemInfo['itemShortName'] = $srcRow['itemShortName'];
+		if (isset($r['itemProperties']) && isset($r['itemProperties']['supplierItemUrl']) && $r['itemProperties']['supplierItemUrl'] !== '')
+			$itemInfo['supplierItemUrl'] = $r['itemProperties']['supplierItemUrl'];
+
+		if (isset($r['itemFullName']) && $r['itemFullName'] !== '')
+			$itemInfo['itemFullName'] = $r['itemFullName'];
+		if (isset($r['itemShortName']) && $r['itemShortName'] !== '')
+			$itemInfo['itemShortName'] = $r['itemShortName'];
 
 		$this->searchItem($itemInfo, $r, $row);
 		$this->checkItem($r, $row);

@@ -163,6 +163,7 @@ class DDMFE_TmeCZ extends \e10doc\ddf\ddm\formatsEngines\CoreFE
     if (isset($nextRows[1]))
     {
       $docRow['itemProperties']['supplierItemCode'] = $docRow['itemShortName'];
+      $docRow['itemProperties']['supplierItemUrl'] = 'https://www.tme.eu/cz/details/'.strtolower($docRow['itemShortName']);
       $propParts = explode(';', $nextRows[1]);
       foreach ($propParts as $oneProp)
       {

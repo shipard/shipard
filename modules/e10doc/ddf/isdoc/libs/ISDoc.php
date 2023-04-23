@@ -279,11 +279,11 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 			'itemShortName' => '',
 		];
 
-		if (isset($il['Item']['SellersItemIdentification']['ID']) && $il['Item']['SellersItemIdentification']['ID'] !== '')
-			$itemInfo['supplierCode'] = $il['Item']['SellersItemIdentification']['ID'];
+		if (isset($il['Item']['SellersItemIdentification']['ID']) && $this->valueStr($il['Item']['SellersItemIdentification']['ID'], 60) !== '')
+			$itemInfo['supplierCode'] = $this->valueStr($il['Item']['SellersItemIdentification']['ID'], 60);
 
-		if (isset($il['Item']['CatalogueItemIdentification']['ID']) && $il['Item']['CatalogueItemIdentification']['ID'] !== '')
-			$itemInfo['manufacturerCode'] = $il['Item']['CatalogueItemIdentification']['ID'];
+		if (isset($il['Item']['CatalogueItemIdentification']['ID']) && $this->valueStr($il['Item']['CatalogueItemIdentification']['ID'], 60) !== '')
+			$itemInfo['manufacturerCode'] = $this->valueStr($il['Item']['CatalogueItemIdentification']['ID'], 60);
 
 		if (isset($il['Item']['Description']) && $il['Item']['Description'] !== '')
 			$itemInfo['itemFullName'] = $il['Item']['Description'];
