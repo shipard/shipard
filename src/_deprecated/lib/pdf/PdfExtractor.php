@@ -75,6 +75,12 @@ class PdfExtractor extends Utility
 		{
 			if (is_readable($a['fullFileName']))
 			{
+				$fileCheckSum = sha1_file($a['fullFileName']);
+				$attExist = $this->db()->query('SELECT ndx FROM [e10_attachments_files] WHERE recid = %i', $toRecId,
+											' AND [tableid] = %s', $toTableId, ' AND [fileCheckSum] = %s', $fileCheckSum)->fetch();
+				if ($attExist)
+					continue;
+
 				\E10\Base\addAttachments ($this->app, $toTableId, $toRecId, $a['fullFileName'], '', true, $attOrder, $a['baseFileName']);
 				$attOrder++;
 			}

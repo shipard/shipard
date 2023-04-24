@@ -140,6 +140,12 @@ class IncomingEmail extends Utility
 			if ($fileType === 'pdf')
 				$attOrder = 100;
 
+			$fileCheckSum = sha1_file($attFullFileName);
+			$attExist = $this->db()->query('SELECT ndx FROM [e10_attachments_files] WHERE recid = %i', $newMsgNdx,
+										' AND [tableid] = %s', 'wkf.core.issues', ' AND [fileCheckSum] = %s', $fileCheckSum)->fetch();
+			if ($attExist)
+				continue;
+
 			\E10\Base\addAttachments ($this->app, 'wkf.core.issues', $newMsgNdx, $attFullFileName, '', true, $attOrder, $attName);
 		}
 
@@ -468,6 +474,8 @@ class IncomingEmail extends Utility
 			$attFileName = $baseFileName.'-'.base_convert(time() + rand(), 10, 35).'.'.$fileType;
 
 			$a->saveAttachment (__APP_DIR__.'/tmp/', $attFileName);
+
+
 
 			\E10\Base\addAttachments ($this->app, $tableNdx, $recNdx, __APP_DIR__.'/tmp/'.$attFileName, '', TRUE);
 		}
