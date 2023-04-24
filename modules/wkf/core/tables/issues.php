@@ -769,7 +769,15 @@ class TableIssues extends DbTable
 		if (isset($issue['attachments']) && count($issue['attachments']))
 		{
 			foreach ($issue['attachments'] as $att)
+			{
+				$fileCheckSum = sha1_file($att['fullFileName']);
+				$attExist = $this->db()->query('SELECT ndx FROM [e10_attachments_files] WHERE recid = %i', $issueNdx,
+											' AND [tableid] = %s', 'wkf.core.issues', ' AND [fileCheckSum] = %s', $fileCheckSum)->fetch();
+				if ($attExist)
+					continue;
+
 				\E10\Base\addAttachments($this->app(), 'wkf.core.issues', $issueNdx, $att['fullFileName'], '', $moveAttachments);
+			}
 		}
 
 		$this->checkAfterSave2($recData);
