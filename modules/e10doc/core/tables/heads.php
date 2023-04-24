@@ -933,11 +933,14 @@ class TableHeads extends DbTable
 		}
 
 		// -- person
-		$persons = $this->app()->db()->query('SELECT dstRecId FROM [e10_base_doclinks] WHERE srcRecId = %i', $issueNdx,
-			' AND srcTableId = %s', 'wkf.core.issues', ' AND dstTableId = %s', 'e10.persons.persons',
-			' AND linkId = %s', 'wkf-issues-from')->fetch();
-		if ($persons)
-			$recData['person'] = $persons['dstRecId'];
+		if (!isset($recData['person']) || !$recData['person'])
+		{
+			$persons = $this->app()->db()->query('SELECT dstRecId FROM [e10_base_doclinks] WHERE srcRecId = %i', $issueNdx,
+				' AND srcTableId = %s', 'wkf.core.issues', ' AND dstTableId = %s', 'e10.persons.persons',
+				' AND linkId = %s', 'wkf-issues-from')->fetch();
+			if ($persons)
+				$recData['person'] = $persons['dstRecId'];
+		}
 	}
 
 	public function checkSaveData (&$saveData, &$saveResult)
