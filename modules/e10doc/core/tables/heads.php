@@ -926,6 +926,12 @@ class TableHeads extends DbTable
 		if ($srcIssueRecData['docProperty'])
 			$recData['property'] = $srcIssueRecData['docProperty'];
 
+		if (isset($srcIssueRecData['subject']) && $srcIssueRecData['subject'] !== '')
+		{
+			if (!isset($recData['title']) || $recData['title'] === '')
+				$recData['title'] = $srcIssueRecData['subject'];
+		}
+
 		// -- person
 		$persons = $this->app()->db()->query('SELECT dstRecId FROM [e10_base_doclinks] WHERE srcRecId = %i', $issueNdx,
 			' AND srcTableId = %s', 'wkf.core.issues', ' AND dstTableId = %s', 'e10.persons.persons',

@@ -162,6 +162,11 @@ class Core extends \lib\docDataFiles\DocDataFile
 		{
 			$this->inboxNdx = $this->docHead['inboxNdx'];
 			unset($this->docHead['inboxNdx']);
+
+			if (!$checkNewRec)
+			{
+				$tableDocs->checkInboxDocument($this->inboxNdx, $this->docHead);
+			}
 		}
 		if (isset($this->docHead['ddfId']))
 			unset($this->docHead['ddfId']);
@@ -354,7 +359,10 @@ class Core extends \lib\docDataFiles\DocDataFile
 		if (isset($this->docHead['dateDue']) && !Utils::dateIsBlank($this->docHead['dateDue']) && Utils::dateIsBlank($inboxRecData['docDateDue']))
 			$update['docDateDue'] = $this->docHead['dateDue'];
 		if (isset($this->docHead['dateTax']) && !Utils::dateIsBlank($this->docHead['dateTax']) && Utils::dateIsBlank($inboxRecData['docDateTax']))
+		{
 			$update['docDateTax'] = $this->docHead['dateTax'];
+			$update['docDateTaxDuty'] = $this->docHead['dateTax'];
+		}
 
 		if (isset($this->srcImpData['head']['money-to-pay']) && $this->srcImpData['head']['money-to-pay'] != 0 && $inboxRecData['docPrice'] == 0)
 			$update['docPrice'] = $this->srcImpData['head']['money-to-pay'];
