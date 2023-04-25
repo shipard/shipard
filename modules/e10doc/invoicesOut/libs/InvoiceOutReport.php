@@ -44,9 +44,6 @@ class InvoiceOutReport extends \e10doc\core\libs\reports\DocReport
 
 	public function addAttachments(\lib\pdf\PdfCreator $pdfCreator)
 	{
-		$testISDoc = intval($this->app()->cfgItem ('options.experimental.testISDoc', 0));
-		if (!$testISDoc)
-			return;
 		$report = $this->table->getReportData ('e10doc.core.libs.reports.DocReportISDoc', $this->recData['ndx']);
 		$report->saveAs = 'isdoc-xml';
 		$report->renderReport ();

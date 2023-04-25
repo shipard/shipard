@@ -22,15 +22,11 @@ class CmnBkp_Acc_Report extends \e10doc\core\libs\reports\DocReport
 
 		if ($this->recData['docType'] === 'invno')
 		{
-			$testISDoc = intval($this->app()->cfgItem('options.experimental.testISDoc', 0));
-			if ($testISDoc)
-			{
-				$printButton['dropdownMenu'][] = [
-					'text' => 'Elektronický doklad ISDOC', 'icon' => 'system/actionDownload',
-					'type' => 'action', 'action' => 'print', 'data-saveas' => 'isdoc-xml', 'data-filename' => $this->saveAsFileName('isdoc-xml'),
-					'data-table' => $this->table->tableId(), 'data-report' => 'e10doc.core.libs.reports.DocReportISDoc', 'data-pk' => $this->recData['ndx']
-				];
-			}
+			$printButton['dropdownMenu'][] = [
+				'text' => 'Elektronický doklad ISDOC', 'icon' => 'system/actionDownload',
+				'type' => 'action', 'action' => 'print', 'data-saveas' => 'isdoc-xml', 'data-filename' => $this->saveAsFileName('isdoc-xml'),
+				'data-table' => $this->table->tableId(), 'data-report' => 'e10doc.core.libs.reports.DocReportISDoc', 'data-pk' => $this->recData['ndx']
+			];
 		}
 	}
 

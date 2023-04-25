@@ -62,8 +62,6 @@ class WkfDocsFromInbox extends TableView
 
 	var $issuesMarks;
 
-	var $testISDoc = 0;
-
 	public function init ()
 	{
 		$this->objectSubType = TableView::vsDetail;
@@ -71,7 +69,6 @@ class WkfDocsFromInbox extends TableView
 
 		$this->initMainQueries();
 
-		$this->testISDoc = intval($this->app()->cfgItem ('options.experimental.testISDoc', 0));
 		$this->tableIssues = $this->app->table ('wkf.core.issues');
 		$this->tableSections = $this->app->table ('wkf.base.sections');
 		$this->usersSections = $this->tableSections->usersSections();
@@ -430,7 +427,7 @@ class WkfDocsFromInbox extends TableView
 
 		$docButtons = [];
 
-		if ($this->testISDoc && isset($this->atts[$item ['ndx']]['files'][0]))
+		if (isset($this->atts[$item ['ndx']]['files'][0]))
 		{
 			foreach ($this->atts[$item ['ndx']]['files'] as $attFile)
 			{
@@ -446,7 +443,7 @@ class WkfDocsFromInbox extends TableView
 				break;
 			}
 		}
-		if (!count($docButtons) && $this->testISDoc && isset($this->atts[$item ['ndx']]['images'][0]))
+		if (!count($docButtons) && isset($this->atts[$item ['ndx']]['images'][0]))
 		{
 			foreach ($this->atts[$item ['ndx']]['images'] as $attFile)
 			{

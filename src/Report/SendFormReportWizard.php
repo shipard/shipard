@@ -147,9 +147,6 @@ class SendFormReportWizard extends \Shipard\Form\Wizard
 	{
 		if ($this->recData['reportClass'] === 'e10doc.invoicesOut.libs.InvoiceOutReport')
 		{
-			$testISDoc = intval($this->app()->cfgItem ('options.experimental.testISDoc', 0));
-			if (!$testISDoc)
-				return;
 			$report = $documentTable->getReportData ('e10doc.core.libs.reports.DocReportISDoc', $this->recData['documentNdx']);
 			foreach ($this->recData as $param => $value)
 			{
