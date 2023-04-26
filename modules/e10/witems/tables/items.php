@@ -141,6 +141,28 @@ class TableItems extends DbTable
 		return 'tables/e10.witems.items';
 	}
 
+	public function subColumnsInfo ($recData, $columnId)
+	{
+		if ($columnId === 'subTypeData')
+		{
+			$subTypeCfg = $this->app()->cfgItem ('e10.witems.subTypes.'.$recData['itemType'].'.'.$recData['itemSubType'], NULL);
+			if (!$subTypeCfg || !isset($subTypeCfg['vds']) || !$subTypeCfg['vds'])
+				return FALSE;
+
+			$vds = $this->db()->query ('SELECT * FROM [vds_base_defs] WHERE [ndx] = %i', $subTypeCfg['vds'])->fetch();
+			if (!$vds)
+				return FALSE;
+
+			$sc = json_decode($vds['structure'], TRUE);
+			if (!$sc || !isset($sc['fields']))
+				return FALSE;
+
+			return $sc['fields'];
+		}
+
+		return parent::subColumnsInfo ($recData, $columnId);
+	}
+
 	public function itemInCategory ($itemRecData, $propertyValues, $category)
 	{
 		if (!isset($category['qry']))
@@ -910,6 +932,8 @@ class FormItems extends TableForm
 		$codeKinds = $this->app()->cfgItem('e10.witems.codesKinds', []);
 		$useItemCodes = (count($codeKinds) !== 0);
 
+		$subTypes = $this->app()->cfgItem('e10.witems.subTypes.'.$this->recData['itemType'], NULL);
+
 		$useSuppliers = 0;
 		if ($itemKind === 1)
 			$useSuppliers = 1;
@@ -924,6 +948,8 @@ class FormItems extends TableForm
 		$this->openForm ();
 
 		$this->addColumnInput ("type");
+		if ($subTypes)
+			$this->addColumnInput ('itemSubType');
 		$this->addColumnInput ("fullName");
 		$this->addColumnInput ("defaultUnit");
 
@@ -984,6 +1010,8 @@ class FormItems extends TableForm
 					if ($debsGroups !== FALSE && count($debsGroups) > 1)
 						$this->addColumnInput ("debsGroup");
 				}
+
+				$this->addSubColumns ('subTypeData');
 
 				$this->appendCode ($properties ['widgetCode']);
 			$this->closeTab ();
@@ -1080,6 +1108,19 @@ class FormItems extends TableForm
 		}
 
 		return parent::docLinkEnabled($docLink);
+	}
+
+	public function comboParams ($srcTableId, $srcColumnId, $allRecData, $recData)
+	{
+		if ($srcTableId === 'e10.witems.items' && $srcColumnId === 'itemSubType')
+		{
+			$cp = [
+				'itemType' => $allRecData ['recData']['itemType'],
+			];
+			return $cp;
+		}
+
+		return parent::comboParams ($srcTableId, $srcColumnId, $allRecData, $recData);
 	}
 }
 

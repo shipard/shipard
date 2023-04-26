@@ -2,7 +2,7 @@
   "id": "e10.witems",
   "name": "Položky",
   "tables": [
-		"items", "itemsets", "itemtypes", "itemcategories", "itemcategoriesqry", "itemSuppliers",
+		"items", "itemsets", "itemtypes", "itemSubTypes", "itemcategories", "itemcategoriesqry", "itemSuppliers",
 		"brands", "units", "relatedKinds", "itemRelated", "codesKinds", "itemCodes"
 	],
   "config": [

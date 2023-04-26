@@ -5,6 +5,12 @@
 		"table": "e10.witems.itemtypes",
 		"viewer": "default"
 	},
+	"witemsSubTypes": {
+		"name": "Podtypy položek", "order": 31500, "group": "witems",
+		"type": "viewer",
+		"table": "e10.witems.itemSubTypes",
+		"viewer": "default"
+	},
 	"witemsCategories": {
 		"name": "Kategorie položek", "order": 33000, "group": "witems",
 		"type": "viewer",

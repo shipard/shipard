@@ -8,6 +8,7 @@
 		{"id": "manufacturerId", "name": "Kód výrobce", "type": "string", "len": 40},
 		{"id": "description", "name": "Popis", "type": "string", "len": 200},
 		{"id": "itemType", "name": "Typ položky", "type": "int", "reference": "e10.witems.itemtypes"},
+		{"id": "itemSubType", "name": "Podtyp položky", "type": "int", "reference": "e10.witems.itemSubTypes", "comboViewer": "combo", "options": ["saveOnChange"]},
 		{"id": "itemKind", "name": "Druh položky", "type": "enumInt",
 			"enumValues": {"0": "Služba", "1": "Zásoba", "2": "Účetní položka", "3": "Ostatní"}},
 		{"id": "itemKind2", "name": "Druh položky ze sady", "type": "enumInt",
@@ -42,6 +43,8 @@
 		{"id": "validTo", "name": "Platné do", "type": "date"},
 		{"id": "successorItem", "name": "Nahrazující položka", "type": "int", "reference": "e10.witems.items"},
 		{"id": "successorDate", "name": "Nahrazovat od data", "type": "date"},
+
+		{"id": "subTypeData", "name": "Data", "type": "subColumns"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

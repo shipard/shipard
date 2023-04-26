@@ -1,0 +1,33 @@
+{
+  "id": "e10.witems.itemSubTypes", "sql": "e10_witems_itemSubTypes", "name": "Podtypy položek",
+  "columns": [
+    {"id": "ndx", "name": "ndx", "type": "int_ai"},
+    {"id": "itemType", "name": "Typ položky", "type": "int", "reference": "e10.witems.itemtypes"},
+    {"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
+    {"id": "id", "name": "ID", "type": "string", "len": 15},
+		{"id": "icon", "name": "Ikona", "type": "string", "len": 60},
+    {"id": "order", "name": "Pořadí", "type": "int"},
+
+		{"id": "vds", "name": "Rozšíření struktury", "type": "int", "reference":  "vds.base.defs"},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+  "lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+  ],
+  "views": [
+    {"id": "default", "class": "e10.witems.ViewItemSubTypes", "detail": "e10.witems.ViewDetailItemSubTypes"},
+		{"id": "combo", "class": "e10.witems.ViewItemSubTypesCombo"}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10.witems.FormItemSubType"}
+  ],
+	"options": ["configSource"],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

@@ -29,6 +29,7 @@
 			"e10.base.places": {"default": 2},
 
 			"e10.witems.itemtypes": {"default": 2},
+			"e10.witems.itemSubTypes": {"default": 2, "combo": 2},
 			"e10.witems.itemcategories": {"default": 2, "editor": 2},
 			"e10.witems.items": {"inCategory": 2},
 
