@@ -32,12 +32,19 @@ const opts = JSON.parse(fs.readFileSync(optsFileName).toString());
 		fullPage: true
 	};
 
-	const page = await browser.newPage();
-	await page.setViewport({
+	let vpOptions = {
 		width: 696,
 		height:80,
 		deviceScaleFactor: 1
-	});
+	};
+	if (opts['pdfOptions']['vpHeight'] !== undefined)
+		vpOptions.height = parseInt(opts['pdfOptions']['vpHeight']);
+	if (opts['pdfOptions']['vpWidth'] !== undefined)
+		vpOptions.width = parseInt(opts['pdfOptions']['vpWidth']);
+
+	const page = await browser.newPage();
+	await page.setViewport(vpOptions);
+
 	await page.goto(opts['url']/*, {waitUntil: 'networkidle0'}*/);
 	await page.screenshot(imgOptions);
 

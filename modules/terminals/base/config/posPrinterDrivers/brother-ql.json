@@ -31,7 +31,7 @@
 			"mmWidth": 12,
 			"mmHeight": 0,
 			"pxWidth": 106,
-			"pxHeight": 0,
+			"pxHeight": 1,
 			"lpid": "12"
 		},
 		"E29": {
@@ -39,7 +39,7 @@
 			"mmWidth": 29,
 			"mmHeight": 0,
 			"pxWidth": 306,
-			"pxHeight": 0,
+			"pxHeight": 1,
 			"lpid": "29"
 		},
 		"E38": {
@@ -47,7 +47,7 @@
 			"mmWidth": 38,
 			"mmHeight": 0,
 			"pxWidth": 413,
-			"pxHeight": 0,
+			"pxHeight": 1,
 			"lpid": "38"
 		},
 		"E50": {
@@ -55,7 +55,7 @@
 			"mmWidth": 50,
 			"mmHeight": 0,
 			"pxWidth": 554,
-			"pxHeight": 0,
+			"pxHeight": 1,
 			"lpid": "50"
 		},
 		"E54": {
@@ -63,7 +63,7 @@
 			"mmWidth": 54,
 			"mmHeight": 0,
 			"pxWidth": 590,
-			"pxHeight": 0,
+			"pxHeight": 1,
 			"lpid": "54"
 		},
 		"E62red": {
@@ -71,7 +71,7 @@
 			"mmWidth": 62,
 			"mmHeight": 0,
 			"pxWidth": 690,
-			"pxHeight": 0,
+			"pxHeight": 1,
 			"lpid": "62red"
 		},
 		"E102": {
@@ -79,7 +79,7 @@
 			"mmWidth": 102,
 			"mmHeight": 0,
 			"pxWidth": 1164,
-			"pxHeight": 0,
+			"pxHeight": 1,
 			"lpid": "102"
 		},
 		"L17x54": {

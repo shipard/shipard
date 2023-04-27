@@ -29,6 +29,21 @@ class RPICreator extends Utility
 		$this->srcURL = $report->reportSrcURL;
 		$this->dstFileName = $report->fullFileName;
 
+		if ($report->printer && $report->printer['labelsType'] && $report->printer['labelsType'] !== '')
+		{
+			$tablePrinters = new \terminals\base\TablePrinters($this->app());
+			$printerDriver = $tablePrinters->loadPrinterDriverCfg($report->printer['posPrinterDriver']);
+			if ($printerDriver && isset($printerDriver['labels']))
+			{
+				$labelsCfg = $printerDriver['labels'][$report->printer['labelsType']] ?? NULL;
+				if ($labelsCfg)
+				{
+					$this->options['vpWidth'] = $labelsCfg['pxWidth'] ?? 696;
+					$this->options['vpHeight'] = $labelsCfg['pxHeight'] ?? 1;
+				}
+			}
+		}
+
 		$this->options['paperOrientation'] = $report->paperOrientation;
 		$this->options['paperFormat'] = $report->paperFormat;
 		$this->options['paperMarginLeft'] = $report->paperMargin;

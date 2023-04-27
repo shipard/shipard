@@ -40,7 +40,8 @@ class TablePrinters extends DbTable
 					'printerType' => $r ['printerType'], 'receiptsPrinterType' => $r ['receiptsPrinterType'],
 					'posPrinterDriver' => $r['posPrinterDriver'],
 					'printMethod' => $r ['printMethod'], 'printerAddress' => $r ['printerAddress'],
-					'printEmail' => $r ['printEmail'], 'printURL' => $r ['printURL'], 'networkQueueId' => $r ['networkQueueId']
+					'printEmail' => $r ['printEmail'], 'printURL' => $r ['printURL'], 'networkQueueId' => $r ['networkQueueId'],
+					'labelsType' => $r['labelsType'],
 			];
 		}
 

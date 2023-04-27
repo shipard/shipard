@@ -3209,12 +3209,17 @@ function e10ViewerPrintDetail (e)
 	var table = searchParentAttr (e, "data-table");
 	var reportClass = e.attr ('data-report');
 	var pk = searchParentAttr (e, "data-pk");
+	var printer = searchParentAttr (e, "data-printer");
+	if (printer === undefined)
+		printer = 0;
 
 	var url = httpApiRootPath + '/api/formreport/' + table + '/' + reportClass + '/' + pk + '?vvv='+Date.now();
 
 	var params = elementAttributes (e, 'data-param');
 	if (params)
 		url += '&' + params;
+
+	url += '&printer=' + printer;
 
 	if (e.attr ('data-saveas') !== undefined)
 	{
