@@ -1682,4 +1682,23 @@ class DbTable
 	{
 		return TRUE;
 	}
+
+	function itemMainBCId ($recData)
+	{
+		$totalLen = 12;
+		$bcTableId = strtoupper(base_convert($this->ndx, 10, 36));
+		$ndxId = strtoupper(base_convert($recData['ndx'], 10, 36));
+
+		$bcId = $bcTableId;
+
+		$bcId .= '-'.$ndxId;
+		$bcId .= '-';
+		while (strlen($bcId) < $totalLen)
+		{
+			$r = strtoupper(base_convert(mt_rand(1000, 9999), 10, 36));
+			$bcId .= $r[0];
+		}
+
+		return $bcId;
+	}
 }

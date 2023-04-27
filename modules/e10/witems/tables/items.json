@@ -83,6 +83,12 @@
   "forms": [
     {"id": "default", "class": "e10.witems.FormItems", "help": "prirucka/211"}
   ],
+	"reports": [
+		{
+			"id": "itemLabel", "name": "Nálepka", "class": "e10.witems.libs.ReportItemLabel",
+			"directPrint": 1, "rasterPrint": 1, "printerClass": "labels", "enabledCfgItem": "options.experimental.testRasterPrint"
+		}
+	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.witems.docStates"},
 	"documentCard": "e10.witems.dc.Item",
   "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
