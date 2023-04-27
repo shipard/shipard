@@ -21,14 +21,194 @@
 		"E62": {
 			"fn": "62 mm endless",
 			"mmWidth": 62,
+			"mmHeight": 0,
 			"pxWidth": 696,
+			"pxHeight": 0,
 			"lpid": "62"
 		},
 		"E12": {
 			"fn": "12 mm endless",
 			"mmWidth": 12,
+			"mmHeight": 0,
 			"pxWidth": 106,
+			"pxHeight": 0,
 			"lpid": "12"
+		},
+		"E29": {
+			"fn": "29 mm endless",
+			"mmWidth": 29,
+			"mmHeight": 0,
+			"pxWidth": 306,
+			"pxHeight": 0,
+			"lpid": "29"
+		},
+		"E38": {
+			"fn": "38 mm endless",
+			"mmWidth": 38,
+			"mmHeight": 0,
+			"pxWidth": 413,
+			"pxHeight": 0,
+			"lpid": "38"
+		},
+		"E50": {
+			"fn": "50 mm endless",
+			"mmWidth": 50,
+			"mmHeight": 0,
+			"pxWidth": 554,
+			"pxHeight": 0,
+			"lpid": "50"
+		},
+		"E54": {
+			"fn": "54 mm endless",
+			"mmWidth": 54,
+			"mmHeight": 0,
+			"pxWidth": 590,
+			"pxHeight": 0,
+			"lpid": "54"
+		},
+		"E62red": {
+			"fn": "62 mm endless (černá/červená/bílá)",
+			"mmWidth": 62,
+			"mmHeight": 0,
+			"pxWidth": 690,
+			"pxHeight": 0,
+			"lpid": "62red"
+		},
+		"E102": {
+			"fn": "102 mm endless",
+			"mmWidth": 102,
+			"mmHeight": 0,
+			"pxWidth": 1164,
+			"pxHeight": 0,
+			"lpid": "102"
+		},
+		"L17x54": {
+			"fn": "štítky 17x54 mm",
+			"mmWidth": 17,
+			"mmHeight": 54,
+			"pxWidth": 165,
+			"pxHeight": 566,
+			"lpid": "17x54"
+		},
+		"L17x87": {
+			"fn": "štítky 17x87 mm",
+			"mmWidth": 17,
+			"mmHeight": 87,
+			"pxWidth": 165,
+			"pxHeight": 956,
+			"lpid": "17x87"
+		},
+		"L23x23": {
+			"fn": "štítky 23x23 mm",
+			"mmWidth": 23,
+			"mmHeight": 23,
+			"pxWidth": 202,
+			"pxHeight": 202,
+			"lpid": "23x23"
+		},
+		"L29x42": {
+			"fn": "štítky 29x42 mm",
+			"mmWidth": 29,
+			"mmHeight": 42,
+			"pxWidth": 306,
+			"pxHeight": 425,
+			"lpid": "29x42"
+		},
+		"L29x90": {
+			"fn": "štítky 29x90 mm",
+			"mmWidth": 29,
+			"mmHeight": 90,
+			"pxWidth": 306,
+			"pxHeight": 991,
+			"lpid": "29x90"
+		},
+		"L39x90": {
+			"fn": "štítky 39x90 mm",
+			"mmWidth": 39,
+			"mmHeight": 90,
+			"pxWidth": 413,
+			"pxHeight": 991,
+			"lpid": "39x90"
+		},
+		"L39x48": {
+			"fn": "štítky 39x48 mm",
+			"mmWidth": 39,
+			"mmHeight": 48,
+			"pxWidth": 425,
+			"pxHeight": 495,
+			"lpid": "39x48"
+		},
+		"L52x29": {
+			"fn": "štítky 52x29 mm",
+			"mmWidth": 52,
+			"mmHeight": 29,
+			"pxWidth": 578,
+			"pxHeight": 271,
+			"lpid": "52x29"
+		},
+		"L62x29": {
+			"fn": "štítky 62x29 mm",
+			"mmWidth": 62,
+			"mmHeight": 29,
+			"pxWidth": 696,
+			"pxHeight": 271,
+			"lpid": "62x29"
+		},
+		"L62x100": {
+			"fn": "štítky 62x100 mm",
+			"mmWidth": 62,
+			"mmHeight": 100,
+			"pxWidth": 696,
+			"pxHeight": 1109,
+			"lpid": "62x100"
+		},
+		"L102x51": {
+			"fn": "štítky 102x51 mm",
+			"mmWidth": 102,
+			"mmHeight": 51,
+			"pxWidth": 1164,
+			"pxHeight": 526,
+			"lpid": "102x51"
+		},
+		"L102x152": {
+			"fn": "štítky 102x152 mm",
+			"mmWidth": 102,
+			"mmHeight": 153,
+			"pxWidth": 1164,
+			"pxHeight": 1660,
+			"lpid": "102x152"
+		},
+		"D12": {
+			"fn": "kulaté štítky 12 mm",
+			"mmWidth": 12,
+			"mmHeight": 12,
+			"pxWidth": 94,
+			"pxHeight": 94,
+			"lpid": "d12"
+		},
+		"D24": {
+			"fn": "kulaté štítky 24 mm",
+			"mmWidth": 24,
+			"mmHeight": 24,
+			"pxWidth": 236,
+			"pxHeight": 236,
+			"lpid": "d24"
+		},
+		"D58": {
+			"fn": "kulaté štítky 58 mm",
+			"mmWidth": 58,
+			"mmHeight": 58,
+			"pxWidth": 618,
+			"pxHeight": 618,
+			"lpid": "d58"
+		},
+		"PT24": {
+			"fn": "papírové štítky 24 mm",
+			"mmWidth": 24,
+			"mmHeight": 24,
+			"pxWidth": 0,
+			"pxHeight": 0,
+			"lpid": "pt24"
 		}
 	},
 
