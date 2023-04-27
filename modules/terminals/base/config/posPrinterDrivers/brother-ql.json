@@ -17,6 +17,21 @@
 		"<twice>": "twiceOn", "</twice>": "twiceOff"
 	},
 
+	"labels": {
+		"E62": {
+			"fn": "62 mm endless",
+			"mmWidth": 62,
+			"pxWidth": 696,
+			"lpid": "62"
+		},
+		"E12": {
+			"fn": "12 mm endless",
+			"mmWidth": 12,
+			"pxWidth": 106,
+			"lpid": "12"
+		}
+	},
+
 	"commands": {
 		"reset": [27, 105, 97, 48, 27, 64,
 			27, 107, 9,

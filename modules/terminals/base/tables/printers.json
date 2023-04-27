@@ -9,10 +9,13 @@
 		{"id": "printerType", "name": "Typ tiskárny", "type": "enumInt", "options": ["saveOnChange"],
 			"enumValues": {"0": "Běžná tiskárna", "1": "Tiskárna účtenek", "2": "Tiskárna štítků/nálepek"}},
 
-		{"id": "receiptsPrinterType", "name": "Druh tiskárny", "type": "enumString", "len": 12,
+		{"id": "labelsType", "name": "Typ štítků", "type": "enumString", "len": 24, "options": ["saveOnChange"],
+			"enumValues": {"cfgItem": "", "cfgValue": "", "cfgText": ""}},
+
+		{"id": "receiptsPrinterType", "name": "Druh tiskárny", "type": "enumString", "len": 12, "options": ["saveOnChange"],
 			"enumValues": {"normal": "Klasická (78mm)", "thin": "Úzká (55mm)"}},
 
-		{"id": "posPrinterDriver", "name": "Ovladač", "type": "enumString", "len": 30,
+		{"id": "posPrinterDriver", "name": "Ovladač", "type": "enumString", "len": 30, "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "terminals.postPrinterDrivers", "cfgValue": "", "cfgText": "name"}},
 
 		{"id": "printMethod", "name": "Způsob tisku", "type": "enumInt", "options": ["saveOnChange"],

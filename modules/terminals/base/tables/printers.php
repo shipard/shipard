@@ -2,7 +2,7 @@
 
 namespace terminals\base;
 
-use \E10\utils, \E10\TableView, \E10\TableForm, \E10\DbTable;
+use \E10\utils, \E10\TableView, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
 
 
 /**
@@ -47,6 +47,38 @@ class TablePrinters extends DbTable
 		// -- save to file
 		$cfg ['e10']['terminals']['printers'] = $printers;
 		file_put_contents(__APP_DIR__ . '/config/_terminals.printers.json', utils::json_lint (json_encode ($cfg)));
+	}
+
+	public function columnInfoEnum ($columnId, $valueType = 'cfgText', TableForm $form = NULL)
+	{
+		if ($columnId === 'labelsType')
+		{
+			$pdCfg = $this->loadPrinterDriverCfg($form->recData['posPrinterDriver']);
+			if (!$pdCfg || !isset($pdCfg['labels']))
+				return ['' => '--- ostatní ---'];
+
+			$enum = [];
+			foreach ($pdCfg['labels'] as $ltId => $ltCfg)
+			{
+				$enum[$ltId] = $ltCfg['fn'];
+			}
+
+			return $enum;
+		}
+
+		return parent::columnInfoEnum ($columnId, $valueType, $form);
+	}
+
+	function loadPrinterDriverCfg($printerDriverId)
+	{
+		$printerDriverCfg = $this->app()->cfgItem('terminals.postPrinterDrivers.'.$printerDriverId, NULL);
+
+		$pdfn = __SHPD_MODULES_DIR__ . $printerDriverCfg['driver'];
+		$printerDriver = Utils::loadCfgFile($pdfn);
+		if (!$printerDriver)
+			return NULL;
+
+		return $printerDriver;
 	}
 }
 
@@ -157,6 +189,11 @@ class FormPrinter extends TableForm
 			{
 				$this->addColumnInput ('receiptsPrinterType');
 			}
+			if ($printerType == 2)
+			{
+				$this->addColumnInput ('labelsType');
+			}
+
 			$this->addColumnInput ('printMethod');
 
 			if ($printMethod == 0 || $printMethod == 1)
