@@ -1605,6 +1605,7 @@ class DbTable
 						'type' => 'action', 'action' => 'print',
 						'style' => 'print', 'text' => '', 'data-report' => $r ['class'],
 						'data-table' => $this->tableId(), 'data-pk' => $recData['ndx'],
+						'data-printer' => $printer,
 						'icon' => 'system/iconImage',
 					];
 				}
