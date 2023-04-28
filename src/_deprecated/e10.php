@@ -100,7 +100,7 @@ function es ($s)
 
 /**
  * @deprecated
- */	
+ */
 function searchArray ($array, $searchBy, $searchWhat)
 {
 	forEach ($array as &$item)
@@ -290,11 +290,14 @@ function createReportResponse ($app, \Shipard\Report\Report $data)
 		$print = $app->testGetParam ('print');
 		if ($print !== '')
 		{
+			$printer = $app->testGetParam('printer');
 			$printCfg = [];
-			$data->printReport($printCfg);
+			$data->printReport($printCfg, 1, $printer);
 		}
 		else
+		{
 			$app->response->setFile ($data->fullFileName, $data->mimeType, $data->saveFileName, ($data->saveAs !== FALSE) ? 'attachment' : 'inline');
+		}
 	}
 	return $app->response;
 }
