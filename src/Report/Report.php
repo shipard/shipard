@@ -43,7 +43,10 @@ class Report extends \Shipard\Base\BaseObject
 	var $pageFooter = '';
 
 	var $reportMode = self::rmDefault;
+
 	var $rasterPrint = 0;
+	var $rasterPrintRawDataFileName = '';
+
 	var $printer = NULL;
 	var $printerDriver = NULL;
 	public $openCashdrawer = FALSE;
@@ -156,6 +159,8 @@ class Report extends \Shipard\Base\BaseObject
 			$rpiCreator->setReport($this);
 
 			$rpiCreator->createImage();
+
+			$this->rasterPrintRawDataFileName = $rpiCreator->dstFileNameRaw;
 		}
 		else
 		{
@@ -384,7 +389,23 @@ class Report extends \Shipard\Base\BaseObject
 			{
 				error_log("PRINT ERROR: socket_connect() to `{$addr}:{$port}` failed.\nReason: ($result) " . socket_strerror(socket_last_error($socket)));
 			}
-			$tst = socket_write($socket, $this->objectData ['mainCode'], strlen($this->objectData ['mainCode']));
+
+			if ($this->reportMode == FormReport::rmPOS || $this->reportMode == FormReport::rmLabels)
+			{
+				if ($this->rasterPrintRawDataFileName !== '')
+				{
+					$rpData = file_get_contents($this->rasterPrintRawDataFileName);
+					$tst = socket_write($socket, $rpData, strlen($rpData));
+				}
+				else
+				{
+					$tst = socket_write($socket, $this->objectData ['mainCode'], strlen($this->objectData ['mainCode']));
+				}
+			}
+			else
+			{
+
+			}
 
 			socket_close($socket);
 		}

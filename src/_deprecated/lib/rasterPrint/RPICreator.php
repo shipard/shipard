@@ -11,6 +11,7 @@ class RPICreator extends Utility
 {
 	var $srcFileName = '';
 	var $dstFileName = '';
+	var $dstFileNameRaw = '';
 	var $srcURL = '';
 
 	var $options = [
@@ -22,6 +23,9 @@ class RPICreator extends Utility
 	var $pdfInfo = ['/Producer' => 'shipard.org'];
 	var $optsFileName = '';
 
+	var $printerDriverCfg = NULL;
+	var $labelsCfg = NULL;
+
 
 	public function setReport(\Shipard\Report\Report $report)
 	{
@@ -32,14 +36,14 @@ class RPICreator extends Utility
 		if ($report->printer && $report->printer['labelsType'] && $report->printer['labelsType'] !== '')
 		{
 			$tablePrinters = new \terminals\base\TablePrinters($this->app());
-			$printerDriver = $tablePrinters->loadPrinterDriverCfg($report->printer['posPrinterDriver']);
-			if ($printerDriver && isset($printerDriver['labels']))
+			$this->printerDriverCfg = $tablePrinters->loadPrinterDriverCfg($report->printer['posPrinterDriver']);
+			if ($this->printerDriverCfg && isset($this->printerDriverCfg['labels']))
 			{
-				$labelsCfg = $printerDriver['labels'][$report->printer['labelsType']] ?? NULL;
-				if ($labelsCfg)
+				$this->labelsCfg = $this->printerDriverCfg['labels'][$report->printer['labelsType']] ?? NULL;
+				if ($this->labelsCfg)
 				{
-					$this->options['vpWidth'] = $labelsCfg['pxWidth'] ?? 696;
-					$this->options['vpHeight'] = $labelsCfg['pxHeight'] ?? 1;
+					$this->options['vpWidth'] = $this->labelsCfg['pxWidth'] ?? 696;
+					$this->options['vpHeight'] = $this->labelsCfg['pxHeight'] ?? 1;
 				}
 			}
 		}
@@ -103,8 +107,6 @@ class RPICreator extends Utility
 		exec($cmd);
 
 		$this->finalize();
-
-		//$this->finalize(); // realy twice?
 	}
 
 	protected function saveParamsForBrowser()
@@ -146,5 +148,21 @@ class RPICreator extends Utility
 
 	public function finalize()
 	{
+		if (!$this->printerDriverCfg || !isset($this->printerDriverCfg['rasterPrintEngine']) || $this->printerDriverCfg['rasterPrintEngine'] === '')
+		{
+			return;
+		}
+
+		/** @var \lib\rasterPrint\RasterPrinterEngine */
+		$e = $this->app()->createObject($this->printerDriverCfg['rasterPrintEngine']);
+		if (!$e)
+		{
+			return;
+		}
+
+		$this->dstFileNameRaw = substr($this->dstFileName, 0, -3).'bin';
+
+		$e->setCfg($this->printerDriverCfg, $this->labelsCfg);
+		$e->createPrinterData($this->dstFileName, $this->dstFileNameRaw);
 	}
 }

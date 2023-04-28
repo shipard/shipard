@@ -1,5 +1,6 @@
 {
 	"name": "Brother QL label printers",
+	"rasterPrintEngine": "lib.rasterPrint.RPEBrotherQL",
 
 	"htmlFormatCodes": {
 		"<huge>": "fontSizeHuge", "</huge>": "fontSizeNormal",
@@ -23,7 +24,7 @@
 			"mmWidth": 62,
 			"mmHeight": 0,
 			"pxWidth": 696,
-			"pxHeight": 0,
+			"pxHeight": 1,
 			"lpid": "62"
 		},
 		"E12": {

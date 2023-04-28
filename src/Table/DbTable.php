@@ -1600,6 +1600,7 @@ class DbTable
 
 				if (utils::param($r, 'rasterPrint', 0))
 				{
+					$btn ['data-print'] = 1;
 					$btn['subButtons'] = [];
 					$btn['subButtons'][] = [
 						'type' => 'action', 'action' => 'print',

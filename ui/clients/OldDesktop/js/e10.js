@@ -3253,6 +3253,8 @@ function e10ViewerPrintDetailDirect (e)
 	var pk = searchParentAttr (e, "data-pk");
 	var printer = e.attr ('data-printer');
 	var url = httpApiRootPath + '/api/formreport/' + table + '/' + reportClass + '/' + pk + "?printer=" + printer;
+	if (e.attr ('data-print') !== undefined)
+		url += '&print='+e.attr ('data-print');
 	$.get (url);
 }
 

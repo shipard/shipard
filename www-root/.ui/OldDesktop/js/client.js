@@ -850,7 +850,7 @@ table=searchParentAttr(e,"data-table");var
 reportClass=e.attr('data-report');var
 pk=searchParentAttr(e,"data-pk");var
 printer=e.attr('data-printer');var
-url=httpApiRootPath+'/api/formreport/'+table+'/'+reportClass+'/'+pk+"?printer="+printer;$.get(url);}function
+url=httpApiRootPath+'/api/formreport/'+table+'/'+reportClass+'/'+pk+"?printer="+printer;if(e.attr('data-print')!==undefined)url+='&print='+e.attr('data-print');$.get(url);}function
 e10ViewerPrint(e){var
 viewerId=searchObjectId(e,'viewer');var
 viewer=$('#'+viewerId);var
