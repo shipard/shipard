@@ -327,7 +327,7 @@ class Core extends \lib\docDataFiles\DocDataFile
 				'rowOrder' => 1000,
 				'itemId' => $itemInfo['supplierCode'],
 			];
-			if ($itemInfo['supplierItemUrl'] !== '')
+			if (isset($itemInfo['supplierItemUrl']) && $itemInfo['supplierItemUrl'] !== '')
 				$newItemSupplier['url'] = $itemInfo['supplierItemUrl'];
 
 			$tableItemSuppliers->dbInsertRec($newItemSupplier);
