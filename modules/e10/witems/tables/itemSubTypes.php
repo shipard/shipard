@@ -150,7 +150,7 @@ class ViewItemSubTypesCombo extends ViewItemSubTypes
 	public function renderRow ($item)
 	{
 		$listItem ['pk'] = $item ['ndx'];
-		$listItem ['t1'] = $item['fullName']."`{$this->itemType}`";
+		$listItem ['t1'] = $item['fullName'];
 		//$listItem ['t2'] = $item['id'];
 
 		//$types = $this->table->columnInfoEnum ('itemType');
