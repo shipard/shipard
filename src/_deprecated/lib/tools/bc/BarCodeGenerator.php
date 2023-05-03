@@ -53,7 +53,7 @@ class BarCodeGenerator extends Utility
     $this->codeType = strtoupper($codeType);
 
 		$this->fullFileName = Utils::tmpFileName($this->fileType);
-		$this->url = $this->app()->dsRoot.'/tmp/'.basename($this->fullFileName);
+		$this->url = 'https://'.$this->app()->cfgItem('hostingCfg.serverDomain').'/'.$this->app->cfgItem('dsid').'/tmp/'.basename($this->fullFileName);
 
     if ($this->codeType === 'QR')
     {

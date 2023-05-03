@@ -18,7 +18,7 @@ class QRCodeGenerator extends Utility
 	public function createQRCode ()
 	{
 		$this->fullFileName = utils::tmpFileName($this->fileType);
-		$this->url = $this->app()->dsRoot.'/tmp/'.basename($this->fullFileName);
+		$this->url = 'https://'.$this->app()->cfgItem('hostingCfg.serverDomain').'/'.$this->app->cfgItem('dsid').'/tmp/'.basename($this->fullFileName);
 
 		if (is_file($this->fullFileName))
 			return;
