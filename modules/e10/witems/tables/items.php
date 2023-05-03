@@ -141,6 +141,28 @@ class TableItems extends DbTable
 		return 'tables/e10.witems.items';
 	}
 
+	function itemMainBCId ($recData)
+	{
+		$totalLen = 12;
+		$bcTableId = strtoupper(base_convert($this->ndx, 10, 36));
+		$ndxId = strtoupper(base_convert($recData['ndx'], 10, 36));
+
+		$bcId = $bcTableId;
+
+		$bcId .= '-'.$ndxId;
+		$bcId .= '-';
+
+		for ($i = 0; $i < strlen($recData['id']); $i++)
+		{
+			if (strlen($bcId) < $totalLen)
+				$bcId .= $recData['id'][$i];
+			else
+				break;
+		}
+
+		return $bcId;
+	}
+
 	public function subColumnsInfo ($recData, $columnId)
 	{
 		if ($columnId === 'subTypeData')
