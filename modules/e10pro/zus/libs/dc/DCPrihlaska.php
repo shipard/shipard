@@ -1,6 +1,7 @@
 <?php
 
 namespace e10pro\zus\libs\dc;
+use \Shipard\Utils\Utils;
 
 
 /**
@@ -8,18 +9,45 @@ namespace e10pro\zus\libs\dc;
  */
 class DCPrihlaska extends \Shipard\Base\DocumentCard
 {
-
   public function addCoreInfo()
   {
     $pobocka = $this->app()->loadItem($this->recData['misto'], 'e10.base.places');
     $obor = $this->app()->loadItem($this->recData['svpObor'], 'e10pro.zus.obory');
     $oddeleni = $this->app()->loadItem($this->recData['svpOddeleni'], 'e10pro.zus.oddeleni');
 
-
-
     $t = [];
 
-    $t[] = ['t' => 'Student', 'v' => $this->recData['lastNameS'].' '.$this->recData['firstNameS']];
+    $studentInfo = [];
+
+    $testNewPersons = intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
+
+    if (!$this->recData['dstStudent'])
+    {
+      $studentInfo [] = ['text' => $this->recData['lastNameS'].' '.$this->recData['firstNameS'], 'class' => 'block'];
+      if ($testNewPersons)
+      {
+        $studentInfo [] = [
+          'type' => 'action', 'action' => 'addwizard',
+          'text' => 'Vytvořit', 'data-class' => 'e10pro.zus.libs.WizardGenerateFromEntries',
+          'icon' => 'cmnbkpRegenerateOpenedPeriod',
+          'class' => 'pull-right'
+        ];
+      }
+    }
+    else
+    {
+      $studentInfo [] = [
+        'text' => $this->recData['lastNameS'].' '.$this->recData['firstNameS'],
+        'docAction' => 'edit',
+        'table' => 'e10.persons.persons',
+        'pk' => $this->recData['dstStudent'],
+      ];
+    }
+
+    $t[] = ['t' => 'Student', 'v' => $studentInfo];
+
+    $t[] = ['t' => 'Datum narození', 'v' => Utils::datef($this->recData['datumNarozeni'])];
+    $t[] = ['t' => 'Rodné číslo', 'v' => $this->recData['rodneCislo']];
     $t[] = ['t' => 'Bydliště', 'v' => $this->recData['street'].', '.$this->recData['city'].', '.$this->recData['zipcode']];
     $t[] = ['t' => 'Obor', 'v' => $obor['nazev']];
     $t[] = ['t' => 'Studijní zaměření', 'v' => $oddeleni['nazev']];
@@ -54,7 +82,6 @@ class DCPrihlaska extends \Shipard\Base\DocumentCard
 
 		$this->addContent ('body', ['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'header' => $h, 'table' => $t,
 				'params' => ['hideHeader' => 1, 'forceTableClass' => 'properties fullWidth']]);
-
   }
 
   public function createContent ()

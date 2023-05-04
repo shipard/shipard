@@ -67,6 +67,9 @@
 		{"id": "webSentDate", "name": "Datum a čas odeslání přihlášky z webu", "type": "timestamp"},
 		{"id": "confirmEmailDone", "name": "Potvrzovací email odeslán", "type": "logical"},
 
+    {"id": "dstStudent", "name": "Student", "type": "int", "reference": "e10.persons.persons"},
+    {"id": "dstStudium", "name": "Studium", "type": "int", "reference": "e10pro.zus.studium"},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
