@@ -87,8 +87,9 @@ class ViewPersonContacts extends TableView
 			if ($item['flagContact'])
 			{
 				$cf = $this->renderRow_contactFlags($item);
+				$listItem['t3'] = [['text' => $item['contactName'], 'class' => '', 'icon' => 'system/iconUser']];
 				if (count($cf))
-					$listItem['t3'] = $cf;
+					$listItem['t3'][] = $cf;
 			}
 		}
 		elseif ($item['flagAddress'] && $item['flagContact'])
