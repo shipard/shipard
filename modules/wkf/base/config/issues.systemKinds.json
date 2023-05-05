@@ -5,34 +5,33 @@
 	"1": {
 		"fullName": "K řešení", "shortName": "K řešení" ,"icon": "system/issueToDo",
 		"order": 300000, "issueType": 0,
-		"askPersons": 1, "askDateIncoming": 2, "askDeadline": 1
+		"askPersons": 1, "askDeadline": 1
 	},
 	"2": {
 		"fullName": "Došlá pošta", "shortName":  "Došlá pošta", "icon": "system/issueReceivedMail",
 		"order": 100000, "issueType": 1,
-		"askKind": 1, "askPersons": 1, "askDateIncoming": 1
+		"askPersons": 1
 	},
 	"3": {
 		"fullName": "Diskuze", "shortName": "Diskuze", "icon": "system/issueDiscussion",
-		"order": 200000, "issueType": 2,
-		"askDateIncoming": 2
+		"order": 200000, "issueType": 2
 	},
 	"4": {
 		"fullName": "Odeslaná pošta", "shortName": "Odeslaná pošta", "icon": "system/issueSentMail",
 		"order": 900000, "issueType": 3,
-		"askPersons": 1, "askDateIncoming": 2
+		"askPersons": 1
 	},
 	"5": {
 		"fullName": "Systémová kontrola", "shortName": "Kontrola", "icon": "system/issueSystemControl",
 		"order": 900000, "issueType": 4,
-		"askPersons": 1, "askDateIncoming": 2
+		"askPersons": 1
 	},
 	"6": {
 		"fullName": "Výstraha", "shortName": "Výstraha", "icon": "system/issueAlert",
-		"order": 900000, "issueType": 5, "askDateIncoming": 2
+		"order": 900000, "issueType": 5
 	},
 	"7": {
 		"fullName": "Poznámka", "shortName": "Poznámka", "icon": "system/issueNote",
-		"order": 800000, "issueType": 6, "askDateIncoming": 2
+		"order": 800000, "issueType": 6
 	}
 }

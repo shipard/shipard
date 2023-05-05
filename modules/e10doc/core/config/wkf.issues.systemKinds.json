@@ -1,52 +1,52 @@
 {
 	"51": {
 		"fullName": "Přijatá faktura", "shortName": "Přijatá faktura", "icon": "docTypeInvoicesIn", "order": 105100, "issueType": 1,
-		"askKind": 1, "askPersons":1, "askDeadline": 1, "askDateIncoming": 1
+		"askPersons":1, "askDeadline": 1
 	},
 	"52": {
 		"fullName": "Bankovní výpis", "shortName": "Banka", "icon": "docType/bank", "order": 105200, "issueType": 1,
-		"askKind": 1, "askPersons":1, "askDeadline": 1, "askDateIncoming": 1
+		"askPersons":1, "askDeadline": 1
 	},
 	"53": {
 		"fullName": "Zápočet", "shortName": "Zápočet", "icon": "docTypeCredit", "order": 105300, "issueType": 1,
-		"askKind": 1, "askPersons":1, "askDeadline": 1, "askDateIncoming": 1
+		"askPersons":1, "askDeadline": 1
 	},
 	"54": {
 		"fullName": "Upomínka", "shortName": "Upomínka", "icon": "docTypeReminder", "order": 105400, "issueType": 1,
-		"askKind": 1, "askPersons":1, "askDeadline": 1, "askDateIncoming": 1
+		"askPersons":1, "askDeadline": 1
 	},
 	"55": {
 		"fullName": "Pokladní lístek", "shortName": "Pokladna", "icon": "docType/cash", "order": 105150, "issueType": 1,
-		"askKind": 1, "askPersons":1, "askDeadline": 1, "askDateIncoming": 1
+		"askPersons":1, "askDeadline": 1
 	},
 
 	"60": {
 		"fullName": "Smlouva", "shortName": "Smlouva", "icon": "docTypeContract", "order": 106100, "issueType": 1,
-		"askKind": 1, "askPersons":1, "askDeadline": 2, "askDateIncoming": 1
+		"askPersons":1, "askDeadline": 2
 	},
 
 	"61": {
 		"fullName": "Poptávka přijatá", "shortName": "Poptávka", "icon": "docTypeDemand", "order": 106200, "issueType": 1,
-		"askKind": 1, "askPersons":1, "askDeadline": 2, "askDateIncoming": 1
+		"askPersons":1, "askDeadline": 2
 	},
 	"62": {
 		"fullName": "Objednávka přijatá", "shortName": "Objednávka", "icon": "docType/ordersIn", "order": 106300, "issueType": 1,
-		"askKind": 1, "askPersons":1, "askDeadline": 2, "askDateIncoming": 1
+		"askPersons":1, "askDeadline": 2
 	},
 
 	"121": {
 		"fullName": "Vydaná faktura", "shortName": "Vydaná faktura", "icon": "docType/invoicesOut",
 		"order": 125100, "issueType": 3,
-		"askKind": 2, "askPersons":1, "askDeadline": 2, "askDateIncoming": 2
+		"askPersons":1, "askDeadline": 2
 	},
 	"122": {
 		"fullName": "Odeslaný zápočet", "shortName": "Zápočet", "icon": "docTypeCredit",
 		"order": 125200, "issueType": 3,
-		"askKind": 2, "askPersons":1, "askDeadline": 2, "askDateIncoming": 2
+		"askPersons":1, "askDeadline": 2
 	},
 	"123": {
 		"fullName": "Odeslaná upomínka", "shortName": "Upomínka", "icon": "docTypeReminder",
 		"order": 125300, "issueType": 3,
-		"askKind": 2, "askPersons":1, "askDeadline": 2, "askDateIncoming": 2
+		"askPersons":1, "askDeadline": 2
 	}
 }
