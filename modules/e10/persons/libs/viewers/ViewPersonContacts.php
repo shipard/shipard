@@ -75,34 +75,25 @@ class ViewPersonContacts extends TableView
 		if ($item['onTop'] != 99)
 			$listItem['i1'] = ['text' => '', 'icon' => 'system/iconPinned', 'class' => 'id'];
 
-    if ($item['flagOffice'])
+    if ($item['flagOffice'] || $item['flagMainAddress'])
     {
 			$address = $this->renderRow_addressText ($item);
 			$addressFlags = $this->renderRow_addressFlags ($item);
 
-      $listItem['t1'] = $address;
+      $listItem['t1'] = ['text' => $address, 'class' => '', 'icon' => 'tables/e10.base.places'];
       if (count($addressFlags))
         $listItem['t2'] = $addressFlags;
 
 			if ($item['flagContact'])
 			{
-				$cf = [];
-				if ($item['contactName'] != '')
-					$cf[] = ['text' => $item['contactName'], 'class' => 'label label-default'];
-				if ($item['contactRole'] != '')
-					$cf[] = ['text' => $item['contactRole'], 'class' => 'label label-default'];
-				if ($item['contactEmail'] != '')
-					$cf[] = ['text' => $item['contactEmail'], 'class' => 'label label-default', 'icon' => 'system/iconEmail'];
-				if ($item['contactPhone'] != '')
-					$cf[] = ['text' => $item['contactPhone'], 'class' => 'label label-default', 'icon' => 'system/iconPhone'];
-
+				$cf = $this->renderRow_contactFlags($item);
 				if (count($cf))
 					$listItem['t3'] = $cf;
 			}
 		}
 		elseif ($item['flagAddress'] && $item['flagContact'])
     {
-			$listItem['t1'] = $item['contactName'];
+			$listItem['t1'] = ['text' => $item['contactName'], 'class' => '', 'icon' => 'system/iconUser'];
 			$address = $this->renderRow_addressText ($item);
 			$addressFlags = $this->renderRow_addressFlags ($item);
 			$cf = $this->renderRow_contactFlags($item);
@@ -121,14 +112,14 @@ class ViewPersonContacts extends TableView
 			$address = $this->renderRow_addressText ($item);
 			$addressFlags = $this->renderRow_addressFlags ($item);
 
-      $listItem['t1'] = $address;
+      $listItem['t1'] = ['text' => $address, 'class' => '', 'icon' => 'tables/e10.base.places'];
       if (count($addressFlags))
         $listItem['t2'] = $addressFlags;
 
 		}
 		elseif ($item['flagContact'])
     {
-			$listItem['t1'] = $item['contactName'];
+			$listItem['t1'] = ['text' => $item['contactName'], 'class' => '', 'icon' => 'system/iconUser'];
 			$cf = $this->renderRow_contactFlags($item);
       if (count($cf))
         $listItem['t2'] = $cf;
