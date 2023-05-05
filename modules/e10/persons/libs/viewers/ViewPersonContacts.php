@@ -75,41 +75,12 @@ class ViewPersonContacts extends TableView
 		if ($item['onTop'] != 99)
 			$listItem['i1'] = ['text' => '', 'icon' => 'system/iconPinned', 'class' => 'id'];
 
-    if ($item['flagAddress'])
+    if ($item['flagOffice'])
     {
-      $ap = [];
-
-      if ($item['adrSpecification'] != '')
-        $ap[] = $item['adrSpecification'];
-      if ($item['adrStreet'] != '')
-        $ap[] = $item['adrStreet'];
-      if ($item['adrCity'] != '')
-        $ap[] = $item['adrCity'];
-      if ($item['adrZipCode'] != '')
-        $ap[] = $item['adrZipCode'];
-
-      $country = World::country($this->app(), $item['adrCountry']);
-      $ap[] = /*$country['f'].' '.*/$country['t'];
-
-      $address = implode(', ', $ap);
-
-      if ($item['flagMainAddress'])
-        $addressFlags[] = ['text' => 'Sídlo', 'class' => 'label label-default'];
-      if ($item['flagPostAddress'])
-        $addressFlags[] = ['text' => 'Korespondenční', 'class' => 'label label-default'];
-      if ($item['flagOffice'])
-        $addressFlags[] = ['text' => 'Provozovna', 'class' => 'label label-default'];
-
-      if ($item['id1'] !== '')
-        $addressFlags[] = ['text' => 'IČP: '.$item['id1'], 'class' => 'label label-default'];
-			if ($item['id2'] !== '')
-        $addressFlags[] = ['text' => 'IČZ: '.$item['id2'], 'class' => 'label label-default'];
-
-			if (!Utils::dateIsBlank($item['validTo']))
-				$addressFlags[] = ['text' => 'Platné do: '.Utils::datef($item['validTo']), 'class' => 'label label-danger'];
+			$address = $this->renderRow_addressText ($item);
+			$addressFlags = $this->renderRow_addressFlags ($item);
 
       $listItem['t1'] = $address;
-
       if (count($addressFlags))
         $listItem['t2'] = $addressFlags;
 
@@ -129,23 +100,95 @@ class ViewPersonContacts extends TableView
 					$listItem['t3'] = $cf;
 			}
 		}
+		elseif ($item['flagAddress'] && $item['flagContact'])
+    {
+			$listItem['t1'] = $item['contactName'];
+			$address = $this->renderRow_addressText ($item);
+			$addressFlags = $this->renderRow_addressFlags ($item);
+			$cf = $this->renderRow_contactFlags($item);
+
+			if (count($cf))
+				$listItem['t2'] = $cf;
+
+			$listItem['t3'] = [['text' => $address, 'class' => '', 'icon' => 'tables/e10.base.places']];
+
+			if (count($addressFlags))
+				$listItem['t3'][] = $addressFlags;
+
+		}
+		elseif ($item['flagAddress'] && !$item['flagContact'])
+    {
+			$address = $this->renderRow_addressText ($item);
+			$addressFlags = $this->renderRow_addressFlags ($item);
+
+      $listItem['t1'] = $address;
+      if (count($addressFlags))
+        $listItem['t2'] = $addressFlags;
+
+		}
 		elseif ($item['flagContact'])
     {
 			$listItem['t1'] = $item['contactName'];
-
-			$cf = [];
-			if ($item['contactRole'] != '')
-        $cf[] = ['text' => $item['contactRole'], 'class' => 'label label-default'];
-      if ($item['contactEmail'] != '')
-        $cf[] = ['text' => $item['contactEmail'], 'class' => 'label label-default', 'icon' => 'system/iconEmail'];
-      if ($item['contactPhone'] != '')
-        $cf[] = ['text' => $item['contactPhone'], 'class' => 'label label-default', 'icon' => 'system/iconPhone'];
-
+			$cf = $this->renderRow_contactFlags($item);
       if (count($cf))
         $listItem['t2'] = $cf;
     }
 
 		return $listItem;
+	}
+
+	public function renderRow_addressText ($item)
+	{
+		$ap = [];
+
+		if ($item['adrSpecification'] != '')
+			$ap[] = $item['adrSpecification'];
+		if ($item['adrStreet'] != '')
+			$ap[] = $item['adrStreet'];
+		if ($item['adrCity'] != '')
+			$ap[] = $item['adrCity'];
+		if ($item['adrZipCode'] != '')
+			$ap[] = $item['adrZipCode'];
+
+		$country = World::country($this->app(), $item['adrCountry']);
+		$ap[] = /*$country['f'].' '.*/$country['t'];
+
+		$address = implode(', ', $ap);
+		return $address;
+	}
+
+	public function renderRow_addressFlags ($item)
+	{
+		$addressFlags = [];
+		if ($item['flagMainAddress'])
+		$addressFlags[] = ['text' => 'Sídlo', 'class' => 'label label-default'];
+		if ($item['flagPostAddress'])
+			$addressFlags[] = ['text' => 'Korespondenční', 'class' => 'label label-default'];
+		if ($item['flagOffice'])
+			$addressFlags[] = ['text' => 'Provozovna', 'class' => 'label label-default'];
+
+		if ($item['id1'] !== '')
+			$addressFlags[] = ['text' => 'IČP: '.$item['id1'], 'class' => 'label label-default'];
+		if ($item['id2'] !== '')
+			$addressFlags[] = ['text' => 'IČZ: '.$item['id2'], 'class' => 'label label-default'];
+
+		if (!Utils::dateIsBlank($item['validTo']))
+			$addressFlags[] = ['text' => 'Platné do: '.Utils::datef($item['validTo']), 'class' => 'label label-danger'];
+
+		return $addressFlags;
+	}
+
+	public function renderRow_contactFlags ($item)
+	{
+		$cf = [];
+		if ($item['contactRole'] != '')
+			$cf[] = ['text' => $item['contactRole'], 'class' => 'label label-default'];
+		if ($item['contactEmail'] != '')
+			$cf[] = ['text' => $item['contactEmail'], 'class' => 'label label-default', 'icon' => 'system/iconEmail'];
+		if ($item['contactPhone'] != '')
+			$cf[] = ['text' => $item['contactPhone'], 'class' => 'label label-default', 'icon' => 'system/iconPhone'];
+
+		return $cf;
 	}
 
 	function decorateRow (&$item)
