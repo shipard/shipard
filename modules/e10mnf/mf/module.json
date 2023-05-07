@@ -1,0 +1,11 @@
+{
+	"id": "e10mnf.mf",
+	"name": "Manufaktura",
+	"extensions": ["mf"],
+	"tables": ["products", "productsVariants", "productsMaterials"],
+	"modules": ["e10doc/buy", "e10mnf/base", "e10mnf/core"],
+	"config": [
+		{"id": "+appSkeleton", "file": "appSkeleton.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"}
+	]
+}

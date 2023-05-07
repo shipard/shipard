@@ -1,0 +1,12 @@
+{
+	"panels": {
+		"e10mnf": {
+			"url": "/app/mf", "objectType": "panel", "zone": "sec", "name": "Výroba", "order": 332500,
+			"items": {
+				"products": {"t1": "Výrobky", "object": "viewer", "table": "e10mnf.mf.products", "viewer": "default", "order": 200000},
+				"productsVariants": {"t1": "Varianty", "object": "viewer", "table": "e10mnf.mf.productsVariants", "viewer": "default", "order": 210000},
+				"witems": {"t1": "Položky", "object": "viewer", "table": "e10.witems.items", "viewer": "mf", "order": 900000}
+			}
+		}
+	}
+}

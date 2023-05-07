@@ -1,0 +1,14 @@
+{
+    "tables/e10mnf.mf.products":{
+        "fa5": "fa-cube",
+        "fa6pro": "fa-cube",
+        "bsi": "bi-box",
+        "mdi": "reorder"
+    },
+    "tables/e10mnf.mf.productsVariants":{
+        "fa5":"fa-cubes",
+        "fa6pro":"fa-cubes",
+        "bsi":"bi-boxes",
+        "mdi":"inventory_2"
+    }
+}

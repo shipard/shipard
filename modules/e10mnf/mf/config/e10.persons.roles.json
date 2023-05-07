@@ -1,0 +1,8 @@
+{
+  "mnf": {
+		"viewers": {
+			"e10mnf.mf.products": {"default": 2},
+			"e10mnf.mf.productsVariants": {"default": 2}
+		}
+	}
+}

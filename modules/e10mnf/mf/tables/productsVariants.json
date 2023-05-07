@@ -1,0 +1,32 @@
+{
+  "id": "e10mnf.mf.productsVariants", "sql": "e10mnf_mf_productsVariants", "name": "Varianty výrobků",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "product", "name": "Výrobek", "type": "int", "reference": "e10mnf.mf.products"},
+    {"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
+		{"id": "id", "name": "Kód varianty", "type": "string", "len": 25},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+  "lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"},
+		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"}
+  ],
+  "views": {
+    "default": {"id": "default", "class": "e10mnf.mf.ViewProductsVariants",
+			"details": {
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10mnf.mf.ViewDetailProductVariant", "order": 1000}
+			}
+		}
+	},
+  "forms": [
+    {"id": "default", "class": "e10mnf.mf.FormProductVariant"}
+  ],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}
