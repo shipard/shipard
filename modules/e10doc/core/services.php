@@ -392,6 +392,29 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$e->import();
 	}
 
+	public function cliResetDocFromAtt()
+	{
+		$paramAttNdx = intval($this->app->arg('attNdx'));
+		if (!$paramAttNdx)
+		{
+			echo "ERROR: missing param `--attNdx`\n";
+			return FALSE;
+		}
+
+		$paramDocNdx = intval($this->app->arg('docNdx'));
+		if (!$paramDocNdx)
+		{
+			echo "ERROR: missing param `--docNdx`\n";
+			return FALSE;
+		}
+
+		$e = new \e10doc\core\libs\DocFromAttachment($this->app());
+		$e->init();
+		$e->setAttNdx($paramAttNdx);
+		$e->replaceDocumentNdx = $paramDocNdx;
+		$e->reset($paramDocNdx);
+	}
+
 	public function onCliAction ($actionId)
 	{
 		switch ($actionId)
@@ -402,6 +425,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'copy-witems': return $this->cliCopyWitems();
 			case 'validate-persons': return $this->cliValidatePersons();
 			case 'new-doc-from-att': return $this->cliNewDocFromAtt();
+			case 'reset-doc-from-att': return $this->cliResetDocFromAtt();
 		}
 
 		parent::onCliAction($actionId);

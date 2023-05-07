@@ -45,11 +45,11 @@ class Core extends \lib\docDataFiles\DocDataFile
 	{
 		$q[] = 'SELECT props.recid';
 
-		array_push ($q,' FROM [e10_base_properties] AS props');
-		array_push ($q,' LEFT JOIN [e10_persons_persons] AS persons ON props.recid = persons.ndx');
-		array_push ($q,' WHERE 1');
-		array_push ($q,' AND [tableid] = %s', 'e10.persons.persons', ' AND [valueString] = %i', $value);
-		array_push ($q,' AND [group] = %s', 'ids', ' AND property = %s', 'oid');
+		array_push ($q,	' FROM [e10_base_properties] AS props');
+		array_push ($q,	' LEFT JOIN [e10_persons_persons] AS persons ON props.recid = persons.ndx');
+		array_push ($q,	' WHERE 1');
+		array_push ($q,	' AND [tableid] = %s', 'e10.persons.persons', ' AND [valueString] = %i', $value);
+		array_push ($q,	' AND [group] = %s', 'ids', ' AND property = %s', 'oid');
 		array_push ($q, ' AND [persons].docState = %i', 4000);
 
 		$rows = $this->db()->query($q);
@@ -177,6 +177,20 @@ class Core extends \lib\docDataFiles\DocDataFile
 
 		if ($this->inboxNdx && isset($this->docHead['person']) && $this->docHead['person'])
 			$this->setInboxPersonFrom($this->docHead['person']);
+	}
+
+	public function resetDocument($documentNdx)
+	{
+		$this->createImport();
+
+		if (isset($this->docHead['ddfId']))
+			unset($this->docHead['ddfId']);
+		if (isset($this->docHead['ddfNdx']))
+			unset($this->docHead['ddfNdx']);
+
+		$this->replaceDocumentNdx = $documentNdx;
+
+		$this->saveDoc();
 	}
 
 	function saveDoc ()
