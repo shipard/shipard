@@ -167,8 +167,8 @@ class Item extends \e10\DocumentCard
 		foreach ($rows as $r)
 		{
 			$item = [
-				'itemId' => $r['itemId'],
-				'supplier' => ['text' => $r['supplierName'], 'url' => $r['url']],
+				'itemId' => $r['url'] != '' ? ['text' => $r['itemId'], 'url' => $r['url'], 'icon' => 'system/iconLink'] : $r['itemId'],
+				'supplier' => $r['supplierName'],
 			];
 
 			$this->dataSuppliers[] = $item;

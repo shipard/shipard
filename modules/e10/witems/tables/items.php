@@ -286,6 +286,16 @@ class TableItems extends DbTable
 			$itemTop[] = $l;
 		}
 
+		if ($recData['itemSubType'])
+		{
+			$subType = $this->app()->cfgItem('e10.witems.subTypes.'.$recData['itemType'].'.'.$recData['itemSubType'], NULL);
+			if ($subType)
+				$itemTop[] = ['text' => $subType['fn'], 'class' => 'label label-default'];
+
+			if ($recData['shortName'] !== '')
+				$itemTop[] = ['text' => $recData['shortName'], 'class' => 'label label-default'];
+		}
+
 		if ($recData['brand'])
 		{
 			$brand = $this->app()->loadItem($recData['brand'], 'e10.witems.brands');
@@ -398,10 +408,12 @@ class ViewItems extends TableView
 				array_push ($q, "[items].[fullName] LIKE %s", '%'.$dotaz.'%');
 				array_push ($q, " OR [items].[shortName] LIKE %s", '%'.$dotaz.'%');
 				array_push ($q, " OR [items].[id] LIKE %s", $dotaz.'%');
+				array_push ($q, " OR [items].[manufacturerId] LIKE %s", '%'.$dotaz.'%');
 
 				if ($this->table->app()->model()->table ('e10doc.debs.accounts') !== FALSE)
 					array_push ($q, ' OR [items].[debsAccountId] LIKE %s', $dotaz.'%');
 
+				array_push ($q, ' OR EXISTS (SELECT ndx FROM e10_witems_itemSuppliers WHERE items.ndx = e10_witems_itemSuppliers.item AND itemId LIKE %s)', '%'.$dotaz.'%');
 				array_push ($q, " OR EXISTS (SELECT ndx FROM e10_base_properties WHERE items.ndx = e10_base_properties.recid AND valueString LIKE %s AND tableid = %s)", '%'.$dotaz.'%', 'e10.witems.items');
 			}
 			else
@@ -435,8 +447,8 @@ class ViewItems extends TableView
 				}
 				array_push ($q, ")");
 
-				array_push ($q, " OR ");
-				array_push ($q, " EXISTS (SELECT ndx FROM e10_base_properties WHERE items.ndx = e10_base_properties.recid AND valueString LIKE %s AND tableid = %s)", '%'.$dotaz.'%', 'e10.witems.items');
+				array_push ($q, ' OR EXISTS (SELECT ndx FROM e10_witems_itemSuppliers WHERE items.ndx = e10_witems_itemSuppliers.item AND itemId LIKE %s)', '%'.$dotaz.'%');
+				array_push ($q, " OR EXISTS (SELECT ndx FROM e10_base_properties WHERE items.ndx = e10_base_properties.recid AND valueString LIKE %s AND tableid = %s)", '%'.$dotaz.'%', 'e10.witems.items');
 			}
 			array_push ($q, ")");
 		}
@@ -630,6 +642,7 @@ class ViewItems extends TableView
 			$useFor = $this->table->columnInfoEnum ('useFor', 'cfgText');
 			$l['suffix'] = $useFor [$item ['useFor']];
 		}
+
 		if (!utils::dateIsBlank($item['itValidTo']) && $item['itValidTo'] < $this->now)
 		{
 			$listItem['!error'] = 1;
@@ -639,6 +652,16 @@ class ViewItems extends TableView
 		}
 		if (!isset ($this->defaultType) || $itShow)
 			$props[] = $itLabel;
+
+		if ($item['itemSubType'])
+		{
+			$subType = $this->app()->cfgItem('e10.witems.subTypes.'.$item['itemType'].'.'.$item['itemSubType'], NULL);
+			if ($subType)
+				$props[] = ['text' => $subType['fn'], 'class' => 'label label-default'];
+
+			if ($item['shortName'] !== '')
+				$props[] = ['text' => $item['shortName'], 'class' => 'label label-default'];
+		}
 
 		if (count($props))
 			$listItem ['t2'] = $props;
@@ -660,7 +683,8 @@ class ViewItems extends TableView
 
 		if (isset ($this->classification [$item ['pk']]))
 		{
-			$item ['t3'] = [];
+			if (!isset($item ['t3']))
+				$item ['t3'] = [];
 			forEach ($this->classification [$item ['pk']] as $clsfGroup)
 				$item ['t3'] = array_merge ($item ['t3'], $clsfGroup);
 		}
@@ -713,9 +737,7 @@ class ViewItems extends TableView
 
 		$panel->addContent(array ('type' => 'query', 'query' => $qry));
 	}
-
-
-} // class ViewItems
+}
 
 
 /**
@@ -955,6 +977,7 @@ class FormItems extends TableForm
 		$useItemCodes = (count($codeKinds) !== 0);
 
 		$subTypes = $this->app()->cfgItem('e10.witems.subTypes.'.$this->recData['itemType'], NULL);
+		$subType = $this->app()->cfgItem('e10.witems.subTypes.'.$this->recData['itemType'].'.'.$this->recData['itemSubType'], NULL);
 
 		$useSuppliers = 0;
 		if ($itemKind === 1)
@@ -1017,6 +1040,15 @@ class FormItems extends TableForm
 				}
 				else
 				{
+					if ($subType)
+					{
+						$this->openRow();
+							$this->addColumnInput ("weightNetto");
+							$this->addColumnInput ("weightNettoUnit");
+							$this->addColumnInput ("weightNettoCount");
+						$this->closeRow();
+					}
+
 					$this->addColumnInput ("brand");
 					$this->addList ('doclinks', '', TableForm::loAddToFormLayout);
 					$this->addList ('clsf', '', TableForm::loAddToFormLayout);

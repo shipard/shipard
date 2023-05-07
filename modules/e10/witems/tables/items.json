@@ -39,6 +39,11 @@
 
 	  {"id": "isSet", "name": "Jedná se o sadu položek", "type": "logical", "options": ["saveOnChange"]},
 
+		{"id": "weightNetto", "name": "Hmotnost", "type": "number", "dec": 3},
+		{"id": "weightNettoUnit", "name": "Jednotka hmotnosti", "type": "enumString", "len": 8,
+			"enumCfg": {"cfgItem": "e10.witems.units", "cfgValue": "", "cfgText": "text"}},
+		{"id": "weightNettoCount", "name": "Počet kusů hmotnosti", "type": "int"},
+
 		{"id": "validFrom", "name": "Platné od", "type": "date"},
 		{"id": "validTo", "name": "Platné do", "type": "date"},
 		{"id": "successorItem", "name": "Nahrazující položka", "type": "int", "reference": "e10.witems.items"},
