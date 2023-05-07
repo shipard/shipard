@@ -2,8 +2,8 @@
 
 namespace E10Doc\Base;
 
-use E10\TableViewPanel;
-use \e10\utils, \e10\TableView, \e10\TableForm, \e10\DbTable, \e10\TableViewDetail;
+use \Shipard\Viewer\TableViewPanel;
+use \e10\utils, \Shipard\Viewer\TableView, \Shipard\Form\TableForm, \Shipard\Table\DbTable, \Shipard\Viewer\TableViewDetail;
 
 
 /**

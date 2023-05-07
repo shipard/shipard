@@ -5,16 +5,15 @@ use \e10\FormReport, \e10\str;
 
 
 /**
- * Class ReportWHPlaceStick
- * @package e10doc\base\libs
+ * class ReportWHPlaceStick
  */
 class ReportWHPlaceStick extends FormReport
 {
 	function init ()
 	{
 		$this->reportMode = FormReport::rmLabels;
-		$this->reportId = 'e10doc.base.whplacestick';
-		$this->reportTemplate = 'e10doc.base.whplacestick';
+		$this->reportId = 'reports.modern.e10doc.witems.whplacestick';
+		$this->reportTemplate = 'reports.modern.e10doc.witems.whplacestick';
 
 		$this->mimeType = 'application/x-octet-stream';
 
