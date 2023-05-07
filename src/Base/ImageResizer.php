@@ -163,6 +163,7 @@ class ImageResizer
 		$fileTypes['.odt'] = array ('util' => 'rsvg-convert', 'extraParam' => '-a', 'outputFileParam' => '-o', 'icon' => 'e10-modules/e10/server/icons/default/mime/document.svg');
 		$fileTypes['.jpg'] = array ('util' => 'convert');
 		$fileTypes['.jpeg'] = array ('util' => 'convert');
+		$fileTypes['.webp'] = array ('util' => 'convert');
 		$fileTypes['.png'] = array ('util' => 'convert', 'destFileType' => 'png');
 		$fileTypes['.gif'] = array ('util' => 'convert', 'destFileType' => 'gif');
 		$fileTypes['.tif'] = array ('util' => 'convert');

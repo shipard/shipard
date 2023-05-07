@@ -84,7 +84,7 @@ class UtilsBase
 
 	static function loadAttachments ($app, $ids, $tableId = FALSE)
 	{
-		static $imgFileTypes = array ('pdf', 'jpg', 'jpeg', 'png', 'gif', 'svg');
+		static $imgFileTypes = array ('pdf', 'jpg', 'jpeg', 'webp', 'png', 'gif', 'svg');
 
 		$files = array ();
 		if (count($ids) == 0)
