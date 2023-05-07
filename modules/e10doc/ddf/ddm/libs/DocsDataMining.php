@@ -182,6 +182,9 @@ class DocsDataMining extends \e10doc\ddf\core\libs\Core
 		else
 			$row['quantity'] = 1.0;
 
+		if (isset($r['unit']))
+			$row['unit'] = $r['unit'];
+
 		$priceWithVat = 0;//(isset($il['ClassifiedTaxCategory']['VATCalculationMethod'])) ? intval($il['ClassifiedTaxCategory']['VATCalculationMethod']) : 0;
 		if ($priceWithVat)
 		{
