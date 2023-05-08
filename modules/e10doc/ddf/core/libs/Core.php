@@ -48,8 +48,8 @@ class Core extends \lib\docDataFiles\DocDataFile
 		array_push ($q,	' FROM [e10_base_properties] AS props');
 		array_push ($q,	' LEFT JOIN [e10_persons_persons] AS persons ON props.recid = persons.ndx');
 		array_push ($q,	' WHERE 1');
-		array_push ($q,	' AND [tableid] = %s', 'e10.persons.persons', ' AND [valueString] = %i', $value);
-		array_push ($q,	' AND [group] = %s', 'ids', ' AND property = %s', 'oid');
+		array_push ($q,	' AND [tableid] = %s', 'e10.persons.persons', ' AND [valueString] = %s', $value);
+		array_push ($q,	' AND [group] = %s', $group, ' AND property = %s', $id);
 		array_push ($q, ' AND [persons].docState = %i', 4000);
 
 		$rows = $this->db()->query($q);

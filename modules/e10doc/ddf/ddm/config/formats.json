@@ -11,6 +11,12 @@
   "cz-tmobile": {
     "fn": "T-Mobile"
   },
+  "cz-mouser": {
+    "fn": "Mouser"
+  },
+  "cz-tesla": {
+    "fn": "Tesla"
+  },
   "cz-vodafone": {
     "fn": "Vodafone"
   },

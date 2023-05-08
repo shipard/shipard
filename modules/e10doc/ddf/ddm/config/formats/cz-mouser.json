@@ -1,0 +1,30 @@
+{
+  "id": "1c9uk62se3i9",
+  "signatureRegExp": "VAT# FR 27512466913",
+  "datesFormat": "d-M-y",
+  "formatEngine": "e10doc.ddf.ddm.formatsEngines.DDMFE_MouserCZ",
+  "items": [
+      {
+          "itemType": "date-issue",
+          "searchPrefix": "\\d{6,20}",
+          "prefixIsRegExp": 1,
+          "searchRegExp": "\\s+(\\d{1,2})[\\-](JAN(?:UARY)?|FEB(?:RUARY)?|MAR(?:CH)?|APR(?:IL)?|MAY|JUN(?:E)?|JUL(?:Y)?|AUG(?:UST)?|SEP(?:TEMBER)?|OCT(?:OBER)?|NOV(?:EMBER)?|DEC(?:EMBER)?)[\\-](\\d{2})"
+      },
+      {
+          "itemType": "date-tax",
+          "searchPrefix": "\\d{6,20}",
+          "prefixIsRegExp": 1,
+          "searchRegExp": "\\s+(\\d{1,2})[\\-](JAN(?:UARY)?|FEB(?:RUARY)?|MAR(?:CH)?|APR(?:IL)?|MAY|JUN(?:E)?|JUL(?:Y)?|AUG(?:UST)?|SEP(?:TEMBER)?|OCT(?:OBER)?|NOV(?:EMBER)?|DEC(?:EMBER)?)[\\-](\\d{2})"
+      },
+      {
+          "itemType": "head-vat-id",
+          "searchPrefix": "VAT#",
+          "searchRegExp": "[a-zA-Z]{2}(| )\\d{7,11}([a-zA-Z]+|)"
+      },
+      {
+          "itemType": "payment-symbol1",
+          "searchPrefix": "1000 North Main Street, Mansfield, TX 76063",
+          "searchRegExp": "\\s+\\d{6,20}+"
+      }
+  ]
+}

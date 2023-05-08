@@ -286,6 +286,21 @@ class DocsDataMining extends \e10doc\ddf\core\libs\Core
 				return;
 			}
 		}
+
+		if (isset($this->srcImpData['head']['person']['vatId']))
+		{
+			$vatId = $this->srcImpData['head']['person']['vatId'];
+			$personNdx = $this->searchPerson('ids', 'taxid', $vatId);
+			if ($personNdx)
+			{
+				$this->docHead['person'] = $personNdx;
+
+				if ($personNdx)
+					$this->setInboxPersonFrom($personNdx);
+
+				return;
+			}
+		}
 	}
 
 	protected function valueStr($value, $maxLen)

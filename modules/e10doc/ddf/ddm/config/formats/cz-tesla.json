@@ -1,0 +1,39 @@
+{
+  "id": "18hvhrnr2z9w",
+  "signatureRegExp": "Tesla Czech Republic s.r.o. se sídlem",
+  "datesFormat": "Y/m/d",
+  "items": [
+      {
+          "itemType": "contacts-web"
+      },
+      {
+          "itemType": "date-issue",
+          "searchPrefix": "Datum faktury",
+          "searchRegExp": "\\d{4}[\\/]\\d{1,2}[\\/]\\d{1,2}"
+      },
+      {
+          "itemType": "document-id",
+          "searchPrefix": "Číslo faktury",
+          "searchRegExp": "[a-zA-Z\\d]+([a-zA-Z]+|)+[\\d,\\/,-]+"
+      },
+      {
+          "itemType": "head-company-id",
+          "searchPrefix": "IČ:",
+          "searchRegExp": "\\d{3} \\d{2} \\d{3}"
+      },
+      {
+          "itemType": "head-vat-id",
+          "searchPrefix": "DIČ:"
+      },
+      {
+          "itemType": "money-to-pay",
+          "searchPrefix": "Celková cena.+",
+          "prefixIsRegExp": 1
+      },
+      {
+          "itemType": "payment-symbol1",
+          "searchPrefix": "Číslo faktury",
+          "searchRegExp": "[a-zA-Z\\d]+([a-zA-Z]+|)+[\\d,\\/,-]+"
+      }
+  ]
+}
