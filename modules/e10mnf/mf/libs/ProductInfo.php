@@ -102,11 +102,21 @@ class ProductInfo extends Utility
         'itemFN' => $r['witemFullName'],
         'itemSN' => $r['witemShortName'],
         'pos' => $r['positions'],
-        'item' => [
-          ['text' => $r['witemShortName'], 'docAction' => 'edit', 'table' => 'e10.witems.items', 'pk' => $r['item'], 'class' => 'block'],
-          ['text' => $r['witemFullName'], 'class' => 'e10-small'],
-        ],
       ];
+
+      $item['item'] = [
+        ['text' => $r['witemShortName'], 'docAction' => 'edit', 'table' => 'e10.witems.items', 'pk' => $r['item'], 'class' => ''],
+      ];
+
+      $suppliers = $this->loadItemSuppliers($r['item']);
+      foreach ($suppliers as $sl)
+      {
+        $item['item'][] = $sl;
+      }
+
+      $item['item'][] = ['text' => $r['witemId'], 'class' => 'label label-default pull-right'];
+      $item['item'][] = ['text' => $r['witemFullName'], 'class' => 'e10-small break'];
+
       $item['q'] = $r['quantity'];
 
       $this->itemStockInfo($r['item'], $item);
@@ -171,6 +181,29 @@ class ProductInfo extends Utility
       $dst ['stockPriceAll'] = $r['price'];
       //, 'price' => $r['price'], 'unit' => $this->units[$r['unit']]['shortcut'], 'lastDate' => $r['lastDate']];
     }
+  }
+
+  public function loadItemSuppliers($itemNdx)
+  {
+    $labels = [];
+    $q = [];
+    array_push($q, 'SELECT itemSuppliers.*, persons.fullName AS personName');
+    array_push($q, ' FROM [e10_witems_itemSuppliers] AS itemSuppliers');
+    array_push($q, ' LEFT JOIN [e10_persons_persons] AS persons ON itemSuppliers.supplier = persons.ndx');
+    array_push($q, ' WHERE 1');
+    array_push($q, ' AND itemSuppliers.item = %i', $itemNdx);
+    $rows = $this->db()->query($q);
+    foreach ($rows as $r)
+    {
+      if ($r['url'] === '')
+        continue;
+      $l = ['text' => substr ($r['personName'], 0, 3), 'url' => $r['url'], 'class' => 'e10-small pull-right', '_icon' => 'system/iconLink'];
+      $l['title'] = $r['personName'].': '.$r['itemId'];
+
+      $labels[] = $l;
+    }
+
+    return $labels;
   }
 
   public function run()

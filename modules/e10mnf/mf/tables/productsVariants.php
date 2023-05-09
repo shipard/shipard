@@ -35,6 +35,7 @@ class ViewProductsVariants extends TableView
 	public function init ()
 	{
 		parent::init();
+		$this->linesWidth = 33;
 
 		$this->objectSubType = TableView::vsMain;
 		$this->enableDetailSearch = TRUE;
