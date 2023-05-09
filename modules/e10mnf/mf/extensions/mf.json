@@ -11,7 +11,8 @@
 					"using": {"title": "Použití", "icon": "system/detailUsage", "type": "detail", "class": "e10.witems.ViewDetailUsing", "order": 8000},
 					"analysis": {"title": "Analýza", "icon": "system/detailMovement", "type": "detail", "class": "e10doc.core.ViewDetailItemsAnalysis", "order": 9000}
 				}
-			}
+			},
+			"mfCombo": {"id": "mfCombo", "class": "e10mnf.mf.libs.ViewMFItemsCombo"}
 		}
 	}
 ]

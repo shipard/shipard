@@ -5,7 +5,7 @@
 		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
 		{"id": "product", "name": "id", "type": "int"},
 		{"id": "productVariant", "name": "Varianta produktu", "label": "Varianta", "type": "int", "reference": "e10mnf.mf.productsVariants"},
-		{"id": "item", "name": "Položka", "type": "int", "reference": "e10.witems.items"},
+		{"id": "item", "name": "Položka", "type": "int", "reference": "e10.witems.items", "comboViewer": "mfCombo"},
 		{"id": "quantity", "name": "Množství", "label": "Množ.", "type": "number", "dec": 3, "options": ["saveOnChange"]},
 		{"id": "positions", "name": "Pozice", "type": "string", "len": 80}
 	],

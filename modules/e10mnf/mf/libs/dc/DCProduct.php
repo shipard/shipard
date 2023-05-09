@@ -39,7 +39,7 @@ class DCProduct extends DocumentCard
         [
           'pane' => 'e10-pane e10-pane-table', 'paneTitle' => $paneTitle,
           'type' => 'table', 'table' => $variantItem['tableBOM'], 'header' => $this->productInfo->data['headerBOM'],
-          '__main' => TRUE, 'params' => ['precision' => 0],
+          'main' => TRUE, 'params' => ['precision' => 0],
         ];
 
       $this->addContent('body', $content);
