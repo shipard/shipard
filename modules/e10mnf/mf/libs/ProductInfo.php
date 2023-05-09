@@ -123,6 +123,8 @@ class ProductInfo extends Utility
 
       if (isset($item ['stockState']) && $item ['stockState'] != 0.0)
         $item['price'] = round(($item ['stockPriceAll'] / $item ['stockState']) * $r['quantity'], 3);
+      elseif (isset($item ['buyQuantity']) && $item ['buyQuantity'] !== 0.0)
+        $item['price'] = round(($item ['buyPriceAll'] / $item ['buyQuantity']) * $r['quantity'], 3);
 
       if (isset($item['price']))
         $item['priceS'] = Utils::nf($item['price'], 3);
@@ -164,9 +166,10 @@ class ProductInfo extends Utility
 		$date = utils::today();
 		$fiscalYear = e10utils::todayFiscalYear($this->app, $date);
 
-		$q[] = 'SELECT SUM(quantity) as quantity, SUM(price) as price, MAX(date) as lastDate, item, unit ';
+		$q = [];
+    array_push ($q, 'SELECT SUM(quantity) as quantity, SUM(price) as price, MAX(date) as lastDate, item, unit ');
 		array_push ($q, 'FROM [e10doc_inventory_journal] WHERE [item] = %i', $itemNdx,
-				' AND [fiscalYear] = %i', $fiscalYear /*, ' AND [date] <= %d', $date*/);
+		  		          ' AND [fiscalYear] = %i', $fiscalYear /*, ' AND [date] <= %d', $date*/);
 
 		$warehouse = 1;
 		if ($warehouse)
@@ -179,7 +182,20 @@ class ProductInfo extends Utility
     {
 			$dst ['stockState'] = $r['quantity'];
       $dst ['stockPriceAll'] = $r['price'];
-      //, 'price' => $r['price'], 'unit' => $this->units[$r['unit']]['shortcut'], 'lastDate' => $r['lastDate']];
+    }
+
+		$q = [];
+    array_push ($q, 'SELECT quantity as quantity, price as price');
+		array_push ($q, ' FROM [e10doc_inventory_journal] WHERE [item] = %i', $itemNdx, ' AND moveType = %i', 0);
+    array_push ($q, ' ORDER BY [date] DESC');
+    array_push ($q, ' LIMIT 1');
+
+		$rows = $this->app()->db()->query ($q);
+		forEach ($rows as $r)
+    {
+			$dst ['buyQuantity'] = $r['quantity'];
+      $dst ['buyPriceAll'] = $r['price'];
+      break;
     }
   }
 
