@@ -1,8 +1,23 @@
 {
+	"TS0503B": {
+		"fn": "Zigbee RGB light",
+		"modelID": "TS0503B",
+		"iotKind": "light", "iotSubKind": "lightbulb", "iotOptions": ["br", "ww", "rgb"]
+	},
 	"TS0505B": {
 		"fn": "Zigbee RGB+CCT light",
 		"modelID": "TS0505B",
 		"iotKind": "light", "iotSubKind": "ledPanel", "iotOptions": ["br", "ww", "rgb"]
+	},
+	"TS0505B_1": {
+		"fn": "Zigbee RGB+CCT light",
+		"modelID": "TS0505B_1",
+		"iotKind": "light", "iotSubKind": "lightbulb", "iotOptions": ["br", "ww", "rgb"]
+	},
+	"TS0505B_2": {
+		"fn": "Zigbee RGB+CCT light",
+		"modelID": "TS0505B_2",
+		"iotKind": "light", "iotSubKind": "lightbulb", "iotOptions": ["br", "ww", "rgb"]
 	},
 
 	"TS0011": {
