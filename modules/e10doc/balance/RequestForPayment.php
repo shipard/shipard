@@ -44,98 +44,15 @@ class RequestForPayment extends \e10doc\core\libs\reports\DocReportBase
 
 		parent::loadData();
 
-		$allProperties = $this->app()->cfgItem ('e10.base.properties', []);
-		$this->lang = '';
+		// -- person
+		$this->loadData_MainPerson('person', $this->recData['ndx']);
 
-		// person
-		$tablePersons = $this->app->table ('e10.persons.persons');
-		$this->data ['person'] = $this->table->loadItem ($this->recData ['ndx'], 'e10_persons_persons');
-		$this->data ['person']['lists'] = $tablePersons->loadLists ($this->data ['person']);
-		$this->data ['person']['address'] = $this->data ['person']['lists']['address'][0];
-		$this->lang = $this->data ['person']['language'];
-		// persons country
-		World::setCountryInfo($this->app(), $this->data ['person']['lists']['address'][0]['worldCountry'], $this->data ['person']['address']);
-		if ($this->lang == '' && isset($this->data ['person']['address']['countryLangSC2']))
-			$this->lang = $this->data ['person']['address']['countryLangSC2'];
+		// -- owner
+		$this->loadData_DocumentOwner ();
 
-		if (!in_array($this->lang, ['de', 'en', 'it', 'sk', 'cs']))
-			$this->lang = 'en';
-
-		forEach ($this->data ['person']['lists']['properties'] as $iii)
-		{
-			if ($iii['group'] != 'ids') continue;
-			$name = '';
-			if ($iii['property'] == 'taxid') $name = 'DIČ';
-			else if ($iii['property'] == 'oid') $name = 'IČ';
-			else if ($iii['property'] == 'idcn') $name = 'OP';
-			else if ($iii['property'] == 'birthdate') $name = 'DN';
-			else if ($iii['property'] == 'pid') $name = 'RČ';
-
-			$this->data ['person_identifiers'][] = array ('name'=> $name, 'value' => $iii['value']);
-		}
-
-
-		// owner
-		$ownerNdx = intval($this->app->cfgItem ('options.core.ownerPerson', 0));
-		if ($ownerNdx)
-		{
-			$this->data ['owner'] = $this->table->loadItem ($ownerNdx, 'e10_persons_persons');
-			$this->data ['owner']['lists'] = $tablePersons->loadLists ($this->data ['owner']);
-			$ownerCountry = '';
-			if (isset($this->data ['owner']['lists']['address'][0]))
-			{
-				$this->data ['owner']['address'] = $this->data ['owner']['lists']['address'][0];
-				World::setCountryInfo($this->app(), $this->data ['owner']['lists']['address'][0]['worldCountry'], $this->data ['owner']['address']);
-			}
-			forEach ($this->data ['owner']['lists']['properties'] as $iii)
-			{
-				if ($iii['group'] == 'ids')
-				{
-					$name = '';
-					if ($iii['property'] == 'taxid')
-					{
-						$name = 'DIČ';
-						$this->data ['owner']['vatId'] = $iii['value'];
-						$this->data ['owner']['vatIdCore'] = substr ($iii['value'], 2);
-					}
-					else
-						if ($iii['property'] == 'oid')
-							$name = 'IČ';
-
-					if ($name != '')
-						$this->data ['owner_identifiers'][] = array ('name'=> $name, 'value' => $iii['value']);
-				}
-				if ($iii['group'] == 'contacts')
-				{
-					$name = $allProperties[$iii['property']]['name'];
-					$this->data ['owner_contacts'][] = array ('name'=> $name, 'value' => $iii['value']);
-				}
-			}
-
-			$ownerAtt = \E10\Base\getAttachments ($this->table->app(), 'e10.persons.persons', $ownerNdx, TRUE);
-			foreach ($ownerAtt as $oa)
-			{
-				$this->data ['owner']['logo'][$oa['name']] = $oa;
-				$this->data ['owner']['logo'][$oa['name']]['rfn'] = 'att/'.$oa['path'].$oa['filename'];
-			}
-		}
-
-		// author
+		// -- author
 		$authorNdx = $this->app->user()->data ('id');
-		$this->data ['author'] = $this->table->loadItem ($authorNdx, 'e10_persons_persons');
-		$this->data ['author']['lists'] = $tablePersons->loadLists ($authorNdx);
-
-		$authorAtt = \E10\Base\getAttachments ($this->table->app(), 'e10.persons.persons', $authorNdx, TRUE);
-		$this->data ['author']['signature'] = \E10\searchArray ($authorAtt, 'name', 'podpis');
-
-		if (isset($this->data ['author']['lists']['address'][0]))
-			$this->data ['author']['address'] = $this->data ['author']['lists']['address'][0];
-
-		$this->data['options']['accentColor'] = $this->app()->cfgItem ('options.appearanceDocs.accentColor', '');
-		$this->data['options']['docReportsHeadLogoRight'] = intval($this->app()->cfgItem ('options.appearanceDocs.docReportsHeadLogoPlace', 1));
-		$this->data['options']['docReportsTablesRoundedCorners'] = intval($this->app()->cfgItem ('options.appearanceDocs.docReportsTablesCorners', 1));
-		if ($this->data['options']['accentColor'] === '')
-			$this->data['options']['accentColor'] = '#CFECEC';
+		$this->loadData_Author($authorNdx);
 
 		// -- default bank account
 		$myBANdx = intval($this->app()->cfgItem('options.e10doc-sale.myBankAccount', 0));
