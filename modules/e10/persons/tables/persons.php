@@ -639,6 +639,7 @@ class ViewPersonsBase extends TableView
 	public $addresses = array();
 	protected $loadAddresses = FALSE;
 	protected $searchInProperties = TRUE;
+	protected $searchInBA = 0;
 	protected $showValidity = TRUE;
 	protected $ftsInArchive = TRUE;
 
@@ -649,6 +650,8 @@ class ViewPersonsBase extends TableView
 
 		if ($this->mainGroup)
 			$this->addAddParam ('maingroup', $this->mainGroup);
+
+		$this->searchInBA =	intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
 
 		parent::init();
 	}
@@ -718,6 +721,9 @@ class ViewPersonsBase extends TableView
 
 			if ($this->searchInProperties)
 				array_push ($q, " OR EXISTS (SELECT ndx FROM e10_base_properties WHERE persons.ndx = e10_base_properties.recid AND valueString LIKE %s AND tableid = %s)", '%'.$fts.'%', 'e10.persons.persons');
+
+			if ($this->searchInBA)
+				array_push ($q, " OR EXISTS (SELECT ndx FROM e10_persons_personsBA WHERE persons.ndx = e10_persons_personsBA.person AND bankAccount LIKE %s)", '%'.$fts.'%');
 
 			if ($numItems === 1)
 				array_push ($q, ' OR ([id] LIKE %s)', $fts.'%');
