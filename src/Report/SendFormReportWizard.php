@@ -138,6 +138,7 @@ class SendFormReportWizard extends \Shipard\Form\Wizard
 		$msg->addAttachment($report->fullFileName, $attachmentFileName.'.pdf', 'application/pdf');
 
 		$this->addOtherReports($documentTable, $msg, $report);
+		$report->addMessageAttachments($msg);
 
 		$msg->sendMail();
 		$msg->saveToOutbox();

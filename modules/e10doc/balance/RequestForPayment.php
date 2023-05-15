@@ -5,6 +5,7 @@ namespace E10Doc\Balance;
 use \e10doc\core\libs\E10Utils, \e10\utils;
 use \Shipard\Utils\World;
 use e10doc\core\ShortPaymentDescriptor;
+use \e10\base\libs\UtilsBase;
 
 /**
  * class RequestForPayment
@@ -184,6 +185,7 @@ class RequestForPayment extends \e10doc\core\libs\reports\DocReportBase
 		{
 			$overDueDays = utils::dateDiff ($r['dateDue'], $today);
 			$item = [
+				'docNdx' => $r['docNdx'],
 				'docNumber' => $r['docNumber'],
 				'request' => $r['totalRequest'] - $r['payments'] + $r['totalPayment'], 'curr' => $this->currencies[$r['currency']]['shortcut'],
 				'dateDue' => $r['dateDue'], 's1' => $r['symbol1'], 's2' => $r['symbol2'], 'docTitle' => $r['docTitle'], 'payment' => 0,
@@ -275,6 +277,51 @@ class RequestForPayment extends \e10doc\core\libs\reports\DocReportBase
 		$spayd->createQRCode();
 
 		$this->data ['spayd'] = $spayd;
+	}
+
+	public function addMessageAttachments(\Shipard\Report\MailMessage $msg)
+	{
+		$cnt = 0;
+		foreach ($this->data ['rows'] as $r)
+		{
+			$q = [];
+			array_push($q, 'SELECT * FROM [wkf_core_issues]');
+			array_push($q, ' WHERE 1');
+			array_push($q, ' AND recNdx = %i', $r['docNdx']);
+			array_push($q, ' AND tableNdx = %i', 1078);
+			array_push($q, ' ORDER BY ndx DESC');
+			array_push($q, ' LIMIT 1');
+
+			$outBoxRecs = $this->db()->query($q);
+			foreach ($outBoxRecs as $or)
+			{
+				$attachments = UtilsBase::loadAttachments ($this->app(), [$or['ndx']], 'wkf.core.issues');
+				if (isset($attachments[$or['ndx']]['images']))
+				{
+					$attIdx = 0;
+					foreach ($attachments[$or['ndx']]['images'] as $a)
+					{
+						if (strtolower($a['filetype']) !== 'pdf')
+							continue;
+
+						$attFileName = __APP_DIR__.'/att/'.$a['path'].$a['filename'];
+						$attName = $a['name'];
+						if (!$attIdx)
+							$attName = 'VF'.$r['docNumber'];
+
+						if (!str_ends_with($attName, '.pdf'))
+							$attName .= '.pdf';
+
+						$msg->addAttachment($attFileName, $attName, 'application/pdf');
+						$attIdx++;
+					}
+				}
+			}
+
+			$cnt++;
+			if ($cnt > 10)
+				break;
+		}
 	}
 }
 

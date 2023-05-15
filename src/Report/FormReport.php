@@ -115,4 +115,8 @@ class FormReport extends Report
 		if ($this->pageFooter !== '' && $this->pageHeader === '')
 			$this->pageHeader = ' ';
 	}
+
+	public function addMessageAttachments(\Shipard\Report\MailMessage $msg)
+	{
+	}
 }

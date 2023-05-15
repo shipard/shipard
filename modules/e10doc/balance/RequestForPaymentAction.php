@@ -60,6 +60,7 @@ class RequestForPaymentAction extends DocumentAction
 			$attachmentFileName = 'priloha';
 
 		$msg->addAttachment($report->fullFileName, $attachmentFileName.'.pdf', 'application/pdf');
+		$report->addMessageAttachments($msg);
 
 		$msg->sendMail();
 		$msg->saveToOutbox();
