@@ -3,8 +3,13 @@
 namespace e10doc\invoicesOut\libs;
 
 use e10doc\core\ShortPaymentDescriptor;
+use \e10\base\libs\UtilsBase;
+use \Shipard\Utils\Utils;
 
 
+/**
+ * InvoiceOutReport
+ */
 class InvoiceOutReport extends \e10doc\core\libs\reports\DocReport
 {
 	function init ()
@@ -54,6 +59,35 @@ class InvoiceOutReport extends \e10doc\core\libs\reports\DocReport
 
 		$pdfCreator->setPdfInfo('Title', $this->data['documentName'].' '.$this->recData['docNumber']);
 		$pdfCreator->setPdfInfo('Subject', $this->recData['title']);
+	}
+
+	public function addMessageAttachments(\Shipard\Report\MailMessage $msg)
+	{
+		$sendDocsAttachments = intval($this->app()->cfgItem ('options.experimental.sendDocsAttachments', 0));
+		if (!$sendDocsAttachments)
+			return;
+
+		$attachments = UtilsBase::loadAttachments ($this->app(), [$this->recData['ndx']], 'e10doc.core.heads');
+		if (isset($attachments[$this->recData['ndx']]['images']))
+		{
+			$attIdx = 0;
+			foreach ($attachments[$this->recData['ndx']]['images'] as $a)
+			{
+				if (strtolower($a['filetype']) !== 'pdf')
+					continue;
+
+				$attFileName = __APP_DIR__.'/att/'.$a['path'].$a['filename'];
+				$attName = $a['name'];
+
+				if (!str_ends_with($attName, '.pdf'))
+					$attName .= '.pdf';
+
+				$attName = Utils::safeChars($attName);
+
+				$msg->addAttachment($attFileName, $attName, 'application/pdf');
+				$attIdx++;
+			}
+		}
 	}
 }
 

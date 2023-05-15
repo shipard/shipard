@@ -82,7 +82,7 @@
 	"experimental": {
 		"options": [
 			{"cfgKey": "testAttInDocEditForms", "cfgName": "Testovat přílohy při editaci dokladů", "options": {"0": "Ne","1": "Ano"}},
-			{"cfgKey": "docReportsType", "cfgName": "Vzhled výstupních sestav dokladů", "options": {"default": "Standardní","modern": "Moderní"}}
+			{"cfgKey": "sendDocsAttachments", "cfgName": "Odesílat přílohy dokladů", "options": {"0": "Ne","1": "Ano"}}
 		]
 	}
 }
