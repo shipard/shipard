@@ -4,6 +4,7 @@
 namespace E10Doc\Balance;
 use \e10doc\core\libs\E10Utils, \e10\utils;
 use \Shipard\Utils\World;
+use e10doc\core\ShortPaymentDescriptor;
 
 /**
  * class RequestForPayment
@@ -141,10 +142,14 @@ class RequestForPayment extends \e10doc\core\libs\reports\DocReportBase
 		{
 			$ba = $this->app()->cfgItem('e10doc.bankAccounts.'.$myBANdx, NULL);
 			if ($ba)
+			{
+				$this->data ['payment']['baCfg'] = $ba;
 				$this->data ['payment']['bankAccount'] = $ba['bankAccount'];
+			}
 		}
 
 		$this->loadData_Documents ();
+		$this->createPaymentInfo();
 	}
 
 	public function loadData_Documents ()
@@ -189,7 +194,10 @@ class RequestForPayment extends \e10doc\core\libs\reports\DocReportBase
 			if ($ba)
 				$item['ba'] = $ba['bankAccount'];
 			if (!isset($this->data ['payment']['bankAccount']))
+			{
+				$this->data ['payment']['baCfg'] = $ba;
 				$this->data ['payment']['bankAccount'] = $ba['bankAccount'];
+			}
 
 			if ($r['totalPayment'])
 			{
@@ -223,6 +231,12 @@ class RequestForPayment extends \e10doc\core\libs\reports\DocReportBase
 				'print' => ['restAmount' => utils::nf($rest, 2)]
 				];
 
+			if (count($totals) === 1)
+			{
+				$this->data ['payment']['restAmount'] = $rest;
+				$this->data ['payment']['currency'] = $curr;
+			}
+
 			$this->data ['totals'][] = $sum;
 		}
 
@@ -231,6 +245,36 @@ class RequestForPayment extends \e10doc\core\libs\reports\DocReportBase
 			$this->messageMoney = $this->data ['totals'][0]['restAmount'];
 			$this->messageCurrency = $this->data ['totals'][0]['currency'];
 		}
+	}
+
+	protected function createPaymentInfo()
+	{
+		if (!isset($this->data ['payment']['restAmount']))
+			return;
+
+		$symbol1 = '';
+		$symbol2 = '';
+
+		if (count($this->data ['rows']) === 1)
+		{
+			$symbol1 = $this->data ['rows'][0]['s1'];
+			$symbol2 = $this->data ['rows'][0]['s2'];
+		}
+		else
+		{
+			$symbol1 = '991'.$this->recData['ndx'];
+		}
+
+		$spayd = new ShortPaymentDescriptor($this->app);
+		$spayd->setBankAccount ('CZ', $this->data['payment']['baCfg']['bankAccount'], $this->data['payment']['baCfg']['iban'], $this->data['payment']['baCfg']['swift']);
+		$spayd->setAmount ($this->data ['payment']['restAmount'], $this->data ['payment']['currency']);
+
+		$spayd->setPaymentSymbols ($symbol1, $symbol2);
+
+		$spayd->createString();
+		$spayd->createQRCode();
+
+		$this->data ['spayd'] = $spayd;
 	}
 }
 
