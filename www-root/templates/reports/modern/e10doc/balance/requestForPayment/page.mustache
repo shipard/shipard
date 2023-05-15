@@ -112,9 +112,16 @@
 
 	{{#data.reportTexts.subFooter}}<div class='reportTextFooter'>{{{data.reportTexts.subFooter}}}</div>{{/data.reportTexts.subFooter}}
 	{{^data.reportTexts.subFooter}}
-		<p>{{@dict;Prosíme Vás o co nejrychlejší kontrolu a úhradu dlužných částek}}.</p>
+		<p>{{@dict;Prosíme Vás o co nejrychlejší kontrolu a úhradu dlužných částek na účet}} <b>{{data.payment.bankAccount}}</b>.</p>
 		<p>{{@dict;Děkujeme}}</p>
 	{{/data.reportTexts.subFooter}}
+
+	{{#data.spayd}}
+		<div id='spayd'>
+			<img src="{{spaydQRCodeURL}}"/>
+			{{@dict;QR platba}}
+		</div>
+	{{/data.spayd}}
 
 </body>
 </html>

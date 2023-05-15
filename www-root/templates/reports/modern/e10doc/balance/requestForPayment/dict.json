@@ -359,11 +359,11 @@
     "it": "nell'importo totale di",
     "sk": "v celkovej výške"
   },
-  "Prosíme Vás o co nejrychlejší kontrolu a úhradu dlužných částek":{
-    "de": "Bitte prüfen Sie die fälligen Beträge und zahlen Sie sie so bald wie möglich",
-    "en": "We ask you to check and pay the amount as soon as possible",
-    "it": "Si prega di controllare e pagare gli importi dovuti il prima possibile",
-    "sk": "Prosíme Vás o čo najrýchlejšie kontrolu a úhradu dlžných súm"
+  "Prosíme Vás o co nejrychlejší kontrolu a úhradu dlužných částek na účet":{
+    "de": "Bitte prüfen Sie so bald wie möglich und überweisen Sie die fälligen Beträge auf das Konto",
+    "en": "We ask you to check it as soon as possible and pay the amount to account",
+    "it": "Si prega di controllare il più presto possibile e di pagare gli importi dovuti al conto",
+    "sk": "Prosíme Vás o čo najrýchlejšie kontrolu a úhradu dlžných súm na účet"
   },
   "Děkujeme":{
     "de": "Dankeschön",
@@ -371,11 +371,11 @@
     "it": "Grazie",
     "sk": "Ďakujeme"
   },
-  "Přesný rozpis dlužných částek naleznete v příloze této zprávy. Žádáme Vás zdvořile o kontrolu a provedení úhrady":{
-    "de": "Eine detaillierte Aufschlüsselung der fälligen Beträge findet sich im Anhang zu diesem Bericht. Wir bitten Sie, zu prüfen und zu bezahlen",
+  "Prosíme Vás o kontrolu a provedení úhrady. V přílohách níže naleznete přesný rozpis dlužných částek a faktury.":{
+    "de": "Bitte überprüfen und die Zahlung durchführen. In den Anlagen unten finden Sie eine genaue Aufschlüsselung der geschuldeten Beträge und Rechnungen.",
     "en": "You can find the exact breakdown of the amounts in attachments below. We ask you to check and pay the amount as soon as possible",
-    "it": "La ripartizione dettagliata degli importi dovuti è riportata nell'allegato alla presente relazione. Vi chiediamo gentilmente di controllare ed effettuare il pagamento",
-    "sk": "Presný rozpis dlžných súm nájdete v prílohe k tejto správe. Žiadame Vás zdvorilo o kontrolu a vykonanie úhrady"
+    "it": "Si prega di controllare ed effettuare il pagamento. Per una ripartizione dettagliata degli importi dovuti e delle fatture, consultare gli allegati sottostanti.",
+    "sk": "Prosíme Vás o kontrolu a prevedenie úhrady. V prílohách nižšie nájdete presný rozpis dlžných čiastok a faktúr."
   },
   "upominka": {
     "de": "zahlungsanfrage",
