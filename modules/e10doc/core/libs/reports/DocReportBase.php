@@ -93,12 +93,14 @@ class DocReportBase extends FormReport
 		}
 	}
 
-	function loadData_MainPerson($columnId)
+	function loadData_MainPerson($columnId, $personNdx = 0)
 	{
 		if (!$this->tablePersons)
 			$this->tablePersons = $this->app()->table('e10.persons.persons');
 
-		$personNdx = $this->recData [$columnId];
+		if (!$personNdx)
+			$personNdx = $this->recData [$columnId];
+
 		$this->data [$columnId] = $this->tablePersons->loadItem($personNdx);
 		if ($personNdx)
 		{
@@ -158,12 +160,15 @@ class DocReportBase extends FormReport
 			$this->country = $this->data [$columnId]['address']['countryNameSC2'];
 	}
 
-	function loadData_Author ()
+	function loadData_Author ($authorNdx = 0)
 	{
-		$this->data ['author'] = $this->tablePersons->loadItem($this->recData ['author']);
-		$this->data ['author']['lists'] = $this->tablePersons->loadLists($this->data ['author']);
+		if (!$authorNdx)
+			$authorNdx = $this->recData ['author'];
 
-		$authorAtt = \E10\Base\getAttachments($this->table->app(), 'e10.persons.persons', $this->recData ['author'], TRUE);
+		$this->data ['author'] = $this->tablePersons->loadItem($authorNdx);
+		$this->data ['author']['lists'] = $this->tablePersons->loadLists($authorNdx);
+
+		$authorAtt = \E10\Base\getAttachments($this->table->app(), 'e10.persons.persons', $authorNdx, TRUE);
 		$this->data ['author']['signature'] = Utils::searchArray($authorAtt, 'name', 'podpis');
 		if (isset($this->data ['author']['signature']))
 			$this->data ['author']['signature']['rfn'] = 'att/'.$this->data ['author']['signature']['path'].$this->data ['author']['signature']['filename'];
