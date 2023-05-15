@@ -135,6 +135,15 @@ class RequestForPayment extends \e10doc\core\libs\reports\DocReportBase
 		if ($this->data['options']['accentColor'] === '')
 			$this->data['options']['accentColor'] = '#CFECEC';
 
+		// -- default bank account
+		$myBANdx = intval($this->app()->cfgItem('options.e10doc-sale.myBankAccount', 0));
+		if ($myBANdx)
+		{
+			$ba = $this->app()->cfgItem('e10doc.bankAccounts.'.$myBANdx, NULL);
+			if ($ba)
+				$this->data ['payment']['bankAccount'] = $ba['bankAccount'];
+		}
+
 		$this->loadData_Documents ();
 	}
 
@@ -145,6 +154,7 @@ class RequestForPayment extends \e10doc\core\libs\reports\DocReportBase
 		$dueDate = E10Utils::balanceOverDueDate ($this->app);
 
 		$q[] = 'SELECT heads.docNumber, heads.dateDue, heads.dateDue as docDateDue, heads.ndx as docNdx, heads.docType as docType, heads.title as docTitle,';
+		array_push ($q, ' heads.myBankAccount,');
 		array_push ($q, ' journal.currency as currency, journal.request as totalRequest, journal.symbol1, journal.symbol2, journal.[date] as dateDue,');
 		array_push ($q, ' (SELECT SUM(payment) FROM `e10doc_balance_journal` AS s WHERE s.pairId = journal.pairId AND s.side = 1 AND s.fiscalYear = %i) AS payments, ', $this->fiscalYear);
 		array_push ($q, ' (SELECT SUM(payment) FROM `e10doc_balance_journal` AS s WHERE s.pairId = journal.pairId AND s.side = 1) AS totalPayment');
@@ -174,6 +184,12 @@ class RequestForPayment extends \e10doc\core\libs\reports\DocReportBase
 				'dateDue' => $r['dateDue'], 's1' => $r['symbol1'], 's2' => $r['symbol2'], 'docTitle' => $r['docTitle'], 'payment' => 0,
 				'_options' => ['class' => E10Utils::balanceOverDueClass ($this->app, $overDueDays)]
 			];
+
+			$ba = $this->app()->cfgItem('e10doc.bankAccounts.'.$r['myBankAccount'], NULL);
+			if ($ba)
+				$item['ba'] = $ba['bankAccount'];
+			if (!isset($this->data ['payment']['bankAccount']))
+				$this->data ['payment']['bankAccount'] = $ba['bankAccount'];
 
 			if ($r['totalPayment'])
 			{
