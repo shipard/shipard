@@ -776,7 +776,7 @@ class TableIssues extends DbTable
 				if ($attExist)
 					continue;
 
-				\E10\Base\addAttachments($this->app(), 'wkf.core.issues', $issueNdx, $att['fullFileName'], '', $moveAttachments);
+				\E10\Base\addAttachments($this->app(), 'wkf.core.issues', $issueNdx, $att['fullFileName'], '', $moveAttachments, 0, $att['baseFileName'] ?? '');
 			}
 		}
 
