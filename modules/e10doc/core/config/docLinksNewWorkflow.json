@@ -4,7 +4,15 @@
 			"linkid": "e10docs-inbox", "name": "Došlá pošta", "icon": "system/issueReceivedMail",
 			"sources": [
 				{"table": "wkf.core.issues", "viewer": "wkf.core.viewers.DocsCombo"}
-			]
+			],
+			"listId": "doclinks"
+		},
+		"e10docs-send-atts": {
+			"linkid": "e10docs-send-atts", "name": "Odeslat s přílohami", "icon": "system/iconPaperclip",
+			"sources": [
+				{"table": "e10.base.attachments", "viewer": "e10doc.core.libs.ViewerAttachmentsToSend"}
+			],
+			"listId": "sendAtts"
 		}
 	}
 }

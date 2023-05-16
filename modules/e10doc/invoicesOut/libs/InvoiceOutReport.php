@@ -63,31 +63,28 @@ class InvoiceOutReport extends \e10doc\core\libs\reports\DocReport
 
 	public function addMessageAttachments(\Shipard\Report\MailMessage $msg)
 	{
-		$sendDocsAttachments = intval($this->app()->cfgItem ('options.experimental.sendDocsAttachments', 0));
-		if (!$sendDocsAttachments)
-			return;
+    $q = [];
+    array_push($q, 'SELECT links.*, atts.[fileType], atts.[path], atts.[fileName], atts.[name]');
+		array_push($q, ' FROM [e10_base_doclinks] AS [links]');
+		array_push($q, ' LEFT JOIN [e10_attachments_files] AS [atts] ON [links].dstRecId = [atts].ndx');
+		array_push($q, ' WHERE [links].linkId = %s', 'e10docs-send-atts');
+    array_push($q, ' AND [links].srcTableId = %s', 'e10doc.core.heads', ' AND [links].srcRecId = %i', $this->recData['ndx']);
+		array_push($q, ' ORDER BY [links].ndx');
+    $rows = $this->db()->query($q);
+    foreach ($rows as $r)
+    {
+			$attFileName = __APP_DIR__.'/att/'.$r['path'].$r['fileName'];
+			$attName = $r['name'];
 
-		$attachments = UtilsBase::loadAttachments ($this->app(), [$this->recData['ndx']], 'e10doc.core.heads');
-		if (isset($attachments[$this->recData['ndx']]['images']))
-		{
-			$attIdx = 0;
-			foreach ($attachments[$this->recData['ndx']]['images'] as $a)
-			{
-				if (strtolower($a['filetype']) !== 'pdf')
-					continue;
+			$fileSuffix = '.'.$r['fileType'];
+			if (!str_ends_with($attName, $fileSuffix))
+				$attName .= $fileSuffix;
 
-				$attFileName = __APP_DIR__.'/att/'.$a['path'].$a['filename'];
-				$attName = $a['name'];
+			$attName = Utils::safeChars($attName);
 
-				if (!str_ends_with($attName, '.pdf'))
-					$attName .= '.pdf';
-
-				$attName = Utils::safeChars($attName);
-
-				$msg->addAttachment($attFileName, $attName, 'application/pdf');
-				$attIdx++;
-			}
-		}
+			$mimeType = mime_content_type($attFileName);
+			$msg->addAttachment($attFileName, $attName, $mimeType);
+    }
 	}
 }
 

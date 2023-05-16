@@ -3464,11 +3464,19 @@ class FormHeads extends TableForm
 
 	protected function addRecapitulation ()
 	{
+		$sendDocsAttachments = intval($this->app()->cfgItem ('options.experimental.sendDocsAttachments', 0));
+
 		$docType = $this->app()->cfgItem ('e10.docs.types.' . $this->recData ['docType'], FALSE);
 
 		$this->layoutOpen (TableForm::ltGrid);
 			$this->addColumnInput ("title", TableForm::coColW12);
 			$this->addList ('doclinks', '', TableForm::loAddToFormLayout|TableForm::coColW12);
+
+			if ($sendDocsAttachments)
+			{
+				if ($this->recData ['docType'] === 'invno')
+					$this->addList ('sendAtts', '', TableForm::loAddToFormLayout|TableForm::coColW12);
+			}
 			$this->addList ('clsf', '', TableForm::loAddToFormLayout|TableForm::coColW12);
 		$this->layoutClose ();
 
@@ -4099,7 +4107,8 @@ class FormHeads extends TableForm
 			$cp = [
 				'docType' => strval ($recData['docType']),
 				'srcCurrency' => $recData['homeCurrency'], 'dstCurrency' => $recData['currency'],
-				'dateAccounting' => utils::createDateTime ($recData['dateAccounting'])->format('Y-m-d')
+				'dateAccounting' => utils::createDateTime ($recData['dateAccounting'])->format('Y-m-d'),
+				'srcDocNdx' => $recData['ndx'],
 			];
 			return $cp;
 		}
