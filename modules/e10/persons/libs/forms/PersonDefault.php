@@ -168,6 +168,8 @@ class PersonDefault extends TableForm
 						}
 					}
 					$this->addColumnInput ('id');
+					$this->addSeparator(self::coH4);
+					$this->addColumnInput ('optSendDocsAttsUnited');
 				$this->closeTab ();
 
 				if ($this->readOnly)
