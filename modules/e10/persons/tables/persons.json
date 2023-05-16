@@ -37,6 +37,8 @@
 		{"id": "optBuyItemsImport", "name": "Automaticky importovat Položky", "type": "logical"},
 		{"id": "optBuyItemsImportItemType", "name": "Typ položky", "type": "int", "reference": "e10.witems.itemtypes"},
 
+		{"id": "optSendDocsAttsUnited", "name": "Přílohy dokladů odesílat v PDF dokladu", "type": "logical"},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
   ],

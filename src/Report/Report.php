@@ -140,6 +140,7 @@ class Report extends \Shipard\Base\BaseObject
 			$pdfCreator = new \lib\pdf\PdfCreator($this->app());
 			$pdfCreator->setReport($this);
 			$this->addAttachments($pdfCreator);
+			$this->addFilesToAppend($pdfCreator);
 
 			$ownerName = $this->app->cfgItem ('options.core.ownerFullName', '');
 			if ($ownerName !== '')
@@ -184,6 +185,10 @@ class Report extends \Shipard\Base\BaseObject
 	}
 
 	public function addAttachments(\lib\pdf\PdfCreator $pdfCreator)
+	{
+	}
+
+	public function addFilesToAppend(\lib\pdf\PdfCreator $pdfCreator)
 	{
 	}
 

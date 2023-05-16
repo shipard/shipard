@@ -20,7 +20,8 @@ class PdfCreator extends Utility
 		'paperMargin' => '1cm',
 	];
 	var $pdfAttachments = [];
-	var $pdfInfo = ['/Producer' => 'shipard.cz'];
+	var $filesToAppend = [];
+	var $pdfInfo = ['/Producer' => 'shipard.org'];
 	var $optsFileName = '';
 
 
@@ -92,8 +93,6 @@ class PdfCreator extends Utility
 			exec($cmd);
 
 			$this->finalize();
-
-			$this->finalize();
 		}
 		elseif ($fileExt === '.fo')
 		{
@@ -138,8 +137,15 @@ class PdfCreator extends Utility
 		$this->pdfAttachments[] = $a;
 	}
 
+	public function addFileToAppend ($srcFullFileName)
+	{
+		$this->filesToAppend[] = $srcFullFileName;
+	}
+
 	public function finalize()
 	{
+		$this->appendFiles();
+
 		$cmd = __SHPD_ROOT_DIR__.'src/_deprecated/lib/pdf/pdfFinalizer.py '.$this->optsFileName.' > '.substr($this->srcFileName, 0, -5) . '.fin.log' . ' 2>&1';
 		exec($cmd);
 
@@ -149,5 +155,26 @@ class PdfCreator extends Utility
 			rename($this->dstFileName, $this->dstFileName.'.original.pdf');
 			rename($ffn, $this->dstFileName);
 		}
+	}
+
+	protected function appendFiles()
+	{
+		if (!count($this->filesToAppend))
+			return;
+
+		$ffn = $this->dstFileName.'.beforeAppend.pdf';
+		rename($this->dstFileName, $ffn);
+
+		$cmd = 'pdfunite ';
+		$cmd .= '"'.$ffn.'" ';
+
+		foreach ($this->filesToAppend as $oneFileName)
+		{
+			$cmd .= "\"{$oneFileName}\" ";
+		}
+		$cmd .= "\"{$this->dstFileName}\"";
+		exec ($cmd);
+
+		unlink($ffn);
 	}
 }

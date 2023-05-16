@@ -171,7 +171,9 @@ class PersonNew extends TableForm
 							$this->addSeparator(self::coH4);
 							$this->addColumnInput ('optBuyItemsImport');
 							$this->addColumnInput ('optBuyItemsImportItemType');
+							$this->addSeparator(self::coH4);
 						}
+						$this->addColumnInput ('optSendDocsAttsUnited');
 					}
 				$this->closeTab ();
 
