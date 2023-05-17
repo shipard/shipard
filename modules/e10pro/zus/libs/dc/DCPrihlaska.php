@@ -15,6 +15,9 @@ class DCPrihlaska extends \Shipard\Base\DocumentCard
     $obor = $this->app()->loadItem($this->recData['svpObor'], 'e10pro.zus.obory');
     $oddeleni = $this->app()->loadItem($this->recData['svpOddeleni'], 'e10pro.zus.oddeleni');
 
+    $pidLabels = [['text' => $this->recData['rodneCislo'], 'class' => '']];
+    $existedStudentNdx = $this->checkPID($this->recData['rodneCislo'], $pidLabels);
+
     $t = [];
 
     $studentInfo = [];
@@ -26,12 +29,24 @@ class DCPrihlaska extends \Shipard\Base\DocumentCard
       $studentInfo [] = ['text' => $this->recData['lastNameS'].' '.$this->recData['firstNameS'], 'class' => 'block'];
       if ($testNewPersons)
       {
-        $studentInfo [] = [
-          'type' => 'action', 'action' => 'addwizard',
-          'text' => 'Vytvořit', 'data-class' => 'e10pro.zus.libs.WizardGenerateFromEntries',
-          'icon' => 'cmnbkpRegenerateOpenedPeriod',
-          'class' => 'pull-right'
-        ];
+        if (!$existedStudentNdx)
+        {
+          $studentInfo [] = [
+            'type' => 'action', 'action' => 'addwizard',
+            'text' => 'Vytvořit', 'data-class' => 'e10pro.zus.libs.WizardGenerateFromEntries',
+            'icon' => 'cmnbkpRegenerateOpenedPeriod',
+            'class' => 'pull-right'
+          ];
+        }
+        else
+        {
+          $studentInfo [] = [
+            'type' => 'action', 'action' => 'addwizard',
+            'text' => 'Student existuje, propojit', 'data-class' => 'e10pro.zus.libs.WizardLinkEntryToStudent',
+            'icon' => 'cmnbkpRegenerateOpenedPeriod',
+            'class' => 'pull-right'
+          ];
+        }
       }
     }
     else
@@ -47,7 +62,7 @@ class DCPrihlaska extends \Shipard\Base\DocumentCard
     $t[] = ['t' => 'Student', 'v' => $studentInfo];
 
     $t[] = ['t' => 'Datum narození', 'v' => Utils::datef($this->recData['datumNarozeni'])];
-    $t[] = ['t' => 'Rodné číslo', 'v' => $this->recData['rodneCislo']];
+    $t[] = ['t' => 'Rodné číslo', 'v' => $pidLabels];
     $t[] = ['t' => 'Bydliště', 'v' => $this->recData['street'].', '.$this->recData['city'].', '.$this->recData['zipcode']];
     $t[] = ['t' => 'Obor', 'v' => $obor['nazev']];
     $t[] = ['t' => 'Studijní zaměření', 'v' => $oddeleni['nazev']];
@@ -82,6 +97,34 @@ class DCPrihlaska extends \Shipard\Base\DocumentCard
 
 		$this->addContent ('body', ['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'header' => $h, 'table' => $t,
 				'params' => ['hideHeader' => 1, 'forceTableClass' => 'properties fullWidth']]);
+  }
+
+  protected function checkPID($pid, &$labels)
+  {
+    $studentNdx = 0;
+
+		$q = [];
+		array_push($q, 'SELECT props.*, persons.fullName AS fullNameS');
+		array_push($q, ' FROM e10_base_properties AS props');
+		array_push($q, ' LEFT JOIN e10_persons_persons AS persons ON props.recid = persons.ndx');
+		array_push($q, ' WHERE 1');
+		array_push($q, ' AND props.[group] = %s', 'ids');
+		array_push($q, ' AND props.[property] = %s', 'pid');
+		array_push($q, ' AND props.[tableid] = %s', 'e10.persons.persons');
+    array_push($q, ' AND props.[valueString] = %s', $pid);
+
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+      $labels[] = [
+        'text' => $r['fullNameS'], 'class' => 'pull-right', 'icon' => 'system/iconUser',
+        'docAction' => 'edit', 'pk' => $r['recid'], 'table' => 'e10.persons.persons'
+      ];
+
+      $studentNdx = $r['recid'];
+    }
+
+    return $studentNdx;
   }
 
   public function createContent ()

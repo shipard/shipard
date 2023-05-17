@@ -340,6 +340,51 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		}
 	}
 
+	public function repairEntries()
+	{
+		$q = [];
+		array_push($q, 'SELECT * FROM e10pro_zus_prihlasky');
+		array_push($q, ' WHERE 1');
+
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$pid = $r ['rodneCislo'];
+			if (strlen($pid) === 10)
+			{
+				echo $r['fullNameS'].': '.$pid;
+				$pid = substr($r ['rodneCislo'], 0, 6).'/'.substr($r['rodneCislo'], 6);
+				echo ' --> '.$pid."\n";
+				$this->db()->query('UPDATE e10pro_zus_prihlasky SET rodneCislo = %s', $pid, ' WHERE ndx = %i', $r['ndx']);
+			}
+		}
+	}
+
+	public function repairPIDs()
+	{
+		$q = [];
+		array_push($q, 'SELECT props.*, persons.fullName AS fullNameS');
+		array_push($q, ' FROM e10_base_properties AS props');
+		array_push($q, ' LEFT JOIN e10_persons_persons AS persons ON props.recid = persons.ndx');
+		array_push($q, ' WHERE 1');
+		array_push($q, ' AND props.[group] = %s', 'ids');
+		array_push($q, ' AND props.[property] = %s', 'pid');
+		array_push($q, ' AND props.[tableid] = %s', 'e10.persons.persons');
+
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$pid = $r ['valueString'];
+			if (strlen($pid) === 10 && !strchr($r ['valueString'], '/'))
+			{
+				echo $r['fullNameS'].': '.$pid;
+				$pid = substr($r ['valueString'], 0, 6).'/'.substr($r['valueString'], 6);
+				echo ' --> '.$pid./*' -> '.json_encode($r->toArray()).*/"\n";
+				$this->db()->query('UPDATE e10_base_properties SET valueString = %s', $pid, ' WHERE ndx = %i', $r['ndx']);
+			}
+		}
+	}
+
 	public function onCliAction ($actionId)
 	{
 		switch ($actionId)
@@ -349,6 +394,8 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'repair-fees': return $this->repairFees();
 			case 'repair-invoices': return $this->repairInvoices();
 			case 'import-contacts': return $this->importContacts();
+			case 'repair-entries': return $this->repairEntries();
+			case 'repair-pids': return $this->repairPIDs();
 		}
 
 		parent::onCliAction($actionId);
