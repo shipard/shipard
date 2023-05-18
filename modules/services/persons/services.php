@@ -38,6 +38,21 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		return TRUE;
 	}
 
+	public function cliDailyImportCZ()
+	{
+		$fileName = $this->app->arg('file');
+		if (!$fileName)
+		{
+			echo "Param `--file` not found.\n";
+			return FALSE;
+		}
+
+		$ip = new \services\persons\libs\cz\InitialImportPersonsCZ($this->app);
+		$ip->dailyImport($fileName);
+
+		return TRUE;
+	}
+
 	public function cliOnlinePersonRegsDownload ()
 	{
 		$e = new \services\persons\libs\OnlinePersonRegsDownloadService($this->app);
@@ -112,6 +127,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		switch ($actionId)
 		{
 			case 'initial-import-cz': return $this->cliInitialImportCZ();
+			case 'daily-import-cz': return $this->cliDailyImportCZ();
 			case 'online-person-regs-download': return $this->cliOnlinePersonRegsDownload();
 			case 'person-regs-import': return $this->cliPersonRegsImport();
 			case 'person-refresh': return $this->cliPersonRefresh();

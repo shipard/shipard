@@ -20,9 +20,9 @@ class InitialImportPersonsCZ extends InitialImportPersons
 		ini_set('memory_limit', '1024M');
 		$archive = new \PharData($archiveFileName);
 
-		if ($file = fopen($fn, "r")) 
+		if ($file = fopen($fn, "r"))
 		{
-			while(!feof($file)) 
+			while(!feof($file))
 			{
 				$line = fgets($file);
 				//echo (trim($line)."\n");
@@ -49,7 +49,7 @@ class InitialImportPersonsCZ extends InitialImportPersons
 
 				if (!is_readable($xmlTarFileName))
 					continue;
-					
+
 				$data = file_get_contents($xmlTarFileName);
 
 				if (!$this->importOnePersonARES($data, $oid))
@@ -82,14 +82,17 @@ class InitialImportPersonsCZ extends InitialImportPersons
 		$onePerson = new \services\persons\libs\cz\OnePersonARES($this->app);
 		$onePerson->setData($xmlString);
 		if (!$onePerson->parse())
-			return FALSE;
-
+		{
+			echo "ERROR1: ========== parse failed ==========\n";
+			echo $xmlString."\n\n";
+			return 0;
+		}
 		if ($onePerson->person['base']['oid'] === '')
 			$onePerson->person['base']['oid'] = $oid;
 
-		$this->savePerson($onePerson->person, $xmlString, 1);
+		$newPersonNdx = $this->savePerson($onePerson->person, $xmlString, 1);
 
-		return TRUE;
+		return $newPersonNdx;
 	}
 
 	public function initialImportRES()
@@ -99,14 +102,14 @@ class InitialImportPersonsCZ extends InitialImportPersons
 		$fn = __APP_DIR__.'/res/res_data.csv';
 		$cnt = 0;
 
-		if ($file = fopen($fn, "r")) 
+		if ($file = fopen($fn, "r"))
 		{
-			while(!feof($file)) 
+			while(!feof($file))
 			{
 				$line = fgets($file);
 				if ($line === '')
 					continue;
-				if ($cnt === 0)	
+				if ($cnt === 0)
 				{
 					$cnt = 1;
 					continue;
@@ -142,7 +145,7 @@ class InitialImportPersonsCZ extends InitialImportPersons
 	}
 
 	public function importOnePersonRES($csvString, $oid)
-	{	
+	{
 		$onePerson = new \services\persons\libs\cz\OnePersonRES($this->app);
 		$onePerson->setData($csvString);
 		if (!$onePerson->parse())
@@ -165,7 +168,7 @@ class InitialImportPersonsCZ extends InitialImportPersons
 		array_push($qe, 'SELECT * FROM [services_persons_persons]');
 		array_push($qe, ' WHERE [oid] = %s', $person['base']['oid']);
 		array_push($qe, ' AND [country] = %i', $person['base']['country']);
-		
+
 		$exist = $this->db()->query($qe)->fetch();
 		$now = new \DateTime();
 		if ($exist)
@@ -210,7 +213,7 @@ class InitialImportPersonsCZ extends InitialImportPersons
 			// -- insert id
 			$insertId = [
 				'person' => $personNdx,
-				'idType' => 2, 
+				'idType' => 2,
 				'id' => $person['base']['oid']
 			];
 			$this->db()->query('INSERT INTO [services_persons_ids]', $insertId);
@@ -220,13 +223,13 @@ class InitialImportPersonsCZ extends InitialImportPersons
 		{
 			$person['address']['addressId'] = 'P'.$person['base']['oid'];
 			$this->saveAddress($personNdx, $person['address']);
-		}	
+		}
 
 		$insert = [
-			'person' => $personNdx, 
-			'regType' => $regType, 
-			'subId' => $person['base']['oid'], 
-			'srcData' => $srcData, 
+			'person' => $personNdx,
+			'regType' => $regType,
+			'subId' => $person['base']['oid'],
+			'srcData' => $srcData,
 			'timeUpdated' => new \DateTime(),
 			'srcDataCheckSum' => sha1($srcData),
 			'imported' => 1,
@@ -235,6 +238,8 @@ class InitialImportPersonsCZ extends InitialImportPersons
 		$this->db()->query ('INSERT INTO [services_persons_regsData]', $insert);
 
 		$this->db()->commit();
+
+		return $personNdx;
 	}
 
 	function checkName ($name)
@@ -253,7 +258,7 @@ class InitialImportPersonsCZ extends InitialImportPersons
 
 		// -- check words with spaces
 		$newString = '';
-		
+
 		$wp = mb_str_split($s, 1, 'UTF-8');
 		$pos = 0;
 		$len = count($wp);
@@ -272,7 +277,7 @@ class InitialImportPersonsCZ extends InitialImportPersons
 					continue;
 				}
 			}
-	
+
 			$disableSpaceCheck = 1;
 			$newString .= $wp[$pos];
 			$pos++;
@@ -290,7 +295,7 @@ class InitialImportPersonsCZ extends InitialImportPersons
 		array_push($qe, 'SELECT * FROM [services_persons_address]');
 		array_push($qe, ' WHERE [person] = %i', $personNdx);
 		array_push($qe, ' AND [type] = %i', $address['type']);
-		
+
 		$exist = $this->db()->query($qe)->fetch();
 		$now = new \DateTime();
 		if ($exist)
@@ -311,6 +316,74 @@ class InitialImportPersonsCZ extends InitialImportPersons
 	{
 		$this->initialImportARES();
 		$this->initialImportRES();
+	}
+
+	public function dailyImport($fileName)
+	{
+		$idsStr = file_get_contents($fileName);
+		if (!$idsStr)
+			return;
+
+		$ids = preg_split("/\\r\\n|\\r|\\n/", $idsStr);
+		$cntRefreshed = 0;
+
+		foreach ($ids as $id)
+		{
+			if (trim($id) === '')
+				continue;
+
+			$personNdx = 0;
+			$count = 0;
+
+			$exist = $this->db()->query('SELECT * FROM [services_persons_persons] WHERE [country] = %i', 60, ' AND [oid] = %s', $id);
+			foreach ($exist as $e)
+			{
+				//echo $e['fullName']."; ";
+				$personNdx = $e['ndx'];
+				$count++;
+			}
+
+			if ($count === 0)
+			{
+				echo $id.'; NEW';
+				$downloadUrl = 'https://wwwinfo.mfcr.cz/cgi-bin/ares/darv_vreo.cgi?ico='.$id;
+				$xmlString = @file_get_contents ($downloadUrl);
+				if (!$xmlString)
+				{
+					echo "DOWNLOAD ERROR!!!\n";
+					continue;
+				}
+
+				//echo $xmlString."\n-------\n";
+
+				$newPersonNdx = $this->importOnePersonARES($xmlString, $id);
+				if ($newPersonNdx)
+				{
+					//echo "NEW PERSON NDX: `$newPersonNdx`\n";
+					$e = new \services\persons\libs\PersonData($this->app());
+					$e->refreshImport(intval($newPersonNdx));
+				}
+				echo "\n";
+
+				break;
+			}
+
+			if ($count === 1)
+			{
+				echo $id.'; UPDATE';
+				$e = new \services\persons\libs\PersonData($this->app());
+				$e->refreshImport(intval($personNdx));
+
+				echo "\n";
+
+				$cntRefreshed++;
+
+				//if ($cntRefreshed > 10)
+				//	break;
+
+				sleep(1);
+			}
+		}
 	}
 }
 
