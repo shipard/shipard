@@ -281,6 +281,14 @@ class PersonData extends \services\persons\libs\CoreObject
 		if (count($update))
 		{
 			$this->db()->query('UPDATE [services_persons_persons] SET ', $update, ' WHERE [ndx] = %i', $this->personNdx);
+
+			$personData = $this->app()->loadItem($this->personNdx, 'services.persons.persons');
+			if ($personData)
+			{
+				if (!Utils::dateIsBlank($personData['validTo']) && $personData['valid'])
+					$this->db()->query('UPDATE [services_persons_persons] SET [valid] = %i', 0, ' WHERE [ndx] = %i', $this->personNdx);
+			}
+
 			$this->logRecord->addItem('update-person-core', '', ['update' => ['tableId' => 'services.persons.persons', 'changes' => $changes]]);
 		}
 	}

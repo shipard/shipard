@@ -33,7 +33,7 @@ class ImportPersonFromRegs extends \services\persons\libs\CoreObject
     if (isset($this->regsData[$regType][$subId]))
       return $this->regsData[$regType][$subId];
 
-    error_log("Invalid regData for regType `$regType` and subId `$subId`");
+    //error_log("Invalid regData for regType `$regType` and subId `$subId`");
 
     //print_r($this->regsData);
 

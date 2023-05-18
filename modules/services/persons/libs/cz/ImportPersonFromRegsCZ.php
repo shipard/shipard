@@ -92,6 +92,16 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
         if ($this->useVAT === self::vatStandard)
           $corePersonInfo['vatID'] = strval($el->DIC);
 
+        if (isset($el->DV))
+        {
+          $corePersonInfo['validFrom'] = strval($el->DV);
+        }
+
+        if (isset($el->DZ))
+        {
+          $corePersonInfo['validTo'] = strval($el->DZ);
+        }
+
         $legalTypeStr = strval($el->PF->KPF);
         $legalTypeRecData = $this->db()->query('SELECT * FROM [e10_base_nomencItems] WHERE [id] = %s', 'cz-tobe-'.$legalTypeStr)->fetch();
         if ($legalTypeRecData)

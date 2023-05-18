@@ -23,7 +23,7 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
     $logRecord = $this->log->newLogRecord();
     $logRecord->init(LogRecord::liDownloadRegisterData, 'services.persons.persons', $this->personNdx);
 
-		$downloadUrl = 'https://wwwinfo.mfcr.cz/cgi-bin/ares/darv_bas.cgi?ico='.$this->personData->personId;
+		$downloadUrl = 'https://wwwinfo.mfcr.cz/cgi-bin/ares/darv_bas.cgi?ico='.$this->personData->personId.'&aktivni=false';
     $logRecord->addItem('ares-download-init', '', ['url' => $downloadUrl]);
 
     $file = @file_get_contents ($downloadUrl);
