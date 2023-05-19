@@ -267,6 +267,9 @@ class PersonData extends \services\persons\libs\CoreObject
 
 	public function saveChanges_Core (PersonData $changedPerson)
 	{
+		if (!isset($changedPerson->data['person']))
+			return;
+
 		$update = [];
 		$changes = [];
 		$this->recordUpdate($this->data['person'], $changedPerson->data['person'], $update, $changes);
@@ -295,6 +298,9 @@ class PersonData extends \services\persons\libs\CoreObject
 
 	function saveChanges_Ids (PersonData $changedPerson)
 	{
+		if (!isset($changedPerson->data['ids']))
+			return;
+
 		$usedIdNdxs = [];
 
 		foreach ($changedPerson->data['ids'] as $oneId)
@@ -333,6 +339,9 @@ class PersonData extends \services\persons\libs\CoreObject
 
 	function saveChanges_Address (PersonData $changedPerson)
 	{
+		if (!isset($changedPerson->data['address']))
+			return;
+
 		$usedAddrNdxs = [];
 
 		foreach ($changedPerson->data['address'] as $oneAddr)
