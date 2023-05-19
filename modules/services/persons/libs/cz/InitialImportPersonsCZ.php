@@ -363,18 +363,14 @@ class InitialImportPersonsCZ extends InitialImportPersons
 					$e = new \services\persons\libs\PersonData($this->app());
 					$e->refreshImport(intval($newPersonNdx));
 				}
+
 				echo "\n";
-
-				break;
 			}
-
-			if ($count === 1)
+			elseif ($count === 1)
 			{
 				echo $id.'; UPDATE';
 				$e = new \services\persons\libs\PersonData($this->app());
 				$e->refreshImport(intval($personNdx));
-
-				echo "\n";
 
 				$cntRefreshed++;
 
@@ -382,6 +378,13 @@ class InitialImportPersonsCZ extends InitialImportPersons
 				//	break;
 
 				sleep(1);
+
+				echo "\n";
+			}
+			else
+			{
+				echo $id.'; MULTI!!!';
+				echo "\n";
 			}
 		}
 	}
