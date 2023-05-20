@@ -41,7 +41,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
     $dest['street'] = trim($street);
     $dest['city'] = trim($data['city'] ?? '');
     $dest['zipcode']= trim($data['zipcode'] ?? '');
-    $dest['specification'] = trim($data['specification'] ?? '');
+    $dest['specification'] = Str::upToLen(trim($data['specification'] ?? ''), 160);
 
     $dest['country'] = $data['country'] ?? 60; // CZ
 
@@ -362,7 +362,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
               $specification .= $vpzItem['UmisteniProvozovny'];
             }
             if ($specification !== '')
-              $this->personDataImport->data	['address'][$addressId]['specification'] = $specification;
+              $this->personDataImport->data	['address'][$addressId]['specification'] = Str::upToLen($specification, 160);
           }
         }
       }
@@ -391,7 +391,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
                 $specification .= $vpzItem['UmisteniProvozovny'];
               }
               if ($specification !== '')
-                $this->personDataImport->data	['address'][$addressId]['specification'] = $specification;
+                $this->personDataImport->data	['address'][$addressId]['specification'] = Str::upToLen($specification, 160);
             }
             elseif (isset($vpzItem[0]['IdentifikacniCisloProvozovny']))
             {
