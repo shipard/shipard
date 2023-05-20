@@ -103,7 +103,7 @@ class RequestForPayment extends \e10doc\core\libs\reports\DocReportBase
 			$overDueDays = utils::dateDiff ($r['dateDue'], $today);
 			$item = [
 				'docNdx' => $r['docNdx'],
-				'docNumber' => $r['docNumber'],
+				'docNumber' => $r['docNumber'], 'docType' => $r['docType'],
 				'request' => $r['totalRequest'] - $r['payments'] + $r['totalPayment'], 'curr' => $this->currencies[$r['currency']]['shortcut'],
 				'dateDue' => $r['dateDue'], 's1' => $r['symbol1'], 's2' => $r['symbol2'], 'docTitle' => $r['docTitle'], 'payment' => 0,
 				'_options' => ['class' => E10Utils::balanceOverDueClass ($this->app, $overDueDays)]
@@ -201,10 +201,24 @@ class RequestForPayment extends \e10doc\core\libs\reports\DocReportBase
 		$cnt = 0;
 		foreach ($this->data ['rows'] as $r)
 		{
+			$docNdx = $r['docNdx'];
+			$docNumber = $r['docNumber'];
+
+			if ($r['docType'] === 'cmnbkp')
+			{
+				$originalDoc = $this->app->db()->query ('SELECT * FROM [e10doc_core_heads] WHERE [docType] = %s', 'invno',
+					'AND symbol1 = %s', $r['s1'], ' AND symbol2 = %s', $r['s2'], ' AND person = %i', $this->recData['ndx'])->fetch();
+				if ($originalDoc)
+				{
+					$docNdx = $originalDoc['ndx'];
+					$docNumber = $originalDoc['docNumber'];
+				}
+			}
+
 			$q = [];
 			array_push($q, 'SELECT * FROM [wkf_core_issues]');
 			array_push($q, ' WHERE 1');
-			array_push($q, ' AND recNdx = %i', $r['docNdx']);
+			array_push($q, ' AND recNdx = %i', $docNdx);
 			array_push($q, ' AND tableNdx = %i', 1078);
 			array_push($q, ' ORDER BY ndx DESC');
 			array_push($q, ' LIMIT 1');
@@ -224,7 +238,7 @@ class RequestForPayment extends \e10doc\core\libs\reports\DocReportBase
 						$attFileName = __APP_DIR__.'/att/'.$a['path'].$a['filename'];
 						$attName = $a['name'];
 						if (!$attIdx)
-							$attName = 'VF'.$r['docNumber'];
+							$attName = 'VF'.$docNumber;
 
 						if (!str_ends_with($attName, '.pdf'))
 							$attName .= '.pdf';
