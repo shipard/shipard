@@ -131,6 +131,8 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			return;
 		}
 
+		ini_set('memory_limit', '1024M');
+
 		$ig = new \e10pro\canteen\libs\InvoicesGenerator($this->app);
 		$ig->year = $year;
 		$ig->month = $month;

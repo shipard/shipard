@@ -1,13 +1,13 @@
 <?php
 
 namespace e10pro\canteen\reports;
-use \e10\utils, e10doc\core\e10utils, E10\uiutils;
+use \Shipard\Utils\Utils, E10\uiutils;
 
 
 /**
- * Class Persons
+ * class Persons
  */
-class Persons extends \e10\GlobalReport
+class Persons extends \Shipard\Report\GlobalReport
 {
 	var $canteenNdx = 0;
 	var $canteenCfg = NULL;
@@ -46,10 +46,10 @@ class Persons extends \e10\GlobalReport
 			$this->invoicing = 1;
 
 		if (!$this->periodBegin)
-			$this->periodBegin = utils::createDateTime($this->reportParams ['calendarMonth']['values'][$this->reportParams ['calendarMonth']['value']]['dateBegin']);
+			$this->periodBegin = Utils::createDateTime($this->reportParams ['calendarMonth']['values'][$this->reportParams ['calendarMonth']['value']]['dateBegin']);
 
 		if (!$this->periodEnd)
-			$this->periodEnd = utils::createDateTime($this->reportParams ['calendarMonth']['values'][$this->reportParams ['calendarMonth']['value']]['dateEnd']);
+			$this->periodEnd = Utils::createDateTime($this->reportParams ['calendarMonth']['values'][$this->reportParams ['calendarMonth']['value']]['dateEnd']);
 
 		$this->setInfo('icon', 'reportPersonsBilling');
 		$this->setInfo('param', 'Vyúčtování stravy za období', $this->periodBegin->format('Y / m'));
@@ -93,7 +93,7 @@ class Persons extends \e10\GlobalReport
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
-			if (utils::dateIsBlank($r['date']))
+			if (Utils::dateIsBlank($r['date']))
 				continue;
 			$addFoods = json_decode($r['addFoods'], TRUE);
 			if (!$addFoods)
@@ -251,8 +251,8 @@ class Persons extends \e10\GlobalReport
 				foreach ($onePerson['days'] as $dateId => $day)
 				{
 					$anyDayFood = 0;
-					$dayDate = utils::createDateTime($dateId);
-					$item = ['dateId' => utils::datef($dayDate, '%d'), 'total' => $day['total']];
+					$dayDate = Utils::createDateTime($dateId);
+					$item = ['dateId' => Utils::datef($dayDate, '%d'), 'total' => $day['total']];
 
 					if (isset($this->peoplesData[$rid][$personNdx]['days'][$dateId]['main']))
 					{
@@ -260,7 +260,7 @@ class Persons extends \e10\GlobalReport
 						{
 							//if ($i['price'] === 0.0)
 							//	continue;
-							$item['main'][] = ['text' => utils::nf($i['price'], 2), 'class' => 'block'];
+							$item['main'][] = ['text' => Utils::nf($i['price'], 2), 'class' => 'block'];
 							$anyFood++;
 							$anyDayFood++;
 						}
@@ -279,7 +279,7 @@ class Persons extends \e10\GlobalReport
 								{
 									//if ($i['price'] === 0.0)
 									//	continue;
-									$item[$afId][] = ['text' => utils::nf($i['price'], 2), 'class' => 'block'];
+									$item[$afId][] = ['text' => Utils::nf($i['price'], 2), 'class' => 'block'];
 									$anyFood++;
 									$anyDayFood++;
 								}
@@ -374,7 +374,7 @@ class Persons extends \e10\GlobalReport
 					foreach ($this->peoplesData[$rid][$personNdx]['detail']['main'] as $priceId => $pf)
 					{
 						$class = '';
-						$item['main'][] = ['text' => $pf['count'] . ' × ' . utils::nf($pf['priceItem'], 2) . ' = ' . utils::nf($pf['priceTotal'], 2), 'class' => $class];
+						$item['main'][] = ['text' => $pf['count'] . ' × ' . Utils::nf($pf['priceItem'], 2) . ' = ' . Utils::nf($pf['priceTotal'], 2), 'class' => $class];
 						if ($rc < $cntCellRows && $cntCellRows > 1)
 							$item['main'][] = ['text' => '', 'class' => 'block'];
 						$rc++;
@@ -382,7 +382,7 @@ class Persons extends \e10\GlobalReport
 						$anyFood++;
 					}
 					if ($cntCellRows > 1)
-						$item['main'][] = ['text' => '∑ = ' . utils::nf($priceTotal, 2), 'class' => $class];
+						$item['main'][] = ['text' => '∑ = ' . Utils::nf($priceTotal, 2), 'class' => $class];
 				}
 				if (isset($this->canteenCfg['addFoods']))
 				{
@@ -397,7 +397,7 @@ class Persons extends \e10\GlobalReport
 						foreach ($this->peoplesData[$rid][$personNdx]['detail'][$afId] as $priceId => $pf)
 						{
 							$class = '';
-							$item[$afId][] = ['text' => $pf['count'] . ' × ' . utils::nf($pf['priceItem'], 2) . ' = ' . utils::nf($pf['priceTotal'], 2), 'class' => $class];
+							$item[$afId][] = ['text' => $pf['count'] . ' × ' . Utils::nf($pf['priceItem'], 2) . ' = ' . Utils::nf($pf['priceTotal'], 2), 'class' => $class];
 							if ($rc < $cntCellRows && $cntCellRows > 1)
 								$item[$afId][] = ['text' => '', 'class' => 'block'];
 							$rc++;
@@ -405,7 +405,7 @@ class Persons extends \e10\GlobalReport
 							$anyFood++;
 						}
 						if ($cntCellRows > 1)
-							$item[$afId][] = ['text' => '∑ = ' . utils::nf($priceTotal, 2), 'class' => $class];
+							$item[$afId][] = ['text' => '∑ = ' . Utils::nf($priceTotal, 2), 'class' => $class];
 					}
 				}
 
@@ -419,7 +419,7 @@ class Persons extends \e10\GlobalReport
 				}
 
 
-				$item['total'] = utils::nf($this->peoplesData[$rid][$personNdx]['total']['total'], 2);
+				$item['total'] = Utils::nf($this->peoplesData[$rid][$personNdx]['total']['total'], 2);
 				$totalTable[] = $item;
 			}
 
@@ -437,14 +437,14 @@ class Persons extends \e10\GlobalReport
 					foreach ($foodInfo as $priceId => $pf)
 					{
 						$class = '';
-						$itemTotal1[$foodColId][] = ['text' => $pf['count'] . ' × ' . utils::nf($pf['priceItem'], 2) . ' = ' . utils::nf($pf['priceTotal'], 2), 'class' => $class];
+						$itemTotal1[$foodColId][] = ['text' => $pf['count'] . ' × ' . Utils::nf($pf['priceItem'], 2) . ' = ' . Utils::nf($pf['priceTotal'], 2), 'class' => $class];
 						if ($rc < $cntCellRows && $cntCellRows > 1)
 							$itemTotal1[$foodColId][] = ['text' => '', 'class' => 'block'];
 						$rc++;
 						$priceTotal += $pf['priceTotal'];
 					}
 					if ($cntCellRows > 1)
-						$itemTotal1['main'][] = ['text' => '∑ = ' . utils::nf($priceTotal, 2), 'class' => $class];
+						$itemTotal1['main'][] = ['text' => '∑ = ' . Utils::nf($priceTotal, 2), 'class' => $class];
 				}
 				$itemTotal1['total'] = $this->totalData[$rid]['ALL']['priceTotal'];
 				$itemTotal1['_options'] = ['class' => 'sumtotal', 'afterSeparator' => 'separator'];
@@ -464,14 +464,14 @@ class Persons extends \e10\GlobalReport
 				foreach ($foodInfo as $priceId => $pf)
 				{
 					$class = '';
-					$itemTotal1[$foodColId][] = ['text' => $pf['count'] . ' × ' . utils::nf($pf['priceItem'], 2) . ' = ' . utils::nf($pf['priceTotal'], 2), 'class' => $class];
+					$itemTotal1[$foodColId][] = ['text' => $pf['count'] . ' × ' . Utils::nf($pf['priceItem'], 2) . ' = ' . Utils::nf($pf['priceTotal'], 2), 'class' => $class];
 					if ($rc < $cntCellRows && $cntCellRows > 1)
 						$itemTotal1[$foodColId][] = ['text' => '', 'class' => 'block'];
 					$rc++;
 					$priceTotal += $pf['priceTotal'];
 				}
 				if ($cntCellRows > 1)
-					$itemTotal1['main'][] = ['text' => '∑ = ' . utils::nf($priceTotal, 2), 'class' => $class];
+					$itemTotal1['main'][] = ['text' => '∑ = ' . Utils::nf($priceTotal, 2), 'class' => $class];
 			}
 			$itemTotal1['total'] = $this->totalData['ALL']['ALL']['priceTotal'];
 			$itemTotal1['_options'] = ['class' => 'sumtotal', 'afterSeparator' => 'separator'];
@@ -502,7 +502,7 @@ class Persons extends \e10\GlobalReport
 		{
 			$item = [
 				'text' => $r['docNumber'], 'icon' => $this->tableDocsHeads->tableIcon($r), 'class' => '',
-				'prefix' => utils::nf($r['toPay'], 2),
+				'prefix' => Utils::nf($r['toPay'], 2),
 				'docAction' => 'edit', 'pk' => $r['ndx'], 'table' => 'e10doc.core.heads'
 			];
 
@@ -612,6 +612,33 @@ class Persons extends \e10\GlobalReport
 			return '';
 
 		return parent::createReportContentHeader ($contentPart);
+	}
+
+	public function createToolbar ()
+	{
+		$buttons = parent::createToolbar();
+
+		$canteens = $this->app->cfgItem ('e10pro.canteen.canteens', []);
+		$invoicingEnabled = 0;
+		foreach ($canteens as $canteenNdx => $canteen)
+		{
+			if (!isset($canteen['invoicingEnabled']) || !$canteen['invoicingEnabled'])
+				continue;
+
+			$invoicingEnabled = 1;
+			break;
+		}
+
+		if ($invoicingEnabled)
+		{
+			$buttons[] = [
+				'text' => 'Vystavit faktury', 'icon' => 'docType/invoicesOut',
+				'type' => 'action', 'action' => 'addwizard', 'data-class' => 'e10pro.canteen.libs.InvoicesGeneratorWizard',
+				'btnClass' => 'btn-warning',
+			];
+		}
+
+		return $buttons;
 	}
 }
 

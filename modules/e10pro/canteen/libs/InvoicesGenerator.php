@@ -8,7 +8,7 @@ use \e10\utils;
  * Class InvoicesGenerator
  * @package e10pro\canteen\libs
  */
-class InvoicesGenerator extends \e10\Utility
+class InvoicesGenerator extends \Shipard\Base\Utility
 {
 	var $year = 0;
 	var $month = 0;
@@ -26,17 +26,20 @@ class InvoicesGenerator extends \e10\Utility
 		$report->periodEnd = $this->periodEnd;
 
 		$report->createPdf();
+		$peoplesData = $report->peoplesData;
+		$relations =  $report->relations;
+		unset($report);
 
-		foreach ($report->peoplesData as $relId => $rel)
+		foreach ($peoplesData as $relId => $rel)
 		{
-			$relCfg = $report->relations[$relId];
+			$relCfg = $relations[$relId];
 			echo " - relation: `{$relId}` - ".$relCfg['name']."\n";
 
-			$this->invoicesIndividual($report, $relId, $relCfg, $rel);
+			$this->invoicesIndividual(/*$report, */$relId, $relCfg, $rel);
 		}
 	}
 
-	protected function invoicesIndividual($report, $relationId, $relationCfg, $relationData)
+	protected function invoicesIndividual(/*$report, */$relationId, $relationCfg, $relationData)
 	{
 		$itemMF = $this->canteenCfg['itemMainFood'];
 		$itemAF = $this->canteenCfg['itemMainFood'];
@@ -53,7 +56,7 @@ class InvoicesGenerator extends \e10\Utility
 
 			$linkId = 'cntn-'.$this->canteenNdx.'-'.$relationId.'-'.$this->periodBegin->format('y-m');
 			echo " / ".$linkId;
-			$invoiceExist = $this->db()->query('SELECT * FROM [e10doc_core_heads] WHERE [docType] = %s', 'invno', 
+			$invoiceExist = $this->db()->query('SELECT * FROM [e10doc_core_heads] WHERE [docType] = %s', 'invno',
 						' AND [person] = %i', $personNdx, ' AND [linkId] = %s', $linkId)->fetch();
 			if ($invoiceExist)
 			{
@@ -101,7 +104,16 @@ class InvoicesGenerator extends \e10\Utility
 			$personReport->subReportId = 'peoples';
 			$personReport->createPdf();
 
-			\E10\Base\addAttachments ($this->app, 'e10doc.core.heads', $invoiceNdx, $personReport->fullFileName, '', true);
+			$attTitle = 'Vyúčtovaní stravného '.$this->periodBegin->format('Y / m');
+			$attNdx = \E10\Base\addAttachments ($this->app, 'e10doc.core.heads', $invoiceNdx, $personReport->fullFileName, '', true, 10000, $attTitle);
+			$newLink = [
+				'linkId' => 'e10docs-send-atts',
+				'srcTableId' => 'e10doc.core.heads', 'srcRecId' => $invoiceNdx,
+				'dstTableId' => 'e10.base.attachments', 'dstRecId' => $attNdx
+			];
+			$this->db()->query ('INSERT INTO e10_base_doclinks ', $newLink);
+
+			unset($personReport);
 		}
 	}
 
@@ -152,9 +164,14 @@ class InvoicesGenerator extends \e10\Utility
 		}
 		$newDoc->docHead['title'] = 'Vyúčtování stravného '.$this->periodBegin->format('Y / m').': '.$this->canteenCfg['fn'];
 
+		$this->db()->begin();
 		$newDoc->saveDocument($this->canteenCfg['dstDocState']);
+		$this->db()->commit();
 
-		return $newDoc->docHead['ndx'];
+		$newDocNdx = $newDoc->docHead['ndx'];
+		unset($newDoc);
+
+		return $newDocNdx;
 	}
 
 	public function run()
