@@ -1,7 +1,8 @@
 <?php
 
 namespace lib\docs;
-use E10Doc\Core\e10utils, \E10\uiutils, \E10\TableForm, \E10\Wizard;
+use \e10doc\core\libs\E10Utils, \E10\TableForm, \E10\Wizard;
+use \Shipard\Utils\Utils;
 
 
 /**
@@ -71,8 +72,26 @@ class DocumentActionWizard extends Wizard
 			}
 			if($p['type'] === 'fiscalYear')
 			{
-				$this->addInputEnum2 ($p['id'], 'Účetní období', e10utils::fiscalYearEnum ($this->app()), self::INPUT_STYLE_OPTION);
+				$this->addInputEnum2 ($p['id'], 'Účetní období', E10Utils::fiscalYearEnum ($this->app()), self::INPUT_STYLE_OPTION);
 			}
+			if($p['type'] === 'calendarYear')
+			{
+				$years = [];
+				$todayYear = intval(Utils::today('Y'));
+				for ($i = 0; $i < 4; $i++)
+					$years[$todayYear - $i] = strval($todayYear - $i);
+				$this->addInputEnum2 ($p['id'], 'Rok', $years, self::INPUT_STYLE_OPTION);
+			}
+			if($p['type'] === 'calendarMonth')
+			{
+				$months = [];
+				for ($i = 1; $i <= 12; $i++)
+					$months[$i] = strval($i);
+				$this->addInputEnum2 ($p['id'], 'Měsíc', $months, self::INPUT_STYLE_OPTION);
+			}
+
+			if (isset($p['defaultValue']) && !isset($this->recData[$p['id']]))
+				$this->recData[$p['id']] = $p['defaultValue'];
 		}
 	}
 
