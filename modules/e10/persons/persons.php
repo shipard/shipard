@@ -240,7 +240,7 @@ function createNewPersonNew (\Shipard\Application\Application $app, $personData)
 	{
 		forEach ($personData ['groups'] as $gid)
 		{
-			$gidNdx = $gid;
+			$gidNdx = 0;
 			if ($gid[0] === '@')
 			{
 				$gndx = $app->db()->query ('SELECT * FROM e10_persons_groups WHERE systemGroup = %s', substr($gid, 1))->fetch();
@@ -248,7 +248,8 @@ function createNewPersonNew (\Shipard\Application\Application $app, $personData)
 					$gidNdx = $gndx['ndx'];
 			}
 
-			$app->db()->query ('INSERT INTO [e10_persons_personsgroups] ([person], [group]) VALUES (%i, %i)', $newPersonNdx, $gidNdx);
+			if ($gidNdx)
+				$app->db()->query ('INSERT INTO [e10_persons_personsgroups] ([person], [group]) VALUES (%i, %i)', $newPersonNdx, $gidNdx);
 		}
 	}
 

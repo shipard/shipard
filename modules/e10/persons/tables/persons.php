@@ -68,7 +68,10 @@ class TablePersons extends DbTable
 		if ($recData ['docStateMain'] === 2 || $recData ['docStateMain'] === 2)
 		{
 			// -- set validate request
-			$this->app()->db()->query ('UPDATE [e10_persons_personsValidity] SET [revalidate] = 1 WHERE [person] = %i', $recData['ndx']);
+			if ($recData['disableRegsChecks'] == 1)
+				$this->app()->db()->query ('UPDATE [e10_persons_personsValidity] SET [revalidate] = 0, [valid] = 1 WHERE [person] = %i', $recData['ndx']);
+			else
+				$this->app()->db()->query ('UPDATE [e10_persons_personsValidity] SET [revalidate] = 1 WHERE [person] = %i', $recData['ndx']);
 		}
 	}
 

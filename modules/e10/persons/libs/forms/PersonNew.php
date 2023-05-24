@@ -174,6 +174,7 @@ class PersonNew extends TableForm
 							$this->addSeparator(self::coH4);
 						}
 						$this->addColumnInput ('optSendDocsAttsUnited');
+						$this->addColumnInput ('disableRegsChecks');
 					}
 				$this->closeTab ();
 

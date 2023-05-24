@@ -151,7 +151,7 @@ class ViewPersonsContactsCombo extends TableView
 
 	public function renderRow ($item)
 	{
-		$at = $this->addressTypes[$item['type']];
+		//$at = $this->addressTypes[$item['type']];
 
 		$listItem ['pk'] = $item ['ndx'];
 		//$listItem ['icon'] = $this->table->tableIcon ($item);
@@ -218,7 +218,11 @@ class ViewPersonsContactsCombo extends TableView
 		{
 
 			forEach ($this->classification [$item ['pk']] as $clsfGroup)
+			{
+				if (!isset($item ['t2']))
+					$item ['t2'] = [];
 				$item ['t2'] = array_merge ($item ['t2'], $clsfGroup);
+			}
 		}
 	}
 }

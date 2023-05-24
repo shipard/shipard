@@ -39,6 +39,8 @@
 
 		{"id": "optSendDocsAttsUnited", "name": "Přílohy dokladů odesílat v PDF dokladu", "type": "logical"},
 
+		{"id": "disableRegsChecks", "name": "Nekontrolovat správnost v registrech", "type": "logical"},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
   ],

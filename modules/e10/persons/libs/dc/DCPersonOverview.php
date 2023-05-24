@@ -23,7 +23,7 @@ class DCPersonOverview extends \Shipard\Base\DocumentCard
 
 	var $properties = NULL;
 	var $contacts = '';
-	var $validity;
+	var $validity = NULL;
 	var $addressesAll;
 	var $addresses;
 	var $groups = [];
@@ -298,14 +298,24 @@ class DCPersonOverview extends \Shipard\Base\DocumentCard
 
 	public function loadDataValidity ()
 	{
+		if ($this->recData['company'] === 0)
+			return;
+
 		$this->validity = ['class' => '', 'icon' => 'icon-question-circle'];
 
 		$validity = $this->db()->query('SELECT * FROM [e10_persons_personsValidity] WHERE [person] = %i', $this->recData['ndx'])->fetch();
 
-		if (!$validity)
+		if ($this->recData['disableRegsChecks'] === 1)
+		{
+			$line = [['text' => 'Tato osoba se nekontroluje']];
+			$this->validity['class'] = 'e10-row-this';
+			$this->validity['icon'] = 'user/times';
+		}
+		elseif (!$validity)
 		{
 			$line = [['text' => 'Kontrola zatím nebyla provedena']];
 			$this->validity['class'] = 'e10-row-this';
+			$this->validity['icon'] = 'user/questionCircle';
 			//$this->addContent('body', ['pane' => 'e10-pane e10-pane-table e10-row-this', 'type' => 'line', 'line' => $line]);
 		}
 		elseif ($validity['valid'] === 1)
@@ -320,7 +330,7 @@ class DCPersonOverview extends \Shipard\Base\DocumentCard
 		else
 		{
 			$this->validity['icon'] = 'system/iconWarning';
-			$title = ['text' => 'Při kontrole byly nalezeny chyby', 'XXXicon' => 'system/iconWarning', 'class' => 'e10-error h2'];
+			$title = ['text' => 'Při kontrole byly nalezeny chyby', 'class' => 'e10-error h2'];
 			$line = [$title];
 
 			if ($validity['revalidate'])
@@ -429,12 +439,14 @@ class DCPersonOverview extends \Shipard\Base\DocumentCard
 		}
 
 		// -- validity
-		$t [] = [
-			'c1' => ['icon' => $this->validity['icon'], 'text' => ''],
-			'c2' => $this->validity['content'],
-			'_options' => ['class' => $this->validity['class']]
-		];
-
+		if ($this->validity)
+		{
+			$t [] = [
+				'c1' => ['icon' => $this->validity['icon'], 'text' => ''],
+				'c2' => $this->validity['content'],
+				'_options' => ['class' => $this->validity['class']]
+			];
+		}
 
 		$h = ['c1' => 'c1', 'c2' => 'c2'];
 		return [

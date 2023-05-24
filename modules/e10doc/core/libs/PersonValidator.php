@@ -21,6 +21,7 @@ class PersonValidator extends Utility
 		array_push($q, ' WHERE 1');
 		array_push($q, ' AND [docState] = %i', 4000);
     array_push($q, ' AND [company] = %i', 1);
+    array_push($q, ' AND [disableRegsChecks] = %i', 0);
 
     array_push($q, ' AND (');
     array_push($q, ' EXISTS (SELECT ndx FROM e10_persons_personsValidity WHERE persons.ndx = person AND [valid] = %i)', 0);
