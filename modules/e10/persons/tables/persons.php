@@ -844,6 +844,22 @@ class ViewPersonsBase extends TableView
 			array_push ($q, ' SELECT person FROM e10_persons_personsContacts WHERE flagAddress = 1 AND flagMainAddress = 1 AND docState = 4000 GROUP BY person HAVING count(*) > 1');
 			array_push ($q, ' ) AS [persMainAddrDups] )');
 		}
+
+		$withoutCompanyId = isset ($qv['others']['withoutCompanyId']);
+		if ($withoutCompanyId)
+		{
+			array_push ($q, ' AND (persons.company = %i', 1);
+
+			array_push ($q, ' AND EXISTS (SELECT ndx FROM e10_persons_personsContacts WHERE persons.ndx = person ');
+			array_push ($q, ' AND e10_persons_personsContacts.flagAddress = 1 AND e10_persons_personsContacts.adrCountry = %i', 60);
+			array_push ($q, ')');
+
+			array_push ($q, ' AND NOT EXISTS (SELECT ndx FROM e10_base_properties WHERE persons.ndx = e10_base_properties.recid ',
+							' AND tableid = %s', 'e10.persons.persons',
+							' AND [group] = %s', 'ids', ' AND [property] = %s', 'oid',
+							')');
+			array_push ($q, ')');
+		}
 	}
 
 	public function selectRows2 ()
@@ -971,6 +987,7 @@ class ViewPersonsBase extends TableView
 		{
 			$chbxOthers['withoutMainAddress'] = ['title' => 'Bez sídla', 'id' => 'withoutMainAddress'];
 			$chbxOthers['withMoreMainAddress'] = ['title' => 'S více sídly', 'id' => 'withMoreMainAddress'];
+			$chbxOthers['withoutCompanyId'] = ['title' => 'Firmy bez IČ', 'id' => 'withoutCompanyId'];
 		}
 
 		$paramsOthers = new \E10\Params ($this->app());
