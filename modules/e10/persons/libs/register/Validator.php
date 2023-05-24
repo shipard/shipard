@@ -36,7 +36,7 @@ class Validator extends Utility
     $this->personNdx = $personNdx;
   }
 
-	public function checkPerson()
+	public function checkPerson($repair = 0)
 	{
 		$this->loadPersonMainAddress();
 
@@ -51,6 +51,14 @@ class Validator extends Utility
 		{
 	    $reg->makeDiff();
   	  $reg->setPersonValidity();
+
+			if ($reg->generalFailure)
+				return;
+
+			if ($repair)
+			{
+				$reg->repair();
+			}
 		}
 	}
 

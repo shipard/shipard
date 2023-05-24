@@ -515,4 +515,17 @@ class PersonRegister extends Utility
 			$this->db()->query ('INSERT INTO [e10_persons_personsValidity] ', $item);
 		}
   }
+
+  public function repair()
+  {
+    $this->applyDiff();
+
+    if (isset($this->registerData['bankAccounts']))
+    {
+      $bas = [];
+      foreach ($this->registerData['bankAccounts'] as $bai)
+        $bas[] = $bai['bankAccount'];
+      $this->addBankAccounts($bas);
+    }
+  }
 }

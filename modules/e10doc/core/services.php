@@ -377,6 +377,19 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$e->batchCheck();
 	}
 
+	protected function cliRepairPersons()
+	{
+		$maxCount = intval($this->app->arg('maxCount'));
+		$debug = intval($this->app->arg('debug'));
+
+		$e = new \e10doc\core\libs\PersonValidator($this->app);
+		if ($maxCount)
+			$e->maxCount = $maxCount;
+		if ($debug)
+			$e->debug = $debug;
+		$e->batchRepair();
+	}
+
 	public function cliNewDocFromAtt()
 	{
 		$paramAttNdx = intval($this->app->arg('attNdx'));
@@ -424,6 +437,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'docs-checks-wrong-journal': return $this->cliDocsChecksWrongJournal();
 			case 'copy-witems': return $this->cliCopyWitems();
 			case 'validate-persons': return $this->cliValidatePersons();
+			case 'repair-persons': return $this->cliRepairPersons();
 			case 'new-doc-from-att': return $this->cliNewDocFromAtt();
 			case 'reset-doc-from-att': return $this->cliResetDocFromAtt();
 		}
