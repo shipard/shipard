@@ -301,8 +301,18 @@ class Accounting extends \e10\DocumentCard
 		$rosType = $rosTypes[$rosReg['rosType']];
 
 		$rosEngine = $this->app()->createObject($rosType['engine']);
-		$content = $rosEngine->documentDetail ($recData);
-		$this->addContent('body', $content);
+		if ($rosEngine)
+		{
+			$content = $rosEngine->documentDetail ($recData);
+			$this->addContent('body', $content);
+		}
+		else
+		{
+			$this->addContent('body', [
+				'type' => 'line', 'pane' => 'e10-pane e10-pane-table e10-warning3',
+				'line' => ['text' => 'Chybný typ evidence tržeb `'.$recData['rosReg'].'`', 'class' => 'h1', 'icon' => 'system/iconWarning']
+			]);
+		}
 	}
 
 	function createInventory($recData)
