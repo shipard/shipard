@@ -2,6 +2,7 @@
 	"acc": {
 		"reports": {
 			"e10doc.debs.libs.reports.GeneralLedger": 2,
+			"e10doc.debs.libs.reports.VatAccReport": 2,
 			"e10doc.debs.libs.reports.CheckOpenStates": 2,
 			"e10doc.debs.libs.reports.ReportStatement": 2,
 			"e10doc.debs.libs.reports.ReportBalanceSheet": 2,

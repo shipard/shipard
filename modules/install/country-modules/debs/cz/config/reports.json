@@ -5,6 +5,8 @@
 	{"name": "Rozvaha", "class": "e10doc.debs.libs.reports.ReportBalanceSheet", "icon": "report/BalanceSheet", "group": "e10doc-finance", "order": 100200},
 	{"name": "Cash Flow", "class": "e10doc.debs.libs.reports.ReportCashFlow", "icon": "report/CashFlow", "group": "e10doc-finance", "order": 100600},
 
+	{"name": "Účtování DPH", "class": "e10doc.debs.libs.reports.VatAccReport", "icon": "report/VAT", "group": "e10doc-finance", "order": 110000},
+
 	{"name": "Účetní rekapitulace", "class": "e10doc.debs.libs.reports.ReportDocsSummary", "icon": "report/docsSummary", "group": "e10docs", "order": 700000},
 
 	{"name": "Kontrola PS", "class": "e10doc.debs.libs.reports.CheckOpenStates", "icon": "reportControlInitialStates", "group": "e10-checks", "order": 900000}
