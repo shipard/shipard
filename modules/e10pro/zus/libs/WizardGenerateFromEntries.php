@@ -112,8 +112,8 @@ class WizardGenerateFromEntries extends Wizard
 
 
 		// -- contacs
-		$this->addContact($this->newPersonNdx, 'ZZ1', 'M');
-		$this->addContact($this->newPersonNdx, 'ZZ2', 'F');
+		$this->addContact($this->newPersonNdx, 'Zákonný zástupce 1', 'M');
+		$this->addContact($this->newPersonNdx, 'Zákonný zástupce 2', 'F');
 
 		return $this->newPersonNdx;
 	}

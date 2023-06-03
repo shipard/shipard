@@ -280,7 +280,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 					$properties['e10-zus-zz-1']['e10-zus-zz-jmeno'][0]['value'] ?? '',
 					$properties['e10-zus-zz-1']['e10-zus-zz-email'][0]['value'] ?? '',
 					$properties['e10-zus-zz-1']['e10-zus-zz-telefon'][0]['value'] ?? '',
-					'zz1',
+					'Zákonný zástupce 1',
 					$personNdx
 				);
 			}
@@ -291,7 +291,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 					$properties['e10-zus-zz-2']['e10-zus-zz2-jmeno'][0]['value'] ?? '',
 					$properties['e10-zus-zz-2']['e10-zus-zz2-email'][0]['value'] ?? '',
 					$properties['e10-zus-zz-2']['e10-zus-zz2-telefon'][0]['value'] ?? '',
-					'zz2',
+					'Zákonný zástupce 2',
 					$personNdx
 				);
 			}
