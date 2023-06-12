@@ -60,9 +60,11 @@
 		{"id": "note", "name": "Poznámka", "type": "memo"},
 
 		{"id": "talentovaZkouska", "name": "Talentová zkouška", "type": "enumInt",
-			"enumValues": {"0": "Zatím neproběhla", "1": "Proběhla úspěšně", "99": "Proběhla neúspěšně"}},
-		{"id": "keStudiu", "name": "Přijat/a ke studiu", "type": "enumInt",
-			"enumValues": {"0": "Nepřijat", "1": "Přijat", "2": "Na čekací listině"}},
+			"enumValues": {"0": "Neabsolvována", "1": "Absolvována"}},
+		{"id": "keStudiu", "name": "Doporučení k přijetí", "type": "enumInt",
+			"enumValues": {"0": "---", "1": "Doporučeno", "2": "Nedoporučeno"}},
+		{"id": "mistoStudia", "name": "Přijetí ke studiu v", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10pro.zus.mistaStudia", "cfgValue": "", "cfgText": "shortName"}},
 
 		{"id": "webSentDate", "name": "Datum a čas odeslání přihlášky z webu", "type": "timestamp"},
 		{"id": "confirmEmailDone", "name": "Potvrzovací email odeslán", "type": "logical"},

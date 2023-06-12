@@ -120,6 +120,7 @@ class ViewPrihlasky extends TableView
 {
 	var $officesParam = NULL;
 	var $offices;
+	var $mistaStudia;
 
 	public function init ()
 	{
@@ -128,6 +129,8 @@ class ViewPrihlasky extends TableView
 
 		$this->offices = [0 => 'Vše'];
 		$this->offices += $this->db()->query('SELECT ndx, shortName FROM [e10_base_places] WHERE docStateMain < 4 AND placeType = %s ORDER BY [fullName]', 'lcloffc')->fetchPairs ('ndx', 'shortName');
+		$this->mistaStudia = $this->app()->cfgItem('e10pro.zus.mistaStudia');
+
 
 		if ($this->offices > 1)
 			$this->usePanelLeft = TRUE;
@@ -181,6 +184,13 @@ class ViewPrihlasky extends TableView
 		if (isset ($qv['keStudiu']))
 			array_push ($q, " AND [prihlasky].[keStudiu] IN %in", array_keys($qv['keStudiu']));
 
+		if (isset($qv['obor']['']) && $qv['obor'][''] != 0)
+			array_push ($q, " AND prihlasky.[svpObor] = %i", $qv['obor']['']);
+		if (isset($qv['oddeleni']['']) && $qv['oddeleni'][''] != 0)
+			array_push ($q, " AND prihlasky.[svpOddeleni] = %i", $qv['oddeleni']['']);
+		if (isset ($qv['mistoStudia']))
+			array_push ($q, " AND [prihlasky].[mistoStudia] IN %in", array_keys($qv['mistoStudia']));
+
 		$this->queryMain ($q, 'prihlasky.', ['[webSentDate]', '[fullNameS]']);
 		$this->runQuery ($q);
 	} // selectRows
@@ -209,10 +219,13 @@ class ViewPrihlasky extends TableView
 		$listItem ['t3'][] = ['text' => 'TZ: '.$tz [$item ['talentovaZkouska']], 'class' => 'label label-default'];
 
 		$ks = $this->table->columnInfoEnum ('keStudiu', 'cfgText');
-		$listItem ['t3'][] = ['text' => 'Studium: '.$ks [$item ['keStudiu']], 'class' => 'label label-default'];
+		if ($item ['keStudiu'] === 1)
+			$listItem ['t3'][] = ['text' => 'Přijetí: '.$ks [$item ['keStudiu']], 'class' => 'label label-success'];
+		else
+			$listItem ['t3'][] = ['text' => 'Přijetí: '.$ks [$item ['keStudiu']], 'class' => 'label label-default'];
 
-		//$listItem ['t3'][] = 'obor '.$this->app()->cfgItem ("e10pro.zus.obory.{$item ['svpObor']}.nazev");
-
+		if ($item ['mistoStudia'] && isset($this->mistaStudia [$item ['mistoStudia']]))
+			$listItem ['t3'][] = ['text' => 'V: '.$this->mistaStudia [$item ['mistoStudia']]['shortName'], 'class' => 'label label-default'];
 
 		if (isset($skolniRoky [$item['skolniRok']]))
 			$listItem ['t3'][] = ['text' => $skolniRoky [$item['skolniRok']]['nazev'], 'class' => 'pull-right'];
@@ -261,6 +274,24 @@ class ViewPrihlasky extends TableView
 		$paramsKS->addParam ('checkboxes', 'query.keStudiu', ['items' => $chbxKS]);
 		$qry[] = ['id' => 'keStudiu', 'style' => 'params', 'title' => 'Ke studiu', 'params' => $paramsKS];
 
+		// -- mistoStudia
+		$ms = $this->table->columnInfoEnum ('mistoStudia', 'cfgText');
+		$chbxMS = [];
+		forEach ($ms as $msNdx => $msName)
+		{
+			$chbxMS[$msNdx] = ['title' => $msName, 'id' => strval($msNdx)];
+		}
+		$paramsMS = new \Shipard\UI\Core\Params ($this->app());
+		$paramsMS->addParam ('checkboxes', 'query.mistoStudia', ['items' => $chbxMS]);
+		$qry[] = ['id' => 'mistoStudia', 'style' => 'params', 'title' => 'Přijetí ke studiu v', 'params' => $paramsMS];
+
+		$paramsRows = new \e10doc\core\libs\GlobalParams ($panel->table->app());
+		$paramsRows->addParam ('switch', 'query.obor', ['title' => 'Obor', 'place' => 'panel', 'cfg' => 'e10pro.zus.obory', 'titleKey' => 'nazev',
+			'enableAll' => ['0' => ['title' => 'Vše']]]);
+		$paramsRows->addParam ('switch', 'query.oddeleni', ['title' => 'Oddělení', 'place' => 'panel', 'cfg' => 'e10pro.zus.oddeleni', 'titleKey' => 'nazev',
+			'enableAll' => ['0' => ['title' => 'Vše']]]);
+		$paramsRows->detectValues();
+		$qry[] = array ('id' => 'paramRows', 'style' => 'params', 'title' => 'Hledat', 'params' => $paramsRows, 'class' => 'switches');
 
 		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}
@@ -287,6 +318,8 @@ class FormPrihlaska extends TableForm
 {
 	public function renderForm ()
 	{
+		$mistaStudia = $this->app()->cfgItem('e10pro.zus.mistaStudia');
+
 		$this->setFlag ('maximize', 1);
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
@@ -345,6 +378,8 @@ class FormPrihlaska extends TableForm
 			$this->addSeparator(self::coH2);
 			$this->addColumnInput('talentovaZkouska');
 			$this->addColumnInput('keStudiu');
+			if (count($mistaStudia) > 0)
+				$this->addColumnInput('mistoStudia');
 		$this->closeTab ();
 
 		$this->openTab (TableForm::ltNone);
