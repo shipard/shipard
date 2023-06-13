@@ -20,7 +20,7 @@ class DSManager extends Utility
 	{
 		$this->tmpDir = __SHPD_VAR_DIR__.'tmp/dsops';
 		$this->todayStr = Utils::today('Y-m-d');
-		
+
 		if (is_dir($this->tmpDir))
 		{
 			exec('rm -rf '.$this->tmpDir);
@@ -108,7 +108,7 @@ class DSManager extends Utility
 		{
 			$this->appStop();
 			return TRUE;
-		}	
+		}
 		echo "# init blank datasource folder\n";
 
 		utils::mkDir($this->dsPathLocal);
@@ -125,9 +125,9 @@ class DSManager extends Utility
 		Utils::mkDir($this->dsPathLocal.'config/curr');
 		Utils::mkDir($this->dsPathLocal.'config/nginx');
 
-		if (!$this->checkChannel())	
+		if (!$this->checkChannel())
 			return FALSE;
-		if (!$this->checkModules())	
+		if (!$this->checkModules())
 			return FALSE;
 
 		$this->appStop();
@@ -136,7 +136,7 @@ class DSManager extends Utility
 		//echo "  --> ".$cmd."\n";
 		passthru($cmd);
 
-		$cmd = 'cd '.$this->dsPathLocal.' && shpd-server app-upgrade';		
+		$cmd = 'cd '.$this->dsPathLocal.' && shpd-server app-upgrade';
 		//echo "  --> ".$cmd."\n";
 		passthru($cmd);
 
@@ -149,7 +149,7 @@ class DSManager extends Utility
 		if (!$channelConfig)
 			return TRUE;
 
-		$channelPath = $this->app()->channelPath($channelConfig['serverInfo']['channelId']);	
+		$channelPath = $this->app()->channelPath($channelConfig['serverInfo']['channelId']);
 
 		if ($channelPath !== !$channelConfig['serverInfo']['channelPath'])
 		{
@@ -159,7 +159,7 @@ class DSManager extends Utility
 		}
 
 		return TRUE;
-	}	
+	}
 
 	public function checkModules()
 	{
@@ -168,7 +168,7 @@ class DSManager extends Utility
 			'pkgs/apps/big' => 'install/apps/shipard-economy',
 			'pkgs/apps/small' => 'install/apps/shipard-economy',
 			'pkgs/install/apps/shipard-economy' => 'install/apps/shipard-economy',
-			'pkgs/apps/npo' => 'install/apps/shipard-economy',
+			'pkgs/apps/npo' => 'install/apps/shipard-npo',
 		];
 		$ignoreModules = ['e10pro/install/other-kb', 'locshare/server', 'gdpr/base'];
 
@@ -176,7 +176,7 @@ class DSManager extends Utility
 		if (!$oldModules)
 			return $this->app->err('Invalid config/modules.json file');
 
-		$newModules = [];	
+		$newModules = [];
 		foreach ($oldModules as $oldModuleId)
 		{
 			echo '  - '.$oldModuleId.': ';
@@ -185,36 +185,36 @@ class DSManager extends Utility
 			{
 				$newModules[] = $replaceModules[$oldModuleId];
 				echo ' ==> '.$replaceModules[$oldModuleId]."\n";
-				continue;	
+				continue;
 			}
 
 			if (in_array($oldModuleId, $ignoreModules))
 			{
 				echo 'IGNORE'."\n";
-				continue;	
+				continue;
 			}
 
 			if (!is_readable(__SHPD_MODULES_DIR__.$oldModuleId.'/module.json'))
 			{
 				echo ' ERROR: module `'.__SHPD_MODULES_DIR__.$oldModuleId.'/module.json'.'`not found'."\n";
-				continue;	
+				continue;
 			}
 
 			$newModules[] = $oldModuleId;
-			
+
 			echo "OK\n";
 		}
 
 		file_put_contents($this->dsPathLocal.'config/modules.json', Json::lint($newModules));
 
-		return TRUE;	
+		return TRUE;
 	}
 
 	public function syncAttachments()
 	{
 		if (isset($this->params['disableAtt']))
 		{
-			echo "# syncing attachments is disable\n";	
+			echo "# syncing attachments is disable\n";
 			return TRUE;
 		}
 
@@ -233,7 +233,7 @@ class DSManager extends Utility
 		if ($this->oldMode)
 			$cmd = 'ssh '.$this->params['server'].' "cd '.$this->dsPathRemote.' && e10 app-stop"';
 		else
-			$cmd = 'ssh '.$this->params['server'].' "cd '.$this->dsPathRemote.' && shpd-server app-stop"';	
+			$cmd = 'ssh '.$this->params['server'].' "cd '.$this->dsPathRemote.' && shpd-server app-stop"';
 		echo $cmd."\n";
 		passthru($cmd);
 	}
@@ -274,7 +274,7 @@ class DSManager extends Utility
 		}
 		else
 		{
-			echo "PLEASE RUN:\nsudo sh -c \"{$cmd}\"\nto fix file permissions\n";				
+			echo "PLEASE RUN:\nsudo sh -c \"{$cmd}\"\nto fix file permissions\n";
 		}
 	}
 
@@ -285,17 +285,17 @@ class DSManager extends Utility
 		if (!$this->getServerInfo())
 			return FALSE;
 
-		if (!$this->checkBlankDSRoot())	
+		if (!$this->checkBlankDSRoot())
 			return FALSE;
 
 		if (!$this->syncAttachments())
 			return FALSE;
 
 		$this->restoreDb();
-		
+
 		$this->doFixPerms();
 
-		return TRUE;	
+		return TRUE;
 	}
 
 	public function moveFrom (array $params)
@@ -311,13 +311,13 @@ class DSManager extends Utility
 		if (!$this->syncAttachments())
 			return FALSE;
 
-		//$this->stopRemote();		
-		$this->downloadLiveBackup();	
+		//$this->stopRemote();
+		$this->downloadLiveBackup();
 		$this->restoreDb();
 
 		$this->doFixPerms();
 
-		return TRUE;	
+		return TRUE;
 	}
 
 	public function fixPermsDir($dir)

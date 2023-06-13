@@ -1,17 +1,14 @@
 {
-	"id": "install.apps.shipard-economy",
-	"name": "Ekonomika",
+	"id": "install.apps.shipard-npo",
+	"name": "Neziskové organizace",
 	"modules": [
 		"install/apps/shipard-core",
 
 		"e10pro/install/docs-sale",
 		"e10pro/install/docs-buy",
 		"e10pro/install/docs-finance",
-		"e10pro/install/docs-stock",
 		"e10pro/install/docs-accounting",
-		"e10pro/install/docs-commerce",
 		"e10pro/property",
-		"e10pro/store",
 
 		"install/country-modules/debs/cz"
 	],
@@ -24,16 +21,6 @@
 		"install/data/common/e10-min-docs-dataset",
 		"install/data/countries/cz/property/property",
 
-		"install/data/countries/cz/debs/debs-accounts-default"
-	],
-
-	"demoData": {
-		"default": {
-			"name": "Demonstrační data 1",
-			"demoModule": "install/demo/modules/company-default",
-			"data": [
-				"install/demo/pkgs/cz/shipard-economy-default"
-			]
-		}
-	}
+		"install/data/countries/cz/debs/debs-accounts-npo"
+	]
 }

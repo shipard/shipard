@@ -12,9 +12,5 @@
 		{"id": "+e10.base", "name": "Daně", "file": "taxes.json"},
 		{"id": "+e10pro.property", "file": "property.json"}
 	],
-	"modules": ["e10/share", "install/country-modules/debs/eu"],
-
-	"dataPackages": [
-		"install/data/countries/cz/debs/debs-accounts-default"
-	]
+	"modules": ["e10/share", "install/country-modules/debs/eu"]
 }

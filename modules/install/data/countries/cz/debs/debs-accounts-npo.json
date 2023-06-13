@@ -1,13 +1,13 @@
 {
 	"name": "Účtová osnova a rozvrh pro neziskové organizace",
 	"includes": [
-		"pkgs/data/cz/accounting/debs-accounts-npo-groups",
-		"pkgs/data/cz/accounting/debs-accounts-npo-class0",
-		"pkgs/data/cz/accounting/debs-accounts-npo-class1",
-		"pkgs/data/cz/accounting/debs-accounts-npo-class2",
-		"pkgs/data/cz/accounting/debs-accounts-npo-class3",
-		"pkgs/data/cz/accounting/debs-accounts-npo-class5",
-		"pkgs/data/cz/accounting/debs-accounts-npo-class6",
-		"pkgs/data/cz/accounting/debs-accounts-npo-class9"
+		"install/data/countries/cz/debs/debs-accounts-npo-groups",
+		"install/data/countries/cz/debs/debs-accounts-npo-class0",
+		"install/data/countries/cz/debs/debs-accounts-npo-class1",
+		"install/data/countries/cz/debs/debs-accounts-npo-class2",
+		"install/data/countries/cz/debs/debs-accounts-npo-class3",
+		"install/data/countries/cz/debs/debs-accounts-npo-class5",
+		"install/data/countries/cz/debs/debs-accounts-npo-class6",
+		"install/data/countries/cz/debs/debs-accounts-npo-class9"
 	]
 }
