@@ -18,11 +18,11 @@
 		font-family: Arial, Helvetica, sans-serif;
 		width: 100%;
 		margin-left: 25.4pt;
-		margin-right: 25.4pt;		
+		margin-right: 25.4pt;
 
 		{{#data.options.docReportsHeadLogoRight}}
 			border-left: 6pt solid {{data.options.accentColor}};
-			border-bottom: 1px solid {{data.options.accentColor}};	
+			border-bottom: 1px solid {{data.options.accentColor}};
 		{{/data.options.docReportsHeadLogoRight}}
 
 		{{^data.options.docReportsHeadLogoRight}}
@@ -31,11 +31,11 @@
 		{{/data.options.docReportsHeadLogoRight}}
 	}
 
-	td.docInfo {		
+	td.docInfo {
 		font-size: 12pt;
 
 		{{#data.options.docReportsHeadLogoRight}}
-			text-align: left;			
+			text-align: left;
 		{{/data.options.docReportsHeadLogoRight}}
 
 		{{^data.options.docReportsHeadLogoRight}}
@@ -48,17 +48,17 @@
 		text-transform: uppercase;
 	}
 
-	td.supplierLogo {		
+	td.supplierLogo {
 		font-size: 10pt;
-		
+
 		{{#data.options.docReportsHeadLogoRight}}
-			text-align: right;			
+			text-align: right;
 		{{/data.options.docReportsHeadLogoRight}}
 
 		{{^data.options.docReportsHeadLogoRight}}
 			text-align: left;
 		{{/data.options.docReportsHeadLogoRight}}
-	}	
+	}
 </style>
 
 <table class='header'>
@@ -68,8 +68,8 @@
 				<span class="docName">
 					PŘEJÍMACÍ LIST<br>
 				</span>
-				{{@dict;dataItem:data.flags.reportTitle}}<br>				
-				číslo <b>{{data.head.docNumber}}</b>, datum <b>{{data.head.dateIssue}}</b>
+				{{@dict;dataItem:data.flags.reportTitle}}<br>
+				číslo <b>{{data.head.docNumber}}</b>, datum <b>{{data.head.dateAccounting}}</b>
 			</td>
 			<td class="supplierLogo">
 				{{#data.owner.logo.logo-nadpis.filename}}
@@ -88,8 +88,8 @@
 				<span class="docName">
 					PŘEJÍMACÍ LIST<br>
 				</span>
-				{{@dict;dataItem:data.flags.reportTitle}}<br>				
-				číslo <b>{{data.head.docNumber}}</b>, datum <b>{{data.head.dateIssue}}</b>
+				{{@dict;dataItem:data.flags.reportTitle}}<br>
+				číslo <b>{{data.head.docNumber}}</b>, datum <b>{{data.head.dateAccounting}}</b>
 			</td>
 		{{/data.options.docReportsHeadLogoRight}}
 	</tr>
