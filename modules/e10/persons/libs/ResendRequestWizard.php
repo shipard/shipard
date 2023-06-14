@@ -21,8 +21,10 @@ class ResendRequestWizard extends Wizard
 		$this->requestRecData = $this->tableRequests->loadItem($this->requestNdx);
 		$this->requestData = Json::decode($this->requestRecData['requestData']);
 
-		if (!isset($this->recData['destEmail']))
+		if (!isset($this->recData['destEmail']) && isset($this->requestData['person']['login']))
 			$this->recData['destEmail'] = $this->requestData['person']['login'];
+		elseif (!isset($this->recData['destEmail']) && isset($this->requestData['login']))
+			$this->recData['destEmail'] = $this->requestData['login'];
 
 		if (!isset($this->recData['requestNdx']))
 			$this->recData['requestNdx'] = $this->requestNdx;
@@ -50,7 +52,7 @@ class ResendRequestWizard extends Wizard
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 
 		$this->openForm ();
-			$this->addInput('requestNdx', '', self::INPUT_STYLE_STRING, /*TableForm::coHidden*/0, 120);
+			$this->addInput('requestNdx', '', self::INPUT_STYLE_STRING, self::coHidden, 120);
 			$this->addInput('destEmail', 'Odeslat na e-mail', self::INPUT_STYLE_STRING, 0, 120);
 		$this->closeForm ();
 	}
@@ -71,11 +73,15 @@ class ResendRequestWizard extends Wizard
 	{
 		$this->init();
 
+		$srEngine = new \e10\persons\libs\SendRequestEngine($this->app());
+		$srEngine->setRequestNdx($this->requestNdx);
+		$url = $srEngine->requestUrl();
+
 		$hdr = [];
 		$hdr ['icon'] = 'user/envelope';
 
-		$hdr ['info'][] = ['class' => 'title', 'value' => 'Znovu odelat požadavek '.$this->requestRecData['subject']];
-		//$hdr ['info'][] = ['class' => 'info', 'value' => Json::encode($this->requestData['person']['login'])];
+		$hdr ['info'][] = ['class' => 'title', 'value' => 'Znovu odeslat požadavek '.$this->requestRecData['subject']];
+		$hdr ['info'][] = ['class' => 'info', 'value' => [['text' => $url, 'icon' => 'system/iconGlobe']]];
 
 		return $hdr;
 	}

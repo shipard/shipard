@@ -27,6 +27,12 @@ class TableRequests extends DbTable
 		$hdr ['info'][] = ['class' => 'info', 'value' => $recData ['requestId']];
 		$hdr ['info'][] = ['class' => 'title', 'value' => $recData ['subject']];
 
+		$srEngine = new \e10\persons\libs\SendRequestEngine($this->app());
+		$srEngine->setRequestNdx($recData['ndx']);
+		$url = $srEngine->requestUrl();
+		$hdr ['info'][] = ['class' => 'info', 'value' => [['text' => $url, 'icon' => 'system/iconGlobe']]];
+
+
 		return $hdr;
 	}
 }

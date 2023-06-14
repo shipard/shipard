@@ -97,4 +97,11 @@ class SendRequestEngine extends Utility
 		$email ['message'] .= "\n--\n  email: $siteEmail | hotline: $sitePhone | $siteWeb \n\n";
 		return $email;
 	}
+
+	public function requestUrl()
+	{
+		$urlHost = $_SERVER['HTTP_HOST'];
+		$url = $this->app->urlProtocol.$urlHost.$this->app->dsRoot.'/user/request/'.$this->requestRecData['requestId'];
+		return $url;
+	}
 }
