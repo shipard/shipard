@@ -5,7 +5,7 @@ use \Shipard\Report\FormReport;
 
 
 /**
- * Class ReportLanDeviceLabelDevice
+ * class ReportLanDeviceLabelDevice
  */
 class ReportLanDeviceLabelDevice extends FormReport
 {
@@ -27,13 +27,5 @@ class ReportLanDeviceLabelDevice extends FormReport
 		$this->rasterPrint = 1;
 
 		parent::loadData();
-
-		$s = '-;:';
-		$qrCodeData = 'TEST123-'.addcslashes($this->recData['id'], $s);
-		$qrCodeGenerator = new \lib\tools\qr\QRCodeGenerator($this->app);
-		$qrCodeGenerator->textData = $qrCodeData;
-		$qrCodeGenerator->createQRCode();
-		$fn = $qrCodeGenerator->url;
-		$this->data['mainQRCodeURL'] = $fn;
 	}
 }

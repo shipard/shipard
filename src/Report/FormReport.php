@@ -119,4 +119,10 @@ class FormReport extends Report
 	public function addMessageAttachments(\Shipard\Report\MailMessage $msg)
 	{
 	}
+
+	public function loadData ()
+	{
+		parent::loadData();
+		$this->data['mainBCId'] = $this->table->itemMainBCId($this->recData);
+	}
 }

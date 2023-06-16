@@ -104,6 +104,7 @@
 			"directPrint": 1, "rasterPrint": 1, "printerClass": "labels", "enabledCfgItem": "options.experimental.testRasterPrint"
 		}
 	],
+  "ndx": 1163,
 	"options": ["disableCopyRecords"],
   "addWizard": {"class": "mac.lan.AddDeviceWizard", "text":  "Přidat"},
   "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},

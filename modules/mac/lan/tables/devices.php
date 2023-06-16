@@ -15,7 +15,7 @@ class TableDevices extends DbTable
 	public function __construct ($dbmodel)
 	{
 		parent::__construct ($dbmodel);
-		$this->setName ('mac.lan.devices', 'mac_lan_devices', 'Zařízení v síti');
+		$this->setName ('mac.lan.devices', 'mac_lan_devices', 'Zařízení v síti', 1163);
 	}
 
 	public function checkAfterSave2 (&$recData)
