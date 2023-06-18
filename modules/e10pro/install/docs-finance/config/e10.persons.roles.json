@@ -23,7 +23,8 @@
 			"e10doc.taxes.VatCS.VatCSReportAll": 2,
 			"e10doc.taxes.VatRS.VatRSReport": 2,
 			"e10doc.taxes.VatReturn.VatReturnReport": 2,
-			"e10doc.taxes.VatOSS.VatOSSReport": 2
+			"e10doc.taxes.VatOSS.VatOSSReport": 2,
+			"e10doc.balance.libs.reports.ExportReceivables": 2
 		}
 	},
 

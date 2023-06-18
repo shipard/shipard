@@ -9,5 +9,7 @@
 	{"name": "Zápočty", "class": "e10doc.balance.reportBalanceOffsetting", "icon": "balance/balanceOffsetting", "group": "e10doc-balance", "order": 9100000},
 	{"name": "Deník", "class": "e10doc.balance.reportBalanceJournal", "icon": "balance/balanceJournal", "group": "e10doc-balance", "order": 9999999},
 
-	{"name": "Kurz. rozdíly", "class": "e10doc.balance.libs.ExchDiffsReport", "icon": "balance/balanceJournal", "group": "e10doc-balance", "order": 19999999}
+	{"name": "Kurz. rozdíly", "class": "e10doc.balance.libs.ExchDiffsReport", "icon": "balance/balanceJournal", "group": "e10doc-balance", "order": 19999999},
+
+	{"name": "Exp. pohledávek", "class": "e10doc.balance.libs.reports.ExportReceivables", "icon": "balance/balanceJournal", "group": "e10doc-balance", "order": 21000000}
 ]
