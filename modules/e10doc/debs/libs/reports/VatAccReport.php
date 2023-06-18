@@ -31,10 +31,10 @@ class VatAccReport extends \e10doc\core\libs\reports\GlobalReport
     if ($this->dateEnd === NULL)
       $this->dateEnd = $this->reportParams ['vatPeriod']['values'][$this->vatPeriod]['dateEnd'];
 
-		$this->setInfo('title', 'Kontrola zaúčtování DPH');
+		$this->setInfo('title', 'Vyúčtování DPH');
 		$this->setInfo('icon', 'report/VAT');
 		$this->setInfo('param', 'Období DPH', $this->reportParams ['vatPeriod']['activeTitle']);
-		$this->setInfo('saveFileName', 'Kontrola zaúčtování DPH '.str_replace(' ', '', $this->reportParams ['vatPeriod']['activeTitle']));
+		$this->setInfo('saveFileName', 'Vyúčtování DPH '.str_replace(' ', '', $this->reportParams ['vatPeriod']['activeTitle']));
 
 		$this->paperOrientation = 'landscape';
 	}
@@ -57,8 +57,14 @@ class VatAccReport extends \e10doc\core\libs\reports\GlobalReport
 		$accNames ['ALL'] = 'CELKEM';
 
 		// -- init states
-		$q1[] = 'SELECT accountId, SUM(journal.moneyDr) as initStateDr, SUM(journal.moneyCr) as initStateCr FROM e10doc_debs_journal as journal ';
-    array_push ($q1, ' WHERE (dateAccounting >= %d', $this->dateBegin, ' AND dateAccounting <= %d', $this->dateEnd, ')');
+		$q1 = [];
+
+		array_push ($q1, 'SELECT accountId,');
+		array_push ($q1, ' SUM(journal.moneyDr) as initStateDr, SUM(journal.moneyCr) as initStateCr');
+		array_push ($q1, ' FROM e10doc_debs_journal as journal ');
+		array_push ($q1, ' LEFT JOIN e10doc_core_heads AS heads ON journal.document = heads.ndx');
+    array_push ($q1, ' WHERE (heads.dateTax >= %d', $this->dateBegin, ' AND heads.dateTax <= %d', $this->dateEnd, ')');
+		array_push ($q1, ' AND fiscalType = %i', 0);
     array_push ($q1, ' AND accountId LIKE %s', '343%');
 		array_push ($q1, ' GROUP BY accountId');
 		$accInitStates = $this->app->db()->query($q1);
@@ -73,8 +79,13 @@ class VatAccReport extends \e10doc\core\libs\reports\GlobalReport
 		}
 
 		// -- month summary
-		$q2[] = 'SELECT accountId, SUM(journal.money) as sumM, SUM(journal.moneyDr) as sumMDr, SUM(journal.moneyCr) as sumMCr FROM e10doc_debs_journal as journal ';
-		array_push ($q2, ' WHERE (dateAccounting >= %d', $this->dateBegin, ' AND dateAccounting <= %d', $this->dateEnd, ')');
+		$q2 = [];
+		array_push ($q2, 'SELECT accountId,');
+		array_push ($q2, ' SUM(journal.money) as sumM, SUM(journal.moneyDr) as sumMDr, SUM(journal.moneyCr) as sumMCr');
+		array_push ($q2, ' FROM e10doc_debs_journal AS journal ');
+		array_push ($q2, ' LEFT JOIN e10doc_core_heads AS heads ON journal.document = heads.ndx');
+		array_push ($q2, ' WHERE (heads.dateTax >= %d', $this->dateBegin, ' AND heads.dateTax <= %d', $this->dateEnd, ')');
+		array_push ($q2, ' AND fiscalType != %i', 2);
     array_push ($q2, ' AND accountId LIKE %s', '343%');
 		array_push ($q2, ' GROUP BY accountId');
 		$accSumM = $this->app->db()->query($q2);
@@ -94,7 +105,7 @@ class VatAccReport extends \e10doc\core\libs\reports\GlobalReport
 		}
 
 		// totals and end states
-		$totals = array ();
+		$totals = [];
 		forEach ($data as &$acc)
 		{
 			$accountId = $acc['accountId'];
@@ -183,7 +194,7 @@ class VatAccReport extends \e10doc\core\libs\reports\GlobalReport
 
 		$h = array ('accountId' => 'Účet',
 			'initState' => ' Poč. stav',
-			'sumMDr' => ' Obrat MD/měsíc', 'sumMCr' => ' Obrat DAL/měsíc',
+			'sumMDr' => ' Obrat MD', 'sumMCr' => ' Obrat DAL',
 			'endState' => ' Zůstatek', 'title' => 'Text');
 
 		$this->addContent (array ('type' => 'table', 'header' => $h, 'table' => $data, 'main' => TRUE));
