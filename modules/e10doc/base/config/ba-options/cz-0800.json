@@ -1,0 +1,18 @@
+{
+	"fields": {
+		"groups": [
+			{"id":  "pla", "title":  "Zástavní smlouva"}
+		],
+		"columns": [
+			{
+				"id": "pledgeAgreementNumber", "group":  "pla", "name": "Číslo zástavní smlouvy", "type": "string", "len": 30
+			},
+			{
+				"id": "pledgeAgreementDate", "group":  "pla", "name": "Datum zástavní smlouvy", "type": "date"
+			},
+			{
+				"id": "pledgeAgreementAppendixNum", "group":  "pla", "name": "Číslo dodatku", "type": "int"
+			}
+    ]
+  }
+}

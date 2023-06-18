@@ -32,6 +32,8 @@
 		{"id": "downloadStatementBeginDate", "name": "Počáteční datum výpisu", "type": "date"},
 		{"id": "downloadStatementBeginNumber", "name": "Počáteční číslo výpisu", "type": "int"},
 
+		{"id": "options", "name": "Nastavení", "type": "subColumns"},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
   ],

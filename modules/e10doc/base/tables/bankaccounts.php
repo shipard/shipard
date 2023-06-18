@@ -1,13 +1,11 @@
 <?php
 
 namespace E10Doc\Base;
-
-use \E10\utils, \E10\TableView, \Shipard\Form\TableForm, \E10\DbTable;
+use \Shipard\Utils\Utils, \Shipard\Utils\Json, \Shipard\Viewer\TableView, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
 
 
 /**
- * Class TableBankAccounts
- * @package E10Doc\Base
+ * class TableBankAccounts
  */
 class TableBankAccounts extends DbTable
 {
@@ -93,21 +91,51 @@ class TableBankAccounts extends DbTable
 				$item ['downloadStatementBeginNumber'] = $r['downloadStatementBeginNumber'];
 			}
 
+			$sci = $this->subColumnsInfo ($r, 'options');
+			if ($sci)
+			{
+				$options = Json::decode($r['options']);
+				if (!$options)
+					$options = [];
+				$item['options'] = $options;
+			}
+
 			$bankAccounts [$r['ndx']] = $item;
 		}
 
 		// -- save to file
 		$cfg ['e10doc']['bankAccounts'] = $bankAccounts;
-		file_put_contents(__APP_DIR__ . '/config/_e10doc.bankAccounts.json', utils::json_lint (json_encode ($cfg)));
+		file_put_contents(__APP_DIR__ . '/config/_e10doc.bankAccounts.json', Utils::json_lint (json_encode ($cfg)));
+	}
+
+	public function subColumnsInfo ($recData, $columnId)
+	{
+		if ($columnId === 'options')
+		{
+			$bankOptionsId = 'cz';
+			$baparts = explode('/', $recData['bankAccount'] ?? '');
+			if (count($baparts) === 2)
+				$bankOptionsId .= '-'.$baparts[1];
+
+			$optionsFileName = __SHPD_MODULES_DIR__.'e10doc/base/config/ba-options/'.$bankOptionsId.'.json';
+
+			if (is_readable($optionsFileName))
+			{
+				$options = Utils::loadCfgFile($optionsFileName);
+				if (!$options || !isset($options['fields']))
+					return FALSE;
+
+				return $options['fields'];
+			}
+		}
+
+		return parent::subColumnsInfo ($recData, $columnId);
 	}
 }
 
 
 /**
- * Prohlížeč vlastních bankovních spojení
- *
- * Class ViewBankAccounts
- * @package E10Doc\Base
+ * class ViewBankAccounts
  */
 class ViewBankAccounts extends TableView
 {
@@ -187,10 +215,7 @@ class ViewBankAccounts extends TableView
 
 
 /**
- * Editační formulář vlastního bankovního spojení
- *
- * Class FormBankAccounts
- * @package E10Doc\Base
+ * class FormBankAccounts
  */
 class FormBankAccounts extends TableForm
 {
@@ -199,9 +224,14 @@ class FormBankAccounts extends TableForm
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
+		$sci = $this->table->subColumnsInfo ($this->recData, 'options');
+
 		$this->openForm ();
 			$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 			$tabs ['tabs'][] = ['text' => 'Ebanking', 'icon' => 'formEBanking'];
+			if ($sci)
+				$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
+
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
 					$this->addColumnInput ('fullName');
@@ -238,6 +268,12 @@ class FormBankAccounts extends TableForm
 							$this->addColumnInput('downloadStatementBeginNumber');
 						}
 				$this->closeTab();
+				if ($sci)
+				{
+					$this->openTab ();
+						$this->addSubColumns ('options');
+					$this->closeTab();
+				}
 			$this->closeTabs();
 		$this->closeForm ();
 	}
