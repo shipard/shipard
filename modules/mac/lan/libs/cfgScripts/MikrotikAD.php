@@ -11,10 +11,15 @@ use e10\Utility;
  */
 class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 {
+	CONST smNone = 0, smAPOnly = 1, smSwitch = 2;
+
 	var $scriptModeSignature = ' -- !!! UNCONFIGURED !!! --';
 	var $userLogin = 'admin';
+	var $csActiveRoot = '';
 
 	var $isRouter = 0;
+	var $switchMode = self::smNone;
+
 
 	public function setDevice($deviceRecData, $lanCfg)
 	{
@@ -27,6 +32,7 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 				$this->userLogin = $this->deviceCfg['userLogin'];
 
 		$this->isRouter = intval($this->deviceCfg['router'] ?? 0);
+		$this->switchMode = intval($this->deviceCfg['switch'] ?? 0);
 	}
 
 	function createData_Init_Identity()
@@ -64,6 +70,9 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 
 		$adminsRangesSSH = array_merge ($this->lanCfg['ipRangesManagement'], $this->lanCfg['ipRangesAdmins']);
 		$adminsRangesWWW = array_merge ($this->lanCfg['ipRangesManagement'], $this->lanCfg['ipRangesAdmins']);
+
+		if (isset($this->deviceCfg['capsmanClient']) && intval($this->deviceCfg['capsmanClient']) && isset($this->lanCfg['mainServerWifiControlIp']))
+			$adminsRangesSSH[] = $this->lanCfg['mainServerWifiControlIp'].'/32';
 
 		if (isset($this->deviceCfg['managementWWWAddrList']) && intval($this->deviceCfg['managementWWWAddrList']))
 			$this->addAddressListIPs($this->deviceCfg['managementWWWAddrList'], $adminsRangesWWW);
@@ -107,6 +116,9 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 
 	function createScript_ScriptMode()
 	{
+		if (!$this->initMode)
+			return;
+
 		$this->script .= "### script mode: {$this->scriptModeSignature} / ".get_class($this)." ###\n";
 		$this->script .= "\n";
 	}
@@ -128,8 +140,12 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 		if (!$this->initMode)
 			return;
 
+		$tftpAddress = $this->lanCfg['mainServerLanControlIp'];
+		if (isset($this->deviceCfg['capsmanClient']) && intval($this->deviceCfg['capsmanClient']) && isset($this->lanCfg['mainServerWifiControlIp']))
+			$tftpAddress = $this->lanCfg['mainServerWifiControlIp'];
+
 		$this->script .= "### user + ssh public key ###\n";
-		$this->script .= "/tool fetch address=".$this->lanCfg['mainServerLanControlIp']." src-path=shn_ssh_key.pub user=".$this->userLogin." mode=tftp dst-path=shn_ssh_key.pub\n";
+		$this->script .= "/tool fetch address=".$tftpAddress." src-path=shn_ssh_key.pub user=".$this->userLogin." mode=tftp dst-path=shn_ssh_key.pub\n";
 		$this->script .= "/user ssh-keys import public-key-file=shn_ssh_key.pub user=".$this->userLogin."\n";
 		$this->script .= "\n";
 	}

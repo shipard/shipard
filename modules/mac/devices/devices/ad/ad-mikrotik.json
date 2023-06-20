@@ -4,8 +4,9 @@
 	"fields": {
 		"columns": [
 			{"id": "router", "name": "Router", "type": "logical", "options": ["saveOnChange"]},
-			{"id": "vlanFiltering", "name": "Filtrování VLAN", "type": "enumInt",
-				"enumValues": {"0": "SW", "1": "HW"}},
+
+			{"id": "switch", "name": "Switch", "type": "enumInt",
+				"enumValues": {"0": "Ne", "1": "Pouze AP mode", "2": "AP + Switch"}},
 
 			{"id": "capsmanServer", "name": "Zapnout CAPSMAN server", "type": "logical"},
 			{"id": "capsmanClient", "name": "Zapnout CAPSMAN klienta (AP Mode)", "type": "logical"},

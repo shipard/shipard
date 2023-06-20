@@ -95,6 +95,7 @@ class OverviewData extends Utility
 			$dk = $this->deviceKinds[$deviceKind];
 
 			$deviceRack = $r['rack'];
+
 			/*
 			if ($deviceRack && isset($this->racks[$deviceRack]) && isset($dk['showDashboardRacks']) && !$r['hideFromDR'])
 			{
@@ -138,6 +139,11 @@ class OverviewData extends Utility
 				$macDeviceCfg = json_decode($r['macDeviceCfg'], TRUE);
 				if ($macDeviceCfg)
 					$this->devices[$deviceNdx]['macDeviceCfg'] = $macDeviceCfg;
+			}
+
+			if ($deviceKind === 14 && isset($this->devices[$deviceNdx]['macDeviceCfg']['capsmanClient']) && intval($this->devices[$deviceNdx]['macDeviceCfg']['capsmanClient']))
+			{
+				$dgId = self::dgiWiFi;
 			}
 
 			// -- dashboard groups

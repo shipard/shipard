@@ -194,6 +194,9 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 
 	function createData_Interfaces_HW_Vlans()
 	{
+		if (!$this->isRouter && $this->switchMode !== self::smSwitch)
+			return;
+
 		$vlansOnPorts = ['native' => [], 'trunk' => [], 'mng' => [], 'all' => []];
 		foreach ($this->lanDeviceCfg['ports'] as $portNdx => $portCfg)
 		{
@@ -366,38 +369,41 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
       return;
     }
 
-
 		$usedAddresses = [];
-		$root = '/ip address';
-		foreach ($this->lanDeviceCfg['addresses'] as $addressCfg)
+
+		if ($this->isRouter)
 		{
-			$interface = isset($addressCfg['vlan']) ? 'IFB_VLAN'.$addressCfg['vlan'] : $addressCfg['portId'];
-			$item = ['type' => 'add',
-				'params' => [
-					'address' => $addressCfg['ip'],
-					'interface' => $interface,
-					'network' => $addressCfg['network'],
-				]
-			];
-			$usedAddresses [] = $item['params']['address'];
-			$this->cfgData[$root][] = $item;
-		}
+			$root = '/ip address';
+			foreach ($this->lanDeviceCfg['addresses'] as $addressCfg)
+			{
+				$interface = isset($addressCfg['vlan']) ? 'IFB_VLAN'.$addressCfg['vlan'] : $addressCfg['portId'];
+				$item = ['type' => 'add',
+					'params' => [
+						'address' => $addressCfg['ip'],
+						'interface' => $interface,
+						'network' => $addressCfg['network'],
+					]
+				];
+				$usedAddresses [] = $item['params']['address'];
+				$this->cfgData[$root][] = $item;
+			}
 
-		foreach ($this->lanCfg['dhcp']['pools'] as $poolId => $poolCfg)
-		{
-			$interface = (isset($poolCfg['vlan'])) ? 'IFB_VLAN'.$poolCfg['vlan'] : 'XXXX';
-			$item = ['type' => 'add',
-				'params' => [
-					'address' => $poolCfg['addressPrefix'].'1'.'/24',
-					'interface' => $interface,
-					'network' => $poolCfg['addressPrefix'].'0',
-				]
-			];
+			foreach ($this->lanCfg['dhcp']['pools'] as $poolId => $poolCfg)
+			{
+				$interface = (isset($poolCfg['vlan'])) ? 'IFB_VLAN'.$poolCfg['vlan'] : 'XXXX';
+				$item = ['type' => 'add',
+					'params' => [
+						'address' => $poolCfg['addressPrefix'].'1'.'/24',
+						'interface' => $interface,
+						'network' => $poolCfg['addressPrefix'].'0',
+					]
+				];
 
-			if (in_array($item['params']['address'], $usedAddresses))
-				continue;
+				if (in_array($item['params']['address'], $usedAddresses))
+					continue;
 
-			$this->cfgData[$root][] = $item;
+				$this->cfgData[$root][] = $item;
+			}
 		}
 	}
 
