@@ -6,7 +6,7 @@
 	"15": {"name": "Hybridní port", "useVlan": 1, "useVLANsList": 1, "icon": "portRolesHybridPort"},
 
 	"20": {"name": "Trunk - uplink", "icon": "portRolesTrunkUplink"},
-	"30": {"name": "Trunk - downlink", "icon": "portRolesTrunkDownlink"},
+	"30": {"name": "Trunk - downlink", "icon": "portRolesTrunkDownlink", "useVlan": 1},
 
 	"40": {"name": "Skupina VLAN", "useVLANsList": 1, "icon": "portRolesVLANGroup"},
 

@@ -113,7 +113,7 @@ class LanCfgCreator extends Utility
 		// --  WiFi management IP ranges
 		$this->cfg['ipRangesManagementWiFi'] = [];
 
-		$q [] = 'SELECT ranges.range as vlanRange, vlans.num AS vlanNumber ';
+		$q [] = 'SELECT ranges.range as vlanRange, ranges.addressGateway, ranges.addressPrefix, vlans.num AS vlanNumber ';
 		array_push($q, ' FROM [mac_lan_lansAddrRanges] AS [ranges]');
 		array_push($q, ' LEFT JOIN [mac_lan_vlans] AS [vlans] ON ranges.vlan = vlans.ndx');
 		array_push($q, ' WHERE 1');
@@ -136,7 +136,11 @@ class LanCfgCreator extends Utility
 					break;
 				default:
 					if (in_array($r['vlanNumber'], $this->cfg['vlanManagementWiFi']))
+					{
 						$this->cfg['ipRangesManagementWiFi'][] = $r['vlanRange'];
+						if (!isset($this->cfg['mainServerWifiControlIp']))
+							$this->cfg['mainServerWifiControlIp'] = $r['addressPrefix'].'2';
+					}
 					break;
 			}
 		}
@@ -211,6 +215,11 @@ class LanCfgCreator extends Utility
 				}
 				elseif ($portRole === 30) // trunk - downlink
 				{
+					if ($r['vlan'])
+					{
+						$portItem['untaggedVlan'] = $this->vlanNumber($r['vlan'], $deviceNdx, $r['portId']);
+						$portItem['vlans'][] = $this->vlanNumber($r['vlan'], $deviceNdx, $r['portId']);
+					}
 					$dvcs = [];
 					$this->deviceDownLinkPortVlans($r['device'], $r['ndx'], $portItem['vlans'], $dvcs);
 				}
@@ -661,6 +670,13 @@ class LanCfgCreator extends Utility
 				{
 					if ($r['connectedTo'] === 2)
 					{
+						if ($r['vlan'])
+						{
+							$vlanNumber = $this->vlanNumber($r['vlan'], $deviceNdx, $r['ndx']);
+							if (!in_array($vlanNumber, $vlans))
+								$vlans[] = $vlanNumber;
+						}
+
 						$this->deviceDownLinkVlans($r['connectedToDevice'],$vlans,$devices);
 					}
 				}

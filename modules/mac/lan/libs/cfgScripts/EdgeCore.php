@@ -138,7 +138,7 @@ class EdgeCore extends \mac\lan\libs\cfgScripts\CoreCfgScript
 				$portParams[] = 'no shutdown';
 			}
 			elseif ($portRole === 15)
-			{ // access port
+			{ // hybrid port
 				$portParams[] = 'switchport mode hybrid';
 				$portParams[] = 'switchport native vlan '.$portCfg['vlans'][0];
 
@@ -159,13 +159,24 @@ class EdgeCore extends \mac\lan\libs\cfgScripts\CoreCfgScript
 			}
 			elseif ($portRole === 20 || $portRole === 30)
 			{ // trunk - uplink / downlink
-				$portParams[] = 'switchport mode trunk';
-				$portParams[] = 'no switchport native vlan';
+				if ($portCfg['untaggedVlan'] ?? 0)
+				{
+					$portParams[] = 'switchport mode hybrid';
+					$portParams[] = 'switchport native vlan '.$portCfg['untaggedVlan'];
+				}
+				else
+				{
+					$portParams[] = 'switchport mode trunk';
+					$portParams[] = 'no switchport native vlan';
+				}
 
 				$ivl = $this->interfaceVlansList($portCfg['vlans']);
 				foreach ($ivl as $ivlItem)
 					$portParams[] = 'switchport allowed vlan add '.$ivlItem.' tagged';
 				$portParams[] = 'switchport allowed vlan remove 1';
+
+				if ($portCfg['untaggedVlan'] ?? 0)
+					$portParams[] = 'switchport allowed vlan add '.$portCfg['untaggedVlan'].' untagged';
 
 				if(count($vlansToRemove))
 				{
