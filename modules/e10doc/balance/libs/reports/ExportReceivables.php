@@ -43,6 +43,7 @@ class ExportReceivables extends \e10doc\core\libs\reports\GlobalReport
   var $exportTypeId = '';
   var $exportType = self::etDefaultCSV;
   var $exportText = '';
+  var $totalAmount = 0;
 
 	function init ()
 	{
@@ -138,10 +139,21 @@ class ExportReceivables extends \e10doc\core\libs\reports\GlobalReport
         'dateIssue' => 'Vystaveno',
         'date' => 'Splatnost',
         'curr' => 'Měna', 'request' => ' Předpis', 'payment' => ' Uhrazeno', 'rest' => ' Zbývá',
+        'restHc' => '+Zbývá CZK',
       ];
 		}
 
-		$this->addContent (array ('type' => 'table', 'header' => $h, 'table' => $data, 'main' => TRUE, 'params' => array ('disableZeros' => 1)));
+    $this->totalAmount = 0;
+    $dataFiltered = [];
+    foreach ($data as $di)
+    {
+      if (!$this->rowIsEnabled($di))
+        continue;
+
+      $dataFiltered[] = $di;
+    }
+
+		$this->addContent (['type' => 'table', 'header' => $h, 'table' => $dataFiltered, 'main' => TRUE, 'params' => ['disableZeros' => 1]]);
 
 		$this->setInfo('title', $thisBalanceDef['name']);
 		$this->setInfo('icon', $thisBalanceDef['icon']);
@@ -186,7 +198,6 @@ class ExportReceivables extends \e10doc\core\libs\reports\GlobalReport
 	function prepareData ()
 	{
 		$q [] = ' ';
-
 
     array_push($q, 'SELECT heads.docNumber, heads.docType, heads.paymentMethod, heads.dateIssue,');
     array_push($q, ' persons.fullName, saldo.*, saldo.symbol1 as symbol1, saldo.symbol2 as symbol2, ');
@@ -437,7 +448,8 @@ class ExportReceivables extends \e10doc\core\libs\reports\GlobalReport
 
   public function createExport($data)
   {
-    $this->exportText = '';
+    $BOM = chr(0xEF).chr(0xBB).chr(0xBF);
+    $this->exportText = $BOM;
 
     // -- head / first row
     if ($this->exportType === self::etCeskaSporitelnaCSV)
@@ -451,7 +463,6 @@ class ExportReceivables extends \e10doc\core\libs\reports\GlobalReport
         $this->createExport_row_ceskaSporitelna($r);
         continue;
       }
-
 
       $rowItems = [];
       $rowItems[] = '"'.Str::upToLen(str_replace('"', '""', $r['fullName']), 250).'"';
@@ -520,10 +531,7 @@ class ExportReceivables extends \e10doc\core\libs\reports\GlobalReport
 
   protected function createExport_row_ceskaSporitelna($r)
   {
-    if ((!isset($r['oid']) || $r['oid'] == '') && (!isset($r['vatId']) || $r['vatId'] == ''))
-      return;
-
-    if (!isset($r['docType']) || $r['docType'] !== 'invno')
+    if (!$this->rowIsEnabled($r))
       return;
 
     $rowItems = [];
@@ -555,6 +563,32 @@ class ExportReceivables extends \e10doc\core\libs\reports\GlobalReport
       $rowItems[] = '';
 
     $this->exportText .= implode(',', $rowItems)."\r\n";
+  }
+
+  protected function rowIsEnabled($r)
+  {
+    if ($this->exportType === self::etCeskaSporitelnaCSV)
+    {
+      if ((!isset($r['oid']) || $r['oid'] == '') && (!isset($r['vatId']) || $r['vatId'] == ''))
+        return FALSE;
+
+      if (!isset($r['docType']) || $r['docType'] !== 'invno')
+        return FALSE;
+    }
+
+    $exportDef = $this->exportTypes[$this->exportTypeId];
+
+    $minAmount = intval($exportDef['options']['minAmount'] ?? 0);
+    if ($minAmount && $r['restHc'] <= $minAmount)
+       return FALSE;
+
+    $maxTotalAmount = intval($exportDef['options']['maxTotalAmount'] ?? 0);
+
+    if ($maxTotalAmount && ($this->totalAmount + $r['restHc']) > $maxTotalAmount)
+       return FALSE;
+
+    $this->totalAmount += $r['restHc'];
+    return TRUE;
   }
 
 	function fiscalMonthsRB ($endMonth)

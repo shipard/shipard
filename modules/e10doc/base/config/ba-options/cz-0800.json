@@ -12,6 +12,12 @@
 			},
 			{
 				"id": "pledgeAgreementAppendixNum", "group":  "pla", "name": "Číslo dodatku", "type": "int"
+			},
+			{
+				"id": "minAmount", "group":  "pla", "name": "Minimální částka pohledávky", "type": "int"
+			},
+			{
+				"id": "maxTotalAmount", "group":  "pla", "name": "Maximální celková částka", "type": "int"
 			}
     ]
   }
