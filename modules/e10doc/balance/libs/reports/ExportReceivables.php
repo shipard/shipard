@@ -448,8 +448,7 @@ class ExportReceivables extends \e10doc\core\libs\reports\GlobalReport
 
   public function createExport($data)
   {
-    $BOM = chr(0xEF).chr(0xBB).chr(0xBF);
-    $this->exportText = $BOM;
+    $this->exportText = '';
 
     // -- head / first row
     if ($this->exportType === self::etCeskaSporitelnaCSV)
@@ -754,6 +753,13 @@ class ExportReceivables extends \e10doc\core\libs\reports\GlobalReport
       $baseFileName = $this->saveAsFileName ($exportDef['saveAsFileType']);
       $this->fullFileName = __APP_DIR__.'/tmp/'.$baseFileName;
       $this->saveFileName = $this->saveAsFileName ($exportDef['saveAsFileType']);
+
+			if ($this->exportType === self::etCeskaSporitelnaCSV)
+			{
+				$e = iconv('UTF-8', 'CP1250', $this->exportText);
+				file_put_contents($this->fullFileName, $e);
+				return;
+			}
 
       file_put_contents($this->fullFileName, $this->exportText);
       return;
