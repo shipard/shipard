@@ -35,7 +35,7 @@ class FormDeliveryNote extends \E10Doc\Core\FormHeads
 					$this->layoutOpen (self::ltHorizontal);
 						$this->layoutOpen (self::ltForm);
 							$this->addColumnInput ('person');
-
+							$this->addColumnInput ('otherAddress1');
 
 							$this->addColumnInput ('dateIssue');
 
@@ -93,6 +93,7 @@ class FormDeliveryNote extends \E10Doc\Core\FormHeads
 					$this->addColumnInput ('author');
 					$this->addColumnInput ('owner');
 					$this->addColumnInput ('roundMethod');
+					$this->addColumnInput ('ownerOffice');
 
 					if ($useDocKinds !== 2)
 						$this->addColumnInput ('docKind');

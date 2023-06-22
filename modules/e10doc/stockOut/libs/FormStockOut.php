@@ -22,6 +22,7 @@ class FormStockOut extends \e10doc\core\FormHeads
 
 			$this->openTab ();
 					$this->addColumnInput ('person');
+					$this->addColumnInput ('otherAddress1');
 					$this->addColumnInput ('dateIssue');
 					$this->addColumnInput ('dateAccounting');
 
@@ -54,6 +55,7 @@ class FormStockOut extends \e10doc\core\FormHeads
 				$this->addColumnInput ('author');
 				$this->addColumnInput ('symbol1');
 				$this->addColumnInput ('symbol2');
+				$this->addColumnInput ('ownerOffice');
 			$this->closeTab ();
 
 			$this->closeTabs ();
