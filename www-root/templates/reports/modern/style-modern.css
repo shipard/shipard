@@ -250,6 +250,19 @@ table.additionalAddresses td div.hdr {font-size: 10pt;}
 /* Objednávky */
 div.orderDescription {margin-top: 5pt;}
 
+/* výdejky a dodací listy */
+
+table.deliveryInfo td{
+	vertical-align: top;
+	width: 50%;
+}
+
+table.deliveryInfo {
+	width: 100%;
+	padding-bottom: 3pt;
+	border-bottom: 1pt solid lightgray;
+	border-collapse: collapse;
+}
 
 /*** universal app styles */
 

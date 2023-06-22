@@ -146,6 +146,28 @@
 	</tr>
 </table>
 
+{{#data.head.transport}}
+	<table class="deliveryInfo">
+		<tr>
+			<td>
+				<div class='hdr'>{{@dict;Doprava}}:</div>
+			</td>
+		</tr>
+		<tr>
+			<td>{{@dict;Jméno řidiče}}:</td><td>{{data.transportPersonDriver.fullName}}</td>
+		</tr>
+		<tr>
+			<td>{{@dict;RZ vozidla}}:</td><td>{{data.head.transportVLP}}</td>
+		</tr>
+		<tr>
+			<td>{{@dict;Celková hmotnost včetně vozidla}}:</td><td>{{data.head.transportVWeight}}</td>
+		</tr>
+		<tr>
+			<td>{{@dict;Celková hmotnost nákladu}}:</td><td>{{data.head.print.weightGross}} kg</td>
+		</tr>
+	</table>
+{{/data.head.transport}}
+
 {{#data.reportTexts.subHeader}}<div class='reportTextHeader'>{{{data.reportTexts.subHeader}}}</div>{{/data.reportTexts.subHeader}}
 
 <table class="rows{{#data.options.docReportsTablesRoundedCorners}} rounded{{/data.options.docReportsTablesRoundedCorners}}">
