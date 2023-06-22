@@ -209,8 +209,9 @@ class DocReport extends DocReportBase
 		}
 		$this->data ['taxNotes'] = array_values($this->data ['taxNotes']);
 
-		// -- person
+		// -- persons
 		$this->loadDataPerson('personHandover');
+		$this->loadDataPerson('transportPersonDriver');
 
 		// delivery address
 		if ($this->recData ['deliveryAddress'] && $this->recData ['deliveryAddress'] !== $this->data ['person']['address']['ndx'])

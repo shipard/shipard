@@ -39,6 +39,11 @@ class FormStockOut extends \e10doc\core\FormHeads
 						if ($transportCfg && intval($transportCfg['askVehicleWeight'] ?? 0))
 							$this->addColumnInput ('transportVWeight');
 
+						if ($transportCfg)
+						{
+							$this->addColumnInput ('transportPersonDriver');
+						}
+
 						$this->addSeparator(self::coH4);
 					}
 				$this->addRecapitulation ();
