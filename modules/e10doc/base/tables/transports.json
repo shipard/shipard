@@ -2,12 +2,20 @@
 	"id": "e10doc.base.transports", "sql": "e10doc_base_transports", "name": "Způsoby dopravy",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "transportType", "name": "Typ dopravy", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "Cizí", "1": "Vlastní"}},
+
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
 		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 40},
 		{"id": "id", "name": "ID", "type": "string", "len": 20},
+
 		{"id": "order", "name": "Pořadí", "type": "int"},
 
 		{"id": "personBalance", "name": "Osoba pro saldokonto", "type": "int", "reference": "e10.persons.persons"},
+
+		{"id": "askVehicleLP", "name": "Zadávat RZ vozidla", "type": "logical"},
+		{"id": "askVehicleWeight", "name": "Zadávat celkovou hmotnost s vozidlem", "type": "logical"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

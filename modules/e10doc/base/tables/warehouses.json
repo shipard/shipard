@@ -16,6 +16,8 @@
 
 		{"id": "order", "name": "Pořadí", "type": "int"},
 
+    {"id": "useTransportOnDocs", "name": "Zadávat na dokladech způsob dopravy", "type": "logical"},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
   ],

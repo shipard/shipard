@@ -45,8 +45,10 @@
 		{"id": "wkfProject", "name": "Projekt", "type": "int", "reference": "wkf.base.projects", "module": "wkf.base"},
 		{"id": "workOrder", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
 		{"id": "property", "name": "Majetek", "type": "int", "reference": "e10pro.property.property"},
-	  {"id": "transport", "name": "Způsob dopravy", "type": "enumInt", "reference": "e10doc.base.transports",
-			"enumCfg": {"cfgItem": "e10doc.transports", "cfgValue": "ndx", "cfgText": "shortName"}},
+
+	  {"id": "transport", "name": "Způsob dopravy", "type": "int", "reference": "e10doc.base.transports", "options": ["saveOnChange"]},
+    {"id": "transportVLP", "name": "RZ vozidla", "type": "string", "len": 20},
+    {"id": "transportVWeight", "name": "Celková hmotnost s vozidlem", "type": "int"},
 
     {"id": "cashBox", "name": "Pokladna", "type": "enumInt", "reference": "e10doc.base.cashboxes",
 			"enumCfg": {"cfgItem": "e10doc.cashBoxes", "cfgValue": "ndx", "cfgText": "shortName"}},

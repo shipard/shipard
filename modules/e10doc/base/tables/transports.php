@@ -29,14 +29,18 @@ class TableTransports extends DbTable
 
 	public function saveConfig ()
 	{
-		$transports = array ();
+		$transports = [];
 		$rows = $this->app()->db->query ('SELECT * from [e10doc_base_transports] WHERE [docState] != 9800 ORDER BY [order], [id]');
 
 		foreach ($rows as $r)
 		{
 			$transports [$r['ndx']] = [
-				'ndx' => $r['ndx'], 'id' => $r['id'],
-				'fullName' => $r ['fullName'], 'shortName' => $r ['shortName'], 'pb' => $r['personBalance']
+				'ndx' => $r['ndx'],
+				'transportType' => $r['transportType'],
+				'id' => $r['id'],
+				'fullName' => $r ['fullName'], 'shortName' => $r ['shortName'],
+				'askVehicleLP' => $r['askVehicleLP'], 'askVehicleWeight' => $r['askVehicleWeight'],
+				'pb' => $r['personBalance']
 			];
 		}
 		// save to file
@@ -108,11 +112,18 @@ class FormTransport extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
 		$this->openForm ();
+			$this->addColumnInput ('transportType');
+
 			$this->addColumnInput ('fullName');
 			$this->addColumnInput ('shortName');
 			$this->addColumnInput ('id');
 			$this->addColumnInput ('order');
-			$this->addColumnInput ('personBalance');
+			$this->addSeparator(self::coH4);
+			$this->addColumnInput ('askVehicleLP');
+			$this->addColumnInput ('askVehicleWeight');
+			$this->addSeparator(self::coH4);
+			if ($this->recData['transportType'] == 0)
+				$this->addColumnInput ('personBalance');
 		$this->closeForm ();
 	}
 }

@@ -10,27 +10,36 @@ class FormStockOut extends \e10doc\core\FormHeads
 		$this->setFlag ('maximize', 1);
 		$this->setFlag ('sidebarPos', self::SIDEBAR_POS_RIGHT);
 
+		$whCfg = $this->app()->cfgItem('e10doc.warehouses.'.$this->recData['warehouse'], NULL);
+
 		$this->openForm (self::ltNone);
-			$tabs ['tabs'][] = array ('text' => 'Záhlaví', 'icon' => 'system/formHeader');
-			$tabs ['tabs'][] = array ('text' => 'Řádky', 'icon' => 'system/formRows');
+			$tabs ['tabs'][] = ['text' => 'Záhlaví', 'icon' => 'system/formHeader'];
+			$tabs ['tabs'][] = ['text' => 'Řádky', 'icon' => 'system/formRows'];
 			$this->addAccountingTab ($tabs['tabs']);
-			$tabs ['tabs'][] = array ('text' => 'Přílohy', 'icon' => 'system/formAttachments');
-			$tabs ['tabs'][] = array ('text' => 'Nastavení', 'icon' => 'system/formSettings');
+			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
+			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 			$this->openTabs ($tabs, TRUE);
 
 			$this->openTab ();
-				$this->layoutOpen (self::ltHorizontal);
-					$this->layoutOpen (self::ltForm);
-						$this->addColumnInput ("person");
+					$this->addColumnInput ('person');
+					$this->addColumnInput ('dateIssue');
+					$this->addColumnInput ('dateAccounting');
 
-						$this->addColumnInput ("dateIssue");
-						$this->addColumnInput ("dateAccounting");
-					$this->layoutClose ();
+					if ($whCfg && intval($whCfg['useTransportOnDocs'] ?? 0))
+					{
+						//askVehicleLP
 
-					$this->layoutOpen (self::ltForm);
-					$this->layoutClose ();
-				$this->layoutClose ();
+						$this->addSeparator(self::coH4);
+						$this->addColumnInput ('transport');
 
+						$transportCfg = $this->app()->cfgItem('e10doc.transports.'.$this->recData['transport'], NULL);
+						if ($transportCfg && intval($transportCfg['askVehicleLP'] ?? 0))
+							$this->addColumnInput ('transportVLP');
+						if ($transportCfg && intval($transportCfg['askVehicleWeight'] ?? 0))
+							$this->addColumnInput ('transportVWeight');
+
+						$this->addSeparator(self::coH4);
+					}
 				$this->addRecapitulation ();
 			$this->closeTab ();
 
