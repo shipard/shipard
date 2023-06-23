@@ -92,6 +92,7 @@ class DeviceInfo extends Utility
 				$this->zigbee2mqttUrl = $baseUrl.'z2m/z2m-'.Utils::safeChars($this->deviceRecData['id'], TRUE).'-'.$this->deviceRecData['uid'].'/';
 			}
 			$this->macDeviceCfg = $macDeviceCfg;
+			$this->info['macDeviceCfg'] = $this->macDeviceCfg;
 		}
 	}
 

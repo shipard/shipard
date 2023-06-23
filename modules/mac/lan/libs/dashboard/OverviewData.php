@@ -205,6 +205,16 @@ class OverviewData extends Utility
 					'badgeQuantityId' => $badgeQuantityId,
 					'badgeParams' => ['dimensions' => 'uptime', 'units' => 'hours', 'divide' => 3600, 'value_color' => 'COLOR:null|red>2400|orange>1200|00A000>=0'],
 				];
+
+				if (isset($this->devices[$deviceNdx]['macDeviceCfg']) && intval($this->devices[$deviceNdx]['macDeviceCfg']['capsmanServer'] ?? 0))
+				{
+					$badgeQuantityId = 'snmp_'.$this->devices[$deviceNdx]['deviceId'].'.wifi-clients';
+					$this->devices[$deviceNdx]['deviceBadges'][] = [
+						'label' => 'WiFi',
+						'badgeQuantityId' => $badgeQuantityId,
+						'badgeParams' => ['units' => ' 웃', 'value_color' => 'COLOR:null|red>100|orange>50|00A000>=0'],
+					];
+				}
 			}
 			elseif ($deviceKind === 11)
 			{ // NAS
