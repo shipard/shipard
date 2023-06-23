@@ -1086,6 +1086,7 @@ class CfgManager
 				if ($colNdx != 0)
 					$alterTableAddColumn .= ', ';
 				$alterTableAddColumn .= "CHANGE $a{$sqlColName}$a $a{$sqlColName}$a smallint NULL DEFAULT '0'";
+				$colNdx++;
 				continue;
 			}
 			if ($col ['type'] == 'int' && $nativeType !== 'INT')
@@ -1093,6 +1094,7 @@ class CfgManager
 				if ($colNdx != 0)
 					$alterTableAddColumn .= ', ';
 				$alterTableAddColumn .= "CHANGE $a{$sqlColName}$a $a{$sqlColName}$a INT DEFAULT '0'";
+				$colNdx++;
 				continue;
 			}
 		}
