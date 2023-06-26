@@ -1,0 +1,33 @@
+{
+	"id": "wkf.events.events", "sql": "wkf_events_events", "name": "Události",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "calendar", "name": "Kalendář", "type": "enumInt", "len": 4,
+			"enumCfg": {"cfgItem": "wkf.events.cals", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "title", "name": "Název", "type": "string", "len": 120},
+		{"id": "text", "name": "Text", "type": "memo", "comboClass": "lib.web.WebTextSidebar"},
+
+		{"id": "author", "name": "Autor", "type": "int", "reference": "e10.persons.persons"},
+
+		{"id": "dateBegin", "name": "Datum od", "type": "date"},
+		{"id": "timeBegin", "name": "Čas od", "type": "time"},
+		{"id": "dateTimeBegin", "name": "Datum a čas začátku", "type": "timestamp"},
+
+		{"id": "dateEnd", "name": "Datum do", "type": "date"},
+		{"id": "timeEnd", "name": "Čas do", "type": "time"},
+		{"id": "dateTimeEnd", "name": "Datum a čas konce", "type": "timestamp"},
+
+		{"id": "multiDays", "name": "Více dnů", "type": "logical", "options": ["saveOnChange"]},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "wkf.events.ViewEvents", "detail": "wkf.events.ViewDetailEvent"}
+	],
+	"forms": [
+		{"id": "default", "class": "wkf.events.FormEvent"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "title"}
+}

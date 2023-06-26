@@ -1,0 +1,15 @@
+{
+	"admin": {
+		"viewers": {
+			"wkf.events.cals": {"default": 2}
+		}
+	},
+	"user": {
+		"viewers": {
+			"wkf.events.events": {"default": 2}
+		},
+		"widgets": {
+			"wkf.events.libs.WidgetCalendar": 2
+		}
+	}
+}

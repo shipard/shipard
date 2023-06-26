@@ -1,0 +1,6 @@
+[
+	{
+		"name": "Kalendář", "class": "wkf.events.libs.WidgetCalendar", "icon": "system/iconCalendar",
+		"dashboard": "main_new", "panel": "calendar", "order": 1000, "row": "main", "width": 12, "type": "wkfWall"
+	}
+]

@@ -1,0 +1,19 @@
+{
+	"panels": {
+		"srvcfg": {
+			"items": {
+				"technical": {
+					"subMenu": {
+						"items": {
+							"personsAddress": {
+								"t1": "Kalendář", "object": "viewer",
+								"table": "wkf.events.events", "viewer": "default",
+								"icon": "system/iconCalendar", "order": 400000
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

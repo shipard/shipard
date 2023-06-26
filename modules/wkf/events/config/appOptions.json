@@ -1,0 +1,6 @@
+{
+	"wkfnEventsCals": {
+		"name": "Kalendáře", "order": 381000, "group": "workflow",
+		"type": "viewer", "table": "wkf.events.cals", "viewer": "default"
+	}
+}

@@ -1,0 +1,13 @@
+{
+	"main_new": {
+		"panels": {
+			"calendar": {
+				"name": "Kalendář",
+				"icon": "system/iconCalendar",
+				"order": 1500,
+				"fullsize": 1,
+				"rows": {"main": {"order": 10000, "class": "full"}}
+			}
+		}
+	}
+}

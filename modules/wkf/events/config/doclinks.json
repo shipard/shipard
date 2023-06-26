@@ -1,0 +1,16 @@
+{
+	"wkf.events.cals": {
+		"wkf-events-cals-members": {
+			"linkid": "wkf-events-cals-members", "name": "Členové kalendáře", "icon": "system/iconUser",
+			"sources": [
+				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			]
+		},
+		"wkf-events-cals-admins": {
+			"linkid": "wkf-events-cals-admins", "name": "Správci kalendáře", "icon": "system/iconAdmin",
+			"sources": [
+				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			]
+		}
+	}
+}

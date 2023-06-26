@@ -1,0 +1,30 @@
+{
+	"id": "wkf.events.cals", "sql": "wkf_events_cals", "name": "Kalendáře",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "fullName", "name": "Název", "type": "string", "len": 100},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 60},
+
+		{"id": "usePerex", "name": "Používat perex", "type": "logical"},
+
+		{"id": "order", "name": "Pořadí", "type": "int"},
+		{"id": "icon", "name": "Ikona", "type": "string", "len": 50},
+		{"id": "colorbg", "name": "Barva", "type": "string", "len": 7, "subtype": "color"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": {
+		"default": {"id": "default", "class": "wkf.events.ViewCals"}
+	},
+	"forms": [
+		{"id": "default", "class": "wkf.events.FormCal"}
+	],
+	"options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

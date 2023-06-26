@@ -1,0 +1,16 @@
+{
+  "id": "wkf.events",
+  "name": "workflow - events",
+  "tables": [
+		"cals", "events"
+	],
+	"modules": ["wkf/base"],
+  "config": [
+	  {"id": "+appOptions", "file": "appOptions.json"},
+		{"id": "+e10.base.doclinks", "file": "doclinks.json"},
+    {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+		{"id": "+dashboards", "file": "dashboards.json"},
+		{"id": "+widgets", "file": "widgets.json"},
+		{"id": "+appSkeleton", "file": "appSkeleton.panel.srvcfg.json"}
+	]
+}
