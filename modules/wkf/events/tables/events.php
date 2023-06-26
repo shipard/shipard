@@ -75,6 +75,18 @@ class TableEvents extends DbTable
 
 		return parent::columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, $form);
 	}
+
+	public function checkAccessToDocument ($recData)
+	{
+		/** @var \wkf\events\TableCals */
+		$tableCals = $this->app()->table('wkf.events.cals');
+		$uc = $tableCals->usersCals();
+
+		if (isset($uc[$recData['calendar']]))
+			return $uc[$recData['calendar']];
+
+		return 1;
+	}
 }
 
 
@@ -198,8 +210,6 @@ class FormEvent extends TableForm
 {
 	public function renderForm ()
 	{
-		$bboard = $this->app()->cfgItem('wkf.bboard.bboards.'.$this->recData['bboard'], []);
-
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 		$this->setFlag ('maximize', 1);
