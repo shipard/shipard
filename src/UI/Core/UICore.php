@@ -189,7 +189,8 @@ class UICore extends \Shipard\Base\BaseObject
 
 	public function actionCode ($button, $mode = 0)
 	{
-		$params = '';
+		$css = (isset($button['css'])) ? " style='{$button['css']}'" : '';
+		$params = $css;
 		$c = '';
 
 		if (isset ($button['subButtons']) || isset ($button['dropdownMenu']))
