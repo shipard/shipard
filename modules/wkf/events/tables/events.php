@@ -37,11 +37,20 @@ class TableEvents extends DbTable
 	{
 		parent::checkBeforeSave ($recData, $ownerData);
 
+		if (Utils::dateIsBlank($recData['dateBegin']))
+			$recData['dateBegin'] = Utils::today();
+		if (!isset($recData['timeBegin']) || $recData['timeBegin'] === '')
+			$recData['timeBegin'] = '00:00';
+		if (!isset($recData['timeEnd']) || $recData['timeEnd'] === '')
+			$recData['timeEnd'] = '00:00';
+
 		$dateTimeBegin = Utils::createDateTimeFromTime ($recData['dateBegin'], $recData['timeBegin']);
 		$recData['dateTimeBegin'] = $dateTimeBegin;
 
 		if ($recData['multiDays'])
 		{
+			if (!isset($recData['dateEnd']))
+				$recData['dateEnd'] = Utils::createDateTime($recData['dateBegin']);
 			$dateTimeEnd = Utils::createDateTimeFromTime ($recData['dateEnd'], $recData['timeEnd']);
 			$recData['dateTimeEnd'] = $dateTimeEnd;
 		}
