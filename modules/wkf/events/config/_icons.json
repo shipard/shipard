@@ -1,0 +1,8 @@
+{
+    "tables/wkf.events.cals":{
+		"fa5": "fa-calendar-alt",
+		"fa6pro": "fa-calendar-alt",
+		"bsi": "bi-calendar",
+		"mdi": "calendar_today"
+	}
+}
