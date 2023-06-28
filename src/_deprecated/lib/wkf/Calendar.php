@@ -69,7 +69,7 @@ class Calendar extends Utility
 
 			$newEvent = [
 				'ndx' => $r['ndx'], 'icon' => $this->tableEvents->tableIcon ($r, 1),
-				'subject' => $r['title'], 'calendar' => $r['calendar'],
+				'subject' => $r['title'], 'calendar' => $r['calendar'], 'placeDesc' => $r['placeDesc'],
 				'dateBegin' => $r['dateBegin'], 'timeBegin' => $r['timeBegin'], 'dateTimeBegin' => $r['dateTimeBegin'],
 				'dateEnd' => $r['dateEnd'], 'timeEnd' => $r['timeEnd'], 'dateTimeEnd' => $r['dateTimeEnd'],
 				'docState' => $r['docState'], 'docStateClass' => $docStateClass
@@ -319,10 +319,13 @@ class Calendar extends Utility
 					$pfx .= ' - '.$e['timeEnd'];
 
 				$event = [
-					'text' => $pfx.' '.$e['subject'], 'class' => 'tag tag-event ' . $e['docStateClass'], 'icon' => $e['icon'],
+					'text' => $pfx.' '.$e['subject'], 'class' => 'e10-suffix-block tag tag-event ' . $e['docStateClass'], 'icon' => $e['icon'],
 					'docAction' => 'edit', 'pk' => $e['ndx'], 'table' => 'wkf.events.events',
 					'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId,
 				];
+
+				if ($e['placeDesc'] !== '')
+					$event['suffix'] = '  '.$e['placeDesc'];
 
 				if ($cal)
 					$event['css'] = 'border-left: 10px solid '.$cal['colorbg'].';';

@@ -7,6 +7,8 @@
 		{"id": "title", "name": "Název", "type": "string", "len": 120},
 		{"id": "text", "name": "Text", "type": "memo", "comboClass": "lib.web.WebTextSidebar"},
 
+		{"id": "placeDesc", "name": "Místo", "type": "string", "len": 160},
+
 		{"id": "author", "name": "Autor", "type": "int", "reference": "e10.persons.persons"},
 
 		{"id": "dateBegin", "name": "Datum od", "type": "date"},

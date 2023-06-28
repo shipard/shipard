@@ -228,13 +228,14 @@ class FormEvent extends TableForm
 				$this->addColumnInput ('dateBegin');
 				$this->addColumnInput ('timeBegin');
 
-
 				if ($this->recData['multiDays'])
 					$this->addColumnInput ('dateEnd');
 				$this->addColumnInput ('timeEnd');
 
 				$this->addColumnInput ('multiDays');
 			$this->closeRow();
+
+			$this->addColumnInput ('placeDesc');
 
 			$this->openTabs ($tabs);
 				$this->openTab (self::ltNone);
