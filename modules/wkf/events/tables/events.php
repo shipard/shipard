@@ -78,6 +78,9 @@ class TableEvents extends DbTable
 
 	public function checkAccessToDocument ($recData)
 	{
+		if (!isset($recData['ndx']) || !$recData['ndx'])
+			return 2;
+
 		/** @var \wkf\events\TableCals */
 		$tableCals = $this->app()->table('wkf.events.cals');
 		$uc = $tableCals->usersCals();

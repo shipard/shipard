@@ -172,7 +172,8 @@ class Calendar extends Utility
 				$thisMonth = intval($activeDate->format('m'));
 				$title = strval($thisDay);
 				if ($thisMonth != $month)
-					$title = strval($thisDay) . '.' . strval($thisMonth) . '.';
+					//$title = strval($thisDay) . '.' . strval($thisMonth) . '.';
+					$title = strval($thisDay);
 
 				if ($params && isset($params['enabledDays']) &&
 						(!isset($params['enabledDays'][$thisMonth]) || !in_array($thisDay, $params['enabledDays'][$thisMonth])))
@@ -181,14 +182,20 @@ class Calendar extends Utility
 				}
 				else
 				{
+					$css = '';
 					$class = '';
 					if ($thisMonth != $month)
-						$class .= ' inactive';
+					{
+						$class .= ' inactive e10-off e10-small';
+						$css .= ' opacity: .6;';
+					}
 					if ($style === 'small' && isset ($this->events[$dayId]))
 						$class .= ' tooltips';
+					if ($dayId == $this->today->format('Y-m-d'))
+						$css .= ' background-color: #00A01030;';
 
 					$dayTitle = utils::es($thisDay . '. ' . utils::$monthNamesForDate[$thisMonth - 1]);
-					$c .= "<td class='day e10-param-btn{$class}' data-value='$dayId' data-date='$dayId' data-title='$dayTitle' tabindex='1' style='padding: 2px; line-height: 1;'>";
+					$c .= "<td class='day e10-param-btn{$class}' data-value='$dayId' data-date='$dayId' data-title='$dayTitle' tabindex='1' style='padding: 2px; line-height: 1;$css'>";
 
 					if ($style === 'small')
 						$c .= "<span style='float:right; padding-left: 2px;'>".$title."</span>";
