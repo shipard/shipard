@@ -106,6 +106,7 @@ class WidgetCalendar extends WidgetBoard
 			'action' => 'new', 'data-table' => 'wkf.events.events', 'icon' => 'system/actionAdd',
 			'text' => 'Přidat', 'type' => 'button', 'actionClass' => 'btn',
 			'class' => 'e10-param-addButton', 'btnClass' => 'btn-success',
+			'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId,
 			//'data-addParams' => $addParams,
 		];
 		$btns[] = $addButton;

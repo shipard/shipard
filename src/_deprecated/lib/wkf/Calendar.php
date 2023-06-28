@@ -318,12 +318,9 @@ class Calendar extends Utility
 				if ($e['timeEnd'] !== '')
 					$pfx .= ' - '.$e['timeEnd'];
 
-
-
 				$event = [
-					'text' => $pfx.' '.$e['subject'], 'btnClass' => 'tag tag-event ' . $e['docStateClass'], 'icon' => $e['icon'],
-					'type' => 'action', 'action' => 'editform', 'data-pk' => $e['ndx'], 'data-table' => 'wkf.events.events',
-					'element' => 'span',
+					'text' => $pfx.' '.$e['subject'], 'class' => 'tag tag-event ' . $e['docStateClass'], 'icon' => $e['icon'],
+					'docAction' => 'edit', 'pk' => $e['ndx'], 'table' => 'wkf.events.events',
 					'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId,
 				];
 
@@ -359,7 +356,8 @@ class Calendar extends Utility
 
 				$event = [
 						'text' => $pfx.' '.$e['subject'], 'class' => 'tag tag-event ' . $e['docStateClass'], 'icon' => $e['icon'],
-						'docAction' => 'edit', 'pk' => $e['ndx'], 'table' => 'wkf.events.events'
+						'docAction' => 'edit', 'pk' => $e['ndx'], 'table' => 'wkf.events.events',
+						'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId,
 				];
 
 				$css = '';
