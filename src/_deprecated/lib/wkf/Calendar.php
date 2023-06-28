@@ -188,10 +188,10 @@ class Calendar extends Utility
 						$class .= ' tooltips';
 
 					$dayTitle = utils::es($thisDay . '. ' . utils::$monthNamesForDate[$thisMonth - 1]);
-					$c .= "<td class='day e10-param-btn{$class}' data-value='$dayId' data-date='$dayId' data-title='$dayTitle' tabindex='1'>";
+					$c .= "<td class='day e10-param-btn{$class}' data-value='$dayId' data-date='$dayId' data-title='$dayTitle' tabindex='1' style='padding: 2px; line-height: 1;'>";
 
 					if ($style === 'small')
-						$c .= $title;
+						$c .= "<span style='float:right; padding-left: 2px;'>".$title."</span>";
 					else
 					{
 						$c .= "<span class='title'>" . utils::es($title) . '</span>';
@@ -334,11 +334,12 @@ class Calendar extends Utility
 	public function renderEventsSmall ($dayId)
 	{
 		$events = [];
-		$counts = [];
+		$badges = [];
 		if (isset($this->events[$dayId]))
 		{
 			foreach ($this->events[$dayId] as $e)
 			{
+				$calNdx = intval($e['calendar']);
 				$cal = $this->calendars[$e['calendar']] ?? NULL;
 
 				$pfx = '';
@@ -356,21 +357,29 @@ class Calendar extends Utility
 
 				$css = '';
 				if ($cal)
-					$css = " style='border: 3px solid ".$cal['colorbg'].";'";
+				{
+					$css = " style='color: ".$cal['colorbg']."; height: 10px; margin: 0; line-height: 1;'";
+					$event['css'] = 'border-left: 10px solid '.$cal['colorbg'].';';
+				}
 
 				$events [] = $event;
 
-				if (!isset($counts[$e['docStateClass']]))
-					$counts[$e['docStateClass']] = 0;
-				$counts[$e['docStateClass']]++;
+				if (!isset($badges[$calNdx]))
+				{
+					$badges[$calNdx] = ['count' => 1, 'css' => $css, 'dsc' => $e['docStateClass']];
+				}
+				else
+					$badges[$calNdx]['count']++;
 			}
 		}
-		$c = "<div class='events'><span class='list' style='left: unset; right: 15px;'>";
-		foreach ($counts as $dsc => $cnt)
+		$c = '';
+		$c = "<div style='display: inline-block;'>";
+
+		foreach ($badges as $calNdx => $badge)
 		{
-			$c .= "<span class='tag $dsc' $css>$cnt</span>";
+			$c .= "<span {$badge['css']}>"."●"."</span>";
 		}
-		$c .= '</span></div>';
+		$c .= '</div>';
 
 		$this->tooltips[$dayId] = '';
 		foreach ($events as $e)
