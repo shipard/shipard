@@ -20,11 +20,15 @@ class WidgetCalendar extends WidgetBoard
 	var $today;
 	var $defaultViewType = 'year';
 
+	var $userCals = NULL;
 	var $calendars;
 
 	public function init ()
 	{
 		//$this->createTabs();
+		/** @var \wkf\events\TableCals */
+		$tableCals = $this->app()->table('wkf.events.cals');
+		$this->userCals = $tableCals->usersCals();
 
 		parent::init();
 	}
@@ -102,15 +106,17 @@ class WidgetCalendar extends WidgetBoard
 
 		$btns = [];
 
-		$addButton = [
-			'action' => 'new', 'data-table' => 'wkf.events.events', 'icon' => 'system/actionAdd',
-			'text' => 'Přidat', 'type' => 'button', 'actionClass' => 'btn',
-			'class' => 'e10-param-addButton', 'btnClass' => 'btn-success',
-			'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId,
-			//'data-addParams' => $addParams,
-		];
-		$btns[] = $addButton;
-
+		if ($this->userCals && count($this->userCals))
+		{
+			$addButton = [
+				'action' => 'new', 'data-table' => 'wkf.events.events', 'icon' => 'system/actionAdd',
+				'text' => 'Přidat', 'type' => 'button', 'actionClass' => 'btn',
+				'class' => 'e10-param-addButton', 'btnClass' => 'btn-success',
+				'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId,
+				//'data-addParams' => $addParams,
+			];
+			$btns[] = $addButton;
+		}
 
 		if (count($btns))
 			$c .= $this->app()->ui()->composeTextLine($btns);
