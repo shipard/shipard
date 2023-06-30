@@ -385,6 +385,26 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		}
 	}
 
+	public function entriesStudents()
+	{
+		$e = new \e10pro\zus\libs\EntriesEngine($this->app());
+		$e->debug = 1;
+		$e->doIt = 1;
+		$e->run();
+
+		return TRUE;
+	}
+
+	public function createStudies()
+	{
+		$e = new \e10pro\zus\libs\StudiesEngine($this->app());
+		$e->debug = 1;
+		$e->doIt = 1;
+		$e->run();
+
+		return TRUE;
+	}
+
 	public function onCliAction ($actionId)
 	{
 		switch ($actionId)
@@ -396,6 +416,8 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'import-contacts': return $this->importContacts();
 			case 'repair-entries': return $this->repairEntries();
 			case 'repair-pids': return $this->repairPIDs();
+			case 'entries-students': return $this->entriesStudents();
+			case 'create-studies': return $this->createStudies();
 		}
 
 		parent::onCliAction($actionId);

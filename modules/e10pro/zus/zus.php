@@ -173,6 +173,9 @@ class zusutils
 
 	static function uhradySkolneho ($app, $student, $skolniRok, $cisloStudia, $rozliseniPlatby, $style) {
 		$uhrady = [];
+		if ($skolniRok == '')
+			return $uhrady;
+
 		$q[] = 'SELECT heads.dateAccounting as date, journal.docHead as docHead, heads.docType as docType, heads.docNumber, SUM(journal.request) as predpis, SUM(journal.payment) as vyrovnani';
 		array_push($q, ' FROM e10doc_balance_journal AS journal');
 		array_push($q, '	LEFT JOIN e10doc_core_heads as heads ON journal.docHead = heads.ndx');
@@ -1918,18 +1921,19 @@ class GenerovaniFakturSkolneEngine extends \E10\Utility
 	var $teacher;
 	var $pololeti;
 
-	var $invHead = array ();
-	var $invRows = array ();
+	var $invHead = [];
+	var $invRows = [];
 
 	var $periodBegin;
 	var $periodEnd;
+	var $dateIssue;
 	var $dateDue;
 	var $aktSkolniRok;
 
 	function createHead ($row, $pololeti)
 	{
 		$tableDocs = new \E10Doc\Core\TableHeads ($this->app);
-		$this->invHead = array ('docType' => 'invno');
+		$this->invHead = ['docType' => 'invno'];
 		$tableDocs->checkNewRec($this->invHead);
 
 		$this->invHead ['docState'] = 4000;
@@ -1941,7 +1945,10 @@ class GenerovaniFakturSkolneEngine extends \E10\Utility
 		$this->invHead ['datePeriodBegin'] = $this->periodBegin;
 		$this->invHead ['datePeriodEnd'] = $this->periodEnd;
 
-		$this->invHead ['person'] = $row['student'];
+		if ($row['platce'])
+			$this->invHead ['person'] = $row['platce'];
+		else
+			$this->invHead ['person'] = $row['student'];
 		$this->invHead ['symbol1'] = $row['cisloStudia'];
 		$this->invHead ['centre'] = $row['pobocka'];
 
@@ -1954,7 +1961,14 @@ class GenerovaniFakturSkolneEngine extends \E10\Utility
 		$this->invHead ['symbol2'] = $specSymb;
 
 		$this->invHead ['title'] = 'Školné ' . $pololeti . '.pololetí ' . $this->aktSkolniRok . '/'. $nextYear . ' - odd. ' . $oddeleni;
-		$this->invHead ['dateIssue'] = $this->periodBegin;
+		if ($row['platce'])
+		{
+			$personRecData = $this->app()->loadItem($row['student'], 'e10.persons.persons');
+			if ($personRecData)
+				$this->invHead ['title'] .= ' ('.$personRecData['fullName'].')';
+		}
+
+		$this->invHead ['dateIssue'] = $this->dateIssue;
 		$this->invHead ['dateTax'] = $this->periodBegin;
 		$this->invHead ['dateDue'] = $this->dateDue;
 		$this->invHead ['dateAccounting'] = $this->periodBegin;
@@ -1963,8 +1977,8 @@ class GenerovaniFakturSkolneEngine extends \E10\Utility
 		$this->invHead ['roundMethod'] = intval($this->app->cfgItem ('options.e10doc-sale.roundInvoice', 0));
 		$this->invHead ['author'] = intval($this->app->cfgItem ('options.e10doc-sale.author', 0));
 
-		$this->invRows = array ();
-	} // createHead
+		$this->invRows = [];
+	}
 
 	function createRow ($row, $pololeti)
 	{
@@ -1974,7 +1988,7 @@ class GenerovaniFakturSkolneEngine extends \E10\Utility
 
 		$oddeleni = $this->app->cfgItem ("e10pro.zus.oddeleni.{$row ['svpOddeleni']}.nazev");
 
-		$nextYear = zusutils::aktualniSkolniRok ();
+		$nextYear = $this->schoolYear;
 		$nextYear++;
 
 		$r['item'] = $this->app->cfgItem('options.e10-pro-zus.itemInvoicesFeeSchool', 0);
@@ -1998,16 +2012,19 @@ class GenerovaniFakturSkolneEngine extends \E10\Utility
 	function setPeriod ($today, $pololeti)
 	{
 		$todayYear = intval($today->format ('Y'));
+		$this->dateIssue = Utils::today();
+		$this->dateDue = Utils::today();
+		$this->dateDue->add (new \DateInterval('P30D'));
 
 		switch ($pololeti)
 		{
 			case 1:
-				$this->dateDue = sprintf ("%04d-10-31", $todayYear);
+				//$this->dateDue = sprintf ("%04d-08-01", $todayYear);
 				$beginDateStr = sprintf ("%04d-09-01", $todayYear);
 				$endDateStr = sprintf ("%04d-01-31", $todayYear+1);
 				break;
 			case 2:
-				$this->dateDue = sprintf ("%04d-03-31", $todayYear);
+				//$this->dateDue = sprintf ("%04d-03-31", $todayYear);
 				$beginDateStr = sprintf ("%04d-02-01", $todayYear);
 				$endDateStr = sprintf ("%04d-06-30", $todayYear);
 				break;
@@ -2100,7 +2117,7 @@ class GenerovaniFakturSkolneEngine extends \E10\Utility
 		$this->teacher = $t;
 		$this->pololeti = $pol;
 
-		$this->aktSkolniRok = zusutils::aktualniSkolniRok();
+		$this->aktSkolniRok = $this->schoolYear;
 	}
 
 	function run()

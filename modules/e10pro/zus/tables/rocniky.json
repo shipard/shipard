@@ -10,6 +10,9 @@
 			"enumValues": {"0": "Vysvědčení", "1": "Závěrečné vysvědčení", "2": "Potvrzení"}},
 		{"id": "poradi", "name": "Pořadí", "type": "int"},
 
+		{"id": "konecStudia", "name": "Ročník ukončuje studium", "type": "logical"},
+		{"id": "dalsiRocnik", "name": "Další ročník", "type": "int", "reference": "e10pro.zus.rocniky"},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],

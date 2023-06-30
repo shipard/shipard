@@ -245,7 +245,9 @@ class ViewPrihlasky extends TableView
 
 	public function createToolbar ()
 	{
-		return [];
+		$btns = parent::createToolbar();
+		//unset($btns[0]);
+		return $btns;
 	}
 
 	public function createPanelContentQry (TableViewPanel $panel)

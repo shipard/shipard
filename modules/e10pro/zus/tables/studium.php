@@ -42,6 +42,15 @@ class TableStudium extends DbTable
 	{
 		parent::checkBeforeSave ($recData, $ownerData);
 
+		if (!isset($recData['cisloStudia']) || $recData['cisloStudia'] == 0)
+		{
+			$max = $this->db()->query ('SELECT MAX(cisloStudia) as cisloStudia FROM e10pro_zus_studium')->fetch();
+			if (isset ($max['cisloStudia']))
+				$recData['cisloStudia'] = $max['cisloStudia'] + 1;
+			else
+				$recData['cisloStudia'] = 1;
+		}
+
 		$obor = $this->app()->cfgItem ('e10pro.zus.obory.'.$recData['svpObor'], FALSE);
 		if ($obor)
 		{
@@ -113,7 +122,7 @@ class TableStudium extends DbTable
 			'class' => 'info',
 			'value' => [
 				['text' => $this->app()->cfgItem ("e10pro.zus.oddeleni.{$recData ['svpOddeleni']}.nazev")],
-				['text' => $rocniky [$recData['rocnik']]['nazev'], 'class' => 'pull-right']
+				['text' => $rocniky [$recData['rocnik']]['nazev'] ?? '---', 'class' => 'pull-right']
 			]
 		];
 
@@ -369,7 +378,11 @@ class ViewStudium extends TableView
                       . ": " . */ $this->app()->cfgItem ("e10pro.zus.oddeleni.{$item ['svpOddeleni']}.nazev");
 		$listItem ['i2'] = $rocniky [$item['rocnik']]['nazev'];
 
-		$listItem ['t3'][] = ['icon' => 'iconTeachers', 'text' => $item ['ucitelFullName']];
+		if ($item ['ucitelFullName'])
+			$listItem ['t3'][] = ['icon' => 'iconTeachers', 'text' => $item ['ucitelFullName']];
+		else
+			$listItem ['t3'][] = ['icon' => 'iconTeachers', 'text' => '---'];
+
 		if ($item ['placeName'])
 			$listItem ['t3'][] = ['icon' => 'system/iconMapMarker', 'text' => $item ['placeName']];
 		$listItem ['t3'][] = ['text' => $skolniRoky [$item['skolniRok']]['nazev'], 'class' => 'pull-right'];
@@ -593,7 +606,7 @@ class ViewDetailStudium extends TableViewDetail
 
 		// -- ids
 		$properties = $tablePersons->loadProperties ($this->item['student']);
-		$ids = $properties[$this->item['student']]['ids'];
+		$ids = $properties[$this->item['student']]['ids'] ?? [];
 		$bdate = \E10\base\searchArrayItem ($ids, 'pid', 'birthdate');
 		if ($bdate)
 		{
@@ -673,7 +686,10 @@ class ViewDetailStudium extends TableViewDetail
 			else
 				$p1['castka'] = utils::nf ($item ['skolVyPrvniPol']);
 
-			$symbol2 = ($item['skolniRok'] - 2000) . ($item['skolniRok'] - 2000 + 1) . '1';
+			if ($item['skolniRok'] != '')
+				$symbol2 = ($item['skolniRok'] - 2000) . ($item['skolniRok'] - 2000 + 1) . '1';
+			else
+				$symbol2 = '00';
 			$qfv[] = 'SELECT * FROM e10doc_core_heads WHERE 1';
 			array_push($qfv, ' AND [docState] = 4000');
 			array_push($qfv, ' AND docType = %s', 'invno',
@@ -702,7 +718,11 @@ class ViewDetailStudium extends TableViewDetail
 			else
 				$p2['castka'] = utils::nf ($item ['skolVyDruhePol']);
 
-			$symbol2 = ($item['skolniRok'] - 2000) . ($item['skolniRok'] - 2000 + 1) . '2';
+			if ($item['skolniRok'] != '')
+				$symbol2 = ($item['skolniRok'] - 2000) . ($item['skolniRok'] - 2000 + 1) . '2';
+			else
+				$symbol2 = '00';
+
 			$qfv[] = 'SELECT * FROM e10doc_core_heads WHERE 1';
 			array_push($qfv, ' AND [docState] = 4000');
 			array_push($qfv, ' AND docType = %s', 'invno',
@@ -959,6 +979,8 @@ class FormStudium extends TableForm
 				$this->addColumnInput ('typVysvedceni', $co);
 				$this->addColumnInput ('student', $co);
 				$this->addColumnInput ('poradoveCislo', $co);
+
+				$this->addColumnInput ('platce', $co);
 			$this->closeTab ();
 
       $this->openTab (TableForm::ltNone);

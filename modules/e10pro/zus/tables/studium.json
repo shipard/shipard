@@ -1,39 +1,39 @@
 {
-    "id": "e10pro.zus.studium", "sql": "e10pro_zus_studium", "name": "Studium studenta", "icon": "icon-asterisk",
-    "columns": [
-        {"id": "ndx", "name": "id", "type": "int_ai"},
-	    {"id": "student", "name": "Student", "type": "int", "options": ["saveOnChange"], "reference": "e10.persons.persons", "comboViewer": "students"},
-	    {"id": "ucitel", "name": "Učitel", "type": "int", "reference": "e10.persons.persons", "comboViewer": "teachers"},
-        {"id": "typVysvedceni", "name": "Typ vysvědčení", "type": "enumInt",
-			"enumCfg": {"cfgItem": "zus.typyVysvedceni", "cfgValue": "", "cfgText": ""}},
-	    {"id": "skolniRok", "name": "Školní rok", "type": "enumString", "len": 10,
-			"enumCfg": {"cfgItem": "e10pro.zus.roky", "cfgValue": "", "cfgText": "nazev", "cfgPrint": "tisk"}},
-	    {"id": "poradoveCislo", "name": "Poř. číslo", "type": "int"},
-        {"id": "svp", "name": "ŠVP", "label": "Studium podle", "type": "enumInt", "options": ["saveOnChange"],
-            "enumCfg": {"cfgItem": "e10pro.zus.svp", "cfgValue": "id", "cfgText": "nazev"}},
-        {"id": "svpObor", "name": "Obor", "type": "enumInt", "options": ["saveOnChange"], "reference": "e10pro.zus.obory",
-	        "enumCfg": {"cfgItem": "e10pro.zus.obory", "cfgValue": "id", "cfgText": "nazev"}},
-        {"id": "svpOddeleni", "name": "Oddělení", "type": "enumInt", "options": ["saveOnChange"], "reference": "e10pro.zus.oddeleni",
-	        "enumCfg": {"cfgItem": "e10pro.zus.oddeleni", "cfgValue": "id", "cfgText": "nazev"}},
-	    {"id": "rocnik", "name": "Ročník", "type": "enumInt",
-			"enumCfg": {"cfgItem": "e10pro.zus.rocniky", "cfgValue": "", "cfgText": "nazev", "cfgPrint": "tisk"}},
-	    {"id": "stupen", "name": "Stupeň", "type": "enumInt",
-			"enumCfg": {"cfgItem": "e10pro.zus.stupne", "cfgValue": "", "cfgText": "nazev", "cfgPrint": "tisk"}},
-	    {"id": "urovenStudia", "name": "Úroveň studia", "type": "enumInt",
-			"enumCfg": {"cfgItem": "zus.urovenStudia", "cfgValue": "", "cfgText": "nazev", "cfgPrint": "tisk"}},
-	    {"id": "bezDotace", "name": "Bez dotace", "type": "logical"},
-	    {"id": "smazano", "name": "Smazáno", "type": "logical"},
+	"id": "e10pro.zus.studium", "sql": "e10pro_zus_studium", "name": "Studium studenta", "icon": "icon-asterisk",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "student", "name": "Student", "type": "int", "options": ["saveOnChange"], "reference": "e10.persons.persons", "comboViewer": "students"},
+		{"id": "ucitel", "name": "Učitel", "type": "int", "reference": "e10.persons.persons", "comboViewer": "teachers"},
+		{"id": "typVysvedceni", "name": "Typ vysvědčení", "type": "enumInt",
+				"enumCfg": {"cfgItem": "zus.typyVysvedceni", "cfgValue": "", "cfgText": ""}},
+		{"id": "skolniRok", "name": "Školní rok", "type": "enumString", "len": 10,
+		"enumCfg": {"cfgItem": "e10pro.zus.roky", "cfgValue": "", "cfgText": "nazev", "cfgPrint": "tisk"}},
+		{"id": "poradoveCislo", "name": "Poř. číslo", "type": "int"},
+		{"id": "svp", "name": "ŠVP", "label": "Studium podle", "type": "enumInt", "options": ["saveOnChange"],
+				"enumCfg": {"cfgItem": "e10pro.zus.svp", "cfgValue": "id", "cfgText": "nazev"}},
+		{"id": "svpObor", "name": "Obor", "type": "enumInt", "options": ["saveOnChange"], "reference": "e10pro.zus.obory",
+			"enumCfg": {"cfgItem": "e10pro.zus.obory", "cfgValue": "id", "cfgText": "nazev"}},
+		{"id": "svpOddeleni", "name": "Oddělení", "type": "enumInt", "options": ["saveOnChange"], "reference": "e10pro.zus.oddeleni",
+			"enumCfg": {"cfgItem": "e10pro.zus.oddeleni", "cfgValue": "id", "cfgText": "nazev"}},
+		{"id": "rocnik", "name": "Ročník", "type": "enumInt",
+		"enumCfg": {"cfgItem": "e10pro.zus.rocniky", "cfgValue": "", "cfgText": "nazev", "cfgPrint": "tisk"}},
+		{"id": "stupen", "name": "Stupeň", "type": "enumInt",
+		"enumCfg": {"cfgItem": "e10pro.zus.stupne", "cfgValue": "", "cfgText": "nazev", "cfgPrint": "tisk"}},
+		{"id": "urovenStudia", "name": "Úroveň studia", "type": "enumInt",
+		"enumCfg": {"cfgItem": "zus.urovenStudia", "cfgValue": "", "cfgText": "nazev", "cfgPrint": "tisk"}},
+		{"id": "bezDotace", "name": "Bez dotace", "type": "logical"},
+		{"id": "smazano", "name": "Smazáno", "type": "logical"},
 
-        {"id": "skolnePrvniPol", "name": "Školné 1.pololetí", "type": "number", "dec": 0, "options": ["saveOnChange"]},
-        {"id": "skolneDruhePol", "name": "Školné 2.pololetí", "type": "number", "dec": 0, "options": ["saveOnChange"]},
-        {"id": "skolSlPrvniPol", "name": "Sleva 1.pololetí", "type": "number", "dec": 0, "options": ["saveOnChange"]},
-        {"id": "skolSlDruhePol", "name": "Sleva 2.pololetí", "type": "number", "dec": 0, "options": ["saveOnChange"]},
-        {"id": "skolVyPrvniPol", "name": "K úhradě 1.pololetí", "type": "number", "dec": 0},
-        {"id": "skolVyDruhePol", "name": "K úhradě 2.pololetí", "type": "number", "dec": 0},
-	    {"id": "pujcovne", "name": "Půjčovné", "type": "number", "dec": 0},
+		{"id": "skolnePrvniPol", "name": "Školné 1.pololetí", "type": "number", "dec": 0, "options": ["saveOnChange"]},
+		{"id": "skolneDruhePol", "name": "Školné 2.pololetí", "type": "number", "dec": 0, "options": ["saveOnChange"]},
+		{"id": "skolSlPrvniPol", "name": "Sleva 1.pololetí", "type": "number", "dec": 0, "options": ["saveOnChange"]},
+		{"id": "skolSlDruhePol", "name": "Sleva 2.pololetí", "type": "number", "dec": 0, "options": ["saveOnChange"]},
+		{"id": "skolVyPrvniPol", "name": "K úhradě 1.pololetí", "type": "number", "dec": 0},
+		{"id": "skolVyDruhePol", "name": "K úhradě 2.pololetí", "type": "number", "dec": 0},
+		{"id": "pujcovne", "name": "Půjčovné", "type": "number", "dec": 0},
 
-        {"id": "cisloStudia", "name": "Číslo studia", "type": "int"},
-        {"id": "oznaceniStudia", "name": "Označení studia", "type": "string", "len": 100},
+		{"id": "cisloStudia", "name": "Číslo studia", "type": "int"},
+		{"id": "oznaceniStudia", "name": "Označení studia", "type": "string", "len": 100},
 		{"id": "pobocka", "name": "Středisko", "type": "int", "reference": "e10doc.base.centres"},
 		{"id": "misto", "name": "Pobočka", "type": "int", "reference": "e10.base.places", "comboViewer": "e10.base.ViewPlacesComboLocalOffices"},
 
@@ -42,26 +42,29 @@
 		{"id": "datumNastupuDoSkoly", "name": "Datum nástupu do školy", "type": "date"},
 		{"id": "datumUkonceniSkoly", "name": "Datum ukončení školy", "type": "date"},
 
+		{"id": "prihlaska", "name": "Přihláška", "type": "int", "reference": "e10pro.zus.prihlasky"},
+		{"id": "platce", "name": "Plátce", "type": "int", "reference": "e10.persons.persons"},
+
 		{"id": "stav", "name": "Stav", "type": "int"},
 		{"id": "stavHlavni", "name": "Hlavní stav", "type": "int"}
-  ],
-  "lists": [
-    {"id": "predmety", "class": "e10.base.ListRows", "name": "Předměty", "table": "e10pro.zus.studiumpre", "queryColumn": "studium"}
-  ],
+	],
+	"lists": [
+		{"id": "predmety", "class": "e10.base.ListRows", "name": "Předměty", "table": "e10pro.zus.studiumpre", "queryColumn": "studium"}
+	],
 	"views": [
 		{
-		  "id": "default", "class": "e10pro.zus.ViewStudium",
-		  "addWizard": [
+			"id": "default", "class": "e10pro.zus.ViewStudium",
+			"addWizard": [
 				{"class": "e10pro.zus.GenerovaniFakturSkolneWizard", "icon": "iconGenerateCertificates", "text": "Generování faktur Školné"},
-			  {"class": "e10pro.zus.GenerovaniFakturPujcovneWizard", "icon": "iconGenerateCertificates", "text": "Generování faktur Půjčovné"}
+				{"class": "e10pro.zus.GenerovaniFakturPujcovneWizard", "icon": "iconGenerateCertificates", "text": "Generování faktur Půjčovné"}
 			],
-		  "detail": "e10pro.zus.ViewDetailStudium"
+			"detail": "e10pro.zus.ViewDetailStudium"
 		},
 		{"id": "combo", "class": "e10pro.zus.ViewStudiumCombo"}
 	],
-  "forms": [
-    {"id": "default", "class": "e10pro.zus.FormStudium"}
-  ],
+	"forms": [
+		{"id": "default", "class": "e10pro.zus.FormStudium"}
+	],
 	"reports": [
 		{"id": "katalog", "name": "Katalog", "class": "e10pro.zus.ReportKatalog"}
 	],

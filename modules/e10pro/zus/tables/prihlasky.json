@@ -76,7 +76,13 @@
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
 	"views": [
-		{"id": "default", "class": "e10pro.zus.ViewPrihlasky", "detail": "e10pro.zus.ViewDetailPrihlaska"}
+		{
+			"id": "default", "class": "e10pro.zus.ViewPrihlasky",
+			"addWizard": [
+				{"class": "e10pro.zus.libs.WizardCreateStudentsFromEntries", "icon": "iconGenerateCertificates", "text": "Vytvořit studenty"}
+			],
+			"detail": "e10pro.zus.ViewDetailPrihlaska"
+		}
 	],
 	"forms": [
 		{"id": "default", "class": "e10pro.zus.FormPrihlaska"}

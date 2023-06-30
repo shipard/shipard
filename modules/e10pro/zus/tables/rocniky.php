@@ -22,9 +22,18 @@ class TableRocniky extends DbTable
 	{
 		$ca = array ();
 
+		$pc = 1;
 		$rows = $this->app()->db->query ("SELECT * from [e10pro_zus_rocniky] ORDER BY [poradi]");
 		forEach ($rows as $r)
-			$ca [$r['ndx']] = array ('id' => $r['ndx'], 'nazev' => $r ['nazev'], 'tisk' => $r ['tisk'], 'zkratka' => $r['zkratka'], 'stupen' => $r ['stupen'], 'typVysvedceni' => $r ['typVysvedceni']);
+		{
+			$ca [$r['ndx']] = [
+				'id' => $r['ndx'], 'nazev' => $r ['nazev'], 'tisk' => $r ['tisk'],
+				'zkratka' => $r['zkratka'], 'stupen' => $r ['stupen'], 'typVysvedceni' => $r ['typVysvedceni'],
+				'pc' => $pc, 'konecStudia' => $r['konecStudia'], 'dalsiRocnik' => $r['dalsiRocnik'],
+			];
+
+			$pc++;
+		}
 
 		// save to file
 		$cfg ['e10pro']['zus']['rocniky'] = $ca;
@@ -117,6 +126,9 @@ class FormRocnik extends TableForm
 			$this->addColumnInput ("poradi");
 			$this->addColumnInput ("stupen");
 			$this->addColumnInput ("typVysvedceni");
+			$this->addSeparator(self::coH4);
+			$this->addColumnInput ('dalsiRocnik');
+			$this->addColumnInput ('konecStudia');
 		$this->closeForm ();
 	}
 }

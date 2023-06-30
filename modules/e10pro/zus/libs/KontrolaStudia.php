@@ -57,6 +57,9 @@ class KontrolaStudia extends Utility
   {
     $etkList = [];
 
+    if ($this->studiumRecData['skolniRok'] == '')
+      return;
+
     // -- individualni
     $q = [];
     array_push($q, 'SELECT vyuky.*');
