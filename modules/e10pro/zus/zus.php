@@ -24,13 +24,8 @@ function monthName2 ($month_int)
 
 
 function aktualniSkolniRok ()
-{ // TODO: refactor to zusutils::aktualniSkolniRok ()
-	$d = getdate ();
-	$m = $d ['mon'];
-	$y = $d ['year'];
-	if ($m <= 7)
-		return $y - 1;
-	return $y;
+{
+	return zusutils::aktualniSkolniRok();
 }
 
 
@@ -157,7 +152,7 @@ class zusutils
 		$d = getdate ();
 		$m = $d ['mon'];
 		$y = $d ['year'];
-		if ($m <= 7)
+		if ($m <= 6)
 			return $y - 1;
 		return $y;
 	}
