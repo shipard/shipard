@@ -2227,7 +2227,12 @@ class GenerovaniFakturPujcovneEngine extends \E10\Utility
 		$this->invHead ['datePeriodBegin'] = $this->periodBegin;
 		$this->invHead ['datePeriodEnd'] = $this->periodEnd;
 
-		$this->invHead ['person'] = $row['student'];
+//		$this->invHead ['person'] = $row['student'];
+		if ($row['platce'])
+			$this->invHead ['person'] = $row['platce'];
+		else
+			$this->invHead ['person'] = $row['student'];
+
 		$this->invHead ['symbol1'] = $row['cisloStudia'];
 		$this->invHead ['centre'] = $row['pobocka'];
 
@@ -2240,7 +2245,14 @@ class GenerovaniFakturPujcovneEngine extends \E10\Utility
 		$this->invHead ['symbol2'] = $specSymb;
 
 		$this->invHead ['title'] = 'Půjčovné ' . $this->aktSkolniRok . '/'. $nextYear . ' - odd. ' . $oddeleni;
-		$this->invHead ['dateIssue'] = $this->periodBegin;
+		if ($row['platce'])
+		{
+			$personRecData = $this->app()->loadItem($row['student'], 'e10.persons.persons');
+			if ($personRecData)
+				$this->invHead ['title'] .= ' ('.$personRecData['fullName'].')';
+		}
+
+		$this->invHead ['dateIssue'] = Utils::today();//$this->periodBegin;
 		$this->invHead ['dateTax'] = $this->periodBegin;
 		$this->invHead ['dateDue'] = $this->dateDue;
 		$this->invHead ['dateAccounting'] = $this->periodBegin;
@@ -2277,7 +2289,11 @@ class GenerovaniFakturPujcovneEngine extends \E10\Utility
 	{
 		$todayYear = intval($today->format ('Y'));
 
-		$this->dateDue = sprintf ("%04d-10-31", $todayYear);
+		$this->dateDue = Utils::today();
+		$this->dateDue->add (new \DateInterval('P30D'));
+
+
+		//$this->dateDue = sprintf ("%04d-10-31", $todayYear);
 		$beginDateStr = sprintf ("%04d-09-01", $todayYear);
 		$endDateStr = sprintf ("%04d-08-31", $todayYear + 1);
 
@@ -2361,7 +2377,7 @@ class GenerovaniFakturPujcovneEngine extends \E10\Utility
 		$this->schoolYear = $schY;
 		$this->teacher = $t;
 
-		$this->aktSkolniRok = zusutils::aktualniSkolniRok();
+		$this->aktSkolniRok = $this->schoolYear;
 	}
 
 	function run()
