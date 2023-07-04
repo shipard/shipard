@@ -6,6 +6,8 @@
 				"stockIn": {"t1": "Příjemky", "object": "viewer", "table": "e10doc.core.heads", "viewer": "stockin", "icon": "docType/stockIn", "order": 100000},
 				"stockOut": {"t1": "Výdejky", "object": "viewer", "table": "e10doc.core.heads", "viewer": "stockout", "icon": "docType/stockOut", "order": 200000},
 				"items": {"t1": "Položky", "object": "viewer", "table": "e10.witems.items", "viewer": "inventory", "order": 500000},
+				"deliveryNote": {"t1": "Dodací listy", "object": "viewer", "table": "e10doc.core.heads", "viewer": "deliveryNote",
+									"icon": "docType/deliveryNote", "enabledCfgItem": "options.e10doc-sale.useDeliveryNotes" ,"order": 520000},
 				"stockInitStates": {"t1": "Počáteční stavy", "object": "viewer", "table": "e10doc.core.heads", "viewer": "stockinst", "icon": "docType/stockinst", "order": 600000},
 				"checks": {"t1": "Inventury", "object": "viewer", "table": "e10doc.inventory.checkHeads", "viewer": "default", "order": 650000},
 				"reports": {"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-inventory", "icon": "system/iconReports", "order": 800000}
