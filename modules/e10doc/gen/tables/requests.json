@@ -1,0 +1,15 @@
+{
+	"id": "e10doc.gen.requests", "sql": "e10doc_gen_requests", "name": "Požadavky na generování dokladů",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+    {"id": "cfg", "name": "CfgGen", "type": "int", "reference": "e10doc.gen.cfgs"},
+
+    {"id": "srcType", "name": "Typ zdroje", "label": "Zdroj", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.gen.srcTypes", "cfgValue": "", "cfgText": "fn"}},
+
+    {"id": "srcDocument", "name": "Zdrojový doklad", "type": "int", "reference": "e10doc.core.heads"},
+		{"id": "dstDocument", "name": "Cílový doklad", "type": "int", "reference": "e10doc.core.heads"}
+	],
+	"options": ["systemTable"]
+}

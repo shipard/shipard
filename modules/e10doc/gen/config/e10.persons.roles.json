@@ -1,0 +1,8 @@
+{
+	"admin": {
+		"viewers": {
+			"e10doc.ddm.formats": {"default": 2},
+			"e10doc.ddm.formatsItems": {"default": 2}
+		}
+	}
+}

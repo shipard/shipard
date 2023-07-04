@@ -1,0 +1,29 @@
+{
+	"id": "e10doc.gen.cfgs", "sql": "e10doc_gen_cfgs", "name": "Nastavení generování dokladů",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+
+    {"id": "srcType", "name": "Typ zdroje", "label": "Zdroj", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.gen.srcTypes", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "srcDocType", "name": "Typ zdrojového dokladu", "type": "enumString", "len": 10,
+	    "enumCfg": {"cfgItem": "e10.docs.types", "cfgValue": "", "cfgText": "fullName"}},
+
+
+		{"id": "dstDocType", "name": "Typ cílového dokladu", "type": "enumString", "len": 10,
+	    "enumCfg": {"cfgItem": "e10.docs.types", "cfgValue": "", "cfgText": "fullName"}},
+
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "e10doc.gen.ViewCfgs"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.gen.FormCfg"}
+	],
+	"options": ["configSource"],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"}
+}

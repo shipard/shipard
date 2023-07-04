@@ -471,6 +471,9 @@ class Detail extends \e10\DocumentCard
 			$this->balanceInfo();
 		}
 		$this->linkedDocuments();
+
+		$this->createDocDetailParts();
+
 		$this->advances();
 
 		if ($detailStyle === 'taxes')
@@ -551,6 +554,32 @@ class Detail extends \e10\DocumentCard
 				'title' => ['icon' => 'icon-money', 'text' => 'Odpočet záloh'], 'header' => $h, 'table' => $list
 			]
 		);
+	}
+
+	protected function createDocDetailParts()
+	{
+		$ddParts = $this->app->cfgItem('e10doc.core.docDetailsParts', NULL);
+		if (!$ddParts)
+			return;
+
+		foreach ($ddParts as $ddPartId => $ddPartCfg)
+		{
+			$classId = $ddPartCfg['classId'];
+
+			/** @var \e10doc\base\libs\DocDetailPart */
+			$o = $this->app()->createObject($classId);
+			if (!$o)
+				continue;
+
+			$o->init();
+			$o->setDocument($this->recData);
+			$o->create();
+
+			foreach ($o->content['body'] as $cnts)
+			{
+				$this->addContent('body', $cnts);
+			}
+		}
 	}
 
 	public function createContent ()

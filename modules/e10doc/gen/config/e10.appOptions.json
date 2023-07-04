@@ -1,0 +1,10 @@
+{
+	"docsGenCfgs": {
+		"name": "Generování dokladů", "order": 20800000, "group": "docs",
+		"icon": "tables/e10doc.gen.cfgs",
+		"type": "viewer",
+		"table": "e10doc.gen.cfgs",
+		"viewer": "default"
+	}
+}
+

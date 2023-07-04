@@ -1,0 +1,14 @@
+{
+  "0": {
+    "fn": "Doklad"
+  },
+  "1": {
+    "fn": "Zakázka"
+  },
+  "2": {
+    "fn": "Přijatá objednávka"
+  },
+  "3": {
+    "fn": "Vydaná objednávka"
+  }
+}

@@ -1,0 +1,13 @@
+{
+	"id": "e10doc.gen",
+	"name": "Documents Generating",
+	"tables": ["cfgs", "requests"],
+
+	"config": [
+		{"id": "+appOptions", "file": "e10.appOptions.json"},
+		{"id": "+e10.persons.roles", "name": "Role uživatelů", "file": "e10.persons.roles.json"},
+
+		{"id": "+e10doc.gen.srcTypes", "file": "srcTypes.json"},
+		{"id": "+e10doc.core.docDetailsParts", "file": "docDetailsParts.json"}
+	]
+}
