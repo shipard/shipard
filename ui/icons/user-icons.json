@@ -597,8 +597,8 @@
     {
         "_title:cs":"Vlaštovka",
         "_title:en":"Paper plane",
-        "_tags:cs":"vlaštovka; papírová vlaštovka; poslat",
-        "_tags:en":"paper plane; sent",
+        "_tags:cs":"vlaštovka; papírová vlaštovka; poslat; posláno; odeslané",
+        "_tags:en":"paper plane; send; sent",
         "fa5":"fa-paper-plane",
         "fa6pro":"fa-paper-plane",
         "bsi":"bi-envelope",
@@ -1725,5 +1725,27 @@
         "fa6pro":"fa-piggy-bank",
         "bsi":"bi-piggy-bank",
         "mdi":"savings"
+    },
+    "user/table":
+    {
+        "_title:cs":"Tabulka",
+        "_title:en":"Table",
+        "_tags:cs":"tabulka; buňka; rozvrh",
+        "_tags:en":"table; cell; timetable",
+        "fa5":"fa-table",
+        "fa6pro":"fa-table",
+        "bsi":"bi-table",
+        "mdi":""
+    },
+    "user/pin":
+    {
+        "_title:cs":"Připínáček",
+        "_title:en":"Pin",
+        "_tags:cs":"připínáček; připnout; nástěnka; připnuto",
+        "_tags:en":"pin; notice board; board; pinned",
+        "fa5":"fa-thumbtack",
+        "fa6pro":"fa-thumbtack",
+        "bsi":"bi-pin",
+        "mdi":""
     }
 }
