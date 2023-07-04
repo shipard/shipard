@@ -124,7 +124,7 @@ class FormCfg extends TableForm
 		$this->setFlag ('maximize', 1);
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
-		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'icon-filter'];
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs, TRUE);

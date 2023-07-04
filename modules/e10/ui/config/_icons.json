@@ -1,0 +1,14 @@
+{
+	"tables/e10.ui.uis": {
+		"fa5": "fa-laptop-code",
+		"fa6pro": "fa-laptop-code",
+		"bsi": "bi-journal-code",
+		"mdi": ""
+	},
+    "tables/e10.ui.uiWidgets": {
+		"fa5": "fa-code",
+		"fa6pro": "fa-code",
+		"bsi": "bi-code",
+		"mdi": ""
+	}
+}

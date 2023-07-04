@@ -59,6 +59,12 @@
         "bsi":"bi-upc",
         "mdi":"barcode"
     },
+    "tables/e10.witems.itemSubTypes":{
+        "fa5":"fa-circle",
+        "fa6pro":"fa-circle",
+        "bsi":"bi-circle",
+        "mdi":""
+    },
 
 
 
