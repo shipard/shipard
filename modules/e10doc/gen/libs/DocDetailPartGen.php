@@ -16,8 +16,8 @@ class DocDetailPartGen extends \e10doc\base\libs\DocDetailPart
     $existedDocs = [];
 
     $q = [];
-    array_push($q, 'SELECT requests.*,');
-    array_push($q, ' docHeads.docNumber, docHeads.docState, docHeads.docStateMain, docHeads.docType');
+    array_push($q, 'SELECT requests.cfg, requests.srcType, requests.srcDocument, requests.dstDocument,');
+    array_push($q, ' docHeads.docNumber, docHeads.docState, docHeads.docStateMain, docHeads.docType, docHeads.ndx');
     array_push($q, ' FROM [e10doc_gen_requests] AS requests');
     array_push($q, ' LEFT JOIN [e10doc_core_heads] AS docHeads ON requests.dstDocument = docHeads.ndx');
     array_push($q, ' WHERE 1');
@@ -27,7 +27,6 @@ class DocDetailPartGen extends \e10doc\base\libs\DocDetailPart
     foreach ($rows as $r)
     {
       $existedDocs[$r['cfg']][] = $r->toArray();
-
     }
 
     foreach ($this->gens as $genId => $gen)
@@ -37,13 +36,18 @@ class DocDetailPartGen extends \e10doc\base\libs\DocDetailPart
         foreach ($existedDocs[$genId] as $doc)
         {
           $test = [];
+
+          $this->tableDocsHeads->createPrintToolbar ($test, $doc);
+          foreach ($test as $btnNdx => $btn)
+            $test[$btnNdx]['class'] = 'pull-right';
+
           $test[] = ['text' => $gen['fn'], 'class' => 'h2'];
 
           $docStates = $this->tableDocsHeads->documentStates ($doc);
           $docStateClass = $this->tableDocsHeads->getDocumentStateInfo ($docStates, $doc, 'styleClass');
 
           $openButton = [
-            '___type' => 'action', 'docAction' => 'edit',
+            'docAction' => 'edit',
             'text' => $doc['docNumber'], 'pk' => $doc['dstDocument'], 'table' => 'e10doc.core.heads',
             'icon' => $this->tableDocsHeads->tableIcon($doc),
             'type' => 'button',
