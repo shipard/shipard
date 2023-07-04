@@ -55,13 +55,31 @@ class DocGenDocumentCreator extends Utility
 		$this->docHead ['dbCounter'] = $activeDbCounter;
 
     $this->docHead ['person'] = $this->srcDocRecData['person'];
+    $this->docHead ['otherAddress1'] = $this->srcDocRecData['otherAddress1'];
+
+    $useTransport = 0;
+    if ($this->srcDocRecData['transport'] !== 0)
+      $useTransport = 1;
+
+    if ($useTransport)
+    {
+      $this->docHead ['transport'] = $this->srcDocRecData['transport'];
+      $this->docHead ['transportVLP'] = $this->srcDocRecData['transportVLP'];
+      $this->docHead ['transportVWeight'] = $this->srcDocRecData['transportVWeight'];
+      $this->docHead ['transportPersonDriver'] = $this->srcDocRecData['transportPersonDriver'];
+    }
+
+    $this->docHead ['currency'] = $this->srcDocRecData['currency'];
+
 		$this->docHead ['title'] = $this->srcDocRecData['title'];
 		$this->docHead ['dateIssue'] = Utils::today();
 		$this->docHead ['dateTax'] = Utils::today();
 		$this->docHead ['dateDue'] = Utils::today();
 		$this->docHead ['dateAccounting'] = Utils::today();
+
 		$this->docHead ['paymentMethod'] = '0';
 		$this->docHead ['roundMethod'] = intval($this->app->cfgItem ('options.e10doc-sale.roundInvoice', 0));
+
 		$this->docHead ['author'] = $this->app()->userNdx();
 
 		$this->docRows = [];
@@ -80,12 +98,18 @@ class DocGenDocumentCreator extends Utility
     $rows = $this->db()->query($q);
     foreach ($rows as $r)
     {
+      $operation = 0;
+
+      if ($this->srcDocRecData['docType'] === 'stockout' && $this->docHead ['docType'] === 'invno')
+        $operation = 1010002;
+
       $newRow = [
         'item' => $r['item'],
         'quantity' => $r['quantity'],
         'unit' => $r['unit'],
         'priceItem' => $r['priceItem'],
         'text' => $r['text'],
+        'operation' => $operation,
       ];
 
       $this->docRows[] = $newRow;
