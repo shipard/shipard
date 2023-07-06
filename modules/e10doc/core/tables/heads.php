@@ -510,6 +510,22 @@ class TableHeads extends DbTable
 			return;
 		}
 
+		if ($changedInput === 'transport')
+		{
+			$transportCfg = $this->app()->cfgItem('e10doc.transports.'.$saveData['recData']['transport'], NULL);
+			if ($transportCfg)
+			{
+				$saveData['recData']['transportVLP'] = $transportCfg['vehicleLP'];
+				$saveData['recData']['transportPersonDriver'] = $transportCfg['vehicleDriver'];
+			}
+			else
+			{
+				$saveData['recData']['transportVLP'] = '';
+				$saveData['recData']['transportPersonDriver'] = 0;
+			}
+			return;
+		}
+
 		// -- row item reset
 		if (count ($colNameParts) === 4 && $colNameParts[1] === 'rows' && $colNameParts[3] === 'item')
 		{

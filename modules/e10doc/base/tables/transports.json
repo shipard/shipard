@@ -14,7 +14,12 @@
 
 		{"id": "personBalance", "name": "Osoba pro saldokonto", "type": "int", "reference": "e10.persons.persons"},
 
-		{"id": "askVehicleLP", "name": "Zadávat RZ vozidla", "type": "logical"},
+		{"id": "vehicleDriver", "name": "Řidič", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "askVehicleDriver", "name": "Zadávat na dokladech řidiče", "type": "logical"},
+
+		{"id": "vehicleLP", "name": "RZ vozidla", "type": "string", "len": 20},
+		{"id": "askVehicleLP", "name": "Zadávat na dokladech RZ vozidla", "type": "logical"},
+
 		{"id": "askVehicleWeight", "name": "Zadávat celkovou hmotnost s vozidlem", "type": "logical"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},

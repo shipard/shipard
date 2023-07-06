@@ -39,7 +39,9 @@ class TableTransports extends DbTable
 				'transportType' => $r['transportType'],
 				'id' => $r['id'],
 				'fullName' => $r ['fullName'], 'shortName' => $r ['shortName'],
-				'askVehicleLP' => $r['askVehicleLP'], 'askVehicleWeight' => $r['askVehicleWeight'],
+				'vehicleLP' => $r['vehicleLP'], 'askVehicleLP' => $r['askVehicleLP'],
+				'vehicleDriver' => $r['vehicleDriver'], 'askVehicleDriver' => $r['askVehicleDriver'],
+				'askVehicleWeight' => $r['askVehicleWeight'],
 				'pb' => $r['personBalance']
 			];
 		}
@@ -73,6 +75,14 @@ class ViewTransports extends TableView
 		$listItem ['i1'] = $item['id'];
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
+		$props = [];
+		if ($item['vehicleLP'] !== '')
+			$props[] = ['text' => $item['vehicleLP'], 'class' => 'label label-info'];
+		if ($item['driverName'])
+			$props[] = ['text' => $item['driverName'], 'class' => 'label label-default', 'icon' => 'system/iconUser'];
+
+		$listItem ['t2'] = $props;
+
 		return $listItem;
 	}
 
@@ -80,7 +90,10 @@ class ViewTransports extends TableView
 	{
 		$fts = $this->fullTextSearch ();
 
-		$q [] = 'SELECT * FROM [e10doc_base_transports]';
+		$q = [];
+		array_push ($q, 'SELECT transports.*, [drivers].fullName AS [driverName]');
+		array_push ($q, ' FROM [e10doc_base_transports] AS [transports]');
+		array_push ($q, ' LEFT JOIN [e10_persons_persons] AS [drivers] ON transports.vehicleDriver = [drivers].ndx');
 		array_push ($q, ' WHERE 1');
 
 		// -- fulltext
@@ -89,12 +102,13 @@ class ViewTransports extends TableView
 			array_push ($q, ' AND (');
 			array_push ($q,
 					' [fullName] LIKE %s', '%'.$fts.'%', ' OR [shortName] LIKE %s', '%'.$fts.'%',
-					' OR [id] LIKE %s', '%'.$fts.'%'
+					' OR [id] LIKE %s', '%'.$fts.'%',
+					' OR [vehicleLP] LIKE %s', '%'.$fts.'%'
 			);
 			array_push ($q, ')');
 		}
 
-		$this->queryMain ($q, '', ['[order]', '[id]', '[ndx]']);
+		$this->queryMain ($q, 'transports.', ['[order]', '[id]', '[ndx]']);
 		$this->runQuery ($q);
 	}
 }
@@ -118,12 +132,22 @@ class FormTransport extends TableForm
 			$this->addColumnInput ('shortName');
 			$this->addColumnInput ('id');
 			$this->addColumnInput ('order');
+
 			$this->addSeparator(self::coH4);
+			$this->addColumnInput ('vehicleLP');
 			$this->addColumnInput ('askVehicleLP');
+			$this->addSeparator(self::coH4);
+			$this->addColumnInput ('askVehicleDriver');
+			$this->addColumnInput ('vehicleDriver');
+			$this->addSeparator(self::coH4);
 			$this->addColumnInput ('askVehicleWeight');
 			$this->addSeparator(self::coH4);
+
 			if ($this->recData['transportType'] == 0)
+			{
+				$this->addSeparator(self::coH4);
 				$this->addColumnInput ('personBalance');
+			}
 		$this->closeForm ();
 	}
 }
