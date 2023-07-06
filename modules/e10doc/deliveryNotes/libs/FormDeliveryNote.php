@@ -54,10 +54,10 @@ class FormDeliveryNote extends \E10Doc\Core\FormHeads
 								$this->addColumnInput ('transportVLP');
 							if ($transportCfg && intval($transportCfg['askVehicleWeight'] ?? 0))
 								$this->addColumnInput ('transportVWeight');
-							if ($transportCfg)
-							{
+
+							if ($transportCfg && intval($transportCfg['askVehicleDriver'] ?? 0))
 								$this->addColumnInput ('transportPersonDriver');
-							}
+
 							$this->addSeparator(self::coH4);
 
 

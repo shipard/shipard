@@ -28,8 +28,6 @@ class FormStockOut extends \e10doc\core\FormHeads
 
 					if ($whCfg && intval($whCfg['useTransportOnDocs'] ?? 0))
 					{
-						//askVehicleLP
-
 						$this->addSeparator(self::coH4);
 						$this->addColumnInput ('transport');
 
@@ -39,10 +37,8 @@ class FormStockOut extends \e10doc\core\FormHeads
 						if ($transportCfg && intval($transportCfg['askVehicleWeight'] ?? 0))
 							$this->addColumnInput ('transportVWeight');
 
-						if ($transportCfg)
-						{
+						if ($transportCfg && intval($transportCfg['askVehicleDriver'] ?? 0))
 							$this->addColumnInput ('transportPersonDriver');
-						}
 
 						$this->addSeparator(self::coH4);
 					}
