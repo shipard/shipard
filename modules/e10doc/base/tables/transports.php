@@ -137,8 +137,8 @@ class FormTransport extends TableForm
 			$this->addColumnInput ('vehicleLP');
 			$this->addColumnInput ('askVehicleLP');
 			$this->addSeparator(self::coH4);
-			$this->addColumnInput ('askVehicleDriver');
 			$this->addColumnInput ('vehicleDriver');
+			$this->addColumnInput ('askVehicleDriver');
 			$this->addSeparator(self::coH4);
 			$this->addColumnInput ('askVehicleWeight');
 			$this->addSeparator(self::coH4);
