@@ -31,9 +31,8 @@ class InfoQueueTester extends Utility
 		if (!$data)
 			return;
 
-		//$urlCore = 'https://sebik-mb.shipard.pro/devel/';
-		//$urlCore = 'https://sebik-u64.shipard.pro/devel/';
-		$urlCore = 'https://system.shipard.app/';
+		//$urlCore = 'https://system.shipard.app/';
+		$urlCore = 'https://org.shipard.app/';
 
 		$urlFull = $urlCore.'feed/sw-info/'.$this->recData['checksumSanitized'];
 
