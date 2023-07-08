@@ -4,6 +4,7 @@ namespace e10pro\condo\libs;
 
 
 use \Shipard\Viewer\TableView;
+use \Shipard\Viewer\TableViewPanel;
 use \Shipard\Utils\Utils;
 
 
@@ -12,11 +13,38 @@ use \Shipard\Utils\Utils;
  */
 class ViewFlatsSettlements extends TableView
 {
+	var $settlementParam = NULL;
+
+
 	public function init ()
 	{
 		parent::init();
 
 		$this->objectSubType = TableView::vsMain;
+
+		$this->usePanelLeft = TRUE;
+
+
+		if ($this->usePanelLeft)
+		{
+			$defaultCR = 0;
+			$enum = [];
+			$crs = $this->db()->query('SELECT * FROM e10doc_reporting_calcReports ORDER BY dateBegin DESC');
+			foreach ($crs as $crsRow)
+			{
+				$enum[$crsRow['ndx']] = ['text' => $crsRow['title'], 'class' => ''];
+
+				if (!$defaultCR)
+					$defaultCR = $crsRow['ndx'];
+			}
+
+			$enum[0] = ['text' => 'Vše', 'class' => ''];
+
+
+			$this->settlementParam = new \Shipard\UI\Core\Params ($this->app);
+			$this->settlementParam->addParam('switch', 'calcReportNdx', ['title' => '', 'defaultValue' => strval($defaultCR), 'switch' => $enum, 'list' => 1]);
+			$this->settlementParam->detectValues();
+		}
 	}
 
 	public function selectRows ()
@@ -33,9 +61,13 @@ class ViewFlatsSettlements extends TableView
     array_push ($q, ' LEFT JOIN [e10mnf_core_workOrders] AS [wo] ON [results].[workOrder] = [wo].[ndx]');
     array_push ($q, ' LEFT JOIN [e10_persons_persons] AS [customers] ON [wo].[customer] = [customers].[ndx]');
     array_push ($q, ' WHERE 1');
-    array_push ($q, '');
-    array_push ($q, '');
-    array_push ($q, '');
+
+		$calcReportNdx = 0;
+		if ($this->settlementParam)
+			$calcReportNdx = intval($this->settlementParam->detectValues()['calcReportNdx']['value']);
+
+		if ($calcReportNdx)
+			array_push($q, ' AND [results].[report] = %i', $calcReportNdx);
 
 		// -- fulltext
 		if ($fts != '')
@@ -58,10 +90,8 @@ class ViewFlatsSettlements extends TableView
 	{
 		$listItem ['pk'] = $item ['ndx'];
 
-		$listItem ['t1'] = $item['customerName'];//;
-
 		$listItem ['i1'] = Utils::nf($item['finalAmount'], 2);
-		$listItem ['t1'] = $item['title'];
+		$listItem ['t1'] = $item['title'].' / '.$item['customerName'];
 
     $props = [];
     $props[] = ['text' => $item['reportTitle'], 'class' => 'label label-default', 'icon' => 'user/moneyBill'];
@@ -74,5 +104,20 @@ class ViewFlatsSettlements extends TableView
 		$listItem ['icon'] = 'user/moneyBill';
 
 		return $listItem;
+	}
+
+	public function createPanelContentLeft (TableViewPanel $panel)
+	{
+		if (!$this->settlementParam)
+			return;
+
+		$qry = [];
+		$qry[] = ['style' => 'params', 'params' => $this->settlementParam];
+		$panel->addContent(['type' => 'query', 'query' => $qry]);
+	}
+
+	public function createToolbar()
+	{
+		return [];
 	}
 }

@@ -1,7 +1,9 @@
 <?php
 
 namespace e10doc\reporting;
+
 use \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
+use \Shipard\Utils\Utils;
 
 
 /**
@@ -86,7 +88,11 @@ class ViewCalcReports extends TableView
 		//$info = $this->table->getEnumsInfo ($item);
 
 		$listItem ['t1'] = $item['title'];
-		$listItem ['t2'] = 'něco tu bude';
+
+		$props = [];
+		$props[] = ['text' =>	Utils::dateFromTo($item['dateBegin'], $item['dateEnd'], NULL), 'class' => '', 'icon' => 'system/iconCalendar'];
+
+		$listItem ['t2'] = $props;
 
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
@@ -110,6 +116,11 @@ class ViewDetailCalcReport extends TableViewDetail
 		];
 
 		return $toolbar;
+	}
+
+	public function createDetailContent ()
+	{
+		$this->addDocumentCard('e10doc.reporting.libs.dc.CalcReport');
 	}
 }
 
