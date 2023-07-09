@@ -23,5 +23,11 @@
 		"fn": "Předběžné",
 		"sn": "Předběžné",
 		"icon": "lifeCyclePreliminary"
+	},
+
+	"9": {
+		"fn": "Nové",
+		"sn": "Nové",
+		"icon": "lifeCycleUnknown"
 	}
 }

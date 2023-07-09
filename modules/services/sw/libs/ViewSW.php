@@ -3,12 +3,13 @@
 namespace services\sw\libs;
 
 
-use \E10\TableView, \e10\utils, \e10\json;
+use \Shipard\Viewer\TableView, \Shipard\Utils\Utils, \Shipard\Utils\Json;
+use \e10\base\libs\UtilsBase;
+use \Shipard\Viewer\TableViewPanel;
 
 
 /**
  * Class ViewSW
- * @package services\sw\libs
  */
 class ViewSW extends TableView
 {
@@ -31,6 +32,7 @@ class ViewSW extends TableView
 		$this->lifeCycle = $this->app()->cfgItem ('mac.swcore.lifeCycle');
 
 		$this->setMainQueries ();
+		$this->setPanels (TableView::sptQuery);
 	}
 
 	public function renderRow ($item)
@@ -88,6 +90,26 @@ class ViewSW extends TableView
 			array_push ($q, ')');
 		}
 
+		// -- special queries
+		$qv = $this->queryValues ();
+
+		if (isset ($qv['swClass']))
+			array_push ($q, ' AND sw.[swClass] IN %in', array_keys($qv['swClass']));
+
+		if (isset ($qv['osFamily']))
+			array_push ($q, ' AND sw.[osFamily] IN %in', array_keys($qv['osFamily']));
+
+		if (isset ($qv['osEdition']))
+			array_push ($q, ' AND sw.[osEdition] IN %in', array_keys($qv['osEdition']));
+
+		$withNewVersion = isset ($qv['others']['withNewVersion']);
+		if ($withNewVersion)
+		{
+			array_push ($q, ' AND (');
+			array_push ($q, 'EXISTS (SELECT [ndx] FROM [mac_sw_swVersions] WHERE [sw].[ndx] = [mac_sw_swVersions].[sw] AND [lifeCycle] = %i)', 9);
+			array_push ($q, ')');
+		}
+
 		$this->queryMain ($q, 'sw.', ['[fullName]', '[ndx]']);
 		$this->runQuery ($q);
 	}
@@ -122,5 +144,38 @@ class ViewSW extends TableView
 		{
 			$item['t2'] = array_merge($item['t2'], $this->categories [$item ['pk']]);
 		}
+	}
+
+	public function createPanelContentQry (TableViewPanel $panel)
+	{
+		$qry = [];
+
+		// -- tags
+		UtilsBase::addClassificationParamsToPanel($this->table, $panel, $qry);
+
+		$swClasses = [];
+		foreach ($this->swClass as $ndx => $k)
+			$swClasses[$ndx] = $k['fn'];
+		$this->qryPanelAddCheckBoxes($panel, $qry, $swClasses, 'swClass', 'Typy SW');
+
+		$osFamilies = [];
+		foreach ($this->osFamily as $ndx => $k)
+			$osFamilies[$ndx] = $k['fn'];
+		$this->qryPanelAddCheckBoxes($panel, $qry, $osFamilies, 'osFamily', 'Druhy operačních systémů');
+
+		$osEditions = [];
+		foreach ($this->osEdition as $ndx => $k)
+			$osEditions[$ndx] = $k['fn'];
+		$this->qryPanelAddCheckBoxes($panel, $qry, $osEditions, 'osEdition', 'Edice operačních systémů');
+
+		$chbxOthers = [
+			'withNewVersion' => ['title' => 'S nově přidanou verzí', 'id' => 'withNewVersion'],
+
+		];
+		$paramsOthers = new \Shipard\UI\Core\Params ($this->app());
+		$paramsOthers->addParam('checkboxes', 'query.others', ['items' => $chbxOthers]);
+		$qry[] = ['id' => 'errors', 'style' => 'params', 'title' => 'Ostatní', 'params' => $paramsOthers];
+
+		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}
 }

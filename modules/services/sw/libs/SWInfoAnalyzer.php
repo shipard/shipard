@@ -230,6 +230,7 @@ class SWInfoAnalyzer extends Utility
 				$newVersion = [
 					'sw' => $this->swNdx,
 					'versionNumber' => $this->osVersion,
+					'lifeCycle' => 9,
 				];
 
 				/** @var \mac\sw\TableSWVersions */
