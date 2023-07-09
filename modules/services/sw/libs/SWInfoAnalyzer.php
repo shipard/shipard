@@ -147,6 +147,14 @@ class SWInfoAnalyzer extends Utility
 					$this->osVersion = $this->srcData['WindowsBuildLabEx'];
 			}
 		}
+		elseif ($this->osFamily === SWUtils::osfSynology)
+		{
+			if (str_starts_with($this->srcData['osName'], 'DSM '))
+			{
+				$this->osName = 'DSM';
+				$this->osVersion = trim(substr($this->srcData['osName'], 4));
+			}
+		}
 		elseif(isset($this->srcData['osName']) && isset($this->srcData['version-os']))
 		{
 			$this->osName = $this->srcData['osName'];
