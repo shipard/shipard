@@ -353,6 +353,29 @@ class SWInfoAnalyzer extends Utility
 		}
 		elseif ($cnt === 0)
 		{
+			if ($r['swVersionsMode'] == 0 && $this->swVersion !== '' && $this->swVersion !== '-') // auto add versions
+			{
+				$newVersion = [
+					'sw' => $this->swNdx,
+					'versionNumber' => $this->swVersion,
+					'lifeCycle' => 9,
+				];
+
+				/** @var \mac\sw\TableSWVersions */
+				$tableSWVersions = $this->app()->table('mac.sw.swVersions');
+
+				$newVersionNdx = $tableSWVersions->dbInsertRec($newVersion);
+				$newVersion = $tableSWVersions->loadItem($newVersionNdx);
+				$tableSWVersions->checkAfterSave2 ($newVersion);
+				$tableSWVersions->docsLog ($newVersionNdx);
+				$this->addProtocol('check-sw-version', "SW version `{$this->swVersion}` / `{$newVersion['suid']}` added");
+
+				$this->swVersionNdx = $newVersionNdx;
+				$this->swVersionSUID = $newVersion['suid'];
+
+				return;
+			}
+
 			$this->addProtocol('search-sw', "No SW found");
 			$this->error = TRUE;
 			return;
