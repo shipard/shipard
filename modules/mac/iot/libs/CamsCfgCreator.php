@@ -81,7 +81,11 @@ class CamsCfgCreator extends Utility
     }
 
     if ($camDef['enableVehicleDetect'])
+    {
       $camCfg['cfg']['enableVehicleDetect'] = $camDef['enableVehicleDetect'];
+      $topic = 'shp/'.'readers/vd/camera-'.$camDef['ndx'];
+      $camCfg['cfg']['vdTopic'] = $topic;
+    }
 
     $this->cfgs[$camDef['ndx']] = $camCfg;
 
