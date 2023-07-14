@@ -984,10 +984,10 @@
         "_title:en":"Automobile",
         "_tags:cs":"osobní automobil; automobil; auto; dopravní prostředek; doprava; přeprava",
         "_tags:en":"automobile; car; vehicle; mean of transport; transport",
-        "fa5": "fa-hand-pointer",
-		"fa6pro": "fa-hand-pointer",
-		"bsi": "bi-hand-index",
-		"mdi": "touch_app"
+        "fa5": "fa-car",
+		"fa6pro": "fa-car",
+		"bsi": "bi-car-front-fill",
+		"mdi": ""
     },
     "user/bicycle":
     {
@@ -1746,6 +1746,28 @@
         "fa5":"fa-thumbtack",
         "fa6pro":"fa-thumbtack",
         "bsi":"bi-pin",
+        "mdi":""
+    },
+    "user/message":
+    {
+        "_title:cs":"Zpráva",
+        "_title:en":"Message",
+        "_tags:cs":"zpráva; text; chat; komentář",
+        "_tags:en":"message; text; chat; comment",
+        "fa5":"fa-comment-dots",
+        "fa6pro":"fa-comment-dots",
+        "bsi":"bi-chat-dots",
+        "mdi":""
+    },
+    "user/blockedUser":
+    {
+        "_title:cs":"Zablokovaný uživatel",
+        "_title:en":"Blocked user",
+        "_tags:cs":"uživatel; zablokovaný uživatel; blok",
+        "_tags:en":"user; blocked user; block",
+        "fa5":"fa-user-times",
+        "fa6pro":"fa-comment-dots",
+        "bsi":"bi-person-slash",
         "mdi":""
     }
 }
