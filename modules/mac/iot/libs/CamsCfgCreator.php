@@ -80,6 +80,9 @@ class CamsCfgCreator extends Utility
       $camCfg['cfg']['streamURL'] .= ':554/';
     }
 
+    if ($camDef['enableVehicleDetect'])
+      $camCfg['cfg']['enableVehicleDetect'] = $camDef['enableVehicleDetect'];
+
     $this->cfgs[$camDef['ndx']] = $camCfg;
 
     /*

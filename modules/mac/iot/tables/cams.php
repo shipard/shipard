@@ -69,6 +69,9 @@ class TableCams extends DbTable
 			'camServerNdx' => $camServerNdx,
 		];
 
+		if ($lanRecData['enableVehicleDetect'])
+			$camInfo['enableVehicleDetect'] = intval($lanRecData['enableVehicleDetect']);
+
 		$server = $this->app->cfgItem('mac.localServers.'.$camInfo['camServerNdx'], NULL);
 		if (!$server)
 		{
@@ -111,9 +114,18 @@ class ViewCams extends TableView
 	public function renderRow ($item)
 	{
 		$listItem ['pk'] = $item ['ndx'];
-		$listItem ['i1'] = ['text' => '#'.$item['ndx']/*.'.'.substr($item['uid'], 0, 3).'...'.substr($item['uid'],-3)*/, 'class' => 'id'];
+		$listItem ['i1'] = ['text' => '#'.$item['ndx'], 'class' => 'id'];
 		$listItem ['t1'] = $item['fullName'];
 		$listItem ['icon'] = $this->table->tableIcon ($item);
+
+		$props = [];
+		if ($item['enableVehicleDetect'])
+		{
+			$vdt = $this->app()->cfgItem('mac.iot.cams.vdt.'.$item['enableVehicleDetect'], NULL);
+			$props[] = ['text' => $vdt['fn'] ?? '!!!', 'icon' => 'user/truck', 'class' => 'label label-info'];
+		}
+
+		$listItem['t2'] = $props;
 
 		return $listItem;
 	}
@@ -169,6 +181,8 @@ class FormCam  extends TableForm
 					//if ($this->recData['controlType'] !== 'sendSetupRequest')
 						$this->addColumnInput ('iotDevice');
             $this->addColumnInput ('lanDevice');
+						$this->addSeparator(self::coH4);
+						$this->addColumnInput ('enableVehicleDetect');
 				$this->closeTab ();
 
 				$this->openTab (TableForm::ltNone);

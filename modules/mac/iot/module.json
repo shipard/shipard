@@ -32,6 +32,7 @@
 	  {"id": "+mac.iot.setups.types", "file": "mac.iot.setups.types.json"},
 
 		{"id": "+mac.iot.cams.types", "file": "mac.iot.cams.types.json"},
+		{"id": "+mac.iot.cams.vdt", "file": "mac.iot.cams.vdt.json"},
 
 		{"id": "+mac.iot.events.onEventTypes", "file": "mac.iot.events.onEventTypes.json"},
 		{"id": "+mac.iot.events.doEventTypes", "file": "mac.iot.events.doEventTypes.json"},

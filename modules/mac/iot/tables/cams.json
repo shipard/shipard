@@ -12,6 +12,9 @@
 		{"id": "iotDevice", "name": "IoT zařízení", "type": "int", "reference": "mac.iot.devices", "options": ["saveOnChange"]},
 		{"id": "lanDevice", "name": "LAN zařízení", "type": "int", "reference": "mac.lan.devices", "options": ["saveOnChange"]},
 
+		{"id": "enableVehicleDetect", "name": "Detekce RZ vozidel", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.iot.cams.vdt", "cfgValue": "", "cfgText": "fn"}},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
