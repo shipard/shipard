@@ -38,6 +38,12 @@ class FlatSettlementAccDocGenerator extends \e10doc\reporting\libs\CalcReportRes
     $newDoc->docHead['dbCounter'] = intval($this->calcReportCfgSettings['dbCounterAccDoc']);
 		$newDoc->docHead['title'] = $this->calcReportRecData['title'].' / '.$this->workOrderRecData['title'];
 
+    $this->calcReportResultResultData['res_flat_water_cold_cost'] ??= 0.0;
+    $this->calcReportResultResultData['res_flat_water_warm_cold_cost'] ?? 0.0;
+    $this->calcReportResultResultData['res_flat_water_heating_cost'] ??= 0.0;
+    $this->calcReportResultResultData['res_flat_electricity_common_cost'] ??= 0.0;
+    $this->calcReportResultResultData['res_flat_insurance_cost'] ??= 0.0;
+    $this->calcReportResultResultData['res_flat_administration_cost'] ??= 0.0;
 
     $this->addDocRowDebit($newDoc, 'acc_item_advance_water_cold', 'res_flat_water_cold_cost');
     $this->addDocRowDebit($newDoc, 'acc_item_advance_water_cold_warm', 'res_flat_water_warm_cold_cost');
@@ -59,7 +65,7 @@ class FlatSettlementAccDocGenerator extends \e10doc\reporting\libs\CalcReportRes
 
   public function addDocRowDebit(CreateDocumentUtility $newDoc, $itemId, $resNumberId)
   {
-    if ($this->calcReportResultResultData[$resNumberId])
+    if ($this->calcReportResultResultData[$resNumberId] ?? 0)
     {
       $newRow = $newDoc->createDocumentRow();
       $newRow['item'] = $this->calcReportCfgSettings[$itemId];
@@ -83,11 +89,11 @@ class FlatSettlementAccDocGenerator extends \e10doc\reporting\libs\CalcReportRes
     if ($amount)
     {
       $newRow = $newDoc->createDocumentRow();
-      $newRow['item'] = $this->calcReportCfgSettings[$itemId];
+      $newRow['item'] = intval($this->calcReportCfgSettings[$itemId] ?? 0);
       $itemRecData = $this->app()->loadItem($newRow['item'], 'e10.witems.items');
       $newRow['credit'] = $amount;
       $newRow['operation'] = '1099998';
-      $newRow['text'] = $itemRecData['fullName'];
+      $newRow['text'] = $itemRecData['fullName'] ?? '';
       $newRow['rowOrder'] = $this->rowOrder;
 
       $this->rowOrder += 100;

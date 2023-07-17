@@ -24,6 +24,8 @@ class FlatsSettlementEngine extends \e10doc\reporting\libs\CalcReportEngine
   var $flatAreaRatioFlat = 0;
   var $flatAreaRatioBuilding = 0;
 
+  var $flatInfo = NULL;
+
   var $partMarks = [
     'flat_info' => 'A',
     'flat_persons' => 'B',
@@ -205,7 +207,7 @@ class FlatsSettlementEngine extends \e10doc\reporting\libs\CalcReportEngine
       $scInfoSrcHead = $this->tableCalcReports->subColumnsInfo ($this->calcReportRecData, 'srcHeaderData');
       $this->numbers->addSubColumns ('src', 'all', $scInfoSrcHead, $this->srcHeaderData);
       $scInfoSrcRows = $this->tableCalcReportsRowsSD->subColumnsInfo ($this->calcReportRecData, 'srcRowData');
-      $this->numbers->addSubColumns ('src', 'flat', $scInfoSrcRows, $this->srcRowData);
+      $this->numbers->addSubColumns ('src', 'flat', $scInfoSrcRows, $srcRowData);
 
       $resRowData = $this->makeResultsRow($rowSDRecData, $srcRowData);
 
