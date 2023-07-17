@@ -71,7 +71,7 @@ class MetersValues extends \Shipard\Base\Utility
       array_push($q, ' FROM [e10pro_meters_values] AS [vals]');
       array_push($q, ' WHERE [meter] = %i', $meterNdx);
       array_push($q, ' AND [datetime] > %d', $this->queryParams['dateEnd']);
-      array_push($q, ' ORDER BY [datetime] DESC');
+      array_push($q, ' ORDER BY [datetime] ASC');
       array_push($q, ' LIMIT 1');
       $current = $this->db()->query($q)->fetch();
       if ($current)
