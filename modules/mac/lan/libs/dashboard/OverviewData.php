@@ -144,6 +144,20 @@ class OverviewData extends Utility
 			if ($deviceKind === 14 && isset($this->devices[$deviceNdx]['macDeviceCfg']['capsmanClient']) && intval($this->devices[$deviceNdx]['macDeviceCfg']['capsmanClient']))
 			{
 				$dgId = self::dgiWiFi;
+
+				$camServerNdx = $r['mainServerCameras'];
+				$badgeQuantityId = 'statsd_capsman.ap.'.strtolower($deviceId).'_gauge';
+
+				$this->devices[$deviceNdx]['infoBadges'][] = [
+					'label' => 'WiFi',
+					'lanBadgesUrl' => $this->devices[$camServerNdx]['lanBadgesUrl'],
+					'badgeQuantityId' => $badgeQuantityId,
+					'badgeParams' => [
+						'units' => ' 웃', 'precision' => 0,
+						'_title' => 'Počet připojených klientů',
+						'value_color' => 'COLOR:null|red>40|orange>20|00A000>=0',
+					],
+				];
 			}
 
 			// -- dashboard groups
