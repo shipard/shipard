@@ -145,12 +145,10 @@ class OverviewData extends Utility
 			{
 				$dgId = self::dgiWiFi;
 
-				$camServerNdx = $r['mainServerCameras'];
 				$badgeQuantityId = 'statsd_capsman.ap.'.strtolower($deviceId).'_gauge';
 
 				$this->devices[$deviceNdx]['infoBadges'][] = [
 					'label' => 'WiFi',
-					'lanBadgesUrl' => $this->devices[$camServerNdx]['lanBadgesUrl'],
 					'badgeQuantityId' => $badgeQuantityId,
 					'badgeParams' => [
 						'units' => ' 웃', 'precision' => 0,
