@@ -33,6 +33,7 @@ class ViewWifiClients extends TableViewGrid
 {
 	var $macs = [];
 	var $macDevicesLabels = [];
+  var $now;
 
 	public function init ()
 	{
@@ -53,7 +54,7 @@ class ViewWifiClients extends TableViewGrid
       'hostName' => 'Jméno',
       'ap' => 'AP',
       'ssid' => 'SSID',
-      'rssi' => 'rssi',
+      'rssi' => ' rssi',
       'cch' => 'Kanál',
       'rxtx' => 'RX / TX',
 		];
@@ -61,6 +62,8 @@ class ViewWifiClients extends TableViewGrid
     $this->setGrid ($g);
 
     $this->setPanels (self::sptQuery);
+
+    $this->now = new \DateTime();
 	}
 
 	public function renderRow ($item)
@@ -69,7 +72,13 @@ class ViewWifiClients extends TableViewGrid
 
 		$listItem ['pk'] = $item ['ndx'];
 
-		$listItem ['mac'] = $item ['mac'];
+		$listItem ['mac'] = [['text' => $item ['mac'], 'class' => 'block']];
+
+    if ($item['inactive'])
+    {
+      $listItem ['mac'][] = ['text' => Utils::dateDiffShort($item['updated'], $this->now), 'prefix' => 'off:', 'class' => 'e10-small'];
+    }
+
     $listItem ['hostName'] = $item ['hostName'];
     $listItem ['rssi'] = $item ['rssi'];
     $listItem ['ssid'] = $item ['ssid'];
@@ -77,8 +86,8 @@ class ViewWifiClients extends TableViewGrid
     $listItem ['cch'] = $item ['cch'];
 
     $listItem ['rxtx'] = [
-      ['text' => $item ['rxRate'], 'class' => 'e10-small block'],
-      ['text' => $item ['txRate'], 'class' => 'e10-small block'],
+      ['text' => $item ['rxRate'], 'prefix' => 'rx:', 'class' => 'e10-small block'],
+      ['text' => $item ['txRate'], 'prefix' => 'tx:', 'class' => 'e10-small block'],
     ];
 
 		$listItem ['icon'] = $this->table->tableIcon ($item);
