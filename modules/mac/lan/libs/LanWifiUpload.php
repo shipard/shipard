@@ -44,6 +44,7 @@ class LanWifiUpload extends Utility
           'cch' => Str::upToLen($client['cch'] ?? '', 80),
           'txRate' => Str::upToLen($client['txRate'] ?? '', 80),
           'rxRate' => Str::upToLen($client['rxRate'] ?? '', 80),
+          'inactive' => 0,
 
           'updated' => new \DateTime()
         ];
@@ -62,6 +63,7 @@ class LanWifiUpload extends Utility
           'cch' => Str::upToLen($client['cch'] ?? '', 80),
           'txRate' => Str::upToLen($client['txRate'] ?? '', 80),
           'rxRate' => Str::upToLen($client['rxRate'] ?? '', 80),
+          'inactive' => 0,
 
 					'created' => new \DateTime(),
           'updated' => new \DateTime()
