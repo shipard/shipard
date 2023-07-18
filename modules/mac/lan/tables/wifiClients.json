@@ -1,0 +1,31 @@
+{
+	"id": "mac.lan.wifiClients", "sql": "mac_lan_wifiClients", "name": "WiFi klienti",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "cmsDevice", "name": "CapsMan zařízení", "type": "int", "reference": "mac.lan.devices"},
+		{"id": "mac", "name": "MAC adresa", "type": "string", "len": 20, "options": ["ascii"]},
+    {"id": "hostName", "name": "Název", "type": "string", "len": 120},
+    {"id": "ssid", "name": "SSID ID", "type": "string", "len": 60},
+    {"id": "wlan", "name": "WLan", "type": "int", "reference": "mac.lan.wlans"},
+    {"id": "apId", "name": "AP ID", "type": "string", "len": 60},
+    {"id": "apLanDevice", "name": "AP", "type": "int", "reference": "mac.lan.devices"},
+    {"id": "rssi", "name": "RSSI", "type": "int"},
+    {"id": "cch", "name": "Kanál", "type": "string", "len": 80, "options": ["ascii"]},
+    {"id": "txRate", "name": "TX", "type": "string", "len": 80, "options": ["ascii"]},
+    {"id": "rxRate", "name": "RX", "type": "string", "len": 80, "options": ["ascii"]},
+		{"id": "created", "name": "Vytvořeno", "type": "timestamp"},
+		{"id": "updated", "name": "Změněno", "type": "timestamp"},
+    {"id": "inactive", "name": "Neaktivní", "type": "logical"}
+	],
+	"views": [
+		{"id": "default", "class": "mac.lan.ViewWifiClients",
+			"details": {
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.lan.ViewDetailWifiClient"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.lan.FormWifiClient"}
+	]
+}
+

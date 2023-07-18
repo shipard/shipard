@@ -26,6 +26,7 @@
 			"mac.lan.ipAddressLists": {"default": 2},
 			"mac.lan.ipAddressListsRows": {"default": 2},
 			"mac.lan.watchdogs": {"default": 2},
+			"mac.lan.wifiClients": {"default": 2},
 
 			"mac.inet.domainsAccounts": {"default": 2},
 			"mac.inet.domains": {"default": 2},

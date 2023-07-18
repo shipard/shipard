@@ -11,7 +11,8 @@
 		"unknowns", "counters",
 		"swInstallPackages", "swApplications", "swLicenses",
 		"ipAddress", "ipAddressLists", "ipAddressListsRows",
-		"alerts", "alertsDevices", "watchdogs"
+		"alerts", "alertsDevices", "watchdogs",
+		"wifiClients"
 	],
 	"modules": [
 		"mac/admin", "mac/data", "mac/devices", "terminals/base",

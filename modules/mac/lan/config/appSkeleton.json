@@ -32,6 +32,8 @@
 							"macs": {"t1": "Všechny", "object": "viewer", "table": "mac.lan.macs", "viewer": "default", "order": 600100, "beforeSeparator": {"text": "MAC adresy", "class": "block pl05 pt1", "icon":  "iconSquare"}},
 							"macsOnPorts" :{"t1": "Podle portů", "object": "viewer", "table": "mac.lan.macsOnPorts", "viewer": "default", "order": 600200},
 
+							"wifiClients": {"t1": "Wifi klienti", "object": "viewer", "table": "mac.lan.wifiClients", "viewer": "default", "order": 700100, "beforeSeparator": {"text": "WiFi", "class": "block pl05 pt1", "icon":  "iconSquare"}},
+
 							"watchdogs": {"t1": "Watchdogs", "object": "viewer", "table": "mac.lan.watchdogs", "viewer": "default", "order": 700100, "beforeSeparator": {"text": "Monitor", "class": "block pl05 pt1", "icon":  "iconSquare"}},
 							"alerts": {"t1": "Výstrahy", "object": "viewer", "table": "mac.lan.alerts", "viewer": "default", "order": 700200}
 						}
