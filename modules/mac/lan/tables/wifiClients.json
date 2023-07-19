@@ -4,6 +4,7 @@
 		{"id": "ndx", "name": "id", "type": "int_ai"},
     {"id": "cmsDevice", "name": "CapsMan zařízení", "type": "int", "reference": "mac.lan.devices"},
 		{"id": "mac", "name": "MAC adresa", "type": "string", "len": 20, "options": ["ascii"]},
+		{"id": "aip", "name": "IPV4 adresa", "type": "string", "len": 16, "options": ["ascii"]},
     {"id": "hostName", "name": "Název", "type": "string", "len": 120},
     {"id": "ssid", "name": "SSID ID", "type": "string", "len": 60},
     {"id": "wlan", "name": "WLan", "type": "int", "reference": "mac.lan.wlans"},
@@ -13,6 +14,9 @@
     {"id": "cch", "name": "Kanál", "type": "string", "len": 80, "options": ["ascii"]},
     {"id": "txRate", "name": "TX", "type": "string", "len": 80, "options": ["ascii"]},
     {"id": "rxRate", "name": "RX", "type": "string", "len": 80, "options": ["ascii"]},
+		{"id": "txBytes", "name": "TX bytes", "type": "long"},
+		{"id": "rxBytes", "name": "RX bytes", "type": "long"},
+		{"id": "uptime", "name": "uptime", "type": "long"},
 		{"id": "created", "name": "Vytvořeno", "type": "timestamp"},
 		{"id": "updated", "name": "Změněno", "type": "timestamp"},
     {"id": "inactive", "name": "Neaktivní", "type": "logical"}
