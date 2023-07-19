@@ -820,7 +820,7 @@ class Utils
 		$ii = $dateBegin->diff($dateEnd);
 		$len = '';
 
-		if ($ii->m < 60 && $ii->h === 0)
+		if ($ii->i < 60 && $ii->h === 0)
 			$len = $ii->format ('%i min');
 		elseif ($ii->d === 0)
 			$len = $ii->format ('%hh %I min');
@@ -828,6 +828,8 @@ class Utils
 			$len = $ii->format ('%dd %hh %I min');
 		elseif ($ii->y === 0 )
 			$len = $ii->format ('%M měs %dd %hh %I min');
+			elseif ($ii->y > 0 )
+			$len = $ii->format ('%Yr %M měs %dd %hh %I min');
 
 		return $len;
 	}
