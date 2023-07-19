@@ -45,8 +45,11 @@ class LanWifiUpload extends Utility
           'txRate' => Str::upToLen($client['txRate'] ?? '', 80),
           'rxRate' => Str::upToLen($client['rxRate'] ?? '', 80),
           'inactive' => 0,
-
-          'updated' => new \DateTime()
+          'rxBytes' => $client['txBytes'] ?? 0,
+          'rxBytes' => $client['rxBytes'] ?? 0,
+          'uptime' => $client['uptime'] ?? 0,
+          'aip' => Str::upToLen($client['aip'] ?? '', 16),
+          'updated' => new \DateTime(),
         ];
 				$this->app()->db()->query('UPDATE [mac_lan_wifiClients] SET ', $update, ' WHERE [ndx] = %i', $exist['ndx']);
         $activeMacsNdxs[] = $exist['ndx'];
@@ -63,6 +66,10 @@ class LanWifiUpload extends Utility
           'cch' => Str::upToLen($client['cch'] ?? '', 80),
           'txRate' => Str::upToLen($client['txRate'] ?? '', 80),
           'rxRate' => Str::upToLen($client['rxRate'] ?? '', 80),
+          'rxBytes' => $client['txBytes'] ?? 0,
+          'rxBytes' => $client['rxBytes'] ?? 0,
+          'uptime' => $client['uptime'] ?? 0,
+          'aip' => Str::upToLen($client['aip'] ?? '', 16),
           'inactive' => 0,
 
 					'created' => new \DateTime(),
