@@ -366,7 +366,7 @@ class Utils
 				$timeParts[] = $value.$separator.$name;
     }
 
-    return implode(', ', $timeParts);
+    return implode(' ', $timeParts);
 	}
 
 	static function createRecId($recData, $formula)
