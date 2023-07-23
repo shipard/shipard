@@ -6,6 +6,20 @@
 		"portType": "rj45",
 		"portsCount": 24
 	},
+	"5": {
+		"fn": "Ethernet RJ45 12 portů",
+		"sn": "ETH 12",
+		"id": "eth12",
+		"portType": "rj45",
+		"portsCount": 12
+	},
+	"6": {
+		"fn": "Ethernet RJ45 8 portů",
+		"sn": "ETH 8",
+		"id": "eth8",
+		"portType": "rj45",
+		"portsCount": 8
+	},
 	"2": {
 		"fn": "Optika 24 SC portů",
 		"sn": "Optika 24 SC",
