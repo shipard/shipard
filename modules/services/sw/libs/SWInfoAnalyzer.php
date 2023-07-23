@@ -239,6 +239,7 @@ class SWInfoAnalyzer extends Utility
 					'sw' => $this->swNdx,
 					'versionNumber' => $this->osVersion,
 					'lifeCycle' => 9,
+					'dateRelease' => Utils::today(),
 				];
 
 				/** @var \mac\sw\TableSWVersions */
@@ -398,6 +399,7 @@ class SWInfoAnalyzer extends Utility
 					'sw' => $this->swNdx,
 					'versionNumber' => $this->swVersion,
 					'lifeCycle' => 9,
+					'dateRelease' => Utils::today(),
 				];
 
 				/** @var \mac\sw\TableSWVersions */
