@@ -42,7 +42,7 @@
       },
       {
           "itemType": "head-company-id",
-          "searchPrefix": "IČ:"
+          "searchPrefix": "IČ (CIN):"
       },
       {
           "itemType": "head-payment-method",
@@ -51,7 +51,7 @@
       },
       {
           "itemType": "head-vat-id",
-          "searchPrefix": "DIČ:"
+          "searchPrefix": "DIČ (VAT ID):"
       },
       {
           "itemType": "money-to-pay",
