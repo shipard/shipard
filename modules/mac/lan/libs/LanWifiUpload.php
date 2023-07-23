@@ -90,6 +90,11 @@ class LanWifiUpload extends Utility
     {
       $this->app()->db()->query('UPDATE [mac_lan_wifiClients] SET [inactive] = %i', 1, ' WHERE cmsDevice = %i', $cmsDeviceNdx);
     }
+
+    // -- remove old inactive
+    $limit = new \DateTime('4 days ago');
+    $this->app()->db()->query('DELETE FROM [mac_lan_wifiClients] WHERE [inactive] = %i', 1, ' AND [updated] < %d', $limit);
+
 		$this->db()->commit();
 
 		$this->result ['success'] = 1;
