@@ -58,7 +58,6 @@ class DDMFE_MouserCZ extends \e10doc\ddf\ddm\formatsEngines\CoreFE
 
       if (str_contains($r, 'Zboží') && str_contains($r, 'Manipulace'))
       {
-        $this->rowNdx = 999999;
         return;
       }
 
@@ -89,7 +88,7 @@ class DDMFE_MouserCZ extends \e10doc\ddf\ddm\formatsEngines\CoreFE
 
       if (str_contains($r, 'Zboží') && str_contains($r, 'Manipulace'))
       {
-        $this->rowNdx = 999999;
+        $this->rowNdx++;
       }
       else
       if (str_starts_with($r, '          '))
@@ -128,6 +127,7 @@ class DDMFE_MouserCZ extends \e10doc\ddf\ddm\formatsEngines\CoreFE
 
     //foreach ($nextRows as $nr)
     //  echo " - ".$nr."\n";
+    //echo "\n";
 
     $docRow = [];
 
