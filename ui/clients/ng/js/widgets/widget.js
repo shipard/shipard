@@ -7,9 +7,9 @@ class ShipardWidget {
   {
     this.rootElm = rootElm;
     this.rootId = this.rootElm.getAttribute('id');
-    console.log("hello from ShipardWidget", this.rootId);
 
     this.on(this, 'click', '.shp-widget-action', function (e, ownerWidget){ownerWidget.widgetAction(e)});
+    this.on(this, 'click', '.shp-widget-action>i', function (e, ownerWidget){ownerWidget.widgetAction(e.parentElement)});
   }
 
   widgetAction(e)
@@ -20,9 +20,12 @@ class ShipardWidget {
 
   doAction (actionId, e)
   {
+    console.log("ACTION: ", actionId);
+
     switch (actionId)
     {
       case 'inline-action': return this.inlineAction(e);
+      case 'select-main-tab': return this.selectMainTab(e);
     }
 
     return 0;
@@ -54,6 +57,71 @@ class ShipardWidget {
     */
 
     console.log("__INLINE_ACTION", requestParams);
+  }
+
+  selectMainTab (e)
+  {
+    const tabsId = e.getAttribute('data-tabs');
+    const inputValueId = this.rootId + '_' + tabsId + '_Value';
+    const inputElement = document.getElementById(inputValueId);
+    inputElement.value = e.getAttribute('data-tab-id');
+
+    const tabsElementId = this.rootId + '_' + tabsId;
+    const tabsElement = document.getElementById(tabsElementId);
+
+		let oldActiveTabElement = tabsElement.querySelector('.active');
+		oldActiveTabElement.classList.remove('active');
+		e.classList.add('active');
+
+    let apiParams = {'cgType': 2};
+
+    this.apiCall('reloadContent', apiParams);
+    //console.log("SELECT MAIN TAB: ", inputValueId);
+  }
+
+  apiCall(apiActionId, outsideApiParams)
+  {
+    var apiParams = {};
+    apiParams['requestType'] = this.rootElm.getAttribute('data-request-type');
+    apiParams['classId'] = this.rootElm.getAttribute('data-class-id');
+    apiParams['actionId'] = apiActionId;
+    if (outsideApiParams !== undefined)
+      apiParams = {...apiParams, ...outsideApiParams};
+
+    this.detectValues(apiParams);
+
+    console.log("API-CALL", apiParams);
+
+    var url = '/api/v2';
+
+    shc.server.post (url, apiParams,
+      function (data) {
+        console.log("--api-call-success--");
+        this.doWidgetResponse(data);
+      }.bind(this),
+      function (data) {
+        console.log("--api-call-error--");
+      }.bind(this)
+    );
+  }
+
+  detectValues(data)
+  {
+    const inputs = this.rootElm.querySelectorAll("input[data-wid='"+this.rootId+"']");
+
+    for (let i = 0; i < inputs.length; ++i)
+    {
+      const valueKey = inputs[i].getAttribute('name');
+      data[valueKey] = inputs[i].value;
+    }
+  }
+
+  doWidgetResponse(data)
+  {
+    if (data['response'] !== undefined && data['response']['uiData'] !== undefined)
+      shc.applyUIData (data['response']['uiData']);
+
+    console.log(data);
   }
 
 	on(ownerWidget, eventType, selector, callback) {

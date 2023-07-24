@@ -13,6 +13,8 @@ class AppPageBlank extends Utility
 {
 	const backIcon = 'system/actionBack';
 
+	var $uiThemeId = 'default';
+	var $uiThemeCfg = NULL;
 	static $themeStatusColor =
 			['default' => '#212529'];
 
@@ -40,21 +42,17 @@ class AppPageBlank extends Utility
 
 	public function createPageCode ()
 	{
-		$firstUrlPart = $this->app->requestPath(1);
+		//$firstUrlPart = $this->app->requestPath(1);
 
 		$c = '';
 
 		if ($this->appMode)
 		{
-			$mobileuiTheme = $this->app->cfgItem ('options.appearanceApp.mobileuiTheme', 'md-teal');
-			if ($mobileuiTheme === '')
-				$mobileuiTheme = 'md-teal';
-
 			$originPath = $this->app->requestPath(1);
 
 			$this->pageInfo['httpOriginPath'] = $originPath;
 			$this->pageInfo['sessionId'] = $this->app->sessionId;
-			$this->pageInfo['guiTheme'] = $mobileuiTheme;
+			$this->pageInfo['guiTheme'] = $this->uiThemeId;
 			$this->pageInfo['wss'] = $this->wss;
 			$this->pageInfo['pageType'] = $this->pageType();
 		}
@@ -108,6 +106,9 @@ class AppPageBlank extends Utility
 	{
 		$this->dsMode = $this->app->cfgItem ('dsMode', Application::dsmTesting);
 
+		$uiThemeFN = 'www-root/.ui/'.'ng'.'/themes'.'/themes.json';
+		$uiThemesCfg = Utils::loadCfgFile($uiThemeFN);
+		$this->uiThemeCfg = $uiThemesCfg[$this->uiThemeId];
 		$tt = $this->pageTitle();
 
 		$absUrl = '';
@@ -148,7 +149,7 @@ class AppPageBlank extends Utility
 
 		$c .= "<link rel='stylesheet' type='text/css' href='{$scRoot}/bs/5.3/dist/css/bootstrap.min.css?v530'/>\n";
 
-		$themeUrl = "$absUrl{$this->app->urlRoot}/www-root/.ui/ng/themes/" . $mobileuiTheme . "/$style?vv={$cfgID}";
+		$themeUrl = "$absUrl{$this->app->urlRoot}/www-root/.ui/ng/themes/" . $this->uiThemeId . "/$style?vv=".$this->uiThemeCfg['integrity']['sha384'];
 		$c .= "<link rel='stylesheet' type='text/css' href='$themeUrl'/>\n";
 
 		$c .= "\t<script type=\"text/javascript\">\nvar httpApiRootPath = '{$this->app->urlRoot}';var serverTitle=\"" . Utils::es ($this->app->cfgItem ('options.core.ownerShortName', '')) . "\";" .
@@ -169,7 +170,7 @@ class AppPageBlank extends Utility
 		$c .= '</script>';
 
 		//$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/libs/js/jquery/jquery-3.5.1.min.js\"></script>";
-		$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/bs/5.3/dist/js/bootstrap.bundle.min.js?v530a2\"></script>";
+		$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/bs/5.3/dist/js/bootstrap.bundle.min.js?v530\"></script>";
 		$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/libs/js/mqttws/mqttws31.min.js\"></script>\n";
 
 

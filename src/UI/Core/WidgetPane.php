@@ -32,6 +32,12 @@ class WidgetPane extends \Shipard\UI\Core\Widget
 		$this->reportParams = $this->params->detectValues();
 	}
 
+	public function setRequestParams (array $requestParams)
+	{
+		$this->widgetAction = $requestParams['widgetAction'] ?? '';
+		$this->reportParams = $this->params->detectValues();
+	}
+
 	public function addContent ($contentPart)
 	{
 		if ($contentPart === FALSE)
@@ -162,6 +168,14 @@ class WidgetPane extends \Shipard\UI\Core\Widget
 		$this->init();
 		$this->createContent();
 		return $this->renderContent();
+	}
+
+	public function createResponse (array &$responseData)
+	{
+		$this->setDefinition (NULL);
+		//$this->init();
+		//$this->createContent();
+		//return $this->renderContent();
 	}
 
 	public function createTabsCode (){return'';}

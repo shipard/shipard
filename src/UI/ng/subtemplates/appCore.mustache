@@ -1,0 +1,53 @@
+<div class="app-container">
+  <div class="app-nav">
+    <nav class="navbar fixed-top align-items-between">
+    <div class="container-fluid">
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <img class="logo" src="https://dev-anna.shpd.dev/32056308011696/att/2023/07/11/e10.ui.uis/zus-logo-pruhledne-1unnk2g.svg" width="70" height="auto">
+
+      <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="offcanvasNavbarLabel">{{data.uiStruct.appMenu.appTitle}}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+          <div class="navbar-nav flex-grow-1 pe-3">
+            <div class="allClasses row row-cols-3 justify-content-evenly g-3 mt-2 text-center">
+              {{#data.uiStruct.appMenu.items}}
+                <div class="col">
+                  <a class="dashboardButton" href="{{uiRoot}}{{id}}">{{{@icon;dataItem:icon}}}</a>
+                  <h4>{{title}}</h4>
+                </div>
+              {{/data.uiStruct.appMenu.items}}
+            </div>
+
+            <div class="row align-items-center mt-3">
+              <div class="col-2">
+                <a class="btn btn-outline-primary btn-lg" href='{{dsRoot}}/user/logout-check?loginUrl=/ui/login/ui/etk/messages'>{{{@icon;icon:user/signOut}}}</a>
+              </div>
+
+              <div class="col-8 text-center">
+                Kateřina Nováková
+              </div>
+
+              <div class="col-2">
+                <a class="btn btn-outline-primary btn-lg" href='kids'>{{{@icon;icon:user/user}}}</a>
+              </div>
+            </div>
+            <!-- End Row -->
+          </div>
+        </div>
+      </div>
+    </div>
+    </nav>
+  </div>
+
+  <div class="app-content" id='shp-main-app-content' {{{data.appBrowserParams}}}>
+    {{{data.coreMainElementCode}}}
+  </div>
+  <div class='app-footer' style='background-color: yellow;'>AHOJ...</div>
+</div>

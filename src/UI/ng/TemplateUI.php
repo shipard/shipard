@@ -7,6 +7,7 @@ namespace Shipard\UI\ng;
  */
 class TemplateUI extends \Shipard\Utils\TemplateCore
 {
+  var $uiRoot = '';
   var $uiData = [];
 
   public function app() {return $this->app;}
@@ -24,6 +25,15 @@ class TemplateUI extends \Shipard\Utils\TemplateCore
         $o->uiTemplate = $this;
         return $o->render($tagName, $params);
       }
+    }
+
+    //{{{@appUIElement}}}
+
+    if ($tagName === 'appUIElement')
+    {
+      $o = new \Shipard\UI\ng\UIElement($this->app());
+      $o->uiTemplate = $this;
+      return $o->render($tagName, $params);
     }
 
     if ($tagName === 'uiWidget')
@@ -47,6 +57,7 @@ class TemplateUI extends \Shipard\Utils\TemplateCore
         $widget = $this->app->createObject($classId);
       if ($widget)
       {
+        $widget->uiTemplate = $this;
         $widget->setDefinition($classId);
         $widget->init();
         $widget->createContent();
@@ -56,7 +67,39 @@ class TemplateUI extends \Shipard\Utils\TemplateCore
       }
     }
 
+    if ($tagName === 'systemWidgetNG')
+    {
+      /** @var \Shipard\UI\Core\UIWidgetBoard */
+      $w = NULL;
+
+      $classId = $params['classId'] ?? NULL;
+      if ($classId)
+        $w = $this->app->createObject($classId);
+      if ($w)
+      {
+        $w->uiTemplate = $this;
+        $w->setDefinition($classId);
+        $w->setRequestParams(['cgType' => 1]);
+        $w->init();
+
+        $responseData = [];
+        $w->createResponse($responseData);
+
+        $c = $responseData['hcFull'];
+        return $c;
+      }
+    }
+
+
     return parent::resolveCmd($tagCode, $tagName, $params);
+  }
+
+  public function checkUIData()
+  {
+    if (isset($this->uiData['iotElementsMap']))
+      unset($this->uiData['iotElementsMap']);
+    if (isset($this->uiData['iotElementsMapSIDs']))
+      unset($this->uiData['iotElementsMapSIDs']);
   }
 }
 
