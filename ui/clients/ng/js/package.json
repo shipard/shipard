@@ -6,9 +6,11 @@
 		{"fileName": "camPictsLoader.js"},
 
 		{"fileName": "widgets/widget.js"},
+		{"fileName": "widgets/tableViewer.js"},
 		{"fileName": "widgets/touchNumPad.js"},
 		{"fileName": "widgets/terminals/documentCore.js"},
 		{"fileName": "widgets/terminals/cashBox.js"},
+		{"fileName": "widgets/terminals/vs.js"},
 
 		{"fileName": "client.js"},
 		{"fileName": "clientIoT.js"},

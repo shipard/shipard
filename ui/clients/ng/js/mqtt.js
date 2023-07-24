@@ -234,4 +234,9 @@ class ShipardMqtt {
     message.destinationName = topic;
     ws.mqttClient.send(message);
   }
+
+	applyUIData (responseUIData)
+	{
+		console.log("ShipardMqtt - apply uiData: ", responseUIData);
+	}
 }

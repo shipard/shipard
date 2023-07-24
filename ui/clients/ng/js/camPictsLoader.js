@@ -13,7 +13,8 @@ class ShipardCamsPictsLoader
       clearTimeout(this.camerasTimer);
     }
 
-    for (let serverNdx in uiData['iotCamServers']) {
+    for (let serverNdx in uiData['iotCamServers'])
+    {
       const urlPath = uiData['iotCamServers'][serverNdx]['camUrl'] + "campicts";
       shc.server.get (urlPath,
         function (data) {
@@ -47,6 +48,13 @@ class ShipardCamsPictsLoader
       for (var key in ids)
       {
         let camPictElement = document.getElementById(ids[key]);
+        if (!camPictElement)
+        {
+          //console.log("Invalid element", key);
+          uiData['iotCamPictures'][camId]['elms'][key];
+          continue;
+        }
+
         let pictStyle = camPictElement.getAttribute('data-pict-style');
 
         if (pictStyle === 'full')

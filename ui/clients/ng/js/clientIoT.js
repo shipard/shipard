@@ -83,4 +83,67 @@ class ShipardClientIoT {
     shc.mqtt.init();
     shc.iot.init();
   }
+
+	applyUIData (responseUIData)
+	{
+    if (responseUIData['iotCamServers'] !== undefined)
+    {
+      if (uiData['iotCamServers'] === undefined)
+        uiData['iotCamServers'] = {};
+
+      for (let serverNdx in responseUIData['iotCamServers'])
+      {
+        if (uiData['iotCamServers'][serverNdx] === undefined)
+          uiData['iotCamServers'][serverNdx] = responseUIData['iotCamServers'][serverNdx];
+      }
+    }
+
+    if (responseUIData['iotCamPictures'] !== undefined)
+    {
+      if (uiData['iotCamPictures'] === undefined)
+        uiData['iotCamPictures'] = {};
+
+      for (let camId in responseUIData['iotCamPictures'])
+      {
+        //let camId = 'CMP' + camNdx;
+
+        if (uiData['iotCamPictures'][camId] === undefined)
+          uiData['iotCamPictures'][camId] = responseUIData['iotCamPictures'][camId];
+        else
+        {
+          let ids = responseUIData['iotCamPictures'][camId]['elms'];
+          for (var key in ids)
+          {
+            uiData['iotCamPictures'][camId]['elms'][key] = responseUIData['iotCamPictures'][camId]['elms'][key];
+          }
+        }
+      }
+    }
+
+    /*
+    for (let camId in uiData['iotCamPictures'])
+    {
+      let ids = uiData['iotCamPictures'][camId]['elms'];
+      for (var key in ids)
+      {
+        console.log("UI CHECK ELEMENT ", ids[key]);
+        let camPictElement = document.getElementById(ids[key]);
+        if (!camPictElement)
+        {
+          console.log("UI DELETE ELEMENT ", ids[key]);
+          delete uiData['iotCamPictures'][camId]['elms'][key];
+        }
+      }
+    }
+    */
+
+    //uiData['iotCamPictures']
+
+    if (this.camPictLoader === null)
+      this.camPictLoader = new ShipardCamsPictsLoader();
+
+    this.camPictLoader.init();
+
+		console.log("ShipardClientIoT - apply uiData: ", uiData);
+	}
 }

@@ -19,6 +19,8 @@ class ShipardClient {
 
 	numPad = null;
 
+	mainAppContent = null;
+
 	on(eventType, selector, callback) {
 		document.addEventListener(eventType, function (event) {
 			if (event.target.matches(selector)) {
@@ -239,13 +241,60 @@ class ShipardClient {
     }
   }
 
+	initUI()
+	{
+		if (!this.mainAppContent)
+			return 0;
+
+		if ('mainUiObjectId' in this.mainAppContent.dataset)
+			return this.initUIObject(this.mainAppContent.dataset.mainUiObjectId);
+	}
+
+	initUIObject(id)
+	{
+		let objectElement = document.getElementById(id);
+		if (!objectElement)
+		{
+			console.error('element not exist: #', id);
+			return 0;
+		}
+
+		const objectElementType = objectElement.getAttribute('data-object-type');
+		if (!objectElementType)
+		{
+			console.error('`data-object-type` attr not found in #', id);
+			return 0;
+		}
+
+		if (objectElementType === 'data-viewer')
+			return initWidgetTableViewer(id);
+
+		console.log(objectElementType);
+
+		return 0;
+	}
+
+	loadUI()
+	{
+		console.log("client__load_ui");
+	}
+
 	init ()
 	{
+		this.mainAppContent = document.getElementById('shp-main-app-content');
 		this.server.setHttpServerRoot(httpApiRootPath);
 
 		this.initColorMode(true);
 
 		this.onClick ('a.shp-simple-tabs-item', function () {shc.simpleTabsEvent(this);});
 		this.onClick ('.shp-app-action', function (e) {this.widgetAction(e);}.bind(this));
+
+		this.initUI();
+	}
+
+	applyUIData (responseUIData)
+	{
+		this.mqtt.applyUIData(responseUIData);
+		this.iot.applyUIData(responseUIData);
 	}
 }
