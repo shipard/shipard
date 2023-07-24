@@ -36,6 +36,18 @@
 			"group": {
 				"kind": "build"
 			}
+		},
+		{
+			"label": "APP: app-ng",
+			"type": "shell",
+			"command": "tools/shpd-ui.php app-ng",
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [],
+			"group": {
+				"kind": "build"
+			}
 		}
 	]
 }

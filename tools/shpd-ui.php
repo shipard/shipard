@@ -209,7 +209,7 @@ class ShpdUIApp
 		echo '* ' . $msg . "\r\n";
 	}
 
-	public function createAppThemes ()
+	public function createAppThemes ($forceUIId = '')
 	{
 		$uiDefs = $this->loadCfgFile('ui/ui.json');
 		if (!$uiDefs)
@@ -218,9 +218,12 @@ class ShpdUIApp
 		$destFolder = 'www-root/.ui/';
 		if (!is_dir($destFolder))
 			mkdir ($destFolder);
-		
+
+
 		forEach ($uiDefs['clients'] as $uiTypeId => $uiDef)
 		{
+			if ($forceUIId !== '' && $forceUIId !== $uiTypeId)
+				continue;
 			echo "* {$uiTypeId}\n";
 
 			$destFolder = 'www-root/.ui/'.$uiTypeId.'/';
@@ -230,9 +233,11 @@ class ShpdUIApp
 			if (!is_dir($destFolder))
 				mkdir ($destFolder);
 
-				// -- themes
+			// -- themes
 			echo "  - themes:\n";
 			$themes = $this->loadCfgFile('ui/clients/'.$uiTypeId.'/themes.json');
+			$themeFullList = [];
+			$themeShortList = [];
 			foreach ($themes as $themeId => $themeDef)
 			{
 				echo "    > {$themeId}\n";
@@ -241,29 +246,37 @@ class ShpdUIApp
 				$themeDestFolder = getcwd().'/'.$destFolder . $themeId.'/';
 				if (!is_dir($themeDestFolder))
 					mkdir ($themeDestFolder);
-	
+
 				$theme = $this->loadCfgFile('ui/clients/'.$uiTypeId.'/themes/'. $themeId . '/theme.json');
 				$themeShortList[$themeId] = $theme['name'];
 				$themeFullList[$themeId] = $theme;
 
-				$destCssFileName = $themeDestFolder.'style.css';
 				//echo ("      - cd $themePath && lessc -x style.less > {$destCssFileName}\n");
-				passthru ("cd $themePath && lessc -x style.less > $destCssFileName");
+				if ($uiTypeId === 'ng')
+				{
+					//$cmd = "export LC_ALL=en_US.UTF.8 && cd {$this->destPath} && sass $dstFileName $dstCssFileName --style compressed --no-source-map 2>&1";
+					$destCssFileName = $themeDestFolder.'style.css';
+					passthru ("cd $themePath && sass theme.scss > $destCssFileName");
+				}
+				else
+				{
+					$destCssFileName = $themeDestFolder.'style.css';
+					passthru ("cd $themePath && lessc -x style.less > $destCssFileName");
+				}
 
 				$sha384 = hash_file('sha384', $destCssFileName);
 				$md5 = md5_file($destCssFileName);
-		
+
 				$themeFullList[$themeId]['integrity'] = ['sha384' => $sha384, 'md5' => $md5];
 			}
+
+			file_put_contents ($destFolder.'/themesList.json', utils::json_lint (json_encode ($themeShortList)));
+			file_put_contents ($destFolder.'/themes.json', utils::json_lint (json_encode ($themeFullList)));
 		}
 
-		// -- SAVE
-		file_put_contents ($destFolder.'/themesList.json', utils::json_lint (json_encode ($themeShortList)));
-		file_put_contents ($destFolder.'/themes.json', utils::json_lint (json_encode ($themeFullList)));
-
-		return TRUE;		
+		return TRUE;
 	}
-	
+
 
 	public function jsApp ()
 	{
@@ -364,6 +377,10 @@ class ShpdUIApp
 		return TRUE;
 	}
 
+	public function ngApp ()
+	{
+		$this->createAppThemes ('ng');
+	}
 
 	public function webTemplate ()
 	{
@@ -480,6 +497,7 @@ class ShpdUIApp
 		{
 			case	'app-themes':			return $this->createAppThemes ();
 			case	'app-js':					return $this->jsApp();
+			case	'app-ng':					return $this->ngApp();
 			case	'web-templates':	return $this->webTemplates ();
 			case	'web-js':					return $this->jsWeb();
 		}
@@ -496,6 +514,8 @@ class ShpdUIApp
 			"commands:\r\n" .
 			"   app-themes: build app-themes\r\n" .
 			"   app-js: build javascript files\r\n" .
+			"   app-ng: build css + javascript for ng ui\r\n" .
+			"   web-templates: build web templates\r\n" .
 			"\r\n";
 
 		return true;

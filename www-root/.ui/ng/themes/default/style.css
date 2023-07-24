@@ -83,3 +83,94 @@ div.shp-workplace-login-users > * {
   min-width: 10rem;
   text-align: center;
 }
+
+body {
+  height: 100vh;
+}
+
+.app-container {
+  background-color: var(--backgroundColor);
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: min-content 1fr min-content;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas: "app-nav" "app-content" "app-footer";
+}
+
+.app-nav {
+  grid-area: app-nav;
+}
+
+.app-content {
+  grid-area: app-content;
+  min-height: 0;
+  overflow-y: clip;
+}
+
+.app-footer {
+  grid-area: app-footer;
+}
+
+data-viewer {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: min-content 1fr min-content;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas: "toolbar" "rows" "tabs";
+}
+data-viewer .toolbar {
+  grid-area: toolbar;
+}
+data-viewer .rows {
+  grid-area: rows;
+  color: green;
+  background-color: white;
+  overflow-y: auto;
+}
+data-viewer .rows div.df2-list-item-t1 {
+  display: inline-block;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+  white-space: pre;
+  font-size: 112%; /*opacity: .9;*/
+}
+data-viewer .rows span.df2-list-item-i1 {
+  float: right;
+  white-space: nowrap;
+  font-size: 112%; /*opacity: .9;*/
+}
+data-viewer .rows div.df2-list-item-t2, data-viewer .rows div.df2-list-item-t3 {
+  clear: both;
+  font-size: 90%; /*color: black;*/
+  opacity: 0.8;
+}
+data-viewer .rows table.df2-viewer-line-content tr td.df2-list-item-t {
+  vertical-align: top;
+  line-height: 1.35;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+data-viewer .rows div.df2-list-item-t2 > span.i2 {
+  float: right;
+}
+data-viewer .rows table.df2-viewer-line-content tr td.df2-list-item-icon {
+  width: 2.5em;
+  text-align: center;
+  vertical-align: top;
+  line-height: 100%;
+  padding-right: 0.3ex;
+  padding-top: 1.4ex;
+}
+data-viewer .rows table.df2-viewer-line-content tr td.df2-list-item-icon span {
+  font-size: 200%;
+  opacity: 0.75;
+}
+data-viewer .tabs {
+  grid-area: tabs;
+}
+data-viewer ul.df2-viewer-list > li {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+}

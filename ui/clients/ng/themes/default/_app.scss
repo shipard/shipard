@@ -1,0 +1,27 @@
+body {
+  height: 100vh;
+  // height: 100%;
+}
+
+.app-container {
+  background-color: var(--backgroundColor);
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: min-content 1fr min-content;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "app-nav"
+    "app-content"
+    "app-footer";
+}
+
+.app-nav {
+  grid-area: app-nav;
+}
+
+.app-content { grid-area: app-content; min-height: 0; overflow-y: clip;}
+
+.app-footer { grid-area: app-footer;}
+
