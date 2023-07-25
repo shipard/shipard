@@ -504,6 +504,10 @@ class UIControl extends \Shipard\UI\ng\TemplateUIControl
       return 'Invalid / missing param `ndx`';
     }
 
+    $btnType = 'primary';
+    if (isset($params['btnType']))
+      $btnType = $params['btnType'];
+
     $c = '';
     foreach ($controlsNdxList as $cn)
     {
@@ -522,7 +526,7 @@ class UIControl extends \Shipard\UI\ng\TemplateUIControl
         'class' => 'pl1',
 
         'icon' => 'system/iconCheck',
-        'btnClass' => 'btn-primary',
+        'btnClass' => 'btn-'.$btnType,
         'actionClass' => 'shp-app-action',
 
         'data-object-class-id' => 'mac.iot.libs.IotAction',
