@@ -147,7 +147,7 @@ class AppPageBlank extends Utility
 		$c .= "<meta name=\"generator\" content=\"E10 ".__E10_VERSION__."\">\n";
 		$c .= "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n";
 
-		$c .= "<link rel='stylesheet' type='text/css' href='{$scRoot}/bs/5.3/dist/css/bootstrap.min.css?v530'/>\n";
+		//$c .= "<link rel='stylesheet' type='text/css' href='{$scRoot}/bs/5.3/dist/css/bootstrap.min.css?v530'/>\n";
 
 		$themeUrl = "$absUrl{$this->app->urlRoot}/www-root/.ui/ng/themes/" . $this->uiThemeId . "/$style?vv=".$this->uiThemeCfg['integrity']['sha384'];
 		$c .= "<link rel='stylesheet' type='text/css' href='$themeUrl'/>\n";
