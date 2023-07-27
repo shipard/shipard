@@ -1,0 +1,12 @@
+{
+  "id": "wkf.msgs",
+  "name": "workflow - messages",
+  "tables": [
+		"msgs"
+	],
+	"modules": ["wkf/base"],
+  "config": [
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+		{"id": "+e10.base.doclinks", "file": "doclinks.json"}
+  ]
+}

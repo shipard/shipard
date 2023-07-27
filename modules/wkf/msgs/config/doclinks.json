@@ -1,0 +1,11 @@
+{
+	"wkf.msgs.msgs": {
+		"wkf-msgs-recps": {
+			"linkid": "wkf-msgs-recps", "name": "Příjemci", "icon": "docLinkNotify",
+			"sources": [
+				{"id": "persons", "viewer": "e10.persons.libs.viewers.ViewPersonsForWorkflow", "table": "e10.persons.persons"}
+			],
+			"listId": "doclinksPersons"
+		}
+	}
+}

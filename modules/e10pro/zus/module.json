@@ -7,7 +7,7 @@
 		"prihlasky", "studium", "studiumpre",
 		"vyuky", "vyukystudenti", "vyukyrozvrh", "hodiny", "hodinydochazka", "hodnoceni"
 	],
-	"modules": ["e10/persons", "wkf/bboard"],
+	"modules": ["e10/persons", "wkf/bboard", "wkf/msgs"],
 	"extensions": ["persons"],
   "config": [
     {"id": "+appSkeleton", "name": "Rozšíření menu aplikace", "file": "zus.appSkeleton.json"},

@@ -1,8 +1,12 @@
 {
 	"panels": {
 		"zus": {
-			"url": "/app/skola", "zone": "sec", "objectType": "panel", "name": "Škola", "cntBigIcons": 7,
+			"url": "/app/skola", "zone": "sec", "objectType": "panel", "name": "Škola", "cntBigIcons": 8,
 			"items": [
+				{
+					"t1": "Zprávy", "object": "viewer", "table": "wkf.msgs.msgs", "viewer": "default",
+					"order": 2500
+				},
 				{"t1": "Nástěnka", "object": "widget", "class": "e10.widgetDashboard", "subclass": "school", "icon": "e10.widgetDashboard/board", "order": 5000},
 				{"t1": "Akce", "object": "viewer", "table": "e10pro.zus.akce", "viewer": "default", "order": 6000},
 				{"t1": "Studenti", "object": "viewer", "table": "e10.persons.persons", "viewer": "students", "icon": "iconStudents", "order": 12000},

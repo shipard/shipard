@@ -1,0 +1,26 @@
+{
+	"id": "wkf.msgs.msgs", "sql": "wkf_msgs_msgs", "name": "Zprávy",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "title", "name": "Titulek", "type": "string", "len": 160},
+		{"id": "text", "name": "Text", "type": "memo", "comboClass": "lib.web.WebTextSidebar"},
+
+		{"id": "author", "name": "Autor", "type": "int", "reference": "e10.persons.persons"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"},
+		{"id": "doclinksPersons", "class": "e10.base.ListDocLinks", "name": "Vazby na Osoby"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "wkf.msgs.ViewMsgs", "detail": "wkf.msgs.ViewDetailMsg"}
+	],
+	"forms": [
+		{"id": "default", "class": "wkf.msgs.FormMsg"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "title"}
+}
