@@ -1,0 +1,43 @@
+.card {
+	background-color: var(--cardBackground);
+    border-color: var(--cardBorder);
+}
+
+a.card {
+	text-decoration: none;
+}
+
+/*toggle*/
+.form-check-input:checked {
+	background-color: #{$shipard-primary};
+	border-color: #{$shipard-primary};
+}
+
+.accordion {
+	margin-top: 1rem;
+	border: 1pt solid var(--accordionBorder);
+	.accordion-header {
+		padding: 0;
+		background-color: var(--accordionBackground);
+	}
+	li {
+		background-color: transparent;
+		border: none;
+	}
+	li:first-child {
+		border-top: 1pt solid var(--accordionBorder);
+	}
+  }
+
+.accordion-body {
+	background-color: var(--accordionBackground);
+	padding: 0;
+}
+
+ol.grades li.list-group-item {
+	border-radius: 0;
+}
+
+ol.grades li.list-group-item:not(:last-child){
+	border-bottom: 1px solid var(--accordionBorder);
+}

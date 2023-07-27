@@ -1,0 +1,60 @@
+body > div.fullScreenModal {
+    position: absolute;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10000;
+  background-color: #101010D0;
+  top: 0;
+  left: 0;
+
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  align-content: stretch;
+}
+
+div.shp-numpad-container {
+width: 25vw;
+background-color: var(--numpadBackground);
+border: 4px solid #10101010;
+border-radius: 4px;
+}
+
+table.shp-numpad-keyboard {
+   width: 100%;
+}
+
+table.shp-numpad-keyboard td {
+padding: .6rem;
+width: 25%;
+text-align: center;
+border: 2px solid var(--numpadBorder);
+background-color: var(--numpadBackground);
+color: var(--numpadColor);
+}
+
+table.shp-numpad-keyboard td.ok.shp-widget-action {
+background-color: #{$numpad-ok};
+}
+
+
+table.shp-numpad-keyboard td.c.shp-widget-action {
+background-color: var(--numpadClose);
+}
+
+
+table.shp-numpad-keyboard td.d.shp-widget-action {
+font-size: 200%;
+line-height: 200%;
+}
+
+table.shp-numpad-keyboard td.b.shp-widget-action {
+  font-size: 200%;
+line-height: 200%;
+}
+
+table.shp-numpad-keyboard td.n.shp-widget-action {
+  padding: 2rem;
+}

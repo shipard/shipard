@@ -1,0 +1,29 @@
+.app-nav {
+    grid-area: app-nav;
+}
+
+.app-nav nav {
+    background-color: var(--navBackground);
+    border-bottom: 1px solid var(--navBorder);
+    a {
+        color: var(--navColor);
+    }
+}
+
+.app-nav a.navbar-brand {
+    padding-left: .5rem;
+}
+
+.app-nav .shp-badge {
+    font-size: 14pt;
+    color: var(--bs-body-color);
+}
+
+.navbar h4 {
+	margin-bottom: 0;
+	padding: .5rem;
+}
+
+div.offcanvas {
+	background-color: var(--navBackground);
+}

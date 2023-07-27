@@ -1,0 +1,74 @@
+.btn-outline-primary {
+    --bs-btn-bg: transparent;
+    --bs-btn-color: var(--bs-btn-color);
+}
+
+/* zuš - univerzální velké tlačítko */
+a.dashboardButton {
+    width: 4rem;
+    height: 4rem;
+    /*padding: .7rem 1.5rem;*/
+    text-decoration: none;
+    display: inline-block;
+    font-size: 24pt;
+    background-color: #{$shipard-secondary};
+    border-radius: 15%;
+	color: var(--dashboardButtonColor) !important;
+}
+a.dashboardButton i, b {
+	text-align: center;
+    vertical-align: middle;
+    padding-top: .5rem;
+}
+
+/* dropdown na ovládání dark light módu*/
+.dropdown-item.active {
+	background-color: #{$shipard-primary};
+}
+
+ul.dropdown-menu {
+	background-color: var(--cardBackground);
+}
+
+/* ostatní */
+a.searchButton {
+    border: none;
+    --bs-btn-hover-bg: transparent;
+    color: var(--bs-body-color);
+}
+
+a.sendButton {
+	max-width: 30%;
+}
+
+a.backButton {
+    border: none;
+    --bs-btn-hover-bg: transparent;
+    color: var(--bs-body-color);
+}
+
+a.closeButton {
+	font-size: 20pt;
+  color: var(--buttonColor);
+  border: none;
+	--bs-btn-hover-bg: transparent;
+	--bs-btn-hover-color: var(--buttonColor);
+	--bs-btn-active-bg: transparent;
+}
+
+a.editButton {
+	font-size: 20pt;
+  color: var(--buttonColor);
+	border: none;
+	--bs-btn-hover-bg: transparent;
+  --bs-btn-hover-color: var(--buttonColor);
+	--bs-btn-active-bg: transparent;
+}
+
+a.cancelButton {
+	width: 30%;
+}
+
+a.saveButton {
+	width: 30%;
+}

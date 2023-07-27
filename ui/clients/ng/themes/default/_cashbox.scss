@@ -1,0 +1,182 @@
+div.cash-box-rows-content div.rows table.rows {
+	width: 100%;
+	text-align: center;
+}
+
+div.cash-box-rows-content div.rows table.rows td {
+ 	border: 2px solid var(--itemBorder);
+ 	padding: .5rem;
+}
+
+div.cash-box-rows-content div.rows table.rows td.item {
+	width: 75%;
+  text-align: left;
+}
+
+div.cash-box-rows-content div.rows table.rows td.item span.e10-small.i.e10-terminal-action {
+	opacity: 0.5;
+}
+
+
+.cash-box-pay-buttons { grid-area: cash-box-pay-buttons; }
+
+.cash-box-buttons {
+  display: grid;
+  background-color: var(--primaryColumn);
+  grid-template-columns: 1fr;
+  grid-template-rows: min-content 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "cash-box-buttons-tabs"
+    "cash-box-buttons-tabs-content";
+  grid-area: cash-box-buttons;
+  padding: 1rem;
+}
+
+.cash-box-buttons-tabs { grid-area: cash-box-buttons-tabs; }
+
+.cash-box-buttons-tabs-content { grid-area: cash-box-buttons-tabs-content; }
+
+
+
+/* ---------------------- */
+
+
+
+
+.cash-box-container-pay {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 50% 50%;
+  grid-template-rows: min-content 1.1fr min-content;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "payHeader paymentAmount"
+    "paymentMethod paymentDo"
+    "paymentFooter paymentFooter";
+}
+
+div.cash-box-container-pay > div.payHeader { grid-area: payHeader; }
+
+div.cash-box-container-pay > div.paymentMethod { grid-area: paymentMethod; }
+
+div.cash-box-container-pay > div.paymentFooter { grid-area: paymentFooter; }
+
+div.cash-box-container-pay > div.paymentAmount { grid-area: paymentAmount; }
+
+div.cash-box-container-pay > div.paymentDo { grid-area: paymentDo; }
+
+
+
+
+div.cash-box-pay-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3rem;
+  padding: .6rem;
+
+}
+div.cash-box-pay-buttons > *
+{
+  flex: 1 1 auto;
+  min-width: 10rem;
+  text-align: center;
+}
+
+/* ---------------------- */
+
+div.shp-buttons-container
+{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-top: 1rem;
+}
+div.shp-buttons-container > *
+{
+  flex: 1 1 15rem;
+  min-width: 10rem;
+  text-align: center;
+}
+
+@media screen and (min-width: 577px) {
+    .primaryColumn {
+      overflow-y: auto;
+      max-height: 100%;
+      height: 100%;
+    }
+
+    .secondaryColumn {
+      overflow-y: auto;
+      max-height: 100%;
+    }
+
+    .container-fluid {
+          height: 100%;
+    }
+
+    .app-content > .container-fluid > .row {
+      height: 100%;
+    }
+  }
+
+  .cash-box-container-sell {
+    height: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 100%;
+    gap: 0px 0px;
+    grid-auto-flow: row;
+    grid-template-areas:
+      "cash-box-rows cash-box-buttons";
+  }
+
+  .cash-box-rows {
+    background-color: var(--secondaryColumn);
+    border-right: 1px solid var(--columnSeparator);
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: min-content 1fr min-content;
+    gap: 0px 0px;
+    grid-auto-flow: row;
+    grid-template-areas:
+      "cash-box-display"
+      "cash-box-rows-content"
+      "cash-box-pay-buttons";
+    grid-area: cash-box-rows;
+    padding: 1rem;
+  }
+
+  .cash-box-display { grid-area: cash-box-display; margin-bottom: .5rem;}
+
+  .cash-box-rows-content { grid-area: cash-box-rows-content; overflow-y: auto;}
+
+  div.e10-terminal-action i{
+    font-size: 150%;
+    padding: .5rem;
+    color: gray;
+  }
+
+  div.docTermIntro i, b {
+    padding: .5rem;
+  }
+
+  .nav-pills a.nav-link {
+    color: var(--navPillsColor);
+    .nav-link.active {
+      color: #{$nav-pills-link-active-color};
+    }
+  }
+
+
+  /* ---- pay screen ----- */
+
+.cash-box-container-pay {
+  background-color: var(--primaryColumn);
+}
+
+.payHeader, .paymentAmount {
+	padding: 1rem;
+}
