@@ -82,9 +82,6 @@ class TableEvents extends DbTable
 		$tableCals = $this->app()->table('wkf.events.cals');
 		$uc = $tableCals->usersCals();
 
-		if (!count($uc))
-			return 0;
-
 		if (!isset($recData['ndx']) || !$recData['ndx'])
 			return 2;
 
