@@ -37,6 +37,53 @@ class TableMsgs extends DbTable
 	{
 		parent::checkBeforeSave ($recData, $ownerData);
 	}
+
+  public function checkAfterSave2 (&$recData)
+	{
+		parent::checkAfterSave2 ($recData);
+
+		if ($recData['docState'] === 4000)
+		{
+			$this->createRecipients($recData);
+		}
+	}
+
+	function createRecipients ($recData)
+	{
+		$tableBulkPosts = $this->app()->table ('wkf.msgs.msgsRecipients');
+
+		// -- delete old
+		$this->db()->query ('DELETE FROM [wkf_msgs_msgsRecipients] WHERE [sent] = 0 AND [msg] = %i', $recData['ndx']);
+
+		// -- add new
+		$q[] = 'SELECT * FROM [wkf_msgs_msgsVGR]';
+		array_push ($q, ' WHERE [msg] = %i', $recData['ndx']);
+		array_push ($q, ' ORDER BY [ndx]');
+
+		$rows = $this->db()->query ($q);
+		foreach ($rows as $r)
+		{
+			$virtualGroup = $this->app()->cfgItem ('e10.persons.virtualGroups.'.$r['virtualGroup'], NULL);
+			if (!$virtualGroup)
+				continue;
+
+			$vgObject = $this->app()->createObject($virtualGroup['classId']);
+			if (!$vgObject)
+				continue;
+
+			$vgObject->addPosts($tableBulkPosts, 'msg', $recData['ndx'], $r);
+
+			unset ($vgObject);
+		}
+
+		$dateReadyToSend = new \DateTime('+ 15 minutes');
+		//$update = ['dateReadyToSend' => $dateReadyToSend, 'sendingState' => 2];
+
+		//$this->db()->query ('UPDATE [e10pro_wkf_bulkEmails] SET ', $update, ' WHERE [ndx] = %i', $recData['ndx']);
+		//$recData['sendingState'] = 2;
+		//$recData['dateReadyToSend'] = $dateReadyToSend;
+	}
+
 }
 
 
@@ -165,7 +212,8 @@ class FormMsg extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 		$this->setFlag ('maximize', 1);
 
-		$tabs ['tabs'][] = ['text' => 'Text', 'icon' => 'formText'];
+		$tabs ['tabs'][] = ['text' => 'Práva', 'icon' => 'formText'];
+    $tabs ['tabs'][] = ['text' => 'Příjemci', 'icon' => 'formRecipients'];
 		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
@@ -177,6 +225,9 @@ class FormMsg extends TableForm
 				$this->openTab (self::ltNone);
 					$this->addInputMemo('text', NULL, TableForm::coFullSizeY);
 				$this->closeTab();
+				$this->openTab ();
+					$this->addList ('vgrs');
+				$this->closeTab ();
 				$this->openTab();
 					$this->addList ('clsf', '', TableForm::loAddToFormLayout);
 					$this->addSeparator(self::coH4);
@@ -199,5 +250,18 @@ class ViewDetailMsg extends TableViewDetail
 	public function createDetailContent ()
 	{
 		$this->addDocumentCard('wkf.msgs.libs.dc.MsgCore');
+	}
+}
+
+
+class ViewDetailMsgRecipients extends TableViewDetail
+{
+	public function createDetailContent ()
+	{
+		$this->addContent (
+			[
+				'type' => 'viewer', 'table' => 'wkf.msgs.msgsRecipients', 'viewer' => 'wkf.msgs.ViewMsgsRecipients',
+				'params' => ['msgNdx' => $this->item ['ndx']]
+			]);
 	}
 }

@@ -2,7 +2,7 @@
   "id": "wkf.msgs",
   "name": "workflow - messages",
   "tables": [
-		"msgs"
+		"msgs", "msgsVGR", "msgsRecipients"
 	],
 	"modules": ["wkf/base"],
   "config": [

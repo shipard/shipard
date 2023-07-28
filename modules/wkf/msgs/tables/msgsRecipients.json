@@ -1,0 +1,17 @@
+{
+	"id": "wkf.msgs.msgsRecipients", "sql": "wkf_msgs_msgsRecipients", "name": "Příjemci zpráv",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "msg", "name": "Zpráva", "type": "int", "reference": "wkf.msgs.msgs"},
+		{"id": "email", "name": "E-mail", "type": "string", "len": 64},
+		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "sent", "name": "Odesláno", "type": "logical"},
+		{"id": "sentDate", "name": "Datum odeslání", "type": "timestamp"}
+	],
+	"views": [
+		{
+			"id": "default", "class": "wkf.msgs.ViewMsgsRecipients"
+		}
+	],
+	"options": ["systemTable"]
+}

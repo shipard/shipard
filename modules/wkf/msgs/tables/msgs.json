@@ -12,12 +12,19 @@
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
 	"lists": [
+		{"id": "vgrs", "class": "e10.base.ListRows", "name": "Adresáti", "table": "wkf.msgs.msgsVGR", "queryColumn": "msg"},
 		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"},
 		{"id": "doclinksPersons", "class": "e10.base.ListDocLinks", "name": "Vazby na Osoby"}
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"views": [
-		{"id": "default", "class": "wkf.msgs.ViewMsgs", "detail": "wkf.msgs.ViewDetailMsg"}
+		{
+			"id": "default", "class": "wkf.msgs.ViewMsgs",
+			"details": {
+				"default": {"title": "Náhled", "icon": "system/detailOverview", "type": "detail", "class": "wkf.msgs.ViewDetailMsg", "order": 1000},
+				"posts": {"title": "Příjemci", "icon": "system/detailRecipients", "type": "detail", "class": "wkf.msgs.ViewDetailMsgRecipients", "order": 2000}
+			}
+		}
 	],
 	"forms": [
 		{"id": "default", "class": "wkf.msgs.FormMsg"}
