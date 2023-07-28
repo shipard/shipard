@@ -62,6 +62,11 @@
     "teachPlans": {
         "name": "Učební plány", "order": 187000, "group": "e10zus",
         "type": "viewer", "table": "e10pro.zus.teachplanheads", "viewer": "default"
-    }
+    },
 
+		"experimental": {
+			"options": [
+				{"cfgKey": "testZUSEZK", "cfgName": "Testovat EŽK", "options": {"0": "Ne","1": "Ano"}}
+			]
+		}
 }

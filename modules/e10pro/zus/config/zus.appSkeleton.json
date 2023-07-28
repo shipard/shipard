@@ -5,7 +5,7 @@
 			"items": [
 				{
 					"t1": "Zprávy", "object": "viewer", "table": "wkf.msgs.msgs", "viewer": "default",
-					"order": 2500
+					"order": 2500, "enabledCfgItem": "options.experimental.testZUSEZK"
 				},
 				{"t1": "Nástěnka", "object": "widget", "class": "e10.widgetDashboard", "subclass": "school", "icon": "e10.widgetDashboard/board", "order": 5000},
 				{"t1": "Akce", "object": "viewer", "table": "e10pro.zus.akce", "viewer": "default", "order": 6000},
