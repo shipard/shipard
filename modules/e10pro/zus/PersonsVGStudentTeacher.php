@@ -22,7 +22,7 @@ class PersonsVGStudentTeacher extends \lib\persons\PersonsVirtualGroup
 	public function addPosts($dstTable, $bulkOwnerColumnId, $bulkOwnerNdx, $vgRecData)
 	{
 		$academicYear = \E10Pro\Zus\aktualniSkolniRok ();
-		$today = utils::today();
+		$today = utils::today('', $this->app());
 
 		$q[] = 'SELECT studium.student AS studentNdx FROM [e10pro_zus_studiumpre] AS predmety';
 		array_push ($q,' LEFT JOIN [e10pro_zus_studium] AS studium ON predmety.studium = studium.ndx');

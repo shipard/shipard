@@ -33,7 +33,7 @@ class PersonsVGStudents extends \lib\persons\PersonsVirtualGroup
 	public function addPosts($dstTable, $bulkOwnerColumnId, $bulkOwnerNdx, $vgRecData)
 	{
 		$academicYear = \E10Pro\Zus\aktualniSkolniRok ();
-		$today = utils::today();
+		$today = utils::today('', $this->app());
 
 		// -- individuální
 		$q[] = 'SELECT vyuky.student AS studentNdx FROM [e10pro_zus_vyukyrozvrh] AS rozvrh';

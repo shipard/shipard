@@ -77,7 +77,7 @@ class zusutils
 		array_push ($q, 'SELECT e10pro_zus_vyukyrozvrh.ucitel FROM e10pro_zus_vyukyrozvrh');
 		array_push ($q, ' LEFT JOIN e10pro_zus_vyuky ON e10pro_zus_vyukyrozvrh.vyuka = e10pro_zus_vyuky.ndx');
 		array_push ($q, ' WHERE persons.ndx = e10pro_zus_vyukyrozvrh.ucitel ');
-		array_push ($q, ' AND e10pro_zus_vyuky.skolniRok = %s', zusutils::aktualniSkolniRok());
+		array_push ($q, ' AND e10pro_zus_vyuky.skolniRok = %s', zusutils::aktualniSkolniRok($app));
 		if ($officeNdx)
 			array_push ($q, ' AND e10pro_zus_vyukyrozvrh.pobocka = %i', $officeNdx);
 		array_push ($q, ')');
@@ -147,11 +147,15 @@ class zusutils
 		return ['0' => 'Vše'] + $skolniroky;
 	}
 
-	static function aktualniSkolniRok ()
+	static function aktualniSkolniRok ($app = NULL)
 	{
-		$d = getdate ();
+		/*$d = getdate ();
 		$m = $d ['mon'];
-		$y = $d ['year'];
+		$y = $d ['year'];*/
+
+		$d = Utils::today('', $app);
+		$m = intval($d->format('m'));
+		$y = intval($d->format('Y'));
 		if ($m <= 6)
 			return $y - 1;
 		return $y;

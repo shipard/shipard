@@ -30,7 +30,7 @@ class PersonsVGTeachers extends \lib\persons\PersonsVirtualGroup
 
 	public function addPosts($dstTable, $bulkOwnerColumnId, $bulkOwnerNdx, $vgRecData)
 	{
-		$academicYear = \E10Pro\Zus\aktualniSkolniRok ();
+		$academicYear = zusutils::aktualniSkolniRok ($this->app());
 
 		// -- individuální
 		$q[] = 'SELECT vyuky.ucitel AS ucitelNdx FROM [e10pro_zus_vyukyrozvrh] AS rozvrh';
