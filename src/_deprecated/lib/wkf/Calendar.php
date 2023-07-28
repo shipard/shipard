@@ -440,7 +440,7 @@ class Calendar extends Utility
 			$c .= "<script>\n";
 			$c .= "var calTooltips = ".json_encode($this->tooltips).";\n";
 			$c .= "function calTooltip (dayId) {return 'nazdar!!!'};\n";
-			$c .= "$('#e10dashboardWidget table.e10-cal-small>tbody>tr>td.day.tooltips').popover({content:function(){return calTooltips[$(this).attr('data-date')];}, html: true, trigger: 'focus', delay: {'show': 0, 'hide': 100}, container: 'body', placement: 'auto', viewport:'#e10dashboardWidget'});";
+			$c .= "$('#e10dashboardWidget table.e10-cal-small>tbody>tr>td.day.tooltips').popover({content:function(){return calTooltips[$(this).attr('data-date')];}, html: true, trigger: 'focus', delay: {'show': 0, 'hide': 500}, container: 'body', placement: 'auto', viewport:'#e10dashboardWidget'});";
 			$c .= "</script>\n";
 		}
 		return $c;
