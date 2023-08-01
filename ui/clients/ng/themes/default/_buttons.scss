@@ -3,6 +3,10 @@
     --bs-btn-color: var(--bs-btn-color);
 }
 
+.navbar .btn {
+  color: var(--bs-btn-color);
+}
+
 /* zuš - univerzální velké tlačítko */
 a.dashboardButton {
     width: 4rem;

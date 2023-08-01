@@ -12,6 +12,8 @@
     --dashboardButtonColor: #{$dashboard-button-color};
     --accordionBackground: #{$accordion-bg-light};
     --accordionBorder: #{$accordion-border-light};
+    --universalBorder: #{$universal-border-light};
+    --listBorder: $list-border-light;
 }
 
 .btn-outline-secondary
@@ -35,6 +37,8 @@
     --dashboardButtonColor: #{$dashboard-button-color};
     --accordionBackground: #{$accordion-bg-dark};
     --accordionBorder: #{$accordion-border-dark};
+    --universalBorder: #{$universal-border-dark};
+    --listBorder: $list-border-dark;
 }
 
 [data-bs-theme="dark"] .btn-outline-secondary {

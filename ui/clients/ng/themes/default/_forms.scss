@@ -1,0 +1,16 @@
+.form-check-input[type=radio]:not(.form-check-input:checked) {
+	border: 4px solid var(--universalBorder);
+}
+
+.form-check-input[type=checkbox] {
+	border: 2px solid var(--formCheckBorder);
+  font-size: 14pt;
+}
+
+.form-check-input{
+    border: 3pt solid var(--universalBorder) !important;
+}
+
+/*.navbar .form-check-input{
+    border: 3pt solid var(--navBorder) !important;
+}*/

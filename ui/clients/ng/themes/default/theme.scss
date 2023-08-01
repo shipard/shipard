@@ -149,7 +149,11 @@ $accordion-bg-dark: #404040;
 $accordion-border-light: gainsboro;
 $accordion-border-dark: dimgray;
 $nav-border-light: gainsboro;
-$nav-border-dark: #303030;
+$nav-border-dark: #202020;
+$universal-border-light: gainsboro;
+$universal-border-dark: #696969;
+$list-border-light: gainsboro;
+$list-border-dark: #606060;
 
 $success: #198754;
 $info: #0dcaf0;
@@ -191,6 +195,17 @@ $accordion-button-active-bg: transparent;
 $accordion-button-focus-border-color: transparent;
 $accordion-button-focus-box-shadow: none;
 
+$form-check-input-checked-color: $shipard-primary;;
+$form-check-input-checked-border-color: var(--universalBorder);
+$form-check-input-checked-border-color: orange;
+
+$form-check-input-focus-border: transparent;
+$form-check-input-focus-box-shadow: none;
+
+$input-focus-border-color: var(--universalBorder);
+$input-focus-box-shadow: none;
+
+$input-focus-bg: var(--formBackground);
 
 
 @import "../../../../../www-root/sc/bs/5.3/scss/bootstrap.scss";
@@ -201,6 +216,7 @@ $accordion-button-focus-box-shadow: none;
 @import "_navbar.scss";
 @import "_other.scss";
 @import "_buttons.scss";
+@import "_forms.scss";
 @import "_app.scss";
 @import "_viewers.scss";
 

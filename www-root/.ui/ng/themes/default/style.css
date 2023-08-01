@@ -2244,10 +2244,10 @@ progress {
 }
 .form-control:focus {
   color: var(--bs-body-color);
-  background-color: var(--bs-body-bg);
-  border-color: #86b7fe;
+  background-color: var(--formBackground);
+  border-color: var(--universalBorder);
   outline: 0;
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  box-shadow: none;
 }
 .form-control::-webkit-date-and-time-value {
   min-width: 85px;
@@ -2390,7 +2390,7 @@ textarea.form-control-lg {
   }
 }
 .form-select:focus {
-  border-color: #86b7fe;
+  border-color: var(--universalBorder);
   outline: 0;
   box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
@@ -2473,19 +2473,19 @@ textarea.form-control-lg {
   filter: brightness(90%);
 }
 .form-check-input:focus {
-  border-color: #86b7fe;
+  border-color: transparent;
   outline: 0;
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  box-shadow: none;
 }
 .form-check-input:checked {
   background-color: #0d6efd;
-  border-color: #0d6efd;
+  border-color: orange;
 }
 .form-check-input:checked[type=checkbox] {
-  --bs-form-check-bg-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
+  --bs-form-check-bg-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%2393C572' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
 }
 .form-check-input:checked[type=radio] {
-  --bs-form-check-bg-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23fff'/%3e%3c/svg%3e");
+  --bs-form-check-bg-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%2393C572'/%3e%3c/svg%3e");
 }
 .form-check-input[type=checkbox]:indeterminate {
   background-color: #0d6efd;
@@ -2520,7 +2520,7 @@ textarea.form-control-lg {
   }
 }
 .form-switch .form-check-input:focus {
-  --bs-form-switch-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%2386b7fe'/%3e%3c/svg%3e");
+  --bs-form-switch-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='var%28--universalBorder%29'/%3e%3c/svg%3e");
 }
 .form-switch .form-check-input:checked {
   background-position: right center;
@@ -2566,10 +2566,10 @@ textarea.form-control-lg {
   outline: 0;
 }
 .form-range:focus::-webkit-slider-thumb {
-  box-shadow: 0 0 0 1px whitesmoke, 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  box-shadow: 0 0 0 1px whitesmoke, none;
 }
 .form-range:focus::-moz-range-thumb {
-  box-shadow: 0 0 0 1px whitesmoke, 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  box-shadow: 0 0 0 1px whitesmoke, none;
 }
 .form-range::-moz-focus-outer {
   border: 0;
@@ -12037,6 +12037,8 @@ textarea.form-control-lg {
   --dashboardButtonColor: black;
   --accordionBackground: white;
   --accordionBorder: gainsboro;
+  --universalBorder: gainsboro;
+  --listBorder: $list-border-light;
 }
 
 .btn-outline-secondary {
@@ -12049,7 +12051,7 @@ textarea.form-control-lg {
   --bodyColor: #D8D8D8;
   --navBackground: #303030;
   --navColor: #D8D8D8;
-  --navBorder: #303030;
+  --navBorder: #202020;
   --cardBackground: #404040;
   --cardBorder: dimgray;
   --navPillsColor: whitesmoke;
@@ -12059,6 +12061,8 @@ textarea.form-control-lg {
   --dashboardButtonColor: black;
   --accordionBackground: #404040;
   --accordionBorder: dimgray;
+  --universalBorder: #696969;
+  --listBorder: $list-border-dark;
 }
 
 [data-bs-theme=dark] .btn-outline-secondary {
@@ -12431,11 +12435,13 @@ ol.grades li.list-group-item:not(:last-child) {
   border-bottom: 1px solid var(--accordionBorder);
 }
 
-/* zuš - tlačítko pro vrácení se na předchozí stránku */
-a.backButton {
-  border: none;
-  --bs-btn-hover-bg: transparent;
-  color: var(--bs-body-color);
+.btn-outline-primary {
+  --bs-btn-bg: transparent;
+  --bs-btn-color: var(--bs-btn-color);
+}
+
+.navbar .btn {
+  color: var(--bs-btn-color);
 }
 
 /* zuš - univerzální velké tlačítko */
@@ -12457,6 +12463,16 @@ a.dashboardButton i, b {
   padding-top: 0.5rem;
 }
 
+/* dropdown na ovládání dark light módu*/
+.dropdown-item.active {
+  background-color: #93C572;
+}
+
+ul.dropdown-menu {
+  background-color: var(--cardBackground);
+}
+
+/* ostatní */
 a.searchButton {
   border: none;
   --bs-btn-hover-bg: transparent;
@@ -12467,22 +12483,54 @@ a.sendButton {
   max-width: 30%;
 }
 
-.dropdown-item.active {
-  background-color: #93C572;
+a.backButton {
+  border: none;
+  --bs-btn-hover-bg: transparent;
+  color: var(--bs-body-color);
 }
 
-ul.dropdown-menu {
-  background-color: var(--cardBackground);
+a.closeButton {
+  font-size: 20pt;
+  color: var(--buttonColor);
+  border: none;
+  --bs-btn-hover-bg: transparent;
+  --bs-btn-hover-color: var(--buttonColor);
+  --bs-btn-active-bg: transparent;
 }
 
-/*.dropdown .btn{
-    border-color: ;
-  }*/
-.btn-outline-primary {
-  --bs-btn-bg: transparent;
-  --bs-btn-color: var(--bs-btn-color);
+a.editButton {
+  font-size: 20pt;
+  color: var(--buttonColor);
+  border: none;
+  --bs-btn-hover-bg: transparent;
+  --bs-btn-hover-color: var(--buttonColor);
+  --bs-btn-active-bg: transparent;
 }
 
+a.cancelButton {
+  width: 30%;
+}
+
+a.saveButton {
+  width: 30%;
+}
+
+.form-check-input[type=radio]:not(.form-check-input:checked) {
+  border: 4px solid var(--universalBorder);
+}
+
+.form-check-input[type=checkbox] {
+  border: 2px solid var(--formCheckBorder);
+  font-size: 14pt;
+}
+
+.form-check-input {
+  border: 3pt solid var(--universalBorder) !important;
+}
+
+/*.navbar .form-check-input{
+    border: 3pt solid var(--navBorder) !important;
+}*/
 body {
   height: 100vh;
 }
