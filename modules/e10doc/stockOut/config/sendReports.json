@@ -5,5 +5,12 @@
     "sc": "VZ",
     "classId": "e10doc.stockOut.libs.StockOutReport",
     "ndx": 2010
+  },
+  "2011": {
+    "fn": "Výdejka zásob / dodací list",
+    "cn": "Výdejka / Dodací list",
+    "sc": "VZDL",
+    "classId": "e10doc.stockOut.libs.StockOutReportDN",
+    "ndx": 2011
   }
 }

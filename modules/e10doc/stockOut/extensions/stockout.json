@@ -17,6 +17,11 @@
         "id": "stockout", "name": "Výdejka", "class": "e10doc.stockOut.libs.StockOutReport",
 				"queryCol": "docType", "queryColValue": "stockout",
         "email": 1
+      },
+      {
+        "id": "stockoutdn", "name": "Dodací list", "class": "e10doc.stockOut.libs.StockOutReportDN",
+				"queryCol": "docType", "queryColValue": "stockout",
+        "email": 1
       }
     ]
   },
