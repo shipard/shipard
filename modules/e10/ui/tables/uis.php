@@ -82,7 +82,7 @@ class TableUIs extends DbTable
 	function createNginxConfigs()
 	{
 		$webServers = Utils::loadCfgFile(__APP_DIR__ . '/config/_e10.ui.uis.json');
-		if (!$webServers || !count($webServers['e10']['ui']['domains']))
+		if (!$webServers || !isset($webServers['e10']['ui']['domains']) || !count($webServers['e10']['ui']['domains']))
 			return;
 
 		$systemDomainsCerts = ['shipard.app', 'shipard.pro', 'shipard.cz'];
