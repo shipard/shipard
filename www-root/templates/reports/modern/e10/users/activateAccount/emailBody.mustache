@@ -1,17 +1,50 @@
-{{textMode}}{{@dict;Dobrý den}},
+{{textMode}}{{#data.reportTexts.emailBody}}{{{data.reportTexts.emailBody}}}{{/data.reportTexts.emailBody}}
+{{^data.reportTexts.emailBody}}
+Dobrý den,
 
-{{@dict;klikně na odkaz}}:
+vítáme vás v aplikaci {{cfgItem.options.core.ownerFullName}}.
+
+Chcete-li se zaregistrovat, klikněte na následující odkaz:
 {{data.request.url}}
+
+Budete požádáni o vytvoření hesla. Heslo následně využijte k přihlášení. Vaše přihlašovací jméno se nachází níže.
 
 Přihlašovací jméno: {{data.request.userLogin}}
 Uživatel: {{data.request.userFullName}}
 
-{{@dict;Děkujeme}},
+Pokud máte jakékoli dotazy, neváhejte nás kontaktovat na {{cfgItem.options.core.ownerEmail}}.
 
-{{@dict;S pozdravem}}
+Děkujeme za registraci!
+
+S pozdravem
 
 --
   {{cfgItem.options.core.ownerFullName}}
   {{cfgItem.options.core.ownerPhone}}
   {{cfgItem.options.core.ownerEmail}}
+
+---------
+Greetings,
+
+welcome to the {{cfgItem.options.core.ownerFullName}} app.
+
+To sign up, click on the following link:
+{{data.request.url}}
+
+You will be asked to create a password. Use this password to log in. Your username is listed below.
+
+Username: {{data.request.userLogin}}
+User: {{data.request.userFullName}}
+
+If you have any questions, please do not hesitate to contact us at {{cfgItem.options.core.ownerEmail}}.
+
+Thank you for signing up!
+
+Best wishes,
+
+--
+  {{cfgItem.options.core.ownerFullName}}
+  {{cfgItem.options.core.ownerPhone}}
+  {{cfgItem.options.core.ownerEmail}}
+{{/data.reportTexts.emailBody}}
 
