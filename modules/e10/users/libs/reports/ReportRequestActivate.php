@@ -32,6 +32,8 @@ class ReportRequestActivate extends \Shipard\Report\FormReport
     $this->data['request']['userFullName'] = $sendRequestEngine->userRecData['fullName'];
     $this->data['request']['userEmail'] = $sendRequestEngine->userRecData['email'];
     $this->data['request']['userLogin'] = $sendRequestEngine->userRecData['login'];
+
+		$this->loadReportsTexts();
 	}
 
 	public function reportWasSent(\Shipard\Report\MailMessage $msg)
@@ -42,6 +44,23 @@ class ReportRequestActivate extends \Shipard\Report\FormReport
 		];
 
 		$this->db()->query('UPDATE [e10_users_requests] SET ', $update, ' WHERE ndx = %i', $this->recData['ndx']);
+	}
+
+	protected function loadReportsTexts()
+	{
+		/** @var \e10\reports\TableReportsTexts */
+		$tableReportsTexts = $this->app()->table('e10.reports.reportsTexts');
+		$this->data ['reportTexts'] ??= [];
+		$tableReportsTexts->loadReportTexts($this, $this->data ['reportTexts']);
+		if (count($this->data ['reportTexts']))
+		{
+			$this->data ['_subtemplatesItems'] ??= [];
+			if (!count($this->data ['_subtemplatesItems']))
+				$this->data ['_subtemplatesItems'][] = 'reportTexts';
+			$this->data ['_textRenderItems'] ??= [];
+			if (!count($this->data ['_textRenderItems']))
+				$this->data ['_textRenderItems'][] = 'reportTexts';
+		}
 	}
 }
 
