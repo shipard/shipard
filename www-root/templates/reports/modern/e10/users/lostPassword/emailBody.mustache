@@ -1,17 +1,35 @@
-{{textMode}}{{@dict;Dobrý den}},
+{{textMode}}{{#data.reportTexts.emailBody}}{{{data.reportTexts.emailBody}}}{{/data.reportTexts.emailBody}}
+{{^data.reportTexts.emailBody}}
+Dobrý den,
 
-{{@dict;klikně na odkaz}}:
+zjistili jsme, že jste požádali o obnovení hesla k vašemu účtu v aplikaci {{cfgItem.options.core.ownerFullName}}.
+
+Chcete-li si vytvořit nové heslo, klikněte prosím na následující odkaz:
 {{data.request.url}}
 
-Přihlašovací jméno: {{data.request.userLogin}}
-Uživatel: {{data.request.userFullName}}
+Pokud jste o obnovení hesla nepožádali, ignorujte prosím tento e-mail.
 
-{{@dict;Děkujeme}},
-
-{{@dict;S pozdravem}}
+S pozdravem,
 
 --
   {{cfgItem.options.core.ownerFullName}}
   {{cfgItem.options.core.ownerPhone}}
   {{cfgItem.options.core.ownerEmail}}
 
+---------
+Greetings,
+
+We have received a request to reset your password for your account in the {{cfgItem.options.core.ownerFullName}} app.
+
+To create a new password, click on the following link:
+{{data.request.url}}
+
+If you did not request a password reset, please ignore this email.
+
+Best wishes,
+
+--
+  {{cfgItem.options.core.ownerFullName}}
+  {{cfgItem.options.core.ownerPhone}}
+  {{cfgItem.options.core.ownerEmail}}
+{{/data.reportTexts.emailBody}}
