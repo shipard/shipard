@@ -25,6 +25,10 @@ class ModuleServices extends \E10\CLI\ModuleServices
 
 	protected function addUsers()
 	{
+		$uiNdx = intval($this->app()->arg('uiNdx'));
+		if (!$uiNdx)
+			$uiNdx = 1;
+
 		$this->db()->query('DELETE FROM e10_users_users');
 		$this->db()->query('DELETE FROM e10_users_requests');
 		$this->db()->query('DELETE FROM e10_users_pwds');
@@ -42,11 +46,11 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		foreach ($rows as $r)
 		{
 			echo "# ".$r['nazev']."\n";
-			$this->addUsersFromContact($r['student']);
+			$this->addUsersFromContact($r['student'], $uiNdx);
 		}
 	}
 
-	protected function addUsersFromContact($personNdx)
+	protected function addUsersFromContact($personNdx, $uiNdx)
 	{
 		$tableUsers = new \e10\users\TableUsers($this->app());
 		$tableRequests = new \e10\users\TableRequests($this->app());
@@ -83,7 +87,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			$newUserNdx = $tableUsers->dbInsertRec($item);
 			$tableUsers->docsLog ($newUserNdx);
 
-			$newRequest = ['user' => $newUserNdx, 'ui' => 1];
+			$newRequest = ['user' => $newUserNdx, 'ui' => $uiNdx];
 			$newRequestNdx = $tableRequests->dbInsertRec($newRequest);
     }
 	}
