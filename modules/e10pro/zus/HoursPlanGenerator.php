@@ -136,7 +136,7 @@ class HoursPlanGenerator extends Utility
 		array_push($q, ' WHERE 1');
 		array_push($q, ' AND hodiny.vyuka = %i', $this->params['etkNdx']);
 
-		if (!$this->app()->hasRole('root'))
+		//if (!$this->app()->hasRole('root'))
 			array_push($q, ' AND hodiny.stav != %i', 9800);
 
 		array_push($q, ' ORDER BY hodiny.[datum], hodiny.[zacatek]');
@@ -610,8 +610,7 @@ class HoursPlanGenerator extends Utility
 	public function run ()
 	{
 		$this->loadExistedHours();
-		$date = $this->beginDate;
-
+		$date = utils::createDateTime($this->beginDate);
 		while ($date <= $this->endDate)
 		{
 			$this->addDay($date);

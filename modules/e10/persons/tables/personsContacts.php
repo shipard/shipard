@@ -24,12 +24,12 @@ class TablePersonsContacts extends DbTable
 		parent::checkBeforeSave ($recData, $ownerData);
 
 		$recData['systemOrder'] = 99;
-		if ($recData['flagMainAddress'])
+		if ($recData['flagMainAddress'] ?? 0)
 			$recData['systemOrder'] = 1;
-		elseif ($recData['flagOffice'])
+		elseif ($recData['flagOffice'] ?? 0)
 			$recData['systemOrder'] = 20;
 
-		if ($recData['onTop'] == 0)
+		if (($recData['onTop'] ?? 0) == 0)
 			$recData['onTop'] = 99;
 	}
 

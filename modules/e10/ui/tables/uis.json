@@ -8,12 +8,16 @@
 
 	  {"id": "uiType", "name": "Typ", "type": "enumInt", "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "e10.ui.uiTypes", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "appType", "name": "Typ aplikace", "type": "enumString", "len": 20, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "apps", "cfgValue": "", "cfgText": "fn"}},
 
 		{"id": "order", "name": "Pořadí", "type": "int"},
 
 		{"id": "template", "name": "Šablona", "type": "memo"},
 		{"id": "style", "name": "CSS style", "type": "memo"},
 		{"id": "uiStruct", "name": "Struktura uživatelského rozhraní", "type": "memo"},
+
+		{"id": "domain", "name": "Doména", "type": "string", "len": 80},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

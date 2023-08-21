@@ -32,6 +32,9 @@
 		},
 		{
 			"id": "combo", "class": "e10pro.zus.ViewHodinyCombo", "detail": "e10pro.zus.ViewDetailHodina"
+		},
+		{
+			"id": "ezk", "class": "e10pro.zus.libs.ezk.ViewHours", "detail": "e10pro.zus.ViewDetailHodina"
 		}
 	],
 	"lists": [

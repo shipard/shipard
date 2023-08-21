@@ -256,7 +256,7 @@ class ShpdUIApp
 				{
 					//$cmd = "export LC_ALL=en_US.UTF.8 && cd {$this->destPath} && sass $dstFileName $dstCssFileName --style compressed --no-source-map 2>&1";
 					$destCssFileName = $themeDestFolder.'style.css';
-					passthru ("cd $themePath && sass theme.scss > $destCssFileName");
+					passthru ("cd $themePath && sass theme.scss --style compressed > $destCssFileName");
 				}
 				else
 				{

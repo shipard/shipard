@@ -22,6 +22,7 @@ class TableViewDetail
 	var $accessLevel = 0;
 	var $content = [];
 	var $header = NULL;
+	var $viewDefinition = NULL;
 
 	/** @return \E10\Application */
 	public function app() {return $this->table->app();}

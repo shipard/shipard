@@ -1,0 +1,39 @@
+<div class='container d-flex justify-content-center align-items-center' style='height: 100vh;'>
+  <div class='card' style='min-width: 90%; max-width: 90vw;'>
+    <div class='card-header'>
+      <h3>Přihlášení</h3>
+    </div>
+    <div class='card-body'>
+      {{#data.login.error}}
+      <div class='alert alert-danger'>
+        {{data.login.errorMsg}}
+      </div>
+      {{/data.login.error}}
+      <form method='POST' action='{{data.uiRoot}}auth/login'>
+        <div class='form-floating mb-3'>
+          <input type='email' class='form-control' name='login' placeholder='name@example.com' id='e10-login-user'>
+          <label for='e10-login-user'>E-mail</label>
+        </div>
+        <div class='form-floating mb-3'>
+          <input type='password' name='password' class='form-control' placeholder='Heslo' id='e10-login-password'>
+          <label for='e10-login-password'>Heslo</label>
+        </div>
+        <div class='form-check mb-3'>
+          <input type='checkbox' name='showPassword' class='form-check-input' id='e10-show-password' onclick="shpLoginShowPasswords()">
+          <label for='e10-show-password'>Zobrazit heslo</label>
+        </div>
+        <input type='hidden' name='from' value='{{{data.login.referer}}}'>
+        <div class='b'>
+          <button type='submit' class='btn btn-primary'>Přihlásit</button>
+          <a href='{{data.uiRoot}}user/send-lost-password' class='btn btn-secondary float-end'>Neznám heslo</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+function shpLoginShowPasswords() {
+  var pwd = document.getElementById("e10-login-password");
+  if (pwd.type === "password") pwd.type = "text"; else pwd.type = "password";
+}
+</script>

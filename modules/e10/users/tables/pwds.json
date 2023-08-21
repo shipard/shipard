@@ -1,0 +1,9 @@
+{
+  "id": "e10.users.pwds", "sql": "e10_users_pwds", "name": "Hesla",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "user", "name": "Uživatel", "type": "int", "reference": "e10.users.users"},
+    {"id": "password", "name": "Heslo", "type": "string", "len": 180, "options": ["ascii"]}
+  ],
+	"options": ["systemTable"]
+}

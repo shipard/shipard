@@ -1,60 +1,132 @@
 
 
-data-viewer  {
+data-viewer.shp-mainViewer  {
+  height:100%;
   display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: min-content 1fr min-content;
   gap: 0px 0px;
-  grid-auto-flow: row;
+
+  grid-template-columns: 30% 1fr;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "toolbar toolbar"
+    "body detail";
+
+  .toolbar { grid-area: toolbar; background-color: lightblue;}
+  .body {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    gap: 0px 0px;
+    grid-template-areas:
+      "search"
+      "rows"
+      "tabs";
+    grid-area: body;
+
+    overflow-y: hidden;
+    border: 3px solid violet;
+
+    >.rows {
+      overflow-y: auto;
+    };
+  }
+  .search { grid-area: search; background-color: aliceblue;}
+  .rows {
+     grid-area: rows; background-color: aqua;
+     border: 5px solid red;
+    }
+  .tabs { grid-area: tabs; }
+  .detail { grid-area: detail;  background-color: lightgreen;}
+
+}
+
+
+data-viewer.shp-detailViewer  {
+  height:100%;
+  display: grid;
+  gap: 0px 0px;
+
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
   grid-template-areas:
     "toolbar"
-    "rows"
-    "tabs";
+    "body";
 
-    .toolbar { grid-area: toolbar; }
+  .toolbar { grid-area: toolbar; background-color: lightpink;}
+  >.body {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    gap: 0px 0px;
+    grid-template-areas:
+      "search"
+      "rows"
+      "tabs";
+    grid-area: body;
 
-    .rows {
-      grid-area: rows;
-      color: green;
-      background-color: white;
+    overflow-y: hidden;
+
+    >.rows {
       overflow-y: auto;
+    };
+  }
+  .search { grid-area: search; background-color: aliceblue;}
+  .rows {
+     grid-area: rows;
+    }
+  .tabs { grid-area: tabs; }
+}
 
 
-      div.df2-list-item-t1 {display: inline-block;
-        overflow-x: hidden;text-overflow: ellipsis;;
-        white-space: pre;
+data-viewer>div.body>div.rows>div.rows-list>div.r {
+  border-bottom: 1px solid gray;
+  display: flex;
+  //flex-direction: row;
+  //flex-wrap: wrap;
 
-        font-size: 112%; /*opacity: .9;*/ }
-        span.df2-list-item-i1 {float: right; white-space: nowrap;
+  >div.df2-list-item-recnum {
+    width: 3rem;
+    flex-shrink: 0;
+  }
 
-        font-size: 112%; /*opacity: .9;*/}
+  >div.df2-list-item-icon {
+    width: 3rem;
+    flex-shrink: 0;
+    font-size: 180%;
+  }
 
-      div.df2-list-item-t2, div.df2-list-item-t3 {
-        clear: both;
-        font-size: 90%; /*color: black;*/ opacity: .80;
-      }
+  >div.row-content {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    flex-grow: 1;
+    min-width: 0;
 
+    div.df2-list-item-t1 {
+      color: red;
 
-      table.df2-viewer-line-content tr td.df2-list-item-t {
-        vertical-align: top;
-        line-height: 1.35;
-        padding-top: 2px; padding-bottom: 2px;
-      }
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
 
-      div.df2-list-item-t2 >span.i2 {float: right;}
+      font-size: 120%;
 
-
-      table.df2-viewer-line-content tr td.df2-list-item-icon {width: 2.5em;  text-align: center;
-        vertical-align: top; line-height: 100%; padding-right: .3ex;padding-top: 1.4ex;}
-
-
-      table.df2-viewer-line-content tr td.df2-list-item-icon span {font-size: 200%; opacity: .75;}
-
+      flex-grow: 1;
     }
 
-    .tabs { grid-area: tabs; }
+    div.df2-list-item-t2 {
+      color: blue;
+      flex-grow: 1;
+    }
 
+    div.df2-list-item-i1 {
+      flex-shrink: 1;
+    }
 
-    ul.df2-viewer-list >li {border-bottom: 1px solid rgba(0,0,0,0.5); }
+    div.break-break {
+      flex-basis: 100%;
+      width: 0;
+    }
   }
+}
 

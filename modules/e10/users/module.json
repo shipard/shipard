@@ -1,0 +1,14 @@
+{
+  "id": "e10.users",
+  "name": "Users",
+  "tables": [
+		"users", "requests", "sessions", "pwds"
+  ],
+  "config": [
+    {"id": "+appSkeleton", "file": "appSkeleton.json"},
+    {"id": "+e10.persons.roles", "file": "e10.users.roles.json"},
+    {"id": "e10.users.accountStates", "file": "accountStates.json"},
+    {"id": "e10.users.requestTypes", "file": "requestTypes.json"},
+    {"id": "e10.users.requestStates", "file": "requestStates.json"}
+	]
+}

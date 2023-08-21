@@ -50,6 +50,10 @@ class SendFormReportWizard extends \Shipard\Form\Wizard
 		//$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 
+		$focusedPKPrimary = intval ($this->app()->testGetParam('focusedPKPrimary'));
+		if ($focusedPKPrimary)
+			$this->focusedPK = $focusedPKPrimary;
+
 		$this->recData['documentNdx'] = $this->focusedPK;
 		$this->recData['documentTable'] = $this->app->testGetParam('documentTable');
 		$this->recData['reportClass'] = $this->app->testGetParam('reportClass');
@@ -73,6 +77,10 @@ class SendFormReportWizard extends \Shipard\Form\Wizard
 		if (isset($documentInfo['persons']['to']))
 		{
 			$this->recData['to'] = $tablePersons->loadEmailsForReport($documentInfo['persons']['to'], $this->recData['reportClass']);
+		}
+		elseif (isset($documentInfo['emails']['to']))
+		{
+			$this->recData['to'] = $documentInfo['emails']['to'];
 		}
 
 		$this->recData['emailFromAddress'] = $this->app->cfgItem ('options.core.ownerEmail');
@@ -142,6 +150,7 @@ class SendFormReportWizard extends \Shipard\Form\Wizard
 
 		$msg->sendMail();
 		$msg->saveToOutbox();
+		$report->reportWasSent($msg);
 	}
 
 	function addOtherReports($documentTable, $msg, $mainReport)

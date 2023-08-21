@@ -19,7 +19,7 @@ class AppLog extends \Shipard\Base\BaseObject
 
 	CONST ttNone = 0, ttHttpApi = 1, ttHttpFeed = 2, ttWeb = 3, ttHttpAppPanel = 4;
 	CONST tkNone = 0, tkForm = 1, tkViewer = 2, tkWidget = 3, tkWizard = 4, tkWindow = 5, tkReport = 6, tkObjects = 7, tkViewerDetail = 8,
-			tkViewerPanel = 9, tkFormReport = 10, tkCall = 11, tkF = 12, tkDocumentCard = 14, tkApiRun = 15;
+			tkViewerPanel = 9, tkFormReport = 10, tkCall = 11, tkF = 12, tkDocumentCard = 14, tkApiRun = 15, tkApiV2 = 16;
 	CONST ssNone = 0, ssTask = 1, ssSql = 2;
 
 	function init()

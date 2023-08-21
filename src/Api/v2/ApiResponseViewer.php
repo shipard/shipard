@@ -14,14 +14,25 @@ class ApiResponseViewer extends \Shipard\Api\v2\ApiResponse
 
   public function run()
   {
-    /*
-    $this->board = $this->app()->createObject($this->requestParam('classId'));
-    if (!$this->board)
-      return;
+    $table = $this->app->table ($this->requestParams['table'] ?? '');
 
-    $this->board->setRequestParams($this->requestParams);
-		$this->board->init();
-    $this->board->createResponse($this->responseData);
-    */
+    /** @var \Shipard\Viewer\TableView */
+    $v = NULL;
+    if ($table)
+      $v = $table->getTableView ($this->requestParams['viewId'] ?? 'default', NULL, $this->requestParams);
+    if ($v)
+    {
+      //$v->requestParams = $this->requestParams;
+      $renderer = new \Shipard\UI\ng\renderers\TableViewRenderer($this->app());
+      $renderer->setViewer($v);
+      $v->renderViewerData ('');
+      $renderer->render();
+
+      $this->responseData['type'] = 'loadNextData';
+      $this->responseData['hcRows'] = $v->rows();
+
+      $this->responseData['rowsPageNumber'] = $v->objectData ['rowsPageNumber'];
+      $this->responseData['rowsLoadNext'] = $v->objectData ['rowsLoadNext'];
+    }
   }
 }

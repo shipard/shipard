@@ -96,6 +96,7 @@ class ShipardClient {
 		switch (actionId)
     {
       case 'setColorMode': return this.setColorMode(e);
+			case 'setUserContext': return this.setUserContext(e);
 			case 'workplaceLogin': return this.workplaceLogin(e);
 			case 'inline-action': return this.inlineAction(e);
     }
@@ -174,6 +175,21 @@ class ShipardClient {
 		let colorMode = e.getAttribute('data-app-color-mode');
 		localStorage.setItem('shpAppColorMode', colorMode);
 		this.doColorMode(colorMode);
+		return 0;
+	}
+
+	setUserContext(e)
+	{
+
+		let userContextId = e.getAttribute('data-user-context');
+		console.log("User context: ", userContextId);
+
+		let apiParams = {
+			'userContextId': userContextId,
+
+		};
+		this.apiCall('setUserContext', apiParams);
+
 		return 0;
 	}
 
@@ -290,11 +306,47 @@ class ShipardClient {
 		this.onClick ('.shp-app-action', function (e) {this.widgetAction(e);}.bind(this));
 
 		this.initUI();
+
+		if ('serviceWorker' in navigator && e10ServiceWorkerURL !== undefined) {
+			navigator.serviceWorker.register(e10ServiceWorkerURL)
+				.then(function(reg){
+				}).catch(function(err) {
+				console.log("Service worker registration error: ", err)
+			});
+		}
 	}
 
 	applyUIData (responseUIData)
 	{
 		this.mqtt.applyUIData(responseUIData);
 		this.iot.applyUIData(responseUIData);
+	}
+
+	apiCall(apiActionId, outsideApiParams)
+  {
+    var apiParams = {};
+    apiParams['requestType'] = 'appCommand';
+    apiParams['actionId'] = apiActionId;
+    if (outsideApiParams !== undefined)
+      apiParams = {...apiParams, ...outsideApiParams};
+
+    console.log("CLIENT-API-CALL", apiParams);
+
+    var url = 'api/v2';
+
+    shc.server.post (url, apiParams,
+      function (data) {
+        console.log("--app-api-call-success--");
+        this.doAppAPIResponse(data);
+      }.bind(this),
+      function (data) {
+        console.log("--api-app-call-error--");
+      }.bind(this)
+    );
+  }
+
+	doAppAPIResponse(data)
+	{
+		window.location.reload(true);
 	}
 }

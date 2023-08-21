@@ -9,6 +9,10 @@
 
       <img class="logo" src="https://dev-anna.shpd.dev/32056308011696/att/2023/07/11/e10.ui.uis/zus-logo-pruhledne-1unnk2g.svg" width="70" height="auto">
 
+      <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar2" aria-controls="offcanvasNavbar2" aria-label="Toggle navigation">
+        {{activeUserContext.title}} <span style='font-size: 180%; padding-left: 1rem;'>👩‍🦱</span>
+      </button>
+
       <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
         <div class="offcanvas-header">
           <h5 class="offcanvas-title" id="offcanvasNavbarLabel">{{data.uiStruct.appMenu.appTitle}}</h5>
@@ -27,11 +31,11 @@
 
             <div class="row align-items-center mt-3">
               <div class="col-2">
-                <a class="btn btn-outline-primary btn-lg" href='{{dsRoot}}/user/logout-check?loginUrl=/ui/login/ui/etk/messages'>{{{@icon;icon:user/signOut}}}</a>
+                <a class="btn btn-outline-primary btn-lg" href='{{data.uiRoot}}auth/logout'>{{{@icon;icon:user/signOut}}}</a>
               </div>
 
               <div class="col-8 text-center">
-                Kateřina Nováková
+                <div>{{userInfo.name}}</div>
               </div>
 
               <div class="col-2">
@@ -40,6 +44,21 @@
             </div>
             <!-- End Row -->
           </div>
+        </div>
+      </div>
+
+
+      <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar2" aria-labelledby="offcanvasNavbarLabel">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="offcanvasNavbarLabel">{{data.uiStruct.appMenu.appTitle}}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+          {{#userContextsEnum}}
+            <div class="d-grid gap-2">
+              <button class='btn btn-outline btn-outline-primary shp-app-action' data-action='setUserContext' data-user-context='{{id}}'> 🧑‍🦱 {{title}} {{#active}}!!!{{/active}}</button>
+            </div>
+          {{/userContextsEnum}}
         </div>
       </div>
     </div>

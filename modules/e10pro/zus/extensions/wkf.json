@@ -1,0 +1,13 @@
+[
+  {
+    "table": "wkf.msgs.msgs",
+    "views": {
+      "ezk": {
+        "id": "ezk", "class": "e10pro.zus.libs.ezk.ViewMessages", "title": "Zprávy",
+        "details": {
+          "overview": {"title": "Student", "icon": "iconStudents", "type": "detail", "class": "e10pro.zus.ViewDetailStudent", "order": 10}
+        }
+			}
+		}
+  }
+]

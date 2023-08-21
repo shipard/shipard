@@ -8,6 +8,7 @@
 	           "nomencTypes", "nomencItems", "nomenc", "statsCounters", "geoTags", "usersSummary",
 	           "docDataFiles"
   ],
+	"modules": ["e10/users"],
   "config": [
     {"id": "+appSkeleton", "name": "Konfigurace serveru", "file": "appSkeleton.panel.srvcfg.json"},
 		{"id": "e10.base.defaultDocStatesArchive", "file": "/e10/base/config/e10.defaultDocStatesArchive.json"},

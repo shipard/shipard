@@ -74,7 +74,10 @@ class ViewUsers extends \e10\persons\ViewPersons
 			{
 				if ($roleId === '')
 					continue;
-				$roles[] = ['class' => 'label label-info', 'text' => $this->roles[$roleId]['name']];
+				if (isset($this->roles[$roleId]) && isset($this->roles[$roleId]['name']))
+					$roles[] = ['class' => 'label label-info', 'text' => $this->roles[$roleId]['name']];
+				else
+					$roles[] = ['class' => 'label label-danger', 'text' => 'Chyba: `'.$roleId.'`'];
 			}
 		}
 		$listItem ['t3'] = $roles;

@@ -3,6 +3,7 @@
 namespace e10pro\zus;
 use \e10\utils;
 use \e10\base\libs\UtilsBase;
+use \Shipard\Utils\Str;
 
 /**
  * Class ModuleServices
@@ -20,6 +21,71 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$this->doSqlScripts ($s);
 
 		//$this->upgradeSkupinoveDochazkyBezStudentu();
+	}
+
+	protected function addUsers()
+	{
+		$this->db()->query('DELETE FROM e10_users_users');
+		$this->db()->query('DELETE FROM e10_users_requests');
+		$this->db()->query('DELETE FROM e10_users_pwds');
+
+		$schoolYear = 2022;
+		$q = [];
+		array_push($q, 'SELECT studium.*');
+		array_push($q, ' FROM [e10pro_zus_studium] as studium ');
+		array_push($q, ' WHERE [stav] = %i', 1200);
+		array_push($q, ' AND skolniRok = %s', $schoolYear);
+		//array_push($q, '');
+		//array_push($q, '');
+
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			echo "# ".$r['nazev']."\n";
+			$this->addUsersFromContact($r['student']);
+		}
+	}
+
+	protected function addUsersFromContact($personNdx)
+	{
+		$tableUsers = new \e10\users\TableUsers($this->app());
+		$tableRequests = new \e10\users\TableRequests($this->app());
+
+    $q = [];
+    array_push($q, 'SELECT contacts.*,');
+    array_push($q, ' persons.fullName AS personName');
+    array_push($q, ' FROM e10_persons_personsContacts AS [contacts]');
+    array_push($q, ' LEFT JOIN [e10_persons_persons] AS [persons] ON [contacts].person = [persons].ndx');
+    array_push($q, ' WHERE 1');
+    array_push($q, ' AND [persons].[docState] = %i', 4000);
+		array_push($q, ' AND [contacts].[flagContact] = %i', 1);
+		array_push($q, ' AND [contacts].[contactEmail] != %s', '');
+		array_push($q, ' AND [person] = %i', $personNdx);
+		array_push($q, ' ORDER BY [persons].ndx');
+
+    $rows = $this->db()->query($q);
+    foreach ($rows as $r)
+    {
+      $item = [
+        'fullName' => trim($r['contactName']),
+        'login' => Str::tolower(trim($r['contactEmail'])),
+				'email' => Str::tolower(trim($r['contactEmail'])),
+        'person' => 0,
+				'docState' => 4000, 'docStateMain' => 2,
+      ];
+
+			$exist = $this->db()->query('SELECT * FROM e10_users_users WHERE [login] = %s', $item['login'])->fetch();
+			if ($exist)
+				continue;
+
+			//echo "* ".json_encode($item)."\n";
+
+			$newUserNdx = $tableUsers->dbInsertRec($item);
+			$tableUsers->docsLog ($newUserNdx);
+
+			$newRequest = ['user' => $newUserNdx, 'ui' => 1];
+			$newRequestNdx = $tableRequests->dbInsertRec($newRequest);
+    }
 	}
 
 	public function anonymizeVyuky ()
@@ -418,6 +484,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'repair-pids': return $this->repairPIDs();
 			case 'entries-students': return $this->entriesStudents();
 			case 'create-studies': return $this->createStudies();
+			case 'add-users': return $this->addUsers();
 		}
 
 		parent::onCliAction($actionId);

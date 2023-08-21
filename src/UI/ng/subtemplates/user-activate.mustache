@@ -1,0 +1,56 @@
+<div class='container d-flex justify-content-center align-items-center' style='height: 100vh;'>
+  <div class='card' style='min-width: 90%; max-width: 90vw;'>
+    {{#data.request.errorInvalidRequest}}
+      <div class='card-header'>
+        <h3>Chyba: {{data.request.errorMsg}}</h3>
+      </div>
+      <div class='card-body'>
+        Odkaz, na který jste kliknuli, nefunguje...
+      </div>
+    {{/data.request.errorInvalidRequest}}
+
+    {{#data.request.requestIsOk}}
+      <div class='card-header'>
+        <h3>Aktivace uživatele: {{data.request.userFullName}}</h3>
+      </div>
+      <div class='card-body'>
+        {{#data.login.error}}
+        <div class='alert alert-danger'>
+          {{data.login.errorMsg}}
+        </div>
+        {{/data.login.error}}
+        <form method='POST' action='{{data.uiRoot}}auth/activate'>
+          <div class='form-floating mb-3'>
+            <input type='password' name='password1' class='form-control' placeholder='Heslo' id='e10-activate-password-1'>
+            <label for='e10-activate-password-1'>Heslo</label>
+          </div>
+          <div class='form-floating mb-3'>
+            <input type='password' name='password2' class='form-control' placeholder='Zopakujte heslo' id='e10-activate-password-2'>
+            <label for='e10-activate-password-2'>Zopakujte heslo</label>
+          </div>
+
+          <div class='form-check mb-3'>
+            <input type='checkbox' name='showPassword' class='form-check-input' id='e10-show-passwords' onclick="showPasswords()">
+            <label for='e10-show-passwords'>Zobrazit hesla</label>
+          </div>
+          <input type='hidden' name='requestId' value='{{{data.request.requestId}}}'>
+          <div class='b'>
+            <button type='submit' class='btn btn-primary'>Aktivovat</button>
+          </div>
+        </form>
+      </div>
+      <div class='card-footer'>
+        <small>Heslo musí být dlouhé alespoň 8 znaků a obsahovat alespoň jednu číslici.</small>
+      </div>
+    {{/data.request.requestIsOk}}
+  </div>
+</div>
+
+<script>
+function showPasswords() {
+  var pwd = document.getElementById("e10-activate-password-1");
+  if (pwd.type === "password") pwd.type = "text"; else pwd.type = "password";
+  pwd = document.getElementById("e10-activate-password-2");
+  if (pwd.type === "password") pwd.type = "text"; else pwd.type = "password";
+}
+</script>

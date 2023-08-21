@@ -11,18 +11,43 @@ use E10\utils, E10\Utility, \e10\Response, e10\Application;
  */
 class Router extends Utility
 {
+	var $uiCfg = NULL;
+	var $uiId = '';
+	var $uiRoot = '';
+	var $urlPath = [];
+	var \Shipard\UI\ng\TemplateUI $uiTemplate;
+
+	public function setUIId($uiId)
+	{
+		if (!$uiId)
+		{ // ui/...
+			for ($ii = 2; $ii < count($this->app->requestPath); $ii++)
+				$this->urlPath[] = $this->app->requestPath[$ii];
+
+			$first = $this->app->requestPath(1);
+			$this->uiId = $first;
+			$this->uiRoot = $this->app()->urlRoot.'/ui/'.$first.'/';
+		}
+		else
+		{ // domain
+			for ($ii = 0; $ii < count($this->app->requestPath); $ii++)
+				$this->urlPath[] = $this->app->requestPath[$ii];
+
+			$this->uiId = $uiId;
+			$this->uiRoot = '/';
+		}
+	}
+
 	public function createLoginRequest ()
 	{
 		$fromPath = $this->app()->requestPath();
-
-		header ('Location: ' . $this->app->urlProtocol . $_SERVER['HTTP_HOST']. $this->app->urlRoot . "/ui/login".$fromPath);
-		//header ('Location: ' . $this->app->urlProtocol . $_SERVER['HTTP_HOST']. $this->app->urlRoot . "/user/login".$fromPath);
+		header ('Location: ' . $this->app->urlProtocol . $_SERVER['HTTP_HOST']. $this->uiRoot.'user/login'.$fromPath);
 		return new Response ($this->app, "access disabled, please login...", 302);
 	}
 
 	protected function createObject ($objectDefinition)
 	{
-		$second = $this->app->requestPath(2);
+		$second = $this->urlPath[0];
 		$object = NULL;
 
 		switch ($objectDefinition['object'])
@@ -47,17 +72,26 @@ class Router extends Utility
 	public function run ()
 	{
 		$this->app()->ngg = 1;
+		$this->uiTemplate = new \Shipard\UI\ng\TemplateUI ($this->app());
+		$this->uiTemplate->data['uiRoot'] = $this->uiRoot;
+		$this->uiTemplate->uiRoot = $this->uiRoot;
 
-		header ("Cache-control: no-store");
+		header ('Cache-control: no-store');
 
 		$this->app->mobileMode = TRUE;
 
-		$first = $this->app->requestPath(1);
-		$second = $this->app->requestPath(2);
+		$first = $this->urlPath[0];
 
-		if ($second === 'manifest.webmanifest')
+		$this->uiCfg = $this->app()->cfgItem('e10.ui.uis.'.$this->uiId, NULL);
+		if (!$this->uiCfg)
+		{
+			return new Response ($this->app, "invalid url 1/".$this->uiId, 404);
+		}
+
+		if ($first === 'manifest.webmanifest')
 		{
 			$object = $this->app->createObject('Shipard.UI.ng.WebManifest');
+			$object->router = $this;
 			return new Response ($this->app, $object->createPageCode(), 200);
 		}
 		elseif ($first === 'sw.js')
@@ -65,37 +99,39 @@ class Router extends Utility
 			$dsMode = $this->app->cfgItem ('dsMode', Application::dsmTesting);
 			header ('Content-type: text/javascript', TRUE);
 
-			if ($dsMode !== Application::dsmDevel)
+			if (0 && $dsMode !== Application::dsmDevel)
 				header ('X-Accel-Redirect: ' . $this->app->urlRoot.'/e10-modules/.cfg/mobile/e10swm.js');
 			else
-				header ('X-Accel-Redirect: ' . $this->app->urlRoot.'/e10-client/lib/js/e10-service-worker.js');
+				header ('X-Accel-Redirect: ' . $this->app->urlRoot.'/www-root/.ui/ng/js/e10-service-worker.js');
 			die();
 		}
 
 		$object = NULL;
-		if ($first === 'login')
-		{
+		if ($first === 'user')
 			$object = $this->app->createObject('Shipard.UI.ng.Login');
+		elseif ($first === 'auth')
+		{
+			$object = $this->app->createObject('Shipard.UI.ng.Auth');
 		}
 		else
 		{
-			if (!$this->app->checkUserRights (NULL, 'user'))
+			if (!$this->checkUserLogin())
 				return $this->createLoginRequest ();
 
-			$uiCfg = $this->app()->cfgItem('e10.ui.uis.'.$first, NULL);
-			if ($uiCfg)
+			if ($first === 'api')
+				return $this->app()->routeApiV2();
+
+			if ($this->uiCfg)
 			{
 				$object = $this->app->createObject('Shipard.UI.ng.AppPageUI');
-				$object->uiCfg = $uiCfg;
+				$object->uiCfg = $this->uiCfg;
+				$object->uiTemplate = $this->uiTemplate;
 			}
-
-			if ($first === '' || $first === '!')
-				$object = $this->app->createObject('Shipard.UI.ng.StartMenu');
-			elseif ($first === 'widget')
-				$object = $this->app->createObject('Shipard.UI.ng.Widget');
 		}
 		if ($object)
 		{
+			$object->router = $this;
+			$object->uiTemplate = $this->uiTemplate;
 			$object->run ();
 
 			if (!$object->appMode)
@@ -112,5 +148,16 @@ class Router extends Utility
 		}
 
 		return new Response ($this->app, "invalid url", 404);
+	}
+
+	protected function checkUserLogin()
+	{
+		$a = new \e10\users\libs\Authenticator($this->app());
+		return $a->checkSession();
+	}
+
+	public function urlPart($idx)
+	{
+		return $this->urlPath[$idx] ?? '';
 	}
 }

@@ -2,7 +2,8 @@
 
 namespace Shipard\UI\ng;
 
-use E10\utils;
+use \Shipard\Utils\Utils;
+use \e10\users\libs\Authenticator;
 
 
 /**
@@ -18,7 +19,7 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 
 	public function createContent ()
 	{
-		$this->mode = $this->app->requestPath(2);
+		$this->mode = $this->router->urlPart(1);
 
 		if ($this->mode === 'set-workplace')
 		{
@@ -34,7 +35,7 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 			die();
 		}
 
-		$headers = utils::getAllHeaders();
+		$headers = Utils::getAllHeaders();
 
 		$workplaceGID = $this->app->testCookie ('_shp_gwid');
 		if ($workplaceGID !== '')
@@ -71,41 +72,109 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 
 		$c = '';
 
-		$userValue = $this->app->cfgItem ('autoLoginUser', FALSE);
-		$userValueParam = ($userValue) ? " value='".utils::es($userValue)."'": '';
-		$passwordValue = $this->app->cfgItem ('autoLoginPassword', FALSE);
-		$passwordValueParam = ($passwordValue) ? " value='".utils::es($passwordValue)."'": '';
-
-		$c .= "<div class='container d-flex justify-content-center align-items-center' style='height: 100vh;'>";
-		$c .= "<div class='card' style='min-width: 90%; max-width: 90vw;'>";
-		$c .= "<div class='card-header'>";
-    $c .= Utils::es('Přihlášení');
-  	$c .= '</div>';
-		$c .= "<div class='card-body'>";
-		if ($this->app->testGetParam ("from", NULL) != NULL)
-			$c .= "<div class='alert alert-danger'>Chybný přihlašovací e-mail nebo heslo</div>";
-		$c .= "<form class='_form-floating _mb-3' method='POST' action='{$this->app->urlRoot}/user/login-check/ui'>";
-
-		$c .=	"<div class='form-floating mb-3'>";
-		$c .= "<input type='email' class='form-control' name='login' placeholder='name@example.com' id='e10-login-user'$userValueParam>\n";
-		$c .= "<label for='e10-login-user'>E-mail</label>\n";
-		$c .= '</div>';
-		$c .=	"<div class='form-floating mb-3'>";
-		$c .= "<input type='password' name='password' class='form-control' placeholder='Heslo' id='e10-login-password'$passwordValueParam>\n";
-		$c .= "<label for='e10-login-password'>Heslo</label>\n";
-		$c .= '</div>';
 		$referer = $this->loginReferer();
-		$c .= "<input type='hidden' name='from' value='$referer'>";
+		$from = $this->app->testGetParam ('from');
 
-		$c .= "<div class='b'>";
-		$c .= "<button type='submit' class='btn btn-primary'>Přihlásit</button>";
-		$c .= '</div>';
+		if ($this->mode === 'login')
+		{
+			$templateStr = file_get_contents(__SHPD_ROOT_DIR__.'src/UI/ng/subtemplates/'.'user-login.mustache');
+			$this->uiTemplate->data['login']['referer'] = $referer;
+			$this->uiTemplate->data['login']['error'] = 0;
+			if ($from !== '')
+			{
+				$this->uiTemplate->data['login']['error'] = 1;
+				$this->uiTemplate->data['login']['errorMsg'] = 'Chybný přihlašovací e-mail nebo heslo';
+			}
+			$c = $this->uiTemplate->render($templateStr);
+		}
 
-		$c .= '</form>';
+		$tableRequests = new \e10\users\TableRequests($this->app());
+		if ($this->mode === 'activate')
+		{
+			$requestId = $this->router->urlPart(2);
+			$requestInfo = $tableRequests->requestInfo($requestId, '');
+			$templateStr = file_get_contents(__SHPD_ROOT_DIR__.'src/UI/ng/subtemplates/'.'user-activate.mustache');
+			$this->uiTemplate->data['request'] = $requestInfo;
+			$this->uiTemplate->data['requestTest'] = json_encode($requestInfo);
 
-		$c .= '</div>';
-		$c .= '</div>';
-		$c .= '</div>';
+			if ($from !== '')
+			{
+				$this->uiTemplate->data['login']['error'] = 1;
+				$errorNumber = intval($from);
+				if ($errorNumber === Authenticator::resPasswordsNotMatch)
+					$this->uiTemplate->data['login']['errorMsg'] = 'Hesla se neshodují';
+				elseif ($errorNumber === Authenticator::resBlankPassword)
+					$this->uiTemplate->data['login']['errorMsg'] = 'Heslo není vyplněno';
+				elseif ($errorNumber === Authenticator::resPasswordIsTooShort)
+					$this->uiTemplate->data['login']['errorMsg'] = 'Heslo musí mít alespoň 8 znaků';
+				elseif ($errorNumber === Authenticator::resPasswordMustIncludeNumber)
+					$this->uiTemplate->data['login']['errorMsg'] = 'Heslo musí obsahovat alespoň jednu číslici';
+				elseif ($errorNumber === Authenticator::resPasswordMustIncludeLetter)
+					$this->uiTemplate->data['login']['errorMsg'] = 'Heslo musí obsahovat alespoň jedno písmeno';
+				elseif ($errorNumber === Authenticator::resRequestError)
+				{
+					$this->uiTemplate->data['login']['errorMsg'] = 'Chyba požadavku';
+				}
+			}
+			$c = $this->uiTemplate->render($templateStr);
+		}
+
+		if ($this->mode === 'send-lost-password')
+		{
+			$templateStr = file_get_contents(__SHPD_ROOT_DIR__.'src/UI/ng/subtemplates/'.'user-send-lost-password.mustache');
+			if ($from !== '')
+			{
+				$errorNumber = intval($from);
+				if ($errorNumber === Authenticator::resEmailIsBlank)
+					$this->uiTemplate->data['login']['errorMsg'] = 'E-mail není vyplněn';
+				elseif ($errorNumber === Authenticator::resUnknownUserEmail)
+					$this->uiTemplate->data['login']['errorMsg'] = 'Tento e-mail není registrován.';
+				elseif ($errorNumber === Authenticator::resAccountNotActivated)
+					$this->uiTemplate->data['login']['errorMsg'] = 'Váš účet zatím nebyl aktivován.';
+				else
+					$this->uiTemplate->data['login']['errorMsg'] = 'Něco se pokazilo';
+
+				$this->uiTemplate->data['login']['error'] = 1;
+			}
+			$c = $this->uiTemplate->render($templateStr);
+		}
+
+		if ($this->mode === 'change-password')
+		{
+			$requestId = $this->router->urlPart(2);
+			$requestInfo = $tableRequests->requestInfo($requestId, '');
+			$templateStr = file_get_contents(__SHPD_ROOT_DIR__.'src/UI/ng/subtemplates/'.'user-change-password.mustache');
+			$this->uiTemplate->data['request'] = $requestInfo;
+			$this->uiTemplate->data['requestTest'] = json_encode($requestInfo);
+
+			if ($from !== '')
+			{
+				$this->uiTemplate->data['login']['error'] = 1;
+				$errorNumber = intval($from);
+				if ($errorNumber === Authenticator::resPasswordsNotMatch)
+					$this->uiTemplate->data['login']['errorMsg'] = 'Hesla se neshodují';
+				elseif ($errorNumber === Authenticator::resBlankPassword)
+					$this->uiTemplate->data['login']['errorMsg'] = 'Heslo není vyplněno';
+				elseif ($errorNumber === Authenticator::resPasswordIsTooShort)
+					$this->uiTemplate->data['login']['errorMsg'] = 'Heslo musí mít alespoň 8 znaků';
+				elseif ($errorNumber === Authenticator::resPasswordMustIncludeNumber)
+					$this->uiTemplate->data['login']['errorMsg'] = 'Heslo musí obsahovat alespoň jednu číslici';
+				elseif ($errorNumber === Authenticator::resPasswordMustIncludeLetter)
+					$this->uiTemplate->data['login']['errorMsg'] = 'Heslo musí obsahovat alespoň jedno písmeno';
+				elseif ($errorNumber === Authenticator::resRequestError)
+				{
+					$this->uiTemplate->data['login']['errorMsg'] = 'Chyba požadavku';
+				}
+			}
+			$c = $this->uiTemplate->render($templateStr);
+		}
+
+
+		if ($this->mode === 'send-lost-password-done')
+		{
+			$templateStr = file_get_contents(__SHPD_ROOT_DIR__.'src/UI/ng/subtemplates/'.'user-send-lost-password-done.mustache');
+			$c = $this->uiTemplate->render($templateStr);
+		}
 
 		return $c;
 	}
@@ -122,9 +191,9 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 		foreach ($this->users as $user)
 		{
 			$c .= "<button class='btn btn-lg btn-primary user shp-app-action' data-action='workplaceLogin'";
-			$c .= " data-login='" . utils::es($user['login']) . "'";
+			$c .= " data-login='" . Utils::es($user['login']) . "'";
 			$c .= '>';
-			$c .= utils::es($user['fullName']);
+			$c .= Utils::es($user['fullName']);
 			$c .= '</button>';
 		}
 
@@ -179,7 +248,7 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 
 		if (($referer == '') && (isset ($this->app->requestPath[2])))
 		{
-			$pos = 2;
+			$pos = 3;
 			while ((isset ($this->app->requestPath[$pos])) && (strlen ($this->app->requestPath[$pos])))
 				$referer .= "/" . $this->app->requestPath[$pos++];
 		}
@@ -188,11 +257,11 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 			if (substr ($_SERVER['HTTP_REFERER'], 0, strlen ($baseUrlRoot)) == $baseUrlRoot)
 				$referer = substr ($_SERVER['HTTP_REFERER'], strlen ($baseUrlRoot));
 
-		if ($referer == '')
-			$referer = '/';
+		if (str_starts_with ($referer, '/user/'))
+			$referer = '';
 
-		if (substr ($referer, 0, strlen ($this->app->appSkeleton['userManagement']['pathBase'])+1) == '/' . $this->app->appSkeleton['userManagement']['pathBase'])
-			$referer = '/';
+		if ($referer == '/')
+			$referer = '';
 
 		return $referer;
 	}

@@ -1,0 +1,17 @@
+{
+  "0": {
+    "fn": "Vytvořeno"
+  },
+  "1": {
+    "fn": "Čeká na odeslání"
+  },
+  "2": {
+    "fn": "Odesláno"
+  },
+  "3": {
+    "fn": "Aktivováno"
+  },
+  "4": {
+    "fn": "Expirování"
+  }
+}

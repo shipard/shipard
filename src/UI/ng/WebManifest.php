@@ -7,7 +7,7 @@ use \Shipard\Utils\Json;
 /**
  * class WebManifest
  */
-class WebManifest extends \Shipard\UI\OldMobile\PageObject
+class WebManifest extends \Shipard\UI\ng\AppPageBlank
 {
 	public function run()
 	{
@@ -21,8 +21,8 @@ class WebManifest extends \Shipard\UI\OldMobile\PageObject
 		$first = $this->app->requestPath(1);
 		$uiCfg = $this->app()->cfgItem('e10.ui.uis.'.$first, NULL);
 
-		$startUrl = 	$this->app->urlRoot.'/ui/'.$this->app()->requestPath (1).'/';
-		$scope = '/ui/'.$this->app()->requestPath (1).'/';
+		$startUrl = '/';$this->app->urlRoot.'/ui/'.$this->app()->requestPath (1).'/';
+		$scope = '/';
 
 		if ($uiCfg && $uiCfg['pwaStartUrlBegin'] !== '')
 		{
@@ -30,10 +30,10 @@ class WebManifest extends \Shipard\UI\OldMobile\PageObject
 		}
 
 		$wm = [
-			'name' => $this->app->cfgItem ('options.core.ownerShortName', 'TEST'),
+			'name' => $this->router->uiCfg['fn'],
 			'short_name' => $this->app->cfgItem ('options.core.ownerShortName', 'TEST'),
 			'start_url' => $startUrl,
-			'display' => 'standalone',
+			'display' => 'fullscreen',
 			'background_color' => $themeStatusColor,
 			'theme_color' => $themeStatusColor,
 			'scope' => $scope,

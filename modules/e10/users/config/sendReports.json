@@ -1,0 +1,16 @@
+{
+  "101": {
+    "fn": "Aktivace uživatelského účtu",
+    "cn": "Aktivace účtu",
+    "sc": "AUA",
+    "classId": "e10.users.libs.reports.ReportRequestActivate",
+    "ndx": 101
+  },
+  "102": {
+    "fn": "Žádost o změnu hesla",
+    "cn": "Změna hesla",
+    "sc": "ULP",
+    "classId": "e10.users.libs.reports.ReportRequestLostPassword",
+    "ndx": 102
+  }
+}

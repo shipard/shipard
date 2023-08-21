@@ -1,0 +1,38 @@
+{
+  "zus-ezk": {
+    "fn": "Elektronická žákovská knížka",
+    "appMenu": {
+      "appTitle": "Ještě nevím",
+      "items": [
+        {
+          "title": "Zprávy2", "icon": "user/envelope", "id": "",
+          "objectType": "viewer", "table": "wkf.msgs.msgs", "viewer": "ezk"
+        },
+        {
+          "title": "Rozvrh", "icon": "user/table", "id": "time-table",
+          "objectType": "widget", "classId": "e10pro.zus.libs.ezk.WidgetTimeTable"
+        },
+        {
+          "title": "Známky", "icon": "user/piggyBank", "id": "grades",
+          "objectType": "widget", "classId": "e10pro.zus.libs.ezk.WidgetGrades"
+        },
+        {
+          "title": "Hodiny", "icon": "user/clock", "id": "all-classes",
+          "objectType": "viewer", "table": "e10pro.zus.hodiny", "viewer": "ezk"
+        },
+        {
+          "title": "Nastavení", "icon": "user/cog", "id": "settings"
+        }
+      ]
+    },
+    "mainRoles":
+    {
+      "parent": {
+        "fn": "Zákonný zástupce"
+      },
+      "student": {
+        "fn": "Student"
+      }
+    }
+  }
+}

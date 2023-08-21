@@ -901,6 +901,47 @@ class ContentRenderer extends \Shipard\Base\BaseObject
 		return $c;
 	}
 
+	function createCodeCard ($card)
+	{
+		$c = '';
+
+		foreach ($card as $cardPartId => $cardPart)
+		{
+			$c .= $this->createCodeCardPart ($card, $cardPartId, $cardPart);
+		}
+
+		return $c;
+	}
+
+	function createCodeCardPart ($card, $partId, $cardPart)
+	{
+		$c = '';
+
+		$class = isset($cardPart['class']) ? $cardPart['class'] : 'card-'.Utils::es($partId);
+		$c .= "<div class='$class'>";
+
+		if (isset($cardPart['value']))
+			$c .= $this->app()->ui()->composeTextLine ($cardPart['value']);
+		elseif (isset($cardPart['values']))
+		{
+			foreach ($cardPart['values'] as $v)
+			{
+				$c .= $this->app()->ui()->composeTextLine ($v);
+			}
+		}
+		elseif (isset($cardPart['content']))
+		{
+			$cr = new ContentRenderer ($this->app);
+			$cr->content = $cardPart['content'];
+			$c  .= $cr->createCode();
+
+			//$c .= $this->render();
+		}
+		$c .= '</div>';
+
+		return $c;
+	}
+
 	public function createCodeTags ($tiles)
 	{
 		$c = '';

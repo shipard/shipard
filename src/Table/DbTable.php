@@ -1374,7 +1374,7 @@ class DbTable
 	}
 
 
-	public function getTableView ($viewId, $queryParams = NULL)
+	public function getTableView ($viewId, $queryParams = NULL, $requestParams = NULL)
 	{
 		$v = NULL;
 
@@ -1398,6 +1398,7 @@ class DbTable
 
 		if ($v)
 		{
+			$v->requestParams = $requestParams;
 			$v->viewerDefinition = $vd;
 			if ($v->rowsPageNumber !== -1)
 			{
@@ -1448,7 +1449,7 @@ class DbTable
 		if (isset ($recData [$stateColumn]))
 		{
 			$stateValue = $recData [$stateColumn];
-			$info ['state'] = $states ['states'][$stateValue];
+			$info ['state'] = $states ['states'][$stateValue] ?? '';
 			$info ['readOnly'] = isset ($states ['states'][$stateValue]['readOnly']) ? $states ['states'][$stateValue]['readOnly'] : 0;
 		}
 
@@ -1468,7 +1469,7 @@ class DbTable
 		switch ($key)
 		{
 			case	'styleClass':
-				return 'e10-docstyle-'. $states ['states'][$stateValue]['stateStyle'];
+				return 'e10-docstyle-'. (isset($states ['states'][$stateValue]) ? ($states ['states'][$stateValue]['stateStyle'] ?? 'unknown') : '');
 			case	'enablePrint':
 				return isset ($states ['states'][$stateValue]['enablePrint']) ? $states ['states'][$stateValue]['enablePrint'] : 0;
 			case	'notify':
@@ -1689,7 +1690,7 @@ class DbTable
 	{
 		$totalLen = 12;
 		$bcTableId = strtoupper(base_convert($this->ndx, 10, 36));
-		$ndxId = strtoupper(base_convert($recData['ndx'], 10, 36));
+		$ndxId = strtoupper(base_convert($recData['ndx'] ?? 0, 10, 36));
 
 		$bcId = $bcTableId;
 

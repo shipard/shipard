@@ -26,6 +26,8 @@ class AppPageBlank extends Utility
 	var $embeddMode = 0;
 	var $dsMode = 1;
 	var $wss = [];
+	var \Shipard\UI\ng\TemplateUI $uiTemplate;
+	var \Shipard\UI\ng\Router $router;
 
 	var $pageInfo = [];
   var ?array $uiCfg = NULL;
@@ -78,7 +80,6 @@ class AppPageBlank extends Utility
 			$this->appMode = TRUE;
 
 		$this->wss = $this->app->webSocketServers ();
-
 		$this->createContent();
 		$this->pageTabs = $this->pageTabs();
 	}
@@ -142,7 +143,7 @@ class AppPageBlank extends Utility
 		$c .= "<meta name=\"format-detection\" content=\"telephone=no\">\n";
 		$c .= "<meta name='theme-color' content='$themeStatusColor'>\n";
 
-		$c .= "<link rel=\"manifest\" href=\"{$this->app->urlRoot}/ui/".$this->app()->requestPath (1)."/manifest.webmanifest\">\n";
+		$c .= "<link rel=\"manifest\" href=\"".$this->router->uiRoot."manifest.webmanifest\">\n";
 
 		$c .= "<meta name=\"generator\" content=\"E10 ".__E10_VERSION__."\">\n";
 		$c .= "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n";
@@ -152,7 +153,7 @@ class AppPageBlank extends Utility
 		$themeUrl = "$absUrl{$this->app->urlRoot}/www-root/.ui/ng/themes/" . $this->uiThemeId . "/$style?vv=".$this->uiThemeCfg['integrity']['sha384'];
 		$c .= "<link rel='stylesheet' type='text/css' href='$themeUrl'/>\n";
 
-		$c .= "\t<script type=\"text/javascript\">\nvar httpApiRootPath = '{$this->app->urlRoot}';var serverTitle=\"" . Utils::es ($this->app->cfgItem ('options.core.ownerShortName', '')) . "\";" .
+		$c .= "\t<script type=\"text/javascript\">\nvar httpApiRootPath = '{$this->router->uiRoot}';var serverTitle=\"" . Utils::es ($this->app->cfgItem ('options.core.ownerShortName', '')) . "\";" .
 			"var remoteHostAddress = '{$_SERVER ['REMOTE_ADDR']}'; e10ClientType = " . json_encode ($this->app->clientType) . ";\n";
 		$c .= "var deviceId = '{$this->app->deviceId}';\n";
 		$c .= "var webSocketServers = ".json_encode($this->wss).";\n";
@@ -162,8 +163,8 @@ class AppPageBlank extends Utility
 		$c .= "var e10dsIconFileName = '{$dsIcon['fileName']}';\n";
 
 
-		//$c .= "var e10ServiceWorkerURL = '$absUrl{$this->app->urlRoot}/sw.js';";
-		$c .= "var e10ServiceWorkerURL = undefined;";
+		$c .= "var e10ServiceWorkerURL = '{$this->router->uiRoot}sw.js';";
+		//$c .= "var e10ServiceWorkerURL = undefined;";
 		if (isset($this->pageInfo['userInfo']))
 			$c .= "g_UserInfo = ".json_encode($this->pageInfo['userInfo']).";\n";
 
@@ -178,7 +179,7 @@ class AppPageBlank extends Utility
 		$c .= "<link rel='stylesheet' type='text/css' href='{$scRoot}/{$iconsCfg['styleLink']}'>\n";
 
 
-		if ($this->dsMode !== Application::dsmDevel)
+		if (0 && $this->dsMode !== Application::dsmDevel)
 		{
 			$files = unserialize (file_get_contents(__SHPD_ROOT_DIR__.'/ui/clients/files.data'));
 			$c .= "\t<script type='text/javascript' integrity='{$files['ng']['client.js']['integrity']}' src='$absUrl{$this->app->urlRoot}/www-root/.ui/ng/js/client.js?v=".$files['ng']['client.js']['ver']."'></script>\n";

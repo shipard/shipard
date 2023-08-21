@@ -79,7 +79,9 @@ class TableView extends \Shipard\Base\BaseObject
 	var $info = [];
 
 	/**@var \E10\ContentRenderer */
-	protected $contentRenderer;
+	var $contentRenderer;
+	var $requestParams = NULL;
+	var $ngRenderer = NULL;
 
 	var $comboSettings;
 	var $saveAs = '';
@@ -157,6 +159,13 @@ class TableView extends \Shipard\Base\BaseObject
 		$this->addParams [$colParamName] = $value;
 	}
 
+
+	public function requestParam($paramId)
+	{
+		if ($this->requestParams)
+			return $this->requestParams[$this->requestParams[$paramId]] ?? NULL;
+	}
+
 	public function appendAsSubObject ()
 	{
 		$this->app()->response->addSubObject($this->vid, 'viewer');
@@ -229,13 +238,18 @@ class TableView extends \Shipard\Base\BaseObject
 
 	public function addListItem2 ($listItem)
 	{
-		$h = $this->rowHtml ($listItem);
+		$h = ($this->ngRenderer) ? $this->ngRenderer->rowHtml($listItem) : $this->rowHtml ($listItem);
 		$this->addHtmlItem($h, $listItem);
 	}
 
-
 	public function addEndMark ()
 	{
+		if ($this->ngRenderer)
+		{
+			$this->ngRenderer->addEndMark();
+			return;
+		}
+
 		$txt = ($this->rowsLoadNext) ? 'Načítají se další řádky' : $this->endMark (($this->rowsPageNumber === 0 && $this->countRows === 0));
 		if ($this->mode === 'panes')
 		{
@@ -1099,6 +1113,9 @@ class TableView extends \Shipard\Base\BaseObject
 
 	public function init ()
 	{
+		if (isset($this->requestParams['rowsPageNumber']))
+			$this->rowsPageNumber = intval($this->requestParams['rowsPageNumber']);
+
 		$this->rowsFirst = $this->rowsPageNumber * $this->rowsPageSize;
 		$this->rowsLoadNext = 0;
 

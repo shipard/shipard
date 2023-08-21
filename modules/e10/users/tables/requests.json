@@ -1,0 +1,37 @@
+{
+  "id": "e10.users.requests", "sql": "e10_users_requests", "name": "Požadavky na správu uživatelů",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+
+    {"id": "user", "name": "Uživatel", "type": "int", "reference": "e10.users.users"},
+    {"id": "ui", "name": "UI", "type": "int", "reference": "e10.ui.uis"},
+    {"id": "requestType", "name": "Druh požadavku", "type": "enumInt",
+      "enumCfg": {"cfgItem": "e10.users.requestTypes", "cfgValue": "", "cfgText": "fn"}},
+    {"id": "requestState", "name": "Stav požadavku", "type": "enumInt",
+      "enumCfg": {"cfgItem": "e10.users.requestStates", "cfgValue": "", "cfgText": "fn"}},
+
+    {"id": "requestId", "name": "ID požadavku", "type": "string", "len": 60, "options": ["ascii"]},
+
+    {"id": "tsCreated", "name": "Okamžik vytvoření", "type": "timestamp"},
+    {"id": "tsSent", "name": "Okamžik odeslání", "type": "timestamp"},
+    {"id": "tsValidTo", "name": "Okamžik ukončení platnosti", "type": "timestamp"},
+    {"id": "tsFinished", "name": "Okamžik vyřízení", "type": "timestamp"}
+  ],
+	"options": ["systemTable"],
+  "views": [
+    {"id": "default", "class": "e10.users.ViewRequests", "detail": "e10.users.ViewDetailRequest"}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10.users.FormRequest"}
+  ],
+  "reports": [
+		{
+      "id": "activate", "name": "Aktivace účtu", "class": "e10.users.libs.reports.ReportRequestActivate",
+      "queryCol": "requestType", "queryColValue": 0, "email": 1
+    },
+		{
+      "id": "lostPassword", "name": "Změna hesla", "class": "e10.users.libs.reports.ReportRequestLostPassword",
+      "queryCol": "requestType", "queryColValue": 1, "email": 1
+    }
+	]
+}

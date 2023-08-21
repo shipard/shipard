@@ -1,0 +1,16 @@
+{
+	"panels": {
+		"srvcfg": {
+			"items": {
+				"technical": {
+					"subMenu": {
+						"items": {
+							"users2": {"t1": "Uživatelé", "object": "viewer", "table": "e10.users.users", "viewer": "default", "order": 9900000},
+							"requests2": {"t1": "Požadavky", "object": "viewer", "table": "e10.users.requests", "viewer": "default", "order": 9900010}
+						}
+					}
+				}
+			}
+		}
+	}
+}

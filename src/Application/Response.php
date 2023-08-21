@@ -6,11 +6,11 @@ use \Shipard\Utils\Utils;
 
 class Response
 {
-	private $app;
+	var $app;
 	private $code = "";
 	private $status = 200;
 	private $mimeType = "text/html; charset=UTF-8";
-	private $data = array ();
+	var $data = [];
 	private $fileName = "";
 	private $rawData = NULL;
 	private $saveFileName = '';
@@ -89,7 +89,7 @@ class Response
 		return FALSE;
 	}
 
-	private function init ()
+	protected function init ()
 	{
 		$this->data ["success"] = 1;
 		$this->data ["responseType"] = 0;
@@ -99,14 +99,13 @@ class Response
 		$this->data ["user"] = $this->app->user ()->data ();
 	}
 
-
 	public function send ()
 	{
 		if ($this->fileName != "")
 		{
 			$httpServer = $this->app->cfgItem ('serverInfo.httpServer', 0);
 
-			header ("Cache-control: no-store");
+			header ("Cache-control: no-cache, no-store");
 			header ("Content-type: " . $this->mimeType ());
 			header ("Content-Disposition: ".$this->contentDisposition."; filename*=UTF-8''" . rawurlencode(Utils::safeChars($this->saveFileName, TRUE)));
 			if ($httpServer === 0)

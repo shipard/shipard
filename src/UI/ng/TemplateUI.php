@@ -101,5 +101,28 @@ class TemplateUI extends \Shipard\Utils\TemplateCore
     if (isset($this->uiData['iotElementsMapSIDs']))
       unset($this->uiData['iotElementsMapSIDs']);
   }
+
+  protected function userContextsEnum()
+  {
+    $uc = $this->app()->uiUserContext();
+    if (!$uc || !isset($uc['contexts']))
+      return [];
+    return array_values($uc['contexts']) ?? [];
+  }
+
+  protected function userInfo()
+  {
+    return $this->app()->uiUser;
+  }
+
+  protected function activeUserContext()
+  {
+    $uc = $this->app()->uiUserContext();
+    $a = $this->app()->uiUserContextId;
+    if (isset($uc['contexts'][$a]))
+      return $uc['contexts'][$a];
+    return NULL;
+  }
+
 }
 

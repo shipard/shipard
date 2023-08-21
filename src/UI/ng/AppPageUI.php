@@ -26,10 +26,10 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
 
   protected function createContentCodeInside_Template()
   {
-    $template = new \Shipard\UI\ng\TemplateUI ($this->app());
+    $template = $this->uiTemplate;
 
-    $template->data['url_path_'.$this->app()->requestPath (2)] = 1;
-    $template->data['url_path_'.$this->app()->requestPath (2).'_active'] = ' active';
+    $template->data['url_path_'.$this->router->urlPart(0)] = 1;
+    $template->data['url_path_'.$this->router->urlPart(0).'_active'] = ' active';
     $template->data['userImg'] = $this->app()->user()->data('picture');
     $template->data['wss'] = array_values($this->wss);
     $template->data['wssDefaultNdx'] = intval(key($this->wss));
@@ -50,20 +50,14 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
   protected function createContentCodeInside_UIStruct()
   {
     $templateCode = '{{{@appUIElement}}}';
-    $urlId = $this->app()->requestPath (2);
+    $urlId = $this->router->urlPath[0];
     $mainUIObjectId = '';
 
-    $template = new \Shipard\UI\ng\TemplateUI ($this->app());
+    $template = $this->uiTemplate;
 
-    $template->uiRoot = $this->app()->dsRoot;
-    $template->uiRoot .= '/ui/'.$this->app->requestPath(1);
-    if ($this->app->requestPath(1) !== '')
-      $template->uiRoot .= '/';
-
-
-    $template->data['url_path1'] = $this->app()->requestPath (2);
-    $template->data['url_path_'.$this->app()->requestPath (2)] = 1;
-    $template->data['url_path_'.$this->app()->requestPath (2).'_active'] = ' active';
+    $template->data['url_path1'] = $this->router->urlPart(0);
+    $template->data['url_path_'.$this->router->urlPart(0)] = 1;
+    $template->data['url_path_'.$this->router->urlPart(0).'_active'] = ' active';
     $template->data['userImg'] = $this->app()->user()->data('picture');
     $template->data['wss'] = array_values($this->wss);
     $template->data['wssDefaultNdx'] = intval(key($this->wss));
@@ -98,15 +92,26 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
           $v = $table->getTableView ($activeMenuItem['viewer'] ?? 'default', NULL);
         if ($v)
         {
-          $v->renderViewerData ('');
           $renderer = new \Shipard\UI\ng\renderers\TableViewRenderer($this->app());
           $renderer->setViewer($v);
+          $v->renderViewerData ('');
           $renderer->render();
           $ec = $renderer->renderedData['hcFull'];
           $mainUIObjectId = $renderer->objectId();
         }
 
         $template->data['coreMainElementCode'] = $ec;
+      }
+      elseif ($objectType === 'widget')
+      {
+        $widget = $this->app()->createObject($activeMenuItem['classId'] ?? 'abcde');
+        if ($widget)
+        {
+          $ec = $widget->createMainCode();
+
+          $template->data['coreMainElementCode'] = $ec;
+          $mainUIObjectId = $widget->widgetId;
+        }
       }
     }
 
@@ -135,11 +140,21 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
 		  return $c;
     }
 
+    if ($this->uiRecData['uiType'] === 4)
+    {
+      $this->uiStruct = $this->app()->cfgItem('apps.'.$this->uiRecData['appType']);
+      if (!$this->uiStruct)
+        $this->uiStruct = [];
+
+      $c = $this->createContentCodeInside_UIStruct();
+		  return $c;
+    }
+
     if ($this->uiRecData['uiType'] === 5)
     {
       $this->uiStruct = json_decode($this->uiRecData['uiStruct'], TRUE);
       if (!$this->uiStruct)
-      $this->uiStruct = [];
+        $this->uiStruct = [];
 
       $c = $this->createContentCodeInside_UIStruct();
 		  return $c;

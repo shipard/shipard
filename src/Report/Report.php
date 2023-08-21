@@ -451,5 +451,9 @@ class Report extends \Shipard\Base\BaseObject
 	public function loadData2 ()
 	{
 	}
+
+	public function reportWasSent(\Shipard\Report\MailMessage $msg)
+	{
+	}
 }
 

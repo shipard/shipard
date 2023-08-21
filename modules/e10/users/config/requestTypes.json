@@ -1,0 +1,11 @@
+{
+  "0": {
+    "fn": "Aktivace účtu",
+    "urlPart": "activate"
+  },
+  "1": {
+    "fn": "Změna hesla",
+    "urlPart": "change-password"
+  }
+}
+

@@ -151,6 +151,7 @@ function createNewPersonNew (\Shipard\Application\Application $app, $personData)
 	utils::addToArray ($newPerson, $personHead, 'fullName', '');
 	utils::addToArray ($newPerson, $personHead, 'company', 0);
 	utils::addToArray ($newPerson, $personHead, 'accountType', 0);
+	utils::addToArray ($newPerson, $personHead, 'id', '');
 
 	$newPerson ['personType'] = 1;
 
@@ -203,7 +204,7 @@ function createNewPersonNew (\Shipard\Application\Application $app, $personData)
         'adrStreet' => $address['street'] ?? '',
         'adrCity' => $address['city'] ?? '',
         'adrZipCode' => $address['zipcode'] ?? '',
-        'adrCountry' => World::countryNdx($app, $app->cfgItem ('options.core.ownerDomicile', 'cz')),
+        'adrCountry' => $address['worldCountry'] ?? World::countryNdx($app, $app->cfgItem ('options.core.ownerDomicile', 'cz')),
         'flagAddress' => 1,
 				'onTop' => 99,
         'docState' => 4000, 'docStateMain' => 2,

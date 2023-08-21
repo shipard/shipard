@@ -92,7 +92,7 @@ class ShipardWidget {
 
     console.log("API-CALL", apiParams);
 
-    var url = '/api/v2';
+    var url = 'api/v2';
 
     shc.server.post (url, apiParams,
       function (data) {
