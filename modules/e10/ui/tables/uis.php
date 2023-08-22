@@ -222,22 +222,27 @@ class FormUI extends TableForm
 					$this->addColumnInput ('pwaStartUrlBegin');
 					$this->addColumnInput ('domain');
 				$this->closeTab ();
-				$this->openTab (TableForm::ltNone);
 				if ($this->recData['uiType'] === 9)
 				{
-					$this->addInputMemo ('template', NULL, TableForm::coFullSizeY, DataModel::ctCode);
+					$this->openTab (TableForm::ltNone);
+						$this->addInputMemo ('template', NULL, TableForm::coFullSizeY, DataModel::ctCode);
+					$this->closeTab();
 				}
 				elseif ($this->recData['uiType'] === 5)
 				{
-					$this->addInputMemo ('uiStruct', NULL, TableForm::coFullSizeY, DataModel::ctCode);
+					$this->openTab (TableForm::ltNone);
+						$this->addInputMemo ('uiStruct', NULL, TableForm::coFullSizeY, DataModel::ctCode);
+					$this->closeTab();
 				}
-				$this->closeTab();
+
 				$this->openTab (TableForm::ltNone);
           $this->addInputMemo ('style', NULL, TableForm::coFullSizeY, DataModel::ctCode);
 				$this->closeTab();
+
 				$this->openTab (TableForm::ltNone);
 					$this->addAttachmentsViewer();
 				$this->closeTab ();
+
 			$this->closeTabs();
 		$this->closeForm ();
 	}
