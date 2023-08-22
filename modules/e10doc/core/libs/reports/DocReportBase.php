@@ -296,7 +296,7 @@ class DocReportBase extends FormReport
 		$personNdx = $this->recData [$columnId] ?? 0;
 		$tablePersons = $this->app->table ('e10.persons.persons');
 		$this->data [$columnId] = $this->table->loadItem ($personNdx, 'e10_persons_persons');
-		$this->lang = $this->data [$columnId]['language'];
+		//$this->lang = $this->data [$columnId]['language'];
 		$this->data [$columnId]['lists'] = $tablePersons->loadLists ($this->data [$columnId]);
 
 		if ($this->testNewPersons)
@@ -312,8 +312,8 @@ class DocReportBase extends FormReport
 		if (isset ($this->data [$columnId]['address']) && isset ($this->data [$columnId]['address']['worldCountry']))
 		{
 			World::setCountryInfo($this->app(), $this->data [$columnId]['address']['worldCountry'], $this->data [$columnId]['address']);
-			if ($this->lang == '' && isset($this->data [$columnId]['address']['countryLangSC2']))
-				$this->lang = $this->data [$columnId]['address']['countryLangSC2'];
+			//if ($this->lang == '' && isset($this->data [$columnId]['address']['countryLangSC2']))
+			//	$this->lang = $this->data [$columnId]['address']['countryLangSC2'];
 		}
 		forEach ($this->data [$columnId]['lists']['properties'] as $iii)
 		{
