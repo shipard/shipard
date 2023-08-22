@@ -5,11 +5,11 @@
     "it": "Nota di consegna",
     "sk": "Dodací list"
   },
-  "Ev. číslo": {
-    "de": "Nr.",
-    "en": "No.",
-    "it": "Num.",
-    "sk": "Číslo"
+  "číslo": {
+    "de": "nr.",
+    "en": "no.",
+    "it": "num.",
+    "sk": "číslo"
   },
   "Dodavatel": {
     "de": "Lieferant",
@@ -370,5 +370,41 @@
     "en": "delivery-note",
     "it": "nota-di-consegna",
     "sk": "dodaci-list"
+  },
+  "Provozovna dodavatele": {
+    "de": "Niederlassung des Lieferanten",
+    "en": "Supplier's establishment",
+    "it": "Ramo del fornitore",
+    "sk": "Prevádzkareň dodávateľa"
+  },
+  "Doprava": {
+    "de": "Transportieren",
+    "en": "Transport",
+    "it": "Trasporto",
+    "sk": "Doprava"
+  },
+  "Jméno řidiče": {
+    "de": "Name des Fahrers",
+    "en": "Name of driver",
+    "it": "Nome del conducente",
+    "sk": "Meno vodiča"
+  },
+  "RZ vozidla": {
+    "de": "Kraftfahrzeugkennzeichen",
+    "en": "Vehicle registration plate",
+    "it": "Targa d'immatricolazione",
+    "sk": "Evidenčné číslo vozidla"
+  },
+  "Celková hmotnost včetně vozidla": {
+    "de": "Gesamtgewicht einschließlich Fahrzeug",
+    "en": "Total weight including vehicle",
+    "it": "Peso totale incluso il veicolo",
+    "sk": "Celková hmotnosť vrátane vozidla"
+  },
+  "Celková hmotnost nákladu": {
+    "de": "Gesamtfrachtgewicht",
+    "en": "Total cargo weight",
+    "it": "Peso totale del carico",
+    "sk": "Celková hmotnosť nákladu"
   }
 }
