@@ -10,22 +10,24 @@ use \Shipard\Utils\Utils, \Shipard\Viewer\TableView;
 class ViewHours extends TableView
 {
 	var $studentNdx = 0;
-	var $studentInfo = NULL;
+	var $userContext = NULL;
 
 	public function init ()
 	{
-		$userContext = $this->app()->uiUserContext ();
-		$ac = $userContext['contexts'][$this->app()->uiUserContextId] ?? NULL;
+		$userContexts = $this->app()->uiUserContext ();
+		$ac = $userContexts['contexts'][$this->app()->uiUserContextId] ?? NULL;
 		if ($ac)
 			$this->studentNdx = $ac['studentNdx'] ?? 0;
+		$this->userContext = $userContexts['ezk']['students'][$this->studentNdx];
 
 		parent::init();
-		$this->studentInfo = $this->getStudentInfo($this->studentNdx);
 
 		$this->objectSubType = TableView::vsDetail;
 		$this->enableDetailSearch = FALSE;
 
 		$this->setMainQueries ();
+
+		$this->uiSubTemplate = 'modules/e10pro/zus/libs/ezk/subtemplates/hoursRow';
 	}
 
 	public function renderRow ($item)
@@ -66,11 +68,15 @@ class ViewHours extends TableView
 			$znamkyHodnoceni = $this->app->cfgItem ('zus.znamkyHodnoceni');
 			$znamka = $znamkyHodnoceni[$item['klasifikaceZnamka']]['sc'];
 			$listItem['card']['header']['values'][] = ['text' => $znamka, 'class' => 'badge text-bg-info'];
+
+			$listItem['grade'] = $znamka;
 		}
 
 		$hourAttendanceTypes = $this->table->columnInfoEnum ('pritomnost');
 		$pritomnost = $hourAttendanceTypes[$item['pritomnost']];
 		$listItem['card']['header']['values'][] = ['text' => $pritomnost, 'class' => 'badge text-bg-secondary'];
+
+		$listItem['presence'] = $pritomnost;
 
 		$listItem['card']['body'] = [
 			'class' => 'card-body',
@@ -78,6 +84,11 @@ class ViewHours extends TableView
 				['type' => 'text', 'subtype' => 'plain', 'text' => $item['probiranaLatka']]
 			]
 		];
+
+		// -----
+		$listItem ['date'] = utils::datef($item ['datum']);
+		$listItem ['txt'] = $item['probiranaLatka'];
+		// ------
 
 		return $listItem;
 	}
@@ -93,7 +104,7 @@ class ViewHours extends TableView
 		array_push ($q, ' LEFT JOIN [e10pro_zus_predmety] AS predmety ON vyuky.svpPredmet = predmety.ndx');
 		array_push ($q, ' WHERE 1');
 		array_push ($q, ' AND hodiny.stavHlavni = %i', 3);
-		array_push ($q, ' AND vyuka IN %in', $this->studentInfo['vyuky']);
+		array_push ($q, ' AND vyuka IN %in', $this->userContext['vyuky']);
 		array_push($q, ' AND (');
     	array_push($q, '([vyuky].[typ] = %i', 1, ')');
 			array_push($q, ' OR ');
@@ -106,57 +117,6 @@ class ViewHours extends TableView
 		array_push ($q, ' ORDER BY [datum] DESC, [zacatek] DESC', $this->sqlLimit ());
 
 		$this->runQuery ($q);
-	}
-
-	public function getStudentInfo($studentNdx)
-	{
-		$schoolYear = 2022;//zusutils::aktualniSkolniRok($this->app());
-		$si = [
-			'schoolYear' => $schoolYear,
-			'studies' => [], 'vyuky' => []
-		];
-
-		// -- studium
-		$q = [];
-		array_push($q, 'SELECT studium.*');
-		array_push($q, ' FROM [e10pro_zus_studium] AS studium');
-		array_push($q, ' WHERE 1');
-		array_push ($q, ' AND [stavHlavni] < %i', 4);
-		array_push ($q, ' AND [skolniRok] = %s', $schoolYear);
-		array_push ($q, ' AND studium.[student] = %i', $studentNdx);
-		array_push ($q, ' ORDER BY [ndx]');
-		$rows = $this->db()->query($q);
-		foreach ($rows as $r)
-		{
-			$si['studies'][] = $r['ndx'];
-		}
-
-		// -- vyuky
-		$q = [];
-    array_push($q, 'SELECT vyuky.*');
-    array_push($q, ' FROM [e10pro_zus_vyuky] AS vyuky');
-    array_push($q, ' WHERE 1');
-		array_push($q, ' AND (');
-    	array_push($q, '([vyuky].[typ] = %i', 1, ' AND [studium] IN %in)', $si['studies']);
-
-			array_push($q, ' OR ');
-			array_push ($q, '([vyuky].[typ] = %i', 0, ' AND EXISTS (',
-											'SELECT vyuka FROM e10pro_zus_vyukystudenti AS vyukyStudenti',
-											' WHERE vyukyStudenti.[studium] IN %in', $si['studies'],
-											' AND vyukyStudenti.vyuka = vyuky.ndx',
-											'))');
-
-		array_push($q, ')');
-    array_push($q, ' AND [vyuky].[stav] != %i', 9800);
-    array_push($q, ' AND [vyuky].[skolniRok] = %i', $schoolYear);
-
-		$rows = $this->db()->query($q);
-		foreach ($rows as $r)
-		{
-			$si['vyuky'][] = $r['ndx'];
-		}
-
-		return $si;
 	}
 
 	public function createToolbar()
