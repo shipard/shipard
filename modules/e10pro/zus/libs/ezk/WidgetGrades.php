@@ -130,7 +130,7 @@ class WidgetGrades extends \Shipard\UI\Core\WidgetPane
 
 			}
 
-			$gradesData['halfYears'] = $halfYear;
+			$gradesData['halfYears'][] = $halfYear;
 		}
 
 		$this->router->uiTemplate->data['grades'] = $gradesData;
