@@ -82,6 +82,7 @@ class TableView extends \Shipard\Base\BaseObject
 	var $contentRenderer;
 	var $requestParams = NULL;
 	var $ngRenderer = NULL;
+	var $uiSubTemplate = '';
 
 	var $comboSettings;
 	var $saveAs = '';

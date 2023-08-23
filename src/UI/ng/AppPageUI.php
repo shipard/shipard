@@ -28,8 +28,8 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
   {
     $template = $this->uiTemplate;
 
-    $template->data['url_path_'.$this->router->urlPart(0)] = 1;
-    $template->data['url_path_'.$this->router->urlPart(0).'_active'] = ' active';
+    $template->data['url_path_'.$this->uiRouter->urlPart(0)] = 1;
+    $template->data['url_path_'.$this->uiRouter->urlPart(0).'_active'] = ' active';
     $template->data['userImg'] = $this->app()->user()->data('picture');
     $template->data['wss'] = array_values($this->wss);
     $template->data['wssDefaultNdx'] = intval(key($this->wss));
@@ -50,14 +50,14 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
   protected function createContentCodeInside_UIStruct()
   {
     $templateCode = '{{{@appUIElement}}}';
-    $urlId = $this->router->urlPath[0];
+    $urlId = $this->uiRouter->urlPath[0];
     $mainUIObjectId = '';
 
     $template = $this->uiTemplate;
 
-    $template->data['url_path1'] = $this->router->urlPart(0);
-    $template->data['url_path_'.$this->router->urlPart(0)] = 1;
-    $template->data['url_path_'.$this->router->urlPart(0).'_active'] = ' active';
+    $template->data['url_path1'] = $this->uiRouter->urlPart(0);
+    $template->data['url_path_'.$this->uiRouter->urlPart(0)] = 1;
+    $template->data['url_path_'.$this->uiRouter->urlPart(0).'_active'] = ' active';
     $template->data['userImg'] = $this->app()->user()->data('picture');
     $template->data['wss'] = array_values($this->wss);
     $template->data['wssDefaultNdx'] = intval(key($this->wss));
@@ -93,6 +93,7 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
         if ($v)
         {
           $renderer = new \Shipard\UI\ng\renderers\TableViewRenderer($this->app());
+          $renderer->uiRouter = $this->uiRouter;
           $renderer->setViewer($v);
           $v->renderViewerData ('');
           $renderer->render();
@@ -107,7 +108,7 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
         $widget = $this->app()->createObject($activeMenuItem['classId'] ?? 'abcde');
         if ($widget)
         {
-          $widget->router = $this->router;
+          $widget->router = $this->uiRouter;
           $ec = $widget->createMainCode();
 
           $template->data['coreMainElementCode'] = $ec;

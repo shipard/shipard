@@ -27,7 +27,7 @@ class AppPageBlank extends Utility
 	var $dsMode = 1;
 	var $wss = [];
 	var \Shipard\UI\ng\TemplateUI $uiTemplate;
-	var \Shipard\UI\ng\Router $router;
+	var ?\Shipard\UI\ng\Router $uiRouter = NULL;
 
 	var $pageInfo = [];
   var ?array $uiCfg = NULL;
@@ -153,7 +153,7 @@ class AppPageBlank extends Utility
 		$themeUrl = "$absUrl{$this->app->urlRoot}/www-root/.ui/ng/themes/" . $this->uiThemeId . "/$style?vv=".$this->uiThemeCfg['integrity']['sha384'];
 		$c .= "<link rel='stylesheet' type='text/css' href='$themeUrl'/>\n";
 
-		$c .= "\t<script type=\"text/javascript\">\nvar httpApiRootPath = '{$this->router->uiRoot}';var serverTitle=\"" . Utils::es ($this->app->cfgItem ('options.core.ownerShortName', '')) . "\";" .
+		$c .= "\t<script type=\"text/javascript\">\nvar httpApiRootPath = '{$this->uiRouter->uiRoot}';var serverTitle=\"" . Utils::es ($this->app->cfgItem ('options.core.ownerShortName', '')) . "\";" .
 			"var remoteHostAddress = '{$_SERVER ['REMOTE_ADDR']}'; e10ClientType = " . json_encode ($this->app->clientType) . ";\n";
 		$c .= "var deviceId = '{$this->app->deviceId}';\n";
 		$c .= "var webSocketServers = ".json_encode($this->wss).";\n";
@@ -163,7 +163,7 @@ class AppPageBlank extends Utility
 		$c .= "var e10dsIconFileName = '{$dsIcon['fileName']}';\n";
 
 
-		$c .= "var e10ServiceWorkerURL = '{$this->router->uiRoot}sw.js';";
+		$c .= "var e10ServiceWorkerURL = '{$this->uiRouter->uiRoot}sw.js';";
 		//$c .= "var e10ServiceWorkerURL = undefined;";
 		if (isset($this->pageInfo['userInfo']))
 			$c .= "g_UserInfo = ".json_encode($this->pageInfo['userInfo']).";\n";

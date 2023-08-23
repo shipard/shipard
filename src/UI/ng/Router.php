@@ -91,7 +91,7 @@ class Router extends Utility
 		if ($first === 'manifest.webmanifest')
 		{
 			$object = $this->app->createObject('Shipard.UI.ng.WebManifest');
-			$object->router = $this;
+			$object->uiRouter = $this;
 			return new Response ($this->app, $object->createPageCode(), 200);
 		}
 		elseif ($first === 'sw.js')
@@ -119,7 +119,7 @@ class Router extends Utility
 				return $this->createLoginRequest ();
 
 			if ($first === 'api')
-				return $this->app()->routeApiV2();
+				return $this->routeApiV2();
 
 			if ($this->uiCfg)
 			{
@@ -129,7 +129,7 @@ class Router extends Utility
 		}
 		if ($object)
 		{
-			$object->router = $this;
+			$object->uiRouter = $this;
 			$object->uiTemplate = $this->uiTemplate;
 			$object->run ();
 
@@ -147,6 +147,26 @@ class Router extends Utility
 		}
 
 		return new Response ($this->app, "invalid url", 404);
+	}
+
+	function routeApiV2()
+	{
+		$requestParamsStr = $this->app()->postData();
+		if ($requestParamsStr === '')
+		{
+			return new Response ($this->app(), "blank request", 404);
+		}
+
+		$requestParams = json_decode($requestParamsStr, TRUE);
+		if (!$requestParams)
+		{
+			return new Response ($this->app(), "invalid request data", 404);
+		}
+
+		$o = new \Shipard\Api\v2\Router($this->app());
+		$o->uiRouter = $this;
+		$o->setRequestParams($requestParams);
+		return $o->run();
 	}
 
 	protected function checkUserLogin()

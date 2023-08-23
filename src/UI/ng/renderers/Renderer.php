@@ -10,6 +10,8 @@ use \Shipard\Base\Utility;
  */
 class Renderer extends Utility
 {
+  var ?\Shipard\UI\ng\Router $uiRouter = NULL;
+
   var $renderedData = [];
 
   public function render()

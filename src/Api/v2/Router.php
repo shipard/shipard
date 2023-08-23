@@ -9,6 +9,7 @@ namespace Shipard\Api\v2;
 class Router extends \Shipard\Base\Utility
 {
   var ?array $requestParams = NULL;
+  var $uiRouter = NULL;
 
 	public function setRequestParams(?array $requestParams)
 	{
@@ -49,6 +50,7 @@ class Router extends \Shipard\Base\Utility
     if (!$apiResponseObject)
       return new \Shipard\Application\Response ($this->app(), 'invalid requestType param', 404);
 
+    $apiResponseObject->uiRouter = $this->uiRouter;
     $apiResponseObject->setRequestParams($this->requestParams);
     $apiResponseObject->run();
 

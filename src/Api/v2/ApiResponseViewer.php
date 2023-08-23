@@ -24,6 +24,7 @@ class ApiResponseViewer extends \Shipard\Api\v2\ApiResponse
     {
       //$v->requestParams = $this->requestParams;
       $renderer = new \Shipard\UI\ng\renderers\TableViewRenderer($this->app());
+      $renderer->uiRouter = $this->uiRouter;
       $renderer->setViewer($v);
       $v->renderViewerData ('');
       $renderer->render();

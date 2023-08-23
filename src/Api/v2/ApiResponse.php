@@ -8,6 +8,8 @@ class ApiResponse extends \Shipard\Base\Utility
   var array $requestParams;
   var array $responseData = [];
 
+  var $uiRouter = NULL;
+
   public function setRequestParams(array $requestParams)
   {
     $this->requestParams = $requestParams;

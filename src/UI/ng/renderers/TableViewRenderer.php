@@ -461,6 +461,15 @@ class TableViewRenderer extends Renderer
 
 		$codeLine = '';
 
+		if ($this->viewer->uiSubTemplate !== '')
+		{
+			$templateStr = $this->uiRouter->uiTemplate->subTemplateStr($this->viewer->uiSubTemplate);
+
+			$this->uiRouter->uiTemplate->data['listRow'] = $listItem;
+
+			$code = $this->uiRouter->uiTemplate->render($templateStr);
+			return $code;
+		}
 
 		if (isset($listItem['pane']))
 		{
