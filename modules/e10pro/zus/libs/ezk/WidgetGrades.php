@@ -106,6 +106,7 @@ class WidgetGrades extends \Shipard\UI\Core\WidgetPane
 				$pDef = $this->app()->cfgItem ('e10pro.zus.predmety.'.substr($predmetId, 1), NULL);
 
 				$subject = [
+					'subjectId' => $halfYearId.'_'.$predmetId,
 					'title' => $pDef['nazev'],
 					'grades' => [],
 				];
