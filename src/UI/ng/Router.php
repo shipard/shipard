@@ -15,7 +15,7 @@ class Router extends Utility
 	var $uiId = '';
 	var $uiRoot = '';
 	var $urlPath = [];
-	var \Shipard\UI\ng\TemplateUI $uiTemplate;
+	var ?\Shipard\UI\ng\TemplateUI $uiTemplate = NULL;
 
 	public function setUIId($uiId)
 	{
@@ -125,7 +125,6 @@ class Router extends Utility
 			{
 				$object = $this->app->createObject('Shipard.UI.ng.AppPageUI');
 				$object->uiCfg = $this->uiCfg;
-				$object->uiTemplate = $this->uiTemplate;
 			}
 		}
 		if ($object)

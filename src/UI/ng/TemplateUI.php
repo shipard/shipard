@@ -124,5 +124,10 @@ class TemplateUI extends \Shipard\Utils\TemplateCore
     return NULL;
   }
 
+  public function subTemplateStr($stId)
+	{
+		$templateStr = file_get_contents(__SHPD_ROOT_DIR__.'/'.$stId.'.mustache');
+		return $templateStr;
+	}
 }
 

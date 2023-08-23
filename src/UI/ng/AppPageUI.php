@@ -107,6 +107,7 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
         $widget = $this->app()->createObject($activeMenuItem['classId'] ?? 'abcde');
         if ($widget)
         {
+          $widget->router = $this->router;
           $ec = $widget->createMainCode();
 
           $template->data['coreMainElementCode'] = $ec;

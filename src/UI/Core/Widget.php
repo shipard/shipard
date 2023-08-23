@@ -13,6 +13,8 @@ class Widget extends \Shipard\Base\BaseObject
 	var $widgetId = '';
 	var $forceFullCode = 0;
 
+	var ?\Shipard\UI\ng\Router $router = NULL;
+
 	public function createMainCode ()
 	{
 		return '';
