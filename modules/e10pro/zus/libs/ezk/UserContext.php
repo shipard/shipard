@@ -15,7 +15,8 @@ class UserContext extends \e10\users\libs\UserContext
   {
     $q = [];
     array_push($q, 'SELECT contacts.*,');
-    array_push($q, ' persons.fullName AS personName, persons.id AS personId, persons.docState AS personDocState, persons.docStateMain AS personDocStateMain');
+    array_push($q, ' persons.fullName AS personFullName, persons.id AS personId,');
+    array_push($q, ' persons.firstName AS personFirstName, persons.lastName AS personLastName');
     array_push($q, ' FROM e10_persons_personsContacts AS [contacts]');
     array_push($q, ' LEFT JOIN [e10_persons_persons] AS [persons] ON [contacts].person = [persons].ndx');
     array_push($q, ' WHERE 1');
@@ -26,9 +27,13 @@ class UserContext extends \e10\users\libs\UserContext
     foreach ($rows as $r)
     {
       if (!isset($this->students[$r['person']]))
+      {
         $this->students[$r['person']] = [
-          'name' => $r['personName'],
+          'fullName' => $r['personFullName'],
+          'firstName' => $r['personFirstName'],
+          'lastName' => $r['personLastName'],
         ];
+      }
     }
   }
 
@@ -52,7 +57,8 @@ class UserContext extends \e10\users\libs\UserContext
       $cid = 'ezk-s-'.$studentNdx;
       $uc = [
         'id' => $cid,
-        'title' => $studentInfo['name'],
+        'title' => $studentInfo['fullName'],
+        'shortTitle' => $studentInfo['firstName'],
         'studentNdx' => $studentNdx,
       ];
 

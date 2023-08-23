@@ -1,0 +1,8 @@
+<h1>Rozvrh hodin</h1>
+
+{{#data.timeTable.days}}
+  <h2>{{dayName}}</h2>
+  {{#hours}}
+    {{timeBegin}} - {{timeEnd}} / {{subjectTitle}} / {{teacher}} / {{place}}<br>
+  {{/hours}}
+{{/data.timeTable.days}}

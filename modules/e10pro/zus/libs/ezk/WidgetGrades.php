@@ -89,26 +89,31 @@ class WidgetGrades extends \Shipard\UI\Core\WidgetPane
 
 	function renderData()
 	{
-		$h = [
-			'grade' => 'Čas',
-			'note' => 'Předmět',
-			'date' => 'Datum',
+		$gradesData = [
+			'halfYears' => [],
 		];
 
 		foreach ($this->grades as $halfYearId => $halfYearContent)
 		{
-			$table = [];
+			$halfYear = [
+				'id' => $halfYearId,
+				'number' => substr($halfYearId, 1),
+				'subjects' => [],
+			];
+
 			foreach ($halfYearContent as $predmetId => $predmetContent)
 			{
 				$pDef = $this->app()->cfgItem ('e10pro.zus.predmety.'.substr($predmetId, 1), NULL);
-				$item = [
-					'grade' => $pDef['nazev'],
+
+				$subject = [
+					'title' => $pDef['nazev'],
+					'grades' => [],
 				];
 
 				if ($predmetContent['cntGrades'])
-					$item['note'] = 'Průměr: '.round($predmetContent['sumGrades'] / $predmetContent['cntGrades'], 2).' ('.$predmetContent['sumGrades'].' / '.$predmetContent['cntGrades'].')';
-
-				$table[] = $item;
+				{
+					$subject['gradeAvg'] = strval(round($predmetContent['sumGrades'] / $predmetContent['cntGrades'], 2));
+				}
 
 				foreach ($predmetContent['hours'] as $hour)
 				{
@@ -118,12 +123,20 @@ class WidgetGrades extends \Shipard\UI\Core\WidgetPane
 						'date' => Utils::datef($hour['date'], '%S'),
 					];
 
-					$table[] = $item;
+					$subject['grades'][] = $item;
 				}
+
+				$halfYear['subjects'][] = $subject;
+
 			}
-			$this->addContent (['type' => 'table', 'table' => $table, 'header' => $h,
-			'title' => ['text' => 'Pololetí '.$halfYearId, 'class' => 'h1']]);
+
+			$gradesData['halfYears'] = $halfYear;
 		}
+
+		$this->router->uiTemplate->data['grades'] = $gradesData;
+		$templateStr = $this->router->uiTemplate->subTemplateStr('modules/e10pro/zus/libs/ezk/subtemplates/grades');
+		$code = $this->router->uiTemplate->render($templateStr);
+		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $code]);
 	}
 
 	public function createContent ()

@@ -1,0 +1,14 @@
+<h1>Známky</h1>
+
+{{#data.grades.halfYears}}
+  <h3>{{number}}. pololetí</h3>
+  {{#subjects}}
+    <h4>{{title}}</h4>
+    <h5>Průměr: {{gradeAvg}}</h5>
+
+    {{#grades}}
+      {{grade}} | {{note}} | {{date}} <br>
+    {{/grades}}
+  {{/subjects}}
+{{/data.grades.halfYears}}
+

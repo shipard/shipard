@@ -44,7 +44,11 @@ class WidgetTimeTable extends \Shipard\UI\Core\WidgetPane
 		array_push ($q, ' WHERE 1');
 		array_push ($q, ' AND vyuky.skolniRok = %s', $this->academicYear);
 		array_push ($q, ' AND rozvrh.stavHlavni <= 2');
-		array_push ($q, ' AND rozvrh.vyuka IN %in', $this->userContext['vyuky']);
+
+		if (isset($this->userContext['vyuky']) && count($this->userContext['vyuky']))
+			array_push ($q, ' AND rozvrh.vyuka IN %in', $this->userContext['vyuky']);
+		else
+			array_push ($q, ' AND rozvrh.vyuka = %i', -1);
 		array_push ($q, ' ORDER BY rozvrh.den, rozvrh.zacatek, rozvrh.ndx');
 
 		$rows = $this->db()->query ($q);
@@ -65,15 +69,17 @@ class WidgetTimeTable extends \Shipard\UI\Core\WidgetPane
 
 	function renderData()
 	{
+		$timeTableData = [
+			'days' => []
+		];
 		$table = [];
 		foreach ($this->dataTimeTable as $dayId => $dayContent)
 		{
-			$item = [
-				'time' => Utils::$dayNames[$dayId],
-
+			$day = [
+				'dayName' => Utils::$dayNames[$dayId],
+				'dayNameShort' => Utils::$dayShortcuts[$dayId],
+				'hours' => []
 			];
-
-			$table[] = $item;
 
 			foreach ($dayContent as $hour)
 			{
@@ -85,19 +91,25 @@ class WidgetTimeTable extends \Shipard\UI\Core\WidgetPane
 				$info[] = ['text' => $hour['ucitelJmeno'], 'class' => 'clearfix'];
 
 				$item = [
+					'timeBegin' => $hour['zacatek'],
+					'timeEnd' => $hour['konec'],
 					'time' => $hour['zacatek'].' - '.$hour['konec'],
-					'info' => $info,
+					'subjectTitle' => $hour['predmetNazev'],
+					'teacher' => $hour['ucitelJmeno'],
+					'place' => $hour['ucebnaNazev'],
 				];
 
-				$table[] = $item;
+				$day['hours'] = $item;
 			}
-		}
-		$h = [
-			'time' => 'Čas',
-			'info' => 'Předmět',
-		];
 
-		$this->addContent (['type' => 'table', 'table' => $table, 'header' => $h]);
+			$timeTableData['days'][] = $day;
+		}
+
+		$this->router->uiTemplate->data['timeTable'] = $timeTableData;
+		$templateStr = $this->router->uiTemplate->subTemplateStr('modules/e10pro/zus/libs/ezk/subtemplates/timeTable');
+		$code = $this->router->uiTemplate->render($templateStr);
+		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $code]);
+
 	}
 
 	public function createContent ()
