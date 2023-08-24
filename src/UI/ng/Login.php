@@ -19,7 +19,7 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 
 	public function createContent ()
 	{
-		$this->mode = $this->router->urlPart(1);
+		$this->mode = $this->uiRouter->urlPart(1);
 
 		if ($this->mode === 'set-workplace')
 		{
@@ -91,9 +91,11 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 		$tableRequests = new \e10\users\TableRequests($this->app());
 		if ($this->mode === 'activate')
 		{
-			$requestId = $this->router->urlPart(2);
+			$requestId = $this->uiRouter->urlPart(2);
 			$requestInfo = $tableRequests->requestInfo($requestId, '');
-			$templateStr = file_get_contents(__SHPD_ROOT_DIR__.'src/UI/ng/subtemplates/'.'user-activate.mustache');
+
+			$templateStr = $this->subTemplateStr('src/UI/ng/subtemplates/user-activate');
+
 			$this->uiTemplate->data['request'] = $requestInfo;
 			$this->uiTemplate->data['requestTest'] = json_encode($requestInfo);
 
@@ -141,7 +143,7 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 
 		if ($this->mode === 'change-password')
 		{
-			$requestId = $this->router->urlPart(2);
+			$requestId = $this->uiRouter->urlPart(2);
 			$requestInfo = $tableRequests->requestInfo($requestId, '');
 			$templateStr = file_get_contents(__SHPD_ROOT_DIR__.'src/UI/ng/subtemplates/'.'user-change-password.mustache');
 			$this->uiTemplate->data['request'] = $requestInfo;
@@ -177,6 +179,12 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 		}
 
 		return $c;
+	}
+
+	protected function subTemplateStr($stId)
+	{
+		$templateStr = file_get_contents(__SHPD_ROOT_DIR__.'/'.$stId.'.mustache');
+		return $templateStr;
 	}
 
 	public function createContentCodeInside_Workplace ()

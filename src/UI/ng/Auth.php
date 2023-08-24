@@ -15,7 +15,7 @@ class Auth extends \Shipard\UI\ng\AppPageBlank
 
 	public function createContent ()
 	{
-		$this->mode = $this->router->urlPath[1];//$this->app->requestPath(3);
+		$this->mode = $this->uiRouter->urlPath[1];//$this->app->requestPath(3);
 
     $from = $this->app->testPostParam('from');
 		$a = new \e10\users\libs\Authenticator($this->app());
@@ -91,7 +91,7 @@ class Auth extends \Shipard\UI\ng\AppPageBlank
       ];
 
       $a = new \e10\users\libs\Authenticator($this->app());
-      $res = $a->sendLostPassword($credentials, $this->router);
+      $res = $a->sendLostPassword($credentials, $this->uiRouter);
       if ($res == 0)
       {
         header('Location: ' . $this->uiTemplate->data['uiRoot'].'user/send-lost-password-done');
