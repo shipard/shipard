@@ -128,8 +128,8 @@ $shipard-secondary: #A9A9A9;
 $nav-bg-light: #E8E8E8;
 $nav-bg-dark: #303030;
 $card-bg-light: white;
-/*$card-bg-dark: #404040;*/
-$card-bg-dark: #585858;
+$card-bg-dark: #505050;
+/*$card-bg-dark: #585858;*/
 $card-border-light: gainsboro;
 $card-border-dark: dimgray;
 $nav-pills-color-light: black;
@@ -145,8 +145,8 @@ $numpad-close-dark: gray;
 $numpad-ok: $shipard-primary;
 $dashboard-button-color: black;
 $accordion-bg-light: white;
-/*$accordion-bg-dark: #404040;*/
-$accordion-bg-dark: #585858;
+$accordion-bg-dark: #505050;
+/*$accordion-bg-dark: #585858;*/
 $accordion-border-light: gainsboro;
 $accordion-border-dark: dimgray;
 $nav-border-light: gainsboro;
@@ -174,11 +174,12 @@ $theme-colors: (
   "dark": $dark,
 );
 
-/*$body-bg-dark: #505050;*/
-$body-bg-dark: #404040;
+$body-bg-dark: #383838;
+/*$body-bg-dark: #404040;*/
 $body-bg: whitesmoke;
 /*$body-color-dark: #adb5bd;*/
-$body-color-dark: #D8D8D8;
+/*$body-color-dark: #D8D8D8;*/
+$body-color-dark: #F0F0F0;
 $body-color: #212529;
 
 $navbar-light-color: #282828;
