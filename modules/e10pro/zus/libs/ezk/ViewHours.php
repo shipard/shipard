@@ -6,7 +6,9 @@ require_once __SHPD_MODULES_DIR__ . 'e10pro/zus/zus.php';
 use \Shipard\Utils\Utils, \Shipard\Viewer\TableView;
 
 
-
+/**
+ * class ViewHours
+ */
 class ViewHours extends TableView
 {
 	var $studentNdx = 0;
@@ -20,13 +22,12 @@ class ViewHours extends TableView
 			$this->studentNdx = $ac['studentNdx'] ?? 0;
 		$this->userContext = $userContexts['ezk']['students'][$this->studentNdx];
 
+		$this->classes = ['viewerWithCards'];
+		$this->enableToolbar = FALSE;
+
 		parent::init();
 
 		$this->objectSubType = TableView::vsDetail;
-		$this->enableDetailSearch = FALSE;
-
-		$this->setMainQueries ();
-
 		$this->uiSubTemplate = 'modules/e10pro/zus/libs/ezk/subtemplates/hoursRow';
 	}
 
@@ -87,7 +88,7 @@ class ViewHours extends TableView
 
 		// -----
 		$listItem ['date'] = utils::datef($item ['datum']);
-		$listItem ['txt'] = $item['probiranaLatka'];
+		$listItem ['txt'] = trim($item['probiranaLatka']);
 		// ------
 
 		return $listItem;

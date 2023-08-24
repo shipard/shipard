@@ -305,7 +305,7 @@ class TableViewRenderer extends Renderer
 				$h .= '</td>';
 			}
 
-			if ($this->viewer->enableFullTextSearch)
+			if ($this->viewer->enableFullTextSearch && $this->viewer->enableToolbar)
 			{
 				$style = '';
 				$fulltextClass = 'main';
