@@ -1,10 +1,18 @@
 
 <div class="card-body">
-  <h3 class="card-title d-flex justify-content-between">
-    <span>{{data.listRow.date}} {{#data.listRow.grade}}</span>
-    <span>{{data.listRow.grade}}{{/data.listRow.grade}}</span>
-    <!--<span>{{data.listRow.presence}}</span>-->
-    <span class="text-success">{{{@icon;icon:user/check}}}</span>
+  <h3 class="card-title text-center">
+    {{data.listRow.subjectName}}
   </h3>
+  <h6 class="card-subtitle d-flex mb-1">
+    <span class="flex-fill">{{data.listRow.date}}</span>
+    {{#data.listRow.withHomeWork}}<span class="badge rounded-pill text-bg-secondary me-2">{{{@icon;icon:user/book}}}</span>{{/data.listRow.withHomeWork}}
+    {{#data.listRow.grade}}<span class="badge rounded-pill text-bg-secondary me-2">{{{@icon;icon:user/medal}}} {{data.listRow.grade}}</span>{{/data.listRow.grade}}
+    <span class="{{data.listRow.presenceCfg.class}}">{{{@icon;dataItem:data.listRow.presenceCfg.icon}}}</span>
+  </h6>
   <pre>{{data.listRow.txt}}</pre>
+
+  {{#data.listRow.withHomeWork}}
+    Domácí úkol:
+    <pre>{{data.listRow.homeWork}}</pre>
+  {{/data.listRow.withHomeWork}}
 </div>

@@ -12,6 +12,10 @@ a.card {
 	font-family: sans-serif;
 }
 
+.card-body :last-child {
+	margin-bottom: 0 !important;
+}
+
 /*toggle*/
 .form-check-input:checked {
 	background-color: #{$shipard-primary};

@@ -16,13 +16,13 @@ class ViewHours extends TableView
 
 	var $presences = [
 		0 => ["title" => "Nezadáno", "icon" => "system/iconWarning", "class" => "text-danger"],
-		1 => ["title" => "Přítomen", "icon" => "system/iconCheck", "class" => "text-success"],
+		1 => ["title" => "Přítomen", "icon" => "user/check", "class" => "text-success"],
 		2 => ["title" => "Nepřítomen / omluven", "icon" => "user/timesCircle", "class" => "text-warning"],
 		2 => ["title" => "Nepřítomen / NEomluven", "icon" => "user/times", "class" => "text-danger"],
-		4 => ["title" => "Státní svátek", "icon" => "system/iconFlag", "class" => "text-secondary"],
-		5 => ["title" => "Prázdiny", "icon" => "system/iconFlag", "class" => "text-secondary"],
-		6 => ["title" => "Ředitelské volno", "icon" => "system/iconFlag", "class" => "text-secondary"],
-		7 => ["title" => "Volno", "icon" => "system/iconFlag", "class" => "text-secondary"],
+		4 => ["title" => "Státní svátek", "icon" => "user/happy", "class" => "text-secondary"],
+		5 => ["title" => "Prázdiny", "icon" => "user/happy", "class" => "text-secondary"],
+		6 => ["title" => "Ředitelské volno", "icon" => "user/happy", "class" => "text-secondary"],
+		7 => ["title" => "Volno", "icon" => "user/happy", "class" => "text-secondary"],
 	];
 
 	public function init ()

@@ -1780,5 +1780,16 @@
         "fa6pro":"fa-medal",
         "bsi":"bi-award",
         "mdi":""
+    },
+    "user/happy":
+    {
+        "_title:cs":"Štastný smajlík",
+        "_title:en":"Happy emoji",
+        "_tags:cs":"štěstí; úsměv; smajlík; emoji",
+        "_tags:en":"happy; smile; emoji; face",
+        "fa5":"fa-grin-beam",
+        "fa6pro":"fa-grin-beam",
+        "bsi":"bi-emoji-laughing-fill",
+        "mdi":""
     }
 }
