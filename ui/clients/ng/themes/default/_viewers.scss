@@ -130,3 +130,11 @@ data-viewer>div.body>div.rows>div.rows-list>div.r {
   }
 }
 
+data-viewer.viewerWithCards {
+  div.rows {
+    padding-left: 0.5rem; padding-right: 0.5rem;
+  }
+  r.card {
+    padding-top: 0.5rem; padding-bottom: 0.5rem;
+  }
+}

@@ -1,8 +1,18 @@
-<h1>Rozvrh hodin</h1>
+<div class="container-fluid" style="overflow-y: auto; height: 100%;">
+  <h1>Rozvrh hodin</h1>
 
-{{#data.timeTable.days}}
-  <h2>{{dayName}}</h2>
-  {{#hours}}
-    {{timeBegin}} - {{timeEnd}} / {{subjectTitle}} / {{teacher}} / {{place}}<br>
-  {{/hours}}
-{{/data.timeTable.days}}
+  {{#data.timeTable.days}}
+    <ol class="list-group mb-2">
+      <li class="list-group-item align-items-start">
+        <h3 class="fw-bold">{{dayName}}</h3>
+
+        {{#hours}}
+          <div class="mt-2 me-auto">
+            <h5><span class="fw-bold">{{timeBegin}} - {{timeEnd}}</span><span class="fw-normal"> - {{subjectTitle}}</span></h5>
+            {{teacher}}, {{place}}
+          </div>
+        {{/hours}}
+      </li>
+    </ol>
+  {{/data.timeTable.days}}
+</div>

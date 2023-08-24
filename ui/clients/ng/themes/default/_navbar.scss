@@ -10,6 +10,14 @@
     }
 }
 
+.navbar-nav .list-group a {
+    color: var(--navColor);
+}
+
+button.navbar-toggler {
+    color: var(--navColor);
+}
+
 .app-nav a.navbar-brand {
     padding-left: .5rem;
 }
@@ -24,6 +32,26 @@
 	padding: .5rem;
 }
 
+.navbar-toggler {
+    border: none;
+}
+
 div.offcanvas {
 	background-color: var(--navBackground);
+    .navListIcon {
+        padding-right: .5rem;
+    }
+    .list-group-item {
+        padding-top: .7rem;
+        padding-bottom: .7rem;
+    }
+    .list-group-item.active {
+        background-color: #{$shipard-primary};
+        border-color: #{$shipard-primary};
+    }
+}
+
+.offcanvas-body {
+    padding: 0 !important;
+    font-size: 110%;
 }

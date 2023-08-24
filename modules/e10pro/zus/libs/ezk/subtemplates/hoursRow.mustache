@@ -1,5 +1,10 @@
 
 <div class="card-body">
-  <h3>{{data.listRow.date}} {{#data.listRow.grade}} / {{data.listRow.grade}}{{/data.listRow.grade}} / {{data.listRow.presence}}</h3>
+  <h3 class="card-title d-flex justify-content-between">
+    <span>{{data.listRow.date}} {{#data.listRow.grade}}</span>
+    <span>{{data.listRow.grade}}{{/data.listRow.grade}}</span>
+    <!--<span>{{data.listRow.presence}}</span>-->
+    <span class="text-success">{{{@icon;icon:user/check}}}</span>
+  </h3>
   <pre>{{data.listRow.txt}}</pre>
 </div>

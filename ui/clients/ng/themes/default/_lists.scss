@@ -1,0 +1,9 @@
+ol.list-group {
+    border: 1pt solid var(--universalBorder);
+    .list-group-item {
+        border: none;
+    }
+}
+.list-group-flush .list-group-item {
+    border-bottom: 1pt solid var(--universalBorder);
+}

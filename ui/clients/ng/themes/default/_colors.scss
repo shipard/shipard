@@ -23,6 +23,10 @@
     --bs-btn-hover-bg: transparent;
 }
 
+.accordion-button:not(.collapsed){
+    --bs-accordion-active-bg: #F8F8F8;
+}
+
 [data-bs-theme="dark"] {
     --bodyColor: #{$body-color-dark};
     --navBackground: #{$nav-bg-dark};
@@ -45,6 +49,10 @@
     /*--bs-btn-bg: transparent;*/
     --bs-btn-color: whitesmoke;
     --bs-btn-hover-bg: transparent;
+}
+
+[data-bs-theme="dark"] .accordion-button:not(.collapsed){
+    --bs-accordion-active-bg: #505050;
 }
 
 /*:root {

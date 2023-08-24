@@ -1,14 +1,35 @@
-<h1>Známky</h1>
+<div class="container-fluid" style="overflow-y: auto; height: 100%;">
+  <h1>Známky</h1>
 
-{{#data.grades.halfYears}}
-  <h3>{{number}}. pololetí</h3>
-  {{#subjects}}
-    <h4>{{title}}</h4>
-    <h5>Průměr: {{gradeAvg}}</h5>
+  {{#data.grades.halfYears}}
+    <h3 class="mt-3">{{number}}. pololetí</h3>
+    {{#subjects}}
+      <div class="accordion accordion-flush" id="{{subjectId}}">
+        <div class="accordion-item">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-{{subjectId}}" aria-expanded="false" aria-controls="flush-{{subjectId}}">
+              <div class="d-flex flex-column">
+                <div class="p-1 fs-3"><h4>{{title}}</h4></div>
+                <div class="p-1 fs-6">Průměr: {{gradeAvg}}</div>
+              </div>
+            </button>
+          </h2>
 
-    {{#grades}}
-      {{grade}} | {{note}} | {{date}} <br>
-    {{/grades}}
-  {{/subjects}}
-{{/data.grades.halfYears}}
-
+          <div id="flush-{{subjectId}}" class="accordion-collapse collapse" data-bs-parent="#{{subjectId}}">
+            <div class="accordion-body">
+              <ol class="grades list-group">
+                {{#grades}}
+                  <li class="list-group-item d-flex justify-content-between align-items-end" style="width: 100%;">
+                    <div class="p-1 fs-2 fw-bold text-start">{{grade}}</div>
+                    <!--<div class="p-2 fs-5">{{note}}</div>-->
+                    <div class="p-1 fs-6 text-end">{{date}}</div>
+                  </li>
+                {{/grades}}
+              </ol>
+            </div>
+          </div>
+        </div>
+      </div>
+    {{/subjects}}
+  {{/data.grades.halfYears}}
+</div>

@@ -1769,5 +1769,16 @@
         "fa6pro":"fa-comment-dots",
         "bsi":"bi-person-slash",
         "mdi":""
+    },
+    "user/medal":
+    {
+        "_title:cs":"Medaile",
+        "_title:en":"Medal",
+        "_tags:cs":"medaile; výhra; ocenění",
+        "_tags:en":"medal; achievement; prize; award",
+        "fa5":"fa-medal",
+        "fa6pro":"fa-medal",
+        "bsi":"bi-award",
+        "mdi":""
     }
 }

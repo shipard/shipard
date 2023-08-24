@@ -99,7 +99,7 @@ class WidgetTimeTable extends \Shipard\UI\Core\WidgetPane
 					'place' => $hour['ucebnaNazev'],
 				];
 
-				$day['hours'] = $item;
+				$day['hours'][] = $item;
 			}
 
 			$timeTableData['days'][] = $day;

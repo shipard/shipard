@@ -123,20 +123,20 @@ body {
 
 
 
-
-
 $shipard-primary: #93C572;
 $shipard-secondary: #A9A9A9;
 $nav-bg-light: #E8E8E8;
 $nav-bg-dark: #303030;
 $card-bg-light: white;
-$card-bg-dark: #404040;
+/*$card-bg-dark: #404040;*/
+$card-bg-dark: #585858;
 $card-border-light: gainsboro;
 $card-border-dark: dimgray;
 $nav-pills-color-light: black;
 $nav-pills-color-dark: whitesmoke;
 $numpad-bg-light: whitesmoke;
-$numpad-bg-dark: #404040;
+/*$numpad-bg-dark: #404040;*/
+$numpad-bg-dark: #585858;
 /*--numpadColor: #383838;*/
 $numpad-border-light: silver;
 $numpad-border-dark: dimgray;
@@ -145,7 +145,8 @@ $numpad-close-dark: gray;
 $numpad-ok: $shipard-primary;
 $dashboard-button-color: black;
 $accordion-bg-light: white;
-$accordion-bg-dark: #404040;
+/*$accordion-bg-dark: #404040;*/
+$accordion-bg-dark: #585858;
 $accordion-border-light: gainsboro;
 $accordion-border-dark: dimgray;
 $nav-border-light: gainsboro;
@@ -173,13 +174,14 @@ $theme-colors: (
   "dark": $dark,
 );
 
-$body-bg-dark: #505050;
+/*$body-bg-dark: #505050;*/
+$body-bg-dark: #404040;
 $body-bg: whitesmoke;
 /*$body-color-dark: #adb5bd;*/
 $body-color-dark: #D8D8D8;
 $body-color: #212529;
 
-$navbar-light-color: dimgray;
+$navbar-light-color: #282828;
 $navbar-dark-color: #D8D8D8;
 $navbar-light-active-color: $shipard-primary;
 $navbar-dark-active-color: $shipard-primary;
@@ -217,6 +219,7 @@ $input-focus-bg: var(--formBackground);
 @import "_other.scss";
 @import "_buttons.scss";
 @import "_forms.scss";
+@import "_lists.scss";
 @import "_app.scss";
 @import "_viewers.scss";
 
