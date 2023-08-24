@@ -63,8 +63,6 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
     $template->data['wssDefaultNdx'] = intval(key($this->wss));
     $template->data['appBrowserParams'] = '';
 
-    $template->data['uiStruct'] = $this->uiStruct;
-
     $activeMenuItem = NULL; // uiStruct.appMenu.items
     if (isset($this->uiStruct['appMenu']['items']))
     {
@@ -74,7 +72,17 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
     if ($activeMenuItem)
     {
       $template->data['activeMenuItem'] = $activeMenuItem;
+      foreach ($this->uiStruct['appMenu']['items'] as &$mi)
+      {
+        if ($mi['id'] === $urlId)
+        {
+          $mi['active'] = 1;
+          break;
+        }
+      }
     }
+
+    $template->data['uiStruct'] = $this->uiStruct;
 
     if ($activeMenuItem)
     {
