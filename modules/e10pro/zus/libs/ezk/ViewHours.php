@@ -89,6 +89,7 @@ class ViewHours extends TableView
 		// -----
 		$listItem ['date'] = utils::datef($item ['datum']);
 		$listItem ['txt'] = trim($item['probiranaLatka']);
+		$listItem ['subjectName'] = $item['predmetNazev'];
 		// ------
 
 		return $listItem;
