@@ -17,6 +17,13 @@ class TableHodiny extends DbTable
 		$this->setName ('e10pro.zus.hodiny', 'e10pro_zus_hodiny', 'Hodiny');
 	}
 
+	public function checkBeforeSave (&$recData, $ownerData = NULL)
+	{
+		parent::checkBeforeSave ($recData, $ownerData);
+
+		$recData['sDomacimUkolem'] = strlen(trim($recData['domaciUkol'])) > 0;
+	}
+
 	public function checkAfterSave2 (&$recData)
 	{
 		if (isset($recData['ndx']) && $recData['ndx'] && $recData['vyuka'])
@@ -239,6 +246,7 @@ class FormHodina extends TableForm
 		$this->openTab (TableForm::ltNone);
 			$this->layoutOpen(TableForm::ltForm);
 				$this->addColumnInput('probiranaLatka'/*, TableForm::coFullSizeY*/);
+				$this->addColumnInput('domaciUkol'/*, TableForm::coFullSizeY*/);
 			$this->layoutClose();
 
 			if ($vyuka['typ'] === 1)

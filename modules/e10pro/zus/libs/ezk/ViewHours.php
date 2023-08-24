@@ -14,6 +14,17 @@ class ViewHours extends TableView
 	var $studentNdx = 0;
 	var $userContext = NULL;
 
+	var $presences = [
+		0 => ["title" => "Nezadáno", "icon" => "system/iconWarning", "class" => "text-danger"],
+		1 => ["title" => "Přítomen", "icon" => "system/iconCheck", "class" => "text-success"],
+		2 => ["title" => "Nepřítomen / omluven", "icon" => "user/timesCircle", "class" => "text-warning"],
+		2 => ["title" => "Nepřítomen / NEomluven", "icon" => "user/times", "class" => "text-danger"],
+		4 => ["title" => "Státní svátek", "icon" => "system/iconFlag", "class" => "text-secondary"],
+		5 => ["title" => "Prázdiny", "icon" => "system/iconFlag", "class" => "text-secondary"],
+		6 => ["title" => "Ředitelské volno", "icon" => "system/iconFlag", "class" => "text-secondary"],
+		7 => ["title" => "Volno", "icon" => "system/iconFlag", "class" => "text-secondary"],
+	];
+
 	public function init ()
 	{
 		$userContexts = $this->app()->uiUserContext ();
@@ -75,21 +86,15 @@ class ViewHours extends TableView
 
 		$hourAttendanceTypes = $this->table->columnInfoEnum ('pritomnost');
 		$pritomnost = $hourAttendanceTypes[$item['pritomnost']];
-		$listItem['card']['header']['values'][] = ['text' => $pritomnost, 'class' => 'badge text-bg-secondary'];
-
-		$listItem['presence'] = $pritomnost;
-
-		$listItem['card']['body'] = [
-			'class' => 'card-body',
-			'content' => [
-				['type' => 'text', 'subtype' => 'plain', 'text' => $item['probiranaLatka']]
-			]
-		];
 
 		// -----
+		$listItem['presence'] = $pritomnost;
+		$listItem['presenceCfg'] = $this->presences[$item['pritomnost']];
 		$listItem ['date'] = utils::datef($item ['datum']);
 		$listItem ['txt'] = trim($item['probiranaLatka']);
 		$listItem ['subjectName'] = $item['predmetNazev'];
+		$listItem ['homeWork'] = $item['domaciUkol'];
+		$listItem ['withHomeWork'] = $item['sDomacimUkolem'];
 		// ------
 
 		return $listItem;
