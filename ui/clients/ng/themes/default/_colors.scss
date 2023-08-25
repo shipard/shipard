@@ -27,6 +27,11 @@
     --bs-accordion-active-bg: #F8F8F8;
 }
 
+.accordion {
+    --bs-accordion-active-color: var(--bs-btn-hover-color);
+	--bs-accordion-active-bg: #E8E8E8;
+}
+
 [data-bs-theme="dark"] {
     --bodyColor: #{$body-color-dark};
     --navBackground: #{$nav-bg-dark};
@@ -53,6 +58,11 @@
 
 [data-bs-theme="dark"] .accordion-button:not(.collapsed){
     --bs-accordion-active-bg: #505050;
+}
+
+[data-bs-theme="dark"] .accordion {
+    --bs-accordion-active-color: gainsboro;
+	--bs-accordion-active-bg: #303030;
 }
 
 /*:root {

@@ -134,7 +134,9 @@ data-viewer.viewerWithCards {
   div.rows {
     padding-left: 0.5rem; padding-right: 0.5rem;
   }
-  r.card {
+  .r.card {
     padding-top: 0.5rem; padding-bottom: 0.5rem;
+    margin-top: .5rem;
+    margin-bottom: .5rem;
   }
 }
