@@ -88,29 +88,33 @@ class UserContext extends \e10\users\libs\UserContext
 		}
 
 		// -- vyuky
-		$q = [];
-    array_push($q, 'SELECT vyuky.*');
-    array_push($q, ' FROM [e10pro_zus_vyuky] AS vyuky');
-    array_push($q, ' WHERE 1');
-		array_push($q, ' AND (');
-    	array_push($q, '([vyuky].[typ] = %i', 1, ' AND [studium] IN %in)', $this->students[$studentNdx]['studia']);
+    if (count($this->students[$studentNdx]['studia']))
+    {
+      $q = [];
 
-			array_push($q, ' OR ');
-			array_push ($q, '([vyuky].[typ] = %i', 0, ' AND EXISTS (',
-											'SELECT vyuka FROM e10pro_zus_vyukystudenti AS vyukyStudenti',
-											' WHERE vyukyStudenti.[studium] IN %in', $this->students[$studentNdx]['studia'],
-											' AND vyukyStudenti.vyuka = vyuky.ndx',
-											'))');
+      array_push($q, 'SELECT vyuky.*');
+      array_push($q, ' FROM [e10pro_zus_vyuky] AS vyuky');
+      array_push($q, ' WHERE 1');
+      array_push($q, ' AND (');
+        array_push($q, '([vyuky].[typ] = %i', 1, ' AND [studium] IN %in)', $this->students[$studentNdx]['studia']);
 
-		array_push($q, ')');
-    array_push($q, ' AND [vyuky].[stav] != %i', 9800);
-    array_push($q, ' AND [vyuky].[skolniRok] = %i', $this->schoolYear);
+        array_push($q, ' OR ');
+        array_push ($q, '([vyuky].[typ] = %i', 0, ' AND EXISTS (',
+                        'SELECT vyuka FROM e10pro_zus_vyukystudenti AS vyukyStudenti',
+                        ' WHERE vyukyStudenti.[studium] IN %in', $this->students[$studentNdx]['studia'],
+                        ' AND vyukyStudenti.vyuka = vyuky.ndx',
+                        '))');
 
-		$rows = $this->db()->query($q);
-		foreach ($rows as $r)
-		{
-			$this->students[$studentNdx]['vyuky'][] = $r['ndx'];
-		}
+      array_push($q, ')');
+      array_push($q, ' AND [vyuky].[stav] != %i', 9800);
+      array_push($q, ' AND [vyuky].[skolniRok] = %i', $this->schoolYear);
+
+      $rows = $this->db()->query($q);
+      foreach ($rows as $r)
+      {
+        $this->students[$studentNdx]['vyuky'][] = $r['ndx'];
+      }
+    }
 	}
 
   public function run()

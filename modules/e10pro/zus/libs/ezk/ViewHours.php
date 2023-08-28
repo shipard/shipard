@@ -111,7 +111,10 @@ class ViewHours extends TableView
 		array_push ($q, ' LEFT JOIN [e10pro_zus_predmety] AS predmety ON vyuky.svpPredmet = predmety.ndx');
 		array_push ($q, ' WHERE 1');
 		array_push ($q, ' AND hodiny.stavHlavni = %i', 3);
-		array_push ($q, ' AND vyuka IN %in', $this->userContext['vyuky']);
+		if (isset($this->userContext['vyuky']) && count($this->userContext['vyuky']))
+			array_push ($q, ' AND vyuka IN %in', $this->userContext['vyuky']);
+		else
+			array_push ($q, ' AND vyuka = %i', -1);
 		array_push($q, ' AND (');
     	array_push($q, '([vyuky].[typ] = %i', 1, ')');
 			array_push($q, ' OR ');

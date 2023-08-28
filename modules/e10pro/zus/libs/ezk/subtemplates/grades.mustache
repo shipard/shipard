@@ -1,6 +1,10 @@
 <div class="container-fluid" style="overflow-y: auto; height: 100%;">
   <h1 class="mt-3 p-1">{{{@icon;icon:user/medal}}} Známky</h1>
 
+  {{^data.grades.halfYears}}
+    Student zatím nebyl klasifikován.
+  {{/data.grades.halfYears}}
+
   {{#data.grades.halfYears}}
     <h3 class="mt-2">{{number}}. pololetí</h3>
     {{#subjects}}

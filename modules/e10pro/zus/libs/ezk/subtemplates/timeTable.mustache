@@ -1,6 +1,10 @@
 <div class="container-fluid" style="overflow-y: auto; height: 100%;">
   <h1 class="p-1 pt-3">{{{@icon;icon:user/clock}}} Rozvrh hodin</h1>
 
+  {{^data.timeTable.days}}
+    Počkejte, prosím, na vytvoření rozvrhu.
+  {{/data.timeTable.days}}
+
   {{#data.timeTable.days}}
     <ol class="list-group mb-2">
       <li class="list-group-item align-items-start">
