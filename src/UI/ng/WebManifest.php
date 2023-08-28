@@ -21,7 +21,7 @@ class WebManifest extends \Shipard\UI\ng\AppPageBlank
 		$first = $this->app->requestPath(1);
 		$uiCfg = $this->app()->cfgItem('e10.ui.uis.'.$first, NULL);
 
-		$startUrl = '/';$this->app->urlRoot.'/ui/'.$this->app()->requestPath (1).'/';
+		$startUrl = '/';
 		$scope = '/';
 
 		if ($uiCfg && $uiCfg['pwaStartUrlBegin'] !== '')
@@ -30,10 +30,10 @@ class WebManifest extends \Shipard\UI\ng\AppPageBlank
 		}
 
 		$wm = [
-			'name' => $this->router->uiCfg['fn'],
+			'name' => $this->uiRouter->uiCfg['fn'],
 			'short_name' => $this->app->cfgItem ('options.core.ownerShortName', 'TEST'),
 			'start_url' => $startUrl,
-			'display' => 'fullscreen',
+			'display' => 'standalone',
 			'background_color' => $themeStatusColor,
 			'theme_color' => $themeStatusColor,
 			'scope' => $scope,

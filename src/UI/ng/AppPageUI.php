@@ -123,6 +123,15 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
           $mainUIObjectId = $widget->widgetId;
         }
       }
+      elseif ($objectType === 'uiWidget')
+      {
+        $widgetId = $activeMenuItem['id'] ?? '';
+        if ($widgetId !== '')
+        {
+          $wtc = '{{{@uiWidget;id:'.$widgetId.'}}}';
+          $template->data['coreMainElementCode'] = $template->render($wtc);
+        }
+      }
     }
 
     if ($mainUIObjectId !== '')
@@ -161,7 +170,7 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
     }
 
     if ($this->uiRecData['uiType'] === 5)
-    {
+    { // vlastní aplikace
       $this->uiStruct = json_decode($this->uiRecData['uiStruct'], TRUE);
       if (!$this->uiStruct)
         $this->uiStruct = [];

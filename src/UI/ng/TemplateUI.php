@@ -110,6 +110,14 @@ class TemplateUI extends \Shipard\Utils\TemplateCore
     return array_values($uc['contexts']) ?? [];
   }
 
+  protected function userContextsEnumExist()
+  {
+    $uc = $this->app()->uiUserContext();
+    if (!$uc || !isset($uc['contexts']))
+      return FALSE;
+    return TRUE;
+  }
+
   protected function userInfo()
   {
     return $this->app()->uiUser;

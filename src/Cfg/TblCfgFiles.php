@@ -52,7 +52,7 @@ class TblCfgFiles extends DbTable
 		return $f;
 	}
 
-	public function getTableView ($viewId, $queryParams = NULL)
+	public function getTableView ($viewId, $queryParams = NULL, $requestParams = NULL)
 	{
 		$v = new ViewCfgFiles ($this, $viewId);
 		$v->init ();

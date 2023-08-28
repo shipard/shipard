@@ -7,11 +7,11 @@
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <!--<img class="logo" src="https://dev-anna.shpd.dev/32056308011696/att/2023/07/11/e10.ui.uis/zus-logo-pruhledne-1unnk2g.svg" width="70" height="auto">-->
-
+      {{#userContextsEnumExist}}
       <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar2" aria-controls="offcanvasNavbar2" aria-label="Toggle navigation">
         <span class="fw-semibold align-items-center" style='font-size: 110%;'>{{activeUserContext.shortTitle}}<span class="ps-2"> {{{@icon;icon:user/user}}}</span></span>
       </button>
+      {{/userContextsEnumExist}}
 
       <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
         <div class="offcanvas-header">
@@ -36,36 +36,12 @@
                 </div>
               </div>
             </div>
-
-
-
-            <!--<div class="allClasses row row-cols-3 justify-content-evenly g-3 mt-2 text-center">
-                {{#data.uiStruct.appMenu.items}}
-                  <div class="col">
-                    <a class="dashboardButton" href="{{uiRoot}}{{id}}">{{{@icon;dataItem:icon}}}</a>
-                    <h4>{{title}}</h4>
-                  </div>
-                {{/data.uiStruct.appMenu.items}}
-              </div>
-
-              <div class="row align-items-center mt-3">
-                <div class="col-2">
-                  <a class="btn btn-outline-primary btn-lg" href='{{data.uiRoot}}auth/logout'>{{{@icon;icon:user/signOut}}}</a>
-                </div>
-
-                <div class="col-8 text-center">
-                  <div>{{userInfo.name}}</div>
-                </div>
-
-                <div class="col-2">
-                  <a class="btn btn-outline-primary btn-lg" href='kids'>{{{@icon;icon:user/user}}}</a>
-                </div>
-              </div>-->
           </div>
         </div>
       </div>
 
 
+      {{#userContextsEnumExist}}
       <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar2" aria-labelledby="offcanvasNavbarLabel">
         <div class="offcanvas-header">
           <h5 class="offcanvas-title" id="offcanvasNavbarLabel"></h5>
@@ -79,9 +55,9 @@
               <!--</div>-->
             {{/userContextsEnum}}
           </div>
-
         </div>
       </div>
+      {{/userContextsEnumExist}}
     </div>
     </nav>
   </div>
