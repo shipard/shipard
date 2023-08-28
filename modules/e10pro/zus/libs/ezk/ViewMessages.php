@@ -18,42 +18,31 @@ class ViewMessages extends TableView
 		$this->objectSubType = TableView::vsDetail;
 		$this->enableDetailSearch = TRUE;
 
-		$this->setMainQueries ();
+		$this->classes = ['viewerWithCards'];
+		$this->enableToolbar = FALSE;
+
+//		$this->setMainQueries ();
 
 		parent::init();
 
 		$this->textRenderer = new \lib\core\texts\Renderer($this->app());
+		$this->uiSubTemplate = 'modules/e10pro/zus/libs/ezk/subtemplates/messageRow';
 	}
 
 	public function renderRow ($item)
 	{
+		$listItem['class'] = 'card';
+
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
-		$listItem ['t1'] = $item['title'].'__!!!';
+		// -----
+		$listItem['authorName'] = $item['authorName'];
+		$listItem['title'] = $item['title'];
 
-		$dates = [];
-		if ($item['onTop'])
-			$dates[] = ['text' => '', 'icon' => 'system/iconPinned', 'class' => ''];
-		if ($item['dateFrom'])
-			$dates[] = ['text' => Utils::datef($item['dateFrom'], '%D'), 'icon' => 'system/actionPlay', 'class' => ''];
-		if ($item['dateTo'])
-			$dates[] = ['text' => Utils::datef($item['dateTo'], '%D'), 'icon' => 'system/actionStop', 'class' => ''];
-		if (count($dates))
-			$listItem ['i2'] = $dates;
-
-		$c = '';
-		$c .= "<div class='pageText padd5' style='border: 1px solid gray; margin: .5ex;'>";
-		$c .= '<h3>'.Utils::es($item['title']).'</h3>';
-
-		//$this->textRenderer->render ($item ['text']);
-		//$c .= $this->textRenderer->code;
-
-		$c .= '</div>';
-
-		//$listItem ['code'] = $c;
-
-		$this->renderCard($item, $listItem);
+		$this->textRenderer->renderAsArticle ($item ['text'], $this->table, $item['ndx']);
+		$listItem ['bodyText'] = $this->textRenderer->code;
+		// ----
 
 		return $listItem;
 	}
