@@ -1791,5 +1791,16 @@
         "fa6pro":"fa-grin-beam",
         "bsi":"bi-emoji-laughing-fill",
         "mdi":""
+    },
+    "user/doctor":
+    {
+        "_title:cs":"Doktor",
+        "_title:en":"Doctor",
+        "_tags:cs":"doktor; nemocnice; nemoc",
+        "_tags:en":"doctor; medic; hospital; sick; ill",
+        "fa5":"fa-user-md",
+        "fa6pro":"fa-user-md",
+        "bsi":"bi-virus2",
+        "mdi":""
     }
 }
