@@ -5,20 +5,24 @@
       "appTitle": "Ještě nevím",
       "items": [
         {
-          "title": "Zprávy", "icon": "user/envelope", "id": "",
-          "objectType": "viewer", "table": "wkf.msgs.msgs", "viewer": "ezk"
-        },
-        {
-          "title": "Rozvrh", "icon": "user/clock", "id": "time-table",
-          "objectType": "widget", "classId": "e10pro.zus.libs.ezk.WidgetTimeTable"
-        },
-        {
-          "title": "Třídní kniha", "icon": "user/book", "id": "all-classes",
+          "title": "Záznamy z hodiny", "icon": "user/book", "id": "all-classes",
           "objectType": "viewer", "table": "e10pro.zus.hodiny", "viewer": "ezk"
         },
         {
           "title": "Známky", "icon": "user/medal", "id": "grades",
           "objectType": "widget", "classId": "e10pro.zus.libs.ezk.WidgetGrades"
+        },
+        {
+          "title": "Zprávy", "icon": "user/envelope", "id": "",
+          "objectType": "viewer", "table": "wkf.msgs.msgs", "viewer": "ezk"
+        },
+        {
+          "title": "Omluvenky", "icon": "user/doctor", "id": "excuses",
+          "objectType": "viewer", "table": "e10pro.zus.omluvenky", "viewer": "ezk"
+        },
+        {
+          "title": "Rozvrh", "icon": "user/clock", "id": "time-table",
+          "objectType": "widget", "classId": "e10pro.zus.libs.ezk.WidgetTimeTable"
         },
         {
           "title": "Nastavení", "icon": "user/cog", "id": "settings"

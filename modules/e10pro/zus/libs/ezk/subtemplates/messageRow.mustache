@@ -1,5 +1,9 @@
-<h3>{{data.listRow.title}}</h3>
-{{data.listRow.authorName}}
-
-{{{data.listRow.bodyText}}}
-
+<div class="card-body pt-0 pb-0">
+    <h5 class="card-titles pt-1">{{data.listRow.title}}</h5>
+    <h6 class="card-subtitle pt-2 mb-2 text-body-secondary">30.6., náměstí</h6>
+    <span class="text-muted fs-6 pe-2">{{{@icon;icon:user/pencil}}} 18.06.2023</span>
+    <span class="text-muted fs-6">{{{@icon;icon:user/user}}} {{data.listRow.authorName}}</span>
+    <p class="card-text">{{{data.listRow.bodyText}}}</p>
+    <a href="#" class="btn btn-secondary">{{{@icon;icon:user/eye}}} Přečteno</a>
+</div>
+<span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle"></span>

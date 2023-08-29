@@ -90,9 +90,9 @@
     "mdi":"description"
   },
   "tables/e10pro.zus.omluvenky":{
-    "fa5":"fa-comment-dots",
-    "fa6pro":"fa-comment-dots",
-    "bsi":"bi-chat-dots",
+    "fa5":"fa-user-md",
+    "fa6pro":"fa-user-md",
+    "bsi":"bi-virus2",
     "mdi":""
   },
 
