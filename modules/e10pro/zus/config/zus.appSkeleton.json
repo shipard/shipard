@@ -22,7 +22,8 @@
 					"icon": "bulkEmailsSending", "order": 800000, "enabledCfgItem": "options.experimental.bulkEmails"
 				},
 				{"t1": "Učitelé", "object": "viewer", "table": "e10.persons.persons", "viewer": "teachers", "icon": "iconTeachers", "order": 850000},
-				{"t1": "Přihlášky", "enabledCfgItem": "options.e10-pro-zus.pouzivatPrihlasky", "object": "viewer", "table": "e10pro.zus.prihlasky", "viewer": "default", "order": 100000}
+				{"t1": "Přihlášky", "enabledCfgItem": "options.e10-pro-zus.pouzivatPrihlasky", "object": "viewer", "table": "e10pro.zus.prihlasky", "viewer": "default", "order": 100000},
+				{"t1": "Omluvenky", "object": "viewer", "table": "e10pro.zus.omluvenky", "viewer": "default", "order": 600000}
 			]
 		}
 	},

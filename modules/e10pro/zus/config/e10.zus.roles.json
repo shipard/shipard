@@ -11,7 +11,8 @@
 			"e10pro.zus.prihlasky": {"default": 2},
 			"e10pro.zus.vyuky": {"default": 1, "etk": 2},
 			"e10pro.zus.vyukyrozvrh": {"default": 1},
-			"e10pro.zus.hodiny": {"default": 2, "combo": 2}
+			"e10pro.zus.hodiny": {"default": 2, "combo": 2},
+			"e10pro.zus.omluvenky": {"default": 2}
 		},
 		"documents": {
 			"e10doc.core.heads": [

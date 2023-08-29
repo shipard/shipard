@@ -89,6 +89,12 @@
     "bsi":"bi-file-earmark-text",
     "mdi":"description"
   },
+  "tables/e10pro.zus.omluvenky":{
+    "fa5":"fa-comment-dots",
+    "fa6pro":"fa-comment-dots",
+    "bsi":"bi-chat-dots",
+    "mdi":""
+  },
 
   "iconStudents":{
     "fa5":"fa-user-graduate",

@@ -1,0 +1,5 @@
+<div class="card-body">
+  {{#data.listRow.longTerm}}{{data.listRow.dateFrom}} - {{data.listRow.dateTo}}{{/data.listRow.longTerm}}
+  {{^data.listRow.longTerm}}{{data.listRow.dateFrom}}{{/data.listRow.longTerm}}
+  <pre>{{data.listRow.text}}</pre>
+</div>
