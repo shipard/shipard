@@ -3,6 +3,7 @@
   "name": "ui",
   "tables": ["uis", "uiWidgets"],
   "config": [
+    {"id": "+e10.appOptions.groups", "file": "appOptionsGroups.json"},
 		{"id": "+appOptions", "file": "e10.appOptions.json"},
     {"id": "+e10.persons.roles", "file": "roles.json"},
     {"id": "+e10.ui.uiTypes", "file": "uiTypes.json"}

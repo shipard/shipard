@@ -1,0 +1,6 @@
+{
+	"ngui": {
+		"title": "UI", "order": 970000,
+		"enabledCfgItem": "options.experimental.testNewUI"
+	}
+}

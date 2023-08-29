@@ -1,0 +1,14 @@
+{
+	"tables/e10.users.users": {
+		"fa5": "fa-user",
+		"fa6pro": "fa-user",
+		"bsi": "bi-person",
+		"mdi": "person"
+	},
+	"tables/e10.users.requests": {
+		"fa5": "fa-receipt",
+		"fa6pro": "fa-receipt",
+		"bsi": "bi-receipt-cutoff",
+		"mdi": "receipt"
+	}
+}

@@ -1,14 +1,22 @@
 {
 	"userInterfaces": {
-		"name": "Uživatelská rozhraní", "order": 940000, "group": "system",
+		"name": "Uživatelská rozhraní", "order": 940000, "group": "ngui",
 		"type": "viewer",
 		"table": "e10.ui.uis",
-		"viewer": "default"
+		"viewer": "default",
+		"enabledCfgItem": "options.experimental.testNewUI"
 	},
 	"userInterfacesWidgets": {
-		"name": "Widgety Uživatelských rozhraní", "order": 941000, "group": "system",
+		"name": "Widgety Uživatelských rozhraní", "order": 941000, "group": "ngui",
 		"type": "viewer",
 		"table": "e10.ui.uiWidgets",
-		"viewer": "default"
+		"viewer": "default",
+		"enabledCfgItem": "options.experimental.testNewUI"
+	},
+
+	"experimental": {
+		"options": [
+			{"cfgKey": "testNewUI", "cfgName": "Testovat nová UI", "options": {"0": "Ne","1": "Ano"}}
+		]
 	}
 }

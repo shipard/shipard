@@ -2,7 +2,10 @@
 	"panels": {
 		"srvcfg": {
 			"items": {
-				"technical": {
+				"usersng": {
+					"t1": "Uživatelé", "object": "subMenu", "icon": "system/iconGlobe",
+					"order": 4995010,
+					"enabledCfgItem": "options.experimental.testNewUI",
 					"subMenu": {
 						"items": {
 							"users2": {"t1": "Uživatelé", "object": "viewer", "table": "e10.users.users", "viewer": "default", "order": 9900000},

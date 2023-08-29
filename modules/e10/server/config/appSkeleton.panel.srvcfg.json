@@ -11,13 +11,14 @@
 				{"text": "Přegenerovat nastavení", "type": "panelaction", "action": "e10.updateConfiguration", "icon": "system/actionRegenerate", "class": "warning"}
 			]
 		},
-		"srvcfg": {"url": "/app/srvcfg", "zone": "sec", "objectType": "panel", "name": "Nastavení", "order": 99000001,
+		"srvcfg": {
+			"url": "/app/srvcfg", "zone": "sec", "objectType": "panel", "name": "Nastavení", "order": 99000001, "cntBigIcons": 7,
 			"items": {
+				"info": {"t1": "Info", "object": "widget", "class": "e10.widgetDashboard", "subclass": "srvcfg", "icon": "e10.widgetDashboard/Info", "role": "admin", "order": 4999910},
 				"options": {"t1": "Nastavení", "object": "viewer", "table": "_TblAppOptions", "viewer": "default", "icon": "system/iconSettings", "#": "settings", "order": 100000},
 				"users": {"t1": "Uživatelé", "object": "viewer", "table": "e10.persons.persons", "viewer": "users", "#": "users", "order": 200000},
-				"info": {"t1": "Info", "object": "widget", "class": "e10.widgetDashboard", "subclass": "srvcfg", "icon": "e10.widgetDashboard/Info", "role": "admin", "order": 99999000},
 				"templates": {"t1": "Šablony", "object": "viewer", "table": "e10.base.templates", "viewer": "default", "#": "templates", "order": 98100000},
-				"usersRequests": {"t1": "Registrace", "object": "viewer", 
+				"usersRequests": {"t1": "Registrace", "object": "viewer",
 					"table": "e10.persons.requests", "viewer": "default", "order": 99400000}
 			},
 			"buttons": [
