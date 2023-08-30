@@ -29,9 +29,17 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		if (!$uiNdx)
 			$uiNdx = 1;
 
+		$mainRoleRecData = $this->db()->query('SELECT * FROM [e10_users_roles] WHERE systemId = %s', 'zus-ezk-legalrep')->fetch();
+		if (!$mainRoleRecData)
+		{
+			return;
+		}
+
 		$this->db()->query('DELETE FROM e10_users_users');
 		$this->db()->query('DELETE FROM e10_users_requests');
 		$this->db()->query('DELETE FROM e10_users_pwds');
+		$this->db()->query('DELETE FROM [e10_base_doclinks] WHERE linkId = %s', 'e10-users-main-roles');
+
 
 		$schoolYear = 2022;
 		$q = [];
@@ -39,18 +47,33 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		array_push($q, ' FROM [e10pro_zus_studium] as studium ');
 		array_push($q, ' WHERE [stav] = %i', 1200);
 		array_push($q, ' AND skolniRok = %s', $schoolYear);
-		//array_push($q, '');
-		//array_push($q, '');
 
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
-			echo "# ".$r['nazev']."\n";
-			$this->addUsersFromContact($r['student'], $uiNdx);
+			$test = 'IND';
+			$existedETK = $this->db()->query(
+				'SELECT * FROM [e10pro_zus_vyuky] WHERE studium = %i', $r['ndx'],
+				' AND stav = %i', 4000)->fetch();
+			if (!$existedETK)
+			{
+				$existedETK = $this->db()->query(
+					'SELECT * FROM [e10pro_zus_vyukystudenti] AS vyukyStudenti',
+					' LEFT JOIN e10pro_zus_vyuky AS vyuky ON vyukyStudenti.vyuka = vyuky.ndx',
+					' WHERE vyukyStudenti.studium = %i', $r['ndx'],
+					' AND skolniRok = %i', $schoolYear,
+					' AND vyuky.stav = %i', 4000)->fetch();
+					$test = 'KOL';
+			}
+			if (!$existedETK)
+				continue;
+
+			echo "# ".$test.' > '.$r['nazev']."\n";
+			$this->addUsersFromContact($r['student'], $uiNdx, $mainRoleRecData['ndx']);
 		}
 	}
 
-	protected function addUsersFromContact($personNdx, $uiNdx)
+	protected function addUsersFromContact($personNdx, $uiNdx, $mainRoleNdx)
 	{
 		$tableUsers = new \e10\users\TableUsers($this->app());
 		$tableRequests = new \e10\users\TableRequests($this->app());
@@ -68,6 +91,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		array_push($q, ' ORDER BY [persons].ndx');
 
     $rows = $this->db()->query($q);
+		$usedEmails = [];
     foreach ($rows as $r)
     {
       $item = [
@@ -82,10 +106,20 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			if ($exist)
 				continue;
 
+			if (in_array($item['login'], $usedEmails))
+				continue;
+			$usedEmails[] = $item['login'];
+
 			//echo "* ".json_encode($item)."\n";
 
 			$newUserNdx = $tableUsers->dbInsertRec($item);
 			$tableUsers->docsLog ($newUserNdx);
+
+			$roleDocLink = [
+				'linkId' => 'e10-users-main-roles', 'srcTableId' => 'e10.users.users', 'dstTableId' => 'e10.users.roles',
+				'srcRecId' => $newUserNdx, 'dstRecId' => $mainRoleNdx,
+			];
+			$this->db()->query('INSERT INTO [e10_base_doclinks]', $roleDocLink);
 
 			$newRequest = ['user' => $newUserNdx, 'ui' => $uiNdx];
 			$newRequestNdx = $tableRequests->dbInsertRec($newRequest);

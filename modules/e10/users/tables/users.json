@@ -15,6 +15,9 @@
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Role"}
+  ],
 	"views": [
 	  {
       "id": "default", "class": "e10.users.ViewUsers",

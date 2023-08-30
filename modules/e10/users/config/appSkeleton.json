@@ -9,7 +9,8 @@
 					"subMenu": {
 						"items": {
 							"users2": {"t1": "Uživatelé", "object": "viewer", "table": "e10.users.users", "viewer": "default", "order": 9900000},
-							"requests2": {"t1": "Požadavky", "object": "viewer", "table": "e10.users.requests", "viewer": "default", "order": 9900010}
+							"requests2": {"t1": "Požadavky", "object": "viewer", "table": "e10.users.requests", "viewer": "default", "order": 9900010},
+							"roles2": {"t1": "Role uživatelů", "object": "viewer", "table": "e10.users.roles", "viewer": "default", "order": 9900060, "beforeSeparator": 1}
 						}
 					}
 				}

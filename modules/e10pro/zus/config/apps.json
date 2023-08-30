@@ -31,10 +31,10 @@
     },
     "mainRoles":
     {
-      "parent": {
+      "zus-ezk-legalrep": {
         "fn": "Zákonný zástupce"
       },
-      "student": {
+      "zus-ezk-student": {
         "fn": "Student"
       }
     }

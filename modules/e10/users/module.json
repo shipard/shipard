@@ -2,7 +2,7 @@
   "id": "e10.users",
   "name": "Users",
   "tables": [
-		"users", "requests", "sessions", "pwds"
+		"users", "requests", "roles", "sessions", "pwds"
   ],
   "config": [
     {"id": "+appSkeleton", "file": "appSkeleton.json"},
@@ -10,6 +10,7 @@
     {"id": "e10.users.accountStates", "file": "accountStates.json"},
     {"id": "e10.users.requestTypes", "file": "requestTypes.json"},
     {"id": "e10.users.requestStates", "file": "requestStates.json"},
-    {"id": "+e10.reports.sendReports", "file": "sendReports.json"}
+    {"id": "+e10.reports.sendReports", "file": "sendReports.json"},
+    {"id": "+e10.base.doclinks", "file": "docLinks.json"}
 	]
 }

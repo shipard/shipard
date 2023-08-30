@@ -1,0 +1,9 @@
+{
+	"e10.users.users": {
+		"e10-users-main-roles": {"linkid": "e10-users-main-roles", "name": "Role uživatelů", "icon": "chevron-left",
+			"sources": [
+				{"table": "e10.users.roles"}
+			]
+		}
+	}
+}

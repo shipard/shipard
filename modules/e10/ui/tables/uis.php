@@ -13,7 +13,7 @@ use \Shipard\Utils\Utils;
  */
 class TableUIs extends DbTable
 {
-  const uitTemplate = 9;
+  const uitSystemApp = 4, uitUserApp = 5, uitTemplate = 9;
 
 	public function __construct ($dbmodel)
 	{
@@ -61,7 +61,7 @@ class TableUIs extends DbTable
 				$uiItem['domain'] = $r['domain'];
 				$domains[$r['domain']] = $r['urlId'];
 			}
-			if ($r['uiType'] === 4)
+			if ($r['uiType'] === self::uitSystemApp)
 			{
 				$uiItem['appType'] = $r['appType'];
 			}

@@ -1,0 +1,26 @@
+{
+	"id": "e10.users.roles", "sql": "e10_users_roles", "name": "Role uživatelů",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "fullName", "sql": "fullName", "name": "Název", "type": "string", "len": 140},
+		{"id": "systemRole", "name": "systemRole", "type": "logical"},
+    {"id": "systemId", "name": "systemId", "type": "string", "len": 64, "options": ["ascii"]},
+    {"id": "ui", "name": "UI", "type": "int", "reference": "e10.ui.uis"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+	  {
+      "id": "default", "class": "e10.users.ViewRoles",
+      "details": {
+				"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "e10.users.ViewDetailRole"}
+			}
+    }
+	],
+	"forms": [
+		{"id": "default", "class": "e10.users.FormRole"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

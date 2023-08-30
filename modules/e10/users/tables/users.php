@@ -73,6 +73,7 @@ class TableUsers extends DbTable
 class ViewUsers extends TableView
 {
 	var $accountStates;
+	var $mainRoles;
 
 	public function init ()
 	{
@@ -148,6 +149,36 @@ class ViewUsers extends TableView
 		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}
 
+	public function selectRows2 ()
+	{
+		if (!count ($this->pks))
+			return;
+
+		$q = [];
+		array_push($q, 'SELECT links.*, [roles].fullName as roleName');
+		array_push($q, ' FROM e10_base_doclinks AS [links]');
+		array_push($q, ' LEFT JOIN e10_users_roles AS [roles] ON links.dstRecId = [roles].ndx');
+		array_push($q, ' WHERE dstTableId = %s', 'e10.users.roles');
+		array_push($q, ' AND srcTableId = %s', 'e10.users.users');
+		array_push($q, ' AND links.srcRecId IN %in', $this->pks);
+
+		$rows = $this->db()->query($q);
+
+		foreach ($rows as $r)
+		{
+			$this->mainRoles[$r['srcRecId']][] = ['text' => $r['roleName'], 'class' => 'label label-default'];
+		}
+	}
+
+	function decorateRow (&$item)
+	{
+		if (isset($this->mainRoles [$item ['pk']]))
+		{
+			$item ['t3'] = $this->mainRoles [$item ['pk']];
+		}
+	}
+
+
 	public function createToolbar ()
 	{
 		$t = parent::createToolbar();
@@ -171,6 +202,7 @@ class FormUser extends TableForm
 			$this->addColumnInput('fullName');
       $this->addColumnInput('login');
 			$this->addColumnInput('email');
+			$this->addList ('doclinks', '', TableForm::loAddToFormLayout);
       $this->addColumnInput('person');
 		$this->closeForm ();
 	}
