@@ -522,10 +522,10 @@
         "_title:en":"Light bulb",
         "_tags:cs":"žárovka; světlo",
         "_tags:en":"light bulb; bulb; light",
-        "fa5": "fa-info",
-		"fa6pro": "fa-info",
-		"bsi": "bi-info-lg",
-		"mdi": "info"
+        "fa5": "fa-lightbulb",
+		"fa6pro": "fa-lightbulb",
+		"bsi": "bi-lightbulb-fill",
+		"mdi": ""
     },
     "user/lock":
     {

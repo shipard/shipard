@@ -41,6 +41,12 @@
         "bsi":"bi-key",
         "mdi":"vpn_key"
 	},
+	"tables/e10.users.roles": {
+		"fa5":"fa-user-cog",
+        "fa6pro":"fa-user-cog",
+        "bsi":"bi-person-gear-fill",
+        "mdi":""
+	},
 
 
 	"formContacts":{
