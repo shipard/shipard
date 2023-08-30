@@ -1,0 +1,21 @@
+{
+	"id": "integrations.sendmail.sendmails", "sql": "integrations_sendmail_sendmails", "name": "Odesílání pošty",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "emailFrom", "name": "Zdrojový e-mail", "type": "string", "len": 100},
+		{"id": "smtpServer", "name": "SMTP server", "type": "string", "len": 100},
+		{"id": "password", "name": "Heslo", "type": "string", "len": 80},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": {
+		"default": {"id": "default", "class": "integrations.sendmail.ViewSendmails"}
+	},
+	"forms": [
+		{"id": "default", "class": "integrations.sendmail.FormSendmail"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "emailFrom"}
+}

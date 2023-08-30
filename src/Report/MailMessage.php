@@ -202,8 +202,30 @@ class MailMessage extends \Shipard\Base\Utility
 		file_put_contents ($ffn, $msg);
 
 		if ($this->app->cfgItem ('dsMode', 1) === 0)
-			exec ('sendmail -t -f "'.$this->fromEmail.'" < "'.$ffn.'"');
+		{
+			if ($this->app->model()->module('integrations.sendmail') !== FALSE)
+			{
+				$emailFromCfg = $this->db()->query('SELECT * FROM [integrations_sendmail_sendmails] ',
+																						'WHERE [emailFrom] = %s', $this->fromEmail, ' AND docState = %i', 4000)->fetch();
+				if ($emailFromCfg)
+				{
+					$cmd = 'swaks --from '.$this->fromEmail;
+					$cmd .= ' --to '.$this->emailsTo[0];
+					$cmd .= ' -s '.$emailFromCfg['smtpServer'];
+					$cmd .= ' -tls';
+					$cmd .= ' --auth-user '.$this->fromEmail;
+					$cmd .= ' --auth-password '.$emailFromCfg['password'];
+					$cmd .= ' -d '.$ffn;
+					$cmd .= ' > '.$ffn.'.log';
 
+					exec ($cmd);
+
+					$this->emailSent = TRUE;
+					return;
+				}
+			}
+			exec ('sendmail -t -f "'.$this->fromEmail.'" < "'.$ffn.'"');
+		}
 		$this->emailSent = TRUE;
 	}
 

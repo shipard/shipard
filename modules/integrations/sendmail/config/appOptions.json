@@ -1,0 +1,6 @@
+{
+	"sendmails": {
+		"name": "Odesílání e-mailů", "order": 900000, "group": "system",
+		"type": "viewer", "table": "integrations.sendmail.sendmails", "viewer": "default"
+	}
+}

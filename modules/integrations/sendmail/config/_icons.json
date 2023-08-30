@@ -1,0 +1,8 @@
+{
+    "tables/integrations.sendmail.sendmails": {
+        "fa5":"fa-paper-plane",
+        "fa6pro":"fa-paper-plane",
+        "bsi":"bi-envelope",
+        "mdi":"send"
+    }
+}

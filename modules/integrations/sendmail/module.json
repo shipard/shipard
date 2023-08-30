@@ -1,0 +1,11 @@
+{
+  "id": "integrations.sendmail",
+  "name": "sendmail",
+  "tables": [
+		"sendmails"
+	],
+  "config": [
+		{"id": "+appOptions", "file": "appOptions.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"}
+  ]
+}
