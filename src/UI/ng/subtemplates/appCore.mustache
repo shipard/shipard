@@ -3,12 +3,12 @@
     <nav class="navbar align-items-between">
     <div class="container-fluid">
 
-      <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+      <button class="navbar-toggler" id="navbar-toggler-left" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
 
       {{#userContextsEnumExist}}
-      <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar2" aria-controls="offcanvasNavbar2" aria-label="Toggle navigation">
+      <button class="navbar-toggler" id="navbar-toggler-right" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar2" aria-controls="offcanvasNavbar2" aria-label="Toggle navigation">
         <span class="fw-semibold align-items-center" style='font-size: 110%;'>{{activeUserContext.shortTitle}}<span class="ps-2"> {{{@icon;icon:user/user}}}</span></span>
       </button>
       {{/userContextsEnumExist}}
@@ -65,6 +65,26 @@
   <div class="app-content" id='shp-main-app-content' {{{data.appBrowserParams}}}>
     {{{data.coreMainElementCode}}}
   </div>
+
+  <div class='app-menu'>
+    <div class="list-group list-group-flush">
+      {{#data.uiStruct.appMenu.items}}
+        <a href="{{uiRoot}}{{id}}" class='list-group-item list-group-item-action {{#active}}active{{/active}}'><span class="navListIcon">{{{@icon;dataItem:icon}}}</span> {{title}}</a>
+      {{/data.uiStruct.appMenu.items}}
+
+      <a class="list-group-item" href='{{data.uiRoot}}auth/logout'>{{{@icon;icon:user/signOut}}} Odhlásit</a>
+
+      <div class="list-group-item d-flex align-items-center">
+        {{{@icon;icon:user/paintBrush}}}&nbsp;Motiv
+        <div class="btn-group ms-3 flex-grow-1">
+          <a class="shp-app-action btn btn-secondary" data-action='setColorMode' href="#" data-app-color-mode='auto'>Auto</a>
+          <a class="shp-app-action btn btn-secondary" data-action='setColorMode' href="#" data-app-color-mode='dark'>Tmavý</a>
+          <a class="shp-app-action btn btn-secondary" data-action='setColorMode' href="#" data-app-color-mode='light'>Světlý</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!--<div class='app-footer'>AHOJ...</div>-->
 
   <div class="p-1">

@@ -3,26 +3,63 @@ body {
   // height: 100%;
 }
 
+
 .app-container {
   background-color: var(--backgroundColor);
   height: 100vh;
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: min-content 1fr min-content;
-  gap: 0px 0px;
-  grid-auto-flow: row;
-  grid-template-areas:
-    "app-nav"
-    "app-content"
-    "app-footer";
 }
-
-.app-nav {
-  grid-area: app-nav;
-}
-
-.app-content { grid-area: app-content; min-height: 0; overflow-y: clip;}
-
-.app-footer { grid-area: app-footer;}
-
 .e10-widget-content {height: 100%;}
+
+
+@media only screen and (max-width: 700px) {
+  .app-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: min-content 1fr min-content;
+    gap: 0px 0px;
+    grid-auto-flow: row;
+    grid-template-areas:
+      "app-nav"
+      "app-content"
+      "app-footer";
+  }
+
+  .app-nav {
+    grid-area: app-nav;
+  }
+
+  .app-content { grid-area: app-content; min-height: 0; overflow-y: clip;}
+
+  .app-footer { grid-area: app-footer;}
+
+  div.app-menu {display: none;}
+}
+
+@media only screen and (min-width: 701px) {
+  .app-container {
+    display: grid;
+
+    grid-template-columns: 25rem 1fr;
+    grid-template-rows: min-content 1fr min-content;
+    gap: 0px 0px;
+    grid-template-areas:
+      "app-nav app-nav"
+      "app-menu app-content"
+      "app-footer app-footer";
+  }
+
+  .app-nav {
+    grid-area: app-nav;
+  }
+
+  .app-content { grid-area: app-content; min-height: 0; overflow-y: clip;}
+
+  .app-footer { grid-area: app-footer;}
+
+  .app-menu { grid-area: app-menu;}
+
+
+
+  #navbar-toggler-left {visibility: hidden}
+}
+
