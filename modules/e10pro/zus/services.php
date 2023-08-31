@@ -1,9 +1,11 @@
 <?php
 
 namespace e10pro\zus;
+require_once __SHPD_MODULES_DIR__ . 'e10pro/zus/zus.php';
 use \e10\utils;
 use \e10\base\libs\UtilsBase;
 use \Shipard\Utils\Str;
+use \e10pro\zus\zusutils;
 
 /**
  * Class ModuleServices
@@ -35,13 +37,12 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			return;
 		}
 
-		$this->db()->query('DELETE FROM e10_users_users');
-		$this->db()->query('DELETE FROM e10_users_requests');
-		$this->db()->query('DELETE FROM e10_users_pwds');
-		$this->db()->query('DELETE FROM [e10_base_doclinks] WHERE linkId = %s', 'e10-users-main-roles');
+		//$this->db()->query('DELETE FROM e10_users_users');
+		//$this->db()->query('DELETE FROM e10_users_requests');
+		//$this->db()->query('DELETE FROM e10_users_pwds');
+		//$this->db()->query('DELETE FROM [e10_base_doclinks] WHERE linkId = %s', 'e10-users-main-roles');
 
-
-		$schoolYear = 2022;
+		$schoolYear = zusutils::aktualniSkolniRok();
 		$q = [];
 		array_push($q, 'SELECT studium.*');
 		array_push($q, ' FROM [e10pro_zus_studium] as studium ');

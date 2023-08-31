@@ -3,6 +3,7 @@
 namespace e10pro\zus\libs\ezk;
 require_once __SHPD_MODULES_DIR__ . 'e10pro/zus/zus.php';
 use \Shipard\Utils\Utils, \Shipard\Utils\Str;
+use \e10pro\zus\zusutils;
 
 
 /**
@@ -109,13 +110,12 @@ class WidgetTimeTable extends \Shipard\UI\Core\WidgetPane
 		$templateStr = $this->router->uiTemplate->subTemplateStr('modules/e10pro/zus/libs/ezk/subtemplates/timeTable');
 		$code = $this->router->uiTemplate->render($templateStr);
 		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $code]);
-
 	}
 
 	public function createContent ()
 	{
 		$this->today = utils::today();
-		$this->academicYear = '2022';//zusutils::aktualniSkolniRok();
+		$this->academicYear = zusutils::aktualniSkolniRok();
 
 		$userContexts = $this->app()->uiUserContext ();
 		$ac = $userContexts['contexts'][$this->app()->uiUserContextId] ?? NULL;

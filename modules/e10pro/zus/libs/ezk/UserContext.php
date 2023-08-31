@@ -1,7 +1,8 @@
 <?php
 
 namespace e10pro\zus\libs\ezk;
-
+require_once __SHPD_MODULES_DIR__ . 'e10pro/zus/zus.php';
+use \e10pro\zus\zusutils;
 
 /**
  * class UserContext
@@ -39,7 +40,7 @@ class UserContext extends \e10\users\libs\UserContext
 
   protected function loadAll()
   {
-    $this->schoolYear = 2022; //zusutils::aktualniSkolniRok($this->app());
+    $this->schoolYear = zusutils::aktualniSkolniRok($this->app());
     $this->loadStudents();
 
     foreach($this->students as $studentNdx => $studentInfo)

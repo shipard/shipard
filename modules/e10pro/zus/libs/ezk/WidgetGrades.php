@@ -3,6 +3,7 @@
 namespace e10pro\zus\libs\ezk;
 require_once __SHPD_MODULES_DIR__ . 'e10pro/zus/zus.php';
 use \Shipard\Utils\Utils, \Shipard\Utils\Str;
+use \e10pro\zus\zusutils;
 
 
 /**
@@ -145,7 +146,7 @@ class WidgetGrades extends \Shipard\UI\Core\WidgetPane
 
 	public function createContent ()
 	{
-		$this->academicYear = '2022';//zusutils::aktualniSkolniRok();
+		$this->academicYear = zusutils::aktualniSkolniRok();
 
 		$academicYear = $this->app->cfgItem ('e10pro.zus.roky.'.$this->academicYear);
 		$this->halfYearDate = utils::createDateTime($academicYear['KK1'] ?? $academicYear['V1']);
