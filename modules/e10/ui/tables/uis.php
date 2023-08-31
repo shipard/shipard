@@ -54,6 +54,9 @@ class TableUIs extends DbTable
         'uiType' => $r ['uiType'],
 				'fn' => $r ['fullName'],
 				'pwaStartUrlBegin' => $r['pwaStartUrlBegin'],
+				'pwaTitle' => $r ['pwaTitle'] !== '' ? $r ['pwaTitle'] : $r ['fullName'],
+				'sendRequestsFromEmail' => $r ['sendRequestsFromEmail'],
+				'icons' => [],
 			];
 
 			if ($r['domain'] !== '')
@@ -65,6 +68,8 @@ class TableUIs extends DbTable
 			{
 				$uiItem['appType'] = $r['appType'];
 			}
+
+			$this->serverImage('pwa', $uiItem['icons'], $r['pwaIcon']);
 
       $uis [$r['urlId']] = $uiItem;
 		}
@@ -126,6 +131,38 @@ class TableUIs extends DbTable
 			$configFileName = __APP_DIR__.'/config/nginx/'.$dsid.'-ui-'.$domain.'.conf';
 			file_put_contents($configFileName, $cfg);
 		}
+	}
+
+	function serverImagesData ($recData)
+	{
+		$data = ['web' => [], 'template' => []];
+		$this->serverImage('icon', $data['web'], $recData['iconCore']);
+		return $data;
+	}
+
+	function serverImage ($key, &$dst, $attNdxPrimary, $attNdxFallBacks = NULL)
+	{
+		$attNdx = $attNdxPrimary;
+		if (!$attNdx && $attNdxFallBacks !== NULL)
+		{
+			foreach ($attNdxFallBacks as $attNdxFallBack)
+			{
+				if ($attNdxFallBack)
+				{
+					$attNdx = $attNdxFallBack;
+					break;
+				}
+			}
+		}
+
+		if (!$attNdx)
+			return;
+
+		$image = $this->db()->query ("SELECT * FROM [e10_attachments_files] WHERE [ndx] = %i", $attNdx)->fetch();
+		if (!$image)
+			return;
+
+		$dst[$key] = '/att/'.$image['path'].$image ['filename'];
 	}
 }
 
@@ -221,6 +258,10 @@ class FormUI extends TableForm
 					$this->addColumnInput ('order');
 					$this->addColumnInput ('pwaStartUrlBegin');
 					$this->addColumnInput ('domain');
+
+					$this->addColumnInput ('pwaTitle');
+					$this->addColumnInput ('pwaIcon');
+					$this->addColumnInput ('sendRequestsFromEmail');
 				$this->closeTab ();
 				if ($this->recData['uiType'] === 9)
 				{

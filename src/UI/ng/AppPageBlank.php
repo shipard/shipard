@@ -121,6 +121,7 @@ class AppPageBlank extends Utility
 		$themeStatusColor = self::$themeStatusColor[$mobileuiTheme];
 		$style = 'style.css';
 
+		$pwaIcon = $this->uiRouter->pwaIcon();
 		$dsIcon = $this->app->dsIcon();
 		$originPath = $this->app->requestPath(1);
 		$wssStatus = $this->createPageCodeWss();
@@ -194,8 +195,8 @@ class AppPageBlank extends Utility
 			}
 
 		}
-		$c .= "<link rel='shortcut icon' sizes='512x512' href='{$dsIcon['iconUrl']}' id='e10-browser-app-icon'>\n";
-		$c .= "<link rel='apple-touch-icon' sizes='180x180' href='{$dsIcon['iconUrl']}'/>\n";
+		$c .= "<link rel='shortcut icon' sizes='512x512' href='{$pwaIcon}' id='e10-browser-app-icon'>\n";
+		$c .= "<link rel='apple-touch-icon' sizes='180x180' href='{$pwaIcon}'/>\n";
 
 
 		$bodyClass = "e10-body-{$this->app->requestPath[0]} body-device-{$this->app->clientType[1]} body-client-{$this->app->clientType[0]} body-dsm-{$this->dsMode}";

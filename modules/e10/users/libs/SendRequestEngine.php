@@ -57,7 +57,13 @@ class SendRequestEngine extends Utility
 
 		$msg = new \Shipard\Report\MailMessage($this->app());
 
-		$msg->setFrom ($this->app->cfgItem ('options.core.ownerFullName'), $this->app->cfgItem ('options.core.ownerEmail'));
+		$fromEmail = $this->app->cfgItem ('options.core.ownerEmail');
+		$fromName = $this->app->cfgItem ('options.core.ownerFullName');
+
+		if ($this->uiRecData['sendRequestsFromEmail'] !== '')
+			$fromEmail = $this->uiRecData['sendRequestsFromEmail'];
+
+		$msg->setFrom ($fromName, $fromEmail);
 		$msg->setTo($emailsTo);
 		$msg->setSubject($msgSubject);
 		$msg->setBody($msgBody);

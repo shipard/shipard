@@ -19,6 +19,11 @@
 
 		{"id": "domain", "name": "Doména", "type": "string", "len": 80},
 
+		{"id": "pwaTitle", "name": "Titulek pro PWA aplikaci", "type": "string", "len": 50},
+		{"id": "pwaIcon", "name": "Ikona PWA aplikace (na ploše)", "type": "int", "reference": "e10.base.attachments", "comboViewer": "images"},
+
+		{"id": "sendRequestsFromEmail", "name": "E-maily s požadavky odesílat z e-mailu:", "type": "string", "len": 70},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],

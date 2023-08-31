@@ -105,6 +105,12 @@ class Router extends Utility
 				header ('X-Accel-Redirect: ' . $this->app->urlRoot.'/www-root/.ui/ng/js/e10-service-worker.js');
 			die();
 		}
+		elseif ($first === 'imgs')
+		{
+			$resizer = new \Shipard\Base\ImageResizer ($this->app());
+			$resizer->run ();
+			die();
+		}
 
 		$object = NULL;
 		if ($first === 'user')
@@ -178,5 +184,14 @@ class Router extends Utility
 	public function urlPart($idx)
 	{
 		return $this->urlPath[$idx] ?? '';
+	}
+
+	public function pwaIcon()
+	{
+		if (isset($this->uiCfg['icons']['pwa']))
+			return $this->uiCfg['icons']['pwa'];
+
+		$dsIcon = $this->app->dsIcon();
+		return $dsIcon['iconUrl'];
 	}
 }
