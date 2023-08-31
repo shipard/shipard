@@ -30,7 +30,8 @@ class Auth extends \Shipard\UI\ng\AppPageBlank
       $a = new \e10\users\libs\Authenticator($this->app());
       if ($a->checkUser($credentials))
       {
-        header('Location: ' . $this->uiTemplate->data['uiRoot'].$from);
+        $redirTo = str_replace('//', '/', $this->uiTemplate->data['uiRoot'].$from);
+        header('Location: ' . $redirTo);
         die();
       }
 

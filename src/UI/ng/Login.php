@@ -265,7 +265,7 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 			if (substr ($_SERVER['HTTP_REFERER'], 0, strlen ($baseUrlRoot)) == $baseUrlRoot)
 				$referer = substr ($_SERVER['HTTP_REFERER'], strlen ($baseUrlRoot));
 
-		if (str_starts_with ($referer, '/user/'))
+		if (str_starts_with ($referer, '/user/') || str_starts_with ($referer, '/auth/'))
 			$referer = '';
 
 		if ($referer == '/')

