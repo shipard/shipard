@@ -7,6 +7,10 @@
         <span class="navbar-toggler-icon"></span>
       </button>
 
+      <h5 id="navbar-title-left">
+        {{{@icon;icon:user/user}}} {{userInfo.name}}
+      </h5>
+
       {{#userContextsEnumExist}}
       <button class="navbar-toggler" id="navbar-toggler-right" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar2" aria-controls="offcanvasNavbar2" aria-label="Toggle navigation">
         <span class="fw-semibold align-items-center" style='font-size: 110%;'>{{activeUserContext.shortTitle}}<span class="ps-2"> {{{@icon;icon:user/user}}}</span></span>

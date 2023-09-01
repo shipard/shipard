@@ -36,7 +36,7 @@ button.navbar-toggler {
     border: none;
 }
 
-div.offcanvas {
+div.offcanvas, div.app-menu {
 	background-color: var(--navBackground);
     .navListIcon {
         padding-right: .5rem;

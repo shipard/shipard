@@ -34,7 +34,7 @@
 
 }
 
-.navbar .list-group {
+.navbar, .app-menu .list-group {
     --bs-list-group-bg: var(--navBackground) !important;
 }
 
@@ -73,7 +73,7 @@
     --bs-accordion-bg: #505050 !important;
 }
 
-[data-bs-theme="dark"] .navbar .list-group {
+[data-bs-theme="dark"] .navbar, [data-bs-theme="dark"] .app-menu .list-group {
     --bs-list-group-bg: var(--navBackground) !important;
 }
 
