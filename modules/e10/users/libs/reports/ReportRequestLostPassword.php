@@ -15,6 +15,8 @@ class ReportRequestLostPassword extends \Shipard\Report\FormReport
 
 		$this->reportId = $reportId;
 		$this->reportTemplate = $reportId;
+
+		$this->pdfAttSendDisabled = TRUE;
 	}
 
 	public function loadData ()
