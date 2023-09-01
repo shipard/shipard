@@ -39,6 +39,8 @@ class Report extends \Shipard\Base\BaseObject
 	public $content = [];
 	public $lang = FALSE;
 
+	var $pdfAttSendDisabled = FALSE;
+
 	var $pageHeader = '';
 	var $pageFooter = '';
 

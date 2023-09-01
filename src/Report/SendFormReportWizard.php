@@ -143,7 +143,8 @@ class SendFormReportWizard extends \Shipard\Form\Wizard
 		if ($attachmentFileName === '')
 			$attachmentFileName = 'priloha';
 
-		$msg->addAttachment($report->fullFileName, $attachmentFileName.'.pdf', 'application/pdf');
+		if (!$report->pdfAttSendDisabled)
+			$msg->addAttachment($report->fullFileName, $attachmentFileName.'.pdf', 'application/pdf');
 
 		$this->addOtherReports($documentTable, $msg, $report);
 		$report->addMessageAttachments($msg);
