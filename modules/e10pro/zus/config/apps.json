@@ -2,7 +2,7 @@
   "zus-ezk": {
     "fn": "Elektronická žákovská knížka",
     "appMenu": {
-      "appTitle": "Ještě nevím",
+      "appTitle": "EŽK",
       "items": [
         {
           "title": "Záznamy z hodiny", "icon": "user/book", "id": "all-classes",
@@ -13,19 +13,8 @@
           "objectType": "widget", "classId": "e10pro.zus.libs.ezk.WidgetGrades"
         },
         {
-          "title": "Zprávy", "icon": "user/envelope", "id": "",
-          "objectType": "viewer", "table": "wkf.msgs.msgs", "viewer": "ezk"
-        },
-        {
-          "title": "Omluvenky", "icon": "user/doctor", "id": "excuses",
-          "objectType": "viewer", "table": "e10pro.zus.omluvenky", "viewer": "ezk"
-        },
-        {
           "title": "Rozvrh", "icon": "user/clock", "id": "time-table",
           "objectType": "widget", "classId": "e10pro.zus.libs.ezk.WidgetTimeTable"
-        },
-        {
-          "title": "Nastavení", "icon": "user/cog", "id": "settings"
         }
       ]
     },
