@@ -2,6 +2,7 @@
 
 
 namespace e10\users\libs\reports;
+use \Shipard\Utils\Utils;
 
 /**
  * class ReportRequestActivate
@@ -15,6 +16,8 @@ class ReportRequestActivate extends \Shipard\Report\FormReport
 
 		$this->reportId = $reportId;
 		$this->reportTemplate = $reportId;
+
+		$this->pdfAttSendDisabled = TRUE;
 	}
 
 	public function loadData ()
@@ -60,6 +63,24 @@ class ReportRequestActivate extends \Shipard\Report\FormReport
 			$this->data ['_textRenderItems'] ??= [];
 			if (!count($this->data ['_textRenderItems']))
 				$this->data ['_textRenderItems'][] = 'reportTexts';
+		}
+	}
+
+	public function addMessageAttachments(\Shipard\Report\MailMessage $msg)
+	{
+		/** @var \e10\reports\TableReportsTexts */
+		$tableReportsTexts = $this->app()->table('e10.reports.reportsTexts');
+
+		$atts = [];
+		$tableReportsTexts->loadReportAttachments($this, $atts);
+
+		foreach ($atts as $att)
+		{
+			$attName = Utils::safeChars($att['attName']);
+
+			$mimeType = mime_content_type($att['fileName']);
+			$msg->addAttachment($att['fileName'], $attName, $mimeType);
+
 		}
 	}
 }

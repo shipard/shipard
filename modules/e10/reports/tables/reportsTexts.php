@@ -88,6 +88,55 @@ class TableReportsTexts extends DbTable
 			$dest[$r['reportPlace']] = $txt;
 		}
 	}
+
+	public function loadReportAttachments (\Shipard\Report\Report $report, &$dest)
+	{
+		$lang = $report->lang;
+		if ($lang === FALSE || $lang == '')
+			$lang = 'cs';
+
+		$q[] = 'SELECT * FROM [e10_reports_reportsTexts]';
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND [docStateMain] IN %in', [0, 2]);
+		array_push ($q, ' AND [reportPlace] = %s', 'emailBody');
+		array_push ($q, ' AND ([language] = %s', $report->lang, ' OR [language] = %s)', '');
+		array_push ($q, ' AND (onAllReports = %i', 1, ' OR EXISTS ');
+		array_push ($q, ' (SELECT ndx FROM [e10_base_doclinks] ');
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND e10_reports_reportsTexts.ndx = srcRecId');
+		array_push ($q, ' AND dstRecId = %i', $report->sendReportNdx);
+		array_push ($q, ' AND [srcTableId] = %s', 'e10.reports.reportsTexts');
+		array_push ($q, ' AND [dstTableId] = %s', 'e10.reports.reports');
+		array_push ($q, '))');
+		array_push ($q, ' ORDER BY [systemOrder], [order], [ndx]');
+
+		$rows = $this->db()->query ($q);
+		foreach ($rows as $r)
+		{
+			$attRows = $this->db()->query ('SELECT * FROM [e10_attachments_files] WHERE [recid] = %i', $r['ndx'],
+																			' AND tableid = %s', 'e10.reports.reportsTexts',
+																			' AND [deleted] = %i ', 0,
+																			' ORDER BY defaultImage DESC, [order], name');
+			foreach ($attRows as $a)
+			{
+				$attName = $a['name'];
+				if ($attName == '')
+					$attName = 'priloha';
+
+				if (!str_ends_with($attName, '.pdf'))
+					$attName .= '.pdf';
+
+				$attItem = [
+					'fileName' => __APP_DIR__.'/att/'.$a['path'].$a['filename'],
+					'attName' => $attName,
+				];
+
+				$dest[] = $attItem;
+			}
+
+			break;
+		}
+	}
 }
 
 
