@@ -180,7 +180,7 @@ class AppPageBlank extends Utility
 		$c .= "<link rel='stylesheet' type='text/css' href='{$scRoot}/{$iconsCfg['styleLink']}'>\n";
 
 
-		if (0 && $this->dsMode !== Application::dsmDevel)
+		if ($this->dsMode !== Application::dsmDevel)
 		{
 			$files = unserialize (file_get_contents(__SHPD_ROOT_DIR__.'/ui/clients/files.data'));
 			$c .= "\t<script type='text/javascript' integrity='{$files['ng']['client.js']['integrity']}' src='$absUrl{$this->app->urlRoot}/www-root/.ui/ng/js/client.js?v=".$files['ng']['client.js']['ver']."'></script>\n";

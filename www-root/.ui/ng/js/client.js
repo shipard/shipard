@@ -59,7 +59,7 @@ if(!stateOnOff&&switchElement[0].checked)switchElement[0].checked=false;}}setSta
 ws=webSocketServers[serverIndex];}publish(serverIndex,topic,payload){var
 ws=webSocketServers[serverIndex];let
 message=new
-Paho.MQTT.Message(payload);message.destinationName=topic;ws.mqttClient.send(message);}}class
+Paho.MQTT.Message(payload);message.destinationName=topic;ws.mqttClient.send(message);}applyUIData(responseUIData){console.log("ShipardMqtt - apply uiData: ",responseUIData);}}class
 ShipardCamsPictsLoader{camerasTimer=null;init(){this.reloadImages();}reloadImages(){if(this.camerasTimer){clearTimeout(this.camerasTimer);}for(let
 serverNdx
 in
@@ -75,13 +75,25 @@ ids=uiData['iotCamPictures'][camId]['elms'];for(var
 key
 in
 ids){let
-camPictElement=document.getElementById(ids[key]);let
+camPictElement=document.getElementById(ids[key]);if(!camPictElement){uiData['iotCamPictures'][camId]['elms'][key];continue;}let
 pictStyle=camPictElement.getAttribute('data-pict-style');if(pictStyle==='full')pictUrl=server['camUrl']+'imgs/'+camNdx+'/'+data[camNdx]['image'];else
 pictUrl=server['camUrl']+'imgs/-w960/-q70/'+camNdx+'/'+data[camNdx]['image'];let
 imgElement=camPictElement.querySelector('img');imgElement.src=pictUrl;}}}}class
-ShipardWidget{rootElm=null;rootId='';numPad=null;init(rootElm){this.rootElm=rootElm;this.rootId=this.rootElm.getAttribute('id');console.log("hello from ShipardWidget",this.rootId);this.on(this,'click','.shp-widget-action',function(e,ownerWidget){ownerWidget.widgetAction(e)});}widgetAction(e){let
-actionId=e.getAttribute('data-action');this.doAction(actionId,e);}doAction(actionId,e){switch(actionId){case'inline-action':return this.inlineAction(e);}return 0;}inlineAction(e){if(e.getAttribute('data-object-class-id')===null)return;var
-requestParams={};requestParams['object-class-id']=e.getAttribute('data-object-class-id');requestParams['action-type']=e.getAttribute('data-action-type');this.elementPrefixedAttributes(e,'data-action-param-',requestParams);if(e.getAttribute('data-pk')!==null)requestParams['pk']=e.getAttribute('data-pk');console.log("__INLINE_ACTION",requestParams);}on(ownerWidget,eventType,selector,callback){this.rootElm.addEventListener(eventType,function(event){if(event.target.matches(selector)){callback.call(event.target,event.target,ownerWidget);}});}onClick(ownerWidget,selector,callback){this.on(ownerWidget,'click',selector,callback)};nf(n,c){var
+ShipardWidget{rootElm=null;rootId='';numPad=null;init(rootElm){this.rootElm=rootElm;this.rootId=this.rootElm.getAttribute('id');this.on(this,'click','.shp-widget-action',function(e,ownerWidget){ownerWidget.widgetAction(e)});this.on(this,'click','.shp-widget-action>i',function(e,ownerWidget){ownerWidget.widgetAction(e.parentElement)});}widgetAction(e){let
+actionId=e.getAttribute('data-action');this.doAction(actionId,e);}doAction(actionId,e){console.log("ACTION: ",actionId);switch(actionId){case'inline-action':return this.inlineAction(e);case'select-main-tab':return this.selectMainTab(e);}return 0;}inlineAction(e){if(e.getAttribute('data-object-class-id')===null)return;var
+requestParams={};requestParams['object-class-id']=e.getAttribute('data-object-class-id');requestParams['action-type']=e.getAttribute('data-action-type');this.elementPrefixedAttributes(e,'data-action-param-',requestParams);if(e.getAttribute('data-pk')!==null)requestParams['pk']=e.getAttribute('data-pk');console.log("__INLINE_ACTION",requestParams);}selectMainTab(e){const
+tabsId=e.getAttribute('data-tabs');const
+inputValueId=this.rootId+'_'+tabsId+'_Value';const
+inputElement=document.getElementById(inputValueId);inputElement.value=e.getAttribute('data-tab-id');const
+tabsElementId=this.rootId+'_'+tabsId;const
+tabsElement=document.getElementById(tabsElementId);let
+oldActiveTabElement=tabsElement.querySelector('.active');oldActiveTabElement.classList.remove('active');e.classList.add('active');let
+apiParams={'cgType':2};this.apiCall('reloadContent',apiParams);}apiCall(apiActionId,outsideApiParams){var
+apiParams={};apiParams['requestType']=this.rootElm.getAttribute('data-request-type');apiParams['classId']=this.rootElm.getAttribute('data-class-id');apiParams['actionId']=apiActionId;if(outsideApiParams!==undefined)apiParams={...apiParams,...outsideApiParams};this.detectValues(apiParams);console.log("API-CALL",apiParams);var
+url='api/v2';shc.server.post(url,apiParams,function(data){console.log("--api-call-success--");this.doWidgetResponse(data);}.bind(this),function(data){console.log("--api-call-error--");}.bind(this));}detectValues(data){const
+inputs=this.rootElm.querySelectorAll("input[data-wid='"+this.rootId+"']");for(let
+i=0;i<inputs.length;++i){const
+valueKey=inputs[i].getAttribute('name');data[valueKey]=inputs[i].value;}}doWidgetResponse(data){if(data['response']!==undefined&&data['response']['uiData']!==undefined)shc.applyUIData(data['response']['uiData']);console.log(data);}on(ownerWidget,eventType,selector,callback){this.rootElm.addEventListener(eventType,function(event){if(event.target.matches(selector)){callback.call(event.target,event.target,ownerWidget);}});}onClick(ownerWidget,selector,callback){this.on(ownerWidget,'click',selector,callback)};nf(n,c){var
 c=isNaN(c=Math.abs(c))?2:c,d='.',t=' ',s=n<0?"-":"",i=parseInt(n=Math.abs(+n||0).toFixed(c))+"",j=(j=i.length)>3?j%3:0;return s+(j?i.substr(0,j)+t:"")+i.substr(j).replace(/(\d{3})(?=\d)/g,"$1"+t)+(c?d+Math.abs(n-i).toFixed(c).slice(2):"");}parseFloat(n){var
 str=n.replace(',','.');return parseFloat(str);}round(value,decimals){return Number(Math.round(value+'e'+decimals)+'e-'+decimals);}escapeHtml(str){var
 div=document.createElement('div');div.appendChild(document.createTextNode(str));return div.innerHTML;};elmHide(e){e.classList.add('d-none');}elmShow(e){e.classList.remove('d-none');}getNumber(options){const
@@ -92,6 +104,22 @@ i=0,attrs=iel.attributes,l=attrs.length;i<l;i++){var
 attrName=attrs.item(i).nodeName;if(attrName.substring(0,prefix.length)!==prefix)continue;var
 attrNameShort=attrName.substring(prefix.length);var
 val=attrs.item(i).nodeValue;data[attrNameShort]=val;}}}class
+ShipardTableViewer
+extends
+ShipardWidget{elmViewerLines=null;elmViewerRows=null;doWidgetResponse(data){console.log("ShipardTableViewer::doWidgetResponse");super.doWidgetResponse(data);}init(e){console.log("ShipardTableViewer::init");super.init(e);this.rootElm.style.display='grid';const
+id=e.getAttribute('id');this.elmViewerLines=document.getElementById(id+'Items');this.elmViewerRows=this.elmViewerLines.parentElement;this.elmViewerRows.addEventListener('scroll',(event)=>{this.doScroll(event)});}doScroll(event){const
+e=event.target;const
+loadOnProgress=parseInt(this.elmViewerRows.getAttribute('data-loadonprogress'));if(loadOnProgress)return;const
+heightToEnd=e.scrollHeight-(e.scrollTop+e.clientHeight);if(heightToEnd<=500){this.elmViewerRows.setAttribute('data-loadonprogress',1);window.requestAnimationFrame(()=>{this.viewerRefreshLoadNext();});}}viewerRefreshLoadNext(){const
+tableName=this.rootElm.getAttribute("data-table");if(!tableName)return;this.df2FillViewerLines();}df2FillViewerLines(){var
+tableName=this.rootElm.getAttribute("data-table");if(!tableName)return;var
+viewerOptions=this.rootElm.getAttribute("data-viewer-view-id");var
+rowsPageNumber=parseInt(this.elmViewerLines.getAttribute('data-rowspagenumber'))+1;var
+viewId=this.rootElm.getAttribute('data-viewer-view-id');let
+apiParams={'cgType':2,'table':tableName,'rowsPageNumber':rowsPageNumber,'viewId':viewId,};this.apiCall('loadNextData',apiParams);return true;}doWidgetResponse(data){super.doWidgetResponse(data);if(data['response']['type']==='loadNextData'){this.appendNextData(data);return;}}appendNextData(data){this.elmViewerLines.removeChild(this.elmViewerLines.lastElementChild);this.elmViewerLines.innerHTML+=data['response']['hcRows'];this.elmViewerLines.setAttribute('data-rowspagenumber',data['response']['rowsPageNumber']);this.elmViewerRows.setAttribute('data-loadonprogress',0);}}function
+initWidgetTableViewer(id){let
+e=document.getElementById(id);e.shpWidget=new
+ShipardTableViewer();e.shpWidget.init(e);return 1;}class
 ShipardTouchNumPad
 extends
 ShipardWidget{elmDisplay=null;gnId='gn1234';gnValue='';options=null;init(rootElm){super.init(rootElm);var
@@ -148,10 +176,17 @@ if(mode==='save'){this.elmHide(this.elmContainerSell);this.elmHide(this.elmConta
 initWidgetCashBox(id){let
 e=document.getElementById(id);e.shpWidget=new
 WidgetCashBox();e.shpWidget.init(e);}class
+ShipardWidgetVS
+extends
+ShipardWidget{doWidgetResponse(data){console.log("VS-WIDGET-RESPONSE");let
+dataElement=this.rootElm.querySelector('div.e10-wr-data');dataElement.innerHTML=data.response.hcMain;console.log(dataElement);super.doWidgetResponse(data);}}function
+initWidgetVS(id){let
+e=document.getElementById(id);e.shpWidget=new
+ShipardWidgetVS();e.shpWidget.init(e);console.log("initWidgetVS",id);}class
 ShipardClient{server=new
 ShipardServer();mqtt=new
 ShipardMqtt();iot=new
-ShipardClientIoT();appVersion='2.0.1';CLICK_EVENT='click';g_formId=1;openModals=[];progressCount=0;viewerScroll=0;disableKeyDown=0;userInfo=null;numPad=null;on(eventType,selector,callback){document.addEventListener(eventType,function(event){if(event.target.matches(selector)){callback.call(event.target,event.target);}});}onClick(selector,callback){this.on('click',selector,callback)};simpleTabsEvent(e){let
+ShipardClientIoT();appVersion='2.0.1';CLICK_EVENT='click';g_formId=1;openModals=[];progressCount=0;viewerScroll=0;disableKeyDown=0;userInfo=null;numPad=null;mainAppContent=null;on(eventType,selector,callback){document.addEventListener(eventType,function(event){if(event.target.matches(selector)){callback.call(event.target,event.target);}});}onClick(selector,callback){this.on('click',selector,callback)};simpleTabsEvent(e){let
 tabsId=e.getAttribute('data-tabs');let
 tabsElement=document.getElementById(tabsId+'-tabs');let
 oldActiveTabElement=tabsElement.querySelector('a.active');oldActiveTabElement.classList.remove('active');let
@@ -162,12 +197,14 @@ newActiveContentElement=document.getElementById(newActiveContentId);newActiveCon
 p=e;while(p.length){var
 attrValue=p.attr(attr);if(p.attr(attr))return p.attr(attr);p=p.parent();if(!p.length)break;}return null;};searchObjectAttr(e,attr){var
 p=e;while(p.length){if(p.attr(attr))return p;p=p.parent();if(!p.length)break;}return null;};widgetAction(e){let
-actionId=e.getAttribute('data-action');this.doAction(actionId,e);}doAction(actionId,e){switch(actionId){case'setColorMode':return this.setColorMode(e);case'workplaceLogin':return this.workplaceLogin(e);case'inline-action':return this.inlineAction(e);}return 0;}inlineAction(e){if(e.getAttribute('data-object-class-id')===null)return;var
+actionId=e.getAttribute('data-action');this.doAction(actionId,e);}doAction(actionId,e){switch(actionId){case'setColorMode':return this.setColorMode(e);case'setUserContext':return this.setUserContext(e);case'workplaceLogin':return this.workplaceLogin(e);case'inline-action':return this.inlineAction(e);}return 0;}inlineAction(e){if(e.getAttribute('data-object-class-id')===null)return;var
 requestParams={};requestParams['object-class-id']=e.getAttribute('data-object-class-id');requestParams['action-type']=e.getAttribute('data-action-type');this.elementPrefixedAttributes(e,'data-action-param-',requestParams);if(e.getAttribute('data-pk')!==null)requestParams['pk']=e.getAttribute('data-pk');shc.server.api(requestParams,function(data){}.bind(this));}workplaceLogin(e){console.log('workplaceLogin',e.getAttribute('data-login'));this.getNumber({title:'Zadejte přístupový kód',srcElement:e,userLogin:e.getAttribute('data-login'),success:function(){this.workplaceLoginDoIt()}.bind(this)});return 0;}workplaceLoginDoIt(e){console.log(this.numPad.options.userLogin);console.log("__DO_IT__",this.numPad.options.srcElement.getAttribute('data-login'),this.numPad.gnValue);document.getElementById('e10-login-user').value=this.numPad.options.userLogin;document.getElementById('e10-login-pin').value=this.numPad.gnValue;document.forms['e10-mui-login-form'].submit();}getNumber(options){const
 template=document.createElement('div');template.id='widget_123';template.classList.add('fullScreenModal');document.body.appendChild(template);var
 abc=new
 ShipardTouchNumPad();abc.options=options;abc.init(template);this.numPad=abc;}setColorMode(e){let
-colorMode=e.getAttribute('data-app-color-mode');localStorage.setItem('shpAppColorMode',colorMode);this.doColorMode(colorMode);return 0;}initColorMode(firstCall){if(firstCall){window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(){this.initColorMode()}.bind(this));}let
+colorMode=e.getAttribute('data-app-color-mode');localStorage.setItem('shpAppColorMode',colorMode);this.doColorMode(colorMode);return 0;}setUserContext(e){let
+userContextId=e.getAttribute('data-user-context');console.log("User context: ",userContextId);let
+apiParams={'userContextId':userContextId,};this.apiCall('setUserContext',apiParams);return 0;}initColorMode(firstCall){if(firstCall){window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(){this.initColorMode()}.bind(this));}let
 colorMode=localStorage.getItem('shpAppColorMode');if(!colorMode||colorMode==='auto'){const
 isSystemDarkMode=window.matchMedia('(prefers-color-scheme: dark)').matches;if(isSystemDarkMode)colorMode='dark';else
 colorMode='light';}this.doColorMode(colorMode);}doColorMode(colorMode){if(colorMode==='light'){document.body.removeAttribute('data-bs-theme');}else
@@ -181,7 +218,13 @@ colorModeElements[idx].classList.remove('active');}}elementPrefixedAttributes(ie
 i=0,attrs=iel.attributes,l=attrs.length;i<l;i++){var
 attrName=attrs.item(i).nodeName;if(attrName.substring(0,prefix.length)!==prefix)continue;var
 attrNameShort=attrName.substring(prefix.length);var
-val=attrs.item(i).nodeValue;data[attrNameShort]=val;}}init(){this.server.setHttpServerRoot(httpApiRootPath);this.initColorMode(true);this.onClick('a.shp-simple-tabs-item',function(){shc.simpleTabsEvent(this);});this.onClick('.shp-app-action',function(e){this.widgetAction(e);}.bind(this));}}class
+val=attrs.item(i).nodeValue;data[attrNameShort]=val;}}initUI(){if(!this.mainAppContent)return 0;if('mainUiObjectId'in
+this.mainAppContent.dataset)return this.initUIObject(this.mainAppContent.dataset.mainUiObjectId);}initUIObject(id){let
+objectElement=document.getElementById(id);if(!objectElement){console.error('element not exist: #',id);return 0;}const
+objectElementType=objectElement.getAttribute('data-object-type');if(!objectElementType){console.error('`data-object-type` attr not found in #',id);return 0;}if(objectElementType==='data-viewer')return initWidgetTableViewer(id);console.log(objectElementType);return 0;}loadUI(){console.log("client__load_ui");}init(){this.mainAppContent=document.getElementById('shp-main-app-content');this.server.setHttpServerRoot(httpApiRootPath);this.initColorMode(true);this.onClick('a.shp-simple-tabs-item',function(){shc.simpleTabsEvent(this);});this.onClick('.shp-app-action',function(e){this.widgetAction(e);}.bind(this));this.initUI();if('serviceWorker'in
+navigator&&e10ServiceWorkerURL!==undefined){navigator.serviceWorker.register(e10ServiceWorkerURL).then(function(reg){}).catch(function(err){console.log("Service worker registration error: ",err)});}}applyUIData(responseUIData){this.mqtt.applyUIData(responseUIData);this.iot.applyUIData(responseUIData);}apiCall(apiActionId,outsideApiParams){var
+apiParams={};apiParams['requestType']='appCommand';apiParams['actionId']=apiActionId;if(outsideApiParams!==undefined)apiParams={...apiParams,...outsideApiParams};console.log("CLIENT-API-CALL",apiParams);var
+url='api/v2';shc.server.post(url,apiParams,function(data){console.log("--app-api-call-success--");this.doAppAPIResponse(data);}.bind(this),function(data){console.log("--api-app-call-error--");}.bind(this));}doAppAPIResponse(data){window.location.reload(true);}}class
 ShipardClientIoT{camPictLoader=null;init(){if(uiData['iotCamServers']!==undefined){this.camPictLoader=new
 ShipardCamsPictsLoader();this.camPictLoader.init();}shc.on('change','input.mac-shp-triggger',function(){shc.iot.mainTrigger(this);});}mainTrigger(element){let
 payload={};if(element.classList.contains('shp-iot-scene-switch')){let
@@ -196,6 +239,17 @@ deviceSIDs=attrDeviceSID.split(',');for(const
 deviceSID
 of
 deviceSIDs){if(uiData['iotSubjects']===undefined||uiData['iotSubjects'][deviceSID]===undefined){console.log("Invalid device SID: ",deviceSID);continue;}let
-setTopic=uiData['iotSubjects'][deviceSID]['topic']+'/set';shc.mqtt.publish(uiData['iotSubjects'][deviceSID]['wss'],setTopic,JSON.stringify(payload));}}initIoT(){shc.mqtt.init();shc.iot.init();}}var
+setTopic=uiData['iotSubjects'][deviceSID]['topic']+'/set';shc.mqtt.publish(uiData['iotSubjects'][deviceSID]['wss'],setTopic,JSON.stringify(payload));}}initIoT(){shc.mqtt.init();shc.iot.init();}applyUIData(responseUIData){if(responseUIData['iotCamServers']!==undefined){if(uiData['iotCamServers']===undefined)uiData['iotCamServers']={};for(let
+serverNdx
+in
+responseUIData['iotCamServers']){if(uiData['iotCamServers'][serverNdx]===undefined)uiData['iotCamServers'][serverNdx]=responseUIData['iotCamServers'][serverNdx];}}if(responseUIData['iotCamPictures']!==undefined){if(uiData['iotCamPictures']===undefined)uiData['iotCamPictures']={};for(let
+camId
+in
+responseUIData['iotCamPictures']){if(uiData['iotCamPictures'][camId]===undefined)uiData['iotCamPictures'][camId]=responseUIData['iotCamPictures'][camId];else{let
+ids=responseUIData['iotCamPictures'][camId]['elms'];for(var
+key
+in
+ids){uiData['iotCamPictures'][camId]['elms'][key]=responseUIData['iotCamPictures'][camId]['elms'][key];}}}}if(this.camPictLoader===null)this.camPictLoader=new
+ShipardCamsPictsLoader();this.camPictLoader.init();console.log("ShipardClientIoT - apply uiData: ",uiData);}}var
 shc=new
 ShipardClient();document.addEventListener('DOMContentLoaded',()=>shc.init());
