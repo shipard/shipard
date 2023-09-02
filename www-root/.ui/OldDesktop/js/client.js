@@ -1656,7 +1656,8 @@ in
 data){var
 picFileName=srv.url+'imgs/-w'+pictsWidth+'/-q70/'+ii+"/"+data[ii].image;var
 origPicFileName=srv.url+'/imgs/'+ii+"/"+data[ii].image;var
-rightPicture=$('#e10-cam-'+ii+'-right');if(rightPicture.length)rightPicture.attr("src",picFileName).parent().attr("data-pict",origPicFileName);}g_camerasBarTimer=setTimeout(camerasReload,10000);});}}function
+rightPicture=$('#e10-cam-'+ii+'-right');if(rightPicture.length&&rightPicture.is('img'))rightPicture.attr("src",picFileName).parent().attr("data-pict",origPicFileName);else
+rightPicture.parent().attr("data-pict",origPicFileName);}g_camerasBarTimer=setTimeout(camerasReload,10000);});}}function
 bigClock(){var
 thetime=new
 Date();var

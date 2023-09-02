@@ -6853,8 +6853,10 @@ function camerasReload ()
 				var origPicFileName = srv.url + '/imgs/' + ii + "/" + data[ii].image;
 
 				var rightPicture = $('#e10-cam-' + ii + '-right');
-				if (rightPicture.length)
+				if (rightPicture.length && rightPicture.is('img'))
 					rightPicture.attr ("src", picFileName).parent().attr ("data-pict", origPicFileName);
+				else
+					rightPicture.parent().attr ("data-pict", origPicFileName);
 			}
 
 			g_camerasBarTimer = setTimeout (camerasReload, 10000);
