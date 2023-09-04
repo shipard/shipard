@@ -190,8 +190,9 @@ class SendFormReportWizard extends \Shipard\Form\Wizard
 		if (isset($documentInfo['title']))
 			$title .= $documentInfo['title'];
 
+		$fromAddress = $this->recData['emailFromAddress'] ?? '';
 		$hdr ['info'][] = array ('class' => 'title', 'value' => $title);
-		$hdr ['info'][] = array ('class' => 'info', 'value' => 'Odeslat emailem');
+		$hdr ['info'][] = array ('class' => 'info', 'value' => 'Odeslat emailem (z adresy '.$fromAddress.')');
 
 		return $hdr;
 	}

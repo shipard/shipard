@@ -97,6 +97,10 @@ class TableRequests extends DbTable
 			$info ['emails']['to'] = $userRecData['email'];
 		}
 
+		$uiRecData = $this->app()->loadItem($recData['ui'], 'e10.ui.uis');
+		if ($uiRecData && $uiRecData['sendRequestsFromEmail'] !== '')
+			$info['emailFromAddress'] = $uiRecData['sendRequestsFromEmail'];
+
 		return $info;
 	}
 }
