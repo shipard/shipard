@@ -17,6 +17,12 @@
       </button>
       {{/userContextsEnumExist}}
 
+      {{#data.rightMenuCode}}
+      <button class="navbar-toggler" id="navbar-toggler-right" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar2" aria-controls="offcanvasNavbar2" aria-label="Toggle navigation">
+        <span class="fw-semibold align-items-center" style='font-size: 110%;'>{{activeUserContext.shortTitle}}<span class="ps-2"> {{{@icon;icon:user/user}}}</span></span>
+      </button>
+      {{/data.rightMenuCode}}
+
       <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
         <div class="offcanvas-header">
           <h5 class="offcanvas-title" id="offcanvasNavbarLabel">{{userInfo.name}}</h5>
@@ -62,6 +68,19 @@
         </div>
       </div>
       {{/userContextsEnumExist}}
+
+      {{#data.rightMenuCode}}
+      <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar2" aria-labelledby="offcanvasNavbarLabel">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="offcanvasNavbarLabel"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+          {{{data.rightMenuCode}}}
+        </div>
+      </div>
+      {{/data.rightMenuCode}}
+
     </div>
     </nav>
   </div>

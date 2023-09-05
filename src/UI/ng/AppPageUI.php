@@ -50,8 +50,15 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
   protected function createContentCodeInside_UIStruct()
   {
     $templateCode = '{{{@appUIElement}}}';
-    $urlId = $this->uiRouter->urlPath[0];
-    $mainUIObjectId = '';
+    $urlId = $this->uiRouter->urlPath[0] ?? '';
+
+    if ($urlId === '')
+    {
+      $redirToId = $this->uiStruct['appMenu']['defaultMenuId'] ?? $this->uiStruct['appMenu']['items'][0]['id'];
+      $redirTo = str_replace('//', '/', $this->uiTemplate->data['uiRoot'].$redirToId);
+      header('Location: ' . $redirTo);
+      die();
+    }
 
     $template = $this->uiTemplate;
 
@@ -82,73 +89,87 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
       }
     }
 
-    $template->data['uiStruct'] = $this->uiStruct;
+    $this->uiTemplate->data['uiStruct'] = $this->uiStruct;
 
     if ($activeMenuItem)
     {
-      $objectType = $activeMenuItem['objectType'] ?? '';
-      $ec = '';
-
-      if ($objectType === 'viewer')
-      {
-        /** @var \Shipard\Table\DbTable */
-        $table = $this->app->table ($activeMenuItem['table'] ?? '');
-
-        /** @var \Shipard\Viewer\TableView */
-        $v = NULL;
-        if ($table)
-          $v = $table->getTableView ($activeMenuItem['viewer'] ?? 'default', NULL);
-        if ($v)
-        {
-          $renderer = new \Shipard\UI\ng\renderers\TableViewRenderer($this->app());
-          $renderer->uiRouter = $this->uiRouter;
-          $renderer->setViewer($v);
-          $v->renderViewerData ('');
-          $renderer->render();
-          $ec = $renderer->renderedData['hcFull'];
-          $mainUIObjectId = $renderer->objectId();
-        }
-
-        $template->data['coreMainElementCode'] = $ec;
-      }
-      elseif ($objectType === 'widget')
-      {
-        $widget = $this->app()->createObject($activeMenuItem['classId'] ?? 'abcde');
-        if ($widget)
-        {
-          $widget->router = $this->uiRouter;
-          $ec = $widget->createMainCode();
-
-          $template->data['coreMainElementCode'] = $ec;
-          $mainUIObjectId = $widget->widgetId;
-        }
-      }
-      elseif ($objectType === 'uiWidget')
-      {
-        $widgetId = $activeMenuItem['id'] ?? '';
-        if ($widgetId !== '')
-        {
-          $wtc = '{{{@uiWidget;id:'.$widgetId.'}}}';
-          $template->data['coreMainElementCode'] = $template->render($wtc);
-        }
-      }
+      $this->renderMenuItem($activeMenuItem);
     }
 
-    if ($mainUIObjectId !== '')
-      $template->data['appBrowserParams'] .= 'data-main-ui-object-id="'.Utils::es($mainUIObjectId).'" ';
+    if (isset($this->uiStruct['appMenu']['rightMenu']))
+    {
+      $this->renderMenuItem($this->uiStruct['appMenu']['rightMenu'], 'rightMenuCode');
+    }
 
-    $template->loadTemplate ('e10pro.templates.basic', 'page.mustache', $templateCode);
+    $this->uiTemplate->loadTemplate ('e10pro.templates.basic', 'page.mustache', $templateCode);
 
-    $c = $template->renderTemplate();
+    $c = $this->uiTemplate->renderTemplate();
 
-    $template->checkUIData();
+    $this->uiTemplate->checkUIData();
 
     $c .= "<script>";
-    $c .= "var uiData = ".Json::lint($template->uiData).";";
+    $c .= "var uiData = ".Json::lint($this->uiTemplate->uiData).";";
     $c .= "(() => {shc.iot.initIoT ();})();";
     $c .= "</script>";
 
     return $c;
+  }
+
+  protected function renderMenuItem($menuItem, $partId = NULL)
+  {
+    $destId = ($partId === NULL) ? 'coreMainElementCode' : $partId;
+    $mainUIObjectId = '';
+
+    $objectType = $menuItem['objectType'] ?? '';
+    $ec = '';
+
+    if ($objectType === 'viewer')
+    {
+      /** @var \Shipard\Table\DbTable */
+      $table = $this->app->table ($menuItem['table'] ?? '');
+
+      /** @var \Shipard\Viewer\TableView */
+      $v = NULL;
+      if ($table)
+        $v = $table->getTableView ($menuItem['viewer'] ?? 'default', NULL);
+      if ($v)
+      {
+        $renderer = new \Shipard\UI\ng\renderers\TableViewRenderer($this->app());
+        $renderer->uiRouter = $this->uiRouter;
+        $renderer->setViewer($v);
+        $v->renderViewerData ('');
+        $renderer->render();
+        $ec = $renderer->renderedData['hcFull'];
+        $mainUIObjectId = $renderer->objectId();
+      }
+
+      $this->uiTemplate->data[$destId] = $ec;
+    }
+    elseif ($objectType === 'widget')
+    {
+      $widget = $this->app()->createObject($menuItem['classId'] ?? 'abcde');
+      if ($widget)
+      {
+        $widget->router = $this->uiRouter;
+        $ec = $widget->createMainCode();
+
+        $this->uiTemplate->data[$destId] = $ec;
+        $mainUIObjectId = $widget->widgetId;
+      }
+    }
+    elseif ($objectType === 'uiWidget')
+    {
+      $widgetId = $menuItem['id'] ?? '';
+
+      if ($widgetId !== '')
+      {
+        $wtc = '{{{@uiWidget;id:'.$widgetId.'}}}';
+        $this->uiTemplate->data[$destId] = $this->uiTemplate->render($wtc);
+      }
+    }
+
+    if ($mainUIObjectId !== '' && $partId === NULL)
+      $this->uiTemplate->data['appBrowserParams'] .= 'data-main-ui-object-id="'.Utils::es($mainUIObjectId).'" ';
   }
 
   public function createContentCodeInside ()
