@@ -8,7 +8,7 @@
 		{"id": "ucitel", "name": "Učitel", "type": "int", "reference": "e10.persons.persons", "comboViewer": "teachers"},
 
 		{"id": "probiranaLatka", "name": "Probíraná látka", "type": "memo", "comboViewer": "combo", "comboTable": "e10pro.zus.hodiny"},
-		{"id": "domaciUkol", "name": "Domácí úkol", "type": "memo"},
+		{"id": "domaciUkol", "name": "Sdělení pro rodiče", "type": "memo"},
 		{"id": "sDomacimUkolem", "name": "S domácím úkolem", "type": "logical"},
 
 		{"id": "datum", "name": "Datum", "type": "date"},
