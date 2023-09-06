@@ -7,6 +7,8 @@ require_once __SHPD_MODULES_DIR__.'e10pro/zus/zus.php';
 
 use \E10\Application, \E10\utils, \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Viewer\TableViewPanel;
 use \Shipard\Form\TableForm, \Shipard\Table\DbTable;
+use \e10\base\libs\UtilsBase;
+use \Shipard\Utils\World;
 
 
 /**
@@ -600,8 +602,15 @@ class ViewStudiumStudenta extends TableView
 
 class ViewDetailStudium extends TableViewDetail
 {
+	var $addressesAll;
+	var $addresses;
+
 	public function createDetailContent ()
 	{
+		$this->loadDataAddresses();
+		$contentContacts = $this->contentContacts();
+		$this->addContent($contentContacts);
+
 		$tablePersons = $this->table->app()->table ('e10.persons.persons');
 
 		// -- ids
@@ -634,6 +643,147 @@ class ViewDetailStudium extends TableViewDetail
 			$this->addContent(['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'header' => $hr, 'table' => $ks->troubles,
 					'title' => ['icon' => 'system/iconWarning', 'text' => 'Problémy', 'class' => 'h1 e10-error'], 'params' => ['__hideHeader' => 1]]);
 		}
+	}
+
+	function loadDataAddresses()
+	{
+		$this->addresses = [];
+
+    $q [] = 'SELECT [contacts].* ';
+		array_push ($q, ' FROM [e10_persons_personsContacts] AS [contacts]');
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND [contacts].[person] = %i', $this->item['student']);
+		array_push ($q, ' ORDER BY [contacts].[onTop], [contacts].[systemOrder]');
+    $rows = $this->db()->query($q);
+    foreach ($rows as $item)
+    {
+			if ($item['flagAddress'])
+			{
+				$ap = [];
+
+				if ($item['adrSpecification'] != '')
+					$ap[] = $item['adrSpecification'];
+				if ($item['adrStreet'] != '')
+					$ap[] = $item['adrStreet'];
+				if ($item['adrCity'] != '')
+					$ap[] = $item['adrCity'];
+				if ($item['adrZipCode'] != '')
+					$ap[] = $item['adrZipCode'];
+
+				$country = World::country($this->app(), $item['adrCountry']);
+				$ap[] = /*$country['f'].' '.*/$country['t'];
+				$addressText = implode(', ', $ap);
+
+				$address = [
+					'icon' => 'system/iconHome',
+					'c2' => []
+				];
+				$address['c2'][] = ['text' => $addressText, 'class' => ''];
+			}
+			else
+			{
+				$address = [
+					'icon' => 'user/idCard',
+					'c2' => []
+				];
+				//$address['c2'][] = ['text' => $addressText, 'class' => ''];
+			}
+
+			$address['isContact'] = $item['flagContact'];
+
+			$address['c2'][] = ['text' => '', 'docAction' => 'edit', 'table' => 'e10.persons.personsContacts', 'pk' => $item['ndx'], 'class' => 'pull-right', 'icon' => 'system/actionOpen'];
+
+
+      if ($item['flagMainAddress'])
+        $address['c2'][] = ['text' => 'Sídlo', 'class' => 'label label-default'];
+      if ($item['flagPostAddress'])
+        $address['c2'][] = ['text' => 'Korespondenční', 'class' => 'label label-default'];
+      if ($item['flagOffice'])
+        $address['c2'][] = ['text' => 'Provozovna', 'class' => 'label label-default'];
+
+      if ($item['flagContact'])
+      {
+        $address['c2'][] = ['text' => '', 'class' => 'break'];
+
+        if ($item['contactName'] != '')
+          $address['c2'][] = ['text' => $item['contactName'], 'class' => 'label label-default'];
+        if ($item['contactRole'] != '')
+          $address['c2'][] = ['text' => $item['contactRole'], 'class' => 'label label-default'];
+        if ($item['contactEmail'] != '')
+          $address['c2'][] = ['text' => $item['contactEmail'], 'class' => 'label label-default', 'icon' => 'system/iconEmail'];
+        if ($item['contactPhone'] != '')
+          $address['c2'][] = ['text' => $item['contactPhone'], 'class' => 'label label-default', 'icon' => 'system/iconPhone'];
+      }
+
+			$this->addresses[$item['ndx']] = $address;
+    }
+
+		$pks = array_keys($this->addresses);
+		if (count($pks))
+		{
+			$classification = UtilsBase::loadClassification ($this->table->app(), 'e10.persons.personsContacts', $pks);
+			foreach ($classification as $pcNdx => $cls)
+			{
+				forEach ($cls as $clsfGroup)
+					$this->addresses[$pcNdx]['c2'] = array_merge ($this->addresses[$pcNdx]['c2'], $clsfGroup);
+			}
+
+			$sendReports = UtilsBase::linkedSendReports($this->app(), 'e10.persons.personsContacts', $pks);
+			foreach ($sendReports as $pcNdx => $sr)
+			{
+				if ($this->addresses[$pcNdx]['isContact'])
+				{
+					$this->addresses[$pcNdx]['c2'][] = ['text' => '', 'class' => 'e10-me break', 'icon' => 'system/iconPaperPlane'];
+					$this->addresses[$pcNdx]['c2'] = array_merge ($this->addresses[$pcNdx]['c2'], $sr);
+				}
+			}
+		}
+	}
+
+	public function contentContacts ()
+	{
+		$t = [];
+
+		// -- contacts
+		/*
+		if ($this->contacts !== '')
+		{
+			$t [] = [
+				'c1' => ['icon' => 'system/iconIdBadge', 'text' => ''],
+				'c2' => $this->contacts,
+				'_options' => ['cellTitles' => ['c1' => 'Kontaktní údaje']]
+			];
+		}
+		*/
+
+		// -- address
+		if (count($this->addresses))
+		{
+			$cnt = 0;
+			foreach ($this->addresses as $a)
+			{
+				$t [] = [
+					'c1' => ['icon' => $a['icon'], 'text' => ''],
+					'c2' => $a['c2'],
+				];
+				$cnt++;
+				if ($cnt > 10)
+				{
+					$t [] = [
+						'c1' => ['icon' => 'system/iconPlusSquare', 'text' => ''],
+						'c2' => '... (zatím nefunguje)',
+					];
+
+					break;
+				}
+			}
+		}
+
+		$h = ['c1' => 'c1', 'c2' => 'c2'];
+		return [
+			'pane' => 'e10-pane e10-pane-top', 'type' => 'table', 'table' => $t, 'header' => $h,
+			'params' => ['forceTableClass' => 'dcInfo fullWidth', 'hideHeader' => 1]
+		];
 	}
 
 	public function addPredmety ()
