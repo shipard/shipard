@@ -1,0 +1,16 @@
+{
+	"id": "mac.iot.camsStreams", "sql": "mac_iot_camsStreams", "name": "Streamy z kamer",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+		{"id": "iotCam", "name": "Kamera", "type": "int", "reference": "mac.iot.cams"},
+
+		{"id": "streamType", "name": "Typ streamu", "type": "enumInt",
+			"enumCfg": {"cfgItem": "mac.iot.cams.streamsTypes", "cfgValue": "", "cfgText": "fn"}},
+    {"id": "streamUrl", "name": "URL", "type": "string", "len": 180}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.iot.FormCamStream"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

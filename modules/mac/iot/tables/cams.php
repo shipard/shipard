@@ -83,6 +83,15 @@ class TableCams extends DbTable
 			'camUrl' => $server['camerasURL']
 		];
 
+		$streams = $this->db()->query('SELECT * FROM [mac_iot_camsStreams] WHERE [iotCam] = %i', $cameraNdx, ' ORDER BY rowOrder, ndx');
+		foreach ($streams as $s)
+		{
+			$camInfo['streams'][] = [
+				'type' => $s['streamType'],
+				'url' => $s['streamUrl'],
+			];
+		}
+
 		return $camInfo;
 	}
 }
@@ -125,6 +134,15 @@ class ViewCams extends TableView
 			$props[] = ['text' => $vdt['fn'] ?? '!!!', 'icon' => 'user/truck', 'class' => 'label label-info'];
 		}
 
+		if ($item['camType'] == 30)
+		{
+			$props[] = [
+				'text' => $item['lanDeviceFullName'] ?? '!!!',
+				'icon' => 'tables/mac.lan.lans', 'class' => 'label label-info',
+				'suffix' => '#'.$item['lanDevice'],
+			];
+		}
+
 		$listItem['t2'] = $props;
 
 		return $listItem;
@@ -134,12 +152,12 @@ class ViewCams extends TableView
 	{
 		$fts = $this->fullTextSearch ();
 
-		$q [] = 'SELECT [cams].* ';
-		//array_push ($q, ' ioPortsDevices.fullName AS [ioPortDeviceFullName], ioPortsDevices.deviceKind AS [ioPortDeviceKind],');
+		$q [] = 'SELECT [cams].*, ';
+		array_push ($q, ' lanDevices.fullName AS [lanDeviceFullName]');
 		//array_push ($q, ' ioPorts.portId AS [ioPortId], ioPorts.fullName AS [ioPortFullName]');
 		array_push ($q, ' FROM [mac_iot_cams] AS [cams]');
 		//array_push ($q, ' LEFT JOIN [mac_lan_devicesIOPorts] AS ioPorts ON [controls].dstIOPort = ioPorts.ndx');
-		//array_push ($q, ' LEFT JOIN [mac_lan_devices] AS ioPortsDevices ON ioPorts.device = ioPortsDevices.ndx');
+		array_push ($q, ' LEFT JOIN [mac_lan_devices] AS lanDevices ON cams.lanDevice = lanDevices.ndx');
 		array_push ($q, ' WHERE 1');
 
 		// -- fulltext
@@ -166,6 +184,7 @@ class FormCam  extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
 		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Streamy', 'icon' => 'system/formHeader'];
 		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		//$iotDevicesUtils = new \mac\iot\libs\IotDevicesUtils($this->app());
@@ -183,6 +202,10 @@ class FormCam  extends TableForm
             $this->addColumnInput ('lanDevice');
 						$this->addSeparator(self::coH4);
 						$this->addColumnInput ('enableVehicleDetect');
+				$this->closeTab ();
+
+				$this->openTab (TableForm::ltNone);
+					$this->addList('streams');
 				$this->closeTab ();
 
 				$this->openTab (TableForm::ltNone);

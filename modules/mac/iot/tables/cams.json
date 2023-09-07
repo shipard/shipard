@@ -28,6 +28,9 @@
 			}
 		}
 	},
+  "lists": [
+		{"id": "streams", "class": "e10.base.ListRows", "name": "Streamy", "table": "mac.iot.camsStreams", "queryColumn": "iotCam", "orderColumn": "rowOrder"}
+	],
 	"forms": [
 		{"id": "default", "class": "mac.iot.FormCam"}
 	],
