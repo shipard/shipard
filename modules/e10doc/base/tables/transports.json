@@ -25,6 +25,9 @@
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
+	"lists": [
+		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"}
+  ],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"views": [
 		{"id": "default", "class": "e10doc.base.ViewTransports", "detail": "e10doc.base.ViewDetailTransport", "help": "prirucka/106"}

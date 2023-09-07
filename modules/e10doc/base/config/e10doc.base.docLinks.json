@@ -32,6 +32,13 @@
 				{"table": "e10doc.base.whPlaces"}
 			]
 		}
+	},
+	"e10doc.base.transports": {
+		"e10-transports-drivers-pg": {
+			"linkid": "e10-transports-drivers-pg", "name": "Skupiny osob řidičů", "icon": "tables/e10doc.base.transports",
+			"sources": [
+				{"table": "e10.persons.groups"}
+			]
+		}
 	}
-
 }

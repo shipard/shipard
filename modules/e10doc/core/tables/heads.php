@@ -4113,6 +4113,15 @@ class FormHeads extends TableForm
 			return $cp;
 		}
 
+		if ($srcTableId === 'e10doc.core.heads' && $srcColumnId === 'transportPersonDriver')
+		{
+			$cp = [
+				'docType' => strval ($recData['docType']), 'transport' => $recData['transport'],
+			];
+			return $cp;
+		}
+
+
 		return parent::comboParams ($srcTableId, $srcColumnId, $allRecData, $recData);
 	}
 

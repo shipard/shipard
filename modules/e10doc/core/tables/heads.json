@@ -49,7 +49,7 @@
 	  {"id": "transport", "name": "Způsob dopravy", "type": "int", "reference": "e10doc.base.transports", "options": ["saveOnChange"]},
     {"id": "transportVLP", "name": "RZ vozidla", "type": "string", "len": 20},
     {"id": "transportVWeight", "name": "Celková hmotnost s vozidlem", "type": "int"},
-    {"id": "transportPersonDriver", "name": "Řidič", "type": "int", "reference": "e10.persons.persons", "options": ["saveOnChange"]},
+    {"id": "transportPersonDriver", "name": "Řidič", "type": "int", "reference": "e10.persons.persons", "comboViewer": "drivers", "options": ["saveOnChange"]},
 
     {"id": "cashBox", "name": "Pokladna", "type": "enumInt", "reference": "e10doc.base.cashboxes",
 			"enumCfg": {"cfgItem": "e10doc.cashBoxes", "cfgValue": "ndx", "cfgText": "shortName"}},
