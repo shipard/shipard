@@ -7,6 +7,10 @@
         {
           "title": "Byt", "icon": "user/medal", "id": "flat-info",
           "objectType": "widget", "classId": "e10pro.condo.libs.apps.WidgetFlat"
+        },
+        {
+          "title": "Faktury", "icon": "user/book", "id": "invoices",
+          "objectType": "viewer", "table": "e10doc.core.heads", "viewer": "condo-invoicesOut"
         }
       ]
     },

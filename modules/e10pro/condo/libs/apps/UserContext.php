@@ -28,6 +28,7 @@ class UserContext extends \e10\users\libs\UserContext
       {
         $this->flats[$r['ndx']] = [
           'fullName' => $r['title'],
+          'customerNdx' => $r['customer'],
           //'firstName' => $r['personFirstName'],
           //'lastName' => $r['personLastName'],
         ];
@@ -49,6 +50,7 @@ class UserContext extends \e10\users\libs\UserContext
         'title' => $flatInfo['fullName'],
         'shortTitle' => $flatInfo['fullName'],//$studentInfo['firstName'],
         'flatNdx' => $flatNdx,
+        'customerNdx' => $flatInfo['customerNdx'],
       ];
 
       $this->contextCreator->contextData['contexts'][$cid] = $uc;

@@ -27,6 +27,13 @@
 				"email": 1, "dropdown": 1
 			}
 		]
-
+	},
+	{
+		"table": "e10doc.core.heads",
+		"views": {
+			"condo-invoicesOut": {
+				"id": "condo-invoicesOut", "class": "e10pro.condo.libs.apps.ViewInvoicesOut"
+			}
+		}
 	}
 ]
