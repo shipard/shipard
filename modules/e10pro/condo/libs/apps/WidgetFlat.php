@@ -1,7 +1,7 @@
 <?php
 
 namespace e10pro\condo\libs\apps;
-use \Shipard\Utils\Utils, \Shipard\Utils\Str;
+use \Shipard\Utils\Utils, \Shipard\Utils\Str, \Shipard\Utils\Json ;
 
 
 
@@ -33,6 +33,9 @@ class WidgetFlat extends \Shipard\UI\Core\WidgetPane
       $cc['title'] = $contentTitle;
       $this->router->uiTemplate->data['contents'][] = $cc;
 
+      $this->router->uiTemplate->data['flatProperties'] = $cc['table'];
+      $this->router->uiTemplate->data['flatPropertiesStruct'] = Json::lint($cc['table']);
+
       break;
     }
 
@@ -43,6 +46,9 @@ class WidgetFlat extends \Shipard\UI\Core\WidgetPane
       unset($cc['pane']);
       $cc['title'] = $contentTitlePersons;
       $this->router->uiTemplate->data['contents'][] = $cc;
+
+      $this->router->uiTemplate->data['personList'] = $cc['table'];
+      $this->router->uiTemplate->data['personListStruct'] = Json::lint($cc['table']);
     }
 
     if ($this->flatInfo->data['rowsContent'])
@@ -53,6 +59,10 @@ class WidgetFlat extends \Shipard\UI\Core\WidgetPane
 			$cc['title'] = $contentTitleAdvances;
 
 			$this->router->uiTemplate->data['contents'][] = $cc;
+
+      $this->router->uiTemplate->data['advancesList'] = $cc['table'];
+      $this->router->uiTemplate->data['advancesListStruct'] = Json::lint($cc['table']);
+      $this->router->uiTemplate->data['advancesListContent'] = Json::lint($cc);
 		}
 
 		$templateStr = $this->router->uiTemplate->subTemplateStr('modules/e10pro/condo/libs/apps/subtemplates/flatInfo');

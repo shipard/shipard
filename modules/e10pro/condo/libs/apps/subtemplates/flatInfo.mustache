@@ -1,4 +1,21 @@
+<div class='container-fluid' style="overflow-y: auto; height: 100%;">
 <h3>evidenční list bytu</h3>
 
-{{{@renderContent;dataItem:data.contents}}}
+<h4>byt</h4>
+{{#data.flatProperties}}
+  {{txt}}: {{val}}<br>
+{{/data.flatProperties}}
 
+<h4>lidé</h4>
+{{#data.personList}}
+  <h5>{{personName.text}}</h5>
+  {{#phone}}- {{phone}}<br>{{/phone}}
+  {{#email}}- {{email}}<br>{{/email}}
+{{/data.personList}}
+
+<h4>výše měsíčních záloh</h4>
+{{#data.advancesList}}
+  {{text}}: {{priceAll}}<br>
+{{/data.advancesList}}
+
+</div>
