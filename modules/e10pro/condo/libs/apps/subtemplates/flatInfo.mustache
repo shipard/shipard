@@ -1,21 +1,39 @@
 <div class='container-fluid' style="overflow-y: auto; height: 100%;">
-<h3>evidenční list bytu</h3>
+    <h1 class="p-1 pt-3">{{{@icon;icon:user/file}}} Evidenční list bytu</h1>
 
-<h4>byt</h4>
-{{#data.flatProperties}}
-  {{txt}}: {{val}}<br>
-{{/data.flatProperties}}
+    <div class="card mb-2">
+        <div class="card-body">
+            <h3 class="fw-bold mb-1">Byt</h3>
+            {{#data.flatProperties}}
+                <div>
+                    {{txt}}: {{val}}
+                </div>
+            {{/data.flatProperties}}
+        </div>
+    </div>
 
-<h4>lidé</h4>
-{{#data.personList}}
-  <h5>{{personName.text}}</h5>
-  {{#phone}}- {{phone}}<br>{{/phone}}
-  {{#email}}- {{email}}<br>{{/email}}
-{{/data.personList}}
+    <div class="card mb-2">
+        <div class="card-body">
+            <h3 class="fw-bold mb-1">Kontakty</h3>
+            {{#data.personList}}
+                <h4 class="mb-0">{{personName.text}}</h4>
+                <div class="mb-2 me-auto">
+                    {{#phone}}{{phone}}<br>{{/phone}}
+                    {{#email}}{{email}}<br>{{/email}}
+                </div>
+            {{/data.personList}}
+        </div>
+    </div>
 
-<h4>výše měsíčních záloh</h4>
-{{#data.advancesList}}
-  {{text}}: {{priceAll}}<br>
-{{/data.advancesList}}
+    <div class="card mb-2">
+        <div class="card-body">
+            <h3 class="fw-bold mb-1">Výše měsíčních záloh</h3>
+            {{#data.advancesList}}
+                <div class="d-flex justify-content-between">
+                    <span>{{text}}:</span> </span>{{priceAll}}</span>
+                </div>
+            {{/data.advancesList}}
+        </div>
+    </div>
 
 </div>

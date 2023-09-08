@@ -1,10 +1,12 @@
+<div class="card-body pt-1 pb-1">
+  <h6 class="card-title">{{data.listRow.title}}</h6>
 
-<div class="card-body">
-  <h3 class="card-title text-center">
-    {{data.listRow.docNumber}}
-  </h3>
+  <div class="d-flex justify-content-between">
+    <span>{{{@icon;icon:user/file}}} {{data.listRow.docNumber}}</span> <span>{{{@icon;icon:user/moneyBill}}} {{data.listRow.sumTotal}} {{data.listRow.currency}}</span>
+  </div>
 
-  {{data.listRow.dateAccounting}} / {{data.listRow.sumTotal}} {{data.listRow.currency}} /
-  VS: {{data.listRow.symbol1}} / SS: {{data.listRow.symbol2}} <br>
-  {{data.listRow.title}}
+  <div class="d-flex justify-content-between align-items-center">
+    <span class="badge bg-success me-2">{{{@icon;icon:user/check}}} Zaplaceno</span>
+    <a class="btn btn-outline-secondary btn-sm flex-shrink-1">{{{@icon;icon:user/fileDownload}}}</a>
+  </div>
 </div>
