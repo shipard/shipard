@@ -1,0 +1,23 @@
+{
+  "condo-portal": {
+    "fn": "Portál SVJ",
+    "appMenu": {
+      "appTitle": "SVL",
+      "items": [
+        {
+          "title": "Byt", "icon": "user/medal", "id": "flat-info",
+          "objectType": "widget", "classId": "e10pro.condo.libs.apps.WidgetFlat"
+        }
+      ]
+    },
+    "mainRoles":
+    {
+      "condo-portal-owner": {
+        "fn": "Majitel"
+      },
+      "condo-portal-lodger": {
+        "fn": "Nájemník"
+      }
+    }
+  }
+}

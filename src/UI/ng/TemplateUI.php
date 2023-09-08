@@ -1,6 +1,7 @@
 <?php
 
 namespace Shipard\UI\ng;
+use \Shipard\UI\Core\ContentRenderer;
 
 /**
  * class TemplateUI
@@ -35,6 +36,9 @@ class TemplateUI extends \Shipard\Utils\TemplateCore
       $o->uiTemplate = $this;
       return $o->render($tagName, $params);
     }
+
+    if ($tagName === 'renderContent')
+      return $this->renderContent($params);
 
     if ($tagName === 'uiWidget')
     {
@@ -136,6 +140,19 @@ class TemplateUI extends \Shipard\Utils\TemplateCore
 	{
 		$templateStr = file_get_contents(__SHPD_ROOT_DIR__.'/'.$stId.'.mustache');
 		return $templateStr;
+	}
+
+  function renderContent ($params)
+	{
+		if (!isset ($params['dataItem']))
+			return '';
+
+		$content = $this->_getVariable($params['dataItem']);
+		$cr = new ContentRenderer ($this->app);
+		$cr->content = $content;
+		$code = $cr->createCode();
+
+		return $code;
 	}
 }
 
