@@ -76,9 +76,23 @@ key
 in
 ids){let
 camPictElement=document.getElementById(ids[key]);if(!camPictElement){uiData['iotCamPictures'][camId]['elms'][key];continue;}let
-pictStyle=camPictElement.getAttribute('data-pict-style');if(pictStyle==='full')pictUrl=server['camUrl']+'imgs/'+camNdx+'/'+data[camNdx]['image'];else
+pictStyle=camPictElement.getAttribute('data-pict-style');if(pictStyle==='video'){let
+videoElement=camPictElement.querySelector('video');const
+played=parseInt(camPictElement.getAttribute('data-stream-started'));if(!played){this.startVideoRTC(videoElement);camPictElement.setAttribute('data-stream-started','1');}}else{if(pictStyle==='full')pictUrl=server['camUrl']+'imgs/'+camNdx+'/'+data[camNdx]['image'];else
 pictUrl=server['camUrl']+'imgs/-w960/-q70/'+camNdx+'/'+data[camNdx]['image'];let
-imgElement=camPictElement.querySelector('img');imgElement.src=pictUrl;}}}}class
+imgElement=camPictElement.querySelector('img');imgElement.src=pictUrl;}}}}startVideoRTC(videoEl){const
+url=videoEl.getAttribute('data-stream-url');const
+webrtc=new
+RTCPeerConnection({iceServers:[{urls:['stun:stun.l.google.com:19302']}],sdpSemantics:'unified-plan'});webrtc.ontrack=function(event){console.log(event.streams.length+' track is delivered');videoEl.srcObject=event.streams[0];videoEl.play();};webrtc.addTransceiver('video',{direction:'sendrecv'});webrtc.onnegotiationneeded=async function
+handleNegotiationNeeded(){const
+offer=await
+webrtc.createOffer();await
+webrtc.setLocalDescription(offer);fetch(url,{method:'POST',body:new
+URLSearchParams({data:btoa(webrtc.localDescription.sdp)})}).then(response=>response.text()).then(data=>{try{webrtc.setRemoteDescription(new
+RTCSessionDescription({type:'answer',sdp:atob(data)}));}catch(e){console.warn(e);}});};const
+webrtcSendChannel=webrtc.createDataChannel('rtsptowebSendChannel');webrtcSendChannel.onopen=(event)=>{console.log(`${webrtcSendChannel.label}has
+opened`);webrtcSendChannel.send('ping');};webrtcSendChannel.onclose=(_event)=>{console.log(`${webrtcSendChannel.label}has
+closed`);startPlay(videoEl,url);};webrtcSendChannel.onmessage=event=>console.log(event.data);}}class
 ShipardWidget{rootElm=null;rootId='';numPad=null;init(rootElm){this.rootElm=rootElm;this.rootId=this.rootElm.getAttribute('id');this.on(this,'click','.shp-widget-action',function(e,ownerWidget){ownerWidget.widgetAction(e)});this.on(this,'click','.shp-widget-action>i',function(e,ownerWidget){ownerWidget.widgetAction(e.parentElement)});}widgetAction(e){let
 actionId=e.getAttribute('data-action');this.doAction(actionId,e);}doAction(actionId,e){console.log("ACTION: ",actionId);switch(actionId){case'inline-action':return this.inlineAction(e);case'select-main-tab':return this.selectMainTab(e);}return 0;}inlineAction(e){if(e.getAttribute('data-object-class-id')===null)return;var
 requestParams={};requestParams['object-class-id']=e.getAttribute('data-object-class-id');requestParams['action-type']=e.getAttribute('data-action-type');this.elementPrefixedAttributes(e,'data-action-param-',requestParams);if(e.getAttribute('data-pk')!==null)requestParams['pk']=e.getAttribute('data-pk');console.log("__INLINE_ACTION",requestParams);}selectMainTab(e){const
