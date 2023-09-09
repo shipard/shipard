@@ -26,6 +26,7 @@ class ShipardWidget {
     {
       case 'inline-action': return this.inlineAction(e);
       case 'select-main-tab': return this.selectMainTab(e);
+			case 'open-popup': return this.openPopup(e);
     }
 
     return 0;
@@ -57,6 +58,18 @@ class ShipardWidget {
     */
 
     console.log("__INLINE_ACTION", requestParams);
+  }
+
+  openPopup(e)
+  {
+    const url = e.getAttribute ('data-url');
+    var height = ((screen.availHeight * window.devicePixelRatio) * 0.8) | 0;
+    var width = (height * .7 + 50) | 0;
+		let popUpId = '-openPopupAtt';
+
+    var nw = window.open(url, "shpd-cl-ng"+popUpId, "location=no,status=no,width=" + width + ",height=" + height);
+		console.log("opened2", nw);
+    nw.focus();
   }
 
   selectMainTab (e)

@@ -94,8 +94,13 @@ webrtcSendChannel=webrtc.createDataChannel('rtsptowebSendChannel');webrtcSendCha
 opened`);webrtcSendChannel.send('ping');};webrtcSendChannel.onclose=(_event)=>{console.log(`${webrtcSendChannel.label}has
 closed`);startPlay(videoEl,url);};webrtcSendChannel.onmessage=event=>console.log(event.data);}}class
 ShipardWidget{rootElm=null;rootId='';numPad=null;init(rootElm){this.rootElm=rootElm;this.rootId=this.rootElm.getAttribute('id');this.on(this,'click','.shp-widget-action',function(e,ownerWidget){ownerWidget.widgetAction(e)});this.on(this,'click','.shp-widget-action>i',function(e,ownerWidget){ownerWidget.widgetAction(e.parentElement)});}widgetAction(e){let
-actionId=e.getAttribute('data-action');this.doAction(actionId,e);}doAction(actionId,e){console.log("ACTION: ",actionId);switch(actionId){case'inline-action':return this.inlineAction(e);case'select-main-tab':return this.selectMainTab(e);}return 0;}inlineAction(e){if(e.getAttribute('data-object-class-id')===null)return;var
-requestParams={};requestParams['object-class-id']=e.getAttribute('data-object-class-id');requestParams['action-type']=e.getAttribute('data-action-type');this.elementPrefixedAttributes(e,'data-action-param-',requestParams);if(e.getAttribute('data-pk')!==null)requestParams['pk']=e.getAttribute('data-pk');console.log("__INLINE_ACTION",requestParams);}selectMainTab(e){const
+actionId=e.getAttribute('data-action');this.doAction(actionId,e);}doAction(actionId,e){console.log("ACTION: ",actionId);switch(actionId){case'inline-action':return this.inlineAction(e);case'select-main-tab':return this.selectMainTab(e);case'open-popup':return this.openPopup(e);}return 0;}inlineAction(e){if(e.getAttribute('data-object-class-id')===null)return;var
+requestParams={};requestParams['object-class-id']=e.getAttribute('data-object-class-id');requestParams['action-type']=e.getAttribute('data-action-type');this.elementPrefixedAttributes(e,'data-action-param-',requestParams);if(e.getAttribute('data-pk')!==null)requestParams['pk']=e.getAttribute('data-pk');console.log("__INLINE_ACTION",requestParams);}openPopup(e){const
+url=e.getAttribute('data-url');var
+height=((screen.availHeight*window.devicePixelRatio)*0.8)|0;var
+width=(height*.7+50)|0;let
+popUpId='-openPopupAtt';var
+nw=window.open(url,"shpd-cl-ng"+popUpId,"location=no,status=no,width="+width+",height="+height);console.log("opened2",nw);nw.focus();}selectMainTab(e){const
 tabsId=e.getAttribute('data-tabs');const
 inputValueId=this.rootId+'_'+tabsId+'_Value';const
 inputElement=document.getElementById(inputValueId);inputElement.value=e.getAttribute('data-tab-id');const
