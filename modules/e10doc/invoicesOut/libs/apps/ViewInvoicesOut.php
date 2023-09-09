@@ -2,7 +2,7 @@
 
 namespace e10doc\invoicesOut\libs\apps;
 use \Shipard\Utils\Utils, \Shipard\Viewer\TableView;
-
+use \e10\base\libs\UtilsBase;
 
 /**
  * class ViewInvoicesOut
@@ -15,7 +15,6 @@ class ViewInvoicesOut extends TableView
 
 	public function init ()
 	{
-
     $this->currencies = $this->table->app()->cfgItem ('e10.base.currencies');
 		$this->today = date('ymd');
 		$this->paymentMethods = $this->table->app()->cfgItem ('e10.docs.paymentMethods');
@@ -48,22 +47,13 @@ class ViewInvoicesOut extends TableView
 	public function selectRows ()
 	{
 		$q = [];
-
-		$q [] = 'SELECT';
-		array_push($q, ' heads.[ndx] as ndx, [docNumber], [title], [sumPrice], [sumBase], [sumTotal], [toPay], [cashBoxDir], [dateIssue], [dateAccounting], [person],');
-		array_push($q, ' heads.[docType] as docType, heads.[docState] as docState, heads.[docStateMain] as docStateMain, symbol1, symbol2, heads.weightGross as weightGross,');
-		array_push($q, ' heads.[taxPayer] as taxPayer, heads.[taxCalc] as taxCalc, heads.currency as currency, heads.homeCurrency as homeCurrency,');
-
-		array_push($q, ' persons.fullName as personFullName, heads.[paymentMethod],');
-		array_push($q, ' heads.[rosReg] as rosReg, heads.[rosState] as rosState,');
-		array_push($q, ' heads.[vatReg], heads.[taxCountry]');
+    array_push($q, 'SELECT [heads].*,');
+		array_push($q, ' persons.fullName as personFullName');
 		array_push($q, ' FROM [e10doc_core_heads] AS heads');
 		array_push($q, ' LEFT JOIN [e10_persons_persons] AS persons ON heads.person = persons.ndx');
 		array_push($q, ' WHERE 1');
 
     $this->appQuery($q);
-
-    array_push($q, ' AND [heads].[docType] = %s', 'invno');
 
     array_push ($q, ' ORDER BY [dateAccounting] DESC, [heads].[docNumber]');
 
@@ -75,6 +65,96 @@ class ViewInvoicesOut extends TableView
   protected function appQuery(&$q)
   {
   }
+
+	protected function balanceInfo ($item, &$listItem)
+	{
+		$bi = new \e10doc\balance\BalanceDocumentInfo($this->app());
+		$bi->setDocRecData ($item);
+		$bi->run ();
+
+		if (!$bi->valid)
+			return;
+
+    $balanceInfo = [];
+
+		$line = [];
+		$line[] = ['text' => utils::datef($item['dateDue']), 'icon' => 'system/iconStar'];
+
+		if ($bi->restAmount < 1.0)
+		{
+			$balanceInfo['text'] = 'Uhrazeno';
+      $balanceInfo['icon'] = 'system/iconCheck';
+      $balanceInfo['class'] = 'bg-success';
+		}
+		else
+    {
+			if ($bi->restAmount == $item['toPay'])
+			{
+        if ($bi->daysOver > 0)
+        {
+          $balanceInfo['text'] = 'NEUHRAZENO';
+          $balanceInfo['icon'] = 'system/iconWarning';
+          $balanceInfo['class'] = 'bg-danger';
+        }
+        else
+        {
+          $balanceInfo['text'] = 'Uhraďte do: '.Utils::datef($item['dateDue'], '%S');
+          $balanceInfo['icon'] = 'system/iconCheck';
+          $balanceInfo['class'] = 'bg-info';
+        }
+			}
+			else
+			{
+        $balanceInfo['text'] = 'Částečně uhrazeno, zbývá '.Utils::nf($bi['restAmount'], 2);
+        $balanceInfo['icon'] = 'system/iconCheck';
+        $balanceInfo['class'] = 'bg-warning';
+			}
+    }
+
+    $listItem['balanceInfo'] = $balanceInfo;
+	}
+
+  public function addReportsForDownload($item, &$listItem)
+	{
+    $docNdx = $item['ndx'];
+    $docNumber = $item['docNumber'];
+
+    $q = [];
+    array_push($q, 'SELECT * FROM [wkf_core_issues]');
+    array_push($q, ' WHERE 1');
+    array_push($q, ' AND recNdx = %i', $docNdx);
+    array_push($q, ' AND tableNdx = %i', 1078);
+    array_push($q, ' ORDER BY ndx DESC');
+    array_push($q, ' LIMIT 1');
+
+    $outBoxRecs = $this->db()->query($q);
+    foreach ($outBoxRecs as $or)
+    {
+      $attachments = UtilsBase::loadAttachments ($this->app(), [$or['ndx']], 'wkf.core.issues');
+      if (isset($attachments[$or['ndx']]['images']))
+      {
+        $attIdx = 0;
+        foreach ($attachments[$or['ndx']]['images'] as $a)
+        {
+          if (strtolower($a['filetype']) !== 'pdf')
+            continue;
+
+          $attFileName = $this->app()->urlRoot.'/att/'.$a['path'].$a['filename'];
+          $attName = $a['name'];
+          if (!$attIdx)
+            $attName = 'VF'.$docNumber;
+
+          if (!str_ends_with($attName, '.pdf'))
+            $attName .= '.pdf';
+
+          $listItem['reportFileName'] = $attFileName;
+
+          $attIdx++;
+          break;
+        }
+      }
+    }
+	}
 
 	public function createToolbar()
 	{

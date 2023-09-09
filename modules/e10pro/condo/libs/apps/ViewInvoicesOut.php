@@ -24,12 +24,13 @@ class ViewInvoicesOut extends \e10doc\invoicesOut\libs\apps\ViewInvoicesOut
 			$this->flatNdx = $ac['flatNdx'] ?? 0;
 
 		$this->userContext = $userContexts['condo']['flats'][$this->flatNdx];
-
 	}
 
   public function renderRow ($item)
 	{
     $listItem = parent::renderRow($item);
+    $this->balanceInfo ($item, $listItem);
+    $this->addReportsForDownload($item, $listItem);
 
 		return $listItem;
 	}
@@ -38,7 +39,6 @@ class ViewInvoicesOut extends \e10doc\invoicesOut\libs\apps\ViewInvoicesOut
   {
     array_push($q, ' AND [heads].[person] = %i', $this->userContext['customerNdx']);
     array_push($q, ' AND [heads].[workOrder] = %i', $this->flatNdx);
+    array_push($q, ' AND [heads].[docType] = %s', 'invno');
   }
 }
-
-

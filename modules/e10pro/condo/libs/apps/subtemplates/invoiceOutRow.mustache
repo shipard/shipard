@@ -6,7 +6,7 @@
   </div>
 
   <div class="d-flex justify-content-between align-items-center">
-    <span class="badge bg-success me-2">{{{@icon;icon:user/check}}} Zaplaceno</span>
-    <a class="btn btn-outline-secondary btn-sm flex-shrink-1">{{{@icon;icon:user/fileDownload}}}</a>
+    <span class="badge {{data.listRow.balanceInfo.class}} me-2">{{{@icon;dataItem:data.listRow.balanceInfo.icon}}} {{data.listRow.balanceInfo.text}}</span>
+    <span class="btn btn-outline-secondary btn-sm flex-shrink-1 shp-widget-action" data-url='{{data.listRow.reportFileName}}' data-action='open-popup'>{{{@icon;icon:user/fileDownload}}}</span>
   </div>
 </div>
