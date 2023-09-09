@@ -19,7 +19,7 @@ class GetHostingInfo extends Utility
 
 	function loadSystemCertificates()
 	{
-		$sc = ['all.shipard.app', 'all.shipard.pro', 'all.shipard.cz', 'all.shipard.com'];
+		$sc = ['all.shipard.app', 'all.shipard.pro', 'all.shipard.cz', 'all.shipard.com', 'all.shipard.online'];
 
 		$e = new \lib\hosting\services\MasterCertificatesManager($this);
 		$this->data['certificates'] = $e->loadCertificates($sc);

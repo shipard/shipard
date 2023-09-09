@@ -90,7 +90,7 @@ class TableUIs extends DbTable
 		if (!$webServers || !isset($webServers['e10']['ui']['domains']) || !count($webServers['e10']['ui']['domains']))
 			return;
 
-		$systemDomainsCerts = ['shipard.app', 'shipard.pro', 'shipard.cz'];
+		$systemDomainsCerts = ['shipard.app', 'shipard.pro', 'shipard.cz', 'shipard.online'];
 		$dsid = $this->app()->cfgItem('dsid');
 
 		array_map ("unlink", glob (__APP_DIR__.'/config/nginx/'.$dsid.'-ui*'));
@@ -99,8 +99,14 @@ class TableUIs extends DbTable
 		{
 			$cfg = '';
 
+			$domainParts = explode('.', $domain);
+			$cntAllDomainParts = count($domainParts);
+			while(count($domainParts) > 2)
+				array_shift($domainParts);
+			$coreDomain = implode('.', $domainParts);
+
 			$cfg .= '# '.$domain;
-			$cfg .= '; ui cfg ver 0.1'."\n\n";
+			$cfg .= '; ui cfg ver 0.2'."\n\n";
 
 			$domainParts = explode('.', $domain);
 			$cntAllDomainParts = count($domainParts);
@@ -108,7 +114,7 @@ class TableUIs extends DbTable
 				array_shift($domainParts);
 			$coreDomain = implode('.', $domainParts);
 
-			$isSystemCert = 0;
+			$isSystemCert = (in_array($coreDomain, $systemDomainsCerts) && $cntAllDomainParts > 2);
 			$certId = $isSystemCert ? 'all.'.$coreDomain : $domain;
 			$certPath = $isSystemCert ? '/var/lib/shipard/certs' : __APP_DIR__.'/config/nginx/certs';
 
@@ -125,6 +131,19 @@ class TableUIs extends DbTable
 				$cfg .= "\tssl_dhparam /etc/ssl/dhparam.pem;\n";
 			$cfg .= "\tinclude /usr/lib/shipard/etc/nginx/shpd-one-app.conf;\n";
 			$cfg .= "\tinclude /usr/lib/shipard/etc/nginx/shpd-https.conf;\n";
+			$cfg .= "}\n\n";
+
+			// -- http redirects
+			$cfg .= "server {\n";
+				$cfg .= "\tlisten 80;\n";
+				$cfg .= "\tserver_name $domain";
+				$cfg .= ";\n";
+
+				$cfg .= "\troot /var/www;\n";
+
+				$cfg .= "\tlocation / {\n";
+				$cfg .= "\t\treturn 301 https://$domain".'$request_uri'.";\n";
+				$cfg .= "\t}\n";
 			$cfg .= "}\n\n";
 
 			// -- save
