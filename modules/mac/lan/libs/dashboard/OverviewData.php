@@ -73,7 +73,7 @@ class OverviewData extends Utility
 	{
 		$q[] = 'SELECT devices.ndx AS deviceNdx, devices.fullName AS deviceFullName, devices.deviceKind, devices.id AS deviceId, devices.uid AS deviceUid, devices.hideFromDR, devices.monitored, devices.vmId AS deviceVMId,';
 		array_push ($q, ' devices.alerts, devices.lan, devices.place, devices.rack, devices.macDataSource, devices.macDeviceCfg, devices.macDeviceType, devices.lan AS deviceLan,');
-		array_push ($q, ' devices.hwMode, devices.hwServer, parentDevices.id AS parentDeviceId,');
+		array_push ($q, ' devices.hwMode, devices.hwServer, parentDevices.id AS parentDeviceId, devices.disableSNMP, ');
 		array_push ($q, ' lans.mainServerCameras');
 		array_push ($q, ' FROM [mac_lan_devices] AS devices');
 		array_push ($q, ' LEFT JOIN e10_base_places AS places ON devices.place = places.ndx');
@@ -131,7 +131,7 @@ class OverviewData extends Utility
 				$this->devicesWithDashboards[] = $deviceNdx;
 
 			//if ($this->devices[$deviceNdx]['macDataSource'] && $this->devices[$deviceNdx]['macDataSource'] === $this->macDataSourceNdx && !in_array($deviceNdx, $this->devicesWithSnmpRealtime))
-			if (isset($dk['useMonitoring']) && in_array('passive', $dk['useMonitoring']))
+			if (isset($dk['useMonitoring']) && in_array('passive', $dk['useMonitoring']) && !$r['disableSNMP'])
 				$this->devicesWithSnmpRealtime[] = $deviceNdx;
 
 			if ($r['macDeviceType'] !== '' && $r['macDeviceCfg'] !== '')
