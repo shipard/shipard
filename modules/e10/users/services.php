@@ -58,9 +58,13 @@ class ModuleServices extends \e10\cli\ModuleServices
 		$maxCount = 50;
 
 		$q = [];
-		array_push($q, 'SELECT * FROM [e10_users_requests]');
+		array_push($q, 'SELECT [requests].* ');
+		array_push($q, ' FROM [e10_users_requests] AS [requests]');
+		array_push($q, ' LEFT JOIN e10_users_users AS [users] ON [requests].[user] = [users].ndx');
 		array_push($q, ' WHERE 1');
+		array_push($q, ' AND [users].[docState] = %i', 4000);
 		array_push($q, ' AND requestState <= %i', 1);
+		array_push($q, ' ORDER BY [requests].ndx');
 
 		$cnt = 0;
 		$rows = $this->db()->query($q);
