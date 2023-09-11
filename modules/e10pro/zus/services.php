@@ -86,6 +86,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
     array_push($q, ' LEFT JOIN [e10_persons_persons] AS [persons] ON [contacts].person = [persons].ndx');
     array_push($q, ' WHERE 1');
     array_push($q, ' AND [persons].[docState] = %i', 4000);
+		array_push($q, ' AND [contacts].[docState] = %i', 4000);
 		array_push($q, ' AND [contacts].[flagContact] = %i', 1);
 		array_push($q, ' AND [contacts].[contactEmail] != %s', '');
 		array_push($q, ' AND [person] = %i', $personNdx);
