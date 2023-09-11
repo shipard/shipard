@@ -55,21 +55,28 @@ class ModuleServices extends \e10\cli\ModuleServices
 
 	protected function sendRequests()
 	{
+		$maxCount = 50;
+
 		$q = [];
 		array_push($q, 'SELECT * FROM [e10_users_requests]');
 		array_push($q, ' WHERE 1');
-		array_push($q, ' AND requestState = %i', 1);
+		array_push($q, ' AND requestState <= %i', 1);
 
+		$cnt = 0;
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
-
 			$sendRequestEngine = new \e10\users\libs\SendRequestEngine($this->app());
 			$sendRequestEngine->setRequestNdx($r['ndx']);
 
 			echo '* '.$sendRequestEngine->userRecData['fullName'].'; '.$sendRequestEngine->userRecData['email']."\n";
 
 			$sendRequestEngine->sendRequest();
+			sleep(5);
+
+			$cnt++;
+			if ($cnt > $maxCount)
+				break;
 		}
 	}
 
