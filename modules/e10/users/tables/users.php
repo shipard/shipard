@@ -95,14 +95,12 @@ class ViewUsers extends TableView
 		$listItem ['t2'] = [
 			['text' => $item['login'], 'class' => 'label label-default', 'icon' => 'user/signIn']
 		];
-		if ($item['login'] !== $item['email'])
+		if ($item['login'] !== $item['email'] && $item['email'] !== '')
 			$listItem ['t2'][] = ['text' => $item['email'], 'class' => 'label label-default', 'icon' => 'system/iconEmail'];
 
 		$listItem ['i2'] = [
 			['text' => $this->accountStates[$item['accState']]['fn'], 'class' => 'label label-default'],
 		];
-
-
 		$listItem ['icon'] = $this->table->tableIcon($item);
 
 		return $listItem;
@@ -130,6 +128,14 @@ class ViewUsers extends TableView
 		if (isset ($qv['accStates']))
 			array_push ($q, ' AND [users].[accState] IN %in', array_keys($qv['accStates']));
 
+		if (isset ($qv['usersRoles']))
+		{
+			array_push ($q, ' AND EXISTS (',
+			'SELECT docLinks.dstRecId FROM [e10_base_doclinks] as docLinks',
+			' WHERE [users].ndx = srcRecId AND srcTableId = %s', 'e10.users.users',
+			' AND dstTableId = %s', 'e10.users.roles',
+			' AND docLinks.dstRecId IN %in)', array_keys($qv['usersRoles']));
+		}
 
 		$this->queryMain ($q, '[users].', ['[fullName]', '[ndx]']);
 		$this->runQuery ($q);
@@ -139,12 +145,18 @@ class ViewUsers extends TableView
 	{
 		$qry = [];
 
-
 		$enum = [];
 		foreach ($this->app()->cfgItem('e10.users.accountStates') as $ndx => $k)
 			$enum[$ndx] = $k['fn'];
 		$this->qryPanelAddCheckBoxes($panel, $qry, $enum, 'accStates', 'Stav účtu');
 
+		$enum = [];
+		$rolesRows = $this->db()->query('SELECT * FROM [e10_users_roles] WHERE [docState] = %i', 4000);
+		foreach ($rolesRows as $role)
+		{
+			$enum[$role['ndx']] = $role['fullName'];
+		}
+		$this->qryPanelAddCheckBoxes($panel, $qry, $enum, 'usersRoles', 'Role uživatelů');
 
 		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}

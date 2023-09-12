@@ -40,7 +40,10 @@ class SendRequestEngine extends Utility
     }
 
 		$url = 'https://'.$host;
-    $url .= '/user/'.$this->requestTypeCfg['urlPart'].'/'.$this->requestRecData['requestId'];
+		if ($this->requestRecData['shortId'] !== '')
+    	$url .= '/a/'.$this->requestRecData['shortId'];
+		else
+			$url .= '/user/'.$this->requestTypeCfg['urlPart'].'/'.$this->requestRecData['requestId'];
 		return $url;
 	}
 

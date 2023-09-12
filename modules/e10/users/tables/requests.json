@@ -11,6 +11,7 @@
       "enumCfg": {"cfgItem": "e10.users.requestStates", "cfgValue": "", "cfgText": "fn"}},
 
     {"id": "requestId", "name": "ID požadavku", "type": "string", "len": 60, "options": ["ascii"]},
+    {"id": "shortId", "name": "Zkrácené ID požadavku", "type": "string", "len": 6, "options": ["ascii"]},
 
     {"id": "tsCreated", "name": "Okamžik vytvoření", "type": "timestamp"},
     {"id": "tsSent", "name": "Okamžik odeslání", "type": "timestamp"},

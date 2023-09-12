@@ -88,6 +88,11 @@ class Router extends Utility
 			return new Response ($this->app, "invalid url 1/".$this->uiId, 404);
 		}
 
+		if ($first === 'a')
+		{
+			$this->checkCodeActivation($this->urlPath[1] ?? '');
+			die();
+		}
 		if ($first === 'manifest.webmanifest')
 		{
 			$object = $this->app->createObject('Shipard.UI.ng.WebManifest');
@@ -193,5 +198,12 @@ class Router extends Utility
 
 		$dsIcon = $this->app->dsIcon();
 		return $dsIcon['iconUrl'];
+	}
+
+	protected function checkCodeActivation($shortId)
+	{
+		$redirTo = $this->uiRoot.'/user/activate/'.$shortId;
+		$redirTo = str_replace('//', '/', $redirTo);
+		header ('Location: ' . $redirTo);
 	}
 }
