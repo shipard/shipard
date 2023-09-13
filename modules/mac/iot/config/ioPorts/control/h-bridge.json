@@ -10,5 +10,36 @@
 				"id": "pin2", "name": "Pin 2", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["out"]}
 			}
 		]
+	},
+	"dataModel": {
+		"itemType": "controls",
+		"data-type": "binary",
+		"valueClass": "mac.iot.libs.IotDevicePayloadValueIotBox",
+		"enumSet": {
+			"2": {"title": "ON"},
+			"1": {"title": "OFF"},
+			"push": {
+				"title": "PUSH",
+				"fields": {
+					"columns": [
+						{"id": "interval", "name": "Doba trvání [ms]", "type": "int"}
+					]
+				}
+			},
+			"unpush": {
+				"title": "UNPUSH",
+				"fields": {
+					"columns": [
+						{"id": "interval", "name": "Doba trvání [ms]", "type": "int"}
+					]
+				}
+			}
+		},
+		"enumGet": {
+			"2": {"title": "ON"},
+			"1": {"title": "OFF"}
+		},
+		"value-on": "2",
+		"value-off": "1"
 	}
 }
