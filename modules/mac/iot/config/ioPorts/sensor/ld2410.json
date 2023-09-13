@@ -1,0 +1,71 @@
+{
+	"name": "Detektor pohybu LD2410",
+	"title": "Detektor pohybu LD2410",
+	"useValueKind": 1,
+	"fields": {
+		"columns": [
+			{
+				"id": "pinRX", "name": "Pin RX (vstup)", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["in", "hwInt"]}
+			},
+			{
+				"id": "pinTX", "name": "Pin TX (výstup)", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["out", "hwInt"]}
+			},
+			{
+				"id": "gt0s", "name": "Citlivost G0 nehybný cíl", "type": "int", "placeholder": "0 - 100"
+			},
+			{
+				"id": "gt1s", "name": "Citlivost G1 nehybný cíl", "type": "int", "placeholder": "0 - 100"
+			},
+			{
+				"id": "gt2s", "name": "Citlivost G2 nehybný cíl", "type": "int", "placeholder": "0 - 100"
+			},
+			{
+				"id": "gt3s", "name": "Citlivost G3 nehybný cíl", "type": "int", "placeholder": "0 - 100"
+			},
+			{
+				"id": "gt4s", "name": "Citlivost G4 nehybný cíl", "type": "int", "placeholder": "0 - 100"
+			},
+			{
+				"id": "gt5s", "name": "Citlivost G5 nehybný cíl", "type": "int", "placeholder": "0 - 100"
+			},
+			{
+				"id": "gt6s", "name": "Citlivost G6 nehybný cíl", "type": "int", "placeholder": "0 - 100"
+			},
+			{
+				"id": "gt7s", "name": "Citlivost G7 nehybný cíl", "type": "int", "placeholder": "0 - 100"
+			},
+			{
+				"id": "gt8s", "name": "Citlivost G8 nehybný cíl", "type": "int", "placeholder": "0 - 100"
+			},
+
+			{
+				"id": "gt0m", "name": "Citlivost G0 pohyb", "type": "int", "placeholder": "0 - 100"
+			},
+			{
+				"id": "gt1m", "name": "Citlivost G1 pohyb", "type": "int", "placeholder": "0 - 100"
+			},
+			{
+				"id": "gt2m", "name": "Citlivost G2 pohyb", "type": "int", "placeholder": "0 - 100"
+			},
+			{
+				"id": "gt3m", "name": "Citlivost G3 pohyb", "type": "int", "placeholder": "0 - 100"
+			},
+			{
+				"id": "gt4m", "name": "Citlivost G4 pohyb", "type": "int", "placeholder": "0 - 100"
+			},
+			{
+				"id": "gt5m", "name": "Citlivost G5 pohyb", "type": "int", "placeholder": "0 - 100"
+			},
+			{
+				"id": "gt6m", "name": "Citlivost G6 pohyb", "type": "int", "placeholder": "0 - 100"
+			},
+			{
+				"id": "gt7m", "name": "Citlivost G7 pohyb", "type": "int", "placeholder": "0 - 100"
+			},
+			{
+				"id": "gt8m", "name": "Citlivost G8 pohyb", "type": "int", "placeholder": "0 - 100"
+			}
+
+		]
+	}
+}

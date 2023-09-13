@@ -1,0 +1,112 @@
+{
+	"gpioLayout": "shipard/espressif/esp32-generic",
+	"enabledPins": {
+		"p18": {"title": "IO1"},
+		"p19": {"title": "IO2"},
+		"p23": {"title": "IO3"},
+		"p27": {"title": "IO4"}
+	},
+	"fields": {
+		"groups": [
+			{"id":  "in1", "title":  "Vstup 1"},
+			{"id":  "in2", "title":  "Vstup 2"},
+			{"id":  "in3", "title":  "Vstup 3"},
+			{"id":  "in4", "title":  "Vstup 4"},
+      {"id":  "espNow", "title":  "ESP-NOW server"}
+		],
+		"columns": [
+      {
+				"id": "in1Enabled", "group":  "in1", "name": "Vstup 1 je povolen", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			},
+			{
+				"id": "in1PortId", "group":  "in1", "name": "ID portu Vstup 1", "label": "ID portu", "type": "string", "len": 30, "enabled": {"in1Enabled": "1"}
+			},
+			{
+				"id": "in1FullName", "group":  "in1", "name": "Název portu Vstup 1", "label": "Název", "type": "string", "len": 80, "enabled": {"in1Enabled": "1"}
+			},
+
+      {
+				"id": "in2Enabled", "group":  "in2", "name": "Vstup 2 je povolen", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			},
+			{
+				"id": "in2PortId", "group":  "in2", "name": "ID portu Vstup 2", "label": "ID portu", "type": "string", "len": 30, "enabled": {"in2Enabled": "1"}
+			},
+			{
+				"id": "in2FullName", "group":  "in2", "name": "Název portu Vstup 2", "label": "Název", "type": "string", "len": 80, "enabled": {"in2Enabled": "1"}
+			},
+
+      {
+				"id": "in3Enabled", "group":  "in3", "name": "Vstup 3 je povolen", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			},
+			{
+				"id": "in3PortId", "group":  "in3", "name": "ID portu Vstup 3", "label": "ID portu", "type": "string", "len": 30, "enabled": {"in3Enabled": "1"}
+			},
+			{
+				"id": "in3FullName", "group":  "in3", "name": "Název portu Vstup 3", "label": "Název", "type": "string", "len": 80, "enabled": {"in3Enabled": "1"}
+			},
+
+      {
+				"id": "in4Enabled", "group":  "in4", "name": "Vstup 4 je povolen", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			},
+			{
+				"id": "in4PortId", "group":  "in4", "name": "ID portu Vstup 4", "label": "ID portu", "type": "string", "len": 30, "enabled": {"in4Enabled": "1"}
+			},
+			{
+				"id": "in4FullName", "group":  "in4", "name": "Název portu Vstup 4", "label": "Název", "type": "string", "len": 80, "enabled": {"in4Enabled": "1"}
+			},
+
+			{
+				"id": "espNowServerEnabled", "group":  "espNow", "name": "Povolit ESP-NOW server", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			}
+		]
+	},
+	"device": {
+		"hbLEDMode": 1,
+		"hbLEDPin": 2
+	},
+	"fixedIOPorts": {
+		"in1": {
+			"type": "input/binary",
+			"portId": "in1",
+
+			"pin": "p25",
+
+			"_rowColumns": {"in1PortId": "portId", "in1FullName": "fullName"},
+      "_portDisabled": {"in1Enabled": 0}
+		},
+		"in2": {
+			"type": "input/binary",
+			"portId": "in2",
+
+			"pin": "p26",
+
+			"_rowColumns": {"in2PortId": "portId", "in1FullName": "fullName"},
+      "_portDisabled": {"in2Enabled": 0}
+		},
+		"in3": {
+			"type": "input/binary",
+			"portId": "in3",
+
+			"pin": "p32",
+
+			"_rowColumns": {"in3PortId": "portId", "in1FullName": "fullName"},
+      "_portDisabled": {"in3Enabled": 0}
+		},
+		"in4": {
+			"type": "input/binary",
+			"portId": "in4",
+
+			"pin": "p33",
+
+			"_rowColumns": {"in4PortId": "portId", "in1FullName": "fullName"},
+      "_portDisabled": {"in4Enabled": 0}
+		},
+
+		"esp-now-server": {
+			"type": "networks/esp-now-server",
+			"portId": "esp-now",
+			"_portDisabled": {"espNowServerEnabled": 0}
+		}
+	},
+	"fwId": "iot-box-can-core-sms72-esp32-can"
+}

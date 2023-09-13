@@ -1,0 +1,18 @@
+{
+	"eth": {
+		"fn": "Ethernet",
+    "needOwner": 0
+	},
+	"wifi": {
+		"fn": "WiFi",
+    "needOwner": 0
+	},
+	"can": {
+		"fn": "CAN",
+    "needOwner": 1
+	},
+	"esp-now": {
+		"fn": "ESP NOW",
+    "needOwner": 1
+	}
+}

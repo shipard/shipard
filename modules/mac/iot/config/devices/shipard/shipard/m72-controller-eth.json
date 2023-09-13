@@ -1,0 +1,57 @@
+{
+	"gpioLayout": "shipard/espressif/esp32-generic",
+	"enabledPins": {
+		"p21": {"title": "OLED.2.sda"},
+		"p22": {"title": "OLED.3.scl"},
+		"p2": {"title": "IDC EXP 2"},
+		"p16": {"title": "IDC EXP 16"}
+	},
+	"fields": {
+		"groups": [
+      {"id":  "can", "title":  "CAN bus router"},
+			{"id":  "opts", "title":  "Nastavení"},
+      {"id":  "espNow", "title":  "ESP-NOW server"}
+		],
+		"columns": [
+			{
+				"id": "setFanMode", "group":  "opts", "name": "Nastavovat rychlost ventilátoru", "type": "enumInt", "options": ["saveOnChange"],
+				"enumValues": {"1": "Ne", "2": "Ano"}
+			},
+			{
+				"id": "fanSpeed", "group":  "opts", "name": "Rychlost", "type": "enumInt", "enabled": {"setFanMode": "2"},
+				"enumValues": {"8": "3%", "25": "10%", "51": "20%", "76": "30%", "102": "40%", "128": "50%", "153": "60%", "178": "70%", "204": "80%", "229": "90%"}
+			},
+
+      {
+        "id": "canRouterEnabled", "group":  "can", "name": "Povolit CAN bus router", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+      },
+			{
+				"id": "espNowServerEnabled", "group":  "espNow", "name": "Povolit ESP-NOW server", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			}
+		]
+	},
+	"fixedIOPorts": {
+		"fan": {
+			"type": "control/level",
+			"portId": "fan",
+			"pin": "p15"
+		},
+
+		"can-bus-router": {
+			"type": "router/can",
+			"portId": "can",
+
+			"pinRX": 33,
+			"pinTX": 32,
+
+			"_portDisabled": {"canRouterEnabled": 0}
+		},
+
+    "esp-now-server": {
+			"type": "networks/esp-now-server",
+			"portId": "esp-now",
+			"_portDisabled": {"espNowServerEnabled": 0}
+		}
+	},
+	"fwId": "iot-box-lan-core-sms72-esp32-eth"
+}

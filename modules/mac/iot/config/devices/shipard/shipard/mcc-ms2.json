@@ -1,0 +1,62 @@
+{
+	"gpioLayout": "shipard/espressif/esp32-generic",
+	"enabledPins": {
+		"p21": {"title": "OLED.2.sda"},
+		"p22": {"title": "OLED.3.scl"}
+	},
+	"fields": {
+		"groups": [
+			{"id":  "s1", "title":  "Čidlo 1"},
+			{"id":  "s2", "title":  "Čidlo 2"},
+			{"id":  "opts", "title":  "Nastavení"}
+		],
+		"columns": [
+      {
+				"id": "sensor1Enabled", "group":  "s1", "name": "Čidlo 1 je povoleno", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			},
+			{
+				"id": "sensor1PortId", "group":  "s1", "name": "ID portu Čidlo 1", "label": "ID portu", "type": "string", "len": 30, "enabled": {"sensor1Enabled": "1"}
+			},
+			{
+				"id": "sensor1FullName", "group":  "s1", "name": "Název portu Čidlo 1", "label": "Název", "type": "string", "len": 80, "enabled": {"sensor1Enabled": "1"}
+			},
+
+      {
+				"id": "sensor2Enabled", "group":  "s2", "name": "Čidlo 2 je povoleno", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			},
+			{
+				"id": "sensor2PortId", "group":  "s2", "name": "ID portu Čidlo 2", "label": "ID portu", "type": "string", "len": 30, "enabled": {"sensor2Enabled": "1"}
+			},
+			{
+				"id": "sensor2FullName", "group":  "s2", "name": "Název portu Čidlo 2", "label": "Název", "type": "string", "len": 80, "enabled": {"sensor2Enabled": "1"}
+			}
+		]
+	},
+	"device": {
+		"hbLEDMode": 1,
+		"hbLEDPin": 2
+	},
+	"fixedIOPorts": {
+		"sensor1": {
+			"type": "sensor/ld2410",
+			"portId": "sensor1",
+
+			"pinRX": "p18",
+			"pinTX": "p19",
+
+			"_rowColumns": {"sensor1PortId": "portId", "sensor1FullName": "fullName"},
+      "_portDisabled": {"sensor1Enabled": 0}
+		},
+		"sensor2": {
+			"type": "sensor/ld2410",
+			"portId": "sensor2",
+
+			"pinRX": "p25",
+			"pinTX": "p26",
+
+			"_rowColumns": {"sensor2PortId": "portId", "sensor2FullName": "fullName"},
+      "_portDisabled": {"sensor2Enabled": 0}
+		}
+	},
+	"fwId": "iot-box-can-core-sms72-esp32-can"
+}

@@ -1,0 +1,154 @@
+{
+	"gpioLayout": "shipard/espressif/esp32-generic",
+	"enabledPins": {
+		"p21": {"title": "OLED.2.sda"},
+		"p22": {"title": "OLED.3.scl"}
+	},
+	"fields": {
+		"groups": [
+			{"id":  "r1", "title":  "Relé 1"},
+			{"id":  "r2", "title":  "Relé 2"},
+			{"id":  "r3", "title":  "Relé 3"},
+			{"id":  "r4", "title":  "Relé 4"},
+			{"id":  "opts", "title":  "Nastavení"},
+      {"id":  "can", "title":  "CAN bus router"},
+      {"id":  "espNow", "title":  "ESP-NOW server"}
+		],
+		"columns": [
+      {
+				"id": "relay1Enabled", "group":  "r1", "name": "Relé 1 je povoleno", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			},
+			{
+				"id": "relay1PortId", "group":  "r1", "name": "ID portu Relé 1", "label": "ID portu", "type": "string", "len": 30, "enabled": {"relay1Enabled": "1"}
+			},
+			{
+				"id": "relay1FullName", "group":  "r1", "name": "Název portu Relé 1", "label": "Název", "type": "string", "len": 80, "enabled": {"relay1Enabled": "1"}
+			},
+
+      {
+				"id": "relay2Enabled", "group":  "r2", "name": "Relé 2 je povoleno", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			},
+			{
+				"id": "relay2PortId", "group":  "r2", "name": "ID portu Relé 2", "label": "ID portu", "type": "string", "len": 30, "enabled": {"relay2Enabled": "1"}
+			},
+			{
+				"id": "relay2FullName", "group":  "r2", "name": "Název portu Relé 2", "label": "Název", "type": "string", "len": 80, "enabled": {"relay2Enabled": "1"}
+			},
+
+      {
+				"id": "relay3Enabled", "group":  "r3", "name": "Relé 3 je povoleno", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			},
+			{
+				"id": "relay3PortId", "group":  "r3", "name": "ID portu Relé 3", "label": "ID portu", "type": "string", "len": 30, "enabled": {"relay3Enabled": "1"}
+			},
+			{
+				"id": "relay3FullName", "group":  "r3", "name": "Název portu Relé 3", "label": "Název", "type": "string", "len": 80, "enabled": {"relay3Enabled": "1"}
+			},
+
+      {
+				"id": "relay4Enabled", "group":  "r4", "name": "Relé 4 je povoleno", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			},
+			{
+				"id": "relay4PortId", "group":  "r4", "name": "ID portu Relé 4", "label": "ID portu", "type": "string", "len": 30, "enabled": {"relay4Enabled": "1"}
+			},
+			{
+				"id": "relay4FullName", "group":  "r4", "name": "Název portu Relé 4", "label": "Název", "type": "string", "len": 80, "enabled": {"relay4Enabled": "1"}
+			},
+
+			{
+				"id": "setLedMode", "group":  "opts", "name": "Nastavovat jas LED", "type": "enumInt", "options": ["saveOnChange"],
+				"enumValues": {"1": "Ne", "2": "Ano"}
+			},
+			{
+				"id": "ledBr", "group":  "opts", "name": "Jas LED", "type": "enumInt", "enabled": {"setLedMode": "2"},
+				"enumValues": {"8": "3%", "25": "10%", "51": "20%", "76": "30%", "102": "40%", "128": "50%", "153": "60%", "178": "70%", "204": "80%", "229": "90%"}
+			},
+
+			{
+				"id": "canRouterEnabled", "group":  "can", "name": "Povolit CAN bus router", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			},
+			{
+				"id": "espNowServerEnabled", "group":  "espNow", "name": "Povolit ESP-NOW server", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			}
+		]
+	},
+	"device": {
+		"hbLEDMode": 1,
+		"hbLEDPin": 2
+	},
+	"fixedIOPorts": {
+		"relay1": {
+			"type": "control/h-bridge",
+			"portId": "relay1",
+
+			"pin1": "p19",
+			"pin2": "p18",
+
+			"pinLed": 5,
+
+			"_rowColumns": {"relay1PortId": "portId", "relay1FullName": "fullName"},
+			"_cfgColumns": {"setLedMode": "ledMode", "ledBr": "ledBr"},
+
+      "_portDisabled": {"relay1Enabled": 0}
+		},
+		"relay2": {
+			"type": "control/h-bridge",
+			"portId": "relay2",
+
+			"pin1": "p27",
+			"pin2": "p23",
+
+			"pinLed": 12,
+
+			"_rowColumns": {"relay2PortId": "portId", "relay2FullName": "fullName"},
+			"_cfgColumns": {"setLedMode": "ledMode", "ledBr": "ledBr"},
+      "_portDisabled": {"relay2Enabled": 0}
+		},
+		"relay3": {
+			"type": "control/h-bridge",
+			"portId": "relay3",
+
+			"pin1": "p25",
+			"pin2": "p26",
+
+			"pinLed": 14,
+
+			"_rowColumns": {"relay3PortId": "portId", "relay3FullName": "fullName"},
+			"_cfgColumns": {"setLedMode": "ledMode", "ledBr": "ledBr"},
+      "_portDisabled": {"relay3Enabled": 0}
+		},
+		"relay4": {
+			"type": "control/h-bridge",
+			"portId": "relay4",
+
+			"pin1": "p32",
+			"pin2": "p33",
+
+			"pinLed": 15,
+
+			"_rowColumns": {"relay4PortId": "portId", "relay4FullName": "fullName"},
+			"_cfgColumns": {"setLedMode": "ledMode", "ledBr": "ledBr"},
+      "_portDisabled": {"relay4Enabled": 0}
+		},
+
+		"dimLeds": {
+			"type": "control/level",
+			"portId": "dimLeds",
+			"pin": "p5"
+		},
+
+		"esp-now-server": {
+			"type": "networks/esp-now-server",
+			"portId": "esp-now",
+			"_portDisabled": {"espNowServerEnabled": 0}
+		},
+		"can-bus-router": {
+			"type": "router/can",
+			"portId": "can",
+			"pinRX": 17,
+			"pinTX": 16,
+			"_portDisabled": {"canRouterEnabled": 0}
+		}
+	},
+	"fwId": "iot-box-can-core-sms72-esp32-can"
+}

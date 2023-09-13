@@ -1,4 +1,34 @@
 {
+	"m72-controller-eth": {
+		"fn": "Kontroler ETH",
+		"iotKind": "shib", "iotSubKind": "shib"
+	},
+	"m72-bist-relays-4x": {
+		"fn": "Bistabilní relé 4x",
+		"iotKind": "shib", "iotSubKind": "shib"
+	},
+	"m72-bist-relays-2x": {
+		"fn": "Bistabilní relé 2x",
+		"iotKind": "shib", "iotSubKind": "shib"
+	},
+	"m72-io-4x-4x": {
+		"fn": "IO: 4xIN + 4xGPIO",
+		"iotKind": "shib", "iotSubKind": "shib"
+	},
+	"m72-exp-board"
+	: {
+		"fn": "Expansion board",
+		"iotKind": "shib", "iotSubKind": "shib"
+	},
+	"m72-gsm"
+	: {
+		"fn": "GSM board",
+		"iotKind": "shib", "iotSubKind": "shib"
+	},
+	"mcc-ms2": {
+		"fn": "pohybový sensor 2x",
+		"iotKind": "shib", "iotSubKind": "shib"
+	},
 	"rs232gw-oli-esp32poe-2": {
 		"fn": "RS232 POE Gateway",
 		"iotKind": "shib", "iotSubKind": "shib"

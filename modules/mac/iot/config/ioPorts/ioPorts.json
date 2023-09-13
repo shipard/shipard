@@ -51,6 +51,9 @@
 	"sensor/distance-us": {
 		"name": "Měřič vzdálenosti (ultrazvukový)", "sensor": 1, "dataType": "numeric"
 	},
+	"sensor/ld2410": {
+		"name": "Detektor pohybu LD2410", "sensor": 1
+	},
 
 	"display/nextion": {
 		"name": "Displej Nextion"
@@ -83,6 +86,10 @@
 
 	"networks/rs485-server": {
 		"name": "RS-485 server", "dataType": "none"
+	},
+
+	"router/can": {
+		"name": "CAN Bus Router", "dataType": "none"
 	},
 
 	"cam/esp32": {

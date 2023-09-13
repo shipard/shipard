@@ -1,6 +1,9 @@
 {
 	"gpioLayout": "shipard/olimex/oli-esp32-poe",
-	"enabledPins": ["uext-5", "uext-6"],
+	"enabledPins": {
+		"uext-5": {"title": "UEXT5"},
+		"uext-6": {"title": "UEXT6"}
+	},
 	"fields": {
 		"groups": [
 			{"id":  "l1", "title":  "Sériová linka 1"},

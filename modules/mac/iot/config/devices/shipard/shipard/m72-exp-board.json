@@ -1,0 +1,43 @@
+{
+	"gpioLayout": "shipard/espressif/esp32-generic",
+	"enabledPins": {
+		"p0": {"title": "0"},
+		"p2": {"title": "2"},
+		"p5": {"title": "5"},
+		"p12": {"title": "12"},
+		"p13": {"title": "13"},
+		"p14": {"title": "14"},
+		"p15": {"title": "15"},
+		"p18": {"title": "18"},
+		"p21": {"title": "21"},
+		"p22": {"title": "22"},
+		"p23": {"title": "23"},
+		"p25": {"title": "25"},
+		"p26": {"title": "26"},
+		"p27": {"title": "27"},
+		"p32": {"title": "32"},
+		"p33": {"title": "33"},
+		"p34": {"title": "34"},
+		"p35": {"title": "35"},
+		"p36": {"title": "36"},
+		"p39": {"title": "39"}
+	},
+	"fields": {
+		"groups": [
+      {"id":  "espNow", "title":  "ESP-NOW server"}
+		],
+		"columns": [
+			{
+				"id": "espNowServerEnabled", "group":  "espNow", "name": "Povolit ESP-NOW server", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			}
+		]
+	},
+	"fixedIOPorts": {
+		"esp-now-server": {
+			"type": "networks/esp-now-server",
+			"portId": "esp-now",
+			"_portDisabled": {"espNowServerEnabled": 0}
+		}
+	},
+	"fwId": "iot-box-can-core-sms72-esp32-can"
+}
