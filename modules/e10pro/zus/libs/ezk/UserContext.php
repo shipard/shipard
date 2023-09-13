@@ -41,7 +41,8 @@ class UserContext extends \e10\users\libs\UserContext
   protected function loadAll()
   {
     $this->schoolYear = zusutils::aktualniSkolniRok($this->app());
-    $this->loadStudents();
+    if (!$this->contextCreator->userRecData['person'])
+      $this->loadStudents();
 
     foreach($this->students as $studentNdx => $studentInfo)
     {
@@ -120,6 +121,18 @@ class UserContext extends \e10\users\libs\UserContext
 
   public function run()
   {
+    if ($this->contextCreator->userRecData['person'])
+    { // student
+      $this->getStudentInfo($this->contextCreator->userRecData['person']);
+
+      $studentRecData = $this->app()->loadItem($this->contextCreator->userRecData['person'], 'e10.persons.persons');
+      $this->students[$studentRecData['ndx']] = [
+        'fullName' => $studentRecData['fullName'],
+        'firstName' => $studentRecData['firstName'],
+        'lastName' => $studentRecData['lastName'],
+      ];
+    }
+
     $this->loadAll();
   }
 }
