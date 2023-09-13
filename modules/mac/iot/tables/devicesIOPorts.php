@@ -64,7 +64,7 @@ class TableDevicesIOPorts extends DbTable
 				{
 					foreach ($iotDeviceCfg['io']['pins'] as $pinId => $pin)
 					{
-						if ($form->recData['fpid'] === '' && isset($iotDeviceCfg['enabledPins']) && !in_array($pinId, $iotDeviceCfg['enabledPins']))
+						if ($form->recData['fpid'] === '' && isset($iotDeviceCfg['enabledPins']) && /*!in_array($pinId, $iotDeviceCfg['enabledPins'])*/ !isset($iotDeviceCfg['enabledPins'][$pinId]))
 							continue;
 						if (isset($column['enumCfgFlags']['pinFlags']))
 						{
@@ -82,7 +82,10 @@ class TableDevicesIOPorts extends DbTable
 							if (!$enabled)
 								continue;
 						}
-						$enum[$pinId] = $pin['title'];
+						if (isset($iotDeviceCfg['enabledPins']) && isset($iotDeviceCfg['enabledPins'][$pinId]) && isset($iotDeviceCfg['enabledPins'][$pinId]['title']))
+							$enum[$pinId] = $iotDeviceCfg['enabledPins'][$pinId]['title'].' ['.$pin['title'].']';
+						else
+							$enum[$pinId] = $pin['title'];
 					}
 				}
 			}
@@ -118,6 +121,30 @@ class TableDevicesIOPorts extends DbTable
 	public function mqttTopicBegin()
 	{
 		return 'shp/';
+	}
+
+	public function mqttTopicPath($iotDeviceNdx)
+	{
+		$thisIoTDeviceRecData = $this->db()->query('SELECT * FROM [mac_iot_devices] WHERE [ndx] = %i', $iotDeviceNdx)->fetch();
+		if (!$thisIoTDeviceRecData)
+			return '###INVALID_DEVICE_NDX_'.$iotDeviceNdx.'###';
+
+		if (!$thisIoTDeviceRecData['ownerIoTDevice'])
+			return '__!'.json_encode($thisIoTDeviceRecData['ownerIoTDevice']).'!__/';
+
+		$ownerIoTDeviceRecData = $this->db()->query('SELECT * FROM [mac_iot_devices] WHERE [ndx] = %i', $thisIoTDeviceRecData['ownerIoTDevice'])->fetch();
+		if (!$ownerIoTDeviceRecData)
+			return '###INVALID_OWNER_DEVICE_NDX_'.$ownerIoTDeviceRecData['ownerIoTDevice'].'###';
+
+		$tp = $ownerIoTDeviceRecData['friendlyId'].'/';
+
+		$iotOwnerDeviceIOPortRecData = $this->db()->query('SELECT * FROM [mac_iot_devicesIOPorts] WHERE [ndx] = %i', $thisIoTDeviceRecData['ownerIoTPort'])->fetch();
+		if (!$iotOwnerDeviceIOPortRecData)
+			return '###INVALID_DEVICE_IO_PORT_NDX_'.$thisIoTDeviceRecData['ownerIoTPort'].'###';
+
+		$tp .= $iotOwnerDeviceIOPortRecData['portId'].'/';
+
+		return $tp;
 	}
 
 	public function getMqttTopics($ioPortRecData)
@@ -434,6 +461,9 @@ class ViewDevicesIOPortsFormList extends \e10\TableViewGrid
 			$listItem ['portId'][] = ['text' => 'Zakázáno', 'class' => 'label label-danger'];
 
 		$listItem ['portId'][] = ['text' => $item['portId'], 'class' => 'break e10-bold'];
+		if ($item['fpid'] !== '')
+			$listItem ['portId'][] = ['text' => 'system', 'class' => 'pull-right label label-warning'];
+
 		if ($item['fullName'] !== '')
 			$listItem ['portId'][] = ['text' => $item['fullName'], 'class' => 'break e10-small'];
 
@@ -460,8 +490,7 @@ class ViewDevicesIOPortsFormList extends \e10\TableViewGrid
 
 			if ($portTypeCfgColumn && isset($portTypeCfgColumn['enumCfgFlags']['type']) && $portTypeCfgColumn['enumCfgFlags']['type'] === 'pin')
 			{
-				$pinsLabels[] = [
-					'text' => $portTypeCfgColumn['name'].': ', 'class' => '__width20 __block __pull-left __number pr1 e10-bold'];
+				//$pinsLabels[] = ['text' => $portTypeCfgColumn['name'].': ', 'class' => '__width20 __block __pull-left __number pr1 e10-bold'];
 
 				$pinCfg = isset($this->iotDeviceCfg['io']['pins'][$value]) ? $this->iotDeviceCfg['io']['pins'][$value] : NULL;
 				if ($pinCfg)
@@ -471,6 +500,9 @@ class ViewDevicesIOPortsFormList extends \e10\TableViewGrid
 						$this->usedHWPins[$hwPin] = 1;
 					else
 						$this->usedHWPins[$hwPin]++;
+
+					if (isset($this->iotDeviceCfg['enabledPins']) && isset($this->iotDeviceCfg['enabledPins'][$value]) && isset($this->iotDeviceCfg['enabledPins'][$value]['title']))
+						$pinsLabels[] = ['text' => $this->iotDeviceCfg['enabledPins'][$value]['title'], 'class' => 'label label-primary'];
 
 					$pinsLabels[] = ['text' => $pinCfg['title'], 'class' => 'label label-default'];
 

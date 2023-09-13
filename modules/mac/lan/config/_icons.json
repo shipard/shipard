@@ -168,7 +168,7 @@
 		"bsi": "bi-hourglass-split",
 		"mdi": "hourglass_empty"
 	},
-    
+
 
 
 
@@ -184,14 +184,14 @@
 		"bsi": "bi-person-square",
 		"mdi": "support_agent"
 	},
-    
+
     "submenu/management": {
 		"fa5": "fa-square",
 		"fa6pro": "fa-square",
 		"bsi": "bi-app",
 		"mdi": "check_box_outline_blank"
 	},
-    
+
 
 
     "deviceTypes/workStation": {
@@ -473,7 +473,7 @@
         "mdi":"folder_open"
 	},
 
-	
+
 
 
 	"deviceInfoTypeStorage":{

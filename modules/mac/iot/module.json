@@ -20,6 +20,7 @@
 	  {"id": "+mac.iot.ioPortValueStyle", "file": "mac.iot.ioPortValueStyle.json"},
 	  {"id": "+mac.iot.values.types", "file": "mac.iot.values.types.json"},
 		{"id": "+mac.iot.devices.types", "file": "mac.iot.devices.types.json"},
+		{"id": "+mac.io.connectionTypes", "file": "mac.io.connectionTypes.json"},
 
 		{"id": "+mac.iot.ioPorts.types", "file": "ioPorts/ioPorts.json"},
 		{"id": "+mac.iot.ioPorts.i2cIOExpanders", "file": "ioPorts/i2cIOExpanders.json"},

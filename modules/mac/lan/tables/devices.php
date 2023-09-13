@@ -492,6 +492,17 @@ class ViewDevices extends TableView
 
 		$props = [];
 
+		$macDeviceType = $this->app()->cfgItem('mac.devices.types.'.$item['macDeviceType'], NULL);
+		if (isset($macDeviceType['useFamily']) && $macDeviceType['useFamily'])
+		{
+			$macDeviceTypeCfg = $this->table->macDeviceTypeCfg($item['macDeviceType']);
+			$mdtFamilyCfg = $macDeviceTypeCfg['families'][$item['mdtFamily']] ?? [];
+			$mdtTypeCfg = $mdtFamilyCfg['types'][$item['mdtType']] ?? [];
+
+			if (isset($macDeviceTypeCfg['name']) && isset($mdtTypeCfg['title']))
+				$props[] = ['text' => $macDeviceTypeCfg['name'].' '.$mdtTypeCfg['title'], 'class' => 'label label-default'];
+		}
+
 		if ($item['nodeSupport'])
 			$props[] = ['icon' => 'system/iconCheck', 'text' => 'node', 'class' => 'label label-info'];
 		if ($item['monitored'])

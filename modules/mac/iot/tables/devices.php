@@ -337,9 +337,14 @@ class FormDevice  extends TableForm
 	public function renderForm ()
 	{
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
+		$this->setFlag ('formStyle', 'e10-formStyleSimple');
+		$this->setFlag ('maximize', 1);
 
 		$deviceTypeCfg = $this->app()->cfgItem('mac.iot.devices.types.'.$this->recData['deviceType']);
 		$useIOPorts = $deviceTypeCfg['useIOPorts'] ?? 0;
+		$connectiontypeCfg = NULL;
+		if ($useIOPorts)
+			$connectiontypeCfg = $this->app()->cfgItem('mac.io.connectionTypes.'.$this->recData['primaryConnectionType']);
 
 		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 		if ($useIOPorts)
@@ -361,10 +366,20 @@ class FormDevice  extends TableForm
 					$this->addColumnInput ('hwId');
 					$this->addColumnInput ('place');
 					$this->addColumnInput ('lan');
-
 					$this->addColumnInput ('nodeServer');
 
-					$this->addSeparator(self::coH2);
+					if ($useIOPorts)
+					{
+						$this->addSeparator(self::coH4);
+						$this->addColumnInput ('primaryConnectionType');
+						if ($connectiontypeCfg && $connectiontypeCfg['needOwner'])
+						{
+							$this->addColumnInput ('ownerIoTDevice');
+							$this->addColumnInput ('ownerIoTPort');
+						}
+					}
+
+					$this->addSeparator(self::coH4);
 					$this->addSubColumns('deviceSettings');
 				$this->closeTab ();
 

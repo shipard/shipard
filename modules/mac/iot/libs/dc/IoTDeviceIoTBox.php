@@ -50,7 +50,6 @@ class IoTDeviceIoTBox extends \mac\iot\libs\dc\IoTDevice
 
 	function createContentBody_IotBox()
 	{
-
 		$q[] = 'SELECT * FROM [mac_iot_devicesCfg]';
 		array_push($q, ' WHERE 1');
 		array_push($q, ' AND [iotDevice] = %i', $this->recData['ndx']);
@@ -61,11 +60,16 @@ class IoTDeviceIoTBox extends \mac\iot\libs\dc\IoTDevice
 		foreach ($rows as $r)
 		{
       $iotBoxCfg = Json::decode($r['cfgData']);
+      $iotBoxCfgStr = Json::lint($iotBoxCfg['iotBoxCfg']);
       $this->addContent('body',
         [
           'pane' => 'e10-pane e10-pane-table',
-          'type' => 'text', 'subtype' => 'code', 'text' => Json::lint($iotBoxCfg['iotBoxCfg']),
-          'paneTitle' => ['text' => 'CFG', 'class' => 'subtitle']
+          'type' => 'text', 'subtype' => 'code', 'text' => $iotBoxCfgStr,
+          'paneTitle' => [
+              ['text' => 'CFG', 'class' => 'h3'],
+              ['text' => Utils::nf(strlen($iotBoxCfgStr)).' bajtů', 'class' => 'id pull-right'],
+              ['text' => ' ', 'class' => 'h3 block bb1 mb1'],
+            ]
           ]
       );
 
@@ -106,6 +110,12 @@ class IoTDeviceIoTBox extends \mac\iot\libs\dc\IoTDevice
       $portTitleBgClass = 'e10-bg-t9';
 
       $portTitle[] = ['text' => $item['portId'], 'class' => 'h2'];
+
+      $portTitle[] = ['text' => '#'.$item['ndx'], 'class' => 'id pull-right'];
+
+      if ($item['fpid'] !== '')
+        $portTitle[] = ['text' => 'system', 'class' => 'pull-right label label-warning'];
+
       if ($item['disabled'])
       {
         $portTitle[] = ['text' => 'Zakázáno', 'class' => 'label label-danger pull-right'];
@@ -119,14 +129,18 @@ class IoTDeviceIoTBox extends \mac\iot\libs\dc\IoTDevice
       if ($item['fullName'] !== '')
         $portTitle[] = ['text' => $item['fullName'], 'class' => 'e10-small'];
 
+      $portTitle[] = ['text' => $item['mqttTopic'], 'class' => 'e10-off pull-right'];
 
       $tile['title'] = [['class' => '__h3 '.$portTitleBgClass, 'value' => $portTitle]];
+
 
       $portBody = [];
 
       $listItem = [];
       $listItem ['icon'] = 'system/iconCogs';
       $listItem ['portId'] = [];
+
+
 
       if ($item['disabled'])
         $listItem ['portId'][] = ['text' => 'Zakázáno', 'class' => 'label label-danger'];
@@ -159,7 +173,7 @@ class IoTDeviceIoTBox extends \mac\iot\libs\dc\IoTDevice
         if ($portTypeCfgColumn && isset($portTypeCfgColumn['enumCfgFlags']['type']) && $portTypeCfgColumn['enumCfgFlags']['type'] === 'pin')
         {
           $pinsLabels[] = [
-            'text' => $portTypeCfgColumn['name'].': ', 'class' => '__width20 __block __pull-left __number pr1 e10-bold'];
+            'text' => $portTypeCfgColumn['name'].': ', 'class' => 'pr1 e10-bold'];
 
           $pinCfg = isset($this->iotDeviceCfg['io']['pins'][$value]) ? $this->iotDeviceCfg['io']['pins'][$value] : NULL;
           if ($pinCfg)
@@ -169,6 +183,9 @@ class IoTDeviceIoTBox extends \mac\iot\libs\dc\IoTDevice
               $this->usedHWPins[$hwPin] = 1;
             else
               $this->usedHWPins[$hwPin]++;
+
+            if (isset($this->iotDeviceCfg['enabledPins']) && isset($this->iotDeviceCfg['enabledPins'][$value]) && isset($this->iotDeviceCfg['enabledPins'][$value]['title']))
+              $pinsLabels[] = ['text' => $this->iotDeviceCfg['enabledPins'][$value]['title'], 'class' => 'label label-primary'];
 
             $pinsLabels[] = ['text' => $pinCfg['title'], 'class' => 'label label-default'];
 

@@ -73,6 +73,15 @@ class DeviceInfo extends Utility
 
 		$this->info['recData'] = $this->deviceRecData;
 
+		$macDeviceTypeCfg = $this->tableDevices->macDeviceTypeCfg($this->deviceRecData['macDeviceType']);
+		$mdtFamilyCfg = $macDeviceTypeCfg['families'][$this->deviceRecData['mdtFamily']] ?? [];
+		$mdtTypeCfg = $mdtFamilyCfg['types'][$this->deviceRecData['mdtType']] ?? [];
+		if (isset($mdtTypeCfg['poe']))
+		{
+			$this->info['poe'] = $mdtTypeCfg['poe'];
+			$this->info['cntPoePorts'] = $mdtTypeCfg['cntPoePorts'] ?? 0;
+		}
+
 		$this->loadDataSources();
 
 		$this->info['ports'] = [];

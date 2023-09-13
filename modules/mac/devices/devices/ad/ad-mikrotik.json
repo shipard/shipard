@@ -1,6 +1,6 @@
 {
-	"name": "AD Mikrotik",
-	"title": "AD Mikrotik",
+	"name": "Mikrotik",
+	"title": "Mikrotik",
 	"fields": {
 		"columns": [
 			{"id": "router", "name": "Router", "type": "logical", "options": ["saveOnChange"]},
@@ -37,7 +37,7 @@
 			}
 		},
 		"mkt-rb-xap": {
-			"title": "*AP / Audience",
+			"title": "AP: cAP / hAP / mAP / wAP / Audience",
 			"sgClassId": "mac.lan.libs.cfgScripts.MikrotikAD_SwitchChip",
 			"types": {
 				"mkt-xap_cap": {"title": "cAP"},

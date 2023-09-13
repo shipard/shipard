@@ -157,6 +157,10 @@ class OverviewData extends Utility
 					],
 				];
 			}
+			elseif ($deviceKind === 14 /* && isset($this->devices[$deviceNdx]['macDeviceCfg']['capsmanClient']) && intval($this->devices[$deviceNdx]['macDeviceCfg']['capsmanClient'])*/)
+			{
+				$dgId = self::dgiLan;
+			}
 
 			// -- dashboard groups
 			if ($dgId !== self::dgiNONE)
@@ -209,7 +213,7 @@ class OverviewData extends Utility
 					],
 				];
 			}
-			elseif ($deviceKind === 8 || $deviceKind === 9)
+			elseif ($deviceKind === 8 || $deviceKind === 9 || $deviceKind === 14)
 			{ // switch / router
 				$badgeQuantityId = 'snmp_'.$this->devices[$deviceNdx]['deviceId'].'.uptime';
 				$this->devices[$deviceNdx]['deviceBadges'][] = [
@@ -227,6 +231,20 @@ class OverviewData extends Utility
 						'badgeParams' => ['units' => ' 웃', 'value_color' => 'COLOR:null|red>100|orange>50|00A000>=0'],
 					];
 				}
+
+				/*
+				$label = $r['connectedPortId'].'poe';
+				$badgeQuantityId = 'snmp_'.$this->devices[$deviceNdx]['deviceId'].'.poe40';
+				$this->devices[$deviceNdx]['deviceBadges'][] = [
+						'label' => $label,
+						'badgeQuantityId' => $badgeQuantityId,
+						'badgeParams' => [
+							'_dimensions' => 'port1|port2', 'label_color' => '476C55', '____options' => 'abs', 'units' => 'W', 'divide' => '1',
+							'precision' => 3, 'value_color' => 'COLOR:null|lightgray<1|red>100|orange>75|AABB00>6|00A000>5',
+							//'_title' => '→ '.$this->devices[$deviceNdx]['deviceId'].' / '.$r['portId'],
+						],
+				];
+				*/
 			}
 			elseif ($deviceKind === 11)
 			{ // NAS
@@ -447,7 +465,7 @@ class OverviewData extends Utility
 				];
 				//$disableConnectedDevice = TRUE;
 			}
-			elseif ($r['portRole'] === 20 && $deviceKind === 9)
+			elseif ($r['portRole'] === 20 && ($deviceKind === 9 || $deviceKind === 14))
 			{ // uplink - switch
 				if (!isset($this->devices[$deviceNdx]['uplinkPortsBadges']))
 					$this->devices[$deviceNdx]['uplinkPortsBadges'] = [];
@@ -503,6 +521,19 @@ class OverviewData extends Utility
 							'_title' => '→ '.$this->devices[$deviceNdx]['deviceId'].' / '.$r['portId'],
 						],
 				];
+
+				$label = /*$r['connectedPortId'].*/'poe';
+				$badgeQuantityId = 'snmp_'.$this->devices[$deviceNdx]['deviceId'].'.poe'.'_'.$r['portNumber'];
+				$this->devices[$r['connectedToDevice']]['lanBadges'][] = [
+						'label' => $label,
+						'badgeQuantityId' => $badgeQuantityId,
+						'badgeParams' => [
+							'_dimensions' => 'in|out', 'label_color' => '476C55', 'options' => 'abs', 'units' => 'W', 'divide' => '1',
+							'precision' => 3, 'value_color' => 'COLOR:null|lightgray<1|red>100|orange>75|AABB00>6|00A000>5',
+							'_title' => '→ '.$this->devices[$deviceNdx]['deviceId'].' / '.$r['portId'],
+						],
+				];
+
 			}
 		}
 	}

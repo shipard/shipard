@@ -226,6 +226,8 @@ class EdgeCore extends \mac\lan\libs\cfgScripts\CoreCfgScript
 		$this->createScript_Init_User();
 		$this->createScript_Init_Identity();
 		$this->createScript_Ports();
+
+		$this->createScript_Upgrade();
 	}
 
 	function createScript_Init_Ssh()
@@ -419,6 +421,23 @@ class EdgeCore extends \mac\lan\libs\cfgScripts\CoreCfgScript
 			$this->script .= $script;
 			$this->script .= "end\n\n";
 		}
+	}
+
+	function createScript_Upgrade()
+	{
+		$s = '';
+
+		$s .= 'copy tftp file'."\n";
+
+		$s .= $this->lanCfg['mainServerLanControlIp']."\n";
+		//$s .= json_encode($this->lanDeviceCfg['addresses'])."\n";
+		$s .= '2'."\n";
+
+		$s .= 'ECS2100_V1.2.3.39.bix'."\n";
+		$s .= 'ECS2100_V1.2.3.39.bix'."\n";
+
+		$this->scriptUpgrade = $s;
+
 	}
 
 	function description($string)

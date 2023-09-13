@@ -118,7 +118,7 @@ class LanTree extends Utility
 				continue;
 			if (!$r['connectedToPort'])
 				continue;
-			if ($r['connectedDeviceKind'] !== 9)
+			if ($r['connectedDeviceKind'] !== 9 && $r['connectedDeviceKind'] !== 14)
 				continue;
 			if ($r['portRole'] === 20)
 				continue;
@@ -139,7 +139,7 @@ class LanTree extends Utility
 
 			$items[$r['connectedToDevice']] = $newItem;
 
-			if ($r['portRole'] === 30 && $r['connectedDeviceKind'] === 9)
+			if ($r['portRole'] === 30 && ($r['connectedDeviceKind'] === 9 || $r['connectedDeviceKind'] === 14))
 				$this->loadTree($r['connectedToDevice'], $items[$r['connectedToDevice']]['items'], $level + 1);
 		}
 	}

@@ -42,6 +42,16 @@ class DocumentCardDeviceScripts extends \e10\DocumentCard
 			$this->addScriptTab($tabs, ['text' => 'V zařízení', 'icon' => 'system/iconCheckSquare'], $existedScripts, 'running');
 			$this->addScriptTab($tabs, ['text' => 'Nastavuje se', 'icon' => 'iconMagic'], $existedScripts, 'new');
 			$this->addScriptTab($tabs, ['text' => 'K nastavení', 'icon' => 'system/actionSettings'], $existedScripts, 'live');
+
+			// -- upgrade
+			if ($this->scriptGenerator->dsg && $this->scriptGenerator->dsg->scriptUpgrade !== '')
+			{
+				$contentUpgrade = [[
+					'pane' => 'e10-pane e10-pane-table',
+					'type' => 'text', 'subtype' => 'code', 'text' => $this->scriptGenerator->dsg->scriptUpgrade,
+				]];
+				$tabs[] = ['title' => ['text' => 'Upgrade', 'icon' => 'system/iconCogs'], 'content' => $contentUpgrade];
+			}
 		}
 
 		$this->createContentBody_RealTimeSNMP($tabs);

@@ -12,6 +12,7 @@ use e10\Utility;
 class CoreCfgScript extends Utility
 {
 	var $script = '';
+	var $scriptUpgrade = '';
 
 	var $deviceCfg = NULL;
 	var $initMode = FALSE;
@@ -52,6 +53,7 @@ class CoreCfgScript extends Utility
 	{
 		$this->initMode = $initMode;
 		$this->script = '';
+		$this->scriptUpgrade = '';
 	}
 
 	function cfgParser()

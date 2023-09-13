@@ -8,11 +8,11 @@
 				"enumValues": {"0": "DSA (starý FW)", "1": "RSA (nový FW)"}}
 		]
 	},
-	"snmpTemplateRealtime": "mac/devices/devices/router/router-mikrotik-netdata-snmp.mustache",
+	"snmpTemplateRealtime": "mac/devices/devices/switch/switch-edgecore-netdata-snmp.mustache",
 	"dashboards": {
 		"realtime-summary": {
 			"title": "Přehled",
-			"template": "mac/devices/devices/router/router-mikrotik-netdata-dashboard-overview.mustache"
+			"template": "mac/devices/devices/switch/switch-edgecore-netdata-dashboard-overview.mustache"
 		}
 	},
 	"families": {
@@ -20,9 +20,9 @@
 			"title": "2100",
 			"types": {
 				"ECS2100-10T": {"title": "2100-10T"},
-        "ECS2100-10P": {"title": "2100-10P"},
-				"ECS2100-28T": {"title": "2100-10T"},
-        "ECS2100-28P": {"title": "2100-10P"}
+        "ECS2100-10P": {"title": "2100-10P", "poe": 1, "cntPoePorts": 8},
+				"ECS2100-28T": {"title": "2100-28T"},
+        "ECS2100-28P": {"title": "2100-28P", "poe": 1, "cntPoePorts": 24}
       }
 		},
 		"ecs3510": {

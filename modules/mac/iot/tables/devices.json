@@ -22,6 +22,11 @@
 		{"id": "deviceModel", "name": "Model", "type": "enumString", "len": 40, "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": ""}},
 
+		{"id": "primaryConnectionType", "name": "Připojeno pomocí", "type": "enumString", "len": 20, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.io.connectionTypes", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "ownerIoTDevice", "name": "Připojeno přes zařízení", "type": "int", "reference": "mac.iot.devices"},
+		{"id": "ownerIoTPort", "name": "Připojeno přes sběrnici zařízení", "type": "int", "reference": "mac.iot.devicesIOPorts"},
+
 		{"id": "deviceSettings", "name": "Nastavení", "type": "subColumns"},
 
 		{"id": "nodeServer", "name": "Řídící server", "type": "int", "reference": "mac.lan.devices", "comboViewer": "shipardNodes"},

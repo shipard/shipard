@@ -99,7 +99,11 @@ class IotDeviceCfgUpdaterIotBox extends \mac\iot\libs\IotDeviceCfgUpdater
 				foreach ($value as $cfgColumnId => $ioPortColumnId)
 				{
 					if (isset($this->deviceSettings[$cfgColumnId]))
+					{
 						$ioPortCfg[$ioPortColumnId] = $this->deviceSettings[$cfgColumnId];
+//				$portTypeCfgColumn = utils::searchArray($ioPortTypeCfg['fields']['columns'], 'id', $key);
+
+					}
 				}
 				continue;
 			}
@@ -142,7 +146,11 @@ class IotDeviceCfgUpdaterIotBox extends \mac\iot\libs\IotDeviceCfgUpdater
 		];
 		if (isset($this->iotDeviceCfg['fwId']))
 			$this->iotBoxCfg['fwId'] = $this->iotDeviceCfg['fwId'];
-
+		if (isset($this->iotDeviceCfg['device']))
+		{
+			foreach ($this->iotDeviceCfg['device'] as $key => $value)
+				$this->iotBoxCfg[$key] = $value;
+		}
 		$gpioLayout = $this->iotDeviceCfg['io'];
 
 		$usedTopicsPks = [];
@@ -216,7 +224,31 @@ class IotDeviceCfgUpdaterIotBox extends \mac\iot\libs\IotDeviceCfgUpdater
 					$ioPort[$key] = $value;
 			}
 
+			$this->addRoutedDevicesTopics($this->iotDeviceRecData['ndx'], $uioPort['ndx'], $ioPort);
+
 			$this->iotBoxCfg['ioPorts'][] = $ioPort;
+		}
+	}
+
+	protected function addRoutedDevicesTopics($deviceNdx, $ioPortNdx, &$ioPort)
+	{
+		$q = [];
+		array_push($q, 'SELECT iotDevices.* FROM [mac_iot_devices] AS iotDevices');
+		array_push($q, ' WHERE 1');
+		array_push($q, ' AND iotDevices.ownerIoTDevice = %i', $deviceNdx);
+		array_push($q, ' AND iotDevices.ownerIoTPort = %i', $ioPortNdx);
+
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			if (!isset($ioPort['rt']))
+			{
+				$ioPort['rt'] = [];
+			}
+			$ioPort['rt'][] = [
+						't' => $r['deviceTopic'].'/',
+						'm' => $r['hwId']
+				];
 		}
 	}
 
