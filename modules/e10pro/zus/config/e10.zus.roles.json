@@ -68,7 +68,8 @@
 						"e10pro.zus.ReportInvoices": 2,
 						"e10pro.zus.ReportBeginEndStudies": 2,
 						"e10pro.zus.libs.ReportKontrolaETK": 2,
-						"e10pro.zus.libs.ReportKontrolaStudii": 2
+						"e10pro.zus.libs.ReportKontrolaStudii": 2,
+						"e10pro.zus.libs.ezk.ReportStudentsActivations": 2
         },
 		"widgets": {
 			"e10pro.zus.SchoolDayDashboardWidget": 2

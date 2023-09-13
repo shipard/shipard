@@ -2,7 +2,7 @@
 
 namespace e10pro\zus;
 require_once __SHPD_MODULES_DIR__ . 'e10pro/zus/zus.php';
-use \e10\utils;
+use \Shipard\Utils\Utils;
 use \e10\base\libs\UtilsBase;
 use \Shipard\Utils\Str;
 use \e10pro\zus\zusutils;
@@ -126,6 +126,132 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			$newRequest = ['user' => $newUserNdx, 'ui' => $uiNdx];
 			$newRequestNdx = $tableRequests->dbInsertRec($newRequest);
     }
+	}
+
+	protected function addStudents()
+	{
+		$tableUsers = new \e10\users\TableUsers($this->app());
+		$tableRequests = new \e10\users\TableRequests($this->app());
+
+		$uiNdx = intval($this->app()->arg('uiNdx'));
+		if (!$uiNdx)
+			$uiNdx = 1;
+
+		$mainRoleRecData = $this->db()->query('SELECT * FROM [e10_users_roles] WHERE systemId = %s', 'zus-ezk-student')->fetch();
+		if (!$mainRoleRecData)
+		{
+			return;
+		}
+
+		//$this->db()->query('DELETE FROM e10_users_users');
+		//$this->db()->query('DELETE FROM e10_users_requests');
+		//$this->db()->query('DELETE FROM e10_users_pwds');
+		//$this->db()->query('DELETE FROM [e10_base_doclinks] WHERE linkId = %s', 'e10-users-main-roles');
+
+		$schoolYear = zusutils::aktualniSkolniRok();
+		$q = [];
+		array_push($q, 'SELECT studium.*');
+		array_push($q, ' FROM [e10pro_zus_studium] as studium ');
+		array_push($q, ' WHERE [stav] = %i', 1200);
+		array_push($q, ' AND skolniRok = %s', $schoolYear);
+
+		$totalCnt = 0;
+		$logins = [];
+		$studentsNdxs = [];
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$test = 'IND';
+			$existedETK = $this->db()->query(
+				'SELECT * FROM [e10pro_zus_vyuky] WHERE studium = %i', $r['ndx'],
+				' AND stav = %i', 4000)->fetch();
+			if (!$existedETK)
+			{
+				$existedETK = $this->db()->query(
+					'SELECT * FROM [e10pro_zus_vyukystudenti] AS vyukyStudenti',
+					' LEFT JOIN e10pro_zus_vyuky AS vyuky ON vyukyStudenti.vyuka = vyuky.ndx',
+					' WHERE vyukyStudenti.studium = %i', $r['ndx'],
+					' AND skolniRok = %i', $schoolYear,
+					' AND vyuky.stav = %i', 4000)->fetch();
+					$test = 'KOL';
+			}
+			if (!$existedETK)
+				continue;
+
+			if (in_array($r['student'], $studentsNdxs))
+				continue;
+
+			$existByPersonNdx = $this->db()->query('SELECT * FROM [e10_users_users] WHERE [person] = %i', $r['student'])->fetch();
+			if ($existByPersonNdx)
+				continue;
+
+			$studentRecData = $this->app()->loadItem($r['student'], 'e10.persons.persons');
+			if (!$studentRecData)
+				continue;
+
+			$studentsNdxs[] = $r['student'];
+
+			$xx = 0;
+			$fn = $studentRecData['firstName'] . '123456789ABCDEF';
+			while (1)
+			{
+				$loginName = substr(Str::tolower(Utils::safeChars($fn)), 0, 1);
+				if ($xx)
+					$loginName .= substr(Str::tolower(Utils::safeChars($fn)), 1, $xx);
+				$loginName .= Str::tolower(Utils::safeChars($studentRecData['lastName']));
+
+				if (in_array($loginName, $logins))
+				{
+					$xx++;
+					continue;
+				}
+
+				$existByLoginName = $this->db()->query('SELECT * FROM [e10_users_users] WHERE [login] = %s', $loginName)->fetch();
+				if ($existByLoginName)
+				{
+					$xx++;
+					continue;
+				}
+
+				$logins[] = $loginName;
+				break;
+			}
+
+			$totalCnt++;
+
+//			if ($xx)
+			echo "# $totalCnt: ".$loginName.' '.$xx.'> '.$studentRecData['fullName']."\n";
+
+			$newUser = [
+        'fullName' => trim($studentRecData['fullName']),
+        'login' => $loginName,
+				'email' => '',
+        'person' => $studentRecData['ndx'],
+				'docState' => 4000, 'docStateMain' => 2,
+      ];
+
+			$newUserNdx = $tableUsers->dbInsertRec($newUser);
+			$tableUsers->docsLog ($newUserNdx);
+
+			$roleDocLink = [
+				'linkId' => 'e10-users-main-roles', 'srcTableId' => 'e10.users.users', 'dstTableId' => 'e10.users.roles',
+				'srcRecId' => $newUserNdx, 'dstRecId' => $mainRoleRecData['ndx'],
+			];
+			$this->db()->query('INSERT INTO [e10_base_doclinks]', $roleDocLink);
+
+
+			$shortId = Utils::createToken(6, false, true);
+			while (1)
+			{
+				$shortIdExist = $this->db()->query('SELECT * FROM [e10_users_requests] WHERE shortId = %s', $shortId)->fetch();
+				if (!$shortIdExist)
+					break;
+				$shortId = Utils::createToken(6, false, true);
+			}
+
+			$newRequest = ['user' => $newUserNdx, 'ui' => $uiNdx, 'shortId' => $shortId];
+			$newRequestNdx = $tableRequests->dbInsertRec($newRequest);
+		}
 	}
 
 	public function anonymizeVyuky ()
@@ -525,6 +651,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'entries-students': return $this->entriesStudents();
 			case 'create-studies': return $this->createStudies();
 			case 'add-users': return $this->addUsers();
+			case 'add-students': return $this->addStudents();
 		}
 
 		parent::onCliAction($actionId);
