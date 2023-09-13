@@ -59,8 +59,8 @@
 			"type": "control/h-bridge",
 			"portId": "relay1",
 
-			"pin1": "p19",
-			"pin2": "p18",
+			"pin1": "p18",
+			"pin2": "p19",
 
 			"pinLed": 5,
 
@@ -73,8 +73,8 @@
 			"type": "control/h-bridge",
 			"portId": "relay2",
 
-			"pin1": "p27",
-			"pin2": "p23",
+			"pin1": "p23",
+			"pin2": "p27",
 
 			"pinLed": 12,
 

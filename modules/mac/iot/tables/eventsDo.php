@@ -149,7 +149,7 @@ class TableEventsDo extends DbTable
 			if (isset($event['enumSet']))
 			{
 				foreach ($event['enumSet'] as $key => $value)
-					$enum[$key] = $key;
+					$enum[$key] = $key.' - '.$value['title'];
 			}
 			elseif (isset($event['enum']))
 			{
