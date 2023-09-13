@@ -10,5 +10,7 @@
 	{"name": "Faktury 384", "class": "e10pro.zus.ReportInvoicesDeferredRevenue", "icon": "reportInvoices", "group": "e10doc-finance", "order": 980000},
 
 	{"name": "Kontrola ETK", "class": "e10pro.zus.libs.ReportKontrolaETK", "icon": "tables/e10pro.zus.vyuky", "group": "e10pro-zus", "order": 990100},
-	{"name": "Kontrola Studií", "class": "e10pro.zus.libs.ReportKontrolaStudii", "icon": "tables/e10pro.zus.vyuky", "group": "e10pro-zus", "order": 990200}
+	{"name": "Kontrola Studií", "class": "e10pro.zus.libs.ReportKontrolaStudii", "icon": "tables/e10pro.zus.vyuky", "group": "e10pro-zus", "order": 990200},
+
+	{"name": "Aktivace EŽK studentů", "class": "e10pro.zus.libs.ezk.ReportStudentsActivations", "icon": "tables/e10pro.zus.vyuky", "group": "e10pro-zus", "order": 990900}
 ]
