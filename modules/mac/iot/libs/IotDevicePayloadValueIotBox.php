@@ -32,6 +32,26 @@ class IotDevicePayloadValueIotBox extends Utility
 		return '';
 	}
 
+	protected function hbridgeValue($enumId)
+	{
+		if ($enumId === 'push')
+		{
+			$interval = intval($this->eventValueCfg['interval']);
+			if (!$interval)
+				$interval = 500;
+			return 'P:'.$interval;
+		}
+		if ($enumId === 'unpush')
+		{
+			$interval = intval($this->eventValueCfg['interval']);
+			if (!$interval)
+				$interval = 500;
+			return 'U:'.$interval;
+		}
+
+		return '';
+	}
+
 	protected function ledStripValue($enumId)
 	{
 		if ($enumId === 'off')
@@ -99,6 +119,8 @@ class IotDevicePayloadValueIotBox extends Utility
 			return $this->ledStripValue($eventRecData['iotDevicePropertyValueEnum']);
 		if (isset($deviceProperty['ioPortType']) && $deviceProperty['ioPortType'] === 'control/binary')
 			return $this->binaryValue($eventRecData['iotDevicePropertyValueEnum']);
+		if (isset($deviceProperty['ioPortType']) && $deviceProperty['ioPortType'] === 'control/h-bridge')
+			return $this->hbridgeValue($eventRecData['iotDevicePropertyValueEnum']);
 
 		return '';
 	}
