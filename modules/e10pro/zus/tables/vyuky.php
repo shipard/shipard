@@ -314,12 +314,14 @@ class ViewVyuky extends TableView
 		// -- fulltext
 		if ($fts != '')
 		{
-			array_push ($q, " AND (");
-				array_push ($q, "vyuky.nazev LIKE %s", '%'.$fts.'%');
-
-//			array_push ($q, " OR nazev LIKE %s", '%'.$fts.'%');
-
-			array_push ($q, ")");
+			array_push ($q, ' AND (');
+			array_push ($q, ' vyuky.nazev LIKE %s', '%'.$fts.'%');
+			array_push ($q, ' OR EXISTS (SELECT e10pro_zus_vyukystudenti.vyuka FROM e10pro_zus_vyukystudenti',
+											' LEFT JOIN e10pro_zus_studium AS colStudia ON e10pro_zus_vyukystudenti.studium = colStudia.ndx ',
+											' WHERE e10pro_zus_vyukystudenti.vyuka = vyuky.ndx ',
+											' AND colStudia.nazev LIKE %s', '%'.$fts.'%',
+											')');
+			array_push ($q, ')');
 		}
 
 		$this->qryMain($q);
@@ -332,7 +334,7 @@ class ViewVyuky extends TableView
 		if (isset($qv['obor']['']) && $qv['obor'][''] != 0)
 			array_push ($q, " AND vyuky.[svpObor] = %i", $qv['obor']['']);
 		if (isset($qv['predmet']['']) && $qv['predmet'][''] != 0)
-			array_push ($q, " AND vyuky.[svpPredmet] = %i", $qv['predmet']['']);
+			array_push ($q, ' AND (vyuky.[svpPredmet] = %i', $qv['predmet'][''], ' OR vyuky.[svpPredmet2] = %i', $qv['predmet'][''], ')');
 		if (isset($qv['typVyuky']['']) && $qv['typVyuky'][''] != 99)
 			array_push ($q, " AND vyuky.[typ] = %i", $qv['typVyuky']['']);
 		if (isset($qv['skolniRok']['']) && $qv['skolniRok'][''] != '0')
