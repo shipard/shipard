@@ -137,6 +137,15 @@ class ViewUsers extends TableView
 			' AND docLinks.dstRecId IN %in)', array_keys($qv['usersRoles']));
 		}
 
+		$withoutContact = isset ($qv['errors']['withoutContact']);
+		if ($withoutContact)
+		{
+			array_push ($q, ' AND users.email != %s', '',
+											' AND NOT EXISTS (SELECT ndx FROM e10_persons_personsContacts WHERE ',
+											' [users].[email] = e10_persons_personsContacts.contactEmail )');
+		}
+
+
 		$this->queryMain ($q, '[users].', ['[fullName]', '[ndx]']);
 		$this->runQuery ($q);
 	}
@@ -157,6 +166,14 @@ class ViewUsers extends TableView
 			$enum[$role['ndx']] = $role['fullName'];
 		}
 		$this->qryPanelAddCheckBoxes($panel, $qry, $enum, 'usersRoles', 'Role uživatelů');
+
+		// -- errors
+		$chbxErrors = [
+			'withoutContact' => ['title' => 'Bez kontaktu', 'id' => 'withoutContact'],
+		];
+		$paramsErrors = new \E10\Params ($this->app());
+		$paramsErrors->addParam('checkboxes', 'query.errors', ['items' => $chbxErrors]);
+		$qry[] = ['id' => 'errors', 'style' => 'params', 'title' => 'Problémy', 'params' => $paramsErrors];
 
 		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}
