@@ -19,6 +19,7 @@ class ReportStudentsActivations extends GlobalReport
 
 		// -- toolbar
 		$this->addParam ('switch', 'ucitel', ['title' => 'Učitel', 'switch' => zusutils::ucitele($this->app, TRUE)]);
+    $this->addParam('switch', 'createdType', ['title' => 'Vytvořeno', 'switch' => ['all' => 'Vše', '1' => 'Za poslední den'], 'radioBtn' => 1, 'defaultValue' => '1']);
 
 		parent::init();
 
@@ -42,6 +43,10 @@ class ReportStudentsActivations extends GlobalReport
 	protected function loadList()
 	{
     $ucitelNdx = intval($this->reportParams ['ucitel']['value']);
+    $createdType = $this->reportParams ['createdType']['value'];
+    $lastTeacherNdx = 0;
+
+    $createLimit = new \DateTime('1 day ago');
 
     $schoolYear = zusutils::aktualniSkolniRok();
 		$q = [];
@@ -62,6 +67,8 @@ class ReportStudentsActivations extends GlobalReport
       $existedRequest = $this->db()->query('SELECT * FROM [e10_users_requests] WHERE [user] = %i', $existedUser['ndx'])->fetch();
       if (!$existedRequest)
         continue;
+      if ($createdType !== 'all' && $existedRequest ['tsCreated'] < $createLimit)
+        continue;
 
       if (in_array($r['student'], $studentsNdxs))
         continue;
@@ -70,6 +77,24 @@ class ReportStudentsActivations extends GlobalReport
 
       if ($ucitelNdx && $ucitelNdx !== $r['ucitel'])
         continue;
+
+      if ($createdType !== 'all' && $lastTeacherNdx !== $r['ucitel'])
+      {
+        $teacherRecData = $this->app()->loadItem($r['ucitel'], 'e10.persons.persons');
+        $item = [
+          'name' => $teacherRecData['fullName'],
+          '_options' => [
+            'afterSeparator' => 'separator', 'beforeSeparator' => 'separator', 'class' => 'subheader',
+            'colSpan' => ['name' => 3]
+          ],
+        ];
+        if ($lastTeacherNdx)
+          $item['_options']['class'] .= ' pageBreakBefore';
+        $this->list[] = $item;
+      }
+
+
+      $lastTeacherNdx = $r['ucitel'];
 
       $sendRequestEngine = new \e10\users\libs\SendRequestEngine($this->app());
       $sendRequestEngine->setRequestNdx($existedRequest['ndx']);
