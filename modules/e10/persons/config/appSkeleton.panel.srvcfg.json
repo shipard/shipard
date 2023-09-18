@@ -5,11 +5,17 @@
 				"technical": {
 					"subMenu": {
 						"items": {
-							"personsAddress": {
+							"personsAddress2": {
 								"t1": "Adresy osob", "object": "viewer",
 								"table": "e10.persons.personsContacts", "viewer": "technicalAddress",
 								"enabledCfgItem": "options.persons.testNewPersons",
 								"icon": "system/iconMapMarker", "order": 100000
+							},
+							"personsContacts2": {
+								"t1": "Kontakty osob", "object": "viewer",
+								"table": "e10.persons.personsContacts", "viewer": "technicalContacts",
+								"enabledCfgItem": "options.persons.testNewPersons",
+								"icon": "system/iconIdBadge", "order": 100000
 							},
 
 							"personsKeys": {"t1": "Klíče", "object": "viewer", "table": "e10.persons.keys", "viewer": "default", "order": 700000}

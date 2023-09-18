@@ -11,7 +11,7 @@
 			"e10.persons.groups": {"default": 2},
 			"e10.persons.categories": {"default": 2},
 			"e10.persons.relations": {"default": 2},
-			"e10.persons.personsContacts": {"technicalAddress": 2},
+			"e10.persons.personsContacts": {"technicalAddress": 2, "technicalContacts": 2},
 
 			"e10.base.templates": {"default": 2},
 			"e10.base.templatesLooks": {"default": 2, "web": 2, "webCombo": 1},

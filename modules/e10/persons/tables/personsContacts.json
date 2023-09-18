@@ -61,6 +61,12 @@
 			"details": {
 				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "e10.persons.libs.viewers.ViewAddressTechnicalDetail"}
 			}
+		},
+		"technicalContacts": {
+			"id": "technicalContacts", "class": "e10.persons.libs.viewers.ViewContactsTechnical",
+			"details": {
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "e10.persons.libs.viewers.ViewAddressTechnicalDetail"}
+			}
 		}
 	},
 	"forms": [
