@@ -83,7 +83,10 @@ class SendRequestEngine extends Utility
 		if ($attachmentFileName === '')
 			$attachmentFileName = 'priloha';
 
-		$msg->addAttachment($report->fullFileName, $attachmentFileName.'.pdf', 'application/pdf');
+		if (!$report->pdfAttSendDisabled)
+			$msg->addAttachment($report->fullFileName, $attachmentFileName.'.pdf', 'application/pdf');
+
+		$report->addMessageAttachments($msg);
 
 		$msg->sendMail();
 		$msg->saveToOutbox();
