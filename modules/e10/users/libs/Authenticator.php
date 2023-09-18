@@ -294,6 +294,10 @@ class Authenticator extends Utility
     $newRequest = ['user' => $existedUser['ndx'], 'ui' => $router->uiCfg ['ndx'], 'requestType' => 1];
     $newRequestNdx = $tableRequests->dbInsertRec($newRequest);
 
+    $sendRequestEngine = new \e10\users\libs\SendRequestEngine($this->app());
+    $sendRequestEngine->setRequestNdx($newRequestNdx);
+    $sendRequestEngine->sendRequest();
+
     return 0;
   }
 }
