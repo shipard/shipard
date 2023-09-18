@@ -50,7 +50,14 @@ class SendRequestEngine extends Utility
 	public function sendRequest ()
 	{
 		$emailsTo = $this->userRecData['email'];
-		$report = new \e10\users\libs\reports\ReportRequestActivate($this->tableRequests, $this->requestRecData);
+		$report = NULL;
+		if ($this->requestRecData['requestType'] == 0)
+			$report = new \e10\users\libs\reports\ReportRequestActivate($this->tableRequests, $this->requestRecData);
+		elseif ($this->requestRecData['requestType'] == 1)
+			$report = new \e10\users\libs\reports\ReportRequestLostPassword($this->tableRequests, $this->requestRecData);
+
+		if (!$report)
+			return;
 
 		$report->init();
 		$report->renderReport ();
