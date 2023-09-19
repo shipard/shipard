@@ -37,7 +37,7 @@ class ViewWifiClients extends TableViewGrid
 	var $macDevicesLabels = [];
   var $now;
 	var $ssids;
-	//var $aps;
+	var $aps;
 
 	public function init ()
 	{
@@ -45,6 +45,10 @@ class ViewWifiClients extends TableViewGrid
 		$rows = $this->db()->query ('SELECT * FROM mac_lan_wlans WHERE docStateMain != 4');
 		foreach ($rows as $r)
 			$this->ssids[$r['ndx']] = ['id' => $r['ssid'], 'fn' => $r['fullName']];
+
+		$rows = $this->db()->query ('SELECT DISTINCT apId FROM mac_lan_wifiClients ORDER BY apId');
+		foreach ($rows as $r)
+			$this->aps[$r['apId']] = ['id' => $r['apId'], 'fn' => $r['apId']];
 
 		parent::init();
 
@@ -163,6 +167,9 @@ class ViewWifiClients extends TableViewGrid
 				array_push ($q, " AND wc.[ssid] IN %in", $ssids);
 		}
 
+		if (isset ($qv['aps']))
+			array_push ($q, " AND wc.[apId] IN %in", array_keys($qv['aps']));
+
 		array_push($q, ' ORDER BY [inactive], [mac], [ndx]');
 		array_push($q, $this->sqlLimit ());
 
@@ -188,6 +195,12 @@ class ViewWifiClients extends TableViewGrid
 				$ssids[$ssidNdx] .= ' ('.$ssid['fn'].')';
 		}
 		$this->qryPanelAddCheckBoxes($panel, $qry, $ssids, 'ssids', 'SSID');
+
+		// -- aps
+		$aps = [];
+		foreach ($this->aps as $apId => $ap)
+			$aps[$apId] = $ap['id'];
+		$this->qryPanelAddCheckBoxes($panel, $qry, $aps, 'aps', 'AP');
 
 		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}
