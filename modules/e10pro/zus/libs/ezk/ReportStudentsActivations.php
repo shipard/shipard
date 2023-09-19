@@ -73,7 +73,7 @@ class ReportStudentsActivations extends GlobalReport
       $existedRequest = $this->db()->query('SELECT * FROM [e10_users_requests] WHERE [user] = %i', $existedUser['ndx'])->fetch();
       if (!$existedRequest)
         continue;
-      if (!$existedRequest['requestState'] > 2)
+      if ($existedRequest['requestState'] > 2)
         continue;
       if ($createdType !== 'all' && $existedRequest ['tsCreated'] < $createLimit)
         continue;
