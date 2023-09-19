@@ -64,6 +64,14 @@ class TableUsers extends DbTable
 
 		return $newUserNdx;
 	}
+
+	public function formId ($recData, $ownerRecData = NULL, $operation = 'edit')
+	{
+		if (isset($recData['userType']) && $recData['userType'] == 1)
+			return 'robot';
+
+		return 'default';
+	}
 }
 
 
@@ -114,6 +122,7 @@ class ViewUsers extends TableView
     array_push ($q, 'SELECT [users].*');
 		array_push ($q, ' FROM [e10_users_users] AS [users]');
 		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND [userType] = %i', 0);
 
 		// -- fulltext
 		if ($fts != '')
@@ -142,7 +151,9 @@ class ViewUsers extends TableView
 		{
 			array_push ($q, ' AND users.email != %s', '',
 											' AND NOT EXISTS (SELECT ndx FROM e10_persons_personsContacts WHERE ',
-											' [users].[email] = e10_persons_personsContacts.contactEmail )');
+											' [users].[email] = e10_persons_personsContacts.contactEmail ',
+											' AND [e10_persons_personsContacts].[docState] = %i ', 4000,
+											')');
 		}
 
 
@@ -239,6 +250,27 @@ class FormUser extends TableForm
 
 
 /**
+ * Class FormUserRobot
+ */
+class FormUserRobot extends TableForm
+{
+	public function renderForm ()
+	{
+		$this->setFlag ('formStyle', 'e10-formStyleSimple');
+		$this->setFlag('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
+
+		$this->openForm ();
+			$this->addColumnInput('fullName');
+      $this->addColumnInput('login');
+			$this->addColumnInput('email');
+			$this->addList ('doclinks', '', TableForm::loAddToFormLayout);
+			$this->addColumnInput('accState');
+		$this->closeForm ();
+	}
+}
+
+
+/**
  * class ViewDetailUser
  */
 class ViewDetailUser extends TableViewDetail
@@ -249,3 +281,14 @@ class ViewDetailUser extends TableViewDetail
 	}
 }
 
+
+/**
+ * class ViewDetailUserRobot
+ */
+class ViewDetailUserRobot extends TableViewDetail
+{
+	public function createDetailContent ()
+	{
+    $this->addDocumentCard('e10.users.libs.dc.DCRobot');
+	}
+}

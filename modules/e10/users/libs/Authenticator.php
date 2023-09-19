@@ -35,14 +35,28 @@ class Authenticator extends Utility
     if (!$sessionId)
       return FALSE;
 
-    $sessionInfo = $this->db()->query('SELECT [user] FROM [e10_users_sessions] WHERE [ndx] = %s', $sessionId)->fetch();
+    $sessionInfo = $this->db()->query('SELECT [user], [apiKey] FROM [e10_users_sessions] WHERE [ndx] = %s', $sessionId)->fetch();
     if ($sessionInfo)
     {
-      $this->setUserInfo($sessionInfo['user']);
+      $this->setUserInfo($sessionInfo['user'], $sessionInfo['apiKey']);
       return TRUE;
     }
 
     return FALSE;
+  }
+
+  function sessionInfo()
+  {
+    $sessionId = $this->testCookie ($this->sessionCookieName);
+
+    if (!$sessionId)
+      return NULL;
+
+    $sessionInfo = $this->db()->query('SELECT * FROM [e10_users_sessions] WHERE [ndx] = %s', $sessionId)->fetch();
+    if ($sessionInfo)
+      return $sessionInfo->toArray();
+
+    return NULL;
   }
 
   function checkUser($credentials)
@@ -65,7 +79,7 @@ class Authenticator extends Utility
       if (password_verify($password, $existedPassword['password']))
       {
         $this->createNewSession($userInfo['ndx']);
-        $this->setUserInfo($userInfo['ndx']);
+        $this->setUserInfo($userInfo['ndx'], 0);
 
         return TRUE;
       }
@@ -74,11 +88,36 @@ class Authenticator extends Utility
     return FALSE;
   }
 
-  function createNewSession($userNdx)
+  function checkRobot($apiKey)
+  {
+    if ($apiKey == '')
+      return FALSE;
+
+    $apiKeyInfo = $this->db()->query('SELECT * FROM [e10_users_apiKeys] WHERE [key] = %s', $apiKey, ' AND [docState] = %i', 4000)->fetch();
+    if (!$apiKeyInfo)
+      return FALSE;
+
+    $userNdx = $apiKeyInfo['user'];
+    $userInfo = $this->db()->query('SELECT * FROM [e10_users_users] WHERE [ndx] = %i', $userNdx,
+                                   ' AND docState = %i', 4000,
+                                   ' AND accState = %i', 1)->fetch();
+    if (!$userInfo)
+      return FALSE;
+    if ($userInfo['userType'] != 1)
+      return FALSE;
+
+    $this->createNewSession($userInfo['ndx'], $apiKeyInfo['ndx']);
+    $this->setUserInfo($userInfo['ndx'], $apiKeyInfo['ndx']);
+
+    return TRUE;
+  }
+
+  function createNewSession($userNdx, $apiKeyNdx = 0)
   {
     $newSession = [
       'ndx' => Utils::createToken(40),
       'user' => $userNdx,
+      'apiKey' => $apiKeyNdx,
       'created' => new \DateTime(),
     ];
 
@@ -88,10 +127,10 @@ class Authenticator extends Utility
     $this->setCookie($this->sessionCookieName, $newSession['ndx'], $sessionExpiration);
   }
 
-  function setUserInfo($userNdx)
+  function setUserInfo($userNdx, $apiKeyNdx = 0)
   {
     $userRecData = $this->db()->query('SELECT * FROM [e10_users_users] WHERE [ndx] = %i', $userNdx)->fetch();
-    $this->app->uiUser = ['ndx' => $userNdx, 'name' => $userRecData['fullName']];
+    $this->app->uiUser = ['ndx' => $userNdx, 'name' => $userRecData['fullName'], 'apiKeyNdx' => $apiKeyNdx];
   }
 
   function closeSession()

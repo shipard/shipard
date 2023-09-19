@@ -2,12 +2,13 @@
   "id": "e10.users",
   "name": "Users",
   "tables": [
-		"users", "requests", "roles", "sessions", "pwds"
+		"users", "requests", "roles", "sessions", "pwds", "apiKeys"
   ],
   "config": [
     {"id": "+appSkeleton", "file": "appSkeleton.json"},
     {"id": "+e10.persons.roles", "file": "e10.users.roles.json"},
     {"id": "e10.users.accountStates", "file": "accountStates.json"},
+    {"id": "e10.users.types", "file": "userTypes.json"},
     {"id": "e10.users.requestTypes", "file": "requestTypes.json"},
     {"id": "e10.users.requestStates", "file": "requestStates.json"},
     {"id": "+e10.reports.sendReports", "file": "sendReports.json"},

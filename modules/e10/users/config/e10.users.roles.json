@@ -1,7 +1,7 @@
 {
   "admin": {
 		"viewers": {
-			"e10.users.users": {"default": 2},
+			"e10.users.users": {"default": 2, "robots": 2},
 			"e10.users.requests": {"default": 2},
 			"e10.users.roles": {"default": 2}
 		},

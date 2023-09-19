@@ -3,6 +3,7 @@
   "columns": [
     {"id": "ndx", "name": "id", "type": "string", "len": 40, "options": ["ascii"]},
     {"id": "user", "name": "Osoba", "type": "int", "reference": "e10.users.users"},
+    {"id": "apiKey", "name": "Klíč", "type": "int", "reference": "e10.users.apiKeys"},
 		{"id": "created", "name": "Vytvořeno", "type": "timestamp"}
   ],
 	"options": ["systemTable"]

@@ -162,6 +162,11 @@ class Router extends Utility
 
 	function routeApiV2()
 	{
+		if (!isset($this->urlPath[1]) || $this->urlPath[1] !== 'v2')
+		{
+			return $this->app()->routeApiRun();
+		}
+
 		$requestParamsStr = $this->app()->postData();
 		if ($requestParamsStr === '')
 		{

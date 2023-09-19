@@ -28,6 +28,18 @@ class WebManifest extends \Shipard\UI\ng\AppPageBlank
 		{
 			$startUrl .= $uiCfg['pwaStartUrlBegin'];
 		}
+		else
+		{
+			$a = new \e10\users\libs\Authenticator($this->app());
+			$sessionInfo = $a->sessionInfo();
+
+			if ($sessionInfo && isset($sessionInfo['apiKey']) && $sessionInfo['apiKey'])
+			{
+				$apiKeyInfo = $this->db()->query('SELECT * FROM [e10_users_apiKeys] WHERE [ndx] = %i', $sessionInfo['apiKey'], ' AND [docState] = %i', 4000)->fetch();
+				if ($apiKeyInfo)
+					$startUrl .= 'auth/robot/'.$apiKeyInfo['key'];
+			}
+		}
 
 		$wm = [
 			'name' => $this->uiRouter->uiCfg['pwaTitle'],

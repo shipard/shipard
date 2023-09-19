@@ -2,6 +2,8 @@
 	"id": "e10.users.users", "sql": "e10_users_users", "name": "Uživatelé",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "userType", "name": "Typ uživatele", "type": "enumInt",
+	    "enumCfg": {"cfgItem": "e10.users.types", "cfgValue": "", "cfgText": "fn"}},
     {"id": "fullName", "sql": "fullName", "name": "Název", "type": "string", "len": 140},
 		{"id": "login", "name": "Přihlašovací jméno", "type": "string", "len": 70},
 		{"id": "email", "name": "E-mail", "type": "string", "len": 70},
@@ -18,17 +20,25 @@
 	"lists": [
 		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Role"}
   ],
-	"views": [
-	  {
+	"views": {
+	  "default": {
       "id": "default", "class": "e10.users.ViewUsers",
 			"addWizard": {"class": "e10.users.libs.AddUserWizard", "text": "Nový uživatel"},
       "details": {
 				"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "e10.users.ViewDetailUser"}
 			}
+    },
+	  "robots": {
+      "id": "robots", "class": "e10.users.libs.ViewUsersRobots",
+      "details": {
+				"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "e10.users.ViewDetailUserRobot"}
+			}
     }
-	],
+	},
 	"forms": [
-		{"id": "default", "class": "e10.users.FormUser"}
+		{"id": "default", "class": "e10.users.FormUser"},
+		{"id": "robot", "class": "e10.users.FormUserRobot"}
 	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
 }
