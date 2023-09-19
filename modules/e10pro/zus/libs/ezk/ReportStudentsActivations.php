@@ -19,7 +19,10 @@ class ReportStudentsActivations extends GlobalReport
 
 		// -- toolbar
 		$this->addParam ('switch', 'ucitel', ['title' => 'Učitel', 'switch' => zusutils::ucitele($this->app, TRUE)]);
-    $this->addParam('switch', 'createdType', ['title' => 'Vytvořeno', 'switch' => ['all' => 'Vše', '1' => 'Za poslední den'], 'radioBtn' => 1, 'defaultValue' => '1']);
+    $this->addParam('switch', 'createdType', ['title' => 'Vytvořeno',
+      'switch' => ['all' => 'Vše', '1' => 'Za poslední den', '7' => 'týden'],
+      'radioBtn' => 1, 'defaultValue' => '1'
+    ]);
 
 		parent::init();
 
@@ -46,7 +49,10 @@ class ReportStudentsActivations extends GlobalReport
     $createdType = $this->reportParams ['createdType']['value'];
     $lastTeacherNdx = 0;
 
-    $createLimit = new \DateTime('1 day ago');
+    if ($createdType == '7')
+      $createLimit = new \DateTime('7 days ago');
+    else
+      $createLimit = new \DateTime('1 day ago');
 
     $schoolYear = zusutils::aktualniSkolniRok();
 		$q = [];
@@ -66,6 +72,8 @@ class ReportStudentsActivations extends GlobalReport
 
       $existedRequest = $this->db()->query('SELECT * FROM [e10_users_requests] WHERE [user] = %i', $existedUser['ndx'])->fetch();
       if (!$existedRequest)
+        continue;
+      if (!$existedRequest['requestState'] > 2)
         continue;
       if ($createdType !== 'all' && $existedRequest ['tsCreated'] < $createLimit)
         continue;
