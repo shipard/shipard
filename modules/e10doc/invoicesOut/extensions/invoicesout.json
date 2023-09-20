@@ -17,6 +17,11 @@
 				"id": "invout", "name": "Faktura", "class": "e10doc.invoicesOut.libs.InvoiceOutReport",
 				"queryCol": "docType", "queryColValues": ["invno", "cashreg"],
 				"email": 1, "dropdown": 1
+			},
+			{
+				"id": "invnoCash", "name": "Pokladní lístek", "class": "e10doc.cash.libs.CashReport",
+        "email": 1, "dropdown": 1,
+        "queryCols": {"paymentMethod" : "1", "docType": "invno"}
 			}
 		]
   },

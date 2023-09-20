@@ -22,5 +22,10 @@ class CashReport extends \e10doc\core\libs\reports\DocReport
 			$this->data ['flags']['cashDirIn'] = 1;
 		else
 			$this->data ['flags']['cashDirOut'] = 1;
+
+		if ($this->recData['docType'] === 'invno')
+		{
+			$this->recData['print']['cashBoxDir'] = 'Příjem';
+		}
 	}
 }
