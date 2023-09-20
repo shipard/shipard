@@ -97,6 +97,7 @@ class Router extends Utility
 		{
 			$object = $this->app->createObject('Shipard.UI.ng.WebManifest');
 			$object->uiRouter = $this;
+			$object->uiCfg = $this->uiCfg;
 			return new Response ($this->app, $object->createPageCode(), 200);
 		}
 		elseif ($first === 'sw.js')

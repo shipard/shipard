@@ -18,8 +18,7 @@ class WebManifest extends \Shipard\UI\ng\AppPageBlank
 		$themeStatusColor = '#212529';
 		$pwaIcon = $this->uiRouter->pwaIcon();
 
-		$first = $this->app->requestPath(1);
-		$uiCfg = $this->app()->cfgItem('e10.ui.uis.'.$first, NULL);
+		$uiCfg = $this->uiCfg;
 
 		$startUrl = '/';
 		$scope = '/';
@@ -46,7 +45,7 @@ class WebManifest extends \Shipard\UI\ng\AppPageBlank
 			'short_name' => $this->app->cfgItem ('options.core.ownerShortName', 'TEST'),
 			'description' => $this->uiRouter->uiCfg['fn'],
 			'start_url' => $startUrl,
-			'id' => '/',
+			'id' => $startUrl,
 			'display' => 'standalone',
 			'background_color' => $themeStatusColor,
 			'theme_color' => $themeStatusColor,

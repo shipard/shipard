@@ -45,6 +45,22 @@ class Auth extends \Shipard\UI\ng\AppPageBlank
       header('Location: ' . $this->uiTemplate->data['uiRoot']);
     }
 
+    if ($this->mode === 'robot')
+		{
+      $apiKey = $this->uiRouter->urlPath[2];
+      error_log("###RS: ".json_encode($apiKey));
+      $a = new \e10\users\libs\Authenticator($this->app());
+      if ($a->checkRobot($apiKey))
+      {
+        $redirTo = str_replace('//', '/', $this->uiTemplate->data['uiRoot']);
+        header('Location: ' . $redirTo);
+        die();
+      }
+
+      header('Location: ' . $this->uiTemplate->data['uiRoot'].'user/login/'.'?from=1');
+			die();
+		}
+
 		if ($this->mode === 'activate')
 		{
       $credentials = [
