@@ -11,28 +11,32 @@ use e10\Utility;
  */
 class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 {
-	CONST smNone = 0, smAPOnly = 1, smSwitch = 2;
+	// -- deviceMode
+	CONST dmSwitch = 0, dmUnmanaged = 1, dmRouter = 2, dmNone = 99;
+	var $deviceMode = self::dmNone;
+
+	// -- wifiMode
+	CONST wmNone = 0, wmCAP = 1, wmManual = 2, wmAutoLAN = 3;
+	var $wifiMode = self::wmNone;
 
 	var $scriptModeSignature = ' -- !!! UNCONFIGURED !!! --';
 	var $userLogin = 'admin';
 	var $csActiveRoot = '';
 
 	var $isRouter = 0;
-	var $switchMode = self::smNone;
 
 
 	public function setDevice($deviceRecData, $lanCfg)
 	{
 		parent::setDevice($deviceRecData, $lanCfg);
 
-		//{"router":0,"vlanFiltering":"1","capsmanServer":0,"capsmanClient":1,"userLogin":"","managementWWWAddrList":"1","managementSSHAddrList":"1"}
-
 		if (isset ($this->deviceCfg['userLogin']))
 			if (strlen ($this->deviceCfg['userLogin']))
 				$this->userLogin = $this->deviceCfg['userLogin'];
 
-		$this->isRouter = intval($this->deviceCfg['router'] ?? 0);
-		$this->switchMode = intval($this->deviceCfg['switch'] ?? 0);
+		$this->deviceMode = intval($this->deviceCfg['mode'] ?? 0);
+		$this->wifiMode = intval($this->deviceCfg['wifi'] ?? 0);
+		$this->isRouter = intval($this->deviceMode == self::dmRouter);
 	}
 
 	function createData_Init_Identity()
@@ -72,6 +76,8 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 		$adminsRangesWWW = array_merge ($this->lanCfg['ipRangesManagement'], $this->lanCfg['ipRangesAdmins']);
 
 		if (isset($this->deviceCfg['capsmanClient']) && intval($this->deviceCfg['capsmanClient']) && isset($this->lanCfg['mainServerWifiControlIp']))
+			$adminsRangesSSH[] = $this->lanCfg['mainServerWifiControlIp'].'/32';
+		elseif (isset($this->deviceCfg['wifi']) && intval($this->deviceCfg['wifi']) == 1 && isset($this->lanCfg['mainServerWifiControlIp']))
 			$adminsRangesSSH[] = $this->lanCfg['mainServerWifiControlIp'].'/32';
 
 		if (isset($this->deviceCfg['managementWWWAddrList']) && intval($this->deviceCfg['managementWWWAddrList']))
@@ -142,6 +148,8 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 
 		$tftpAddress = $this->lanCfg['mainServerLanControlIp'];
 		if (isset($this->deviceCfg['capsmanClient']) && intval($this->deviceCfg['capsmanClient']) && isset($this->lanCfg['mainServerWifiControlIp']))
+			$tftpAddress = $this->lanCfg['mainServerWifiControlIp'];
+		elseif (isset($this->deviceCfg['wifi']) && intval($this->deviceCfg['wifi']) == 1 && isset($this->lanCfg['mainServerWifiControlIp']))
 			$tftpAddress = $this->lanCfg['mainServerWifiControlIp'];
 
 		$this->script .= "### user + ssh public key ###\n";

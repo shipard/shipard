@@ -879,7 +879,7 @@ class ViewDevicesWiFiAPs extends ViewDevices
 {
 	public function init ()
 	{
-		$this->deviceKind = 15;
+		$this->deviceKind = [14, 15];
 		parent::init();
 	}
 }

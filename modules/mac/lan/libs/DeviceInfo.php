@@ -299,6 +299,7 @@ class DeviceInfo extends Utility
 
 		$firstIp = '';
 		$managementIp = '';
+		$managementPortId = '';
 
 		// -- prepare list
 		$list = [];
@@ -310,14 +311,17 @@ class DeviceInfo extends Utility
 				$list[$portNdx] = ['portId' => $r['portId'], 'portMac' => $r['portMac'], 'addresses' => []];
 
 			$at = $addrTypes[$r['addrType']];
-			$a = ['ip' => $r['ip'], 'rangeName' => $r['rangeName'], 'addrType' => $at['sc']];
+			$a = ['ip' => $r['ip'], 'rangeName' => $r['rangeName'], 'addrType' => $at['sc'], 'portId' => $r['portId']];
 			$list[$portNdx]['addresses'][] = $a;
 
 			if ($firstIp === '')
 				$firstIp = $r['ip'];
 
 			if ($r['portVlan'] && $r['portVlan'] === $this->lanRecData['vlanManagement'])
+			{
 				$managementIp = $r['ip'];
+				$managementPortId = $r['portId'];
+			}
 		}
 
 		if ($managementIp === '')
@@ -325,6 +329,9 @@ class DeviceInfo extends Utility
 
 		if ($managementIp !== '')
 			$this->info['managementIp'] = $managementIp;
+
+		if ($managementPortId !== '')
+			$this->info['managementPortId'] = $r['portId'];
 
 		// -- add to table
 		foreach ($list as $portNdx => $portDef)

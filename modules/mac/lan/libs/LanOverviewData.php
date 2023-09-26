@@ -154,6 +154,11 @@ class LanOverviewData extends Utility
 			if (isset($this->devicesKindsToDG[$deviceKind]))
 				$dgId = $this->devicesKindsToDG[$deviceKind];
 
+			if ($deviceKind === 14)
+			{
+				$dgId = self::dgiWiFi;
+			}
+
 			$this->devices[$deviceNdx] = [
 				'title' => $r['deviceFullName'], 'deviceId' => $r['deviceId'], 'icon' => $dk['icon'],
 				'dk' => $r['deviceKind'], 'lan' => $r['lan'], 'monitored' => $r['monitored'],
@@ -220,7 +225,7 @@ class LanOverviewData extends Utility
 
 				}
 			}
-			elseif ($deviceKind === 7 || ($deviceKind === 70 && isset($this->devices[$deviceNdx]['macDeviceCfg']) && ($this->devices[$deviceNdx]['macDeviceCfg']['rnableCams'] || $this->devices[$deviceNdx]['macDeviceCfg']['supportWss'])))
+			elseif ($deviceKind === 7 || ($deviceKind === 70 && isset($this->devices[$deviceNdx]['macDeviceCfg']) && ($this->devices[$deviceNdx]['macDeviceCfg']['enableCams'] || $this->devices[$deviceNdx]['macDeviceCfg']['supportWss'])))
 			{ // servers
 				if ($this->devices[$deviceNdx]['macDeviceType'] === 'server-linux' || $this->devices[$deviceNdx]['macDeviceType'] === 'shipardNode-common')
 				{

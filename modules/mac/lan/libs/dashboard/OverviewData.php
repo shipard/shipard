@@ -141,7 +141,7 @@ class OverviewData extends Utility
 					$this->devices[$deviceNdx]['macDeviceCfg'] = $macDeviceCfg;
 			}
 
-			if ($deviceKind === 14 && isset($this->devices[$deviceNdx]['macDeviceCfg']['capsmanClient']) && intval($this->devices[$deviceNdx]['macDeviceCfg']['capsmanClient']))
+			if ($deviceKind === 14 && isset($this->devices[$deviceNdx]['macDeviceCfg']['wifi']) && intval($this->devices[$deviceNdx]['macDeviceCfg']['wifi']) == 1)
 			{
 				$dgId = self::dgiWiFi;
 

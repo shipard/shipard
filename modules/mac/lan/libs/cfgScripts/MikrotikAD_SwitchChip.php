@@ -12,6 +12,7 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 {
 	var $csActiveRoot = '';
 	var $rootsInfo = [];
+	var $vlansPorts = [];
 
 	public function initRoots()
 	{
@@ -106,95 +107,17 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 		  $this->createData_DHCP();
 		  $this->createData_DHCP_Leases();
     }
-	}
-
-	function createData_Interfaces_SW_Vlans()
-	{
-
-		$root = '/interface bridge';
-		foreach ($this->lanCfg['vlans'] as $vlanNdx => $vlanCfg)
+		elseif ($this->deviceMode === self::dmSwitch)
 		{
-			$item =['type' => 'add',
-				'params' => [
-					'fast-forward' => 'no',
-					'name' => 'IFB_VLAN'.$vlanCfg['num']
-				]
-			];
-			if ($vlanCfg['desc'] !== '')
-				$item['params']['comment'] = $vlanCfg['desc'];
-
-			$this->cfgData[$root][] = $item;
+			$this->createData_Gateways();
 		}
 
-		$root = '/interface vlan';
-		foreach ($this->lanDeviceCfg['ports'] as $portNdx => $portCfg)
-		{
-			if (!isset($portCfg['vlans']) || !count($portCfg['vlans']))
-				continue;
-
-			if ($portCfg['portKind'] !== 5 && $portCfg['portKind'] !== 6)
-				continue;
-
-			foreach ($portCfg['vlans'] as $vlanNumber)
-			{
-				if ($portCfg['portRole'] === 15 || $portCfg['portRole'] === 20 ||
-					$portCfg['portRole'] === 30 || $portCfg['portRole'] === 40) // trunk or hybrid port or VLANs list
-				{
-					$item = ['type' => 'add',
-						'params' => [
-							'interface' => $portCfg['portId'],
-							'name' => 'IFV_' . $portCfg['portId'] . '_' . $vlanNumber,
-							'vlan-id' => $vlanNumber,
-						]
-					];
-					$this->cfgData[$root][] = $item;
-				}
-			}
-		}
-
-		$root = '/interface bridge port';
-		foreach ($this->lanDeviceCfg['ports'] as $portNdx => $portCfg)
-		{
-			if (!isset($portCfg['vlans']) || !count($portCfg['vlans']))
-				continue;
-
-			if ($portCfg['portKind'] !== 5 && $portCfg['portKind'] !== 6)
-				continue;
-
-			foreach ($portCfg['vlans'] as $vlanListIdx => $vlanNumber)
-			{
-				if ($portCfg['portRole'] === 10 || ($portCfg['portRole'] === 15 && $vlanListIdx == 0)) // access or hybrid port
-				{
-					$item = ['type' => 'add',
-						'params' => [
-							'bridge' => 'IFB_VLAN' . $vlanNumber,
-							'interface' => $portCfg['portId'],
-							'pvid' => $vlanNumber
-						]
-					];
-					$this->cfgData[$root][] = $item;
-				}
-
-				if ($portCfg['portRole'] === 15 || $portCfg['portRole'] === 20 ||
-					  $portCfg['portRole'] === 30 || $portCfg['portRole'] === 40) // trunk or hybrid port or VLANs list
-				{
-					$item = ['type' => 'add',
-						'params' => [
-							'bridge' => 'IFB_VLAN' . $vlanNumber,
-							'interface' => 'IFV_' . $portCfg['portId'] . '_' . $vlanNumber
-						]
-					];
-					$this->cfgData[$root][] = $item;
-				}
-			}
-		}
-
-
+		$this->createData_DNS();
 	}
 
 	function createData_Interfaces_HW_Vlans()
 	{
-		if (!$this->isRouter && $this->switchMode !== self::smSwitch)
+		if (!$this->isRouter && $this->deviceMode !== self::dmSwitch)
 			return;
 
 		$vlansOnPorts = ['native' => [], 'trunk' => [], 'mng' => [], 'all' => []];
@@ -211,19 +134,25 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 					$portRole = 'native';
 				elseif ($portCfg['portRole'] === 20 || $portCfg['portRole'] === 30 || $portCfg['portRole'] === 40)
 					$portRole = 'trunk';
+				//elseif ($portCfg['portRole'] === 30 && isset($portCfg['untaggedVlan']))
+				//	$portRole = 'native';
 			}
 			elseif ($portCfg['portKind'] === 10)
 				$portRole = 'mng';
 
 			foreach ($portCfg['vlans'] as $vlanNumber)
 			{
-				$portId = (($portRole == 'mng') ? 'switch1-cpu':$portCfg['portId']);
+				$portId = (($portRole == 'mng') ? 'bridge1':$portCfg['portId']);
 				$vlansOnPorts[$portRole][$vlanNumber][$portCfg['number']] = $portId;
 				$vlansOnPorts['all'][$vlanNumber][$portCfg['number']] = $portId;
+				if ($portCfg['portRole'] === 30 && isset($portCfg['untaggedVlan']) && $portCfg['untaggedVlan'] == $vlanNumber)
+					$vlansOnPorts['native'.'_'][$vlanNumber][] = $portId;
+				elseif ($portRole == 'mng')
+					$vlansOnPorts['trunk'.'_'][$vlanNumber][] = $portId;
+				else
+					$vlansOnPorts[$portRole.'_'][$vlanNumber][] = $portId;
 			}
 		}
-
-
 
 
 		$root = '/interface bridge';
@@ -240,92 +169,75 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 
 		foreach ($this->lanDeviceCfg['ports'] as $portNdx => $portCfg)
 		{
-			//if ($portCfg['portKind'] !== 5 && $portCfg['portKind'] !== 6)
-			//	continue;
-
 			$portRole = $portCfg['portRole'];
 			$vlans = [];
 			if (isset($portCfg['vlans']) && count($portCfg['vlans']))
 				foreach ($portCfg['vlans'] as $vn)
 					$vlans[] = $vn;
-			/*
-			if ($portRole === 10)
-			{ // native vlan
-				$item = ['type' => 'add',
-					'params' => [
-						'bridge' => 'bridge1',
-						'interface' => $portCfg['portId'],
-						'hw' => 'yes',
-						'pvid' => $portCfg['vlans'][0],
-					]
-				];
-				$this->cfgData[$root][] = $item;
+			$item = ['type' => 'add',
+				'params' => [
+					'bridge' => 'bridge1',
+					'interface' => $portCfg['portId'],
+					//'hw' => 'yes',
+				]
+			];
 
-				$vlans[] = $portCfg['vlans'][0];
+			if ($portRole === 10 && isset($portCfg['vlans']) && count($portCfg['vlans']))
+			{
+				$item['params']['pvid'] = implode(',', $portCfg['vlans']);
+				$item['params']['frame-types'] = 'admit-only-untagged-and-priority-tagged';
 			}
-			elseif ($portRole === 70 || $portRole === 90 || $portRole === 20 || $portRole === 30 || $portRole === 40)
-			{ // local port
-				*/
-				$item = ['type' => 'add',
-					'params' => [
-						'bridge' => 'bridge1',
-						'interface' => $portCfg['portId'],
-						//'hw' => 'yes',
-					]
-				];
+
+			if ($portRole === 20 || $portRole === 30) // uplink / downlink
+			{
+				if ($portRole === 30 && isset($portCfg['untaggedVlan']))
+				{
+					$item['params']['pvid'] = $portCfg['untaggedVlan'];//json_encode($portCfg); // implode(',', $portCfg['vlans']);
+					$item['params']['frame-types'] = 'admit-all';
+				}
+				else
+					$item['params']['frame-types'] = 'admit-only-vlan-tagged';
+			}
+
+			if ($portCfg['portKind'] == 5 || $portCfg['portKind'] == 6)
 				$this->cfgData[$root][] = $item;
-			//}
 
 			if (count($vlans))
 			{
 				foreach ($vlans as $vn)
 				{
 					if (!isset($vlansPorts[$vn]) || !in_array($portCfg['portId'], $vlansPorts[$vn]))
-						$vlansPorts[$vn][] = $portCfg['portId'];
+					{
+						$portId = (($portCfg['portKind'] === 10) ? 'bridge1' : $portCfg['portId']);
+						$vlansPorts[$vn][] = $portId;
+					}
 				}
 			}
 		}
 
-
-
-
-
-		$root = '/interface ethernet switch vlan';
-
-		$allPorts = $vlansOnPorts['all'];
-		ksort ($allPorts);
-		foreach ($allPorts as $vlanNum => $vlan)
+		$root = '/interface vlan';
+		foreach ($this->lanDeviceCfg['ports'] as $portNdx => $portCfg)
 		{
-			ksort($vlan);
-			$ports = "";
-			foreach ($vlan as $port)
-			{
-				if (strlen ($ports))
-					$ports .= ",";
-				$ports .= $port;
-			}
+			if (!isset($portCfg['vlans']) || !count($portCfg['vlans']))
+				continue;
 
-			$item =['type' => 'add',
+			if ($portCfg['portKind'] !== 10)
+				continue;
+
+			$item = ['type' => 'add',
 				'params' => [
-					'ports' => $ports,
-					'vlan-id' => $vlanNum,
-					//'learn' => 'yes'
+					'interface' => 'bridge1',
+					'vlan-id' => $portCfg['vlans'][0],
+					'name' => $portCfg['portId']
 				]
 			];
-			$vlanCfg = \e10\searchArray($this->lanCfg['vlans'], 'num', $vlanNum);
-			if ($vlanCfg['desc'] !== '')
-				$item['params']['comment'] = $vlanCfg['desc'];
 
 			$this->cfgData[$root][] = $item;
 		}
 
-
-
-
-
 		$root = '/interface bridge vlan';
 		ksort($vlansPorts);
-		foreach ($vlansPorts as $vlanNumber => $ports)
+		foreach ($vlansOnPorts['trunk_'] as $vlanNumber => $ports)
 		{
 			$item = ['type' => 'add',
 				'params' => [
@@ -337,28 +249,16 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 			$this->cfgData[$root][] = $item;
 		}
 
-		$root = '/interface vlan';
-		foreach ($this->lanCfg['vlans'] as $vlanNdx => $vlanCfg)
-		{
-			$item = ['type' => 'add',
-				'params' => [
-					'interface' => 'bridge1',
-					'vlan-id' => $vlanCfg['num'],
-					'name' => 'IFB_VLAN'.$vlanCfg['num'],
-				]
-			];
-			if ($vlanCfg['desc'] !== '')
-				$item['comment'] = $vlanCfg['desc'];
+		$root = '/interface bridge';
+		$item = ['type' => 'set bridge1',
+			'params' => [
+				//'bridge' => 'bridge1',
+				'vlan-filtering' => 'yes',
+			]
+		];
+		$this->cfgData[$root][] = $item;
 
-			$this->cfgData[$root][] = $item;
-		}
-
-		/*
-		$this->script .= "/interface bridge\n";
-		$this->script .= "set bridge1 vlan-filtering=yes\n";
-		$this->script .= "\n";
-		$this->script .= "\n";
-		*/
+		$this->vlansPorts = $vlansPorts;
 	}
 
 	function createData_Interfaces_Addresses()
@@ -371,7 +271,7 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 
 		$usedAddresses = [];
 
-		if ($this->isRouter)
+		if ($this->deviceMode === self::dmSwitch)
 		{
 			$root = '/ip address';
 			foreach ($this->lanDeviceCfg['addresses'] as $addressCfg)
@@ -380,29 +280,36 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 				$item = ['type' => 'add',
 					'params' => [
 						'address' => $addressCfg['ip'],
-						'interface' => $interface,
+						'interface' => $addressCfg['portId'],
 						'network' => $addressCfg['network'],
 					]
 				];
 				$usedAddresses [] = $item['params']['address'];
 				$this->cfgData[$root][] = $item;
 			}
+		}
+	}
 
-			foreach ($this->lanCfg['dhcp']['pools'] as $poolId => $poolCfg)
+	function createData_DNS()
+	{
+		if ($this->deviceMode === self::dmSwitch)
+		{
+			$root = '/ip dns';
+			foreach ($this->lanDeviceCfg['addresses'] as $address)
 			{
-				$interface = (isset($poolCfg['vlan'])) ? 'IFB_VLAN'.$poolCfg['vlan'] : 'XXXX';
-				$item = ['type' => 'add',
-					'params' => [
-						'address' => $poolCfg['addressPrefix'].'1'.'/24',
-						'interface' => $interface,
-						'network' => $poolCfg['addressPrefix'].'0',
-					]
-				];
-
-				if (in_array($item['params']['address'], $usedAddresses))
-					continue;
-
-				$this->cfgData[$root][] = $item;
+				if (isset ($address['vlan']) && $address['vlan'] == $this->lanCfg['vlanManagement'])
+				{
+					if (isset ($address['gw']) && strlen ($address['gw']))
+					{
+						$item = ['type' => 'set',
+							'params' => [
+								'servers' => $address['gw']
+							]
+						];
+						$this->cfgData[$root][] = $item;
+						break;
+					}
+				}
 			}
 		}
 	}
@@ -630,26 +537,48 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 
 	function createData_Gateways()
 	{
-		if (!isset($this->lanDeviceCfg['gateways']) || !count($this->lanDeviceCfg['gateways']))
-			return;
+		if (0)
+		{ // router
+			if (!isset($this->lanDeviceCfg['gateways']) || !count($this->lanDeviceCfg['gateways']))
+				return;
 
-		$root = '/ip route';
-		foreach ($this->lanDeviceCfg['gateways'] as $gw)
+			$root = '/ip route';
+			foreach ($this->lanDeviceCfg['gateways'] as $gw)
+			{
+				$distance = $gw['priority'];
+				if (!$distance)
+					$distance = 1;
+
+				$item = ['type' => 'add',
+					'params' => [
+						'distance' => $distance,
+						'gateway' => $gw['addr'],
+					]
+				];
+				if ($gw['desc'] !== '')
+					$item['params']['comment'] = $gw['desc'];
+
+				$this->cfgData[$root][] = $item;
+			}
+		}
+		else
 		{
-			$distance = $gw['priority'];
-			if (!$distance)
-				$distance = 1;
-
-			$item = ['type' => 'add',
-				'params' => [
-					'distance' => $distance,
-					'gateway' => $gw['addr'],
-				]
-			];
-			if ($gw['desc'] !== '')
-				$item['params']['comment'] = $gw['desc'];
-
-			$this->cfgData[$root][] = $item;
+			$root = '/ip route';
+			foreach ($this->lanDeviceCfg['addresses'] as $addressNdx => $addressCfg)
+			{
+				if (isset ($addressCfg['vlan']) && $addressCfg['vlan'] == $this->lanCfg['vlanManagement'])
+				{
+					if (isset ($addressCfg['gw']) && strlen ($addressCfg['gw']))
+					{
+						$item = ['type' => 'add',
+							'params' => [
+								'gateway' => $addressCfg['gw']
+							]
+						];
+						$this->cfgData[$root][] = $item;
+					}
+				}
+			}
 		}
 	}
 
@@ -671,6 +600,10 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 		$this->createScript_Interfaces_Addresses();
 		$this->createScript_Firewall();
 		$this->createScript_Gateways();
+
+		$this->csActiveRoot = '/ip dns';
+		$this->createScriptForRoot();
+
 		$this->createScript_DHCP();
 		$this->createScript_DHCP_Leases();
 	}
@@ -698,7 +631,6 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 
 		$this->csActiveRoot = '/interface vlan';
 		$this->createScriptForRoot();
-
 
 		/*
 		$this->script .= "/interface bridge\n";
@@ -744,9 +676,6 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 
 	function createScript_Gateways()
 	{
-		if (!isset($this->lanDeviceCfg['gateways']) || !count($this->lanDeviceCfg['gateways']))
-			return;
-
 		$this->csActiveRoot = '/ip route';
 		$this->createScriptForRoot();
 	}

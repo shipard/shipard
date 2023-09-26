@@ -296,6 +296,8 @@ class LanCfgCreator extends Utility
 				}
 			}
 
+			$addressItem['portId'] = $r['portId'];
+
 			if ($addrInfo)
 			{
 				$addressItem['network'] = $addrInfo['network'];
@@ -536,6 +538,8 @@ class LanCfgCreator extends Utility
 			{
 				$macDeviceCfg = json_decode($r['macDeviceCfg'], TRUE);
 				if (isset($macDeviceCfg['capsmanClient']) && intval($macDeviceCfg['capsmanClient']))
+					$enabled = 1;
+				elseif (isset($macDeviceCfg['wifi']) && intval($macDeviceCfg['wifi']) == 1)
 					$enabled = 1;
 			}
 			if (!$enabled)

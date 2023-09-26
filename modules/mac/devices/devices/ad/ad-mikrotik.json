@@ -3,13 +3,26 @@
 	"title": "Mikrotik",
 	"fields": {
 		"columns": [
-			{"id": "router", "name": "Router", "type": "logical", "options": ["saveOnChange"]},
+			{
+				"id": "mode", "name": "Mód", "type": "enumInt", "options": ["saveOnChange"],
+				"enumValues": {
+					"0": "switch",
+					"1": "AP/Bridge (unmanaged)",
+					"2": "router"
+				}
+			},
 
-			{"id": "switch", "name": "Switch", "type": "enumInt",
-				"enumValues": {"0": "Ne", "1": "Pouze AP mode", "2": "AP + Switch"}},
+			{
+				"id": "wifi", "name": "WiFi", "type": "enumInt", "options": ["saveOnChange"],
+				"enumValues": {
+					"0": "ne",
+					"1": "CAP",
+					"2": "ruční nastavení na tomto zařízení",
+					"3": "automatické nastavení ze sítě"
+				}
+			},
 
 			{"id": "capsmanServer", "name": "Zapnout CAPSMAN server", "type": "logical"},
-			{"id": "capsmanClient", "name": "Zapnout CAPSMAN klienta (AP Mode)", "type": "logical"},
 
 			{"id": "userLogin", "name": "Uživatel", "type": "string", "len": 30},
 			{"id": "managementWWWAddrList", "name": "Povolené adresy pro správu přes WWW", "type": "int", "reference": "mac.lan.ipAddressLists"},
@@ -92,6 +105,7 @@
 		},
 		"mkt-rb-crs": {
 			"title": "CRS",
+			"sgClassId": "mac.lan.libs.cfgScripts.MikrotikAD_SwitchChip",
 			"types": {
 				"mkt-crs106-1c-5s": {"title": "CRS106-1C-5S"},
 				"mkt-crs112-8g-4s": {"title": "CRS112-8G-4S-IN"},
@@ -101,6 +115,8 @@
 				"mkt-crs310-1g-5s-4s": {"title": "CRS310-1G-5S-4S+IN"},
 				"mkt-crs326-24s-2q": {"title": "CRS326-24S+2Q+RM"},
 				"mkt-crs326-24g-2s": {"title": "CRS326-24G-2S+IN / CRS326-24G-2S+RM"},
+				"mkt-crs328-24p-4s-rm": {"title": "CRS328-24P-4S+RM"},
+				"mkt-crs328-4c-20s-4s-rm": {"title": "CRS328-4C-20S-4S+RM"},
 				"mkt-crs354-48p-4s-2q": {"title": "CRS354-48P-4S+2Q+RM"}
 			}
 		}
