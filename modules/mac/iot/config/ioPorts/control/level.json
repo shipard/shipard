@@ -5,6 +5,12 @@
 		"columns": [
 			{
 				"id": "pin", "name": "Pin", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["out"]}
+			},
+			{
+				"id": "defaultValue", "name": "Výchozí hodnota v %", "type": "int"
+			},
+			{
+				"id": "startMax", "name": "Při startu zapnout na 100%", "type": "logical"
 			}
 		]
 	}

@@ -102,7 +102,11 @@ class IotDeviceCfgUpdaterIotBox extends \mac\iot\libs\IotDeviceCfgUpdater
 					{
 						$ioPortCfg[$ioPortColumnId] = $this->deviceSettings[$cfgColumnId];
 //				$portTypeCfgColumn = utils::searchArray($ioPortTypeCfg['fields']['columns'], 'id', $key);
-
+					}
+					elseif ($cfgColumnId[0] === '_')
+					{
+						$icd = substr($cfgColumnId, 1);
+						$ioPortCfg[$icd] = $ioPortColumnId;
 					}
 				}
 				continue;
