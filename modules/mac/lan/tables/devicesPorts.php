@@ -530,6 +530,20 @@ class ViewDevicesPortsFormList extends \e10\TableViewGrid
 			$this->linkedVlans[$r['srcRecId']][] = $l;
 		}
 	}
+
+	public function createToolbar ()
+	{
+		$tlbr = parent::createToolbar();
+
+		$tlbr[] = [
+			'text' => 'Nastavit porty', 'type' => 'action', 'action' => 'addwizard', 'icon' => 'system/actionSettings',
+			'class' => 'mr1 pull-right',
+			'data-class' => 'mac.lan.libs.LanDevicePortsWizard',
+			'data-addparams' => '__lanDeviceNdx=' . $this->device,
+		];
+
+		return $tlbr;
+	}
 }
 
 

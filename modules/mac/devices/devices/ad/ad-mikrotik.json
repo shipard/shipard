@@ -55,11 +55,25 @@
 			"types": {
 				"mkt-xap_cap": {"title": "cAP"},
 				"mkt-xap_cap-ac": {"title": "cAP ac"},
-				"mkt-xap_cap-xl-ac": {"title": "cAP XL ac"},
+				"mkt-xap_cap-xl-ac": {
+					"title": "cAP XL ac",
+					"ports": [
+						{"kind": 5, "count": 2, "maskId": "eth"},
+						{"kind": 1, "count": 2, "maskId": "wlan"},
+						{"kind": 10, "count": 1, "maskId": "mng"}
+					]
+				},
 				"mkt-xap_cap-lite": {"title": "cAP lite"},
 
 				"mkt-xap_hap": {"title": "hAP"},
-				"mkt-xap_hap-ax2": {"title": "hAP ax²"},
+				"mkt-xap_hap-ax2": {
+					"title": "hAP ax²",
+					"ports": [
+						{"kind": 5, "count": 5, "maskId": "ether"},
+						{"kind": 1, "count": 2, "maskId": "wlan"},
+						{"kind": 10, "count": 1, "maskId": "mng"}
+					]
+				},
 				"mkt-xap_hap-ax3": {"title": "hAP ax³"},
 				"mkt-xap_hap-mini": {"title": "hAP mini"},
 				"mkt-xap_hap-lite": {"title": "hAP lite / hAP lite TC"},
@@ -111,11 +125,32 @@
 				"mkt-crs112-8g-4s": {"title": "CRS112-8G-4S-IN"},
 				"mkt-crs112-8p-4s": {"title": "CRS112-8P-4S-IN"},
 				"mkt-crs125-24g-1s-2hnd": {"title": "CRS125-24G-1S-2HnD-IN"},
-				"mkt-crs309-1g-8s": {"title": "CRS309-1G-8S+IN"},
+				"mkt-crs309-1g-8s": {
+					"title": "CRS309-1G-8S+IN",
+					"ports": [
+						{"kind": 5, "count": 1, "maskId": "ether"},
+						{"kind": 6, "count": 8, "maskId": "sfp-sfpplus"},
+						{"kind": 10, "count": 1, "maskId": "mng"}
+					]
+				},
 				"mkt-crs310-1g-5s-4s": {"title": "CRS310-1G-5S-4S+IN"},
 				"mkt-crs326-24s-2q": {"title": "CRS326-24S+2Q+RM"},
-				"mkt-crs326-24g-2s": {"title": "CRS326-24G-2S+IN / CRS326-24G-2S+RM"},
-				"mkt-crs328-24p-4s-rm": {"title": "CRS328-24P-4S+RM"},
+				"mkt-crs326-24g-2s": {
+					"title": "CRS326-24G-2S+IN / CRS326-24G-2S+RM",
+					"ports": [
+						{"kind": 5, "count": 24, "maskId": "ether"},
+						{"kind": 6, "count": 2, "maskId": "sfp-sfpplus"},
+						{"kind": 10, "count": 1, "maskId": "mng"}
+					]
+				},
+				"mkt-crs328-24p-4s-rm": {
+					"title": "CRS328-24P-4S+RM",
+					"ports": [
+						{"kind": 5, "count": 24, "maskId": "ether"},
+						{"kind": 6, "count": 4, "maskId": "sfp-sfpplus"},
+						{"kind": 10, "count": 1, "maskId": "mng"}
+					]
+				},
 				"mkt-crs328-4c-20s-4s-rm": {"title": "CRS328-4C-20S-4S+RM"},
 				"mkt-crs354-48p-4s-2q": {"title": "CRS354-48P-4S+2Q+RM"}
 			}

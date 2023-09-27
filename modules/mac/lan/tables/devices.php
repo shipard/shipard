@@ -426,6 +426,88 @@ class TableDevices extends DbTable
 
 		return $sgClassId;
 	}
+
+	function activeDeviceCfg($deviceRecData)
+	{
+		$macDeviceType = $this->app()->cfgItem('mac.devices.types.'.$deviceRecData['macDeviceType'], NULL);
+		if (!$macDeviceType)
+			return NULL;
+
+		$macDeviceTypeCfg = $this->macDeviceTypeCfg($deviceRecData['macDeviceType']);
+		$mdtFamilyCfg = $macDeviceTypeCfg['families'][$deviceRecData['mdtFamily']] ?? NULL;
+		if (!$mdtFamilyCfg)
+			return NULL;
+
+		$mdtTypeCfg = $mdtFamilyCfg['types'][$deviceRecData['mdtType']] ?? NULL;
+
+		return $mdtTypeCfg;
+	}
+
+	public function checkPorts($deviceNdx, &$portsInfo, $doIt = FALSE)
+	{
+		$deviceRecData = $this->loadItem($deviceNdx);
+		if (!$deviceRecData)
+			return;
+
+		$adCfg = $this->activeDeviceCfg($deviceRecData);
+		if (!$adCfg || !isset($adCfg['ports']))
+			return;
+
+		$devicePortNumber = 1;
+		$portsInfo['allPorts'] = [];
+		foreach ($adCfg['ports'] as $onePort)
+		{
+			$groupIndex = 1;
+			for ($pidx = 0; $pidx < $onePort['count']; $pidx++)
+			{
+				$portId = strval ($groupIndex);
+				if ($onePort['maskId'] !== '')
+				{
+					if (strpos($$onePort['maskId'], '%N') !== FALSE)
+						$portId = str_replace('%N', $portId, $onePort['maskId']);
+					else
+						$portId = $onePort['maskId'].$portId;
+				}
+
+				$newPort = [
+					'device' => $deviceNdx,
+					'portNumber' => $devicePortNumber,
+					'portId' => $portId,
+					'portKind' => $onePort['kind'],
+					'rowOrder' => $devicePortNumber * 100,
+				];
+
+				/*
+				if ($pt['portKind'] == 10 && $portsCount === 1 && $lanRecData)
+					$newPort['vlan'] = $lanRecData['vlanManagement'];
+				*/
+
+				$portExist = $this->db()->query('SELECT * FROM [mac_lan_devicesPorts] WHERE [device] = %i', $deviceNdx,
+																				' AND [portId] = %s', $portId)->fetch();
+
+				if ($portExist)
+				{
+					$newPort['_note'] = 'Port již existuje';
+				}
+				else
+				{
+					if ($doIt)
+					{
+						$this->db()->query('INSERT INTO mac_lan_devicesPorts ', $newPort);
+					}
+					else
+						$newPort['_note'] = 'Port neexistuje, bude přidán';
+				}
+
+				$portsInfo['allPorts'][] = $newPort;
+
+
+				$groupIndex++;
+				$devicePortNumber++;
+
+			}
+		}
+	}
 }
 
 
