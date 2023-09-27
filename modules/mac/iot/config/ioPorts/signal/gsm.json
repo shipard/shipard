@@ -17,6 +17,23 @@
 			},
 			{
 				"id": "pinTX", "name": "Pin TX (výstup)", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["out", "hwInt"]}
+			},
+
+			{
+				"id": "powerOn", "name": "Modul vyžaduje zapnutí", "type": "logical", "options": ["saveOnChange"]
+			},
+			{
+				"id": "pinPowerOn", "name": "Pin pro zapnutí", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["out"]}, "enabled": {"powerOn": "1"}
+			},
+
+			{
+				"id": "dualSIM", "name": "Podpora dual SIM", "type": "logical", "options": ["saveOnChange"]
+			},
+			{
+				"id": "sim1Id", "name": "SIM1 id", "type": "string", "len": 30, "enabled": {"dualSIM": "1"}
+			},
+			{
+				"id": "sim2Id", "name": "SIM2 id", "type": "string", "len": 30, "enabled": {"dualSIM": "1"}
 			}
 		]
 	},
