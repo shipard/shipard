@@ -127,6 +127,12 @@ class Item extends \e10\DocumentCard
 				if ($label)
 					$item['application'][] = ['text' => $label['name'], 'class' => 'label', 'icon' => 'tables/e10.base.clsfgroups', 'css' => $label['css']];
 			}
+
+			if (!Utils::dateIsBlank($r['validFrom']) || !Utils::dateIsBlank($r['validTo']))
+			{
+				$item['application'][] = ['text' => Utils::dateFromTo($r['validFrom'], $r['validTo'], NULL), 'class' => 'label label-info', 'icon' => 'system/iconCalendar'];
+			}
+
 			if($askDir)
 				$item['info'][] = ['text' => $codeDir['sn'] ?? '!!!', 'class' => 'block'];
 			if($refType === 1)

@@ -1779,6 +1779,10 @@ class TableHeads extends DbTable
 		elseif ($personType == 2) // company
 			array_push ($q, ' AND ([codes].[personType] = %i', 1, ' OR [codes].[personType] = %i)', 0);
 
+		// -- date valid
+		array_push ($q, ' AND ([codes].[validFrom] IS NULL', ' OR [codes].[validFrom] <= %d)', $headRecData['dateAccounting']);
+		array_push ($q, ' AND ([codes].[validTo] IS NULL', ' OR [codes].[validTo] >= %d)', $headRecData['dateAccounting']);
+
 		if (count($addressLabels))
 		{
 			array_push ($q, ' AND ([codes].[addressLabel] IN %in', $addressLabels, ' OR [codes].[addressLabel] = %i)', 0);

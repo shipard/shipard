@@ -99,6 +99,7 @@ class FormItemCode extends TableForm
 
       if ($askDir || $askPerson || $askPersonsGroup || $askAddressLabel || $askPersonType)
       {
+        $this->openRow();
         if ($askDir && $askPerson && $askPersonsGroup)
         {
           $this->addColumnInput ('codeDir', self::coColW2);
@@ -131,7 +132,13 @@ class FormItemCode extends TableForm
         {
           $this->addColumnInput ('person', self::coColW12);
         }
+        $this->closeRow();
       }
+
+      $this->openRow();
+        $this->addColumnInput ('validFrom', self::coColW4);
+        $this->addColumnInput ('validTo', self::coColW4);
+      $this->closeRow();
 		$this->closeForm ();
 	}
 }
