@@ -20,7 +20,7 @@ class BarCodeGenerator extends Utility
 
 	public function createQRCode()
 	{
-		$cmd = "qrencode -lM -t ".strtoupper($this->fileType)." -o \"{$this->fullFileName}\" \"{$this->textData}\"";
+		$cmd = "qrencode -lM -m 0 -t ".strtoupper($this->fileType)." -o \"{$this->fullFileName}\" \"{$this->textData}\"";
 		exec ($cmd);
 	}
 
