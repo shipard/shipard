@@ -13,7 +13,7 @@ class TableDevices extends DbTable
 	public function __construct ($dbmodel)
 	{
 		parent::__construct ($dbmodel);
-		$this->setName ('mac.iot.devices', 'mac_iot_devices', 'IoT zařízení');
+		$this->setName ('mac.iot.devices', 'mac_iot_devices', 'IoT zařízení', 1412);
 	}
 
 	public function checkAfterSave2 (&$recData)

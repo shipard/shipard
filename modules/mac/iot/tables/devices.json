@@ -1,5 +1,5 @@
 {
-	"id": "mac.iot.devices", "sql": "mac_iot_devices", "name": "IoT zařízení",
+	"id": "mac.iot.devices", "sql": "mac_iot_devices", "name": "IoT zařízení", "ndx": 1412,
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 
@@ -49,6 +49,12 @@
 	],
 	"forms": [
 		{"id": "default", "class": "mac.iot.FormDevice", "help":"prirucka/508"}
+	],
+	"reports": [
+		{
+			"id": "labelDevice", "name": "Nálepka", "class": "mac.iot.libs.reports.ReportIoTDeviceLabel",
+			"directPrint": 1, "rasterPrint": 1, "printerClass": "labels", "enabledCfgItem": "options.experimental.testRasterPrint"
+		}
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
