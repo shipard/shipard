@@ -19,6 +19,9 @@
 	"control/binary": {
 		"name": "Ovladač Zapnuto / Vypnuto", "dataType": "binary"
 	},
+	"control/bist-relay": {
+		"name": "Bistabilné relé", "dataType": "binary"
+	},
 	"control/level": {
 		"name": "Ovladač úrovně", "dataType": "numeric"
 	},

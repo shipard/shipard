@@ -78,7 +78,7 @@
 	},
 	"fixedIOPorts": {
 		"relay1": {
-			"type": "control/h-bridge",
+			"type": "control/bist-relay",
 			"portId": "relay1",
 
 			"pin1": "p18",
@@ -92,7 +92,7 @@
       "_portDisabled": {"relay1Enabled": 0}
 		},
 		"relay2": {
-			"type": "control/h-bridge",
+			"type": "control/bist-relay",
 			"portId": "relay2",
 
 			"pin1": "p23",
@@ -105,7 +105,7 @@
       "_portDisabled": {"relay2Enabled": 0}
 		},
 		"relay3": {
-			"type": "control/h-bridge",
+			"type": "control/bist-relay",
 			"portId": "relay3",
 
 			"pin1": "p26",
@@ -118,7 +118,7 @@
       "_portDisabled": {"relay3Enabled": 0}
 		},
 		"relay4": {
-			"type": "control/h-bridge",
+			"type": "control/bist-relay",
 			"portId": "relay4",
 
 			"pin1": "p33",

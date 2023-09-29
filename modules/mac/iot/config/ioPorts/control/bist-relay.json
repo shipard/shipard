@@ -1,0 +1,45 @@
+{
+	"name": "Ovladač Bistabilné relé",
+	"title": "Ovladač Bistabilné relé",
+	"fields": {
+		"columns": [
+			{
+				"id": "pin1", "name": "Pin 1", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["out"]}
+			},
+			{
+				"id": "pin2", "name": "Pin 2", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["out"]}
+			}
+		]
+	},
+	"dataModel": {
+		"itemType": "controls",
+		"data-type": "binary",
+		"valueClass": "mac.iot.libs.IotDevicePayloadValueIotBox",
+		"enumSet": {
+			"1": {"title": "ON"},
+			"0": {"title": "OFF"},
+			"push": {
+				"title": "PUSH",
+				"fields": {
+					"columns": [
+						{"id": "interval", "name": "Doba trvání [ms]", "type": "int"}
+					]
+				}
+			},
+			"unpush": {
+				"title": "UNPUSH",
+				"fields": {
+					"columns": [
+						{"id": "interval", "name": "Doba trvání [ms]", "type": "int"}
+					]
+				}
+			}
+		},
+		"enumGet": {
+			"0": {"title": "OFF"},
+			"1": {"title": "ON"}
+		},
+		"value-on": "1",
+		"value-off": "0"
+	}
+}

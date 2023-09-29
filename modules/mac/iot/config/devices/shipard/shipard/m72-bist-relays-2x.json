@@ -56,7 +56,7 @@
 	},
 	"fixedIOPorts": {
 		"relay1": {
-			"type": "control/h-bridge",
+			"type": "control/bist-relay",
 			"portId": "relay1",
 
 			"pin1": "p18",
@@ -70,7 +70,7 @@
       "_portDisabled": {"relay1Enabled": 0}
 		},
 		"relay2": {
-			"type": "control/h-bridge",
+			"type": "control/bist-relay",
 			"portId": "relay2",
 
 			"pin1": "p23",
@@ -81,12 +81,6 @@
 			"_rowColumns": {"relay2PortId": "portId", "relay2FullName": "fullName"},
 			"_cfgColumns": {"setLedMode": "ledMode", "ledBr": "ledBr"},
       "_portDisabled": {"relay2Enabled": 0}
-		},
-
-		"dimLeds": {
-			"type": "control/level",
-			"portId": "dimLeds",
-			"pin": "p5"
 		},
 
 		"esp-now-server": {
