@@ -79,6 +79,14 @@ class TableDevices extends DbTable
 				}
 			}
 
+			if ($recData['deviceKind'] == 14)
+			{
+				if (isset($macDeviceCfg['mode']))
+					$recData['adLanMode'] = intval($macDeviceCfg['mode']);
+				if (isset($macDeviceCfg['wifi']))
+					$recData['adWifiMode'] = intval($macDeviceCfg['wifi']);
+			}
+
 			if ((isset($macDeviceCfg['monNetdataEnabled']) && $macDeviceCfg['monNetdataEnabled']))
 			{
 				$recData['monitored'] = 1;
@@ -522,6 +530,9 @@ class ViewDevices extends TableView
 	var $osInfo = [];
 	var $deviceInfo = [];
 
+	var $lanModes;
+	var $wifiModes;
+
 	var $deviceKind = 0;
 
 	var $usePropertyLink = FALSE;
@@ -541,6 +552,9 @@ class ViewDevices extends TableView
 
 		$this->swDeviceUtils = new \mac\swlan\libs\SWDevicesUtils($this->app());
 		$this->watchdogsUtils = new \mac\lan\libs\WatchdogsUtils($this->app());
+
+		$this->lanModes = $this->app()->cfgItem('mac.lan.devices.adLanModes');
+		$this->wifiModes = $this->app()->cfgItem('mac.lan.devices.adWifiModes');
 
 		if ($this->queryParam ('lan'))
 			$this->addAddParam ('lan', $this->queryParam ('lan'));
@@ -583,6 +597,10 @@ class ViewDevices extends TableView
 
 			if (isset($macDeviceTypeCfg['name']) && isset($mdtTypeCfg['title']))
 				$props[] = ['text' => $macDeviceTypeCfg['name'].' '.$mdtTypeCfg['title'], 'class' => 'label label-default'];
+
+			$props[] = ['text' => $this->lanModes[$item['adLanMode']]['fn'], 'class' => 'label label-default', 'icon' => 'settings/network'];
+			if ($item['adWifiMode'])
+				$props[] = ['text' => $this->wifiModes[$item['adWifiMode']]['fn'], 'class' => 'label label-default', 'icon' => 'user/wifi'];
 		}
 
 		if ($item['nodeSupport'])
@@ -590,6 +608,7 @@ class ViewDevices extends TableView
 		if ($item['monitored'])
 			$props[] = ['icon' => 'tables/mac.lan.lans', 'text' => 'Netdata', 'class' => 'label label-info'];
 
+		/*
 		if ($item['placeFullName'])
 		{
 			$placeLabel = ['icon' => 'system/iconMapMarker', 'text' => $item['placeFullName'], 'class' => ''];
@@ -599,6 +618,7 @@ class ViewDevices extends TableView
 		}
 		elseif ($item['placeDesc'] !== '')
 			$props[] = ['icon' => 'system/iconMapMarker', 'text' => $item['placeDesc'], 'class' => ''];
+		*/
 
 		if (count($props))
 			$listItem['t2'] = $props;
@@ -855,7 +875,7 @@ class ViewDevicesAll extends ViewDevices
 		$this->linesWidth = 40;
 
 		$enum = [];
-		$this->devicesGroups = $this->app()->cfgItem ('mac.lan.devices.groups');
+		$this->devicesGroups = $this->app()->cfgItem ('mac.lan.devices.groupsNew');
 		forEach ($this->devicesGroups as $dgNdx => $dg)
 		{
 			$enum[$dgNdx] = ['text' => $dg['name'], 'icon' => $dg['icon']];
@@ -892,6 +912,24 @@ class ViewDevicesAll extends ViewDevices
 
 		if (isset($devicesGroup['devicesKinds']))
 			array_push ($q, ' AND devices.[deviceKind] IN %in', $devicesGroup['devicesKinds']);
+
+		if (isset($devicesGroup['adLanModes']))
+		{
+			array_push ($q, ' AND (',
+						'(devices.[deviceKind] = %i', 14, ' AND devices.[adLanMode] IN %in)', $devicesGroup['adLanModes'],
+						' OR (devices.[deviceKind] != %i)', 14,
+					')'
+			);
+		}
+
+		if (isset($devicesGroup['adWifiModes']))
+		{
+			array_push ($q, ' AND (',
+						'(devices.[deviceKind] = %i', 14, ' AND devices.[adWifiMode] IN %in)', $devicesGroup['adWifiModes'],
+						' OR (devices.[deviceKind] != %i)', 14,
+					')'
+			);
+		}
 
 		parent::defaultQuery($q);
 	}
@@ -1091,7 +1129,7 @@ class FormDevice extends TableForm
 
 			$this->openTab ();
 				$this->addColumnInput ('disableSNMP');
-				$this->addColumnInput ('disableInstalledSW');
+				$this->addColumnInput ('disableDeviceConfig');
 				$this->addColumnInput ('alerts');
 				$this->addColumnInput ('hideFromDR');
 				$this->addColumnInput ('uid');

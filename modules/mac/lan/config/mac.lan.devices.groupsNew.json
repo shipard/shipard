@@ -1,0 +1,70 @@
+{
+	"0": {
+		"name": "Vše", "icon": ""
+	},
+
+	"10": {
+		"name": "Aktivní prvky", "icon": "lanDeviceActiveDevices", "devicesKinds": [8, 9, 14, 20]
+	},
+	"11": {
+		"name": "Switche", "icon": "deviceTypes/switch",
+		"devicesKinds": [9, 14],
+		"adLanModes": [0]
+	},
+	"12": {
+		"name": "Bridge", "icon": "deviceTypes/switch",
+		"devicesKinds": [14],
+		"adLanModes": [2]
+	},
+	"13": {
+		"name": "WiFi", "icon": "deviceTypes/wifiAccessPoints",
+		"devicesKinds": [14, 15],
+		"adWifiModes": [1, 2, 3]
+	},
+	"14": {
+		"name": "CAP", "icon": "deviceTypes/wifiAccessPoints",
+		"devicesKinds": [14],
+		"adWifiModes": [1]
+	},
+	"15": {
+		"name": "Routery", "icon": "deviceTypes/router",
+		"devicesKinds": [8, 14],
+		"adLanModes": [3]
+	},
+
+	"20": {
+		"name": "Servery", "icon": "deviceTypes/server", "devicesKinds": [7, 70]
+	},
+	"21": {
+		"name": "NAS", "icon": "deviceTypes/nas", "devicesKinds": [11]
+	},
+
+	"30": {
+		"name": "Kamery", "icon": "deviceTypes/camera", "devicesKinds": [10]
+	},
+	"31": {
+		"name": "IoT", "icon": "deviceTypes/shipardIoTBoxes", "devicesKinds": [75]
+	},
+
+	"40": {
+		"name": "Tiskárny", "icon": "deviceTypes/printer", "devicesKinds": [3]
+	},
+
+	"50": {
+		"name": "Terminály", "icon": "deviceTypes/terminal", "devicesKinds": [40]
+	},
+
+	"60": {
+		"name": "Počítače", "icon": "deviceTypes/notebook", "devicesKinds": [1, 2]
+	},
+	"70": {
+		"name": "Multimedia", "icon": "deviceTypes/tv", "devicesKinds": [6]
+	},
+	"80": {
+		"name": "Tablety a telefony", "icon": "deviceTypes/phone", "devicesKinds": [4, 5]
+	},
+
+	"99": {
+		"name": "Ostatní", "icon": "deviceTypes/other", "devicesKinds": [99]
+	}
+}

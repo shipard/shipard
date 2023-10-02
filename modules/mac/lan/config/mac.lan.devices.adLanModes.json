@@ -1,0 +1,14 @@
+{
+	"0": {
+		"fn": "Switch", "icon": ""
+	},
+	"1": {
+		"fn": "AP", "icon": ""
+	},
+	"2": {
+		"fn": "Bridge", "icon": ""
+	},
+	"3": {
+		"fn": "Router", "icon": ""
+	}
+}

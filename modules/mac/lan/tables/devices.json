@@ -12,6 +12,12 @@
     {"id": "deviceType", "name": "Typ zařízení", "type": "int", "reference": "mac.lan.deviceTypes", "options": ["saveOnChange"]},
     {"id": "deviceKind", "name": "Druh zařízení", "type": "enumInt",
       "enumCfg": {"cfgItem": "mac.lan.devices.kinds", "cfgValue": "", "cfgText": "name"}},
+
+    {"id": "adLanMode", "name": "Síťový mód", "type": "enumInt",
+      "enumCfg": {"cfgItem": "mac.lan.devices.adLanModes", "cfgValue": "", "cfgText": "fn"}},
+    {"id": "adWifiMode", "name": "WiFi mód", "type": "enumInt",
+      "enumCfg": {"cfgItem": "mac.lan.devices.adWifiModes", "cfgValue": "", "cfgText": "fn"}},
+
 		{"id": "hwMode", "name": "Mód HW", "type": "enumInt", "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "mac.lan.devices.hwModes", "cfgValue": "", "cfgText": "fn"}},
 		{"id": "hwServer", "name": "Server", "type": "int", "reference": "mac.lan.devices"},
@@ -28,7 +34,7 @@
     {"id": "property", "name": "Majetek", "type": "int", "reference": "e10pro.property.property", "module": "e10pro.property"},
 
 		{"id": "disableSNMP", "name": "Vypnout sledování SNMP", "type": "logical"},
-		{"id": "disableInstalledSW", "name": "Vypnout sledování nainstalovaných aplikací", "type": "logical"},
+    {"id": "disableDeviceConfig", "name": "Zakázat nastavování zařízení ", "type": "logical"},
     {"id": "alerts", "name": "Hlásit výpadky", "type": "enumInt",
       "enumValues": {"0": "Automaticky", "1": "Ano",  "2": "Ne"}},
 		{"id": "hideFromDR", "name": "Nezobrazovat v racku v dashboardu", "type": "logical"},
