@@ -6,9 +6,10 @@
 			{
 				"id": "mode", "name": "Mód", "type": "enumInt", "options": ["saveOnChange"],
 				"enumValues": {
-					"0": "switch",
-					"1": "AP/Bridge (unmanaged)",
-					"2": "router"
+					"0": "Switch",
+					"1": "AP - Bez nastavení portů",
+					"2": "AP/Bridge - Bridge pro access port",
+					"3": "Router"
 				}
 			},
 
@@ -17,12 +18,15 @@
 				"enumValues": {
 					"0": "ne",
 					"1": "CAP",
-					"2": "ruční nastavení na tomto zařízení",
-					"3": "automatické nastavení ze sítě"
+					"2": "Z tohoto zařízení",
+					"3": "Z nastavení sítě"
 				}
 			},
 
-			{"id": "capsmanServer", "name": "Zapnout CAPSMAN server", "type": "logical"},
+			{"id": "wifiSSID", "name": "WiFi SSID", "type": "string", "len": 40, "enabled": {"wifi": 2}},
+			{"id": "wifiPassword", "name": "WiFi heslo", "type": "string", "len": 40, "enabled": {"wifi": 2}},
+
+			{"id": "capsmanServer", "name": "Zapnout CAPSMAN server", "type": "logical", "enabled": {"mode": 2}},
 
 			{"id": "userLogin", "name": "Uživatel", "type": "string", "len": 30},
 			{"id": "managementWWWAddrList", "name": "Povolené adresy pro správu přes WWW", "type": "int", "reference": "mac.lan.ipAddressLists"},
@@ -57,8 +61,9 @@
 				"mkt-xap_cap-ac": {"title": "cAP ac"},
 				"mkt-xap_cap-xl-ac": {
 					"title": "cAP XL ac",
+					"wirelessMode": "wireless",
 					"ports": [
-						{"kind": 5, "count": 2, "maskId": "eth"},
+						{"kind": 5, "count": 2, "maskId": "ether"},
 						{"kind": 1, "count": 2, "maskId": "wlan"},
 						{"kind": 10, "count": 1, "maskId": "mng"}
 					]
@@ -68,16 +73,25 @@
 				"mkt-xap_hap": {"title": "hAP"},
 				"mkt-xap_hap-ax2": {
 					"title": "hAP ax²",
+					"wirelessMode": "wifiwave2",
 					"ports": [
 						{"kind": 5, "count": 5, "maskId": "ether"},
-						{"kind": 1, "count": 2, "maskId": "wlan"},
+						{"kind": 1, "count": 2, "maskId": "wifi"},
 						{"kind": 10, "count": 1, "maskId": "mng"}
 					]
 				},
 				"mkt-xap_hap-ax3": {"title": "hAP ax³"},
 				"mkt-xap_hap-mini": {"title": "hAP mini"},
 				"mkt-xap_hap-lite": {"title": "hAP lite / hAP lite TC"},
-				"mkt-xap_hap-ac2": {"title": "hAP ac²"},
+				"mkt-xap_hap-ac2": {
+					"title": "hAP ac²",
+					"wirelessMode": "wireless",
+					"ports": [
+						{"kind": 5, "count": 5, "maskId": "ether"},
+						{"kind": 1, "count": 2, "maskId": "wlan"},
+						{"kind": 10, "count": 1, "maskId": "mng"}
+					]
+				},
 				"mkt-xap_hap-ac3": {"title": "hAP ac³"},
 				"mkt-xap_hap-ac-lite": {"title": "hAP ac lite / hAP ac lite TC"},
 
@@ -89,7 +103,15 @@
 				"mkt-xap_wap-r": {"title": "wAP R"},
 				"mkt-xap_wap-ac": {"title": "wAP ac / wAP ac BE"},
 
-				"mkt-xap_audience": {"title": "Audience"}
+				"mkt-xap_audience": {
+					"title": "Audience",
+					"wirelessMode": "wireless",
+					"ports": [
+						{"kind": 5, "count": 2, "maskId": "ether"},
+						{"kind": 1, "count": 3, "maskId": "wlan"},
+						{"kind": 10, "count": 1, "maskId": "mng"}
+					]
+				}
 			}
 		},
 		"mkt-rb-hex": {

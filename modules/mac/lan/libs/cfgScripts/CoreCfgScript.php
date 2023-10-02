@@ -25,8 +25,15 @@ class CoreCfgScript extends Utility
 	var $cfgData = [];
 	var $cfgRunningConfig = NULL;
 
+	/** @var \mac\lan\TableDevices */
+	var $tableLanDevices;
+	var $adCfg = NULL;
+
 	public function setDevice($deviceRecData, $lanCfg)
 	{
+		$this->tableLanDevices = $this->app()->table('mac.lan.devices');
+		$this->adCfg = $this->tableLanDevices->activeDeviceCfg($deviceRecData);
+
 		$this->deviceRecData = $deviceRecData;
 		$this->deviceNdx = $deviceRecData['ndx'];
 		$this->lanCfg = $lanCfg;

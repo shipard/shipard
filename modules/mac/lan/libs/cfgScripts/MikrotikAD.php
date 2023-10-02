@@ -12,12 +12,15 @@ use e10\Utility;
 class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 {
 	// -- deviceMode
-	CONST dmSwitch = 0, dmUnmanaged = 1, dmRouter = 2, dmNone = 99;
+	CONST dmSwitch = 0, dmCAPUnmanaged = 1, dmAPBridge = 2, dmRouter = 3, dmNone = 99;
 	var $deviceMode = self::dmNone;
 
 	// -- wifiMode
 	CONST wmNone = 0, wmCAP = 1, wmManual = 2, wmAutoLAN = 3;
 	var $wifiMode = self::wmNone;
+
+	CONST wrmNone = 0, wrmWireless = 1, wrmWifiWave2 = 2;
+	var $wirelessMode = self::wrmNone;
 
 	var $scriptModeSignature = ' -- !!! UNCONFIGURED !!! --';
 	var $userLogin = 'admin';
@@ -37,6 +40,14 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 		$this->deviceMode = intval($this->deviceCfg['mode'] ?? 0);
 		$this->wifiMode = intval($this->deviceCfg['wifi'] ?? 0);
 		$this->isRouter = intval($this->deviceMode == self::dmRouter);
+
+		if ($this->adCfg && isset($this->adCfg['wirelessMode']))
+		{
+			if ($this->adCfg['wirelessMode'] === 'wireless')
+				$this->wirelessMode = self::wrmWireless;
+			elseif ($this->adCfg['wirelessMode'] === 'wifiwave2')
+				$this->wirelessMode = self::wrmWifiWave2;
+		}
 	}
 
 	function createData_Init_Identity()
@@ -125,7 +136,15 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 		if (!$this->initMode)
 			return;
 
+		$deviceModes = [0 => 'switch', 1 => 'unmanaged', 2 => 'ap/bridge', 3 => 'router'];
+		$wifiModes = [0 => 'none', 1 => 'CAP', 2 => 'manual', 3 => 'auto/from LAN'];
+		$wirelessModes = [0 => "none", 1 => 'wireless', 2 => 'wifiwave2'];
+
 		$this->script .= "### script mode: {$this->scriptModeSignature} / ".get_class($this)." ###\n";
+		$this->script .= "### device mode: ".($deviceModes[$this->deviceMode] ?? 'UNKNOWN').
+										"; wifi: ".($wifiModes[$this->wifiMode] ?? 'UNKNOWN').
+										"; wireless: ".($wirelessModes[$this->wirelessMode] ?? 'UNKNOWN').
+										" ###\n";
 		$this->script .= "\n";
 	}
 
@@ -151,6 +170,8 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 			$tftpAddress = $this->lanCfg['mainServerWifiControlIp'];
 		elseif (isset($this->deviceCfg['wifi']) && intval($this->deviceCfg['wifi']) == 1 && isset($this->lanCfg['mainServerWifiControlIp']))
 			$tftpAddress = $this->lanCfg['mainServerWifiControlIp'];
+
+		// /user/add name=js group=full comment="John Shipard" password=“hfztrbt7h3”
 
 		$this->script .= "### user + ssh public key ###\n";
 		$this->script .= "/tool fetch address=".$tftpAddress." src-path=shn_ssh_key.pub user=".$this->userLogin." mode=tftp dst-path=shn_ssh_key.pub\n";

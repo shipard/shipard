@@ -2,8 +2,8 @@
 
 namespace mac\lan\libs\cfgScripts;
 
-use e10\Utility;
-
+use \Shipard\Base\Utility;
+use \Shipard\Utils\Utils;
 
 /**
  * class MikrotikAD_SwitchChip
@@ -32,6 +32,24 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 			'mandatoryColumns' => ['fast-forward', 'name'],
 			'updateColumns' => ['comment']
 		];
+
+		if ($this->deviceMode === self::dmAPBridge)
+		{
+			if ($this->wirelessMode === self::wrmWireless)
+			{
+				$this->rootsInfo ['/interface wireless security-profiles'] = [
+					'mandatoryColumns' => ['wpa2-pre-shared-key', 'name'],
+					'updateColumns' => ['comment']
+				];
+			}
+			elseif ($this->wirelessMode === self::wrmWifiWave2)
+			{
+				$this->rootsInfo ['/interface wifiwave2 security'] = [
+					'mandatoryColumns' => ['passphrase', 'name'],
+					'updateColumns' => ['comment']
+				];
+			}
+		}
 
 		$this->rootsInfo ['/interface vlan'] = [
 			'mandatoryColumns' => ['interface', 'name', 'vlan-id'],
@@ -95,7 +113,13 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 		$this->createData_Init_Identity();
 		$this->createData_Init_Services();
 
-		$this->createData_Interfaces_HW_Vlans();
+		if ($this->deviceMode === self::dmAPBridge)
+		{
+			$this->createData_UnmanagedWifi();
+			$this->createData_APBridgeInterfaces();
+		}
+		else
+			$this->createData_Interfaces_HW_Vlans();
 
 		$this->createData_Interfaces_Addresses();
 
@@ -113,6 +137,129 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 		}
 
 		$this->createData_DNS();
+	}
+
+	function createData_UnmanagedWifi()
+	{
+		if ($this->wifiMode === self::wmManual)
+		{
+			if ($this->wirelessMode === self::wrmWireless)
+			{
+				// /interface wireless security-profiles
+				// add authentication-types=wpa-psk,wpa2-psk mode=dynamic-keys name=wlan-password supplicant-identity="" wpa2-pre-shared-key=abcd1234
+				$root = '/interface wireless security-profiles';
+				$item = ['type' => 'add',
+					'params' => [
+						'name' => 'wlan-password',
+						'authentication-types' => 'wpa-psk,wpa2-psk',
+						'wpa2-pre-shared-key' => $this->deviceCfg['wifiPassword'],
+					]
+				];
+				$this->cfgData[$root][] = $item;
+
+				// /interface wireless
+				// set wlan1 band=2ghz-b/g/n country="czech republic" disabled=no frequency=auto installation=indoor mode=ap-bridge security-profile=wlan-password ssid=uno wireless-protocol=802.11
+				// set wlan2 band=5ghz-a/n/ac country="czech republic" disabled=no frequency=auto installation=indoor mode=ap-bridge security-profile=wlan-password ssid=due wireless-protocol=802.11
+				// set wlan3 band=5ghz-a/n/ac channel-width=20/40mhz-XX country="czech republic" disabled=no frequency=auto installation=indoor mode=ap-bridge security-profile=wlan-password ssid=tre wireless-protocol=802.11
+
+				$root = '/interface wireless';
+				$ports = \e10\sortByOneKey($this->lanDeviceCfg['ports'], 'portId', TRUE, TRUE);
+				foreach ($ports as $portNdx => $portCfg)
+				{
+					if ($portCfg['portKind'] !== 1)
+						continue;
+
+					$item = ['type' => 'set '.$portCfg['portId'],
+						'params' => [
+							'country' => 'czech republic',
+							'disabled' => 'no',
+							'installation' => 'indoor',
+							'mode' => 'ap-bridge',
+							'security-profile' => 'wlan-password',
+							'ssid' => $this->deviceCfg['wifiSSID'],
+						]
+					];
+
+					$this->cfgData[$root][] = $item;
+				}
+			}
+			elseif ($this->wirelessMode === self::wrmWifiWave2)
+			{
+				// /interface wifiwave2 security
+				// add authentication-types=wpa-psk,wpa2-psk disabled=no name=wifi-password passphrase=abcd1234
+				$root = '/interface wifiwave2 security';
+				$item = ['type' => 'add',
+					'params' => [
+						'name' => 'wlan-password',
+						'disabled' => 'no',
+						'authentication-types' => 'wpa-psk,wpa2-psk',
+						'passphrase' => $this->deviceCfg['wifiPassword'],
+					]
+				];
+				$this->cfgData[$root][] = $item;
+
+				// /interface wifiwave2
+				// set wifi1 channel.band=5ghz-ax .skip-dfs-channels=10min-cac .width=20/40/80mhz configuration.country=Czech .mode=ap .ssid=xxx disabled=no security=wlan-password
+				// set wifi2 channel.band=2ghz-ax .skip-dfs-channels=10min-cac .width=20/40mhz configuration.country=Czech .mode=ap .ssid=xxx disabled=no security=wlan-password
+				$root = '/interface wifiwave2';
+				$ports = \e10\sortByOneKey($this->lanDeviceCfg['ports'], 'portId', TRUE, TRUE);
+				foreach ($ports as $portNdx => $portCfg)
+				{
+					if ($portCfg['portKind'] !== 1)
+						continue;
+
+					$item = ['type' => 'set '.$portCfg['portId'],
+						'params' => [
+							'configuration.country' => 'Czech',
+							'disabled' => 'no',
+							'configuration.mode' => 'ap',
+							'configuration.ssid' => $this->deviceCfg['wifiSSID'],
+							'security' => 'wlan-password',
+						]
+					];
+
+					$this->cfgData[$root][] = $item;
+				}
+			}
+		}
+	}
+
+	function createData_APBridgeInterfaces()
+	{
+		$root = '/interface bridge';
+		$item = ['type' => 'add',
+			'params' => [
+				'name' => 'bridge1',
+				'protocol-mode' => 'none',
+			]
+		];
+		$this->cfgData[$root][] = $item;
+
+		$root = '/interface bridge port';
+
+		$ports = \e10\sortByOneKey($this->lanDeviceCfg['ports'], 'portId', TRUE, TRUE);
+		foreach (/*$this->lanDeviceCfg['ports']*/$ports as $portNdx => $portCfg)
+		{
+			if ($portCfg['portKind'] !== 5 && $portCfg['portKind'] !== 6 && $portCfg['portKind'] !== 1)
+				continue; // only ETH/SFP ports & wifi
+
+			$item = ['type' => 'add',
+				'params' => [
+					'bridge' => 'bridge1',
+					'interface' => $portCfg['portId'],
+				]
+			];
+
+			$this->cfgData[$root][] = $item;
+		}
+
+		$root = '/ip dhcp-client';
+		$item = ['type' => 'add',
+			'params' => [
+				'interface' => 'bridge1',
+			]
+		];
+		$this->cfgData[$root][] = $item;
 	}
 
 	function createData_Interfaces_HW_Vlans()
@@ -588,12 +735,25 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 
 		$this->createData();
 
-
-
-		$this->createScript_Init_User();
-
 		$this->createScript_Init_Identity();
 		$this->createScript_Init_Services();
+
+		if ($this->wirelessMode == self::wrmWireless)
+		{
+			$this->csActiveRoot = '/interface wireless security-profiles';
+			$this->createScriptForRoot();
+
+			$this->csActiveRoot = '/interface wireless';
+			$this->createScriptForRoot();
+		}
+		elseif ($this->wirelessMode == self::wrmWifiWave2)
+		{
+			$this->csActiveRoot = '/interface wifiwave2 security';
+			$this->createScriptForRoot();
+
+			$this->csActiveRoot = '/interface wifiwave2';
+			$this->createScriptForRoot();
+		}
 
 		$this->createScript_Interfaces_HW_Vlans();
 
@@ -601,11 +761,16 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 		$this->createScript_Firewall();
 		$this->createScript_Gateways();
 
+		$this->csActiveRoot = '/ip dhcp-client';
+		$this->createScriptForRoot();
+
 		$this->csActiveRoot = '/ip dns';
 		$this->createScriptForRoot();
 
 		$this->createScript_DHCP();
 		$this->createScript_DHCP_Leases();
+
+		$this->createScript_Init_User();
 	}
 
 	function createScript_Interfaces_Addresses()
