@@ -255,10 +255,10 @@
 		"mdi": "device_hub"
 	},
     "deviceTypes/wifiAccessPoints": {
-		"fa5": "fa-signal",
-		"fa6pro": "fa-signal-stream",
-		"bsi": "bi-wifi-2",
-		"mdi": "sensors"
+		"fa5": "fa-satellite-dish",
+		"fa6pro": "fa-satellite-dish",
+		"bsi": "bi-router",
+		"mdi": ""
 	},
     "deviceTypes/camera": {
 		"fa5": "fa-video",
@@ -308,19 +308,31 @@
 		"bsi": "bi-record-circle-fill",
 		"mdi": "radio_button_checked"
 	},
-    "deviceTypesIotBoard": {
+    "deviceTypes/iotBoard": {
 		"fa5": "fa-power-off",
 		"fa6pro": "fa-power-off",
 		"bsi": "bi-power",
 		"mdi": "power_settings_new"
 	},
+	"deviceTypes/wifi": {
+		"fa5": "fa-wifi",
+		"fa6pro": "fa-wifi",
+		"bsi": "bi-wifi",
+		"mdi": ""
+	},
+	"deviceTypes/bridge": {
+		"fa5": "fa-rss-square",
+		"fa6pro": "fa-rss-square",
+		"bsi": "bi-rss-fill",
+		"mdi": ""
+	},
 
 
 	"lanDeviceActiveDevices":{
-		"fa5": "fa-sitemap",
-		"fa6pro": "fa-sitemap",
-		"bsi": "bi-diagram-3",
-		"mdi": "device_hub"
+		"fa5": "fa-ethernet",
+		"fa6pro": "fa-ethernet",
+		"bsi": "bi-ethernet",
+		"mdi": ""
 	},
 
 

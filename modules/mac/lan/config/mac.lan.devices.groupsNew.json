@@ -12,12 +12,12 @@
 		"adLanModes": [0]
 	},
 	"12": {
-		"name": "Bridge", "icon": "deviceTypes/switch",
+		"name": "Bridge", "icon": "deviceTypes/bridge",
 		"devicesKinds": [14],
 		"adLanModes": [2]
 	},
 	"13": {
-		"name": "WiFi", "icon": "deviceTypes/wifiAccessPoints",
+		"name": "WiFi", "icon": "deviceTypes/wifi",
 		"devicesKinds": [14, 15],
 		"adWifiModes": [1, 2, 3]
 	},
