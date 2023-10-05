@@ -163,6 +163,8 @@ class BoardOffices extends DataView
 
     $this->data['tableCells'] = $tableCells;
     $this->data['pageNumber'] = strval($this->pageNumber);
+    $this->data['pageNumber1'] = strval($this->pageNumber + 1);
+    $this->data['countPages'] = strval($this->countPages);
 
     $this->pageBtnSizeX = 255;
     $this->pageBtnSizeY = 100;
@@ -208,6 +210,11 @@ class BoardOffices extends DataView
     $c .= "\n<textarea id='shp-sc-page-info-result' style='display: none;'></textarea>";
 
     $jsScripts = '';
+
+    $jsScripts .= "
+
+    ";
+
     $jsScripts .= "<script type='text/javascript' src='".$this->app()->dsRoot."/www-root/templates/web/libs/scCreator.js?v=22'></script>";
     $this->data['jsScripts'] = $jsScripts;
     $c .= $jsScripts;
