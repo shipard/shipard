@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+	<title>test</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/sc/icons/fa/5/css/all.css" type="text/css"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		html, body {font-size: 32px; margin: 2px; padding: 1px; font-family: sans-serif; width: 100vw;}
+		table.labels {width: 100%; border-collapse: collapse;}
+		table.labels td {padding: 1px; margin: 0; vertical-align: top; text-align: left;}
+	</style>
+</head>
+<body>
+	<table class="labels">
+		<tr>
+			<td style="font-size: 130%; width: 60%; text-align: center;">
+				<i class="fa fa-wifi" style="font-size: 2em"></i><br>
+				{{data.wifiSSID}}<br><br>
+				<b>heslo / password:</b><br>{{data.wifiPassword}}
+			</td>
+			<td style="text-align: right; padding-left: 10px;">
+				<img src="{{@barCodeImg;dataItem:data.wifiQRCodeData;codeType:QR}}" style="width: 100%;">
+			</td>
+		</tr>
+	</table>
+
+	<div style='font-size: 180%; border-top: 2px solid black; padding-top: 12px; margin-top: 12px;'>{{data.head.id}}</div>
+	<img src="{{@barCodeImg;dataItem:data.mainBCId;codeType:CODE128}}" style='width: 75%; max-width: 100%; padding-right: 20px; margin: 0;'>
+</body>
+</html>

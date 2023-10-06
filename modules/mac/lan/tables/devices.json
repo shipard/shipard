@@ -99,15 +99,20 @@
 	"reports": [
 		{
 			"id": "labelDevice", "name": "Nálepka", "class": "mac.lan.libs.ReportDeviceLabelDevice",
-			"directPrint": 1, "printerClass": "labels"
+			"directPrint": 1, "printerClass": "labels", "disabledCfgItem": "options.experimental.testRasterPrint"
 		},
 		{
 			"id": "labelCable", "name": "Kabel", "class": "mac.lan.libs.ReportDeviceLabelCable",
 			"directPrint": 1, "printerClass": "labels"
 		},
 		{
-			"id": "labelDeviceNew", "name": "Nálepka NEW", "class": "mac.lan.libs.ReportLanDeviceLabelDevice",
+			"id": "labelDeviceNew", "name": "Nálepka", "class": "mac.lan.libs.ReportLanDeviceLabelDevice",
 			"directPrint": 1, "rasterPrint": 1, "printerClass": "labels", "enabledCfgItem": "options.experimental.testRasterPrint"
+		},
+		{
+			"id": "labelDeviceWWifi", "name": "Nálepka s WiFi", "class": "mac.lan.libs.ReportLanDeviceLabelDeviceWWifi",
+			"directPrint": 1, "rasterPrint": 1, "printerClass": "labels", "enabledCfgItem": "options.experimental.testRasterPrint",
+      "queryCols": {"deviceKind" : "14", "adWifiMode": "2"}
 		}
 	],
   "ndx": 1163,
