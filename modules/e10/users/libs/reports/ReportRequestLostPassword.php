@@ -37,6 +37,16 @@ class ReportRequestLostPassword extends \Shipard\Report\FormReport
 		$this->loadReportsTexts();
 	}
 
+	public function reportWasSent(\Shipard\Report\MailMessage $msg)
+	{
+		$update = [
+			'requestState' => 2,
+			'tsSent' => new \DateTime(),
+		];
+
+		$this->db()->query('UPDATE [e10_users_requests] SET ', $update, ' WHERE ndx = %i', $this->recData['ndx']);
+	}
+
 	protected function loadReportsTexts()
 	{
 		/** @var \e10\reports\TableReportsTexts */
