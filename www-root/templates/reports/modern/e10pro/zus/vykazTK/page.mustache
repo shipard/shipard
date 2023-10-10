@@ -1,0 +1,114 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+	<title>test</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v24" type="text/css"/>
+
+	<style>
+		table.rows {font-size: 8pt; }
+		table.rows td {padding: 1pt 3pt !important; }
+	</style>
+
+</head>
+
+
+<body style="font-size: 10pt;">
+	{{#data.reportTexts.subHeader}}<div class='reportTextHeader'>{{{data.reportTexts.subHeader}}}</div>{{/data.reportTexts.subHeader}}
+
+
+	<div style="text-align: center">
+		<h1 style="padding-top: 60pt;">Výkaz třídních knih</h1>
+		<h2 style="padding-top: 20pt;">{{data.teacher.fullName}}</h2>
+		<span style="padding-left: 3cm; padding-right: 3cm; padding-top: 6pt; margin-top: 6pt; border-top: 1px dotted black;">učitel/ka</span>
+		<h2 style="padding-top: 20pt;">školní rok {{data.schoolYear.nazev}}</h2>
+		<h3 style="padding-top: 40pt;">Přehled celkového prospěchu žáků</h3>
+	</div>
+
+
+	<table class="default" style="font-size: 10pt !important;">
+		<tr>
+			<td class=''>Stupeň celkového hodnocení</td>
+			<td class=''>Prospělo s vyznamenáním</td>
+			<td class=''>Prospělo</td>
+			<td class=''>Neprospělo</td>
+			<td class=''>Neklasifikováno</td>
+			<td class=''>Přípravné studium</td>
+			<td class=''>Celkem</td>
+		</tr>
+		<tr>
+			<td class=''>Na konci 1. pololetí</td>
+			<td class=''>{{data.sums.h1.v1}}</td>
+			<td class=''>{{data.sums.h1.v2}}</td>
+			<td class=''>{{data.sums.h1.v3}}</td>
+			<td class=''>{{data.sums.h1.v0}}</td>
+			<td class=''>{{data.sums.h1.ps}}</td>
+			<td class=''>{{data.sums.h1.total}}</td>
+		</tr>
+		<tr>
+			<td class=''>Na konci školního roku</td>
+			<td class=''>{{data.sums.h2.v1}}</td>
+			<td class=''>{{data.sums.h2.v2}}</td>
+			<td class=''>{{data.sums.h2.v3}}</td>
+			<td class=''>{{data.sums.h2.v0}}</td>
+			<td class=''>{{data.sums.h2.ps}}</td>
+			<td class=''>{{data.sums.h2.total}}</td>
+		</tr>
+	</table>
+
+
+	<table class="fullWidth" style="margin-top: 30pt;">
+		<tr>
+			<td style="width: 50%; padding: 20pt 0;">
+				Vysvědčení vydané
+			</td>
+			<td style="width: 50%;">
+				Shodu známek s katalogem o průběhu vzdělávání potvrzuje:
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 50%; padding: 20pt 0;">
+				Za první pololetí dne: {{data.schoolYear.dateH1}}
+			</td>
+			<td style="width: 50%;">
+				..............................................................
+			</td>
+		</tr>
+		<tr>
+			<td style="width: 50%; padding: 20pt 0;">
+				Za druhé pololetí dne: {{data.schoolYear.dateH2}}
+			</td>
+			<td style="width: 50%;">
+				..............................................................
+			</td>
+		</tr>
+	</table>
+
+	<table class="fullWidth" style="margin-top: 96pt;">
+		<tr>
+			<td style="width: 33%; padding-top: 40pt; text-align: center;">
+				........................................<br>
+				učitel/ka
+			</td>
+
+			<td style="padding-bottom: 40pt; text-align: center;">
+				........................................<br>
+				razítko školy
+			</td>
+
+			<td style="width: 33%; padding-top: 40pt; text-align: center;">
+				........................................<br>
+				ředitel/ka
+			</td>
+		</tr>
+	</table>
+
+	{{#data.reportTexts.subFooter}}<div class='reportTextFooter'>{{{data.reportTexts.subFooter}}}</div>{{/data.reportTexts.subFooter}}
+
+
+
+	<h3 class="pageBreakBefore">Přehled studií</h3>
+	{{{@renderContent;dataItem:data.studia}}}
+</body>
+</html>
+

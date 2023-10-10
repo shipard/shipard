@@ -64,6 +64,7 @@
             "e10pro.zus.ReportFees": 2,
             "e10pro.zus.reportTeachPlan": 2,
             "e10pro.zus.reportVykazZus": 2,
+						"e10pro.zus.libs.ReportHromadnyVykazTridnichKnih": 2,
 						"e10pro.zus.SchoolReportsPrintReport": 2,
 						"e10pro.zus.ReportInvoices": 2,
 						"e10pro.zus.ReportBeginEndStudies": 2,
