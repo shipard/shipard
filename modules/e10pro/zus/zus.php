@@ -1460,6 +1460,7 @@ class reportTeachPlan extends \E10\GlobalReport
 		array_push($q, ' LEFT JOIN e10pro_zus_oddeleni AS oddeleni ON heads.svpOddeleni = oddeleni.ndx');
 		array_push($q, ' LEFT JOIN e10pro_zus_rocniky as years ON heads.year = years.ndx');
 		array_push($q, ' WHERE heads.eduprogram = %i', $this->reportParams ['eduprogram']['value']);
+		array_push($q, ' AND heads.docState = %i', 4000);
 
 		if ($this->reportParams ['obor']['value'] != 0)
 			array_push ($q, " AND heads.[svpObor] = %i", $this->reportParams ['obor']['value']);
