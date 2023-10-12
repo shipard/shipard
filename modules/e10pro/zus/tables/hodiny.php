@@ -262,6 +262,10 @@ class FormHodina extends TableForm
 			$tabs ['tabs'][] = ['text' => 'Docházka', 'icon' => 'system/iconUser'];
 		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
+
+		if ($this->app()->hasRole('root'))
+			$tabs ['tabs'][] = ['text' => 'Historie', 'icon' => 'system/formHistory'];
+
 		$this->openTabs ($tabs, TRUE);
 
 		$this->openTab (TableForm::ltNone);
@@ -313,6 +317,14 @@ class FormHodina extends TableForm
 		$this->openTab (TableForm::ltNone);
 			$this->addAttachmentsViewer();
 		$this->closeTab ();
+
+		if ($this->app()->hasRole('root'))
+		{
+			$this->openTab(self::ltNone);
+				$params = ['tableid' => $this->tableId(),'recid' => $this->recData['ndx']];
+				$this->addViewerWidget('e10.base.docslog', 'e10.base.libs.ViewDocsLogDocHistory', $params);
+			$this->closeTab();
+		}
 
 		$this->closeTabs ();
 
