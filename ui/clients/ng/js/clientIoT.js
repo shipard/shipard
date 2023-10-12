@@ -45,7 +45,14 @@ class ShipardClientIoT {
       if (propertyId === null)
         propertyId = 'state';
 
-      payload[propertyId] = element.checked ? 'ON' : 'OFF';
+      let valueOn = element.getAttribute('data-shp-value-on');
+      if (!valueOn)
+        valueOn = 'ON';
+      let valueOff = element.getAttribute('data-shp-value-off');
+      if (!valueOff)
+        valueOff = 'OFF';
+
+      payload[propertyId] = element.checked ? valueOn : valueOff;
     }
     else if (element.classList.contains('shp-iot-br-range'))
       payload['brightness'] = element.value;
@@ -70,7 +77,11 @@ class ShipardClientIoT {
         continue;
       }
 
-      let setTopic = uiData['iotSubjects'][deviceSID]['topic'] + '/set';
+      let setTopic = uiData['iotSubjects'][deviceSID]['topic'];
+      if (setTopic.endsWith('/'))
+        setTopic += 'set';
+      else
+        setTopic += '/set';
 
       //console.log(setTopic, payload);
       shc.mqtt.publish(uiData['iotSubjects'][deviceSID]['wss'], setTopic, JSON.stringify(payload));

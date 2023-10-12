@@ -10,13 +10,14 @@ class DataModel
 				ctEnumInt = 7, ctEnumString = 8, ctLogical = 9, ctNumber = 10, ctLong = 11, ctCode = 12,
 				ctTime = 14, ctSubColumns = 15, ctTimeLen = 16, ctShort = 17;
 
-	CONST coMandatory 		= 0x0001,
-				coSaveOnChange 	= 0x0002,
-				coEnumMultiple 	= 0x0004,
-				coAscii				 	= 0x0008,
-				coScanner				= 0x0010,
-				coComputed			= 0x0020,
-				coUserInput			= 0x0040
+	CONST coMandatory 				= 0x0001,
+				coSaveOnChange 			= 0x0002,
+				coEnumMultiple 			= 0x0004,
+				coAscii				 			= 0x0008,
+				coScanner						= 0x0010,
+				coComputed					= 0x0020,
+				coUserInput					= 0x0040,
+				coCheckOnChange			= 0x0080
 				;
 
 	CONST

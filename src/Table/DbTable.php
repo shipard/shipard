@@ -1505,6 +1505,9 @@ class DbTable
 
 	public function getDocumentLockState ($recData, $form = NULL)
 	{
+		if ($this->app()->ngg)
+			return FALSE;
+
 		$tableOptions = $this->app()->model()->tableProperty ($this, 'options');
 		if ($tableOptions & DataModel::toSystemTable)
 			return FALSE;

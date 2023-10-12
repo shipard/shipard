@@ -1,5 +1,6 @@
 :root {
     --bodyColor: #{$body-color};
+    --bodyBg: #{$body-bg};
     --navBackground: #{$nav-bg-light};
     --navColor: #{$navbar-light-color};
     --navBorder: #{$nav-border-light};
@@ -40,6 +41,7 @@
 
 [data-bs-theme="dark"] {
     --bodyColor: #{$body-color-dark};
+    --bodyBg: #{$body-bg-dark};
     --navBackground: #{$nav-bg-dark};
     --navColor: #{$navbar-dark-color};
     --navBorder: #{$nav-border-dark};

@@ -56,7 +56,11 @@ class ShipardMqtt {
       if (uiData['iotTopicsMap'][oneTopic]['type'] === 'device' || uiData['iotTopicsMap'][oneTopic]['type'] === 'scene')
       {
         let message = new Paho.MQTT.Message('{"state": ""}');
-        message.destinationName = oneTopic+'/get';
+        if (oneTopic.endsWith('/'))
+          message.destinationName = oneTopic+'get';
+        else
+          message.destinationName = oneTopic+'/get';
+        console.log("GET: ", message.destinationName);
         ws.mqttClient.send(message);
       }
     }
@@ -64,10 +68,11 @@ class ShipardMqtt {
 
   onMessage (serverIndex, data)
   {
-    //var ws = webSocketServers[serverIndex];
-    //console.log("mqtt#"+ws.id+": `"+data.destinationName+"` `"+data.payloadString+"`");
+    var ws = webSocketServers[serverIndex];
+    console.log("mqtt#"+ws.id+": `"+data.destinationName+"` `"+data.payloadString+"`");
 
     shc.mqtt.setElementValue(serverIndex, data);
+
     return;
   }
 
@@ -75,9 +80,15 @@ class ShipardMqtt {
   {
     let payload = null;
     if (data.payloadString[0] === '{' || data.payloadString[0] === '[')
+    {
       payload = JSON.parse(data.payloadString);
+      if ('_states' in payload)
+        payload = payload['_states'];
+    }
     else
       payload = {value: data.payloadString};
+
+    console.log("__PAYLOAD: ", payload);
 
     if (uiData['iotTopicsMap'] === undefined)
     {
@@ -121,7 +132,12 @@ class ShipardMqtt {
           {
             if (switchElement[0].disabled)
               switchElement[0].disabled = false;
-            switchElement[0].checked = payload[propertyId] === 'ON';
+
+            let valueOn = switchElement[0].getAttribute('data-shp-value-on');
+            if (!valueOn)
+              valueOn = 'ON';
+
+            switchElement[0].checked = payload[propertyId] === valueOn;
           }
         }
         if (payload['brightness'] !== undefined)

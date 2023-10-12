@@ -801,6 +801,7 @@ class CfgManager
 		$colOptions = [
 			'mandatory' => DataModel::coMandatory,
 			'saveOnChange' => DataModel::coSaveOnChange,
+			'checkOnChange' => DataModel::coCheckOnChange,
 			'ascii' => DataModel::coAscii,
 			'scanner' => DataModel::coScanner,
 			'computed' => DataModel::coComputed,

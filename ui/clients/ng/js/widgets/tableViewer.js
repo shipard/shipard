@@ -24,6 +24,16 @@ class ShipardTableViewer extends ShipardWidget
     this.elmViewerRows.addEventListener('scroll', (event) => {this.doScroll(event)});
   }
 
+  doAction (actionId, e)
+  {
+    switch (actionId)
+    {
+      case 'newform': return this.actionNewForm(e);
+    }
+
+    return super.doAction (actionId, e);
+  }
+
   doScroll(event)
   {
     const e = event.target;
@@ -71,6 +81,53 @@ class ShipardTableViewer extends ShipardWidget
     return true;
   }
 
+  refreshData ()
+  {
+    var tableName = this.rootElm.getAttribute ("data-table");
+    if (!tableName)
+      return;
+
+    var viewId = this.rootElm.getAttribute ('data-viewer-view-id');
+
+    let apiParams = {
+      'cgType': 2,
+      'table': tableName,
+      'rowsPageNumber': 0,
+      'viewId': viewId,
+    };
+    this.apiCall('refreshData', apiParams);
+
+    return true;
+  }
+
+  actionNewForm(e)
+  {
+	  var formParams = {};
+	  var formAttrs = {
+      'parent-widget-id': this.rootElm.getAttribute('id'),
+      'parent-widget-type': 'viewer',
+    };
+    this.elementPrefixedAttributes (this.rootElm, 'data-form-param-', formParams);
+    this.elementPrefixedAttributes (e, 'data-action-param-', formParams);
+    this.openModalForm(formParams, formAttrs);
+  }
+
+  openModalForm(params, attrs)
+  {
+    let newEnvelope = document.createElement('data-modal-form-env');
+    newEnvelope.setAttribute('data-request-type', 'dataForm');
+    for (const oneParamId in params)
+      newEnvelope.setAttribute('data-action-param-'+oneParamId, params[oneParamId]);
+    for (const oneParamId in attrs)
+      newEnvelope.setAttribute('data-'+oneParamId, attrs[oneParamId]);
+
+    newEnvelope.id = 'test1122';
+    newEnvelope.innerHTML = "čekejte, prosím, data se načítají...";
+    document.body.appendChild(newEnvelope);
+
+    newEnvelope.shpWidget = new ShipardTableForm();
+    newEnvelope.shpWidget.init(newEnvelope);
+  }
 
   doWidgetResponse(data)
   {
@@ -81,12 +138,24 @@ class ShipardTableViewer extends ShipardWidget
       this.appendNextData(data);
       return;
     }
+    else if (data['response']['type'] === 'refreshData')
+    {
+      this.appendNextData(data, 1);
+      return;
+    }
   }
 
-  appendNextData(data)
+  appendNextData(data, clear)
   {
-    this.elmViewerLines.removeChild(this.elmViewerLines.lastElementChild);
-    this.elmViewerLines.innerHTML += data['response']['hcRows'];
+    if (clear !== undefined)
+    {
+      this.elmViewerLines.innerHTML = data['response']['hcRows'];
+    }
+    else
+    {
+      this.elmViewerLines.removeChild(this.elmViewerLines.lastElementChild);
+      this.elmViewerLines.innerHTML += data['response']['hcRows'];
+    }
     this.elmViewerLines.setAttribute ('data-rowspagenumber', data['response']['rowsPageNumber']);
     this.elmViewerRows.setAttribute ('data-loadonprogress', 0);
   }

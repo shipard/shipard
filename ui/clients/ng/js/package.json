@@ -7,6 +7,7 @@
 
 		{"fileName": "widgets/widget.js"},
 		{"fileName": "widgets/tableViewer.js"},
+		{"fileName": "widgets/tableForm.js"},
 		{"fileName": "widgets/touchNumPad.js"},
 		{"fileName": "widgets/terminals/documentCore.js"},
 		{"fileName": "widgets/terminals/cashBox.js"},

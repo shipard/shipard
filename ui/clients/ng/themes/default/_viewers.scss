@@ -52,7 +52,7 @@ data-viewer.shp-detailViewer  {
     "toolbar"
     "body";
 
-  .toolbar { grid-area: toolbar; background-color: lightpink;}
+  .toolbar { grid-area: toolbar; padding: .5rem; }
   >.body {
     display: grid;
     grid-template-columns: 1fr;

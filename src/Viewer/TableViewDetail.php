@@ -285,7 +285,7 @@ class TableViewDetail
 		$headerCode .= "<button class='df2-action-trigger e10-close-detail' style='font-size: 100%; position:relative; top: .75em;' data-action='print-lv-detail'>".$this->app()->ui()->icon('system/actionPrint')."</button>";
 		$headerCode .= "</td>";
 
-		$headerCode .= "</table>";
+		$headerCode .= "</tr></table>";
 		$headerCode .= "</div>";
 
 		return $headerCode;

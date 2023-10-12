@@ -62,6 +62,10 @@ class TableForm
 
 	var $dirtyColsReferences;
 
+	var $formContent = [];
+
+
+
 	const INPUT_STYLE_RADIO = 1, INPUT_STYLE_OPTION = 2, INPUT_STYLE_MONEY = 3, INPUT_STYLE_DATE = 4, INPUT_STYLE_STRING = 5,
 				INPUT_STYLE_DOUBLE = 6, INPUT_STYLE_INT = 7, INPUT_STYLE_DATETIME = 8, INPUT_STYLE_TIME = 9, INPUT_STYLE_TIMELEN = 10,
 				INPUT_STYLE_STRING_COLOR = 11;
@@ -70,6 +74,8 @@ class TableForm
 
 	const disOld = 0, disNative = 1, disShipard = 2;
 	var $dateInputStyle = self::disShipard;
+
+	CONST etColumnInput = 1;
 
 	// -- column options - lower bits are reserved for dataModel column options
 	const coHidden				= 0x00000100,
@@ -447,6 +453,16 @@ class TableForm
 
 	function addColumnInput ($columnId, $options = 0, $params = FALSE, $columnPath = '')
 	{
+		$this->formContent[] = [
+			'type' => self::etColumnInput,
+			'columnId' => $columnId,
+			'options' => $options,
+			'params' => $params,
+			'columnPath' => $columnPath,
+		];
+		if ($this->app()->ngg)
+			return;
+
 		$col = $this->inputColDef($columnId, $columnPath);
 		if (!$col)
 			return;
@@ -1015,6 +1031,8 @@ class TableForm
 				$labelCode = "<label>" . self::e ($label) . "</label>";
 			$this->appendElement ($inputCode, $labelCode);
 		}
+
+		return $inputCode;
 	}
 
 	function addListViewer ($listId, $listViewerId, $label = '', $options = 0)
@@ -1407,6 +1425,8 @@ class TableForm
 		$c = '';
 		if ($options & DataModel::coSaveOnChange)
 			$c .= ' e10-ino-saveOnChange';
+		if ($options & DataModel::coCheckOnChange)
+			$c .= ' e10-ino-checkOnChange';
 		return $c;
 	}
 
@@ -1675,7 +1695,7 @@ class TableForm
 		$headerCode .= "<td class='content-header-btns'><button class='df2-action-trigger e10-close-detail' data-action='cancelform'>&times;</button>";
 		$headerCode .= "</td>";
 
-		$headerCode .= "</table>";
+		$headerCode .= "</tr></table>";
 		$headerCode .= "</div>";
 
 		return $headerCode;

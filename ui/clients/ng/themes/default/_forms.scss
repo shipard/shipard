@@ -18,3 +18,43 @@
 /*.navbar .form-check-input{
     border: 3pt solid var(--navBorder) !important;
 }*/
+
+
+data-modal-form-env {
+    position: absolute;
+    background-color: #000000C0;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+
+
+    .formContainer {
+        display: grid;
+        grid-template-columns: min-content 1fr 1fr;
+        grid-template-rows: min-content 1fr min-content;
+        gap: 0px 0px;
+        grid-auto-flow: row;
+        grid-template-areas:
+          "header header header"
+          "tabs content content"
+          "toolbar toolbar toolbar";
+
+
+
+        max-width: 30em;
+
+
+        background-color: var(--bodyBg);
+      }
+
+      .formHeader { grid-area: header; }
+
+      .formToolbar { grid-area: toolbar; }
+
+      .formTabs { grid-area: tabs; }
+
+      .formContent { grid-area: content; }
+
+}

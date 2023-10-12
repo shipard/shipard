@@ -29,7 +29,7 @@ class ApiResponseViewer extends \Shipard\Api\v2\ApiResponse
       $v->renderViewerData ('');
       $renderer->render();
 
-      $this->responseData['type'] = 'loadNextData';
+      $this->responseData['type'] = $this->requestParam('actionId') ?? 'INVALID';
       $this->responseData['hcRows'] = $v->rows();
 
       $this->responseData['rowsPageNumber'] = $v->objectData ['rowsPageNumber'];

@@ -94,7 +94,16 @@ class TableViewRenderer extends Renderer
     $c .= "data-object-type='data-viewer'";
     $c .= "class='$viewerClass' id='{$this->viewer->vid}' data-viewer='{$this->viewer->vid}' data-object='viewer'";
 		$c .=	"data-viewertype='{$this->viewer->objectSubType}' data-table='" . $this->viewer->table->tableId () . "' data-viewer-view-id='" . $this->viewer->viewId () . "' ";
-		$c .= "data-addparams='{$this->viewer->addParams ()}' data-queryparams='{$this->viewer->queryParams()}' data-lineswidth='{$this->viewer->linesWidth}' ";
+
+		foreach ($this->viewer->addParams as $apk => $apv)
+		{
+			if (str_starts_with($apk, ''))
+				$c .= "data-form-param-addparam-".substr($apk, 2)."='".Utils::es(strval($apv))."' ";
+			else
+				$c .= "data-form-param-addparam-{$apk}='".Utils::es(strval($apv))."' ";
+		}
+
+		$c .= "data-queryparams='{$this->viewer->queryParams()}' data-lineswidth='{$this->viewer->linesWidth}' ";
 		$c .= "data-toolbar='{$this->viewer->toolbarElementId}' data-mode='{$this->viewer->mode}' data-type='{$this->viewer->type}'";
 
     /*
@@ -130,7 +139,7 @@ class TableViewRenderer extends Renderer
 		//if ($this->viewer->type === 'inline')
 		{
 			$c .= "<div class='toolbar' id='{$this->viewer->toolbarElementId}__Main'>";
-			$c .= $this->viewer->createToolbarCode ();
+			$c .= $this->createToolbarCode ();
 			$c .= '</div>';
 		}
 
@@ -196,13 +205,13 @@ class TableViewRenderer extends Renderer
 		$c = '';
 		$tlbr = $this->viewer->createToolbar ();
 
-		/*
-    if ($this->fullWidthToolbar)
+    if ($this->viewer->fullWidthToolbar)
 		{
 			$c .= $this->app()->ui()->composeTextLine($tlbr);
 			return $c;
 		}
-    */
+
+
 
 		$btnClass = 'btn-large';
 		if ($this->viewer->objectSubType == TableView::vsMini)
@@ -210,13 +219,16 @@ class TableViewRenderer extends Renderer
 
 		foreach ($tlbr as $btn)
 		{
+			$buttonsParams = [];
+			$buttonsParams['data-action-param-table'] = $this->viewer->tableId();
+
 			if ($btn['type'] == 'code')
 			{
 				$c .= $btn['code'];
 			}
 			else
 			{
-				$class = '';
+				$class = ' shp-widget-action';
 
 				if (isset ($btn['doubleClick']))
 					$class .= ' dblclk';
@@ -232,7 +244,7 @@ class TableViewRenderer extends Renderer
 														$icon = $this->app()->ui()->icon($btn['icon'] ?? 'system/actionAddWizard');
 														break;
 					case 'new':
-													$class .= ' e10-document-trigger';
+													//$class .= ' e10-document-trigger';
 													$icon = $this->app()->ui()->icon('system/actionAdd');
 													if (isset ($btn ['table']))
 														$dataTable = "data-table='{$btn ['table']}' ";
@@ -243,20 +255,25 @@ class TableViewRenderer extends Renderer
 			}
 				$btnParams = '';
 				if (isset ($btn['data-class']))
-					$btnParams .= "data-class='{$btn['data-class']}' ";
+					//$btnParams .= "data-class='{$btn['data-class']}' ";
+					$buttonsParams['data-action-class'] = $btn['data-class'];
 
 				if (isset ($btn['data-addparams']))
-					$btnParams .= "data-addparams='{$btn['data-addparams']}' ";
+//					$btnParams .= "data-addparams='{$btn['data-addparams']}' ";
+					$buttonsParams['data-action-add-params'] = $btn['data-addparams'];
 
 				$btnText = $btn['text'];
+
+				foreach ($buttonsParams as $bpk => $bpv)
+					$btnParams.= ' '.$bpk."='".Utils::es($bpv)."'";
 
 				if (isset ($btn['subButtons']) || isset ($btn['dropdownMenu']))
 					$c .= "<div class='btn-group'>";
 
 				if ($btn['action'] === '')
-					$c .= "<button type='button' class='$class $btnClass dropdown-toggle' data-toggle='dropdown'>{$icon}&nbsp;{$btnText}&nbsp;<span class='caret'></span></button>";
+					$c .= "<button type='button' class='$class $btnClass dropdown-toggle' data-toggle='dropdown'>{$icon}&nbsp;{$btnText}XX &nbsp;<span class='caret'></span></button>";
 				else
-					$c .= "<button class='btn {$btnClass}$class df2-{$btn['type']}-trigger e10-sv-tlbr-btn-{$btn['action']}' {$dataTable}data-action='{$btn['action']}' data-viewer='{$this->vid}' $btnParams>{$icon}&nbsp;{$btnText}</button>";
+					$c .= "<button class='btn {$btnClass}$class e10-sv-tlbr-btn-{$btn['action']}' {$dataTable}data-action='{$btn['action']}' data-viewer='{$this->viewer->vid}' $btnParams>{$icon}&nbsp;{$btnText}</button>";
 				if (isset ($btn['subButtons']))
 				{
 					foreach($btn['subButtons'] as $subbtn)
@@ -284,7 +301,6 @@ class TableViewRenderer extends Renderer
 		}
 		return $c;
 	}
-
 
 	public function createTopMenuSearchCode ()
 	{
@@ -339,7 +355,7 @@ class TableViewRenderer extends Renderer
 					$h .= "<td style='vertical-align: middle; text-align: right; width: 90px;'>";
 
 					$h .= "<div class='btn-group pull-right'>";
-					$h .= "<button class='btn btn-large btn-default df2-action-trigger' data-action='printviewer' data-viewer='{$this->vid}' data-format='pdf'>".$this->app()->ui()->icon('system/actionPrint')."</button>";
+					$h .= "<button class='btn btn-large btn-default df2-action-trigger_22' data-action='printviewer' data-viewer='{$this->vid}' data-format='pdf'>".$this->app()->ui()->icon('system/actionPrint')."</button>";
 
 					$h .= "<button type='button' class='btn btn-default dropdown-toggle'' data-toggle='dropdown'><span class='caret'></span></button>";
 					$h .= '<ul class="dropdown-menu" role="menu">';

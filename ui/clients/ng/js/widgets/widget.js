@@ -68,7 +68,7 @@ class ShipardWidget {
 		let popUpId = '-openPopupAtt';
 
     var nw = window.open(url, "shpd-cl-ng"+popUpId, "location=no,status=no,width=" + width + ",height=" + height);
-		console.log("opened2", nw);
+
     nw.focus();
   }
 
@@ -103,7 +103,7 @@ class ShipardWidget {
 
     this.detectValues(apiParams);
 
-    console.log("API-CALL", apiParams);
+    console.log("API-CALL-WIDGET", apiParams);
 
     var url = 'api/v2';
 
@@ -173,7 +173,7 @@ class ShipardWidget {
     var div = document.createElement('div');
     div.appendChild(document.createTextNode(str));
     return div.innerHTML;
-  };
+  }
 
   elmHide(e)
   {

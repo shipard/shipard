@@ -76,7 +76,7 @@ class ShipardServer {
 
 	api (data, f, errorFunction)
 	{
-		var fullUrl = this.beginUrl() + '/api';
+		var fullUrl = this.beginUrl() + 'api';
 
 		var options = {
 			method: 'POST',

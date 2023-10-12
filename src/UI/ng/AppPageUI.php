@@ -167,6 +167,16 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
         $this->uiTemplate->data[$destId] = $this->uiTemplate->render($wtc);
       }
     }
+    elseif ($objectType === 'iframe')
+    {
+      $url = $menuItem['url'] ?? '';
+
+      if ($url !== '')
+      {
+        $code = "<iframe src='$url' style='width: 100%; height: 100%;'></iframe>";
+        $this->uiTemplate->data[$destId] = $code;
+      }
+    }
 
     if ($mainUIObjectId !== '' && $partId === NULL)
       $this->uiTemplate->data['appBrowserParams'] .= 'data-main-ui-object-id="'.Utils::es($mainUIObjectId).'" ';
