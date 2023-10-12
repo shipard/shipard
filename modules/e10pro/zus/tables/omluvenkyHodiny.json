@@ -1,0 +1,11 @@
+{
+	"id": "e10pro.zus.omluvenkyHodiny", "sql": "e10pro_zus_omluvenkyHodiny", "name": "Omvuvené hodiny",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "omluvenka", "name": "Omluvenka", "type": "int", "reference": "e10pro.zus.omluvenky"},
+		{"id": "datum", "name": "Datum", "type": "date"},
+		{"id": "vyuka", "name": "Výuka", "type": "int", "reference": "e10pro.zus.vyuky"},
+    {"id": "rozvrh", "name": "Rozvrh", "type": "int", "reference": "e10pro.zus.vyukyrozvrh"}
+	],
+  "options": ["systemTable"]
+}

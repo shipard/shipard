@@ -3,7 +3,5 @@
     {{#data.listRow.longTerm}}{{data.listRow.dateFrom}} - {{data.listRow.dateTo}}{{/data.listRow.longTerm}}
     {{^data.listRow.longTerm}}{{data.listRow.dateFrom}}{{/data.listRow.longTerm}}
   </h5>
-  <span class="text-muted fs-6 pe-2">{{{@icon;icon:user/pencil}}} datum vytvoření</span>
-  <span class="text-muted fs-6">{{{@icon;icon:user/user}}} Autor příspěvku</span>
-  <p class="card-text mt-1">{{{data.listRow.text}}}</p>
+  <span class="text-muted fs-6 pe-2">{{data.listRow.reason}}</span>
 </div>

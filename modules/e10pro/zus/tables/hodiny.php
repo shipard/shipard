@@ -344,7 +344,17 @@ class FormHodina extends TableForm
 				$studenti = $this->table->db()->query ($q);
 				foreach ($studenti as $r)
 				{
-					$list->data [] = ['student' => $r['studentNdx'], 'studium' => $r['studium'], 'pritomnost' => 1];
+					$np = 1;
+
+					$eex = $this->table->db()->query('SELECT * FROM [e10pro_zus_omluvenky] WHERE 1',
+																					' AND [student] = %i', $r['studentNdx'],
+																					' AND [datumOd] <= %d', $this->recData['datum'],
+																					' AND [datumDo] >= %d', $this->recData['datum'],
+																					' AND [docState] = %i', 4000
+																		)->fetch();
+					if ($eex)
+						$np = 2;
+					$list->data [] = ['student' => $r['studentNdx'], 'studium' => $r['studium'], 'pritomnost' => $np];
 				}
 			}
 		}

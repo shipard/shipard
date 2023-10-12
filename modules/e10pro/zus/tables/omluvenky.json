@@ -6,9 +6,13 @@
 
 		{"id": "text", "name": "Text", "type": "memo"},
 
-		{"id": "datumOd", "name": "Datum od", "type": "date"},
-		{"id": "datumDo", "name": "Datum do", "type": "date"},
-		{"id": "dlouhodoba", "name": "Více dnů", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "datumOd", "name": "Datum od", "label": "Od", "type": "date"},
+		{"id": "datumDo", "name": "Datum do", "label": "Do", "type": "date"},
+
+		{"id": "duvod", "name": "Důvod", "type": "enumInt",
+			"enumCfg": {"cfgItem": "zus.duvodyOmluveni", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "dlouhodoba", "name": "Více dnů", "type": "logical", "options": ["saveOnChange", "checkOnChange"]},
 
     {"id": "authorUser", "name": "Autor", "type": "int", "reference": "e10.users.users"},
 

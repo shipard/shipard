@@ -5,10 +5,10 @@
 		"obory", "oddeleni", "oddeleniPobocky", "predmety", "svp", "stupne", "rocniky", "teachplanheads", "teachplanrows", "roky",
 		"vysvedceni", "znamky", "akce", "programakci",
 		"prihlasky", "studium", "studiumpre",
-		"vyuky", "vyukystudenti", "vyukyrozvrh", "hodiny", "hodinydochazka", "hodnoceni", "omluvenky"
+		"vyuky", "vyukystudenti", "vyukyrozvrh", "hodiny", "hodinydochazka", "hodnoceni", "omluvenky", "omluvenkyHodiny"
 	],
 	"modules": ["e10/persons", "wkf/bboard"],
-	"extensions": ["persons", "wkf"],
+	"extensions": ["persons", "wkf", "ezk"],
   "config": [
 		{"id": "+apps", "file": "apps.json"},
     {"id": "+appSkeleton", "name": "Rozšíření menu aplikace", "file": "zus.appSkeleton.json"},
@@ -17,6 +17,7 @@
 		{"id": "+e10.base.doclinks", "file": "docLinks.json"},
     {"id": "zus.znamky", "name": "Známky", "file": "zus.znamky.json"},
 	  {"id": "zus.pritomnost", "file": "zus.pritomnost.json"},
+		{"id": "zus.duvodyOmluveni", "file": "e10pro.zus.duvodyOmluveni.json"},
     {"id": "+zus", "file": "zus.json"},
     {"id": "zus.statniObcanstvi", "name": "Státní občanství", "file": "zus.statniObcanstvi.json"},
     {"id": "+e10.persons.roles", "name": "Role uživatelů", "file": "e10.zus.roles.json"},
