@@ -1,0 +1,10 @@
+[
+	{
+		"table": "e10doc.core.heads",
+		"views": {
+			"zus-ezk-invoicesOut": {
+				"id": "zus-ezk-invoicesOut", "class": "e10pro.zus.libs.ezk.ViewInvoicesOut"
+			}
+		}
+	}
+]

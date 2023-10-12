@@ -1,0 +1,12 @@
+<div class="card-body pt-1 pb-1">
+  <h6 class="card-title">{{data.listRow.title}}</h6>
+
+  <div class="d-flex justify-content-between">
+    <span>{{{@icon;icon:user/file}}} {{data.listRow.docNumber}}</span> <span>{{{@icon;icon:user/moneyBill}}} {{data.listRow.sumTotal}} {{data.listRow.currency}}</span>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center">
+    <span class="badge {{data.listRow.balanceInfo.class}} me-2">{{{@icon;dataItem:data.listRow.balanceInfo.icon}}} {{data.listRow.balanceInfo.text}}</span>
+    <span class="btn btn-outline-secondary btn-sm flex-shrink-1 shp-widget-action" data-url='{{data.listRow.reportFileName}}' data-action='open-popup'>{{{@icon;icon:user/fileDownload}}}</span>
+  </div>
+</div>

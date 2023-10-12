@@ -11,17 +11,23 @@ use \Shipard\Utils\Utils, \Shipard\Viewer\TableView;
 class ViewExcuses extends TableView
 {
   var $studentNdx = 0;
+	var $duvodyOmluveni;
 
 	public function init ()
 	{
 		$userContexts = $this->app()->uiUserContext ();
 		$ac = $userContexts['contexts'][$this->app()->uiUserContextId] ?? NULL;
 		if ($ac)
+		{
 			$this->studentNdx = $ac['studentNdx'] ?? 0;
+			$this->addAddParam ('student', $this->studentNdx);
+		}
+
+		$this->duvodyOmluveni = $this->app()->cfgItem('zus.duvodyOmluveni');
 
     $this->classes = ['viewerWithCards'];
-		$this->enableToolbar = FALSE;
-    //$this->enableFullTextSearch = FALSE;
+
+    $this->enableFullTextSearch = FALSE;
 
 		parent::init();
 
@@ -39,11 +45,11 @@ class ViewExcuses extends TableView
 
     $listItem ['t2'] = Utils::dateFromTo($item['datumOd'], $item['datumDo'], NULL);
 
-
-    $listItem ['dateFrom'] = Utils::datef($item['datumOd']);
-    $listItem ['dateTo'] = Utils::datef($item['datumDo']);
-    $listItem ['longTerm'] = $item['dlouhodoba'];
+    $listItem ['dateFrom'] = Utils::datef($item['datumOd'], '%d');
+    $listItem ['dateTo'] = Utils::datef($item['datumDo'], '%d');
+    $listItem ['longTerm'] = intval($item['datumOd'] != $item['datumDo']);//$item['dlouhodoba'];
     $listItem ['text'] = $item['text'];
+		$listItem ['reason'] = $this->duvodyOmluveni[$item['duvod']]['fn'];
 
 		return $listItem;
 	}
@@ -62,13 +68,18 @@ class ViewExcuses extends TableView
 
 		// -- fulltext
 		if ($fts != '')
-			array_push ($q, ' AND (students.[fullName] LIKE %s)', '%'.$fts.'%');
+		{
+			array_push ($q, ' AND (');
+			array_push ($q, ' students.[fullName] LIKE %s', '%'.$fts.'%');
+			array_push ($q, ' OR omluvenky.[text] LIKE %s', '%'.$fts.'%');
+			array_push ($q, ') ');
+		}
 
 		$this->queryMain ($q, 'omluvenky.', ['[datumOd] DESC', '[ndx]']);
 		$this->runQuery ($q);
 	}
 
-  public function createToolbar()
+  public function createToolbar_TMP()
 	{
 		return [];
 	}

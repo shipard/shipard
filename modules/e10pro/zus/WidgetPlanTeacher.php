@@ -168,11 +168,23 @@ class WidgetPlanTeacher extends \Shipard\UI\Core\WidgetPane
 						['text' => $tt['zacatek'], 'suffix' => $tt['konec'], 'class' => 'block']
 					];
 
-					$rc = [
-						['text' => $tt['vyukaNazev'], 'class' => 'block e10-bold'],
-						['text' => $tt['predmetNazev'], 'class' => 'block'],
-						['text' => $tt['ucebnaNazev'], 'class' => 'block id']
-					];
+					$eex = $this->db()->query('SELECT * FROM [e10pro_zus_omluvenkyHodiny] AS hodiny ',
+																		' LEFT JOIN [e10pro_zus_omluvenky] AS omluvenky ON hodiny.omluvenka = omluvenky.ndx',
+																		' WHERE [vyuka] = %i', $tt['vyuka'],
+																		' AND [datum] = %d', $activeDate,
+																		' AND [omluvenky].[docState] = %i', 4000)->fetch();
+
+					$rc = [];
+					if ($eex)
+					{
+						$rc[] = ['text' => $tt['vyukaNazev'], 'class' => 'e10-bold'];
+						$rc[] = ['text' => 'Omluvenka', 'class' => 'label label-danger pull-right'];
+					}
+					else
+						$rc[] = ['text' => $tt['vyukaNazev'], 'class' => 'block e10-bold'];
+					$rc[] = ['text' => $tt['predmetNazev'], 'class' => 'block'];
+					if ($tt['ucebnaNazev'] && $tt['ucebnaNazev'] !== '')
+						$rc[] = ['text' => $tt['ucebnaNazev'], 'class' => 'block id'];
 
 					if (isset($this->dataExistedHours[$itemId]))
 					{
@@ -281,7 +293,7 @@ class WidgetPlanTeacher extends \Shipard\UI\Core\WidgetPane
 		$this->tableHodiny = $this->app->table('e10pro.zus.hodiny');
 
 		$this->teacher = $this->app->userNdx();
-		//$this->teacher = 6;
+		//$this->teacher = 4255;
 
 		$this->today = utils::today();
 		//$this->today = new \DateTime('2022-09-05');
