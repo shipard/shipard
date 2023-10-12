@@ -408,6 +408,12 @@ class Application extends \Shipard\Application\ApplicationCore
 
 	public function checkAccess ($item)
 	{
+		if ($this->ngg)
+			return $this->checkAccessNG($item);
+
+		if (PHP_SAPI === 'cli')
+			return 2;
+
 		$allRoles = $this->cfgItem ('e10.persons.roles');
 		$userRoles = $this->user()->data ('roles');
 
@@ -500,13 +506,18 @@ class Application extends \Shipard\Application\ApplicationCore
 		return $accessLevel;
 	}
 
+	public function checkAccessNG ($item)
+	{
+		return 2;
+	}
+
 	public function checkUserRights ($item, $minimalRole = 'guest')
 	{
 		if (!$this->authenticator)
 			return true;
 
 		$ok = false;
-		$auth = array ();
+		$auth = [];
 
 		$headers = utils::getAllHeaders();
 
@@ -1304,6 +1315,9 @@ class Application extends \Shipard\Application\ApplicationCore
 
 	public function table ($tableId)
 	{
+		if (!$tableId)
+			return NULL;
+
 		if (isset($tableId [0]) && $tableId [0] === '_')
 		{
 			$tableClassName = "\\E10\\" . substr ($tableId, 1);
@@ -1763,6 +1777,7 @@ class Application extends \Shipard\Application\ApplicationCore
 		}
 
 		$o = new \Shipard\Api\v2\Router($this);
+		$o->uiRouter = $this;
 		$o->setRequestParams($requestParams);
 		return $o->run();
 	}
