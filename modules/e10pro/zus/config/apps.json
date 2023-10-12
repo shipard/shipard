@@ -15,6 +15,10 @@
         {
           "title": "Rozvrh", "icon": "user/clock", "id": "time-table",
           "objectType": "widget", "classId": "e10pro.zus.libs.ezk.WidgetTimeTable"
+        },
+        {
+          "title": "Omluvenky", "icon": "user/book", "id": "excuses",
+          "objectType": "viewer", "table": "e10pro.zus.omluvenky", "viewer": "ezk"
         }
       ]
     },
