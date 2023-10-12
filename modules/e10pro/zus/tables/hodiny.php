@@ -41,6 +41,27 @@ class TableHodiny extends DbTable
 		parent::checkAfterSave2($recData);
 	}
 
+	public function checkNewRec (&$recData)
+	{
+		parent::checkNewRec ($recData);
+
+		if (isset($recData['vyuka']) && isset($recData['datum']))
+		{
+			$vyuka = $this->app()->loadItem($recData['vyuka'], 'e10pro.zus.vyuky');
+			if ($vyuka['typ'] === 1)
+			{ // individualni
+				$eex = $this->db()->query('SELECT * FROM [e10pro_zus_omluvenky] WHERE 1',
+																	' AND [student] = %i', $vyuka['student'],
+																	' AND [datumOd] <= %d', $recData['datum'],
+																	' AND [datumDo] >= %d', $recData['datum'],
+																	' AND [docState] = %i', 4000
+						)->fetch();
+				if ($eex)
+					$recData['pritomnost'] = 2;
+			}
+		}
+	}
+
 	public function createHeader ($recData, $options)
 	{
 		$hdr = [];
