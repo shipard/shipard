@@ -192,26 +192,40 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
 
     if ($this->uiRecData['uiType'] === 4)
     {
-      $this->uiStruct = $this->app()->cfgItem('apps.'.$this->uiRecData['appType']);
-      if (!$this->uiStruct)
-        $this->uiStruct = [];
-
+      $this->createUIStruct($this->app()->cfgItem('apps.'.$this->uiRecData['appType']));
       $c = $this->createContentCodeInside_UIStruct();
 		  return $c;
     }
 
     if ($this->uiRecData['uiType'] === 5)
     { // vlastní aplikace
-      $this->uiStruct = json_decode($this->uiRecData['uiStruct'], TRUE);
-      if (!$this->uiStruct)
-        $this->uiStruct = [];
-
+      $this->createUIStruct(json_decode($this->uiRecData['uiStruct'], TRUE));
       $c = $this->createContentCodeInside_UIStruct();
 		  return $c;
     }
 
     return 'ERROR-500';
 	}
+
+  protected function createUIStruct($data)
+  {
+    $this->uiStruct = $data;
+
+    if (!$this->uiStruct)
+      $this->uiStruct = [];
+
+    if (isset($data['appMenu']['items']))
+    {
+      $this->uiStruct['appMenu']['items'] = [];
+      foreach ($data['appMenu']['items'] as $menuItem)
+      {
+        if (isset($menuItem['mainRole']) && !$this->app()->hasMainRole($menuItem['mainRole']))
+          continue;
+
+        $this->uiStruct['appMenu']['items'][] = $menuItem;
+      }
+    }
+  }
 
 	public function run ()
 	{

@@ -726,6 +726,17 @@ class Application extends \Shipard\Application\ApplicationCore
 		return false;
 	}
 
+	public function hasMainRole ($roleId)
+	{
+		if (!$this->uiUser || !isset($this->uiUser['mainRoles']))
+			return false;
+
+		if (in_array($roleId, $this->uiUser['mainRoles']))
+			return true;
+
+		return false;
+	}
+
 	public function loadItem ($ndx, $tableId)
 	{
 		$table = $this->table ($tableId);

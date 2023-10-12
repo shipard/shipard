@@ -18,7 +18,8 @@
         },
         {
           "title": "Omluvenky", "icon": "user/book", "id": "excuses",
-          "objectType": "viewer", "table": "e10pro.zus.omluvenky", "viewer": "ezk"
+          "objectType": "viewer", "table": "e10pro.zus.omluvenky", "viewer": "ezk",
+          "mainRole": "zus-ezk-legalrep"
         }
       ]
     },

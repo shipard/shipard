@@ -130,7 +130,21 @@ class Authenticator extends Utility
   function setUserInfo($userNdx, $apiKeyNdx = 0)
   {
     $userRecData = $this->db()->query('SELECT * FROM [e10_users_users] WHERE [ndx] = %i', $userNdx)->fetch();
-    $this->app->uiUser = ['ndx' => $userNdx, 'name' => $userRecData['fullName'], 'apiKeyNdx' => $apiKeyNdx];
+
+    // -- main roles
+    $mainRoles = [];
+    $q = [];
+		array_push($q, 'SELECT links.*, [roles].systemId AS systemId');
+		array_push($q, ' FROM e10_base_doclinks AS [links]');
+		array_push($q, ' LEFT JOIN e10_users_roles AS [roles] ON links.dstRecId = [roles].ndx');
+		array_push($q, ' WHERE dstTableId = %s', 'e10.users.roles');
+		array_push($q, ' AND srcTableId = %s', 'e10.users.users');
+		array_push($q, ' AND links.srcRecId = %i', $userNdx);
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+			$mainRoles[] = $r['systemId'];
+
+    $this->app->uiUser = ['ndx' => $userNdx, 'name' => $userRecData['fullName'], 'apiKeyNdx' => $apiKeyNdx, 'mainRoles' => $mainRoles];
   }
 
   function closeSession()
