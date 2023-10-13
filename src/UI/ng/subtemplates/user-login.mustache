@@ -9,9 +9,9 @@
         {{data.login.errorMsg}}
       </div>
       {{/data.login.error}}
-      <form method='POST' action='{{data.uiRoot}}auth/login'>
+      <form method='POST' action='{{data.uiRoot}}auth/login' novalidate>
         <div class='form-floating mb-3'>
-          <input type='text' class='form-control' name='login' placeholder='name@example.com' id='e10-login-user'>
+          <input type='email' class='form-control' name='login' placeholder='name@example.com' id='e10-login-user' novalidate>
           <label for='e10-login-user'>Přihlašovací jméno / e-mail</label>
         </div>
         <div class='form-floating mb-3'>
