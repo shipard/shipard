@@ -308,6 +308,7 @@ class TemplateCore extends \Mustache
 	{
 		switch ($tagName)
 		{
+			case	'date' 						: return $this->resolveCmd_Date($params);
 			case	'icon' 						: return $this->resolveCmd_Icon($params);
 			case	'imgData' 				: return $this->resolveCmd_ImgData($params);
 			case	'include' 				: return $this->resolveCmd_Include($params);
@@ -381,6 +382,22 @@ class TemplateCore extends \Mustache
 	{
 		$user = $this->app->user ()->data ();
 		return utils::userImage ($this->app, $user['ndx'], $user);
+	}
+
+	function resolveCmd_Date ($params)
+	{
+		$date = NULL;
+		if (isset ($params['dataItem']))
+			$date = Utils::createDateTime($this->getVar($params['dataItem']));
+		else
+			$date = Utils::today();
+
+		if (!$date)
+			return '';
+
+		$format	= $params['format'] ?? '%d';
+
+		return Utils::datef($date, $format);
 	}
 
 	function resolveCmd_Icon ($params)
