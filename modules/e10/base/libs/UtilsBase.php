@@ -425,10 +425,10 @@ class UtilsBase
 		$subjectEncoded = "=?utf-8?B?".base64_encode ($subject)."?=";
 		$header = "MIME-Version: 1.0\n";
 		if ($html)
-			$header .= "Content-Type: text/html; charset=utf-8\n";
+			$header .= "Content-Type: text/html; charset=utf-8\r\n";
 		else
-			$header .= "Content-Type: text/plain; charset=utf-8\n";
-		$header .= "From: =?UTF-8?B?".base64_encode($fromName)."?=<".$fromAdress.">\n";
+			$header .= "Content-Type: text/plain; charset=utf-8\r\n";
+		$header .= "From: =?UTF-8?B?".base64_encode($fromName)."?=<".$fromAdress.">\r\n";
 		//$header .= "To: =?UTF-8?B?".base64_encode($toName)."?=<".$toAdress.">\n";
 		return mail ($toAdress, $subjectEncoded, $message, $header);
 	}

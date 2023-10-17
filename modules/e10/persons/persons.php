@@ -1086,6 +1086,8 @@ class Authenticator extends \Shipard\Application\Authenticator
 			$urlHost = 'muj.shipard.cz';
 		elseif ($urlHost === 'uctarna.online')
 			$urlHost = 'moje.uctarna.online';
+		elseif ($urlHost === 'shipard.app')
+			$urlHost = 'shipard.app';
 
 		switch ($type)
 		{
