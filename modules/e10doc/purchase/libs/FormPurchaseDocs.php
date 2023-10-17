@@ -311,6 +311,7 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 					array_push ($qba, ' FROM [e10_persons_personsBA] AS [ba]');
 					array_push ($qba, ' WHERE 1');
 					array_push ($qba, ' AND [ba].[person] = %i', $personNdx);
+					array_push ($qba, ' AND [ba].[docState] = %i', 4000);
 					$baRows = $this->app()->db()->query($qba);
 					foreach ($baRows as $ba)
 					{
