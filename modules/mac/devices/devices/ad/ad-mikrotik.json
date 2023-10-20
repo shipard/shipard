@@ -165,7 +165,16 @@
 					]
 				},
 				"mkt-crs310-1g-5s-4s": {"title": "CRS310-1G-5S-4S+IN"},
-				"mkt-crs326-24s-2q": {"title": "CRS326-24S+2Q+RM"},
+				"mkt-crs326-24s-2q": {
+					"title": "CRS326-24S+2Q+RM",
+					"ports": [
+						{"kind": 5, "count": 1, "maskId": "ether"},
+						{"kind": 6, "count": 4, "maskId": "qsfpplus1-"},
+						{"kind": 6, "count": 4, "maskId": "qsfpplus2-"},
+						{"kind": 6, "count": 24, "maskId": "sfp-sfpplus"},
+						{"kind": 10, "count": 1, "maskId": "mng"}
+					]
+				},
 				"mkt-crs326-24g-2s": {
 					"title": "CRS326-24G-2S+IN / CRS326-24G-2S+RM",
 					"ports": [
