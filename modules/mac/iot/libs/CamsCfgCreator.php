@@ -71,7 +71,7 @@ class CamsCfgCreator extends Utility
 
     $camCfg['cfg']['picturesFolder'] = $camDef['macDeviceCfg']['picturesFolder'] ?? strval($camDef['ndx']);
 
-    $camCfg['cfg']['streamURL'] = $this->camServerMacDeviceCfg['streamURL'] ?? '';
+    $camCfg['cfg']['streamURL'] = $camDef['macDeviceCfg']['streamURL'] ?? '';
     if ($camCfg['cfg']['streamURL'] === '')
     {
       $camCfg['cfg']['streamURL'] = 'rtsp://';
