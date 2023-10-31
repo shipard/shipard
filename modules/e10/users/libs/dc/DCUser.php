@@ -17,6 +17,26 @@ class DCUser extends \Shipard\Base\DocumentCard
     $this->createContentBody_Contacts();
     $this->createContentBody_Persons();
     $this->createContentBody_Requests();
+
+    if ($this->app()->hasRole('root'))
+    {
+      $btns = [];
+
+			$btns[] = [
+				'text' => 'Resetovat heslo', 'type' => 'action', 'action' => 'addwizard', 'icon' => 'user/key',
+				'class' => '',
+				'element' => 'span',
+				'btnClass' => 'btn btn-danger',
+				'data-class' => 'e10.users.libs.ResetPasswordWizard',
+				'data-addparams' => 'focusedPK='.$this->recData['ndx'],
+			];
+
+      $this->addContent('body', [
+        'pane' => 'e10-pane e10-pane-table', 'paneTitle' => ['text' => 'Systémové nástroje', 'class' => 'h2 block'],
+        'type' => 'line', 'line' => $btns,
+        ]
+      );
+    }
 	}
 
 	function createContentBody_Contacts()
