@@ -38,6 +38,10 @@ class WidgetPlanTeacher extends \Shipard\UI\Core\WidgetPane
 		array_push ($q, ' AND rozvrh.ucitel = %i', $this->teacher);
 		array_push ($q, ' AND vyuky.skolniRok = %s', $this->academicYear);
 		array_push ($q, ' AND rozvrh.stavHlavni <= 2');
+
+		array_push ($q, ' AND (vyuky.datumUkonceni IS NULL OR vyuky.datumUkonceni > %t)', $this->today);
+		array_push ($q, ' AND (vyuky.datumZahajeni IS NULL OR vyuky.datumZahajeni <= %t)', $this->today);
+
 		array_push ($q, ' ORDER BY ucitele.lastName, ucitele.firstName, rozvrh.den, rozvrh.zacatek, rozvrh.ndx');
 
 		$rows = $this->db()->query ($q);
