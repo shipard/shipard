@@ -5,17 +5,6 @@
 		"type": "cfgFile",
 		"options":
 			[
-				{"cfgKey": "appTheme", "cfgName": "Téma aplikace", "cfgItem": "e10settings.themes.desktop"},
-				{"cfgKey": "iconsTheme", "cfgName": "Ikony", "cfgItem": "ui.app.icons.types"},
-				{"cfgKey": "mobileuiTheme", "cfgName": "Vzhled mobilního rozhraní",
-					"options": {
-						"md-bluegray": "Modrošedá",
-						"md-indigo": "Indigo",
-						"md-lime": "Limetka",
-						"md-default": "Růžová",
-						"md-teal": "Modrozelená"
-					}
-				},
 				{"cfgKey": "dateInputStyle", "cfgName": "Způsob zadávání datumů",
 					"options": {
 						"a": "Automaticky",
