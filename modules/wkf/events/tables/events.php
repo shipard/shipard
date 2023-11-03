@@ -244,7 +244,8 @@ class FormEvent extends TableForm
 				$this->openTab();
 					//$this->addList ('clsf', '', TableForm::loAddToFormLayout);
 					//$this->addSeparator(self::coH4);
-					$this->addColumnInput ('author');
+					if (!$this->app()->ngg)
+						$this->addColumnInput ('author');
 				$this->closeTab();
 				$this->openTab(TableForm::ltNone);
 					$this->addAttachmentsViewer();

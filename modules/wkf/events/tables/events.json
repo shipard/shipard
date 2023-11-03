@@ -19,7 +19,7 @@
 		{"id": "timeEnd", "name": "Čas do", "type": "time"},
 		{"id": "dateTimeEnd", "name": "Datum a čas konce", "type": "timestamp"},
 
-		{"id": "multiDays", "name": "Více dnů", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "multiDays", "name": "Více dnů", "type": "logical", "options": ["saveOnChange", "checkOnChange"]},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
