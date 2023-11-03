@@ -109,24 +109,7 @@ class ShipardTableViewer extends ShipardWidget
     };
     this.elementPrefixedAttributes (this.rootElm, 'data-form-param-', formParams);
     this.elementPrefixedAttributes (e, 'data-action-param-', formParams);
-    this.openModalForm(formParams, formAttrs);
-  }
-
-  openModalForm(params, attrs)
-  {
-    let newEnvelope = document.createElement('data-modal-form-env');
-    newEnvelope.setAttribute('data-request-type', 'dataForm');
-    for (const oneParamId in params)
-      newEnvelope.setAttribute('data-action-param-'+oneParamId, params[oneParamId]);
-    for (const oneParamId in attrs)
-      newEnvelope.setAttribute('data-'+oneParamId, attrs[oneParamId]);
-
-    newEnvelope.id = 'test1122';
-    newEnvelope.innerHTML = "čekejte, prosím, data se načítají...";
-    document.body.appendChild(newEnvelope);
-
-    newEnvelope.shpWidget = new ShipardTableForm();
-    newEnvelope.shpWidget.init(newEnvelope);
+    this.openModalForm('new', formParams, formAttrs);
   }
 
   doWidgetResponse(data)

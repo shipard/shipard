@@ -3,8 +3,6 @@ class WidgetCashBox extends ShipardWidgetDocumentCore
   init (rootElm)
   {
     super.init(rootElm);
-    console.log("hello, cashBox", this.rootId);
-
     this.documentInit();
   }
 

@@ -9,7 +9,7 @@ use \e10pro\zus\zusutils;
 /**
  * Class WidgetTimeTable
  */
-class WidgetTimeTable extends \Shipard\UI\Core\WidgetPane
+class WidgetTimeTable extends \Shipard\UI\Core\UIWidget
 {
 	var $teacher;
 	var $today;
@@ -106,9 +106,9 @@ class WidgetTimeTable extends \Shipard\UI\Core\WidgetPane
 			$timeTableData['days'][] = $day;
 		}
 
-		$this->router->uiTemplate->data['timeTable'] = $timeTableData;
-		$templateStr = $this->router->uiTemplate->subTemplateStr('modules/e10pro/zus/libs/ezk/subtemplates/timeTable');
-		$code = $this->router->uiTemplate->render($templateStr);
+		$this->uiTemplate->data['timeTable'] = $timeTableData;
+		$templateStr = $this->uiTemplate->subTemplateStr('modules/e10pro/zus/libs/ezk/subtemplates/timeTable');
+		$code = $this->uiTemplate->render($templateStr);
 		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $code]);
 	}
 

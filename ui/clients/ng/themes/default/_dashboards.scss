@@ -1,0 +1,44 @@
+.shp-widget-board {
+  display: grid;
+  grid-template-columns: 1fr 15em;
+  grid-template-rows: min-content 1fr;
+  gap: 0px 0px;
+  grid-template-areas:
+    "toolbar sidebar"
+    "content sidebar";
+
+  height: 100%;
+
+  .shp-wb-sidebar {
+    grid-area: sidebar;
+  }
+  .shp-wb-toolbar {
+    grid-area: toolbar;
+  }
+  .shp-wb-content {
+    grid-area: content;
+  }
+}
+
+
+.shp-widget-simple {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: min-content 1fr;
+  gap: 0px 0px;
+  grid-template-areas:
+    "toolbar"
+    "content";
+
+  height: 100%;
+
+  .shp-wb-toolbar {
+    grid-area: toolbar;
+  }
+
+  .shp-wb-content {
+    grid-area: content;
+    height: 100%;
+    overflow-y: auto;
+  }
+}

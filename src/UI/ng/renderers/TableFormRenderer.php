@@ -67,12 +67,12 @@ class TableFormRenderer extends Renderer
 		$stateBtnIdx = 0;
 		foreach ($tlbr as $btn)
 		{
-			if ($btn['style'] !== 'stateSave' || $btn['docState'] != 4000)
+			if ($btn['style'] === 'cancel' || $btn['style'] === 'defaultSave')
 				continue;
 
 			$side = isset ($btn['side']) ? $btn['side'] : 0; //left; 1 -> right
 			$class = '';
-			$icon = (isset($btn['icon'])) ? "<i class='fa fa-{$btn['icon']}'></i> " : '';
+			$icon = '';
 			$params = '';
 			$btnid = '';
 
@@ -191,18 +191,41 @@ class TableFormRenderer extends Renderer
 
 			if (isset ($btn['subButtons']))
 				$btnsCode [$side] .= "<div class='btn-group'>";
-			$btnsCode [$side] .= "<button{$btnid} class='btn btn-large$class' data-action='{$btn['action']}' data-fid='{$this->form->fid}' data-form='{$this->form->fid}'{$params}>{$icon}&nbsp;{$btn['text']}</button> ";
+
+			if ($side === 0)
+				$btnsCode [$side] .= "<button{$btnid} class='btn btn-large$class' data-action='{$btn['action']}' data-fid='{$this->form->fid}' data-form='{$this->form->fid}'{$params}>{$icon}&nbsp;{$btn['text']}</button> ";
+			else
+			{
+				$btnsCode [$side] .= "<li>";
+				$btnsCode [$side] .= "<a href='#' {$btnid} class='dropdown-item shp-widget-action' data-action='{$btn['action']}' data-fid='{$this->form->fid}' data-form='{$this->form->fid}'{$params}>{$icon}&nbsp;{$btn['text']}</a>";
+				$btnsCode [$side] .= "</li>";
+			}
+
+			/*
 			if (isset ($btn['subButtons']))
 			{
 				foreach($btn['subButtons'] as $subbtn)
 					$btnsCode [$side] .= $this->app()->ui()->actionCode($subbtn);
 				$btnsCode [$side] .= '</div>';
 			}
+			*/
 		}
 
-		$c .= "<span class='btns-on-left'>{$btnsCode [0]}</span>";
+		$c .= "<div class='btn-group'>";
+		$c .= $btnsCode [0];
+		$c .= '</div>';
 		if ($btnsCode [1] != '')
-			$c .= "<span class='btns-on-right'>{$btnsCode [1]}</span>";
+		{
+			$c .= ' ';
+			$c .= "<div class='btn-group'>";
+			$c .= "<div class='dropdown'>";
+			$c .= "<button class='btn btn-outline' type='button' data-bs-toggle='dropdown' aria-expanded='false'>".$this->app()->ui()->icon('system/iconOther')."</button>";
+			$c .= "<ul class='dropdown-menu'>";
+			$c .= $btnsCode [1];
+			$c .= '</ul>';
+			$c .= '</div>';
+			$c .= '</div>';
+		}
 		return $c;
 	}
 
@@ -376,7 +399,7 @@ class TableFormRenderer extends Renderer
 			case TableForm::INPUT_STYLE_MONEY: $inputClass = 'e10-inputMoney'; $inputParams .= "autocomplete='off'"; $rightLayout = TRUE; break;
 			case TableForm::INPUT_STYLE_DATE: $this->inputInfoHtml($inputStyle, $inputClass, $inputType, $inputParams); break;
 			case TableForm::INPUT_STYLE_DATETIME: $this->inputInfoHtml($inputStyle, $inputClass, $inputType, $inputParams); break;
-			case TableForm::INPUT_STYLE_TIME: $inputClass = 'e10-inputTime'; $placeholder = " placeholder='HH:MM'";break;
+			case TableForm::INPUT_STYLE_TIME: $inputType='time'; $inputClass = 'e10-inputTime';break;
 			case TableForm::INPUT_STYLE_TIMELEN: $inputClass = 'e10-inputTimeLen'; $placeholder = " placeholder='HH:MM'";break;
 			case TableForm::INPUT_STYLE_DOUBLE: $inputClass = 'e10-inputDouble';  $inputParams .= "autocomplete='off'"; $rightLayout = TRUE; break;
 			case TableForm::INPUT_STYLE_INT: $inputClass = 'e10-inputInt';  $inputParams .= "autocomplete='off'"; $rightLayout = TRUE; break;

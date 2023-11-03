@@ -15,13 +15,12 @@ class UIWidgetBoard extends \Shipard\UI\Core\UIWidget
 	var $panelWidth = 'e10-1x';
 
 
-
 	public function init()
 	{
     if (!$this->uiTemplate)
       $this->uiTemplate = new \Shipard\UI\ng\TemplateUI ($this->app());
 
-		$this->widgetMainClass = 'e10-widget-board';
+		$this->widgetMainClass = 'shp-widget-board';
 		parent::init();
 
 		if ($this->toolbar)
@@ -42,8 +41,8 @@ class UIWidgetBoard extends \Shipard\UI\Core\UIWidget
 
 	public function setRequestParams (array $requestParams)
 	{
-    if (!$this->uiTemplate)
-      $this->uiTemplate = new \Shipard\UI\ng\TemplateUI ($this->app());
+    //if (!$this->uiTemplate)
+    //  $this->uiTemplate = new \Shipard\UI\ng\TemplateUI ($this->app());
 
 		parent::setRequestParams($requestParams);
 
@@ -51,53 +50,23 @@ class UIWidgetBoard extends \Shipard\UI\Core\UIWidget
 		$this->activeTopTabRight = $requestParams['rightTabId'] ?? '';
 	}
 
-	public function createResponse (array &$responseData)
-	{
-    if (!$this->uiTemplate)
-      $this->uiTemplate = new \Shipard\UI\ng\TemplateUI ($this->app());
-
-		$responseData ['cgType'] = $this->cgType;
-
-
-		$this->prepareData();
-		$this->renderData($responseData);
-
-		if ($this->cgType === self::cgtFullCode)
-		{
-			$this->createContent();
-			$responseData ['hcFull'] = $this->renderContent(TRUE);
-			return;
-		}
-
-//		$responseData ['fullCode'] = intval($this->app->testGetParam('fullCode'));
-
-
-$this->createContent();
-
-    $responseData ['hcToolbar'] = $this->createToolbarCode ();
-		$responseData ['hcDetails'] = $this->createTabsCode ();
-		$responseData ['hcMain'] = $this->renderContent(FALSE);
-
-    $responseData ['uiData'] = $this->uiTemplate->uiData;
-	}
-
 	protected function initRightTabs()
 	{
 	}
 
-	protected function renderContentContent($fullCode)
+	protected function createCodeContent()
 	{
 		$cr = new ContentRenderer ($this->app);
 		$cr->setWidget($this);
 
 		$c = '';
 
-		if ($fullCode)
+		if (1 /*$fullCode*/)
 		{
-			$c .= $this->renderContentTitle();
+			//$c .= $this->renderContentTitle();
 
-			$c .= "<div class='e10-widget-content e10-widget-board e10-widget-" . $this->widgetType() . "'>";
-				$c .= "<div class='e10-wr-data'>";
+			//$c .= "<div class='e10-widget-content'>";
+				$c .= "<div class='shp-wb-content'>";
 				$c .= $cr->createCode();
 				$c .= "</div>";
 
@@ -105,35 +74,38 @@ $this->createContent();
 				{
 					if ($this->panelStyle === self::psFloat)
 					{
-						$c .= "<div class='e10-wr-params close'>";
+						$c .= "<div class='shp-wb-sidebar close'>";
 						$c .= "<div class='tlbr e10-reportPanel-toggle'><i class='fa fa-bars'></i></div>";
 					}
 					else
-						$c .= "<div class='e10-wr-params {$this->panelWidth} fixed'>";
-					$c .= "<div class='params' id='e10-widget-panel'>NAZDAR";
+						$c .= "<div class='shp-wb-sidebar {$this->panelWidth} fixed'>";
+					$c .= "<div class='params' id='e10-widget-panel'>";
 					$c .= $this->createPanelCode();
 					$c .= "</div>";
 					$c .= "</div>";
 				}
-			$c .= '</div>';
+			//$c .= '</div>';
 		}
 		else
 			$c .= $cr->createCode();
 		return $c;
 	}
 
-	function renderContentTitle ()
+	function createCodeToolbar ()
 	{
-		if (!$this->toolbar)
-			return parent::renderContentTitle();
+		//if (!$this->toolbar)
+		//	return parent::renderContentTitle();
 
 		$c = '';
+
+		if (!$this->toolbar)
+			return '';
 
 		$tabsClass = 'e10-wf-tabs';
 		if (!count ($this->toolbar['tabs']))
 			$tabsClass .= ' e10-wf-tabs-inside-viewer';
 
-		$c .= "<div class='$tabsClass'>";
+		$c .= "<div class='$tabsClass shp-wb-toolbar'>";
 		foreach ($this->toolbar as $key => $obj)
 		{
 			if ($key === 'tabs')
@@ -239,22 +211,14 @@ $this->createContent();
 		return $c;
 	}
 
-
-
-
-
-
   public function prepareData ()
   {
-		//$this->createTa
-
   }
 
+	/*
   public function renderData (array &$responseData)
   {
 		parent::renderData($responseData);
   }
-
-
-
+	*/
 }

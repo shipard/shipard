@@ -87,9 +87,9 @@ class ShipardWidget {
 		e.classList.add('active');
 
     let apiParams = {'cgType': 2};
-
-    this.apiCall('reloadContent', apiParams);
     //console.log("SELECT MAIN TAB: ", inputValueId);
+    this.apiCall('reloadContent', apiParams);
+
   }
 
   apiCall(apiActionId, outsideApiParams)
@@ -120,7 +120,8 @@ class ShipardWidget {
 
   detectValues(data)
   {
-    const inputs = this.rootElm.querySelectorAll("input[data-wid='"+this.rootId+"']");
+    //const inputs = this.rootElm.querySelectorAll("input[data-wid='"+this.rootId+"']");
+    const inputs = this.rootElm.querySelectorAll("input");
 
     for (let i = 0; i < inputs.length; ++i)
     {
@@ -210,5 +211,27 @@ class ShipardWidget {
       data[attrNameShort] = val;
     }
   }
+
+  openModalForm(formOp, params, attrs)
+  {
+    let newEnvelope = document.createElement('data-modal-form-env');
+    newEnvelope.setAttribute('data-request-type', 'dataForm');
+    for (const oneParamId in params)
+      newEnvelope.setAttribute('data-action-param-'+oneParamId, params[oneParamId]);
+    for (const oneParamId in attrs)
+      newEnvelope.setAttribute('data-'+oneParamId, attrs[oneParamId]);
+
+    newEnvelope.id = 'test1122';
+    newEnvelope.innerHTML = "čekejte, prosím, data se načítají...";
+    document.body.appendChild(newEnvelope);
+
+    newEnvelope.formOp = formOp;
+    newEnvelope.shpWidget = new ShipardTableForm();
+    newEnvelope.shpWidget.init(newEnvelope);
+  }
 }
 
+function inputCh()
+{
+  console.log("--CHANGE--");
+}

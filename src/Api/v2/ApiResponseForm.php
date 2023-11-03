@@ -21,14 +21,11 @@ class ApiResponseForm extends \Shipard\Api\v2\ApiResponse
 
   public function run()
   {
-    //error_log("___FORM__RENDER1___: `{$this->requestParams['table']}`");
-
     /** @var \Shipard\Table\DbTable */
     $this->table = $this->app->table ($this->requestParams['table'] ?? '');
     $this->formOp = $this->requestParam('formOp');
-    //error_log("### formOp: `{$this->formOp}`: ".json_encode($this->requestParams));
-    $pk = 0;
-    /** @var \Shipard\Viewer\TableView */
+
+    $pk = intval($this->requestParam('pk'));
 
     $this->form = NULL;
 

@@ -97,6 +97,9 @@ class ShipardClientIoT {
 
 	applyUIData (responseUIData)
 	{
+    if (!responseUIData)
+      return;
+
     if (responseUIData['iotCamServers'] !== undefined)
     {
       if (uiData['iotCamServers'] === undefined)

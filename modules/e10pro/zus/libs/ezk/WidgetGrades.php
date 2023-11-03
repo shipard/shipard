@@ -9,7 +9,7 @@ use \e10pro\zus\zusutils;
 /**
  * Class WidgetGrades
  */
-class WidgetGrades extends \Shipard\UI\Core\WidgetPane
+class WidgetGrades extends \Shipard\UI\Core\UIWidget
 {
 	var $academicYear;
 	var $halfYearDate;
@@ -138,9 +138,10 @@ class WidgetGrades extends \Shipard\UI\Core\WidgetPane
 			$gradesData['halfYears'][] = $halfYear;
 		}
 
-		$this->router->uiTemplate->data['grades'] = $gradesData;
-		$templateStr = $this->router->uiTemplate->subTemplateStr('modules/e10pro/zus/libs/ezk/subtemplates/grades');
-		$code = $this->router->uiTemplate->render($templateStr);
+		$this->uiTemplate->data['grades'] = $gradesData;
+		$templateStr = $this->uiTemplate->subTemplateStr('modules/e10pro/zus/libs/ezk/subtemplates/grades');
+		$code = $this->uiTemplate->render($templateStr);
+
 		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $code]);
 	}
 

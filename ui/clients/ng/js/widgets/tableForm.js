@@ -10,7 +10,7 @@ class ShipardTableForm extends ShipardWidget
 
     let apiParams = {
       'cgType': 2,
-      'formOp': 'new',
+      'formOp': e.formOp,
     };
 
     this.elementPrefixedAttributes (e, 'data-action-param-', apiParams);
@@ -20,7 +20,7 @@ class ShipardTableForm extends ShipardWidget
 
   doAction (actionId, e)
   {
-    console.log("form action!", actionId);
+    //console.log("form action!", actionId);
     switch (actionId)
     {
       case 'saveForm': return this.saveForm(e);
@@ -97,7 +97,18 @@ class ShipardTableForm extends ShipardWidget
       if (!noCloseForm)
       {
         const parentWidgetType = this.rootElm.getAttribute('data-parent-widget-type');
+        //console.log('parentWidgetType: ', parentWidgetType);
         if (parentWidgetType === 'viewer')
+        {
+          const parentWidgetId = this.rootElm.getAttribute('data-parent-widget-id');
+          if (parentWidgetId)
+          {
+            const parentElement = document.getElementById(parentWidgetId);
+            if (parentElement)
+              parentElement.shpWidget.refreshData();
+          }
+        }
+        else if (parentWidgetType === 'board')
         {
           const parentWidgetId = this.rootElm.getAttribute('data-parent-widget-id');
           if (parentWidgetId)
@@ -131,8 +142,8 @@ class ShipardTableForm extends ShipardWidget
   setFormData(data)
   {
     this.formData = data;
-    console.log('setFormData', data);
-    const inputs = this.rootElm.querySelectorAll('input, textarea');
+    //console.log('setFormData', data);
+    const inputs = this.rootElm.querySelectorAll('input, textarea, select');
 
     inputs.forEach(input => {
       this.setFormInputValue(input);
@@ -146,7 +157,7 @@ class ShipardTableForm extends ShipardWidget
       return;
 
     const iv = this.dataInputValue(inputId);
-    console.log('setFormInputValue', inputId, iv);
+    //console.log('setFormInputValue', inputId, iv);
 
     if (input.classList.contains('e10-inputDateN'))
     {
@@ -163,7 +174,7 @@ class ShipardTableForm extends ShipardWidget
       return;
     }
 
-    console.log('set input value ', iv, input);
+    //console.log('set input value ', iv, input);
     input.value = iv;
   }
 
@@ -194,7 +205,7 @@ class ShipardTableForm extends ShipardWidget
       return;
 
     const iv = input.value;
-    console.log('getFormInputValue', inputId, iv);
+    //console.log('getFormInputValue', inputId, iv);
 
     let siv = iv;
 

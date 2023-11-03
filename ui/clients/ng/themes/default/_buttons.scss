@@ -7,6 +7,11 @@
   color: var(--bs-btn-color);
 }
 
+a.dropdown-item>i {
+  width: 1.4rem;
+  text-align: center;
+}
+
 /* zuš - univerzální velké tlačítko */
 a.dashboardButton {
     width: 4rem;

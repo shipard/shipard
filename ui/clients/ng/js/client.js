@@ -284,6 +284,8 @@ class ShipardClient {
 
 		if (objectElementType === 'data-viewer')
 			return initWidgetTableViewer(id);
+		if (objectElementType === 'data-widget-board')
+			return initWidgetBoard(id);
 
 		console.log(objectElementType);
 

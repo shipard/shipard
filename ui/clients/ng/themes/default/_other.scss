@@ -54,3 +54,16 @@ ol.grades li.list-group-item:not(:last-child){
 	border-bottom: 1px solid var(--accordionBorder);
 }
 
+.tag {
+  display: inline-block;
+  border: 1px solid rgba(0,0,0,.2);
+  border-radius: 2px;
+  padding: 2px 6px 2px 6px;
+  margin: 2px 4px 2px 0px;
+
+	background-color: #999;
+}
+
+.tag.shp-widget-action {
+	cursor: pointer;
+}

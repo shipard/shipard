@@ -33,9 +33,11 @@ class UIElement extends \Shipard\Base\BaseObject
   {
   }
 
+	/*
   public function renderData (array &$responseData)
   {
   }
+	*/
 
 	/*
 	public function createMainCode ()

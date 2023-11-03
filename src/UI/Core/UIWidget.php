@@ -10,16 +10,17 @@ use \Shipard\Utils\Utils;
 class UIWidget extends \Shipard\UI\Core\UIElement
 {
   /** @var \Shipard\UI\Core\Params */
-	var $params;
+	var $params = NULL;
 	var $widgetSystemParams = [];
   var $widgetAction = '';
+	var $widgetMainClass = 'shp-widget-simple';
+	var $requestParams = NULL;
 
   var ?\Shipard\UI\ng\TemplateUI $uiTemplate = NULL;
+	var ?\Shipard\UI\ng\Router $uiRouter = NULL;
 
   CONST cgtFullCode = 1, cgtMainCode = 2, cgtParts = 0;
   var $cgType = self::cgtFullCode;
-
-
 
 	protected function createParamsObject ()
 	{
@@ -35,76 +36,50 @@ class UIWidget extends \Shipard\UI\Core\UIElement
 	{
 	}
 
-	public function renderContent ($forceFullCode = FALSE)
+	public function createCodeAll ($fullCode = FALSE)
 	{
-		$fullCode = intval($this->app->testGetParam('fullCode'));
-		if ($forceFullCode)
-			$fullCode = 1;
-		if ($this->forceFullCode)
-			$fullCode = 1;
 		$c = '';
 
 		if ($fullCode)
 		{
-			$params = "data-object='widget' data-widget-class='{$this->definition['class']}'";
-			$pv = [];
-			forEach ($this->params->getParams() as $paramId => $paramContent)
-			{
-				$pv [$paramId] = $paramId.'='.$this->reportParams [$paramId]['value'];
-			}
-			$params .= " data-widget-params='".implode('&', $pv)."'";
+			$params = '';
+			$params .= " data-object-type='data-widget-board'";
+			$params .= " data-request-type='widgetBoard'";
+			$cid = str_replace('\\', '.', get_class($this));
+			$params .= " data-class-id='$cid'";
 
-			if ($this->app()->remote !== '')
-				$params .= " data-remote='".$this->app()->remote."'";
+			//foreach ($this->widgetSystemParams as $wspId => $wspValue)
+			//	$params .= " $wspId='$wspValue'";
 
-			foreach ($this->widgetSystemParams as $wspId => $wspValue)
-				$params .= " $wspId='$wspValue'";
-
-			$c .= "<div id='{$this->widgetId}' class='{$this->widgetMainClass} e10-widget-".$this->widgetType()."' $params>";
+			$c .= "<div id='{$this->widgetId}' class='{$this->widgetMainClass}' $params>";
 		}
 
-		$c .= $this->renderContentContent($fullCode);
+		$c .= $this->createCodeToolbar();
+		$c .= $this->createCodeContent($fullCode);
 
-		if (!$this->app->mobileMode)
-		$c .= "<script>
-					$('div.e10-widget-content table.main').floatThead({
-						scrollContainer: function(table){
-							return table.parent();
-						},
-						useAbsolutePositioning: false,
-						zIndex: 101
-					});
-				</script>
-				";
 		if ($fullCode)
 			$c .= '</div>';
-
-		if (!$this->app()->ngg)
-			$c .= "<script>\$(function () {e10WidgetInit('{$this->widgetId}');});</script>";
 
 		return $c;
 	}
 
-	/*
-	public function createMainCode ()
+	function createCodeToolbar ()
 	{
-		$this->setDefinition (NULL);
-		$this->init();
-		$this->createContent();
-		return $this->renderContent();
+		return '';
 	}
-	*/
 
   public function setRequestParams (array $requestParams)
 	{
     $this->cgType = $requestParams['cgType'] ?? self::cgtParts;
     $this->widgetAction = $requestParams['widgetAction'] ?? '';
+		$this->requestParams = $requestParams;
 		//$this->reportParams = $this->params->detectValues();
 	}
 
   public function init ()
 	{
     $this->createParamsObject ();
+
     if ($this->app->testGetParam('widgetId'))
       $this->widgetId = $this->app->testGetParam('widgetId');
     else
@@ -116,5 +91,42 @@ class UIWidget extends \Shipard\UI\Core\UIElement
 		if (isset($this->definition['type']))
 			return $this->definition['type'];
 		return NULL;
+	}
+
+	public function createResponse (array &$responseData)
+	{
+		$responseData ['cgType'] = $this->cgType;
+		$this->init();
+		$this->prepareData();
+		//$this->renderData($responseData);
+
+		if ($this->cgType === self::cgtFullCode)
+		{
+			$this->createContent();
+			$responseData ['hcFull'] = $this->createCodeAll(TRUE);
+			return;
+		}
+
+		$this->createContent();
+
+    //$responseData ['hcToolbar'] = $this->createToolbarCode ();
+		//$responseData ['hcDetails'] = $this->createTabsCode ();
+		$responseData ['hcMain'] = $this->createCodeAll(FALSE);
+
+    $responseData ['uiData'] = $this->uiTemplate->uiData;
+	}
+
+	protected function createCodeContent()
+	{
+		$cr = new ContentRenderer ($this->app);
+		$cr->setWidget($this);
+
+		$c = '';
+
+		$c .= "<div class='shp-wb-content'>";
+		$c .= $cr->createCode();
+		$c .= '</div>';
+
+		return $c;
 	}
 }

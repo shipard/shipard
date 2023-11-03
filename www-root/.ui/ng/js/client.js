@@ -114,7 +114,7 @@ oldActiveTabElement=tabsElement.querySelector('.active');oldActiveTabElement.cla
 apiParams={'cgType':2};this.apiCall('reloadContent',apiParams);}apiCall(apiActionId,outsideApiParams){var
 apiParams={};apiParams['requestType']=this.rootElm.getAttribute('data-request-type');apiParams['classId']=this.rootElm.getAttribute('data-class-id');apiParams['actionId']=apiActionId;if(outsideApiParams!==undefined)apiParams={...apiParams,...outsideApiParams};this.detectValues(apiParams);console.log("API-CALL-WIDGET",apiParams);var
 url='api/v2';shc.server.post(url,apiParams,function(data){console.log("--api-call-success--");this.doWidgetResponse(data);}.bind(this),function(data){console.log("--api-call-error--");}.bind(this));}detectValues(data){const
-inputs=this.rootElm.querySelectorAll("input[data-wid='"+this.rootId+"']");for(let
+inputs=this.rootElm.querySelectorAll("input");for(let
 i=0;i<inputs.length;++i){const
 valueKey=inputs[i].getAttribute('name');data[valueKey]=inputs[i].value;}}doWidgetResponse(data){if(data['response']!==undefined&&data['response']['uiData']!==undefined)shc.applyUIData(data['response']['uiData']);console.log(data);}on(ownerWidget,eventType,selector,callback){this.rootElm.addEventListener(eventType,function(event){if(event.target.matches(selector)){callback.call(event.target,event.target,ownerWidget);}});}onClick(ownerWidget,selector,callback){this.on(ownerWidget,'click',selector,callback)};nf(n,c){var
 c=isNaN(c=Math.abs(c))?2:c,d='.',t=' ',s=n<0?"-":"",i=parseInt(n=Math.abs(+n||0).toFixed(c))+"",j=(j=i.length)>3?j%3:0;return s+(j?i.substr(0,j)+t:"")+i.substr(j).replace(/(\d{3})(?=\d)/g,"$1"+t)+(c?d+Math.abs(n-i).toFixed(c).slice(2):"");}parseFloat(n){var
@@ -126,7 +126,16 @@ ShipardTouchNumPad();abc.options=options;abc.init(template);this.numPad=abc;}ele
 i=0,attrs=iel.attributes,l=attrs.length;i<l;i++){var
 attrName=attrs.item(i).nodeName;if(attrName.substring(0,prefix.length)!==prefix)continue;var
 attrNameShort=attrName.substring(prefix.length);var
-val=attrs.item(i).nodeValue;data[attrNameShort]=val;}}}class
+val=attrs.item(i).nodeValue;data[attrNameShort]=val;}}openModalForm(formOp,params,attrs){let
+newEnvelope=document.createElement('data-modal-form-env');newEnvelope.setAttribute('data-request-type','dataForm');for(const
+oneParamId
+in
+params)newEnvelope.setAttribute('data-action-param-'+oneParamId,params[oneParamId]);for(const
+oneParamId
+in
+attrs)newEnvelope.setAttribute('data-'+oneParamId,attrs[oneParamId]);newEnvelope.id='test1122';newEnvelope.innerHTML="čekejte, prosím, data se načítají...";document.body.appendChild(newEnvelope);newEnvelope.formOp=formOp;newEnvelope.shpWidget=new
+ShipardTableForm();newEnvelope.shpWidget.init(newEnvelope);}}function
+inputCh(){console.log("--CHANGE--");}class
 ShipardTableViewer
 extends
 ShipardWidget{elmViewerLines=null;elmViewerRows=null;doWidgetResponse(data){console.log("ShipardTableViewer::doWidgetResponse");super.doWidgetResponse(data);}init(e){console.log("ShipardTableViewer::init");super.init(e);this.rootElm.style.display='grid';const
@@ -144,15 +153,7 @@ tableName=this.rootElm.getAttribute("data-table");if(!tableName)return;var
 viewId=this.rootElm.getAttribute('data-viewer-view-id');let
 apiParams={'cgType':2,'table':tableName,'rowsPageNumber':0,'viewId':viewId,};this.apiCall('refreshData',apiParams);return true;}actionNewForm(e){var
 formParams={};var
-formAttrs={'parent-widget-id':this.rootElm.getAttribute('id'),'parent-widget-type':'viewer',};this.elementPrefixedAttributes(this.rootElm,'data-form-param-',formParams);this.elementPrefixedAttributes(e,'data-action-param-',formParams);this.openModalForm(formParams,formAttrs);}openModalForm(params,attrs){let
-newEnvelope=document.createElement('data-modal-form-env');newEnvelope.setAttribute('data-request-type','dataForm');for(const
-oneParamId
-in
-params)newEnvelope.setAttribute('data-action-param-'+oneParamId,params[oneParamId]);for(const
-oneParamId
-in
-attrs)newEnvelope.setAttribute('data-'+oneParamId,attrs[oneParamId]);newEnvelope.id='test1122';newEnvelope.innerHTML="čekejte, prosím, data se načítají...";document.body.appendChild(newEnvelope);newEnvelope.shpWidget=new
-ShipardTableForm();newEnvelope.shpWidget.init(newEnvelope);}doWidgetResponse(data){super.doWidgetResponse(data);if(data['response']['type']==='loadNextData'){this.appendNextData(data);return;}else
+formAttrs={'parent-widget-id':this.rootElm.getAttribute('id'),'parent-widget-type':'viewer',};this.elementPrefixedAttributes(this.rootElm,'data-form-param-',formParams);this.elementPrefixedAttributes(e,'data-action-param-',formParams);this.openModalForm('new',formParams,formAttrs);}doWidgetResponse(data){super.doWidgetResponse(data);if(data['response']['type']==='loadNextData'){this.appendNextData(data);return;}else
 if(data['response']['type']==='refreshData'){this.appendNextData(data,1);return;}}appendNextData(data,clear){if(clear!==undefined){this.elmViewerLines.innerHTML=data['response']['hcRows'];}else{this.elmViewerLines.removeChild(this.elmViewerLines.lastElementChild);this.elmViewerLines.innerHTML+=data['response']['hcRows'];}this.elmViewerLines.setAttribute('data-rowspagenumber',data['response']['rowsPageNumber']);this.elmViewerRows.setAttribute('data-loadonprogress',0);}}function
 initWidgetTableViewer(id){let
 e=document.getElementById(id);e.shpWidget=new
@@ -160,25 +161,41 @@ ShipardTableViewer();e.shpWidget.init(e);return 1;}class
 ShipardTableForm
 extends
 ShipardWidget{formData=null;init(e){console.log("ShipardTableForm::init");super.init(e);this.rootElm.style.display='grid';let
-apiParams={'cgType':2,'formOp':'new',};this.elementPrefixedAttributes(e,'data-action-param-',apiParams);this.apiCall('createForm',apiParams);}doAction(actionId,e){console.log("form action!",actionId);switch(actionId){case'saveForm':return this.saveForm(e);case'saveform':return this.saveForm(e);case'closeForm':return this.closeForm(e);}return super.doAction(actionId,e);}saveForm(e){const
+apiParams={'cgType':2,'formOp':e.formOp,};this.elementPrefixedAttributes(e,'data-action-param-',apiParams);this.apiCall('createForm',apiParams);}doAction(actionId,e){switch(actionId){case'saveForm':return this.saveForm(e);case'saveform':return this.saveForm(e);case'closeForm':return this.closeForm(e);}return super.doAction(actionId,e);}saveForm(e){const
 noClose=parseInt(e.getAttribute('data-noclose'));this.getFormData();let
 apiParams={'cgType':2,'formOp':'save','formData':this.formData,'noCloseForm':noClose,};this.elementPrefixedAttributes(this.rootElm,'data-action-param-',apiParams);this.elementPrefixedAttributes(e,'data-action-param-',apiParams);this.apiCall('saveForm',apiParams);return 0;}checkForm(changedInput){this.getFormData();let
 apiParams={'cgType':2,'formOp':'check','formData':this.formData,'noCloseForm':1,};this.elementPrefixedAttributes(this.rootElm,'data-action-param-',apiParams);this.apiCall('checkForm',apiParams);return 0;}doWidgetResponse(data){if(data['response']['type']==='createForm'){this.rootElm.innerHTML=data['response']['hcFull'];this.setFormData(data['response']['formData']);this.on(this,'change','input',function(e,ownerWidget){ownerWidget.inputValueChanged(e)});return;}if(data['response']['type']==='saveForm'){let
 noCloseForm=data['response']['saveResult']['noCloseForm']??0;if(!noCloseForm){const
 parentWidgetType=this.rootElm.getAttribute('data-parent-widget-type');if(parentWidgetType==='viewer'){const
 parentWidgetId=this.rootElm.getAttribute('data-parent-widget-id');if(parentWidgetId){const
-parentElement=document.getElementById(parentWidgetId);if(parentElement)parentElement.shpWidget.refreshData();}}this.closeForm();return;}this.rootElm.innerHTML=data['response']['hcFull'];this.setFormData(data['response']['formData']);return;}if(data['response']['type']==='checkForm'){this.rootElm.innerHTML=data['response']['hcFull'];this.setFormData(data['response']['formData']);return;}super.doWidgetResponse(data);}setFormData(data){this.formData=data;console.log('setFormData',data);const
-inputs=this.rootElm.querySelectorAll('input, textarea');inputs.forEach(input=>{this.setFormInputValue(input);});}setFormInputValue(input){const
+parentElement=document.getElementById(parentWidgetId);if(parentElement)parentElement.shpWidget.refreshData();}}else
+if(parentWidgetType==='board'){const
+parentWidgetId=this.rootElm.getAttribute('data-parent-widget-id');if(parentWidgetId){const
+parentElement=document.getElementById(parentWidgetId);if(parentElement)parentElement.shpWidget.refreshData();}}this.closeForm();return;}this.rootElm.innerHTML=data['response']['hcFull'];this.setFormData(data['response']['formData']);return;}if(data['response']['type']==='checkForm'){this.rootElm.innerHTML=data['response']['hcFull'];this.setFormData(data['response']['formData']);return;}super.doWidgetResponse(data);}setFormData(data){this.formData=data;const
+inputs=this.rootElm.querySelectorAll('input, textarea, select');inputs.forEach(input=>{this.setFormInputValue(input);});}setFormInputValue(input){const
 inputId=input.getAttribute('name');if(!inputId)return;const
-iv=this.dataInputValue(inputId);console.log('setFormInputValue',inputId,iv);if(input.classList.contains('e10-inputDateN')){let
-siv=iv;if(iv===null||iv==='0000-00-00')siv='';input.value=siv;return;}if(input.classList.contains('e10-inputLogical')){input.checked=parseInt(iv)==1;return;}console.log('set input value ',iv,input);input.value=iv;}dataInputValue(inputId){var
+iv=this.dataInputValue(inputId);if(input.classList.contains('e10-inputDateN')){let
+siv=iv;if(iv===null||iv==='0000-00-00')siv='';input.value=siv;return;}if(input.classList.contains('e10-inputLogical')){input.checked=parseInt(iv)==1;return;}input.value=iv;}dataInputValue(inputId){var
 iidParts=inputId.split('.');if(iidParts.length==1){return this.formData['recData'][inputId]?this.formData['recData'][inputId]:null;}return null;}getFormData(){const
 inputs=this.rootElm.querySelectorAll('input, textarea, select');inputs.forEach(input=>{this.getFormInputValue(input);});}getFormInputValue(input){const
 inputId=input.getAttribute('name');if(!inputId)return;const
-iv=input.value;console.log('getFormInputValue',inputId,iv);let
+iv=input.value;let
 siv=iv;if(input.classList.contains('e10-inputDateN')){if(iv===null||iv==='0000-00-00'||iv==='')siv=null;}else
 if(input.classList.contains('e10-inputLogical')){siv=input.checked?1:0;}this.setDataInputValue(inputId,siv);}setDataInputValue(inputId,value){var
 iidParts=inputId.split('.');if(iidParts.length==1){this.formData['recData'][inputId]=value;}}closeForm(e){this.rootElm.remove();return 0;}inputValueChanged(e){if(e.classList.contains('e10-ino-checkOnChange')){this.checkForm(e);}}}class
+ShipardWidgetBoard
+extends
+ShipardWidget{init(e){console.log("ShipardWidgetBoard::init");super.init(e);}doAction(actionId,e){console.log("ACTION-BOARD: ",actionId);switch(actionId){case'set-param-value':return this.setParamValue(e);case'newform':return this.actionNewForm(e);case'edit':return this.actionEditForm(e);}return super.doAction(actionId,e);}doWidgetResponse(data){this.rootElm.innerHTML=data.response.hcMain;}setParamValue(e){var
+inputElement=e.parentElement.parentElement.querySelector('input');if(!inputElement)inputElement=e.parentElement.parentElement.parentElement.querySelector('input');if(inputElement)inputElement.value=e.getAttribute('data-value');let
+apiParams={'cgType':2};this.apiCall('reloadContent',apiParams);}actionNewForm(e){var
+formParams={};var
+formAttrs={'parent-widget-id':this.rootElm.getAttribute('id'),'parent-widget-type':'board',};this.elementPrefixedAttributes(this.rootElm,'data-form-param-',formParams);this.elementPrefixedAttributes(e,'data-action-param-',formParams);this.openModalForm('new',formParams,formAttrs);}actionEditForm(e){var
+formParams={};var
+formAttrs={'parent-widget-id':this.rootElm.getAttribute('id'),'parent-widget-type':'board',};this.elementPrefixedAttributes(this.rootElm,'data-form-param-',formParams);this.elementPrefixedAttributes(e,'data-action-param-',formParams);this.openModalForm('edit',formParams,formAttrs);}refreshData(e){let
+apiParams={'cgType':2};this.apiCall('reloadContent',apiParams);}}function
+initWidgetBoard(id){console.log("INIT_BOARD_2!!!!");let
+e=document.getElementById(id);e.shpWidget=new
+ShipardWidgetBoard();e.shpWidget.init(e);return 1;}class
 ShipardTouchNumPad
 extends
 ShipardWidget{elmDisplay=null;gnId='gn1234';gnValue='';options=null;init(rootElm){super.init(rootElm);var
@@ -189,7 +206,7 @@ extends
 ShipardWidget{docRowsTableElm=null;displayAllElm=null;displayValueElm=null;elmIntro=null;elmContainerSell=null;elmContainerPay=null;elmContainerSave=null;doc=null;mode='';init(rootElm){super.init(rootElm);this.docRowsTableElm=this.rootElm.querySelector('div.rows>table.rows');this.elmIntro=this.rootElm.querySelector('div.cash-box-rows-content>div.docTermIntro');this.displayAllElm=this.rootElm.querySelector('div.display');this.displayValueElm=this.displayAllElm.querySelector('div.total');this.elmContainerSell=this.rootElm.querySelector('div.cash-box-container-sell');this.elmContainerPay=this.rootElm.querySelector('div.cash-box-container-pay');this.elmContainerSave=this.rootElm.querySelector('div.cash-box-container-save');}}class
 WidgetCashBox
 extends
-ShipardWidgetDocumentCore{init(rootElm){super.init(rootElm);console.log("hello, cashBox",this.rootId);this.documentInit();}doAction(actionId,e){console.log("ACTION: ",actionId);switch(actionId){case'addRow':return this.newRow(e);case'quantity-plus':return this.documentQuantityRow(e,1);case'quantity-minus':return this.documentQuantityRow(e,-1);case'remove-row':return this.documentRemoveRow(e);case'terminal-sell':return this.setMode('sell');case'terminal-pay':return this.doPay(e);case'terminal-save':return this.save();case'change-payment-method':return this.changePaymentMethod(e);}return super.doAction(actionId,e);}itemFromElement(e){var
+ShipardWidgetDocumentCore{init(rootElm){super.init(rootElm);this.documentInit();}doAction(actionId,e){console.log("ACTION: ",actionId);switch(actionId){case'addRow':return this.newRow(e);case'quantity-plus':return this.documentQuantityRow(e,1);case'quantity-minus':return this.documentQuantityRow(e,-1);case'remove-row':return this.documentRemoveRow(e);case'terminal-sell':return this.setMode('sell');case'terminal-pay':return this.doPay(e);case'terminal-save':return this.save();case'change-payment-method':return this.changePaymentMethod(e);}return super.doAction(actionId,e);}itemFromElement(e){var
 item={pk:e.getAttribute('data-pk'),price:parseFloat(e.getAttribute('data-price')),quantity:(e.getAttribute('data-quantity'))?parseFloat(e.getAttribute('data-quantity')):1,name:e.getAttribute('data-name'),askq:e.getAttribute('data-askq'),askp:e.getAttribute('data-askp'),unit:e.getAttribute('data-unit'),unitName:e.getAttribute('data-unit-name')};return item;}newRow(e){var
 askq=parseInt(e.getAttribute('data-askq'));var
 askp=parseInt(e.getAttribute('data-askp'));if(!askq&&!askp){this.addDocumentRow(this.itemFromElement(e));return 1;}if(askp){this.getNumber({title:'Zadejte cenu '+'('+e.getAttribute('data-unit-name')+')',subtitle:e.getAttribute('data-name'),srcElement:e,askType:'p',success:function(){this.addDocumentRow()}.bind(this)});return 1;}if(askq){this.getNumber({title:'Zadejte množství '+'('+e.getAttribute('data-unit-name')+')',subtitle:e.getAttribute('data-name'),srcElement:e,askType:'q',success:function(){this.addDocumentRow()}.bind(this)});}return 1;}addDocumentRow(item){var
@@ -280,7 +297,7 @@ attrNameShort=attrName.substring(prefix.length);var
 val=attrs.item(i).nodeValue;data[attrNameShort]=val;}}initUI(){if(!this.mainAppContent)return 0;if('mainUiObjectId'in
 this.mainAppContent.dataset)return this.initUIObject(this.mainAppContent.dataset.mainUiObjectId);}initUIObject(id){let
 objectElement=document.getElementById(id);if(!objectElement){console.error('element not exist: #',id);return 0;}const
-objectElementType=objectElement.getAttribute('data-object-type');if(!objectElementType){console.error('`data-object-type` attr not found in #',id);return 0;}if(objectElementType==='data-viewer')return initWidgetTableViewer(id);console.log(objectElementType);return 0;}loadUI(){console.log("client__load_ui");}init(){this.mainAppContent=document.getElementById('shp-main-app-content');this.server.setHttpServerRoot(httpApiRootPath);this.initColorMode(true);this.onClick('a.shp-simple-tabs-item',function(){shc.simpleTabsEvent(this);});this.onClick('.shp-app-action',function(e){this.widgetAction(e);}.bind(this));this.initUI();if('serviceWorker'in
+objectElementType=objectElement.getAttribute('data-object-type');if(!objectElementType){console.error('`data-object-type` attr not found in #',id);return 0;}if(objectElementType==='data-viewer')return initWidgetTableViewer(id);if(objectElementType==='data-widget-board')return initWidgetBoard(id);console.log(objectElementType);return 0;}loadUI(){console.log("client__load_ui");}init(){this.mainAppContent=document.getElementById('shp-main-app-content');this.server.setHttpServerRoot(httpApiRootPath);this.initColorMode(true);this.onClick('a.shp-simple-tabs-item',function(){shc.simpleTabsEvent(this);});this.onClick('.shp-app-action',function(e){this.widgetAction(e);}.bind(this));this.initUI();if('serviceWorker'in
 navigator&&e10ServiceWorkerURL!==undefined){navigator.serviceWorker.register(e10ServiceWorkerURL).then(function(reg){}).catch(function(err){console.log("Service worker registration error: ",err)});}}applyUIData(responseUIData){this.mqtt.applyUIData(responseUIData);this.iot.applyUIData(responseUIData);}apiCall(apiActionId,outsideApiParams){var
 apiParams={};apiParams['requestType']='appCommand';apiParams['actionId']=apiActionId;if(outsideApiParams!==undefined)apiParams={...apiParams,...outsideApiParams};console.log("CLIENT-API-CALL",apiParams);var
 url='api/v2';shc.server.post(url,apiParams,function(data){console.log("--app-api-call-success--");this.doAppAPIResponse(data);}.bind(this),function(data){console.log("--api-app-call-error--");}.bind(this));}doAppAPIResponse(data){window.location.reload(true);}}class
@@ -301,7 +318,7 @@ deviceSID
 of
 deviceSIDs){if(uiData['iotSubjects']===undefined||uiData['iotSubjects'][deviceSID]===undefined){console.log("Invalid device SID: ",deviceSID);continue;}let
 setTopic=uiData['iotSubjects'][deviceSID]['topic'];if(setTopic.endsWith('/'))setTopic+='set';else
-setTopic+='/set';shc.mqtt.publish(uiData['iotSubjects'][deviceSID]['wss'],setTopic,JSON.stringify(payload));}}initIoT(){shc.mqtt.init();shc.iot.init();}applyUIData(responseUIData){if(responseUIData['iotCamServers']!==undefined){if(uiData['iotCamServers']===undefined)uiData['iotCamServers']={};for(let
+setTopic+='/set';shc.mqtt.publish(uiData['iotSubjects'][deviceSID]['wss'],setTopic,JSON.stringify(payload));}}initIoT(){shc.mqtt.init();shc.iot.init();}applyUIData(responseUIData){if(!responseUIData)return;if(responseUIData['iotCamServers']!==undefined){if(uiData['iotCamServers']===undefined)uiData['iotCamServers']={};for(let
 serverNdx
 in
 responseUIData['iotCamServers']){if(uiData['iotCamServers'][serverNdx]===undefined)uiData['iotCamServers'][serverNdx]=responseUIData['iotCamServers'][serverNdx];}}if(responseUIData['iotCamPictures']!==undefined){if(uiData['iotCamPictures']===undefined)uiData['iotCamPictures']={};for(let

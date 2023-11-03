@@ -214,7 +214,9 @@ $input-focus-bg: var(--formBackground);
 @import "../../../../../www-root/sc/bs/5.3/scss/bootstrap.scss";
 
 @import "_colors.scss";
+@import "_calendar.scss";
 @import "_cashbox.scss";
+@import "_dashboards.scss";
 @import "_numpad.scss";
 @import "_navbar.scss";
 @import "_other.scss";

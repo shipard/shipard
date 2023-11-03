@@ -48,7 +48,6 @@ class Auth extends \Shipard\UI\ng\AppPageBlank
     if ($this->mode === 'robot')
 		{
       $apiKey = $this->uiRouter->urlPath[2];
-      error_log("###RS: ".json_encode($apiKey));
       $a = new \e10\users\libs\Authenticator($this->app());
       if ($a->checkRobot($apiKey))
       {

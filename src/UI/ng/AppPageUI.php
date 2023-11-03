@@ -147,11 +147,17 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
     }
     elseif ($objectType === 'widget')
     {
-      $widget = $this->app()->createObject($menuItem['classId'] ?? 'abcde');
+      /** @var \Shipard\UI\Core\UIWidget */
+      $widget = $this->app()->createObject($menuItem['classId'] ?? 'invalid--class--id');
       if ($widget)
       {
-        $widget->router = $this->uiRouter;
-        $ec = $widget->createMainCode();
+        $widget->uiRouter = $this->uiRouter;
+        $widget->uiTemplate = $this->uiTemplate;
+
+        $responseData = [];
+        $widget->createResponse($responseData);
+
+        $ec = $responseData['hcFull'];
 
         $this->uiTemplate->data[$destId] = $ec;
         $mainUIObjectId = $widget->widgetId;

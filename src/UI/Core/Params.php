@@ -175,33 +175,67 @@ class Params extends \Shipard\Base\BaseObject
 		{
 			$justified = isset($p['options']['justified']) ? $p['options']['justified'] : 0;
 			$grpClass = 'btn-group e10-param';
-			if ($justified)
-				$grpClass .= ' btn-group-justified';
-
-			$c .= "<div class='$grpClass' data-paramid='$paramId'>";
-			if (isset ($p['title']))
-				$c .= "<span class='btn btn-default'><b>" . Utils::es($p['title']) . ':</b></span>';
-			$first = TRUE;
-			forEach ($p['values'] as $pid => $pc)
+			if ($this->app()->ngg)
 			{
-				$t = is_string($pc['title']) ? Utils::es($pc['title']) : Utils::es($pc['title']['text']);
-
-				$class = ($pid == $activeValue) ? 'active ': '';
-				$class .= 'btn btn-default e10-param-btn';
-
 				if ($justified)
-					$c .= "<div class='btn-group' role='group'>";
-				$c .= "<button data-value='$pid' data-title='$t' class='$class'>" . $this->app()->ui()->composeTextLine($pc['title']);
-				if ($first)
+					$grpClass .= ' btn-group-justified';
+
+				$c .= "<div class='$grpClass' data-paramid='$paramId'>";
+				if (isset ($p['title']))
+					$c .= "<span class='btn btn-secondary'><b>" . Utils::es($p['title']) . ':</b></span>';
+				$first = TRUE;
+				forEach ($p['values'] as $pid => $pc)
 				{
-					$c .= "<input name='$paramId' type='hidden' class='$inputClass' value='$activeValue' style='display: none;'>";
-					$first = FALSE;
+					$t = is_string($pc['title']) ? Utils::es($pc['title']) : Utils::es($pc['title']['text']);
+
+					$class = ($pid == $activeValue) ? 'active ': '';
+					$class .= 'btn btn-secondary shp-widget-action';
+
+					if ($justified)
+						$c .= "<div class='btn-group' role='group'>";
+					$c .= "<a href='#' data-action='set-param-value' data-value='$pid' data-title='$t' class='$class'>" . $this->app()->ui()->composeTextLine($pc['title']);
+					if ($first)
+					{
+						$c .= "<input name='$paramId' type='text' class='$inputClass' value='$activeValue' style='display: none;'>";
+						$first = FALSE;
+					}
+					$c .= '</a>';
+					if ($justified)
+						$c .= '</div>';
 				}
-				$c .= '</button>';
-				if ($justified)
-					$c .= '</div>';
+				$c .= '</div>';
+
 			}
-			$c .= '</div>';
+			else
+			{
+				if ($justified)
+					$grpClass .= ' btn-group-justified';
+
+				$c .= "<div class='$grpClass' data-paramid='$paramId'>";
+				if (isset ($p['title']))
+					$c .= "<span class='btn btn-default'><b>" . Utils::es($p['title']) . ':</b></span>';
+				$first = TRUE;
+				forEach ($p['values'] as $pid => $pc)
+				{
+					$t = is_string($pc['title']) ? Utils::es($pc['title']) : Utils::es($pc['title']['text']);
+
+					$class = ($pid == $activeValue) ? 'active ': '';
+					$class .= 'btn btn-default e10-param-btn';
+
+					if ($justified)
+						$c .= "<div class='btn-group' role='group'>";
+					$c .= "<button data-value='$pid' data-title='$t' class='$class'>" . $this->app()->ui()->composeTextLine($pc['title']);
+					if ($first)
+					{
+						$c .= "<input name='$paramId' type='hidden' class='$inputClass' value='$activeValue' style='display: none;'>";
+						$first = FALSE;
+					}
+					$c .= '</button>';
+					if ($justified)
+						$c .= '</div>';
+				}
+				$c .= '</div>';
+			}
 		}
 		elseif (isset($p['radioBtn']) && $p['radioBtn'] === 2)
 		{ // table
@@ -251,26 +285,53 @@ class Params extends \Shipard\Base\BaseObject
 		}
 		else
 		{
-			$c .= "<div class='btn-group e10-param' data-paramid='$paramId'>";
-			$c .= "<button type='button' class='btn btn-default dropdown-toggle e10-report-param' data-toggle='dropdown'>";
-
-			if (isset ($p['title']))
-				$c .= '<b>'.Utils::es ($p['title']).':</b> ';
-
-			$c .=	"<span class='v'>".Utils::es($activeTitle).'</span>'.
-						" <span class='caret'></span>".
-						'</button>';
-			$c .= "<input name='$paramId' type='hidden' class='$inputClass' value='$activeValue'>";
-			$c .= "<ul class='dropdown-menu' role='menu'>";
-
-			forEach ($p['values'] as $pid => $pc)
+			if ($this->app()->ngg)
 			{
-				$t = Utils::es($pc['title']);
-				$class = (strval($pid) === strval($activeValue)) ? " class='active'": '';
-				$c .= "<li data-value='$pid' data-title='$t'$class><a href='#'>" . Utils::es($pc['title']) . '</a></li>';
-			}
+				$c .= "<div class='btn-group e10-param' data-xxx-paramid='$paramId'>";
+				$c .= "<button type='button' class='btn btn-secondary dropdown-toggle e10-report-param' data-bs-toggle='dropdown'>";
 
-			$c .= '</ul></div> ';
+				if (isset ($p['title']))
+					$c .= '<b>'.Utils::es ($p['title']).':</b> ';
+				$c .=	"<span class='v'>".Utils::es($activeTitle).'</span>';
+
+				$c .=	'</button>';
+
+				$c .= "<input name='{$paramId}' type='text' class='$inputClass' value='$activeValue' style='display:none;'>";
+				$c .= "<ul class='dropdown-menu' role='menu'>";
+
+				forEach ($p['values'] as $pid => $pc)
+				{
+					$t = Utils::es($pc['title']);
+					$class = (strval($pid) === strval($activeValue)) ? " class='active'": '';
+					$c .= "<li data-title='$t'$class><a class='dropdown-item shp-widget-action' data-value='$pid' data-action='set-param-value' href='#'>" . Utils::es($pc['title']) . '</a></li>';
+				}
+
+				$c .= '</ul></div> ';
+			}
+			else
+			{
+				$c .= "<div class='btn-group e10-param' data-paramid='$paramId'>";
+				$c .= "<button type='button' class='btn btn-default dropdown-toggle e10-report-param' data-toggle='dropdown'>";
+
+				if (isset ($p['title']))
+					$c .= '<b>'.Utils::es ($p['title']).':</b> ';
+
+				$c .=	"<span class='v'>".Utils::es($activeTitle).'</span>'.
+							" <span class='caret'></span>".
+							'</button>';
+				$c .= "<input name='$paramId' type='hidden' class='$inputClass' value='$activeValue'>";
+				$c .= "<ul class='dropdown-menu' role='menu'>";
+
+				forEach ($p['values'] as $pid => $pc)
+				{
+					$t = Utils::es($pc['title']);
+					$class = (strval($pid) === strval($activeValue)) ? " class='active'": '';
+
+					$c .= "<li data-value='$pid' data-title='$t'$class><a href='#'>" . Utils::es($pc['title']) . '</a></li>';
+				}
+
+				$c .= '</ul></div> ';
+			}
 		}
 		return $c;
 	}
@@ -422,10 +483,17 @@ class Params extends \Shipard\Base\BaseObject
 		return $c;
 	}
 
-	public function detectValues ()
+	public function detectValues ($paramsData = NULL)
 	{
 		forEach ($this->params as $paramId => &$paramContent)
 		{
+			if ($paramsData && isset($paramsData[$paramId]))
+			{
+				$this->params [$paramId]['value'] = $paramsData[$paramId];
+				$pv = $this->params [$paramId]['value'];
+				$this->params [$paramId]['activeTitle'] = isset ($this->params [$paramId]['values'][$pv]['title']) ? $this->params [$paramId]['values'][$pv]['title'] : '';
+			}
+			else
 			if ($paramContent['type'] === 'checkboxes')
 			{
 				forEach ($paramContent['values'] as $pid => &$pc)
