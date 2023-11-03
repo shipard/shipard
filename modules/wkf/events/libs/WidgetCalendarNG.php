@@ -258,13 +258,12 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 					$class = '';
 					if ($thisMonth != $month)
 					{
-						$class .= ' inactive e10-off e10-small';
-						$css .= ' opacity: .6;';
+						$class .= ' inactive';
 					}
 					if ($style === 'small' && isset ($calendar->events[$dayId]))
 						$class .= ' tooltips';
 					if ($dayId == $this->today->format('Y-m-d'))
-						$css .= ' background-color: #00A01030;';
+						$class .= ' today';
 
 					$dayTitle = utils::es($thisDay . '. ' . utils::$monthNamesForDate[$thisMonth - 1]);
 					$c .= "<td class='day e10-param-btn{$class}' data-value='$dayId' data-date='$dayId' data-title='$dayTitle' tabindex='1' style='$css'>";
@@ -390,21 +389,19 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 			$c .= "
 			function setCalPopovers() {\n
 				let tooltips = document.querySelectorAll('table.shp-cal-small>tbody>tr>td.day.tooltips');\n
-
 				for(let i = 0; i < tooltips.length; i++) {\n
-					let tooltip = tooltips[i].popover({content:function(){return calTooltips[$(this).attr('data-date')];}, html: true, trigger: 'focus', delay: {'show': 0, 'hide': 500}, container: 'body', placement: 'auto', viewport:'#e10dashboardWidget'});\n
+					let tooltip = new bootstrap.Popover(tooltips[i],
+						{
+							content: calTooltips[tooltips[i].getAttribute('data-date')],
+							sanitize: false, html: true, trigger: 'focus', delay: {'show': 0, 'hide': 100}, container: 'div.shp-widget-board', placement: 'auto', XXXviewport:'#e10dashboardWidget'
+						}
+					);\n
 				}\n
-				console.log('popovers!', tooltips);
 			}\n
-
-			\n;
-
-
+			setCalPopovers();
 			";
 
 			$c .= "</script>\n";
-
-			$c .= "\n<script>console.log('POKUS');document.addEventListener('DOMContentLoaded', () => console.log('####### TEST'));</script>";
 		}
 		return $c;
 	}
@@ -481,16 +478,19 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 					$pfx .= ' - '.$e['timeEnd'];
 
 				$event = [
-						'text' => $pfx.' '.$e['subject'], 'class' => 'tag tag-event ' . $e['docStateClass'], 'icon' => $e['icon'],
-						'docAction' => 'edit', 'pk' => $e['ndx'], 'table' => 'wkf.events.events',
-						'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId,
+						'text' => $pfx.' '.$e['subject'], 'actionClass' => 'tag tag-event shp-widget-action ' . $e['docStateClass'],
+						'type' => 'action', 'action' => 'edit', 'pk' => $e['ndx'], 'table' => 'wkf.events.events',
+						'element' => 'span',
+						'data-action-param-table' => 'wkf.events.events',
+						'data-action-param-pk' => strval($e['ndx']),
+						'data-action' => 'edit',
 				];
 
 				$css = '';
 				if ($cal)
 				{
 					$css = " style='color: ".$cal['colorbg']."; height: 10px; margin: 0; line-height: 1;'";
-					$event['css'] = 'border-left: 10px solid '.$cal['colorbg'].';';
+					$event['css'] = 'background-color: '.$cal['colorbg'].';';
 				}
 
 				$events [] = $event;
