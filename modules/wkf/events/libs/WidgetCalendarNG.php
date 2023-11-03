@@ -449,7 +449,7 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 				//	$event['suffix'] = '  '.$e['placeDesc'];
 
 				if ($cal)
-					$event['css'] = 'border-left: 6px solid '.$cal['colorbg'].';';
+					$event['css'] = 'background-color: '.$cal['colorbg'].';';
 
 				$c .= "<div>";
 				$c .= $this->app()->ui()->composeTextLine($event);
