@@ -22,7 +22,8 @@ class ShipardWidgetBoard extends ShipardWidget
   {
     //console.log('doWidgetResponse: ');
     //console.log(data);
-    this.rootElm.innerHTML = data.response.hcMain;
+    //this.rootElm.innerHTML = data.response.hcMain;
+    this.setInnerHTML(this.rootElm, data.response.hcMain);
   }
 
   setParamValue(e)

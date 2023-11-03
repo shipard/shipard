@@ -134,7 +134,9 @@ params)newEnvelope.setAttribute('data-action-param-'+oneParamId,params[oneParamI
 oneParamId
 in
 attrs)newEnvelope.setAttribute('data-'+oneParamId,attrs[oneParamId]);newEnvelope.id='test1122';newEnvelope.innerHTML="čekejte, prosím, data se načítají...";document.body.appendChild(newEnvelope);newEnvelope.formOp=formOp;newEnvelope.shpWidget=new
-ShipardTableForm();newEnvelope.shpWidget.init(newEnvelope);}}function
+ShipardTableForm();newEnvelope.shpWidget.init(newEnvelope);}setInnerHTML(elm,html){elm.innerHTML=html;Array.from(elm.querySelectorAll("script")).forEach(oldScriptEl=>{const
+newScriptEl=document.createElement("script");Array.from(oldScriptEl.attributes).forEach(attr=>{newScriptEl.setAttribute(attr.name,attr.value)});const
+scriptText=document.createTextNode(oldScriptEl.innerHTML);newScriptEl.appendChild(scriptText);oldScriptEl.parentNode.replaceChild(newScriptEl,oldScriptEl);});}}function
 inputCh(){console.log("--CHANGE--");}class
 ShipardTableViewer
 extends
@@ -185,7 +187,7 @@ if(input.classList.contains('e10-inputLogical')){siv=input.checked?1:0;}this.set
 iidParts=inputId.split('.');if(iidParts.length==1){this.formData['recData'][inputId]=value;}}closeForm(e){this.rootElm.remove();return 0;}inputValueChanged(e){if(e.classList.contains('e10-ino-checkOnChange')){this.checkForm(e);}}}class
 ShipardWidgetBoard
 extends
-ShipardWidget{init(e){console.log("ShipardWidgetBoard::init");super.init(e);}doAction(actionId,e){console.log("ACTION-BOARD: ",actionId);switch(actionId){case'set-param-value':return this.setParamValue(e);case'newform':return this.actionNewForm(e);case'edit':return this.actionEditForm(e);}return super.doAction(actionId,e);}doWidgetResponse(data){this.rootElm.innerHTML=data.response.hcMain;}setParamValue(e){var
+ShipardWidget{init(e){console.log("ShipardWidgetBoard::init");super.init(e);}doAction(actionId,e){console.log("ACTION-BOARD: ",actionId);switch(actionId){case'set-param-value':return this.setParamValue(e);case'newform':return this.actionNewForm(e);case'edit':return this.actionEditForm(e);}return super.doAction(actionId,e);}doWidgetResponse(data){this.setInnerHTML(this.rootElm,data.response.hcMain);}setParamValue(e){var
 inputElement=e.parentElement.parentElement.querySelector('input');if(!inputElement)inputElement=e.parentElement.parentElement.parentElement.querySelector('input');if(inputElement)inputElement.value=e.getAttribute('data-value');let
 apiParams={'cgType':2};this.apiCall('reloadContent',apiParams);}actionNewForm(e){var
 formParams={};var
