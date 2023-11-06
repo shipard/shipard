@@ -108,7 +108,7 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 	{
 		$this->calParams = new \E10\Params ($this->app);
 		$viewTypes = ['year' => 'Rok', 'month' => 'Měsíc', 'week' => 'Týden', /*'agenda' => 'Agenda'*/];
-		$this->calParams->addParam('switch', 'viewType', ['title' => 'Pohled', 'switch' => $viewTypes, 'radioBtn' => 1, 'defaultValue' => $this->requestParams['viewType'] ?? $this->defaultViewType]);
+		$this->calParams->addParam('switch', 'viewType', ['___title' => 'Pohled', 'switch' => $viewTypes, 'radioBtn' => 1, 'defaultValue' => $this->requestParams['viewType'] ?? $this->defaultViewType]);
 		$this->addParamMonth ();
 		$this->addParamWeek ();
 		$this->addParamYear ();
@@ -130,7 +130,7 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 		{
 			$addButton = [
 				'action' => 'newform', 'data-table' => 'wkf.events.events', 'icon' => 'system/actionAdd',
-				'text' => 'Přidat', 'type' => 'button', 'actionClass' => 'btn shp-widget-action',
+				'text' => '', 'type' => 'button', 'actionClass' => 'btn shp-widget-action',
 				'class' => 'e10-param-addButton', 'btnClass' => 'btn-success',
 				'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId,
 				'data-action-param-table' => 'wkf.events.events'
@@ -142,13 +142,14 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 		if (count($btns))
 			$c .= $this->app()->ui()->composeTextLine($btns);
 
+		//$c .= "<span class='pull-right'>";
+		$c .= $this->calParams->createParamCode('viewType');
+		$c .= '&nbsp;';
+		//$c .= '</span>';
+
 		$c .= $this->calParams->createParamCode('activeMonth');
 		$c .= $this->calParams->createParamCode('activeYear');
 		$c .= $this->calParams->createParamCode('activeWeek');
-
-		$c .= "<span class='pull-right'>";
-		$c .= $this->calParams->createParamCode('viewType');
-		$c .= '</span>';
 
 		$c .= '</div>';
 

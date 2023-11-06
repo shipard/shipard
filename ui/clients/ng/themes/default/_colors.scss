@@ -14,7 +14,9 @@
     --accordionBackground: #{$accordion-bg-light};
     --accordionBorder: #{$accordion-border-light};
     --universalBorder: #{$universal-border-light};
-    --listBorder: $list-border-light;
+    --listBorder: #{$list-border-light};
+    --calendarInactive: #{$calendar-inactive-light};
+    --popoverBg: #{$popover-bg-light};
 }
 
 .btn-outline-secondary
@@ -55,7 +57,9 @@
     --accordionBackground: #{$accordion-bg-dark};
     --accordionBorder: #{$accordion-border-dark};
     --universalBorder: #{$universal-border-dark};
-    --listBorder: $list-border-dark;
+    --listBorder: #{$list-border-dark};
+    --calendarInactive: #{$calendar-inactive-dark};
+    --popoverBg: #{$popover-bg-dark};
 }
 
 [data-bs-theme="dark"] .btn-outline-secondary {

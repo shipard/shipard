@@ -67,3 +67,8 @@ ol.grades li.list-group-item:not(:last-child){
 .tag.shp-widget-action {
 	cursor: pointer;
 }
+
+.dropdown-menu.show {
+	overflow-y: auto;
+	max-height: 80%;
+}

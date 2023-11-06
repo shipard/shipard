@@ -155,6 +155,12 @@ $universal-border-light: gainsboro;
 $universal-border-dark: #696969;
 $list-border-light: gainsboro;
 $list-border-dark: #606060;
+$calendar-inactive-light: #E8E8E8;
+$calendar-inactive-dark: #282828;
+$calendar-today: rgb(147,197,114,0.7);
+$popover-bg-light: white;
+$popover-bg-dark: #505050;
+
 
 $success: #198754;
 $info: #0dcaf0;
@@ -209,6 +215,9 @@ $input-focus-border-color: var(--universalBorder);
 $input-focus-box-shadow: none;
 
 $input-focus-bg: var(--formBackground);
+
+$popover-body-padding-y: .5rem;
+$popover-body-padding-x: .5rem;
 
 
 @import "../../../../../www-root/sc/bs/5.3/scss/bootstrap.scss";
