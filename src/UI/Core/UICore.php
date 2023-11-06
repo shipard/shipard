@@ -308,7 +308,12 @@ class UICore extends \Shipard\Base\BaseObject
 		else
 		{
 			if ($button['action'] !== '')
-				$c .= "<$element class='$elementClass $class' data-action='{$button['action']}' $params>{$icon}&nbsp;{$btnText}</$element>";
+			{
+				$c .= "<$element class='$elementClass $class' data-action='{$button['action']}' $params>{$icon}";
+				if ($icon !== '' && $btnText !== '')
+					$c .= "&nbsp;";
+				$c .= "{$btnText}</$element>";
+			}
 		}
 
 		if (isset ($button['subButtons']))
