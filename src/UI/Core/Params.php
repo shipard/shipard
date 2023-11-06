@@ -288,7 +288,7 @@ class Params extends \Shipard\Base\BaseObject
 			if ($this->app()->ngg)
 			{
 				$c .= "<div class='btn-group e10-param' data-xxx-paramid='$paramId'>";
-				$c .= "<button type='button' class='btn btn-secondary dropdown-toggle e10-report-param' data-bs-toggle='dropdown'>";
+				$c .= "<button type='button' class='btn btn-secondary dropdown-toggle e10-report-param' data-bs-toggle='dropdown' data-bs-popper-config='{\"strategy\":\"fixed\"}'>";
 
 				if (isset ($p['title']))
 					$c .= '<b>'.Utils::es ($p['title']).':</b> ';
