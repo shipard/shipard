@@ -4,6 +4,26 @@ class ShipardWidgetBoard extends ShipardWidget
   {
     console.log("ShipardWidgetBoard::init");
     super.init(e);
+
+    var mc = new Hammer(this.rootElm);
+    mc.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 300 });
+    mc.get('pan').set({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 300 });
+    mc.on("panleft panright", function(ev) {this.doSwipe(ev)}.bind(this));
+  }
+
+  doSwipe(dir)
+  {
+    var swipeDir = 0;
+    if (dir.type === 'panleft')
+      swipeDir = 1;
+    else if (dir.type === 'panright')
+      swipeDir = 2;
+
+    if (!swipeDir)
+      return;
+
+    let apiParams = {'cgType': 2, 'swipe': swipeDir};
+    this.apiCall('reloadContent', apiParams);
   }
 
   doAction (actionId, e)

@@ -171,8 +171,8 @@ class AppPageBlank extends Utility
 
 		$c .= '</script>';
 
-		//$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/libs/js/jquery/jquery-3.5.1.min.js\"></script>";
-		$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/bs/5.3/dist/js/bootstrap.bundle.min.js?v530\"></script>";
+		$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/bs/5.3/dist/js/bootstrap.bundle.min.js?v530\"></script>\n";
+		$c .= "<script src='https://hammerjs.github.io/dist/hammer.js'></script>\n";
 		$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/libs/js/mqttws/mqttws31.min.js\"></script>\n";
 
 
