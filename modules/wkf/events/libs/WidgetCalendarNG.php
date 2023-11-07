@@ -426,6 +426,7 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 
 	public function renderWeek($calendar, $year, $weekDate, $style, $params = NULL)
 	{
+		$tdd = $this->today->format('Y-m-d');
 		$c = '';
 
 		$c .= "<table class='shp-cal-$style'>";
@@ -434,7 +435,11 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 		$c .= "<thead><tr>";
 		for ($weekDay = 0; $weekDay < 7; $weekDay++)
 		{
-			$c .= '<th>';
+			$dayId = $activeDate->format('Y-m-d');
+			$class = '';
+			if ($tdd === $dayId)
+				$class = 'today';
+			$c .= "<th class='$class'>";
 			$c .= utils::$dayShortcuts[$weekDay].' <small>'.$activeDate->format('d.m.').'</small>';
 			$c .= '</th>';
 			$activeDate->modify('+1 day');
@@ -449,6 +454,8 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 			$dayId = $activeDate->format('Y-m-d');
 
 			$class = '';
+			if ($tdd === $dayId)
+				$class = 'today';
 
 			$c .= "<td class='wk {$class}'>";
 			$c .= $this->renderEvents($calendar, $dayId, $style);
