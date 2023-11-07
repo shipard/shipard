@@ -53,7 +53,7 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 			$this->year = intval($this->requestParams['activeYear'] ?? $this->today->format('Y'));
 			$this->month = intval($this->requestParams['activeMonth'] ?? $this->today->format('m'));
 
-			if ($swipeDir === self::swpRight)
+			if ($swipeDir === self::swpLeft)
 			{
 				$this->month++;
 				if ($this->month === 13)
@@ -69,7 +69,7 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 				$this->requestParams['activeMonth'] = $this->month;
 				$this->requestParams['activeYear'] = $this->year;
 			}
-			elseif ($swipeDir === self::swpLeft)
+			elseif ($swipeDir === self::swpRight)
 			{
 				$this->month--;
 				if ($this->month === 0)
@@ -90,13 +90,13 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 		if ($this->viewType === 'year')
 		{
 			$this->year = intval($this->requestParams['activeYear'] ?? $this->today->format('Y'));
-			if ($swipeDir === self::swpRight)
+			if ($swipeDir === self::swpLeft)
 			{
 				if ($this->year < $this->yearMax)
 					$this->year++;
 				$this->requestParams['activeYear'] = $this->year;
 			}
-			elseif ($swipeDir === self::swpLeft)
+			elseif ($swipeDir === self::swpRight)
 			{
 				if ($this->year > $this->yearMin)
 					$this->year--;
@@ -125,13 +125,13 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 				$this->weekDate = $weekDate->format('Y-m-d');
 			}
 
-			if ($swipeDir === self::swpRight)
+			if ($swipeDir === self::swpLeft)
 			{
 				$wd->modify('+7 days');
 				$this->weekDate = $wd->format('Y-m-d');
 				$this->year = intval($wd->format('Y'));
 			}
-			elseif ($swipeDir === self::swpLeft)
+			elseif ($swipeDir === self::swpRight)
 			{
 				$wd->modify('-7 days');
 				$this->weekDate = $wd->format('Y-m-d');
