@@ -107,11 +107,22 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 		if ($this->viewType === 'week')
 		{
 			$this->year = intval($this->requestParams['activeYear'] ?? $this->today->format('Y'));
-			$this->weekDate = $this->requestParams['activeWeek'] ?? $this->today->format('Y-m-d');
+			if (isset($this->requestParams['activeWeek']))
+				$this->weekDate = $this->requestParams['activeWeek'];
+			else
+			{
+				$weekDate = Utils::today();
+				$weekDate->modify(('Monday' === $weekDate->format('l')) ? 'monday this week' : 'last monday');
+				$this->weekDate = $weekDate->format('Y-m-d');
+			}
 			$wd = Utils::createDateTime($this->weekDate);
+
 			if ($this->year !== intval($wd->format('Y')))
 			{
-				$this->weekDate = $this->year.$wd->format('-m-d');
+				$wwd = $this->year.$wd->format('-m-d');
+				$weekDate = new \DateTime($wwd);
+				$weekDate->modify(('Monday' === $weekDate->format('l')) ? 'monday this week' : 'last monday');
+				$this->weekDate = $weekDate->format('Y-m-d');
 			}
 
 			if ($swipeDir === self::swpRight)
@@ -119,17 +130,16 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 				$wd->modify('+7 days');
 				$this->weekDate = $wd->format('Y-m-d');
 				$this->year = intval($wd->format('Y'));
-				$this->requestParams['activeYear'] = $this->year;
-				$this->requestParams['activeWeek'] = $this->weekDate;
 			}
 			elseif ($swipeDir === self::swpLeft)
 			{
 				$wd->modify('-7 days');
 				$this->weekDate = $wd->format('Y-m-d');
 				$this->year = intval($wd->format('Y'));
-				$this->requestParams['activeYear'] = $this->year;
-				$this->requestParams['activeWeek'] = $this->weekDate;
 			}
+
+			$this->requestParams['activeYear'] = $this->year;
+			$this->requestParams['activeWeek'] = $this->weekDate;
 		}
 
 		$this->createContent_Toolbar();
