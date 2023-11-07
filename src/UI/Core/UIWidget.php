@@ -22,6 +22,8 @@ class UIWidget extends \Shipard\UI\Core\UIElement
   CONST cgtFullCode = 1, cgtMainCode = 2, cgtParts = 0;
   var $cgType = self::cgtFullCode;
 
+	CONST swpNone = 0, swpLeft = 1, swpRight = 2;
+
 	protected function createParamsObject ()
 	{
 		$this->params = new \Shipard\UI\Core\Params ($this->app);
