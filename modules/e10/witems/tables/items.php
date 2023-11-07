@@ -486,6 +486,9 @@ class ViewItems extends TableView
 		if (isset ($qv['itemBrands']))
 			array_push ($q, " AND [items].[brand] IN %in", array_keys($qv['itemBrands']));
 
+		if (isset ($qv['vr']))
+			array_push ($q, " AND [items].[vatRate] IN %in", array_keys($qv['vr']));
+
 		if (isset($qv['clsf']))
 		{
 			array_push ($q, ' AND EXISTS (SELECT ndx FROM e10_base_clsf WHERE items.ndx = recid AND tableId = %s', 'e10.witems.items');
@@ -735,7 +738,22 @@ class ViewItems extends TableView
 			$qry[] = array ('id' => 'itemBrands', 'style' => 'params', 'title' => 'Značky položek', 'params' => $paramsItemBrands);
 		}
 
-		$panel->addContent(array ('type' => 'query', 'query' => $qry));
+		// -- VAT rates
+		$vatPeriod = $this->app()->cfgItem ('options.core.vatPeriod', 0);
+		$taxRates = $this->app()->cfgItem ('e10doc.taxes.'.'eu'.'.'.'cz'.'.taxRates', NULL);
+		if ($vatPeriod && $taxRates)
+		{
+			$chbxItemVR = [];
+			$chbxItemVR['0'] = array ('title' => '---', 'id' => 0);
+			forEach ($taxRates as $vrId => $vr)
+				$chbxItemVR[$vrId] = ['title' => $vr['title'], 'id' => $vrId];
+
+			$paramsItemVR = new \E10\Params ($panel->table->app());
+			$paramsItemVR->addParam ('checkboxes', 'query.vr', ['items' => $chbxItemVR]);
+			$qry[] = ['id' => 'itemVATRates', 'style' => 'params', 'title' => 'Sazby DPH', 'params' => $paramsItemVR];
+		}
+
+		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}
 }
 
