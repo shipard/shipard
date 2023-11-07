@@ -23,8 +23,12 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 	var $calendars;
 	var $tooltips = [];
 
+	var $yearMin = 0;
+	var $yearMax = 0;
+
 	var $year = 0;
 	var $month = 0;
+	var $weekDate = '';
 
 	public function init ()
 	{
@@ -33,16 +37,102 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 		$tableCals = $this->app()->table('wkf.events.cals');
 		$this->userCals = $tableCals->usersCals();
 
+		$this->today = new \DateTime();
+		$this->yearMin = intval($this->today->format('Y')) - 1;
+		$this->yearMax = $this->yearMin + 4;
+
 		parent::init();
 	}
 
 	public function createContent ()
 	{
-		$this->today = new \DateTime();
+		$swipeDir = intval($this->requestParams['swipe'] ?? 0);
+		$this->viewType = $this->requestParams['viewType'] ?? $this->defaultViewType;
+		if ($this->viewType === 'month')
+		{
+			$this->year = intval($this->requestParams['activeYear'] ?? $this->today->format('Y'));
+			$this->month = intval($this->requestParams['activeMonth'] ?? $this->today->format('m'));
+
+			if ($swipeDir === self::swpRight)
+			{
+				$this->month++;
+				if ($this->month === 13)
+				{
+					if ($this->year < $this->yearMax)
+					{
+						$this->month = 1;
+						$this->year++;
+					}
+					else
+						$this->month = 12;
+				}
+				$this->requestParams['activeMonth'] = $this->month;
+				$this->requestParams['activeYear'] = $this->year;
+			}
+			elseif ($swipeDir === self::swpLeft)
+			{
+				$this->month--;
+				if ($this->month === 0)
+				{
+					if ($this->year > $this->yearMin)
+					{
+						$this->month = 12;
+						$this->year--;
+					}
+					else
+						$this->month = 1;
+				}
+				$this->requestParams['activeMonth'] = $this->month;
+				$this->requestParams['activeYear'] = $this->year;
+			}
+		}
+		else
+		if ($this->viewType === 'year')
+		{
+			$this->year = intval($this->requestParams['activeYear'] ?? $this->today->format('Y'));
+			if ($swipeDir === self::swpRight)
+			{
+				if ($this->year < $this->yearMax)
+					$this->year++;
+				$this->requestParams['activeYear'] = $this->year;
+			}
+			elseif ($swipeDir === self::swpLeft)
+			{
+				if ($this->year > $this->yearMin)
+					$this->year--;
+				$this->requestParams['activeYear'] = $this->year;
+			}
+		}
+		else
+		if ($this->viewType === 'week')
+		{
+			$this->year = intval($this->requestParams['activeYear'] ?? $this->today->format('Y'));
+			$this->weekDate = $this->requestParams['activeWeek'] ?? $this->today->format('Y-m-d');
+			$wd = Utils::createDateTime($this->weekDate);
+			if ($this->year !== intval($wd->format('Y')))
+			{
+				$this->weekDate = $this->year.$wd->format('-m-d');
+			}
+
+			if ($swipeDir === self::swpRight)
+			{
+				$wd->modify('+7 days');
+				$this->weekDate = $wd->format('Y-m-d');
+				$this->year = intval($wd->format('Y'));
+				$this->requestParams['activeYear'] = $this->year;
+				$this->requestParams['activeWeek'] = $this->weekDate;
+			}
+			elseif ($swipeDir === self::swpLeft)
+			{
+				$wd->modify('-7 days');
+				$this->weekDate = $wd->format('Y-m-d');
+				$this->year = intval($wd->format('Y'));
+				$this->requestParams['activeYear'] = $this->year;
+				$this->requestParams['activeWeek'] = $this->weekDate;
+			}
+		}
 
 		$this->createContent_Toolbar();
-		$this->viewType = $this->calParamsValues['viewType']['value'];
-
 		$this->panelStyle = self::psFixed;
 
 
@@ -74,27 +164,23 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 
 			if ($this->viewType === 'month')
 			{
-				$this->year = intval($this->calParamsValues['activeYear']['value']);
-				$this->month = intval($this->calParamsValues['activeMonth']['value']);
-
 				$calendar->setMonthView($this->year, $this->month);
 			}
 			else
 			if ($this->viewType === 'year')
 			{
-				$this->year = intval($this->calParamsValues['activeYear']['value']);
 				$calendar->setYearView($this->year);
 			}
 			else
 			if ($this->viewType === 'week')
 			{
-				$this->year = intval($this->calParamsValues['activeYear']['value']);
-				$calendar->setWeekView($this->year, $this->calParamsValues['activeWeek']['value']);
+				$calendar->setWeekView($this->year, $this->weekDate);
 			}
 
 			$calendar->widgetId = $this->widgetId;
 			$calendar->init();
 			$calendar->loadEvents();
+
 			$calCode = $this->createCalendarCode ($calendar);
 			$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $calCode]);
 
@@ -108,7 +194,7 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 	{
 		$this->calParams = new \E10\Params ($this->app);
 		$viewTypes = ['year' => 'Rok', 'month' => 'Měsíc', 'week' => 'Týden', /*'agenda' => 'Agenda'*/];
-		$this->calParams->addParam('switch', 'viewType', ['___title' => 'Pohled', 'switch' => $viewTypes, 'radioBtn' => 1, 'defaultValue' => $this->requestParams['viewType'] ?? $this->defaultViewType]);
+		$this->calParams->addParam('switch', 'viewType', ['___title' => 'Pohled', 'switch' => $viewTypes, 'radioBtn' => 1, 'defaultValue' => $this->viewType]);
 		$this->addParamMonth ();
 		$this->addParamWeek ();
 		$this->addParamYear ();
@@ -164,7 +250,7 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 
 		$months = [1 => 'leden',2 => 'únor',3 => 'březen',4 => 'duben',5 => 'květen',6 => 'červen',
 								7 => 'červenec',8 => 'srpen',9 => 'září',10 => 'říjen',11 => 'listopad',12 => 'prosinec'];
-		$this->calParams->addParam('switch', 'activeMonth', ['switch' => $months, 'defaultValue' => intval($this->today->format('m'))]);
+		$this->calParams->addParam('switch', 'activeMonth', ['switch' => $months, 'defaultValue' => $this->month]);
 	}
 
 	public function addParamYear ()
@@ -174,9 +260,9 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 			return;
 
 		$years = [];
-		for ($y = 2023; $y <= 2025; $y++)
+		for ($y = $this->yearMin; $y <= $this->yearMax; $y++)
 			$years[$y] = strval ($y);
-		$this->calParams->addParam('switch', 'activeYear', ['switch' => $years, 'defaultValue' => '2023'/*$this->today->format('Y')*/]);
+		$this->calParams->addParam('switch', 'activeYear', ['switch' => $years, 'defaultValue' => $this->year]);
 	}
 
 	public function addParamWeek ()
@@ -185,8 +271,8 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 		if ($viewType !== 'week')
 			return;
 
-		$weekYear = UIUtils::detectParamValue('activeYear', utils::today('Y'));
-		$thisWeekNumber = intval(strftime ('%V'));
+		$weekYear = $this->year;
+		$thisWeekNumber = intval(Utils::createDateTime($this->weekDate)->format ('W'));
 		$thisWeekDate = '';
 
 		$weeks = [];
@@ -195,7 +281,7 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 			$thisWeekYear = intval(Utils::weekDate ($y, $weekYear, 1, 'Y'));
 			if ($thisWeekYear > $weekYear)
 				break;
-			$weekName = $y . ' (' . Utils::weekDate ($y, $weekYear, 1, 'd.m.') . ' - ' . Utils::weekDate ($y, $weekYear, 7, 'd.m.') . ')';
+			$weekName = $y . ' (' . Utils::weekDate ($y, $weekYear, 1, 'd.m') . ' - ' . Utils::weekDate ($y, $weekYear, 7, 'd.m') . ')';
 			$weekNumber = Utils::weekDate ($y, $weekYear);
 			if ($thisWeekNumber === $y)
 				$thisWeekDate = $weekNumber;
@@ -339,7 +425,7 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 		for ($weekDay = 0; $weekDay < 7; $weekDay++)
 		{
 			$c .= '<th>';
-			$c .= utils::$dayShortcuts[$weekDay].' <small>'.$activeDate->format('d.m').'</small>';
+			$c .= utils::$dayShortcuts[$weekDay].' <small>'.$activeDate->format('d.m.').'</small>';
 			$c .= '</th>';
 			$activeDate->modify('+1 day');
 		}
