@@ -1,7 +1,10 @@
 ol.list-group {
-    border: 1pt solid var(--universalBorder);
+    border: 1pt solid var(--listBorder);
     .list-group-item {
-        border: none;
+        background-color: var(--listBackground);
+    }
+    .list-group-item:not(:last-child) {
+        border-bottom: 1px solid var(--listBorder);
     }
 }
 .list-group-flush .list-group-item {

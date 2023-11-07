@@ -6,6 +6,8 @@
     --navBorder: #{$nav-border-light};
     --cardBackground: #{$card-bg-light};
     --cardBorder: #{$card-border-light};
+    --listBackground: #{$list-bg-light};
+    --listBorder: #{$list-border-light};
     --navPillsColor: #{$nav-pills-color-light};
     --numpadBackground: #{$numpad-bg-light};
     --numpadBorder: #{$numpad-border-light};
@@ -14,7 +16,6 @@
     --accordionBackground: #{$accordion-bg-light};
     --accordionBorder: #{$accordion-border-light};
     --universalBorder: #{$universal-border-light};
-    --listBorder: #{$list-border-light};
     --calendarInactive: #{$calendar-inactive-light};
     --popoverBg: #{$popover-bg-light};
 }
@@ -49,6 +50,8 @@
     --navBorder: #{$nav-border-dark};
     --cardBackground: #{$card-bg-dark};
     --cardBorder: #{$card-border-dark};
+    --listBackground: #{$list-bg-dark};
+    --listBorder: #{$list-border-dark};
     --navPillsColor: #{$nav-pills-color-dark};
     --numpadBackground: #{$numpad-bg-dark};
     --numpadBorder: #{$numpad-border-dark};
@@ -57,7 +60,6 @@
     --accordionBackground: #{$accordion-bg-dark};
     --accordionBorder: #{$accordion-border-dark};
     --universalBorder: #{$universal-border-dark};
-    --listBorder: #{$list-border-dark};
     --calendarInactive: #{$calendar-inactive-dark};
     --popoverBg: #{$popover-bg-dark};
 }
