@@ -4,5 +4,7 @@
 		"icon": "docTypeRedemptions", "tradeDir": 2, "docDir": 1, "useTax": 1, "acc": 1, "timeline": "in", "timelineSum": "def",
 		"headerStyle": "toPay", "showInfo2": "wg", "showDate": "c",
 		"outboxDocKind": "doc.purchase", "outboxSystemKind": 125, "outboxSystemSection": 121,
-		"docNumber": "%D%W%y%M%5", "symbol1": "91%y%M%4", "invDirection": 1}
+		"docNumber": "%D%W%y%M%5", "symbol1": "91%y%M%4", "invDirection": 1,
+		"primaryBalance": "2000"
+	}
 }

@@ -1,0 +1,10 @@
+[
+	{
+		"table": "e10doc.core.heads",
+		"views": {
+			"condo-invoicesOut": {
+				"id": "portal-purchases", "class": "e10pro.purchase.libs.apps.ViewPurchases"
+			}
+		}
+	}
+]

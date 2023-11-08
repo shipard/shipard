@@ -5,8 +5,9 @@
 		"e10doc/purchase", "e10doc/cashRegister", "e10pro/reports/terminal_daily", "e10pro/reports/terminal_monthly",
 		"e10pro/reports/pricelist", "e10pro/reports/purchases", "e10pro/custreg"
 	],
-	"extensions": ["persons"],
+	"extensions": ["persons", "purchase"],
   "config": [
+		{"id": "+apps", "file": "apps.json"},
     {"id": "+appSkeleton", "name": "Rozšíření menu aplikace", "file": "purchase.appSkeleton.json"},
 	  {"id": "+e10.dashboardInfo", "file": "dashboardInfo.json"},
 		{"id": "+e10.docs.types", "file": "e10.docs.types.json"},
