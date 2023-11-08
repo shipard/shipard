@@ -2253,6 +2253,9 @@ class Application extends \Shipard\Application\ApplicationCore
 
 	public function userNdx ()
 	{
+		if ($this->ngg && $this->uiUser)
+			return $this->uiUser['person'] ?? 0;
+
 		if (isset($this->user))
 			return $this->user->data('id');
 		return 0;

@@ -144,7 +144,13 @@ class Authenticator extends Utility
 		foreach ($rows as $r)
 			$mainRoles[] = $r['systemId'];
 
-    $this->app->uiUser = ['ndx' => $userNdx, 'name' => $userRecData['fullName'], 'apiKeyNdx' => $apiKeyNdx, 'mainRoles' => $mainRoles];
+    $this->app->uiUser = [
+      'ndx' => $userNdx, 'name' => $userRecData['fullName'],
+      'apiKeyNdx' => $apiKeyNdx,
+      'person' => $userRecData['person'],
+      'login' => $userRecData['person'], 'email' => $userRecData['email'],
+      'mainRoles' => $mainRoles,
+    ];
   }
 
   function closeSession()

@@ -47,6 +47,9 @@ class DbTable
 		if ($this->app()->hasRole ('all'))
 			return 2;
 
+		if ($this->app()->ngg)
+			return 2;
+
 		$allRoles = $this->app()->cfgItem ('e10.persons.roles');
 		$userRoles = $this->app()->user()->data ('roles');
 		$accessLevel = 0;
@@ -1505,9 +1508,6 @@ class DbTable
 
 	public function getDocumentLockState ($recData, $form = NULL)
 	{
-		if ($this->app()->ngg)
-			return FALSE;
-
 		$tableOptions = $this->app()->model()->tableProperty ($this, 'options');
 		if ($tableOptions & DataModel::toSystemTable)
 			return FALSE;

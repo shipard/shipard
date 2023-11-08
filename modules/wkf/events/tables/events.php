@@ -68,7 +68,7 @@ class TableEvents extends DbTable
 			/** @var \wkf\events\TableCals */
 			$tableCals = $this->app()->table('wkf.events.cals');
 			$uc = $tableCals->usersCals();
-			if (isset($uc[$cfgKey]))
+			if (isset($uc[$cfgKey]) || $form->readOnly)
 				return TRUE;
 			return FALSE;
 		}

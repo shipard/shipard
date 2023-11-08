@@ -30,12 +30,23 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 	var $month = 0;
 	var $weekDate = '';
 
+	var $enableAdd = 0;
+
 	public function init ()
 	{
 		//$this->createTabs();
 		/** @var \wkf\events\TableCals */
 		$tableCals = $this->app()->table('wkf.events.cals');
 		$this->userCals = $tableCals->usersCals();
+
+		foreach ($this->userCals as $cal)
+		{
+			if ($cal['accessLevel'] === 2)
+			{
+				$this->enableAdd = 1;
+				break;
+			}
+		}
 
 		$this->today = new \DateTime();
 		$this->yearMin = intval($this->today->format('Y')) - 1;
@@ -222,7 +233,7 @@ class WidgetCalendarNG extends \Shipard\UI\Core\UIWidgetBoard
 
 		$btns = [];
 
-		if ($this->userCals && count($this->userCals))
+		if ($this->userCals && count($this->userCals) && $this->enableAdd)
 		{
 			$addButton = [
 				'action' => 'newform', 'data-table' => 'wkf.events.events', 'icon' => 'system/actionAdd',
