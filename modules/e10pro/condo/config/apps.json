@@ -11,6 +11,10 @@
         {
           "title": "Faktury", "icon": "user/book", "id": "invoices",
           "objectType": "viewer", "table": "e10doc.core.heads", "viewer": "condo-invoicesOut"
+        },
+        {
+          "title": "Nastavení", "icon": "system/actionSettings", "id": "settings",
+          "objectType": "widget", "classId": "Shipard.UI.ng.WidgetAppSettings"
         }
       ]
     },

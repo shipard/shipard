@@ -8,7 +8,7 @@ use \Shipard\Utils\Utils, \Shipard\Utils\Str, \Shipard\Utils\Json ;
 /**
  * Class WidgetFlat
  */
-class WidgetFlat extends \Shipard\UI\Core\WidgetPane
+class WidgetFlat extends \Shipard\UI\Core\UIWidget
 {
 	var $flatNdx = 0;
 	var $userContext = NULL;
@@ -24,17 +24,17 @@ class WidgetFlat extends \Shipard\UI\Core\WidgetPane
 
 	function renderData()
 	{
-    $this->router->uiTemplate->data['contents'] = [];
+    $this->uiTemplate->data['contents'] = [];
 
     $contentTitle = ['text' => 'Informace o bytové jednotce', 'class' => 'h3'];
     foreach ($this->flatInfo->data['vdsContent'] as $cc)
     {
       $cc['params'] = ['hideHeader' => 1, ];
       $cc['title'] = $contentTitle;
-      $this->router->uiTemplate->data['contents'][] = $cc;
+      $this->uiTemplate->data['contents'][] = $cc;
 
-      $this->router->uiTemplate->data['flatProperties'] = $cc['table'];
-      $this->router->uiTemplate->data['flatPropertiesStruct'] = Json::lint($cc['table']);
+      $this->uiTemplate->data['flatProperties'] = $cc['table'];
+      $this->uiTemplate->data['flatPropertiesStruct'] = Json::lint($cc['table']);
 
       break;
     }
@@ -45,10 +45,10 @@ class WidgetFlat extends \Shipard\UI\Core\WidgetPane
       $cc = $this->flatInfo->data['personsList'];
       unset($cc['pane']);
       $cc['title'] = $contentTitlePersons;
-      $this->router->uiTemplate->data['contents'][] = $cc;
+      $this->uiTemplate->data['contents'][] = $cc;
 
-      $this->router->uiTemplate->data['personList'] = $cc['table'];
-      $this->router->uiTemplate->data['personListStruct'] = Json::lint($cc['table']);
+      $this->uiTemplate->data['personList'] = $cc['table'];
+      $this->uiTemplate->data['personListStruct'] = Json::lint($cc['table']);
     }
 
     if ($this->flatInfo->data['rowsContent'])
@@ -58,15 +58,15 @@ class WidgetFlat extends \Shipard\UI\Core\WidgetPane
 			unset($cc['pane']);
 			$cc['title'] = $contentTitleAdvances;
 
-			$this->router->uiTemplate->data['contents'][] = $cc;
+			$this->uiTemplate->data['contents'][] = $cc;
 
-      $this->router->uiTemplate->data['advancesList'] = $cc['table'];
-      $this->router->uiTemplate->data['advancesListStruct'] = Json::lint($cc['table']);
-      $this->router->uiTemplate->data['advancesListContent'] = Json::lint($cc);
+      $this->uiTemplate->data['advancesList'] = $cc['table'];
+      $this->uiTemplate->data['advancesListStruct'] = Json::lint($cc['table']);
+      $this->uiTemplate->data['advancesListContent'] = Json::lint($cc);
 		}
 
-		$templateStr = $this->router->uiTemplate->subTemplateStr('modules/e10pro/condo/libs/apps/subtemplates/flatInfo');
-		$code = $this->router->uiTemplate->render($templateStr);
+		$templateStr = $this->uiTemplate->subTemplateStr('modules/e10pro/condo/libs/apps/subtemplates/flatInfo');
+		$code = $this->uiTemplate->render($templateStr);
 		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $code]);
 	}
 
