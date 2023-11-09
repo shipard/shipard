@@ -10,9 +10,28 @@ class WidgetAppSettings extends \Shipard\UI\Core\UIWidget
 {
 	var $userContext = NULL;
 
-
 	function loadData()
 	{
+    if (!isset($this->uiTemplate->data['uiStruct']['appSettings']))
+      return;
+
+    foreach ($this->uiTemplate->data['uiStruct']['appSettings'] as $classId)
+    {
+      /** @var \Shipard\UI\ng\AppSettings $o */
+      $o = $this->app()->createObject($classId);
+      if (!$o)
+      {
+        continue;
+      }
+
+      $o->uiTemplate = $this->uiTemplate;
+      $o->run();
+
+      foreach ($o->resultData as $rd)
+      {
+        $this->uiTemplate->data['appSettings'][] = $rd;
+      }
+    }
 	}
 
 	function renderData()
