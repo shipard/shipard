@@ -25,6 +25,23 @@ class AppSettings extends \Shipard\Base\Utility
     $this->renderSubtemplate();
   }
 
+	function loadDataPersonsBankAccounts($personNdx)
+	{
+		$q = [];
+		array_push($q, 'SELECT * FROM [e10_persons_personsBA]');
+		array_push($q, ' WHERE [person] = %i', $personNdx);
+    array_push($q, ' AND [docState] = %i', 4000);
+    array_push($q, ' ORDER BY bankAccount');
+
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$this->uiTemplate->data['personsBankAccounts'] = [
+				'bankAccount' => $r['bankAccount'],
+			];
+		}
+  }
+
   function loadDataPersonProperties ($personNdx)
 	{
 		$this->properties = $this->tablePersons->loadProperties ($personNdx);
@@ -97,6 +114,7 @@ class AppSettings extends \Shipard\Base\Utility
 
     $this->loadDataPersonProperties ($personNdx);
     $this->loadDataPersonAddresses ($personNdx);
+    $this->loadDataPersonsBankAccounts($personNdx);
   }
 
   protected function loadData()
