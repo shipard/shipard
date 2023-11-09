@@ -19,6 +19,7 @@
       "purch-portal-spl": {
         "fn": "Dodavatel"
       }
-    }
+    },
+    "appSettings": ["e10pro.purchase.libs.apps.AppSettings"]
   }
 }
