@@ -36,7 +36,7 @@ class AppSettings extends \Shipard\Base\Utility
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
-			$this->uiTemplate->data['personsBankAccounts'] = [
+			$this->uiTemplate->data['personsBankAccounts'][] = [
 				'bankAccount' => $r['bankAccount'],
 			];
 		}
