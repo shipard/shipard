@@ -1,6 +1,6 @@
 <?php
 
-namespace E10Doc\Bank\Import\cz_kb_mb_csv {
+namespace E10Doc\Bank\Import\cz_kb_mb_csv;
 
 require_once __SHPD_MODULES_DIR__ . 'e10doc/bank/bank.php';
 
@@ -9,6 +9,14 @@ use \E10\Application, E10\Wizard, E10\utils;
 
 class Import extends \E10Doc\Bank\ebankingImportDoc
 {
+	var $colIdDateDue = 0;
+	var $colIdBankAccount = 2;
+	var $colIdAmount = 4;
+	var $colIdSymbol1 = 8;
+	var $colIdSymbol2 = 10;
+	var $colIdSymbol3 = 9;
+	var $colIdFirstMemo = 11;
+
 	public function import ()
 	{
 		$rows = explode ("\r\n", $this->textData);
@@ -38,21 +46,33 @@ class Import extends \E10Doc\Bank\ebankingImportDoc
 
 			if (count($cells) < 15)
 				continue;
+
 			if ($cells[0] === 'Datum splatnosti')
+			{
+				if ($cells[1] === 'Datum zuctovani')
+				{
+					$this->colIdBankAccount = 3;
+					$this->colIdAmount = 5;
+					$this->colIdSymbol1 = 9;
+					$this->colIdSymbol2 = 11;
+					$this->colIdSymbol3 = 10;
+					$this->colIdFirstMemo = 12;
+				}
 				continue;
+			}
 
 			// -- add new row
-			$this->setRowInfo ('dateDue', $this->parseDate ($cells [0]));
-			$this->setRowInfo ('bankAccount', $cells [2]);
-			$this->setRowInfo ('money', $this->parseNumber ($cells [4]));
+			$this->setRowInfo ('dateDue', $this->parseDate ($cells [$this->colIdDateDue]));
+			$this->setRowInfo ('bankAccount', $cells [$this->colIdBankAccount]);
+			$this->setRowInfo ('money', $this->parseNumber ($cells [$this->colIdAmount]));
 
-			$this->setRowInfo ('symbol1', $cells [8]);
-			if ($cells [10] === '0') // prázdný SS je znak nula (0)
-				$cells [10] = '';
-			$this->setRowInfo ('symbol2', $cells [10]);
-			$this->setRowInfo ('symbol3', $cells [9]);
+			$this->setRowInfo ('symbol1', $cells [$this->colIdSymbol1]);
+			if ($cells [$this->colIdSymbol2] === '0') // prázdný SS je znak nula (0)
+				$cells [$this->colIdSymbol2] = '';
+			$this->setRowInfo ('symbol2', $cells [$this->colIdSymbol2]);
+			$this->setRowInfo ('symbol3', $cells [$this->colIdSymbol3]);
 
-			for ($mid = 11; $mid < 19; $mid++)
+			for ($mid = $this->colIdFirstMemo; $mid < $this->colIdFirstMemo + 8; $mid++)
 			{
 				$cells [$mid] = trim ($cells [$mid]);
 				if (isset ($cells [$mid]) && $cells [$mid] != '')
@@ -77,5 +97,3 @@ class Import extends \E10Doc\Bank\ebankingImportDoc
 
 } // class Import
 
-
-} // namespace E10Doc\Bank\Import\cz_kb_mb_csv
