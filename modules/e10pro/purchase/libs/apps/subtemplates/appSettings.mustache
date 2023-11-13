@@ -1,2 +1,27 @@
-<h3>Nastavení Výkupna</h3>
+<ol class="list-group mb-2">
+    <h3 class="list-group-item mb-0">{{userInfo.name}}</h3>
+
+    {{#data.personsContacts}}
+        <span class="list-group-item">{{{@icon;dataItem:icon}}} {{text}}</span>
+    {{/data.personsContacts}}
+
+    {{#data.personsIds}}
+        <span class="list-group-item">{{{@icon;dataItem:icon}}} {{text}} </span>
+    {{/data.personsIds}}
+
+    {{#data.personsBankAccounts}}
+        <span class="list-group-item">{{{@icon;icon:user/creditCard}}} {{bankAccount}} </span>
+    {{/data.personsBankAccounts}}
+
+    {{#data.personsAddress}}
+        <span class="list-group-item">
+            {{{@icon;dataItem:icon}}} {{addressText}}
+            {{#type}}
+                <small class="text-muted ps-1">{{text}}</small>
+            {{/type}}
+        </span>
+    {{/data.personsAddress}}
+</ol>
+
+
 

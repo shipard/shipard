@@ -1,11 +1,16 @@
 <div class="container-fluid">
   <h1 class="p-1 pt-3">{{{@icon;icon:user/cog}}} Nastavení</h1>
 
-  <ol class="list-group mb-2">
+  <!--<ol class="list-group mb-2">
     <h3 class="list-group-item mb-0">{{userInfo.name}}</h3>
-  </ol>
+    <p class="list-group-item mb-0">{{userInfo.email}}</p>
+  </ol>-->
 
-  <ol class="list-group">
+  {{#data.appSettings}}
+    {{{code}}}
+  {{/data.appSettings}}
+
+  <ol class="list-group mb-2">
     <div class="list-group-item align-items-center">
       {{{@icon;icon:user/paintBrush}}}&nbsp;Motiv
       <div class="btn-group ms-3 flex-grow-1">
@@ -14,10 +19,11 @@
         <a class="shp-app-action btn btn-secondary" data-action='setColorMode' href="#" data-app-color-mode='light'>Světlý</a>
       </div>
     </div>
-
-    <a class="list-group-item" href='{{data.uiRoot}}auth/logout'>{{{@icon;icon:user/signOut}}} Odhlásit</a>
   </ol>
 
+  <ol class="list-group">
+    <a class="list-group-item" href='{{data.uiRoot}}auth/logout'>{{{@icon;icon:user/signOut}}} Odhlásit</a>
+  </ol>
 
 
 </div>

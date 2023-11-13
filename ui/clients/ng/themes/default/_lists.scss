@@ -2,6 +2,7 @@ ol.list-group {
     border: 1pt solid var(--listBorder);
     .list-group-item {
         background-color: var(--listBackground);
+        border: none;
     }
     .list-group-item:not(:last-child) {
         border-bottom: 1px solid var(--listBorder);

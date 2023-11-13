@@ -1,2 +1,46 @@
-<h3>Nastavení EŽK:</h3>
+<ol class="list-group mb-2">
+    <h3 class="list-group-item mb-0">{{userInfo.name}}</h3>
+
+    {{#data.personsContacts}}
+        <span class="list-group-item">{{{@icon;dataItem:icon}}} {{text}}</span>
+    {{/data.personsContacts}}
+
+    {{#data.personsAddress}}
+        <span class="list-group-item">
+            {{{@icon;dataItem:icon}}} {{addressText}}
+            {{#type}}
+                <small class="text-muted ps-1">{{text}}</small>
+            {{/type}}
+        </span>
+    {{/data.personsAddress}}
+
+    <span class="list-group-item text-muted"><small>V případě nesprávných informací nám zašlete e-mail na: <a href="mailto:{{data.uiCfg.supportEmail}}">{{data.uiCfg.supportEmail}}</a></small></span>
+</ol>
+
+<ol class="list-group mb-2">
+    <h3 class="list-group-item mb-0">Studenti</h3>
+
+    {{#data.students}}
+        <span class="list-group-item">
+            <h6 class="mb-0">{{fullName}}</h6>
+
+            {{#personsContacts}}
+                <small class="ps-1">{{{@icon;dataItem:icon}}} {{text}}</small>
+            {{/personsContacts}}
+
+            {{#personsIds}}
+                <small class="ps-1">{{{@icon;dataItem:icon}}} {{text}}</small>
+            {{/personsIds}}
+        </span>
+    {{/data.students}}
+</ol>
+
+<ol class="list-group mb-2">
+    <h3 class="list-group-item mb-0">Školné</h3>
+    <div class="list-group-item d-flex justify-content-between">
+        <span class='text-{{data.balance.status.class}}'>{{{@icon;dataItem:data.balance.status.icon}}} {{data.balance.status.text}}</span>
+
+        <span>{{{@icon;icon:user/archive}}} Přehled faktur</span>
+    </div>
+</ol>
 

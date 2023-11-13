@@ -1,8 +1,8 @@
 {
 	"oid": {"name": "IČ", "type": "text","icontxt": "IČ", "multi": 1, "needCompany": 1},
 	"taxid": {"name": "DIČ", "type": "text", "icontxt": "DIČ", "multi": 1, "needCompany": 1},
-	"pid": {"name": "Rodné číslo", "type": "text", "icontxt": "RČ", "needPerson": 1, "personalData":  1},
-	"idcn": {"name": "Číslo OP", "type": "text", "icontxt": "OP", "needPerson": 1, "personalData":  1},
+	"pid": {"name": "Rodné číslo", "type": "text", "icontxt": "RČ", "icon": "user/idCard", "needPerson": 1, "personalData":  1},
+	"idcn": {"name": "Číslo OP", "type": "text", "icontxt": "OP", "icon": "user/idCard", "needPerson": 1, "personalData":  1},
 	"birthdate": {"name": "Datum narození", "type": "date", "icon": "personBirthDate", "icontxt": "✱", "needPerson": 1, "personalData":  1},
 	"email": {"name": "Email", "type": "text", "icon": "personEmail", "icontxt": "✉", "multi": 1, "note": 1},
 	"phone": {"name": "Telefon", "type": "text", "icon": "personPhone", "icontxt": "✆", "multi": 1, "note": 1},

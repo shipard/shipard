@@ -34,17 +34,6 @@
               {{#data.uiStruct.appMenu.items}}
                 <a href="{{uiRoot}}{{id}}" class='list-group-item list-group-item-action {{#active}}active{{/active}}'><span class="navListIcon">{{{@icon;dataItem:icon}}}</span> {{title}}</a>
               {{/data.uiStruct.appMenu.items}}
-
-              <a class="list-group-item" href='{{data.uiRoot}}auth/logout'>{{{@icon;icon:user/signOut}}} Odhlásit</a>
-
-              <div class="list-group-item d-flex align-items-center">
-                {{{@icon;icon:user/paintBrush}}}&nbsp;Motiv
-                <div class="btn-group ms-3 flex-grow-1">
-                  <a class="shp-app-action btn btn-secondary" data-action='setColorMode' href="#" data-app-color-mode='auto'>Auto</a>
-                  <a class="shp-app-action btn btn-secondary" data-action='setColorMode' href="#" data-app-color-mode='dark'>Tmavý</a>
-                  <a class="shp-app-action btn btn-secondary" data-action='setColorMode' href="#" data-app-color-mode='light'>Světlý</a>
-                </div>
-              </div>
             </div>
           </div>
         </div>

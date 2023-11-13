@@ -72,3 +72,7 @@ ol.grades li.list-group-item:not(:last-child){
 	overflow-y: auto;
 	max-height: 80%;
 }
+
+a {
+	color: var(--bodyColor);
+}
