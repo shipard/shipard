@@ -19,6 +19,8 @@ class AppSettings extends \Shipard\UI\ng\AppSettings
 		array_push ($q, ' FROM [e10_persons_personsContacts] AS [contacts]');
 		array_push ($q, ' WHERE 1');
 		array_push ($q, ' AND [contacts].[person] = %i', $studentNdx);
+    array_push ($q, ' AND [contacts].[contactEmail] = %s', $this->app()->uiUser['email'] ?? '!');
+    array_push ($q, ' AND [contacts].[docState] = %i', 4000);
 		array_push ($q, ' ORDER BY [contacts].[onTop], [contacts].[systemOrder]');
     $rows = $this->db()->query($q);
     foreach ($rows as $item)
