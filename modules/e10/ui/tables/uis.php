@@ -56,6 +56,8 @@ class TableUIs extends DbTable
 				'pwaStartUrlBegin' => $r['pwaStartUrlBegin'],
 				'pwaTitle' => $r ['pwaTitle'] !== '' ? $r ['pwaTitle'] : $r ['fullName'],
 				'sendRequestsFromEmail' => $r ['sendRequestsFromEmail'],
+				'supportEmail' => $r ['supportEmail'],
+				'supportPhone' => $r ['supportPhone'],
 				'icons' => [],
 			];
 
@@ -278,8 +280,15 @@ class FormUI extends TableForm
 					$this->addColumnInput ('pwaStartUrlBegin');
 					$this->addColumnInput ('domain');
 
+					$this->addSeparator(self::coH4);
 					$this->addColumnInput ('pwaTitle');
 					$this->addColumnInput ('pwaIcon');
+
+					$this->addSeparator(self::coH4);
+					$this->addColumnInput ('supportEmail');
+					$this->addColumnInput ('supportPhone');
+
+					$this->addSeparator(self::coH4);
 					$this->addColumnInput ('sendRequestsFromEmail');
 				$this->closeTab ();
 				if ($this->recData['uiType'] === 9)

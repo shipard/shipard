@@ -24,6 +24,9 @@
 
 		{"id": "sendRequestsFromEmail", "name": "E-maily s požadavky odesílat z e-mailu:", "type": "string", "len": 70},
 
+		{"id": "supportEmail", "name": "E-mail na technickou podporu:", "type": "string", "len": 70},
+		{"id": "supportPhone", "name": "Telefon na technickou podporu:", "type": "string", "len": 40},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],

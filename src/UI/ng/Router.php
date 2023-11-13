@@ -88,6 +88,8 @@ class Router extends Utility
 			return new Response ($this->app, "invalid url 1/".$this->uiId, 404);
 		}
 
+    $this->uiTemplate->data['uiCfg'] = $this->uiCfg;
+
 		if ($first === 'a')
 		{
 			$this->checkCodeActivation($this->urlPath[1] ?? '');
