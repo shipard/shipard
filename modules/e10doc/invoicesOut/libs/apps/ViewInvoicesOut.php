@@ -105,7 +105,7 @@ class ViewInvoicesOut extends TableView
 			}
 			else
 			{
-        $balanceInfo['text'] = 'Částečně uhrazeno, zbývá '.Utils::nf($bi['restAmount'], 2);
+        $balanceInfo['text'] = 'Částečně uhrazeno, zbývá '.Utils::nf($bi->restAmount, 2);
         $balanceInfo['icon'] = 'system/iconCheck';
         $balanceInfo['class'] = 'bg-warning';
 			}
