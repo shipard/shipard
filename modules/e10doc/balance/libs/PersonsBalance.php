@@ -155,11 +155,11 @@ class PersonsBalance extends Utility
 			$this->messageMoney = $this->data ['totals'][0]['restAmount'];
 			$this->messageCurrency = $this->data ['totals'][0]['currency'];
 
-      $this->data['status'] = ['text' => 'Zbývá uhradit celkem '.Utils::nf($this->messageMoney, 2).' '.$this->messageCurrency, 'class' => 'warning'];
+      $this->data['status'] = ['text' => 'Zbývá uhradit celkem '.Utils::nf($this->messageMoney, 2).' '.$this->messageCurrency, 'class' => 'warning', 'icon' => 'system/iconWarning'];
 		}
     else
     {
-      $this->data['status'] = ['text' => 'V pořádku', 'class' => 'success'];
+      $this->data['status'] = ['text' => 'Uhrazeno', 'class' => 'success', 'icon' => 'system/iconCheck'];
     }
 	}
 
