@@ -21,6 +21,8 @@ class ShipardClient {
 
 	mainAppContent = null;
 
+	counter = 1;
+
 	on(eventType, selector, callback) {
 		document.addEventListener(eventType, function (event) {
 			if (event.target.matches(selector)) {
@@ -100,6 +102,8 @@ class ShipardClient {
 			case 'workplaceLogin': return this.workplaceLogin(e);
 			case 'inline-action': return this.inlineAction(e);
     }
+
+		console.log("APP-ACTION", actionId);
 
     return 0;
   }

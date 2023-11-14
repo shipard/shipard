@@ -37,6 +37,11 @@ class Router extends \Shipard\Base\Utility
     if (!$requestType)
       return new \Shipard\Application\Response ($this->app(), 'no requestType param', 404);
 
+    if ($requestType === 'openModal')
+    {
+      $requestType = $this->requestParam('modal-type');
+    }
+
     /** @var \Api\v2\ApiResponse  */
     $apiResponseObject = NULL;
 

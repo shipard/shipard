@@ -40,7 +40,7 @@
     <div class="list-group-item d-flex justify-content-between">
         <span class='text-{{data.balance.status.class}}'>{{{@icon;dataItem:data.balance.status.icon}}} {{data.balance.status.text}}</span>
 
-        <span>{{{@icon;icon:user/archive}}} Přehled faktur</span>
+        <button class='btn btn-sm btn-default shp-widget-action' data-action='open-modal' data-action-param-modal-type='dataViewer' data-action-param-view-id='zus-ezk-invoicesOut' data-action-param-table='e10doc.core.heads'>{{{@icon;icon:user/archive}}} Přehled faktur</button>
     </div>
 </ol>
 

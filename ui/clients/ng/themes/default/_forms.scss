@@ -66,3 +66,28 @@ input.e10-ef-w999 {
 select.e10-inputEnum {
   max-width: 100%;
 }
+
+
+data-modal-env {
+  position: absolute;
+  background-color: #000000C0;
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+
+  >div, >data-viewer {
+    background-color: var(--bodyBg);
+  }
+}
+
+@media only screen and (min-width: 701px) {
+  data-modal-env {
+    >div, >data-viewer {
+      width: 60%;
+      margin-left: 20%;
+    }
+  }
+}
+

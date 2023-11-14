@@ -1,13 +1,21 @@
 class ShipardWidgetBoard extends ShipardWidget
 {
+  elmContent = null;
+
   init(e)
   {
     console.log("ShipardWidgetBoard::init");
     super.init(e);
 
-    var mc = new Hammer(this.rootElm);
-    mc.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 300 });
-    mc.get('pan').set({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 300 });
+    this.initContent();
+  }
+
+  initContent()
+  {
+    this.elmContent = this.rootElm.querySelector('.shp-wb-content');
+    var mc = new Hammer(this.elmContent);
+    mc.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 250 });
+    mc.get('pan').set({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 250 });
     mc.on("panleft panright", function(ev) {this.doSwipe(ev)}.bind(this));
   }
 
@@ -44,6 +52,7 @@ class ShipardWidgetBoard extends ShipardWidget
     //console.log(data);
     //this.rootElm.innerHTML = data.response.hcMain;
     this.setInnerHTML(this.rootElm, data.response.hcMain);
+    this.initContent();
   }
 
   setParamValue(e)

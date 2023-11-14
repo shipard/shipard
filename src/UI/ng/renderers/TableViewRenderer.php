@@ -12,6 +12,7 @@ use \Shipard\UI\Core\ContentRenderer;
 class TableViewRenderer extends Renderer
 {
   var ?\Shipard\Viewer\TableView $viewer = NULL;
+	var $isModal = 0;
 
   public function setViewer (\Shipard\Viewer\TableView $viewer)
   {
@@ -139,6 +140,12 @@ class TableViewRenderer extends Renderer
 		//if ($this->viewer->type === 'inline')
 		{
 			$c .= "<div class='toolbar' id='{$this->viewer->toolbarElementId}__Main'>";
+
+			if ($this->isModal)
+			{
+				$c .= "<span style='font-size: 1.6em;' class='shp-widget-action p-2' data-action='closeModal'>".$this->app()->ui()->icon('user/arrowLeft')."</span>";
+			}
+
 			$c .= $this->createToolbarCode ();
 			$c .= '</div>';
 		}

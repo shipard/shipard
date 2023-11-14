@@ -49,7 +49,7 @@ class ShipardServer {
 	post (url, data, f, errorFunction)
 	{
 		var fullUrl = this.httpServerRoot + url;
-
+		//console.log('server.post: ', fullUrl);
 		var options = {
 			method: 'POST',
 			url: fullUrl,

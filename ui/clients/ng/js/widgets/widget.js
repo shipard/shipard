@@ -27,6 +27,8 @@ class ShipardWidget {
       case 'inline-action': return this.inlineAction(e);
       case 'select-main-tab': return this.selectMainTab(e);
 			case 'open-popup': return this.openPopup(e);
+      case 'open-modal': return this.openModal(e);
+      case 'closeModal': return this.closeModal(e);
     }
 
     return 0;
@@ -60,6 +62,71 @@ class ShipardWidget {
     console.log("__INLINE_ACTION", requestParams);
   }
 
+  openModal(e)
+  {
+    const modalType = e.getAttribute('data-modal-type');
+
+    //console.log("OPEN-MODAL; ", modalType);
+
+    var modalParams = {};
+	  var modalAttrs = {
+      'parent-widget-id': this.rootElm.getAttribute('id'),
+      'parent-widget-type': 'unknown',
+    };
+
+    this.elementPrefixedAttributes (e, 'data-action-param-', modalParams);
+
+    let newEnvelope = document.createElement('data-modal-env');
+    newEnvelope.setAttribute('data-request-type', 'dataModal');
+
+    for (const oneParamId in modalParams)
+      newEnvelope.setAttribute('data-action-param-'+oneParamId, modalParams[oneParamId]);
+
+    newEnvelope.id = 'shc_meid_'+shc.counter++;
+
+    newEnvelope.innerHTML = "čekejte, prosím, data se načítají...";
+
+    document.body.appendChild(newEnvelope);
+
+    switch (modalType)
+    {
+      case 'viewer':  console.log('Viewer!');
+                      break;
+    }
+
+    let apiParams = {
+      'cgType': 2,
+      'requestType': 'openModal',
+      //'formOp': e.formOp,
+    };
+
+    this.elementPrefixedAttributes (e, 'data-action-param-', apiParams);
+
+    //console.log("API-CALL-MODAL", apiParams);
+
+    var url = 'api/v2';
+
+    shc.server.post (url, apiParams,
+      function (data) {
+        console.log("--api-call-MODAL-success--", data);
+        this.doWidgetModalResponse(data, newEnvelope.id);
+      }.bind(this),
+      function (data) {
+        console.log("--api-call-MODAL-error--");
+      }.bind(this)
+    );
+
+    return 0;
+  }
+
+  closeModal(e)
+  {
+    this.rootElm.parentElement.remove();
+
+    return 0;
+  }
+
+
   openPopup(e)
   {
     const url = e.getAttribute ('data-url');
@@ -70,6 +137,8 @@ class ShipardWidget {
     var nw = window.open(url, "shpd-cl-ng"+popUpId, "location=no,status=no,width=" + width + ",height=" + height);
 
     nw.focus();
+
+    return 0;
   }
 
   selectMainTab (e)
@@ -136,6 +205,20 @@ class ShipardWidget {
       shc.applyUIData (data['response']['uiData']);
 
     console.log(data);
+  }
+
+  doWidgetModalResponse(data, targetElementId)
+  {
+    if (data['response'] !== undefined && data['response']['uiData'] !== undefined)
+      shc.applyUIData (data['response']['uiData']);
+
+    //console.log('doWidgetModalResponse', data);
+
+    var targetElement = document.getElementById(targetElementId);
+    this.setInnerHTML(targetElement, data.response.hcFull);
+
+    if (data.response.objectType === 'dataView')
+      initWidgetTableViewer(data.response.objectId);
   }
 
 	on(ownerWidget, eventType, selector, callback) {
@@ -221,8 +304,10 @@ class ShipardWidget {
     for (const oneParamId in attrs)
       newEnvelope.setAttribute('data-'+oneParamId, attrs[oneParamId]);
 
-    newEnvelope.id = 'test1122';
+    newEnvelope.id = 'shc_meid_'+shc.counter++;
+
     newEnvelope.innerHTML = "čekejte, prosím, data se načítají...";
+
     document.body.appendChild(newEnvelope);
 
     newEnvelope.formOp = formOp;
