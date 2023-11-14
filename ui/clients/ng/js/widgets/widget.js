@@ -102,7 +102,7 @@ class ShipardWidget {
 
     this.elementPrefixedAttributes (e, 'data-action-param-', apiParams);
 
-    //console.log("API-CALL-MODAL", apiParams);
+    console.log("API-CALL-MODAL", apiParams);
 
     var url = 'api/v2';
 
@@ -219,6 +219,13 @@ class ShipardWidget {
 
     if (data.response.objectType === 'dataView')
       initWidgetTableViewer(data.response.objectId);
+    else
+    {
+      console.log("init-other-widget");
+      let e = document.getElementById(data.response.objectId);
+      e.shpWidget = new ShipardWidget();
+      e.shpWidget.init(e);
+    }
   }
 
 	on(ownerWidget, eventType, selector, callback) {

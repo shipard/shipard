@@ -17,6 +17,9 @@ class DocumentCard extends Content
 	var $header = NULL;
 	var $disableAttachments = FALSE;
 	var $dstObjectType = '';
+	var $widgetId = '';
+
+	var ?\Shipard\UI\ng\TemplateUI $uiTemplate = NULL;
 
 	CONST spTimeLine = 'tl', spDocuments = 'docs';
 
@@ -77,6 +80,8 @@ class DocumentCard extends Content
 	{
 		$this->table = $table;
 		$this->recData = $recData;
+
+		$this->widgetId = 'DC-'.mt_rand(1000000, 999999999);
 	}
 
 	public function addContentAttachments ($toRecId, $tableId = FALSE, $title = FALSE, $downloadTitle = FALSE)
@@ -283,6 +288,25 @@ class DocumentCard extends Content
 		$attCode = $this->app()->ui()->addAttachmentsInputCodeMobile($this->table->tableId(), $this->recData['ndx'], '');
 
 		$this->response->add ('codeFooter', $attCode."<div class='e10-page-end'><i class='fa fa-chevron-up'></i></div>");
+	}
+
+	public function createCodeNG ()
+	{
+		$cr = new ContentRenderer($this->app);
+		$cr->mobile = TRUE;
+		$cr->setDocumentCard($this);
+
+		$c = "<document-card id='{$this->widgetId}'>";
+		$c .= "<div class='toolbar'>";
+		$c .= "<span style='font-size: 1.6em;' class='shp-widget-action p-2' data-action='closeModal'>".$this->app()->ui()->icon('user/arrowLeft')."</span>";
+		//$c .= $this->createToolbarCode ();
+		$c .= '</div>';
+		$c .= "<div class='content'>";
+		$c .= $cr->createCode('body');
+		$c .= '</div>';
+		$c .= "</document-card>";
+
+		return $c;
 	}
 
 	public function response ()

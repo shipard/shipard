@@ -10,6 +10,7 @@
 
   <div class="d-flex justify-content-between align-items-center">
     <span class="badge {{data.listRow.balanceInfo.class}} me-2">{{{@icon;dataItem:data.listRow.balanceInfo.icon}}} {{data.listRow.balanceInfo.text}}</span>
+    <button class='btn btn-sm btn-default shp-widget-action' data-action='open-modal' data-action-param-modal-type='documentCard' data-action-param-pk='{{data.listRow.pk}}' data-action-param-class-id='e10pro.purchase.libs.apps.DocumentCardPurchase' data-action-param-table='e10doc.core.heads'>{{{@icon;icon:user/archive}}} Detail</button>
     <span class="btn btn-outline-secondary btn-sm flex-shrink-1 shp-widget-action" data-url='{{data.listRow.reportFileName}}' data-action='open-popup'>{{{@icon;icon:user/fileDownload}}}</span>
   </div>
 </div>

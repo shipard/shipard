@@ -77,17 +77,33 @@ data-modal-env {
   width: 100vw;
   height: 100vh;
 
-  >div, >data-viewer {
+  >div, >data-viewer, >document-card {
     background-color: var(--bodyBg);
   }
 }
 
+document-card {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: min-content 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "toolbar"
+    "content";
+
+  height: 100%;
+
+  >.toolbar { grid-area: toolbar; }
+  >.content { grid-area: content; }
+}
+
+
 @media only screen and (min-width: 701px) {
   data-modal-env {
-    >div, >data-viewer {
+    >div, >data-viewer, >document-card {
       width: 60%;
       margin-left: 20%;
     }
   }
 }
-
