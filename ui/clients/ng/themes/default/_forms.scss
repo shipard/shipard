@@ -95,7 +95,7 @@ document-card {
   height: 100%;
 
   >.toolbar { grid-area: toolbar; }
-  >.content { grid-area: content; }
+  >.content { grid-area: content; overflow-y: auto;}
 }
 
 
