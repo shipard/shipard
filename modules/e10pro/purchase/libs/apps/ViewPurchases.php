@@ -88,7 +88,7 @@ use \e10\base\libs\UtilsBase;
 		 {
 			 $balanceInfo['text'] = 'Uhrazeno';
 			 $balanceInfo['icon'] = 'system/iconCheck';
-			 $balanceInfo['class'] = 'bg-success';
+			 $balanceInfo['class'] = 'success';
 		 }
 		 else
 		 {
@@ -98,20 +98,20 @@ use \e10\base\libs\UtilsBase;
 				 {
 					 $balanceInfo['text'] = 'NEUHRAZENO';
 					 $balanceInfo['icon'] = 'system/iconWarning';
-					 $balanceInfo['class'] = 'bg-danger';
+					 $balanceInfo['class'] = 'danger';
 				 }
 				 else
 				 {
 					 $balanceInfo['text'] = 'Uhraďte do: '.Utils::datef($item['dateDue'], '%S');
 					 $balanceInfo['icon'] = 'system/iconCheck';
-					 $balanceInfo['class'] = 'bg-info';
+					 $balanceInfo['class'] = 'info';
 				 }
 			 }
 			 else
 			 {
 				 $balanceInfo['text'] = 'Částečně uhrazeno, zbývá '.Utils::nf($bi['restAmount'], 2);
 				 $balanceInfo['icon'] = 'system/iconCheck';
-				 $balanceInfo['class'] = 'bg-warning';
+				 $balanceInfo['class'] = 'warning';
 			 }
 		 }
 
