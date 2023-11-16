@@ -70,9 +70,16 @@ ol.grades li.list-group-item:not(:last-child){
 
 .dropdown-menu.show {
 	overflow-y: auto;
-	max-height: 80%;
+	max-height: 80vh;
 }
 
 a {
 	color: var(--bodyColor);
+}
+
+/*rows in receipts*/
+div.rowsOnWeb {
+	span {
+		padding: 1rem;
+	}
 }
