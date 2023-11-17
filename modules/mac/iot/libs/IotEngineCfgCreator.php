@@ -290,7 +290,7 @@ class IotEngineCfgCreator extends Utility
 					$dp = $this->iotDevicesUtils->deviceProperty($iotDeviceNdx, $r['iotDeviceProperty']);
 					if ($dp)
 					{
-						if ($dp['data-type'] === 'binary' || $dp['data-type'] === 'enum')
+						if ($dp['data-type'] === 'binary' || $dp['data-type'] === 'enum' || $dp['data-type'] === 'h-bridge')
 						{
 							$enumSetValue = $dp['enumSet'][$r['iotDevicePropertyValueEnum']] ?? NULL;
 

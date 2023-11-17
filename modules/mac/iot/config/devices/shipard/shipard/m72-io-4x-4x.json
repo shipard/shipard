@@ -12,6 +12,7 @@
 			{"id":  "in2", "title":  "Vstup 2"},
 			{"id":  "in3", "title":  "Vstup 3"},
 			{"id":  "in4", "title":  "Vstup 4"},
+			{"id":  "1w", "title":  "Čidlo teploty"},
       {"id":  "espNow", "title":  "ESP-NOW server"}
 		],
 		"columns": [
@@ -55,6 +56,11 @@
 				"id": "in4FullName", "group":  "in4", "name": "Název portu Vstup 4", "label": "Název", "type": "string", "len": 80, "enabled": {"in4Enabled": "1"}
 			},
 
+      {
+				"id": "1WEnabled", "group":  "1w", "name": "Čidlo teploty (1-wire)", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			},
+
+
 			{
 				"id": "espNowServerEnabled", "group":  "espNow", "name": "Povolit ESP-NOW server", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
 			}
@@ -80,7 +86,7 @@
 
 			"pin": "p26",
 
-			"_rowColumns": {"in2PortId": "portId", "in1FullName": "fullName"},
+			"_rowColumns": {"in2PortId": "portId", "in2FullName": "fullName"},
       "_portDisabled": {"in2Enabled": 0}
 		},
 		"in3": {
@@ -89,7 +95,7 @@
 
 			"pin": "p32",
 
-			"_rowColumns": {"in3PortId": "portId", "in1FullName": "fullName"},
+			"_rowColumns": {"in3PortId": "portId", "in3FullName": "fullName"},
       "_portDisabled": {"in3Enabled": 0}
 		},
 		"in4": {
@@ -98,8 +104,18 @@
 
 			"pin": "p33",
 
-			"_rowColumns": {"in4PortId": "portId", "in1FullName": "fullName"},
+			"_rowColumns": {"in4PortId": "portId", "in4FullName": "fullName"},
       "_portDisabled": {"in4Enabled": 0}
+		},
+
+		"1w": {
+			"type": "bus/1wire",
+			"portId": "1w",
+
+			"pin": "p13",
+
+			"_rowColumns": {"_portId": "1w"},
+      "_portDisabled": {"1WEnabled": 0}
 		},
 
 		"esp-now-server": {

@@ -44,7 +44,7 @@ class TableEventsDo extends DbTable
 				$dp = $properties[$recData['iotDeviceProperty']] ?? NULL;
 				if ($dp)
 				{
-					if ($dp['data-type'] === 'binary' || $dp['data-type'] === 'enum')
+					if ($dp['data-type'] === 'binary' || $dp['data-type'] === 'enum' || $dp['data-type'] === 'h-bridge')
 						$recData['iotDevicePropertyValue'] = $recData['iotDevicePropertyValueEnum'];
 				}
 			}
@@ -441,7 +441,7 @@ class FormEventDo extends TableForm
 						$dp = $properties[$this->recData['iotDeviceProperty']] ?? NULL;
 						if ($dp)
 						{
-							if ($dp['data-type'] === 'binary' || $dp['data-type'] === 'enum')
+							if ($dp['data-type'] === 'binary' || $dp['data-type'] === 'enum' || $dp['data-type'] === 'h-bridge')
 								$this->addColumnInput ('iotDevicePropertyValueEnum');
 							else
 								$this->addColumnInput ('iotDevicePropertyValue');

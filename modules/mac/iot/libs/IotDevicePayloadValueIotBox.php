@@ -34,19 +34,33 @@ class IotDevicePayloadValueIotBox extends Utility
 
 	protected function hbridgeValue($enumId)
 	{
-		if ($enumId === 'push')
+		if ($enumId === 'push0')
 		{
 			$interval = intval($this->eventValueCfg['interval']);
 			if (!$interval)
-				$interval = 500;
-			return 'P:'.$interval;
+				$interval = 50;
+			return '0:'.$interval;
 		}
-		if ($enumId === 'unpush')
+		elseif ($enumId === 'push1')
 		{
 			$interval = intval($this->eventValueCfg['interval']);
 			if (!$interval)
-				$interval = 500;
-			return 'U:'.$interval;
+				$interval = 50;
+			return '1:'.$interval;
+		}
+		elseif ($enumId === 'push2')
+		{
+			$interval = intval($this->eventValueCfg['interval']);
+			if (!$interval)
+				$interval = 50;
+			return '2:'.$interval;
+		}
+		elseif ($enumId === 'push3')
+		{
+			$interval = intval($this->eventValueCfg['interval']);
+			if (!$interval)
+				$interval = 50;
+			return '3:'.$interval;
 		}
 
 		return '';

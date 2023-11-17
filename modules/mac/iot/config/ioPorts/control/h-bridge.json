@@ -13,21 +13,39 @@
 	},
 	"dataModel": {
 		"itemType": "controls",
-		"data-type": "binary",
+		"data-type": "h-bridge",
 		"valueClass": "mac.iot.libs.IotDevicePayloadValueIotBox",
 		"enumSet": {
-			"2": {"title": "ON"},
-			"1": {"title": "OFF"},
-			"push": {
-				"title": "PUSH",
+			"0": {"title": "STOP"},
+			"1": {"title": "LEFT"},
+			"2": {"title": "RIGHT"},
+			"3": {"title": "???"},
+			"push0": {
+				"title": "PUSH-0 - STOP",
 				"fields": {
 					"columns": [
 						{"id": "interval", "name": "Doba trvání [ms]", "type": "int"}
 					]
 				}
 			},
-			"unpush": {
-				"title": "UNPUSH",
+			"push1": {
+				"title": "PUSH-1 - LEFT",
+				"fields": {
+					"columns": [
+						{"id": "interval", "name": "Doba trvání [ms]", "type": "int"}
+					]
+				}
+			},
+			"push2": {
+				"title": "PUSH-2 - RIGHT",
+				"fields": {
+					"columns": [
+						{"id": "interval", "name": "Doba trvání [ms]", "type": "int"}
+					]
+				}
+			},
+			"push3": {
+				"title": "PUSH-3",
 				"fields": {
 					"columns": [
 						{"id": "interval", "name": "Doba trvání [ms]", "type": "int"}
@@ -36,10 +54,10 @@
 			}
 		},
 		"enumGet": {
-			"2": {"title": "ON"},
-			"1": {"title": "OFF"}
-		},
-		"value-on": "2",
-		"value-off": "1"
+			"0": {"title": "STOP"},
+			"1": {"title": "LEFT"},
+			"2": {"title": "RIGHT"},
+			"3": {"title": "???"}
+		}
 	}
 }

@@ -121,7 +121,7 @@ class TableControls extends DbTable
 			if (!$events)
 				return [];
 
-			$event = $events[$form->recData['iotDeviceProperty']] ?? NULL;	
+			$event = $events[$form->recData['iotDeviceProperty']] ?? NULL;
 			if (!$event)
 				return [];
 
@@ -281,7 +281,7 @@ class FormControl  extends TableForm
 						$dp = $properties[$this->recData['iotDeviceProperty']] ?? NULL;
 						if ($dp)
 						{
-							if ($dp['data-type'] === 'binary' || $dp['data-type'] === 'enum')
+							if ($dp['data-type'] === 'binary' || $dp['data-type'] === 'enum' || $dp['data-type'] === 'h-bridge')
 								$this->addColumnInput ('iotDevicePropertyValueEnum');
 							else
 								$this->addColumnInput ('iotDevicePropertyValue');

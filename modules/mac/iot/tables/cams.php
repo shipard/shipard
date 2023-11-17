@@ -69,7 +69,7 @@ class TableCams extends DbTable
 			'camServerNdx' => $camServerNdx,
 		];
 
-		if ($lanRecData['enableVehicleDetect'])
+		if ($lanRecData['enableVehicleDetect'] ?? 0)
 			$camInfo['enableVehicleDetect'] = intval($lanRecData['enableVehicleDetect']);
 
 		$server = $this->app->cfgItem('mac.localServers.'.$camInfo['camServerNdx'], NULL);
