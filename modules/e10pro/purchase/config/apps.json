@@ -5,6 +5,10 @@
       "appTitle": "Výkupna",
       "items": [
         {
+          "title": "Ceník", "icon": "user/medal", "id": "priceList",
+          "objectType": "widget", "classId": "e10pro.purchase.libs.apps.WidgetPriceList"
+        },
+        {
           "title": "Výkupy", "icon": "user/book", "id": "purchases",
           "objectType": "viewer", "table": "e10doc.core.heads", "viewer": "portal-purchases"
         },

@@ -1,0 +1,18 @@
+<h2>CENÍK</h2>
+
+{{#data.categories}}
+  <a href='#CAT_{{id}}' class='p-1 bg-secondary'>{{fullName}}</a>
+{{/data.categories}}
+
+<hr/>
+
+{{#data.categories}}
+  <h3 id='CAT_{{id}}' class='pt-5'>{{fullName}}</h3>
+
+  {{#items}}
+    <b>{{name}}</b>{{^priceIsText}} | {{price}} / {{unit}}{{/priceIsText}}<br>
+    {{#description}}{{description}}<br>{{/description}}
+    {{#priceIsText}}{{price}}<br>{{/priceIsText}}
+  {{/items}}
+{{/data.categories}}
+
