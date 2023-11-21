@@ -83,3 +83,9 @@ div.rowsOnWeb {
 		padding: 1rem;
 	}
 }
+
+/* výkupna */
+
+div a.pricingCategory:not(:last-of-type) {
+	padding-right: 1rem;
+}

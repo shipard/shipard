@@ -1,18 +1,29 @@
-<h2>CENÍK</h2>
+<div class="container-fluid">
+  <h1 class="p-1 pt-3">{{{@icon;icon:user/moneyBill}}} Ceník</h1>
 
-{{#data.categories}}
-  <a href='#CAT_{{id}}' class='p-1 bg-secondary'>{{fullName}}</a>
-{{/data.categories}}
+  <div class="mb-2 ps-1">
+    {{#data.categories}}
+      <a href='#CAT_{{id}}' class="pricingCategory" id="pricingCategories">{{fullName}}</a>
+    {{/data.categories}}
+  </div>
 
-<hr/>
+  {{#data.categories}}
+    <div class="d-flex align-items-center pb-2 ps-1">
+      <span id='CAT_{{id}}' class='fs-3'>{{fullName}}</span>
+      <a class="btn btn-outline-secondary btn-sm ms-3" href="#pricingCategories">{{{@icon;icon:user/arrowUp}}}</a>
+    </div>
 
-{{#data.categories}}
-  <h3 id='CAT_{{id}}' class='pt-5'>{{fullName}}</h3>
-
-  {{#items}}
-    <b>{{name}}</b>{{^priceIsText}} | {{price}} / {{unit}}{{/priceIsText}}<br>
-    {{#description}}{{description}}<br>{{/description}}
-    {{#priceIsText}}{{price}}<br>{{/priceIsText}}
-  {{/items}}
-{{/data.categories}}
-
+    <table class="priceList mb-2" style="width: 100%;">
+      {{#items}}
+        <tr>
+          <td>
+            <div>{{name}}</div>
+            {{#description}}<small class="text-muted">{{description}}<br></small>{{/description}}
+            {{#priceIsText}}{{price}}{{/priceIsText}}
+          </td>
+          <td style="white-space: pre; text-align: right; vertical-align: top;">{{^priceIsText}}{{price}} / {{unit}}{{/priceIsText}}</td>
+        </tr>
+      {{/items}}
+    </table>
+  {{/data.categories}}
+</div>

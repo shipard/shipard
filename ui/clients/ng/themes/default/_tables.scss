@@ -1,0 +1,37 @@
+/* table.default {
+    border-collapse: collapse !important; border: 1px solid #B0B0B0 !important;
+
+    >tbody>tr>td {border: 1px solid #B0B0B0; padding: 4px; vertical-align: top;}
+      tr.separator td {border-left: 1px solid transparent; border-right: 1px solid transparent;}
+  }
+
+  table.fullWidth {width: 100%;}
+
+
+  table.default thead tr:last-child {border-bottom: 2px solid #888;}
+  table.default thead tr th {text-align: left; border: 1px solid #909090; padding: 4px !important; background-color: #eee !important;}
+
+  table.stripped tbody tr:nth-child(even) {background-color: #F0F0F0 !important;}
+  table.stripped tbody tr:nth-child(odd) {background-color: #FAFAFA !important;}
+
+  td.e10-icon, th.e10-icon {width: 2em; text-align: center !important; white-space: pre;}
+
+  td.e10-icon {
+      >span>span.e10-ntf-badge {
+          position: absolute;
+          margin-left: -1ex;
+          margin-top: -0.9rem;
+      }
+  }*/
+
+table.priceList {
+    border: 1pt solid var(--universalBorder); border-style: hidden; border-radius: 5px; border-style: hidden; box-shadow: 0 0 0 1px var(--universalBorder); border-collapse: collapse;
+    background-color: var(--cardBackground);
+    tr {
+        border-bottom: 1px solid var(--universalBorder);
+    }
+    td
+    {
+        padding: .5rem;
+    }
+}
