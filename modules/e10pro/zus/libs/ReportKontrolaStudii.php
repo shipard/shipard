@@ -32,7 +32,7 @@ class ReportKontrolaStudii extends \E10\GlobalReport
 		array_push($q, ' FROM [e10pro_zus_studium] AS studia');
 		array_push($q, ' WHERE 1');
 		array_push($q, ' AND studia.skolniRok = %s', $this->reportParams ['skolniRok']['value']);
-		array_push($q, ' AND [studia].[stavHlavni] != %i', 4);
+		array_push($q, ' AND [studia].[stavHlavni] = %i', 1);
 		array_push($q, ' ORDER BY studia.nazev');
 
 		$counter = 1;
@@ -48,7 +48,7 @@ class ReportKontrolaStudii extends \E10\GlobalReport
         $hr = ['#' => '#', 'msg' => 'Problém', ];
         $this->addContent(['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'header' => $hr, 'table' => $ks->troubles,
             'title' => [
-              ['text' => $r['poradoveCislo'].': '.$r['nazev'], 'docAction' => 'edit', 'table' => 'e10pro.zus.studia', 'pk' => $r['ndx'], 'icon' => 'system/iconWarning', 'class' => 'h1 e10-error'],
+              ['text' => $r['poradoveCislo'].': '.$r['nazev'], 'docAction' => 'edit', 'table' => 'e10pro.zus.studium', 'pk' => $r['ndx'], 'icon' => 'system/iconWarning', 'class' => 'h1 e10-error'],
               ['text' => '#'.utils::nf($counter), 'class' => 'break'],
             ],
             'params' => ['hideHeader' => 1]
