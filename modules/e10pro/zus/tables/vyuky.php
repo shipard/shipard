@@ -422,8 +422,10 @@ class ViewVyuky extends TableView
 		if ($item['studiumRocnik'])
 			$listItem ['i2'] = $rocniky [$item['studiumRocnik']]['nazev']; //['icon' => 'x-teacher', 'text' => $item['jmenoUcitele']];
 
-		//$listItem ['t2'] = $this->app()->cfgItem ("e10pro.zus.oddeleni.{$item['svpOddeleni']}.nazev");
-		$listItem ['t2'][] = ['text' => $item['idOboru'].' / '.$this->app()->cfgItem ("e10pro.zus.predmety.{$item['svpPredmet']}.nazev"), 'class' => ''];
+		$predmetLabel = ['text' => $item['idOboru'].' / '.$this->app()->cfgItem ("e10pro.zus.predmety.{$item['svpPredmet']}.nazev"), 'class' => ''];
+		if ($item['svpPredmet2'])
+			$predmetLabel['text'] .= ' / '. $this->app()->cfgItem ("e10pro.zus.predmety.{$item['svpPredmet2']}.nazev");
+		$listItem ['t2'][] = $predmetLabel;
 
 		if (!utils::dateIsBlank($item['datumZahajeni']))
 			$listItem ['t2'][] = ['text' => 'Zahájeno '.utils::datef($item['datumZahajeni']), 'class' => 'label label-info'];
