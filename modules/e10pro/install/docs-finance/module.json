@@ -3,6 +3,7 @@
   "name": "Finance",
   "config": [
     {"id": "+appSkeleton", "name": "Kostra aplikace", "file": "docs-finance.appSkeleton.json"},
+    {"id": "+apps", "file": "appShipard.json"},
     {"id": "+e10.persons.roles", "name": "Role uživatelů", "file": "e10.persons.roles.json"},
     {"id": "+appOptions", "file": "e10.appOptions.json"},
 	  {"id": "+appCache", "file": "appCache.json"},

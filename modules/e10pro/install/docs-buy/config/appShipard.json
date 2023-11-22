@@ -11,12 +11,16 @@
           "objectType": "menuItem",
           "items": {
             "invni": {
-              "title": "Faktury přijaté", "icon": "docTypeInvoicesIn",
-              "objectType": "viewer", "table": "e10doc.core.heads", "viewer": "invoicesIn", "order": 200000
+              "title": "Přijaté faktury", "icon": "docTypeInvoicesIn", "order": 200000,
+              "objectType": "viewer", "table": "e10doc.core.heads", "viewer": "invoicesIn"
+            },
+            "ordersOut": {
+              "title": "Vydané objednávky", "icon": "tables/e10buy.orders.orders", "order": 220000,
+              "object": "viewer", "table": "e10buy.orders.orders", "viewer": "default", "enabledCfgItem": "options.e10doc-commerce.useOrdersOut"
             },
             "cashBox": {
-              "title": "Pokladna", "objectType": "viewer", "table": "e10doc.core.heads", "viewer": "cash",
-              "icon": "docType/cash", "order": 250000
+              "title": "Pokladna", "icon": "docType/cash", "order": 250000,
+              "objectType": "viewer", "table": "e10doc.core.heads", "viewer": "cash"
             }
           }
         }

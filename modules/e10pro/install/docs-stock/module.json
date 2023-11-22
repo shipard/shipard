@@ -3,6 +3,7 @@
   "name": "Zásoby",
   "config": [
     {"id": "+appSkeleton", "name": "Kostra aplikace", "file": "docs-stock.appSkeleton.json"},
+    {"id": "+apps", "file": "appShipard.json"},
 		{"id": "+e10.docs.types", "file": "e10.docs.types.json"},
 		{"id": "+e10.persons.roles", "name": "Role uživatelů", "file": "e10.persons.roles.json"},
 		{"id": "+reportsGroups", "file": "reportsGroups.json"},

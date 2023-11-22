@@ -1,0 +1,43 @@
+{
+  "shipard1":
+  {
+    "appMenu":
+    {
+      "items": {
+        "sale":
+        {
+          "title": "Prodej",
+          "id": "sale",
+          "objectType": "menuItem",
+          "items": {
+            "invoicesOut": {
+              "title": "Vydané faktury", "icon": "docType/invoicesOut", "order": 100000,
+              "object": "viewer", "table": "e10doc.core.heads", "viewer": "invoicesOut"
+            },
+            "proformaOut": {
+              "title": "Zálohové faktury", "icon": "docType/proFormaOut", "order": 150000,
+              "object": "viewer", "table": "e10doc.core.heads", "viewer": "proformaOut", "enabledCfgItem": "options.e10doc-sale.useProformaOut"
+            },
+            "contractSale": {
+              "title": "Prodejní smlouvy", "icon": "docType/contractSale", "order": 400000,
+              "object": "viewer", "table": "e10doc.contracts.core.heads", "viewer": "sale", "enabledCfgItem": "options.e10doc-sale.useContractSale"
+            },
+				    "workOrders": {
+              "title": "Zakázky", "icon": "docType/workOrders", "order": 405000,
+              "object": "viewer", "table": "e10mnf.core.workOrders", "viewer": "default", "enabledCfgItem": "options.e10doc-commerce.useWorkOrders"
+            },
+				    "ordersIn": {
+              "title": "Přijaté objednávky", "icon": "docType/ordersIn", "order": 410000,
+              "object": "viewer", "table": "e10doc.core.heads", "viewer": "orderIn", "enabledCfgItem": "options.e10doc-commerce.useOrdersIn"
+            },
+				    "deliveryNote": {
+              "title": "Dodací listy", "icon": "docType/deliveryNote", "order": 420000,
+              "object": "viewer", "table": "e10doc.core.heads", "viewer": "deliveryNote", "enabledCfgItem": "options.e10doc-sale.useDeliveryNotes"
+
+            }
+          }
+        }
+      }
+    }
+  }
+}

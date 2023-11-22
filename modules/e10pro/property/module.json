@@ -8,6 +8,7 @@
     {"id": "+appSkeleton", "name": "Rozšíření menu aplikace", "file": "property.appSkeleton.json"},
     {"id": "+e10.persons.roles", "name": "Role uživatelů", "file": "e10.persons.roles.json"},
 		{"id": "+appOptions", "file": "e10.appOptions.json"},
+		{"id": "+apps", "file": "appShipard.json"},
 		{"id": "+e10.appOptions.groups", "file": "e10.appOptionsGroups.json"},
 		{"id": "+e10.base.doclinks", "file": "e10.property.docLinks.json"},
 		{"id": "e10pro.property.docStates", "name": "Stavy osob", "file": "e10pro.property.docStates.json"},

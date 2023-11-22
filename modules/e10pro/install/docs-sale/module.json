@@ -3,6 +3,7 @@
   "name": "Prodej",
   "config": [
     {"id": "+appSkeleton", "name": "Kostra aplikace", "file": "docs-sale.appSkeleton.json"},
+    {"id": "+apps", "file": "appShipard.json"},
 		{"id": "+appOptions", "name": "Nastavení aplikace", "file": "e10.appOptions.json"},
 		{"id": "e10doc.core.heads.docStates.cashreg", "name": "Stavy dokladů", "file": "e10doc.core.heads.docStates.cashreg.json"},
     {"id": "+e10.persons.roles", "name": "Role uživatelů", "file": "e10.persons.roles.json"},
