@@ -21,6 +21,7 @@
 	"config": [
 		{"id": "+alerts", "file": "alerts.json"},
 		{"id": "+appSkeleton", "file": "appSkeleton.json"},
+		{"id": "+apps", "file": "appShipard.json"},
 		{"id": "+appOptions", "file": "e10.appOptions.json"},
 		{"id": "+e10.persons.roles", "file": "mac.lan.roles.json"},
 		{"id": "+e10.persons.systemGroups", "file": "e10.persons.groups.json"},

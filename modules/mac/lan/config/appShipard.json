@@ -1,0 +1,22 @@
+{
+  "shipard1":
+  {
+    "appMenu":
+    {
+      "items": {
+        "lan":
+        {
+          "title": "IT",
+          "id": "lan",
+          "objectType": "menuItem",
+          "items": {
+            "devices": {
+              "title": "Prvky sítě",  "icon": "tables/mac.lan.devices", "order": 5100,
+              "object": "viewer", "table": "mac.lan.devices", "viewer": "all"
+            }
+          }
+        }
+      }
+    }
+  }
+}
