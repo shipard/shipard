@@ -1,0 +1,24 @@
+{
+  "shipard1":
+  {
+    "fn": "Shipard",
+    "template": "appShipard",
+    "appMenu":
+    {
+      "items": {
+        "home":
+        {
+          "title": "Home",
+          "id": "home",
+          "objectType": "menuItem",
+          "items": [
+            {
+              "title": "Osoby", "icon": "user/book", "id": "persons",
+              "objectType": "viewer", "table": "e10.persons.persons", "viewer": "default"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

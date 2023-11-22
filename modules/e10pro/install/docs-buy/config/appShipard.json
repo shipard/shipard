@@ -1,0 +1,26 @@
+{
+  "shipard1":
+  {
+    "appMenu":
+    {
+      "items": {
+        "buy":
+        {
+          "title": "Nákup",
+          "id": "buy",
+          "objectType": "menuItem",
+          "items": {
+            "invni": {
+              "title": "Faktury přijaté", "icon": "docTypeInvoicesIn",
+              "objectType": "viewer", "table": "e10doc.core.heads", "viewer": "invoicesIn", "order": 200000
+            },
+            "cashBox": {
+              "title": "Pokladna", "objectType": "viewer", "table": "e10doc.core.heads", "viewer": "cash",
+              "icon": "docType/cash", "order": 250000
+            }
+          }
+        }
+      }
+    }
+  }
+}

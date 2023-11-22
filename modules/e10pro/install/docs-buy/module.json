@@ -3,6 +3,7 @@
   "name": "Nákup",
   "config": [
     {"id": "+appSkeleton", "name": "Kostra aplikace", "file": "docs-buy.appSkeleton.json"},
+    {"id": "+apps", "file": "appShipard.json"},
     {"id": "+e10.persons.roles", "name": "Role uživatelů", "file": "e10.persons.roles.json"},
 		{"id": "+appOptions", "name": "Nastavení aplikace", "file": "e10.appOptions.json"},
 		{"id": "+reportsGroups", "file": "reportsGroups.json"},

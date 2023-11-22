@@ -1,0 +1,62 @@
+<div class="app-container">
+  <div class="app-nav">
+    <nav class="navbar">
+    <div class="container-fluid">
+
+      <button class="navbar-toggler" id="navbar-toggler-left" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <h5 id="navbar-title-left">
+        {{{@icon;icon:user/user}}} {{userInfo.name}}
+      </h5>
+
+      {{#userContextsEnumExist}}
+      <button class="navbar-toggler" id="navbar-toggler-right" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar2" aria-controls="offcanvasNavbar2" aria-label="Toggle navigation">
+        <span class="fw-semibold align-items-center" style='font-size: 110%;'>{{activeUserContext.shortTitle}}<span class="ps-2"> {{{@icon;icon:user/user}}}</span></span>
+      </button>
+      {{/userContextsEnumExist}}
+
+      <div class='app-menu'>
+        <ul class="nav nav-pills">
+          {{#data.uiStruct.appMenu.items}}
+            <li class='nav-item'>
+              <a href="{{uiRoot}}{{id}}" class='nav-link {{#active}}active{{/active}}'>{{{@icon;dataItem:icon}}}{{title}}</a>
+            </li>
+          {{/data.uiStruct.appMenu.items}}
+        </ul>
+      </div>
+
+      <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="offcanvasNavbarLabel">{{userInfo.name}}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+          <div class="navbar-nav flex-grow-1">
+            <div class="list-group list-group-flush">
+              {{#data.uiStruct.appMenu.items}}
+                <a href="{{uiRoot}}{{id}}" class='list-group-item list-group-item-action {{#active}}active{{/active}}'><span class="navListIcon">{{{@icon;dataItem:icon}}}</span> {{title}}</a>
+              {{/data.uiStruct.appMenu.items}}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </nav>
+  </div>
+
+  <div class="app-content" id='shp-main-app-content' {{{data.appBrowserParams}}}>
+    {{{data.coreMainElementCode}}}
+  </div>
+
+  <div class='app-menu'>
+    <div class="list-group list-group-flush">
+      {{#data.activeMenuItem.items}}
+        <a href="{{uiRoot}}{{id}}" class='list-group-item list-group-item-action {{#active}}active{{/active}}'><span class="navListIcon">{{{@icon;dataItem:icon}}}</span> {{title}}</a>
+      {{/data.activeMenuItem.items}}
+    </div>
+  </div>
+
+  <!--<div class='app-footer'>AHOJ...</div>-->
+</div>

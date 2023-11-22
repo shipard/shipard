@@ -70,7 +70,7 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
     $template->data['wssDefaultNdx'] = intval(key($this->wss));
     $template->data['appBrowserParams'] = '';
 
-    $activeMenuItem = NULL; // uiStruct.appMenu.items
+    $activeMenuItem = NULL;
     if (isset($this->uiStruct['appMenu']['items']))
     {
       $activeMenuItem = Utils::searchArray($this->uiStruct['appMenu']['items'], 'id', $urlId);
@@ -155,6 +155,7 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
         $widget->uiTemplate = $this->uiTemplate;
 
         $responseData = [];
+        $widget->init();
         $widget->createResponse($responseData);
 
         $ec = $responseData['hcFull'];
@@ -222,6 +223,7 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
 
     if (isset($data['appMenu']['items']))
     {
+      /*
       $this->uiStruct['appMenu']['items'] = [];
       foreach ($data['appMenu']['items'] as $menuItem)
       {
@@ -230,7 +232,29 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
 
         $this->uiStruct['appMenu']['items'][] = $menuItem;
       }
+      */
+
+      $this->uiStruct['appMenu']['items'] = $this->createUIStructMenuItems($data['appMenu']['items']);
     }
+  }
+
+  protected function createUIStructMenuItems($menuItems)
+  {
+    //if (isset($data['appMenu']['items']))
+    $items = [];
+      //$this->uiStruct['appMenu']['items'] = [];
+    foreach ($menuItems as $menuItem)
+    {
+      if (isset($menuItem['mainRole']) && !$this->app()->hasMainRole($menuItem['mainRole']))
+        continue;
+
+      if (isset($menuItem['items']))
+        $menuItem['items'] = $this->createUIStructMenuItems($menuItem['items']);
+
+      $items[] = $menuItem;
+    }
+
+    return $items;
   }
 
 	public function run ()

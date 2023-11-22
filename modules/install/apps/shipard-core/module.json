@@ -6,5 +6,6 @@
 		"wkf/core", "e10pro/kb"
 	],
 	"config": [
+		{"id": "+apps", "file": "appShipard.json"}
 	]
 }
