@@ -79,7 +79,7 @@ ids=uiData['iotCamPictures'][camId]['elms'];for(var
 key
 in
 ids){let
-camPictElement=document.getElementById(ids[key]);if(!camPictElement){uiData['iotCamPictures'][camId]['elms'][key];continue;}let
+camPictElement=document.getElementById(ids[key]);if(!camPictElement){continue;}let
 pictStyle=camPictElement.getAttribute('data-pict-style');if(pictStyle==='video'){let
 videoElement=camPictElement.querySelector('video');const
 played=parseInt(camPictElement.getAttribute('data-stream-started'));if(!played){this.startVideoRTC(videoElement);camPictElement.setAttribute('data-stream-started','1');}}else{if(pictStyle==='full')pictUrl=server['camUrl']+'imgs/'+camNdx+'/'+data[camNdx]['image'];else
@@ -98,7 +98,7 @@ webrtcSendChannel=webrtc.createDataChannel('rtsptowebSendChannel');webrtcSendCha
 opened`);webrtcSendChannel.send('ping');};webrtcSendChannel.onclose=(_event)=>{console.log(`${webrtcSendChannel.label}has
 closed`);startPlay(videoEl,url);};webrtcSendChannel.onmessage=event=>console.log(event.data);}}class
 ShipardWidget{rootElm=null;rootId='';numPad=null;init(rootElm){this.rootElm=rootElm;this.rootId=this.rootElm.getAttribute('id');this.on(this,'click','.shp-widget-action',function(e,ownerWidget){ownerWidget.widgetAction(e)});this.on(this,'click','.shp-widget-action>i',function(e,ownerWidget){ownerWidget.widgetAction(e.parentElement)});}widgetAction(e){let
-actionId=e.getAttribute('data-action');this.doAction(actionId,e);}doAction(actionId,e){console.log("ACTION: ",actionId);switch(actionId){case'inline-action':return this.inlineAction(e);case'select-main-tab':return this.selectMainTab(e);case'open-popup':return this.openPopup(e);case'open-modal':return this.openModal(e);case'closeModal':return this.closeModal(e);}return 0;}inlineAction(e){if(e.getAttribute('data-object-class-id')===null)return;var
+actionId=e.getAttribute('data-action');this.doAction(actionId,e);}doAction(actionId,e){console.log("ACTION: ",actionId);switch(actionId){case'inline-action':return this.inlineAction(e);case'select-main-tab':return this.selectMainTab(e);case'select-simple-tab':return this.selectSimpleTab(e);case'open-popup':return this.openPopup(e);case'open-modal':return this.openModal(e);case'closeModal':return this.closeModal(e);case'treeListGroupOC':return this.treeListGroupOC(e);}return 0;}inlineAction(e){if(e.getAttribute('data-object-class-id')===null)return;var
 requestParams={};requestParams['object-class-id']=e.getAttribute('data-object-class-id');requestParams['action-type']=e.getAttribute('data-action-type');this.elementPrefixedAttributes(e,'data-action-param-',requestParams);if(e.getAttribute('data-pk')!==null)requestParams['pk']=e.getAttribute('data-pk');console.log("__INLINE_ACTION",requestParams);}openModal(e){const
 modalType=e.getAttribute('data-modal-type');var
 modalParams={};var
@@ -120,8 +120,14 @@ inputElement=document.getElementById(inputValueId);inputElement.value=e.getAttri
 tabsElementId=this.rootId+'_'+tabsId;const
 tabsElement=document.getElementById(tabsElementId);let
 oldActiveTabElement=tabsElement.querySelector('.active');oldActiveTabElement.classList.remove('active');e.classList.add('active');let
-apiParams={'cgType':2};this.apiCall('reloadContent',apiParams);}apiCall(apiActionId,outsideApiParams){var
-apiParams={};apiParams['requestType']=this.rootElm.getAttribute('data-request-type');apiParams['classId']=this.rootElm.getAttribute('data-class-id');apiParams['actionId']=apiActionId;if(outsideApiParams!==undefined)apiParams={...apiParams,...outsideApiParams};this.detectValues(apiParams);console.log("API-CALL-WIDGET",apiParams);var
+apiParams={'cgType':2};this.apiCall('reloadContent',apiParams);}selectSimpleTab(e){const
+tabsId=e.getAttribute('data-tabs');const
+tabsElement=document.getElementById(tabsId);let
+oldActiveTabElement=tabsElement.querySelector('.active');oldActiveTabElement.classList.remove('active');e.classList.add('active');const
+tabsOldElementContentId=oldActiveTabElement.getAttribute('data-tab-id');document.getElementById(tabsOldElementContentId).classList.remove('active');const
+tabsNewElementContentId=e.getAttribute('data-tab-id');document.getElementById(tabsNewElementContentId).classList.add('active');}treeListGroupOC(e){let
+itemElement=e.parentElement;if(itemElement.classList.contains('open')){itemElement.classList.remove('open');itemElement.classList.add('closed');}else{itemElement.classList.remove('closed');itemElement.classList.add('open');}}apiCall(apiActionId,outsideApiParams){var
+apiParams={};apiParams['requestType']=this.rootElm.getAttribute('data-request-type');apiParams['classId']=this.rootElm.getAttribute('data-class-id');apiParams['actionId']=apiActionId;apiParams['widgetId']=this.rootElm.id;if(outsideApiParams!==undefined)apiParams={...apiParams,...outsideApiParams};this.detectValues(apiParams);console.log("API-CALL-WIDGET",apiParams);var
 url='api/v2';shc.server.post(url,apiParams,function(data){console.log("--api-call-success--");this.doWidgetResponse(data);}.bind(this),function(data){console.log("--api-call-error--");}.bind(this));}detectValues(data){const
 inputs=this.rootElm.querySelectorAll("input");for(let
 i=0;i<inputs.length;++i){const
@@ -204,7 +210,7 @@ mc=new
 Hammer(this.elmContent);mc.get('swipe').set({direction:Hammer.DIRECTION_HORIZONTAL,threshold:250});mc.get('pan').set({direction:Hammer.DIRECTION_HORIZONTAL,threshold:250});mc.on("panleft panright",function(ev){this.doSwipe(ev)}.bind(this));}doSwipe(dir){var
 swipeDir=0;if(dir.type==='panleft')swipeDir=1;else
 if(dir.type==='panright')swipeDir=2;if(!swipeDir)return;let
-apiParams={'cgType':2,'swipe':swipeDir};this.apiCall('reloadContent',apiParams);}doAction(actionId,e){console.log("ACTION-BOARD: ",actionId);switch(actionId){case'set-param-value':return this.setParamValue(e);case'newform':return this.actionNewForm(e);case'edit':return this.actionEditForm(e);}return super.doAction(actionId,e);}doWidgetResponse(data){this.setInnerHTML(this.rootElm,data.response.hcMain);this.initContent();}setParamValue(e){var
+apiParams={'cgType':2,'swipe':swipeDir};this.apiCall('reloadContent',apiParams);}doAction(actionId,e){console.log("ACTION-BOARD: ",actionId);switch(actionId){case'set-param-value':return this.setParamValue(e);case'newform':return this.actionNewForm(e);case'edit':return this.actionEditForm(e);}return super.doAction(actionId,e);}doWidgetResponse(data){this.setInnerHTML(this.rootElm,data.response.hcMain);this.initContent();super.doWidgetResponse(data);}setParamValue(e){var
 inputElement=e.parentElement.parentElement.querySelector('input');if(!inputElement)inputElement=e.parentElement.parentElement.parentElement.querySelector('input');if(inputElement)inputElement.value=e.getAttribute('data-value');let
 apiParams={'cgType':2};this.apiCall('reloadContent',apiParams);}actionNewForm(e){var
 formParams={};var
@@ -273,11 +279,16 @@ e=document.getElementById(id);e.shpWidget=new
 WidgetCashBox();e.shpWidget.init(e);}class
 ShipardWidgetVS
 extends
-ShipardWidget{doWidgetResponse(data){console.log("VS-WIDGET-RESPONSE");let
-dataElement=this.rootElm.querySelector('div.e10-wr-data');dataElement.innerHTML=data.response.hcMain;console.log(dataElement);super.doWidgetResponse(data);}}function
+ShipardWidgetBoard{doWidgetResponse(data){super.doWidgetResponse(data);}}function
 initWidgetVS(id){let
 e=document.getElementById(id);e.shpWidget=new
 ShipardWidgetVS();e.shpWidget.init(e);console.log("initWidgetVS",id);}class
+ShipardWidgetApplication
+extends
+ShipardWidget{elmContent=null;init(e){console.log("ShipardWidgetApplication::init");super.init(e);this.initContent();}initContent(){}doAction(actionId,e){console.log("ACTION-APP: ",actionId);return super.doAction(actionId,e);}doWidgetResponse(data){super.doWidgetResponse(data);}}function
+initWidgetApplication(id){console.log("INIT_APP!!!!");let
+e=document.getElementById(id);e.shpWidget=new
+ShipardWidgetApplication();e.shpWidget.init(e);return 1;}class
 ShipardClient{server=new
 ShipardServer();mqtt=new
 ShipardMqtt();iot=new
@@ -292,7 +303,14 @@ newActiveContentElement=document.getElementById(newActiveContentId);newActiveCon
 p=e;while(p.length){var
 attrValue=p.attr(attr);if(p.attr(attr))return p.attr(attr);p=p.parent();if(!p.length)break;}return null;};searchObjectAttr(e,attr){var
 p=e;while(p.length){if(p.attr(attr))return p;p=p.parent();if(!p.length)break;}return null;};widgetAction(e){let
-actionId=e.getAttribute('data-action');this.doAction(actionId,e);}doAction(actionId,e){switch(actionId){case'setColorMode':return this.setColorMode(e);case'setUserContext':return this.setUserContext(e);case'workplaceLogin':return this.workplaceLogin(e);case'inline-action':return this.inlineAction(e);}console.log("APP-ACTION",actionId);return 0;}inlineAction(e){if(e.getAttribute('data-object-class-id')===null)return;var
+actionId=e.getAttribute('data-action');this.doAction(actionId,e);}doAction(actionId,e){switch(actionId){case'setColorMode':return this.setColorMode(e);case'setUserContext':return this.setUserContext(e);case'workplaceLogin':return this.workplaceLogin(e);case'inline-action':return this.inlineAction(e);case'loadAppMenuItem':return this.loadAppMenuItem(e);}console.log("APP-ACTION",actionId);return 0;}loadAppMenuItem(e){console.log('loadAppMenuItem',e);const
+modalType='viewer';var
+modalParams={};var
+modalAttrs={'parent-widget-id':'','parent-widget-type':'unknown',};switch(modalType){case'viewer':console.log('Viewer!');break;}let
+apiParams={'cgType':2,'requestType':'appMenuItem',};this.elementPrefixedAttributes(e,'data-action-param-',apiParams);if(apiParams['object-type']==='viewer')apiParams['object-type']='dataViewer';console.log("API-CALL-MENU-ITEM",apiParams);var
+url='api/v2';shc.server.post(url,apiParams,function(data){console.log("--api-call-MENU-ITEM-success--",data);this.doLoadAppMenuItemResponse(data);}.bind(this),function(data){console.log("--api-call-MODAL-error--");}.bind(this));return 0;}doLoadAppMenuItemResponse(data){console.log("doLoadAppMenuItemResponse",data);this.setInnerHTML(this.mainAppContent,data.response.hcFull);if(data.response.objectType==='dataView')initWidgetTableViewer(data.response.objectId);else{console.log("init-other-widget");let
+e=document.getElementById(data.response.objectId);e.shpWidget=new
+ShipardWidget();e.shpWidget.init(e);}}inlineAction(e){if(e.getAttribute('data-object-class-id')===null)return;var
 requestParams={};requestParams['object-class-id']=e.getAttribute('data-object-class-id');requestParams['action-type']=e.getAttribute('data-action-type');this.elementPrefixedAttributes(e,'data-action-param-',requestParams);if(e.getAttribute('data-pk')!==null)requestParams['pk']=e.getAttribute('data-pk');shc.server.api(requestParams,function(data){}.bind(this));}workplaceLogin(e){console.log('workplaceLogin',e.getAttribute('data-login'));this.getNumber({title:'Zadejte přístupový kód',srcElement:e,userLogin:e.getAttribute('data-login'),success:function(){this.workplaceLoginDoIt()}.bind(this)});return 0;}workplaceLoginDoIt(e){console.log(this.numPad.options.userLogin);console.log("__DO_IT__",this.numPad.options.srcElement.getAttribute('data-login'),this.numPad.gnValue);document.getElementById('e10-login-user').value=this.numPad.options.userLogin;document.getElementById('e10-login-pin').value=this.numPad.gnValue;document.forms['e10-mui-login-form'].submit();}getNumber(options){const
 template=document.createElement('div');template.id='widget_123';template.classList.add('fullScreenModal');document.body.appendChild(template);var
 abc=new
@@ -317,9 +335,11 @@ val=attrs.item(i).nodeValue;data[attrNameShort]=val;}}initUI(){if(!this.mainAppC
 this.mainAppContent.dataset)return this.initUIObject(this.mainAppContent.dataset.mainUiObjectId);}initUIObject(id){let
 objectElement=document.getElementById(id);if(!objectElement){console.error('element not exist: #',id);return 0;}const
 objectElementType=objectElement.getAttribute('data-object-type');if(!objectElementType){console.error('`data-object-type` attr not found in #',id);return 0;}if(objectElementType==='data-viewer')return initWidgetTableViewer(id);if(objectElementType==='data-widget-board')return initWidgetBoard(id);console.log(objectElementType);return 0;}loadUI(){console.log("client__load_ui");}init(){this.mainAppContent=document.getElementById('shp-main-app-content');this.server.setHttpServerRoot(httpApiRootPath);this.initColorMode(true);this.onClick('a.shp-simple-tabs-item',function(){shc.simpleTabsEvent(this);});this.onClick('.shp-app-action',function(e){this.widgetAction(e);}.bind(this));this.initUI();if('serviceWorker'in
-navigator&&e10ServiceWorkerURL!==undefined){navigator.serviceWorker.register(e10ServiceWorkerURL).then(function(reg){}).catch(function(err){console.log("Service worker registration error: ",err)});}}applyUIData(responseUIData){this.mqtt.applyUIData(responseUIData);this.iot.applyUIData(responseUIData);}apiCall(apiActionId,outsideApiParams){var
+navigator&&e10ServiceWorkerURL!==undefined){navigator.serviceWorker.register(e10ServiceWorkerURL).then(function(reg){}).catch(function(err){console.log("Service worker registration error: ",err)});}initWidgetApplication('shp-app-window');}applyUIData(responseUIData){this.mqtt.applyUIData(responseUIData);this.iot.applyUIData(responseUIData);}apiCall(apiActionId,outsideApiParams){var
 apiParams={};apiParams['requestType']='appCommand';apiParams['actionId']=apiActionId;if(outsideApiParams!==undefined)apiParams={...apiParams,...outsideApiParams};console.log("CLIENT-API-CALL",apiParams);var
-url='api/v2';shc.server.post(url,apiParams,function(data){console.log("--app-api-call-success--");this.doAppAPIResponse(data);}.bind(this),function(data){console.log("--api-app-call-error--");}.bind(this));}doAppAPIResponse(data){window.location.reload(true);}}class
+url='api/v2';shc.server.post(url,apiParams,function(data){console.log("--app-api-call-success--");this.doAppAPIResponse(data);}.bind(this),function(data){console.log("--api-app-call-error--");}.bind(this));}doAppAPIResponse(data){window.location.reload(true);}setInnerHTML(elm,html){elm.innerHTML=html;Array.from(elm.querySelectorAll("script")).forEach(oldScriptEl=>{const
+newScriptEl=document.createElement("script");Array.from(oldScriptEl.attributes).forEach(attr=>{newScriptEl.setAttribute(attr.name,attr.value)});const
+scriptText=document.createTextNode(oldScriptEl.innerHTML);newScriptEl.appendChild(scriptText);oldScriptEl.parentNode.replaceChild(newScriptEl,oldScriptEl);});}}class
 ShipardClientIoT{camPictLoader=null;init(){if(uiData['iotCamServers']!==undefined){this.camPictLoader=new
 ShipardCamsPictsLoader();this.camPictLoader.init();}shc.on('change','input.mac-shp-triggger',function(){shc.iot.mainTrigger(this);});}mainTrigger(element){let
 payload={};if(element.classList.contains('shp-iot-scene-switch')){let

@@ -14,6 +14,9 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
   var \e10\ui\TableUIs $tableUIs;
   var $uiStruct = NULL;
 
+  CONST amtSimple = 0, amtComplex = 1;
+  var $appMenuType = self::amtSimple;
+
   protected function init()
   {
     $this->tableUIs = new \e10\ui\TableUIs($this->app());
@@ -93,7 +96,13 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
 
     if ($activeMenuItem)
     {
-      $this->renderMenuItem($activeMenuItem);
+      if (isset($activeMenuItem['items']))
+      {
+        $aiId = key($activeMenuItem['items']);
+        $this->renderMenuItem($activeMenuItem['items'][$aiId]);
+      }
+      else
+        $this->renderMenuItem($activeMenuItem);
     }
 
     if (isset($this->uiStruct['appMenu']['rightMenu']))
@@ -217,36 +226,52 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
   protected function createUIStruct($data)
   {
     $this->uiStruct = $data;
+    if (isset($data['appMenuType']) && $data['appMenuType'] === 'complex')
+      $this->appMenuType = self::amtComplex;
 
     if (!$this->uiStruct)
       $this->uiStruct = [];
 
-    if (isset($data['appMenu']['items']))
+    if ($this->appMenuType === self::amtSimple)
     {
-      /*
-      $this->uiStruct['appMenu']['items'] = [];
-      foreach ($data['appMenu']['items'] as $menuItem)
+      if (isset($data['appMenu']['items']))
       {
-        if (isset($menuItem['mainRole']) && !$this->app()->hasMainRole($menuItem['mainRole']))
-          continue;
-
-        $this->uiStruct['appMenu']['items'][] = $menuItem;
+        $this->uiStruct['appMenu']['items'] = $this->createUIStructMenuItems($data['appMenu']['items']);
       }
-      */
+    }
+    else
+    {
+      $this->createUIStruct_Favorites ($data);
+      $this->createUIStruct_AppSettings ($data['appMenu']['appSettings']);
+      $active = 1;
+      foreach ($data['appMenu'] as $partId => $partContent)
+      {
+        $part = $partContent;
+        $part['id'] = $partId;
+        $part['active'] = $active;
+        if (isset($partContent['groups']))
+          $part['groups'] = $this->createUIStructMenuItems($partContent['groups']);
+        if (isset($partContent['items']))
+          $part['items'] = $this->createUIStructMenuItems($partContent['items']);
 
-      $this->uiStruct['appMenu']['items'] = $this->createUIStructMenuItems($data['appMenu']['items']);
+        unset($this->uiStruct['appMenu'][$partId]);
+        $this->uiStruct['appMenu'][] = $part;
+
+        $active = 0;
+      }
     }
   }
 
   protected function createUIStructMenuItems($menuItems)
   {
-    //if (isset($data['appMenu']['items']))
     $items = [];
-      //$this->uiStruct['appMenu']['items'] = [];
-    foreach ($menuItems as $menuItem)
+    foreach ($menuItems as $menuId => $menuItem)
     {
       if (isset($menuItem['mainRole']) && !$this->app()->hasMainRole($menuItem['mainRole']))
         continue;
+
+      if (!isset($menuItem['id']))
+        $menuItem['id'] = $menuId;
 
       if (isset($menuItem['items']))
         $menuItem['items'] = $this->createUIStructMenuItems($menuItem['items']);
@@ -255,6 +280,60 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
     }
 
     return $items;
+  }
+
+  public function createUIStruct_AppSettings (&$dstItem)
+	{
+		$appOptions = \e10\sortByOneKey($this->app()->appOptions(), 'order', TRUE);
+		$groups = \E10\sortByOneKey($this->app()->cfgItem ('e10.appOptions.groups', []), 'order', TRUE);
+		foreach ($groups as $groupId => $group)
+		{
+			$groupCfg = ['title' => $group['title'], 'icon' => $group['icon'] ?? 'system/actionAdd', 'items' => []];
+			forEach ($appOptions as $id => $c)
+			{
+				if ($c['group'] !== $groupId)
+					continue;
+				if (!utils::enabledCfgItem($this->app(), $c))
+					continue;
+
+				if ($c ['type'] === 'viewer')
+				{
+					$c['object'] = 'viewer';
+					//if ($this->app()->checkAccess($c) === 0)
+					//	continue;
+					$si = [
+						'title' => $c['name'],
+						'objectType' => "viewer",
+            'table' => $c['table'],
+            'viewer' => $c['viewer'],
+            'icon' => $c['icon'] ?? 'system/iconUser',
+            'order' => $c['order'],
+					];
+					$groupCfg['items'][] = $si;
+				}
+			}
+      $dstItem['groups'][] = $groupCfg;
+		}
+	}
+
+  public function createUIStruct_Favorites (&$data)
+	{
+    foreach ($this->uiStruct['appMenu'] as $partId => $partContent)
+    {
+      if (!isset($partContent['groups']))
+        continue;
+      foreach ($partContent['groups'] as $groupId => $groupContent)
+      {
+        foreach ($groupContent['items'] as $itemId => $item)
+        {
+          if (isset($item['autoFav']))
+          {
+            $data['appMenu']['favorites']['items'][$itemId] = $item;
+            $data['appMenu']['favorites']['items'][$itemId]['order'] = intval($item['autoFav']);
+          }
+        }
+      }
+    }
   }
 
 	public function run ()

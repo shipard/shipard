@@ -43,6 +43,7 @@ class ShipardWidgetBoard extends ShipardWidget
       case 'newform': return this.actionNewForm(e);
       case 'edit': return this.actionEditForm(e);
     }
+
     return super.doAction (actionId, e);
   }
 
@@ -53,6 +54,8 @@ class ShipardWidgetBoard extends ShipardWidget
     //this.rootElm.innerHTML = data.response.hcMain;
     this.setInnerHTML(this.rootElm, data.response.hcMain);
     this.initContent();
+
+    super.doWidgetResponse(data);
   }
 
   setParamValue(e)

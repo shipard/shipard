@@ -1,62 +1,80 @@
-<div class="app-container">
-  <div class="app-nav">
-    <nav class="navbar">
-    <div class="container-fluid">
-
-      <button class="navbar-toggler" id="navbar-toggler-left" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <h5 id="navbar-title-left">
+<div class="app-container app-container-full" id='shp-app-window'>
+  <div class="app-header">
+    <span id='shp-app-content-title' class='app-content-title'>tady bude nějaký text</span>
+  </div>
+  <div class="app-menu">
+    <div class="app-menu-shp-ng">
+      <div class="menu-toolbar">
+        <img src='{{data.dsIconUrl}}' style='height: 100%;'>
+        {{cfgItem.options.core.ownerShortName}}
+      </div>
+      <div class="menu-footer">
         {{{@icon;icon:user/user}}} {{userInfo.name}}
-      </h5>
-
-      {{#userContextsEnumExist}}
-      <button class="navbar-toggler" id="navbar-toggler-right" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar2" aria-controls="offcanvasNavbar2" aria-label="Toggle navigation">
-        <span class="fw-semibold align-items-center" style='font-size: 110%;'>{{activeUserContext.shortTitle}}<span class="ps-2"> {{{@icon;icon:user/user}}}</span></span>
-      </button>
-      {{/userContextsEnumExist}}
-
-      <div class='app-menu'>
-        <ul class="nav nav-pills">
-          {{#data.uiStruct.appMenu.items}}
-            <li class='nav-item'>
-              <a href="{{uiRoot}}{{id}}" class='nav-link {{#active}}active{{/active}}'>{{{@icon;dataItem:icon}}}{{title}}</a>
-            </li>
-          {{/data.uiStruct.appMenu.items}}
-        </ul>
       </div>
 
-      <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
-        <div class="offcanvas-header">
-          <h5 class="offcanvas-title" id="offcanvasNavbarLabel">{{userInfo.name}}</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body">
-          <div class="navbar-nav flex-grow-1">
-            <div class="list-group list-group-flush">
-              {{#data.uiStruct.appMenu.items}}
-                <a href="{{uiRoot}}{{id}}" class='list-group-item list-group-item-action {{#active}}active{{/active}}'><span class="navListIcon">{{{@icon;dataItem:icon}}}</span> {{title}}</a>
-              {{/data.uiStruct.appMenu.items}}
-            </div>
+      <div class="menu-content shp-tree-list">
+        {{#data.uiStruct.appMenu}}
+          <div id='shp-app-cats-menu-tabs_{{id}}' class='tab-content{{#active}} active{{/active}}'>
+            {{#items.0}}
+              <ul class='shp-tree-list'>
+                {{#items}}
+                  <li>
+                    <span class='li-title'>
+                      {{{@icon;dataItem:icon}}}
+                      <span
+                        data-action-param-object-type='{{objectType}}'
+                        {{#table}}data-action-param-table='{{table}}'{{/table}}
+                        {{#viewer}}data-action-param-view-id='{{viewer}}'{{/viewer}}
+                        data-action='loadAppMenuItem'
+                        class='shp-app-action'>
+                        {{title}}
+                      </span>
+                    </span>
+                  </li>
+                {{/items}}
+              </ul>
+            {{/items.0}}
+
+            {{#groups.0}}
+            <ul class='shp-tree-list'>
+              {{#groups}}
+                <li class='tl-group open{{#active}} active{{/active}}' >
+                  <span class='shp-widget-action' data-action='treeListGroupOC'>{{title}}</span>
+                  <ul class='shp-tree-list'>
+                    {{#items}}
+                      <li>
+                        <span class='li-title'>
+                          {{{@icon;dataItem:icon}}}
+                          <span
+                            data-action-param-object-type='{{objectType}}'
+                            {{#table}}data-action-param-table='{{table}}'{{/table}}
+                            {{#viewer}}data-action-param-view-id='{{viewer}}'{{/viewer}}
+                            data-action='loadAppMenuItem'
+                            class='shp-app-action'>
+                            {{title}}
+                          </span>
+                        </span>
+                      </li>
+                    {{/items}}
+                  </ul>
+                </li>
+              {{/groups}}
+            </ul>
+            {{/groups.0}}
           </div>
-        </div>
+        {{/data.uiStruct.appMenu}}
+      </div>
+
+      <div class="menu-tabs shp-app-cats-menu-tabs" id='shp-app-cats-menu-tabs'>
+        {{#data.uiStruct.appMenu}}
+          <span class='shp-widget-action shp-tab-item{{#active}} active{{/active}}' data-action='select-simple-tab' data-tab-id='shp-app-cats-menu-tabs_{{id}}' data-tabs='shp-app-cats-menu-tabs' title='{{title}}'>{{{@icon;dataItem:icon}}}</span>
+        {{/data.uiStruct.appMenu}}
       </div>
     </div>
-    </nav>
   </div>
 
   <div class="app-content" id='shp-main-app-content' {{{data.appBrowserParams}}}>
     {{{data.coreMainElementCode}}}
   </div>
 
-  <div class='app-menu'>
-    <div class="list-group list-group-flush">
-      {{#data.activeMenuItem.items}}
-        <a href="{{uiRoot}}{{id}}" class='list-group-item list-group-item-action {{#active}}active{{/active}}'><span class="navListIcon">{{{@icon;dataItem:icon}}}</span> {{title}}</a>
-      {{/data.activeMenuItem.items}}
-    </div>
-  </div>
-
-  <!--<div class='app-footer'>AHOJ...</div>-->
 </div>

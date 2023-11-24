@@ -24,6 +24,8 @@ class UIWidget extends \Shipard\UI\Core\UIElement
 
 	CONST swpNone = 0, swpLeft = 1, swpRight = 2;
 
+	var $fullCode = 0;
+
 	protected function createParamsObject ()
 	{
 		$this->params = new \Shipard\UI\Core\Params ($this->app);
@@ -31,15 +33,24 @@ class UIWidget extends \Shipard\UI\Core\UIElement
 
 	public function addParam ($paramType, $paramId = FALSE, $options = NULL)
 	{
-		$this->params->addParam ($paramType, $paramId, $options);
+		if ($this->params)
+			$this->params->addParam ($paramType, $paramId, $options);
+		else
+			Utils::debugBacktrace();
 	}
 
   public function createContent ()
 	{
 	}
 
+	public function createCodeInitJS()
+	{
+		return '';
+	}
+
 	public function createCodeAll ($fullCode = FALSE)
 	{
+		$this->fullCode = $fullCode;
 		$c = '';
 
 		if ($fullCode)
@@ -58,6 +69,7 @@ class UIWidget extends \Shipard\UI\Core\UIElement
 
 		$c .= $this->createCodeToolbar();
 		$c .= $this->createCodeContent($fullCode);
+		$c .= $this->createCodeInitJS();
 
 		if ($fullCode)
 			$c .= '</div>';
@@ -82,10 +94,7 @@ class UIWidget extends \Shipard\UI\Core\UIElement
 	{
     $this->createParamsObject ();
 
-    if ($this->app->testGetParam('widgetId'))
-      $this->widgetId = $this->app->testGetParam('widgetId');
-    else
-      $this->widgetId = 'W-'.mt_rand(1000000, 999999999);
+		$this->widgetId = $this->requestParams['widgetId'] ?? 'W-'.mt_rand(1000000, 999999999);
   }
 
 	public function widgetType()
@@ -98,9 +107,7 @@ class UIWidget extends \Shipard\UI\Core\UIElement
 	public function createResponse (array &$responseData)
 	{
 		$responseData ['cgType'] = $this->cgType;
-		$this->init();
 		$this->prepareData();
-		//$this->renderData($responseData);
 
 		if ($this->cgType === self::cgtFullCode)
 		{

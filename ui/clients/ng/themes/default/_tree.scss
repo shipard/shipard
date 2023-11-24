@@ -1,0 +1,37 @@
+
+  ul.shp-tree-list {
+    list-style-type: none;
+    padding-left: 0;
+    > li {
+      > span.li-title {
+        padding-left: 1rem;
+      }
+      i {
+        text-align: center;
+        width: 2em;
+        display: inline-block;
+      }
+    }
+
+    > li.tl-group.open {
+      > ul {display: list;}
+    }
+    > li.tl-group.closed {
+      > ul {display: none;}
+    }
+
+    > li.tl-group.open::before {
+      content: '▼ ';
+      width: 1.2rem;
+      display: inline-block;
+      margin-left: .5rem;
+    }
+    > li.tl-group.closed::before {
+      content: ' ▶︎ ';
+      width: 1.2rem;
+      display: inline-block;
+      margin-left: .5rem;
+    }
+  }
+
+

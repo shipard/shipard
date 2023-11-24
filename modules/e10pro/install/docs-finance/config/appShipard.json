@@ -3,41 +3,44 @@
   {
     "appMenu":
     {
-      "items": {
-        "finance":
-        {
-          "title": "Účtárna",
-          "id": "finance",
-          "objectType": "menuItem",
-          "items": {
-            "balance": {
-              "title": "Saldo",  "icon": "system/iconBalance", "order": 100000,
-              "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-balance"
-            },
-            "bank": {
-              "title": "Banka", "icon": "docType/bank", "order": 200000,
-              "object": "viewer", "table": "e10doc.core.heads", "viewer": "bank"
-            },
-            "cash": {
-              "title": "Pokladna", "icon": "docType/cash", "order": 300000,
-              "object": "viewer", "table": "e10doc.core.heads", "viewer": "cash"
-            },
-            "accDocs": {
-              "title": "Účetní doklady", "icon": "docType/accDocs", "order": 400000,
-              "object": "viewer", "table": "e10doc.core.heads", "viewer": "cmnbkp"
-            },
-            "bankOrders": {
-              "title": "Příkazy", "order": 500000, "icon": "docType/bankOrders",
-              "object": "viewer", "table": "e10doc.core.heads", "viewer": "bankorder", "enabledCfgItem": "options.e10doc-finance.useBankOrders"
-            },
+      "application": {
+        "groups": {
+          "finance":
+          {
+            "title": "Účtárna",
+            "id": "finance",
+            "objectType": "menuItem",
+            "items": {
+              "balance": {
+                "title": "Saldo",  "icon": "system/iconBalance", "order": 100000,
+                "objectType": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-balance"
+              },
+              "bank": {
+                "title": "Banka", "icon": "docType/bank", "order": 200000,
+                "objectType": "viewer", "table": "e10doc.core.heads", "viewer": "bank",
+                "autoFav": 400000
+              },
+              "cash": {
+                "title": "Pokladna", "icon": "docType/cash", "order": 300000,
+                "objectType": "viewer", "table": "e10doc.core.heads", "viewer": "cash"
+              },
+              "accDocs": {
+                "title": "Účetní doklady", "icon": "docType/accDocs", "order": 400000,
+                "objectType": "viewer", "table": "e10doc.core.heads", "viewer": "cmnbkp"
+              },
+              "bankOrders": {
+                "title": "Příkazy", "order": 500000, "icon": "docType/bankOrders",
+                "objectType": "viewer", "table": "e10doc.core.heads", "viewer": "bankorder", "enabledCfgItem": "options.e10doc-finance.useBankOrders"
+              },
 
-            "openClosePeriods": {
-              "title": "Otevření / Uzavření účetních období", "icon": "docType/openClosePeriods", "order": 2000000,
-              "object": "viewer", "table": "e10doc.core.heads", "viewer": "cmnbkpocp"
-            },
-				    "taxes": {
-              "title": "Daně", "icon": "docType/taxes", "order": 2100000,
-              "object": "viewer", "table": "e10doc.taxes.reports", "viewer": "default"
+              "openClosePeriods": {
+                "title": "Otevření / Uzavření ÚO", "icon": "docType/openClosePeriods", "order": 2000000,
+                "objectType": "viewer", "table": "e10doc.core.heads", "viewer": "cmnbkpocp"
+              },
+              "taxes": {
+                "title": "Daně", "icon": "docType/taxes", "order": 2100000,
+                "objectType": "viewer", "table": "e10doc.taxes.reports", "viewer": "default"
+              }
             }
           }
         }

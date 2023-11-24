@@ -3,24 +3,28 @@
   {
     "appMenu":
     {
-      "items": {
-        "buy":
-        {
-          "title": "Nákup",
-          "id": "buy",
-          "objectType": "menuItem",
-          "items": {
-            "invni": {
-              "title": "Přijaté faktury", "icon": "docTypeInvoicesIn", "order": 200000,
-              "objectType": "viewer", "table": "e10doc.core.heads", "viewer": "invoicesIn"
-            },
-            "ordersOut": {
-              "title": "Vydané objednávky", "icon": "tables/e10buy.orders.orders", "order": 220000,
-              "object": "viewer", "table": "e10buy.orders.orders", "viewer": "default", "enabledCfgItem": "options.e10doc-commerce.useOrdersOut"
-            },
-            "cashBox": {
-              "title": "Pokladna", "icon": "docType/cash", "order": 250000,
-              "objectType": "viewer", "table": "e10doc.core.heads", "viewer": "cash"
+      "application": {
+        "groups": {
+          "buy":
+          {
+            "title": "Nákup",
+            "id": "buy",
+            "objectType": "menuItem",
+            "items": {
+              "invni": {
+                "title": "Přijaté faktury", "icon": "docTypeInvoicesIn", "order": 200000,
+                "objectType": "viewer", "table": "e10doc.core.heads", "viewer": "invoicesIn",
+                "autoFav": 10000
+              },
+              "ordersOut": {
+                "title": "Vydané objednávky", "icon": "tables/e10buy.orders.orders", "order": 220000,
+                "objectType": "viewer", "table": "e10buy.orders.orders", "viewer": "default", "enabledCfgItem": "options.e10doc-commerce.useOrdersOut"
+              },
+              "cashBox": {
+                "title": "Pokladna", "icon": "docType/cash", "order": 250000,
+                "objectType": "viewer", "table": "e10doc.core.heads", "viewer": "cash",
+                "autoFav": 300000
+              }
             }
           }
         }

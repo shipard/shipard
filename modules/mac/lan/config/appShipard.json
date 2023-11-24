@@ -3,16 +3,17 @@
   {
     "appMenu":
     {
-      "items": {
-        "lan":
-        {
-          "title": "IT",
-          "id": "lan",
-          "objectType": "menuItem",
-          "items": {
-            "devices": {
-              "title": "Prvky sítě",  "icon": "tables/mac.lan.devices", "order": 5100,
-              "object": "viewer", "table": "mac.lan.devices", "viewer": "all"
+      "application": {
+        "groups": {
+          "lan":
+          {
+            "title": "IT",
+            "id": "lan",
+            "items": {
+              "devices": {
+                "title": "Prvky sítě",  "icon": "tables/mac.lan.devices", "order": 5100,
+                "objectType": "viewer", "table": "mac.lan.devices", "viewer": "all"
+              }
             }
           }
         }

@@ -3,21 +3,37 @@
   {
     "fn": "Shipard",
     "template": "appShipard",
+    "appMenuType": "complex",
     "appMenu":
     {
-      "items": {
-        "home":
-        {
-          "title": "Home",
-          "id": "home",
-          "objectType": "menuItem",
-          "items": [
-            {
-              "title": "Osoby", "icon": "user/book", "id": "persons",
-              "objectType": "viewer", "table": "e10.persons.persons", "viewer": "default"
+      "application": {
+        "title": "Aplikace",
+        "icon": "system/iconAppInfoMenu",
+        "groups": {
+          "home":
+          {
+            "title": "Home",
+            "id": "home",
+            "objectType": "menuItem",
+            "items": {
+              "persons": {
+                "title": "Osoby", "icon": "user/book", "id": "persons",
+                "objectType": "viewer", "table": "e10.persons.persons", "viewer": "default",
+                "autoFav": 1000
+              }
             }
-          ]
+          }
         }
+      },
+      "favorites": {
+        "title": "Oblíbené",
+        "icon": "system/iconStar",
+        "items": {}
+      },
+      "appSettings": {
+        "title": "Nastavení",
+        "icon": "system/actionSettings",
+        "items": {}
       }
     }
   }

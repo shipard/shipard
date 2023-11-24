@@ -1,13 +1,8 @@
-class ShipardWidgetVS extends ShipardWidget
+class ShipardWidgetVS extends ShipardWidgetBoard
 {
   doWidgetResponse(data)
   {
-    console.log("VS-WIDGET-RESPONSE");
-
-    let dataElement = this.rootElm.querySelector ('div.e10-wr-data');
-    dataElement.innerHTML = data.response.hcMain;
-    console.log(dataElement);
-
+    //console.log("VS-WIDGET-RESPONSE");
     super.doWidgetResponse(data);
   }
 }

@@ -62,11 +62,12 @@ class TemplateUI extends \Shipard\Utils\TemplateCore
       if ($widget)
       {
         $widget->uiTemplate = $this;
-        $widget->setDefinition($classId);
+        //$widget->setDefinition($classId);
         $widget->init();
         $widget->createContent();
 
-        $c = $widget->renderContent(TRUE);
+        //$c = $widget->renderContent(TRUE);
+        $c = $widget->createCodeAll(TRUE);
         return $c;
       }
     }

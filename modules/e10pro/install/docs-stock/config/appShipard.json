@@ -3,32 +3,34 @@
   {
     "appMenu":
     {
-      "items": {
-        "stock":
-        {
-          "title": "Zásoby",
-          "id": "stock",
-          "objectType": "menuItem",
-          "items": {
-            "stockIn": {
-              "title": "Příjemky", "icon": "docType/stockIn", "order": 100000,
-              "object": "viewer", "table": "e10doc.core.heads", "viewer": "stockin"
-            },
-				    "stockOut": {
-              "title": "Výdejky", "icon": "docType/stockOut", "order": 200000,
-              "object": "viewer", "table": "e10doc.core.heads", "viewer": "stockout"
-            },
-            "deliveryNote": {
-              "title": "Dodací listy", "icon": "docType/deliveryNote", "order": 520000,
-              "object": "viewer", "table": "e10doc.core.heads", "viewer": "deliveryNote", "enabledCfgItem": "options.e10doc-sale.useDeliveryNotes"
-            },
-            "stockInitStates": {
-              "title": "Počáteční stavy", "icon": "docType/stockinst", "order": 600000,
-              "object": "viewer", "table": "e10doc.core.heads", "viewer": "stockinst"
-            },
-            "checks": {
-              "title": "Inventury", "order": 650000, "icon": "tables/e10doc.inventory.checkHeads",
-              "viewer": "default", "object": "viewer", "table": "e10doc.inventory.checkHeads"
+      "application": {
+        "groups": {
+          "stock":
+          {
+            "title": "Zásoby",
+            "id": "stock",
+            "objectType": "menuItem",
+            "items": {
+              "stockIn": {
+                "title": "Příjemky", "icon": "docType/stockIn", "order": 100000,
+                "objectType": "viewer", "table": "e10doc.core.heads", "viewer": "stockin"
+              },
+              "stockOut": {
+                "title": "Výdejky", "icon": "docType/stockOut", "order": 200000,
+                "objectType": "viewer", "table": "e10doc.core.heads", "viewer": "stockout"
+              },
+              "deliveryNote": {
+                "title": "Dodací listy", "icon": "docType/deliveryNote", "order": 520000,
+                "objectType": "viewer", "table": "e10doc.core.heads", "viewer": "deliveryNote", "enabledCfgItem": "options.e10doc-sale.useDeliveryNotes"
+              },
+              "stockInitStates": {
+                "title": "Počáteční stavy", "icon": "docType/stockinst", "order": 600000,
+                "objectType": "viewer", "table": "e10doc.core.heads", "viewer": "stockinst"
+              },
+              "checks": {
+                "title": "Inventury", "order": 650000, "icon": "tables/e10doc.inventory.checkHeads",
+                "objectType": "default", "object": "viewer", "table": "e10doc.inventory.checkHeads"
+              }
             }
           }
         }

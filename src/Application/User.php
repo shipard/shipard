@@ -21,7 +21,7 @@ class User
 
 			if ($key === 'picture')
 			{
-				$this->data ['picture'] = Utils::userImage($this->app, $this->data['id'], $this->data);
+				$this->data ['picture'] = Utils::userImage($this->app, $this->data['id'] ?? 0, $this->data);
 				return $this->data ['picture'];
 			}
 

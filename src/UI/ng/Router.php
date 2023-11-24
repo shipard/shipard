@@ -76,6 +76,9 @@ class Router extends Utility
 		$this->uiTemplate->data['uiRoot'] = $this->uiRoot;
 		$this->uiTemplate->uiRoot = $this->uiRoot;
 
+		$dsIcon = $this->app->dsIcon();
+		$this->uiTemplate->data['dsIconUrl'] = $dsIcon['iconUrl'];
+
 		header ('Cache-control: no-store');
 
 		$this->app->mobileMode = TRUE;

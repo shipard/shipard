@@ -101,7 +101,7 @@ body {
  }
 
  div.e10-widget-terminal {height: 100%;}
-
+/*
  .app-container {
    height: 100vh;
    display: grid;
@@ -114,11 +114,13 @@ body {
      "app-content"
      "app-footer";
  }
+*/
 
+/*
  .app-content { grid-area: app-content; min-height: 0; overflow-y: auto;}
 
 .app-footer { grid-area: app-footer;}
-
+*/
 
 
 
@@ -235,7 +237,10 @@ $popover-body-padding-x: .5rem;
 @import "_buttons.scss";
 @import "_forms.scss";
 @import "_lists.scss";
+@import "_tree.scss";
 @import "_app.scss";
+@import "_appSimple.scss";
+@import "_appFull.scss";
 @import "_viewers.scss";
 @import "_tables.scss";
 

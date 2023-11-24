@@ -9,6 +9,7 @@ class ShipardCamsPictsLoader
 
   reloadImages()
   {
+    //console.log('reload-images', uiData['iotCamServers']);
     if (this.camerasTimer) {
       clearTimeout(this.camerasTimer);
     }
@@ -32,6 +33,7 @@ class ShipardCamsPictsLoader
 
   setPictures(serverNdx, data)
   {
+    //console.log('set-pictures', data);
     const server = uiData['iotCamServers'][serverNdx];
     for (let camNdx in data)
     {
@@ -51,7 +53,7 @@ class ShipardCamsPictsLoader
         if (!camPictElement)
         {
           //console.log("Invalid element", key);
-          uiData['iotCamPictures'][camId]['elms'][key];
+          //uiData['iotCamPictures'][camId]['elms'][key];
           continue;
         }
 

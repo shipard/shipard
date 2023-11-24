@@ -802,7 +802,7 @@ class WidgetLive extends WidgetBoard
 
 	function createEnumParamCode ($p)
 	{
-		$paramId = $p['paramId'];
+		$paramId = $p['paramId'] ?? '';
 		$activeValue = '';
 		if (isset($p['defaultValue']))
 			$activeValue = $p['defaultValue'];

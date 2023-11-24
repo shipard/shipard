@@ -101,12 +101,82 @@ class ShipardClient {
 			case 'setUserContext': return this.setUserContext(e);
 			case 'workplaceLogin': return this.workplaceLogin(e);
 			case 'inline-action': return this.inlineAction(e);
+			case 'loadAppMenuItem': return this.loadAppMenuItem(e);
     }
 
 		console.log("APP-ACTION", actionId);
 
     return 0;
   }
+
+	loadAppMenuItem (e)
+  {
+		console.log('loadAppMenuItem', e);
+
+
+    const modalType = 'viewer';
+
+    //console.log("OPEN-MODAL; ", modalType);
+
+    var modalParams = {};
+	  var modalAttrs = {
+      'parent-widget-id': '',
+      'parent-widget-type': 'unknown',
+    };
+
+    //this.elementPrefixedAttributes (e, 'data-action-param-', modalParams);
+
+    switch (modalType)
+    {
+      case 'viewer':  console.log('Viewer!');
+                      break;
+    }
+
+    let apiParams = {
+      'cgType': 2,
+      'requestType': 'appMenuItem',
+			//'object-type': 'dataViewer',
+      //'formOp': e.formOp,
+    };
+
+    this.elementPrefixedAttributes (e, 'data-action-param-', apiParams);
+
+		if (apiParams['object-type'] === 'viewer')
+			apiParams['object-type'] = 'dataViewer';
+
+    console.log("API-CALL-MENU-ITEM", apiParams);
+
+    var url = 'api/v2';
+
+    shc.server.post (url, apiParams,
+      function (data) {
+        console.log("--api-call-MENU-ITEM-success--", data);
+        this.doLoadAppMenuItemResponse(data);
+      }.bind(this),
+      function (data) {
+        console.log("--api-call-MODAL-error--");
+      }.bind(this)
+    );
+
+    return 0;
+	}
+
+	doLoadAppMenuItemResponse (data)
+	{
+		console.log("doLoadAppMenuItemResponse", data);
+
+    this.setInnerHTML(this.mainAppContent, data.response.hcFull);
+
+    if (data.response.objectType === 'dataView')
+      initWidgetTableViewer(data.response.objectId);
+    else
+    {
+      console.log("init-other-widget");
+      let e = document.getElementById(data.response.objectId);
+      e.shpWidget = new ShipardWidget();
+      e.shpWidget.init(e);
+    }
+	}
 
 	inlineAction (e)
   {
@@ -320,6 +390,8 @@ class ShipardClient {
 				console.log("Service worker registration error: ", err)
 			});
 		}
+
+		initWidgetApplication('shp-app-window');
 	}
 
 	applyUIData (responseUIData)
@@ -355,4 +427,22 @@ class ShipardClient {
 	{
 		window.location.reload(true);
 	}
+
+  setInnerHTML(elm, html) {
+    elm.innerHTML = html;
+
+    Array.from(elm.querySelectorAll("script"))
+      .forEach( oldScriptEl => {
+        const newScriptEl = document.createElement("script");
+
+        Array.from(oldScriptEl.attributes).forEach( attr => {
+          newScriptEl.setAttribute(attr.name, attr.value)
+        });
+
+        const scriptText = document.createTextNode(oldScriptEl.innerHTML);
+        newScriptEl.appendChild(scriptText);
+
+        oldScriptEl.parentNode.replaceChild(newScriptEl, oldScriptEl);
+    });
+  }
 }

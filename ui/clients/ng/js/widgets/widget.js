@@ -14,6 +14,7 @@ class ShipardWidget {
 
   widgetAction(e)
   {
+    //console.log('widgetAction');
     let actionId = e.getAttribute('data-action');
     this.doAction(actionId, e);
   }
@@ -26,9 +27,11 @@ class ShipardWidget {
     {
       case 'inline-action': return this.inlineAction(e);
       case 'select-main-tab': return this.selectMainTab(e);
+      case 'select-simple-tab': return this.selectSimpleTab(e);
 			case 'open-popup': return this.openPopup(e);
       case 'open-modal': return this.openModal(e);
       case 'closeModal': return this.closeModal(e);
+      case 'treeListGroupOC': return this.treeListGroupOC(e);
     }
 
     return 0;
@@ -143,6 +146,7 @@ class ShipardWidget {
 
   selectMainTab (e)
   {
+    //console.log("__SELECT_MAIN__TAB__", e);
     const tabsId = e.getAttribute('data-tabs');
     const inputValueId = this.rootId + '_' + tabsId + '_Value';
     const inputElement = document.getElementById(inputValueId);
@@ -158,7 +162,38 @@ class ShipardWidget {
     let apiParams = {'cgType': 2};
     //console.log("SELECT MAIN TAB: ", inputValueId);
     this.apiCall('reloadContent', apiParams);
+  }
 
+  selectSimpleTab (e)
+  {
+    //console.log("__SELECT_SIMPLE__TAB__", e);
+    const tabsId = e.getAttribute('data-tabs');
+    const tabsElement = document.getElementById(tabsId);
+
+		let oldActiveTabElement = tabsElement.querySelector('.active');
+		oldActiveTabElement.classList.remove('active');
+		e.classList.add('active');
+
+    const tabsOldElementContentId = oldActiveTabElement.getAttribute('data-tab-id');
+    document.getElementById(tabsOldElementContentId).classList.remove('active');
+
+    const tabsNewElementContentId = e.getAttribute('data-tab-id');
+    document.getElementById(tabsNewElementContentId).classList.add('active');
+  }
+
+  treeListGroupOC(e)
+  {
+    let itemElement = e.parentElement;
+		if (itemElement.classList.contains('open'))
+    {
+      itemElement.classList.remove('open');
+      itemElement.classList.add('closed');
+    }
+    else
+    {
+      itemElement.classList.remove('closed');
+      itemElement.classList.add('open');
+    }
   }
 
   apiCall(apiActionId, outsideApiParams)
@@ -167,6 +202,7 @@ class ShipardWidget {
     apiParams['requestType'] = this.rootElm.getAttribute('data-request-type');
     apiParams['classId'] = this.rootElm.getAttribute('data-class-id');
     apiParams['actionId'] = apiActionId;
+    apiParams['widgetId'] = this.rootElm.id;
     if (outsideApiParams !== undefined)
       apiParams = {...apiParams, ...outsideApiParams};
 

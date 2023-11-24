@@ -14,8 +14,14 @@ class ApiResponseViewer extends \Shipard\Api\v2\ApiResponse
 
   public function run()
   {
-    $table = $this->app->table ($this->requestParams['table'] ?? '');
+    $tableId = $this->requestParams['table'] ?? '';
+    $table = $this->app->table ($tableId);
+    if (!$table)
+    {
+      error_log("--INVALID-TABLE-- `{$tableId}`");
+    }
     $isModal = ($this->requestParam('modal-type') !== NULL) ? 1 : 0;
+    $fullCode = intval($this->requestParam('full-code'));
 
     /** @var \Shipard\Viewer\TableView */
     $v = NULL;
@@ -35,6 +41,10 @@ class ApiResponseViewer extends \Shipard\Api\v2\ApiResponse
       {
         $this->responseData['hcFull'] = $renderer->renderedData['hcFull'];
       }
+      elseif ($fullCode)
+      {
+        $this->responseData['hcFull'] = $renderer->renderedData['hcFull'];
+      }
       else
       {
         $this->responseData['hcRows'] = $v->rows();
@@ -46,6 +56,10 @@ class ApiResponseViewer extends \Shipard\Api\v2\ApiResponse
       $this->responseData['type'] = $this->requestParam('actionId') ?? 'INVALID';
       $this->responseData['objectType'] = 'dataView';
       $this->responseData['objectId'] = $v->vid;
+    }
+    else
+    {
+      error_log("--INVALID-VIEWER-- `{$viewId}`");
     }
   }
 }

@@ -41,6 +41,11 @@ class Router extends \Shipard\Base\Utility
     {
       $requestType = $this->requestParam('modal-type');
     }
+    elseif ($requestType === 'appMenuItem')
+    {
+      $requestType = $this->requestParam('object-type');
+      $this->requestParams['full-code'] = 1;
+    }
 
     /** @var \Api\v2\ApiResponse  */
     $apiResponseObject = NULL;
@@ -55,7 +60,10 @@ class Router extends \Shipard\Base\Utility
     }
 
     if (!$apiResponseObject)
+    {
+      error_log("##ERR-REQUEST-TYPE: `$requestType`");
       return new \Shipard\Application\Response ($this->app(), 'invalid requestType param', 404);
+    }
 
     $apiResponseObject->uiRouter = $this->uiRouter;
     $apiResponseObject->setRequestParams($this->requestParams);

@@ -1,67 +1,46 @@
+$app-header-height: 2rem;
+
 body {
   height: 100vh;
-  // height: 100%;
 }
 
-
+/*
+ * appContainer
+ */
 .app-container {
   background-color: var(--backgroundColor);
   height: 100vh;
 }
+
 .e10-widget-content {height: 100%;}
 
+// ------
 
-@media only screen and (max-width: 700px) {
-  .app-container {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: min-content 1fr min-content;
-    gap: 0px 0px;
-    grid-auto-flow: row;
-    grid-template-areas:
-      "app-nav"
-      "app-content"
-      "app-footer";
+div.shp-app-cats-menu-tabs {
+  .shp-tab-item {
+    background-color: blue;
   }
-
-  .app-nav {
-    grid-area: app-nav;
+  .shp-tab-item.active {
+    background-color: lightblue;
   }
-
-  .app-content { grid-area: app-content; min-height: 0; overflow-y: clip;}
-
-  .app-footer { grid-area: app-footer;}
-
-  div.app-menu {display: none;}
-
-  #navbar-title-left {display: none;}
 }
 
-@media only screen and (min-width: 701px) {
-  .app-container {
-    display: grid;
 
-    grid-template-columns: 25rem 1fr;
-    grid-template-rows: min-content 1fr min-content;
-    gap: 0px 0px;
-    grid-template-areas:
-      "app-nav app-nav"
-      "app-menu app-content"
-      "app-footer app-footer";
+.tab-content {display: none;}
+.tab-content.active {display: block;}
+
+// -------
+
+span.shp-widget-action, span.shp-app-action {
+  cursor: pointer;
+
+}
+
+
+div.app-menu-shp-ng {
+  .shp-tab-item {
+    font-size: 180%;
+    padding: .2rem .5rem;
   }
-
-  .app-nav {
-    grid-area: app-nav;
-  }
-
-  .app-content { grid-area: app-content; min-height: 0; overflow-y: clip;}
-
-  .app-footer { grid-area: app-footer;}
-
-  .app-menu { grid-area: app-menu;}
-
-
-
-  #navbar-toggler-left {display: none;}
 }
 

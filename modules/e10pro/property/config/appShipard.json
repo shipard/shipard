@@ -3,20 +3,22 @@
   {
     "appMenu":
     {
-      "items": {
-        "property":
-        {
-          "title": "Majetek",
-          "id": "property",
-          "objectType": "menuItem",
-          "items": {
-            "propertyAll": {
-              "title": "Evidence", "icon": "tables/e10pro.property.property" , "order": 10000,
-              "object": "viewer", "table": "e10pro.property.property", "viewer": "default"
-            },
-				    "propertyDeps": {
-              "title": "Odpisy", "icon": "tables/e10pro.property.property-deps", "order": 20000,
-              "object": "viewer", "table": "e10pro.property.property", "viewer": "debs"
+      "application": {
+        "groups": {
+          "property":
+          {
+            "title": "Majetek",
+            "id": "property",
+            "objectType": "menuItem",
+            "items": {
+              "propertyAll": {
+                "title": "Evidence", "icon": "tables/e10pro.property.property" , "order": 10000,
+                "objectType": "viewer", "table": "e10pro.property.property", "viewer": "default"
+              },
+              "propertyDeps": {
+                "title": "Odpisy", "icon": "tables/e10pro.property.property-deps", "order": 20000,
+                "objectType": "viewer", "table": "e10pro.property.property", "viewer": "debs"
+              }
             }
           }
         }
