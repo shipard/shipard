@@ -37,7 +37,6 @@
 		{"id": "iotSensorValueToParam", "name": "Parametr", "type": "int", "reference": "mac.iot.params"},
 		{"id": "iotSensorValueToTemplate", "name": "Hodnota do", "type": "string", "len": 80},
 
-		{"id": "rowOrder", "name": "Pořadí", "type": "int"},
 		{"id": "disabled", "name": "Zakázáno", "type": "logical"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
