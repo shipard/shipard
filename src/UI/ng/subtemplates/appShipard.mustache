@@ -1,7 +1,4 @@
 <div class="app-container app-container-full" id='shp-app-window'>
-  <div class="app-header">
-    <span id='shp-app-content-title' class='app-content-title'>tady bude nějaký text</span>
-  </div>
   <div class="app-menu">
     <div class="app-menu-shp-ng">
       <div class="menu-toolbar">
@@ -26,7 +23,7 @@
                         {{#table}}data-action-param-table='{{table}}'{{/table}}
                         {{#viewer}}data-action-param-view-id='{{viewer}}'{{/viewer}}
                         data-action='loadAppMenuItem'
-                        class='shp-app-action'>
+                        class='shp-widget-action'>
                         {{title}}
                       </span>
                     </span>
@@ -50,7 +47,7 @@
                             {{#table}}data-action-param-table='{{table}}'{{/table}}
                             {{#viewer}}data-action-param-view-id='{{viewer}}'{{/viewer}}
                             data-action='loadAppMenuItem'
-                            class='shp-app-action'>
+                            class='shp-widget-action'>
                             {{title}}
                           </span>
                         </span>
@@ -73,8 +70,13 @@
     </div>
   </div>
 
-  <div class="app-content" id='shp-main-app-content' {{{data.appBrowserParams}}}>
-    {{{data.coreMainElementCode}}}
+  <div class='app-content-container'>
+    <div class="app-header">
+      <span id='shp-app-hdr-back' class='app-hdr-back shp-widget-action' data-action='toggleContent' >{{{@icon;icon:user/arrowLeft}}}</span>
+      <span id='shp-app-hdr-title' class='shp-app-hdr-title'>tady bude nějaký text</span>
+    </div>
+    <div class="app-content" id='shp-main-app-content' {{{data.appBrowserParams}}}>
+      {{{data.coreMainElementCode}}}
+    </div>
   </div>
-
 </div>

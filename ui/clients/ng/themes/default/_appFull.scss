@@ -2,14 +2,39 @@
   display: grid;
 
   grid-template-columns: min-content 1fr;
-  grid-template-rows: $app-header-height 1fr;
+  grid-template-rows: 1fr;
   gap: 0px 0px;
   grid-template-areas:
-    "app-menu app-header"
-    "app-menu app-content";
+    "app-menu app-content-container";
 
-  .app-header { grid-area: app-header; background-color: #555555;}
-  .app-content { grid-area: app-content; min-height: 0; overflow-y: clip;}
+  overflow-x: clip;
+
+  .app-content-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: $app-header-height 1fr;
+    gap: 0px 0px;
+    grid-template-areas:
+      "app-content-header"
+      "app-content";
+    grid-area: app-content-container;
+
+    min-height: 0;
+    overflow-y: clip;
+    overflow-x: clip;
+
+
+    .app-content-header {
+      grid-area: app-content-header;
+    }
+    .app-content {
+      grid-area: app-content;
+
+      min-height: 0;
+      overflow-y: clip;
+    }
+  }
+
   .app-menu {
     grid-area: app-menu;
 
@@ -40,3 +65,57 @@
   height: 100%;
 }
 
+
+@media only screen and (max-width: 700px) {
+  .app-menu {
+    width: calc(100vw - 3rem);
+  }
+
+  .app-content-container {
+    width: 100vw;
+  }
+
+
+  .app-menu {
+    margin-left: 0;
+  }
+
+  div.app-container-full.full-screen-content-on {
+    .app-menu {
+      margin-left: -100vw;
+      animation:fscOpen .3s;
+    }
+  }
+
+  div.app-container-full.full-screen-content-off {
+    .app-menu {
+      margin-left: 0;
+      animation:fscClose .2s;
+    }
+  }
+
+}
+
+
+@media only screen and (min-width: 701px)
+{
+  .app-header {
+    >.app-hdr-back {
+      display: none;
+    }
+  }
+}
+
+
+
+@keyframes fscOpen
+{
+  from {margin-left: 0;}
+  to{margin-left: -100vw;}
+}
+
+@keyframes fscClose
+{
+  from {margin-left: -100vw;}
+  to{margin-left: 0;}
+}

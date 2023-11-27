@@ -13,10 +13,13 @@ class ShipardWidgetBoard extends ShipardWidget
   initContent()
   {
     this.elmContent = this.rootElm.querySelector('.shp-wb-content');
+
+    /*
     var mc = new Hammer(this.elmContent);
     mc.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 250 });
     mc.get('pan').set({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 250 });
     mc.on("panleft panright", function(ev) {this.doSwipe(ev)}.bind(this));
+    */
   }
 
   doSwipe(dir)

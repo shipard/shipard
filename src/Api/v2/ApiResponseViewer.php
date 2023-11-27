@@ -15,6 +15,7 @@ class ApiResponseViewer extends \Shipard\Api\v2\ApiResponse
   public function run()
   {
     $tableId = $this->requestParams['table'] ?? '';
+    /** @var \Shipard\Table\DbTable */
     $table = $this->app->table ($tableId);
     if (!$table)
     {
@@ -40,10 +41,12 @@ class ApiResponseViewer extends \Shipard\Api\v2\ApiResponse
       if ($isModal)
       {
         $this->responseData['hcFull'] = $renderer->renderedData['hcFull'];
+        $this->addTitle($table, $v);
       }
       elseif ($fullCode)
       {
         $this->responseData['hcFull'] = $renderer->renderedData['hcFull'];
+        $this->addTitle($table, $v);
       }
       else
       {
@@ -60,6 +63,25 @@ class ApiResponseViewer extends \Shipard\Api\v2\ApiResponse
     else
     {
       error_log("--INVALID-VIEWER-- `{$viewId}`");
+    }
+  }
+
+  protected function addTitle(\Shipard\Table\DbTable $table, ?\Shipard\Viewer\TableView $v)
+  {
+    if (!$v)
+      return;
+
+    if ($v->toolbarTitle)
+    {
+      $this->responseData['hcTitle'] = $this->app()->ui()->composeTextLine($v->toolbarTitle);
+    }
+    else
+    {
+      $icon = $table->tableIcon(NULL);
+      $titleText = $table->tableName();
+
+      $title = ['text' => $titleText, 'icon' => $icon];
+      $this->responseData['hcTitle'] = $this->app()->ui()->composeTextLine($title);
     }
   }
 }

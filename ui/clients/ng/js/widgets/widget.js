@@ -8,20 +8,21 @@ class ShipardWidget {
     this.rootElm = rootElm;
     this.rootId = this.rootElm.getAttribute('id');
 
-    this.on(this, 'click', '.shp-widget-action', function (e, ownerWidget){ownerWidget.widgetAction(e)});
-    this.on(this, 'click', '.shp-widget-action>i', function (e, ownerWidget){ownerWidget.widgetAction(e.parentElement)});
+    this.on(this, 'click', '.shp-widget-action', function (e, ownerWidget, event){ownerWidget.widgetAction(e, event)});
+    this.on(this, 'click', '.shp-widget-action>i', function (e, ownerWidget, event){ownerWidget.widgetAction(e.parentElement, event)});
   }
 
-  widgetAction(e)
+  widgetAction(e, event)
   {
-    //console.log('widgetAction');
+    //console.log('widgetAction', event);
     let actionId = e.getAttribute('data-action');
     this.doAction(actionId, e);
+    event.stopPropagation();
   }
 
   doAction (actionId, e)
   {
-    console.log("ACTION: ", actionId);
+    //console.log("ACTION-WIDGET: ", actionId);
 
     switch (actionId)
     {
@@ -69,7 +70,7 @@ class ShipardWidget {
   {
     const modalType = e.getAttribute('data-modal-type');
 
-    //console.log("OPEN-MODAL; ", modalType);
+    //console.log("OPEN-MODAL; ", modalType, e);
 
     var modalParams = {};
 	  var modalAttrs = {
@@ -124,11 +125,11 @@ class ShipardWidget {
 
   closeModal(e)
   {
+    //console.log('close-modal', this.rootElm.parentElement);
     this.rootElm.parentElement.remove();
 
     return 0;
   }
-
 
   openPopup(e)
   {
@@ -267,7 +268,7 @@ class ShipardWidget {
 	on(ownerWidget, eventType, selector, callback) {
 		this.rootElm.addEventListener(eventType, function (event) {
 			if (event.target.matches(selector)) {
-				callback.call(event.target, event.target, ownerWidget);
+				callback.call(event.target, event.target, ownerWidget, event);
 			}
 		});
 	}
