@@ -230,6 +230,9 @@
 			"type": 2, "dir": 1, "rate": 2,
 			"rowTaxReturn": 22
 		},
+
+
+
 		"EUCZ405": {
 			"fullName": "DOVOZ/Výstup/Zboží/Základní (odběratel)", "name": "Základní - zboží DOVOZ (ODB)", "print": "Základní - zboží DOVOZ (odběratel)",
 			"type": 2, "dir": 1, "rate": 0, "noPayTax": 1, "hidden": 1,
@@ -250,6 +253,28 @@
 			"type": 2, "dir": 1, "rate": 5, "noPayTax": 1, "hidden": 1,
 			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 8
 		},
+
+		"EUCZ407": {
+			"fullName": "DOVOZ/Výstup/Ostatní/Základní (odběratel)", "name": "Základní - ostatní DOVOZ (ODB)", "print": "Základní - ostatní DOVOZ (odběratel)",
+			"type": 2, "dir": 1, "rate": 0, "noPayTax": 1, "hidden": 1,
+			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 12
+		},
+		"EUCZ408": {
+			"fullName": "DOVOZ/Výstup/Ostatní/Snížená (odběratel)", "name": "Snížená - ostatní DOVOZ (ODB)", "print": "Snížená - ostatní DOVOZ (odběratel)",
+			"type": 2, "dir": 1, "rate": 1, "noPayTax": 1, "hidden": 1,
+			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 13
+		},
+		"EUCZ462": {
+			"fullName": "DOVOZ/Výstup/Ostatní/První snížená (odběratel)", "name": "První snížená - ostatní DOVOZ (ODB)", "print": "První snížená - ostatní DOVOZ (odběratel)",
+			"type": 2, "dir": 1, "rate": 4, "noPayTax": 1, "hidden": 1,
+			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 13
+		},
+		"EUCZ463": {
+			"fullName": "DOVOZ/Výstup/Ostatní/Druhá snížená (odběratel)", "name": "Druhá snížená - ostatní DOVOZ (ODB)", "print": "Druhá snížená - ostatní DOVOZ (odběratel)",
+			"type": 2, "dir": 1, "rate": 5, "noPayTax": 1, "hidden": 1,
+			"sumTax": 0, "sumBase": 0, "sumTotal": 0, "rowTaxReturn": 13
+		},
+
 		"EUCZ415": {
 			"fullName": "DOVOZ/Vstup/Zboží/Základní", "name": "Základní - zboží DOVOZ", "print": "DOVOZ/Zboží/Základní",
 			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "EUCZ405",
@@ -270,6 +295,30 @@
 			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "EUCZ461",
 			"sumTax": 0, "rowTaxReturn": 44
 		},
+
+		"EUCZ417": {
+			"fullName": "DOVOZ/Vstup/Ostatní/Základní", "name": "Základní - ostatní DOVOZ", "print": "DOVOZ/Ostatní/Základní",
+			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "EUCZ407",
+			"sumTax": 0, "rowTaxReturn": 43
+		},
+		"EUCZ418": {
+			"fullName": "DOVOZ/Vstup/Ostatní/Snížená", "name": "Snížená - ostatní DOVOZ", "print": "DOVOZ/Ostatní/Snížená",
+			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "EUCZ408",
+			"sumTax": 0, "rowTaxReturn": 44
+		},
+		"EUCZ492": {
+			"fullName": "DOVOZ/Vstup/Ostatní/První snížená", "name": "První snížená - ostatní DOVOZ", "print": "DOVOZ/Ostatní/První snížená",
+			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "EUCZ462",
+			"sumTax": 0, "rowTaxReturn": 44
+		},
+		"EUCZ493": {
+			"fullName": "DOVOZ/Vstup/Ostatní/Druhá snížená", "name": "Druhá snížená - ostatní DOVOZ", "print": "DOVOZ/Ostatní/Druhá snížená",
+			"type": 2, "dir": 0, "rate": 2, "noPayTax": 1, "reverseTaxCode": "EUCZ463",
+			"sumTax": 0, "rowTaxReturn": 44
+		},
+
+
+
 		"EUCZ000": {
 			"fullName": "Nedaňový řádek", "name": "---", "print": "---",
 			"rate": 0
@@ -360,8 +409,17 @@
 		{"code": "EUCZ416", "from": "2012-01-01", "to": "2012-12-31", "value": 14.0},
 		{"code": "EUCZ416", "from": "2013-01-01", "to": "2014-12-31", "value": 15.0},
 		{"code": "EUCZ416", "from": "2024-01-01", "to": "0000-00-00", "value": 12.0},
+		{"code": "EUCZ417", "from": "2010-01-01", "to": "2011-12-31", "value": 20.0},
+		{"code": "EUCZ417", "from": "2012-01-01", "to": "2012-12-31", "value": 20.0},
+		{"code": "EUCZ417", "from": "2013-01-01", "to": "0000-00-00", "value": 21.0},
+		{"code": "EUCZ418", "from": "2010-01-01", "to": "2011-12-31", "value": 10.0},
+		{"code": "EUCZ418", "from": "2012-01-01", "to": "2012-12-31", "value": 14.0},
+		{"code": "EUCZ418", "from": "2013-01-01", "to": "2014-12-31", "value": 15.0},
+		{"code": "EUCZ418", "from": "2024-01-01", "to": "0000-00-00", "value": 12.0},
 		{"code": "EUCZ490", "from": "2015-01-01", "to": "2023-12-31", "value": 15.0},
-		{"code": "EUCZ491", "from": "2015-01-01", "to": "2023-12-31", "value": 10.0}
+		{"code": "EUCZ491", "from": "2015-01-01", "to": "2023-12-31", "value": 10.0},
+		{"code": "EUCZ492", "from": "2015-01-01", "to": "2023-12-31", "value": 15.0},
+		{"code": "EUCZ493", "from": "2015-01-01", "to": "2023-12-31", "value": 10.0}
 	],
 	"taxNotes": {
 		"pdp4": {"text": "Daň odvede zákazník"},
