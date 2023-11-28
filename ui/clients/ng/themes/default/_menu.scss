@@ -1,0 +1,23 @@
+div.app-menu-shp-ng{
+    .menu-toolbar {
+        background-color: var(--menuToolbarBackground);
+    }
+    .shp-tree-list li:not(:last-of-type){
+        padding-bottom: .5rem;
+    }
+    .shp-tree-list li:first-of-type{
+        padding-top: .5rem;
+    }
+    .shp-tab-item {
+        background-color: transparent;
+        opacity: .8;
+    }
+    .shp-tab-item.active{
+        background-color: transparent;
+        border-top: 3px solid $shipard-primary;
+        opacity: 1;
+    }
+    .menu-tabs {
+        background-color: var(--menuTabsBackground);
+    }
+}

@@ -127,8 +127,16 @@ body {
 
 $shipard-primary: #93C572;
 $shipard-secondary: #A9A9A9;
+
 $nav-bg-light: #E8E8E8;
 $nav-bg-dark: #303030;
+$nav-border-light: gainsboro;
+$nav-border-dark: #202020;
+$menu-tabs-bg-light: whitesmoke;
+$menu-tabs-bg-dark: #202020;
+$menu-toolbar-bg-light: whitesmoke;
+$menu-toolbar-bg-dark: #202020;
+
 $card-bg-light: white;
 $card-bg-dark: #505050;
 $card-border-light: gainsboro;
@@ -154,8 +162,6 @@ $accordion-bg-dark: #505050;
 /*$accordion-bg-dark: #585858;*/
 $accordion-border-light: gainsboro;
 $accordion-border-dark: dimgray;
-$nav-border-light: gainsboro;
-$nav-border-dark: #202020;
 $universal-border-light: gainsboro;
 $universal-border-dark: #696969;
 $list-border-light: gainsboro;
@@ -243,4 +249,5 @@ $popover-body-padding-x: .5rem;
 @import "_appFull.scss";
 @import "_viewers.scss";
 @import "_tables.scss";
+@import "_menu.scss";
 

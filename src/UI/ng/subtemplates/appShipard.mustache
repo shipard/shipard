@@ -1,13 +1,13 @@
 <div class="app-container app-container-full" id='shp-app-window'>
   <div class="app-menu">
     <div class="app-menu-shp-ng">
-      <div class="menu-toolbar">
+      <div class="menu-toolbar d-flex align-items-center">
         <img src='{{data.dsIconUrl}}' style='height: 100%;'>
-        {{cfgItem.options.core.ownerShortName}}
+        <span class="ms-2">{{cfgItem.options.core.ownerShortName}}</span>
       </div>
-      <div class="menu-footer">
+      <!--<div class="menu-footer">
         {{{@icon;icon:user/user}}} {{userInfo.name}}
-      </div>
+      </div>-->
 
       <div class="menu-content shp-tree-list">
         {{#data.uiStruct.appMenu}}
@@ -35,7 +35,7 @@
             {{#groups.0}}
             <ul class='shp-tree-list'>
               {{#groups}}
-                <li class='tl-group open{{#active}} active{{/active}}' >
+                <li class='tl-group open{{#active}} active{{/active}}'>
                   <span class='shp-widget-action' data-action='treeListGroupOC'>{{title}}</span>
                   <ul class='shp-tree-list'>
                     {{#items}}
@@ -62,18 +62,20 @@
         {{/data.uiStruct.appMenu}}
       </div>
 
-      <div class="menu-tabs shp-app-cats-menu-tabs" id='shp-app-cats-menu-tabs'>
+      <div class="menu-tabs shp-app-cats-menu-tabs d-flex ps-2" id='shp-app-cats-menu-tabs'>
         {{#data.uiStruct.appMenu}}
           <span class='shp-widget-action shp-tab-item{{#active}} active{{/active}}' data-action='select-simple-tab' data-tab-id='shp-app-cats-menu-tabs_{{id}}' data-tabs='shp-app-cats-menu-tabs' title='{{title}}'>{{{@icon;dataItem:icon}}}</span>
         {{/data.uiStruct.appMenu}}
+
+        <span class="ms-auto me-1 shp-widget-action shp-tab-item{{#active}} active{{/active}}">{{{@icon;icon:user/user}}}</span>
       </div>
     </div>
   </div>
 
   <div class='app-content-container'>
-    <div class="app-header">
-      <span id='shp-app-hdr-back' class='app-hdr-back shp-widget-action' data-action='toggleContent' >{{{@icon;icon:user/arrowLeft}}}</span>
-      <span id='shp-app-hdr-title' class='shp-app-hdr-title'>tady bude nějaký text</span>
+    <div class="app-header d-flex align-items-center">
+      <span id='shp-app-hdr-back' class='app-hdr-back shp-widget-action ps-2' data-action='toggleContent' >{{{@icon;icon:user/arrowLeft}}}</span>
+      <span id='shp-app-hdr-title' class='shp-app-hdr-title ps-2'></span>
     </div>
     <div class="app-content" id='shp-main-app-content' {{{data.appBrowserParams}}}>
       {{{data.coreMainElementCode}}}
