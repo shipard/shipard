@@ -17,6 +17,7 @@
     <span class="list-group-item text-muted"><small>V případě nesprávných informací nám zašlete e-mail na: <a href="mailto:{{data.uiCfg.supportEmail}}">{{data.uiCfg.supportEmail}}</a></small></span>
 </ol>
 
+{{#data.students.0}}
 <ol class="list-group mb-2">
     <h3 class="list-group-item mb-0">Studenti</h3>
 
@@ -34,7 +35,9 @@
         </span>
     {{/data.students}}
 </ol>
+{{/data.students.0}}
 
+{{#data.flags.showBalance}}
 <ol class="list-group mb-2">
     <h3 class="list-group-item mb-0">Školné</h3>
     <div class="list-group-item d-flex justify-content-between">
@@ -43,4 +46,5 @@
         <button class='btn btn-sm btn-default shp-widget-action' data-action='open-modal' data-action-param-modal-type='dataViewer' data-action-param-view-id='zus-ezk-invoicesOut' data-action-param-table='e10doc.core.heads'>{{{@icon;icon:user/archive}}} Přehled faktur</button>
     </div>
 </ol>
+{{/data.flags.showBalance}}
 

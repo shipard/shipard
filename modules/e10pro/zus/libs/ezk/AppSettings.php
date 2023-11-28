@@ -83,6 +83,7 @@ class AppSettings extends \Shipard\UI\ng\AppSettings
       $pbi->setPersons(array_keys($this->students));
       $pbi->run();
 
+      $this->uiTemplate->data['flags']['showBalance'] = 1;
       $this->uiTemplate->data['balance'] = $pbi->data;
       $this->uiTemplate->data['balance_json'] = json_encode($pbi->data);
     }
