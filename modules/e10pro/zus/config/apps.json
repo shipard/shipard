@@ -20,6 +20,10 @@
           "title": "Omluvenky", "icon": "user/book", "id": "excuses",
           "objectType": "viewer", "table": "e10pro.zus.omluvenky", "viewer": "ezk",
           "mainRole": "zus-ezk-legalrep"
+        },
+        {
+          "title": "Nastavení", "icon": "system/actionSettings", "id": "settings",
+          "objectType": "widget", "classId": "Shipard.UI.ng.WidgetAppSettings"
         }
       ]
     },
@@ -31,6 +35,7 @@
       "zus-ezk-student": {
         "fn": "Student"
       }
-    }
+    },
+    "appSettings": ["e10pro.zus.libs.ezk.AppSettings"]
   }
 }
