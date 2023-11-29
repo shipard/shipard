@@ -24,7 +24,7 @@ data-viewer.shp-mainViewer  {
     grid-area: body;
 
     overflow-y: hidden;
-    border: 3px solid violet;
+
 
     >.rows {
       overflow-y: auto;
@@ -33,7 +33,6 @@ data-viewer.shp-mainViewer  {
   .search { grid-area: search; background-color: aliceblue;}
   .rows {
      grid-area: rows;
-     border: 5px solid red;
     }
   .tabs { grid-area: tabs; }
   .detail { grid-area: detail;  background-color: lightgreen;}
@@ -77,59 +76,6 @@ data-viewer.shp-detailViewer  {
   .tabs { grid-area: tabs; }
 }
 
-/*
-data-viewer>div.body>div.rows>div.rows-list>div.r {
-
-  display: flex;
-
-  >div.df2-list-item-recnum {
-    width: 3rem;
-    flex-shrink: 0;
-  }
-
-  >div.df2-list-item-icon {
-    width: 3rem;
-    flex-shrink: 0;
-    font-size: 180%;
-  }
-
-  >div.row-content {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    flex-grow: 1;
-    min-width: 0;
-
-    div.df2-list-item-t1 {
-      color: red;
-
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-
-      font-size: 120%;
-
-      flex-grow: 1;
-    }
-
-    div.df2-list-item-t2 {
-      color: blue;
-      flex-grow: 1;
-    }
-
-    div.df2-list-item-i1 {
-      flex-shrink: 1;
-    }
-
-    div.break-break {
-      flex-basis: 100%;
-      width: 0;
-    }
-  }
-}
-*/
-
-
 data-viewer>div.body>div.rows>div.rows-list>div.r {
   display: grid;
   grid-template-columns: min-content min-content 1fr min-content;
@@ -144,19 +90,19 @@ data-viewer>div.body>div.rows>div.rows-list>div.r {
 
     .lnr {
       grid-area: lnr;
-      width: 2rem;
+      width: 1.5rem;
       font-size: 80%;
-      text-align: right;
       display: flex;
       align-items: end;
     }
 
     .icon {
       grid-area: icon;
-
       width: 3rem;
-      font-size: 2rem;
-      text-align: center;
+      font-size: 1.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .t1 {
@@ -165,6 +111,7 @@ data-viewer>div.body>div.rows>div.rows-list>div.r {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      font-size: 112%;
     }
 
     .i1 {
@@ -173,10 +120,18 @@ data-viewer>div.body>div.rows>div.rows-list>div.r {
       white-space: nowrap;
     }
 
-    .t3 { grid-area: t3; }
+    .t3 {
+      grid-area: t3; font-size: 90%;
+      opacity: .8;
+    }
 
     .t2 {
       grid-area: t2;
+      font-size: 90%;
+      opacity: .8;
+      >span {
+        white-space: pre;
+      }
     }
 
     .i2 {
@@ -196,5 +151,20 @@ data-viewer.viewerWithCards {
     padding-top: 0.5rem; padding-bottom: 0.5rem;
     margin-top: .5rem;
     margin-bottom: .5rem;
+  }
+}
+
+data-viewer>div.body>div.rows>div.rows-list>div.r {
+  border-bottom: 1pt solid var(--universalBorder);
+  padding-top: .2rem;
+  padding-bottom: .2rem;
+
+  .df2-list-item-i1 {
+    text-align: right;
+  }
+
+  .i2 {
+    font-size: 90%;
+    text-align: right;
   }
 }

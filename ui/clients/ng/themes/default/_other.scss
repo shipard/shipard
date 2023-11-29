@@ -89,3 +89,36 @@ div.rowsOnWeb {
 div a.pricingCategory:not(:last-of-type) {
 	padding-right: 1rem;
 }
+
+/* labels */
+span.label{
+	padding: .15rem;
+	border-radius: 5px;
+	font-size: 90%;
+	white-space: pre;
+}
+
+span.label.label-default{
+	background-color: #{$label-default};
+	color: #{$label-color-lights};
+}
+
+span.label.label-success{
+	background-color: #{$label-success};
+	color: #{$label-color-darks};
+}
+
+span.label.label-info{
+	background-color: #{$label-info};
+	color: #{$label-color-lights};
+}
+
+span.label.label-warning{
+	background-color: #{$label-warning};
+	color: #{$label-color-lights};
+}
+
+span.label.label-danger{
+	background-color: #{$label-danger};
+	color: #{$label-color-darks};
+}
