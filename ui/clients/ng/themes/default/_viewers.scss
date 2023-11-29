@@ -32,7 +32,7 @@ data-viewer.shp-mainViewer  {
   }
   .search { grid-area: search; background-color: aliceblue;}
   .rows {
-     grid-area: rows; background-color: aqua;
+     grid-area: rows;
      border: 5px solid red;
     }
   .tabs { grid-area: tabs; }
@@ -77,12 +77,10 @@ data-viewer.shp-detailViewer  {
   .tabs { grid-area: tabs; }
 }
 
-
+/*
 data-viewer>div.body>div.rows>div.rows-list>div.r {
-  /*border-bottom: 1px solid gray;*/
+
   display: flex;
-  //flex-direction: row;
-  //flex-wrap: wrap;
 
   >div.df2-list-item-recnum {
     width: 3rem;
@@ -129,6 +127,66 @@ data-viewer>div.body>div.rows>div.rows-list>div.r {
     }
   }
 }
+*/
+
+
+data-viewer>div.body>div.rows>div.rows-list>div.r {
+  display: grid;
+  grid-template-columns: min-content min-content 1fr min-content;
+  grid-template-rows: min-content min-content min-content;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "lnr icon t1 i1"
+    "lnr icon t2 i2"
+    "lnr icon t3 t3";
+
+
+    .lnr {
+      grid-area: lnr;
+      width: 2rem;
+      font-size: 80%;
+      text-align: right;
+      display: flex;
+      align-items: end;
+    }
+
+    .icon {
+      grid-area: icon;
+
+      width: 3rem;
+      font-size: 2rem;
+      text-align: center;
+    }
+
+    .t1 {
+      grid-area: t1;
+
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .i1 {
+      grid-area: i1;
+
+      white-space: nowrap;
+    }
+
+    .t3 { grid-area: t3; }
+
+    .t2 {
+      grid-area: t2;
+    }
+
+    .i2 {
+      grid-area: i2;
+      white-space: nowrap;
+    }
+}
+
+
+
 
 data-viewer.viewerWithCards {
   div.rows {

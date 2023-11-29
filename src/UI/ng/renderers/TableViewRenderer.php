@@ -514,7 +514,7 @@ class TableViewRenderer extends Renderer
 		if (isset ($listItem ['level']))
 			$itemLevel = intval ($listItem ['level']);
 
-		$codeLine .= "<div class='df2-list-item-recnum df2-list-item-level$itemLevel'>";
+		$codeLine .= "<div class='df2-list-item-recnum lnr df2-list-item-level$itemLevel'>";
 		if ($this->viewer->checkboxes)
 			$codeLine .= "<span><input type='checkbox' name='vchbx_{$listItem['pk']}' value='{$listItem ['pk']}'/></span>";
 		if ($this->viewer->onlyOneRec === 0)
@@ -526,23 +526,23 @@ class TableViewRenderer extends Renderer
 		if ((isset ($listItem ['icon'])) && ($listItem ['icon'] != ''))
 		{
 			$icon = $this->app()->ui()->icon($listItem ['icon'], $listItem['!error'] ?? '', 'span');
-			$codeLine .= "<div class='df2-list-item-icon'>{$icon}</div>";
+			$codeLine .= "<div class='df2-list-item-icon icon'>{$icon}</div>";
 		}
 		else
 		if (isset ($listItem ['image']))
 		{
-			$codeLine .= "<div class='df2-list-item-image'>";
+			$codeLine .= "<div class='df2-list-item-image icon'>";
 			if ($listItem ['image'] !== '')
 				$codeLine .= "<img src='{$listItem ['image']}'>";
 			$codeLine .= '</div>';
 		}
 		elseif ((isset ($listItem ['emoji'])))
 		{
-			$codeLine .= "<div class='df2-list-item-emoji'><span>{$listItem ['emoji']}</span></div>";
+			$codeLine .= "<div class='df2-list-item-emoji icon'><span>{$listItem ['emoji']}</span></div>";
 		}
 		elseif ((isset ($listItem ['svgIcon'])) && ($listItem ['svgIcon'] != ''))
 		{
-			$codeLine .= "<div class='df2-list-item-icon'><img style='width:100%;' src='{$listItem ['svgIcon']}'></div>";
+			$codeLine .= "<div class='df2-list-item-icon icon'><img style='width:100%;' src='{$listItem ['svgIcon']}'></div>";
 		}
 
 		if (isset($listItem['code']))
@@ -559,10 +559,12 @@ class TableViewRenderer extends Renderer
 			$t1 = "&nbsp;";
 
 		$t2 = isset ($listItem ['t2']) ? $this->app()->ui()->composeTextLine ($listItem ['t2']) : '&nbsp;';
-		if (isset ($listItem ['i2']))
-			$t2 .= $this->app()->ui()->composeTextLine ($listItem['i2']);
 
-		$codeLine .= "<div class='row-content'>";
+		$i2 = '';
+		if (isset ($listItem ['i2']))
+			$i2 = $this->app()->ui()->composeTextLine ($listItem['i2']);
+
+		//$codeLine .= "<div class='row-content'>";
 
 
 		if (isset($listItem ['tt']))
@@ -573,16 +575,18 @@ class TableViewRenderer extends Renderer
 		}
 		elseif (isset ($listItem ['t1']) || (!isset ($listItem ['t1']) && !isset ($listItem ['txt'])))
 		{
-			$codeLine .= "<div class='df2-list-item-t1'>$t1</div>";
+			$codeLine .= "<div class='df2-list-item-t1 t1'>$t1</div>";
 			if (isset ($listItem ['i1']))
-				$codeLine .= "<div class='df2-list-item-i1'>" . $this->app()->ui()->composeTextLine ($listItem['i1']) . '</div>';
+				$codeLine .= "<div class='df2-list-item-i1 i1'>" . $this->app()->ui()->composeTextLine ($listItem['i1']) . '</div>';
 		}
+		if ($i2 !== '')
+			$codeLine .= "<div class='i2'>" . $i2 . '</div>';
 
 		if (isset ($listItem ['t2']) || (!isset ($listItem ['t2']) && !isset ($listItem ['txt'])))
-			$codeLine .= "<div class='break-break'></div><div class='df2-list-item-t2'>$t2</div>";
+			$codeLine .= "<div class='df2-list-item-t2 t2'>$t2</div>";
 
 		if (isset($listItem ['t3']))
-			$codeLine .= "<div class='df2-list-item-t3'>" . $this->app()->ui()->composeTextLine ($listItem['t3']) . '</div>';
+			$codeLine .= "<div class='df2-list-item-t3 t3'>" . $this->app()->ui()->composeTextLine ($listItem['t3']) . '</div>';
 
 		if (isset ($listItem ['txt']))
 			$codeLine .= "<div class='pageText'>{$listItem ['txt']}</div>";
@@ -598,7 +602,7 @@ class TableViewRenderer extends Renderer
 		}
     */
 
-		$codeLine .= "</div>";
+		//$codeLine .= "</div>";
 
     /*
 		if (isset ($listItem ['rightImage']))
