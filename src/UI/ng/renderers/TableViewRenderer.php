@@ -174,7 +174,7 @@ class TableViewRenderer extends Renderer
 		if ($this->viewer->htmlRowsElementClass !== '')
 			$listClass .= ' '.$this->viewer->htmlRowsElementClass;
 
-		$c .= $this->viewer->createLeftPanelCode();
+		$c .= $this->createLeftPanelCode();
 
 		//if ($this->viewer->fullWidthToolbar)
 		//	$c .= $this->viewer->createFullWidthToolbarCode();
@@ -206,6 +206,24 @@ class TableViewRenderer extends Renderer
 
 		return $c;
 	}
+
+	public function createLeftPanelCode()
+	{
+		if (!$this->viewer->usePanelLeft)
+			return '';
+
+		$this->viewer->panelLeft = $this->viewer->panel('left');
+		$this->viewer->createPanelContent ($this->viewer->panelLeft);
+
+		$c = '';
+
+		$c .= "<div class='sidebar' id='{$this->viewer->vid}PanelLeft'>";
+		$c .= $this->viewer->panelLeft->createCode();
+		$c .= '</div>';
+
+		return $c;
+	}
+
 
 	public function createToolbarCode ()
 	{

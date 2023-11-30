@@ -5,13 +5,16 @@ data-viewer.shp-mainViewer  {
   display: grid;
   gap: 0px 0px;
 
-  grid-template-columns: 30% 1fr;
-  grid-template-rows: auto 1fr;
+  grid-template-columns: min-content min-content 1fr;
+  grid-template-rows: min-content 1fr;
   grid-template-areas:
-    "toolbar toolbar"
-    "body detail";
+    "sidebar toolbar toolbar"
+    "sidebar body detail";
 
   .toolbar { grid-area: toolbar; background-color: lightblue;}
+  .sidebar { grid-area: sidebar; background-color: yellowgreen;}
+  .detail { grid-area: detail;  background-color: lightgreen;}
+
   .body {
     display: grid;
     grid-template-columns: 1fr;
@@ -25,18 +28,17 @@ data-viewer.shp-mainViewer  {
 
     overflow-y: hidden;
 
+    .rows {
+      grid-area: rows;
+     }
 
     >.rows {
       overflow-y: auto;
     };
-  }
-  .search { grid-area: search; background-color: aliceblue;}
-  .rows {
-     grid-area: rows;
-    }
-  .tabs { grid-area: tabs; }
-  .detail { grid-area: detail;  background-color: lightgreen;}
 
+    .search { grid-area: search; background-color: aliceblue;}
+    .tabs { grid-area: tabs; }
+  }
 }
 
 
@@ -154,6 +156,10 @@ data-viewer.viewerWithCards {
   }
 }
 
+data-viewer>div.body {
+  min-width: 28rem;
+}
+
 data-viewer>div.body>div.rows>div.rows-list>div.r {
   border-bottom: 1pt solid var(--universalBorder);
   padding-top: .2rem;
@@ -167,4 +173,16 @@ data-viewer>div.body>div.rows>div.rows-list>div.r {
     font-size: 90%;
     text-align: right;
   }
+}
+
+
+data-viewer>div.body>div.rows>div.rows-list>div.r {
+  &.e10-docstyle-concept {>div.lnr {background-color: $conceptHandleBackgroundColor;}}
+  &.e10-docstyle-done {>div.lnr {background-color: $doneHandleBackgroundColor;}}
+  &.e10-docstyle-halfdone {>div.lnr {background-color: $halfdoneHandleBackgroundColor;}}
+  &.e10-docstyle-confirmed {>div.lnr {background-color: $confirmedHandleBackgroundColor;}}
+  &.e10-docstyle-edit {>div.lnr {background-color: $editHandleBackgroundColor;}}
+  &.e10-docstyle-delete {>div.lnr {background-color: $deleteHandleBackgroundColor;}}
+  &.e10-docstyle-cancel {>div.lnr {background-color: $cancelHandleBackgroundColor;}}
+  &.e10-docstyle-archive {>div.lnr {background-color: $archiveHandleBackgroundColor;}}
 }
