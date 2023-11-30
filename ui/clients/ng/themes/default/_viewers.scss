@@ -11,9 +11,9 @@ data-viewer.shp-mainViewer  {
     "sidebar toolbar toolbar"
     "sidebar body detail";
 
-  .toolbar { grid-area: toolbar; background-color: lightblue;}
-  .sidebar { grid-area: sidebar; background-color: yellowgreen;}
-  .detail { grid-area: detail;  background-color: lightgreen;}
+  .toolbar { grid-area: toolbar;}
+  .sidebar { grid-area: sidebar;}
+  .detail { grid-area: detail;}
 
   .body {
     display: grid;
@@ -36,7 +36,7 @@ data-viewer.shp-mainViewer  {
       overflow-y: auto;
     };
 
-    .search { grid-area: search; background-color: aliceblue;}
+    .search { grid-area: search;}
     .tabs { grid-area: tabs; }
   }
 }
@@ -96,6 +96,7 @@ data-viewer>div.body>div.rows>div.rows-list>div.r {
       font-size: 80%;
       display: flex;
       align-items: end;
+      padding-left: .2rem;
     }
 
     .icon {
@@ -175,14 +176,31 @@ data-viewer>div.body>div.rows>div.rows-list>div.r {
   }
 }
 
-
+/* doc states colors*/
 data-viewer>div.body>div.rows>div.rows-list>div.r {
-  &.e10-docstyle-concept {>div.lnr {background-color: $conceptHandleBackgroundColor;}}
-  &.e10-docstyle-done {>div.lnr {background-color: $doneHandleBackgroundColor;}}
-  &.e10-docstyle-halfdone {>div.lnr {background-color: $halfdoneHandleBackgroundColor;}}
-  &.e10-docstyle-confirmed {>div.lnr {background-color: $confirmedHandleBackgroundColor;}}
-  &.e10-docstyle-edit {>div.lnr {background-color: $editHandleBackgroundColor;}}
-  &.e10-docstyle-delete {>div.lnr {background-color: $deleteHandleBackgroundColor;}}
-  &.e10-docstyle-cancel {>div.lnr {background-color: $cancelHandleBackgroundColor;}}
-  &.e10-docstyle-archive {>div.lnr {background-color: $archiveHandleBackgroundColor;}}
+  &.e10-docstyle-concept {
+    border-left: 5px solid #{$docstate-concept};
+  }
+  &.e10-docstyle-done {
+    border-left: 5px solid #{$docstate-done};
+  }
+  &.e10-docstyle-halfdone {
+    border-left: 5px solid #{$docstate-halfdone};
+  }
+  &.e10-docstyle-confirmed {
+    border-left: 5px solid #{$docstate-confirmed};
+  }
+  &.e10-docstyle-edit {
+    border-left: 5px solid #{$docstate-edit};
+  }
+  &.e10-docstyle-delete {
+    border-left: 5px solid #{$docstate-delete};
+  }
+  &.e10-docstyle-cancel {
+    border-left: 5px solid #{$docstate-cancel};
+  }
+  &.e10-docstyle-archive {
+    border-left: 5px solid #{$docstate-archive};
+  }
 }
+
