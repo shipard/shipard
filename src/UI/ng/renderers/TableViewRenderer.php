@@ -149,20 +149,27 @@ class TableViewRenderer extends Renderer
 				}
 
 				$c .= "<div class='buttons'>";
-					$c .= "<span class='fts'>";
-						$c .= $this->app()->ui()->icon('system/iconSearch', 'iconSearch');
-						$c .= "<input name='fullTextSearch' type='text' class='fulltext e10-viewer-search' autocomplete='off' placeholder='".utils::es($placeholder)."' value=''";
-						if ($this->viewer->disableIncrementalSearch)
-							$c .= " data-onenter='1'";
-						$c .= '/>';
-						$c .= $this->app()->ui()->icon('system/actionInputClear', 'iconClear');
-					$c .= '</span>';
+					if ($this->viewer->enableFullTextSearch)
+					{
+						$c .= "<span class='fts'>";
+							$c .= $this->app()->ui()->icon('system/iconSearch', 'iconSearch');
+							$c .= "<input name='fullTextSearch' type='text' class='fulltext e10-viewer-search' autocomplete='off' placeholder='".utils::es($placeholder)."' value=''";
+							if ($this->viewer->disableIncrementalSearch)
+								$c .= " data-onenter='1'";
+							$c .= '/>';
+							$c .= $this->app()->ui()->icon('system/actionInputClear', 'iconClear');
+						$c .= '</span>';
+					}
 					$c .= $this->createToolbarCode ();
 				$c .= '</div>';
 
-				$c .= "<div class='filters'>";
-				$c .= $this->createMainQueriesCode();
-				$c .= '</div>';
+				$fc = $this->createMainQueriesCode();
+				if ($fc !== '')
+				{
+					$c .= "<div class='filters'>";
+					$c .= $fc;
+					$c .= '</div>';
+				}
 
 			$c .= '</div>';
 		}
