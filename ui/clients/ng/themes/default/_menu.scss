@@ -1,23 +1,36 @@
 div.app-menu-shp-ng{
     .menu-toolbar {
-        background-color: var(--menuToolbarBackground);
+        background-color: var(--menuTopBackground);
     }
-    .shp-tree-list li:not(:last-of-type){
-        padding-bottom: .5rem;
+    .menu-content {
+        background-color: var(--menuBackground);
     }
-    .shp-tree-list li:first-of-type{
-        padding-top: .5rem;
+
+    .shp-tree-list .li-title {
+        display: flex;
+        align-items: center;
+        padding-top: .3rem;
+        padding-bottom: .3rem;
     }
+
     .shp-tab-item {
         background-color: transparent;
         opacity: .8;
     }
     .shp-tab-item.active{
-        background-color: transparent;
+        background-color: var(--menuActiveBackground);
         border-top: 3px solid $shipard-primary;
+        opacity: 1;
+    }
+    .shp-tab-item:hover {
+        background-color: var(--hoverNavBackground); /*  !!!!! */
         opacity: 1;
     }
     .menu-tabs {
         background-color: var(--menuTabsBackground);
     }
+}
+
+.shp-tree-list>li>ul>li>.li-title:hover{
+    background-color: var(--hoverMenuBackground);  /*  !!!!! */
 }

@@ -154,6 +154,7 @@ data-viewer.viewerWithCards {
 
 data-viewer>div.body {
   min-width: 28rem;
+  max-width: 100vw;
 }
 
 data-viewer>div.body>div.rows>div.rows-list>div.r {
@@ -171,13 +172,16 @@ data-viewer>div.body>div.rows>div.rows-list>div.r {
   }
 }
 
+data-viewer>div.toolbar {
+  border-bottom: 1px solid var(--universalBorder);
+  background-color: var(--menuBackground);
+  border-left: 3px solid var(--menuBorder);
+}
+
 data-viewer>div.toolbar>div.buttons {
   display: flex;
   gap: 1rem;
-  padding-left: 1rem;
-  background: #555;
-  padding-top: 4px;
-  padding-bottom: 5px;
+  padding: .5rem;
 
   input {
     height: 100%;
@@ -207,15 +211,56 @@ data-viewer>div.toolbar>div.buttons {
 data-viewer>div.toolbar>div.filters {
   display: flex;
   gap: 1rem;
-  padding-left: 1rem;
-  border-bottom: 1px solid #999;
-  padding-top: 4px;
-  padding-bottom: 5px;
+  padding-top: .2rem;
+  .q {
+    padding: .3rem;
+    opacity: .8;
+    /*border-top: 3px solid navy;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;*/
+  }
+  .q.active {
+    background-color: var(--menuActiveBackground);
+    border-top: 3px solid var(--menuActiveBackground);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    opacity: 1;
+  }
+  .q:hover {
+    background-color: var(--hoverNavBackground); /* !!!!! */
+    border-top: 3px solid var(--hoverNavBackground); /* !!!!! */
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    opacity: 1;
+  }
 }
 
 data-viewer>div.detail {
-  background-color: #444;
-  border-left: 1px solid #999;
+  background-color: lightpink;
+  border-left: 1px solid var(--universalBorder);
+}
+
+data-viewer>div.body>div.viewerBottomTabs {
+  background-color: var(--menuTabsBackground);
+  overflow-x: hidden;
+  display: flex;
+  align-items: center;
+  border-top: 1px solid var(--universalBorder);
+  .q {
+    padding: .3rem;
+    white-space: nowrap;
+    text-overflow: clip;
+    overflow-x: hidden;
+    opacity: .8;
+  }
+  .q.active {
+    background-color: var(--menuActiveBackground);
+    opacity: 1;
+  }
+  .q:hover {
+    background-color: var(--hoverNavBackground); /* !!!!! */
+    opacity: 1;
+  }
 }
 
 /* doc states colors*/
@@ -251,6 +296,6 @@ data-viewer>div.body>div.rows>div.rows-list>div.r {
 }
 
 data-viewer>div.body>div.rows>div.rows-list>div.r:hover {
-  background-color: #AABBCCA0;
+  background-color: var(--hoverViewerBackground); /* !!!!! */
 }
 

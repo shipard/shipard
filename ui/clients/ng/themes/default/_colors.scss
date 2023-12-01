@@ -1,11 +1,21 @@
 :root {
     --bodyColor: #{$body-color};
     --bodyBg: #{$body-bg};
+
+    /*simple app menu */
     --navBackground: #{$nav-bg-light};
     --navColor: #{$navbar-light-color};
     --navBorder: #{$nav-border-light};
-    --menuTabsBackground: #{$menu-tabs-bg-light};
-    --menuToolbarBackground: #{$menu-toolbar-bg-light};
+
+    /* full app menu */
+    --menuBackground: #{$menu-bg-light};
+    --menuBorder: #{$menu-border-light};
+        /* bottom tabs in menu */
+        --menuTabsBackground: #{$menu-tabs-bg-light};
+        --menuActiveBackground: #{$menu-active-bg-light};
+        /* top row with info - user name/app name */
+        --menuTopBackground: #{$menu-top-bg-light};
+
     --cardBackground: #{$card-bg-light};
     --cardBorder: #{$card-border-light};
     --listBackground: #{$list-bg-light};
@@ -20,6 +30,9 @@
     --universalBorder: #{$universal-border-light};
     --calendarInactive: #{$calendar-inactive-light};
     --popoverBg: #{$popover-bg-light};
+    --hoverMenuBackground: #{$hover-menu-bg-light};
+    --hoverNavBackground: #{$hover-nav-bg-light};
+    --hoverViewerBackground: #{$hover-viewer-bg-light};
 }
 
 .btn-outline-secondary
@@ -47,11 +60,21 @@
 [data-bs-theme="dark"] {
     --bodyColor: #{$body-color-dark};
     --bodyBg: #{$body-bg-dark};
+
+    /*simple app menu */
     --navBackground: #{$nav-bg-dark};
     --navColor: #{$navbar-dark-color};
     --navBorder: #{$nav-border-dark};
-    --menuTabsBackground: #{$menu-tabs-bg-dark};
-    --menuToolbarBackground: #{$menu-toolbar-bg-dark};
+
+    /* full app menu */
+    --menuBackground: #{$menu-bg-dark};
+    --menuBorder: #{$menu-border-dark};
+        /* bottom tabs in menu */
+        --menuTabsBackground: #{$menu-tabs-bg-dark};
+        --menuActiveBackground: #{$menu-active-bg-dark};
+        /* top row with info - user name/app name */
+        --menuTopBackground: #{$menu-top-bg-dark};
+
     --cardBackground: #{$card-bg-dark};
     --cardBorder: #{$card-border-dark};
     --listBackground: #{$list-bg-dark};
@@ -66,6 +89,9 @@
     --universalBorder: #{$universal-border-dark};
     --calendarInactive: #{$calendar-inactive-dark};
     --popoverBg: #{$popover-bg-dark};
+    --hoverMenuBackground: #{$hover-menu-bg-dark};
+    --hoverNavBackground: #{$hover-nav-bg-dark};
+    --hoverViewerBackground: #{$hover-viewer-bg-dark};
 }
 
 [data-bs-theme="dark"] .btn-outline-secondary {

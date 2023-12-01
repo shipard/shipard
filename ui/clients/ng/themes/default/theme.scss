@@ -133,17 +133,37 @@ $label-success: #009933;
 $label-info: #0dcaf0;
 $label-warning: #FFCC00;
 $label-danger: #CC0000;
-$label-color-darks: #F0F0F0;
-$label-color-lights: #212529;
+$label-color-darks: #F0F0F0; /*text color for darker labels*/
+$label-color-lights: #212529; /*text color for lighter labels*/
 
+/* menu - simple app*/
 $nav-bg-light: #E8E8E8;
 $nav-bg-dark: #303030;
 $nav-border-light: gainsboro;
 $nav-border-dark: #202020;
-$menu-tabs-bg-light: whitesmoke;
-$menu-tabs-bg-dark: #202020;
-$menu-toolbar-bg-light: whitesmoke;
-$menu-toolbar-bg-dark: #202020;
+
+/* menu - full app */
+$menu-bg-light: #E8E8E8; /*for side menu + toolbar - .menu-content*/
+$menu-bg-dark: #303030;
+$menu-border-light: gainsboro;
+$menu-border-dark: #202020;
+  /* bottom tabs in menu ^*/
+  $menu-tabs-bg-light: gainsboro;
+  $menu-tabs-bg-dark: #202020;
+  $menu-active-bg-light: #C8C8C8;
+  $menu-active-bg-dark: #505050;
+  /* top row in full app - user name/database name */
+  $menu-top-bg-light: gainsboro;
+  $menu-top-bg-dark: #202020;
+
+
+$hover-menu-bg-light: lightgray;
+$hover-menu-bg-dark: #606060;
+$hover-nav-bg-light: white;
+$hover-nav-bg-dark: #696969;
+$hover-viewer-bg-light: gainsboro;
+$hover-viewer-bg-dark: #505050;
+
 
 $docstate-concept: #fff973;
 $docstate-new: #040304;
