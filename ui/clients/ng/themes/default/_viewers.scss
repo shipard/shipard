@@ -14,30 +14,25 @@ data-viewer.shp-mainViewer  {
   .toolbar { grid-area: toolbar;}
   .sidebar { grid-area: sidebar;}
   .detail { grid-area: detail;}
+  .body { grid-area: body;}
 
   .body {
     display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr auto;
+    grid-template-rows: 1fr min-content;
     gap: 0px 0px;
     grid-template-areas:
-      "search"
       "rows"
       "tabs";
-    grid-area: body;
 
     overflow-y: hidden;
 
-    .rows {
-      grid-area: rows;
-     }
+    >.rows {grid-area: rows;}
+    >.tabs { grid-area: tabs; }
 
     >.rows {
       overflow-y: auto;
     };
-
-    .search { grid-area: search;}
-    .tabs { grid-area: tabs; }
   }
 }
 
@@ -53,7 +48,7 @@ data-viewer.shp-detailViewer  {
     "toolbar"
     "body";
 
-  .toolbar { grid-area: toolbar; padding: .5rem; }
+  .toolbar { grid-area: toolbar; }
   >.body {
     display: grid;
     grid-template-columns: 1fr;
@@ -78,7 +73,7 @@ data-viewer.shp-detailViewer  {
   .tabs { grid-area: tabs; }
 }
 
-data-viewer>div.body>div.rows>div.rows-list>div.r {
+data-viewer.appViewer>div.body>div.rows>div.rows-list>div.r {
   display: grid;
   grid-template-columns: min-content min-content 1fr min-content;
   grid-template-rows: min-content min-content min-content;
@@ -176,8 +171,59 @@ data-viewer>div.body>div.rows>div.rows-list>div.r {
   }
 }
 
+data-viewer>div.toolbar>div.buttons {
+  display: flex;
+  gap: 1rem;
+  padding-left: 1rem;
+  background: #555;
+  padding-top: 4px;
+  padding-bottom: 5px;
+
+  input {
+    height: 100%;
+  }
+
+  span.fts {
+    padding-left: .8rem;
+
+    i.iconSearch {
+      position: relative;
+      width: 1.5rem;
+    }
+    i.iconClear {
+      position: relative;
+      left: -1.5rem;
+    }
+
+
+    >input {
+      margin-left: -2rem;
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+}
+
+data-viewer>div.toolbar>div.filters {
+  display: flex;
+  gap: 1rem;
+  padding-left: 1rem;
+  border-bottom: 1px solid #999;
+  padding-top: 4px;
+  padding-bottom: 5px;
+}
+
+data-viewer>div.detail {
+  background-color: #444;
+  border-left: 1px solid #999;
+}
+
 /* doc states colors*/
 data-viewer>div.body>div.rows>div.rows-list>div.r {
+  padding-right: 0.5rem;
+  cursor: pointer;
+
+
   &.e10-docstyle-concept {
     border-left: 5px solid #{$docstate-concept};
   }
@@ -202,5 +248,9 @@ data-viewer>div.body>div.rows>div.rows-list>div.r {
   &.e10-docstyle-archive {
     border-left: 5px solid #{$docstate-archive};
   }
+}
+
+data-viewer>div.body>div.rows>div.rows-list>div.r:hover {
+  background-color: #AABBCCA0;
 }
 

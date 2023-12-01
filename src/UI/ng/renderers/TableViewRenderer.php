@@ -89,6 +89,8 @@ class TableViewRenderer extends Renderer
 
 		if (isset ($this->viewer->classes))
 			$viewerClass .= ' '.implode (' ', $this->viewer->classes);
+		else
+			$viewerClass .= ' appViewer';
 
 		$c = "<data-viewer style='display: none;' ";
 		$c .= "data-request-type='dataViewer' ";
@@ -137,16 +139,31 @@ class TableViewRenderer extends Renderer
 		$c .= ">";
 
 		// -- toolbar?
-		//if ($this->viewer->type === 'inline')
+		if ($this->viewer->enableToolbar)
 		{
 			$c .= "<div class='toolbar' id='{$this->viewer->toolbarElementId}__Main'>";
 
-			if ($this->isModal)
-			{
-				$c .= "<span style='font-size: 1.6em;' class='shp-widget-action p-2' data-action='closeModal'>".$this->app()->ui()->icon('user/arrowLeft')."</span>";
-			}
+				if ($this->isModal)
+				{
+					$c .= "<span style='font-size: 1.6em;' class='shp-widget-action p-2' data-action='closeModal'>".$this->app()->ui()->icon('user/arrowLeft')."</span>";
+				}
 
-			$c .= $this->createToolbarCode ();
+				$c .= "<div class='buttons'>";
+					$c .= "<span class='fts'>";
+						$c .= $this->app()->ui()->icon('system/iconSearch', 'iconSearch');
+						$c .= "<input name='fullTextSearch' type='text' class='fulltext e10-viewer-search' autocomplete='off' placeholder='".utils::es($placeholder)."' value=''";
+						if ($this->viewer->disableIncrementalSearch)
+							$c .= " data-onenter='1'";
+						$c .= '/>';
+						$c .= $this->app()->ui()->icon('system/actionInputClear', 'iconClear');
+					$c .= '</span>';
+					$c .= $this->createToolbarCode ();
+				$c .= '</div>';
+
+				$c .= "<div class='filters'>";
+				$c .= $this->createMainQueriesCode();
+				$c .= '</div>';
+
 			$c .= '</div>';
 		}
 
@@ -181,10 +198,10 @@ class TableViewRenderer extends Renderer
 
 		$c .= "<div class='body'>";
 
-		if (!$this->viewer->fullWidthToolbar)
-			$c .= $this->createTopMenuSearchCode ();
+		//if (!$this->viewer->fullWidthToolbar)
+		//	$c .= $this->createTopMenuSearchCode ();
 
-      $c .= "<div class='rows'>";
+		$c .= "<div class='rows'>";
 
 
 		$c .= "<div style='z-index: 499;' class='rows-list e10-viewer-list$listClass' id='{$this->viewer->vid}Items' data-rowspagenumber='0'".
@@ -327,7 +344,48 @@ class TableViewRenderer extends Renderer
 		return $c;
 	}
 
-	public function createTopMenuSearchCode ()
+	public function createMainQueriesCode()
+	{
+		$c = '';
+		if (!isset ($this->viewer->mainQueries))
+			return '';
+
+
+		$c .= "<div class='viewerQuerySelect'>";
+		$c .= "<input name='mainQuery' type='hidden' value='{$this->viewer->mainQueries[0]['id']}'/>";
+		$idx = 0;
+
+		$code = ['left' => '', 'right' => ''];
+
+		forEach ($this->viewer->mainQueries as $q)
+		{
+			$txt = Utils::es ($q ['title']);
+
+			if ($idx === 0 || (isset($q['side']) && $q['side'] === 'left'))
+			{
+				if ($idx == 0)
+					$code['left'] .= "<span class='q active left' data-mqid='{$q['id']}'>$txt</span>";
+				else
+					$code['left'] .= "<span class='q left' data-mqid='{$q['id']}'>$txt</span>";
+			}
+			else
+			{
+				$code['right'] .= "<span class='q right' data-mqid='{$q['id']}'>$txt</span>";
+			}
+			$idx++;
+		}
+
+		if ($code['left'] !== '')
+			$c .= $code['left'];
+		if ($code['right'] !== '')
+			$c .= $code['right'];
+
+		$c .= '</div>';
+
+		return $c;
+	}
+
+	public function createTopMenuSearchCode_TMP_DIS ()
 	{
 		$h = '';
 		if ($this->viewer->enableFullTextSearch || ($this->viewer->objectSubType === TableView::vsMini && $this->viewer->enableToolbar))
