@@ -243,6 +243,9 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
     {
       $this->createUIStruct_Favorites ($data);
       $this->createUIStruct_AppSettings ($data['appMenu']['appSettings']);
+
+      $this->uiStruct['appMenuFavorites'] = $this->createUIStructMenuItems($data['appMenu']['favorites']['items']);
+
       $active = 1;
       foreach ($data['appMenu'] as $partId => $partContent)
       {

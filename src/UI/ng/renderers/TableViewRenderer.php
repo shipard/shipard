@@ -28,8 +28,6 @@ class TableViewRenderer extends Renderer
   function createViewerCode ()
 	{
     $fullCode = 1;
-		//if ($this->mobile)
-		//	return $this->createViewerCodeMobile ($format, $fullCode, $jsinit);
 
     /*
 		$this->viewer->toolbarElementId = 'e10-tm-detailbuttonbox';
@@ -84,8 +82,8 @@ class TableViewRenderer extends Renderer
 		if ($this->viewer->usePanelLeft)
 			$viewerClass .= ' e10-viewer-panel-left';
 
-		if ($this->viewer->fullWidthToolbar)
-			$viewerClass .= ' e10-viewer-fw-toolbar';
+		//if ($this->viewer->fullWidthToolbar)
+		//	$viewerClass .= ' e10-viewer-fw-toolbar';
 
 		if (isset ($this->viewer->classes))
 			$viewerClass .= ' '.implode (' ', $this->viewer->classes);
@@ -200,30 +198,14 @@ class TableViewRenderer extends Renderer
 
 		$c .= $this->createLeftPanelCode();
 
-		//if ($this->viewer->fullWidthToolbar)
-		//	$c .= $this->viewer->createFullWidthToolbarCode();
-
 		$c .= "<div class='body'>";
-
-		//if (!$this->viewer->fullWidthToolbar)
-		//	$c .= $this->createTopMenuSearchCode ();
-
-		$c .= "<div class='rows'>";
-
-
-		$c .= "<div style='z-index: 499;' class='rows-list e10-viewer-list$listClass' id='{$this->viewer->vid}Items' data-rowspagenumber='0'".
-					"data-viewer='{$this->viewer->vid}' data-rowelement='{$this->viewer->htmlRowElement}'>";
-
-		$c .= $this->viewer->rows ();
-
-
-
-		$c .= "</div>";
-
-    $c .= "</div>";
-
-
-		$c .= $this->viewer->createBottomTabsCode ();
+			$c .= "<div class='rows'>";
+				$c .= "<div style='z-index: 499;' class='rows-list e10-viewer-list$listClass' id='{$this->viewer->vid}Items' data-rowspagenumber='0'".
+							"data-viewer='{$this->viewer->vid}' data-rowelement='{$this->viewer->htmlRowElement}'>";
+					$c .= $this->viewer->rows ();
+				$c .= "</div>";
+			$c .= "</div>";
+			$c .= $this->createBottomTabsCode ();
 		$c .= '</div>';
 
 		$c .= $this->viewer->createRightPanelCode();
@@ -254,12 +236,13 @@ class TableViewRenderer extends Renderer
 		$c = '';
 		$tlbr = $this->viewer->createToolbar ();
 
+		/*
     if ($this->viewer->fullWidthToolbar)
 		{
 			$c .= $this->app()->ui()->composeTextLine($tlbr);
 			return $c;
 		}
-
+		*/
 
 
 		$btnClass = 'btn-large';
@@ -371,13 +354,13 @@ class TableViewRenderer extends Renderer
 			if ($idx === 0 || (isset($q['side']) && $q['side'] === 'left'))
 			{
 				if ($idx == 0)
-					$code['left'] .= "<span class='q active left' data-mqid='{$q['id']}'>$txt</span>";
+					$code['left'] .= "<span class='q shp-widget-action active left' data-action='viewerTabsReload' data-value='{$q['id']}'>$txt</span>";
 				else
-					$code['left'] .= "<span class='q left' data-mqid='{$q['id']}'>$txt</span>";
+					$code['left'] .= "<span class='q shp-widget-action left' data-action='viewerTabsReload' data-value='{$q['id']}'>$txt</span>";
 			}
 			else
 			{
-				$code['right'] .= "<span class='q right' data-mqid='{$q['id']}'>$txt</span>";
+				$code['right'] .= "<span class='q shp-widget-action right' data-action='viewerTabsReload' data-value='{$q['id']}'>$txt</span>";
 			}
 			$idx++;
 		}
@@ -392,117 +375,59 @@ class TableViewRenderer extends Renderer
 		return $c;
 	}
 
-	public function createTopMenuSearchCode_TMP_DIS ()
+	public function createBottomTabsCode ()
 	{
-		$h = '';
-		if ($this->viewer->enableFullTextSearch || ($this->viewer->objectSubType === TableView::vsMini && $this->viewer->enableToolbar))
+		if (!isset ($this->viewer->bottomTabs))
+			return;
+
+		$h = "";
+
+		$activeTab = 0;
+		$idx = 0;
+		forEach ($this->viewer->bottomTabs as $q)
 		{
-			$h .=	"<table style='width: 100%'><tr>";
-
-			if ($this->viewer->type === 'form')
+			if ($q['active'])
 			{
-				if ($this->viewer->toolbarTitle)
-					$h .= "<td class='pr1'>".$this->app()->ui()->composeTextLine($this->viewer->toolbarTitle).'</td>';
-
-				$h .= "<td id='{$this->viewer->toolbarElementId}__Main'>";
-				$h .= $this->createToolbarCode ();
-				$h .= "<div id='{$this->viewer->toolbarElementId}' style='display: inline-block; padding-left: 1em; padding-right: 1em;'>";
-				$h .= '</div>';
-				$h .= '</td>';
+				$activeTab = $idx;
+				break;
 			}
-
-			if ($this->viewer->enableFullTextSearch && $this->viewer->enableToolbar)
-			{
-				$style = '';
-				$fulltextClass = 'main';
-				if (isset ($this->viewer->topParams))
-				{
-					$style .= ' width: 12em;';
-					$fulltextClass = 'params';
-				}
-				if ($this->viewer->disableFullTextSearchInput)
-					$h .=	"<td style='width: 2em!important; font-size: 40%;'>" .
-						"<span  data-action='fulltextsearchclear' id='{$this->vid}Progress' data-run='0'>&nbsp;&nbsp;</span>" .
-						'</td>';
-				else
-				{
-					$placeholder = ($this->viewer->disableIncrementalSearch) ? 'hledat ⏎' : 'hledat';
-
-					$h .= "<td class='fulltext $fulltextClass' style='$style'>" .
-							"<span class='df2-background-button df2-action-trigger df2-fulltext-clear' data-action='fulltextsearchclear' id='{$this->viewer->vid}Progress' data-run='0'>".$this->app()->ui()->icon('system/actionInputClear')."</span>";
-					$h .= "<input name='fullTextSearch' type='text' class='fulltext e10-viewer-search' autocomplete='off' placeholder='".utils::es($placeholder)."' value=''";
-					if ($this->viewer->disableIncrementalSearch)
-						$h .= " data-onenter='1'";
-					$h .= '/></td>';
-				}
-				if (isset ($this->viewer->topParams))
-				{
-					$h .= "<td style='padding-left: 1ex;'>".$this->viewer->topParams->createCode().'</td>';
-				}
-
-				if (isset ($this->viewer->gridStruct) && !$this->viewer->inlineSourceElement)
-				{
-					$h .= "<td style='vertical-align: middle; text-align: right; width: 90px;'>";
-
-					$h .= "<div class='btn-group pull-right'>";
-					$h .= "<button class='btn btn-large btn-default df2-action-trigger_22' data-action='printviewer' data-viewer='{$this->vid}' data-format='pdf'>".$this->app()->ui()->icon('system/actionPrint')."</button>";
-
-					$h .= "<button type='button' class='btn btn-default dropdown-toggle'' data-toggle='dropdown'><span class='caret'></span></button>";
-					$h .= '<ul class="dropdown-menu" role="menu">';
-
-					$h .= "<li><a class='df2-action-trigger' data-action='printviewer' data-viewer='{$this->vid}' data-format='csv'>".$this->app()->ui()->icon('system/actionSave')." ".utils::es('Uložit jako CSV soubor')."</a></li>";
-					//$h .= "<li><a class='df2-action-trigger' data-action='printviewer' data-viewer='{$this->vid}' data-format='xls'><i class='fa fa-file-excel-o'></i> ".utils::es('Uložit jako Excel')."</a></li>";
-
-					$h .= '</ul>';
-					$h .= '</div>';
-
-					$h .= '</td>';
-				}
-			}
-			if ($this->viewer->objectSubType === TableView::vsMini && $this->viewer->enableToolbar)
-				$h .= "<td><span class='e10-sv-search-toolbar'>" . $this->createToolbarCode () . '</span></td>';
-
-			$h .= '</tr></table>';
+			$idx++;
 		}
 
-		$h .= $this->viewer->createTopTabsCode();
+		$h .= "<div class='viewerBottomTabs'>";
+		$h .= "<input name='bottomTab' type='hidden' value='{$this->viewer->bottomTabs[$activeTab]['id']}'/>";
 
-		if (isset ($this->viewer->mainQueries))
+		$activeTab = 0;
+		$idx = 0;
+		forEach ($this->viewer->bottomTabs as $q)
 		{
-			$h .= "<div class='viewerQuerySelect'>";
-			$h .= "<input name='mainQuery' type='hidden' value='{$this->viewer->mainQueries[0]['id']}'/>";
-			$idx = 0;
-
-			$code = array ('left' => '', 'right' => '');
-
-			forEach ($this->viewer->mainQueries as $q)
+			if ($q['active'])
 			{
-				$txt = \E10\es ($q ['title']);
-
-				if ($idx === 0 || (isset($q['side']) && $q['side'] === 'left'))
-				{
-					if ($idx == 0)
-						$code['left'] .= "<span class='q active' data-mqid='{$q['id']}'>$txt</span>";
-					else
-						$code['left'] .= "<span class='q' style='margin-left: 1em;' data-mqid='{$q['id']}'>$txt</span>";
-				}
-				else
-				{
-					$code['right'] .= "<span class='q' data-mqid='{$q['id']}'>$txt</span>";
-				}
-				$idx++;
+				$activeTab = $idx;
+				break;
 			}
-
-			if ($code['left'] !== '')
-				$h .= $code['left'];
-			if ($code['right'] !== '')
-				$h .= "<span style='float: right'>" . $code['right'] . '</span>';
-
-			$h .= '</div>';
+			$idx++;
 		}
 
-		if ($h !== '')
-			$h = "<div class='search' id='{$this->viewer->vid}Search'>".$h.'</div>';
+		$idx = 0;
+		forEach ($this->viewer->bottomTabs as $q)
+		{
+			$addParams = '';
+			if (isset ($q['addParams']))
+			{
+				forEach ($q['addParams'] as $apCol => $apValue)
+				{
+					if ($addParams != '')
+						$addParams .= '&';
+					$addParams .= "__$apCol=$apValue";
+				}
+			}
+
+			$active = ($idx == $activeTab) ? ' active' : '';
+			$h .= "<span class='q shp-widget-action $active' data-action='viewerTabsReload' data-value='{$q['id']}' data-addparams='$addParams'>".Utils::es($q['title']).'</span>';
+			$idx++;
+		}
+		$h .= '</div>';
 
 		return $h;
 	}

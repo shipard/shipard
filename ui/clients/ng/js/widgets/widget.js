@@ -9,7 +9,7 @@ class ShipardWidget {
     this.rootId = this.rootElm.getAttribute('id');
 
     this.on(this, 'click', '.shp-widget-action', function (e, ownerWidget, event){ownerWidget.widgetAction(e, event)});
-    this.on(this, 'click', '.shp-widget-action>i', function (e, ownerWidget, event){ownerWidget.widgetAction(e.parentElement, event)});
+    //this.on(this, 'click', '.shp-widget-action>i', function (e, ownerWidget, event){ownerWidget.widgetAction(e.parentElement, event)});
   }
 
   widgetAction(e, event)
@@ -231,6 +231,7 @@ class ShipardWidget {
 
     for (let i = 0; i < inputs.length; ++i)
     {
+      console.log("INPUT: ", inputs[i]);
       const valueKey = inputs[i].getAttribute('name');
       data[valueKey] = inputs[i].value;
     }
@@ -267,8 +268,10 @@ class ShipardWidget {
 
 	on(ownerWidget, eventType, selector, callback) {
 		this.rootElm.addEventListener(eventType, function (event) {
-			if (event.target.matches(selector)) {
-				callback.call(event.target, event.target, ownerWidget, event);
+      var ce = event.target.closest(selector);
+			if (ce) {
+
+				callback.call(ce, ce, ownerWidget, event);
 			}
 		});
 	}

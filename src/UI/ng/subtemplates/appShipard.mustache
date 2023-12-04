@@ -1,13 +1,11 @@
 <div class="app-container app-container-full" id='shp-app-window'>
-  <div class="app-menu">
-    <div class="app-menu-shp-ng">
+  <div id='shp-app-menu' class="app-menu open">
+    <div class="app-menu-shp-ng" id='shp-app-menu-ng'>
       <div class="menu-toolbar d-flex align-items-center">
         <img src='{{data.dsIconUrl}}' style='height: 100%;'>
         <span class="ms-2">{{cfgItem.options.core.ownerShortName}}</span>
+        <span class='ms-auto me-1 shp-widget-action' data-action='toggleAppMenu'>{{{@icon;icon:system/iconAngleDoubleLeft}}}</span>
       </div>
-      <!--<div class="menu-footer">
-        {{{@icon;icon:user/user}}} {{userInfo.name}}
-      </div>-->
 
       <div class="menu-content shp-tree-list">
         {{#data.uiStruct.appMenu}}
@@ -60,6 +58,9 @@
             {{/groups.0}}
           </div>
         {{/data.uiStruct.appMenu}}
+        <div id='shp-app-cats-menu-tabs_USER' class='tab-content{{#active}} active{{/active}}'>
+          tady bude nastavení...
+        </div>
       </div>
 
       <div class="menu-tabs shp-app-cats-menu-tabs d-flex ps-2" id='shp-app-cats-menu-tabs'>
@@ -67,7 +68,27 @@
           <span class='shp-widget-action shp-tab-item{{#active}} active{{/active}}' data-action='select-simple-tab' data-tab-id='shp-app-cats-menu-tabs_{{id}}' data-tabs='shp-app-cats-menu-tabs' title='{{title}}'>{{{@icon;dataItem:icon}}}</span>
         {{/data.uiStruct.appMenu}}
 
-        <span class="ms-auto me-1 shp-widget-action shp-tab-item{{#active}} active{{/active}}">{{{@icon;icon:user/user}}}</span>
+        <span class="ms-auto me-1 shp-widget-action shp-tab-item{{#active}} active{{/active}}" data-action='select-simple-tab' data-tab-id='shp-app-cats-menu-tabs_USER' data-tabs='shp-app-cats-menu-tabs'>{{{@icon;icon:user/user}}}</span>
+      </div>
+    </div>
+
+    <div class='menu-favorites'>
+      <div class='menu-handle' id='shp-app-menu-handle'></div>
+      <div class='menu-toolbar'>
+        <img src='{{data.dsIconUrl}}'>
+        <span class='shp-widget-action' data-action='toggleAppMenu'>{{{@icon;icon:system/iconAngleDoubleRight}}}</span>
+      </div>
+      <div class='menu-buttons'>
+        {{#data.uiStruct.appMenuFavorites}}
+          <span
+            data-action-param-object-type='{{objectType}}'
+            {{#table}}data-action-param-table='{{table}}'{{/table}}
+            {{#viewer}}data-action-param-view-id='{{viewer}}'{{/viewer}}
+            data-action='loadAppMenuItem'
+            class='shp-widget-action'>
+            {{{@icon;dataItem:icon}}}
+          </span>
+        {{/data.uiStruct.appMenuFavorites}}
       </div>
     </div>
   </div>

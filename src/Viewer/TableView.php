@@ -289,6 +289,11 @@ class TableView extends \Shipard\Base\BaseObject
 
 	public function bottomTabId ()
 	{
+		if ($this->app()->ngg)
+		{
+			return $this->requestParams['bottomTab'] ?? '';
+		}
+
 		if (isset ($_POST ['bottomTab']))
 			return $_POST ['bottomTab'];
 		if (isset($this->bottomTabs))
@@ -1932,6 +1937,10 @@ class TableView extends \Shipard\Base\BaseObject
 
 	public function mainQueryId ()
 	{
+		if ($this->app()->ngg)
+		{
+			return $this->requestParams['mainQuery'] ?? '';
+		}
 		if (isset ($_POST ['mainQuery']))
 			return $_POST ['mainQuery'];
 		if (isset($this->mainQueries[0]['id']))

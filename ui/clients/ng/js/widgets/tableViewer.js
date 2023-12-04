@@ -22,13 +22,18 @@ class ShipardTableViewer extends ShipardWidget
     this.elmViewerRows = this.elmViewerLines.parentElement;
 
     this.elmViewerRows.addEventListener('scroll', (event) => {this.doScroll(event)});
+
+    this.on(this, 'click', 'div.rows-list.mainViewer>div.r', function (e, ownerWidget, event){this.rowClick(e, event)}.bind(this));
+    //this.on(this, 'click', 'div.rows-list.mainViewer>div.r *', function (e, ownerWidget, event){this.rowClick(e, event)}.bind(this));
   }
 
   doAction (actionId, e)
   {
+    console.log("viewerAction", actionId);
     switch (actionId)
     {
       case 'newform': return this.actionNewForm(e);
+      case 'viewerTabsReload': this.viewerTabsReload(e);
     }
 
     return super.doAction (actionId, e);
@@ -50,6 +55,20 @@ class ShipardTableViewer extends ShipardWidget
     }
   }
 
+  viewerTabsReload(e)
+  {
+    let itemElement = e.parentElement;
+
+    const inputElement = itemElement.querySelector('input');
+    inputElement.value = e.getAttribute('data-value');
+
+    let oldActiveTabElement = itemElement.querySelector('.active');
+		oldActiveTabElement.classList.remove('active');
+		e.classList.add('active');
+
+    this.refreshData(e);
+  }
+
   viewerRefreshLoadNext()
   {
     const tableName = this.rootElm.getAttribute ("data-table");
@@ -59,13 +78,23 @@ class ShipardTableViewer extends ShipardWidget
     this.df2FillViewerLines ();
   }
 
+  rowClick(e, event)
+  {
+    let oldActiveRowElement = this.elmViewerLines.querySelector('.active');
+    if (oldActiveRowElement)
+      oldActiveRowElement.classList.remove('active');
+		e.classList.add('active');
+
+    console.log("___ROW_CLICK2___", e);
+  }
+
   df2FillViewerLines ()
   {
     var tableName = this.rootElm.getAttribute ("data-table");
     if (!tableName)
       return;
 
-    var viewerOptions = this.rootElm.getAttribute ("data-viewer-view-id");
+    //var viewerOptions = this.rootElm.getAttribute ("data-viewer-view-id");
 
     var rowsPageNumber = parseInt (this.elmViewerLines.getAttribute ('data-rowspagenumber')) + 1;
     var viewId = this.rootElm.getAttribute ('data-viewer-view-id');
@@ -132,7 +161,9 @@ class ShipardTableViewer extends ShipardWidget
   {
     if (clear !== undefined)
     {
+
       this.elmViewerLines.innerHTML = data['response']['hcRows'];
+      this.elmViewerLines.parentElement.scrollTop = 0;
     }
     else
     {

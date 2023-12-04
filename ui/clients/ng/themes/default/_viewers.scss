@@ -299,3 +299,9 @@ data-viewer>div.body>div.rows>div.rows-list>div.r:hover {
   background-color: var(--hoverViewerBackground); /* !!!!! */
 }
 
+data-viewer>div.body>div.rows>div.rows-list>div.r.active,
+data-viewer>div.body>div.rows>div.rows-list>div.r.active:hover {
+  background-color: rgb(35, 70, 105);
+
+}
+

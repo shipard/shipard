@@ -2,14 +2,23 @@ class ShipardWidgetApplication extends ShipardWidget
 {
 	mainAppContent = null;
   elmAppTitle = null;
+  elmAppMenu = null;
+  elmAppMenuNG = null;
+  elmAppMenuHandle = null;
 
   init(e)
   {
     this.mainAppContent = document.getElementById('shp-main-app-content');
     this.elmAppTitle = document.getElementById('shp-app-hdr-title');
+    this.elmAppMenu = document.getElementById('shp-app-menu');
+    this.elmAppMenuNG = document.getElementById('shp-app-menu-ng');
+    this.elmAppMenuHandle = document.getElementById('shp-app-menu-handle');
 
     console.log("ShipardWidgetApplication::init");
     super.init(e);
+
+    this.elmAppMenuHandle.addEventListener('mouseenter', function (){this.appMenuFloatOn()}.bind(this));
+    this.elmAppMenuNG.addEventListener('mouseleave', function (){this.appMenuFloatOff()}.bind(this));
 
     this.initContent();
   }
@@ -24,10 +33,48 @@ class ShipardWidgetApplication extends ShipardWidget
     {
       case 'loadAppMenuItem': return this.loadAppMenuItem(e);
       case 'toggleContent': return this.fullScreenContentToggle(e);
+      case 'toggleAppMenu': return this.appMenuToggle(e);
     }
 
     return super.doAction (actionId, e);
   }
+
+  appMenuToggle (e)
+  {
+    console.log('togle-app-menu');
+    if (this.elmAppMenu.classList.contains('float'))
+    {
+      this.elmAppMenu.classList.remove('float');
+      return 0;
+    }
+
+    if (this.elmAppMenu.classList.contains('open'))
+    {
+      this.elmAppMenu.classList.remove('open');
+      this.elmAppMenu.classList.add('closed');
+    }
+    else
+    {
+      this.elmAppMenu.classList.remove('closed');
+      this.elmAppMenu.classList.add('open');
+    }
+
+    return 0;
+  }
+
+  appMenuFloatOn()
+  {
+    this.elmAppMenu.classList.add('float');
+    return 0;
+  }
+
+  appMenuFloatOff()
+  {
+    if (this.elmAppMenu.classList.contains('float'))
+      this.elmAppMenu.classList.remove('float');
+    return 0;
+  }
+
 
   fullScreenContentToggle(e)
   {
@@ -67,6 +114,8 @@ class ShipardWidgetApplication extends ShipardWidget
   {
 		console.log('loadAppMenuItem222', e);
 
+    if (this.elmAppMenu.classList.contains('float'))
+      this.elmAppMenu.classList.remove('float');
 
     const modalType = 'viewer';
 

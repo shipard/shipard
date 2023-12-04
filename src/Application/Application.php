@@ -933,8 +933,19 @@ class Application extends \Shipard\Application\ApplicationCore
 
 	public function userGroups ()
 	{
+		if ($this->ngg)
+		{
+			$userNdx = $this->userNdx();
+			$groups = [];
+			$rows = $this->db->query ('SELECT * FROM [e10_persons_personsgroups] WHERE [person] = %i', $userNdx);
+			foreach ($rows as $r)
+				$groups[] = $r['group'];
+
+			return $groups;
+		}
+
 		if (!$this->authenticator)
-			return array();
+			return [];
 
 		$groups = $this->user()->data ('groups');
 		if ($groups !== FALSE)
