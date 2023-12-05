@@ -13,7 +13,10 @@ data-viewer.shp-mainViewer  {
 
   .toolbar { grid-area: toolbar;}
   .sidebar { grid-area: sidebar;}
-  .detail { grid-area: detail;}
+  .detail {
+    grid-area: detail;
+  }
+
   .body { grid-area: body;}
 
   .body {
@@ -236,7 +239,7 @@ data-viewer>div.toolbar>div.filters {
 }
 
 data-viewer>div.detail {
-  background-color: lightpink;
+  background-color: #455;
   border-left: 1px solid var(--universalBorder);
 }
 
@@ -305,3 +308,55 @@ data-viewer>div.body>div.rows>div.rows-list>div.r.active:hover {
 
 }
 
+
+
+/* details */
+data-viewer.appViewer>div.detail {
+  display: grid;
+  grid-template-columns: 1fr min-content;
+  grid-template-rows: min-content 1fr;
+  gap: 0px 0px;
+  grid-template-areas:
+    "header header"
+    "content tabs";
+
+  overflow-y: hidden;
+
+  .header { grid-area: header; }
+  .content {
+    grid-area: content;
+    overflow-y: auto;
+
+  }
+  .tabs { grid-area: tabs; }
+}
+
+data-viewer.appViewer>div.detail>div.header {
+  background-color: #246;
+}
+
+data-viewer.appViewer>div.detail>div.tabs {
+  background-color: #789;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+
+  width: 4rem;
+
+  >span {
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 80%;
+    padding: .2rem .4rem;
+
+    >i {
+      font-size: 2rem;
+    }
+  }
+
+  >span.active {
+    background-color: #432;
+  }
+}

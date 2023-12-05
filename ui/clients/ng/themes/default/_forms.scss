@@ -69,6 +69,30 @@ select.e10-inputEnum {
 
 
 data-modal-env {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: min-content 1fr;
+  gap: 0px 0px;
+  grid-template-areas:
+    "tlbr"
+    "content";
+
+  .tlbr {
+    grid-area: tlbr;
+    display: flex;
+    align-items: center;
+
+    >span {
+      padding-top: .4rem;
+      padding-bottom: .4rem;
+    }
+    >span.backIcon {
+      padding-left: .8rem;
+      padding-right: .8rem;
+    }
+  }
+  .content { grid-area: content; }
+
   position: absolute;
   background-color: #000000C0;
   z-index: 1000;
@@ -101,7 +125,7 @@ document-card {
 
 @media only screen and (min-width: 701px) {
   data-modal-env {
-    >div, >data-viewer, >document-card {
+    >div {
       width: 60%;
       margin-left: 20%;
     }

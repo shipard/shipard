@@ -44,18 +44,8 @@ class TableViewRenderer extends Renderer
 
 		$detailCode = '';
 
-		if (/*$this->viewer->paneMode && */ $this->viewer->objectSubType !== TableView::vsDetail)
-		{
-			$detailCode .= "<div style='' class='detail' id='{$this->viewer->vid}Details'>";
-			$detailCode .=
-			"<div class='e10-mv-ld-header'></div>" .
-			"<div class='e10-mv-ld-content' data-e10mxw='1'></div>" .
-			"</div>";
-		}
-
-		//if ($this->viewer->paneMode && $this->viewer->objectSubType !== TableView::vsDetail)
-		//	$detailCode .= $this->viewer->createDetailsCode ();
-
+		if ($this->viewer->objectSubType !== TableView::vsDetail)
+			$detailCode = $this->createDetailsCode();
 
 		$reportCode =
 		"<div style='display: none;' class='e10-mv-lr' id='{$this->viewer->vid}Report'>" .
@@ -140,12 +130,6 @@ class TableViewRenderer extends Renderer
 		if ($this->viewer->enableToolbar)
 		{
 			$c .= "<div class='toolbar' id='{$this->viewer->toolbarElementId}__Main'>";
-
-				if ($this->isModal)
-				{
-					$c .= "<span style='font-size: 1.6em;' class='shp-widget-action p-2' data-action='closeModal'>".$this->app()->ui()->icon('user/arrowLeft')."</span>";
-				}
-
 				$c .= "<div class='buttons'>";
 					if ($this->viewer->enableFullTextSearch)
 					{
@@ -184,6 +168,36 @@ class TableViewRenderer extends Renderer
 //			$c .= "<script type='text/javascript'>jQuery(function tst (){initViewer ('$this->viewer->vid')});</script>";
 
     return $c;
+	}
+
+	function createDetailsCode()
+	{
+		$c = '';
+		$c .= "<div style='' class='detail' id='{$this->viewer->vid}Details'>";
+		$c .= "<div class='header'></div>";
+		$c .= "<div class='content' data-e10mxw='1'></div>";
+
+
+		$details = $this->viewer->createDetails ();
+		if (count($details))
+		{
+			$active = ' active';
+
+			$c .= "<div class='tabs'>\n";
+			foreach ($details as $id => $detail)
+			{
+				$c .= "<span data-detail='$id' class='shp-widget-action$active' data-action='detailSelect'>";
+				$c .= $this->app()->ui()->icon ($detail['icon']);
+				$c .= "<div>".\E10\es ($detail['title']).'</div>';
+				$c .= '</span>';
+				$active = '';
+			}
+			$c .= "</div>\n";
+		}
+
+		$c .= "</div>";
+
+		return $c;
 	}
 
   function createViewerBodyCode ()
@@ -653,5 +667,9 @@ class TableViewRenderer extends Renderer
   public function render()
   {
     $this->renderedData['hcFull'] = $this->createViewerCode();
+		if ($this->isModal)
+		{
+			$this->renderedData['hcBackIcon'] = $this->app()->ui()->icon('user/arrowLeft');
+		}
   }
 }

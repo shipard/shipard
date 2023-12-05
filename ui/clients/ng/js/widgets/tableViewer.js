@@ -3,6 +3,10 @@ class ShipardTableViewer extends ShipardWidget
   elmViewerLines = null;
   elmViewerRows = null;
 
+  elmViewerDetail = null;
+  elmViewerDetailContent = null;
+  elmViewerDetailHeader = null;
+  elmViewerDetailTabs = null;
 
   doWidgetResponse(data)
   {
@@ -20,8 +24,12 @@ class ShipardTableViewer extends ShipardWidget
     const id = e.getAttribute('id');
     this.elmViewerLines = document.getElementById(id + 'Items');
     this.elmViewerRows = this.elmViewerLines.parentElement;
-
     this.elmViewerRows.addEventListener('scroll', (event) => {this.doScroll(event)});
+
+    this.elmViewerDetail = this.rootElm.querySelector('div.detail');
+    this.elmViewerDetailContent = this.elmViewerDetail.querySelector('div.content');
+    this.elmViewerDetailHeader = this.elmViewerDetail.querySelector('div.header');
+    this.elmViewerDetailTabs = this.elmViewerDetail.querySelector('div.tabs');
 
     this.on(this, 'click', 'div.rows-list.mainViewer>div.r', function (e, ownerWidget, event){this.rowClick(e, event)}.bind(this));
     //this.on(this, 'click', 'div.rows-list.mainViewer>div.r *', function (e, ownerWidget, event){this.rowClick(e, event)}.bind(this));
@@ -34,6 +42,7 @@ class ShipardTableViewer extends ShipardWidget
     {
       case 'newform': return this.actionNewForm(e);
       case 'viewerTabsReload': this.viewerTabsReload(e);
+      case 'detailSelect': this.detailSelect(e);
     }
 
     return super.doAction (actionId, e);
@@ -85,7 +94,78 @@ class ShipardTableViewer extends ShipardWidget
       oldActiveRowElement.classList.remove('active');
 		e.classList.add('active');
 
-    console.log("___ROW_CLICK2___", e);
+    this.detailOpen(e);
+  }
+
+  detailSelect(e)
+  {
+    console.log('detailSelect1');
+    if (this.elmViewerDetailTabs)
+    {
+      const activeTabElement = this.elmViewerDetailTabs.querySelector('.active');
+
+      if (activeTabElement)
+      {
+        activeTabElement.classList.remove('active');
+        e.classList.add('active');
+
+        console.log('detailSelect2');
+
+        const activeRowElement = this.elmViewerLines.querySelector('.active');
+        this.detailOpen(activeRowElement);
+      }
+    }
+
+    return 0;
+  }
+
+  detailOpen(activeRowElement)
+  {
+    const viewId = this.rootElm.getAttribute ('data-viewer-view-id');
+    const tableId = this.rootElm.getAttribute ('data-table');
+    const rowNdx = activeRowElement.getAttribute('data-pk');
+
+    let detailId = 'default';
+    if (this.elmViewerDetailTabs)
+    {
+      const activeTabElement = this.elmViewerDetailTabs.querySelector('.active');
+
+      if (activeTabElement)
+        detailId = activeTabElement.getAttribute('data-detail');
+    }
+
+    var apiParams = {};
+    apiParams['requestType'] = 'dataViewerDetail';
+    apiParams['actionId'] = 'loadDetail';
+    apiParams['table'] = tableId;
+    apiParams['viewId'] = viewId;
+    apiParams['detailId'] = detailId;
+    apiParams['pk'] = rowNdx;
+
+    this.detectValues(apiParams);
+
+    console.log("API-CALL-DETAIL-OPEN", apiParams);
+
+    var url = 'api/v2';
+
+    shc.server.post (url, apiParams,
+      function (data) {
+        console.log("--api-call-detail-success--", data);
+        this.doDetailOpenResponse(data);
+      }.bind(this),
+      function (data) {
+        console.log("--api-call-error--");
+      }.bind(this)
+    );
+
+    //
+  }
+
+  doDetailOpenResponse(data)
+  {
+    this.setInnerHTML(this.elmViewerDetailHeader, data.response.hcHeader);
+    this.setInnerHTML(this.elmViewerDetailContent, data.response.hcContent);
+
   }
 
   df2FillViewerLines ()

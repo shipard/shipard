@@ -27,7 +27,6 @@ class Router extends \Shipard\Base\Utility
 		return $a->checkSession();
 	}
 
-
   public function run()
   {
     if (!$this->checkUserLogin())
@@ -54,6 +53,7 @@ class Router extends \Shipard\Base\Utility
     {
       case 'widgetBoard': $apiResponseObject = new \Shipard\Api\v2\ApiResponseBoard($this->app()); break;
       case 'dataViewer': $apiResponseObject = new \Shipard\Api\v2\ApiResponseViewer($this->app()); break;
+      case 'dataViewerDetail': $apiResponseObject = new \Shipard\Api\v2\ApiResponseViewerDetail($this->app()); break;
       case 'dataForm': $apiResponseObject = new \Shipard\Api\v2\ApiResponseForm($this->app()); break;
       case 'appCommand': $apiResponseObject = new \Shipard\Api\v2\ApiResponseAppCommand($this->app()); break;
       case 'documentCard': $apiResponseObject = new \Shipard\Api\v2\ApiResponseDocumentCard($this->app()); break;

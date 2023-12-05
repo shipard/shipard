@@ -41,6 +41,7 @@ class ApiResponseViewer extends \Shipard\Api\v2\ApiResponse
       if ($isModal)
       {
         $this->responseData['hcFull'] = $renderer->renderedData['hcFull'];
+        $this->responseData['hcBackIcon'] = $renderer->renderedData['hcBackIcon'];
         $this->addTitle($table, $v);
       }
       elseif ($fullCode)

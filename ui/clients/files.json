@@ -15,9 +15,9 @@
     },
     "ng": {
         "client.js": {
-            "sha384": "b1b8e0e11cddeb28bef1b8d80adb72299dd15cc44de3b0c908d35d94af05f8320811596eacbbca884b8bd26efe97420b",
-            "integrity": "sha384-sbjg4Rzd6yi+8bjYCttyKZ3RXMRN47DJCNNdlK8F+DIIEVlurLvKiEuL0m7+l0IL",
-            "ver": "aa1b1e4c2e20f49442116cb7076711ca"
+            "sha384": "2665cb2d50ca3759bd9fd50cea9e5216922de7fc9f570b68290ad5eb7ab4b3c05b1cb1aa4e09ad14ccd7cf5a03d64e87",
+            "integrity": "sha384-JmXLLVDKN1m9n9UM6p5SFpIt5/yfVwtoKQrV63q0s8BbHLGqTgmtFMzXz1oD1k6H",
+            "ver": "ce1ab95f379dcb5f17c7a5ea0cc7ed45"
         }
     }
 }

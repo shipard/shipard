@@ -9,7 +9,6 @@ class ShipardWidget {
     this.rootId = this.rootElm.getAttribute('id');
 
     this.on(this, 'click', '.shp-widget-action', function (e, ownerWidget, event){ownerWidget.widgetAction(e, event)});
-    //this.on(this, 'click', '.shp-widget-action>i', function (e, ownerWidget, event){ownerWidget.widgetAction(e.parentElement, event)});
   }
 
   widgetAction(e, event)
@@ -22,7 +21,7 @@ class ShipardWidget {
 
   doAction (actionId, e)
   {
-    //console.log("ACTION-WIDGET: ", actionId);
+    console.log("ACTION-WIDGET: ", actionId);
 
     switch (actionId)
     {
@@ -50,19 +49,6 @@ class ShipardWidget {
 	  if (e.getAttribute('data-pk') !== null)
 		  requestParams['pk'] = e.getAttribute('data-pk');
 
-    /*
-		e10.server.api(requestParams, function(data) {
-		if (data.reloadNotifications === 1)
-			e10NCReset();
-
-		if (e.parent().hasClass('btn-group'))
-		{
-			e.parent().find('>button.active').removeClass('active');
-			e.addClass('active');
-		}
-	  });
-    */
-
     console.log("__INLINE_ACTION", requestParams);
   }
 
@@ -82,15 +68,19 @@ class ShipardWidget {
 
     let newEnvelope = document.createElement('data-modal-env');
     newEnvelope.setAttribute('data-request-type', 'dataModal');
+    newEnvelope.innerHTML = "<div class='tlbr'><span class='backIcon shp-widget-action' data-action='closeModal'></span><span class='modalTitle'></span></div><div class='content'></div>";
 
     for (const oneParamId in modalParams)
       newEnvelope.setAttribute('data-action-param-'+oneParamId, modalParams[oneParamId]);
 
     newEnvelope.id = 'shc_meid_'+shc.counter++;
 
-    newEnvelope.innerHTML = "čekejte, prosím, data se načítají...";
+    //newEnvelope.innerHTML = "čekejte, prosím, data se načítají...";
 
     document.body.appendChild(newEnvelope);
+
+    newEnvelope.shpWidget = new ShipardWidget();
+    newEnvelope.shpWidget.init(newEnvelope);
 
     switch (modalType)
     {
@@ -125,9 +115,7 @@ class ShipardWidget {
 
   closeModal(e)
   {
-    //console.log('close-modal', this.rootElm.parentElement);
-    this.rootElm.parentElement.remove();
-
+    this.rootElm.remove();
     return 0;
   }
 
@@ -252,8 +240,20 @@ class ShipardWidget {
 
     //console.log('doWidgetModalResponse', data);
 
-    var targetElement = document.getElementById(targetElementId);
-    this.setInnerHTML(targetElement, data.response.hcFull);
+    var targetModalElement = document.getElementById(targetElementId);
+    var contentElement = targetModalElement.querySelector('div.content');
+    var tlbrElement = targetModalElement.querySelector('div.tlbr');
+    console.log("tlbrElement", tlbrElement);
+    var backIconElement = tlbrElement.querySelector('.backIcon');
+    var titleElement = tlbrElement.querySelector('.modalTitle');
+
+    if (data.response.hcBackIcon !== undefined)
+      backIconElement.innerHTML = data.response.hcBackIcon;
+
+    if (data.response.hcTitle !== undefined)
+      titleElement.innerHTML = data.response.hcTitle;
+
+    this.setInnerHTML(contentElement, data.response.hcFull);
 
     if (data.response.objectType === 'dataView')
       initWidgetTableViewer(data.response.objectId);

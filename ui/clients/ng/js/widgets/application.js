@@ -17,8 +17,10 @@ class ShipardWidgetApplication extends ShipardWidget
     console.log("ShipardWidgetApplication::init");
     super.init(e);
 
-    this.elmAppMenuHandle.addEventListener('mouseenter', function (){this.appMenuFloatOn()}.bind(this));
-    this.elmAppMenuNG.addEventListener('mouseleave', function (){this.appMenuFloatOff()}.bind(this));
+    if (this.elmAppMenuHandle)
+      this.elmAppMenuHandle.addEventListener('mouseenter', function (){this.appMenuFloatOn()}.bind(this));
+    if (this.elmAppMenuNG)
+      this.elmAppMenuNG.addEventListener('mouseleave', function (){this.appMenuFloatOff()}.bind(this));
 
     this.initContent();
   }
