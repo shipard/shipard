@@ -14,16 +14,13 @@
               <ul class='shp-tree-list'>
                 {{#items}}
                   <li>
-                    <span class='li-title'>
-                      {{{@icon;dataItem:icon}}}
-                      <span
-                        data-action-param-object-type='{{objectType}}'
-                        {{#table}}data-action-param-table='{{table}}'{{/table}}
-                        {{#viewer}}data-action-param-view-id='{{viewer}}'{{/viewer}}
-                        data-action='loadAppMenuItem'
-                        class='shp-widget-action'>
-                        {{title}}
-                      </span>
+                    <span
+                      data-action-param-object-type='{{objectType}}'
+                      {{#table}}data-action-param-table='{{table}}'{{/table}}
+                      {{#viewer}}data-action-param-view-id='{{viewer}}'{{/viewer}}
+                      data-action='loadAppMenuItem'
+                      class='li-title app-menu-item shp-widget-action'>
+                        {{{@icon;dataItem:icon}}} {{title}}
                     </span>
                   </li>
                 {{/items}}
@@ -38,16 +35,13 @@
                   <ul class='shp-tree-list'>
                     {{#items}}
                       <li>
-                        <span class='li-title'>
-                          {{{@icon;dataItem:icon}}}
-                          <span
-                            data-action-param-object-type='{{objectType}}'
-                            {{#table}}data-action-param-table='{{table}}'{{/table}}
-                            {{#viewer}}data-action-param-view-id='{{viewer}}'{{/viewer}}
-                            data-action='loadAppMenuItem'
-                            class='shp-widget-action'>
-                            {{title}}
-                          </span>
+                        <span
+                          data-action-param-object-type='{{objectType}}'
+                          {{#table}}data-action-param-table='{{table}}'{{/table}}
+                          {{#viewer}}data-action-param-view-id='{{viewer}}'{{/viewer}}
+                          data-action='loadAppMenuItem'
+                          class='li-title app-menu-item shp-widget-action'>
+                            {{{@icon;dataItem:icon}}} {{title}}
                         </span>
                       </li>
                     {{/items}}
@@ -85,7 +79,7 @@
             {{#table}}data-action-param-table='{{table}}'{{/table}}
             {{#viewer}}data-action-param-view-id='{{viewer}}'{{/viewer}}
             data-action='loadAppMenuItem'
-            class='shp-widget-action'>
+            class='app-menu-item shp-widget-action'>
             {{{@icon;dataItem:icon}}}
           </span>
         {{/data.uiStruct.appMenuFavorites}}

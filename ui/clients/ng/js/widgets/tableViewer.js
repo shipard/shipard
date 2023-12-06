@@ -27,9 +27,12 @@ class ShipardTableViewer extends ShipardWidget
     this.elmViewerRows.addEventListener('scroll', (event) => {this.doScroll(event)});
 
     this.elmViewerDetail = this.rootElm.querySelector('div.detail');
-    this.elmViewerDetailContent = this.elmViewerDetail.querySelector('div.content');
-    this.elmViewerDetailHeader = this.elmViewerDetail.querySelector('div.header');
-    this.elmViewerDetailTabs = this.elmViewerDetail.querySelector('div.tabs');
+    if (this.elmViewerDetail)
+    {
+      this.elmViewerDetailContent = this.elmViewerDetail.querySelector('div.content');
+      this.elmViewerDetailHeader = this.elmViewerDetail.querySelector('div.header');
+      this.elmViewerDetailTabs = this.elmViewerDetail.querySelector('div.tabs');
+    }
 
     this.on(this, 'click', 'div.rows-list.mainViewer>div.r', function (e, ownerWidget, event){this.rowClick(e, event)}.bind(this));
     //this.on(this, 'click', 'div.rows-list.mainViewer>div.r *', function (e, ownerWidget, event){this.rowClick(e, event)}.bind(this));
@@ -89,6 +92,9 @@ class ShipardTableViewer extends ShipardWidget
 
   rowClick(e, event)
   {
+    if (!this.elmViewerDetail)
+      return;
+
     let oldActiveRowElement = this.elmViewerLines.querySelector('.active');
     if (oldActiveRowElement)
       oldActiveRowElement.classList.remove('active');

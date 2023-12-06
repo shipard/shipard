@@ -31,6 +31,29 @@ div.app-menu-shp-ng{
     }
 }
 
-.shp-tree-list>li>ul>li>.li-title:hover{
+.shp-tree-list li>.li-title{
+    border-left: 2px solid transparent;
+}
+
+
+.shp-tree-list li>.li-title:hover{
     background-color: var(--hoverMenuBackground);  /*  !!!!! */
+}
+
+.shp-tree-list li>.li-title.active{
+    background-color: #222;
+    border-left: 2px solid greenyellow;
+}
+
+
+
+div.menu-favorites>div.menu-buttons {
+    .app-menu-item:hover {
+        background-color: var(--hoverMenuBackground);
+    }
+
+    .app-menu-item.active {
+        background-color: #222;
+    }
+
 }

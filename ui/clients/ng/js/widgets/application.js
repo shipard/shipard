@@ -114,10 +114,14 @@ class ShipardWidgetApplication extends ShipardWidget
 
   loadAppMenuItem (e)
   {
-		console.log('loadAppMenuItem222', e);
-
     if (this.elmAppMenu.classList.contains('float'))
       this.elmAppMenu.classList.remove('float');
+
+    let activeElement = this.elmAppMenu.querySelector('.app-menu-item.active');
+    if (activeElement)
+      activeElement.classList.remove('active');
+
+    e.classList.add('active');
 
     const modalType = 'viewer';
 

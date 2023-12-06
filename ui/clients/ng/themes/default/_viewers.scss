@@ -215,9 +215,14 @@ data-viewer>div.toolbar>div.filters {
   display: flex;
   gap: 1rem;
   padding-top: .2rem;
+  .viewerQuerySelect {
+    display: flex;
+  }
+
   .q {
     padding: .3rem;
     opacity: .8;
+    border-top: 3px solid transparent;
     /*border-top: 3px solid navy;
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;*/
@@ -269,8 +274,6 @@ data-viewer>div.body>div.viewerBottomTabs {
 /* doc states colors*/
 data-viewer>div.body>div.rows>div.rows-list>div.r {
   padding-right: 0.5rem;
-  cursor: pointer;
-
 
   &.e10-docstyle-concept {
     border-left: 5px solid #{$docstate-concept};
@@ -308,7 +311,9 @@ data-viewer>div.body>div.rows>div.rows-list>div.r.active:hover {
 
 }
 
-
+data-viewer.appViewer>div.body>div.rows>div.rows-list>div.r {
+  cursor: pointer;
+}
 
 /* details */
 data-viewer.appViewer>div.detail {
@@ -359,4 +364,9 @@ data-viewer.appViewer>div.detail>div.tabs {
   >span.active {
     background-color: #432;
   }
+}
+
+
+data-viewer>div.sidebar>div.queryWidget {
+   width: 12rem;
 }
