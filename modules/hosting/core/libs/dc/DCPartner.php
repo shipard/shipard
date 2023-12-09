@@ -11,22 +11,10 @@ class DCPartner extends \Shipard\Base\DocumentCard
 {
 	public function createContentRecap ()
 	{
-		$tablePortals = $this->app()->table ('hosting.core.hostings');
-
 		$i = $this->recData;
-
-		$portalName = '';
-		/*
-		if ($i['portal'])
-		{
-			$portal = $tablePortals->loadItem ($i['portal']);
-			$portalName = $portal['name'];
-		}
-		*/
 
 		$info = [];
 		$info[] = ['p1' => 'Název', 't1' => $i['name']];
-		$info[] = ['p1' => 'Portál', 't1' => $portalName];
 		$info[] = ['p1' => 'Web', 't1' => $i['webUrl']];
 		$info[] = ['p1' => 'Email na podporu', 't1' => $i['supportEmail']];
 		$info[] = ['p1' => 'Telefon na podporu', 't1' => $i['supportPhone']];
@@ -39,21 +27,7 @@ class DCPartner extends \Shipard\Base\DocumentCard
 		$info[0]['_options']['cellClasses']['p1'] = 'width30';
 		$h = ['p1' => ' ', 't1' => ''];
 
-//		$title = [['icon' => 'icon-umbrella', 'text' => $i['name'], 'class' => 'h2']];
-
-		$dsStatsInfo = $this->table->partnerDSStats($i['ndx']);
-		$title = [
-			['text' => utils::nf($dsStatsInfo['2']['cnt']), 'icon' => 'system/iconDatabase', 'class' => 'label label-success', 'title' => 'Počet databází v ostrém provozu'],
-			['text' => utils::snf($dsStatsInfo['2']['usageTotal']), 'icon' => 'icon-hdd-o', 'class' => 'label label-success', 'title' => 'Celková velikost databází v ostrém provozu'],
-			['text' => utils::snf($dsStatsInfo['2']['cntDocuments12m']), 'icon' => 'icon-file-text-o', 'class' => 'label label-success', 'title' => 'Počet dokladů za posledních 12 měsíců u databází v ostrém provozu'],
-
-			['text' => utils::nf($dsStatsInfo['NONPROD']['cnt']), 'icon' => 'system/iconDatabase', 'class' => 'label label-default', 'title' => 'Počet databází v testovacím provozu'],
-			['text' => utils::snf($dsStatsInfo['NONPROD']['usageTotal']), 'icon' => 'icon-hdd-o', 'class' => 'label label-default', 'title' => 'Celková velikost databází v testovacím provozu'],
-			['text' => utils::snf($dsStatsInfo['NONPROD']['cntDocuments12m']), 'icon' => 'icon-file-text-o', 'class' => 'label label-default', 'title' => 'Počet dokladů za posledních 12 měsíců u databází v testovacím provozu'],
-		];
-
 		$this->addContent ('body', ['pane' => 'e10-pane e10-pane-table', 'type' => 'table',
-			'title' => $title,
 			'header' => $h, 'table' => $info, 'params' => ['hideHeader' => 1, 'forceTableClass' => 'properties fullWidth']]);
 	}
 

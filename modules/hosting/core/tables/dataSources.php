@@ -200,6 +200,9 @@ use \e10\base\libs\UtilsBase;
 			if ($totalSizeGB > $p['maxSpaceUsage'] && ($p['allowExtraUsage'] ?? 1) === 0)
 				continue;
 
+			if ($data['invoicingTo'] == 1 && isset($p['b2bOnly']))
+				continue;
+
 			break;
 		}
 
@@ -324,8 +327,18 @@ use \e10\base\libs\UtilsBase;
 				'maxDocs' => $docs, //$p['docs'],
 				'price' => $p['price'],
 				'maxUsage' => $p['maxSpaceUsage'],
-				'usageBlockPrice' => ($p['extraSpaceBlockPrice']) ? $p['extraSpaceBlockPrice'].' Kč / každých '.$p['extraSpaceBlockSize'].' GB' : 'Úložiště nelze navýšit',
+				'notes' => [],
 			];
+
+			if (isset($p['b2bOnly']))
+				$item['notes'][] = ['text' => 'Neveřejný tarif pouze pro partnery', 'class' => 'break'];
+
+			if (isset($p['extraSpaceBlockPrice']))
+				$item['notes'][] = ['text' => 'Příplatek '.$p['extraSpaceBlockPrice'].' Kč / každých '.$p['extraSpaceBlockSize'].' GB', 'class' => 'break'];
+			else
+				$item['notes'][] = ['text' => 'Úložiště nelze navýšit', 'class' => 'break'];
+
+
 			$t[] = $item;
 
 			$prevPlan = $p;
@@ -336,7 +349,7 @@ use \e10\base\libs\UtilsBase;
 			'maxDocs' => ' Počet dokladů / rok',
 			'maxUsage' => ' Max. velikost v GB',
 			'price' => ' Cena / měsíc',
-			'usageBlockPrice' => ' Příplatek za navýšení úložiště',
+			'notes' => 'Poznámky',
 		];
 
 		return ['table' => $t, 'header' => $h];

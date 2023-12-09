@@ -4,6 +4,7 @@
     <title>AHOJ</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v12" type="text/css"/>
+    <link rel="stylesheet" href="{{dsUrl}}www-root/sc/icons/fa/5/css/all.min.css">
 
     <style>
         table.default {font-size: 9pt;}
@@ -25,6 +26,9 @@
 {{{@renderContent;dataItem:data.contents}}}
 
 {{{@renderContent;dataItem:data.priceLegend}}}
+
+<div class='h2 pageBreakBefore'>Informace o partnerovi</div>
+{{{@renderContent;dataItem:data.partnerInfo}}}
 
 {{#data.reportTexts.subFooter}}<div class='reportTextFooter'>{{{data.reportTexts.subFooter}}}</div>{{/data.reportTexts.subFooter}}
 

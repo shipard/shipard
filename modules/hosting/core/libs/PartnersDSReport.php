@@ -33,6 +33,9 @@ class PartnersDSReport extends \e10doc\core\libs\reports\DocReportBase
 
 		$priceLegend = $dse->createContentPlansLegend();
 		$this->data['priceLegend'] = [$priceLegend];
+
+		$partnerInfo = $dse->createContentRecap ();
+		$this->data['partnerInfo'] = [$partnerInfo];
 	}
 }
 

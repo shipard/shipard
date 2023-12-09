@@ -105,7 +105,8 @@ class PartnersDSEngine extends Utility
 	{
 		$q = [];
     array_push($q, 'SELECT stats.*, ');
-		array_push($q, ' ds.ndx AS dsNdx, ds.name as dsName, ds.shortName as dsShortName, ds.gid, partners.name as partnerName');
+		array_push($q, ' ds.ndx AS dsNdx, ds.name as dsName, ds.shortName as dsShortName, ds.gid, ds.invoicingTo,');
+    array_push($q, ' partners.name as partnerName');
     array_push($q, ' FROM hosting_core_dataSources AS ds');
 		array_push($q, ' LEFT JOIN hosting_core_dsStats AS stats ON ds.ndx = stats.dataSource');
     array_push($q, ' LEFT JOIN hosting_core_partners AS partners ON ds.partner = partners.ndx');
@@ -302,7 +303,101 @@ class PartnersDSEngine extends Utility
 
 
     return $plansLegend;
-		//$this->addContent ($plansLegend);
+	}
+
+  public function createContentRecap ()
+	{
+		$i = $this->app()->loadItem($this->partnerNdx, 'hosting.core.partners');
+
+		$info = [];
+		$info[] = ['p1' => 'Název', 't1' => $i['name']];
+		$info[] = ['p1' => 'Web', 't1' => $i['webUrl']];
+		$info[] = ['p1' => 'Email na podporu', 't1' => $i['supportEmail']];
+		$info[] = ['p1' => 'Telefon na podporu', 't1' => $i['supportPhone']];
+
+		$this->addLogo ('Logo partnera', $i['logoPartner'], $info);
+		$this->addLogo ('Logo - ikona', $i['logoIcon'], $info);
+
+		$this->addPersons($info);
+
+		$info[0]['_options']['cellClasses']['p1'] = 'width30';
+		$h = ['p1' => ' ', 't1' => ''];
+
+    if ($this->print)
+    {
+      $content = [
+        'type' => 'table',
+        'header' => $h, 'table' => $info, 'params' => ['hideHeader' => 1]
+      ];
+    }
+    else
+    {
+      $content = [
+        'pane' => 'e10-pane e10-pane-table', 'type' => 'table',
+        'header' => $h, 'table' => $info, 'params' => ['hideHeader' => 1, 'forceTableClass' => 'properties fullWidth']
+      ];
+    }
+
+    return $content;
+	}
+
+  function addLogo ($title, $ndx, &$dstTable)
+	{
+		if (!$ndx)
+		{
+			$dstTable[] = [
+				'p1' => $title,
+				];
+			return;
+		}
+
+		$att = $this->db()->query ('SELECT * FROM [e10_attachments_files] WHERE [ndx] = %i', $ndx)->fetch();
+		$fn = $this->app()->dsRoot.'/att/'.$att['path'].$att['filename'];
+
+		$dstTable[] = [
+			'p1' => $title,
+			't1' => [
+				['text' => '#'.$ndx], ['code' => "<img src='$fn' class='pull-right' style='max-height: 3em; padding: .5ex; '>"]
+			]
+		];
+	}
+
+	function addPersons(&$dstTable)
+	{
+		$q[] = 'SELECT pp.*, persons.fullName AS personName, persons.id AS personId';
+		array_push ($q, ' FROM [hosting_core_partnersPersons] AS pp');
+		array_push ($q, ' LEFT JOIN e10_persons_persons as persons ON pp.person = persons.ndx');
+
+		array_push($q, ' WHERE pp.partner = %i', $this->partnerNdx);
+		array_push($q, ' ORDER BY persons.lastName');
+
+		$rows = $this->db()->query ($q);
+		$label = 1;
+		foreach ($rows as $r)
+		{
+			$item = [];
+			if ($label)
+				$item['p1'] = 'Osoby';
+			$item['t1'] = [['text' => $r['personName']]];
+			$item['t1'][] = ['text' => '#'.$r['personId'], 'class' => 'pull-right id'];
+
+      if ($this->print)
+      {
+        if ($r['isSupport'])
+          $item['t1'][] = ['text' => 'Technická podpora', 'class' => 'pull-right e10-small', 'icon' => 'system/actionSupport'];
+        if ($r['isAdmin'])
+          $item['t1'][] = ['text' => 'Správce', 'class' => 'pull-right e10-small', 'icon' => 'system/actionSettings'];
+      }
+      else
+      {
+        if ($r['isSupport'])
+          $item['t1'][] = ['text' => '', 'title' => 'Technická podpora zákazníků', 'class' => 'pull-right', 'icon' => 'system/actionSupport'];
+        if ($r['isAdmin'])
+          $item['t1'][] = ['text' => '', 'title' => 'Správce partnera', 'class' => 'pull-right', 'icon' => 'system/actionSettings'];
+      }
+			$dstTable[] = $item;
+			$label = 0;
+		}
 	}
 
   public function run()
