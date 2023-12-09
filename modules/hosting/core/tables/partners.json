@@ -28,5 +28,10 @@
 	"forms": [
 		{"id": "default", "class": "hosting.core.FormPartner"}
 	],
+	"reports": [
+		{
+			"id": "partnersDS", "name": "Databáze", "class": "hosting.core.libs.PartnersDSReport", "email": 1
+		}
+	],
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"}
 }

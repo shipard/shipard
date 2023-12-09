@@ -33,7 +33,7 @@ class DocReportBase extends FormReport
 
 	public function setReportId($baseReportId)
 	{
-		if (str_starts_with($baseReportId, 'reports.default.'))
+		if (str_starts_with($baseReportId, 'reports.default.') || str_starts_with($baseReportId, 'reports.modern.'))
 		{
 			$reportId = $baseReportId;
 		}
@@ -177,9 +177,12 @@ class DocReportBase extends FormReport
 			$this->data ['author']['address'] = $this->data ['author']['lists']['address'][0];
 	}
 
-	function loadData_DocumentOwner ()
+	function loadData_DocumentOwner ($ownerNdx = -1)
 	{
-		$this->ownerNdx = $this->recData ['owner'] ?? 0;
+		if ($ownerNdx !== -1)
+			$this->ownerNdx = $ownerNdx;
+		else
+			$this->ownerNdx = $this->recData ['owner'] ?? 0;
 		if ($this->ownerNdx == 0)
 			$this->ownerNdx = intval($this->app()->cfgItem('options.core.ownerPerson', 0));
 		if ($this->ownerNdx)

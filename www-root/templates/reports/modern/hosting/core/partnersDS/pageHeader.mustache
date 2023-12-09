@@ -1,0 +1,47 @@
+<style>
+	body, html {
+		margin: 0;
+		padding: 0;
+		box-sizing: border-box;
+	}
+
+	table.header {
+		margin: 0;
+		padding: 0;
+		font-family: Arial, Helvetica, sans-serif;
+		width: 100%;
+		margin-left: 25.4pt;
+		margin-right: 25.4pt;
+		border-left: 6pt solid #CFECEC;
+		border-bottom: 1px solid #CFECEC;
+	}
+
+	td.docInfo {
+		text-align: left;
+		font-size: 11pt;
+	}
+
+	span.docName {
+		text-transform: uppercase;
+	}
+
+	td.supplierLogo {
+		text-align: right;
+		font-size: 10pt;
+		/*font-weight: bold;*/
+	}
+</style>
+
+<table class='header'>
+	<tr>
+		<td class="docInfo">
+			<span class='docName'>Přehled databází</span><br>
+			<b>{{data.head.name}}</b>
+		</td>
+		<td class="supplierLogo">
+			{{#data.owner.logo.logo-nadpis.filename}}
+				<img style="height:24pt;" src='{{{@imgData;dataItem:data.owner.logo.logo-nadpis}}}'>
+			{{/data.owner.logo.logo-nadpis.filename}}
+		</td>
+	</tr>
+</table>

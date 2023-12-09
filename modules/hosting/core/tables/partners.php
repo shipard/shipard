@@ -81,7 +81,7 @@ class TablePartners extends DbTable
 			$c = strval ($r['condition']);
 			$info[$c] = $r->toArray();
 
-			if ($c !== '1')
+			if ($c !== '2')
 			{
 				$info['NONPROD']['usageTotal'] += $r['usageTotal'];
 				$info['NONPROD']['cntDocuments12m'] += $r['cntDocuments12m'];
@@ -117,6 +117,19 @@ class TablePartners extends DbTable
 
 		return $list;
 	}
+
+	public function getRecordInfo ($recData, $options = 0)
+	{
+		$title = $recData['name'];
+		$info = [
+			'title' => $title, 'docID' => $recData['gid']
+		];
+
+		$info ['persons']['to'][] = $recData['owner'];
+		$info ['persons']['from'][] = intval($this->app()->cfgItem ('options.core.ownerPerson', 0));
+
+		return $info;
+	}
 }
 
 
@@ -129,6 +142,7 @@ class ViewPartners extends TableView
 	{
 		parent::init();
 		$this->setMainQueries();
+		$this->linesWidth = 25;
 	}
 
 	public function selectRows ()
@@ -173,100 +187,7 @@ class ViewDetailPartner extends TableViewDetail
 {
 	public function createDetailContent ()
 	{
-		$tablePortals = $this->app()->table ('hosting.core.hostings');
-
-
-		$i = $this->item;
-
-
-		$portalName = '';
-		if ($i['portal'])
-		{
-			$portal = $tablePortals->loadItem ($i['portal']);
-			$portalName = $portal['name'];
-		}
-
-		$info = [];
-		$info[] = ['p1' => 'Název', 't1' => $i['name']];
-		$info[] = ['p1' => 'Portál', 't1' => $portalName];
-		$info[] = ['p1' => 'Web', 't1' => $i['webUrl']];
-		$info[] = ['p1' => 'Email na podporu', 't1' => $i['supportEmail']];
-		$info[] = ['p1' => 'Telefon na podporu', 't1' => $i['supportPhone']];
-
-		$this->addLogo ('Logo partnera', $i['logoPartner'], $info);
-		$this->addLogo ('Logo - ikona', $i['logoIcon'], $info);
-
-		$this->addPersons($info);
-
-		$info[0]['_options']['cellClasses']['p1'] = 'width30';
-		$h = ['p1' => ' ', 't1' => ''];
-
-//		$title = [['icon' => 'icon-umbrella', 'text' => $i['name'], 'class' => 'h2']];
-
-		$dsStatsInfo = $this->table()->partnerDSStats($i['ndx']);
-		$title = [
-			['text' => utils::nf($dsStatsInfo['1']['cnt']), 'icon' => 'system/iconDatabase', 'class' => 'label label-success', 'title' => 'Počet databází v ostrém provozu'],
-			['text' => utils::snf($dsStatsInfo['1']['usageTotal']), 'icon' => 'icon-hdd-o', 'class' => 'label label-success', 'title' => 'Celková velikost databází v ostrém provozu'],
-			['text' => utils::snf($dsStatsInfo['1']['cntDocuments12m']), 'icon' => 'icon-file-text-o', 'class' => 'label label-success', 'title' => 'Počet dokladů za posledních 12 měsíců u databází v ostrém provozu'],
-
-			['text' => utils::nf($dsStatsInfo['NONPROD']['cnt']), 'icon' => 'system/iconDatabase', 'class' => 'label label-default', 'title' => 'Počet databází v testovacím provozu'],
-			['text' => utils::snf($dsStatsInfo['NONPROD']['usageTotal']), 'icon' => 'icon-hdd-o', 'class' => 'label label-default', 'title' => 'Celková velikost databází v testovacím provozu'],
-			['text' => utils::snf($dsStatsInfo['NONPROD']['cntDocuments12m']), 'icon' => 'icon-file-text-o', 'class' => 'label label-default', 'title' => 'Počet dokladů za posledních 12 měsíců u databází v testovacím provozu'],
-		];
-
-		$this->addContent (['pane' => 'e10-pane e10-pane-table', 'type' => 'table',
-			'title' => $title,
-			'header' => $h, 'table' => $info, 'params' => ['hideHeader' => 1, 'forceTableClass' => 'properties fullWidth']]);
-	}
-
-	function addPersons(&$dstTable)
-	{
-		$q[] = 'SELECT pp.*, persons.fullName AS personName, persons.id AS personId';
-		array_push ($q, ' FROM [hosting_core_partnersPersons] AS pp');
-		array_push ($q, ' LEFT JOIN e10_persons_persons as persons ON pp.person = persons.ndx');
-
-		array_push($q, ' WHERE pp.partner = %i', $this->item['ndx']);
-		array_push($q, ' ORDER BY persons.lastName');
-
-		$rows = $this->db()->query ($q);
-		$label = 1;
-		foreach ($rows as $r)
-		{
-			$item = [];
-			if ($label)
-				$item['p1'] = 'Osoby';
-			$item['t1'] = [['text' => $r['personName']]];
-			$item['t1'][] = ['text' => '#'.$r['personId'], 'class' => 'pull-right id'];
-
-			if ($r['isSupport'])
-				$item['t1'][] = ['text' => '', 'title' => 'Technická podpora zákazníků', 'class' => 'pull-right', 'icon' => 'system/actionSupport'];
-			if ($r['isAdmin'])
-				$item['t1'][] = ['text' => '', 'title' => 'Správce partnera', 'class' => 'pull-right', 'icon' => 'system/actionSettings'];
-
-			$dstTable[] = $item;
-			$label = 0;
-		}
-	}
-
-	function addLogo ($title, $ndx, &$dstTable)
-	{
-		if (!$ndx)
-		{
-			$dstTable[] = [
-				'p1' => $title,
-				];
-			return;
-		}
-
-		$att = $this->db()->query ('SELECT * FROM [e10_attachments_files] WHERE [ndx] = %i', $ndx)->fetch();
-		$fn = $this->app()->dsRoot.'/att/'.$att['path'].$att['filename'];
-
-		$dstTable[] = [
-			'p1' => $title,
-			't1' => [
-				['text' => '#'.$ndx], ['code' => "<img src='$fn' class='pull-right' style='max-height: 3em; padding: .5ex; '>"]
-			]
-		];
+		$this->addDocumentCard('hosting.core.libs.dc.DCPartner');
 	}
 }
 
