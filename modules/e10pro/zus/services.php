@@ -5,6 +5,7 @@ require_once __SHPD_MODULES_DIR__ . 'e10pro/zus/zus.php';
 use \Shipard\Utils\Utils;
 use \e10\base\libs\UtilsBase;
 use \Shipard\Utils\Str;
+use \Shipard\Utils\Json;
 use \e10pro\zus\zusutils;
 
 /**
@@ -663,9 +664,39 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$e->sendAll();
 	}
 
+	public function dataSourceStatsCreate()
+	{
+		$dsStats = new \lib\hosting\DataSourceStats($this);
+		$dsStats->loadFromFile();
+
+		// -- studia
+		$dsStats->data['extModules']['zus']['studies']['created'] = new \DateTime();
+		$dsStats->data['extModules']['zus']['studies']['count']['ALL'] = 0;
+
+
+		$schoolYear = zusutils::aktualniSkolniRok();
+		$q = [];
+		array_push($q, 'SELECT COUNT(*) AS cnt');
+		array_push($q, ' FROM [e10pro_zus_studium] as studium ');
+		array_push($q, ' WHERE [stav] = %i', 1200);
+		array_push($q, ' AND skolniRok = %s', $schoolYear);
+		$cnt = $this->db()->query($q)->fetch();
+		if ($cnt)
+			$dsStats->data['extModules']['zus']['studies']['count']['ALL'] = $cnt['cnt'];
+
+		Json::polish($dsStats->data['extModules']['zus']['studies']);
+
+		$dsStats->saveToFile();
+	}
+
 	public function onCronEver ()
 	{
 		$this->sendEntriesEmails();
+	}
+
+	public function onStats()
+	{
+		$this->dataSourceStatsCreate();
 	}
 
 	public function onCron ($cronType)
@@ -673,8 +704,8 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		switch ($cronType)
 		{
 			case 'ever': $this->onCronEver(); break;
+			case 'stats': $this->onStats(); break;
 		}
 		return TRUE;
 	}
-
 }

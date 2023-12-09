@@ -66,7 +66,19 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			$dsStats->data['extModules']['mac']['lan']['countDevices'][$r['deviceKind']] = $r['cnt'];
 		}
 
+		// -- iot devices
+		$dsStats->data['extModules']['mac']['iot']['created'] = new \DateTime();
+		$dsStats->data['extModules']['mac']['iot']['countDevices']['ALL'] = 0;
+		$rows = $this->app->db()->query (
+			'SELECT [deviceType], COUNT(*) AS cnt FROM mac_iot_devices', ' WHERE docState = %i', 4000, ' GROUP by deviceType');
+		foreach ($rows as $r)
+		{
+			$dsStats->data['extModules']['mac']['iot']['countDevices']['ALL'] += $r['cnt'];
+			$dsStats->data['extModules']['mac']['iot']['countDevices'][$r['deviceType']] = $r['cnt'];
+		}
+
 		json::polish($dsStats->data['extModules']['mac']['lan']);
+		json::polish($dsStats->data['extModules']['mac']['iot']);
 
 		$dsStats->saveToFile();
 	}
