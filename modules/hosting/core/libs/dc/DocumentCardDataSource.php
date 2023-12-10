@@ -207,6 +207,18 @@ class DocumentCardDataSource extends \Shipard\Base\DocumentCard
 								];
 							}
 						}
+
+						if ($emId === 'zus')
+						{
+							if (isset($em['studies']) && isset($em['studies']['count']['ALL']))
+							{
+								$extModulesLabels[] = [
+									'text' => 'ZUŠ',
+									'suffix' => Utils::nf($em['studies']['count']['ALL']).' studií',
+									'icon' => 'tables/e10pro.zus.predmety', 'class' => 'label label-info'
+								];
+							}
+						}
 					}
 
 					$info[] = ['p1' => 'Rozšíření', 't1' => $extModulesLabels];
