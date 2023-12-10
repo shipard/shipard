@@ -135,10 +135,10 @@ class DocumentCardDataSource extends \Shipard\Base\DocumentCard
 
 				$flags = [];
 				$flagsInfo = [
-					'vat' => ['icon' => 'icon-shield', 'text' => 'DPH', 'class' => 'label label-info'],
-					'ros' => ['icon' => 'icon-microchip', 'text' => 'EET', 'class' => 'label label-info'],
-					'debs' => ['icon' => 'icon-calculator', 'text' => 'Podvojné účetnictví', 'class' => 'label label-info'],
-					'sebs' => ['icon' => 'icon-calculator', 'text' => 'Daňová evidence', 'class' => 'label label-info'],
+					'vat' => ['icon' => 'report/VatReturnReport', 'text' => 'DPH', 'class' => 'label label-info'],
+					'ros' => ['icon' => 'tables/e10doc.ros.journal', 'text' => 'EET', 'class' => 'label label-info'],
+					'debs' => ['icon' => 'homeAccounting', 'text' => 'Podvojné účetnictví', 'class' => 'label label-info'],
+					'sebs' => ['icon' => 'homeAccounting', 'text' => 'Daňová evidence', 'class' => 'label label-info'],
 				];
 				if (isset($this->statsRecData['data']['flags']))
 				{
@@ -191,7 +191,19 @@ class DocumentCardDataSource extends \Shipard\Base\DocumentCard
 								$extModulesLabels[] = [
 									'text' => 'Kamerový systém',
 									'suffix' => Utils::nf($em['lan']['countDevices']['10']).' kamer',
-									'icon' => 'icon-video-camera', 'class' => 'label label-info'
+									'icon' => 'tables/mac.iot.cams', 'class' => 'label label-info'
+								];
+							}
+							if (isset($em['iot']) && isset($em['iot']['countDevices']['ALL']))
+							{
+								$sfx =  Utils::nf($em['iot']['countDevices']['ALL']).' zařízení (';
+								$sfx .= 'zigbee: '.Utils::nf($em['iot']['countDevices']['zigbee'] ?? 0);
+								$sfx .= ', shipard: '.Utils::nf($em['iot']['countDevices']['shipard'] ?? 0);
+								$sfx .= ')';
+								$extModulesLabels[] = [
+									'text' => 'IoT',
+									'suffix' => $sfx,
+									'icon' => 'tables/mac.iot.devices', 'class' => 'label label-info'
 								];
 							}
 						}
@@ -225,7 +237,7 @@ class DocumentCardDataSource extends \Shipard\Base\DocumentCard
 	{
 		if (!$this->recData['createRequest'] || $this->recData['createRequest'] === '')
 			return;
-		
+
 		$destTable[] = ['p1' => 'Požadavek na vytvoření', '_options' => ['class' => 'e10-bg-t6 bb1']];
 
 		$createRequest = json_decode($this->recData['createRequest'], TRUE);
