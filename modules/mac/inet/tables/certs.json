@@ -14,6 +14,10 @@
 
 		{"id": "dateExpire", "name": "Datum exspirace", "type": "date"},
 
+		{"id": "apiDownloadEnabled", "name": "Povolit stahování přes API", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "apiDownloadKey", "name": "API klíč", "type": "string", "len": 64},
+		{"id": "apiDownloadID", "name": "API ID", "type": "string", "len": 32},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],

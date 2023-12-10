@@ -34,6 +34,19 @@ class TableCerts extends DbTable
 		if (count($ahAscii))
 			$recData['anotherHostsAscii'] = implode(' ', $ahAscii);
 
+		if (intval($recData['apiDownloadEnabled'] ?? 0))
+		{
+			if ($recData['apiDownloadKey'] === '')
+				$recData['apiDownloadKey'] = Utils::createToken(64);
+			if ($recData['apiDownloadID'] === '')
+				$recData['apiDownloadID'] = Utils::createToken(32);
+		}
+		else
+		{
+			$recData['apiDownloadKey'] = '';
+			$recData['apiDownloadID'] = '';
+		}
+
 		parent::checkBeforeSave ($recData, $ownerData);
 	}
 
@@ -190,6 +203,14 @@ class FormCert extends TableForm
 					$this->addColumnInput ('provider');
 					$this->addColumnInput ('dataSource');
 					$this->addColumnInput ('dateExpiry');
+
+					$this->addSeparator(self::coH2);
+					$this->addColumnInput ('apiDownloadEnabled');
+					if ($this->recData['apiDownloadEnabled'])
+					{
+						$this->addColumnInput ('apiDownloadKey');
+						$this->addColumnInput ('apiDownloadID');
+					}
 				$this->addList ('clsf', '', TableForm::loAddToFormLayout);
 				$this->closeTab ();
 				$this->openTab (TableForm::ltNone);

@@ -9,6 +9,9 @@
 	"feed": {
 		"loginScreen": {
 			"classId": "hosting.core.libs.LoginScreenFeed"
+		},
+		"certs": {
+			"classId": "hosting.core.libs.api.CertDownload"
 		}
 	}
 }
