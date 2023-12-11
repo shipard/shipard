@@ -352,7 +352,7 @@ class PartnersDSEngine extends Utility
 		}
 
 		$att = $this->db()->query ('SELECT * FROM [e10_attachments_files] WHERE [ndx] = %i', $ndx)->fetch();
-		$fn = $this->app()->dsRoot.'/att/'.$att['path'].$att['filename'];
+    $fn = 'https://'.$this->app()->cfgItem('hostingCfg.serverDomain').'/'.$this->app->cfgItem('dsid').'/att/'.$att['path'].$att['filename'];
 
 		$dstTable[] = [
 			'p1' => $title,

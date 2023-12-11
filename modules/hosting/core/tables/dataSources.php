@@ -185,6 +185,8 @@ use \e10\base\libs\UtilsBase;
 		$plan = NULL;
 		$planPriceCam = 0;
 		$planPriceLANDevice = 0;
+		$planPriceCam = 0;
+		$planPriceZUSStudium = 0;
 
 		foreach ($plans as $p)
 		{
@@ -193,6 +195,9 @@ use \e10\base\libs\UtilsBase;
 				$planPriceCam = $plan['priceCam'];
 			if (isset($plan['priceLANDevice']))
 				$planPriceLANDevice = $plan['priceLANDevice'];
+
+			if (isset($plan['priceLANDevice']))
+				$planPriceZUSStudium = $plan['priceZUSStudium'];
 
 			if ($cntDocs > $p['maxDocs'])
 				continue;
@@ -230,7 +235,7 @@ use \e10\base\libs\UtilsBase;
 
 		if (isset($statsData['extModules']))
 		{
-			$extModulesLabels = [];
+			//$extModulesLabels = [];
 			foreach ($statsData['extModules'] as $emId => $em)
 			{
 				if ($emId === 'mac')
@@ -240,11 +245,13 @@ use \e10\base\libs\UtilsBase;
 
 					if (isset($em['lan']) && isset($em['lan']['countDevices']['ALL']))
 					{
+						/*
 						$extModulesLabels[] = [
 							'text' => 'Počítačová síť',
 							'suffix' => utils::nf($cntLANDevices).' zařízení',
 							'icon' => 'system/iconSitemap', 'class' => 'label label-info'
 						];
+						*/
 						$plan['extModulesPoints'] += intval($em['lan']['countDevices']['ALL']);
 
 						if ($cntLANDevices)
@@ -262,18 +269,68 @@ use \e10\base\libs\UtilsBase;
 					}
 					if (isset($em['lan']) && isset($em['lan']['countDevices']['10']))
 					{
+						/*
 						$extModulesLabels[] = [
 							'text' => 'Kamerový systém',
 							'suffix' => utils::nf($cntCams).' kamer',
 							'icon' => 'user/videoCamera', 'class' => 'label label-info'
 						];
-
+						*/
 						$oneCamPrice = $planPriceCam;
 						$extraPrice = $cntCams * $oneCamPrice;
 						$plan['extraCharges']['charges'][] = [
 							'price' => $extraPrice,
 							'legend' => $cntCams.' kamer × '.$oneCamPrice,
 							'icon' => 'user/videoCamera',
+						];
+
+						$plan['extraCharges']['total'] += $extraPrice;
+					}
+
+					/*
+					if (isset($em['iot']) && isset($em['iot']['countDevices']['ALL']))
+					{
+						$extModulesLabels[] = [
+							'text' => 'Počítačová síť',
+							'suffix' => utils::nf($cntLANDevices).' zařízení',
+							'icon' => 'system/iconSitemap', 'class' => 'label label-info'
+						];
+						$plan['extModulesPoints'] += intval($em['iot']['countDevices']['ALL']);
+
+						if ($cntLANDevices)
+						{
+							$oneDevicePrice = $planPriceLANDevice;
+							$extraPrice = $cntLANDevices * $oneDevicePrice;
+							$plan['extraCharges']['charges'][] = [
+								'price' => $extraPrice,
+								'legend' => $cntLANDevices.' zařízení × '.$oneDevicePrice,
+								'icon' => 'system/iconSitemap',
+							];
+						}
+
+						$plan['extraCharges']['total'] += $extraPrice;
+					}
+					*/
+				}
+
+				if ($emId === 'zus')
+				{
+					if (isset($em['studies']) && isset($em['studies']['count']['ALL']))
+					{
+						/*
+						$extModulesLabels[] = [
+							'text' => 'ZUŠ',
+							'suffix' => Utils::nf($em['studies']['count']['ALL']).' studií',
+							'icon' => 'tables/e10pro.zus.predmety', 'class' => 'label label-info'
+						];
+						*/
+
+						$cntStudies = intval($em['studies']['count']['ALL']);
+						$extraPrice = $cntStudies * $planPriceZUSStudium;
+						$plan['extraCharges']['charges'][] = [
+							'price' => $extraPrice,
+							'legend' => $cntStudies.' studií × '.$planPriceZUSStudium,
+							'icon' => 'tables/e10pro.zus.predmety',
 						];
 
 						$plan['extraCharges']['total'] += $extraPrice;
