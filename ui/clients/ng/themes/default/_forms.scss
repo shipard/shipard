@@ -1,5 +1,5 @@
 .form-check-input[type=radio]:not(.form-check-input:checked) {
-	border: 4px solid var(--universalBorder);
+	border: 4px solid var(--shpd-universal-border);
 }
 
 .form-check-input[type=checkbox] {
@@ -8,7 +8,7 @@
 }
 
 .form-check-input{
-    border: 3pt solid var(--universalBorder) !important;
+    border: 3pt solid var(--shpd-universal-border) !important;
 }
 
 /*.form-floating input {
@@ -46,7 +46,7 @@ data-modal-form-env {
         max-width: 30em;
 
 
-        background-color: var(--bodyBg);
+        background-color: var(--shpd-body-bg);
       }
 
       .formHeader { grid-area: header; }
@@ -102,7 +102,7 @@ data-modal-env {
   height: 100vh;
 
   >div, >data-viewer, >document-card {
-    background-color: var(--bodyBg);
+    background-color: var(--shpd-body-bg);
   }
 }
 

@@ -25,10 +25,10 @@
   }*/
 
 table.priceList {
-    border: 1pt solid var(--universalBorder); border-style: hidden; border-radius: 5px; border-style: hidden; box-shadow: 0 0 0 1px var(--universalBorder); border-collapse: collapse;
-    background-color: var(--cardBackground);
+    border: 1pt solid var(--shpd-universal-border); border-style: hidden; border-radius: 5px; border-style: hidden; box-shadow: 0 0 0 1px var(--shpd-universal-border); border-collapse: collapse;
+    background-color: var(--shpd-card-bg);
     tr {
-        border-bottom: 1px solid var(--universalBorder);
+        border-bottom: 1px solid var(--shpd-universal-border);
     }
     td
     {

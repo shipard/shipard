@@ -3,28 +3,30 @@
 }
 
 .app-nav nav {
-    background-color: var(--navBackground);
-    border-bottom: 1px solid var(--navBorder);
+    background-color: var(--shpd-nav-top-bg);
+    border-bottom: 1px solid var(--shpd-nav-border);
     a {
         color: var(--navColor);
     }
 }
 
 .navbar-nav .list-group a {
-    color: var(--navColor);
+    color: var(--shpd-nav-color);
 }
 
 button.navbar-toggler {
-    color: var(--navColor);
+    color: var(--shpd-nav-color);
 }
 
-.app-nav a.navbar-brand {
+.app-nav {
+    a.navbar-brand {
     padding-left: .5rem;
-}
+    }
 
-.app-nav .shp-badge {
-    font-size: 14pt;
-    color: var(--bs-body-color);
+    .shp-badge {
+        font-size: 14pt;
+        color: var(--shpd-body-color);
+    }
 }
 
 .navbar h4 {
@@ -36,18 +38,26 @@ button.navbar-toggler {
     border: none;
 }
 
+//for simple app - menu + offcanvas menu (student name,...)
 div.offcanvas, div.app-menu {
-	background-color: var(--navBackground);
+    background-color: var(--shpd-nav-bg);
     .navListIcon {
         padding-right: .5rem;
     }
     .list-group-item {
         padding-top: .7rem;
         padding-bottom: .7rem;
+        background-color: var(--shpd-nav-bg);
+        border-bottom: 1px solid var(--shpd-nav-border) !important; //list don't have last bottom border
     }
     .list-group-item.active {
-        background-color: #{$shipard-primary};
-        border-color: #{$shipard-primary};
+        /* background-color: #{$shipard-primary}; */
+        background-color: var(--shpd-primary-subtle);
+        color: #101010;
+        border-top: 1px solid var(--shpd-nav-border);
+    }
+    .list-group-item:hover{
+        background-color: var(--shpd-hover-bg);
     }
 }
 

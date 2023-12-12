@@ -1,13 +1,14 @@
 ol.list-group {
-    border: 1pt solid var(--listBorder);
+    border: 1pt solid var(--shpd-list-border);
+    color: green !important;
     .list-group-item {
-        background-color: var(--listBackground);
+        background-color: var(--shpd-list-bg);
         border: none;
     }
     .list-group-item:not(:last-child) {
-        border-bottom: 1px solid var(--listBorder);
+        border-bottom: 1px solid var(--shpd-list-border);
     }
 }
 .list-group-flush .list-group-item {
-    border-bottom: 1pt solid var(--universalBorder);
+    border-bottom: 1pt solid var(--shpd-universal-border);
 }

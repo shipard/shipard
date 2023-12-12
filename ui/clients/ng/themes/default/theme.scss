@@ -1,23 +1,3 @@
-/*:root {
-  --accentColor: #93C572;
- --navBackground: #E8E8E8;
- --primaryColumn: whitesmoke;
- --secondaryColumn: white;
- --columnSeparator: gainsboro;
- --numpadBackground: whitesmoke;
- --numpadColor: #383838;
- --numpadBorder: silver;
- --numpadClose: gainsboro;
- --numpadOk: var(--accentColor);
- --itemBorder: gainsboro;
- --cardBackground: white;
-}*/
-
-
-
-
-
-
 body > div.fullScreenModal {
   position: absolute;
   width: 100vw;
@@ -33,6 +13,12 @@ body > div.fullScreenModal {
   justify-content: center;
   align-items: center;
   align-content: stretch;
+}
+
+
+div.app-container {
+  background-color: var(--shpd-body-bg);
+  color: var(--shpd-body-color) !important;
 }
 
 div.shp-numpad-container {
@@ -100,33 +86,13 @@ body {
   height: 100vh;
  }
 
- div.e10-widget-terminal {height: 100%;}
-/*
- .app-container {
-   height: 100vh;
-   display: grid;
-   grid-template-columns: 1fr;
-   grid-template-rows: min-content 1fr min-content;
-   gap: 0px 0px;
-   grid-auto-flow: row;
-   grid-template-areas:
-     "app-nav"
-     "app-content"
-     "app-footer";
- }
-*/
+div.e10-widget-terminal {height: 100%;}
 
-/*
- .app-content { grid-area: app-content; min-height: 0; overflow-y: auto;}
-
-.app-footer { grid-area: app-footer;}
-*/
-
-
-
-
+// delete after defining numpad
 $shipard-primary: #93C572;
 $shipard-secondary: #A9A9A9;
+
+
 
 $label-default: #CCCCCC;
 $label-success: #009933;
@@ -136,75 +102,29 @@ $label-danger: #CC0000;
 $label-color-darks: #F0F0F0; /*text color for darker labels*/
 $label-color-lights: #212529; /*text color for lighter labels*/
 
-/* menu - simple app*/
-$nav-bg-light: #E8E8E8;
-$nav-bg-dark: #303030;
-$nav-border-light: gainsboro;
-$nav-border-dark: #202020;
+:root {
+  --shpd-docstate-concept: #fff973;
+  --shpd-docstate-new: #040304;
+  --shpd-docstate-done: #c4e3a6;
+  --sphd-docstate-halfdone: #BDD0F2;
+  --shpd-docstate-confirmed: #BDD0F2;
+  --shpd-docstate-edit: #ffcb6c;
+  --shpd-docstate-delete: #262626;
+  --shpd-docstate-cancel: #ff4040;
+  --shpd-docstate-archive: #d1d1d1;
+  --shpd-docstate-nostate: transparent;
+}
 
-/* menu - full app */
-$menu-bg-light: #E8E8E8; /*for side menu + toolbar - .menu-content*/
-$menu-bg-dark: #303030;
-$menu-border-light: gainsboro;
-$menu-border-dark: #202020;
-  /* bottom tabs in menu ^*/
-  $menu-tabs-bg-light: gainsboro;
-  $menu-tabs-bg-dark: #202020;
-  $menu-active-bg-light: #C8C8C8;
-  $menu-active-bg-dark: #505050;
-  /* top row in full app - user name/database name */
-  $menu-top-bg-light: gainsboro;
-  $menu-top-bg-dark: #202020;
-
-
-$hover-menu-bg-light: lightgray;
-$hover-menu-bg-dark: #606060;
-$hover-nav-bg-light: white;
-$hover-nav-bg-dark: #696969;
-$hover-viewer-bg-light: gainsboro;
-$hover-viewer-bg-dark: #505050;
-
-
-$docstate-concept: #fff973;
-$docstate-new: #040304;
-$docstate-done: #c4e3a6;
-$docstate-halfdone: #BDD0F2;
-$docstate-confirmed: #BDD0F2;
-$docstate-edit: #ffcb6c;
-$docstate-delete: #262626;
-$docstate-cancel: #ff4040;
-$docstate-archive: #d1d1d1;
-$docstate-nostate: transparent;
-
-$card-bg-light: white;
-$card-bg-dark: #505050;
-$card-border-light: gainsboro;
-$card-border-dark: dimgray;
-$list-bg-light: white;
-$list-bg-dark: #505050;
-$list-border-light: gainsboro;
-$list-border-dark: dimgray;
 $nav-pills-color-light: black;
 $nav-pills-color-dark: whitesmoke;
 $numpad-bg-light: whitesmoke;
-/*$numpad-bg-dark: #404040;*/
 $numpad-bg-dark: #585858;
-/*--numpadColor: #383838;*/
 $numpad-border-light: silver;
 $numpad-border-dark: dimgray;
 $numpad-close-light: gainsboro;
 $numpad-close-dark: gray;
 $numpad-ok: $shipard-primary;
 $dashboard-button-color: black;
-$accordion-bg-light: white;
-$accordion-bg-dark: #505050;
-/*$accordion-bg-dark: #585858;*/
-$accordion-border-light: gainsboro;
-$accordion-border-dark: dimgray;
-$universal-border-light: gainsboro;
-$universal-border-dark: #696969;
-$list-border-light: gainsboro;
-$list-border-dark: #606060;
 $calendar-inactive-light: #E8E8E8;
 $calendar-inactive-dark: #282828;
 $calendar-today: rgb(147,197,114,0.7);
@@ -230,11 +150,6 @@ $theme-colors: (
   "dark": $dark,
 );
 
-$body-bg-dark: #383838;
-/*$body-bg-dark: #404040;*/
-$body-bg: whitesmoke;
-/*$body-color-dark: #adb5bd;*/
-/*$body-color-dark: #D8D8D8;*/
 $body-color-dark: #F0F0F0;
 $body-color: #212529;
 
@@ -270,9 +185,14 @@ $popover-body-padding-y: .5rem;
 $popover-body-padding-x: .5rem;
 
 
+
+
+
+
+
 @import "../../../../../www-root/sc/bs/5.3/scss/bootstrap.scss";
 
-@import "_colors.scss";
+//@import "_colors.scss";
 @import "_docStates.scss";
 @import "_calendar.scss";
 @import "_cashbox.scss";
@@ -290,4 +210,5 @@ $popover-body-padding-x: .5rem;
 @import "_viewers.scss";
 @import "_tables.scss";
 @import "_menu.scss";
-
+@import "_colorsLight.scss";
+//@import "_colorsDark.scss";

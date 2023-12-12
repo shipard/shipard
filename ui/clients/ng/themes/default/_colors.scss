@@ -1,40 +1,89 @@
+/*  light mode */
 :root {
-    --bodyColor: #{$body-color};
-    --bodyBg: #{$body-bg};
+    --shpdPrimary: #{$shpd-primary-light};
+    --shpdPrimarySubtle: #{$shpd-primary-subtle-light};
+    --shpdPrimaryGray: #{$shpd-primary-gray-light};
+
+    --bodyColor: #{$shpd-body-color-light};
+    --bodyBackground: #{$shpd-gray-100};
 
     /*simple app menu */
-    --navBackground: #{$nav-bg-light};
+    --navBackground: #{$shpd-gray-200};
     --navColor: #{$navbar-light-color};
-    --navBorder: #{$nav-border-light};
+    --navBorder: #{$shpd-gray-300}; // ?????
 
     /* full app menu */
-    --menuBackground: #{$menu-bg-light};
-    --menuBorder: #{$menu-border-light};
-        /* bottom tabs in menu */
-        --menuTabsBackground: #{$menu-tabs-bg-light};
-        --menuActiveBackground: #{$menu-active-bg-light};
-        /* top row with info - user name/app name */
-        --menuTopBackground: #{$menu-top-bg-light};
+    --menuBackground: #{$shpd-gray-200};
+    --menuBorder: #{$shpd-gray-300};
+    --menuActiveBackground: #{$shpd-gray-400}; // for every active
+    --menuTabsBackground: #{$shpd-gray-300}; // bottom tabs in menu
+    --menuTopBackground: #{$shpd-gray-400}; // top row with info - user name/app name
+    --menuHandleBackground: #{$shpd-gray-500}; // left column after minimizing menu
 
-    --cardBackground: #{$card-bg-light};
-    --cardBorder: #{$card-border-light};
-    --listBackground: #{$list-bg-light};
-    --listBorder: #{$list-border-light};
+    --hoverBackground: #{$shpd-primary-gray-light};
+    --viewerRowActive: #{$shpd-primary-subtle-light};
+    --universalBorder: #{$shpd-gray-300};
+    --cardBackground: #{$shpd-white};
+    --cardBorder: #{$shpd-gray-200};
+    --listBackground: #{$shpd-white};
+    --listBorder: #{$shpd-gray-200};
+    --accordionBackground: #{$shpd-white};
+    --accordionBorder: #{$shpd-gray-200};
+
+
     --navPillsColor: #{$nav-pills-color-light};
     --numpadBackground: #{$numpad-bg-light};
     --numpadBorder: #{$numpad-border-light};
     --numpadClose: #{$numpad-close-light};
     --dashboardButtonColor: #{$dashboard-button-color};
-    --accordionBackground: #{$accordion-bg-light};
-    --accordionBorder: #{$accordion-border-light};
-    --universalBorder: #{$universal-border-light};
     --calendarInactive: #{$calendar-inactive-light};
     --popoverBg: #{$popover-bg-light};
-    --hoverMenuBackground: #{$hover-menu-bg-light};
-    --hoverNavBackground: #{$hover-nav-bg-light};
-    --hoverViewerBackground: #{$hover-viewer-bg-light};
 }
 
+/* dark mode */
+[data-bs-theme="dark"] {
+    --shpdPrimary: #{$shpd-primary-dark};
+    --shpdPrimarySubtle: #{$shpd-primary-subtle-dark};
+    --shpdPrimaryGray: #{$shpd-primary-gray-dark};
+
+    --bodyColor: #{$shpd-body-color-dark};
+    --bodyBackground: #{$shpd-gray-700};
+
+    /*simple app menu */
+    --navBackground: #{$shpd-gray-800};
+    --navColor: #{$navbar-dark-color};
+    --navBorder: #{$shpd-gray-900};
+
+    /* full app menu */
+    --menuBackground: #{$shpd-gray-800};
+    --menuBorder: #{$shpd-gray-900};
+    --menuActiveBackground: #{$shpd-gray-600}; // for every active
+    --menuTabsBackground: #{$shpd-gray-900}; // bottom tabs in menu
+    --menuTopBackground: #{$shpd-gray-900}; // top row with info - user name/app name
+    --menuHandleBackground: #{$shpd-gray-600}; // left column after minimizing menu
+
+    --hoverBackground: #{$shpd-primary-gray-dark};
+    --viewerRowActive: #{$shpd-primary-subtle-dark};
+    --universalBorder: #{$shpd-gray-500};
+    --cardBackground: #{$shpd-gray-600};
+    --cardBorder: #{$shpd-gray-500};
+    --listBackground: #{$shpd-gray-600};
+    --listBorder: #{$shpd-gray-500};
+    --accordionBackground: #{$shpd-gray-600};
+    --accordionBorder: #{$shpd-gray-500};
+
+
+
+    --navPillsColor: #{$nav-pills-color-dark};
+    --numpadBackground: #{$numpad-bg-dark};
+    --numpadBorder: #{$numpad-border-dark};
+    --numpadClose: #{$numpad-close-dark};
+    --dashboardButtonColor: #{$dashboard-button-color};
+    --calendarInactive: #{$calendar-inactive-dark};
+    --popoverBg: #{$popover-bg-dark};
+}
+
+/* secondary button */
 .btn-outline-secondary
 {
     /*--bs-btn-bg: transparent;*/
@@ -42,131 +91,38 @@
     --bs-btn-hover-bg: transparent;
 }
 
+[data-bs-theme="dark"] .btn-outline-secondary {
+    /*--bs-btn-bg: transparent;*/
+    --bs-btn-color: $shpd-gray-100;
+    --bs-btn-hover-bg: transparent;
+}
+
+/* accordion */
 .accordion-button:not(.collapsed){
-    --bs-accordion-active-bg: #F8F8F8;
+    --bs-accordion-active-bg: $shpd-gray-100;
 }
 
 .accordion {
     --bs-accordion-active-color: var(--bs-btn-hover-color);
-	--bs-accordion-active-bg: #E8E8E8;
-    --bs-accordion-bg: #FFFFFF !important;
-
-}
-
-.navbar, .app-menu .list-group {
-    --bs-list-group-bg: var(--navBackground) !important;
-}
-
-[data-bs-theme="dark"] {
-    --bodyColor: #{$body-color-dark};
-    --bodyBg: #{$body-bg-dark};
-
-    /*simple app menu */
-    --navBackground: #{$nav-bg-dark};
-    --navColor: #{$navbar-dark-color};
-    --navBorder: #{$nav-border-dark};
-
-    /* full app menu */
-    --menuBackground: #{$menu-bg-dark};
-    --menuBorder: #{$menu-border-dark};
-        /* bottom tabs in menu */
-        --menuTabsBackground: #{$menu-tabs-bg-dark};
-        --menuActiveBackground: #{$menu-active-bg-dark};
-        /* top row with info - user name/app name */
-        --menuTopBackground: #{$menu-top-bg-dark};
-
-    --cardBackground: #{$card-bg-dark};
-    --cardBorder: #{$card-border-dark};
-    --listBackground: #{$list-bg-dark};
-    --listBorder: #{$list-border-dark};
-    --navPillsColor: #{$nav-pills-color-dark};
-    --numpadBackground: #{$numpad-bg-dark};
-    --numpadBorder: #{$numpad-border-dark};
-    --numpadClose: #{$numpad-close-dark};
-    --dashboardButtonColor: #{$dashboard-button-color};
-    --accordionBackground: #{$accordion-bg-dark};
-    --accordionBorder: #{$accordion-border-dark};
-    --universalBorder: #{$universal-border-dark};
-    --calendarInactive: #{$calendar-inactive-dark};
-    --popoverBg: #{$popover-bg-dark};
-    --hoverMenuBackground: #{$hover-menu-bg-dark};
-    --hoverNavBackground: #{$hover-nav-bg-dark};
-    --hoverViewerBackground: #{$hover-viewer-bg-dark};
-}
-
-[data-bs-theme="dark"] .btn-outline-secondary {
-    /*--bs-btn-bg: transparent;*/
-    --bs-btn-color: whitesmoke;
-    --bs-btn-hover-bg: transparent;
+	--bs-accordion-active-bg: $shpd-gray-200;
+    --bs-accordion-bg: $shpd-white !important;
 }
 
 [data-bs-theme="dark"] .accordion-button:not(.collapsed){
-    --bs-accordion-active-bg: #404040;
-    ;
+    --bs-accordion-active-bg: $shpd-gray-700;
 }
 
 [data-bs-theme="dark"] .accordion {
-    --bs-accordion-active-color: gainsboro;
-	--bs-accordion-active-bg: #303030;
-    --bs-accordion-bg: #505050 !important;
+    --bs-accordion-active-color: $shpd-gray-200;
+	--bs-accordion-active-bg: $shpd-gray-800;
+    --bs-accordion-bg: $shpd-gray-600 !important;
+}
+
+/* navbar (simple app) */
+.navbar, .app-menu .list-group {
+    --bs-list-group-bg: var(--navBackground) !important;
 }
 
 [data-bs-theme="dark"] .navbar, [data-bs-theme="dark"] .app-menu .list-group {
     --bs-list-group-bg: var(--navBackground) !important;
 }
-
-/*:root {
-    --backgroundColor: whitesmoke;
-    --primaryBackground: whitesmoke;
-	--secondaryBackground: white;
-    --columnSeparator: gainsboro;
-}
-
-div.app-content, .btn-primary, .btn-outline-primary, .btn-success, .btn-outline-success, ul.nav-pills, nav.navbar, a.navbar-brand, .row
-{
-    --bs-btn-bg: silver;
-    --bs-btn-border-color: silver;
-    --bs-btn-color: black;
-    --bs-btn-hover-bg: gainsboro;
-    --bs-btn-hover-color: black;
-    --bs-btn-hover-border-color: gainsboro;
-    --bs-nav-pills-link-active-bg: var(--accentColor);
-    --bs-nav-pills-link-active-color: black;
-    --bs-nav-link-color: black;
-    --bs-nav-link-hover-color: var(--accentColor);
-    --bs-navbar-hover-color: var(--accentColor);
-    --bs-btn-active-bg: var(--accentColor);
-    --bs-btn-active-border-color: var(--accentColor);
-    --bs-btn-active-color: black;
-}
-
-[data-bs-theme="dark"] {
-    --backgroundColor: #505050;
-    --primaryBackground: #505050;
-	--secondaryBackground: #404040;
-    --columnSeparator: #303030;
-}
-
-[data-bs-theme="dark"] div.app-content,
-[data-bs-theme="dark"] .btn-primary,
-[data-bs-theme="dark"] button.btn-success,
-[data-bs-theme="dark"] .btn-outline-success,
-[data-bs-theme="dark"] ul.nav-pills,
-[data-bs-theme="dark"] nav.navbar,
-[data-bs-theme="dark"] a.navbar-brand {
-    --bs-btn-bg: gray;
-    --bs-btn-border-color: gray;
-    --bs-btn-color: whitesmoke;
-    --bs-btn-hover-bg: gainsboro;
-    --bs-btn-hover-color: black;
-    --bs-btn-hover-border-color: gainsboro;
-    --bs-nav-pills-link-active-bg: var(--accentColor);
-    --bs-nav-pills-link-active-color: black;
-    color: whitesmoke;
-    --bs-nav-link-color: whitesmoke;
-    --bs-nav-link-hover-color: var(--accentColor);
-    --bs-navbar-hover-color: var(--accentColor);
-    --bs-btn-active-bg: var(--accentColor);
-    --bs-btn-active-border-color: var(--accentColor);
-    --bs-btn-active-color: black;
-}*/

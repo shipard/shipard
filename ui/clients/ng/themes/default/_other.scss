@@ -1,6 +1,6 @@
 .card {
-	background-color: var(--cardBackground);
-    border-color: var(--cardBorder);
+	background-color: var(--shpd-card-bg);
+    border-color: var(--shpd-card-border);
 }
 
 a.card {
@@ -18,23 +18,23 @@ a.card {
 
 /*toggle*/
 .form-check-input:checked {
-	background-color: #{$shipard-primary};
-	border-color: #{$shipard-primary};
+	background-color: var(--shpd-primary);
+	border-color: var(--shpd-primary);
 }
 
 .accordion {
 	margin-top: 1rem;
-	border: 1pt solid var(--accordionBorder);
+	border: 1pt solid var(--shpd-accordion-border);
 	.accordion-header {
 		padding: 0;
-		background-color: var(--accordionBackground);
+		background-color: var(--shpd-accordion-bg);
 	}
 	li {
 		background-color: transparent;
 		border: none;
 	}
 	li:first-child {
-		border-top: 1pt solid var(--accordionBorder) !important;
+		border-top: 1pt solid var(--shpd-accordion-border) !important;
 	}
 	ol.list-group{
 	border: none !important;
@@ -42,7 +42,7 @@ a.card {
   }
 
 .accordion-body {
-	background-color: var(--accordionBackground);
+	background-color: var(--shpd-accordion-bg);
 	padding: 0;
 }
 
@@ -51,7 +51,7 @@ ol.grades li.list-group-item {
 }
 
 ol.grades li.list-group-item:not(:last-child){
-	border-bottom: 1px solid var(--accordionBorder);
+	border-bottom: 1px solid var(--shpd-accordion-border);
 }
 
 .tag {
@@ -74,7 +74,7 @@ ol.grades li.list-group-item:not(:last-child){
 }
 
 a {
-	color: var(--bodyColor);
+	color: var(--shpd-body-color);
 }
 
 /*rows in receipts*/

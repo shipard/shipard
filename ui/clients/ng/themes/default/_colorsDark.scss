@@ -1,0 +1,66 @@
+:root {
+    --shpd-primary: #00508A;
+    --shpd-primary-subtle: #7FA7C4;
+    --shpd-primary-gray: #485056;
+
+    --shpd-100: #808080;
+    --shpd-200: #505050;
+    --shpd-300: #404040;
+    --shpd-400: #303030;
+    --shpd-500: #202020;
+
+    --shpd-body-color: #F0F0F0;
+    --shpd-body-bg: --shpd-300;
+
+    /*simple app menu */
+    --shpd-nav-bg: --shpd-400;
+    --shpd-nav-top-bg: --shpd-500;
+    --shpd-nav-color: #D8D8D8;
+    --shpd-nav-border: --shpd-500;
+
+    /* full app menu */
+    --shpd-menu-bg: --shpd-400;
+    --shpd-menu-border: --shpd-500;
+    --shpd-menu-active-bg: --shpd-200; // for every active
+    --shpd-menu-tabs-bg: --shpd-500; // bottom tabs in menu
+    --shpd-menu-top-bg: --shpd-500; // top row with info - user name/app name
+    --shpd-menu-handle-bg: --shpd-200; // left column after minimizing menu
+
+    --shpd-hover-bg: --shpd-primary-gray;
+    --shpd-viewer-row-active: --shpd-primary-subtle;
+    --shpd-universal-border: --shpd-100;
+    --shpd-card-bg: --shpd-200;
+    --shpd-card-border: --shpd-100;
+    --shpd-list-bg: --shpd-200;
+    --shpd-list-border: --shpd-100;
+    --shpd-accordion-bg: --shpd-200;
+    --shpd-accordion-border: --shpd-100;
+
+    --navPillsColor: #F5F5F5;
+    --numpadBackground: #585858;
+    --numpadBorder: #696969;
+    --numpadClose: #808080;
+    --dashboardButtonColor: #000;
+    --calendarInactive: #282828;
+    --popoverBg: #505050;
+}
+
+.accordion-button:not(.collapsed){
+    --bs-accordion-active-bg: var(--shpd-300);
+}
+
+.accordion {
+    --bs-accordion-active-color: #DCDCDC;
+	--bs-accordion-active-bg: var(--shpd-400);
+    --bs-accordion-bg: var(---shpd-200) !important;
+}
+
+/* delete?
+[data-bs-theme="dark"] .navbar, [data-bs-theme="dark"] .app-menu .list-group {
+    --bs-list-group-bg: var(--shpd-nav-bg) !important;
+}*/
+
+.btn-outline-secondary {
+    --bs-btn-color: var(--shpd-body-color);
+    --bs-btn-hover-bg: transparent;
+}
