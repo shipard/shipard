@@ -67,13 +67,16 @@ function createNewPerson (\Shipard\Application\Application $app, $personData)
 	{
 		forEach ($personData ['address'] as $address)
 		{
-			$newAddress = array ('tableid' => 'e10.persons.persons', 'recid' => $newPersonNdx);
+			$newAddress = ['tableid' => 'e10.persons.persons', 'recid' => $newPersonNdx];
 			utils::addToArray ($newAddress, $address, 'specification', '');
 			utils::addToArray ($newAddress, $address, 'street', '');
 			utils::addToArray ($newAddress, $address, 'city', '');
 			utils::addToArray ($newAddress, $address, 'zipcode', '');
 			utils::addToArray ($newAddress, $address, 'worldCountry', World::countryNdx($app, $app->cfgItem ('options.core.ownerDomicile', 'cz')));
 			utils::addToArray ($newAddress, $address, 'country', $app->cfgItem ('options.core.ownerDomicile', 'cz'));
+			utils::addToArray ($newAddress, $address, 'docState', 4000);
+			utils::addToArray ($newAddress, $address, 'docStateMain', 2);
+
 			$app->db->query ("INSERT INTO [e10_persons_address]", $newAddress);
 		}
 	}
@@ -1498,7 +1501,7 @@ class Authenticator extends \Shipard\Application\Authenticator
 		if ($forUserNdx !== 0)
 			$userNdx = $forUserNdx;
 		else
-			$userNdx = $this->app->user()->data ('id');
+			$userNdx = $this->app->userNdx();
 		$groups = array ();
 		$rows = $this->app->db->query ('SELECT * FROM [e10_persons_personsgroups] WHERE [person] = %i', $userNdx);
 		foreach ($rows as $r)
