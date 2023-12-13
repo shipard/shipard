@@ -10,31 +10,31 @@
     --shpd-500: #202020;
 
     --shpd-body-color: #F0F0F0;
-    --shpd-body-bg: --shpd-300;
+    --shpd-body-bg: var(--shpd-300);
 
     /*simple app menu */
-    --shpd-nav-bg: --shpd-400;
-    --shpd-nav-top-bg: --shpd-500;
+    --shpd-nav-bg: var(--shpd-400);
+    --shpd-nav-top-bg: var(--shpd-500);
     --shpd-nav-color: #D8D8D8;
-    --shpd-nav-border: --shpd-500;
+    --shpd-nav-border: var(--shpd-500);
 
     /* full app menu */
-    --shpd-menu-bg: --shpd-400;
-    --shpd-menu-border: --shpd-500;
-    --shpd-menu-active-bg: --shpd-200; // for every active
-    --shpd-menu-tabs-bg: --shpd-500; // bottom tabs in menu
-    --shpd-menu-top-bg: --shpd-500; // top row with info - user name/app name
-    --shpd-menu-handle-bg: --shpd-200; // left column after minimizing menu
+    --shpd-menu-bg: var(--shpd-400);
+    --shpd-menu-border: var(--shpd-500);
+    --shpd-menu-active-bg: (--shpd-200); // for every active
+    --shpd-menu-tabs-bg: var(--shpd-500); // bottom tabs in menu
+    --shpd-menu-top-bg: var(--shpd-500); // top row with info - user name/app name
+    --shpd-menu-handle-bg: var(--shpd-200); // left column after minimizing menu
 
-    --shpd-hover-bg: --shpd-primary-gray;
-    --shpd-viewer-row-active: --shpd-primary-subtle;
-    --shpd-universal-border: --shpd-100;
-    --shpd-card-bg: --shpd-200;
-    --shpd-card-border: --shpd-100;
-    --shpd-list-bg: --shpd-200;
-    --shpd-list-border: --shpd-100;
-    --shpd-accordion-bg: --shpd-200;
-    --shpd-accordion-border: --shpd-100;
+    --shpd-hover-bg: var(--shpd-primary-gray);
+    --shpd-viewer-row-active: var(--shpd-primary-subtle);
+    --shpd-universal-border: var(--shpd-100);
+    --shpd-card-bg: var(--shpd-200);
+    --shpd-card-border: var(--shpd-100);
+    --shpd-list-bg: var(--shpd-200);
+    --shpd-list-border: var(--shpd-100);
+    --shpd-accordion-bg: var(--shpd-200);
+    --shpd-accordion-border: var(--shpd-100);
 
     --navPillsColor: #F5F5F5;
     --numpadBackground: #585858;
