@@ -1,0 +1,31 @@
+{
+	"name": "Čidlo Kapacitní tlačítko",
+	"title": "Čidlo Kapacitní tlačítko",
+	"useValueKind": 1,
+	"fields": {
+		"columns": [
+			{
+				"id": "pin", "name": "Pin", "type": "enumString", "len":  10, "enumCfgFlags": {"type": "pin", "pinFlags":  ["in"]}
+			},
+			{
+				"id": "treshold", "name": "Detekční hodnota ", "type": "int", "placeholder": "40"
+			},
+			{
+				"id": "portIdBuzzer", "name": "IO port Bzučák", "type": "enumString", "len": 30, "enumCfgFlags": {"type": "ioPortId"}
+			},
+			{
+				"id": "ledStripFeedback", "name": "LED pásek", "type": "logical", "options": ["saveOnChange"]
+			},
+			{
+				"id": "portIdLedStrip", "name": "IO port LED pásek", "type": "enumString", "len": 30, "enumCfgFlags": {"type": "ioPortId"},
+        "enabled": {"ledStripFeedback": "1"}
+			},
+			{
+				"id": "ledStripPixel", "name": "Pořadí LED ", "type": "int", "placeholder": "0", "enabled": {"ledStripFeedback": "1"}
+			},
+      {
+        "id": "ledStripPixelColor", "name": "Barva", "type": "string", "len": 20, "placeholder": "FF0000", "enabled": {"ledStripFeedback": "1"}
+      }
+		]
+	}
+}

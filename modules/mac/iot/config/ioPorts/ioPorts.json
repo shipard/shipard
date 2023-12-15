@@ -41,6 +41,9 @@
 	"input/counter": {
 		"name": "Počitadlo impulsů", "sensor": 1
 	},
+	"input/capBtn": {
+		"name": "Čidlo - Kapacitní tlačítko", "sensor": 1
+	},
 
 	"sensor/meteo-dht": {
 		"name": "Meteo čidlo DHT22", "sensor": 1
