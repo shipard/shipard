@@ -1,0 +1,42 @@
+.shpd-card {
+    margin-top: .5rem;
+    margin-bottom: .5rem;
+    padding: 1rem !important;
+    background-color: var(--shpd-card-bg);
+    border: 1px solid var(--shpd-card-border);
+    border-radius: 6px;
+    word-wrap: break-word;
+    display: flex;
+    position: relative;
+    flex-direction: column;
+    pre {
+        white-space: break-spaces;
+        font-family: sans-serif;
+    }
+    h3.shpd-card-title {
+        text-align: center;
+        padding: 0 .5rem 0 .5rem;
+    }
+    .shpd-card-subtitle {
+        align-items: center;
+    }
+}
+
+/*
+.card {
+	background-color: var(--shpd-card-bg);
+    border-color: var(--shpd-card-border);
+}
+
+a.card {
+	text-decoration: none;
+}
+
+.card-body pre {
+	white-space: break-spaces;
+	font-family: sans-serif;
+}
+
+.card-body :last-child {
+	margin-bottom: 0 !important;
+}*/

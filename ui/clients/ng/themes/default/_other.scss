@@ -1,21 +1,3 @@
-.card {
-	background-color: var(--shpd-card-bg);
-    border-color: var(--shpd-card-border);
-}
-
-a.card {
-	text-decoration: none;
-}
-
-.card-body pre {
-	white-space: break-spaces;
-	font-family: sans-serif;
-}
-
-.card-body :last-child {
-	margin-bottom: 0 !important;
-}
-
 /*toggle*/
 .form-check-input:checked {
 	background-color: var(--shpd-primary);

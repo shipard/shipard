@@ -1,67 +1,106 @@
-.app-nav {
-    grid-area: app-nav;
-}
-
-.app-nav nav {
-    background-color: var(--shpd-nav-top-bg);
-    border-bottom: 1px solid var(--shpd-nav-border);
-    a {
-        color: var(--navColor);
-    }
-}
-
-.navbar-nav .list-group a {
-    color: var(--shpd-nav-color);
-}
-
-button.navbar-toggler {
-    color: var(--shpd-nav-color);
-}
-
-.app-nav {
-    a.navbar-brand {
-    padding-left: .5rem;
+.app-container-simple {
+    .app-nav { // seperate from visual css
+        grid-area: app-nav;
     }
 
-    .shp-badge {
-        font-size: 14pt;
-        color: var(--shpd-body-color);
+    .app-nav {
+        background-color: var(--shpd-nav-top-bg);
+        border-bottom: 1px solid var(--shpd-nav-border);
+        a {
+            color: var(--navColor);
+        }
+        a.navbar-brand {
+            padding-left: .5rem;
+        }
+        .shp-badge {
+            font-size: 14pt;
+            color: var(--shpd-body-color);
+        }
+        /* new css */
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        padding: .5rem;
+        font-size: 1.25rem;
     }
-}
 
-.navbar h4 {
-	margin-bottom: 0;
-	padding: .5rem;
-}
+    /*.navbar-nav .list-group a {
+        color: var(--shpd-nav-color);
+    }*/
 
-.navbar-toggler {
-    border: none;
-}
-
-//for simple app - menu + offcanvas menu (student name,...)
-div.offcanvas, div.app-menu {
-    background-color: var(--shpd-nav-bg);
-    .navListIcon {
-        padding-right: .5rem;
+    button.navbar-toggler{
+        color: var(--shpd-nav-color);
     }
-    .list-group-item {
-        padding-top: .7rem;
-        padding-bottom: .7rem;
+
+    .navbar h4 {
+        margin-bottom: 0;
+        padding: .5rem;
+    }
+
+    .navbar-toggler {
+        border: none;
+    }
+
+    //for simple app - menu + offcanvas menu (student name,...)
+    div.offcanvas, div.app-menu {
         background-color: var(--shpd-nav-bg);
-        border-bottom: 1px solid var(--shpd-nav-border) !important; //list don't have last bottom border
-    }
-    .list-group-item.active {
-        /* background-color: #{$shipard-primary}; */
-        background-color: var(--shpd-primary-subtle);
-        color: #101010;
-        border-top: 1px solid var(--shpd-nav-border);
-    }
-    .list-group-item:hover{
-        background-color: var(--shpd-hover-bg);
-    }
-}
+        .shpd-nav {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            .shpd-nav-item {
+                padding-top: .7rem;
+                padding-bottom: .7rem;
+                padding-left: .5rem;
+                background-color: var(--shpd-nav-bg);
+                border-bottom: 1px solid var(--shpd-universal-border);
+                text-decoration: none;
+                width: 100%;
+                text-align: inherit;
+                display: block;
+                position: relative;
+            }
+            .shpd-nav-item.active {
+                background-color: var(--shpd-primary-subtle);
+                color: #101010;
+            }
+            .shpd-nav-item:hover{
+                background-color: var(--shpd-hover-bg);
+            }
+        }
 
-.offcanvas-body {
-    padding: 0 !important;
-    font-size: 110%;
+
+
+        .navListIcon {
+            padding-right: .5rem;
+        }
+        /*.list-group-item {
+            padding-top: .7rem;
+            padding-bottom: .7rem;
+            background-color: var(--shpd-nav-bg);
+            border-bottom: 1px solid var(--shpd-nav-border) !important; //list don't have last bottom border
+        }
+        .list-group-item.active {
+            background-color: var(--shpd-primary-subtle);
+            color: #101010;
+            border-top: 1px solid var(--shpd-nav-border);
+        }
+        .list-group-item:hover{
+            background-color: var(--shpd-hover-bg);
+        }*/
+    }
+
+    div.offcanvas {
+        button {
+            border: none;
+        }
+        button:first-child {
+            border-top: 1px solid var(--shpd-universal-border);
+        }
+    }
+
+    .offcanvas-body {
+        padding: 0 !important;
+        font-size: 110%;
+    }
 }

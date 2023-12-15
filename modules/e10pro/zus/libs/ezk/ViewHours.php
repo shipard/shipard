@@ -15,14 +15,14 @@ class ViewHours extends TableView
 	var $userContext = NULL;
 
 	var $presences = [
-		0 => ["title" => "Nezadáno", "icon" => "system/iconWarning", "class" => "text-danger"],
-		1 => ["title" => "Přítomen", "icon" => "user/check", "class" => "text-success"],
-		2 => ["title" => "Nepřítomen / omluven", "icon" => "user/timesCircle", "class" => "text-warning"],
-		2 => ["title" => "Nepřítomen / NEomluven", "icon" => "user/times", "class" => "text-danger"],
-		4 => ["title" => "Státní svátek", "icon" => "user/happy", "class" => "text-secondary"],
-		5 => ["title" => "Prázdiny", "icon" => "user/happy", "class" => "text-secondary"],
-		6 => ["title" => "Ředitelské volno", "icon" => "user/happy", "class" => "text-secondary"],
-		7 => ["title" => "Volno", "icon" => "user/happy", "class" => "text-secondary"],
+		0 => ["title" => "Nezadáno", "icon" => "system/iconWarning", "class" => "shpd-text-danger"],
+		1 => ["title" => "Přítomen", "icon" => "user/check", "class" => "shpd-text-success"],
+		2 => ["title" => "Nepřítomen / omluven", "icon" => "user/timesCircle", "class" => "shpd-text-warning"],
+		2 => ["title" => "Nepřítomen / NEomluven", "icon" => "user/times", "class" => "shpd-text-danger"],
+		4 => ["title" => "Státní svátek", "icon" => "user/happy", "class" => "shpd-text-secondary"],
+		5 => ["title" => "Prázdiny", "icon" => "user/happy", "class" => "shpd-text-secondary"],
+		6 => ["title" => "Ředitelské volno", "icon" => "user/happy", "class" => "shpd-text-secondary"],
+		7 => ["title" => "Volno", "icon" => "user/happy", "class" => "shpd-text-secondary"],
 	];
 
 	public function init ()
@@ -51,7 +51,7 @@ class ViewHours extends TableView
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
 
-		$listItem['class'] = 'card';
+		$listItem['class'] = 'shpd-card';
 
 		$listItem['card'] = [];
 
