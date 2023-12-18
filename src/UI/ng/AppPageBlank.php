@@ -154,7 +154,7 @@ class AppPageBlank extends Utility
 		$themeUrl = "$absUrl{$this->app->urlRoot}/www-root/.ui/ng/themes/" . $this->uiThemeId . "/$style?vv=".$this->uiThemeCfg['integrity']['sha384'];
 		$c .= "<link rel='stylesheet' type='text/css' href='$themeUrl'/>\n";
 
-		$c .= "\t<script type=\"text/javascript\">\nvar httpApiRootPath = '{$this->uiRouter->uiRoot}';var serverTitle=\"" . Utils::es ($this->app->cfgItem ('options.core.ownerShortName', '')) . "\";" .
+		$c .= "\t<script type=\"text/javascript\">\nvar httpApiRootPath = '{$this->uiRouter->uiRoot}'; const httpDSRootPath = '{$this->app()->dsRoot}'; var serverTitle=\"" . Utils::es ($this->app->cfgItem ('options.core.ownerShortName', '')) . "\";" .
 			"var remoteHostAddress = '{$_SERVER ['REMOTE_ADDR']}'; e10ClientType = " . json_encode ($this->app->clientType) . ";\n";
 		$c .= "var deviceId = '{$this->app->deviceId}';\n";
 		$c .= "var webSocketServers = ".json_encode($this->wss).";\n";

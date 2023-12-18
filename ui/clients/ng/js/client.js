@@ -241,7 +241,7 @@ class ShipardClient {
 		if (!linkElement)
 		{
 			linkElement = document.createElement('link');
-			linkElement.href = themeVariant.file+'?v='+themeVariant.integrity.sha384;
+			linkElement.href = httpDSRootPath + themeVariant.file+'?v='+themeVariant.integrity.sha384;
 			linkElement.type = 'text/css';
 			linkElement.rel = 'stylesheet';
 			linkElement.id = 'themeVariant';
@@ -249,7 +249,7 @@ class ShipardClient {
 		}
 		else
 		{
-			linkElement.href = themeVariant.file+'?v='+themeVariant.integrity.sha384;
+			linkElement.href = httpDSRootPath + themeVariant.file+'?v='+themeVariant.integrity.sha384;
 		}
 
 		document.body.setAttribute('data-shp-theme-variant', colorMode);
