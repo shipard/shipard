@@ -257,6 +257,15 @@ class ShpdUIApp
 					//$cmd = "export LC_ALL=en_US.UTF.8 && cd {$this->destPath} && sass $dstFileName $dstCssFileName --style compressed --no-source-map 2>&1";
 					$destCssFileName = $themeDestFolder.'style.css';
 					passthru ("cd $themePath && sass theme.scss --style compressed > $destCssFileName");
+					foreach ($theme['variants'] as $themeVariantId => $themeVariant)
+					{
+						$destCssVariantFileName = $themeDestFolder.$themeVariantId.'.css';
+						echo "      - {$themeVariantId}\n";
+						passthru ("cd $themePath && sass ".$themeVariant['file'].".scss --style compressed > $destCssVariantFileName");
+						$sha384 = hash_file('sha384', $destCssVariantFileName);
+						$themeFullList[$themeId]['variants'][$themeVariantId]['integrity']['sha384'] = $sha384;
+						$themeFullList[$themeId]['variants'][$themeVariantId]['file'] = '/www-root/.ui/ng/themes/'.$themeId.'/'.$themeVariantId.'.css';
+					}
 				}
 				else
 				{
