@@ -162,7 +162,7 @@ class AppPageBlank extends Utility
 		$c .= "var e10dsIcon = '{$dsIcon['iconUrl']}';\n";
 		$c .= "var e10dsIconServerUrl = '{$dsIcon['serverUrl']}';\n";
 		$c .= "var e10dsIconFileName = '{$dsIcon['fileName']}';\n";
-
+		$c .= "const uiThemesVariants = ".json_encode($this->uiThemeCfg['variants']).";\n";
 
 		$c .= "var e10ServiceWorkerURL = '{$this->uiRouter->uiRoot}sw.js';";
 		//$c .= "var e10ServiceWorkerURL = undefined;";

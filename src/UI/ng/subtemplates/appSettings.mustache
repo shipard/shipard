@@ -11,13 +11,15 @@
   {{/data.appSettings}}
 
   <ol class="list-group mb-2">
-    <div class="list-group-item align-items-center">
-      {{{@icon;icon:user/paintBrush}}}&nbsp;Motiv
-      <div class="btn-group ms-3 flex-grow-1">
-        <a class="shp-app-action btn btn-secondary" data-action='setColorMode' href="#" data-app-color-mode='auto'>Auto</a>
-        <a class="shp-app-action btn btn-secondary" data-action='setColorMode' href="#" data-app-color-mode='dark'>Tmavý</a>
-        <a class="shp-app-action btn btn-secondary" data-action='setColorMode' href="#" data-app-color-mode='light'>Světlý</a>
-      </div>
+    <div class="d-flex list-group-item align-items-center">
+      <label class="me-3">{{{@icon;icon:user/paintBrush}}}&nbsp;Motiv</label>
+      <select name="shp-theme-variant" id="input-shp-theme-variant" onchange="shc.setColorMode(event)">
+        <option value="auto">Auto</option>
+        {{#data.uiStruct.themeVariants}}
+          <option value='{{id}}'>{{name}}</option>
+        {{/data.uiStruct.themeVariants}}
+      </select>
+
     </div>
   </ol>
 

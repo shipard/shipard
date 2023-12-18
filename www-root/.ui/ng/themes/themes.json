@@ -2,9 +2,27 @@
   "default":{
     "id":"default",
     "name":"default ng theme",
+    "variants":{
+      "systemDefaultLight":{
+        "name":"sv\u011btl\u00e9",
+        "file":"\/www-root\/.ui\/ng\/themes\/default\/systemDefaultLight.css",
+        "dm":0,
+        "integrity":{
+          "sha384":"7c4cf88032f0856c7ebe9c61a223da27ff90ff019825df72c8dab7750b21fe7e0372265f8b9311e2f83000c9fec07dc1"
+        }
+      },
+      "systemDefaultDark":{
+        "name":"tmav\u00e9",
+        "file":"\/www-root\/.ui\/ng\/themes\/default\/systemDefaultDark.css",
+        "dm":1,
+        "integrity":{
+          "sha384":"185ecf560b91b588118be6b554ff718dbf85b51cc9560b08d0ef3331d7ceec0498a655481fc608948dccc268f1a37672"
+        }
+      }
+    },
     "integrity":{
-      "sha384":"d425cb05455e7942abfb410ab7a49ea65419b0a7b572d3f7948eb3f749cd94d915da4645639c01835a25810a7d9b93eb",
-      "md5":"1ea5bbe566efb43b4545c0a3208d85e3"
+      "sha384":"c7038147ca47873934ef8d04d7ac5f94b50be8542a12d8cb1a092ab82d395f61d55c512f60fb5b970144593e91aa6939",
+      "md5":"5f1a7e2fb17e27a5f82da9043e7738da"
     }
   }
 }

@@ -263,6 +263,14 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
         $active = 0;
       }
     }
+
+    $this->uiStruct['themeVariants'] = [];
+    foreach ($this->uiThemeCfg['variants'] as $themeVariantId => $themeVariant)
+    {
+      $tv = $themeVariant;
+      $tv['id'] = $themeVariantId;
+      $this->uiStruct['themeVariants'][] = $tv;
+    }
   }
 
   protected function createUIStructMenuItems($menuItems)

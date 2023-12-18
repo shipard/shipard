@@ -1,4 +1,16 @@
 {
 	"id": "default",
-	"name": "default ng theme"
+	"name": "default ng theme",
+	"variants": {
+		"systemDefaultLight": {
+			"name": "světlé",
+			"file": "_colorsLight",
+			"dm": 0
+		},
+		"systemDefaultDark": {
+			"name": "tmavé",
+			"file": "_colorsDark",
+			"dm": 1
+		}
+	}
 }

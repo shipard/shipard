@@ -174,10 +174,10 @@ class ShipardClient {
     this.numPad = abc;
   }
 
-	setColorMode(e)
+	setColorMode(event)
 	{
-		let colorMode = e.getAttribute('data-app-color-mode');
-		localStorage.setItem('shpAppColorMode', colorMode);
+		let colorMode = event.target.value;
+		localStorage.setItem('shpAppThemeVariant', colorMode);
 		this.doColorMode(colorMode);
 		return 0;
 	}
@@ -199,20 +199,23 @@ class ShipardClient {
 
 	initColorMode(firstCall)
 	{
+		//console.log("=== initColorMode ===", firstCall);
 		if (firstCall)
 		{
 			window.matchMedia('(prefers-color-scheme: dark)')
 				.addEventListener('change', function() {this.initColorMode()}.bind(this));
 		}
 
-		let colorMode = localStorage.getItem('shpAppColorMode');
-		if (!colorMode || colorMode === 'auto')
+		var colorMode = localStorage.getItem('shpAppThemeVariant');
+		const themeVariant = uiThemesVariants[colorMode];
+		//console.log("loadedColorMode: ", colorMode);
+		if (!themeVariant || !colorMode || colorMode === 'auto')
 		{
 			const isSystemDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
 			if (isSystemDarkMode)
-				colorMode = 'dark';
+				colorMode = 'systemDefaultDark';
 			else
-				colorMode = 'light';
+				colorMode = 'systemDefaultLight';
 		}
 
 		this.doColorMode(colorMode);
@@ -220,32 +223,50 @@ class ShipardClient {
 
 	doColorMode(colorMode)
 	{
-		if (colorMode === 'light')
-		{
-			document.body.removeAttribute('data-bs-theme');
-		}
-		else if (colorMode === 'dark')
-		{
-			document.body.setAttribute('data-bs-theme', 'dark');
-		}
-		else if (colorMode === 'auto')
+		if (colorMode === 'auto')
 		{
 			this.initColorMode();
+			return;
 		}
 
-		var uiColorMode = colorMode;
-		let savedColorMode = localStorage.getItem('shpAppColorMode');
-		if (!savedColorMode || savedColorMode === 'auto')
-			uiColorMode = 'auto';
-
-		let colorModeElements = document.querySelectorAll('[data-action="setColorMode"]');
-		for (let idx = 0; idx < colorModeElements.length; idx++)
+		const themeVariant = uiThemesVariants[colorMode];
+		if (!themeVariant)
 		{
-			if (colorModeElements[idx].getAttribute('data-app-color-mode') === uiColorMode)
-				colorModeElements[idx].classList.add('active');
-			else
-				colorModeElements[idx].classList.remove('active');
+			this.initColorMode();
+			return;
 		}
+
+		//console.log("themeVariant: ", themeVariant);
+		var linkElement = document.getElementById('themeVariant');
+		if (!linkElement)
+		{
+			linkElement = document.createElement('link');
+			linkElement.href = themeVariant.file+'?v='+themeVariant.integrity.sha384;
+			linkElement.type = 'text/css';
+			linkElement.rel = 'stylesheet';
+			linkElement.id = 'themeVariant';
+			document.getElementsByTagName('head')[0].appendChild(linkElement);
+		}
+		else
+		{
+			linkElement.href = themeVariant.file+'?v='+themeVariant.integrity.sha384;
+		}
+
+		document.body.setAttribute('data-shp-theme-variant', colorMode);
+		document.body.setAttribute('data-shp-dark-mode', themeVariant.dm);
+	}
+
+	setThemeVariantInput()
+	{
+		var inputElement = document.getElementById('input-shp-theme-variant');
+		if (!inputElement)
+			return;
+
+		let themeVariant = localStorage.getItem('shpAppThemeVariant');
+		if (!themeVariant)
+			themeVariant = 'auto';
+
+		inputElement.value = themeVariant;
 	}
 
   elementPrefixedAttributes (iel, prefix, data)
@@ -263,6 +284,8 @@ class ShipardClient {
 
 	initUI()
 	{
+		this.setThemeVariantInput();
+
 		if (!this.mainAppContent)
 			return 0;
 

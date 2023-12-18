@@ -332,24 +332,22 @@ actionId=e.getAttribute('data-action');this.doAction(actionId,e);}doAction(actio
 requestParams={};requestParams['object-class-id']=e.getAttribute('data-object-class-id');requestParams['action-type']=e.getAttribute('data-action-type');this.elementPrefixedAttributes(e,'data-action-param-',requestParams);if(e.getAttribute('data-pk')!==null)requestParams['pk']=e.getAttribute('data-pk');shc.server.api(requestParams,function(data){}.bind(this));}workplaceLogin(e){console.log('workplaceLogin',e.getAttribute('data-login'));this.getNumber({title:'Zadejte přístupový kód',srcElement:e,userLogin:e.getAttribute('data-login'),success:function(){this.workplaceLoginDoIt()}.bind(this)});return 0;}workplaceLoginDoIt(e){console.log(this.numPad.options.userLogin);console.log("__DO_IT__",this.numPad.options.srcElement.getAttribute('data-login'),this.numPad.gnValue);document.getElementById('e10-login-user').value=this.numPad.options.userLogin;document.getElementById('e10-login-pin').value=this.numPad.gnValue;document.forms['e10-mui-login-form'].submit();}getNumber(options){const
 template=document.createElement('div');template.id='widget_123';template.classList.add('fullScreenModal');document.body.appendChild(template);var
 abc=new
-ShipardTouchNumPad();abc.options=options;abc.init(template);this.numPad=abc;}setColorMode(e){let
-colorMode=e.getAttribute('data-app-color-mode');localStorage.setItem('shpAppColorMode',colorMode);this.doColorMode(colorMode);return 0;}setUserContext(e){let
+ShipardTouchNumPad();abc.options=options;abc.init(template);this.numPad=abc;}setColorMode(event){let
+colorMode=event.target.value;localStorage.setItem('shpAppThemeVariant',colorMode);this.doColorMode(colorMode);return 0;}setUserContext(e){let
 userContextId=e.getAttribute('data-user-context');console.log("User context: ",userContextId);let
-apiParams={'userContextId':userContextId,};this.apiCall('setUserContext',apiParams);return 0;}initColorMode(firstCall){if(firstCall){window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(){this.initColorMode()}.bind(this));}let
-colorMode=localStorage.getItem('shpAppColorMode');if(!colorMode||colorMode==='auto'){const
-isSystemDarkMode=window.matchMedia('(prefers-color-scheme: dark)').matches;if(isSystemDarkMode)colorMode='dark';else
-colorMode='light';}this.doColorMode(colorMode);}doColorMode(colorMode){if(colorMode==='light'){document.body.removeAttribute('data-bs-theme');}else
-if(colorMode==='dark'){document.body.setAttribute('data-bs-theme','dark');}else
-if(colorMode==='auto'){this.initColorMode();}var
-uiColorMode=colorMode;let
-savedColorMode=localStorage.getItem('shpAppColorMode');if(!savedColorMode||savedColorMode==='auto')uiColorMode='auto';let
-colorModeElements=document.querySelectorAll('[data-action="setColorMode"]');for(let
-idx=0;idx<colorModeElements.length;idx++){if(colorModeElements[idx].getAttribute('data-app-color-mode')===uiColorMode)colorModeElements[idx].classList.add('active');else
-colorModeElements[idx].classList.remove('active');}}elementPrefixedAttributes(iel,prefix,data){for(var
+apiParams={'userContextId':userContextId,};this.apiCall('setUserContext',apiParams);return 0;}initColorMode(firstCall){if(firstCall){window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(){this.initColorMode()}.bind(this));}var
+colorMode=localStorage.getItem('shpAppThemeVariant');const
+themeVariant=uiThemesVariants[colorMode];if(!themeVariant||!colorMode||colorMode==='auto'){const
+isSystemDarkMode=window.matchMedia('(prefers-color-scheme: dark)').matches;if(isSystemDarkMode)colorMode='systemDefaultDark';else
+colorMode='systemDefaultLight';}this.doColorMode(colorMode);}doColorMode(colorMode){if(colorMode==='auto'){this.initColorMode();return;}const
+themeVariant=uiThemesVariants[colorMode];if(!themeVariant){this.initColorMode();return;}var
+linkElement=document.getElementById('themeVariant');if(!linkElement){linkElement=document.createElement('link');linkElement.href=themeVariant.file+'?v='+themeVariant.integrity.sha384;linkElement.type='text/css';linkElement.rel='stylesheet';linkElement.id='themeVariant';document.getElementsByTagName('head')[0].appendChild(linkElement);}else{linkElement.href=themeVariant.file+'?v='+themeVariant.integrity.sha384;}document.body.setAttribute('data-shp-theme-variant',colorMode);document.body.setAttribute('data-shp-dark-mode',themeVariant.dm);}setThemeVariantInput(){var
+inputElement=document.getElementById('input-shp-theme-variant');if(!inputElement)return;let
+themeVariant=localStorage.getItem('shpAppThemeVariant');if(!themeVariant)themeVariant='auto';inputElement.value=themeVariant;}elementPrefixedAttributes(iel,prefix,data){for(var
 i=0,attrs=iel.attributes,l=attrs.length;i<l;i++){var
 attrName=attrs.item(i).nodeName;if(attrName.substring(0,prefix.length)!==prefix)continue;var
 attrNameShort=attrName.substring(prefix.length);var
-val=attrs.item(i).nodeValue;data[attrNameShort]=val;}}initUI(){if(!this.mainAppContent)return 0;if('mainUiObjectId'in
+val=attrs.item(i).nodeValue;data[attrNameShort]=val;}}initUI(){this.setThemeVariantInput();if(!this.mainAppContent)return 0;if('mainUiObjectId'in
 this.mainAppContent.dataset)return this.initUIObject(this.mainAppContent.dataset.mainUiObjectId);}initUIObject(id){let
 objectElement=document.getElementById(id);if(!objectElement){console.error('element not exist: #',id);return 0;}const
 objectElementType=objectElement.getAttribute('data-object-type');if(!objectElementType){console.error('`data-object-type` attr not found in #',id);return 0;}if(objectElementType==='data-viewer')return initWidgetTableViewer(id);if(objectElementType==='data-widget-board')return initWidgetBoard(id);console.log(objectElementType);return 0;}loadUI(){console.log("client__load_ui");}init(){this.mainAppContent=document.getElementById('shp-main-app-content');this.server.setHttpServerRoot(httpApiRootPath);this.initColorMode(true);this.onClick('a.shp-simple-tabs-item',function(){shc.simpleTabsEvent(this);});this.onClick('.shp-app-action',function(e){this.widgetAction(e);}.bind(this));this.initUI();if('serviceWorker'in
