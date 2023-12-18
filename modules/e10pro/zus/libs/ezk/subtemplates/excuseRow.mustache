@@ -1,7 +1,5 @@
-<div class="card-body pt-0 pb-0">
-  <h5 class="card-titles pt-1 mb-1">
-    {{#data.listRow.longTerm}}{{data.listRow.dateFrom}} - {{data.listRow.dateTo}}{{/data.listRow.longTerm}}
-    {{^data.listRow.longTerm}}{{data.listRow.dateFrom}}{{/data.listRow.longTerm}}
-  </h5>
-  <span class="text-muted fs-6 pe-2">{{data.listRow.reason}}</span>
-</div>
+<h5 class="shpd-card-title mb-0">
+  {{#data.listRow.longTerm}}{{data.listRow.dateFrom}} - {{data.listRow.dateTo}}{{/data.listRow.longTerm}}
+  {{^data.listRow.longTerm}}{{data.listRow.dateFrom}}{{/data.listRow.longTerm}}
+</h5>
+<span class="text-muted fs-6 pe-2">{{data.listRow.reason}}</span>

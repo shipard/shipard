@@ -51,7 +51,7 @@ class ViewHours extends TableView
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
 
-		$listItem['class'] = 'shpd-card';
+		$listItem['class'] = 'shpd-card p-3';
 
 		$listItem['card'] = [];
 

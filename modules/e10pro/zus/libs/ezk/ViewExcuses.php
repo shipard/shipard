@@ -38,7 +38,7 @@ class ViewExcuses extends TableView
 	public function renderRow ($item)
 	{
 		$listItem ['pk'] = $item ['ndx'];
-    $listItem['class'] = 'card';
+    $listItem['class'] = 'shpd-card ps-3 pt-2 pe-3';
 
 		$listItem ['icon'] = $this->table->tableIcon($item);
 		$listItem ['t1'] = $item ['studentFullName'];

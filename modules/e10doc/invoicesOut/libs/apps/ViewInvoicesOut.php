@@ -31,7 +31,7 @@ class ViewInvoicesOut extends TableView
 	{
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['icon'] = $this->table->tableIcon ($item);
-		$listItem['class'] = 'card';
+		$listItem['class'] = 'shpd-card p-2 ps-3';
 
 		$listItem ['docNumber'] = $item['docNumber'];
     $listItem ['title'] = $item['title'];
@@ -84,7 +84,7 @@ class ViewInvoicesOut extends TableView
 		{
 			$balanceInfo['text'] = 'Uhrazeno';
       $balanceInfo['icon'] = 'system/iconCheck';
-      $balanceInfo['class'] = 'bg-success';
+      $balanceInfo['class'] = 'shpd-bg-success';
 		}
 		else
     {
@@ -94,20 +94,20 @@ class ViewInvoicesOut extends TableView
         {
           $balanceInfo['text'] = 'NEUHRAZENO';
           $balanceInfo['icon'] = 'system/iconWarning';
-          $balanceInfo['class'] = 'bg-danger';
+          $balanceInfo['class'] = 'shpd-bg-danger';
         }
         else
         {
           $balanceInfo['text'] = 'Uhraďte do: '.Utils::datef($item['dateDue'], '%S');
           $balanceInfo['icon'] = 'system/iconCheck';
-          $balanceInfo['class'] = 'bg-info';
+          $balanceInfo['class'] = 'shpd-bg-info';
         }
 			}
 			else
 			{
         $balanceInfo['text'] = 'Částečně uhrazeno, zbývá '.Utils::nf($bi->restAmount, 2);
         $balanceInfo['icon'] = 'system/iconCheck';
-        $balanceInfo['class'] = 'bg-warning';
+        $balanceInfo['class'] = 'shpd-bg-warning';
 			}
     }
 

@@ -3,8 +3,8 @@
 </h3>
 <h6 class="d-flex align-items-center mb-1">
   <span class="flex-fill pb-0">{{data.listRow.date}}</span>
-  {{#data.listRow.withHomeWork}}<span class="shpd-badge bg-secondary me-2">{{{@icon;icon:user/book}}}</span>{{/data.listRow.withHomeWork}}
-  {{#data.listRow.grade}}<span class="shpd-badge bg-secondary me-2">{{{@icon;icon:user/medal}}} {{data.listRow.grade}}</span>{{/data.listRow.grade}}
+  {{#data.listRow.withHomeWork}}<span class="shpd-badge shpd-bg-secondary me-2">{{{@icon;icon:user/book}}}</span>{{/data.listRow.withHomeWork}}
+  {{#data.listRow.grade}}<span class="shpd-badge shpd-bg-secondary me-2">{{{@icon;icon:user/medal}}} {{data.listRow.grade}}</span>{{/data.listRow.grade}}
   <span class="{{data.listRow.presenceCfg.class}}">{{{@icon;dataItem:data.listRow.presenceCfg.icon}}}</span>
 </h6>
 <pre>{{data.listRow.txt}}</pre>

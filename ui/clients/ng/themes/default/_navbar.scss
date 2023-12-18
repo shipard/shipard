@@ -53,6 +53,7 @@
                 padding-bottom: .7rem;
                 padding-left: .5rem;
                 background-color: var(--shpd-nav-bg);
+                color: var(--shpd-nav-color) !important;
                 border-bottom: 1px solid var(--shpd-universal-border);
                 text-decoration: none;
                 width: 100%;
@@ -62,7 +63,7 @@
             }
             .shpd-nav-item.active {
                 background-color: var(--shpd-primary-subtle);
-                color: #101010;
+                color: #101010 !important;
             }
             .shpd-nav-item:hover{
                 background-color: var(--shpd-hover-bg);

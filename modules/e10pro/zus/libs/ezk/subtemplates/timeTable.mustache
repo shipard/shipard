@@ -6,13 +6,13 @@
   {{/data.timeTable.days}}
 
   {{#data.timeTable.days}}
-    <ol class="list-group mb-2">
-      <li class="list-group-item align-items-start">
+    <ol class="shpd-list mb-2">
+      <li class="shpd-list-item align-items-start">
         <h3 class="fw-bold">{{dayName}}</h3>
 
         {{#hours}}
           <div class="mt-2 me-auto">
-            <h5><span class="fw-bold">{{timeBegin}} - {{timeEnd}}</span><span class="fw-normal"> - {{subjectTitle}}</span></h5>
+            <h5 class="mb-0"><span class="fw-bold">{{timeBegin}} - {{timeEnd}}</span><span class="fw-normal"> - {{subjectTitle}}</span></h5>
             {{teacher}}, {{place}}
           </div>
         {{/hours}}

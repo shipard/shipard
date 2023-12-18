@@ -12,6 +12,35 @@ a.dropdown-item>i {
   text-align: center;
 }
 
+button.btn {
+  color: var(--shpd-body-color) !important;
+}
+
+// re-do with different variables for bg and color
+.dropdown-menu{
+  border: 1px solid var(--shpd-card-border);
+  background-color: var(--shpd-card-bg) !important;
+}
+
+.dropdown-item {
+  background-color: var(--shpd-card-bg);
+  color: var(--shpd-body-color);
+}
+
+.dropdown-menu li:not(:last-of-type) {
+  border-bottom: 1px solid var(--shpd-card-border) !important;
+}
+
+.dropdown-item:hover {
+  background-color: var(--shpd-primary-gray);
+  color: var(--shpd-body-color);
+}
+
+.dropdown-item.active {
+  background-color: var(--shpd-primary-subtle);
+  color: #101010 !important;
+}
+
 /* zuš - univerzální velké tlačítko */
 a.dashboardButton {
     width: 4rem;

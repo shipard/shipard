@@ -1,17 +1,12 @@
 <div class="container-fluid">
   <h1 class="p-1 pt-3">{{{@icon;icon:user/cog}}} Nastavení</h1>
 
-  <!--<ol class="list-group mb-2">
-    <h3 class="list-group-item mb-0">{{userInfo.name}}</h3>
-    <p class="list-group-item mb-0">{{userInfo.email}}</p>
-  </ol>-->
-
   {{#data.appSettings}}
     {{{code}}}
   {{/data.appSettings}}
 
-  <ol class="list-group mb-2">
-    <div class="d-flex list-group-item align-items-center">
+  <ol class="shpd-list mb-2">
+    <div class="d-flex shpd-list-item align-items-center">
       <label class="me-3">{{{@icon;icon:user/paintBrush}}}&nbsp;Motiv</label>
       <select name="shp-theme-variant" id="input-shp-theme-variant" onchange="shc.setColorMode(event)">
         <option value="auto">Auto</option>
@@ -19,12 +14,11 @@
           <option value='{{id}}'>{{name}}</option>
         {{/data.uiStruct.themeVariants}}
       </select>
-
     </div>
   </ol>
 
-  <ol class="list-group mb-2">
-    <a class="list-group-item" href='{{data.uiRoot}}auth/logout'>{{{@icon;icon:user/signOut}}} Odhlásit</a>
+  <ol class="shpd-list mb-2">
+    <a class="shpd-list-item" href='{{data.uiRoot}}auth/logout'>{{{@icon;icon:user/signOut}}} Odhlásit</a>
   </ol>
 
 
