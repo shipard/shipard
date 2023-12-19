@@ -10,6 +10,9 @@
 	.accordion-header {
 		padding: 0;
 		background-color: var(--shpd-accordion-bg);
+		.d-flex {
+			color: var(--shpd-body-color);
+		}
 	}
 	li {
 		background-color: transparent;
@@ -21,15 +24,18 @@
 	ol.list-group{
 	border: none !important;
 	}
-  }
-
-.accordion-body {
-	background-color: var(--shpd-accordion-bg);
-	padding: 0;
+	.accordion-body {
+		background-color: var(--shpd-accordion-bg);
+		padding: 0;
+	}
 }
+
 
 ol.grades li.list-group-item {
 	border-radius: 0;
+	div {
+		color: var(--shpd-body-color);
+	}
 }
 
 ol.grades li.list-group-item:not(:last-child){

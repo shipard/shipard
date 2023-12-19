@@ -28,9 +28,6 @@
         color: var(--shpd-nav-color);
     }*/
 
-    button.navbar-toggler{
-        color: var(--shpd-nav-color);
-    }
 
     .navbar h4 {
         margin-bottom: 0;
@@ -39,6 +36,10 @@
 
     .navbar-toggler {
         border: none;
+        color: var(--shpd-nav-color);
+        .shpd-nav-toggler-icon {
+            font-size: 1.5rem;
+        }
     }
 
     //for simple app - menu + offcanvas menu (student name,...)
@@ -97,6 +98,10 @@
         }
         button:first-child {
             border-top: 1px solid var(--shpd-universal-border);
+        }
+        .offcanvas-header {
+            padding: 0 .5rem !important;
+            color: var(--shpd-nav-color);
         }
     }
 

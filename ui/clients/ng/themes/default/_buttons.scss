@@ -110,3 +110,10 @@ a.cancelButton {
 a.saveButton {
 	width: 30%;
 }
+
+// offcanvas close button (re-do of bootstrap close icon)
+button.shpd-close {
+  background-color: transparent;
+  font-size: 2rem;
+  color: var(--shpd-nav-color);
+}
