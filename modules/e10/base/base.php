@@ -584,7 +584,7 @@ class ListProperties implements \E10\IDocumentList
 		$inputNoteId = str_replace ('.', '-', $inputPrefix . '-note');
 
 		if ($property ['type']  == 'text')
-			$c .= "<input type='text' name='{$inputPrefix}.value' class='e10-ef-w50' id='$inputId' data-fid='{$this->formData->fid}'$readOnlyParam/>";
+			$c .= "<input type='text' name='{$inputPrefix}.value' class='e10-ef-w50' maxlength='64' id='$inputId' data-fid='{$this->formData->fid}'$readOnlyParam/>";
 		else
 		if ($property ['type']  == 'memo')
 		{
@@ -645,7 +645,7 @@ class ListProperties implements \E10\IDocumentList
 
 		if (isset($property ['note']) && $property ['note'])
 			$c .= "<label for='$inputNoteId' class='e10-prop-note'><i class='fa fa-pencil'></i></label>".
-						"<input type='text' placeholder='pozn.' name='{$inputPrefix}.note' class='e10-prop-note' id='$inputNoteId' data-fid='{$this->formData->fid}'$readOnlyParam/>";
+						"<input type='text' placeholder='pozn.' name='{$inputPrefix}.note' class='e10-prop-note' maxlength='50' id='$inputNoteId' data-fid='{$this->formData->fid}'$readOnlyParam/>";
 
 		if (isset($property ['multi']) && $property ['multi'] && !$this->formData->readOnly)
 			$c .= " <button type='button' class='btn btn-default btn-xs e10-row-append' tabindex='-1' data-list='{$this->listId}' data-propid='{$dataItem ['property']}' data-groupid='{$dataItem ['group']}'>".$this->formData->app()->ui()->icon('system/actionAdd')."</button>";
