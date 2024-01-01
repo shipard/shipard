@@ -96,7 +96,7 @@ class ServerManager extends Utility
 			return $this->app()->err('Server configuration file `' . __SHPD_ETC_DIR__ . '/server.json' . '`not found...');
 		}
 
-		return TRUE;	
+		return TRUE;
 	}
 
 	public function checkFilesystem()
@@ -134,35 +134,91 @@ class ServerManager extends Utility
 	public function checkServer ()
 	{
 		$develHost = $this->app()->cfgServer['develMode'];
+		$restart = 0;
 
 		// -- nginx
 		if (is_dir ('/etc/nginx'))
 		{
 			$fn = '/etc/nginx/conf.d/shpd-server.conf';
-			if (!is_file($fn)) 
+			if (!is_file($fn))
 			{
 				symlink(__SHPD_ROOT_DIR__.'/etc/nginx/shpd-server.conf', $fn);
 				echo "# `$fn` - nginx restart required!\n";
+				$restart = 1;
 			}
 		}
 
+		if (!is_dir ('/etc/php/8.3/fpm'))
+		{
+			$cmd = 'apt install --assume-yes --quiet php8.3-cli php8.3-mysql php8.3-fpm php8.3-imap php8.3-xml php8.3-curl php8.3-intl php8.3-zip php8.3-bcmath php8.3-gd php8.3-mbstring php8.3-soap php8.3-mailparse php8.3-yaml php8.3-redis';
+			echo "### UPGRADE TO PHP 8.3 ###\n";
+			echo '* '.$cmd."\n";
+			passthru($cmd);
+			$restart = 1;
+		}
+
 		// -- PHP
+		if (is_dir ('/etc/php/8.3'))
+		{
+			$fn = '/etc/php/8.3/fpm/pool.d/zz-shpd-php-fpm.conf';
+			if (!is_file($fn))
+			{
+				symlink(__SHPD_ROOT_DIR__.'/etc/php/zz-shpd-php-fpm.conf', $fn);
+				echo "# `$fn` - service php8.3-fpm restart required!\n";
+			}
+			$fn = '/etc/php/8.3/fpm/conf.d/95-shpd-php.ini';
+			if (!is_file($fn))
+			{
+				symlink(__SHPD_ROOT_DIR__.'/etc/php/95-shpd-php.ini', $fn);
+				echo "# `$fn` - service php8.3-fpm restart required!\n";
+			}
+			$fn = '/etc/php/8.3/cli/conf.d/95-shpd-php.ini';
+			if (!is_file($fn))
+			{
+				symlink(__SHPD_ROOT_DIR__.'/etc/php/95-shpd-php.ini', $fn);
+				echo "# `$fn` - service php8.3-fpm restart required!\n";
+			}
+			$restart = 1;
+		}
+
+		if (is_dir ('/etc/php/8.2'))
+		{
+			$fn = '/etc/php/8.2/fpm/pool.d/zz-shpd-php-fpm.conf';
+			if (!is_file($fn))
+			{
+				symlink(__SHPD_ROOT_DIR__.'/etc/php/zz-shpd-php-fpm.conf', $fn);
+				echo "# `$fn` - service php8.2-fpm restart required!\n";
+			}
+			$fn = '/etc/php/8.2/fpm/conf.d/95-shpd-php.ini';
+			if (!is_file($fn))
+			{
+				symlink(__SHPD_ROOT_DIR__.'/etc/php/95-shpd-php.ini', $fn);
+				echo "# `$fn` - service php8.2-fpm restart required!\n";
+			}
+			$fn = '/etc/php/8.2/cli/conf.d/95-shpd-php.ini';
+			if (!is_file($fn))
+			{
+				symlink(__SHPD_ROOT_DIR__.'/etc/php/95-shpd-php.ini', $fn);
+				echo "# `$fn` - service php8.2-fpm restart required!\n";
+			}
+		}
+
 		if (is_dir ('/etc/php/8.1'))
 		{
 			$fn = '/etc/php/8.1/fpm/pool.d/zz-shpd-php-fpm.conf';
-			if (!is_file($fn)) 
+			if (!is_file($fn))
 			{
 				symlink(__SHPD_ROOT_DIR__.'/etc/php/zz-shpd-php-fpm.conf', $fn);
 				echo "# `$fn` - service php8.1-fpm restart required!\n";
 			}
 			$fn = '/etc/php/8.1/fpm/conf.d/95-shpd-php.ini';
-			if (!is_file($fn)) 
+			if (!is_file($fn))
 			{
 				symlink(__SHPD_ROOT_DIR__.'/etc/php/95-shpd-php.ini', $fn);
 				echo "# `$fn` - service php8.1-fpm restart required!\n";
 			}
 			$fn = '/etc/php/8.1/cli/conf.d/95-shpd-php.ini';
-			if (!is_file($fn)) 
+			if (!is_file($fn))
 			{
 				symlink(__SHPD_ROOT_DIR__.'/etc/php/95-shpd-php.ini', $fn);
 				echo "# `$fn` - service php8.1-fpm restart required!\n";
@@ -181,7 +237,7 @@ class ServerManager extends Utility
 		if (is_dir ('/etc/apt/apt.conf.d'))
 		{
 			$fn = '/etc/apt/apt.conf.d/99zz-shp-upgrades';
-			if (!is_file($fn)) 
+			if (!is_file($fn))
 			{
 				symlink(__SHPD_ROOT_DIR__.'/etc/apt/99zz-shp-upgrades', $fn);
 			}
@@ -218,6 +274,12 @@ class ServerManager extends Utility
 		}
 		*/
 
+		if ($restart)
+		{
+			passthru('systemctl restart php8.3-fpm');
+			passthru('systemctl restart nginx');
+		}
+
 		$this->checkService ('shpd-ds-cmds', '/etc/services');
 		$this->checkService ('shpd-ds-services', '/etc/services');
 		$this->checkService ('shpd-headless-browser', '/etc/services');
@@ -226,7 +288,7 @@ class ServerManager extends Utility
 		{
 			$this->checkService ('shpd-hosting-create-ds', '/etc/services');
 			$this->checkService ('shpd-hosting-upload', '/etc/services');
-		}	
+		}
 	}
 
 	protected function checkService ($serviceBaseFileName, $serviceFileSrcFolder)
@@ -301,7 +363,7 @@ class ServerManager extends Utility
 		if ($verExist !== $verNew)
 		{
 			file_put_contents($configFileName, $cfg);
-			// -- symlink 
+			// -- symlink
 			$link = '/etc/nginx/sites-enabled/shpd-server.conf';
 			if (!is_readable($link))
 				symlink($configFileName, $link);
@@ -337,7 +399,7 @@ class ServerManager extends Utility
 			{
 				passthru("cd {$channel['path']} && git pull");
 			}
-			else 
+			else
 			{
 				error_log ("ERROR: channel `$channelId` (`{$channel['path']}`) is not git repository");
 			}
@@ -360,6 +422,6 @@ class ServerManager extends Utility
 
 		$this->checkServerNginxCfg();
 
-		return TRUE;	
+		return TRUE;
 	}
 }

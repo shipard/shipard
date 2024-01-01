@@ -24,7 +24,7 @@ function versionToInt() {
 #
 if [ "$NAME" = "Ubuntu" ]; then
     currentVersion=$(versionToInt $VERSION_ID)
-    min81Version=$(versionToInt 22.04.0)
+    min81Version=$(versionToInt 24.04.0)
 
     if [ "$currentVersion" -lt "$min81Version" ]; then
         add-apt-repository --yes ppa:ondrej/php
@@ -48,7 +48,7 @@ apt install --assume-yes --quiet nginx
 apt install --assume-yes --quiet mariadb-server
 
 
-apt install --assume-yes --quiet php8.1-cli php8.1-mysql php8.1-fpm php8.1-imap php8.1-xml php8.1-curl php8.1-intl php8.1-zip php8.1-bcmath php8.1-gd php8.1-mbstring php8.1-soap php8.1-mailparse
+apt install --assume-yes --quiet php8.3-cli php8.3-mysql php8.3-fpm php8.3-imap php8.3-xml php8.3-curl php8.3-intl php8.3-zip php8.3-bcmath php8.3-gd php8.3-mbstring php8.3-soap php8.3-mailparse php8.3-yaml
 
 
 apt install --assume-yes --quiet librsvg2-bin qrencode imagemagick poppler-utils zip graphviz idn
@@ -93,7 +93,7 @@ apt install --assume-yes --quiet ttf-mscorefonts-installer
 #
 # redis
 #
-apt install --assume-yes --quiet redis-server php8.1-redis
+apt install --assume-yes --quiet redis-server php8.3-redis
 
 #
 # python
@@ -127,7 +127,7 @@ apt install --assume-yes --quiet libimage-exiftool-perl docx2txt tesseract-ocr t
 adduser --disabled-password --gecos "" --home /home/shpd shpd
 adduser www-data shpd
 systemctl restart nginx
-systemctl restart php8.1-fpm
+systemctl restart php8.3-fpm
 
 #
 # optional: fop - https://xmlgraphics.apache.org/fop/
