@@ -1930,32 +1930,29 @@ class AddWizard extends \Shipard\Form\Wizard
 
 	public function aresLoad ($ic)
 	{
-		define('ARESURL','http://wwwinfo.mfcr.cz/cgi-bin/ares/darv_bas.cgi?ico=');
-
+		define('ARESURL','https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/ekonomicke-subjekty/');
 		$file = @file_get_contents (ARESURL . $ic);
 
+		$data = NULL;
 		if ($file)
-			$xml = @simplexml_load_string ($file);
-		if (isset($xml) && $xml)
+			$data = json_decode($file, TRUE);
+		if ($data && isset($data['ico']))
 		{
-			$ns = $xml->getDocNamespaces();
-			$data = $xml->children($ns['are']);
-			$el = $data->children($ns['D'])->VBAS;
-			if (strval($el->ICO) == $ic)
+			if ($data['ico'] == $ic)
 			{
-				$this->recData ['ic'] = strval ($el->ICO);
-				$this->recData ['dic'] = strval ($el->DIC);
-				$this->recData ['fullName'] = strval ($el->OF);
+				$this->recData ['ic'] = $data['ico'] ?? '';
+				$this->recData ['dic'] = $data ['dic'] ?? '';
+				$this->recData ['fullName'] = $data['obchodniJmeno'] ?? '';
 
-				$street = strval ($el->AA->NU);
+				$street = $data['sidlo']['nazevUlice'];
 				if ($street == '')
-					$street = strval ($el->AA->N);
-				$this->recData ['street'] = $street . ' ' . strval($el->AA->CD);
-				if ($el->AA->CO != '')
-					$this->recData ['street'] .= '/' . $el->AA->CO;
+					$street = $data['sidlo']['nazevCastiObce'];
+				if ($street == '')
+					$street = $data['sidlo']['nazevObce'];
+				$this->recData ['street'] = trim($street . ' ' . ($data['sidlo']['cisloDomovni'] ?? ''));
 
-				$this->recData ['city']= strval ($el->AA->N);
-				$this->recData ['zipcode']= strval ($el->AA->PSC);
+				$this->recData ['city']= $data['sidlo']['nazevObce'];
+				$this->recData ['zipcode']= strval($data['sidlo']['psc']);
 				$this->recData ['state'] = 'ok';
 				$this->recData ['lastName'] = $this->recData ['fullName'];
 			}
@@ -1988,8 +1985,8 @@ class AddWizard extends \Shipard\Form\Wizard
 		$newAddress ['country'] = 'cz'; 		// CZ - fixed value
 		$newPerson ['address'][] = $newAddress;
 
-		$newPerson ['ids'][] = array ('type' => 'oid', 'value' => $this->recData ['ic']);
-		$newPerson ['ids'][] = array ('type' => 'taxid', 'value' => $this->recData ['dic']);
+		$newPerson ['ids'][] = ['type' => 'oid', 'value' => $this->recData ['ic']];
+		$newPerson ['ids'][] = ['type' => 'taxid', 'value' => $this->recData ['dic']];
 
 		$newPersonNdx = \E10\Persons\createNewPerson ($this->app, $newPerson);
 
