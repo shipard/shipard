@@ -79,6 +79,7 @@ class FormItemCode extends TableForm
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 
     $codeKind = $this->app()->cfgItem('e10.witems.codesKinds.'.$this->recData['codeKind']);
+
     $refType = $codeKind['refType'] ?? 0;
     $askDir = $codeKind['askDir'] ?? 0;
     $askPerson = $codeKind['askPerson'] ?? 0;
@@ -99,40 +100,62 @@ class FormItemCode extends TableForm
 
       if ($askDir || $askPerson || $askPersonsGroup || $askAddressLabel || $askPersonType)
       {
-        $this->openRow();
-        if ($askDir && $askPerson && $askPersonsGroup)
+        if ($askPerson && $askAddressLabel && $askPersonsGroup && $askPersonType)
         {
-          $this->addColumnInput ('codeDir', self::coColW2);
-          $this->addColumnInput ('personsGroup', self::coColW5);
-          $this->addColumnInput ('person', self::coColW5);
+          $this->openRow();
+            $this->addColumnInput ('codeDir', self::coColW2);
+            $this->addColumnInput ('personType', self::coColW2);
+            $this->addColumnInput ('person', self::coColW8);
+          $this->closeRow();
+          $this->openRow();
+            $this->addColumnInput ('addressLabel', self::coColW6);
+            $this->addColumnInput ('personsGroup', self::coColW6);
+          $this->closeRow();
+        }
+        elseif ($askDir && $askPerson && $askPersonsGroup && !$askPersonType)
+        {
+          $this->openRow();
+            $this->addColumnInput ('codeDir', self::coColW2);
+            $this->addColumnInput ('personsGroup', self::coColW5);
+            $this->addColumnInput ('person', self::coColW5);
+          $this->closeRow();
         }
         elseif ($askDir && $askAddressLabel && $askPersonsGroup && $askPersonType)
         {
+          $this->openRow();
           $this->addColumnInput ('codeDir', self::coColW2);
           $this->addColumnInput ('personType', self::coColW2);
           $this->addColumnInput ('addressLabel', self::coColW4);
           $this->addColumnInput ('personsGroup', self::coColW4);
+          $this->closeRow();
         }
         elseif ($askDir && $askAddressLabel && $askPersonsGroup)
         {
-          $this->addColumnInput ('codeDir', self::coColW2);
-          $this->addColumnInput ('addressLabel', self::coColW5);
-          $this->addColumnInput ('personsGroup', self::coColW5);
+          $this->openRow();
+            $this->addColumnInput ('codeDir', self::coColW2);
+            $this->addColumnInput ('addressLabel', self::coColW5);
+            $this->addColumnInput ('personsGroup', self::coColW5);
+          $this->closeRow();
         }
         elseif ($askDir && $askPerson)
         {
-          $this->addColumnInput ('codeDir', self::coColW2);
-          $this->addColumnInput ('person', self::coColW10);
-        }
+          $this->openRow();
+            $this->addColumnInput ('codeDir', self::coColW2);
+            $this->addColumnInput ('person', self::coColW10);
+          $this->closeRow();
+      }
         elseif ($askDir && !$askPerson)
         {
-          $this->addColumnInput ('codeDir', self::coColW4);
-        }
+          $this->openRow();
+            $this->addColumnInput ('codeDir', self::coColW4);
+          $this->closeRow();
+      }
         elseif (!$askDir && $askPerson)
         {
-          $this->addColumnInput ('person', self::coColW12);
+          $this->openRow();
+            $this->addColumnInput ('person', self::coColW12);
+          $this->closeRow();
         }
-        $this->closeRow();
       }
 
       $this->openRow();

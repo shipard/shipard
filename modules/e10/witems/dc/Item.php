@@ -116,7 +116,7 @@ class Item extends \e10\DocumentCard
 				'info' => [],
 			];
 			if ($r['person'])
-				$item['application'][] = ['text' => $r['personName'], 'class' => 'block', 'icon' => 'tables/e10.persons.persons'];
+				$item['application'][] = ['text' => $r['personName'], 'class' => 'block', 'icon' => 'system/personCompany'];
 			if ($r['personsGroup'])
 				$item['application'][] = ['text' => $r['groupName'], 'class' => 'block', 'icon' => 'tables/e10.persons.groups'];
 			if ($askPersonType)
