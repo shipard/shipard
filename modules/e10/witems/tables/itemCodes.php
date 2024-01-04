@@ -58,7 +58,7 @@ class TableItemCodes extends DbTable
       $recData ['systemOrder']--;
 
     if ($recData['person'])
-      $recData ['systemOrder']--;
+      $recData ['systemOrder'] -= 10;
 
     if ($recData['personsGroup'] != 0)
       $recData ['systemOrder']--;
