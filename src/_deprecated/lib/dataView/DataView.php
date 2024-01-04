@@ -56,6 +56,7 @@ class DataView extends Utility
 	{
 		$this->data['html'] = '';
 		$this->data['html'] .= $this->remoteDataViewElementOpen();
+		$this->data['persons'] = array_values($this->data['table'] ?? []);
 
 		$webScriptId = $this->requestParam ('webScript', '');
 		$showAs = $this->requestParam ('showAs', '');
@@ -78,7 +79,7 @@ class DataView extends Utility
 		}
 		if ($this->debugLevel)
 		{
-			$this->data['html'] .= "<!---- DATA BEGIN -----\n" . json::lint($this->data['table']) . "\n\n----- DATA END ---->\n\n";
+			$this->data['html'] .= "\n<!---- DATA BEGIN -----\n" . json::lint($this->data) . "\n\n----- DATA END ---->\n\n";
 		}
 
 		$this->data['html'] .= $this->remoteDataViewElementClose();
