@@ -24,12 +24,16 @@
 	},
 	"fields": {
 		"groups": [
-      {"id":  "espNow", "title":  "ESP-NOW server"}
+      {"id":  "espNow", "title":  "ESP-NOW server"},
+			{"id":  "can", "title":  "CAN bus router"}
 		],
 		"columns": [
 			{
 				"id": "espNowServerEnabled", "group":  "espNow", "name": "Povolit ESP-NOW server", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
-			}
+			},
+      {
+        "id": "canRouterEnabled", "group":  "can", "name": "Povolit CAN bus router", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+      }
 		]
 	},
 	"fixedIOPorts": {
@@ -37,6 +41,15 @@
 			"type": "networks/esp-now-server",
 			"portId": "esp-now",
 			"_portDisabled": {"espNowServerEnabled": 0}
+		},
+		"can-bus-router": {
+			"type": "router/can",
+			"portId": "can",
+
+			"pinRX": 17,
+			"pinTX": 16,
+
+			"_portDisabled": {"canRouterEnabled": 0}
 		}
 	},
 	"fwId": "iot-box-can-core-sms72-esp32-can"
