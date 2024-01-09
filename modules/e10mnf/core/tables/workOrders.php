@@ -374,6 +374,7 @@ class ViewWorkOrders extends TableView
 			array_push ($q, ' workOrders.docNumber LIKE %s', '%'.$fts.'%');
 			array_push ($q, ' OR workOrders.title LIKE %s', '%'.$fts.'%');
 			array_push ($q, ' OR customers.fullName LIKE %s', '%'.$fts.'%');
+			array_push ($q, ' OR EXISTS (SELECT ndx FROM e10_base_properties WHERE workOrders.customer = e10_base_properties.recid AND tableid = %s', 'e10.persons.persons', ' AND valueString LIKE %s)', '%'.$fts.'%');
 			array_push ($q, ')');
 		}
 
