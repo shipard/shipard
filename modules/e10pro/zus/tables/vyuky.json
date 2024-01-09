@@ -47,11 +47,25 @@
 	"views": {
 		"default": {
 			"id": "default", "class": "e10pro.zus.ViewVyuky",
-			"detail": "e10pro.zus.ViewDetailVyuka"
+			"details": {
+				"default": {
+					"title": "Výuka", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.zus.ViewDetailVyuka"
+				},
+				"klasifikace": {
+					"title": "Známky", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.zus.libs.ViewDetailVyukaKlasifikace"
+				}
+			}
 		},
 		"etk": {
 			"id": "etk", "class": "e10pro.zus.ViewVyukyETK", "title": "Elektronická třídní kniha",
-			"detail": "e10pro.zus.ViewDetailVyuka"
+			"details": {
+				"default": {
+					"title": "Výuka", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.zus.ViewDetailVyuka"
+				},
+				"klasifikace": {
+					"title": "Známky", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.zus.libs.ViewDetailVyukaKlasifikace"
+				}
+			}
 		}
 	},
 	"forms": [
