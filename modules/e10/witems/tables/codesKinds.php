@@ -47,9 +47,11 @@ class TableCodesKinds extends DbTable
 				'fn' => $r ['fullName'],
 				'sn' => $r ['shortName'],
 				'codeType' => $r['codeType'],
-				'reportSwitchTitle' => $r ['reportSwitchTitle'],
-				'reportPersonTitle' => $r ['reportPersonTitle'],
-				'reportPersonOutTitle' => $r ['reportPersonOutTitle'],
+				'reportSwitchTitle' => trim($r ['reportSwitchTitle']),
+				'reportPersonTitle' => trim($r ['reportPersonTitle']),
+				'reportPersonOutTitle' => trim($r ['reportPersonOutTitle']),
+				'reportPersonOutCodeSC' => trim($r ['reportPersonOutCodeSC']),
+				'reportPersonOutCodeNote' => trim($r ['reportPersonOutCodeNote']),
 				'showInDocRows' => $r ['showInDocRows'],
 			];
 
@@ -149,6 +151,8 @@ class FormCodeKind extends TableForm
 			$this->addColumnInput ('reportSwitchTitle');
 			$this->addColumnInput ('reportPersonTitle');
 			$this->addColumnInput ('reportPersonOutTitle');
+			$this->addColumnInput ('reportPersonOutCodeSC');
+			$this->addColumnInput ('reportPersonOutCodeNote');
 			$this->addColumnInput ('showInDocRows');
 		$this->closeForm ();
 	}

@@ -13,6 +13,7 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 	var $periodBegin = NULL;
   var $periodEnd = NULL;
 	var $codeKindNdx = 0;
+	var $codeKindDef = NULL;
 
 	var $dir = WasteReturnEngine::rowDirIn;
 
@@ -90,8 +91,9 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 		$this->loadData_DocumentOwner ();
 		$this->initParams();
 
-		$ckDef = $this->app()->cfgItem('e10.witems.codesKinds.'.$this->codeKindNdx, NULL);
-		$this->data['reportTitle'] = $ckDef['reportPersonTitle'] ?? '';
+		$this->codeKindDef = $this->app()->cfgItem('e10.witems.codesKinds.'.$this->codeKindNdx, NULL);
+		$this->data['reportTitle'] = $this->codeKindDef['reportPersonTitle'] ?? '';
+		$this->data['reportNote'] = $this->codeKindDef['reportPersonOutCodeNote'];
 	}
 
 	public function loadData2 ()
@@ -159,6 +161,9 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 		{
 			$wasteCode = $r['itemId'];
 			$wasteName = $r['fullName'];
+			$wasteCodeSC = $wasteCode;
+			if ($this->codeKindDef['reportPersonOutCodeSC'] !== '')
+				$wasteCodeSC = $this->codeKindDef['reportPersonOutCodeSC'];
 
 			$quantity = $r['quantityKG'] / 1000; // tons
 
@@ -213,7 +218,7 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 			if (!isset($this->sumData[$sumRowId]))
 			{
 				$this->sumData[$sumRowId] = [
-					'weight' => 0, 'code' => $wasteCode, 'title' => $wasteName,
+					'weight' => 0, 'code' => $wasteCodeSC, 'title' => $wasteName,
 					'icp_our' => $id_icp_our, 'icz_our' => $id_icz_our,
 					'icp_theirs' => $id_icp_theirs_text
 				];
@@ -224,7 +229,7 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 			if (!isset($this->itemsData[$itemsRowId]))
 			{
 				$this->itemsData[$itemsRowId] = [
-					'weight' => 0, 'code' => $wasteCode, 'title' => $wasteName,
+					'weight' => 0, 'code' => $wasteCodeSC, 'title' => $wasteName,
 					'docNumber' => $r['docNumber'], 'date' => $r['dateAccounting'], 'o' => $r['docNumber'].'-'.$wasteCode
 				];
 			}
