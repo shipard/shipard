@@ -110,7 +110,7 @@ class DCVyukaKlasifikace extends \Shipard\Base\DocumentCard
 		foreach ($rows as $r)
 		{
 			$item = [
-					'datum' => ($r['datum']) ? $r['datum']->format ('j.n') : '!!!',
+					'datum' => ($r['datum']) ? $r['datum']->format ('j.n.') : '!!!',
 					//'pritomnost' => /*$dochazkaPritomnost[$r['pritomnost']]['sc']*/$fullAttendanceShortcuts[$r['pritomnost']],
 					'znamka' => $this->znamkyHodnoceni[$r['klasifikaceZnamka']]['sc'],
 			];

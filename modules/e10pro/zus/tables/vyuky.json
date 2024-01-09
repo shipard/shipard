@@ -63,7 +63,7 @@
 					"title": "Výuka", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.zus.ViewDetailVyuka"
 				},
 				"klasifikace": {
-					"title": "Známky", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.zus.libs.ViewDetailVyukaKlasifikace"
+					"title": "Známky", "icon": "user/medal", "type": "detail", "class": "e10pro.zus.libs.ViewDetailVyukaKlasifikace"
 				}
 			}
 		}
