@@ -233,29 +233,97 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		return TRUE;
 	}
 
-	public function geoCode ()
+	public function geoCode ($fromCli = 0)
 	{
-		$limit = 20;
-		$tableAddress = $this->app->table('e10.persons.address');
+		$debug = 0;
+		$limit = 0;
 
-		$q[] = 'SELECT * FROM [e10_persons_address] AS [address]';
-		array_push ($q, ' WHERE locState = 0');
-		array_push ($q, ' ORDER BY ndx DESC');
-
-		$cnt = 0;
-		$rows = $this->app->db()->query ($q);
-		forEach ($rows as $r)
+		if ($fromCli)
 		{
-			if (!$tableAddress->geoCode ($r))
+			$debug = intval($this->app()->arg('debug'));
+			$limit = intval($this->app()->arg('limit'));
+		}
+
+		if (!$limit)
+			$limit = 20;
+
+		if ($fromCli)
+			echo ":: debug is `{$debug}`, limit is `{$limit}`\n\n";
+
+		$testNewPersons = intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
+
+		if ($testNewPersons)
+		{
+			if ($debug > 1)
+				echo ":: new persons\n";
+
+			$personRecData = NULL;
+			/** @var \e10\persons\TablePersonsContacts */
+			$tableContacts = $this->app->table('e10.persons.personsContacts');
+			/** @var \e10\persons\TablePersons */
+			$tablePersons = $this->app->table('e10.persons.persons');
+
+			$q = [];
+			array_push ($q, 'SELECT * FROM [e10_persons_personsContacts] AS [contacts]');
+			array_push ($q, ' WHERE 1');
+			array_push ($q, ' AND adrLocState = %i', 0, ' AND [flagAddress] = %i', 1);
+			array_push ($q, ' AND docState = %i', 4000);
+			if ($fromCli)
+				array_push ($q, ' ORDER BY ndx ASC');
+			else
+			array_push ($q, ' ORDER BY ndx DESC');
+
+			$cnt = 1;
+			$rows = $this->app->db()->query ($q);
+			forEach ($rows as $r)
 			{
-				// TODO: message
+				if ($debug)
+				{
+					$personRecData = $tablePersons->loadItem($r['person']);
+					echo "* #".$r['person'].' / '.$personRecData['fullName'];
+				}
+
+				if (!$tableContacts->geoCode ($r, $debug))
+				{
+					// TODO: message
+				}
+
+				if ($debug)
+					echo "\n";
+				if ($debug > 1)
+					echo "\n";
+
+				$cnt++;
+				if ($cnt > $limit)
+					break;
+
+				usleep(150000); // max 5 request per second
 			}
+		}
+		else
+		{
+			/** @var \e10\persons\TableAddress */
+			$tableAddress = $this->app->table('e10.persons.address');
 
-			$cnt++;
-			if ($cnt > $limit)
-				break;
+			$q[] = 'SELECT * FROM [e10_persons_address] AS [address]';
+			array_push ($q, ' WHERE locState = 0');
+			array_push ($q, ' ORDER BY ndx DESC');
 
-			usleep(150000); // max 5 request per second
+			$cnt = 0;
+			$rows = $this->app->db()->query ($q);
+			forEach ($rows as $r)
+			{
+				if (!$tableAddress->geoCode ($r))
+				{
+					// TODO: message
+				}
+
+				$cnt++;
+				if ($cnt > $limit)
+					break;
+
+				usleep(150000); // max 5 request per second
+			}
 		}
 	}
 
@@ -351,7 +419,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 	{
 		switch ($actionId)
 		{
-			case 'geo-code': return $this->geoCode();
+			case 'geo-code': return $this->geoCode(1);
 			case 'last-persons-use-create': return $this->lastPersonsUseCreate();
 			case 'person-validator': return $this->personValidator();
 			case 'import-new-persons': return $this->importNewPersons();

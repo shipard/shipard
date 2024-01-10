@@ -57,6 +57,14 @@ class ViewAddressTechnical extends TableView
 		if (isset ($qv['fiscalPeriods']))
 			array_push ($q, ' AND EXISTS (SELECT ndx FROM e10doc_core_heads WHERE contacts.person = e10doc_core_heads.person AND [fiscalYear] IN %in', array_keys($qv['fiscalPeriods']), ')');
 
+		// geo location
+		if (isset ($qv['geoLocation']['geoLocNone']))
+			array_push ($q, ' AND [adrLocState] = %i', 0);
+		if (isset ($qv['geoLocation']['geoLocOK']))
+			array_push ($q, ' AND [adrLocState] = %i', 1);
+		if (isset ($qv['geoLocation']['geoLocError']))
+			array_push ($q, ' AND [adrLocState] = %i', 2);
+
 		$this->queryMain ($q, '[contacts].', ['[systemOrder], [adrCity]', '[ndx]']);
 		$this->runQuery ($q);
 
@@ -169,6 +177,17 @@ class ViewAddressTechnical extends TableView
 		$paramsFiscalPeriods = new \E10\Params ($panel->table->app());
 		$paramsFiscalPeriods->addParam ('checkboxes', 'query.fiscalPeriods', ['items' => $periodsEnum]);
 		$qry[] = ['id' => 'fiscalPeriods', 'style' => 'params', 'title' => 'Použito ve fiskálním období', 'params' => $paramsFiscalPeriods];
+
+		// -- geo location
+		$chbxGeoLocation = [
+			'geoLocNone' => ['title' => 'Zatím nezaměřeno', 'id' => 'geoLocNone'],
+			'geoLocOK' => ['title' => 'OK', 'id' => 'geoLocOK'],
+			'geoLocError' => ['title' => 'S chybou', 'id' => 'geoLocError'],
+		];
+		$paramsGeoLocation = new \E10\Params ($this->app());
+		$paramsGeoLocation->addParam ('checkboxes', 'query.geoLocation', ['items' => $chbxGeoLocation]);
+		$qry[] = ['id' => 'itemTypes', 'style' => 'params', 'title' => 'GEO lokace', 'params' => $paramsGeoLocation];
+
 
 		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}

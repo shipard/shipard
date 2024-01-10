@@ -90,6 +90,86 @@ class TablePersonsContacts extends DbTable
 
 		return $hdr;
 	}
+
+	public function geoCode ($recData, $debugLevel = 0)
+	{
+		$googleMapsApiKey = $this->app()->cfgServer['googleMapsApiKey'] ?? '';
+
+		if ($googleMapsApiKey === '')
+		{
+			return FALSE;
+		}
+
+		$locHash = $this->geoCodeLocHash($recData);
+		$logEvent = ['tableid' => $this->tableId(), 'recid' => $recData['ndx'], 'eventType' => 3];
+
+		if ($recData['adrStreet'] === '' && $recData['adrCity'] === '' && $recData['adrZipCode'] === '')
+		{
+			$rec = [ 'adrLocLat'=>0, 'adrLocLon'=>0, 'adrLocState' => 2, 'adrLocTime' => new \DateTime(), 'adrLocHash' => $locHash];
+			$this->db()->query ('UPDATE [e10_persons_personsContacts] SET ', $rec, ' WHERE ndx = %i', $recData['ndx']);
+			return TRUE;
+		}
+
+		$country = World::country($this->app(), $recData['adrCountry']);
+		$addressParam = urlencode($recData['adrStreet'].', '.$recData['adrCity'].' '.$recData['adrZipCode'].', '.strtoupper($country['i']).' - '.$country['t']);
+		$logEvent['eventSubtitle'] = str::upToLen('GPS: '.$recData['adrStreet'].', '.$recData['adrCity'].' '.$recData['adrZipCode'].', '.strtoupper($country['i']), 130);
+
+		$url = 'https://maps.googleapis.com/maps/api/geocode/json?address='.$addressParam.'&key='.$googleMapsApiKey;
+
+		if ($debugLevel > 1)
+			echo "\n    -> ".$url."\n      ";
+
+		$opts = ['http'=> ['timeout' => 1, 'method'=>'GET', 'header'=> "Connection: close\r\n"]];
+		$context = stream_context_create($opts);
+		$resultString = file_get_contents ($url, FALSE, $context);
+
+		if (!$resultString)
+		{
+			$logEvent['eventResult'] = 3;
+			$this->app()->addLogEvent($logEvent);
+			return FALSE;
+		}
+		$logEvent['eventData'] = $resultString;
+		$resultData = json_decode ($resultString, TRUE);
+
+		if ($resultData['status'] === 'OK')
+		{
+			if ($debugLevel > 0)
+				echo '; OK: '.$resultData['results'][0]['geometry']['location']['lat'].' x '.$resultData['results'][0]['geometry']['location']['lng'].'; ';
+
+			$rec = [
+					'adrLocLat'=>$resultData['results'][0]['geometry']['location']['lat'],
+					'adrLocLon'=>$resultData['results'][0]['geometry']['location']['lng'],
+					'adrLocState' => 1, 'adrLocTime' => new \DateTime(), 'adrLocHash' => $locHash
+			];
+			$this->db()->query ('UPDATE [e10_persons_personsContacts] SET ', $rec, ' WHERE ndx = %i', $recData['ndx']);
+			$logEvent['eventResult'] = 1;
+			$this->app()->addLogEvent($logEvent);
+			return TRUE;
+		}
+
+		if ($resultData['status'] === 'ZERO_RESULTS')
+		{
+			$rec = ['adrLocLat'=>0, 'adrLocLon'=>0, 'adrLocState' => 2, 'adrLocTime' => new \DateTime(), 'adrLocHash' => $locHash];
+			$this->db()->query ('UPDATE [e10_persons_personsContacts] SET ', $rec, ' WHERE ndx = %i', $recData['ndx']);
+			$logEvent['eventResult'] = 2;
+			$this->app()->addLogEvent($logEvent);
+			return TRUE;
+		}
+
+		if ($debugLevel > 0)
+			echo '; INVALID: '.json_encode($resultData).'; ';
+
+		$logEvent['eventResult'] = 3;
+		$this->app()->addLogEvent($logEvent);
+
+		return FALSE;
+	}
+
+	public function geoCodeLocHash ($recData)
+	{
+		return md5($recData['adrStreet'].'_'.$recData['adrCity'].'_'.$recData['adrZipCode'].'_'.$recData['adrCountry']);
+	}
 }
 
 

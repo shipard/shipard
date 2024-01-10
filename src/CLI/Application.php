@@ -72,6 +72,9 @@ class Application extends \Shipard\Application\Application
 		$this->user = new \Shipard\Application\User ();
 		$this->user->app = $this;
 		$this->clientType = array('cli');
+
+		if (!$this->cfgServer)
+			$this->cfgServer = $this->loadCfgFile('/etc/shipard/server.json');
 	}
 	
 	public function arg ($name)

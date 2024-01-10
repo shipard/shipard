@@ -111,8 +111,26 @@ class DCPersonOverview extends \Shipard\Base\DocumentCard
 
 			$address['isContact'] = $item['flagContact'];
 
-			$address['c2'][] = ['text' => '', 'docAction' => 'edit', 'table' => 'e10.persons.personsContacts', 'pk' => $item['ndx'], 'class' => 'pull-right', 'icon' => 'system/actionOpen'];
+			if ($item['adrLocState'] === 1)
+			{ // success
+				$address['c2'][] = [
+					'type' => 'action', 'action' => 'open-popup',
+					'element' => 'span',
+					'data-popup-url' => 'https://maps.google.com/?q='.$item['adrLocLat'].','.$item['adrLocLon'],
+					'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
+					'text' => '', 'title' => 'GPS: '.$item['adrLocLat'].', '.$item['adrLocLon'],
+					'icon' => 'system/iconMapMarker', 'class' => 'e10-success mr1'
+				];
+			}
+			elseif ($item['adrLocState'] === 1)
+			{ // error
+				$address['c2'][] = [
+					'text' => '', 'title' => 'Chyba GPS zaměření',
+					'icon' => 'system/iconMapMarker', 'class' => 'e10-error mr1'
+				];
+			}
 
+			$address['c2'][] = ['text' => '', 'docAction' => 'edit', 'table' => 'e10.persons.personsContacts', 'pk' => $item['ndx'], 'class' => 'pull-right', 'icon' => 'system/actionOpen'];
 
       if ($item['flagMainAddress'])
         $address['c2'][] = ['text' => 'Sídlo', 'class' => 'label label-default'];
