@@ -69,11 +69,7 @@ class ImportNewPersons extends Utility
       elseif ($oldAddressType === 3 || $oldAddressType === 4)
         $newAddress['flagPostAddress'] = 1;
       elseif ($oldAddressType === 99)
-      {
         $newAddress['flagOffice'] = 1;
-        $newAddress['id1'] = $r['specification'];
-        $newAddress['adrSpecification'] = '';
-      }
 
       $tablePersonsContact->checkBeforeSave($newAddress);
       echo sprintf('%5d', $cntr).': '.json_encode($newAddress)."\n";
