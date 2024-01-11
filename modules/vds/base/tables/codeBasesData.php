@@ -91,7 +91,7 @@ class ViewCodeBasesData extends TableView
 			array_push ($q, ')');
 		}
 
-		$this->queryMain ($q, '[cbData].', ['[fullName]', '[ndx]']);
+		$this->queryMain ($q, '[cbData].', ['[ndx] DESC', '[fullName]']);
 		$this->runQuery ($q);
 	}
 }
