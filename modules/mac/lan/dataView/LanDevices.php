@@ -29,7 +29,7 @@ class LanDevices extends \lib\dataView\DataView
 		$this->checkRequestParamsList('rack');
 		$this->checkRequestParamsList('lan');
 
-		$this->devicesKinds = $this->app()->cfgItem ('e10pro.lan.devices.kinds');
+		$this->devicesKinds = $this->app()->cfgItem ('mac.lan.devices.kinds');
 	}
 
 	protected function loadData()

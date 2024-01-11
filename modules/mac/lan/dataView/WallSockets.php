@@ -68,8 +68,7 @@ class WallSockets extends \lib\dataView\DataView
 		if (!count ($pks))
 			return;
 
-		$devicesKinds = $this->app()->cfgItem ('e10pro.lan.devices.kinds');
-
+		$devicesKinds = $this->app()->cfgItem ('mac.lan.devices.kinds');
 
 		$q[] = 'SELECT ports.*, ';
 		array_push($q, ' devices.id AS deviceId, devices.fullName AS deviceName, devices.deviceKind AS deviceKind');
@@ -99,8 +98,8 @@ class WallSockets extends \lib\dataView\DataView
 				}
 
 				$dstItem[] = [
-					'text' => $r['deviceName'], 'suffix' => $r['deviceId'],
-					'icon' => $devicesKinds[$r['deviceKind']]['icon'], 'class' => ''
+					'text' => $r['deviceName'], 'suffix' => $r['deviceId'].'_'.$r['deviceKind'],
+					'icon' => $devicesKinds[$r['deviceKind']]['icon'] ?? 'system/iconWarning', 'class' => ''
 				];
 
 				$dstItem[] = [
