@@ -1,7 +1,7 @@
 [
 	{
 		"type": "oid", "country": "cz", "name": "ARES",
-		"weburl": "https://wwwinfo.mfcr.cz/cgi-bin/ares/ares_es.cgi?jazyk=cz&obch_jm=&ico=@ID&cestina=cestina&maxpoc=200&setrid=ZADNE&pr_for=&nace=&xml=1&filtr=1"
+		"weburl": "https://ares.gov.cz/ekonomicke-subjekty?ico=@ID"
 	},
 	{
 		"type": "oid", "country": "cz", "name": "justice.cz",
