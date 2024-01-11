@@ -6,6 +6,7 @@
 	],
 	"modules": [],
   "config": [
+		{"id": "+appSkeleton", "file": "appSkeleton.json"},
 		{"id": "+vds.systemTypes", "file": "vds.systemTypes.json"},
 	  {"id": "+appOptions", "file": "appOptions.json"},
     {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"}

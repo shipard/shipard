@@ -18,7 +18,8 @@
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"views": {
-		"default": {"id": "default", "class": "vds.base.ViewCodeBasesData"}
+		"default": {"id": "default", "class": "vds.base.ViewCodeBasesData"},
+		"cb": {"id": "default", "class": "vds.base.libs.ViewCodeBases", "detail": "vds.base.libs.ViewDetailCodeBase"}
 	},
 	"forms": [
 		{"id": "default", "class": "vds.base.FormCodeBaseDataItem"}

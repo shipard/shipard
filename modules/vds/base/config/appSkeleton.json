@@ -1,0 +1,19 @@
+{
+	"panels": {
+		"srvcfg": {
+			"items": {
+				"technical": {
+					"subMenu": {
+						"items": {
+							"cb": {
+								"t1": "Číselníky", "object": "viewer",
+								"table": "vds.base.codeBasesData", "viewer": "cb",
+								"order": 930000
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

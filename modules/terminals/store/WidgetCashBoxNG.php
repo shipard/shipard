@@ -9,13 +9,11 @@ use \Shipard\UI\Core\WidgetPane;
 /**
  * class WidgetCashBoxNG
  */
-class WidgetCashBoxNG extends WidgetPane
+class WidgetCashBoxNG extends \Shipard\UI\Core\UIWidgetBoard
 {
 	var $code;
 	var $products = [];
 	var $units;
-
-	var $embeddMode = 0;
 
 	var $today = NULL;
 
@@ -501,10 +499,6 @@ class WidgetCashBoxNG extends WidgetPane
 
 	public function createContent ()
 	{
-		$emp = $this->app()->testGetParam('embeddMode');
-		if ($emp === '1')
-			$this->embeddMode = 1;
-
 		$this->today = new \DateTime();
 
 		$this->disablePaymentCards = intval($this->app->cfgItem ('options.e10doc-sale.cashregMobileDisablePaymentCards', 0));

@@ -3,6 +3,7 @@
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "fullName", "name": "Název", "type": "string", "len":  120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len":  60},
 
 		{"id": "vds", "name": "Struktura", "type": "int", "reference":  "vds.base.defs"},
 
@@ -10,6 +11,15 @@
 		{"id": "useShortName", "name": "Zadávat zkrácený název", "type": "logical"},
     {"id": "useDates", "name": "Používat datumy", "type": "enumInt",
 			"enumValues": {"0": "Ne", "1": "Datum", "2": "Datum OD - DO"}},
+		{"id": "orderByColumn", "name": "Seřadit podle", "type": "enumString", "len": 40,
+			"enumValues": {
+				"dateFrom": "Datum Od",
+				"dateTo": "Datum",
+				"fullName": "Název",
+				"shortName": "Zkrácený název"
+			}
+		},
+		{"id": "orderByDesc", "name": "Setřídit sestupně (Z --> A)", "type": "logical"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

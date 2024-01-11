@@ -36,10 +36,13 @@ class TableCodeBasesDefs extends DbTable
       [
         'ndx' => $r ['ndx'],
         'fn' => $r ['fullName'],
+				'sn' => $r ['shortName'],
         'vds' => $r ['vds'],
 				'useFullName' => $r ['useFullName'],
 				'useShortName' => $r ['useShortName'],
 				'useDates' => $r ['useDates'],
+				'orderByColumn' => $r ['orderByColumn'],
+				'orderByDesc' => $r ['orderByDesc'],
 			];
     }
 
@@ -114,10 +117,13 @@ class FormCodeBaseDef extends TableForm
 			$this->openTabs ($tabs);
 				$this->openTab ();
 					$this->addColumnInput ('fullName');
+					$this->addColumnInput ('shortName');
 					$this->addColumnInput ('vds');
 					$this->addColumnInput ('useFullName');
 					$this->addColumnInput ('useShortName');
 					$this->addColumnInput ('useDates');
+					$this->addColumnInput ('orderByColumn');
+					$this->addColumnInput ('orderByDesc');
 				$this->closeTab();
         /*
 				$this->openTab (TableForm::ltNone);
