@@ -43,7 +43,7 @@ class TableDocKinds extends DbTable
 				'useIntTitle' => $r ['useIntTitle'],
 				'useRetentionGuarantees' => $r ['useRetentionGuarantees'],
 				'useAddress' => $r ['useAddress'], 'invoicesInDetail' => $r ['invoicesInDetail'],
-				'viewerPrimaryTitle' => $r ['viewerPrimaryTitle'],
+				'viewerPrimaryTitle' => $r ['viewerPrimaryTitle'], 'viewerLabelTitle' => $r ['viewerLabelTitle'],
 				'useMembers' => $r ['useMembers'],
 				'useHeadSymbol1' => $r ['useHeadSymbol1'],
 				'useOwnerWorkOrder' => $r ['useOwnerWorkOrder'],
@@ -98,6 +98,7 @@ class TableDocKinds extends DbTable
 			'workOrderType' => 0, 'workOrderFrequency' => 0, 'useInvoicingPeriodicity' => 0,
 			'disableRows' => 0, 'priceOnHead' => 0,
 			'viewerPrimaryTitle' => 0,
+			'viewerLabelTitle' => 0,
 			'useDescription' => 0,
 			'usePersonsList' => 0,
 			'useDateIssue' => 1, 'labelDateIssue' => 'Datum vystavení',
@@ -228,6 +229,7 @@ class FormDocKind extends TableForm
 					$this->addColumnInput ('usePersonsList');
 					$this->addColumnInput ('invoicesInDetail');
 					$this->addColumnInput ('viewerPrimaryTitle');
+					$this->addColumnInput ('viewerLabelTitle');
 					$this->addColumnInput ('useMembers');
 					$this->addColumnInput ('useHeadSymbol1');
 					$this->addColumnInput ('useOwnerWorkOrder');

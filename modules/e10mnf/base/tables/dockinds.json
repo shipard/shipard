@@ -72,6 +72,13 @@
 			"enumValues": {"1": "Jen celkovou částku", "2": "Seznam faktur", "0": "Ne"}},
 		{"id": "viewerPrimaryTitle", "name": "Hlavní titulek v prohlížeči", "type": "enumInt",
 			"enumValues": {"0": "Zákazník", "1": "Číslo zakázky", "2": "Název zakázky"}},
+		{"id": "viewerLabelTitle", "name": "Label v prohlížečích", "type": "enumInt",
+			"enumValues": {
+				"0": "Číslo zakázky",
+				"1": "Interní číslo zakázky",
+				"2": "Interní název zakázky"
+			}
+		},
 
 		{"id": "vds", "name": "Rozšíření struktury", "type": "int", "reference":  "vds.base.defs"},
 

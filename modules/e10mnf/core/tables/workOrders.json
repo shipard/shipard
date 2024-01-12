@@ -44,8 +44,8 @@
 		{"id": "price", "name": "Cena", "type": "money"},
 		{"id": "priceHc", "name": "Cena [MD]", "type": "money"},
 
-		{"id": "refId1", "name": "Interní číslo zakázky", "type": "string", "len": 30},
-		{"id": "refId2", "name": "Objednávka / HS", "type": "string", "len": 30},
+		{"id": "refId1", "name": "Objednávka / HS", "type": "string", "len": 30},
+		{"id": "refId2", "name": "Interní číslo zakázky", "type": "string", "len": 30},
 		{"id": "intTitle", "name": "Interní text dokladu", "type": "string", "len": 120},
 		{"id": "description", "name": "Popis zakázky", "type": "memo"},
 

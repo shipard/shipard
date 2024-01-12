@@ -24,6 +24,8 @@ class ViewItemsGrid extends TableViewGrid
 	var $lastGroupId = '';
 	var $fixedMainQuery = NULL;
 
+	var $workOrdersKinds = NULL;
+
 	var $useViewDetail = 0;
 	var $useViewCompact = 0;
 	var $showColumnPrice = 0;
@@ -37,6 +39,8 @@ class ViewItemsGrid extends TableViewGrid
 	public function init ()
 	{
 		parent::init();
+
+		$this->workOrdersKinds = $this->app()->cfgItem ('e10mnf.workOrders.kinds', NULL);
 
 		$this->planNdx = intval($this->queryParam('plan'));
 		if ($this->planNdx)
@@ -210,6 +214,10 @@ class ViewItemsGrid extends TableViewGrid
 		$listItem ['iid'] = $item['iid'];
 		$listItem ['prjId'] = $item['projectId'];
 
+		$wok = NULL;
+		if ($this->workOrdersKinds)
+			$wok = $this->workOrdersKinds[$item['woDocKind'] ?? 1];
+
 		if ($this->useViewCompact)
 		{
 			$subj = [];
@@ -222,8 +230,11 @@ class ViewItemsGrid extends TableViewGrid
 				$subj[] = ['text' => $item['note'], 'class' => 'block e10-off'];
 
 			if ($item['workOrder'])
-				$subj[] = ['docAction' => 'show', 'text' => $item['woDocNumber'], 'table' => 'e10mnf.core.workOrders', 'pk' => $item['workOrder'], 'class' => 'label label-info', 'icon' => 'tables/e10mnf.core.workOrders'];
-
+				$subj[] = [
+					'docAction' => 'show',
+					'text' => match($wok['viewerLabelTitle'] ?? 0) {1 => $item['woRefId2'], 2 => $item['woIntTitle'], default => $item['woDocNumber']},
+					'table' => 'e10mnf.core.workOrders', 'pk' => $item['workOrder'], 'class' => 'label label-info', 'icon' => 'tables/e10mnf.core.workOrders'
+				];
 
 			$listItem ['subject'] = $subj;
 
@@ -233,8 +244,6 @@ class ViewItemsGrid extends TableViewGrid
 		}
 		else
 		{
-
-
 			if ($this->useWorkOrders)
 			{
 				if ($item['workOrder'])
@@ -335,7 +344,7 @@ class ViewItemsGrid extends TableViewGrid
 		array_push ($q, ', [personsCust].fullName AS [personCustName]');
 		if ($this->useWorkOrders)
 		{
-			array_push ($q, ', [wo].docNumber AS [woDocNumber]');
+			array_push ($q, ', wo.docKind AS woDocKind, [wo].docNumber AS [woDocNumber], [wo].intTitle AS [woIntTitle], [wo].refId2 AS [woRefId2]');
 			array_push ($q, ', [woParent].docNumber AS [woParentDocNumber]');
 		}
 		array_push ($q, ' FROM [plans_core_items] AS [items]');

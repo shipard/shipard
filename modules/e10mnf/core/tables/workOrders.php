@@ -334,8 +334,6 @@ class ViewWorkOrders extends TableView
 			{
 				forEach ($this->dbCounters as $cid => $c)
 				{
-					if (isset ($this->disabledActivitiesGroups) && in_array($c['activitiesGroup'], $this->disabledActivitiesGroups))
-						continue;
 					$addParams = ['dbCounter' => intval($cid)];
 					$nbt = [
 							'id' => $cid, 'title' => ($c['tabName'] !== '') ? $c['tabName'] : $c['shortName'],
@@ -820,6 +818,9 @@ class FormWorkOrder extends TableForm
 					if ($dko['useHeadSymbol1'])
 						$this->addColumnInput ('symbol1');
 					//$this->addColumnInput ('symbol2');
+
+					if ($dko['useOwnerWorkOrder'])
+						$this->addColumnInput ('parentWorkOrder');
 
 					if ($dko['useMembers'])
 						$this->addList ('doclinks', '', TableForm::loAddToFormLayout/*|TableForm::coColW12*/);
