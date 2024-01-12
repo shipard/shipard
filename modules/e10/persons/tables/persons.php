@@ -819,6 +819,9 @@ class ViewPersonsBase extends TableView
 			array_push ($q, ')');
 		}
 
+		if (isset ($qv['fiscalPeriods']))
+			array_push ($q, ' AND EXISTS (SELECT ndx FROM e10doc_core_heads WHERE persons.ndx = e10doc_core_heads.person AND [fiscalYear] IN %in', array_keys($qv['fiscalPeriods']), ')');
+
 		// -- others - with error
 		$withError = isset ($qv['others']['withError']);
 		if ($withError)
@@ -974,6 +977,19 @@ class ViewPersonsBase extends TableView
 
 		// -- tags
 		UtilsBase::addClassificationParamsToPanel($this->table, $panel, $qry);
+
+		// -- active in fiscal period
+		$periods = $this->app->cfgItem ('e10doc.acc.periods', NULL);
+		if ($periods)
+		{
+			$periodsEnum = [];
+			forEach ($periods as $periodNdx => $periodCfg)
+				$periodsEnum[$periodNdx] = ['title' => $periodCfg['fullName'], 'id' => $periodNdx];
+
+			$paramsFiscalPeriods = new \E10\Params ($panel->table->app());
+			$paramsFiscalPeriods->addParam ('checkboxes', 'query.fiscalPeriods', ['items' => $periodsEnum]);
+			$qry[] = ['id' => 'fiscalPeriods', 'style' => 'params', 'title' => 'Použito ve fiskálním období', 'params' => $paramsFiscalPeriods];
+		}
 
 		// -- others
 		$testNewPersons = intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
