@@ -42,6 +42,9 @@ class TableItems extends DbTable
 			$recData['iid'] = Utils::createToken(5, FALSE, TRUE);
 		}
 
+		if (!isset($recData ['author']) || !$recData ['author'])
+			$recData ['author'] = $this->app()->userNdx();
+
 		parent::checkBeforeSave ($recData, $ownerData);
 	}
 }
@@ -184,6 +187,8 @@ class FormItem extends TableForm
 				}
 
         $this->openTab ();
+					$this->addColumnInput ('ownerItem');
+					$this->addColumnInput ('author');
 					$this->addColumnInput ('plan');
 				$this->closeTab ();
 

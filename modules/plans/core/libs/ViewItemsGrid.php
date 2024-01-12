@@ -24,6 +24,10 @@ class ViewItemsGrid extends TableViewGrid
 	var $lastGroupId = '';
 	var $fixedMainQuery = NULL;
 
+	var $useViewDetail = 0;
+	var $useViewCompact = 0;
+	var $showColumnPrice = 0;
+
 	var $showPrevItemInMonth = 1;
 
 	var $annots = [];
@@ -46,6 +50,8 @@ class ViewItemsGrid extends TableViewGrid
 				$this->useProjectId = $this->planCfg['useProjectId'] ?? 0;
 				$this->useTableViewTabsMonths = $this->planCfg['useTableViewTabsMonths'] ?? 0;
 				$this->useViewDetail = $this->planCfg['useViewDetail'] ?? 0;
+				$this->useViewCompact = $this->planCfg['useViewCompact'] ?? 0;
+				$this->showColumnPrice = $this->planCfg['usePrice'] ?? 0;;
 			}
 		}
 
@@ -70,30 +76,50 @@ class ViewItemsGrid extends TableViewGrid
 			$this->objectSubType = self::vsDetail;
 		}
 
-
-		$this->createBottomTabs();
+		//$this->createBottomTabs();
 
 		$g = [
 			'iid' => 'ID',
 		];
-		if ($this->useWorkOrders)
+
+		if ($this->useViewCompact)
 		{
-			$g['woParent'] = 'Zakázka';
-			$g['wo'] = 'VP';
+			if ($this->useProjectId)
+				$g['prjId'] = 'Ev.č.';
+
+			$g['subject'] = 'Věc';
+			$g['begin'] = 'Zahájení';
+			$g['deadline'] = 'Termín';
+			if ($this->showColumnPrice)
+			{
+				$g['price'] = ' Cena';
+				$g['currency'] = 'Měna';
+			}
+			//$g['note'] = 'Pozn.';
 		}
+		else
+		{
+			if ($this->useWorkOrders)
+			{
+				$g['woParent'] = 'Zakázka';
+				$g['wo'] = 'VP';
+			}
 
+			if ($this->useProjectId)
+				$g['prjId'] = 'Ev.č.';
 
-		if ($this->useProjectId)
-			$g['prjId'] = 'Ev.č.';
-
-		$g['subject'] = 'Název';
-		if ($this->useCustomer)
-			$g['personCust'] = 'Zákazník';
-		$g['begin'] = 'Zahájení';
-		$g['deadline'] = 'Termín';
-		$g['price'] = ' Cena';
-		$g['currency'] = 'Měna';
-		$g['note'] = 'Pozn.';
+			$g['subject'] = 'Název';
+			if ($this->useCustomer)
+				$g['personCust'] = 'Zákazník';
+			$g['begin'] = 'Zahájení';
+			$g['deadline'] = 'Termín';
+			if ($this->showColumnPrice)
+			{
+				$g['price'] = ' Cena';
+				$g['currency'] = 'Měna';
+			}
+			$g['note'] = 'Pozn.';
+		}
 
 		$this->setGrid ($g);
 
@@ -103,11 +129,8 @@ class ViewItemsGrid extends TableViewGrid
 
 	public function createBottomTabs ()
 	{
-		$thisYear = 2022;
-		$thisMonth = 7;
-
-		$startMonths = [-1 => 12, 0 => 1, 1 => 1];
-		$stopMonths = [-1 => 12, 0 => 12, 1 => 5];
+		$thisYear = 2023;
+		$thisMonth = 4;
 
 		$anyActiveTab = 0;
 		$bt = [];
@@ -119,6 +142,7 @@ class ViewItemsGrid extends TableViewGrid
 
 		if ($this->useTableViewTabsMonths)
 		{
+			/*
 			for ($yearIndex = -1; $yearIndex < 2; $yearIndex++)
 			{
 				$year = $thisYear + $yearIndex;
@@ -140,6 +164,35 @@ class ViewItemsGrid extends TableViewGrid
 						$anyActiveTab = 1;
 				}
 			}
+			*/
+
+			$cntMonths = 0;
+			$year = $thisYear;
+			$month = $thisMonth;
+
+			while(1)
+			{
+				$isActive = ($thisMonth === $month && $thisYear === $year);
+				$nbt = [
+					'id' => $year.$month, 'title' => ($thisYear === $year) ? Utils::$monthNames[$month-1] : Utils::$monthSc3[$month-1].($year-2000),
+					'active' => $isActive,
+				];
+				$bt [] = $nbt;
+
+				if ($isActive)
+					$anyActiveTab = 1;
+
+				$month++;
+				if ($month === 13)
+				{
+					$month = 1;
+					$year++;
+				}
+
+				$cntMonths++;
+				if ($cntMonths > 5)
+					break;
+			}
 		}
 
 		if (!$anyActiveTab && isset($bt[0]))
@@ -154,58 +207,87 @@ class ViewItemsGrid extends TableViewGrid
 
 		$listItem ['pk'] = $item ['ndx'];
 
-		if ($this->useWorkOrders)
-		{
-			if ($item['workOrder'])
-				$listItem ['wo'] = ['docAction' => 'show', 'text' => $item['woDocNumber'], 'table' => 'e10mnf.core.workOrders', 'pk' => $item['workOrder']];
-
-			if ($item['workOrderParent'])
-				$listItem ['woParent'] = ['docAction' => 'edit', 'text' => $item['woParentDocNumber'], 'table' => 'e10mnf.core.workOrders', 'pk' => $item['workOrderParent']];
-		}
-
-		if ($item['personCustomer'])
-			$listItem ['personCust'] = $item['personCustName'];
-
-		$listItem ['subject'] = $item['isPrivate'] ? [['text' => $item['subject'], 'class' => ''], ['text' => '', 'icon' => 'system/iconLocked', 'class' => 'e10-me']] : $item['subject'];
-
 		$listItem ['iid'] = $item['iid'];
 		$listItem ['prjId'] = $item['projectId'];
 
-		if ($item['note'] !== '')
-			$listItem ['note'] = [['text' => $item['note'], 'class' => 'block']];
-
-		$listItem ['begin'] = $item['datePlanBegin'];
-		$listItem ['deadline'] = $item['dateDeadline'];
-
-		$listItem ['price'] = $item['price'];
-		$curr = World::currency($this->app(), $item ['currency']);
-		$listItem ['currency'] = strtoupper($curr['i']);
-
-		if ($itemState)
+		if ($this->useViewCompact)
 		{
-			$listItem ['icon'] = $itemState['icon'] ?? '';//$this->table->tableIcon ($item);
-
-			$css = "background-color: ".$itemState['colorbg'].'; color: '.$itemState['colorfg'];
-			$listItem['_options']['cellCss'] = ['subject' => $css];
-		}
-
-		if ($this->useTableViewTabsMonths)
-		{
-			if (!Utils::dateIsBlank($item['dateDeadline']))
-				$groupId = $item['dateDeadline']->format('Y-m');
+			$subj = [];
+			if ($item['isPrivate'])
+				$subj[] = ['text' => $item['subject'], 'icon' => 'system/iconLocked', 'class' => 'e10-me e10-bold  block'];
 			else
-				$groupId = '---';
-			if ($this->lastGroupId !== $groupId)
-			{
-				$headerTitle = '_____';
-				if (!Utils::dateIsBlank($item['dateDeadline']))
-					$headerTitle.= $item['dateDeadline']->format('Y-m');
-				$this->addGroupHeader ($headerTitle);
-				$this->lastGroupId = $groupId;
-			}
-		}
+				$subj[] = ['text' => $item['subject'], '_icon' => 'system/iconLocked', 'class' => 'e10-bold block'];
 
-		$listItem['_options']['cellCss']['note'] = 'line-height: 1.5;';
+			if ($item['note'] !== '')
+				$subj[] = ['text' => $item['note'], 'class' => 'block e10-off'];
+
+			if ($item['workOrder'])
+				$subj[] = ['docAction' => 'show', 'text' => $item['woDocNumber'], 'table' => 'e10mnf.core.workOrders', 'pk' => $item['workOrder'], 'class' => 'label label-info', 'icon' => 'tables/e10mnf.core.workOrders'];
+
+
+			$listItem ['subject'] = $subj;
+
+
+			$listItem ['begin'] = $item['datePlanBegin'];
+			$listItem ['deadline'] = $item['dateDeadline'];
+		}
+		else
+		{
+
+
+			if ($this->useWorkOrders)
+			{
+				if ($item['workOrder'])
+					$listItem ['wo'] = ['docAction' => 'show', 'text' => $item['woDocNumber'], 'table' => 'e10mnf.core.workOrders', 'pk' => $item['workOrder']];
+
+				if ($item['workOrderParent'])
+					$listItem ['woParent'] = ['docAction' => 'edit', 'text' => $item['woParentDocNumber'], 'table' => 'e10mnf.core.workOrders', 'pk' => $item['workOrderParent']];
+			}
+
+			if ($item['personCustomer'])
+				$listItem ['personCust'] = $item['personCustName'];
+
+			$listItem ['subject'] = $item['isPrivate'] ? [['text' => $item['subject'], 'class' => ''], ['text' => '', 'icon' => 'system/iconLocked', 'class' => 'e10-me']] : $item['subject'];
+
+
+			if ($item['note'] !== '')
+				$listItem ['note'] = [['text' => $item['note'], 'class' => 'block']];
+
+			$listItem ['begin'] = $item['datePlanBegin'];
+			$listItem ['deadline'] = $item['dateDeadline'];
+
+			$listItem ['price'] = $item['price'];
+			$curr = World::currency($this->app(), $item ['currency']);
+			$listItem ['currency'] = strtoupper($curr['i']);
+
+			if ($itemState)
+			{
+				$listItem ['icon'] = $itemState['icon'] ?? '';//$this->table->tableIcon ($item);
+
+				$css = "background-color: ".$itemState['colorbg'].'; color: '.$itemState['colorfg'];
+				$listItem['_options']['cellCss'] = ['subject' => $css];
+			}
+
+			if ($this->useTableViewTabsMonths)
+			{
+				/*
+				if (!Utils::dateIsBlank($item['dateDeadline']))
+					$groupId = $item['dateDeadline']->format('Y-m');
+				else
+					$groupId = '---';
+				if ($this->lastGroupId !== $groupId)
+				{
+					$headerTitle = '__!!!!___';
+					if (!Utils::dateIsBlank($item['dateDeadline']))
+						$headerTitle.= $item['dateDeadline']->format('Y-m');
+					$this->addGroupHeader ($headerTitle);
+					$this->lastGroupId = $groupId;
+				}
+				*/
+			}
+
+			$listItem['_options']['cellCss']['note'] = 'line-height: 1.5;';
+		}
 
 		return $listItem;
 	}
@@ -225,13 +307,21 @@ class ViewItemsGrid extends TableViewGrid
 
 		if (isset ($this->classification [$item ['pk']]))
 		{
-			if (!isset($item ['note']))
-				$item ['note'] = [];
+			if ($this->useViewCompact)
+			{
+				forEach ($this->classification [$item ['pk']] as $clsfGroup)
+					$item ['subject'] = array_merge ($item ['subject'], $clsfGroup);
+			}
 			else
-				$item ['note'][0]['class'] .= ' pb1';
+			{
+				if (!isset($item ['note']))
+					$item ['note'] = [];
+				else
+					$item ['note'][0]['class'] .= ' pb1';
 
-			forEach ($this->classification [$item ['pk']] as $clsfGroup)
-				$item ['note'] = array_merge ($item ['note'], $clsfGroup);
+				forEach ($this->classification [$item ['pk']] as $clsfGroup)
+					$item ['note'] = array_merge ($item ['note'], $clsfGroup);
+			}
 		}
 	}
 
@@ -262,6 +352,7 @@ class ViewItemsGrid extends TableViewGrid
 		if ($this->planNdx)
 			array_push ($q, ' AND [plan] = %i', $this->planNdx);
 
+		/*
 		if ($bottomTabId !== '')
 		{
 			$dateBegin = '';
@@ -316,6 +407,7 @@ class ViewItemsGrid extends TableViewGrid
 			if (count($inProgressIS))
 				array_push ($q, ' AND [itemState] IN %in', $inProgressIS);
 		}
+		*/
 
 		// -- public/private item
 		$thisUserId = $this->app()->userNdx();

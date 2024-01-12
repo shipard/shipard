@@ -37,6 +37,7 @@ class TablePlans extends DbTable
 				'title' => $r['title'],
 				'primaryViewType' => intval($r['primaryViewType']),
 				'useViewDetail' => intval($r['useViewDetail']),
+				'useViewCompact' => intval($r['useViewCompact']),
 				'useWorkOrders' => intval($r['useWorkOrders']),
 				'useCustomer' => intval($r['useCustomer']),
 				'useProjectId' => intval($r['useProjectId']),
@@ -228,6 +229,7 @@ class FormPlan extends TableForm
 				$this->openTab ();
 					$this->addColumnInput ('primaryViewType');
 					$this->addColumnInput ('useViewDetail');
+					$this->addColumnInput ('useViewCompact');
 					$this->addColumnInput ('useWorkOrders');
 					$this->addColumnInput ('useCustomer');
 					$this->addColumnInput ('useProjectId');

@@ -3,7 +3,7 @@
 
 namespace plans\core\libs\dc;
 use \Shipard\Base\DocumentCard;
-
+use \e10\web\WebTemplateMustache;
 
 /**
  * class PlanItemCore
@@ -23,8 +23,14 @@ class PlanItemCore extends DocumentCard
     if ($useText && $this->recData ['text'] && $this->recData ['text'] !== '')
     {
       $textRenderer = new \lib\core\texts\Renderer($this->app());
+
+      $template = new WebTemplateMustache ($this->app());
+			$page = ['tableId' => $this->table->tableId()];
+      $textRenderer->setOwner ($page);
       $textRenderer->render($this->recData ['text']);
-      $this->addContent('body', ['type' => 'text', 'subtype' => 'rawhtml', 'text' => $textRenderer->code, 'pane' => 'e10-pane e10-pane-table pageText']);
+      $code = $template->renderPagePart('content', $textRenderer->code);
+
+      $this->addContent('body', ['type' => 'text', 'subtype' => 'rawhtml', 'text' => $code/*$textRenderer->code*/, 'pane' => 'e10-pane e10-pane-table pageText']);
     }
 
     // annots

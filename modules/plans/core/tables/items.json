@@ -11,6 +11,8 @@
     {"id": "itemState", "name": "Stav", "type": "enumInt",
 			"enumCfg": {"cfgItem": "plans.itemStates", "cfgValue": "", "cfgText": "sn"}},
 
+		{"id": "ownerItem", "name": "Nadřazená položka plánu", "type": "int", "reference": "plans.core.items"},
+
     {"id": "personCustomer", "name": "Zákazník", "type": "int", "reference": "e10.persons.persons"},
 
     {"id": "workOrder", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
@@ -18,9 +20,11 @@
 
     {"id": "projectId", "name": "ID projektu", "type": "string", "len": 20},
 
-		{"id": "datePlanBegin", "name": "Datum zahájení plánování", "type": "date"},
+		{"id": "datePlanBegin", "name": "Datum zahájení", "type": "date"},
 		{"id": "dateDeadline", "name": "Termín", "type": "date"},
 		{"id": "dateClosed", "name": "Datum uzavření", "type": "date"},
+
+		{"id": "author", "name": "Autor", "type": "int", "reference": "e10.persons.persons"},
 
 		{"id": "price", "name": "Cena", "type": "money"},
 		{"id": "currency", "name": "Měna", "type": "int", "reference": "e10.world.currencies"},

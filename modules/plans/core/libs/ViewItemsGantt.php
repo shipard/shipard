@@ -46,7 +46,6 @@ class ViewItemsGantt extends TableViewGrid
 				$this->useCustomer = $this->planCfg['useCustomer'] ?? 0;
 				$this->useProjectId = $this->planCfg['useProjectId'] ?? 0;
 				$this->useTableViewTabsMonths = $this->planCfg['useTableViewTabsMonths'] ?? 0;
-				$this->useViewDetail = $this->planCfg['useViewDetail'] ?? 0;
 			}
 		}
 

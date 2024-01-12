@@ -81,7 +81,7 @@ class ViewItemStates extends TableView
 		$listItem ['pk'] = $item ['ndx'];
 
 		$listItem ['t1'] = $item['fullName'];
-		//$listItem ['i1'] = ['text' => '#'.$item['ndx'], 'class' => 'id'];
+		$listItem ['i1'] = ['text' => '#'.$item['ndx'], 'class' => 'id'];
 
 		//$listItem ['t2'] = $item['id'];
 
