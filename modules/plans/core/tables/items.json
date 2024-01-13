@@ -53,6 +53,10 @@
 		{
       "id": "gridTree", "class": "plans.core.libs.ViewItemsGridTree",
 			"detail": "plans.core.ViewDetailItem"
+		},
+		{
+      "id": "gantt", "class": "plans.core.libs.ViewItemsGantt",
+			"detail": "plans.core.ViewDetailItem"
 		}
 	],
 	"forms": [
