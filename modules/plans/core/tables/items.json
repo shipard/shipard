@@ -49,6 +49,10 @@
 		{
       "id": "grid", "class": "plans.core.libs.ViewItemsGrid",
 			"detail": "plans.core.ViewDetailItem"
+		},
+		{
+      "id": "gridTree", "class": "plans.core.libs.ViewItemsGridTree",
+			"detail": "plans.core.ViewDetailItem"
 		}
 	],
 	"forms": [

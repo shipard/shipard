@@ -39,15 +39,14 @@ class Dashboard extends WidgetBoard
 			return;
 		}
 
-    //$this->addContent(['type' => 'line', 'line' => ['text' => 'nazdar']]);
-
     $parts = explode ('-', $this->activeTopTab);
 
-		if ($viewerMode === 'gantt')
-			$this->addContentViewer('plans.core.items', /*'plans.core.ViewItems'*/'plans.core.libs.ViewItemsGantt', ['plan' => $parts[1], 'viewerMode' => $viewerMode]);
+		if ($viewerMode === 'tree')
+			$this->addContentViewer('plans.core.items', 'gridTree', ['plan' => $parts[1], 'viewerMode' => $viewerMode]);
+		elseif ($viewerMode === 'gantt')
+			$this->addContentViewer('plans.core.items', 'gantt', ['plan' => $parts[1], 'viewerMode' => $viewerMode]);
 		else
-			$this->addContentViewer('plans.core.items', /*'plans.core.ViewItems'*/'plans.core.libs.ViewItemsGrid', ['plan' => $parts[1], 'viewerMode' => $viewerMode]);
-
+			$this->addContentViewer('plans.core.items', 'grid', ['plan' => $parts[1], 'viewerMode' => $viewerMode]);
 	}
 
 	public function init ()
@@ -136,10 +135,27 @@ class Dashboard extends WidgetBoard
 
 	protected function initRightTabs ()
 	{
-		$rt = [
-			'viewer-mode-table' => ['text' => '', 'icon' => 'system/dashboardModeRows', 'action' => 'viewer-mode-table'],
-			'viewer-mode-gantt' => ['text' => '', 'icon' => 'system/iconCalendar', 'action' => 'viewer-mode-gantt'],
-		];
+		$parts = explode ('-', $this->activeTopTab);
+		$planNdx = intval($parts[1] ?? 0);
+		if (!$planNdx)
+			$planNdx = key($this->usersPlans);
+
+		$planCfg = $this->app()->cfgItem('plans.plans.'.$planNdx, NULL);
+
+		$rt = [];
+
+		if (intval($planCfg['useViewTree'] ?? 0))
+		{
+			$rt['viewer-mode-tree-'.$planNdx] = ['text' => '', 'icon' => 'user/alignRight', 'action' => 'viewer-mode-tree'];
+			$rt['viewer-mode-table-'.$planNdx] = ['text' => '', 'icon' => 'system/dashboardModeRows', 'action' => 'viewer-mode-table'];
+		}
+		else
+		{
+			$rt['viewer-mode-table-'.$planNdx] = ['text' => '', 'icon' => 'system/dashboardModeRows', 'action' => 'viewer-mode-table'];
+			$rt['viewer-mode-tree-'.$planNdx] = ['text' => '', 'icon' => 'user/alignRight', 'action' => 'viewer-mode-tree'];
+		}
+
+		$rt ['viewer-mode-gantt'] = ['text' => '', 'icon' => 'system/iconCalendar', 'action' => 'viewer-mode-gantt'];
 
 		$this->toolbar['rightTabs'] = $rt;
 	}

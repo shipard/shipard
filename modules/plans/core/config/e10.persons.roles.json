@@ -8,7 +8,7 @@
 	},
 	"pwuser": {
 		"viewers": {
-			"plans.core.items": {"default": 2, "grid": 2}
+			"plans.core.items": {"default": 2, "grid": 2, "gridTree": 2}
 		},
 		"widgets": {
 			"plans.core.libs.Dashboard": 2
