@@ -148,7 +148,7 @@ class ViewOmluvenky extends TableView
 			array_push($q, ')');
 		}
 
-		$this->queryMain ($q, 'omluvenky.', ['[datumOd] ASC', '[ndx]']);
+		$this->queryMain ($q, 'omluvenky.', ['[datumOd] DESC', '[ndx]']);
 		$this->runQuery ($q);
 	}
 
