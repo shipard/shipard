@@ -506,6 +506,7 @@ class E10Utils
 		{
 			case 0: return $recData['dateTax'];
 			case 1: return $recData['dateIssue'];
+			case 2: return $recData['dateTaxDuty'];
 		}
 
 		return NULL;
