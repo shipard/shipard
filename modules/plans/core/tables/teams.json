@@ -1,0 +1,26 @@
+{
+	"id": "plans.core.teams", "sql": "plans_core_teams", "name": "Týmy",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 60},
+
+		{"id": "icon", "name": "Ikona", "type": "string", "len": 50},
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "plans.core.ViewTeams",
+			"details": {
+				"preview": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "plans.core.ViewDetailTeam"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "plans.core.FormTeam"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

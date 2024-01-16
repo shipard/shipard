@@ -123,6 +123,7 @@ class FormItem extends TableForm
 		$usePrice = $planCfg['usePrice'] ?? 0;
 		$useAnnots = $planCfg['useAnnots'] ?? 0;
 		$useText = $planCfg['useText'] ?? 0;
+		$useTeams = $planCfg['useTeams'] ?? 0;
 		$plansWorkOrdersRows = $planCfg['plansWorkOrdersRows'] ?? 0;
 
 		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
@@ -157,6 +158,9 @@ class FormItem extends TableForm
 						$this->addColumnInput ('price');
 						$this->addColumnInput ('currency');
 					}
+
+					if ($useTeams)
+          	$this->addColumnInput ('team');
 
 					$this->addColumnInput ('datePlanBegin');
 					$this->addColumnInput ('dateDeadline');

@@ -1,7 +1,7 @@
 {
   "id": "plans.core",
   "name": "Planning - Core",
-  "tables": ["plans", "items", "itemsParts", "itemStates"],
+  "tables": ["plans", "teams", "items", "itemsParts", "itemStates"],
   "modules": ["wkf/core"],
 
   "config": [

@@ -20,6 +20,7 @@ class ViewItemsGrid extends TableViewGrid
 	var $useTableViewTabsMonths = 0;
 	var $useWorkOrders = 0;
 	var $useCustomer = 0;
+	var $useTeams = 0;
 	var $useProjectId = 0;
 	var $lastGroupId = '';
 	var $fixedMainQuery = NULL;
@@ -52,6 +53,7 @@ class ViewItemsGrid extends TableViewGrid
 			{
 				$this->useWorkOrders = $this->planCfg['useWorkOrders'] ?? 0;
 				$this->useCustomer = $this->planCfg['useCustomer'] ?? 0;
+				$this->useTeams = $this->planCfg['useTeams'] ?? 0;
 				$this->useProjectId = $this->planCfg['useProjectId'] ?? 0;
 				$this->useTableViewTabsMonths = $this->planCfg['useTableViewTabsMonths'] ?? 0;
 				$this->useViewDetail = $this->planCfg['useViewDetail'] ?? 0;
@@ -116,6 +118,10 @@ class ViewItemsGrid extends TableViewGrid
 			$g['subject'] = 'Název';
 			if ($this->useCustomer)
 				$g['personCust'] = 'Zákazník';
+
+			if ($this->useTeams)
+				$g['team'] = 'Tým';
+
 			$g['begin'] = 'Zahájení';
 			$g['deadline'] = 'Termín';
 			if ($this->showColumnPrice)
@@ -254,6 +260,9 @@ class ViewItemsGrid extends TableViewGrid
 					'table' => 'e10mnf.core.workOrders', 'pk' => $item['workOrder'], 'class' => 'label label-info', 'icon' => 'tables/e10mnf.core.workOrders'
 				];
 
+			if ($item['teamName'])
+				$subj[] = ['text' => $item['teamName'], 'icon' => 'tables/plans.core.teams', 'class' => 'label label-default'];
+
 			if ($treeLevel === 2)
 				$listItem['_options']['cellCss']['subject'] = 'padding-left: 1rem;';
 
@@ -284,6 +293,10 @@ class ViewItemsGrid extends TableViewGrid
 
 			if ($item['note'] !== '')
 				$listItem ['note'] = [['text' => $item['note'], 'class' => 'block']];
+
+
+			if ($item['teamName'])
+				$listItem ['team'] = $item['teamName'];
 
 			$listItem ['begin'] = $item['datePlanBegin'];
 			$listItem ['deadline'] = $item['dateDeadline'];
@@ -384,6 +397,7 @@ class ViewItemsGrid extends TableViewGrid
 
 			array_push ($q, ' SELECT [items].datePlanBegin AS oc1, [items].dateDeadline AS oc2, [items].ndx AS oc3, 1 AS treeLevel, [items].*');
 			array_push ($q, ', [personsCust].fullName AS [personCustName]');
+			array_push ($q, ', [teams].shortName AS [teamName]');
 			if ($this->useWorkOrders)
 			{
 				array_push ($q, ', wo.docKind AS woDocKind, [wo].docNumber AS [woDocNumber], [wo].intTitle AS [woIntTitle], [wo].refId2 AS [woRefId2]');
@@ -392,6 +406,7 @@ class ViewItemsGrid extends TableViewGrid
 			array_push ($q, ' FROM [plans_core_items] AS [items]');
 
 			array_push ($q, ' LEFT JOIN [e10_persons_persons] AS [personsCust] ON [items].[personCustomer] = [personsCust].ndx');
+			array_push ($q, ' LEFT JOIN [plans_core_teams] AS [teams] ON [items].[team] = [teams].ndx');
 
 			if ($this->useWorkOrders)
 			{
@@ -436,6 +451,7 @@ class ViewItemsGrid extends TableViewGrid
 
 			array_push ($q, ' SELECT [ownerItems].datePlanBegin AS oc1, [ownerItems].dateDeadline AS oc2, [ownerItems].ndx AS oc3, 2 AS treeLevel, [items].*');
 			array_push ($q, ', [personsCust].fullName AS [personCustName]');
+			array_push ($q, ', [teams].shortName AS [teamName]');
 			if ($this->useWorkOrders)
 			{
 				array_push ($q, ', wo.docKind AS woDocKind, [wo].docNumber AS [woDocNumber], [wo].intTitle AS [woIntTitle], [wo].refId2 AS [woRefId2]');
@@ -447,6 +463,7 @@ class ViewItemsGrid extends TableViewGrid
 
 
 			array_push ($q, ' LEFT JOIN [e10_persons_persons] AS [personsCust] ON [items].[personCustomer] = [personsCust].ndx');
+			array_push ($q, ' LEFT JOIN [plans_core_teams] AS [teams] ON [items].[team] = [teams].ndx');
 
 			if ($this->useWorkOrders)
 			{
@@ -529,6 +546,7 @@ class ViewItemsGrid extends TableViewGrid
 		$q = [];
 		array_push ($q, ' SELECT [items].*');
 		array_push ($q, ', [personsCust].fullName AS [personCustName]');
+		array_push ($q, ', [teams].shortName AS [teamName]');
 		if ($this->useWorkOrders)
 		{
 			array_push ($q, ', wo.docKind AS woDocKind, [wo].docNumber AS [woDocNumber], [wo].intTitle AS [woIntTitle], [wo].refId2 AS [woRefId2]');
@@ -537,6 +555,7 @@ class ViewItemsGrid extends TableViewGrid
 		array_push ($q, ' FROM [plans_core_items] AS [items]');
 
 		array_push ($q, ' LEFT JOIN [e10_persons_persons] AS [personsCust] ON [items].[personCustomer] = [personsCust].ndx');
+		array_push ($q, ' LEFT JOIN [plans_core_teams] AS [teams] ON [items].[team] = [teams].ndx');
 
 		if ($this->useWorkOrders)
 		{

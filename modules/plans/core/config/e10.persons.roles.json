@@ -2,6 +2,7 @@
 	"admin": {
 		"viewers": {
 			"plans.core.plans": {"default": 2},
+			"plans.core.teams": {"default": 2},
 			"plans.core.items": {"default": 2, "grid": 2, "gridTree": 2, "gantt": 2},
 			"plans.core.itemStates": {"default": 2}
 		}

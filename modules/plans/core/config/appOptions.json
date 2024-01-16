@@ -3,6 +3,10 @@
 		"name": "Plány", "order": 101000, "group": "plans",
 		"type": "viewer", "table": "plans.core.plans", "viewer": "default"
 	},
+	"plansTeams": {
+		"name": "Týmy", "order": 101500, "group": "plans",
+		"type": "viewer", "table": "plans.core.teams", "viewer": "default"
+	},
 	"plansItemStates": {
 		"name": "Stavy plánování", "order": 102000, "group": "plans",
 		"type": "viewer", "table": "plans.core.itemStates", "viewer": "default"

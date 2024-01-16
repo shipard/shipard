@@ -16,6 +16,7 @@
 		{"id": "useProjectId", "name": "Používat kód projektu", "type": "logical"},
 		{"id": "usePrice", "name": "Zadávat cenu", "type": "logical"},
 		{"id": "useText", "name": "Používat textový popis", "type": "logical"},
+		{"id": "useTeams", "name": "Používat Týmy", "type": "logical"},
 
 		{"id": "useTableViewTabsMonths", "name": "V tabulkovém pohledu členit po měsících", "type": "logical"},
 
