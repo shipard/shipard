@@ -391,6 +391,8 @@ class ViewItemsGrid extends TableViewGrid
 	public function selectRows_Tree ()
 	{
 		$fts = $this->fullTextSearch ();
+		$mainQuery = $this->mainQueryId ();
+		$forceArchive = ($fts !== '');
 
 		$q = [];
 		array_push ($q, '(');
@@ -446,6 +448,17 @@ class ViewItemsGrid extends TableViewGrid
 				array_push ($q, ')');
 			}
 
+			if ($mainQuery === 'active' || $mainQuery === '')
+			{
+				if ($forceArchive)
+					array_push($q, ' AND [items].[docStateMain] != %i', 4);
+				else
+					array_push($q, ' AND [items].[docStateMain] < %i', 4);
+			}
+			elseif ($mainQuery === 'archive')
+				array_push ($q, ' AND [items].[docStateMain] = %i', 5);
+			elseif ($mainQuery === 'trash')
+				array_push ($q, ' AND [items].[docStateMain] = %i', 4);
 
 		array_push ($q, ') UNION (');
 
@@ -515,6 +528,17 @@ class ViewItemsGrid extends TableViewGrid
 				array_push ($q, ')');
 			}
 
+			if ($mainQuery === 'active' || $mainQuery === '')
+			{
+				if ($forceArchive)
+					array_push($q, ' AND [items].[docStateMain] != %i', 4);
+				else
+					array_push($q, ' AND [items].[docStateMain] < %i', 4);
+			}
+			elseif ($mainQuery === 'archive')
+				array_push ($q, ' AND [items].[docStateMain] = %i', 5);
+			elseif ($mainQuery === 'trash')
+				array_push ($q, ' AND [items].[docStateMain] = %i', 4);
 
 		array_push ($q, ')');
 
