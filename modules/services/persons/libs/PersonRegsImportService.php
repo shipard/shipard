@@ -14,6 +14,8 @@ final class PersonRegsImportService extends Utility
 
   public function importOnePerson()
   {
+    if ($this->app()->debug)
+      echo "* importOnePerson\n";
     $e = new \services\persons\libs\cz\ImportPersonFromRegsCZ($this->app());
     $e->setPersonNdx($this->personNdx);
     $e->run();
@@ -36,7 +38,7 @@ final class PersonRegsImportService extends Utility
       array_push($q, ' LIMIT 10');
       $rows = $this->db()->query($q);
 
-      $cnt = 0;  
+      $cnt = 0;
       foreach ($rows as $r)
       {
         if ($this->debug)
@@ -53,7 +55,7 @@ final class PersonRegsImportService extends Utility
       $runLen = time() - $startTime;
       if ($this->debug)
         echo ' >>> '.$runLen.' secs (max is '.$this->maxDuration.')'."\n";
-      
+
       if ($runLen > $this->maxDuration)
         break;
     }

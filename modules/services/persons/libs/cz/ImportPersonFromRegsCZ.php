@@ -53,27 +53,30 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
 
   function doImport_ARES_Core()
   {
+    if ($this->app()->debug)
+      echo "* doImport_ARES_Core; ";
     $regData = $this->regData(self::prtCZAresCore, $this->personDataCurrent->personId);
     if (!$regData)
     {
+      if ($this->app()->debug)
+        echo "ERROR; no regs data found\n";
       return;
     }
 
-		$xml = @simplexml_load_string ($regData['srcData']);
-		if (isset($xml) && $xml)
+    $data = json_decode($regData['srcData'], TRUE);
+    //print_r($data);
+		if (isset($data['ico']))
 		{
-			$ns = $xml->getDocNamespaces();
-			$data = $xml->children($ns['are']);
-			$el = $data->children($ns['D'])->VBAS;
-			if (strval($el->ICO) == $this->personDataCurrent->personId)
+			if ($data['ico'] == $this->personDataCurrent->personId)
 			{
-        $oid = strval ($el->ICO);
+        $oid = $data['ico'];
         $corePersonInfo = [
           'oid' => $oid,
-          'originalName' => Str::upToLen(strval ($el->OF), 240),
-          'fullName' => Str::upToLen($this->clearFullName(strval ($el->OF)), 240),
+          'originalName' => Str::upToLen(strval ($data['obchodniJmeno']), 240),
+          'fullName' => Str::upToLen($this->clearFullName(strval ($data['obchodniJmeno'])), 240),
         ];
 
+        /*
         $flags = strval ($el->PSU);
         if ($flags[3] === 'A')
           $this->useRZP = 1;
@@ -83,26 +86,38 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
           $this->useVAT = self::vatStandard;
         elseif ($flags[5] === 'S')
           $this->useVAT = self::vatGroup;
+        */
 
-        $this->primaryTAXID = strval($el->DIC);
+        $flags = $data['seznamRegistraci'] ?? [];
+        if ($flags['stavZdrojeRzp'] ?? '' === 'AKTIVNI')
+          $this->useRZP = 1;
+        //if ($flags[3] === 'A')
+        //  $this->useRZP = 1;
+        if ($flags['stavZdrojeDph'] === 'AKTIVNI')
+          $this->useVAT = self::vatStandard;
+        //elseif ($flags[5] === 'S') // "dicSkDph":"N/A"
+        //  $this->useVAT = self::vatGroup;
+
+
+        $this->primaryTAXID = $data['dic'] ?? '';
         if ($this->useVAT === self::vatGroup)
           $this->primaryTAXID = 'CZ'.$oid;
 
         $corePersonInfo['vatState'] = $this->useVAT;
         if ($this->useVAT === self::vatStandard)
-          $corePersonInfo['vatID'] = strval($el->DIC);
+          $corePersonInfo['vatID'] = $data['dic'] ?? '';
 
-        if (isset($el->DV))
+        if (isset($data['datumVzniku']))
         {
-          $corePersonInfo['validFrom'] = strval($el->DV);
+          $corePersonInfo['validFrom'] = $data['datumVzniku'];
         }
 
-        if (isset($el->DZ))
+        if (isset($data['datumZaniku']))
         {
-          $corePersonInfo['validTo'] = strval($el->DZ);
+          $corePersonInfo['validTo'] = strval($data['datumZaniku']);
         }
 
-        $legalTypeStr = strval($el->PF->KPF);
+        $legalTypeStr = $data['pravniForma'] ?? '';
         $legalTypeRecData = $this->db()->query('SELECT * FROM [e10_base_nomencItems] WHERE [id] = %s', 'cz-tobe-'.$legalTypeStr)->fetch();
         if ($legalTypeRecData)
           $corePersonInfo['natLegalType'] = $legalTypeRecData['ndx'];
@@ -114,11 +129,11 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
         $primaryAddress = [];
         $this->fillAddress ([
             'addressId' => 'P'.$oid,
-            'street' => strval ($el->AA->NU),
-            'streetNumber' => strval($el->AA->CD),
-            'streetNumber2' => strval($el->AA->CO),
-            'city' => strval ($el->AA->N),
-            'zipcode' => strval ($el->AA->PSC),
+            'street' => $data['sidlo']['nazevUlice'] ?? '',
+            'streetNumber' => $data['sidlo']['cisloDomovni'] ?? '',
+            'streetNumber2' => ($data['sidlo']['cisloOrientacni'] ?? '').($data['sidlo']['cisloOrientacniPismeno'] ?? ''),
+            'city' => $data['sidlo']['nazevObce'] ?? '',
+            'zipcode' => $data['sidlo']['psc'] ?? $data['sidlo']['pscTxt'] ?? '',
           ], $primaryAddress);
 
         $primaryAddress['type'] = 0;
@@ -127,19 +142,39 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
 			}
       else
       {
-
+        if ($this->app()->debug)
+          echo "ERROR; invalid personId\n";
       }
     }
+    else
+    {
+      if ($this->app()->debug)
+        echo "ERROR; data parse\n";
+    }
+
+    if ($this->app()->debug)
+      echo "OK\n";
   }
 
   function doImport_ARES_RZP()
   {
+    return;
+    if ($this->app()->debug)
+      echo "* doImport_ARES_Core; ";
+
     if (!$this->useRZP)
+    {
+      if ($this->app()->debug)
+        echo "disabled\n";
+
       return;
+    }
 
     $regData = $this->regData(self::prtCZAresRZP, $this->personDataCurrent->personId);
     if (!$regData)
     {
+      if ($this->app()->debug)
+        echo "ERROR; no regs data found\n";
       return;
     }
 
@@ -540,6 +575,8 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
 
   protected function doImport()
   {
+    if ($this->app()->debug)
+      echo "* doImport\n";
     $this->doImport_ARES_Core();
     $this->doImport_ARES_RZP();
     $this->doImport_RZP();

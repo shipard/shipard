@@ -19,6 +19,9 @@ class ImportPersonFromRegs extends \services\persons\libs\CoreObject
 
   public function setPersonNdx($personNdx)
   {
+    if ($this->app()->debug)
+      echo "* setPersonNdx\n";
+
     $this->personNdx = $personNdx;
 
     $this->personDataCurrent = new PersonData($this->app());

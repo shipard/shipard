@@ -118,6 +118,10 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			$e->personNdx = $personNdx;
 			$e->refreshImport($personNdx);
 		}
+		else
+		{
+			echo "ERROR: no `personNdx` param...\n";
+		}
 
 		return TRUE;
 	}
