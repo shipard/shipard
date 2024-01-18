@@ -11,7 +11,7 @@ class Application extends \Shipard\Application\Application
 {
 	var $arguments;
 	var $lastUsedVersionId = 0;
-	
+
 	public function __construct ($argv)
 	{
 		$this->e10dir = __SHPD_ROOT_DIR__;
@@ -22,6 +22,8 @@ class Application extends \Shipard\Application\Application
 			return;
 		}
 
+		$this->debug = intval($this->arg('debug'));
+
 		// -- load last version id
 		$this->lastUsedVersionId = intval (@file_get_contents (__APP_DIR__ . "/config/E10_VERSION_ID"));
 
@@ -30,7 +32,7 @@ class Application extends \Shipard\Application\Application
 		if (!$cfgString)
 			return ;//$this->setError (500, "uncofigured application");
 		$this->appCfg = unserialize ($cfgString);
-		
+
 		// -- load app skeleton
 		$this->appSkeleton  = $this->appCfg ['appSkeleton'];
 		$this->dataModel = new \Shipard\Application\DataModel ($this->appCfg ['dataModel']);
@@ -58,8 +60,8 @@ class Application extends \Shipard\Application\Application
 
 			try {
 			$this->db = new \Dibi\Connection ($dboptions);;
-			} catch (\Dibi\Exception $e) {                                                                                                                         
-					error_log (get_class($e) . ': ' . $e->getMessage());  
+			} catch (\Dibi\Exception $e) {
+					error_log (get_class($e) . ': ' . $e->getMessage());
 			}
 			//$profiler = $this->db->getProfiler();
 			//$profiler->setFile (__APP_DIR__ . '/log/dibi.log');
@@ -76,20 +78,20 @@ class Application extends \Shipard\Application\Application
 		if (!$this->cfgServer)
 			$this->cfgServer = $this->loadCfgFile('/etc/shipard/server.json');
 	}
-	
+
 	public function arg ($name)
 	{
 		if (isset ($this->arguments [$name]))
 			return strval($this->arguments [$name]);
-		
+
 		return FALSE;
 	}
-	
+
 	public function command ($idx = 0)
 	{
 		if (isset ($this->arguments [$idx]))
 			return $this->arguments [$idx];
-		
+
 		return "";
 	}
 
@@ -164,7 +166,7 @@ class Application extends \Shipard\Application\Application
 			}
 			return $out;
 	}
-	
+
 
 	public function run ()
 	{

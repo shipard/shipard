@@ -19,6 +19,8 @@ class Application extends \Shipard\Application\ApplicationCore
 	var $otherDbs = [];
 	var $cache;
 
+	var $debug = 0;
+
 	static $appLog;
 
 	public $response;
