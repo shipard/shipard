@@ -18,7 +18,8 @@ class Validator extends Utility
   var $mainAddress = NULL;
   var $country = '';
 
-  var $checkOid;
+  var $checkOid = [];
+	var $checkVATID = [];
 
 	var $onlineToolsDef;
 
@@ -40,12 +41,19 @@ class Validator extends Utility
 	{
 		$this->loadPersonMainAddress();
 
+
+    $reg = new \e10\persons\libs\register\PersonRegister($this->app());
+
 		if ($this->country !== 'cz')
 		{
+			if ($this->app()->debug)
+				echo "country `{$this->country}` not supported; ";
+
+			$reg->personNdx = $this->personNdx;
+			$reg->setPersonValidity(3);
 			return;
 		}
 
-    $reg = new \e10\persons\libs\register\PersonRegister($this->app());
 		$reg->setPersonNdx($this->personNdx);
 		if (!$reg->generalFailure)
 		{
@@ -60,6 +68,8 @@ class Validator extends Utility
 				$reg->repair();
 			}
 		}
+		else
+			$reg->setPersonValidity(2);
 	}
 
 	protected function loadPersonMainAddress()
@@ -107,13 +117,18 @@ class Validator extends Utility
 		{
 			if ($r['valueString'] === '')
 				continue;
-			//$this->checkVat[$r['valueString']] = ['valid' => 0];
+			$this->addVATID($r['valueString']);
 		}
 	}
 
 	public function addOID($oid)
 	{
 		$this->checkOid[$oid] = ['valid' => 0];
+	}
+
+	public function addVATID($oid)
+	{
+		$this->checkVATID[$oid] = ['valid' => 0];
 	}
 
 	public function onlineTools ($personRecData)
@@ -126,7 +141,7 @@ class Validator extends Utility
 
 			$this->loadPersonMainAddress();
 			$this->loadPersonOid();
-			//$this->loadPersonVat();
+			$this->loadPersonVat();
 		}
 
 		$tools = [];

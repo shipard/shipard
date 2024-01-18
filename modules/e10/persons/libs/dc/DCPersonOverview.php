@@ -345,15 +345,25 @@ class DCPersonOverview extends \Shipard\Base\DocumentCard
 			$this->validity['icon'] = 'system/iconCheck';
 			//$this->addContent('body', ['pane' => 'e10-pane e10-pane-table e10-row-plus', 'type' => 'line', 'line' => $line]);
 		}
+		elseif ($validity['valid'] === 3)
+		{
+			$line = [['text' => 'V této zemi nelze kontrolu provést', 'XXicon' => 'system/iconCheck', 'suffix' => utils::datef ($validity['updated'], '%D, %T')]];
+			if ($validity['revalidate'])
+				$line [] = ['text' => 'údaje byly opraveny, je naplánována nová kontrola', 'icon' => 'system/docStateEdit', 'class' => 'e10-small block'];
+			$this->validity['class'] = 'e10-row-plus';
+			$this->validity['icon'] = 'system/iconCheck';
+			//$this->addContent('body', ['pane' => 'e10-pane e10-pane-table e10-row-plus', 'type' => 'line', 'line' => $line]);
+		}
 		else
 		{
 			$this->validity['icon'] = 'system/iconWarning';
-			$title = ['text' => 'Při kontrole byly nalezeny chyby', 'class' => 'e10-error h2'];
+			$title = ['text' => 'Při kontrole byly nalezeny chyby', 'suffix' => utils::datef ($validity['updated'], '%D, %T'), 'class' => 'e10-error h2'];
 			$line = [$title];
 
 			if ($validity['revalidate'])
 				$line [] = ['text' => 'údaje byly opraveny, je naplánována nová kontrola', 'icon' => 'system/iconCheck', 'class' => 'e10-small block'];
 
+			/*
 			$msg = json::decode($validity['msg']);
 			foreach ($msg as $partId => $part)
 			{
@@ -365,6 +375,7 @@ class DCPersonOverview extends \Shipard\Base\DocumentCard
 					$line[] = $info;
 				}
 			}
+			*/
 
 			$this->validity['class'] = 'e10-warning1';
 		}

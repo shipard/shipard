@@ -4,7 +4,7 @@
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "person", "name": "Osoba", "type": "int"},
 		{"id": "valid", "name": "V pořádku", "type": "enumInt",
-			"enumValues": {"0": "Nezkontrolováno", "1": "Ano", "2": "Ne"}},
+			"enumValues": {"0": "Nezkontrolováno", "1": "Ano", "2": "Ne", "3": "Nepodporovaná země"}},
 		{"id": "validVat", "name": "Stav DPH", "type": "enumInt",
 			"enumValues": {"0": "Nezkontrolováno", "1": "Ano", "2": "Ne"}},
 		{"id": "validOid", "name": "Stav IČ", "type": "enumInt",

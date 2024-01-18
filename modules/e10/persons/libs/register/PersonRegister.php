@@ -21,6 +21,7 @@ class PersonRegister extends Utility
   var $tablePersonsContact;
 
   var $personOid = '';
+  var $personVATIDs = [];
   var $personNdx = 0;
   var $personRecData = NULL;
   var $personMainAddress = [];
@@ -47,6 +48,7 @@ class PersonRegister extends Utility
     $this->personNdx = $personNdx;
     $this->personRecData = $this->app()->loadItem($this->personNdx, 'e10.persons.persons');
     $this->loadPersonOid();
+    $this->loadPersonVatIDs();
 
     if ($this->generalFailure)
       return;
@@ -162,6 +164,23 @@ class PersonRegister extends Utility
     return $this->personOid;
 	}
 
+  protected function loadPersonVatIDs ($forcePersonNdx = 0)
+	{
+    $personNdx = ($forcePersonNdx) ? $forcePersonNdx : $this->personRecData['ndx'];
+
+		$q[] = 'SELECT * FROM [e10_base_properties] AS props';
+		array_push ($q, ' WHERE [recid] = %i', $this->personRecData['ndx']);
+		array_push ($q, ' AND [tableid] = %s', 'e10.persons.persons', 'AND [group] = %s', 'ids', ' AND property = %s', 'taxid');
+
+		$rows = $this->db()->query ($q);
+		foreach ($rows as $r)
+		{
+			if ($r['valueString'] === '')
+				continue;
+			$this->personVATIDs[$r['valueString']] = ['valid' => 0];
+		}
+	}
+
   protected function loadContacts()
   {
     $q [] = 'SELECT [contacts].* ';
@@ -263,7 +282,7 @@ class PersonRegister extends Utility
 
   protected function addAddress($addressData, $flags = NULL)
   {
-        $newAddress = [
+    $newAddress = [
       'person' => $this->personNdx,
       'adrSpecification' => $addressData['specification'],
       'adrStreet' => $addressData['street'],
@@ -359,6 +378,12 @@ class PersonRegister extends Utility
     {
       $this->addDiffMsg('Změna názvu z `'.$this->personRecData['fullName'].'` na `'.$this->registerData['person']['fullName'].'`');
       $update['fullName'] = $this->registerData['person']['fullName'];
+    }
+
+    if (isset($this->registerData['person']['vatID']) && $this->registerData['person']['vatID'] !== '' && !isset($this->personVATIDs[$this->registerData['person']['vatID']]))
+    {
+      $this->addDiffMsg('Nové DIČ `'.$this->registerData['person']['vatID'].'`');
+      //$update['fullName'] = $this->registerData['person']['fullName'];
     }
 
     if (count($update))
@@ -497,10 +522,11 @@ class PersonRegister extends Utility
 
 		$item = [
       'valid' => $valid,
-      'msg' => json::lint($this->diff['msgs']),
       'updated' => new \DateTime(),
       'revalidate' => 0
     ];
+    if (isset($this->diff['msgs']))
+      $item['msg'] = json::lint($this->diff['msgs']);
 
 		$exist = $this->db()->query('SELECT * FROM [e10_persons_personsValidity] WHERE [person] = %i', $this->personNdx)->fetch();
 		if ($exist)
