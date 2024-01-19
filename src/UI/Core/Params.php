@@ -549,7 +549,10 @@ class Params extends \Shipard\Base\BaseObject
 			$years = Utils::calendarMonths($this->app);
 		foreach ($years as $year)
 		{
-			$p['values']['Y'.$year] = ['title' => $year, 'calendarYear' => 'Y'.$year, 'calendarMonth' => 0];
+			$startDateStr = sprintf ('%04d-%02d-01', $year, 1);
+			$endDateStr = sprintf ('%04d-%02d-01', $year, 12);
+
+			$p['values']['Y'.$year] = ['title' => $year, 'calendarYear' => 'Y'.$year, 'calendarMonth' => 0, 'dateBegin' => $startDateStr, 'dateEnd' => $endDateStr];
 			for ($month = 1; $month < 13; $month++)
 			{
 				$startDateStr = sprintf ('%04d-%02d-01', $year, $month);
