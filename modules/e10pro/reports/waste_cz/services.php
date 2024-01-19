@@ -24,11 +24,47 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$wre->run();
 	}
 
+
+	public function repairWasteReturn ()
+	{
+		$dateBeginStr = $this->app->arg('dateBegin');
+		if (!$dateBeginStr)
+		{
+			echo "ERROR: param `--dateBegin=YYYY-MM-DD` not found\n";
+			return;
+		}
+		$dateBegin = Utils::createDateTime($dateBeginStr);
+		if ($dateBegin === NULL)
+		{
+			echo "ERROR: param `--dateBegin=YYYY-MM-DD` has bad format\n";
+			return;
+		}
+
+		$dateEndStr = $this->app->arg('dateEnd');
+		if (!$dateEndStr)
+		{
+			echo "ERROR: param `--dateEnd=YYYY-MM-DD` not found\n";
+			return;
+		}
+		$dateEnd = Utils::createDateTime($dateEndStr);
+		if ($dateEnd === NULL)
+		{
+			echo "ERROR: param `--dateEnd=YYYY-MM-DD` has bad format\n";
+			return;
+		}
+
+		$wce = new \e10pro\reports\waste_cz\libs\WasteCheckEngine($this->app);
+		$wce->repair($dateBegin, $dateEnd);
+
+		return TRUE;
+	}
+
 	public function onCliAction ($actionId)
 	{
 		switch ($actionId)
 		{
 			case 'reset-waste-return': return $this->resetWasteReturn();
+			case 'repair-waste-return': return $this->repairWasteReturn();
 		}
 
 		return parent::onCliAction($actionId);

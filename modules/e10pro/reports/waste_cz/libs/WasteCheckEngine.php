@@ -123,7 +123,7 @@ class WasteCheckEngine extends Utility
 		$this->checkWRContent = [
 			'pane' => 'e10-pane e10-pane-table', 'type' => 'table',
 			'table' => $this->checkWRTable, 'header' => $this->checkWRTableHeader,
-			'title' => $t, 'params' => ['disableZeros' => 1]
+			'title' => $t, 'params' => ['disableZeros' => 1, 'precision' => 3]
 		];
   }
 
@@ -135,7 +135,7 @@ class WasteCheckEngine extends Utility
         continue;
       if ($newWRRow['item'] !== $wrRow['item'])
         continue;
-      if ($newWRRow['quantityKG'] !== $wrRow['quantityKG'])
+      if (round($newWRRow['quantityKG'], 3) !== round($wrRow['quantityKG'], 3))
         continue;
       if (isset($newWRRow['isUsed']))
         continue;
@@ -155,6 +155,41 @@ class WasteCheckEngine extends Utility
     $this->loadWasteReturn();
     $this->createWasteReturn();
     $this->checkData();
+  }
+
+  public function repair($dateBegin, $dateEnd)
+  {
+    $q [] = 'SELECT heads.*, persons.fullName as personName ';
+		array_push ($q, ' FROM e10doc_core_heads as heads');
+		array_push ($q, '	LEFT JOIN e10_persons_persons as persons ON heads.person = persons.ndx');
+		array_push ($q, ' WHERE heads.docState = %i', 4000);
+
+    array_push ($q, ' AND heads.docType IN %in', ['purchase', 'invno']);
+    array_push ($q, ' AND heads.dateAccounting >= %d', $dateBegin);
+    array_push ($q, ' AND heads.dateAccounting <= %d', $dateEnd);
+
+		array_push ($q, ' ORDER BY dateAccounting, docNumber');
+
+		$rows = $this->app->db()->query ($q);
+
+		forEach ($rows as $r)
+		{
+      $this->setDocument($r['ndx']);
+      $this->checkDocument();
+
+      if ($this->checkOk)
+        continue;
+
+      if ($this->app()->debug)
+        echo "* ".$r['docNumber'];
+
+      $wre = new \e10pro\reports\waste_cz\libs\WasteReturnEngine($this->app);
+      $wre->year = intval(Utils::createDateTime($r['dateAccounting'])->format('Y'));
+      $wre->resetDocument($r['ndx']);
+
+      if ($this->app()->debug)
+        echo "\n";
+    }
   }
 }
 
