@@ -1,5 +1,6 @@
 [
 	{"name": "Odpady", "class": "e10pro.reports.waste_cz.libs.ReportWasteCompanies", "group": "e10pro-other"},
+	{"name": "Kontrola odpadů", "class": "e10pro.reports.waste_cz.libs.ReportBadWasteReturn", "group": "e10pro-other"},
 	{"name": "Město (staré)", "class": "e10pro.reports.waste_cz.ReportWasteMunicipal", "group": "e10pro-other"},
 	{"name": "Odpady (staré)", "class": "e10pro.reports.waste_cz.ReportWasteState", "group": "e10pro-other"},
 	{"name": "Osoby (staré)", "class": "e10pro.reports.waste_cz.ReportWasteByPersons", "group": "e10pro-other"}

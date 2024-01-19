@@ -461,6 +461,22 @@ class Detail extends \e10\DocumentCard
 		return FALSE;
 	}
 
+	function createWasteReport($recData)
+	{
+		if ($this->app()->model()->table ('e10pro.reports.waste_cz.returnRows') === FALSE)
+			return;
+
+		if ($recData['docType'] !== 'purchase' && $recData['docType'] !== 'invno')
+			return;
+
+		$wce = new \e10pro\reports\waste_cz\libs\WasteCheckEngine($this->app);
+		$wce->setDocument($recData['ndx']);
+		$wce->checkDocument();
+
+		if ($wce->checkWRContent)
+			$this->addContent ('body', $wce->checkWRContent);
+	}
+
 	public function createContentBody ()
 	{
 		$docType = $this->app->cfgItem ('e10.docs.types.' . $this->recData['docType']);
@@ -502,6 +518,8 @@ class Detail extends \e10\DocumentCard
 		}
 
 		$this->addContent ('body', $this->docsRows ());
+
+		$this->createWasteReport($this->recData);
 
 		/*
 		if ($this->recData['docType'] === 'mnf')

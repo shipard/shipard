@@ -13,6 +13,9 @@ class WasteReturnEngine extends Utility
   var $dateBegin;
   var $dateEnd;
 
+  var $onlyCreateData = 0;
+  var $wasteReturnRows = NULL;
+
   /** @var \e10doc\core\TableHeads */
 	var $tableHeads;
 	/** @var \e10doc\core\TableRows */
@@ -72,7 +75,7 @@ class WasteReturnEngine extends Utility
       array_push ($q, ' AND [heads].dateAccounting >= %d', $this->dateBegin);
       array_push ($q, ' AND [heads].dateAccounting <= %d', $this->dateEnd);
     }
-    array_push ($q, ' ORDER BY [heads].[docNumber]');
+    array_push ($q, ' ORDER BY [heads].[docNumber], [rows].[ndx]');
 
     $cnt = 0;
     $rows = $this->db()->query($q);
@@ -131,7 +134,12 @@ class WasteReturnEngine extends Utility
         //if (!$newRow['wasteCodeText'] || $newRow['wasteCodeText'] === '')
         //  echo "\n".'! '.$r['docNumber'].': '.json_encode($rowDestData['rowItemCodesData'])."\n";
 
-        $this->db()->query('INSERT INTO [e10pro_reports_waste_cz_returnRows]', $newRow);
+        if ($this->onlyCreateData)
+        {
+          $this->wasteReturnRows[] = $newRow;
+        }
+        else
+          $this->db()->query('INSERT INTO [e10pro_reports_waste_cz_returnRows]', $newRow);
       }
       $cnt++;
 
@@ -173,6 +181,20 @@ class WasteReturnEngine extends Utility
     $this->tableHeads = $this->app->table ('e10doc.core.heads');
 
     $this->db()->query('DELETE FROM [e10pro_reports_waste_cz_returnRows] WHERE [document] = %i', $this->documentNdx);
+
+    $this->addPurchases();
+    $this->addInvoicesOut();
+  }
+
+  public function createDataForDocument($documentNdx)
+  {
+    $this->onlyCreateData = 1;
+
+    $this->init();
+
+    $this->wasteReturnRows = [];
+    $this->documentNdx = $documentNdx;
+    $this->tableHeads = $this->app->table ('e10doc.core.heads');
 
     $this->addPurchases();
     $this->addInvoicesOut();

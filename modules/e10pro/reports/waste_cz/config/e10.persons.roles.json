@@ -4,7 +4,8 @@
 			"e10pro.reports.waste_cz.ReportWasteMunicipal": 2,
 			"e10pro.reports.waste_cz.ReportWasteState": 2,
 			"e10pro.reports.waste_cz.ReportWasteByPersons": 2,
-			"e10pro.reports.waste_cz.libs.ReportWasteCompanies": 2
+			"e10pro.reports.waste_cz.libs.ReportWasteCompanies": 2,
+			"e10pro.reports.waste_cz.libs.ReportBadWasteReturn": 2
 		}
 	}
 }
