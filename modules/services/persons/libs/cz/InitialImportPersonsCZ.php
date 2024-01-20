@@ -388,5 +388,81 @@ class InitialImportPersonsCZ extends InitialImportPersons
 			}
 		}
 	}
+
+	public function refreshImportRES()
+	{
+		echo "=== REFRESH-RES ===\n";
+
+		$fn = __APP_DIR__.'/res/res_data.csv';
+		$cnt = 0;
+		$cntNew = 0;
+		$rowNumber = 0;
+
+		if ($file = fopen($fn, "r"))
+		{
+			while(!feof($file))
+			{
+				$line = fgets($file);
+				if ($line === '')
+					continue;
+				if ($cnt === 0)
+				{
+					$cnt = 1;
+					continue;
+				}
+				if ($line === '')
+					continue;
+
+				$rowNumber++;
+
+				$cols = str_getcsv($line, ',');
+				$id = ltrim($cols[0], " \t\n\r\0\x0B0");
+				$oid = sprintf('%08d', intval($id));
+				$count = 0;
+				$exist = $this->db()->query('SELECT * FROM [services_persons_persons] WHERE [country] = %i', 60, ' AND [oid] = %s', $oid);
+				foreach ($exist as $e)
+				{
+					//echo $e['fullName']."; ";
+					$count++;
+				}
+
+				if ($count === 1)
+					continue;
+				if ($count > 1)
+				{
+					echo $oid.": ERROR; multi ID\n";
+					continue;
+				}
+
+				$name = trim($cols[11] ?? '');
+				if ($name === '')
+				{
+					//echo $oid.": invalid\n";
+					continue;
+				}
+
+				$cntNew++;
+				echo sprintf("%8d", $rowNumber).' / '.sprintf("%06d", $cntNew).': '.$oid.": `".$name."`";
+
+				$addResult = $this->importOnePersonRES($line, '');
+				if ($addResult)
+					echo " OK";
+				else
+					echo " ERROR";
+
+
+				echo "\n";
+				//if ($cntNew > 1000)
+				//	break;
+			}
+			fclose($file);
+
+			echo "\n\n";
+		}
+		else
+		{
+
+		}
+	}
 }
 

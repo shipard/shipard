@@ -126,6 +126,14 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		return TRUE;
 	}
 
+	public function cliRefreshImportRES()
+	{
+		$ip = new \services\persons\libs\cz\InitialImportPersonsCZ($this->app);
+		$ip->refreshImportRES();
+
+		return TRUE;
+	}
+
 	public function onCliAction ($actionId)
 	{
 		switch ($actionId)
@@ -135,6 +143,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'online-person-regs-download': return $this->cliOnlinePersonRegsDownload();
 			case 'person-regs-import': return $this->cliPersonRegsImport();
 			case 'person-refresh': return $this->cliPersonRefresh();
+			case 'refresh-import-res': return $this->cliRefreshImportRES();
 		}
 
 		parent::onCliAction($actionId);
