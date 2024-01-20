@@ -383,7 +383,13 @@ class PersonRegister extends Utility
     if (isset($this->registerData['person']['vatID']) && $this->registerData['person']['vatID'] !== '' && !isset($this->personVATIDs[$this->registerData['person']['vatID']]))
     {
       $this->addDiffMsg('Nové DIČ `'.$this->registerData['person']['vatID'].'`');
-      //$update['fullName'] = $this->registerData['person']['fullName'];
+      $this->diff['properties']['add'][] = [
+        'recid' => $this->personRecData['ndx'],
+        'tableid' => 'e10.persons.persons',
+        'group' => 'ids', 'property' => 'taxid',
+        'valueString' => $this->registerData['person']['vatID'],
+        'created' => new \DateTime(),
+      ];
     }
 
     if (count($update))
@@ -504,6 +510,15 @@ class PersonRegister extends Utility
         $table->docsLog($rec['ndx']);
       }
     }
+
+    if (isset($this->diff['properties']['add']))
+    {
+      foreach ($this->diff['properties']['add'] as $newProperty)
+      {
+        $this->db()->query('INSERT INTO [e10_base_properties] ', $newProperty);
+      }
+    }
+
     $this->setPersonValidity(1);
   }
 
