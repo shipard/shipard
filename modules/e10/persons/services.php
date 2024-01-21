@@ -351,6 +351,19 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$e->run();
 	}
 
+	public function personsRevalidate()
+	{
+		$testNewPersons = intval($this->app->cfgItem ('options.persons.testNewPersons', 0));
+		if (!$testNewPersons)
+			return TRUE;
+
+		$e = new \e10doc\core\libs\PersonValidator($this->app);
+		$e->maxCount = 10;
+		$e->revalidate();
+
+		return TRUE;
+	}
+
 	public function lastPersonsUseCreate()
 	{
 		$lastUseCfg = $this->app->cfgItem('e10.persons.lastUse');
@@ -398,6 +411,11 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$this->lastPersonsUseCreate();
 	}
 
+	public function onCronHourly()
+	{
+		$this->personsRevalidate();
+	}
+
 	public function importNewPersons()
 	{
 		$e = new \e10\persons\libs\ImportNewPersons($this->app);
@@ -429,6 +447,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'geo-code': return $this->geoCode(1);
 			case 'last-persons-use-create': return $this->lastPersonsUseCreate();
 			case 'person-validator': return $this->personValidator();
+			case 'persons-revalidate': return $this->personsRevalidate();
 			case 'import-new-persons': return $this->importNewPersons();
 			case 'import-new-persons-ba': return $this->importNewPersonsBA();
 			case 'import-new-persons-ba-clean': return $this->importNewPersonsBAClean();
@@ -444,6 +463,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		{
 			case 'services':  $this->onCronServices(); break;
 			case 'stats':     $this->onStats(); break;
+			case 'hourly': 		$this->onCronHourly(); break;
 		}
 		return TRUE;
 	}

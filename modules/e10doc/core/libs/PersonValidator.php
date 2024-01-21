@@ -76,4 +76,29 @@ class PersonValidator extends Utility
       $pv->checkPerson(1);
 		}
   }
+
+  public function revalidate()
+  {
+    $minDate = new \DateTime('3 months ago');
+
+    $q = [];
+    array_push($q, 'SELECT [validity].*, [persons].fullName AS [personName]');
+    array_push($q, ' FROM [e10_persons_personsValidity] AS [validity]');
+    array_push($q, ' LEFT JOIN [e10_persons_persons] AS [persons] ON [validity].[person] = [persons].[ndx]');
+    array_push($q, ' WHERE 1');
+    array_push($q, ' AND [validity].[valid] = %i', 1);
+    array_push($q, ' AND [validity].[revalidate] = %i', 0);
+    array_push($q, ' AND [validity].[updated] < %d', $minDate);
+    array_push($q, ' AND [persons].[docState] = %i', 4000);
+    array_push($q, ' ORDER BY [validity].[updated]');
+    array_push($q, ' LIMIT 0, %i', $this->maxCount);
+    $rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+      if ($this->app()->debug)
+        echo "* ".$r['personName']."\n";
+
+      $this->db()->query('UPDATE [e10_persons_personsValidity] SET [revalidate] = %i', 1, ' WHERE [ndx] = %i', $r['ndx']);
+    }
+  }
 }

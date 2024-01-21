@@ -340,7 +340,7 @@ class DCPersonOverview extends \Shipard\Base\DocumentCard
 		{
 			$line = [['text' => 'V pořádku', 'XXicon' => 'system/iconCheck', 'suffix' => utils::datef ($validity['updated'], '%D, %T')]];
 			if ($validity['revalidate'])
-				$line [] = ['text' => 'údaje byly opraveny, je naplánována nová kontrola', 'icon' => 'system/docStateEdit', 'class' => 'e10-small block'];
+				$line [] = ['text' => 'Je naplánována nová kontrola', 'icon' => 'system/docStateEdit', 'class' => 'e10-small block'];
 			$this->validity['class'] = 'e10-row-plus';
 			$this->validity['icon'] = 'system/iconCheck';
 			//$this->addContent('body', ['pane' => 'e10-pane e10-pane-table e10-row-plus', 'type' => 'line', 'line' => $line]);
