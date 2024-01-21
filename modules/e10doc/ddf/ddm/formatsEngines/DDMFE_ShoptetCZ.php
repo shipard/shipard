@@ -169,7 +169,7 @@ class DDMFE_ShoptetCZ extends \e10doc\ddf\ddm\formatsEngines\CoreFE
       //echo "--->".$nr."\n";
       if (str_starts_with(trim($nr), 'Kód:'))
       {
-        $docRow['itemProperties']['supplierItemCode'] = trim(substr($nr, 5));
+        $docRow['itemProperties']['supplierItemCode'] = trim(substr(trim($nr), 5));
       }
       elseif (str_starts_with($nr, 'Recyklační příspěvek:'))
       {
