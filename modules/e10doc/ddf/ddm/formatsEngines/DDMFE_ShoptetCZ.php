@@ -43,12 +43,14 @@ class DDMFE_ShoptetCZ extends \e10doc\ddf\ddm\formatsEngines\CoreFE
       $r = $this->srcTextRows[$this->rowNdx];
       $this->rowNdx++;
 
-      if (!str_contains($r, 'Číslo dodávky') || !str_contains($r, 'Množství'))
+      if (!str_contains($r, 'Položky objednávky:'))
       {
         continue;
       }
 
       $r = $this->srcTextRows[$this->rowNdx];
+      if (str_contains($r, 'Cena za m.'))
+        $this->rowNdx++;
       if (str_contains($r, 'Položky objednávky:'))
         $this->rowNdx++;
 
@@ -93,7 +95,9 @@ class DDMFE_ShoptetCZ extends \e10doc\ddf\ddm\formatsEngines\CoreFE
         {
           $nextRows[] = $r;
           $this->rowNdx++;
-          continue;
+
+          if (!str_starts_with($r, 'Kód:'))
+            continue;
         }
       }
 
@@ -136,7 +140,7 @@ class DDMFE_ShoptetCZ extends \e10doc\ddf\ddm\formatsEngines\CoreFE
 
 
     $docRow['rowNumber'] = $this->docRowNumber;
-    $docRow['itemFullName'] = $frParts[0];
+    $docRow['itemFullName'] = trim($frParts[0]);
 
     // -- quantity
     $qp = explode(' ', $frParts[1]);
@@ -151,18 +155,19 @@ class DDMFE_ShoptetCZ extends \e10doc\ddf\ddm\formatsEngines\CoreFE
     }
 
     // -- price
-    $priceStr = str_replace(' ', '', $frParts [3]);
+    $priceStr = str_replace(' ', '', $frParts [5]);
     $priceStr = str_replace(',', '.', $priceStr);
     $docRow['priceAll'] = floatVal($priceStr);
     $docRow['priceSource'] = 1;
 
     // -- vatPercent
-    $vatPercentStr = str_replace(',', '.', $frParts [5]);
+    $vatPercentStr = str_replace(',', '.', $frParts [6]);
     $docRow['vatPercent'] = floatVal($vatPercentStr);
 
     foreach ($nextRows as $nr)
     {
-      if (str_starts_with($nr, 'Kód:'))
+      //echo "--->".$nr."\n";
+      if (str_starts_with(trim($nr), 'Kód:'))
       {
         $docRow['itemProperties']['supplierItemCode'] = trim(substr($nr, 5));
       }
