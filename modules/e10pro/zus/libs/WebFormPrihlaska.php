@@ -128,7 +128,7 @@ class WebFormPrihlaska extends \Shipard\Base\WebForm
 
 		//$c.= "<div class='col col-12'>";
 		$c .= "<h4>".'Od 1. září školního roku ';
-		$c .= $this->addFormInput ('', 'select', 'skolniRok', ['select' => ['2022' => '2022 / 2023', '2023' => '2023 / 2024'], 'inputStyle' => 'width: 10rem; display: inline-block; margin-left: .5rem; margin-right: .5rem;']);
+		$c .= $this->addFormInput ('', 'select', 'skolniRok', ['select' => ['2024' => '2024 / 2025', '2023' => '2023 / 2024'], 'inputStyle' => 'width: 10rem; display: inline-block; margin-left: .5rem; margin-right: .5rem;']);
 		$c .= ' bude žákem / žákyní (MŠ / ZŠ / SŠ):'.'</h4>';
 
 		//$c.= "</div>";
