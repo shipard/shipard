@@ -22,6 +22,7 @@ class WasteCheckEngine extends Utility
   var $checkWRContent = NULL;
 
   var $newWRData = NULL;
+  var $newWRErrors = NULL;
 
   var $checkOk = 0;
 
@@ -68,10 +69,14 @@ class WasteCheckEngine extends Utility
 		if ($this->docRecData['docType'] !== 'purchase' && $this->docRecData['docType'] !== 'invno')
 			return;
 
+    $this->newWRErrors = NULL;
+
 		$wre = new \e10pro\reports\waste_cz\libs\WasteReturnEngine($this->app);
 		$wre->year = intval(Utils::createDateTime($this->docRecData['dateAccounting'])->format('Y'));
 		$wre->createDataForDocument($this->docRecData['ndx']);
     $this->newWRData = $wre->wasteReturnRows;
+    if ($wre->wasteReturnErrorLabels && count($wre->wasteReturnErrorLabels))
+      $this->newWRErrors = $wre->wasteReturnErrorLabels;
   }
 
   protected function checkData()
@@ -117,6 +122,19 @@ class WasteCheckEngine extends Utility
       $item['_options']['class'] = 'e10-warning2';
       $this->checkWRTable[] = $item;
       $this->checkOk = 0;
+    }
+
+    if ($this->newWRErrors)
+    {
+      $this->checkOk = 0;
+      foreach ($this->newWRErrors as $errLbl)
+      {
+        $item = [
+          'wc' => $errLbl,
+          '_options' => ['class' => 'e10-warning3', 'colSpan' => ['wc' => 2]]
+        ];
+        $this->checkWRTable[] = $item;
+      }
     }
 
     $t = [['icon' => 'system/actionRecycle', 'text' => 'Hlášení o odpadech']];

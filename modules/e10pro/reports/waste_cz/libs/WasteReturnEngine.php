@@ -15,6 +15,7 @@ class WasteReturnEngine extends Utility
 
   var $onlyCreateData = 0;
   var $wasteReturnRows = NULL;
+  var $wasteReturnErrorLabels = [];
 
   /** @var \e10doc\core\TableHeads */
 	var $tableHeads;
@@ -86,6 +87,15 @@ class WasteReturnEngine extends Utility
 
       $row = $r->toArray();
 			$this->tableHeads->loadDocRowItemsCodes($row, $r['personType'], $row, NULL, $rowDestData, $allDestData);
+
+      if ($this->onlyCreateData)
+      {
+        if (isset($rowDestData['rowItemCodesDataErrors']))
+        {
+          foreach ($rowDestData['rowItemCodesDataErrors'] as $errLbl)
+            $this->wasteReturnErrorLabels[] = $errLbl;
+        }
+      }
 
       foreach ($this->enabledCodesKinds as $eck)
       {
@@ -193,6 +203,7 @@ class WasteReturnEngine extends Utility
     $this->init();
 
     $this->wasteReturnRows = [];
+    $this->wasteReturnErrorLabels = [];
     $this->documentNdx = $documentNdx;
     $this->tableHeads = $this->app->table ('e10doc.core.heads');
 

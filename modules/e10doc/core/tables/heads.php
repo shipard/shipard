@@ -1763,6 +1763,15 @@ class TableHeads extends DbTable
 			}
 		}
 
+		$usedCodesKinds = [];
+		$usedCodesKindRows = $this->db()->query('SELECT * FROM e10_witems_itemCodes WHERE [item] = %i', $rowRecData['item']);
+		foreach ($usedCodesKindRows as $ucr)
+		{
+			if (!in_array($ucr['codeKind'], $usedCodesKinds))
+				$usedCodesKinds[] = $ucr['codeKind'];
+		}
+		//$rowDestData ['rowItemCodesDataUsedKinds'] = $usedCodesKinds;
+
 		$rowDir = E10Utils::docRowDir ($this->app(), $rowRecData, $headRecData);
 
 		$q = [];
@@ -1820,6 +1829,18 @@ class TableHeads extends DbTable
 
 			$codes[$ckNdx] = $irc;
 		}
+
+		foreach ($usedCodesKinds as $usesCodeKind)
+		{
+			if (!isset($codes[$usesCodeKind]))
+			{
+				if (!isset($rowDestData ['rowItemCodesDataErrors']))
+					$rowDestData ['rowItemCodesDataErrors'] = [];
+
+				$rowDestData ['rowItemCodesDataErrors'][] = ['text' => 'Chybí '.$codesKinds[$usesCodeKind]['fn'], 'class' => 'label label-danger', 'icon' => 'system/iconWarning'];
+			}
+		}
+
 		$rowDestData ['rowItemCodesData'] = $codes;
 	}
 
@@ -2317,7 +2338,6 @@ class TableHeads extends DbTable
 				return $itemRecData['priceSellBase'];
 			if ($itemRecData['priceSellTotal'] != 0.0)
 			{
-				error_log("__2__");
 				$taxDate = e10utils::headsTaxDate ($headRecData);
 				$taxPercents = e10utils::taxPercent ($this->app(), $rowRecData['taxCode'], $taxDate);
 				$price = $itemRecData['priceSellTotal'];

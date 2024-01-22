@@ -430,7 +430,13 @@ class Detail extends \e10\DocumentCard
 				}
 			}
 
-			//$rowItem['text'][] = ['text' => 'AHOJ!'];
+			if (isset($rowItem['rowItemCodesDataErrors']))
+			{
+				foreach ($rowItem['rowItemCodesDataErrors'] as $errLbl)
+					$rowItem['text'][] = $errLbl;
+			}
+
+			//$rowItem['text'][] = ['text' => json_encode($rowItem)];
 
 			$list[] = $rowItem;
 			$totalPriceAll += $r['rPriceAll'];
@@ -593,9 +599,12 @@ class Detail extends \e10\DocumentCard
 			$o->setDocument($this->recData);
 			$o->create();
 
-			foreach ($o->content['body'] as $cnts)
+			if (isset($o->content['body']))
 			{
-				$this->addContent('body', $cnts);
+				foreach ($o->content['body'] as $cnts)
+				{
+					$this->addContent('body', $cnts);
+				}
 			}
 		}
 	}
