@@ -110,6 +110,26 @@ class TablePrihlasky extends DbTable
 		$r = zusutils::columnInfoEnumTest ($columnId, $cfgItem, $form);
 		return ($r !== NULL) ? $r : parent::columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, $form);
 	}
+
+	public function archiveEntries($academicYearId)
+	{
+		$q = [];
+		array_push($q, 'SELECT *');
+		array_push($q, ' FROM [e10pro_zus_prihlasky]');
+		array_push($q, ' WHERE [docState] = %i', 4000);
+		array_push($q, ' AND [skolniRok] = %s', $academicYearId);
+		array_push($q, ' ORDER BY [ndx]');
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			if ($this->app()->debug)
+				echo "* ".$r['fullNameS']."\n";
+			$this->db()->query('UPDATE [e10pro_zus_prihlasky] SET [docState] = %i, ', 9000, '[docStateMain] = %i', 5,
+													' WHERE [ndx] = %i', $r['ndx']);
+
+			$this->docsLog ($r['ndx']);
+		}
+	}
 }
 
 

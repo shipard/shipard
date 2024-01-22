@@ -644,6 +644,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		{
 			case 'upgrade-skupinove-dochazky': return $this->upgradeSkupinoveDochazky();
 			case 'send-entries-emails': return $this->sendEntriesEmails();
+			case 'archive-entries': return $this->archiveEntries();
 			case 'repair-fees': return $this->repairFees();
 			case 'repair-invoices': return $this->repairInvoices();
 			case 'import-contacts': return $this->importContacts();
@@ -662,6 +663,21 @@ class ModuleServices extends \E10\CLI\ModuleServices
 	{
 		$e = new \e10pro\zus\libs\SendEntriesEmails($this->app());
 		$e->sendAll();
+	}
+
+	public function archiveEntries()
+	{
+		$yearParam = $this->app()->arg('year');
+		if (!$yearParam)
+		{
+			echo "Missing `--year` param!\n";
+			return FALSE;
+		}
+
+		/** @var \e10pro\zus\TablePrihlasky */
+		$tablePrihlasky = $this->app()->table('e10pro.zus.prihlasky');
+		$tablePrihlasky->archiveEntries($yearParam);
+		return TRUE;
 	}
 
 	public function dataSourceStatsCreate()
