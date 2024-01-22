@@ -20,6 +20,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
   var $codeKindNdx = 0;
   var $useZipCode = 0;
   var $limitDistance = 0;
+  var $limitKG = 0;
   var $officeLat = 0.0;
   var $officeLon = 0.0;
 
@@ -45,6 +46,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
     {
       $this->addParam('switch', 'useZipCode', ['title' => 'PSČ', 'switch' => ['0' => 'Ne', '1' => 'Ano'], 'radioBtn' => 1, 'defaultValue' => '0']);
       $this->addParam('switch', 'limitDistance', ['title' => 'Omezit vzdálenost', 'switch' => ['0' => 'Ne', '10' => '10 km', '20' => '20 km', '30' => '30 km', '40' => '40 km', '50' => '50 km', '60' => '60 km', '70' => '70 km', '80' => '80 km', '90' => '90 km', '100' => '100 km'], 'defaultValue' => '0']);
+      $this->addParam('switch', 'limitKG', ['title' => 'Limit', 'switch' => ['0' => 'Ne', '100' => '100 kg', '250' => '250 kg', '500' => '500 kg', '1000' => '1 tuna', '5000' => '5 tun'], 'defaultValue' => '0']);
     }
 
 		parent::init();
@@ -699,6 +701,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
   {
     $this->useZipCode = intval($this->reportParams ['useZipCode']['value'] ?? '0');
     $this->limitDistance = intval($this->reportParams ['limitDistance']['value'] ?? '0');
+    $this->limitKG = intval($this->reportParams ['limitKG']['value'] ?? '0');
 
     $q = [];
     array_push ($q, 'SELECT [rows].wasteCodeNomenc, SUM([rows].quantityKG) as quantityKG,');
@@ -748,8 +751,11 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 
       if ($this->limitDistance && $distance > $this->limitDistance)
       {
-        $cityId = '__OTHER__';
-        $cityName = 'OSTATNÍ';
+        if (!$this->limitKG || $r['quantityKG'] < $this->limitKG)
+        {
+          $cityId = '__OTHER__';
+          $cityName = 'OSTATNÍ';
+        }
       }
 
       if ($r['adrCity'] == '')
