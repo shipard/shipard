@@ -4,6 +4,7 @@ namespace e10pro\reports\waste_cz\libs;
 
 
 use \Shipard\Utils\Utils;
+use \Shipard\Utils\World;
 use \e10pro\reports\waste_cz\libs\WasteReturnEngine;
 
 /**
@@ -23,6 +24,8 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
   var $limitKG = 0;
   var $officeLat = 0.0;
   var $officeLon = 0.0;
+
+  var $thisCountryNdx = 60;
 
 	public function init ()
 	{
@@ -706,7 +709,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
     $q = [];
     array_push ($q, 'SELECT [rows].wasteCodeNomenc, SUM([rows].quantityKG) as quantityKG,');
     array_push ($q, ' nomencItems.fullName, nomencItems.itemId,');
-    array_push ($q, ' addrs.adrCity, addrs.adrZipCode, addrs.adrLocLat, addrs.adrLocLon, addrs.adrLocState,');
+    array_push ($q, ' addrs.adrCity, addrs.adrZipCode, addrs.adrLocLat, addrs.adrLocLon, addrs.adrLocState, addrs.adrCountry,');
     array_push ($q, ' ownerOffices.adrLocLat AS ownerAdrLocLat, ownerOffices.adrLocLon AS ownerAdrLocLon');
 		array_push ($q, ' FROM e10pro_reports_waste_cz_returnRows AS [rows]');
     array_push ($q, ' LEFT JOIN [e10_base_nomencItems] AS nomencItems ON [rows].wasteCodeNomenc = nomencItems.ndx');
@@ -725,7 +728,9 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
     if ($this->useZipCode)
 		  array_push ($q, ' GROUP BY addrs.adrCity, addrs.adrZipCode, wasteCodeNomenc');
     else
-      array_push ($q, ' GROUP BY addrs.adrCity, wasteCodeNomenc');
+      array_push ($q, ' GROUP BY addrs.adrCountry, addrs.adrCity, wasteCodeNomenc');
+
+    array_push ($q, ' ORDER BY addrs.adrCountry, addrs.adrCity, wasteCodeNomenc');
 
 		$rows = $this->app->db()->query ($q);
     $header = ['#' => '#', 'city' => 'Obec', 'zip' => 'PSČ', 'dist' => ' Vzdál. KM'];
@@ -737,9 +742,9 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
       $this->officeLon = $r['ownerAdrLocLon'];
 
       if ($this->useZipCode)
-        $cityId = $r['adrCity'].'_'.$r['adrZipCode'];
+        $cityId = $r['adrCountry'].'_'.$r['adrCity'].'_'.$r['adrZipCode'];
       else
-        $cityId = $r['adrCity'];
+        $cityId = $r['adrCountry'].'_'.$r['adrCity'];
 
       $cityName = $r['adrCity'];
 
@@ -749,6 +754,18 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
         $distance = round($this->computeDistance($r['adrLocLat'], $r['adrLocLon'], $this->officeLat, $this->officeLon) / 1000, 1);
       }
 
+      $country = World::country($this->app(), $r['adrCountry']);
+      if ($this->thisCountryNdx !== $r['adrCountry'])
+      {
+        $cityId = '__COUNTRY__'.$r['adrCountry'];
+        if ($country)
+          $cityName = 'CELÝ STÁT: '.$country['t'];
+        else
+          $cityName = '=== NENÍ ZADÁN STÁT ===';
+
+        $distance = 0;
+      }
+      else
       if ($this->limitDistance && $distance > $this->limitDistance)
       {
         if (!$this->limitKG || $r['quantityKG'] < $this->limitKG)
