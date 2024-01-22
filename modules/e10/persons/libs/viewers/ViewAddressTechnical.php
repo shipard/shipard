@@ -65,6 +65,10 @@ class ViewAddressTechnical extends TableView
 		if (isset ($qv['geoLocation']['geoLocError']))
 			array_push ($q, ' AND [adrLocState] = %i', 2);
 
+		// -- countries
+		if (isset ($qv['personCountries']))
+			array_push ($q, ' AND [contacts].[adrCountry] IN %in', array_keys($qv['personCountries']));
+
 		$this->queryMain ($q, '[contacts].', ['[systemOrder], [adrCity]', '[ndx]']);
 		$this->runQuery ($q);
 
@@ -177,6 +181,22 @@ class ViewAddressTechnical extends TableView
 		$paramsFiscalPeriods = new \E10\Params ($panel->table->app());
 		$paramsFiscalPeriods->addParam ('checkboxes', 'query.fiscalPeriods', ['items' => $periodsEnum]);
 		$qry[] = ['id' => 'fiscalPeriods', 'style' => 'params', 'title' => 'Použito ve fiskálním období', 'params' => $paramsFiscalPeriods];
+
+		// -- countries
+		$paramsPersonCountries = new \E10\Params ($panel->table->app());
+		$countriesQry = 'SELECT distinct adrCountry FROM [e10_persons_personsContacts] WHERE [flagAddress] = 1 ORDER BY adrCountry';
+		$countriesRows = $this->table->db()->query ($countriesQry);
+		if (count($countriesRows) !== 0)
+		{
+			$chbxPersonCountries = [];
+			forEach ($countriesRows as $r)
+			{
+				$country = World::country($this->app(), $r['adrCountry']);
+				$chbxPersonCountries[$r['adrCountry']] = ['title' => $country['t'] ?? '---', 'id' => $r['adrCountry']];
+			}
+			$paramsPersonCountries->addParam ('checkboxes', 'query.personCountries', ['items' => $chbxPersonCountries]);
+			$qry[] = array ('id' => 'personCountries', 'style' => 'params', 'title' => 'Země', 'params' => $paramsPersonCountries);
+		}
 
 		// -- geo location
 		$chbxGeoLocation = [
