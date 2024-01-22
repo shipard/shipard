@@ -191,6 +191,9 @@ class ViewPrihlasky extends TableView
 		if (isset ($qv['mistoStudia']))
 			array_push ($q, " AND [prihlasky].[mistoStudia] IN %in", array_keys($qv['mistoStudia']));
 
+		if (isset($qv['skolniRok']['']) && $qv['skolniRok'][''] != '0')
+			array_push ($q, " AND prihlasky.[skolniRok] = %i", $qv['skolniRok']['']);
+
 		$this->queryMain ($q, 'prihlasky.', ['[webSentDate]', '[fullNameS]']);
 		$this->runQuery ($q);
 	} // selectRows
@@ -288,10 +291,12 @@ class ViewPrihlasky extends TableView
 		$qry[] = ['id' => 'mistoStudia', 'style' => 'params', 'title' => 'Přijetí ke studiu v', 'params' => $paramsMS];
 
 		$paramsRows = new \e10doc\core\libs\GlobalParams ($panel->table->app());
+		$paramsRows->addParam('switch', 'query.skolniRok', ['title' => 'Školní rok', 'switch' => zusutils::skolniRoky($this->app)]);
 		$paramsRows->addParam ('switch', 'query.obor', ['title' => 'Obor', 'place' => 'panel', 'cfg' => 'e10pro.zus.obory', 'titleKey' => 'nazev',
 			'enableAll' => ['0' => ['title' => 'Vše']]]);
 		$paramsRows->addParam ('switch', 'query.oddeleni', ['title' => 'Oddělení', 'place' => 'panel', 'cfg' => 'e10pro.zus.oddeleni', 'titleKey' => 'nazev',
 			'enableAll' => ['0' => ['title' => 'Vše']]]);
+
 		$paramsRows->detectValues();
 		$qry[] = array ('id' => 'paramRows', 'style' => 'params', 'title' => 'Hledat', 'params' => $paramsRows, 'class' => 'switches');
 
