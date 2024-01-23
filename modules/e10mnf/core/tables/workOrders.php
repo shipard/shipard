@@ -948,4 +948,21 @@ class FormWorkOrder extends TableForm
 
 		return $useDocKinds;
 	}
+
+	public function validNewDocumentState ($newDocState, $saveData)
+	{
+		$this->dko = $this->table->docKindOptions ($this->recData);
+		if ($this->dko['useDateBegin'] ?? 0)
+		{
+			if ($newDocState === 4000)
+			{
+				if (Utils::dateIsBlank($saveData['recData']['dateClosed']))
+				{
+					$this->setColumnState('dateClosed', utils::es ('Hodnota'." `".$this->columnLabel($this->table->column ('dateClosed'), 0)."` ".'není vyplněna'));
+					return FALSE;
+				}
+			}
+		}
+		return parent::validNewDocumentState($newDocState, $saveData);
+	}
 }
