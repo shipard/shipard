@@ -824,7 +824,9 @@ class FormWorkOrder extends TableForm
 						$this->addColumnInput ('parentWorkOrder');
 
 					if ($dko['useMembers'])
-						$this->addList ('doclinks', '', TableForm::loAddToFormLayout/*|TableForm::coColW12*/);
+					{
+						$this->addList ('doclinksMembers', '', TableForm::loAddToFormLayout/*|TableForm::coColW12*/);
+					}
 					$this->addList ('clsf', '', TableForm::loAddToFormLayout);
 
 					$this->addSeparator(self::coH4);
