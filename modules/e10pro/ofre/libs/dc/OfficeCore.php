@@ -43,6 +43,8 @@ class OfficeCore extends DocumentCard
 
     if (isset($this->officeInfo->data['rowsMetersReadings']))
       $this->addContent('body', $this->officeInfo->data['rowsMetersReadings']);
+
+    $this->addContentAttachments ($this->recData ['ndx']);
   }
 
   public function createContent ()
