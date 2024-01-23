@@ -5,11 +5,11 @@
 	},
 	"1200": {
 		"stateName": "Potvrzeno", "actionName": "Potvrdit",
-		"stateStyle": "confirmed", "mainState": 1, "readOnly": 1, "enablePrint": 1, "goto": [4000, 4100, 8000]
+		"stateStyle": "done", "mainState": 1, "readOnly": 1, "enablePrint": 1, "goto": [4000, 4100, 8000]
 	},
 	"4000": {
-		"stateName": "Uzavřeno", "actionName": "Uzavřít",
-		"stateStyle": "done", "mainState": 2, "readOnly": 1, "enablePrint": 1, "side": 1, "goto": [8000]
+		"stateName": "Ukončeno", "actionName": "Ukončit",
+		"stateStyle": "archive", "mainState": 2, "readOnly": 1, "enablePrint": 1, "side": 1, "goto": [8000]
 	},
 	"4100": {
 		"stateName": "Stornováno", "actionName": "Stornovat",
