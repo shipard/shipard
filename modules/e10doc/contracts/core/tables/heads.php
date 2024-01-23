@@ -692,5 +692,18 @@ class FormHead extends TableForm
 		return parent::comboParams ($srcTableId, $srcColumnId, $allRecData, $recData);
 	}
 
+	public function validNewDocumentState ($newDocState, $saveData)
+	{
+		if ($newDocState === 9000)
+		{
+			if (Utils::dateIsBlank($saveData['recData']['end']))
+			{
+				$this->setColumnState('end', utils::es ('Hodnota'." `".$this->columnLabel($this->table->column ('end'), 0)."` ".'není vyplněna'));
+				return FALSE;
+			}
+		}
+
+		return parent::validNewDocumentState($newDocState, $saveData);
+	}
 }
 
