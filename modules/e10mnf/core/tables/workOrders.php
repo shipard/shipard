@@ -781,11 +781,12 @@ class FormWorkOrder extends TableForm
 						$this->addColumnInput ('dateContract');
 					if ($dko['useDateDeadlineRequested'])
 						$this->addColumnInput ('dateDeadlineRequested');
-					if ($dko['useDateBegin'])
-					{
+					if ($dko['useDateBegin'] ?? 0)
 						$this->addColumnInput ('dateBegin');
+					if ($dko['useDateClosed'] ?? 0)
 						$this->addColumnInput ('dateClosed');
-					}
+					if ($dko['useReasonClosed'] ?? 0)
+						$this->addColumnInput ('reasonClosed');
 
 					if ($dko['useInvoicingPeriodicity'])
 						$this->addColumnInput ('invoicingPeriod');
@@ -928,6 +929,8 @@ class FormWorkOrder extends TableForm
 			case'dateIssue': return $dko['labelDateIssue'];
 			case'dateContract': return $dko['labelDateContract'];
 			case'dateBegin': return $dko['labelDateBegin'];
+			case'dateClosed': return $dko['labelDateClosed'];
+			case'reasonClosed': return $dko['labelReasonClosed'];
 			case'dateDeadlineRequested': return $dko['labelDateDeadlineRequested'];
 			case'dateDeadlineConfirmed': return $dko['labelDateDeadlineConfirmed'];
 			case'refId1': return $dko['labelRefId1'];
@@ -956,10 +959,22 @@ class FormWorkOrder extends TableForm
 		{
 			if ($newDocState === 4000)
 			{
-				if (Utils::dateIsBlank($saveData['recData']['dateClosed']))
+				if ($this->dko['useDateClosed'] === 2)
 				{
-					$this->setColumnState('dateClosed', utils::es ('Hodnota'." `".$this->columnLabel($this->table->column ('dateClosed'), 0)."` ".'není vyplněna'));
-					return FALSE;
+					if (Utils::dateIsBlank($saveData['recData']['dateClosed']))
+					{
+						$this->setColumnState('dateClosed', utils::es ('Hodnota'." `".$this->columnLabel($this->table->column ('dateClosed'), 0)."` ".'není vyplněna'));
+						return FALSE;
+					}
+				}
+
+				if ($this->dko['useReasonClosed'] === 2)
+				{
+					if (trim($saveData['recData']['reasonClosed']) === '')
+					{
+						$this->setColumnState('reasonClosed', utils::es ('Hodnota'." `".$this->columnLabel($this->table->column ('reasonClosed'), 0)."` ".'není vyplněna'));
+						return FALSE;
+					}
 				}
 			}
 		}

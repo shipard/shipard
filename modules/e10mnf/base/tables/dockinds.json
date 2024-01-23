@@ -28,6 +28,13 @@
 		{"id": "useDateBegin", "name": "Používat Datum zahájení", "type": "logical"},
 		{"id": "labelDateBegin", "name": "Popisek", "type": "string", "len": 40},
 
+		{"id": "useDateClosed", "name": "Používat Datum ukončení", "type": "enumInt",
+			"enumValues": {"0": "Ne", "1": "Ano", "2": "Ano, s povinností vyplnit"}},
+		{"id": "labelDateClosed", "name": "Popisek", "type": "string", "len": 40},
+		{"id": "useReasonClosed", "name": "Používat Důvod ukončení", "type": "enumInt",
+			"enumValues": {"0": "Ne", "1": "Ano", "2": "Ano, s povinností vyplnit"}},
+		{"id": "labelReasonClosed", "name": "Popisek", "type": "string", "len": 40},
+
 		{"id": "useDateDeadlineRequested", "name": "Používat Požadovaný termín", "type": "logical"},
 		{"id": "labelDateDeadlineRequested", "name": "Popisek", "type": "string", "len": 40},
 

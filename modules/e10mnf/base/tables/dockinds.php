@@ -36,6 +36,8 @@ class TableDocKinds extends DbTable
 				'useDateIssue' => $r ['useDateIssue'], 'labelDateIssue' => $r ['labelDateIssue'],
 				'useDateContract' => $r ['useDateContract'], 'labelDateContract' => $r ['labelDateContract'],
 				'useDateBegin' => $r ['useDateBegin'], 'labelDateBegin' => $r ['labelDateBegin'],
+				'useDateClosed' => $r ['useDateClosed'], 'labelDateClosed' => $r ['labelDateClosed'],
+				'useReasonClosed' => $r ['useReasonClosed'], 'labelReasonClosed' => $r ['labelReasonClosed'],
 				'useDateDeadlineRequested' => $r ['useDateDeadlineRequested'], 'labelDateDeadlineRequested' => $r ['labelDateDeadlineRequested'],
 				'useDateDeadlineConfirmed' => $r ['useDateDeadlineConfirmed'], 'labelDateDeadlineConfirmed' => $r ['labelDateDeadlineConfirmed'],
 				'useRefId1' => $r ['useRefId1'], 'labelRefId1' => $r ['labelRefId1'],
@@ -62,6 +64,10 @@ class TableDocKinds extends DbTable
 				$dk['labelDateContract'] = 'Datum podpisu smlouvy';
 			if ($dk['labelDateBegin'] === '')
 				$dk['labelDateBegin'] = 'Datum zahájení';
+			if ($dk['labelDateClosed'] === '')
+				$dk['labelDateClosed'] = 'Datum ukončení';
+			if ($dk['labelReasonClosed'] === '')
+				$dk['labelReasonClosed'] = 'Důvod ukončení';
 			if ($dk['labelDateDeadlineRequested'] === '')
 				$dk['labelDateDeadlineRequested'] = 'Požadovaný termín';
 			if ($dk['labelDateDeadlineConfirmed'] === '')
@@ -104,6 +110,8 @@ class TableDocKinds extends DbTable
 			'useDateIssue' => 1, 'labelDateIssue' => 'Datum vystavení',
 			'useDateContract' => 0, 'labelDateContract' => '',
 			'useDateBegin' => 0, 'labelDateBegin' => '',
+			'useDateClosed' => 0, 'labelDateClosed' => '',
+			'useReasonClosed' => 0, 'labelReasonClosed' => '',
 			'useDateDeadlineRequested' => 0, 'labelDateDeadlineRequested' => '',
 			'useDateDeadlineConfirmed' => 1, 'labelDateDeadlineConfirmed' => 'Potvrzený termín',
 			'useRefId1' => 0, 'labelRefId1' => '',
@@ -275,6 +283,12 @@ class FormDocKind extends TableForm
 							$this->addColumnInput ('useRetentionGuarantees', TableForm::coColW5);
 						$this->closeRow ();
 					$this->layoutClose ();
+					$this->addSeparator(self::coH4);
+
+					$this->addColumnInput ('useDateClosed');
+					$this->addColumnInput ('labelDateClosed');
+					$this->addColumnInput ('useReasonClosed');
+					$this->addColumnInput ('labelReasonClosed');
 
 					$this->addSeparator(self::coH2);
 					$this->addStatic(['text' => 'Řádky zakázky', 'class' => 'h2 pl1']);
