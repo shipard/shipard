@@ -16,6 +16,7 @@
 		{"id": "useDescription", "name": "Použít textový popis zakázky", "type": "logical"},
 		{"id": "usePersonsList", "name": "Používat Osoby na Zakázce", "type": "logical"},
 		{"id": "useMembers", "name": "Používat Členy a Správce", "type": "logical"},
+		{"id": "usePlaces", "name": "Používat Místa", "type": "logical"},
 		{"id": "useHeadSymbol1", "name": "Používat Variabilní symbol", "type": "logical"},
 		{"id": "useOwnerWorkOrder", "name": "Používat Nadřazenou zakázku", "type": "logical"},
 

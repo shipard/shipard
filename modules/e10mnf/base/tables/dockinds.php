@@ -47,6 +47,7 @@ class TableDocKinds extends DbTable
 				'useAddress' => $r ['useAddress'], 'invoicesInDetail' => $r ['invoicesInDetail'],
 				'viewerPrimaryTitle' => $r ['viewerPrimaryTitle'], 'viewerLabelTitle' => $r ['viewerLabelTitle'],
 				'useMembers' => $r ['useMembers'],
+				'usePlaces' => $r ['usePlaces'],
 				'useHeadSymbol1' => $r ['useHeadSymbol1'],
 				'useOwnerWorkOrder' => $r ['useOwnerWorkOrder'],
 				'useRowValidFromTo' => $r ['useRowValidFromTo'],
@@ -239,6 +240,7 @@ class FormDocKind extends TableForm
 					$this->addColumnInput ('viewerPrimaryTitle');
 					$this->addColumnInput ('viewerLabelTitle');
 					$this->addColumnInput ('useMembers');
+					$this->addColumnInput ('usePlaces');
 					$this->addColumnInput ('useHeadSymbol1');
 					$this->addColumnInput ('useOwnerWorkOrder');
 					$this->addColumnInput ('order');
