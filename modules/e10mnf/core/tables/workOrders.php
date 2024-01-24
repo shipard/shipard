@@ -300,6 +300,7 @@ class ViewWorkOrders extends TableView
 	var $personsLists = [];
 	var $classification;
 	var $dbCounters;
+	var $fixedDbCounter = 0;
 
 	CONST vptCustomer = 0, vptDocNumber = 1, vptTitle = 2;
 
@@ -325,27 +326,51 @@ class ViewWorkOrders extends TableView
 
 	public function createBottomTabs ()
 	{
+		$enabledDbCounters = NULL;
+		$enabledDbCountersStr = $this->queryParam('enabledDbCounters');
+		if ($enabledDbCountersStr !== FALSE)
+		{
+			$enabledDbCounters = [];
+			$enabledDbCountersParts = explode(',', $enabledDbCountersStr);
+			foreach ($enabledDbCountersParts as $edbc)
+			{
+				$enabledDbCounters[] = intval(trim($edbc));
+			}
+			if (!count($enabledDbCounters))
+				$enabledDbCounters = NULL;
+		}
+
 		// -- dbCounters
 		$this->dbCounters = $this->table->app()->cfgItem ('e10mnf.workOrders.dbCounters', FALSE);
 		if ($this->dbCounters !== FALSE)
 		{
-			$activeDbCounter = key($this->dbCounters);
+			$activeDbCounter = 0;
 			if (count ($this->dbCounters) > 1)
 			{
 				forEach ($this->dbCounters as $cid => $c)
 				{
+					if ($enabledDbCounters && !in_array($cid, $enabledDbCounters))
+						continue;
+					if (!$activeDbCounter)
+						$activeDbCounter = $cid;
 					$addParams = ['dbCounter' => intval($cid)];
 					$nbt = [
 							'id' => $cid, 'title' => ($c['tabName'] !== '') ? $c['tabName'] : $c['shortName'],
-							'active' => ($activeDbCounter === $cid),
+							'active' => ($activeDbCounter == $cid),
 							'addParams' => $addParams
 					];
 					$bt [] = $nbt;
 				}
-				$this->setBottomTabs ($bt);
+				if (count($bt) > 1)
+					$this->setBottomTabs ($bt);
+				else
+				{
+					$this->addAddParam ('dbCounter', $activeDbCounter);
+					$this->fixedDbCounter = intval($activeDbCounter);
+				}
 			}
 			else
-				$this->addAddParam ('dbCounter', $activeDbCounter);
+				$this->addAddParam ('dbCounter', key($this->dbCounters));
 		}
 	}
 
@@ -362,7 +387,9 @@ class ViewWorkOrders extends TableView
 		array_push ($q, ' WHERE 1');
 
 		// -- bottom tabs
-		if ($bottomTabId != 0)
+		if ($this->fixedDbCounter)
+			array_push ($q, ' AND workOrders.dbCounter = %i', $this->fixedDbCounter);
+		elseif ($bottomTabId != 0)
 			array_push ($q, ' AND workOrders.dbCounter = %i', $bottomTabId);
 
 		// -- fulltext
@@ -450,6 +477,9 @@ class ViewWorkOrders extends TableView
 
 		if ($dko['workOrderType'] === TableWorkOrders::wotMnf)
 		{
+			if ($item['dateBegin'])
+				$props[] = ['icon' => 'system/iconDateOfOrigin', 'text' => utils::datef ($item ['dateBegin'], '%d'), 'class' => ''];
+			else
 			if ($item['dateIssue'])
 				$props[] = ['icon' => 'system/iconDateOfOrigin', 'text' => utils::datef ($item ['dateIssue'], '%d'), 'class' => ''];
 
