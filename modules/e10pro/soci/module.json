@@ -1,0 +1,10 @@
+{
+	"id": "e10pro.soci",
+	"name": "Spolek",
+	"tables": [],
+	"extensions": ["soci"],
+	"modules": ["e10/base", "e10settings/base", "e10mnf/core"],
+	"config": [
+		{"id": "+e10.persons.roles", "file": "e10pro.persons.roles.json"}
+	]
+}

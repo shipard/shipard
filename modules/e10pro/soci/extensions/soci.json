@@ -1,0 +1,13 @@
+[
+	{
+		"table": "e10mnf.core.workOrders",
+		"views": {
+			"events": {
+				"id": "events", "class": "e10pro.soci.libs.ViewWOEvents",
+				"details": {
+					"eventDetail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.soci.libs.ViewDetailWOEvent"}
+				}
+			}
+		}
+	}
+]
