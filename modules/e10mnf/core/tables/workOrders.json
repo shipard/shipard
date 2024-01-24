@@ -32,6 +32,7 @@
 		{"id": "project", "name": "Projekt", "type": "int", "reference": "e10pro.wkf.projects", "module": "e10pro.wkf"},
 		{"id": "wkfProject", "name": "Projekt", "type": "int", "reference": "wkf.base.projects", "module": "wkf.base"},
 		{"id": "parentWorkOrder", "name": "Nadřazená zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
+		{"id": "place", "name": "Místo", "type": "int", "reference": "e10.base.places"},
 
 		{"id": "currency", "name": "Měna", "type": "enumString", "len": 3, "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
@@ -65,7 +66,6 @@
 		{"id": "rows", "class": "e10.base.ListRows", "name": "Řádky", "table": "e10mnf.core.workOrdersRows", "queryColumn": "workOrder", "orderColumn": "rowOrder"},
 		{"id": "persons", "class": "e10.base.ListRows", "name": "Osoby", "table": "e10mnf.core.workOrdersPersons", "queryColumn": "workOrder", "orderColumn": "rowOrder"},
 		{"id": "doclinksMembers", "class": "e10.base.ListDocLinks", "name": "Členové zakázky"},
-		{"id": "doclinksPlaces", "class": "e10.base.ListDocLinks", "name": "Místa"},
 		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"},
 		{"id": "address", "class": "e10.persons.ListAddress", "name": "Adresy"}
 	],

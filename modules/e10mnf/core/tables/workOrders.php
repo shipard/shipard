@@ -7,6 +7,8 @@ require_once __SHPD_MODULES_DIR__ . 'e10/base/base.php';
 
 use \e10\utils, \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Viewer\TableViewPanel, \e10\TableForm, \e10\DbTable, \e10doc\core\e10utils;
 use \e10doc\core\libs\GlobalParams;
+use \e10\base\libs\UtilsBase;
+
 
 /**
  * Class TableWorkOrders
@@ -302,6 +304,10 @@ class ViewWorkOrders extends TableView
 	var $dbCounters;
 	var $fixedDbCounter = 0;
 
+	var $useLinkedPersons = 0;
+	var $linkedPersons = NULL;
+
+
 	CONST vptCustomer = 0, vptDocNumber = 1, vptTitle = 2;
 
 	public function init ()
@@ -381,9 +387,11 @@ class ViewWorkOrders extends TableView
 		$bottomTabId = intval($this->bottomTabId());
 
 		$q [] = 'SELECT workOrders.*, ';
-		array_push ($q, ' customers.fullName as customerFullName ');
+		array_push ($q, ' customers.fullName as customerFullName,');
+		array_push ($q, ' places.fullName as placeFullName');
 		array_push ($q, ' FROM [e10mnf_core_workOrders] as workOrders');
 		array_push ($q, ' LEFT JOIN e10_persons_persons as customers ON workOrders.customer = customers.ndx');
+		array_push ($q, ' LEFT JOIN e10_base_places AS places ON workOrders.place = places.ndx ');
 		array_push ($q, ' WHERE 1');
 
 		// -- bottom tabs
@@ -500,6 +508,14 @@ class ViewWorkOrders extends TableView
 
 		$listItem ['t2'] = $props;
 
+		$props3 = [];
+
+		if ($item['placeFullName'])
+			$props3[] = ['icon' => 'tables/e10.base.places', 'text' => $item ['placeFullName'], 'class' => 'label label-default'];
+
+		if (count($props3))
+			$listItem ['t3'] = $props3;
+
 		return $listItem;
 	}
 
@@ -569,6 +585,9 @@ class ViewWorkOrders extends TableView
 				$this->personsLists[$r['workOrder']][] = $pl;
 			}
 		}
+
+		if ($this->useLinkedPersons)
+			$this->linkedPersons = UtilsBase::linkedPersons ($this->table->app(), $this->table, $this->pks, 'label label-info');
 	}
 
 	function decorateRow (&$item)
@@ -646,6 +665,14 @@ class ViewWorkOrders extends TableView
 		if (isset($this->personsLists[$item ['pk']]))
 		{
 			$item['t2'] = array_merge($item['t2'], $this->personsLists[$item ['pk']]);
+		}
+
+
+		if ($this->linkedPersons && isset ($this->linkedPersons [$item ['pk']]))
+		{
+			if (!isset($item ['t3']))
+				$item ['t3'] = [];
+			$item ['t3'] = array_merge($item ['t3'], $this->linkedPersons [$item ['pk']]);
 		}
 	}
 
@@ -838,6 +865,9 @@ class FormWorkOrder extends TableForm
 							$this->addColumnInput ('rgPercent');
 					}
 
+					if ($dko['usePlaces'] ?? 0)
+						$this->addColumnInput ('place');
+
 					if ($this->table->app()->cfgItem ('options.core.useCentres', 0))
 						$this->addColumnInput ('centre');
 					if ($this->table->app()->cfgItem ('options.core.useProjects', 0))
@@ -854,17 +884,16 @@ class FormWorkOrder extends TableForm
 						$this->addColumnInput ('parentWorkOrder');
 
 					if ($dko['useMembers'])
-					{
 						$this->addList ('doclinksMembers', '', TableForm::loAddToFormLayout/*|TableForm::coColW12*/);
-					}
+
 					$this->addList ('clsf', '', TableForm::loAddToFormLayout);
 
 					$this->addSeparator(self::coH4);
 					if ($this->addSubColumns('vdsData'))
 						$this->addSeparator(self::coH4);
 
-					if ($dko['useMembers'])
-						$this->addColumnInput ('useOwnerWorkOrder');
+					if ($dko['useOwnerWorkOrder'])
+						$this->addColumnInput ('parentWorkOrder');
 				$this->closeTab ();
 				if (!$dko['disableRows'])
 				{
