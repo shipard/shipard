@@ -3,7 +3,7 @@
 namespace e10pro\canteen\reports;
 
 use \e10\utils, e10doc\core\e10utils;
-
+use \e10\base\libs\UtilsBase;
 
 /**
  * Class Daily
@@ -68,6 +68,7 @@ class Daily extends \e10\GlobalReport
 		array_push($q, ' AND [orders].[date] = %d', $this->date);
 		array_push($q, ' ORDER BY personsOrder.[lastName], personsOrder.[firstName]');
 
+		$personsPks = [];
 		$t = [];
 		$h = ['#' => '#', 'person' => 'Jméno', 'main' => '|'.$this->canteenCfg['mainFoodTitle']];
 		$colClasses = ['main' => 'width10'];
@@ -110,6 +111,8 @@ class Daily extends \e10\GlobalReport
 				$sum['main']++;
 			}
 
+			$personsPks[] = $personNdx;
+
 			if (isset($this->canteenCfg['addFoods']))
 			{
 				foreach ($this->canteenCfg['addFoods'] as $afNdx => $af)
@@ -125,6 +128,23 @@ class Daily extends \e10\GlobalReport
 			}
 		}
 
+		if ($this->canteenCfg['dailyReportLabels'] != NULL)
+		{
+			$classification = UtilsBase::loadClassification ($this->app(), 'e10.persons.persons', $personsPks);
+			foreach ($classification as $personNdx => $personClsfs)
+			{
+				foreach ($personClsfs as $plbls)
+				{
+					foreach ($plbls as $plblId => $plbl)
+					{
+						if (!in_array($plbl['clsfItem'], $this->canteenCfg['dailyReportLabels']))
+							continue;
+						$t[$personNdx]['_options']['cellCss']['#'] = $plbl['css'];
+						break;
+					}
+				}
+			}
+		}
 		$t['SUM'] = $sum;
 
 		$this->addContent (['type' => 'table', 'header' => $h, 'table' => $t,

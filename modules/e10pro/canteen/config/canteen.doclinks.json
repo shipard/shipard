@@ -17,6 +17,12 @@
 			"sources": [
 				{"id": "default", "viewer": "default", "table": "e10.persons.persons"}
 			]
+		},
+		"canteen-daily-report-labels": {
+			"linkid": "canteen-daily-report-labels", "name": "Členit denní přehled za štítky", "icon": "system/iconUser",
+			"sources": [
+				{"id": "personsLabels", "viewer": "default", "table": "e10.base.clsfitems"}
+			]
 		}
 	},
 	"e10pro.canteen.personsOptions": {
