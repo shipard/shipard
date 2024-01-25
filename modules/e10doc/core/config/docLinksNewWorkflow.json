@@ -5,7 +5,7 @@
 			"sources": [
 				{"table": "wkf.core.issues", "viewer": "wkf.core.viewers.DocsCombo"}
 			],
-			"listId": "doclinks"
+			"listId": "inbox"
 		},
 		"e10docs-send-atts": {
 			"linkid": "e10docs-send-atts", "name": "Odeslat s přílohami", "icon": "system/iconPaperclip",

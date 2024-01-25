@@ -19,6 +19,7 @@ class FormInvoiceIn extends \e10doc\core\FormHeads
 			$useDocKinds = Utils::param ($dbCounter, 'useDocKinds', 0);
 		}
 
+		$testDocsInboxFirst = intval($this->app()->cfgItem ('options.experimental.testDocsInboxFirst', 0));
 		$usePropertyExpenses = $this->table->app()->cfgItem ('options.property.usePropertyExpenses', 0);
 
 		$this->setFlag ('maximize', 1);
@@ -33,6 +34,13 @@ class FormInvoiceIn extends \e10doc\core\FormHeads
 			$this->openTabs ($tabs, TRUE);
 
 			$this->openTab ();
+			if ($testDocsInboxFirst)
+			{
+				$this->addList ('inbox', '', self::loAddToFormLayout|self::coColW12);
+				$this->addSeparator(self::coH3);
+				$this->addInboxListDone = 1;
+			}
+
 			$this->layoutOpen (self::ltHorizontal);
 				$this->layoutOpen (self::ltForm);
 					$this->addColumnInput ("person");

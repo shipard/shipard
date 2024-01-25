@@ -82,7 +82,8 @@
 	"experimental": {
 		"options": [
 			{"cfgKey": "testAttInDocEditForms", "cfgName": "Testovat přílohy při editaci dokladů", "options": {"0": "Ne","1": "Ano"}},
-			{"cfgKey": "sendDocsAttachments", "cfgName": "Odesílat přílohy dokladů", "options": {"0": "Ne","1": "Ano"}}
+			{"cfgKey": "sendDocsAttachments", "cfgName": "Odesílat přílohy dokladů", "options": {"0": "Ne","1": "Ano"}},
+			{"cfgKey": "testDocsInboxFirst", "cfgName": "Testovat Došlou poštu jako první", "options": {"0": "Ne","1": "Ano"}}
 		]
 	}
 }

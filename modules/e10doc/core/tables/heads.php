@@ -3437,6 +3437,7 @@ class FormHeads extends TableForm
 	var $useAttInfoPanel = 0;
 
 	var $vatRegs = NULL;
+	var $addInboxListDone = 0;
 
 	function openForm ($layoutType = TableForm::ltForm)
 	{
@@ -3510,7 +3511,8 @@ class FormHeads extends TableForm
 
 		$this->layoutOpen (TableForm::ltGrid);
 			$this->addColumnInput ("title", TableForm::coColW12);
-			$this->addList ('doclinks', '', TableForm::loAddToFormLayout|TableForm::coColW12);
+			if (!$this->addInboxListDone)
+				$this->addList ('inbox', '', TableForm::loAddToFormLayout|TableForm::coColW12);
 
 			if ($sendDocsAttachments)
 			{
