@@ -1,0 +1,22 @@
+{
+	"e10-pro-soci": {
+		"name": "Spolek", "order": 11000, "group": "e10prosoci",
+		"icon": "iconMusic",
+		"type": "cfgFile",
+		"options":
+		[
+			{
+				"cfgKey": "useEntries", "cfgName": "Používat Přihlášky",
+				"options": {"0": "Ne", "1": "Ano"}}
+		]
+	},
+
+	"soci-periods": {
+		"name": "Období", "order": 170000, "group": "e10prosoci",
+		"type": "viewer", "table": "e10pro.soci.periods", "viewer": "default"
+	},
+	"entries-kinds": {
+		"name": "Druhy přihlášek", "order": 180000, "group": "e10prosoci",
+		"type": "viewer", "table": "e10pro.soci.entriesKinds", "viewer": "default"
+	}
+}

@@ -1,0 +1,54 @@
+{
+	"id": "e10pro.soci.entries", "sql": "e10pro_soci_entries", "name": "Přihlášky",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "docNumber", "name": "Číslo přihlášky", "type": "string", "len": 12, "options": ["ascii"]},
+    {"id": "entryKind", "name": "Druh přihlášky", "type": "int", "reference": "e10pro.soci.entriesKinds"},
+
+		{"id": "dateIssue", "name": "Datum přihlášky", "type": "date"},
+    {"id": "entryTo", "name": "Přihláška do", "type": "int", "reference": "e10mnf.core.workOrders"},
+		{"id": "entryPeriod", "name": "Na období", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10pro.soci.periods", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "firstName", "name": "Jméno", "type": "string", "len": 60},
+		{"id": "lastName", "name": "Příjmení", "type": "string", "len": 80},
+    {"id": "fullName", "name": "Celé jméno", "type": "string", "len": 140},
+		{"id": "birthday", "name": "Datum narození", "type": "date"},
+		{"id": "phone", "name": "Telefon", "type": "string", "len": 60},
+		{"id": "email", "name": "E-mail", "type": "string", "len": 60},
+
+		{"id": "note", "name": "Poznámka", "type": "memo"},
+
+    {"id": "saleType", "name": "Sleva", "type": "enumInt",
+      "enumValues": {"0": "Ne", "1": "Ano"}},
+		{"id": "paymentPeriod", "name": "Platba na období", "type": "enumInt",
+      "enumValues": {"0": "Celé období", "1": "Polovina období"}},
+
+    {"id": "source", "name": "Zdroj", "type": "enumInt",
+      "enumValues": {"0": "Papírová přihláška", "1": "E-mail", "2": "Webový formulář", "3": "Import"}},
+
+		{"id": "webSentDate", "name": "Datum a čas odeslání přihlášky z webu", "type": "timestamp"},
+		{"id": "confirmEmailDone", "name": "Potvrzovací email odeslán", "type": "logical"},
+
+    {"id": "dstPerson", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+  "lists": [
+		{"id": "inbox", "class": "e10.base.ListDocLinks", "name": "Došlá pošta"}
+	],
+	"views": [
+		{
+			"id": "default", "class": "e10pro.soci.ViewEntries",
+			"detail": "e10pro.soci.ViewDetailEntry"
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.soci.FormEntry"}
+	],
+	"reports": [
+		{"id": "entry", "name": "Přihláška", "class": "e10pro.soci.libs.ReportEntry", "email": 1}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

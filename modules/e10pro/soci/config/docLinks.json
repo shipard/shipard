@@ -1,0 +1,11 @@
+{
+	"e10pro.soci.entries": {
+		"e10pro-soci-entries-inbox": {
+			"linkid": "e10pro-soci-entries-inbox", "name": "Došlá pošta", "icon": "system/issueReceivedMail",
+			"sources": [
+				{"table": "wkf.core.issues", "viewer": "e10pro.soci.libs.InboxComboEntries"}
+			],
+			"listId": "inbox"
+		}
+	}
+}

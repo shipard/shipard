@@ -1,10 +1,13 @@
 {
 	"id": "e10pro.soci",
 	"name": "Spolek",
-	"tables": [],
+	"tables": ["periods", "entriesKinds", "entries"],
 	"extensions": ["soci"],
 	"modules": ["e10/base", "e10settings/base", "e10mnf/core"],
 	"config": [
-		{"id": "+e10.persons.roles", "file": "e10pro.persons.roles.json"}
+		{"id": "+e10.persons.roles", "file": "e10pro.persons.roles.json"},
+		{"id": "+appOptions", "file": "appOptions.json"},
+	  {"id": "+e10.appOptions.groups", "file": "appOptionsGroups.json"},
+		{"id": "+e10.base.doclinks", "file": "docLinks.json"}
 	]
 }

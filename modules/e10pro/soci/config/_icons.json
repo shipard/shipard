@@ -1,0 +1,14 @@
+{
+  "tables/e10pro.soci.entries":{
+    "fa5":"fa-child",
+		"fa6pro":"fa-child",
+		"bsi":"bi-person-badge",
+		"mdi":"emoji_people"
+  },
+  "tables/e10pro.soci.periods":{
+    "fa5": "fa-calendar",
+		"fa6pro": "fa-calendar",
+		"bsi": "bi-calendar",
+		"mdi": "calendar_today"
+  }
+}
