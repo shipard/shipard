@@ -1517,6 +1517,9 @@ function e10viewerDoComboClick (e, event)
 			var formId = searchObjectId (target, 'form');
 			var form = $('#'+formId);
 			e10doSizeHints (form);
+
+			if (target.hasClass('e10-ino-saveOnChange'))
+				e10FormNeedSave(target, -1);
 		}
 		else
 		{

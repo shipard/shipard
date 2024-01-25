@@ -450,7 +450,7 @@ infotext=e.find('.df2-list-item-t1').text();var
 listItems=target.find('ul').first();var
 newItem="<li class='data' data-pk='"+pk+"' data-table='"+table+"'"+'>'+infotext+"<span class='e10-inputDocLink-closeItem'>&times;</span></li>";target.find("span.placeholder").hide();$(newItem).insertBefore($('#'+targetId+'>ul>li.input'));listItems.find('li.input>input').val('').focus();e10FormSetAsModified(target);var
 formId=searchObjectId(target,'form');var
-form=$('#'+formId);e10doSizeHints(form);}else{var
+form=$('#'+formId);e10doSizeHints(form);if(target.hasClass('e10-ino-saveOnChange'))e10FormNeedSave(target,-1);}else{var
 valueInput=target.find('input.e10-inputNdx');if(valueInput.is('INPUT')){valueInput.val(pk);target.find('span.btns').show();var
 infotext=e.find('div.df2-list-item-t1').text();target.find('span.e10-refinp-infotext').text(infotext);}else{valueInput=target.find('input.e10-inputRefId, textarea.e10-inputRefId');var
 inputPrefix=searchParentAttr(valueInput,'data-inputprefix');var

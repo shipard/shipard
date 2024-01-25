@@ -2165,8 +2165,11 @@ class ListDocLinks implements \E10\IDocumentList
 				$inputHint = $this->formData->columnOptionsHints ($options);
 			}
 
+			$inputClass = 'e10-inputDocLink';
+			if (isset($this->listDefinition['saveOnChange']))
+				$inputClass .= ' e10-ino-saveOnChange';
 			$inputCode = '';
-			$inputCode .= "<div id='$inputId' class='e10-inputDocLink' data-name='$inputName'
+			$inputCode .= "<div id='$inputId' class='$inputClass' data-name='$inputName'
 											data-srctable='{$this->table->tableId()}' data-listid='{$this->listId}'
 											data-listgroup='{$linkDef['linkid']}' data-fid='{$this->formData->fid}'$readOnlyParam>";
 			$inputCode .= "<span class='placeholder'>" . '...' . '</span>';

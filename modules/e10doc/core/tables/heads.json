@@ -170,7 +170,7 @@
 			"propertiesCfgList2": "e10.docs.properties"
 		},
 		{"id": "doclinks", "class": "e10.base.ListDocLinks", "name": "Vazby"},
-		{"id": "inbox", "class": "e10.base.ListDocLinks", "name": "Došlá pošta"},
+		{"id": "inbox", "class": "e10.base.ListDocLinks", "name": "Došlá pošta", "saveOnChange": 1},
 		{"id": "sendAtts", "class": "e10.base.ListDocLinks", "name": "Přílohy k odeslání"},
 		{"id": "clsf", "class": "e10.base.ListClassification", "name": "Zatřídění"},
 	  {"id": "address", "class": "e10.persons.ListAddress", "name": "Adresy"}
