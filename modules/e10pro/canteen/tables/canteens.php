@@ -87,6 +87,7 @@ class TableCanteens extends DbTable
 			$wiki['allowAllUsers'] = ($cntPeoples) ? 0 : 1;
 
 			$this->saveConfigList ($canteen, 'optimizePayers', 'e10.persons.persons', 'e10pro-canteens-optimize-payers', $r ['ndx']);
+			$this->saveConfigList ($canteen, 'dailyReportLabels', 'e10.base.clsfitems', 'canteen-daily-report-labels', $r ['ndx']);
 
 			$this->saveConfigAddFoods($canteen);
 
