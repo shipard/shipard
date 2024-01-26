@@ -8,6 +8,7 @@
 					"eventDetail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.soci.libs.ViewDetailWOEvent"}
 				}
 			}
-		}
+		},
+		"reports": [{"id": "woEventRecordSheet", "name": "Evidenční list", "class": "e10pro.soci.libs.ReportWOEventRecordSheet", "email": 1}]
 	}
 ]

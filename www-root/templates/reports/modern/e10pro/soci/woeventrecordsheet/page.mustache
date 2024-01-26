@@ -1,0 +1,26 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+    <title>Evidenční list</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v12" type="text/css"/>
+
+    <style>
+        table.default {font-size: 9pt;}
+    </style>
+
+</head>
+<body>
+
+{{#data.reportTexts.subHeader}}<div class='reportTextHeader'>{{{data.reportTexts.subHeader}}}</div>{{/data.reportTexts.subHeader}}
+
+{{{@renderContent;dataItem:data.contents}}}
+
+{{#data.reportTexts.subFooter}}<div class='reportTextFooter'>{{{data.reportTexts.subFooter}}}</div>{{/data.reportTexts.subFooter}}
+{{^data.reportTexts.subFooter}}
+    <p>Zkontrolujte, prosím, výše uvedené údaje. V případě nesrovnalostí nebo dotazů se na nás obraďte e-mailem.</p>
+{{/data.reportTexts.subFooter}}
+
+</body>
+
+</html>

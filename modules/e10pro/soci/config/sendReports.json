@@ -1,0 +1,9 @@
+{
+  "5001": {
+    "fn": "Evidenční list Zakázky",
+    "cn": "Evidenční list Zakázky",
+    "sc": "EVLZ",
+    "classId": "e10pro.soci.libs.ReportWOEventRecordSheet",
+    "ndx": 5001
+  }
+}
