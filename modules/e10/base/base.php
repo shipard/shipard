@@ -109,7 +109,12 @@ function getPropertiesTable ($app, $toTableId, $toRecId)
 			else
 			if ($p ['type'] == 'date')
 			{
-				$oneProp = array ('ndx' => $row ['ndx'], 'property' => $row ['property'], 'group' => $row ['group'], 'value' => $row ['valueDate'], 'type' => 'memo', 'name' => $p ['name']);
+				$oneProp = [
+					'ndx' => $row ['ndx'], 'property' => $row ['property'], 'group' => $row ['group'],
+					'value' => $row ['valueDate'], 'type' => 'memo', 'name' => $p ['name']
+				];
+				if ($row ['valueDate'])
+					$oneProp['value'] = utils::datef($row ['valueDate'], '%d');
 				$loaded = true;
 			}
 			else
