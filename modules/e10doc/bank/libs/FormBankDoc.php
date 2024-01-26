@@ -40,6 +40,7 @@ class FormBankDoc extends \e10doc\core\FormHeads
 
 			$this->layoutOpen (self::ltGrid);
 				$this->addColumnInput ('title', self::coColW12);
+				$this->addList ('inbox', '', self::loAddToFormLayout|self::coColW12);
 				$this->addList ('doclinks', '', self::loAddToFormLayout|self::coColW12);
 				$this->addList ('clsf', '', self::loAddToFormLayout|self::coColW12);
 			$this->layoutClose ();
