@@ -12,13 +12,29 @@
 		width: 100%;
 		margin-left: 25.4pt;
 		margin-right: 25.4pt;
-		border-left: 6pt solid #CFECEC;
-		border-bottom: 1px solid #CFECEC;
+
+		{{#data.options.docReportsHeadLogoRight}}
+			border-left: 6pt solid {{data.options.accentColor}};
+			border-bottom: 1px solid {{data.options.accentColor}};
+		{{/data.options.docReportsHeadLogoRight}}
+
+		{{^data.options.docReportsHeadLogoRight}}
+			border-right: 6pt solid {{data.options.accentColor}};
+			border-bottom: 1px solid {{data.options.accentColor}};
+		{{/data.options.docReportsHeadLogoRight}}
 	}
 
 	td.docInfo {
-		text-align: left;
-		font-size: 11pt;
+		font-size: 12pt;
+
+		{{#data.options.docReportsHeadLogoRight}}
+			text-align: left;
+		{{/data.options.docReportsHeadLogoRight}}
+
+		{{^data.options.docReportsHeadLogoRight}}
+			text-align: right;
+			padding-right: 2pt;
+		{{/data.options.docReportsHeadLogoRight}}
 	}
 
 	span.docName {
@@ -26,22 +42,42 @@
 	}
 
 	td.supplierLogo {
-		text-align: right;
 		font-size: 10pt;
-		/*font-weight: bold;*/
+
+		{{#data.options.docReportsHeadLogoRight}}
+			text-align: right;
+		{{/data.options.docReportsHeadLogoRight}}
+
+		{{^data.options.docReportsHeadLogoRight}}
+			text-align: left;
+		{{/data.options.docReportsHeadLogoRight}}
 	}
 </style>
 
 <table class='header'>
 	<tr>
-		<td class="docInfo">
-			<span class='docName'>Evidenční list</span><br>
-			<small><b>{{data.head.title}}</b> <small>{{data.person.fullName}}</small></small>
-		</td>
-		<td class="supplierLogo">
-			{{#data.owner.logo.logo-nadpis.filename}}
-				<img style="height:24pt;" src='{{{@imgData;dataItem:data.owner.logo.logo-nadpis}}}'>
-			{{/data.owner.logo.logo-nadpis.filename}}
-		</td>
+		{{#data.options.docReportsHeadLogoRight}}
+			<td class="docInfo">
+				<span class='docName'>Evidenční list</span><br>
+				<small><b>{{data.head.title}}</b> <small>{{data.person.fullName}}</small></small>
+			</td>
+			<td class="supplierLogo">
+				{{#data.owner.logo.logo-nadpis.filename}}
+					<img style="height:24pt;" src='{{{@imgData;dataItem:data.owner.logo.logo-nadpis}}}'>
+				{{/data.owner.logo.logo-nadpis.filename}}
+			</td>
+		{{/data.options.docReportsHeadLogoRight}}
+
+		{{^data.options.docReportsHeadLogoRight}}
+			<td class="supplierLogo">
+				{{#data.owner.logo.logo-nadpis.filename}}
+					<img style="height:24pt;" src='{{{@imgData;dataItem:data.owner.logo.logo-nadpis}}}'>
+				{{/data.owner.logo.logo-nadpis.filename}}
+			</td>
+			<td class="docInfo">
+				<span class='docName'>Evidenční list</span><br>
+				<small><b>{{data.head.title}}</b> <small>{{data.person.fullName}}</small></small>
+			</td>
+		{{/data.options.docReportsHeadLogoRight}}
 	</tr>
 </table>
