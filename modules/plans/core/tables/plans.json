@@ -10,6 +10,7 @@
 		{"id": "useViewDetail", "name": "Používat detail prohlížeče", "type": "logical"},
 		{"id": "useViewCompact", "name": "Používat kompaktní zobrazení", "type": "logical"},
 		{"id": "useViewTree", "name": "Preferovat stromový pohled", "type": "logical"},
+		{"id": "useViewStatesColors", "name": "Obarvit prohlížeč barvou stavů", "type": "logical"},
 
 		{"id": "useCustomer", "name": "Zadávat zákazníka", "type": "logical"},
 		{"id": "useWorkOrders", "name": "Používat Zakázky", "type": "logical"},

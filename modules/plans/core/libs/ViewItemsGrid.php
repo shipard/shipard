@@ -30,6 +30,7 @@ class ViewItemsGrid extends TableViewGrid
 	var $useViewDetail = 0;
 	var $useViewCompact = 0;
 	var $useViewTree = 0;
+	var $useViewStatesColors = 0;
 	var $showColumnPrice = 0;
 
 	var $showPrevItemInMonth = 1;
@@ -59,6 +60,7 @@ class ViewItemsGrid extends TableViewGrid
 				$this->useViewDetail = $this->planCfg['useViewDetail'] ?? 0;
 				$this->useViewCompact = $this->planCfg['useViewCompact'] ?? 0;
 				$this->showColumnPrice = $this->planCfg['usePrice'] ?? 0;;
+				$this->useViewStatesColors = $this->planCfg['useViewStatesColors'] ?? 0;;
 			}
 		}
 
@@ -266,7 +268,8 @@ class ViewItemsGrid extends TableViewGrid
 			if ($treeLevel === 2)
 				$listItem['_options']['cellCss']['subject'] = 'padding-left: 1rem;';
 
-			//$listItem['_options']['cellCss']['iid'] = 'background-color: '.$itemState['colorbg'].'; color: '.$itemState['colorfg'];
+			if ($this->useViewStatesColors)
+				$listItem['_options']['cellCss']['subject'] .= 'background-color: '.$itemState['colorbg'].'; color: '.$itemState['colorfg'];
 
 			$listItem ['subject'] = $subj;
 
@@ -309,8 +312,11 @@ class ViewItemsGrid extends TableViewGrid
 			{
 				$listItem ['icon'] = $itemState['icon'] ?? '';//$this->table->tableIcon ($item);
 
-				$css = "background-color: ".$itemState['colorbg'].'; color: '.$itemState['colorfg'];
-				$listItem['_options']['cellCss'] = ['subject' => $css];
+				if ($this->useViewStatesColors)
+				{
+					$css = "background-color: ".$itemState['colorbg'].'; color: '.$itemState['colorfg'];
+					$listItem['_options']['cellCss'] = ['subject' => $css];
+				}
 			}
 
 			if ($this->useTableViewTabsMonths)
