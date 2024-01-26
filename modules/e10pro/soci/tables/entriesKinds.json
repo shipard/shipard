@@ -12,6 +12,8 @@
 		{"id": "useInbox", "name": "Používat Došlou poštu", "type": "logical"},
 		{"id": "inboxSection", "name": "Sekce Došlé pošty", "type": "int", "reference": "wkf.base.sections"},
 		{"id": "usePeriods", "name": "Používat Období", "type": "logical"},
+		{"id": "useSaleType", "name": "Používat Slevu", "type": "logical"},
+		{"id": "usePaymentPeriod", "name": "Používat Platbu na období", "type": "logical"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

@@ -87,6 +87,7 @@ class DCEntry extends \Shipard\Base\DocumentCard
   public function addCoreInfo()
   {
     $entryTo = $this->app()->loadItem($this->recData['entryTo'], 'e10mnf.core.workOrders');
+    $entryKind = $this->app()->cfgItem('e10pro.soci.entriesKinds.'.$this->recData['entryKind']);
 
     $pidLabels = [['text' => $this->recData['email'], 'class' => '']];
     $existedPersonNdx = $this->checkPerson($pidLabels);
@@ -128,6 +129,7 @@ class DCEntry extends \Shipard\Base\DocumentCard
       ];
     }
 
+    $t[] = ['t' => 'Datum přihlášky', 'v' => Utils::datef($entryTo['dateIssue'])];
     $t[] = ['t' => 'Přihláška do', 'v' => $entryTo['title']];
     if ($this->recData['entryPeriod'])
     {
@@ -136,12 +138,25 @@ class DCEntry extends \Shipard\Base\DocumentCard
         $t[] = ['t' => 'Období', 'v' => $period['sn']];
     }
     $t[] = ['t' => 'Jméno', 'v' => $personInfo];
-
     $t[] = ['t' => 'Datum narození', 'v' => Utils::datef($this->recData['birthday'])];
     $t[] = ['t' => 'E-mail', 'v' => $this->recData['email']];
     $t[] = ['t' => 'Telefon', 'v' => $this->recData['phone']];
 
-    $h = ['t' => '', 'v' => ''];
+    if ($entryKind['useSaleType'] ?? 0)
+    {
+      $saleTypes = $this->table->columnInfoEnum ('saleType', 'cfgText');
+      $t[] = ['t' => 'Sleva', 'v' => $saleTypes[$this->recData['saleType']]];
+    }
+    if ($entryKind['usePaymentPeriod'] ?? 0)
+    {
+      $paymentPeriods = $this->table->columnInfoEnum ('paymentPeriod', 'cfgText');
+      $t[] = ['t' => 'Platba na období', 'v' => $paymentPeriods[$this->recData['paymentPeriod']]];
+    }
+
+    if ($this->recData['note'] && trim($this->recData['note']) !== '')
+      $t[] = ['t' => 'Poznámka', 'v' => $this->recData['note']];
+
+    $h = ['t' => '_T', 'v' => 'H'];
 
 		$this->addContent ('body', ['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'header' => $h, 'table' => $t,
 				'params' => ['hideHeader' => 1, 'forceTableClass' => 'properties fullWidth']]);

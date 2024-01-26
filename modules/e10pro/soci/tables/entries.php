@@ -141,7 +141,7 @@ class ViewEntries extends TableView
 
     array_push ($q, 'SELECT entries.*,');
     array_push ($q, ' workOrders.docNumber AS woDocNumber, workOrders.title AS woTitle,');
-    array_push ($q, ' places.fullName AS placeFullName,');
+    array_push ($q, ' places.fullName AS placeFullName, places.shortName AS placeShortName,');
     array_push ($q, ' persons.fullName AS personFullName');
     array_push ($q, ' FROM [e10pro_soci_entries] AS entries ');
     array_push ($q, ' LEFT JOIN e10mnf_core_workOrders AS workOrders ON entries.entryTo = workOrders.ndx');
@@ -162,11 +162,13 @@ class ViewEntries extends TableView
 			array_push ($q, ' AND (');
 			array_push ($q, ' entries.[firstName] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ' OR entries.[lastName] LIKE %s', '%'.$fts.'%');
+			array_push ($q, ' OR entries.[email] LIKE %s', '%'.$fts.'%');
+			array_push ($q, ' OR entries.[phone] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ' OR persons.[fullName] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ')');
 		}
 
-		$this->queryMain ($q, 'entries.', ['[webSentDate]', '[fullName]']);
+		$this->queryMain ($q, 'entries.', ['[dateIssue] DESC', '[fullName]']);
 		$this->runQuery ($q);
 	}
 
@@ -184,6 +186,8 @@ class ViewEntries extends TableView
     elseif ($item['personFullName'])
       $listItem ['t1'] = $item['personFullName'];
 
+		$listItem ['i2'] = Utils::datef($item['dateIssue']);
+
     /*
     $listItem ['t2'] = [];
     $listItem ['t2'][] = ['text' => $item['email'], 'class' => 'label label-default', 'icon' => 'system/iconEnvelope'];
@@ -196,7 +200,9 @@ class ViewEntries extends TableView
 
 		$listItem ['t2'][] = ['text' => $item['woTitle'], 'class' => 'label label-default'];
 
-		if ($item['placeFullName'])
+		if ($item['placeShortName'] && $item['placeShortName'] !== '')
+      $listItem ['t2'][] = ['icon' => 'tables/e10.base.places', 'text' => $item ['placeShortName'], 'class' => 'label label-default'];
+		elseif ($item['placeFullName'])
       $listItem ['t2'][] = ['icon' => 'tables/e10.base.places', 'text' => $item ['placeFullName'], 'class' => 'label label-default'];
 
 		return $listItem;
@@ -261,10 +267,15 @@ class FormEntry extends TableForm
         {
           $this->addColumnInput('dstPerson');
         }
+
 				$this->addSeparator(self::coH3);
-				$this->addColumnInput('saleType');
-				$this->addColumnInput('paymentPeriod');
-        $this->addSeparator(self::coH3);
+				if ($entryKind['useSaleType'] ?? 0)
+					$this->addColumnInput('saleType');
+				if ($entryKind['usePaymentPeriod'] ?? 0)
+					$this->addColumnInput('paymentPeriod');
+				if (($entryKind['useSaleType'] ?? 0) || ($entryKind['usePaymentPeriod'] ?? 0))
+        	$this->addSeparator(self::coH3);
+
         $this->addColumnInput('dateIssue');
         $this->addSeparator(self::coH3);
         $this->addColumnInput ('note');
