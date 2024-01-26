@@ -25,6 +25,8 @@ class DocReportBase extends FormReport
 
 	var $testNewPersons = 0;
 
+	var $defaultLanguage = 'cs';
+
 	function init ()
 	{
 		parent::init();
@@ -125,11 +127,14 @@ class DocReportBase extends FormReport
 			if ($this->lang == '' && isset($this->data [$columnId]['address']['countryLangSC2']))
 				$this->lang = $this->data [$columnId]['address']['countryLangSC2'];
 
-			if (!in_array($this->lang, ['de', 'en', 'it', 'sk', 'cs']))
+			if ($this->lang === '')
+				$this->lang = $this->defaultLanguage;
+
+				if (!in_array($this->lang, ['de', 'en', 'it', 'sk', 'cs']))
 				$this->lang = 'en';
 		}
 		else
-			$this->lang = 'cs';
+			$this->lang = $this->defaultLanguage;
 
 		if (isset($this->data [$columnId]['lists']['properties']))
 		{
