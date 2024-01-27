@@ -57,6 +57,17 @@ class Params extends \Shipard\Base\BaseObject
 			if (isset($options['title']))
 				$pc['title'] = $options['title'];
 
+			if (isset ($options['cfg']))
+			{
+				$enumData = $this->app->cfgItem($options['cfg'], NULL);
+				foreach ($enumData as $enumId => $enumItem)
+				{
+					$pc['values'][strval($enumId)] = [
+						'title' => $enumItem[$options['cfgTitleId']], 'id' => strval($enumId)
+					];
+				}
+			}
+			else
 			foreach ($options['items'] as $valId => $val)
 			{
 				$pc['values'][$valId] = $val;
@@ -396,6 +407,10 @@ class Params extends \Shipard\Base\BaseObject
 			$c .= "<h3>".$this->app()->ui()->composeTextLine($p['title']).'</h3>';
 		forEach ($p['values'] as $pid => $pc)
 		{
+			if (isset($pc['label']))
+			{
+				$c .= "<h4>".$this->app()->ui()->composeTextLine($pc['label']).'</h4>';
+			}
 			$inputName = $paramId.'.'.$pid;
 			$inputId = $chgiid.'-'.$pid;
 			$css = '';
