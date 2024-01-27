@@ -19,9 +19,9 @@
 		{"id": "note", "name": "Poznámka", "type": "memo"},
 
     {"id": "saleType", "name": "Sleva", "type": "enumInt",
-      "enumValues": {"0": "Ne", "1": "Ano"}},
+			"enumCfg": {"cfgItem": "e10pro.soci.saleTypes", "cfgValue": "", "cfgText": "fn"}},
 		{"id": "paymentPeriod", "name": "Platba na období", "type": "enumInt",
-      "enumValues": {"0": "Celé období", "1": "Polovina období"}},
+			"enumCfg": {"cfgItem": "e10pro.soci.paymentPeriods", "cfgValue": "", "cfgText": "fn"}},
 
     {"id": "source", "name": "Zdroj", "type": "enumInt",
       "enumValues": {"0": "Papírová přihláška", "1": "E-mail", "2": "Webový formulář", "3": "Import"}},

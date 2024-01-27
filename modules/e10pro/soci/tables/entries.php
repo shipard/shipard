@@ -68,11 +68,13 @@ class ViewEntries extends TableView
 {
   var $entryKinds = NULL;
   var $fixedEntryKind = 0;
+	var $entryKindCfg = NULL;
   var $periods = NULL;
 
 	public function init ()
 	{
     $this->periods = $this->app()->cfgItem('e10pro.soci.periods', NULL);
+		$this->entryKinds = $this->table->app()->cfgItem ('e10pro.soci.entriesKinds', FALSE);
 
 		parent::init();
 
@@ -99,7 +101,6 @@ class ViewEntries extends TableView
 		}
 
 		// -- entryKinds
-		$this->entryKinds = $this->table->app()->cfgItem ('e10pro.soci.entriesKinds', FALSE);
 		if ($this->entryKinds !== FALSE)
 		{
 			$activeEntryKind = 0;
@@ -125,10 +126,15 @@ class ViewEntries extends TableView
 				{
 					$this->addAddParam ('entryKind', $activeEntryKind);
 					$this->fixedEntryKind = intval($activeEntryKind);
+					$this->entryKindCfg = $this->entryKinds[$this->fixedEntryKind];
 				}
 			}
 			else
-				$this->addAddParam ('entryKind', key($this->entryKinds));
+			{
+				$this->fixedEntryKind = intval(key($this->entryKinds));
+				$this->addAddParam ('entryKind', $this->fixedEntryKind);
+				$this->entryKindCfg = $this->entryKinds[$this->fixedEntryKind];
+			}
 		}
 	}
 
@@ -167,6 +173,17 @@ class ViewEntries extends TableView
 			array_push ($q, ' OR persons.[fullName] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ')');
 		}
+
+		$qv = $this->queryValues();
+
+		if (isset ($qv['paymentPeriods']))
+			array_push ($q, ' AND entries.paymentPeriod IN %in', array_keys($qv['paymentPeriods']));
+		if (isset ($qv['saleTypes']))
+			array_push ($q, ' AND entries.saleType IN %in', array_keys($qv['saleTypes']));
+		if (isset ($qv['wo']))
+			array_push ($q, ' AND entries.entryTo IN %in', array_keys($qv['wo']));
+		if (isset ($qv['places']))
+			array_push ($q, ' AND workOrders.place IN %in', array_keys($qv['places']));
 
 		$this->queryMain ($q, 'entries.', ['[dateIssue] DESC', '[fullName]']);
 		$this->runQuery ($q);
@@ -211,6 +228,67 @@ class ViewEntries extends TableView
 	public function createPanelContentQry (TableViewPanel $panel)
 	{
 		$qry = [];
+
+		$paramsPaymentPeriods = new \Shipard\UI\Core\Params ($this->app());
+		$paramsPaymentPeriods->addParam ('checkboxes', 'query.paymentPeriods', ['cfg' => 'e10pro.soci.paymentPeriods', 'cfgTitleId' => 'fn']);
+		$qry[] = ['id' => 'paymentPeriods', 'style' => 'params', 'title' => 'Platba na období', 'params' => $paramsPaymentPeriods];
+
+		$paramsSaleTypes = new \Shipard\UI\Core\Params ($this->app());
+		$paramsSaleTypes->addParam ('checkboxes', 'query.saleTypes', ['cfg' => 'e10pro.soci.saleTypes', 'cfgTitleId' => 'fn']);
+		$qry[] = ['id' => 'saleTypes', 'style' => 'params', 'title' => 'Sleva', 'params' => $paramsSaleTypes];
+
+		$placesNdxs = [];
+		$paramsWO = new \Shipard\UI\Core\Params ($this->app());
+		$chbxWO = [];
+		foreach ($this->entryKinds as $ekId => $ekCfg)
+		{
+			if (intval($ekCfg['workOrderKind'] ?? 0))
+			{
+				$woKind = $this->app()->cfgItem('e10mnf.workOrders.kinds.'.$ekCfg['workOrderKind'], NULL);
+				if ($woKind)
+				{
+					$label = $woKind['fullName'];
+					$woRows = $this->db()->query(
+											'SELECT * FROM [e10mnf_core_workOrders] WHERE [docKind] = %i', $ekCfg['workOrderKind'],
+											' AND docState = %i', 1200,
+											' ORDER BY title, docNumber');
+					foreach ($woRows as $wor)
+					{
+						$chbxWO[$wor['ndx']] = ['title' => $wor['title'], 'id' => $wor['ndx']];
+						if ($label)
+						{
+							$chbxWO[$wor['ndx']]['label'] = $label;
+							$label = NULL;
+						}
+
+						if (!in_array($wor['place'], $placesNdxs))
+							$placesNdxs[] = $wor['place'];
+					}
+				}
+			}
+		}
+		if (count($chbxWO))
+		{
+			$paramsWO->addParam ('checkboxes', 'query.wo', ['items' => $chbxWO]);
+			$qry[] = ['id' => 'wo', 'style' => 'params', 'title' => 'Přihláška do', 'params' => $paramsWO];
+		}
+
+		if (count($placesNdxs))
+		{
+			$paramsPlaces = new \Shipard\UI\Core\Params ($this->app());
+			$chbxPlaces = [];
+
+			$placesRows = $this->db()->query('SELECT * FROM [e10_base_places] WHERE [ndx] IN %in', $placesNdxs);
+			foreach ($placesRows as $pr)
+			{
+				$chbxPlaces[$pr['ndx']] = ['title' => $pr['shortName'], 'id' => $pr['ndx']];
+			}
+
+			$paramsPlaces->addParam ('checkboxes', 'query.places', ['items' => $chbxPlaces]);
+			$qry[] = ['id' => 'places', 'style' => 'params', 'title' => 'Místo', 'params' => $paramsPlaces];
+		}
+
+		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}
 }
 

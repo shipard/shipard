@@ -29,6 +29,7 @@ class TableEntriesKinds extends DbTable
 				'inputPerson' => $r ['inputPerson'],
 				'useInbox' => intval($r ['useInbox']),
 				'inboxSection' => intval($r ['inboxSection']),
+				'workOrderKind' => intval($r ['workOrderKind']),
 				'usePeriods' => intval($r ['usePeriods']),
 				'useSaleType' => intval($r ['useSaleType']),
 				'usePaymentPeriod' => intval($r ['usePaymentPeriod']),
@@ -136,6 +137,7 @@ class FormEntryKind extends TableForm
 					$this->addColumnInput ('inputPerson');
 					$this->addColumnInput ('useInbox');
 					$this->addColumnInput ('inboxSection');
+					$this->addColumnInput ('workOrderKind');
 					$this->addColumnInput ('usePeriods');
 					$this->addColumnInput ('useSaleType');
 					$this->addColumnInput ('usePaymentPeriod');

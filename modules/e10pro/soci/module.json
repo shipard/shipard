@@ -3,12 +3,14 @@
 	"name": "Spolek",
 	"tables": ["periods", "entriesKinds", "entries"],
 	"extensions": ["soci"],
-	"modules": ["e10/base", "e10settings/base", "e10mnf/core"],
+	"modules": ["e10/base", "e10settings/base", "e10mnf/core", "e10doc/templates"],
 	"config": [
 		{"id": "+e10.persons.roles", "file": "e10pro.persons.roles.json"},
 		{"id": "+appOptions", "file": "appOptions.json"},
 	  {"id": "+e10.appOptions.groups", "file": "appOptionsGroups.json"},
 		{"id": "+e10.base.doclinks", "file": "docLinks.json"},
-		{"id": "+e10.reports.sendReports", "file": "sendReports.json"}
+		{"id": "+e10.reports.sendReports", "file": "sendReports.json"},
+		{"id": "+e10pro.soci.saleTypes", "file": "saleTypes.json"},
+		{"id": "+e10pro.soci.paymentPeriods", "file": "paymentPeriods.json"}
 	]
 }

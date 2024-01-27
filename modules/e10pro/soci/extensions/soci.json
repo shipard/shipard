@@ -10,5 +10,17 @@
 			}
 		},
 		"reports": [{"id": "woEventRecordSheet", "name": "Evidenční list", "class": "e10pro.soci.libs.ReportWOEventRecordSheet", "email": 1}]
-	}
+	},
+  {
+    "table": "e10.persons.persons",
+    "views": {
+      "soci": {
+				"id": "soci", "class": "e10pro.soci.libs.ViewPersons", "title": "Osoby",
+				"details": {
+					"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "e10.persons.ViewDetailPersons"}
+				}
+			}
+		}
+  }
+
 ]

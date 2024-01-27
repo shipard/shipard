@@ -14,6 +14,7 @@
 		{"id": "usePeriods", "name": "Používat Období", "type": "logical"},
 		{"id": "useSaleType", "name": "Používat Slevu", "type": "logical"},
 		{"id": "usePaymentPeriod", "name": "Používat Platbu na období", "type": "logical"},
+		{"id": "workOrderKind", "name": "Druh Zakázky", "type": "int", "reference": "e10mnf.base.dockinds"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
