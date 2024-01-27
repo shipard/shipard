@@ -956,6 +956,8 @@ class ViewPersonsBase extends TableView
 			}
 		}
 
+		$this->createPanelContentQry1 ($panel, $qry);
+
 		// -- countries
 		$paramsPersonCountries = new \E10\Params ($panel->table->app());
 
@@ -1014,6 +1016,10 @@ class ViewPersonsBase extends TableView
 
 		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}
+
+	protected function createPanelContentQry1 (TableViewPanel $panel, &$qry)
+	{
+	}
 }
 
 
@@ -1034,7 +1040,8 @@ class ViewPersons extends ViewPersonsBase
 		$this->setMainQueries ($mq);
 
 		$this->setPanels (TableView::sptQuery);
-	}}
+	}
+}
 
 /**
  * class ViewDetailPersons
