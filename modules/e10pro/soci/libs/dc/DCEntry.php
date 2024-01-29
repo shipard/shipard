@@ -88,6 +88,7 @@ class DCEntry extends \Shipard\Base\DocumentCard
   {
     $entryTo = $this->app()->loadItem($this->recData['entryTo'], 'e10mnf.core.workOrders');
     $entryKind = $this->app()->cfgItem('e10pro.soci.entriesKinds.'.$this->recData['entryKind']);
+    $entryState = $this->app()->cfgItem('e10pro.soci.entryStates.'.$this->recData['entryState'], NULL);
 
     $pidLabels = [['text' => $this->recData['email'], 'class' => '']];
     $existedPersonNdx = $this->checkPerson($pidLabels);
@@ -156,9 +157,13 @@ class DCEntry extends \Shipard\Base\DocumentCard
     if ($this->recData['note'] && trim($this->recData['note']) !== '')
       $t[] = ['t' => 'Poznámka', 'v' => $this->recData['note']];
 
+
+    $t[0]['_options']['cellClasses']['t'] = 'width10em';
+
     $h = ['t' => '_T', 'v' => 'H'];
 
-		$this->addContent ('body', ['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'header' => $h, 'table' => $t,
+    $paneClass = 'e10-ds '.$entryState['stateClass'];
+		$this->addContent ('body', ['pane' => 'e10-pane e10-pane-table '.$paneClass, 'type' => 'table', 'header' => $h, 'table' => $t,
 				'params' => ['hideHeader' => 1, 'forceTableClass' => 'properties fullWidth']]);
   }
 
@@ -198,9 +203,54 @@ class DCEntry extends \Shipard\Base\DocumentCard
     return $personNdx;
   }
 
+  protected function addInvoicing()
+  {
+    $ie = new \e10pro\soci\libs\EntriesInvoicingEngine($this->app());
+    $ie->init();
+    $ie->setEntry($this->recData['ndx']);
+    $ie->loadInvoices();
+    $ie->planInvoices();
+
+    $title = [['text' => 'Faktury k vystavení', 'class' => 'h2 block']];
+    if (count($ie->planInvoicesTable))
+    {
+      if ($this->recData['entryState'] !== 0)
+      {
+        $this->addContent ('body', [
+          'pane' => 'e10-pane e10-pane-table', 'type' => 'line', 'paneTitle' => $title,
+          'line' => ['text' => 'Přihláška není platná, faktury není možné vystavit...', 'class' => 'e10-off']
+        ]);
+      }
+      else
+      {
+        $this->addContent ('body', [
+            'pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'paneTitle' => $title,
+            'header' => $ie->planInvoicesHead, 'table' => $ie->planInvoicesTable,
+        ]);
+      }
+    }
+
+    $title = ['text' => 'Vystavené faktury', 'class' => 'h2 block'];
+    if (count($ie->existedInvoicesTable))
+    {
+      $this->addContent ('body', [
+          'pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'paneTitle' => $title,
+          'header' => $ie->existedInvoicesHead, 'table' => $ie->existedInvoicesTable,
+      ]);
+    }
+    else
+    {
+      $this->addContent ('body', [
+        'pane' => 'e10-pane e10-pane-table', 'type' => 'line', 'paneTitle' => $title,
+        'line' => ['text' => 'Žádna faktura zatím nebyla vystavena...']
+      ]);
+    }
+  }
+
   public function createContent ()
 	{
     $this->addCoreInfo();
+    $this->addInvoicing();
     $this->attachments ();
 	}
 }

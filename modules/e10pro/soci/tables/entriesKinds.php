@@ -116,8 +116,7 @@ class ViewEntriesKinds extends TableView
 
 
 /**
- * Class FormDocKind
- * @package e10mnf\base
+ * class FormDocKind
  */
 class FormEntryKind extends TableForm
 {

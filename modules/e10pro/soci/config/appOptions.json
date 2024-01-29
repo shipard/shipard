@@ -18,5 +18,9 @@
 	"entries-kinds": {
 		"name": "Druhy přihlášek", "order": 180000, "group": "e10prosoci",
 		"type": "viewer", "table": "e10pro.soci.entriesKinds", "viewer": "default"
+	},
+	"entries-invoicing": {
+		"name": "Fakturace přihlášek", "order": 181000, "group": "e10prosoci",
+		"type": "viewer", "table": "e10pro.soci.entriesInvoicing", "viewer": "default"
 	}
 }

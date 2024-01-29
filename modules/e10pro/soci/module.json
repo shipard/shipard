@@ -1,9 +1,9 @@
 {
 	"id": "e10pro.soci",
 	"name": "Spolek",
-	"tables": ["periods", "entriesKinds", "entries"],
+	"tables": ["periods", "entriesKinds", "entriesInvoicing", "entries"],
 	"extensions": ["soci"],
-	"modules": ["e10/base", "e10settings/base", "e10mnf/core", "e10doc/templates"],
+	"modules": ["e10/base", "e10settings/base", "e10mnf/core", "e10doc/templates", "e10pro/install/docs-commerce"],
 	"config": [
 		{"id": "+e10.persons.roles", "file": "e10pro.persons.roles.json"},
 		{"id": "+appOptions", "file": "appOptions.json"},
@@ -11,6 +11,7 @@
 		{"id": "+e10.base.doclinks", "file": "docLinks.json"},
 		{"id": "+e10.reports.sendReports", "file": "sendReports.json"},
 		{"id": "+e10pro.soci.saleTypes", "file": "saleTypes.json"},
-		{"id": "+e10pro.soci.paymentPeriods", "file": "paymentPeriods.json"}
+		{"id": "+e10pro.soci.paymentPeriods", "file": "paymentPeriods.json"},
+		{"id": "+e10pro.soci.entryStates", "file": "entryStates.json"}
 	]
 }

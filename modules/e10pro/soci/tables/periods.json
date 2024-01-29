@@ -7,6 +7,7 @@
 
 		{"id": "dateBegin", "name": "Začátek", "type": "date"},
 		{"id": "dateEnd", "name": "Konec", "type": "date"},
+		{"id": "dateHalf", "name": "Začátek druhé poloviny", "type": "date"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

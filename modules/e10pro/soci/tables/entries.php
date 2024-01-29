@@ -58,6 +58,16 @@ class TableEntries extends DbTable
 
 		return $hdr;
 	}
+
+	public function tableIcon ($recData, $options = NULL)
+	{
+		$entryState = $this->app()->cfgItem ('e10pro.soci.entryStates.'.$recData['entryState'], NULL);
+
+		if ($entryState)
+			return $entryState['icon'];
+
+		return parent::tableIcon ($recData, $options);
+	}
 }
 
 
@@ -170,6 +180,7 @@ class ViewEntries extends TableView
 			array_push ($q, ' OR entries.[lastName] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ' OR entries.[email] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ' OR entries.[phone] LIKE %s', '%'.$fts.'%');
+			array_push ($q, ' OR entries.[docNumber] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ' OR persons.[fullName] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ')');
 		}
@@ -330,6 +341,7 @@ class FormEntry extends TableForm
           $this->addSeparator(self::coH4);
         }
         $this->addColumnInput('entryTo');
+				$this->addColumnInput('testDriveWanted');
         if ($entryKind['usePeriods'] ?? 0)
           $this->addColumnInput('entryPeriod');
         $this->addSeparator(self::coH4);
@@ -357,6 +369,11 @@ class FormEntry extends TableForm
         $this->addColumnInput('dateIssue');
         $this->addSeparator(self::coH3);
         $this->addColumnInput ('note');
+				$this->addSeparator(self::coH2);
+				$this->addColumnInput('entryState');
+        $this->addSeparator(self::coH3);
+				$this->addColumnInput('datePeriodBegin');
+				$this->addColumnInput('datePeriodEnd');
 	  	$this->closeTab ();
 
       $this->openTab ();

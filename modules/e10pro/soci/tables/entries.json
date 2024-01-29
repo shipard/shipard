@@ -9,6 +9,9 @@
     {"id": "entryTo", "name": "Přihláška do", "type": "int", "reference": "e10mnf.core.workOrders"},
 		{"id": "entryPeriod", "name": "Na období", "type": "enumInt",
 			"enumCfg": {"cfgItem": "e10pro.soci.periods", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "testDriveWanted", "name": "Přihláška na zkoušku", "type": "logical"},
+		{"id": "entryState", "name": "Stav přihlášky", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10pro.soci.entryStates", "cfgValue": "", "cfgText": "fn"}},
 		{"id": "firstName", "name": "Jméno", "type": "string", "len": 60},
 		{"id": "lastName", "name": "Příjmení", "type": "string", "len": 80},
     {"id": "fullName", "name": "Celé jméno", "type": "string", "len": 140},
@@ -22,6 +25,9 @@
 			"enumCfg": {"cfgItem": "e10pro.soci.saleTypes", "cfgValue": "", "cfgText": "fn"}},
 		{"id": "paymentPeriod", "name": "Platba na období", "type": "enumInt",
 			"enumCfg": {"cfgItem": "e10pro.soci.paymentPeriods", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "datePeriodBegin", "name": "Začátek období", "type": "date"},
+		{"id": "datePeriodEnd", "name": "Konec období", "type": "date"},
 
     {"id": "source", "name": "Zdroj", "type": "enumInt",
       "enumValues": {"0": "Papírová přihláška", "1": "E-mail", "2": "Webový formulář", "3": "Import"}},

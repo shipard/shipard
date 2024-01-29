@@ -1,0 +1,22 @@
+{
+  "0": {
+    "fn": "Platná přihláška",
+    "icon": "user/checkSquare",
+    "stateClass": "e10-docstyle-done"
+  },
+  "1": {
+     "fn": "Zkušební lhůta",
+     "icon": "user/questionCircle",
+     "stateClass": "e10-docstyle-new"
+  },
+  "2": {
+    "fn": "Zájem o pokračování",
+    "icon": "user/thumbsUp",
+    "stateClass": "e10-docstyle-halfdone"
+  },
+  "3": {
+    "fn": "Stornováno",
+    "icon": "user/timesCircle",
+    "stateClass": "e10-docstyle-cancel"
+  }
+}

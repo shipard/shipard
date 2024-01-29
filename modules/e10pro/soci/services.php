@@ -28,11 +28,19 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$e->run();
 	}
 
+	public function invoicesFromEntries()
+	{
+    $ie = new \e10pro\soci\libs\EntriesInvoicingEngine($this->app());
+    $ie->init();
+		$ie->generateAll();
+	}
+
 	public function onCliAction ($actionId)
 	{
 		switch ($actionId)
 		{
 			case 'import-entries': return $this->importEntries();
+			case 'invoices-from-entries': return $this->invoicesFromEntries();
 		}
 
 		parent::onCliAction($actionId);

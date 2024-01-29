@@ -29,6 +29,7 @@ class TablePeriods extends DbTable
 				'fn' => $r ['fullName'], 'sn' => $r ['shortName'],
 				'dateBegin' => $r['dateBegin']->format ('Y-m-d'),
 				'dateEnd' => $r['dateEnd']->format ('Y-m-d'),
+				'dateHalf' => $r['dateHalf']->format ('Y-m-d'),
 			];
 		}
 
@@ -107,6 +108,7 @@ class FormPeriod extends TableForm
 			$this->addColumnInput ('fullName');
 			$this->addColumnInput ('shortName');
 			$this->addColumnInput ('dateBegin');
+			$this->addColumnInput ('dateHalf');
 			$this->addColumnInput ('dateEnd');
 		$this->closeForm ();
 	}
