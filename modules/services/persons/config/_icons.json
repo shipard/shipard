@@ -4,5 +4,12 @@
 		"fa6pro": "fa-users",
 		"bsi": "bi-people",
 		"mdi": "people"
+    },
+    "tables/services.persons.regsChanges":
+    {
+        "fa5": "fa-download",
+		"fa6pro": "fa-download",
+		"bsi": "bi-download",
+		"mdi": "file_download"
     }
 }

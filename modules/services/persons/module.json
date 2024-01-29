@@ -2,7 +2,7 @@
   "id": "services.persons",
   "name": "Persons services",
 	"modules": ["e10/base"],
-  "tables": ["persons", "ids", "address", "bankAccounts", "regsData", "log"],
+  "tables": ["persons", "ids", "address", "bankAccounts", "regsData", "log", "regsChanges"],
   "config": [
 	  {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
 	  {"id": "+registeredClasses", "file": "registeredClasses.json"},

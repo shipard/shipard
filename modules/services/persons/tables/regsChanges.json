@@ -1,0 +1,28 @@
+{
+  "id": "services.persons.regsChanges", "sql": "services_persons_regsChanges", "name": "Změny v registrech",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "regType", "name": "Registr", "type": "enumInt", "len": 2,
+		  "enumCfg": {"cfgItem": "services.persons.registers", "cfgValue": "", "cfgText": "name"}},
+
+    {"id": "changeDay", "name": "Datum změny", "type": "date"},
+    {"id": "changeSetId", "name": "ID sady", "type": "long"},
+    {"id": "cntChanges", "name": "Počet změn", "type": "int"},
+		{"id": "srcData", "name": "Zdrojová data", "type": "memo"},
+
+    {"id": "changeState", "name": "Stav", "type": "enumInt",
+      "enumValues": {"0": "Evidována", "1": "Staženo", "2": "Připraveno ke zpracování", "3": "Zpracováno"}},
+
+    {"id": "tsDownload", "name": "Okamžik stažení", "type": "timestamp"}
+  ],
+  "views": {
+		"default": {
+			"id": "default", "class": "services.persons.ViewRegsChanges",
+			"details": {
+				"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "services.persons.ViewDetailRegChanges"}
+			}
+		}
+	},
+
+  "options": ["systemTable"]
+}

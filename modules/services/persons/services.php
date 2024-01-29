@@ -134,6 +134,28 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		return TRUE;
 	}
 
+	public function downloadRegsChangeSets()
+	{
+		$rc = new \services\persons\libs\cz\RegsChangesCZ($this->app());
+		$rc->downloadChangeSets();
+	}
+
+	public function downloadRegsChangeSetsContents()
+	{
+		$rc = new \services\persons\libs\cz\RegsChangesCZ($this->app());
+		$rc->downloadChangeSetsContents();
+	}
+
+	protected function onCronMorning()
+	{
+		$this->downloadRegsChangeSets();
+	}
+
+	protected function onCronEver()
+	{
+		$this->downloadRegsChangeSetsContents();
+	}
+
 	public function onCliAction ($actionId)
 	{
 		switch ($actionId)
@@ -144,8 +166,20 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'person-regs-import': return $this->cliPersonRegsImport();
 			case 'person-refresh': return $this->cliPersonRefresh();
 			case 'refresh-import-res': return $this->cliRefreshImportRES();
+			case 'download-regs-change-sets': return $this->downloadRegsChangeSets();
+			case 'download-regs-change-sets-contents': return $this->downloadRegsChangeSetsContents();
 		}
 
 		parent::onCliAction($actionId);
+	}
+
+	public function onCron ($cronType)
+	{
+		switch ($cronType)
+		{
+			case 'morning':  $this->onCronMorning(); break;
+			case 'ever':   $this->onCronEver(); break;
+		}
+		return TRUE;
 	}
 }
