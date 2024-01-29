@@ -88,7 +88,7 @@ class ViewItemsGrid extends TableViewGrid
 		//$this->createBottomTabs();
 
 		$g = [
-			'iid' => 'ID',
+			//'iid' => 'ID',
 		];
 
 		if ($this->useViewCompact)
@@ -248,7 +248,8 @@ class ViewItemsGrid extends TableViewGrid
 					'data-addParams' => '__ownerItem='.$item['ndx']
 				];
 
-			$subj[] = ['text' => $itemState['sn'] ?? '!!!', 'icon' => $itemStateIcon, 'class' => 'label pull-right', 'css' => $itemStateCss];
+			//$subj[] = ['text' => $itemState['sn'] ?? '!!!', 'icon' => $itemStateIcon, 'class' => 'label pull-right', 'css' => $itemStateCss];
+			$subj[] = ['text' => $itemState['sn'] ?? '!!!', 'class' => 'label pull-right e10-small'];
 
 			$subj[] = ['text' => '', 'class' => 'break'];
 
@@ -269,8 +270,11 @@ class ViewItemsGrid extends TableViewGrid
 				$listItem['_options']['cellCss']['subject'] = 'padding-left: 1rem;';
 
 			if ($this->useViewStatesColors)
+			{
 				$listItem['_options']['cellCss']['subject'] .= 'background-color: '.$itemState['colorbg'].'; color: '.$itemState['colorfg'];
-
+				$listItem['_options']['cellCss']['begin'] .= 'background-color: '.$itemState['colorbg'].'; color: '.$itemState['colorfg'];
+				$listItem['_options']['cellCss']['deadline'] .= 'background-color: '.$itemState['colorbg'].'; color: '.$itemState['colorfg'];
+			}
 			$listItem ['subject'] = $subj;
 
 
