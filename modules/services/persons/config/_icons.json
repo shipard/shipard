@@ -11,5 +11,11 @@
 		"fa6pro": "fa-download",
 		"bsi": "bi-download",
 		"mdi": "file_download"
-    }
+    },
+	"tables/services.persons.regsChangesItems": {
+		"fa5": "fa-edit",
+		"fa6pro": "fa-edit",
+		"bsi": "bi-pencil-square",
+		"mdi": "edit"
+	}
 }

@@ -1,0 +1,22 @@
+{
+  "id": "services.persons.regsChangesItems", "sql": "services_persons_regsChangesItems", "name": "Položky změny v registrech",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "regsChangeSet", "name": "Aktualizační dávka", "type": "int", "reference": "services.persons.regsChanges"},
+		{"id": "country", "name": "Země", "type": "int", "reference": "e10.world.countries"},
+		{"id": "oid", "name": "id", "type": "string", "len": 20, "options": ["ascii"]},
+		{"id": "person", "name": "Osoba", "type": "int", "reference": "services.persons.persons"},
+		{"id": "changeType", "name": "Typ změny", "type": "enumInt", "len": 2,
+      "enumValues": {"0": "Nová firma", "1": "Zrušení firmy", "2": "Změna údajů"}},
+    {"id": "done", "name": "Hotovo", "type": "logical"}
+  ],
+  "views": {
+		"default": {
+			"id": "default", "class": "services.persons.ViewRegsChangesItems",
+			"details": {
+				"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "services.persons.ViewDetailRegChangeItem"}
+			}
+		}
+	},
+  "options": ["systemTable"]
+}

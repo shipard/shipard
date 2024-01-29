@@ -146,6 +146,12 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$rc->downloadChangeSetsContents();
 	}
 
+	public function prepareRegsChangeItems()
+	{
+		$rc = new \services\persons\libs\cz\RegsChangesCZ($this->app());
+		$rc->prepareChangeSetsItems();
+	}
+
 	protected function onCronMorning()
 	{
 		$this->downloadRegsChangeSets();
@@ -154,6 +160,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 	protected function onCronEver()
 	{
 		$this->downloadRegsChangeSetsContents();
+		$this->prepareRegsChangeItems();
 	}
 
 	public function onCliAction ($actionId)
@@ -168,6 +175,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'refresh-import-res': return $this->cliRefreshImportRES();
 			case 'download-regs-change-sets': return $this->downloadRegsChangeSets();
 			case 'download-regs-change-sets-contents': return $this->downloadRegsChangeSetsContents();
+			case 'prepare-regs-change-items': return $this->prepareRegsChangeItems();
 		}
 
 		parent::onCliAction($actionId);

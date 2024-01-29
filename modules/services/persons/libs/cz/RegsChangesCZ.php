@@ -119,6 +119,80 @@ class RegsChangesCZ extends Utility
     }
   }
 
+  public function prepareChangeSetsItems()
+  {
+    $q = [];
+    array_push($q, 'SELECT * FROM [services_persons_regsChanges]');
+    array_push($q, ' WHERE [changeState] = %i', 1);
+    array_push($q, ' AND [regType] = %i', $this->regNumId);
+    array_push($q, ' ORDER BY [ndx]');
+
+    $rows = $this->db()->query($q);
+    foreach ($rows as $r)
+    {
+      $data = Json::decode($r['srcData']);
+      if (!$data)
+        continue;
+      if (!isset($data['seznamNotifikaci']))
+        continue;
+
+      foreach ($data['seznamNotifikaci'] as $oneChange)
+      {
+        $this->addChangeSetItem($r['ndx'], $r['changeDay'], $oneChange);
+      }
+
+      $this->db()->query('UPDATE [services_persons_regsChanges] SET [changeState] = %i', 2, ' WHERE [ndx] = %i', $r['ndx']);
+
+      break;
+    }
+  }
+
+  protected function addChangeSetItem($changeSetNdx, $changeSetDay, $item)
+  {
+    //echo "* ".$item['icoId']."\n";
+
+    $newItem = [
+      'regsChangeSet' => $changeSetNdx,
+      'country' => 60, // CZ
+      'oid' => $item['icoId'],
+      'changeType' => 2,
+    ];
+
+    if ($item['typZmeny'] === 'DEL')
+      $newItem['changeType'] = 1;
+    elseif ($item['typZmeny'] === 'INS')
+      $newItem['changeType'] = 0;
+
+    $existedPerson = $this->db()->query('SELECT * FROM [services_persons_persons]',
+          ' WHERE [country] = %i', $newItem['country'],
+          ' AND [oid] = %s', $newItem['oid'])->fetch();
+
+    if ($existedPerson)
+    {
+      $newItem['person'] = $existedPerson['ndx'];
+      if ($newItem['changeType'] === 1)
+      { // DELETE
+        $update = [
+          'validTo' => $changeSetDay,
+          'valid' => 0,
+          'newDataAvailable' => 0,
+          'updated' => new \DateTime(),
+        ];
+        $this->db()->query('UPDATE [services_persons_persons] SET ', $update,
+                           ' WHERE [ndx] = %i', $existedPerson['ndx']);
+
+        $newItem['done'] = 1;
+      }
+      else
+      {
+        $this->db()->query('UPDATE [services_persons_persons] SET [newDataAvailable] = %i', 1,
+                            ', [newDataAvailable] = 1 WHERE [ndx] = %i', $existedPerson['ndx']);
+      }
+    }
+
+    $this->db()->query('INSERT INTO [services_persons_regsChangesItems] ', $newItem);
+  }
+
   public function run()
   {
     $this->downloadChangeSets();
