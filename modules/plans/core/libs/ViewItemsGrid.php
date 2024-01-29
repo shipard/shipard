@@ -457,6 +457,14 @@ class ViewItemsGrid extends TableViewGrid
 					array_push ($q, ' AND ([group] = %s', $grpId, ' AND [clsfItem] IN %in', array_keys($grpItems), ')');
 				array_push ($q, ')');
 			}
+			if (isset($qv['itemStates']))
+			{
+				array_push ($q, ' AND (');
+				array_push ($q, ' [items].[itemState] IN %in', array_keys($qv['itemStates']));
+				array_push ($q, ' OR ');
+				array_push ($q, ' EXISTS (SELECT ndx FROM [plans_core_items] AS [innerItems] WHERE items.ndx = innerItems.ownerItem AND innerItems.itemState IN %in)', array_keys($qv['itemStates']));
+				array_push ($q, ')');
+			}
 
 			if ($mainQuery === 'active' || $mainQuery === '')
 			{
@@ -536,6 +544,12 @@ class ViewItemsGrid extends TableViewGrid
 					array_push ($q, ')');
 
 				array_push ($q, ')');
+			}
+
+			if (isset($qv['itemStates']))
+			{
+				array_push ($q, ' AND ([items].[itemState] IN %in', array_keys($qv['itemStates']),
+															' OR [ownerItems].[itemState] IN %in)', array_keys($qv['itemStates']));
 			}
 
 			if ($mainQuery === 'active' || $mainQuery === '')
@@ -623,6 +637,9 @@ class ViewItemsGrid extends TableViewGrid
 			array_push ($q, ')');
 		}
 
+		if (isset($qv['itemStates']))
+			array_push ($q, ' AND [items].[itemState] IN %in', array_keys($qv['itemStates']));
+
 		// -- fulltext
 		if ($fts != '')
 		{
@@ -686,6 +703,11 @@ class ViewItemsGrid extends TableViewGrid
 	public function createPanelContentQry (TableViewPanel $panel)
 	{
 		$qry = [];
+
+		// -- states
+		$paramsItemStates = new \Shipard\UI\Core\Params ($this->app());
+		$paramsItemStates->addParam ('checkboxes', 'query.itemStates', ['cfg' => 'plans.itemStates', 'cfgTitleId' => 'fn']);
+		$qry[] = ['id' => 'itemStates', 'style' => 'params', 'title' => 'Stav', 'params' => $paramsItemStates];
 
 		// -- tags
 		UtilsBase::addClassificationParamsToPanel($this->table, $panel, $qry);
