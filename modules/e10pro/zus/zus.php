@@ -446,6 +446,7 @@ class ViewStudents extends \e10\persons\ViewPersonsBase
 			'withoutEmail' => ['title' => 'Bez e-mailu', 'id' => 'withoutEmail'],
 			'badContacts' => ['title' => 'Vadné kontakty', 'id' => 'badContacts'],
 			'withoutContacts' => ['title' => 'Bez kontaktů', 'id' => 'withoutContacts'],
+			'withoutMainAddress' => ['title' => 'Bez bydliště', 'id' => 'withoutMainAddress'],
 			'badAddress' => ['title' => 'Vadné adresy', 'id' => 'badAddress'],
 		];
 		$paramsOthers = new \E10\Params ($this->app());
@@ -557,6 +558,14 @@ class ViewStudents extends \e10\persons\ViewPersonsBase
 														'AND docState = 4000 AND adrStreet = %s', '', ' AND adrCity = %s', '',
 														'GROUP BY person HAVING count(*) > 0');
 				array_push ($q, ' ) AS [persBadAddress] )');
+			}
+
+			$withoutMainAddress = isset ($qv['others']['withoutMainAddress']);
+			if ($withoutMainAddress)
+			{
+				array_push ($q, ' AND NOT EXISTS (SELECT ndx FROM e10_persons_personsContacts WHERE persons.ndx = person ');
+				array_push ($q, ' AND e10_persons_personsContacts.flagAddress = 1 AND e10_persons_personsContacts.flagMainAddress = 1');
+				array_push ($q, ')');
 			}
 		}
 	}
