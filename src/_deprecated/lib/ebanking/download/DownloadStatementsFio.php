@@ -9,7 +9,7 @@ use E10\utils, E10\Utility;
  * Class DownloadStatementsFio
  * @package lib\ebanking\download
  *
- * @url http://www.fio.cz/docs/cz/API_Bankovnictvi.pdf
+ * @url https://www.fio.cz/docs/cz/API_Bankovnictvi.pdf
  *
  */
 class DownloadStatementsFio extends \lib\ebanking\download\DownloadStatements
@@ -47,15 +47,33 @@ class DownloadStatementsFio extends \lib\ebanking\download\DownloadStatements
 
 		$urlPdf = $url . '.pdf';
 		$filePdf = $tmpFileName . '.pdf';
-		$data = @file_get_contents($urlPdf);
+		if ($this->app()->debug)
+			echo "Download PDF statement - contact FIO API: ".$urlPdf."\n";
+		$data = file_get_contents($urlPdf);
+		$responseHeaders = $http_response_header ?? [];
+		if ($this->app()->debug)
+		{
+			echo ("response data: ".json_encode($data))."\n";
+			echo ("response headers: ".json_encode($responseHeaders))."\n";
+		}
+
 		if ($data === FALSE)
 			return;
 		file_put_contents($filePdf, $data);
 
 		sleep(33); // minimal pause between requests is 30 seconds
 
-		$urlData = $url . '.gpc';
-		$fileData = $tmpFileName . '.gpc';
+		$testImportFioJson = $this->app()->cfgItem ('options.experimental.testImportFioJson', 0);
+		if ($testImportFioJson)
+		{
+			$urlData = $url . '.json';
+			$fileData = $tmpFileName . '.json.txt';
+		}
+		else
+		{
+			$urlData = $url . '.gpc';
+			$fileData = $tmpFileName . '.gpc';
+		}
 		$data = file_get_contents($urlData);
 		if ($data === FALSE)
 			return;

@@ -18,5 +18,7 @@
 	{"id": "cz.cba-xml", "name": "ČBA / XML",
 		"checkRegExp": "/<BkToCstmrStmt>/"},
 	{"id": "cz.csob-xml", "name": "ČSOB / XML",
-		"checkRegExp": "/<FINSTA>/"}
+		"checkRegExp": "/<FINSTA>/"},
+	{"id": "cz.fio-json", "name": "FIO / JSON",
+		"checkRegExp": "/\\\"accountStatement\\\":\\{/"}
 ]
