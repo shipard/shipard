@@ -1,0 +1,18 @@
+{
+  "e10pro-cashbox": {
+    "fn": "Maloobchodní kasa",
+    "appMenu": {
+      "appTitle": "Kasa",
+      "items": [
+        {
+          "title": "Kasa", "icon": "user/medal", "id": "cashbox",
+          "objectType": "widget", "classId": "terminals.store.WidgetCashBoxNG"
+        },
+        {
+          "title": "Prodejky", "icon": "user/book", "id": "cashregister",
+          "objectType": "viewer", "table": "e10doc.core.heads", "viewer": "cashregisterall"
+        }
+      ]
+    }
+  }
+}

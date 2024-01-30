@@ -5,6 +5,7 @@
 	"modules": ["e10doc/cashRegister", "e10pro/reports/terminal_daily", "e10pro/reports/terminal_monthly", "terminals/store"],
 	"extensions": ["store"],
   "config": [
+    {"id": "+apps", "file": "apps.json"},
     {"id": "+appSkeleton", "file": "store.appSkeleton.json"},
     {"id": "+e10.persons.roles", "file": "store.roles.json"},
 	  {"id": "+e10.dashboardInfo", "file": "dashboardInfo.json"},
