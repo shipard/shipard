@@ -103,6 +103,8 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 
 		$this->initParams();
 		$this->codeKindDef = $this->app()->cfgItem('e10.witems.codesKinds.'.$this->codeKindNdx, NULL);
+		$this->data['reportTitle'] = $this->codeKindDef['reportPersonTitle'] ?? '';
+		$this->data['reportNote'] = $this->codeKindDef['reportPersonOutCodeNote'] ?? '';
 
 		if ($this->dir === WasteReturnEngine::rowDirIn)
 			$this->outboxLinkId = 'waste-suppliers-'.$this->calendarYear.'-'.$this->codeKindNdx;
