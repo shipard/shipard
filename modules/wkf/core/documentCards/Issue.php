@@ -47,14 +47,17 @@ class Issue extends \e10\DocumentCard
 	function loadData()
 	{
 		$this->lp = new LinkedPersons($this->app());
-		$this->lp->setSource('wkf.core.issues', $this->recData['ndx']);
-		$this->lp->setFlags(LinkedPersons::lpfHyperlinks);
-		$this->lp->load();
+		if (isset($this->recData['ndx']))
+		{
+			$this->lp->setSource('wkf.core.issues', $this->recData['ndx']);
+			$this->lp->setFlags(LinkedPersons::lpfHyperlinks);
+			$this->lp->load();
+		}
 
 		$this->loadDataConnectedIssues();
 		$this->loadDataConnectedIssues2();
 
-		if ($this->recData['systemInfo'] !== '')
+		if (isset($this->recData['systemInfo']) && $this->recData['systemInfo'] !== '')
 			$this->systemInfo = json_decode($this->recData['systemInfo'], TRUE);
 	}
 
@@ -141,6 +144,18 @@ class Issue extends \e10\DocumentCard
 			$this->createSystemInfo_emails($sit, $systemInfo, 'from');
 			$this->createSystemInfo_emails($sit, $systemInfo, 'to');
 			//$this->createSystemInfo_emailHeaders($sit, $systemInfo);
+		}
+
+		if ($this->recData['linkId'] !== '')
+		{
+			$sit[] = [
+				'p1' => ['text' => 'linkId'],
+				'_options' => ['class' => 'header', 'colSpan' => ['p1' => 2], 'cellClasses' => ['p1' => 'width30 pull-left']]
+			];
+			$sit[] = [
+				'p1' => ['text' => 'Hodnota'],
+				't1' => $this->recData['linkId'],
+			];
 		}
 
 		if (count($sit))
@@ -355,7 +370,7 @@ class Issue extends \e10\DocumentCard
 
 	function createContentIssueText($columnId)
 	{
-		if ($this->recData [$columnId] === NULL || $this->recData [$columnId] === '')
+		if (!isset($this->recData [$columnId]) || $this->recData [$columnId] === NULL || $this->recData [$columnId] === '')
 			return;
 
 		//if ($this->recData [$columnId] !== '' && $this->recData [$columnId] !== '0')
