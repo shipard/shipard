@@ -447,7 +447,7 @@ class TablePersons extends DbTable
 				$rows = $this->db()->query($q);
 				foreach ($rows as $r)
 				{
-					$emails[] = $r['contactEmail'];
+					$emails[] = trim($r['contactEmail']);
 				}
 
 				if (count($emails))
@@ -473,7 +473,7 @@ class TablePersons extends DbTable
 			$rows = $this->db()->query($q);
 			foreach ($rows as $r)
 			{
-				$emails[] = $r['contactEmail'];
+				$emails[] = trim($r['contactEmail']);
 			}
 			if (count($emails))
 				return implode (', ', $emails);
@@ -482,7 +482,11 @@ class TablePersons extends DbTable
 		$sql = 'SELECT valueString FROM [e10_base_properties] where [tableid] = %s AND [recid] IN %in AND [property] = %s AND [group] = %s ORDER BY ndx';
 		$emailsRows = $this->db()->query ($sql, 'e10.persons.persons', $persons, 'email', 'contacts')->fetchPairs ();
 		if (count($emailsRows))
+		{
+			foreach ($emailsRows as &$e)
+				$e = trim($e);
 			return implode (', ', $emailsRows);
+		}
 
 		return '';
 	}

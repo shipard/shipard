@@ -15,9 +15,14 @@ class ReportWasteOnePersonAction extends DocumentAction
 	var $debug = 0;
 	var $maxCount = 0;
 
+	/** @var \e10\persons\TablePersons */
+	var $tablePersons = NULL;
+
+
 	public function init ()
 	{
 		parent::init();
+		$this->tablePersons = $this->app()->table('e10.persons.persons');
 	}
 
 	public function actionName ()
@@ -116,8 +121,9 @@ class ReportWasteOnePersonAction extends DocumentAction
 
 	public function loadEmails ($personNdx)
 	{
-		$sql = 'SELECT valueString FROM [e10_base_properties] where [tableid] = %s AND [recid] = %i AND [property] = %s AND [group] = %s ORDER BY ndx';
-		$emailsRows = $this->db()->query ($sql, 'e10.persons.persons', $personNdx, 'email', 'contacts')->fetchPairs ();
-		return implode (', ', $emailsRows);
+		if (!$this->tablePersons)
+			$this->tablePersons = $this->app()->table('e10.persons.persons');
+
+		return $this->tablePersons->loadEmailsForReport([$personNdx], 'e10pro.reports.waste_cz.ReportWasteOnePerson');
 	}
 }
