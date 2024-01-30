@@ -170,9 +170,9 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
   public function createContent_Companies($dir)
   {
     if ($dir == WasteReturnEngine::rowDirIn)
-      $linkId = 'waste-suppliers-'.$this->calendarYear;
+      $linkId = 'waste-suppliers-'.$this->calendarYear.'-'.$this->codeKindNdx;
     else
-      $linkId = 'waste-cust-'.$this->calendarYear;
+      $linkId = 'waste-cust-'.$this->calendarYear.'-'.$this->codeKindNdx;
 
 		/** @var \wkf\core\TableIssues */
 		$tableIssues = $this->app()->table ('wkf.core.issues');
@@ -361,9 +361,9 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
       { // city
         $nomencCityRecData = $this->app()->loadItem($r['nomencCity'], 'e10.base.nomencItems');
         $data[$wcId]['id1'] = [
-          ['text' => 'ORP: '.substr($nomencCityRecData['itemId'], 2), 'class' => ''],
+          ['text' => 'ORP: '.substr($nomencCityRecData['itemId'] ?? '--', 2), 'class' => ''],
         ];
-        $data[$wcId]['id1'][0]['suffix'] = $nomencCityRecData['fullName'];
+        $data[$wcId]['id1'][0]['suffix'] = $nomencCityRecData['fullName'] ?? '--';
       }
 
       $lastPerson = $r['person'];
@@ -805,9 +805,9 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
   function loadSendedReports (&$data, $dir)
 	{
     if ($dir == WasteReturnEngine::rowDirIn)
-      $linkId = 'waste-suppliers-'.$this->calendarYear;
+      $linkId = 'waste-suppliers-'.$this->calendarYear.'-'.$this->codeKindNdx;
     else
-      $linkId = 'waste-cust-'.$this->calendarYear;
+      $linkId = 'waste-cust-'.$this->calendarYear.'-'.$this->codeKindNdx;
 
 		/** @var \wkf\core\TableIssues */
 		$tableIssues = $this->app()->table ('wkf.core.issues');
@@ -829,7 +829,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 		foreach ($rows as $r)
 		{
 			$item = [
-					'icon' => 'system/iconPaperPlane', 'text' => utils::datef($r['dateCreate']),
+					'icon' => 'system/iconPaperPlane', 'text' => utils::datef($r['dateCreate'], '%D%t'),
           'class' => 'pull-right',
           'type' => 'button',
           'title' => $r['subject'],
@@ -864,6 +864,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
         'data-param-period-begin' => $this->periodBegin->format('Y-m-d'),
         'data-param-period-end' => $this->periodEnd->format('Y-m-d'),
         'data-param-calendar-year' => strval($this->calendarYear),
+        'data-param-code-kind' => strval($this->codeKindNdx),
         'data-table' => 'e10.persons.persons', 'data-pk' => '0',
         'class' => 'btn-primary'
       ];

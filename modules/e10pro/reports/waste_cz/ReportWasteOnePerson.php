@@ -93,7 +93,7 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 
 		$this->codeKindDef = $this->app()->cfgItem('e10.witems.codesKinds.'.$this->codeKindNdx, NULL);
 		$this->data['reportTitle'] = $this->codeKindDef['reportPersonTitle'] ?? '';
-		$this->data['reportNote'] = $this->codeKindDef['reportPersonOutCodeNote'];
+		$this->data['reportNote'] = $this->codeKindDef['reportPersonOutCodeNote'] ?? '';
 	}
 
 	public function loadData2 ()
@@ -102,11 +102,12 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 		$this->loadDataPerson('person');
 
 		$this->initParams();
+		$this->codeKindDef = $this->app()->cfgItem('e10.witems.codesKinds.'.$this->codeKindNdx, NULL);
 
 		if ($this->dir === WasteReturnEngine::rowDirIn)
-			$this->outboxLinkId = 'waste-suppliers-'.$this->calendarYear;
+			$this->outboxLinkId = 'waste-suppliers-'.$this->calendarYear.'-'.$this->codeKindNdx;
 		else
-			$this->outboxLinkId = 'waste-cust-'.$this->calendarYear;
+			$this->outboxLinkId = 'waste-cust-'.$this->calendarYear.'-'.$this->codeKindNdx;
 
 		$tablePersons = $this->app->table ('e10.persons.persons');
 

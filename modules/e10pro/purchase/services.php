@@ -63,15 +63,26 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			return;
 		}
 
+		$wasteCodeKindParam = intval($this->app->arg('wasteCodeKind'));
+		if (!$wasteCodeKindParam)
+		{
+			echo "ERROR: param `--wasteCodeKind=' not found...\n";
+			return;
+		}
+
 		$runParam = intval($this->app->arg('run'));
 		if ($runParam)
 			$action->testRun = 0;
+
+		$maxCountParam = intval($this->app->arg('maxCount'));
+		if ($maxCountParam)
+			$action->maxCount = $maxCountParam;
 
 		$debugParam = intval($this->app->arg('debug'));
 		if ($debugParam)
 			$action->debug = 1;
 
-		$action->runFromCli($yearParam);
+		$action->runFromCli($yearParam, $wasteCodeKindParam);
 	}
 
 	public function onCronHourly ()
