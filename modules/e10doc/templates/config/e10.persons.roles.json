@@ -1,0 +1,7 @@
+{
+	"admin": {
+		"viewers": {
+			"e10doc.templates.heads": {"default": 2}
+		}
+	}
+}
