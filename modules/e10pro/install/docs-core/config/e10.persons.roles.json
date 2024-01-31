@@ -45,6 +45,11 @@
 		"name": "Auditor",
 		"all": 1
 	},
+	"pwuser": {
+		"viewers": {
+			"e10.persons.persons": {"drivers": 2}
+		}
+	},
 	"bsass": {
 		"name": "Společník",
 		"roles": ["user"],
