@@ -241,6 +241,12 @@ iel=e.get(0);for(var
 i=0,attrs=iel.attributes,l=attrs.length;i<l;i++){var
 attrName=attrs.item(i).nodeName;if(attrName.substring(0,prefix.length)!==prefix)continue;var
 val=attrs.item(i).nodeValue;data[attrName]=val;}if($.isEmptyObject(data))return null;return $.param(data);}function
+elementAttributesArray(e,prefix){var
+data={};var
+iel=e.get(0);for(var
+i=0,attrs=iel.attributes,l=attrs.length;i<l;i++){var
+attrName=attrs.item(i).nodeName;if(attrName.substring(0,prefix.length)!==prefix)continue;var
+val=attrs.item(i).nodeValue;data[attrName]=val;}if($.isEmptyObject(data))return null;return data;}function
 dfMaximizeMainElement(aElementId){$("html,body").css({"overflow":"hidden"});contentElement=document.getElementById(aElementId);var
 newHeight=$(window).height()-contentElement.offsetTop;contentElement.style.height=newHeight+'px';return newHeight;}function
 testInputType(type){var
@@ -1044,7 +1050,7 @@ noClose=0;if(srcEl.attr('data-noclose'))noClose=1;var
 id=srcEl.attr("data-form");var
 e=$("#"+id);var
 docState=0;if(srcEl.attr('data-docstate'))docState=parseInt(srcEl.attr('data-docstate'));var
-formData=df2collectEditFormData(e,$.myFormsData[id]);formData['setDocState']=docState;formData.postData=e10DocumentData();var
+formData=df2collectEditFormData(e,$.myFormsData[id]);formData['setDocState']=docState;saveParams=elementAttributesArray(srcEl,'data-save-');if(saveParams)formData['saveParams']=saveParams;formData.postData=e10DocumentData();var
 table=e.attr("data-table");var
 url="/api/form/"+table+"/save?callback=?&newFormId="+id;url+="&viewPortWidth="+document.documentElement.clientWidth;e10.server.post(url,formData,function(data){if(successFunction)successFunction(e,data.recData['ndx']);else{if(data.saveResult!==undefined&&data.saveResult.disableClose!==undefined)noClose=1;if(noClose){e.parent().parent().parent().find('div.e10-ef-header').html(data.htmlHeader);var
 buttons=$("#"+id+'Buttons');buttons.html(data.buttonsCode);if(data.saveResult!==undefined&&data.saveResult.disableSetData!==undefined)e10FormSetAsSaved(id);else{e.parent().parent().html(data.mainCode);df2FormsSetData(id,data);}var

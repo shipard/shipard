@@ -153,6 +153,26 @@ function elementAttributes (e, prefix)
 	return $.param(data);
 }
 
+function elementAttributesArray (e, prefix)
+{
+	var data = {};
+
+	var iel = e.get(0);
+	for (var i = 0, attrs = iel.attributes, l = attrs.length; i < l; i++)
+	{
+		var attrName = attrs.item(i).nodeName;
+		if (attrName.substring(0, prefix.length) !== prefix)
+			continue;
+		var val = attrs.item(i).nodeValue;
+		data[attrName] = val;
+	}
+
+	if ($.isEmptyObject(data))
+		return null;
+
+	return data;
+}
+
 function dfMaximizeMainElement (aElementId)
 {
 	$("html,body").css ({"overflow": "hidden"});
@@ -4045,6 +4065,11 @@ function df2saveForm (srcEl, successFunction)
 
   var formData = df2collectEditFormData (e, $.myFormsData [id]);
 	formData ['setDocState'] = docState;
+
+	saveParams = elementAttributesArray (srcEl, 'data-save-');
+	if (saveParams)
+		formData ['saveParams'] = saveParams;
+
 	formData.postData = e10DocumentData();
 
 	var table = e.attr ("data-table");
