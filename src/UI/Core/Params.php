@@ -565,7 +565,7 @@ class Params extends \Shipard\Base\BaseObject
 		foreach ($years as $year)
 		{
 			$startDateStr = sprintf ('%04d-%02d-01', $year, 1);
-			$endDateStr = sprintf ('%04d-%02d-01', $year, 12);
+			$endDateStr = sprintf ('%04d-12-31', $year);
 
 			$p['values']['Y'.$year] = ['title' => $year, 'calendarYear' => 'Y'.$year, 'calendarMonth' => 0, 'dateBegin' => $startDateStr, 'dateEnd' => $endDateStr];
 			for ($month = 1; $month < 13; $month++)
