@@ -2179,7 +2179,13 @@ class ListDocLinks implements \E10\IDocumentList
 											data-listgroup='{$linkDef['linkid']}' data-fid='{$this->formData->fid}'$readOnlyParam>";
 			$inputCode .= "<span class='placeholder'>" . '...' . '</span>';
 			$inputCode .= '<ul>';
-			$inputCode .= "<li class='input'><input class='e10-inputListSearch e10-viewer-search' style='width: 10ex' data-sid='{$this->formData->fid}Sidebar'></li>";
+			$inputClass = '';
+			if ($options & TableForm::coFocus)
+			{
+				$inputClass = ' autofocus';
+				$this->formData->setFlag ('autofocus', 1);
+			}
+			$inputCode .= "<li class='input'><input class='e10-inputListSearch e10-viewer-search$inputClass' style='width: 10ex' data-sid='{$this->formData->fid}Sidebar'></li>";
 			$inputCode .= '</ul>';
 			$inputCode .= '</div>';
 			if ($this->formData->activeLayout === TableForm::ltGrid)
