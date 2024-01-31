@@ -192,13 +192,15 @@ class CheckOpenStates extends \e10doc\core\libs\reports\GlobalReport
 		if ($this->subReportId === 'all')
 		{
 			$content['title'] = $this->prevFiscalYearCfg['fullName'].' → '.$this->fiscalYearCfg['fullName'];
+			if (intval($this->fiscalYearCfg['disableCheckOpenStates'] ?? 0))
+				$content['title'] .= ' (nekontroluje se)';
 		}
 
 		if (count($table))
 		{
 			$this->addContent($content);
 
-			if ($this->testEngine)
+			if ($this->testEngine && !intval($this->fiscalYearCfg['disableCheckOpenStates'] ?? 0))
 			{
 				$this->testEngine->addCycleContent(['type' => 'line', 'line' => ['text' => $this->prevFiscalYearCfg['fullName'].' → '.$this->fiscalYearCfg['fullName'], 'class' => 'h2 block pt1']]);
 				$this->testEngine->addCycleContent(['type' => 'table', 'header' => $h, 'table' => $table]);

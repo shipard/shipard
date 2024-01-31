@@ -139,7 +139,8 @@ class TableFiscalYears extends DbTable
 				'ndx' => $r ['ndx'], 'mark' => $r ['mark'], 'currency' => $r ['currency'],
 				'method' => $r['accMethod'], 'stockAccMethod' => $r['stockAccMethod'], 'propertyDepsMethod' => $r['propertyDepsMethod'],
 				'fullName' => $r ['fullName'],
-				'begin' => $r['start']->format('Y-m-d'), 'end' => $r['end']->format('Y-m-d'), 'prevNdx' => $prevNdx
+				'begin' => $r['start']->format('Y-m-d'), 'end' => $r['end']->format('Y-m-d'), 'prevNdx' => $prevNdx,
+				'disableCheckOpenStates' => $r['disableCheckOpenStates'],
 			];
 
 			$prevNdx = $r['ndx'];
@@ -254,7 +255,7 @@ class ViewFiscalYears extends TableView
 
 /*
  * FormFiscalYears
- * 
+ *
  */
 
 class FormFiscalYears extends TableForm
@@ -281,6 +282,8 @@ class FormFiscalYears extends TableForm
 				$this->addColumnInput ('accMethod');
 				$this->addColumnInput ('stockAccMethod');
 				$this->addColumnInput ('propertyDepsMethod');
+				$this->addColumnInput ('disableCheckOpenStates');
+
 			$this->layoutClose ('width50');
 		$this->layoutClose ();
 
@@ -291,7 +294,6 @@ class FormFiscalYears extends TableForm
 			$this->closeTabs ();
 
     $this->closeForm ();
-    
-	}	
+	}
 } // class FormFiscalYears
 

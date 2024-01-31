@@ -15,6 +15,8 @@
 		{"id": "propertyDepsMethod", "name": "Odpisy majetku", "type": "enumString", "len": "12",
 			"enumValues": {"propDepsY": "Ročně", "propDepsM": "Měsíčně", "propDepsH": "Manuálně", "propDepsOff": "Majetek se neodepisuje"}},
 
+    {"id": "disableCheckOpenStates", "name": "Nekontrolovat návaznost počátečních stavů", "type": "logical"},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
   ],
