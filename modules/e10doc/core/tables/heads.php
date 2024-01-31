@@ -136,6 +136,37 @@ class TableHeads extends DbTable
 	{
 	}
 
+	protected function checkSpecialDocState($phase, $specialDocState, &$saveData)
+	{
+		if (!isset($saveData['saveParams']))
+			return FALSE;
+
+		if (!isset($saveData['recData']['ndx']) || !$saveData['recData']['ndx'])
+			return FALSE;
+
+		$importAttNdx = intval($saveData['saveParams']['data-save-import-attndx'] ?? 0);
+		$importIssueNdx = intval($saveData['saveParams']['data-save-import-issuendx'] ?? 0);
+
+		if ($phase === 1 && $importIssueNdx && $saveData ['recData']['importedFromIssue'] == 0)
+		{
+			$this->checkInboxDocument($importIssueNdx, $saveData['recData']);
+			return TRUE;
+		}
+
+		if ($phase === 2 && $importAttNdx && $saveData ['recData']['importedFromAtt'] == 0)
+		{
+			$e = new \e10doc\core\libs\DocFromAttachment($this->app());
+			$e->init();
+			$e->setAttNdx($importAttNdx);
+			$e->replaceDocumentNdx = $saveData['recData']['ndx'];
+			$e->reset($saveData['recData']['ndx']);
+			$this->db()->query('UPDATE [e10doc_core_heads] SET [importedFromAtt] = %i', $importAttNdx, ' WHERE [ndx] = %i', $saveData['recData']['ndx']);
+			return TRUE;
+		}
+
+		return TRUE;
+	}
+
 	public function documentCard ($recData, $objectType)
 	{
 		$o = NULL;
@@ -947,6 +978,8 @@ class TableHeads extends DbTable
 			if (!isset($recData['title']) || $recData['title'] === '')
 				$recData['title'] = $srcIssueRecData['subject'];
 		}
+
+		$recData['importedFromIssue'] = $issueNdx;
 
 		// -- person
 		if (!isset($recData['person']) || !$recData['person'])

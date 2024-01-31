@@ -36,8 +36,11 @@ class FormInvoiceIn extends \e10doc\core\FormHeads
 			$this->openTab ();
 			if ($testDocsInboxFirst)
 			{
-				$this->addList ('inbox', '', self::loAddToFormLayout|self::coColW12);
-				$this->addSeparator(self::coH3);
+				$this->layoutOpen (self::ltGrid);
+					if (!$this->addImportButtons())
+						$this->addList ('inbox', '', self::loAddToFormLayout|self::coColW12|self::coFocus);
+				$this->layoutClose();
+				$this->addSeparator(self::coH2);
 				$this->addInboxListDone = 1;
 			}
 
@@ -154,5 +157,61 @@ class FormInvoiceIn extends \e10doc\core\FormHeads
 		}
     return parent::columnLabel ($colDef, $options);
   }
+
+	protected function addImportButtons()
+	{
+		$testDocsInboxImport = intval($this->app()->cfgItem ('options.experimental.testDocsInboxImport', 0));
+		if (!$testDocsInboxImport)
+			return FALSE;
+
+		if (!isset($this->recData['ndx']) || $this->recData['ndx'] == 0)
+			return FALSE;
+		if ($this->recData['docState'] !== 1000)
+			return FALSE;
+		if (!isset($this->recData['importedFromAtt']) || $this->recData['importedFromAtt'] !== 0)
+			return FALSE;
+		if (!isset($this->recData['importedFromIssue']) || $this->recData['importedFromIssue'] !== 0)
+			return FALSE;
+
+		// -- load inbox
+		$inboxPks = [];
+		$q = [];
+		array_push($q, 'SELECT dstRecId FROM e10_base_doclinks WHERE 1');
+		array_push($q, ' AND srcTableId = %s', 'e10doc.core.heads', ' AND srcRecId = %i', $this->recData['ndx']);
+		array_push($q, ' AND dstTableId = %s', 'wkf.core.issues', 'AND [linkId] = %s', 'e10docs-inbox');
+		array_push($q, ' ORDER BY ndx');
+		$rows = $this->table->db()->query ($q);
+		foreach ($rows as $r)
+		{
+			$inboxPks[] = $r['dstRecId'];
+		}
+
+		// -- attachments with ddf
+		$qa = [];
+		array_push($qa, 'SELECT * FROM [e10_attachments_files]');
+		array_push($qa, ' WHERE [recid] IN %in', $inboxPks);
+		array_push($qa, ' AND [tableid] = %s', 'wkf.core.issues');
+		array_push($qa, ' AND [deleted] = %i', 0);
+		array_push($qa, ' AND [ddfNdx] != %i', 0);
+		$rows = $this->table->db()->query ($qa);
+		foreach ($rows as $r)
+		{
+			$btnTxt = 'Importovat';
+			$bntCode = "<button class='btn btn-large btn-primary df2-action-trigger width100' data-action='saveform' data-noclose='1'";
+			$bntCode .= " data-save-import-attNdx='{$r['ndx']}'";
+			$bntCode .= " data-save-import-issueNdx='{$r['recid']}'";
+			$bntCode .= " data-fid='".$this->fid."' data-form='{$this->fid}' data-docstate='99001'>";
+			$bntCode .= $this->app()->ui()->icons()->icon('system/iconImport');
+			$bntCode .= ' '.Utils::es($btnTxt);
+			$bntCode .= "</button>";
+
+			$this->addList ('inbox', '', self::loAddToFormLayout|self::coColW10|self::coFocus);
+			$this->appendElement ($bntCode, NULL, 'e10-gl-col2');
+
+			return TRUE;
+		}
+
+		return FALSE;
+	}
 }
 

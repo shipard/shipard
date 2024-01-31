@@ -11,6 +11,10 @@
     {"id": "docNumber", "name": "Číslo dokladu", "type": "string", "len": 20, "options": ["ascii"]},
     {"id": "docId", "name": "Ev. číslo dokladu", "type": "string", "len": 40},
     {"id": "docOrderNumber", "name": "Pořadové číslo", "type": "int"},
+
+    {"id": "importedFromIssue", "name": "Importováno z došlé pošty", "type": "int", "reference": "wkof.core.issues"},
+    {"id": "importedFromAtt", "name": "Importováno z přílohy", "type": "int", "reference": "e10.base.attachments"},
+
     {"id": "title", "name": "Text dokladu", "type": "string", "len": 120},
 
     {"id": "owner", "name": "Vlastní Osoba", "type": "int", "reference": "e10.persons.persons"},
