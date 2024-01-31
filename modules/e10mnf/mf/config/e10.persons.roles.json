@@ -5,7 +5,7 @@
 			"viewers": {
 			"e10mnf.mf.products": {"default": 2},
 			"e10mnf.mf.productsVariants": {"default": 2},
-			"e10.witems.items": {"mf": 2}
+			"e10.witems.items": {"mf": 2, "mfCombo": 2}
 		}
 	}
 }
