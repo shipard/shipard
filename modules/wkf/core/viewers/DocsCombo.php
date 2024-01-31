@@ -5,7 +5,7 @@ namespace wkf\core\viewers;
 require_once __SHPD_MODULES_DIR__ . 'e10/base/base.php';
 
 use \e10\TableView, \e10\utils, \wkf\core\TableIssues;
-
+use \Shipard\Utils\World;
 
 /**
  * Class DocsCombo
@@ -39,6 +39,7 @@ class DocsCombo extends TableView
 		3 => 'icon-android', 4 => 'system/iconWarning', 5 => 'icon-globe'
 	];
 
+	var $docPaymentMethods = NULL;
 
 	public function init ()
 	{
@@ -47,6 +48,8 @@ class DocsCombo extends TableView
 
 		if ($this->queryParam('docType') !== FALSE)
 			$this->srcDocType = $this->queryParam('docType');
+
+		$this->docPaymentMethods = $this->table->app()->cfgItem ('e10.docs.paymentMethods', NULL);
 
 		$mq [] = ['id' => 'active', 'title' => 'K řešení', 'icon' => 'system/filterActive'];
 		$mq [] = ['id' => 'done', 'title' => 'Hotovo', 'icon' => 'system/filterDone'];
@@ -119,6 +122,47 @@ class DocsCombo extends TableView
 			'class' => $titleClass,
 			'value' => $title,
 		];
+
+		$docProperties = [];
+		if ($item['docPrice'])
+		{
+			$pl = [
+				'text' => Utils::nf($item['docPrice'], 2),
+				'class' => 'label label-default', 'title' => 'Cena',
+				'icon' => $this->docPaymentMethods[$item['docPaymentMethod']]['icon'] ?? 'system/iconMoney'
+			];
+
+			$curr = World::currency($this->app(), $item ['docCurrency']);
+			$pl ['suffix'] = strtoupper($curr['i']);
+
+			$docProperties[] = $pl;
+		}
+
+		if ($item['docSymbol1'] !== '')
+			$docProperties[] = ['text' => $item['docSymbol1'], 'class' => 'label label-default', 'title' => 'Variabilní symbol', 'icon' => 'system/iconExchange'];
+
+		if ($item['docDateDue'])
+			$docProperties[] = ['text' => Utils::datef($item['docDateDue']), 'class' => 'label label-default', 'title' => 'Datum splatnosti', 'icon' => 'system/iconMoney'];
+		if ($item['docDateTax'])
+		{
+			$ld = ['text' => Utils::datef($item['docDateTax']), 'class' => 'label label-default', 'title' => 'DUZP', 'icon' => 'detailDeferredTax'];
+			if ($item['docDateTaxDuty'] && $item['docDateTax'] !== $item['docDateTaxDuty'])
+			{
+				$ld['suffix'] = Utils::datef($item['docDateTaxDuty']);
+				$ld['title'] .= ' + DPPD';
+			}
+
+			$docProperties[] = $ld;
+		}
+
+		if ($item['docCentre'])
+			$docProperties[] = ['text' => $item['docCentreName'], 'class' => 'label label-default', 'title' => 'Středisko', 'icon' => 'tables/e10doc.base.centres'];
+
+		if ($item['docProperty'])
+			$docProperties[] = ['text' => $item['docPropertyName'], 'class' => 'label label-default', 'title' => 'Majetek', 'icon' => 'tables/e10pro.property.property'];
+
+		if (count($docProperties))
+			$listItem ['pane']['body'][] = ['value' => $docProperties, 'class' => 'padd5'];
 
 		return $listItem;
 	}
