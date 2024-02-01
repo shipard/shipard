@@ -1167,6 +1167,9 @@ class TableHeads extends DbTable
 		$recData ['rosState'] = 0;
 		$recData ['rosRecord'] = 0;
 
+		$recData ['importedFromIssue'] = 0;
+		$recData ['importedFromAtt'] = 0;
+
 		return $recData;
 	}
 
@@ -1325,7 +1328,13 @@ class TableHeads extends DbTable
 
 	public function doWaste (&$recData)
 	{
-		if ($recData['docType'] !== 'purchase' && $recData['docType'] !== 'invno')
+		$enabled = 0;
+		if ($recData['docType'] === 'purchase' || $recData['docType'] === 'invno')
+			$enabled = 1;
+		if ($recData['docType'] === 'stockout' && $recData['addToWasteReport'])
+			$enabled = 1;
+
+		if (!$enabled)
 			return;
 
 		$wre = new \e10pro\reports\waste_cz\libs\WasteReturnEngine($this->app);
