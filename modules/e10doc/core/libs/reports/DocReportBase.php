@@ -130,7 +130,7 @@ class DocReportBase extends FormReport
 			if ($this->lang === '')
 				$this->lang = $this->defaultLanguage;
 
-				if (!in_array($this->lang, ['de', 'en', 'it', 'sk', 'cs']))
+			if (!in_array($this->lang, ['de', 'en', 'it', 'sk', 'cs']))
 				$this->lang = 'en';
 		}
 		else
@@ -140,7 +140,7 @@ class DocReportBase extends FormReport
 		{
 			foreach ($this->data [$columnId]['lists']['properties'] as $iii)
 			{
-				if ($iii['group'] != 'ids')
+				if (!$this->personPropertyEnabled($iii))
 					continue;
 				$name = '';
 				if ($iii['property'] == 'taxid') $name = 'DIČ';
@@ -249,6 +249,20 @@ class DocReportBase extends FormReport
 		}
 	}
 
+	function personPropertyEnabled($pp)
+	{
+		if ($pp['group'] != 'ids')
+			return FALSE;
+		if ($pp['property'] == 'idcn' && !intval($this->app()->cfgItem ('options.appearanceDocs.docReportsPersons_idcn', 0)))
+			return FALSE;
+		if ($pp['property'] == 'birthdate' && !intval($this->app()->cfgItem ('options.appearanceDocs.docReportsPersons_birthdate', 0)))
+			return FALSE;
+		if ($pp['property'] == 'pid' && !intval($this->app()->cfgItem ('options.appearanceDocs.docReportsPersons_pid', 0)))
+			return FALSE;
+
+		return TRUE;
+	}
+
 	function loadPersonAddress($personNdx, $mainAddress = 0, $addressNdx = 0)
 	{
 		if (!$personNdx && !$addressNdx)
@@ -325,7 +339,8 @@ class DocReportBase extends FormReport
 		}
 		forEach ($this->data [$columnId]['lists']['properties'] as $iii)
 		{
-			if ($iii['group'] != 'ids') continue;
+			if (!$this->personPropertyEnabled($iii))
+				continue;
 			$name = '';
 			if ($iii['property'] == 'taxid') $name = 'DIČ';
 			else if ($iii['property'] == 'oid') $name = 'IČ';
