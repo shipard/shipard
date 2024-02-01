@@ -22,13 +22,13 @@ class OverviewMoney extends \lib\dashboards\widgets\BalanceCore
 
 		$info = [];
 
-		if (count ($dataBank['data']['accounts']) > 1)
+		if (isset($dataBank['data']['accounts']) && count ($dataBank['data']['accounts']) > 1)
 		{
 			foreach ($dataBank['data']['accounts'] as $currId => &$acc)
 				$info[] = ['text' => utils::nf($acc['balance']), 'class' => 'nowrap', 'prefix' => $acc['title']];
 		}
 
-		if (count($dataCash['data']['cashBoxes']) > 1)
+		if (isset($dataCash['data']['cashBoxes']) && count($dataCash['data']['cashBoxes']) > 1)
 		{
 			foreach ($dataCash['data']['cashBoxes'] as $currId => &$acc)
 				$info[] = ['text' => utils::nf($acc['balance']), 'class' => 'xblock', 'prefix' => $acc['title']];
