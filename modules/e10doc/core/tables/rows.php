@@ -99,7 +99,7 @@ class TableRows extends DbTable
 		}
 
 		// -- subColumns
-		if ($recData['rowVds'])
+		if (isset($recData['rowVds']) && $recData['rowVds'])
 		{
 			$sci = $this->subColumnsInfo ($recData, 'rowData');
 			if ($sci && isset($sci['computeClass']))
@@ -523,6 +523,7 @@ class TableRows extends DbTable
 
 	public function docDir ($recData, $ownerRecData)
 	{
+		// TODO: refactor to E10Utils::docRowDir
 		$docType = $this->app()->cfgItem ('e10.docs.types.' . $ownerRecData['docType']);
 		if (isset ($docType ['docDir']) && $docType ['docDir'] != 0)
 			return $docType ['docDir'];
