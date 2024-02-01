@@ -76,6 +76,8 @@
     {"id": "symbol3", "name": "Konstantní symbol", "label": "KS", "type": "string", "len": 10},
     {"id": "bankAccount", "name": "Bankovní účet", "label": "Č. účtu", "type": "string", "len": 40},
     {"id": "dateDue", "name": "Datum splatnosti", "type": "date"},
+		{"id": "bankTransId", "name": "ID bankovní transakce", "type": "long"},
+		{"id": "bankTransNdx", "name": "Bankovní transakce", "type": "int", "reference": "e10doc.finance.transactions"},
 
     {"id": "dateTax", "name": "Datum uskutečnění zdanitelného plnění", "label": "DUZP", "type": "date"},
     {"id": "taxPeriod", "name": "Daňové období", "type": "int", "reference": "e10doc.base.taxperiods"},
