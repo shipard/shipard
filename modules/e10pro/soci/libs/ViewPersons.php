@@ -149,6 +149,29 @@ class ViewPersons extends \e10\persons\ViewPersons
 			$qry[] = ['id' => 'wo', 'style' => 'params', 'title' => 'Přihláška do', 'params' => $paramsWO];
 		}
 
+
+		// -- wo persons
+		$qp = [];
+		array_push($qp, 'SELECT DISTINCT persons.ndx, persons.fullName');
+		array_push($qp, ' FROM e10_base_doclinks AS [links]');
+		array_push($qp, ' LEFT JOIN [e10_persons_persons] AS [persons] ON [links].dstRecId = [persons].ndx');
+		array_push($qp, ' WHERE linkId = %s', 'e10mnf-workRecs-admins');
+		array_push($qp, ' AND srcTableId = %s', 'e10mnf.core.workOrders');
+		array_push($qp, ' ORDER BY persons.fullName');
+		$personsRows = $this->db()->query($qp);
+		$chbxPersons = [];
+		foreach ($personsRows as $pr)
+			$chbxPersons[$pr['ndx']] = ['title' => $pr['fullName'], 'id' => $pr['ndx']];
+
+		if (count($chbxPersons))
+		{
+			$paramsPersons = new \Shipard\UI\Core\Params ($this->app());
+			$paramsPersons->addParam ('checkboxes', 'query.toPersons', ['items' => $chbxPersons]);
+			$qry[] = ['id' => 'toPersons', 'style' => 'params', 'title' => 'Přihláška ke komu', 'params' => $paramsPersons];
+		}
+
+
+		// -- places
 		if (count($placesNdxs))
 		{
 			$paramsPlaces = new \Shipard\UI\Core\Params ($this->app());
@@ -185,6 +208,19 @@ class ViewPersons extends \e10\persons\ViewPersons
 			' LEFT JOIN e10mnf_core_workOrders AS wos ON  e10mnf_core_workOrdersPersons.workOrder = wos.ndx',
 			' WHERE persons.ndx = e10mnf_core_workOrdersPersons.person',
 			' AND wos.[place] IN %in', array_keys($qv['places']), ')');
+		}
+
+		if (isset ($qv['toPersons']))
+		{
+			array_push ($q, ' AND EXISTS (',
+			'SELECT ndx FROM e10mnf_core_workOrdersPersons WHERE persons.ndx = e10mnf_core_workOrdersPersons.person',
+			' AND e10mnf_core_workOrdersPersons.[workOrder] IN ',
+				'(',
+				' SELECT srcRecId FROM e10_base_doclinks AS l WHERE linkId = %s', 'e10mnf-workRecs-admins',
+				' AND srcTableId = %s', 'e10mnf.core.workOrders',
+				' AND l.dstRecId IN %in', array_keys($qv['toPersons']),
+				')',
+			')');
 		}
 	}
 }

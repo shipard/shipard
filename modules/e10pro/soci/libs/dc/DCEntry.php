@@ -3,6 +3,7 @@
 namespace e10pro\soci\libs\dc;
 use \Shipard\Utils\Utils;
 use \wkf\core\TableIssues;
+use \e10\base\libs\UtilsBase;
 
 
 /**
@@ -90,6 +91,10 @@ class DCEntry extends \Shipard\Base\DocumentCard
     $entryKind = $this->app()->cfgItem('e10pro.soci.entriesKinds.'.$this->recData['entryKind']);
     $entryState = $this->app()->cfgItem('e10pro.soci.entryStates.'.$this->recData['entryState'], NULL);
 
+    $placeRecData = NULL;
+    if ($entryTo['place'])
+      $placeRecData = $this->app()->loadItem($entryTo['place'], 'e10.base.places');
+
     $pidLabels = [['text' => $this->recData['email'], 'class' => '']];
     $existedPersonNdx = $this->checkPerson($pidLabels);
 
@@ -97,56 +102,119 @@ class DCEntry extends \Shipard\Base\DocumentCard
 
     $personInfo = [];
 
-    if (!$this->recData['dstPerson'])
+    if ($this->recData['testDriveWanted'])
     {
-      $personInfo [] = ['text' => $this->recData['firstName'].' '.$this->recData['lastName'], 'class' => 'block'];
-      if (!$existedPersonNdx)
+      $tdinfo = ['t' => 'Přihláška na zkoušku', 'v' => ' '];
+      $tdinfo['_options']['class'] = 'e10-bg-t3';
+      $t[] = $tdinfo;
+    }
+
+    if (intval($entryKind['inputPerson'] ?? 0) === 0)
+    {
+      if (!$this->recData['dstPerson'])
       {
-        $personInfo [] = [
-          'type' => 'action', 'action' => 'addwizard',
-          'text' => 'Vytvořit', 'data-class' => 'e10pro.soci.libs.WizardGenerateFromEntries',
-          'icon' => 'cmnbkpRegenerateOpenedPeriod',
-          'class' => 'pull-right'
-        ];
+        $personInfo [] = ['text' => $this->recData['firstName'].' '.$this->recData['lastName'], 'class' => 'block'];
+        if (!$existedPersonNdx)
+        {
+          $personInfo [] = [
+            'type' => 'action', 'action' => 'addwizard',
+            'text' => 'Vytvořit', 'data-class' => 'e10pro.soci.libs.WizardGenerateFromEntries',
+            'icon' => 'cmnbkpRegenerateOpenedPeriod',
+            'class' => 'pull-right'
+          ];
+        }
+        else
+        {
+          $personInfo [] = [
+            'type' => 'action', 'action' => 'addwizard',
+            'text' => 'Osoba existuje, propojit', 'data-class' => 'e10pro.soci.libs.WizardLinkEntryToPerson',
+            'data-addParams' => 'personNdx='.$existedPersonNdx,
+            'icon' => 'cmnbkpRegenerateOpenedPeriod',
+            'class' => 'pull-right'
+          ];
+        }
       }
       else
       {
+        $personRecData = $this->app()->loadItem($this->recData['dstPerson'], 'e10.persons.persons');
+        $personInfo [] = ['text' => $this->recData['firstName'].' '.$this->recData['lastName'], 'class' => ''];
         $personInfo [] = [
-          'type' => 'action', 'action' => 'addwizard',
-          'text' => 'Osoba existuje, propojit', 'data-class' => 'e10pro.soci.libs.WizardLinkEntryToPerson',
-          'data-addParams' => 'personNdx='.$existedPersonNdx,
-          'icon' => 'cmnbkpRegenerateOpenedPeriod',
+          'text' => $personRecData['fullName'],
+          'suffix' => $personRecData['id'],
+          'docAction' => 'edit',
+          'table' => 'e10.persons.persons',
+          'pk' => $this->recData['dstPerson'],
+          'icon' => 'system/iconUser',
           'class' => 'pull-right'
         ];
       }
     }
     else
     {
-      $personInfo [] = [
-        'text' => $this->recData['lastName'].' '.$this->recData['firstName'],
-        'docAction' => 'edit',
-        'table' => 'e10.persons.persons',
-        'pk' => $this->recData['dstPerson'],
-      ];
+      $personRecData = $this->app()->loadItem($this->recData['dstPerson'], 'e10.persons.persons');
+      if ($personRecData)
+      {
+        $personInfo [] = [
+          'text' => $personRecData['fullName'],
+          'suffix' => $personRecData['id'],
+          'docAction' => 'edit',
+          'table' => 'e10.persons.persons',
+          'pk' => $this->recData['dstPerson'],
+          'icon' => 'system/iconUser'
+        ];
+      }
+      else
+        $personInfo [] = ['text' => 'Není zadána osoba', 'class' => 'e10-error', 'icon' => 'system/iconError'];
     }
 
     $t[] = ['t' => 'Datum přihlášky', 'v' => Utils::datef($entryTo['dateIssue'])];
-    $t[] = ['t' => 'Přihláška do', 'v' => $entryTo['title']];
-    if ($this->recData['entryPeriod'])
-    {
-      $period = $this->app()->cfgItem('e10pro.soci.periods.'.$this->recData['entryPeriod'], NULL);
-      if ($period)
-        $t[] = ['t' => 'Období', 'v' => $period['sn']];
-    }
-    $t[] = ['t' => 'Jméno', 'v' => $personInfo];
-    $t[] = ['t' => 'Datum narození', 'v' => Utils::datef($this->recData['birthday'])];
-    $t[] = ['t' => 'E-mail', 'v' => $this->recData['email']];
-    $t[] = ['t' => 'Telefon', 'v' => $this->recData['phone']];
 
+    $entryToLabel = [['text' => $entryTo['title'], 'class' => '']];
+
+    if ($placeRecData)
+      $entryToLabel [] = ['text' => $placeRecData['shortName'], 'class' => 'e10-small', 'icon' => 'tables/e10.base.places'];
+    $linkedPersons = UtilsBase::linkedPersons ($this->table->app(), 'e10mnf.core.workOrders', $this->recData['entryTo'], 'label label-default');
+    if (isset($linkedPersons[$this->recData['entryTo']]) && count($linkedPersons[$this->recData['entryTo']]))
+      $entryToLabel = array_merge($entryToLabel, $linkedPersons);
+    $t[] = ['t' => 'Přihláška do', 'v' => $entryToLabel];
+
+    if (intval($entryKind['usePeriods'] ?? 0) === 1)
+    {
+      $periodLabel = [];
+      $period = $this->app()->cfgItem('e10pro.soci.periods.'.$this->recData['entryPeriod'], NULL);
+      if ($this->recData['entryPeriod'])
+      {
+        if ($period)
+          $periodLabel[] = ['text' => $period['sn'], 'class' => ''];
+        else
+          $periodLabel[] = ['text' => 'BEZ OBDOBÍ', 'class' => 'e10-error'];
+      }
+      if (!Utils::dateIsBlank($this->recData['datePeriodBegin']))
+        $fts = Utils::dateFromTo($this->recData['datePeriodBegin'], $this->recData['datePeriodEnd'] ?? Utils::createDateTime($period['dateEnd']), NULL);
+      else
+        $fts = Utils::dateFromTo($this->recData['datePeriodBegin'], $this->recData['datePeriodEnd'], NULL);
+      if ($fts !== '')
+        $periodLabel[] = ['text' => ' ('.$fts.')', 'class' => ''];
+
+      $t[] = ['t' => 'Období', 'v' => $periodLabel];
+    }
+
+    $t[] = ['t' => 'Jméno', 'v' => $personInfo];
+    if (intval($entryKind['inputPerson'] ?? 0) === 0)
+    {
+      $t[] = ['t' => 'Datum narození', 'v' => Utils::datef($this->recData['birthday'])];
+      $t[] = ['t' => 'E-mail', 'v' => $this->recData['email']];
+      $t[] = ['t' => 'Telefon', 'v' => $this->recData['phone']];
+    }
+
+    $saleType = NULL;
     if ($entryKind['useSaleType'] ?? 0)
     {
-      $saleTypes = $this->table->columnInfoEnum ('saleType', 'cfgText');
-      $t[] = ['t' => 'Sleva', 'v' => $saleTypes[$this->recData['saleType']]];
+      $saleType = $this->app()->cfgItem('e10pro.soci.saleTypes.'.$this->recData['saleType'], NULL);//$this->table->columnInfoEnum ('saleType', 'cfgText');
+      $saleLabel = [['text' => $saleType['fn'], 'class' => '']];
+      if (intval($saleType['disableInvoicing'] ?? 0))
+        $saleLabel [] = ['text' => 'Nefakturuje se', 'class' => 'label label-warning'];
+      $t[] = ['t' => 'Sleva', 'v' => $saleLabel];
     }
     if ($entryKind['usePaymentPeriod'] ?? 0)
     {
@@ -158,7 +226,7 @@ class DCEntry extends \Shipard\Base\DocumentCard
       $t[] = ['t' => 'Poznámka', 'v' => $this->recData['note']];
 
 
-    $t[0]['_options']['cellClasses']['t'] = 'width10em';
+    $t[0]['_options']['cellClasses']['t'] = 'width12em';
 
     $h = ['t' => '_T', 'v' => 'H'];
 
@@ -242,7 +310,7 @@ class DCEntry extends \Shipard\Base\DocumentCard
     {
       $this->addContent ('body', [
         'pane' => 'e10-pane e10-pane-table', 'type' => 'line', 'paneTitle' => $title,
-        'line' => ['text' => 'Žádna faktura zatím nebyla vystavena...']
+        'line' => ['text' => 'Žádná faktura zatím nebyla vystavena...']
       ]);
     }
   }

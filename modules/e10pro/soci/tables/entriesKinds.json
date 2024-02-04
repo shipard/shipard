@@ -12,9 +12,13 @@
 		{"id": "useInbox", "name": "Používat Došlou poštu", "type": "logical"},
 		{"id": "inboxSection", "name": "Sekce Došlé pošty", "type": "int", "reference": "wkf.base.sections"},
 		{"id": "usePeriods", "name": "Používat Období", "type": "logical"},
+		{"id": "useTestDrive", "name": "Používat Přihlášky na zkoušku", "type": "logical"},
 		{"id": "useSaleType", "name": "Používat Slevu", "type": "logical"},
 		{"id": "usePaymentPeriod", "name": "Používat Platbu na období", "type": "logical"},
 		{"id": "workOrderKind", "name": "Druh Zakázky", "type": "int", "reference": "e10mnf.base.dockinds"},
+
+		{"id": "useItem", "name": "Používat Položku pro prodej", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "itemType", "name": "Typ položky", "type": "int", "reference": "e10.witems.itemtypes"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

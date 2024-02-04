@@ -196,6 +196,15 @@ class ViewEntries extends TableView
 		if (isset ($qv['places']))
 			array_push ($q, ' AND workOrders.place IN %in', array_keys($qv['places']));
 
+		if (isset ($qv['persons']))
+		{
+			array_push ($q,
+				' AND EXISTS (SELECT ndx FROM e10_base_doclinks AS l WHERE linkId = %s', 'e10mnf-workRecs-admins',
+				' AND srcTableId = %s', 'e10mnf.core.workOrders', ' AND l.srcRecId = entries.entryTo',
+				' AND l.dstRecId IN %in', array_keys($qv['persons']), ')'
+				);
+		}
+
 		$this->queryMain ($q, 'entries.', ['[dateIssue] DESC', '[fullName]']);
 		$this->runQuery ($q);
 	}
@@ -284,6 +293,27 @@ class ViewEntries extends TableView
 			$qry[] = ['id' => 'wo', 'style' => 'params', 'title' => 'Přihláška do', 'params' => $paramsWO];
 		}
 
+		// -- wo persons
+		$qp = [];
+		array_push($qp, 'SELECT DISTINCT persons.ndx, persons.fullName');
+		array_push($qp, ' FROM e10_base_doclinks AS [links]');
+		array_push($qp, ' LEFT JOIN [e10_persons_persons] AS [persons] ON [links].dstRecId = [persons].ndx');
+		array_push($qp, ' WHERE linkId = %s', 'e10mnf-workRecs-admins');
+		array_push($qp, ' AND srcTableId = %s', 'e10mnf.core.workOrders');
+		array_push($qp, ' ORDER BY persons.fullName');
+		$personsRows = $this->db()->query($qp);
+		$chbxPersons = [];
+		foreach ($personsRows as $pr)
+			$chbxPersons[$pr['ndx']] = ['title' => $pr['fullName'], 'id' => $pr['ndx']];
+
+		if (count($chbxPersons))
+		{
+			$paramsPersons = new \Shipard\UI\Core\Params ($this->app());
+			$paramsPersons->addParam ('checkboxes', 'query.persons', ['items' => $chbxPersons]);
+			$qry[] = ['id' => 'persons', 'style' => 'params', 'title' => 'Ke komu', 'params' => $paramsPersons];
+		}
+
+		// -- places
 		if (count($placesNdxs))
 		{
 			$paramsPlaces = new \Shipard\UI\Core\Params ($this->app());
@@ -341,7 +371,8 @@ class FormEntry extends TableForm
           $this->addSeparator(self::coH4);
         }
         $this->addColumnInput('entryTo');
-				$this->addColumnInput('testDriveWanted');
+        if ($entryKind['useTestDrive'] ?? 0)
+					$this->addColumnInput('testDriveWanted');
         if ($entryKind['usePeriods'] ?? 0)
           $this->addColumnInput('entryPeriod');
         $this->addSeparator(self::coH4);
@@ -357,6 +388,11 @@ class FormEntry extends TableForm
         {
           $this->addColumnInput('dstPerson');
         }
+
+				if (intval($entryKind['useItem'] ?? 0))
+				{
+					$this->addColumnInput('item1');
+				}
 
 				$this->addSeparator(self::coH3);
 				if ($entryKind['useSaleType'] ?? 0)

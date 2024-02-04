@@ -2,7 +2,7 @@
   "pwuser": {
 		"viewers": {
 			"e10mnf.core.workOrders": {"events": 2},
-			"e10pro.soci.entriesKinds": {"events": 2},
+			"e10pro.soci.entriesKinds": {"default": 2},
 			"e10pro.soci.entries": {"default": 2},
 			"e10pro.soci.periods": {"default": 2},
 			"e10.persons.persons": {"soci": 2},

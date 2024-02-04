@@ -26,6 +26,8 @@
 		{"id": "paymentPeriod", "name": "Platba na období", "type": "enumInt",
 			"enumCfg": {"cfgItem": "e10pro.soci.paymentPeriods", "cfgValue": "", "cfgText": "fn"}},
 
+		{"id": "item1", "name": "Položka", "type": "int", "reference": "e10.witems.items", "comboViewer": "combo"},
+
 		{"id": "datePeriodBegin", "name": "Začátek období", "type": "date"},
 		{"id": "datePeriodEnd", "name": "Konec období", "type": "date"},
 

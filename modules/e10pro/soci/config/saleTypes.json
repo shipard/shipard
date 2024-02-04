@@ -6,6 +6,7 @@
     "fn": "Ano"
   },
   "99": {
-    "fn": "Zdarma"
+    "fn": "Zdarma",
+    "disableInvoicing": 1
   }
 }

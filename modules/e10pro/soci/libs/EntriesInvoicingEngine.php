@@ -13,6 +13,7 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 	var $entryRecData = NULL;
 	var $periodNdx = 0;
 	var $periodCfg = NULL;
+	var $entryKindCfg;
 	var $periodBegin;
 	var $periodEnd;
 	var $periodHalf;
@@ -133,6 +134,7 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 	{
 		$this->entryNdx = $entryNdx;
 		$this->entryRecData = $this->tableEntries->loadItem($this->entryNdx);
+		$this->entryKindCfg = $this->app()->cfgItem('e10pro.soci.entriesKinds.'.$this->entryRecData['entryKind']);
 		$this->workOrderRecData = $this->app()->loadItem($this->entryRecData['entryTo'], 'e10mnf.core.workOrders');
 		$this->periodNdx = $this->entryRecData['entryPeriod'];
 		$this->periodCfg = $this->app()->cfgItem('e10pro.soci.periods.'.$this->periodNdx, NULL);
@@ -184,18 +186,29 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 	{
 		$this->planInvoicesTable = [];
 
-		if ($this->entryRecData['paymentPeriod'] === 0)
-		{ // full
-			$this->planInvoice(0);
+		$saleType = $this->app()->cfgItem('e10pro.soci.saleTypes.'.$this->entryRecData['saleType'], NULL);
+		if (intval($saleType['disableInvoicing'] ?? 0))
+			return;
+
+		if (intval($this->entryKindCfg['usePeriods'] ?? 0) === 1)
+		{ // YES, entry for period(s)
+			if ($this->entryRecData['paymentPeriod'] === 0)
+			{ // full
+				$this->planInvoicePeriod(0);
+			}
+			elseif ($this->entryRecData['paymentPeriod'] === 1)
+			{ // halfs
+				$this->planInvoicePeriod(1);
+				$this->planInvoicePeriod(2);
+			}
 		}
-		elseif ($this->entryRecData['paymentPeriod'] === 1)
-		{ // halfs
-			$this->planInvoice(1);
-			$this->planInvoice(2);
+		else
+		{ // event
+			$this->planInvoiceEvent();
 		}
 	}
 
-	public function planInvoice($entryPeriod)
+	public function planInvoicePeriod($entryPeriod)
 	{
 		$pi = [
 			'priceAll' => 0.0
@@ -231,12 +244,12 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 		if ($entryPeriod)
 			$pi['symbol2'] .= $entryPeriod;
 
-		$this->planInvoiceItems($pi, $entryPeriod);
-		if (!$this->searchExistedIncoice($pi))
+		$this->planInvoiceItemsPeriod($pi, $entryPeriod);
+		if (!$this->searchExistedInvoicePeriod($pi))
 			$this->planInvoicesTable[] = $pi;
 	}
 
-	public function planInvoiceItems(&$invoice, $entryPeriod)
+	public function planInvoiceItemsPeriod(&$invoice, $entryPeriod)
 	{
 		$periodTitle = ' '.substr($this->periodCfg['dateBegin'], 0, 4).'/'.substr($this->periodCfg['dateEnd'], 2, 2);
 		if ($entryPeriod)
@@ -262,7 +275,41 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 		}
 	}
 
-	protected function searchExistedIncoice($pi)
+	public function planInvoiceItemsEvent(&$invoice)
+	{
+		if (!$this->entryRecData['item1'])
+			return;
+
+		$itemNdx = $this->entryRecData['item1'];
+		$itemRecData = $this->app()->loadItem($itemNdx, 'e10.witems.items');
+		if ($itemRecData)
+		{
+			$invoice['items'][] = [
+				'item' => $itemNdx, 'priceAll' => $itemRecData['priceSellTotal'],
+				'text' => $itemRecData['fullName'],
+			];
+			$invoice['itemsCell'][] = ['text' => $itemRecData['fullName'], 'suffix' => $itemRecData['id'], 'class' => 'block'];
+			$invoice['priceAll'] += $itemRecData['priceSellTotal'];
+		}
+	}
+
+	public function planInvoiceEvent()
+	{
+		$pi = [
+			'priceAll' => 0.0
+		];
+
+		$pi['dateAccounting'] = Utils::createDateTime($this->workOrderRecData['dateBegin'] ?? Utils::today());
+		$pi['datePeriodBegin'] = Utils::createDateTime($this->workOrderRecData['dateBegin']);
+		$pi['datePeriodEnd'] = Utils::createDateTime($this->workOrderRecData['dateClosed']);
+
+		$this->planInvoiceItemsEvent($pi);
+
+		if (!$this->searchExistedInvoiceEvent())
+			$this->planInvoicesTable[] = $pi;
+	}
+
+	protected function searchExistedInvoicePeriod($pi)
 	{
 		foreach ($this->existedInvoicesTable as $ei)
 		{
@@ -271,6 +318,15 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 			if ($pi['symbol2'] !== $ei['symbol2'])
 				continue;
 
+			return TRUE;
+		}
+		return FALSE;
+	}
+
+	protected function searchExistedInvoiceEvent()
+	{
+		foreach ($this->existedInvoicesTable as $ei)
+		{
 			return TRUE;
 		}
 		return FALSE;
@@ -304,6 +360,10 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
+      $saleType = $this->app()->cfgItem('e10pro.soci.saleTypes.'.$r['saleType'], NULL);
+      if (intval($saleType['disableInvoicing'] ?? 0))
+        continue;
+
 			$this->setEntry($r['ndx']);
 			$this->loadInvoices();
 			$this->planInvoices();
