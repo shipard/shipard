@@ -29,8 +29,21 @@ class TableEntries extends DbTable
 
     $recData ['fullName'] = str_replace('  ', ' ', trim ($recData ['lastName'].' '.$recData ['firstName']));
 
-		if (!isset($recData['docNumber']) || $recData['docNumber'] === '')
-			$recData['docNumber'] = Utils::today('y').Utils::createToken(4, FALSE, TRUE);
+		if (isset($recData['docNumber']) && $recData['docNumber'] === '')
+		{
+			$entryKind = $this->app()->cfgItem('e10pro.soci.entriesKinds.'.$recData['entryKind'], NULL);
+			if ($entryKind && $entryKind['docNumberType'] === 0)
+				$recData['docNumber'] = Utils::today('y').mt_rand(1000, 9999);
+			elseif ($entryKind && $entryKind['docNumberType'] === 1)
+			{
+				if (!Utils::dateIsBlank($recData['birthday']))
+				{
+					$bd = Utils::createDateTime($recData['birthday']);
+					if ($bd)
+						$recData['docNumber'] = $bd->format('dmY');
+				}
+			}
+		}
 	}
 
 	public function createHeader ($recData, $options)

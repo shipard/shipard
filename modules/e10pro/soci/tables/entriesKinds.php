@@ -36,6 +36,7 @@ class TableEntriesKinds extends DbTable
 				'usePaymentPeriod' => intval($r ['usePaymentPeriod']),
 				'useItem' => intval($r ['useItem']),
 				'itemType' => intval($r ['itemType']),
+				'docNumberType' => intval($r ['docNumberType']),
 			];
 
 			$docKinds [strval($r['ndx'])] = $dk;
@@ -152,6 +153,7 @@ class FormEntryKind extends TableForm
 					$this->addColumnInput ('order');
 				$this->closeTab ();
 				$this->openTab ();
+					$this->addColumnInput ('docNumberType');
 				$this->closeTab ();
 		$this->closeTabs();
 		$this->closeForm ();

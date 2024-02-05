@@ -20,6 +20,9 @@
 		{"id": "useItem", "name": "Používat Položku pro prodej", "type": "logical", "options": ["saveOnChange"]},
 		{"id": "itemType", "name": "Typ položky", "type": "int", "reference": "e10.witems.itemtypes"},
 
+    {"id": "docNumberType", "name": "Kód přihlášky", "type": "enumInt",
+      "enumValues": {"0": "Náhodný kód", "1": "Datum narození"}},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],

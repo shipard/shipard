@@ -118,7 +118,7 @@ class DCEntry extends \Shipard\Base\DocumentCard
         {
           $personInfo [] = [
             'type' => 'action', 'action' => 'addwizard',
-            'text' => 'Vytvořit', 'data-class' => 'e10pro.soci.libs.WizardGenerateFromEntries',
+            'text' => 'Vytvořit Osobu', 'data-class' => 'e10pro.soci.libs.WizardGenerateFromEntries',
             'icon' => 'cmnbkpRegenerateOpenedPeriod',
             'class' => 'pull-right'
           ];
@@ -273,6 +273,9 @@ class DCEntry extends \Shipard\Base\DocumentCard
 
   protected function addInvoicing()
   {
+    if (!$this->recData['dstPerson'])
+      return;
+
     $ie = new \e10pro\soci\libs\EntriesInvoicingEngine($this->app());
     $ie->init();
     $ie->setEntry($this->recData['ndx']);
