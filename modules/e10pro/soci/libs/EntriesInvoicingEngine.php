@@ -82,8 +82,8 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 		$this->invHead ['dateDue'] = Utils::createDateTime($invoice['dateAccounting']);
 		$this->invHead ['dateDue']->add (new \DateInterval('P30D'));
 
-		$this->invHead ['symbol1'] = $invoice['symbol1'];
-		$this->invHead ['symbol2'] = $invoice['symbol2'];
+		$this->invHead ['symbol1'] = $invoice['symbol1'] ?? '';
+		$this->invHead ['symbol2'] = $invoice['symbol2'] ?? '';
 
 		$this->invHead ['paymentMethod'] = '0';
 		$this->invHead ['roundMethod'] = intval($this->app->cfgItem ('options.e10doc-sale.roundInvoice', 0));
@@ -286,7 +286,7 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 		{
 			$invoice['items'][] = [
 				'item' => $itemNdx, 'priceAll' => $itemRecData['priceSellTotal'],
-				'text' => $itemRecData['fullName'],
+				'text' => $this->workOrderRecData['title'].': '.$itemRecData['fullName'],
 			];
 			$invoice['itemsCell'][] = ['text' => $itemRecData['fullName'], 'suffix' => $itemRecData['id'], 'class' => 'block'];
 			$invoice['priceAll'] += $itemRecData['priceSellTotal'];
@@ -349,11 +349,13 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 	public function generateAll()
 	{
 		$q = [];
-		array_push($q, 'SELECT [entries].* ');
+		array_push($q, 'SELECT [entries].*, [persons].fullName AS [personName]');
 		array_push($q, ' FROM [e10pro_soci_entries] AS [entries]');
+		array_push($q, ' LEFT JOIN [e10_persons_persons] AS [persons] ON [entries].[dstPerson] = [persons].ndx');
 		array_push($q, ' WHERE 1');
 		array_push($q, ' AND [entries].[docState] = %i', 4000);
 		array_push($q, ' AND [entries].[entryState] = %i', 0);
+		array_push($q, ' AND [entries].[dstPerson] != %i', 0);
 		array_push($q, ' ORDER BY ndx DESC');
 
 		$cnt = 0;
@@ -371,7 +373,7 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 			if (!count($this->planInvoicesTable))
 				continue;
 
-			echo "# ".$r['docNumber'].' - '.$r['firstName'].' '.$r['lastName']."\n";
+			echo "# ".$r['docNumber'].' - '.$r['personName']."\n";
 
 			$this->generatePlan();
 
