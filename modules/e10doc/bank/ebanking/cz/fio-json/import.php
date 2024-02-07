@@ -29,9 +29,9 @@ class Import extends \E10Doc\Bank\ebankingImportDoc
 			$bankAccount = $r['column2']['value'];
 		if (isset($r['column3']))
 			$bankAccount .= '/'.$r['column3']['value'];
-		$bankAccount = ltrim ($newItem['bankAccount'], '0'); // strip leading zeros and blank account prefix
-		$bankAccount = ltrim ($newItem['bankAccount'], '-');
-		$bankAccount = ltrim ($newItem['bankAccount'], '0');
+		$bankAccount = ltrim ($bankAccount, '0'); // strip leading zeros and blank account prefix
+		$bankAccount = ltrim ($bankAccount, '-');
+		$bankAccount = ltrim ($bankAccount, '0');
 		$this->setRowInfo ('bankAccount', $bankAccount);
 
 		// -- symbols
