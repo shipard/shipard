@@ -167,8 +167,12 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 		$rows = $this->db()->query($q);
 		foreach($rows as $r)
 		{
+			$docStates = $this->tableHeads->documentStates ($r);
+			$docStateIcon = $this->tableHeads->getDocumentStateInfo ($docStates, $r, 'styleIcon');
+			$docStateClass = $this->tableHeads->getDocumentStateInfo ($docStates, $r, 'styleClass');
+
 			$ti = [
-				'docNumber' => ['text' => $r['docNumber'], 'docAction' => 'edit', 'table' => 'e10doc.core.heads', 'pk' => $r['ndx']],
+				'docNumber' => ['text' => $r['docNumber'], 'docAction' => 'edit', 'table' => 'e10doc.core.heads', 'pk' => $r['ndx'], 'icon' => $docStateIcon],
 				'symbol1' => $r['symbol1'],
 				'symbol2' => $r['symbol2'],
 				'dateAccounting' => $r['dateAccounting'],
@@ -177,6 +181,7 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 				'datePeriodEnd' => $r['datePeriodEnd'],
 				'price' => $r['sumTotal']
 			];
+			$ti ['_options']['cellClasses']['docNumber'] = $docStateClass;
 
 			$this->existedInvoicesTable[] = $ti;
 		}

@@ -167,7 +167,7 @@ class DCEntry extends \Shipard\Base\DocumentCard
         $personInfo [] = ['text' => 'Není zadána osoba', 'class' => 'e10-error', 'icon' => 'system/iconError'];
     }
 
-    $t[] = ['t' => 'Datum přihlášky', 'v' => Utils::datef($entryTo['dateIssue'])];
+    $t[] = ['t' => 'Datum přihlášky', 'v' => Utils::datef($this->recData['dateIssue'])];
 
     $entryToLabel = [['text' => $entryTo['title'], 'class' => '']];
 
