@@ -77,7 +77,7 @@ class SaveIssueBodyWizard extends Wizard
 		$hdr = [];
 		$hdr ['icon'] = 'system/actionSplit';
 
-		$hdr ['info'][] = ['class' => 'title', 'value' => 'Uložit zorávu do PDF'];
+		$hdr ['info'][] = ['class' => 'title', 'value' => 'Uložit zprávu do PDF'];
 		$hdr ['info'][] = ['class' => 'info', 'value' => $this->issueRecData['subject']];
 
 		return $hdr;
