@@ -41,6 +41,7 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 		'datePeriodEnd' => 'Období do',
 		'dateIssue' => 'Vystaveno',
 		'price' => '+Cena',
+		'bi' => 'Stav'
 	];
 
 	var $planInvoicesTable;
@@ -182,6 +183,10 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 				'price' => $r['sumTotal']
 			];
 			$ti ['_options']['cellClasses']['docNumber'] = $docStateClass;
+
+			$bi = $this->balanceInfo ($r);
+			$ti['bi'] = $bi;
+			$ti ['_options']['cellClasses']['bi'] = $bi['class'];
 
 			$this->existedInvoicesTable[] = $ti;
 		}
@@ -335,6 +340,60 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 			return TRUE;
 		}
 		return FALSE;
+	}
+
+	protected function balanceInfo ($item)
+	{
+		$bi = new \e10doc\balance\BalanceDocumentInfo($this->app());
+		$bi->setDocRecData ($item);
+		$bi->run ();
+
+		if (!$bi->valid)
+			return;
+
+    $balanceInfo = [];
+
+		$line = [];
+		$line[] = ['text' => utils::datef($item['dateDue']), 'icon' => 'system/iconStar'];
+
+		if ($bi->restAmount < -1.0)
+		{
+			$balanceInfo['text'] = 'Přeplatek: '.Utils::nf(- $bi->restAmount, 2);
+      $balanceInfo['icon'] = 'system/iconCheck';
+      $balanceInfo['class'] = 'e10-warning1';
+		}
+		elseif ($bi->restAmount < 1.0)
+		{
+			$balanceInfo['text'] = 'Uhrazeno';
+      $balanceInfo['icon'] = 'system/iconCheck';
+      $balanceInfo['class'] = 'e10-bg-t1';
+		}
+		else
+    {
+			if ($bi->restAmount == $item['toPay'])
+			{
+        if ($bi->daysOver > 0)
+        {
+          $balanceInfo['text'] = 'NEUHRAZENO';
+          $balanceInfo['icon'] = 'system/iconWarning';
+          $balanceInfo['class'] = 'e10-warning3';
+        }
+        else
+        {
+          $balanceInfo['text'] = 'Uhradit do: '.Utils::datef($item['dateDue'], '%S');
+          $balanceInfo['icon'] = 'system/iconCheck';
+          $balanceInfo['class'] = 'e10-bg-t4';
+        }
+			}
+			else
+			{
+        $balanceInfo['text'] = 'Částečně uhrazeno, zbývá '.Utils::nf($bi->restAmount, 2);
+        $balanceInfo['icon'] = 'system/iconCheck';
+        $balanceInfo['class'] = 'e10-warning1';
+			}
+    }
+
+    return $balanceInfo;
 	}
 
 	public function generatePlan()
