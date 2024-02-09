@@ -1,6 +1,8 @@
 <?php
 
 namespace e10pro\soci\libs;
+use \e10\base\libs\UtilsBase;
+use \Shipard\Utils\Utils;
 
 
 /**
@@ -24,19 +26,32 @@ class ReportWOEventRecordSheet extends \e10doc\core\libs\reports\DocReportBase
     parent::loadData();
 		$this->loadData_DocumentOwner ();
 
-		$this->data['workOrder'] = $this->app()->loadItem($this->recData['workOrder'], 'e10mnf.core.workOrders');
 		$this->data['person'] = $this->app()->loadItem($this->data['workOrder']['customer'], 'e10.persons.persons');
+
+    if ($this->recData['place'])
+      $this->data['place'] = $this->app()->loadItem($this->recData['place'], 'e10.base.places');
+
+    $linkedPersons = UtilsBase::linkedPersons ($this->table->app(), 'e10mnf.core.workOrders', $this->recData['ndx']);
+		if ($linkedPersons && isset ($linkedPersons [$this->recData['ndx']]['e10mnf-workRecs-admins']))
+		{
+      $admins = [];
+      foreach ($linkedPersons [$this->recData['ndx']]['e10mnf-workRecs-admins'] as $lp)
+        $admins[] = $lp['text'];
+
+      $this->data['eventAdmins'] = implode(', ', $admins);
+		}
+
+    $now = new \DateTime();
+    $this->data['printDateTime'] = Utils::datef($now, '%d%t');
 
     $this->eventInfo = new \e10pro\soci\libs\WOEventInfo($this->app());
     $this->eventInfo->setWorkOrder($this->recData['ndx']);
     $this->eventInfo->loadInfo();
 
-    if ($this->eventInfo->data['personsList'])
+    if ($this->eventInfo->data['members'])
     {
-      $contentTitlePersons = ['text' => 'Lidé', 'class' => 'h3'];
-      $cc = $this->eventInfo->data['personsList'];
+      $cc = $this->eventInfo->data['members'];
       unset($cc['pane']);
-      $cc['title'] = $contentTitlePersons;
       $this->data['contents'][] = $cc;
     }
 	}

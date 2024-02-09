@@ -20,12 +20,8 @@ class WOEventCore extends DocumentCard
       $this->addContent('body', $cc);
     }
 
-    if ($this->woInfo->data['personsList'])
-      $this->addContent('body', $this->woInfo->data['personsList']);
-
-    if ($this->woInfo->data['entriesList'])
-      $this->addContent('body', $this->woInfo->data['entriesList']);
-
+    if ($this->woInfo->data['members'])
+      $this->addContent('body', $this->woInfo->data['members']);
   }
 
   public function createContent ()

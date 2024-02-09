@@ -38,7 +38,8 @@
 	}
 
 	span.docName {
-		text-transform: uppercase;
+		//text-transform: uppercase;
+		font-size: 111%;
 	}
 
 	td.supplierLogo {
@@ -58,8 +59,9 @@
 	<tr>
 		{{#data.options.docReportsHeadLogoRight}}
 			<td class="docInfo">
-				<span class='docName'>Evidenční list</span><br>
-				<small><b>{{data.head.title}}</b> <small>{{data.person.fullName}}</small></small>
+				<span class='docName'>{{data.head.title}}</span><br>
+				{{#data.eventAdmins}}<b>{{data.eventAdmins}}</b>{{/data.eventAdmins}}
+				{{#data.place}}<small style='padding-left: 2rem;'>{{fullName}}</small>{{/data.place}}
 			</td>
 			<td class="supplierLogo">
 				{{#data.owner.logo.logo-nadpis.filename}}
@@ -75,8 +77,9 @@
 				{{/data.owner.logo.logo-nadpis.filename}}
 			</td>
 			<td class="docInfo">
-				<span class='docName'>Evidenční list</span><br>
-				<small><b>{{data.head.title}}</b> <small>{{data.person.fullName}}</small></small>
+				<span class='docName'>{{data.head.title}}</span><br>
+				{{#data.eventAdmins}}<b>{{data.eventAdmins}}</b>{{/data.eventAdmins}}
+				{{#data.place}}<small style='padding-left: 2rem;'>{{fullName}}</small>{{/data.place}}
 			</td>
 		{{/data.options.docReportsHeadLogoRight}}
 	</tr>

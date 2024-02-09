@@ -67,6 +67,47 @@ class TableEntries extends DbTable
 
 			$this->app()->db()->query ('UPDATE [e10pro_soci_entries] SET [docNumber] = %s', $recData['docNumber'], ' WHERE [ndx] = %i', $recData['ndx']);
 		}
+
+		if ($recData['docState'] === 4000)
+		{ // valid - add to persons on workOrder
+			$this->checkEntryToPersonExist($recData);
+		}
+	}
+
+	protected function checkEntryToPersonExist($entryRecData)
+	{
+		if (!$entryRecData['dstPerson'])
+			return;
+
+		$entryToRecData = $this->app()->loadItem($entryRecData['entryTo'], 'e10mnf.core.workOrders');
+		if (!$entryToRecData)
+			return;
+
+		$woKind = $this->app()->cfgItem('e10mnf.workOrders.kinds.'.$entryToRecData['docKind'], NULL);
+		if (!$woKind)
+			return;
+
+		if (!intval($woKind['usePersonsList'] ?? 0))
+			return;
+
+		$existedPerson = $this->db()->query('SELECT * FROM [e10mnf_core_workOrdersPersons]',
+										' WHERE [workOrder] = %i', $entryRecData['entryTo'],
+										' AND [person] = %i', $entryRecData['dstPerson'])->fetch();
+		if ($existedPerson)
+			return;
+
+		$maxRowOrderRec = $this->db()->query('SELECT * FROM [e10mnf_core_workOrdersPersons]',
+			' WHERE [workOrder] = %i', $entryRecData['entryTo'],
+			' ORDER BY rowOrder DESC LIMIT 1')->fetch();
+
+		$maxRowOrder = $maxRowOrderRec['rowOrder'] ?? 0;
+		$maxRowOrder += 100;
+
+		$np = [
+			'workOrder' => $entryRecData['entryTo'], 'person' => $entryRecData['dstPerson'],
+			'rowOrder' => $maxRowOrder,
+		];
+		$this->db()->query('INSERT INTO [e10mnf_core_workOrdersPersons]', $np);
 	}
 
 	public function createHeader ($recData, $options)
@@ -217,7 +258,9 @@ class ViewEntries extends TableView
 			array_push ($q, ' OR entries.[email] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ' OR entries.[phone] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ' OR entries.[docNumber] LIKE %s', '%'.$fts.'%');
+			array_push ($q, ' OR entries.[note] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ' OR persons.[fullName] LIKE %s', '%'.$fts.'%');
+			array_push ($q, ' OR DATE_FORMAT([birthday], \'%m%d%Y\') LIKE %s', '%'.$fts.'%');
 			array_push ($q, ')');
 		}
 
