@@ -167,6 +167,18 @@ class TableWorkOrders extends DbTable
 
 		if (isset($recData['customer']) && $recData['customer'])
 			$info ['persons']['to'][] = $recData['customer'];
+		else
+		{ // workOrder admins
+			$admins = $this->db()->query('SELECT *',
+												' FROM e10_base_doclinks as links ',
+												' WHERE srcTableId = %s', 'e10mnf.core.workOrders',
+												' AND linkId = %s', 'e10mnf-workRecs-admins',
+												' AND dstTableId = %s', 'e10.persons.persons',
+												' AND links.srcRecId = %i', $recData['ndx']);
+			foreach ($admins as $a)
+				$info ['persons']['to'][] = $a['dstRecId'];
+		}
+
 		$info ['persons']['from'][] = intval($this->app()->cfgItem ('options.core.ownerPerson', 0));
 
 		return $info;
