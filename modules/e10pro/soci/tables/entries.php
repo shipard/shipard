@@ -46,6 +46,29 @@ class TableEntries extends DbTable
 		}
 	}
 
+	public function checkAfterSave2 (&$recData)
+	{
+		parent::checkAfterSave2 ($recData);
+
+		if (isset($recData['docNumber']) && $recData['docNumber'] === '')
+		{
+			$entryKind = $this->app()->cfgItem('e10pro.soci.entriesKinds.'.$recData['entryKind'], NULL);
+			if ($entryKind && $entryKind['docNumberType'] === 0)
+				$recData['docNumber'] = Utils::today('y').mt_rand(1000, 9999);
+			elseif ($entryKind && $entryKind['docNumberType'] === 1)
+			{
+				if (!Utils::dateIsBlank($recData['birthday']))
+				{
+					$bd = Utils::createDateTime($recData['birthday']);
+					if ($bd)
+						$recData['docNumber'] = $bd->format('dmY');
+				}
+			}
+
+			$this->app()->db()->query ('UPDATE [e10pro_soci_entries] SET [docNumber] = %s', $recData['docNumber'], ' WHERE [ndx] = %i', $recData['ndx']);
+		}
+	}
+
 	public function createHeader ($recData, $options)
 	{
 		$hdr = [];
