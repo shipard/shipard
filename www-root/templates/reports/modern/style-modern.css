@@ -392,3 +392,20 @@ td.e10-off {
 .e10-bold {font-weight: 600;}
 .e10-em {font-style: italic;}
 .e10-me {color: #4078c0; font-size: 85%;}
+
+.e10-warning0 {background-color: #fff;}
+.e10-warning1 {background-color: #fff0f030 !important;}
+.e10-warning2 {background-color: #ffe0e030 !important;}
+.e10-warning3 {background-color: #ffb0b030 !important;}
+
+
+.e10-bg-t1 {background-color: #e1f7d530;}
+.e10-bg-t2 {background-color: #ffcfab30;}
+.e10-bg-t3 {background-color: #ffe0e530;}
+.e10-bg-t4 {background-color: #fbffb530;}
+.e10-bg-t5 {background-color: #e0fffa30;}
+.e10-bg-t6 {background-color: #c5e0d630;}
+.e10-bg-t7 {background-color: #9fe28f30;}
+.e10-bg-t8 {background-color: #ffefd530;}
+.e10-bg-t9 {background-color: #f0f0f070;}
+
