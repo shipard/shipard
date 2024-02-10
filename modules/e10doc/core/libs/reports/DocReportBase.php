@@ -71,6 +71,9 @@ class DocReportBase extends FormReport
 
 		parent::loadData();
 
+		$this->data['options']['docReportsInvoicePaymentInfo'] = intval($this->app()->cfgItem ('options.appearanceDocs.docReportsInvoicePaymentInfo', 0));
+		if ($this->data['options']['docReportsInvoicePaymentInfo'] === 2)
+			$this->data['options']['docReportsInvoicePaymentInfoSigns'] = 1;
 
 		$this->data['options']['docReportsPersonsSigns'] = intval($this->app()->cfgItem ('options.appearanceDocs.docReportsPersonsSigns', 0));
 		$this->data['options']['docReportsHeadLogoRight'] = intval($this->app()->cfgItem ('options.appearanceDocs.docReportsHeadLogoPlace', 1));

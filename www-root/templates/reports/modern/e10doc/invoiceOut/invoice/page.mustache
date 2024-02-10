@@ -420,6 +420,47 @@
 	</tr>
 </table>
 
+{{#data.options.docReportsInvoicePaymentInfo}}
+	{{#data.balanceInfo.payedCash}}
+		<div style='border: 3pt solid green; padding: 0; margin-top: 24pt;'>
+			<table>
+				<tr>
+					<td style='background-color: green; color: white; font-size: 300%; text-align: center; vertical-align: middle; padding: 5pt;' rowspan='2'>{{{@icon;icon:user/check}}}</td>
+					<td style='font-size: 200%; padding: 3pt;'>Uhrazeno v hotovosti - NEPLAŤTE!<td>
+					<td rowspan='2'>
+					{{#data.options.docReportsInvoicePaymentInfoSigns}}
+						{{#data.author.signature.rfn}}<img src='{{dsUrl}}{{data.author.signature.rfn}}' style='width: 4cm;'>{{/data.author.signature.rfn}}</td>
+					{{/data.options.docReportsInvoicePaymentInfoSigns}}
+				</tr>
+				<tr>
+					<td style='padding-left: 3pt; padding-bottom: 2pt;'>Slouží jako pokladní doklad. Hotovost převzal: {{data.author.fullName}}</td>
+					<td></td>
+				</tr>
+			</table>
+		</div>
+	{{/data.balanceInfo.payedCash}}
+	{{#data.balanceInfo.payed}}
+		<div style='border: 3pt solid green; padding: 0; margin-top: 24pt;'>
+			<table>
+				<tr>
+					<td style='background-color: green; color: white; font-size: 300%; text-align: center; vertical-align: middle; padding: 5pt;' rowspan='{{data.balanceInfo.rowSpan}}'>{{{@icon;icon:user/check}}}</td>
+					<td style='font-size: 200%; padding: 3pt;'>Faktura je uhrazena - NEPLAŤTE!<td>
+					<td rowspan='{{data.balanceInfo.rowSpan}}'>
+					{{#data.options.docReportsInvoicePaymentInfoSigns}}
+						{{#data.author.signature.rfn}}<img src='{{dsUrl}}{{data.author.signature.rfn}}' style='width: 4cm;'>{{/data.author.signature.rfn}}</td>
+					{{/data.options.docReportsInvoicePaymentInfoSigns}}
+				</tr>
+			{{#data.balanceInfo.payments}}
+				<tr>
+					<td style='padding-left: 3pt; padding-bottom: 2pt;'>Datum úhrady: {{date}} Částka: {{paymentPrint}} {{currencyPrint}} {{#bankAccount}}Z účtu: {{bankAccount}}{{/bankAccount}}</td>
+					<td></td>
+				</tr>
+			{{/data.balanceInfo.payments}}
+			</table>
+		</div>
+	{{/data.balanceInfo.payed}}
+{{/data.options.docReportsInvoicePaymentInfo}}
+
 <div class='footerNotes'>
 	{{#data.additionsExists}}
 		<h4>Poznámky</h4>

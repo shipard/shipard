@@ -4,6 +4,9 @@
 
 {{@dict;v příloze Vám zasíláme fakturu za poskytované služby}}: {{data.head.title}}.
 
+{{#data.options.docReportsInvoicePaymentInfo}}{{#data.balanceInfo.paymentDone}}Faktura je uhrazena - NEPLAŤTE!
+{{/data.balanceInfo.paymentDone}}{{/data.options.docReportsInvoicePaymentInfo}}
+
 {{@dict;Odběratel}}: {{{data.person.fullName}}}
 {{#data.head.datePeriodBegin}}
 {{@dict;Účtované období}}: {{data.head.datePeriodBegin}} {{@dict;až}} {{data.head.datePeriodEnd}}
@@ -19,7 +22,8 @@
 {{/data.myBankAccount.iban}}
 
 
-{{@dict;Děkujeme za včasnou úhradu}}.
+{{^data.balanceInfo.paymentDone}}{{@dict;Děkujeme za včasnou úhradu}}.
+{{/data.balanceInfo.paymentDone}}
 
 {{@dict;S pozdravem}}
 

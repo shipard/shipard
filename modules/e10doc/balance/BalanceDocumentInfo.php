@@ -14,6 +14,8 @@ class BalanceDocumentInfo extends Utility
 	var $docRecData;
 	var $valid = FALSE;
 
+	var $payments = [];
+
 	var $primaryBalanceId = 0;
 	var $paymentTotal = 0.0;
 	var $restAmount = 0.0;
@@ -56,6 +58,14 @@ class BalanceDocumentInfo extends Utility
 				$this->paymentTotal += $r['payment'];
 				$this->lastPayment = ['date' => $r['date'], 'amount' => $r['payment']];
 				$payments[] = $this->lastPayment;
+
+				$pp = $r->toArray();
+				$pp['amountPrint'] = Utils::nf($r['amount'], 2);
+				$pp['paymentPrint'] = Utils::nf($r['payment'], 2);
+				$cc = $this->app()->cfgItem ('e10.base.currencies.'.$r['currency'], NULL);
+				if ($cc)
+					$pp['currencyPrint'] = $cc['shortcut'];
+				$this->payments[] = $pp;
 			}
 		}
 

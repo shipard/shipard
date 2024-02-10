@@ -43,6 +43,7 @@
 					"3": "Ve sloupcích - dvouřádkový mód"
 				}
 			},
+			{"cfgKey": "docReportsInvoicePaymentInfo", "cfgName": "Uvádět na fakturách informaci o úhradě", "options": {"0": "Ne", "1": "Ano", "2": "Včetně razítka/podpisu"}},
 			{"cfgKey": "docReportsPersons_birthdate", "cfgName": "Tisknout Datum narození", "options": {"0": "Ne","1": "Ano"}},
 			{"cfgKey": "docReportsPersons_pid", "cfgName": "Tisknout Rodné číslo", "options": {"0": "Ne","1": "Ano"}},
 			{"cfgKey": "docReportsPersons_idcn", "cfgName": "Tisknout Číslo OP", "options": {"0": "Ne","1": "Ano"}}
