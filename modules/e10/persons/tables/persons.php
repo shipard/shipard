@@ -896,8 +896,8 @@ class ViewPersonsBase extends TableView
 		if (isset ($this->properties [$item ['pk']]['contacts']))
 			$item ['t2'] = array_merge ($item ['t2'], array_slice ($this->properties [$item ['pk']]['contacts'], 0, 2, TRUE));
 
-		if (!count($item ['t2']))
-			$item ['t2'] = ' ';
+		//if (!count($item ['t2']))
+		//	$item ['t2'] = ' ';
 
 		if (isset ($this->classification [$item ['pk']]))
 		{
