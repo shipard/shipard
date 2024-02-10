@@ -45,6 +45,7 @@ class ReportWOEventRecordSheet extends \e10doc\core\libs\reports\DocReportBase
     $this->data['printDateTime'] = Utils::datef($now, '%d%t');
 
     $this->eventInfo = new \e10pro\soci\libs\WOEventInfo($this->app());
+    $this->eventInfo->forPrint = 1;
     $this->eventInfo->setWorkOrder($this->recData['ndx']);
     $this->eventInfo->loadInfo();
 

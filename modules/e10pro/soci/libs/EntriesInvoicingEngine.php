@@ -18,6 +18,8 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 	var $periodEnd;
 	var $periodHalf;
 
+	var $forPrint = 0;
+
 	var $workOrderRecData = NULL;
 
 	var $invHead = [];
@@ -34,14 +36,14 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 
 	var $existedInvoicesTable;
 	var $existedInvoicesHead = [
-		'docNumber' => 'Doklad',
+		'docNumber' => '_Doklad',
 		'symbol1' => 'VS',
 		'symbol2' => 'SS',
 		'datePeriodBegin' => 'Období od',
 		'datePeriodEnd' => 'Období do',
 		'dateIssue' => 'Vystaveno',
 		'price' => '+Cena',
-		'bi' => 'Stav'
+		'bi' => '_Stav'
 	];
 
 	var $planInvoicesTable;
@@ -365,6 +367,8 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 		elseif ($bi->restAmount < 1.0)
 		{
 			$balanceInfo['text'] = 'Uhrazeno';
+			if (!$this->forPrint && isset($bi->lastPayment['date']) && !Utils::dateIsBlank($bi->lastPayment['date']))
+				$balanceInfo['suffix'] = Utils::datef($bi->lastPayment['date'], '%S');
       $balanceInfo['icon'] = 'system/iconCheck';
       $balanceInfo['class'] = 'e10-bg-t1';
 		}
@@ -387,7 +391,7 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 			}
 			else
 			{
-        $balanceInfo['text'] = 'Částečně uhrazeno, zbývá '.Utils::nf($bi->restAmount, 2);
+        $balanceInfo['text'] = 'NEDOPLATEK: '.Utils::nf($bi->restAmount, 2);
         $balanceInfo['icon'] = 'system/iconCheck';
         $balanceInfo['class'] = 'e10-warning1';
 			}

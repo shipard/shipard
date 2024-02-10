@@ -30,19 +30,23 @@ class WOEventInfo extends \e10mnf\core\libs\WorkOrderInfo
 		{
       $entryNdx = $r['ndx'];
 
+      $personInfo = [];
 			$item = $r->toArray();
       if ($r['dstPerson'])
       {
         if ($this->forPrint)
-          $item['personName'] = ['text' => $r['personFullName'], 'class' => 'e10-bold block'];
+          $personInfo[] = ['text' => $r['personFullName'], 'class' => 'e10-bold'];
         else
-          $item['personName'] = ['text' => $r['personFullName'], 'docAction' => 'edit', 'pk' => $r['dstPerson'], 'table' => 'e10.persons.persons', 'class' => 'e10-bold block'];
+          $personInfo[] = ['text' => $r['personFullName'], 'docAction' => 'edit', 'pk' => $r['dstPerson'], 'table' => 'e10.persons.persons', 'class' => 'e10-bold'];
       }
       else
-        $item['personName'] = ['text' => $r['lastName'].' '.$r['firstName'], 'class' => 'e10-bold block'];
+        $personInfo[] = ['text' => $r['lastName'].' '.$r['firstName'], 'class' => 'e10-bold'];
+
+      $item['personName'] = $personInfo;
 
       $invoices = [];
       $ie = new \e10pro\soci\libs\EntriesInvoicingEngine($this->app());
+      $ie->forPrint = $this->forPrint;
       $ie->init();
       $ie->setEntry($entryNdx);
       $ie->loadInvoices();
@@ -145,7 +149,19 @@ class WOEventInfo extends \e10mnf\core\libs\WorkOrderInfo
       $rowClass = ($rowIdx % 2 === 0) ? 'e10-bg-t9' : '';
 
       $personNdx = $entry['dstPerson'];
-      $personInfo = [$entry['personName']];
+      $personInfo = $entry['personName'];
+
+      if (!$this->forPrint)
+      {
+        $personInfo[] = ['text' => '', 'title' => 'Přihláška', 'docAction' => 'edit', 'table' => 'e10pro.soci.entries', 'pk' => $entryNdx, 'class' => 'pull-right', 'icon' => 'tables/e10pro.soci.entries'];
+      }
+
+      if (!Utils::dateIsBlank($entry['datePeriodEnd']))
+        $personInfo[] = ['text' => 'Do: '.Utils::datef($entry['datePeriodEnd'], '%s'), 'class' => 'e10-me pull-right'];
+      if (!Utils::dateIsBlank($entry['datePeriodBegin']))
+        $personInfo[] = ['text' => 'Od: '.Utils::datef($entry['datePeriodBegin'], '%d'), 'class' => 'e10-me pull-right'];
+
+      $personInfo[] = ['text' => '', 'class' => 'block', 'css' => 'padding-bottom: .2rem;'];
 
       $props = [];
       if ($personNdx)
@@ -188,6 +204,7 @@ class WOEventInfo extends \e10mnf\core\libs\WorkOrderInfo
         $item['_options']['rowSpan']['person'] = count($entry['invoices']) + 1;
         $item['_options']['rowSpan']['num'] = count($entry['invoices']) + 1;
       }
+      $item['_options']['cellCss']['person'] = 'break-inside: avoid;';
 
       $item['_options']['class'] = $rowClass;
 
