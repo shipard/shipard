@@ -341,7 +341,7 @@ class TablePersons extends DbTable
 		return $addresses;
 	}
 
-	public function loadProperties ($pkeys, $disabledProperties = FALSE)
+	public function loadProperties ($pkeys, $disabledProperties = FALSE, $withoutGroups = FALSE)
 	{
 		if (is_array($pkeys))
 			$personsIds = implode (', ', $pkeys);
@@ -354,14 +354,17 @@ class TablePersons extends DbTable
 			return $properties;
 
 		/* groups */
-		$allGroups = $this->app()->cfgItem ('e10.persons.groups', FALSE);
-		$q = "SELECT * FROM [e10_persons_personsgroups] WHERE person IN ($personsIds)";
-		$groups = $this->db()->fetchAll ($q);
-		forEach ($groups as $g)
+		if (!$withoutGroups)
 		{
-			$thisGroup = Utils::searchArray ($allGroups, 'id', $g ['group']);
-			if ($thisGroup)
-				$properties [$g ['person']]['groups'][] = array ('text' => $thisGroup ['name'], 'class' => 'label label-default');
+			$allGroups = $this->app()->cfgItem ('e10.persons.groups', FALSE);
+			$q = "SELECT * FROM [e10_persons_personsgroups] WHERE person IN ($personsIds)";
+			$groups = $this->db()->fetchAll ($q);
+			forEach ($groups as $g)
+			{
+				$thisGroup = Utils::searchArray ($allGroups, 'id', $g ['group']);
+				if ($thisGroup)
+					$properties [$g ['person']]['groups'][] = array ('text' => $thisGroup ['name'], 'class' => 'label label-default');
+			}
 		}
 
 		/* properties */
