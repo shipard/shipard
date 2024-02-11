@@ -429,7 +429,7 @@
 					<td style='font-size: 200%; padding: 3pt;'>Uhrazeno v hotovosti - NEPLAŤTE!<td>
 					<td rowspan='2'>
 					{{#data.options.docReportsInvoicePaymentInfoSigns}}
-						{{#data.author.signature.rfn}}<img src='{{dsUrl}}{{data.author.signature.rfn}}' style='width: 4cm;'>{{/data.author.signature.rfn}}</td>
+						{{#data.author.signature.rfn}}<img src='{{dsUrl}}{{data.author.signature.rfn}}' style='{{#data.flags.invoicePaymentInfoSignatureCSS}}{{data.flags.invoicePaymentInfoSignatureCSS}}{{/data.flags.invoicePaymentInfoSignatureCSS}}{{^data.flags.invoicePaymentInfoSignatureCSS}}width: 4cm;{{/data.flags.invoicePaymentInfoSignatureCSS}}'>{{/data.author.signature.rfn}}</td>
 					{{/data.options.docReportsInvoicePaymentInfoSigns}}
 				</tr>
 				<tr>
@@ -447,7 +447,7 @@
 					<td style='font-size: 200%; padding: 3pt;'>Faktura je uhrazena - NEPLAŤTE!<td>
 					<td rowspan='{{data.balanceInfo.rowSpan}}'>
 					{{#data.options.docReportsInvoicePaymentInfoSigns}}
-						{{#data.author.signature.rfn}}<img src='{{dsUrl}}{{data.author.signature.rfn}}' style='width: 4cm;'>{{/data.author.signature.rfn}}</td>
+						{{#data.author.signature.rfn}}<img src='{{dsUrl}}{{data.author.signature.rfn}}' style='{{#data.flags.invoicePaymentInfoSignatureCSS}}{{data.flags.invoicePaymentInfoSignatureCSS}}{{/data.flags.invoicePaymentInfoSignatureCSS}}{{^data.flags.invoicePaymentInfoSignatureCSS}}width: 4cm;{{/data.flags.invoicePaymentInfoSignatureCSS}}'>{{/data.author.signature.rfn}}</td>
 					{{/data.options.docReportsInvoicePaymentInfoSigns}}
 				</tr>
 			{{#data.balanceInfo.payments}}

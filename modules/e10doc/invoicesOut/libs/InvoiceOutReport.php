@@ -35,6 +35,10 @@ class InvoiceOutReport extends \e10doc\core\libs\reports\DocReport
 
 		$this->loadBalanceInfo($this->recData);
 
+		$invoicePaymentInfoSignatureCSS = $this->app()->cfgItem('flags.e10doc.docReports.invoicePaymentInfoSignatureCSS', NULL);
+		if ($invoicePaymentInfoSignatureCSS !== NULL)
+			$this->data['flags']['invoicePaymentInfoSignatureCSS'] = $invoicePaymentInfoSignatureCSS;
+
 		$this->data ['spayd'] = $spayd;
 	}
 
