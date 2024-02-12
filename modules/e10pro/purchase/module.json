@@ -3,7 +3,7 @@
   "name": "Purchase",
 	"modules": [
 		"e10doc/purchase", "e10doc/cashRegister", "e10pro/reports/terminal_daily", "e10pro/reports/terminal_monthly",
-		"e10pro/reports/pricelist", "e10pro/reports/purchases", "e10pro/custreg"
+		"e10pro/reports/pricelist", "e10pro/reports/purchases", "e10pro/custreg", "e10doc/waster"
 	],
 	"extensions": ["persons", "purchase"],
   "config": [

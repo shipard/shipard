@@ -8,6 +8,8 @@ class FormInvoiceOut extends \E10Doc\Core\FormHeads
 {
 	public function renderForm ()
 	{
+		$wdm = $this->wasteDocMode();
+
 		$this->checkInfoPanelAttachments();
 		$taxPayer = $this->recData['taxPayer'];
 		$paymentMethod = $this->table->app()->cfgItem ('e10.docs.paymentMethods.' . $this->recData['paymentMethod'], 0);
@@ -89,6 +91,15 @@ class FormInvoiceOut extends \E10Doc\Core\FormHeads
 
 					$this->layoutClose ();
 
+					if ($wdm === 1)
+					{
+						$this->layoutOpen (self::ltForm);
+							$this->addSeparator(self::coH4);
+							$this->addColumnInput ('addToWasteReport', self::coRight);
+							$this->addSeparator(self::coH4);
+						$this->layoutClose ();
+					}
+
 					$this->addRecapitulation ();
 
 			$this->closeTab ();
@@ -116,6 +127,8 @@ class FormInvoiceOut extends \E10Doc\Core\FormHeads
 				$this->addColumnInput ("author");
 				$this->addColumnInput ("myBankAccount");
 				$this->addColumnInput ("owner");
+				if ($usePersonOffice)
+					$this->addColumnInput ('ownerOffice');
 				$this->addColumnInput ('automaticRound');
 				$rmRO = $this->recData['automaticRound'] ? self::coReadOnly : 0;
         $this->addColumnInput ('roundMethod', $rmRO);

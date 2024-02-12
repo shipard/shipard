@@ -66,8 +66,12 @@ class WasteCheckEngine extends Utility
 
   protected function createWasteReturn()
   {
-		if ($this->docRecData['docType'] !== 'purchase' && $this->docRecData['docType'] !== 'invno')
-			return;
+    $enabled = 0;
+    if ($this->docRecData['docType'] === 'purchase' || $this->docRecData['docType'] === 'invno' || $this->docRecData['docType'] === 'stockout')
+      $enabled = 1;
+
+    if (!$enabled)
+      return;
 
     $this->newWRErrors = NULL;
 

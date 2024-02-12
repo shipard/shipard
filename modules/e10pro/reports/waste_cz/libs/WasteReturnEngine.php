@@ -12,6 +12,7 @@ class WasteReturnEngine extends Utility
   var $year = 0;
   var $dateBegin;
   var $dateEnd;
+  var $wasteSettings = NULL;
 
   var $onlyCreateData = 0;
   var $wasteReturnRows = NULL;
@@ -40,18 +41,33 @@ class WasteReturnEngine extends Utility
         continue;
       $this->enabledCodesKinds[] = $ackNdx;
     }
+
+		$this->wasteSettings = $this->app()->cfgItem('e10doc.waster.settings.'.$this->year, NULL);
   }
 
   public function resetYear()
   {
     $this->db()->query('DELETE FROM [e10pro_reports_waste_cz_returnRows] WHERE [calendarYear] = %i', $this->year);
 
-    $this->addPurchases();
-    $this->addInvoicesOut();
+    $this->addAllDocuments();
   }
 
-  public function addDocuments($docType, $rowDir)
+  public function addAllDocuments()
   {
+    $this->addDocuments('purchase', self::rowDirIn);
+    $this->addDocuments('invno', self::rowDirOut);
+    $this->addDocuments('stockout', self::rowDirOut, 1);
+  }
+
+  public function addDocuments($docType, $rowDir, $requireAddToWasteReport = 0)
+  {
+		$wasteSettings = $this->app()->cfgItem('e10doc.waster.settings.'.$this->year, NULL);
+		if (!$wasteSettings)
+			return;
+
+		if (!isset($wasteSettings['docModes'][$docType]) || $wasteSettings['docModes'][$docType] === 0)
+			return;
+
 		$q = [];
 
     array_push ($q, 'SELECT ');
@@ -68,6 +84,9 @@ class WasteReturnEngine extends Utility
     array_push ($q, ' AND [rows].rowType = %i', 0);
     array_push ($q, ' AND [heads].docType = %s', $docType);
     array_push ($q, ' AND [heads].docState = %i', 4000);
+
+    if ($wasteSettings['docModes'][$docType] === 1)
+      array_push ($q, ' AND [heads].addToWasteReport = %i', 1);
 
     if ($this->documentNdx)
       array_push ($q, ' AND [rows].[document] = %i', $this->documentNdx);
@@ -161,16 +180,6 @@ class WasteReturnEngine extends Utility
     //echo "\n".$cnt." rows\n";
   }
 
-  public function addPurchases()
-  {
-    $this->addDocuments('purchase', self::rowDirIn);
-  }
-
-  public function addInvoicesOut()
-  {
-    $this->addDocuments('invno', self::rowDirOut);
-  }
-
 	protected function quantityKG ($quantity, $unit)
 	{
 		switch ($unit)
@@ -192,8 +201,7 @@ class WasteReturnEngine extends Utility
 
     $this->db()->query('DELETE FROM [e10pro_reports_waste_cz_returnRows] WHERE [document] = %i', $this->documentNdx);
 
-    $this->addPurchases();
-    $this->addInvoicesOut();
+    $this->addAllDocuments();
   }
 
   public function createDataForDocument($documentNdx)
@@ -207,8 +215,7 @@ class WasteReturnEngine extends Utility
     $this->documentNdx = $documentNdx;
     $this->tableHeads = $this->app->table ('e10doc.core.heads');
 
-    $this->addPurchases();
-    $this->addInvoicesOut();
+    $this->addAllDocuments();
   }
 
   public function run()

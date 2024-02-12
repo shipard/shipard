@@ -3,6 +3,9 @@
 namespace e10doc\stockOut\libs;
 
 
+/**
+ * class FormStockOut
+ */
 class FormStockOut extends \e10doc\core\FormHeads
 {
 	public function renderForm ()
@@ -10,6 +13,7 @@ class FormStockOut extends \e10doc\core\FormHeads
 		$this->setFlag ('maximize', 1);
 		$this->setFlag ('sidebarPos', self::SIDEBAR_POS_RIGHT);
 
+		$wdm = $this->wasteDocMode();
 		$whCfg = $this->app()->cfgItem('e10doc.warehouses.'.$this->recData['warehouse'], NULL);
 
 		$this->openForm (self::ltNone);
@@ -40,6 +44,11 @@ class FormStockOut extends \e10doc\core\FormHeads
 						if ($transportCfg && intval($transportCfg['askVehicleDriver'] ?? 0))
 							$this->addColumnInput ('transportPersonDriver');
 
+						if ($wdm === 1)
+						{
+							$this->addSeparator(self::coH3);
+							$this->addColumnInput ('addToWasteReport');
+						}
 						$this->addSeparator(self::coH4);
 					}
 				$this->addRecapitulation ();

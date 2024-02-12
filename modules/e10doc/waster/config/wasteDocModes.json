@@ -1,0 +1,14 @@
+{
+  "0": {
+    "fn": "Nejde do hlášení o odpadech",
+    "sc": "Ne"
+  },
+  "1": {
+    "fn": "Jde do hlášení volitelně",
+    "sc": "Volitelně"
+  },
+  "2": {
+    "fn": "Vždy jde do hlášení",
+    "sc": "Vždy"
+  }
+}
