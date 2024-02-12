@@ -1334,9 +1334,7 @@ class TableHeads extends DbTable
 			return;
 
 		$docType = $recData['docType'] ?? '';
-		if (!isset($wasteSettings['docModes'][$docType]) || $wasteSettings['docModes'][$docType] === 0)
-			return;
-		if ($wasteSettings['docModes'][$docType] === 1 && !($recData['addToWasteReport'] ?? 0))
+		if (!isset($wasteSettings['docModes'][$docType]))
 			return;
 
 		$wre = new \e10pro\reports\waste_cz\libs\WasteReturnEngine($this->app);
