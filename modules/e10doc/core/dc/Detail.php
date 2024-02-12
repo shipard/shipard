@@ -472,7 +472,12 @@ class Detail extends \e10\DocumentCard
 		if ($this->app()->model()->table ('e10pro.reports.waste_cz.returnRows') === FALSE)
 			return;
 
-		if ($recData['docType'] !== 'purchase' && $recData['docType'] !== 'invno')
+		$enabled = 0;
+
+		if ($recData['docType'] === 'purchase' || $recData['docType'] === 'invno' || $recData['docType'] === 'stockout')
+			$enabled = 1;
+
+		if (!$enabled)
 			return;
 
 		$wce = new \e10pro\reports\waste_cz\libs\WasteCheckEngine($this->app);

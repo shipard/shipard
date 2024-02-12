@@ -82,6 +82,8 @@
     {"id": "correctiveDoc", "name": "Opravný doklad", "type": "logical"},
     {"id": "collectingDoc", "name": "Sběrný doklad", "type": "logical", "options": ["saveOnChange"]},
 
+    {"id": "addToWasteReport", "name": "Zařadit do Hlášení o odpadech", "type": "logical"},
+
     {"id": "dateIssue", "name": "Datum vystavení", "type": "date"},
     {"id": "dateDue", "name": "Datum splatnosti", "type": "date"},
     {"id": "dateAccounting", "name": "Účetní datum", "type": "date"},

@@ -1328,17 +1328,19 @@ class TableHeads extends DbTable
 
 	public function doWaste (&$recData)
 	{
-		$enabled = 0;
-		if ($recData['docType'] === 'purchase' || $recData['docType'] === 'invno')
-			$enabled = 1;
-		if ($recData['docType'] === 'stockout' && $recData['addToWasteReport'])
-			$enabled = 1;
+		$cy = intval(Utils::createDateTime($recData['dateAccounting'] ?? NULL)->format('Y'));
+		$wasteSettings = $this->app()->cfgItem('e10doc.waster.settings.'.$cy, NULL);
+		if (!$wasteSettings)
+			return;
 
-		if (!$enabled)
+		$docType = $recData['docType'] ?? '';
+		if (!isset($wasteSettings['docModes'][$docType]) || $wasteSettings['docModes'][$docType] === 0)
+			return;
+		if ($wasteSettings['docModes'][$docType] === 1 && !($recData['addToWasteReport'] ?? 0))
 			return;
 
 		$wre = new \e10pro\reports\waste_cz\libs\WasteReturnEngine($this->app);
-		$wre->year = intval(Utils::createDateTime($recData['dateAccounting'])->format('Y'));
+		$wre->year = $cy;
 		$wre->resetDocument($recData['ndx']);
 	}
 
@@ -4240,6 +4242,24 @@ class FormHeads extends TableForm
 			}
 		}
 		return parent::validNewDocumentState($newDocState, $saveData);
+	}
+
+	protected function wasteSettings()
+	{
+		$cy = intval(Utils::createDateTime($this->recData['dateAccounting'] ?? NULL)->format('Y'));
+		$wasteSettings = $this->app()->cfgItem('e10doc.waster.settings.'.$cy, NULL);
+		return $wasteSettings;
+	}
+
+	protected function wasteDocMode()
+	{
+		$cy = intval(Utils::createDateTime($this->recData['dateAccounting'] ?? NULL)->format('Y'));
+		$wasteSettings = $this->app()->cfgItem('e10doc.waster.settings.'.$cy, NULL);
+		$docType = $this->recData['docType'] ?? '';
+		if (!isset($wasteSettings['docModes'][$docType]) || !$wasteSettings['docModes'][$docType])
+			return 0;
+
+		return $wasteSettings['docModes'][$docType];
 	}
 } // class FormHeads
 
