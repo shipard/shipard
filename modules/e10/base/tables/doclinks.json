@@ -13,6 +13,7 @@
 	"options": ["systemTable"],
 	"indexes": [
 		{"id": "s1", "columns": ["srcTableId", "srcRecId"]},
-		{"id": "s2", "columns": ["dstTableId", "dstRecId", "linkId"]}
+		{"id": "s2", "columns": ["dstTableId", "dstRecId", "linkId"]},
+    {"id": "s3", "columns": ["linkId", "dstTableId", "srcRecId"]}
 	]
 }

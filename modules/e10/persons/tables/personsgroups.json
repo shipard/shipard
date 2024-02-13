@@ -8,6 +8,7 @@
   ],
 	"options": ["systemTable"],
 	"indexes": [
-		{"id": "s1", "columns": ["group", "person"]}
+		{"id": "s1", "columns": ["group", "person"]},
+    {"id": "s2", "columns": ["person"]}
 	]
 }

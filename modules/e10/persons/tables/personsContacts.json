@@ -73,5 +73,8 @@
 		{"id": "default", "class": "e10.persons.FormPersonContact"}
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
-	"autocomplete": {"columnValue": "ndx", "columnTitle": "adrCity"}
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "adrCity"},
+	"indexes": [
+		{"id": "s1", "columns": ["person"]}
+	]
 }
