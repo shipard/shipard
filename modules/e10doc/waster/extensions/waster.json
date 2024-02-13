@@ -9,6 +9,12 @@
 				}
 			}
 		},
+		"reports": [
+			{
+				"id": "wastelp", "name": "Odpadový protokol", "class": "e10doc.waster.libs.ReportWasteLP",
+				"queryCol": "docType", "queryColValues": ["wastelp"], "email": 1
+			}
+		],
     "forms": [
       {"id": "wastelp", "class": "e10doc.waster.libs.FormWasteLPDoc"}
     ]

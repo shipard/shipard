@@ -1,0 +1,410 @@
+{
+  "Dodací list": {
+    "de": "Lieferschein",
+    "en": "Delivery note",
+    "it": "Nota di consegna",
+    "sk": "Dodací list"
+  },
+  "číslo": {
+    "de": "nr.",
+    "en": "no.",
+    "it": "num.",
+    "sk": "číslo"
+  },
+  "Dodavatel": {
+    "de": "Lieferant",
+    "en": "Supplier",
+    "it": "Imprenditore",
+    "sk": "Dodávateľ"
+  },
+  "Odběratel": {
+    "de": "Kunde",
+    "en": "Customer",
+    "it": "Abbonato",
+    "sk": "Odberateľ"
+  },
+  "IČ": {
+    "de": "Steuer-Nr",
+    "en": "Reg. No.",
+    "it": "N.id.org.",
+    "sk": "IČO"
+  },
+  "DIČ": {
+    "de": "USt-IdNr.",
+    "en": "VAT No.",
+    "it": "P.IVA",
+    "sk": "DIČ"
+  },
+  "Banka": {
+    "de": "Bank",
+    "en": "Bank",
+    "it": "Banca",
+    "sk": "Banka"
+  },
+  "Bankovní spojení": {
+    "de": "Konto Nr.",
+    "en": "Account No.",
+    "it": "Conto bancario",
+    "sk": "Bankové spojenie"
+  },
+  "Způsob úhrady": {
+    "de": "Zahlungsart",
+    "en": "Payment Method",
+    "it": "Metodo di pagamento",
+    "sk": "Spôsob úhrady"
+  },
+  "Variabilní symbol": {
+    "de": "Zahlungsreferenz",
+    "en": "Payment ID",
+    "it": "Simbolo variabile",
+    "sk": "Variabilný symbol"
+  },
+  "Specifický symbol": {
+    "de": "Referenz Nr.",
+    "en": "Reference ID",
+    "it": "",
+    "sk": "Špecifický symbol"
+  },
+  "Datum vystavení": {
+    "de": "Ausstellungsdatum",
+    "en": "Date of issue",
+    "it": "Data di emissione",
+    "sk": "Dátum vystavenia"
+  },
+  "Datum u.zd.plnění": {
+    "de": "Datum der steuerbaren Leistung",
+    "en": "Delivery date",
+    "it": "Data di prestazioni",
+    "sk": "Dátum plnenia"
+  },
+  "Datum splatnosti": {
+    "de": "Fälligkeitsdatum",
+    "en": "Payment date",
+    "it": "Data di scadenza",
+    "sk": "Dátum splatnosti"
+  },
+  "Účetní datum": {
+    "de": "Abrechnungsdatum",
+    "en": "Accounting date",
+    "it": "Data di contabile",
+    "sk": "Účtovný dátum"
+  },
+  "Telefon": {
+    "de": "Telefon",
+    "en": "Phone",
+    "it": "Numero di telefono",
+    "sk": "Telefón"
+  },
+  "Položka": {
+    "de": "Artikel",
+    "en": "Item",
+    "it": "Descrizione della voce",
+    "sk": "Položka"
+  },
+  "Množství": {
+    "de": "Menge",
+    "en": "Quantity",
+    "it": "Quantitá",
+    "sk": "Množstvo"
+  },
+  "Jed.": {
+    "de": "Einheit",
+    "en": "Unit",
+    "it": "UM",
+    "sk": "Jed."
+  },
+  "Cena/jed.": {
+    "de": "Einzelpreis",
+    "en": "Unit Price",
+    "it": "Prezzo per UM",
+    "sk": "Jed. cena"
+  },
+  "Cena celkem": {
+    "de": "Gesamtpreis",
+    "en": "Total Price",
+    "it": "Totale",
+    "sk": "Celkom"
+  },
+  "Celkem k úhradě": {
+    "de": "Rechnungsbetrag",
+    "en": "Total to be paid",
+    "it": "Da pagare",
+    "sk": "Suma na úhradu"
+  },
+  "Vystavil": {
+    "de": "Ausgestellt von",
+    "en": "Issued by",
+    "it": "Responsabile",
+    "sk": "Vystavil"
+  },
+  "Převodním příkazem": {
+    "de": "Zahlungsauftrag",
+    "en": "Bank transfer",
+    "it": "Bonifico",
+    "sk": "Prevodný príkaz"
+  },
+  "Hotově": {
+    "de": "In bar",
+    "en": "Cash",
+    "it": "Contanti",
+    "sk": "V hotovosti"
+  },
+  "Pokladním lístkem": {
+    "de": "Kassenbeleg auschecken",
+    "en": "Checkout receipt",
+    "it": "Ricevuta di pagamento",
+    "sk": "Pokladničným lístkom"
+  },
+  "Platební brána": {
+    "de": "Payment Gateway",
+    "en": "Payment Gateway",
+    "it": "Payment Gateway",
+    "sk": "Platobná brána"
+  },
+  "Základ": {
+    "de": "Basis",
+    "en": "Tax Base",
+    "it": "Base fiscale",
+    "sk": "Základ"
+  },
+  "Daň": {
+    "de": "MWSt.",
+    "en": "Tax",
+    "it": "Imposta",
+    "sk": "Daň"
+  },
+  "Celkem": {
+    "de": "Gesamt",
+    "en": "Total",
+    "it": "Totale",
+    "sk": "Celkom"
+  },
+  "DPH": {
+    "de": "MWSt.",
+    "en": "VAT",
+    "it": "IVA",
+    "sk": "DPH"
+  },
+  "Zaokrouhlení": {
+    "de": "Abrundung",
+    "en": "Rounding",
+    "it": "Arrotondamento",
+    "sk": "Zaokrúhlenie"
+  },
+  "Datumy a platební údaje": {
+    "de": "Zahlungsbedingungen",
+    "en": "Payment conditions",
+    "it": "Condizioni di pagamento",
+    "sk": "Dátumy a platobné údaje"
+  },
+  "Účtované období": {
+    "de": "Rechnungszeitraum",
+    "en": "Period",
+    "it": "Stagione",
+    "sk": "Účtované obdobie"
+  },
+  "Sazba": {
+    "de": "Satz",
+    "en": "Rate",
+    "it": "Tasso",
+    "sk": "Sadzba"
+  },
+  "Základní": {
+    "de": "Grundsteuer",
+    "en": "Basic tax",
+    "it": "Primario",
+    "sk": "Základná"
+  },
+  "Snížená": {
+    "de": "Ermäßigte Steuer",
+    "en": "Reduced tax",
+    "it": "Ridotta",
+    "sk": "Znížená"
+  },
+  "První snížená": {
+    "de": "Ermäßigte Steuer",
+    "en": "Reduced tax",
+    "it": "Ridotta",
+    "sk": "Prvá znížená"
+  },
+  "Druhá snížená": {
+    "de": "Ermäßigte Steuer",
+    "en": "Reduced tax",
+    "it": "Ridotta",
+    "sk": "Druhá znížená"
+  },
+  "Osvobozeno": {
+    "de": "Steuerbefreit",
+    "en": "Tax-exempt",
+    "it": "Esente",
+    "sk": "Oslobodené"
+  },
+  "Bez daně": {
+    "de": "Steuerfrei",
+    "en": "Free of tax",
+    "it": "Senza tasse",
+    "sk": "Bez dane"
+  },
+  "EU/Služby": {
+    "de": "EU/Dienstleistungen",
+    "en": "EU/Services",
+    "it": "EU/Servizio",
+    "sk": "EU/Služby"
+  },
+  "EU/Zboží": {
+    "de": "EU/Ware",
+    "en": "EU/Wares",
+    "it": "EU/Merce",
+    "sk": "EU/Tovar"
+  },
+  "ks": {
+    "de": "stk",
+    "en": "pcs",
+    "it": "pezzo",
+    "sk": "ks"
+  },
+  "rok": {
+    "de": "jahr",
+    "en": "year",
+    "it": "anno",
+    "sk": "rok"
+  },
+  "měs": {
+    "de": "monat",
+    "en": "month",
+    "it": "mese",
+    "sk": "mes"
+  },
+  "den": {
+    "de": "tag",
+    "en": "day",
+    "it": "giorno",
+    "sk": "deň"
+  },
+  "NS": {
+    "de": "NS",
+    "en": "SP",
+    "it": "PdS",
+    "sk": "NS"
+  },
+  "slovo": {
+    "de": "wort",
+    "en": "word",
+    "it": "parola",
+    "sk": "slovo"
+  },
+  "až": {
+    "de": "bis",
+    "en": "to",
+    "it": "quando",
+    "sk": "až"
+  },
+  "Daň odvede zákazník": {
+    "de": "Steuerschuldnerschaft des Leistungsempfängers",
+    "en": "Reverse charge",
+    "it": "Cliente prelievo fiscale",
+    "sk": "Dodanie podlieha preneseniu daňovej povinnosti"
+  },
+  "QR platba": {
+    "de": "QR-Code",
+    "en": "QR code",
+    "it": "Codice QR",
+    "sk": "QR kód"
+  },
+  "Vystaveno v aplikaci": {
+    "de": "Gedrückt mit",
+    "en": "Printed in",
+    "it": "Stampato da",
+    "sk": "Vystavené v aplikácii"
+  },
+  "Zákazník": {
+    "de": "Klient",
+    "en": "Customer",
+    "it": "Cliente",
+    "sk": "Zákazník"
+  },
+  "Strana": {
+    "de": "Seite",
+    "en": "Page",
+    "it": "Pagina",
+    "sk": "Strana"
+  },
+  "z": {
+    "de": "von",
+    "en": "of",
+    "it": "di",
+    "sk": "z"
+  },
+  "Dobrý den": {
+    "de": "Hallo",
+    "en": "Greetings",
+    "it": "Buongiorno",
+    "sk": "Dobrý deň"
+  },
+  "v příloze Vám zasíláme dodací list": {
+    "de": "Anbei senden wir Ihnen den Lieferschein",
+    "en": "in attachments below you will find your delivery note",
+    "it": "in allegato vi inviamo la nota di consegna",
+    "sk": "v prílohe Vám zasielame dodací list"
+  },
+  "S pozdravem": {
+    "de": "Mit freundlichen Grüßen",
+    "en": "Best wishes",
+    "it": "Cordiali saluti",
+    "sk": "S pozdravom"
+  },
+  "Provozovna odběratele": {
+    "de": "Niederlassung des Kunden",
+    "en": "Customer's establishment",
+    "it": "Ramo del cliente",
+    "sk": "Prevádzkareň zákazníka"
+  },
+  "vydejka": {
+    "de": "aktienfreigabemitteilung",
+    "en": "stock-release-note",
+    "it": "nota-di-rilascio",
+    "sk": "vydajka"
+  },
+  "dodaci-list": {
+    "de": "lieferschein",
+    "en": "delivery-note",
+    "it": "nota-di-consegna",
+    "sk": "dodaci-list"
+  },
+  "Provozovna dodavatele": {
+    "de": "Niederlassung des Lieferanten",
+    "en": "Supplier's establishment",
+    "it": "Ramo del fornitore",
+    "sk": "Prevádzkareň dodávateľa"
+  },
+  "Doprava": {
+    "de": "Transportieren",
+    "en": "Transport",
+    "it": "Trasporto",
+    "sk": "Doprava"
+  },
+  "Jméno řidiče": {
+    "de": "Name des Fahrers",
+    "en": "Name of driver",
+    "it": "Nome del conducente",
+    "sk": "Meno vodiča"
+  },
+  "RZ vozidla": {
+    "de": "Kraftfahrzeugkennzeichen",
+    "en": "Vehicle registration plate",
+    "it": "Targa d'immatricolazione",
+    "sk": "Evidenčné číslo vozidla"
+  },
+  "Celková hmotnost včetně vozidla": {
+    "de": "Gesamtgewicht einschließlich Fahrzeug",
+    "en": "Total weight including vehicle",
+    "it": "Peso totale incluso il veicolo",
+    "sk": "Celková hmotnosť vrátane vozidla"
+  },
+  "Celková hmotnost nákladu": {
+    "de": "Gesamtfrachtgewicht",
+    "en": "Total cargo weight",
+    "it": "Peso totale del carico",
+    "sk": "Celková hmotnosť nákladu"
+  }
+}
