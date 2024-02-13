@@ -56,16 +56,17 @@ class WasteReturnEngine extends Utility
   {
     $this->addDocuments('purchase', self::rowDirIn);
     $this->addDocuments('invno', self::rowDirOut);
-    $this->addDocuments('stockout', self::rowDirOut, 1);
+    $this->addDocuments('stockout', self::rowDirOut);
+    $this->addDocuments('wastelp', self::rowDirOut);
   }
 
-  public function addDocuments($docType, $rowDir, $requireAddToWasteReport = 0)
+  public function addDocuments($docType, $rowDir)
   {
 		$wasteSettings = $this->app()->cfgItem('e10doc.waster.settings.'.$this->year, NULL);
 		if (!$wasteSettings)
 			return;
 
-		if (!isset($wasteSettings['docModes'][$docType]) || $wasteSettings['docModes'][$docType] === 0)
+    if (!isset($wasteSettings['docModes'][$docType]) || $wasteSettings['docModes'][$docType] === 0)
 			return;
 
 		$q = [];

@@ -48,6 +48,7 @@ class TableWasteSettings extends DbTable
           'invno' => intval($r['docModeInvoiceOut']),
           'stockout' => intval($r['docModeStockOut']),
           'purchase' => intval($r['docModePurchase']),
+          'wastelp' => 2,
         ]
       ];
 			$list [$r['calendarYear']] = $wsi;

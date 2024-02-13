@@ -1,0 +1,9 @@
+{
+	"panels": {
+		"buy": {
+			"items": {
+          "wastelps": {"t1": "Odpadové protokoly", "object": "viewer", "table": "e10doc.core.heads", "viewer": "wastelps", "icon": "system/actionRecycle", "order": 700000}
+			}
+  	}
+	}
+}

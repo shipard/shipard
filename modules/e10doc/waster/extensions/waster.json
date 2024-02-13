@@ -1,0 +1,22 @@
+[
+  {
+    "table": "e10doc.core.heads",
+    "views": {
+      "wastelps": {
+				"id": "wastelps", "class": "e10doc.waster.libs.ViewWasteLPDocs",
+				"details": {
+					"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.waster.libs.ViewDetailWasteLPDoc", "order": 1000}
+				}
+			}
+		},
+    "forms": [
+      {"id": "wastelp", "class": "e10doc.waster.libs.FormWasteLPDoc"}
+    ]
+	},
+  {
+    "table": "e10doc.core.rows",
+    "forms": [
+      {"id": "wastelp", "class": "e10doc.waster.libs.FormWasteLPDocRow"}
+    ]
+  }
+]

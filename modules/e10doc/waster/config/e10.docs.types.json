@@ -1,0 +1,9 @@
+{
+	"wastelp": {
+		"fullName": "Odpadový protokol", "shortName": "Odpadový protokol", "pluralName": "Odpadové protokoly",
+		"shortcut": "ODP", "docIdCode": "81", "icon": "system/actionRecycle",
+		"classId": "wastelp", "docDir": 2, "taxDir": 0, "docNumbers": 1,
+		"tradeDir": 1, "useTax": 0, "timeline": "out", "timelineSum": "other",
+		"docNumber": "%D%y%C%4"
+	}
+}

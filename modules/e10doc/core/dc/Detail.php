@@ -472,12 +472,13 @@ class Detail extends \e10\DocumentCard
 		if ($this->app()->model()->table ('e10pro.reports.waste_cz.returnRows') === FALSE)
 			return;
 
-		$enabled = 0;
+		$cy = intval(Utils::createDateTime($this->recData['dateAccounting'] ?? NULL)->format('Y'));
+		$wasteSettings = $this->app()->cfgItem('e10doc.waster.settings.'.$cy, NULL);
+		if (!$wasteSettings)
+			return;
 
-		if ($recData['docType'] === 'purchase' || $recData['docType'] === 'invno' || $recData['docType'] === 'stockout')
-			$enabled = 1;
-
-		if (!$enabled)
+		$docType = $this->recData['docType'] ?? '';
+		if (!isset($wasteSettings['docModes'][$docType]))
 			return;
 
 		$wce = new \e10pro\reports\waste_cz\libs\WasteCheckEngine($this->app);

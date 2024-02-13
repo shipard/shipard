@@ -66,17 +66,19 @@ class WasteCheckEngine extends Utility
 
   protected function createWasteReturn()
   {
-    $enabled = 0;
-    if ($this->docRecData['docType'] === 'purchase' || $this->docRecData['docType'] === 'invno' || $this->docRecData['docType'] === 'stockout')
-      $enabled = 1;
+		$cy = intval(Utils::createDateTime($this->docRecData['dateAccounting'] ?? NULL)->format('Y'));
+		$wasteSettings = $this->app()->cfgItem('e10doc.waster.settings.'.$cy, NULL);
+		if (!$wasteSettings)
+			return;
 
-    if (!$enabled)
-      return;
+		$docType = $this->docRecData['docType'] ?? '';
+		if (!isset($wasteSettings['docModes'][$docType]))
+			return;
 
     $this->newWRErrors = NULL;
 
 		$wre = new \e10pro\reports\waste_cz\libs\WasteReturnEngine($this->app);
-		$wre->year = intval(Utils::createDateTime($this->docRecData['dateAccounting'])->format('Y'));
+		$wre->year = $cy;
 		$wre->createDataForDocument($this->docRecData['ndx']);
     $this->newWRData = $wre->wasteReturnRows;
     if ($wre->wasteReturnErrorLabels && count($wre->wasteReturnErrorLabels))
@@ -112,20 +114,23 @@ class WasteCheckEngine extends Utility
       $this->checkWRTable[] = $item;
     }
 
-    foreach ($this->newWRData as $wrRow)
+    if ($this->newWRData)
     {
-      if (isset($wrRow['isUsed']))
-        continue;
+      foreach ($this->newWRData as $wrRow)
+      {
+        if (isset($wrRow['isUsed']))
+          continue;
 
-      $item = [
-        'wc' => $wrRow['wasteCodeText'],
-        'quantity' => $wrRow['quantityKG'],
-      ];
+        $item = [
+          'wc' => $wrRow['wasteCodeText'],
+          'quantity' => $wrRow['quantityKG'],
+        ];
 
-      $item['note'] = 'CHYBÍ v hlášení';
-      $item['_options']['class'] = 'e10-warning2';
-      $this->checkWRTable[] = $item;
-      $this->checkOk = 0;
+        $item['note'] = 'CHYBÍ v hlášení';
+        $item['_options']['class'] = 'e10-warning2';
+        $this->checkWRTable[] = $item;
+        $this->checkOk = 0;
+      }
     }
 
     if ($this->newWRErrors)
@@ -151,6 +156,9 @@ class WasteCheckEngine extends Utility
 
   protected function searchNewWRRow($wrRow)
   {
+    if (!$this->newWRData)
+      return NULL;
+
     foreach ($this->newWRData as &$newWRRow)
     {
       if ($newWRRow['wasteCodeNomenc'] !== $wrRow['wasteCodeNomenc'])
