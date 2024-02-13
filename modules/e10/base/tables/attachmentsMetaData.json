@@ -14,5 +14,6 @@
 	],
 	"options": ["systemTable"],
 	"indexes": [
+		{"id": "s1", "columns": ["attachment"]}
 	]
 }

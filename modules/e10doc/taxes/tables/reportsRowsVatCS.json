@@ -30,5 +30,8 @@
 		{"id": "docId", "name": "Ev. číslo dokladu", "type": "string", "len": 40}
 	],
 	"options": ["systemTable"],
+	"indexes": [
+		{"id": "s1", "columns": ["document"]}
+	],
 	"ndx": 1108
 }
