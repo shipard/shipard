@@ -301,13 +301,15 @@ class Detail extends \e10\DocumentCard
 		/** @var \wkf\core\TableIssues $tableIssues */
 		$tableIssues = $this->app()->table ('wkf.core.issues');
 
-		$rows = $this->db()->query (
-			'SELECT * FROM [wkf_core_issues] WHERE (tableNdx = %i', 1078, ' AND recNdx = %i', $this->recData['ndx'], ') ',
-			' OR ',
-			'EXISTS (SELECT ndx FROM [e10_base_doclinks] AS l WHERE linkId = %s', 'e10docs-inbox', ' AND srcTableId = %s', 'e10doc.core.heads',
-			' AND srcRecId = %i', $this->recData['ndx'], ' AND l.dstRecId = wkf_core_issues.ndx)',
-			' ORDER BY dateCreate DESC, ndx DESC'
-		);
+		$q = [];
+		array_push($q, '(SELECT * FROM [wkf_core_issues]');
+		array_push($q, ' WHERE (tableNdx = %i', 1078, ' AND recNdx = %i', $this->recData['ndx'], '))');
+		array_push($q, ' UNION ');
+		array_push($q, '(SELECT * FROM [wkf_core_issues]');
+		array_push($q, ' WHERE EXISTS (SELECT ndx FROM [e10_base_doclinks] AS l WHERE linkId = %s', 'e10docs-inbox', ' AND srcTableId = %s', 'e10doc.core.heads',
+										' AND srcRecId = %i', $this->recData['ndx'], ' AND l.dstRecId = wkf_core_issues.ndx))');
+		array_push($q, ' ORDER BY dateCreate DESC, ndx DESC');
+		$rows = $this->db()->query ($q);
 
 		foreach ($rows as $r)
 		{
