@@ -29,6 +29,9 @@ class AppLog extends \Shipard\Base\BaseObject
 
 		$e = $this->newEvent();
 		$e['subsystem'] = self::ssTask;
+		$e['cntSqlCmds'] = 0;
+		$e['maxSqlCmdLen'] = 0;
+
 		$this->events[] = $e;
 	}
 
@@ -71,11 +74,11 @@ class AppLog extends \Shipard\Base\BaseObject
 		$e['cmd'] = $cmd;
 		$e['timeLen'] = $timeLen;
 		$e['subsystem'] = self::ssSql;
+		$this->events[] = $e;
 
 		if ($timeLen > $this->events[0]['maxSqlCmdLen'])
 			$this->events[0]['maxSqlCmdLen'] = $timeLen;
 
-		$this->events[] = $e;
 		$this->events[0]['cntSqlCmds']++;
 	}
 
