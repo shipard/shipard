@@ -1730,7 +1730,7 @@ class TableForm
 
 			if ($this->lockState === FALSE)
 			{
-				if (isset($docState['state']))
+				if (isset($docState['state']) && isset($docState ['state']['goto']))
 				{
 					forEach ($docState ['state']['goto'] as $gotoStateId)
 					{
@@ -1840,6 +1840,8 @@ class TableForm
 				$btnsCode [$side] .= "<span style='padding-left: 1em; vertical-align: middle;display: inline-block;'>$icon<h4 style='display: inline-block; position: relative; padding-left: 1ex;'>$t1<br/><small>$t2</small></h4></span>";
 				continue;
 			}
+			if (isset ($btn['noclose']))
+				$params .= " data-noclose='1'";
 
 			switch ($btn['style'])
 			{

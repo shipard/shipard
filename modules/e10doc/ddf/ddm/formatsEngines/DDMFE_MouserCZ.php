@@ -15,6 +15,7 @@ class DDMFE_MouserCZ extends \e10doc\ddf\ddm\formatsEngines\CoreFE
   {
     $coreHeadData['head']['vat'] = 1;
     $coreHeadData['head']['taxType'] = 1;
+    $coreHeadData['head']['documentId'] = $coreHeadData['head']['symbol1'];
     $this->importRows();
   }
 

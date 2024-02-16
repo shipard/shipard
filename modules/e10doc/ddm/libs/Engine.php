@@ -189,6 +189,12 @@ class Engine extends Utility
 			unset($this->docHeadSrcItems['document-id']);
 		}
 
+		if (isset($this->docHeadSrcItems['taxType']))
+		{
+			$this->docHeadSrcItems['taxType'] = intval($this->docHeadSrcItems['taxType']);
+			unset($this->docHeadSrcItems['taxType']);
+		}
+
 		$this->docHeadSrcItems['person']['country'] = 'cz';
 		if (isset($this->docHeadSrcItems['head-company-id']))
 		{

@@ -12,6 +12,11 @@ use Shipard\Base\Utility;
  *
  * <[wo.number:(+10);(*2)]>
  * <[wo.number:(+`wo.anotherNumber`)]>
+ *
+ *
+ * <[docHead.dateBegin:dateFormat;Y-m-d]>
+ * <[wo.text:substr;1-9]>
+ * <[wo.text:between;textBegin;textEnd]>
  */
 
 
@@ -44,6 +49,7 @@ class Variables extends Utility
   protected function resolveVariable($varId)
   {
     $format = '';
+    $formatParams = [];
     $coreId = substr ($varId, 2, -2);
     $varId = strchr($coreId, ':', TRUE);
     if ($varId === FALSE)
@@ -52,12 +58,40 @@ class Variables extends Utility
     }
     else
     {
-      $format = substr($coreId, strlen($varId) + 1);
+      $formatStr = substr($coreId, strlen($varId) + 1);
+      $formatParams = explode(';', $formatStr);
     }
 
     $value = $this->getItem($varId);
     if ($value === NULL)
       return 'NULL';
+
+    if (count($formatParams) > 1)
+    {
+      $result = $value;
+      while (count($formatParams))
+      {
+        $cmd = array_shift($formatParams);
+        if ($cmd === 'dateFormat')
+        {
+          $dateFormat = array_shift($formatParams);
+          if (Utils::dateIsValid($result))
+          {
+            $d = Utils::createDateTime($result);
+            $result = $d->format($dateFormat);
+          }
+        }
+        elseif ($cmd === 'between')
+        {
+          $startStr = array_shift($formatParams);
+          $endStr = array_shift($formatParams);
+          $result = trim($this->getStrBetween($result, $startStr, $endStr));
+        }
+      }
+      return $result;
+    }
+
+    $format = array_pop($formatParams);
 
     if ($value instanceof \DateTimeInterface)
     {
@@ -96,4 +130,23 @@ class Variables extends Utility
 
 		return $value;
 	}
+
+  function getStrBetween ($string, $start, $end = '')
+  {
+    if (strpos($string, $start) !== FALSE)
+    {
+      $startCharCount = strpos($string, $start) + strlen($start);
+      $firstSubStr = substr($string, $startCharCount, strlen($string));
+      $endCharCount = strpos($firstSubStr, $end);
+      if ($endCharCount == 0)
+      {
+          $endCharCount = strlen($firstSubStr);
+      }
+      return substr($firstSubStr, 0, $endCharCount);
+    }
+    else
+    {
+      return '';
+    }
+  }
 }

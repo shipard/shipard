@@ -70,10 +70,26 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 
 		$c = [];
 
+		// -- preview
+		$ci = [
+			'name' => 'Náhled',
+			'icon' => 'system/iconPreview',
+			'content' => ['type' => 'text', 'subtype' => 'rawhtml', 'text' => $this->previewCode()]
+		];
+		$c[] = $ci;
+
+		// -- PDF
+		$ci = [
+			'name' => 'PDF',
+			'icon' => 'system/iconFilePdf',
+			'content' => $this->previewAtt(),
+		];
+		$c[] = $ci;
+
 		// -- xml
 		$ci = [
-			'name' => 'XML',
-			'icon' => 'icon-file-code-o',
+			'name' => 'ISDOC',
+			'icon' => 'user/fileText',
 			'content' => ['type' => 'text', 'subtype' => 'code', 'text' => $this->ddfRecData['srcData']]
 		];
 		$c[] = $ci;
@@ -81,19 +97,18 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 		// -- simplifiedData
 		$ci = [
 			'name' => 'JSON',
-			'icon' => 'icon-file-code-o',
+			'icon' => 'user/fileText',
 			'content' => ['type' => 'text', 'subtype' => 'code', 'text' => json::lint($this->srcImpData)]
 		];
 		$c[] = $ci;
 
 		// -- impData
 		$ci = [
-			'name' => 'IMP',
-			'icon' => 'icon-file-code-o',
+			'name' => 'Shipard',
+			'icon' => 'user/fileText',
 			'content' => ['type' => 'text', 'subtype' => 'code', 'text' => json::lint($this->impData)]
 		];
 		$c[] = $ci;
-
 
 		return $c;
 	}
@@ -291,7 +306,10 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 		$this->searchItem($itemInfo, $il, $row);
 		$this->checkItem($il, $row);
 
+		$row['!itemInfo'] = $itemInfo;
+
 		$this->applyRowSettings($row);
+		$this->applyDocsImportSettings($row);
 
 		if (count($row))
 			$this->docRows[] = $row;
@@ -299,9 +317,16 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 
 	function checkPersons()
 	{
+		if (isset($this->srcImpData['AccountingSupplierParty']['Party']['PartyName']['Name']))
+			$this->importProtocol['person']['src']['fullName'] = $this->srcImpData['AccountingSupplierParty']['Party']['PartyName']['Name'];
 		if (isset($this->srcImpData['AccountingSupplierParty']['Party']['PartyIdentification']['ID']))
 		{
 			$oid = $this->srcImpData['AccountingSupplierParty']['Party']['PartyIdentification']['ID'];
+
+			$this->importProtocol['person']['src']['oid'] = $oid;
+			if (isset($this->srcImpData['AccountingSupplierParty']['Party']['PartyTaxScheme']['CompanyID']))
+				$this->importProtocol['person']['src']['vatId'] = $this->srcImpData['AccountingSupplierParty']['Party']['PartyTaxScheme']['CompanyID'];
+
 			$personNdx = $this->searchPerson('ids', 'oid', $oid);
 			if ($personNdx)
 			{

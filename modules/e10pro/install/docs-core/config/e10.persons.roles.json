@@ -4,7 +4,8 @@
 		"viewers": {
 			"e10doc.taxes.reports": {"default": 2},
 			"e10doc.taxes.filings": {"default": 2},
-			"e10doc.helpers.rowsSettings": {"default": 2}
+			"e10doc.helpers.rowsSettings": {"default": 2},
+			"e10doc.helpers.impDocsSettings": {"default": 2}
 		},
 		"reports": {
 			"e10doc.taxes.VatCS.VatCSReportAll": 2,
@@ -33,6 +34,7 @@
 			"e10doc.base.additions": {"default": 2},
 			"e10doc.base.reportsTexts": {"default": 2},
 			"e10doc.helpers.rowsSettings": {"default": 2},
+			"e10doc.helpers.impDocsSettings": {"default": 2},
 			"e10doc.helpers.wkfSectionsRelations": {"default": 2},
 			"e10doc.base.docRowsVDSCfg": {"default": 2}
 		},

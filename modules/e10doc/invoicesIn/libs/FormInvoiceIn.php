@@ -37,8 +37,10 @@ class FormInvoiceIn extends \e10doc\core\FormHeads
 			if ($testDocsInboxFirst)
 			{
 				$this->layoutOpen (self::ltGrid);
+					$this->openRow();
 					if (!$this->addImportButtons())
 						$this->addList ('inbox', '', self::loAddToFormLayout|self::coColW12|self::coFocus);
+					$this->closeRow();
 				$this->layoutClose();
 				$this->addSeparator(self::coH2);
 				$this->addInboxListDone = 1;
@@ -197,16 +199,23 @@ class FormInvoiceIn extends \e10doc\core\FormHeads
 		foreach ($rows as $r)
 		{
 			$btnTxt = 'Importovat';
-			$bntCode = "<button class='btn btn-large btn-primary df2-action-trigger width100' data-action='saveform' data-noclose='1'";
-			$bntCode .= " data-save-import-attNdx='{$r['ndx']}'";
-			$bntCode .= " data-save-import-issueNdx='{$r['recid']}'";
-			$bntCode .= " data-fid='".$this->fid."' data-form='{$this->fid}' data-docstate='99001'>";
-			$bntCode .= $this->app()->ui()->icons()->icon('system/iconImport');
-			$bntCode .= ' '.Utils::es($btnTxt);
-			$bntCode .= "</button>";
+			$btnCode = '';
+			$btnCode .= "<div class='btn-group'>";
+			$btnCode .= "<button class='btn btn-large btn-primary df2-action-trigger' data-action='saveform' data-noclose='1'";
+			$btnCode .= " data-save-import-attNdx='{$r['ndx']}'";
+			$btnCode .= " data-save-import-issueNdx='{$r['recid']}'";
+			$btnCode .= " data-fid='".$this->fid."' data-form='{$this->fid}' data-docstate='99001'>";
+			$btnCode .= $this->app()->ui()->icons()->icon('system/iconImport');
+			$btnCode .= ' '.Utils::es($btnTxt);
+			$btnCode .= "</button>";
 
-			$this->addList ('inbox', '', self::loAddToFormLayout|self::coColW10|self::coFocus);
-			$this->appendElement ($bntCode, NULL, 'e10-gl-col2');
+			$btnCode .= "<button class='btn df2-action-trigger btn-primary' data-action='editform' data-table='e10.base.docDataFiles'";
+			$btnCode .= " data-pk='{$r['ddfNdx']}'><i class='bi bi-pencil-square'></i></button>";
+
+			$btnCode .= "</div>";
+
+			$this->addList ('inbox', '', self::loAddToFormLayout|self::coColW9|self::coFocus);
+			$this->appendElement ($btnCode, NULL, 'e10-gl-col3 e10-right');
 
 			return TRUE;
 		}

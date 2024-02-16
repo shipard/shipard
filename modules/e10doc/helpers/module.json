@@ -2,7 +2,7 @@
   "id": "e10doc.helpers",
   "name": "Pomocné aparáty k dokladům",
   "tables": [
-		"rowsSettings", "wkfSectionsRelations"
+		"rowsSettings", "wkfSectionsRelations", "impDocsSettings"
   ],
   "config": [
 		{"id": "+appOptions", "file": "e10.appOptions.json"},

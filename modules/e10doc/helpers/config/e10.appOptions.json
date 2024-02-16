@@ -6,6 +6,10 @@
 	"docsRowsSettings": {
 		"name": "Nastavení řádků dokladů", "order": 29300, "group": "docs",
 		"type": "viewer", "table": "e10doc.helpers.rowsSettings", "viewer": "default"
+	},
+	"docsImportSettings": {
+		"name": "Nastavení importu dokladů", "order": 29400, "group": "docs",
+		"type": "viewer", "table": "e10doc.helpers.impDocsSettings", "viewer": "default"
 	}
 }
 

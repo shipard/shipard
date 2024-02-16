@@ -4,7 +4,7 @@ namespace e10doc\ddf\core\libs;
 use \e10\json, \e10\utils, \Shipard\Utils\Str;
 use \e10doc\core\libs\E10Utils;
 use \Shipard\Utils\World;
-
+use \e10\base\libs\UtilsBase;
 
 /**
  * Class Core
@@ -16,6 +16,8 @@ class Core extends \lib\docDataFiles\DocDataFile
 	var $docRows = [];
 	var $replaceDocumentNdx = 0;
 	var $personRecData = NULL;
+
+	var $importProtocol = ['head' => [], 'rows' => []];
 
 	protected function date($date)
 	{
@@ -227,6 +229,9 @@ class Core extends \lib\docDataFiles\DocDataFile
 
 		forEach ($this->docRows as $r)
 		{
+			if (isset($r['!itemInfo']))
+				unset($r['!itemInfo']);
+
 			$r['document'] = $docNdx;
 			$tableRows->dbInsertRec ($r, $f->recData);
 		}
@@ -241,6 +246,12 @@ class Core extends \lib\docDataFiles\DocDataFile
 	{
 		$rowsSettings = new \e10doc\helpers\RowsSettings($this->app());
 		$rowsSettings->run ($row, $this->docHead);
+	}
+
+	function applyDocsImportSettings(&$row)
+	{
+		$importSettings = new \e10doc\helpers\libs\DocsImportSettings($this->app());
+		$importSettings->run ($row, $this->docHead);
 	}
 
 	protected function checkItem($srcRow, &$docRow)
@@ -389,5 +400,214 @@ class Core extends \lib\docDataFiles\DocDataFile
 
 		if (count($update))
 			$this->db()->query('UPDATE [wkf_core_issues] SET ', $update, ' WHERE [ndx] = %i', $this->inboxNdx);
+	}
+
+	protected function previewCode()
+	{
+		$tableDocs = new \E10Doc\Core\TableHeads ($this->app);
+
+		$paymentMethods = $this->app->cfgItem ('e10.docs.paymentMethods');
+		$taxCalc = $tableDocs->columnInfoEnum ('taxCalc', 'cfgText');
+		$taxType = $tableDocs->columnInfoEnum ('taxType', 'cfgText');
+		$taxMethod = $tableDocs->columnInfoEnum ('taxMethod', 'cfgText');
+
+		$personRecData = NULL;
+		$personNdx = 0;
+		if ($this->impData['head']['person'])
+		{
+			$personRecData = $this->app()->loadItem($this->impData['head']['person'], 'e10.persons.persons');
+			$personNdx = $personRecData['ndx'];
+		}
+
+		$c = '';
+		$c .= "<h2>Faktura č. ".Utils::es($this->impData['head']['docId'] ?? '---'). "</h2>";
+
+		if (isset($this->impData['head']['title']))
+			$c .= "<div class='pb1'>".Utils::es($this->impData['head']['title']).'</div>';
+
+		// -- persons
+		$c .= "<table class='default fullWidth'>";
+		$c .= "<tr>";
+			$c .= "<td class='width50'>";
+				$c .= "<span class='h2'>".Utils::es('Dodavatel').'</span>';
+				$srcLabels = [];
+				if (isset($this->importProtocol['person']['src']['oid']))
+					$srcLabels [] = ['text' => 'IČ: '.$this->importProtocol['person']['src']['oid'], 'class' => 'label label-success pull-right'];
+				if (isset($this->importProtocol['person']['src']['vatId']))
+					$srcLabels [] = ['text' => 'DIČ: '.$this->importProtocol['person']['src']['vatId'], 'class' => 'label label-success pull-right'];
+				if (isset($this->importProtocol['person']['src']['fullName']))
+					$srcLabels [] = ['text' => $this->importProtocol['person']['src']['fullName'], 'class' => 'break'];
+				$c .= $this->app()->ui()->composeTextLine($srcLabels);
+			$c .= '</td>';
+			$c .= '<td>';
+				$c .= "<div class='h2'>".Utils::es('Odběratel').'</div>';
+			$c .= "</td>";
+		$c .= "</tr>";
+
+		$c .= "<tr>";
+			$c .= "<td class='width50'>";
+				if ($personRecData)
+				{
+					$personLabel = [];
+					$personLabel[] = [
+						'text' => $personRecData['fullName'], 'suffix' => '#'.$personRecData['id'], 'class' => 'h2 block',
+						'docAction' => 'edit', 'table' => 'e10.persons.persons', 'pk' => $personRecData['ndx'],
+					];
+
+					$c .= $this->app()->ui()->composeTextLine($personLabel);
+				}
+			$c .= '</td>';
+			$c .= '<td>';
+			$c .= '</td>';
+		$c .= "</tr>";
+		$c .= "</table>";
+
+		// -- dates & co.
+		$c .= '<br/>';
+		$c .= "<table class='default fullWidth'>";
+		$c .= "<tr>";
+			$c .= "<td>".Utils::es('Datum vystavení').'</td>';
+			$c .= "<td>".$this->previewCode_Date($this->impData['head'], 'dateIssue').'</td>';
+
+			$c .= "<td>".Utils::es('Variabilní symbol').'</td>';
+			$c .= "<td>".Utils::es($this->impData['head']['symbol1'] ?? '').'</td>';
+
+			$c .= "<td>".Utils::es('Způsob úhrady').'</td>';
+			$pm = $paymentMethods[$this->impData['head']['paymentMethod'] ?? 0] ?? NULL;
+			$pmLabel = NULL;
+			if ($pm)
+				$pmLabel = ['text' => $pm['title'], 'icon' => $pm['icon'], 'class' => ''];
+			else
+				$pmLabel = ['text' => '?', 'class' => ''];
+			$c .= "<td>".$this->app()->ui()->composeTextLine($pmLabel).'</td>';
+
+		$c .= "</tr>";
+		$c .= "<tr>";
+			$c .= "<td>".Utils::es('DUZP / DPPD').'</td>';
+			$c .= "<td>".$this->previewCode_Date($this->impData['head'], 'dateTax').'</td>';
+			$c .= "<td>".Utils::es('Specifický symbol').'</td>';
+			$c .= "<td>".Utils::es($this->impData['head']['symbol2'] ?? '').'</td>';
+
+			$c .= "<td>".Utils::es('Výpočet daně').'</td>';
+			$c .= "<td>".Utils::es($taxCalc[$this->impData['head']['taxCalc'] ?? 0] ?? '!').' / '.Utils::es($taxMethod[$this->impData['head']['taxMethod'] ?? 0] ?? '!').'</td>';
+		$c .= "</tr>";
+		$c .= "<tr>";
+			$c .= "<td>".Utils::es('Datum splatnosti').'</td>';
+			$c .= "<td>".$this->previewCode_Date($this->impData['head'], 'dateDue').'</td>';
+			$c .= "<td>".Utils::es('Bankovní spojení').'</td>';
+			$c .= "<td>".Utils::es($this->impData['head']['bankAccount'] ?? '').'</td>';
+			$c .= "<td>".Utils::es('Typ daně').'</td>';
+			$c .= "<td>".Utils::es($taxType[$this->impData['head']['taxType'] ?? 0] ?? '!').'</td>';
+		$c .= "</tr>";
+		$c .= "</table>";
+
+		// -- rows
+		$c .= '<br/>';
+		$tr = [];
+		$th = [
+			'#' => '#', 'itemId' => 'Položka', 'itemInfo' => 'Obsah řádku', 'vatp' => ' %DPH',
+			'quantity' => ' Mn.', 'priceItem' => ' Cena/pol.', 'priceAll' => '+Cena celk.'
+		];
+
+		foreach ($this->impData['rows'] as $r)
+		{
+			$itemRecData = NULL;
+			if (isset($r['item']))
+				$itemRecData = $this->app()->loadItem($r['item'], 'e10.witems.items');
+			$rowItem = [];
+
+			$rowItem['itemInfo'] = [];
+			$rowItem['itemInfo'][] = ['text' => $r['text'], 'class' => 'block e10-bold'];
+			if (isset($r['!itemInfo']))
+			{
+				$iiLabels = [];
+				foreach ($r['!itemInfo'] as $iiKey => $iiValue)
+				{
+					if ($iiValue == '')
+						continue;
+					$iiLabels[] = ['text' => $iiValue, 'suffix' => $iiKey, 'class' => 'label label-default lh16'];
+					if ($iiKey === 'supplierCode' && $personNdx && !intval($r['item'] ?? 0))
+					{
+						$iiLabels[] = [
+							'text'=> '', 'docAction' => 'new', 'table' => 'e10doc.helpers.impDocsSettings', 'type' => 'span',
+							'title' => 'Nové pravidlo na základě Kódu dodavatele',
+							'actionClass' => 'label label-success', 'icon' => 'system/actionAdd', 'class' => 'label label-success',
+							'addParams' => "__qryRowSupplierCodeValue=".Utils::es($iiValue)."&__qryRowSupplierCodeType=1"."&__qryHeadPerson={$personNdx}"
+						];
+					}
+					if ($iiKey === 'itemFullName' && $personNdx && !intval($r['item'] ?? 0))
+					{
+						$iiLabels[] = [
+							'text'=> '', 'docAction' => 'new', 'table' => 'e10doc.helpers.impDocsSettings', 'type' => 'span',
+							'title' => 'Nové pravidlo na základě Textu řádku',
+							'actionClass' => 'label label-success', 'icon' => 'system/actionAdd', 'class' => 'label label-success',
+							'addParams' => "__qryRowTextValue=".Utils::es($iiValue)."&__qryRowTextType=1"."&__qryHeadPerson={$personNdx}"
+						];
+					}
+
+				}
+				if (count($iiLabels))
+					$rowItem['itemInfo'] = array_merge($rowItem['itemInfo'], $iiLabels);
+			}
+
+			$quantity = $r['quantity'] ?? 1;
+			$rowItem['quantity'] = strval($r['quantity'] ?? 1);
+
+			$priceSource = intval($r['priceSource'] ?? 0);
+
+			if ($priceSource === 0)
+			{
+				$rowItem['priceAll'] = $r['priceAll'] ?? 0.0;
+				$rowItem['priceItem'] = Utils::nf($r['priceItem'] ?? 0, 2);
+				$rowItem['_options']['cellClasses']['priceItem'] = 'e10-bold';
+			}
+			else
+			{
+				$rowItem['priceAll'] = $r['priceAll'] ?? 0.0;
+				$rowItem['priceItem'] = $r['priceAll'] / $quantity;
+				$rowItem['_options']['cellClasses']['priceAll'] = 'e10-bold';
+			}
+
+
+			$rowItem['vatp'] = strval($r['taxPercents']);
+
+			if ($itemRecData)
+			{
+				$rowItem['itemId'] = ['text' => $itemRecData['id'], 'docAction' => 'edit', 'table' => 'e10.witems.items', 'pk' => $itemRecData['ndx']];
+			}
+
+			$tr[] = $rowItem;
+		}
+
+		$tabRendeder = new \Shipard\Utils\TableRenderer($tr, $th, ['tableClass' => 'default fullWidth'], $this->app());
+    $c .= $tabRendeder->render();
+
+		return $c;
+	}
+
+	protected function previewCode_Date($src, $key)
+	{
+		if (!isset($src[$key]))
+			return '-';
+		$d = Utils::createDateTime($src[$key]);
+		if (!$d)
+			return '!';
+
+		return Utils::datef($d, '%d');
+	}
+
+
+	protected function previewAtt()
+	{
+		$attRecData = $this->app()->loadItem($this->attachmentNdx, 'e10.base.attachments');
+		$files = UtilsBase::loadAttachments ($this->app(), [$attRecData['recid']], $attRecData['tableid']);
+
+		if (isset($files[$attRecData['recid']]))
+		{
+			$content = ['type' => 'attachments', 'attachments' => $files[$attRecData['recid']], 'downloadTitle' => 'Stáhnout'];
+			return $content;
+		}
+
+		return NULL;
 	}
 }

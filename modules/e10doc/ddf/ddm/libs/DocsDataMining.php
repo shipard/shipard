@@ -4,6 +4,7 @@ namespace e10doc\ddf\ddm\libs;
 use \e10\json, \Shipard\Utils\Str;
 use \e10doc\core\libs\E10Utils;
 
+
 /**
  * class DocsDataMining
  */
@@ -67,10 +68,25 @@ class DocsDataMining extends \e10doc\ddf\core\libs\Core
 
 		$c = [];
 
+		// -- preview
+		$ci = [
+			'name' => 'Náhled',
+			'icon' => 'system/iconPreview',
+			'content' => ['type' => 'text', 'subtype' => 'rawhtml', 'text' => $this->previewCode()]
+		];
+		$c[] = $ci;
+
+		$ci = [
+			'name' => 'PDF',
+			'icon' => 'system/iconFilePdf',
+			'content' => $this->previewAtt(),
+		];
+		$c[] = $ci;
+
 		// -- src data
 		$ci = [
-			'name' => 'XML',
-			'icon' => 'icon-file-code-o',
+			'name' => 'Originál',
+			'icon' => 'user/fileText',
 			'content' => ['type' => 'text', 'subtype' => 'code', 'text' => $this->ddfRecData['srcData']]
 		];
 		$c[] = $ci;
@@ -78,15 +94,15 @@ class DocsDataMining extends \e10doc\ddf\core\libs\Core
 		// -- simplifiedData
 		$ci = [
 			'name' => 'Vytěženo',
-			'icon' => 'icon-file-code-o',
+			'icon' => 'user/fileText',
 			'content' => ['type' => 'text', 'subtype' => 'code', 'text' => json::lint($this->srcImpData)]
 		];
 		$c[] = $ci;
 
 		// -- impData
 		$ci = [
-			'name' => 'IMP',
-			'icon' => 'icon-file-code-o',
+			'name' => 'Shipard',
+			'icon' => 'user/fileText',
 			'content' => ['type' => 'text', 'subtype' => 'code', 'text' => json::lint($this->impData)]
 		];
 		$c[] = $ci;
@@ -136,6 +152,9 @@ class DocsDataMining extends \e10doc\ddf\core\libs\Core
 			$this->docHead['docId'] = $this->srcImpData['head']['documentId']; //$this->valueStr($this->srcImpData['ID'], 40);
 		//if (isset($this->srcImpData['Note']))
 		//	$this->docHead['title'] = $this->valueStr($this->srcImpData['Note'], 120);
+
+		if (isset($this->srcImpData['head']['taxType']))
+			$this->docHead['taxType'] = $this->srcImpData['head']['taxType'];
 
 		if (isset($this->srcImpData['head']['dateIssue']))
 			$this->docHead['dateIssue'] = $this->srcImpData['head']['dateIssue'];
@@ -242,6 +261,8 @@ class DocsDataMining extends \e10doc\ddf\core\libs\Core
 		if (isset($r['itemShortName']) && $r['itemShortName'] !== '')
 			$itemInfo['itemShortName'] = $r['itemShortName'];
 
+		$row['!itemInfo'] = $itemInfo;
+
 		$this->searchItem($itemInfo, $r, $row);
 		$this->checkItem($r, $row);
 
@@ -290,6 +311,7 @@ class DocsDataMining extends \e10doc\ddf\core\libs\Core
 		if (isset($this->srcImpData['head']['person']['vatId']))
 		{
 			$vatId = $this->srcImpData['head']['person']['vatId'];
+			$this->importProtocol['person']['src']['vatId'] = $vatId;
 			$personNdx = $this->searchPerson('ids', 'taxid', $vatId);
 			if ($personNdx)
 			{

@@ -1,0 +1,55 @@
+{
+	"id": "e10doc.helpers.impDocsSettings", "sql": "e10doc_helpers_impDocsSettings", "name": "Nastavení importu dokladů",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "name", "name": "Název", "type": "string", "len": 80},
+
+		{"id": "qryHeadPerson", "name": "Osoba na hlavičce je", "type": "int", "label": "Osoba", "reference": "e10.persons.persons"},
+
+		{"id": "qryRowTextType", "name": "Text řádku", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.queryTypes.string", "cfgValue": "", "cfgText": "name"}},
+    {"id": "qryRowTextValue", "name": "Text řádku", "type": "string", "len": 120},
+
+		{"id": "qryRowSupplierCodeType", "name": "Kód dodavatele", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.queryTypes.string", "cfgValue": "", "cfgText": "name"}},
+    {"id": "qryRowSupplierCodeValue", "name": "Kód dodavatele", "type": "string", "len": 120},
+
+		{"id": "qryHeadTextType", "name": "Text dokladu", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.queryTypes.string", "cfgValue": "", "cfgText": "name"}},
+    {"id": "qryHeadTextValue", "name": "Text dokladu", "type": "string", "len": 120},
+
+		{"id": "valRowTextType", "name": "Nastavit Text řádku na", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.setValueTypes.string", "cfgValue": "", "cfgText": "name"}},
+		{"id": "valRowTextValue", "name": "Text", "type": "string", "len": 220},
+
+		{"id": "valRowItemType", "name": "Nastavit Položku na", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.setValueTypes.reference", "cfgValue": "", "cfgText": "name"}},
+		{"id": "valRowItemValue", "name": "Položka", "type": "int", "reference": "e10.witems.items", "comboViewer": "combo"},
+
+		{"id": "valRowCentreType", "name": "Nastavit Středisko na", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.setValueTypes.reference", "cfgValue": "", "cfgText": "name"}},
+		{"id": "valRowCentreValue", "name": "Středisko", "type": "int", "reference": "e10doc.base.centres"},
+
+		{"id": "valRowWorkOrderType", "name": "Nastavit Zakázku na", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.setValueTypes.reference", "cfgValue": "", "cfgText": "name"}},
+		{"id": "valRowWorkOrderValue", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
+
+		{"id": "valHeadTitleType", "name": "Nastavit Text dokladu na", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.setValueTypes.string", "cfgValue": "", "cfgText": "name"}},
+		{"id": "valHeadTitleValue", "name": "Text", "type": "string", "len": 220},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "e10doc.helpers.ViewImpDocsSettings"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.helpers.FormImpDocsSetting"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"}
+}
