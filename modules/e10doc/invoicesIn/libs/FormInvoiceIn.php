@@ -210,7 +210,9 @@ class FormInvoiceIn extends \e10doc\core\FormHeads
 			$btnCode .= "</button>";
 
 			$btnCode .= "<button class='btn df2-action-trigger btn-primary' data-action='editform' data-table='e10.base.docDataFiles'";
-			$btnCode .= " data-pk='{$r['ddfNdx']}'><i class='bi bi-pencil-square'></i></button>";
+			$btnCode .= " data-pk='{$r['ddfNdx']}'>";
+			$btnCode .= $this->app()->ui()->icons()->icon('system/actionOpen');
+			$btnCode .= "</i></button>";
 
 			$btnCode .= "</div>";
 
