@@ -1,11 +1,13 @@
 {
 	"id": "e10doc.ddm",
 	"name": "Documents Data Mining",
-	"tables": ["formats", "formatsItems"],
+	"tables": ["ddm", "ddmItems"],
 
 	"config": [
 		{"id": "+appOptions", "file": "e10.appOptions.json"},
 		{"id": "+e10.persons.roles", "name": "Role uživatelů", "file": "e10.persons.roles.json"},
-		{"id": "+e10doc.ddm.formatItemsTypes", "file": "formatItemsTypes.json"}
+		{"id": "+e10doc.ddm.formatItemsTypes", "file": "formatItemsTypes.json"},
+		{"id": "+e10doc.ddm.ddmItemsTypes", "file": "ddmItemsTypes.json"},
+		{"id": "+e10doc.ddm.ddmDateFormats", "file": "ddmDateFormats.json"}
 	]
 }

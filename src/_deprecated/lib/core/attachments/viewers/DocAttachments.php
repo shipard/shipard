@@ -82,17 +82,30 @@ class DocAttachments extends \E10\TableViewWidget
 
 
 		$props = [];
+
 		if (isset($attInfo['labels']) && count($attInfo['labels']) && $listItem['fileKind'] !== 0)
 			$props = array_merge($props, $attInfo['labels']);
+
+		$refreshDDMBtnCode = '';
+		$refreshDDMBtnCode .= "<span class='btn btn-xs btn-primary df2-action-trigger pull-right' data-action='saveform' data-noclose='1'";
+		$refreshDDMBtnCode .= " data-save-refresh-ddm-attndx='{$listItem['ndx']}'";
+		$refreshDDMBtnCode .= " data-fid='AUTO' data-form='AUTO' data-docstate='99001'>";
+		$refreshDDMBtnCode .= $this->app()->ui()->icons()->icon('user/cogs');
+		$refreshDDMBtnCode .= ' '.Utils::es('Znovu načíst');
+		$refreshDDMBtnCode .= "</span>";
+		$props[] = ['code' => $refreshDDMBtnCode];
+
+		if ($ddfCfg)
+		{
+			$props[] = [
+				'text' => $ddfCfg['sn'], 'icon' => $ddfCfg['icon'], 'class' => '', 'type' => 'span',
+				'docAction' => 'edit', 'table' => 'e10.base.docDataFiles', 'pk' => $listItem['ddfNdx'], 'actionClass' => 'btn btn-xs btn-success pull-right',
+			];
+		}
 
 		if (isset($this->metadata[$listItem['ndx']]))
 			$props = array_merge($props, $this->metadata[$listItem['ndx']]);
 
-		if ($ddfCfg)
-			$props[] = [
-				'text' => $ddfCfg['sn'], 'icon' => $ddfCfg['icon'], 'class' => 'label label-default',
-				'docAction' => 'edit', 'table' => 'e10.base.docDataFiles', 'pk' => $listItem['ddfNdx'],
-			];
 
 		if (count($props))
 		{

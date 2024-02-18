@@ -25,8 +25,8 @@ class PdfToText extends Base
 		{
 			$this->saveData(self::mdtTextContent, $text);
 
-			$testDocDataMining = intval($this->app()->cfgItem('options.experimental.testDocDataMining', 0));
-			if ($testDocDataMining)
+			//$testDocDataMining = intval($this->app()->cfgItem('options.experimental.testDocDataMining', 0));
+			if (1 /*$testDocDataMining*/)
 			{
 				$o = new \e10doc\ddf\ddm\libs\DocsDataMining($this->app());
 				$o->init();

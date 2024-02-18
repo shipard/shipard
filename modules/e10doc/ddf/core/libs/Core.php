@@ -390,7 +390,9 @@ class Core extends \lib\docDataFiles\DocDataFile
 		}
 
 		if (isset($this->srcImpData['head']['money-to-pay']) && $this->srcImpData['head']['money-to-pay'] != 0 && $inboxRecData['docPrice'] == 0)
-			$update['docPrice'] = $this->srcImpData['head']['money-to-pay'];
+			$update['docPrice'] = $this->srcImpData['head']['money-to-pay']; // obsolete
+		if (isset($this->srcImpData['head']['moneyToPay']) && $this->srcImpData['head']['moneyToPay'] != 0 && $inboxRecData['docPrice'] == 0)
+			$update['docPrice'] = $this->srcImpData['head']['moneyToPay'];
 
 		if (isset($update['docPrice']) && $inboxRecData['docCurrency'] == 0)
 		{

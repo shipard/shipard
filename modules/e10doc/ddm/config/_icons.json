@@ -1,11 +1,5 @@
 {
-    "tables/e10doc.ddm.formats":{
-		"fa5": "fa-filter",
-		"fa6pro": "fa-filter",
-		"bsi": "bi-funnel",
-		"mdi": "filter_alt"
-	},
-    "tables/e10doc.ddm.formatsItems":{
+	"tables/e10doc.ddm.ddm":{
 		"fa5": "fa-filter",
 		"fa6pro": "fa-filter",
 		"bsi": "bi-funnel",

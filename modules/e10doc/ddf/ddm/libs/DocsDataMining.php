@@ -15,6 +15,42 @@ class DocsDataMining extends \e10doc\ddf\core\libs\Core
 		if (isset($this->ddfRecData['srcData']))
 			$this->fileContent = $this->ddfRecData['srcData'];
 
+		if ($this->checkOldWay())
+			return;
+
+		$this->checkLocalDDMs();
+	}
+
+	protected function checkLocalDDMs()
+	{
+		$q = [];
+		array_push ($q, 'SELECT * FROM [e10doc_ddm_ddm]');
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND [docState] IN %in', [4000, 8000, 1000]);
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			if (!Str::strstr($this->fileContent, $r['signatureString']))
+				continue;
+
+			$formatDef = Json::decode($r['configuration']);
+			$ddmEngine = new \e10doc\ddm\libs\DDMEngine($this->app());
+			$ddmEngine->importDataText($this->fileContent, $formatDef);
+
+			$this->srcImpData = ['head' => $ddmEngine->docHeadSrcItems];
+			$this->importHead();
+			$this->importRows();
+
+			$this->impData = ['head' => $this->docHead, 'rows' => $this->docRows];
+
+			//echo json_encode($ddmEngine->docHeadSrcItems)."\n";
+
+			return;
+		}
+	}
+
+	protected function checkOldWay()
+	{
 		$allFormats = $this->app()->cfgItem('e10.ddf.ddm.formats');
 
 		foreach ($allFormats as $oneFormatId => $oneFormat)
@@ -57,9 +93,10 @@ class DocsDataMining extends \e10doc\ddf\core\libs\Core
 			$this->importRows();
 
 			$this->impData = ['head' => $this->docHead, 'rows' => $this->docRows];
-
-			return;
+			return TRUE;
 		}
+
+		return FALSE;
 	}
 
 	public function createContents()
@@ -169,8 +206,6 @@ class DocsDataMining extends \e10doc\ddf\core\libs\Core
 			$this->docHead['bankAccount'] = $this->srcImpData['head']['bankAccount'];
 
 		//echo json_encode($this->docHead);
-
-		//$this->importPayment();
 	}
 
 	protected function importRows()

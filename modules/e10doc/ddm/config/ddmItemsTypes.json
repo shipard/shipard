@@ -1,0 +1,44 @@
+{
+	"partnerOID": {
+		"fn": "IČ partnera (dodavatele)"
+	},
+	"partnerVatID": {
+		"fn": "DIČ partnera (dodavatele)",
+		"re": "[a-zA-Z]{2}(| )\\d{7,10}([a-zA-Z]+|)"
+	},
+	"paymentMethod": {
+		"fn": "Způsob úhrady"
+	},
+	"bankAccount": {
+		"fn": "Bankovní spojení (číslo účtu)"
+	},
+	"docId": {
+		"fn": "Číslo dokladu"
+	},
+	"docTitle": {
+		"fn": "Text dokladu"
+	},
+	"dateIssue": {
+		"fn": "Datum vystavení", "type": "date"
+	},
+	"dateDue": {
+		"fn": "Datum splatnosti", "type": "date",
+		"re": "\\d{1,2}(\\..|\\.)\\d{1,2}(\\..|\\.)\\d{4}"
+	},
+	"dateTax": {
+		"fn": "DUZP", "type": "date",
+		"re": "\\d{1,2}(\\..|\\.)\\d{1,2}(\\..|\\.)\\d{4}"
+	},
+	"paymentSymbol1": {
+		"fn": "Variabilní symbol"
+	},
+	"paymentSymbol2": {
+		"fn": "Specifický symbol"
+	},
+	"paymentSymbol3": {
+		"fn": "Konstantní symbol"
+	},
+	"moneyToPay": {
+		"fn": "K úhradě", "type": "money"
+	}
+}

@@ -125,6 +125,26 @@ class TableIssues extends DbTable
 			$recData ['onTop'] = 0;
 	}
 
+	protected function checkSpecialDocState($phase, $specialDocState, &$saveData)
+	{
+		if (!isset($saveData['saveParams']))
+			return FALSE;
+		if (!isset($saveData['recData']['ndx']) || !$saveData['recData']['ndx'])
+			return FALSE;
+		$refreshDDMAttNdx = intval($saveData['saveParams']['data-save-refresh-ddm-attndx'] ?? 0);
+
+		if ($phase === 2 && $refreshDDMAttNdx)
+		{
+			$e = new \lib\core\attachments\Extract($this->app);
+			$e->setAttNdx($refreshDDMAttNdx);
+			$e->run();
+
+			return TRUE;
+		}
+
+		return TRUE;
+	}
+
 	public function documentStates ($recData)
 	{
 		if ($recData['issueType'] == self::mtNote)

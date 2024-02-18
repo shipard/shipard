@@ -1,10 +1,10 @@
 {
-	"ddmFormats": {
+	"ddms": {
 		"name": "Vytěžování dat z dokladů", "order": 20200000, "group": "docs",
-		"icon": "tables/e10doc.ddm.formats",
+		"icon": "tables/e10doc.ddm.ddm",
 		"type": "viewer",
-		"table": "e10doc.ddm.formats",
-		"viewer": "default"
+		"table": "e10doc.ddm.ddm",
+		"viewer": "default",
+		"enabledCfgItem": "options.experimental.testDocsInboxImport"
 	}
 }
-

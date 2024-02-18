@@ -82,8 +82,12 @@ class DashboardIssuesCore extends TableView
 	var $issuesMarks;
 	var $docLinksDocs;
 
+	var $testDocsInboxImport = 0;
+
 	public function init ()
 	{
+		$this->testDocsInboxImport = intval($this->app()->cfgItem ('options.experimental.testDocsInboxImport', 0));
+
 		$this->objectSubType = TableView::vsDetail;
 		//$this->usePanelRight = 1;
 		$this->enableDetailSearch = TRUE;
@@ -934,7 +938,7 @@ class DashboardIssuesCore extends TableView
 
 		if (isset($this->comments[$ndx]) && count($this->comments[$ndx]))
 		{
-			$title[] = ['icon' => 'icon-comment-o', 'class' => 'pull-right e10-off', 'text' => utils::nf(count($this->comments[$ndx]))];
+			$title[] = ['icon' => 'system/issueComment', 'class' => 'pull-right e10-off', 'text' => utils::nf(count($this->comments[$ndx]))];
 		}
 
 		// -- email forward
@@ -961,7 +965,7 @@ class DashboardIssuesCore extends TableView
 				$cnt += $this->connectedIssuesTo[$ndx]['cnt'];
 			if (isset($this->connectedIssuesFrom[$ndx]))
 				$cnt += $this->connectedIssuesFrom[$ndx]['cnt'];
-			$title[] = ['text' => utils::nf($cnt), 'icon' => 'icon-link', 'class' => 'e10-off pull-right'];
+			$title[] = ['text' => utils::nf($cnt), 'icon' => 'system/issueComment', 'class' => 'e10-off pull-right'];
 		}
 
 		$titleClass = '';
@@ -991,7 +995,7 @@ class DashboardIssuesCore extends TableView
 			// -- comments
 			if (isset($this->comments[$ndx]))
 			{
-				$commentsTitle = [['value' => [['text' => 'Komentáře', 'icon' => 'icon-comments-o', 'class' => 'h2']]]];
+				$commentsTitle = [['value' => [['text' => 'Komentáře', 'icon' => 'system/issueComment', 'class' => 'h2']]]];
 				$list = ['rows' => [], 'title' => $commentsTitle];
 				foreach ($this->comments[$ndx] as $comment)
 				{
@@ -1415,6 +1419,7 @@ class DashboardIssuesCore extends TableView
 	function attLinks ($ndx)
 	{
 		$links = [];
+		$ddmLinks = [];
 		$attachments = $this->atts[$ndx];
 		if (isset($attachments['images']))
 		{
@@ -1430,6 +1435,18 @@ class DashboardIssuesCore extends TableView
 						'popup-id' => 'wdbi', 'with-shift' => 'tab' /* 'popup' */
 					];
 				$links[] = $l;
+
+				if ($a['ddfId'])
+				{
+					$ddfCfg = $this->app()->cfgItem('e10.ddf.formats.'.$a['ddfId'], NULL);
+					if ($ddfCfg)
+					{
+						$ddmLinks[] = [
+							'text' => $ddfCfg['sn'], 'icon' => $ddfCfg['icon'], 'class' => '', 'type' => 'span',
+							'docAction' => 'edit', 'table' => 'e10.base.docDataFiles', 'pk' => $a['ddfNdx'], 'actionClass' => 'btn btn-xs btn-success',
+						];
+					}
+				}
 			}
 		}
 
@@ -1437,6 +1454,17 @@ class DashboardIssuesCore extends TableView
 		{
 			foreach ($attachments['files'] as $a)
 			{
+				if ($a['ddfId'])
+				{
+					$ddfCfg = $this->app()->cfgItem('e10.ddf.formats.'.$a['ddfId'], NULL);
+					if ($ddfCfg)
+					{
+						$ddmLinks[] = [
+							'text' => $ddfCfg['sn'], 'icon' => $ddfCfg['icon'], 'class' => '', 'type' => 'span',
+							'docAction' => 'edit', 'table' => 'e10.base.docDataFiles', 'pk' => $a['ddfNdx'], 'actionClass' => 'btn btn-xs btn-success',
+						];
+					}
+				}
 				$suffix = strtolower(substr($a['filename'], -3));
 				if ($suffix !== 'zip')
 					continue;
@@ -1453,6 +1481,9 @@ class DashboardIssuesCore extends TableView
 				$links[] = $unzipButton;
 			}
 		}
+
+		if (count($ddmLinks) && $this->testDocsInboxImport)
+			$links = array_merge($links, $ddmLinks);
 
 		return $links;
 	}

@@ -1,0 +1,28 @@
+{
+	"id": "e10doc.ddm.ddmItems", "sql": "e10doc_ddm_ddmItems", "name": "Položky vytěžování dat dokladů",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "ddm", "name": "DDM", "type": "int", "reference": "e10doc.ddm.ddm"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 80},
+
+		{"id": "itemType", "name": "Typ údaje", "type": "enumString", "len": 50, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.ddm.ddmItemsTypes", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "searchPrefix", "name": "Text před", "type": "string", "len": 100},
+		{"id": "searchSuffix", "name": "Text za", "type": "string", "len": 100},
+
+		{"id": "dateFormat", "name": "Formát data", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10doc.ddm.ddmDateFormats", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "e10doc.ddm.ViewDDMItems"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.ddm.FormDDMItem"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"}
+}

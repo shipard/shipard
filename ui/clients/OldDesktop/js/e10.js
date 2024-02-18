@@ -3514,6 +3514,9 @@ function e10FormSaveBegin (element, formId)
 	if (element.attr ('data-fid') || formId)
 	{
 		var fid = (formId) ? formId : element.attr ('data-fid');
+		if (fid === 'AUTO')
+			fid = searchParentAttr (element, "data-formid");
+
 		var saveBtn = $('#'+fid+'Save');
 
 		if (saveBtn.attr ('data-insave') === '1')
@@ -4054,6 +4057,11 @@ function df2saveForm (srcEl, successFunction)
 		noClose = 1;
 
   var id = srcEl.attr ("data-form");
+	if (id === 'AUTO')
+	{
+		var fe = searchParentAttrElement(srcEl.parent(), "data-formid");
+		id = fe.attr('id');
+	}
 
 	var e = $("#" + id);
 
