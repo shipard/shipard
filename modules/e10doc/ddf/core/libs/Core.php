@@ -254,6 +254,12 @@ class Core extends \lib\docDataFiles\DocDataFile
 		$importSettings->run ($row, $this->docHead);
 	}
 
+	protected function addRowsFromSettings()
+	{
+		$importSettings = new \e10doc\helpers\libs\DocsImportSettings($this->app());
+		$importSettings->addRows ($this->docRows, $this->docHead, $this);
+	}
+
 	protected function checkItem($srcRow, &$docRow)
 	{
 		if (isset($docRow['item']) && $docRow['item'])

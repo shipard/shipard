@@ -4,6 +4,9 @@
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "name", "name": "Název", "type": "string", "len": 80},
 
+	  {"id": "settingType", "name": "Druh", "type": "enumInt", "options": ["saveOnChange"],
+		  "enumValues": {"0": "Nastavit hodnoty", "1": "Přidat řádek"}},
+
 		{"id": "qryHeadPerson", "name": "Osoba na hlavičce je", "type": "int", "label": "Osoba", "reference": "e10.persons.persons"},
 
 		{"id": "qryRowTextType", "name": "Text řádku", "type": "enumInt", "options": ["saveOnChange"],
@@ -25,6 +28,10 @@
 		{"id": "valRowItemType", "name": "Nastavit Položku na", "type": "enumInt", "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "e10doc.helpers.setValueTypes.reference", "cfgValue": "", "cfgText": "name"}},
 		{"id": "valRowItemValue", "name": "Položka", "type": "int", "reference": "e10.witems.items", "comboViewer": "combo"},
+
+		{"id": "valRowItemPriceType", "name": "Nastavit Cenu za položku na", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.setValueTypes.other", "cfgValue": "", "cfgText": "name"}},
+		{"id": "valRowItemPriceValue", "name": "Cena za položku", "type": "string", "len": 160},
 
 		{"id": "valRowCentreType", "name": "Nastavit Středisko na", "type": "enumInt", "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "e10doc.helpers.setValueTypes.reference", "cfgValue": "", "cfgText": "name"}},

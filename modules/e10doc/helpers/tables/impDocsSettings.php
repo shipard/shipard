@@ -97,6 +97,8 @@ class FormImpDocsSetting extends TableForm
 {
 	public function renderForm ()
 	{
+		$st = $this->recData['settingType'];
+
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 		$this->setFlag ('maximize', 1);
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
@@ -104,19 +106,24 @@ class FormImpDocsSetting extends TableForm
 		$this->openForm ();
 			$this->addColumnInput ('name');
       $this->addColumnInput ('qryHeadPerson');
+			$this->addColumnInput ('settingType');
 
 			$this->addSeparator(self::coH2);
 			$this->layoutOpen (TableForm::ltGrid);
-        $this->openRow ();
-          $this->addStatic('Text řádku', TableForm::coColW3|TableForm::coRight);
-          $this->addColumnInput ('qryRowTextType', TableForm::coColW2);
-          $this->addColumnInput ('qryRowTextValue',TableForm::coColW7);
-        $this->closeRow ();
-				$this->openRow (/*'grid-form-tabs'*/);
-					$this->addStatic('Kód dodavatele je', TableForm::coColW3|TableForm::coRight);
-					$this->addColumnInput ('qryRowSupplierCodeType', TableForm::coColW2);
-					$this->addColumnInput ('qryRowSupplierCodeValue',TableForm::coColW7);
-				$this->closeRow ();
+				if ($st === 0)
+				{
+					$this->openRow ();
+						$this->addStatic('Text řádku', TableForm::coColW3|TableForm::coRight);
+						$this->addColumnInput ('qryRowTextType', TableForm::coColW2);
+						$this->addColumnInput ('qryRowTextValue',TableForm::coColW7);
+					$this->closeRow ();
+
+					$this->openRow (/*'grid-form-tabs'*/);
+						$this->addStatic('Kód dodavatele je', TableForm::coColW3|TableForm::coRight);
+						$this->addColumnInput ('qryRowSupplierCodeType', TableForm::coColW2);
+						$this->addColumnInput ('qryRowSupplierCodeValue',TableForm::coColW7);
+					$this->closeRow ();
+				}
         $this->openRow ();
           $this->addStatic('Text dokladu', TableForm::coColW3|TableForm::coRight);
           $this->addColumnInput ('qryHeadTextType', TableForm::coColW2);
@@ -131,6 +138,13 @@ class FormImpDocsSetting extends TableForm
 					$this->addColumnInput ('valRowItemType', TableForm::coColW2);
 					$this->addColumnInput ('valRowItemValue', TableForm::coColW7);
 				$this->closeRow ();
+
+				$this->openRow ();
+					$this->addStatic('Cena za položku', TableForm::coColW3|TableForm::coRight);
+					$this->addColumnInput ('valRowItemPriceType', TableForm::coColW2);
+					$this->addColumnInput ('valRowItemPriceValue', TableForm::coColW7);
+				$this->closeRow ();
+
 				$this->openRow ();
 					$this->addStatic('Středisko', TableForm::coColW3|TableForm::coRight);
 					$this->addColumnInput ('valRowCentreType', TableForm::coColW2);

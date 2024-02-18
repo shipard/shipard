@@ -119,6 +119,7 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 
 		$this->importHead();
 		$this->importRows();
+		$this->addRowsFromSettings();
 
 		$this->impData = ['head' => $this->docHead, 'rows' => $this->docRows];
 	}

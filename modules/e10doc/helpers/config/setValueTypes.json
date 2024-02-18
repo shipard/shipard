@@ -11,5 +11,9 @@
 		"0": {"name" : "Nenastavovat"},
 		"1": {"name" : "Nastavit text"},
 		"2": {"name" : "Použít skript"}
+	},
+	"other": {
+		"0": {"name" : "Nenastavovat"},
+		"1": {"name" : "Nastavit na"}
 	}
 }

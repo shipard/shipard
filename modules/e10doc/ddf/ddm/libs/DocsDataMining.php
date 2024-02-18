@@ -40,6 +40,7 @@ class DocsDataMining extends \e10doc\ddf\core\libs\Core
 			$this->srcImpData = ['head' => $ddmEngine->docHeadSrcItems];
 			$this->importHead();
 			$this->importRows();
+			$this->addRowsFromSettings();
 
 			$this->impData = ['head' => $this->docHead, 'rows' => $this->docRows];
 
@@ -83,6 +84,7 @@ class DocsDataMining extends \e10doc\ddf\core\libs\Core
 				{
 					$fe->setSrcText($this->fileContent);
 					$fe->import($this->srcImpData);
+					$this->addRowsFromSettings();
 
 					$this->srcImpData['rows'] = $fe->docRows;
 					//echo "Format ENGINE2!\n";
@@ -302,6 +304,7 @@ class DocsDataMining extends \e10doc\ddf\core\libs\Core
 		$this->checkItem($r, $row);
 
 		$this->applyRowSettings($row);
+		$this->applyDocsImportSettings($row);
 
 		if (count($row))
 			$this->docRows[] = $row;
