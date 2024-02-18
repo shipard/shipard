@@ -925,7 +925,7 @@ rowOrderNextInputName='lists.'+list+'.'+rowNext.attr('data-rowid')+'.'+rowOrderC
 rowOrderNextInput=rowNext.find('input[name="'+rowOrderNextInputName+'"]');var
 rowOrderNext=rowOrderNextInput.val();rowOrderCurrentInput.val(rowOrderNext);rowOrderNextInput.val(rowOrderCurrent);e10FormNeedSave(rows,-1);}function
 e10FormSaveBegin(element,formId){if(element.attr('data-fid')||formId){var
-fid=(formId)?formId:element.attr('data-fid');var
+fid=(formId)?formId:element.attr('data-fid');if(fid==='AUTO')fid=searchParentAttr(element,"data-formid");var
 saveBtn=$('#'+fid+'Save');if(saveBtn.attr('data-insave')==='1')return false;saveBtn.attr('data-insave','1');saveBtn.html("<i class='fa fa-upload'></i> Ukládá se").prop('disabled',true);return true;}return false;}function
 e10FormSetAsModified(button){if(button.attr('data-miid'))button=$('#'+button.attr('data-miid'));if(button.attr('data-fid')){var
 fid=button.attr('data-fid');var
@@ -1047,7 +1047,8 @@ action=e.attr("data-action");if(action=='edit'){if(event.which==1){event.stopPro
 apiPath=e.attr("data-apipath");alert("do-click: "+e.text()+", action="+action+", apipath="+apiPath);}function
 df2saveForm(srcEl,successFunction){if(!e10FormSaveBegin(srcEl))return false;var
 noClose=0;if(srcEl.attr('data-noclose'))noClose=1;var
-id=srcEl.attr("data-form");var
+id=srcEl.attr("data-form");if(id==='AUTO'){var
+fe=searchParentAttrElement(srcEl.parent(),"data-formid");id=fe.attr('id');}var
 e=$("#"+id);var
 docState=0;if(srcEl.attr('data-docstate'))docState=parseInt(srcEl.attr('data-docstate'));var
 formData=df2collectEditFormData(e,$.myFormsData[id]);formData['setDocState']=docState;saveParams=elementAttributesArray(srcEl,'data-save-');if(saveParams)formData['saveParams']=saveParams;formData.postData=e10DocumentData();var
