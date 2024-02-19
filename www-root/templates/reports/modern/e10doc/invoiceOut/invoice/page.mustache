@@ -307,14 +307,16 @@
 <table class='paymentInfo'>
 	<tr>
 		<td class='qrPayment'>
-			{{^data.flags.foreignCurrency}}
-				{{#data.spayd}}
-					<div id='spayd'>
-						<img src="{{spaydQRCodeURL}}"/>
-						{{@dict;QR platba}}
-					</div>
-				{{/data.spayd}}
-			{{/data.flags.foreignCurrency}}
+			{{^data.balanceInfo.payedCash}}
+				{{^data.flags.foreignCurrency}}
+					{{#data.spayd}}
+						<div id='spayd'>
+							<img src="{{spaydQRCodeURL}}"/>
+							{{@dict;QR platba}}
+						</div>
+					{{/data.spayd}}
+				{{/data.flags.foreignCurrency}}
+			{{/data.balanceInfo.payedCash}}
 		</td>
 		<td class='taxInfo'>
 			{{#data.head.taxPayer}}
