@@ -14,7 +14,11 @@
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
 	"views": [
-		{"id": "default", "class": "e10doc.ddm.ViewDDMs"}
+		{
+			"id": "default",
+			"class": "e10doc.ddm.ViewDDMs",
+			"addWizard": {"class": "e10doc.ddm.libs.ImportJsonDDMWizard", "text": "Načíst JSON"}
+		}
 	],
 	"forms": [
 		{"id": "default", "class": "e10doc.ddm.FormDDM"}
