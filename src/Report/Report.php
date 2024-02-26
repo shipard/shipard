@@ -265,7 +265,12 @@ class Report extends \Shipard\Base\BaseObject
 
 	public function createReportPart ($partId)
 	{
-		return $this->renderTemplate ($this->reportTemplate, $partId);
+		$fn = $this->renderTemplate ($this->reportTemplate, $partId);
+		if ($partId === 'fileName' || $partId === 'emailSubject')
+		{
+			$fn = trim($fn);
+		}
+		return $fn;
 	}
 
 	public function setCfg ($printCfg)
