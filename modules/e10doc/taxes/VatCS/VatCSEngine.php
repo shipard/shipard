@@ -193,7 +193,12 @@ class VatCSEngine extends \e10doc\taxes\TaxReportEngine
 							$newRows[$rowKind]['tax1'] += $r['sumTaxHc'];
 							$newRows[$rowKind]['total1'] += $r['sumTotalHc'];
 							break;
-				case 4: // první snížená
+					case 1: // snížená
+							$newRows[$rowKind]['base2'] += $r['sumBaseHc'];
+							$newRows[$rowKind]['tax2'] += $r['sumTaxHc'];
+							$newRows[$rowKind]['total2'] += $r['sumTotalHc'];
+							break;
+					case 4: // první snížená
 							$newRows[$rowKind]['base2'] += $r['sumBaseHc'];
 							$newRows[$rowKind]['tax2'] += $r['sumTaxHc'];
 							$newRows[$rowKind]['total2'] += $r['sumTotalHc'];
