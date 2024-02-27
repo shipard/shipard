@@ -40,7 +40,7 @@ class DDMEngine extends Utility
 		{
 			if ($res === '')
 				return '0000-00-00';
-			$dateParts = preg_split ('/[\:,\.,\-]/', $res);
+			$dateParts = preg_split ('/[\:,\.,\-\/]/', $res);
 			if (count($dateParts) !== 3)
 				return '0000-00-00';
 			$dateFormat = $this->app()->cfgItem('e10doc.ddm.ddmDateFormats.'.$rec['dateFormat'], NULL);
