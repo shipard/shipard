@@ -110,7 +110,8 @@ class TableForm
 				coRightCheckbox	= 0x800000000,
 				coDisabled			= 0x1000000000,
 				coInline				= 0x2000000000,
-				coBorder				= 0x4000000000;
+				coBorder				= 0x4000000000,
+				coDisableCombo	= 0x8000000000;
 
 
 	const loAddToFormLayout = 0x1000, loWidgetParts = 0x2000, loRowsDisableMove = 0x4000;
@@ -587,7 +588,7 @@ class TableForm
 		$colId = str_replace('.', '_', $this->fid . "_inp_$ip{$columnId}");
 		$finalColumnName = $ip.$columnId;
 
-		if (isset ($colDef ['comboTable']))
+		if (isset ($colDef ['comboTable']) && !($options & self::coDisableCombo))
 		{
 			$inputClass .= ' e10-inputRefId e10-inputRefIdDirty e10-viewer-search';
 			$comboTableId = $this->tableId();
