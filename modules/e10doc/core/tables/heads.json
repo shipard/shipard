@@ -41,7 +41,8 @@
 
     {"id": "personVATIN", "name": "DIČ osoby", "type": "string", "len": 14},
 
-    {"id": "bankAccount", "name": "Bankovní účet", "type": "string", "len": 40},
+    {"id": "bankAccount", "name": "Bankovní účet", "type": "string", "len": 40,
+      "comboViewer": "combo", "comboTable": "e10.persons.personsBA"},
     {"id": "myBankAccount", "name": "Vlastní bankovní spojení", "type": "int", "reference": "e10doc.base.bankaccounts"},
 
 		{"id": "centre", "name": "Středisko", "type": "int", "reference": "e10doc.base.centres"},

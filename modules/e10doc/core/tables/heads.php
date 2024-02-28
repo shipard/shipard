@@ -4189,6 +4189,14 @@ class FormHeads extends TableForm
 			return $cp;
 		}
 
+		if ($srcTableId === 'e10doc.core.heads' && $srcColumnId === 'bankAccount')
+		{
+			$cp = [
+				'personNdx' => strval ($allRecData ['recData']['person'])
+			];
+
+			return $cp;
+		}
 
 		return parent::comboParams ($srcTableId, $srcColumnId, $allRecData, $recData);
 	}

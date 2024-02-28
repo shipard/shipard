@@ -9,6 +9,8 @@ class FormInvoiceIn extends \e10doc\core\FormHeads
 
 	public function renderForm ()
 	{
+		$testNewPersons = intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
+
 		$this->checkInfoPanelAttachments();
 		$taxPayer = $this->recData['taxPayer'];
 		$paymentMethod = $this->table->app()->cfgItem ('e10.docs.paymentMethods.' . $this->recData['paymentMethod'], 0);
@@ -54,7 +56,11 @@ class FormInvoiceIn extends \e10doc\core\FormHeads
 					if ($paymentMethod ['cash'])
 						$this->addColumnInput ("cashBox");
 
-					$this->addColumnInput ("bankAccount");
+					if ($testNewPersons)
+						$this->addColumnInput ('bankAccount');
+					else
+						$this->addColumnInput ('bankAccount', self::coDisableCombo);
+
 					$this->addColumnInput ("symbol1");
 					$this->addColumnInput ("symbol2");
 					$this->addColumnInput ("dateIssue");

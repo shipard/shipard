@@ -17,6 +17,9 @@
 		},
 		"form": {
 			"id": "form", "class": "e10.persons.libs.viewers.ViewPersonBA"
+		},
+		"combo": {
+			"id": "combo", "class": "e10.persons.libs.viewers.ViewPersonBACombo"
 		}
 	},
 	"forms": [

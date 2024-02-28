@@ -81,7 +81,7 @@
 			"e10.persons.persons": {"default": 2},
 			"e10.persons.address": {"default": 2, "form": 2, "persons": 2, "personsCombo": 2},
 			"e10.persons.personsContacts": {"default": 2, "form": 2, "combo": 2},
-			"e10.persons.personsBA": {"default": 2, "form": 2},
+			"e10.persons.personsBA": {"default": 2, "form": 2, "combo": 2},
 			"e10.persons.contacts": {"default": 2, "form": 2},
 			"e10.persons.relations": {"default": 2},
 			"e10.witems.items": {"default": 2, "combo": 2, "byCategories": 2},
