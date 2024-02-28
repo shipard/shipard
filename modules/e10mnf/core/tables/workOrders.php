@@ -903,9 +903,6 @@ class FormWorkOrder extends TableForm
 					$this->addSeparator(self::coH4);
 					if ($this->addSubColumns('vdsData'))
 						$this->addSeparator(self::coH4);
-
-					if ($dko['useOwnerWorkOrder'])
-						$this->addColumnInput ('parentWorkOrder');
 				$this->closeTab ();
 				if (!$dko['disableRows'])
 				{
