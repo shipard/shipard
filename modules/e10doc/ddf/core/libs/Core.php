@@ -200,9 +200,6 @@ class Core extends \lib\docDataFiles\DocDataFile
 		$tableDocs = new \E10Doc\Core\TableHeads ($this->app);
 		$tableRows = new \E10Doc\Core\TableRows ($this->app);
 
-		if ($this->replaceDocumentNdx !== 0)
-			$this->docHead = $tableDocs->loadItem ($this->replaceDocumentNdx);
-
 		if ($this->replaceDocumentNdx === 0)
 		{
 			$docNdx = $tableDocs->dbInsertRec ($this->docHead);
@@ -220,7 +217,15 @@ class Core extends \lib\docDataFiles\DocDataFile
 		}
 		else
 		{
-			$tableDocs->dbUpdateRec ($this->docHead);
+			$dh = $tableDocs->loadItem ($this->replaceDocumentNdx);
+			foreach ($this->docHead as $dhKey => $dhValue)
+			{
+				if ($dhKey === 'docState' || $dhKey === 'docStateMain')
+					continue;
+				$dh[$dhKey] = $dhValue;
+			}
+			$tableDocs->dbUpdateRec ($dh);
+			$this->docHead = $tableDocs->loadItem ($this->replaceDocumentNdx);
 			$docNdx = $this->replaceDocumentNdx;
 			$this->db()->query ("DELETE FROM [e10doc_core_rows] WHERE [document] = %i", $docNdx);
 		}
