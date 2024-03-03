@@ -39,10 +39,10 @@ class DiaryHelper extends Utility
 		$this->loadPinnedContent();
 		foreach ($this->pinnedIssues as $pi)
 		{
-			$codeTitle = "<div class='subtitle bb1 pl1 pr1'>".$this->app()->ui()->composeTextLine($pi['title']).'</div>';
-			$codeBody = "<div class='body pageText padd5'>".$this->app()->ui()->composeTextLine($pi['body']).'</div>';
+			$codeTitle = "<div class='bb1'>".$this->app()->ui()->composeTextLine($pi['title']).'</div>';
+			$codeBody = "<div class='body pageText'>".$this->app()->ui()->composeTextLine($pi['body']).'</div>';
 
-			$content[] = ['pane' => 'e10-pane e10-pane-table',
+			$content[] = ['pane' => 'e10-pane-core padd5 e10-bg-t10 e10-ds '.$pi['dsClass'],
 				'type' => 'line', 'line' => [['code' => $codeTitle], ['code' => $codeBody]]];
 		}
 	}
@@ -70,17 +70,20 @@ class DiaryHelper extends Utility
 			if (!$this->textRenderer)
 				$this->textRenderer = new \lib\core\texts\Renderer($this->app());
 
+			$docStates = $this->tableIssues->documentStates ($r);
+			$docStateClass = $this->tableIssues->getDocumentStateInfo ($docStates, $r, 'styleClass');
+
 			$title = [];
-			$title[] = ['class' => 'title', 'text' => $r['subject'], 'icon' => $this->tableIssues->tableIcon($r, 1)];
+			$title[] = ['class' => 'title', 'text' => $r['subject'], 'class' => 'h2', 'icon' => $this->tableIssues->tableIcon($r, 1)];
 			$title [] = [
-				'class' => 'label label-default pull-right', 'icon' => 'system/docStateEdit',
+				'class' => 'pull-right', 'icon' => 'system/actionOpen',
 				'text' => '', 'title' => 'Opravit', 'type' => 'span',
 				'pk' => $r['ndx'], 'docAction' => 'edit', 'data-table' => 'wkf.core.issues',
 			];
 
 			$body = $this->tableIssues->messageBodyContent($this->textRenderer, $r);
 
-			$item = ['title' => $title, 'body' => $body,];
+			$item = ['title' => $title, 'body' => $body, 'dsClass' => $docStateClass];
 			$this->pinnedIssues[] = $item;
 		}
 	}

@@ -438,6 +438,7 @@ class TableIssues extends DbTable
 
 		if (isset($params['diary']))
 		{
+			$enabledIssuesKinds = [];
 			foreach ($issuesKinds as $ikNdx => $ik)
 			{
 				if ($ik['systemKind'] != 1 && $ik['systemKind'] != 7)
@@ -457,6 +458,10 @@ class TableIssues extends DbTable
 				continue;
 			$buttonGroups[$issueKind['issueType']][$issueKindNdx] = $issueKind;
 		}
+
+		$btnActionClass = 'btn';
+		if (isset($params['btnActionClass']))
+			$btnActionClass = $params['btnActionClass'];
 
 		foreach ($buttonGroups as $issueTypeNdx => $issueKinds)
 		{
@@ -482,7 +487,7 @@ class TableIssues extends DbTable
 				$txtText = '';
 				$addButton = [
 					'action' => 'new', 'data-table' => 'wkf.core.issues', 'icon' => $icon,
-					'text' => $txtText, 'title' => $txtTitle, 'type' => 'button', 'actionClass' => 'btn',
+					'text' => $txtText, 'title' => $txtTitle, 'type' => 'button', 'actionClass' => $btnActionClass,
 					'class' => 'e10-param-addButton', 'btnClass' => 'btn-success', 'dropRight' => 1,
 					'data-addParams' => $addParams,
 				];
@@ -541,12 +546,23 @@ class TableIssues extends DbTable
 					if (isset($params['section']) && $issueKind['issueType'] !== self::mtNote)
 						$addParams .= '&__section=' . $params['section'];
 
+					if (isset($params['onTop']))
+						$addParams .= '&__onTop=' . $params['onTop'];
+
 					$icon = ($issueKind['icon'] !== '') ? $issueKind['icon'] : $issueType['icon'];
-					$txtTitle = $issueKind['fn'];
-					$txtText = '';
+					if (isset($params['btnWithTexts']))
+					{
+						$txtTitle = 'Přidat';
+						$txtText = $issueKind['fn'];
+					}
+					else
+					{
+						$txtTitle = $issueKind['fn'];
+						$txtText = '';
+					}
 					$addButton = [
 						'action' => 'new', 'data-table' => 'wkf.core.issues', 'icon' => $icon,
-						'text' => $txtText, 'title' => $txtTitle, 'type' => 'button', 'actionClass' => 'btn',
+						'text' => $txtText, 'title' => $txtTitle, 'type' => 'button', 'actionClass' => $btnActionClass,
 						'class' => 'e10-param-addButton', 'btnClass' => 'btn-success',
 						'data-addParams' => $addParams,
 					];

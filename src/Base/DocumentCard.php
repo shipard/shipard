@@ -19,6 +19,9 @@ class DocumentCard extends Content
 	var $dstObjectType = '';
 	var $widgetId = '';
 
+	/** @var  \wkf\core\TableIssues */
+	var $tableIssues;
+
 	var ?\Shipard\UI\ng\TemplateUI $uiTemplate = NULL;
 
 	CONST spTimeLine = 'tl', spDocuments = 'docs';
@@ -82,6 +85,8 @@ class DocumentCard extends Content
 		$this->recData = $recData;
 
 		$this->widgetId = 'DC-'.mt_rand(1000000, 999999999);
+
+		$this->tableIssues = $this->app->table ('wkf.core.issues');
 	}
 
 	public function addContentAttachments ($toRecId, $tableId = FALSE, $title = FALSE, $downloadTitle = FALSE)
@@ -171,6 +176,45 @@ class DocumentCard extends Content
 				$this->addContent('body', $dc);
 			}
 		}
+	}
+
+	protected function addDiaryButtonsParams()
+	{
+		//$diaryInfo = $this->table->getDiaryInfo($this->recData);
+
+		$btnParams = [
+			'btnActionClass' => 'btn btn-xs btn-outline',
+			'btnWithTexts' => 1,
+			'diary' => 1,
+			'onTop' => 5,
+		];
+
+		//if (isset($diaryInfo['sectionNdx']))
+		//	$btnParams['section'] = $diaryInfo['sectionNdx'];
+
+		$btnParams['section'] = $this->tableIssues->defaultSection(21);
+
+		$btnParams['tableNdx'] = $this->table->ndx;
+		$btnParams['recNdx'] = $this->recData['ndx'];
+		$btnParams['diary'] = 1;
+
+		return $btnParams;
+	}
+
+	protected function diaryButtons()
+	{
+		$addButtonsEnabled = 1;
+		if ($addButtonsEnabled)
+		{
+			$addButtons = [];
+			$btnParams = $this->addDiaryButtonsParams();
+			$this->tableIssues->addWorkflowButtons($addButtons, $btnParams);
+
+			if (count($addButtons))
+				return $addButtons;
+		}
+
+		return NULL;
 	}
 
 	public function createContent()

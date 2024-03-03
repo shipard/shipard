@@ -8,7 +8,7 @@ use \e10doc\core\libs\E10Utils;
  * Class Detail
  * @package e10doc\core\dc
  */
-class Detail extends \e10\DocumentCard
+class Detail extends \Shipard\Base\DocumentCard
 {
 	protected $linkedAttachments = [];
 	protected $docTypes, $currencies, $balances, $usedNdxs;
@@ -64,6 +64,17 @@ class Detail extends \e10\DocumentCard
 
 	public function createContentHeader ()
 	{
+		$testBetterDiary = intval($this->app()->cfgItem ('options.experimental.testBetterDiary', 0));
+		if ($testBetterDiary)
+		{
+			$diaryButtons = $this->diaryButtons();
+			if ($diaryButtons)
+			{
+				$this->header = $this->table->createHeader($this->recData, \Shipard\Table\DbTable::chmViewer);
+				$this->header['info'][] = ['class' => 'e10-error', 'value' => $diaryButtons];
+			}
+		}
+
 		$recData = $this->recData;
 
 		$this->docType = $this->app->cfgItem ('e10.docs.types.' . $recData['docType']);
