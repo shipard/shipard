@@ -645,6 +645,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'upgrade-skupinove-dochazky': return $this->upgradeSkupinoveDochazky();
 			case 'send-entries-emails': return $this->sendEntriesEmails();
 			case 'archive-entries': return $this->archiveEntries();
+			case 'archive-students': return $this->archiveStudents();
 			case 'repair-fees': return $this->repairFees();
 			case 'repair-invoices': return $this->repairInvoices();
 			case 'import-contacts': return $this->importContacts();
@@ -677,6 +678,43 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		/** @var \e10pro\zus\TablePrihlasky */
 		$tablePrihlasky = $this->app()->table('e10pro.zus.prihlasky');
 		$tablePrihlasky->archiveEntries($yearParam);
+		return TRUE;
+	}
+
+	public function archiveStudents()
+	{
+		/** @var \Shipard\Table\DbTable */
+		$tablePersons = $this->app()->table('e10.persons.persons');
+
+		$skolniRok = zusutils::aktualniSkolniRok();
+		$mainGroup = 0;
+		$group = 'e10pro-zus-groups-students';
+		$groupsMap = $this->app()->cfgItem ('e10.persons.groupsToSG', FALSE);
+		if ($groupsMap && isset ($groupsMap [$group]))
+			$mainGroup = $groupsMap [$group];
+
+		$q = [];
+		array_push($q, 'SELECT * FROM [e10_persons_persons] AS persons');
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND [persons].[docState] = %i', 4000);
+		array_push ($q, ' AND EXISTS (SELECT ndx FROM e10_persons_personsgroups WHERE persons.ndx = e10_persons_personsgroups.person and [group] = %i)', $mainGroup);
+		array_push ($q, ' AND NOT EXISTS (',
+				'SELECT student FROM e10pro_zus_studium WHERE persons.ndx = e10pro_zus_studium.student ',
+				'AND e10pro_zus_studium.skolniRok = %s', $skolniRok,
+				')');
+		array_push ($q, ' ORDER BY persons.lastName, persons.firstName, persons.ndx');
+
+		$cnt = 1;
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			echo sprintf('%04d', $cnt).': '.$r['fullName']."\n";
+
+			$this->db()->query('UPDATE [e10_persons_persons] SET docState = %i, ', 9000, 'docStateMain = %i', 5, ' WHERE ndx = %i', $r['ndx']);
+			$tablePersons->docsLog($r['ndx']);
+
+			$cnt++;
+		}
 		return TRUE;
 	}
 
