@@ -99,6 +99,16 @@ class TableBulkEmails extends DbTable
 			if ($ownerEmail !== '')
 				$enum[$ownerEmail] = $ownerEmail;
 
+			// -- other emails
+			$otherEmails = $this->app()->cfgItem('e10pro.bume.sendersEmails', NULL);
+			if ($otherEmails && count($otherEmails))
+			{
+				foreach($otherEmails as $e)
+				{
+					$enum[$e] = $e;
+				}
+			}
+
 			return $enum;
 		}
 
