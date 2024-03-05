@@ -448,6 +448,7 @@ class ViewStudents extends \e10\persons\ViewPersonsBase
 			'withoutContacts' => ['title' => 'Bez kontaktů', 'id' => 'withoutContacts'],
 			'withoutMainAddress' => ['title' => 'Bez bydliště', 'id' => 'withoutMainAddress'],
 			'badAddress' => ['title' => 'Vadné adresy', 'id' => 'badAddress'],
+			'withoutStudium' => ['title' => 'Bez studia', 'id' => 'withoutStudium'],
 		];
 		$paramsOthers = new \E10\Params ($this->app());
 		$paramsOthers->addParam ('checkboxes', 'query.others', ['items' => $chbxOthers]);
@@ -528,6 +529,14 @@ class ViewStudents extends \e10\persons\ViewPersonsBase
 				')');
 		}
 
+		if (isset ($qv['others']['withoutStudium']))
+		{
+			$skolniRok = zusutils::aktualniSkolniRok();
+			array_push ($q, ' AND NOT EXISTS (',
+					'SELECT student FROM e10pro_zus_studium WHERE persons.ndx = e10pro_zus_studium.student ',
+					'AND e10pro_zus_studium.skolniRok = %s', $skolniRok,
+					')');
+		}
 
 		$testNewPersons = intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
 		if ($testNewPersons)
