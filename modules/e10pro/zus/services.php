@@ -700,7 +700,8 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		array_push ($q, ' AND EXISTS (SELECT ndx FROM e10_persons_personsgroups WHERE persons.ndx = e10_persons_personsgroups.person and [group] = %i)', $mainGroup);
 		array_push ($q, ' AND NOT EXISTS (',
 				'SELECT student FROM e10pro_zus_studium WHERE persons.ndx = e10pro_zus_studium.student ',
-				'AND e10pro_zus_studium.skolniRok = %s', $skolniRok,
+				' AND e10pro_zus_studium.skolniRok = %s', $skolniRok,
+				' AND e10pro_zus_studium.stavHlavni != %i', 4,
 				')');
 		array_push ($q, ' ORDER BY persons.lastName, persons.firstName, persons.ndx');
 

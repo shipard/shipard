@@ -534,7 +534,8 @@ class ViewStudents extends \e10\persons\ViewPersonsBase
 			$skolniRok = zusutils::aktualniSkolniRok();
 			array_push ($q, ' AND NOT EXISTS (',
 					'SELECT student FROM e10pro_zus_studium WHERE persons.ndx = e10pro_zus_studium.student ',
-					'AND e10pro_zus_studium.skolniRok = %s', $skolniRok,
+					' AND e10pro_zus_studium.skolniRok = %s', $skolniRok,
+					' AND e10pro_zus_studium.stavHlavni != %i', 4,
 					')');
 		}
 
