@@ -25,8 +25,13 @@ class ViewMeters extends TableView
 	var $metersKinds;
 	var $units;
 
+	var $useWorkOrders = TRUE;
+
 	public function init ()
 	{
+		if ($this->app()->model()->module ('e10mnf.core') === FALSE)
+			$this->useWorkOrders = FALSE;
+
 		$this->metersKinds = $this->app()->cfgItem('e10pro.meters.kinds', NULL);
 		$this->units = $this->app->cfgItem ('e10.witems.units');
 
@@ -66,7 +71,7 @@ class ViewMeters extends TableView
 
 		$listItem['t2'] = [];
 		$listItem['t2'][] = ['text' => $this->metersKinds[$item['meterKind']]['sn'], 'class' => 'label label-default'];
-		$listItem['t2'][] = ['text' => $this->units[$item['unit']]['shortcut'], 'class' => 'label label-default'];
+		$listItem['t2'][] = ['text' => $this->units[$item['unit']]['shortcut'] ?? '---', 'class' => 'label label-default'];
 
 		if ($item['sn'] != '')
 			$listItem['t2'][] = ['text' => $item['sn'], 'class' => 'label label-default'];
@@ -98,11 +103,13 @@ class ViewMeters extends TableView
 		$q = [];
 		array_push($q, 'SELECT [meters].*,');
 		array_push($q, ' [places].[fullName] AS [placeName],');
-		array_push($q, ' [wo].[title] AS [woTitle], [wo].[docNumber] AS [woDocNumber],');
+		if ($this->useWorkOrders)
+			array_push($q, ' [wo].[title] AS [woTitle], [wo].[docNumber] AS [woDocNumber],');
 		array_push($q, ' [parents].[fullName] AS [parentFullName]');
 		array_push($q, ' FROM [e10pro_meters_meters] AS [meters]');
 		array_push($q, ' LEFT JOIN [e10_base_places] AS [places] ON [meters].[place] = [places].[ndx]');
-		array_push($q, ' LEFT JOIN [e10mnf_core_workOrders] AS [wo] ON [meters].[workOrder] = [wo].[ndx]');
+		if ($this->useWorkOrders)
+			array_push($q, ' LEFT JOIN [e10mnf_core_workOrders] AS [wo] ON [meters].[workOrder] = [wo].[ndx]');
 		array_push($q, ' LEFT JOIN [e10pro_meters_meters] AS [parents] ON [meters].[parentMeter] = [parents].[ndx]');
 		array_push($q, ' WHERE 1');
 
@@ -118,8 +125,11 @@ class ViewMeters extends TableView
 			array_push ($q, ' OR [meters].[id] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ' OR [meters].[sn] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ' OR [places].[fullName] LIKE %s', '%'.$fts.'%');
-			array_push ($q, ' OR [wo].[docNumber] LIKE %s', '%'.$fts.'%');
-			array_push ($q, ' OR [wo].[title] LIKE %s', '%'.$fts.'%');
+			if ($this->useWorkOrders)
+			{
+				array_push ($q, ' OR [wo].[docNumber] LIKE %s', '%'.$fts.'%');
+				array_push ($q, ' OR [wo].[title] LIKE %s', '%'.$fts.'%');
+			}
 			array_push ($q, ')');
 		}
 		$this->queryMain ($q, '[meters].', ['[meters].id', '[meters].[fullName]']);
