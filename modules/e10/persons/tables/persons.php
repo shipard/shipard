@@ -450,7 +450,9 @@ class TablePersons extends DbTable
 				$rows = $this->db()->query($q);
 				foreach ($rows as $r)
 				{
-					$emails[] = trim($r['contactEmail']);
+					$e = trim($r['contactEmail']);
+					if ($e !== '')
+						$emails[] = $e;
 				}
 
 				if (count($emails))
@@ -476,7 +478,9 @@ class TablePersons extends DbTable
 			$rows = $this->db()->query($q);
 			foreach ($rows as $r)
 			{
-				$emails[] = trim($r['contactEmail']);
+				$e = trim($r['contactEmail']);
+				if ($e !== '')
+					$emails[] = $e;
 			}
 			if (count($emails))
 				return implode (', ', $emails);

@@ -210,11 +210,11 @@ class MailMessage extends \Shipard\Base\Utility
 				if ($emailFromCfg)
 				{
 					$cmd = 'swaks --from '.$this->fromEmail;
-					$cmd .= ' --to '.$this->emailsTo[0];
+					$cmd .= ' --to "'.$this->emailsTo[0].'"';
 					$cmd .= ' -s '.$emailFromCfg['smtpServer'];
 					$cmd .= ' -tls';
 					$cmd .= ' --auth-user '.$this->fromEmail;
-					$cmd .= ' --auth-password '.$emailFromCfg['password'];
+					$cmd .= ' --auth-password "'.$emailFromCfg['password'].'"';
 					$cmd .= ' -d '.$ffn;
 					$cmd .= ' > '.$ffn.'.log';
 
