@@ -24,8 +24,12 @@ class DocDataFile extends Utility
 	var $inboxNdx = 0;
 	var $automaticImport = 0;
 
+	/** @var \E10Doc\Core\TableHeads */
+	var $tableDocsHeads;
+
 	public function init()
 	{
+		$this->tableDocsHeads = new \E10Doc\Core\TableHeads ($this->app);
 	}
 
 	public function setFileContent($fileContent, $attachmentNdx = 0)
@@ -44,6 +48,10 @@ class DocDataFile extends Utility
 	public function createContents()
 	{
 		return [];
+	}
+
+	public function resetDocument($documentNdx)
+	{
 	}
 
 	public function checkFileContent()

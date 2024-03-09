@@ -433,10 +433,33 @@ class Core extends \lib\docDataFiles\DocDataFile
 		}
 
 		$c = '';
-		$c .= "<h2>Faktura č. ".Utils::es($this->impData['head']['docId'] ?? '---'). "</h2>";
 
-		if (isset($this->impData['head']['title']))
-			$c .= "<div class='pb1'>".Utils::es($this->impData['head']['title']).'</div>';
+		$fc = ($this->impData['head']['currency'] != $this->impData['head']['homeCurrency']);
+		$scFC = strtoupper($this->impData['head']['currency']);
+		$scHC = strtoupper($this->impData['head']['homeCurrency']);
+
+		$c .= "<table class=' fullWidth'>";
+		$c .= "<tr>";
+
+			$c .= "<td class='width80' style='vertical-align: top;'>";
+				$c .= '<h2>Faktura č. '.Utils::es($this->impData['head']['docId'] ?? '---').'</h2>';
+				if (isset($this->impData['head']['title']))
+				$c .= "<div class='pb1'>".Utils::es($this->impData['head']['title']).'</div>';
+			$c .= "</td>";
+
+			$c .= "<td class='width20 number' style='vertical-align: top;'>";
+				if ($fc)
+				{
+					$c .= '<h2>'."<small class='e10-off'>".Utils::es($scHC).'</small> '.Utils::es($scFC).'</h2>';
+					$c .= '1 '.Utils::es($scHC).' = '.strval($this->impData['head']['exchangeRate']).' '.Utils::es($scFC);
+				}
+				else
+					$c .= '<h2>'.Utils::es($scFC).'</h2>';
+			$c .= "</td>";
+
+		$c .= "</tr>";
+		$c .= "</table>";
+		$c .= "<br/>";
 
 		// -- persons
 		$c .= "<table class='default fullWidth'>";

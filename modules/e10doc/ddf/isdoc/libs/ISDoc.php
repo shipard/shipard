@@ -157,6 +157,23 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 		if (isset($this->srcImpData['TaxPointDate']))
 			$this->docHead['dateTax'] = $this->date($this->srcImpData['TaxPointDate']);
 
+
+		$vatRegs = $this->app()->cfgItem('e10doc.base.taxRegs', NULL);
+		if ($vatRegs)
+			$this->docHead['vatReg'] = key($vatRegs);
+
+		$this->tableDocsHeads->findAndSetFiscalPeriod ($this->docHead);
+
+		if (isset($this->srcImpData['ForeignCurrencyCode']))
+			$this->docHead['currency'] = strtolower($this->valueStr($this->srcImpData['ForeignCurrencyCode'], 3));
+		else
+			$this->docHead['currency'] = $this->docHead['homeCurrency'];
+
+		if (isset($this->srcImpData['CurrRate']))
+			$this->docHead['exchangeRate'] = $this->valueNumber($this->srcImpData['CurrRate']);
+		else
+			$this->docHead['exchangeRate'] = 1;
+
 		$this->importPayment();
 	}
 
@@ -248,6 +265,8 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 
 		$row = [];
 
+		$fc = ($this->docHead['currency'] != $this->docHead['homeCurrency']);
+
 		if (isset($il['Item']['Description']))
 			$row['text'] = $this->valueStr($il['Item']['Description'], 220);
 
@@ -256,28 +275,49 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 		else
 			$row['quantity'] = 1.0;
 
+		$vatPayer = $this->tableDocsHeads->cfgItemTaxPayer ($this->docHead);
 		$priceWithVat = (isset($il['ClassifiedTaxCategory']['VATCalculationMethod'])) ? intval($il['ClassifiedTaxCategory']['VATCalculationMethod']) : 0;
-		if ($priceWithVat)
-		{
-			$row['priceItem'] = $this->valueNumber($il['UnitPriceTaxInclusive']);
-			$row['taxCalc'] = 2;
 
-			if ($testDocRowPriceSource)
+		if ($vatPayer)
+		{
+			if ($priceWithVat)
 			{
-				$row['priceAll'] = $this->valueNumber($il['LineExtensionAmountTaxInclusive']);
-				$row['priceSource'] = 1;
+				$row['priceItem'] = $this->valueNumber($fc ? $il['UnitPriceTaxInclusiveCurr'] : $il['UnitPriceTaxInclusive']);
+				$row['taxCalc'] = 2;
+
+				if ($testDocRowPriceSource)
+				{
+					$row['priceAll'] = $this->valueNumber($fc ? $il['LineExtensionAmountTaxInclusiveCurr'] : $il['LineExtensionAmountTaxInclusive']);
+					$row['priceSource'] = 1;
+				}
+				else
+					$row['priceAll'] = $row['quantity'] * $row['priceItem'];//$this->valueNumber($il['LineExtensionAmount']);
+			}
+			else
+			{
+				$row['priceItem'] = $this->valueNumber($il['UnitPrice']);
+				$row['taxCalc'] = 1;
+
+				if ($testDocRowPriceSource)
+				{
+					$row['priceAll'] = $this->valueNumber($fc ? $il['LineExtensionAmountCurr'] : $il['LineExtensionAmount']);
+					$row['priceSource'] = 1;
+				}
+				else
+					$row['priceAll'] = $row['quantity'] * $row['priceItem'];//$this->valueNumber($il['LineExtensionAmount']);
 			}
 		}
 		else
 		{
-			$row['priceItem'] = $this->valueNumber($il['UnitPrice']);
-			$row['taxCalc'] = 1;
+			$row['priceItem'] = $fc ? $this->valueNumber($il['UnitPriceTaxInclusiveCurr']) : $this->valueNumber($il['UnitPriceTaxInclusive']);
 
 			if ($testDocRowPriceSource)
 			{
-				$row['priceAll'] = $this->valueNumber($il['LineExtensionAmount']);
+				$row['priceAll'] = $fc ? $this->valueNumber($il['LineExtensionAmountTaxInclusiveCurr']) : $this->valueNumber($il['LineExtensionAmountTaxInclusive']);
 				$row['priceSource'] = 1;
 			}
+			else
+				$row['priceAll'] = $row['quantity'] * $row['priceItem'];
 		}
 
 		if ($negativePrices && $row['priceItem'] > 0.0)
