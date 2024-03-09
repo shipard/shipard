@@ -500,13 +500,14 @@ class E10Utils
 		return $today;
 	}
 
-	static function headsTaxDate ($recData)
+	static function headsTaxDate ($recData, $rowData)
 	{
 		switch ($recData['taxPercentDateType'])
 		{
 			case 0: return $recData['dateTax'];
 			case 1: return $recData['dateIssue'];
 			case 2: return $recData['dateTaxDuty'];
+			case 3: return $rowData['dateVATRate'] ?? $recData['dateTax'];
 		}
 
 		return NULL;

@@ -107,8 +107,8 @@
 			"enumValues": {"1": "z hlavičky", "2": "z řádků"}, "options": ["saveOnChange"]},
     {"id": "taxType", "name": "Typ daně", "type": "enumInt",
 			"enumValues": {"0": "tuzemsko", "1": "intrakomunitární", "2": "zahraničí"},  "options": ["saveOnChange"]},
-    {"id": "taxPercentDateType", "name": "Který datum určuje procenta DPH", "type": "enumInt",
-			"enumValues": {"0": "DUZP", "1": "datum vystavení", "2": "DPPD"}},
+    {"id": "taxPercentDateType", "name": "Který datum určuje procenta DPH", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "DUZP", "1": "datum vystavení", "2": "DPPD", "3": "Vlastní nastavení na řádcích dokladu"}},
 		{"id": "taxManual", "name": "Ruční výpočet DPH", "type": "logical", "options": ["saveOnChange"]},
 
     {"id": "currency", "name": "Měna", "type": "enumString", "len": 3, "options": ["saveOnChange"],

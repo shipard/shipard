@@ -85,6 +85,12 @@ class FormInvoiceOutRow extends \e10doc\core\libs\FormDocRows
 					$this->addColumnInput ('project', self::coColW5);
 			$this->closeRow ();
 
+			if ($ownerRecData['taxPercentDateType'] == 3)
+			{
+				$this->openRow ();
+					$this->addColumnInput ('dateVATRate', self::coColW12);
+				$this->closeRow ();
+			}
 		$this->closeForm ();
 	}
 

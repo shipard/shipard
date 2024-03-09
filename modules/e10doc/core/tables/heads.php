@@ -1120,9 +1120,16 @@ class TableHeads extends DbTable
 							$newRow ['rowOrder'] = intval($saveOptions['rowOrder']);
 						if (!isset($newRow ['rowOrder']) || !$newRow ['rowOrder'])
 							$newRow ['rowOrder'] = $lastRow ['rowOrder'] + 100;
+
+						if ($saveData ['recData']['taxPercentDateType'] == 3)
+							$newRow ['dateVATRate'] = $lastRow ['dateVATRate'] ?? $saveData ['recData']['dateTax'];
 					}
 					else
+					{
 						$newRow ['rowOrder'] = ($cntLines + 1) * 100;
+						if ($saveData ['recData']['taxPercentDateType'] == 3)
+							$newRow ['dateVATRate'] = $saveData ['recData']['dateTax'];
+					}
 					$saveData ['lists']['rows'][] = $newRow;
 					if (isset($saveOptions['rowOrder']))
 						$saveResult ['modifiedRow'] = intval($saveOptions['rowNumber']);
@@ -2380,7 +2387,7 @@ class TableHeads extends DbTable
 				return $itemRecData['priceSellBase'];
 			if ($itemRecData['priceSellTotal'] != 0.0)
 			{
-				$taxDate = e10utils::headsTaxDate ($headRecData);
+				$taxDate = e10utils::headsTaxDate ($headRecData, $rowRecData);
 				$taxPercents = e10utils::taxPercent ($this->app(), $rowRecData['taxCode'], $taxDate);
 				$price = $itemRecData['priceSellTotal'];
 				$k = round (($taxPercents / ($taxPercents + 100)), 4);
@@ -2395,7 +2402,7 @@ class TableHeads extends DbTable
 				return $itemRecData['priceSellTotal'];
 			if ($itemRecData['priceSellBase'] != 0.0)
 			{
-				$taxDate = e10utils::headsTaxDate ($headRecData);
+				$taxDate = e10utils::headsTaxDate ($headRecData, $rowRecData);
 				$taxPercents = e10utils::taxPercent ($this->app(), $rowRecData['taxCode'], $taxDate);
 				$price = $itemRecData['priceSellBase'];
 				$total = utils::round (($price * ((100 + $taxPercents) / 100)), 2, 0);
