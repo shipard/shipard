@@ -4,7 +4,7 @@
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 
 		{"id": "issueId", "name": "ID", "type": "string", "len": 20, "options": ["ascii"]},
-		{"id": "issueType", "name": "Typ", "type": "enumInt",
+		{"id": "issueType", "name": "Typ", "type": "enumInt", "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "wkf.issues.types", "cfgValue": "", "cfgText": "name"}},
 		{"id": "issueKind", "name": "Druh", "type": "enumInt", "len": 2, "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "wkf.issues.kinds", "cfgValue": "", "cfgText": "sn"}},
@@ -13,7 +13,7 @@
 		{"id": "text", "name": "Text", "type": "memo"},
 		{"id": "body", "name": "Tělo zprávy", "type": "memo"},
 
-		{"id": "section", "name": "Sekce", "type": "int", "reference": "wkf.base.sections"},
+		{"id": "section", "name": "Sekce", "type": "int", "reference": "wkf.base.sections", "options": ["saveOnChange"]},
 		{"id": "target", "name": "Cíl", "type": "int", "reference": "wkf.base.targets"},
 		{"id": "status", "name": "Status", "type": "enumInt", "len": 2,
 			"enumCfg": {"cfgItem": "wkf.issues.statuses.all", "cfgValue": "", "cfgText": "sn"}},

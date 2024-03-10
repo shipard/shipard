@@ -95,6 +95,28 @@ class TableIssues extends DbTable
 		if (isset($recData['issueId']) && $recData['issueId'] === '' && isset($recData['ndx']) && $recData['ndx'] !== 0)
 			$recData['issueId'] = str_replace(' ', '.', utils::nf(100000+$recData['ndx']));
 
+		$section = $this->app()->cfgItem ('wkf.sections.all.'.$recData['section'], NULL);
+
+		if ($section && isset($section['issuesKinds']))
+		{
+			$enableIssueKind = \e10\searchArray($section['issuesKinds'], 'ndx', $recData['issueKind']);
+			if (!$enableIssueKind)
+			{
+				$recData['issueKind'] = $section['issuesKinds'][0]['ndx'] ?? 0;
+				$issueKindCfg = $this->app()->cfgItem ('wkf.issues.kinds.'.$recData['issueKind'], NULL);
+				$recData['issueType'] = $issueKindCfg['issueType'];
+			}
+		}
+
+		$issueKindCfg = $this->app()->cfgItem ('wkf.issues.kinds.'.$recData['issueKind'], NULL);
+		if ($recData['issueType'] != $issueKindCfg['issueType'])
+		{
+			$allIssuesKinds = $this->app()->cfgItem ('wkf.issues.kinds', []);
+			$defaultIssueKind = \e10\searchArray($allIssuesKinds, 'issueType', $recData['issueType']);
+			if ($defaultIssueKind)
+				$recData['issueKind'] = $defaultIssueKind['ndx'];
+		}
+
 		parent::checkBeforeSave ($recData, $ownerData);
 	}
 
@@ -361,6 +383,23 @@ class TableIssues extends DbTable
 				return FALSE;
 
 			return TRUE;
+		}
+
+		if ($columnId === 'issueType')
+		{
+			$section = $this->app()->cfgItem ('wkf.sections.all.'.$form->recData['section'], NULL);
+
+			if (!$section || !isset($section['issuesKinds']))
+				return FALSE;
+
+			foreach ($section['issuesKinds'] as $eik)
+			{
+				$issueKindCfg = $this->app()->cfgItem ('wkf.issues.kinds.'.$eik['ndx'], NULL);
+				if ($issueKindCfg['issueType'] == $cfgKey)
+					return TRUE;
+			}
+
+			return FALSE;
 		}
 
 		if ($columnId === 'status')

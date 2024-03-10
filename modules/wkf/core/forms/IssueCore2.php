@@ -138,6 +138,7 @@ class IssueCore2 extends TableForm
 		$this->addColumnInput('onTop');
 		$this->addColumnInput('disableComments');
 		$this->addColumnInput('section');
+		$this->addColumnInput('issueType');
 
 		//if ($topSection['useStatuses'])
 		//	$this->addColumnInput('status');
@@ -255,9 +256,8 @@ class IssueCore2 extends TableForm
 		$this->setFlag ('sidebarWidth', '0.45');
 		$this->setFlag ('maximize', 1);
 
-		$tabs ['tabs'][] = ['text' => 'Obsah', 'icon' => 'icon-pencil-square-o'];
-		//$tabs ['tabs'][] = ['text' => 'Analýza', 'icon' => 'icon-search-plus'];
-		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'icon-paperclip'];
+		$tabs ['tabs'][] = ['text' => 'Obsah', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		$this->openForm (TableForm::ltNone);
 			$this->addColumnInput ('subject', TableForm::coHidden);
