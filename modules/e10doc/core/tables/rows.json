@@ -80,7 +80,7 @@
 		{"id": "bankTransNdx", "name": "Bankovní transakce", "type": "int", "reference": "e10doc.finance.transactions"},
 
     {"id": "dateTax", "name": "Datum uskutečnění zdanitelného plnění", "label": "DUZP", "type": "date"},
-    {"id": "dateVATRate", "name": "Datum sazby DPH", "type": "date"},
+    {"id": "dateVATRate", "name": "Datum sazby DPH", "type": "date", "options": ["saveOnChange"]},
     {"id": "taxPeriod", "name": "Daňové období", "type": "int", "reference": "e10doc.base.taxperiods"},
 
     {"id": "dateAccounting", "name": "Účetní datum", "type": "date"},
