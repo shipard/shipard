@@ -15,6 +15,21 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$e->sendAllBulkEmails();
 	}
 
+	protected function sendBulkPost()
+	{
+		$postNdx = intval($this->app->arg('postNdx'));
+		if (!$postNdx)
+			return $this->app->err('arg `--postNdx` is missing or wrong');
+
+		$params = ['actionTable' => 'e10pro.bume.bulkEmails', 'actionPK' => $postNdx];
+		$sendAction = new \lib\wkf\SendBulkEmailAction($this->app());
+		$sendAction->setParams($params);
+		$sendAction->init();
+		$sendAction->run();
+
+		return TRUE;
+	}
+
 	public function onCronEver()
 	{
 		$this->sendBulkEmails();
@@ -27,5 +42,15 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'ever': $this->onCronEver(); break;
 		}
 		return TRUE;
+	}
+
+	public function onCliAction ($actionId)
+	{
+		switch ($actionId)
+		{
+			case 'send-bulk-post': return $this->sendBulkPost();
+		}
+
+		parent::onCliAction($actionId);
 	}
 }
