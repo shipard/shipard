@@ -1816,7 +1816,10 @@ class ViewDetailPersonsBalances extends \E10\TableViewDetail
 						'request' => $r['request'], 'payment' => $r['payment'],
 						's1' => $r['symbol1'], 's2' => $r['symbol2']);
 					$item['curr'] = $this->currencies[$r['currency']]['shortcut'];
-					$item['exchangeRate'] = $r['requestHc']/$r['request'];
+					if ($r['request'] != 0.0)
+						$item['exchangeRate'] = $r['requestHc']/$r['request'];
+					else
+						$item['exchangeRate'] = 1;
 					$item['dateAccounting'] = $r['dateAccounting'];
 					$item['icon'] = array ('text' => '', 'icon' => $this->balances[$r['type']]['icon']);
 					$item['_options'] = [
@@ -1844,7 +1847,10 @@ class ViewDetailPersonsBalances extends \E10\TableViewDetail
 						'request' => $r['request'], 'payment' => $r['payment'],
 						's1' => $r['symbol1'], 's2' => $r['symbol2']);
 					$item['curr'] = $this->currencies[$r['currency']]['shortcut'];
-					$item['exchangeRate'] = $r['paymentHc']/$r['payment'];
+					if ($r['payment'] != 0.0)
+						$item['exchangeRate'] = $r['paymentHc']/$r['payment'];
+					else
+						$item['exchangeRate'] = 1;
 					$item['dateAccounting'] = $r['dateAccounting'];
 					$item['icon'] = array ('text' => '', 'icon' => $this->balances[$r['type']]['icon']);
 					$item['_options'] = [
