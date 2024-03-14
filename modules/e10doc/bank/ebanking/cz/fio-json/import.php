@@ -38,6 +38,8 @@ class Import extends \E10Doc\Bank\ebankingImportDoc
 		$symbol1 = isset($r['column5']) ? $r['column5']['value'] : '';
 		$symbol1 = ltrim ($symbol1, '0');
 		$symbol2 = isset($r['column6']) ? $r['column6']['value'] : '';
+		if ($symbol2 === '0')
+			$symbol2 = '';
 		$symbol3 = isset($r['column4']) ? $r['column4']['value'] : '';
 		if ($symbol3 === '0000')
 			$symbol3 = '';
