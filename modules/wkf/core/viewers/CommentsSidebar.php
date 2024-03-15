@@ -4,6 +4,7 @@ namespace wkf\core\viewers;
 
 
 use \e10\TableView, \e10\utils, \e10\uiutils, \e10\json;
+use \e10\base\libs\UtilsBase;
 
 
 /**
@@ -121,7 +122,7 @@ class CommentsSidebar extends TableView
 
 		// -- add comment button
 		$title [] = [
-			'class' => 'label label-default', 'icon' => 'icon-commenting',
+			'class' => 'label label-default', 'icon' => 'system/issueComment',
 			'text' => 'Odpovědět', 'title' => 'Odpovědět', 'element' => 'span', 'btnClass' => 'test',
 			'action' => 'new', 'data-table' => 'wkf.core.comments',
 			'data-addParams' => '__issue='.$item['issue'].'&__inReplyToComment='.$item['ndx'],
@@ -238,7 +239,7 @@ class CommentsSidebar extends TableView
 			return;
 
 		$this->loadNotifications();
-		$this->atts = \E10\Base\loadAttachments ($this->app(), $this->pks, 'wkf.core.comments');
+		$this->atts = UtilsBase::loadAttachments($this->app(), $this->pks, 'wkf.core.comments');
 	}
 
 	protected function loadNotifications ()
