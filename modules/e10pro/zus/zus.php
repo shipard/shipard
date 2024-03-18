@@ -219,7 +219,7 @@ class zusutils
 		$docTypes = $app->cfgItem ('e10.docs.types');
 
 		$q[] = 'SELECT heads.dateAccounting as date, journal.docHead as docHead, journal.side, heads.docType as docType,';
-		array_push($q, ' heads.docNumber, heads.ndx as headNdx, journal.symbol2 as symbol2, journal.request as predpis, journal.payment as vyrovnani');
+		array_push($q, ' heads.docNumber, heads.ndx as headNdx, heads.dateDue as docDateDue, journal.symbol2 as symbol2, journal.request as predpis, journal.payment as vyrovnani');
 		array_push($q, ' FROM e10doc_balance_journal AS journal');
 		array_push($q, ' LEFT JOIN e10doc_core_heads as heads ON journal.docHead = heads.ndx');
 		array_push($q, ' WHERE journal.type = 1000 AND journal.symbol1 = %s', $cisloStudia);
@@ -242,6 +242,7 @@ class zusutils
 		$predpisy = [];
 		$heads = [];
 		$minDate = utils::today();
+		$docDateDue = NULL;
 		$rows = $app->db()->query ($q);
 		foreach ($rows as $r)
 		{
@@ -288,6 +289,7 @@ class zusutils
 			$heads[] = $r['headNdx'];
 			if ($r['date'] < $minDate)
 				$minDate = $r['date'];
+			$docDateDue = $r['docDateDue'];
 		}
 		if ($style == 0)
 		{
@@ -299,7 +301,7 @@ class zusutils
 
 		$res = [
 				'docPredpisy' => $predpisy, 'celkKUhrade' => $celkemKUhrade, 'docUhrady' => $uhrady, 'celkUhrazeno' => $celkemUhrazeno,
-				'heads' => $heads, 'minDate' => $minDate, 'totals' => $totals
+				'heads' => $heads, 'minDate' => $minDate, 'docDateDue' => $docDateDue, 'totals' => $totals
 		];
 
 		return $res;

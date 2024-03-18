@@ -8,6 +8,7 @@ require_once __SHPD_MODULES_DIR__ . 'e10doc/core/core.php';
 
 
 use \e10\utils;
+use \e10doc\core\libs\E10Utils;
 
 
 /**
@@ -318,6 +319,8 @@ class reportFees extends \E10\GlobalReport
 
 	function createContent_All()
 	{
+		$dueDate = E10Utils::balanceOverDueDate ($this->app);
+
 		$this->setInfo('param', $this->reportParams ['viewType']['title'], $this->reportParams ['viewType']['activeTitle']);
 		$this->paperOrientation = 'landscape';
 
@@ -376,17 +379,20 @@ class reportFees extends \E10\GlobalReport
 			// -- request for payment button
 			if (!$this->app()->printMode && $r['amountRest'] > 0.0)
 			{
-				$btn = [
-						'type' => 'action', 'action' => 'print', 'style' => 'print', 'icon' => 'system/actionPrint', 'text' => '', 'title' => 'Upomínka',
-						'data-report' => 'e10doc.balance.RequestForPayment',
-						'data-table' => 'e10.persons.persons', 'data-pk' => $r['studentNdx'], 'actionClass' => 'btn-xs btn-primary', 'class' => 'pull-right'];
-				$btn['subButtons'] = [];
-				$btn['subButtons'][] = [
-						'type' => 'action', 'action' => 'addwizard', 'icon' => 'system/iconEmail', 'title' => 'Odeslat emailem', 'btnClass' => 'btn-primary btn-xs',
-						'data-table' => 'e10.persons.persons', 'data-pk' => $r['studentNdx'], 'data-class' => 'Shipard.Report.SendFormReportWizard',
-						'data-addparams' => 'reportClass=' . 'e10doc.balance.RequestForPayment' . '&documentTable=' . 'e10.persons.persons'
-				];
-				$invoices[] = $btn;
+				if ($r['docDateDue'] < $dueDate)
+				{
+					$btn = [
+							'type' => 'action', 'action' => 'print', 'style' => 'print', 'icon' => 'system/actionPrint', 'text' => '', 'title' => 'Upomínka',
+							'data-report' => 'e10doc.balance.RequestForPayment',
+							'data-table' => 'e10.persons.persons', 'data-pk' => $r['studentNdx'], 'actionClass' => 'btn-xs btn-primary', 'class' => 'pull-right'];
+					$btn['subButtons'] = [];
+					$btn['subButtons'][] = [
+							'type' => 'action', 'action' => 'addwizard', 'icon' => 'system/iconEmail', 'title' => 'Odeslat emailem', 'btnClass' => 'btn-primary btn-xs',
+							'data-table' => 'e10.persons.persons', 'data-pk' => $r['studentNdx'], 'data-class' => 'Shipard.Report.SendFormReportWizard',
+							'data-addparams' => 'reportClass=' . 'e10doc.balance.RequestForPayment' . '&documentTable=' . 'e10.persons.persons'
+					];
+					$invoices[] = $btn;
+				}
 			}
 
 			if (count($invoices))
@@ -470,7 +476,8 @@ class reportFees extends \E10\GlobalReport
 					'invAmountTotal' => $balance['celkKUhrade'], 'amountPayed' => $balance['celkUhrazeno'],
 					'amountRest' => $balance['celkKUhrade'] - $balance['celkUhrazeno'],
 					'amountOverpaid' => 0.0, 'amountUnpaid' => 0.0,
-					'invoices' => $balance['docPredpisy']
+					'invoices' => $balance['docPredpisy'],
+					'docDateDue' => $balance['docDateDue'] ?? NULL,
 			];
 
 			switch ($this->fees)
@@ -635,14 +642,15 @@ class reportFees extends \E10\GlobalReport
 		}
 
 		// -- prepare persons to demand
-		$dateLimit = new \DateTime('1 week ago');
+		$dueDate = E10Utils::balanceOverDueDate ($this->app);
 		foreach ($this->dataStudies as $item)
 		{
 			$studentNdx = $item['studentNdx'];
 			if ($item['amountRest'] > 10.0 && !in_array($studentNdx, $this->personsToDemand)
 				/*&& isset($this->demandsForPayDates[$studentNdx]) && $this->demandsForPayDates[$studentNdx] < $dateLimit*/)
 			{
-				$this->personsToDemand[] = $studentNdx;
+				if ($item['docDateDue'] < $dueDate)
+					$this->personsToDemand[] = $studentNdx;
 			}
 		}
 	}
