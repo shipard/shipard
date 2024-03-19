@@ -236,6 +236,8 @@ class WebPages extends \E10\utility
 			$c = $this->template->renderTemplate();
 			$this->page ['code'] = $c;
 		}
+		if (isset ($this->template->data ['forceStatus']))
+			$this->page ['status'] = $this->template->data ['forceStatus'];
 
 		while(1)
 		{
@@ -749,7 +751,7 @@ class WebPages extends \E10\utility
 
 		$gaid = $this->serverInfo['gaid'] ?? '';
 		if ($gaid !== '' && !webPages::$secureWebPage)
-		{	
+		{
 			$c .= "(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 				(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
 				m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
@@ -762,7 +764,7 @@ class WebPages extends \E10\utility
 		$mtmSiteId = $this->serverInfo['mtmSiteId'] ?? '';
 		$mtmUrl = $this->serverInfo['mtmUrl'] ?? '';
 		if ($mtmSiteId != '' && $mtmUrl !== '' && !webPages::$secureWebPage)
-		{	
+		{
 			$c .= "var _paq = window._paq = window._paq || [];
 				_paq.push(['trackPageView']);
 				_paq.push(['enableLinkTracking']);
