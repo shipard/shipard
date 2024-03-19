@@ -1,0 +1,30 @@
+{
+	"id": "e10pro.bume.listRecipients", "sql": "e10pro_bume_listRecipients", "name": "Adresáti hromadné pošty",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "list", "name": "Seznam", "type": "int", "reference": "e10pro.bume.lists"},
+		{"id": "virtualGroup", "name": "Skupina", "label": "Komu", "type": "enumString", "len": 40, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10.persons.virtualGroups", "cfgValue": "", "cfgText": "name"}},
+		{"id": "virtualGroupItem", "name": "Položka", "type": "enumInt", "len": 4, "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": ""}},
+		{"id": "virtualGroupItem2", "name": "Položka č. 2", "type": "enumInt", "len": 4,
+			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": ""}},
+		{"id": "virtualGroupItem3", "name": "Položka č. 3", "type": "enumInt", "len": 4,
+			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": ""}},
+		{"id": "virtualGroupItem4", "name": "Položka č. 4", "type": "enumInt", "len": 4,
+			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": ""}},
+		{"id": "virtualGroupItem5", "name": "Položka č. 5", "type": "enumInt", "len": 4,
+			"enumCfg": {"cfgItem": "", "cfgValue": "", "cfgText": ""}}
+	],
+	"views": [
+		{"id": "default", "class": "e10pro.bume.ViewBListRecipients",
+			"details": {
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.bume.ViewDetaiBulkRecipient", "order": 1000}
+			}
+		}
+	],
+	"options": ["systemTable"],
+	"forms": [
+		{"id": "default", "class": "e10pro.bume.FormListRecipient"}
+	]
+}

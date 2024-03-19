@@ -3,5 +3,9 @@
 		"options": [
 			{"cfgKey": "bulkEmails", "cfgName": "Testovat Hromadné emaily", "options": {"0": "Ne","1": "Ano"}}
 		]
+	},
+	"wkfnBumeLists": {
+		"name": "Seznamy pro Hromadnou poštu", "order": 451000, "group": "workflow",
+		"type": "viewer", "table": "e10pro.bume.lists", "viewer": "default"
 	}
 }

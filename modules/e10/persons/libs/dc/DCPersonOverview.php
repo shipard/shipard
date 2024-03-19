@@ -21,6 +21,9 @@ class DCPersonOverview extends \Shipard\Base\DocumentCard
 	var $tableRelations = NULL;
 	var $relationsCategories;
 
+	/** @var \e10\persons\libs\Vcard */
+	var $vcard;
+
 	var $properties = NULL;
 	var $contacts = '';
 	var $validity = NULL;
@@ -63,6 +66,7 @@ class DCPersonOverview extends \Shipard\Base\DocumentCard
 		$this->loadDataValidity();
 		$this->loadDataAddresses();
 		$this->loadDataRelations();
+		$this->loadDataVcard();
 	}
 
 	function loadDataAddresses()
@@ -403,6 +407,13 @@ class DCPersonOverview extends \Shipard\Base\DocumentCard
 		$this->validity['content'] = $line;
 	}
 
+	protected function loadDataVcard()
+	{
+		$this->vcard = new \e10\persons\libs\Vcard($this->app());
+		$this->vcard->setPerson($this->recData['ndx']);
+		$this->vcard->run();
+	}
+
 	public function createContentBody ()
 	{
 		$contentContacts = $this->contentContacts();
@@ -428,9 +439,19 @@ class DCPersonOverview extends \Shipard\Base\DocumentCard
 		// -- contacts
 		if ($this->contacts !== '')
 		{
+			$ccc = $this->contacts;
+
+			$qrBtn = "<span class='pull-right' data-toggle='popover' data-trigger='hover' data-html='true' data-placement='left'";
+			$qrBtn .= " data-content=\"<img style='max-width: 100%;' src='{$this->vcard->info['vcardQRCodeURL']}'>\"";
+			$qrBtn .= " onmouseover='$(this).popover(\"show\")'";
+			$qrBtn .= '>';
+			$qrBtn .= $this->app()->ui()->icon('user/addressBook');
+			$qrBtn .= '</span>';
+
+			$ccc[] = ['code' => $qrBtn];
 			$t [] = [
 				'c1' => ['icon' => 'system/iconIdBadge', 'text' => ''],
-				'c2' => $this->contacts,
+				'c2' => $ccc,
 				'_options' => ['cellTitles' => ['c1' => 'Kontaktní údaje']]
 			];
 		}

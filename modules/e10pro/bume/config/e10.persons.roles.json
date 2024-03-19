@@ -3,7 +3,8 @@
 		"name": "Hromadné emaily",
 		"roles": ["user"],
 		"viewers": {
-			"e10pro.bume.bulkEmails": {"default": 2}
+			"e10pro.bume.bulkEmails": {"default": 2},
+			"e10pro.bume.lists": {"default": 2}
 		}
 	}
 }

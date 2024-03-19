@@ -2,7 +2,7 @@
 	"id": "e10pro.bume",
 	"name": "Bulk Messaging",
 	"tables": [
-		"bulkEmails", "bulkRecipients", "bulkPosts"
+		"bulkEmails", "bulkRecipients", "bulkPosts", "lists", "listRecipients"
 	],
 	"modules": ["e10/base"],
 	"config": [

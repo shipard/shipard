@@ -1,0 +1,25 @@
+{
+	"id": "e10pro.bume.lists", "sql": "e10pro_bume_lists", "name": "Seznamy pro Hromadnou poštu", "icon": "system/iconList",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Předmět zprávy", "type": "string", "len": 120},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"lists": [
+		{"id": "rows", "class": "e10.base.ListRows", "name": "Adresáti", "table": "e10pro.bume.listRecipients", "queryColumn": "list"}
+	],
+	"views": [
+		{"id": "default", "class": "e10pro.bume.ViewLists",
+			"details": {
+				"default": {"title": "Náhled", "icon": "system/detailOverview", "type": "detail", "class": "e10pro.bume.ViewDetailBulkEmail", "order": 1000},
+				"posts": {"title": "Příjemci", "icon": "system/detailRecipients", "type": "detail", "class": "e10pro.bume.ViewDetailBulkEmailPosts", "order": 2000}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.bume.FormList"}
+	]
+}
