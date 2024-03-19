@@ -19,7 +19,11 @@ class Vcard extends DataView
 		if (isset($this->requestParams['personId']))
 		{
 			if ($this->requestParams['personId'] === 'URL')
+      {
 				$this->requestParams['personId'] = $this->app()->requestPath(count($this->app()->requestPath) - 1);
+        if (str_ends_with($this->requestParams['personId'], '.vcf'))
+          $this->requestParams['personId'] = substr($this->requestParams['personId'], 0, -4);
+      }
 
 			$rows = $this->db()->query('SELECT ndx FROM [e10_persons_persons] WHERE [id] = %s', $this->requestParams['personId'],
                                   ' AND [docState] IN %in', [4000, 8000]);
