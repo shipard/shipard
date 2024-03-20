@@ -1,5 +1,5 @@
 body > div.fullScreenModal {
-    position: absolute;
+  position: absolute;
   width: 100vw;
   height: 100vh;
   z-index: 10000;
@@ -32,16 +32,19 @@ width: 25%;
 text-align: center;
 border: 2px solid var(--numpadBorder);
 background-color: var(--numpadBackground);
-color: var(--numpadColor);
+//color: var(--numpadColor);
+color: var(--shpd-body-color);
 }
 
 table.shp-numpad-keyboard td.ok.shp-widget-action {
-background-color: #{$numpad-ok};
+//background-color: #{$numpad-ok};
+background-color: var(--shpd-success);
 }
 
 
 table.shp-numpad-keyboard td.c.shp-widget-action {
-background-color: var(--numpadClose);
+//background-color: var(--numpadClose);
+background-color: var(--shpd-200);
 }
 
 

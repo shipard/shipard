@@ -10,10 +10,16 @@
     --shpd-500: #202020;
 
     --shpd-secondary: #BEBEBE;
-    --shpd-success: #00AA39;
+    --shpd-success: #0AAF41;
     --shpd-info: #0EBBDE;
     --shpd-warning: #E9C01E;
     --shpd-danger: #CA0000;
+
+    --shpd-secondary-hover: #83878A;
+    --shpd-success-hover: #1D9247;
+    --shpd-info-hover: #1F9BB5;
+    --shpd-warning-hover: #C9AA29;
+    --shpd-danger-hover: #A3181A;
 
     --shpd-body-color: #F0F0F0;
     --shpd-body-color-muted: #C4C4C4; // 75% opacity of body color
@@ -34,6 +40,7 @@
     --shpd-menu-handle-bg: var(--shpd-200); // left column after minimizing menu
 
     --shpd-hover-bg: var(--shpd-primary-gray);
+    --shpd-hover-color: #F0F0F0;
     --shpd-viewer-row-active: var(--shpd-primary-subtle);
     --shpd-universal-border: var(--shpd-100);
     --shpd-card-bg: var(--shpd-200);
@@ -44,12 +51,21 @@
     --shpd-accordion-border: var(--shpd-100);
 
     --navPillsColor: #F5F5F5;
-    --numpadBackground: #585858;
-    --numpadBorder: #696969;
-    --numpadClose: #808080;
     --dashboardButtonColor: #000;
     --calendarInactive: #282828;
     --popoverBg: #505050;
+
+    /* cashbox */
+    --shpd-cashbox-item-bg: var(--shpd-secondary);
+
+    /* numpad */
+    --numpadBackground: #585858;
+    --numpadBorder: #696969;
+    //--numpadClose: #808080;
+
+    /* buttons */
+    --shpd-btn-color-darks: #F0F0F0; //text color for dark buttons
+    --shpd-btn-color-lights: #212529; //text color for light buttons
 }
 
 .accordion-button:not(.collapsed){

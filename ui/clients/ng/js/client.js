@@ -25,8 +25,10 @@ class ShipardClient {
 
 	on(eventType, selector, callback) {
 		document.addEventListener(eventType, function (event) {
-			if (event.target.matches(selector)) {
-				callback.call(event.target, event.target);
+			var ce = event.target.closest(selector);
+			if (ce) {
+
+				callback.call(ce, ce);
 			}
 		});
 	}
@@ -40,9 +42,10 @@ class ShipardClient {
 	 */
 	simpleTabsEvent(e)
 	{
+		console.log('tabs...');
 		let tabsId = e.getAttribute('data-tabs');
 		let tabsElement = document.getElementById(tabsId+'-tabs');
-		let oldActiveTabElement = tabsElement.querySelector('a.active');
+		let oldActiveTabElement = tabsElement.querySelector('.active');
 		oldActiveTabElement.classList.remove('active');
 
 		let oldActiveContentId = oldActiveTabElement.getAttribute('data-tab-id');
@@ -331,7 +334,7 @@ class ShipardClient {
 
 		this.initColorMode(true);
 
-		this.onClick ('a.shp-simple-tabs-item', function () {shc.simpleTabsEvent(this);});
+		this.onClick ('.shp-simple-tabs-item', function () {shc.simpleTabsEvent(this);});
 		this.onClick ('.shp-app-action', function (e) {this.widgetAction(e);}.bind(this));
 
 		this.initUI();

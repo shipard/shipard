@@ -182,3 +182,53 @@ div.shp-buttons-container > *
 .payHeader, .paymentAmount {
 	padding: 1rem;
 }
+
+/* border for bought items*/
+.cash-box-container-sell table.rows tbody {
+  border-bottom: 1px solid var(--shpd-universal-border);
+}
+
+/* for items in cashbox*/
+span.cashboxItem{
+  background-color: var(--shpd-cashbox-item-bg);
+  border: 1px solid var(--shpd-cashbox-item-bg);
+  border-radius: 6px;
+  padding: .3rem;
+  text-align: center;
+  text-decoration: none;
+  font-size: 1rem;
+  color: var(--shpd-btn-color-lights);
+}
+span.cashboxItem:hover{
+  background-color: var(--shpd-hover-bg);
+  border: 1px solid var(--shpd-hover-bg);
+  color: var(--shpd-hover-color);
+}
+
+/* cashbox menu (items categories) */
+ul.shpd-pills{
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  padding: 0;
+  margin-bottom: 0;
+  column-gap: .5rem;
+  li.shpd-pills-item {
+    padding: .3rem 1rem;
+  }
+  li.shpd-pills-item:hover{
+    background-color: var(--shpd-hover-bg);
+    border-radius: 6px;
+  }
+  li.shpd-pills-item.active {
+    background-color: var(--shpd-primary-subtle);
+    border-radius: 6px;
+    a {
+      color: var(--shpd-btn-color-lights);
+    }
+  }
+  a.shpd-pills-link {
+    display: block;
+    text-decoration: none;
+  }
+}

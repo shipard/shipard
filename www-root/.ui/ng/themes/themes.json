@@ -8,7 +8,7 @@
         "file":"\/www-root\/.ui\/ng\/themes\/default\/systemDefaultLight.css",
         "dm":0,
         "integrity":{
-          "sha384":"6079a37641f0e55ba3c31004dafb8b7ac06a0db053af86b934b19700fbf11a58539129fea5bab065ea5a25d7a625d187"
+          "sha384":"80ea672fa2ecddcabdd5ee397c5e2ece71302e0defcfce6524292bc5d97dda6e88b50e0586e5d300464f18c52bf581fd"
         }
       },
       "systemDefaultDark":{
@@ -16,13 +16,13 @@
         "file":"\/www-root\/.ui\/ng\/themes\/default\/systemDefaultDark.css",
         "dm":1,
         "integrity":{
-          "sha384":"781cbe53f6430df7d2eb1aa0dee9a227885434221941e49b8c0ea7b575b92e7b143c1bf02fb666fa2db4934d15d754f3"
+          "sha384":"f1e91603c7842ac275e40b3938e126d4a0b413a4a599a5c2765b31ca3097acd3ca3879fdb2b1cf54e602f1c3a4962199"
         }
       }
     },
     "integrity":{
-      "sha384":"5fb34b6bf54568e85d1e20c3b59a67fe94bc066c23f435f7d533ff2da221fe6b6bf520ed0b31ef66f3298cc04a9fb375",
-      "md5":"14b55363556c2adcfac0d38c8cb525a4"
+      "sha384":"0987475164b4f16d7720f83135b9d4df828cc297e97c5b7b1939643a64837a232a0f86a4def19a93e2fff245e2b008db",
+      "md5":"3eb20da2bdfc53f0be6bf25220f140b5"
     }
   }
 }

@@ -186,12 +186,12 @@ class WidgetCashBoxNG extends \Shipard\UI\Core\UIWidgetBoard
 		{
 			if ($this->disablePaymentCards)
 			{
-				$c .= "<button class='btn btn-success shp-widget-action' data-action='terminal-pay' data-pay-method='1'>Zaplatit</button>";
+				$c .= "<button class='shpd-btn shpd-btn-secondary shp-widget-action' data-action='terminal-pay' data-pay-method='1'>Zaplatit</button>";
 			}
 			else
 			{
-				$c .= "<button class='btn btn-success shp-widget-action' data-action='terminal-pay' data-pay-method='1'>Hotově</button>";
-				$c .= "<button class='btn btn-success shp-widget-action' data-action='terminal-pay' data-pay-method='2'>Kartou</button>";
+				$c .= "<button class='shpd-btn shpd-btn-secondary shp-widget-action' data-action='terminal-pay' data-pay-method='1'>Hotově</button>";
+				$c .= "<button class='shpd-btn shpd-btn-secondary shp-widget-action' data-action='terminal-pay' data-pay-method='2'>Kartou</button>";
 			}
 		}
     $c .= '</div>';
@@ -274,11 +274,11 @@ class WidgetCashBoxNG extends \Shipard\UI\Core\UIWidgetBoard
         $tabsHidden = 'hidden';
 
       $class = ' active';
-      $c .= "<ul class='nav nav-pills' id='$cbProductsTabsId-tabs'>";
+      $c .= "<ul class='shpd-pills' id='$cbProductsTabsId-tabs'>";
       foreach ($this->products as $productCatKey => $productCat)
       {
-        $c .= "<li class='nav-item'>";
-        $c .= "<a class='nav-link shp-simple-tabs-item$class' href='#' data-tabs='$cbProductsTabsId' data-tab-id='$cbProductsTabsId-content-$productCatKey'>".utils::es ($productCat['title']).'</a>';
+        $c .= "<li class='shpd-pills-item shp-simple-tabs-item $class' data-tabs='$cbProductsTabsId' data-tab-id='{$cbProductsTabsId}-content-$productCatKey'>";
+        $c .= "<a class='shpd-pills-link' href='#'>".utils::es ($productCat['title']).'</a>';
         $c .= '</li>';
         $class = '';
       }
@@ -308,7 +308,7 @@ class WidgetCashBoxNG extends \Shipard\UI\Core\UIWidgetBoard
         $c .= "<div class='products shp-buttons-container$cls' id='$cbProductsTabsId-content-$productCatKey'>";
         foreach ($this->products[$productCatKey]['items'] as $item)
         {
-          $c .= "<button class='item btn btn-primary shp-widget-action' data-action='addRow'";
+          $c .= "<span class='item cashboxItem shp-widget-action' data-action='addRow'";
 
           $c .= " data-pk='{$item['pk']}'" . " data-price='{$item['price']}'" . " data-askq='{$item['askq']}'" . " data-askp='{$item['askp']}'" .
                 " data-name=\"".utils::es($item['name'])."\"" . " data-unit=\"".utils::es($item['unit'])."\"" . " data-unit-name=\"".utils::es($item['unitname'])."\"";
@@ -321,7 +321,7 @@ class WidgetCashBoxNG extends \Shipard\UI\Core\UIWidgetBoard
 
           $c .= utils::es($item['title']);
 
-          $c .= '</button>';
+          $c .= '</span>';
         }
         $c .= '</div>';
 
@@ -436,17 +436,17 @@ class WidgetCashBoxNG extends \Shipard\UI\Core\UIWidgetBoard
       if (!$this->disablePaymentCards)
       {
         $c .= "<input type='radio' class='btn-check'  name='payment-method' id='".$this->widgetId."_payM0' autocomplete='off' data-pay-method='1' value='1' checked>";
-        $c .= "<label class='btn btn-outline-success shp-widget-action' data-action='change-payment-method' data-pay-method='1' for='".$this->widgetId."_payM0'>Hotově</label>";
+        $c .= "<label class='btn btn-outline-danger shp-widget-action' data-action='change-payment-method' data-pay-method='1' for='".$this->widgetId."_payM0'>Hotově</label>";
         $c .= "<br>";
         $c .= "<input type='radio' class='btn-check' name='payment-method' id='".$this->widgetId."_payM1' autocomplete='off' data-pay-method='2' value='2'>";
-        $c .= "<label class='btn btn-outline-success shp-widget-action' data-action='change-payment-method' data-pay-method='2' for='".$this->widgetId."_payM1'>Kartou</label>";
+        $c .= "<label class='btn btn-outline-danger shp-widget-action' data-action='change-payment-method' data-pay-method='2' for='".$this->widgetId."_payM1'>Kartou</label>";
       }
       else
         $c .= "<span class='e10-terminal-action active' data-action='change-payment-method' data-pay-method='1' style='display: none;'>Hotově</span>";
     $c .= "</div>";
 
     $c .= "<div class='paymentFooter text-end p-3'>";
-      $c .= "<button class='btn btn-primary shp-widget-action' data-action='terminal-sell'>".$this->app()->ui()->icon('system/actionBack')." Zpět do kasy</button>";
+      $c .= "<button class='shpd-btn shpd-btn-secondary shp-widget-action' data-action='terminal-sell'>".$this->app()->ui()->icon('system/actionBack')." Zpět do kasy</button>";
     $c .= "</div>";
 
     $c .= "<div class='paymentAmount'>";
@@ -454,7 +454,7 @@ class WidgetCashBoxNG extends \Shipard\UI\Core\UIWidgetBoard
     $c .= "</div>";
 
     $c .= "<div class='paymentDo'>";
-      $c .= "<button class='btn btn-primary shp-widget-action' data-action='terminal-save'>ZAPLACENO</button>";
+      $c .= "<button class='shpd-btn shpd-btn-success shp-widget-action' data-action='terminal-save'>ZAPLACENO</button>";
     $c .= "</div>";
 
     $c .= "</div>"; // <-- div.cash-box-container-pay
