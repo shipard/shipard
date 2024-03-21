@@ -23,14 +23,9 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 
 		if ($this->mode === 'set-workplace')
 		{
-			$workplaceId = $this->app->requestPath(3);
+			$workplaceId = $this->uiRouter->urlPart(2);//$this->app->requestPath(3);
 			$this->app->setCookie ('_shp_gwid', $workplaceId, time() + 10 * 365 * 86400);
-
-			$redirTo = $this->app->urlProtocol . $_SERVER['HTTP_HOST']. $this->app->urlRoot . '/ui/login';
-			$lpid = 4;
-			while ($this->app->requestPath($lpid) !== '')
-				$redirTo .= '/'.$this->app->requestPath($lpid++);
-
+			$redirTo = $this->app->urlProtocol . $_SERVER['HTTP_HOST']. $this->uiRouter->uiRoot . '/user/login';
 			header ('Location: '.$redirTo);
 			die();
 		}
@@ -45,7 +40,7 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 			return;
 
 
-		if (isset($this->workplace['users']))
+		if (0 && isset($this->workplace['users']))
 		{
 			$q[] = 'SELECT persons.fullName, persons.firstName, persons.lastName, persons.login FROM e10_persons_persons AS persons';
 			array_push($q, ' WHERE persons.ndx IN %in', $this->workplace['users']);

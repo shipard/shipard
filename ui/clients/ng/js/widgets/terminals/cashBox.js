@@ -303,18 +303,14 @@ class WidgetCashBox extends ShipardWidgetDocumentCore
 
   save ()
   {
-    console.log("__SAVE__");
-
     //this.setDoneStatus ('sending');
     this.setMode('save');
 
-    var printAfterConfirm = '1';
-
-    var url = '/api/objects/insert/e10doc.core.heads?printAfterConfirm='+printAfterConfirm;
-
-    shc.server.post (url, this.doc,
+    const docData = {requestType: 'rest', table: 'e10doc.core.heads', operation: 'insert', printAfterConfirm: 1, data: this.doc};
+    var url = 'api/v2';
+    shc.server.post (url, docData,
       function (data) {
-        console.log("--save-success--");
+        console.log("--save-success--", data);
         this.documentInit(true);
         this.setMode('sell');
         //e10.terminal.setDoneStatus ('success');

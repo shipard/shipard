@@ -15,6 +15,7 @@ class Router extends Utility
 	var $uiId = '';
 	var $uiRoot = '';
 	var $urlPath = [];
+	var $workplace = NULL;
 	var ?\Shipard\UI\ng\TemplateUI $uiTemplate = NULL;
 
 	public function setUIId($uiId)
@@ -75,6 +76,13 @@ class Router extends Utility
 		$this->uiTemplate = new \Shipard\UI\ng\TemplateUI ($this->app());
 		$this->uiTemplate->data['uiRoot'] = $this->uiRoot;
 		$this->uiTemplate->uiRoot = $this->uiRoot;
+
+		$workplaceGID = $this->app->testCookie ('_shp_gwid');
+		if ($workplaceGID !== '')
+		{
+			$this->workplace = $this->app->searchWorkplaceByGID($workplaceGID);
+			$this->app->workplace = $this->workplace;
+		}
 
 		$dsIcon = $this->app->dsIcon();
 		$this->uiTemplate->data['dsIconUrl'] = $dsIcon['iconUrl'];
@@ -170,6 +178,7 @@ class Router extends Utility
 	{
 		if (!isset($this->urlPath[1]) || $this->urlPath[1] !== 'v2')
 		{
+			error_log("__OLD_API__");
 			return $this->app()->routeApiRun();
 		}
 

@@ -57,6 +57,7 @@ class Router extends \Shipard\Base\Utility
       case 'dataForm': $apiResponseObject = new \Shipard\Api\v2\ApiResponseForm($this->app()); break;
       case 'appCommand': $apiResponseObject = new \Shipard\Api\v2\ApiResponseAppCommand($this->app()); break;
       case 'documentCard': $apiResponseObject = new \Shipard\Api\v2\ApiResponseDocumentCard($this->app()); break;
+      case 'rest': $apiResponseObject = new \Shipard\Api\v2\ApiResponseRest($this->app()); break;
     }
 
     if (!$apiResponseObject)

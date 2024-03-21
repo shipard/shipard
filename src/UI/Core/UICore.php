@@ -7,7 +7,7 @@ use \Shipard\Utils\Utils;
 class UICore extends \Shipard\Base\BaseObject
 {
 	protected \Shipard\UI\Core\Icons $icons;
-	
+
 	public function icons()
 	{
 		return $this->icons;
@@ -109,6 +109,8 @@ class UICore extends \Shipard\Base\BaseObject
 
 		if (isset($p['mark']))
 			return $this->renderDocMark($p);
+		if (isset($p['badge']))
+			return $this->renderBadge($p);
 
 		$t = '';
 		$css = (isset($p['css'])) ? " style='{$p['css']}'" : '';
@@ -153,7 +155,7 @@ class UICore extends \Shipard\Base\BaseObject
 			$t .= Utils::elementActionParams ($p, $linkClass);
 			if (isset($p['table']))
 				$t.= " data-table='{$p['table']}'";
-			$t .= " class='$linkClass' data-action='{$p['docAction']}' $title>$i" . Utils::es ($p ['text']) . "</$element>";
+			$t .= " class='$linkClass' data-action='{$p['docAction']}' $title $css>$i" . Utils::es ($p ['text']) . "</$element>";
 		}
 		else
 		if (isset($p['action']))
@@ -393,6 +395,31 @@ class UICore extends \Shipard\Base\BaseObject
 		return $t;
 	}
 
+	public function renderBadge($p)
+	{
+		$b = '';
+/*
+    $url = '';//;'https://updown.io/'.$recData['updownIOId'];
+    $b .= "<span class='df2-action-trigger shp-badge mb1' data-url-download='$url' data-with-shift='tab' data-action='open-link' data-popup-id='updownio'>";
+    $b .= "<span class='e10-bg-bt'>";
+
+		if (isset($p['action']))
+		{
+			$b .= $this->actionCode ($p);
+		}
+
+		foreach ($p['items'] as $item)
+		{
+
+			if (isset ($p ['icon']))
+				$b .= $this->icons()->icon($p ['icon']);
+			if (isset ($p ['text']))
+				$b .= $this->icons()->icon($p ['icon']);
+		}
+*/
+		return $b;
+	}
+
 	public function icon(string $i, string $addClass = '', string $element = 'i', string $params = '')
 	{
 		return $this->icons->icon($i, $addClass, $element, $params);
@@ -407,5 +434,5 @@ class UICore extends \Shipard\Base\BaseObject
 	{
 		$tr = new \Shipard\Utils\TableRenderer($rows, $columns, $params, $this->app());
 		return $tr->render();
-	}	
+	}
 }

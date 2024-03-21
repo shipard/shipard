@@ -11,6 +11,10 @@
         {
           "title": "Prodejky", "icon": "user/book", "id": "cashregister",
           "objectType": "viewer", "table": "e10doc.core.heads", "viewer": "cashregisterall"
+        },
+        {
+          "title": "Nastavení", "icon": "system/actionSettings", "id": "settings",
+          "objectType": "widget", "classId": "Shipard.UI.ng.WidgetAppSettings"
         }
       ]
     }

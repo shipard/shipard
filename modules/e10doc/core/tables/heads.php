@@ -191,6 +191,9 @@ class TableHeads extends DbTable
 		if ($this->app()->hasRole ('all'))
 			return 2;
 
+		if ($this->app()->ngg)
+			return 2;
+
 		$allRoles = $this->app()->cfgItem ('e10.persons.roles');
 		$userRoles = $this->app()->user()->data ('roles');
 

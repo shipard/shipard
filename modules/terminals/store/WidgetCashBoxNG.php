@@ -160,8 +160,8 @@ class WidgetCashBoxNG extends \Shipard\UI\Core\UIWidgetBoard
       $c .= "<div class='infoLogin'>";
         $c .= "<span class='userInfo'>".$this->app()->ui()->icon('system/iconUser').' '.utils::es($this->app->user()->data ('name')).'</span>';
         $c .= "<span class='workplaceInfo'>";
-        if ($this->app->workplace)
-          $c .= ' '.$this->app()->ui()->icon('system/iconWorkplace').' '.utils::es($this->app->workplace['name']);
+        if ($this->uiRouter->workplace)
+          $c .= ' '.$this->app()->ui()->icon('system/iconWorkplace').' '.utils::es($this->uiRouter->workplace['name']);
         else
           $c .= ' '.$this->app()->ui()->icon('system/iconWarning').' '.utils::es('Neznámé pracoviště');
         $c .= "</span>";

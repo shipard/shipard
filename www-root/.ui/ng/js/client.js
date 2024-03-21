@@ -285,9 +285,9 @@ radioButtons=this.elmContainerPay.querySelectorAll('input[type="radio"]');consol
 radioButton
 of
 radioButtons){console.log(radioButton);if(parseInt(radioButton.value)==paymentMethod)radioButton.checked=true;else
-radioButton.checked=false;}return 0;}save(){console.log("__SAVE__");this.setMode('save');var
-printAfterConfirm='1';var
-url='/api/objects/insert/e10doc.core.heads?printAfterConfirm='+printAfterConfirm;shc.server.post(url,this.doc,function(data){console.log("--save-success--");this.documentInit(true);this.setMode('sell');}.bind(this),function(data){console.log("--save-error--");}.bind(this));return 0;}setMode(mode){if(mode==='pay'){console.log("do-pay",this.elmContainerSell);this.elmHide(this.elmContainerSell);this.elmHide(this.elmContainerSave);this.elmShow(this.elmContainerPay);}else
+radioButton.checked=false;}return 0;}save(){this.setMode('save');const
+docData={requestType:'rest',table:'e10doc.core.heads',operation:'insert',printAfterConfirm:1,data:this.doc};var
+url='api/v2';shc.server.post(url,docData,function(data){console.log("--save-success--",data);this.documentInit(true);this.setMode('sell');}.bind(this),function(data){console.log("--save-error--");}.bind(this));return 0;}setMode(mode){if(mode==='pay'){console.log("do-pay",this.elmContainerSell);this.elmHide(this.elmContainerSell);this.elmHide(this.elmContainerSave);this.elmShow(this.elmContainerPay);}else
 if(mode==='sell'){this.elmHide(this.elmContainerSave);this.elmHide(this.elmContainerPay);this.elmShow(this.elmContainerSell);}else
 if(mode==='save'){this.elmHide(this.elmContainerSell);this.elmHide(this.elmContainerPay);this.elmShow(this.elmContainerSave);}return 0;}}function
 initWidgetCashBox(id){let
@@ -317,10 +317,11 @@ ShipardWidgetApplication();e.shpWidget.init(e);return 1;}class
 ShipardClient{server=new
 ShipardServer();mqtt=new
 ShipardMqtt();iot=new
-ShipardClientIoT();appVersion='2.0.1';CLICK_EVENT='click';g_formId=1;openModals=[];progressCount=0;viewerScroll=0;disableKeyDown=0;userInfo=null;numPad=null;mainAppContent=null;counter=1;on(eventType,selector,callback){document.addEventListener(eventType,function(event){if(event.target.matches(selector)){callback.call(event.target,event.target);}});}onClick(selector,callback){this.on('click',selector,callback)};simpleTabsEvent(e){let
+ShipardClientIoT();appVersion='2.0.1';CLICK_EVENT='click';g_formId=1;openModals=[];progressCount=0;viewerScroll=0;disableKeyDown=0;userInfo=null;numPad=null;mainAppContent=null;counter=1;on(eventType,selector,callback){document.addEventListener(eventType,function(event){var
+ce=event.target.closest(selector);if(ce){callback.call(ce,ce);}});}onClick(selector,callback){this.on('click',selector,callback)};simpleTabsEvent(e){console.log('tabs...');let
 tabsId=e.getAttribute('data-tabs');let
 tabsElement=document.getElementById(tabsId+'-tabs');let
-oldActiveTabElement=tabsElement.querySelector('a.active');oldActiveTabElement.classList.remove('active');let
+oldActiveTabElement=tabsElement.querySelector('.active');oldActiveTabElement.classList.remove('active');let
 oldActiveContentId=oldActiveTabElement.getAttribute('data-tab-id');let
 oldActiveContentElement=document.getElementById(oldActiveContentId);oldActiveContentElement.classList.add('d-none');e.classList.add('active');let
 newActiveContentId=e.getAttribute('data-tab-id');let
@@ -350,7 +351,7 @@ attrNameShort=attrName.substring(prefix.length);var
 val=attrs.item(i).nodeValue;data[attrNameShort]=val;}}initUI(){this.setThemeVariantInput();if(!this.mainAppContent)return 0;if('mainUiObjectId'in
 this.mainAppContent.dataset)return this.initUIObject(this.mainAppContent.dataset.mainUiObjectId);}initUIObject(id){let
 objectElement=document.getElementById(id);if(!objectElement){console.error('element not exist: #',id);return 0;}const
-objectElementType=objectElement.getAttribute('data-object-type');if(!objectElementType){console.error('`data-object-type` attr not found in #',id);return 0;}if(objectElementType==='data-viewer')return initWidgetTableViewer(id);if(objectElementType==='data-widget-board')return initWidgetBoard(id);console.log(objectElementType);return 0;}loadUI(){console.log("client__load_ui");}init(){this.mainAppContent=document.getElementById('shp-main-app-content');this.server.setHttpServerRoot(httpApiRootPath);this.initColorMode(true);this.onClick('a.shp-simple-tabs-item',function(){shc.simpleTabsEvent(this);});this.onClick('.shp-app-action',function(e){this.widgetAction(e);}.bind(this));this.initUI();if('serviceWorker'in
+objectElementType=objectElement.getAttribute('data-object-type');if(!objectElementType){console.error('`data-object-type` attr not found in #',id);return 0;}if(objectElementType==='data-viewer')return initWidgetTableViewer(id);if(objectElementType==='data-widget-board')return initWidgetBoard(id);console.log(objectElementType);return 0;}loadUI(){console.log("client__load_ui");}init(){this.mainAppContent=document.getElementById('shp-main-app-content');this.server.setHttpServerRoot(httpApiRootPath);this.initColorMode(true);this.onClick('.shp-simple-tabs-item',function(){shc.simpleTabsEvent(this);});this.onClick('.shp-app-action',function(e){this.widgetAction(e);}.bind(this));this.initUI();if('serviceWorker'in
 navigator&&e10ServiceWorkerURL!==undefined){navigator.serviceWorker.register(e10ServiceWorkerURL).then(function(reg){}).catch(function(err){console.log("Service worker registration error: ",err)});}initWidgetApplication('shp-app-window');}applyUIData(responseUIData){this.mqtt.applyUIData(responseUIData);this.iot.applyUIData(responseUIData);}apiCall(apiActionId,outsideApiParams){var
 apiParams={};apiParams['requestType']='appCommand';apiParams['actionId']=apiActionId;if(outsideApiParams!==undefined)apiParams={...apiParams,...outsideApiParams};console.log("CLIENT-API-CALL",apiParams);var
 url='api/v2';shc.server.post(url,apiParams,function(data){console.log("--app-api-call-success--");this.doAppAPIResponse(data);}.bind(this),function(data){console.log("--api-app-call-error--");}.bind(this));}doAppAPIResponse(data){window.location.reload(true);}}class
