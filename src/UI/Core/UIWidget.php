@@ -61,8 +61,8 @@ class UIWidget extends \Shipard\UI\Core\UIElement
 			$cid = str_replace('\\', '.', get_class($this));
 			$params .= " data-class-id='$cid'";
 
-			//foreach ($this->widgetSystemParams as $wspId => $wspValue)
-			//	$params .= " $wspId='$wspValue'";
+			foreach ($this->widgetSystemParams as $wspId => $wspValue)
+				$params .= " $wspId='$wspValue'";
 
 			$c .= "<div id='{$this->widgetId}' class='{$this->widgetMainClass}' $params>";
 		}
