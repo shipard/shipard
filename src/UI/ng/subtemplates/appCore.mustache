@@ -1,4 +1,4 @@
-<div class="app-container app-container-simple" id='shp-app-window'>
+<div class="app-container app-container-simple{{#data.uiStruct.appMenu.class}} {{data.uiStruct.appMenu.class}}{{/data.uiStruct.appMenu.class}}" id='shp-app-window'>
   <div class="app-nav">
     <!--<nav class="_navbar align-items-between">-->
       <!--<div class="container-fluid">-->
@@ -19,7 +19,7 @@
 
       {{#data.rightMenuCode}}
       <button class="navbar-toggler" id="navbar-toggler-right" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar2" aria-controls="offcanvasNavbar2" aria-label="Toggle navigation">
-        <span class="fw-semibold align-items-center" style='font-size: 110%;'>{{activeUserContext.shortTitle}}<span class="ps-2"> {{{@icon;icon:user/user}}}</span></span>
+        <span class="fw-semibold align-items-center" style='font-size: 110%;'>{{activeUserContext.shortTitle}}<span class="ps-2"> {{{@icon;dataItem:data.uiStruct.appMenu.rightMenu.icon}}}</span></span>
       </button>
       {{/data.rightMenuCode}}
 
@@ -79,7 +79,7 @@
   <div class='app-menu'>
     <div class="shpd-nav">
       {{#data.uiStruct.appMenu.items}}
-        <a href="{{uiRoot}}{{id}}" class='shpd-nav-item {{#active}}active{{/active}}'><span class="navListIcon">{{{@icon;dataItem:icon}}}</span> {{title}}</a>
+        <a href="{{uiRoot}}{{id}}" class='shpd-nav-item {{#active}}active{{/active}}'><div class="navListIcon">{{{@icon;dataItem:icon}}}</div> {{title}}</a>
       {{/data.uiStruct.appMenu.items}}
     </div>
   </div>
