@@ -184,6 +184,7 @@ class ViewRequests extends TableView
 			array_push($q, ' [users].[fullName] LIKE %s', '%' . $fts . '%');
       array_push($q, ' OR [users].[login] LIKE %s', '%' . $fts . '%');
       array_push($q, ' OR [users].[email] LIKE %s', '%' . $fts . '%');
+			array_push($q, ' OR [requests].[requestId] LIKE %s', $fts . '%');
 			array_push($q, ')');
 		}
 

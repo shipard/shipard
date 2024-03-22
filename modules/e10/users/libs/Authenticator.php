@@ -68,7 +68,8 @@ class Authenticator extends Utility
     if (!$password)
       return FALSE;
 
-    $userInfo = $this->db()->query('SELECT * FROM [e10_users_users] WHERE [login] = %s', $login)->fetch();
+    $userInfo = $this->db()->query('SELECT * FROM [e10_users_users] WHERE [login] = %s', $login,
+                                    ' AND [docState] = %i', 4000)->fetch();
     if (!$userInfo)
       return FALSE;
 
@@ -83,6 +84,34 @@ class Authenticator extends Utility
 
         return TRUE;
       }
+    }
+
+    return FALSE;
+  }
+
+  function checkUserPin($credentials)
+  {
+    $login = $credentials['login'] ?? NULL;
+    if (!$login)
+      return FALSE;
+    $pin = $credentials['pin'] ?? NULL;
+    if (!$pin)
+      return FALSE;
+
+    $userInfo = $this->db()->query('SELECT * FROM [e10_users_users] WHERE [login] = %s', $login,
+                                    ' AND [docState] = %i', 4000)->fetch();
+    if (!$userInfo)
+      return FALSE;
+
+    $existedPin = $this->db()->query('SELECT * FROM [e10_users_usersKeys] WHERE [keyType] = %i', 0,
+                                      ' AND [user] = %i', $userInfo['ndx'],
+                                      ' AND [docState] = %i', 4000)->fetch();
+    if ($existedPin && $existedPin['key'] === $pin)
+    {
+      $this->createNewSession($userInfo['ndx']);
+      $this->setUserInfo($userInfo['ndx'], 0);
+
+      return TRUE;
     }
 
     return FALSE;

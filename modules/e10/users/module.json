@@ -2,7 +2,7 @@
   "id": "e10.users",
   "name": "Users",
   "tables": [
-		"users", "requests", "roles", "sessions", "pwds", "apiKeys"
+		"users", "requests", "roles", "sessions", "pwds", "apiKeys", "usersKeys"
   ],
   "config": [
     {"id": "+appSkeleton", "file": "appSkeleton.json"},

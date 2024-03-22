@@ -17,6 +17,7 @@ class DCUser extends \Shipard\Base\DocumentCard
     $this->createContentBody_Contacts();
     $this->createContentBody_Persons();
     $this->createContentBody_Requests();
+    $this->createContentBody_UsersKeys();
 
     if ($this->app()->hasRole('root'))
     {
@@ -70,18 +71,20 @@ class DCUser extends \Shipard\Base\DocumentCard
       $table[] = $item;
     }
 
-    $h = [
-      'name' => 'Jméno',
-      'role' => 'Funkce',
-      'person' => 'Osoba',
-    ];
+    if (count($table))
+    {
+      $h = [
+        'name' => 'Jméno',
+        'role' => 'Funkce',
+        'person' => 'Osoba',
+      ];
 
-
-    $this->addContent('body', [
-      'pane' => 'e10-pane e10-pane-table', 'paneTitle' => ['text' => 'Kontakty', 'class' => 'h2'],
-      'table' => $table, 'header' => $h,
-      ]
-    );
+      $this->addContent('body', [
+        'pane' => 'e10-pane e10-pane-table', 'paneTitle' => ['text' => 'Kontakty', 'class' => 'h2'],
+        'table' => $table, 'header' => $h,
+        ]
+      );
+    }
 	}
 
 	function createContentBody_Requests()
@@ -184,18 +187,62 @@ class DCUser extends \Shipard\Base\DocumentCard
       $table[] = $item;
     }
 
-    $h = [
-      'person' => 'Osoba',
-    ];
-
     if (count($table))
     {
-      $this->addContent('body', [
-        'pane' => 'e10-pane e10-pane-table', 'paneTitle' => ['text' => 'Osoby', 'class' => 'h2'],
-        'table' => $table, 'header' => $h,
-        ]
-      );
+      $h = [
+        'person' => 'Osoba',
+      ];
+
+      if (count($table))
+      {
+        $this->addContent('body', [
+          'pane' => 'e10-pane e10-pane-table', 'paneTitle' => ['text' => 'Osoby s e-mailem '.$this->recData['login'], 'class' => 'h2'],
+          'table' => $table, 'header' => $h,
+          ]
+        );
+      }
     }
+	}
+
+  public function createContentBody_UsersKeys ()
+	{
+		if (!$this->app()->hasRole('admin'))
+			return;
+
+     /** @var \e10\users\TableUsersKeys */
+    $tableUsersKeys = $this->app()->table('e10.users.usersKeys');
+
+    $q = [];
+		array_push($q, 'SELECT * FROM e10_users_usersKeys ');
+    array_push($q, ' WHERE 1');
+		array_push($q, ' AND [user] = %i', $this->recData['ndx']);
+
+		$keys = [];
+		$rows = $this->table->db()->query($q);
+		foreach ($rows as $r)
+		{
+      $docStates = $tableUsersKeys->documentStates ($r);
+			$docStateClass = $tableUsersKeys->getDocumentStateInfo ($docStates, $r, 'styleClass');
+
+			$k = [
+        'key' => ['text' => $r['key'], 'docAction' => 'edit', 'table' => 'e10.users.usersKeys', 'pk' => $r['ndx']],
+        '_options' => ['cellClasses' => ['key' => $docStateClass]],
+      ];
+			$keys[] = $k;
+		}
+
+		$title = [];
+		$title[] = ['icon' => 'icon-plug', 'text' => 'Klíče'];
+
+		$title[] = [
+				'text'=> 'Nový', 'docAction' => 'new', 'table' => 'e10.users.usersKeys', 'type' => 'button',
+				'actionClass' => 'btn btn-success btn-xs', 'icon' => 'system/actionAdd', 'class' => 'pull-right',
+				'addParams' => "__user={$this->recData['ndx']}"
+		];
+
+		$h = ['#' => '#', 'key' => 'Klíč'];
+		$this->addContent(['pane' => 'e10-pane e10-pane-table', 'type' => 'table',
+												'title' => $title, 'header' => $h, 'table' => $keys]);
 	}
 
 	public function createContent ()

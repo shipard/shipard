@@ -1,0 +1,19 @@
+{
+  "id": "e10.users.usersKeys", "sql": "e10_users_usersKeys", "name": "Klíče uživatelů",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "user", "name": "Uživatel", "type": "int", "reference": "e10.users.users"},
+    {"id": "keyType", "name": "Typ osoby", "type": "enumInt",
+      "enumValues": {"0": "PIN", "1": "Klíč"}},
+    {"id": "key", "name": "Klíč", "type": "string", "len": 20, "options": ["ascii"]},
+    {"id": "tsCreated", "name": "Okamžik vytvoření", "type": "timestamp"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+	"options": ["systemTable"],
+  "forms": [
+    {"id": "default", "class": "e10.users.FormUserKey"}
+  ],
+  "states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

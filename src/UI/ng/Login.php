@@ -40,7 +40,7 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 			return;
 
 
-		if (0 && isset($this->workplace['users']))
+		if (isset($this->workplace['users']))
 		{
 			$q[] = 'SELECT persons.fullName, persons.firstName, persons.lastName, persons.login FROM e10_persons_persons AS persons';
 			array_push($q, ' WHERE persons.ndx IN %in', $this->workplace['users']);
@@ -186,9 +186,9 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 	{
 		$c = '';
 
-		$c .= "<div class='container d-flex justify-content-center align-items-center flex-row flex-wrap: wrap;' style='height: 100vh;'>";
+		$c .= "<div id='shp-app-window' class='container d-flex justify-content-center align-items-center flex-row flex-wrap: wrap;' style='height: 100vh;'>";
 		$c .= "<div class='shp-workplace-login-users'>";
-		if ($this->app->testGetParam ("from", NULL) != NULL)
+		if ($this->app->testGetParam ('from') != '')
 			$c .= "<div class='alert alert-danger flex-grow-1 w-100'>Chybně zadaný PIN</div>";
 
 		foreach ($this->users as $user)
@@ -200,7 +200,7 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 			$c .= '</button>';
 		}
 
-		$c .= "<form class='e10-mui-login-form' name='e10-mui-login-form' method='POST' action='{$this->app->urlRoot}/user/login-check/ui' style='display: none;'>";
+		$c .= "<form class='e10-mui-login-form' name='e10-mui-login-form' method='POST' action='{$this->uiRouter->uiRoot}/auth/pin' style='display: none;'>";
 			$c .= "<input type='hidden' name='login' id='e10-login-user'>";
 			$c .= "<input type='hidden' name='pin' id='e10-login-pin'>";
 			$referer = $this->loginReferer();

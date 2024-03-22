@@ -39,6 +39,25 @@ class Auth extends \Shipard\UI\ng\AppPageBlank
 			die();
 		}
 
+		if ($this->mode === 'pin')
+		{
+      $credentials = [
+        'login' => $this->app->testPostParam('login'),
+        'pin' => $this->app->testPostParam('pin'),
+      ];
+
+      $a = new \e10\users\libs\Authenticator($this->app());
+      if ($a->checkUserPin($credentials))
+      {
+        $redirTo = str_replace('//', '/', $this->uiTemplate->data['uiRoot'].$from);
+        header('Location: ' . $redirTo);
+        die();
+      }
+
+      header('Location: ' . $this->uiTemplate->data['uiRoot'].'user/login/'.$from.'?from=1');
+			die();
+		}
+
     if ($this->mode === 'logout')
 		{
       $a->closeSession();
