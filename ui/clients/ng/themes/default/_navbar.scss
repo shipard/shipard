@@ -110,3 +110,17 @@
         font-size: 110%;
     }
 }
+
+div.app-container-simple.menu-icons {
+    div.app-menu>div.shpd-nav>.shpd-nav-item {
+        font-size: 90%;
+        text-align: center;
+        padding-left: 0;
+        >.navListIcon {
+            display: block;
+            padding-right: 0;
+            padding-bottom: .4rem;
+            >i {font-size: 3rem;}
+        }
+    }
+}

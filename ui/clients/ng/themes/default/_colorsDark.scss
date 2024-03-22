@@ -87,3 +87,16 @@
     --bs-btn-color: var(--shpd-body-color);
     --bs-btn-hover-bg: transparent;
 }
+
+.btn-outline-primary {
+    --bs-btn-color: var(--shpd-body-color);
+    --bs-btn-border-color: var(--shpd-primary-subtle);
+    --bs-btn-active-bg: var(--shpd-primary-subtle);
+    --bs-btn-active-border-color: var(--shpd-primary-subtle);
+}
+
+.card {
+    --bs-heading-color: var(--shpd-body-color);
+    --bs-card-cap-color: var(--shpd-body-color);
+    color: var(--shpd-body-color);
+}

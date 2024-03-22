@@ -12,9 +12,9 @@ a.dropdown-item>i {
   text-align: center;
 }
 
-button.btn {
+/*button.btn {
   color: var(--shpd-body-color) !important;
-}
+}*/
 
 // re-do with different variables for bg and color
 .dropdown-menu{
@@ -59,10 +59,10 @@ a.dashboardButton i, b {
     padding-top: .5rem;
 }
 
-/* dropdown na ovládání dark light módu*/
+/* dropdown na ovládání dark light módu
 .dropdown-item.active {
 	background-color: #{$shipard-primary};
-}
+}*/
 
 ul.dropdown-menu {
 	background-color: var(--cardBackground);

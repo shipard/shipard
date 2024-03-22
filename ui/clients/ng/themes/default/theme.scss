@@ -100,8 +100,9 @@ body {
 
 div.e10-widget-terminal {height: 100%;}
 
-// delete after defining numpad
+// delete after defining numpad, its used in other stuff - simple app/ui
 $shipard-primary: #93C572;
+//$shipard-primary: var(--shpd-primary-subtle);
 $shipard-secondary: #A9A9A9;
 
 
@@ -129,13 +130,13 @@ $label-color-lights: #212529; /*text color for lighter labels*/
 
 $nav-pills-color-light: black;
 $nav-pills-color-dark: whitesmoke;
-$numpad-bg-light: whitesmoke;
+/*$numpad-bg-light: whitesmoke;
 $numpad-bg-dark: #585858;
 $numpad-border-light: silver;
 $numpad-border-dark: dimgray;
 $numpad-close-light: gainsboro;
 $numpad-close-dark: gray;
-$numpad-ok: $shipard-primary;
+$numpad-ok: $shipard-primary;*/
 $dashboard-button-color: black;
 $calendar-inactive-light: #E8E8E8;
 $calendar-inactive-dark: #282828;
@@ -165,7 +166,7 @@ $theme-colors: (
 $body-color-dark: #F0F0F0;
 $body-color: #212529;
 
-$navbar-light-color: #282828;
+/*$navbar-light-color: #282828;
 $navbar-dark-color: #D8D8D8;
 $navbar-light-active-color: $shipard-primary;
 $navbar-dark-active-color: $shipard-primary;
@@ -175,13 +176,13 @@ $navbar-light-hover-color: $shipard-primary;
 $navbar-dark-hover-color: $shipard-primary;
 
 $nav-pills-link-active-color: black;
-$nav-pills-link-active-bg: $shipard-primary;
+$nav-pills-link-active-bg: $shipard-primary;*/
 
 $accordion-button-active-bg: transparent;
 $accordion-button-focus-border-color: transparent;
 $accordion-button-focus-box-shadow: none;
 
-$form-check-input-checked-color: $shipard-primary;;
+//$form-check-input-checked-color: $shipard-primary;
 $form-check-input-checked-border-color: var(--universalBorder);
 $form-check-input-checked-border-color: orange;
 
@@ -196,8 +197,9 @@ $input-focus-bg: var(--formBackground);
 $popover-body-padding-y: .5rem;
 $popover-body-padding-x: .5rem;
 
-
-
+$card-bg: var(--shpd-card-bg);
+$card-border-color: var(--shpd-card-border);
+$card-color: var(--shpd-body-color);
 
 
 

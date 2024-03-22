@@ -10,12 +10,8 @@
       "app-content"
       "app-footer";
 
-
-
     .app-content { grid-area: app-content; min-height: 0; overflow-y: clip;}
-
     .app-footer { grid-area: app-footer;}
-
     div.app-menu {display: none;}
 
     #navbar-title-left {display: none;}
@@ -29,7 +25,6 @@
 @media only screen and (min-width: 701px) {
   .app-container-simple {
     display: grid;
-
     grid-template-columns: 25rem 1fr;
     grid-template-rows: min-content 1fr min-content;
     gap: 0px 0px;
@@ -39,21 +34,17 @@
       "app-footer app-footer";
 
     .app-content { grid-area: app-content; min-height: 0; overflow-y: clip;}
-
     .app-footer { grid-area: app-footer;}
-
     .app-menu { grid-area: app-menu;}
-
-
-
-
   }
 
   .app-nav {
     grid-area: app-nav;
   }
 
+  .app-container-simple.menu-icons {
+    grid-template-columns: 6rem 1fr;
+  }
+
   #navbar-toggler-left {display: none;}
 }
-
-
