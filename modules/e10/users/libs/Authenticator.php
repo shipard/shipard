@@ -152,7 +152,7 @@ class Authenticator extends Utility
 
     $this->db()->query('INSERT INTO [e10_users_sessions] ', $newSession);
 
-    $sessionExpiration = time()+60*60*24*14;
+    $sessionExpiration = $apiKeyNdx ? time()+60*60*24*365*5 : time()+60*60*24*14; // robots session expired after 5 years
     $this->setCookie($this->sessionCookieName, $newSession['ndx'], $sessionExpiration);
   }
 
