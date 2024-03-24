@@ -48,7 +48,6 @@ class ExchDiffsEngine extends \Shipard\Base\Utility
 		array_push ($q, ' sum(request) as request, sum(payment) as payment');
     array_push ($q, ' FROM e10doc_balance_journal as j',
       ' WHERE j.[type] = %i', $this->balance, ' AND j.pairId = saldo.pairId AND j.[fiscalYear] = %i ', $this->fiscalYear);
-    array_push ($q, ' AND j.[currency] != %s', 'czk');
 		array_push ($q, ' GROUP BY j.pairId');
 		array_push ($q, ' HAVING ');
     array_push ($q, '[request] = [payment] AND [requestHc] != [paymentHc]');
