@@ -17,7 +17,7 @@ class DCExcuse extends \Shipard\Base\DocumentCard
 
     $t = [];
 
-    if ($this->recData['datumOd'])
+    if ($this->recData['pouzitCasOdDo'])
     {
       $t[] = ['t' => 'Od', 'v' => Utils::datef($this->recData['datumOd'], '%d').', '.$this->recData['casOd'].' - '.$this->recData['casDo']];
       // $t[] = ['t' => 'Do', 'v' => Utils::datef($this->recData['datumDo'], '%d')];
