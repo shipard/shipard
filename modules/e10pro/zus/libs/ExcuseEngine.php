@@ -40,6 +40,13 @@ class ExcuseEngine extends Utility
         if ($ttd['dow'] !== $dow)
           continue;
 
+				if ($this->excuseRecData['pouzitCasOdDo'])
+				{
+					if ($this->excuseRecData['casOd'] > $ttd['casDo'])
+						continue;
+					if ($this->excuseRecData['casDo'] < $ttd['casOd'])
+						continue;
+				}
         $ah = [
           'day' => Utils::datef($dd, '%n'),
           'date' => Utils::datef($dd, '%d'),
@@ -119,6 +126,7 @@ class ExcuseEngine extends Utility
 					['text' => ' '.$nazvyDnu[$r['den']]]
 				],
 				'doba' => $r['zacatek'].' - '.$r['konec'],
+				'casOd' => $r['zacatek'], 'casDo' => $r['konec'],
 				'ucitel' => $r['personFullName'],
 				'predmet' => ['icon' => $ikonaPredmet, 'text' => $r['predmet']],
 				'rocnik' => zusutils::rocnikVRozvrhu($this->app(), $r['rocnik'], $r['typVyuky']),

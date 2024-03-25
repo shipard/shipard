@@ -206,6 +206,13 @@ class FormOmluvenka extends TableForm
 			$this->addColumnInput ('datumOd');
 			$this->addColumnInput ('datumDo');
 			$this->addColumnInput ('duvod');
+
+			$this->addColumnInput ('pouzitCasOdDo');
+			if ($this->recData['pouzitCasOdDo'])
+			{
+				$this->addColumnInput ('casOd');
+				$this->addColumnInput ('casDo');
+			}
 		$this->closeForm ();
 	}
 }

@@ -14,6 +14,10 @@
 
 		{"id": "dlouhodoba", "name": "Více dnů", "type": "logical", "options": ["saveOnChange", "checkOnChange"]},
 
+		{"id": "pouzitCasOdDo", "name": "Zadat čas", "type": "logical", "options": ["saveOnChange", "checkOnChange"]},
+		{"id": "casOd", "name": "Čas od", "type": "time"},
+		{"id": "casDo", "name": "Čas do", "type": "time"},
+
     {"id": "authorUser", "name": "Autor", "type": "int", "reference": "e10.users.users"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},

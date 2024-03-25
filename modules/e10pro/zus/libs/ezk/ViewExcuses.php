@@ -48,6 +48,14 @@ class ViewExcuses extends TableView
     $listItem ['dateFrom'] = Utils::datef($item['datumOd'], '%d');
     $listItem ['dateTo'] = Utils::datef($item['datumDo'], '%d');
     $listItem ['longTerm'] = intval($item['datumOd'] != $item['datumDo']);//$item['dlouhodoba'];
+
+		if ($item['pouzitCasOdDo'])
+		{
+			$listItem ['useTimeFromTo'] = 1;
+			$listItem ['timeFrom'] = $item['casOd'];
+			$listItem ['timeTo'] = $item['casDo'];
+		}
+
     $listItem ['text'] = $item['text'];
 		$listItem ['reason'] = $this->duvodyOmluveni[$item['duvod']]['fn'];
 
