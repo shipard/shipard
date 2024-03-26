@@ -60,14 +60,14 @@
         "mdi":"shopping_basket"
     },
     "docType/offersOut":{
-        "fa5":"fa-file-signature",
-        "fa6pro":"fa-file-signature",
-        "bsi":"bi-truck",
+        "fa5":"fa-file-contract",
+        "fa6pro":"fa-file-contract",
+        "bsi":"bi-file-earmark-medical",
         "mdi":"local-shipping"
     },
     "docType/deliveryNote":{
-        "fa5":"fa-file-signature",
-        "fa6pro":"fa-file-signature",
+        "fa5":"fa-truck",
+        "fa6pro":"fa-truck",
         "bsi":"bi-truck",
         "mdi":"local-shipping"
     },
