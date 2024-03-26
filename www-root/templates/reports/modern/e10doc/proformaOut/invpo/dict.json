@@ -311,6 +311,12 @@
     "it": "Pagina",
     "sk": "Strana"
   },
+  "z": {
+    "de": "von",
+    "en": "of",
+    "it": "di",
+    "sk": "z"
+  },
   "Dobrý den": {
     "de": "Hallo",
     "en": "Greetings",
@@ -364,5 +370,11 @@
     "en": "proforma-invoice",
     "it": "fattura-proforma",
     "sk": "zalohova-faktura"
+  },
+  "Nejedná se o daňový doklad, vyčíslení DPH je pouze informativní": {
+    "de": "Es handelt sich nicht um ein Steuerdokument, die Mehrwertsteuerberechnung ist nur informativ",
+    "en": "This is not a tax document, the calculation of VAT is only informative",
+    "it": "Non è un documento fiscale, il calcolo dell'IVA è solo informativo",
+    "sk": "Nejedná sa o daňový doklad, vyčíslenie DPH je iba informatívne"
   }
 }

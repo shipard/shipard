@@ -14,23 +14,15 @@
 				<tr>
 					<td class='label'>{{@dict;Datum vystavení}}:</td><td class='value'>{{data.head.dateIssue}}</td>
 				</tr>
-				{{#data.flags.taxDocument}}
-					<tr>
-						<td class='label'>{{@dict;Datum u.zd.plnění}}:</td><td class='value'>{{data.head.dateTax}}</td>
-					</tr>
-				{{/data.flags.taxDocument}}
-					<tr>
-						<td class='label'>{{@dict;Datum splatnosti}}:</td><td class='value'><b>{{data.head.dateDue}}</b></td>
-					</tr>
 				{{#data.head.datePeriodBegin}}
 					<tr>
-						<td class='label'>{{@dict;Účtované období}}:</td><td class='value'>{{data.head.datePeriodBegin}} {{@dict;až}} {{data.head.datePeriodEnd}}</td>
+						<td class='label'>{{@dict;Platnost nabídky}}:</td><td class='value'>{{data.head.datePeriodBegin}} {{@dict;až}} {{data.head.datePeriodEnd}}</td>
 					</tr>
 				{{/data.head.datePeriodBegin}}
 			</table>
 		<td>
 
-		<td class="info">
+		<!--<td class="info">
 			<table class="docInfo">
 				<tr>
 					<td class='label'>{{@dict;Způsob úhrady}}:</td><td class='value'>{{@dict;dataItem:data.head.print.paymentMethod}}</td>
@@ -43,17 +35,8 @@
 						<td>{{@dict;IBAN}}:</td><td> {{data.myBankAccount.iban}} <br/></td>
 					</tr>
 					{{/data.myBankAccount.iban}}
-
-				<tr>
-					<td class='label'>{{@dict;Variabilní symbol}}:</td><td class='value'><b>{{data.head.symbol1}}</b></td>
-				</tr>
-				{{#data.head.symbol2}}
-					<tr>
-						<td class='label'>{{@dict;Specifický symbol}}:</td><td class='value'><b>{{data.head.symbol2}}</b></td>
-					</tr>
-				{{/data.head.symbol2}}
 			</table>
-		</td>
+		</td>-->
 	</tr>
 </table>
 

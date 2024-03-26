@@ -14,14 +14,9 @@
 				<tr>
 					<td class='label'>{{@dict;Datum vystavení}}:</td><td class='value'>{{data.head.dateIssue}}</td>
 				</tr>
-				{{#data.flags.taxDocument}}
-					<tr>
-						<td class='label'>{{@dict;Datum u.zd.plnění}}:</td><td class='value'>{{data.head.dateTax}}</td>
-					</tr>
-				{{/data.flags.taxDocument}}
-					<tr>
-						<td class='label'>{{@dict;Datum splatnosti}}:</td><td class='value'><b>{{data.head.dateDue}}</b></td>
-					</tr>
+				<tr>
+					<td class='label'>{{@dict;Datum splatnosti}}:</td><td class='value'><b>{{data.head.dateDue}}</b></td>
+				</tr>
 				{{#data.head.datePeriodBegin}}
 					<tr>
 						<td class='label'>{{@dict;Účtované období}}:</td><td class='value'>{{data.head.datePeriodBegin}} {{@dict;až}} {{data.head.datePeriodEnd}}</td>
@@ -390,6 +385,10 @@
 					<b><sup>{{mark}})</sup></b> {{@dict;dataItem:text}}<br/>
 				{{/data.taxNotes}}
 			{{/data.head.taxPayer}}
+
+			<small>
+				{{{@dict;Nejedná se o daňový doklad, vyčíslení DPH je pouze informativní}}}.
+			</small>
 
 			<div class='pay'>
 				{{@dict;Celkem k úhradě}}: <b>{{data.head.print.toPay}} {{data.head.print.currency}}</b>

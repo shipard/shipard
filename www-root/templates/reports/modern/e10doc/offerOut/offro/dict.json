@@ -1,9 +1,9 @@
 {
-  "Zálohová faktura": {
-    "de": "Proforma-Rechnung",
-    "en": "Proforma invoice",
-    "it": "Fattura proforma",
-    "sk": "Zálohová faktúra"
+  "Nabídka": {
+    "de": "Angebot",
+    "en": "Offer",
+    "it": "Offerta",
+    "sk": "Ponuka"
   },
   "číslo": {
     "de": "nr.",
@@ -185,11 +185,11 @@
     "it": "Condizioni di pagamento",
     "sk": "Dátumy a platobné údaje"
   },
-  "Účtované období": {
-    "de": "Rechnungszeitraum",
-    "en": "Period",
-    "it": "Stagione",
-    "sk": "Účtované obdobie"
+  "Platnost nabídky": {
+    "de": "Gültigkeit des Angebots",
+    "en": "Offer validity",
+    "it": "Validità dell'offerta",
+    "sk": "Platnosť ponuky"
   },
   "Sazba": {
     "de": "Satz",
@@ -311,17 +311,23 @@
     "it": "Pagina",
     "sk": "Strana"
   },
+  "z": {
+    "de": "von",
+    "en": "of",
+    "it": "di",
+    "sk": "z"
+  },
   "Dobrý den": {
     "de": "Hallo",
     "en": "Greetings",
     "it": "Buongiorno",
     "sk": "Dobrý deň"
   },
-  "v příloze Vám zasíláme zálohovou fakturu": {
-    "de": "beiliegend finden Sie eine Vorschussrechnung",
-    "en": "in attachments below you will find your proforma invoice",
-    "it": "si allega fattura anticipata",
-    "sk": "v prílohe Vám zasielame zálohovú faktúru"
+  "v příloze Vám zasíláme nabídku": {
+    "de": "beiliegend finden Sie das Angebot",
+    "en": "in attachments below you will find your offer",
+    "it": "si allega l'offerta",
+    "sk": "v prílohe Vám zasielame ponuku"
   },
   "Zákazník": {
     "de": "Klient",
@@ -359,10 +365,10 @@
     "it": "Ramo del cliente",
     "sk": "Prevádzkareň zákazníka"
   },
-  "zalohova-faktura": {
-    "de": "proforma-rechnung",
-    "en": "proforma-invoice",
-    "it": "fattura-proforma",
-    "sk": "zalohova-faktura"
+  "nabidka": {
+    "de": "angebot",
+    "en": "offer",
+    "it": "offerta",
+    "sk": "ponuka"
   }
 }
