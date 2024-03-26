@@ -499,6 +499,8 @@ class WidgetCashBoxNG extends \Shipard\UI\Core\UIWidgetBoard
 
 	public function createContent ()
 	{
+		$this->panelStyle = self::psNone;
+
 		$this->today = new \DateTime();
 
 		$this->disablePaymentCards = intval($this->app->cfgItem ('options.e10doc-sale.cashregMobileDisablePaymentCards', 0));

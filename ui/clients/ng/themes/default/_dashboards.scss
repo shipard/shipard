@@ -34,7 +34,7 @@
 @media only screen and (min-width: 701px) {
   .shp-widget-board {
     display: grid;
-    grid-template-columns: 1fr 15em;
+    grid-template-columns: 1fr min-content;
     grid-template-rows: min-content 1fr;
     gap: 0px 0px;
     grid-template-areas:

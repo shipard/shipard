@@ -201,9 +201,13 @@ data-viewer.viewerWithCards {
 }
 
 data-viewer>div.body {
-  min-width: 28rem;
   max-width: 100vw;
 }
+
+data-viewer.shp-mainViewer>div.body {
+  min-width: 28rem;
+}
+
 
 data-viewer>div.body>div.rows>div.rows-list>div.r {
   border-bottom: 1pt solid var(--shpd-universal-border);
