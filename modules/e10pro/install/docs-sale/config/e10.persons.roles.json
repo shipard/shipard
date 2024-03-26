@@ -3,7 +3,7 @@
 		"name": "Prodej",
 		"roles": ["pwuser"],
 		"viewers": {
-			"e10doc.core.heads": {"invoicesOut": 2, "proformaOut": 2, "orderIn": 2, "cash": 2, "deliveryNote":  2},
+			"e10doc.core.heads": {"invoicesOut": 2, "proformaOut": 2, "orderIn": 2, "cash": 2, "deliveryNote": 2, "offerOut":  2},
 			"e10doc.contracts.core.heads": {"sale": 2}
 		},
 		"documents": {
@@ -11,6 +11,7 @@
 				{"docType": ["invno", "invpo", "cash"], "_access": 2, "_name": "Vydané faktury a Pokladna"},
 				{"docType": "orderin", "_access": 2, "_name": "Objednávky přijaté"},
 				{"docType": "dlvrnote", "_access": 2, "_name": "Dodací listy"},
+				{"docType": "offro", "_access": 2, "_name": "Nabídky"},
 				{"docType": "cashreg", "_access": 2, "_name": "Prodejky"},
 				{"docType": "cmnbkp", "activity": ["balSetOff", "ocpBalInSt"], "_access": 1, "_name": "Zápočty a Počáteční stavy saldokonta"}
 			]

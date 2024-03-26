@@ -1,0 +1,9 @@
+{
+  "2701": {
+    "fn": "Nabídka vydaná",
+    "cn": "Nabídka vydaná",
+    "sc": "NAV",
+    "classId": "e10doc.offersOut.libs.ReportOfferOut",
+    "ndx": 2701
+  }
+}

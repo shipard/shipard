@@ -1,0 +1,23 @@
+[
+  {
+    "table": "e10doc.core.heads",
+    "views": [
+      {"id": "offerOut", "class": "e10doc.offersOut.libs.ViewOffersOut", "detail": "e10doc.offersOut.libs.ViewDetailOfferOut"}
+    ],
+    "forms": [
+      {"id": "offerOut", "class": "e10doc.offersOut.libs.FormOfferOut"}
+    ],
+		"reports": [
+			{
+				"id": "offerout", "name": "Nabídka", "class": "e10doc.offersOut.libs.ReportOfferOut",
+				"queryCol": "docType", "queryColValues": ["offro"], "email": 1
+			}
+		]
+  },
+  {
+    "table": "e10doc.core.rows",
+    "forms": [
+      {"id": "offerOut", "class": "e10doc.offersOut.libs.FormOfferOutRow"}
+    ]
+  }
+]

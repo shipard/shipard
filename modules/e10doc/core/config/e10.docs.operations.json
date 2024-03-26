@@ -3,6 +3,7 @@
             "docTypes": {
                 "invno": {"order": 10000},
 								"invpo": {"order": 10000},
+								"offro": {"order": 10000},
                 "cash": {"order": 10000},
                 "cashreg": {"order": 10000}
             }
@@ -11,6 +12,7 @@
             "docTypes": {
                 "invno" : {"order": 20000},
 								"invpo": {"order": 20000},
+                "offro": {"order": 10000},
                 "cash" : {"order": 20000},
                 "cashreg" : {"order": 20000}
             }

@@ -81,5 +81,12 @@
 		"shortcut": "DL", "classId": "deliveryNote", "docIdCode": "65", "docDir": 1, "taxDir": 0, "docNumbers": 1,
 		"tradeDir": 1, "useTax": 0, "timeline": "out", "timelineSum": "other",
 		"docNumber": "%D%W%y%5"
+	},
+	"offro": {
+		"fullName": "Nabídka vydaná", "shortName": "nabídka", "icon": "docType/offersOut", "pluralName": "Nabídky",
+		"shortcut": "NAV", "classId": "offerOut", "docIdCode": "67",
+		"docDir": 2, "taxDir": 0, "docNumbers": 1,
+		"tradeDir": 1, "useTax": 0, "timeline": "out", "timelineSum": "other",
+		"docNumber": "%D%y%C%4"
 	}
 }

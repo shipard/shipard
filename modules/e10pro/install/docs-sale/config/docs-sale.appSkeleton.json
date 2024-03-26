@@ -12,6 +12,8 @@
 					"enabledCfgItem": "options.e10doc-commerce.useWorkOrders", "order": 405000},
 				"ordersIn": {"t1": "Přijaté objednávky", "object": "viewer", "table": "e10doc.core.heads", "viewer": "orderIn", "icon": "docType/ordersIn",
 					"enabledCfgItem": "options.e10doc-commerce.useOrdersIn", "order": 410000},
+				"offersOut": {"t1": "Nabídky", "object": "viewer", "table": "e10doc.core.heads", "viewer": "offerOut",
+					"icon": "docType/offersOut", "enabledCfgItem": "options.e10doc-sale.useOffersOut" ,"order": 415000},
 				"deliveryNote": {"t1": "Dodací listy", "object": "viewer", "table": "e10doc.core.heads", "viewer": "deliveryNote",
 					"icon": "docType/deliveryNote", "enabledCfgItem": "options.e10doc-sale.useDeliveryNotes" ,"order": 420000},
 				"reports": {"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10docs",

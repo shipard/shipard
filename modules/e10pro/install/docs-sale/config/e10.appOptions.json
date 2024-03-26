@@ -20,6 +20,8 @@
 					"options": {"0": "ne", "1": "ano"}},
 				{"cfgKey": "useContractSale", "cfgName": "Používat Prodejní smlouvy",
 					"options": {"0": "ne", "1": "ano"}},
+				{"cfgKey": "useOffersOut", "cfgName": "Používat Nabídky",
+					"options": {"0": "ne", "1": "ano"}},
 				{"cfgKey": "useDeliveryNotes", "cfgName": "Používat Dodací listy",
 					"options": {"0": "ne", "1": "ano"}},
 				{"cfgKey": "usrText1Label", "cfgName": "Název uživ. textu 1", "placeholder": ""},

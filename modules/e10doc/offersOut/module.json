@@ -1,0 +1,8 @@
+{
+  "id": "e10doc.offersOut",
+  "name": "OffersOut",
+  "extensions": ["offersOut"],
+  "config": [
+    {"id": "+e10.reports.sendReports", "file": "sendReports.json"}
+  ]
+}

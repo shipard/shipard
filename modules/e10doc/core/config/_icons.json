@@ -5,8 +5,6 @@
 		"bsi": "bi-file-earmark",
 		"mdi": "insert_drive_file"
     },
-    
-    
     "docTypeInvoicesIn":{
         "fa5":"fa-file-download",
         "fa6pro":"fa-file-download",
@@ -60,6 +58,12 @@
         "fa6pro":"fa-shopping-basket",
         "bsi":"bi-basket",
         "mdi":"shopping_basket"
+    },
+    "docType/offersOut":{
+        "fa5":"fa-file-signature",
+        "fa6pro":"fa-file-signature",
+        "bsi":"bi-truck",
+        "mdi":"local-shipping"
     },
     "docType/deliveryNote":{
         "fa5":"fa-file-signature",
