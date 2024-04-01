@@ -370,7 +370,7 @@ class WorkOrderAnalysisEngine extends Utility
 			{
 				if ($onePart['sign'] === '')
 					continue;
-				$item[$partId] = $subWorkOrder['engine']->viewsData['sums'][$partId]['amountHc'];
+				$item[$partId] = $subWorkOrder['engine']->viewsData['sums'][$partId]['amountHc'] ?? 0;
 				if (!isset($this->subWorkOrdersSummary['header'][$partId]))
 					$this->subWorkOrdersSummary['header'][$partId] = ' '.$onePart['title'];
 

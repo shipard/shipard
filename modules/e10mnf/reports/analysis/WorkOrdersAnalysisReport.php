@@ -28,6 +28,7 @@ class WorkOrdersAnalysisReport extends \e10doc\core\libs\reports\GlobalReport
 	function init ()
 	{
 		set_time_limit (0);
+		ini_set('memory_limit', '1024M');
 
 		$this->tableWorkOrders = $this->app()->table('e10mnf.core.workOrders');
 
