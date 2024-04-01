@@ -5,7 +5,7 @@
 		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
     {"id": "widgetId", "name": "ID widgetu", "type": "string", "len": 80},
 
-		{"id": "template", "name": "Šablona", "type": "memo"},
+		{"id": "template", "name": "Šablona", "type": "code", "clng": "html"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

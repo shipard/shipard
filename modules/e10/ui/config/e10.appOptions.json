@@ -16,7 +16,8 @@
 
 	"experimental": {
 		"options": [
-			{"cfgKey": "testNewUI", "cfgName": "Testovat nová UI", "options": {"0": "Ne","1": "Ano"}}
+			{"cfgKey": "testNewUI", "cfgName": "Testovat nová UI", "options": {"0": "Ne","1": "Ano"}},
+			{"cfgKey": "testNewCodeEditor", "cfgName": "Testovat nový editor kódu", "options": {"0": "Ne","1": "Ano"}}
 		]
 	}
 }

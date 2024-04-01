@@ -13,9 +13,9 @@
 
 		{"id": "order", "name": "Pořadí", "type": "int"},
 
-		{"id": "template", "name": "Šablona", "type": "memo"},
-		{"id": "style", "name": "CSS style", "type": "memo"},
-		{"id": "uiStruct", "name": "Struktura uživatelského rozhraní", "type": "memo"},
+		{"id": "template", "name": "Šablona", "type": "code", "clng": "html"},
+		{"id": "style", "name": "CSS style", "type": "code", "clng": "scss"},
+		{"id": "uiStruct", "name": "Struktura uživatelského rozhraní", "type": "code", "clng": "json"},
 
 		{"id": "domain", "name": "Doména", "type": "string", "len": 80},
 

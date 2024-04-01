@@ -1095,6 +1095,8 @@ class Application extends \Shipard\Application\ApplicationCore
 
 	public function addPageCodeParts ($type, $parts, $page, $appWindow = FALSE)
 	{
+		$testNewCodeEditor = intval($this->cfgItem ('options.experimental.testNewCodeEditor', 0));
+
 		$absUrl = '';
 		$useNewWebsockets = 1;
 
@@ -1105,7 +1107,7 @@ class Application extends \Shipard\Application\ApplicationCore
 				$dsIcon = $this->dsIcon();
 				$wss = $this->webSocketServers ();
 				$c .= "\t<script type=\"text/javascript\">\nvar httpApiRootPath = '{$this->urlRoot}';var serverTitle=\"" . Utils::es ($this->cfgItem ('options.core.ownerShortName', '')) . "\";" .
-					"var remoteHostAddress = '{$_SERVER ['REMOTE_ADDR']}'; e10ClientType = " . json_encode ($this->clientType) . ";\n";
+					"var g_useMonaco = {$testNewCodeEditor}; var remoteHostAddress = '{$_SERVER ['REMOTE_ADDR']}'; e10ClientType = " . json_encode ($this->clientType) . ";\n";
 				$c .= "var g_useMqtt = {$useNewWebsockets};";
 				$c .= "var deviceId = '{$this->deviceId}';";
 				$c .= "var webSocketServers = ".json_encode($wss).";\n";
@@ -1181,6 +1183,7 @@ class Application extends \Shipard\Application\ApplicationCore
 	public function createPageCodeOpen ($page, $appWindow = FALSE)
 	{
 		$useNewWebsockets = 1;
+		$testNewCodeEditor = intval($this->cfgItem ('options.experimental.testNewCodeEditor', 0));
 
 		$absUrl = '';
 
@@ -1252,9 +1255,17 @@ class Application extends \Shipard\Application\ApplicationCore
 					$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/libs/js/mqttws/mqttws31.min.js\"></script>\n";
 			}
 
-			$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/libs/js/codemirror/codemirror-4.7.1-min.js\"></script>\n";
+			if (!$testNewCodeEditor)
+			{
+				$c .= "<script type=\"text/javascript\" src=\"{$scRoot}/libs/js/codemirror/codemirror-4.7.1-min.js\"></script>\n";
+				$c .= "<link rel=\"stylesheet\" type=\"text/css\" href=\"{$scRoot}/libs/js/codemirror/codemirror-4.7.1.css\">\n";
+			}
+			else
+			{
+				$c .= "<link rel='stylesheet' data-name='vs/editor/editor.main' href='{$scRoot}/libs/monaco-editor-0.47/min/vs/editor/editor.main.css'>";
+			}
+
 			$c .= "<link rel=\"stylesheet\" type=\"text/css\" href=\"{$scRoot}/libs/js/chosen/chosen.css\">\n";
-			$c .= "<link rel=\"stylesheet\" type=\"text/css\" href=\"{$scRoot}/libs/js/codemirror/codemirror-4.7.1.css\">\n";
 			$c .= "<link rel=\"stylesheet\" type=\"text/css\" href=\"//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.css\">\n";
 
 

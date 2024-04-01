@@ -1118,6 +1118,21 @@ function e10jsinit ()
 
 	initEventer();
 	initMQTT ();
+
+	if (g_useMonaco)
+	{
+		let monacoLoader = $('#monaco-loader');
+		if (!monacoLoader.length)
+		{
+			$('head').append("<script id='monaco-loader'>var require = { paths: { 'vs': '"+httpApiRootPath+"/www-root/sc/libs/monaco-editor-0.47/min/vs' } };</script>");
+
+			setTimeout (function () {
+				$('head').append("<script type='text/javascript' src='"+httpApiRootPath+"/www-root/sc/libs/monaco-editor-0.47/min/vs/loader.js'></script>");
+				$('head').append("<script type='text/javascript' src='"+httpApiRootPath+"/www-root/sc/libs/monaco-editor-0.47/min/vs/editor/editor.main.nls.js'></script>");
+				$('head').append("<script type='text/javascript' src='"+httpApiRootPath+"/www-root/sc/libs/monaco-editor-0.47/min/vs/editor/editor.main.js'></script>");
+			}, 500);
+		}
+	}
 }
 
 function initEventer()
@@ -4234,7 +4249,7 @@ function df2collectEditFormData (form, data)
 	var thisInputValue = null;
 	var mainFid = form.attr('id');
 
-  var formElements = form.find (':input, div.e10-inputDocLink');
+  var formElements = form.find (':input, div.e10-inputDocLink, div.e10-monaco-editor');
   for (var i = 0; i < formElements.length; i++)
   {
     var thisInput = $(formElements [i]);
@@ -4419,7 +4434,10 @@ function df2collectEditFormData (form, data)
 		else
 		if (thisInput.hasClass ("e10-inputCode"))
 		{
-			thisInputValue = thisInput.data ('cm').getValue ();
+			if (g_useMonaco)
+				thisInputValue = thisInput[0]._me.getValue ();
+			else
+				thisInputValue = thisInput.data ('cm').getValue ();
 		}
 		else
 			thisInputValue = thisInput.val ();
@@ -4869,7 +4887,7 @@ function df2FormsSetData (id, data)
 
   var form = $("#" + id);
   $.myFormsData [id] = data;//$.extend ({}, data);
-	var formElements = form.find (':input, div.e10-inputDocLink');
+	var formElements = form.find (':input, div.e10-inputDocLink, div.e10-monaco-editor');
 	var readOnly = (form.attr ('data-readonly') !== undefined);
 
   for (var i = 0; i < formElements.length; i++)
@@ -5128,18 +5146,48 @@ function df2FormsSetData (id, data)
 		else
 		if (thisInput.hasClass ("e10-inputCode"))
 		{
-			var cm = thisInput.data ('cm');
-			if (cm === undefined)
+			if (g_useMonaco)
 			{
-				cm = CodeMirror.fromTextArea(thisInput[0], {tabSize: 2, lineNumbers: true, styleActiveLine: true});
-				var cmWidth = form.width() - 1;
-				cmWidth -= form.find('div.e10-form-maintabs-menu').width();
-				cm.setSize(cmWidth, form.parent().parent().height() - $('#'+id+'Buttons').height() - 4);
-				cm.on("change",function (cmEditor,cmChangeObject){e10FormNeedSave (thisInput, 0);});
-				thisInput.data('cm', cm);
+				if (thisInput[0]._me === undefined)
+				{
+					var opts = {
+						scrollBeyondLastLine: false,
+						minimap: {
+							enabled: false
+						},
+						automaticLayout: true
+					};
+					const clang = thisInput.attr('data-clng');
+					if (clang)
+						opts.language = clang;
+					const readonly = thisInput.attr('readonly');
+						if (readonly === 'readonly')
+							opts.readOnly = true;
+
+					var me = monaco.editor.create(thisInput[0], opts);
+
+					me.getModel().onDidChangeContent((event) => {e10FormNeedSave (thisInput, 0);});
+
+					thisInput[0]._me = me;
+				}
+				if (thisInputValue !== undefined && thisInputValue !== null)
+					thisInput[0]._me.setValue (thisInputValue);
 			}
-			if (thisInputValue !== undefined && thisInputValue !== null)
-				cm.setValue (thisInputValue);
+			else
+			{
+				var cm = thisInput.data ('cm');
+				if (cm === undefined)
+				{
+					cm = CodeMirror.fromTextArea(thisInput[0], {tabSize: 2, lineNumbers: true, styleActiveLine: true});
+					var cmWidth = form.width() - 1;
+					cmWidth -= form.find('div.e10-form-maintabs-menu').width();
+					cm.setSize(cmWidth, form.parent().parent().height() - $('#'+id+'Buttons').height() - 4);
+					cm.on("change",function (cmEditor,cmChangeObject){e10FormNeedSave (thisInput, 0);});
+					thisInput.data('cm', cm);
+				}
+				if (thisInputValue !== undefined && thisInputValue !== null)
+					cm.setValue (thisInputValue);
+			}
 		}
 		else {
             thisInput.val(thisInputValue);

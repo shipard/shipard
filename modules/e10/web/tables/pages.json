@@ -10,7 +10,7 @@
     {"id": "pageType", "name": "Typ", "type": "enumInt",
 			"enumValues": {"0": "stránka", "1": "článek"}},
 		{"id": "server", "name": "Server", "type": "int", "reference": "e10.web.servers"},
-    {"id": "text", "name": "Text", "type": "memo", "comboClass": "lib.web.WebTextSidebar"},
+    {"id": "text", "name": "Text", "type": "memo", "comboClass": "lib.web.WebTextSidebar", "clng": "html"},
 		{"id": "editTextAsCode", "name": "Editovat text jako kód", "type": "logical"},
     {"id": "perex", "name": "Perex", "type": "memo"},
 		{"id": "description", "name": "Popis", "type": "string", "len": 200},

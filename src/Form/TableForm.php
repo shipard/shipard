@@ -920,6 +920,8 @@ class TableForm
 
 	function addInputMemo ($columnId, $label, $options = NULL, $columnType = DataModel::ctMemo, $colDef = NULL)
 	{
+		$testNewCodeEditor = intval($this->app()->cfgItem ('options.experimental.testNewCodeEditor', 0));
+
 		$ip = $this->option ('inputPrefix', '');
 		$colId = str_replace ('.', '_', $this->fid."_inp_$ip{$columnId}");
 
@@ -971,7 +973,14 @@ class TableForm
 
 		if ($label !== NULL && !($options & TableForm::coFullSizeY))
 			$inputCode .= "<label for='inp_$ip{$columnId}'$labelClass>" . self::e ($label) . "</label>";
-		$inputCode .= $inputCodePrefix."<textarea name='$ip{$columnId}' id='$colId' class='$inputClass'$inputParams></textarea>".$inputCodeCoreSuffix;
+		if ($columnType === DataModel::ctCode && $testNewCodeEditor)
+		{
+			if ($colDef && isset($colDef['clng']))
+				$inputParams .= " data-clng='{$colDef['clng']}'";
+			$inputCode .= $inputCodePrefix."<div name='$ip{$columnId}' id='$colId' class='e10-monaco-editor $inputClass'$inputParams></div>".$inputCodeCoreSuffix;
+		}
+		else
+			$inputCode .= $inputCodePrefix."<textarea name='$ip{$columnId}' id='$colId' class='$inputClass'$inputParams></textarea>".$inputCodeCoreSuffix;
 
 		$hints = $this->columnOptionsHints ($options, $columnId);
 		$this->appendElement ($inputCode, $labelCode, $hints);
