@@ -418,19 +418,13 @@ class UtilsBase
 		if ($app->cfgItem ('develMode', 0) !== 0)
 			return;
 
-		if ($fromName == '')
-			$fromName = $fromAdress;
-		if ($toName == '')
-			$toName = $toAdress;
-		$subjectEncoded = "=?utf-8?B?".base64_encode ($subject)."?=";
-		$header = "MIME-Version: 1.0\n";
-		if ($html)
-			$header .= "Content-Type: text/html; charset=utf-8\r\n";
-		else
-			$header .= "Content-Type: text/plain; charset=utf-8\r\n";
-		$header .= "From: =?UTF-8?B?".base64_encode($fromName)."?=<".$fromAdress.">\r\n";
-		//$header .= "To: =?UTF-8?B?".base64_encode($toName)."?=<".$toAdress.">\n";
-		return mail ($toAdress, $subjectEncoded, $message, $header);
+		$msg = new \Shipard\Report\MailMessage($app);
+		$msg->setFrom ($fromName, $fromAdress);
+		$msg->setTo($toAdress);
+		$msg->setSubject($subject);
+		$msg->setBody($message, $html);
+
+		$msg->sendMail();
 	}
 
 	static function getPropertiesTable ($app, $toTableId, $toRecId)
