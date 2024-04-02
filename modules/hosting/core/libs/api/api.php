@@ -128,9 +128,13 @@ function getDataSourceInfo ($app)
 
 		switch ($r['appWarning'])
 		{
-			case 1: $newds['appWarning'] = ['text' => 'Provoz aplikace dosud nebyl uhrazen. Prosím zkontrolujte Vaše platby. Děkujeme.', 'icon' => 'icon-warning'];
+			case 1: $newds['appWarning'] = ['text' => 'Provoz aplikace dosud nebyl uhrazen. Prosím zkontrolujte Vaše platby. Děkujeme.', 'icon' => 'system/iconWarning'];
 							break;
-			case 2: $newds['appWarning'] = ['text' => 'Uhraďte prosím neprodleně dlužnou částku za provoz aplikace. Děkujeme.', 'icon' => 'icon-warning'];
+			case 2: $newds['appWarning'] = ['text' => 'Uhraďte prosím neprodleně dlužnou částku za provoz aplikace. Děkujeme.', 'icon' => 'system/iconWarning'];
+							break;
+			case 3: $newds['appWarning'] = ['text' => 'Zkušební lhůta vyprší '.Utils::datef($r['dateTrialEnd']).'. Pokud chcete databázi zachovat, napište nám na podpora@shipard.cz. Děkujeme.', 'icon' => 'system/iconWarning'];
+							break;
+			case 4: $newds['appWarning'] = ['text' => 'Zkušební lhůta vypršela. Pokud chcete databázi zachovat, napište nám na podpora@shipard.cz. Děkujeme.', 'icon' => 'system/iconWarning'];
 							break;
 		}
 
