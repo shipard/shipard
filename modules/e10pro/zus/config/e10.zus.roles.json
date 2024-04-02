@@ -8,7 +8,6 @@
 			"e10pro.zus.programakci": {"e10pro.zus.WidgetProgramAkce": 2, "programAkce": 2},
 			"e10pro.zus.vysvedceni": {"default": 20, "e10pro.zus.WidgetVysvedceniStudenta2": 2, "vsvStudenta": 2},
 			"e10pro.zus.studium": {"default": 20, "combo": 1},
-			"e10pro.zus.prihlasky": {"default": 2},
 			"e10pro.zus.vyuky": {"default": 1, "etk": 2},
 			"e10pro.zus.vyukyrozvrh": {"default": 1},
 			"e10pro.zus.hodiny": {"default": 2, "combo": 2},
