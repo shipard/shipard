@@ -5,5 +5,8 @@
 	"config": [
 		{"id": "+appSkeleton", "file": "appSkeleton.json"},
 		{"id": "+e10.global.viewerDetails", "file": "wkf.viewerDetails.json"}
+	],
+	"dataPackages": [
+		"install/data/common/e10-persons"
 	]
 }

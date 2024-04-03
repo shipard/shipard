@@ -95,20 +95,29 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		// -- address
 		if (isset ($personData ['address']))
 		{
+			/** @var \e10\persons\TablePersonsContacts */
+			$tablePersonsContact = $this->app->table('e10.persons.personsContacts');
+			$cntAddr = 0;
 			forEach ($personData ['address'] as $address)
 			{
-				$newAddress = ['tableid' => 'e10.persons.persons', 'recid' => $newPersonNdx];
-				Utils::addToArray ($newAddress, $address, 'specification', '');
-				Utils::addToArray ($newAddress, $address, 'street', '');
-				Utils::addToArray ($newAddress, $address, 'city', '');
-				Utils::addToArray ($newAddress, $address, 'zipcode', '');
-				Utils::addToArray ($newAddress, $address, 'country', $this->app()->cfgItem ('options.core.ownerDomicile', 'cz'));
+				$newAddress = [
+					'person' => $newPersonNdx,
+					'adrSpecification' => $address['specification'] ?? '',
+					'adrStreet' => $address['street'] ?? '',
+					'adrCity' => $address['city'] ?? '',
+					'adrZipCode' => $address['zipcode'] ?? '',
+					'adrCountry' => $address['worldCountry'] ?? World::countryNdx($this->app, $this->app->cfgItem ('options.core.ownerDomicile', 'cz')),
+					'flagAddress' => 1,
+					'onTop' => 99,
+					'docState' => 4000, 'docStateMain' => 2,
+				];
 
-				Utils::addToArray ($newAddress, $address, 'worldCountry', 0);
-				if ($newAddress['worldCountry'] === 0) // TODO: for compatibility with old hosting
-					$newAddress['worldCountry'] = World::countryNdx($this->app(), $newAddress['country']);
+				if ($cntAddr === 0)
+					$newAddress['flagMainAddress'] = 1;
 
-				$this->db()->query ("INSERT INTO [e10_persons_address]", $newAddress);
+				$tablePersonsContact->checkBeforeSave($newAddress);
+				$this->app->db->query ('INSERT INTO [e10_persons_personsContacts]', $newAddress);
+				$cntAddr++;
 			}
 		}
 

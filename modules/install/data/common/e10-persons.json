@@ -1,41 +1,10 @@
 {
 	"name": "Základní sada dat pro Osoby",
-	"datasets": [
-		{
-			"table": "e10.base.propdefs",
-			"name": "Definice vlastností - kontaktní údaje",
-			"defaultValues": {"docState": 4000, "docStateMain": 2},
-			"checkExistence": {"qryColumns": ["id"]},
-			"data": [
-				{"rec": {"#": "e10-pid-taxid","fullName":"DIČ","shortName":"DIČ","id":"e10-pid-taxid", "type":"text", "multipleValues": 1, "enableNote": 1}},
-				{"rec": {"#": "e10-pid-oid","fullName":"IČ","shortName":"IČ","id":"e10-pid-oid", "type":"text", "multipleValues": 1, "enableNote": 1}},
-				{"rec": {"#": "e10-con-email","fullName":"E-mail","shortName":"E-mail","id":"e10-con-email", "type":"text", "multipleValues": 1, "enableNote": 1}},
-				{"rec": {"#": "e10-con-phone","fullName":"Telefon","shortName":"Telefon","id":"e10-con-phone", "type":"text", "multipleValues": 1, "enableNote": 1}},
-				{"rec": {"#": "e10-con-web","fullName":"Web","shortName":"Web","id":"e10-con-web", "type":"text", "multipleValues": 1, "enableNote": 1}}
-			]
-		},
-		{
-			"table": "e10.base.propgroups",
-			"name": "Skupiny vlastností",
-			"defaultValues": {"docState": 4000, "docStateMain": 2},
-			"checkExistence": {"qryColumns": ["id"]},
-			"data": [
-				{"rec": {"#": "e10-pid", "fullName":"Identifikace","id":"e10-pid","shortName":"Identifikace"}},
-				{"rec": {"#": "e10-con", "fullName":"Kontaktní údaje","id":"e10-con","shortName":"Kontaktní údaje"}}
-			]
-		},
-		{
-			"table": "e10.base.doclinks",
-			"defaultValues": {"linkId":"e10-base-propgoups-props", "srcTableId":"e10.base.propgroups", "dstTableId":"e10.base.propdefs"},
-			"name": "Propojení skupin a vlastností",
-			"checkExistence": {"qryColumns": ["srcRecId", "dstRecId", "linkId"]},
-			"data": [
-				{"rec": {"srcRecId":"#e10-pid","dstRecId":"#e10-pid-taxid"}},
-				{"rec": {"srcRecId":"#e10-pid","dstRecId":"#e10-pid-oid"}},
-				{"rec": {"srcRecId":"#e10-con","dstRecId":"#e10-con-email"}},
-				{"rec": {"srcRecId":"#e10-con","dstRecId":"#e10-con-phone"}},
-				{"rec": {"srcRecId":"#e10-con","dstRecId":"#e10-con-web"}}
-			]
+	"appOptions": {
+		"persons": {
+			"testNewPersons": 1
 		}
+	},
+	"datasets": [
 	]
 }
