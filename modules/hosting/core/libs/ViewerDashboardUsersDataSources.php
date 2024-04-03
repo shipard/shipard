@@ -50,17 +50,17 @@ class ViewerDashboardUsersDataSources extends TableView
 		$listItem ['i1'] = ['text' => '#'.$item['dsGidStr'], 'class' => 'id'];
 		$listItem ['class'] = 'df2-action-trigger';
 		if ($item['appWarning'] != 0)
-			$listItem ['class'] = 'e10-row-minus';
+			$listItem ['class'] .= ' e10-row-minus';
 
 		$props = [];
 
 		$props[] = [
-			'text' => 'Nastavení', 'icon' => 'system/iconSettings', 
+			'text' => 'Nastavení', 'icon' => 'system/iconSettings',
 			'docAction' => 'edit', 'pk' => $item['udsOptionsNdx'], 'table' => 'hosting.core.dsUsersOptions',
 			'element' => 'button', 'actionClass' => 'btn btn-success', 'type' => 'button',
 			'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->queryParam('widgetId'),
 		];
-	
+
 		$listItem['data-url-download'] = $this->dsUrl($item);
 
 
