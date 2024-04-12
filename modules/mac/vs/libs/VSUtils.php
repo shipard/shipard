@@ -71,7 +71,7 @@ class VSUtils
 		{
 			$mainCode .= "<script language='JavaScript' type='text/javascript'>\n";
 			$mainCode .= "var g_appWindowsCamerasPictures = ".json_encode($camPicturesList).";\n";
-			$mainCode .= "$(camerasReload ()); bigClock();\n";
+			$mainCode .= "$(camerasReload (1)); bigClock();\n";
 			$mainCode .= "</script>";
 		}
 		$mainCode .= '</div>';

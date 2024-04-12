@@ -6917,15 +6917,16 @@ function e10WizardNext (input)
 // ---- cameras
 
 var g_camerasBarTimer = 0;
-function camerasReload ()
+function camerasReload (first)
 {
 	if (g_appWindowsCamerasPictures === undefined || g_appWindowsCamerasPictures.servers === undefined)
 		return;
-
+	var needReload = 0;
 	var pictsWidth = 380;
 	var boxElement = $("#mainBrowserRightBarTop>div.camPicts");
 	if (boxElement.length)
 		pictsWidth = (boxElement.innerWidth() | 0) - 22;
+	//pictsWidth = 960;
 	for (var si in g_appWindowsCamerasPictures.servers)
 	{
 		var srv = g_appWindowsCamerasPictures.servers[si];
@@ -6938,12 +6939,30 @@ function camerasReload ()
 
 				var rightPicture = $('#e10-cam-' + ii + '-right');
 				if (rightPicture.length && rightPicture.is('img'))
+				{
+					if (first === 1)
+					{
+						rightPicture.load(function(){
+							$(this).attr ('data-load-in-progress', '0');
+						});
+					}
+
 					rightPicture.attr ("src", picFileName).parent().attr ("data-pict", origPicFileName);
+
+					if (rightPicture.attr ('data-load-in-progress') === '1')
+					{
+						needReload = 1;
+						continue;
+					}
+					rightPicture.attr('data-load-in-progress', '1');
+				}
 				else
 					rightPicture.parent().attr ("data-pict", origPicFileName);
 			}
-
-			g_camerasBarTimer = setTimeout (camerasReload, 10000);
+			if (needReload)
+				g_camerasBarTimer = setTimeout (camerasReload, 1000);
+			else
+				g_camerasBarTimer = setTimeout (camerasReload, 5000);
 		});
 	}
 }
