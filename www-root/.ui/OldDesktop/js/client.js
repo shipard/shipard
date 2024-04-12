@@ -1655,7 +1655,8 @@ if(data.stepResult.editDocument==1)e10DocumentEdit(0,data.stepResult.params);}el
 if(data.stepResult&&data.stepResult.restartApp==1){e10CloseModals();location.replace(httpApiRootPath+'/app/dashboard');}else
 if(data.stepResult&&data.stepResult.reloadPage==1){e10CloseModals();location.reload();}$('#'+focusedId).focusNextInputField();});}var
 g_camerasBarTimer=0;function
-camerasReload(){if(g_appWindowsCamerasPictures===undefined||g_appWindowsCamerasPictures.servers===undefined)return;var
+camerasReload(first){if(g_appWindowsCamerasPictures===undefined||g_appWindowsCamerasPictures.servers===undefined)return;var
+needReload=0;var
 pictsWidth=380;var
 boxElement=$("#mainBrowserRightBarTop>div.camPicts");if(boxElement.length)pictsWidth=(boxElement.innerWidth()|0)-22;for(var
 si
@@ -1669,8 +1670,9 @@ in
 data){var
 picFileName=srv.url+'imgs/-w'+pictsWidth+'/-q70/'+ii+"/"+data[ii].image;var
 origPicFileName=srv.url+'/imgs/'+ii+"/"+data[ii].image;var
-rightPicture=$('#e10-cam-'+ii+'-right');if(rightPicture.length&&rightPicture.is('img'))rightPicture.attr("src",picFileName).parent().attr("data-pict",origPicFileName);else
-rightPicture.parent().attr("data-pict",origPicFileName);}g_camerasBarTimer=setTimeout(camerasReload,10000);});}}function
+rightPicture=$('#e10-cam-'+ii+'-right');if(rightPicture.length&&rightPicture.is('img')){if(first===1){rightPicture.load(function(){$(this).attr('data-load-in-progress','0');});}rightPicture.attr("src",picFileName).parent().attr("data-pict",origPicFileName);if(rightPicture.attr('data-load-in-progress')==='1'){needReload=1;continue;}rightPicture.attr('data-load-in-progress','1');}else
+rightPicture.parent().attr("data-pict",origPicFileName);}if(needReload)g_camerasBarTimer=setTimeout(camerasReload,1000);else
+g_camerasBarTimer=setTimeout(camerasReload,5000);});}}function
 bigClock(){var
 thetime=new
 Date();var
