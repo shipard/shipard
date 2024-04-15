@@ -1278,7 +1278,7 @@ if(thisInput.hasClass("e10-inputCode")){if(g_useMonaco){if(thisInput[0]._me===un
 opts={scrollBeyondLastLine:false,minimap:{enabled:false},automaticLayout:true};const
 clang=thisInput.attr('data-clng');if(clang)opts.language=clang;const
 readonly=thisInput.attr('readonly');if(readonly==='readonly')opts.readOnly=true;var
-me=monaco.editor.create(thisInput[0],opts);me.getModel().onDidChangeContent((event)=>{e10FormNeedSave(thisInput,0);});thisInput[0]._me=me;}if(thisInputValue!==undefined&&thisInputValue!==null)thisInput[0]._me.setValue(thisInputValue);}else{var
+me=monaco.editor.create(thisInput[0],opts);me.getModel().onDidChangeContent(function(event){e10FormNeedSave(thisInput,0);});thisInput[0]._me=me;}if(thisInputValue!==undefined&&thisInputValue!==null)thisInput[0]._me.setValue(thisInputValue);}else{var
 cm=thisInput.data('cm');if(cm===undefined){cm=CodeMirror.fromTextArea(thisInput[0],{tabSize:2,lineNumbers:true,styleActiveLine:true});var
 cmWidth=form.width()-1;cmWidth-=form.find('div.e10-form-maintabs-menu').width();cm.setSize(cmWidth,form.parent().parent().height()-$('#'+id+'Buttons').height()-4);cm.on("change",function(cmEditor,cmChangeObject){e10FormNeedSave(thisInput,0);});thisInput.data('cm',cm);}if(thisInputValue!==undefined&&thisInputValue!==null)cm.setValue(thisInputValue);}}else{thisInput.val(thisInputValue);}if(thisInput.hasClass('e10-inputColor'))e10FormsBlurColorInput(0,thisInput);}}function
 df2runFormClose(id){$("#"+id).parent().remove();$("#modalDlg").remove();}function

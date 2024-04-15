@@ -5166,8 +5166,7 @@ function df2FormsSetData (id, data)
 
 					var me = monaco.editor.create(thisInput[0], opts);
 
-					me.getModel().onDidChangeContent((event) => {e10FormNeedSave (thisInput, 0);});
-
+					me.getModel().onDidChangeContent(function (event) {e10FormNeedSave (thisInput, 0);});
 					thisInput[0]._me = me;
 				}
 				if (thisInputValue !== undefined && thisInputValue !== null)
