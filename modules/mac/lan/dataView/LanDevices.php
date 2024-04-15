@@ -75,7 +75,11 @@ class LanDevices extends \lib\dataView\DataView
 					$item['place'] = $r['placeFullName'];
 			}
 
-			$item['deviceKind'] = $this->devicesKinds[$r['deviceKind']]['name'];
+			$dk = $this->devicesKinds[$r['deviceKind']] ?? NULL;
+			if ($dk)
+				$item['deviceKind'] = $dk['name'] ?? '!!!#'.$r['deviceKind'];
+			else
+				$item['deviceKind'] = '#'.$r['deviceKind'];
 			if ($r['rackName'])
 				$item['rack'] = $r['rackName'];
 
@@ -92,7 +96,7 @@ class LanDevices extends \lib\dataView\DataView
 
 	public function loadConnections ($devices, &$data)
 	{
-		$devicesKinds = $this->app()->cfgItem ('e10pro.lan.devices.kinds');
+		$devicesKinds = $this->app()->cfgItem ('mac.lan.devices.kinds');
 
 		$q[] = 'SELECT ports.*, ';
 		array_push ($q, ' vlans.num AS vlanNum, vlans.fullName AS vlanName,');
@@ -152,7 +156,7 @@ class LanDevices extends \lib\dataView\DataView
 					$item['connectedTo'][] = [
 						'prefix' => $r['portId'].':',
 						'suffix' => $r['connectedDeviceId'], 'text' => $r['connectedDeviceName'],
-						'icon' => $this->devicesKinds[$r['connectedDeviceKind']]['icon'], 'class' => 'e10-bold'
+						'icon' => $this->devicesKinds[$r['connectedDeviceKind']]['icon'] ?? '', 'class' => 'e10-bold'
 					];
 
 					if ($r['connectedPortNumber'])
@@ -266,9 +270,9 @@ class LanDevices extends \lib\dataView\DataView
 			if (!isset($list[$portNdx]))
 				$list[$portNdx] = ['portId' => $r['portId'], 'portMac' => $r['portMac'], 'addresses' => []];
 
-			$at = $addrTypes[$r['addrType']];
+			$at = $addrTypes[$r['addrType']] ?? NULL;
 			$a = ['prefix' => $r['portId'], 'text' => $r['ip']];
-			if ($at['sc'] !== 'F')
+			if ($at && $at['sc'] !== 'F')
 				$a['suffix'] = $at['sc'];
 
 			if (isset($data[$r['device']]['addr']))
