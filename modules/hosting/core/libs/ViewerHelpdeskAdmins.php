@@ -180,6 +180,10 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 		if (isset($qv['ticketPriority']))
 			array_push ($q, ' AND [tickets].[priority] IN %in', array_keys($qv['ticketPriority']));
 
+		// -- state
+		if (isset($qv['ticketState']))
+			array_push ($q, ' AND [tickets].[ticketState] IN %in', array_keys($qv['ticketState']));
+
 		// -- data sources
 		if (isset($qv['ds']))
 			array_push ($q, ' AND [tickets].[dataSource] IN %in', array_keys($qv['ds']));
@@ -258,6 +262,10 @@ class ViewerHelpdeskAdmins extends TableViewGrid
 		// -- priority
 		$ticketPriorities = $this->table->columnInfoEnum('priority');
 		$this->qryPanelAddCheckBoxes($panel, $qry, $ticketPriorities, 'ticketPriority', 'Důležitost');
+
+		// -- state
+		$ticketPriorities = $this->table->columnInfoEnum('ticketState');
+		$this->qryPanelAddCheckBoxes($panel, $qry, $ticketPriorities, 'ticketState', 'Stav');
 
 		// -- data sources
 		$qds[] = 'SELECT * FROM hosting_core_dataSources AS ds';

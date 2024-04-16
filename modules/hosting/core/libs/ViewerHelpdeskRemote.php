@@ -159,6 +159,10 @@ class ViewerHelpdeskRemote extends TableViewGrid
 		if (isset($qv['ticketPriority']))
 			array_push ($q, ' AND [tickets].[priority] IN %in', array_keys($qv['ticketPriority']));
 
+		// -- state
+		if (isset($qv['ticketState']))
+			array_push ($q, ' AND [tickets].[ticketState] IN %in', array_keys($qv['ticketState']));
+
 		// -- fulltext
 		$forceArchive = FALSE;
 		if ($fts != '')
@@ -233,6 +237,10 @@ class ViewerHelpdeskRemote extends TableViewGrid
 		// -- priority
 		$ticketPriorities = $this->table->columnInfoEnum('priority');
 		$this->qryPanelAddCheckBoxes($panel, $qry, $ticketPriorities, 'ticketPriority', 'Důležitost');
+
+		// -- state
+		$ticketPriorities = $this->table->columnInfoEnum('ticketState');
+		$this->qryPanelAddCheckBoxes($panel, $qry, $ticketPriorities, 'ticketState', 'Stav');
 
 		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}
