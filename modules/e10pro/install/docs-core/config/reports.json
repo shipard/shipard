@@ -1,6 +1,7 @@
 [
 	{"name": "Kurzy cizích měn", "class": "e10pro.reports.tests.docs.ReportExchangeRates", "group": "e10-checks", "icon":"tables/e10doc.base.exchangeRatesLists"},
 	{"name": "Období", "class": "e10pro.reports.tests.docs.ReportBadFiscalPeriod", "group": "e10-checks", "icon":"detailReportPeriod"},
+	{"name": "Chybné číslování", "class": "e10pro.reports.tests.docs.ReportBadNumbering", "group": "e10-checks", "icon":"system/actionCopy"},
 	{"name": "Pokladní kniha", "class": "e10doc.finance.reportCashBook", "icon": "report/cashBook", "group": "e10doc-finance", "order": 80000},
 	{"name": "Položky", "class": "e10pro.reports.tests.items.ReportBadItems", "icon":"tables/e10.witems.items" ,"group": "e10-checks"}
 ]

@@ -40,7 +40,8 @@
 		},
 		"reports": {
 			"e10pro.reports.tests.docs.ReportBadFiscalPeriod": 2,
-			"e10pro.reports.tests.docs.ReportExchangeRates": 2
+			"e10pro.reports.tests.docs.ReportExchangeRates": 2,
+			"e10pro.reports.tests.docs.ReportBadNumbering": 2
 		}
 	},
 	"audit": {
