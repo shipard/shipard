@@ -1,6 +1,6 @@
 {
 	"1000": {
-		"stateName": "Rozpracovaný doklad", "actionName": "Opravit", "mainState": 0,
+		"stateName": "Rozpracovaný doklad", "actionName": "Opravit",
 		"stateStyle": "concept",  "mainState": 0, "goto": [1200, 9800]
 	},
 
@@ -12,7 +12,12 @@
 	"4000": {
 		"stateName": "Odesláno k úhradě", "actionName": "Uhradit", "stateStyle": "done",
 		"mainState": 2, "readOnly": 1,
-		"enablePrint": 1, "focus": 1, "goto": [8000]},
+		"enablePrint": 1, "focus": 1, "goto": [8000]
+	},
+
+	"4100": {
+		"stateName": "Stornováno", "actionName": "Stornovat", "stateStyle": "cancel",
+		"mainState": 2, "readOnly": 1, "enablePrint": 1, "goto": [8000]},
 
 	"8000": {
 		"stateName": "V opravě", "actionName": "Opravit", "stateStyle": "edit",
