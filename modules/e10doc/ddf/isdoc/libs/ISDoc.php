@@ -45,10 +45,6 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 			$this->fileContent = str_replace('</isdoc:', '</', $this->fileContent);
 		}
 
-		$tst = strstr($this->fileContent, '<?xml');
-		if (!$tst)
-			return;
-
 		$tst = strstr($this->fileContent, '<Invoice');
 		if (!$tst)
 			return;
