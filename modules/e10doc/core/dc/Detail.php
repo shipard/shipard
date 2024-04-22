@@ -594,7 +594,7 @@ class Detail extends \Shipard\Base\DocumentCard
 		$this->addContent('body',
 			[
 				'pane' => 'e10-pane e10-pane-table', 'type' => 'table',
-				'title' => ['icon' => 'icon-money', 'text' => 'Odpočet záloh'], 'header' => $h, 'table' => $list
+				'title' => ['icon' => 'system/iconMoney', 'text' => 'Odpočet záloh'], 'header' => $h, 'table' => $list
 			]
 		);
 	}
