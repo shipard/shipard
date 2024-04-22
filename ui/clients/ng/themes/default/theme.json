@@ -11,6 +11,21 @@
 			"name": "tmavé",
 			"file": "_colorsDark",
 			"dm": 1
+		},
+		"systemDefaultColored": {
+			"name": "modrý",
+			"file": "_colorsShipardBlue",
+			"dm": 1
+		},
+		"systemPastelLight": {
+			"name": "světle pastelové",
+			"file": "_colorsPastelLight",
+			"dm": 1
+		},
+		"systemPastelDark": {
+			"name": "tmavě pastelové",
+			"file": "_colorsPastelDark",
+			"dm": 1
 		}
 	}
 }

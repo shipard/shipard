@@ -6,10 +6,10 @@
 
 .accordion {
 	margin-top: 1rem;
-	border: 1pt solid var(--shpd-accordion-border);
+	border: 1pt solid var(--shpd-universal-border);
 	.accordion-header {
 		padding: 0;
-		background-color: var(--shpd-accordion-bg);
+		background-color: var(--shpd-universal-bg);
 		.d-flex {
 			color: var(--shpd-body-color);
 		}
@@ -19,13 +19,13 @@
 		border: none;
 	}
 	li:first-child {
-		border-top: 1pt solid var(--shpd-accordion-border) !important;
+		border-top: 1pt solid var(--shpd-universal-border) !important;
 	}
 	ol.list-group{
 	border: none !important;
 	}
 	.accordion-body {
-		background-color: var(--shpd-accordion-bg);
+		background-color: var(--shpd-universal-bg);
 		padding: 0;
 	}
 }
@@ -39,7 +39,7 @@ ol.grades li.list-group-item {
 }
 
 ol.grades li.list-group-item:not(:last-child){
-	border-bottom: 1px solid var(--shpd-accordion-border);
+	border-bottom: 1px solid var(--shpd-universal-border);
 }
 
 .tag {

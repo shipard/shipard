@@ -1,0 +1,196 @@
+.e10-pane {
+	/*margin-bottom: 1ex;
+	//background-color: #fafafa;
+    background-color: #fafafa;
+	border-radius: 2px;
+	border: 1px solid rgba(0,0,0,.2);
+	box-shadow: -1px -1px 3px #ddd;
+	overflow-x: auto;
+	overflow-y: hidden;*/
+
+	margin-top: .5rem;
+    margin-bottom: .5rem;
+    background-color: var(--shpd-universal-bg);
+    border: 1px solid var(--shpd-universal-border);
+    border-radius: 6px;
+    word-wrap: break-word;
+    display: flex;
+    position: relative;
+    flex-direction: column;
+
+	>div.title, >div.footer {
+		>div {
+			padding: 4px 6px;
+			display: inline-block;
+			width: 100%;
+		}
+	}
+
+	/*>div.title {
+		border-bottom: 1px solid rgba(0,0,0,.1);
+		div.e10-document-trigger:hover {
+			background-color: @viewerHoveredRowBackground;
+		}
+	}*/
+
+	>div.body {
+		> div.pageText, > div.attBoxSmall {
+			padding: 1ex;
+			font-size: 97%;
+			background-color: #fff;
+			//border-bottom: 1px solid rgba(0, 0, 0, .1);
+			max-height: 70vh;
+			overflow-y: auto;
+		}
+	}
+
+	div.row {
+		border-top: 1px solid rgba(0,0,0,.2);
+		padding: 6px;
+		clear: both;
+		display: inline-block;
+		width: 100%;
+	}
+	span.e10-att-thumb {
+		display: inline-block;
+		border: 1px solid rgba(0,0,0,.2);
+		img {
+			height: 140px;
+		}
+		a {
+			clear: both;
+		}
+	}
+	>div>div.info {clear: both;}
+	>div>div.width50 {display: inline-block;}
+
+    .e10-small {
+        //color: #555;
+        font-size: 85% !important;
+    }
+}
+
+.e10-pane-table {
+	padding: 6px;
+	h2.next {margin-top: 2ex; }
+}
+
+
+div.e10-pane-info {
+	margin: -1ex -1ex 1ex -1ex;
+	//border-bottom: 1px solid rgba(0,0,0,.4);
+}
+
+div.e10-pane-top {
+	margin-top: -1ex;
+	border-top: none;
+	border-radius: 0 0 2px 2px;
+}
+
+.e10-pane-core {
+	margin-bottom: 1ex;
+	border-radius: 2px;
+	border: 1px solid rgba(0,0,0,.2);
+
+	overflow-x: auto;
+	overflow-y: hidden;
+
+	>.title, >.subtitle {
+		border-bottom: 1px solid rgba(0,0,0,.1);
+	}
+}
+
+div.e10-pane-hover:hover {
+	background-color: rgba(0,0,0,.5) !important;
+}
+
+details>summary {
+	display: list-item;
+	cursor: pointer;
+}
+
+div.e10-reportContent {
+    padding: .5rem;
+    overflow-x: auto;    
+    .subtitle {
+        font-size: 122%;
+        font-weight: normal;
+		padding-top: .2rem;        
+        margin-bottom: .3rem;
+        display: block;		
+    }
+    .subtitle:not(:first-child) {padding-top: 1em;}
+}
+
+.e10-pane-core {
+	margin-bottom: 1ex;
+	border-radius: 2px;
+	border: 1px solid rgba(0,0,0,.2);
+
+	overflow-x: auto;
+	overflow-y: hidden;
+
+	>.title, >.subtitle {
+		border-bottom: 1px solid rgba(0,0,0,.1);
+	}
+}
+
+.pull-right {
+    float: right;
+}
+.pull-left {
+    float: left
+}
+
+span.pre {
+    opacity: .9;
+    font-size: 85%;
+    padding-right: 1ex;
+}
+
+div.content-header>table {
+    width: 100%;
+    td.sum-header-info {
+        padding-left: 1.3ex;
+        text-align: right;
+        white-space: pre;
+        .big {font-size: 200%; font-weight: bold;}
+        .normal {font-size: 133%; font-weight: normal;}
+    }
+    a.e10-document-trigger {
+        color: black;
+        text-decoration: underline;
+    }
+    td.content-header-info-new .title {
+        font-size: 116%;
+        font-family: Verdana, Helvetica, Ubuntu, sans-serif !important;
+        font-weight: normal;
+    }
+}
+
+// tabs for details (přehled, zápisník, historie, atd.)
+data-viewer.appViewer>div.detail>div.tabs {
+	background-color: var(--shpd-detail-tabs-bg);
+	color: var(--shpd-detail-tabs-color);
+	text-align: center;
+	display: flex;
+	flex-direction: column;
+	width: 4rem;
+  
+	>span {
+	  width: 100%;
+	  white-space: nowrap;
+	  overflow: hidden;
+	  text-overflow: ellipsis;
+	  font-size: 80%;
+	  padding: .2rem .4rem;
+  
+	  >i {
+		font-size: 2rem;
+	  }
+	}
+  
+	>span.active {
+	  background-color: var(--shpd-detail-tabs-active-bg);
+	}
+}

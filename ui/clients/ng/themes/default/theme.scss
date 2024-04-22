@@ -197,8 +197,8 @@ $input-focus-bg: var(--formBackground);
 $popover-body-padding-y: .5rem;
 $popover-body-padding-x: .5rem;
 
-$card-bg: var(--shpd-card-bg);
-$card-border-color: var(--shpd-card-border);
+$card-bg: var(--shpd-universal-bg);
+$card-border-color: var(--shpd-universal-border);
 $card-color: var(--shpd-body-color);
 
 
@@ -225,6 +225,7 @@ $card-color: var(--shpd-body-color);
 @import "_tables.scss";
 @import "_menu.scss";
 @import "_card.scss";
+@import "_details.scss";
 @import "_utility.scss";
 //@import "_colorsLight.scss";
 //@import "_colorsDark.scss";

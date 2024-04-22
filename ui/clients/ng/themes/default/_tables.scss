@@ -25,13 +25,39 @@
   }*/
 
 table.priceList {
-    border: 1pt solid var(--shpd-universal-border); border-style: hidden; border-radius: 5px; border-style: hidden; box-shadow: 0 0 0 1px var(--shpd-universal-border); border-collapse: collapse;
-    background-color: var(--shpd-card-bg);
+    border: 1pt solid var(--shpd-table-border); border-style: hidden; border-radius: 5px; border-style: hidden; box-shadow: 0 0 0 1px var(--shpd-table-border); border-collapse: collapse;
+    background-color: var(--shpd-table-bg);
     tr {
-        border-bottom: 1px solid var(--shpd-universal-border);
+        border-bottom: 1px solid var(--shpd-table-border);
     }
     td
     {
         padding: .5rem;
     }
 }
+
+table.default {    
+    border: 1pt solid var(--shpd-table-border); border-style: hidden; border-radius: 5px; border-style: hidden; box-shadow: 0 0 0 1px lightgray; border-collapse: collapse;
+
+    //thead tr:last-child {border-bottom: 2px solid #888;}
+
+    th {
+        text-align: left;        
+        padding: .3em;
+        background-color: var(--shpd-table-th-bg);        
+        border-left: 1pt solid var(--shpd-table-border);        
+        background-color: rgba(0, 0, 0, 0.1);
+    }
+    th:first-child {border-radius: 5px 0px 0px 0px;}
+    th:last-child {border-radius: 0px 5px 0px 0px;}
+  
+    >tbody>tr>td {border: 1px solid var(--shpd-table-border); padding: 4px; vertical-align: top;}
+
+    tr.separator td {border-left: 1px solid transparent; border-right: 1px solid transparent;}
+
+    .number  {text-align: right !important; }
+    td.number {white-space:pre;}
+    th.number {white-space:pre;}
+  }
+  
+  table.fullWidth {width: 100%;}

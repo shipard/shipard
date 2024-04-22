@@ -8,7 +8,7 @@
         "file":"\/www-root\/.ui\/ng\/themes\/default\/systemDefaultLight.css",
         "dm":0,
         "integrity":{
-          "sha384":"764bf1c2b8443f894ad041d0ce917a3f5be96d531337108360e484eaa4a378bb10f4103a83629a364969d23046820bd7"
+          "sha384":"c2c20db8f505c55b61a5dc80605449408f6042f99628ad74a51c292b2201e20b7a5155c01138b14e19842f06627d642d"
         }
       },
       "systemDefaultDark":{
@@ -16,13 +16,37 @@
         "file":"\/www-root\/.ui\/ng\/themes\/default\/systemDefaultDark.css",
         "dm":1,
         "integrity":{
-          "sha384":"6c7062b99dd547d6668ed457f577d0f7a4ac682efa809dd7262237579f5751867eee247613f90963739f36167a25cd1a"
+          "sha384":"03edd2195e12380192556867b49ab437c9a6b9089879a2061f16563b3811cb439349497579ebe670abd60bd0e28838bf"
+        }
+      },
+      "systemDefaultColored":{
+        "name":"modr\u00fd",
+        "file":"\/www-root\/.ui\/ng\/themes\/default\/systemDefaultColored.css",
+        "dm":1,
+        "integrity":{
+          "sha384":"9de70a606212845f6cbac210aed7f86cd110c85feb0e7d6e2c169ce7fffea9afd564e81cb935172c990cf15453d55e7e"
+        }
+      },
+      "systemPastelLight":{
+        "name":"sv\u011btle pastelov\u00e9",
+        "file":"\/www-root\/.ui\/ng\/themes\/default\/systemPastelLight.css",
+        "dm":1,
+        "integrity":{
+          "sha384":"a577d5e7a05c1059aaf823a3a71d0e594c224cfe5c2d533e1afd59c84ada0c4a0e0106e15bd8765cb4dc29d4110b3559"
+        }
+      },
+      "systemPastelDark":{
+        "name":"tmav\u011b pastelov\u00e9",
+        "file":"\/www-root\/.ui\/ng\/themes\/default\/systemPastelDark.css",
+        "dm":1,
+        "integrity":{
+          "sha384":"8f3e802328ac56a3254a7d38be6aa2b20178836a459b593a503c2f2b715b6aea69d26d56b8985c9cf76a56e166a7ea31"
         }
       }
     },
     "integrity":{
-      "sha384":"b2613ba27a0b466242b97066c4e650e70ea13d01b1444f229814f8341eb480bd6bae2b39140e067be509b846ec747dec",
-      "md5":"1fecac1d85bc1a4ffbb41675f97b441c"
+      "sha384":"7d2b7391ba5041b81d0592a7de4880f0d9704ba651bb62fb762fb196ce7239e1b2ecbbb691b9fa5b09184945d116568c",
+      "md5":"905e7f4a073e3f1ba9f807f04c6aa424"
     }
   }
 }

@@ -137,6 +137,11 @@
 
 
 /* visuals */
+div.app-header {
+  background-color: var(--shpd-menu-top-bg);
+  color: var(--shpd-menu-top-color);
+}
+
 .app-menu {
     height: 100%;
     overflow-y: hidden;
@@ -144,6 +149,7 @@
 
 div.app-menu-shp-ng{
     height: 100%;
+    color: var(--shpd-menu-color);
     .menu-toolbar {
         background-color: var(--shpd-menu-top-bg);
     }
@@ -160,12 +166,15 @@ div.app-menu-shp-ng{
     }
 
     .shp-tab-item {
-        background-color: transparent;
+        background-color: var(--shpd-menu-tabs-bg);
+        color: var(--shpd-menu-tabs-color);
         opacity: .8;
+        border-top: 3px solid transparent;
     }
     .shp-tab-item.active{
-        background-color: var(--shpd-menu-active-bg);
-        border-top: 3px solid var(--shpd-primary);
+        background-color: var(--shpd-menu-tabs-active-bg);
+        //color: var(--shpd-menu-tabs-active-color);
+        border-top: 3px solid var(--shpd-menu-tabs-active-border);
         opacity: 1;
     }
     .shp-tab-item:hover {
@@ -189,6 +198,7 @@ div.app-menu-shp-ng{
 .shp-tree-list li>.li-title.active{
     background-color: var(--shpd-menu-active-bg);
     border-left: 3px solid var(--shpd-primary);
+    //color: var(--shpd-menu-active-color);
 }
 
 

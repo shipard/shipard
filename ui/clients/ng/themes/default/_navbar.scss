@@ -6,6 +6,7 @@
     .app-nav {
         background-color: var(--shpd-nav-top-bg);
         border-bottom: 1px solid var(--shpd-nav-border);
+        color: var(--shpd-nav-color);
         a {
             color: var(--navColor);
         }
@@ -55,7 +56,7 @@
                 padding-left: .5rem;
                 background-color: var(--shpd-nav-bg);
                 color: var(--shpd-nav-color) !important;
-                border-bottom: 1px solid var(--shpd-universal-border);
+                border-bottom: 1px solid var(--shpd-nav-border);
                 text-decoration: none;
                 width: 100%;
                 text-align: inherit;
@@ -63,7 +64,7 @@
                 position: relative;
             }
             .shpd-nav-item.active {
-                background-color: var(--shpd-primary-subtle);
+                background-color: var(--shpd-nav-active-bg);
                 color: #101010 !important;
             }
             .shpd-nav-item:hover{
@@ -97,7 +98,7 @@
             border: none;
         }
         button:first-child {
-            border-top: 1px solid var(--shpd-universal-border);
+            border-top: 1px solid var(--shpd-nav-border);
         }
         .offcanvas-header {
             padding: 0 .5rem !important;

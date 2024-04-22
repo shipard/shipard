@@ -1,13 +1,13 @@
 :root {
-    --shpd-primary: #00508A;
-    --shpd-primary-subtle: #7FA7C4;
-    --shpd-primary-gray: #485056;
+    --shpd-primary: #eb6608;
+    --shpd-primary-subtle: #F19352;
+    --shpd-primary-gray: #987d6a;
 
-    --shpd-100: #808080;
-    --shpd-200: #505050;
-    --shpd-300: #404040;
-    --shpd-400: #303030;
-    --shpd-500: #202020;
+    --shpd-100: #F7FAF7;
+    --shpd-200: #BFD3BF;
+    --shpd-300: #6B866B; // body bg
+    --shpd-400: #556B55; // nav bg, menu bg
+    --shpd-500: #405040; // menu tabs bg, other borders - menu, universal 
 
     --shpd-secondary: #BEBEBE;
     --shpd-success: #0AAF41;
@@ -30,13 +30,13 @@
     --shpd-nav-top-bg: var(--shpd-500);
     --shpd-nav-color: #D8D8D8;
     --shpd-nav-border: var(--shpd-500);
-    --shpd-nav-active-bg: var(--shpd-primary-subtle);
+    --shpd-nav-active-bg: var(--shpd-primary);
     --shpd-nav-border: var(--shpd-100);
 
     /* full app menu */
     --shpd-menu-bg: var(--shpd-400);
     --shpd-menu-border: var(--shpd-500);
-    --shpd-menu-active-bg: var(--shpd-200); // for every active
+    --shpd-menu-active-bg: var(--shpd-primary); // for every active
     //--shpd-menu-active-color: #F0F0F0; // text color in active    
     --shpd-menu-top-bg: var(--shpd-500); // top row with info - user name/app name
     --shpd-menu-top-color: #F0F0F0; // top row with info - user name/app name
@@ -45,7 +45,7 @@
     // bottom tabs
     --shpd-menu-tabs-color: #F0F0F0; // text color in menu
     --shpd-menu-tabs-bg: var(--shpd-500); // bottom tabs in menu
-    --shpd-menu-tabs-active-bg: transparent;
+    --shpd-menu-tabs-active-bg: var(--shpd-primary);;
     //--shpd-menu-tabs-active-color: #F0F0F0; // text color in active
     --shpd-menu-tabs-active-border: var(--shpd-primary);
 
@@ -53,31 +53,19 @@
     // toolbar
     --shpd-toolbar-color: #F0F0F0;
     --shpd-toolbar-bg: var(--shpd-400);
-    --shpd-toolbar-active-bg: var(--shpd-200);
+    --shpd-toolbar-active-bg: var(--shpd-primary);
     //--shpd-toolbar-active-color: #F0F0F0;
     // bottom tabs
     --shpd-viewer-bottom-tabs-color: #F0F0F0;
     --shpd-viewer-bottom-tabs-bg: var(--shpd-500);
-    --shpd-viewer-bottom-tabs-active-bg: var(--shpd-200);
+    --shpd-viewer-bottom-tabs-active-bg: var(--shpd-primary);
     //--shpd-viewer-bottom-tabs-active-color: #F0F0F0;
     --shpd-viewer-bottom-tabs-active-border: var(--shpd-primary);
-
-    // details
-    --shpd-detail-tabs-color: #F0F0F0;
-    --shpd-detail-tabs-bg: var(--shpd-500);
-    --shpd-detail-tabs-active-bg: var(--shpd-200);
 
     --shpd-hover-bg: var(--shpd-primary-gray);
     --shpd-hover-color: #F0F0F0;
     --shpd-viewer-row-active: var(--shpd-primary-subtle);
-
-    --shpd-universal-border: var(--shpd-100); // for cards, lists, accordion, etc.
-    --shpd-universal-bg: var(--shpd-200); // background color for cards, lists, accordion, etc.
-
-    /* tables */
-    --shpd-table-border: var(--shpd-200);
-    --shpd-table-th-bg: var(--shpd-100);
-
+    --shpd-universal-border: var(--shpd-100);
     --shpd-card-bg: var(--shpd-200);
     --shpd-card-border: var(--shpd-100);
     --shpd-list-bg: var(--shpd-200);

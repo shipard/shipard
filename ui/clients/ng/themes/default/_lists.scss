@@ -14,8 +14,8 @@
 }*/
 
 .shpd-list {
-    background-color: var(--shpd-list-bg);
-    border: 1px solid var(--shpd-list-border);
+    background-color: var(--shpd-universal-bg);
+    border: 1px solid var(--shpd-universal-border);
     border-radius: 6px;
     display: flex;
     flex-direction: column;
@@ -25,7 +25,7 @@
         padding: .5rem 1rem !important;
     }
     .shpd-list-item:not(:last-child) {
-        border-bottom: 1px solid var(--shpd-list-border);
+        border-bottom: 1px solid var(--shpd-universal-border);
     }
     a.shpd-list-item {
         text-decoration: none !important;
