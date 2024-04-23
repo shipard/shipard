@@ -3,12 +3,16 @@
     --shpd-primary-subtle: #8FC0E3;
     --shpd-primary-gray: #DDE8F0;
 
-    --shpd-100: #F5F5F5;
-    --shpd-200: #E0E0E0;
-    --shpd-300: #BEBEBE;
-    --shpd-400: #A9A9A9;
-    --shpd-500: #505050;
+    --shpd-100: #F5F5F5; // body bg
+    --shpd-200: #E0E0E0; // menu
+    --shpd-300: #BEBEBE; // tabs
+    --shpd-400: #A9A9A9; // top menu, active bg
+    --shpd-500: #505050; // handle bg ???? not used for anything else ????
 
+    --shpd-white: #FFF;
+    --shpd-black: #000;
+
+    /* buttons */
     --shpd-secondary: #CACACA;
     --shpd-success: #00BD3F;
     --shpd-info: #0DCAF0;
@@ -21,14 +25,18 @@
     --shpd-warning-hover: #D5BF59;
     --shpd-danger-hover: #D04144;
 
+    /* text colors */
     --shpd-body-color: #212529;
     --shpd-body-color-muted: #595C5F; // 75% opacity of body color
+    --shpd-menu-color: #1b1b1b; // used for every menu (top, tabs)
+
+    /* body colors */    
     --shpd-body-bg: var(--shpd-100);
 
     /*simple app menu */
     --shpd-nav-bg: var(--shpd-200);
     --shpd-nav-top-bg: var(--shpd-300);
-    --shpd-nav-color: #282828;
+    --shpd-nav-color: var(--shpd-menu-color);
     --shpd-nav-border: var(--shpd-300); // ?????
     --shpd-nav-active-bg: var(--shpd-primary-subtle);
     --shpd-nav-border: var(--shpd-300);
@@ -37,46 +45,46 @@
     --shpd-menu-bg: var(--shpd-200);
     --shpd-menu-border: var(--shpd-300);
     --shpd-menu-active-bg: var(--shpd-400); // for every active
-    //--shpd-menu-active-color: #212529; // text color in active    
+    --shpd-menu-active-border: var(--shpd-primary);
+    // top menu
     --shpd-menu-top-bg: var(--shpd-400); // top row with info - user name/app name
-    --shpd-menu-top-color: #212529; // top row with info - user name/app name
-    --shpd-menu-handle-bg: var(--shpd-500); // left column after minimizing menu
-    --shpd-menu-color: var(--shpd-body-color); // text color in menu, same as body text
+    --shpd-menu-top-color: var(--shpd-menu-color); // top row with info - user name/app name
+    // minimized menu
+    --shpd-menu-handle-bg: var(--shpd-400); // left column, same as top row
+    --shpd-menu-buttons-bg: var(--shpd-200); // favorites, same as menu
     // bottom tabs
-    --shpd-menu-tabs-color: #212529; // text color in menu
+    --shpd-menu-tabs-color: var(--shpd-menu-color); // text color in menu
     --shpd-menu-tabs-bg: var(--shpd-300); // bottom tabs in menu
     --shpd-menu-tabs-active-bg: transparent;
-    //--shpd-menu-tabs-active-color: #212529; // text color in active
     --shpd-menu-tabs-active-border: var(--shpd-primary);
 
     /* viewers */
     // toolbar
-    --shpd-toolbar-color: #212529;
+    --shpd-toolbar-color: var(--shpd-menu-color);
     --shpd-toolbar-bg: var(--shpd-200);
-    --shpd-toolbar-active-bg: var(--shpd-400);
-    //--shpd-toolbar-active-color: #212529;
+    --shpd-toolbar-active-bg: var(--shpd-400);    
     // bottom tabs
-    --shpd-viewer-bottom-tabs-color: #212529;
+    --shpd-viewer-bottom-tabs-color: var(--shpd-menu-color);
     --shpd-viewer-bottom-tabs-bg: var(--shpd-300);
     --shpd-viewer-bottom-tabs-active-bg: var(--shpd-400);
-    //--shpd-viewer-bottom-tabs-active-color: #212529;
     --shpd-viewer-bottom-tabs-active-border: var(--shpd-primary);
     
-    // details
-    --shpd-detail-tabs-color: #212529;
-    --shpd-detail-tabs-bg: var(--shpd-300);
-    --shpd-detail-tabs-active-bg: var(--shpd-400);
+    /* details */
+    --shpd-detail-tabs-color: var(--shpd-menu-color);
+    --shpd-detail-tabs-bg: var(--shpd-200); // same as menu bg
+    --shpd-detail-tabs-active-bg: var(--shpd-400); // same as menu active
+    --shpd-detail-tabs-active-border: var(--shpd-primary);
 
     --shpd-hover-bg: var(--shpd-primary-gray);
     --shpd-hover-color: #212529;
     --shpd-viewer-row-active: var(--shpd-primary-subtle);
 
     --shpd-universal-border: var(--shpd-200); // for cards, lists, accordion, etc.
-    --shpd-universal-bg: #FFF; // background color for cards, lists, accordion, etc.
+    --shpd-universal-bg: var(--shpd-white); // background color for cards, lists, accordion, etc.
 
     /* tables */
     --shpd-table-border: var(--shpd-300);
-    --shpd-table-th-bg: var(--shpd-100);
+    --shpd-table-th-bg: var(--shpd-200);
 
     // in buttons, delete after replacing
     --shpd-card-bg: #FFF;
@@ -85,6 +93,7 @@
     --shpd-list-border: var(--shpd-200);
     --shpd-accordion-bg: #FFF;
     --shpd-accordion-border: var(--shpd-200);
+    //
 
     --navPillsColor: #000;
     --dashboardButtonColor: #000;

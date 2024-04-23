@@ -68,6 +68,10 @@
         //color: #555;
         font-size: 85% !important;
     }
+
+	.label {		
+		line-height: 1;
+	}
 }
 
 .e10-pane-table {
@@ -148,24 +152,43 @@ span.pre {
     padding-right: 1ex;
 }
 
+// detail header (jméno osoby, číslo dokladu, cena, zavírací tlačítko, atd.)
 div.content-header>table {
     width: 100%;
     td.sum-header-info {
         padding-left: 1.3ex;
         text-align: right;
         white-space: pre;
-        .big {font-size: 200%; font-weight: bold;}
-        .normal {font-size: 133%; font-weight: normal;}
+        .big {
+			font-size: 200%;
+			font-weight: bold;
+		}
+        .normal {
+			font-size: 133%;
+			font-weight: normal;
+		}		
     }
     a.e10-document-trigger {
         color: black;
         text-decoration: underline;
     }
-    td.content-header-info-new .title {
-        font-size: 116%;
-        font-family: Verdana, Helvetica, Ubuntu, sans-serif !important;
-        font-weight: normal;
-    }
+	td.content-header-info-new {
+		padding: 4px;
+		padding-left: 1ex;
+		vertical-align: top;
+		.title {
+			font-size: 116%;
+			font-family: Verdana, Helvetica, Ubuntu, sans-serif !important;
+			font-weight: normal;
+		}
+	}
+	td.content-header-icon-new {
+		width: 8ex; text-align: center;
+		height: 10ex;
+		>span {font-size: 333%; }
+	}
+	td.content-header-btns {vertical-align: top; text-align: right; width: 2.5em;}
+	div.content-header button.e10-close-detail {border: none; cursor: pointer; background: none; font-size: 26px; display: inline-block; padding-right: 5px;}
 }
 
 // tabs for details (přehled, zápisník, historie, atd.)
@@ -176,21 +199,22 @@ data-viewer.appViewer>div.detail>div.tabs {
 	display: flex;
 	flex-direction: column;
 	width: 4rem;
-  
 	>span {
-	  width: 100%;
-	  white-space: nowrap;
-	  overflow: hidden;
-	  text-overflow: ellipsis;
-	  font-size: 80%;
-	  padding: .2rem .4rem;
-  
-	  >i {
-		font-size: 2rem;
-	  }
+		width: 100%;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		font-size: 80%;
+		padding: .2rem .4rem;
+		>i {
+			font-size: 2rem;
+		}
 	}
-  
 	>span.active {
-	  background-color: var(--shpd-detail-tabs-active-bg);
+		background-color: var(--shpd-detail-tabs-active-bg);
+		border-left: 3px solid var(--shpd-detail-tabs-active-border);
+	}
+	>span:hover {
+		background-color: var(--shpd-hover-bg);
 	}
 }

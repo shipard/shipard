@@ -22,9 +22,9 @@
 			"file": "_colorsPastelLight",
 			"dm": 1
 		},
-		"systemPastelDark": {
-			"name": "tmavě pastelové",
-			"file": "_colorsPastelDark",
+		"systemBlack": {
+			"name": "černý",
+			"file": "_colorsBlack",
 			"dm": 1
 		}
 	}
