@@ -91,7 +91,7 @@
 		{"id": "prihlaska", "name": "Přihláška", "class": "e10pro.zus.libs.ReportPrihlaska", "email": 1}
 	],
 	"options": ["timelineSource"],
-	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10pro.zus.docStatesEntries"},
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullNameS"},
 	"ndx": 1216
 }
