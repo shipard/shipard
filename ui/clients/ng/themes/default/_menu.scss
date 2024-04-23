@@ -151,7 +151,7 @@ div.app-menu-shp-ng{
     height: 100%;
     color: var(--shpd-menu-color);
     .menu-toolbar {
-        background-color: var(--shpd-menu-top-bg);
+        background-color: var(--shpd-menu-top-bg);        
     }
     .menu-content {
         background-color: var(--shpd-menu-bg);
@@ -197,7 +197,7 @@ div.app-menu-shp-ng{
 
 .shp-tree-list li>.li-title.active{
     background-color: var(--shpd-menu-active-bg);
-    border-left: 3px solid var(--shpd-primary);
+    border-left: 3px solid var(--shpd-menu-active-border);
     //color: var(--shpd-menu-active-color);
 }
 
@@ -211,6 +211,8 @@ div.menu-favorites {
         display: flex;
         align-items: center;
         flex-direction: column;
+        background-color: var(--shpd-menu-buttons-bg);
+        color: var(--shpd-menu-color);
 
         >span {
           font-size: 180%;
@@ -228,9 +230,10 @@ div.menu-favorites {
     }
 
     div.menu-toolbar {
-        //background-color: var(--shpd-menu-top-bg); works ???
-        padding-left: .5rem;
-        padding-right: .5rem;
+        background-color: var(--shpd-menu-top-bg);
+        color: var(--shpd-menu-color);
+        //padding-left: .5rem;
+        //padding-right: .5rem;
         height: $app-header-height;
         display: flex;
         >img {
