@@ -1,5 +1,12 @@
 class ShipardTableViewer extends ShipardWidget
 {
+  detailModes = {
+    panels: 0,
+    details: 1,
+  };
+
+  dmDetail = 1;
+
   elmViewerLines = null;
   elmViewerRows = null;
 
@@ -7,6 +14,8 @@ class ShipardTableViewer extends ShipardWidget
   elmViewerDetailContent = null;
   elmViewerDetailHeader = null;
   elmViewerDetailTabs = null;
+
+  detailMode = this.detailModes.panels;
 
   doWidgetResponse(data)
   {
@@ -44,8 +53,9 @@ class ShipardTableViewer extends ShipardWidget
     switch (actionId)
     {
       case 'newform': return this.actionNewForm(e);
-      case 'viewerTabsReload': this.viewerTabsReload(e);
-      case 'detailSelect': this.detailSelect(e);
+      case 'viewerTabsReload': return this.viewerTabsReload(e);
+      case 'detailSelect': return this.detailSelect(e);
+      case 'viewerPanelTab': return this.viewerPanelTab(e);
     }
 
     return super.doAction (actionId, e);
@@ -81,6 +91,15 @@ class ShipardTableViewer extends ShipardWidget
     this.refreshData(e);
   }
 
+  viewerPanelTab(e)
+  {
+    let itemElement = e.parentElement;
+
+    let oldActiveTabElement = itemElement.querySelector('.active');
+		oldActiveTabElement.classList.remove('active');
+		e.classList.add('active');
+  }
+
   viewerRefreshLoadNext()
   {
     const tableName = this.rootElm.getAttribute ("data-table");
@@ -94,6 +113,13 @@ class ShipardTableViewer extends ShipardWidget
   {
     if (!this.elmViewerDetail)
       return;
+
+    if (e.classList.contains('active'))
+    {
+      e.classList.remove('active');
+      this.detailClose();
+      return;
+    }
 
     let oldActiveRowElement = this.elmViewerLines.querySelector('.active');
     if (oldActiveRowElement)
@@ -127,6 +153,10 @@ class ShipardTableViewer extends ShipardWidget
 
   detailOpen(activeRowElement)
   {
+    this.detailMode = this.detailModes.details;
+    this.rootElm.classList.remove('dmPanels');
+    this.rootElm.classList.add('dmDetails');
+
     const viewId = this.rootElm.getAttribute ('data-viewer-view-id');
     const tableId = this.rootElm.getAttribute ('data-table');
     const rowNdx = activeRowElement.getAttribute('data-pk');
@@ -150,13 +180,13 @@ class ShipardTableViewer extends ShipardWidget
 
     this.detectValues(apiParams);
 
-    console.log("API-CALL-DETAIL-OPEN", apiParams);
+    //console.log("API-CALL-DETAIL-OPEN", apiParams);
 
     var url = 'api/v2';
 
     shc.server.post (url, apiParams,
       function (data) {
-        console.log("--api-call-detail-success--", data);
+        //console.log("--api-call-detail-success--", data);
         this.doDetailOpenResponse(data);
       }.bind(this),
       function (data) {
@@ -165,6 +195,13 @@ class ShipardTableViewer extends ShipardWidget
     );
 
     //
+  }
+
+  detailClose()
+  {
+    this.detailMode = this.detailModes.panels;
+    this.rootElm.classList.remove('dmDetails');
+    this.rootElm.classList.add('dmPanels');
   }
 
   doDetailOpenResponse(data)

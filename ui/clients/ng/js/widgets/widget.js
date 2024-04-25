@@ -219,7 +219,7 @@ class ShipardWidget {
 
     for (let i = 0; i < inputs.length; ++i)
     {
-      console.log("INPUT: ", inputs[i]);
+      //console.log("INPUT: ", inputs[i]);
       const valueKey = inputs[i].getAttribute('name');
       data[valueKey] = inputs[i].value;
     }

@@ -3,16 +3,19 @@ data-viewer.shp-mainViewer  {
   display: grid;
   gap: 0px 0px;
 
-  grid-template-columns: min-content min-content 1fr;
+  grid-template-columns: min-content min-content 1fr 0;
   grid-template-rows: min-content 1fr;
   grid-template-areas:
-    "sidebar toolbar toolbar"
-    "sidebar body detail";
+    "sidebar toolbar toolbar toolbar"
+    "sidebar body panels detail";
 
   .toolbar { grid-area: toolbar;}
   .sidebar { grid-area: sidebar;}
   .detail {
     grid-area: detail;
+  }
+  .panels {
+    grid-area: panels;
   }
 
   .body { grid-area: body;}
@@ -120,6 +123,38 @@ data-viewer.appViewer>div.detail {
 }
 
 
+data-viewer.appViewer>div.panels {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: min-content 1fr;
+  gap: 0px 0px;
+  grid-template-areas:
+    "tabs"
+    "content";
+
+  .viewerPanelsTabs {
+    grid-area: tabs;
+
+    display: flex;
+    justify-content: space-between;
+  }
+  .activePanelContent {
+    grid-area: content;
+  }
+}
+
+
+data-viewer.shp-mainViewer.dmPanels  {
+  grid-template-columns: min-content min-content 1fr 0;
+  >div.panels {display: grid;}
+  >div.detail {display: none;}
+}
+
+data-viewer.shp-mainViewer.dmDetails  {
+  grid-template-columns: min-content min-content 0 1fr;
+  >div.panels {display: none;}
+  >div.detail {display: grid;}
+}
 
 
 /* visuals */
@@ -323,7 +358,7 @@ data-viewer>div.body>div.viewerBottomTabs {
     border-top: 3px solid var(--shpd-hover-bg);
     opacity: 1;
   }
-  .q.active:hover {    
+  .q.active:hover {
     border-top: 3px solid var(--shpd-viewer-bottom-tabs-active-border);
   }
 }
