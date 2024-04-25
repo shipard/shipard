@@ -43,7 +43,6 @@
 			overflow-y: auto;
 		}
 	}
-
 	div.row {
 		border-top: 1px solid rgba(0,0,0,.2);
 		padding: 6px;
@@ -63,12 +62,10 @@
 	}
 	>div>div.info {clear: both;}
 	>div>div.width50 {display: inline-block;}
-
     .e10-small {
         //color: #555;
         font-size: 85% !important;
     }
-
 	.label {		
 		line-height: 1;
 	}
@@ -85,11 +82,11 @@ div.e10-pane-info {
 	//border-bottom: 1px solid rgba(0,0,0,.4);
 }
 
-div.e10-pane-top {
+/* div.e10-pane-top { delete??? do we want it to be stuck to the header?
 	margin-top: -1ex;
 	border-top: none;
 	border-radius: 0 0 2px 2px;
-}
+} */
 
 .e10-pane-core {
 	margin-bottom: 1ex;
@@ -155,8 +152,26 @@ span.pre {
 // detail header (jméno osoby, číslo dokladu, cena, zavírací tlačítko, atd.)
 div.content-header>table {
     width: 100%;
-    td.sum-header-info {
-        padding-left: 1.3ex;
+	td.content-header-info-new {
+		padding: .3rem;
+		//padding-left: 1ex;
+		vertical-align: top;
+		.title {
+			font-size: 116%;
+			font-family: Verdana, Helvetica, Ubuntu, sans-serif !important;
+			font-weight: normal;
+		}
+	}
+	td.content-header-icon-new {
+		width: 8ex;
+		text-align: center;
+		height: 10ex;
+		>span {
+			font-size: 333%;
+		}
+	}
+	td.sum-header-info {
+        //padding-left: 1.3ex;
         text-align: right;
         white-space: pre;
         .big {
@@ -168,25 +183,6 @@ div.content-header>table {
 			font-weight: normal;
 		}		
     }
-    a.e10-document-trigger {
-        color: black;
-        text-decoration: underline;
-    }
-	td.content-header-info-new {
-		padding: 4px;
-		padding-left: 1ex;
-		vertical-align: top;
-		.title {
-			font-size: 116%;
-			font-family: Verdana, Helvetica, Ubuntu, sans-serif !important;
-			font-weight: normal;
-		}
-	}
-	td.content-header-icon-new {
-		width: 8ex; text-align: center;
-		height: 10ex;
-		>span {font-size: 333%; }
-	}
 	td.content-header-btns {vertical-align: top; text-align: right; width: 2.5em;}
 	div.content-header button.e10-close-detail {border: none; cursor: pointer; background: none; font-size: 26px; display: inline-block; padding-right: 5px;}
 }
@@ -218,3 +214,85 @@ data-viewer.appViewer>div.detail>div.tabs {
 		background-color: var(--shpd-hover-bg);
 	}
 }
+
+/* for persons */
+table.dcInfo {	
+	td {
+		padding: .4rem;
+		vertical-align: top;
+		line-height: 1.7;
+	}
+	td:first-child {
+		text-align: center;
+		width: 1.7em;
+	}
+	tr + tr {border-top: 1px solid var(--shpd-universal-border);}
+	// tr.header > td {font-weight: bold; font-size: 120%; text-align: left; border-bottom: 1px solid rgba(0,0,0,.15);} - what is this for??
+	// * + tr.header > td {padding-top: 2ex;}
+	.e10-tag {
+		padding: .15rem;
+		//border: 1px solid rgba(0,0,0,.1);
+		background-color: var(--shpd-secondary);
+		color: var(--shpd-btn-color-lights);
+		border-radius: 5px;
+	}
+	.pull-right-absolute {
+		position: absolute;
+		right: 1em;
+		line-height: 1;
+	}
+	.suf {
+		opacity: .9;
+		font-size: 85%;
+		padding-left: .2rem;
+	}
+	.e10-small {
+		font-size: 85%;
+	}
+}
+
+/* prodejní smlouvy */
+table.properties {
+	td {
+		padding: 4px;
+		vertical-align: top;
+	}
+	td:nth-child(2n-1) {
+	  text-align: right;
+	  font-weight: bold;
+	  padding-right: 6px;
+	}
+	tr + tr {border-top: 1px solid rgba(0,0,0,.05);}
+	tr.header > td {font-weight: bold; font-size: 120%; text-align: left; border-bottom: 1px solid rgba(0,0,0,.15);}
+	* + tr.header > td {padding-top: 2ex;}
+}
+
+/* link styles */
+div.detail a.e10-document-trigger {
+	text-decoration: underline;
+	color: var(--shpd-body-color);
+} // for every link in detail
+
+span.label a.e10-document-trigger {	
+	color: var(--shpd-btn-color-lights) !important;
+} // for links in labels (cant be white in dark mode)
+
+/* attachments */
+span.e10-attbox-one {
+	border: 1px solid var(--shpd-universal-border);	
+	display: block;
+	text-align: center;
+	img {max-width: 100%;}
+	//background-color: white;
+	border-radius: 6px;
+	padding: .2rem;
+	margin-bottom: .5rem;
+	background-color: #fff;
+}
+
+div.e10-attbox {
+	clear: both;
+	overflow-x: auto;
+	padding-top: .5rem;
+}
+

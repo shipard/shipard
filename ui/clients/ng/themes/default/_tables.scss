@@ -36,8 +36,9 @@ table.priceList {
     }
 }
 
-table.default {    
-    border: 1pt solid var(--shpd-table-border); border-style: hidden; border-radius: 5px; border-style: hidden; box-shadow: 0 0 0 1px var(--shpd-table-border); border-collapse: collapse;
+//div.e10-pane
+ table.default {    
+    border: 1pt solid var(--shpd-table-border); border-radius: 5px; border-style: hidden; box-shadow: 0 0 0 1px var(--shpd-table-border); border-collapse: collapse;
 
     //thead tr:last-child {border-bottom: 2px solid #888;}
 
@@ -64,6 +65,11 @@ table.default {
         border-top: 2px solid var(--shpd-table-border);
         background-color: var(--shpd-table-th-bg);
     }
-  }
+}
   
-  table.fullWidth {width: 100%;}
+table.fullWidth {width: 100%;}
+  
+/*.e10-pane-table {
+	padding: 6px;
+	h2.next {margin-top: 2ex; }
+}*/
