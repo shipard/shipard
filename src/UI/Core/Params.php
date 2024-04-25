@@ -446,12 +446,14 @@ class Params extends \Shipard\Base\BaseObject
 		if (1)
 		{
 			$c .= "<input type='text' name='$paramId' class='$inputClass' placeholder='$pch' value='$value'> ";
-			$c .= "<script>$('input.e10-inputDate').datepicker ({duration: 50});</script>";
+			if (!$this->app()->ngg)
+				$c .= "<script>$('input.e10-inputDate').datepicker ({duration: 50});</script>";
 		}
 		else
 		{
 			$c .= "<input type='text' name='$paramId' class='$inputClass' placeholder='$pch'> ";
-			$c .= "<script>$('input.e10-inputDate').datepicker ({duration: 50});</script>";
+			if (!$this->app()->ngg)
+				$c .= "<script>$('input.e10-inputDate').datepicker ({duration: 50});</script>";
 		}
 
 		$c .= '</span>';

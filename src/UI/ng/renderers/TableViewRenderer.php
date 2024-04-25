@@ -43,16 +43,17 @@ class TableViewRenderer extends Renderer
 
 
 		$detailCode = '';
-
 		if ($this->viewer->objectSubType !== TableView::vsDetail)
 			$detailCode = $this->createDetailsCode();
 
+		/*
 		$reportCode =
 		"<div style='display: none;' class='e10-mv-lr' id='{$this->viewer->vid}Report'>" .
 				//$this->createPanelsCode () .
 				"<div class='e10-mv-lr-content'>{$this->viewer->report ()}</div>" .
 				"</div>
 		</div>";
+		*/
 
 		$viewerClass = "df2-viewer shp-viewer-{$this->viewer->table->tableId()} shp-{$this->viewer->objectSubType}";
 		$viewerClass .= ' shp-viewer-type-'.$this->viewer->type;
@@ -71,6 +72,8 @@ class TableViewRenderer extends Renderer
 
 		if ($this->viewer->usePanelLeft)
 			$viewerClass .= ' e10-viewer-panel-left';
+
+		$viewerClass .= ' dmPanels';
 
 		//if ($this->viewer->fullWidthToolbar)
 		//	$viewerClass .= ' e10-viewer-fw-toolbar';
@@ -129,7 +132,7 @@ class TableViewRenderer extends Renderer
 		// -- toolbar?
 		if ($this->viewer->enableToolbar)
 		{
-			$c .= "<div class='toolbar' id='{$this->viewer->toolbarElementId}__Main'>";
+			$c .= "<div class='toolbar'>";
 				$c .= "<div class='buttons'>";
 					if ($this->viewer->enableFullTextSearch)
 					{
@@ -162,10 +165,11 @@ class TableViewRenderer extends Renderer
 		{
 			$c .= $detailCode;// . $reportCode;
 		}
-		$c .= "</data-viewer>";
 
-//		if ($jsinit)
-//			$c .= "<script type='text/javascript'>jQuery(function tst (){initViewer ('$this->viewer->vid')});</script>";
+		$c .= $this->createPanelsCode();
+
+
+		$c .= "</data-viewer>";
 
     return $c;
 	}
@@ -222,8 +226,6 @@ class TableViewRenderer extends Renderer
 			$c .= $this->createBottomTabsCode ();
 		$c .= '</div>';
 
-		$c .= $this->viewer->createRightPanelCode();
-
 		return $c;
 	}
 
@@ -244,6 +246,50 @@ class TableViewRenderer extends Renderer
 		return $c;
 	}
 
+
+	public function createPanelsCode()
+	{
+		$c = '';
+
+		$c .= "<div class='panels'>";
+			$c .= $this->createPanelsTabsCode();
+			$c .= "<div class='activePanelContent'>".$this->viewer->report ()."</div>";
+			$c .= "</div>";
+		$c .= "</div>";
+
+		return $c;
+	}
+
+	public function createPanelsTabsCode()
+	{
+		if ($this->viewer->panels === FALSE)
+			return '';
+		$c = '';
+
+		$title = isset ($this->viewer->viewerDefinition['title']) ? $this->viewer->viewerDefinition['title'] : $this->viewer->table->tableName ();
+
+		$c .= "<div class='viewerPanelsTabs'>";
+
+		if ($title !== '')
+			$c .= "<span class='title'>". Utils::es ($title) . '</span>';
+		$c .= "<span class='tabs'>";
+		$activeTabId = $this->viewer->panels[0]['id'];
+		forEach ($this->viewer->panels as $q)
+		{
+			$txt = Utils::es ($q ['title']);
+			$c .= "<span class='tab shp-widget-action";
+
+			if ($q['id'] === $activeTabId)
+				$c .= ' active';
+
+			$c .= "' data-id='{$q['id']}' data-action='viewerPanelTab'>";
+			$c .= $txt;
+			$c .= '</span>';
+		}
+		$c .= '</span>';
+		$c .= '</div>';
+		return $c;
+	}
 
 	public function createToolbarCode ()
 	{
