@@ -249,6 +249,9 @@ class TableViewRenderer extends Renderer
 
 	public function createPanelsCode()
 	{
+		if ($this->viewer->panels === FALSE)
+			return '';
+
 		$c = '';
 
 		$c .= "<div class='panels'>";
