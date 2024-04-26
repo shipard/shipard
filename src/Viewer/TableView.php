@@ -291,11 +291,15 @@ class TableView extends \Shipard\Base\BaseObject
 	{
 		if ($this->app()->ngg)
 		{
-			return $this->requestParams['bottomTab'] ?? '';
+			if (isset($this->requestParams['bottomTab']))
+				return $this->requestParams['bottomTab'];
+		}
+		else
+		{
+			if (isset ($_POST ['bottomTab']))
+				return $_POST ['bottomTab'];
 		}
 
-		if (isset ($_POST ['bottomTab']))
-			return $_POST ['bottomTab'];
 		if (isset($this->bottomTabs))
 			forEach ($this->bottomTabs as $q)
 				if ($q['active'])
