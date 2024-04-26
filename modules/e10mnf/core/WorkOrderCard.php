@@ -163,7 +163,7 @@ class WorkOrderCard extends \e10\DocumentCard
 				$list[] = ['text' => 'Celkem', 'priceAll' => $totalPriceAll, '_options' => ['class' => 'sum']];
 			}
 
-			return ['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'title' => ['icon' => 'x-properties', 'text' => 'Řádky dokladu'], 'header' => $h, 'table' => $list];
+			return ['pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'title' => ['icon' => 'system/iconList', 'text' => 'Řádky dokladu'], 'header' => $h, 'table' => $list];
 		}
 		return FALSE;
 	}
@@ -274,7 +274,7 @@ class WorkOrderCard extends \e10\DocumentCard
 		{
 			$this->addContent ('body', [
 				'pane' => 'e10-pane e10-pane-table',
-				'paneTitle' => ['text' => 'Rozbor zakázky', 'class' => 'h2', 'icon' => 'icon-money'],
+				'paneTitle' => ['text' => 'Rozbor zakázky', 'class' => 'h2', 'icon' => 'system/iconMoney'],
 				'sumTable' => [
 					'objectId' => 'e10doc.debs.SumTableJournalDebsBS',
 					'queryParams' => ['work_order' => $this->recData['ndx']]

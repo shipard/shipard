@@ -149,7 +149,7 @@ class ContractSale extends \e10\DocumentCard
 			{
 				$list[] = array ('state' => ['icon' => 'system/actionPlay', 'text' => ''], 'text' => 'Celkem aktuálně platné', 'priceAll' => $totalPriceAll, '_options' => ['class' => 'sum', 'cellClasses' => ['state' => 'e10-icon']]);
 			}
-			return array ('pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'title' => ['icon' => 'x-properties', 'text' => 'Řádky smlouvy'], 'header' => $h, 'table' => $list);
+			return array ('pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'title' => ['icon' => 'system/iconList', 'text' => 'Řádky smlouvy'], 'header' => $h, 'table' => $list);
 		}
 		return FALSE;
 	}
@@ -208,7 +208,7 @@ class ContractSale extends \e10\DocumentCard
 			'balance' => 'Úhrada',
 		];
 		$content = ['pane' => 'e10-pane e10-pane-table', 'type' => 'table',
-			'title' => ['icon' => 'icon-money', 'text' => 'Fakturace'],
+			'title' => ['icon' => 'system/iconMoney', 'text' => 'Fakturace'],
 			'header' => $h, 'table' => $t
 		];
 		$this->addContent ('body', $content);
