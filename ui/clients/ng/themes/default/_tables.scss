@@ -37,32 +37,53 @@ table.priceList {
 }
 
 //div.e10-pane
- table.default {    
+table.default {    
     border: 1pt solid var(--shpd-table-border); border-radius: 5px; border-style: hidden; box-shadow: 0 0 0 1px var(--shpd-table-border); border-collapse: collapse;
-
-    //thead tr:last-child {border-bottom: 2px solid #888;}
-
     th {
         text-align: left;        
         padding: .3em;
         background-color: var(--shpd-table-th-bg);        
         border-left: 1pt solid var(--shpd-table-border);        
-        //background-color: rgba(0, 0, 0, 0.1);
     }
-    th:first-child {border-radius: 5px 0px 0px 0px;}
-    th:last-child {border-radius: 0px 5px 0px 0px;}
-  
-    >tbody>tr>td {border: 1px solid var(--shpd-table-border); padding: 4px; vertical-align: top;}
-
-    tr.separator td {border-left: 1px solid transparent; border-right: 1px solid transparent;}
-
-    .number  {text-align: right !important; }
-    td.number {white-space:pre;}
-    th.number {white-space:pre;}
-
+    >thead>tr:first-child>th:first-child {
+        border-radius: 5px 0 0 0;
+    } // needs to be like this bc some tables have two rows in header
+    >thead>tr:first-child>th:last-child {
+        border-radius: 0 5px 0 0;
+    }
+    thead>tr {
+        border-bottom: 1px solid var(--shpd-table-border);
+    } // for thead with two rows in Účtování
+    >tbody>tr>td {
+        border: 1px solid var(--shpd-table-border);
+        padding: 4px;
+        vertical-align: top;
+    }
+    tr.separator td {
+        border-left: 1px solid transparent;
+        border-right: 1px solid transparent;
+    } // not working bc of the box shadow
+    .number {
+        text-align: right !important;
+    }
+    td.number {
+        white-space:pre;
+    }
+    th.number {
+        white-space:pre;
+    }
     >tbody>tr.sum {
         font-weight: bold;
         border-top: 2px solid var(--shpd-table-border);
+        background-color: var(--shpd-table-th-bg);
+    }
+    tr.sum td:first-child {
+        border-radius: 0 0 0 5px;
+    }
+    tr.sum td:last-child {
+        border-radius: 0 0 5px 0;
+    }
+    tr.subtotal {
         background-color: var(--shpd-table-th-bg);
     }
 }
@@ -73,3 +94,68 @@ table.fullWidth {width: 100%;}
 	padding: 6px;
 	h2.next {margin-top: 2ex; }
 }*/
+
+/* prodejní smlouvy */
+table.properties {
+	td {
+		padding: .3rem;
+		vertical-align: top;
+	}
+	td:nth-child(2n-1) {
+		text-align: right;
+		font-weight: bold;
+		padding-right: .4rem;
+	}
+	tr + tr {
+		border-top: 1px solid var(--shpd-universal-border);
+	}
+	//tr.header > td {font-weight: bold; font-size: 120%; text-align: left; border-bottom: 1px solid var(--shpd-universal-border);}
+	//* + tr.header > td {padding-top: 2ex;}
+}
+
+/* table with info at the beginning (persons, work orders) */
+table.dcInfo {	
+	td {
+		padding: .4rem;
+		vertical-align: top;
+		line-height: 1.7;
+	}
+	td:first-child {
+		text-align: center;
+		width: 1.7rem;
+	}
+	tr + tr {border-top: 1px solid var(--shpd-universal-border);}
+	// tr.header > td {font-weight: bold; font-size: 120%; text-align: left; border-bottom: 1px solid rgba(0,0,0,.15);} - what is this for??
+	// * + tr.header > td {padding-top: 2ex;}
+	.e10-tag {
+		padding: .15rem;
+		//border: 1px solid rgba(0,0,0,.1);
+		background-color: var(--shpd-secondary);
+		color: var(--shpd-btn-color-lights);
+		border-radius: 5px;
+	}
+	.pull-right-absolute {
+		position: absolute;
+		right: 1em;
+		line-height: 1;
+	}
+	.suf {
+		opacity: .9;
+		font-size: 85%;
+		padding-left: .2rem;
+	}
+	.e10-small {
+		font-size: 85%;
+	}
+	td.number {
+		white-space: pre;
+	}
+}
+
+table.dcInfoB {
+	td:first-child {
+		text-align: right;
+		width: 5em;
+		font-weight: bold;
+	}
+}

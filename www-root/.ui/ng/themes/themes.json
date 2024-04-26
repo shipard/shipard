@@ -4,19 +4,19 @@
     "name":"default ng theme",
     "variants":{
       "systemDefaultLight":{
-        "name":"sv\u011btl\u00e9",
+        "name":"sv\u011btl\u00fd",
         "file":"\/www-root\/.ui\/ng\/themes\/default\/systemDefaultLight.css",
         "dm":0,
         "integrity":{
-          "sha384":"895519624700c2045ad7d249d8e56b2d1353a9d04a0aa917d341c6b69322a9ed56cd7335726bb4e556856d275703b714"
+          "sha384":"79fdb48b60d8690896456e3530691aaf66148f27e1e88e6e47463d3d112ec5fd0416c8fe7d9e3e73d9c6540d8ecf526b"
         }
       },
       "systemDefaultDark":{
-        "name":"tmav\u00e9",
+        "name":"tmav\u00fd",
         "file":"\/www-root\/.ui\/ng\/themes\/default\/systemDefaultDark.css",
         "dm":1,
         "integrity":{
-          "sha384":"8e70559e0692f15e7f50006158bc89fb260f19bd29e316f338aa2b057b1337e39ed33580dcf343320193f6b54e9dcd76"
+          "sha384":"846b955e48968ad581aa8028a79f03688abd438f9c733ce3ddd7e194901846553e8ea6a79f9fe8e70914cc3d1545fb2e"
         }
       },
       "systemDefaultColored":{
@@ -24,15 +24,15 @@
         "file":"\/www-root\/.ui\/ng\/themes\/default\/systemDefaultColored.css",
         "dm":1,
         "integrity":{
-          "sha384":"278994898f3ac28b5a424f51a7c53e6df86fd97d3384519d9acdc50f972ca2351516e840c68dd4f9e34e3ae4f5bf3a90"
+          "sha384":"f17cccf5506eef6ea55d3394c26fa88b13df7629e29c798ad7caee4e2a06259c968850b7613615a8c60ad61430b99879"
         }
       },
       "systemPastelLight":{
-        "name":"sv\u011btle pastelov\u00e9",
+        "name":"sv\u011btle pastelov\u00fd",
         "file":"\/www-root\/.ui\/ng\/themes\/default\/systemPastelLight.css",
         "dm":1,
         "integrity":{
-          "sha384":"ae6f44407aec4150c3a365ea7abfdf40566910c797acc23040d7dab4dae5c72f3e5365f23d45e186ee5712d82d5c4416"
+          "sha384":"bc292b128f43436260d26619fda3f5dd1a0b693dbacd0686f268d6ef7cdecd0ea6c03b30b4e183ed9e2b0c9a4dc8db07"
         }
       },
       "systemBlack":{
@@ -40,13 +40,13 @@
         "file":"\/www-root\/.ui\/ng\/themes\/default\/systemBlack.css",
         "dm":1,
         "integrity":{
-          "sha384":"2849c49bbadb1f1cc3417bb757489ce4a8897927e119d4963837fd3e490611323a3646334dd43d2b5382b3124a7a7e5d"
+          "sha384":"54bd3e74133b9a61b7650b46902f49ce613e46f089019299bf2cc26ca44815898d293ea94e3a9ccaeb51ce95a1a7b194"
         }
       }
     },
     "integrity":{
-      "sha384":"d8cfa5d3c457299f8a9ff383d4f602ba97709ae6ffb5b355efb63d1560bb92b11be24c0790b8e63323f05d01a64c59e2",
-      "md5":"0467bc0d4ef847fb5b33fe55d5dcf270"
+      "sha384":"d22376d04d9a8a3402602a697a913162da7a8ab1967ef58a6c163243eda1544b439787cbaecc8307811d1c70ae6237ca",
+      "md5":"c08d3d2dc163377d69144e9455b5cf5a"
     }
   }
 }

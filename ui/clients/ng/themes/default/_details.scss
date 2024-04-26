@@ -82,12 +82,6 @@ div.e10-pane-info {
 	//border-bottom: 1px solid rgba(0,0,0,.4);
 }
 
-/* div.e10-pane-top { delete??? do we want it to be stuck to the header?
-	margin-top: -1ex;
-	border-top: none;
-	border-radius: 0 0 2px 2px;
-} */
-
 .e10-pane-core {
 	margin-bottom: 1ex;
 	border-radius: 2px;
@@ -96,9 +90,9 @@ div.e10-pane-info {
 	overflow-x: auto;
 	overflow-y: hidden;
 
-	>.title, >.subtitle {
+	/*>.title, >.subtitle {
 		border-bottom: 1px solid rgba(0,0,0,.1);
-	}
+	}*/
 }
 
 div.e10-pane-hover:hover {
@@ -121,6 +115,13 @@ div.e10-reportContent {
         display: block;		
     }
     .subtitle:not(:first-child) {padding-top: 1em;}
+	.h2 {
+        font-size: 122%;
+        font-weight: normal;
+		padding-top: .2rem;        
+        margin-bottom: .3rem;
+        display: block;		
+    }    
 }
 
 .e10-pane-core {
@@ -131,9 +132,9 @@ div.e10-reportContent {
 	overflow-x: auto;
 	overflow-y: hidden;
 
-	>.title, >.subtitle {
+	/*>.title, >.subtitle {
 		border-bottom: 1px solid rgba(0,0,0,.1);
-	}
+	}*/
 }
 
 .pull-right {
@@ -163,9 +164,9 @@ div.content-header>table {
 		}
 	}
 	td.content-header-icon-new {
-		width: 8ex;
+		width: 4rem;
 		text-align: center;
-		height: 10ex;
+		//height: 10ex;
 		>span {
 			font-size: 333%;
 		}
@@ -183,8 +184,18 @@ div.content-header>table {
 			font-weight: normal;
 		}		
     }
-	td.content-header-btns {vertical-align: top; text-align: right; width: 2.5em;}
-	div.content-header button.e10-close-detail {border: none; cursor: pointer; background: none; font-size: 26px; display: inline-block; padding-right: 5px;}
+	td.content-header-btns {
+		vertical-align: top;
+		text-align: right;
+		width: 3rem;
+		button.e10-close-detail {
+			border: none;
+			cursor: pointer;
+			background: none;
+			font-size: 26px;
+			display: inline-block;			
+		}
+	}
 }
 
 // tabs for details (přehled, zápisník, historie, atd.)
@@ -213,58 +224,6 @@ data-viewer.appViewer>div.detail>div.tabs {
 	>span:hover {
 		background-color: var(--shpd-hover-bg);
 	}
-}
-
-/* for persons */
-table.dcInfo {	
-	td {
-		padding: .4rem;
-		vertical-align: top;
-		line-height: 1.7;
-	}
-	td:first-child {
-		text-align: center;
-		width: 1.7em;
-	}
-	tr + tr {border-top: 1px solid var(--shpd-universal-border);}
-	// tr.header > td {font-weight: bold; font-size: 120%; text-align: left; border-bottom: 1px solid rgba(0,0,0,.15);} - what is this for??
-	// * + tr.header > td {padding-top: 2ex;}
-	.e10-tag {
-		padding: .15rem;
-		//border: 1px solid rgba(0,0,0,.1);
-		background-color: var(--shpd-secondary);
-		color: var(--shpd-btn-color-lights);
-		border-radius: 5px;
-	}
-	.pull-right-absolute {
-		position: absolute;
-		right: 1em;
-		line-height: 1;
-	}
-	.suf {
-		opacity: .9;
-		font-size: 85%;
-		padding-left: .2rem;
-	}
-	.e10-small {
-		font-size: 85%;
-	}
-}
-
-/* prodejní smlouvy */
-table.properties {
-	td {
-		padding: 4px;
-		vertical-align: top;
-	}
-	td:nth-child(2n-1) {
-	  text-align: right;
-	  font-weight: bold;
-	  padding-right: 6px;
-	}
-	tr + tr {border-top: 1px solid rgba(0,0,0,.05);}
-	tr.header > td {font-weight: bold; font-size: 120%; text-align: left; border-bottom: 1px solid rgba(0,0,0,.15);}
-	* + tr.header > td {padding-top: 2ex;}
 }
 
 /* link styles */

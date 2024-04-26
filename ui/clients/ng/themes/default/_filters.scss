@@ -1,0 +1,45 @@
+/* panels tabs */
+div.viewerPanelsTabs {    
+    display: flex;
+    width: 100%;
+    font-size: 122%;
+    //color: #333; /*z-index: 100; position: relative;*/
+    //border-bottom: 1px solid var(--shpd-universal-border);
+    background-color: var(--shpd-filter-tabs-bg);
+    color: var(--shpd-filter-tabs-color);
+    padding: 0 1rem;
+    /*span.title {
+        display: inline-block;
+        padding: .2rem .5rem;
+    }
+    span.tabs {
+        padding-right: 1rem;
+        span.tab {
+            cursor: pointer;
+            display: inline-block;            
+            padding: .2rem .5rem;
+        }
+        span.tab.active {            
+            background-color: var(--shpd-filter-tabs-active-bg);
+        }
+    }*/
+    span.tab {
+        padding: .2rem .5rem;
+        opacity: .8;
+        border-top: 3px solid transparent;
+    }
+    span.tab.active {
+        background-color: var(--shpd-filter-tabs-active-bg);
+        border-top: 3px solid var(--shpd-filter-tabs-active-bg);
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+        opacity: 1;
+    }
+    span.tab:hover {
+        background-color: var(--shpd-hover-bg);
+        border-top: 3px solid var(--shpd-hover-bg);
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+        opacity: 1;
+    }
+  }

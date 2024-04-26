@@ -61,7 +61,7 @@ data-viewer.shp-detailViewer  {
   .search { grid-area: search;}
   .rows {
      grid-area: rows;
-    }
+  }
   .tabs { grid-area: tabs; }
 }
 
@@ -260,7 +260,7 @@ data-viewer>div.body>div.rows>div.rows-list>div.r {
 }
 
 data-viewer>div.toolbar {
-  border-bottom: 1px solid var(--shpd-universal-border);
+  //border-bottom: 1px solid var(--shpd-universal-border);
   background-color: var(--shpd-toolbar-bg);
   border-left: 3px solid var(--shpd-menu-border);
   color: var(--shpd-toolbar-color);
@@ -306,9 +306,7 @@ data-viewer>div.toolbar>div.filters {
   }
 
   .q {
-    padding: .3rem;
-    padding-left: .5rem;
-    padding-right: .5rem;
+    padding: .3rem .5rem;
     opacity: .8;
     border-top: 3px solid transparent;
   }
@@ -390,9 +388,77 @@ data-viewer.appViewer>div.detail {
   background-color: #246;
 }*/
 
+/* sidebar */
 data-viewer>div.sidebar>div.queryWidget {
    width: 12rem;
+   line-height: 1.6rem;
 }
+
+data-viewer>div.sidebar {
+  background-color: var(--shpd-sidebar-bg);
+  color: var(--shpd-sidebar-color);
+  border-left: 2px solid var(--shpd-menu-border);
+  title {
+    padding: 2ex .1ex .5ex .5ex;
+    font-size: 122%;
+  }
+  ul.level-0 {
+    list-style: none;
+    padding: .5rem;
+    li {
+      list-style: none;      
+    }
+  }
+  ul.level-1 {
+    li {
+      padding: .3rem 0;
+    }
+    li.selectable.active {
+      background-color: var(--shpd-sidebar-active-bg);
+      border-left: 1px solid vae(--shpd-sidebar-active-border);
+    }
+    li.selectable:hover {
+      background-color: var(--shpd-hover-bg);
+    }
+  }
+}
+
+/*div.e10-param-list {
+	>div.title {
+		padding: 2ex .1ex .5ex .5ex;
+		font-size: 122%;
+	}
+	ul {
+		list-style: none;
+		li {
+			>.title {
+				position: relative;
+				padding: .5ex 1ex;
+
+				span.e10-ntf-badge {
+					position: absolute;
+					line-height: 1;
+					bottom: 2.2ex;
+					margin-left: .5ex;
+				}
+			}
+		}
+		li.selectable {
+			>.title {
+				cursor: pointer;
+			}
+		}
+	}
+	ul.level-1 {
+		>li>div.title {padding-left: 2.5ex;}
+	}
+	ul.level-2 {
+		>li>div.title {padding-left: 4.5ex;}
+	}
+	ul.level-3 {
+		>li>div.title {padding-left: 6.5ex;}
+	}
+}*/
 
 /* doc states colors*/
 data-viewer>div.body>div.rows>div.rows-list>div.r {

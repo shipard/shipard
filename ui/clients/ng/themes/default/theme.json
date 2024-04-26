@@ -3,12 +3,12 @@
 	"name": "default ng theme",
 	"variants": {
 		"systemDefaultLight": {
-			"name": "světlé",
+			"name": "světlý",
 			"file": "_colorsLight",
 			"dm": 0
 		},
 		"systemDefaultDark": {
-			"name": "tmavé",
+			"name": "tmavý",
 			"file": "_colorsDark",
 			"dm": 1
 		},
@@ -18,7 +18,7 @@
 			"dm": 1
 		},
 		"systemPastelLight": {
-			"name": "světle pastelové",
+			"name": "světle pastelový",
 			"file": "_colorsPastelLight",
 			"dm": 1
 		},

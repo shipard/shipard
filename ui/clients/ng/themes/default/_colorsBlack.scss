@@ -68,6 +68,16 @@
     --shpd-viewer-bottom-tabs-bg: var(--shpd-500);
     --shpd-viewer-bottom-tabs-active-bg: var(--shpd-100);
     --shpd-viewer-bottom-tabs-active-border: var(--shpd-primary-subtle);
+    // sidebar - left column (dashboard, bank, )
+    --shpd-sidebar-color: var(--shpd-menu-color);
+    --shpd-sidebar-bg: var(--shpd-500);
+    --shpd-sidebar-active-bg: var(--shpd-100);
+    --shpd-sidebar-active-border: var(--shpd-primary-subtle);
+
+    /* filters */
+    --shpd-filter-tabs-color: var(--shpd-menu-color);
+    --shpd-filter-tabs-bg: var(--shpd-500);
+    --shpd-filter-tabs-active-bg: var(--shpd-100);
 
     /* details */
     --shpd-detail-tabs-color: var(--shpd-menu-color);
