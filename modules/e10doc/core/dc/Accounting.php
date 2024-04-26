@@ -409,10 +409,12 @@ class Accounting extends \e10\DocumentCard
 			]
 		];
 
+		$hh = $header[1];
+		$hh ['invPriceAll'] = '+' . $hh ['invPriceAll'];
 
 		$this->addContent([
 			'pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'title' => ['icon' => 'e10doc-inventory/inventoryStates', 'text' => 'Zásoby'],
-			'header' => $header[1], 'table' => $list, 'params' => ['header' => $header]
+			'header' => $hh, 'table' => $list, 'params' => ['header' => $header]
 			]);
 	}
 
