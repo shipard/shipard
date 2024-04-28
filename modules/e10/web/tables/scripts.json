@@ -6,7 +6,7 @@
 		{"id": "id", "name": "Identifikátor", "type": "string", "len": 80},
 		{"id": "gid", "name": "Globální ID", "type": "string", "len": 16},
 
-		{"id": "code", "name": "Kód", "type": "code"},
+		{"id": "code", "name": "Kód", "type": "code", "clng": "html"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

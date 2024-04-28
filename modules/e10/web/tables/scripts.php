@@ -136,7 +136,7 @@ class FormScript extends TableForm
 			$tabs ['tabs'][] = ['text' => 'Skript', 'icon' => 'formScript'];
 			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 			$this->openTabs ($tabs, TRUE);
-				$this->openTab ();
+				$this->openTab (TableForm::ltNone);
 					$this->addInputMemo ('code', NULL, TableForm::coFullSizeY, DataModel::ctCode);
 				$this->closeTab ();
 
