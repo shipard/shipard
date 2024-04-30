@@ -30,11 +30,17 @@ class CalendarEngine extends Utility
 
 	var $enabledCalendars = NULL;
 
+  var \lib\core\texts\Renderer $textRenderer;
+
+
 	public function init()
 	{
 		$this->tableEvents = $this->app->table ('wkf.events.events');
 		$this->today = Utils::today();
 		$this->calendars = $this->app()->cfgItem('wkf.events.cals', NULL);
+
+    $this->textRenderer = new \lib\core\texts\Renderer($this->app());
+    $this->textRenderer->setFirstHeaderSize (3);
 	}
 
 	public function loadDailyEvents ()
@@ -66,7 +72,8 @@ class CalendarEngine extends Utility
 
 			$newEvent = [
 				'ndx' => $r['ndx'], 'icon' => $this->tableEvents->tableIcon ($r, 1),
-				'subject' => $r['title'], 'calendar' => $r['calendar'], 'placeDesc' => $r['placeDesc'],
+				'subject' => $r['title'], 'text' => $r['text'],
+        'calendar' => $r['calendar'], 'placeDesc' => $r['placeDesc'],
 				'dateBegin' => $r['dateBegin'], 'timeBegin' => $r['timeBegin'], 'dateTimeBegin' => $r['dateTimeBegin'],
 				'dateEnd' => $r['dateEnd'], 'timeEnd' => $r['timeEnd'], 'dateTimeEnd' => $r['dateTimeEnd'],
 				'docState' => $r['docState'], 'docStateClass' => $docStateClass
@@ -131,10 +138,12 @@ class CalendarEngine extends Utility
 		{
 			$docState = $this->tableEvents->getDocumentState ($r);
 			$docStateClass = $this->tableEvents->getDocumentStateInfo ($docState ['states'], $r, 'styleClass');
+			$this->textRenderer->render($r ['text']);
 
 			$newEvent = [
 				'ndx' => $r['ndx'], 'icon' => $this->tableEvents->tableIcon ($r, 1),
-				'subject' => $r['title'], 'calendar' => $r['calendar'], 'placeDesc' => $r['placeDesc'],
+				'subject' => $r['title'], 'text' => $r['text'], 'textHTML' => $this->textRenderer->code,
+        'calendar' => $r['calendar'], 'placeDesc' => $r['placeDesc'],
 				'dateBegin' => $r['dateBegin'], 'timeBegin' => $r['timeBegin'], 'dateTimeBegin' => $r['dateTimeBegin'],
 				'dateEnd' => $r['dateEnd'], 'timeEnd' => $r['timeEnd'], 'dateTimeEnd' => $r['dateTimeEnd'],
 				'docState' => $r['docState'], 'docStateClass' => $docStateClass,

@@ -14,6 +14,7 @@ class Renderer extends Utility
 	/** @var  \lib\core\texts\Texy */
 	protected $texy = NULL;
 	var $linkRoot = NULL;
+	var int $firstHeaderSize = 2;
 
 	var $wikiWidgetMode = FALSE;
 
@@ -28,6 +29,8 @@ class Renderer extends Utility
 
 		if ($this->linkRoot !== NULL)
 			$this->texy->linkModule->root = $this->linkRoot;
+
+		$this->texy->headingModule->top = $this->firstHeaderSize;
 	}
 
 	public function setLinkRoot($linkRoot)
@@ -87,6 +90,11 @@ class Renderer extends Utility
 			$this->init();
 
 		$this->texy->setOwner($ownerInfo);
+	}
+
+	public function setFirstHeaderSize(int $hs)
+	{
+		$this->firstHeaderSize = $hs;
 	}
 
 	function codeEncode($srcText)
