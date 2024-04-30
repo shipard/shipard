@@ -33,6 +33,8 @@ class Calendar extends DataView
     $this->calendar->setAgendaView($this->today);
     $this->calendar->init();
     $this->calendar->loadEvents();
+
+    $this->data['events'] = $this->calendar->events;
 	}
 
 	protected function loadData()
