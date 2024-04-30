@@ -395,6 +395,27 @@ class TemplateCore extends \Mustache
 		if (!$date)
 			return '';
 
+		if (isset($params['offset']))
+		{
+			if ($params['offset'][0] === '-')
+				$date->sub (new \DateInterval('P'.substr($params['offset'], 1)));
+			elseif ($params['offset'][0] === '+')
+				$date->add (new \DateInterval('P'.substr($params['offset'], 1)));
+			else
+				$date->add (new \DateInterval('P'.$params['offset']));
+		}
+
+		if (isset($params['sf']))
+		{
+			return $date->format($params['sf']);
+		}
+
+		if (isset($params['if']))
+		{
+			$locale = $params['locale'] ?? 'cs_CZ';
+			return \IntlDateFormatter::formatObject($date, $params['if'], $locale);
+		}
+
 		$format	= $params['format'] ?? '%d';
 
 		return Utils::datef($date, $format);
