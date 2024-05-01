@@ -309,6 +309,7 @@ class TemplateCore extends \Mustache
 		switch ($tagName)
 		{
 			case	'date' 						: return $this->resolveCmd_Date($params);
+			case	'dayInfo' 				: return $this->resolveCmd_DayInfo($params);
 			case	'icon' 						: return $this->resolveCmd_Icon($params);
 			case	'imgData' 				: return $this->resolveCmd_ImgData($params);
 			case	'include' 				: return $this->resolveCmd_Include($params);
@@ -419,6 +420,38 @@ class TemplateCore extends \Mustache
 		$format	= $params['format'] ?? '%d';
 
 		return Utils::datef($date, $format);
+	}
+
+	function resolveCmd_DayInfo ($params)
+	{
+		$date = NULL;
+		if (isset ($params['dataItem']))
+			$date = Utils::createDateTime($this->getVar($params['dataItem']));
+		else
+			$date = Utils::today();
+
+		if (!$date)
+			return '';
+
+		if (isset($params['offset']))
+		{
+			if ($params['offset'][0] === '-')
+				$date->sub (new \DateInterval('P'.substr($params['offset'], 1)));
+			elseif ($params['offset'][0] === '+')
+				$date->add (new \DateInterval('P'.substr($params['offset'], 1)));
+			else
+				$date->add (new \DateInterval('P'.$params['offset']));
+		}
+
+		$dayInfo = new \Shipard\Utils\DayInfo($this->app);
+		$dayInfo->dayInfo($date);
+
+		if (isset($params['format']))
+		{
+			return $dayInfo->format($params['format']);
+		}
+
+		return '';
 	}
 
 	function resolveCmd_Icon ($params)
