@@ -121,6 +121,10 @@
     /* buttons */
     --shpd-btn-color-darks: #F0F0F0; //text color for dark buttons
     --shpd-btn-color-lights: #212529; //text color for light buttons
+
+    /* forms */
+    --shpd-form-input-bg: var(--shpd-100);
+    --shpd-form-input-focus: var(--shpd-primary);
 }
 
 .accordion-button:not(.collapsed){
@@ -138,6 +142,22 @@
 .navbar, .app-menu .list-group {
     --bs-list-group-bg: var(--shpd-nav-bg) !important;
 }*/
+
+.btn-primary {
+    background-color: var(--shpd-primary);
+    border: 1px solid var(--shpd-primary);
+    color: var(--shpd-btn-color-lights);
+}
+.btn-primary:hover {
+    background-color: var(--shpd-primary-gray);
+    border: 1px solid var(--shpd-primary-gray);
+    color: var(--shpd-btn-color-lights);
+}
+.btn-primary:active {
+    background-color: var(--shpd-primary-gray) !important;
+    border: 1px solid var(--shpd-primary-gray) !important;
+    color: var(--shpd-btn-color-lights) !important;
+}
 
 .btn-outline-secondary
 {

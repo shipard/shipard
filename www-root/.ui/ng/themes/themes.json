@@ -8,7 +8,7 @@
         "file":"\/www-root\/.ui\/ng\/themes\/default\/systemDefaultLight.css",
         "dm":0,
         "integrity":{
-          "sha384":"79fdb48b60d8690896456e3530691aaf66148f27e1e88e6e47463d3d112ec5fd0416c8fe7d9e3e73d9c6540d8ecf526b"
+          "sha384":"48c12fd3e6986428cc409ae27e9221be68a4e2450b02d6959740efdf499a04e01dee319b653556a7a79b4a7ed8bf7124"
         }
       },
       "systemDefaultDark":{
@@ -16,7 +16,7 @@
         "file":"\/www-root\/.ui\/ng\/themes\/default\/systemDefaultDark.css",
         "dm":1,
         "integrity":{
-          "sha384":"846b955e48968ad581aa8028a79f03688abd438f9c733ce3ddd7e194901846553e8ea6a79f9fe8e70914cc3d1545fb2e"
+          "sha384":"72b749d6798c9af2b23f3b32485c73362fc112f18c4a6b6b18a9f7b77b7e7011dd87f50b179b0c15776ac112c7d86723"
         }
       },
       "systemDefaultColored":{
@@ -24,7 +24,7 @@
         "file":"\/www-root\/.ui\/ng\/themes\/default\/systemDefaultColored.css",
         "dm":1,
         "integrity":{
-          "sha384":"f17cccf5506eef6ea55d3394c26fa88b13df7629e29c798ad7caee4e2a06259c968850b7613615a8c60ad61430b99879"
+          "sha384":"e9fba06d67863c33f5a9fe41e70be9cbf6e549609b70ef7f192049387ce354a1c199ed8194bf8706189b192b79f4fe16"
         }
       },
       "systemPastelLight":{
@@ -32,7 +32,7 @@
         "file":"\/www-root\/.ui\/ng\/themes\/default\/systemPastelLight.css",
         "dm":1,
         "integrity":{
-          "sha384":"bc292b128f43436260d26619fda3f5dd1a0b693dbacd0686f268d6ef7cdecd0ea6c03b30b4e183ed9e2b0c9a4dc8db07"
+          "sha384":"beda705e4e8bb8dfddd6913eb274744626fb98487d477e93d055aae56a505685f6070fa3062cda4107abb9aa92a4f154"
         }
       },
       "systemBlack":{
@@ -40,13 +40,13 @@
         "file":"\/www-root\/.ui\/ng\/themes\/default\/systemBlack.css",
         "dm":1,
         "integrity":{
-          "sha384":"54bd3e74133b9a61b7650b46902f49ce613e46f089019299bf2cc26ca44815898d293ea94e3a9ccaeb51ce95a1a7b194"
+          "sha384":"e4a08449d93a42da1adba260ad0376ed380ce74fd7914695a1be8240a94a4b53a23debb3e42fd81165831d5d9a6d339c"
         }
       }
     },
     "integrity":{
-      "sha384":"d22376d04d9a8a3402602a697a913162da7a8ab1967ef58a6c163243eda1544b439787cbaecc8307811d1c70ae6237ca",
-      "md5":"c08d3d2dc163377d69144e9455b5cf5a"
+      "sha384":"c52026cd49a676d43e7bc770b20971e5ea20599c03c21b7f9641400b2d9d0b75bd5bf00507b5a7c8ecf2868101323416",
+      "md5":"434a8a932b05f98e4c34c1eaf95c2fce"
     }
   }
 }

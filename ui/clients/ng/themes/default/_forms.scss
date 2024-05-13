@@ -134,3 +134,29 @@ document-card {
     }
   }
 }
+
+
+/* visuals */
+form {
+  position: relative;
+  .shpd-form-text {
+    width: 100%;    
+    height: 2.5rem;
+    border: 2pt solid var(--shpd-universal-border);
+    border-radius: 6px;
+    padding: 0.5rem;
+    line-height: 1.5;
+    box-sizing: border-box;
+  }
+  input {
+    background-color: var(--shpd-form-input-bg);
+    color: var(--shpd-body-color);
+  }
+  input:focus {
+    outline: 0;
+    border: 2pt solid var(--shpd-form-input-focus);
+  }
+  .shpd-form-checkbox {
+    background-color: var(--shpd-form-input-bg);
+  }
+}

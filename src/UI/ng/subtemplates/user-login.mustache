@@ -1,25 +1,25 @@
-<div id='shp-app-window' class='container d-flex justify-content-center align-items-center' style='height: 100vh;'>
-  <div class='card' style='min-width: 90%; max-width: 90vw;'>
-    <div class='card-header'>
+<div id='shp-app-window' class='container-fluid d-flex justify-content-center align-items-center' style='height: 100vh; background-color: var(--shpd-body-bg)'>
+  <div class='shpd-card' >
+    <div class='shpd-card-title'>
       <h3>Přihlášení</h3>
     </div>
-    <div class='card-body'>
+    
       {{#data.login.error}}
       <div class='alert alert-danger'>
         {{data.login.errorMsg}}
       </div>
       {{/data.login.error}}
       <form method='POST' action='{{data.uiRoot}}auth/login' novalidate>
-        <div class='form-floating mb-3'>
-          <input type='email' class='form-control' name='login' placeholder='name@example.com' id='e10-login-user' novalidate>
+        <div class='mb-3'>
           <label for='e10-login-user'>Přihlašovací jméno / e-mail</label>
+          <input type='email' class='shpd-form-text' name='login' id='e10-login-user' novalidate>          
         </div>
-        <div class='form-floating mb-3'>
-          <input type='password' name='password' class='form-control' placeholder='Heslo' id='e10-login-password'>
+        <div class='mb-3'>
           <label for='e10-login-password'>Heslo</label>
+          <input type='password' name='password' class='shpd-form-text' id='e10-login-password'>          
         </div>
-        <div class='form-check mb-3'>
-          <input type='checkbox' name='showPassword' class='form-check-input' id='e10-show-password' onclick="shpLoginShowPasswords()">
+        <div class='mb-3'>
+          <input type='checkbox' name='showPassword' class='shpd-form-checkbox' id='e10-show-password' onclick="shpLoginShowPasswords()">
           <label for='e10-show-password'>Zobrazit heslo</label>
         </div>
         <input type='hidden' name='from' value='{{{data.login.referer}}}'>
@@ -28,7 +28,7 @@
           <a href='{{data.uiRoot}}user/send-lost-password' class='btn btn-outline-secondary float-end'>Neznám heslo</a>
         </div>
       </form>
-    </div>
+    
   </div>
 </div>
 <script>

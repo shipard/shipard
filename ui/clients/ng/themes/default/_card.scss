@@ -1,7 +1,7 @@
 .shpd-card {
     margin-top: .5rem;
     margin-bottom: .5rem;
-    //padding: 1rem !important;
+    padding: 1rem;
     background-color: var(--shpd-universal-bg);
     border: 1px solid var(--shpd-universal-border);
     border-radius: 6px;
@@ -9,13 +9,14 @@
     display: flex;
     position: relative;
     flex-direction: column;
+    color: var(--shpd-body-color);
     pre {
         white-space: break-spaces;
         font-family: sans-serif;
     }
     h3.shpd-card-title {
         text-align: center;
-        padding: 0 .5rem 0 .5rem;
+        padding: 0 .5rem 0 .5rem;        
     }
     .shpd-card-subtitle {
         align-items: center;
