@@ -6,7 +6,7 @@
 		{"id": "systemType", "name": "Typ", "type": "enumInt", "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "vds.systemTypes", "cfgValue": "", "cfgText": "fullName"}},
 
-		{"id": "structure", "name": "Definice struktury", "type": "code"},
+		{"id": "structure", "name": "Definice struktury", "type": "code", "clng": "json"},
 		{"id": "valid", "name": "V pořádku", "type": "logical"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
