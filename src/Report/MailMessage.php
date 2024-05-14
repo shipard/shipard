@@ -80,7 +80,15 @@ class MailMessage extends \Shipard\Base\Utility
 
 	public function setTo ($emails)
 	{
-		$this->emailsTo = preg_split("/[\s,]+/", $emails);
+		$this->emailsTo = [];
+		$et = preg_split("/[\s,]+/", $emails);
+		foreach ($et as $oneAddr)
+		{
+			$a = trim($oneAddr);
+			$a = str_replace(' ', '', $a);
+			if ($a !==  '')
+				$this->emailsTo[] = $a;
+		}
 	}
 
 	public function setSubject ($subject)
@@ -210,13 +218,13 @@ class MailMessage extends \Shipard\Base\Utility
 				if ($emailFromCfg)
 				{
 					$cmd = 'swaks --from '.$this->fromEmail;
-					$cmd .= ' --to "'.$this->emailsTo[0].'"';
+					$cmd .= ' --to "'.implode(',', $this->emailsTo[0]).'"';
 					$cmd .= ' -s '.$emailFromCfg['smtpServer'];
 					$cmd .= ' -tls';
 					$cmd .= ' --auth-user '.$this->fromEmail;
 					$cmd .= ' --auth-password "'.$emailFromCfg['password'].'"';
 					$cmd .= ' -d '.$ffn;
-					$cmd .= ' > '.$ffn.'.log';
+					$cmd .= ' > '.$ffn.'.log'.' 2>&1';
 
 					exec ($cmd);
 
