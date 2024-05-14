@@ -1,6 +1,6 @@
 {
-	"m72-controller-eth": {
-		"fn": "Kontroler ETH",
+	"m72-controller-eth_V31": {
+		"fn": "Kontroler ETH V31",
 		"iotKind": "shib", "iotSubKind": "shib"
 	},
 	"m72-bist-relays-4x": {
@@ -31,6 +31,10 @@
 	},
 	"rs232gw-oli-esp32poe-2": {
 		"fn": "RS232 POE Gateway",
+		"iotKind": "shib", "iotSubKind": "shib"
+	},
+	"m72-controller-eth": {
+		"fn": "Kontroler ETH V2 (zrušeno)",
 		"iotKind": "shib", "iotSubKind": "shib"
 	}
 }

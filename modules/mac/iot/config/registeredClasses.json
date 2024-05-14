@@ -2,6 +2,7 @@
 	"objectsCalls": {
 		"iot-upload-sensors-data": {"classId": "mac.iot.libs.IoTSensorsDataReceiver"},
 		"iot-mac-set-state": {"classId": "mac.iot.libs.IoTMacStateDataReceiver"},
-		"iot-mac-setup-request": {"classId": "mac.iot.libs.IoTMacSetupRequest"}
+		"iot-mac-setup-request": {"classId": "mac.iot.libs.IoTMacSetupRequest"},
+		"iot-mac-esign-image": {"classId": "mac.iot.libs.IoTMacESignImage"}
 	}
 }

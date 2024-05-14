@@ -1,0 +1,75 @@
+{
+	"gpioLayout": "shipard/espressif/esp32-generic",
+	"enabledPins": {
+		"p15": {"title": "qwiic.sda"},
+		"p12": {"title": "qwiic.scl"}
+	},
+	"fields": {
+		"groups": [
+      {"id":  "can", "title":  "CAN bus router"},
+			{"id":  "opts", "title":  "Nastavení"},
+      {"id":  "espNow", "title":  "ESP-NOW server"}
+		],
+		"columns": [
+			{
+				"id": "setFanMode", "group":  "opts", "name": "Nastavovat rychlost ventilátoru", "type": "enumInt", "options": ["saveOnChange"],
+				"enumValues": {"1": "Ne", "2": "Ano"}
+			},
+			{
+				"id": "fanSpeed", "group":  "opts", "name": "Rychlost", "type": "enumInt", "enabled": {"setFanMode": "2"},
+				"enumValues": {
+					"3": "3%", "10": "10%", "20": "20%", "30": "30%", "40": "40%",
+					"50": "50%", "60": "60%", "70": "70%", "75": "75%", "80": "80%", "85": "85%", "90": "90%", "100": "100%"
+				}
+			},
+
+      {
+        "id": "i2cEnabled", "group":  "opts", "name": "Povolit i2c sběrnici", "type": "logical", "options": ["saveOnChange"]
+      },
+
+      {
+        "id": "canRouterEnabled", "group":  "can", "name": "Povolit CAN bus router", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+      },
+			{
+				"id": "espNowServerEnabled", "group":  "espNow", "name": "Povolit ESP-NOW server", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			}
+		]
+	},
+	"fixedIOPorts": {
+		"fan": {
+			"type": "control/level",
+			"portId": "fan",
+			"pin": "p14",
+
+			"_cfgColumns": {"fanSpeed": "defaultValue", "_startMax": 1}
+		},
+
+		"can-bus-router": {
+			"type": "router/can",
+			"portId": "can",
+
+			"pinRX": 33,
+			"pinTX": 32,
+
+			"_portDisabled": {"canRouterEnabled": 0}
+		},
+
+		"i2c": {
+			"type": "bus/i2c",
+			"portId": "i2c",
+
+			"pinSDA": "p15",
+			"pinSCL": "p12",
+
+			"_portDisabled": {"i2cEnabled": 0}
+		},
+
+
+    "esp-now-server": {
+			"type": "networks/esp-now-server",
+			"portId": "esp-now",
+			"_portDisabled": {"espNowServerEnabled": 0}
+		}
+	},
+	"fwId": "iot-box-lan-core-sms72-esp32-eth"
+}

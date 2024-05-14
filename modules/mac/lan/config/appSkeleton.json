@@ -57,6 +57,8 @@
 
 							"cams": {"t1": "Kamery", "object": "viewer", "table": "mac.iot.cams", "viewer": "default", "order": 43000, "beforeSeparator": 1},
 
+							"esigns": {"t1": "Cedulky", "object": "viewer", "table": "mac.iot.esigns", "viewer": "default", "order": 44000, "beforeSeparator": 1},
+							"esignsKinds": {"t1": "Typy cedulek", "object": "viewer", "table": "mac.iot.esignsKinds", "viewer": "default", "order": 44100},
 
 							"users": {"t1": "Uživatelé", "object": "viewer", "table": "mac.iot.users", "viewer": "default", "order": 90100, "beforeSeparator": 1}
 						}

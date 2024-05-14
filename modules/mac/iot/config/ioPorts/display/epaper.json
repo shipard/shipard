@@ -1,0 +1,12 @@
+{
+	"name": "Displej E-Ink",
+	"title": "Displej E-Ink",
+	"fields": {
+		"columns": [
+			{
+				"id": "displayType", "name": "Typ displeje", "type": "enumString", "len": 25,
+				"enumCfg": {"cfgItem": "mac.iot.epds.types", "cfgValue": "", "cfgText": "fn"}
+			}
+		]
+	}
+}

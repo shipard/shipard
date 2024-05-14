@@ -1,0 +1,11 @@
+{
+	"id": "mac.iot.esignsImgs", "sql": "mac_iot_esignsImgs", "name": "Obrázky E-cedulek",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "htmlCodeVer", "name": "Verze HTML kódu", "type": "string", "len": 40, "options": ["ascii"]},
+		{"id": "imagePreviewURL", "name": "URL náhledového obrázku", "type": "string", "len": 200},
+		{"id": "imageEinkURL", "name": "URL obrázku pro e-ink", "type": "string", "len": 200},
+		{"id": "version", "name": "Verze", "type": "int"}
+	],
+	"options": ["systemTable"]
+}

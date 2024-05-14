@@ -8,6 +8,8 @@
 		"params",
 		"cams", "camsStreams",
 
+		"esigns", "esignsKinds", "esignsImgs",
+
 	  "topics", "sensors", "sensorsValues", "sensorsValuesHistory",
 	  "controls", "scPlacements",
 	  "scenes",
@@ -29,6 +31,8 @@
 
 		{"id": "+mac.iot.ioPorts.serialLineSpeed", "file": "ioPorts/serialLineSpeed.json"},
 		{"id": "+mac.iot.ioPorts.serialLineMode", "file": "ioPorts/serialLineMode.json"},
+		{"id": "+mac.iot.epds.types", "file": "epdsTypes.json"},
+		{"id": "+mac.iot.epds.orientation", "file": "epdsOrientation.json"},
 
 	  {"id": "+mac.iot.setups.types", "file": "mac.iot.setups.types.json"},
 

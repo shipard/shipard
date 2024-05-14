@@ -1,0 +1,33 @@
+{
+	"id": "mac.iot.esigns", "sql": "mac_iot_esigns", "name": "E-cedulky",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Úplný název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
+		{"id": "idName", "name": "ID", "type": "string", "len": 80},
+
+		{"id": "esignKind", "name": "Druh", "type": "int", "reference": "mac.iot.esignsKinds"},
+
+		{"id": "iotDevice", "name": "Zařízení", "type": "int", "reference": "mac.iot.devices"},
+		{"id": "iotPort", "name": "Displej", "type": "int", "reference": "mac.iot.devicesIOPorts"},
+
+	  {"id": "orientation", "name": "Orientace", "type": "enumInt",
+		  "enumCfg": {"cfgItem": "mac.iot.epds.orientation", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "codeTemplate", "name": "Šablona", "type": "code", "clng": "html"},
+		{"id": "codeStyle", "name": "CSS style", "type": "code", "clng": "scss"},
+
+		{"id": "vdsData", "name": "Data", "type": "subColumns"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "mac.iot.ViewESigns", "detail": "mac.iot.ViewDetailESign"}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.iot.FormESign"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

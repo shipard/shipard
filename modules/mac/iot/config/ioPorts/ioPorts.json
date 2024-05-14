@@ -61,6 +61,9 @@
 		"name": "Detektor pohybu LD2410", "sensor": 1
 	},
 
+	"display/epaper": {
+		"name": "Displej E-Ink"
+	},
 	"display/nextion": {
 		"name": "Displej Nextion"
 	},

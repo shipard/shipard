@@ -163,6 +163,7 @@ class NodeServerCfgUpdater extends Utility
 				$this->nodeServerConfigIotBoxes($cfgData, $r['ndx'], $r['lan'], $r['mainServerLanControl'] === $r['ndx']);
 				$this->nodeServerConfigIotThings($cfgData, $r['ndx'], $r['lan'], $r['mainServerLanControl'] === $r['ndx']);
 				$this->nodeServerConfigLanControl($cfgData, $r['ndx'], $r['lan'], $r['mainServerLanControl'] === $r['ndx']);
+				$this->nodeServerConfigESigns($cfgData, $r['ndx'], $r['lan'], $r['mainServerLanControl'] === $r['ndx']);
 
 				$sensors = $this->tableSensors->sensorsCfg($r['lan']);
 				if (count($sensors))
@@ -344,6 +345,34 @@ class NodeServerCfgUpdater extends Utility
 		}
 
 		$cfgData['iotThings'] = $iecc->cfg;
+	}
+
+	function nodeServerConfigESigns (&$cfgData, $serverNdx, $lanNdx, $isDefaultServer)
+	{
+		$esigns = [];
+
+		$q = [];
+		array_push($q, 'SELECT esigns.*, ');
+		array_push($q, ' iotDevices.friendlyId AS iotDeviceId, iotDevicesPorts.portId AS iotDevicePortId');
+		array_push($q, ' FROM [mac_iot_esigns] AS esigns');
+		array_push($q, ' LEFT JOIN [mac_iot_devices] AS iotDevices ON esigns.iotDevice = iotDevices.ndx');
+		array_push($q, ' LEFT JOIN [mac_iot_devicesIOPorts] AS iotDevicesPorts ON esigns.iotPort = iotDevicesPorts.ndx');
+		array_push($q, ' WHERE esigns.[docState] IN %in', [4000, 8000]);
+		array_push($q, ' ORDER BY esigns.idName, esigns.ndx');
+
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$es = [
+				'id' => $r['idName'],
+				'epdId' => $r['iotDeviceId'].'-'.$r['iotDevicePortId'],
+			];
+
+			$esigns[$r['ndx']] = $es;
+		}
+
+		if (count($esigns))
+			$cfgData['esigns'] = $esigns;
 	}
 
 	function nodeServerConfigLanControl (&$cfgData, $serverNdx, $lanNdx, $isDefaultServer)

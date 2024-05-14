@@ -7,12 +7,15 @@
 			"mac.iot.setups": {"default": 2},
 			"mac.iot.params": {"default": 2},
 			"mac.iot.cams": {"default": 2},
+			"mac.iot.camsStreams": {"default": 2},
 			"mac.iot.devicesGroups": {"default": 2},
 			"mac.iot.scPlacements": {"default": 2},
 			"mac.iot.scenes": {"default": 2},
 			"mac.iot.scenariosSchedule": {"default": 2},
 			"mac.iot.scenariosActions": {"default": 2},
-			"mac.iot.users": {"default": 2}
+			"mac.iot.users": {"default": 2},
+			"mac.iot.esigns": {"default": 2},
+			"mac.iot.esignsKinds": {"default": 2}
 		}
 	}
 }
