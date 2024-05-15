@@ -218,7 +218,7 @@ class MailMessage extends \Shipard\Base\Utility
 				if ($emailFromCfg)
 				{
 					$cmd = 'swaks --from '.$this->fromEmail;
-					$cmd .= ' --to "'.implode(',', $this->emailsTo[0]).'"';
+					$cmd .= ' --to "'.implode(',', $this->emailsTo).'"';
 					$cmd .= ' -s '.$emailFromCfg['smtpServer'];
 					$cmd .= ' -tls';
 					$cmd .= ' --auth-user '.$this->fromEmail;
