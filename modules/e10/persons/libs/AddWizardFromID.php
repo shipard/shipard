@@ -16,6 +16,13 @@ class AddWizardFromID extends Wizard
 	var $docState = 4000;
 	var $docStateMain = 2;
 
+	public function __construct($app, $options = NULL)
+	{
+		parent::__construct($app, $options);
+		$this->dirtyColsReferences['country'] = 'e10.world.countries';
+		$this->table = $this->app()->table('e10.persons.persons');
+	}
+
 	public function doStep ()
 	{
 		if ($this->pageNumber === 1)
@@ -43,6 +50,9 @@ class AddWizardFromID extends Wizard
 
 	public function renderFormWelcome_AddOnePerson ($sfx, $fields = FALSE)
 	{
+		if (!isset($this->recData ['country'.$sfx]) || !$this->recData ['country'.$sfx])
+			$this->recData ['country'.$sfx] = World::countryNdx($this->app(), $this->app()->cfgItem ('options.core.ownerDomicile', 'cz'));
+
 		$this->addInput('lastName'.$sfx, 'Příjmení', self::INPUT_STYLE_STRING, 0, 80);
 		$this->addInput('firstName'.$sfx, 'Jméno', self::INPUT_STYLE_STRING, 0, 60);
 		$this->addInput('idcn'.$sfx, 'Čislo OP', self::INPUT_STYLE_STRING, 0, 30);
@@ -50,6 +60,7 @@ class AddWizardFromID extends Wizard
 		$this->addInput('street'.$sfx, 'Ulice', self::INPUT_STYLE_STRING, 0, 250);
 		$this->addInput('city'.$sfx, 'Město', self::INPUT_STYLE_STRING, 0, 90);
 		$this->addInput('zipcode'.$sfx, 'PSČ', self::INPUT_STYLE_STRING, 0, 20);
+		$this->addInputIntRef ('country'.$sfx, 'e10.world.countries', 'Stát');
 
 		if ($fields === FALSE || in_array('email', $fields))
 			$this->addInput('email'.$sfx, 'E-mail', self::INPUT_STYLE_STRING, 0, 60);
@@ -91,8 +102,8 @@ class AddWizardFromID extends Wizard
 		$newAddress ['street'] = $this->recData ['street'.$sfx];
 		$newAddress ['city'] = $this->recData ['city'.$sfx];
 		$newAddress ['zipcode'] = $this->recData ['zipcode'.$sfx];
-		$newAddress ['country'] = $this->app()->cfgItem ('options.core.ownerDomicile', 'cz');
-		$newAddress ['worldCountry'] = World::countryNdx($this->app(), $this->app()->cfgItem ('options.core.ownerDomicile', 'cz'));
+		$newAddress ['worldCountry'] = $this->recData ['country'.$sfx];//World::countryNdx($this->app(), $this->app()->cfgItem ('options.core.ownerDomicile', 'cz'));
+		$newAddress ['country'] = World::countryId($this->app(), $newAddress ['worldCountry']);//$this->app()->cfgItem ('options.core.ownerDomicile', 'cz');
 
 		if ($newAddress ['street'] !== '' || $newAddress ['city'] !== '' || $newAddress ['zipcode'] !== '')
 			$newPerson ['address'][] = $newAddress;

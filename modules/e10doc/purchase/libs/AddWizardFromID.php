@@ -12,7 +12,11 @@ class AddWizardFromID extends \e10\persons\libs\AddWizardFromID
 {
 	public function savePerson ()
 	{
+    $this->docState = 4000;
+		$this->docStateMain = 2;
+
 		parent::savePerson ();
+
 		$this->stepResult ['addDocument'] = 1;
 		$this->stepResult ['params'] = array('table' => 'e10doc.core.heads', 'addparams' => "__docType=purchase&__person={$this->newPersonNdx}");
 	}
