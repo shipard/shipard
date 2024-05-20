@@ -88,7 +88,7 @@ class TaxReportReport extends \e10doc\core\libs\reports\GlobalReport
 			$this->setInfo('icon', 'report/VatReturnReport');
 			$this->setInfo('title', $this->taxReportRecData['title']);
 			$this->setInfo('param', 'Období', utils::datef ($this->taxReportRecData['datePeriodBegin'], '%d').' - '.utils::datef ($this->taxReportRecData['datePeriodEnd'], '%d'));
-			
+
 			$this->setInfo('param', 'DIČ', $this->taxRegCfg['title']);
 		}
 		else
@@ -333,7 +333,7 @@ class TaxReportReport extends \e10doc\core\libs\reports\GlobalReport
 	public function loadInvalidPersons($forTableSQLName)
 	{
 		$q[] = 'SELECT [rows].vatId as vatId, [rows].ndx as rowNdx, [rows].docNumber as docNumber, [rows].document as docNdx,';
-		array_push($q, ' docs.person as personNdx, docs.docType as docType, persons.fullName as personFullName,');
+		array_push($q, ' docs.person as personNdx, docs.docType as docType, persons.fullName as personFullName, persons.disableRegsChecks AS personDisableRegsChecks,');
 		array_push($q, ' validity.valid as personValid, validity.msg as personMsg, validity.revalidate as personRevalidate');
 		array_push($q, ' FROM ['.$forTableSQLName.'] AS [rows]');
 		array_push($q, ' LEFT JOIN [e10doc_core_heads] as docs ON [rows].document = docs.ndx');
@@ -354,6 +354,9 @@ class TaxReportReport extends \e10doc\core\libs\reports\GlobalReport
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
+			if ($r['personDisableRegsChecks'])
+				continue;
+
 			$personNdx = $r['personNdx'];
 			$item = [
 					'rowNdx' => $r['rowNdx'], 'docNumber' => $r['docNumber'], 'docNdx' => $r['docNdx'], 'docType' => $r['docType'],
