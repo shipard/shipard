@@ -4,11 +4,15 @@ namespace e10\persons\libs;
 use \Shipard\Base\Utility;
 use \Shipard\Utils\Utils;
 
-
+/**
+ * class Vcard
+ */
 class Vcard extends Utility
 {
   var $personNdx = 0;
   var $personRecData = NULL;
+
+	var $orgTitle = '';
 
   var $info = [];
 
@@ -22,6 +26,11 @@ class Vcard extends Utility
     $this->personNdx = $personNdx;
     $this->personRecData = $this->tablePersons->loadItem($personNdx);
   }
+
+	public function setOrganization($orgTitle)
+	{
+		$this->orgTitle = $orgTitle;
+	}
 
   protected function createVcard()
   {
@@ -50,12 +59,16 @@ class Vcard extends Utility
 		$v = '';
 		$v .= 'BEGIN:VCARD'.$ld;
 		$v .= 'VERSION:2.1'.$ld;
-		$v .= 'N;CHARSET=UTF-8:'.$this->personRecData['lastName'].';;'.$this->personRecData['firstName'].$ld;
- 		$v .= 'FN;CHARSET=UTF-8:'.$this->personRecData['fullName'].$ld;
+		$v .= 'N;CHARSET=UTF-8:'.$this->vcEscape($this->personRecData['lastName']).';;'.$this->vcEscape($this->personRecData['firstName']).$ld;
+ 		$v .= 'FN;CHARSET=UTF-8:'.$this->vcEscape($this->personRecData['fullName']).$ld;
 		if (isset($this->info['email']))
  			$v .= 'EMAIL;TYPE=work:'.$this->info['email'].$ld;
 		if (isset($this->info['phone']))
  			$v .= 'TEL;TYPE=cell:'.$this->info['phone'].$ld;
+
+		if ($this->orgTitle !== '')
+			$v .= 'ORG;CHARSET=UTF-8:'.$this->vcEscape($this->orgTitle).$ld;
+
  		$v .= 'END:VCARD'.$ld;
 
 		$this->info['vcard'] = $v;
@@ -86,6 +99,11 @@ class Vcard extends Utility
 		exec ($cmd);
 		//$cmd = "qrencode -8 -t SVG -m 0 --rle -o \"{$qrFullFileName}\" \"https://x.yz.abc/qwert\"";
 		//exec ($cmd);
+	}
+
+	function vcEscape ($str)
+	{
+		return str_replace([';', ',', ':'], ['\;', '\,', '\:'], $str);
 	}
 
   public function run()

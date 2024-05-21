@@ -1,0 +1,9 @@
+{
+	"id": "e10pro.bume.listPersons", "sql": "e10pro_wkf_listPersons", "name": "Osoby v seznamu",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "list", "name": "Seznam", "type": "int", "reference": "e10pro.bume.lists"},
+		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"}
+	],
+	"options": ["systemTable"]
+}
