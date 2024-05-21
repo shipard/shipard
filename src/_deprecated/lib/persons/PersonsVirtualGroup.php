@@ -13,6 +13,10 @@ class PersonsVirtualGroup extends Utility
 {
 	var $vgItemNdx = 0;
 
+	CONST rmBulkEmail = 0, rmPersonsMsgs = 1;
+	var $recipientsMode = self::rmBulkEmail;
+
+
 	public function setItem ($vgItemNdx)
 	{
 		$this->vgItemNdx = $vgItemNdx;
@@ -79,5 +83,23 @@ class PersonsVirtualGroup extends Utility
 		}
 
 		return $emails;
+	}
+
+	function recipientPersonExist ($dstTable, $bulkOwnerColumnId, $bulkOwnerNdx, $personNdx)
+	{
+		$exist = $this->db()->query ('SELECT ndx FROM ['.$dstTable->sqlName().'] WHERE [person] = %i', $personNdx, ' AND ['.$bulkOwnerColumnId.'] = %i', $bulkOwnerNdx)->fetch();
+		if ($exist)
+			return TRUE;
+
+		return FALSE;
+	}
+
+	function addRecipientPerson ($dstTable, $bulkOwnerColumnId, $bulkOwnerNdx, $personNdx)
+	{
+		if ($this->recipientPersonExist($dstTable, $bulkOwnerColumnId, $bulkOwnerNdx, $personNdx))
+			return;
+
+		$newPost = ['person' => $personNdx, $bulkOwnerColumnId => $bulkOwnerNdx];
+		$this->db()->query ('INSERT INTO ['.$dstTable->sqlName().']', $newPost);
 	}
 }
