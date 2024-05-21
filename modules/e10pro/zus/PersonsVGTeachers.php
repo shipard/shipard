@@ -49,8 +49,13 @@ class PersonsVGTeachers extends \lib\persons\PersonsVirtualGroup
 		$rows = $this->db()->query ($q);
 		foreach ($rows as $r)
 		{
-			$emails = $this->personsEmails($r['ucitelNdx']);
+			if ($this->recipientsMode === self::rmPersonsMsgs)
+			{
+				$this->addRecipientPerson ($dstTable, $bulkOwnerColumnId, $bulkOwnerNdx, $r['ucitelNdx']);
+				continue;
+			}
 
+			$emails = $this->personsEmails($r['ucitelNdx']);
 			foreach ($emails as $email)
 			{
 				$this->addPostEmail ($dstTable, $bulkOwnerColumnId, $bulkOwnerNdx, $r['ucitelNdx'], $email);

@@ -36,8 +36,13 @@ class PersonsVGWasteCustomers extends \lib\persons\PersonsVirtualGroup
 
     foreach ($report->persons as $personNdx)
     {
-      $emails = $this->personsEmails($personNdx);
+			if ($this->recipientsMode === self::rmPersonsMsgs)
+			{
+				$this->addRecipientPerson ($dstTable, $bulkOwnerColumnId, $bulkOwnerNdx, $personNdx);
+				continue;
+			}
 
+      $emails = $this->personsEmails($personNdx);
       foreach ($emails as $email)
       {
         $this->addPostEmail ($dstTable, $bulkOwnerColumnId, $bulkOwnerNdx, $personNdx, $email);

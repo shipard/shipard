@@ -63,8 +63,13 @@ class PersonsVGStudents extends \lib\persons\PersonsVirtualGroup
 		$rows = $this->db()->query ($q);
 		foreach ($rows as $r)
 		{
-			$emails = $this->personsEmails($r['studentNdx']);
+			if ($this->recipientsMode === self::rmPersonsMsgs)
+			{
+				$this->addRecipientPerson ($dstTable, $bulkOwnerColumnId, $bulkOwnerNdx, $r['studentNdx']);
+				continue;
+			}
 
+			$emails = $this->personsEmails($r['studentNdx']);
 			foreach ($emails as $email)
 			{
 				$this->addPostEmail ($dstTable, $bulkOwnerColumnId, $bulkOwnerNdx, $r['studentNdx'], $email);
@@ -103,8 +108,13 @@ class PersonsVGStudents extends \lib\persons\PersonsVirtualGroup
 		$rows = $this->db()->query ($q);
 		foreach ($rows as $r)
 		{
-			$emails = $this->personsEmails($r['studentNdx']);
+			if ($this->recipientsMode === self::rmPersonsMsgs)
+			{
+				$this->addRecipientPerson ($dstTable, $bulkOwnerColumnId, $bulkOwnerNdx, $r['studentNdx']);
+				continue;
+			}
 
+			$emails = $this->personsEmails($r['studentNdx']);
 			foreach ($emails as $email)
 			{
 				$this->addPostEmail ($dstTable, $bulkOwnerColumnId, $bulkOwnerNdx, $r['studentNdx'], $email);
