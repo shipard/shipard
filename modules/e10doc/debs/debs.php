@@ -695,6 +695,7 @@ class docAccounting extends Utility
 				return;
 			}
 			$newRow ['accountId'] = $step['cat'].str_repeat('9', 6 - strlen ($step['cat']));
+			$this->addMessage('Účet nenalezen');
 			return;
 		}
 
@@ -709,6 +710,7 @@ class docAccounting extends Utility
 				return;
 			}
 			$newRow ['accountId'] = '999999';
+			$this->addMessage('Účet nenalezen');
 		}
 
 		forEach ($this->accOpts['accounts'] as $a)
@@ -796,7 +798,10 @@ class docAccounting extends Utility
 					$newRow ['accountId'] = $whOptions[$a['accountType']];
 
 				if (!isset($newRow ['accountId']) || $newRow ['accountId'] === '')
+				{
 					$newRow ['accountId'] = $a['accountMask'].'999';
+					$this->addMessage('Účet nenalezen');
+				}
 			}
 			else
 			if ($a['accountSrc'] === 'bankAccount')
@@ -835,6 +840,7 @@ class docAccounting extends Utility
 				if (!isset($row['property']) || $row['property'] === 0)
 				{
 					$newRow ['accountId'] = $a['accountMask'].'999';
+					$this->addMessage('Účet nenalezen');
 				}
 				else
 				{
@@ -852,7 +858,10 @@ class docAccounting extends Utility
 					}
 
 					if (!isset($newRow ['accountId']) || $newRow ['accountId'] === '')
+					{
 						$newRow ['accountId'] = $a['accountMask'].'999';
+						$this->addMessage('Účet nenalezen');
+					}
 				}
 			}
 		}
@@ -882,6 +891,7 @@ class docAccounting extends Utility
 		if ($row)
 			return $row['id'];
 
+		$this->addMessage('Účet nenalezen');
 		return $accountMask.str_repeat('9', 6 - strlen ($accountMask));
 	}
 
