@@ -9,6 +9,8 @@ use \e10\base\libs\UtilsBase;
  */
 class ListOffices extends DataView
 {
+	var $orderBy = '';
+
   protected function init()
 	{
 		parent::init();
@@ -18,6 +20,8 @@ class ListOffices extends DataView
 		$this->checkRequestParamsList('withoutLabels');
     $this->checkRequestParamsList('floors', TRUE);
 		$this->checkRequestParamsList('directions', TRUE);
+
+		$this->orderBy = $this->requestParam('orderBy', 'wo');
 	}
 
 	protected function loadData()
@@ -46,7 +50,11 @@ class ListOffices extends DataView
 
     if (isset($this->requestParams['docKinds']))
       array_push ($q, ' AND wo.docKind IN %in', $this->requestParams['docKinds']);
-		array_push ($q, ' ORDER BY custs.[fullName], custs.[ndx]');
+
+		if ($this->orderBy === 'person')
+			array_push ($q, ' ORDER BY custs.[fullName], custs.[ndx]');
+		else
+			array_push ($q, ' ORDER BY wo.[title], wo.[ndx]');
 
 		$t = [];
 		$pks = [];

@@ -24,6 +24,8 @@ class BoardOffices extends DataView
   var $displayWidth = 2880;
   var $displayHeight = 2160;
 
+  var $orderBy = '';
+
 	protected function init()
 	{
 		parent::init();
@@ -31,6 +33,7 @@ class BoardOffices extends DataView
 		$this->checkRequestParamsList('docKinds', TRUE);
 		$this->checkRequestParamsList('withLabels');
 		$this->checkRequestParamsList('withoutLabels');
+    $this->orderBy = $this->requestParam('orderBy', 'wo');
 
     $this->cntCols = $this->requestParam ('cntCols', 5);
     $this->cntRows = $this->requestParam ('cntRows', 10);
@@ -70,7 +73,11 @@ class BoardOffices extends DataView
 
     if (isset($this->requestParams['docKinds']))
       array_push ($q, ' AND wo.docKind IN %in', $this->requestParams['docKinds']);
-		array_push ($q, ' ORDER BY custs.[fullName], custs.[ndx]');
+
+    if ($this->orderBy === 'person')
+      array_push ($q, ' ORDER BY custs.[fullName], custs.[ndx]');
+    else
+      array_push ($q, ' ORDER BY wo.[title], wo.[ndx]');
 
     $sqlLimitStart = $this->pageNumber * $this->pageSize;
     array_push ($q, ' LIMIT %i', $sqlLimitStart, ', %i', $this->pageSize);
