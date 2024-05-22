@@ -10,9 +10,9 @@
 	},
 
 	"4000": {
-		"stateName": "Odesláno k úhradě", "actionName": "Uhradit", "stateStyle": "done",
+		"stateName": "Odesláno k úhradě", "actionName": "K úhradě", "stateStyle": "done",
 		"mainState": 2, "readOnly": 1,
-		"enablePrint": 1, "focus": 1, "goto": [8000]
+		"enablePrint": 1, "focus": 1, "goto": [8000, 9000]
 	},
 
 	"4100": {
@@ -21,10 +21,10 @@
 
 	"8000": {
 		"stateName": "V opravě", "actionName": "Opravit", "stateStyle": "edit",
-		"mainState": 0, "goto": [4000, 4100]},
+		"mainState": 0, "goto": [4000, 4100, 9000]},
 
 	"9000": {
-		"stateName": "V Archívu", "actionName": "Ukončit platnost", "stateStyle": "archive",
+		"stateName": "Uhrazeno", "actionName": "Uhrazeno", "stateStyle": "archive",
 		"mainState": 5, "enablePrint": 1, "readOnly": 1, "goto": [8000]
 	},
 
