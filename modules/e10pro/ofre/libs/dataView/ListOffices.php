@@ -65,6 +65,7 @@ class ListOffices extends DataView
 			$item = [
         'ndx' => $r['ndx'],
         'custName' => $r['custName'],
+				'officeTitle' => ($r['title'] !== '') ? $r['title'] : $r['custName'],
       ];
 
       $vdsData = Json::decode($r['vdsData']);

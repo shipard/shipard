@@ -25,6 +25,7 @@ class BoardOffices extends DataView
   var $displayHeight = 2160;
 
   var $orderBy = '';
+  var $displayTitle = '';
 
 	protected function init()
 	{
@@ -34,6 +35,7 @@ class BoardOffices extends DataView
 		$this->checkRequestParamsList('withLabels');
 		$this->checkRequestParamsList('withoutLabels');
     $this->orderBy = $this->requestParam('orderBy', 'wo');
+    $this->displayTitle = $this->requestParam('title', 'office');
 
     $this->cntCols = $this->requestParam ('cntCols', 5);
     $this->cntRows = $this->requestParam ('cntRows', 10);
@@ -90,6 +92,7 @@ class BoardOffices extends DataView
 			$item = [
         'ndx' => $r['ndx'],
         'custName' => $r['custName'],
+        'officeTitle' => ($r['title'] !== '') ? $r['title'] : $r['custName'],
       ];
 
       $vdsData = Json::decode($r['vdsData']);
@@ -113,7 +116,7 @@ class BoardOffices extends DataView
         $t[$personNdx]['oid'] = $pp['ids']['oid'][0]['value'];
     }
 
-		$this->data['header'] = ['#' => '#', 'id' => 'id', 'custName' => 'Jméno', 'email' => 'E-mail', 'phone' => 'Telefon'];
+		$this->data['header'] = ['#' => '#', 'id' => 'id', 'custName' => 'Jméno', 'officeTitle' => 'Název', 'email' => 'E-mail', 'phone' => 'Telefon'];
 		$this->data['table'] = $t;
 	}
 
@@ -152,7 +155,10 @@ class BoardOffices extends DataView
 
       $tableCells .= "<div style=' border-left: 6px solid #AAA; padding: .4rem; margin: 1rem; height: 100%;'>";
 
-      $tableCells .= '<h5>'.utils::es($person['custName']).'</h5>';
+      if ($this->displayTitle === 'office')
+        $tableCells .= '<h5>'.utils::es($person['officeTitle']).'</h5>';
+      else
+        $tableCells .= '<h5>'.utils::es($person['custName']).'</h5>';
       if (isset($person['oid']))
       $tableCells .= "<span class='text-nowrap'>".Utils::es('IČ').' '.Utils::es($person['oid']).'</span> ';
       if (isset($person['email']))
