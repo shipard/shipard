@@ -19,8 +19,8 @@
 		"enumCfg": {"cfgItem": "e10pro.zus.rocniky", "cfgValue": "", "cfgText": "nazev", "cfgPrint": "tisk"}},
 		{"id": "stupen", "name": "Stupeň", "type": "enumInt",
 		"enumCfg": {"cfgItem": "e10pro.zus.stupne", "cfgValue": "", "cfgText": "nazev", "cfgPrint": "tisk"}},
-		{"id": "urovenStudia", "name": "Úroveň studia", "type": "enumInt",
-		"enumCfg": {"cfgItem": "zus.urovenStudia", "cfgValue": "", "cfgText": "nazev", "cfgPrint": "tisk"}},
+		{"id": "urovenStudia", "name": "Úroveň studia", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "zus.urovenStudia", "cfgValue": "", "cfgText": "nazev", "cfgPrint": "tisk"}},
 		{"id": "bezDotace", "name": "Bez dotace", "type": "logical"},
 		{"id": "smazano", "name": "Smazáno", "type": "logical"},
 

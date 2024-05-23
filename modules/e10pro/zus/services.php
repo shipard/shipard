@@ -16,6 +16,8 @@ class ModuleServices extends \E10\CLI\ModuleServices
 {
 	public function onAppUpgrade ()
 	{
+		$s [] = ['end' => '2024-05-30', 'sql' => "UPDATE e10pro_zus_oddeleni SET urovenStudia = 1 WHERE urovenStudia = 0"];
+
 		$s [] = ['end' => '2020-12-31', 'sql' => "UPDATE e10pro_zus_hodiny SET stavHlavni = 3 WHERE stav = 4000 AND stavHlavni = 2"];
 
 		$s [] = ['end' => '2021-02-28', 'sql' => "DELETE FROM e10pro_zus_vyukystudenti WHERE studium = 0 OR studium IS NULL"];

@@ -1094,8 +1094,8 @@ class FormStudium extends TableForm
             $this->addColumnInput ('rocnik', $co);
 						$this->addColumnInput ('svp', $co);
 						$this->addColumnInput ('svpObor', $co);
-						$this->addColumnInput ('svpOddeleni', $co);
 						$this->addColumnInput ('urovenStudia', $co);
+						$this->addColumnInput ('svpOddeleni', $co);
 						$this->addColumnInput ('cisloStudia', $co);
             //$this->addColumnInput ('stupen');
           $this->layoutClose ('width50');

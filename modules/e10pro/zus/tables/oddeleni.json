@@ -6,9 +6,15 @@
 		{"id": "tisk", "name": "Název pro tisk", "type": "string", "len": 120},
     {"id": "svp", "name": "ŠVP", "type": "int", "reference": "e10pro.zus.svp"},
     {"id": "obor", "name": "Obor", "type": "int", "reference": "e10pro.zus.obory"},
+    {"id": "urovenStudia", "name": "Úroveň studia", "type": "enumInt",
+      "enumCfg": {"cfgItem": "zus.urovenStudia", "cfgValue": "", "cfgText": "nazev", "cfgPrint": "tisk"}},
     {"id": "id", "name": "ID", "type": "string", "len": 10},
     {"id": "pos", "name": "Pořadí", "type": "int"},
     {"id": "stop", "name": "Stop stav na přihláškách", "type": "logical"},
+
+    {"id": "navazneOddeleni", "name": "Návazné oddělení", "type": "int", "reference": "e10pro.zus.oddeleni"},
+		{"id": "platnostOd", "name": "Platnost OD", "type": "date"},
+		{"id": "platnostDo", "name": "Platnost DO", "type": "date"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
