@@ -86,6 +86,32 @@ class TableStudium extends DbTable
 
   public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, TableForm $form = NULL)
 	{
+		if ($columnId == 'svpOddeleni')
+		{
+			if (!$form)
+				return TRUE;
+
+			if ($form->recData ['svp'] != $cfgItem ['svp'] && $cfgItem ['svp'] != 0)
+				return FALSE;
+
+			if ($form->recData ['svpObor'] != $cfgItem ['obor'] && $cfgItem ['obor'] != 0)
+				return FALSE;
+
+			if (isset($form->recData ['urovenStudia']) && $form->recData ['urovenStudia'] != $cfgItem ['urovenStudia'] && $cfgItem ['urovenStudia'] != 0)
+				return FALSE;
+
+			$academicYear = $this->app()->cfgItem ('e10pro.zus.roky.'.$form->recData ['skolniRok'], NULL);
+			if ($academicYear)
+			{
+				if ($cfgItem['platnostOd'] && $academicYear['zacatek'] < $cfgItem['platnostOd'])
+					return FALSE;
+				if ($cfgItem['platnostDo'] && $academicYear['konec'] > $cfgItem['platnostDo'])
+					return FALSE;
+			}
+
+			return TRUE;
+		}
+
 		$r = zusutils::columnInfoEnumTest ($columnId, $cfgItem, $form);
 		return ($r !== NULL) ? $r : parent::columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, $form);
 	}

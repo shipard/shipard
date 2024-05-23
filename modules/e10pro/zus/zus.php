@@ -355,7 +355,7 @@ class zusutils
 			if ($form->recData ['svpObor'] != $cfgItem ['obor'] && $cfgItem ['obor'] != 0)
 				return FALSE;
 
-			if (isset($form->recData ['urovenStudia']) && $form->recData ['urovenStudia'] != $cfgItem ['urovenStudia'])
+			if (isset($form->recData ['urovenStudia']) && $form->recData ['urovenStudia'] != $cfgItem ['urovenStudia'] && $cfgItem ['urovenStudia'] != 0)
 				return FALSE;
 
 			return TRUE;

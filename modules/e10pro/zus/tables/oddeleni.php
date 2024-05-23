@@ -5,7 +5,7 @@ namespace e10pro\zus;
 use \Shipard\Viewer\TableView;
 use \Shipard\Form\TableForm;
 use \Shipard\Table\DbTable;
-use \Shipard\Utils\Utils;
+use \Shipard\Utils\Utils, \Shipard\Utils\Json;
 
 
 /**
@@ -31,16 +31,28 @@ class TableOddeleni extends DbTable
 				'tisk' => $r['tisk'], 'svp' => $r ['svp'],
 				'obor' => $r ['obor'], 'oznaceni' => $r ['id'],
 				'urovenStudia' => $r ['urovenStudia'],
+				'platnostOd' => NULL, 'platnostDo' => NULL,
 			];
 			if ($itm['tisk'] === '')
 				$itm['tisk'] = $r ['nazev'];
+
+			if (!Utils::dateIsBlank($r['platnostOd']))
+				$itm['platnostOd'] = $r['platnostOd']->format('Y-m-d');
+
+			if (!Utils::dateIsBlank($r['platnostDo']))
+				$itm['platnostDo'] = $r['platnostDo']->format('Y-m-d');
+
 			$ca [$r['ndx']] = $itm;
 		}
-		$ca [0] = ['id' => 0, 'nazev' => '---', 'tisk' => '', 'svp' => 0, 'obor' => 0,  'oznaceni' => ''];
+		$ca [0] = [
+			'id' => 0, 'nazev' => '---', 'tisk' => '', 'svp' => 0, 'obor' => 0,  'oznaceni' => '',
+			'urovenStudia' => 0,
+			'platnostOd' => NULL, 'platnostDo' => NULL,
+		];
 
 		// save to file
 		$cfg ['e10pro']['zus']['oddeleni'] = $ca;
-		file_put_contents(__APP_DIR__ . '/config/_e10pro.zus.oddeleni.json', json_encode ($cfg));
+		file_put_contents(__APP_DIR__ . '/config/_e10pro.zus.oddeleni.json', Json::lint ($cfg));
 	}
 }
 
