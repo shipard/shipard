@@ -177,6 +177,7 @@ class WOEventInfo extends \e10mnf\core\libs\WorkOrderInfo
       $item = [
         'num' => ($rowIdx + 1).'.',
         'person' => $personInfo,
+        'personFullName' => $entry['personName'],
       ];
 
       if (isset($entry['_options']))

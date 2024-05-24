@@ -5,5 +5,12 @@
     "sc": "EVLZ",
     "classId": "e10pro.soci.libs.ReportWOEventRecordSheet",
     "ndx": 5001
+  },
+  "5002": {
+    "fn": "Návratka",
+    "cn": "Návratka",
+    "sc": "NAVR",
+    "classId": "e10pro.soci.libs.ReportWOEventReturnList",
+    "ndx": 5002
   }
 }

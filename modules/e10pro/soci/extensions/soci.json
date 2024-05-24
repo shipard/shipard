@@ -11,7 +11,10 @@
 				}
 			}
 		},
-		"reports": [{"id": "woEventRecordSheet", "name": "Evidenční list", "class": "e10pro.soci.libs.ReportWOEventRecordSheet", "email": 1}]
+		"reports": [
+			{"id": "woEventRecordSheet", "name": "Evidenční list", "class": "e10pro.soci.libs.ReportWOEventRecordSheet", "email": 1},
+			{"id": "woEventReturnList", "name": "Návratka", "class": "e10pro.soci.libs.ReportWOEventReturnList", "email": 1}
+		]
 	},
   {
     "table": "e10.persons.persons",

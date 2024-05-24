@@ -1,0 +1,17 @@
+{{textMode}}{{#data.reportTexts.emailBody}}{{{data.reportTexts.emailBody}}}{{/data.reportTexts.emailBody}}
+{{^data.reportTexts.emailBody}}
+{{@dict;Dobrý den}},
+
+{{@dict;v příloze Vám zasíláme}} aktuální evidenční list za {{data.head.title}}.
+
+Zkontrolujte, prosím, výše uvedené údaje. V případě nesrovnalostí nebo dotazů se na nás obraťte e-mailem.
+
+
+{{@dict;S pozdravem}}
+
+--
+{{data.owner.fullName}}
+{{#data.owner_contacts}}
+{{name}}: {{value}}
+{{/data.owner_contacts}}
+{{/data.reportTexts.emailBody}}
