@@ -17,7 +17,7 @@ class WOEventInfo extends \e10mnf\core\libs\WorkOrderInfo
 		$h = ['#' => '#', 'personName' => 'Jméno'];
 
 		$q[] = 'SELECT [entries].*,';
-		array_push($q, ' [persons].fullName AS personFullName');
+		array_push($q, ' [persons].fullName AS personFullName, [persons].id AS personId');
 		array_push($q, ' FROM [e10pro_soci_entries] AS [entries]');
 		array_push($q, ' LEFT JOIN [e10_persons_persons] AS [persons] ON [entries].[dstPerson] = [persons].[ndx]');
 		array_push($q, ' WHERE [entries].entryTo = %i', $this->recData ['ndx']);
@@ -61,6 +61,11 @@ class WOEventInfo extends \e10mnf\core\libs\WorkOrderInfo
           $item ['_options']['cellClasses']['invoice'] = $ei ['_options']['cellClasses']['docNumber'];
           $item ['_options']['cellClasses']['bi'] = $ei['bi']['class'];
           $item['bi']['class'] = '';
+
+          $this->data['peoples'][] = [
+            'id' => $r['personId'],
+            'fullName' => $r['personFullName'],
+          ];
         }
         else
         {

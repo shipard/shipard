@@ -51,6 +51,7 @@ class ReportWOEventReturnList extends \e10doc\core\libs\reports\DocReportBase
     $this->eventInfo->loadInfo();
 
     $this->data['members']= $this->eventInfo->data['members']['table'];
+    $this->data['peoples']= $this->eventInfo->data['peoples'];
 
     if ($this->eventInfo->data['members'])
     {

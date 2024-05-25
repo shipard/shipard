@@ -6,28 +6,29 @@
     <link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v21" type="text/css"/>
     <link rel="stylesheet" href="{{dsUrl}}www-root/sc/icons/fa/5/css/all.min.css">
     <style>
-        table.default {font-size: 9pt;}
+        table.default {font-size: 12pt;}
     </style>
 </head>
-<body>
+    <body>
 
-{{#data.reportTexts.subHeader}}<div class='reportTextHeader'>{{{data.reportTexts.subHeader}}}</div>{{/data.reportTexts.subHeader}}
+    {{#data.reportTexts.subHeader}}<div class='reportTextHeader'>{{{data.reportTexts.subHeader}}}</div>{{/data.reportTexts.subHeader}}
 
-<table>
-{{#data.members}}
-    <tr>
-        <td>{{person.0.text}}</td>
-        <td></td>
-        <td></td>
-    </tr>
-{{/data.members}}
-</table>
+    <table class="default">
+        {{#data.peoples}}
+            <tr>
+                <td>{{id}}</td>
+                <td>{{fullName}}</td>
+                <td>---</td>
+                <td>---</td>
+            </tr>
+        {{/data.peoples}}
+    </table>
 
-{{#data.reportTexts.subFooter}}<div class='reportTextFooter'>{{{data.reportTexts.subFooter}}}</div>{{/data.reportTexts.subFooter}}
-{{^data.reportTexts.subFooter}}
-    <small><br>Seznam je platný k {{data.printDateTime}}
-{{/data.reportTexts.subFooter}}
+    {{#data.reportTexts.subFooter}}<div class='reportTextFooter'>{{{data.reportTexts.subFooter}}}</div>{{/data.reportTexts.subFooter}}
+    {{^data.reportTexts.subFooter}}
+        <small><br>Seznam je platný k {{data.printDateTime}}
+    {{/data.reportTexts.subFooter}}
 
-</body>
+    </body>
 
 </html>
