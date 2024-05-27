@@ -11,23 +11,26 @@
 </head>
     <body>
 
-    {{#data.reportTexts.subHeader}}<div class='reportTextHeader'>{{{data.reportTexts.subHeader}}}</div>{{/data.reportTexts.subHeader}}
+    {{#data.reportTexts.subHeader}}<div class='reportTextHeader' style="font-size: 12pt;">{{{data.reportTexts.subHeader}}}</div>{{/data.reportTexts.subHeader}}                
 
     <table class="default">
+        <thead>
+            <tr>            
+                <th>Jméno</th>
+                <th colspan="2" style="text-align: center;">Budu pokračovat</th>
+            </tr>
+        </thead>
         {{#data.peoples}}
             <tr>
-                <td>{{id}}</td>
+            <!--<td>{{id}}</td>-->
                 <td>{{fullName}}</td>
-                <td>---</td>
-                <td>---</td>
+                <td style="text-align: center;">ano&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;ne</td>
+                <!--<td></td>-->
             </tr>
         {{/data.peoples}}
     </table>
 
     {{#data.reportTexts.subFooter}}<div class='reportTextFooter'>{{{data.reportTexts.subFooter}}}</div>{{/data.reportTexts.subFooter}}
-    {{^data.reportTexts.subFooter}}
-        <small><br>Seznam je platný k {{data.printDateTime}}
-    {{/data.reportTexts.subFooter}}
 
     </body>
 
