@@ -17,15 +17,15 @@
         <thead>
             <tr>            
                 <th>Jméno</th>
-                <th colspan="2" style="text-align: center;">Budu pokračovat</th>
+                <th style="text-align: center;">Budu pokračovat</th>
+                <th style="text-align: center;">Platba za</th>
             </tr>
         </thead>
         {{#data.peoples}}
-            <tr>
-            <!--<td>{{id}}</td>-->
+            <tr>            
                 <td>{{fullName}}</td>
                 <td style="text-align: center;">ano&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;ne</td>
-                <!--<td></td>-->
+                <td style="text-align: center;">pololetí&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;&nbsp;celý rok</td>
             </tr>
         {{/data.peoples}}
     </table>
