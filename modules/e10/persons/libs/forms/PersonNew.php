@@ -160,6 +160,7 @@ class PersonNew extends TableForm
 						}
 					}
 					$this->addColumnInput ('id');
+					$this->addColumnInput ('personalId');
 
 					if ($this->recData['company'] == 1)
 					{
