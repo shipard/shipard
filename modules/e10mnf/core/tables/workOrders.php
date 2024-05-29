@@ -487,8 +487,11 @@ class ViewWorkOrders extends TableView
 
 		if ($dko['workOrderType'] === TableWorkOrders::wotMnf)
 		{
-			$i1 = ['text' => utils::nf ($item['sumPrice'], 2), 'prefix' => $this->currencies[$item ['currency']]['shortcut']];
-			$listItem ['i1'] = $i1;
+			if ($item['sumPrice'])
+			{
+				$i1 = ['text' => utils::nf ($item['sumPrice'], 2), 'prefix' => $this->currencies[$item ['currency']]['shortcut']];
+				$listItem ['i1'] = $i1;
+			}
 		}
 
 		if ($item ['intTitle'] !== '')
