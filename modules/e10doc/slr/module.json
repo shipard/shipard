@@ -1,0 +1,11 @@
+{
+  "id": "e10doc.slr",
+  "name": "Podklady ke Mzdám",
+  "tables": [
+		"slrItems", "imports", "personsRecs", "personsRecsRows"
+  ],
+  "config": [
+    {"id": "+appSkeleton", "file": "appSkeleton.json"},
+    {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"}
+  ]
+}
