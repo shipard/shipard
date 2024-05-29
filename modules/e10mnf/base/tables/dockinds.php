@@ -31,6 +31,7 @@ class TableDocKinds extends DbTable
 				'useInvoicingPeriodicity' => $r['useInvoicingPeriodicity'],
 				'disableRows' => $r ['disableRows'], 'priceOnHead' => $r ['priceOnHead'],
 				'vds' => $r ['vds'],
+				'disableCustomer' => $r ['disableCustomer'],
 				'useDescription' => $r ['useDescription'],
 				'usePersonsList' => $r ['usePersonsList'],
 				'useDateIssue' => $r ['useDateIssue'], 'labelDateIssue' => $r ['labelDateIssue'],
@@ -40,6 +41,7 @@ class TableDocKinds extends DbTable
 				'useReasonClosed' => $r ['useReasonClosed'], 'labelReasonClosed' => $r ['labelReasonClosed'],
 				'useDateDeadlineRequested' => $r ['useDateDeadlineRequested'], 'labelDateDeadlineRequested' => $r ['labelDateDeadlineRequested'],
 				'useDateDeadlineConfirmed' => $r ['useDateDeadlineConfirmed'], 'labelDateDeadlineConfirmed' => $r ['labelDateDeadlineConfirmed'],
+				'useUsersPeriods' => $r ['useUsersPeriods'],
 				'useRefId1' => $r ['useRefId1'], 'labelRefId1' => $r ['labelRefId1'],
 				'useRefId2' => $r ['useRefId2'], 'labelRefId2' => $r ['labelRefId2'],
 				'useIntTitle' => $r ['useIntTitle'],
@@ -104,11 +106,13 @@ class TableDocKinds extends DbTable
 			'ndx' => 0, 'fullName' => '', 'shortName' => '',
 			'workOrderType' => 0, 'workOrderFrequency' => 0, 'useInvoicingPeriodicity' => 0,
 			'disableRows' => 0, 'priceOnHead' => 0,
+			'disableCustomer' => 0,
 			'viewerPrimaryTitle' => 0,
 			'viewerLabelTitle' => 0,
 			'useDescription' => 0,
 			'usePersonsList' => 0,
 			'useDateIssue' => 1, 'labelDateIssue' => 'Datum vystavení',
+			'useUsersPeriods' => 0,
 			'useDateContract' => 0, 'labelDateContract' => '',
 			'useDateBegin' => 0, 'labelDateBegin' => '',
 			'useDateClosed' => 0, 'labelDateClosed' => '',
@@ -232,6 +236,7 @@ class FormDocKind extends TableForm
 					$this->addColumnInput ('workOrderFrequency');
 					if ($this->recData['workOrderFrequency'] == 2)
 						$this->addColumnInput ('useInvoicingPeriodicity');
+					$this->addColumnInput ('disableCustomer');
 					$this->addColumnInput ('priceOnHead');
 					$this->addColumnInput ('useDescription');
 					$this->addColumnInput ('useAddress');
@@ -241,6 +246,7 @@ class FormDocKind extends TableForm
 					$this->addColumnInput ('viewerLabelTitle');
 					$this->addColumnInput ('useMembers');
 					$this->addColumnInput ('usePlaces');
+					$this->addColumnInput ('useUsersPeriods');
 					$this->addColumnInput ('useHeadSymbol1');
 					$this->addColumnInput ('useOwnerWorkOrder');
 					$this->addColumnInput ('order');

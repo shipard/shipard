@@ -27,6 +27,8 @@
 		{"id": "dateDeadlineConfirmed", "name": "Potvrzený termín", "type": "date"},
 		{"id": "dateClosed", "name": "Datum ukončení", "type": "date"},
 		{"id": "reasonClosed", "name": "Důvod ukončení", "type": "string", "len": 120},
+		{"id": "usersPeriod", "name": "Uživatelské období", "label": "Období", "type": "enumString", "len": 10,
+			"enumCfg": {"cfgItem": "e10.usersPeriods", "cfgValue": "", "cfgText": "sn"}},
 
 		{"id": "centre", "name": "Středisko", "type": "int", "reference": "e10doc.base.centres"},
 		{"id": "project", "name": "Projekt", "type": "int", "reference": "e10pro.wkf.projects", "module": "e10pro.wkf"},

@@ -326,6 +326,17 @@ class ViewWorkOrders extends TableView
 	{
 		parent::init();
 
+		$this->createMainQueries();
+		$this->createBottomTabs();
+
+		$this->setPanels (TableView::sptQuery);
+
+		$this->currencies = $this->table->app()->cfgItem ('e10.base.currencies');
+		$this->tableDocsHeads = $this->app()->table ('e10doc.core.heads');
+	}
+
+	protected function createMainQueries()
+	{
 		$mq [] = ['id' => 'active', 'title' => 'Živé', 'side' => 'left'];
 		$mq [] = ['id' => 'done', 'title' => 'Hotové', 'side' => 'left'];
 		$mq [] = ['id' => 'allActive', 'title' => 'Vše', 'side' => 'left'];
@@ -333,13 +344,6 @@ class ViewWorkOrders extends TableView
 		$mq [] = ['id' => 'all', 'title' => 'Vše'];
 		$mq [] = ['id' => 'trash', 'title' => 'Koš'];
 		$this->setMainQueries ($mq);
-
-		$this->createBottomTabs();
-
-		$this->setPanels (TableView::sptQuery);
-
-		$this->currencies = $this->table->app()->cfgItem ('e10.base.currencies');
-		$this->tableDocsHeads = $this->app()->table ('e10doc.core.heads');
 	}
 
 	public function createBottomTabs ()
@@ -424,7 +428,16 @@ class ViewWorkOrders extends TableView
 		}
 
 		$this->qryPanel($q);
+		$this->qryMainQuery($q, $fts, $mainQuery);
+		$this->qryOrder($q);
 
+		array_push($q, $this->sqlLimit());
+
+		$this->runQuery ($q);
+	}
+
+	protected function qryMainQuery(&$q, $fts, $mainQuery)
+	{
 		if ($mainQuery === 'active' || $mainQuery == '')
 		{
 			if ($fts != '')
@@ -441,12 +454,6 @@ class ViewWorkOrders extends TableView
 			array_push ($q, ' AND workOrders.[docStateMain] = 5');
 		if ($mainQuery === 'trash')
 			array_push ($q, ' AND workOrders.[docStateMain] = 4');
-
-		$this->qryOrder($q);
-
-		array_push($q, $this->sqlLimit());
-
-		$this->runQuery ($q);
 	}
 
 	protected function qryOrder(&$q)
@@ -834,8 +841,14 @@ class FormWorkOrder extends TableForm
 					if ($manualNumbering)
 						$this->addColumnInput ('docNumber');
 
-					$this->addColumnInput ('customer');
-					$this->addColumnInput ('currency');
+					if ($dko['useUsersPeriods'] ?? 0)
+						$this->addColumnInput ('usersPeriod');
+
+					if (!($dko['disableCustomer'] ?? 0))
+						$this->addColumnInput ('customer');
+
+					if ($dko['priceOnHead'])
+						$this->addColumnInput ('currency');
 					$this->addColumnInput ('title');
 
 					if ($useDocKinds === 2)

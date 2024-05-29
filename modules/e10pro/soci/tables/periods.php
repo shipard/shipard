@@ -2,7 +2,7 @@
 
 namespace e10pro\soci;
 
-use \Shipard\Utils\Utils, \Shipard\Form\TableForm, \Shipard\Table\DbTable, \Shipard\Viewer\TableView;
+use \Shipard\Utils\Utils, \Shipard\Utils\Json, \Shipard\Form\TableForm, \Shipard\Table\DbTable, \Shipard\Viewer\TableView;
 
 
 /**
@@ -18,6 +18,8 @@ class TablePeriods extends DbTable
 
 	public function saveConfig ()
 	{
+		$usersPeriods = [];
+
 		$ca = [];
 
 		$rows = $this->app()->db->query ('SELECT * FROM [e10pro_soci_periods] WHERE docState != 9800 ORDER BY [dateBegin] DESC');
@@ -31,11 +33,25 @@ class TablePeriods extends DbTable
 				'dateEnd' => $r['dateEnd']->format ('Y-m-d'),
 				'dateHalf' => $r['dateHalf']->format ('Y-m-d'),
 			];
+
+			$upId = 'AY'.$r['ndx'];
+			$up = [
+				'id' => $upId,
+				'fn' => $r ['fullName'], 'sn' => $r ['shortName'],
+				'dateBegin' => $r['dateBegin']->format ('Y-m-d'),
+				'dateEnd' => $r['dateEnd']->format ('Y-m-d'),
+				'dateHalf' => $r['dateHalf']->format ('Y-m-d'),
+				'done' => intval($r['docState'] === 9000),
+			];
+			$usersPeriods[$upId] = $up;
 		}
 
 		// save to file
 		$cfg ['e10pro']['soci']['periods'] = $ca;
-		file_put_contents(__APP_DIR__ . '/config/_e10pro.soci.periods.json', json_encode ($cfg));
+		file_put_contents(__APP_DIR__ . '/config/_e10pro.soci.periods.json', Json::lint ($cfg));
+
+		$cfgUP ['e10']['usersPeriods'] = $usersPeriods;
+		file_put_contents(__APP_DIR__ . '/config/_e10pro.soci.usersPeriods.json', Json::lint ($cfgUP));
 	}
 
 	public function tableIcon ($recData, $options = NULL)

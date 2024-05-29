@@ -11,6 +11,7 @@
 		{"id": "workOrderFrequency", "name": "Časovost", "type": "enumInt", "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "e10mnf.workOrders.woFrequency", "cfgValue": "", "cfgText": "sn"}},
 		{"id": "useInvoicingPeriodicity", "name": "Povolit nastavení periodicity fakturace", "type": "logical"},
+		{"id": "disableCustomer", "name": "Nepoužívat Zákazníka", "type": "logical"},
 		{"id": "disableRows", "name": "Nepoužívat řádky zákazky", "type": "logical"},
 		{"id": "priceOnHead", "name": "Zadávat cenu na hlavičce", "type": "logical"},
 		{"id": "useDescription", "name": "Použít textový popis zakázky", "type": "logical"},
@@ -19,6 +20,7 @@
 		{"id": "usePlaces", "name": "Používat Místa", "type": "logical"},
 		{"id": "useHeadSymbol1", "name": "Používat Variabilní symbol", "type": "logical"},
 		{"id": "useOwnerWorkOrder", "name": "Používat Nadřazenou zakázku", "type": "logical"},
+		{"id": "useUsersPeriods", "name": "Používat Uživatelská období", "type": "logical"},
 
 		{"id": "useDateIssue", "name": "Používat Datum vystavení", "type": "logical"},
 		{"id": "labelDateIssue", "name": "Popisek", "type": "string", "len": 40},
