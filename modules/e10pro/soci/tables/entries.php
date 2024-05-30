@@ -168,7 +168,28 @@ class ViewEntries extends TableView
 		$this->setPanels (TableView::sptQuery);
     $this->createBottomTabs ();
 
-		$this->setMainQueries ();
+
+		$mq = [];
+
+		if ($this->periods)
+		{
+			$periods = \e10\sortByOneKey ($this->periods, 'dateBegin', TRUE, TRUE);
+			foreach ($periods as $periodId => $period)
+			{
+				$mq[] = ['id' => 'AY_'.$periodId, 'title' => $period['sn'], 'icon' => 'system/filterActive', 'side' => 'left'];
+			}
+		}
+		else
+		{
+			$mq[] = ['id' => 'active', 'title' => 'Aktivní', 'icon' => 'system/filterActive'];
+		}
+
+		$mq[] = ['id' => 'archive', 'title' => 'Archív', 'icon' => 'system/filterArchive'];
+		$mq[] = ['id' => 'all', 'title' => 'Vše', 'icon' => 'system/filterAll'];
+		$mq[] = ['id' => 'trash', 'title' => 'Koš', 'icon' => 'system/filterTrash'];
+
+
+		$this->setMainQueries ($mq);
 	}
 
   public function createBottomTabs ()
@@ -229,6 +250,7 @@ class ViewEntries extends TableView
 	{
 		$fts = $this->fullTextSearch ();
 		$bottomTabId = intval($this->bottomTabId());
+		$mainQuery = $this->mainQueryId ();
 
 		$q = [];
 
@@ -284,7 +306,29 @@ class ViewEntries extends TableView
 				);
 		}
 
-		$this->queryMain ($q, 'entries.', ['[dateIssue] DESC', '[fullName]']);
+		if (substr($mainQuery, 0, 3) === 'AY_')
+		{
+			$userPeriodId = substr($mainQuery, 3);
+			array_push ($q, ' AND entries.[entryPeriod] = %s', $userPeriodId);
+			array_push ($q, ' AND [entries].[docStateMain] != %i', 4);
+		}
+
+		if ($mainQuery === 'active' || $mainQuery === '')
+		{
+			if ($fts !== 0)
+				array_push($q, ' AND [entries].[docStateMain] != 4');
+			else
+				array_push($q, ' AND [entries].[docStateMain] < 4');
+		}
+		if ($mainQuery === 'archive')
+			array_push ($q, ' AND [entries].[docStateMain] = %i', 5);
+		if ($mainQuery === 'trash')
+			array_push ($q, ' AND [entries].[docStateMain] = 4');
+
+
+		array_push ($q, ' ORDER BY [entries].[docStateMain], entries.lastName, entries.firstName ');
+		array_push ($q, $this->sqlLimit ());
+
 		$this->runQuery ($q);
 	}
 

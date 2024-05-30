@@ -26,7 +26,7 @@ class ViewWOEvents extends \e10mnf\core\ViewWorkOrders
 
 		if (!$this->allUsersPeriods)
 		{
-			$mq [] = ['id' => 'active', 'title' => 'Živé2', 'side' => 'left'];
+			$mq [] = ['id' => 'active', 'title' => 'Živé', 'side' => 'left'];
 			$mq [] = ['id' => 'done', 'title' => 'Hotové', 'side' => 'left'];
 
 			$mq [] = ['id' => 'all', 'title' => 'Vše'];
@@ -85,7 +85,6 @@ class ViewWOEvents extends \e10mnf\core\ViewWorkOrders
 
 	protected function qryOrder(&$q)
 	{
-    array_push($q, ' ORDER BY workOrders.[docNumber]');
+    array_push($q, ' ORDER BY [workOrders].[docStateMain], workOrders.[title], workOrders.[docNumber]');
 	}
 }
-
