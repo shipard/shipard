@@ -148,7 +148,7 @@ class ViewBankOrders extends \E10Doc\Core\ViewHeads
       array_push ($q, ' AND heads.[docStateMain] = 4');
 
 		if ($mainQuery == 'all')
-			array_push ($q, ' ORDER BY [datePeriodBegin] DESC' . $this->sqlLimit());
+			array_push ($q, ' ORDER BY [datePeriodBegin] DESC, [docNumber] DESC' . $this->sqlLimit());
 		else
 			array_push ($q, ' ORDER BY heads.[docStateMain], [docNumber] DESC' . $this->sqlLimit());
 
