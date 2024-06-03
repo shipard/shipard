@@ -29,6 +29,8 @@
 		{"id": "mqttTopic", "name": "Zdrojový MQTT topic", "type": "string", "len": "100"},
 		{"id": "mqttTopicPayloadValue", "name": "Hodnota", "type": "memo"},
 
+		{"id": "startDelay", "name": "Zpoždění [ms]", "type": "int"},
+
 		{"id": "when", "name": "Když", "type": "logical", "options": ["saveOnChange"]},
 		{"id": "whenType", "name": "Co", "type": "enumString", "len": "20", "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "mac.iot.events.onWhenTypes", "cfgValue": "", "cfgText": "fn"}},

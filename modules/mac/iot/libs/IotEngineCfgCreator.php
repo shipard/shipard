@@ -303,6 +303,9 @@ class IotEngineCfgCreator extends Utility
 							$dst['setProperties'][$destTopic]['data'][$r['iotDeviceProperty']]['when'] = $when;
 						/*else
 							$dst['setProperties'][$destTopic]['data'][$r['iotDeviceProperty']] = $r['iotDevicePropertyValueEnum'];*/
+
+						if ($r['startDelay'])
+							$dst['setProperties'][$destTopic]['data'][$r['iotDeviceProperty']]['startDelay'] = $r['startDelay'];
 					}
 				}
 				elseif ($r['eventType'] === 'incDeviceProperty' || $r['eventType'] === 'decDeviceProperty' || $r['eventType'] === 'assignDeviceProperty')
