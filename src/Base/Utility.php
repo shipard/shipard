@@ -58,6 +58,22 @@ class Utility
 		return $this->messagess;
 	}
 
+	public function errorsHtml ()
+	{
+		$msgs = $this->messages();
+		if (!$msgs)
+			return '';
+
+
+		$res = '';
+		foreach ($msgs as $msg)
+		{
+			$res .= '* '.$msg['text']."\n";
+		}
+
+		return \Shipard\Utils\MiniMarkdown::render($res);
+	}
+
 	public function db () {return $this->app->db();}
 
 	protected function loadCfgFile ($fileName)

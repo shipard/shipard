@@ -16,6 +16,11 @@ class WebForm
 	public $recapitulation = FALSE;
 
 	var $fw = 'bs3';
+	var $webScriptId = '';
+	var $webFormId = '';
+
+	var $formInfo = [];
+	var $formParams = NULL;
 
 	protected $disableAutofocus = FALSE;
 
@@ -32,6 +37,11 @@ class WebForm
 	public function validate ()	{return TRUE;}
 	public function createEmailRequest () {return array ();}
 	public function createFormCode () {return '';}
+
+	public function setFormParams($params)
+	{
+		$this->formParams = $params;
+	}
 
 	/**
 	 * @param mixed $labelTxt

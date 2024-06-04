@@ -255,7 +255,21 @@ class WebTemplateMustache extends \Shipard\Utils\TemplateCore
 		$formFwParam = \E10\searchParam ($params, 'fw', 'bs3');
 
 		$wf = $this->app->createObject ($formIdParam);
+		if (!$wf)
+			return 'INVALID FORM ID';
+
+		$webFormparams = [];
+		foreach ($params as $key => $value)
+		{
+			if (is_string($value))
+				$webFormparams[$key] = $value;
+		}
+
+		$wf->setFormParams($webFormparams);
 		$wf->fw = $formFwParam;
+
+		$wf->webFormId = $formIdParam;
+		$wf->webScriptId = \E10\searchParam ($params, 'webScript', '');
 
 		if (isset($params['owner']))
 			$wf->template = $params['owner'];
