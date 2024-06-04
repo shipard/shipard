@@ -10,11 +10,17 @@ use \lib\dataView\DataView;
 class Vcard extends DataView
 {
   var $personNdx = 0;
+	var $personCompanyRecData = NULL;
   var ?\e10\persons\libs\Vcard $vcard = NULL;
 
 	protected function init()
 	{
 		parent::init();
+
+		if (intval($this->requestParams['companyNdx'] ?? 0))
+		{
+			$this->personCompanyRecData = $this->app()->loadItem(intval($this->requestParams['companyNdx'] ?? 0), 'e10.persons.persons');
+		}
 
 		if (isset($this->requestParams['personId']))
 		{
@@ -42,6 +48,8 @@ class Vcard extends DataView
 	{
     $this->vcard = new \e10\persons\libs\Vcard($this->app());
     $this->vcard->setPerson($this->personNdx);
+		if ($this->personCompanyRecData)
+			$this->vcard->setOrganization($this->personCompanyRecData['fullName']);
     $this->vcard->run();
 	}
 

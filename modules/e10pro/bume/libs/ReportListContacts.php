@@ -33,7 +33,9 @@ class ReportListContacts extends \Shipard\Report\GlobalReport
 
 		$h = [
 			'personId' => 'id',
-			'firstName' => 'Jméno', 'lastName' => 'Příjmení', 'email' => 'E-mail', 'phone' => 'Telefon',
+			'fullName' => 'Celé jméno',
+			'firstName' => 'Jméno', 'lastName' => 'Příjmení',
+			'email' => 'E-mail', 'phone' => 'Telefon',
 			'qrBtn' => 'QR'
 		];
 		$this->addContent (['type' => 'table', 'header' => $h, 'table' => $this->data]);

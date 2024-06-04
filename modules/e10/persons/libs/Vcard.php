@@ -59,8 +59,29 @@ class Vcard extends Utility
 		$v = '';
 		$v .= 'BEGIN:VCARD'.$ld;
 		$v .= 'VERSION:2.1'.$ld;
-		$v .= 'N;CHARSET=UTF-8:'.$this->vcEscape($this->personRecData['lastName']).';;'.$this->vcEscape($this->personRecData['firstName']).$ld;
+
+		$v .= 'N;CHARSET=UTF-8:'.$this->vcEscape($this->personRecData['lastName']);
+		$v .= ';';
+
+		$v .= $this->vcEscape($this->personRecData['firstName']);
+		$v .= ';';
+
+		if ($this->personRecData['middleName'] !== '')
+			$v .= $this->vcEscape($this->personRecData['middleName']);
+		$v .= ';';
+
+		if ($this->personRecData['beforeName'] !== '')
+			$v .= $this->vcEscape($this->personRecData['beforeName']);
+		$v .= ';';
+
+		if ($this->personRecData['afterName'] !== '')
+			$v .= $this->vcEscape($this->personRecData['afterName']);
+		$v .= ';';
+
+		$v .= $ld;
+
  		$v .= 'FN;CHARSET=UTF-8:'.$this->vcEscape($this->personRecData['fullName']).$ld;
+
 		if (isset($this->info['email']))
  			$v .= 'EMAIL;TYPE=work:'.$this->info['email'].$ld;
 		if (isset($this->info['phone']))

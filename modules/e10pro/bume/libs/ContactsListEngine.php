@@ -138,18 +138,21 @@ class ContactsListEngine extends Utility
 
 	public function createCSV($fileName)
 	{
-		$h = ['personId' => 'id', 'firstName' => 'Jméno', 'lastName' => 'Příjmení', 'email' => 'E-mail', 'phone' => 'Telefon'/*, 'street' => 'Ulice', 'city' => 'Město', 'zipcode' => 'PSČ'*/];
+		$h = ['personId' => 'id', 'fullName' => 'Úplné jméno', 'firstName' => 'Jméno', 'lastName' => 'Příjmení', 'email' => 'E-mail', 'phone' => 'Telefon'/*, 'street' => 'Ulice', 'city' => 'Město', 'zipcode' => 'PSČ'*/];
 
 		$params ['colSeparator'] = ',';
 		$data = utils::renderTableFromArrayCsv($this->data, $h, $params);
-		file_put_contents($fileName, $data);
+		$BOM = chr(0xEF).chr(0xBB).chr(0xBF);
+		file_put_contents($fileName, $BOM.$data);
 	}
 
 	public function createVCF($fileName, $saveSinglesPath = '')
 	{
+		//$BOM = chr(0xEF).chr(0xBB).chr(0xBF);
+		//file_put_contents($fileName, $BOM);
+
 		foreach ($this->data as $personNdx => $person)
 		{
-
 			$vcard = new \e10\persons\libs\Vcard($this->app());
 			$vcard->setPerson($personNdx);
 			if ($this->personCompanyRecData)
