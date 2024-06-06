@@ -290,22 +290,26 @@ class IotEngineCfgCreator extends Utility
 					$dp = $this->iotDevicesUtils->deviceProperty($iotDeviceNdx, $r['iotDeviceProperty']);
 					if ($dp)
 					{
+						$dpId = $r['iotDeviceProperty'];
+						if ($r['startDelay'])
+							$dpId .= ':'.$r['startDelay'];
+
 						if ($dp['data-type'] === 'binary' || $dp['data-type'] === 'enum' || $dp['data-type'] === 'h-bridge')
 						{
 							$enumSetValue = $dp['enumSet'][$r['iotDevicePropertyValueEnum']] ?? NULL;
 
-							$dst['setProperties'][$destTopic]['data'][$r['iotDeviceProperty']] = ['value' => $this->enumSetValue ($r, $dp, $enumSetValue)];
+							$dst['setProperties'][$destTopic]['data'][$dpId] = ['value' => $this->enumSetValue ($r, $dp, $enumSetValue)];
 						}
 						elseif ($dp['data-type'] === 'numeric')
-							$dst['setProperties'][$destTopic]['data'][$r['iotDeviceProperty']] = ['value' => intval($r['iotDevicePropertyValue'])];
+							$dst['setProperties'][$destTopic]['data'][$dpId] = ['value' => intval($r['iotDevicePropertyValue'])];
 
 						if ($when)
-							$dst['setProperties'][$destTopic]['data'][$r['iotDeviceProperty']]['when'] = $when;
+							$dst['setProperties'][$destTopic]['data'][$dpId]['when'] = $when;
 						/*else
-							$dst['setProperties'][$destTopic]['data'][$r['iotDeviceProperty']] = $r['iotDevicePropertyValueEnum'];*/
+							$dst['setProperties'][$destTopic]['data'][$dpId] = $r['iotDevicePropertyValueEnum'];*/
 
 						if ($r['startDelay'])
-							$dst['setProperties'][$destTopic]['data'][$r['iotDeviceProperty']]['startDelay'] = $r['startDelay'];
+							$dst['setProperties'][$destTopic]['data'][$dpId]['startDelay'] = $r['startDelay'];
 					}
 				}
 				elseif ($r['eventType'] === 'incDeviceProperty' || $r['eventType'] === 'decDeviceProperty' || $r['eventType'] === 'assignDeviceProperty')
