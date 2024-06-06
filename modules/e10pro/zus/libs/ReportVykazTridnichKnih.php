@@ -167,6 +167,11 @@ class ReportVykazTridnichKnih extends \e10doc\core\libs\reports\DocReportBase
       $data [] = $item;
     }
 
+    foreach ($this->sums as $hid => $sums)
+    {
+      $this->sums[$hid]['nc'] = ($sums['ps'] ?? 0) + ($sums['v0'] ?? 0);
+    }
+
 		$h = [
       '#' => '#', 'student' => 'Student', 'docNumber' => ' Studium č.',
       'obor' => 'Obor', 'oddeleni' => 'Studijní zaměření',
