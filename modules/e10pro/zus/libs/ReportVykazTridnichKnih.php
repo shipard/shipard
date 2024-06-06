@@ -169,7 +169,8 @@ class ReportVykazTridnichKnih extends \e10doc\core\libs\reports\DocReportBase
 
     foreach ($this->sums as $hid => $sums)
     {
-      $this->sums[$hid]['nc'] = ($sums['ps'] ?? 0) + ($sums['v0'] ?? 0);
+      if (isset($sums['ps']) || isset($sums['v0']))
+        $this->sums[$hid]['nc'] = ($sums['ps'] ?? 0) + ($sums['v0'] ?? 0);
     }
 
 		$h = [
@@ -181,7 +182,7 @@ class ReportVykazTridnichKnih extends \e10doc\core\libs\reports\DocReportBase
     ];
 
 		$this->data['studia'] = [
-      ['type' => 'table', 'header' => $h, 'table' => $data, 'params' =>  ['tableClass' => 'rows']]
+      ['type' => 'table', 'header' => $h, 'table' => $data, 'params' =>  ['tableClass' => 'seznamStudii']]
     ];
   }
 }
