@@ -1503,8 +1503,16 @@ class DepreciationsEngine extends Utility
 						$cz = $ap['czn'];
 						if ($priceIsIncreased)
 							$cz = $ap['czi'];
-						$deprecation = 2*$taxBalance/($cz-$this->yearCounter);
-						$calcFormula = "2 * $taxBalance / ($cz - $this->yearCounter)";
+						if (($cz - $this->yearCounter))
+						{
+							$deprecation = 2*$taxBalance / ($cz - $this->yearCounter);
+							$calcFormula = "2 * $taxBalance / ($cz - $this->yearCounter)";
+						}
+						else
+						{
+							$deprecation = 0;
+							$calcFormula = "2 * $taxBalance / ($cz - $this->yearCounter)";
+						}
 						if ($this->yearCounter == 0)
 						{
 							$cz = $ap['cz1'];
