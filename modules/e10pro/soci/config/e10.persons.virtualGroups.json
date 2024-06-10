@@ -1,0 +1,10 @@
+{
+	"e10pro-soci-Students": {
+		"name": "Aktuální účastníci",
+		"queryColumns": {
+			"virtualGroupItem": "Druh akce",
+			"virtualGroupItem2": "Místo"
+		},
+		"classId": "e10pro.soci.libs.PersonsVGStudents"
+	}
+}
