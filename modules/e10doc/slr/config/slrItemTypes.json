@@ -1,63 +1,67 @@
 {
-  "0": {
-    "fn": "Ostatní",
-    "sn": "Ostatní",
-    "payee": 2
-  },
-  "10": {
-    "fn": "Čistá mzda",
-    "sn": "Čistá mzda",
-    "payee": 1
-  },
-  "20": {
+  "5": {
     "fn": "Hrubá mzda",
     "sn": "Hrubá mzda",
     "payee": 0
   },
-  "30": {
-    "fn": "Benefity",
-    "sn": "Benefity",
+  "10": {
+    "fn": "Benefity - čistá mzda",
+    "sn": "Benefity čistá mzda",
     "payee": 2
   },
-  "40": {
-    "fn": "Srážky",
-    "sn": "Srážky",
-    "payee": 2
-  },
-  "41": {
-    "fn": "Exekuce",
-    "sn": "Exekuce",
-    "payee": 2
-  },
-  "50": {
-    "fn": "Zdravotní pojištění - zaměstnavatel",
-    "sn": "Zdravotní zaměstnavatel",
-    "payee": 2
-  },
-  "51": {
+  "15": {
     "fn": "Zdravotní pojištění - zaměstnanec",
     "sn": "Zdravotní zaměstnanec",
     "payee": 2
   },
-  "52": {
-    "fn": "Sociální pojištění - zaměstnavatel",
-    "sn": "Sociální zaměstnavatel",
-    "payee": 2
-  },
-  "53": {
+  "20": {
     "fn": "Sociální pojištění - zaměstnanec",
     "sn": "Sociální zaměstnanec",
     "payee": 2
   },
+  "25": {
+    "fn": "Daně",
+    "sn": "Daně",
+    "payee": 2
+  },
+  "30": {
+    "fn": "Srážky",
+    "sn": "Srážky",
+    "payee": 2
+  },
+  "35": {
+    "fn": "Exekuce",
+    "sn": "Exekuce",
+    "payee": 2
+  },
+  "40": {
+    "fn": "Čistá mzda",
+    "sn": "Čistá mzda",
+    "payee": 1
+  },
+  "45": {
+    "fn": "Zdravotní pojištění - zaměstnavatel",
+    "sn": "Zdravotní zaměstnavatel",
+    "payee": 2
+  },
+  "50": {
+    "fn": "Sociální pojištění - zaměstnavatel",
+    "sn": "Sociální zaměstnavatel",
+    "payee": 2
+  },
   "55": {
+    "fn": "Benefity - ostatní",
+    "sn": "Benefity ostatní",
+    "payee": 2
+  },
+  "60": {
     "fn": "Úrazové pojištění",
     "sn": "Úrazové pojištění",
     "payee": 2
   },
-
-  "60": {
-    "fn": "Daně",
-    "sn": "Daně",
-    "payee": 2
+  "0": {
+    "fn": "Ostatní",
+    "sn": "Ostatní",
+    "payee": 0
   }
 }
