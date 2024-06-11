@@ -1,0 +1,37 @@
+{
+  "0": {
+    "fn": "Ostatní",
+    "sn": "Ostatní",
+    "payee": 0
+  },
+  "10": {
+    "fn": "Čistá mzda",
+    "sn": "Čistá mzda",
+    "payee": 1
+  },
+  "20": {
+    "fn": "Hrubá mzda",
+    "sn": "Hrubá mzda",
+    "payee": 0
+  },
+  "30": {
+    "fn": "Náhrada",
+    "sn": "Náhrada",
+    "payee": 0
+  },
+  "40": {
+    "fn": "Srážka",
+    "sn": "Srážka",
+    "payee": 2
+  },
+  "50": {
+    "fn": "Zdravotní pojištění",
+    "sn": "Zdravotní",
+    "payee": 2
+  },
+  "51": {
+    "fn": "Sociální pojištění",
+    "sn": "Sociální pojištění",
+    "payee": 2
+  }
+}

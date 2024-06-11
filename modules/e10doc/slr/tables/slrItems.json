@@ -7,6 +7,11 @@
 
 		{"id": "importId", "name": "ID pro Importy", "type": "string", "len": 30},
 
+		{"id": "itemType", "name": "Typ položky", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.slr.slrItemTypes", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "moneyOrg", "name": "Instituce", "type": "int", "reference": "e10doc.slr.orgs"},
+
 		{"id": "accItemDr", "name": "Účtopoložka MD", "type": "int", "reference": "e10.witems.items", "comboViewer": "combo"},
     {"id": "accItemCr", "name": "Účtopoložka DAL", "type": "int", "reference": "e10.witems.items", "comboViewer": "combo"},
 

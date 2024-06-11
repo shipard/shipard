@@ -47,9 +47,7 @@ class ViewEmps extends TableView
 	{
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['t1'] = $item['fullName'];
-
-
-		//$listItem ['i1'] = ['text' => $item['importId'], 'class' => 'id'];
+		$listItem ['i1'] = ['text' => $item['personalId'], 'class' => 'id'];
 
 		$props = [];
 
@@ -64,20 +62,16 @@ class ViewEmps extends TableView
 		$fts = $this->fullTextSearch ();
 
 		$q = [];
-
     array_push ($q, 'SELECT [emps].* ');
 		array_push ($q, ' FROM [e10doc_slr_emps] AS [emps]');
-		array_push ($q, '');
-		array_push ($q, '');
-		array_push ($q, '');
-		array_push ($q, '');
 		array_push ($q, ' WHERE 1');
 
 		// -- fulltext
 		if ($fts != '')
 		{
 			array_push ($q, ' AND (');
-			array_push ($q,' [emps].[fullNname] LIKE %s', '%'.$fts.'%');
+			array_push ($q, ' [emps].[fullName] LIKE %s', '%'.$fts.'%');
+			array_push ($q, ' OR [emps].[personalId] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ')');
 		}
 
@@ -110,7 +104,12 @@ class FormEmp extends TableForm
 
           $this->addColumnInput ('healthIns');
 
+					$this->addSeparator(self::coH4);
           $this->addColumnInput ('slrBankAccount');
+          $this->addColumnInput ('slrSymbol1');
+          $this->addColumnInput ('slrSymbol2');
+          $this->addColumnInput ('slrSymbol3');
+					$this->addSeparator(self::coH4);
           $this->addColumnInput ('slrCentre');
 				$this->closeTab();
 				$this->openTab (TableForm::ltNone);

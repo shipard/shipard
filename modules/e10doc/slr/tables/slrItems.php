@@ -34,6 +34,8 @@ class TableSlrItems extends DbTable
  */
 class ViewSlrItems extends TableView
 {
+	var $itemTypes;
+
 	public function init ()
 	{
 		parent::init();
@@ -41,20 +43,23 @@ class ViewSlrItems extends TableView
 		$this->enableDetailSearch = TRUE;
 
 		$this->setMainQueries ();
+
+		$this->itemTypes = $this->app()->cfgItem('e10doc.slr.slrItemTypes');
 	}
 
 	public function renderRow ($item)
 	{
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['t1'] = $item['fullName'];
-
-
 		$listItem ['i1'] = ['text' => $item['importId'], 'class' => 'id'];
 
+		$it = $this->itemTypes[$item['itemType']];
+
 		$props = [];
+		$props[] = ['text' => $it['fn'], 'class' => 'label label-info'];
 
 		if ($item['debsAccountIdDr'] && $item['debsAccountIdCr'])
-			$props[] = ['text' => $item['debsAccountIdDr'].' ⨉ '.$item['debsAccountIdCr'], 'class' => 'label label-info'];
+			$props[] = ['text' => $item['debsAccountIdDr'].' ⨉ '.$item['debsAccountIdCr'], 'class' => 'label label-default'];
 
 		if (count($props))
 			$listItem ['t2'] = $props;
@@ -82,8 +87,8 @@ class ViewSlrItems extends TableView
 		if ($fts != '')
 		{
 			array_push ($q, ' AND (');
-			array_push ($q,' [imports].[fullNname] LIKE %s', '%'.$fts.'%');
-			array_push ($q,' OR [imports].[shortNname] LIKE %s', '%'.$fts.'%');
+			array_push ($q,' [slrItems].[fullName] LIKE %s', '%'.$fts.'%');
+			array_push ($q,' OR [slrItems].[shortName] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ')');
 		}
 
@@ -100,6 +105,8 @@ class FormSlrItem extends TableForm
 {
 	public function renderForm ()
 	{
+		$itemType = $this->app()->cfgItem('e10doc.slr.slrItemTypes.'.$this->recData['itemType']);
+
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 		$this->setFlag ('maximize', 1);
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
@@ -113,6 +120,10 @@ class FormSlrItem extends TableForm
 					$this->addColumnInput ('fullName');
 					$this->addColumnInput ('shortName');
 					$this->addColumnInput ('importId');
+					$this->addSeparator(self::coH4);
+					$this->addColumnInput ('itemType');
+					if ($itemType['payee'] === 2)
+						$this->addColumnInput ('moneyOrg');
 					$this->addSeparator(self::coH4);
 					$this->addColumnInput ('accItemDr');
 					$this->addColumnInput ('accItemCr');

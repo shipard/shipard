@@ -34,6 +34,8 @@ class TableOrgs extends DbTable
  */
 class ViewOrgs extends TableView
 {
+	var $orgTypes;
+
 	public function init ()
 	{
 		parent::init();
@@ -41,6 +43,8 @@ class ViewOrgs extends TableView
 		$this->enableDetailSearch = TRUE;
 
 		$this->setMainQueries ();
+
+		$this->orgTypes = $this->app()->cfgItem('e10doc.slr.orgTypes');
 	}
 
 	public function renderRow ($item)
@@ -51,7 +55,13 @@ class ViewOrgs extends TableView
 
 		//$listItem ['i1'] = ['text' => $item['importId'], 'class' => 'id'];
 
+		$ot = $this->orgTypes[$item['orgType']];
+
 		$props = [];
+
+		$props[] = ['text' => $ot['sn'], 'class' => 'label label-default'];
+
+		$listItem ['t2'] = $props;
 
 
 		$listItem ['icon'] = $this->table->tableIcon ($item);
@@ -73,7 +83,11 @@ class ViewOrgs extends TableView
 		if ($fts != '')
 		{
 			array_push ($q, ' AND (');
-			array_push ($q,' [orgs].[fullNname] LIKE %s', '%'.$fts.'%');
+			array_push ($q,' [orgs].[fullName] LIKE %s', '%'.$fts.'%');
+			array_push ($q,' OR [orgs].[bankAccount] LIKE %s', '%'.$fts.'%');
+			array_push ($q,' OR [orgs].[symbol1] LIKE %s', '%'.$fts.'%');
+			array_push ($q,' OR [orgs].[symbol2] LIKE %s', '%'.$fts.'%');
+			array_push ($q,' OR [orgs].[symbol3] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ')');
 		}
 
@@ -102,7 +116,14 @@ class FormOrg extends TableForm
 				$this->openTab ();
           $this->addColumnInput ('person');
 					$this->addColumnInput ('fullName');
+					$this->addSeparator(self::coH4);
+					$this->addColumnInput ('orgType');
+					$this->addColumnInput ('isDefault');
+					$this->addSeparator(self::coH4);
           $this->addColumnInput ('bankAccount');
+					$this->addColumnInput ('symbol1');
+					$this->addColumnInput ('symbol2');
+					$this->addColumnInput ('symbol3');
 				$this->closeTab();
 				$this->openTab (TableForm::ltNone);
 					$this->addAttachmentsViewer();

@@ -1,0 +1,18 @@
+{
+  "0": {
+    "fn": "Ostatní",
+    "sn": "Ostatní"
+  },
+  "1": {
+    "fn": "Zdravotní pojišťovna",
+    "sn": "Zdravotní"
+  },
+  "2": {
+    "fn": "Sociální zabezpečení",
+    "sn": "Sociální"
+  },
+  "3": {
+    "fn": "Finanční úřad",
+    "sn": "FÚ"
+  }
+}
