@@ -101,9 +101,6 @@ class FormEmp extends TableForm
           $this->addColumnInput ('person');
 					$this->addColumnInput ('fullName');
           $this->addColumnInput ('personalId');
-
-          $this->addColumnInput ('healthIns');
-
 					$this->addSeparator(self::coH4);
           $this->addColumnInput ('slrBankAccount');
           $this->addColumnInput ('slrSymbol1');

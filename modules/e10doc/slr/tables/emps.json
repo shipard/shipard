@@ -8,7 +8,6 @@
     {"id": "note", "name": "Poznámka", "type": "string", "len": 160},
 
     {"id": "personalId", "name": "Osobní číslo", "type": "string", "len": 12},
-	  {"id": "healthIns", "name": "Zdravotní pojišťovna", "type": "int", "reference": "e10doc.slr.orgs"},
     {"id": "slrBankAccount", "name": "Bankovní účet pro mzdu", "type": "string", "len": 40, "comboTable": "e10.persons.personsBA"},
     {"id": "slrSymbol1", "name": "Variabilní symbol", "type": "string", "len": 20},
     {"id": "slrSymbol2", "name": "Specifický symbol", "type": "string", "len": 20},

@@ -118,7 +118,6 @@ class FormOrg extends TableForm
 					$this->addColumnInput ('fullName');
 					$this->addSeparator(self::coH4);
 					$this->addColumnInput ('orgType');
-					$this->addColumnInput ('isDefault');
 					$this->addSeparator(self::coH4);
           $this->addColumnInput ('bankAccount');
 					$this->addColumnInput ('symbol1');

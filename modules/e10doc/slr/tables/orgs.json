@@ -9,7 +9,6 @@
 
 		{"id": "orgType", "name": "Typ instituce", "type": "enumInt",
 			"enumCfg": {"cfgItem": "e10doc.slr.orgTypes", "cfgValue": "", "cfgText": "fn"}},
-		{"id": "isDefault", "name": "Výchozí", "type": "logical"},
 
     {"id": "bankAccount", "name": "Bankovní účet", "type": "string", "len": 40, "comboViewer": "combo", "comboTable": "e10.persons.personsBA"},
     {"id": "symbol1", "name": "Variabilní symbol", "type": "string", "len": 20},
