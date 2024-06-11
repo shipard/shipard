@@ -2,14 +2,16 @@
 	"panels": {
 		"accounting": {
 			"items": {
-				"settingsLAN": {
+				"slr": {
 					"t1": "Mzdy", "object": "subMenu", "icon": "user/moneyBill",
 					"order": 9900100,
 					"subMenu": {
 						"items": {
 							"imports": {"t1": "Importy", "object": "viewer", "table": "e10doc.slr.imports", "viewer": "default", "order": 30000},
-							"personsRecs": {"t1": "Osoby", "object": "viewer", "table": "e10doc.slr.personsRecs", "viewer": "default", "order": 31000},
-							"slrItems": {"t1": "Položky", "object": "viewer", "table": "e10doc.slr.slrItems", "viewer": "default", "order": 700000, "beforeSeparator":  1}
+							"empsRecs": {"t1": "Záznamy", "object": "viewer", "table": "e10doc.slr.empsRecs", "viewer": "default", "order": 31000},
+							"slrItems": {"t1": "Položky", "object": "viewer", "table": "e10doc.slr.slrItems", "viewer": "default", "order": 700000, "beforeSeparator":  1},
+							"emps": {"t1": "Zaměstnanci", "object": "viewer", "table": "e10doc.slr.emps", "viewer": "default", "order": 90000, "beforeSeparator":  1},
+							"orgs": {"t1": "Instituce", "object": "viewer", "table": "e10doc.slr.orgs", "viewer": "default", "order": 91000}
 						}
 					}
 				}

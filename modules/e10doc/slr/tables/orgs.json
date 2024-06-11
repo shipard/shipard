@@ -1,0 +1,31 @@
+{
+	"id": "e10doc.slr.orgs", "sql": "e10doc_slr_orgs", "name": "Instituce",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+	  {"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+    {"id": "fullName", "name": "Jméno", "type": "string", "len": 140},
+    {"id": "note", "name": "Poznámka", "type": "string", "len": 160},
+
+    {"id": "bankAccount", "name": "Bankovní účet", "type": "string", "len": 40, "comboViewer": "combo", "comboTable": "e10.persons.personsBA"},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{
+			"id": "default", "class": "e10doc.slr.ViewOrgs",
+      "details": {
+        "default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.slr.ViewDetailOrg"}
+      }
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.slr.FormOrg"}
+	],
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

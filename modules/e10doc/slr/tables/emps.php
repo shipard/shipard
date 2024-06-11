@@ -7,14 +7,14 @@ use \Shipard\Viewer\TableView, \Shipard\Form\TableForm, \Shipard\Table\DbTable, 
 
 
 /**
- * class TableSlrItems
+ * class TableEmps
  */
-class TableSlrItems extends DbTable
+class TableEmps extends DbTable
 {
 	public function __construct ($dbmodel)
 	{
 		parent::__construct ($dbmodel);
-		$this->setName ('e10doc.slr.slrItems', 'e10doc_slr_slrItems', 'Mzdové položky');
+		$this->setName ('e10doc.slr.emps', 'e10doc_slr_emps', 'Zaměstnanci');
 	}
 
 	public function createHeader ($recData, $options)
@@ -30,9 +30,9 @@ class TableSlrItems extends DbTable
 
 
 /**
- * class ViewSlrItems
+ * class ViewEmps
  */
-class ViewSlrItems extends TableView
+class ViewEmps extends TableView
 {
 	public function init ()
 	{
@@ -49,15 +49,10 @@ class ViewSlrItems extends TableView
 		$listItem ['t1'] = $item['fullName'];
 
 
-		$listItem ['i1'] = ['text' => $item['importId'], 'class' => 'id'];
+		//$listItem ['i1'] = ['text' => $item['importId'], 'class' => 'id'];
 
 		$props = [];
 
-		if ($item['debsAccountIdDr'] && $item['debsAccountIdCr'])
-			$props[] = ['text' => $item['debsAccountIdDr'].' ⨉ '.$item['debsAccountIdCr'], 'class' => 'label label-info'];
-
-		if (count($props))
-			$listItem ['t2'] = $props;
 
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
@@ -70,33 +65,32 @@ class ViewSlrItems extends TableView
 
 		$q = [];
 
-    array_push ($q, 'SELECT [slrItems].*,');
-		array_push ($q, ' accDr.debsAccountId AS debsAccountIdDr,');
-		array_push ($q, ' accCr.debsAccountId AS debsAccountIdCr');
-		array_push ($q, ' FROM [e10doc_slr_slrItems] AS [slrItems]');
-		array_push ($q, ' LEFT JOIN [e10_witems_items] AS accDr ON slrItems.accItemDr = accDr.ndx');
-		array_push ($q, ' LEFT JOIN [e10_witems_items] AS accCr ON slrItems.accItemCr = accCr.ndx');
+    array_push ($q, 'SELECT [emps].* ');
+		array_push ($q, ' FROM [e10doc_slr_emps] AS [emps]');
+		array_push ($q, '');
+		array_push ($q, '');
+		array_push ($q, '');
+		array_push ($q, '');
 		array_push ($q, ' WHERE 1');
 
 		// -- fulltext
 		if ($fts != '')
 		{
 			array_push ($q, ' AND (');
-			array_push ($q,' [imports].[fullNname] LIKE %s', '%'.$fts.'%');
-			array_push ($q,' OR [imports].[shortNname] LIKE %s', '%'.$fts.'%');
+			array_push ($q,' [emps].[fullNname] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ')');
 		}
 
-		$this->queryMain ($q, '[slrItems].', ['[fullName]', '[ndx]']);
+		$this->queryMain ($q, '[emps].', ['[fullName]', '[ndx]']);
 		$this->runQuery ($q);
 	}
 }
 
 
 /**
- * class FormSlrItem
+ * class FormEmp
  */
-class FormSlrItem extends TableForm
+class FormEmp extends TableForm
 {
 	public function renderForm ()
 	{
@@ -104,18 +98,20 @@ class FormSlrItem extends TableForm
 		$this->setFlag ('maximize', 1);
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
-		$tabs ['tabs'][] = ['text' => 'Položka', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Zaměstnanec', 'icon' => 'system/formHeader'];
 		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);
 				$this->openTab ();
+          $this->addColumnInput ('person');
 					$this->addColumnInput ('fullName');
-					$this->addColumnInput ('shortName');
-					$this->addColumnInput ('importId');
-					$this->addSeparator(self::coH4);
-					$this->addColumnInput ('accItemDr');
-					$this->addColumnInput ('accItemCr');
+          $this->addColumnInput ('personalId');
+
+          $this->addColumnInput ('healthIns');
+
+          $this->addColumnInput ('slrBankAccount');
+          $this->addColumnInput ('slrCentre');
 				$this->closeTab();
 				$this->openTab (TableForm::ltNone);
 					$this->addAttachmentsViewer();
@@ -123,13 +119,27 @@ class FormSlrItem extends TableForm
 			$this->closeTabs ();
 		$this->closeForm ();
 	}
+
+	public function comboParams ($srcTableId, $srcColumnId, $allRecData, $recData)
+	{
+		if ($srcTableId === 'e10doc.slr.orgs' && $srcColumnId === 'slrBankAccount')
+		{
+			$cp = [
+				'personNdx' => strval ($allRecData ['recData']['person'])
+			];
+
+			return $cp;
+		}
+
+		return parent::comboParams ($srcTableId, $srcColumnId, $allRecData, $recData);
+	}
 }
 
 
 /**
- * Class ViewDetailSlrItem
+ * Class ViewDetailEmp
  */
-class ViewDetailSlrItem extends TableViewDetail
+class ViewDetailEmp extends TableViewDetail
 {
 	public function createDetailContent ()
 	{

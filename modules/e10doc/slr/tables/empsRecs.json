@@ -1,0 +1,28 @@
+{
+	"id": "e10doc.slr.empsRecs", "sql": "e10doc_slr_empsRecs", "name": "Mzdové podklady zaměstnanců",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "import", "name": "Import", "type": "int", "reference": "e10doc.slr.imports"},
+    {"id": "emp", "name": "Zaměstnanec", "type": "int", "reference": "e10doc.slr.emps"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "rows", "class": "e10.base.ListRows", "name": "Řádky", "table": "e10doc.slr.empsRecsRows", "queryColumn": "empsRec", "orderColumn": "rowOrder"}
+  ],
+
+	"views": [
+		{
+			"id": "default", "class": "e10doc.slr.ViewEmpsRecs",
+      "details": {
+        "default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.slr.ViewDetailEmpRec"}
+      }
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.slr.FormEmpRec"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

@@ -12,7 +12,7 @@ class ImportEngine extends Utility
 {
   var $importNdx = 0;
 
-  var $persons = [];
+  var $emps = [];
   var $slrItems = [];
 
 
@@ -53,94 +53,119 @@ class ImportEngine extends Utility
     }
 
     $data = Json::decode($dataStr);
-    if (!$data || !isset($data['Shipard']['RozuctPolozka']))
+    if (!$data || !isset($data['Shipard']))
     {
       return;
     }
 
-    $this->db()->query('DELETE [e10doc_slr_personsRecsRows] FROM [e10doc_slr_personsRecsRows] ',
-        ' INNER JOIN e10doc_slr_personsRecs ON  e10doc_slr_personsRecs.ndx = e10doc_slr_personsRecsRows.personsRec',
-        ' WHERE [e10doc_slr_personsRecs].[import] = %i', $this->importNdx);
-    $this->db()->query('DELETE FROM [e10doc_slr_personsRecs] WHERE [import] = %i', $this->importNdx);
+    //$this->db()->query('DELETE FROM e10doc_slr_slrItems');
+    //$this->db()->query('DELETE FROM e10doc_slr_emps');
 
-    foreach ($data['Shipard']['RozuctPolozka'] as $oneItem)
+    $this->db()->query('DELETE [e10doc_slr_empsRecsRows] FROM [e10doc_slr_empsRecsRows] ',
+        ' INNER JOIN e10doc_slr_empsRecs ON  e10doc_slr_empsRecs.ndx = e10doc_slr_empsRecsRows.empsRec',
+        ' WHERE [e10doc_slr_empsRecs].[import] = %i', $this->importNdx);
+    $this->db()->query('DELETE FROM [e10doc_slr_empsRecs] WHERE [import] = %i', $this->importNdx);
+
+    foreach ($data['Shipard'] as $oneItem)
     {
       if ($this->app()->debug)
         echo "   -- ".json_encode($oneItem)."\n";
 
-      $personRecData = $this->loadPerson($oneItem['OsCislo']);
+      $empRecData = $this->loadEmp($oneItem['OsCislo']);
       $slrItemRecData = $this->loadSlrItem($oneItem['MzPolozka'], $oneItem['Popis']);
 
-      if (!$personRecData || !$slrItemRecData)
+      if (!$empRecData || !$slrItemRecData)
         continue;
 
-      $this->addOneItem($personRecData['ndx'], $slrItemRecData['ndx'], $oneItem);
+      $this->addOneItem($empRecData['ndx'], $slrItemRecData['ndx'], $oneItem);
     }
   }
 
-  protected function addOneItem($personNdx, $slrItemNdx, $item)
+  protected function addOneItem($empNdx, $slrItemNdx, $item)
   {
-    $personsRecNdx = 0;
-    $personRecRecData = $this->db()->query('SELECT * FROM [e10doc_slr_personsRecs] WHERE',
-                                    ' [person] = %i', $personNdx,
+    $empRecNdx = 0;
+    $empRecRecData = $this->db()->query('SELECT * FROM [e10doc_slr_empsRecs] WHERE',
+                                    ' [emp] = %i', $empNdx,
                                     ' AND [import] = %i', $this->importNdx)->fetch();
-    if ($personRecRecData)
+    if ($empRecRecData)
     {
-      $personsRecNdx = $personRecRecData['ndx'];
+      $empRecNdx = $empRecRecData['ndx'];
     }
     else
     {
-      $newPersonRec = [
-         'person' => $personNdx,
+      $newEmpRec = [
+         'emp' => $empNdx,
          'import' => $this->importNdx,
          'docState' => 1000, 'docStateMain' => 0,
       ];
-      $this->db()->query('INSERT INTO [e10doc_slr_personsRecs]', $newPersonRec);
+      $this->db()->query('INSERT INTO [e10doc_slr_empsRecs]', $newEmpRec);
 
-      $personsRecNdx = $this->db()->getInsertId ();
+      $empRecNdx = $this->db()->getInsertId ();
     }
 
     $newRow = [
       'rowOrder' => 100,
-      'personsRec' => $personsRecNdx,
+      'empsRec' => $empRecNdx,
       'slrItem' => $slrItemNdx,
       'amount' => $item['Castka'],
     ];
 
-    $this->db()->query('INSERT INTO [e10doc_slr_personsRecsRows]', $newRow);
+    $this->db()->query('INSERT INTO [e10doc_slr_empsRecsRows]', $newRow);
   }
 
-  protected function loadPerson($personalId)
+  protected function loadEmp($personalId)
   {
-    if (array_key_exists($personalId, $this->persons))
-      return $this->persons[$personalId];
+    if (array_key_exists($personalId, $this->emps))
+      return $this->emps[$personalId];
 
-    $personRecData = NULL;
-    $personsRows = $this->db()->query('SELECT * FROM [e10_persons_persons] WHERE [personalId] = %s', $personalId,
-                                        ' AND [docState] != %i', 9800);
+    $empRecData = NULL;
+    $empsRows = $this->db()->query('SELECT * FROM [e10doc_slr_emps] WHERE [personalId] = %s', $personalId,
+                                       ' AND [docState] != %i', 9800);
 
     $cnt = 0;
-    foreach ($personsRows as $r)
+    foreach ($empsRows as $r)
     {
       if (!$cnt)
-        $personRecData = $r->toArray();
+        $empRecData = $r->toArray();
       $cnt++;
     }
 
     if ($cnt === 1)
     {
-      $this->persons[$personalId] = $personRecData;
-      return $this->persons[$personalId];
+      $this->emps[$personalId] = $empRecData;
+      return $this->emps[$personalId];
     }
 
     if ($cnt === 0)
     {
-      $this->err('Neznámé osobní číslo `'.$personalId.'`');
-      $this->persons[$personalId] = NULL;
-      return $this->persons[$personalId];
+      $personRecData = NULL;
+      $personRecData = $this->db()->query('SELECT * FROM [e10_persons_persons] WHERE [personalId] = %s', $personalId,
+                                          ' AND [docState] != %i', 9800)->fetch();
+      if ($personRecData)
+      {
+        $newEmp = [
+          'fullName' => $personRecData['fullName'],
+          'personalId' => $personalId,
+          'docState' => 1000, 'docStateMain' => 0,
+        ];
+      }
+      else
+      {
+        $newEmp = [
+          'fullName' => 'Zaměstnanec č. `'.$personalId.'`',
+          'personalId' => $personalId,
+          'docState' => 1000, 'docStateMain' => 0,
+        ];
+      }
+
+      $this->db()->query('INSERT INTO [e10doc_slr_emps]', $newEmp);
+      $newEmpRecNdx = $this->db()->getInsertId ();
+      $this->emps[$personalId] = $this->app()->loadItem($newEmpRecNdx, 'e10doc.slr.emps');
+
+      return $this->emps[$personalId];
     }
 
-    $this->err('Existuje více osob s osobním číslem `'.$personalId.'`');
+    $this->err('Existuje více zaměstnanců s osobním číslem `'.$personalId.'`');
 
     return NULL;
   }

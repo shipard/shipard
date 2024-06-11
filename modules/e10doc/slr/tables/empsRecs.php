@@ -5,14 +5,14 @@ use \Shipard\Viewer\TableView, \Shipard\Form\TableForm, \Shipard\Table\DbTable, 
 
 
 /**
- * class TablePersonsRecs
+ * class TableEmpsRecs
  */
-class TablePersonsRecs extends DbTable
+class TableEmpsRecs extends DbTable
 {
 	public function __construct ($dbmodel)
 	{
 		parent::__construct ($dbmodel);
-		$this->setName ('e10doc.slr.personsRecs', 'e10doc_slr_personsRecs', 'Mzdové podklady Osob');
+		$this->setName ('e10doc.slr.empsRecs', 'e10doc_slr_empsRecs', 'Mzdové podklady zaměstnanců');
 	}
 
 	public function createHeader ($recData, $options)
@@ -28,9 +28,9 @@ class TablePersonsRecs extends DbTable
 
 
 /**
- * class ViewPersonsRecs
+ * class ViewEmpsRecs
  */
-class ViewPersonsRecs extends TableView
+class ViewEmpsRecs extends TableView
 {
 	public function init ()
 	{
@@ -42,19 +42,14 @@ class ViewPersonsRecs extends TableView
 	public function renderRow ($item)
 	{
 		$listItem ['pk'] = $item ['ndx'];
-		//$listItem ['t1'] = $item['name'];
-
+		$listItem ['t1'] = $item['personName'];
 
 		$listItem ['i1'] = ['text' => '#'.$item['ndx'], 'class' => 'id'];
 
 		$props = [];
-
-    /*
-		$dt = $this->docsTypes[$item['docType']];
-		$props[] = ['text' => $dt['pluralName'], 'icon' => $dt['icon'], 'class' => 'label label-info'];
+		$props[] = ['text' => $item['calendarYear'].'/'.$item['calendarMonth'], 'icon' => 'system/iconCalendar', 'class' => 'label label-info'];
 
 		$listItem ['t2'] = $props;
-    */
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
 		return $listItem;
@@ -65,33 +60,32 @@ class ViewPersonsRecs extends TableView
 		$fts = $this->fullTextSearch ();
 
 		$q = [];
-
-    array_push ($q, 'SELECT [personsRecs].* ');
-		array_push ($q, ' FROM [e10doc_slr_personsRecs] AS [personsRecs]');
-		array_push ($q, '');
-		array_push ($q, '');
-		array_push ($q, '');
-		array_push ($q, '');
+    array_push ($q, 'SELECT [empsRecs].*,');
+		array_push ($q, ' emps.fullName AS personName,');
+		array_push ($q, ' imports.calendarYear, imports.calendarMonth');
+		array_push ($q, ' FROM [e10doc_slr_empsRecs] AS [empsRecs]');
+		array_push ($q, ' LEFT JOIN [e10doc_slr_emps] AS emps ON [empsRecs].[emp] = [emps].ndx');
+		array_push ($q, ' LEFT JOIN [e10doc_slr_imports] AS [imports] ON [empsRecs].[import] = [imports].ndx');
 		array_push ($q, ' WHERE 1');
 
 		// -- fulltext
 		if ($fts != '')
 		{
 			array_push ($q, ' AND (');
-			//array_push ($q,' [imports].[name] LIKE %s', '%'.$fts.'%');
+			array_push ($q,' [emps].[fullName] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ')');
 		}
 
-		$this->queryMain ($q, '[personsRecs].', ['[ndx]']);
+		$this->queryMain ($q, '[empsRecs].', ['[ndx]']);
 		$this->runQuery ($q);
 	}
 }
 
 
 /**
- * class FormPersonRec
+ * class FormEmpRec
  */
-class FormPersonRec extends TableForm
+class FormEmpRec extends TableForm
 {
 	public function renderForm ()
 	{
@@ -106,7 +100,7 @@ class FormPersonRec extends TableForm
 		$this->openForm ();
 			$this->openTabs ($tabs);
 				$this->openTab ();
-					$this->addColumnInput ('person');
+					$this->addColumnInput ('emp');
 					$this->addColumnInput ('import');
 				$this->closeTab();
 				$this->openTab (TableForm::ltNone);
@@ -122,12 +116,12 @@ class FormPersonRec extends TableForm
 
 
 /**
- * class ViewDetailPersonRec
+ * class ViewDetailEmpRec
  */
-class ViewDetailPersonRec extends TableViewDetail
+class ViewDetailEmpRec extends TableViewDetail
 {
 	public function createDetailContent ()
 	{
-		//$this->addDocumentCard('e10doc.slr.dc.DCImport');
+		$this->addDocumentCard('e10doc.slr.dc.DCEmpRec');
 	}
 }

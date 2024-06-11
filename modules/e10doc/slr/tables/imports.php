@@ -58,13 +58,9 @@ class ViewImports extends TableView
 		$listItem ['i1'] = ['text' => '#'.$item['ndx'], 'class' => 'id'];
 
 		$props = [];
-
-    /*
-		$dt = $this->docsTypes[$item['docType']];
-		$props[] = ['text' => $dt['pluralName'], 'icon' => $dt['icon'], 'class' => 'label label-info'];
+		$props[] = ['text' => $item['calendarYear'].'/'.$item['calendarMonth'], 'icon' => 'system/iconCalendar', 'class' => 'label label-info'];
 
 		$listItem ['t2'] = $props;
-    */
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
 		return $listItem;

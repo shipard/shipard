@@ -1,0 +1,14 @@
+{
+    "tables/e10doc.slr.emps": {
+        "fa5": "fa-id-card",
+        "fa6pro": "fa-id-card",
+        "bsi": "bi-person-badge",
+        "mdi": "badge"
+   },
+   "tables/e10doc.slr.orgs": {
+    "fa5": "fa-building",
+    "fa6pro": "fa-building",
+    "bsi": "bi-building",
+    "mdi": "business"
+    }
+}

@@ -1,15 +1,15 @@
 {
-	"id": "e10doc.slr.personsRecsRows", "sql": "e10doc_slr_personsRecsRows", "name": "Řádky mzdových podkladů Osob",
+	"id": "e10doc.slr.empsRecsRows", "sql": "e10doc_slr_empsRecsRows", "name": "Řádky mzdových podkladů zaměstnanců",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
 
-		{"id": "personsRec", "name": "Záznam Osoby", "type": "int", "reference": "e10doc.slr.personsRecs"},
+		{"id": "empsRec", "name": "Záznam", "type": "int", "reference": "e10doc.slr.empsRecs"},
 		{"id": "slrItem", "name": "Mzdová položka", "type": "int", "reference": "e10doc.slr.slrItems"},
 		{"id": "amount", "name": "Částka", "type": "money"}
 	],
 	"forms": [
-		{"id": "default", "class": "e10doc.slr.FormPersonRecRow"}
+		{"id": "default", "class": "e10doc.slr.FormEmpRecRow"}
 	],
 	"options": ["systemTable"]
 }

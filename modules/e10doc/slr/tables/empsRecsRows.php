@@ -1,25 +1,25 @@
 <?php
 namespace e10doc\slr;
-use \Shipard\Viewer\TableView, \Shipard\Form\TableForm, \Shipard\Table\DbTable, \Shipard\Viewer\TableViewDetail;
+use \Shipard\Form\TableForm, \Shipard\Table\DbTable;
 
 
 
 /**
- * class TablePersonsRecs
+ * class TableEmpsRecsRows
  */
-class TablePersonsRecsRows extends DbTable
+class TableEmpsRecsRows extends DbTable
 {
 	public function __construct ($dbmodel)
 	{
 		parent::__construct ($dbmodel);
-		$this->setName ('e10doc.slr.personsRecsRows', 'e10doc_slr_personsRecsRows', 'Řádky mzdových podkladů Osob');
+		$this->setName ('e10doc.slr.empsRecsRows', 'e10doc_slr_empsRecsRows', 'Řádky mzdových podkladů zaměstnanců');
 	}
 }
 
 /**
- * class FormPersonRecRow
+ * class FormEmpRecRow
  */
-class FormPersonRecRow extends TableForm
+class FormEmpRecRow extends TableForm
 {
 	public function renderForm ()
 	{
