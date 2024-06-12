@@ -257,6 +257,10 @@ class AccEngine extends Utility
   {
     $this->loadData();
 
+		$dbCounter = $this->app()->cfgItem ('options.e10doc-finance.slrAccDocDbCounter', 0);
+    if (!$dbCounter)
+      return;
+
     $this->rowOrder = 100;
 
     $accountingFirstDay = new \DateTime (sprintf("%04d-%02d-01", $this->importRecData['calendarYear'], $this->importRecData['calendarMonth']));
@@ -266,11 +270,11 @@ class AccEngine extends Utility
 		$newDoc = new CreateDocumentUtility ($this->app);
 		$newDoc->createDocumentHead('cmnbkp');
 
-		$newDoc->docHead['person'] = intval($this->app()->cfgItem ('options.core.ownerPerson', 0));
+		$newDoc->docHead['person'] = $this->empRecData['person'];
     $newDoc->docHead['dateAccounting'] = $accDate;
     $newDoc->docHead['dateTax'] = $accDate;
 		$newDoc->docHead['author'] = $this->app()->userNdx();
-    $newDoc->docHead['dbCounter'] = 6;
+    $newDoc->docHead['dbCounter'] = $dbCounter;
 		$newDoc->docHead['title'] = 'Mzdy '.sprintf("%04d/%02d", $this->importRecData['calendarYear'], $this->importRecData['calendarMonth']).': '.$this->empRecData['fullName'];
 
     foreach ($this->docRows as $docRow)

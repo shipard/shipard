@@ -6,6 +6,7 @@
   ],
   "config": [
     {"id": "+appSkeleton", "file": "appSkeleton.json"},
+    {"id": "+appOptions", "file": "appOptions.json"},
     {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
     {"id": "+e10doc.slr.orgTypes", "file": "orgTypes.json"},
     {"id": "+e10doc.slr.slrItemTypes", "file": "slrItemTypes.json"}

@@ -1,0 +1,8 @@
+{
+	"e10doc-finance": {
+		"options":
+			[
+				{"cfgKey": "slrAccDocDbCounter", "cfgName": "Číselná řady pro účtování Mezd", "cfgItem": "e10.docs.dbCounters.cmnbkp"}
+			]
+	}
+}
