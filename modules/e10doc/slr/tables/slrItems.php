@@ -58,8 +58,14 @@ class ViewSlrItems extends TableView
 		$props = [];
 		$props[] = ['text' => $it['fn'], 'class' => 'label label-info'];
 
+		$accItemTxt = '';
 		if ($item['debsAccountIdDr'] && $item['debsAccountIdCr'])
-			$props[] = ['text' => $item['debsAccountIdDr'].' ⨉ '.$item['debsAccountIdCr'], 'class' => 'label label-default'];
+			$accItemTxt = $item['debsAccountIdDr'].' ⨉ '.$item['debsAccountIdCr'];
+
+		if ($item['debsAccountIdBal'])
+			$accItemTxt .= ' > '.$item['debsAccountIdBal'];
+
+		$props[] = ['text' => $accItemTxt, 'class' => 'label label-default'];
 
 		if (count($props))
 			$listItem ['t2'] = $props;
@@ -77,10 +83,12 @@ class ViewSlrItems extends TableView
 
     array_push ($q, 'SELECT [slrItems].*,');
 		array_push ($q, ' accDr.debsAccountId AS debsAccountIdDr,');
-		array_push ($q, ' accCr.debsAccountId AS debsAccountIdCr');
+		array_push ($q, ' accCr.debsAccountId AS debsAccountIdCr,');
+		array_push ($q, ' accBal.debsAccountId AS debsAccountIdBal');
 		array_push ($q, ' FROM [e10doc_slr_slrItems] AS [slrItems]');
 		array_push ($q, ' LEFT JOIN [e10_witems_items] AS accDr ON slrItems.accItemDr = accDr.ndx');
 		array_push ($q, ' LEFT JOIN [e10_witems_items] AS accCr ON slrItems.accItemCr = accCr.ndx');
+		array_push ($q, ' LEFT JOIN [e10_witems_items] AS accBal ON slrItems.accItemBal = accBal.ndx');
 		array_push ($q, ' WHERE 1');
 
 		// -- fulltext
@@ -127,6 +135,9 @@ class FormSlrItem extends TableForm
 					$this->addSeparator(self::coH4);
 					$this->addColumnInput ('accItemDr');
 					$this->addColumnInput ('accItemCr');
+					$this->addColumnInput ('accItemBal');
+					$this->addSeparator(self::coH4);
+					$this->addColumnInput ('dueDay');
 				$this->closeTab();
 				$this->openTab (TableForm::ltNone);
 					$this->addAttachmentsViewer();
