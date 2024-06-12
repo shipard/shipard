@@ -6,6 +6,8 @@
 		{"id": "import", "name": "Import", "type": "int", "reference": "e10doc.slr.imports"},
     {"id": "emp", "name": "Zaměstnanec", "type": "int", "reference": "e10doc.slr.emps"},
 
+		{"id": "docAcc", "name": "Účetní doklad", "type": "int", "reference": "e10doc.core.heads"},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],

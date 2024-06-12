@@ -3,6 +3,7 @@ namespace e10doc\slr\libs;
 use \Shipard\Base\Utility;
 use \e10\base\libs\UtilsBase;
 use \Shipard\Utils\Json;
+use \e10doc\core\libs\CreateDocumentUtility;
 
 
 /**
@@ -18,6 +19,7 @@ class AccEngine extends Utility
 
   var $slrOrgRecData = NULL;
 
+  var $nextMonthFirstDay = NULL;
   var $rows = [];
   var $docRows = [];
 
@@ -25,6 +27,8 @@ class AccEngine extends Utility
   var $detailOverviewHeader = [];
 
   var $slrItemTypes;
+
+  var $rowOrder;
 
   public function setEmpRec($empRecNdx)
   {
@@ -44,7 +48,7 @@ class AccEngine extends Utility
     $q = [];
     array_push ($q, 'SELECT [recsRows].*, ');
 		array_push ($q, ' slrItems.fullName AS srlItemName, slrItems.itemType AS slrItemType, ');
-    array_push ($q, ' slrItems.accItemDr, slrItems.accItemCr, slrItems.moneyOrg AS slrOrg');
+    array_push ($q, ' slrItems.accItemDr, slrItems.accItemCr, slrItems.moneyOrg AS slrOrg, slrItems.fullName AS slrItemName');
 		array_push ($q, ' FROM [e10doc_slr_empsRecsRows] AS [recsRows]');
 		array_push ($q, ' LEFT JOIN [e10doc_slr_slrItems] AS slrItems ON [recsRows].slrItem = slrItems.ndx');
 		array_push ($q, ' WHERE 1');
@@ -77,6 +81,12 @@ class AccEngine extends Utility
         $item['symbol1'] = $this->empRecData['slrSymbol1'];
         $item['symbol2'] = $this->empRecData['slrSymbol2'];
         $item['symbol3'] = $this->empRecData['slrSymbol3'];
+        $item['person'] = $this->empRecData['person'];
+
+        $dueDays = 10;
+        $dateDue = new \DateTime($this->nextMonthFirstDay->format('Y-m-d'));
+        $dateDue->add(new \DateInterval('P'.$dueDays.'D'));
+        $item['dateDue'] = $dateDue;
 
         if ($item['symbol1'] === '')
           $item['symbol1'] = $this->empRecData['personalId'];
@@ -97,6 +107,12 @@ class AccEngine extends Utility
           $item['symbol1'] = $paymentOrgRecData['symbol1'];
           $item['symbol2'] = $paymentOrgRecData['symbol2'];
           $item['symbol3'] = $paymentOrgRecData['symbol3'];
+          $item['person'] = $paymentOrgRecData['person'];
+
+          $dueDays = 15;
+          $dateDue = new \DateTime($this->nextMonthFirstDay->format('Y-m-d'));
+          $dateDue->add(new \DateInterval('P'.$dueDays.'D'));
+          $item['dateDue'] = $dateDue;
 
           $item['symbol2'] .= sprintf("%02d%02d", ($this->importRecData['calendarYear'] - 2000), $this->importRecData['calendarMonth']);
         }
@@ -124,9 +140,35 @@ class AccEngine extends Utility
   {
     foreach ($this->rows as $r)
     {
-      $docRow = [
-
+      // -- debit / MD
+      $docRowDr = [
+        'item' => $r['accItemDr'],
+        'debit' => $r['amount'],
+        'person' => $this->empRecData['person'], //$r['person'] ?? 0,
+        'text' => $r['slrItemName'],
       ];
+
+      // -- credit / DAL
+      $docRowCr = [
+        'item' => $r['accItemCr'],
+        'credit' => $r['amount'],
+        'person' => $r['person'] ?? 0,
+        'text' => $r['slrItemName'],
+      ];
+
+      if ($r['doPayment'])
+      {
+        $docRowCr['bankAccount'] = $r['bankAccount'];
+        $docRowCr['symbol1'] = $r['symbol1'];
+        $docRowCr['symbol2'] = $r['symbol2'];
+        $docRowCr['symbol3'] = $r['symbol3'];
+
+        if (isset($r['dateDue']))
+          $docRowCr['dateDue'] = $r['dateDue'];
+      }
+
+      $this->docRows[] = $docRowDr;
+      $this->docRows[] = $docRowCr;
     }
   }
 
@@ -160,7 +202,6 @@ class AccEngine extends Utility
           $item['slrItem'] = array_merge($item['slrItem'], $r['info']);
         }
 
-
         $this->detailOverviewTable[] = $item;
 
         $sitSum += $r['amount'];
@@ -186,13 +227,61 @@ class AccEngine extends Utility
       '_options' => ['__afterSeparator' => 'separator', 'class' => 'sumtotal'],
     ];
 
-
     $this->detailOverviewHeader = ['#' => '#', 'slrItem' => 'Položka', 'amount' => ' Částka'];
   }
 
   public function loadData()
   {
+    $accountingFirstDay = new \DateTime (sprintf("%04d-%02d-01", $this->importRecData['calendarYear'], $this->importRecData['calendarMonth']));
+    $this->nextMonthFirstDay = new \DateTime($accountingFirstDay->format('Y-m-t'));
+    $this->nextMonthFirstDay->add(new \DateInterval('P1D'));
+
     $this->loadRows();
     $this->createOverview();
+    $this->createDocRows();
+  }
+
+  public function generateAccDoc()
+  {
+    $this->loadData();
+
+    $this->rowOrder = 100;
+
+    $accountingFirstDay = new \DateTime (sprintf("%04d-%02d-01", $this->importRecData['calendarYear'], $this->importRecData['calendarMonth']));
+    $accDate = new \DateTime($accountingFirstDay->format('Y-m-t'));
+    $accDate->add(new \DateInterval('P10D'));
+
+		$newDoc = new CreateDocumentUtility ($this->app);
+		$newDoc->createDocumentHead('cmnbkp');
+
+		$newDoc->docHead['person'] = intval($this->app()->cfgItem ('options.core.ownerPerson', 0));
+    $newDoc->docHead['dateAccounting'] = $accDate;
+    $newDoc->docHead['dateTax'] = $accDate;
+		$newDoc->docHead['author'] = $this->app()->userNdx();
+    $newDoc->docHead['dbCounter'] = 6;
+		$newDoc->docHead['title'] = 'Mzdy '.sprintf("%04d/%02d", $this->importRecData['calendarYear'], $this->importRecData['calendarMonth']).': '.$this->empRecData['fullName'];
+
+    foreach ($this->docRows as $docRow)
+    {
+      $this->addDocRowDebit($newDoc, $docRow);
+    }
+
+		$docNdx = $newDoc->saveDocument(CreateDocumentUtility::sdsConfirmed, intval($this->empRecRecData['docAcc']));
+
+    $this->db()->query('UPDATE [e10doc_slr_empsRecs] SET [docAcc] = %i', $docNdx, ' WHERE [ndx] = %i', $this->empRecNdx);
+  }
+
+  public function addDocRowDebit(CreateDocumentUtility $newDoc, $docRow)
+  {
+    $newRow = $newDoc->createDocumentRow();
+    foreach ($docRow as $key => $value)
+      $newRow[$key] = $value;
+
+    $newRow['operation'] = '1099998';
+    $newRow['rowOrder'] = $this->rowOrder;
+
+    $this->rowOrder += 100;
+
+    $newDoc->addDocumentRow ($newRow);
   }
 }
