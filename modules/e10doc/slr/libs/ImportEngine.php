@@ -62,9 +62,9 @@ class ImportEngine extends Utility
     //$this->db()->query('DELETE FROM e10doc_slr_emps');
 
     $this->db()->query('DELETE [e10doc_slr_empsRecsRows] FROM [e10doc_slr_empsRecsRows] ',
-        ' INNER JOIN e10doc_slr_empsRecs ON  e10doc_slr_empsRecs.ndx = e10doc_slr_empsRecsRows.empsRec',
+        ' INNER JOIN e10doc_slr_empsRecs ON e10doc_slr_empsRecs.ndx = e10doc_slr_empsRecsRows.empsRec',
         ' WHERE [e10doc_slr_empsRecs].[import] = %i', $this->importNdx);
-    $this->db()->query('DELETE FROM [e10doc_slr_empsRecs] WHERE [import] = %i', $this->importNdx);
+    $this->db()->query('DELETE FROM [e10doc_slr_empsRecs] WHERE [import] = %i', $this->importNdx, ' AND [docAcc] = %i', 0);
 
     foreach ($data['Shipard'] as $oneItem)
     {

@@ -92,7 +92,7 @@ class AccEngine extends Utility
           $item['symbol1'] = $this->empRecData['personalId'];
 
         if ($this->importRecData)
-          $item['symbol2'] .= sprintf("%02d%02d", ($this->importRecData['calendarYear'] - 2000), $this->importRecData['calendarMonth']);
+          $item['symbol2'] .= sprintf("%04d%02d", $this->importRecData['calendarYear'], $this->importRecData['calendarMonth']);
       }
       elseif ($sit['payee'] === 2)
       { // org
@@ -114,7 +114,7 @@ class AccEngine extends Utility
           $dateDue->add(new \DateInterval('P'.$dueDays.'D'));
           $item['dateDue'] = $dateDue;
 
-          $item['symbol2'] .= sprintf("%02d%02d", ($this->importRecData['calendarYear'] - 2000), $this->importRecData['calendarMonth']);
+          $item['symbol2'] .= sprintf("%04d%02d", $this->importRecData['calendarYear'], $this->importRecData['calendarMonth']);
         }
       }
 
@@ -138,37 +138,49 @@ class AccEngine extends Utility
 
   protected function createDocRows()
   {
-    foreach ($this->rows as $r)
+    foreach ($this->slrItemTypes as $sitNdx => $sit)
     {
-      // -- debit / MD
-      $docRowDr = [
-        'item' => $r['accItemDr'],
-        'debit' => $r['amount'],
-        'person' => $this->empRecData['person'], //$r['person'] ?? 0,
-        'text' => $r['slrItemName'],
-      ];
-
-      // -- credit / DAL
-      $docRowCr = [
-        'item' => $r['accItemCr'],
-        'credit' => $r['amount'],
-        'person' => $r['person'] ?? 0,
-        'text' => $r['slrItemName'],
-      ];
-
-      if ($r['doPayment'])
+      $cnt = 0;
+      $sitSum = 0;
+      foreach ($this->rows as $r)
       {
-        $docRowCr['bankAccount'] = $r['bankAccount'];
-        $docRowCr['symbol1'] = $r['symbol1'];
-        $docRowCr['symbol2'] = $r['symbol2'];
-        $docRowCr['symbol3'] = $r['symbol3'];
+        if ($r['slrItemType'] !== $sitNdx)
+          continue;
 
-        if (isset($r['dateDue']))
-          $docRowCr['dateDue'] = $r['dateDue'];
+        // -- debit / MD
+        $docRowDr = [
+          'item' => $r['accItemDr'],
+          'debit' => $r['amount'],
+          'person' => $this->empRecData['person'],
+          'text' => $r['slrItemName'],
+        ];
+
+        // -- credit / DAL
+        $docRowCr = [
+          'item' => $r['accItemCr'],
+          'credit' => $r['amount'],
+          'person' => $r['person'] ?? 0,
+          'text' => $r['slrItemName'],
+        ];
+
+        if ($r['doPayment'])
+        {
+          $docRowCr['bankAccount'] = $r['bankAccount'];
+          $docRowCr['symbol1'] = $r['symbol1'];
+          $docRowCr['symbol2'] = $r['symbol2'];
+          $docRowCr['symbol3'] = $r['symbol3'];
+
+          if (isset($r['dateDue']))
+            $docRowCr['dateDue'] = $r['dateDue'];
+        }
+        else
+        {
+          $docRowCr['person'] = $this->empRecData['person'];
+        }
+
+        $this->docRows[] = $docRowDr;
+        $this->docRows[] = $docRowCr;
       }
-
-      $this->docRows[] = $docRowDr;
-      $this->docRows[] = $docRowCr;
     }
   }
 
