@@ -10,6 +10,8 @@
 		{"id": "fiscalYear", "name": "Fiskální období - roční", "type": "int", "reference": "e10doc.base.fiscalyears"},
     {"id": "fiscalMonth", "name": "Fiskální období - měsíční", "type": "int", "reference": "e10doc.base.fiscalmonths"},
 
+		{"id": "docAccBal", "name": "Účetní doklad pro saldo", "type": "int", "reference": "e10doc.core.heads"},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],

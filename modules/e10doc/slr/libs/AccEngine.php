@@ -191,6 +191,51 @@ class AccEngine extends Utility
     }
   }
 
+  public function addDocBalanceRows(&$dest)
+  {
+    $this->loadData();
+
+    foreach ($this->slrItemTypes as $sitNdx => $sit)
+    {
+      foreach ($this->rows as $r)
+      {
+        if ($r['slrItemType'] !== $sitNdx)
+          continue;
+        if (!$r['accItemBal'])
+          continue;
+
+        // -- debit / MD
+        $docRowDr = [
+          'item' => $r['accItemBal'],
+          'debit' => $r['amount'],
+          'person' => 0,
+          'bankAccount' => '', 'symbol1' => '', 'symbol2' => '', 'symbol3' => '',
+        ];
+
+        // -- credit / DAL
+        $docRowCr = [
+          'item' => $r['accItemCr'],
+          'credit' => $r['amount'],
+          'person' => $r['person'] ?? 0,
+          'bankAccount' => '', 'symbol1' => '', 'symbol2' => '', 'symbol3' => '',
+        ];
+        if ($r['doPayment'])
+        {
+          $docRowCr['bankAccount'] = $r['bankAccount'];
+          $docRowCr['symbol1'] = $r['symbol1'];
+          $docRowCr['symbol2'] = $r['symbol2'];
+          $docRowCr['symbol3'] = $r['symbol3'];
+
+          if (isset($r['dateDue']))
+            $docRowCr['dateDue'] = $r['dateDue'];
+        }
+
+        $dest[] = $docRowDr;
+        $dest[] = $docRowCr;
+      }
+    }
+  }
+
   protected function createOverview()
   {
     $lastSit = -1;

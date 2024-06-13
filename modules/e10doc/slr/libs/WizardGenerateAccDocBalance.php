@@ -5,15 +5,15 @@ use \Shipard\Form\TableForm, \Shipard\Form\Wizard;
 
 
 /**
- * class WizardGenerateAccDoc
+ * class WizardGenerateAccDocBalance
  */
-class WizardGenerateAccDoc extends Wizard
+class WizardGenerateAccDocBalance extends Wizard
 {
-  var $empRecNdx = 0;
+  var $importNdx = 0;
 
 	function init()
 	{
-		$this->empRecNdx = ($this->focusedPK) ? $this->focusedPK : $this->recData['empRecNdx'];
+		$this->importNdx = ($this->focusedPK) ? $this->focusedPK : $this->recData['importNdx'];
 	}
 
 	public function doStep ()
@@ -37,12 +37,10 @@ class WizardGenerateAccDoc extends Wizard
 	{
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 
-		$this->recData['empRecNdx'] = intval ($this->app()->testGetParam('empRecNdx'));
-		if (!$this->recData['empRecNdx'])
-			$this->recData['empRecNdx'] = $this->focusedPK;
+		$this->recData['importNdx'] = $this->focusedPK;
 
 		$this->openForm ();
-			$this->addInput('empRecNdx', '', self::INPUT_STYLE_STRING, self::coHidden, 120);
+			$this->addInput('importNdx', '', self::INPUT_STYLE_STRING, self::coHidden, 120);
 		$this->closeForm ();
 	}
 
@@ -50,9 +48,9 @@ class WizardGenerateAccDoc extends Wizard
 	{
 		$this->init();
 
-    $ae = new \e10doc\slr\libs\AccEngine($this->app());
-    $ae->setEmpRec($this->recData['empRecNdx']);
-    $ae->generateAccDoc();
+    $ae = new \e10doc\slr\libs\AccBalanceEngine($this->app());
+    $ae->setImport($this->recData['importNdx']);
+    $ae->generateAccBalanceDoc();
 
 		$this->stepResult ['close'] = 1;
     $this->stepResult ['refreshDetail'] = 1;
@@ -65,7 +63,7 @@ class WizardGenerateAccDoc extends Wizard
 		$hdr = [];
 		$hdr ['icon'] = 'icon-refresh';
 
-		$hdr ['info'][] = ['class' => 'title', 'value' => 'Vystavit mzdový účetní doklad'];
+		$hdr ['info'][] = ['class' => 'title', 'value' => 'Vystavit účetní doklad pro závazky'];
 
 		return $hdr;
 	}
