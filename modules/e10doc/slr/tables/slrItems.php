@@ -59,11 +59,10 @@ class ViewSlrItems extends TableView
 		$props[] = ['text' => $it['fn'], 'class' => 'label label-info'];
 
 		$accItemTxt = '';
-		if ($item['debsAccountIdDr'] && $item['debsAccountIdCr'])
+		if ($item['debsAccountIdDr'] && $item['debsAccountIdCr'] && $item['debsAccountIdBal'])
+			$accItemTxt = $item['debsAccountIdDr'].' ⨉ '.$item['debsAccountIdBal'].' > '.$item['debsAccountIdCr'];
+		elseif ($item['debsAccountIdDr'] && $item['debsAccountIdCr'])
 			$accItemTxt = $item['debsAccountIdDr'].' ⨉ '.$item['debsAccountIdCr'];
-
-		if ($item['debsAccountIdBal'])
-			$accItemTxt .= ' > '.$item['debsAccountIdBal'];
 
 		$props[] = ['text' => $accItemTxt, 'class' => 'label label-default'];
 
@@ -134,8 +133,8 @@ class FormSlrItem extends TableForm
 						$this->addColumnInput ('moneyOrg');
 					$this->addSeparator(self::coH4);
 					$this->addColumnInput ('accItemDr');
-					$this->addColumnInput ('accItemCr');
 					$this->addColumnInput ('accItemBal');
+					$this->addColumnInput ('accItemCr');
 					$this->addSeparator(self::coH4);
 					$this->addColumnInput ('dueDay');
 				$this->closeTab();

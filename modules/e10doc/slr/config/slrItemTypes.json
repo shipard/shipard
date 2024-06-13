@@ -27,17 +27,20 @@
   "30": {
     "fn": "Srážky",
     "sn": "Srážky",
-    "payee": 2
+    "payee": 2,
+    "nonEmpCosts": 1
   },
   "35": {
     "fn": "Exekuce",
     "sn": "Exekuce",
-    "payee": 2
+    "payee": 2,
+    "nonEmpCosts": 1
   },
   "40": {
     "fn": "Čistá mzda",
     "sn": "Čistá mzda",
-    "payee": 1
+    "payee": 1,
+    "nonEmpCosts": 1
   },
   "45": {
     "fn": "Zdravotní pojištění - zaměstnavatel",

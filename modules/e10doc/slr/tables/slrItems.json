@@ -16,7 +16,7 @@
 
 		{"id": "accItemDr", "name": "Účtopoložka MD", "type": "int", "reference": "e10.witems.items", "comboViewer": "combo"},
     {"id": "accItemCr", "name": "Účtopoložka DAL", "type": "int", "reference": "e10.witems.items", "comboViewer": "combo"},
-    {"id": "accItemBal", "name": "Účtopoložka pro saldokonto", "type": "int", "reference": "e10.witems.items", "comboViewer": "combo"},
+    {"id": "accItemBal", "name": "Spojovací účtopoložka pro saldo", "type": "int", "reference": "e10.witems.items", "comboViewer": "combo"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

@@ -48,7 +48,7 @@ class AccEngine extends Utility
     $q = [];
     array_push ($q, 'SELECT [recsRows].*, ');
 		array_push ($q, ' slrItems.fullName AS srlItemName, slrItems.itemType AS slrItemType, ');
-    array_push ($q, ' slrItems.accItemDr, slrItems.accItemCr, slrItems.moneyOrg AS slrOrg, slrItems.fullName AS slrItemName');
+    array_push ($q, ' slrItems.accItemDr, slrItems.accItemCr, slrItems.accItemBal, slrItems.moneyOrg AS slrOrg, slrItems.fullName AS slrItemName');
 		array_push ($q, ' FROM [e10doc_slr_empsRecsRows] AS [recsRows]');
 		array_push ($q, ' LEFT JOIN [e10doc_slr_slrItems] AS slrItems ON [recsRows].slrItem = slrItems.ndx');
 		array_push ($q, ' WHERE 1');
@@ -163,19 +163,26 @@ class AccEngine extends Utility
           'text' => $r['slrItemName'],
         ];
 
-        if ($r['doPayment'])
+        if ($r['accItemBal'])
         {
-          $docRowCr['bankAccount'] = $r['bankAccount'];
-          $docRowCr['symbol1'] = $r['symbol1'];
-          $docRowCr['symbol2'] = $r['symbol2'];
-          $docRowCr['symbol3'] = $r['symbol3'];
-
-          if (isset($r['dateDue']))
-            $docRowCr['dateDue'] = $r['dateDue'];
+          $docRowCr['item'] = $r['accItemBal'];
         }
         else
         {
-          $docRowCr['person'] = $this->empRecData['person'];
+          if ($r['doPayment'])
+          {
+            $docRowCr['bankAccount'] = $r['bankAccount'];
+            $docRowCr['symbol1'] = $r['symbol1'];
+            $docRowCr['symbol2'] = $r['symbol2'];
+            $docRowCr['symbol3'] = $r['symbol3'];
+
+            if (isset($r['dateDue']))
+              $docRowCr['dateDue'] = $r['dateDue'];
+          }
+          else
+          {
+            $docRowCr['person'] = $this->empRecData['person'];
+          }
         }
 
         $this->docRows[] = $docRowDr;
@@ -217,7 +224,7 @@ class AccEngine extends Utility
         $this->detailOverviewTable[] = $item;
 
         $sitSum += $r['amount'];
-        if ($sitNdx >= 40)
+        if (!isset($sit['nonEmpCosts']))
           $empSum += $r['amount'];
 
         $cnt++;
@@ -265,7 +272,6 @@ class AccEngine extends Utility
 
     $accountingFirstDay = new \DateTime (sprintf("%04d-%02d-01", $this->importRecData['calendarYear'], $this->importRecData['calendarMonth']));
     $accDate = new \DateTime($accountingFirstDay->format('Y-m-t'));
-    $accDate->add(new \DateInterval('P10D'));
 
 		$newDoc = new CreateDocumentUtility ($this->app);
 		$newDoc->createDocumentHead('cmnbkp');
