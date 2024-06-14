@@ -92,7 +92,8 @@ class FormEmp extends TableForm
 		$this->setFlag ('maximize', 1);
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
-		$tabs ['tabs'][] = ['text' => 'Zaměstnanec', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Zaměstn.', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Instituce', 'icon' => 'tables/e10doc.slr.orgs'];
 		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		$this->openForm ();
@@ -109,6 +110,9 @@ class FormEmp extends TableForm
 					$this->addSeparator(self::coH4);
           $this->addColumnInput ('slrCentre');
 				$this->closeTab();
+				$this->openTab (TableForm::ltNone);
+					$this->addList ('orgs');
+				$this->closeTab ();
 				$this->openTab (TableForm::ltNone);
 					$this->addAttachmentsViewer();
 				$this->closeTab ();

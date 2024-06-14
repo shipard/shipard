@@ -21,6 +21,9 @@
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
+	"lists": [
+		{"id": "orgs", "class": "e10.base.ListRows", "name": "Řádky", "table": "e10doc.slr.empsOrgs", "queryColumn": "emp", "orderColumn": "rowOrder"}
+  ],
 	"views": [
 		{
 			"id": "default", "class": "e10doc.slr.ViewEmps",

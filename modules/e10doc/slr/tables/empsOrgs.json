@@ -1,0 +1,19 @@
+{
+	"id": "e10doc.slr.empsOrgs", "sql": "e10doc_slr_empsOrgs", "name": "Nastavení institucí zaměstnanců",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+
+    {"id": "emp", "name": "Zaměstnanec", "type": "int", "reference": "e10doc.slr.emps"},
+
+		{"id": "slrItem", "name": "Mzdová položka", "type": "int", "reference": "e10doc.slr.slrItems"},
+    {"id": "org", "name": "Instituce", "type": "int", "reference": "e10doc.slr.orgs"},
+
+    {"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.slr.FormEmpOrg"}
+	],
+	"options": ["systemTable"]
+}

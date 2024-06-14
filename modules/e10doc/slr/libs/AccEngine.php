@@ -20,6 +20,7 @@ class AccEngine extends Utility
   var $slrOrgRecData = NULL;
 
   var $nextMonthFirstDay = NULL;
+  var $accountingFirstDay = NULL;
   var $rows = [];
   var $docRows = [];
 
@@ -100,7 +101,10 @@ class AccEngine extends Utility
       }
       elseif ($sit['payee'] === 2)
       { // org
-        $slrOrgRecData = $this->app()->loadItem($r['slrOrg'], 'e10doc.slr.orgs');
+        $slrOrgRecData = $this->searchPaymentOrg($r['slrItem'], $this->empRecData['ndx']);
+
+        if (!$slrOrgRecData)
+          $slrOrgRecData = $this->app()->loadItem($r['slrOrg'], 'e10doc.slr.orgs');
 
         if ($r['slrOrg'])
         {
@@ -312,6 +316,25 @@ class AccEngine extends Utility
     $this->detailOverviewHeader = ['#' => '#', 'slrItem' => 'Položka', 'amount' => ' Částka'];
   }
 
+  protected function searchPaymentOrg($slrItemNdx, $empNdx)
+  {
+    $q = [];
+    array_push($q, 'SELECT * FROM [e10doc_slr_empsOrgs]');
+    array_push($q, ' WHERE [emp] = %i', $empNdx);
+    array_push($q, ' AND [slrItem] = %i', $slrItemNdx);
+		array_push($q, ' AND ([validFrom] IS NULL OR [validFrom] <= %d)', $this->accountingFirstDay);
+		array_push($q, ' AND ([validTo] IS NULL OR [validTo] >= %d)', $this->accountingFirstDay);
+
+    $empOrg = $this->db()->query($q)->fetch();
+    if ($empOrg)
+    {
+      $orgRecData = $this->app()->loadItem($empOrg['org'], 'e10doc.slr.orgs');
+      return $orgRecData;
+    }
+
+    return NULL;
+  }
+
   protected function accAccount($itemNdx)
   {
     $accountId = '';
@@ -342,8 +365,8 @@ class AccEngine extends Utility
 
   public function loadData()
   {
-    $accountingFirstDay = new \DateTime (sprintf("%04d-%02d-01", $this->importRecData['calendarYear'], $this->importRecData['calendarMonth']));
-    $this->nextMonthFirstDay = new \DateTime($accountingFirstDay->format('Y-m-t'));
+    $this->accountingFirstDay = new \DateTime (sprintf("%04d-%02d-01", $this->importRecData['calendarYear'], $this->importRecData['calendarMonth']));
+    $this->nextMonthFirstDay = new \DateTime($this->accountingFirstDay->format('Y-m-t'));
     $this->nextMonthFirstDay->add(new \DateInterval('P1D'));
 
     $this->loadRows();
