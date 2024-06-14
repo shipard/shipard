@@ -27,6 +27,10 @@ class AccEngine extends Utility
   var $detailOverviewHeader = [];
 
   var $slrItemTypes;
+  var $accounts = [];
+  var $witems = [];
+
+  var $empCosts = 0.0;
 
   var $rowOrder;
 
@@ -118,7 +122,7 @@ class AccEngine extends Utility
         }
       }
 
-      if ($item['doPayment'])
+      if ($item['doPayment'] ?? 0)
       {
         if ($item['bankAccount'] !== '')
           $item['info'][] = ['text' => $item['bankAccount'], 'icon' => 'paymentMethodTransferOrder', 'class' => ''];
@@ -138,8 +142,13 @@ class AccEngine extends Utility
 
   protected function createDocRows()
   {
+    $this->empCosts  = 0.0;
+
     foreach ($this->slrItemTypes as $sitNdx => $sit)
     {
+      if (isset($sit['ignore']))
+        continue;
+
       $cnt = 0;
       $sitSum = 0;
       foreach ($this->rows as $r)
@@ -185,6 +194,13 @@ class AccEngine extends Utility
           }
         }
 
+        $drAccAccount = $this->accAccount($docRowDr['item']);
+        if ($drAccAccount)
+        {
+          if ($drAccAccount['accountKind'] === 2)
+            $this->empCosts += $docRowDr['debit'];
+        }
+
         $this->docRows[] = $docRowDr;
         $this->docRows[] = $docRowCr;
       }
@@ -197,6 +213,9 @@ class AccEngine extends Utility
 
     foreach ($this->slrItemTypes as $sitNdx => $sit)
     {
+      if (isset($sit['ignore']))
+        continue;
+
       foreach ($this->rows as $r)
       {
         if ($r['slrItemType'] !== $sitNdx)
@@ -238,9 +257,7 @@ class AccEngine extends Utility
 
   protected function createOverview()
   {
-    $lastSit = -1;
     $sitSum = 0;
-    $empSum = 0;
 
     foreach ($this->slrItemTypes as $sitNdx => $sit)
     {
@@ -266,11 +283,12 @@ class AccEngine extends Utility
           $item['slrItem'] = array_merge($item['slrItem'], $r['info']);
         }
 
+        if (isset($sit['ignore']))
+          $item['_options']['class'] = 'e10-warning3';
+
         $this->detailOverviewTable[] = $item;
 
         $sitSum += $r['amount'];
-        if (!isset($sit['nonEmpCosts']))
-          $empSum += $r['amount'];
 
         $cnt++;
       }
@@ -287,11 +305,39 @@ class AccEngine extends Utility
 
     $this->detailOverviewTable[] = [
       'slrItem' => 'Celkové náklady na zaměstnance',
-      'amount' => $empSum,
+      'amount' => $this->empCosts,
       '_options' => ['__afterSeparator' => 'separator', 'class' => 'sumtotal'],
     ];
 
     $this->detailOverviewHeader = ['#' => '#', 'slrItem' => 'Položka', 'amount' => ' Částka'];
+  }
+
+  protected function accAccount($itemNdx)
+  {
+    $accountId = '';
+
+    if (isset($this->witems[$itemNdx]))
+      $accountId = $this->witems[$itemNdx]['debsAccountId'];
+
+    if ($accountId === '')
+    {
+      $itemRecData = $this->app()->loadItem($itemNdx, 'e10.witems.items');
+      $this->witems[$itemNdx] = $itemRecData;
+      $accountId = $itemRecData['debsAccountId'];
+    }
+
+    if (isset($this->accounts[$accountId]))
+      return $this->accounts[$accountId];
+
+    $rows = $this->db()->query('SELECT * FROM e10doc_debs_accounts WHERE docStateMain < 3 AND [id] = %s', $accountId);
+    foreach ($rows as $r)
+    {
+      $this->accounts[$accountId] = $r->toArray();
+      return $this->accounts[$accountId];
+    }
+
+    $this->accounts[$accountId] = NULL;
+    return NULL;
   }
 
   public function loadData()
@@ -301,8 +347,9 @@ class AccEngine extends Utility
     $this->nextMonthFirstDay->add(new \DateInterval('P1D'));
 
     $this->loadRows();
-    $this->createOverview();
     $this->createDocRows();
+
+    $this->createOverview();
   }
 
   public function generateAccDoc()

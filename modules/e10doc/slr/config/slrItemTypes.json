@@ -2,7 +2,8 @@
   "5": {
     "fn": "Hrubá mzda",
     "sn": "Hrubá mzda",
-    "payee": 0
+    "payee": 0,
+    "mandatory": 1
   },
   "10": {
     "fn": "Benefity - čistá mzda",
@@ -27,20 +28,18 @@
   "30": {
     "fn": "Srážky",
     "sn": "Srážky",
-    "payee": 2,
-    "nonEmpCosts": 1
+    "payee": 2
   },
   "35": {
     "fn": "Exekuce",
     "sn": "Exekuce",
-    "payee": 2,
-    "nonEmpCosts": 1
+    "payee": 2
   },
   "40": {
     "fn": "Čistá mzda",
     "sn": "Čistá mzda",
     "payee": 1,
-    "nonEmpCosts": 1
+    "mandatory": 1
   },
   "45": {
     "fn": "Zdravotní pojištění - zaměstnavatel",
@@ -65,6 +64,12 @@
   "0": {
     "fn": "Ostatní",
     "sn": "Ostatní",
+    "payee": 0
+  },
+  "100": {
+    "fn": "Ignorovat",
+    "sn": "Ignorovat",
+    "ignore": 1,
     "payee": 0
   }
 }

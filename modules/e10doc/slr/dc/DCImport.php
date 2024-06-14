@@ -109,7 +109,7 @@ class DCImport extends \Shipard\Base\DocumentCard
 			$t[] = $item;
 		}
 
-		$h = ['#' => '#', 'pid' => ' Os.č.', 'emp' => 'Zaměstnanec', 'costs' => '+Náklady', 'actions' => ' Úč. doklad'];
+		$h = ['#' => '#', 'pid' => ' Os.č.', 'emp' => 'Zaměstnanec', /*'costs' => '+Náklady',*/ 'actions' => ' Úč. doklad'];
 
     $this->addContent('body',  [
       'pane' => 'e10-pane e10-pane-table',

@@ -34,8 +34,6 @@ class TableOrgs extends DbTable
  */
 class ViewOrgs extends TableView
 {
-	var $orgTypes;
-
 	public function init ()
 	{
 		parent::init();
@@ -43,8 +41,6 @@ class ViewOrgs extends TableView
 		$this->enableDetailSearch = TRUE;
 
 		$this->setMainQueries ();
-
-		$this->orgTypes = $this->app()->cfgItem('e10doc.slr.orgTypes');
 	}
 
 	public function renderRow ($item)
@@ -55,13 +51,8 @@ class ViewOrgs extends TableView
 
 		//$listItem ['i1'] = ['text' => $item['importId'], 'class' => 'id'];
 
-		$ot = $this->orgTypes[$item['orgType']];
-
-		$props = [];
-
-		$props[] = ['text' => $ot['sn'], 'class' => 'label label-default'];
-
-		$listItem ['t2'] = $props;
+//		$props = [];
+//		$listItem ['t2'] = $props;
 
 
 		$listItem ['icon'] = $this->table->tableIcon ($item);
@@ -116,8 +107,6 @@ class FormOrg extends TableForm
 				$this->openTab ();
           $this->addColumnInput ('person');
 					$this->addColumnInput ('fullName');
-					$this->addSeparator(self::coH4);
-					$this->addColumnInput ('orgType');
 					$this->addSeparator(self::coH4);
           $this->addColumnInput ('bankAccount');
 					$this->addColumnInput ('symbol1');
