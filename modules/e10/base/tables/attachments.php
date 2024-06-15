@@ -88,7 +88,7 @@ class TableAttachments extends DbTable
 		$rndTxt = '-' . base_convert(time() + rand(), 10, 35);
 		$origbn = urldecode(basename($app->requestPath()));
 		$path_parts = pathinfo($origbn);
-		$baseFileName = utils::safeChars($path_parts ['filename']);
+		$baseFileName = utils::safeFileName($path_parts ['filename']);
 		$fileType = $path_parts ['extension'];
 		$bn = $baseFileName . $rndTxt . '.' . $fileType;
 

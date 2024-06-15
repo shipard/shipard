@@ -1006,6 +1006,17 @@ class Utils
 		return str_replace(' ', '-', $string);
 	}
 
+	static function safeFileName ($string, $keepSpaces = FALSE)
+	{
+		$s = iconv('UTF-8', 'ASCII//TRANSLIT', $string);
+		$s = preg_replace(array('~[^0-9a-zA-Z_\-\.]~i', '~[ -]+~'), ' ', $s);
+
+		if ($keepSpaces)
+			return $s;
+
+		return str_replace(' ', '_', $s);
+	}
+
 	static function searchArray ($array, $searchBy, $searchWhat)
 	{
 		forEach ($array as &$item)
