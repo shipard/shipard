@@ -91,6 +91,20 @@ class AccBalanceEngine extends Utility
       $this->addDocRow($newDoc, $docRow);
     }
 
+    // -- inbox
+		$fromTableId = 'e10doc.slr.imports';
+		$docLinkId = 'e10doc-slr-imports-inbox';
+
+    $q = [];
+		array_push($q, 'SELECT * FROM [e10_base_doclinks]');
+    array_push($q, ' WHERE linkId = %s', $docLinkId);
+		array_push($q, ' AND srcTableId = %s', $fromTableId);
+		array_push($q, ' AND srcRecId = %i', $this->importNdx);
+		$rows = $this->db()->query ($q);
+    foreach ($rows as $r)
+      $newDoc->addInbox($r['dstRecId']);
+
+    // -- save
 		$docNdx = $newDoc->saveDocument(CreateDocumentUtility::sdsConfirmed, intval($this->importRecData['docAccBal']));
 
     $this->db()->query('UPDATE [e10doc_slr_imports] SET [docAccBal] = %i', $docNdx, ' WHERE [ndx] = %i', $this->importNdx);

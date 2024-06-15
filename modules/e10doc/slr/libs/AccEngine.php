@@ -186,7 +186,7 @@ class AccEngine extends Utility
         }
         else
         {
-          if ($r['doPayment'])
+          if ($r['doPayment'] ?? 0)
           {
             $docRowCr['bankAccount'] = $r['bankAccount'];
             $docRowCr['symbol1'] = $r['symbol1'];
@@ -410,6 +410,20 @@ class AccEngine extends Utility
       $this->addDocRowDebit($newDoc, $docRow);
     }
 
+    // -- inbox
+		$fromTableId = 'e10doc.slr.imports';
+		$docLinkId = 'e10doc-slr-imports-inbox';
+
+    $q = [];
+		array_push($q, 'SELECT * FROM [e10_base_doclinks]');
+    array_push($q, ' WHERE linkId = %s', $docLinkId);
+		array_push($q, ' AND srcTableId = %s', $fromTableId);
+		array_push($q, ' AND srcRecId = %i', $this->empRecRecData['import']);
+		$rows = $this->db()->query ($q);
+    foreach ($rows as $r)
+      $newDoc->addInbox($r['dstRecId']);
+
+    // -- save
 		$docNdx = $newDoc->saveDocument(CreateDocumentUtility::sdsConfirmed, intval($this->empRecRecData['docAcc']));
 
     $this->db()->query('UPDATE [e10doc_slr_empsRecs] SET [docAcc] = %i', $docNdx, ' WHERE [ndx] = %i', $this->empRecNdx);
