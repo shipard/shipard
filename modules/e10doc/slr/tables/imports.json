@@ -15,6 +15,9 @@
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
+  "lists": [
+		{"id": "inbox", "class": "e10.base.ListDocLinks", "name": "Došlá pošta"}
+	],
 	"views": [
 		{
 			"id": "default", "class": "e10doc.slr.ViewImports",

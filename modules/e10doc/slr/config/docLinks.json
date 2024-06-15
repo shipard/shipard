@@ -1,0 +1,11 @@
+{
+	"e10doc.slr.imports": {
+		"e10doc-slr-imports-inbox": {
+			"linkid": "e10doc-slr-imports-inbox", "name": "Došlá pošta", "icon": "system/issueReceivedMail",
+			"sources": [
+				{"table": "wkf.core.issues", "viewer": "e10doc.slr.libs.InboxComboSlr"}
+			],
+			"listId": "inbox"
+		}
+	}
+}

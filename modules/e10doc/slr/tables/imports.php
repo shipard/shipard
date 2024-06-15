@@ -114,6 +114,8 @@ class FormImport extends TableForm
 					$this->addColumnInput ('name');
 					$this->addColumnInput ('calendarYear');
 					$this->addColumnInput ('calendarMonth');
+
+					$this->addList ('inbox', '', self::loAddToFormLayout);
 				$this->closeTab();
 				$this->openTab (TableForm::ltNone);
 					$this->addAttachmentsViewer();
