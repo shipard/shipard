@@ -30,7 +30,12 @@ class FormEmpRecRow extends TableForm
 				$this->addColumnInput ('slrItem', self::coColW12);
       $this->closeRow();
       $this->openRow();
+				$this->addColumnInput ('centre', self::coColW12);
+			$this->closeRow();
+      $this->openRow();
 				$this->addColumnInput ('amount', self::coColW4);
+				$this->addColumnInput ('quantity', self::coColW4);
+				$this->addColumnInput ('unit', self::coColW4);
 			$this->closeRow();
 		$this->closeForm ();
 	}

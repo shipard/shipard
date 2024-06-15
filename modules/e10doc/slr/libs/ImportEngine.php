@@ -110,6 +110,20 @@ class ImportEngine extends Utility
       'amount' => $item['Castka'],
     ];
 
+    $q = floatval($item['NatUkaz'] ?? 0);
+    if ($q)
+    {
+      $newRow['quantity'] = $q;
+      $newRow['unit'] = 'hr';
+    }
+
+    if (isset($item['Stredisko']) && $item['Stredisko'] != '')
+    {
+      $centreRecData = $this->searchCentre($item['Stredisko']);
+      if ($centreRecData)
+        $newRow['centre'] = $centreRecData['ndx'];
+    }
+
     $this->db()->query('INSERT INTO [e10doc_slr_empsRecsRows]', $newRow);
   }
 
@@ -206,6 +220,17 @@ class ImportEngine extends Utility
       $this->slrItems[$importId] = $slrItemRecData;
       return $slrItemRecData;
     }
+  }
+
+  protected function searchCentre($centreId)
+  {
+    $centreRecData = $this->db()->query('SELECT * FROM [e10doc_base_centres] WHERE [id] = %s', $centreId,
+                                        ' AND [docState] != %i', 9800)->fetch();
+
+    if ($centreRecData)
+      return $centreRecData->toArray();
+
+    return NULL;
   }
 
   public function run()

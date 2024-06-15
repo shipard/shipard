@@ -76,7 +76,7 @@ class ViewEmpsRecs extends TableView
 			array_push ($q, ')');
 		}
 
-		$this->queryMain ($q, '[empsRecs].', ['[ndx]']);
+		$this->queryMain ($q, '[empsRecs].', ['fullName', '[ndx]']);
 		$this->runQuery ($q);
 	}
 }
