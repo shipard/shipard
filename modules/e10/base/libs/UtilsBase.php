@@ -240,6 +240,54 @@ class UtilsBase
 		return $files;
 	}
 
+	static function loadAllRecAttachments ($app, $recTableId, $recNdx)
+	{
+		$files = [];
+
+		// -- primary atts
+		$q = [];
+		array_push ($q, 'SELECT * FROM [e10_attachments_files]');
+		array_push ($q, ' WHERE [tableid] = %s', $recTableId, ' AND [recid] = %i', $recNdx);
+		array_push ($q, ' AND [deleted] = %i', 0);
+		array_push ($q, ' ORDER BY [order], name');
+		$query = $app->db->query ($q);
+		foreach ($query as $row)
+		{
+			$f = $row->toArray();
+			$files [] = $f;
+		}
+
+		// -- atts via inbox
+		$docLinkId = 'e10doc-slr-imports-inbox';
+    $q = [];
+		array_push($q, 'SELECT * FROM [e10_base_doclinks]');
+    array_push($q, ' WHERE linkId = %s', $docLinkId);
+		array_push($q, ' AND srcTableId = %s', $recTableId);
+		array_push($q, ' AND srcRecId = %i', $recNdx);
+		$rows = $app->db()->query ($q);
+
+		$issuesPks = [];
+		foreach ($rows as $r)
+			$issuesPks[] = $r['dstRecId'];
+
+		if (count($issuesPks))
+		{
+			$q = [];
+			array_push ($q, 'SELECT * FROM [e10_attachments_files]');
+			array_push ($q, ' WHERE [tableid] = %s', 'wkf.core.issues', ' AND [recid] IN %in', $issuesPks);
+			array_push ($q, ' AND [deleted] = %i', 0);
+			array_push ($q, ' ORDER BY [order], name');
+			$query = $app->db->query ($q);
+			foreach ($query as $row)
+			{
+				$f = $row->toArray();
+				$files [] = $f;
+			}
+		}
+
+		return $files;
+	}
+
 	static function linkedPersons ($app, $table, $toRecId, $elementClass = '')
 	{
 		if (is_string($table))
