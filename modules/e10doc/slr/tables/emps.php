@@ -109,6 +109,8 @@ class FormEmp extends TableForm
           $this->addColumnInput ('slrSymbol3');
 					$this->addSeparator(self::coH4);
           $this->addColumnInput ('slrCentre');
+					$this->addSeparator(self::coH4);
+					$this->addColumnInput ('optionSrazkovaDan');
 				$this->closeTab();
 				$this->openTab (TableForm::ltNone);
 					$this->addList ('orgs');
