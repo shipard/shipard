@@ -16,8 +16,11 @@ class DCImport extends \Shipard\Base\DocumentCard
 
 	protected function addErrors()
 	{
-		$e = new \e10doc\slr\libs\ImportEngine($this->app());
-		//$e->init();
+		/** @var \e10doc\slr\TableImports */
+		$tableImports = $this->app()->table('e10doc.slr.imports');
+		$e = $tableImports->importEngine ($this->recData['ndx']);
+		if (!$e)
+			return;
 		$e->setImportNdx($this->recData['ndx']);
 		$e->run();
 
@@ -88,7 +91,7 @@ class DCImport extends \Shipard\Base\DocumentCard
 		array_push ($q, ' LEFT JOIN [e10doc_slr_imports] AS [imports] ON [empsRecs].[import] = [imports].ndx');
 		array_push ($q, ' WHERE [empsRecs].[import] = %i', $this->recData['ndx']);
 		array_push ($q, ' AND [empsRecs].docState != %i', 9800);
-		array_push ($q, ' ORDER BY emps.fullName, [empsRecs].ndx');
+		array_push ($q, ' ORDER BY emps.fullName, emps.personalId, [empsRecs].ndx');
 
 		$t = [];
 
