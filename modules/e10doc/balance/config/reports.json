@@ -4,6 +4,7 @@
 	{"name": "Přijaté zálohy", "class": "e10doc.balance.reportBalanceDepositReceived", "icon": "balance/depositReceived", "group": "e10doc-balance", "order": 3000},
   {"name": "Poskytnuté zálohy", "class": "e10doc.balance.reportBalanceAdvance", "icon": "balance/balanceAdvance", "group": "e10doc-balance", "order": 3500},
   {"name": "Peníze na cestě", "class": "e10doc.balance.reportBalanceCashInTransit", "icon": "balance/cashInTransit", "group": "e10doc-balance", "order": 4100},
+  {"name": "Přechodné účty", "class": "e10doc.balance.reportBalanceTransitionalAccounts", "icon": "balance/transitionalAccounts", "group": "e10doc-balance", "order": 4500},
 
 	{"name": "Upomínky", "class": "e10doc.balance.ReportRequestsForPayment", "icon": "balanceAlerts", "group": "e10doc-balance", "order": 9000000},
 	{"name": "Zápočty", "class": "e10doc.balance.reportBalanceOffsetting", "icon": "balance/balanceOffsetting", "group": "e10doc-balance", "order": 9100000},

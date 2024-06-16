@@ -1330,12 +1330,19 @@ class reportBalanceCashInTransit extends reportBalance
 		$this->balance = 4100;
 		parent::init();
 	}
+}
 
-	public function subReportsList ()
+
+/**
+ * Class reportBalanceTransitionalAccounts
+ * @package E10Doc\Balance
+ */
+class reportBalanceTransitionalAccounts extends reportBalance
+{
+	function init ()
 	{
-		$d[] = ['id' => 'items', 'icon' => 'detailBalanceByItems', 'title' => 'Položkově'];
-		$d[] = ['id' => 'exchDiffs', 'icon' => 'detailBalanceRatesDifferences', 'title' => 'Kurzové rozdíly'];
-		return $d;
+		$this->balance = 4500;
+		parent::init();
 	}
 }
 

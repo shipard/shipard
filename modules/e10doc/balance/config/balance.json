@@ -147,5 +147,31 @@
 			{"docType": "cmnbkp", "src": "row", "operation": "1099998", "checkItemBalance": 1, "moneySide": "cr",
 				"side": 1, "itemId": "4100_{rows.person}_{rows.symbol1}_{rows.symbol2}_{heads.homeCurrency}"}
 		]
+	},
+	"4500": {
+		"name": "Přechodné účty", "shortName": "PrechUcty", "icon": "balance/transitionalAccounts", "shortcut": "PrU", "id": "4500", "side": "d",
+		"type": "hc", "docTypes": ["invni", "invno", "bank", "cash", "cmnbkp"],
+		"content": [
+			{"docType": "invni", "src": "row", "operation": "1099998", "personSide": 0, "checkItemBalance": 1, "moneySide": "cr",
+				"side": 0, "itemId": "4500_{heads.person}_{rows.symbol1}_{rows.symbol2}_{heads.homeCurrency}"},
+			{"docType": "invni", "src": "row", "operation": "1099998", "personSide": 0, "checkItemBalance": 1, "moneySide": "dr",
+				"side": 1, "itemId": "4500_{heads.person}_{rows.symbol1}_{rows.symbol2}_{heads.homeCurrency}"},
+			{"docType": "invno", "src": "row", "operation": "1099998", "personSide": 0, "checkItemBalance": 1, "moneySide": "cr",
+				"side": 0, "itemId": "4500_{heads.person}_{rows.symbol1}_{rows.symbol2}_{heads.homeCurrency}"},
+			{"docType": "invno", "src": "row", "operation": "1099998", "personSide": 0, "checkItemBalance": 1, "moneySide": "dr",
+				"side": 1, "itemId": "4500_{heads.person}_{rows.symbol1}_{rows.symbol2}_{heads.homeCurrency}"},
+			{"docType": "bank", "src": "row", "operation": "1099998", "checkItemBalance": 1, "moneySide": "dr",
+				"side": 0, "itemId": "4500_{rows.person}_{rows.symbol1}_{rows.symbol2}_{heads.homeCurrency}"},
+			{"docType": "bank", "src": "row", "operation": "1099998", "checkItemBalance": 1, "moneySide": "cr",
+				"side": 1, "itemId": "4500_{rows.person}_{rows.symbol1}_{rows.symbol2}_{heads.homeCurrency}"},
+			{"docType": "cash", "src": "row", "operation": "1099998", "checkItemBalance": 1, "moneySide": "dr",
+				"side": 0, "itemId": "4500_{rows.person}_{rows.symbol1}_{rows.symbol2}_{heads.homeCurrency}"},
+			{"docType": "cash", "src": "row", "operation": "1099998", "checkItemBalance": 1, "moneySide": "cr",
+				"side": 1, "itemId": "4500_{rows.person}_{rows.symbol1}_{rows.symbol2}_{heads.homeCurrency}"},
+			{"docType": "cmnbkp", "src": "row", "operation": "1099998", "checkItemBalance": 1, "moneySide": "dr",
+				"side": 0, "itemId": "4500_{rows.person}_{rows.symbol1}_{rows.symbol2}_{heads.homeCurrency}"},
+			{"docType": "cmnbkp", "src": "row", "operation": "1099998", "checkItemBalance": 1, "moneySide": "cr",
+				"side": 1, "itemId": "4500_{rows.person}_{rows.symbol1}_{rows.symbol2}_{heads.homeCurrency}"}
+		]
 	}
 }

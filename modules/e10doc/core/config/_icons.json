@@ -211,6 +211,12 @@
         "bsi":"bi-cash-stack",
         "mdi":"payments"
     },
+    "balance/transitionalAccounts":{
+        "fa5":"fa-clock",
+        "fa6pro":"fa-clock",
+        "bsi":"bi-clock",
+        "mdi":"timer"
+    },
     "balance/requestsForPayment":{
         "fa5":"fa-exclamation-circle",
         "fa6pro":"fa-exclamation-circle",
