@@ -3,7 +3,7 @@
 namespace lib\core\attachments;
 require_once __SHPD_MODULES_DIR__ . 'e10/base/base.php';
 use E10\Utility;
-
+use \Shipard\Utils\Utils;
 
 /**
  * Class FileArchiveExtractor
@@ -37,7 +37,9 @@ class FileArchiveExtractor extends Utility
 				$zipFileName = $this->zipArchive->getNameIndex($i);
 			$srcFileInfo = pathinfo($zipFileName);
 
-			$tmpFileName = $dstPath.$srcFileInfo['basename'];
+			$dstBaseName = Utils::safeFileName($srcFileInfo['basename']);
+
+			$tmpFileName = $dstPath.$dstBaseName;
 			copy("zip://".$this->fileName."#".$zipFileName, $tmpFileName);
 
 			\E10\Base\addAttachments ($this->app, $toTableId, $toRecId, $tmpFileName, '', true, 0, $srcFileInfo['basename']);

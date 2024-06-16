@@ -11,6 +11,8 @@ class CreateDocumentUtility extends \Shipard\Base\Utility
 {
 	public $docHead = [];
 	public $docRows = [];
+	var $inboxIssues = [];
+
   /** @var \E10Doc\Core\TableHeads */
 	protected $tableDocs;
   /** @var \E10Doc\Core\TableRows */
@@ -44,6 +46,11 @@ class CreateDocumentUtility extends \Shipard\Base\Utility
 	public function addDocumentRow ($row)
 	{
 		$this->docRows[] = $row;
+	}
+
+	public function addInbox($issueNdx)
+	{
+		$this->inboxIssues[] = $issueNdx;
 	}
 
 	function saveDocument ($saveDocState = self::sdsConcept, $existedDocNdx = 0)
@@ -103,6 +110,9 @@ class CreateDocumentUtility extends \Shipard\Base\Utility
 			$this->tableDocs->checkDocumentState ($f->recData);
 			$this->tableDocs->dbUpdateRec ($f->recData);
 			$this->tableDocs->checkAfterSave2 ($f->recData);
+
+			$this->saveInbox($f->recData['ndx']);
+
 			$this->tableDocs->docsLog ($f->recData['ndx']);
 
 			$docStates = $this->tableDocs->documentStates ($f->recData);
@@ -112,6 +122,30 @@ class CreateDocumentUtility extends \Shipard\Base\Utility
 			$this->tableDocs->printAfterConfirm($printCfg, $f->recData, $ds);
 
       return $docNdx;
+		}
+	}
+
+	protected function saveInbox($docNdx)
+	{
+		if (!count($this->inboxIssues))
+			return;
+
+		if ($docNdx)
+		{
+			$this->db()->query ('DELETE FROM [e10_base_doclinks] WHERE [srcTableId] = %s', 'e10doc.core.heads',
+													' AND [srcRecId] = %i', $docNdx,
+													' AND [linkId] = %s', 'e10docs-inbox'
+												);
+		}
+
+		foreach ($this->inboxIssues as $issueNdx)
+		{
+			$newLink = [
+				'linkId' => 'e10docs-inbox',
+				'srcTableId' => 'e10doc.core.heads', 'srcRecId' => $docNdx,
+				'dstTableId' => 'wkf.core.issues', 'dstRecId' => $issueNdx,
+			];
+			$this->db()->query('INSERT INTO [e10_base_doclinks] ', $newLink);
 		}
 	}
 }

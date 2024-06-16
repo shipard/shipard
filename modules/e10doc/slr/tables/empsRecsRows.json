@@ -6,7 +6,13 @@
 
 		{"id": "empsRec", "name": "Záznam", "type": "int", "reference": "e10doc.slr.empsRecs"},
 		{"id": "slrItem", "name": "Mzdová položka", "type": "int", "reference": "e10doc.slr.slrItems"},
-		{"id": "amount", "name": "Částka", "type": "money"}
+		{"id": "amount", "name": "Částka", "type": "money"},
+
+    {"id": "quantity", "name": "Množství", "label": "Množ.", "type": "number", "dec": 2},
+		{"id": "unit", "name": "Jednotka", "type": "enumString", "len": 8,
+			"enumCfg": {"cfgItem": "e10.witems.units", "cfgValue": "", "cfgText": "shortcut"}},
+
+		{"id": "centre", "name": "Středisko", "type": "int", "reference": "e10doc.base.centres"}
 	],
 	"forms": [
 		{"id": "default", "class": "e10doc.slr.FormEmpRecRow"}

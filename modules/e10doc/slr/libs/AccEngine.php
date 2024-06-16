@@ -1,8 +1,6 @@
 <?php
 namespace e10doc\slr\libs;
 use \Shipard\Base\Utility;
-use \e10\base\libs\UtilsBase;
-use \Shipard\Utils\Json;
 use \e10doc\core\libs\CreateDocumentUtility;
 
 
@@ -53,9 +51,11 @@ class AccEngine extends Utility
     $q = [];
     array_push ($q, 'SELECT [recsRows].*, ');
 		array_push ($q, ' slrItems.fullName AS srlItemName, slrItems.itemType AS slrItemType, ');
-    array_push ($q, ' slrItems.accItemDr, slrItems.accItemCr, slrItems.accItemBal, slrItems.moneyOrg AS slrOrg, slrItems.fullName AS slrItemName');
+    array_push ($q, ' slrItems.accItemDr, slrItems.accItemCr, slrItems.accItemBal, slrItems.moneyOrg AS slrOrg, slrItems.fullName AS slrItemName,');
+    array_push ($q, ' [centres].[id] AS [centreId]');
 		array_push ($q, ' FROM [e10doc_slr_empsRecsRows] AS [recsRows]');
 		array_push ($q, ' LEFT JOIN [e10doc_slr_slrItems] AS slrItems ON [recsRows].slrItem = slrItems.ndx');
+    array_push ($q, ' LEFT JOIN [e10doc_base_centres] AS [centres] ON [recsRows].[centre] = [centres].ndx');
 		array_push ($q, ' WHERE 1');
     array_push ($q, ' AND empsRec = %i', $this->empRecNdx);
 
@@ -129,7 +129,7 @@ class AccEngine extends Utility
       if ($item['doPayment'] ?? 0)
       {
         if ($item['bankAccount'] !== '')
-          $item['info'][] = ['text' => $item['bankAccount'], 'icon' => 'paymentMethodTransferOrder', 'class' => ''];
+          $item['info'][] = ['text' => $item['bankAccount'], 'icon' => 'paymentMethodTransferOrder', 'class' => 'break'];
         else
           $item['warnings'][] = ['text' => 'Chybí bankovní účet pro úhradu', 'class' => 'block e10-warning1'];
 
@@ -166,7 +166,11 @@ class AccEngine extends Utility
           'debit' => $r['amount'],
           'person' => $this->empRecData['person'],
           'text' => $r['slrItemName'],
+          'centre' => $r['centre'] ?? 0,
         ];
+
+        if (!$docRowDr['centre'] && $this->empRecData['centre'])
+          $docRowDr['centre'] = $this->empRecData['centre'];
 
         // -- credit / DAL
         $docRowCr = [
@@ -182,7 +186,7 @@ class AccEngine extends Utility
         }
         else
         {
-          if ($r['doPayment'])
+          if ($r['doPayment'] ?? 0)
           {
             $docRowCr['bankAccount'] = $r['bankAccount'];
             $docRowCr['symbol1'] = $r['symbol1'];
@@ -273,9 +277,12 @@ class AccEngine extends Utility
           continue;
 
         $item = [
-          'slrItem' => [['text' => $r['srlItemName'], 'class' => 'e10-bold block']],
+          'slrItem' => [['text' => $r['srlItemName'], 'class' => 'e10-bold']],
           'amount' => $r['amount'],
         ];
+
+        if ($r['centreId'])
+          $item['slrItem'][] = ['text' => $r['centreId'], 'class' => 'label label-default pull-right', 'icon' => 'tables/e10doc.base.centres'];
 
         if (count($r['warnings']))
         {
@@ -403,6 +410,20 @@ class AccEngine extends Utility
       $this->addDocRowDebit($newDoc, $docRow);
     }
 
+    // -- inbox
+		$fromTableId = 'e10doc.slr.imports';
+		$docLinkId = 'e10doc-slr-imports-inbox';
+
+    $q = [];
+		array_push($q, 'SELECT * FROM [e10_base_doclinks]');
+    array_push($q, ' WHERE linkId = %s', $docLinkId);
+		array_push($q, ' AND srcTableId = %s', $fromTableId);
+		array_push($q, ' AND srcRecId = %i', $this->empRecRecData['import']);
+		$rows = $this->db()->query ($q);
+    foreach ($rows as $r)
+      $newDoc->addInbox($r['dstRecId']);
+
+    // -- save
 		$docNdx = $newDoc->saveDocument(CreateDocumentUtility::sdsConfirmed, intval($this->empRecRecData['docAcc']));
 
     $this->db()->query('UPDATE [e10doc_slr_empsRecs] SET [docAcc] = %i', $docNdx, ' WHERE [ndx] = %i', $this->empRecNdx);
