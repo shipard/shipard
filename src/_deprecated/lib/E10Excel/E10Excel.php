@@ -197,5 +197,30 @@ class E10Excel extends \E10\Utility
 			$sheet->getStyle($cells)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 		}
 	}
+
+	public function getSheetAsTable ($spreadsheet, $sheetNumber, &$table, $maxX = 0)
+	{
+		$tableY = 0;
+		$tableX = 0;
+		$sheet = $spreadsheet->getSheet($sheetNumber);
+
+		foreach ($sheet->getRowIterator() as $row)
+		{
+			$cellIterator = $row->getCellIterator();
+			$cellIterator->setIterateOnlyExistingCells(FALSE);
+
+			$tableX = 0;
+			foreach ($cellIterator as $cell)
+			{
+				$cv = $cell->getValue();
+				$table[$tableY][$tableX] = $cv;
+				$tableX++;
+
+				if ($maxX && $tableX > $maxX)
+					break;
+			}
+			$tableY++;
+		}
+	}
 }
 
