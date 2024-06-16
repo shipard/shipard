@@ -44,7 +44,7 @@ class ViewEmpsRecs extends TableView
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['t1'] = $item['personName'];
 
-		$listItem ['i1'] = ['text' => '#'.$item['ndx'], 'class' => 'id'];
+		$listItem ['i1'] = ['text' => $item['empPersonalId'], 'class' => 'id'];
 
 		$props = [];
 		$props[] = ['text' => $item['calendarYear'].'/'.$item['calendarMonth'], 'icon' => 'system/iconCalendar', 'class' => 'label label-info'];
@@ -61,7 +61,7 @@ class ViewEmpsRecs extends TableView
 
 		$q = [];
     array_push ($q, 'SELECT [empsRecs].*,');
-		array_push ($q, ' emps.fullName AS personName,');
+		array_push ($q, ' emps.fullName AS personName, emps.personalId AS empPersonalId,');
 		array_push ($q, ' imports.calendarYear, imports.calendarMonth');
 		array_push ($q, ' FROM [e10doc_slr_empsRecs] AS [empsRecs]');
 		array_push ($q, ' LEFT JOIN [e10doc_slr_emps] AS emps ON [empsRecs].[emp] = [emps].ndx');

@@ -1,0 +1,10 @@
+{
+  "cz-perm": {
+    "fn": "PERM / Kvasar",
+    "classId": "e10doc.slr.libs.imports.ImportEngineCZPerm"
+  },
+  "cz-pohoda": {
+    "fn": "Pohoda",
+    "classId": "e10doc.slr.libs.imports.ImportEngineCZPohoda"
+  }
+}

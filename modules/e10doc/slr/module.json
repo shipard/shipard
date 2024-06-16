@@ -10,6 +10,7 @@
     {"id": "+e10.base.doclinks", "file": "docLinks.json"},
     {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
     {"id": "+e10doc.slr.orgTypes", "file": "orgTypes.json"},
-    {"id": "+e10doc.slr.slrItemTypes", "file": "slrItemTypes.json"}
+    {"id": "+e10doc.slr.slrItemTypes", "file": "slrItemTypes.json"},
+    {"id": "+e10doc.slr.importTypes", "file": "importTypes.json"}
   ]
 }

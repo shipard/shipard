@@ -2,6 +2,9 @@
 	"id": "e10doc.slr.imports", "sql": "e10doc_slr_imports", "name": "Importy podkladů ke mzdám",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "importType", "name": "Typ importu", "type": "enumString", "len": 15,
+	    "enumCfg": {"cfgItem": "e10doc.slr.importTypes", "cfgValue": "", "cfgText": "fn"}},
+
 		{"id": "name", "name": "Název", "type": "string", "len": 80},
 
 		{"id": "calendarYear", "name": "Rok", "type": "int"},

@@ -26,6 +26,21 @@ class TableImports extends DbTable
 
 		return $hdr;
 	}
+
+	public function importEngine ($importNdx)
+	{
+		$importRecData = $this->loadItem($importNdx);
+		if (!$importRecData)
+			return NULL;
+
+		$importTypeCfg = $this->app()->cfgItem('e10doc.slr.importTypes.'.$importRecData['importType'], NULL);
+		if (!$importTypeCfg || !isset($importTypeCfg['classId']))
+			return NULL;
+
+		$ie = $this->app()->createObject($importTypeCfg['classId']);
+
+		return $ie;
+	}
 }
 
 
@@ -111,6 +126,7 @@ class FormImport extends TableForm
 		$this->openForm ();
 			$this->openTabs ($tabs);
 				$this->openTab ();
+					$this->addColumnInput ('importType');
 					$this->addColumnInput ('name');
 					$this->addColumnInput ('calendarYear');
 					$this->addColumnInput ('calendarMonth');
