@@ -424,7 +424,7 @@ class ListProperties implements \E10\IDocumentList
 			}
 			else
 			{
-				$r['valueString'] = $row ['value'];
+				$r['valueString'] = str::upToLen($row ['value'], 64);
 				if ($row ['value'] != '')
 					$hasValue = true;
 			}
