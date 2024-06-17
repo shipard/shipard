@@ -7,6 +7,8 @@
 		{"id": "bcCompany", "name": "Společnost pro vizitku", "type": "int", "reference": "e10.persons.persons"},
 		{"id": "bcQRCodeLinkMask", "name": "Odkaz pro stažení QR kódu", "type": "string", "len": 80},
 
+		{"id": "vcardExt", "name": "Rozšíření VCARD", "type": "memo"},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],

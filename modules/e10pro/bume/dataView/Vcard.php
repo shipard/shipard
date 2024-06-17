@@ -11,6 +11,8 @@ class Vcard extends DataView
 {
   var $personNdx = 0;
 	var $personCompanyRecData = NULL;
+	var $contactsListNdx = 0;
+	var $contactsListRecData = NULL;
   var ?\e10\persons\libs\Vcard $vcard = NULL;
 
 	protected function init()
@@ -20,6 +22,11 @@ class Vcard extends DataView
 		if (intval($this->requestParams['companyNdx'] ?? 0))
 		{
 			$this->personCompanyRecData = $this->app()->loadItem(intval($this->requestParams['companyNdx'] ?? 0), 'e10.persons.persons');
+		}
+		if (intval($this->requestParams['extVcardList'] ?? 0))
+		{
+			$this->contactsListNdx = intval($this->requestParams['extVcardList'] ?? 0);
+			$this->contactsListRecData = $this->app()->loadItem($this->contactsListNdx, 'e10pro.bume.lists');
 		}
 
 		if (isset($this->requestParams['personId']))
@@ -50,6 +57,8 @@ class Vcard extends DataView
     $this->vcard->setPerson($this->personNdx);
 		if ($this->personCompanyRecData)
 			$this->vcard->setOrganization($this->personCompanyRecData['fullName']);
+		if ($this->contactsListRecData)
+			$this->vcard->setExtension($this->contactsListRecData['vcardExt']);
     $this->vcard->run();
 	}
 

@@ -100,6 +100,7 @@ class ContactsListEngine extends Utility
 				$vcard->setPerson($pndx);
 				if ($this->personCompanyRecData)
 					$vcard->setOrganization($this->personCompanyRecData['fullName']);
+				$vcard->setExtension($this->contactsListRecData['vcardExt']);
 				$vcard->run();
 
 				$qrBtn = "<span class='pull-right' data-toggle='popover' data-trigger='hover' data-html='true' data-placement='left'";
@@ -157,6 +158,7 @@ class ContactsListEngine extends Utility
 			$vcard->setPerson($personNdx);
 			if ($this->personCompanyRecData)
 				$vcard->setOrganization($this->personCompanyRecData['fullName']);
+			$vcard->setExtension($this->contactsListRecData['vcardExt']);
 			$vcard->run();
 
 			file_put_contents($fileName, $vcard->info['vcard'], FILE_APPEND);

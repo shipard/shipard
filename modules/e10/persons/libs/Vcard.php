@@ -13,6 +13,7 @@ class Vcard extends Utility
   var $personRecData = NULL;
 
 	var $orgTitle = '';
+	var $extRows = [];
 
   var $info = [];
 
@@ -30,6 +31,16 @@ class Vcard extends Utility
 	public function setOrganization($orgTitle)
 	{
 		$this->orgTitle = $orgTitle;
+	}
+
+	public function setExtension($extText)
+	{
+		if (!$extText || $extText === '')
+		{
+			$this->extRows = [];
+			return;
+		}
+		$this->extRows = preg_split("/\\r\\n|\\r|\\n/", $extText);
 	}
 
   protected function createVcard()
@@ -89,6 +100,13 @@ class Vcard extends Utility
 
 		if ($this->orgTitle !== '')
 			$v .= 'ORG;CHARSET=UTF-8:'.$this->vcEscape($this->orgTitle).$ld;
+
+		foreach ($this->extRows as $er)
+		{
+			if ($er === '')
+				continue;
+			$v .= $er.$ld;
+		}
 
  		$v .= 'END:VCARD'.$ld;
 

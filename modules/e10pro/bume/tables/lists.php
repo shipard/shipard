@@ -229,6 +229,7 @@ class FormList extends TableForm
 			//$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 			$tabs ['tabs'][] = ['text' => 'Příjemci', 'icon' => 'formRecipients'];
 			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
+			$tabs ['tabs'][] = ['text' => 'Rozšíření VCARD', 'icon' => 'system/formSettings'];
 			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 			$this->openTabs ($tabs);
@@ -239,6 +240,9 @@ class FormList extends TableForm
 				$this->openTab ();
 					$this->addColumnInput ('bcCompany');
 					$this->addColumnInput ('bcQRCodeLinkMask');
+				$this->closeTab ();
+				$this->openTab (TableForm::ltNone);
+					$this->addInputMemo ('vcardExt', NULL, TableForm::coFullSizeY);
 				$this->closeTab ();
 
 				$this->openTab (TableForm::ltNone);
