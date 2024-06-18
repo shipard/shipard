@@ -2,6 +2,7 @@
   "acc": {
 		"viewers": {
 			"e10doc.slr.emps": {"default": 2},
+			"e10doc.slr.empsKinds": {"default": 2},
 			"e10doc.slr.orgs": {"default": 2},
 			"e10doc.slr.slrItems": {"default": 2},
 			"e10doc.slr.imports": {"default": 2},

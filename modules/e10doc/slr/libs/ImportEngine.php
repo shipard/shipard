@@ -80,6 +80,13 @@ class ImportEngine extends Utility
 
     if ($cnt === 1)
     {
+      if ($empRecData['empKind'])
+      {
+        $empKindRecData = $this->app()->loadItem($empRecData['empKind'], 'e10doc.slr.empsKinds');
+        if ($empKindRecData)
+          $empRecData['empKindCfg'] = $empKindRecData;
+      }
+
       $this->emps[$personalId] = $empRecData;
       return $this->emps[$personalId];
     }

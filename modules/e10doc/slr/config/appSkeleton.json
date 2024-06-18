@@ -11,7 +11,8 @@
 							"empsRecs": {"t1": "Záznamy", "object": "viewer", "table": "e10doc.slr.empsRecs", "viewer": "default", "order": 31000},
 							"slrItems": {"t1": "Položky", "object": "viewer", "table": "e10doc.slr.slrItems", "viewer": "default", "order": 700000, "beforeSeparator":  1},
 							"emps": {"t1": "Zaměstnanci", "object": "viewer", "table": "e10doc.slr.emps", "viewer": "default", "order": 90000, "beforeSeparator":  1},
-							"orgs": {"t1": "Instituce", "object": "viewer", "table": "e10doc.slr.orgs", "viewer": "default", "order": 91000}
+							"orgs": {"t1": "Instituce", "object": "viewer", "table": "e10doc.slr.orgs", "viewer": "default", "order": 91000},
+							"empsKinds": {"t1": "Druhy zam.", "object": "viewer", "table": "e10doc.slr.empsKinds", "viewer": "default", "order": 92000}
 						}
 					}
 				}

@@ -15,7 +15,7 @@
 
 		{"id": "slrCentre", "name": "Středisko", "type": "int", "reference": "e10doc.base.centres"},
 
-		{"id": "optionSrazkovaDan", "name": "Srážková daň", "type": "logical"},
+		{"id": "empKind", "name": "Druh zaměstnance", "type": "int", "reference": "e10doc.slr.empsKinds"},
 
 		{"id": "validFrom", "name": "Platné od", "type": "date"},
 		{"id": "validTo", "name": "Platné do", "type": "date"},

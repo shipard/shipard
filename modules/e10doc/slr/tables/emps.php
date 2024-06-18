@@ -50,7 +50,11 @@ class ViewEmps extends TableView
 		$listItem ['i1'] = ['text' => $item['personalId'], 'class' => 'id'];
 
 		$props = [];
+		if ($item['kindName'])
+			$props[] = ['text' => $item['kindName'], 'class' => 'label label-default'];
 
+		if (count($props))
+			$listItem['t2'] = $props;
 
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
@@ -62,8 +66,9 @@ class ViewEmps extends TableView
 		$fts = $this->fullTextSearch ();
 
 		$q = [];
-    array_push ($q, 'SELECT [emps].* ');
+    array_push ($q, 'SELECT [emps].*, [kinds].shortName AS kindName ');
 		array_push ($q, ' FROM [e10doc_slr_emps] AS [emps]');
+		array_push ($q, ' LEFT JOIN [e10doc_slr_empsKinds] AS [kinds] ON [emps].empKind = [kinds].ndx');
 		array_push ($q, ' WHERE 1');
 
 		// -- fulltext
@@ -72,6 +77,8 @@ class ViewEmps extends TableView
 			array_push ($q, ' AND (');
 			array_push ($q, ' [emps].[fullName] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ' OR [emps].[personalId] LIKE %s', '%'.$fts.'%');
+			array_push ($q, ' OR [kinds].[fullName] LIKE %s', '%'.$fts.'%');
+			array_push ($q, ' OR [kinds].[shortName] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ')');
 		}
 
@@ -110,7 +117,7 @@ class FormEmp extends TableForm
 					$this->addSeparator(self::coH4);
           $this->addColumnInput ('slrCentre');
 					$this->addSeparator(self::coH4);
-					$this->addColumnInput ('optionSrazkovaDan');
+					$this->addColumnInput ('empKind');
 				$this->closeTab();
 				$this->openTab (TableForm::ltNone);
 					$this->addList ('orgs');

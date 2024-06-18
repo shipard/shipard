@@ -10,7 +10,6 @@ class ModuleServices extends \E10\CLI\ModuleServices
 	public function onAppUpgrade ()
 	{
 		$s [] = ['end' => '2024-06-30', 'sql' => "UPDATE e10doc_slr_imports SET importType = 'cz-perm' WHERE importType = ''"];
-		$s [] = ['end' => '2024-06-16', 'sql' => "UPDATE e10doc_slr_emps SET optionSrazkovaDan = 1 WHERE personalId LIKE 'DPP%'"];
 
 		$this->doSqlScripts ($s);
 	}

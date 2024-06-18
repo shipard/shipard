@@ -132,12 +132,11 @@ class ImportEngineCZPohoda extends \e10doc\slr\libs\ImportEngine
         if (!$empAmount)
           continue;
 
-        if ($si['id'] === 'dan' && $empRecData['optionSrazkovaDan'])
-        {
-          $slrItemRecData = $this->loadSlrItem('dan-srazka', 'Srážková daň');
-        }
-        else
-          $slrItemRecData = $this->loadSlrItem($si['id'], $si['fn']);
+        $slrItemId = $si['id'];
+        if (isset($empRecData['empKindCfg']['slrItemIdSuffix']) && $empRecData['empKindCfg']['slrItemIdSuffix'] !== '')
+          $slrItemId .= '-'.$empRecData['empKindCfg']['slrItemIdSuffix'];
+
+        $slrItemRecData = $this->loadSlrItem($slrItemId, $si['fn']);
 
         $oneItem = ['amount' => $empAmount, 'hours' => 0];
         $this->addOneItem($empRecData['ndx'], $slrItemRecData['ndx'], $oneItem);
