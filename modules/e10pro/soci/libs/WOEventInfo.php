@@ -158,7 +158,12 @@ class WOEventInfo extends \e10mnf\core\libs\WorkOrderInfo
 
       if (!$this->forPrint)
       {
-        $personInfo[] = ['text' => '', 'title' => 'Přihláška', 'docAction' => 'edit', 'table' => 'e10pro.soci.entries', 'pk' => $entryNdx, 'class' => 'pull-right', 'icon' => 'tables/e10pro.soci.entries'];
+        $nyClass= '';
+        if ($entry['nextYearContinue'] === 1)
+          $nyClass= 'e10-success';
+        elseif ($entry['nextYearContinue'] === 2)
+          $nyClass= 'e10-error';
+        $personInfo[] = ['text' => '', 'type' => 'span', 'title' => 'Přihláška', 'docAction' => 'edit', 'table' => 'e10pro.soci.entries', 'pk' => $entryNdx, 'class' => 'pull-right '.$nyClass, 'icon' => 'tables/e10pro.soci.entries'];
       }
 
       if (!Utils::dateIsBlank($entry['datePeriodEnd']))

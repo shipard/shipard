@@ -34,6 +34,11 @@
     {"id": "source", "name": "Zdroj", "type": "enumInt",
       "enumValues": {"0": "Papírová přihláška", "1": "E-mail", "2": "Webový formulář", "3": "Import"}},
 
+		{"id": "nextYearContinue", "name": "Pokračovat v dalším roce", "type": "enumInt",
+      "enumValues": {"0": "", "1": "Ano", "2": "Ne"}},
+		{"id": "nextYearPayment", "name": "Platba na období", "type": "enumInt",
+      "enumValues": {"0": "", "1": "Celý rok", "2": "Pololetí"}},
+
 		{"id": "webSentDate", "name": "Datum a čas odeslání přihlášky z webu", "type": "timestamp"},
 		{"id": "confirmEmailDone", "name": "Potvrzovací email odeslán", "type": "logical"},
 

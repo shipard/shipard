@@ -536,7 +536,13 @@ class FormEntry extends TableForm
 	  	$this->closeTab ();
 
       $this->openTab ();
-        $this->addColumnInput('source');
+			if ($entryKind['usePeriods'] ?? 0)
+			{
+				$this->addColumnInput('nextYearContinue');
+				$this->addColumnInput('nextYearPayment');
+				$this->addSeparator(self::coH3);
+			}
+			$this->addColumnInput('source');
         if (($entryKind['inputPerson'] ?? 0) === 0)
           $this->addColumnInput('dstPerson');
         $this->addColumnInput('entryKind');
