@@ -4,6 +4,7 @@
 	{"name": "Učební plány", "class": "e10pro.zus.reportTeachPlan", "icon": "reportStudyPlan", "group": "e10pro-zus"},
 	{"name": "Výkaz o ZUŠ", "class": "e10pro.zus.reportVykazZus", "icon": "system/iconFile", "group": "e10pro-zus"},
 	{"name": "Výkaz TK", "class": "e10pro.zus.libs.ReportHromadnyVykazTridnichKnih", "icon": "tables/e10pro.zus.studium", "group": "e10pro-zus"},
+	{"name": "Výkaz žáků a hodin", "class": "e10pro.zus.libs.ReportHromadnyVykazZakuAHodin", "icon": "tables/e10pro.zus.studium", "group": "e10pro-zus"},
 	{"name": "Rozvrhy", "class": "e10pro.zus.ReportPlan", "icon": "reportTimeTable", "group": "e10pro-zus"},
 	{"name": "Tisk vysvědčení", "class": "e10pro.zus.SchoolReportsPrintReport", "icon": "reportPrintCertificates", "group": "e10pro-zus"},
 	{"name": "Faktury", "class": "e10pro.zus.ReportInvoices", "icon": "reportInvoices", "group": "e10pro-zus"},

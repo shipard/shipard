@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+	<title>test</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v24" type="text/css"/>
+
+	<style>
+		table.seznamStudii {font-size: 9pt;}
+	</style>
+
+</head>
+
+
+<body style="font-size: 10pt;">
+	{{#data.reportTexts.subHeader}}<div class='reportTextHeader'>{{{data.reportTexts.subHeader}}}</div>{{/data.reportTexts.subHeader}}
+
+
+	<div style="text-align: center">
+		<h2 style="padding-top: 10pt;">{{data.teacher.fullName}}</h2>
+		<span style="padding-left: 3cm; padding-right: 3cm; padding-top: 6pt; margin-top: 6pt; border-top: 1px dotted black;">učitel/ka</span>
+		<h2 style="padding-top: 20pt;">školní rok {{data.schoolYear.nazev}}</h2>
+	</div>
+
+	{{{@renderContent;dataItem:data.test}}}
+
+	{{#data.reportTexts.subFooter}}<div class='reportTextFooter'>{{{data.reportTexts.subFooter}}}</div>{{/data.reportTexts.subFooter}}
+
+</body>
+</html>
+
