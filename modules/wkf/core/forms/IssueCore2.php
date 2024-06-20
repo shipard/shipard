@@ -77,6 +77,7 @@ class IssueCore2 extends TableForm
 		if ($enableConnectedIssues)
 			$tabs ['tabs'][] = ['text' => 'Propojení', 'icon' => 'formLink'];
 		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
+		//$tabs ['tabs'][] = ['text' => 'Historie', 'icon' => 'system/formHistory'];
 
 		$bigTextMode = 0;
 		//if ($this->formKind === self::fkDefault && $askPersons !== self::askYes && $askDeadline !== self::askYes && $askDateIncoming !== self::askYes && $askWorkOrder !== self::askYes)
@@ -152,6 +153,12 @@ class IssueCore2 extends TableForm
 		$this->openTab(TableForm::ltNone);
 		$this->addAttachmentsViewer();
 		$this->closeTab();
+		/*
+		$this->openTab(self::ltNone);
+			$params = ['tableid' => $this->tableId(),'recid' => $this->recData['ndx']];
+			$this->addViewerWidget('e10.base.docslog', 'e10.base.libs.ViewDocsLogDocHistory', $params);
+		$this->closeTab();
+		*/
 		$this->closeTabs ();
 		$this->closeForm ();
 	}
@@ -258,6 +265,7 @@ class IssueCore2 extends TableForm
 
 		$tabs ['tabs'][] = ['text' => 'Obsah', 'icon' => 'system/formHeader'];
 		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
+		$tabs ['tabs'][] = ['text' => 'Historie', 'icon' => 'system/formHistory'];
 
 		$this->openForm (TableForm::ltNone);
 			$this->addColumnInput ('subject', TableForm::coHidden);
@@ -267,6 +275,10 @@ class IssueCore2 extends TableForm
 				$this->closeTab();
 				$this->openTab(TableForm::ltNone);
 					$this->addAttachmentsViewer();
+				$this->closeTab();
+				$this->openTab(self::ltNone);
+					$params = ['tableid' => $this->tableId(),'recid' => $this->recData['ndx']];
+					$this->addViewerWidget('e10.base.docslog', 'e10.base.libs.ViewDocsLogDocHistory', $params);
 				$this->closeTab();
 			$this->closeTabs();
 		$this->closeForm ();
