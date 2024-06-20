@@ -471,7 +471,7 @@ class TableDevices extends DbTable
 				$portId = strval ($groupIndex);
 				if ($onePort['maskId'] !== '')
 				{
-					if (strpos($$onePort['maskId'], '%N') !== FALSE)
+					if (strpos($onePort['maskId'], '%N') !== FALSE)
 						$portId = str_replace('%N', $portId, $onePort['maskId']);
 					else
 						$portId = $onePort['maskId'].$portId;

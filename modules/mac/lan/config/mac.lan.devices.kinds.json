@@ -1,6 +1,6 @@
 {
 	"0": {
-		"name": "---", "pluralName": "", "active": 0, "icon": "x-cog",
+		"name": "---", "pluralName": "---", "active": 0, "icon": "x-cog",
 		"overviewOrder": 999999, "alerts": 2, "alertsScope": 0
 	},
 	"1": {

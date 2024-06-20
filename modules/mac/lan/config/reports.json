@@ -1,4 +1,5 @@
 [
 	{"name": "SW licence", "class": "mac.lan.ReportSWLicenses", "icon": "report/SWLicenses", "group": "mac-lan", "order": 1000},
+	{"name": "Síťová zařízení", "class": "mac.lan.libs.reports.ReportDevices", "icon": "tables/mac.lan.devices", "group": "mac-lan", "order": 100000},
 	{"name": "Shipard Agent", "class": "mac.lan.libs.ReportShipardAgentInstall", "icon": "report/shipardAgent", "group": "mac-lan", "order": 100000}
 ]

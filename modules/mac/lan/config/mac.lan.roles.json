@@ -38,7 +38,8 @@
 		  "mac.lan.LanAddressesWidget": 2
 	  },
 	  "reports": {
-		  "mac.lan.ReportSWLicenses": 2
+		  "mac.lan.ReportSWLicenses": 2,
+			"mac.lan.libs.reports.ReportDevices": 2
 	  }
 	},
 	"admin": {
