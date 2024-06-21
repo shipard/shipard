@@ -57,10 +57,6 @@ class ImportEngine extends Utility
   {
   }
 
-  protected function addOneItem($empNdx, $slrItemNdx, $item)
-  {
-  }
-
   protected function loadEmp($personalId, $empName = '')
   {
     if (array_key_exists($personalId, $this->emps))
@@ -166,15 +162,36 @@ class ImportEngine extends Utility
     }
   }
 
-  protected function searchCentre($centreId)
+  protected function searchCentreById($centreId)
   {
+    $centreImportRecData = $this->db()->query('SELECT * FROM [e10doc_slr_centres] WHERE [importId] = %s', $centreId,
+                                        ' AND [docState] != %i', 9800)->fetch();
+    if ($centreImportRecData)
+    {
+      $centreRecData = $this->app()->loadItem($centreImportRecData['centre'], 'e10doc.base.centres');
+      return $centreRecData;
+    }
+
     $centreRecData = $this->db()->query('SELECT * FROM [e10doc_base_centres] WHERE [id] = %s', $centreId,
                                         ' AND [docState] != %i', 9800)->fetch();
-
     if ($centreRecData)
       return $centreRecData->toArray();
 
     return NULL;
+  }
+
+  protected function searchCentre($empRecData, $slrItemNdx)
+  {
+    $empSlrItemCentre = $this->db()->query('SELECT * FROM [e10doc_slr_empsCentres] WHERE ',
+                                            '[emp] = %i', $empRecData['ndx'],
+                                            ' AND [slrItem] = %i', $slrItemNdx)->fetch();
+    if ($empSlrItemCentre && $empSlrItemCentre['centre'])
+      return $empSlrItemCentre['centre'];
+
+    if ($empRecData['slrCentre'])
+      return $empRecData['slrCentre'];
+
+    return 0;
   }
 
   public function run()

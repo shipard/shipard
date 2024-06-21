@@ -12,7 +12,8 @@
 							"slrItems": {"t1": "Položky", "object": "viewer", "table": "e10doc.slr.slrItems", "viewer": "default", "order": 700000, "beforeSeparator":  1},
 							"emps": {"t1": "Zaměstnanci", "object": "viewer", "table": "e10doc.slr.emps", "viewer": "default", "order": 90000, "beforeSeparator":  1},
 							"orgs": {"t1": "Instituce", "object": "viewer", "table": "e10doc.slr.orgs", "viewer": "default", "order": 91000},
-							"empsKinds": {"t1": "Druhy zam.", "object": "viewer", "table": "e10doc.slr.empsKinds", "viewer": "default", "order": 92000}
+							"empsKinds": {"t1": "Druhy zam.", "object": "viewer", "table": "e10doc.slr.empsKinds", "viewer": "default", "order": 92000},
+							"slrCentres": {"t1": "Střediska", "object": "viewer", "table": "e10doc.slr.centres", "viewer": "default", "order": 93000}
 						}
 					}
 				}

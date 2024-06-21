@@ -139,7 +139,7 @@ class ImportEngineCZPohoda extends \e10doc\slr\libs\ImportEngine
         $slrItemRecData = $this->loadSlrItem($slrItemId, $si['fn']);
 
         $oneItem = ['amount' => $empAmount, 'hours' => 0];
-        $this->addOneItem($empRecData['ndx'], $slrItemRecData['ndx'], $oneItem);
+        $this->addOneItem($empRecData, $slrItemRecData['ndx'], $oneItem);
       }
     }
   }
@@ -177,7 +177,7 @@ class ImportEngineCZPohoda extends \e10doc\slr\libs\ImportEngine
 
         $slrItemRecData = $this->loadSlrItem($si['id'], $si['fn']);
         $oneItem = ['amount' => $empAmount, 'hours' => 0];
-        $this->addOneItem($empRecData['ndx'], $slrItemRecData['ndx'], $oneItem);
+        $this->addOneItem($empRecData, $slrItemRecData['ndx'], $oneItem);
       }
 
       //echo json_encode($empAmounts)."\n";
@@ -217,16 +217,16 @@ class ImportEngineCZPohoda extends \e10doc\slr\libs\ImportEngine
 
         $slrItemRecData = $this->loadSlrItem($si['id'], $si['fn']);
         $oneItem = ['amount' => $empAmount, 'hours' => 0];
-        $this->addOneItem($empRecData['ndx'], $slrItemRecData['ndx'], $oneItem);
+        $this->addOneItem($empRecData, $slrItemRecData['ndx'], $oneItem);
       }
     }
   }
 
-  protected function addOneItem($empNdx, $slrItemNdx, $item)
+  protected function addOneItem($empRecData, $slrItemNdx, $item)
   {
     $empRecNdx = 0;
     $empRecRecData = $this->db()->query('SELECT * FROM [e10doc_slr_empsRecs] WHERE',
-                                    ' [emp] = %i', $empNdx,
+                                    ' [emp] = %i', $empRecData['ndx'],
                                     ' AND [import] = %i', $this->importNdx)->fetch();
     if ($empRecRecData)
     {
@@ -235,7 +235,7 @@ class ImportEngineCZPohoda extends \e10doc\slr\libs\ImportEngine
     else
     {
       $newEmpRec = [
-         'emp' => $empNdx,
+         'emp' => $empRecData['ndx'],
          'import' => $this->importNdx,
          'docState' => 1000, 'docStateMain' => 0,
       ];
@@ -256,6 +256,12 @@ class ImportEngineCZPohoda extends \e10doc\slr\libs\ImportEngine
     {
       $newRow['quantity'] = $q;
       $newRow['unit'] = 'hr';
+    }
+
+    $centreNdx = $this->searchCentre($empRecData, $slrItemNdx);
+    if ($centreNdx)
+    {
+      $newRow['centre'] = $centreNdx;
     }
 
     $this->db()->query('INSERT INTO [e10doc_slr_empsRecsRows]', $newRow);

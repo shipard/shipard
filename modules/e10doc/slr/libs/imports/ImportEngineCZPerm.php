@@ -60,15 +60,15 @@ class ImportEngineCZPerm extends \e10doc\slr\libs\ImportEngine
       if (!$empRecData || !$slrItemRecData)
         continue;
 
-      $this->addOneItem($empRecData['ndx'], $slrItemRecData['ndx'], $oneItem);
+      $this->addOneItem($empRecData, $slrItemRecData['ndx'], $oneItem);
     }
   }
 
-  protected function addOneItem($empNdx, $slrItemNdx, $item)
+  protected function addOneItem($empRecData, $slrItemNdx, $item)
   {
     $empRecNdx = 0;
     $empRecRecData = $this->db()->query('SELECT * FROM [e10doc_slr_empsRecs] WHERE',
-                                    ' [emp] = %i', $empNdx,
+                                    ' [emp] = %i', $empRecData['ndx'],
                                     ' AND [import] = %i', $this->importNdx)->fetch();
     if ($empRecRecData)
     {
@@ -77,7 +77,7 @@ class ImportEngineCZPerm extends \e10doc\slr\libs\ImportEngine
     else
     {
       $newEmpRec = [
-         'emp' => $empNdx,
+         'emp' => $empRecData['ndx'],
          'import' => $this->importNdx,
          'docState' => 1000, 'docStateMain' => 0,
       ];
@@ -100,9 +100,15 @@ class ImportEngineCZPerm extends \e10doc\slr\libs\ImportEngine
       $newRow['unit'] = 'hr';
     }
 
+    $centreNdx = $this->searchCentre($empRecData, $slrItemNdx);
+    if ($centreNdx)
+    {
+      $newRow['centre'] = $centreNdx;
+    }
+    else
     if (isset($item['Stredisko']) && $item['Stredisko'] != '')
     {
-      $centreRecData = $this->searchCentre($item['Stredisko']);
+      $centreRecData = $this->searchCentreById($item['Stredisko']);
       if ($centreRecData)
         $newRow['centre'] = $centreRecData['ndx'];
     }

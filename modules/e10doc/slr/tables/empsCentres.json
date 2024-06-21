@@ -1,0 +1,19 @@
+{
+	"id": "e10doc.slr.empsCentres", "sql": "e10doc_slr_empsCentres", "name": "Nastavení středisek zaměstnanců",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+
+    {"id": "emp", "name": "Zaměstnanec", "type": "int", "reference": "e10doc.slr.emps"},
+
+		{"id": "slrItem", "name": "Mzdová položka", "type": "int", "reference": "e10doc.slr.slrItems"},
+    {"id": "centre", "name": "Středisko", "type": "int", "reference": "e10doc.base.centres"},
+
+    {"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.slr.FormEmpCentre"}
+	],
+	"options": ["systemTable"]
+}

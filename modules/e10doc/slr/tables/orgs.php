@@ -48,11 +48,21 @@ class ViewOrgs extends TableView
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['t1'] = $item['fullName'];
 
+		$props3 = [];
+		if ($item['bankAccount'] !== '')
+			$props3[] = ['text' => $item['bankAccount'], 'icon' => 'paymentMethodTransferOrder', 'class' => 'label label-default'];
+		else
+			$props3[] = ['text' => 'Chybí bankovní účet pro úhradu', 'class' => 'label label-danger'];
 
-		//$listItem ['i1'] = ['text' => $item['importId'], 'class' => 'id'];
+		$props3[] = ['text' => $item['symbol1'], 'prefix' => 'VS', 'class' => 'label label-default'];
 
-//		$props = [];
-//		$listItem ['t2'] = $props;
+		if ($item['symbol2'] !== '')
+			$props3[] = ['text' => $item['symbol2'], 'prefix' => 'SS', 'class' => 'label label-default'];
+
+		if ($item['symbol3'] !== '')
+			$props3[] = ['text' => $item['symbol3'], 'prefix' => 'KS', 'class' => 'label label-default'];
+
+		$listItem ['t2'] = $props3;
 
 
 		$listItem ['icon'] = $this->table->tableIcon ($item);

@@ -1,6 +1,7 @@
 {
   "acc": {
 		"viewers": {
+			"e10doc.slr.centres": {"default": 2},
 			"e10doc.slr.emps": {"default": 2},
 			"e10doc.slr.empsKinds": {"default": 2},
 			"e10doc.slr.orgs": {"default": 2},
