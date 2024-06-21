@@ -51,7 +51,8 @@ class AccEngine extends Utility
     $q = [];
     array_push ($q, 'SELECT [recsRows].*, ');
 		array_push ($q, ' slrItems.fullName AS srlItemName, slrItems.itemType AS slrItemType, ');
-    array_push ($q, ' slrItems.accItemDr, slrItems.accItemCr, slrItems.accItemBal, slrItems.moneyOrg AS slrOrg, slrItems.fullName AS slrItemName,');
+    array_push ($q, ' slrItems.accItemDr, slrItems.accItemCr, slrItems.accItemBal, slrItems.moneyOrg AS slrOrg,');
+    array_push ($q, ' slrItems.fullName AS slrItemName, slrItems.dueDay AS slrItemDueDay,');
     array_push ($q, ' [centres].[id] AS [centreId]');
 		array_push ($q, ' FROM [e10doc_slr_empsRecsRows] AS [recsRows]');
 		array_push ($q, ' LEFT JOIN [e10doc_slr_slrItems] AS slrItems ON [recsRows].slrItem = slrItems.ndx');
@@ -88,7 +89,7 @@ class AccEngine extends Utility
         $item['symbol3'] = $this->empRecData['slrSymbol3'];
         $item['person'] = $this->empRecData['person'];
 
-        $dueDays = 10;
+        $dueDays = ($r['slrItemDueDay']) ? $r['slrItemDueDay'] - 1 : 14;
         $dateDue = new \DateTime($this->nextMonthFirstDay->format('Y-m-d'));
         $dateDue->add(new \DateInterval('P'.$dueDays.'D'));
         $item['dateDue'] = $dateDue;
@@ -117,7 +118,7 @@ class AccEngine extends Utility
           $item['symbol3'] = $paymentOrgRecData['symbol3'];
           $item['person'] = $paymentOrgRecData['person'];
 
-          $dueDays = 15;
+          $dueDays = ($r['slrItemDueDay']) ? $r['slrItemDueDay'] - 1 : 14;
           $dateDue = new \DateTime($this->nextMonthFirstDay->format('Y-m-d'));
           $dateDue->add(new \DateInterval('P'.$dueDays.'D'));
           $item['dateDue'] = $dateDue;
