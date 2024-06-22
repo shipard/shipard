@@ -2,6 +2,7 @@
   "5": {
     "fn": "Hrubá mzda",
     "sn": "Hrubá mzda",
+    "disableAccItemBal": 1,
     "payee": 0,
     "mandatory": 1
   },
@@ -38,6 +39,7 @@
   "40": {
     "fn": "Čistá mzda",
     "sn": "Čistá mzda",
+    "disableAccItemBal": 1,
     "payee": 1,
     "mandatory": 1
   },

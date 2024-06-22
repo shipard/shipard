@@ -69,6 +69,9 @@ class ViewSlrItems extends TableView
 		if (count($props))
 			$listItem ['t2'] = $props;
 
+		if ($item['dueDay'])
+			$listItem['i2']	= ['text' => strval($item['dueDay']), 'class' => 'label label-info', 'icon' => 'system/iconCalendar'];
+
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
 		return $listItem;
@@ -133,10 +136,14 @@ class FormSlrItem extends TableForm
 						$this->addColumnInput ('moneyOrg');
 					$this->addSeparator(self::coH4);
 					$this->addColumnInput ('accItemDr');
-					$this->addColumnInput ('accItemBal');
+					if (!($itemType['disableAccItemBal'] ?? 0))
+						$this->addColumnInput ('accItemBal');
 					$this->addColumnInput ('accItemCr');
-					$this->addSeparator(self::coH4);
-					$this->addColumnInput ('dueDay');
+					if ($itemType['payee'])
+					{
+						$this->addSeparator(self::coH4);
+						$this->addColumnInput ('dueDay');
+					}
 				$this->closeTab();
 				$this->openTab (TableForm::ltNone);
 					$this->addAttachmentsViewer();
