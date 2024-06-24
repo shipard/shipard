@@ -1062,6 +1062,21 @@ class FormWorkOrder extends TableForm
 						return FALSE;
 					}
 				}
+
+				if ($saveData['recData']['ndx'])
+				{
+					$q = [];
+					array_push($q, 'SELECT ndx, docState, docNumber, title');
+					array_push($q, ' FROM [e10mnf_core_workOrders]');
+					array_push($q, ' WHERE parentWorkOrder = %i', $saveData['recData']['ndx']);
+					array_push($q, ' AND docState NOT IN %in', [4000, 4100, 9800]);
+					$rows = $this->app()->db()->query($q);
+					foreach ($rows as $r)
+					{
+						$this->setColumnState('title', utils::es ('Podřízená zakázka'." `".$r['docNumber']."` (".$r['title'].")".' není ukončena'));
+						return FALSE;
+					}
+				}
 			}
 		}
 		return parent::validNewDocumentState($newDocState, $saveData);
