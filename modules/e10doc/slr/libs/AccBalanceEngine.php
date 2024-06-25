@@ -4,7 +4,7 @@ use \Shipard\Base\Utility;
 use \e10\base\libs\UtilsBase;
 use \Shipard\Utils\Json;
 use \e10doc\core\libs\CreateDocumentUtility;
-
+use \Shipard\Utils\Utils;
 
 /**
  * class AccBalanceEngine
@@ -60,6 +60,58 @@ class AccBalanceEngine extends Utility
         else
           $this->docRowsPacked[$packId]['credit'] += $docRow['credit'];
       }
+    }
+
+    // -- round
+    $rowOrder = 100;
+    $roundingRows = [];
+    foreach ($this->docRowsPacked as $packId => $row)
+    {
+      $this->docRowsPacked[$packId]['rowOrder'] = $rowOrder;
+      $rowOrder += 100;
+
+      if (!isset($this->docRowsPacked[$packId]['credit']))
+        continue;
+      if (1)
+      {
+        $roundMethod = $this->app()->cfgItem ('e10.docs.roundMethods.' . '2', 0); // Koruny nahoru
+        $roundedAmount = Utils::e10round($this->docRowsPacked[$packId]['credit'], $roundMethod);
+        if (strval($roundedAmount) !== strval($this->docRowsPacked[$packId]['credit']))
+        {
+          $rounding = Utils::round($roundedAmount - $this->docRowsPacked[$packId]['credit'], 2, 0);
+          $this->docRowsPacked[$packId]['credit'] = $roundedAmount;
+          if ($rounding > 0)
+          {
+            $accItemRound = $this->app()->cfgItem ('options.e10doc-finance.accItemRoundCost', 0);
+            $rndRow = [
+              'item' => $accItemRound,
+              'debit' => $rounding,
+              'person' => 0,
+              'text' => 'Zaokrouhlení: '.$row['text'],
+              'centre' => $row['centre'] ?? 0,
+              'rowOrder' => $this->docRowsPacked[$packId]['rowOrder'] - 10,
+            ];
+            $roundingRows[] = $rndRow;
+          }
+          else
+          {
+            $accItemRound = $this->app()->cfgItem ('options.e10doc-finance.accItemRoundProfit', 0);
+            $rndRow = [
+              'item' => $accItemRound,
+              'credit' => $rounding,
+              'person' => 0,
+              'text' => 'Zaokrouhlení: '.$row['text'],
+              'centre' => $row['centre'] ?? 0,
+              'rowOrder' => $this->docRowsPacked[$packId]['rowOrder'] - 10,
+            ];
+            $roundingRows[] = $rndRow;
+          }
+        }
+      }
+    }
+    if (count($roundingRows))
+    {
+      $this->docRowsPacked = array_merge($this->docRowsPacked, $roundingRows);
     }
   }
 
@@ -117,7 +169,7 @@ class AccBalanceEngine extends Utility
       $newRow[$key] = $value;
 
     $newRow['operation'] = '1099998';
-    $newRow['rowOrder'] = $this->rowOrder;
+    //$newRow['rowOrder'] = $this->rowOrder;
 
     $this->rowOrder += 100;
 
