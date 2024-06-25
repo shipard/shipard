@@ -66,6 +66,9 @@ class ViewSlrItems extends TableView
 
 		$props[] = ['text' => $accItemTxt, 'class' => 'label label-default'];
 
+		if ($item['negativeAmount'])
+			$props[] = ['text' => '✖️ -1', 'class' => 'label label-info'];
+
 		if (count($props))
 			$listItem ['t2'] = $props;
 
@@ -144,6 +147,8 @@ class FormSlrItem extends TableForm
 						$this->addSeparator(self::coH4);
 						$this->addColumnInput ('dueDay');
 					}
+					$this->addSeparator(self::coH4);
+					$this->addColumnInput ('negativeAmount');
 				$this->closeTab();
 				$this->openTab (TableForm::ltNone);
 					$this->addAttachmentsViewer();

@@ -60,11 +60,11 @@ class ImportEngineCZPerm extends \e10doc\slr\libs\ImportEngine
       if (!$empRecData || !$slrItemRecData)
         continue;
 
-      $this->addOneItem($empRecData, $slrItemRecData['ndx'], $oneItem);
+      $this->addOneItem($empRecData, $slrItemRecData, $oneItem);
     }
   }
 
-  protected function addOneItem($empRecData, $slrItemNdx, $item)
+  protected function addOneItem($empRecData, $slrItemRecData, $item)
   {
     $empRecNdx = 0;
     $empRecRecData = $this->db()->query('SELECT * FROM [e10doc_slr_empsRecs] WHERE',
@@ -89,9 +89,12 @@ class ImportEngineCZPerm extends \e10doc\slr\libs\ImportEngine
     $newRow = [
       'rowOrder' => 100,
       'empsRec' => $empRecNdx,
-      'slrItem' => $slrItemNdx,
+      'slrItem' => $slrItemRecData['ndx'],
       'amount' => $item['Castka'],
     ];
+
+    if ($slrItemRecData['negativeAmount'] ?? 0)
+      $newRow['amount']  = - $newRow['amount'];
 
     $q = floatval($item['NatUkaz'] ?? 0);
     if ($q)
@@ -100,7 +103,7 @@ class ImportEngineCZPerm extends \e10doc\slr\libs\ImportEngine
       $newRow['unit'] = 'hr';
     }
 
-    $centreNdx = $this->searchCentre($empRecData, $slrItemNdx);
+    $centreNdx = $this->searchCentre($empRecData, $slrItemRecData['ndx']);
     if ($centreNdx)
     {
       $newRow['centre'] = $centreNdx;

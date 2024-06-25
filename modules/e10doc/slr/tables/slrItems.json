@@ -13,6 +13,7 @@
 		{"id": "moneyOrg", "name": "Instituce", "type": "int", "reference": "e10doc.slr.orgs"},
 
 		{"id": "dueDay", "name": "Den splatnosti (v měsíci)", "type": "int"},
+		{"id": "negativeAmount", "name": "Záporná částka (✖️ -1)", "type": "logical"},
 
 		{"id": "accItemDr", "name": "Účtopoložka MD", "type": "int", "reference": "e10.witems.items", "comboViewer": "combo"},
     {"id": "accItemCr", "name": "Účtopoložka DAL", "type": "int", "reference": "e10.witems.items", "comboViewer": "combo"},

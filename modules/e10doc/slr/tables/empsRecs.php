@@ -76,7 +76,7 @@ class ViewEmpsRecs extends TableView
 			array_push ($q, ')');
 		}
 
-		$this->queryMain ($q, '[empsRecs].', ['fullName', '[ndx]']);
+		$this->queryMain ($q, '[empsRecs].', ['imports.calendarYear DESC', 'imports.calendarMonth DESC', 'fullName', '[ndx]']);
 		$this->runQuery ($q);
 	}
 }

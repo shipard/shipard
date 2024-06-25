@@ -17,7 +17,7 @@ class ImportEngineCZPohoda extends \e10doc\slr\libs\ImportEngine
     2 => ['id' => 'zp-prac', 'fn' => 'Zdravotní pojištění (odvod za zaměstnance)', 'i' => 0],
     3 => ['id' => 'dan', 'fn' => 'Daň', 'i' => 1],
     4 => ['id' => 'slevy', 'fn' => 'Slevy', 'i' => 0],
-    5 => ['id' => 'bonus', 'fn' => 'Bonus', 'i' => 0],
+    5 => ['id' => 'bonus', 'fn' => 'Bonus', 'i' => 1],
     6 => ['id' => 'rocni-zuct', 'fn' => 'Roční zůčtování', 'i' => 0],
     7 => ['id' => 'nahrady', 'fn' => 'Náhrady', 'i' => 1],
     8 => ['id' => 'nezd-nahrady', 'fn' => 'Nezdaněné náhrady', 'i' => 1],
@@ -137,6 +137,9 @@ class ImportEngineCZPohoda extends \e10doc\slr\libs\ImportEngine
           $slrItemId .= '-'.$empRecData['empKindCfg']['slrItemIdSuffix'];
 
         $slrItemRecData = $this->loadSlrItem($slrItemId, $si['fn']);
+
+        if ($slrItemRecData['negativeAmount'] ?? 0)
+          $empAmount = - $empAmount;
 
         $oneItem = ['amount' => $empAmount, 'hours' => 0];
         $this->addOneItem($empRecData, $slrItemRecData['ndx'], $oneItem);
