@@ -38,7 +38,7 @@ class WebScript extends Utility
 		$this->scriptRecData = $rec->toArray();
 	}
 
-	function runScript($data = NULL, $srcTemplate = NULL)
+	function runScript($data = NULL, $removeArrayKeys = TRUE)
 	{
 		$this->loadScript();
 		if (!$this->scriptRecData)
@@ -47,7 +47,7 @@ class WebScript extends Utility
 		$t = new \e10\TemplateCore($this->app());
 		foreach ($data as $k => $v)
 		{
-			if (is_array($v))
+			if ($removeArrayKeys && is_array($v))
 				$t->data[$k] = array_values($v);
 			else
 				$t->data[$k] = $v;

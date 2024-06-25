@@ -14,6 +14,24 @@ class WebForm2 extends \Shipard\Base\WebForm
 		$useReCaptcha = ($this->template && isset($this->template->pageParams['recaptcha-v3-site-key']));
 
 		$this->formInfo['formErrors'] = $this->formErrors;
+
+		$this->formInfo['formErrorsAll'] = [];
+		foreach ($this->formErrors as $inputId => $msg)
+		{
+			$this->formInfo['formErrorsAll'][] = ['inputId' => $inputId, 'msg' => $msg];
+		}
+
+		$formData = [];
+		$flds = $this->fields();
+		foreach ($flds as $fld)
+		{
+			$inputValue = $this->app->testPostParam ($fld, NULL);
+			if ($inputValue !== NULL)
+				$formData[$fld] = Utils::es($inputValue);
+		}
+		$this->formInfo['frmData'] = $formData;
+		$this->formInfo['formDataJSON'] = json_encode($formData);
+
 		$this->loadData();
 
 		$c = '';
@@ -40,7 +58,7 @@ class WebForm2 extends \Shipard\Base\WebForm
 		{
 			$script = new \lib\web\WebScript($this->app());
 			$script->setScriptId($this->webScriptId);
-			$script->runScript($this->formInfo);
+			$script->runScript($this->formInfo, FALSE);
 			$c .= $script->resultCode;
 		}
 

@@ -1,5 +1,7 @@
 <?php
 namespace e10pro\soci\libs;
+
+use e10\utils as E10Utils;
 use \Shipard\Utils\Utils, \Shipard\Utils\Json, \Shipard\Utils\Str;
 
 
@@ -15,9 +17,13 @@ class WebFormEntry extends \Shipard\Base\WebForm2
 		return [
 			'firstName', 'lastName',
       'bdDay', 'bdMonth', 'bdYear',
-      'branch', 'course',
+      'place', 'event',
 			'email', 'phone',
-			'healthIssues', 'healthIssuesNote',
+			'healthIssues',
+			'healthIssuesNote',
+			'bdDay', 'bdMonth', 'bdYear',
+			'paymentPeriod',
+			'saleType',
 		];
 	}
 
@@ -25,6 +31,7 @@ class WebFormEntry extends \Shipard\Base\WebForm2
 	{
 		$this->valid = TRUE;
 
+		$this->checkBirthdate();
 		$this->checkValidField('firstName', 'Jméno není vyplněno');
 		$this->checkValidField('lastName', 'Příjmení není vyplněno');
 
@@ -62,8 +69,21 @@ class WebFormEntry extends \Shipard\Base\WebForm2
 		return $this->valid;
 	}
 
+	protected function checkBirthdate()
+	{
+		$bdStr = sprintf('%04d-%02d-%02d', intval($this->data['bdYear']), intval($this->data['bdMonth']), intval($this->data['bdDay']));
+		//$bd = new \DateTime($bdStr);
+		if (!Utils::dateIsValid($bdStr))
+		{
+			$this->formErrors ['bdDay'] = 'Vyplňte prosím správné datum narození';
+			$this->valid = FALSE;
+			return FALSE;
+		}
+	}
+
 	public function checkValidField ($id, $msg)
 	{
+		/*
 		if ($id === 'misto')
 		{
 			$misto = intval($this->app->testPostParam ('misto'));
@@ -94,7 +114,7 @@ class WebFormEntry extends \Shipard\Base\WebForm2
 				return;
 			}
 		}
-
+		*/
 		if ($this->app->testPostParam ($id) == '')
 		{
 			$this->formErrors [$id] = $msg;
@@ -107,19 +127,28 @@ class WebFormEntry extends \Shipard\Base\WebForm2
 		/** @var \e10pro\soci\TableEntries $tableEntries */
 		$tableEntries = $this->app->table('e10pro.soci.entries');
 
+		$bd = NULL;
+		$bdStr = sprintf('%04d-%02d-%02d', intval($this->data['bdYear']), intval($this->data['bdMonth']), intval($this->data['bdDay']));
+		if (Utils::dateIsValid($bdStr))
+			$bd = new \DateTime($bdStr);
+
 		$newEntry = [
 			'firstName' => Str::upToLen($this->data['firstName'], 60),
       'lastName' => Str::upToLen($this->data['lastName'], 80),
       'email' => Str::upToLen($this->data['email'], 60),
       'phone' => Str::upToLen($this->data['phone'], 60),
 
-      'entryTo' => intval($this->data['course']),
+      'entryTo' => intval($this->data['event']),
       'entryState' => 1,
       'entryKind' => 1,
       'entryPeriod' => 2,
 
       'dateIssue' => Utils::today(),
       'webSentDate' => new \DateTime(),
+
+			'birthday' => $bd,
+			'paymentPeriod' => intval($this->data['paymentPeriod'] ?? 0),
+			'saleType' => intval($this->data['saleType'] ?? 0),
 
 			'docState' => 1000, 'docStateMain' => 0,
 		];
@@ -189,6 +218,9 @@ class WebFormEntry extends \Shipard\Base\WebForm2
 		$pks = [];
     $places = [];
 
+		$activePlace = $this->app()->testPostParam('place', NULL);
+		$activeEvent = $this->app()->testPostParam('event', NULL);
+
 		$rows = $this->app()->db()->query($q);
 		foreach ($rows as $r)
 		{
@@ -202,7 +234,13 @@ class WebFormEntry extends \Shipard\Base\WebForm2
           'ndx' => $r['place'],
 				]
       ];
+
+			if ($activeEvent !== NULL && $r['ndx'] == intval($activeEvent))
+				$item['selected'] = 1;
+
 			$item['place']['address'] = $tableAddress->loadAddresses($tablePlaces, $r['place']);
+			if ($activePlace !== NULL && $r['place'] == intval($activePlace))
+				$item['place']['selected'] = 1;
 
       $vdsData = Json::decode($r['vdsData']);
       if ($vdsData)
@@ -231,5 +269,44 @@ class WebFormEntry extends \Shipard\Base\WebForm2
 
 		$this->formInfo['events'] = array_values($t);
     $this->formInfo['places'] = array_values($places);
-  }
+
+		$activeBdDay = $this->app()->testPostParam('bdDay', NULL);
+		$this->formInfo['bdDays'] = [];
+		for ($i = 1; $i <= 31; $i++)
+		{
+			$item = ['day' => $i];
+			if ($activeBdDay !== NULL && $i == intval($activeBdDay))
+				$item['selected'] = 1;
+
+			$this->formInfo['bdDays'][] = $item;
+		}
+
+		$activeBdMonth = $this->app()->testPostParam('bdMonth', NULL);
+		$this->formInfo['bdMonths'] = [];
+		for ($i = 1; $i <= 12; $i++)
+		{
+			$item = ['monthNum' => $i, 'monthName' => Utils::$monthNames[$i - 1]];
+			if ($activeBdMonth !== NULL && $i == intval($activeBdMonth))
+				$item['selected'] = 1;
+			$this->formInfo['bdMonths'][] = $item;
+		}
+
+		$activeBdYear = $this->app()->testPostParam('bdYear', NULL);
+		$this->formInfo['bdYears'] = [];
+		for ($i = 1935; $i <= 2020; $i++)
+		{
+			$item = ['year' => $i];
+			if ($activeBdYear !== NULL && $i == intval($activeBdYear))
+				$item['selected'] = 1;
+			$this->formInfo['bdYears'][] = $item;
+		}
+
+		$activePaymentPeriod = $this->app()->testPostParam('paymentPeriod', NULL);
+		if ($activePaymentPeriod !== NULL)
+			$this->formInfo['paymentPeriod_'.intval($activePaymentPeriod)] = 1;
+
+		$activeSaleType = $this->app()->testPostParam('saleType', NULL);
+		if ($activeSaleType !== NULL)
+			$this->formInfo['saleType_'.intval($activeSaleType)] = 1;
+	}
 }
