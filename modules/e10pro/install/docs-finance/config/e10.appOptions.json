@@ -7,7 +7,9 @@
 			[
 				{"cfgKey": "useBankOrders", "cfgName": "Používat Převodní příkazy",
 					"options": {"0": "ne", "1": "ano"}},
-				{"cfgKey": "dateValidFrom_CZ_VAT_2019_4", "cfgName": "Datum platnosti novely DPH 4/2019", "placeholder": "1.9.2019"}
+				{"cfgKey": "dateValidFrom_CZ_VAT_2019_4", "cfgName": "Datum platnosti novely DPH 4/2019", "placeholder": "1.9.2019"},
+				{"cfgKey": "accItemRoundCost", "cfgName": "Účtopoložka pro zaokrouhlení - náklady", "reference": "e10.witems.items"},
+				{"cfgKey": "accItemRoundProfit", "cfgName": "Účtopoložka pro zaokrouhlení - výnosy", "reference": "e10.witems.items"}
 			]
 	}
 }
