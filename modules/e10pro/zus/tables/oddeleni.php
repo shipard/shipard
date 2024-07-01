@@ -33,6 +33,10 @@ class TableOddeleni extends DbTable
 				'urovenStudia' => $r ['urovenStudia'],
 				'platnostOd' => NULL, 'platnostDo' => NULL,
 			];
+
+			if ($r['navazneOddeleni'])
+				$itm['navazneOddeleni'] = $r ['navazneOddeleni'];
+
 			if ($itm['tisk'] === '')
 				$itm['tisk'] = $r ['nazev'];
 
