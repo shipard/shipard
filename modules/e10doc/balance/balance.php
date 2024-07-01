@@ -381,12 +381,13 @@ class reportBalance extends \e10doc\core\libs\reports\GlobalReport
 	var $currencies;
 
 	var $mode = self::bmNormal;
-	var $totalsColSpan = 5;
 
 	public $balanceKinds = array();
 	var $balanceKind = '0';
 	var $displayItem = '0';
-	public $personSubTotals = [];
+	public $dataSubTotals = [];
+	var $pidColumnName = 'person';
+	var $sortColumnName = 'fullName';
 
 	protected $paymentInfo = [];
 
@@ -412,6 +413,7 @@ class reportBalance extends \e10doc\core\libs\reports\GlobalReport
 		$this->addParamPerson ();
 		$this->addParam ('switch', 'unpairedPayments', ['title' => 'Nespárované úhrady', 'place' => 'panel', 'switch' => array ('show' => 'Zobrazovat', 'hide' => 'Nezobrazovat')]);
 		$this->addParam ('switch', 'balanceOverDue', ['title' => 'Po splatnosti', 'place' => 'panel', 'switch' => array ('highlight' => 'Zvýrazňovat', 'normal' => 'Nezvýrazňovat')]);
+		$this->addParam ('switch', 'orderBy', ['title' => 'Třídit', 'place' => 'panel', 'switch' => array ('byName' => 'Podle jména', 'byDateDue' => 'Podle splatnosti')]);
 
 		parent::init();
 
@@ -876,7 +878,21 @@ class reportBalance extends \e10doc\core\libs\reports\GlobalReport
 
 		array_push ($q, ')');
 
-		array_push ($q, ' ORDER BY persons.[fullName], [side], saldo.[date], pairId');
+		$sortColumnName = '';
+		if ($this->reportParams ['orderBy']['value'] == 'byDateDue')
+		{
+			array_push ($q, ' ORDER BY saldo.[date], persons.[fullName], [side], pairId');
+			$sortColumnName = 'date';
+			$this->pidColumnName = 'date';
+			$this->sortColumnName = 'date';
+			}
+		else
+		{
+			array_push ($q, ' ORDER BY persons.[fullName], [side], saldo.[date], pairId');
+			$sortColumnName = 'fullName';
+			$this->pidColumnName = 'person';
+			$this->sortColumnName = 'fullName';
+		}
 
 		$rows = $this->app->db()->query ($q);
 		$data = array ();
@@ -986,8 +1002,8 @@ class reportBalance extends \e10doc\core\libs\reports\GlobalReport
 		$subTotals = array ();
 		$totals = array ('fullName' => 'Celkem', 'enforce' => 1);
 
-		$lastName = FALSE;
-		$lastNameCnt = 0;
+		$lastSortValue = FALSE;
+		$lastSortValueCnt = 0;
 		forEach ($oldData as $itemId => &$itemValue)
 		{
 			$paymentId = $this->balance.'-'.$itemValue['person'].'-'.$itemValue['s1'].'-'.$itemValue['s2'];
@@ -1050,22 +1066,22 @@ class reportBalance extends \e10doc\core\libs\reports\GlobalReport
 					continue;
 			}
 
-			if ($lastName === $itemValue['fullName'])
-				$lastNameCnt++;
-			if ($lastName != $itemValue['fullName'] && $lastNameCnt === 0)
+			if ($lastSortValue === $itemValue[$sortColumnName])
+				$lastSortValueCnt++;
+			if ($lastSortValue != $itemValue[$sortColumnName] && $lastSortValueCnt === 0)
 			{
-				if ($lastName !== FALSE)
+				if ($lastSortValue !== FALSE)
 					$itemValue ['_options']['beforeSeparator'] = 'separator';
-				$lastNameCnt = 0;
+				$lastSortColumnCnt = 0;
 			}
 
 			$pid = $itemId;
-			if (!isset($subTotals['fullName']) || $subTotals['fullName'] != $itemValue['fullName'])
+			if (!isset($subTotals[$sortColumnName]) || $subTotals[$sortColumnName] != $itemValue[$sortColumnName])
 			{
-				$this->insertSubTotals ($subTotals, $data);
-				$subTotals = array ('fullName' => $itemValue['fullName'], 'pairIds' => array ($pid => 1));
+				$this->insertSubTotals ($subTotals, $data, $this->sortColumnName);
+				$subTotals = array ($sortColumnName => $itemValue[$sortColumnName], 'pairIds' => array ($pid => 1));
 
-				$lastNameCnt = 0;
+				$lastSortValueCnt = 0;
 			}
 			else
 			{
@@ -1079,28 +1095,26 @@ class reportBalance extends \e10doc\core\libs\reports\GlobalReport
 					$curr = $itemValue['unit'];
 				else
 					$curr = $itemValue['curr'];
-			$this->incSubTotals($subTotals, $itemValue, $curr, TRUE);
-			$this->incSubTotals($totals, $itemValue, $curr);
+			$this->incSubTotals($subTotals, $itemValue, $curr, $this->pidColumnName, $this->sortColumnName, TRUE);
+			$this->incSubTotals($totals, $itemValue, $curr, $this->pidColumnName, $this->sortColumnName);
 			$data[$itemId] = $itemValue;
 
-			$lastName = $itemValue['fullName'];
+			$lastSortValue = $itemValue[$sortColumnName];
 		}
 
-		if (isset ($itemId) && isset ($data[$itemId]) && $lastNameCnt === 0)
+		if (isset ($itemId) && isset ($data[$itemId]) && $lastSortValueCnt === 0)
 			$data[$itemId]['_options']['afterSeparator'] = 'separator';
 
-		if ($lastName !== FALSE)
+		if ($lastSortValue !== FALSE)
 		{
-			$this->insertSubTotals ($subTotals, $data);
-			$this->insertSubTotals ($totals, $data, TRUE);
+			$this->insertSubTotals ($subTotals, $data, $this->sortColumnName);
+			$this->insertSubTotals ($totals, $data, $this->sortColumnName, TRUE);
 		}
-
-		$this->totals = $totals;
 
 		return $data;
 	}
 
-	function incSubTotals (&$subTotals, $itemValue, $curr, $toPerson = FALSE)
+	function incSubTotals (&$subTotals, $itemValue, $curr, $pidColumnName, $sortColumnName, $toSortColumn = FALSE)
 	{
 		if ($this->disableSums)
 			return;
@@ -1134,28 +1148,28 @@ class reportBalance extends \e10doc\core\libs\reports\GlobalReport
 			);
 		}
 
-		if ($toPerson)
+		if ($toSortColumn)
 		{
-			$pid = $itemValue['person'];
-			if (!isset($this->personSubTotals[$pid]))
-				$this->personSubTotals[$pid] = ['fullName' => $itemValue['fullName'], 'restHc' => 0.0, 'totals' => []];
-			if (!isset($this->personSubTotals[$pid]['totals'][$curr]))
-				$this->personSubTotals[$pid]['totals'][$curr] = [
+			$pid = json_encode($itemValue[$pidColumnName]);
+			if (!isset($this->dataSubTotals[$pid]))
+				$this->dataSubTotals[$pid] = [$sortColumnName => $itemValue[$sortColumnName], 'restHc' => 0.0, 'totals' => []];
+			if (!isset($this->dataSubTotals[$pid]['totals'][$curr]))
+				$this->dataSubTotals[$pid]['totals'][$curr] = [
 						'rest' => 0.0, 'rest0' => 0.0, 'rest1' => 0.0, 'rest2' => 0.0, 'rest3' => 0.0, 'rest4' => 0.0, 'rest5' => 0.0
 				];
 
-			$this->personSubTotals[$pid]['restHc'] += $itemValue['restHc'];
-			$this->personSubTotals[$pid]['totals'][$curr]['rest'] += $itemValue['rest'];
-			$this->personSubTotals[$pid]['totals'][$curr]['rest0'] += $itemValue['rest0'];
-			$this->personSubTotals[$pid]['totals'][$curr]['rest1'] += $itemValue['rest1'];
-			$this->personSubTotals[$pid]['totals'][$curr]['rest2'] += $itemValue['rest2'];
-			$this->personSubTotals[$pid]['totals'][$curr]['rest3'] += $itemValue['rest3'];
-			$this->personSubTotals[$pid]['totals'][$curr]['rest4'] += $itemValue['rest4'];
-			$this->personSubTotals[$pid]['totals'][$curr]['rest5'] += $itemValue['rest5'];
+			$this->dataSubTotals[$pid]['restHc'] += $itemValue['restHc'];
+			$this->dataSubTotals[$pid]['totals'][$curr]['rest'] += $itemValue['rest'];
+			$this->dataSubTotals[$pid]['totals'][$curr]['rest0'] += $itemValue['rest0'];
+			$this->dataSubTotals[$pid]['totals'][$curr]['rest1'] += $itemValue['rest1'];
+			$this->dataSubTotals[$pid]['totals'][$curr]['rest2'] += $itemValue['rest2'];
+			$this->dataSubTotals[$pid]['totals'][$curr]['rest3'] += $itemValue['rest3'];
+			$this->dataSubTotals[$pid]['totals'][$curr]['rest4'] += $itemValue['rest4'];
+			$this->dataSubTotals[$pid]['totals'][$curr]['rest5'] += $itemValue['rest5'];
 		}
 	}
 
-	function insertSubTotals ($subTotals, &$data, $end = FALSE)
+	function insertSubTotals ($subTotals, &$data, $sortColumnName, $end = FALSE)
 	{
 		if ($this->disableSums)
 			return;
@@ -1165,25 +1179,26 @@ class reportBalance extends \e10doc\core\libs\reports\GlobalReport
 			$subTotalCnt = 0;
 			forEach ($subTotals['subTotal'] as $key => $s)
 			{
-				$data[$subTotals['fullName'].$key] = ['fullName' => $subTotals['fullName'],
+				$data[$subTotals[$sortColumnName].$key] = [$sortColumnName => $subTotals[$sortColumnName],
 					'request' => $s['request'], 'requestHc' => $s['requestHc'], 'requestQ' => $s['requestQ'],
 					'payment' => $s['payment'], 'paymentHc' => $s['paymentHc'], 'paymentQ' => $s['paymentQ'],
 					'rest' => $s['rest'], 'restHc' => $s['restHc'], 'restQ' => $s['restQ'],
 					'rest0' => $s['rest0'], 'rest1' => $s['rest1'], 'rest2' => $s['rest2'],
 					'rest3' => $s['rest3'], 'rest4' => $s['rest4'], 'rest5' => $s['rest5'],
-					'_options' => ['colSpan' => ['fullName' => $this->totalsColSpan]],
+					'_options' => ['colSpan' => (($this->reportParams ['orderBy']['value'] == 'byDateDue')?['fullName' => 4]:['docNumber' => 4])],
 				];
 
-				$data[$subTotals['fullName'].$key]['curr'] = $key;
+				$data[$subTotals[$sortColumnName].$key]['curr'] = $key;
 				if (!$end)
 				{
 					if ($subTotalCnt+1 == count ($subTotals['subTotal']))
-						$data[$subTotals['fullName'].$key]['_options']['afterSeparator'] = 'separator';
-					$data[$subTotals['fullName'].$key]['_options']['class'] = 'subtotal';
+						$data[$subTotals[$sortColumnName].$key]['_options']['afterSeparator'] = 'separator';
+					$data[$subTotals[$sortColumnName].$key]['_options']['class'] = 'subtotal';
 				}
 				else
 				{
-					$data[$subTotals['fullName'].$key]['_options']['class'] = 'sumtotal';
+					$data[$subTotals[$sortColumnName].$key]['_options']['class'] = 'sumtotal';
+					$data[$subTotals[$sortColumnName].$key]['_options']['colSpan'] = ['fullName' => 5];
 				}
 				$subTotalCnt++;
 			}
