@@ -6,6 +6,7 @@
 		{"id": "order", "name": "Pořadí", "type": "int"},
 
     {"id": "entryKind", "name": "Druh přihlášky", "type": "int", "reference": "e10pro.soci.entriesKinds"},
+    {"id": "entryTo", "name": "Přihláška do", "type": "int", "reference": "e10mnf.core.workOrders"},
     {"id": "saleType", "name": "Sleva", "type": "enumInt",
 			"enumCfg": {"cfgItem": "e10pro.soci.saleTypes", "cfgValue": "", "cfgText": "fn"}},
 		{"id": "paymentPeriod", "name": "Platba na období", "type": "enumInt",

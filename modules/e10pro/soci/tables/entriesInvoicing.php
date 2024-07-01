@@ -64,20 +64,23 @@ class ViewEntriesInvoicing extends TableViewGrid
 	{
 		$fts = $this->fullTextSearch ();
 
-		$q [] = 'SELECT * FROM [e10pro_soci_entriesInvoicing]';
+		$q = [];
+		array_push ($q, 'SELECT invoicing.*,');
+		array_push ($q, ' workOrders.docNumber AS woDocNumber, workOrders.title AS woTitle');
+		array_push ($q, ' FROM [e10pro_soci_entriesInvoicing] AS invoicing');
+		array_push ($q, ' LEFT JOIN e10mnf_core_workOrders AS workOrders ON invoicing.entryTo = workOrders.ndx');
+
 		array_push ($q, ' WHERE 1');
 
 		// -- fulltext
 		if ($fts != '')
 		{
 			array_push ($q, ' AND (');
-			array_push ($q,
-					' [fullName] LIKE %s', '%'.$fts.'%',
-			);
+			array_push ($q, ' invoicing.[fullName] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ')');
 		}
 
-		$this->queryMain ($q, '', ['[order]', '[fullName]', '[ndx]']);
+		$this->queryMain ($q, 'invoicing.', ['[order]', '[fullName]', '[ndx]']);
 		$this->runQuery ($q);
 	}
 
@@ -85,7 +88,10 @@ class ViewEntriesInvoicing extends TableViewGrid
 	{
 		$listItem ['pk'] = $item ['ndx'];
 
-		$listItem ['fullName'] = $item ['fullName'];
+		$listItem ['fullName'] = [['text' => $item ['fullName'], 'class' => 'block']];
+		if ($item['woTitle'])
+			$listItem ['fullName'][] = ['text' => $item ['woTitle'], 'class' => 'e10-small'];
+
     $listItem ['priceAll'] = $item ['priceAll'];
 
     $listItem ['entryKind'] = $this->entryKinds[$item ['entryKind']]['fn'] ?? '!!!';
@@ -115,6 +121,7 @@ class FormEntryInvoicing extends TableForm
 				$this->openTab ();
 					$this->addColumnInput ('fullName');
 					$this->addColumnInput ('entryKind');
+					$this->addColumnInput ('entryTo');
 					$this->addColumnInput ('saleType');
 					$this->addColumnInput ('paymentPeriod');
 

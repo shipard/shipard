@@ -3,6 +3,7 @@ namespace e10pro\soci\libs;
 
 use e10\utils as E10Utils;
 use \Shipard\Utils\Utils, \Shipard\Utils\Json, \Shipard\Utils\Str;
+use \e10\base\libs\UtilsBase;
 
 
 class WebFormEntry extends \Shipard\Base\WebForm2
@@ -83,38 +84,6 @@ class WebFormEntry extends \Shipard\Base\WebForm2
 
 	public function checkValidField ($id, $msg)
 	{
-		/*
-		if ($id === 'misto')
-		{
-			$misto = intval($this->app->testPostParam ('misto'));
-			if (!$misto)
-			{
-				$this->formErrors [$id] = $msg;
-				$this->valid = FALSE;
-				return;
-			}
-		}
-		if ($id === 'svpObor')
-		{
-			$svpObor = intval($this->app->testPostParam ('svpObor'));
-			if (!$svpObor)
-			{
-				$this->formErrors [$id] = $msg;
-				$this->valid = FALSE;
-				return;
-			}
-		}
-		if ($id === 'svpOddeleni')
-		{
-			$svpOddeleni = intval($this->app->testPostParam ('svpOddeleni'));
-			if (!$svpOddeleni)
-			{
-				$this->formErrors [$id] = $msg;
-				$this->valid = FALSE;
-				return;
-			}
-		}
-		*/
 		if ($this->app->testPostParam ($id) == '')
 		{
 			$this->formErrors [$id] = $msg;
@@ -232,8 +201,19 @@ class WebFormEntry extends \Shipard\Base\WebForm2
 					'shortName' => $r['placeShortName'],
 					'id' => $r['placeId'],
           'ndx' => $r['place'],
-				]
+				],
+				'prices' => [],
       ];
+
+			$linkedPersons = UtilsBase::linkedPersons ($this->app(), 'e10mnf.core.workOrders', $r['ndx']);
+			foreach ($linkedPersons as $wkNdx => $lp)
+			{
+				if (isset($lp['e10mnf-workRecs-admins']))
+					$item['lp']['admins'] = $lp['e10mnf-workRecs-admins'];
+			}
+
+			$this->getEventPrices($r, $item['prices']);
+			$item['prices'] = array_values($item['prices']);
 
 			if ($activeEvent !== NULL && $r['ndx'] == intval($activeEvent))
 				$item['selected'] = 1;
@@ -308,5 +288,24 @@ class WebFormEntry extends \Shipard\Base\WebForm2
 		$activeSaleType = $this->app()->testPostParam('saleType', NULL);
 		if ($activeSaleType !== NULL)
 			$this->formInfo['saleType_'.intval($activeSaleType)] = 1;
+	}
+
+	protected function getEventPrices($eventRecData, &$dest)
+	{
+		$q = [];
+		array_push($q, 'SELECT [ei].* ');
+		array_push($q, ' FROM [e10pro_soci_entriesInvoicing] AS [ei]');
+		array_push($q, ' WHERE 1');
+		array_push($q, ' AND [entryKind] = %i', 1);
+		array_push($q, ' AND ([entryTo] = %i', 0, ' OR [entryTo] = %i', $eventRecData['ndx'], ')');
+		array_push($q, ' ORDER BY [entryTo] DESC, [order]');
+		$rows = $this->app()->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$priceId = $r['paymentPeriod'].'-'.$r['saleType'];
+			if (isset($dest[$priceId]))
+				continue;
+			$dest[$priceId] = ['priceId' => $priceId, 'price' => $r['priceAll']];
+		}
 	}
 }
