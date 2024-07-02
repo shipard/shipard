@@ -118,6 +118,7 @@ class WebFormEntry extends \Shipard\Base\WebForm2
 			'birthday' => $bd,
 			'paymentPeriod' => intval($this->data['paymentPeriod'] ?? 0),
 			'saleType' => intval($this->data['saleType'] ?? 0),
+			'source' => 2, // web form
 
 			'docState' => 1000, 'docStateMain' => 0,
 		];
