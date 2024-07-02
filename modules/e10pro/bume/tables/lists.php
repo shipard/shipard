@@ -240,6 +240,7 @@ class FormList extends TableForm
 				$this->openTab ();
 					$this->addColumnInput ('bcCompany');
 					$this->addColumnInput ('bcQRCodeLinkMask');
+					$this->addColumnInput ('vcardPersFuncProperty');
 				$this->closeTab ();
 				$this->openTab (TableForm::ltNone);
 					$this->addInputMemo ('vcardExt', NULL, TableForm::coFullSizeY);

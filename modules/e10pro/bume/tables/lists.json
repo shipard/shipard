@@ -8,6 +8,7 @@
 		{"id": "bcQRCodeLinkMask", "name": "Odkaz pro stažení QR kódu", "type": "string", "len": 80},
 
 		{"id": "vcardExt", "name": "Rozšíření VCARD", "type": "memo"},
+		{"id": "vcardPersFuncProperty", "name": "Vlastnost pro Funkci", "type": "int", "reference": "e10.base.propdefs", "comboViewer": "combo"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

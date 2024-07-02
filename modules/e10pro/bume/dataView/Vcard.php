@@ -13,6 +13,7 @@ class Vcard extends DataView
 	var $personCompanyRecData = NULL;
 	var $contactsListNdx = 0;
 	var $contactsListRecData = NULL;
+	var $persFuncPropertyRecData = NULL;
   var ?\e10\persons\libs\Vcard $vcard = NULL;
 
 	protected function init()
@@ -27,6 +28,11 @@ class Vcard extends DataView
 		{
 			$this->contactsListNdx = intval($this->requestParams['extVcardList'] ?? 0);
 			$this->contactsListRecData = $this->app()->loadItem($this->contactsListNdx, 'e10pro.bume.lists');
+
+			if ($this->contactsListRecData && $this->contactsListRecData['vcardPersFuncProperty'] !== 0)
+			{
+				$this->persFuncPropertyRecData = $this->app()->loadItem($this->contactsListRecData['vcardPersFuncProperty'], 'e10.base.propdefs');
+			}
 		}
 
 		if (isset($this->requestParams['personId']))
@@ -59,6 +65,7 @@ class Vcard extends DataView
 			$this->vcard->setOrganization($this->personCompanyRecData['fullName']);
 		if ($this->contactsListRecData)
 			$this->vcard->setExtension($this->contactsListRecData['vcardExt']);
+		$this->vcard->setFunctionProperty($this->persFuncPropertyRecData);
     $this->vcard->run();
 	}
 

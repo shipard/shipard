@@ -35,6 +35,7 @@ class ReportListContacts extends \Shipard\Report\GlobalReport
 			'personId' => 'id',
 			'fullName' => 'Celé jméno',
 			'firstName' => 'Jméno', 'lastName' => 'Příjmení',
+			'function' => 'Funkce',
 			'email' => 'E-mail', 'phone' => 'Telefon',
 			'qrBtn' => 'QR'
 		];
@@ -42,7 +43,6 @@ class ReportListContacts extends \Shipard\Report\GlobalReport
 
 		$this->setInfo('title', 'Kontaktní údaje');
 	}
-
 
 	function createContent_Contacts ()
 	{

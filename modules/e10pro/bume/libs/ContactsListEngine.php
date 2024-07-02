@@ -16,6 +16,7 @@ class ContactsListEngine extends Utility
 	var $contactsListRecData = NULL;
 
 	var $personCompanyRecData = NULL;
+	var $persFuncPropertyRecData = NULL;
 
 	var $data = [];
 
@@ -29,6 +30,11 @@ class ContactsListEngine extends Utility
 		if ($this->contactsListRecData && $this->contactsListRecData['bcCompany'] !== 0)
 		{
 			$this->personCompanyRecData = $this->app()->loadItem($this->contactsListRecData['bcCompany'], 'e10.persons.persons');
+		}
+
+		if ($this->contactsListRecData && $this->contactsListRecData['vcardPersFuncProperty'] !== 0)
+		{
+			$this->persFuncPropertyRecData = $this->app()->loadItem($this->contactsListRecData['vcardPersFuncProperty'], 'e10.base.propdefs');
 		}
 	}
 
@@ -101,6 +107,7 @@ class ContactsListEngine extends Utility
 				if ($this->personCompanyRecData)
 					$vcard->setOrganization($this->personCompanyRecData['fullName']);
 				$vcard->setExtension($this->contactsListRecData['vcardExt']);
+				$vcard->setFunctionProperty($this->persFuncPropertyRecData);
 				$vcard->run();
 
 				$qrBtn = "<span class='pull-right' data-toggle='popover' data-trigger='hover' data-html='true' data-placement='left'";
@@ -118,8 +125,6 @@ class ContactsListEngine extends Utility
 		array_push ($qp, 'SELECT props.recid as personNdx, props.valueString, props.property');
 		array_push ($qp, ' FROM e10_base_properties AS props');
 		array_push ($qp, ' WHERE tableid = %s', 'e10.persons.persons');
-		array_push ($qp, ' AND [group] = %s', 'contacts');
-		array_push ($qp, ' AND [property] IN %in', ['email', 'phone']);
 		array_push ($qp, ' AND EXISTS (SELECT ndx FROM e10pro_wkf_listPersons WHERE props.recid = e10pro_wkf_listPersons.person AND e10pro_wkf_listPersons.[list] = %i', $this->contactsListNdx, ')');
 
 		$rows = $this->app->db()->query($qp);
@@ -132,6 +137,8 @@ class ContactsListEngine extends Utility
 			if ($r['property'] === 'phone')
 				$data[$pndx]['phone'] = $r['valueString'];
 
+			if ($this->persFuncPropertyRecData && $this->persFuncPropertyRecData['id'] === $r['property'])
+				$data[$pndx]['function'] = $r['valueString'];
 		}
 
 		$this->data = $data;
@@ -139,7 +146,12 @@ class ContactsListEngine extends Utility
 
 	public function createCSV($fileName)
 	{
-		$h = ['personId' => 'id', 'fullName' => 'Úplné jméno', 'firstName' => 'Jméno', 'lastName' => 'Příjmení', 'email' => 'E-mail', 'phone' => 'Telefon'/*, 'street' => 'Ulice', 'city' => 'Město', 'zipcode' => 'PSČ'*/];
+		$h = [
+			'personId' => 'id',
+			'fullName' => 'Úplné jméno', 'firstName' => 'Jméno', 'lastName' => 'Příjmení',
+			'function' => 'Funkce',
+			'email' => 'E-mail', 'phone' => 'Telefon',
+			/*, 'street' => 'Ulice', 'city' => 'Město', 'zipcode' => 'PSČ'*/];
 
 		$params ['colSeparator'] = ',';
 		$data = utils::renderTableFromArrayCsv($this->data, $h, $params);
@@ -159,6 +171,7 @@ class ContactsListEngine extends Utility
 			if ($this->personCompanyRecData)
 				$vcard->setOrganization($this->personCompanyRecData['fullName']);
 			$vcard->setExtension($this->contactsListRecData['vcardExt']);
+			$vcard->setFunctionProperty($this->persFuncPropertyRecData);
 			$vcard->run();
 
 			file_put_contents($fileName, $vcard->info['vcard'], FILE_APPEND);

@@ -14,6 +14,7 @@ class Vcard extends Utility
 
 	var $orgTitle = '';
 	var $extRows = [];
+	var $functionPropertyDefRecData = NULL;
 
   var $info = [];
 
@@ -43,11 +44,15 @@ class Vcard extends Utility
 		$this->extRows = preg_split("/\\r\\n|\\r|\\n/", $extText);
 	}
 
+	public function setFunctionProperty($functionPropertyDefRecData)
+	{
+		$this->functionPropertyDefRecData = $functionPropertyDefRecData;
+	}
+
   protected function createVcard()
   {
 		$q [] = 'SELECT valueString, [property] FROM [e10_base_properties]';
 		array_push ($q, ' WHERE [tableid] = %s', 'e10.persons.persons', ' AND [recid] = %i', $this->personNdx);
-		array_push ($q, ' AND [property] IN %in', ['email', 'phone'], ' AND [group] = %s', 'contacts');
 		array_push ($q, ' ORDER BY ndx');
 		$rows = $this->app()->db()->query ($q);
 		foreach ($rows as $r)
@@ -64,6 +69,7 @@ class Vcard extends Utility
 					$this->info['phone'] = $r['valueString'];
 				$this->info['phones'][] = $r['valueString'];
 			}
+			$this->info['properties'][$r['property']] = $r['valueString'];
 		}
 
 		$ld = "\r\n";
@@ -98,8 +104,17 @@ class Vcard extends Utility
 		if (isset($this->info['phone']))
  			$v .= 'TEL;TYPE=cell:'.$this->info['phone'].$ld;
 
+		$orgFunction = '';
+		if ($this->functionPropertyDefRecData)
+		{
+			$orgFunction = $this->info['properties'][$this->functionPropertyDefRecData['id']] ?? '';
+		}
+
 		if ($this->orgTitle !== '')
 			$v .= 'ORG;CHARSET=UTF-8:'.$this->vcEscape($this->orgTitle).$ld;
+
+		if ($orgFunction !== '')
+			$v .= 'TITLE;CHARSET=UTF-8:'.$this->vcEscape($orgFunction).$ld;
 
 		foreach ($this->extRows as $er)
 		{
