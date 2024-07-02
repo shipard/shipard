@@ -463,8 +463,8 @@ class reportBalance extends \e10doc\core\libs\reports\GlobalReport
 			{
 				if ($p['fullName'] != '')
 				{
-					if (strlen ($p['fullName']) > 28)
-						$personsSwitch [$p['person']] = substr($p['fullName'], 0, 25).'...';
+					if (mb_strlen ($p['fullName']) > 28)
+						$personsSwitch [$p['person']] = mb_substr($p['fullName'], 0, 25).'...';
 					else
 						$personsSwitch [$p['person']] = $p['fullName'];
 				}

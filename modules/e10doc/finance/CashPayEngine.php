@@ -35,7 +35,7 @@ class CashPayEngine extends \E10\Utility
 		$report->disableSums = $disableSums;
 
 		$data = $report->prepareData();
-		$this->personTotals = $report->personSubTotals[$this->personNdx];
+		$this->personTotals = $report->dataSubTotals[$this->personNdx];
 		return $data;
 	}
 
