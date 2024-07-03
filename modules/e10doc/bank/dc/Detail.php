@@ -304,13 +304,10 @@ class Detail extends \e10doc\core\dc\Detail
 
 	public function linkedDocuments ()
 	{
-	}
+		parent::linkedDocuments ();
 
-	public function createContentXXX ()
-	{
-		$this->createContentHeader ();
-		$this->createContentBody ();
-		$this->createTitle();
+		$testNewBankDocDetail = $this->app()->cfgItem ('options.experimental.testNewBankDocDetail', 0);
+		if ($testNewBankDocDetail)
+			unset($this->content['body'][0]);
 	}
-
 }
