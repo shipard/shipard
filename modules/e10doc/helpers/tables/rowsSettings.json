@@ -70,7 +70,12 @@
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
 	"views": [
-		{"id": "default", "class": "e10doc.helpers.ViewRowsSettings"}
+		{
+			"id": "default", "class": "e10doc.helpers.ViewRowsSettings",
+      "details": {
+        "default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.helpers.ViewDetailFormRowSettings"}
+      }
+		}
 	],
 	"forms": [
 		{"id": "default", "class": "e10doc.helpers.FormRowSettings"}

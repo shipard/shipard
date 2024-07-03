@@ -13,6 +13,9 @@ class RowsSettings extends Utility
 {
 	var $enabledRowsSettingsType = NULL;
 
+	var $cntApplies = 0;
+	var $usedRowsSettings = [];
+
 	function testRow($rs, $docRow, $docHead)
 	{
 		if ($rs['qryRowDirType'] == 1 && $docRow['debit'] > 0.0) // in/credit
@@ -79,44 +82,89 @@ class RowsSettings extends Utility
 		{
 			if (!$this->testRow($rs, $docRow, $docHead))
 				continue;
-			$this->applyRow($rs, $docRow, $docHead);
+
+			$this->usedRowsSettings[$rs['ndx']] = [
+				'rsRecData' => $rs->toArray(),
+				'changes' => [],
+				'applies' => [],
+			];
+			$this->applyRow($rs, $docRow, $docHead, $this->usedRowsSettings[$rs['ndx']]);
 		}
 	}
 
-	function applyRow($rs, &$docRow, $docHead)
+	function applyRow($rs, &$docRow, $docHead, &$info)
 	{
 		if ($rs['valRowPersonType'] === 1)
-			$docRow['person'] = $rs['valRowPersonValue'];
+		{
+			if ($docRow['person'] != $rs['valRowPersonValue'])
+				$info['changes'][] = ['person' => ['from' => $docRow['person'], 'to' => $rs['valRowPersonValue']]];
+			$info['applies'][] = ['person' => $rs['valRowPersonValue']];
 
+			$docRow['person'] = $rs['valRowPersonValue'];
+			$this->cntApplies++;
+		}
 		if ($rs['valRowOperationType'] === 1)
+		{
+			if ($docRow['operation'] != $rs['valRowOperationValue'])
+				$info['changes'][] = ['operation' => ['from' => $docRow['operation'], 'to' => $rs['valRowOperationValue']]];
+			$info['applies'][] = ['operation' => $rs['valRowOperationValue']];
+
 			$docRow['operation'] = $rs['valRowOperationValue'];
+			$this->cntApplies++;
+		}
 
 		if ($rs['valRowItemType'] === 1)
 		{
+			if ($docRow['item'] != $rs['valRowItemValue'])
+				$info['changes'][] = ['item' => ['from' => $docRow['item'], 'to' => $rs['valRowItemValue']]];
+			$info['applies'][] = ['item' => $rs['valRowItemValue']];
+
 			$docRow['item'] = $rs['valRowItemValue'];
 			$docRow['itemType'] = '';
+			$this->cntApplies++;
 		}
 
 		if ($rs['valRowCentreType'] === 1)
+		{
+			if ($docRow['centre'] != $rs['valRowCentreValue'])
+				$info['changes'][] = ['centre' => ['from' => $docRow['centre'], 'to' => $rs['valRowCentreValue']]];
+			$info['applies'][] = ['centre' => $rs['valRowCentreValue']];
+
 			$docRow['centre'] = $rs['valRowCentreValue'];
+			$this->cntApplies++;
+		}
 
 		if ($rs['valRowWorkOrderType'] === 1)
-			$docRow['centre'] = $rs['valRowWorkOrderValue'];
+		{
+			if ($docRow['workOrder'] != $rs['valRowWorkOrderValue'])
+				$info['changes'][] = ['workOrder' => ['from' => $docRow['workOrder'], 'to' => $rs['valRowWorkOrderValue']]];
+			$info['applies'][] = ['workOrder' => $rs['valRowWorkOrderValue']];
 
-		$this->applyStringValue($rs['valRowTextType'], $rs['valRowTextValue'], 'text',$docRow, $docHead);
-		$this->applyStringValue($rs['valRowSymbol1Type'], $rs['valRowSymbol1Value'], 'symbol1',$docRow, $docHead);
-		$this->applyStringValue($rs['valRowSymbol2Type'], $rs['valRowSymbol2Value'], 'symbol2',$docRow, $docHead);
-		$this->applyStringValue($rs['valRowSymbol3Type'], $rs['valRowSymbol3Value'], 'symbol3',$docRow, $docHead);
+			$docRow['workOrder'] = $rs['valRowWorkOrderValue'];
+			$this->cntApplies++;
+		}
+
+		$this->applyStringValue($rs['valRowTextType'], $rs['valRowTextValue'], 'text', $docRow, $docHead, $info);
+		$this->applyStringValue($rs['valRowSymbol1Type'], $rs['valRowSymbol1Value'], 'symbol1', $docRow, $docHead, $info);
+		$this->applyStringValue($rs['valRowSymbol2Type'], $rs['valRowSymbol2Value'], 'symbol2', $docRow, $docHead, $info);
+		$this->applyStringValue($rs['valRowSymbol3Type'], $rs['valRowSymbol3Value'], 'symbol3', $docRow, $docHead, $info);
 	}
 
-	function applyStringValue($setValueType, $settingsValue, $docRowColumnId, &$docRow, $docHead)
+	function applyStringValue($setValueType, $settingsValue, $docRowColumnId, &$docRow, $docHead, &$info)
 	{
 		if ($setValueType === 0)
 			return;
 
 		if ($setValueType === 1)
 		{
+			if ($docRow[$docRowColumnId] != $settingsValue)
+				$info['changes'][] = [$docRowColumnId => ['from' => $docRow[$docRowColumnId], 'to' => $settingsValue]];
+			$info['applies'][] = [$docRowColumnId => $settingsValue];
+
 			$docRow[$docRowColumnId] = $settingsValue;
+
+			$this->cntApplies++;
+
 			return;
 		}
 
@@ -126,13 +174,24 @@ class RowsSettings extends Utility
 			$t->data['row'] = $docRow;
 			$t->data['head'] = $docHead;
 			$value = $t->render($settingsValue);
+
+			if ($docRow[$docRowColumnId] != $value)
+				$info['changes'][] = [$docRowColumnId => ['from' => $docRow[$docRowColumnId], 'to' => $value]];
+			$info['applies'][] = [$docRowColumnId => $value];
+
 			$docRow[$docRowColumnId] = $value;
+
+			$this->cntApplies++;
+
 			return;
 		}
 	}
 
 	public function run (&$docRow, $docHead)
 	{
+		$this->cntApplies = 0;
+		$this->usedRowsSettings = [];
+
 		$this->enabledRowsSettingsType = [];
 		$allRowsSettingTypes = $this->app()->cfgItem ('e10doc.helpers.rowsSettingsTypes', []);
 		foreach ($allRowsSettingTypes as $rstId => $rstCfg)
