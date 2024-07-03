@@ -281,10 +281,23 @@ class Detail extends \e10doc\core\dc\Detail
 			//'balance' => ' Zůstatek',
 		];
 
+		$title = [
+			['icon' => 'system/iconList', 'text' => 'Řádky dokladu', 'class' => 'h2'],
+		];
+
+		$title [] = [
+			'type' => 'action', 'action' => 'addwizard',
+			'text' => 'Přeúčtovat', 'data-class' => 'e10doc.core.libs.ReAccountingWizard',
+			'icon' => 'cmnbkpRegenerateOpenedPeriod',
+			'class' => 'pull-right',
+			'actionClass' => 'btn btn-warning btn-xs'
+		];
+		$title[] = ['text' => '', 'class' => 'block pb-1'];
+
 		return [
 			'pane' => 'e10-pane e10-pane-table',
 			'type' => 'table',
-			'title' => ['icon' => 'system/iconList', 'text' => 'Řádky dokladu'],
+			'paneTitle' => $title,
 			'header' => $h, 'table' => $list,
 		];
 	}
