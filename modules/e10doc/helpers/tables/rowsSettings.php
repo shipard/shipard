@@ -2,7 +2,8 @@
 
 namespace e10doc\helpers;
 
-use \E10\utils, \E10\TableView, \E10\TableForm, \E10\DbTable;
+use \Shipard\Viewer\TableView, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
+use \Shipard\Viewer\TableViewDetail;
 
 
 /**
@@ -36,14 +37,15 @@ class TableRowsSettings extends DbTable
 class ViewRowsSettings extends TableView
 {
 	var $settingsTypes;
+	var $bankAccounts;
 
 	public function init ()
 	{
 		$this->settingsTypes = $this->app()->cfgItem ('e10doc.helpers.rowsSettingsTypes');
+		$this->bankAccounts = $this->app()->cfgItem ('e10doc.bankAccounts');
 
 		parent::init();
 
-		$this->objectSubType = TableView::vsDetail;
 		$this->enableDetailSearch = TRUE;
 
 		$this->setMainQueries ();
@@ -55,17 +57,71 @@ class ViewRowsSettings extends TableView
 
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['t1'] = $item['name'];
-		$listItem ['t2'] = $st['name'];
+
+		$props2 = [];
+		$props3 = [];
+		$props2[] = ['text' => $st['name'], 'class' => 'label label-default'];
+
+		if ($item['qryMyBankAccountType'])
+		{
+			$mba = $this->bankAccounts[$item['myBankAccount']] ?? NULL;
+			if ($mba)
+				$props2[] = ['text' => $mba['fullName'], 'icon' => 'tables/e10doc.base.bankaccounts', 'class' => 'label label-default'];
+		}
+
+		if ($item['qryRowDirType'] === 1)
+			$props2[] = ['text' => 'Příjem', 'icon' => 'system/actionInputPlus', 'class' => 'label label-default'];
+		elseif ($item['qryRowDirType'] === 2)
+			$props2[] = ['text' => 'Výdej', 'icon' => 'system/actionInputMinus', 'class' => 'label label-default'];
+
+		$this->addStringQuery($item['qryRowBankAccountType'], $item['qryRowBankAccountValue'], $props3, 'bú');
+
+		$this->addStringQuery($item['qryRowSymbol1Type'], $item['qryRowSymbol1Value'], $props3, 'vs');
+		$this->addStringQuery($item['qryRowSymbol2Type'], $item['qryRowSymbol2Value'], $props3, 'ss');
+		$this->addStringQuery($item['qryRowSymbol3Type'], $item['qryRowSymbol3Value'], $props3, 'ks');
+		$this->addStringQuery($item['qryRowTextType'], $item['qryRowTextValue'], $props3, 'txt');
+
+		$listItem ['t2'] = $props2;
+		if (count($props3))
+			$listItem ['t3'] = $props3;
+
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
 		return $listItem;
+	}
+
+	protected function addStringQuery($qryType, $value, &$dest, $title = '')
+	{
+		if (!$qryType)
+			return;
+
+		$txt = '';
+		if ($qryType === 1)
+			$txt = '= `'.$value.'`';
+		elseif ($qryType === 2)
+			$txt = '`'.$value.'`'.'*';
+		elseif ($qryType === 3)
+			$txt = '*'.'`'.$value.'`'.'*';
+
+		$label = ['text' => $txt, 'class' => 'label label-info'];
+		if ($title !== '')
+			$label['prefix'] = $title;
+
+		$dest[] = $label;
 	}
 
 	public function selectRows ()
 	{
 		$fts = $this->fullTextSearch ();
 
-		$q [] = 'SELECT st.* FROM [e10doc_helpers_rowsSettings] AS st';
+		$q = [];
+		array_push ($q, 'SELECT st.*,');
+		array_push ($q, ' headPersons.fullName AS headPersonFullName');
+		array_push ($q, ' FROM [e10doc_helpers_rowsSettings] AS st');
+		array_push ($q, ' LEFT JOIN [e10_persons_persons] AS headPersons ON st.qryHeadPerson = headPersons.ndx');
+		array_push ($q, '');
+		array_push ($q, '');
+		array_push ($q, '');
 		array_push ($q, ' WHERE 1');
 
 		// -- fulltext
@@ -196,5 +252,16 @@ class FormRowSettings extends TableForm
 				$this->closeRow ();
 			$this->layoutClose ();
 		$this->closeForm ();
+	}
+}
+
+
+/**
+ * class ViewDetailFormRowSettings
+ */
+class ViewDetailFormRowSettings extends TableViewDetail
+{
+	public function createDetailContent ()
+	{
 	}
 }
