@@ -308,8 +308,11 @@ class ViewEntries extends TableView
 
 		if (substr($mainQuery, 0, 3) === 'AY_')
 		{
-			$userPeriodId = substr($mainQuery, 3);
-			array_push ($q, ' AND entries.[entryPeriod] = %s', $userPeriodId);
+			//$userPeriodId = substr($mainQuery, 3);
+			//array_push ($q, ' AND entries.[entryPeriod] = %s', $userPeriodId);
+			$userPeriodId = 'AY'.substr($mainQuery, 3);
+			array_push ($q, ' AND workOrders.[usersPeriod] = %s', $userPeriodId);
+
 			array_push ($q, ' AND [entries].[docStateMain] != %i', 4);
 		}
 
