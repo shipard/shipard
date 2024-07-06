@@ -3217,7 +3217,11 @@ class ViewHeads extends TableView
 
 			if (isset($qv['rows']['text']) && $qv['rows']['text'] != '')
 			{
-				array_push($q, ' AND [rows].[text] LIKE %s', '%'.$qv['rows']['text'].'%');
+				array_push($q, ' AND (');
+				array_push($q, ' [rows].[text] LIKE %s', '%'.$qv['rows']['text'].'%');
+				if ($this->docType === 'bank')
+					array_push($q, ' OR [rows].[bankAccount] LIKE %s', '%'.$qv['rows']['text'].'%');
+				array_push($q, ')');
 			}
 
 			e10utils::amountQuery ($q, '[rows].[priceAll]', $qv['rows']['amount'], $qv['rows']['amountDiff']);
