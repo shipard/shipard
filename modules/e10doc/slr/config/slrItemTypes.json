@@ -29,12 +29,12 @@
   "30": {
     "fn": "Srážky",
     "sn": "Srážky",
-    "payee": 2
+    "payee": 3
   },
   "35": {
     "fn": "Exekuce",
     "sn": "Exekuce",
-    "payee": 2
+    "payee": 3
   },
   "40": {
     "fn": "Čistá mzda",

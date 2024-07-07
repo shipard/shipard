@@ -2,7 +2,8 @@
   "id": "e10doc.slr",
   "name": "Podklady ke Mzdám",
   "tables": [
-		"centres", "emps", "empsCentres", "empsOrgs", "empsKinds", "orgs", "slrItems", "imports", "empsRecs", "empsRecsRows"
+		"centres", "emps", "empsCentres", "empsOrgs", "empsKinds", "orgs", "slrItems", "imports", "empsRecs", "empsRecsRows",
+    "deductions"
   ],
   "config": [
     {"id": "+appSkeleton", "file": "appSkeleton.json"},

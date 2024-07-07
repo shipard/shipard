@@ -126,9 +126,39 @@ class AccEngine extends Utility
           $item['symbol2'] .= sprintf("%04d%02d", $this->importRecData['calendarYear'], $this->importRecData['calendarMonth']);
         }
       }
+      elseif ($sit['payee'] === 3)
+      { // deduction
+        $deduction = $this->searchDeduction($this->empRecData['ndx'], $r->toArray());
+
+        $item['doPayment'] = 1;
+        if ($deduction)
+        {
+          $item['bankAccount'] = $deduction['bankAccount'];
+          $item['symbol1'] = $deduction['symbol1'];
+          $item['symbol2'] = $deduction['symbol2'];
+          $item['symbol3'] = $deduction['symbol3'];
+          $item['person'] = $deduction['payTo'];
+        }
+        else
+        {
+          $item['bankAccount'] = '';
+          $item['symbol1'] = '';
+          $item['symbol2'] = '';
+          $item['symbol3'] = '';
+          $item['person'] = 0;
+        }
+
+        $dueDays = ($r['slrItemDueDay']) ? $r['slrItemDueDay'] - 1 : 14;
+        $dateDue = new \DateTime($this->nextMonthFirstDay->format('Y-m-d'));
+        $dateDue->add(new \DateInterval('P'.$dueDays.'D'));
+        $item['dateDue'] = $dateDue;
+      }
 
       if ($item['doPayment'] ?? 0)
       {
+        if (!isset($item['person']) || !$item['person'])
+          $item['warnings'][] = ['text' => 'Chybí Osoba pro úhradu', 'class' => 'block e10-warning1'];
+
         if ($item['bankAccount'] !== '')
           $item['info'][] = ['text' => $item['bankAccount'], 'icon' => 'paymentMethodTransferOrder', 'class' => 'break'];
         else
@@ -338,6 +368,29 @@ class AccEngine extends Utility
     {
       $orgRecData = $this->app()->loadItem($empOrg['org'], 'e10doc.slr.orgs');
       return $orgRecData;
+    }
+
+    return NULL;
+  }
+
+  protected function searchDeduction($empNdx, $empRecRow)
+  {
+    $q = [];
+    array_push($q, 'SELECT * FROM [e10doc_slr_deductions]');
+    array_push($q, ' WHERE [emp] = %i', $empNdx);
+    array_push($q, ' AND [slrItem] = %i', $empRecRow['slrItem']);
+    array_push($q, ' AND [bankAccount] = %s', $empRecRow['bankAccount']);
+    array_push($q, ' AND [symbol1] = %s', $empRecRow['symbol1']);
+    array_push($q, ' AND [symbol2] = %s', $empRecRow['symbol2']);
+    array_push($q, ' AND [symbol3] = %s', $empRecRow['symbol3']);
+    array_push($q, ' AND [docState] != %i', 9800);
+		array_push($q, ' AND ([validFrom] IS NULL OR [validFrom] <= %d)', $this->accountingFirstDay);
+		array_push($q, ' AND ([validTo] IS NULL OR [validTo] >= %d)', $this->accountingFirstDay);
+
+    $deduction = $this->db()->query($q)->fetch();
+    if ($deduction)
+    {
+      return $deduction->toArray();
     }
 
     return NULL;

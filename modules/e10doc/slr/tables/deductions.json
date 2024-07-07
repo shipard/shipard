@@ -1,0 +1,35 @@
+{
+	"id": "e10doc.slr.deductions", "sql": "e10doc_slr_deductions", "name": "Srážky a exekuce",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "fullName", "name": "Jméno", "type": "string", "len": 140},
+
+	  {"id": "emp", "name": "Zaměstnanec", "type": "int", "reference": "e10doc.slr.emps"},
+		{"id": "slrItem", "name": "Mzdová položka", "type": "int", "reference": "e10doc.slr.slrItems"},
+    {"id": "bankAccount", "name": "Bankovní účet", "type": "string", "len": 40, "label": "Bank. úč.", "comboViewer": "combo", "comboTable": "e10.persons.personsBA"},
+    {"id": "symbol1", "name": "Variabilní symbol", "type": "string", "label": "VS", "len": 20},
+    {"id": "symbol2", "name": "Specifický symbol", "type": "string", "label": "SS", "len": 20},
+		{"id": "symbol3", "name": "Konstantní symbol", "type": "string", "label": "KS", "len": 10},
+
+    {"id": "payTo", "name": "Příjemce", "type": "int", "reference": "e10.persons.persons"},
+
+    {"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{
+			"id": "default", "class": "e10doc.slr.ViewDeductions",
+      "details": {
+        "default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.slr.ViewDetailDeduction"}
+      }
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.slr.FormDeduction"}
+	],
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

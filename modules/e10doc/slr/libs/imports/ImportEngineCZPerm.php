@@ -2,6 +2,7 @@
 namespace e10doc\slr\libs\imports;
 use \e10\base\libs\UtilsBase;
 use \Shipard\Utils\Json;
+use \Shipard\Utils\Str;
 
 
 /**
@@ -123,5 +124,44 @@ class ImportEngineCZPerm extends \e10doc\slr\libs\ImportEngine
     }
 
     $this->db()->query('INSERT INTO [e10doc_slr_empsRecsRows]', $newRow);
+
+    $sit = $this->app()->cfgItem('e10doc.slr.slrItemTypes.'.$slrItemRecData['itemType']);
+    if ($sit['payee'] === 3)
+      $this->checkDeduction($empRecData, $slrItemRecData['itemType'], $newRow);
+  }
+
+  protected function checkDeduction($empRecData, $slrItemType, $empRecRow)
+  {
+    $empNdx = $empRecData['ndx'];
+
+    $q = [];
+    array_push($q, 'SELECT * FROM [e10doc_slr_deductions]');
+    array_push($q, ' WHERE [emp] = %i', $empNdx);
+    array_push($q, ' AND [slrItem] = %i', $empRecRow['slrItem']);
+    array_push($q, ' AND [bankAccount] = %s', $empRecRow['bankAccount']);
+    array_push($q, ' AND [symbol1] = %s', $empRecRow['symbol1']);
+    array_push($q, ' AND [symbol2] = %s', $empRecRow['symbol2']);
+    array_push($q, ' AND [symbol3] = %s', $empRecRow['symbol3']);
+    array_push($q, ' AND [docState] != %i', 9800);
+
+    $deduction = $this->db()->query($q)->fetch();
+    if ($deduction)
+    {
+      return;
+    }
+
+    $sit = $this->app()->cfgItem('e10doc.slr.slrItemTypes.'.$slrItemType);
+    $newD = [
+      'fullName' => Str::upToLen(($sit['sn'] ?? '!!!').': '.$empRecData['fullName'], 140),
+      'emp' => $empNdx,
+      'slrItem' => $empRecRow['slrItem'],
+      'bankAccount' => $empRecRow['bankAccount'],
+      'symbol1' => $empRecRow['symbol1'],
+      'symbol2' => $empRecRow['symbol2'],
+      'symbol3' => $empRecRow['symbol3'],
+      'docState' => 1000, 'docStateMain' => 0,
+    ];
+
+    $this->db()->query('INSERT INTO [e10doc_slr_deductions]', $newD);
   }
 }
