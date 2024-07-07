@@ -91,7 +91,13 @@ class ImportEngineCZPerm extends \e10doc\slr\libs\ImportEngine
       'empsRec' => $empRecNdx,
       'slrItem' => $slrItemRecData['ndx'],
       'amount' => $item['Castka'],
+      'symbol1' => $item['VS'] ?? '',
+      'symbol2' => $item['SS'] ?? '',
+      'symbol3' => $item['KS'] ?? '',
     ];
+
+    if (isset($item['CisloUctu']) && $item['CisloUctu'] !== '')
+      $newRow['bankAccount'] = $item['CisloUctu'].'/'.$item['SmerKod'];
 
     if ($slrItemRecData['negativeAmount'] ?? 0)
       $newRow['amount']  = - $newRow['amount'];

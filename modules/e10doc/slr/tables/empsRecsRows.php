@@ -37,6 +37,12 @@ class FormEmpRecRow extends TableForm
 				$this->addColumnInput ('quantity', self::coColW4);
 				$this->addColumnInput ('unit', self::coColW4);
 			$this->closeRow();
+      $this->openRow();
+				$this->addColumnInput ('bankAccount', self::coColW4);
+				$this->addColumnInput ('symbol1', self::coColW3);
+				$this->addColumnInput ('symbol2', self::coColW3);
+				$this->addColumnInput ('symbol3', self::coColW2);
+			$this->closeRow();
 		$this->closeForm ();
 	}
 }

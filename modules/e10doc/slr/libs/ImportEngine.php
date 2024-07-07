@@ -124,7 +124,7 @@ class ImportEngine extends Utility
     return NULL;
   }
 
-  protected function loadSlrItem($importId, $slrItemTitle)
+  protected function loadSlrItem($importId, $slrItemTitle, $slrItemType = 0)
   {
     if (isset($this->slrItems[$importId]))
       return $this->slrItems[$importId];
@@ -152,6 +152,7 @@ class ImportEngine extends Utility
       $newSlrItem = [
         'importId' => $importId,
         'fullName' => $slrItemTitle, 'shortName' => $slrItemTitle,
+        'itemType' => $slrItemType,
         'docState' => 1000, 'docStateMain' => 0,
       ];
       $this->db()->query ('INSERT INTO [e10doc_slr_slrItems] ', $newSlrItem);
