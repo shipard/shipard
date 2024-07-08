@@ -132,6 +132,14 @@ class FormInvoiceOut extends \E10Doc\Core\FormHeads
 				$this->addColumnInput ('automaticRound');
 				$rmRO = $this->recData['automaticRound'] ? self::coReadOnly : 0;
         $this->addColumnInput ('roundMethod', $rmRO);
+
+				if ($paymentMethod['askPersonBalance'] ?? 0)
+				{
+					$this->addColumnInput('askPersonBalance');
+					if ($this->recData['askPersonBalance'])
+						$this->addColumnInput('personBalance');
+				}
+
 				if ($taxPayer)
 				{
 					$this->addColumnInput("taxPercentDateType");

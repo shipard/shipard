@@ -1,7 +1,7 @@
 {
-	"0": {"title": "Převodním příkazem", "cash": 0, "bank": 1, "icon": "paymentMethodTransferOrder"},
+	"0": {"title": "Převodním příkazem", "cash": 0, "bank": 1, "askPersonBalance": 1, "icon": "paymentMethodTransferOrder"},
 	"1": {"title": "Hotově", "cash": 1, "bank": 0, "icon": "paymentMethodCash"},
-	"2": {"title": "Kartou", "cash": 0, "bank": 1, "icon": "paymentMethodCard"},
+	"2": {"title": "Kartou", "cash": 0, "bank": 1, "card": 1, "icon": "paymentMethodCard"},
 	"3": {"title": "Dobírka", "cash": 0, "bank": 1, "icon": "paymentMethodCashOnDelivery"},
 	"4": {"title": "Fakturou", "cash": 0, "bank": 0, "icon": "paymentMethodInvoice"},
 	"5": {"title": "Pokladním lístkem", "cash": 0, "bank": 0, "icon": "paymentMethodCashTicket"},

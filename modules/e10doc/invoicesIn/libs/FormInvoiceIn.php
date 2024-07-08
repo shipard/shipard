@@ -131,6 +131,12 @@ class FormInvoiceIn extends \e10doc\core\FormHeads
 			$this->addAttachmentsTabContent ();
 
 			$this->openTab ();
+				if ($paymentMethod['askPersonBalance'] ?? 0)
+				{
+					$this->addColumnInput('askPersonBalance');
+					if ($this->recData['askPersonBalance'])
+						$this->addColumnInput('personBalance');
+				}
 				$this->addColumnInput ("author");
 				if ($taxPayer)
 					$this->addVatSettingsIn ();
