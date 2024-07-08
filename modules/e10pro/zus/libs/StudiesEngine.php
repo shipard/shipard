@@ -83,6 +83,16 @@ class StudiesEngine extends Utility
         continue;
       }
 
+      $exist = $this->db()->query('SELECT * FROM [e10pro_zus_studium] WHERE [cisloStudia] = %i', $r ['cisloStudia'],
+                                  ' AND [skolniRok] = %s', strval($r ['skolniRok'] + 1))->fetch();
+
+      if ($exist)
+      {
+        if ($this->debug)
+          echo "; INFO - studium EXISTUJE\n";
+        continue;
+      }
+
       if ($this->doIt)
       {
         $svpOddeleni = $r ['svpOddeleni'];
@@ -112,7 +122,8 @@ class StudiesEngine extends Utility
           'oznaceniStudia' => $r ['oznaceniStudia'],
           'pobocka' => $r ['pobocka'],
           'misto' => $r ['misto'],
-          'stavHlavni' => 1, 'stav' => 1200,
+          //'stavHlavni' => 1, 'stav' => 1200,
+          'stavHlavni' => 0, 'stav' => 1000,
           'datumNastupuDoSkoly' => $r ['datumNastupuDoSkoly'],
           'datumUkonceniSkoly' => $r ['datumUkonceniSkoly'],
         ];
