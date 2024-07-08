@@ -66,7 +66,8 @@
     {"id": "cashPersonName", "name": "Jméno příjemce", "type": "string", "len": 100},
     {"id": "cashPersonID", "name": "OP příjemce", "type": "string", "len": 30},
 	  {"id": "personHandover", "name": "Převzal", "type": "int", "reference": "e10.persons.persons", "options": ["saveOnChange"]},
-		{"id": "personBalance", "name": "Osoba pro saldokonto", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "personBalance", "name": "Osoba pro saldokonto", "type": "int", "label": "Plátce", "reference": "e10.persons.persons"},
+		{"id": "askPersonBalance", "name": "Nastavit Plátce", "type": "logical", "options": ["saveOnChange"]},
 
     {"id": "warehouse", "name": "Sklad", "type": "int", "reference": "e10doc.base.warehouses"},
     {"id": "numWareHouseDoc", "name": "Číslo dokladu zásob", "type": "string", "len": 20},
