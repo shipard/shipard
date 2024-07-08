@@ -482,7 +482,7 @@ class TableHeads extends DbTable
 
 		// -- personBalance / payment terminal / cash on delivery
 		$recData ['personBalance'] = $recData ['person'];
-		if ($recData['paymentMethod'] == 2)
+		if ($recData['paymentMethod'] == 2 || ($paymentMethod['card'] ?? 0))
 		{ // payment terminal
 			if ($recData['docType'] === 'invno' || $recData ['docType'] === 'cashreg' || ($recData ['docType'] === 'cash' && $recData['cashBoxDir'] == 1))
 			{
