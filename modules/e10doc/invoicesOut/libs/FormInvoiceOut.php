@@ -43,7 +43,7 @@ class FormInvoiceOut extends \E10Doc\Core\FormHeads
 								$this->addColumnInput ('otherAddress1');
 							$this->addColumnInput ("paymentMethod");
 
-							if ($paymentMethod ['cash'] || $this->recData['paymentMethod'] == 2)
+							if ($paymentMethod ['cash'] || ($paymentMethod ['card'] ?? 0) || $this->recData['paymentMethod'] == 2)
 								$this->addColumnInput ("cashBox");
 							if ($this->recData['paymentMethod'] == 3)
 								$this->addColumnInput ('transport');
