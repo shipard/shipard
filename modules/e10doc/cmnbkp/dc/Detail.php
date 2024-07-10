@@ -5,6 +5,8 @@ require_once __SHPD_MODULES_DIR__ . 'e10doc/finance/finance.php';
 require_once __SHPD_MODULES_DIR__ . 'e10doc/cmnbkp/cmnbkp.php';
 
 use \e10doc\core\libs\E10Utils;
+use \e10\base\libs\UtilsBase;
+
 
 /**
  * Class Detail
@@ -194,8 +196,8 @@ class Detail extends \e10doc\core\dc\Detail
 				$iconState = 'icon-exclamation-circle';
 			}
 			$list[] = [
-				'description' => $subTotalLabels[$dir]['description'] ?? '!!!', 
-				'taxBase' => $baseValueSubtotal, 'taxValue' => $taxValueSubtotal, 
+				'description' => $subTotalLabels[$dir]['description'] ?? '!!!',
+				'taxBase' => $baseValueSubtotal, 'taxValue' => $taxValueSubtotal,
 				'state' => ['icon' => $iconState, 'text' => ''],
 				'_options' => ['class' => 'subtotal', 'afterSeparator' => 'separator', 'cellClasses' => ['state' => $stateClasses], 'colSpan' => ['description' => 2]]
 			];
@@ -640,6 +642,45 @@ class Detail extends \e10doc\core\dc\Detail
 			'header' => $h, 'table' => $list, 'params' => array ('disableZeros' => 1)));
 	}
 
+	function addContentImport ()
+	{
+		$testCmnBkpDocImports = $this->app()->cfgItem ('options.experimental.testCmnBkpDocImports', 0);
+		if (!$testCmnBkpDocImports)
+			return;
+
+		$allAttachments = UtilsBase::loadAllRecAttachments($this->app(), 'e10doc.core.heads', $this->recData['ndx']);
+		$files = [];
+		foreach ($allAttachments as $a)
+		{
+			$srcFullFileName = __APP_DIR__.'/att/'. $a['path'].$a['filename'];
+			$files[] = $srcFullFileName;
+		}
+
+		$ie = new \e10doc\cmnbkp\libs\imports\ImportHelper($this->app());
+
+		/** @var \e10doc\cmnbkp\libs\imports\cardTrans\ImportCardTrans */
+		$importEngine = $ie->createImportFromAttachments($files);
+
+		if ($importEngine)
+		{
+			$importEngine->setDocument($this->recData['ndx']);
+
+			$btns = [];
+      $btns [] = [
+        'type' => 'action', 'action' => 'addwizard',
+        'text' => 'Přegenerovat doklad', 'data-class' => 'e10doc.cmnbkp.libs.imports.WizardRunImport',
+        'icon' => 'cmnbkpRegenerateOpenedPeriod',
+        'class' => 'pull-right'
+      ];
+
+			$this->addContent ('body', [
+				'pane' => 'e10-pane e10-pane-table',
+				'type' => 'line', 'line' => $btns,
+				'paneTitle' => ['icon' => 'icon-file-text', 'text' => $importEngine->title(), 'class' => 'h2 block']
+			]);
+		}
+	}
+
 	public function createContentBody ()
 	{
 		$this->linkedDocuments();
@@ -651,6 +692,7 @@ class Detail extends \e10doc\core\dc\Detail
 			$this->addContent ('body', ['pane' => 'e10-pane e10-pane-table', 'type' => 'text', 'title' => ['icon' => 'icon-file-text', 'text' => 'Strany MD a DAL se nerovnají!']]);
 		}
 
+		$this->addContentImport();
 
 		switch ($this->item['activity'])
 		{

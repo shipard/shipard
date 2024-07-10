@@ -1,0 +1,8 @@
+[
+	{
+		"id": "cz.csob-cardsTransactions",
+		"name": "ČSOB / Karetní transakce",
+		"checkRegExp": "/<firm_header><type>01<\\/type>/",
+		"classId": "e10doc.cmnbkp.libs.imports.cardTrans.ImportCZCSOBCardTransactions"
+	}
+]

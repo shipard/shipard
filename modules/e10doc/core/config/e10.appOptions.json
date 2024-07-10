@@ -6,7 +6,8 @@
 			{"cfgKey": "checkIncomingIssues", "cfgName": "Testovat automatické pořizování dokladů z došlé pošty", "options": {"0": "Ne","1": "Ano"}},
 			{"cfgKey": "testDocRowPriceSource", "cfgName": "Testovat přepínání ceny celkem v řádcích dokladů", "options": {"0": "Ne","1": "Ano"}},
 			{"cfgKey": "testImportFioJson", "cfgName": "Testovat import výpisů FIO banky ve formátu JSON", "options": {"0": "Ne","1": "Ano"}},
-			{"cfgKey": "testNewBankDocDetail", "cfgName": "Testovat nový detail Banky", "options": {"0": "Ne","1": "Ano"}}
+			{"cfgKey": "testNewBankDocDetail", "cfgName": "Testovat nový detail Banky", "options": {"0": "Ne","1": "Ano"}},
+			{"cfgKey": "testCmnBkpDocImports", "cfgName": "Testovat importy účetních dokladů", "options": {"0": "Ne","1": "Ano"}}
 		]
 	}
 }
