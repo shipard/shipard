@@ -2180,10 +2180,18 @@ class GenerovaniFakturSkolneEngine extends \E10\Utility
 	function setPeriod ($today, $pololeti)
 	{
 		$todayYear = intval($today->format ('Y'));
+		$todayMonth = intval($today->format ('m'));
 		$this->dateIssue = Utils::today();
-		$this->dateDue = Utils::today();
-		$this->dateDue->add (new \DateInterval('P30D'));
-
+		if ($pololeti == 1 && $todayMonth === 7)
+		{
+			$dd = sprintf('%04d-%02d-%02d', $todayYear, 8, 26);
+			$this->dateDue = Utils::createDateTime($dd);
+		}
+		else
+		{
+			$this->dateDue = Utils::today();
+			$this->dateDue->add (new \DateInterval('P30D'));
+		}
 		switch ($pololeti)
 		{
 			case 1:
@@ -2346,7 +2354,7 @@ class GenerovaniFakturSkolneWizard extends Wizard
 		$today = new \DateTime();
 		//$todayYear = intval($today->format ('Y'));
 		$todayMonth = intval($today->format ('m'));
-		if (($todayMonth > 8) && ($todayMonth <= 12))
+		if (($todayMonth > 6) && ($todayMonth <= 12))
 			$this->recData['pololeti'] = '1';
 		else
 			$this->recData['pololeti'] = '2';
