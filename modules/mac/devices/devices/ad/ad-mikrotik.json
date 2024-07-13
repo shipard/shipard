@@ -58,7 +58,15 @@
 			"sgClassId": "mac.lan.libs.cfgScripts.MikrotikAD_SwitchChip",
 			"types": {
 				"mkt-xap_cap": {"title": "cAP"},
-				"mkt-xap_cap-ac": {"title": "cAP ac"},
+				"mkt-xap_cap-ac": {
+					"title": "cAP ac",
+					"wirelessMode": "wifiwave2",
+					"ports": [
+						{"kind": 5, "count": 2, "maskId": "ether"},
+						{"kind": 1, "count": 2, "maskId": "wifi"},
+						{"kind": 10, "count": 1, "maskId": "mng"}
+					]
+				},
 				"mkt-xap_cap-ax": {
 					"title": "cAP ax",
 					"wirelessMode": "wifiwave2",
