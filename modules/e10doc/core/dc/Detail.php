@@ -363,6 +363,10 @@ class Detail extends \Shipard\Base\DocumentCard
 
 	public function linkedDocuments_Balance (&$docsFrom, &$docsTo, $symbol1, $symbol2, $person)
 	{
+		$testNewBankDocDetail = $this->app()->cfgItem ('options.experimental.testNewBankDocDetail', 0);
+		if ($testNewBankDocDetail)
+			return;
+
 		if ($this->app()->model()->module ('e10doc.balance') === FALSE)
 			return;
 		if ($symbol1 == '')
