@@ -91,6 +91,12 @@ class TableDevices extends DbTable
 			{
 				$recData['monitored'] = 1;
 			}
+
+			if ((isset($macDeviceCfg['macBridge']) && $macDeviceCfg['macBridge'] === ''))
+			{
+				$macDeviceCfg['macBridge'] = $this->macAddrPrivate($recData['ndx'], 1);
+				$recData['macDeviceCfg'] = json_encode($macDeviceCfg);
+			}
 		}
 
 		if (isset($recData['id']) && $recData['id'] === '' && isset($recData['ndx']) && $recData['ndx'] !== 0)
@@ -515,6 +521,21 @@ class TableDevices extends DbTable
 
 			}
 		}
+	}
+
+	public function macAddrPrivate ($deviceNdx, $addressKind = 1)
+	{
+		$mac = '5a:';
+		$mac .= sprintf('%02x:', $addressKind);
+
+		$deviceNdxHex = sprintf('%04x', $deviceNdx);
+		$mac .= substr($deviceNdxHex, 0, 2).':';
+		$mac .= substr($deviceNdxHex, 2).':';
+
+		$mac .= sprintf('%02x:', mt_rand(0, 255));
+		$mac .= sprintf('%02x', mt_rand(0, 255));
+
+		return $mac;
 	}
 }
 

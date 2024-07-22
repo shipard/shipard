@@ -2,7 +2,8 @@
 
 namespace mac\lan\libs\cfgScripts;
 
-use e10\Utility;
+use \Shipard\Base\Utility;
+use \Shipard\Utils\Utils;
 
 
 /**
@@ -12,14 +13,14 @@ use e10\Utility;
 class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 {
 	// -- deviceMode
-	CONST dmSwitch = 0, dmCAPUnmanaged = 1, dmAPBridge = 2, dmRouter = 3, dmNone = 99;
+	CONST dmSwitch = 0, dmCAPUnmanaged_OBSOLETE = 1, dmAPBridge = 2, dmRouter = 3, dmNone = 99;
 	var $deviceMode = self::dmNone;
 
 	// -- wifiMode
 	CONST wmNone = 0, wmCAP = 1, wmManual = 2, wmAutoLAN = 3;
 	var $wifiMode = self::wmNone;
 
-	CONST wrmNone = 0, wrmWireless = 1, wrmWifiWave2 = 2;
+	CONST wrmNone = 0, wrmWireless = 1, wrmWifiWave2 = 2, wrmWifi = 3;
 	var $wirelessMode = self::wrmNone;
 
 	var $scriptModeSignature = ' -- !!! UNCONFIGURED !!! --';
@@ -47,6 +48,8 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 				$this->wirelessMode = self::wrmWireless;
 			elseif ($this->adCfg['wirelessMode'] === 'wifiwave2')
 				$this->wirelessMode = self::wrmWifiWave2;
+			elseif ($this->adCfg['wirelessMode'] === 'wifi')
+				$this->wirelessMode = self::wrmWifi;
 		}
 	}
 
@@ -60,10 +63,21 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 		];
 		$this->cfgData[$root][] = $item;
 
-		$root = '/system clock';
+		$root = '/system/clock/';
 		$item = ['type' => 'set',
 			'params' => [
 				'time-zone-name' => 'Europe/Prague',
+			]
+		];
+		$this->cfgData[$root][] = $item;
+	}
+
+	function createData_Init_SNMP()
+	{
+		$root = '/snmp/';
+		$item = ['type' => 'set',
+			'params' => [
+				'enabled' => 'yes',
 			]
 		];
 		$this->cfgData[$root][] = $item;
@@ -137,8 +151,8 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 			return;
 
 		$deviceModes = [0 => 'switch', 1 => 'unmanaged', 2 => 'ap/bridge', 3 => 'router'];
-		$wifiModes = [0 => 'none', 1 => 'CAP', 2 => 'manual', 3 => 'auto/from LAN'];
-		$wirelessModes = [0 => "none", 1 => 'wireless', 2 => 'wifiwave2'];
+		$wifiModes = [0 => 'none', 1 => 'CAPSMAN client', 2 => 'manual', 3 => 'auto/from LAN'];
+		$wirelessModes = [0 => "none", 1 => 'wireless', 2 => 'wifiwave2', 3 => 'wifi ROS >= 7.13'];
 
 		$this->script .= "### script mode: {$this->scriptModeSignature} / ".get_class($this)." ###\n";
 		$this->script .= "### device mode: ".($deviceModes[$this->deviceMode] ?? 'UNKNOWN').
@@ -151,6 +165,15 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 	function createScript_Init_Identity()
 	{
 		$this->csActiveRoot = '/system identity';
+		$this->createScriptForRoot();
+
+		$this->csActiveRoot = '/system/clock/';
+		$this->createScriptForRoot();
+	}
+
+	function createScript_Init_SNMP()
+	{
+		$this->csActiveRoot = '/snmp/';
 		$this->createScriptForRoot();
 	}
 
@@ -174,6 +197,9 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 		// /user/add name=js group=full comment="John Shipard" password=“hfztrbt7h3”
 
 		$this->script .= "### user + ssh public key ###\n";
+
+		if ($this->userLogin !== 'admin')
+			$this->script .= "/user/add name=".$this->userLogin.' group=full'.' password="'.Utils::createToken(10, TRUE).'"'."\n";
 		$this->script .= "/tool fetch address=".$tftpAddress." src-path=shn_ssh_key.pub user=".$this->userLogin." mode=tftp dst-path=shn_ssh_key.pub\n";
 		$this->script .= "/user ssh-keys import public-key-file=shn_ssh_key.pub user=".$this->userLogin."\n";
 		$this->script .= "\n";
@@ -205,12 +231,22 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 			return 0;
 			//$s .= '### ';
 
-		$s .= $this->csActiveRoot.' ';
+		$cmdSeparator = ' ';
+		if (str_ends_with ($this->csActiveRoot, '/'))
+			$cmdSeparator = '/';
+
+		if ($cmdSeparator === '/')
+			$s .= $this->csActiveRoot;
+		else
+			$s .= $this->csActiveRoot.$cmdSeparator;
 		$s .= $item['type'];
 
 		foreach ($item['params'] as $key => $value)
 		{
-			$s .= ' ';
+			if ($cmdSeparator !== '/')
+				$s .= $cmdSeparator;
+			else
+				$s .= ' ';
 			$s .= $key;
 			if ($value === NULL)
 				continue;
