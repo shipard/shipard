@@ -118,7 +118,11 @@ class Response
 		header ('X-Frame-Options: SAMEORIGIN');
 		header ("Content-Security-Policy: frame-ancestors 'self' *.shipard.cz *.shipard.pro *.shipard.app shipard.app;");
 
+		if ($this->saveFileName !== '')
+			header ("Content-Disposition: ".$this->contentDisposition."; filename*=UTF-8''" . rawurlencode(Utils::safeChars($this->saveFileName, TRUE)));
+
 		header ("Content-type: " . $this->mimeType ());
+
 		header("HTTP/1.1 " . self::$messages [$this->status]);
 		echo $this->data();
 	}
@@ -137,6 +141,12 @@ class Response
 
 		if (!$this->saveFileName || $this->saveFileName === '')
 			$this->saveFileName = basename($fileName);
+	}
+
+	public function setSaveFileName ($saveFileName, $contentDisposition = 'inline')
+	{
+		$this->saveFileName = $saveFileName;
+		$this->contentDisposition = $contentDisposition;
 	}
 
 	public function setRawData($data)

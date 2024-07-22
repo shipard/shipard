@@ -32,10 +32,22 @@ class DocumentCardDeviceScripts extends \e10\DocumentCard
 
 			// -- init / reset script
 			$initContent = [];
+
+			$tlbr = [];
+			$url = $this->app()->dsRoot.'/api/objects/call/mac-get-lan-device-init-script/'.$this->recData['ndx'].'?save=1';
+			$tlbr[] = ['text' => 'Download', 'url' => $url, 'class' => '', 'icon' => 'system/actionDownload'];
+
+			$tlbrContent = [
+				'pane' => 'padd5 e10-pane e10-pane-table',
+				'type' => 'line', 'line' => $tlbr,
+			];
+			$initContent [] = $tlbrContent;
+
 			$this->scriptGenerator = new \mac\lan\libs\LanCfgDeviceScriptGenerator($this->app());
 			$this->scriptGenerator->init();
 			$this->scriptGenerator->setDevice($this->recData['ndx'], NULL, TRUE);
 			$this->scriptGenerator->addToContent($initContent);
+
 			$tabs[] = ['title' => ['text' => 'Inicializace', 'icon' => 'system/iconCogs'], 'content' => $initContent];
 
 			// -- generated scripts - running
@@ -89,7 +101,7 @@ class DocumentCardDeviceScripts extends \e10\DocumentCard
 
 		$content[] = [
 			'pane' => 'padd5 e10-pane e10-pane-table',
-			'type' => 'line', 'line' => $info
+			'type' => 'line', 'line' => $info,
 		];
 
 		$content[] = [

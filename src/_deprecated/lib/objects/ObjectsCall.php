@@ -48,6 +48,16 @@ class ObjectsCall extends Service
 	{
 		if ($this->status === self::psOK)
 			$this->result ['status'] = 1;
+
+		if (isset($this->result ['forceTextData']))
+		{
+			$r = new Response($this->app, $this->result ['forceTextData']);
+			$r->setMimeType('text/plain');
+			if (isset($this->result ['forceTextDataSaveFileName']))
+				$r->setSaveFileName($this->result ['forceTextDataSaveFileName'], 'attachment');
+			return $r;
+		}
+
 		$r = new Response($this->app, json_encode($this->result, JSON_PRETTY_PRINT));
 		$r->setMimeType('application/json');
 		return $r;
