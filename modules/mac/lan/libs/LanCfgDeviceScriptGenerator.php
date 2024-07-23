@@ -23,7 +23,7 @@ class LanCfgDeviceScriptGenerator extends Utility
 	var $lanCfgCreator = NULL;
 
 	var $sgClassId = '';
-	/** @var \mac\lan\libs\scriptGenerators\DeviceSG_Core */
+	/** @var \mac\lan\libs\cfgScripts\CoreCfgScript */
 	var $dsg = NULL;
 
 
@@ -97,6 +97,18 @@ class LanCfgDeviceScriptGenerator extends Utility
 				'pane' => 'e10-pane e10-pane-table',
 				'type' => 'text', 'subtype' => 'code', 'text' => $this->dsg->script
 			];
+
+			if (count($this->dsg->scripsUtils))
+			{
+				foreach ($this->dsg->scripsUtils as $scu)
+				{
+					$content[] = [
+						'pane' => 'e10-pane e10-pane-table',
+						'type' => 'text', 'subtype' => 'code', 'text' => $scu['script'],
+						'paneTitle' => ['text' => $scu['title'], 'class' => 'subtitle'],
+					];
+				}
+			}
 		}
 		else
 		{

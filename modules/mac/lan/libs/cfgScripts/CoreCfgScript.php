@@ -12,6 +12,7 @@ use e10\Utility;
 class CoreCfgScript extends Utility
 {
 	var $script = '';
+	var $scripsUtils = [];
 	var $scriptUpgrade = '';
 
 	var $deviceCfg = NULL;

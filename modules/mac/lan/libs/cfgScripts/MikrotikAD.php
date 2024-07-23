@@ -194,15 +194,33 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 		elseif (isset($this->deviceCfg['wifi']) && intval($this->deviceCfg['wifi']) == 1 && isset($this->lanCfg['mainServerWifiControlIp']))
 			$tftpAddress = $this->lanCfg['mainServerWifiControlIp'];
 
-		// /user/add name=js group=full comment="John Shipard" password=“hfztrbt7h3”
-
-		$this->script .= "### user + ssh public key ###\n";
-
+		// -- add user
+		$s = "### user + ssh public key ###\n";
 		if ($this->userLogin !== 'admin')
-			$this->script .= "/user/add name=".$this->userLogin.' group=full'.' password="'.Utils::createToken(10, TRUE).'"'."\n";
-		$this->script .= "/tool fetch address=".$tftpAddress." src-path=shn_ssh_key.pub user=".$this->userLogin." mode=tftp dst-path=shn_ssh_key.pub\n";
-		$this->script .= "/user ssh-keys import public-key-file=shn_ssh_key.pub user=".$this->userLogin."\n";
-		$this->script .= "\n";
+			$s .= "/user/add name=".$this->userLogin.' group=full'.' password="'.Utils::createToken(10, TRUE).'"'."\n";
+		$s .= "/tool/fetch address=".$tftpAddress." src-path=shn_ssh_key.pub user=".$this->userLogin." mode=tftp dst-path=shn_ssh_key.pub\n";
+		$s .= "/user/ssh-keys/import public-key-file=shn_ssh_key.pub user=".$this->userLogin."\n";
+		$s .= "\n";
+
+		$initUsersScript = [
+			'title' => 'Přidání uživatele',
+			'script' => $s,
+		];
+
+		$this->scripsUtils[] = $initUsersScript;
+
+		// -- device reset
+		$s = "### device reset ###\n";
+		$s .= "/tool/fetch address=".$tftpAddress." src-path=init-".$this->deviceNdx.".rsc mode=tftp dst-path=init-".$this->deviceNdx.".rsc\n";
+		$s .= '/system/reset-configuration caps-mode=no keep-users=yes no-defaults=yes skip-backup=yes run-after-reset=init-'.$this->deviceNdx.'.rsc'."\n";
+		$s .= "\n";
+
+		$initUsersScript = [
+			'title' => 'Reset zařízení',
+			'script' => $s,
+		];
+
+		$this->scripsUtils[] = $initUsersScript;
 	}
 
 	function createScriptForRoot()
