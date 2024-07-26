@@ -71,6 +71,25 @@ class TokensEngine extends Utility
     }
   }
 
+  public function loadLANValidTokens($lanNdx)
+  {
+    $tokens = [];
+
+    $q = [];
+    array_push($q, 'SELECT * FROM [mac_admin_tokens]');
+    array_push($q, ' WHERE [expired] = %i', 0);
+    array_push($q, ' AND [lan] = %i', $lanNdx);
+    array_push($q, ' ORDER BY expireAfter DESC');
+
+    $rows = $this->db()->query($q);
+    foreach ($rows as $r)
+    {
+      $tokens[] = $r['token'];
+    }
+
+    return $tokens;
+  }
+
   public function run()
   {
     $this->loadlans();

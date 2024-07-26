@@ -797,6 +797,9 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 
 	public function createScript($initMode = FALSE)
 	{
+		if (!$initMode)
+			return;
+
 		parent::createScript($initMode);
 
 		$this->createData();

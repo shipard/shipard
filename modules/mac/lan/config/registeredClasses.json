@@ -16,5 +16,10 @@
 		"mac-lan-wifi-upload": {"classId": "mac.lan.libs.LanWifiUpload"},
 		"mac-lan-info-download": {"classId": "mac.lan.LanInfoDownload"},
 		"mac-lan-alerts-download": {"classId": "mac.lan.libs.alerts.LanAlertsDownload"}
+	},
+	"feed": {
+		"lan-device-init-script": {
+			"classId": "mac.lan.libs.FeedLanDeviceInitScript"
+		}
 	}
 }

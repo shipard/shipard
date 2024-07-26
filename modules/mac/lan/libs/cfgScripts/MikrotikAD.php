@@ -211,9 +211,19 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 
 		// -- device reset
 		$s = "### device reset ###\n";
-		$s .= "/tool/fetch address=".$tftpAddress." src-path=init-".$this->deviceNdx.".rsc mode=tftp dst-path=init-".$this->deviceNdx.".rsc\n";
-		$s .= '/system/reset-configuration caps-mode=no keep-users=yes no-defaults=yes skip-backup=yes run-after-reset=init-'.$this->deviceNdx.'.rsc'."\n";
-		$s .= "\n";
+    $te = new \mac\admin\libs\TokensEngine($this->app());
+    $validTokens = $te->loadLANValidTokens($this->deviceRecData['lan']);
+		if (isset($validTokens[0]))
+		{
+			$initScriptUrl = 'https://'.$_SERVER['HTTP_HOST'].$this->app()->urlRoot.'/feed/lan-device-init-script/'.$this->deviceNdx.'/'.$validTokens[0].'/init-'.$this->deviceNdx.'.rsc';
+			$s .= "/tool/fetch url=".$initScriptUrl." mode=https dst-path=init-".$this->deviceNdx.".rsc\n";
+			$s .= '/system/reset-configuration caps-mode=no keep-users=yes no-defaults=yes skip-backup=yes run-after-reset=init-'.$this->deviceNdx.'.rsc'."\n";
+			$s .= "\n";
+		}
+		else
+		{
+			$s = "### ERROR: no valid auth token!!! ###\n";
+		}
 
 		$initUsersScript = [
 			'title' => 'Reset zařízení',
