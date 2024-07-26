@@ -202,6 +202,10 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 		if (!$this->initMode)
 			return;
 
+		$te = new \mac\admin\libs\TokensEngine($this->app());
+		$validTokens = $te->loadLANValidTokens($this->deviceRecData['lan']);
+
+
 		$tftpAddress = $this->lanCfg['mainServerLanControlIp'];
 		if (isset($this->deviceCfg['capsmanClient']) && intval($this->deviceCfg['capsmanClient']) && isset($this->lanCfg['mainServerWifiControlIp']))
 			$tftpAddress = $this->lanCfg['mainServerWifiControlIp'];
@@ -210,9 +214,26 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 
 		// -- add user
 		$s = "### user + ssh public key ###\n";
+
 		if ($this->userLogin !== 'admin')
 			$s .= "/user/add name=".$this->userLogin.' group=full'.' password="'.Utils::createToken(10, TRUE).'"'."\n";
-		$s .= "/tool/fetch address=".$tftpAddress." src-path=shn_ssh_key.pub user=".$this->userLogin." mode=tftp dst-path=shn_ssh_key.pub\n";
+
+		if (isset($this->lanCfg['mainServerMacDeviceCfg']['serverFQDN']) && $this->lanCfg['mainServerMacDeviceCfg']['serverFQDN'] != '')
+		{
+			$httpsPort = (isset($this->lanCfg['mainServerMacDeviceCfg']['httpsPort']) && (intval($this->lanCfg['mainServerMacDeviceCfg']['httpsPort']))) ? intval($this->lanCfg['mainServerMacDeviceCfg']['httpsPort']) : 443;
+			$keysUrl = 'https://'.$this->lanCfg['mainServerMacDeviceCfg']['serverFQDN'];
+			if ($httpsPort !== 443)
+				$keysUrl .= ':'.$httpsPort;
+
+			$keysUrl .= '/';
+			$keysUrl .= $validTokens[0] ?? '---';
+			$keysUrl .= '/lc-ssh/';
+			$keysUrl .= 'shn_ssh_key.pub';
+
+			$s .= "/tool/fetch url=\"".$keysUrl."\" src-path=shn_ssh_key.pub user=".$this->userLogin." mode=https dst-path=shn_ssh_key.pub\n";
+		}
+		else
+			$s .= "/tool/fetch address=".$tftpAddress." src-path=shn_ssh_key.pub user=".$this->userLogin." mode=tftp dst-path=shn_ssh_key.pub\n";
 		$s .= "/user/ssh-keys/import public-key-file=shn_ssh_key.pub user=".$this->userLogin."\n";
 		$s .= "\n";
 
@@ -225,8 +246,6 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 
 		// -- device reset
 		$s = "### device reset ###\n";
-    $te = new \mac\admin\libs\TokensEngine($this->app());
-    $validTokens = $te->loadLANValidTokens($this->deviceRecData['lan']);
 		if (isset($validTokens[0]))
 		{
 			$initScriptUrl = 'https://'.$_SERVER['HTTP_HOST'].$this->app()->urlRoot.'/feed/lan-device-init-script/'.$this->deviceNdx.'/'.$validTokens[0].'/init-'.$this->deviceNdx.'.rsc';
