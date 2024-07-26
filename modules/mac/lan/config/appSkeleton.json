@@ -28,6 +28,7 @@
 							"admins" :{"t1": "Správci", "object": "viewer", "table": "mac.admin.admins", "viewer": "default", "order": 500000, "beforeSeparator":  {"text": "Správa", "class": "block pl05 pt1", "icon": "submenu/management"}},
 							"ipAddressLists" :{"t1": "Seznamy IP adres", "object": "viewer", "table": "mac.lan.ipAddressLists", "viewer": "default", "order": 500100},
 							"ipAddress" :{"t1": "IP adresy", "object": "viewer", "table": "mac.lan.ipAddress", "viewer": "default", "order": 500200},
+							"tokens" :{"t1": "Tokeny", "object": "viewer", "table": "mac.admin.tokens", "viewer": "default", "order": 570000},
 
 							"macs": {"t1": "Všechny", "object": "viewer", "table": "mac.lan.macs", "viewer": "default", "order": 600100, "beforeSeparator": {"text": "MAC adresy", "class": "block pl05 pt1", "icon":  "iconSquare"}},
 							"macsOnPorts" :{"t1": "Podle portů", "object": "viewer", "table": "mac.lan.macsOnPorts", "viewer": "default", "order": 600200},

@@ -4,7 +4,8 @@
 			"mac.admin.admins": {"default": 2},
 			"mac.admin.ipAddress": {"default": 2},
 			"mac.admin.ipAddressLists": {"default": 2},
-			"mac.admin.ipAddressListsRows": {"default": 2}
+			"mac.admin.ipAddressListsRows": {"default": 2},
+			"mac.admin.tokens": {"default": 2}
 		}
 	}
 }

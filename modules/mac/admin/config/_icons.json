@@ -16,5 +16,11 @@
 		"fa6pro": "fa-crosshairs",
 		"bsi": "bi-geo-fill",
 		"mdi": "location_on"
+	},
+	"tables/mac.admin.tokens": {
+		"fa5":"fa-tag",
+		"fa6pro":"fa-tag",
+		"bsi":"bi-tag-fill",
+		"mdi":"local_offer"
 	}
 }
