@@ -39,7 +39,7 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 
 		if ($this->deviceMode === self::dmAPBridge)
 		{
-			if (isset($this->deviceCfg['macBridge']) && $this->deviceCfg['macBridge'] !== '')
+			if ($this->macBridge !== '')
 			{
 				$this->rootsInfo ['/interface bridge']['mandatoryColumns'][] = 'admin-mac';
 				$this->rootsInfo ['/interface bridge']['mandatoryColumns'][] = 'auto-mac';
@@ -292,9 +292,9 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 			]
 		];
 
-		if (isset($this->deviceCfg['macBridge']) && $this->deviceCfg['macBridge'] !== '')
+		if ($this->macBridge !== '')
 		{
-			$item['params']['admin-mac'] = $this->deviceCfg['macBridge'];
+			$item['params']['admin-mac'] = $this->macBridge;
 			$item['params']['auto-mac'] = 'no';
 			$item['params']['port-cost-mode'] = 'short';
 		}

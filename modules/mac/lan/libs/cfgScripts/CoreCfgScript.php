@@ -30,6 +30,8 @@ class CoreCfgScript extends Utility
 	var $tableLanDevices;
 	var $adCfg = NULL;
 
+	var $macBridge = '';
+
 	public function setDevice($deviceRecData, $lanCfg)
 	{
 		$this->tableLanDevices = $this->app()->table('mac.lan.devices');

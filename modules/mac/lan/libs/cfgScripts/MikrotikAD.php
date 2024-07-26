@@ -51,6 +51,20 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 			elseif ($this->adCfg['wirelessMode'] === 'wifi')
 				$this->wirelessMode = self::wrmWifi;
 		}
+
+		// -- mng VLAN mac addr
+		$q = [];
+		array_push($q, 'SELECT * FROM [mac_lan_devicesPorts]');
+		array_push($q, ' WHERE device = %i', $deviceRecData['ndx']);
+		array_push($q, ' AND portKind = %i', 10); // VLAN
+		array_push($q, ' AND mac != %s', '');
+
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$this->macBridge = $r['mac'];
+			break;
+		}
 	}
 
 	function createData_Init_Identity()

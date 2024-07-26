@@ -29,8 +29,7 @@
 
 			{"id": "userLogin", "name": "Uživatel", "type": "string", "len": 30},
 			{"id": "managementWWWAddrList", "name": "Povolené adresy pro správu přes WWW", "type": "int", "reference": "mac.lan.ipAddressLists"},
-			{"id": "managementSSHAddrList", "name": "Povolené adresy pro správu přes SSH", "type": "int", "reference": "mac.lan.ipAddressLists"},
-			{"id": "macBridge", "name": "MAC adresa pro bridge rozhraní", "type": "string", "len": 20}
+			{"id": "managementSSHAddrList", "name": "Povolené adresy pro správu přes SSH", "type": "int", "reference": "mac.lan.ipAddressLists"}
 		]
 	},
 	"snmpTemplateRealtime": "mac/devices/devices/router/router-mikrotik-netdata-snmp.mustache",

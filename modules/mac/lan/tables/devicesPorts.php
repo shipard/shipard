@@ -69,6 +69,9 @@ class TableDevicesPorts extends DbTable
 				' WHERE [ndx] = %i', $recData['connectedToPort']);
 		}
 
+		if ($recData['portKind'] == 10 && $recData['mac'] === '' && $recData['device'] != 0)
+			$recData['mac'] = $this->macAddrPrivate($recData['device'], 1);
+
 		unset($recData['OLD_connectedToWallSocket'], $recData['OLD_connectedToDevice'], $recData['OLD_connectedToPort']);
 
 		parent::checkBeforeSave ($recData, $ownerData);
@@ -92,6 +95,20 @@ class TableDevicesPorts extends DbTable
 		return parent::tableIcon ($recData, $options);
 	}
 
+	public function macAddrPrivate ($deviceNdx, $addressKind = 1)
+	{
+		$mac = '5a:';
+		$mac .= sprintf('%02x:', $addressKind);
+
+		$deviceNdxHex = sprintf('%04x', $deviceNdx);
+		$mac .= substr($deviceNdxHex, 0, 2).':';
+		$mac .= substr($deviceNdxHex, 2).':';
+
+		$mac .= sprintf('%02x:', mt_rand(0, 255));
+		$mac .= sprintf('%02x', mt_rand(0, 255));
+
+		return $mac;
+	}
 }
 
 /**
