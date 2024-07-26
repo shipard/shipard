@@ -55,7 +55,7 @@ class TokensEngine extends Utility
   protected function expireExpiredTokens()
   {
     $now = new \DateTime();
-    $this->db()->query('UPDATE [mac_admin_tokens] SET [expired] = 1 WHERE [expireAfter] < %d', $now,
+    $this->db()->query('UPDATE [mac_admin_tokens] SET [expired] = 1 WHERE [expireAfter] < %t', $now,
                         ' AND [expired] = %i', 0);
   }
 
