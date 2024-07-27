@@ -114,14 +114,25 @@
 				"mkt-xap_map-lite": {"title": "mAP lite"},
 				"mkt-xap_map": {"title": "mAP"},
 
-				"mkt-xap_wap": {"title": "wAP / wAP BE"},
-
-				"mkt-xap_wap-r": {"title": "wAP R"},
-				"mkt-xap_wap-ac": {
-					"title": "wAP ac / wAP ac BE",
+				"mkt-xap_wap-d2": {
+					"title": "wAP ac",
+					"typeIds": ["RBwAPG-5HacD2HnD"],
 					"wirelessMode": "wifi",
 					"ports": [
 						{"kind": 5, "count": 2, "maskId": "ether"},
+						{"kind": 1, "count": 2, "maskId": "wifi"},
+						{"kind": 10, "count": 1, "maskId": "mng"}
+					]
+				},
+
+				"mkt-xap_wap-r": {"title": "wAP R"},
+
+				"mkt-xap_wap-ac": {
+					"title": "[OLD] wAP ac / wAP BE (1 ✖️ eth)",
+					"typeIds": ["RBwAPG-5HacT2HnD", "RBwAPG-5HacT2HnD-BE"],
+					"wirelessMode": "wifi",
+					"ports": [
+						{"kind": 5, "count": 1, "maskId": "ether"},
 						{"kind": 1, "count": 2, "maskId": "wifi"},
 						{"kind": 10, "count": 1, "maskId": "mng"}
 					]
