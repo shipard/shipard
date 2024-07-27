@@ -119,6 +119,7 @@
 				"mkt-xap_wap-r": {"title": "wAP R"},
 				"mkt-xap_wap-ac": {
 					"title": "wAP ac / wAP ac BE",
+					"wirelessMode": "wifi",
 					"ports": [
 						{"kind": 5, "count": 2, "maskId": "ether"},
 						{"kind": 1, "count": 2, "maskId": "wifi"},
