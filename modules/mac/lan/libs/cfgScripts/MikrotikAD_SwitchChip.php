@@ -303,7 +303,10 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 
 		$root = '/interface bridge port';
 
-		$ports = \e10\sortByOneKey($this->lanDeviceCfg['ports'], 'portId', TRUE, TRUE);
+		if (isset($this->lanDeviceCfg['ports']))
+			$ports = \e10\sortByOneKey($this->lanDeviceCfg['ports'], 'portId', TRUE, TRUE);
+		else
+			$ports = [];
 		foreach (/*$this->lanDeviceCfg['ports']*/$ports as $portNdx => $portCfg)
 		{
 			if ($portCfg['portKind'] !== 5 && $portCfg['portKind'] !== 6 && $portCfg['portKind'] !== 1)
