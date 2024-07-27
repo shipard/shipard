@@ -230,7 +230,7 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 			$keysUrl .= '/lc-ssh/';
 			$keysUrl .= 'shn_ssh_key.pub';
 
-			$s .= "/tool/fetch url=\"".$keysUrl."\" src-path=shn_ssh_key.pub user=".$this->userLogin." mode=https dst-path=shn_ssh_key.pub\n";
+			$s .= "/tool/fetch url=\"".$keysUrl."\" user=".$this->userLogin." mode=https dst-path=shn_ssh_key.pub\n";
 		}
 		else
 			$s .= "/tool/fetch address=".$tftpAddress." src-path=shn_ssh_key.pub user=".$this->userLogin." mode=tftp dst-path=shn_ssh_key.pub\n";
