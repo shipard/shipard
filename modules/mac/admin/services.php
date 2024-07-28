@@ -16,6 +16,12 @@ class ModuleServices extends \E10\CLI\ModuleServices
     $te->run();
 	}
 
+	protected function macLanUsersUpdate()
+	{
+    $te = new \mac\admin\libs\LanUsersEngine($this->app());
+    $te->run();
+	}
+
 	public function dataSourceStatsCreate()
 	{
 	}
@@ -25,6 +31,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		switch ($actionId)
 		{
 			case 'mac-tokens-update': return $this->macTokensUpdate();
+			case 'mac-lan-users-update': return $this->macLanUsersUpdate();
 		}
 
 		parent::onCliAction($actionId);
@@ -33,6 +40,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 	function onCronHourly()
 	{
 		$this->macTokensUpdate();
+		$this->macLanUsersUpdate();
 	}
 
 	public function onCron ($cronType)

@@ -1,10 +1,11 @@
 {
   "id": "mac.admin",
   "name": "Monitoring And Control - Admin",
-  "tables": ["admins", "ipAddress", "ipAddressLists", "ipAddressListsRows", "tokens"],
+  "tables": ["admins", "lanUsers", "ipAddress", "ipAddressLists", "ipAddressListsRows", "tokens"],
   "modules": ["e10/base"],
 
   "config": [
-		{"id": "+e10.persons.roles", "file": "mac.admin.roles.json"}
+		{"id": "+e10.persons.roles", "file": "mac.admin.roles.json"},
+    {"id": "+mac.admin.lanUsersTypes", "file": "mac.admin.lanUsersTypes.json"}
   ]
 }

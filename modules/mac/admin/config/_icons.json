@@ -1,5 +1,11 @@
 {
-    "tables/mac.admin.admins": {
+	"tables/mac.admin.admins": {
+		"fa5": "fa-user-secret",
+		"fa6pro": "fa-user-secret",
+		"bsi": "bi-person-square",
+		"mdi": "support_agent"
+	},
+	"tables/mac.admin.lanUsers": {
 		"fa5": "fa-user-secret",
 		"fa6pro": "fa-user-secret",
 		"bsi": "bi-person-square",

@@ -1,0 +1,22 @@
+{
+	"lan-admin": {
+		"name": "LAN Admin",
+		"class": "lan", "level": "adm",
+		"usePubKeys": 1
+	},
+	"mqtt-ro": {
+		"name": "MQTT ReadOnly",
+		"class": "mqtt", "level": "ro",
+		"tokenize": 1, "cnt": 4, "hours": 6
+	},
+	"mqtt-rw": {
+		"name": "MQTT ReadWrite",
+		"class": "mqtt", "level": "rw",
+		"tokenize": 1, "cnt": 4, "hours": 6
+	},
+	"mqtt-admin": {
+		"name": "MQTT Admin",
+		"class": "mqtt", "level": "adm",
+		"mandatory": 1
+	}
+}

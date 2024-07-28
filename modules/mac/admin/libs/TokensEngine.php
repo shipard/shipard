@@ -92,7 +92,7 @@ class TokensEngine extends Utility
 
   public function run()
   {
-    $this->loadlans();
+    $this->loadLans();
     $this->expireExpiredTokens();
     $this->loadValidTokens();
     $this->createNewTokens();
