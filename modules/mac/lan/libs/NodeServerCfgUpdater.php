@@ -75,7 +75,8 @@ class NodeServerCfgUpdater extends Utility
 		$localServers = [];
 		$mainServers = [];
 
-		$q[] = 'SELECT devices.*, lans.mainServerCameras, lans.mainServerLanControl, lans.mainServerIot, lans.alertsDeliveryTarget, lans.[domain] AS lanDomain';
+		$q[] = 'SELECT devices.*,  ';
+		array_push ($q,' lans.mainServerCameras, lans.mainServerLanControl, lans.mainServerIot, lans.alertsDeliveryTarget, lans.[domain] AS lanDomain, lans.[ipv6Enabled] AS lanIpv6Enabled');
 		array_push ($q,' FROM [mac_lan_devices] AS devices');
 		array_push ($q,' LEFT JOIN mac_lan_lans AS lans ON devices.lan = lans.ndx');
 		array_push ($q,' WHERE devices.[deviceKind] = %i', 7, ' AND devices.[nodeSupport] = %i', 1, ' AND devices.[docState] != %i', 9800);
@@ -101,6 +102,7 @@ class NodeServerCfgUpdater extends Utility
 				'httpsPort' => (isset($macDeviceCfg['httpsPort']) && (intval($macDeviceCfg['httpsPort']))) ? intval($macDeviceCfg['httpsPort']) : 443,
 				'lanNdx' => $r['lan'],
 				'domain' => $lanDomain,
+				'ipv6Enabled' => $r['lanIpv6Enabled'],
 				'mqttServerHost' => '',
 				'mqttServerIPV4' => '',
 				'alertsDeliveryTarget' => $r['alertsDeliveryTarget'],

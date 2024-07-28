@@ -45,7 +45,7 @@ class TableVlans extends DbTable
 	public function tableIcon ($recData, $options = NULL)
 	{
 		if ($recData['isGroup'])
-			return 'icon-folder-o';
+			return 'user/folder';
 
 		return parent::tableIcon ($recData, $options);
 	}
@@ -93,6 +93,13 @@ class ViewVlans extends TableView
 
 		if ($item['isPublic'])
 			$listItem ['t2'] = [['text' => 'Veřejná', 'icon' => 'system/iconUser', 'class' => 'label label-warning']];
+
+		if ($item['ipv6Enabled'])
+			$listItem ['t2'] = [['text' => 'ipv6', 'icon' => 'system/iconCheck', 'class' => 'label label-success']];
+		if ($item['ipv4Disabled'])
+			$listItem ['t2'] = [['text' => 'ipv4', 'icon' => 'user/timesCircle', 'class' => 'label label-danger']];
+		if ($item['internetDisabled'])
+			$listItem ['t2'] = [['text' => 'Internet', 'icon' => 'user/timesCircle', 'class' => 'label label-danger']];
 
 		return $listItem;
 	}
@@ -177,7 +184,7 @@ class ViewVlans extends TableView
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
-			$l = ['text' => $r['vlanName'], 'icon' => ($r['vlanIsGroup']?'icon-folder-o':'tables/mac.lan.vlans'), 'class' => 'label label-success'];
+			$l = ['text' => $r['vlanName'], 'icon' => ($r['vlanIsGroup']?'user/folder':'tables/mac.lan.vlans'), 'class' => 'label label-success'];
 			if (!$r['vlanIsGroup'])
 				$l['suffix'] = $r['vlanNum'];
 			$this->groupsInfo[$r['srcRecId']][] = $l;
@@ -279,7 +286,14 @@ class FormVlan extends TableForm
 					$this->addColumnInput ('id');
 					$this->addColumnInput ('fullName');
 					if (!$this->recData['isGroup'])
+					{
+						$this->addSeparator(self::coH4);
 						$this->addColumnInput ('isPublic');
+						$this->addColumnInput ('internetDisabled');
+						$this->addColumnInput ('ipv6Enabled');
+						$this->addColumnInput ('ipv4Disabled');
+						$this->addSeparator(self::coH4);
+					}
 					$this->addList ('doclinks', '', TableForm::loAddToFormLayout);
 					$this->addColumnInput ('lan');
 				$this->closeTab ();

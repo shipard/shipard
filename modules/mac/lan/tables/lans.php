@@ -159,7 +159,10 @@ class ViewLans extends TableView
 
 		$props = [];
 		if ($item['routerId'])
-			$props[] = ['text' => $item['routerId'], 'suffix' => $item['routerName'], 'icon' => 'icon-retweet', 'class' => 'label label-default'];
+			$props[] = ['text' => $item['routerId'], 'suffix' => $item['routerName'], 'icon' => 'deviceTypes/router', 'class' => 'label label-default'];
+
+		if ($item['ipv6Enabled'])
+			$props[] = ['text' => 'ipv6', 'icon' => 'system/iconCheck', 'class' => 'label label-success'];
 
 		if (count($props))
 			$listItem ['t2'] = $props;
@@ -245,6 +248,7 @@ class FormLan extends TableForm
 				$this->addColumnInput ('vlanManagement');
 				$this->addColumnInput ('vlanAdmins');
 				$this->addList ('doclinks', '', TableForm::loAddToFormLayout);
+				$this->addColumnInput ('ipv6Enabled');
 
 				$this->addSeparator(self::coH2);
 				$this->addColumnInput ('defaultMacDataSource');

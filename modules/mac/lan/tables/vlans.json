@@ -9,6 +9,10 @@
 		{"id": "isGroup", "name": "Skupina", "type": "logical", "options": ["saveOnChange"]},
 		{"id": "isPublic", "name": "Veřejná VLAN", "type": "logical", "options": ["saveOnChange"]},
 
+		{"id": "internetDisabled", "name": "Zakázat Internet", "type": "logical"},
+		{"id": "ipv6Enabled", "name": "Povolit ipv6", "type": "logical"},
+		{"id": "ipv4Disabled", "name": "Zakázat ipv4", "type": "logical"},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],

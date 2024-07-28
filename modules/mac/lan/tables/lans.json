@@ -14,6 +14,7 @@
 
 		{"id": "vlanManagement", "name": "VLAN pro management aktivních prvků", "type": "int", "reference": "mac.lan.vlans", "comboViewer": "comboVlans"},
 		{"id": "vlanAdmins", "name": "VLAN správců sítě", "type": "int", "reference": "mac.lan.vlans", "comboViewer": "comboVlans"},
+		{"id": "ipv6Enabled", "name": "Povolit ipv6", "type": "logical"},
 
 		{"id": "robotUser", "name": "Uživatel - robot pro komunikaci s databází", "type": "int", "reference": "e10.persons.persons", "comboViewer": "users"},
 		{"id": "domain", "name": "Doména", "type": "string", "len": "80"},
