@@ -1,0 +1,13 @@
+{
+	"id": "mac.admin.lanUsersPubKeys", "sql": "mac_admin_lanUsersPubKeys", "name": "Veřejné klíče LAN uživatelů",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "lanUser", "name": "LAN Uživatel", "type": "int", "reference": "mac.admin.lanUsers"},
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+    {"id": "name", "name": "Název", "type": "string", "len": 40},
+		{"id": "key", "name": "Klíč", "type": "memo"}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.admin.FormLanUserPubKey"}
+	]
+}

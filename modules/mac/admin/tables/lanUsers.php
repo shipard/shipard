@@ -122,14 +122,17 @@ class FormLanUser extends TableForm
 {
 	public function renderForm ()
 	{
-		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
-
-		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
-
     $userType = $this->app()->cfgItem('mac.admin.lanUsersTypes.'.$this->recData['userType'], []);
     $tokenize = $userType['tokenize'] ?? 0;
-    if ($tokenize)
-      $this->readOnly = TRUE;
+    $mandatory = $userType['mandatory'] ?? 0;
+		$usePubKeys = $userType['usePubKeys'] ?? 0;
+
+		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
+		$this->setFlag ('maximize', 1);
+
+		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		if ($usePubKeys)
+			$tabs ['tabs'][] = ['text' => 'Klíče', 'icon' => 'user/key'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);
@@ -144,11 +147,16 @@ class FormLanUser extends TableForm
             $this->addColumnInput ('expireAfter');
             $this->addColumnInput ('expired');
           }
+					elseif ($mandatory)
+						$this->addColumnInput ('lan');
 				$this->closeTab ();
 
-				$this->openTab (TableForm::ltNone);
-					//$this->addList ('');
-				$this->closeTab ();
+				if ($usePubKeys)
+				{
+					$this->openTab (TableForm::ltNone);
+						$this->addList ('keys');
+					$this->closeTab ();
+				}
 			$this->closeTabs ();
 		$this->closeForm ();
 	}

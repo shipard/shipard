@@ -1,7 +1,7 @@
 {
   "id": "mac.admin",
   "name": "Monitoring And Control - Admin",
-  "tables": ["admins", "lanUsers", "ipAddress", "ipAddressLists", "ipAddressListsRows", "tokens"],
+  "tables": ["admins", "lanUsers", "lanUsersPubKeys", "ipAddress", "ipAddressLists", "ipAddressListsRows", "tokens"],
   "modules": ["e10/base"],
 
   "config": [

@@ -17,12 +17,15 @@
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
-	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"lists": [
+		{"id": "keys", "class": "e10.base.ListRows", "name": "Klíče", "table": "mac.admin.lanUsersPubKeys", "queryColumn": "lanUser", "orderColumn": "rowOrder"}
+	],
 	"views": [
 		{"id": "default", "class": "mac.admin.ViewLanUsers", "detail": "mac.admin.ViewDetailLanUser"}
 	],
 	"forms": [
 		{"id": "default", "class": "mac.admin.FormLanUser"}
 	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"}
 }
