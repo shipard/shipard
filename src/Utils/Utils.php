@@ -441,7 +441,7 @@ class Utils
 
 	static function createToken($len, $passwdMode = FALSE, $safeMode = FALSE)
 	{
-		$passwdChars = '_.,%@^';
+		$passwdChars = '_.,@-';
 		$id = '';
 		while (1)
 		{
@@ -450,13 +450,22 @@ class Utils
 			{
 				if ($passwdMode)
 				{
-					$q = rand(0, 100);
+					$q = mt_rand(0, 100);
 					if ($q < 50)
 						$id .= strtoupper(strval($part[$i]));
 					elseif ($q > 80 && $i > 1)
-						$id .= $passwdChars[mt_rand(0, 5)];
+						$id .= $passwdChars[mt_rand(0, 4)];
 					else
-						$id .= $part[$i];
+					{
+						if ($safeMode)
+						{
+							 if ($part[$i] === '0' || $part[$i] === 'o' || $part[$i] === 'i' || $part[$i] === 'l' || $part[$i] === 'j')
+								continue;
+							$id .= $part[$i];
+						}
+						else
+							$id .= $part[$i];
+						}
 				}
 				else
 				{
