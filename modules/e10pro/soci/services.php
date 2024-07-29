@@ -35,6 +35,12 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$ie->generateAll();
 	}
 
+	public function sendEntriesEmails()
+	{
+		$e = new \e10pro\soci\libs\SendEntriesEmails($this->app());
+		$e->sendAll();
+	}
+
 	public function onCliAction ($actionId)
 	{
 		switch ($actionId)
@@ -48,7 +54,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 
 	public function onCronEver ()
 	{
-		//$this->sendEntriesEmails();
+		$this->sendEntriesEmails();
 	}
 
 	public function onStats()
