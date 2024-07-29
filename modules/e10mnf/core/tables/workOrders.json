@@ -34,6 +34,7 @@
 		{"id": "project", "name": "Projekt", "type": "int", "reference": "e10pro.wkf.projects", "module": "e10pro.wkf"},
 		{"id": "wkfProject", "name": "Projekt", "type": "int", "reference": "wkf.base.projects", "module": "wkf.base"},
 		{"id": "parentWorkOrder", "name": "Nadřazená zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
+		{"id": "followUpWorkOrder", "name": "Návazná zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
 		{"id": "place", "name": "Místo", "type": "int", "reference": "e10.base.places"},
 
 		{"id": "currency", "name": "Měna", "type": "enumString", "len": 3, "options": ["saveOnChange"],

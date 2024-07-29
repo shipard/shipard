@@ -52,6 +52,7 @@ class TableDocKinds extends DbTable
 				'usePlaces' => $r ['usePlaces'],
 				'useHeadSymbol1' => $r ['useHeadSymbol1'],
 				'useOwnerWorkOrder' => $r ['useOwnerWorkOrder'],
+				'useFollowUpWorkOrder' => $r ['useFollowUpWorkOrder'],
 				'useRowValidFromTo' => $r ['useRowValidFromTo'],
 				'useRowDateDeadlineRequested' => $r ['useRowDateDeadlineRequested'], 'labelRowDateDeadlineRequested' => $r ['labelRowDateDeadlineRequested'],
 				'useRowDateDeadlineConfirmed' => $r ['useRowDateDeadlineConfirmed'], 'labelRowDateDeadlineConfirmed' => $r ['labelRowDateDeadlineConfirmed'],
@@ -249,6 +250,7 @@ class FormDocKind extends TableForm
 					$this->addColumnInput ('useUsersPeriods');
 					$this->addColumnInput ('useHeadSymbol1');
 					$this->addColumnInput ('useOwnerWorkOrder');
+					$this->addColumnInput ('useFollowUpWorkOrder');
 					$this->addColumnInput ('order');
 					$this->addList ('doclinks', '', TableForm::loAddToFormLayout);
 				$this->closeTab ();

@@ -910,6 +910,8 @@ class FormWorkOrder extends TableForm
 
 					if ($dko['useOwnerWorkOrder'])
 						$this->addColumnInput ('parentWorkOrder');
+					if ($dko['useFollowUpWorkOrder'] ?? 0)
+						$this->addColumnInput ('followUpWorkOrder');
 
 					if ($dko['useMembers'])
 						$this->addList ('doclinksMembers', '', TableForm::loAddToFormLayout/*|TableForm::coColW12*/);

@@ -20,6 +20,7 @@
 		{"id": "usePlaces", "name": "Používat Místa", "type": "logical"},
 		{"id": "useHeadSymbol1", "name": "Používat Variabilní symbol", "type": "logical"},
 		{"id": "useOwnerWorkOrder", "name": "Používat Nadřazenou zakázku", "type": "logical"},
+		{"id": "useFollowUpWorkOrder", "name": "Používat Návaznou zakázku", "type": "logical"},
 		{"id": "useUsersPeriods", "name": "Používat Uživatelská období", "type": "logical"},
 
 		{"id": "useDateIssue", "name": "Používat Datum vystavení", "type": "logical"},
