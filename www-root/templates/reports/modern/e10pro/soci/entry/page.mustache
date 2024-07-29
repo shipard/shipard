@@ -1,0 +1,43 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+	<title>test</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v25" type="text/css"/>
+
+</head>
+<body style="font-size: 10pt;">
+
+	{{#data.reportTexts.subHeader}}<div class='reportTextHeader'>{{{data.reportTexts.subHeader}}}</div>{{/data.reportTexts.subHeader}}
+
+	<table class="default" style="font-size: 10pt !important;">
+		<tr>
+			<td>Jméno:</td><td>{{data.head.firstName}}</td>
+		</tr>
+		<tr>
+			<td>Příjmení:</td><td>{{data.head.lastName}}</td>
+		</tr>
+		<tr>
+			<td>Datum narození:</td><td>{{data.head.birthday}}</td>
+		</tr>
+		<tr>
+			<td>Telefon:</td><td>{{data.head.phone}}</td>
+		</tr>
+		<tr>
+			<td>E-mail:</td><td>{{data.head.email}}</td>
+		</tr>
+		<tr>
+			<td>Přihláška do:</td>
+			<td>
+				<div style='font-weight: bold'>{{data.entryTo.title}}</div>
+				<div>{{data.eventAdmins}}</div>
+				<div>{{data.place.fullName}}</div>
+				<div>{{@dowName;dataItem:data.entryToInfo.weekDay}} {{data.entryToInfo.startTime}} - {{data.entryToInfo.endTime}}</div>
+			</td>
+		</tr>
+	</table>
+
+	{{#data.reportTexts.subFooter}}<div class='reportTextFooter'>{{{data.reportTexts.subFooter}}}</div>{{/data.reportTexts.subFooter}}
+</body>
+</html>
+

@@ -12,5 +12,12 @@
     "sc": "NAVR",
     "classId": "e10pro.soci.libs.ReportWOEventReturnList",
     "ndx": 5002
+  },
+  "5003": {
+    "fn": "Přihláška",
+    "cn": "Přihláška",
+    "sc": "PRIHL",
+    "classId": "e10pro.soci.libs.ReportEntry",
+    "ndx": 5003
   }
 }

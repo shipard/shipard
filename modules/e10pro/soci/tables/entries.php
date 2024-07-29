@@ -145,6 +145,19 @@ class TableEntries extends DbTable
 
 		return parent::tableIcon ($recData, $options);
 	}
+
+	public function getRecordInfo ($recData, $options = 0)
+	{
+		$info = [
+			'title' => '',
+			'docID' => $recData['docNumber'],
+		];
+
+		if (isset($recData['dstPerson']) && $recData['dstPerson'])
+			$info ['persons']['to'][] = $recData['dstPerson'];
+
+		return $info;
+	}
 }
 
 
