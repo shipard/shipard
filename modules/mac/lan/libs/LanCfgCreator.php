@@ -69,6 +69,7 @@ class LanCfgCreator extends Utility
 		$this->mainRouterNdx = $this->lanRecData['mainRouter'];
 		$this->mainServerLanControlNdx = $this->lanRecData['mainServerLanControl'];
 
+		$this->cfg['lanRecData'] = $this->lanRecData;
 		$this->cfg['mainServerLanControl'] = $this->mainServerLanControlNdx;
 		$this->cfg['mainServerRecData'] = $this->tableDevices->loadItem($this->mainServerLanControlNdx);
 		$this->cfg['mainServerMacDeviceCfg'] = json_decode($this->cfg['mainServerRecData']['macDeviceCfg'], TRUE);

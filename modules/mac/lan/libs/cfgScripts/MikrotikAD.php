@@ -24,7 +24,10 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 	var $wirelessMode = self::wrmNone;
 
 	var $scriptModeSignature = ' -- !!! UNCONFIGURED !!! --';
-	var $userLogin = 'admin';
+
+	var $lcMainLanUserNdx = 0;
+
+	var $rootsInfo = [];
 	var $csActiveRoot = '';
 
 	var $isRouter = 0;
@@ -34,9 +37,7 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 	{
 		parent::setDevice($deviceRecData, $lanCfg);
 
-		if (isset ($this->deviceCfg['userLogin']))
-			if (strlen ($this->deviceCfg['userLogin']))
-				$this->userLogin = $this->deviceCfg['userLogin'];
+		$this->lcMainLanUserNdx = $this->lanCfg['lanRecData']['lcUserMikrotik'] ?? 0;
 
 		$this->deviceMode = intval($this->deviceCfg['mode'] ?? 0);
 		$this->wifiMode = intval($this->deviceCfg['wifi'] ?? 0);
@@ -202,22 +203,48 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 		if (!$this->initMode)
 			return;
 
+		$s = '';
+
+		// -- add main user
+		$s = "### main user + ssh public key ###\n";
+		if (!$this->lcMainLanUserNdx)
+		{
+			$s .= "### ERROR: no main user on device! ###\n";
+		}
+		else
+		{
+			$mainLanUser = $this->loadLanUser($this->lcMainLanUserNdx);
+			$s .= $this->createScript_Init_User_AddOne($mainLanUser);
+		}
+
+		$initUsersScript = [
+			'title' => 'Přidání uživatele',
+			'script' => $s,
+		];
+
+		$this->scripsUtils[] = $initUsersScript;
+	}
+
+	function createScript_Init_User_AddOne($lanUserData)
+	{
 		$te = new \mac\admin\libs\TokensEngine($this->app());
 		$validTokens = $te->loadLANValidTokens($this->deviceRecData['lan']);
 
+		$s = '';
 
-		$tftpAddress = $this->lanCfg['mainServerLanControlIp'];
-		if (isset($this->deviceCfg['capsmanClient']) && intval($this->deviceCfg['capsmanClient']) && isset($this->lanCfg['mainServerWifiControlIp']))
-			$tftpAddress = $this->lanCfg['mainServerWifiControlIp'];
-		elseif (isset($this->deviceCfg['wifi']) && intval($this->deviceCfg['wifi']) == 1 && isset($this->lanCfg['mainServerWifiControlIp']))
-			$tftpAddress = $this->lanCfg['mainServerWifiControlIp'];
+		$userNdx = $lanUserData['user']['ndx'] ?? 0;
+		$login = $lanUserData['user']['login'];
 
-		// -- add user
-		$s = "### user + ssh public key ###\n";
+		if (!count($lanUserData['pubKeys']))
+		{
+			$s .= "### ERROR: no public key for user `{$login}` ###\n";
+			return $s;
+		}
 
-		if ($this->userLogin !== 'admin')
-			$s .= "/user/add name=".$this->userLogin.' group=full'.' password="'.Utils::createToken(10, TRUE).'"'."\n";
+		if ($login !== 'admin')
+			$s .= "/user/add name=".$login.' group=full'.' password="'.Utils::createToken(10, TRUE).'"'."\n";
 
+		/*
 		if (isset($this->lanCfg['mainServerMacDeviceCfg']['serverFQDN']) && $this->lanCfg['mainServerMacDeviceCfg']['serverFQDN'] != '')
 		{
 			$httpsPort = (isset($this->lanCfg['mainServerMacDeviceCfg']['httpsPort']) && (intval($this->lanCfg['mainServerMacDeviceCfg']['httpsPort']))) ? intval($this->lanCfg['mainServerMacDeviceCfg']['httpsPort']) : 443;
@@ -229,20 +256,29 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 			$keysUrl .= $validTokens[0] ?? '---';
 			$keysUrl .= '/lc-ssh/';
 			$keysUrl .= 'shn_ssh_key.pub';
-
-			$s .= "/tool/fetch url=\"".$keysUrl."\" user=".$this->userLogin." mode=https dst-path=shn_ssh_key.pub\n";
 		}
-		else
-			$s .= "/tool/fetch address=".$tftpAddress." src-path=shn_ssh_key.pub user=".$this->userLogin." mode=tftp dst-path=shn_ssh_key.pub\n";
-		$s .= "/user/ssh-keys/import public-key-file=shn_ssh_key.pub user=".$this->userLogin."\n";
-		$s .= "\n";
+		*/
 
-		$initUsersScript = [
-			'title' => 'Přidání uživatele',
-			'script' => $s,
-		];
+		foreach ($lanUserData['pubKeys'] as $pubKey)
+		{
+			$keyUrl = 'https://'.$_SERVER['HTTP_HOST'].$this->app()->urlRoot.'/feed/lan-user-pub-key/';
+			$keyUrl .= $this->deviceNdx.'/'.$userNdx.'/'.$pubKey['ndx'].'/'.$validTokens[0].'/pub-key-'.$userNdx.'-'.$pubKey['ndx'].'.pub';
 
-		$this->scripsUtils[] = $initUsersScript;
+			$s .= "/tool/fetch url=\"".$keyUrl."\" user=".$login." mode=https dst-path=shn_ssh_key.pub\n";
+			$s .= "/user/ssh-keys/import public-key-file=shn_ssh_key.pub user=".$login."\n";
+			$s .= "\n";
+		}
+
+		return $s;
+	}
+
+	function createScript_Reset_Device()
+	{
+		if (!$this->initMode)
+		return;
+
+		$te = new \mac\admin\libs\TokensEngine($this->app());
+		$validTokens = $te->loadLANValidTokens($this->deviceRecData['lan']);
 
 		// -- device reset
 		$s = "### device reset ###\n";
@@ -258,12 +294,12 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 			$s = "### ERROR: no valid auth token!!! ###\n";
 		}
 
-		$initUsersScript = [
+		$resetDeviceScript = [
 			'title' => 'Reset zařízení',
 			'script' => $s,
 		];
 
-		$this->scripsUtils[] = $initUsersScript;
+		$this->scripsUtils[] = $resetDeviceScript;
 	}
 
 	function createScriptForRoot()
@@ -397,5 +433,25 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 	function cfgParser()
 	{
 		return new \mac\lan\libs\cfgScripts\parser\Mikrotik($this->app());
+	}
+
+	protected function loadLanUser ($lanUserNdx)
+	{
+		$lanUser = [
+			'user' => $this->app()->loadItem($lanUserNdx, 'mac.admin.lanUsers'),
+			'pubKeys' => [],
+		];
+
+		$rows = $this->db()->query('SELECT * FROM [mac_admin_lanUsersPubKeys] WHERE [lanUser] = %i', $lanUserNdx);
+		foreach ($rows as $r)
+		{
+			$lanUser['pubKeys'][] = [
+				'ndx' => $r['ndx'],
+				'name' => $r['name'],
+				'key' => $r['key'],
+			];
+		}
+
+		return $lanUser;
 	}
 }

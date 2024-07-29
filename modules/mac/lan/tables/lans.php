@@ -244,6 +244,8 @@ class FormLan extends TableForm
 				$this->addColumnInput ('mainRouter');
 				$this->addColumnInput ('robotUser');
 
+				$this->addColumnInput ('lcUserMikrotik');
+
 				$this->addSeparator(self::coH2);
 				$this->addColumnInput ('vlanManagement');
 				$this->addColumnInput ('vlanAdmins');

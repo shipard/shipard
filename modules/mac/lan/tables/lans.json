@@ -12,6 +12,8 @@
 		{"id": "mainServerIoT", "name": "Hlavní server pro IoT", "type": "int", "reference": "mac.lan.devices", "comboViewer": "shipardNodes"},
 		{"id": "mainRouter", "name": "Hlavní router", "type": "int", "reference": "mac.lan.devices", "comboViewer": "routers"},
 
+		{"id": "lcUserMikrotik", "name": "Uživatel - správa Mikrotiků", "type": "int", "reference": "mac.admin.lanUsers"},
+
 		{"id": "vlanManagement", "name": "VLAN pro management aktivních prvků", "type": "int", "reference": "mac.lan.vlans", "comboViewer": "comboVlans"},
 		{"id": "vlanAdmins", "name": "VLAN správců sítě", "type": "int", "reference": "mac.lan.vlans", "comboViewer": "comboVlans"},
 		{"id": "ipv6Enabled", "name": "Povolit ipv6", "type": "logical"},

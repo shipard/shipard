@@ -21,6 +21,9 @@
 	"feed": {
 		"lan-device-init-script": {
 			"classId": "mac.lan.libs.FeedLanDeviceInitScript"
+		},
+		"lan-user-pub-key": {
+			"classId": "mac.lan.libs.FeedLanUserPubKey"
 		}
 	}
 }

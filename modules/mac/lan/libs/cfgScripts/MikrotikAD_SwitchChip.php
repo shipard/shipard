@@ -11,7 +11,6 @@ use \Shipard\Utils\Utils;
 class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 {
 	var $csActiveRoot = '';
-	var $rootsInfo = [];
 	var $vlansPorts = [];
 
 	public function initRoots()
@@ -853,6 +852,7 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 		$this->createScript_Init_SNMP();
 
 		$this->createScript_Init_User();
+		$this->createScript_Reset_Device();
 	}
 
 	function createScript_Interfaces_Addresses()
