@@ -13,7 +13,11 @@ class ReportEntry extends \e10doc\core\libs\reports\DocReportBase
 {
 	/** @var \e10\persons\TablePersons $tablePersons */
 	var $tablePersons;
+	/** @var \e10mnf\core\TableWorkOrders */
+	var $tableWorkOrders;
+
 	var $allProperties;
+
 
 	var $ownerNdx = 0;
 	var $ownerCountry = FALSE;
@@ -35,6 +39,7 @@ class ReportEntry extends \e10doc\core\libs\reports\DocReportBase
 		$this->loadData_DocumentOwner ();
 
 		$this->tablePersons = $this->app()->table('e10.persons.persons');
+		$this->tableWorkOrders = $this->app()->table('e10mnf.core.workOrders');
 		$this->allProperties = $this->app()->cfgItem('e10.base.properties', []);
 
 		parent::loadData();
@@ -42,6 +47,8 @@ class ReportEntry extends \e10doc\core\libs\reports\DocReportBase
 
     $entryTo = $this->app()->loadItem($this->recData['entryTo'], 'e10mnf.core.workOrders');
     $this->data['entryTo'] = $entryTo;
+
+    $this->data['entryTo']['print'] = $this->getPrintValues ($this->tableWorkOrders, $entryTo);
 
     $vdsData = Json::decode($entryTo['vdsData']);
     if ($vdsData)
@@ -62,6 +69,30 @@ class ReportEntry extends \e10doc\core\libs\reports\DocReportBase
       $this->data['eventAdmins'] = implode(', ', $admins);
 		}
 
+    $eventPrices = [];
+    $this->getEventPrices($entryTo, $eventPrices);
+    $eventPrice = $eventPrices[$this->recData['paymentPeriod'].'-'.$this->recData['paymentPeriod']]['price'] ?? 0.0;
+    $this->data['price'] = Utils::nf($eventPrice, 2);
+
 		$this->data ['webSentDate'] = Utils::datef($this->recData['webSentDate'], '%d, %T');
+	}
+
+	protected function getEventPrices($eventRecData, &$dest)
+	{
+		$q = [];
+		array_push($q, 'SELECT [ei].* ');
+		array_push($q, ' FROM [e10pro_soci_entriesInvoicing] AS [ei]');
+		array_push($q, ' WHERE 1');
+		array_push($q, ' AND [entryKind] = %i', 1);
+		array_push($q, ' AND ([entryTo] = %i', 0, ' OR [entryTo] = %i', $eventRecData['ndx'], ')');
+		array_push($q, ' ORDER BY [entryTo] DESC, [order]');
+		$rows = $this->app()->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$priceId = $r['paymentPeriod'].'-'.$r['saleType'];
+			if (isset($dest[$priceId]))
+				continue;
+			$dest[$priceId] = ['priceId' => $priceId, 'price' => $r['priceAll']];
+		}
 	}
 }

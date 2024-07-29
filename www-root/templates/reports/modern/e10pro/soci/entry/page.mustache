@@ -35,6 +35,18 @@
 				<div>{{@dowName;dataItem:data.entryToInfo.weekDay}} {{data.entryToInfo.startTime}} - {{data.entryToInfo.endTime}}</div>
 			</td>
 		</tr>
+		<tr>
+			<td>Období:</td><td>{{data.head.print.entryPeriod}}</td>
+		</tr>
+		<tr>
+			<td>Platba za období:</td><td>{{data.head.print.paymentPeriod}}</td>
+		</tr>
+		<tr>
+			<td>Sleva:</td><td>{{data.head.print.saleType}}</td>
+		</tr>
+		<tr>
+			<td>Cena:</td><td>{{data.price}}</td>
+		</tr>
 	</table>
 
 	{{#data.reportTexts.subFooter}}<div class='reportTextFooter'>{{{data.reportTexts.subFooter}}}</div>{{/data.reportTexts.subFooter}}
