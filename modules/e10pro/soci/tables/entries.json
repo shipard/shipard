@@ -32,7 +32,7 @@
 		{"id": "datePeriodEnd", "name": "Konec období", "type": "date"},
 
     {"id": "source", "name": "Zdroj", "type": "enumInt",
-      "enumValues": {"0": "Papírová přihláška", "1": "E-mail", "2": "Webový formulář", "3": "Import"}},
+      "enumValues": {"0": "Papírová přihláška", "1": "E-mail", "2": "Webový formulář", "3": "Import", "4": "Přechod z minulého období"}},
 
 		{"id": "nextYearContinue", "name": "Pokračovat v dalším roce", "type": "enumInt",
       "enumValues": {"0": "", "1": "Ano", "2": "Ne"}},

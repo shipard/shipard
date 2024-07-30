@@ -274,6 +274,12 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 		array_push($q, ' AND [entryKind] = %i', $this->entryRecData['entryKind']);
 		array_push($q, ' AND [saleType] = %i', $this->entryRecData['saleType']);
 		array_push($q, ' AND [paymentPeriod] = %i', $this->entryRecData['paymentPeriod']);
+		array_push($q, ' AND (');
+		array_push($q, ' [entryTo] = %i', $this->entryRecData['entryTo']);
+		array_push($q, ' OR [entryTo] = %i', 0);
+		array_push($q, ')');
+		array_push($q, ' ORDER BY [entryTo] DESC');
+		array_push($q, ' LIMIT 1');
 
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)

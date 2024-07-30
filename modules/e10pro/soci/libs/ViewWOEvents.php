@@ -1,7 +1,7 @@
 <?php
 
 namespace e10pro\soci\libs;
-
+use \Shipard\Utils\Utils;
 use function e10\sortByOneKey;
 
 /**
@@ -21,8 +21,17 @@ class ViewWOEvents extends \e10mnf\core\ViewWorkOrders
 	protected function createMainQueries()
 	{
 		$allUsersPeriods = $this->app()->cfgItem('e10.usersPeriods', NULL);
+
+		$today = Utils::today();
+		$todayMonth = intval($today->format('m'));
+
 		if ($allUsersPeriods)
-			$this->allUsersPeriods = \e10\sortByOneKey ($allUsersPeriods, 'dateBegin', TRUE, TRUE);
+		{
+			if ($todayMonth < 7)
+				$this->allUsersPeriods = \e10\sortByOneKey ($allUsersPeriods, 'dateBegin', TRUE, TRUE);
+			else
+				$this->allUsersPeriods = \e10\sortByOneKey ($allUsersPeriods, 'dateBegin', TRUE, FALSE);
+		}
 
 		if (!$this->allUsersPeriods)
 		{

@@ -35,6 +35,13 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$ie->generateAll();
 	}
 
+	protected function entriesFromreturnLists()
+	{
+    $rle = new \e10pro\soci\libs\ReturnListsEngine($this->app());
+		//$rle->setSrcPeriod('');
+    $rle->run();
+	}
+
 	public function sendEntriesEmails()
 	{
 		$e = new \e10pro\soci\libs\SendEntriesEmails($this->app());
@@ -47,6 +54,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		{
 			case 'import-entries': return $this->importEntries();
 			case 'invoices-from-entries': return $this->invoicesFromEntries();
+			case 'entries-from-return-lists': return $this->entriesFromreturnLists();
 		}
 
 		parent::onCliAction($actionId);

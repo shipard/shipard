@@ -186,7 +186,14 @@ class ViewEntries extends TableView
 
 		if ($this->periods)
 		{
-			$periods = \e10\sortByOneKey ($this->periods, 'dateBegin', TRUE, TRUE);
+			$today = Utils::today();
+			$todayMonth = intval($today->format('m'));
+
+			if ($todayMonth < 7)
+				$periods = \e10\sortByOneKey ($this->periods, 'dateBegin', TRUE, TRUE);
+			else
+				$periods = \e10\sortByOneKey ($this->periods, 'dateBegin', TRUE, FALSE);
+
 			foreach ($periods as $periodId => $period)
 			{
 				$mq[] = ['id' => 'AY_'.$periodId, 'title' => $period['sn'], 'icon' => 'system/filterActive', 'side' => 'left'];
