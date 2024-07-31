@@ -435,6 +435,17 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 		return new \mac\lan\libs\cfgScripts\parser\Mikrotik($this->app());
 	}
 
+	protected function initScriptAfterVerSuffix()
+	{
+		$s = '';
+
+		$shipardCfgVersion = sha1($this->script);
+		$s .= "### set shipard-cfg-version: #$shipardCfgVersion ###\n";
+		$s .= "/system/note/set note=\"shipard-cfg-version: $shipardCfgVersion\" show-at-login=yes\n";
+
+		return $s;
+	}
+
 	protected function loadLanUser ($lanUserNdx)
 	{
 		$lanUser = [

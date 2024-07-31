@@ -27,7 +27,7 @@ class GetLanDeviceInitScript extends Utility
 
 		$initScript = '';
 		if ($scriptGenerator->dsg)
-			$initScript = $scriptGenerator->dsg->script;
+			$initScript = $scriptGenerator->dsg->initScriptFinalized();
 
 		if ($saveAsText)
 		{

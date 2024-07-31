@@ -36,6 +36,8 @@ class DocumentCardDeviceScripts extends \e10\DocumentCard
 			$tlbr = [];
 			$url = $this->app()->dsRoot.'/api/objects/call/mac-get-lan-device-init-script/'.$this->recData['ndx'].'?save=1';
 			$tlbr[] = ['text' => 'Download', 'url' => $url, 'class' => '', 'icon' => 'system/actionDownload'];
+			$tlbr[] = ['text' => 'Verze: `'.$existedScripts['initScriptVer'].'`', 'class' => 'label label-default'];
+			$tlbr[] = ['text' => 'V zařízení: `'.$existedScripts['inDevInitScriptVer'].'`', 'class' => 'label label-default'];
 
 			$tlbrContent = [
 				'pane' => 'padd5 e10-pane e10-pane-table',

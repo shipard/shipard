@@ -43,6 +43,14 @@ class LanControlCfgUpdater extends Utility
 			$updateData = [];
 			$sg->addToDeviceCfgScripts($updateData);
 
+			$sgInitDevice = new \mac\lan\libs\LanCfgDeviceScriptGenerator($this->app());
+			$sgInitDevice->init();
+			$sgInitDevice->setDevice($deviceNdx, $lanCfg, TRUE);
+			if ($sgInitDevice->dsg)
+			{
+				$updateData['initScriptVer'] = sha1($sgInitDevice->dsg->script);
+			}
+
 			$this->updateDeviceCfgScripts($deviceNdx, $updateData);
 		}
 	}
@@ -192,6 +200,8 @@ class LanControlCfgUpdater extends Utility
 			$update['runningData'] = json::lint($p->cfgParser->parsedData);
 			$update['runningVer'] = sha1($update['runningText'].$update['runningData']);
 			$update['runningTimestamp'] = new \DateTime();
+
+			$update['inDevInitScriptVer'] = $p->cfgParser->inDevShipardCfgVer;
 
 			$update['newText'] = '';
 			$update['newData'] = '[]';

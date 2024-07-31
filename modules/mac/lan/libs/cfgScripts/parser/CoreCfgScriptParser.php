@@ -15,6 +15,8 @@ class CoreCfgScriptParser extends Utility
 	var $srcScriptRows = NULL;
 	var $parsedData = [];
 
+	var $inDevShipardCfgVer = '--none--';
+
 	public function setSrcScript($srcScript)
 	{
 		$this->srcScript = $srcScript;
@@ -29,6 +31,8 @@ class CoreCfgScriptParser extends Utility
 			if (!$this->parseNextRow())
 				break;
 		}
+
+		$this->postParse();
 	}
 
 	protected function parseNextRow()
@@ -38,5 +42,9 @@ class CoreCfgScriptParser extends Utility
 			return FALSE;
 
 		return TRUE;
+	}
+
+	protected function postParse()
+	{
 	}
 }

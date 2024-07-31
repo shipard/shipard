@@ -85,4 +85,16 @@ class CoreCfgScript extends Utility
 			$dst[] = $r['ipAddress'].$addMask;
 		}
 	}
+
+	public function initScriptFinalized()
+	{
+		if (!$this->initMode)
+			return '';
+		return $this->script.$this->initScriptAfterVerSuffix();
+	}
+
+	protected function initScriptAfterVerSuffix()
+	{
+		return '';
+	}
 }

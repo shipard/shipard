@@ -78,4 +78,15 @@ class Mikrotik extends \mac\lan\libs\cfgScripts\parser\CoreCfgScriptParser
 
 		$addTo[$k] = $v;
 	}
+
+	protected function postParse()
+	{
+		if (!isset($this->parsedData['/system note']) || !isset($this->parsedData['/system note'][0]['params']))
+			return;
+		$verInfo = $this->parsedData['/system note'][0]['params']['note'] ?? 'none';
+		$parts = explode(':', $verInfo);
+		if (count($parts) != 2 || $parts[0] !== 'shipard-cfg-version')
+			return;
+		$this->inDevShipardCfgVer = trim($parts[1]);
+	}
 }

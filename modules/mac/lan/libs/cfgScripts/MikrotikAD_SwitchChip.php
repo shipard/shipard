@@ -113,6 +113,10 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 			'updateColumns' => ['address', 'comment'],
 			'caseInsensitiveColumns' => ['mac-address'],
 		];
+
+		$this->rootsInfo ['/system/note'] = [
+			'mandatoryColumns' => ['note']
+		];
 	}
 
 	public function setDevice($deviceRecData, $lanCfg)

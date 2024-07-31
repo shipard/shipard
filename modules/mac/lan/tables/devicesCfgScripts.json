@@ -22,6 +22,10 @@
 				"2": "Chyba"
 			}
 		},
+
+		{"id": "initScriptVer", "name": "Verze inicializačního skriptu", "type": "string", "len": 40, "options": ["ascii"]},
+		{"id": "inDevInitScriptVer", "name": "Verze inicializačního skriptu v zařízení", "type": "string", "len": 40, "options": ["ascii"]},
+
 		{"id": "cfgLastRequestResultLog", "name": "Výsledek posledního požadavku - log", "type": "memo"},
 		{"id": "cfgLastRequestResultTimestamp", "name": "Datum a čas posledního stavu požadavku", "type": "timestamp"},
 
