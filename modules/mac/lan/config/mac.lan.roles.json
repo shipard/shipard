@@ -4,7 +4,7 @@
 		"viewers": {
 			"mac.lan.alerts": {"default": 2},
 			"mac.lan.lans": {"default": 2},
-			"mac.lan.devices": {"default": 2, "all": 2, "cameras": 2, "iot": 2, "routers": 2, "shipardNodes": 2, "wifiAPs":  2, "servers":  2},
+			"mac.lan.devices": {"default": 2, "all": 2, "all3": 2, "cameras": 2, "iot": 2, "routers": 2, "shipardNodes": 2, "wifiAPs":  2, "servers":  2},
 			"mac.lan.unknowns": {"default": 2},
 			"mac.lan.macs": {"default": 2},
 			"mac.lan.macsOnPorts": {"default": 2},

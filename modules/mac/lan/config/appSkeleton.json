@@ -2,8 +2,10 @@
 	"panels": {
 		"maclan": {"url": "/app/maclan", "zone": "sec", "objectType": "panel", "name": "IT", "cntBigIcons": 4, "role": "maclan", "order": 1800000,
 			"items": {
-				"dashboard-lans": {"t1": "Síť", "object": "widget", "class": "e10.widgetDashboard", "subclass": "maclan", "icon": "e10.widgetDashboard/lanDashboard", "order": 5000},
-				"devices": {"t1": "Prvky sítě", "object": "viewer", "table": "mac.lan.devices", "viewer": "all", "order": 5100},
+				"dashboard-lans": {"t1": "Síť", "object": "widget", "class": "e10.widgetDashboard", "subclass": "maclan", "icon": "e10.widgetDashboard/lanDashboard", "disabledCfgItem": "mac.gen.mg3", "order": 5000},
+				"dashboard-overview": {"t1": "Přehled", "object": "widget", "class": "e10.widgetDashboard", "subclass": "maclan", "icon": "e10.widgetDashboard/lanDashboard", "enabledCfgItem": "mac.gen.mg3", "order": 5100},
+				"devices": {"t1": "Prvky sítě", "object": "viewer", "table": "mac.lan.devices", "viewer": "all", "disabledCfgItem": "mac.gen.mg3", "order": 5100},
+				"devices3": {"t1": "Prvky sítě³", "object": "viewer", "table": "mac.lan.devices", "viewer": "all3", "enabledCfgItem": "mac.gen.mg3", "order": 5110},
 				"dashboard-access": { "t1": "Budova", "object": "widget", "class": "e10.widgetDashboard", "subclass": "macAccess", "icon": "e10.widgetDashboard/building", "order": 5200},
 				"reports": {"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "mac-lan", "icon": "system/iconReports", "order": 80000},
 

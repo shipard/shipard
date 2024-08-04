@@ -1,7 +1,11 @@
 [
 	{
-		"class": "mac.lan.LanMonitoringWidget",
+		"class": "mac.lan.LanMonitoringWidget", "disabledCfgItem": "mac.gen.mg3",
 		"dashboard": "maclan", "panel": "lans", "order": 1000, "row": "main", "width": 12, "type": "lans"
+	},
+	{
+		"class": "mac.lan.libs3.WidgetOverview", "enabledCfgItem": "mac.gen.mg3",
+		"dashboard": "maclan", "panel": "lans", "order": 1100, "row": "main", "width": 12, "type": "lans"
 	},
 	{
 		"class": "mac.access.libs.WidgetAccess",

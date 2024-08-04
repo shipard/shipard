@@ -78,6 +78,8 @@ class WidgetDashboard extends \Shipard\UI\Core\Widget
 
 		forEach ($this->allWidgets as $w)
 		{
+			if (!utils::enabledCfgItem($this->app(), $w))
+				continue;
 			if (!isset ($w ['dashboard']) || $w ['dashboard'] !== $this->dashboardId)
 				continue;
 			if (!isset ($w ['panel']) || $w ['panel'] !== $this->panelId)

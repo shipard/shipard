@@ -95,7 +95,7 @@ class LanCfgDeviceScriptGenerator extends Utility
 		{
 			$content[] = [
 				'pane' => 'e10-pane e10-pane-table',
-				'type' => 'text', 'subtype' => 'code', 'text' => $this->dsg->script
+				'type' => 'text', 'subtype' => 'code', 'text' => $this->dsg->initScriptFinalized(),
 			];
 
 			if (count($this->dsg->scripsUtils))
