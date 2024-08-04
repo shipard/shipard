@@ -7,6 +7,7 @@
     {"id": "name", "name": "Název", "type": "string", "len": 40},
 		{"id": "key", "name": "Klíč", "type": "memo"}
 	],
+	"options": ["systemTable"],
 	"forms": [
 		{"id": "default", "class": "mac.admin.FormLanUserPubKey"}
 	]
