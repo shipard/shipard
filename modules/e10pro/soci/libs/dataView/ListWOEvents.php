@@ -79,6 +79,7 @@ class ListWOEvents extends DataView
 			$item = [
         'ndx' => $r['ndx'],
 				'title' => $r['title'],
+				'wo' => $r->toArray(),
 				'place' => [
 					'fullName' => $r['placeFullName'],
 					'shortName' => $r['placeShortName'],
