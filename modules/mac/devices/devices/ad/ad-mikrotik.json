@@ -183,7 +183,7 @@
 					"title": "CRS112-8G-4S-IN",
 					"ports": [
 						{"kind": 5, "count": 8, "maskId": "ether"},
-						{"kind": 6, "count": 4, "maskId": "sfp"},
+						{"kind": 6, "count": 4, "maskId": "sfp", "startNumber": 9},
 						{"kind": 10, "count": 1, "maskId": "mng"}
 					]
 				},
@@ -191,7 +191,7 @@
 					"title": "CRS112-8P-4S-IN",
 					"ports": [
 						{"kind": 5, "count": 8, "maskId": "ether"},
-						{"kind": 6, "count": 4, "maskId": "sfp"},
+						{"kind": 6, "count": 4, "maskId": "sfp", "startNumber": 9},
 						{"kind": 10, "count": 1, "maskId": "mng"}
 					]
 				},

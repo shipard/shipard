@@ -465,7 +465,7 @@ class TableDevices extends DbTable
 		$portsInfo['allPorts'] = [];
 		foreach ($adCfg['ports'] as $onePort)
 		{
-			$groupIndex = 1;
+			$groupIndex = $onePort['startNumber'] ?? 1;
 			for ($pidx = 0; $pidx < $onePort['count']; $pidx++)
 			{
 				$portId = strval ($groupIndex);
