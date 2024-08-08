@@ -104,7 +104,7 @@
 					"wirelessMode": "wifi",
 					"ports": [
 						{"kind": 5, "count": 5, "maskId": "ether"},
-						{"kind": 1, "count": 2, "maskId": "wlan"},
+						{"kind": 1, "count": 2, "maskId": "wifi"},
 						{"kind": 10, "count": 1, "maskId": "mng"}
 					]
 				},
@@ -143,7 +143,7 @@
 					"wirelessMode": "wifi",
 					"ports": [
 						{"kind": 5, "count": 2, "maskId": "ether"},
-						{"kind": 1, "count": 3, "maskId": "wlan"},
+						{"kind": 1, "count": 3, "maskId": "wifi"},
 						{"kind": 10, "count": 1, "maskId": "mng"}
 					]
 				}
