@@ -8,7 +8,7 @@
     {"id": "peoples", "name": "Účinkující", "type": "memo"},
     {"id": "note", "name": "Poznámka", "type": "memo"},
 
-		{"id": "order", "name": "pořadí", "type": "int"},
+		{"id": "order", "name": "Pořadí", "type": "int"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

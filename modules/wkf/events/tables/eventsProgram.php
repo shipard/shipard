@@ -73,27 +73,32 @@ class ViewEventsProgram extends TableView
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
+    $listItem ['t1'] = "Program akce";
+    if ($item ['order'])
+      $listItem ['i1'] = ['icon' => 'system/iconOrder', 'text' => utils::nf ($item ['order']), 'class' => 'id'];
+
     $c = '';
 
-    $c .= "<h3>Program akce</h3>";
     $this->textRenderer->render ($item ['program']);
 		$c .= $this->textRenderer->code;
 
     if ($item ['peoples'] && $item ['peoples'] !== '')
     {
-      $c .= "<h3>Účinkující</h3>";
-      $this->textRenderer->render ($item ['peoples']);
-      $c .= $this->textRenderer->code;
+      $c .= "<h4>Účinkující</h4>\n";
+      $c .= $item ['peoples'];
+      //$this->textRenderer->render ($item ['peoples']);
+      //$c .= $this->textRenderer->code;
     }
 
     if ($item ['none'] !== '')
     {
-      $c .= "<h3>Poznámky</h3>";
-      $this->textRenderer->render ($item ['note']);
-      $c .= $this->textRenderer->code;
+      $c .= "<h4>Poznámky</h4>\n";
+      $c .= $item ['note'];
+      //$this->textRenderer->render ($item ['note']);
+      //$c .= $this->textRenderer->code;
     }
 
-    $listItem ['code'] = $c;
+    $listItem ['txt'] = $c;
 
 		return $listItem;
 	}
@@ -174,6 +179,8 @@ class FormEventProgram extends TableForm
           $this->addColumnInput('program');
           $this->addColumnInput('peoples');
           $this->addColumnInput('note');
+          $this->addSeparator(self::coH4);
+          $this->addColumnInput('order');
 				$this->closeTab();
 				$this->openTab();
 					//$this->addList ('clsf', '', TableForm::loAddToFormLayout);
