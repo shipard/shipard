@@ -1,0 +1,39 @@
+{
+	"id": "mac.lan.wgServers", "sql": "mac_lan_wgServers", "name": "Wireguard servery",
+	"columns": [
+		{"id": "ndx", "name": "ndx", "type": "int_ai"},
+		{"id": "lan", "name": "Síť", "type": "int", "reference": "mac.lan.lans"},
+    {"id": "fullName", "name": "Úplný název", "type": "string", "len": 120},
+    {"id": "id", "name": "Zkrácený název/ID", "type": "string", "len": 40},
+
+	  {"id": "placement", "name": "Umístění", "type": "enumInt",
+		  "enumValues": {"0": "Veřejný internet", "1": "Vnitřní síť"}},
+
+		{"id": "listenPort", "name": "Poslouchat na portu", "type": "int"},
+		{"id": "endpoint", "name": "Vstupní bod (ip/hostname:port)", "placeholder": "wg.example.com:51820", "type": "string", "len": 120},
+
+		{"id": "ifaceAddr4", "name": "Adresa rozhraní IPV4", "placeholder": "10.12.12.1/32", "type": "string", "len": 60},
+		{"id": "ifaceAddr6", "name": "Adresa rozhraní IPV6", "placeholder": "2001:db8:2:345::2/64", "type": "string", "len": 80},
+
+		{"id": "dns", "name": "Adresy DNS serverů", "placeholder": "1.1.1.1, 8.8.8.8", "type": "string", "len": 120},
+
+		{"id": "keyPrivate", "name": "Privátní klíč", "placeholder": "Bude vygenerován po uložení", "type": "string", "len": 80},
+		{"id": "keyPublic", "name": "Veřejný klíč", "placeholder": "Bude vygenerován po uložení", "type": "string", "len": 80},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+  "views": [
+    {
+      "id": "default", "class": "mac.lan.ViewWGServers",
+      "details": {
+        "default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.lan.ViewDetailWGServer"}
+      }
+    }
+  ],
+	"forms": [
+		{"id": "default", "class": "mac.lan.FormWGServer"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

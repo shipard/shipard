@@ -3,7 +3,7 @@
 		"maclan": {"url": "/app/maclan", "zone": "sec", "objectType": "panel", "name": "IT", "cntBigIcons": 4, "role": "maclan", "order": 1800000,
 			"items": {
 				"dashboard-lans": {"t1": "Síť", "object": "widget", "class": "e10.widgetDashboard", "subclass": "maclan", "icon": "e10.widgetDashboard/lanDashboard", "disabledCfgItem": "mac.gen.mg3", "order": 5000},
-				"dashboard-overview": {"t1": "Přehled", "object": "widget", "class": "e10.widgetDashboard", "subclass": "maclan", "icon": "e10.widgetDashboard/lanDashboard", "enabledCfgItem": "mac.gen.mg3", "order": 5100},
+				"dashboard-overview": {"t1": "Přehled", "object": "widget", "class": "e10.widgetDashboard", "subclass": "maclan", "icon": "e10.widgetDashboard/lanDashboard", "enabledCfgItem": "mac.gen.mg3", "order": 4900},
 				"devices": {"t1": "Prvky sítě", "object": "viewer", "table": "mac.lan.devices", "viewer": "all", "disabledCfgItem": "mac.gen.mg3", "order": 5100},
 				"devices3": {"t1": "Prvky sítě³", "object": "viewer", "table": "mac.lan.devices", "viewer": "all3", "enabledCfgItem": "mac.gen.mg3", "order": 5110},
 				"dashboard-access": { "t1": "Budova", "object": "widget", "class": "e10.widgetDashboard", "subclass": "macAccess", "icon": "e10.widgetDashboard/building", "order": 5200},
@@ -31,6 +31,9 @@
 							"ipAddressLists" :{"t1": "Seznamy IP adres", "object": "viewer", "table": "mac.lan.ipAddressLists", "viewer": "default", "order": 500100},
 							"ipAddress" :{"t1": "IP adresy", "object": "viewer", "table": "mac.lan.ipAddress", "viewer": "default", "order": 500200},
 							"tokens" :{"t1": "Tokeny", "object": "viewer", "table": "mac.admin.tokens", "viewer": "default", "order": 570000},
+
+							"wgServers" :{"t1": "Servery", "object": "viewer", "table": "mac.lan.wgServers", "viewer": "default", "order": 580000, "beforeSeparator":  {"text": "Wireguard", "class": "block pl05 pt1", "icon": "submenu/management"}, "enabledCfgItem": "mac.gen.mg3"},
+							"wgPeers" :{"t1": "Klienti", "object": "viewer", "table": "mac.lan.wgPeers", "viewer": "default", "order": 581000, "enabledCfgItem": "mac.gen.mg3"},
 
 							"macs": {"t1": "Všechny", "object": "viewer", "table": "mac.lan.macs", "viewer": "default", "order": 600100, "beforeSeparator": {"text": "MAC adresy", "class": "block pl05 pt1", "icon":  "iconSquare"}},
 							"macsOnPorts" :{"t1": "Podle portů", "object": "viewer", "table": "mac.lan.macsOnPorts", "viewer": "default", "order": 600200},

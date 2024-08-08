@@ -1,0 +1,32 @@
+{
+	"id": "mac.lan.wgPeers", "sql": "mac_lan_wgPeers", "name": "Wireguard klienti",
+	"columns": [
+		{"id": "ndx", "name": "ndx", "type": "int_ai"},
+		{"id": "wgServer", "name": "Wireguard server", "type": "int", "reference": "mac.lan.wgServers"},
+    {"id": "fullName", "name": "Úplný název", "type": "string", "len": 120},
+    {"id": "id", "name": "Zkrácený název/ID", "type": "string", "len": 40},
+
+		{"id": "peerAddr4", "name": "Adresa ipv4", "placeholder": "10.12.12.2/24", "type": "string", "len": 60},
+		{"id": "peerAddr6", "name": "Adresa ipv6", "placeholder": "2001:db8:2:345::3/128", "type": "string", "len": 80},
+
+		{"id": "peerKeyPrivate", "name": "Privátní klíč", "placeholder": "Bude vygenerován po uložení", "type": "string", "len": 80},
+		{"id": "peerKeyPublic", "name": "Veřejný klíč", "placeholder": "Bude vygenerován po uložení", "type": "string", "len": 80},
+		{"id": "peerKeyPreshared", "name": "Předsdílený klíč (PSK)", "placeholder": "Bude vygenerován po uložení", "type": "string", "len": 80},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+  "views": [
+    {
+      "id": "default", "class": "mac.lan.ViewWGPeers",
+      "details": {
+        "default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.lan.ViewDetailWGPeer"}
+      }
+    }
+  ],
+	"forms": [
+		{"id": "default", "class": "mac.lan.FormWGPeer"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

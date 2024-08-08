@@ -5,6 +5,7 @@
 		"deviceTypes", "deviceTypesPorts",
 		"racks", "racksSensorsShow", "wallSockets", "patchPanels", "patchPanelsPorts",
 		"vlans", "wlans", "macs", "macsOnPorts",
+		"wgServers", "wgPeers",
 		"lans", "lansAddrRanges",
 		"devices", "devicesPorts", "devicesIOPorts", "devicesIfaces", "devicesInfo", "devicesProperties", "devicesSensorsShow",
 		"devicesCfgNodes", "devicesCfgScripts", "devicesCfgIotBoxes",
