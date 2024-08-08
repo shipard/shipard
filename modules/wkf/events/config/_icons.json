@@ -4,5 +4,11 @@
 		"fa6pro": "fa-calendar-alt",
 		"bsi": "bi-calendar",
 		"mdi": "calendar_today"
-	}
+	},
+	"tables/wkf.events.events":{
+    "fa5":"fa-theater-masks",
+    "fa6pro":"fa-theater-masks",
+    "bsi":"bi-calendar-event",
+    "mdi":"theater_comedy"
+  }
 }

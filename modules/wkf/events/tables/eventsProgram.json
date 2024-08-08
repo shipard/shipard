@@ -1,0 +1,24 @@
+{
+	"id": "wkf.events.eventsProgram", "sql": "wkf_events_eventsProgram", "name": "Program událostí",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "event", "name": "Událost", "type": "int", "reference": "wkf.events.events"},
+
+    {"id": "program", "name": "Program", "type": "memo"},
+    {"id": "peoples", "name": "Účinkující", "type": "memo"},
+    {"id": "note", "name": "Poznámka", "type": "memo"},
+
+		{"id": "order", "name": "pořadí", "type": "int"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "wkf.events.ViewEventsProgram", "detail": "wkf.events.ViewDetailEventProgram"}
+	],
+	"forms": [
+		{"id": "default", "class": "wkf.events.FormEventProgram"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "title"}
+}

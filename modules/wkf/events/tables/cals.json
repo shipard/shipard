@@ -12,6 +12,8 @@
 		{"id": "icon", "name": "Ikona", "type": "string", "len": 50},
 		{"id": "colorbg", "name": "Barva", "type": "string", "len": 7, "subtype": "color"},
 
+		{"id": "useProgram", "name": "Používat Program akcí", "type": "logical"},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],

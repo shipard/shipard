@@ -104,9 +104,11 @@ class ViewEvents extends TableView
 	var $calendarNdx = 0;
 	var $linkedPersons = [];
 	var $classification = [];
+	var $calendars;
 
 	public function init ()
 	{
+		$this->calendars =  $this->app()->cfgItem('wkf.events.cals', NULL);
 		$this->linesWidth = 45;
 
 		$this->calendarNdx = intval($this->queryParam('calendar'));
@@ -131,24 +133,27 @@ class ViewEvents extends TableView
 
 		$dates = [];
 
-		/*
-		if ($item['dateFrom'])
-			$dates[] = ['text' => Utils::datef($item['dateFrom'], '%D'), 'icon' => 'system/actionPlay', 'class' => ''];
-		if ($item['dateTo'])
-			$dates[] = ['text' => Utils::datef($item['dateTo'], '%D'), 'icon' => 'system/actionStop', 'class' => ''];
-		if (count($dates))
-			$listItem ['i2'] = $dates;
-		*/
-		$c = '';
-		$c .= "<div class='pageText padd5' style='border: 1px solid gray; margin: .5ex;'>";
-		$c .= '<h3>'.Utils::es($item['title']).'</h3>';
+		if ($item['multiDays'])
+		{
+			$dates[] = ['text' => Utils::datef($item['dateBegin']), 'suffix' => $item['timeEnd'], 'class' => ''];
+			$dates[] = ['text' => Utils::datef($item['dateEnd']), 'suffix' => $item['timeEnd'], 'class' => ''];
+		}
+		else
+		{
+			$dates[] = ['text' => Utils::datef($item['dateBegin']), 'suffix' => $item['timeBegin'].' - '.$item['timeEnd'], 'class' => ''];
+		}
 
-		//$this->textRenderer->render ($item ['text']);
-		//$c .= $this->textRenderer->code;
+		$listItem['t2'] = $dates;
+		$listItem['i2'] = [];
+		$listItem['i2'][] = ['text' => $item['placeDesc'], 'class' => ''];
 
-		$c .= '</div>';
+		$cal = $this->calendars[$item['calendar']];
+		$calCss = '';
+		if (isset($cal['colorbg']))
+			$calCss .= 'background-color: '.$cal['colorbg'].';';
+		$calLabel = ['text' => $cal['sn'], 'class' => 'label', 'css' => $calCss];
 
-		//$listItem ['code'] = $c;
+		$listItem['i2'][] = $calLabel;
 
 		return $listItem;
 	}
@@ -172,7 +177,7 @@ class ViewEvents extends TableView
 			array_push ($q, ')');
 		}
 
-		$this->queryMain ($q, '[events].', ['[title]', '[ndx]']);
+		$this->queryMain ($q, '[events].', ['[dateBegin] DESC', '[timeBegin] DESC', '[ndx]']);
 		$this->runQuery ($q);
 	}
 
@@ -261,8 +266,14 @@ class FormEvent extends TableForm
  */
 class ViewDetailEvent extends TableViewDetail
 {
-	public function createDetailContent ()
+	function createDetailContent ()
 	{
-		//$this->addDocumentCard('wkf.bboard.libs.dc.MsgCore');
+		$calendar = $this->app()->cfgItem('wkf.events.cals.'.$this->item['calendar'], NULL);
+		if (!$calendar || !($calendar['useProgram'] ?? 0))
+			return;
+		$this->addContent ([
+			'type' => 'viewer', 'table' => 'wkf.events.eventsProgram', 'viewer' => 'default',
+			'params' => ['eventNdx' => $this->item ['ndx']]
+		]);
 	}
 }

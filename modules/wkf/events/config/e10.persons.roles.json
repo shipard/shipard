@@ -6,7 +6,8 @@
 	},
 	"user": {
 		"viewers": {
-			"wkf.events.events": {"default": 2}
+			"wkf.events.events": {"default": 2},
+			"wkf.events.eventsProgram": {"default": 2}
 		},
 		"widgets": {
 			"wkf.events.libs.WidgetCalendar": 2

@@ -45,6 +45,7 @@ class TableCals extends DbTable
 				'ndx' => $r ['ndx'], 'fn' => $r ['fullName'], 'sn' => $r ['shortName'],
 				'icon' => ($r['icon'] === '') ? 'system/iconCalendar': $r['icon'],
 				'colorbg' => ($r['colorbg'] === '') ? '0000FA' : $r['colorbg'],
+				'useProgram' => $r['useProgram'],
 			];
 
 			$cntPeoples = 0;
@@ -220,6 +221,7 @@ class FormCal extends TableForm
 					$this->addColumnInput('colorbg');
 					$this->addColumnInput('icon');
 					$this->addColumnInput('order');
+					$this->addColumnInput('useProgram');
 				$this->closeTab ();
 			$this->closeTabs();
 		$this->closeForm ();

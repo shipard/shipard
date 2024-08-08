@@ -2,7 +2,7 @@
   "id": "wkf.events",
   "name": "workflow - events",
   "tables": [
-		"cals", "events"
+		"cals", "events", "eventsProgram"
 	],
 	"modules": ["wkf/base"],
   "config": [

@@ -9,6 +9,7 @@
 				},
 				{"t1": "Nástěnka", "object": "widget", "class": "e10.widgetDashboard", "subclass": "school", "icon": "e10.widgetDashboard/board", "order": 5000},
 				{"t1": "Akce", "object": "viewer", "table": "e10pro.zus.akce", "viewer": "default", "order": 6000},
+				{"t1": "Nové Akce", "object": "viewer", "table": "wkf.events.events", "viewer": "default", "order": 6100, "enabledCfgItem": "options.e10-pro-zus.useEvents"},
 				{"t1": "Studenti", "object": "viewer", "table": "e10.persons.persons", "viewer": "students", "icon": "iconStudents", "order": 12000},
 				{"t1": "Studium", "object": "viewer", "table": "e10pro.zus.studium", "viewer": "default", "order": 15000},
 				{"t1": "Vysvědčení", "object": "viewer", "table": "e10pro.zus.vysvedceni", "viewer": "default", "order": 18000},
