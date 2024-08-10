@@ -171,6 +171,11 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		}
 		$dsStats->data['users']['lastMonth']['all'] = ['users' => $cntUsers, 'ops' => $cntOps];
 
+		// -- last log rec timestamp
+		$llr = $this->app->db()->query ('SELECT [created] FROM e10_base_docslog ORDER BY ndx DESC LIMIT 1')->fetch();
+		if ($llr)
+			$dsStats->data['lastLogRecTS'] = $llr['created']->format('Y-m-d H:i:s');
+
 		// -- modules
 		$dsStats->data['modules'] = utils::loadCfgFile(__APP_DIR__.'/config/modules.json');
 

@@ -219,6 +219,11 @@ class ModuleServices extends \E10\CLI\ModuleServices
 
 		$dsStats->data['docs']['created'] = new \DateTime();
 
+		// -- last document dateAccounting
+		$ldc = $this->app->db()->query ('SELECT MAX(dateAccounting) AS lastDocDateAccounting FROM e10doc_core_heads WHERE docState = 4000')->fetch();
+		if ($ldc && $ldc['lastDocDateAccounting'])
+			$dsStats->data['docs']['lastDateAccounting'] = $ldc['lastDocDateAccounting']->format('Y-m-d H:i:s');
+
 		// -- count documents
 		$cnt12m = $this->app->db()->query ('select count(*) as c from e10doc_core_heads WHERE docState = 4000 AND dateAccounting > %d', $minDate)->fetch();
 		$dsStats->data['docs']['last12m']['cnt'] = $cnt12m['c'];
