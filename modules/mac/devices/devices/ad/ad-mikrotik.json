@@ -166,7 +166,14 @@
 				"mkt-ccr1009_7g-1c-1s-pc": {"title": "CCR1009-7G-1C-1S+PC"},
 				"mkt-ccr1009_7g-1c-1s": {"title": "CCR1009-7G-1C-1S+"},
 
-				"mkt-ccr1036_8g-2S": {"title": "CCR1036-8G-2S+ / CCR1036-8G-2S+EM"},
+				"mkt-ccr1036_8g-2S": {
+					"title": "CCR1036-8G-2S+ / CCR1036-8G-2S+EM",
+					"ports": [
+						{"kind": 5, "count": 8, "maskId": "ether"},
+						{"kind": 6, "count": 2, "maskId": "sfp-sfpplus"},
+						{"kind": 10, "count": 1, "maskId": "mng"}
+					]
+				},
 				"mkt-ccr1036_12g-4S": {"title": "CCR1036-12G-4S / CCR1036-12G-4S-EM"},
 
 				"mkt-ccr2004_1g-12S-2xs": {
