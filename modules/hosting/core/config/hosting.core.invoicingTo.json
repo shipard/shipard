@@ -10,5 +10,8 @@
   },
   "3": {
     "fn": "Nefakturuje se", "sn": "NE"
+  },
+  "4": {
+    "fn": "Fakturační skupina", "sn": "FS"
   }
 }

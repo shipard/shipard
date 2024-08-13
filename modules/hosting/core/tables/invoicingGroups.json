@@ -1,0 +1,25 @@
+{
+	"id": "hosting.core.invoicingGroups", "sql": "hosting_core_invoicingGroups", "name": "Fakturační skupiny",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "name", "name": "Název", "type": "string", "len": 80},
+		{"id": "gid", "name": "ID", "type": "string", "len": 25},
+		{"id": "partner", "name": "Partner", "type": "int", "reference": "hosting.core.partners"},
+		{"id": "payer", "name": "Plátce", "type": "int", "reference": "e10.persons.persons"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "hosting.core.ViewInvoicingGroups",
+			"details": {
+				"overview": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "hosting.core.ViewDetailInvoicingGroup", "order": 10}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "hosting.core.FormInvoicingGroup"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"}
+}

@@ -144,7 +144,7 @@ use \e10\base\libs\UtilsBase;
 		$installModule = $this->app()->cfgItem('hosting.core.installModules.'.$recData['installModule'], NULL);
 		if ($installModule)
 		{
-			$labels['condition'][] = ['text' => $installModule['sn'], 'class' => 'label label-info', 'icon' => 'tables/e10.install.modules'];
+			//$labels['condition'][] = ['text' => $installModule['sn'], 'class' => 'label label-info', 'icon' => 'tables/e10.install.modules'];
 		}
 		else
 			$labels['condition'][] = ['text' => 'Vadný modul', 'class' => 'label label-warning', 'icon' => 'system/iconWarning'];
@@ -669,6 +669,8 @@ class ViewDataSources extends TableView
 
 		if (isset($qv['partners']))
 			array_push ($q, ' AND [partner] IN %in', array_keys($qv['partners']));
+		if (isset($qv['invoicingGroups']))
+			array_push ($q, ' AND [invoicingGroup] IN %in', array_keys($qv['invoicingGroups']));
 		if (isset($qv['servers']))
 			array_push ($q, ' AND ds.[server] IN %in', array_keys($qv['servers']));
 		if (isset($qv['conditions']))
@@ -751,6 +753,11 @@ class ViewDataSources extends TableView
 		$partners = $this->db()->query ('SELECT ndx, name FROM hosting_core_partners WHERE docStateMain <= 2 ORDER BY name')->fetchPairs ('ndx', 'name');
 		$partners[0] = 'bez partnera';
 		$this->qryPanelAddCheckBoxes($panel, $qry, $partners, 'partners', 'Partneři');
+
+		// -- invoicingGroups
+		$invoicingGroups = $this->db()->query ('SELECT ndx, name FROM hosting_core_invoicingGroups WHERE docStateMain <= 2 ORDER BY name')->fetchPairs ('ndx', 'name');
+		//$invoicingGroups[0] = 'bez skupiny';
+		$this->qryPanelAddCheckBoxes($panel, $qry, $invoicingGroups, 'invoicingGroups', 'Fakturační skupiny');
 
 		// -- servers
 		$servers = $this->db()->query ('SELECT ndx, name FROM hosting_core_servers WHERE docStateMain <= 2 ORDER BY name')->fetchPairs ('ndx', 'name');
@@ -899,6 +906,8 @@ class FormDataSource extends TableForm
 					$this->addColumnInput ('helpdeskMode');
 					$this->addColumnInput ('pricePlanKind');
 					$this->addColumnInput ('invoicingTo');
+					if ($this->recData['invoicingTo'] == 4)
+						$this->addColumnInput ('invoicingGroup');
 				$this->closeTab ();
 
 				$this->openTab ();

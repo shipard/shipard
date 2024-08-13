@@ -40,5 +40,11 @@
 			"fa6pro": "fa-user",
 			"bsi": "bi-person",
 			"mdi": "person"
-    }
+    },
+    "tables/hosting.core.invoicingGroups":{
+      "fa5":"fa-money-bill-alt",
+      "fa6pro":"fa-money-bill-alt",
+      "bsi":"bi-cash",
+      "mdi":"payments"
+  }
 }

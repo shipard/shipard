@@ -52,8 +52,9 @@
 		{"id": "condition", "name": "Stav", "type": "enumInt",
 			"enumCfg": {"cfgItem": "hosting.core.dsConditions", "cfgValue": "", "cfgText": "fn"}},
 
-		{"id": "invoicingTo", "name": "Fakturovat", "type": "enumInt",
+		{"id": "invoicingTo", "name": "Fakturovat", "type": "enumInt", "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "hosting.core.invoicingTo", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "invoicingGroup", "name": "Fakturační skupina", "type": "int", "reference": "hosting.core.invoicingGroups"},
 
 	  {"id": "imageUrl", "name": "URL obrázku", "type": "string", "len": 160},
 	  {"id": "dsIconServerUrl", "name": "Ikona - URL serveru", "type": "string", "len": 60},
