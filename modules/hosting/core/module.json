@@ -3,8 +3,8 @@
   "name": "Hosting",
 	"tables": [
 		"hostings", "servers", "serversInfo",
-		"partners", "partnersPersons",
-		"dataSources", "dsStats", "dsUsers", "dsPersons", "dsUsersOptions", "dsUsersSummary"
+		"partners", "partnersPersons", "invoicingGroups",
+		"dataSources", "dsStats", "dsUsers", "dsPersons", "dsUsersOptions", "dsUsersSummary", "hostingLog"
 	],
 	"config": [
 		{"id": "+appSkeleton", "file": "hosting.appSkeleton.json"},
@@ -31,6 +31,6 @@
 	],
 	"extensions": ["hosting"],
 	"modules": [
-		"integrations/core", "mac/inet", "e10settings/base"
+		"integrations/core", "mac/inet", "e10settings/base", "wkf/events", "wkf/msgs"
 	]
 }
