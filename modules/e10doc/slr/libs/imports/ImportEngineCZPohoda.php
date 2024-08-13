@@ -79,14 +79,6 @@ class ImportEngineCZPohoda extends \e10doc\slr\libs\ImportEngine
     {
       return;
     }
-    if (!isset($this->srcData['soupis-socialniho']))
-    {
-      return;
-    }
-    if (!isset($this->srcData['soupis-zdravotniho']))
-    {
-      return;
-    }
 
     $this->importFile_prehledMezd();
     $this->importFile_soupisSocialniho();
@@ -149,6 +141,9 @@ class ImportEngineCZPohoda extends \e10doc\slr\libs\ImportEngine
 
   protected function importFile_soupisSocialniho()
   {
+    if (!isset($this->srcData['soupis-socialniho']))
+      return;
+
     $ss = $this->srcData['soupis-socialniho'];
     foreach ($ss as $rowId => $row)
     {
@@ -189,6 +184,9 @@ class ImportEngineCZPohoda extends \e10doc\slr\libs\ImportEngine
 
   protected function importFile_soupisZdravotniho()
   {
+    if (!isset($this->srcData['soupis-zdravotniho']))
+      return;
+
     $sz = $this->srcData['soupis-zdravotniho'];
     foreach ($sz as $rowId => $row)
     {
