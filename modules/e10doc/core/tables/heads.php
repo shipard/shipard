@@ -1163,7 +1163,7 @@ class TableHeads extends DbTable
 		$recData ['fiscalYear'] = 0;
 		$recData ['fiscalMonth'] = 0;
 		$recData ['taxManual'] = 0;
-		unset ($recData ['activateTimeFirst'], $recData ['activateDateFirst'], $recData ['activateTimeLast']);
+		unset ($recData ['activateTimeFirst'], $recData ['activateDateFirst'], $recData ['activateTimeLast'], $recData ['activateCnt']);
 
 		$recData ['dateIssue'] = utils::today();
 		$recData ['dateAccounting'] = utils::today();
