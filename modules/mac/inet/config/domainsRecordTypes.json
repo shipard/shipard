@@ -1,15 +1,15 @@
 {
-	"MX": {"name": "MX"},
-	"A": {"name": "A"},
-	"AAAA": {"name": "AAAA"},
-	"ALIAS": {"name": "ALIAS"},
-	"HTTPS": {"name": "HTTPS"},
-	"CNAME": {"name": "CNAME"},
-	"TXT": {"name": "TXT"},
-	"SPF": {"name": "SPF"},
-	"SRV": {"name": "SRV"},
-	"DNSKEY": {"name": "DNSKEY"},
-	"NS": {"name": "NS"},
-	"SOA": {"name": "SOA"},
-	"CAA": {"name": "CAA"}
+	"A": {"name": "A", "displayOrder": 100},
+	"AAAA": {"name": "AAAA", "displayOrder": 100},
+	"ALIAS": {"name": "ALIAS", "displayOrder": 100},
+	"HTTPS": {"name": "HTTPS", "displayOrder": 200},
+	"CNAME": {"name": "CNAME", "displayOrder": 200},
+	"MX": {"name": "MX", "displayOrder": 500},
+	"TXT": {"name": "TXT", "displayOrder": 700},
+	"SPF": {"name": "SPF", "displayOrder": 710},
+	"SRV": {"name": "SRV", "displayOrder": 750},
+	"CAA": {"name": "CAA", "displayOrder": 800},
+	"DNSKEY": {"name": "DNSKEY", "displayOrder": 2000},
+	"NS": {"name": "NS", "displayOrder": 2200},
+	"SOA": {"name": "SOA", "displayOrder": 5000}
 }

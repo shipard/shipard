@@ -38,8 +38,6 @@ class ViewDomainsRecordsAll extends TableView
     array_push($q, ' [domains].[domain] AS domainName');
     array_push($q, ' FROM [mac_inet_domainsRecords] AS [records]');
     array_push($q, ' LEFT JOIN [mac_inet_domains] AS [domains] ON [records].[domain] = [domains].[ndx]');
-    array_push($q, '');
-    array_push($q, '');
 		array_push($q, ' WHERE 1');
 
 		if ($fts != '')
@@ -51,7 +49,7 @@ class ViewDomainsRecordsAll extends TableView
 			array_push ($q, ')');
     }
 
-		$this->queryMain ($q, '[records].', ['[hostName]', '[value]', '[priority]', '[ndx]']);
+		$this->queryMain ($q, '[records].', ['[domains].[domain]', '[displayOrder]', '[hostName]', '[value]', '[priority]', '[ndx]']);
 		$this->runQuery ($q);
 	}
 

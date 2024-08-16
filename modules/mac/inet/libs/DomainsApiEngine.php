@@ -26,6 +26,7 @@ class DomainsApiEngine extends Utility
 	var $accountNdx = 0;
 	var $account = NULL;
 
+	var $domainRecordTypes;
 	var $lastCheckId = 0;
 
 	public function setAccountNdx ($accountNdx)
@@ -244,6 +245,8 @@ class DomainsApiEngine extends Utility
 		if (isset($dnsRecord['registrarId']))
 			$exist = $this->db()->query('SELECT * FROM [mac_inet_domainsRecords] WHERE [registrarId] = %i', $dnsRecord['registrarId'])->fetch();
 
+		$recordType = $this->domainRecordTypes[$dnsRecord['recordType']] ?? [];
+
 		$newNdx = 0;
 		if (!$exist)
 		{ // add new
@@ -254,6 +257,7 @@ class DomainsApiEngine extends Utility
 				'priority' => $dnsRecord['priority'] ?? 0,
 				'ttl' => $dnsRecord['ttl'],
 				'registrarId' => $dnsRecord['registrarId'] ?? 0,
+				'displayOrder' => $recordType['displayOrder'] ?? 1,
 				'docState' => 4000, 'docStateMain' => 2
 			];
 
@@ -407,6 +411,8 @@ class DomainsApiEngine extends Utility
 	public function run()
 	{
 		$this->lastCheckId = time() - 1723800000;
+		$this->domainRecordTypes = $this->app()->cfgItem('mac.inet.domainsRecordTypes');
+
 		if (!$this->checkParams())
 			return;
 		$this->loadDomainDbInfo();

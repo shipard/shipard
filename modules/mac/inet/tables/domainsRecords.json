@@ -17,6 +17,8 @@
 		{"id": "versionProvider", "name": "ID verze u poskytovatele", "type": "string", "len": 40, "options": ["ascii"]},
 		{"id": "versionData", "name": "ID verze v datech", "type": "string", "len": 40, "options": ["ascii"]},
 
+		{"id": "displayOrder", "name": "Pořadí pro zabrazení", "type": "int"},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],

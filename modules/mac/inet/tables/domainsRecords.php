@@ -85,7 +85,7 @@ class ViewDomainsRecords extends TableView
 		if ($fts != '')
 			array_push ($q, ' AND ([hostName] LIKE %s)', '%'.$fts.'%');
 
-		$this->queryMain ($q, '', ['[hostName]', '[value]', '[priority]', '[ndx]']);
+		$this->queryMain ($q, '', ['[displayOrder]', '[hostName]', '[value]', '[priority]', '[ndx]']);
 		$this->runQuery ($q);
 	}
 
