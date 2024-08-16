@@ -117,6 +117,15 @@ class ViewDomains extends TableView
 			$listItem ['t3'][] = ['text' => $item['accountRegName'], 'class' => 'label label-default', 'icon' => 'system/actionSettings', 'prefix' => 'reg'];
 		if ($item['accountDNSName'])
 			$listItem ['t3'][] = ['text' => $item['accountDNSName'], 'class' => 'label label-default', 'icon' => 'system/actionSettings', 'prefix' => 'dns'];
+		else
+			$listItem ['t3'][] = ['text' => '!!!', 'class' => 'label label-danger', 'icon' => 'system/actionSettings', 'prefix' => 'dns'];
+
+		$listItem ['t3'][] = ['text' => Utils::datef($item['lastCheck'], '%S, %T'), 'class' => 'e10-off'];
+
+		if ($item['notFound'])
+		{
+			$listItem ['class'] = 'e10-error';
+		}
 
 		return $listItem;
 	}

@@ -13,6 +13,7 @@
 				{"#": "requests", "t1": "Požadavky", "object": "viewer", "table": "e10.persons.requests", "viewer": "default", "order": 380000},
 				{"#": "domainsAccounts", "t1": "Doménové účty", "object": "viewer", "table": "mac.inet.domainsAccounts", "viewer": "default", "order": 8390000},
 				{"#": "domains", "t1": "Domény", "object": "viewer", "table": "mac.inet.domains", "viewer": "default", "order": 395000},
+				{"#": "domainsRecords", "t1": "DNS", "object": "viewer", "table": "mac.inet.domainsRecords", "viewer": "all", "order": 395300},
 				{"#": "certs", "t1": "Certifikáty", "object": "viewer", "table": "mac.inet.certs", "viewer": "default", "order": 396000},
 				{"#": "hostings", "t1": "Hostingy", "object": "viewer", "table": "hosting.core.hostings", "viewer": "default", "order": 9909100}
 			]

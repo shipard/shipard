@@ -1,6 +1,6 @@
 <?php
 
-namespace hosting\core;
+namespace mac\inet;
 
 
 use \e10\TableView, \e10\TableViewDetail, \e10\TableForm, \e10\DbTable, \e10\utils;
@@ -14,7 +14,7 @@ class TableDomainsRecords extends DbTable
 	public function __construct ($dbmodel)
 	{
 		parent::__construct ($dbmodel);
-		$this->setName ('hosting.core.domainsRecords', 'hosting_core_domainsRecords', 'Doménové záznamy');
+		$this->setName ('mac.inet.domainsRecords', 'mac_inet_domainsRecords', 'Doménové záznamy');
 	}
 
 	public function createHeader ($recData, $options)
@@ -28,7 +28,7 @@ class TableDomainsRecords extends DbTable
 
 	public function checkBeforeSave (&$recData, $ownerData = NULL)
 	{
-		$id = $recData['hostName'].'-'.$recData['value'].'-'.$recData['priority'].'-'.$recData['ttl'];
+		$id = $recData['hostName'].'-'.($recData['value'] ?? $recData['valueMemo'] ?? '').'-'.$recData['priority'].'-'.$recData['ttl'];
 		$recData['versionData'] = sha1($id);
 
 		parent::checkBeforeSave ($recData, $ownerData);
@@ -62,7 +62,7 @@ class ViewDomainsRecords extends TableView
 
 		$this->setMainQueries();
 
-		$this->domainRecordTypes = $this->app()->cfgItem('hosting.core.domainsRecordTypes');
+		$this->domainRecordTypes = $this->app()->cfgItem('mac.inet.domainsRecordTypes');
 
 		if ($this->queryParam ('domain'))
 		{
@@ -75,7 +75,7 @@ class ViewDomainsRecords extends TableView
 	{
 		$fts = $this->fullTextSearch ();
 
-		$q[] = 'SELECT * FROM [hosting_core_domainsRecords] ';
+		$q[] = 'SELECT * FROM [mac_inet_domainsRecords] ';
 
 		array_push($q, ' WHERE 1');
 

@@ -2,9 +2,14 @@
 	"MX": {"name": "MX"},
 	"A": {"name": "A"},
 	"AAAA": {"name": "AAAA"},
+	"ALIAS": {"name": "ALIAS"},
+	"HTTPS": {"name": "HTTPS"},
 	"CNAME": {"name": "CNAME"},
 	"TXT": {"name": "TXT"},
 	"SPF": {"name": "SPF"},
 	"SRV": {"name": "SRV"},
-	"DNSKEY": {"name": "DNSKEY"}
+	"DNSKEY": {"name": "DNSKEY"},
+	"NS": {"name": "NS"},
+	"SOA": {"name": "SOA"},
+	"CAA": {"name": "CAA"}
 }

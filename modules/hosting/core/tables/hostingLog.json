@@ -1,0 +1,20 @@
+{
+	"id": "hosting.core.hostingLog", "sql": "hosting_core_hostingLog", "name": "Log hostingu",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+	  {"id": "itemType", "name": "Druh záznamu", "type": "enumInt",
+			"enumCfg": {"cfgItem": "hosting.core.logItems", "cfgValue": "ndx", "cfgText": "fn"}},
+		{"id": "dataSource", "name": "Zdroj dat", "type": "int", "reference": "hosting.core.dataSources"},
+		{"id": "server", "name": "Server", "type": "int", "reference": "hosting.core.servers"},
+    {"id": "severity", "name": "Kritičnost", "type": "enumInt",
+      "enumValues": {"0": "OK", "40": "Varování",  "80": "Chyba"}},
+
+    {"id": "dateCreate", "name": "Datum a čas události", "type": "timestamp"},
+    {"id": "dateBegin", "name": "Datum a čas začátku", "type": "timestamp"},
+		{"id": "dateEnd", "name": "Datum a čas ukončení", "type": "timestamp"},
+		{"id": "timeLen", "name": "Doba trvání", "type": "timeLen"},
+
+		{"id": "data", "name": "Data", "type": "memo"}
+	],
+	"options": ["systemTable"]
+}

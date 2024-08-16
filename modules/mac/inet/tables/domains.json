@@ -9,6 +9,10 @@
 		{"id": "domainAccountDNS", "name": "Doménový účet - správa DNS", "type": "int", "reference": "mac.inet.domainsAccounts"},
 		{"id": "owner", "name": "Majitel", "type": "int", "reference": "e10.persons.persons"},
 
+		{"id": "checkId", "name": "checkId", "type": "int"},
+		{"id": "lastCheck", "name": "lastCheck", "type": "timestamp"},
+		{"id": "notFound", "name": "checkId", "type": "logical"},
+
 		{"id": "dateExpire", "name": "Datum expirace", "type": "date"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},

@@ -26,6 +26,8 @@ class DomainsApiEngine extends Utility
 	var $accountNdx = 0;
 	var $account = NULL;
 
+	var $lastCheckId = 0;
+
 	public function setAccountNdx ($accountNdx)
 	{
 		$this->accountNdx = $accountNdx;
@@ -34,7 +36,7 @@ class DomainsApiEngine extends Utility
 	public function checkParams()
 	{
 		$this->tableDomains = $this->app->table ('mac.inet.domains');
-		//$this->tableDomainsRecords = $this->app->table ('mac.inet.domainsRecords');
+		$this->tableDomainsRecords = $this->app->table ('mac.inet.domainsRecords');
 		$this->tableDomainsAccounts = $this->app->table ('mac.inet.domainsAccounts');
 
 		$cmd = $this->app()->arg('cmd');
@@ -108,7 +110,7 @@ class DomainsApiEngine extends Utility
 			$accountNdx = $this->accountDNS['ndx'];
 
 		if (!$accountNdx)
-			return $this->err('Missing account');
+			return $this->err('Missing account (--account=xxx)');
 
 		$this->account = $this->tableDomainsAccounts->loadItem($accountNdx);
 		if (!$this->account)
@@ -116,7 +118,8 @@ class DomainsApiEngine extends Utility
 
 		$this->accountNdx = $this->account['ndx'];
 
-		$this->debug("account: #".$this->account['ndx']." / ".$this->account['name']);
+		if ($this->app()->debug)
+			$this->debug("account: #".$this->account['ndx']." / ".$this->account['name']);
 
 		return TRUE;
 	}
@@ -163,7 +166,7 @@ class DomainsApiEngine extends Utility
 
 	public function importDomain($domain)
 	{
-		$exist = $this->db()->query('SELECT * FROM [e10pro_hosting_server_domains] WHERE [domainAscii] = %s', $domain['domain'])->fetch();
+		$exist = $this->db()->query('SELECT * FROM [mac_inet_domains] WHERE [domainAscii] = %s', $domain['domain'])->fetch();
 
 		$newNdx = 0;
 		if (!$exist)
@@ -180,37 +183,66 @@ class DomainsApiEngine extends Utility
 			$this->tableDomains->docsLog ($newNdx);
 		}
 		else
-		{ // update existing
-			$update = $exist->toArray();
-			if ($update['dateExpire'] != $domain['dateExpire'])
-				$update['dateExpire'] = $domain['dateExpire'];
-
-			if (count($update))
+		{ // update existing?
+			$newNdx = $exist['ndx'];
+			if ($exist['domainAccount'] === $this->accountNdx)
 			{
-				$newNdx = $this->tableDomains->dbUpdateRec($update);
-				$this->tableDomains->docsLog($newNdx);
+				$update = $exist->toArray();
+				if ($update['dateExpire'] != $domain['dateExpire'])
+					$update['dateExpire'] = $domain['dateExpire'];
+				$update['checkId'] = 0;
+
+				if (count($update))
+				{
+					$newNdx = $this->tableDomains->dbUpdateRec($update);
+					$this->tableDomains->docsLog($newNdx);
+				}
 			}
 		}
 
 		// --- dns records
-		$this->importDomainDnsRecords ($newNdx);
+		//echo " --->`{$this->accountNdx}` ".json_encode($exist->toArray())."\n";
+		if ($exist['domainAccountDNS'] == $this->accountNdx)
+		{
+			$this->importDomainDnsRecords ($newNdx);
+		}
+		else
+		{
+			//echo "     !!!: {$exist['domainAccountDNS']} != {$this->accountNdx}; ".json_encode($exist->toArray())."\n";
+		}
 	}
 
 	public function importDomainDnsRecords ($domainNdx)
 	{
+		$this->db()->query('DELETE FROM [mac_inet_domainsRecords] WHERE [domain] = %i', $domainNdx);
+
 		$domainRecData = $this->tableDomains->loadItem($domainNdx);
-		//echo "  --> ".json_encode($domainRecData)."\n";
 		if (!$domainRecData)
+		{
+			//echo "     ---- ##### -----`{$domainNdx}`\n";
 			return;
+		}
 
 		$dnsRecords = $this->apiClient->dnsRecords($domainRecData['domainAscii']);
-		foreach ($dnsRecords as $dnsRecord)
-			$this->importDnsRecord($domainNdx, $dnsRecord);
+		if ($this->app()->debug)
+			echo " --> dnsRecords: ".json_encode($dnsRecords)."\n";
+		if ($dnsRecords)
+		{
+			foreach ($dnsRecords as $dnsRecord)
+			{
+				if ($this->app()->debug)
+					echo " ---> ".json_encode($dnsRecord)."\n";
+				$this->importDnsRecord($domainNdx, $dnsRecord);
+			}
+		}
 	}
 
 	public function importDnsRecord($domainNdx, $dnsRecord)
 	{
-		$exist = $this->db()->query('SELECT * FROM [e10pro_hosting_server_domainsRecords] WHERE [registrarId] = %i', $dnsRecord['registrarId'])->fetch();
+		$exist = NULL;
+
+		if (isset($dnsRecord['registrarId']))
+			$exist = $this->db()->query('SELECT * FROM [mac_inet_domainsRecords] WHERE [registrarId] = %i', $dnsRecord['registrarId'])->fetch();
 
 		$newNdx = 0;
 		if (!$exist)
@@ -219,18 +251,22 @@ class DomainsApiEngine extends Utility
 				'domain' => $domainNdx,
 				'recordType' => $dnsRecord['recordType'],
 				'hostName' => $dnsRecord['hostName'],
-				'value' => $dnsRecord['value'],
-				'priority' => $dnsRecord['priority'],
+				'priority' => $dnsRecord['priority'] ?? 0,
 				'ttl' => $dnsRecord['ttl'],
-				'registrarId' => $dnsRecord['registrarId'],
+				'registrarId' => $dnsRecord['registrarId'] ?? 0,
 				'docState' => 4000, 'docStateMain' => 2
 			];
 
-			$id = $item['hostName'].'-'.$item['value'].'-'.$item['priority'].'-'.$item['ttl'];
+			if (strlen($dnsRecord['value']) <= 250)
+				$item['value'] = $dnsRecord['value'];
+			else
+				$item['valueMemo'] = $dnsRecord['value'];
+
+			$id = $item['hostName'].'-'.($item['value'] ?? $item['valueMemo'] ?? '').'-'.$item['priority'].'-'.$item['ttl'];
 			$item['versionProvider'] = sha1($id);
 
 			$newNdx = $this->tableDomainsRecords->dbInsertRec ($item);
-			$this->tableDomainsRecords->docsLog ($newNdx);
+			//$this->tableDomainsRecords->docsLog ($newNdx);
 		}
 		else
 		{ // update existing
@@ -293,6 +329,10 @@ class DomainsApiEngine extends Utility
 
 	public function doDomainsList()
 	{
+		$this->db()->query('UPDATE [mac_inet_domains] SET checkId = %i, ', $this->lastCheckId,
+											 ' lastCheck = %t', new \DateTime(),
+											 ' WHERE [domainAccount] = %i', $this->accountNdx);
+
 		$domainsList = $this->apiClient->domainsList();
 
 		if (!$domainsList)
@@ -300,13 +340,14 @@ class DomainsApiEngine extends Utility
 
 		foreach ($domainsList as $domain)
 		{
-		//	$this->importDomain($domain);
-			echo '* '.json_encode($domain)."\n";
+			if ($this->app()->debug)
+				echo '* '.json_encode($domain)."\n";
+			$this->importDomain($domain);
 		}
 
-		return TRUE;
+		$this->db()->query('UPDATE [mac_inet_domains] SET notFound = %i', 1, ' WHERE [domainAccount] = %i', $this->accountNdx, ' AND checkId = %i', $this->lastCheckId);
 
-		//echo "IMPORTED DOMAINS: ".json_encode($domainsList)."\n";
+		return TRUE;
 	}
 
 	public function doDomainRecords()
@@ -365,6 +406,7 @@ class DomainsApiEngine extends Utility
 
 	public function run()
 	{
+		$this->lastCheckId = time() - 1723800000;
 		if (!$this->checkParams())
 			return;
 		$this->loadDomainDbInfo();

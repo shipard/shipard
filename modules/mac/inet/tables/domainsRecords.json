@@ -1,14 +1,15 @@
 {
-	"id": "hosting.core.domainsRecords", "sql": "hosting_core_domainsRecords", "name": "Doménové záznamy",
+	"id": "mac.inet.domainsRecords", "sql": "mac_inet_domainsRecords", "name": "Doménové záznamy",
 	"columns": [
 		{"id": "ndx", "sql": "ndx", "name": "id", "type": "int_ai"},
 
 		{"id": "recordType", "name": "Typ záznamu", "type": "enumString", "len": 10,
-			"enumCfg": {"cfgItem": "hosting.core.domainsRecordTypes", "cfgValue": "", "cfgText": "name"}},
+			"enumCfg": {"cfgItem": "mac.inet.domainsRecordTypes", "cfgValue": "", "cfgText": "name"}},
 
-		{"id": "domain", "name": "Doména", "type": "int", "reference": "hosting.core.domains"},
+		{"id": "domain", "name": "Doména", "type": "int", "reference": "mac.inet.domains"},
 		{"id": "hostName", "name": "Název", "type": "string", "len": 120},
 		{"id": "value", "name": "Hodnota", "type": "string", "len": 250},
+		{"id": "valueMemo", "name": "Hodnota", "type": "memo"},
 		{"id": "priority", "name": "Priorita", "type": "int"},
 		{"id": "ttl", "name": "TTL", "type": "int"},
 		{"id": "registrarId", "name": "ID u registrátora", "type": "int"},
@@ -20,14 +21,19 @@
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
 	"views": [
-		{"id": "default", "class": "hosting.core.ViewDomainsRecords",
+		{"id": "default", "class": "mac.inet.ViewDomainsRecords",
 			"details": {
-				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "hosting.core.ViewDetailDomainRecord"}
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.inet.ViewDetailDomainRecord"}
+			}
+		},
+		{"id": "all", "class": "mac.inet.libs.ViewDomainsRecordsAll",
+			"details": {
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.inet.ViewDetailDomainRecord"}
 			}
 		}
 	],
 	"forms": [
-		{"id": "default", "class": "hosting.core.FormDomainRecord"}
+		{"id": "default", "class": "mac.inet.FormDomainRecord"}
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "hostName"}

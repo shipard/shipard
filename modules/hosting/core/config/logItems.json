@@ -1,0 +1,19 @@
+{
+  "1": {
+    "fn": "Záloha zdroje dat"
+  },
+  "2": {
+    "fn": "Záloha nastavení serveru se zdroji dat"
+  },
+  "3": {
+    "fn": "Záloha kontejneru serveru"
+  },
+  "4": {
+    "fn": "Kontrola integrity příloh zdroje dat"
+  },
+
+
+  "90": {
+    "fn": "Server Ping"
+  }
+}

@@ -27,6 +27,7 @@
 		{"id": "hosting.core.dsCreateModes", "file": "hosting.core.dsCreateModes.json"},
 		{"id": "hosting.core.dsCreateDemoTypes", "file": "hosting.core.dsCreateDemoTypes.json"},
 		{"id": "hosting.core.serverCreateDSTypes", "file": "hosting.core.serverCreateDSTypes.json"},
+		{"id": "hosting.core.logItems", "file": "logItems.json"},
 		{"id": "+reports", "file": "reports.json"}
 	],
 	"extensions": ["hosting"],
