@@ -51,6 +51,9 @@
 	"sensor/meteo-bme280": {
 		"name": "Meteo čidlo BME280", "sensor": 1
 	},
+	"sensor/meteo-bmp280": {
+		"name": "Meteo čidlo BMP280", "sensor": 1
+	},
 	"sensor/meteo-bh1750": {
 		"name": "Měřič osvětlení BH1750", "sensor": 1, "dataType": "numeric"
 	},
