@@ -44,10 +44,10 @@ class PartnersDSEngine extends Utility
     ]);
 
     $this->loadDataPart([
-      'title' => 'Databáze fakturované přímo zákazníkovi',
-      'subTitle' => 'Poskytujete podporu, ale faktura za provoz jde zákazníkovi od nás',
-      'headerClass' => 'e10-bg-t1',
-      'query' => ['invoicingTo' => 1, 'dsType' => 0, 'dsDemo' => 0]
+      'title' => 'Databáze v archívu',
+      'subTitle' => 'Již nepoužívané databáze v režimu "pouze pro čtení"',
+      'headerClass' => 'e10-bg-t2',
+      'query' => ['dsType' => 0, 'condition' => 4]
     ]);
 
     if (count($this->data))
@@ -59,6 +59,13 @@ class PartnersDSEngine extends Utility
       $this->data [] = $this->sumTotals;
       $this->sumTotals['usageTotal'] = $oldUsageTotal;
     }
+
+    $this->loadDataPart([
+      'title' => 'Databáze fakturované přímo zákazníkovi',
+      'subTitle' => 'Poskytujete podporu, ale faktura za provoz jde zákazníkovi od nás',
+      'headerClass' => 'e10-bg-t1',
+      'query' => ['invoicingTo' => 1, 'dsType' => 0, 'dsDemo' => 0]
+    ]);
 
     if ($this->print)
       $this->firstPart = 1;
@@ -83,13 +90,6 @@ class PartnersDSEngine extends Utility
       'subTitle' => 'Obvykle se jedná o kopie ostrých databází k testovacím účelům',
       'headerClass' => 'e10-bg-t9',
       'query' => ['dsType' => 1]
-    ]);
-
-    $this->loadDataPart([
-      'title' => 'Databáze v archívu',
-      'subTitle' => 'Již nepoužívané databáze v režimu "pouze pro čtení"',
-      'headerClass' => 'e10-bg-t2',
-      'query' => ['dsType' => 0, 'condition' => 4]
     ]);
 
     $this->loadDataPart([
@@ -162,6 +162,8 @@ class PartnersDSEngine extends Utility
 			];
 
       if (isset($partDef['query']) && (intval($partDef['query']['invoicingTo'] ?? 0) >= 3))
+        $item['priceTotal'] = 0.0;
+      if (isset($partDef['query']) && (intval($partDef['query']['invoicingTo'] ?? 0) === 1))
         $item['priceTotal'] = 0.0;
       if (isset($partDef['query']) && (intval($partDef['query']['condition'] ?? 0) === 4))
         $item['priceTotal'] = 100;
