@@ -122,6 +122,7 @@ class PartnersDSEngine extends Utility
     elseif (isset($partDef['partType']) && $partDef['partType'] === 'others')
     {
       array_push($q, ' AND ds.[ndx] NOT IN %in', $this->allPks);
+      array_push($q, ' AND ds.[invoicingTo] != %i', 4);
     }
 
     array_push($q, ' ORDER BY ds.name');
@@ -159,6 +160,13 @@ class PartnersDSEngine extends Utility
 
 				'priceTotal' => $plan['priceTotal'],
 			];
+
+      if (isset($partDef['query']) && (intval($partDef['query']['invoicingTo'] ?? 0) >= 3))
+        $item['priceTotal'] = 0.0;
+      if (isset($partDef['query']) && (intval($partDef['query']['condition'] ?? 0) === 4))
+        $item['priceTotal'] = 100;
+      if (isset($partDef['query']) && (intval($partDef['query']['dsType'] ?? 0) === 1))
+        $item['priceTotal'] = 0.0;
 
 			if ($plan['extraCharges']['total'])
 			{

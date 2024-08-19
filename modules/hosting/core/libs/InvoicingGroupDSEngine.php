@@ -289,7 +289,7 @@ class InvoicingGroupDSEngine extends Utility
 
 			'priceUsage' => ' Příplatek',
 			'extraCharges' => '_Za',
-			'extModulesPrice' => ' Rozšíření',
+			//'extModulesPrice' => ' Rozšíření',
 			'priceTotal' => ' Cena celkem',
 		];
 
