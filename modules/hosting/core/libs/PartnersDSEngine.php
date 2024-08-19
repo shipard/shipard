@@ -50,6 +50,25 @@ class PartnersDSEngine extends Utility
       'query' => ['dsType' => 0, 'condition' => 4]
     ]);
 
+    // -- invoicing groups
+    $qigs = [];
+    array_push($qigs, 'SELECT ds.invoicingGroup, igs.name');
+    array_push($qigs, ' FROM [hosting_core_dataSources] AS ds');
+    array_push($qigs, ' LEFT JOIN [hosting_core_invoicingGroups] AS igs ON ds.invoicingGroup = igs.ndx');
+    array_push($qigs, ' WHERE 1');
+    array_push($qigs, ' AND ds.partner = %i', $this->partnerNdx);
+    array_push($qigs, ' AND ds.invoicingTo = %i', 4);
+    array_push($qigs, ' GROUP BY 1');
+    $igsRows = $this->db()->query($qigs);
+    foreach ($igsRows as $ig)
+    {
+      $this->loadDataPart([
+        'title' => $ig['name'],
+        'headerClass' => 'e10-bg-t1',
+        'query' => ['invoicingTo' => 4, 'invoicingGroup' => $ig['invoicingGroup'], 'dsType' => 0, 'dsDemo' => 0]
+      ]);
+    }
+
     if (count($this->data))
     {
       $this->sumTotals['_options'] = ['class' => 'sumtotal pageBreakAfter', 'beforeSeparator' => 'separator', 'colSpan' => ['dsid' => 2]];
@@ -60,15 +79,15 @@ class PartnersDSEngine extends Utility
       $this->sumTotals['usageTotal'] = $oldUsageTotal;
     }
 
+    if ($this->print)
+      $this->firstPart = 1;
+
     $this->loadDataPart([
       'title' => 'Databáze fakturované přímo zákazníkovi',
       'subTitle' => 'Poskytujete podporu, ale faktura za provoz jde zákazníkovi od nás',
       'headerClass' => 'e10-bg-t1',
       'query' => ['invoicingTo' => 1, 'dsType' => 0, 'dsDemo' => 0]
     ]);
-
-    if ($this->print)
-      $this->firstPart = 1;
 
     $this->loadDataPart([
       'title' => 'Databáze v ostrém provozu BEZ FAKTURACE',
@@ -161,10 +180,10 @@ class PartnersDSEngine extends Utility
 				'priceTotal' => $plan['priceTotal'],
 			];
 
-      if (isset($partDef['query']) && (intval($partDef['query']['invoicingTo'] ?? 0) >= 3))
+      if (isset($partDef['query']) && (intval($partDef['query']['invoicingTo'] ?? 0) === 3))
         $item['priceTotal'] = 0.0;
-      if (isset($partDef['query']) && (intval($partDef['query']['invoicingTo'] ?? 0) === 1))
-        $item['priceTotal'] = 0.0;
+      //if (isset($partDef['query']) && (intval($partDef['query']['invoicingTo'] ?? 0) === 1))
+      //  $item['priceTotal'] = 0.0;
       if (isset($partDef['query']) && (intval($partDef['query']['condition'] ?? 0) === 4))
         $item['priceTotal'] = 100;
       if (isset($partDef['query']) && (intval($partDef['query']['dsType'] ?? 0) === 1))
