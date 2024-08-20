@@ -71,7 +71,7 @@ class ReportEntry extends \e10doc\core\libs\reports\DocReportBase
 
     $eventPrices = [];
     $this->getEventPrices($entryTo, $eventPrices);
-    $eventPrice = $eventPrices[$this->recData['paymentPeriod'].'-'.$this->recData['paymentPeriod']]['price'] ?? 0.0;
+    $eventPrice = $eventPrices[$this->recData['paymentPeriod'].'-'.$this->recData['saleType']]['price'] ?? 0.0;
     $this->data['price'] = Utils::nf($eventPrice, 2);
 
 		$this->data ['webSentDate'] = Utils::datef($this->recData['webSentDate'], '%d, %T');
