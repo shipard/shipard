@@ -113,6 +113,24 @@ class ListWOEvents extends DataView
 			$pks[] = $r['ndx'];
 		}
 
+		// -- capacity
+		$qcp = [];
+		array_push($qcp, 'SELECT entryTo, COUNT(*) AS cnt');
+		array_push($qcp, ' FROM e10pro_soci_entries AS entries');
+		array_push($qcp, ' WHERE entryTo IN %in', $pks);
+		array_push($qcp, ' AND docState IN %in', [1000, 4000, 8000]);
+		array_push($qcp, ' GROUP BY 1');
+		$cpRows = $this->db()->query($qcp);
+		foreach ($cpRows as $cpr)
+		{
+			$woNdx = $cpr['entryTo'];
+			$capacity = intval($t[$woNdx]['data']['capacity'] ?? 0);
+			$t[$woNdx]['cntEntries'] = $cpr['cnt'];
+			$t[$woNdx]['eventCapacity'] = $capacity;
+			if ($capacity && $cpr['cnt'] >= $capacity)
+				$t[$woNdx]['overCapacity'] = 1;
+		}
+
 		// -- linkedPersons
 		$linkedPersons = UtilsBase::linkedPersons ($this->app(), 'e10mnf.core.workOrders', $pks);
 		foreach ($linkedPersons as $wkNdx => $lp)

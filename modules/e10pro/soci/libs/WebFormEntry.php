@@ -35,6 +35,7 @@ class WebFormEntry extends \Shipard\Base\WebForm2
 		$this->checkBirthdate();
 		$this->checkValidField('firstName', 'Jméno není vyplněno');
 		$this->checkValidField('lastName', 'Příjmení není vyplněno');
+		$this->checkValidField('event', 'Vyberte prosím kurz');
 
 		$reCaptchaResponse = $this->app->testPostParam ('webFormReCaptchtaResponse', NULL);
 		if ($reCaptchaResponse !== NULL)
@@ -238,6 +239,23 @@ class WebFormEntry extends \Shipard\Base\WebForm2
         if (isset($vdsData['publicEmail']) && $vdsData['publicEmail'] !== '')
           $item['email'] = $vdsData['publicEmail'];
       }
+
+			// -- capacity
+			$qcp = [];
+			array_push($qcp, 'SELECT entryTo, COUNT(*) AS cnt');
+			array_push($qcp, ' FROM e10pro_soci_entries AS entries');
+			array_push($qcp, ' WHERE entryTo = %i', $r['ndx']);
+			array_push($qcp, ' AND docState IN %in', [1000, 4000, 8000]);
+			array_push($qcp, ' GROUP BY 1');
+			$cpRows = $this->app()->db()->query($qcp);
+			foreach ($cpRows as $cpr)
+			{
+				$capacity = intval($item['data']['capacity'] ?? 0);
+				$item['cntEntries'] = $cpr['cnt'];
+				$item['eventCapacity'] = $capacity;
+				if ($capacity && $cpr['cnt'] >= $capacity)
+					$item['overCapacity'] = 1;
+			}
 
 			$t[$r['ndx']] = $item;
 			$pks[] = $r['ndx'];
