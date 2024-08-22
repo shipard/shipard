@@ -349,7 +349,7 @@ class ViewEntries extends TableView
 			array_push ($q, ' AND [entries].[docStateMain] = 4');
 
 
-		array_push ($q, ' ORDER BY [entries].[docStateMain], entries.lastName, entries.firstName ');
+		array_push ($q, ' ORDER BY [entries].[docStateMain], [entries].[dateIssue] DESC, entries.lastName, entries.firstName ');
 		array_push ($q, $this->sqlLimit ());
 
 		$this->runQuery ($q);
