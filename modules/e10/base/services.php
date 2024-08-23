@@ -189,6 +189,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 
 	public function onStats()
 	{
+		$this->attRepairFileSize();
 		$this->dataSourceStatsCreate();
 	}
 
@@ -259,7 +260,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 	{
 		$maxCount = intval($this->app->arg('maxCount'));
 		if (!$maxCount)
-			$maxCount = 100;
+			$maxCount = 10000;
 		$e = new \e10\base\libs\AttachmentsRepairs($this->app);
 		$e->repairFileSize($maxCount);
 	}
