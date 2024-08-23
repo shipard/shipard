@@ -853,7 +853,8 @@ function addAttachments ($app, $toTableId, $toRecId, $fullFileName, $attType, $m
 			copy ($fullFileName, $destFullFileName);
 	}
 
-	$newAtt ['name'] = ($attName === '') ? $baseFileName : str::upToLen($attName, 80);
+	$newAtt ['fileSize'] = filesize($destFullFileName);
+	$newAtt ['name'] = ($attName === '') ? str::upToLen($baseFileName, 80) : str::upToLen($attName, 80);
 
 	$app->db->query ("INSERT INTO [e10_attachments_files]", $newAtt);
 	$newNdx = intval ($app->db->getInsertId ());
