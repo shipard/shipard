@@ -11,7 +11,8 @@
 					"order": 4994010,
 					"subMenu": {
 						"items": {
-							"tasks": {"t1": "Úlohy", "object": "viewer", "table": "e10.base.tasks", "viewer": "default", "order": 900000}
+							"tasks": {"t1": "Úlohy", "object": "viewer", "table": "e10.base.tasks", "viewer": "default", "order": 900000},
+							"atts": {"t1": "Přílohy", "object": "viewer", "table": "e10.base.attachments", "viewer": "technical", "order": 98000000}
 						}
 					}
 				},

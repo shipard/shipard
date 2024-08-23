@@ -50,7 +50,13 @@
   ],
   "views": [
     {"id": "default", "class": "e10.base.ViewAttachmentsAll"},
-    {"id": "images", "class": "e10.base.ViewAttachmentsImages"}
+    {"id": "images", "class": "e10.base.ViewAttachmentsImages"},
+    {
+      "id": "technical", "class": "e10.base.libs.ViewAttachmentsTechnical",
+			"details": {
+				"preview": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10.base.libs.ViewDetailAttachment"}
+			}
+		}
   ],
   "order": [{"column": "ndx", "order": "ASC"}],
   "fullText": ["name", "filename"],
