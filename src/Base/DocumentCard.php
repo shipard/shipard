@@ -89,14 +89,14 @@ class DocumentCard extends Content
 		$this->tableIssues = $this->app->table ('wkf.core.issues');
 	}
 
-	public function addContentAttachments ($toRecId, $tableId = FALSE, $title = FALSE, $downloadTitle = FALSE)
+	public function addContentAttachments ($toRecId, $tableId = FALSE, $title = FALSE, $downloadTitle = FALSE, $oneAttachmentNdx = 0)
 	{
 		if ($this->disableAttachments)
 			return;
 		if ($tableId === FALSE)
 			$tableId = $this->table->tableId();
 
-		$files = UtilsBase::loadAttachments ($this->table->app(), [$toRecId], $tableId);
+		$files = UtilsBase::loadAttachments ($this->table->app(), [$toRecId], $tableId, $oneAttachmentNdx);
 		if (isset($files[$toRecId]))
 			$this->content['body'][] = ['type' => 'attachments', 'attachments' => $files[$toRecId], 'title' => $title, 'downloadTitle' => $downloadTitle];
 	}

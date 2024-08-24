@@ -46,6 +46,11 @@ class ViewAttachmentsTechnical extends TableView
 		if ($item['created'])
 			$listItem ['t2'][] = ['text' => Utils::datef ($item['created'], '%d, %T'), 'class' => 'label label-default'];
 
+		$listItem['icon'] = $attInfo['icon'];
+
+		if ($item['deleted'])
+			$listItem['class'] = 'e10-warning1';
+
 		return $listItem;
 	}
 

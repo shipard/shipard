@@ -82,7 +82,7 @@ class UtilsBase
 		return $c;
 	}
 
-	static function loadAttachments ($app, $ids, $tableId = FALSE)
+	static function loadAttachments ($app, $ids, $tableId = FALSE, $oneAttachmentNdx = 0)
 	{
 		static $imgFileTypes = array ('pdf', 'jpg', 'jpeg', 'webp', 'png', 'gif', 'svg');
 
@@ -92,8 +92,18 @@ class UtilsBase
 
 		if ($tableId)
 		{
-			$sql = "SELECT * FROM [e10_attachments_files] where [recid] IN %in AND tableid = %s AND [deleted] = 0 ORDER BY defaultImage DESC, [order], name";
-			$query = $app->db->query ($sql, $ids, $tableId);
+			$q = [];
+			array_push($q, 'SELECT * FROM [e10_attachments_files]');
+			array_push($q, ' WHERE 1');
+			array_push($q, ' AND [recid] IN %in', $ids);
+			array_push($q, ' AND tableid = %s', $tableId);
+			if ($oneAttachmentNdx)
+				array_push($q, ' AND [ndx] = %i', $oneAttachmentNdx);
+			else
+				array_push($q, ' AND [deleted] = 0');
+			array_push($q, ' ORDER BY defaultImage DESC, [order], name');
+
+			$query = $app->db->query ($q);
 			foreach ($query as $row)
 			{
 				$img = $row->toArray ();
@@ -132,6 +142,8 @@ class UtilsBase
 			$query = $app->db->query ($sql, $ids);
 			foreach ($query as $row)
 			{
+				if ($oneAttachmentNdx && $row['ndx'] !== $oneAttachmentNdx)
+					continue;
 				$img = $row->toArray ();
 				$img['folder'] = 'att/';
 				$img['url'] = self::getAttachmentUrl ($app, $row);
