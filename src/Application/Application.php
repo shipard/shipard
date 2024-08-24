@@ -416,6 +416,9 @@ class Application extends \Shipard\Application\ApplicationCore
 		if (PHP_SAPI === 'cli')
 			return 2;
 
+		if (isset($item['role']) && !$this->hasRole($item['role']))
+			return 0;
+
 		$allRoles = $this->cfgItem ('e10.persons.roles');
 		$userRoles = $this->user()->data ('roles');
 

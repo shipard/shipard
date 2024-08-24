@@ -554,6 +554,8 @@ class MainWindow extends \Shipard\Base\BaseObject
 					$subMenusCode .= "<ul>";
 					foreach ($oneItem['subMenu']['items'] as $smId => $sm)
 					{
+						if (!$this->app()->checkAccess ($sm))
+							continue;
 						if (!utils::enabledCfgItem ($this->app, $sm))
 							continue;
 						$subMenusCode .= $this->menuRowCode($sm);
