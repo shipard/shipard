@@ -30,5 +30,6 @@
 	"forms": [
 		{"id": "default", "class": "e10.web.FormArticle", "help":"prirucka/222"}
 	],
-	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "title"}
 }

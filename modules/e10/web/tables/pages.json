@@ -51,5 +51,6 @@
   "forms": [
     {"id": "default", "class": "e10.web.FormPagesPage", "help":"prirucka/188"}
   ],
-	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.web.pages.docStates"}
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.web.pages.docStates"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "title"}
 }

@@ -28,8 +28,14 @@ class DCAttachment extends \e10\DocumentCard
 			if ($srcDocRecData)
 			{
 				$ri = $table->getRecordInfo($srcDocRecData);
+				$docTitle = $ri['title'] ?? '--- bez názvu ---';
+				if ($docTitle === '')
+					$docTitle = '--- bez názvu ---';
 				$docLabel = [
-					['text' => $ri['title'], 'docAction' => 'edit', 'pk' => $this->recData['recid'], 'table' => $this->recData['tableid'], 'class' => 'block']
+					[
+						'text' => $docTitle,
+						'docAction' => 'edit', 'pk' => $this->recData['recid'], 'table' => $this->recData['tableid'], 'class' => 'block'
+					]
 				];
 				if (isset($ri['docID']))
 					$docLabel[] = ['text' => $ri['docID'], 'class' => 'label label-info'];
@@ -39,15 +45,19 @@ class DCAttachment extends \e10\DocumentCard
 					$docLabel[0]['icon'] = $ri['icon'];
 
 				$docStates = $table->documentStates ($srcDocRecData);
+				if ($docStates)
+				{
+					$docStateName = $table->getDocumentStateInfo ($docStates, $srcDocRecData, 'name');
+					$docStateIcon = $table->getDocumentStateInfo ($docStates, $srcDocRecData, 'styleIcon');
+					$docStateClass = $table->getDocumentStateInfo ($docStates, $srcDocRecData, 'styleClass');
 
-				$docStateName = $table->getDocumentStateInfo ($docStates, $srcDocRecData, 'name');
-				$docStateIcon = $table->getDocumentStateInfo ($docStates, $srcDocRecData, 'styleIcon');
-				$docStateClass = $table->getDocumentStateInfo ($docStates, $srcDocRecData, 'styleClass');
-
-				$docLabel[] = ['text' => $docStateName, 'class' => 'label label-default', 'icon' => $docStateIcon ];
+					$docLabel[] = ['text' => $docStateName, 'class' => 'label label-default', 'icon' => $docStateIcon ];
+				}
 
 				$docInfo = ['p1' => 'Dokument', 't1' => $docLabel];
-				$docInfo['_options']['cellClasses']['t1'] = 'e10-ds '.$docStateClass;
+
+				if ($docStates)
+					$docInfo['_options']['cellClasses']['t1'] = 'e10-ds '.$docStateClass;
 
 				$info[] = $docInfo;
 			}
