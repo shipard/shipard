@@ -1,0 +1,16 @@
+{{textMode}}{{#data.reportTexts.emailBody}}{{{data.reportTexts.emailBody}}}{{/data.reportTexts.emailBody}}
+{{^data.reportTexts.emailBody}}
+{{@dict;Dobrý den}},
+
+{{@dict;v příloze Vám zasíláme}} přehled Vašich databází v systému Shipard.
+
+Prosíme Vás o kontrolu a nahlášení případných změn nebo nepřesností.
+
+{{@dict;S pozdravem}}
+
+--
+{{data.owner.fullName}}
+{{#data.owner_contacts}}
+{{name}}: {{value}}
+{{/data.owner_contacts}}
+{{/data.reportTexts.emailBody}}

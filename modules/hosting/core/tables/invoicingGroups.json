@@ -21,5 +21,10 @@
 	"forms": [
 		{"id": "default", "class": "hosting.core.FormInvoicingGroup"}
 	],
+	"reports": [
+		{
+			"id": "invoiceGroup", "name": "Přehled", "class": "hosting.core.libs.InvoicingGroupReport", "email": 1
+		}
+	],
 	"autocomplete": {"columnValue": "ndx", "columnTitle": "name"}
 }

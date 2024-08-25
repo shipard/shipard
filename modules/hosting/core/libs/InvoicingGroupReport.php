@@ -3,14 +3,14 @@ namespace hosting\core\libs;
 
 
 /**
- * class PartnersDSReport
+ * class InvoicingGroupReport
  */
-class PartnersDSReport extends \e10doc\core\libs\reports\DocReportBase
+class InvoicingGroupReport extends \e10doc\core\libs\reports\DocReportBase
 {
 	function init ()
 	{
 		parent::init();
-		$this->setReportId('reports.modern.hosting.core.partnersDS');
+		$this->setReportId('reports.modern.hosting.core.invoicingGroup');
 	}
 
 	public function loadData ()
@@ -23,8 +23,8 @@ class PartnersDSReport extends \e10doc\core\libs\reports\DocReportBase
 		// -- owner
 		$this->loadData_DocumentOwner (0);
 
-		$dse = new \hosting\core\libs\PartnersDSEngine($this->app());
-		$dse->setPartner($this->recData['ndx']);
+		$dse = new \hosting\core\libs\InvoicingGroupDSEngine($this->app());
+		$dse->setInvoicingGroup($this->recData['ndx']);
 		//$dse->print = 1;
 		$dse->run();
 
@@ -33,9 +33,6 @@ class PartnersDSReport extends \e10doc\core\libs\reports\DocReportBase
 
 		$priceLegend = $dse->createContentPlansLegend();
 		$this->data['priceLegend'] = [$priceLegend];
-
-		$partnerInfo = $dse->createContentRecap ();
-		$this->data['partnerInfo'] = [$partnerInfo];
 	}
 }
 

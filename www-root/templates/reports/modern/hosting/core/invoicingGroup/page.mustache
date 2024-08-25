@@ -1,0 +1,37 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+    <title>AHOJ</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v12" type="text/css"/>
+    <link rel="stylesheet" href="{{dsUrl}}www-root/sc/icons/fa/5/css/all.min.css">
+
+    <style>
+        table.default {font-size: 9pt;}
+        .e10-bg-t1 {background-color: #e1f7d5;}
+        .e10-bg-t2 {background-color: #ffcfab;}
+        .e10-bg-t3 {background-color: #ffe0e5;}
+        .e10-bg-t4 {background-color: #fbffb5;}
+        .e10-bg-t5 {background-color: #e0fffa;}
+        .e10-bg-t6 {background-color: #c5e0d6;}
+        .e10-bg-t7 {background-color: #9fe28f;}
+        .e10-bg-t8 {background-color: #ffefd5;}
+        .e10-bg-t9 {background-color: #eee;}
+    </style>
+</head>
+<body>
+
+{{#data.reportTexts.subHeader}}<div class='reportTextHeader'>{{{data.reportTexts.subHeader}}}</div>{{/data.reportTexts.subHeader}}
+
+{{{@renderContent;dataItem:data.contents}}}
+
+{{{@renderContent;dataItem:data.priceLegend}}}
+
+<div class='h2 pageBreakBefore'>Informace o partnerovi</div>
+{{{@renderContent;dataItem:data.partnerInfo}}}
+
+{{#data.reportTexts.subFooter}}<div class='reportTextFooter'>{{{data.reportTexts.subFooter}}}</div>{{/data.reportTexts.subFooter}}
+
+</body>
+
+</html>

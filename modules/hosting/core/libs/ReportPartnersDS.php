@@ -149,7 +149,7 @@ class ReportPartnersDS extends \Shipard\Report\GlobalReport
 
 				//'extModulesPrice' => $plan['extModulesPrice'],
         'priceDocs' => $plan['priceDocs'],
-				
+
 				'priceTotal' => $plan['priceTotal'],
 			];
 
@@ -176,19 +176,19 @@ class ReportPartnersDS extends \Shipard\Report\GlobalReport
       $this->allPks[] = $r['dataSource'];
 
 			$data[] = $item;
-    }  
+    }
 
     if (count($data))
     {
       $itemHeader = [
         'dsid' => [['text' => $partDef['title'], 'class' => 'e10-bold block h2']],
-        
+
         'cntDocuments12m' => ' Doklady/rok',
         'cntCashRegs12m' => ' Prodejky/rok',
   			'usageTotal' => ' Velikost',
         '_options' => [
           'noIncRowNum' => 1,
-          'class' => $partDef['headerClass'] ?? 'e10-bg-t9', 'beforeSeparator' => 'separator', 
+          'class' => $partDef['headerClass'] ?? 'e10-bg-t9', 'beforeSeparator' => 'separator',
           'colSpan' => ['dsid' => 2],
         ],
       ];

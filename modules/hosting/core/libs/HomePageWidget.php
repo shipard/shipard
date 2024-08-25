@@ -240,6 +240,7 @@ class HomePageWidget extends WidgetBoard
 		}
 
 		// -- devProjects
+		/*
 		if ($this->activeTopTab === 'viewer-mode-devProjects')
 		{
 			if ($this->projectsAccessLevel)
@@ -258,8 +259,22 @@ class HomePageWidget extends WidgetBoard
 			}
 			return;
 		}
+		*/
 
-		// -- hedelpDesk
+		if ($this->activeTopTab === 'viewer-mode-msgs')
+		{
+				$viewerMode = '1';
+				$vmp = explode ('-', $this->activeTopTabRight);
+				if (isset($vmp[2]))
+					$viewerMode = $vmp[2];
+
+				$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => '<div style="float: right; width: calc(100% - 1px); height: calc(100% - 2.4rem); position: absolute; left: 0;">']);
+				$this->addContentViewer('helpdesk.core.tickets', 'hosting.core.libs.ViewerHostingMsgs', ['viewerMode' => $viewerMode]);
+				$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => '</div>']);
+				return;
+		}
+
+		// -- helpDesk
 		if ($this->activeTopTab === 'viewer-mode-helpdesk')
 		{
 			if (count($this->helpdeskDataSources))
@@ -329,8 +344,11 @@ class HomePageWidget extends WidgetBoard
 
 		$tabs['viewer-mode-home'] = ['text' => ' Přehled', 'icon' => 'system/iconStart', 'action' => 'viewer-mode-home'];
 		$tabs['viewer-mode-dbs'] = ['text' => ' Databáze', 'icon' => 'system/iconDatabase', 'action' => 'viewer-mode-dbs'];
-		if ($this->projectsAccessLevel)
-			$tabs['viewer-mode-devProjects'] = ['text' => ' Projekty', 'icon' => 'user/code', 'action' => 'viewer-mode-devProjects'];
+		//if ($this->projectsAccessLevel)
+		//	$tabs['viewer-mode-devProjects'] = ['text' => ' Projekty', 'icon' => 'user/code', 'action' => 'viewer-mode-devProjects'];
+
+		$tabs['viewer-mode-msgs'] = ['text' => ' Zprávy', 'icon' => 'user/code', 'action' => 'viewer-mode-msgs'];
+
 
 		if (count($this->helpdeskDataSources))
 			$tabs['viewer-mode-helpdesk'] = ['text' => 'Helpdesk', 'icon' => 'tables/helpdesk.core.tickets', 'action' => 'viewer-mode-helpdesk', 'ntfBadgeId' => "ntf-badge-hhdsk-total",];
@@ -468,6 +486,7 @@ class HomePageWidget extends WidgetBoard
 
 	protected function initRightTabs ()
 	{
+		/*
 		if ($this->activeTopTab === 'viewer-mode-devProjects')
 		{
 			$rt = [
@@ -477,6 +496,7 @@ class HomePageWidget extends WidgetBoard
 
 			$this->toolbar['rightTabs'] = $rt;
 		}
+		*/
 	}
 
 	function renderContentTitle ()

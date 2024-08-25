@@ -243,6 +243,12 @@ class DocumentCardDataSource extends \Shipard\Base\DocumentCard
 			'pane' => 'e10-pane e10-pane-table', 'type' => 'table',
 			'header' => $h, 'table' => $info, 'params' => ['hideHeader' => 1, 'forceTableClass' => 'properties fullWidth']
 		]);
+
+
+		$this->addContent ('body', [
+			'pane' => 'e10-pane e10-pane-table', 'type' => 'line',
+			'line' => ['code' => '<pre>'.Json::lint($this->statsRecData['data']).'</pre>']
+		]);
 	}
 
 	protected function addCreateRequest(&$destTable)
