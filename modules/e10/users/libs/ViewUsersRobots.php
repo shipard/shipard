@@ -14,6 +14,8 @@ class ViewUsersRobots extends TableView
 
 	public function init ()
 	{
+		$this->accountStates = $this->app()->cfgItem('e10.users.accountStates');
+
 		$this->setMainQueries();
     $this->addAddParam ('userType', 1);
 
@@ -31,7 +33,7 @@ class ViewUsersRobots extends TableView
 			$listItem ['t2'][] = ['text' => $item['email'], 'class' => 'label label-default', 'icon' => 'system/iconEmail'];
 
 		$listItem ['i2'] = [
-			['text' => $this->accountStates[$item['accState']]['fn'], 'class' => 'label label-default'],
+			['text' => $this->accountStates[$item['accState']]['fn'] ?? '!!!', 'class' => 'label label-default'],
 		];
 		$listItem ['icon'] = $this->table->tableIcon($item);
 
