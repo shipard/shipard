@@ -200,7 +200,7 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 			$c .= '</button>';
 		}
 
-		$c .= "<form class='e10-mui-login-form' name='e10-mui-login-form' method='POST' action='{$this->uiRouter->uiRoot}/auth/pin' style='display: none;'>";
+		$c .= "<form class='e10-mui-login-form' name='e10-mui-login-form' method='POST' action='{$this->uiRouter->uiRoot}auth/pin' style='display: none;'>";
 			$c .= "<input type='hidden' name='login' id='e10-login-user'>";
 			$c .= "<input type='hidden' name='pin' id='e10-login-pin'>";
 			$referer = $this->loginReferer();
