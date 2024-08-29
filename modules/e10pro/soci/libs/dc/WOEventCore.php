@@ -20,8 +20,18 @@ class WOEventCore extends DocumentCard
       $this->addContent('body', $cc);
     }
 
-    if ($this->woInfo->data['members'])
+    if ($this->woInfo->data['members'] && count($this->woInfo->data['members']['table']))
+    {
+      $title = [['text' => 'Evidenční list', 'class' => 'h2']];
+      $title [] = [
+        'type' => 'action', 'action' => 'addwizard',
+        'text' => 'Vystavit faktury', 'data-class' => 'e10pro.soci.libs.WizardEventIvoicing',
+        'icon' => 'system/actionAdd', 'class' => 'pull-right padd5', 'actionClass' => 'btn-sm',
+      ];
+
+      $this->woInfo->data['members']['paneTitle'] = $title;
       $this->addContent('body', $this->woInfo->data['members']);
+    }
   }
 
   public function createContent ()

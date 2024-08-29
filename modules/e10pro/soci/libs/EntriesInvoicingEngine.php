@@ -18,6 +18,8 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 	var $periodEnd;
 	var $periodHalf;
 
+	var $thisMonth = 0;
+
 	var $forPrint = 0;
 
 	var $workOrderRecData = NULL;
@@ -62,6 +64,9 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 		$this->tableEntries = $this->app()->table('e10pro.soci.entries');
 		$this->tableHeads = $this->app()->table('e10doc.core.heads');
 		$this->tableRows = $this->app()->table('e10doc.core.rows');
+
+		$today = Utils::today();
+		$this->thisMonth = intval($today->format('m'));
 	}
 
 	function createHead ($invoice)
@@ -210,8 +215,10 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 			}
 			elseif ($this->entryRecData['paymentPeriod'] === 1)
 			{ // halfs
-				$this->planInvoicePeriod(1);
-				$this->planInvoicePeriod(2);
+				if ($this->thisMonth > 7)
+					$this->planInvoicePeriod(1);
+				if ($this->thisMonth < 8)
+					$this->planInvoicePeriod(2);
 			}
 		}
 		else
@@ -420,7 +427,7 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 		}
 	}
 
-	public function generateAll()
+	public function generateAll($entryNdx = 0, $entryToNdx = 0)
 	{
 		$q = [];
 		array_push($q, 'SELECT [entries].*, [persons].fullName AS [personName]');
@@ -430,6 +437,10 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 		array_push($q, ' AND [entries].[docState] = %i', 4000);
 		array_push($q, ' AND [entries].[entryState] = %i', 0);
 		array_push($q, ' AND [entries].[dstPerson] != %i', 0);
+		if ($entryNdx)
+			array_push($q, ' AND [entries].[ndx] = %i', $entryNdx);
+		if ($entryToNdx)
+			array_push($q, ' AND [entries].[entryTo] = %i', $entryToNdx);
 		array_push($q, ' ORDER BY ndx DESC');
 
 		$cnt = 0;
@@ -447,13 +458,14 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 			if (!count($this->planInvoicesTable))
 				continue;
 
-			echo "# ".$r['docNumber'].' - '.$r['personName']."\n";
+			if ($this->app()->debug)
+				echo "# ".$r['docNumber'].' - '.$r['personName']."\n";
 
 			$this->generatePlan();
 
 			$cnt++;
 
-			if ($cnt > 20)
+			if ($this->app()->debug && $cnt > 20)
 				break;
 		}
 	}

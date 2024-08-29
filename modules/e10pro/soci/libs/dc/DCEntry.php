@@ -282,7 +282,7 @@ class DCEntry extends \Shipard\Base\DocumentCard
     $ie->loadInvoices();
     $ie->planInvoices();
 
-    $title = [['text' => 'Faktury k vystavení', 'class' => 'h2 block']];
+    $title = [['text' => 'Faktury k vystavení', 'class' => 'h2']];
     if (count($ie->planInvoicesTable))
     {
       if ($this->recData['entryState'] !== 0)
@@ -294,6 +294,12 @@ class DCEntry extends \Shipard\Base\DocumentCard
       }
       else
       {
+        $title [] = [
+          'type' => 'action', 'action' => 'addwizard',
+          'text' => 'Vystavit', 'data-class' => 'e10pro.soci.libs.WizardEntryIvoicing',
+          'icon' => 'system/actionAdd', 'class' => 'pull-right padd5', 'actionClass' => 'btn-sm',
+        ];
+
         $this->addContent ('body', [
             'pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'paneTitle' => $title,
             'header' => $ie->planInvoicesHead, 'table' => $ie->planInvoicesTable,
