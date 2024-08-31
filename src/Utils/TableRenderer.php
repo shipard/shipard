@@ -353,6 +353,13 @@ class TableRenderer extends \Shipard\Base\BaseObject
 			if ($cellStyle !== '')
 				$ccp .= ' style="'.$cellStyle.'"';
 
+			if (isset ($r ['_options']) && isset ($r ['_options']['cellData'][$cn]))
+			{
+				foreach ($r['_options']['cellData'][$cn] as $cdKey => $cdValue)
+				{
+					$ccp .= ' data-'.$cdKey."=\"".utils::es($cdValue)."\"";
+				}
+			}
 
 			if (!$cid)
 				$c .= "<$td$ccp>$ct</$td>".$this->nls;
