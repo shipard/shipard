@@ -19,16 +19,10 @@ class UIElement extends \Shipard\UI\ng\TemplateUIControl
 
   protected function renderAppCore()
   {
-    /*
-    $c = 'bla bla bla<br>';
-    $c .= json_encode($this->uiStruct);
-    return $c;
-    */
-
     $appTemplate = $this->uiStruct['template'] ?? 'appCore';
+    $appTemplatePath = $this->uiStruct['templatePath'] ?? 'src/UI/ng/subtemplates/';
 
-
-    $templateStr = file_get_contents(__SHPD_ROOT_DIR__.'src/UI/ng/subtemplates/'.$appTemplate.'.mustache');
+    $templateStr = file_get_contents(__SHPD_ROOT_DIR__.$appTemplatePath.$appTemplate.'.mustache');
     $c = $this->uiTemplate->render($templateStr);
 
     return $c;
