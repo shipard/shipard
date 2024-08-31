@@ -77,7 +77,7 @@ class Router extends Utility
 		$this->uiTemplate->data['uiRoot'] = $this->uiRoot;
 		$this->uiTemplate->uiRoot = $this->uiRoot;
 
-		$workplaceGID = $this->app->testCookie ('_shp_gwid');
+		$workplaceGID = $this->testCookie ('_shp_gwid');
 		if ($workplaceGID !== '')
 		{
 			$this->workplace = $this->app->searchWorkplaceByGID($workplaceGID);
@@ -225,5 +225,34 @@ class Router extends Utility
 		$redirTo = $this->uiRoot.'/user/activate/'.$shortId;
 		$redirTo = str_replace('//', '/', $redirTo);
 		header ('Location: ' . $redirTo);
+	}
+
+	function testCookie ($cookieName)
+	{
+    return $_COOKIE [$cookieName] ?? NULL;
+	}
+
+	public function sessionCookieDomain ()
+	{
+		return $_SERVER['HTTP_HOST'];
+	}
+
+	public function sessionCookiePath ()
+	{
+    return ($this->app()->dsRoot === '') ? '/' : $this->app()->dsRoot;
+	}
+
+  public function setCookie (string $name, string $value, int $expires)
+	{
+		$options = [
+			'expires' => $expires,
+			'path' => $this->sessionCookiePath(),
+			'domain' => $this->sessionCookieDomain(),
+			'secure' => TRUE,
+			'httponly' => TRUE,
+			'samesite' => 'strict',
+		];
+
+		return \setCookie($name, $value, $options);
 	}
 }

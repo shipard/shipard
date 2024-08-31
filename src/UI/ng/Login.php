@@ -24,7 +24,7 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 		if ($this->mode === 'set-workplace')
 		{
 			$workplaceId = $this->uiRouter->urlPart(2);//$this->app->requestPath(3);
-			$this->app->setCookie ('_shp_gwid', $workplaceId, time() + 10 * 365 * 86400);
+			$this->uiRouter->setCookie ('_shp_gwid', $workplaceId, time() + 10 * 365 * 86400);
 			$redirTo = $this->app->urlProtocol . $_SERVER['HTTP_HOST']. $this->uiRouter->uiRoot . '/user/login';
 			header ('Location: '.$redirTo);
 			die();
@@ -32,7 +32,7 @@ class Login extends \Shipard\UI\ng\AppPageBlank
 
 		$headers = Utils::getAllHeaders();
 
-		$workplaceGID = $this->app->testCookie ('_shp_gwid');
+		$workplaceGID = $this->uiRouter->testCookie ('_shp_gwid');
 		if ($workplaceGID !== '')
 			$this->workplace = $this->app->searchWorkplaceByGID($workplaceGID);
 
