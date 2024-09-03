@@ -413,7 +413,7 @@ class reportBalance extends \e10doc\core\libs\reports\GlobalReport
 		$this->addParamPerson ();
 		$this->addParam ('switch', 'unpairedPayments', ['title' => 'Nespárované úhrady', 'place' => 'panel', 'switch' => array ('show' => 'Zobrazovat', 'hide' => 'Nezobrazovat')]);
 		$this->addParam ('switch', 'balanceOverDue', ['title' => 'Po splatnosti', 'place' => 'panel', 'switch' => array ('highlight' => 'Zvýrazňovat', 'normal' => 'Nezvýrazňovat')]);
-		$this->addParam ('switch', 'orderBy', ['title' => 'Třídit', 'place' => 'panel', 'switch' => array ('byName' => 'Podle jména', 'byDateDue' => 'Podle splatnosti')]);
+		$this->addParam ('switch', 'orderBy', ['title' => 'Pořadí', 'place' => 'panel', 'switch' => array ('byName' => 'Podle jména', 'byDateDue' => 'Podle splatnosti')]);
 
 		parent::init();
 
