@@ -83,7 +83,7 @@ class DocumentCardDevice extends \e10\DocumentCard
 		array_push ($q, ' LEFT JOIN [mac_lan_racks] AS connectedDevicesRacks ON connectedDevices.rack = connectedDevicesRacks.ndx');
 
 		array_push ($q, ' WHERE ports.device = %i', $deviceNdx);
-		array_push ($q, ' ORDER BY ports.[rowOrder], ports.[portNumber], ports.[ndx]');
+		array_push ($q, ' ORDER BY ports.[portNumber], ports.[ndx]');
 
 		$rows = $this->db()->query ($q);
 		foreach ($rows as $r)

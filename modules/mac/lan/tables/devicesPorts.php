@@ -504,7 +504,7 @@ class ViewDevicesPortsFormList extends \e10\TableViewGrid
 			array_push ($q, ')');
 		}
 
-		array_push ($q, ' ORDER BY ports.[rowOrder] ' . $this->sqlLimit ());
+		array_push ($q, ' ORDER BY ports.[portNumber], ports.[ndx] ' . $this->sqlLimit ());
 
 		$this->runQuery ($q);
 	}
