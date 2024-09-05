@@ -1,0 +1,25 @@
+  <div class='vmMode active' id="vm-mode-select">
+    <div class='vmSelectBoxDisplay' id='vm-select-box-display'>
+      <span id='vm-select-box-display-item-name'></span>
+      <span id='vm-select-box-display-item-price'></span>
+      <span id='vm-select-box-display-item-btns'>
+        <button class="shp-widget-action" data-action="vmBuyGetCard">Koupit!</button>
+      </span>
+    </div>
+    {{{data.machineSelectBoxTable}}}
+  </div>
+
+  <div class='vmMode' id="vm-mode-buy-get-card">
+    Přiložte kartu...
+    <input type="text" maxlen="10" id="vm-card-code-input"/>
+    <button class="shp-widget-action" data-action="vmBuyCancel">Zrušit!</button>
+
+    <div class="statusInvalidCode d-none">Neznámá karta. Zkuste to prosím znovu nebo kontaktuje správce automatu...</div>
+    <div class="statusInvalidCredit d-none">Nemáte dostatečný kredit k nákupu...</div>
+    <div class="statusCardVerify d-none">Oveřuje se karta...</div>
+  </div>
+
+  <div class='vmMode' id="vm-mode-buy-in-progress">
+    Zboží se vydává...
+  </div>
+

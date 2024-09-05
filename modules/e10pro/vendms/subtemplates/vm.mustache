@@ -1,0 +1,43 @@
+<div class="app-container __app-container-simple{{#data.uiStruct.appMenu.class}} {{data.uiStruct.appMenu.class}}{{/data.uiStruct.appMenu.class}}" id='shp-app-window'>
+  {{{@systemWidgetNG;classId:e10pro.vendms.libs.VendMsMachineWidget}}}
+</div>
+
+<style>
+  div.vmMode {
+    display: none;
+  }
+  div.vmMode.active {
+    display: block;
+  }
+
+  table.vmSelectBox>tbody {
+    height: 94.9vh;
+    >tr {
+      height: 18%;
+      >td {
+        vertical-align: middle !important;
+        text-align: center;
+
+        font-size: 7vw;
+      }
+
+      >td.active {
+        color: black;
+        background-color: red;
+      }
+    }
+  }
+
+  div.shp-wb-content {
+    padding: 1px !important;
+  }
+
+  div.vmSelectBoxDisplay {
+    height: 5vh;
+  }
+
+  body,html {
+    height: 100vh;
+    overflow: hidden;
+  }
+</style>

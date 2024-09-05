@@ -1,0 +1,9 @@
+{
+	"main_new": {
+		"panels": {
+			"canteens": {
+				"creatorClass": "e10pro.vendms.libs.VendMsDashboardPanelsCreator", "order": 1800
+			}
+		}
+	}
+}

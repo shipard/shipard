@@ -1,0 +1,24 @@
+{
+	"id": "e10pro.vendms.vendmsBoxes", "sql": "e10pro_vendms_vendmsBoxes", "name": "Boxy prodejních automatů",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "vm", "name": "Automat", "type": "int", "reference": "e10pro.vendms.vendms"},
+		{"id": "item", "name": "Položka", "type": "int", "reference": "e10.witems.items"},
+
+		{"id": "cellId", "name": "ID buňka", "type": "string", "len": 10},
+		{"id": "label", "name": "Titulek", "type": "string", "len": 10},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+
+	"views": [
+		{"id": "default", "class": "e10pro.vendms.ViewVendMsBoxes"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.vendms.FormVendMsBox"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "label"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

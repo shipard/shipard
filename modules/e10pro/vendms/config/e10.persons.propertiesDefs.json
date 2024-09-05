@@ -1,0 +1,3 @@
+{
+	"chipid": {"name": "Kód čipu/karty", "type": "text", "icontxt": "CHP", "multi": 1}
+}

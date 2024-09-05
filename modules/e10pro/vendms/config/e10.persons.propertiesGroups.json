@@ -1,0 +1,7 @@
+{
+	"chips": {
+		"name": "Přístupové kódy",
+		"id": "chips",
+		"properties": ["chipid"]
+	}
+}

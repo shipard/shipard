@@ -1,0 +1,6 @@
+{
+	"vendmsVendMs": {
+		"name": "Automaty", "order": 110000, "group": "vendms",
+		"type": "viewer", "table": "e10pro.vendms.vendms", "viewer": "default"
+	}
+}

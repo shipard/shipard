@@ -1,0 +1,6 @@
+{
+	"objectsCalls": {
+		"vendms-validate-code": {"classId": "e10pro.vendms.libs.ObjectValidateCode"},
+		"vendms-create-invoice": {"classId": "e10pro.vendms.libs.ObjectCreateInvoice"}
+	}
+}
