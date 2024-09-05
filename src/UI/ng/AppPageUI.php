@@ -55,7 +55,7 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
     $templateCode = '{{{@appUIElement}}}';
     $urlId = $this->uiRouter->urlPath[0] ?? '';
 
-    if ($urlId === '')
+    if ($urlId === '' && isset($this->uiStruct['appMenu']))
     {
       $redirToId = $this->uiStruct['appMenu']['defaultMenuId'] ?? $this->uiStruct['appMenu']['items'][0]['id'];
       $redirTo = str_replace('//', '/', $this->uiTemplate->data['uiRoot'].$redirToId);
