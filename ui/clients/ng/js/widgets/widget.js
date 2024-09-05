@@ -197,14 +197,35 @@ class ShipardWidget {
 
     this.detectValues(apiParams);
 
-    console.log("API-CALL-WIDGET", apiParams);
-
     var url = 'api/v2';
 
     shc.server.post (url, apiParams,
       function (data) {
         console.log("--api-call-success--");
         this.doWidgetResponse(data);
+      }.bind(this),
+      function (data) {
+        console.log("--api-call-error--");
+      }.bind(this)
+    );
+  }
+
+  apiCallObject(classId, outsideApiParams)
+  {
+    var apiParams = {};
+    apiParams['requestType'] = 'object';
+    apiParams['classId'] = classId;
+    if (outsideApiParams !== undefined)
+      apiParams = {...apiParams, ...outsideApiParams};
+
+    console.log("API-CALL-OBJECT", apiParams);
+
+    var url = 'api/v2';
+
+    shc.server.post (url, apiParams,
+      function (data) {
+        console.log("--api-call-success--");
+        this.doApiObjectResponse(data);
       }.bind(this),
       function (data) {
         console.log("--api-call-error--");
@@ -230,6 +251,11 @@ class ShipardWidget {
     if (data['response'] !== undefined && data['response']['uiData'] !== undefined)
       shc.applyUIData (data['response']['uiData']);
 
+    console.log(data);
+  }
+
+  doApiObjectResponse(data)
+  {
     console.log(data);
   }
 

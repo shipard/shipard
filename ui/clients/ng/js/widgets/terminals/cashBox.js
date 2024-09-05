@@ -8,7 +8,7 @@ class WidgetCashBox extends ShipardWidgetDocumentCore
 
   doAction (actionId, e)
   {
-    console.log("ACTION: ", actionId);
+    //console.log("ACTION: ", actionId);
     switch (actionId)
     {
       case 'addRow': return this.newRow(e);
