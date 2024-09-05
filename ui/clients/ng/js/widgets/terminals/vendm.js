@@ -3,7 +3,6 @@ class WidgetVendM extends ShipardWidgetBoard
   elmTableBoxes = null;
   elmSBDisplayItemName = null;
   elmSBDisplayItemPrice = null;
-  elmSBDisplayItemBtns = null;
   elmCardCodeInput = null;
 
   itemName = '';
@@ -19,7 +18,6 @@ class WidgetVendM extends ShipardWidgetBoard
     this.elmTableBoxes = this.rootElm.querySelector('table.vmSelectBox');
     this.elmSBDisplayItemName = document.getElementById('vm-select-box-display-item-name');
     this.elmSBDisplayItemPrice = document.getElementById('vm-select-box-display-item-price');
-    this.elmSBDisplayItemBtns = document.getElementById('vm-select-box-display-item-btns');
     this.elmCardCodeInput = document.getElementById('vm-card-code-input');
 
     this.elmCardCodeInput.addEventListener("keypress", function(event) {
@@ -28,8 +26,6 @@ class WidgetVendM extends ShipardWidgetBoard
         this.validateCardCode();
       }
     }.bind(this));
-
-    this.selectBoxDisplay();
   }
 
   doAction (actionId, e)
@@ -66,7 +62,6 @@ class WidgetVendM extends ShipardWidgetBoard
       {
         if (data.response.success !== 1)
         {
-//          this.elmShow(this.rootElm.querySelector('div.statusInvalidCode'));
           return;
         }
         this.doBuyEjectItem();
@@ -76,6 +71,7 @@ class WidgetVendM extends ShipardWidgetBoard
 
   selectBox (e)
   {
+
     let oldBoxId = '';
     let oldActiveElement = this.elmTableBoxes.querySelector('td.active');
     if (oldActiveElement)
@@ -85,15 +81,6 @@ class WidgetVendM extends ShipardWidgetBoard
     }
 
     let newBoxId = e.getAttribute('data-box-id');
-    if (newBoxId === oldBoxId)
-    {
-      this.itemName = '';
-      this.itemPrice = 0;
-      this.itemNdx = 0;
-      this.itemBoxId = '';
-      this.selectBoxDisplay();
-      return 1;
-    }
 
     e.classList.add('active');
 
@@ -101,30 +88,18 @@ class WidgetVendM extends ShipardWidgetBoard
     this.itemPrice = parseFloat(e.getAttribute('data-item-price'));
     this.itemNdx = parseInt(e.getAttribute('data-item-ndx'));
     this.itemBoxId = newBoxId;
-    this.selectBoxDisplay();
 
     return 1;
   }
 
-  selectBoxDisplay()
-  {
-    if (this.itemNdx === 0)
-    {
-      this.elmSBDisplayItemName.innerText = 'Vyberte, co si chcete koupit....';
-      this.elmSBDisplayItemPrice.innerText = '';
-      this.elmHide(this.elmSBDisplayItemBtns);
-
-      return;
-    }
-
-    this.elmSBDisplayItemName.innerText = this.itemName;
-    this.elmShow(this.elmSBDisplayItemBtns);
-  }
-
   buyGetCard (e)
   {
-    console.log('buyGetCard');
+    this.selectBox (e);
     this.setVMMode('get-card');
+
+    this.elmSBDisplayItemName.innerText = this.itemName;
+    this.elmSBDisplayItemPrice.innerText = this.itemPrice;
+
     return 1;
   }
 

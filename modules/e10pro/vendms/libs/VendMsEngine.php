@@ -115,10 +115,10 @@ class VendMsEngine extends Utility
             $col[] = $cellLabel;
             $row['_options']['cellData'][$colId]['item-ndx'] = $cellBoxRecData['witem']['ndx'];
             $row['_options']['cellData'][$colId]['item-name'] = $cellBoxRecData['witem']['shortName'];
-            $row['_options']['cellData'][$colId]['action'] = 'vmSelectBox';
+            $row['_options']['cellData'][$colId]['item-price'] = $cellBoxRecData['witem']['priceSellTotal'];
+            $row['_options']['cellData'][$colId]['action'] = 'vmBuyGetCard';
             $row['_options']['cellData'][$colId]['box-id'] = $cellId;
             $row['_options']['cellClasses'][$colId] = 'shp-widget-action';
-            //shp-widget-action' data-action='terminal-sell'
           }
         }
         else
