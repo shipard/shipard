@@ -51,6 +51,7 @@ class WidgetVendM extends ShipardWidgetBoard
       if (data.response.validPerson !== 1)
       {
         this.elmShow(this.rootElm.querySelector('div.statusInvalidCode'));
+        this.elmCardCodeInput.value = '';
         return;
       }
       this.personNdx = data.response.personNdx;
@@ -96,6 +97,7 @@ class WidgetVendM extends ShipardWidgetBoard
   {
     this.selectBox (e);
     this.setVMMode('get-card');
+    this.elmCardCodeInput.value = '';
 
     this.elmSBDisplayItemName.innerText = this.itemName;
     this.elmSBDisplayItemPrice.innerText = this.itemPrice;
