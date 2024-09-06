@@ -14,6 +14,8 @@ class VendMsEngine extends Utility
   var $vendmsCfg = NULL;
   var $vendmsRecData = NULL;
 
+  var $boxStates = [];
+
   var $widgetId = '';
 
   var $code = '';
@@ -73,6 +75,8 @@ class VendMsEngine extends Utility
 
   protected function createVMTable(&$vmHeader, &$vmTable, $tableType)
   {
+    $this->loadBoxStates();
+
     for ($x = 0; $x < $this->vendmsCfg['vm']['cntCols']; $x++)
     {
       $colId = 'C'.$x;
@@ -99,6 +103,11 @@ class VendMsEngine extends Utility
         $col = [];
         if ($cellBoxRecData)
         {
+          $boxNdx = $cellBoxRecData['ndx'];
+          $quantity = 0;
+          if (isset($this->boxStates[$boxNdx]))
+           $quantity = $this->boxStates[$boxNdx];
+
           if ($tableType === self::tctApp)
           {
             $cellLabel = [
@@ -108,6 +117,14 @@ class VendMsEngine extends Utility
             $col[] = $cellLabel;
             if (isset($cellBoxRecData['witem']))
               $col[] = ['text' => $cellBoxRecData['witem']['shortName'], 'class' => 'break'];
+
+            $col[] = [
+              'text' => $quantity.' ks' , 'class' => 'break',
+              'type' => 'action', 'action' => 'addwizard',
+              'data-addparams' => 'boxNdx='.$boxNdx.'&'.'itemNdx='.$cellBoxRecData['witem']['ndx'],
+              'data-class' => 'e10pro.vendms.libs.WizardBoxQuantity',
+              'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId,
+            ];
           }
           else
           {
@@ -116,9 +133,16 @@ class VendMsEngine extends Utility
             $row['_options']['cellData'][$colId]['item-ndx'] = $cellBoxRecData['witem']['ndx'];
             $row['_options']['cellData'][$colId]['item-name'] = $cellBoxRecData['witem']['shortName'];
             $row['_options']['cellData'][$colId]['item-price'] = $cellBoxRecData['witem']['priceSellTotal'];
-            $row['_options']['cellData'][$colId]['action'] = 'vmBuyGetCard';
             $row['_options']['cellData'][$colId]['box-id'] = $cellId;
-            $row['_options']['cellClasses'][$colId] = 'shp-widget-action';
+            $row['_options']['cellData'][$colId]['box-ndx'] = $boxNdx;
+
+            if ($quantity > 0)
+            {
+              $row['_options']['cellData'][$colId]['action'] = 'vmBuyGetCard';
+              $row['_options']['cellClasses'][$colId] = 'shp-widget-action';
+            }
+            else
+              $row['_options']['cellClasses'][$colId] = 'boxIsEmpty';
           }
         }
         else
@@ -192,5 +216,19 @@ class VendMsEngine extends Utility
 
     $tableRendeder = new \Shipard\Utils\TableRenderer($vmTable, $vmHeader, ['tableClass' => 'fullWidth vmSelectBox', 'hideHeader' => 1], $this->app());
     $this->code .= $tableRendeder->render();
+  }
+
+  public function loadBoxStates()
+  {
+    $q = [];
+    array_push($q, 'SELECT [box], SUM(quantity) AS q');
+    array_push($q, ' FROM [e10pro_vendms_vendmsJournal]');
+    array_push($q, ' GROUP BY 1');
+
+    $rows = $this->db()->query($q);
+    foreach ($rows as $r)
+    {
+      $this->boxStates[$r['box']] = $r['q'];
+    }
   }
 }

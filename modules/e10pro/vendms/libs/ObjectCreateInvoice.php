@@ -51,6 +51,17 @@ class ObjectCreateInvoice extends Utility
     // -- save
 		$docNdx = $newDoc->saveDocument(CreateDocumentUtility::sdsDone);
 
+    $journalItem = [
+      'created' => new \DateTime(),
+      'vm' => 1,
+      'item' => $this->requestParams['itemNdx'],
+      'box' => $this->requestParams['boxNdx'],
+      'moveType' => 0, 'quantity' => -1,
+      'doc' => $docNdx,
+    ];
+
+    $this->db()->query('INSERT INTO [e10pro_vendms_vendmsJournal] ', $journalItem);
+
     $this->result['docNdx'] = $docNdx;
     $this->result['success'] = 1;
   }

@@ -2,7 +2,7 @@
 	"id": "e10pro.vendms",
 	"name": "Prodejní automaty",
 	"tables": [
-		"vendms", "vendmsBoxes"
+		"vendms", "vendmsBoxes", "vendmsJournal"
 	],
 	"modules": ["e10/base"],
 	"config": [

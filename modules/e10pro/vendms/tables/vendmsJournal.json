@@ -1,0 +1,15 @@
+{
+	"id": "e10pro.vendms.vendmsJournal", "sql": "e10pro_vendms_vendmsJournal", "name": "Deník pohybů automatu",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "created", "name": "Okamžik vytvoření", "type": "timestamp"},
+		{"id": "vm", "name": "Automat", "type": "int", "reference": "e10pro.vendms.vendms"},
+		{"id": "item", "name": "Položka", "type": "int", "reference": "e10.witems.items"},
+		{"id": "box", "name": "Přihrádka", "type": "int", "reference": "e10pro.vendms.vendmsBoxes"},
+		{"id": "doc", "name": "Doklad", "type": "int", "reference": "e10doc.core.heads"},
+    {"id": "moveType", "name": "Druh pohybu", "type": "enumInt",
+      "enumValues": {"0": "prodej", "1": "příjem", "2": "výdej"}},
+    {"id": "quantity", "name": "Množství", "type": "int"}
+	],
+	"options": ["systemTable"]
+}

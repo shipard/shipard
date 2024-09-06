@@ -10,6 +10,7 @@ class WidgetVendM extends ShipardWidgetBoard
   personNdx = 0;
   itemPrice = 0;
   itemBoxId = '';
+  itemBoxNdx = '';
 
   init (rootElm)
   {
@@ -89,6 +90,7 @@ class WidgetVendM extends ShipardWidgetBoard
     this.itemPrice = parseFloat(e.getAttribute('data-item-price'));
     this.itemNdx = parseInt(e.getAttribute('data-item-ndx'));
     this.itemBoxId = newBoxId;
+    this.itemBoxNdx = e.getAttribute('data-box-ndx');
 
     return 1;
   }
@@ -154,7 +156,7 @@ class WidgetVendM extends ShipardWidgetBoard
   doBuyCreateInvoice ()
   {
     console.log('create_invoice');
-    this.apiCallObject('vendms-create-invoice', {'itemNdx': this.itemNdx, 'personNdx': this.personNdx});
+    this.apiCallObject('vendms-create-invoice', {'itemNdx': this.itemNdx, 'boxNdx': this.itemBoxNdx, 'personNdx': this.personNdx});
   }
 
   doBuyEjectItem ()
