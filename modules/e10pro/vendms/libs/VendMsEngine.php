@@ -20,7 +20,7 @@ class VendMsEngine extends Utility
 
   var $code = '';
 
-  CONST tctApp = 0, tctMachine = 1;
+  CONST tctApp = 0, tctMachine = 1, tctSetup = 2;
 
   public function setVendMs($vendmsNdx)
   {
@@ -126,7 +126,7 @@ class VendMsEngine extends Utility
               'data-srcobjecttype' => 'widget', 'data-srcobjectid' => $this->widgetId,
             ];
           }
-          else
+          elseif ($tableType === self::tctMachine)
           {
             $cellLabel = ['text' => $box['label']];
             $col[] = $cellLabel;
@@ -143,6 +143,23 @@ class VendMsEngine extends Utility
             }
             else
               $row['_options']['cellClasses'][$colId] = 'boxIsEmpty';
+          }
+          elseif ($tableType === self::tctSetup)
+          {
+            $cellLabel = ['text' => $box['label'], 'class' => 'vm-box-label'];
+            $col[] = $cellLabel;
+            $col[] = [
+              'text' => $quantity.' ks' , 'class' => 'vm-box-quantity',
+            ];
+
+            $row['_options']['cellData'][$colId]['item-ndx'] = $cellBoxRecData['witem']['ndx'];
+            $row['_options']['cellData'][$colId]['item-name'] = $cellBoxRecData['witem']['shortName'];
+            $row['_options']['cellData'][$colId]['item-price'] = $cellBoxRecData['witem']['priceSellTotal'];
+            $row['_options']['cellData'][$colId]['box-id'] = $cellId;
+            $row['_options']['cellData'][$colId]['box-ndx'] = $boxNdx;
+            $row['_options']['cellData'][$colId]['box-label'] = $box['label'];
+            $row['_options']['cellData'][$colId]['action'] = 'vmBoxSetQuantity';
+            $row['_options']['cellClasses'][$colId] = 'shp-widget-action';
           }
         }
         else
@@ -217,6 +234,19 @@ class VendMsEngine extends Utility
     $tableRendeder = new \Shipard\Utils\TableRenderer($vmTable, $vmHeader, ['tableClass' => 'fullWidth vmSelectBox', 'hideHeader' => 1], $this->app());
     $this->code .= $tableRendeder->render();
   }
+
+  public function createCodeSetup()
+  {
+    $this->code = '';
+
+    $vmHeader = [];
+    $vmTable = [];
+    $this->createVMTable($vmHeader, $vmTable, self::tctSetup);
+
+    $tableRendeder = new \Shipard\Utils\TableRenderer($vmTable, $vmHeader, ['tableClass' => 'fullWidth vmSelectBox', 'hideHeader' => 1], $this->app());
+    $this->code .= $tableRendeder->render();
+  }
+
 
   public function loadBoxStates()
   {

@@ -3,5 +3,10 @@
     "fn": "Prodejní automat",
     "template": "vmAppMachine",
     "templatePath": "modules/e10pro/vendms/subtemplates/"
+  },
+  "vending-setup": {
+    "fn": "Nastavení prodejního automatu",
+    "template": "vmAppSetup",
+    "templatePath": "modules/e10pro/vendms/subtemplates/"
   }
 }

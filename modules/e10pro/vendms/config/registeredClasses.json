@@ -1,7 +1,8 @@
 {
 	"objectsCalls": {
 		"vendms-validate-code": {"classId": "e10pro.vendms.libs.ObjectValidateCode"},
-		"vendms-create-invoice": {"classId": "e10pro.vendms.libs.ObjectCreateInvoice"}
+		"vendms-create-invoice": {"classId": "e10pro.vendms.libs.ObjectCreateInvoice"},
+		"vendms-box-quantity": {"classId": "e10pro.vendms.libs.ObjectBoxQuantity"}
 	},
 	"financeTransactionInfo": [
 		{"classId": "e10pro.vendms.libs.AddCreditFromBankTransaction"}
