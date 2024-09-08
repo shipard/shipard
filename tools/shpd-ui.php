@@ -352,6 +352,35 @@ class ShpdUIApp
 				'ver' => md5_file($finalFileName),
 			]
 		];
+
+		if (!isset($pkg['libs']))
+			return;
+		forEach ($pkg['libs'] as $jsLib)
+		{
+			$finalFileString = '';
+			forEach ($jsLib['srcFiles'] as $file)
+			{
+				$oneFileStr = file_get_contents($srcDir.$file['fileName']);
+				if (isset ($file['minify']) && !$file['minify'])
+					$finalFileString .= $oneFileStr;
+				else
+				{
+					$shrinkedScript = jsShrink($oneFileStr);
+					$finalFileString .= $shrinkedScript;
+				}
+			}
+			$finalFileName = $dstDir.$jsLib['id'].'.js';
+			file_put_contents($finalFileName, $finalFileString);
+			$sha384_ascii = hash_file('SHA384', $finalFileName);
+			$sha384_base64 = base64_encode(hash_file('SHA384', $finalFileName, true));
+			$info[$infoKey]['libs'][] = [
+				$jsLib['id'].'.js' => [
+					'sha384' => ''.$sha384_ascii,
+					'integrity' => 'sha384-'.$sha384_base64,
+					'ver' => md5_file($finalFileName),
+				]
+			];
+		}
 	}
 
 	public function jsWeb ()
