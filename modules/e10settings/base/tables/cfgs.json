@@ -5,7 +5,7 @@
 		{"id": "id", "name": "ID", "type": "string", "len": 190},
 		{"id": "title", "name": "Název", "type": "string", "len": 120},
 
-		{"id": "code", "name": "Kód", "type": "code"},
+		{"id": "code", "name": "Kód", "type": "code", "clng": "json"},
 		{"id": "valid", "name": "V pořádku", "type": "logical"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},

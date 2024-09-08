@@ -151,23 +151,22 @@ class FormCfg extends TableForm
 {
 	public function renderForm ()
 	{
-		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
-		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 		$this->setFlag ('maximize', 1);
+		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
 		$this->openForm ();
+			$tabs ['tabs'][] = ['text' => 'Kód', 'icon' => 'formScript'];
+			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
+			$this->openTabs ($tabs, TRUE);
+				$this->openTab (TableForm::ltNone);
+					$this->addInputMemo ('code', NULL, TableForm::coFullSizeY, DataModel::ctCode);
+				$this->closeTab ();
 
-		$this->layoutOpen (TableForm::ltGrid);
-			$this->openRow ();
-				$this->addColumnInput ('id', TableForm::coColW8);
-				$this->addColumnInput ('title', TableForm::coColW4);
-			$this->closeRow ();
-		$this->layoutClose ();
-
-		$this->layoutOpen (TableForm::ltHorizontal);
-			$this->addInputMemo ('code', NULL, TableForm::coFullSizeY, DataModel::ctCode);
-		$this->layoutClose ();
-
+				$this->openTab ();
+					$this->addColumnInput ('title');
+					$this->addColumnInput ('id');
+				$this->closeTab ();
+			$this->closeTabs ();
 		$this->closeForm ();
 	}
 
