@@ -1,0 +1,14 @@
+{
+  "1": {
+    "fn": "dobití v hotovosti"
+  },
+  "2": {
+    "fn": "nákup zboží"
+  },
+  "0": {
+    "fn": "dobití přes banku"
+  },
+  "3": {
+    "fn": "výdej"
+  }
+}

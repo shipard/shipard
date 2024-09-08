@@ -3,5 +3,10 @@
 		"name": "Přístupové kódy",
 		"id": "chips",
 		"properties": ["chipid"]
+	},
+	"paysyms": {
+		"name": "Variabilní symboly",
+		"id": "paysyms",
+		"properties": ["paysym1"]
 	}
 }

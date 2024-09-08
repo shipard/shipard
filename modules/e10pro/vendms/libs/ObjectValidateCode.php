@@ -39,10 +39,19 @@ class ObjectValidateCode extends Utility
       $this->result ['validPerson'] = 1;
       $this->result ['personNdx'] = $person['propRecId'];
       $this->result ['personName'] = $person['personName'];
-      $this->result ['creditAmount'] = 1234;
+      $this->result ['creditAmount'] = $this->personsCredit($person['propRecId']);
 
       $this->result ['success'] = 1;
     }
+  }
+
+  protected function personsCredit($personNdx)
+  {
+    $c = $this->db()->query('SELECT SUM(amount) AS totalCredit FROM [e10pro_vendms_credits] WHERE [person] = %i', $personNdx)->fetch();
+    if ($c)
+      return $c['totalCredit'];
+
+    return 0;
   }
 
   public function run()

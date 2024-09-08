@@ -1,3 +1,4 @@
 {
-	"chipid": {"name": "Kód čipu/karty", "type": "text", "icontxt": "CHP", "multi": 1}
+	"chipid": {"name": "Kód čipu/karty", "type": "text", "icontxt": "CHP", "multi": 1},
+	"paysym1": {"name": "VS pro kredit", "type": "text", "icontxt": "VS", "multi": 1}
 }

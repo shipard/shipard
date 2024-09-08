@@ -2,18 +2,19 @@
 	"id": "e10pro.vendms",
 	"name": "Prodejní automaty",
 	"tables": [
-		"vendms", "vendmsBoxes", "vendmsJournal"
+		"vendms", "vendmsBoxes", "vendmsJournal", "credits"
 	],
 	"modules": ["e10/base"],
 	"config": [
 		{"id": "+apps", "file": "apps.json"},
-		{"id": "+e10.persons.roles", "name": "Role uživatelů", "file": "e10pro.vendms.roles.json"},
+		{"id": "+e10.persons.roles", "file": "e10pro.vendms.roles.json"},
 		{"id": "+e10.appOptions.groups", "file": "appOptionsGroups.json"},
 		{"id": "+appOptions", "file": "e10.appOptions.json"},
 		{"id": "+dashboards", "file": "dashboards.json"},
 		{"id": "+registeredClasses", "file": "registeredClasses.json"},
-    {"id": "+e10.persons.properties", "name": "Vlastnosti osob", "file": "e10.persons.properties.json"},
-    {"id": "+e10.base.properties", "name": "Definice vlastností osob", "file": "e10.persons.propertiesDefs.json"},
-    {"id": "+e10.base.propertiesGroups", "name": "Skupiny vlastnostní osob", "file": "e10.persons.propertiesGroups.json"}
+    {"id": "+e10.persons.properties", "file": "e10.persons.properties.json"},
+    {"id": "+e10.base.properties", "file": "e10.persons.propertiesDefs.json"},
+    {"id": "+e10.base.propertiesGroups", "file": "e10.persons.propertiesGroups.json"},
+    {"id": "+e10pro.vendms.creditMoveTypes", "file": "creditMoveTypes.json"}
 	]
 }

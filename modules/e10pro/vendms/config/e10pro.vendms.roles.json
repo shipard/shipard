@@ -3,7 +3,8 @@
 		"name": "Prodejní automaty",
 		"viewers": {
 			"e10pro.vendms.vendms": {"default": 2},
-			"e10pro.vendms.vendmsBoxes": {"default": 2}
+			"e10pro.vendms.vendmsBoxes": {"default": 2},
+			"e10pro.vendms.credits": {"default": 2}
 		},
 		"widgets": {
 			"e10pro.vendms.libs.WidgetVendMs": 2

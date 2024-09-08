@@ -64,15 +64,20 @@ class WizardBoxQuantity extends Wizard
 
 	public function doIt ()
 	{
-		if (!intval($this->recData['quantity']))
+		$quantity = intval($this->recData['quantity']);
+		if (!$quantity)
 			return;
+
+		$moveType = 1;
+		if ($quantity < 0)
+			$moveType = 2;
 
 		$journalItem = [
       'created' => new \DateTime(),
       'vm' => 1,
       'item' => $this->recData['itemNdx'],
       'box' => $this->recData['boxNdx'],
-      'moveType' => 0, 'quantity' => intval($this->recData['quantity']),
+      'moveType' => $moveType, 'quantity' => $quantity,
     ];
 
     $this->app()->db()->query('INSERT INTO [e10pro_vendms_vendmsJournal] ', $journalItem);

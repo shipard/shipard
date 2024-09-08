@@ -1,8 +1,5 @@
 <?php
-
 namespace e10pro\vendms\libs;
-use e10\utils, e10doc\core\libs\E10Utils;
-use \Shipard\UI\Core\WidgetPane;
 
 
 /**
@@ -26,20 +23,14 @@ class VendMsMachineWidget extends \Shipard\UI\Core\UIWidgetBoard
 
 		$c = '';
 
-		//$c .= '<h1>NAZDAR!!!</h1>';
-
 		$vme = new \e10pro\vendms\libs\VendMsEngine($this->app());
 		$vme->setVendMs($this->vendmNdx);
 		$vme->createCodeMachine();
-
-		//$c .= $vme->code;
-		//$c .= $this->composeCodeInitScript();
 
 		$this->uiTemplate->data['machineSelectBoxTable'] = $vme->code;
 
 		$templateStr = $this->uiTemplate->subTemplateStr('modules/e10pro/vendms/subtemplates/vmWidgetMachine');
 		$c .= $this->uiTemplate->render($templateStr);
-		//$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $code]);
 
 		$c .= $this->composeCodeInitScript();
 

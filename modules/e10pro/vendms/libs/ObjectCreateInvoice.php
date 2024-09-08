@@ -24,8 +24,6 @@ class ObjectCreateInvoice extends Utility
 
     $itemRecData = $this->app()->loadItem($this->requestParams['itemNdx'] ?? 0, 'e10.witems.items');
 
-    $rowOrder = 100;
-
     $accDate = Utils::today();
 
 		$newDoc = new CreateDocumentUtility ($this->app);
@@ -51,6 +49,7 @@ class ObjectCreateInvoice extends Utility
     // -- save
 		$docNdx = $newDoc->saveDocument(CreateDocumentUtility::sdsDone);
 
+    // -- journal
     $journalItem = [
       'created' => new \DateTime(),
       'vm' => 1,
@@ -59,9 +58,24 @@ class ObjectCreateInvoice extends Utility
       'moveType' => 0, 'quantity' => -1,
       'doc' => $docNdx,
     ];
-
     $this->db()->query('INSERT INTO [e10pro_vendms_vendmsJournal] ', $journalItem);
 
+    // -- credit
+    /** @var \Shipard\Table\DbTable */
+    $tableCredits = $this->app()->table('e10pro.vendms.credits');
+
+    $creditItem = [
+      'created' => new \DateTime(),
+      'person' => $this->requestParams['personNdx'] ?? 0,
+      'amount' => -($itemRecData['priceSellTotal'] ?? 0),
+      'moveType' => 2,
+      'doc' => $docNdx,
+      'docState' => 4000, 'docStateMain' => 2,
+    ];
+    $newCreditNdx = $tableCredits->dbInsertRec($creditItem);
+    $tableCredits->docsLog($newCreditNdx);
+
+    // -- done
     $this->result['docNdx'] = $docNdx;
     $this->result['success'] = 1;
   }

@@ -1,3 +1,4 @@
 {
-	"chips": ["chipid"]
+	"chips": ["chipid"],
+	"paysyms": ["paysym1"]
 }
