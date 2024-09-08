@@ -20,5 +20,14 @@
 		{"fileName": "clientIoT.js"},
 
 		{"fileName": "main.js"}
+	],
+	"libs": [
+		{
+			"id": "ibSerialTerm",
+			"srcFiles": [
+				{"fileName": "libs/IBSerial/IBSerialTerm.js"},
+				{"fileName": "libs/IBSerial/IBMsgParser.js"}
+			]
+		}
 	]
 }

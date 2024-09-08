@@ -756,7 +756,7 @@ focusedRow=viewer.find('ul.e10-viewer-list > li.active');if(focusedRow.is('li'))
 if(e.attr('data-pk'))focusedPK=e.attr('data-pk');g_formId++;var
 newElementId="mainEditF"+g_formId;var
 url="/api/wizard/"+wizardClass+"/0?callback=?&fullTextSearch="+fullTextSearch+"&newFormId="+newElementId;if(addParams)url+='&'+addParams;if(focusedPK!='')url+='&focusedPK='+focusedPK;var
-params=elementAttributes(e,'data-param');if(params)url+='&'+params;console.log("URL: ",url);console.log("ADD-PARAMS: ",addParams);var
+params=elementAttributes(e,'data-param');if(params)url+='&'+params;var
 postData={};var
 dataFormElementId='mainBrowserTopBar';if(e.attr('data-form-element-id')!=undefined)dataFormElementId=e.attr('data-form-element-id');var
 dataForm=$('#'+dataFormElementId);e10collectFormData(dataForm,postData);e10.server.post(url,postData,function(data){e10ViewerCreateEditForm(data,newElementId,srcObjectType,srcObjectId);});}function
