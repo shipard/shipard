@@ -20,60 +20,6 @@ class VendMsMachineWidget extends \Shipard\UI\Core\UIWidgetBoard
 
 	// uiTemplate
 
-	protected function loadProducts ()
-	{
-		/*
-		$comboByCats = intval($this->app->cfgItem ('options.e10doc-sale.cashregItemComboCats', 0));
-		if ($comboByCats === 0)
-		{
-			return;
-		}
-		$taxReg = E10Utils::primaryTaxRegCfg($this->app());
-		$taxCalc = intval($this->app->cfgItem ('options.e10doc-sale.cashRegSalePricesType', 2));
-		$taxCalc = E10Utils::taxCalcIncludingVATCode ($this->app(), $this->today, $taxCalc);
-
-		$catPath = $this->app->cfgItem ('e10.witems.categories.list.'.$comboByCats, '---');
-		$cats = $this->app->cfgItem ("e10.witems.categories.tree".$catPath.'.cats');
-		forEach ($cats as $catId => $cat)
-		{
-			$catNdx = $cat['ndx'];
-			$catKey = 'c'.$catNdx;
-			$catRootPath = $this->app->cfgItem ('e10.witems.categories.list.'.$catNdx, '');
-			$parts = explode ('.', substr($catRootPath, 1));
-			$rootTreeId = 'e10.witems.categories.tree.'.implode('.cats.', $parts);
-			$ac = $this->app->cfgItem ($rootTreeId);
-
-			$this->products[$catKey] = ['title' => $cat['shortName'], 'items' => []];
-
-			$q[] = 'SELECT * FROM [e10_witems_items] AS items ';
-			array_push ($q, ' WHERE 1');
-
-			\e10\witems\itemCategoryQuery ($ac, $q, 'items');
-
-			array_push ($q, ' ORDER BY items.orderCashRegister, items.fullName');
-
-			$pks = [];
-			$rows = $this->db()->query ($q);
-			foreach ($rows as $r)
-			{
-				$askQuantity = $this->askItem('Q', $ac, $r);
-				$askPrice = $this->askItem('P', $ac, $r);
-				$title = ($r['shortName'] !== '') ? $r['shortName'] : $r['fullName'];
-				$item = [
-						'title' => $title, 'name' => $r['fullName'], 'pk' => $r['ndx'],
-						'price' => E10Utils::itemPriceSell($this->app, $taxReg, $taxCalc, $r),
-						'unit' => $r['defaultUnit'], 'unitname' => $this->units[$r['defaultUnit']]['shortcut'],
-						'askq' => $askQuantity, 'askp' => $askPrice
-				];
-				$this->products[$catKey]['items'][$r['ndx']] = $item;
-				$pks[] = $r['ndx'];
-			}
-
-			unset ($q);
-		}
-			*/
-	}
-
 	protected function composeCode ()
 	{
 		$this->vendmNdx = 1;
@@ -91,7 +37,7 @@ class VendMsMachineWidget extends \Shipard\UI\Core\UIWidgetBoard
 
 		$this->uiTemplate->data['machineSelectBoxTable'] = $vme->code;
 
-		$templateStr = $this->uiTemplate->subTemplateStr('modules/e10pro/vendms/subtemplates/vmWidget');
+		$templateStr = $this->uiTemplate->subTemplateStr('modules/e10pro/vendms/subtemplates/vmWidgetMachine');
 		$c .= $this->uiTemplate->render($templateStr);
 		//$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $code]);
 
@@ -122,8 +68,6 @@ class VendMsMachineWidget extends \Shipard\UI\Core\UIWidgetBoard
 		//$this->widgetSystemParams['data-roundmethod'] = 1;
 
 		//$this->units = $this->app->cfgItem ('e10.witems.units');
-
-		//$this->loadProducts();
 
 		$this->code = $this->composeCode();
 		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $this->code]);

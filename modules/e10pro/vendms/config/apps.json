@@ -1,7 +1,7 @@
 {
   "vending-machine": {
     "fn": "Prodejní automat",
-    "template": "vm",
+    "template": "vmAppMachine",
     "templatePath": "modules/e10pro/vendms/subtemplates/"
   }
 }
