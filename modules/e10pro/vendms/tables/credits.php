@@ -3,7 +3,7 @@
 namespace e10pro\vendms;
 
 use \Shipard\Utils\Utils, \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
-
+use \Shipard\Utils\Str;
 
 /**
  * Class TableCredits
@@ -20,7 +20,7 @@ class TableCredits extends DbTable
 	{
 		parent::checkBeforeSave ($recData, $ownerData);
 
-		if (Utils::dateIsBlank($recData ['created']))
+		if (Utils::dateIsBlank($recData ['created'] ?? NULL))
 		{
 			$recData ['created'] = new \DateTime();
 		}
@@ -34,6 +34,8 @@ class TableCredits extends DbTable
 				$personRecData = $this->app()->loadItem($recData['person'], 'e10.persons.persons');
 				if ($personRecData)
 				$recData ['title'] .= ': '.$personRecData['fullName'];
+
+				$recData ['title'] = Str::upToLen($recData ['title'], 120);
 			}
 		}
   }
@@ -147,8 +149,8 @@ class FormCredit extends TableForm
 
 				$this->openTab ();
 					$this->addColumnInput ('doc');
-					$this->addColumnInput ('bankTransId');
-					$this->addColumnInput ('bankTransNdx');
+					//$this->addColumnInput ('bankTransId');
+					//$this->addColumnInput ('bankTransNdx');
 				$this->closeTab();
 				$this->openTab (TableForm::ltNone);
 					$this->addAttachmentsViewer();
