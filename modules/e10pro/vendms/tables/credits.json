@@ -21,6 +21,6 @@
 	"forms": [
 		{"id": "default", "class": "e10pro.vendms.FormCredit"}
 	],
-	"autocomplete": {"columnValue": "ndx", "columnTitle": "label"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "title"},
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
 }
