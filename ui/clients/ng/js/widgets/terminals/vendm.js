@@ -55,6 +55,16 @@ class WidgetVendM extends ShipardWidgetBoard
         this.elmCardCodeInput.value = '';
         return;
       }
+
+      let currentCredit = parseInt(data.response.creditAmount);
+      if (currentCredit < this.itemPrice)
+      {
+        this.elmShow(this.rootElm.querySelector('div.statusInvalidCredit'));
+        this.rootElm.querySelector('div.statusInvalidCreditAmount').innerText = 'Výše kreditu: '+currentCredit+' Kč';
+        this.elmCardCodeInput.value = '';
+        return;
+      }
+
       this.personNdx = data.response.personNdx;
       this.setVMMode('do-buy');
       this.doBuyCreateInvoice();
