@@ -36,6 +36,8 @@ class DownloadBankTransactions extends Utility
 		$item['myBankAccount'] = $this->bankAccountNdx;
 
 		$this->db()->query ('INSERT INTO [e10doc_finance_transactions] ', $item);
+		$newNdx = $this->db()->getInsertId();
+		$item['ndx'] = $newNdx;
 
 		$listsClasses = $this->app->cfgItem ('registeredClasses.financeTransactionInfo', []);
 		foreach ($listsClasses as $class)
