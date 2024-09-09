@@ -41,9 +41,9 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		}
 	}
 
-	public function downloadBankTransactions()
+	public function downloadBankTransactions($force = 0)
 	{
-		if (!$this->app->production())
+		if (!$force && !$this->app->production())
 			return;
 
 		$bankAccounts = $this->app->cfgItem ('e10doc.bankAccounts', []);
@@ -91,6 +91,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		{
 			case 'download-inbox-bank-statements': $this->downloadBankStatements(TRUE); return TRUE;
 			case 'download-all-bank-statements': $this->downloadBankStatements(); return TRUE;
+			case 'download-all-bank-transactions': $this->downloadBankTransactions(1); return TRUE;
 		}
 
 		parent::onCliAction($actionId);
