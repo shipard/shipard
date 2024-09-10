@@ -38,14 +38,16 @@ class ViewMsgsRecipients extends TableView
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
 		$listItem ['t1'] = $item['personName'];
-		$listItem ['t2'] = $item['email'];
+		//$listItem ['t2'] = $item['email'];
 
 		$props = [];
 
-		if ($item['sent'])
-			$props [] = ['icon' => 'system/iconPaperPlane', 'text' => utils::datef ($item['sentDate'], '%D, %T')];
+
+		if ($item['read'])
+			$props [] = ['icon' => 'system/iconPaperPlane', 'text' => 'Přečteno '.utils::datef ($item['readDate'], '%D, %T')];
 		else
-			$props [] = ['icon' => 'icon-hourglass-half', 'text' => 'Čeká se na odeslání'];
+			$props [] = ['icon' => 'icon-hourglass-half', 'text' => 'Nepřečteno'];
+
 
 		if (count($props))
 			$listItem ['i2'] = $props;
@@ -60,7 +62,7 @@ class ViewMsgsRecipients extends TableView
 
 		$q = [];
 
-		array_push ($q, 'SELECT recps.*, persons.fullName AS personName');
+		array_push ($q, 'SELECT recps.*, persons.fullName AS personName, persons.id AS personId');
 		array_push ($q, ' FROM [wkf_msgs_msgsRecipients] AS recps');
 		array_push ($q, ' LEFT JOIN [e10_persons_persons] AS persons ON recps.person = persons.ndx');
 		array_push ($q, ' WHERE 1');
@@ -68,7 +70,9 @@ class ViewMsgsRecipients extends TableView
 
 		// -- fulltext
 		if ($fts != '')
-			array_push ($q, ' AND ([email] LIKE %s OR persons.[fullName] LIKE %s)', '%'.$fts.'%', '%'.$fts.'%');
+		{
+			array_push ($q, ' AND (persons.[fullName] LIKE %s)', '%'.$fts.'%');
+		}
 
 		array_push ($q, ' ORDER BY persons.lastName, persons.fullName, ndx');
 		array_push ($q, $this->sqlLimit());

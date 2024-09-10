@@ -3,7 +3,7 @@
 namespace wkf\msgs;
 use \Shipard\Utils\Utils, \Shipard\Viewer\TableView, \Shipard\Form\TableForm, \Shipard\Table\DbTable, \Shipard\Viewer\TableViewDetail;
 use \e10\base\libs\UtilsBase;
-
+use \lib\persons\PersonsVirtualGroup;
 
 /**
  * class TableMsgs
@@ -50,12 +50,20 @@ class TableMsgs extends DbTable
 
 	function createRecipients ($recData)
 	{
+		/** @var \wkf\msgs\TableMsgsRecipients */
 		$tableBulkPosts = $this->app()->table ('wkf.msgs.msgsRecipients');
 
 		// -- delete old
 		$this->db()->query ('DELETE FROM [wkf_msgs_msgsRecipients] WHERE [sent] = 0 AND [msg] = %i', $recData['ndx']);
 
-		// -- add new
+		// -- users & users groups
+		$pig = new \wkf\core\libs\PersonsVGPersonsInGroup($this->app);
+		$pig->recipientsMode = PersonsVirtualGroup::rmPersonsMsgs;
+
+		$pig->addPostFromDocLinks($tableBulkPosts, 'msg', $recData['ndx'],
+															'wkf-msgs-recps', $this->tableId(), $recData['ndx']);
+
+		// -- virtual groups
 		$q[] = 'SELECT * FROM [wkf_msgs_msgsVGR]';
 		array_push ($q, ' WHERE [msg] = %i', $recData['ndx']);
 		array_push ($q, ' ORDER BY [ndx]');
@@ -71,6 +79,7 @@ class TableMsgs extends DbTable
 			if (!$vgObject)
 				continue;
 
+			$vgObject->recipientsMode = PersonsVirtualGroup::rmPersonsMsgs;
 			$vgObject->addPosts($tableBulkPosts, 'msg', $recData['ndx'], $r);
 
 			unset ($vgObject);
@@ -83,7 +92,6 @@ class TableMsgs extends DbTable
 		//$recData['sendingState'] = 2;
 		//$recData['dateReadyToSend'] = $dateReadyToSend;
 	}
-
 }
 
 
@@ -95,7 +103,6 @@ class ViewMsgs extends TableView
 	/** @var \lib\core\texts\Renderer */
 	var $textRenderer;
 
-	var $bboardNdx = 0;
 	var $linkedPersons = [];
 	var $classification = [];
 
@@ -104,12 +111,6 @@ class ViewMsgs extends TableView
 		$this->linesWidth = 45;
 		$this->objectSubType = TableView::vsMain;
 		$this->enableDetailSearch = TRUE;
-
-		$this->bboardNdx = intval($this->queryParam('bboard'));
-		if ($this->bboardNdx)
-		{
-			$this->addAddParam ('bboard', $this->bboardNdx);
-		}
 
 		$this->setMainQueries ();
 

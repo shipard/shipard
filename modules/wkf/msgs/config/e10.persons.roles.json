@@ -1,5 +1,7 @@
 {
-	"user": {
+	"wmsgwr": {
+		"name": "Autor Zpráv",
+		"roles": ["user"],
 		"viewers": {
 			"wkf.msgs.msgs": {"default": 2}
 		}
