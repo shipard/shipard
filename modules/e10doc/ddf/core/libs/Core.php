@@ -14,6 +14,8 @@ class Core extends \lib\docDataFiles\DocDataFile
 {
 	var $docHead = [];
 	var $docRows = [];
+	var $attRecData = NULL;
+	var $issueRecData = NULL;
 	var $replaceDocumentNdx = 0;
 	var $personRecData = NULL;
 
@@ -521,7 +523,9 @@ class Core extends \lib\docDataFiles\DocDataFile
 		$c .= "</tr>";
 		$c .= "<tr>";
 			$c .= "<td>".Utils::es('DUZP / DPPD').'</td>';
-			$c .= "<td>".$this->previewCode_Date($this->impData['head'], 'dateTax').'</td>';
+			$c .= "<td>".$this->previewCode_Date($this->impData['head'], 'dateTax');
+			$c .= ' / '.$this->previewCode_Date($this->impData['head'], 'dateTaxDuty');
+			$c .= '</td>';
 			$c .= "<td>".Utils::es('Specifický symbol').'</td>';
 			$c .= "<td>".Utils::es($this->impData['head']['symbol2'] ?? '').'</td>';
 
@@ -633,6 +637,20 @@ class Core extends \lib\docDataFiles\DocDataFile
 		return Utils::datef($d, '%d');
 	}
 
+	protected function loadSourceInfo()
+	{
+		if (!$this->attachmentNdx)
+			return;
+
+		$this->attRecData = $this->app()->loadItem($this->attachmentNdx, 'e10.base.attachments');
+		if (!$this->attRecData)
+			return;
+
+		if ($this->attRecData['tableid'] !== 'wkf.core.issues')
+			return;
+
+		$this->issueRecData = $this->app()->loadItem($this->attRecData['recid'], 'wkf.core.issues');
+	}
 
 	protected function previewAtt()
 	{

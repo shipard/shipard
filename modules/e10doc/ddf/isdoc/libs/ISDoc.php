@@ -151,8 +151,18 @@ class ISDoc extends \e10doc\ddf\core\libs\Core
 		if (isset($this->srcImpData['IssueDate']))
 			$this->docHead['dateIssue'] = $this->date($this->srcImpData['IssueDate']);
 		if (isset($this->srcImpData['TaxPointDate']))
+		{
+			$this->docHead['dateAccounting'] = $this->date($this->srcImpData['TaxPointDate']);
 			$this->docHead['dateTax'] = $this->date($this->srcImpData['TaxPointDate']);
+			$this->docHead['dateTaxDuty'] = $this->date($this->srcImpData['TaxPointDate']);
 
+			$this->loadSourceInfo();
+
+			if ($this->issueRecData)
+			{
+				$this->docHead['dateTax'] = Utils::createDateTime($this->issueRecData['dateIncoming']);
+			}
+		}
 
 		$vatRegs = $this->app()->cfgItem('e10doc.base.taxRegs', NULL);
 		if ($vatRegs)
