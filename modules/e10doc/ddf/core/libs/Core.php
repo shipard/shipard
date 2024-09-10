@@ -114,6 +114,7 @@ class Core extends \lib\docDataFiles\DocDataFile
 			$row['taxCode'] = $itm['code'];
 			$row['taxRate'] = $taxCodeCfg['rate'];
 			$row['taxPercents'] = $itm['value'];
+			$row['_fixTaxCode'] = 1;
 
 			return;
 		}
