@@ -154,7 +154,15 @@ class DataView extends Utility
 		foreach ($parts as $p)
 		{
 			if ($isString)
-				$list[] = $p;
+			{
+				if (str_starts_with($p, '##'))
+				{
+					$v = $this->template->getVar(substr($p, 2));
+					$list[] = $v;
+				}
+				else
+					$list[] = $p;
+			}
 			else
 			{
 				$pndx = intval($p);
