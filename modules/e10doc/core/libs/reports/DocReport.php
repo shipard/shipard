@@ -76,6 +76,13 @@ class DocReport extends DocReportBase
 			$r = $row->toArray();
 			$r ['print'] = $this->getPrintValues($tableDocRows, $r);
 
+			// -- item price with VAT - ISDOC :-(
+			$q = $r['quantity'];
+			if ($q == 0)
+				$q = 1;
+			$r['priceItemWithVAT'] = round($r['priceTotal'] / $q, 4);
+			$r['priceItemWithVATHc'] = round($r['priceTotalHc'] / $q, 4);
+
 			// -- advances
 			if ($r['operation'] === 1010101/*1010104*/ && $r['taxCode'] !== '122')
 			{ // tax advance
