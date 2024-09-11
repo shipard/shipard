@@ -41,7 +41,7 @@ class ESignImageEngine extends Utility
     $this->template->data['displayInfo'] = $this->displayInfo;
 
     $this->template->data['vds'] = Json::decode($this->esignRecData['vdsData']);
-
+    $this->template->data['dataVer'] = md5(json_encode($this->esignRecData));
     $this->template->data['cssStyle'] = $this->template->render($this->templateCss);
     $this->htmlCode = $this->template->render($this->templateHtml);
   }
