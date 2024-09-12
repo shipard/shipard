@@ -6,7 +6,7 @@ use \Shipard\Utils\Utils;
 
 
 /**
- * class ReportFlatRecordSheet
+ * class ReportWOEventRecordSheet
  */
 class ReportWOEventRecordSheet extends \e10doc\core\libs\reports\DocReportBase
 {
@@ -49,11 +49,23 @@ class ReportWOEventRecordSheet extends \e10doc\core\libs\reports\DocReportBase
     $this->eventInfo->setWorkOrder($this->recData['ndx']);
     $this->eventInfo->loadInfo();
 
-    if ($this->eventInfo->data['members'])
+    if ($this->eventInfo->woKind['usePersonsList'])
     {
-      $cc = $this->eventInfo->data['members'];
-      unset($cc['pane']);
-      $this->data['contents'][] = $cc;
+      if ($this->eventInfo->data['personsList'])
+      {
+        $cc = $this->eventInfo->data['personsList'];
+        unset($cc['pane']);
+        $this->data['contents'][] = $cc;
+      }
+    }
+    else
+    {
+      if ($this->eventInfo->data['members'])
+      {
+        $cc = $this->eventInfo->data['members'];
+        unset($cc['pane']);
+        $this->data['contents'][] = $cc;
+      }
     }
 	}
 }

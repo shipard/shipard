@@ -22,15 +22,36 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			return FALSE;
 		}
 
-		$e = new \e10pro\soci\libs\EntriesImport($this->app());
+		$e = new \e10pro\soci\libs\imports\EntriesImport($this->app());
 		$e->fileName = $fileParam;
 		$e->setEntryTo($entryToParam);
+		$e->run();
+	}
+
+	public function importPersons()
+	{
+		$fileParam = $this->app()->arg('file');
+		if (!$fileParam)
+		{
+			echo "Missing `--file` param!\n";
+			return FALSE;
+		}
+
+		$e = new \e10pro\soci\libs\imports\PersonsImport($this->app());
+		$e->fileName = $fileParam;
 		$e->run();
 	}
 
 	public function invoicesFromEntries()
 	{
     $ie = new \e10pro\soci\libs\EntriesInvoicingEngine($this->app());
+    $ie->init();
+		$ie->generateAll();
+	}
+
+	public function invoicesMembersFee()
+	{
+    $ie = new \e10pro\soci\libs\MembersFeeInvoicingEngine($this->app());
     $ie->init();
 		$ie->generateAll();
 	}
@@ -53,7 +74,9 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		switch ($actionId)
 		{
 			case 'import-entries': return $this->importEntries();
+			case 'import-persons': return $this->importPersons();
 			case 'invoices-from-entries': return $this->invoicesFromEntries();
+			case 'invoices-members-fee': return $this->invoicesMembersFee();
 			case 'entries-from-return-lists': return $this->entriesFromreturnLists();
 		}
 

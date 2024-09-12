@@ -13,24 +13,43 @@ class WOEventCore extends DocumentCard
 
   public function createContentBody ()
 	{
-    foreach ($this->woInfo->data['vdsContent'] as $cc)
+    if (isset($this->woInfo->data['vdsContent']) && count($this->woInfo->data['vdsContent']))
     {
-      $cc['pane'] = 'e10-pane e10-pane-table';
-      $cc['params'] = ['hideHeader' => 1, ];
-      $this->addContent('body', $cc);
+      foreach ($this->woInfo->data['vdsContent'] as $cc)
+      {
+        if (!count($cc['table'] ?? []))
+          continue;
+        $cc['pane'] = 'e10-pane e10-pane-table';
+        $cc['params'] = ['hideHeader' => 1, ];
+        $this->addContent('body', $cc);
+      }
     }
 
-    if ($this->woInfo->data['members'] && count($this->woInfo->data['members']['table']))
+    if ($this->woInfo->woKind['usePersonsList'])
     {
-      $title = [['text' => 'Evidenční list', 'class' => 'h2']];
-      $title [] = [
-        'type' => 'action', 'action' => 'addwizard',
-        'text' => 'Vystavit faktury', 'data-class' => 'e10pro.soci.libs.WizardEventIvoicing',
-        'icon' => 'system/actionAdd', 'class' => 'pull-right padd5', 'actionClass' => 'btn-sm',
-      ];
 
-      $this->woInfo->data['members']['paneTitle'] = $title;
-      $this->addContent('body', $this->woInfo->data['members']);
+      if ($this->woInfo->data['personsList'] && count($this->woInfo->data['personsList']['table']))
+      {
+        $title = [['text' => 'Evidenční list', 'class' => 'h2']];
+
+        $this->woInfo->data['personsList']['paneTitle'] = $title;
+        $this->addContent('body', $this->woInfo->data['personsList']);
+      }
+    }
+    else
+    {
+      if ($this->woInfo->data['members'] && count($this->woInfo->data['members']['table']))
+      {
+        $title = [['text' => 'Evidenční list', 'class' => 'h2']];
+        $title [] = [
+          'type' => 'action', 'action' => 'addwizard',
+          'text' => 'Vystavit faktury', 'data-class' => 'e10pro.soci.libs.WizardEventIvoicing',
+          'icon' => 'system/actionAdd', 'class' => 'pull-right padd5', 'actionClass' => 'btn-sm',
+        ];
+
+        $this->woInfo->data['members']['paneTitle'] = $title;
+        $this->addContent('body', $this->woInfo->data['members']);
+      }
     }
   }
 

@@ -14,6 +14,8 @@ class WorkOrderInfo extends Utility
 
   var $vdsData;
   var $scDef;
+	var $woKind = NULL;
+
   var $data = [];
 
   /** @var \e10mnf\core\TableWorkOrders $tableWorkOrders */
@@ -23,6 +25,8 @@ class WorkOrderInfo extends Utility
   {
     $this->tableWorkOrders = $this->app()->table('e10mnf.core.workOrders');
     $this->recData = $this->tableWorkOrders->loadItem($workOrderNdx);
+
+		$this->woKind = $this->app()->cfgItem('e10mnf.workOrders.kinds.'.$this->recData['docKind'], NULL);
   }
 
   public function loadInfo()

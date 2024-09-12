@@ -1,6 +1,6 @@
 <?php
 
-namespace e10pro\soci\libs;
+namespace e10pro\soci\libs\imports;
 use \Shipard\Base\Utility;
 use Shipard\Utils\Utils;
 use \Shipard\UI\Core\UIUtils;

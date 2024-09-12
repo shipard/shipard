@@ -7,7 +7,11 @@
 		[
 			{
 				"cfgKey": "useEntries", "cfgName": "Používat Přihlášky",
-				"options": {"0": "Ne", "1": "Ano"}}
+				"options": {"0": "Ne", "1": "Ano"}
+			},
+			{"cfgKey": "dbCounterInvoicesMembersFee", "cfgName": "Číselná řada pro faktury za členské příspěvky", "reference": "e10doc.base.docnumbers"},
+			{"cfgKey": "itemInvoicesMembersFee", "cfgName": "Položka pro faktury za členské příspěvky", "reference": "e10.witems.items"},
+			{"cfgKey": "tagMembers", "cfgName": "Štítek pro Členy spolku", "reference": "e10.base.clsfitems"}
 		]
 	},
 
