@@ -1,0 +1,40 @@
+{
+	"io": {
+		"pins": {
+			"p0": {"title": "GPIO0", "hwnr": 0, "flags": ["d", "in", "out", "hwInt"]},
+			"p1": {"title": "GPIO1", "hwnr": 1, "flags": ["d", "in", "out", "hwInt"]},
+			"p2": {"title": "GPIO2", "hwnr": 2, "flags": ["d", "in", "out", "hwInt"]},
+			"p3": {"title": "GPIO3", "hwnr": 3, "flags": ["d", "in", "out", "hwInt"]},
+			"p4": {"title": "GPIO4", "hwnr": 4, "flags": ["d", "in", "out", "hwInt"]},
+			"p5": {"title": "GPIO5", "hwnr": 5, "flags": ["d", "in", "out", "hwInt"]},
+			"p12": {"title": "GPIO12", "hwnr": 12, "flags": ["d", "in", "out", "hwInt"]},
+			"p13": {"title": "GPIO13", "hwnr": 13, "flags": ["d", "in", "out", "hwInt"]},
+			"p14": {"title": "GPIO14", "hwnr": 14, "flags": ["d", "in", "out", "hwInt"]},
+			"p15": {"title": "GPIO15", "hwnr": 15, "flags": ["d", "in", "out", "hwInt"]},
+			"p16": {"title": "GPIO16", "hwnr": 16, "flags": ["d", "in", "out", "hwInt"]},
+			"p17": {"title": "GPIO17", "hwnr": 17, "flags": ["d", "in", "out", "hwInt"]},
+			"p18": {"title": "GPIO18", "hwnr": 18, "flags": ["d", "in", "out", "hwInt"]},
+			"p19": {"title": "GPIO19", "hwnr": 19, "flags": ["d", "in", "out", "hwInt"]},
+			"p21": {"title": "GPIO21", "hwnr": 21, "flags": ["d", "in", "out", "hwInt"]},
+			"p22": {"title": "GPIO22", "hwnr": 22, "flags": ["d", "in", "out", "hwInt"]},
+			"p23": {"title": "GPIO23", "hwnr": 23, "flags": ["d", "in", "out", "hwInt"]},
+			"p25": {"title": "GPIO25", "hwnr": 25, "flags": ["d", "in", "out", "hwInt"]},
+			"p26": {"title": "GPIO26", "hwnr": 26, "flags": ["d", "in", "out", "hwInt"]},
+			"p27": {"title": "GPIO27", "hwnr": 27, "flags": ["d", "in", "out", "hwInt"]},
+			"p32": {"title": "GPIO32", "hwnr": 32, "flags": ["d", "in", "out", "hwInt"]},
+			"p33": {"title": "GPIO33", "hwnr": 33, "flags": ["d", "in", "out", "hwInt"]},
+			"p34": {"title": "GPIO34", "hwnr": 34, "flags": ["d", "in", "hwInt"]},
+			"p35": {"title": "GPIO35", "hwnr": 35, "flags": ["d", "in", "hwInt"]},
+			"p36": {"title": "GPIO36", "hwnr": 36, "flags": ["d", "in", "hwInt"]},
+			"p39": {"title": "GPIO39", "hwnr": 39, "flags": ["d", "in", "hwInt"]},
+
+			"p40": {"title": "GPIO40 / MTD0", "hwnr": 40, "flags": ["d", "in", "hwInt"]},
+			"p41": {"title": "GPIO41 / MTDI", "hwnr": 41, "flags": ["d", "in", "hwInt"]},
+			"p42": {"title": "GPIO41 / MTDS", "hwnr": 42, "flags": ["d", "in", "hwInt"]},
+			"p45": {"title": "GPIO45", "hwnr": 45, "flags": ["d", "in", "out", "hwInt"]},
+			"p46": {"title": "GPIO46", "hwnr": 46, "flags": ["d", "in", "out", "hwInt"]},
+			"p47": {"title": "GPIO47", "hwnr": 47, "flags": ["d", "in", "out", "hwInt"]},
+			"p48": {"title": "GPIO48", "hwnr": 48, "flags": ["d", "in", "out", "hwInt"]}
+		}
+	}
+}
