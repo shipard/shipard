@@ -132,13 +132,18 @@ class SensorsAndControlsEngine extends Utility
 				continue;
 			$this->wss [$ws['lanNdx']] = [
 				'id' => $ws['ndx'], 'name' => $ws['name'],
-				'fqdn' => $ws['fqdn'],
+				'fqdn' => ($ws['mqttServerHost'] !== '') ? $ws['mqttServerHost'] : $ws['fqdn'],
 				'port' => $ws['wsPort'],
 				'wsUrl' => $ws['wsUrl'],
 				//'postUrl' => $ws['subsystems']['wss']['postUrl'],
 				'icon' => 'system/iconLocalServer',
 				'topics' => [],
 			];
+
+			if ($this->app()->ngg)
+			{
+				$this->wss [$ws['lanNdx']]['wsUrl'] =  'wss://' . $this->wss [$ws['lanNdx']]['fqdn'] . ':' . $ws['wsPort'];
+			}
 		}
 	}
 }
