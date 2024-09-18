@@ -14,5 +14,9 @@
 	"esp-now": {
 		"fn": "ESP NOW",
     "needOwner": 1
+	},
+	"uart": {
+		"fn": "UART",
+    "needOwner": 0
 	}
 }
