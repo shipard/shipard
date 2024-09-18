@@ -3,6 +3,7 @@
 namespace e10mnf\core;
 
 use \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\DbTable, \E10\utils;
+use \e10\base\libs\UtilsBase;
 
 
 /**
@@ -303,7 +304,7 @@ class TableWorkRecs extends DbTable
 		$sourcesIcons = [0 => 'icon-keyboard-o', 1 => 'system/iconEmail', 2 => 'icon-plug', 3 => 'icon-android'];
 		$item = $recData;
 
-		$linkedPersons = \E10\Base\linkedPersons ($this->app(), $this, $recData['ndx']);
+		$linkedPersons = UtilsBase::linkedPersons ($this->app(), $this, $recData['ndx']);
 
 		$hdr ['icon'] = $this->tableIcon ($recData);
 
