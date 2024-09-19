@@ -131,7 +131,8 @@ class DocReportISDoc extends \e10doc\core\libs\reports\DocReport
 
 		$this->data['ISDOC']['dateIssue'] = $this->recData['dateIssue']->format('Y-m-d');
 		$this->data['ISDOC']['dateTax'] = $this->recData['dateTax']->format('Y-m-d');
-		$this->data['ISDOC']['dateDue'] = $this->recData['dateDue']->format('Y-m-d');
+		if (!Utils::dateIsBlank($this->recData['dateDue']))
+			$this->data['ISDOC']['dateDue'] = $this->recData['dateDue']->format('Y-m-d');
 
 		$pos = strrpos ($this->data['owner']['address']['street'], ' ');
 		if ($pos === FALSE)
@@ -184,25 +185,28 @@ class DocReportISDoc extends \e10doc\core\libs\reports\DocReport
 			$this->data['ISDOC']['person'] = $tmpISDOCOwner;
 		}
 
-		$bankAccount = $this->data['myBankAccount']['bankAccount'];
-		if ($this->recData['docType'] == 'invni')
-			$bankAccount = $this->recData['bankAccount'];
-		$separatorPos = strrpos($bankAccount, "/");
-		if ($separatorPos === false)
+		$bankAccount = $this->data['myBankAccount']['bankAccount'] ?? NULL;
+		if ($bankAccount)
 		{
-			$bankID = $bankAccount;
-			$bankCode = '';
+			if ($this->recData['docType'] == 'invni')
+				$bankAccount = $this->recData['bankAccount'];
+			$separatorPos = strrpos($bankAccount, "/");
+			if ($separatorPos === false)
+			{
+				$bankID = $bankAccount;
+				$bankCode = '';
+			}
+			else
+			{
+				$bankID = substr ($bankAccount, 0, $separatorPos);
+				$bankCode = substr ($bankAccount, $separatorPos+1);
+			}
+			$this->data['ISDOC']['bankID'] = $bankID;
+			$this->data['ISDOC']['bankCode'] = $bankCode;
+			$this->data['ISDOC']['bankName'] = self::$czBanks[$bankCode]['name'];
+			$this->data['ISDOC']['bankSWIFT'] = self::$czBanks[$bankCode]['SWIFT'];
+			$this->data['ISDOC']['bankIBAN'] = "";
 		}
-		else
-		{
-			$bankID = substr ($bankAccount, 0, $separatorPos);
-			$bankCode = substr ($bankAccount, $separatorPos+1);
-		}
-		$this->data['ISDOC']['bankID'] = $bankID;
-		$this->data['ISDOC']['bankCode'] = $bankCode;
-		$this->data['ISDOC']['bankName'] = self::$czBanks[$bankCode]['name'];
-		$this->data['ISDOC']['bankSWIFT'] = self::$czBanks[$bankCode]['SWIFT'];
-		$this->data['ISDOC']['bankIBAN'] = "";
 	}
 
 	public function saveReportAs ()
