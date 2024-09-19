@@ -64,11 +64,14 @@ class LanCreator extends Utility
 		$this->lanData['vlans'] = [];
 		$this->lanData['vlanGroups'] = [];
 
-		foreach ($this->lanTemplate['vlanGroups'] as $vg)
+		if ($this->lanTemplate['vlanGroups'])
 		{
-			$this->lanData['vlanGroups'][$vg['id']] = [
-				'id' => $vg['id'], 'name' => $vg['name'], 'vlans' => $vg['vlans']
-			];
+			foreach ($this->lanTemplate['vlanGroups'] as $vg)
+			{
+				$this->lanData['vlanGroups'][$vg['id']] = [
+					'id' => $vg['id'], 'name' => $vg['name'], 'vlans' => $vg['vlans']
+				];
+			}
 		}
 
 		foreach ($this->lanTemplate['vlans'] as $vlan)
@@ -169,29 +172,32 @@ class LanCreator extends Utility
 		$this->tableLans->docsLog($newLanNdx);
 
 		// -- vlan groups
-		foreach ($this->lanData['vlanGroups'] as $vgId => $vg)
+		if (isset($this->lanData['vlanGroups']))
 		{
-			$recData = [
-				'isGroup' => 1,
-				'id' => $vg['id'],
-				'fullName' =>  $vg['name'],
-				'lan' => $newLanNdx,
-				'docState' => 4000, 'docStateMain' => 2,
-			];
-			$newVGNdx = $this->tableVlans->dbInsertRec($recData);
-			$this->lanData['vlanGroups'][$vgId]['ndx'] = $newVGNdx;
-
-			foreach ($vg['vlans'] as $vlanId)
+			foreach ($this->lanData['vlanGroups'] as $vgId => $vg)
 			{
-				$vlanNdx = $this->lanData['vlans'][$vlanId]['ndx'];
-				$newLink = [
-					'linkId' => 'mac-lan-vlans-groups',
-					'srcTableId' => 'mac.lan.vlans', 'srcRecId' => $vlanNdx,
-					'dstTableId' => 'mac.lan.vlans', 'dstRecId' => $newVGNdx
+				$recData = [
+					'isGroup' => 1,
+					'id' => $vg['id'],
+					'fullName' =>  $vg['name'],
+					'lan' => $newLanNdx,
+					'docState' => 4000, 'docStateMain' => 2,
 				];
-				$this->app()->db()->query ('INSERT INTO [e10_base_doclinks] ', $newLink);
+				$newVGNdx = $this->tableVlans->dbInsertRec($recData);
+				$this->lanData['vlanGroups'][$vgId]['ndx'] = $newVGNdx;
+
+				foreach ($vg['vlans'] as $vlanId)
+				{
+					$vlanNdx = $this->lanData['vlans'][$vlanId]['ndx'];
+					$newLink = [
+						'linkId' => 'mac-lan-vlans-groups',
+						'srcTableId' => 'mac.lan.vlans', 'srcRecId' => $vlanNdx,
+						'dstTableId' => 'mac.lan.vlans', 'dstRecId' => $newVGNdx
+					];
+					$this->app()->db()->query ('INSERT INTO [e10_base_doclinks] ', $newLink);
+				}
+				$this->tableVlans->docsLog($newVGNdx);
 			}
-			$this->tableVlans->docsLog($newVGNdx);
 		}
 
 		// -- vlans enabled groups
@@ -220,6 +226,7 @@ class LanCreator extends Utility
 		$this->tableRacks->docsLog($newRackNdx);
 
 		// -- create devices
+		/*
 		// -- router
 		$dataRouter = [
 			'deviceType' => $formRecData['routerType'], 'macDeviceType' => $formRecData['routerMacLan'],
@@ -236,6 +243,7 @@ class LanCreator extends Utility
 			'lan' => $this->lanRecData['ndx']
 		];
 		$newSwitchNdx = $this->tableDevices->createDeviceFromType ($dataSwitch);
+		*/
 
 		// -- update lan recData with main router
 		$this->tableLans->dbUpdateRec($this->lanRecData);

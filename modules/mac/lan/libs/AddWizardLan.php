@@ -13,22 +13,33 @@ class AddWizardLan extends Wizard
 {
 	var $tableDevices;
 
-	var $lanTemplate = [
-		'vlans' => [
-			['num' => 2, 'name' => 'Management aktivních prvků', 'id' => 'mng', 'ipRangeNum' => 2, 'poolBegin' => 0, 'poolEnd' => 0],
-			['num' => 7, 'name' => 'Správci sítě', 'id' => 'admins', 'ipRangeNum' => 7, 'poolBegin' => 180, 'poolEnd' => 220],
-			['num' => 3, 'name' => 'Kamerový systém', 'id' => 'cams', 'ipRangeNum' => 3, 'poolBegin' => 101, 'poolEnd' => 220],
-			['num' => 6, 'name' => 'Servery', 'id' => 'servers', 'ipRangeNum' => 6, 'poolBegin' => 101, 'poolEnd' => 220, 'enabledGroups' => ['g-users']],
-			['num' => 8, 'name' => 'Tiskárny', 'id' => 'printers', 'ipRangeNum' => 8, 'poolBegin' => 101, 'poolEnd' => 220, 'enabledGroups' => ['g-users']],
-			['num' => 4, 'name' => 'Management WiFi', 'id' => 'mng-wifi', 'ipRangeNum' => 4, 'poolBegin' => 11, 'poolEnd' => 220],
+	var $lanTemplates = [
+		'standard' => [
+			'title' => 'Běžná síť (domácí, pracovní)',
+			'vlans' => [
+				['num' => 2, 'name' => 'Management aktivních prvků', 'id' => 'mng', 'ipRangeNum' => 2, 'poolBegin' => 0, 'poolEnd' => 0],
+				['num' => 7, 'name' => 'Správci sítě', 'id' => 'admins', 'ipRangeNum' => 7, 'poolBegin' => 180, 'poolEnd' => 220],
+				['num' => 3, 'name' => 'Kamerový systém', 'id' => 'cams', 'ipRangeNum' => 3, 'poolBegin' => 101, 'poolEnd' => 220],
+				['num' => 6, 'name' => 'Servery', 'id' => 'servers', 'ipRangeNum' => 6, 'poolBegin' => 101, 'poolEnd' => 220, 'enabledGroups' => ['g-users']],
+				['num' => 8, 'name' => 'Tiskárny', 'id' => 'printers', 'ipRangeNum' => 8, 'poolBegin' => 101, 'poolEnd' => 220, 'enabledGroups' => ['g-users']],
+				['num' => 4, 'name' => 'Management WiFi', 'id' => 'mng-wifi', 'ipRangeNum' => 4, 'poolBegin' => 11, 'poolEnd' => 220],
 
-			['num' => 101, 'name' => 'Uživatelé ETH', 'id' => 'users-eth', 'ipRangeNum' => 101, 'poolBegin' => 101, 'poolEnd' => 250],
-			['num' => 102, 'name' => 'Uživatelé WiFi', 'id' => 'users-wifi', 'ipRangeNum' => 102, 'poolBegin' => 101, 'poolEnd' => 250],
-			['num' => 201, 'name' => 'Hosté ETH', 'id' => 'guests-eth', 'ipRangeNum' => 201, 'poolBegin' => 21, 'poolEnd' => 250],
-			['num' => 202, 'name' => 'Hosté WiFi', 'id' => 'guests-wifi', 'ipRangeNum' => 202, 'poolBegin' => 21, 'poolEnd' => 250],
+				['num' => 101, 'name' => 'Uživatelé ETH', 'id' => 'users-eth', 'ipRangeNum' => 101, 'poolBegin' => 101, 'poolEnd' => 250],
+				['num' => 102, 'name' => 'Uživatelé WiFi', 'id' => 'users-wifi', 'ipRangeNum' => 102, 'poolBegin' => 101, 'poolEnd' => 250],
+				['num' => 201, 'name' => 'Hosté ETH', 'id' => 'guests-eth', 'ipRangeNum' => 201, 'poolBegin' => 21, 'poolEnd' => 250],
+				['num' => 202, 'name' => 'Hosté WiFi', 'id' => 'guests-wifi', 'ipRangeNum' => 202, 'poolBegin' => 21, 'poolEnd' => 250],
+			],
+			'vlanGroups' => [
+				['name' => 'Uživatelé', 'id' => 'g-users', 'vlans' => ['users-eth', 'users-wifi']]
+			]
 		],
-		'vlanGroups' => [
-			['name' => 'Uživatelé', 'id' => 'g-users', 'vlans' => ['users-eth', 'users-wifi']]
+		'micro' => [
+			'title' => 'Mikrosíť (rourer + server)',
+			'vlans' => [
+				['num' => 2, 'name' => 'Management aktivních prvků', 'id' => 'mng', 'ipRangeNum' => 2, 'poolBegin' => 0, 'poolEnd' => 0],
+				['num' => 7, 'name' => 'Správci sítě', 'id' => 'admins', 'ipRangeNum' => 7, 'poolBegin' => 180, 'poolEnd' => 220],
+				['num' => 6, 'name' => 'Servery', 'id' => 'servers', 'ipRangeNum' => 6, 'poolBegin' => 101, 'poolEnd' => 220],
+			]
 		]
 	];
 
@@ -54,6 +65,9 @@ class AddWizardLan extends Wizard
 	{
 		$this->recData['ipAddrSecondNumber'] = strval(mt_rand(4, 252));
 
+		$enumLanTemplates = $this->enumLanTemplates();
+		$this->recData['lanTemplate'] = key($enumLanTemplates);
+
 		$enumRouter = $this->enumRouter();
 		$this->recData['routerType'] = key($enumRouter);
 		$enumRouterMacLan = $this->enumMacLanType(8);
@@ -67,6 +81,8 @@ class AddWizardLan extends Wizard
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 
 		$this->openForm ();
+			$this->addInputEnum2('lanTemplate', 'Druh sítě', $enumLanTemplates, TableForm::INPUT_STYLE_OPTION);
+			$this->addSeparator(self::coH2);
 			$this->addInput('lanName', 'Název', self::INPUT_STYLE_STRING, 0, 80, FALSE, 'Naše síť');
 			$this->addInput('ipAddrSecondNumber', 'Hlavní číslo pro IP adresy (10.XXX.1.1)', self::INPUT_STYLE_INT, 0, 0,FALSE);
 
@@ -89,7 +105,7 @@ class AddWizardLan extends Wizard
 			$this->recData['lanName'] = 'Naše síť';
 
 		$lc = new \mac\lan\libs\LanCreator($this->app());
-		$lc->setTemplate($this->lanTemplate);
+		$lc->setTemplate($this->lanTemplates[$this->recData['lanTemplate']]);
 		$lpc = $lc->createPreviewContent($this->recData['lanName'], $this->recData['ipAddrSecondNumber']);
 
 		$this->setFlag ('formStyle', 'e10-formStyleWizard');
@@ -110,7 +126,7 @@ class AddWizardLan extends Wizard
 	public function doIt ()
 	{
 		$lc = new \mac\lan\libs\LanCreator($this->app());
-		$lc->setTemplate($this->lanTemplate);
+		$lc->setTemplate($this->lanTemplates[$this->recData['lanTemplate']]);
 		$lc->save($this->recData['lanName'], $this->recData['ipAddrSecondNumber'], $this->recData);
 
 		// -- close wizard
@@ -148,6 +164,17 @@ class AddWizardLan extends Wizard
 			if ($typeCfg['dk'] != $deviceKind)
 				continue;
 			$enum[$typeId] = $typeCfg['fn'];
+		}
+
+		return $enum;
+	}
+
+	public function enumLanTemplates()
+	{
+		$enum = [];
+		foreach ($this->lanTemplates as $ltId => $ltCfg)
+		{
+			$enum[$ltId] = $ltCfg['title'];
 		}
 
 		return $enum;
