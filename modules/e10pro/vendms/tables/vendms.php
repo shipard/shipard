@@ -35,21 +35,15 @@ class TableVendMs extends DbTable
 				'ndx' => $r['ndx'], 'fn' => $r['fullName'], 'sn' => $r['shortName'],
 				'title' => $r['title'],
 				'allowAllUsers' => 1,
+				'mqttBaseTopic' => $r['mqttBaseTopic'],
+				'urlMachine' => $r['urlMachine'],
+				'urlSetup' => $r['urlSetup'],
+				'mqttTempTop' => $r['mqttTempTop'],
+				'mqttTempBottom' => $r['mqttTempBottom'],
+				'mqttRfid' => $r['mqttRfid'],
+				'mqttBusy' => $r['mqttBusy'],
+				'setupModeChipIds' => $r['setupModeChipIds'],
 			];
-
-			/*
-			$cntPeoples = 0;
-			$cntPeoples += $this->saveConfigList ($canteen, 'admins', 'e10.persons.persons', 'e10pro-canteens-admins', $r ['ndx']);
-			$cntPeoples += $this->saveConfigList ($canteen, 'adminsGroups', 'e10.persons.groups', 'e10pro-canteens-admins', $r ['ndx']);
-			$cntPeoples += $this->saveConfigList ($canteen, 'users', 'e10.persons.persons', 'e10pro-canteens-users', $r ['ndx']);
-			$cntPeoples += $this->saveConfigList ($canteen, 'usersGroups', 'e10.persons.groups', 'e10pro-canteens-users', $r ['ndx']);
-
-			$wiki['allowAllUsers'] = ($cntPeoples) ? 0 : 1;
-			*/
-			//$this->saveConfigList ($canteen, 'optimizePayers', 'e10.persons.persons', 'e10pro-canteens-optimize-payers', $r ['ndx']);
-			//$this->saveConfigList ($canteen, 'dailyReportLabels', 'e10.base.clsfitems', 'canteen-daily-report-labels', $r ['ndx']);
-
-			//$this->saveConfigAddFoods($canteen);
 
 			$vendms [$r['ndx']] = $vendm;
 		}
@@ -60,33 +54,8 @@ class TableVendMs extends DbTable
 
 	function usersVendMs ()
 	{
-		$canteens = [];
-		$userNdx = $this->app()->userNdx();
-		$userGroups = $this->app()->userGroups();
-
 		$allVendMS = $this->app()->cfgItem ('e10pro.vendms.vendms', NULL);
-		//if ($allVendMS === NULL)
-			return $allVendMS;
-
-		/*
-		foreach ($allCanteens as $w)
-		{
-			$enabled = 0;
-			if (!isset($w['allowAllUsers'])) $enabled = 1;
-			elseif ($w['allowAllUsers']) $enabled = 1;
-			elseif (isset($w['admins']) && in_array($userNdx, $w['admins'])) $enabled = 1;
-			elseif (isset($w['adminsGroups']) && count($userGroups) && count(array_intersect($userGroups, $w['adminsGroups'])) !== 0) $enabled = 1;
-			elseif (isset($w['users']) && in_array($userNdx, $w['users'])) $enabled = 1;
-			elseif (isset($w['usersGroups']) && count($userGroups) && count(array_intersect($userGroups, $w['usersGroups'])) !== 0) $enabled = 1;
-
-			if (!$enabled)
-				continue;
-
-			$canteens[$w['ndx']] = $w;
-		}
-
-		return $canteens;
-		*/
+		return $allVendMS;
 	}
 }
 
@@ -194,6 +163,14 @@ class FormVendMs extends TableForm
 				$this->closeTab ();
 
 				$this->openTab ();
+					$this->addColumnInput ('mqttBaseTopic');
+					$this->addColumnInput ('urlMachine');
+					$this->addColumnInput ('urlSetup');
+					$this->addColumnInput ('mqttTempTop');
+					$this->addColumnInput ('mqttTempBottom');
+					$this->addColumnInput ('mqttRfid');
+					$this->addColumnInput ('mqttBusy');
+					$this->addColumnInput ('setupModeChipIds');
 				$this->closeTab();
 				$this->openTab (TableForm::ltNone);
 					$this->addAttachmentsViewer();

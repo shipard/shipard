@@ -8,18 +8,16 @@ namespace e10pro\vendms\libs;
 class VendMsSetupWidget extends \Shipard\UI\Core\UIWidgetBoard
 {
 	var $vendmNdx = 0;
+	var $vendmsCfg = NULL;
 
 	var $code;
-	var $products = [];
-	var $units;
-
-	var $today = NULL;
-
-	// uiTemplate
 
 	protected function composeCode ()
 	{
-		$this->vendmNdx = 1;
+		if (!$this->vendmsCfg)
+		{
+			return 'unconfigured...';
+		}
 
 		$c = '';
 
@@ -28,6 +26,7 @@ class VendMsSetupWidget extends \Shipard\UI\Core\UIWidgetBoard
 		$vme->createCodeSetup();
 
 		$this->uiTemplate->data['machineSelectBoxTable'] = $vme->code;
+		$this->uiTemplate->data['machineUrl'] = $this->vendmsCfg['urlMachine'];
 
 		$templateStr = $this->uiTemplate->subTemplateStr('modules/e10pro/vendms/subtemplates/vmWidgetSetup');
 		$c .= $this->uiTemplate->render($templateStr);
@@ -48,17 +47,10 @@ class VendMsSetupWidget extends \Shipard\UI\Core\UIWidgetBoard
 	{
 		$this->panelStyle = self::psNone;
 
-		$this->today = new \DateTime();
+		$this->vendmNdx = 1;
+		$this->vendmsCfg = $this->app()->cfgItem('e10pro.vendms.vendms.'.$this->vendmNdx, NULL);
 
-		//$this->widgetSystemParams['data-cashbox'] = ($this->app->workplace && $this->app->workplace['cashBox']) ? $this->app->workplace['cashBox'] : 1;
-		//$this->widgetSystemParams['data-warehouse'] = 0;
-
-		//$this->widgetSystemParams['data-taxcalc'] = intval($this->app->cfgItem ('options.e10doc-sale.cashRegSalePricesType', 2));
-		//$this->widgetSystemParams['data-taxcalc'] = E10Utils::taxCalcIncludingVATCode ($this->app(), $this->today, $this->widgetSystemParams['data-taxcalc']);
-
-		//$this->widgetSystemParams['data-roundmethod'] = 1;
-
-		//$this->units = $this->app->cfgItem ('e10.witems.units');
+		$this->widgetSystemParams['data-machine-url'] = $this->vendmsCfg['urlMachine'];
 
 		$this->code = $this->composeCode();
 		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $this->code]);

@@ -9,6 +9,18 @@
 
 		{"id": "order", "name": "Pořadí", "type": "int"},
 
+		{"id": "urlMachine", "name": "URL pro rozhraní automatu", "type": "string", "len": 160},
+		{"id": "urlSetup", "name": "URL pro nastavení automatu", "type": "string", "len": 160},
+
+		{"id": "mqttBaseTopic", "name": "MQTT topic automatu", "type": "string", "len": 160},
+
+		{"id": "mqttTempTop", "name": "MQTT topic pro teplotu nahoře", "type": "string", "len": 160},
+		{"id": "mqttTempBottom", "name": "MQTT topic pro teplotu dole", "type": "string", "len": 160},
+		{"id": "mqttRfid", "name": "MQTT topic čtečku karet / čipů", "type": "string", "len": 160},
+		{"id": "mqttBusy", "name": "MQTT topic pro senzor výdeje", "type": "string", "len": 160},
+
+		{"id": "setupModeChipIds", "name": "ID čipů pro vstup do Nastaveni", "type": "string", "placeholder": "012345ABC FADC565", "len": 200},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],

@@ -8,18 +8,25 @@ namespace e10pro\vendms\libs;
 class VendMsMachineWidget extends \Shipard\UI\Core\UIWidgetBoard
 {
 	var $vendmNdx = 0;
+	var $vendmsCfg = NULL;
 
 	var $code;
-	var $products = [];
-	var $units;
 
-	var $today = NULL;
-
-	// uiTemplate
+	var $sensorIdTempTop = '';
+	var $sensorIdTempBottom = '';
+	var $sensorIdBusy = '';
+	var $rfidReaderId = '';
+	var $mqttBaseTopic = '';
 
 	protected function composeCode ()
 	{
-		$this->vendmNdx = 1;
+		if (!$this->vendmsCfg)
+		{
+			return 'unconfigured...';
+		}
+
+		$this->uiTemplate->data['machineUrl'] = $this->vendmsCfg['urlMachine'];
+		$this->uiTemplate->data['setupUrl'] = $this->vendmsCfg['urlSetup'];
 
 		$c = '';
 
@@ -33,6 +40,41 @@ class VendMsMachineWidget extends \Shipard\UI\Core\UIWidgetBoard
 		$c .= $this->uiTemplate->render($templateStr);
 
 		$c .= $this->composeCodeInitScript();
+
+		$this->uiTemplate->uiData['iotTopicsMap'][$this->sensorIdTempTop] = [
+			'sid' => 'AAA_10',
+			'type' => 'sensor',
+			'wss' => 1,
+			'elids' => [$this->widgetId]
+		];
+
+		$this->uiTemplate->uiData['iotTopicsMap'][$this->sensorIdTempBottom] = [
+			'sid' => 'AAA_20',
+			'type' => 'sensor',
+			'wss' => 1,
+			'elids' => [$this->widgetId]
+		];
+
+		$this->uiTemplate->uiData['iotTopicsMap'][$this->sensorIdBusy] = [
+			'sid' => 'AAA_30',
+			'type' => 'sensor',
+			'wss' => 1,
+			'elids' => [$this->widgetId]
+		];
+
+		$this->uiTemplate->uiData['iotTopicsMap'][$this->rfidReaderId] = [
+			'sid' => 'AAA_40',
+			'type' => 'reader',
+			'wss' => 1,
+			'elids' => [$this->widgetId]
+		];
+
+		$this->uiTemplate->uiData['iotTopicsMap'][$this->mqttBaseTopic] = [
+			'sid' => 'AAA_50',
+			'type' => 'device',
+			'wss' => 1,
+			'elids' => [$this->widgetId]
+		];
 
 		return $c;
 	}
@@ -48,17 +90,23 @@ class VendMsMachineWidget extends \Shipard\UI\Core\UIWidgetBoard
 	{
 		$this->panelStyle = self::psNone;
 
-		$this->today = new \DateTime();
+		$this->vendmNdx = 1;
+		$this->vendmsCfg = $this->app()->cfgItem('e10pro.vendms.vendms.'.$this->vendmNdx, NULL);
 
-		//$this->widgetSystemParams['data-cashbox'] = ($this->app->workplace && $this->app->workplace['cashBox']) ? $this->app->workplace['cashBox'] : 1;
-		//$this->widgetSystemParams['data-warehouse'] = 0;
+		$this->rfidReaderId = $this->vendmsCfg['mqttRfid'];
+		$this->sensorIdBusy = $this->vendmsCfg['mqttBusy'];
+		$this->sensorIdTempBottom = $this->vendmsCfg['mqttTempBottom'];
+		$this->sensorIdTempTop = $this->vendmsCfg['mqttTempTop'];
+		$this->mqttBaseTopic = $this->vendmsCfg['mqttBaseTopic'];
 
-		//$this->widgetSystemParams['data-taxcalc'] = intval($this->app->cfgItem ('options.e10doc-sale.cashRegSalePricesType', 2));
-		//$this->widgetSystemParams['data-taxcalc'] = E10Utils::taxCalcIncludingVATCode ($this->app(), $this->today, $this->widgetSystemParams['data-taxcalc']);
-
-		//$this->widgetSystemParams['data-roundmethod'] = 1;
-
-		//$this->units = $this->app->cfgItem ('e10.witems.units');
+		$this->widgetSystemParams['data-temp-sensor-top'] = $this->sensorIdTempTop;
+		$this->widgetSystemParams['data-temp-sensor-bottom'] = $this->sensorIdTempBottom;
+		$this->widgetSystemParams['data-sensor-busy'] = $this->sensorIdBusy;
+		$this->widgetSystemParams['data-base-topic'] = $this->mqttBaseTopic;
+		$this->widgetSystemParams['data-reader-rfid'] = $this->rfidReaderId;
+		$this->widgetSystemParams['data-setup-mode-cards'] = $this->vendmsCfg['setupModeChipIds'];
+		$this->widgetSystemParams['data-setup-url'] =  $this->vendmsCfg['urlSetup'];
+		$this->widgetSystemParams['data-machine-url'] = $this->vendmsCfg['urlMachine'];
 
 		$this->code = $this->composeCode();
 		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $this->code]);

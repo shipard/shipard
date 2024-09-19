@@ -1,7 +1,9 @@
   <div class='vmMode vm-mode-select active' id="vm-mode-select">
     <div class='vmSelectBoxTitle' id='vm-select-box-display'>
       <div>{{{@icon;icon:user/shoppingCart}}} Vyberte zboží.</div>
-      <button class="shpd-btn shpd-btn-outline-secondary">{{{@icon;icon:user/user}}}</button>
+      <div id='test'>
+        <span id='vm-temp-bottom'></span>
+      </div>
     </div>
     {{{data.machineSelectBoxTable}}}
   </div>
@@ -22,6 +24,12 @@
   </div>
 
   <div class='vmMode vm-mode-buy-in-progress' id="vm-mode-buy-in-progress">
-    Zboží se vydává...
+    <div>Zboží se vydává...</div>
+    <div><span class='rest-credit-title'>Zbývající kredit: </span><span id='rest-credit-amount'></span></div>
   </div>
 
+  <div class='vmMode vm-mode-info-card' id="vm-mode-info-card">
+    <div id="card-holder-info"></div>
+    <div id="rest-credit-info"></div>
+    <div><a href="{{data.machineUrl}}" class="shpd-btn shpd-btn-outline-success">{{{@icon;icon:user/checkSquare}}} Hotovo</a></div>
+  </div>
