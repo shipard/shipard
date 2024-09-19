@@ -16,8 +16,9 @@ body > div.fullScreenModal {
 }
 
 div.shp-numpad-container {
-  width: 30rem;
+  width: 40rem;
   max-width: 90vw;
+  font-size: 140%;
 }
 
 table.shp-numpad-keyboard {
@@ -35,8 +36,9 @@ color: var(--shpd-body-color);
 }
 
 table.shp-numpad-keyboard td.ok.shp-widget-action {
-//background-color: #{$numpad-ok};
-background-color: var(--shpd-success);
+  //background-color: #{$numpad-ok};
+  background-color: var(--shpd-success);
+  font-size: 300%;
 }
 
 
