@@ -31,6 +31,7 @@ class ObjectCreateInvoice extends Utility
 
 		$newDoc->docHead['person'] = $this->requestParams['personNdx'] ?? 0;
     $newDoc->docHead['dateAccounting'] = $accDate;
+    $newDoc->docHead['dateDue'] = Utils::today();
     $newDoc->docHead['dateTax'] = $accDate;
 		$newDoc->docHead['author'] = $this->app()->userNdx();
     $newDoc->docHead['dbCounter'] = $dbCounter;
