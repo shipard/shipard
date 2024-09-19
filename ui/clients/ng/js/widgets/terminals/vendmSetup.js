@@ -59,8 +59,8 @@ class WidgetVendMSetup extends ShipardWidgetBoard
     this.numPad.rootElm.remove();
     this.numPad = null;
 
-    if (!quantity)
-      return;
+    //if (!quantity)
+    //  return;
 
     this.apiCallObject('vendms-box-quantity', {'itemNdx': this.itemNdx, 'boxNdx': this.itemBoxNdx, 'quantity': quantity});
   }

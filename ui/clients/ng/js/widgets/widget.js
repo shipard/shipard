@@ -405,6 +405,11 @@ class ShipardWidget {
         oldScriptEl.parentNode.replaceChild(newScriptEl, oldScriptEl);
     });
   }
+
+  onMqttMessage (serverIndex, topic, payload)
+  {
+    //console.log("widget - onMqttMessage: ", topic, payload);
+  }
 }
 
 function inputCh()

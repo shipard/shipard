@@ -5,21 +5,46 @@ class WidgetVendM extends ShipardWidgetBoard
   elmSBDisplayItemPrice = null;
   elmCardCodeInput = null;
 
+  vmMode = 'select';
+
+  rfidReaderTopic = '';
+  tempBottomSensorTopic = '';
+  topicMotorsMatrix = '';
+  topicMotorsBusy = '';
+
+  setupModeCards = null;
+  setupUrl = '';
+
   itemName = '';
   itemNdx = 0;
   personNdx = 0;
   itemPrice = 0;
   itemBoxId = '';
   itemBoxNdx = '';
+  motorsMatrixValue = '';
+  restCreditAmount = 0;
+
+  buyTimeout = 0;
 
   init (rootElm)
   {
     super.init(rootElm);
 
+    this.rfidReaderTopic = this.rootElm.getAttribute('data-reader-rfid');
+    this.tempBottomSensorTopic = this.rootElm.getAttribute('data-temp-sensor-bottom');
+
     this.elmTableBoxes = this.rootElm.querySelector('table.vmSelectBox');
     this.elmSBDisplayItemName = document.getElementById('vm-select-box-display-item-name');
     this.elmSBDisplayItemPrice = document.getElementById('vm-select-box-display-item-price');
     this.elmCardCodeInput = document.getElementById('vm-card-code-input');
+
+    let setupModeCardsStr = this.rootElm.getAttribute('data-setup-mode-cards');
+    if (setupModeCardsStr !== undefined)
+      this.setupModeCards = setupModeCardsStr.split(' ');
+
+    this.setupUrl = this.rootElm.getAttribute('data-setup-url');
+    this.topicMotorsBusy = this.rootElm.getAttribute('data-sensor-busy');
+    this.topicMotorsMatrix = this.rootElm.getAttribute('data-base-topic') + '/M';
 
     this.elmCardCodeInput.addEventListener("keypress", function(event) {
       if (event.key === "Enter") {
@@ -31,7 +56,7 @@ class WidgetVendM extends ShipardWidgetBoard
 
   doAction (actionId, e)
   {
-    console.log("VM-ACTION: ", actionId);
+    //console.log("VM-ACTION: ", actionId);
     switch (actionId)
     {
       case 'vmSelectBox': return this.selectBox(e);
@@ -43,6 +68,22 @@ class WidgetVendM extends ShipardWidgetBoard
 
   doApiObjectResponse(data)
   {
+    if (data.response.classId === 'vendms-validate-code' && this.vmMode === 'info-card')
+    {
+      if (data.response.validPerson !== 1)
+      {
+        document.getElementById('card-holder-info').innerText = 'Neznámá karta / čip';
+        document.getElementById('rest-credit-info').innerText = '';
+      }
+      else
+      {
+        document.getElementById('card-holder-info').innerText = data.response.personName;
+        document.getElementById('rest-credit-info').innerText = 'Kredit: ' + data.response.creditAmount + ' Kč';
+      }
+      setTimeout(function() {location.reload();}, 30000);
+      return;
+    }
+
     if (data.response.classId === 'vendms-validate-code')
     {
       this.elmHide(this.rootElm.querySelector('div.statusInvalidCode'));
@@ -65,6 +106,7 @@ class WidgetVendM extends ShipardWidgetBoard
         return;
       }
 
+      this.restCreditAmount = currentCredit - this.itemPrice;
       this.personNdx = data.response.personNdx;
       this.setVMMode('do-buy');
       this.doBuyCreateInvoice();
@@ -76,9 +118,7 @@ class WidgetVendM extends ShipardWidgetBoard
         {
           return;
         }
-        this.doBuyEjectItem();
       }
-      console.log("VM_doApiObjectResponse", data);
   }
 
   selectBox (e)
@@ -101,6 +141,11 @@ class WidgetVendM extends ShipardWidgetBoard
     this.itemNdx = parseInt(e.getAttribute('data-item-ndx'));
     this.itemBoxId = newBoxId;
     this.itemBoxNdx = e.getAttribute('data-box-ndx');
+    this.motorsMatrixValue = e.getAttribute('data-box-mm');
+
+    if (this.buyTimeout != 0)
+      clearTimeout(this.buyTimeout);
+    this.buyTimeout = setTimeout(function() {location.reload();}, 120000);
 
     return 1;
   }
@@ -112,21 +157,26 @@ class WidgetVendM extends ShipardWidgetBoard
     this.elmCardCodeInput.value = '';
 
     this.elmSBDisplayItemName.innerText = this.itemName;
-    this.elmSBDisplayItemPrice.innerText = this.itemPrice;
+    this.elmSBDisplayItemPrice.innerText = this.itemPrice + ' Kč';
 
     return 1;
   }
 
   buyCancel (e)
   {
-    console.log('buyCancel');
+    if (this.buyTimeout != 0)
+      clearTimeout(this.buyTimeout);
+    this.buyTimeout = 0;
     this.setVMMode('select');
+
     return 1;
   }
 
-  validateCardCode ()
+  validateCardCode (cardId)
   {
     let cardCode = this.elmCardCodeInput.value;
+    if (cardId !== undefined)
+      cardCode = cardId;
     console.log("validateCardCode: ", cardCode);
 
     this.elmHide(this.rootElm.querySelector('div.statusInvalidCode'));
@@ -140,6 +190,8 @@ class WidgetVendM extends ShipardWidgetBoard
 
   setVMMode(mode)
   {
+    this.vmMode = mode;
+
     let oldActiveElement = this.rootElm.querySelector('div.vmMode.active');
     oldActiveElement.classList.remove('active');
 
@@ -160,18 +212,77 @@ class WidgetVendM extends ShipardWidgetBoard
     else if (mode === 'do-buy')
     {
       document.getElementById('vm-mode-buy-in-progress').classList.add('active');
+      document.getElementById('rest-credit-amount').innerText = this.restCreditAmount + ' Kč';
     }
-  }
+    else if (mode === 'info-card')
+      {
+        this.elmHide(this.rootElm.querySelector('div.statusInvalidCode'));
+        this.elmHide(this.rootElm.querySelector('div.statusInvalidCredit'));
+        this.elmHide(this.rootElm.querySelector('div.statusCardVerify'));
+
+        document.getElementById('vm-mode-info-card').classList.add('active');
+      }
+    }
 
   doBuyCreateInvoice ()
   {
-    console.log('create_invoice');
+    if (this.buyTimeout != 0)
+      clearTimeout(this.buyTimeout);
+    this.buyTimeout = 0;
+
+    shc.mqtt.publish(1, this.topicMotorsMatrix, this.motorsMatrixValue);
+
     this.apiCallObject('vendms-create-invoice', {'itemNdx': this.itemNdx, 'boxNdx': this.itemBoxNdx, 'personNdx': this.personNdx});
   }
 
-  doBuyEjectItem ()
+  doRfidReader(cardId)
   {
-    location.reload();
+    console.log("RFID1: ", cardId);
+
+    if (this.vmMode === 'select')
+    { // show card info / start setup mode
+
+      if (this.setupModeCards !== null && this.setupModeCards.indexOf(cardId) >= 0)
+      {
+        document.location.href = this.setupUrl;
+        return;
+      }
+
+      this.setVMMode('info-card');
+      this.validateCardCode(cardId);
+      return;
+    }
+    if (this.vmMode === 'get-card')
+    { // show card info
+      this.validateCardCode(cardId);
+      return;
+    }
+  }
+
+  onMqttMessage (serverIndex, topic, payload)
+  {
+    console.log("vendms - onMqttMessage: ", topic, payload);
+
+    if (topic === this.rfidReaderTopic)
+    {
+      this.doRfidReader(payload['value']);
+    }
+
+    if (topic == this.tempBottomSensorTopic)
+    {
+      document.getElementById('vm-temp-bottom').innerText = parseFloat(payload['value']) + ' °C';
+    }
+
+    console.log("topicBusy: ", this.topicMotorsBusy);
+    if (topic == this.topicMotorsBusy)
+    {
+      console.log("YES, busy...");
+      if (parseInt(payload['value']) == 0)
+      {
+        console.log("!!!RELOAD");
+        location.reload();
+      }
+    }
   }
 }
 
