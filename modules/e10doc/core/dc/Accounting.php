@@ -360,7 +360,7 @@ class Accounting extends \e10\DocumentCard
 			$rowItem = [
 				'text' => $rowText,
 				'item' => ['text' => $r['witemId'], 'title' => $r['witemName'], 'class' => '', 'docAction' => 'edit', 'table' => 'e10.witems.items', 'pk' => $r['item']],
-				'docQuantity' => $r['quantity'], 'docUnit' => $docUnit, 'docPriceAll' => $r['priceAllHc'],
+				'docQuantity' => $r['quantity'], 'docUnit' => $docUnit, 'docPriceAll' => $r['taxBase'],
 				'invDir' => $invDirections[$r['invDirection']], 'operation' => $op,
 			];
 
