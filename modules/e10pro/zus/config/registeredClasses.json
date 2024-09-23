@@ -1,0 +1,5 @@
+{
+	"objectsCalls": {
+		"zus-students-sync-pull": {"classId": "e10pro.zus.libs.StudentsSyncPullResponse"}
+	}
+}

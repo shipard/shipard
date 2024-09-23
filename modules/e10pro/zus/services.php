@@ -257,6 +257,35 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		}
 	}
 
+	protected function syncStudentsPull()
+	{
+		$listNdx = intval($this->app->arg('listNdx'));
+		if (!$listNdx)
+			return $this->app->err('arg `--listNdx` is missing or wrong');
+
+		$url = $this->app->arg('url');
+		if (!$url || $url == '')
+			return $this->app->err('arg `--url` is missing or wrong');
+
+		$apiKey = $this->app->arg('apiKey');
+		if (!$apiKey || $apiKey == '')
+			return $this->app->err('arg `--apiKey` is missing or wrong');
+
+		$addLabels = $this->app->arg('addLabels');
+
+		$e = new \e10pro\zus\libs\StudentsSyncPullEngine($this->app());
+		$e->contactsListNdx = $listNdx;
+		$e->url = $url;
+		$e->apiKey = $apiKey;
+
+		if ($addLabels && $addLabels != '')
+			$e->setAddLabels($addLabels);
+
+		$e->run();
+
+		return TRUE;
+	}
+
 	public function anonymizeVyuky ()
 	{
 		$q [] = 'SELECT vyuky.*, studenti.fullName as jmenoStudenta';
@@ -657,6 +686,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'create-studies': return $this->createStudies();
 			case 'add-users': return $this->addUsers();
 			case 'add-students': return $this->addStudents();
+			case 'sync-students-pull': return $this->syncStudentsPull();
 		}
 
 		parent::onCliAction($actionId);

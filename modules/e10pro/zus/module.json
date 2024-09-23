@@ -35,6 +35,7 @@
 		{"id": "+widgets", "file": "widgets.json"},
 		{"id": "+e10.persons.virtualGroups", "file": "e10.persons.virtualGroups.json"},
 		{"id": "+e10.reports.sendReports", "file": "sendReports.json"},
-		{"id": "+e10.usersContexts", "file": "usersContexts.json"}
+		{"id": "+e10.usersContexts", "file": "usersContexts.json"},
+		{"id": "+registeredClasses", "file": "registeredClasses.json"}
   ]
 }
