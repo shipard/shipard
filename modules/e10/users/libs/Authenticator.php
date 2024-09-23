@@ -30,6 +30,14 @@ class Authenticator extends Utility
 
   function checkSession()
   {
+    $headers = Utils::getAllHeaders();
+		if (isset ($headers['shpd-api-key']))
+		{
+			$ok = $this->checkRobot($headers['shpd-api-key']);
+			if ($ok)
+				return TRUE;
+		}
+
     $sessionId = $this->testCookie ($this->sessionCookieName);
 
     if (!$sessionId)
