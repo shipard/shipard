@@ -1,7 +1,6 @@
 <?php
 
 namespace e10pro\vendms\libs;
-use \Shipard\Base\Utility;
 use \Shipard\Utils\Utils;
 use \e10doc\core\libs\CreateDocumentUtility;
 
@@ -9,11 +8,8 @@ use \e10doc\core\libs\CreateDocumentUtility;
 /**
  * class ObjectCreateInvoice
  */
-class ObjectCreateInvoice extends Utility
+class ObjectCreateInvoice extends \Shipard\Base\ApiObject2
 {
-  var $requestParams = NULL;
-  var $result = ['success' => 0];
-
   public function saveDoc()
   {
 		$dbCounter = 1;

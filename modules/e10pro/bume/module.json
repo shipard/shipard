@@ -10,6 +10,7 @@
 		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
 		{"id": "+e10pro.bume.bulkEmails.docStates", "file": "wkf.bulkEmails.docStates.json"},
 		{"id": "+e10.persons.virtualGroups", "file": "e10.persons.virtualGroups.json"},
-		{"id": "+reports", "file": "reports.json"}
+		{"id": "+reports", "file": "reports.json"},
+		{"id": "+registeredClasses", "file": "registeredClasses.json"}
 	]
 }

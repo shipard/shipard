@@ -30,6 +30,35 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		return TRUE;
 	}
 
+	protected function syncPersonsPull()
+	{
+		$listNdx = intval($this->app->arg('listNdx'));
+		if (!$listNdx)
+			return $this->app->err('arg `--listNdx` is missing or wrong');
+
+		$url = $this->app->arg('url');
+		if (!$url || $url == '')
+			return $this->app->err('arg `--url` is missing or wrong');
+
+		$apiKey = $this->app->arg('apiKey');
+		if (!$apiKey || $apiKey == '')
+			return $this->app->err('arg `--apiKey` is missing or wrong');
+
+		$addLabels = $this->app->arg('addLabels');
+
+		$e = new \e10pro\bume\libs\PersonsSyncPullEngine($this->app());
+		$e->contactsListNdx = $listNdx;
+		$e->url = $url;
+		$e->apiKey = $apiKey;
+
+		if ($addLabels && $addLabels != '')
+			$e->setAddLabels($addLabels);
+
+		$e->run();
+
+		return TRUE;
+	}
+
 	public function onCronEver()
 	{
 		$this->sendBulkEmails();
@@ -49,6 +78,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		switch ($actionId)
 		{
 			case 'send-bulk-post': return $this->sendBulkPost();
+			case 'sync-persons-pull': return $this->syncPersonsPull();
 		}
 
 		parent::onCliAction($actionId);

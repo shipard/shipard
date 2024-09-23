@@ -43,7 +43,7 @@ class ContactsListEngine extends Utility
 		$tableListPersons = $this->app()->table ('e10pro.bume.listPersons');
 
 		// -- delete old
-		$this->db()->query ('DELETE FROM [e10pro_wkf_listPersons] WHERE [list] = %i', $this->contactsListNdx);
+		$this->db()->query ('DELETE FROM [e10pro_bume_listPersons] WHERE [list] = %i', $this->contactsListNdx);
 
 		// -- add new
 		$q[] = 'SELECT * FROM [e10pro_bume_listRecipients]';
@@ -81,7 +81,7 @@ class ContactsListEngine extends Utility
 		$q = [];
 		array_push ($q, 'SELECT listPersons.*,');
 		array_push ($q, ' persons.fullName AS personFullName, persons.firstName AS personFirstName, persons.lastName AS personLastName, persons.id AS personId, persons.company AS personCompany');
-		array_push ($q, ' FROM e10pro_wkf_listPersons AS listPersons');
+		array_push ($q, ' FROM e10pro_bume_listPersons AS listPersons');
 		array_push ($q, ' LEFT JOIN [e10_persons_persons] AS persons ON listPersons.person = persons.ndx');
 		array_push ($q, ' WHERE 1');
 		array_push ($q, ' AND [listPersons].[list] = %i', $this->contactsListNdx);
@@ -125,7 +125,7 @@ class ContactsListEngine extends Utility
 		array_push ($qp, 'SELECT props.recid as personNdx, props.valueString, props.property');
 		array_push ($qp, ' FROM e10_base_properties AS props');
 		array_push ($qp, ' WHERE tableid = %s', 'e10.persons.persons');
-		array_push ($qp, ' AND EXISTS (SELECT ndx FROM e10pro_wkf_listPersons WHERE props.recid = e10pro_wkf_listPersons.person AND e10pro_wkf_listPersons.[list] = %i', $this->contactsListNdx, ')');
+		array_push ($qp, ' AND EXISTS (SELECT ndx FROM e10pro_bume_listPersons WHERE props.recid = e10pro_bume_listPersons.person AND e10pro_bume_listPersons.[list] = %i', $this->contactsListNdx, ')');
 
 		$rows = $this->app->db()->query($qp);
 		foreach ($rows as $r)
@@ -192,6 +192,42 @@ class ContactsListEngine extends Utility
 				copy($vcard->info['vcardQRCodeFullFileName'], $ffn.'.svg');
 			}
 		}
+	}
+
+	public function createSyncList ($listPageSize, $listFirstRowNumber)
+	{
+		$data = [];
+
+		$q = [];
+		array_push ($q, 'SELECT listPersons.*,');
+		array_push ($q, ' persons.fullName AS personFullName, persons.firstName AS personFirstName, persons.lastName AS personLastName, persons.id AS personId, persons.company AS personCompany');
+		array_push ($q, ' FROM e10pro_bume_listPersons AS listPersons');
+		array_push ($q, ' LEFT JOIN [e10_persons_persons] AS persons ON listPersons.person = persons.ndx');
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND [listPersons].[list] = %i', $this->contactsListNdx);
+		array_push ($q, ' ORDER BY listPersons.ndx');
+		array_push ($q, ' LIMIT %i, %i', $listFirstRowNumber, $listPageSize);
+
+		$rows = $this->app->db()->query($q);
+		//error_log("#### ".\dibi::$sql);
+		forEach ($rows as $r)
+		{
+			$pndx = $r['person'];
+
+			if (!isset ($data[$pndx]))
+			{
+				$item = [
+					'ndx' => $pndx,
+					'fullName' => $r['personFullName'],
+					'company' => $r['personCompany'],
+					'personId' => $r['personId'],
+				];
+
+				$data[$pndx] = $item;
+			}
+		}
+
+		$this->data = array_values($data);
 	}
 
 	public function createZIP($fileName)

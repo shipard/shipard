@@ -49,8 +49,9 @@ class ApiResponseObject extends \Shipard\Api\v2\ApiResponse
 		$classId = $this->functionClass['classId'] ?? '';
 		$this->responseData ['classId'] = $this->functionId;
 
+		/** @var \Shipard\Base\ApiObject2 */
 		$object = $this->app->createObject($classId);
-		$object->requestParams = $this->requestParams;
+		$object->setRequestParams($this->requestParams);
 
 		$object->run ();
 		if (is_array($object->result))

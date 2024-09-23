@@ -7,6 +7,13 @@
 		]
 	},
 	{
+		"table": "e10.persons.personsContacts",
+		"columns": [
+			{"id": "syncNdx", "name": "syncNdx", "type": "int"},
+			{"id": "syncSrc", "name": "syncSrc", "type": "int"}
+		]
+	},
+	{
 		"table": "e10.persons.address",
 		"columns": [
 			{"id": "syncNdx", "name": "syncNdx", "type": "int"},

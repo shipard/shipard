@@ -1,17 +1,13 @@
 <?php
 
 namespace e10pro\vendms\libs;
-use \Shipard\Base\Utility;
 
 
 /**
  * class ObjectBoxQuantity
  */
-class ObjectBoxQuantity extends Utility
+class ObjectBoxQuantity extends \Shipard\Base\ApiObject2
 {
-  var $requestParams = NULL;
-  var $result = ['success' => 0];
-
   public function setQuantity()
   {
     $currentQuantity = 0;

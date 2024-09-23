@@ -1815,7 +1815,7 @@ class Application extends \Shipard\Application\ApplicationCore
 		}
 
 		$o = new \Shipard\Api\v2\Router($this);
-		$o->uiRouter = $this;
+		//$o->uiRouter = $this;
 		$o->setRequestParams($requestParams);
 		return $o->run();
 	}

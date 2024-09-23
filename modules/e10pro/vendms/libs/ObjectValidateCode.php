@@ -1,17 +1,14 @@
 <?php
 
 namespace e10pro\vendms\libs;
-use \Shipard\Base\Utility;
+use \Shipard\Base\ApiObject2;
 
 
 /**
  * class ObjectValidateCode
  */
-class ObjectValidateCode extends Utility
+class ObjectValidateCode extends ApiObject2
 {
-  var $requestParams = NULL;
-  var $result = ['success' => 0];
-
   public function checkData()
   {
     $this->result ['validPerson'] = 0;

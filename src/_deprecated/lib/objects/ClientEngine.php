@@ -37,6 +37,42 @@ class ClientEngine extends Utility
 		return $resultData;
 	}
 
+	public function apiCall2 ($dsUrl, $classId, $requestParams)
+	{
+		if (!$this->curl)
+		{
+			$this->curl = curl_init();
+			curl_setopt($this->curl, CURLOPT_HTTPHEADER, [
+				'Connection: Keep-Alive',
+				'Keep-Alive: 300',
+				'shpd-api-key: ' . $this->apiKey,
+				'shpd-device-id: ' . utils::machineDeviceId()
+			]);
+			curl_setopt ($this->curl, CURLOPT_RETURNTRANSFER, TRUE);
+			curl_setopt ($this->curl, CURLOPT_POST, true);
+		}
+
+		$url = $dsUrl;
+		if (!str_starts_with($url, '/'))
+			$url .= '/';
+		$url .= 'api/v2';
+
+		$params = [
+			'requestType' => 'object',
+			'classId' => $classId,
+		];
+
+		if ($requestParams)
+			$params = array_merge($params, $requestParams);
+
+		curl_setopt ($this->curl, CURLOPT_URL, $url);
+		curl_setopt ($this->curl, CURLOPT_POSTFIELDS, json::encode($params));
+		$resultCode = curl_exec ($this->curl);
+		$resultData = json_decode ($resultCode, TRUE);
+
+		return $resultData;
+	}
+
 	function uploadDoc ($tableId, $data)
 	{
 		$url = $this->apiUrl;
