@@ -90,7 +90,7 @@ class TablePersons extends DbTable
 				$recData ['loginHash'] = '';
 		}
 		else
-		if ($recData['company'] === 0)
+		if (($recData['company'] ?? 0) === 0)
 		{ // people
 			if (!isset($recData['complicatedName']) || $recData['complicatedName'] === 0)
 			{
@@ -98,7 +98,7 @@ class TablePersons extends DbTable
 				$recData ['afterName'] = '';
 				$recData ['middleName'] = '';
 			}
-			$recData ['fullName'] = str_replace('  ', ' ', trim ($recData ['beforeName'].' '.$recData ['lastName'].' '.$recData ['firstName'].' '.$recData ['middleName'].' '.$recData ['afterName']));
+			$recData ['fullName'] = str_replace('  ', ' ', trim (($recData ['beforeName'] ?? '').' '.$recData ['lastName'].' '.$recData ['firstName'].' '.($recData ['middleName'] ?? '').' '.($recData ['afterName'] ?? '')));
 
 			if (isset($recData ['login']) && $recData ['login'] !== '')
 				$recData ['loginHash'] = md5(strtolower(trim($recData ['login'])));
