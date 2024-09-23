@@ -163,8 +163,8 @@ class MembersFeeInvoicingEngine extends \Shipard\Base\Utility
 
 		$docTitle = 'Členský příspěvek '.$this->periodCfg['fn'];
 		$docTitle .= ': '.$this->personFullName;
-		if ($this->woTitle !== '')
-			$docTitle .= ', '.$this->woTitle;
+		//if ($this->woTitle !== '')
+		//	$docTitle .= ', '.$this->woTitle;
 
 		$this->invHead ['title'] = Str::upToLen($docTitle, 120);
 
