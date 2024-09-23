@@ -32,6 +32,7 @@ class ReportListContacts extends \Shipard\Report\GlobalReport
 		$this->createContent_Contacts();
 
 		$h = [
+			'#' => '#',
 			'personId' => 'id',
 			'fullName' => 'Celé jméno',
 			'firstName' => 'Jméno', 'lastName' => 'Příjmení',

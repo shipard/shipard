@@ -1,5 +1,5 @@
 {
-	"id": "e10pro.bume.listPersons", "sql": "e10pro_wkf_listPersons", "name": "Osoby v seznamu",
+	"id": "e10pro.bume.listPersons", "sql": "e10pro_bume_listPersons", "name": "Osoby v seznamu",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "list", "name": "Seznam", "type": "int", "reference": "e10pro.bume.lists"},

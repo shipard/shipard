@@ -13,7 +13,7 @@ class TableListPersons extends DbTable
 	public function __construct($dbmodel)
 	{
 		parent::__construct($dbmodel);
-		$this->setName('e10pro.bume.listPersons', 'e10pro_wkf_listPersons', 'Osoby v seznamu');
+		$this->setName('e10pro.bume.listPersons', 'e10pro_bume_listPersons', 'Osoby v seznamu');
 	}
 }
 
