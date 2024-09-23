@@ -34,6 +34,8 @@ class MergePersons extends Utility
 		// -- all referenced columns
 		foreach ($this->app->model()->tables() as $tableDef)
 		{
+			if ($tableDef['sql'] === 'e10_persons_personsContacts')
+				continue;
 			foreach ($tableDef['cols'] as $columnId => $columnDef)
 			{
 				if (!isset($columnDef['reference']) || $columnDef['reference'] !== 'e10.persons.persons')

@@ -2,7 +2,7 @@
   "id": "e10.persons.personsContacts", "sql": "e10_persons_personsContacts", "name": "Adresy Osob",
   "columns": [
     {"id": "ndx", "name": "id", "type": "int_ai"},
-		{"id": "person", "name": "Vlastník", "type": "int"},
+		{"id": "person", "name": "Vlastník", "type": "int", "reference": "e10.persons.persons"},
 
     {"id": "flagAddress", "name": "Adresa", "type": "logical", "options": ["saveOnChange"]},
     {"id": "flagMainAddress", "name": "Sídlo", "type": "logical", "options": ["saveOnChange"]},
