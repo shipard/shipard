@@ -33,7 +33,7 @@ class PersonsSyncPullEngine extends \e10sync\libs\SyncPullClient
 
     while (1)
     {
-		  $result = $this->ce->apiCall2($this->url, 'persons-sync-pull', $params);
+		  $result = $this->ce->apiCall2($this->url, $this->apiCallClassId(), $params);
       //echo Json::lint($result)."\n";
 
       if (!isset($result['response']['data']))
@@ -76,13 +76,25 @@ class PersonsSyncPullEngine extends \e10sync\libs\SyncPullClient
       'style' => 'person',
       'personNdx' => $personInfo['ndx'],
     ];
-    $result = $this->ce->apiCall2($this->url, 'persons-sync-pull', $params);
+    $result = $this->ce->apiCall2($this->url, $this->apiCallClassId(), $params);
     //echo "    - ".$result['response']['person']['rec']['fullName']."\n";
     //echo Json::lint($result['response']['person'])."\n";
 
     $personNdx = $this->doImport($this->tablePersons, $result['response']['person']);
     if ($personNdx)
+    {
       $this->addLabels($this->tablePersons, $personNdx);
+      $this->checkOnePerson($personNdx, $result['response']['person']);
+    }
+  }
+
+  protected function checkOnePerson($personNdx, $personInfo)
+  {
+  }
+
+  protected function apiCallClassId()
+  {
+    return 'persons-sync-pull';
   }
 
   public function run()

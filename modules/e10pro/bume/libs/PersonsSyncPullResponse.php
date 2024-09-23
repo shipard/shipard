@@ -103,7 +103,13 @@ class PersonsSyncPullResponse extends \e10sync\libs\SyncPullServerResponse
       $personItem['associated']['contacts']['recs'][] = $personContact;
     }
 
+    $this->checkPersonItem($personItem);
+
     $this->result['person'] = $personItem;
+  }
+
+  protected function checkPersonItem(&$personItem)
+  {
   }
 
   public function run()
