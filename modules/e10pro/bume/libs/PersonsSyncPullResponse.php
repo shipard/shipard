@@ -91,7 +91,7 @@ class PersonsSyncPullResponse extends \e10sync\libs\SyncPullServerResponse
     $q = [];
     array_push($q, 'SELECT contacts.ndx FROM [e10_persons_personsContacts] AS contacts');
     array_push($q, ' WHERE [contacts].[person] = %i', $this->personNdx);
-    array_push($q, ' AND [contacts].[flagContact] = %i', 1);
+    array_push($q, ' AND ([contacts].[flagContact] = %i', 1, ' OR [contacts].[flagAddress] = %i)', 1);
     array_push($q, ' AND [contacts].[docState] = %i', 4000);
     array_push($q, ' ORDER BY [contacts].[onTop], [contacts].[systemOrder], [contacts].[ndx]');
     $rows = $this->db()->query($q);
