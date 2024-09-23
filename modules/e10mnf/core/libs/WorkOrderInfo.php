@@ -125,6 +125,9 @@ class WorkOrderInfo extends Utility
 				$values = [];
 				foreach ($propertyValues as $pv)
 				{
+					if (($pv['property'] == 'birthdate') || ($pv['property'] == 'pid'))
+						continue;
+
 					$values[] = $pv['value'];
 					if (!isset($tableHeader[$propertyId]))
 						$tableHeader[$propertyId] = $pv['name'];
