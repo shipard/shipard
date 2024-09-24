@@ -285,7 +285,7 @@ totalPrice=quantity*price;var
 quantityStr=quantity;row.setAttribute('data-quantity',quantity);row.setAttribute('data-totalprice',totalPrice);row.querySelector('td.q').innerText=quantityStr;var
 unitName=row.getAttribute('data-unit-name');var
 rowInfo=quantityStr+' '+unitName+' á '+this.nf(price,2)+' = <b>'+this.nf(totalPrice,2)+'</b>';row.querySelector('td.item>span.i').innerHTML=rowInfo;this.documentRecalc();return 0;}documentRemoveRow(e){var
-row=e.parentElement;row.remove();this.documentRecalc();return 0;}doPay(e){var
+row=e.parentElement;row.remove();this.documentRecalc();return 0;}doPay(e){if(this.docRowsTableElm.rows.length==0)return;var
 paymentMethod=e.getAttribute('data-pay-method');console.log('payment method: ',paymentMethod);this.changePaymentMethod(e);this.setMode('pay');}changePaymentMethod(e){let
 paymentMethod=parseInt(e.getAttribute('data-pay-method'));this.doc.rec.paymentMethod=parseInt(paymentMethod);if(this.doc.rec.paymentMethod==2)this.doc.rec.roundMethod=0;else
 this.doc.rec.roundMethod=parseInt(this.rootElm.getAttribute('data-roundmethod'));this.documentRecalc();const

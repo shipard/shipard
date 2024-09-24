@@ -267,6 +267,8 @@ class WidgetCashBox extends ShipardWidgetDocumentCore
 
   doPay (e)
   {
+    if (this.docRowsTableElm.rows.length == 0)
+      return;
     var paymentMethod = e.getAttribute ('data-pay-method');
     console.log('payment method: ', paymentMethod);
     //var paymentMethodButton = e10.terminal.boxWidget.find ('div.pay-methods>span[data-pay-method="'+paymentMethod+'"]');
