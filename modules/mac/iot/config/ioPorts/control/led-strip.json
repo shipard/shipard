@@ -9,12 +9,13 @@
 			{
 				"id": "colorMode", "name": "Barevný mód", "type": "enumInt",
 				"enumValues": {
-					"0": "G-R-B (WS2812, Neopixel,...)", 
+					"0": "G-R-B (WS2812, Neopixel,...)",
 					"1": "R-B-G (WS2811, SM16703,...)",
 					"2": "R-G-B",
 					"3": "G-B-R",
 					"4": "B-R-G",
-					"5": "B-G-R"
+					"5": "B-G-R",
+					"6": "R-G-B-W (SK6812)"
 				}
 			},
 			{
