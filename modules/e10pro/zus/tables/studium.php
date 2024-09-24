@@ -373,6 +373,9 @@ class ViewStudium extends TableView
 			array_push($q, ')');
 		}
 
+		if (isset ($qv['errors']['invalidStudents']))
+			array_push ($q, 'AND student.docState != %i', 4000);
+
 		if (isset ($qv['errors']['withSale']))
 			array_push ($q, ' AND (skolSlPrvniPol != %i', 0, ' OR skolSlDruhePol != %i', 0, ')');
 
@@ -449,6 +452,7 @@ class ViewStudium extends TableView
 			'lateBegin' => ['title' => 'Opožděný začátek studia', 'id' => 'lateBegin'],
 			'withSale' => ['title' => 'Se slevou', 'id' => 'withSale'],
 			'withoutBegin' => ['title' => 'Bez data nástupu do školy', 'id' => 'withoutBegin'],
+			'invalidStudents' => ['title' => 'Vadní studenti (v archívu/koši)', 'id' => 'invalidStudents'],
 		];
 		$paramsErrors = new \E10\Params ($this->app());
 		$paramsErrors->addParam ('checkboxes', 'query.errors', ['items' => $chbxErrors]);
