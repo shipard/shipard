@@ -90,13 +90,12 @@ class TableRows extends DbTable
 						$recData ['taxRate'] = $item['vatRate'];
 						$recData ['taxCode'] = E10Utils::taxCodeForDocRow($this->app(), $ownerData, $this->taxDir($recData, $ownerData), $item['vatRate']);
 					}
-					else
-					{
-						unset ($recData ['_fixTaxCode']);
-					}
 				}
 			}
 		}
+
+		if (isset($recData ['_fixTaxCode']))
+			unset ($recData ['_fixTaxCode']);
 
 		// -- subColumns
 		if (isset($recData['rowVds']) && $recData['rowVds'])
