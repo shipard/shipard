@@ -1,0 +1,15 @@
+{
+	"id": "e10doc.base.sendReportsQueue", "sql": "e10doc_base_sendReportsQueue", "name": "Fronta odesílání dokladů",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+    {"id": "sendAfter", "name": "Odeslat nejdříve v", "type": "timestamp"},
+    {"id": "sentDateTime", "name": "Odesláno v", "type": "timestamp"},
+		{"id": "docNdx", "name": "Doklad", "type": "int", "reference": "e10doc.core.heads"},
+		{"id": "formReport", "name": "Report", "label": "Zaokrouhlení DPH", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10doc.base.sendFormReportsTypes", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "sendState", "name": "Stav odeslání", "type": "enumInt",
+			"enumValues": {"0": "Naplánováno", "1": "Odesláno"}}
+	],
+	"options": ["systemTable"]
+}

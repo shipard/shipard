@@ -191,11 +191,38 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$e->run();
 	}
 
+	protected function sendReportsAddToQueue()
+	{
+		$dbCounter = intval($this->app->arg('dbCounter'));
+		if (!$dbCounter)
+		{
+			echo "ERROR: missing or bad param `--dbCounter`\n";
+			return FALSE;
+		}
+
+		$e = new \e10doc\base\libs\SendReportsAddToQueue($this->app);
+		$e->dbCounterNdx = $dbCounter;
+		$e->run();
+
+
+		return TRUE;
+	}
+
+	protected function sendReportsFromQueue()
+	{
+		$e = new \e10doc\base\libs\SendReportsFromQueue($this->app);
+		$e->run();
+
+		return TRUE;
+	}
+
 	public function onCliAction ($actionId)
 	{
 		switch ($actionId)
 		{
 			case 'exchange-rate-lists-download': return $this->ExchangeRateListsDownload();
+			case 'send-reports-add-to-queue': return $this->sendReportsAddToQueue();
+			case 'send-reports-from-queue': return $this->sendReportsFromQueue();
 		}
 
 		return parent::onCliAction($actionId);

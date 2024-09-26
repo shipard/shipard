@@ -7,7 +7,7 @@
 		"exchangeRatesLists", "exchangeRatesValues",
 		"statsPersonDocType", "statsItemDocType", "statsPersonItemDocType",
 		"transports", "additionsTypes", "additions", "reportsTexts",
-	  "whPlaces", "docRowsVDSCfg"
+	  "whPlaces", "docRowsVDSCfg", "sendReportsQueue"
   ],
   "config": [
 		{"id": "+appOptions", "name": "Nastavení položek", "file": "e10.appOptions.json"},
@@ -20,6 +20,7 @@
 		{"id": "+e10doc.acc.methods", "file": "e10doc.acc.methods.json"},
 	  {"id": "+e10doc.base.taxRegsTypes", "file": "e10doc.base.taxRegsTypes.json"},
 		{"id": "+e10doc.base.tagsRegsPayerKinds", "file": "e10doc.base.tagsRegsPayerKinds.json"},
-		{"id": "+e10doc.base.exchangeRatesLists", "file": "exchangeRatesLists.json"}
+		{"id": "+e10doc.base.exchangeRatesLists", "file": "exchangeRatesLists.json"},
+		{"id": "+e10doc.base.sendFormReportsTypes", "file": "sendFormReportsTypes.json"}
   ]
 }
