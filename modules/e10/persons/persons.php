@@ -23,6 +23,10 @@ function createNewPerson (\Shipard\Application\Application $app, $personData)
 	$personHead = $personData ['person'];
 	utils::addToArray ($newPerson, $personHead, 'firstName');
 	utils::addToArray ($newPerson, $personHead, 'lastName');
+	utils::addToArray ($newPerson, $personHead, 'beforeName');
+	utils::addToArray ($newPerson, $personHead, 'afterName');
+	utils::addToArray ($newPerson, $personHead, 'id');
+	utils::addToArray ($newPerson, $personHead, 'complicatedName');
 	utils::addToArray ($newPerson, $personHead, 'fullName', '');
 	utils::addToArray ($newPerson, $personHead, 'company', 0);
 	utils::addToArray ($newPerson, $personHead, 'accountType', 0);
@@ -152,6 +156,10 @@ function createNewPersonNew (\Shipard\Application\Application $app, $personData)
 	utils::addToArray ($newPerson, $personHead, 'firstName');
 	utils::addToArray ($newPerson, $personHead, 'lastName');
 	utils::addToArray ($newPerson, $personHead, 'fullName', '');
+	utils::addToArray ($newPerson, $personHead, 'beforeName');
+	utils::addToArray ($newPerson, $personHead, 'afterName');
+	utils::addToArray ($newPerson, $personHead, 'id');
+	utils::addToArray ($newPerson, $personHead, 'complicatedName');
 	utils::addToArray ($newPerson, $personHead, 'company', 0);
 	utils::addToArray ($newPerson, $personHead, 'accountType', 0);
 	utils::addToArray ($newPerson, $personHead, 'id', '');
