@@ -35,6 +35,9 @@ class FormReportEngine extends Utility
 
 	public function createReport ($prepareOnly = FALSE)
 	{
+		/** @var \e10\persons\TablePersons */
+		$tablePersons = $this->app()->table('e10.persons.persons');
+
 		$this->documentTable = $this->app()->table ($this->params['documentTable']);
 
 		$this->report = $this->documentTable->getReportData ($this->params['reportClass'], $this->params['documentNdx']);
@@ -46,8 +49,9 @@ class FormReportEngine extends Utility
 		$item = $this->documentTable->loadItem ($this->params['documentNdx']);
 		$this->documentInfo = $this->documentTable->getRecordInfo ($item);
 		if (isset($this->documentInfo['persons']['to']))
-			$this->params['to'] = $this->loadEmails($this->documentInfo['persons']['to']);
-
+		{
+			$this->params['to'] = $tablePersons->loadEmailsForReport($this->documentInfo['persons']['to'], $this->params['reportClass']);
+		}
 		$this->params['emailFromAddress'] = $this->app->cfgItem ('options.core.ownerEmail');
 		$this->params['emailFromName'] = $this->app->cfgItem ('options.core.ownerFullName');
 		if (isset($this->documentInfo['emailFromAddress']))
@@ -89,15 +93,5 @@ class FormReportEngine extends Utility
 
 		$this->msg->saveToOutbox();
   }
-
-	protected function loadEmails ($persons)
-	{
-		if (!count($persons))
-			return '';
-
-		$sql = 'SELECT valueString FROM [e10_base_properties] where [tableid] = %s AND [recid] IN %in AND [property] = %s AND [group] = %s ORDER BY ndx';
-		$emailsRows = $this->app()->db()->query ($sql, 'e10.persons.persons', $persons, 'email', 'contacts')->fetchPairs ();
-		return implode (', ', $emailsRows);
-	}
 }
 
