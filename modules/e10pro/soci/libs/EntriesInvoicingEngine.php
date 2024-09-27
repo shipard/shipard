@@ -235,7 +235,7 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 
 		if ($entryPeriod === 0)
 		{
-			$pi['dateAccounting'] = Utils::createDateTime($this->periodBegin);
+			$pi['dateAccounting'] = Utils::today();//Utils::createDateTime($this->periodBegin);
 			$pi['datePeriodBegin'] = Utils::createDateTime($this->periodBegin);
 			$pi['datePeriodEnd'] = Utils::createDateTime($this->periodEnd);
 		}
@@ -246,14 +246,14 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 			if ($this->periodBegin > $endFirstHalfPeriod)
 				return;
 
-			$pi['dateAccounting'] = Utils::createDateTime($this->periodBegin);
+			$pi['dateAccounting'] = Utils::today();//Utils::createDateTime($this->periodBegin);
 			$pi['datePeriodBegin'] = Utils::createDateTime($this->periodBegin);
 			$pi['datePeriodEnd'] = Utils::createDateTime($this->periodHalf);
 			$pi['datePeriodEnd']->sub(new \DateInterval('P1D'));
 		}
 		elseif ($entryPeriod === 2)
 		{ // second half
-			$pi['dateAccounting'] = Utils::createDateTime($this->periodHalf);
+			$pi['dateAccounting'] = Utils::today();//Utils::createDateTime($this->periodHalf);
 			$pi['datePeriodBegin'] = Utils::createDateTime($this->periodHalf);
 			$pi['datePeriodEnd'] = Utils::createDateTime($this->periodEnd);
 		}
