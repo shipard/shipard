@@ -393,7 +393,7 @@ class TemplateCore extends \Mustache
 		if (isset ($params['dataItem']))
 			$date = Utils::createDateTime($this->getVar($params['dataItem']));
 		else
-			$date = Utils::today();
+			$date = new \DateTime();
 
 		if (!$date)
 			return '';
