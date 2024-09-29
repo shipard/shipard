@@ -89,8 +89,20 @@ class LanDevices extends \lib\dataView\DataView
 
 		$this->loadConnections($pks, $t);
 		$this->loadAddresses($pks, $t);
+		$this->loadDevicesInfo($pks, $t);
 
-		$this->data['header'] = ['#' => '#', 'id' => 'id', 'deviceKind' => 'Druh', 'name' => 'Název', 'typeName' => 'Typ', 'place' => 'Místo', 'rack' => 'Rack', 'connectedTo' => 'Zapojeno do', 'addr' => 'IP adresa'];
+		$this->data['header'] = [
+			'#' => '#',
+			'id' => 'id',
+			'deviceKind' => 'Druh',
+			'deviceSN' => 'Výr. č.',
+			'name' => 'Název',
+			'typeName' => 'Typ',
+			'place' => 'Místo',
+			'rack' => 'Rack',
+			'connectedTo' => 'Zapojeno do',
+			'addr' => 'IP adresa',
+		];
 		$this->data['table'] = $t;
 	}
 
@@ -287,9 +299,31 @@ class LanDevices extends \lib\dataView\DataView
 				unset ($data[$deviceNdx]['addr'][0]['prefix']);
 		}
 	}
+
+	public function loadDevicesInfo ($devices, &$data)
+	{
+		$rows = $this->db()->query ('SELECT * FROM [mac_lan_devicesInfo] WHERE [device] IN %in', $devices);
+
+		$info = [];
+		foreach ($rows as $row)
+		{
+			$deviceNdx = $row['device'];
+			$info[$row['infoType']] = $row->toArray();
+
+			$infoList = ['system', 'drives', 'storages', 'sw', 'counters'];
+			foreach ($infoList as $infoType)
+			{
+				if (!isset($info[$infoType]))
+					continue;
+
+				$r = $info[$infoType];
+				$infoData = json_decode($r['data'], TRUE);
+				if ($r['infoType'] === 'system')
+				{
+					if (isset($infoData['items']['device-sn']))
+						$data[$deviceNdx]['deviceSN'] = $infoData['items']['device-sn'];
+				}
+			}
+		}
+	}
 }
-
-
-
-
-
