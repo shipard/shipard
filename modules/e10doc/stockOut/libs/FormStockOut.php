@@ -29,6 +29,8 @@ class FormStockOut extends \e10doc\core\FormHeads
 					$this->addColumnInput ('otherAddress1');
 					$this->addColumnInput ('dateIssue');
 					$this->addColumnInput ('dateAccounting');
+					if ($this->table->app()->cfgItem ('options.e10doc-commerce.useWorkOrders', 0))
+						$this->addColumnInput ('workOrder');
 
 					if ($whCfg && intval($whCfg['useTransportOnDocs'] ?? 0))
 					{

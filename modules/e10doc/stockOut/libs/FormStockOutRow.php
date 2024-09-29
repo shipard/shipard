@@ -20,6 +20,9 @@ class FormStockOutRow extends \e10doc\core\libs\FormDocRows
 		$this->openRow();
 			$this->addColumnInput ("quantity", self::coColW3);
 			$this->addColumnInput ("unit", self::coColW3);
+			if ($this->table->app()->cfgItem ('options.e10doc-commerce.useWorkOrders', 0))
+				$this->addColumnInput ('workOrder', self::coColW6);
+
 		$this->closeRow();
 
 		$this->closeForm ();
