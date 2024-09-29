@@ -186,7 +186,7 @@ class TemplateCore extends \Mustache
 		}
 		else
 		{
-			error_log ("template.json `$fullOptionsName` not found");
+			//error_log ("template.json `$fullOptionsName` not found");
 			$this->options = [];
 		}
 
@@ -210,8 +210,8 @@ class TemplateCore extends \Mustache
 
 		if ($templateFileName !== FALSE && !$this->template)
 		{
-			error_log("file `$fullTemplateName` not found [TID: $name]");
-			Utils::debugBacktrace();
+			//error_log("file `$fullTemplateName` not found [TID: $name]");
+			//Utils::debugBacktrace();
 		}
 	}
 

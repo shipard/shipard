@@ -1,0 +1,28 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+    <title>{{data.wikiSection.title}}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v12" type="text/css"/>
+    <link rel="stylesheet" href="{{dsUrl}}www-root/sc/icons/fa/5/css/all.min.css">
+    {{#data.wikiSection.bookCSS}}
+        <style>
+            {{{data.wikiSection.bookCSS}}}
+        </style>
+    {{/data.wikiSection.bookCSS}}
+</head>
+<body>
+    {{#data.wikiSection.bookCoverPage}}
+        {{{data.wikiSection.bookCoverPage}}}
+        <div class='pageBreakAfter'></div>
+    {{/data.wikiSection.bookCoverPage}}
+
+    {{#data.bookContent}}
+        <h1 class="book-content-title" id="book-content">Obsah</h1>
+        {{{data.bookContent}}}
+        <div class='pageBreakAfter'></div>
+    {{/data.bookContent}}
+
+    {{{data.bookText}}}
+</body>
+</html>

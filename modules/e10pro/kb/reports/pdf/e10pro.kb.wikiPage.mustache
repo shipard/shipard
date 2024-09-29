@@ -1,0 +1,43 @@
+<div class='pageBreakBefore'></div>
+
+<main class="e10-wiki e10-wiki-page" role="main" id="page-{{data.page.id}}">
+	<div id="e10-wiki-header" class="e10-wiki-header{{#data.page.docStateAlert}} {{data.page.docStateClass}}{{/data.page.docStateAlert}}">
+		<table class="e10-wiki-page-header" style="width: 100%;">
+				<tr>
+						<td class="e10-wiki-page-header-title">
+								<h2 class="e10-wiki-title"{{#data.page.subTitle}} style="margin-bottom: 0;"{{/data.page.subTitle}}>
+									{{#data.page.icon}}{{{@icon;dataItem:data.page.icon}}} {{/data.page.icon}}{{data.page.title}}
+								</h2>
+								{{#data.page.subTitle}}<small style="display: inline-block; margin-bottom: .4rem;">{{data.page.subTitle}}</small>{{/data.page.subTitle}}
+						</td>
+						<td class="e10-wiki-page-header-buttons text-end">
+						<span>
+								<small class="grey-text e10-wiki-pageId">#{{data.page.id}}</small>
+								{{#data.page.tags}}<span class="tag z-depth-0" style="{{css}}">{{text}}</span> {{/data.page.tags}}
+						</span>
+					</td>
+				</tr>
+		</table>
+	</div>
+
+	{{#data.page.docStateInfo}}
+		<div class="alert e10-ds-block {{data.page.docStateClass}}">
+			{{data.page.docStateInfoText}}
+		</div>
+	{{/data.page.docStateInfo}}
+
+	<div class="pageText">
+		<div class="e10-wiki-page-body">{{{data.page.htmlPageText}}}</div>
+		{{#data.page.content.0}}
+			<div class="e10-wiki-content">
+				{{#data.page.text}}<hr>{{/data.page.text}}
+				<h5>Obsah</h5>
+				<ul class="e10-angle-list">
+					{{#data.page.content}}
+						<li><a{{#docStateAlert}} class="e10-ds-block {{docStateClass}}"{{/docStateAlert}} href="#page-{{id}}">{{title}}</a></li>
+					{{/data.page.content}}
+				</ul>
+			</div>
+		{{/data.page.content.0}}
+	</div>
+</main>

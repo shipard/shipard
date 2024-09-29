@@ -4,9 +4,9 @@
 			<div>
 				{{#images}}
 					<div class="image">
-							{{^svg}}<img src="images/{{@registerImage;src:/imgs/-w1200/-x/[folder][fileName].jpg}}"/>{{/svg}}
-							{{#svg}}<img src="images/{{@registerImage;src:/[folder][fileName]}}"/>{{/svg}}
-							<small>{{name}}</small>
+							{{^svg}}<img src="{{data.bookBaseURL}}images/{{@registerImage;src:/imgs/-w1200/[folder][fileName]}}"/>{{/svg}}
+							{{#svg}}<img src="{{data.bookBaseURL}}images/{{@registerImage;src:/[folder][fileName]}}" style="max-width: 100%;"/>{{/svg}}
+							<div><small>{{name}}</small></div>
 					</div>
 				{{/images}}
 			</div>
@@ -16,7 +16,7 @@
 		{{#data.gallery.rows}}
 			{{#images}}
 				<span class="thumb thumb-{{data.gallery.style}}">
-						<img src="images/{{@registerImage;src:/imgs/-w1200/-x/[folder][fileName].jpg}}" {{#data.gallery.imgcss}}style='{{data.gallery.imgcss}}'{{/data.gallery.imgcss}}/>
+						<img src="{{data.bookBaseURL}}images/{{@registerImage;src:/imgs/-w1200/-x/[folder][fileName]}}" {{#data.gallery.imgcss}}style='{{data.gallery.imgcss}}'{{/data.gallery.imgcss}}/>
 						<br/><small>{{name}}</small>
 				</span>
 			{{/images}}
@@ -34,7 +34,7 @@
 			{{#cnt3}}<div class="wc4">{{/cnt3}}
 			{{#cnt2}}<div class="wc6">{{/cnt2}}
 			{{#cnt1}}<div class="wc12">{{/cnt1}}
-					<img src="images/{{@registerImage;src:/imgs/-w1200/-x/[folder][fileName].jpg}}"/>
+					<img src="{{data.bookBaseURL}}images/{{@registerImage;src:/imgs/-w1200/-x/[folder][fileName]}}"/>
 					<small>{{name}}</small>
 			</div>
 		{{/images}}

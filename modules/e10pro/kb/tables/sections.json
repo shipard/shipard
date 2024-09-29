@@ -19,6 +19,10 @@
 
 		{"id": "bookEnable", "name": "Povolit generování knihy", "type": "enumInt", "options": ["saveOnChange"],
 			"enumValues": {"0": "Ne", "1": "Správcům", "2": "Všem"}},
+		{"id": "bookTitle", "name": "Titul knihy", "type": "string", "len": 80},
+		{"id": "bookSubTitle", "name": "Podtitul knihy", "type": "string", "len": 120},
+		{"id": "bookCoverPage", "name": "Titulní strana knihy", "type": "memo", "clng": "html"},
+		{"id": "bookCSS", "name": "Doplňující kód pro knihu", "type": "memo", "clng": "scss"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

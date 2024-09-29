@@ -13,7 +13,8 @@ class WikiBookWizard extends Wizard
 {
 	var $tableSections;
 	var $section = NULL;
-	var $bg = NULL;
+	var $wikiNdx = 0;
+	var \e10pro\kb\libs\WikiBookGenerator $wbg;
 
 	public function doStep ()
 	{
@@ -68,7 +69,9 @@ class WikiBookWizard extends Wizard
 			}
 			$c .= '</ul>';
 		}
-		$c .= "<a href='{$this->app->dsRoot}/{$this->bg->bookFiles[0]['url']}' class='btn btn-primary' target='_blank'>Stáhnout</a>";
+		$c .= "<div style='padding: 1rem;'>";
+		$c .= "<a href='{$this->wbg->bookPdfURL}' class='btn btn-primary' target='_blank' download='{$this->wbg->bookPdfFileName}'>Stáhnout PDF</a>";
+		$c .= '</div>';
 
 		$this->appendCode ($c);
 
@@ -79,11 +82,9 @@ class WikiBookWizard extends Wizard
 	{
 		$this->loadSettings();
 
-		$this->bg = new \lib\documentation\BookGenerator($this->app());
-
-		$this->bg->addSrcBookSection($this->section['ndx']);
-
-		$this->bg->generateBook();
+		$this->wbg = new \e10pro\kb\libs\WikiBookGenerator($this->app);
+		$this->wbg->setSource($this->wikiNdx, $this->section['ndx']);
+		$this->wbg->run();
 
 		$this->stepResult ['lastStep'] = 1;
 	}
@@ -93,7 +94,7 @@ class WikiBookWizard extends Wizard
 		$this->loadSettings ();
 
 		$hdr = [];
-		$hdr ['icon'] = 'icon-book';
+		$hdr ['icon'] = 'system/iconBook';
 
 		$hdr ['info'][] = ['class' => 'title', 'value' => 'Vygenerovat knihu'];
 
@@ -111,9 +112,10 @@ class WikiBookWizard extends Wizard
 		$this->tableSections = $this->app()->table ('e10pro.kb.sections');
 
 		$pp = explode ('-', $this->recData['genBookId']);
-		if ($pp[0] === 's')
+		$this->wikiNdx = intval($pp[0]);
+		if (isset($pp[1]))
 		{
-			$this->section = $this->tableSections->loadItem($pp[1]);
+			$this->section = $this->tableSections->loadItem(intval($pp[1]));
 		}
 	}
 }

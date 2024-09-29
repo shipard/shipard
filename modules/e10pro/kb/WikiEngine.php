@@ -112,9 +112,9 @@ class WikiEngine extends Utility
 		{
 			if ($r['docState'] === 4000)
 			{
-				$this->page['title'] = $renderedText['title'];
-				$this->page['subTitle'] = $renderedText['subTitle'];
-				$this->page['text'] = $renderedText['text'];
+				$this->page['title'] = $renderedText['title'] ?? '';
+				$this->page['subTitle'] = $renderedText['subTitle'] ?? '';
+				$this->page['text'] = $renderedText['text'] ?? '';
 			}
 			else
 			{
@@ -140,8 +140,8 @@ class WikiEngine extends Utility
 			}
 			elseif ($r['docState'] === 1000)
 			{
-				$this->page['title'] = $renderedText['title'];
-				$this->page['subTitle'] = $renderedText['subTitle'];
+				$this->page['title'] = $renderedText['title'] ?? '';
+				$this->page['subTitle'] = $renderedText['subTitle'] ?? '';
 				$this->page['text'] = 'Stránka se připravuje';
 			}
 			else
@@ -694,9 +694,9 @@ class WikiEngine extends Utility
 
 		if (($section['bookEnable']) && in_array('a', $section['roles']))
 		{
-			$b = ['text' => 'Vygenerovat knihu', 'icon' => 'icon-book', 'actionClass' => 'df2-action-trigger',
+			$b = ['text' => 'Vygenerovat knihu', 'icon' => 'system/iconBook', 'actionClass' => 'df2-action-trigger',
 				'attr' => [
-					['k' => 'pk', 'v' => 's-'.$sectionNdx],
+					['k' => 'pk', 'v' => $this->wikiNdx.'-'.$sectionNdx],
 					['k' => 'action', 'v' => 'addwizard'],
 					['k' => 'class', 'v' => 'e10pro.kb.WikiBookWizard'],
 				]
@@ -752,8 +752,8 @@ class WikiEngine extends Utility
 		$this->textRenderer->setLinkRoot($this->urlBegin);
 		if (!$template)
 		{
-			$this->template = new \e10\web\webTemplateMustache ($this->app());
-			$this->template->webEngine = \e10\web\webPages::$engine;
+			$this->template = new \e10\web\WebTemplateMustache ($this->app());
+			$this->template->webEngine = \e10\web\WebPages::$engine;
 		}
 		else
 		{

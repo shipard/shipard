@@ -2,8 +2,9 @@
 
 namespace e10pro\kb;
 
-use \E10\utils, \E10\TableView, \E10\TableForm, \E10\DbTable;
+use \Shipard\Utils\Utils, \Shipard\Viewer\TableView, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
 use \e10\base\libs\UtilsBase;
+use \Shipard\Application\DataModel;
 
 
 /**
@@ -151,6 +152,8 @@ class FormSection extends TableForm
 			$tabs ['tabs'][] = ['text' => 'Perex', 'icon' => 'formPerex'];
 			$tabs ['tabs'][] = ['text' => 'Patička', 'icon' => 'formFooter'];
 			$tabs ['tabs'][] = ['text' => 'Kniha', 'icon' => 'formBook'];
+			$tabs ['tabs'][] = ['text' => 'Titulní strana', 'icon' => 'formBook'];
+			$tabs ['tabs'][] = ['text' => 'CSS', 'icon' => 'formBook'];
 			$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 			$this->openTabs ($tabs, TRUE);
 				$this->openTab ();
@@ -173,6 +176,14 @@ class FormSection extends TableForm
 				$this->closeTab();
 				$this->openTab ();
 					$this->addColumnInput ('bookEnable');
+					$this->addColumnInput ('bookTitle');
+					$this->addColumnInput ('bookSubTitle');
+				$this->closeTab();
+				$this->openTab (TableForm::ltNone);
+					$this->addInputMemo ('bookCoverPage', '', TableForm::coFullSizeY, DataModel::ctCode);
+				$this->closeTab();
+				$this->openTab (TableForm::ltNone);
+					$this->addInputMemo ('bookCSS', '', TableForm::coFullSizeY, DataModel::ctCode);
 				$this->closeTab();
 				$this->openTab (TableForm::ltNone);
 					$this->addAttachmentsViewer();

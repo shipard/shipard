@@ -12,7 +12,7 @@ class TemplateMustache extends \Shipard\Utils\TemplateCore
 	public $binCodePage = FALSE;
 	public $binData = '';
 	protected $info;
-	protected $registeredImages;
+	var $registeredImages = [];
 	protected $report;
 
 	public function appDir ()
@@ -86,7 +86,10 @@ class TemplateMustache extends \Shipard\Utils\TemplateCore
 				$dest = md5($src).strrchr($src, ".");
 			}
 
-			$params['owner']->report->registerImage ($src, $dest);
+			if (isset($params['owner']->report))
+				$params['owner']->report->registerImage ($src, $dest);
+
+			$this->registeredImages[] = ['src' => $src, 'dest' => $dest];
 			if (!isset ($params['dest']))
 				return $dest;
 		}

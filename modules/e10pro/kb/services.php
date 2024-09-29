@@ -70,12 +70,33 @@ class ModuleServices extends \E10\CLI\ModuleServices
 
 	}
 
+	function wikiCreateBook()
+	{
+		$wikiNdx = intval($this->app->arg('wikiNdx'));
+		if (!$wikiNdx)
+		{
+			echo "Param `--wikiNdx` is missing\n";
+			return FALSE;
+		}
+		$sectionNdx = intval($this->app->arg('sectionNdx'));
+		if (!$sectionNdx)
+		{
+			echo "Param `--sectionNdx` is missing\n";
+			return FALSE;
+		}
+
+		$wbg = new \e10pro\kb\libs\WikiBookGenerator($this->app);
+		$wbg->setSource($wikiNdx, $sectionNdx);
+		$wbg->run();
+	}
+
 	public function onCliAction ($actionId)
 	{
 		switch ($actionId)
 		{
 			case 'regenerate-wiki-pages': return $this->regenerateWikiPages();
 			case 'reset-wiki-pages-sections': return $this->resetWikiPagesSections();
+			case 'wiki-create-book': return $this->wikiCreateBook();
 		}
 
 		parent::onCliAction($actionId);
