@@ -181,7 +181,8 @@ class WikiBookGenerator extends Utility
     $report->createReport ();
 
     $rfn = substr($report->reportSrcFileNameRelative, 0, -(strlen($report->srcFileExtension) + 1)) . '.pdf';
-    $this->bookPdfURL = 'https://'.$this->app()->cfgItem('hostingCfg.serverDomain').'/'.$this->app->cfgItem('dsid') . '/'. $rfn;
+    rename($rfn, 'tmp/'.$this->bookPdfFileName);
+    $this->bookPdfURL = 'https://'.$this->app()->cfgItem('hostingCfg.serverDomain').'/'.$this->app->cfgItem('dsid') . '/'. 'tmp/'.$this->bookPdfFileName;
 
     if ($this->app()->debug)
       echo "book url: ".$this->bookPdfURL."\n";
