@@ -50,7 +50,18 @@ class DataViewDocumentCard extends \lib\dataView\DataView
 			return;
 		}
 
-		$this->documentCard = $this->table->documentCard ($this->recData, 0);
+		$documentCardClassId = $this->requestParam('documentCardClassId');
+		if ($documentCardClassId !== '')
+		{
+			$this->documentCard =$this->app()->createObject($documentCardClassId);
+			if (!$this->documentCard)
+			{
+				$this->addMessage("Invalid DocumentCard class `{$documentCardClassId}` for table `{$tableId}`.");
+				return;
+			}
+		}
+		else
+			$this->documentCard = $this->table->documentCard ($this->recData, 0);
 		if (!$this->documentCard)
 		{
 			$this->addMessage("Cannot create DocumentCard for table `{$tableId}`.");
