@@ -147,7 +147,7 @@ class DocumentCardDeviceInfo extends \e10\DocumentCard
 		];
 
 		$date = ($row['dateUpdate']) ? $row['dateUpdate'] : $row['dateCreate'];
-		$title = [['icon' => 'icon-info-circle', 'text' => 'Informace o systému', 'suffix' => utils::datef($date, '%D, %T')]];
+		$title = [['icon' => 'system/detailInfo', 'text' => 'Informace o systému', 'class' => 'header', 'suffix' => utils::datef($date, '%D, %T')]];
 
 		$table = [];
 		foreach ($data['items'] as $key => $value)

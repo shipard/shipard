@@ -235,7 +235,7 @@ class DocumentCardDevice extends \e10\DocumentCard
 
 		$tablePorts = [];
 		$this->loadPorts($this->recData['ndx'], $tablePorts);
-		$titlePorts = ['text' => 'Zapojení portů', 'icon' => 'icon-plug', 'class' => 'header'];
+		$titlePorts = ['text' => 'Zapojení portů', 'icon' => 'system/iconExchange', 'class' => 'header'];
 		$headerPorts = ['num' => ' Č.', 'id' => 'ID', 'connectedTo' => 'Zapojeno do', 'note' => 'Upřesnění'];
 
 		$this->addContent ('body',
