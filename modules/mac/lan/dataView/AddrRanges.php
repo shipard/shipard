@@ -46,7 +46,7 @@ class AddrRanges extends DataView
 			$pks[] = $r['ndx'];
 		}
 
-		$this->data['header'] = ['#' => '#', 'range' => 'Rozsah', 'id' => 'id', 'fullName' => 'Název', 'dhcpServerId' => 'Server ID', 'vlan' => 'VLAN'];
+		$this->data['header'] = ['#' => '#', 'range' => 'Rozsah', 'id' => 'id', 'fullName' => 'Název', 'vlan' => 'VLAN'];
 		$this->data['table'] = $t;
 	}
 }

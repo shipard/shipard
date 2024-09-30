@@ -108,7 +108,7 @@ class DocumentCardDevice extends \e10\DocumentCard
 			{ // wallSocket
 				if ($r['wallSocketId'])
 				{
-					$item['connectedTo'][] = ['text' => $r['wallSocketId'], 'icon' => 'icon-square-o', 'class' => 'e10-bold'];
+					$item['connectedTo'][] = ['text' => $r['wallSocketId'], 'icon' => 'user/square', 'class' => 'e10-bold'];
 					if ($r['wallSocketPlaceName'])
 						$item['connectedTo'][] = ['text' => $r['wallSocketPlaceName'], 'icon' => 'system/iconMapMarker', 'class' => ''];
 
@@ -132,16 +132,16 @@ class DocumentCardDevice extends \e10\DocumentCard
 					{
 						$item['connectedTo'][] = [
 							'text' => $r['connectedPortId'], 'suffix' => '#' . $r['connectedPortNumber'],
-							'icon' => 'icon-arrow-circle-o-right', 'class' => ''];
+							'icon' => 'user/arrowRight', 'class' => ''];
 					}
 					else
-						$item['connectedTo'][] = ['text' => '!!!', 'icon' => 'icon-arrow-circle-o-right', 'class' => 'e10-error'];
+						$item['connectedTo'][] = ['text' => '!!!', 'icon' => 'user/arrowRight', 'class' => 'e10-error'];
 
 					if ($r['connectedDeviceRackId'])
 					{
 						$item['connectedTo'][] = [
 							'text' => $r['connectedDeviceRackName'], 'suffix' => $r['connectedDeviceRackId'],
-							'icon' => 'icon-square', 'class' => 'break'];
+							'icon' => 'user/square', 'class' => 'break'];
 					}
 
 					if ($r['connectedDeviceKind'] == 20)
@@ -193,7 +193,8 @@ class DocumentCardDevice extends \e10\DocumentCard
 					$dstItem[] = ['code' => '<br>'];
 				$dstItem[] = ['text' => ' ', 'class' => (($ii === 0) ? 'break' : '')];
 			}
-			$dstItem[] = ['text' => '', 'icon' => 'icon-level-up fa-rotate-90 fa-fw', 'class' => ''];
+			//$dstItem[] = ['text' => '', 'icon' => 'icon-level-up fa-rotate-90 fa-fw', 'class' => ''];
+			$dstItem[] = ['text' => '', 'icon' => 'user/chevronRight', 'class' => 'e10-off'];
 
 			if ($r['deviceName'])
 			{
@@ -204,7 +205,7 @@ class DocumentCardDevice extends \e10\DocumentCard
 
 				$dstItem[] = [
 					'text' => $r['portId'], 'suffix' => '#' . $r['portNumber'],
-					'icon' => 'icon-arrow-circle-o-right', 'class' => 'e10-off'];
+					'icon' => 'user/arrowRight', 'class' => 'e10-off'];
 
 				if ($r['deviceKind'] == 20)
 				{ // media converter
