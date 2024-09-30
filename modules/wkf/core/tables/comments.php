@@ -65,7 +65,13 @@ class TableComments extends DbTable
 	{
 		$hdr = parent::createHeader ($recData, $options);
 
-		$hdr ['info'][] = ['class' => 'title', 'value' => 'TEST'];
+		$hdr ['info'][] = ['class' => 'title', 'value' => 'Komentář'];
+		if ($recData['issue'])
+		{
+			$issueRecData = $this->app()->loadItem($recData['issue'], 'wkf.core.issues');
+			if ($issueRecData)
+				$hdr ['info'][] = ['class' => 'title', 'value' => $issueRecData['subject']];
+		}
 
 		return $hdr;
 	}
