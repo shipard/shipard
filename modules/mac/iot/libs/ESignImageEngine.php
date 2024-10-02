@@ -38,6 +38,7 @@ class ESignImageEngine extends Utility
   protected function createHTML()
   {
     $this->template = new \Shipard\Report\TemplateMustache($this->app());
+    $this->template->data['esignNdx'] = $this->esignNdx;
     $this->template->data['displayInfo'] = $this->displayInfo;
 
     $this->template->data['vds'] = Json::decode($this->esignRecData['vdsData']);

@@ -8,6 +8,9 @@
 
 		{"id": "author", "name": "Autor", "type": "int", "reference": "e10.persons.persons"},
 
+		{"id": "validFrom", "name": "Platné od", "type": "timestamp"},
+		{"id": "validTo", "name": "Platné do", "type": "timestamp"},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],

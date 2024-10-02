@@ -220,8 +220,8 @@ class FormMsg extends TableForm
 
 		$this->openForm ();
 			$this->addColumnInput ('title');
-			//if ($usePersonsNotify)
 				$this->addList ('doclinksPersons', '', self::loAddToFormLayout);
+				$this->addList ('doclinksEsigns', '', self::loAddToFormLayout);
 			$this->openTabs ($tabs);
 				$this->openTab (self::ltNone);
 					$this->addInputMemo('text', NULL, TableForm::coFullSizeY);
@@ -230,6 +230,8 @@ class FormMsg extends TableForm
 					$this->addList ('vgrs');
 				$this->closeTab ();
 				$this->openTab();
+					$this->addColumnInput ('validFrom');
+					$this->addColumnInput ('validTo');
 					$this->addList ('clsf', '', TableForm::loAddToFormLayout);
 					$this->addSeparator(self::coH4);
 					$this->addColumnInput ('author');

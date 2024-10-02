@@ -1,0 +1,8 @@
+[
+	{
+		"table": "wkf.msgs.msgs",
+		"lists": [
+			{"id": "doclinksEsigns", "class": "e10.base.ListDocLinks", "name": "Vazby na E-cedulky"}
+		]
+	}
+]

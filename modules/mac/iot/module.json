@@ -16,8 +16,8 @@
 		"scenariosSchedule", "scenariosActions",
 		"users"
   ],
+	"extensions": ["wkf"],
   "modules": ["mac/base"],
-
   "config": [
 	  {"id": "+mac.iot.ioPortValueStyle", "file": "mac.iot.ioPortValueStyle.json"},
 	  {"id": "+mac.iot.values.types", "file": "mac.iot.values.types.json"},
