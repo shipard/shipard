@@ -17,7 +17,7 @@
 		"users"
   ],
 	"extensions": ["wkf"],
-  "modules": ["mac/base"],
+  "modules": ["mac/base", "wkf/msgs"],
   "config": [
 	  {"id": "+mac.iot.ioPortValueStyle", "file": "mac.iot.ioPortValueStyle.json"},
 	  {"id": "+mac.iot.values.types", "file": "mac.iot.values.types.json"},

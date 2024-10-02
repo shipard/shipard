@@ -12,5 +12,14 @@
 				{"id": "controls", "viewer": "default", "table": "mac.iot.controls"}
 			]
 		}
+	},
+	"wkf.msgs.msgs": {
+		"wkfmsgs-show-on-esigns": {
+			"linkid": "wkfmsgs-show-on-esigns", "name": "Zobrazit na", "icon": "tables/mac.iot.esigns",
+			"sources": [
+				{"id": "esigns", "viewer": "default", "table": "mac.iot.esigns"}
+			],
+			"listId": "doclinksEsigns"
+		}
 	}
 }
