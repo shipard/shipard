@@ -1018,6 +1018,8 @@ class TableForm
 	function addList ($listId, $label = '', $options = 0)
 	{
 		$listDefinition = $this->table->listDefinition ($listId);
+		if (!$listDefinition)
+			return;
 		$listObject = $this->table->app()->createObject ($listDefinition ['class']);
 		$listObject->setRecord ($listId, $this);
 		$inputCode = $listObject->createHtmlCode ($options);
