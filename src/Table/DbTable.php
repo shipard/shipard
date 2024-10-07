@@ -1647,7 +1647,8 @@ class DbTable
 					$btn['subButtons'][] = [
 						'type' => 'action', 'action' => 'addwizard', 'icon' => 'system/iconEmail', 'title' => 'Odeslat emailem',
 						'data-table' => $this->tableId(), 'data-pk' => $recData['ndx'], 'data-class' => 'Shipard.Report.SendFormReportWizard',
-						'data-addparams' => 'reportClass='.$r ['class'].'&documentTable='.$this->tableId(), 'btnClass' => 'btn-default'
+						'data-addparams' => 'reportClass='.$r ['class'].'&documentTable='.$this->tableId().'&focusedPKPrimary='.$recData['ndx'],
+						'btnClass' => 'btn-default'
 					];
 				}
 				if (utils::param($r, 'dropdown', 0))
