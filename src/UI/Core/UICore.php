@@ -166,7 +166,10 @@ class UICore extends \Shipard\Base\BaseObject
 		if (isset ($p['url']))
 		{
 			$t .= "<a href='{$p['url']}'";
-			$t .= " target='_blank'";
+			if (isset($p['download']))
+				$t .= " download=\"".Utils::es($p['download'])."\"";
+			else
+				$t .= " target='_blank'";
 			$t .= " rel='noopener'";
 			$t .= '>';
 
