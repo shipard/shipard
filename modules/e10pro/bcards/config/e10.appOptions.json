@@ -1,0 +1,12 @@
+{
+	"bcards": {
+		"name": "Vizitky", "order": 1000, "group": "bcards",
+		"icon": "user/idCard",
+		"type": "cfgFile",
+		"options":
+		[
+			{"cfgKey": "urlTest", "cfgName": "URL pro testování"},
+			{"cfgKey": "urlProduction", "cfgName": "URL pro ostrý provoz"}
+		]
+	}
+}

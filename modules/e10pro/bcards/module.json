@@ -1,0 +1,13 @@
+{
+  "id": "e10pro.bcards",
+  "name": "Vizitky",
+	"modules": ["e10/base", "e10/persons"],
+	"tables": ["orgs", "cards", "webTemplates"],
+	"config": [
+		{"id": "+appSkeleton", "file": "appSkeleton.json"},
+		{"id": "+e10.appOptions.groups", "file": "appOptionsGroups.json"},
+		{"id": "+appOptions", "file": "e10.appOptions.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+		{"id": "+e10pro.bcards.bcardsTypes", "file": "bcardTypes.json"}
+	]
+}

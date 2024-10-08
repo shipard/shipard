@@ -1,0 +1,34 @@
+{
+	"id": "e10pro.bcards.cards", "sql": "e10pro_bcards_cards", "name": "Vizitky",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "org", "name": "Organizace", "type": "int", "reference": "e10pro.bcards.orgs"},
+    {"id": "bcardType", "name": "Typ vizitky", "type": "enumInt",
+	    "enumCfg": {"cfgItem": "e10pro.bcards.bcardsTypes", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "fullName", "name": "Jméno", "type": "string", "len": 120},
+		{"id": "title", "name": "Funkce", "type": "string", "len": 120},
+		{"id": "phone", "name": "Telefon", "type": "string", "len": 80},
+		{"id": "email", "name": "E-mail", "type": "string", "len": 80},
+		{"id": "web", "name": "Web", "type": "string", "len": 80},
+
+		{"id": "id1", "name": "ID1", "type": "string", "len": 16, "options": ["ascii"]},
+		{"id": "id2", "name": "ID2", "type": "string", "len": 16, "options": ["ascii"]},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": {
+    "default": {
+      "id": "default", "class": "e10pro.bcards.ViewCards",
+      "details": {
+        "condoDetail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.bcards.ViewDetailCard"}
+      }
+    }
+  },
+	"forms": [
+		{"id": "default", "class": "e10pro.bcards.FormCard"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}
+

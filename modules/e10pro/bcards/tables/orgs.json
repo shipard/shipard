@@ -1,0 +1,26 @@
+{
+	"id": "e10pro.bcards.orgs", "sql": "e10pro_bcards_orgs", "name": "Organizace",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+
+		{"id": "webTemplate", "name": "Šablona pro webovou vizitku", "type": "int", "reference": "e10pro.bcards.webTemplates"},
+		{"id": "companyBCard", "name": "Firemní vizitka", "type": "int", "reference": "e10pro.bcards.cards"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": {
+    "default": {
+      "id": "default", "class": "e10pro.bcards.ViewOrgs",
+      "details": {
+        "condoDetail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.bcards.ViewDetailOrg"}
+      }
+    }
+  },
+	"forms": [
+		{"id": "default", "class": "e10pro.bcards.FormOrg"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

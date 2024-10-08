@@ -1,0 +1,19 @@
+{
+	"panels": {
+		"agendy": {
+			"items": {
+				"loyp": {
+					"t1": "Vizitky", "object": "subMenu", "icon": "user/idCard",
+					"order": 9800000,
+					"subMenu": {
+						"items": {
+							"bcards-orgs": {"t1": "Organizace", "object": "viewer", "table": "e10pro.bcards.orgs", "viewer": "default", "order": 100000},
+							"bcards-cards": {"t1": "Vizitky", "object": "viewer", "table": "e10pro.bcards.cards", "viewer": "default", "order": 110000},
+							"bcards-webTemplates": {"t1": "Webové šablony", "object": "viewer", "table": "e10pro.bcards.webTemplates", "viewer": "default", "order": 120000}
+						}
+					}
+				}
+			}
+		}
+	}
+}
