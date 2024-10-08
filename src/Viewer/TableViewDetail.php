@@ -14,6 +14,7 @@ class TableViewDetail
 {
 	/** @var \Shipard\Base\DbTable */
 	var $table;
+	var $ndx = 0;
 	var $item;
 	var $ok = 0;
 	var $objectData = [];
@@ -64,10 +65,10 @@ class TableViewDetail
 		$this->content [] = array ('type' => 'viewer', 'table' => $tableId, 'viewer' => $viewerId, 'params' => $params);
 	}
 
-	public function addDocumentCard ($cardClassId)
+	public function addDocumentCard ($cardClassId, $recData = NULL)
 	{
 		$card = $this->app()->createObject($cardClassId);
-		$card->setDocument($this->table(), $this->item);
+		$card->setDocument($this->table(), $recData === NULL ? $this->item : $recData);
 		$card->createContent();
 
 		if (isset($card->content['body']))
