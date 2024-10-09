@@ -102,6 +102,7 @@ class LanDevices extends \lib\dataView\DataView
 			'rack' => 'Rack',
 			'connectedTo' => 'Zapojeno do',
 			'addr' => 'IP adresa',
+			'addrm' => 'IP/MAC adresa',
 		];
 		$this->data['table'] = $t;
 	}
@@ -284,12 +285,19 @@ class LanDevices extends \lib\dataView\DataView
 
 			$at = $addrTypes[$r['addrType']] ?? NULL;
 			$a = ['prefix' => $r['portId'], 'text' => $r['ip']];
+			$am = ['prefix' => $r['portId'], 'text' => $r['ip']];
 			if ($at && $at['sc'] !== 'F')
 				$a['suffix'] = $at['sc'];
+			if ($r['mac'] !== '')
+				$am['suffix'] = $r['mac'];
 
 			if (isset($data[$r['device']]['addr']))
 				$data[$r['device']]['addr'][] = ['code' => '<br>'];
 			$data[$r['device']]['addr'][] = $a;
+
+			if (isset($data[$r['device']]['addrm']))
+				$data[$r['device']]['addrm'][] = ['code' => '<br>'];
+			$data[$r['device']]['addrm'][] = $am;
 		}
 
 		// -- remove unused portId
