@@ -103,6 +103,7 @@ class LanDevices extends \lib\dataView\DataView
 			'connectedTo' => 'Zapojeno do',
 			'addr' => 'IP adresa',
 			'addrm' => 'IP/MAC adresa',
+			'osInfo' => 'Operační systém',
 		];
 		$this->data['table'] = $t;
 	}
@@ -332,6 +333,16 @@ class LanDevices extends \lib\dataView\DataView
 						$data[$deviceNdx]['deviceSN'] = $infoData['items']['device-sn'];
 				}
 			}
+		}
+
+		// -- OS
+		$osBadges = [];
+		$swDeviceUtils = new \mac\swlan\libs\SWDevicesUtils($this->app());
+		$swDeviceUtils->devicesOSBadges($devices, $osBadges);
+		foreach ($osBadges as $deviceNdx => $osInfo)
+		{
+			$data[$deviceNdx]['osInfo'] = $osInfo;
+			unset($data[$deviceNdx]['osInfo'][0]['icon']);
 		}
 	}
 }
