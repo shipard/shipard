@@ -20,6 +20,7 @@ class DCBCardWebTemplate extends \Shipard\Base\DocumentCard
     $e->setBCard($this->testBCardNdx);
 
 		$previewUrl = $e->url();
+		$previewUrl .= '?template='.$this->recData['ndx'];
 		$htmlPaneTitle = [
 			['text' => 'Náhled HTML', 'class' => 'h2 pb1', 'icon' => 'user/photo'],
 			['text' => 'Otevřít', 'class' => 'h2 pb1 pl1', 'icon' => 'system/iconLink', 'url' => $previewUrl],

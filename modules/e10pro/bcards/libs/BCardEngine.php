@@ -17,6 +17,7 @@ class BCardEngine extends \Shipard\Base\Utility
   var $orgRecData = NULL;
 
   var $webTemplateNdx = 0;
+  var $forceWebTemplateNdx = 0;
   var $webTemplateRecData = NULL;
   var $webTemplateCodeCss = '';
   var $webTemplateCodeHtml = 'TEMPLATE NOT FOUND';
@@ -44,7 +45,13 @@ class BCardEngine extends \Shipard\Base\Utility
     if (!$this->bcardRecData || !$this->orgRecData)
       return;
 
-    $this->webTemplateNdx = $this->orgRecData['webTemplate'];
+    $webTemplateParam = intval($this->app()->testGetParam('template'));
+    if ($webTemplateParam && !$this->forceWebTemplateNdx)
+      $this->forceWebTemplateNdx= $webTemplateParam;
+    if ($this->forceWebTemplateNdx)
+      $this->webTemplateNdx = $this->forceWebTemplateNdx;
+    else
+      $this->webTemplateNdx = $this->orgRecData['webTemplate'];
     $this->webTemplateRecData = $this->app()->loadItem($this->webTemplateNdx, 'e10pro.bcards.webTemplates');
     if (!$this->webTemplateRecData)
       return;
