@@ -51,6 +51,12 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$iqt->run();
 	}
 
+	function infoQueueSWClean()
+	{
+		$limit = new \DateTime('3 months ago');
+		$this->db()->query('DELETE FROM [mac_swlan_infoQueue] WHERE [dateCreate] < %t', $limit);
+	}
+
 	public function onCliAction ($actionId)
 	{
 		switch ($actionId)
@@ -59,6 +65,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'info-queue-sanitize': return $this->infoQueueSanitize();
 			case 'info-queue-tester': return $this->infoQueueTester();
 			case 'info-queue-sw-loader': return $this->infoQueueSWLoader();
+			case 'info-queue-sw-clean': return $this->infoQueueSWClean();
 		}
 
 		parent::onCliAction($actionId);
@@ -75,12 +82,18 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$this->infoQueueSWLoader();
 	}
 
+	protected function onCronMorning()
+	{
+		$this->infoQueueSWClean();
+	}
+
 	public function onCron ($cronType)
 	{
 		switch ($cronType)
 		{
 			case 'ever': $this->onCronEver(); break;
 			case 'hourly': $this->onCronHourly(); break;
+			case 'morning': $this->onCronMorning(); break;
 		}
 		return TRUE;
 	}
