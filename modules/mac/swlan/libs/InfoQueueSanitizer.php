@@ -138,6 +138,12 @@ class InfoQueueSanitizer extends Utility
 		if ($this->recData['osInfo'])
 		{
 			$this->dataSanitized['_saInfo'] = 'os';
+
+			if (isset($this->dataSanitized['OsName']) && strstr($this->dataSanitized['OsName'], 'Windows 11'))
+			{ // windows 10 / 11
+				if (isset($this->dataSanitized['WindowsProductName']))
+					$this->dataSanitized['WindowsProductName'] = str_replace('Windows 10', 'Windows 11', $this->dataSanitized['WindowsProductName']);
+			}
 		}
 		else
 		{
