@@ -30,6 +30,18 @@ class DeviceSW extends \e10\DocumentCard
 	public function createContentBody ()
 	{
 		$this->addDevices();
+
+		$line = [];
+		$line[] = [
+			'text' => 'Smazat', 'type' => 'action', 'action' => 'addwizard', 'icon' => 'system/actionDelete',
+			'btnClass' => 'btn-danger btn-sm', 'class' => 'pull-right',
+			'data-class' => 'mac.swlan.libs.WizardDeleteDeviceSWInfo',
+			'data-addparams' => 'personNdx=' . $this->recData['ndx'],
+		];
+
+		$this->addContent('body', [
+			'pane' => 'e10-pane e10-pane-table', 'type' => 'line', 'line' => $line,
+		]);
 	}
 
 	public function createContent ()
