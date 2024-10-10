@@ -122,7 +122,7 @@ class SWInfoAnalyzer extends Utility
 		}
 		elseif ($this->osFamily === SWUtils::osfWindows)
 		{
-			if (strstr($this->srcData['osName'], 'Windows 11'))
+			if (strstr($this->srcData['OsName'], 'Windows 11'))
 			{
 				if (isset($this->srcData['WindowsProductName']))
 					$this->srcData['WindowsProductName'] = str_replace('Windows 10', 'Windows 11', $this->srcData['WindowsProductName']);
