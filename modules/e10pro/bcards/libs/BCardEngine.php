@@ -156,6 +156,11 @@ class BCardEngine extends \Shipard\Base\Utility
 
 		$v .= $ld;
     */
+
+		$v .= 'N;CHARSET=UTF-8:'.$this->vcEscape($this->bcardData['name']);
+		$v .= ';';
+		$v .= $ld;
+
  		$v .= 'FN;CHARSET=UTF-8:'.$this->vcEscape($this->bcardData['name']).$ld;
 
 		if (isset($this->bcardData['email']) && $this->bcardData['email'] !== '')
