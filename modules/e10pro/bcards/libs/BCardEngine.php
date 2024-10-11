@@ -170,13 +170,13 @@ class BCardEngine extends \Shipard\Base\Utility
 		if (isset($this->bcardData['company']['name']))
 			$v .= 'ORG;CHARSET=UTF-8:'.$this->vcEscape($this->bcardData['company']['name']).$ld;
     if (isset($this->bcardData['company']['web']))
-			$v .= 'URL:'.$this->vcEscape($this->bcardData['company']['web']).$ld;
+			$v .= 'URL:'.$this->bcardData['company']['web'].$ld;
 
     if (isset($this->bcardData['links']))
     {
       foreach ($this->bcardData['links'] as $oneLink)
       {
-        $v .= 'URL:'.$this->vcEscape($oneLink['url']).$ld;
+        $v .= 'URL:'.$oneLink['url'].$ld;
       }
     }
 
