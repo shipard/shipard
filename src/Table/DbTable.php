@@ -835,6 +835,7 @@ class DbTable
 		$detailData = new $className ($this, $viewId);
 		$detailData->detailId = $detailId;
 
+		$detailData->ndx = intval($pk);
 		$detailData->item = $recData;
 		$detailData->ok = 1;
 		if ($disabledDetails !== NULL)
