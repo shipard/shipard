@@ -37,9 +37,9 @@ class DocsPointsRecalc extends \Shipard\Base\Utility
 
   protected function recalcDocument($recData)
   {
-    echo "* ".$recData['docNumber']."\n";
+    //echo "* ".$recData['docNumber']."\n";
 
-		$dpe = new \e10pro\loyp\libs\DocsPointsEngine($this->app);
+    $dpe = new \e10pro\loyp\libs\DocsPointsEngine($this->app);
 		$dpe->doDocument($recData, 1);
   }
 
@@ -48,6 +48,14 @@ class DocsPointsRecalc extends \Shipard\Base\Utility
     $this->dateFrom = Utils::createDateTime('2024-01-01');
     $this->dateTo = Utils::createDateTime('2024-12-31');
 
+    //$now = new \DateTime();
+    //echo "START: ".$now->format('H:i:s')."\n";
+
+    $this->db()->begin();
     $this->recalcAll();
+    $this->db()->commit();
+
+    //$end = new \DateTime();
+    //echo "DONE: ".$end->format('H:i:s')."\n";
   }
 }
