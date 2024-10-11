@@ -33,7 +33,7 @@ class TableLinkTypes extends DbTable
 		$rows = $this->app()->db->query ('SELECT * FROM [e10pro_bcards_linkTypes] WHERE [docState] != 9800 ORDER BY [order], [fullName]');
 
 		foreach ($rows as $r)
-			$list [$r['ndx']] = ['ndx' => $r ['ndx'], 'id' => $r ['id'], 'fn' => $r ['fullName'], 'sn' => $r ['shortName']];
+			$list [$r['ndx']] = ['ndx' => $r ['ndx'], 'id' => $r ['id'], 'fn' => $r ['fullName'], 'sn' => $r ['shortName'], 'iconFA' => $r['iconFA']];
 
 		// -- save to file
 		$cfg ['e10pro']['bcards']['linkTypes'] = $list;

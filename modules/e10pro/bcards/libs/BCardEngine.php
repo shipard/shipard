@@ -86,6 +86,20 @@ class BCardEngine extends \Shipard\Base\Utility
     if ($this->bcardRecData['web'] !== '')
       $this->bcardData['web'] = $this->bcardRecData['web'];
 
+    // -- links
+    $cardLinks = $this->db()->query('SELECT * FROM [e10pro_bcards_cardsLinks] WHERE [card] = %i', $this->bcardNdx, ' ORDER BY [rowOrder], [ndx]');
+    foreach ($cardLinks as $cl)
+    {
+      $lt = $this->app()->cfgItem('e10pro.bcards.linkTypes.'.$cl['linkType'], NULL);
+      if (!$lt)
+        continue;
+
+      $icl = $lt;
+      $icl['url'] = $cl['url'];
+
+      $this->bcardData['links'][] = $icl;
+    }
+
     $this->bcardData['org'] = $this->orgRecData;
     if ($this->bcardRecData['bcardType'] === 0 && $this->orgRecData['companyBCard'])
     {
@@ -119,7 +133,7 @@ class BCardEngine extends \Shipard\Base\Utility
 		$ld = "\r\n";
 		$v = '';
 		$v .= 'BEGIN:VCARD'.$ld;
-		$v .= 'VERSION:2.1'.$ld;
+		$v .= 'VERSION:3.0'.$ld;
 
     /*
 		$v .= 'N;CHARSET=UTF-8:'.$this->vcEscape($this->personRecData['lastName']);
@@ -157,6 +171,14 @@ class BCardEngine extends \Shipard\Base\Utility
 			$v .= 'ORG;CHARSET=UTF-8:'.$this->vcEscape($this->bcardData['company']['name']).$ld;
     if (isset($this->bcardData['company']['web']))
 			$v .= 'URL:'.$this->vcEscape($this->bcardData['company']['web']).$ld;
+
+    if (isset($this->bcardData['links']))
+    {
+      foreach ($this->bcardData['links'] as $oneLink)
+      {
+        $v .= 'URL:'.$this->vcEscape($oneLink['url']).$ld;
+      }
+    }
 
 		if ($orgFunction !== '')
 			$v .= 'TITLE;CHARSET=UTF-8:'.$this->vcEscape($orgFunction).$ld;
