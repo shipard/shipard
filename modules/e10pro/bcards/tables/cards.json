@@ -17,6 +17,9 @@
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
+	"lists": [
+		{"id": "links", "class": "e10.base.ListRows", "name": "Odkazy", "table": "e10pro.bcards.cardsLinks", "queryColumn": "card", "orderColumn": "rowOrder"}
+	],
 	"views": {
     "default": {
       "id": "default", "class": "e10pro.bcards.ViewCards",

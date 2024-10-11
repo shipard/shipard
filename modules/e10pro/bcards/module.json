@@ -2,7 +2,7 @@
   "id": "e10pro.bcards",
   "name": "Vizitky",
 	"modules": ["e10/base", "e10/persons"],
-	"tables": ["orgs", "cards", "webTemplates"],
+	"tables": ["orgs", "cards", "cardsLinks", "webTemplates", "linkTypes"],
 	"config": [
 		{"id": "+appSkeleton", "file": "appSkeleton.json"},
 		{"id": "+e10.appOptions.groups", "file": "appOptionsGroups.json"},

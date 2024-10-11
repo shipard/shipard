@@ -5,6 +5,7 @@
 		"viewers": {
 			"e10pro.bcards.orgs": {"default": 2},
 			"e10pro.bcards.cards": {"default": 2},
+			"e10pro.bcards.linkTypes": {"default": 2},
 			"e10pro.bcards.webTemplates": {"default": 2}
 		}
 	}

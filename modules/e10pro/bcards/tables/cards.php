@@ -26,6 +26,14 @@ class TableCards extends DbTable
 		}
 	}
 
+	public function tableIcon ($recData, $options = NULL)
+	{
+		if ($recData ['bcardType'] == 1)
+			return 'system/personCompany';
+
+		return 'system/personHuman';
+	}
+
 	public function createHeader ($recData, $options)
 	{
 		$hdr = parent::createHeader ($recData, $options);
@@ -54,7 +62,7 @@ class ViewCards extends TableView
 	{
 		$listItem ['pk'] = $item['ndx'];
 		$listItem ['t1'] = $item['fullName'];
-		//$listItem ['t2'] = $item['shortName'];
+		$listItem ['t2'] = $item['orgName'];
 
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
@@ -67,18 +75,18 @@ class ViewCards extends TableView
 
 		$q = [];
 
-    array_push ($q, 'SELECT [cards].* ');
+    array_push ($q, 'SELECT [cards].*, ');
+    array_push ($q, ' [orgs].fullName AS orgName');
     array_push ($q, ' FROM [e10pro_bcards_cards] AS [cards]');
-    array_push ($q, '');
-    array_push ($q, '');
-    array_push ($q, '');
+    array_push ($q, ' LEFT JOIN [e10pro_bcards_orgs] AS [orgs] ON [cards].[org] = [orgs].ndx');
     array_push ($q, ' WHERE 1');
 
 		// -- fulltext
 		if ($fts != '')
     {
       array_push ($q, 'AND (');
-			array_push ($q, '[fullName] LIKE %s ', '%'.$fts.'%');
+			array_push ($q, '[cards].[fullName] LIKE %s ', '%'.$fts.'%');
+			array_push ($q, ' OR [orgs].[fullName] LIKE %s ', '%'.$fts.'%');
       array_push ($q, ')');
     }
 
@@ -100,6 +108,7 @@ class FormCard extends TableForm
 		$this->setFlag ('maximize', 1);
 
 		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Sítě', 'icon' => 'formParameters'];
 		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'formParameters'];
 		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
@@ -116,6 +125,9 @@ class FormCard extends TableForm
 					$this->addColumnInput ('email');
 					$this->addColumnInput ('web');
 				$this->closeTab();
+				$this->openTab (TableForm::ltNone);
+					$this->addList ('links');
+				$this->closeTab ();
 				$this->openTab ();
 					$this->addColumnInput ('id1');
 					$this->addColumnInput ('id2');

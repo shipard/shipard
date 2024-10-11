@@ -1,0 +1,19 @@
+{
+	"id": "e10pro.bcards.cardsLinks", "sql": "e10pro_bcards_cardsLinks", "name": "Odkazy na vizitkách",
+	"columns": [
+		{"id": "ndx", "name": "ndx", "type": "int_ai"},
+
+		{"id": "card", "name": "Zóna", "type": "int", "reference": "e10pro.bcards.cards"},
+
+    {"id": "linkType", "name": "Druh", "type": "enumInt", "options": ["saveOnChange"],
+		  "enumCfg": {"cfgItem": "e10pro.bcards.linkTypes", "cfgValue": "ndx", "cfgText": "sn"}},
+
+    {"id": "url", "name": "URL", "type": "string", "len": "90"},
+
+		{"id": "rowOrder", "name": "Pořadí", "type": "int"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.bcards.FormCardLink"}
+	],
+	"options": ["systemTable"]
+}
