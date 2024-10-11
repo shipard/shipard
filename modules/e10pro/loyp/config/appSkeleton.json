@@ -1,0 +1,19 @@
+{
+	"panels": {
+		"buy": {
+			"items": {
+				"loyp": {
+					"t1": "Věrnostní program", "object": "subMenu", "icon": "user/medal",
+					"order": 9800000,
+					"subMenu": {
+						"items": {
+							"pointsSettings": {"t1": "Nastavení bodů", "object": "viewer", "table": "e10pro.loyp.pointsSettings", "viewer": "default", "icon": "tables/e10.witems.itemcategories", "order": 100000},
+							"pointsSummary": {"t1": "Stav bodů", "object": "viewer", "table": "e10pro.loyp.pointsJournal", "viewer": "summary", "icon": "tables/e10.witems.itemcategories", "order": 110000},
+							"reports": {"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10pro-loyp", "icon": "system/iconReports", "order": 700000}
+						}
+					}
+				}
+			}
+		}
+	}
+}

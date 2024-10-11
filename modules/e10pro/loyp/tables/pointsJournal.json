@@ -1,0 +1,17 @@
+{
+	"id": "e10pro.loyp.pointsJournal", "sql": "e10pro_loyp_pointsJournal", "name": "Deník věrnostních bodů",
+	"columns": [
+		{"id": "ndx", "name": "ndx", "type": "int_ai"},
+
+		{"id": "rowType", "name": "Typ řádku", "type": "enumInt",
+			"enumValues": {"0": "Prodej", "1": "Výkup",  "2": "Nákup za body"}},
+
+		{"id": "document", "name": "Doklad", "type": "int", "reference": "e10docs.core.heads"},
+    {"id": "person", "name": "Osoba", "type": "int", "reference": "e10docs.core.heads"},
+    {"id": "cntPoints", "name": "Počet bodů", "type": "int"}
+	],
+	"views": [
+		{"id": "summary", "class": "e10pro.loyp.libs.ViewPointsJournalSummary", "detail": "e10pro.loyp.libs.ViewDetailPointsJournalSummary"}
+	],
+	"options": ["systemTable"]
+}

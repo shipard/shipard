@@ -1,0 +1,6 @@
+{
+  "loyp-purchase": {
+    "docTypes": ["purchase"],
+    "engine": "e10pro.loyp.libs.DocsPointsEngine"
+  }
+}

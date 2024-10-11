@@ -1,0 +1,23 @@
+{
+	"id": "e10pro.loyp.pointsSettings", "sql": "e10pro_loyp_pointsSettings", "name": "Nastavení věrnostních bodů",
+	"columns": [
+		{"id": "ndx", "name": "ndx", "type": "int_ai"},
+		{"id": "witemCategory", "name": "Kategorie položek", "type": "int", "reference": "e10.witems.itemcategories"},
+
+    {"id": "cntPoints", "name": "Počet bodů", "type": "int"},
+    {"id": "perAmount", "name": "Za částku", "type": "money"},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "e10pro.loyp.ViewPointsSettings", "detail": "e10pro.loyp.ViewDetailPointsSettings"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.loyp.FormPointsSettings"}
+	]
+}
