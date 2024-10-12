@@ -18,9 +18,13 @@ class DCBCard extends \Shipard\Base\DocumentCard
     $e->setBCard($this->recData['ndx']);
 
 		$previewUrl = $e->url();
+		$webUrl = $e->url(TRUE);
+		$webUrlTitle = substr($webUrl, 8);
+
 		$htmlPaneTitle = [
 			['text' => 'Náhled HTML', 'class' => 'h2 pb1', 'icon' => 'user/photo'],
 			['text' => 'Otevřít', 'class' => 'h2 pb1 pl1', 'icon' => 'system/iconLink', 'url' => $previewUrl],
+			['text' => $webUrlTitle, 'class' => 'h2 pb1 pl1 pull-right', 'icon' => 'system/iconGlobe', 'url' => $webUrl],
 		];
 		$width = '600'.'px';
 		$height = '820'.'px';

@@ -87,6 +87,7 @@ class BCardEngine extends \Shipard\Base\Utility
       $this->bcardData['web'] = $this->bcardRecData['web'];
 
     // -- links
+    $this->bcardData['links'] = [];
     $cardLinks = $this->db()->query('SELECT * FROM [e10pro_bcards_cardsLinks] WHERE [card] = %i', $this->bcardNdx, ' ORDER BY [rowOrder], [ndx]');
     foreach ($cardLinks as $cl)
     {
