@@ -38,8 +38,8 @@ class TablePersons extends DbTable
 		$hdr ['info'][] = ['class' => 'title', 'value' => $recData ['fullName']];
 
 		$registerInfo = [
-			['text' => Utils::dateFromTo($recData['validFrom'], $recData['validTo'], NULL), 'class' => ($recData['valid'] ? 'label label-success' : 'label label-danger')],
-			['text' => utils::datef($recData['updated'], '%D, %T'), 'class' => 'label label-default', 'icon' => 'system/iconImport'],
+			['text' => Utils::dateFromTo(Utils::createDateTime($recData['validFrom']), Utils::createDateTime($recData['validTo']), NULL), 'class' => ($recData['valid'] ? 'label label-success' : 'label label-danger')],
+			['text' => Utils::datef($recData['updated'], '%D, %T'), 'class' => 'label label-default', 'icon' => 'system/iconImport'],
 		];
 		$hdr ['info'][] = ['class' => 'info', 'value' => $registerInfo];
 

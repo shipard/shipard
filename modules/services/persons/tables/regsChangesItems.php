@@ -18,6 +18,21 @@ class TableRegsChangesItems extends DbTable
 		parent::__construct ($dbmodel);
 		$this->setName ('services.persons.regsChangesItems', 'services_persons_regsChangesItems', 'Položky změny v registrech');
 	}
+
+	public function createHeader ($recData, $options)
+	{
+		$changeTypes = $this->columnInfoEnum ('changeType', 'cfgText');
+
+		$hdr = parent::createHeader ($recData, $options);
+		$hdr ['info'][] = [
+			'class' => 'title', 'value' => [
+				['text' => $recData ['oid']],
+				['text' =>$changeTypes[$recData ['changeType']], 'class' => 'id pull-right'],
+			]
+		];
+
+		return $hdr;
+	}
 }
 
 
@@ -51,6 +66,9 @@ class ViewRegsChangesItems extends TableView
       $listItem ['t2'] = $item['personName'];
     else
       $listItem ['t2'] = '';
+
+		if ($item['done'])
+			$listItem['class'] = 'e10-row-plus';
 
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
