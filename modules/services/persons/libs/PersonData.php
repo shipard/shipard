@@ -50,13 +50,17 @@ class PersonData extends \services\persons\libs\CoreObject
 		}
 		else
 		{
-			$exist = $this->db()->query('SELECT [ndx], [importState], [valid] FROM [services_persons_persons] WHERE [oid] = %s', $personId,
+			$exist = $this->db()->query('SELECT [ndx], [importState], [valid], [newDataAvailable] FROM [services_persons_persons] WHERE [oid] = %s', $personId,
 																	' AND [country] = %i', $countryNdx)->fetch();
 		}
 		if ($exist)
 		{
 			if ($exist['importState'] === 0 && $exist['valid'])
 				$this->refreshImport($exist['ndx']);
+			elseif ($exist['newDataAvailable'])
+			{
+				$this->refreshImport($exist['ndx']);
+			}
 
 			$this->setPersonNdx($exist['ndx']);
 			$this->load();
