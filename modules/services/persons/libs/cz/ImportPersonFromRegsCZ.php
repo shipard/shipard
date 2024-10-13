@@ -3,7 +3,7 @@
 namespace services\persons\libs\cz;
 
 use services\persons\libs\ImportPersonFromRegs;
-use \Shipard\Utils\Utils ,\Shipard\Utils\Str;
+use \Shipard\Utils\Utils ,\Shipard\Utils\Str, \Shipard\Utils\Json;
 use \services\persons\libs\LogRecord;
 
 /**
@@ -158,9 +158,90 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
 
   function doImport_ARES_RZP()
   {
-    return;
     if ($this->app()->debug)
-      echo "* doImport_ARES_Core; ";
+      echo "* doImport_ARES_RZP; ";
+
+    if (!$this->useRZP)
+    {
+      if ($this->app()->debug)
+        echo "disabled\n";
+
+      return;
+    }
+
+    $regData = $this->regData(self::prtCZAresRZP, $this->personDataCurrent->personId);
+    if (!$regData)
+    {
+      if ($this->app()->debug)
+        echo "ERROR; no regs data found\n";
+      return;
+    }
+
+    $rzpData = Json::decode($regData['srcData']);
+		if (!$rzpData)
+		{
+      if ($this->app()->debug)
+        echo "parse ERROR!\n";
+      return;
+    }
+
+    if (isset($rzpData['zaznamy']))
+    {
+      foreach ($rzpData['zaznamy'] as $zaznam)
+      {
+        if (!isset($zaznam['zivnosti']))
+          continue;
+        foreach ($zaznam['zivnosti'] as $z)
+        {
+          if (!isset($z['provozovny']))
+            continue;
+          foreach ($z['provozovny'] as $provozovna)
+          {
+            if ($this->app()->debug)
+              echo Json::lint($provozovna)."\n";
+
+            $this->doImport_ARES_RZP_Provozovna($provozovna);
+          }
+        }
+      }
+    }
+  }
+
+  protected function doImport_ARES_RZP_Provozovna($bb)
+  {
+    $officeId = strval($bb['icp']);
+
+    $officeAddress = [];
+    $this->fillAddress ([
+        'addressId' => 'O'.$officeId,
+        'street' => $bb['sidloProvozovny']['nazevUlice'] ?? '',
+        'streetNumber' => $bb['sidloProvozovny']['cisloDomovni'] ?? '',
+        'streetNumber2' => $bb['sidloProvozovny']['cisloDomovni2'] ?? '', // @TODO: ???
+        'city' => $bb['sidloProvozovny']['nazevObce'] ?? '',
+        'zipcode' => $bb['sidloProvozovny']['pscTxt'] ?? '',
+        'specification' => $bb['umisteniProvozovny'] ?? '',
+        'natAddressGeoId' => $bb['sidloProvozovny']['kodAdresnihoMista'] ?? 0,
+      ], $officeAddress);
+
+    $officeAddress['type'] = 1;
+
+    if (isset($bb['icp']))
+      $officeAddress['natId'] = $bb['icp'];
+
+    if (isset($bb['platnostOd']))
+      $officeAddress['validFrom'] = $bb['platnostOd'];
+    if (isset($bb['platnostDo']))
+      $officeAddress['validTo'] = $bb['platnostDo'];
+
+    $this->personDataImport->addAddress($officeAddress);
+  }
+
+  function doImport_ARES_RZP_OLD()
+  {
+    return;
+
+    if ($this->app()->debug)
+      echo "* doImport_ARES_RZP_OLD; ";
 
     if (!$this->useRZP)
     {
@@ -208,7 +289,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
     {
       if (isset($aa['PRY']['PR']['ICP']))
       {
-        $this->doImport_ARES_RZP_Provozovna($aa['PRY']['PR']);
+        $this->doImport_ARES_RZP_OLD_Provozovna($aa['PRY']['PR']);
         continue;
       }
       if (isset($aa['PRY']))
@@ -219,14 +300,14 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
           {
             if (!isset($bb['ICP']) || $bb['ICP'] === '')
               continue;
-            $this->doImport_ARES_RZP_Provozovna($bb);
+            $this->doImport_ARES_RZP_OLD_Provozovna($bb);
           }
         }
       }
     }
   }
 
-  protected function doImport_ARES_RZP_Provozovna($bb)
+  protected function doImport_ARES_RZP_OLD_Provozovna($bb)
   {
     $officeId = strval($bb['ICP']);
 
