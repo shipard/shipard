@@ -16,7 +16,7 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
   var $useRZP = 0;
 
   /**
-   * https://wwwinfo.mfcr.cz/ares/ares_xml_basic.html.cz
+   * https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/ekonomicke-subjekty/
    */
   function loadARESCore()
   {
@@ -38,7 +38,7 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
     {
       $logRecord->addItem('ares-download-failed', '', ['result' => $file]);
       if ($this->app()->debug)
-      echo "FAILED; ";
+        echo "FAILED; ";
     }
 		else
     {
@@ -227,29 +227,23 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
 
     $qryString = "";
     $qryString .= "<?xml version=\"1.0\" encoding=\"ISO-8859-2\"?>\n";
-    $qryString .="<VerejnyWebDotaz \n xmlns=\"urn:cz:isvs:rzp:schemas:VerejnaCast:v1\" \n version=\"2.8\">\n";
+    $qryString .="<VerejnyWebDotaz \n xmlns=\"urn:cz:isvs:rzp:schemas:VerejnaCast:v1\" \n version=\"3.1\">\n";
     $qryString .= "<Kriteria>\n";
     $qryString .= "<IdentifikacniCislo>".$this->personData->personId."</IdentifikacniCislo>\n";
     $qryString .= "<PlatnostZaznamu>0</PlatnostZaznamu>\n";
     $qryString .= "</Kriteria>\n";
     $qryString .= "</VerejnyWebDotaz>\n";
 
-
-    $queryfileName = Utils::tmpFileName('xml');
-    file_put_contents($queryfileName, $qryString);
-
-
-    $uploadUrl = 'https://www.rzp.cz/cgi-bin/aps_cacheWEB.sh';
-    $post = ['VSS_SERV' => 'ZVWSBJXML', 'filename' => curl_file_create($queryfileName, 'text/xml', 'dotaz.xml')];
+    $uploadUrl = "https://www.rzp.cz/rzp/api3-c/srv/vw/v31/vwinterface/xml";
 		$ch = curl_init();
 		curl_setopt ($ch, CURLOPT_HEADER, 0);
 		curl_setopt ($ch, CURLOPT_URL, $uploadUrl);
 		curl_setopt ($ch, CURLOPT_VERBOSE, 0);
-		curl_setopt ($ch, CURLOPT_HTTPHEADER, ['Content-Type: multipart/form-data']);
+    curl_setopt ($ch, CURLOPT_HTTPHEADER, ['Content-Type: text/xml']);
     curl_setopt ($ch, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible;)");
 		curl_setopt ($ch, CURLOPT_POST, 1);
 		curl_setopt ($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt ($ch, CURLOPT_POSTFIELDS, $post);
+		curl_setopt ($ch, CURLOPT_POSTFIELDS, $qryString);
 		$result = curl_exec ($ch);
 		curl_close ($ch);
     unset ($ch);
@@ -263,31 +257,29 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
     {
       $logRecord->addItem('rzp-invalid-content', 'Invalid `podnikatelID` value', ['xml-data' => $result]);
       $logRecord->setStatus(LogRecord::lstError, TRUE);
+      if ($this->app()->debug)
+        echo "  ERROR1\n";
       return;
     }
     //echo "TEST: !$podnikatelID! `\n".Json::lint($xmlData)."`\n";
 
     $qryString = "";
     $qryString .= "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-    $qryString .="<VerejnyWebDotaz \n xmlns=\"urn:cz:isvs:rzp:schemas:VerejnaCast:v1\" \n version=\"2.8\">\n";
+    $qryString .="<VerejnyWebDotaz \n xmlns=\"urn:cz:isvs:rzp:schemas:VerejnaCast:v1\" \n version=\"3.1\">\n";
     $qryString .= "<PodnikatelID>".$podnikatelID."</PodnikatelID>\n";
     $qryString .= "<Historie>0</Historie>\n";
     $qryString .= "</VerejnyWebDotaz>\n";
 
-    $queryfileName = Utils::tmpFileName('xml');
-    file_put_contents($queryfileName, $qryString);
-
-    $uploadUrl = 'https://www.rzp.cz/cgi-bin/aps_cacheWEB.sh';
-    $post = ['VSS_SERV' => 'ZVWSBJXML', 'filename' => curl_file_create($queryfileName, 'text/xml', 'dotaz2.xml')];
+    $uploadUrl = "https://www.rzp.cz/rzp/api3-c/srv/vw/v31/vwinterface/xml";
 		$ch = curl_init();
 		curl_setopt ($ch, CURLOPT_HEADER, 0);
 		curl_setopt ($ch, CURLOPT_URL, $uploadUrl);
 		curl_setopt ($ch, CURLOPT_VERBOSE, 0);
-		curl_setopt ($ch, CURLOPT_HTTPHEADER, ['Content-Type: multipart/form-data']);
+		curl_setopt ($ch, CURLOPT_HTTPHEADER, ['Content-Type: text/xml']);
     curl_setopt ($ch, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible;)");
 		curl_setopt ($ch, CURLOPT_POST, 1);
 		curl_setopt ($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt ($ch, CURLOPT_POSTFIELDS, $post);
+		curl_setopt ($ch, CURLOPT_POSTFIELDS, $qryString);
 		$result = curl_exec ($ch);
 		curl_close ($ch);
 
