@@ -407,7 +407,7 @@ class ViewItemsGrid extends TableViewGrid
 		$q = [];
 		array_push ($q, '(');
 
-			array_push ($q, ' SELECT [items].datePlanBegin AS oc1, [items].dateDeadline AS oc2, [items].ndx AS oc3, 1 AS treeLevel, [items].*');
+			array_push ($q, ' SELECT [items].datePlanBegin AS oc1, [items].datePlanBegin AS oc15, [items].dateDeadline AS oc2, [items].ndx AS oc3, 1 AS treeLevel, [items].*');
 			array_push ($q, ', [personsCust].fullName AS [personCustName]');
 			array_push ($q, ', [teams].shortName AS [teamName]');
 			if ($this->useWorkOrders)
@@ -480,7 +480,7 @@ class ViewItemsGrid extends TableViewGrid
 
 		array_push ($q, ') UNION (');
 
-			array_push ($q, ' SELECT [ownerItems].datePlanBegin AS oc1, [ownerItems].dateDeadline AS oc2, [ownerItems].ndx AS oc3, 2 AS treeLevel, [items].*');
+			array_push ($q, ' SELECT [ownerItems].datePlanBegin AS oc1, [items].datePlanBegin AS oc15, [ownerItems].dateDeadline AS oc2, [ownerItems].ndx AS oc3, 2 AS treeLevel, [items].*');
 			array_push ($q, ', [personsCust].fullName AS [personCustName]');
 			array_push ($q, ', [teams].shortName AS [teamName]');
 			if ($this->useWorkOrders)
@@ -581,7 +581,7 @@ class ViewItemsGrid extends TableViewGrid
 		array_push ($q, ')');
 		*/
 
-		array_push ($q, ' ORDER BY !ISNULL([oc1]) DESC, oc1, oc2, oc3, treeLevel ');
+		array_push ($q, ' ORDER BY !ISNULL([oc1]) DESC, oc1, oc2, oc3, treeLevel, !ISNULL([oc15]) DESC, oc15 ');
 		array_push ($q, $this->sqlLimit());
 
 		$this->runQuery ($q);
