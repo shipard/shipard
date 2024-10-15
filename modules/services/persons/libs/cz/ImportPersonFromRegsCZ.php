@@ -197,7 +197,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
             continue;
           foreach ($z['provozovny'] as $provozovna)
           {
-            if ($this->app()->debug)
+            if ($this->app()->debug > 1)
               echo Json::lint($provozovna)."\n";
 
             $this->doImport_ARES_RZP_Provozovna($provozovna);

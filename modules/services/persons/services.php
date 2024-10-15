@@ -175,8 +175,11 @@ class ModuleServices extends \E10\CLI\ModuleServices
 
 	public function doChangeSetItems()
 	{
+		$maxCount = intval($this->app->arg('maxCount'));
+		if (!$maxCount)
+			$maxCount = 20;
 		$rc = new \services\persons\libs\cz\RegsChangesCZ($this->app());
-		$rc->doChangeSetItems();
+		$rc->doChangeSetItems($maxCount);
 	}
 
 	protected function onCronMorning()

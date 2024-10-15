@@ -230,7 +230,7 @@ class RegsChangesCZ extends Utility
       $this->db()->query('UPDATE [services_persons_regsChangesItems] SET [done] = 1 WHERE [ndx] = %i', $r['ndx']);
 
       $cnt++;
-      if ($cnt > $maxCount)
+      if ($cnt >= $maxCount)
         break;
 
       sleep(1);
