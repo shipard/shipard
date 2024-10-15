@@ -43,7 +43,8 @@ class ViewRegsChanges extends TableView
 
 		$listItem ['i1'] = ['text' => '#'.$item ['ndx'], 'class' => 'id'];
     $listItem ['t2'][] = ['text' => 'Počet změn: '.Utils::nf($item ['cntChanges'], 0), 'class' => 'label label-default'];
-    $listItem ['t2'][] = ['text' => 'Staženo: '.Utils::datef($item ['tsDownload'], '%d%t'), 'class' => ''];
+		$listItem ['t2'][] = ['text' => 'Hotovo: '.Utils::nf($item ['cntDone'], 0), 'class' => 'label label-default'];
+    $listItem ['t2'][] = ['text' => 'Staženo: '.Utils::datef($item ['tsDownload'], '%d%t'), 'class' => 'pull-right'];
 
 		$listItem ['i2'] = $this->changesStates[$item ['changeState']];
 
@@ -57,7 +58,8 @@ class ViewRegsChanges extends TableView
 		$fts = $this->fullTextSearch ();
 
 		$q = [];
-		array_push ($q, ' SELECT [changes].* ');
+		array_push ($q, ' SELECT [changes].*, ');
+		array_push ($q, ' (SELECT COUNT(*) FROM services_persons_regsChangesItems WHERE changes.ndx = services_persons_regsChangesItems.regsChangeSet AND [done] = 1) AS cntDone');
 		array_push ($q, ' FROM [services_persons_regsChanges] AS [changes]');
 		array_push ($q, ' WHERE 1');
 

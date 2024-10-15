@@ -19,7 +19,8 @@
 		}
 	},
 	"indexes": [
-		{"id": "oid", "columns": ["oid"]}
+		{"id": "oid", "columns": ["oid"]},
+		{"id": "chs", "columns": ["regsChangeSet", "done"]}
 	],
   "options": ["systemTable"]
 }
