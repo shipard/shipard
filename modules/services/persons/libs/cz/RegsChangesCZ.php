@@ -193,6 +193,50 @@ class RegsChangesCZ extends Utility
     $this->db()->query('INSERT INTO [services_persons_regsChangesItems] ', $newItem);
   }
 
+  public function doChangeSetItems($maxCount = 10)
+  {
+    /** @var \services\persons\TableRegsChangesItems */
+    $table = $this->app()->table('services.persons.regsChangesItems');
+    $changeTypes = $table->columnInfoEnum ('changeType', 'cfgText');
+
+    $q = []; //
+    array_push($q, 'SELECT changeItems.*');
+    array_push($q, ' FROM [services_persons_regsChangesItems] AS changeItems');
+    array_push($q, ' WHERE 1');
+    array_push($q, ' AND [done] = %i', 0);
+    array_push($q, ' ORDER BY ndx');
+
+    $cnt = 0;
+    $rows = $this->db()->query($q);
+    foreach ($rows as $r)
+    {
+      if ($r['changeType'] == 1)
+        continue; // deleted
+
+      if ($this->app->debug)
+        echo "=== #".$r['ndx'].": ".$r['oid']."; ".$changeTypes[$r['changeType']]." ===\n";
+
+      if ($r['changeType'] == 0)
+      { // new
+        $e = new \services\persons\libs\PersonData($this->app());
+        $e->addPersonFromReg($r['oid'], $r['country']);
+      }
+      elseif ($r['changeType'] == 2)
+      { // update
+        $e = new \services\persons\libs\PersonData($this->app());
+        $e->refreshImport($r['person']);
+      }
+
+      $this->db()->query('UPDATE [services_persons_regsChangesItems] SET [done] = 1 WHERE [ndx] = %i', $r['ndx']);
+
+      $cnt++;
+      if ($cnt > $maxCount)
+        break;
+
+      sleep(1);
+    }
+  }
+
   public function run()
   {
     $this->downloadChangeSets();

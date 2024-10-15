@@ -205,6 +205,9 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
         }
       }
     }
+
+    if ($this->app()->debug)
+      echo "\n";
   }
 
   protected function doImport_ARES_RZP_Provozovna($bb)

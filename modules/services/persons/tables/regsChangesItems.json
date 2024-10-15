@@ -18,5 +18,8 @@
 			}
 		}
 	},
+	"indexes": [
+		{"id": "oid", "columns": ["oid"]}
+	],
   "options": ["systemTable"]
 }

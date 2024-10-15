@@ -64,6 +64,11 @@ class ViewRegsChanges extends TableView
 		// -- fulltext
 		if ($fts != '')
 		{
+			array_push ($q, ' AND EXISTS (');
+			array_push ($q, 'SELECT ndx FROM services_persons_regsChangesItems',
+											' WHERE changes.ndx = services_persons_regsChangesItems.regsChangeSet ',
+											' AND [oid] LIKE %s' , $fts.'%');
+			array_push ($q, ')');
     }
 
     array_push ($q, ' ORDER BY ndx DESC');

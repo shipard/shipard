@@ -89,6 +89,7 @@ class ViewRegsChangesItems extends TableView
 		// -- fulltext
 		if ($fts != '')
 		{
+			array_push ($q, ' AND [items].[oid] LIKE %s', $fts.'%');
     }
 
     array_push ($q, ' ORDER BY ndx DESC');

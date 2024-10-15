@@ -104,6 +104,27 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		return TRUE;
 	}
 
+	public function cliPersonAdd ()
+	{
+    $e = new \services\persons\libs\PersonData($this->app());
+
+		$debug = $this->app->arg('debug');
+		if ($debug)
+			$e->debug = 1;
+
+		$personId = $this->app->arg('personId');
+		if ($personId != '')
+		{
+			$e->addPersonFromReg($personId);
+		}
+		else
+		{
+			echo "ERROR: no `personNdx` param...\n";
+		}
+
+		return TRUE;
+	}
+
 	public function cliPersonRefresh ()
 	{
     $e = new \services\persons\libs\PersonData($this->app());
@@ -152,6 +173,12 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$rc->prepareChangeSetsItems();
 	}
 
+	public function doChangeSetItems()
+	{
+		$rc = new \services\persons\libs\cz\RegsChangesCZ($this->app());
+		$rc->doChangeSetItems();
+	}
+
 	protected function onCronMorning()
 	{
 		$this->downloadRegsChangeSets();
@@ -172,10 +199,12 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'online-person-regs-download': return $this->cliOnlinePersonRegsDownload();
 			case 'person-regs-import': return $this->cliPersonRegsImport();
 			case 'person-refresh': return $this->cliPersonRefresh();
+			case 'person-add': return $this->cliPersonAdd();
 			case 'refresh-import-res': return $this->cliRefreshImportRES();
 			case 'download-regs-change-sets': return $this->downloadRegsChangeSets();
 			case 'download-regs-change-sets-contents': return $this->downloadRegsChangeSetsContents();
 			case 'prepare-regs-change-items': return $this->prepareRegsChangeItems();
+			case 'do-regs-change-set-items': return $this->doChangeSetItems();
 		}
 
 		parent::onCliAction($actionId);

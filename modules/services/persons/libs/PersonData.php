@@ -81,6 +81,36 @@ class PersonData extends \services\persons\libs\CoreObject
 		$importEngine->importOnePerson();
 	}
 
+	public function addPersonFromReg($personId, $countryNdx = 60)
+	{
+		$exist = $this->db()->query('SELECT [ndx], [importState], [valid] FROM [services_persons_persons]',
+																' WHERE [oid] = %s', $personId,
+																' AND [country] = %i', $countryNdx)->fetch();
+
+		if ($exist)
+		{
+			$this->refreshImport($exist['ndx']);
+			return;
+		}
+
+		$iid = Utils::createToken(8, FALSE, TRUE);
+
+		$insert['valid'] = TRUE;
+		$now = new \DateTime();
+		$newPerson = [
+			'country' => $countryNdx,
+			'oid' => $personId,
+		];
+		$newPerson['created'] = $now;
+		$newPerson['updated'] = $now;
+		$newPerson['iid'] = $iid;
+		$newPerson['vatState'] = 99;
+
+		$this->db()->query('INSERT INTO [services_persons_persons] ', $newPerson);
+		$newNdx = intval ($this->db()->getInsertId ());
+		$this->refreshImport($newNdx);
+	}
+
   protected function loadCoreData()
   {
 		$q = [];
@@ -277,7 +307,7 @@ class PersonData extends \services\persons\libs\CoreObject
 		$update = [];
 		$changes = [];
 		$this->recordUpdate($this->data['person'], $changedPerson->data['person'], $update, $changes);
-		if ($this->debug)
+		if ($this->app()->debug)
 		{
 			/*
 			echo "--- saveChanges_Core ---\n";
@@ -294,6 +324,8 @@ class PersonData extends \services\persons\libs\CoreObject
 			{
 				if (!Utils::dateIsBlank($personData['validTo']) && $personData['valid'])
 					$this->db()->query('UPDATE [services_persons_persons] SET [valid] = %i', 0, ' WHERE [ndx] = %i', $this->personNdx);
+				elseif (!$personData['valid'] && Utils::dateIsBlank($personData['validTo']) && !Utils::dateIsBlank($personData['validFrom']))
+					$this->db()->query('UPDATE [services_persons_persons] SET [valid] = %i', 1, ' WHERE [ndx] = %i', $this->personNdx);
 			}
 
 			$this->logRecord->addItem('update-person-core', '', ['update' => ['tableId' => 'services.persons.persons', 'changes' => $changes]]);
