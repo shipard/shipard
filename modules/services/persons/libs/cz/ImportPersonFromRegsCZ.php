@@ -381,7 +381,13 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
           {
             $city = $addrParts[1] ?? '';
             $zipcode = $addrParts[0] ?? '';
-            $street = '';
+            if (Str::strlen($zipcode) > 15)
+            {
+              $street = $zipcode;
+              $zipcode = '';
+            }
+            else
+              $street = '';
           }
           else
           {
@@ -645,6 +651,12 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
       $dest['city'] = trim($addrParts[1] ?? '');
       $dest['zipcode'] = trim($addrParts[0] ?? '');
       $dest['street'] = '';
+
+      if (Str::strlen($dest['zipcode']) > 15)
+      {
+        $dest['street'] = $dest['zipcode'];
+        $dest['zipcode'] = '';
+      }
     }
     else
     {
