@@ -114,18 +114,17 @@ class FormSubTemplate extends TableForm
 		$this->setFlag ('maximize', 1);
 
 		$this->openForm ();
-
-		$this->layoutOpen (TableForm::ltGrid);
-			$this->openRow ();
-				$this->addColumnInput ("fileName", TableForm::coColW8);
-				$this->addColumnInput ("type", TableForm::coColW4);
-			$this->closeRow ();
-		$this->layoutClose ();
-
-		$this->layoutOpen (TableForm::ltHorizontal);
-			$this->addInputMemo ("code", NULL, TableForm::coFullSizeY, DataModel::ctCode);
-		$this->layoutClose ();
-
+			$tabs ['tabs'][] = ['text' => 'Kód', 'icon' => 'formScript'];
+			$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
+			$this->openTabs ($tabs, TRUE);
+				$this->openTab (TableForm::ltNone);
+					$this->addInputMemo ('code', NULL, TableForm::coFullSizeY, DataModel::ctCode);
+				$this->closeTab ();
+				$this->openTab ();
+					$this->addColumnInput ('fileName');
+					$this->addColumnInput ('type');
+				$this->closeTab ();
+			$this->closeTabs ();
 		$this->closeForm ();
 	}
 

@@ -10,7 +10,7 @@
 		{"id": "type", "name": "Typ", "type": "enumInt",
 			"enumValues": {"0": "Ostatní", "1": "Hlavní LESS/SASS soubor"}},
 
-		{"id": "code", "name": "Kód šablony", "type": "code"},
+		{"id": "code", "name": "Kód šablony", "type": "code", "clng": "html"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
