@@ -119,9 +119,36 @@ class WidgetPlanTeacher extends \Shipard\UI\Core\WidgetPane
 		$this->renderDataMobile();
 	}
 
+	function renderDataWorkRecs()
+	{
+		$wip = new \e10mnf\core\libs\WorkInProgressEngine($this->app());
+		$wip->init();
+		$wip->loadState();
+
+		if ($this->widgetAction === 'action-wip-startWork')
+		{
+			$wip->startWork();
+			$wip->loadState();
+		}
+		elseif ($this->widgetAction === 'action-wip-endWork')
+		{
+			$wip->endWork();
+			$wip->loadState();
+		}
+
+		$c = '';
+
+		$c .= $wip->buttonCode();
+
+		$this->addContent (['pane' => 'e10-pane e10-pane-table', 'type' => 'text', 'subtype' => 'rawhtml', 'text' => $c]);
+	}
+
 	function renderDataMobile()
 	{
 		$tabsMode = $this->app->mobileMode;
+
+		if (!$this->app->mobileMode)
+			$this->renderDataWorkRecs();
 
 		$h = ['time' => 'Čas', 'content' => 'Výuka'];
 		$tabs = [];

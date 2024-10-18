@@ -1,9 +1,5 @@
 [
 	{
-		"name": "i", "class": "e10pro.wkf.widgetDashboardTitle", "icon": "icon-user", "align": "left",
-		"dashboard": "school", "panel": "teacher-tmp", "order": 100, "row": "topInfo", "width": 12, "type": "infoTitle"
-	},
-	{
 		"name": "Nástěnka", "class": "wkf.bboard.libs.WidgetBBoardOverview", "icon": "x-inbox",
 		"dashboard": "school", "panel": "teacher", "order": 1000, "row": "docViewers", "width": 5, "maxwidth": 6, "type": "docViewer"
 	},

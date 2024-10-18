@@ -1,5 +1,10 @@
 {
 	"objectsCalls": {
 		"zus-students-sync-pull": {"classId": "e10pro.zus.libs.StudentsSyncPullResponse"}
+	},
+	"startMenu": {
+		"zus": {
+			"classId": "e10pro.zus.libs.StartMenu"
+		}
 	}
 }

@@ -49,6 +49,9 @@
 		],
 		"zusteacherplan": [
 			{"class": "e10pro.zus.WidgetPlanTeacher"}
+		],
+		"workInProgress": [
+			{"class": "e10mnf.core.libs.WorkInProgressWidget"}
 		]
 	}
 }

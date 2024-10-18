@@ -11,7 +11,8 @@
 			"e10pro.zus.vyuky": {"default": 1, "etk": 2},
 			"e10pro.zus.vyukyrozvrh": {"default": 1},
 			"e10pro.zus.hodiny": {"default": 2, "combo": 2},
-			"e10pro.zus.omluvenky": {"default": 2}
+			"e10pro.zus.omluvenky": {"default": 2},
+			"e10mnf.core.workRecs": {"user": 2}
 		},
 		"documents": {
 			"e10doc.core.heads": [
@@ -23,7 +24,8 @@
 			"e10pro.zus.TeachersDashboardWidget": 2,
 			"e10pro.zus.WidgetPlanTeacher": 2,
 			"e10pro.zus.WidgetPlanTeacherSmall": 2,
-			"wkf.bboard.libs.WidgetBBoardOverview": 2
+			"wkf.bboard.libs.WidgetBBoardOverview": 2,
+			"e10mnf.core.libs.WorkInProgressWidget": 2
 		},
 	  "reports": {
 		  "e10pro.zus.SchoolReportsPrintReport": 2,
@@ -74,18 +76,6 @@
 		"widgets": {
 			"e10pro.zus.SchoolDayDashboardWidget": 2
 		}
-	},
-  "scrtr": {
-		"viewers": {
-			"e10.persons.persons": {"students": 2, "teachers": 2},
-			"e10pro.zus.studium": {"default": 2},
-			"e10pro.zus.prihlasky": {"default": 2},
-			"e10pro.zus.vyuky": {"default": 1}
-		},
-		"reports": {"e10pro.zus.reportStudium": 2},
-	  "widgets": {
-		  "e10pro.zus.SchoolDayDashboardWidget": 2
-	  }
 	},
 	"acc": {
 		"reports": {
