@@ -19,8 +19,8 @@ class DownloadBankTransactionsFio extends \lib\ebanking\transactions\DownloadBan
 
 	protected function downloadTransactions ()
 	{
-		// https://www.fio.cz/ib_api/rest/last/API-TOKEN/transactions.xml
-		$url = 'https://www.fio.cz/ib_api/rest/last/'.$this->bankAccountRec['apiTokenTransactions'].'/'.'transactions.json';
+		// https://fioapi.fio.cz/v1/rest/last/API-TOKEN/transactions.xml
+		$url = 'https://fioapi.fio.cz/v1/rest/last/'.$this->bankAccountRec['apiTokenTransactions'].'/'.'transactions.json';
 
 		$tmpFileName = Utils::tmpFileName('json');
 
@@ -67,7 +67,7 @@ class DownloadBankTransactionsFio extends \lib\ebanking\transactions\DownloadBan
 			$newItem['bankAccount'] = '';
 			if (isset($r['column2']))
 				$newItem['bankAccount'] = $r['column2']['value'];
-			if (isset($r['column3']))	
+			if (isset($r['column3']))
 				$newItem['bankAccount'] .= '/'.$r['column3']['value'];
 			$newItem['bankAccount'] = ltrim ($newItem['bankAccount'], '0'); // strip leading zeros and blank account prefix
 			$newItem['bankAccount'] = ltrim ($newItem['bankAccount'], '-');

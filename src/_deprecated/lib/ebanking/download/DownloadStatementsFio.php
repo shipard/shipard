@@ -39,9 +39,9 @@ class DownloadStatementsFio extends \lib\ebanking\download\DownloadStatements
 
 	protected function downloadOneStatement ()
 	{
-		// https://www.fio.cz/ib_api/rest/by-id/API-TOKEN/YEAR/STATEMENT-ORDER-NUMBER/transactions.pdf
-		$url = 'https://www.fio.cz/ib_api/rest/by-id/'.$this->bankAccountRec['apiToken'].'/'.
-			$this->nextStatementYear.'/'.$this->nextStatementNumber.'/'.'transactions';
+		// https://fioapi.fio.cz/v1/rest/by-id/API-TOKEN/YEAR/STATEMENT-ORDER-NUMBER/transactions.pdf
+		$url = 'https://fioapi.fio.cz/v1/rest/by-id/'.$this->bankAccountRec['apiToken'].'/'.
+		$this->nextStatementYear.'/'.$this->nextStatementNumber.'/'.'transactions';
 
 		$tmpFileName = __APP_DIR__.'/tmp/'.'vypis-B'.$this->bankAccountCfg['id'].'-'.$this->nextStatementYear.'-'.$this->nextStatementNumber.'-'.time();
 

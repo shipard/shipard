@@ -26,7 +26,7 @@ class UploadOrdersFio extends \lib\ebanking\upload\UploadOrders
 
 	protected function upload ()
 	{
-		$uploadUrl = 'https://www.fio.cz/ib_api/rest/import/';
+		$uploadUrl = 'https://fioapi.fio.cz/v1/rest/import/';
 		$post = ['type' => 'abo', 'token' => $this->bankAccountRec['apiTokenUploads'], 'file' => curl_file_create($this->fileNameData, 'text/plain', 'prikaz.abo')];
 
 		$ch = curl_init();
