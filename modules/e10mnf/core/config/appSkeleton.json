@@ -1,0 +1,21 @@
+{
+	"panels": {
+		"others": {
+			"items": {
+				"workRecs": {
+					"t1": "Výkazy práce", "object": "subMenu", "icon": "tables/e10mnf.core.workRecs",
+					"order": 100000,
+					"enabledCfgItem": "options.e10mnf-workRecs.useWorkRecs",
+					"subMenu": {
+						"items": {
+							"workRecs": {"t1": "Výkazy práce", "object": "viewer", "table": "e10mnf.core.workRecs", "viewer": "default", "order": 10000},
+							"reports": {"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10mnf-workRecs", "icon": "system/iconReports", "order": 80000},
+							"workActs": {"t1": "Pracovní činnosti", "object": "viewer", "table": "e10mnf.base.workActivities", "viewer": "default", "order": 90000, "beforeSeparator": 1},
+							"wipSettings": {"t1": "Monitoring práce", "object": "viewer", "table": "e10mnf.base.wipSettings", "viewer": "default", "order": 91000}
+						}
+					}
+				}
+			}
+		}
+	}
+}

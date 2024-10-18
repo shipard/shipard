@@ -18,6 +18,7 @@
 			"e10mnf.base.dockinds": {"default": 2},
 			"e10mnf.base.docnumbers": {"default": 2},
 			"e10mnf.base.workOrdersGroups": {"default": 2},
+			"e10mnf.base.workActivities": {"default": 2},
 			"e10mnf.base.workRecsKinds": {"default": 2},
 			"e10mnf.base.workRecsNumbers": {"default": 2}
 		}

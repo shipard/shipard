@@ -12,11 +12,21 @@
 		"type": "viewer", "table": "e10mnf.base.workOrdersGroups", "viewer": "default"
 	},
 	"wkfWorksRecsKinds": {
-		"name": "Druhy pracovních záznamů", "order": 4377000, "group": "workOrders",
+		"name": "Druhy pracovních záznamů", "order": 4377000, "group": "workRecs",
 		"type": "viewer", "table": "e10mnf.base.workRecsKinds", "viewer": "default"
 	},
 	"wkfWorksRecsNumbers": {
-		"name": "Číselné řady pracovních záznamů", "order": 4378000, "group": "workOrders",
+		"name": "Číselné řady pracovních záznamů", "order": 4378000, "group": "workRecs",
 		"type": "viewer", "table": "e10mnf.base.workRecsNumbers", "viewer": "default"
+	},
+	"e10mnf-workRecs": {
+		"name": "Pracovní záznamy", "order": 15000, "group": "workRecs",
+		"icon": "tables/e10mnf.core.workRecs",
+		"type": "cfgFile",
+		"options":
+			[
+				{"cfgKey": "useWorkRecs", "cfgName": "Používat Pracovní záznamy",
+					"options": {"0": "ne", "1": "ano"}}
+			]
 	}
 }

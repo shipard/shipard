@@ -1,7 +1,10 @@
 {
   "id": "e10mnf.base",
   "name": "Číselníky Výroby",
-  "tables": ["dockinds", "docnumbers", "workOrdersGroups", "workRecsKinds", "workRecsNumbers"],
+  "tables": [
+    "dockinds", "docnumbers", "workOrdersGroups", "workRecsKinds", "workRecsNumbers",
+    "workActivities", "wipSettings", "wipSettingsPersons", "wipSettingsWO"
+  ],
   "config": [
     {"id": "+e10.appOptions.groups", "file": "e10.appOptionsGroups.json"},
 	  {"id": "+appOptions", "file": "e10.appOptions.json"},

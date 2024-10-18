@@ -120,6 +120,22 @@ class TableWorkRecs extends DbTable
 		*/
 	}
 
+	public function checkAfterSave2 (&$recData)
+	{
+		parent::checkAfterSave2 ($recData);
+
+		if ($recData['docNumber'] == '')
+			$recData['docNumber'] = '!'.sprintf ('%09d', $recData['ndx']);
+
+		$dk = $this->app()->cfgItem ('e10mnf.workRecs.wrKinds.'.$recData['docKind'], []);
+		$useRows = (isset($dk['useRows']) && $dk['useRows']) ? 1 : 0;
+
+		if ($useRows)
+			$this->calcTimeLen($recdData);
+		else
+			$this->createSystemRow($recData);
+	}
+
 	public function checkDocumentState_OLD (&$recData)
 	{
 		parent::checkDocumentState ($recData);
@@ -222,6 +238,70 @@ class TableWorkRecs extends DbTable
 		}
 
 		return $recData;
+	}
+
+	function calcTimeLen (&$recData)
+	{
+		$totalTimeLen = 0;
+		$sum = $this->db()->query ('SELECT SUM(timeLen) AS totalTimeLen FROM [e10mnf_core_workRecsRows] WHERE workRec = %i', $recData['ndx'])->fetch ();
+		if ($sum)
+		{
+			$totalTimeLen = $sum['totalTimeLen'];
+		}
+		$recData['timeLen'] = $totalTimeLen;
+	}
+
+	function createSystemRow (&$recData)
+	{
+		$rows = $this->db()->query ('SELECT ndx FROM [e10mnf_core_workRecsRows] WHERE workRec = %i', $recData['ndx'], ' ORDER BY ndx');
+
+		$cnt = 0;
+		foreach ($rows as $r)
+		{
+			if ($cnt === 0)
+			{ // update first row
+				$update = [
+					'subject' => $recData['subject'],
+					'person' => $recData['person'],
+					'workOrder' => $recData['workOrder'],
+
+					'beginDate' => $recData['beginDate'],
+					'beginTime' => $recData['beginTime'],
+					'beginDateTime' => $recData['beginDateTime'],
+					'endDate' => $recData['endDate'],
+					'endTime' => $recData['endTime'],
+					'endDateTime' => $recData['endDateTime'],
+					'timeLen' => $recData['timeLen'],
+					'timeLenHours' => $recData['timeLenHours'],
+				];
+				$this->app()->db()->query ('UPDATE [e10mnf_core_workRecsRows] SET ', $update, ' WHERE ndx = %i', $r['ndx']);
+			}
+			else
+			{ // delete next rows
+				$this->app()->db()->query ('DELETE FROM [e10mnf_core_workRecsRows] WHERE ndx = %i', $r['ndx']);
+			}
+			$cnt++;
+		}
+
+		if ($cnt === 0)
+		{ // insert first row
+			$item = [
+				'workRec' => $recData['ndx'],
+				'subject' => $recData['subject'],
+				'person' => $recData['person'],
+				'workOrder' => $recData['workOrder'],
+
+				'beginDate' => $recData['beginDate'],
+				'beginTime' => $recData['beginTime'],
+				'beginDateTime' => $recData['beginDateTime'],
+				'endDate' => $recData['endDate'],
+				'endTime' => $recData['endTime'],
+				'endDateTime' => $recData['endDateTime'],
+				'timeLen' => $recData['timeLen'],
+				'timeLenHours' => $recData['timeLenHours'],
+			];
+			$this->app()->db()->query ('INSERT INTO [e10mnf_core_workRecsRows] ', $item);
+		}
 	}
 
 	function resetDocType (&$recData)
@@ -344,118 +424,6 @@ class TableWorkRecs extends DbTable
 
 		return $hdr;
 	}
-
-	public function addWorksRecsButtons (&$buttons, $params)
-	{
-		$wrKinds = $this->app()->cfgItem ('e10mnf.workRecs.wrKinds', []);
-		$wrTypes = $this->app()->cfgItem ('e10mnf.core.wrTypes', []);
-
-		$oneButton = [
-			'action' => '', 'icon' => 'icon-paw',
-			'text' => '', 'title' => 'Pracovní záznamy', 'type' => 'button', 'actionClass' => 'btn btn-sm',
-			'class' => '', 'btnClass' => 'btn-info',
-			'dropdownMenu' => [],
-		];
-
-		$allButtons = [];
-
-		foreach ($wrKinds as $wrKindNdx => $wrKind)
-		{
-			$add = FALSE;
-
-			if ($wrKind['startGlobal'])
-				$add = TRUE;
-			elseif ($wrKind['startOnIssue'] && isset($params['ownerMsg']))
-				$add = TRUE;
-			elseif (isset($params['project']) && $params['project'] && $wrKind['startOnProject'])
-				$add = TRUE;
-			elseif (isset($params['uiPlace']) && $params['uiPlace'] === 'bboard' && $wrKind['startOnBBoard'])
-				$add = TRUE;
-			elseif (isset($params['forceTypes']) && in_array($wrKind['msgType'], $params['forceTypes']))
-				$add = TRUE;
-
-			$enabled = TRUE;
-			$enabledFromProjectGroup = FALSE;
-			if (isset($wrKind['projectsGroups']))
-			{
-				if (!isset($params['projectsGroup']) || !$params['projectsGroup'] || !in_array($params['projectsGroup'], $wrKind['projectsGroups']))
-					$enabled = FALSE;
-				else
-					$enabledFromProjectGroup = TRUE;
-			}
-			if (!$enabledFromProjectGroup && isset($wrKind['projects']))
-			{
-				if (!isset($params['project']) || !$params['project'] || !in_array($this->activeProjectNdx, $wrKind['projects']))
-					$enabled = FALSE;
-			}
-
-			$ug = $this->app()->userGroups();
-			$enabledFromUserGroups = FALSE;
-			if (isset($wrKind['usersGroups']))
-			{
-				if (!count($ug) || count(array_intersect($ug, $wrKind['usersGroups'])) == 0)
-					$enabled = FALSE;
-				else
-					$enabledFromUserGroups = TRUE;
-			}
-			if (!$enabledFromUserGroups && isset($wrKind['users']))
-			{
-				if (!in_array($this->app()->userNdx(), $wrKind['users']))
-					$enabled = FALSE;
-			}
-
-			if (!$enabled)
-				$add = FALSE;
-
-			if (!$add)
-				continue;
-
-			$wrType = $wrTypes[$wrKind['docType']];
-
-			$addParams = '__docKind=' . $wrKindNdx . '&__docType=' . $wrKind['docType'];
-			if (isset($params['project']) && $params['project'])
-				$addParams .= '&__project=' . $params['project'];
-			if (isset($params['projectPart']) && $params['projectPart'])
-				$addParams .= '&__projectPart=' . $params['projectPart'];
-			if (isset($params['projectFolder']) && $params['projectFolder'])
-				$addParams .= '&__projectFolder=' . $params['projectFolder'];
-			if (isset($params['ownerMsg']))
-				$addParams .= '&__ownerMsg=' . $params['ownerMsg'];
-
-			$icon = ($wrKind['icon'] !== '') ? $wrKind['icon'] : $wrType['icon'];
-			$txtTitle = $wrKind['fn'];
-			$txtText = '';
-			$addButtonPullDown = [
-				'action' => 'new', 'data-table' => 'e10mnf.core.workRecs', 'icon' => $icon,
-				'text' => $txtTitle, 'data-addParams' => $addParams,
-			];
-
-			$addButton = [
-				'action' => 'new', 'data-table' => 'e10mnf.core.workRecs', 'icon' => $icon,
-				'text' => $txtText, 'title' => $txtTitle, 'type' => 'button', 'actionClass' => 'btn btn-sm',
-				'class' => 'e10-param-addButton', 'btnClass' => 'btn-info',
-				'data-addParams' => $addParams,
-			];
-
-			if (isset($params['thisViewerId']))
-			{
-				$addButton['data-srcobjecttype'] = 'viewer';
-				$addButton['data-srcobjectid'] = $params['thisViewerId'];
-			}
-
-			$allButtons[] = $addButton;
-			$oneButton['dropdownMenu'][] = $addButtonPullDown;
-		}
-
-		if (!count($allButtons))
-			return;
-
-		if (count($allButtons) > 4)
-			$buttons[] = $oneButton;
-		else
-			foreach ($allButtons as $b)
-				$buttons[] = $b;
-	}
 }
 
 
@@ -467,6 +435,7 @@ class ViewWorkRecs extends TableView
 {
 	var $now;
 	var $useWorkOrders = FALSE;
+	var $personNdx = 0;
 
 	public function init ()
 	{
@@ -483,6 +452,9 @@ class ViewWorkRecs extends TableView
 		$this->setMainQueries ($mq);
 
 		$this->createBottomTabs();
+
+		if ($this->personNdx)
+			$this->addAddParam ('person', $this->personNdx);
 	}
 
 	public function createBottomTabs ()
@@ -534,6 +506,9 @@ class ViewWorkRecs extends TableView
 
 		array_push ($q, ' WHERE 1');
 
+		if ($this->personNdx)
+			array_push ($q, ' AND workrecs.person = %i', $this->personNdx);
+
 		// -- bottom tabs
 		if ($bottomTabId != 0)
 			array_push ($q, ' AND workrecs.dbCounter = %i', $bottomTabId);
@@ -584,14 +559,14 @@ class ViewWorkRecs extends TableView
 
 		$propsBeginEnd = [];
 		if ($item['beginDateTime'])
-			$propsBeginEnd [] = ['icon' => 'system/actionLogIn', 'text' => utils::datef($item['beginDateTime'], '%d, %T'), 'class' => ''];
+			$propsBeginEnd [] = ['icon' => 'user/signIn', 'text' => utils::datef($item['beginDateTime'], '%d, %T'), 'class' => ''];
 		if ($item['endDateTime'])
 		{
 			$format = '%T';
 			if ($item['beginDateTime'] && $item['beginDateTime']->format('Ymd') !== $item['endDateTime']->format('Ymd'))
 				$format = '%d, %T';
 
-			$propsBeginEnd [] = ['icon' => 'icon-sign-out', 'text' => utils::datef($item['endDateTime'], $format), 'class' => ''];
+			$propsBeginEnd [] = ['icon' => 'user/signOut', 'text' => utils::datef($item['endDateTime'], $format), 'class' => ''];
 		}
 		if (count($propsBeginEnd))
 			$listItem ['t2'] = $propsBeginEnd;
@@ -604,23 +579,39 @@ class ViewWorkRecs extends TableView
 		$propsTime[] = [
 			'text' => $allMinutes,
 			'suffix' => utils::nf($item['timeLen'] / 60 / 60, 2) . ' hod',
-			'icon' => 'icon-clock-o', 'class' => 'label label-success'
+			'icon' => 'system/iconClock', 'class' => 'label label-success'
 		];
 
 		if (count($propsTime))
 			$listItem ['i2'] = $propsTime;
 
 		$info = [];
-		if ($item['projectName'])
-			$info [] = ['icon' => 'icon-lightbulb-o', 'text' => $item['projectName'], 'class' => 'label label-default'];
+
+		//if ($item['projectName'])
+		//	$info [] = ['icon' => 'icon-lightbulb-o', 'text' => $item['projectName'], 'class' => 'label label-default'];
 		if ($this->useWorkOrders && $item['woDocNumber'])
 			$info [] = ['icon' => 'icon-industry', 'text' => $item['woDocNumber'], 'class' => 'label label-info'];
 		$listItem ['t3'] = $info;
+
+		if ($item['workInProgress'] == 1)
+			$listItem ['class'] = 'e10-row-plus';
 
 		return $listItem;
 	}
 }
 
+
+/**
+ * class ViewWorkRecsUser
+ */
+class ViewWorkRecsUser extends ViewWorkRecs
+{
+	public function init ()
+	{
+		$this->personNdx = $this->app()->userNdx();
+		parent::init();
+	}
+}
 
 /**
  * Class ViewDetailWorkRec
@@ -657,6 +648,7 @@ class FormWorkRec extends TableForm
 		$askSubject = isset($dk['askSubject']) ? $dk['askSubject'] : 0;
 		$askNote = isset($dk['askNote']) ? $dk['askNote'] : 0;
 		$askWorkOrder = isset($dk['askWorkOrder']) ? $dk['askWorkOrder'] : 0;
+		$askWorkActivity = isset($dk['askWorkActivity']) ? $dk['askWorkActivity'] : 0;
 		$askItem = isset($dk['askItem']) ? $dk['askItem'] : 0;
 		$askPrice = isset($dk['askPrice']) ? $dk['askPrice'] : 0;
 		$askPersons = (isset($dk['askPersons']) && $dk['askPersons']);
@@ -684,6 +676,8 @@ class FormWorkRec extends TableForm
 						$this->addColumnInput('projectPart');
 					}
 
+					if ($askWorkActivity == 1)
+						$this->addColumnInput('workActivity');
 					if ($askWorkOrder == 1)
 						$this->addColumnInput('workOrder');
 
@@ -745,87 +739,5 @@ class FormWorkRec extends TableForm
 				$this->closeTab ();
 			$this->closeTabs ();
 		$this->closeForm ();
-	}
-
-	public function checkAfterSave ()
-	{
-		parent::checkAfterSave();
-
-		if ($this->recData['docNumber'] == '')
-			$this->recData['docNumber'] = '!'.sprintf ('%09d', $this->recData['ndx']);
-
-		$dk = $this->app()->cfgItem ('e10mnf.workRecs.wrKinds.'.$this->recData['docKind'], []);
-		$useRows = (isset($dk['useRows']) && $dk['useRows']) ? 1 : 0;
-
-		if ($useRows)
-			$this->calcTimeLen();
-		else
-			$this->createSystemRow();
-
-		return TRUE;
-	}
-
-	function calcTimeLen ()
-	{
-		$totalTimeLen = 0;
-		$sum = $this->table->db()->query ('SELECT SUM(timeLen) AS totalTimeLen FROM [e10mnf_core_workRecsRows] WHERE workRec = %i', $this->recData['ndx'])->fetch ();
-		if ($sum)
-		{
-			$totalTimeLen = $sum['totalTimeLen'];
-		}
-		$this->recData['timeLen'] = $totalTimeLen;
-	}
-
-	function createSystemRow ()
-	{
-		$rows = $this->table->db()->query ('SELECT ndx FROM [e10mnf_core_workRecsRows] WHERE workRec = %i', $this->recData['ndx'], ' ORDER BY ndx');
-
-		$cnt = 0;
-		foreach ($rows as $r)
-		{
-			if ($cnt === 0)
-			{ // update first row
-				$update = [
-					'subject' => $this->recData['subject'],
-					'person' => $this->recData['person'],
-					'workOrder' => $this->recData['workOrder'],
-
-					'beginDate' => $this->recData['beginDate'],
-					'beginTime' => $this->recData['beginTime'],
-					'beginDateTime' => $this->recData['beginDateTime'],
-					'endDate' => $this->recData['endDate'],
-					'endTime' => $this->recData['endTime'],
-					'endDateTime' => $this->recData['endDateTime'],
-					'timeLen' => $this->recData['timeLen'],
-					'timeLenHours' => $this->recData['timeLenHours'],
-				];
-				$this->app()->db()->query ('UPDATE [e10mnf_core_workRecsRows] SET ', $update, ' WHERE ndx = %i', $r['ndx']);
-			}
-			else
-			{ // delete next rows
-				$this->app()->db()->query ('DELETE FROM [e10mnf_core_workRecsRows] WHERE ndx = %i', $r['ndx']);
-			}
-			$cnt++;
-		}
-
-		if ($cnt === 0)
-		{ // insert first row
-			$item = [
-				'workRec' => $this->recData['ndx'],
-				'subject' => $this->recData['subject'],
-				'person' => $this->recData['person'],
-				'workOrder' => $this->recData['workOrder'],
-
-				'beginDate' => $this->recData['beginDate'],
-				'beginTime' => $this->recData['beginTime'],
-				'beginDateTime' => $this->recData['beginDateTime'],
-				'endDate' => $this->recData['endDate'],
-				'endTime' => $this->recData['endTime'],
-				'endDateTime' => $this->recData['endDateTime'],
-				'timeLen' => $this->recData['timeLen'],
-				'timeLenHours' => $this->recData['timeLenHours'],
-			];
-			$this->app()->db()->query ('INSERT INTO [e10mnf_core_workRecsRows] ', $item);
-		}
 	}
 }

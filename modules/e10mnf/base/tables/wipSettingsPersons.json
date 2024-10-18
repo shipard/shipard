@@ -1,0 +1,19 @@
+{
+	"id": "e10mnf.base.wipSettingsPersons", "sql": "e10mnf_base_wipSettingsPersons", "name": "Osoby nastavení monitoringu práce",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "wipSettings", "name": "Nastavení", "type": "int"},
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+
+		{"id": "rowType", "name": "Typ", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "Skupina", "1": "Osoba"}},
+
+		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "personsGroup", "name": "Skupina", "type": "int", "reference": "e10.persons.groups"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10mnf.base.FormWIPSettingsPerson"}
+	],
+	"options": ["systemTable"]
+}

@@ -37,6 +37,8 @@
 			"enumValues": {"0": "Na hlavičce", "1": "Na řádku"}},
 		{"id": "askProject", "name": "Zadávat projekt", "type": "enumInt",
 			"enumValues": {"0": "Ne", "1": "Na hlavičce", "2": "Na řádku"}},
+		{"id": "askWorkActivity", "name": "Zadávat činnost", "type": "enumInt",
+			"enumValues": {"0": "Ne", "1": "Na hlavičce", "2": "Na řádku"}},
 		{"id": "askWorkOrder", "name": "Zadávat zakázku", "type": "enumInt",
 			"enumValues": {"0": "Ne", "1": "Na hlavičce", "2": "Na řádku"}},
 		{"id": "askItem", "name": "Zadávat položku", "type": "enumInt",

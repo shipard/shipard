@@ -37,7 +37,7 @@ class TableWorkRecsKinds extends DbTable
 			if ($dt)
 				return $dt['icon'];
 		}
-				
+
 		return parent::tableIcon ($recData, $options);
 	}
 
@@ -54,6 +54,7 @@ class TableWorkRecsKinds extends DbTable
 				'askPerson' => $r['askPerson'],
 				'askProject' => $r['askProject'],
 				'askWorkOrder' => $r['askWorkOrder'],
+				'askWorkActivity' => $r['askWorkActivity'],
 				'askItem' => $r['askItem'],
 				'askPrice' => $r['askPrice'],
 
@@ -177,6 +178,7 @@ class FormWorkRecsKind extends TableForm
 					$this->addColumnInput ('askPerson');
 					$this->addColumnInput ('askProject');
 					$this->addColumnInput ('askWorkOrder');
+					$this->addColumnInput ('askWorkActivity');
 					$this->addColumnInput ('askItem');
 					$this->addColumnInput ('askPrice');
 					$this->addColumnInput ('askPersons');

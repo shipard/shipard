@@ -110,7 +110,7 @@ class WorkedHoursReport extends \e10doc\core\libs\reports\GlobalReport
 		}
 
 		ksort($this->header);
-		$this->header = array_merge(['#' => '#', 'person' => 'Osoba', 'A00' => '+∑'], $this->header);
+		$this->header = array_merge(['#' => '#', 'person' => 'Osoba', 'A00' => '+Celkem'], $this->header);
 
 
 		$this->addContent (['type' => 'table', 'header' => $this->header, 'table' => $this->data, 'main' => TRUE, 'params' => ['precision' => 1, 'tableClass' => 'rowsSmall']]);
@@ -170,7 +170,7 @@ class WorkedHoursReport extends \e10doc\core\libs\reports\GlobalReport
 		}
 
 		ksort($this->header);
-		$this->header = array_merge(['#' => '#', 'workOrder' => 'Zakázka', 'A00' => '+∑'], $this->header);
+		$this->header = array_merge(['#' => '#', 'workOrder' => 'Zakázka', 'A00' => '+Celkem'], $this->header);
 
 
 		$this->addContent (['type' => 'table', 'header' => $this->header, 'table' => $this->data, 'main' => TRUE, 'params' => ['precision' => 1, 'tableClass' => 'rowsSmall']]);
@@ -178,8 +178,11 @@ class WorkedHoursReport extends \e10doc\core\libs\reports\GlobalReport
 
 	public function subReportsList ()
 	{
+		$useWorkOrders = intval($this->app()->cfgItem('options.e10doc-commerce.useWorkOrders', 0));
+
 		$d[] = ['id' => 'persons', 'icon' => 'detailPersons', 'title' => 'Lidé'];
-		$d[] = ['id' => 'workOrders', 'icon' => 'detailWorkOrders', 'title' => 'Zakázky'];
+		if ($useWorkOrders)
+			$d[] = ['id' => 'workOrders', 'icon' => 'detailWorkOrders', 'title' => 'Zakázky'];
 		return $d;
 	}
 }

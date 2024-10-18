@@ -1,5 +1,8 @@
 {
 	"workOrders": {
 		"title": "Zakázky", "order": 31500
+	},
+	"workRecs": {
+		"title": "Pracovní záznamy", "order": 31600
 	}
 }

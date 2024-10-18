@@ -1,0 +1,35 @@
+{
+	"id": "e10mnf.base.wipSettings", "sql": "e10mnf_base_wipSettings", "name": "Nastavení monitoringu práce",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 100},
+
+		{"id": "workActivity", "name": "Činnost", "type": "int", "reference": "e10mnf.base.workActivities"},
+
+		{"id": "wrDocKind", "name": "Druh pracovního záznamu", "type": "enumInt", "len": 2,
+			"enumCfg": {"cfgItem": "e10mnf.workRecs.wrKinds", "cfgValue": "", "cfgText": "sn"}},
+		{"id": "wrDbCounter", "name": "Číselná řada pracovního záznamu", "type": "enumInt", "len": 2,
+			"enumCfg": {"cfgItem": "e10mnf.workRecs.wrNumbers", "cfgValue": "", "cfgText": "shortName"}},
+
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+		{"id": "btnTextStart", "name": "Text tlačítka Zahájit", "type": "string", "len": 100},
+		{"id": "btnTextStop", "name": "Text tlačítka Ukončit", "type": "string", "len": 100},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "persons", "class": "e10.base.ListRows", "name": "Osoby", "table": "e10mnf.base.wipSettingsPersons", "queryColumn": "wipSettings", "orderColumn": "rowOrder"},
+		{"id": "workOrders", "class": "e10.base.ListRows", "name": "Zakázky", "table": "e10mnf.base.wipSettingsWO", "queryColumn": "wipSettings", "orderColumn": "rowOrder"}
+	],
+	"views": {
+		"default": {"id": "default", "class": "e10mnf.base.ViewWIPSettings", "detail": "e10mnf.base.ViewDetailWIPSettings"}
+	},
+	"forms": [
+		{"id": "default", "class": "e10mnf.base.FormWIPSettings"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

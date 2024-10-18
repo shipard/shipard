@@ -15,8 +15,9 @@
 	},
 	"wrkrcs": {
 		"name": "Výkazy práce",
+		"roles": ["pwuser"],
 		"viewers": {
-			"e10mnf.core.workRecs": {"default": 2}
+			"e10mnf.core.workRecs": {"default": 2, "user": 2}
 		}
 	},
 	"admin": {
@@ -25,7 +26,9 @@
 			"e10mnf.base.docnumbers": {"default": 2},
 			"e10mnf.base.workOrdersGroups": {"default": 2},
 			"e10mnf.base.workRecsKinds": {"default": 2},
-			"e10mnf.base.workRecsNumbers": {"default": 2}
+			"e10mnf.base.workRecsNumbers": {"default": 2},
+			"e10mnf.base.workActivities": {"default": 2},
+			"e10mnf.base.wipSettings": {"default": 2}
 		}
 	}
 }

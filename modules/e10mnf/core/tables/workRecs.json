@@ -22,6 +22,7 @@
 		{"id": "currency", "name": "Měna", "type": "enumString", "len": 3,
 			"enumCfg": {"cfgItem": "e10.base.currencies", "cfgValue": "", "cfgText": "shortcut"}},
 
+		{"id": "workActivity", "name": "Činnost", "type": "int", "reference": "e10mnf.base.workActivities"},
 		{"id": "workOrder", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
 
 		{"id": "author", "name": "Autor", "type": "int", "reference": "e10.persons.persons"},
@@ -46,6 +47,9 @@
 		{"id": "source", "name": "Zdroj", "type": "enumInt",
 			"enumValues": {"0": "Ručně", "2": "API"}},
 
+		{"id": "workInProgress", "name": "Probíhá", "type": "enumInt",
+			"enumValues": {"0": "Ne", "1": "Ano"}},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
@@ -55,7 +59,8 @@
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10mnf.core.workRecs.docStates"},
 	"views": [
-		{"id": "default", "class": "e10mnf.core.ViewWorkRecs", "detail": "e10mnf.core.ViewDetailWorkRec"}
+		{"id": "default", "class": "e10mnf.core.ViewWorkRecs", "detail": "e10mnf.core.ViewDetailWorkRec"},
+		{"id": "user", "class": "e10mnf.core.ViewWorkRecsUser", "detail": "e10mnf.core.ViewDetailWorkRec"}
 	],
 	"forms": [
 		{"id": "default", "class": "e10mnf.core.FormWorkRec"}

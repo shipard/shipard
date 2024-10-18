@@ -1,0 +1,16 @@
+{
+	"id": "e10mnf.base.wipSettingsWO", "sql": "e10mnf_base_wipSettingsWO", "name": "Zakázky nastavení monitoringu práce",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "wipSettings", "name": "Nastavení", "type": "int"},
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+
+		{"id": "woRecKind", "name": "Druh zakázky", "type": "int", "reference": "e10mnf.base.dockinds"},
+		{"id": "woDbCounter", "name": "Číselná řada", "type": "int", "reference": "e10mnf.base.docnumbers"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10mnf.base.FormWIPSettingsWO"}
+	],
+	"options": ["systemTable"]
+}

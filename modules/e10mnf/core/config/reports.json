@@ -1,0 +1,3 @@
+[
+	{"name": "Odprac. hodiny", "class": "e10mnf.core.libs.WorkedHoursReport", "icon": "reportHoursWorked", "group": "e10mnf-workRecs"}
+]
