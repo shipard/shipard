@@ -145,6 +145,8 @@ class ViewWIPSettings extends TableView
 	{
 		if (isset($this->personsLists[$item ['pk']]))
 		{
+			if (!isset($item['t2']))
+				$item['t2'] = [];
 			$item['t2'] = array_merge($item['t2'], $this->personsLists[$item ['pk']]);
 		}
 	}
