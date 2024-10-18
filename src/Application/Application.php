@@ -1911,6 +1911,8 @@ class Application extends \Shipard\Application\ApplicationCore
 			$menuItems = $this->panelItems($topMenuItem);
 			forEach ($menuItems as $menuId => $menuItem)
 			{
+				if (!utils::enabledCfgItem ($this, $menuItem))
+					continue;
 				if (!$this->checkAccess($menuItem))
 					continue;
 				$m ['items'][] = $menuItem;
@@ -2028,7 +2030,8 @@ class Application extends \Shipard\Application\ApplicationCore
 			}
 		}
 
-		$srcItem['subMenu']['items'] = \e10\sortByOneKey($subMenu, 'order', TRUE);
+		if (count($subMenu))
+			$srcItem['subMenu']['items'] = \e10\sortByOneKey($subMenu, 'order', TRUE);
 	}
 
 	public function route ()

@@ -35,6 +35,10 @@
 					"subclass": "main", "icon": "system/dashboardDashboard", "order": 5000}
 			]
 		},
+		"others": {
+			"url": "/app/others", "zone": "sec", "objectType": "panel", "name": "Ostatní", "cntBigIcons": 7, "order": 800000,
+			"items": []
+		},
 		"wikiAppPageR": {"urlRegExp": "/^\\/app\\/wiki\\-[0-9]+$/", "zone": "sec", "objectType": "redirect", "redirect": "", "order": 100},
 		"wikiAppPage": {"urlRegExp": "/^\\/app\\/wiki\\-[0-9]+\\/(.*)$/", "objectType": "function", "function": "e10.web.createWebPageWiki", "zone": "sec", "order": 100}
 	},
