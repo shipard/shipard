@@ -8,7 +8,8 @@
 		{"id": "person", "name": "Osoba", "type": "int", "reference": "services.persons.persons"},
 		{"id": "changeType", "name": "Typ změny", "type": "enumInt", "len": 2,
       "enumValues": {"0": "Nová firma", "1": "Zrušení firmy", "2": "Změna údajů"}},
-    {"id": "done", "name": "Hotovo", "type": "logical"}
+    {"id": "done", "name": "Hotovo", "type": "logical"},
+    {"id": "doneAt", "name": "Okamžik vyřízení", "type": "timestamp"}
   ],
   "views": {
 		"default": {

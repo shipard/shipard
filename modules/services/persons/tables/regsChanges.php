@@ -39,7 +39,7 @@ class ViewRegsChanges extends TableView
 	public function renderRow ($item)
 	{
 		$listItem ['pk'] = $item['ndx'];
-		$listItem ['t1'] = ['suffix' => Utils::Datef($item['changeDay']), 'class' => '', 'text' => '#'.$item['changeSetId']];
+		$listItem ['t1'] = ['suffix' => Utils::Datef($item['changeDay']), 'class' => '', 'text' => $item['changeSetId'], 'icon' => 'user/fileText'];
 
 		$listItem ['i1'] = ['text' => '#'.$item ['ndx'], 'class' => 'id'];
     $listItem ['t2'][] = ['text' => 'Počet změn: '.Utils::nf($item ['cntChanges'], 0), 'class' => 'label label-default'];

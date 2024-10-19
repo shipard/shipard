@@ -108,6 +108,14 @@ class PersonData extends \services\persons\libs\CoreObject
 
 		$this->db()->query('INSERT INTO [services_persons_persons] ', $newPerson);
 		$newNdx = intval ($this->db()->getInsertId ());
+
+		$insertId = [
+			'person' => $newNdx,
+			'idType' => 2,
+			'id' => $personId,
+		];
+		$this->db()->query('INSERT INTO [services_persons_ids]', $insertId);
+
 		$this->refreshImport($newNdx);
 	}
 

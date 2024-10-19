@@ -46,9 +46,15 @@ class ViewRegsChangesItems extends TableView
 
 	public function init()
 	{
-		parent::init();
 		$this->registers = $this->app()->cfgItem('services.personsRegisters', []);
     $this->changeTypes = $this->table->columnInfoEnum ('changeType', 'cfgText');
+
+		$mq [] = ['id' => 'active', 'title' => 'Aktivní'];
+		$mq [] = ['id' => 'done', 'title' => 'Hotovo'];
+		$mq [] = ['id' => 'all', 'title' => 'Vše'];
+		$this->setMainQueries ($mq);
+
+		parent::init();
 	}
 
 	public function renderRow ($item)
@@ -77,6 +83,7 @@ class ViewRegsChangesItems extends TableView
 
 	public function selectRows ()
 	{
+		$mainQuery = $this->mainQueryId ();
 		$fts = $this->fullTextSearch ();
 
 		$q = [];
@@ -91,6 +98,14 @@ class ViewRegsChangesItems extends TableView
 		{
 			array_push ($q, ' AND [items].[oid] LIKE %s', $fts.'%');
     }
+
+		if ($mainQuery === 'active')
+			array_push ($q, ' AND [items].[done] = %i', 0);
+		elseif ($mainQuery === 'done')
+			array_push ($q, ' AND [items].[done] = %i', 1);
+
+		//array_push ($q, ' AND [items].[changeType] = %i', 0);
+
 
     array_push ($q, ' ORDER BY ndx DESC');
 		array_push ($q, $this->sqlLimit());

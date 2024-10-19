@@ -180,6 +180,7 @@ class InitialImportPersonsCZ extends InitialImportPersons
 					'originalName' => $person['base']['originalName'],
 					'fullName' => $this->checkName($person['base']['originalName']),
 					'cleanedName' => 0,
+					'newDataAvailable' => 1,
 				];
 				if ($update['fullName'] !== $update['originalName'])
 					$update['cleanedName'] = 1;
@@ -196,6 +197,7 @@ class InitialImportPersonsCZ extends InitialImportPersons
 			$insert['updated'] = $now;
 			$insert['iid'] = $iid;
 			$insert['vatState'] = 99;
+			$insert['newDataAvailable'] = 1;
 
 			$insert['cleanedName'] = 0;
 			if ($insert['fullName'] !== $insert['originalName'])

@@ -193,7 +193,7 @@ class RegsChangesCZ extends Utility
     $this->db()->query('INSERT INTO [services_persons_regsChangesItems] ', $newItem);
   }
 
-  public function doChangeSetItems($maxCount = 10)
+  public function doChangeSetItems($maxCount = 10, $addOnly = 0)
   {
     /** @var \services\persons\TableRegsChangesItems */
     $table = $this->app()->table('services.persons.regsChangesItems');
@@ -204,6 +204,8 @@ class RegsChangesCZ extends Utility
     array_push($q, ' FROM [services_persons_regsChangesItems] AS changeItems');
     array_push($q, ' WHERE 1');
     array_push($q, ' AND [done] = %i', 0);
+    if ($addOnly)
+      array_push($q, ' AND [changeType] = %i', 0);
     array_push($q, ' ORDER BY ndx');
 
     $cnt = 0;
@@ -236,6 +238,96 @@ class RegsChangesCZ extends Utility
       sleep(1);
     }
   }
+
+  public function doChangeSetItemsFromFiles($maxCount = 10)
+  {
+    $cntMissingFiles = 0;
+    $cntExists = 0;
+    $cntTotal = 0;
+    $cntAdded = 0;
+
+		$archiveFileName = __APP_DIR__.'/res/ares_vreo_all.tar';
+		ini_set('memory_limit', '1024M');
+		$archive = new \PharData($archiveFileName);
+
+
+    /** @var \services\persons\TableRegsChangesItems */
+    $table = $this->app()->table('services.persons.regsChangesItems');
+    $changeTypes = $table->columnInfoEnum ('changeType', 'cfgText');
+
+    $q = []; //
+    array_push($q, 'SELECT changeItems.*');
+    array_push($q, ' FROM [services_persons_regsChangesItems] AS changeItems');
+    array_push($q, ' WHERE 1');
+    array_push($q, ' AND ',
+        ' NOT EXISTS (SELECT ndx FROM services_persons_persons WHERE ',
+        'changeItems.oid = services_persons_persons.oid AND changeItems.country = services_persons_persons.country',
+    ')');
+    array_push($q, ' AND [done] = %i', 0);
+    array_push($q, ' AND [changeType] = %i', 0);
+    array_push($q, ' ORDER BY ndx');
+
+    $cnt = 0;
+    $rows = $this->db()->query($q);
+    foreach ($rows as $r)
+    {
+      $cntTotal++;
+
+      if ($this->app->debug)
+        echo "=== ".sprintf('%10d', $cntTotal).": ".$r['oid']."; ".$changeTypes[$r['changeType']].": ";
+
+      $exist = $this->db()->query('SELECT * FROM [services_persons_persons] WHERE [oid] = %s', $r['oid'], ' AND [country] = %i', 60)->fetch();
+      if ($exist)
+      {
+        if ($this->app->debug)
+          echo "record exist...\n";
+        $cntExists++;
+        continue;
+      }
+
+      $oid = sprintf('%08d', intval($r['oid']));
+      $oneTarFileName = 'VYSTUP/DATA/'.$oid.'.xml';
+      $xmlTarFileName = __APP_DIR__.'/tmp/'.$oneTarFileName;
+
+      try
+      {
+        $archive->extractTo(__APP_DIR__.'/tmp/', './'.$oneTarFileName, TRUE);
+      }
+      catch (\Exception $e){}
+
+      if (!is_readable($xmlTarFileName))
+      {
+        if ($this->app->debug)
+          echo "file `$oneTarFileName` not found\n";
+        $cntMissingFiles++;
+        continue;
+      }
+
+      $data = file_get_contents($xmlTarFileName);
+
+      $ii = new \services\persons\libs\cz\InitialImportPersonsCZ($this->app());
+      $newPersonNdx = $ii->importOnePersonARES($data, $oid);
+      if (!$newPersonNdx)
+      {
+        if ($this->app->debug)
+          echo "save person failed\n";
+        continue;
+      }
+
+      $now = new \DateTime();
+      $this->db()->query('UPDATE [services_persons_regsChangesItems] SET [done] = 1, [doneAt] = %t', $now,
+                          ' WHERE [oid] = %s', $r['oid'], ' AND country = %i', 60);
+
+      echo "SUCCESS; chsndx: {$r['regsChangeSet']}!\n";
+
+      $cnt++;
+      if ($cnt >= $maxCount)
+        break;
+    }
+
+    echo "#### DONE; ADDED: {$cnt}; total scanned: ".$cntTotal.'; '. $cntMissingFiles . ' files missing'."\n";
+  }
+
 
   public function run()
   {

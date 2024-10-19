@@ -173,13 +173,19 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$rc->prepareChangeSetsItems();
 	}
 
-	public function doChangeSetItems()
+	public function doChangeSetItems($fromFile = 0)
 	{
 		$maxCount = intval($this->app->arg('maxCount'));
 		if (!$maxCount)
 			$maxCount = 20;
 		$rc = new \services\persons\libs\cz\RegsChangesCZ($this->app());
-		$rc->doChangeSetItems($maxCount);
+		if ($fromFile)
+			$rc->doChangeSetItemsFromFiles($maxCount);
+		else
+		{
+			$addOnly = intval($this->app->arg('addOnly'));
+			$rc->doChangeSetItems($maxCount, $addOnly);
+		}
 	}
 
 	protected function onCronMorning()
@@ -208,6 +214,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'download-regs-change-sets-contents': return $this->downloadRegsChangeSetsContents();
 			case 'prepare-regs-change-items': return $this->prepareRegsChangeItems();
 			case 'do-regs-change-set-items': return $this->doChangeSetItems();
+			case 'do-regs-change-set-items-from-file': return $this->doChangeSetItems(1);
 		}
 
 		parent::onCliAction($actionId);
