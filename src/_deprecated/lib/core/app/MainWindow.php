@@ -182,6 +182,8 @@ class MainWindow extends \Shipard\Base\BaseObject
 		{
 			if (isset($mi['hidden']))
 				continue;
+			if (!isset($mi['items']) || !count($mi['items']))
+				continue;
 			$pmclass = '';
 			if ($mi['url'] == $this->app->requestPath ())
 				$pmclass = ' active';
