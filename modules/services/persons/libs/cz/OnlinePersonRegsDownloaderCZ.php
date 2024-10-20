@@ -49,7 +49,7 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
         {
           $flags = $data['seznamRegistraci'] ?? [];
           $this->useRZP = 0;
-          if ($flags['stavZdrojeRzp'] ?? '' === 'AKTIVNI')
+          if (($flags['stavZdrojeRzp'] ?? '') === 'AKTIVNI')
             $this->useRZP = 1;
           if ($flags['stavZdrojeDph'] === 'AKTIVNI')
             $this->useVAT = self::vatStandard;
