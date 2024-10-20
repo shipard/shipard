@@ -1,5 +1,5 @@
 {
-	"witemsTags": {
+	"plansTags": {
 		"name": "Plánování",
 		"label": "Štítky",
 		"tables": ["plans.core.items"],
