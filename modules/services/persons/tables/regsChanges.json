@@ -11,9 +11,10 @@
 		{"id": "srcData", "name": "Zdrojová data", "type": "memo"},
 
     {"id": "changeState", "name": "Stav", "type": "enumInt",
-      "enumValues": {"0": "Evidována", "1": "Staženo", "2": "Připraveno ke zpracování", "3": "Zpracováno"}},
+      "enumValues": {"0": "Evidována", "1": "Staženo", "2": "Ke zpracování", "3": "Hotovo"}},
 
-    {"id": "tsDownload", "name": "Okamžik stažení", "type": "timestamp"}
+    {"id": "tsDownload", "name": "Okamžik stažení", "type": "timestamp"},
+    {"id": "tsDone", "name": "Okamžik zpracování", "type": "timestamp"}
   ],
   "views": {
 		"default": {

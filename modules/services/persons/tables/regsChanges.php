@@ -31,9 +31,15 @@ class ViewRegsChanges extends TableView
 
 	public function init()
 	{
-		parent::init();
 		$this->registers = $this->app()->cfgItem('services.personsRegisters', []);
     $this->changesStates = $this->table->columnInfoEnum ('changeState', 'cfgText');
+
+		$mq [] = ['id' => 'active', 'title' => 'Zpracovat'];
+		$mq [] = ['id' => 'done', 'title' => 'Hotovo'];
+		$mq [] = ['id' => 'all', 'title' => 'Vše'];
+		$this->setMainQueries ($mq);
+
+		parent::init();
 	}
 
 	public function renderRow ($item)
@@ -44,9 +50,18 @@ class ViewRegsChanges extends TableView
 		$listItem ['i1'] = ['text' => '#'.$item ['ndx'], 'class' => 'id'];
     $listItem ['t2'][] = ['text' => 'Počet změn: '.Utils::nf($item ['cntChanges'], 0), 'class' => 'label label-default'];
 		$listItem ['t2'][] = ['text' => 'Hotovo: '.Utils::nf($item ['cntDone'], 0), 'class' => 'label label-default'];
-    $listItem ['t2'][] = ['text' => 'Staženo: '.Utils::datef($item ['tsDownload'], '%d%t'), 'class' => 'pull-right'];
 
-		$listItem ['i2'] = $this->changesStates[$item ['changeState']];
+    $listItem ['t2'][] = ['text' => Utils::datef($item ['tsDownload'], '%d'), 'suffix' => Utils::datef($item ['tsDownload'], '%T'), 'class' => 'pull-right', 'icon' => 'system/actionSave'];
+
+
+		$listItem ['i2'] = ['text' => $this->changesStates[$item ['changeState']]];
+
+		if (!Utils::dateIsBlank($item['tsDone']) && $item ['changeState'] == 3)
+		{
+			$listItem ['i2']['text'] = Utils::datef($item ['tsDone'], '%d');
+			$listItem ['i2']['suffix'] = Utils::datef($item ['tsDone'], '%T');
+			$listItem ['i2']['icon'] = 'system/iconCheck';
+		}
 
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
@@ -55,6 +70,7 @@ class ViewRegsChanges extends TableView
 
 	public function selectRows ()
 	{
+		$mainQuery = $this->mainQueryId ();
 		$fts = $this->fullTextSearch ();
 
 		$q = [];
@@ -72,6 +88,11 @@ class ViewRegsChanges extends TableView
 											' AND [oid] LIKE %s' , $fts.'%');
 			array_push ($q, ')');
     }
+
+		if ($mainQuery === 'active')
+			array_push ($q, ' AND [changes].[changeState] != %i', 3);
+		elseif ($mainQuery === 'done')
+			array_push ($q, ' AND [changes].[changeState] = %i', 3);
 
     array_push ($q, ' ORDER BY ndx DESC');
 		array_push ($q, $this->sqlLimit());

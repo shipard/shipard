@@ -188,6 +188,23 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		}
 	}
 
+	public function doChangeSetItemsDone()
+	{
+		$now = new \DateTime();
+		$q = [];
+		array_push($q, 'SELECT changes.ndx, cntChanges');
+		array_push($q, ' FROM services_persons_regsChanges AS changes');
+		array_push($q, ' WHERE (SELECT COUNT(*) FROM services_persons_regsChangesItems WHERE changes.ndx = services_persons_regsChangesItems.regsChangeSet AND done = 1) = cntChanges');
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$this->db()->query ('UPDATE services_persons_regsChanges SET changeState = %i, ', 3, 'tsDone = %t', $now,
+													' WHERE ndx = %i', $r['ndx']);
+			if ($this->app()->debug)
+				echo "# ".\dibi::$sql."\n";
+		}
+	}
+
 	protected function onCronMorning()
 	{
 		$this->downloadRegsChangeSets();
@@ -197,6 +214,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 	{
 		$this->downloadRegsChangeSetsContents();
 		$this->prepareRegsChangeItems();
+		$this->doChangeSetItemsDone();
 	}
 
 	public function onCliAction ($actionId)
@@ -215,6 +233,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'prepare-regs-change-items': return $this->prepareRegsChangeItems();
 			case 'do-regs-change-set-items': return $this->doChangeSetItems();
 			case 'do-regs-change-set-items-from-file': return $this->doChangeSetItems(1);
+			case 'do-regs-change-set-items-done': return $this->doChangeSetItemsDone();
 		}
 
 		parent::onCliAction($actionId);
