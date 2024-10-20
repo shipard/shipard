@@ -195,6 +195,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		array_push($q, 'SELECT changes.ndx, cntChanges');
 		array_push($q, ' FROM services_persons_regsChanges AS changes');
 		array_push($q, ' WHERE (SELECT COUNT(*) FROM services_persons_regsChangesItems WHERE changes.ndx = services_persons_regsChangesItems.regsChangeSet AND done = 1) = cntChanges');
+		array_push($q, ' AND changeState != %i', 3);
 		$rows = $this->db()->query($q);
 		foreach ($rows as $r)
 		{
