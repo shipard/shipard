@@ -48,10 +48,9 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
         if ($data['ico'] == $this->personData->personId)
         {
           $flags = $data['seznamRegistraci'] ?? [];
+          $this->useRZP = 0;
           if ($flags['stavZdrojeRzp'] ?? '' === 'AKTIVNI')
             $this->useRZP = 1;
-          //if ($flags[3] === 'A')
-          //  $this->useRZP = 1;
           if ($flags['stavZdrojeDph'] === 'AKTIVNI')
             $this->useVAT = self::vatStandard;
           //elseif ($flags[5] === 'S') // "dicSkDph":"N/A"
@@ -108,7 +107,7 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
 		if (!$file)
     {
       if ($this->app()->debug)
-        echo "ERROR-DOWNLOAD-FAILED; ";
+        echo "ERROR-DOWNLOAD-FAILED; \n";
       $logRecord->addItem('ares-rzp-download-failed', '', ['result' => $file]);
       $logRecord->setStatus(LogRecord::lstError, TRUE);
       return;
@@ -118,7 +117,7 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
 		if (!$data)
 		{
       if ($this->app()->debug)
-        echo "ERROR-PARSE; ";
+        echo "ERROR-PARSE; \n";
 
       $logRecord->addItem('ares-rzp-download-parse-error', '', ['json-text' => $file]);
       $logRecord->setStatus(LogRecord::lstError, TRUE);
