@@ -203,6 +203,9 @@ class FormClsfItems extends TableForm
 				$this->openTab ();
 					$this->addColumnInput ('validFrom');
 					$this->addColumnInput ('validTo');
+
+					if ($this->app()->hasRole('root'))
+						$this->addColumnInput ('group');
 				$this->closeTab ();
 			$this->closeTabs();
 		$this->closeForm ();

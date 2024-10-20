@@ -4,7 +4,7 @@
     {"id": "ndx", "name": "id", "type": "int_ai"},
     {"id": "fullName", "name": "Název", "type": "string", "len": 120},
     {"id": "group", "name": "Typ", "type": "enumString", "len": 20,
-	    "enumCfg": {"cfgItem": "e10.base.clsf", "cfgValue": "", "cfgText": "name"}},
+	    "enumCfg": {"cfgItem": "e10.base.clsfGroups", "cfgValue": "", "cfgText": "name"}},
 		{"id": "id", "name": "Zkratka", "type": "string", "len": 40},
     {"id": "colorbg", "name": "Barva", "type": "string", "len": 7, "subtype": "color"},
     {"id": "colorfg", "name": "Barva písma", "type": "string", "len": 7, "subtype": "color"},
