@@ -21,52 +21,6 @@ class ContactForm2 extends \Shipard\Base\WebForm2
 		return [];
 	}
 
-	public function createFormCode_CCCCC ($options = 0)
-	{
-		$useReCaptcha = ($this->template && isset($this->template->pageParams['recaptcha-v3-site-key']));
-
-		$this->disableAutofocus = TRUE;
-		$sendMsgTxt = $this->dictText('Odeslat zprávu');
-
-		$c = '';
-
-		if ($useReCaptcha)
-		{
-			$c .= "<noscript><p>";
-			$c .= Utils::es('Kontaktní formulář vyžaduje javascript...');
-			$c .= "</p></noscript>";
-		}
-
-		$c .= "<form class='form-horizontal' method='POST'";
-		if ($useReCaptcha)
-			$c .= "style='display: none;'";
-		$c .= ">";
-
-		$c .= "<input type='hidden' name='webFormState' value='1'/>";
-		$c .= "<input type='hidden' name='webFormId' value='e10.web.contactForm2'/>";
-
-		if ($useReCaptcha)
-		{
-			$c .= "<input type='hidden' id='recaptcha-response' name='webFormReCaptchtaResponse' value=''/>";
-		}
-
-		$c .= $this->addFormInput ('Váš e-mail', 'email', 'email', ['icon' => 'system/iconEmail']);
-		$c .= $this->addFormInput ('Vaše jméno', 'text', 'name', ['icon' => 'system/iconUser']);
-		$c .= $this->addFormInput ('Zpráva', 'memo', 'msg', ['icon' => 'icon-pencil']);
-
-		if ($this->fw === 'bs4')
-		{
-			$c .= "<div class='text-xs-center'>";
-			$c .= "<button type='submit' class='btn btn-primary'>".Utils::es($sendMsgTxt)."</button>";
-			$c .= '</div>';
-		}
-		else
-			$c .= "<div class='form-group'><div class='col-sm-offset-2 col-sm-10'><button type='submit' class='btn btn-primary'>".Utils::es($sendMsgTxt)."</button></div></div>";
-		$c .= '</form>';
-
-		return $c;
-	}
-
 	public function validate ()
 	{
 		return TRUE;

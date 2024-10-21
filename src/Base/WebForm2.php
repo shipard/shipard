@@ -42,7 +42,9 @@ class WebForm2 extends \Shipard\Base\WebForm
 			$c .= "</p></noscript>";
 		}
 
-		$c .= "<form class='' method='POST'";
+		$formClass = $this->formParams['formClass'] ?? '';
+
+		$c .= "<form class='$formClass' method='POST'";
 		if ($useReCaptcha)
 			$c .= " style='display: none;'";
 
