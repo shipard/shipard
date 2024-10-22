@@ -266,9 +266,15 @@ class ShipardMqtt {
   publish (serverIndex, topic, payload)
   {
     var ws = webSocketServers[serverIndex];
+
+    if (!ws.hasOwnProperty('mqttClient'))
+      return 0;
+
     let message = new Paho.MQTT.Message(payload);
     message.destinationName = topic;
     ws.mqttClient.send(message);
+
+    return 1;
   }
 
 	applyUIData (responseUIData)

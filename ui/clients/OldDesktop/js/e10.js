@@ -237,6 +237,8 @@ function attLinkPreviewOpen (e)
 					"</div>"
 			;
 
+	e.on("remove", function(){attLinkPreviewClose ()});
+
 	var mainBrowserContent = $('#mainBrowserContent');
 	$('body').append (previewHtml);
 }

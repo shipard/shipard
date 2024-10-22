@@ -11,6 +11,7 @@ class WidgetVendM extends ShipardWidgetBoard
   tempBottomSensorTopic = '';
   topicMotorsMatrix = '';
   topicMotorsBusy = '';
+  topicLeds = '';
 
   setupModeCards = null;
   setupUrl = '';
@@ -25,6 +26,14 @@ class WidgetVendM extends ShipardWidgetBoard
   restCreditAmount = 0;
 
   buyTimeout = 0;
+
+  ledStates = {
+    off: 'static:0:000000',
+    select: 'static:0:50000000',
+    waitForCard: 'static:0:500000FF',
+    invalidCard: 'static:0:00AA00',
+    buyInProgress: 'circus-combustus:2500:20AA00:00A0A0'
+  };
 
   init (rootElm)
   {
@@ -45,6 +54,7 @@ class WidgetVendM extends ShipardWidgetBoard
     this.setupUrl = this.rootElm.getAttribute('data-setup-url');
     this.topicMotorsBusy = this.rootElm.getAttribute('data-sensor-busy');
     this.topicMotorsMatrix = this.rootElm.getAttribute('data-base-topic') + '/M';
+    this.topicLeds = this.rootElm.getAttribute('data-leds-topic');
 
     this.elmCardCodeInput.addEventListener("keypress", function(event) {
       if (event.key === "Enter") {
@@ -52,6 +62,8 @@ class WidgetVendM extends ShipardWidgetBoard
         this.validateCardCode();
       }
     }.bind(this));
+
+    this.setVMMode('select');
   }
 
   doAction (actionId, e)
@@ -94,6 +106,7 @@ class WidgetVendM extends ShipardWidgetBoard
       {
         this.elmShow(this.rootElm.querySelector('div.statusInvalidCode'));
         this.elmCardCodeInput.value = '';
+        this.setLedStrip(this.ledStates.invalidCard);
         return;
       }
 
@@ -152,6 +165,7 @@ class WidgetVendM extends ShipardWidgetBoard
 
   buyGetCard (e)
   {
+    this.setLedStrip(this.ledStates.waitForCard);
     this.selectBox (e);
     this.setVMMode('get-card');
     this.elmCardCodeInput.value = '';
@@ -159,6 +173,13 @@ class WidgetVendM extends ShipardWidgetBoard
     this.elmSBDisplayItemName.innerText = this.itemName;
     this.elmSBDisplayItemPrice.innerText = this.itemPrice + ' Kč';
 
+    /*
+    let text = this.itemName+'   '+this.itemPrice+' korun. Prosím přiložte kartu';
+    let utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'cs-CZ'
+    speechSynthesis.speak(utterance);
+    console.log("============= SPEAK ============");
+    */
     return 1;
   }
 
@@ -198,6 +219,7 @@ class WidgetVendM extends ShipardWidgetBoard
     if (mode === 'select')
     {
       document.getElementById('vm-mode-select').classList.add('active');
+      this.setLedStrip(this.ledStates.select);
     }
     else if (mode === 'get-card')
     {
@@ -226,6 +248,8 @@ class WidgetVendM extends ShipardWidgetBoard
 
   doBuyCreateInvoice ()
   {
+    this.setLedStrip(this.ledStates.buyInProgress);
+
     if (this.buyTimeout != 0)
       clearTimeout(this.buyTimeout);
     this.buyTimeout = 0;
@@ -259,6 +283,22 @@ class WidgetVendM extends ShipardWidgetBoard
     }
   }
 
+  setLedStrip(state)
+  {
+    console.log("LEDS: ", this.topicLeds, state);
+    if (!shc.mqtt.publish(1, this.topicLeds, state))
+      setTimeout(function() {this.setLedStrip(state)}.bind(this), 1000);
+
+    if (state === this.ledStates.waitForCard)
+    {
+      let cc = '0000FF';
+      let ledStart = 40;
+      let ledCnt = 8;
+      for (let i = ledStart; i < ledStart+ledCnt; i++)
+        shc.mqtt.publish(1, this.topicLeds, 'pixel:'+i+':'+cc);
+    }
+  }
+
   onMqttMessage (serverIndex, topic, payload)
   {
     console.log("vendms - onMqttMessage: ", topic, payload);
@@ -273,13 +313,10 @@ class WidgetVendM extends ShipardWidgetBoard
       document.getElementById('vm-temp-bottom').innerText = parseFloat(payload['value']) + ' °C';
     }
 
-    console.log("topicBusy: ", this.topicMotorsBusy);
     if (topic == this.topicMotorsBusy)
     {
-      console.log("YES, busy...");
       if (parseInt(payload['value']) == 0)
       {
-        console.log("!!!RELOAD");
         location.reload();
       }
     }

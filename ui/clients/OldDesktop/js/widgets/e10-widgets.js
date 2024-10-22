@@ -14,6 +14,9 @@ e10client.prototype.widgets.autoRefresh = function (widgetId) {
 	{
 		return;
 	}
-	e10WidgetAction (0, null, widgetId);
-	setTimeout("e10.widgets.autoRefresh('"+widgetId+"')", 60000);
+	setTimeout(function(){e10WidgetAction (0, null, widgetId);}, 60000);
+
+	//setTimeout("e10.widgets.autoRefresh('"+widgetId+"')", 60000);
+
+	console.log("__!!!REFRESH!!!");
 };
