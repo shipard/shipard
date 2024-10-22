@@ -179,8 +179,14 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		if (!$maxCount)
 			$maxCount = 20;
 		$rc = new \services\persons\libs\cz\RegsChangesCZ($this->app());
-		if ($fromFile)
+		if ($fromFile === 1)
+		{ // ARES
 			$rc->doChangeSetItemsFromFiles($maxCount);
+		}
+		elseif ($fromFile === 2)
+		{ // RES
+			$rc->doChangeSetItemsFromRES($maxCount);
+		}
 		else
 		{
 			$addOnly = intval($this->app->arg('addOnly'));
@@ -234,6 +240,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'prepare-regs-change-items': return $this->prepareRegsChangeItems();
 			case 'do-regs-change-set-items': return $this->doChangeSetItems();
 			case 'do-regs-change-set-items-from-file': return $this->doChangeSetItems(1);
+			case 'do-regs-change-set-items-from-res': return $this->doChangeSetItems(2);
 			case 'do-regs-change-set-items-done': return $this->doChangeSetItemsDone();
 		}
 

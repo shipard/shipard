@@ -255,7 +255,7 @@ class RegsChangesCZ extends Utility
     $table = $this->app()->table('services.persons.regsChangesItems');
     $changeTypes = $table->columnInfoEnum ('changeType', 'cfgText');
 
-    $q = []; //
+    $q = [];
     array_push($q, 'SELECT changeItems.*');
     array_push($q, ' FROM [services_persons_regsChangesItems] AS changeItems');
     array_push($q, ' WHERE 1');
@@ -328,6 +328,77 @@ class RegsChangesCZ extends Utility
     echo "#### DONE; ADDED: {$cnt}; total scanned: ".$cntTotal.'; '. $cntMissingFiles . ' files missing'."\n";
   }
 
+  public function doChangeSetItemsFromRES($maxCount = 10)
+  {
+		$fn = __APP_DIR__.'/res/res_data.csv';
+		$cnt = 0;
+		$cntNew = 0;
+		$rowNumber = 0;
+
+		if ($file = fopen($fn, "r"))
+		{
+			while(!feof($file))
+			{
+				$line = fgets($file);
+				if ($line === '')
+					continue;
+				if ($cnt === 0)
+				{
+					$cnt = 1;
+					continue;
+				}
+				if ($line === '')
+					continue;
+
+				$rowNumber++;
+
+				$cols = str_getcsv($line, ',');
+				$id = ltrim($cols[0], " \t\n\r\0\x0B0");
+				$oid = sprintf('%08d', intval($id));
+				$count = 0;
+				$exist = $this->db()->query('SELECT * FROM [services_persons_persons] WHERE [country] = %i', 60, ' AND [oid] = %s', $oid, ' LIMIT 1')->fetch();
+        if ($exist)
+        {
+          continue;
+        }
+
+				$name = trim($cols[11] ?? '');
+        if ($name === '')
+					continue;
+
+        $newInChages = $this->db()->query('SELECT * FROM [services_persons_regsChangesItems] ',
+                                          ' WHERE [done] = %i', 0, ' AND [changeType] = %i', 0,
+                                          ' AND [oid] = %s', $oid , ' AND country = %i', 60)->fetch();
+        if (!$newInChages)
+          continue;
+
+				$cntNew++;
+				echo sprintf("%8d", $rowNumber).' / '.sprintf("%06d", $cntNew).': '.$oid.": `".$name."`";
+
+        $ii = new \services\persons\libs\cz\InitialImportPersonsCZ($this->app());
+        $addResult = $ii->importOnePersonRES($line, '');
+        if ($addResult)
+					echo " OK";
+				else
+					echo " ERROR";
+
+        $now = new \DateTime();
+        $this->db()->query('UPDATE [services_persons_regsChangesItems] SET [done] = 1, [doneAt] = %t', $now,
+                            ' WHERE [oid] = %s', $oid, ' AND country = %i', 60, ' AND changeType IN %in', [0, 2]);
+
+				echo "\n";
+				if ($cntNew >= $maxCount)
+					break;
+			}
+			fclose($file);
+
+			echo "\n\n";
+		}
+		else
+		{
+
+		}
+  }
 
   public function run()
   {
