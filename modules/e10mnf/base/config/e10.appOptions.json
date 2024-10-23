@@ -23,6 +23,10 @@
 		"name": "Pracovní činnosti", "order": 4379000, "group": "workRecs",
 		"type": "viewer", "table": "e10mnf.base.workActivities", "viewer": "default"
 	},
+	"wkfWorksWipSettings": {
+		"name": "Monitoring práce", "order": 4379500, "group": "workRecs",
+		"type": "viewer", "table": "e10mnf.base.wipSettings", "viewer": "default"
+	},
 	"e10mnf-workRecs": {
 		"name": "Pracovní záznamy", "order": 15000, "group": "workRecs",
 		"icon": "tables/e10mnf.core.workRecs",
