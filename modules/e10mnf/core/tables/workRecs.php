@@ -575,12 +575,25 @@ class ViewWorkRecs extends TableView
 
 		$propsTime = [];
 
-		$allMinutes = utils::minutesToTime($item['timeLen'] / 60);
-		$propsTime[] = [
-			'text' => $allMinutes,
-			'suffix' => utils::nf($item['timeLen'] / 60 / 60, 2) . ' hod',
-			'icon' => 'system/iconClock', 'class' => 'label label-success'
-		];
+		if ($item['workInProgress'])
+		{
+			$tl = utils::dateDiffSeconds(utils::createDateTime($item['beginDateTime'], TRUE), $this->now);
+			$allMinutes = utils::minutesToTime($tl / 60);
+			$propsTime[] = [
+				'text' => $allMinutes,
+				'suffix' => utils::nf($tl / 60 / 60, 2) . ' hod',
+				'icon' => 'system/iconClock', 'class' => 'label label-info'
+			];
+		}
+		else
+		{
+			$allMinutes = utils::minutesToTime($item['timeLen'] / 60);
+			$propsTime[] = [
+				'text' => $allMinutes,
+				'suffix' => utils::nf($item['timeLen'] / 60 / 60, 2) . ' hod',
+				'icon' => 'system/iconClock', 'class' => 'label label-success'
+			];
+		}
 
 		if (count($propsTime))
 			$listItem ['i2'] = $propsTime;
