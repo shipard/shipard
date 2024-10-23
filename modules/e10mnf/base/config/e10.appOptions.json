@@ -19,6 +19,10 @@
 		"name": "Číselné řady pracovních záznamů", "order": 4378000, "group": "workRecs",
 		"type": "viewer", "table": "e10mnf.base.workRecsNumbers", "viewer": "default"
 	},
+	"wkfWorksWorkActs": {
+		"name": "Pracovní činnosti", "order": 4379000, "group": "workRecs",
+		"type": "viewer", "table": "e10mnf.base.workActivities", "viewer": "default"
+	},
 	"e10mnf-workRecs": {
 		"name": "Pracovní záznamy", "order": 15000, "group": "workRecs",
 		"icon": "tables/e10mnf.core.workRecs",
