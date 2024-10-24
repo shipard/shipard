@@ -50,6 +50,8 @@ class PlanItemCore extends DocumentCard
         ]);
       }
     }
+
+    $this->addContentAttachments ($this->recData ['ndx']);
   }
 
   public function createContent ()
