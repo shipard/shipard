@@ -76,23 +76,10 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
           'fullName' => Str::upToLen($this->clearFullName(strval ($data['obchodniJmeno'])), 240),
         ];
 
-        /*
-        $flags = strval ($el->PSU);
-        if ($flags[3] === 'A')
-          $this->useRZP = 1;
-        if ($flags[3] === 'A')
-          $this->useRZP = 1;
-        if ($flags[5] === 'A')
-          $this->useVAT = self::vatStandard;
-        elseif ($flags[5] === 'S')
-          $this->useVAT = self::vatGroup;
-        */
-
         $flags = $data['seznamRegistraci'] ?? [];
+        $this->useRZP = 0;
         if ($flags['stavZdrojeRzp'] ?? '' === 'AKTIVNI')
           $this->useRZP = 1;
-        //if ($flags[3] === 'A')
-        //  $this->useRZP = 1;
         if ($flags['stavZdrojeDph'] === 'AKTIVNI')
           $this->useVAT = self::vatStandard;
         //elseif ($flags[5] === 'S') // "dicSkDph":"N/A"
@@ -116,6 +103,8 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
         {
           $corePersonInfo['validTo'] = strval($data['datumZaniku']);
         }
+        else
+          $corePersonInfo['validTo'] = NULL;
 
         $legalTypeStr = $data['pravniForma'] ?? '';
         $legalTypeRecData = $this->db()->query('SELECT * FROM [e10_base_nomencItems] WHERE [id] = %s', 'cz-tobe-'.$legalTypeStr)->fetch();
