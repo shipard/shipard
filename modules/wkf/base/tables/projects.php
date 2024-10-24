@@ -96,17 +96,23 @@ class FormProject extends TableForm
 
 		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
+		$tabs ['tabs'][] = ['text' => 'Popis', 'icon' => 'formText'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);
 				$this->openTab ();
 					$this->addColumnInput ('fullName');
 					$this->addColumnInput ('shortName');
+					$this->addColumnInput ('dateBegin');
+					$this->addColumnInput ('dateEnd');
 				$this->closeTab();
 				$this->openTab ();
 					$this->addColumnInput ('icon');
 					$this->addColumnInput ('order');
 				$this->closeTab();
+				$this->openTab (self::ltNone);
+					$this->addInputMemo ('text', NULL, TableForm::coFullSizeY);
+				$this->closeTab ();
 			$this->closeTabs();
 		$this->closeForm ();
 	}

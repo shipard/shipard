@@ -119,6 +119,7 @@ class FormItem extends TableForm
 		$planCfg = $this->app()->cfgItem('plans.plans.'.$this->recData['plan'], NULL);
 		$useWorkOrders = $planCfg['useWorkOrders'] ?? 0;
 		$useCustomer = $planCfg['useCustomer'] ?? 0;
+		$useProjects = $planCfg['useProjects'] ?? 0;
 		$useProjectId = $planCfg['useProjectId'] ?? 0;
 		$usePrice = $planCfg['usePrice'] ?? 0;
 		$useAnnots = $planCfg['useAnnots'] ?? 0;
@@ -147,6 +148,8 @@ class FormItem extends TableForm
 						$this->addColumnInput ('workOrder');
 						$this->addColumnInput ('workOrderParent');
 					}
+					if ($useProjects)
+          	$this->addColumnInput ('project');
 					if ($useProjectId)
           	$this->addColumnInput ('projectId');
 

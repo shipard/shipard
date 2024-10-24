@@ -6,6 +6,11 @@
 		{"id": "fullName", "name": "Název", "type": "string", "len": 100},
 		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 60},
 
+		{"id": "text", "name": "Text", "type": "memo", "comboClass": "lib.web.WebTextSidebarWiki"},
+
+		{"id": "dateBegin", "name": "Datum zahájení", "type": "date"},
+		{"id": "dateEnd", "name": "Datum ukončení", "type": "date"},
+
 		{"id": "order", "name": "Pořadí", "type": "int"},
 		{"id": "icon", "name": "Ikona", "type": "string", "len": 50},
 

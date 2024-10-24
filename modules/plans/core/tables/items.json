@@ -18,6 +18,7 @@
     {"id": "workOrder", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
     {"id": "workOrderParent", "name": "Nadřazená zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
 
+    {"id": "project", "name": "Projekt", "type": "int", "reference": "wkf.base.projects"},
     {"id": "projectId", "name": "ID projektu", "type": "string", "len": 20},
 		{"id": "team", "name": "Tým", "type": "int", "reference": "plans.core.teams"},
 
