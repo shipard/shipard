@@ -19,7 +19,12 @@
 	],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
 	"views": {
-		"default": {"id": "default", "class": "wkf.base.ViewProjects", "help": "prirucka/122"}
+		"default": {
+			"id": "default", "class": "wkf.base.ViewProjects", "help": "prirucka/122",
+			"details": {
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "wkf.base.ViewDetailProject", "order": 1000}
+			}
+		}
 	},
 	"forms": [
 		{"id": "default", "class": "wkf.base.FormProject", "help": "prirucka/122"}

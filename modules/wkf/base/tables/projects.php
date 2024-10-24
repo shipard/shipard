@@ -2,12 +2,11 @@
 
 namespace wkf\base;
 
-use \e10\utils, \e10\TableView, \e10\TableForm, \e10\DbTable;
+use \Shipard\Utils\Utils, \Shipard\Viewer\TableView, \Shipard\Form\TableForm, \Shipard\Table\DbTable, \Shipard\Viewer\TableViewDetail;
 
 
 /**
- * Class TableProjects
- * @package wkf\base
+ * class TableProjects
  */
 class TableProjects extends DbTable
 {
@@ -30,18 +29,13 @@ class TableProjects extends DbTable
 
 
 /**
- * Class ViewProjects
- * @package wkf\base
+ * class ViewProjects
  */
 class ViewProjects extends TableView
 {
 	public function init ()
 	{
 		parent::init();
-
-//		$this->objectSubType = TableView::vsDetail;
-//		$this->enableDetailSearch = TRUE;
-
 		$this->setMainQueries ();
 	}
 
@@ -51,7 +45,11 @@ class ViewProjects extends TableView
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
 		$listItem ['t1'] = $item['fullName'];
-		$listItem ['t2'] = $item['shortName'];
+		$listItem ['t2'] = [['text' => $item['shortName'], 'class' => '']];
+
+		$ft = utils::dateFromTo($item['dateBegin'], $item['dateEnd'], NULL);
+		if ($ft !== '')
+			$listItem['t2'][] = ['text' => $ft, 'class' => 'label label-default pull-right'];
 
 		return $listItem;
 	}
@@ -83,8 +81,7 @@ class ViewProjects extends TableView
 
 
 /**
- * Class FormProject
- * @package wkf\base
+ * class FormProject
  */
 class FormProject extends TableForm
 {
@@ -97,6 +94,7 @@ class FormProject extends TableForm
 		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
 		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 		$tabs ['tabs'][] = ['text' => 'Popis', 'icon' => 'formText'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);
@@ -113,7 +111,19 @@ class FormProject extends TableForm
 				$this->openTab (self::ltNone);
 					$this->addInputMemo ('text', NULL, TableForm::coFullSizeY);
 				$this->closeTab ();
+				$this->openTab (TableForm::ltNone);
+					$this->addAttachmentsViewer();
+				$this->closeTab ();
 			$this->closeTabs();
 		$this->closeForm ();
+	}
+}
+
+
+class ViewDetailProject extends TableViewDetail
+{
+	public function createDetailContent ()
+	{
+		$this->addDocumentCard('wkf.base.libs.dc.Project');
 	}
 }
