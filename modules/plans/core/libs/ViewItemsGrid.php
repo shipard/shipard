@@ -234,7 +234,7 @@ class ViewItemsGrid extends TableViewGrid
 
 		if ($this->useViewCompact)
 		{
-			$titleClass = ($treeLevel !== 2) ? 'e10-bold' : '';
+			$titleClass = ($treeLevel !== 2 && $this->useViewTree) ? 'e10-bold' : '';
 			$subj = [];
 			if ($item['isPrivate'])
 				$subj[] = ['text' => $item['subject'], 'icon' => 'system/iconLocked', 'class' => $titleClass.' e10-me'];
@@ -265,15 +265,17 @@ class ViewItemsGrid extends TableViewGrid
 
 			if ($item['teamName'])
 				$subj[] = ['text' => $item['teamName'], 'icon' => 'tables/plans.core.teams', 'class' => 'label label-default'];
+			if ($item['projectName'])
+				$subj[] = ['text' => $item['projectName'], 'icon' => 'tables/wkf.base.projects', 'class' => 'label label-default'];
 
 			if ($treeLevel === 2)
 				$listItem['_options']['cellCss']['subject'] = 'padding-left: 1rem;';
 
 			if ($this->useViewStatesColors)
 			{
-				$listItem['_options']['cellCss']['subject'] .= 'background-color: '.$itemState['colorbg'].'; color: '.$itemState['colorfg'];
-				$listItem['_options']['cellCss']['begin'] .= 'background-color: '.$itemState['colorbg'].'; color: '.$itemState['colorfg'];
-				$listItem['_options']['cellCss']['deadline'] .= 'background-color: '.$itemState['colorbg'].'; color: '.$itemState['colorfg'];
+				$listItem['_options']['cellCss']['subject'] = 'background-color: '.$itemState['colorbg'].'; color: '.$itemState['colorfg'];
+				$listItem['_options']['cellCss']['begin'] = 'background-color: '.$itemState['colorbg'].'; color: '.$itemState['colorfg'];
+				$listItem['_options']['cellCss']['deadline'] = 'background-color: '.$itemState['colorbg'].'; color: '.$itemState['colorfg'];
 			}
 			$listItem ['subject'] = $subj;
 
@@ -595,6 +597,7 @@ class ViewItemsGrid extends TableViewGrid
 		array_push ($q, ' SELECT [items].*');
 		array_push ($q, ', [personsCust].fullName AS [personCustName]');
 		array_push ($q, ', [teams].shortName AS [teamName]');
+		array_push ($q, ', [projects].shortName AS [projectName]');
 		if ($this->useWorkOrders)
 		{
 			array_push ($q, ', wo.docKind AS woDocKind, [wo].docNumber AS [woDocNumber], [wo].intTitle AS [woIntTitle], [wo].refId2 AS [woRefId2]');
@@ -604,6 +607,7 @@ class ViewItemsGrid extends TableViewGrid
 
 		array_push ($q, ' LEFT JOIN [e10_persons_persons] AS [personsCust] ON [items].[personCustomer] = [personsCust].ndx');
 		array_push ($q, ' LEFT JOIN [plans_core_teams] AS [teams] ON [items].[team] = [teams].ndx');
+		array_push ($q, ' LEFT JOIN [wkf_base_projects] AS [projects] ON [items].[project] = [projects].ndx');
 
 		if ($this->useWorkOrders)
 		{
@@ -639,6 +643,8 @@ class ViewItemsGrid extends TableViewGrid
 
 		if (isset($qv['itemStates']))
 			array_push ($q, ' AND [items].[itemState] IN %in', array_keys($qv['itemStates']));
+		if (isset($qv['projects']))
+			array_push ($q, ' AND [items].[project] IN %in', array_keys($qv['projects']));
 
 		// -- fulltext
 		if ($fts != '')
@@ -708,6 +714,22 @@ class ViewItemsGrid extends TableViewGrid
 		$paramsItemStates = new \Shipard\UI\Core\Params ($this->app());
 		$paramsItemStates->addParam ('checkboxes', 'query.itemStates', ['cfg' => 'plans.itemStates', 'cfgTitleId' => 'fn']);
 		$qry[] = ['id' => 'itemStates', 'style' => 'params', 'title' => 'Stav', 'params' => $paramsItemStates];
+
+		// -- projects
+		$q = [];
+		$q [] = 'SELECT projects.* FROM [wkf_base_projects] AS projects';
+		array_push ($q, ' WHERE projects.docStateMain <= %i', 2);
+		array_push ($q, ' ORDER BY [order], [shortName]');
+		$chbxProjects = [];
+		$rows = $this->db()->query ($q);
+		foreach ($rows as $pr)
+			$chbxProjects[$pr['ndx']] = ['title' => $pr['shortName'], 'id' => $pr['ndx']];
+		if (count($chbxProjects))
+		{
+			$paramsProjects = new \Shipard\UI\Core\Params ($this->app());
+			$paramsProjects->addParam ('checkboxes', 'query.projects', ['items' => $chbxProjects]);
+			$qry[] = ['id' => 'places', 'style' => 'params', 'title' => 'Projekt', 'params' => $paramsProjects];
+		}
 
 		// -- tags
 		UtilsBase::addClassificationParamsToPanel($this->table, $panel, $qry);
