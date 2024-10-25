@@ -63,7 +63,7 @@ class DownloadStatementsFio extends \lib\ebanking\download\DownloadStatements
 
 		sleep(33); // minimal pause between requests is 30 seconds
 
-		$testImportFioJson = $this->app()->cfgItem ('options.experimental.testImportFioJson', 0);
+		$testImportFioJson = $this->app()->cfgItem ('options.experimental.testImportFioJson', 1);
 		if ($testImportFioJson)
 		{
 			$urlData = $url . '.json';
