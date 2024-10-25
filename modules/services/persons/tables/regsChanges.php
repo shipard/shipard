@@ -111,3 +111,15 @@ class ViewDetailRegChanges extends TableViewDetail
     $this->addContent(['pane' => 'e10-pane e10-pane-table', 'type' => 'text', 'subtype' => 'code', 'text' => $this->item['srcData']]);
   }
 }
+
+
+/**
+ * class ViewDetailRegChangesItems
+ */
+class ViewDetailRegChangesItems extends TableViewDetail
+{
+	public function createDetailContent ()
+	{
+		$this->addContentViewer ('services.persons.regsChangesItems', 'default', ['regsChangesNdx' => $this->item ['ndx']]);
+  }
+}

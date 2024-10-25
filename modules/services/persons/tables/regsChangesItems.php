@@ -43,11 +43,16 @@ class ViewRegsChangesItems extends TableView
 {
 	var $registers;
   var $changeTypes;
+	var $regsChangesNdx = 0;
 
 	public function init()
 	{
+		if ($this->queryParam ('regsChangesNdx'))
+			$this->regsChangesNdx = intval($this->queryParam ('regsChangesNdx'));
+
 		$this->registers = $this->app()->cfgItem('services.personsRegisters', []);
     $this->changeTypes = $this->table->columnInfoEnum ('changeType', 'cfgText');
+		$this->enableDetailSearch = TRUE;
 
 		$mq [] = ['id' => 'active', 'title' => 'Aktivní'];
 		$mq [] = ['id' => 'done', 'title' => 'Hotovo'];
@@ -92,6 +97,9 @@ class ViewRegsChangesItems extends TableView
     array_push ($q, ' LEFT JOIN [services_persons_persons] AS [persons] ON [items].[person] = [persons].[ndx]');
     array_push ($q, ' LEFT JOIN [services_persons_regsChanges] AS [changeSets] ON [items].[regsChangeSet] = [changeSets].[ndx]');
 		array_push ($q, ' WHERE 1');
+
+		if ($this->regsChangesNdx)
+			array_push($q, ' AND regsChangeSet = %i', $this->regsChangesNdx);
 
 		// -- fulltext
 		if ($fts != '')
