@@ -400,6 +400,61 @@ class RegsChangesCZ extends Utility
 		}
   }
 
+  public function doChangeSetItemsCleanup($maxCount = 10)
+  {
+    // -- change data
+    $q = [];
+    array_push($q, 'SELECT * FROM [services_persons_regsChangesItems]');
+    array_push($q, ' WHERE [done] = %i', 0);
+    array_push($q, ' AND [changeType] = %i', 2);
+    $rows = $this->db()->query($q);
+    $cnt = 1;
+    $cntNonExistedPerson = 0;
+    $cntDeletedPerson = 0;
+    $cntNewDataAdded = 0;
+    foreach ($rows as $r)
+    {
+      echo '#'.sprintf('%5d', $cnt).': '.$r['oid'].';';
+      $person = $this->db()->query('SELECT * FROM [services_persons_persons]',
+                        ' WHERE [country] = %i', $r['country'], ' AND [oid] = %s', $r['oid'], ' LIMIT 1')->fetch();
+      if ($person)
+      {
+        echo ' exist; ';
+        if ($person['newDataAvailable'])
+        {
+          echo ' has new data; ';
+        }
+        else
+        {
+          if (!$person['valid'])
+            $cntDeletedPerson++;
+          $cntNewDataAdded++;
+          $this->db()->query('UPDATE [services_persons_persons] SET [newDataAvailable] = %i', 1, ' WHERE [ndx] = %i', $person['ndx']);
+          echo ' new data added; ';
+        }
+      }
+      else
+      {
+        echo ' NOT exist; ';
+        $cntNonExistedPerson++;
+      }
+
+      $now = new \DateTime();
+      $this->db()->query('UPDATE [services_persons_regsChangesItems] SET [done] = 1, [doneAt] = %t', $now, ' WHERE [ndx] = %i', $r['ndx']);
+      echo ' set-done';
+
+      echo "\n";
+      $cnt++;
+
+      if ($cnt > $maxCount)
+        break;
+    }
+
+    echo "cntNonExistedPerson: $cntNonExistedPerson\n";
+    echo "cntDeletedPerson: $cntDeletedPerson\n";
+    echo "cntNewDataAdded: $cntNewDataAdded\n";
+  }
+
   public function run()
   {
     $this->downloadChangeSets();

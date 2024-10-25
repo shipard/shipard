@@ -212,6 +212,15 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		}
 	}
 
+	public function doChangeSetItemsCleanup()
+	{
+		$maxCount = intval($this->app->arg('maxCount'));
+		if (!$maxCount)
+			$maxCount = 20;
+		$rc = new \services\persons\libs\cz\RegsChangesCZ($this->app());
+		$rc->doChangeSetItemsCleanup($maxCount);
+	}
+
 	protected function onCronMorning()
 	{
 		$this->downloadRegsChangeSets();
@@ -242,6 +251,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'do-regs-change-set-items-from-file': return $this->doChangeSetItems(1);
 			case 'do-regs-change-set-items-from-res': return $this->doChangeSetItems(2);
 			case 'do-regs-change-set-items-done': return $this->doChangeSetItemsDone();
+			case 'do-regs-change-set-items-cleanup': return $this->doChangeSetItemsCleanup();
 		}
 
 		parent::onCliAction($actionId);
