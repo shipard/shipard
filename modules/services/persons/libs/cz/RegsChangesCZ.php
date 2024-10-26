@@ -237,6 +237,21 @@ class RegsChangesCZ extends Utility
 
       sleep(1);
     }
+
+    return $cnt;
+  }
+
+  public function doChangeSetItemsQueue($maxCount = 10)
+  {
+    $cntAdded = $this->doChangeSetItems($maxCount, 1);
+    if ($cntAdded)
+      return $cntAdded;
+
+    $cntUpdated = $this->doChangeSetItems($maxCount);
+    if ($cntUpdated)
+      return $cntUpdated;
+
+    return 0;
   }
 
   public function doChangeSetItemsFromFiles($maxCount = 10)

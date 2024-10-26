@@ -187,6 +187,10 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		{ // RES
 			$rc->doChangeSetItemsFromRES($maxCount);
 		}
+		elseif ($fromFile === 3)
+		{ // queue
+			$rc->doChangeSetItemsQueue($maxCount);
+		}
 		else
 		{
 			$addOnly = intval($this->app->arg('addOnly'));
@@ -233,6 +237,11 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$this->doChangeSetItemsDone();
 	}
 
+	protected function onCronQueue()
+	{
+		$this->doChangeSetItems(3);
+	}
+
 	public function onCliAction ($actionId)
 	{
 		switch ($actionId)
@@ -250,6 +259,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'do-regs-change-set-items': return $this->doChangeSetItems();
 			case 'do-regs-change-set-items-from-file': return $this->doChangeSetItems(1);
 			case 'do-regs-change-set-items-from-res': return $this->doChangeSetItems(2);
+			case 'do-regs-change-set-items-queue': return $this->doChangeSetItems(3);
 			case 'do-regs-change-set-items-done': return $this->doChangeSetItemsDone();
 			case 'do-regs-change-set-items-cleanup': return $this->doChangeSetItemsCleanup();
 		}
@@ -263,6 +273,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		{
 			case 'morning':  $this->onCronMorning(); break;
 			case 'ever':   $this->onCronEver(); break;
+			case 'queue':   $this->onCronQueue(); break;
 		}
 		return TRUE;
 	}
