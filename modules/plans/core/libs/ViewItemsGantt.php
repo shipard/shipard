@@ -100,6 +100,7 @@ class ViewItemsGantt extends TableViewGrid
 		array_push ($q, ' SELECT MIN([items].[datePlanBegin]) AS [dateFirst], MAX([items].[dateDeadline]) AS [dateLast]');
 		array_push ($q, ' FROM [plans_core_items] AS [items]');
 		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND [items].[docState] IN %in', [4000, 8000]);
 
 		if ($this->planNdx)
 			array_push ($q, ' AND [plan] = %i', $this->planNdx);
@@ -110,8 +111,12 @@ class ViewItemsGantt extends TableViewGrid
     $data = $this->db()->query($q)->fetch();
     if ($data)
     {
-      $this->dateFirst = $data['dateFirst'];
-      $this->dateLast = $data['dateLast'];
+      $this->dateFirst = Utils::createDateTime($data['dateFirst']);
+      $this->dateLast = Utils::createDateTime($data['dateLast']);
+
+			$days = Utils::dateDiff($this->dateFirst, $this->dateLast);
+			if ($days < 180)
+				$this->dateLast->add(new \DateInterval('P60D'));
 
       $today = Utils::today();
       if ($today > $this->dateFirst)
