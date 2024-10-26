@@ -373,11 +373,11 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 			}
 		}
 
-
 		$root = '/interface bridge';
 		$item = ['type' => 'add',
 			'params' => [
 				'name' => 'bridge1',
+				'protocol-mode' => 'none',
 			]
 		];
 		$this->cfgData[$root][] = $item;
