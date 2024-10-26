@@ -281,6 +281,7 @@ class ServerManager extends Utility
 		}
 
 		$this->checkService ('shpd-ds-cmds', '/etc/services');
+		$this->checkService ('shpd-ds-queue', '/etc/services');
 		$this->checkService ('shpd-ds-services', '/etc/services');
 		$this->checkService ('shpd-headless-browser', '/etc/services');
 

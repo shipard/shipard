@@ -1,0 +1,14 @@
+[Unit]
+Description=Shipard data sources queues ver 0.1
+After=network.target auditd.service
+
+[Service]
+User=shpd
+Group=shpd
+PIDFile=/var/lib/shipard/shpd/shpd-ds-queue.pid
+ExecStart=/usr/lib/shipard/etc/services/shpd-ds-queue.sh
+Type=forking
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
