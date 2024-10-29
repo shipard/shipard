@@ -15,6 +15,13 @@
 					"main": {"order": 10000, "align": "right"}
 				}
 			},
+			"calendar": {
+				"name": "Kalendář",
+				"icon": "system/iconCalendar",
+				"order": 1600,
+				"fullsize": 1,
+				"rows": {"main": {"order": 10000, "class": "full"}}
+			},
 			"plan": {
 				"name": "ETK", "icon": "tables/e10pro.zus.vyuky", "order": 1500, "fullsize": 1,
 				"rows": {

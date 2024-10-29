@@ -53,6 +53,10 @@ class PlanDailyTeachers extends Utility
 	protected $countHoursRows = 0;
 	protected $errorCounter = 1;
 
+	var $povolitNezaplanovaneVyuky = 1;
+	var $enableWorkRecsColors = 0;
+	var $workRecs = [];
+
 	public function loadTimetable ()
 	{
 		$today = utils::today();
@@ -142,6 +146,24 @@ class PlanDailyTeachers extends Utility
 		foreach ($rows as $r)
 		{
 
+		}
+	}
+
+	protected function loadWorkRecs()
+	{
+		$today = Utils::today();
+
+		$q = [];
+		array_push($q, 'SELECT workrecs.*');
+		array_push ($q, ' FROM [e10mnf_core_workRecs] AS workrecs');
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND beginDate = %d', $today);
+
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$person = $r['person'];
+			$this->workRecs[$person][] = $r->toArray();
 		}
 	}
 
@@ -370,7 +392,7 @@ divs.on( 'scroll', sync);
 			$cnt++;
 		}
 
-		if ($cnt)
+		if ($cnt && $this->povolitNezaplanovaneVyuky)
 		{
 			$this->codeToPlan = $this->app()->ui()->composeTextLine(['text' => 'Nezaplánované výuky', 'class' => 'h2 block']);
 			$this->codeToPlan .= $c;
@@ -479,6 +501,9 @@ divs.on( 'scroll', sync);
 
 	public function oneItemCode ($item, $rn)
 	{
+		if ($this->enableWorkRecsColors)
+			$this->checkHourWorkRec($item);
+
 		$onePx = $this->pixelsPerMin;
 
 		$itemStyle = '';
@@ -486,6 +511,10 @@ divs.on( 'scroll', sync);
 		$itemStyle .= 'height: '.($this->hourRowHeight - 4).'px;';
 		$itemStyle .= 'left: '.(($item['zacatekMin'] - $this->zacatekMin)*$onePx/*-1*/).'px;';
 		$itemStyle .= 'top: '.((/*$item['rowNumber']*/$rn)*$this->hourRowHeight + 2 - $item['shiftUp'] * 5).'px;';
+
+
+		if (isset($item['workRecStyle']))
+			$itemStyle .= ' '.$item['workRecStyle'];
 
 		$icon = utils::icon($item['vyukaIcon']);
 		$icon .= ' e10-off';
@@ -503,8 +532,8 @@ divs.on( 'scroll', sync);
 		];
 		$c .= $this->app()->ui()->composeTextLine($button);
 
-
-		$c .= "<div class='t2'>".utils::es ($item['predmetNazev']).'</div>';
+		$xx = json_encode($item);
+		$c .= "<div class='t2' title='$xx'>".utils::es ($item['predmetNazev']).'</div>';
 
 		$c .= "<div class='t3'>".utils::es ($item['ucitelJmeno']).'</div>';
 		$c .= "<div class='t4'>".utils::es ($item['zacatek'].'‧'.$item['konec'].' '.$item['ucebnaNazev']).'</div>';
@@ -519,10 +548,46 @@ divs.on( 'scroll', sync);
 		return $c;
 	}
 
+	protected function checkHourWorkRec(&$item)
+	{
+		$person = $item['ucitel'];
+		if (!isset($this->workRecs[$person]))
+		{
+			return;
+		}
+
+		$now = new \DateTime();
+		$nowStr = $now->format('H:i');
+		$dow = intval($now->format('N')) - 1;
+
+		if ($dow != $this->todayDow)
+			return;
+
+		if ($nowStr < $item['zacatek'])
+			return;
+
+		foreach ($this->workRecs[$person] as $wr)
+		{
+			$beginTime = Utils::dateIsBlank($wr['beginDateTime']) ? '23:59' : $wr['beginDateTime']->format('H:i');
+			if ($item['zacatek'] < $beginTime)
+			{
+				continue;
+			}
+			$item['workRecStyle'] = 'background-color: #00FF00A0;';
+			return;
+		}
+
+		$item['workRecStyle'] = 'background-color: #FF0000A0;';
+	}
+
 	public function renderPlan ()
 	{
+		if ($this->app->hasRole('zusadm'))
+			$this->enableWorkRecsColors = 1;
+
 		$this->loadTimetable();
 		$this->loadToPlan();
+		$this->loadWorkRecs();
 		$this->createTimetable();
 		$this->composeCode();
 

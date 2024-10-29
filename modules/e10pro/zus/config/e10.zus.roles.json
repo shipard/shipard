@@ -25,7 +25,8 @@
 			"e10pro.zus.WidgetPlanTeacher": 2,
 			"e10pro.zus.WidgetPlanTeacherSmall": 2,
 			"wkf.bboard.libs.WidgetBBoardOverview": 2,
-			"e10mnf.core.libs.WorkInProgressWidget": 2
+			"e10mnf.core.libs.WorkInProgressWidget": 2,
+			"wkf.events.libs.WidgetCalendar": 2
 		},
 	  "reports": {
 		  "e10pro.zus.SchoolReportsPrintReport": 2,
@@ -74,7 +75,8 @@
 						"e10pro.zus.libs.ezk.ReportStudentsActivations": 2
         },
 		"widgets": {
-			"e10pro.zus.SchoolDayDashboardWidget": 2
+			"e10pro.zus.SchoolDayDashboardWidget": 2,
+			"e10pro.zus.SchoolDayDashboardWidget2": 2
 		}
 	},
 	"acc": {

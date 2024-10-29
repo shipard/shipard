@@ -7,7 +7,7 @@
 		"prihlasky", "studium", "studiumpre",
 		"vyuky", "vyukystudenti", "vyukyrozvrh", "hodiny", "hodinydochazka", "hodnoceni", "omluvenky", "omluvenkyHodiny"
 	],
-	"modules": ["e10/persons", "wkf/bboard"],
+	"modules": ["e10/persons", "wkf/bboard", "wkf/events"],
 	"extensions": ["persons", "wkf", "ezk"],
   "config": [
 		{"id": "+apps", "file": "apps.json"},

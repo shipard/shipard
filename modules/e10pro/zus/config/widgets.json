@@ -8,8 +8,12 @@
 		"dashboard": "school", "panel": "teacher", "order": 2000, "row": "docViewers", "width": 7, "maxwidth": 6, "type": "docViewer"
 	},
 	{
-		"name": "Škola", "class": "e10pro.zus.SchoolDayDashboardWidget", "icon": "icon-eye",
+		"name": "Škola", "class": "e10pro.zus.SchoolDayDashboardWidget2", "icon": "icon-eye",
 		"dashboard": "school", "panel": "schoolDay", "order": 1000, "row": "main", "width": 12, "type": "fullsize"
+	},
+	{
+		"name": "Kalendář", "class": "wkf.events.libs.WidgetCalendar", "icon": "system/iconCalendar",
+		"dashboard": "school", "panel": "calendar", "order": 5000, "row": "main", "width": 12, "type": "wkfWall"
 	},
 	{
 		"name": "Škola", "class": "e10pro.zus.WidgetPlanTeacher", "icon": "icon-eye",

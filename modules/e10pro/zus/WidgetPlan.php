@@ -338,7 +338,7 @@ class PlanTeacher extends Plan
 	{
 		$c = "<div class='padd5'>";
 		$c .= "<div style='overflow-y: scroll; margin: .5ex;'>";
-		$cols = [/*'edit' => '', */'pobockaId' => 'Pobočka', 'zacatek' => 'Od', 'konec' => 'Do', 'vyukaNazev' => 'Výuka', 'predmetNazev' => 'Předmět', 'rocnik' => 'Ročník', 'ucebnaNazev' => 'Učebna2'];
+		$cols = [/*'edit' => '', */'pobockaId' => 'Pobočka', 'zacatek' => 'Od', 'konec' => 'Do', 'vyukaNazev' => 'Výuka', 'predmetNazev' => 'Předmět', 'rocnik' => 'Ročník', 'ucebnaNazev' => 'Učebna'];
 		$c .= $this->app->ui()->renderTableFromArray ($this->data, $cols);
 		$c .= '</div>';
 		$c .= '</div>';
