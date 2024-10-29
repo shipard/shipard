@@ -155,7 +155,10 @@ class UICore extends \Shipard\Base\BaseObject
 			$t .= Utils::elementActionParams ($p, $linkClass);
 			if (isset($p['table']))
 				$t.= " data-table='{$p['table']}'";
-			$t .= " class='$linkClass' data-action='{$p['docAction']}' $title $css>$i" . Utils::es ($p ['text']) . "</$element>";
+			$thisCss = $css;
+			if (isset($p['class']))
+				$thisCss = '';
+			$t .= " class='$linkClass' data-action='{$p['docAction']}' $title $thisCss>$i" . Utils::es ($p ['text']) . "</$element>";
 		}
 		else
 		if (isset($p['action']))

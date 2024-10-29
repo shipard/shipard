@@ -312,10 +312,10 @@ class Calendar extends Utility
 				$cal = $this->calendars[$e['calendar']] ?? NULL;
 				$pfx = '';
 
-				if ($e['timeBegin'] !== '')
+				if ($e['timeBegin'] !== '' && $e['timeBegin'] !== '00:00')
 					$pfx = $e['timeBegin'];
 
-				if ($e['timeEnd'] !== '')
+				if ($e['timeEnd'] !== '' && $e['timeEnd'] !== '00:00')
 					$pfx .= ' - '.$e['timeEnd'];
 
 				$event = [
