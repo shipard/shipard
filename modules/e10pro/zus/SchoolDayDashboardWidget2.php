@@ -39,6 +39,7 @@ class SchoolDayDashboardWidget2 extends \Shipard\UI\Core\WidgetPane
 			$this->plan->setYear(zusutils::aktualniSkolniRok(), $dow);
 			$this->plan->setLocalOffice($this->calParamsValues['localOffice']['value'], $this->calParamsValues['room']['value']);
 			$this->plan->povolitNezaplanovaneVyuky = 0;
+			$this->plan->enableWorkRecsColors = 1;
 			$this->plan->init();
 
 			$code = $this->plan->renderPlan();

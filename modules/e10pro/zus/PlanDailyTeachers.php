@@ -56,6 +56,7 @@ class PlanDailyTeachers extends Utility
 	var $povolitNezaplanovaneVyuky = 1;
 	var $enableWorkRecsColors = 0;
 	var $workRecs = [];
+	var $noWorkDay = 0;
 
 	public function loadTimetable ()
 	{
@@ -164,6 +165,26 @@ class PlanDailyTeachers extends Utility
 		{
 			$person = $r['person'];
 			$this->workRecs[$person][] = $r->toArray();
+		}
+	}
+
+	protected function loadCalendar()
+	{
+		$today = Utils::today();
+
+		$q = [];
+		array_push($q, 'SELECT events.*');
+		array_push ($q, ' FROM [wkf_events_events] AS events');
+		array_push ($q, ' LEFT JOIN [wkf_events_cals] AS cals ON events.calendar = cals.ndx');
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND cals.noWork = %i', 1);
+		array_push($q,' AND (events.dateBegin <= %d', $today, ')');
+		array_push($q,' AND (events.dateEnd >= %d', $today, ')');
+
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$this->noWorkDay = 1;
 		}
 	}
 
@@ -550,6 +571,11 @@ divs.on( 'scroll', sync);
 
 	protected function checkHourWorkRec(&$item)
 	{
+		if ($this->noWorkDay)
+		{
+			$item['workRecStyle'] = 'background-color: #1589FFA0;';
+		}
+
 		$person = $item['ucitel'];
 		if (!isset($this->workRecs[$person]))
 		{
@@ -582,12 +608,13 @@ divs.on( 'scroll', sync);
 
 	public function renderPlan ()
 	{
-		if ($this->app->hasRole('zusadm'))
-			$this->enableWorkRecsColors = 1;
+		//if ($this->app->hasRole('zusadm'))
+		//	$this->enableWorkRecsColors = 1;
 
 		$this->loadTimetable();
 		$this->loadToPlan();
 		$this->loadWorkRecs();
+		$this->loadCalendar();
 		$this->createTimetable();
 		$this->composeCode();
 
