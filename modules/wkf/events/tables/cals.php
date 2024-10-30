@@ -45,7 +45,7 @@ class TableCals extends DbTable
 				'ndx' => $r ['ndx'], 'fn' => $r ['fullName'], 'sn' => $r ['shortName'],
 				'icon' => ($r['icon'] === '') ? 'system/iconCalendar': $r['icon'],
 				'colorbg' => ($r['colorbg'] === '') ? '0000FA' : $r['colorbg'],
-				'useProgram' => $r['useProgram'],
+				'useProgram' => $r['useProgram'], 'noWork' => $r['noWork'],
 			];
 
 			$cntPeoples = 0;
@@ -152,6 +152,12 @@ class ViewCals extends TableView
 			$listItem ['t1'] = ['text' => $item['fullName'], 'suffix' => $item['shortName']];
 		}
 
+		$listItem ['t2'] = [];
+		if ($item['noWork'])
+			$listItem ['t2'][] = ['text' => 'Pracovní volno', 'class' => ''];
+		if ($item['useProgram'])
+			$listItem ['t2'][] = ['text' => 'Program akcí', 'class' => ''];
+
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
 		$props = [];
@@ -221,6 +227,7 @@ class FormCal extends TableForm
 					$this->addColumnInput('colorbg');
 					$this->addColumnInput('icon');
 					$this->addColumnInput('order');
+					$this->addColumnInput('noWork');
 					$this->addColumnInput('useProgram');
 				$this->closeTab ();
 			$this->closeTabs();
