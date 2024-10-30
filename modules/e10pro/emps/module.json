@@ -1,0 +1,12 @@
+{
+  "id": "e10pro.emps",
+  "name": "Zaměstnanci",
+  "tables": ["absencesKinds", "absences"],
+  "modules": ["e10/base"],
+  "config": [
+    {"id": "+appSkeleton", "file": "appSkeleton.json"},
+	  {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+		{"id": "+e10.appOptions.groups", "file": "appOptionsGroups.json"},
+		{"id": "+appOptions", "file": "appOptions.json"}
+  ]
+}

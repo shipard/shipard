@@ -1,0 +1,6 @@
+{
+	"empsAbsencesKinds": {
+		"name": "Druhy nepřítomnosti", "order": 100000, "group": "e10proEmps",
+		"type": "viewer", "table": "e10pro.emps.absencesKinds", "viewer": "default"
+	}
+}

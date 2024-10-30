@@ -1,0 +1,14 @@
+{
+	"emps": {
+		"name": "Zaměstnanci",
+		"roles": ["user"],
+		"viewers": {
+			"e10pro.emps.absences": {"default": 2}
+		}
+	},
+	"admin": {
+		"viewers": {
+			"e10pro.emps.absencesKinds": {"default": 2}
+		}
+	}
+}

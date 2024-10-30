@@ -1,0 +1,15 @@
+{
+	"panels": {
+		"others": {
+			"items": {
+				"workRecs": {
+					"subMenu": {
+						"items": {
+							"absences": {"t1": "Nepřítomnosti", "object": "viewer", "table": "e10pro.emps.absences", "viewer": "default", "order": 840000, "beforeSeparator": 1}
+						}
+					}
+				}
+			}
+		}
+	}
+}
