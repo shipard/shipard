@@ -53,10 +53,8 @@ class ModuleServices extends \e10\cli\ModuleServices
     }
 	}
 
-	protected function sendRequests()
+	protected function sendRequests($maxCount = 50)
 	{
-		$maxCount = 50;
-
 		$q = [];
 		array_push($q, 'SELECT [requests].* ');
 		array_push($q, ' FROM [e10_users_requests] AS [requests]');
@@ -74,10 +72,11 @@ class ModuleServices extends \e10\cli\ModuleServices
 			$sendRequestEngine = new \e10\users\libs\SendRequestEngine($this->app());
 			$sendRequestEngine->setRequestNdx($r['ndx']);
 
-			echo '* '.$sendRequestEngine->userRecData['fullName'].'; '.$sendRequestEngine->userRecData['email']."\n";
+			if ($this->app()->debug)
+				echo '* '.$sendRequestEngine->userRecData['fullName'].'; '.$sendRequestEngine->userRecData['email']."\n";
 
 			$sendRequestEngine->sendRequest();
-			sleep(5);
+			sleep(1);
 
 			$cnt++;
 			if ($cnt > $maxCount)
@@ -94,5 +93,19 @@ class ModuleServices extends \e10\cli\ModuleServices
 		}
 
 		parent::onCliAction($actionId);
+	}
+
+	protected function onCronQueue()
+	{
+		$this->sendRequests(10);
+	}
+
+	public function onCron ($cronType)
+	{
+		switch ($cronType)
+		{
+			case 'queue':   $this->onCronQueue(); break;
+		}
+		return TRUE;
 	}
 }
