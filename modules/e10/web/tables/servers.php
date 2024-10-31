@@ -320,7 +320,7 @@ class TableServers extends DbTable
 
 				$cfg .= "\tlocation / {\n";
 				if ($forceRedirTo !== '')
-					$cfg .= "\t\ttreturn 301 ".$forceRedirTo.";\n";
+					$cfg .= "\t\treturn 301 ".$forceRedirTo.";\n";
 				else
 					$cfg .= "\t\treturn 301 https://$domain".'$request_uri'.";\n";
 				$cfg .= "\t}\n";
