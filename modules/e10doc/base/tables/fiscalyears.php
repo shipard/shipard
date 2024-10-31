@@ -232,7 +232,7 @@ class ViewFiscalYears extends TableView
 		return $listItem;
 	}
 
-	public function queryMain (&$q, $tablePrefix = '', $order = NULL, $forceArchive = FALSE)
+	public function queryMain (&$q, $tablePrefix = '', $order = NULL, $forceArchive = FALSE, $ntfQueryCol = '')
 	{
 		$mainQuery = $this->mainQueryId ();
 		// -- active
