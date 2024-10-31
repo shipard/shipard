@@ -112,7 +112,11 @@ class ViewItemsGantt extends TableViewGrid
     if ($data)
     {
       $this->dateFirst = Utils::createDateTime($data['dateFirst']);
+			if (!$this->dateFirst)
+				$this->dateFirst = new \DateTime();
       $this->dateLast = Utils::createDateTime($data['dateLast']);
+			if (!$this->dateLast)
+				$this->dateLast = new \DateTime();
 
 			$days = Utils::dateDiff($this->dateFirst, $this->dateLast);
 			if ($days < 180)
