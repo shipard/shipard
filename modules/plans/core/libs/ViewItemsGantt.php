@@ -77,7 +77,7 @@ class ViewItemsGantt extends TableViewGrid
 
       $colId = 'W-'.$weekYear.'-'.sprintf('%02d', $weekNumber);
       $colTitle = [
-        ['text' => $weekNumber/*.'/'.$weekYearShort*/, 'class' => 'e10-small block', 'css' => 'text-align: center;'],
+        ['text' => $weekNumber/*.'/'.$weekYearShort*/, 'class' => 'e10-small block', 'colClass' => 'center'],
         ['text' => $weekDate->format('d.m'), 'class' => 'id', 'css' => 'font-weight: normal;']
       ];
 
