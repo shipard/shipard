@@ -8,6 +8,7 @@
 		{"id": "domain", "name": "Doména", "type": "string", "len": 80},
 		{"id": "domainsRedirectHere", "name": "Domény pro přesměrování sem", "type": "string", "len": 180},
 		{"id": "urlBegin", "name": "Začátek webové adresy", "type": "string", "len": 100},
+		{"id": "redirTo", "name": "URL pro presměrování", "type": "string", "len": 120},
 
 		{"id": "templateNdx", "name": "Šablona", "type": "int", "reference": "e10.base.templates", "comboViewer": "webCombo", "options": ["saveOnChange"]},
 		{"id": "template", "name": "ID šablony", "type": "string", "len": 60},

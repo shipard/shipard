@@ -4,5 +4,6 @@
 	"app": {"name": "Aplikace", "icon": "serverModeApp", "hpFunction": ""},
 	"display": {"name": "Displej", "icon": "serverModeDisplay", "hpFunction": ""},
 
-	"manual": {"name": "Ruční nastavení", "icon": "serverModeManualSetting", "askHpFunction": 1}
+	"manual": {"name": "Ruční nastavení", "icon": "serverModeManualSetting", "askHpFunction": 1},
+	"redir": {"name": "Přesměrování", "icon": "user/externalLink", "hpFunction": "", "askRedirTo": 1}
 }
