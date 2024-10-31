@@ -72,7 +72,8 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			if (!$existedETK)
 				continue;
 
-			echo "# ".$test.' > '.$r['nazev']."\n";
+			if ($this->app()->debug)
+				echo "# ".$test.' > '.$r['nazev']."\n";
 			$this->addUsersFromContact($r['student'], $uiNdx, $mainRoleRecData['ndx']);
 		}
 	}
@@ -781,6 +782,17 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$this->sendEntriesEmails();
 	}
 
+	public function onCronHourly ()
+	{
+		$now = new \DateTime ();
+		$hour = intval($now->format('H'));
+
+		if ($hour === 17)
+		{
+			$this->addUsers();
+		}
+	}
+
 	public function onStats()
 	{
 		$this->dataSourceStatsCreate();
@@ -791,6 +803,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		switch ($cronType)
 		{
 			case 'ever': $this->onCronEver(); break;
+			case 'hourly': $this->onCronHourly(); break;
 			case 'stats': $this->onStats(); break;
 		}
 		return TRUE;
