@@ -1968,17 +1968,35 @@ class TableView extends \Shipard\Base\BaseObject
 		return '';
 	}
 
-	public function queryMain (&$q, $tablePrefix = '', $order = NULL, $forceArchive = FALSE)
+	public function queryMain (&$q, $tablePrefix = '', $order = NULL, $forceArchive = FALSE, $ntfQueryCol = '')
 	{
 		$mainQuery = $this->mainQueryId ();
 
 		// -- active
 		if ($mainQuery === 'active' || $mainQuery === '')
 		{
-			if ($forceArchive)
-				array_push($q, " AND {$tablePrefix}[docStateMain] != 4");
+			if ($ntfQueryCol !== '')
+			{
+				array_push ($q, ' AND (');
+				if ($forceArchive)
+					array_push($q, " {$tablePrefix}[docStateMain] != 4");
+				else
+					array_push($q, " {$tablePrefix}[docStateMain] < 4");
+				array_push ($q, ' OR ');
+				array_push ($q, ' EXISTS (SELECT ndx FROM e10_base_notifications WHERE state = 0',
+												' AND '.$ntfQueryCol.' = recIdMain',
+												' AND personDest = %i', $this->app()->userNdx(),
+												' AND tableId = %s', $this->table->tableId());
+				array_push ($q, ')');
+				array_push ($q, ')');
+			}
 			else
-				array_push($q, " AND {$tablePrefix}[docStateMain] < 4");
+			{
+				if ($forceArchive)
+					array_push($q, " AND {$tablePrefix}[docStateMain] != 4");
+				else
+					array_push($q, " AND {$tablePrefix}[docStateMain] < 4");
+			}
 		}
 
 		// -- archive
