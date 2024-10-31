@@ -661,6 +661,7 @@ class ViewItemsGrid extends TableViewGrid
 			array_push ($q, ' AND [items].[project] IN %in', array_keys($qv['projects']));
 
 		// -- fulltext
+		$forceArchive = FALSE;
 		if ($fts != '')
 		{
 			array_push ($q, ' AND (');
@@ -675,10 +676,10 @@ class ViewItemsGrid extends TableViewGrid
 			}
 
 			array_push ($q, ')');
+			$forceArchive = TRUE;
 		}
 
-		//$this->queryMain ($q, 'items.', ['!ISNULL([dateDeadline]) DESC', '[dateDeadline]', '[datePlanBegin]', '[ndx]']);
-		$this->queryMain ($q, 'items.', ['[ntf] DESC', '!ISNULL([datePlanBegin]) DESC', '[datePlanBegin]', '[dateDeadline]', '[ndx]']);
+		$this->queryMain ($q, 'items.', ['[ntf] DESC', '!ISNULL([datePlanBegin]) DESC', '[datePlanBegin]', '[dateDeadline]', '[ndx]'], $forceArchive, 'items.ndx');
 		$this->runQuery ($q);
 	}
 
