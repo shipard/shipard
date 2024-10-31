@@ -1875,9 +1875,20 @@ class TableView extends \Shipard\Base\BaseObject
 		if ($this->gridEditable)
 			$this->gridTableHeaderCode .= '<th class="e10-icon"></th>';
 
-		foreach ($this->gridStruct as $cn => $ch)
+		foreach ($this->gridStruct as $cn => $chdr)
 		{
 			$this->gridColClasses [$cn] = '';
+			$ch = '';
+			if (is_string($chdr))
+				$ch = $chdr;
+			elseif (is_array($chdr) && isset($chdr['text']))
+				$ch = $chdr['text'];
+			elseif (is_array($chdr) && isset($chdr[0]['text']))
+			{
+				$ch = $chdr[0]['text'];
+				if (isset($chdr[0]['colClass']))
+					$this->gridColClasses [$cn] = $chdr[0]['colClass'];
+			}
 			if ($ch === '')
 				$ct = '';
 			else
@@ -1906,9 +1917,14 @@ class TableView extends \Shipard\Base\BaseObject
 				$ct = $ch;
 				$this->gridColClasses [$cn] = 'number';
 			}
+			else if ($ch[0] == '|')
+			{
+				$ct = substr ($ch, 1);
+				$this->gridColClasses [$cn] = 'center';
+			}
 			else
 				$ct = $ch;
-			$this->gridTableHeaderCode .= "<th class='{$this->gridColClasses [$cn]}'>".$this->app()->ui()->composeTextLine($ct).'</th>';
+			$this->gridTableHeaderCode .= "<th class='{$this->gridColClasses [$cn]}'>".$this->app()->ui()->composeTextLine($chdr).'</th>';
 		}
 		$this->gridTableHeaderCode .= '</tr></thead>';
 	}
