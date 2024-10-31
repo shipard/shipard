@@ -2013,7 +2013,7 @@ class TableView extends \Shipard\Base\BaseObject
 
 		if ($order !== NULL)
 		{
-			if ($mainQuery === 'all')
+			if ($mainQuery === 'all' || $ntfQueryCol !== '')
 				array_push ($q, ' ORDER BY ', implode(', ', $order), $this->sqlLimit ());
 			else
 				array_push ($q, " ORDER BY {$tablePrefix}[docStateMain], ", implode(', ', $order), $this->sqlLimit ());

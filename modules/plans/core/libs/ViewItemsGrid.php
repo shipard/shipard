@@ -679,7 +679,7 @@ class ViewItemsGrid extends TableViewGrid
 			$forceArchive = TRUE;
 		}
 
-		$this->queryMain ($q, 'items.', ['[ntf] DESC', '!ISNULL([datePlanBegin]) DESC', '[datePlanBegin]', '[dateDeadline]', '[ndx]'], $forceArchive, 'items.ndx');
+		$this->queryMain ($q, 'items.', ['[ntf] DESC', 'items.[docStateMain]', '!ISNULL([datePlanBegin]) DESC', '[datePlanBegin]', '[dateDeadline]', '[ndx]'], $forceArchive, 'items.ndx');
 		$this->runQuery ($q);
 	}
 
