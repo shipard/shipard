@@ -2443,6 +2443,19 @@ class NotificationCentre extends \Shipard\UI\Core\WidgetPane
 				$this->getHostingHelpdeskNotifications($badges);
 		}
 
+		// -- plans - TODO: move to better place
+		if ($this->app->model()->module ('plans.core') !== FALSE)
+		{
+			// -- plans - total
+			$q = [];
+			$q[] = 'SELECT COUNT(*) AS [cnt] ';
+			array_push($q, ' FROM e10_base_notifications AS ntf');
+			array_push($q, ' WHERE tableId = %s', 'plans.core.items', ' AND state = 0 AND ntf.personDest = %i', $this->app()->userNdx());
+			$hdc = $this->db()->query($q)->fetch();
+
+			$badges['ntf-badge-plans-total'] = intval($hdc['cnt'] ?? 0);
+		}
+
 		return $badges;
 	}
 

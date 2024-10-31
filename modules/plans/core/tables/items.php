@@ -5,6 +5,7 @@ namespace plans\core;
 use \e10\TableForm, \e10\DbTable, \e10\TableView, e10\TableViewDetail;
 use Shipard\Utils\Utils;
 use \e10\base\libs\UtilsBase;
+use \translation\dicts\e10\base\system\DictSystem;
 
 /**
  * Class TableItems
@@ -46,6 +47,20 @@ class TableItems extends DbTable
 			$recData ['author'] = $this->app()->userNdx();
 
 		parent::checkBeforeSave ($recData, $ownerData);
+	}
+
+	public function docsLog ($ndx)
+	{
+		$recData = parent::docsLog($ndx);
+		$this->doNotify($recData, 0, NULL);
+		return $recData;
+	}
+
+	public function doNotify($docRecData, $reason = 0, $commentRecData = NULL)
+	{
+		$ain = new \plans\core\libs\AddItemNotification($this->app());
+		$ain->setDocument($this, $docRecData, $reason, $commentRecData);
+		$ain->run();
 	}
 }
 
@@ -218,6 +233,22 @@ class FormItem extends TableForm
 		}
 
 		return parent::comboParams ($srcTableId, $srcColumnId, $allRecData, $recData);
+	}
+
+	public function createToolbar ()
+	{
+		if (!$this->readOnly && $this->recData['source'] == 0)
+			return parent::createToolbar();
+
+		$b = [
+			'type' => 'action', 'action' => 'saveform', 'text' => DictSystem::text(DictSystem::diBtn_Seen), 'docState' => '99000',
+			'style' => 'stateSave', 'stateStyle' => 'done', 'icon' => 'icon-eye', 'buttonClass' => 'btn-default'
+		];
+
+		$toolbar [] = $b;
+
+		$toolbar = array_merge ($toolbar, parent::createToolbar());
+		return $toolbar;
 	}
 }
 

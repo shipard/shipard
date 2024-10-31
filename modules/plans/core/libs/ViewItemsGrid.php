@@ -346,6 +346,13 @@ class ViewItemsGrid extends TableViewGrid
 			$listItem['_options']['cellCss']['note'] = 'line-height: 1.5;';
 		}
 
+		if ($item ['ntf'])
+		{
+			if (isset($listItem['_options']['cellClasses']['subject']))
+				$listItem['_options']['cellClasses']['subject'] .= ' e10-block-notification';
+			else
+				$listItem['_options']['cellClasses']['subject'] = ' e10-block-notification';
+		}
 		return $listItem;
 	}
 
@@ -603,6 +610,13 @@ class ViewItemsGrid extends TableViewGrid
 			array_push ($q, ', wo.docKind AS woDocKind, [wo].docNumber AS [woDocNumber], [wo].intTitle AS [woIntTitle], [wo].refId2 AS [woRefId2]');
 			array_push ($q, ', [woParent].docNumber AS [woParentDocNumber]');
 		}
+
+		array_push ($q, ', (SELECT COUNT(*) FROM e10_base_notifications WHERE state = 0',
+		' AND items.ndx = recIdMain',
+		' AND personDest = %i', $this->app()->userNdx(),
+		' AND tableId = %s', $this->table->tableId());
+		array_push ($q, ' LIMIT 1) AS [ntf]');
+
 		array_push ($q, ' FROM [plans_core_items] AS [items]');
 
 		array_push ($q, ' LEFT JOIN [e10_persons_persons] AS [personsCust] ON [items].[personCustomer] = [personsCust].ndx');
@@ -664,7 +678,7 @@ class ViewItemsGrid extends TableViewGrid
 		}
 
 		//$this->queryMain ($q, 'items.', ['!ISNULL([dateDeadline]) DESC', '[dateDeadline]', '[datePlanBegin]', '[ndx]']);
-		$this->queryMain ($q, 'items.', ['!ISNULL([datePlanBegin]) DESC', '[datePlanBegin]', '[dateDeadline]', '[ndx]']);
+		$this->queryMain ($q, 'items.', ['[ntf] DESC', '!ISNULL([datePlanBegin]) DESC', '[datePlanBegin]', '[dateDeadline]', '[ndx]']);
 		$this->runQuery ($q);
 	}
 
