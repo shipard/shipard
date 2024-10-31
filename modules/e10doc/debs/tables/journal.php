@@ -183,7 +183,7 @@ class ViewJournalAll extends \E10\TableViewGrid
 		if ($fts != '')
 		{
 			array_push ($q, " AND (");
-			array_push ($q, "[text] LIKE %s", '%'.$fts.'%');
+			array_push ($q, "journal.[text] LIKE %s", '%'.$fts.'%');
 			array_push ($q, " OR ");
 			array_push ($q, "[accountId] LIKE %s", $fts.'%');
 			array_push ($q, " OR ");
