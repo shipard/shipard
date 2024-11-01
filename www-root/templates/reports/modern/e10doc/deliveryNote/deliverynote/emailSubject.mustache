@@ -1,4 +1,4 @@
 {{textMode}}{{#data.reportTexts.emailSubject}}{{{data.reportTexts.emailSubject}}}{{/data.reportTexts.emailSubject}}
 {{^data.reportTexts.emailSubject}}
-{{@dict;Dodací list}}: {{data.head.title}}
+{{@dict;Dodací list}}: {{#data.head.title}}{{data.head.title}}{{/data.head.title}}{{^data.head.title}}{{data.owner.fullName}}{{/data.head.title}}
 {{/data.reportTexts.emailSubject}}

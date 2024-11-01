@@ -2,7 +2,7 @@
 {{^data.reportTexts.emailBody}}
 {{@dict;Dobrý den}},
 
-{{@dict;v příloze Vám zasíláme zálohovou fakturu}}: {{data.head.title}}.
+{{@dict;v příloze Vám zasíláme zálohovou fakturu}}{{#data.head.title}}: {{data.head.title}}{{/data.head.title}}.
 
 {{@dict;Odběratel}}: {{{data.person.fullName}}}
 {{#data.head.datePeriodBegin}}

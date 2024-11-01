@@ -2,7 +2,7 @@
 {{^data.reportTexts.emailBody}}
 {{@dict;Dobrý den}},
 
-{{@dict;v příloze Vám zasíláme fakturu za poskytované služby}}: {{data.head.title}}.
+{{@dict;v příloze Vám zasíláme fakturu za poskytované služby}}{{#data.head.title}}: {{data.head.title}}{{/data.head.title}}.
 
 {{#data.options.docReportsInvoicePaymentInfo}}{{#data.balanceInfo.paymentDone}}Faktura je uhrazena - NEPLAŤTE!
 {{/data.balanceInfo.paymentDone}}{{/data.options.docReportsInvoicePaymentInfo}}
