@@ -66,8 +66,6 @@ class ViewItemsGantt extends TableViewGrid
 
 		$g['subject'] = 'Název';
 
-
-
 		$weekDate = clone $this->firstDay;
     while (1)
     {
@@ -105,8 +103,7 @@ class ViewItemsGantt extends TableViewGrid
 		if ($this->planNdx)
 			array_push ($q, ' AND [plan] = %i', $this->planNdx);
 
-    array_push ($q, ' AND [datePlanBegin] IS NOT NULL');
-    array_push ($q, ' AND [dateDeadline] IS NOT NULL');
+		array_push ($q, ' AND ([datePlanBegin] IS NOT NULL OR [dateDeadline] IS NOT NULL)');
 
     $data = $this->db()->query($q)->fetch();
     if ($data)
@@ -120,7 +117,7 @@ class ViewItemsGantt extends TableViewGrid
 
 			$days = Utils::dateDiff($this->dateFirst, $this->dateLast);
 			if ($days < 180)
-				$this->dateLast->add(new \DateInterval('P60D'));
+				$this->dateLast->add(new \DateInterval('P40D'));
 
       $today = Utils::today();
       if ($today > $this->dateFirst)
@@ -134,6 +131,22 @@ class ViewItemsGantt extends TableViewGrid
 	public function renderRow ($item)
 	{
 		$itemState = $this->itemStates[$item['itemState']] ?? NULL;
+
+		if (!$item['datePlanBegin'])
+		{
+			$item['datePlanBegin'] = Utils::createDateTime($item['dateDeadline']);
+			$item['datePlanBegin']->sub(new \DateInterval('P1D'));
+
+			if ($item['datePlanBegin'] < $this->firstDay)
+				$item['datePlanBegin'] = Utils::createDateTime($this->firstDay);
+		}
+		if (!$item['dateDeadline'])
+		{
+			$item['dateDeadline'] = Utils::createDateTime($item['datePlanBegin']);
+			$item['dateDeadline']->add(new \DateInterval('P1D'));
+			if ($item['dateDeadline'] < $this->firstDay)
+				$item['dateDeadline'] = Utils::createDateTime($this->firstDay);
+		}
 
 		$listItem ['pk'] = $item ['ndx'];
 
@@ -150,7 +163,8 @@ class ViewItemsGantt extends TableViewGrid
 
 		$listItem ['price'] = $item['price'];
 		$curr = World::currency($this->app(), $item ['currency']);
-		$listItem ['currency'] = strtoupper($curr['i']);
+		if ($curr)
+			$listItem ['currency'] = strtoupper($curr['i']);
 
 		$listItem ['icon'] = $itemState['icon'];//$this->table->tableIcon ($item);
 
@@ -244,8 +258,7 @@ class ViewItemsGantt extends TableViewGrid
 		if ($this->planNdx)
 			array_push ($q, ' AND [plan] = %i', $this->planNdx);
 
-    array_push ($q, ' AND [datePlanBegin] IS NOT NULL');
-    array_push ($q, ' AND [dateDeadline] IS NOT NULL');
+		array_push ($q, ' AND ([datePlanBegin] IS NOT NULL OR [dateDeadline] IS NOT NULL)');
 		array_push ($q, ' AND [items].[docState] IN %in', [1000, 4000, 8000]);
 
 		$inProgressIS = array_merge($this->lifeCycleItemStates[20] ?? [], $this->lifeCycleItemStates[10] ?? []);
@@ -281,7 +294,7 @@ class ViewItemsGantt extends TableViewGrid
 		array_push ($q, ')');
 		array_push ($q, ')');
 
-    array_push ($q, 'ORDER BY items.[datePlanBegin], items.[dateDeadline], items.[ndx]');
+    array_push ($q, 'ORDER BY COALESCE(items.[datePlanBegin],items.[dateDeadline]), items.[ndx]');
     array_push ($q, $this->sqlLimit());
 
 		$this->runQuery ($q);
