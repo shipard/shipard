@@ -1882,14 +1882,16 @@ class TableView extends \Shipard\Base\BaseObject
 			if (is_string($chdr))
 				$ch = $chdr;
 			elseif (is_array($chdr) && isset($chdr['text']))
-				$ch = $chdr['text'];
+				$ch = strval($chdr['text']);
 			elseif (is_array($chdr) && isset($chdr[0]['text']))
 			{
-				$ch = $chdr[0]['text'];
+				$ch = strval($chdr[0]['text']);
 				if (isset($chdr[0]['colClass']))
 					$this->gridColClasses [$cn] = $chdr[0]['colClass'];
 			}
-			if ($ch === '')
+			else
+				$ch = strval($chdr);
+			if ($ch == '')
 				$ct = '';
 			else
 			if ($ch [0] == '+')
@@ -1917,7 +1919,7 @@ class TableView extends \Shipard\Base\BaseObject
 				$ct = $ch;
 				$this->gridColClasses [$cn] = 'number';
 			}
-			else if ($ch[0] == '|')
+			else if (isset($ch[0]) && $ch[0] == '|')
 			{
 				$ct = substr ($ch, 1);
 				$this->gridColClasses [$cn] = 'center';
