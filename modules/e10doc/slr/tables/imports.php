@@ -103,7 +103,7 @@ class ViewImports extends TableView
 			array_push ($q, ')');
 		}
 
-		$this->queryMain ($q, '[imports].', ['[name]', '[ndx]']);
+		$this->queryMain ($q, '[imports].', ['[calendarYear] DESC', '[calendarMonth] DESC', '[ndx]']);
 		$this->runQuery ($q);
 	}
 }
