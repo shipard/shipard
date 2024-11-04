@@ -74,13 +74,19 @@ class ImportEngineCZPerm extends \e10doc\slr\libs\ImportEngine
     if ($empRecRecData)
     {
       $empRecNdx = $empRecRecData['ndx'];
+
+      $updateEmpRec = [
+        'docState' => 4000, 'docStateMain' => 2,
+     ];
+
+     $this->db()->query('UPDATE [e10doc_slr_empsRecs] SET ', $updateEmpRec, ' WHERE ndx = %i', $empRecNdx);
     }
     else
     {
       $newEmpRec = [
          'emp' => $empRecData['ndx'],
          'import' => $this->importNdx,
-         'docState' => 1000, 'docStateMain' => 0,
+         'docState' => 4000, 'docStateMain' => 2,
       ];
       $this->db()->query('INSERT INTO [e10doc_slr_empsRecs]', $newEmpRec);
 

@@ -195,6 +195,30 @@ class ImportEngine extends Utility
     return 0;
   }
 
+  public function createAccDocs()
+  {
+		$q = [];
+    array_push ($q, 'SELECT [empsRecs].*');
+		array_push ($q, ' FROM [e10doc_slr_empsRecs] AS [empsRecs]');
+		array_push ($q, ' WHERE [empsRecs].[import] = %i', $this->importNdx);
+		array_push ($q, ' AND [empsRecs].docState != %i', 9800);
+		array_push ($q, ' ORDER BY [empsRecs].ndx');
+    $rows = $this->db()->query($q);
+    foreach ($rows as $r)
+    {
+      $ae = new \e10doc\slr\libs\AccEngine($this->app());
+      $ae->setEmpRec($r['ndx']);
+      $ae->generateAccDoc();
+    }
+  }
+
+  public function createBalanceDoc ()
+	{
+    $ae = new \e10doc\slr\libs\AccBalanceEngine($this->app());
+    $ae->setImport($this->importNdx);
+    $ae->generateAccBalanceDoc();
+	}
+
   public function run()
   {
     $this->doImport();

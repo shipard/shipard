@@ -157,7 +157,7 @@ class AccBalanceEngine extends Utility
       $newDoc->addInbox($r['dstRecId']);
 
     // -- save
-		$docNdx = $newDoc->saveDocument(CreateDocumentUtility::sdsConfirmed, intval($this->importRecData['docAccBal']));
+		$docNdx = $newDoc->saveDocument(CreateDocumentUtility::sdsDone, intval($this->importRecData['docAccBal']));
 
     $this->db()->query('UPDATE [e10doc_slr_imports] SET [docAccBal] = %i', $docNdx, ' WHERE [ndx] = %i', $this->importNdx);
   }

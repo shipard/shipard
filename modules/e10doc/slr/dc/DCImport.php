@@ -14,6 +14,26 @@ class DCImport extends \Shipard\Base\DocumentCard
 
 	protected $linkedAttachments = [];
 
+
+	protected function addStartImport()
+  {
+    $title = [];
+    $title[] = ['text' => 'Import', 'class' => 'h2', 'icon' => 'docType/accDocs'];
+
+    $body = [];
+		$body[] = ['text' => 'Všechny existující doklady budou přegenerovány', 'class' => 'e10-off'];
+
+		$title [] = [
+			'type' => 'action', 'action' => 'addwizard',
+			'text' => 'Spustit', 'data-class' => 'e10doc.slr.libs.WizardRunImport',
+			'icon' => 'system/iconImport',
+			'class' => 'pull-right'
+		];
+
+    $title[] = ['text' => '', 'class' => 'block'];
+    $this->addContent('body', ['pane' => 'e10-pane e10-pane-table', 'paneTitle' => $title, 'type' => 'line', 'line' => $body]);
+	}
+
 	protected function addErrors()
 	{
 		/** @var \e10doc\slr\TableImports */
@@ -22,7 +42,7 @@ class DCImport extends \Shipard\Base\DocumentCard
 		if (!$e)
 			return;
 		$e->setImportNdx($this->recData['ndx']);
-		$e->run();
+		//$e->run();
 
 		if ($e->messages() !== FALSE)
 		{
@@ -237,6 +257,7 @@ class DCImport extends \Shipard\Base\DocumentCard
 
 	public function createContentBody ()
 	{
+		$this->addStartImport();
 		$this->addErrors();
 		$this->addAccDoc();
 		$this->addEmpsRecs();

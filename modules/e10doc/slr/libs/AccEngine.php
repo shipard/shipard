@@ -478,7 +478,7 @@ class AccEngine extends Utility
       $newDoc->addInbox($r['dstRecId']);
 
     // -- save
-		$docNdx = $newDoc->saveDocument(CreateDocumentUtility::sdsConfirmed, intval($this->empRecRecData['docAcc']));
+		$docNdx = $newDoc->saveDocument(CreateDocumentUtility::sdsDone, intval($this->empRecRecData['docAcc']));
 
     $this->db()->query('UPDATE [e10doc_slr_empsRecs] SET [docAcc] = %i', $docNdx, ' WHERE [ndx] = %i', $this->empRecNdx);
   }
