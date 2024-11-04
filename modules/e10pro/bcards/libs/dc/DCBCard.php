@@ -36,7 +36,16 @@ class DCBCard extends \Shipard\Base\DocumentCard
 
 		$e->createData();
 
+		// -- QR code with URL to web bcard
+		$qrLinkTitle = [
+			['text' => 'QR CODE: URL LINK', 'class' => 'h2'],
+			['text' => 'Download', 'class' => 'btn btn-default pull-right', 'download' => 'url-link.svg', 'url' => $e->bcardData['linkQRCodeURL']],
+			['text' => ' ', 'class' => 'block bb1 mb1'],
+		];
+		$code = "<img style='max-width: 200px; padding: 8px;' src='{$e->bcardData['linkQRCodeURL']}'>";
+		$this->addContent('body',  ['pane' => 'e10-pane e10-pane-table', 'paneTitle' => $qrLinkTitle, 'type' => 'text', 'subtype' => 'rawhtml', 'text' => $code]);
 
+		// -- VCARD & QR CODE
 		$vcardTitle = [
 			['text' => 'VCARD', 'class' => 'h2 subtitle'],
 		];

@@ -4,7 +4,6 @@ namespace e10pro\bcards\libs;
 use \Shipard\Utils\Utils;
 use \e10\base\libs\UtilsBase;
 
-
 /**
  * class BCardEngine
  */
@@ -211,12 +210,18 @@ class BCardEngine extends \Shipard\Base\Utility
     //$this->bcardData ['vcardQRCodeFullFileName'] = $qrFullFileName;
 		$this->bcardData ['vcardQRCodeURL'] = 'https://'.$this->app()->cfgItem('hostingCfg.serverDomain').'/'.$this->app->cfgItem('dsid').'/imgcache/bcards/'.$qrBaseFileName;
 
-		if (is_readable($qrFullFileName))
-			return;
+		if (!is_readable($qrFullFileName))
+    {
+      $cmd = "qrencode -lM -m 0 -t SVG --rle -o \"{$qrFullFileName}\" -r \"{$vcardFullFileName}\"";
+      exec ($cmd);
+    }
 
-
-		$cmd = "qrencode -lM -m 0 -t SVG --rle -o \"{$qrFullFileName}\" -r \"{$vcardFullFileName}\"";
-		exec ($cmd);
+    // -- bcard link qr code
+    $qrLinkFN = Utils::tmpFileName('svg', 'qrbcl', TRUE);
+    $qrLink = $this->url(TRUE);
+    $cmd = "qrencode -8 -t SVG -m 0 --rle -o \"{$qrLinkFN}\" \"{$qrLink}\"";
+    exec ($cmd);
+    $this->bcardData ['linkQRCodeURL'] = 'https://'.$this->app()->cfgItem('hostingCfg.serverDomain').'/'.$this->app->cfgItem('dsid').'//'.$qrLinkFN;
 	}
 
 	function vcEscape ($str)
