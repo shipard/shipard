@@ -203,7 +203,8 @@ class ImportEngineCZPohoda extends \e10doc\slr\libs\ImportEngine
       {
         if ($value === NULL)
           continue;
-
+        if ($valueColId == 20)
+          continue;
         $empAmounts[] = $value;
       }
 
