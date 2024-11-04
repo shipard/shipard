@@ -102,7 +102,8 @@ class WOEventInfo extends \e10mnf\core\libs\WorkOrderInfo
 
   public function loadPersonsList ()
 	{
-		$h = ['#' => '#', 'personName' => 'Jméno'];
+    $tagMembersNdx = intval($this->app->cfgItem('options.e10-pro-soci.tagMembers', 0));
+		$h = ['#' => '#', 'personName' => 'Jméno2'];
 
 		$q[] = 'SELECT [rowsPersons].*,';
 		array_push($q, ' [persons].fullName AS personFullName');
@@ -120,11 +121,21 @@ class WOEventInfo extends \e10mnf\core\libs\WorkOrderInfo
 
 			$item = [];
 			if ($this->forPrint)
-				$item['personName'] = ['text' => $r['personFullName'], 'class' => 'e10-bold block'];
+				$item['personName'] = [['text' => $r['personFullName'], 'class' => 'e10-bold block']];
 			else
-				$item['personName'] = ['text' => $r['personFullName'], 'docAction' => 'edit', 'pk' => $r['person'], 'table' => 'e10.persons.persons', 'class' => '__e10-bold block'];
+				$item['personName'] = [['text' => $r['personFullName'], 'docAction' => 'edit', 'pk' => $r['person'], 'table' => 'e10.persons.persons', 'class' => '__e10-bold block']];
 
 			$this->loadProperties ('e10.persons.persons', $r['person'], $item, $h);
+      $classification = UtilsBase::loadClassification ($this->app(), 'e10.persons.persons', $r['person']);
+      if (isset($classification[$r['person']]['personsTags']))
+      {
+        foreach ($classification[$r['person']]['personsTags'] as $opt)
+        {
+          if ($opt['clsfItem'] == $tagMembersNdx)
+            continue;
+          $item['personName'][] = $opt;
+        }
+      }
 
       $this->woPersons[$personNdx] = $item;
 		}
