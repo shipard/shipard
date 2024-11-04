@@ -12,13 +12,14 @@ class ImportEngineCZPerm extends \e10doc\slr\libs\ImportEngine
 {
   protected function doAllAttachments()
   {
-    $attachments = UtilsBase::loadAttachments ($this->app, [$this->importNdx], 'e10doc.slr.imports');
-		if (!count($attachments))
-			return;
-
-		foreach ($attachments[$this->importNdx]['files'] as $a)
+    foreach ($this->allAttachments as $a)
 		{
-			$srcFullFileName = __APP_DIR__.'/att/'. $a['path'].$a['filename'];
+      $srcFullFileName = __APP_DIR__.'/att/'. $a['path'].$a['filename'];
+      if ($a['filetype'] !== 'json' && $a['filetype'] !== 'txt')
+        continue;
+
+      if ($this->app()->debug)
+        echo " --> ".$srcFullFileName."\n";
 
       if ($this->app()->debug)
         echo " --> ".$srcFullFileName."\n";
