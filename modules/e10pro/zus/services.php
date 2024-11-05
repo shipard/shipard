@@ -688,6 +688,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'add-users': return $this->addUsers();
 			case 'add-students': return $this->addStudents();
 			case 'sync-students-pull': return $this->syncStudentsPull();
+			case 'close-work-in-progress': return $this->closeWorkInProgress();
 		}
 
 		parent::onCliAction($actionId);
@@ -712,6 +713,28 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$tablePrihlasky = $this->app()->table('e10pro.zus.prihlasky');
 		$tablePrihlasky->archiveEntries($yearParam);
 		return TRUE;
+	}
+
+	protected function closeWorkInProgress()
+	{
+    $q = [];
+    array_push($q, 'SELECT [wr].* ');
+    array_push($q, ' FROM [e10mnf_core_workRecs] AS [wr]');
+    array_push($q, ' WHERE 1');
+    array_push($q, ' AND [docState] = %i', 1000);
+    array_push($q, ' AND [workInProgress] = %i', 1);
+    //array_push($q, ' AND [person] = %i', $this->userNdx);
+    array_push($q, ' ORDER BY ndx');
+
+    $rows = $this->db()->query($q);
+    foreach ($rows as $r)
+    {
+			$wip = new \e10mnf\core\libs\WorkInProgressEngine($this->app());
+			$wip->init();
+			$wip->userNdx = $r['person'];
+			$wip->loadState();
+			$wip->endWork();
+    }
 	}
 
 	public function archiveStudents()
@@ -790,6 +813,10 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		if ($hour === 17)
 		{
 			$this->addUsers();
+		}
+		if ($hour === 21)
+		{
+			$this->closeWorkInProgress();
 		}
 	}
 

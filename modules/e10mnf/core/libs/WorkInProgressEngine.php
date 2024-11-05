@@ -16,12 +16,15 @@ class WorkInProgressEngine extends Utility
   /** @var \e10mnf\core\TableWorkRecs */
   var $tableWorkRecs;
 
+  var $userNdx = 0;
+
   var $wipRecs = [];
   var $wips = [];
 
   public function init()
   {
     $this->tableWorkRecs = $this->app()->table('e10mnf.core.workRecs');
+    $this->userNdx = $this->app()->userNdx();
   }
 
   public function loadState()
@@ -34,7 +37,7 @@ class WorkInProgressEngine extends Utility
     array_push($q, ' WHERE 1');
     array_push($q, ' AND [docState] = %i', 1000);
     array_push($q, ' AND [workInProgress] = %i', 1);
-    array_push($q, ' AND [person] = %i', $this->app()->userNdx());
+    array_push($q, ' AND [person] = %i', $this->userNdx);
     array_push($q, ' ORDER BY ndx');
 
     $rows = $this->db()->query($q);
@@ -58,7 +61,7 @@ class WorkInProgressEngine extends Utility
 
     $newWR = [
       'dbCounter' => $dbCounterNdx,
-      'person' => $this->app()->userndx(),
+      'person' => $this->userNdx,
       'docType' => 0,
       'docKind' => $docKindNdx,
       'workActivity' => $workActivityNdx,
