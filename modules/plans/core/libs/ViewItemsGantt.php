@@ -131,9 +131,10 @@ class ViewItemsGantt extends TableViewGrid
 	public function renderRow ($item)
 	{
 		$itemState = $this->itemStates[$item['itemState']] ?? NULL;
-
+		$itemContent = NULL;
 		if (!$item['datePlanBegin'])
 		{
+			$itemContent = ['text' => '', 'icon' => 'user/chevronLeft', 'class' => 'pull-right'];
 			$item['datePlanBegin'] = Utils::createDateTime($item['dateDeadline']);
 			$item['datePlanBegin']->sub(new \DateInterval('P1D'));
 
@@ -142,6 +143,7 @@ class ViewItemsGantt extends TableViewGrid
 		}
 		if (!$item['dateDeadline'])
 		{
+			$itemContent = ['text' => '', 'icon' => 'user/chevronRight', 'class' => 'pull-left'];
 			$item['dateDeadline'] = Utils::createDateTime($item['datePlanBegin']);
 			$item['dateDeadline']->add(new \DateInterval('P1D'));
 			if ($item['dateDeadline'] < $this->firstDay)
@@ -194,7 +196,10 @@ class ViewItemsGantt extends TableViewGrid
       if ($gridColId > $colIdEnd)
         break;
 
-      $listItem['_options']['cellCss'][$gridColId] = 'background-color: #445566B0;';
+			if ($itemContent)
+				$listItem[$gridColId] = $itemContent;
+
+      $listItem['_options']['cellCss'][$gridColId] = 'background-color: #44556630;';
       if ($colSpanCol === '')
         $colSpanCol = $gridColId;
       $colSpanCnt++;
