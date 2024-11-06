@@ -60,7 +60,7 @@ class DCImport extends \Shipard\Base\DocumentCard
   {
     $docNdx = $this->recData['docAccBal'];
     $title = [];
-    $title[] = ['text' => 'Závazky', 'class' => 'h2', 'icon' => 'docType/accDocs'];
+    $title[] = ['text' => 'Odvody z mezd', 'class' => 'h2', 'icon' => 'docType/accDocs'];
 
     $docStateStyle = '';
     $body = [];

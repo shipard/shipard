@@ -136,7 +136,7 @@ class AccBalanceEngine extends Utility
     $newDoc->docHead['dateTax'] = $accDate;
 		$newDoc->docHead['author'] = $this->app()->userNdx();
     $newDoc->docHead['dbCounter'] = $dbCounter;
-		$newDoc->docHead['title'] = 'Závazky z mezd '.sprintf("%04d/%02d", $this->importRecData['calendarYear'], $this->importRecData['calendarMonth']);
+		$newDoc->docHead['title'] = 'Odvody z mezd '.sprintf("%04d/%02d", $this->importRecData['calendarYear'], $this->importRecData['calendarMonth']);
 
     foreach ($this->docRowsPacked as $docRow)
     {
