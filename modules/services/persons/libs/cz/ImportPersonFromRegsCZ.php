@@ -576,6 +576,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
         else
           continue;
 
+        $bankAccount['bankAccount'] = Str::upToLen($bankAccount['bankAccount'], 40);
         $this->personDataImport->addBankAccount($bankAccount);
       }
     }
