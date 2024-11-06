@@ -3949,7 +3949,7 @@ class FormHeads extends TableForm
 			if (isset ($this->postData['docActionData.person']))
 				$this->recData['person'] = $this->postData['docActionData.person'];
 			if (isset ($this->postData['docActionData.title']))
-				$this->recData['title'] = $this->postData['docActionData.title'];
+				$this->recData['title'] = Str::upToLen($this->postData['docActionData.title'], 120);
 			if (isset ($this->postData['docActionData.dbCounter']))
 				$this->recData['dbCounter'] = $this->postData['docActionData.dbCounter'];
 			if (isset ($this->postData['docActionData.symbol1']))
@@ -4067,6 +4067,7 @@ class FormHeads extends TableForm
 			}
 			$this->recData['title'] .= ' '.implode (', ', $docNumbers);
 		}
+		$this->recData['title'] = Str::upToLen($this->recData['title'], 120);
 	}
 
 	public function createHeader ()
