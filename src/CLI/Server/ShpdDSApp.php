@@ -6,42 +6,10 @@ use \Shipard\CLI\Server\ServerManager;
 use \Shipard\CLI\Server\DSManager;
 
 
-
-function parseArgs($argv)
-{
-	// http://pwfisher.com/nucleus/index.php?itemid=45
-		array_shift ($argv);
-		$out = array();
-		foreach ($argv as $arg){
-				if (substr($arg,0,2) == '--'){
-						$eqPos = strpos($arg,'=');
-						if ($eqPos === false){
-								$key = substr($arg,2);
-								$out[$key] = isset($out[$key]) ? $out[$key] : true;
-						} else {
-								$key = substr($arg,2,$eqPos-2);
-								$out[$key] = substr($arg,$eqPos+1);
-						}
-				} else if (substr($arg,0,1) == '-'){
-						if (substr($arg,2,1) == '='){
-								$key = substr($arg,1,1);
-								$out[$key] = substr($arg,3);
-						} else {
-								$chars = str_split(substr($arg,1));
-								foreach ($chars as $char){
-										$key = $char;
-										$out[$key] = isset($out[$key]) ? $out[$key] : true;
-								}
-						}
-				} else {
-						$out[] = $arg;
-				}
-		}
-		return $out;
-}
-
-
-class ShpdServerApp extends \Shipard\Application\ApplicationCore
+/**
+ * class ShpdDSApp
+ */
+class ShpdDSApp extends \Shipard\Application\ApplicationCore
 {
 	var $arguments;
 	var $manager;
@@ -607,11 +575,6 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		Utils::setAppStatus ($status);
 	}
 
-	public function appRights ()
-	{
-		passthru ('chgrp -R '.utils::wwwGroup().' att');
-	}
-
 	public function appTest ()
 	{
 		passthru('e10-test all');
@@ -738,40 +701,6 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		$im = new \Shipard\CLI\Server\IconsManager($this);
 		$im->createModulesIcons();
 		return TRUE;
-	}
-
-	public function appWalk ()
-	{
-		$dsroot = $this->cfgServer['dsRoot'];
-		chdir($dsroot);
-
-		$paramsArray = $_SERVER ['argv'];
-		$appCmd = $paramsArray [0];
-		array_shift($paramsArray);
-		array_shift($paramsArray);
-		$cmdArgs = implode (' ', $paramsArray);
-
-		$withFile = $this->arg ('with-file', FALSE);
-
-		forEach (glob ('*', GLOB_ONLYDIR) as $appDir)
-		{
-			if (is_link ($appDir))
-				continue;
-			if (is_file($appDir.'/.disable-upgrade'))
-				continue;
-			if ($withFile !== FALSE && !is_file ($appDir.'/'.$withFile))
-				continue;
-			if (is_file ($appDir.'/config/config.json'))
-			{
-				$this->msg ("---- $appDir");
-				chdir ($appDir);
-
-				$cmdBase = $appCmd;
-				$cmd = $cmdBase.' '.$cmdArgs;
-				passthru ($cmd);
-				chdir ('..');
-			}
-		}
 	}
 
 	public function dbCreate ($deleteBeforeCreate = FALSE)
@@ -1183,25 +1112,19 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		{
 			case "":
 						echo
-							"usage: shpd-server command arguments\r\n\r\n" .
+							"usage: shpd-ds command arguments\r\n\r\n" .
 							"commands:\r\n" .
 							"   app-backup:  backup application (database, config files and attachments)\r\n" .
 							"   app-config:  generate config files\r\n" .
 							"   app-create:  create new application\r\n" .
-							"   app-doc:     create documentation\r\n" .
 							"   app-init:    initialize new application\r\n" .
 							"   app-publish: send email with login info\r\n" .
 							"   app-upgrade: upgrade configs and db tables\r\n" .
-							"   app-walk:    apply commands to all apps in folder\r\n" .
 							"   db-create:   create database\r\n" .
 							"   db-check:    check tables in database (create nonexists tables, add missing columns)\r\n" .
 							"   db-optimize: optimize database (defragment tables, ...): use --run for run commands\r\n" .
 							"   db-restore:  restore database from file (--file=some/path/database.sql)\r\n" .
 							"   db-repair:   repair database (charsets, collations, ...): use --run for run commands\r\n" .
-							"   host-backup: backup this host\r\n" .
-							"   host-check:  check this host\r\n" .
-							"   host-cleanup:cleanup this host\r\n" .
-							"   host-upgrade:upgrade e10 packages\r\n" .
 							"   help:        general help\r\n" .
 							"\r\nSee 'shpd-server help <command>' for more information on a specific command.\r\n" .
 							"\r\n";
@@ -1353,26 +1276,6 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		return TRUE;
 	}
 
-	public function installShpdTools()
-	{
-		if (is_dir('/usr/lib/shipad-devel'))
-		{
-			if (!is_file('/bin/shpd-ds'))
-				symlink('/usr/lib/shipad-devel/tools/shpd-ds.php', '/bin/shpd-ds');
-
-			if (!is_file('/bin/shpd-srv'))
-				symlink('/usr/lib/shipad-devel/tools/shpd-srv.php', '/bin/shpd-srv');
-		}
-		elseif (is_dir('/usr/lib/shipad'))
-		{
-			if (!is_file('/bin/shpd-ds'))
-				symlink('/usr/lib/shipad/tools/shpd-ds.php', '/bin/shpd-ds');
-
-			if (!is_file('/bin/shpd-srv'))
-				symlink('/usr/lib/shipad/tools/shpd-srv.php', '/bin/shpd-srv');
-		}
-	}
-
 	public function msg ($msg)
 	{
 		if (!$this->quiet)
@@ -1403,46 +1306,34 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		return TRUE;
 	}
 
+	public function version()
+	{
+		echo "shpd-srv version `".__E10_VERSION__.'`; shpd-root-dir: `'.__SHPD_ROOT_DIR__."`\n";
+		return TRUE;
+	}
+
 	public function run ($argv)
 	{
 		$this->modulesPath = __SHPD_MODULES_DIR__;
 
-		$this->arguments = parseArgs($argv);
+		$this->arguments = Utils::parseArgs($argv);
 
 		if (count ($this->arguments) == 0)
 			return $this->help ();
 
-		if (!$this->superuser() && in_array($this->command (), ['server-backup', 'server-check', 'server-cleanup', 'server-after-pkgs-upgrade']))
+		if (!$this->superuser() && in_array($this->command (), ['ds-fix-perms']))
 			return $this->manager->err ('Need to be root');
 
-		$this->quiet = $this->arg ("quiet");
+		$this->quiet = $this->arg ('quiet');
 
 		switch ($this->command ())
 		{
-			case	"app-create":       return $this->appCreate ();
-			case	"app-new":       		return $this->appNew();
-			case	"app-dscmd":       	return $this->appDSCmd ();
-			case	"app-dscmd-all":    return $this->appDSCmdAll ();
-			case	"app-walk":					return $this->appWalk ();
-
-			case	"ds-ls":						return $this->dsLs ();
-			case	"ds-copy-from":			return $this->dsCopyFrom ();
-			case	"ds-move-from":			return $this->dsCopyFrom (TRUE);
-			case	"ds-fix-perms":			return $this->dsFixPerms ();
-
-			case	"help":             return $this->help ();
-
-			case	"server-backup":						return $this->serverBackup ();
-			case	"server-check":							return $this->serverCheck ();
-			case	"server-cleanup":						return $this->serverCleanup ();
-			case	"server-upgrade":						return $this->serverUpgrade();
-			case	"server-info":							return $this->serverInfo ();
-			case  "server-after-pkgs-upgrade":return $this->serverAfterPkgsUpgrade();
-			case  "server-get-hosting-info":	return $this->getHostingInfo();
-			case  "server-create-hosting-ds":	return $this->serverCreateHostingDataSources();
-			case	'netdata-alarm':						return $this->netDataAlarm();
-
-			case	'install-shpd-tools':				return $this->installShpdTools();
+			case	'app-create':       return $this->appCreate();
+			case	'app-new':       		return $this->appNew();
+			case	'app-dscmd':       	return $this->appDSCmd();
+			case	'app-dscmd-all':    return $this->appDSCmdAll();
+			case	'help':             return $this->help();
+			case	'version':          return $this->version();
 		}
 
 		if (!$this->manager->load ())
@@ -1450,32 +1341,32 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 
 		switch ($this->command ())
 		{
-			case	"app-backup":			return $this->appBackup ();
-			case	"app-config":			return $this->appConfig ();
-			case	"app-cron":				return $this->appCron ();
-			case	"app-fullupgrade":return $this->appUpgradeFull ();
-			case	"app-getdsinfo":	return $this->appGetDSInfo ();
-			case	"app-httpd-ds":		return $this->appHttpdDS ();
-			case	"app-init":				return $this->appInit ();
-			case	"app-modules":    return $this->appModules();
-			case	"app-publish":		return $this->appPublish ();
-			case	"app-reset":			return $this->appReset ();
-			case	"app-start":			return $this->appStatus ('');
-			case	"app-stop":				return $this->appStatus ('STOP');
-			case	"app-test":				return $this->appTest ();
-			case	"app-rights":			return $this->appRights ();
-			case	"app-upgrade":		return $this->appUpgrade ();
+			case	'app-backup':			return $this->appBackup ();
+			case	'app-config':			return $this->appConfig ();
+			case	'app-cron':				return $this->appCron ();
+			case	'app-fullupgrade':return $this->appUpgradeFull ();
+			case	'app-getdsinfo':	return $this->appGetDSInfo ();
+			case	'app-httpd-ds':		return $this->appHttpdDS ();
+			case	'app-init':				return $this->appInit ();
+			case	'app-modules':    return $this->appModules();
+			case	'app-publish':		return $this->appPublish ();
+			case	'app-reset':			return $this->appReset ();
+			case	'app-start':			return $this->appStatus ('');
+			case	'app-stop':				return $this->appStatus ('STOP');
+			case	'app-test':				return $this->appTest ();
+			case	'app-upgrade':		return $this->appUpgrade ();
 
+			case	'db-backup':			return $this->dbBackup ();
+			case	'db-check':				return $this->manager->dbCheck ();
+			case	'db-optimize':		return $this->dbOptimize ();
+			case	'db-repair':			return $this->dbRepair ();
+			case	'db-create':			return $this->dbCreate ();
+			case	'db-restore':			return $this->dbRestore ();
 
-			case	"db-backup":			return $this->dbBackup ();
-			case	"db-check":				return $this->manager->dbCheck ();
-			case	"db-optimize":		return $this->dbOptimize ();
-			case	"db-repair":			return $this->dbRepair ();
-			case	"db-create":			return $this->dbCreate ();
-			case	"db-restore":			return $this->dbRestore ();
+			case	'ds-fix-perms':		return $this->dsFixPerms ();
 		}
 
-		$this->manager->err ("unknown command...");
+		$this->manager->err ('unknown command...');
 
 		return FALSE;
 	}
@@ -1502,8 +1393,6 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 				case 'onAppUpgrade' : $moduleService->onAppUpgrade (); break;
 				case 'onCreateDataSource' : $moduleService->onCreateDataSource (); break;
 			}
-
-			//echo  $srcPath. "\r\n";
 		}
 	}
 }
