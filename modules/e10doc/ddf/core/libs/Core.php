@@ -122,6 +122,26 @@ class Core extends \lib\docDataFiles\DocDataFile
 		}
 	}
 
+	public function checkSpecialDocState($phase, $specialDocState, &$saveData)
+	{
+		$addItemKind = intval($saveData['saveParams']['data-save-add-item-kind'] ?? 0);
+		if ($addItemKind)
+		{
+			if (isset($saveData['saveParams']['data-save-item-info']))
+			{
+				$itemInfo = json_decode(base64_decode($saveData['saveParams']['data-save-item-info']), TRUE);
+				if ($itemInfo)
+				{
+					$this->checkFileContent();
+					$this->createImport();
+					$this->loadPerson();
+					$dr = NULL;
+					$this->createItemFromRow($itemInfo, NULL, $dr);
+				}
+			}
+		}
+	}
+
 	protected function loadPerson()
 	{
 		if ($this->personRecData)
@@ -316,7 +336,7 @@ class Core extends \lib\docDataFiles\DocDataFile
 		return 0;
 	}
 
-	protected function createItemFromRow($itemInfo, $srcRow, &$docRow)
+	protected function createItemFromRow($itemInfo, $srcRow, &$docRow = NULL)
 	{
 		/** @var \e10\witems\TableItems */
 		$tableItems = $this->app()->table('e10.witems.items');
@@ -337,8 +357,10 @@ class Core extends \lib\docDataFiles\DocDataFile
 		if (!count($newItem))
 			return;
 
-		if (isset($srcRow['unit']))
+		if ($srcRow !== NULL && isset($srcRow['unit']))
 			$newItem['defaultUnit'] = $srcRow['unit'];
+		else
+			$newItem['defaultUnit'] = 'pcs';
 
 		if ($this->personRecData && $this->personRecData['optBuyItemsImportItemType'])
 		{
@@ -349,6 +371,13 @@ class Core extends \lib\docDataFiles\DocDataFile
 				$newItem['type'] = $itemTypeRecData['id'];
 				$newItem['itemKind'] = $itemTypeRecData['type'];
 			}
+		}
+		elseif (isset($itemInfo['itemType']))
+		{
+			$itemTypeRecData = $this->app()->loadItem($itemInfo['itemType'], 'e10.witems.itemtypes');
+			$newItem['itemType'] = $itemInfo['itemType'];
+			$newItem['type'] = $itemTypeRecData['id'];
+			$newItem['itemKind'] = $itemTypeRecData['type'];
 		}
 
 		$newItem['docState'] = 1000;
@@ -362,7 +391,7 @@ class Core extends \lib\docDataFiles\DocDataFile
 		{
 			$newItemSupplier = [
 				'item' => $newItemNdx,
-				'supplier' => $this->docHead['person'],
+				'supplier' => $this->docHead['person'] ?? 0,
 				'rowOrder' => 1000,
 				'itemId' => $itemInfo['supplierCode'],
 			];
@@ -370,7 +399,8 @@ class Core extends \lib\docDataFiles\DocDataFile
 				$newItemSupplier['url'] = $itemInfo['supplierItemUrl'];
 
 			$tableItemSuppliers->dbInsertRec($newItemSupplier);
-			$this->searchItemBySupplierCode($itemInfo, $docRow);
+			if ($docRow)
+				$this->searchItemBySupplierCode($itemInfo, $docRow);
 		}
 		else
 		{
@@ -546,7 +576,7 @@ class Core extends \lib\docDataFiles\DocDataFile
 		$c .= '<br/>';
 		$tr = [];
 		$th = [
-			'#' => '#', 'itemId' => 'Položka', 'itemInfo' => 'Obsah řádku', 'vatp' => ' %DPH',
+			'#' => '#', 'itemId' => 'Položka', 'itemInfo' => 'Obsah řádku2', 'vatp' => ' %DPH',
 			'quantity' => ' Mn.', 'priceItem' => ' Cena/pol.', 'priceAll' => '+Cena celk.'
 		];
 
@@ -592,6 +622,8 @@ class Core extends \lib\docDataFiles\DocDataFile
 			}
 
 			$quantity = $r['quantity'] ?? 1;
+			if (!$quantity)
+				$quantity = 1;
 			$rowItem['quantity'] = strval($r['quantity'] ?? 1);
 
 			$priceSource = intval($r['priceSource'] ?? 0);
@@ -615,6 +647,43 @@ class Core extends \lib\docDataFiles\DocDataFile
 			if ($itemRecData)
 			{
 				$rowItem['itemId'] = ['text' => $itemRecData['id'], 'docAction' => 'edit', 'table' => 'e10.witems.items', 'pk' => $itemRecData['ndx']];
+			}
+			else
+			{
+				$ii = $r['!itemInfo'] ?? NULL;
+				$itemKind = 1;
+				$itemType = 0;
+				if ($this->personRecData && $this->personRecData['optBuyItemsImportItemType'])
+					$itemType = $this->personRecData['optBuyItemsImportItemType'];
+				if (!$itemType)
+				{
+					$allItemTypes = $this->app()->cfgItem('e10.witems.types', []);
+					foreach ($allItemTypes as $itId => $it)
+					{
+						if ($it['kind'] == $itemKind)
+						{
+							$itemType = $it['ndx'];
+							break;
+						}
+					}
+				}
+				if ($ii && $itemType)
+				{
+					$ii['itemType'] = $itemType;
+					$itemTypeRecData = $this->app()->loadItem($itemType, 'e10.witems.itemtypes');
+
+					$addItemBtnCode = '';
+					$addItemBtnCode .= "<span class='btn btn-xs btn-success df2-action-trigger _pull-right' data-action='saveform' data-noclose='1'";
+					$addItemBtnCode .= " data-save-add-item-kind='{$itemKind}'";
+					$addItemBtnCode .= " data-save-item-info='".base64_encode(json_encode($ii))."'";
+					$addItemBtnCode .= " data-fid='AUTO' data-form='AUTO' data-docstate='99001'>";
+					$addItemBtnCode .= $this->app()->ui()->icons()->icon('system/actionAdd');
+					$addItemBtnCode .= ' '.Utils::es($itemTypeRecData['shortName'] ?? '!!!'.$itemType);
+					$addItemBtnCode .= "</span>";
+
+					$rowItem['itemId'] = [];
+					$rowItem['itemId'][] = ['code' => $addItemBtnCode];
+				}
 			}
 
 			$tr[] = $rowItem;

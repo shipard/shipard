@@ -54,6 +54,10 @@ class DocDataFile extends Utility
 	{
 	}
 
+	public function checkSpecialDocState($phase, $specialDocState, &$saveData)
+	{
+	}
+
 	public function checkFileContent()
 	{
 	}

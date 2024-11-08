@@ -2,7 +2,7 @@
 
 namespace e10\base;
 
-use \e10\TableForm, \e10\utils, \e10\DbTable;
+use \Shipard\Form\TableForm, \Shipard\Utils\Str, \Shipard\Table\DbTable;
 
 
 /**
@@ -21,6 +21,13 @@ class TableDocDataFiles extends DbTable
 	{
 		if (!isset($saveData['recData']['ndx']) || !$saveData['recData']['ndx'])
 			return FALSE;
+
+		if ($phase === 1)
+		{
+			$ddfObject = $this->ddfObject($saveData['recData']);
+			if ($ddfObject)
+				$ddfObject->checkSpecialDocState($phase, $specialDocState, $saveData);
+		}
 
 		if ($phase === 2)
 		{
