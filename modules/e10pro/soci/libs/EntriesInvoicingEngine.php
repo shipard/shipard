@@ -87,8 +87,10 @@ class EntriesInvoicingEngine extends \Shipard\Base\Utility
 		$this->invHead ['dateIssue'] = $invoice['dateAccounting'];
 		$this->invHead ['dateTax'] = $invoice['dateAccounting'];
 		$this->invHead ['dateAccounting'] = $invoice['dateAccounting'];
+
 		$this->invHead ['dateDue'] = Utils::createDateTime($invoice['dateAccounting']);
-		$this->invHead ['dateDue']->add (new \DateInterval('P30D'));
+		$dd = intval($this->app()->cfgItem ('options.e10doc-sale.dueDays', 14));
+		$this->invHead ['dateDue']->add (new \DateInterval('P'.$dd.'D'));
 
 		$this->invHead ['symbol1'] = $invoice['symbol1'] ?? '';
 		$this->invHead ['symbol2'] = $invoice['symbol2'] ?? '';
