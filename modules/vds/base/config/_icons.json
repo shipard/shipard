@@ -5,6 +5,18 @@
         "bsi":"bi-table",
         "mdi":"table_view"
     },
+    "tables/vds.base.codeBasesDefs":{
+        "fa5":"fa-list-ol",
+        "fa6pro":"fa-list-ol",
+        "bsi":"bi-list-ol",
+        "mdi":""
+    },
+    "tables/vds.base.codeBasesData":{
+        "fa5":"fa-bars",
+        "fa6pro":"fa-bars",
+        "bsi":"bi-list",
+        "mdi":""
+    },
 
 
     "formStructure":{

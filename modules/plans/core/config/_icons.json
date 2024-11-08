@@ -10,5 +10,17 @@
 		"fa6pro": "fa-check-circle",
 		"bsi": "bi-check-circle",
 		"mdi": "check_circle"
+    },
+    "tables/plans.core.teams":{
+        "fa5":"fa-users",
+        "fa6pro":"fa-users",
+        "bsi":"bi-people",
+        "mdi":""
+    },
+    "tables/plans.core.itemStates":{
+        "fa5": "fa-tasks",
+		"fa6pro": "fa-tasks",
+		"bsi": "bi-list-check",
+		"mdi": ""
     }
 }

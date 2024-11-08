@@ -10,5 +10,17 @@
 		"fa6pro": "fa-calendar",
 		"bsi": "bi-calendar",
 		"mdi": "calendar_today"
+  },
+  "tables/e10pro.soci.entriesKinds":{
+    "fa5": "fa-file-alt",
+		"fa6pro": "fa-file-alt",
+		"bsi": "bi-file-earmark-text",
+		"mdi": ""
+  },
+  "tables/e10pro.soci.entriesInvoicing":{
+    "fa5": "fa-file-upload",
+		"fa6pro": "fa-file-upload",
+		"bsi": "bi-file-earmark-arrow-up",
+		"mdi": ""
   }
 }

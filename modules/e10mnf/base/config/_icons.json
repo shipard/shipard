@@ -29,6 +29,18 @@
         "bsi":"bi-play-circle-fill",
         "mdi":"play_circle_filled"
     },
+    "tables/e10mnf.base.workActivities":{
+        "fa5":"fa-id-badge",
+        "fa6pro":"fa-id-badge",
+        "bsi":"bi-file-earmark-person",
+        "mdi":"_"
+    },
+    "tables/e10mnf.base.wipSettings":{
+        "fa5":"fa-user-edit",
+        "fa6pro":"fa-user-edit",
+        "bsi":"bi-person-fill-check",
+        "mdi":"_"
+    },
 
 
     "formDetail":{

@@ -1,7 +1,7 @@
 {
     "tables/e10.reports.reportsTexts":{
-        "fa5":"fa-rectangle-list",
-        "fa6pro":"fa-rectangle-list",
+        "fa5":"fa-list-alt",
+        "fa6pro":"fa-list-alt",
         "bsi":"bi-card-text",
         "mdi":""
     }

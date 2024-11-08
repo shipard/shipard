@@ -1,0 +1,14 @@
+{
+    "tables/e10pro.emps.absencesKinds":{
+        "fa5": "fa-user-slash",
+        "fa6pro": "fa-user-slash",
+        "bsi": "bi-person-slash",
+        "mdi": ""
+    },
+    "tables/e10pro.emps.absences":{
+        "fa5": "fa-user-slash",
+        "fa6pro": "fa-user-slash",
+        "bsi": "bi-person-slash",
+        "mdi": ""
+    }
+}

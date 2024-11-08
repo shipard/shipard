@@ -10,5 +10,11 @@
         "fa6pro":"fa-cog",
         "bsi":"bi-gear",
         "mdi":"settings"
+    },
+    "tables/e10doc.helpers.impDocsSettings":{
+        "fa5":"fa-file-import",
+        "fa6pro":"fa-file-import",
+        "bsi":"bi-file-earmark-arrow-down",
+        "mdi":""
     }
 }

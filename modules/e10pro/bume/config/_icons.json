@@ -17,6 +17,12 @@
 		"bsi": "bi-person-badge",
 		"mdi": "badge"
 	},
+	"tables/e10pro.bume.lists":{
+		"fa5": "fa-users",
+		"fa6pro": "fa-users",
+		"bsi": "bi-people-fill",
+		"mdi": ""
+	},
 
 
 	"formRecipients":{
