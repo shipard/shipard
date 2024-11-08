@@ -122,7 +122,10 @@ class ContactForm2 extends \Shipard\Base\WebForm2
 
 
 		// -- notify via email?
-		$formNotifyEmail = $this->app->cfgItem ('options.webcomm.contactFormNotifyEmail', '');
+		$formNotifyEmail = '';
+		if ($this->app->webEngine !== NULL)
+			$formNotifyEmail= $this->app->webEngine->serverInfo['formsEmail'];
+
 		if ($formNotifyEmail !== '')
 		{
 			$fromEmail = $this->app->cfgItem ('options.core.ownerEmail');
