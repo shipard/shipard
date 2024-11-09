@@ -10,7 +10,8 @@
 		{"id": "useViewDetail", "name": "Používat detail prohlížeče", "type": "logical"},
 		{"id": "useViewCompact", "name": "Používat kompaktní zobrazení", "type": "logical"},
 		{"id": "useViewTree", "name": "Preferovat stromový pohled", "type": "logical"},
-		{"id": "useViewStatesColors", "name": "Obarvit prohlížeč barvou stavů", "type": "logical"},
+    {"id": "useViewStatesColors", "name": "Obarvit prohlížeč barvou stavů", "type": "enumInt",
+			"enumValues": {"0": "Ne", "1": "Celý řádek", "2": "Jen ikony"}},
 
 		{"id": "useCustomer", "name": "Zadávat zákazníka", "type": "logical"},
 		{"id": "useWorkOrders", "name": "Používat Zakázky", "type": "logical"},
