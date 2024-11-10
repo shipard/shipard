@@ -37,7 +37,8 @@
 		},
 	  "widgets": {
 		  "mac.lan.LanMonitoringWidget": 2,
-		  "mac.lan.LanAddressesWidget": 2
+		  "mac.lan.LanAddressesWidget": 2,
+			"mac.lan.libs3.WidgetOverview": 2
 	  },
 	  "reports": {
 		  "mac.lan.ReportSWLicenses": 2,
