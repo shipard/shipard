@@ -32,7 +32,7 @@
 
 			"mac.inet.domainsAccounts": {"default": 2},
 			"mac.inet.domains": {"default": 2},
-			"mac.inet.domainsRecords": {"default": 2},
+			"mac.inet.domainsRecords": {"default": 2, "all": 2},
 			"mac.inet.certs": {"default": 2}
 		},
 	  "widgets": {
