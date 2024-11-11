@@ -218,7 +218,12 @@ class ViewItemsGrid extends TableViewGrid
 	{
 		$itemState = $this->itemStates[$item['itemState']] ?? NULL;
 		$itemStateIcon = $itemState['icon'] ?? 'system/iconWarning';
-		$itemStateCss = 'background-color: '.$itemState['colorbg'].'; color: '.$itemState['colorfg'];
+
+		if ($this->useViewStatesColors)
+		{
+			$itemStateCss = 'background-color: '.$itemState['colorbg'].'; color: '.$itemState['colorfg'];
+			$listItem ['rowIconCss'] = $itemStateCss;
+		}
 
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['icon'] = $itemStateIcon;
@@ -271,7 +276,7 @@ class ViewItemsGrid extends TableViewGrid
 			if ($treeLevel === 2)
 				$listItem['_options']['cellCss']['subject'] = 'padding-left: 1rem;';
 
-			if ($this->useViewStatesColors)
+			if ($this->useViewStatesColors === 1)
 			{
 				$listItem['_options']['cellCss']['subject'] = 'background-color: '.$itemState['colorbg'].'; color: '.$itemState['colorfg'];
 				$listItem['_options']['cellCss']['begin'] = 'background-color: '.$itemState['colorbg'].'; color: '.$itemState['colorfg'];
@@ -318,7 +323,7 @@ class ViewItemsGrid extends TableViewGrid
 			{
 				$listItem ['icon'] = $itemState['icon'] ?? '';//$this->table->tableIcon ($item);
 
-				if ($this->useViewStatesColors)
+				if ($this->useViewStatesColors === 1)
 				{
 					$css = "background-color: ".$itemState['colorbg'].'; color: '.$itemState['colorfg'];
 					$listItem['_options']['cellCss'] = ['subject' => $css];

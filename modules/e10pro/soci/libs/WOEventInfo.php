@@ -240,6 +240,14 @@ class WOEventInfo extends \e10mnf\core\libs\WorkOrderInfo
       if (isset($props[$personNdx]))
         $personInfo = array_merge($personInfo, $props[$personNdx]);
 
+      if ($entry['note'] && trim($entry['note']) !== '')
+      {
+        $textRenderer = new \lib\core\texts\Renderer($this->app());
+        $textRenderer->render ($entry['note']);
+        $code = "<div class='pageText'>".$textRenderer->code.'</div>';
+        $personInfo[] = ['code' => $code, 'class' => 'block'];
+      }
+
       $item = [
         'num' => ($rowIdx + 1).'.',
         'person' => $personInfo,

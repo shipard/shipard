@@ -1355,21 +1355,21 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 
 	public function installShpdTools()
 	{
-		if (is_dir('/usr/lib/shipad-devel'))
+		if (is_dir('/usr/lib/shipard-devel'))
 		{
 			if (!is_file('/bin/shpd-ds'))
-				symlink('/usr/lib/shipad-devel/tools/shpd-ds.php', '/bin/shpd-ds');
+				symlink('/usr/lib/shipard-devel/tools/shpd-ds.php', '/bin/shpd-ds');
 
 			if (!is_file('/bin/shpd-srv'))
-				symlink('/usr/lib/shipad-devel/tools/shpd-srv.php', '/bin/shpd-srv');
+				symlink('/usr/lib/shipard-devel/tools/shpd-srv.php', '/bin/shpd-srv');
 		}
-		elseif (is_dir('/usr/lib/shipad'))
+		elseif (is_dir('/usr/lib/shipard'))
 		{
 			if (!is_file('/bin/shpd-ds'))
-				symlink('/usr/lib/shipad/tools/shpd-ds.php', '/bin/shpd-ds');
+				symlink('/usr/lib/shipard/tools/shpd-ds.php', '/bin/shpd-ds');
 
 			if (!is_file('/bin/shpd-srv'))
-				symlink('/usr/lib/shipad/tools/shpd-srv.php', '/bin/shpd-srv');
+				symlink('/usr/lib/shipard/tools/shpd-srv.php', '/bin/shpd-srv');
 		}
 	}
 

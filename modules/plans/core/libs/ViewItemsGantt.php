@@ -22,6 +22,8 @@ class ViewItemsGantt extends TableViewGrid
 	var $useProjectId = 0;
 	var $lastGroupId = '';
 
+	var $useViewStatesColors = 0;
+
 	var $showPrevItemInMonth = 1;
 
   var $dateFirst = NULL;
@@ -46,6 +48,7 @@ class ViewItemsGantt extends TableViewGrid
 				$this->useCustomer = $this->planCfg['useCustomer'] ?? 0;
 				$this->useProjectId = $this->planCfg['useProjectId'] ?? 0;
 				$this->useTableViewTabsMonths = $this->planCfg['useTableViewTabsMonths'] ?? 0;
+				$this->useViewStatesColors = $this->planCfg['useViewStatesColors'] ?? 0;;
 			}
 		}
 
@@ -150,6 +153,12 @@ class ViewItemsGantt extends TableViewGrid
 				$item['dateDeadline'] = Utils::createDateTime($this->firstDay);
 		}
 
+		if ($this->useViewStatesColors)
+		{
+			$itemStateCss = 'background-color: '.$itemState['colorbg'].'; color: '.$itemState['colorfg'];
+			$listItem ['rowIconCss'] = $itemStateCss;
+		}
+
 		$listItem ['pk'] = $item ['ndx'];
 
 		$listItem ['subject'] = $item['isPrivate'] ? [['text' => $item['subject'], 'class' => ''], ['text' => '', 'icon' => 'system/iconLocked', 'class' => 'e10-me']] : $item['subject'];
@@ -170,12 +179,11 @@ class ViewItemsGantt extends TableViewGrid
 
 		$listItem ['icon'] = $itemState['icon'];//$this->table->tableIcon ($item);
 
-		if ($itemState)
+		if ($itemState && $this->useViewStatesColors === 1)
 		{
 			$css = "background-color: ".$itemState['colorbg'].'; color: '.$itemState['colorfg'];
 			$listItem['_options']['cellCss'] = ['subject' => $css];
 		}
-
 
     $weekYearBegin = intval($item['datePlanBegin']->format('o'));
     $weekNumberBegin = intval($item['datePlanBegin']->format('W'));
@@ -199,7 +207,10 @@ class ViewItemsGantt extends TableViewGrid
 			if ($itemContent)
 				$listItem[$gridColId] = $itemContent;
 
-      $listItem['_options']['cellCss'][$gridColId] = 'background-color: #44556630;';
+			if ($this->useViewStatesColors)
+				$listItem['_options']['cellCss'][$gridColId] = 'background-color: '.$itemState['colorbg'].';';
+			else
+				$listItem['_options']['cellCss'][$gridColId] = 'background-color: #44556630;';
       if ($colSpanCol === '')
         $colSpanCol = $gridColId;
       $colSpanCnt++;

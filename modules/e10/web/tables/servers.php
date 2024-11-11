@@ -140,7 +140,7 @@ class TableServers extends DbTable
 				'template' => $r['template'], 'look' => $r['templateLook'], 'lookNdx' => $r['templateLookNdx'], 'templateStylePath' => $r['templateStylePath'],
 				'templateParams' => $templateParams, 'themeColor' => '#00508a',
 				'gaid' => $r['gaid'], 'mtmSiteId' => $r['mtmSiteId'], 'mtmUrl' => $r['mtmUrl'], 'gmApiKey' => $r['gmApiKey'],
-				'authType' => $r['authType'], 'redirTo' => $r['redirTo'],
+				'authType' => $r['authType'], 'redirTo' => $r['redirTo'], 'formsEmail' => $r['formsEmail'],
 			];
 
 			if ($r['domainsRedirectHere'] !== '')
@@ -604,7 +604,7 @@ class FormServer extends TableForm
 				$this->openTab ();
 					$this->addColumnInput ('excludeFromDashboard');
 					$this->addColumnInput ('order');
-
+					$this->addColumnInput ('formsEmail');
 					$this->addColumnInput ('gaid');
 					$this->addColumnInput ('mtmSiteId');
 					$this->addColumnInput ('mtmUrl');

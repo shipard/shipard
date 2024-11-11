@@ -27,6 +27,7 @@
 		{"id": "gaid", "name": "Google Analytics ID", "type": "string", "len": 25},
 		{"id": "mtmSiteId", "name": "Matomo/Piwik ID", "type": "string", "len": 25},
 		{"id": "mtmUrl", "name": "Matomo URL", "type": "string", "len": 80},
+		{"id": "formsEmail", "name": "E-mail pro zasílání webových formulářů", "type": "string", "len": 120},
 
 		{"id": "gmApiKey", "name": "Google Maps API Key", "type": "string", "len": 80},
 

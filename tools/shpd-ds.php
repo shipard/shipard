@@ -3,7 +3,7 @@
 
 define ("__APP_DIR__", getcwd());
 
-$cfgServerString = file_get_contents ('config/_server_channelInfo.json');
+$cfgServerString = @file_get_contents ('config/_server_channelInfo.json');
 if (!$cfgServerString)
 {
 	echo "### ERROR: file `config/_server_channelInfo.json` not found.\n";
