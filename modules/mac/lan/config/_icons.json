@@ -125,6 +125,37 @@
 		"bsi": "bi-emoji-frown",
 		"mdi": "sentiment_dissatisfied"
 	},
+	"tables/mac.lan.wifiClients": {
+		"fa5": "fa-wifi",
+		"fa6pro": "fa-wifi",
+		"bsi": "bi-wifi",
+		"mdi": "sentiment_dissatisfied"
+	},
+
+	"tables/mac.iot.esigns": {
+		"fa5": "fa-desktop",
+		"fa6pro": "fa-desktop",
+		"bsi": "bi-display",
+		"mdi": ""
+	},
+	"tables/mac.iot.esignsKinds": {
+		"fa5": "fa-clone",
+		"fa6pro": "fa-clone",
+		"bsi": "bi-copy",
+		"mdi": ""
+	},
+	"tables/mac.iot.params": {
+		"fa5": "fa-list",
+		"fa6pro": "fa-list",
+		"bsi": "bi-list-task",
+		"mdi": ""
+	},
+	"tables/mac.iot.params": {
+		"fa5": "fa-list",
+		"fa6pro": "fa-list",
+		"bsi": "bi-list-task",
+		"mdi": ""
+	},
 
 
 
