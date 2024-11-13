@@ -3457,9 +3457,9 @@ class ViewHeads extends TableView
 
 		if ($showDate === 'c' && $item['dateIssue']->format('ymd') === $this->today)
 		{
-			$props [] = ['icon' => 'icon-clock-o', 'text' => \E10\df ($item['activateTimeFirst']), 'class' => ''];
+			$props [] = ['icon' => 'user/clock', 'text' => \E10\df ($item['activateTimeFirst']), 'class' => ''];
 			if ($item['activateTimeFirst'] != $item['activateTimeLast'])
-				$props [] = ['icon' => 'icon-pencil', 'text' => \E10\df ($item['activateTimeLast']), 'class' => ''];
+				$props [] = ['icon' => 'user/edit', 'text' => \E10\df ($item['activateTimeLast']), 'class' => ''];
 			$listItem ['t2'] = $props;
 		}
 		else
