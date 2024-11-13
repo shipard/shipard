@@ -4225,10 +4225,11 @@ class FormHeads extends TableForm
 	{
 		if ($srcTableId === 'e10doc.core.heads')
 		{
+			$date = Utils::dateIsBlank($recData['dateAccounting']) ? Utils::today() : Utils::createDateTime ($recData['dateAccounting']);
 			$cp = [
 				'docType' => strval ($recData['docType']),
 				'srcCurrency' => $recData['homeCurrency'], 'dstCurrency' => $recData['currency'],
-				'dateAccounting' => utils::createDateTime ($recData['dateAccounting'])->format('Y-m-d'),
+				'dateAccounting' => $date->format('Y-m-d'),
 				'srcDocNdx' => $recData['ndx'],
 			];
 			return $cp;
