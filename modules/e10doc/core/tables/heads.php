@@ -4273,17 +4273,17 @@ class FormHeads extends TableForm
 
 	protected function wasteSettings()
 	{
-		$cy = intval(Utils::createDateTime($this->recData['dateAccounting'] ?? NULL)->format('Y'));
+		$cy = intval(Utils::createDateTime($this->recData['dateAccounting'] ?? Utils::today())->format('Y'));
 		$wasteSettings = $this->app()->cfgItem('e10doc.waster.settings.'.$cy, NULL);
 		return $wasteSettings;
 	}
 
 	protected function wasteDocMode()
 	{
-		$cy = intval(Utils::createDateTime($this->recData['dateAccounting'] ?? NULL)->format('Y'));
+		$cy = intval(Utils::createDateTime($this->recData['dateAccounting'] ?? Utils::today())->format('Y'));
 		$wasteSettings = $this->app()->cfgItem('e10doc.waster.settings.'.$cy, NULL);
 		$docType = $this->recData['docType'] ?? '';
-		if (!isset($wasteSettings['docModes'][$docType]) || !$wasteSettings['docModes'][$docType])
+		if (!$wasteSettings || !isset($wasteSettings['docModes'][$docType]) || !$wasteSettings['docModes'][$docType])
 			return 0;
 
 		return $wasteSettings['docModes'][$docType];
