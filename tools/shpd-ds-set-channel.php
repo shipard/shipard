@@ -41,7 +41,14 @@ function setChannel ($channel)
 		return;
 	}
 
-	$serverChannelCfg = $cfgServer['channels'][$channel] ?? NULL;
+	$serverConfig = \Shipard\Utils\Utils::loadCfgFile ('/etc/shipard/server.json');
+	if (!$serverConfig)
+	{
+		echo '###ERROR: file `/etc/shipard/server.json` is invalid'."\n";
+		return;
+	}
+
+	$serverChannelCfg = $serverConfig['channels'][$channel] ?? NULL;
 	if (!$serverChannelCfg)
 	{
 		echo 'Channel `'.$channel.'` is invalid'."\n";
