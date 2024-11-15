@@ -1361,7 +1361,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 				symlink('/usr/lib/shipard-devel/tools/shpd-ds.php', '/bin/shpd-ds');
 
 			if (!is_file('/bin/shpd-ds-set-channel'))
-				symlink('/usr/lib/shipard-devel/tools/shpd-ds-set-channel.php', 'shpd-ds-set-channel');
+				symlink('/usr/lib/shipard-devel/tools/shpd-ds-set-channel.php', '/bin/shpd-ds-set-channel');
 
 			if (!is_file('/bin/shpd-srv'))
 				symlink('/usr/lib/shipard-devel/tools/shpd-srv.php', '/bin/shpd-srv');
