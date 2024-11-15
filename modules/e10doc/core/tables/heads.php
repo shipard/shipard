@@ -3455,7 +3455,7 @@ class ViewHeads extends TableView
 		if ($item ['symbol1'] != '' && $item ['symbol1'] !== $item ['docNumber'])
 			$props [] = ['icon' => 'system/iconExchange', 'text' => $item ['symbol1'], 'class' => ''];
 
-		if ($showDate === 'c' && $item['dateIssue']->format('ymd') === $this->today)
+		if ($showDate === 'c' && !Utils::dateIsBlank($item['dateIssue']) && $item['dateIssue']->format('ymd') === $this->today)
 		{
 			$props [] = ['icon' => 'user/clock', 'text' => \E10\df ($item['activateTimeFirst']), 'class' => ''];
 			if ($item['activateTimeFirst'] != $item['activateTimeLast'])
