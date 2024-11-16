@@ -427,10 +427,13 @@ class ShpdDSApp extends \Shipard\Application\ApplicationCore
 		$cfg = '';
 
 		// -- web via https
-		$cfg .= "# ".$dsInfo['name']."; app cfg ver 0.5\n";
+		$cfg .= "# ".$dsInfo['name']."; app cfg ver 0.6\n";
 
 		$cfg .= "server {\n";
 		$cfg .= "\tlisten 443 ssl http2;\n";
+		if ($this->cfgServer['ipv6Enabled'] ?? 0)
+			$cfg .= "\tlisten [::]:443 ssl http2;\n";
+
 		$cfg .= "\tserver_name $domains;\n";
 		$cfg .= "\troot ".$this->cfgServer['dsRoot']."$dsid;\n";
 		$cfg .= "\tindex index.php;\n";
