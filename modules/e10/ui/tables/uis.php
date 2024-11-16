@@ -123,6 +123,8 @@ class TableUIs extends DbTable
 			// -- web via https
 			$cfg .= "server {\n";
 			$cfg .= "\tlisten 443 ssl http2;\n";
+			if ($this->app()->cfgServer['ipv6Enabled'] ?? 0)
+				$cfg .= "\tlisten [::]:443 ssl http2;\n";
 			$cfg .= "\tserver_name $domain;\n";
 			$cfg .= "\troot /var/lib/shipard/data-sources/$dsid;\n";
 			$cfg .= "\tindex index.php;\n";
@@ -138,6 +140,8 @@ class TableUIs extends DbTable
 			// -- http redirects
 			$cfg .= "server {\n";
 				$cfg .= "\tlisten 80;\n";
+				if ($this->app()->cfgServer['ipv6Enabled'] ?? 0)
+					$cfg .= "\tlisten [::]:80 ssl http2;\n";
 				$cfg .= "\tserver_name $domain";
 				$cfg .= ";\n";
 
