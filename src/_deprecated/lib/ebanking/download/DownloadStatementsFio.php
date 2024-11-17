@@ -59,9 +59,9 @@ class DownloadStatementsFio extends \lib\ebanking\download\DownloadStatements
 
 		if ($data === FALSE)
 		{
-			$dsId = $this->app->cfgItem ('dsid', 0);
-			$tokenId = substr ($this->bankAccountRec['apiToken'], 0, 6).'...'.substr ($this->bankAccountRec['apiToken'], -6);
-			error_log ("FIO.downloadOneStatement.pdf failed; dsid: `$dsId`; toke: `$tokenId`");
+			//$dsId = $this->app->cfgItem ('dsid', 0);
+			//$tokenId = substr ($this->bankAccountRec['apiToken'], 0, 6).'...'.substr ($this->bankAccountRec['apiToken'], -6);
+			//error_log ("FIO.downloadOneStatement.pdf failed; dsid: `$dsId`; toke: `$tokenId`");
 			return;
 		}
 		file_put_contents($filePdf, $data);
@@ -82,9 +82,9 @@ class DownloadStatementsFio extends \lib\ebanking\download\DownloadStatements
 		$data = @file_get_contents($urlData);
 		if ($data === FALSE)
 		{
-			$dsId = $this->app->cfgItem ('dsid', 0);
-			$tokenId = substr ($this->bankAccountRec['apiToken'], 0, 6).'...'.substr ($this->bankAccountRec['apiToken'], -6);
-			error_log ("FIO.downloadOneStatement.data failed; dsid: `$dsId`; toke: `$tokenId`");
+			//$dsId = $this->app->cfgItem ('dsid', 0);
+			//$tokenId = substr ($this->bankAccountRec['apiToken'], 0, 6).'...'.substr ($this->bankAccountRec['apiToken'], -6);
+			//error_log ("FIO.downloadOneStatement.data failed; dsid: `$dsId`; token: `$tokenId`");
 			return;
 		}
 		file_put_contents($fileData, $data);
