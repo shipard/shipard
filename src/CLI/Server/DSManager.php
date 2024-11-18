@@ -344,4 +344,31 @@ class DSManager extends Utility
 		$this->fixPermsDir('imgcache');
 		$this->fixPermsDir('res');
 	}
+
+	public function cleanOldFiles ()
+	{
+		$oldDir = getcwd();
+		$cmdCleanOldFiles = 'find . -mtime +1 -type f -delete';
+
+		chdir (__APP_DIR__.'/tmp');
+		passthru ($cmdCleanOldFiles);
+		chdir (__APP_DIR__.'/tmp/api/access');
+		passthru ($cmdCleanOldFiles);
+
+		// -- imgcache
+		if (is_dir(__APP_DIR__ . '/imgcache/att'))
+		{
+			$cmdCleanImgCache = 'find . -mtime +1095 -type f -delete'; // 3 * 365 - 3 years
+			chdir(__APP_DIR__ . '/imgcache/att');
+			passthru($cmdCleanImgCache);
+		}
+		if (is_dir(__APP_DIR__ . '/imgcache/pdf'))
+		{
+			$cmdCleanImgCache = 'find . -mtime +365 -type f -delete'; // 1 year
+			chdir(__APP_DIR__ . '/imgcache/pdf');
+			passthru($cmdCleanImgCache);
+		}
+
+		chdir ($oldDir);
+	}
 }

@@ -901,6 +901,14 @@ class ShpdDSApp extends \Shipard\Application\ApplicationCore
 		return $dsm->fixPerms();
 	}
 
+	public function dsCleanOldFiles ()
+	{
+		$dsm = new DSManager($this);
+		$dsm->init();
+
+		return $dsm->cleanOldFiles();
+	}
+
 	public function dsLs ()
 	{
 		$dsList = [];
@@ -1324,7 +1332,7 @@ class ShpdDSApp extends \Shipard\Application\ApplicationCore
 		if (count ($this->arguments) == 0)
 			return $this->help ();
 
-		if (!$this->superuser() && in_array($this->command (), ['ds-fix-perms']))
+		if (!$this->superuser() && in_array($this->command (), ['ds-fix-perms', 'ds-clean-old-files']))
 			return $this->manager->err ('Need to be root');
 
 		$this->quiet = $this->arg ('quiet');
@@ -1366,7 +1374,8 @@ class ShpdDSApp extends \Shipard\Application\ApplicationCore
 			case	'db-create':			return $this->dbCreate ();
 			case	'db-restore':			return $this->dbRestore ();
 
-			case	'ds-fix-perms':		return $this->dsFixPerms ();
+			case	'ds-fix-perms':				return $this->dsFixPerms ();
+			case	'ds-clean-old-files':	return $this->dsCleanOldFiles ();
 		}
 
 		$this->manager->err ('unknown command...');

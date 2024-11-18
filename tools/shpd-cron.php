@@ -84,33 +84,6 @@ class CronApp extends Application
 		}
 	}
 
-	public function cleanTempFiles ()
-	{
-		$oldDir = getcwd();
-		$cmdCleanOldFiles = 'find . -mtime +1 -type f -delete';
-
-		chdir (__APP_DIR__.'/tmp');
-		passthru ($cmdCleanOldFiles);
-		chdir (__APP_DIR__.'/tmp/api/access');
-		passthru ($cmdCleanOldFiles);
-
-		// -- imgcache
-		if (is_dir(__APP_DIR__ . '/imgcache/att'))
-		{
-			$cmdCleanImgCache = 'find . -mtime +1095 -type f -delete'; // 3 * 365 - 3 years
-			chdir(__APP_DIR__ . '/imgcache/att');
-			passthru($cmdCleanImgCache);
-		}
-		if (is_dir(__APP_DIR__ . '/imgcache/pdf'))
-		{
-			$cmdCleanImgCache = 'find . -mtime +365 -type f -delete'; // 1 year
-			chdir(__APP_DIR__ . '/imgcache/pdf');
-			passthru($cmdCleanImgCache);
-		}
-
-		chdir ($oldDir);
-	}
-
 	public function clearUserSessions ()
 	{
 		$q = 'DELETE FROM [e10_persons_sessions] WHERE [created] IS NULL'; // TODO: delete in some next version
@@ -139,7 +112,6 @@ class CronApp extends Application
 
 	public function cronMorning ()
 	{
-		$this->cleanTempFiles ();
 		$this->clearUserSessions();
 		$this->clearNotifications();
 	}
