@@ -1610,6 +1610,18 @@ function e10viewerDoComboClick (e, event)
 		if (form.attr ('data-readonly') !== undefined)
 			return;
 		var options = {"appendRowList": "rows", "appendRowItemPK": pk};
+
+		var iel = e.get(0);
+		for (var i = 0, attrs = iel.attributes, l = attrs.length; i < l; i++)
+		{
+			var attrName = attrs.item(i).nodeName;
+			if (attrName.substring(0, 7) !== 'data-cc')
+				continue;
+			var valParts = attrs.item(i).nodeValue.split(':');
+
+			options[valParts[0]] = b64DecodeUnicode(valParts[1]);
+		}
+
 		if (!e10SaveOnChange (form, options))
 			setTimeout (function () {e10viewerDoComboClick (e, 0)}, 50);
 	}

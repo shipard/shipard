@@ -471,7 +471,11 @@ checkIt=(b64DecodeUnicode(valParts[1])==='1');inputElement[0].checked=checkIt;}e
 inputElement.val(b64DecodeUnicode(valParts[1]));}valueInput.addClass('e10-ino-saveOnChange');}if(event!==0&&event.shiftKey)valueInput.attr('data-softchange','1');e10FormSetAsModified(valueInput);if(valueInput.hasClass('e10-ino-saveOnChange'))valueInput.change();target.find('input.e10-inputRefId').focus();}return;}if(viewer.attr('data-combo-rows-target')){var
 formId=viewer.attr('data-combo-formid-target');var
 form=$('#'+formId);if(form.attr('data-readonly')!==undefined)return;var
-options={"appendRowList":"rows","appendRowItemPK":pk};if(!e10SaveOnChange(form,options))setTimeout(function(){e10viewerDoComboClick(e,0)},50);}}var
+options={"appendRowList":"rows","appendRowItemPK":pk};var
+iel=e.get(0);for(var
+i=0,attrs=iel.attributes,l=attrs.length;i<l;i++){var
+attrName=attrs.item(i).nodeName;if(attrName.substring(0,7)!=='data-cc')continue;var
+valParts=attrs.item(i).nodeValue.split(':');options[valParts[0]]=b64DecodeUnicode(valParts[1]);}if(!e10SaveOnChange(form,options))setTimeout(function(){e10viewerDoComboClick(e,0)},50);}}var
 dadCounter=0;var
 lastDadElement=null;function
 e10viewerAttDragEnter(e,event){event.stopPropagation();event.preventDefault();if(lastDadElement!=null)lastDadElement.removeClass('dropzone');dadCounter++;lastDadElement=e;if(!e.hasClass('dropzone')){e.addClass('dropzone');}}function
