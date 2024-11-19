@@ -1,0 +1,8 @@
+{
+	"e10doc-buy": {
+		"options":
+			[
+				{"cfgKey": "purchItemLoypComboCat", "cfgName": "Výchozí kategorie dárků pro výkup", "reference": "e10.witems.itemcategories"}
+			]
+	}
+}

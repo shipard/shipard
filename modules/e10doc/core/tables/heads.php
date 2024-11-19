@@ -366,6 +366,8 @@ class TableHeads extends DbTable
 		$this->doTaxReports($recData);
 		$this->doRos($recData);
 		$this->doInbox($recData);
+
+		$this->doDocsOps ($recData);
 	}
 
 	public function checkBeforeSave (&$recData, $ownerData = NULL)
@@ -1016,7 +1018,11 @@ class TableHeads extends DbTable
 			$witem = array ();
 			$operation = 0;
 			if (isset ($saveOptions['appendRowItemPK']))
+			{
 				$witem = $this->loadItem ($saveOptions['appendRowItemPK'], 'e10_witems_items');
+				if (isset ($saveOptions['operation']))
+					$operation = intval($saveOptions['operation']);
+			}
 			else
 			if (isset ($saveOptions['appendRowItemBarcode']))
 			{
@@ -1339,6 +1345,28 @@ class TableHeads extends DbTable
 
 		$rosEngine = $this->app()->createObject($rosType['engine']);
 		$rosEngine->doDocument ($rosRegNdx, $recData);
+	}
+
+	public function doDocsOps ($recData)
+	{
+		if ($recData['docStateMain'] !== 2)
+			return;
+
+		$docsOps = $this->app()->cfgItem('e10doc.docs.ops', NULL);
+		if (!$docsOps)
+			return;
+
+		foreach ($docsOps as $do)
+		{
+			if (!isset($do['docTypes']) || !in_array($recData['docType'], $do['docTypes']))
+				continue;
+			$doEngine = $this->app()->createObject($do['engine']);
+
+			if ($doEngine)
+			{
+				$doEngine->doDocument ($recData);
+			}
+		}
 	}
 
 	public function doWaste (&$recData)

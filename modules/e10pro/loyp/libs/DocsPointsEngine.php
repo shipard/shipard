@@ -23,6 +23,9 @@ class DocsPointsEngine extends \Shipard\Base\Utility
 
   protected function loadItems()
   {
+    if (!$this->documentRecData['loyp'])
+      return;
+
     // -- points settings
     $q = [];
     array_push ($q, 'SELECT [points].*, [cats].fullName AS categoryName');
@@ -117,6 +120,9 @@ class DocsPointsEngine extends \Shipard\Base\Utility
     if ($this->doSave)
     {
       $this->db()->query('DELETE FROM [e10pro_loyp_pointsJournal] WHERE [document] = %i', $this->documentNdx);
+      if (!$this->documentRecData['loyp'])
+        return;
+
       // -- add to journal
       $journalItem = [
         'rowType' => 1,
@@ -165,7 +171,7 @@ class DocsPointsEngine extends \Shipard\Base\Utility
     }
 
     $paneTitle = [
-      ['text' => 'Věrnostní body', 'class' => 'h2'],
+      ['text' => 'Věrnostní body'.$this->documentRecData['loyp'], 'class' => 'h2'],
       ['text' => Utils::nf($this->totalPts, 0), 'class' => 'h2 pull-right'],
     ];
 
@@ -176,11 +182,46 @@ class DocsPointsEngine extends \Shipard\Base\Utility
     $this->docDetailContent = ['table' => $t, 'header' => $h, 'pane' => 'e10-pane e10-pane-table', 'paneTitle' => $paneTitle];
   }
 
-  public function doDocument($docRecData, $doSave = 0)
+  protected function checkLoyp(&$docRecData)
   {
+    $loyps = $this->app()->cfgItem('e10pro.loyps.loyps', NULL);
+    if (!$loyps)
+      return;
+
+    $docDate = $docRecData['dateAccounting']->format('Y-m-d');
+    $loypCfg = NULL;
+    $loypNdx = 0;
+
+    foreach ($loyps as $loyp)
+    {
+      if (isset($loyp['validFrom']) && $docDate < $loyp['validFrom'])
+        continue;
+      if (isset($loyp['validTo']) && $docDate > $loyp['validTo'])
+        continue;
+
+      if ($docRecData['docType'] === 'purchase' && $loypCfg['type'] !== 0)
+        continue;
+
+      $loypCfg = $loyp;
+      $loypNdx = $loyp['ndx'];
+      break;
+    }
+
+    if ($docRecData['loyp'] != $loypNdx)
+    {
+      $docRecData['loyp'] = $loypNdx;
+      $this->db()->query ('UPDATE [e10doc_core_heads] SET loyp = %i', $loypCfg['ndx'], ' WHERE ndx = %i', $docRecData['ndx']);
+    }
+  }
+
+  public function doDocument(&$docRecData, $doSave = 0)
+  {
+    $this->checkLoyp($docRecData);
+
     $this->doSave = $doSave;
     $this->documentNdx = $docRecData['ndx'];
     $this->documentRecData = $docRecData;
+
     $this->loadItems();
     $this->createPoints();
   }

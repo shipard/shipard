@@ -506,6 +506,21 @@ class Detail extends \Shipard\Base\DocumentCard
 			$this->addContent ('body', $wce->checkWRContent);
 	}
 
+	function createLoyp($recData)
+	{
+		if ($this->app()->model()->table ('e10pro.loyp.pointsJournal') === FALSE)
+			return;
+		if ($recData['docType'] !== 'purchase')
+			return;
+
+		$dpe = new \e10pro\loyp\libs\DocsPointsEngine($this->app);
+		$dpe->doDocument($recData);
+		$dpe->createDocDetailContent();
+
+		if ($dpe->docDetailContent)
+			$this->addContent ('body', $dpe->docDetailContent);
+	}
+
 	public function createContentBody ()
 	{
 		$docType = $this->app->cfgItem ('e10.docs.types.' . $this->recData['docType']);
@@ -548,6 +563,7 @@ class Detail extends \Shipard\Base\DocumentCard
 
 		$this->addContent ('body', $this->docsRows ());
 
+		$this->createLoyp($this->recData);
 		$this->createWasteReport($this->recData);
 
 		/*

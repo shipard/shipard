@@ -19,6 +19,8 @@
 			"enumCfg": {"cfgItem": "e10.balance", "cfgValue": "", "cfgText": "name"}},
 		{"id": "itemIsSet", "name": "Položka je sada", "type": "enumInt",
 			"enumValues": {"0": "ne", "1": "ano, nutno doplnit do dokladu", "2": "ano, nutno přepočítat", "99": "ano, hotovo"}},
+		{"id": "itemIsLoyp", "name": "Věrnostní program", "type": "enumInt",
+			"enumValues": {"0": "ne", "1": "ano, dárek"}},
     {"id": "text", "name": "Text", "type": "string", "len": 220},
 		{"id": "usrText1", "name": "Už. text 1", "type": "string", "len": 25},
 

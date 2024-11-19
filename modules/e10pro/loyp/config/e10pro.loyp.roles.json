@@ -3,7 +3,9 @@
 		"name": "Věrnostní program",
 		"roles": ["user"],
 		"viewers": {
-			"e10pro.loyp.pointsSettings": {"default": 2}
+			"e10pro.loyp.loyps": {"default": 2},
+			"e10pro.loyp.pointsSettings": {"default": 2},
+			"e10pro.loyp.priceListPoints": {"default": 2}
 		},
 		"widgets": {
 			"e10pro.loyp.libs.reports.ReportAnalyzePoints": 2

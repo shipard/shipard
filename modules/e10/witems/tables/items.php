@@ -330,6 +330,7 @@ class ViewItems extends TableView
 	var $units;
 	var $itemKind = FALSE;
 	var $activeCategory = FALSE;
+	var $loypMode = 0;
 
 	CONST PRICE_NONE = 0, PRICE_SALE = 1, PRICE_BUY = 2;
 	var $showPrice = self::PRICE_SALE;
@@ -373,10 +374,15 @@ class ViewItems extends TableView
 		{
 			if ($topTabId[0] === 't') // item type
 				$this->defaultType = substr ($topTabId, 1);
-			else
-			if ($topTabId[0] === 'c') // item category
+			elseif ($topTabId[0] === 'c') // item category
 			{
-				$catNdx = intval (substr($topTabId, 1));
+				if ($topTabId[1] === 'l')
+				{
+					$this->loypMode = 1;
+					$catNdx = intval (substr($topTabId, 2));
+				}
+				else
+					$catNdx = intval (substr($topTabId, 1));
 				$catRootPath = $this->app->cfgItem ('e10.witems.categories.list.'.$catNdx, '');
 				if ($catRootPath != '')
 				{

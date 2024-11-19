@@ -1,0 +1,31 @@
+{
+	"id": "e10pro.loyp.loyps", "sql": "e10pro_loyp_loyps", "name": "Věrnostní programy",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "loypType", "name": "Druh programu", "type": "enumInt",
+		"enumCfg": {"cfgItem": "e10pro.loyp.types", "cfgValue": "ndx", "cfgText": "fn"}},
+
+    {"id": "fullName", "name": "Název", "type": "string", "len": 120},
+    {"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 40},
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{
+			"id": "default", "class": "e10pro.loyp.ViewLoyps",
+      "details": {
+        "default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.loyp.ViewDetailLoyp"}
+      }
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.loyp.FormLoyp"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"options": ["configSource"],
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

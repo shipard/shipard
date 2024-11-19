@@ -17,8 +17,9 @@ class FormPurchaseDocsRows extends TableForm
 			$this->addColumnInput ('itemType', TableForm::coHidden);
 			$this->addColumnInput ('itemBalance', TableForm::coHidden);
 			$this->addColumnInput ('itemIsSet', TableForm::coHidden);
+			$this->addColumnInput ('itemIsLoyp', TableForm::coHidden);
 			$this->addColumnInput ('rowVds', TableForm::coHidden);
-			//$this->addColumnInput ("priceSource", TableForm::coHidden);
+			$this->addColumnInput ('operation', TableForm::coHidden);
 
 			if ($mainMode === self::ltGrid)
 			{

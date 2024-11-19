@@ -1,13 +1,15 @@
 {
   "id": "e10pro.loyp",
   "name": "Věrnostní program",
-  "tables": ["pointsSettings", "pointsJournal"],
+  "tables": ["loyps", "pointsSettings", "pointsJournal", "priceListPoints"],
 	"modules": ["e10/base", "e10/persons"],
   "config": [
     {"id": "+appSkeleton", "file": "appSkeleton.json"},
     {"id": "+e10.persons.roles", "file": "e10pro.loyp.roles.json"},
     {"id": "+e10doc.docs.ops", "file": "docsOps.json"},
     {"id": "+reportsGroups", "file": "reportsGroups.json"},
-    {"id": "+reports", "name": "Výstupy", "file": "reports.json"}
+    {"id": "+reports", "name": "Výstupy", "file": "reports.json"},
+    {"id": "+appOptions", "file": "e10.appOptions.json"},
+    {"id": "+e10pro.loyp.types", "file": "e10pro.loyp.types.json"}
   ]
 }

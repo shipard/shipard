@@ -13,5 +13,10 @@
               "docTypes": {
                 "invni" : {"order": 20000}
               }
+  },
+	"10400015": {"title": "Dárek", "docDir": 1, "invDirection": 0,
+              "docTypes": {
+                "purchase" : {"order": 201000}
+              }
   }
 }

@@ -167,6 +167,10 @@
 		  "enumValues": {"0": "Nepodléhá EET", "1": "Úspěch", "2": "Zatím neodesláno", "3": "Chyba"}},
 	  {"id": "rosRecord", "name": "Aktivní záznam EET", "type": "int"},
 
+	  {"id": "loyp", "name": "Věrnostní program", "type": "enumInt",
+		  "enumCfg": {"cfgItem": "e10pro.loyp.loyps", "cfgValue": "", "cfgText": "sn"}},
+    {"id": "loypOtherDoc", "name": "Související doklad", "type": "int", "reference": "e10doc.core.heads"},
+
 	  {"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
   ],

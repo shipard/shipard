@@ -260,7 +260,7 @@ class TableRows extends DbTable
 			$op = $this->app()->cfgItem ('e10.docs.operations.' . $recData ['operation'], FALSE);
 		}
 
-		if ($recData ['invDirection'] === 0 && isset ($op['invDirection'])  && $ownerData['warehouse'] != 0)
+		if (/*$recData ['invDirection'] === 0 &&*/ isset ($op['invDirection'])  && $ownerData['warehouse'] != 0)
 			$recData ['invDirection'] = $op['invDirection'];
 
 		if (isset($op['setTaxBase']))
@@ -357,6 +357,11 @@ class TableRows extends DbTable
 			$recData ['workOrder'] = $ownerData ['workOrder'];
 		if ((!isset($recData ['property']) || $recData ['property'] == 0) && isset($ownerData ['property']) && $ownerData ['property'] != 0)
 			$recData ['property'] = $ownerData ['property'];
+
+		if ($ownerData['docType'] === 'purchase' && $recData ['operation'] == 10400015)
+			$recData ['itemIsLoyp'] = 1;
+		else
+			$recData ['itemIsLoyp'] = 0;
 
 		parent::checkBeforeSave ($recData, $ownerData);
 	}

@@ -508,6 +508,17 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 		{
 			$this->addColumnInput('personNomencCity', self::coNoLabel);
 		}
+
+
+		$q = [];
+    array_push ($q, 'SELECT SUM([journal].cntPoints) AS sumCntPoints');
+    array_push ($q, ' FROM [e10pro_loyp_pointsJournal] AS [journal]');
+		array_push ($q, ' WHERE [person] = %i', $personNdx);
+		$cntLoypPoints = $this->app()->db()->query($q)->fetch();
+		if ($cntLoypPoints)
+		{
+			$this->addStatic(Utils::nf($cntLoypPoints['sumCntPoints']).' bodů');
+		}
 	}
 
 	public function addFormPersonInfo_Address ($addresses, $columnId, $suggestedAddressNdx, $labelText)

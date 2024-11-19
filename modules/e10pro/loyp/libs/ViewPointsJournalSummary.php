@@ -37,7 +37,7 @@ class ViewPointsJournalSummary extends TableView
 	{
 		$fts = $this->fullTextSearch ();
 
-		$q = [];// = '';
+		$q = [];
     array_push ($q, 'SELECT [journal].person, SUM([journal].cntPoints) AS sumCntPoints,');
     array_push ($q, ' [persons].fullName AS personFullName, [persons].id AS personId');
     array_push ($q, ' FROM [e10pro_loyp_pointsJournal] AS [journal]');

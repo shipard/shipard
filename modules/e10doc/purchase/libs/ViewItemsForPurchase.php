@@ -12,6 +12,7 @@ use \e10\base\libs\UtilsBase;
 class ViewItemsForPurchase extends \e10\witems\ViewItems
 {
 	var $purchItemComboImages = 0;
+	var $loypsInfo = [];
 
 	public function init ()
 	{
@@ -29,6 +30,8 @@ class ViewItemsForPurchase extends \e10\witems\ViewItems
 		$comboByCats = intval($this->table->app()->cfgItem ('options.e10doc-buy.purchItemComboCats', 0));
 		$defaultCat = intval($this->table->app()->cfgItem ('options.e10doc-buy.purchItemDefaultComboCat', 0));
 		$purchItemComboAll = intval($this->table->app()->cfgItem ('options.e10doc-buy.purchItemComboAll', 1));
+
+		$loypCats = intval($this->table->app()->cfgItem ('options.e10doc-buy.purchItemLoypComboCat', 0));
 
 		$this->purchItemComboImages = intval($this->table->app()->cfgItem ('options.e10doc-buy.purchItemComboImages', 0));
 
@@ -48,8 +51,10 @@ class ViewItemsForPurchase extends \e10\witems\ViewItems
 			{
 				if ($itemTypeId === 'none')
 					continue;
-				$bt [] = array ('id' => 't'.$itemTypeId, 'title' => $itemType['shortName'], 'active' => 0,
-					'addParams' => array ('type' => $itemTypeId));
+				$bt [] = [
+					'id' => 't'.$itemTypeId, 'title' => $itemType['shortName'], 'active' => 0,
+					'addParams' => ['type' => $itemTypeId]
+				];
 			}
 		}
 
@@ -60,6 +65,16 @@ class ViewItemsForPurchase extends \e10\witems\ViewItems
 			forEach ($cats as $catId => $cat)
 			{
 				$bt [] = ['id' => 'c'.$cat['ndx'], 'title' => $cat['shortName'], 'active' => ($defaultCat == $cat['ndx']) ? 1 : 0];
+			}
+		}
+
+		if ($loypCats)
+		{
+			$loypCatPath = $this->table->app()->cfgItem ('e10.witems.categories.list.'.$loypCats, '---');
+			$loypCat = $this->table->app()->cfgItem ("e10.witems.categories.tree".$loypCatPath, NULL);
+			if ($loypCat)
+			{
+				$bt [] = ['id' => 'cl'.$loypCat['ndx'], 'title' => $loypCat['shortName'], 'active' => 0];
 			}
 		}
 
@@ -124,6 +139,12 @@ class ViewItemsForPurchase extends \e10\witems\ViewItems
 		$listItem ['t2'] = $item['description'];
 		$listItem ['i2'] = $item['id'];
 
+		if ($this->loypMode)
+		{
+			if ($item['priceSell'])
+				$listItem ['i1'] = ['text' => utils::nf($item['priceSell'], 2)];
+		}
+		else
 		if ($thisItemType['kind'] !== 2)
 		{
 			$listItem ['i1'] = ['text' => ''];
@@ -166,6 +187,12 @@ class ViewItemsForPurchase extends \e10\witems\ViewItems
 			}
 		}
 
+		if ($this->loypMode)
+		{
+			$listItem ['data-cc']['operation'] = '10400015';
+			$listItem ['data-cc']['itemIsLoyp'] = '1';
+		}
+
 		return $listItem;
 	}
 
@@ -177,7 +204,33 @@ class ViewItemsForPurchase extends \e10\witems\ViewItems
 		if (isset ($this->itemsStates [$item ['pk']]))
 			$item ['i2'] = \E10\nf ($this->itemsStates [$item ['pk']]['quantity'], 2).' '.$this->itemsStates [$item ['pk']]['unit'] .
 					(isset($item ['i2']['text']) ? ' / '.$item ['i2']['text'] : '');
+
+		if (isset($this->loypsInfo[$item['pk']]))
+		{
+			$item['i1'] = ['text' => Utils::nf($this->loypsInfo[$item['pk']]['pricePoints']), 'suffix' => 'bodů', 'class' => 'id'];
+		}
 	}
 
+	public function selectRows2 ()
+	{
+		if (!count ($this->pks))
+			return;
+
+		parent::selectRows2();
+
+		if (!$this->loypMode)
+			return;
+
+		$q = [];
+		array_push ($q, 'SELECT [priceList].*');
+		array_push ($q, ' FROM [e10pro_loyp_priceListPoints] AS [priceList]');
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND [item] IN %in', $this->pks);
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$this->loypsInfo[$r['item']]['pricePoints'] = $r['pricePoints'];
+		}
+	}
 }
 

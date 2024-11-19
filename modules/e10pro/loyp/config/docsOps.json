@@ -2,5 +2,9 @@
   "loyp-purchase": {
     "docTypes": ["purchase"],
     "engine": "e10pro.loyp.libs.DocsPointsEngine"
+  },
+  "loyp-purchase-sale-doc": {
+    "docTypes": ["purchase"],
+    "engine": "e10pro.loyp.libs.LoypPurchaseSaleDocGenerator"
   }
 }
