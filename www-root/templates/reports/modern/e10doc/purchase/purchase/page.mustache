@@ -174,6 +174,7 @@
 
 	{{^data.flags.multiLineRows}}
 		{{#data.rows}}
+			{{^itemIsLoypPresent}}
 			<tr>
 				<td class='itemID'>{{itemID}}</td>
 				<td>
@@ -192,10 +193,39 @@
 				<td class='number'>{{print.priceItem}}</td>
 				<td class='number'>{{print.priceAll}}</td>
 			</tr>
+			{{/itemIsLoypPresent}}
 		{{/data.rows}}
+		{{#data.flags.rowsWithLoypPresent}}
+			<tr>
+				<td colspan="6">Dárek:</td>
+			</tr>
+			{{#data.rows}}
+				{{#itemIsLoypPresent}}
+				<tr>
+					<td class='itemID'>{{itemID}}</td>
+					<td>
+						{{text}}{{#additionsMarks}}<sup> {{additionsMarks}}</sup>{{/additionsMarks}}{{#itemDecription}}<div style="font-size: 80%; color: #777;">{{itemDecription}}</div>{{/itemDecription}}
+						{{#data.flags.itemCodesList}}
+							<ul class="itemCodesList{{#data.flags.itemCodesInline}} itemCodesListInline{{/data.flags.itemCodesInline}}">
+								{{#rowItemCodes}}
+									{{#itemCodeText}}<li>{{itemCodeName}}: {{itemCodeText}}</li>{{/itemCodeText}}
+								{{/rowItemCodes}}
+							</ul>
+						{{/data.flags.itemCodesList}}
+						{{#rowDataHtmlCode}}<div>{{{rowDataHtmlCode}}}</div>{{/rowDataHtmlCode}}
+					</td>
+					<td class='number'>{{quantity}}</td>
+					<td>{{@dict;dataItem:print.unit}}</td>
+					<td class='number'>{{print.priceItem}}</td>
+					<td class='number'>{{print.priceAll}}</td>
+				</tr>
+				{{/itemIsLoypPresent}}
+			{{/data.rows}}
+		{{/data.flags.rowsWithLoypPresent}}
 	{{/data.flags.multiLineRows}}
 	{{#data.flags.multiLineRows}}
 		{{#data.rows}}
+			{{^itemIsLoypPresent}}
 			<tr>
 				<td class="itemRow" colspan="7" style="font-weight: semi-bold;">
 					{{text}}{{#additionsMarks}}<sup> {{additionsMarks}}</sup>{{/additionsMarks}}
@@ -212,6 +242,7 @@
 				<td class='number'>{{print.priceItem}}</td>
 				<td class='number'>{{print.priceAll}}</td>
 			</tr>
+			{{/itemIsLoypPresent}}
 		{{/data.rows}}
 	{{/data.flags.multiLineRows}}
 </table>
