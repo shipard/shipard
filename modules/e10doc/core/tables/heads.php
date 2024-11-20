@@ -1364,7 +1364,7 @@ class TableHeads extends DbTable
 
 			if ($doEngine)
 			{
-				$doEngine->doDocument ($recData);
+				$doEngine->doDocument ($recData, 1);
 			}
 		}
 	}
@@ -3779,6 +3779,10 @@ class FormHeads extends TableForm
 			else
 				$this->recData ['totalCash'] = $this->recData ['toPay'];
 		}
+
+		// -- lp
+		$sumLPPoints = $this->table->db()->query ('SELECT SUM(lpPriceAll) as sumLPPriceAll FROM [e10doc_core_rows] WHERE [document] = %i AND rowType != 1', $this->recData['ndx'])->fetch ();
+		$this->recData ['lpPriceAll'] = $sumLPPoints['sumLPPriceAll'] ?? 0;
   }
 
 	public function calcTaxes ()

@@ -99,6 +99,9 @@
 		{"id": "rowVds", "name": "Rozšíření struktury", "type": "int", "reference": "vds.base.defs"},
 		{"id": "rowData", "name": "Data řádku", "type": "subColumns"},
 
+    {"id": "lpPriceItem", "name": "Jednotková cena v bodech", "label": "Body/jed", "type": "int"},
+    {"id": "lpPriceAll", "name": "Cena celkem v bodech", "type": "int"},
+
     {"id": "invDirection", "name": "Směr skladového pohybu", "type": "enumInt",
 			"enumValues": {"0": "žádný", "1": "příjem", "-1": "výdej"}},
     {"id": "invPrice", "name": "Skladová cena", "type": "money"},

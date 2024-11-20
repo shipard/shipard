@@ -153,6 +153,8 @@
 	  {"id": "costBaseHc", "name": "Cena", "type": "money"},
 	  {"id": "costTotalHc", "name": "Cena včetně daně", "type": "money"},
 
+    {"id": "lpPriceAll", "name": "Cena celkem v bodech", "type": "int"},
+
 	  {"id": "vatCS", "name": "Do kontrolního hlášení", "type": "enumInt",
 		  "enumValues": {"0": "Automaticky", "1": "Ano; > 10 000,- (A4/B2)",  "2": "Ano; <= 10 000,- (A5/B3)", "3": "Ne"}},
 

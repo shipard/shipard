@@ -33,22 +33,40 @@ class DCPersonPointsSummary extends \Shipard\Base\DocumentCard
 		$rows = $this->table->db()->query($q);
 		foreach ($rows as $r)
 		{
-      $docRecData = $this->app()->loadItem($r['document'], 'e10doc.core.heads');
-      $dpe = new \e10pro\loyp\libs\DocsPointsEngine($this->app);
-      $dpe->doDocument($docRecData);
+      if ($r['rowType'] == 1)
+      { // purchase
+        $docRecData = $this->app()->loadItem($r['document'], 'e10doc.core.heads');
+        $dpe = new \e10pro\loyp\libs\DocsPointsEngine($this->app);
+        $dpe->doDocument($docRecData);
 
-      $item = [
-        'docNumber' => ['text' => $r['docNumber'], 'docAction' => 'edit', 'pk' => $r['document'], 'table' => 'e10doc.core.heads'],
-        'docDateAccounting' => $r['docDateAccounting'],
-        'cntPoints' => $r['cntPoints'],
-        'explain' => $dpe->calcExplain['stepsLabels'],
-      ];
-
-			$t[] = $item;
+        $item = [
+          'docNumber' => ['text' => $r['docNumber'], 'docAction' => 'edit', 'pk' => $r['document'], 'table' => 'e10doc.core.heads'],
+          'docDateAccounting' => $r['docDateAccounting'],
+          'cntPoints' => $r['cntPoints'],
+          'explain' => $dpe->calcExplain['stepsLabels'],
+        ];
+      }
+      elseif ($r['rowType'] == 2)
+      { // sale
+        $item = [
+          'docNumber' => ['text' => $r['docNumber'], 'docAction' => 'edit', 'pk' => $r['document'], 'table' => 'e10doc.core.heads'],
+          'docDateAccounting' => $r['docDateAccounting'],
+          'cntPoints' => $r['cntPoints'],
+        ];
+      }
+      else
+      {
+        $item = [
+          'docNumber' => ['text' => $r['docNumber'], 'docAction' => 'edit', 'pk' => $r['document'], 'table' => 'e10doc.core.heads'],
+          'docDateAccounting' => $r['docDateAccounting'],
+          'cntPoints' => $r['cntPoints'],
+        ];
+      }
+      $t[] = $item;
 		}
 
 		$title = [];
-		$title[] = ['icon' => 'icon-plug', 'text' => 'Body ' .json_encode($this->recData)];
+		$title[] = ['icon' => 'icon-plug', 'text' => 'Body'];
 
 		$h = [
       '#' => '#',

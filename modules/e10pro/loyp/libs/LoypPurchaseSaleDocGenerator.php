@@ -85,6 +85,19 @@ class LoypPurchaseSaleDocGenerator extends Utility
     $newRow['priceItem'] = $docRow['itemPriceSellBase'];
     $newRow['rowOrder'] = $this->rowOrder;
 
+    $existedLPPrice = $this->db()->query('SELECT * FROM [e10pro_loyp_priceListPoints] WHERE [item] = %i', $docRow['item'],
+                                         ' AND ([validFrom] IS NULL OR [validFrom] <= %d)', $newDoc->docHead['dateAccounting'],
+                                         ' AND ([validTo] IS NULL OR [validTo] >= %d)', $newDoc->docHead['dateAccounting'],
+                                         ' AND [docState] IN %in', [4000, 8000],
+
+                      )->fetch();
+
+    if ($existedLPPrice)
+    {
+      $newRow['lpPriceItem'] = $existedLPPrice['pricePoints'];
+      $newRow['lpPriceAll'] = intval($existedLPPrice['pricePoints'] * $newRow['quantity']);
+    }
+
     $this->rowOrder += 100;
 
     $newDoc->addDocumentRow ($newRow);

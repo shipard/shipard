@@ -6,5 +6,9 @@
   "loyp-purchase-sale-doc": {
     "docTypes": ["purchase"],
     "engine": "e10pro.loyp.libs.LoypPurchaseSaleDocGenerator"
+  },
+  "loyp-sale": {
+    "docTypes": ["invno"],
+    "engine": "e10pro.loyp.libs.DocsPointsEngineOnSale"
   }
 }
