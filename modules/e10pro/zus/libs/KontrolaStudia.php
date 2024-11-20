@@ -49,7 +49,15 @@ class KontrolaStudia extends Utility
     {
       $predmetNdx = $this->predmetNdx($r['svpPredmet']);
       $pDef = $this->app()->cfgItem ('e10pro.zus.predmety.'.$predmetNdx, FALSE);
-      $this->predmetyStudia[$predmetNdx] = $pDef;
+      if (isset($this->predmetyStudia[$predmetNdx]))
+      {
+        $this->predmetyStudia[$predmetNdx]['cnt']++;
+      }
+      else
+      {
+        $this->predmetyStudia[$predmetNdx] = $pDef;
+        $this->predmetyStudia[$predmetNdx]['cnt'] = 1;
+      }
     }
   }
 
@@ -119,7 +127,7 @@ class KontrolaStudia extends Utility
 					'msg' => 'Chybí ETK pro předmět '.$predmet['nazev'],
 				];
       }
-      elseif (count($etkList [$predmetNdx]) > 1)
+      elseif (count($etkList [$predmetNdx]) > $this->predmetyStudia[$predmetNdx]['cnt'])
       {
 				$this->troubles[] = [
 					'msg' => 'Více ETK pro předmět '.$predmet['nazev'],
