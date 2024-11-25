@@ -195,33 +195,6 @@
 			</tr>
 			{{/itemIsLoypPresent}}
 		{{/data.rows}}
-		{{#data.flags.rowsWithLoypPresent}}
-			<tr>
-				<td colspan="6">Dárek:</td>
-			</tr>
-			{{#data.rows}}
-				{{#itemIsLoypPresent}}
-				<tr>
-					<td class='itemID'>{{itemID}}</td>
-					<td>
-						{{text}}{{#additionsMarks}}<sup> {{additionsMarks}}</sup>{{/additionsMarks}}{{#itemDecription}}<div style="font-size: 80%; color: #777;">{{itemDecription}}</div>{{/itemDecription}}
-						{{#data.flags.itemCodesList}}
-							<ul class="itemCodesList{{#data.flags.itemCodesInline}} itemCodesListInline{{/data.flags.itemCodesInline}}">
-								{{#rowItemCodes}}
-									{{#itemCodeText}}<li>{{itemCodeName}}: {{itemCodeText}}</li>{{/itemCodeText}}
-								{{/rowItemCodes}}
-							</ul>
-						{{/data.flags.itemCodesList}}
-						{{#rowDataHtmlCode}}<div>{{{rowDataHtmlCode}}}</div>{{/rowDataHtmlCode}}
-					</td>
-					<td class='number'>{{quantity}}</td>
-					<td>{{@dict;dataItem:print.unit}}</td>
-					<td class='number'>{{print.priceItem}}</td>
-					<td class='number'>{{print.priceAll}}</td>
-				</tr>
-				{{/itemIsLoypPresent}}
-			{{/data.rows}}
-		{{/data.flags.rowsWithLoypPresent}}
 	{{/data.flags.multiLineRows}}
 	{{#data.flags.multiLineRows}}
 		{{#data.rows}}
@@ -292,6 +265,38 @@
 		{{#mark}}{{mark}}: {{/mark}}{{labelPrefix}} {{identifier}}<br>
   {{/data.additions}}
 {{/data.additionsExists}}
+
+{{#data.flags.rowsWithLoypPresent}}
+	<table class="rows {{#data.options.docReportsTablesRoundedCorners}} rounded{{/data.options.docReportsTablesRoundedCorners}}">
+		<thead>
+			<tr>
+				<th colspan="2">Dárek</th>
+				<th class="number">{{@dict;Množství}}</th>
+				<th>{{@dict;Jed.}}</th>
+			</tr>
+		</thead>
+		{{#data.rows}}
+			{{#itemIsLoypPresent}}
+				<tr>
+					<td class='itemID' style="width: 8.5%;">{{itemID}}</td>
+					<td style="width: 66.5%;">
+						{{text}}{{#additionsMarks}}<sup> {{additionsMarks}}</sup>{{/additionsMarks}}{{#itemDecription}}<div style="font-size: 80%; color: #777;">{{itemDecription}}</div>{{/itemDecription}}
+						{{#data.flags.itemCodesList}}
+							<ul class="itemCodesList{{#data.flags.itemCodesInline}} itemCodesListInline{{/data.flags.itemCodesInline}}">
+								{{#rowItemCodes}}
+									{{#itemCodeText}}<li>{{itemCodeName}}: {{itemCodeText}}</li>{{/itemCodeText}}
+								{{/rowItemCodes}}
+							</ul>
+						{{/data.flags.itemCodesList}}
+						{{#rowDataHtmlCode}}<div>{{{rowDataHtmlCode}}}</div>{{/rowDataHtmlCode}}
+					</td>
+					<td class='number' style="width: 15%;">{{quantity}}</td>
+					<td style="width: 10%;">{{@dict;dataItem:print.unit}}</td>					
+				</tr>
+			{{/itemIsLoypPresent}}
+		{{/data.rows}}
+	</table>
+{{/data.flags.rowsWithLoypPresent}}
 
 <table class="authorSigned">
     <tr>
