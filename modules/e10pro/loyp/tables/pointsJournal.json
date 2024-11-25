@@ -7,7 +7,7 @@
 			"enumValues": {"0": "Prodej", "1": "Výkup",  "2": "Nákup za body"}},
 
 		{"id": "document", "name": "Doklad", "type": "int", "reference": "e10docs.core.heads"},
-    {"id": "person", "name": "Osoba", "type": "int", "reference": "e10docs.core.heads"},
+    {"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
     {"id": "cntPoints", "name": "Počet bodů", "type": "int"}
 	],
 	"views": [
@@ -15,6 +15,7 @@
 	],
 	"options": ["systemTable"],
 	"indexes": [
-		{"id": "doc2", "columns": ["document"]}
+		{"id": "doc2", "columns": ["document"]},
+		{"id": "s2", "columns": ["person", "rowType"]}
 	]
 }

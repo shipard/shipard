@@ -509,15 +509,50 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 			$this->addColumnInput('personNomencCity', self::coNoLabel);
 		}
 
-
-		$q = [];
-    array_push ($q, 'SELECT SUM([journal].cntPoints) AS sumCntPoints');
-    array_push ($q, ' FROM [e10pro_loyp_pointsJournal] AS [journal]');
-		array_push ($q, ' WHERE [person] = %i', $personNdx);
-		$cntLoypPoints = $this->app()->db()->query($q)->fetch();
-		if ($cntLoypPoints)
+		if ($this->app()->model()->table ('e10pro.loyp.pointsJournal') !== FALSE)
 		{
-			$this->addStatic(Utils::nf($cntLoypPoints['sumCntPoints']).' bodů');
+			$q = [];
+			array_push ($q, 'SELECT SUM([journal].cntPoints) AS sumCntPoints');
+			array_push ($q, ' FROM [e10pro_loyp_pointsJournal] AS [journal]');
+			array_push ($q, ' WHERE [person] = %i', $personNdx);
+			$cntLoypPoints = $this->app()->db()->query($q)->fetch();
+			if ($cntLoypPoints)
+			{
+				$this->addStatic(Utils::nf($cntLoypPoints['sumCntPoints']).' bodů');
+			}
+
+			$q = [];
+			array_push($q, 'SELECT [journal].*');
+			array_push($q, ' FROM [e10pro_loyp_pointsJournal] AS [journal]');
+			array_push($q, ' WHERE 1');
+			array_push($q, ' AND [journal].[person] = %i', $this->recData['person']);
+			array_push($q, ' AND [journal].[rowType] = %i', 2);
+			array_push($q, ' ORDER BY [journal].ndx DESC');
+			array_push($q, ' LIMIT 2');
+
+			$docsNdxs = [];
+			$rows = $this->app()->db()->query($q);
+			foreach ($rows as $r)
+			{
+				if (!in_array($r['document'], $docsNdxs))
+					$docsNdxs[] = $r['document'];
+			}
+
+			if (count($docsNdxs))
+			{
+				$q = [];
+				array_push($q, 'SELECT [rows].ndx, [rows].[text], [heads].[dateAccounting] AS [docDate]');
+				array_push($q, ' FROM [e10doc_core_rows] AS [rows]');
+				array_push($q, ' LEFT JOIN [e10doc_core_heads] AS [heads] ON [rows].[document] = [heads].[ndx]');
+				array_push($q, ' WHERE 1');
+				array_push($q, ' AND [rows].[document] IN %in', $docsNdxs);
+
+				$rows = $this->app()->db()->query($q);
+				foreach ($rows as $r)
+				{
+					$this->addStatic(['text' => $r['text'], 'suffix' => Utils::datef($r['docDate'])]);
+				}
+			}
 		}
 	}
 
