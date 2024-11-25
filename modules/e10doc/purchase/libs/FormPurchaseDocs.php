@@ -518,7 +518,12 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 			$cntLoypPoints = $this->app()->db()->query($q)->fetch();
 			if ($cntLoypPoints)
 			{
-				$this->addStatic(Utils::nf($cntLoypPoints['sumCntPoints']).' bodů');
+				$pc = '';
+				if ($cntLoypPoints['sumCntPoints'] < 0)
+					$pc = 'e10-warning1 block';
+				elseif ($cntLoypPoints['sumCntPoints'] > 0)
+					$pc = 'e10-row-plus block';
+				$this->addStatic(['text' => Utils::nf($cntLoypPoints['sumCntPoints']).' bodů', 'class' => $pc]);
 			}
 
 			$q = [];
