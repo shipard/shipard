@@ -150,16 +150,7 @@
 		"bsi": "bi-list-task",
 		"mdi": ""
 	},
-	"tables/mac.iot.params": {
-		"fa5": "fa-list",
-		"fa6pro": "fa-list",
-		"bsi": "bi-list-task",
-		"mdi": ""
-	},
-
-
-
-
+	
 	"e10.widgetDashboard/lanDashboard": {
 		"fa5": "fa-sitemap",
 		"fa6pro": "fa-sitemap",

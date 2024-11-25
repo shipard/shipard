@@ -1,0 +1,33 @@
+{
+    "tables/e10pro.loyp.pointsSettings":{
+        "fa5":"fa-tree",
+        "fa6pro":"fa-trees",
+        "bsi":"bi-tree-fill",
+        "mdi":""
+	},
+    "tables/e10pro.loyp.pointsJournal":{
+		"fa5": "fa-th-list",
+		"fa6pro": "fa-th-list",
+		"bsi": "bi-list-task",
+		"mdi": ""
+	},
+    "tables/e10pro.loyp.priceListPoints":{
+		"fa5": "fa-money-bill-alt",
+		"fa6pro": "fa-money-bill-alt",
+		"bsi": "bi-cash",
+		"mdi": ""
+	},
+    "tables/e10pro.loyp.loyps":{
+		"fa5": "fa-medal",
+		"fa6pro": "fa-medal",
+		"bsi": "bi-award",
+		"mdi": ""
+	},
+
+    "iconGift":{
+		"fa5": "fa-gift",
+		"fa6pro": "fa-gift",
+		"bsi": "bi-gift",
+		"mdi": ""
+	}
+}
