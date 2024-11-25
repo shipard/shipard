@@ -39,6 +39,8 @@ class TableLoyps extends DbTable
 				'type' => $r ['loypType'],
         'fn' => $r ['fullName'],
         'sn' => $r ['shortName'],
+        'dbCounterInvoiceOut' => $r ['dbCounterInvoiceOut'],
+        'warehouse' => $r ['warehouse'],
       ];
 
 			if (!Utils::dateIsBlank($r['validFrom']))
@@ -117,6 +119,9 @@ class FormLoyp extends TableForm
       $this->addSeparator(self::coH4);
       $this->addColumnInput ('validFrom');
       $this->addColumnInput ('validTo');
+      $this->addSeparator(self::coH4);
+      $this->addColumnInput ('dbCounterInvoiceOut');
+      $this->addColumnInput ('warehouse');
 		$this->closeForm ();
 	}
 }

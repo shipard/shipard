@@ -171,7 +171,7 @@ class DocsPointsEngine extends \Shipard\Base\Utility
     }
 
     $paneTitle = [
-      ['text' => 'Věrnostní body'.$this->documentRecData['loyp'], 'class' => 'h2'],
+      ['text' => 'Věrnostní body', 'class' => 'h2'],
       ['text' => Utils::nf($this->totalPts, 0), 'class' => 'h2 pull-right'],
     ];
 

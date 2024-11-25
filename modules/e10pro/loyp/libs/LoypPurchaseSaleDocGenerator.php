@@ -40,6 +40,10 @@ class LoypPurchaseSaleDocGenerator extends Utility
     if (!$docRecData['loyp'])
       return;
 
+    $loypCfg = $this->app()->cfgItem('e10pro.loyp.loyps.'.$docRecData['loyp'], NULL);
+    if (!$loypCfg)
+      return;
+
     $this->purchaseDocNdx = $docRecData['ndx'];
     $this->purchaseDocRecData = $docRecData;
 
@@ -47,7 +51,10 @@ class LoypPurchaseSaleDocGenerator extends Utility
     if (!count($this->docRows))
       return;
 
-    $dbCounter = 21;
+    $dbCounter = intval($loypCfg['dbCounterInvoiceOut'] ?? 0);
+    if (!$dbCounter)
+      return;
+    $warehouse = intval($loypCfg['warehouse'] ?? 0);
 
     $accDate = new \DateTime($this->purchaseDocRecData['dateAccounting']);
 		$newDoc = new CreateDocumentUtility ($this->app);
@@ -57,7 +64,7 @@ class LoypPurchaseSaleDocGenerator extends Utility
     $newDoc->docHead['dateAccounting'] = $accDate;
     $newDoc->docHead['dateTax'] = $accDate;
 		$newDoc->docHead['author'] = $this->app()->userNdx();
-    //$newDoc->docHead['cashBox'] = $cashBoxNdx;
+    $newDoc->docHead['warehouse'] = $warehouse;
     $newDoc->docHead['dbCounter'] = $dbCounter;
 		$newDoc->docHead['title'] = 'Dárek k výkupu '.$this->purchaseDocRecData['docNumber'];
 
