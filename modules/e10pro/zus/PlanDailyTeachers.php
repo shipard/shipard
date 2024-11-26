@@ -57,10 +57,20 @@ class PlanDailyTeachers extends Utility
 	var $enableWorkRecsColors = 0;
 	var $workRecs = [];
 	var $noWorkDay = 0;
+	var $today = NULL;
+
+
+	protected function today()
+	{
+		if (!$this->today)
+			$this->today = Utils::today();
+
+		return $this->today;
+	}
 
 	public function loadTimetable ()
 	{
-		$today = utils::today();
+		$today = $this->today();
 
 		$q[] = 'SELECT rozvrh.*, pobocky.shortName as pobockaId, vyuky.nazev as vyukaNazev, vyuky.typ as typVyuky,
 		vyuky.rocnik as rocnik, predmety.nazev as predmetNazev, ucebny.shortName as ucebnaNazev,';
@@ -152,7 +162,7 @@ class PlanDailyTeachers extends Utility
 
 	protected function loadWorkRecs()
 	{
-		$today = Utils::today();
+		$today = $this->today();
 
 		$q = [];
 		array_push($q, 'SELECT workrecs.*');
@@ -170,7 +180,7 @@ class PlanDailyTeachers extends Utility
 
 	protected function loadCalendar()
 	{
-		$today = Utils::today();
+		$today = $this->today();
 
 		$q = [];
 		array_push($q, 'SELECT events.*');
@@ -577,20 +587,26 @@ divs.on( 'scroll', sync);
 		}
 
 		$person = $item['ucitel'];
-		if (!isset($this->workRecs[$person]))
+
+		$today = Utils::today();
+		if ($this->today->format('Y-m-d') === $today->format('Y-m-d'))
 		{
-			return;
+			$now = new \DateTime();
+			$nowStr = $now->format('H:i');
 		}
-
-		$now = new \DateTime();
-		$nowStr = $now->format('H:i');
-		$dow = intval($now->format('N')) - 1;
-
-		if ($dow != $this->todayDow)
-			return;
+		else
+		{
+			$nowStr = '23:50';
+		}
 
 		if ($nowStr < $item['zacatek'])
 			return;
+
+		if (!isset($this->workRecs[$person]))
+		{
+			$item['workRecStyle'] = 'background-color: #FF0000A0;';
+			return;
+		}
 
 		foreach ($this->workRecs[$person] as $wr)
 		{

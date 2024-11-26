@@ -31,10 +31,13 @@ class SchoolDayDashboardWidget2 extends \Shipard\UI\Core\WidgetPane
 
 		if ($this->viewType === 'daily')
 		{
-			$now = new \DateTime();
+			$todayId = $this->calParamsValues['day']['value'];
+
+			$now = new \DateTime($todayId);
 			$dow = intval($now->format('N')) - 1;
 
 			$this->plan = new \e10pro\zus\PlanDailyTeachers($this->app);
+			$this->plan->today = Utils::createDateTime($todayId);
 			$this->plan->widgetId = $this->widgetId;
 			$this->plan->setYear(zusutils::aktualniSkolniRok(), $dow);
 			$this->plan->setLocalOffice($this->calParamsValues['localOffice']['value'], $this->calParamsValues['room']['value']);
@@ -53,6 +56,7 @@ class SchoolDayDashboardWidget2 extends \Shipard\UI\Core\WidgetPane
 
 		$this->calParams = new \E10\Params ($this->app);
 		$this->addParamLocalOffices();
+		$this->addParamDays();
 		$this->calParams->detectValues();
 		$this->calParamsValues = $this->calParams->getParams();
 
@@ -94,10 +98,31 @@ class SchoolDayDashboardWidget2 extends \Shipard\UI\Core\WidgetPane
 		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $c]);
 	}
 
-	public function X_addParamDays ()
+	public function addParamDays ()
 	{
-		$days = ['0' => 'Po', '1' => 'Út', '2' => 'St', '3' => 'Čt', '4' => 'Pá'];
-		$this->calParams->addParam ('switch', 'day', ['title' => 'Den', 'switch' => $days, 'radioBtn' => 1, 'defaultValue' => '0']);
+		$days = [];
+		$today = Utils::today();
+		$todayId = $today->format('Y-m-d');
+		$cnt = 0;
+		while(1)
+		{
+			$dayId = $today->format('Y-m-d');
+			$dow = intval($today->format('N')) - 1;
+
+			if ($dow >= 5)
+			{
+				$today->sub(new \DateInterval('P1D'));
+				continue;
+			}
+
+			$days[$dayId] = ['text' => Utils::$dayShortcuts[$dow], 'suffix' => Utils::datef($today, '%k')];
+			$cnt++;
+			$today->sub(new \DateInterval('P1D'));
+			if ($cnt > 10)
+				break;
+		}
+
+		$this->calParams->addParam ('switch', 'day', ['title' => 'Den', 'switch' => $days, 'radioBtn' => 1, 'defaultValue' => $todayId]);
 	}
 
 	public function X_addParamTeachers ()
