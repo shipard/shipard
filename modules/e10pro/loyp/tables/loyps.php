@@ -39,6 +39,7 @@ class TableLoyps extends DbTable
 				'type' => $r ['loypType'],
         'fn' => $r ['fullName'],
         'sn' => $r ['shortName'],
+				'minPointsPerDoc' => $r ['minPointsPerDoc'],
         'dbCounterInvoiceOut' => $r ['dbCounterInvoiceOut'],
         'warehouse' => $r ['warehouse'],
       ];
@@ -116,6 +117,8 @@ class FormLoyp extends TableForm
 			$this->addColumnInput ('loypType');
 			$this->addColumnInput ('fullName');
 			$this->addColumnInput ('shortName');
+			$this->addSeparator(self::coH4);
+			$this->addColumnInput ('minPointsPerDoc');
       $this->addSeparator(self::coH4);
       $this->addColumnInput ('validFrom');
       $this->addColumnInput ('validTo');

@@ -11,6 +11,8 @@
 		{"id": "validFrom", "name": "Platné od", "type": "date"},
 		{"id": "validTo", "name": "Platné do", "type": "date"},
 
+    {"id": "minPointsPerDoc", "name": "Minimální počet bodů za doklad", "type": "int"},
+
 		{"id": "dbCounterInvoiceOut", "type": "int", "name": "Číselná řada pro vydané faktury", "reference": "e10doc.base.docnumbers", "group": "invoices"},
     {"id": "warehouse", "name": "Sklad s dárky", "type": "int", "reference": "e10doc.base.warehouses"},
 

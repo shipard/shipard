@@ -21,6 +21,8 @@ class DocsPointsEngine extends \Shipard\Base\Utility
   var $calcExplain = [];
   var $docDetailContent = NULL;
 
+  var $loypCfg = NULL;
+
   protected function loadItems()
   {
     if (!$this->documentRecData['loyp'])
@@ -103,7 +105,7 @@ class DocsPointsEngine extends \Shipard\Base\Utility
 
     $this->calcExplain['sbc'] = $this->sumsByCats;
     $this->calcExplain['items'] = $this->items;
-    $this->calcExplain['totalPts'] = $this->totalPts;
+    //$this->calcExplain['totalPts'] = $this->totalPts;
 
     foreach ($this->sumsByCats as $catNdx => $catSum)
     {
@@ -112,9 +114,22 @@ class DocsPointsEngine extends \Shipard\Base\Utility
       $this->totalPts += $pts;
       $this->calcExplain['stepsLabels'][] = $stepLabel;
       $this->calcExplain['stepsInfo'][] = [
-        'catNdx' => 0, 'ps' => $this->pointsSettings[$catNdx], 'price' => $catSum['price'], 'pts' => $pts,
+        'catNdx' => $catNdx, 'ps' => $this->pointsSettings[$catNdx], 'price' => $catSum['price'], 'pts' => $pts,
         'mathExplain' => $stepLabel,
       ];
+    }
+
+    if ($this->totalPts < $this->loypCfg['minPointsPerDoc'])
+    {
+      $pts = $this->loypCfg['minPointsPerDoc'] - $this->totalPts;
+      $stepLabel = ['text' => 'Minimální počet bodů: '.Utils::nf($this->loypCfg['minPointsPerDoc']), 'prefix' => 'Ostatní'];
+      $this->calcExplain['stepsLabels'][] = $stepLabel;
+      $this->calcExplain['stepsInfo'][] = [
+        'catNdx' => 0, 'ps' => ['categoryName' => 'Ostatní'], 'price' => 0, 'pts' => $pts,
+        'mathExplain' => $stepLabel,
+      ];
+
+      $this->totalPts += $pts;
     }
 
     if ($this->doSave)
@@ -191,7 +206,7 @@ class DocsPointsEngine extends \Shipard\Base\Utility
     }
 
     $docDate = $docRecData['dateAccounting']->format('Y-m-d');
-    $loypCfg = NULL;
+    $this->loypCfg = NULL;
     $loypNdx = 0;
 
     foreach ($loyps as $loyp)
@@ -204,7 +219,7 @@ class DocsPointsEngine extends \Shipard\Base\Utility
       if ($docRecData['docType'] === 'purchase' && $loyp['type'] !== 0)
         continue;
 
-      $loypCfg = $loyp;
+      $this->loypCfg = $loyp;
       $loypNdx = $loyp['ndx'];
       break;
     }
@@ -212,7 +227,7 @@ class DocsPointsEngine extends \Shipard\Base\Utility
     if ($docRecData['loyp'] != $loypNdx)
     {
       $docRecData['loyp'] = $loypNdx;
-      $this->db()->query ('UPDATE [e10doc_core_heads] SET loyp = %i', $loypCfg['ndx'], ' WHERE ndx = %i', $docRecData['ndx']);
+      $this->db()->query ('UPDATE [e10doc_core_heads] SET loyp = %i', $this->loypCfg['ndx'], ' WHERE ndx = %i', $docRecData['ndx']);
     }
   }
 
