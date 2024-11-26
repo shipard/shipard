@@ -184,9 +184,11 @@ class DocsPointsEngine extends \Shipard\Base\Utility
 
   protected function checkLoyp(&$docRecData)
   {
-    $loyps = $this->app()->cfgItem('e10pro.loyps.loyps', NULL);
+    $loyps = $this->app()->cfgItem('e10pro.loyp.loyps', NULL);
     if (!$loyps)
+    {
       return;
+    }
 
     $docDate = $docRecData['dateAccounting']->format('Y-m-d');
     $loypCfg = NULL;
@@ -199,7 +201,7 @@ class DocsPointsEngine extends \Shipard\Base\Utility
       if (isset($loyp['validTo']) && $docDate > $loyp['validTo'])
         continue;
 
-      if ($docRecData['docType'] === 'purchase' && $loypCfg['type'] !== 0)
+      if ($docRecData['docType'] === 'purchase' && $loyp['type'] !== 0)
         continue;
 
       $loypCfg = $loyp;

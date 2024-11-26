@@ -37,7 +37,8 @@ class DocsPointsRecalc extends \Shipard\Base\Utility
 
   protected function recalcDocument($recData)
   {
-    //echo "* ".$recData['docNumber']."\n";
+    if ($this->app()->debug)
+      echo "* ".$recData['docNumber']."\n";
 
     $dpe = new \e10pro\loyp\libs\DocsPointsEngine($this->app);
 		$dpe->doDocument($recData, 1);
