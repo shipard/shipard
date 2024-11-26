@@ -310,7 +310,9 @@ class WeekMenuSender extends Utility
 				continue;
 
 			$urlKey = $this->db()->query('SELECT * FROM [e10_web_wuKeys] WHERE [person] = %i', $r['person'],
-				' AND [keyType] = %i', 1, ' AND [webServer] = %i', $canteen['webServer'])->fetch();
+				' AND [keyType] = %i', 1, ' AND [webServer] = %i', $canteen['webServer'],
+				' AND [docState] = %i', 4000,
+				)->fetch();
 			if (!$urlKey)
 				continue;
 
