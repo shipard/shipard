@@ -6,6 +6,14 @@
 			"e10pro.emps.absences": {"default": 2}
 		}
 	},
+	"wrkrcs": {
+		"viewers": {
+			"e10pro.emps.absences": {"default": 2}
+		},
+	  "reports": {
+			"e10mnf.core.libs.WorkedHoursReport": 2
+	  }
+	},
 	"admin": {
 		"viewers": {
 			"e10pro.emps.absencesKinds": {"default": 2}
