@@ -85,6 +85,7 @@ class AnalyzePointsEngine extends \Shipard\Base\Utility
 
   protected function loadOverviewHistogram($personType, $title)
   {
+    $firstsSteps = [49, 48, 49];
     $cntBlocks = 50;
     $step = intval($this->overviewData[$personType]['maxPoints'] / $cntBlocks);
     $from = 0;
@@ -113,15 +114,17 @@ class AnalyzePointsEngine extends \Shipard\Base\Utility
       $this->hstTable[$personType][] = $rowItem;
 
       $from = $to + 1;
+
+      if (isset($firstsSteps[$stepNum]))
+        $to = $from + $firstsSteps[$stepNum];
       /*
-      if ($stepNum < 10)
-        $to = $from + 5;
       elseif ($stepNum < 30)
         $to = $from + 10;
       else
         $to = $from + $step;
       */
-      $to = $from + 20;
+      else
+        $to = $from + 1000;
       if ($from > $this->overviewData[$personType]['maxPoints'])
         break;
 

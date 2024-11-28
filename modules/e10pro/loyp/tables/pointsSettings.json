@@ -2,10 +2,20 @@
 	"id": "e10pro.loyp.pointsSettings", "sql": "e10pro_loyp_pointsSettings", "name": "Nastavení věrnostních bodů",
 	"columns": [
 		{"id": "ndx", "name": "ndx", "type": "int_ai"},
-		{"id": "witemCategory", "name": "Kategorie položek", "type": "int", "reference": "e10.witems.itemcategories"},
 
-    {"id": "cntPoints", "name": "Počet bodů", "type": "int"},
+    {"id": "fullName", "name": "Název", "type": "string", "len": 120},
+
+		{"id": "settingsType", "name": "Nastavit pro", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "Položka", "1": "Kategorie", "2": "Vše"}},
+
+		{"id": "witemCategory", "name": "Kategorie položek", "type": "int", "reference": "e10.witems.itemcategories", "options": ["saveOnChange"]},
+		{"id": "item", "name": "Položka", "type": "int", "reference": "e10.witems.items", "comboViewer": "combo", "options": ["saveOnChange"]},
+
+		{"id": "loyp", "name": "Věrnostní program", "type": "int", "reference": "e10pro.loyp.loyps"},
+
+    {"id": "cntPoints", "name": "Počet bodů", "type": "number", "dec": 2},
     {"id": "perAmount", "name": "Za částku", "type": "money"},
+    {"id": "perQuantity", "name": "Za množství", "type": "money"},
 
 		{"id": "validFrom", "name": "Platné od", "type": "date"},
 		{"id": "validTo", "name": "Platné do", "type": "date"},

@@ -36,10 +36,11 @@ class TableLoyps extends DbTable
     {
 			$list [$r['ndx']] = [
         'ndx' => $r ['ndx'],
-				'type' => $r ['loypType'],
+				'type' => intval($r ['loypType']),
         'fn' => $r ['fullName'],
         'sn' => $r ['shortName'],
 				'minPointsPerDoc' => $r ['minPointsPerDoc'],
+				'pointsSource' => $r ['pointsSource'],
         'dbCounterInvoiceOut' => $r ['dbCounterInvoiceOut'],
         'warehouse' => $r ['warehouse'],
       ];
@@ -74,10 +75,16 @@ class ViewLoyps extends TableView
 		$listItem ['pk'] = $item['ndx'];
 
     $listItem ['t1'] = $item['fullName'];
+		$listItem['t2'] = [];
+
+		if ($item['pointsSource'] == 0)
+			$listItem['t2'][] = ['text' => 'Za peníze', 'class' => 'label label-default'];
+		else
+			$listItem['t2'][] = ['text' => 'Za množství', 'class' => 'label label-default'];
 
     $ft = utils::dateFromTo($item['validFrom'], $item['validTo'], NULL);
 		if ($ft !== '')
-			$listItem['i2'] = ['text' => $ft, 'class' => 'label label-default'];
+			$listItem['t2'][] = ['text' => $ft, 'class' => 'label label-default'];
 
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
@@ -118,6 +125,7 @@ class FormLoyp extends TableForm
 			$this->addColumnInput ('fullName');
 			$this->addColumnInput ('shortName');
 			$this->addSeparator(self::coH4);
+			$this->addColumnInput ('pointsSource');
 			$this->addColumnInput ('minPointsPerDoc');
       $this->addSeparator(self::coH4);
       $this->addColumnInput ('validFrom');

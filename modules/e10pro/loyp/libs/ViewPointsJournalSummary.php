@@ -25,8 +25,7 @@ class ViewPointsJournalSummary extends TableView
     $listItem ['t1'] = $item['personFullName'];
 		$listItem ['i1'] = ['text' => '#'.$item['personId'], 'class' => 'id'];
 
-    //$pts = $item['cntPoints'].' bodů za '.Utils::nf($item['perAmount']).' Kč';
-    $listItem ['t2'] = Utils::nf($item['sumCntPoints']);
+    $listItem ['t2'] = Utils::nf($item['sumCntPoints'], 2);
 
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 

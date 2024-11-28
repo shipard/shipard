@@ -4,7 +4,9 @@
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 
 		{"id": "loypType", "name": "Druh programu", "type": "enumInt",
-		"enumCfg": {"cfgItem": "e10pro.loyp.types", "cfgValue": "ndx", "cfgText": "fn"}},
+			"enumCfg": {"cfgItem": "e10pro.loyp.types", "cfgText": "fn"}},
+		{"id": "pointsSource", "name": "Získávat body za", "type": "enumInt",
+			"enumValues": {"0": "Peníze", "1": "Množství"}},
 
     {"id": "fullName", "name": "Název", "type": "string", "len": 120},
     {"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 40},
