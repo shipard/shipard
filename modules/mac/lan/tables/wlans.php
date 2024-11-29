@@ -2,12 +2,13 @@
 
 namespace mac\lan;
 
-use \E10\TableView, \E10\TableViewDetail, \E10\TableForm, \E10\DbTable, \e10\FormReport;
+use \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
+use \Shipard\Report\FormReport;
+use \Shipard\Utils\Utils;
 
 
 /**
- * Class TableWlans
- * @package mac\lan
+ * class TableWlans
  */
 class TableWlans extends DbTable
 {
@@ -15,6 +16,22 @@ class TableWlans extends DbTable
 	{
 		parent::__construct ($dbmodel);
 		$this->setName ('mac.lan.wlans', 'mac_lan_wlans', 'WiFi sítě');
+	}
+
+	public function checkNewRec (&$recData)
+	{
+		parent::checkNewRec ($recData);
+
+		if (!isset($recData['wpaPassphrase']) || $recData['wpaPassphrase'] === '')
+			$recData['wpaPassphrase'] = Utils::createToken(16, TRUE);
+	}
+
+	public function checkBeforeSave (&$recData, $ownerData = NULL)
+	{
+		parent::checkBeforeSave ($recData, $ownerData);
+
+		if (!isset($recData['wpaPassphrase']) || $recData['wpaPassphrase'] === '')
+			$recData['wpaPassphrase'] = Utils::createToken(16, TRUE, TRUE);
 	}
 
 	public function checkAfterSave2 (&$recData)
@@ -45,14 +62,20 @@ class TableWlans extends DbTable
 
 
 /**
- * Class ViewWlans
- * @package mac\lan
+ * class ViewWlans
  */
 class ViewWlans extends TableView
 {
+	/** @var \mac\lan\TableLans */
+	var $tableLans;
+
 	public function init ()
 	{
+		$this->tableLans = $this->app()->table('mac.lan.lans');
+		$this->tableLans->setViewerBottomTabs($this);
+
 		parent::init();
+
 		$this->setMainQueries ();
 	}
 
@@ -69,7 +92,10 @@ class ViewWlans extends TableView
 		else
 			$listItem ['i2'] = ['text' => '!!!', 'icon' => 'system/iconSitemap'];
 
-		$listItem ['t2'] = ['text' => $item['ssid'], 'icon' => 'tables/mac.lan.wlans', 'class' => ''];
+		$listItem ['t2'] = [['text' => $item['ssid'], 'icon' => 'tables/mac.lan.wlans', 'class' => '']];
+
+		if ($item['vlan'])
+			$listItem ['t2'][] = ['text' => $item['vlanName'], 'suffix' => Utils::nf($item['vlanNum']), 'icon' => 'tables/mac.lan.vlans', 'class' => 'label label-default'];
 
 		return $listItem;
 	}
@@ -78,10 +104,18 @@ class ViewWlans extends TableView
 	{
 		$fts = $this->fullTextSearch ();
 
-		$q [] = 'SELECT wlans.*, lans.shortName as lanShortName';
+		$q = [];
+		array_push ($q, 'SELECT wlans.*, lans.shortName as lanShortName,');
+		array_push ($q, ' [vlans].fullName AS vlanName, [vlans].[num] AS [vlanNum]');
 		array_push ($q, ' FROM [mac_lan_wlans] AS wlans');
 		array_push ($q, ' LEFT JOIN mac_lan_lans AS lans ON wlans.lan = lans.ndx');
+		array_push ($q, ' LEFT JOIN mac_lan_vlans AS vlans ON wlans.vlan = vlans.ndx');
 		array_push ($q, ' WHERE 1');
+
+		$lan = intval($this->bottomTabId());
+		if ($lan)
+			array_push($q,' AND [wlans].[lan] = %i', $lan);
+
 		// -- fulltext
 		if ($fts != '')
 		{
@@ -100,8 +134,7 @@ class ViewWlans extends TableView
 
 
 /**
- * Class ViewDetailWlan
- * @package mac\lan
+ * class ViewDetailWlan
  */
 class ViewDetailWlan extends TableViewDetail
 {
@@ -113,8 +146,7 @@ class ViewDetailWlan extends TableViewDetail
 
 
 /**
- * Class FormWlan
- * @package mac\lan
+ * class FormWlan
  */
 class FormWlan extends TableForm
 {
@@ -148,8 +180,7 @@ class FormWlan extends TableForm
 
 
 /**
- * Class ReportWlanSticker
- * @package mac\lan
+ * class ReportWlanSticker
  */
 class ReportWlanSticker extends FormReport
 {
