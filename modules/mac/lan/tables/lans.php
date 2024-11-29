@@ -117,13 +117,18 @@ class TableLans extends DbTable
 		}
 	}
 
-	public function setViewerBottomTabs($viewer)
+	public function setViewerBottomTabs($viewer, $activeLan = 0)
 	{
 		$rows = $this->app()->db->query ('SELECT * FROM [mac_lan_lans] WHERE [docState] != 9800 ORDER BY [order], [fullName]');
 		$bt = [];
+
 		$active = 1;
+		if ($activeLan)
+			$active = 0;
 		foreach ($rows as $r)
 		{
+			if ($activeLan && $activeLan == $r['ndx'])
+				$active = 1;
 			$addParams = ['lan' => $r['ndx']];
 			$bt [] = ['id' => $r['ndx'], 'title' => $r['shortName'], 'active' => $active, 'addParams' => $addParams];
 			$active = 0;

@@ -19,8 +19,7 @@
 		{"id": "addressGateway", "name": "Adresa brány", "type": "string", "len": 40},
 		{"id": "priority", "name": "Priorita", "type": "int"},
 
-		{"id": "range", "name": "Rozsah adres", "type": "enumInt", "len": 4, "options": ["saveOnChange"],
-			"enumCfg": {"cfgItem": "mac.lan.addrRanges", "cfgValue": "", "cfgText": "id"}},
+		{"id": "range", "name": "Rozsah adres", "type": "int", "reference": "mac.lan.lansAddrRanges", "options": ["saveOnChange"]},
 
 		{"id": "mac", "name": "MAC", "type": "string", "len": 20},
 		{"id": "dnsname", "name": "Název", "label": "DNS jméno", "type": "string", "len": 60},

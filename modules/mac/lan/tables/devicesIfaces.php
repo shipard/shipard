@@ -262,6 +262,18 @@ class FormDeviceIface extends TableForm
 			return $cp;
 		}
 
+		if ($srcTableId === 'mac.lan.devicesIfaces' && $srcColumnId === 'range')
+		{
+			$deviceRecData = $this->app()->loadItem($allRecData['recData']['device'], 'mac.lan.devices');
+			$cp = [
+				'lan' => $deviceRecData['lan'],
+			];
+			//error_log("___ARD: ".json_encode($allRecData));
+
+			return $cp;
+		}
+
+
 		return parent::comboParams ($srcTableId, $srcColumnId, $allRecData, $recData);
 	}
 
