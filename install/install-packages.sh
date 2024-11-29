@@ -24,9 +24,9 @@ function versionToInt() {
 #
 if [ "$NAME" = "Ubuntu" ]; then
     currentVersion=$(versionToInt $VERSION_ID)
-    min81Version=$(versionToInt 24.04.0)
+    min84Version=$(versionToInt 26.04.0)
 
-    if [ "$currentVersion" -lt "$min81Version" ]; then
+    if [ "$currentVersion" -lt "$min84Version" ]; then
         add-apt-repository --yes ppa:ondrej/php
         apt --assume-yes --quiet update
         apt --assume-yes --quiet upgrade
@@ -59,7 +59,7 @@ apt install --assume-yes --quiet net-tools
 # nodejs
 #
 #apt install --assume-yes --quiet nodejs npm
-curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
+curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
 apt install --assume-yes --quiet nodejs
 
 #
@@ -99,7 +99,7 @@ apt install --assume-yes --quiet redis-server php8.3-redis
 # python
 #
 apt install --assume-yes --quiet python3-pip
-pip3 install PyPDF4
+pip3 install PyPDF4 --break-system-packages
 
 #
 # chromium & puppeteer
@@ -117,6 +117,11 @@ npm -g i puppeteer-core
 #
 apt install --assume-yes --quiet libimage-exiftool-perl docx2txt tesseract-ocr tesseract-ocr-ces ocrmypdf
 
+
+#
+# swaks
+#
+apt install --assume-yes --quiet swaks
 
 #apt install postfix
 
