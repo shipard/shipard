@@ -88,6 +88,7 @@ class LoypPurchaseSaleDocGenerator extends Utility
     $newRow['operation'] = '1010002'; // stock sale
     $newRow['item'] = $docRow['item'];
     $newRow['quantity'] = $docRow['quantity'];
+    $newRow['unit'] = $docRow['unit'];
     $newRow['text'] = $docRow['itemFullName'];
     $newRow['priceItem'] = $docRow['itemPriceSellBase'];
     $newRow['rowOrder'] = $this->rowOrder;
