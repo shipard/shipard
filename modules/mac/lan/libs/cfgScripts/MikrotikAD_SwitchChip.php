@@ -12,6 +12,9 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 {
 	var $csActiveRoot = '';
 	var $vlansPorts = [];
+	var $ssids = [];
+	var $wifiIfaces = [];
+	var $ssidsIfaces = [];
 
 	public function initRoots()
 	{
@@ -63,6 +66,21 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 			{
 				$this->rootsInfo ['/interface wifi security'] = [
 					'mandatoryColumns' => ['passphrase', 'name'],
+					'updateColumns' => ['comment']
+				];
+			}
+		}
+		elseif ($this->deviceMode === self::dmSwitch)
+		{
+			if ($this->wirelessMode === self::wrmWifi)
+			{
+				$this->rootsInfo ['/interface/wifi/configuration'] = [
+					'mandatoryColumns' => ['passphrase', 'name'],
+					'updateColumns' => ['comment']
+				];
+
+				$this->rootsInfo ['/interface/wifi'] = [
+					'mandatoryColumns' => ['master-interface', 'name'],
 					'updateColumns' => ['comment']
 				];
 			}
@@ -140,7 +158,11 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 			$this->createData_APBridgeInterfaces();
 		}
 		else
+		{
+			if ($this->wirelessMode !== self::wrmNone && $this->wifiMode !== self::wmNone)
+				$this->createData_ManagedWifi();
 			$this->createData_Interfaces_HW_Vlans();
+		}
 
 		$this->createData_Interfaces_Addresses();
 
@@ -281,6 +303,154 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 
 					$this->cfgData[$root][] = $item;
 				}
+			}
+		}
+	}
+
+	function createData_ManagedWifi()
+	{
+		if ($this->wirelessMode !== self::wrmWifi)
+			return;
+
+		$this->prepareSSIDs();
+
+		foreach ($this->ssids as $ssid)
+		{
+			$root = '/interface/wifi/configuration';
+			$item = ['type' => 'add',
+				'params' => [
+					'name' => $ssid['id'],
+					'country' => 'Czech',
+					'disabled' => 'no',
+					'ssid' => $ssid['ssid'],
+					'datapath.vlan-id' => $ssid['vlan'] ?? 0,
+					'mode' => 'ap',
+					'security.authentication-types' => 'wpa2-psk,wpa3-psk',
+					'security.passphrase' => $ssid['password'],
+				]
+			];
+			$this->cfgData[$root][] = $item;
+		}
+
+		$cnt = 0;
+		foreach ($this->ssids as $ssid)
+		{
+			if ($cnt === 0)
+			{
+				$root = '/interface/wifi';
+
+				foreach ($this->wifiIfaces as $wifiIfaceNdx => $wifiIface)
+				{
+					$item = ['type' => 'set '.$wifiIface['portId'],
+						'params' => [
+							'configuration' => $ssid['id'],
+							'disabled' => 'no',
+						]
+					];
+
+					$this->cfgData[$root][] = $item;
+				}
+			}
+			elseif ($cnt)
+			{
+				$root = '/interface/wifi';
+
+				foreach ($this->wifiIfaces as $wifiIfaceNdx => $wifiIface)
+				{
+					$item = ['type' => 'add',
+						'params' => [
+							'configuration' => $ssid['id'],
+							'disabled' => 'no',
+							'master-interface' => $wifiIface['portId'],
+							'name' => $ssid['id'].'_'.$wifiIface['portId'],
+						]
+					];
+					$this->cfgData[$root][] = $item;
+				}
+			}
+			$cnt++;
+		}
+	}
+
+	protected function prepareSSIDs()
+	{
+		$q [] = 'SELECT ports.*';
+		array_push($q, ' FROM [mac_lan_devicesPorts] AS [ports]');
+		array_push($q, ' WHERE 1');
+		array_push($q, ' AND ports.[device] = %i', $this->deviceNdx);
+		array_push($q, ' AND ports.[portKind] = %i', 1); // wifi
+		array_push($q, ' ORDER BY ports.portId');
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$wifiIface = [
+				'portId' => $r['portId'],
+				'vlans' => [],
+			];
+
+			$this->wifiIfaces[$r['ndx']] = $wifiIface;
+		}
+
+		$this->ssids = [];
+		if ($this->wifiMode === self::wmManual)
+		{
+			$ssid = [
+				'id' => Utils::safeChars($this->deviceCfg['wifiSSID']),
+				'ssid' => $this->deviceCfg['wifiSSID'],
+				'password' => $this->deviceCfg['wifiPassword'],
+				'vlan' => intval($this->lanCfg['devicesFixedWifi'][$this->deviceNdx]['vlan'] ?? 0)
+			];
+			$this->ssids[] = $ssid;
+
+			foreach ($this->wifiIfaces as $wifiIfaceNdx => $wifiIface)
+			{
+				$this->wifiIfaces[$wifiIfaceNdx]['vlans'][] = $ssid['vlan'];
+			}
+		}
+		elseif ($this->wifiMode === self::wmAutoLAN)
+		{
+			$cnt = 0;
+			foreach ($this->lanCfg['wlansByDevices'][$this->deviceNdx] as $wlanNdx)
+			{
+				$wlanCfg = $this->lanCfg['wlans'][$wlanNdx];
+				$ssid = [
+					'id' => Utils::safeChars($wlanCfg['ssid']),
+					'ssid' => $wlanCfg['ssid'],
+					'password' => $wlanCfg['wpaPassphrase'],
+					'vlan' => $wlanCfg['vlan']
+				];
+				$this->ssids[] = $ssid;
+
+				if (!$cnt)
+				{
+					foreach ($this->wifiIfaces as $wifiIfaceNdx => $wifiIface)
+					{
+						$this->wifiIfaces[$wifiIfaceNdx]['vlans'][] = $ssid['vlan'];
+					}
+				}
+				$cnt++;
+			}
+
+			$cnt = 0;
+			foreach ($this->ssids as $ssid)
+			{
+				if (!$cnt)
+				{
+					$cnt++;
+					continue;
+				}
+				foreach ($this->wifiIfaces as $wifiIfaceNdx => $wifiIface)
+				{
+					$wifiIface = [
+						'portId' => $ssid['id'].'_'.$wifiIface['portId'],
+						'vlans' => [$ssid['vlan']],
+					];
+
+					$portNdx = $cnt * 10000000 + $wifiIfaceNdx;
+					$this->ssidsIfaces[$portNdx] = $wifiIface;
+				}
+
+				$cnt++;
 			}
 		}
 	}
@@ -434,6 +604,35 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 			}
 		}
 
+		if (count($this->wifiIfaces))
+		{
+			foreach ($this->wifiIfaces as $wifiIfaceNdx => $wifiIface)
+			{
+				$item = ['type' => 'add',
+					'params' => [
+						'bridge' => 'bridge1',
+						'interface' => $wifiIface['portId'],
+					]
+				];
+				$item['params']['frame-types'] = 'admit-only-vlan-tagged';
+				$this->cfgData[$root][] = $item;
+			}
+		}
+		if (count($this->ssidsIfaces))
+		{
+			foreach ($this->ssidsIfaces as $ssidIfaceNdx => $ssidIface)
+			{
+				$item = ['type' => 'add',
+					'params' => [
+						'bridge' => 'bridge1',
+						'interface' => $ssidIface['portId'],
+					]
+				];
+				$item['params']['frame-types'] = 'admit-only-vlan-tagged';
+				$this->cfgData[$root][] = $item;
+			}
+		}
+
 		$root = '/interface vlan';
 		foreach ($this->lanDeviceCfg['ports'] as $portNdx => $portCfg)
 		{
@@ -456,8 +655,28 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 
 		$root = '/interface bridge vlan';
 		ksort($vlansPorts);
-		foreach ($vlansOnPorts['trunk_'] as $vlanNumber => $ports)
+		foreach ($vlansOnPorts['trunk_'] as $vlanNumber => $srcPorts)
 		{
+			$ports = $srcPorts;
+
+			// -- check wifi
+			if (count($this->wifiIfaces))
+			{
+				foreach ($this->wifiIfaces as $wifiIfaceNdx => $wifiIface)
+				{
+					if (in_array($vlanNumber, $wifiIface['vlans']))
+						$ports[] = $wifiIface['portId'];
+				}
+			}
+			if (count($this->ssidsIfaces))
+			{
+				foreach ($this->ssidsIfaces as $ssidIfaceNdx => $ssidIface)
+				{
+					if (in_array($vlanNumber, $ssidIface['vlans']))
+						$ports[] = $ssidIface['portId'];
+				}
+			}
+
 			$item = ['type' => 'add',
 				'params' => [
 					'bridge' => 'bridge1',
@@ -832,6 +1051,12 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 		elseif ($this->wirelessMode == self::wrmWifi)
 		{
 			$this->csActiveRoot = '/interface wifi security';
+			$this->createScriptForRoot();
+
+			$this->csActiveRoot = '/interface/wifi/configuration';
+			$this->createScriptForRoot();
+
+			$this->csActiveRoot = '/interface/wifi';
 			$this->createScriptForRoot();
 
 			$this->csActiveRoot = '/interface/wifi/';

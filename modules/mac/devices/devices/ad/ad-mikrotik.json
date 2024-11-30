@@ -24,6 +24,7 @@
 
 			{"id": "wifiSSID", "name": "WiFi SSID", "type": "string", "len": 40, "enabled": {"wifi": 2}},
 			{"id": "wifiPassword", "name": "WiFi heslo", "type": "string", "len": 40, "enabled": {"wifi": 2}},
+			{"id": "wifiVlan", "name": "WiFi VLAN", "type": "int", "reference": "mac.lan.vlans", "enabled": {"wifi": 2, "mode": 0}},
 
 			{"id": "capsmanServer", "name": "Zapnout CAPSMAN server", "type": "logical", "enabled": {"mode": 3}},
 

@@ -261,7 +261,7 @@ class LanCfgCreator extends Utility
 			//if (!$r['range'] || !$r['addressRange'] || $r['addressRange'] === '')
 			//	continue;
 
-			if ($r['addrType'] === 2)
+			if ($r['addrType'] === 2 && !$r['rangeVlan'])
 			{ // DHCP client
 				continue;
 			}
@@ -492,6 +492,10 @@ class LanCfgCreator extends Utility
 			{ // dhcp fix
 				$this->cfg['dhcp']['servers'][$dhcpServerId]['staticLeases'][] = $addressItem;
 			}
+			elseif ($r['addrType'] === 2 && $r['mac'] && $r['mac'] !== '')
+			{ // dhcp client with ip address
+				$this->cfg['dhcp']['servers'][$dhcpServerId]['staticLeases'][] = $addressItem;
+			}
 		}
 	}
 
@@ -521,6 +525,8 @@ class LanCfgCreator extends Utility
 
 
 		// -- load APS
+		$this->cfg['devicesFixedWifi'] = [];
+
 		$q = [];
 		$q [] = 'SELECT devices.*';
 		array_push($q, ' FROM [mac_lan_devices] AS [devices]');
@@ -534,16 +540,29 @@ class LanCfgCreator extends Utility
 		$rows = $this->db()->query ($q);
 		foreach ($rows as $r)
 		{
+			$deviceNdx = $r['ndx'];
 			$enabled = 0;
 			if ($r['deviceKind'] == 15)
 				$enabled = 1;
 			else
 			{
 				$macDeviceCfg = json_decode($r['macDeviceCfg'], TRUE);
-				if (isset($macDeviceCfg['capsmanClient']) && intval($macDeviceCfg['capsmanClient']))
+				if (isset($macDeviceCfg['wifi']) && intval($macDeviceCfg['wifi']) === 3) // global wlans
 					$enabled = 1;
-				elseif (isset($macDeviceCfg['wifi']) && intval($macDeviceCfg['wifi']) == 1)
+				if (isset($macDeviceCfg['wifi']) && intval($macDeviceCfg['wifi']) === 1) // capsman client
 					$enabled = 1;
+
+				if (isset($macDeviceCfg['wifi']) && intval($macDeviceCfg['wifi']) === 2) // wifi from this device
+				{
+					if (isset($macDeviceCfg['mode']) && intval($macDeviceCfg['mode']) === 0) // switch
+					{
+						$wifiVlan = $this->vlanNumber($macDeviceCfg['wifiVlan'] ?? 0, $deviceNdx, 0, 'device wifi');
+						$this->cfg['devicesFixedWifi'][$deviceNdx] = [
+							'vlan' => $wifiVlan
+						];
+					}
+				}
+
 			}
 			if (!$enabled)
 				continue;
@@ -560,6 +579,7 @@ class LanCfgCreator extends Utility
 		}
 
 		// -- load exceptions
+		/*
 		$rows = $this->app()->db->query (
 			'SELECT doclinks.srcRecId, doclinks.dstRecId, doclinks.linkId FROM [e10_base_doclinks] AS doclinks WHERE 1',
 			' AND dstTableId = %s', 'mac.lan.devices', ' AND srcTableId = %s', 'mac.lan.wlans',
@@ -580,7 +600,7 @@ class LanCfgCreator extends Utility
 			{
 				$wlans[$wlanNdx]['devices'][] = $deviceNdx;
 			}
-		}
+		}*/
 
 		// -- set
 		$this->cfg['wlans'] = $wlans;
@@ -638,6 +658,14 @@ class LanCfgCreator extends Utility
 
 	function deviceDownLinkVlans ($deviceNdx, &$vlans, &$devices)
 	{
+		if (isset($this->cfg['devicesFixedWifi'][$deviceNdx]) && intval($this->cfg['devicesFixedWifi'][$deviceNdx]['vlan'] ?? 0))
+		{
+			if (!in_array(intval($this->cfg['devicesFixedWifi'][$deviceNdx]['vlan'] ?? 0), $vlans))
+			{
+				$vlans[] = intval($this->cfg['devicesFixedWifi'][$deviceNdx]['vlan'] ?? 0);
+			}
+		}
+
 		if (in_array($deviceNdx, $devices))
 			return;
 		$devices[] = $deviceNdx;
@@ -706,6 +734,8 @@ class LanCfgCreator extends Utility
 			foreach ($this->cfg['wlansByDevices'][$deviceNdx] as $wlanNdx)
 			{
 				$wlan = $this->cfg['wlans'][$wlanNdx];
+				if (!isset($wlan['vlan']))
+					continue;
 				$vlanNumber = $wlan['vlan'];
 				if (!in_array($vlanNumber, $vlans))
 					$vlans[] = $vlanNumber;
