@@ -335,7 +335,7 @@ class TableServers extends DbTable
 			$cfg .= "server {\n";
 			$cfg .= "\tlisten 80;\n";
 			if ($this->app()->cfgServer['ipv6Enabled'] ?? 0)
-				$cfg .= "\tlisten [::]:80 ssl http2;\n";
+				$cfg .= "\tlisten [::]:80;\n";
 			$cfg .= "\tserver_name $domain";
 			if (count($redirectsHosts))
 				$cfg .= ' '.implode(' ', $redirectsHosts);
