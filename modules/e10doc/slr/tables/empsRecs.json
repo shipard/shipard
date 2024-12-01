@@ -3,8 +3,8 @@
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 
-		{"id": "import", "name": "Import", "type": "int", "reference": "e10doc.slr.imports"},
-    {"id": "emp", "name": "Zaměstnanec", "type": "int", "reference": "e10doc.slr.emps"},
+		{"id": "import", "name": "Import", "type": "int", "reference": "e10doc.slr.imports", "options": ["saveOnChange"]},
+    {"id": "emp", "name": "Zaměstnanec", "type": "int", "reference": "e10doc.slr.emps", "options": ["saveOnChange"]},
 
 		{"id": "docAcc", "name": "Účetní doklad", "type": "int", "reference": "e10doc.core.heads"},
 

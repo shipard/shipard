@@ -6,5 +6,9 @@
   "cz-pohoda": {
     "fn": "Pohoda",
     "classId": "e10doc.slr.libs.imports.ImportEngineCZPohoda"
+  },
+  "cz-manual": {
+    "fn": "Ruční pořízení",
+    "classId": "e10doc.slr.libs.imports.ImportEngineCZManual"
   }
 }

@@ -112,6 +112,44 @@ class FormEmpRec extends TableForm
 			$this->closeTabs ();
 		$this->closeForm ();
 	}
+
+	function checkLoadedList ($list)
+	{
+		if (!intval($this->recData['import'] ?? 0))
+			return;
+		if (!intval($this->recData['emp'] ?? 0))
+			return;
+
+		if ($list->listId === 'rows' && count($list->data) == 0)
+		{
+			$import = $this->app()->loadItem ($this->recData['import'], 'e10doc.slr.imports');
+			if (!$import || $import['importType'] !== 'cz-manual')
+				return;
+
+			$q = [];
+			array_push($q, 'SELECT itms.*');
+			array_push($q, ' FROM [e10doc_slr_slrItems] AS [itms]');
+			array_push($q, ' WHERE 1');
+			array_push($q, ' AND docState IN %in', [4000, 8000]);
+			array_push($q, ' ORDER BY itemType, ndx');
+			$itmsRows = $this->app()->db()->query($q);
+			$rowOrder = 1000;
+			foreach ($itmsRows as $itmRow)
+			{
+				$newRow = [
+					'ndx' => 0,
+					'rowOrder' => $rowOrder,
+					'slrItem' => $itmRow['ndx'],
+					'amount' => 0.0
+				];
+				$list->data [] = $newRow;
+				$rowOrder += 1000;
+			}
+			return;
+		}
+
+		parent::checkLoadedList ($list);
+	}
 }
 
 
