@@ -27,6 +27,14 @@ class TableImports extends DbTable
 		return $hdr;
 	}
 
+	public function checkNewRec (&$recData)
+	{
+		parent::checkNewRec ($recData);
+
+		if (!isset($recData['importType']) || $recData['importType'] == '')
+			$recData['importType'] = $this->app()->cfgItem ('options.e10doc-finance.slrDefaultImportType', 'cz-perm');
+	}
+
 	public function importEngine ($importNdx)
 	{
 		$importRecData = $this->loadItem($importNdx);
