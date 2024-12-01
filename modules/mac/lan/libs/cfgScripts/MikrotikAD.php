@@ -175,6 +175,9 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 										"; wireless: ".($wirelessModes[$this->wirelessMode] ?? 'UNKNOWN').
 										" ###\n";
 		$this->script .= "\n";
+
+		if (isset($this->adCfg['preInitCfgDelay']) && intval($this->adCfg['preInitCfgDelay']))
+			$this->script .= ':delay '.intval($this->adCfg['preInitCfgDelay']).'s;'."\n\n";
 	}
 
 	function createScript_Init_Identity()

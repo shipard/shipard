@@ -142,6 +142,7 @@
 				"mkt-xap_audience": {
 					"title": "Audience",
 					"wirelessMode": "wifi",
+					"preInitCfgDelay": 5,
 					"ports": [
 						{"kind": 5, "count": 2, "maskId": "ether"},
 						{"kind": 1, "count": 3, "maskId": "wifi"},
