@@ -47,7 +47,7 @@ class DSManager extends Utility
 		echo "# getServerInfo\n";
 
 		// -- get OLD server info
-		$cmd = 'ssh '.$this->params['server'].' "[ -s /etc/e10-hosting.cfg ] && cat /etc/e10-hosting.cfg" > '.$this->tmpDir.'/from-e10-hosting.cfg';
+		$cmd = 'ssh '.$this->params['user'].'@'.$this->params['server'].' "[ -s /etc/e10-hosting.cfg ] && cat /etc/e10-hosting.cfg" > '.$this->tmpDir.'/from-e10-hosting.cfg';
 		//echo $cmd."\n";
 		passthru($cmd);
 		if (!is_readable ($this->tmpDir.'/from-e10-hosting.cfg'))
@@ -55,7 +55,7 @@ class DSManager extends Utility
 			return $this->app->err('Invalid server response');
 		}
 
-		$cmd = 'ssh '.$this->params['server'].' "[ -s /etc/shipard/server.json ] && cat /etc/shipard/server.json" > '.$this->tmpDir.'/from-server.json';
+		$cmd = 'ssh '.$this->params['user'].'@'.$this->params['server'].' "[ -s /etc/shipard/server.json ] && cat /etc/shipard/server.json" > '.$this->tmpDir.'/from-server.json';
 		//echo $cmd."\n";
 		passthru($cmd);
 		if (!is_readable ($this->tmpDir.'/from-server.json'))
@@ -79,7 +79,7 @@ class DSManager extends Utility
 		}
 
 
-		$cmd = 'ssh '.$this->params['server'].' "[ -s '.$this->dsPathRemote.'config/config.json ] && cat '.$this->dsPathRemote.'config/config.json" > '.$this->tmpDir.'/from-ds-config.json';
+		$cmd = 'ssh '.$this->params['user'].'@'.$this->params['server'].' "[ -s '.$this->dsPathRemote.'config/config.json ] && cat '.$this->dsPathRemote.'config/config.json" > '.$this->tmpDir.'/from-ds-config.json';
 		//echo $cmd."\n";
 		passthru($cmd);
 		if (!is_readable ($this->tmpDir.'/from-ds-config.json'))
@@ -95,9 +95,9 @@ class DSManager extends Utility
 
 		$this->dsPathLocal = $dsRoot = $this->app()->cfgServer['dsRoot'].'/'.$this->params['dsId'].'/';
 
-		//echo "REMOTE DS PATH    : ".$this->dsPathRemote."\n";
-		//echo "LOCAL DS PATH     : ".$this->dsPathLocal."\n";
-		//echo "REMOTE BACKUP FILE: ".$this->backupFileNameRemote."\n";
+		echo "REMOTE DS PATH    : ".$this->dsPathRemote."\n";
+		echo "LOCAL DS PATH     : ".$this->dsPathLocal."\n";
+		echo "REMOTE BACKUP FILE: ".$this->backupFileNameRemote."\n";
 
 		return TRUE;
 	}
@@ -132,11 +132,11 @@ class DSManager extends Utility
 
 		$this->appStop();
 
-		$cmd = 'cd '.$this->dsPathLocal.' && shpd-server db-create --replace';
+		$cmd = 'cd '.$this->dsPathLocal.' && shpd-ds db-create --replace';
 		//echo "  --> ".$cmd."\n";
 		passthru($cmd);
 
-		$cmd = 'cd '.$this->dsPathLocal.' && shpd-server app-upgrade';
+		$cmd = 'cd '.$this->dsPathLocal.' && shpd-ds app-upgrade';
 		//echo "  --> ".$cmd."\n";
 		passthru($cmd);
 
@@ -231,9 +231,9 @@ class DSManager extends Utility
 	public function stopRemote()
 	{
 		if ($this->oldMode)
-			$cmd = 'ssh '.$this->params['server'].' "cd '.$this->dsPathRemote.' && e10 app-stop"';
+			$cmd = 'ssh '.$this->params['user'].'@'.$this->params['server'].' "cd '.$this->dsPathRemote.' && e10 app-stop"';
 		else
-			$cmd = 'ssh '.$this->params['server'].' "cd '.$this->dsPathRemote.' && shpd-server app-stop"';
+			$cmd = 'ssh '.$this->params['user'].'@'.$this->params['server'].' "cd '.$this->dsPathRemote.' && shpd-ds app-stop"';
 		echo $cmd."\n";
 		passthru($cmd);
 	}
@@ -247,7 +247,7 @@ class DSManager extends Utility
 		//	$cmd = 'ssh '.$this->params['server'].' "cd '.$this->dsPathRemote.' && shpd-server app-stop"';
 		$dsCfg = Utils::loadCfgFile($this->tmpDir.'/from-ds-config.json');
 
-		$cmd = 'ssh -C '.$this->params['server']. ' "'. "mysqldump --default-character-set=utf8mb4 -u {$dsCfg['db']['login']} -p{$dsCfg['db']['password']} {$dsCfg['db']['database']}".'" > '.$this->dsPathLocal.'/database.sql';
+		$cmd = 'ssh -C '.$this->params['user'].'@'.$this->params['server']. ' "'. "mysqldump --default-character-set=utf8mb4 -u {$dsCfg['db']['login']} -p{$dsCfg['db']['password']} {$dsCfg['db']['database']}".'" > '.$this->dsPathLocal.'/database.sql';
 		//echo $cmd."\n";
 		passthru($cmd);
 	}
@@ -255,11 +255,11 @@ class DSManager extends Utility
 	public function restoreDb()
 	{
 		echo "# restore db\n";
-		$cmd = 'cd '.$this->dsPathLocal.' && shpd-server db-restore --file=database.sql';
+		$cmd = 'cd '.$this->dsPathLocal.' && shpd-ds db-restore --file=database.sql';
 		passthru($cmd);
-		$cmd = 'cd '.$this->dsPathLocal.' && shpd-server app-upgrade';
+		$cmd = 'cd '.$this->dsPathLocal.' && shpd-ds app-upgrade';
 		passthru($cmd);
-		$cmd = 'cd '.$this->dsPathLocal.' && shpd-server app-fullupgrade';
+		$cmd = 'cd '.$this->dsPathLocal.' && shpd-ds app-fullupgrade';
 		passthru($cmd);
 
 		unlink ($this->dsPathLocal.'/database.sql');
@@ -274,7 +274,7 @@ class DSManager extends Utility
 		}
 		else
 		{
-			echo "PLEASE RUN:\nsudo sh -c \"{$cmd}\"\nto fix file permissions\n";
+			echo "##### PLEASE RUN:\nsudo sh -c \"{$cmd}\"\nto fix file permissions #####\n";
 		}
 	}
 
