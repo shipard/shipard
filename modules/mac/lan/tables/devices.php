@@ -625,7 +625,7 @@ class ViewDevices extends TableView
 
 		$props = [];
 		if ($item['rackName'])
-			$props[] = ['text' => $item['rackName'], 'icon' => 'icon-window-maximize', 'class' => ''];
+			$props[] = ['text' => $item['rackName'], 'icon' => 'tables/mac.lan.racks', 'class' => ''];
 
 		if ($item['lanShortName'])
 			$props[] = ['text' => $item['lanShortName'], 'icon' => 'system/iconSitemap', 'class' => ''];
@@ -701,6 +701,7 @@ class ViewDevices extends TableView
 					' OR devices.[deviceTypeName] LIKE %s', '%'.$fts.'%',
 					' OR devices.[id] LIKE %s', '%'.$fts.'%',
 					' OR devices.[evNumber] LIKE %s', '%'.$fts.'%',
+					' OR devices.[uid] LIKE %s', '%'.$fts.'%',
 					')'
 			);
 			array_push ($q, ' OR EXISTS (SELECT ndx FROM mac_lan_devicesIfaces WHERE devices.ndx = device AND (ip LIKE %s OR mac LIKE %s))', '%'.$fts.'%', '%'.$fts.'%');

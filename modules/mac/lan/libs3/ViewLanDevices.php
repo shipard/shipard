@@ -111,7 +111,7 @@ class ViewLanDevices extends TableView
 
 		$props = [];
 		if ($item['rackName'])
-			$props[] = ['text' => $item['rackName'], 'icon' => 'icon-window-maximize', 'class' => ''];
+			$props[] = ['text' => $item['rackName'], 'icon' => 'tables/mac.lan.racks', 'class' => ''];
 
 		if ($item['lanShortName'])
 			$props[] = ['text' => $item['lanShortName'], 'icon' => 'system/iconSitemap', 'class' => ''];
