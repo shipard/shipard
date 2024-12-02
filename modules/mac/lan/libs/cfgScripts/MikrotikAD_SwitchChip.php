@@ -323,12 +323,15 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 					'country' => 'Czech',
 					'disabled' => 'no',
 					'ssid' => $ssid['ssid'],
-					'datapath.vlan-id' => $ssid['vlan'] ?? 0,
 					'mode' => 'ap',
 					'security.authentication-types' => 'wpa2-psk,wpa3-psk',
 					'security.passphrase' => $ssid['password'],
 				]
 			];
+
+			if ($this->wifiChipset === self::wchAX)
+				$item['params']['datapath.vlan-id'] = $ssid['vlan'] ?? 0;
+
 			$this->cfgData[$root][] = $item;
 		}
 
@@ -614,7 +617,13 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 						'interface' => $wifiIface['portId'],
 					]
 				];
-				$item['params']['frame-types'] = 'admit-only-vlan-tagged';
+				if ($this->wifiChipset === self::wchAX)
+					$item['params']['frame-types'] = 'admit-only-vlan-tagged';
+				else
+				{
+					$item['params']['frame-types'] = 'admit-only-untagged-and-priority-tagged';
+					$item['params']['pvid'] = $wifiIface['vlans'][0] ?? 9999;
+				}
 				$this->cfgData[$root][] = $item;
 			}
 		}
@@ -628,7 +637,13 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 						'interface' => $ssidIface['portId'],
 					]
 				];
-				$item['params']['frame-types'] = 'admit-only-vlan-tagged';
+				if ($this->wifiChipset === self::wchAX)
+					$item['params']['frame-types'] = 'admit-only-vlan-tagged';
+				else
+				{
+					$item['params']['frame-types'] = 'admit-only-untagged-and-priority-tagged';
+					$item['params']['pvid'] = $ssidIface['vlans'][0] ?? 9999;
+				}
 				$this->cfgData[$root][] = $item;
 			}
 		}
@@ -660,20 +675,23 @@ class MikrotikAD_SwitchChip extends \mac\lan\libs\cfgScripts\MikrotikAD
 			$ports = $srcPorts;
 
 			// -- check wifi
-			if (count($this->wifiIfaces))
+			if ($this->wifiChipset === self::wchAX)
 			{
-				foreach ($this->wifiIfaces as $wifiIfaceNdx => $wifiIface)
+				if (count($this->wifiIfaces))
 				{
-					if (in_array($vlanNumber, $wifiIface['vlans']))
-						$ports[] = $wifiIface['portId'];
+					foreach ($this->wifiIfaces as $wifiIfaceNdx => $wifiIface)
+					{
+						if (in_array($vlanNumber, $wifiIface['vlans']))
+							$ports[] = $wifiIface['portId'];
+					}
 				}
-			}
-			if (count($this->ssidsIfaces))
-			{
-				foreach ($this->ssidsIfaces as $ssidIfaceNdx => $ssidIface)
+				if (count($this->ssidsIfaces))
 				{
-					if (in_array($vlanNumber, $ssidIface['vlans']))
-						$ports[] = $ssidIface['portId'];
+					foreach ($this->ssidsIfaces as $ssidIfaceNdx => $ssidIface)
+					{
+						if (in_array($vlanNumber, $ssidIface['vlans']))
+							$ports[] = $ssidIface['portId'];
+					}
 				}
 			}
 

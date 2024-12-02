@@ -70,6 +70,7 @@
 				"mkt-xap_cap-ax": {
 					"title": "cAP ax",
 					"wirelessMode": "wifi",
+					"wifiChipset": "ax",
 					"ports": [
 						{"kind": 5, "count": 2, "maskId": "ether"},
 						{"kind": 1, "count": 2, "maskId": "wifi"},
@@ -91,6 +92,7 @@
 				"mkt-xap_hap-ax2": {
 					"title": "hAP ax²",
 					"wirelessMode": "wifi",
+					"wifiChipset": "ax",
 					"ports": [
 						{"kind": 5, "count": 5, "maskId": "ether"},
 						{"kind": 1, "count": 2, "maskId": "wifi"},

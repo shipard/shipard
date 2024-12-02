@@ -23,6 +23,9 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 	CONST wrmNone = 0, wrmWireless = 1, wrmWifiWave2 = 2, wrmWifi = 3;
 	var $wirelessMode = self::wrmNone;
 
+	CONST wchNone = 0, wchAC = 1, wchAX = 2;
+	var $wifiChipset = self::wchNone;
+
 	var $scriptModeSignature = ' -- !!! UNCONFIGURED !!! --';
 
 	var $lcMainLanUserNdx = 0;
@@ -51,6 +54,11 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 				$this->wirelessMode = self::wrmWifiWave2;
 			elseif ($this->adCfg['wirelessMode'] === 'wifi')
 				$this->wirelessMode = self::wrmWifi;
+
+			if ($this->adCfg['wifiChipset'] === 'ax')
+				$this->wifiChipset = self::wchAX;
+			else
+				$this->wifiChipset = self::wchAC;
 		}
 
 		// -- mng VLAN mac addr
@@ -168,12 +176,13 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 		$deviceModes = [0 => 'switch', 1 => 'unmanaged', 2 => 'ap/bridge', 3 => 'router'];
 		$wifiModes = [0 => 'none', 1 => 'CAPSMAN client', 2 => 'manual', 3 => 'auto/from LAN'];
 		$wirelessModes = [0 => "none", 1 => 'wireless', 2 => 'wifiwave2', 3 => 'wifi ROS >= 7.13'];
+		$wifiChipset = [0 => "none", 1 => 'ac', 2 => 'ax'];
 
 		$this->script .= "### script mode: {$this->scriptModeSignature} / ".get_class($this)." ###\n";
-		$this->script .= "### device mode: ".($deviceModes[$this->deviceMode] ?? 'UNKNOWN').
-										"; wifi: ".($wifiModes[$this->wifiMode] ?? 'UNKNOWN').
-										"; wireless: ".($wirelessModes[$this->wirelessMode] ?? 'UNKNOWN').
-										" ###\n";
+		$this->script .= "### device mode: ".($deviceModes[$this->deviceMode] ?? 'UNKNOWN')."\n";
+		$this->script .= "### wifi SSIDs: ".($wifiModes[$this->wifiMode] ?? 'UNKNOWN')."\n";
+		$this->script .= "### wireless-mode: ".($wirelessModes[$this->wirelessMode] ?? 'UNKNOWN')."\n";
+		$this->script .= "### wifi-chipset: ".($wifiChipset[$this->wifiChipset] ?? 'UNKNOWN')."\n";
 		$this->script .= "\n";
 
 		if (isset($this->adCfg['preInitCfgDelay']) && intval($this->adCfg['preInitCfgDelay']))
