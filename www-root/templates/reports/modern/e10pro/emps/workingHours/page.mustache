@@ -8,9 +8,30 @@
 </head>
 <body style="font-size: 10pt;">
 
-	{{#data.reportTexts.subHeader}}<div class='reportTextHeader'>{{{data.reportTexts.subHeader}}}</div>{{/data.reportTexts.subHeader}}
-
 	<h3>{{data.whPerson.fullName}}</h3>
+
+	<table class="default" style="text-align: center !important;">
+		<thead>
+			<tr>
+				<th style="text-align: center;">Týdenní pracovní doba</th>
+				<th style="text-align: center;">Stanovená výše přímé pedagogické činnosti</th>
+				<th style="text-align: center;">Přímá pedagogická činnost</th>
+				<th style="text-align: center;">Práce související s přímou pedagogickou činností</th>
+				<th style="text-align: center;">Počet pracovních hodin týdně celkem</th>
+				<th style="text-align: center;">Výše úvazku</th>
+			<tr>
+		</thead>
+		<tr>
+			<td>{{data.head.wlWeeklyTotal}}</td>
+			<td>{{data.head.wlWeekly1}}</td>
+			<td>{{data.head.sumWeeklyHours1}}</td>
+			<td>{{data.head.sumWeeklyHours2}}</td>
+			<td>{{data.head.sumWeeklyHoursTotal}}</td>
+			<td>{{data.head.calcWeeklyRatio}}</td>
+		</tr>
+	</table>
+
+	{{#data.reportTexts.subHeader}}<div class='reportTextHeader'>{{{data.reportTexts.subHeader}}}</div>{{/data.reportTexts.subHeader}}
 
 	{{{@renderContent;dataItem:data.whRows}}}
 
