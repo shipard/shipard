@@ -3,7 +3,8 @@
 		"name": "Zaměstnanci",
 		"roles": ["user"],
 		"viewers": {
-			"e10pro.emps.absences": {"default": 2}
+			"e10pro.emps.absences": {"default": 2},
+			"e10pro.emps.workingHours": {"default": 2}
 		}
 	},
 	"wrkrcs": {
@@ -16,7 +17,8 @@
 	},
 	"admin": {
 		"viewers": {
-			"e10pro.emps.absencesKinds": {"default": 2}
+			"e10pro.emps.absencesKinds": {"default": 2},
+			"e10pro.emps.workingHoursKinds": {"default": 2}
 		}
 	}
 }

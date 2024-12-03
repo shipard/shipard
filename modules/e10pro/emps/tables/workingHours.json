@@ -1,0 +1,39 @@
+{
+	"id": "e10pro.emps.workingHours", "sql": "e10pro_emps_workingHours", "name": "Evidence pracovní doby",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+
+    {"id": "workingHoursKind", "name": "Druh", "type": "enumInt", "reference": "e10pro.emps.workingHoursKinds",
+			"enumCfg": {"cfgItem": "e10pro.emps.workingHoursKinds", "cfgValue": "", "cfgText": "fn"}},
+
+		{"id": "wlWeeklyTotal", "name": "Týdenní pracovní doba", "type": "number", "dec": 2},
+		{"id": "wlWeeklyRation", "name": "Výše úvazku", "type": "number", "dec": 4},
+		{"id": "wlWeekly1", "name": "Týdenní pracovní doba - přímá", "type": "number", "dec": 2},
+
+		{"id": "validFrom", "name": "Platnost od", "type": "date"},
+		{"id": "validTo", "name": "Platnost do", "type": "date"},
+
+    {"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "rows", "class": "e10.base.ListRows", "name": "Řádky", "table": "e10pro.emps.workingHoursRows", "queryColumn": "workingHours", "orderColumn": "rowOrder"}
+  ],
+	"views": {
+    "default": {
+      "id": "default", "class": "e10pro.emps.ViewWorkingHours",
+      "details": {
+        "detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.emps.ViewDetailWorkingHours"}
+      }
+    }
+  },
+	"forms": [
+		{"id": "default", "class": "e10pro.emps.FormWorkingHours"}
+	],
+	"reports": [
+		{"id": "reportWorkingHours", "name": "Rozvrh", "class": "e10pro.emps.libs.ReportWorkingHours", "email": 1}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

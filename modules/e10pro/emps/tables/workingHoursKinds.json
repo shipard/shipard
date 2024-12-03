@@ -1,0 +1,28 @@
+{
+	"id": "e10pro.emps.workingHoursKinds", "sql": "e10pro_emps_workingHoursKinds", "name": "Druhy pracovní doby",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+    {"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
+
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+    {"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": {
+    "default": {
+      "id": "default", "class": "e10pro.emps.ViewWorkingHoursKinds",
+      "details": {
+        "detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.emps.ViewDetailWorkingHoursKind"}
+      }
+    }
+  },
+	"forms": [
+		{"id": "default", "class": "e10pro.emps.FormWorkingHoursKind"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+  "options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

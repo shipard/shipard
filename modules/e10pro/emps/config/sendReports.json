@@ -1,0 +1,9 @@
+{
+  "5201": {
+    "fn": "Rozvrh pracovní doby",
+    "cn": "Rozvrh pracovní doby",
+    "sc": "RPD",
+    "classId": "e10pro.emps.libs.ReportWorkingHours",
+    "ndx": 5201
+  }
+}

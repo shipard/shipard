@@ -1,12 +1,13 @@
 {
   "id": "e10pro.emps",
   "name": "Zaměstnanci",
-  "tables": ["absencesKinds", "absences"],
+  "tables": ["absencesKinds", "absences", "workingHours", "workingHoursRows", "workingHoursKinds"],
   "modules": ["e10/base"],
   "config": [
     {"id": "+appSkeleton", "file": "appSkeleton.json"},
 	  {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
 		{"id": "+e10.appOptions.groups", "file": "appOptionsGroups.json"},
-		{"id": "+appOptions", "file": "appOptions.json"}
+		{"id": "+appOptions", "file": "appOptions.json"},
+    {"id": "+e10.reports.sendReports", "file": "sendReports.json"}
   ]
 }

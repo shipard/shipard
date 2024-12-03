@@ -1,0 +1,21 @@
+{
+	"id": "e10pro.emps.workingHoursRows", "sql": "e10pro_emps_workingHoursRows", "name": "Řádky evidence pracovní doby",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "workingHours", "name": "Pracovní doba", "type": "int", "reference": "e10pro.emps.workingHours"},
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+
+		{"id": "dow", "name": "Den", "type": "enumInt",
+			"enumValues": {"0": "---", "1": "Pondělí", "2": "Úterý", "3": "Středa", "4": "Čtvrtek", "5": "Pátek", "6": "Sobota", "7": "Neděle"}},
+
+		{"id": "timeBegin", "name": "Čas od", "type": "time"},
+		{"id": "timeEnd", "name": "Čas do", "type": "time"},
+
+		{"id": "cntHours1", "name": "Počet hodin Přímá PD", "type": "number", "dec": 2},
+		{"id": "cntHours2", "name": "Počet hodin Nepřímá PD", "type": "number", "dec": 2}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.emps.FormWorkingHoursRow"}
+	],
+	"options": ["systemTable"]
+}
