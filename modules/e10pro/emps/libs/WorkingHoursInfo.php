@@ -10,6 +10,7 @@ class WorkingHoursInfo extends \Shipard\Base\Utility
   var $workingHoursRecData = NULL;
 
   var $dataWeekly = [];
+  var $dataWeeklySum = ['hoursTotal' => 0.0, 'hours1' => 0.0, 'hours2' => 0.0];
   var $weeklyContent = ['table' => [], 'header' => []];
 
   public function setWorkingHours($workingHoursNdx)
@@ -46,6 +47,10 @@ class WorkingHoursInfo extends \Shipard\Base\Utility
         ];
         $this->dataWeekly[$dow] = $dayItem;
       }
+
+      $this->dataWeeklySum['hoursTotal'] += $r['cntHours1'] + $r['cntHours2'];
+      $this->dataWeeklySum['hours1'] += $r['cntHours1'];
+      $this->dataWeeklySum['hours2'] += $r['cntHours2'];
     }
 
     $this->createWeeklyContent();

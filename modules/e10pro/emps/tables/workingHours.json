@@ -8,8 +8,13 @@
 			"enumCfg": {"cfgItem": "e10pro.emps.workingHoursKinds", "cfgValue": "", "cfgText": "fn"}},
 
 		{"id": "wlWeeklyTotal", "name": "Týdenní pracovní doba", "type": "number", "dec": 2},
-		{"id": "wlWeeklyRation", "name": "Výše úvazku", "type": "number", "dec": 4},
+		{"id": "wlWeeklyRatio", "name": "Výše úvazku", "type": "number", "dec": 4},
 		{"id": "wlWeekly1", "name": "Týdenní pracovní doba - přímá", "type": "number", "dec": 2},
+
+		{"id": "sumWeeklyHoursTotal", "name": "Celkem týdenní pracovní doba", "type": "number", "dec": 2},
+		{"id": "sumWeeklyHours1", "name": "Celkem týdenní pracovní doba - přímá", "type": "number", "dec": 2},
+		{"id": "sumWeeklyHours2", "name": "Celkem týdenní pracovní doba - přímá", "type": "number", "dec": 2},
+		{"id": "calcWeeklyRatio", "name": "Vypočítaná výše úvazku", "type": "number", "dec": 4},
 
 		{"id": "validFrom", "name": "Platnost od", "type": "date"},
 		{"id": "validTo", "name": "Platnost do", "type": "date"},

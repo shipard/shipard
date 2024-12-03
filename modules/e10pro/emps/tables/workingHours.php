@@ -20,6 +20,23 @@ class TableWorkingHours extends DbTable
 	public function checkBeforeSave (&$recData, $ownerData = NULL)
 	{
 		parent::checkBeforeSave ($recData, $ownerData);
+
+		$recNdx = intval($recData['ndx'] ?? 0);
+		if (!$recNdx)
+			return;
+
+		$whInfo = new \e10pro\emps\libs\WorkingHoursInfo($this->app());
+		$whInfo->setWorkingHours($recNdx);
+		$whInfo->loadData();
+
+		$recData['sumWeeklyHoursTotal'] = $whInfo->dataWeeklySum['hoursTotal'];
+		$recData['sumWeeklyHours1'] = $whInfo->dataWeeklySum['hours1'];
+		$recData['sumWeeklyHours2'] = $whInfo->dataWeeklySum['hours2'];
+
+		if ($recData['wlWeeklyTotal'])
+			$recData['calcWeeklyRatio'] = round($recData['sumWeeklyHoursTotal'] / $recData['wlWeeklyTotal'], 4);
+		else
+			$recData['calcWeeklyRatio'] = 0.0;
 	}
 
 	public function createHeader ($recData, $options)
@@ -117,7 +134,7 @@ class FormWorkingHours extends TableForm
 					$this->addColumnInput ('workingHoursKind');
 					$this->addSeparator(self::coH3);
 					$this->addColumnInput ('wlWeeklyTotal');
-					$this->addColumnInput ('wlWeeklyRation');
+					$this->addColumnInput ('wlWeeklyRatio');
 					$this->addColumnInput ('wlWeekly1');
 					$this->addSeparator(self::coH3);
 					$this->addColumnInput ('validFrom');
