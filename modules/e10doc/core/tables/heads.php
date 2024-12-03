@@ -1083,6 +1083,8 @@ class TableHeads extends DbTable
 				{
 					$newRow = array ();
 					$newRow ['item'] = $witem['ndx'];
+					if ($operation)
+						$newRow ['operation'] = $operation;
 
 					$newRow ['quantity'] = 1;
 					if ($saveData ['recData']['docType'] === 'purchase')
@@ -1092,11 +1094,12 @@ class TableHeads extends DbTable
 							$needWeight = $saveData ['recData']['weightIn'] - $saveData ['recData']['weightOut'];
 							$needWeight = $needWeight - $saveData ['recData']['weightNet'];
 							if ($needWeight > 1)
-								$newRow ['quantity'] = $needWeight;
+							{
+								if (($newRow ['operation'] ?? 0) != 10400015)
+									$newRow ['quantity'] = $needWeight;
+							}
 						}
 					}
-					if ($operation)
-						$newRow ['operation'] = $operation;
 
 					$this->resetRowItem ($saveData ['recData'], $newRow, $witem, $docType);
 
