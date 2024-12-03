@@ -89,7 +89,7 @@ class ViewWorkingHours extends TableView
       array_push ($q, ')');
     }
 
-		$this->queryMain ($q, '[wh].', ['[persons.fullName]', 'dateBegin', 'ndx']);
+		$this->queryMain ($q, '[wh].', ['[persons.fullName]', 'validFrom', 'ndx']);
 		$this->runQuery ($q);
 	}
 }
