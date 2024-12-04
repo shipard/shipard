@@ -1,0 +1,17 @@
+{
+	"id": "e10pro.emps.orgsPersons", "sql": "e10pro_emps_orgsPersons", "name": "Osoby organizační struktury",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "orgs", "name": "Organizační struktura", "type": "int", "reference": "e10pro.emps.orgs"},
+		{"id": "rowOrder", "name": "Pořadí řádku", "type": "int"},
+
+    {"id": "function", "name": "Funkce", "type": "string", "len": 80},
+    {"id": "superior", "name": "Nadřízený", "type": "logical"},
+
+    {"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.emps.FormOrgsPerson"}
+	],
+	"options": ["systemTable"]
+}

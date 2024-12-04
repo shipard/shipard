@@ -6,7 +6,8 @@
 					"subMenu": {
 						"items": {
 							"absences": {"t1": "Nepřítomnosti", "object": "viewer", "table": "e10pro.emps.absences", "viewer": "default", "order": 840000, "beforeSeparator": 1},
-							"workingHours": {"t1": "Prac. doba", "object": "viewer", "table": "e10pro.emps.workingHours", "viewer": "default", "order": 850000, "beforeSeparator": 1}
+							"workingHours": {"t1": "Prac. doba", "object": "viewer", "table": "e10pro.emps.workingHours", "viewer": "default", "order": 850000, "beforeSeparator": 1},
+							"orgs": {"t1": "Org. struktura", "object": "viewer", "table": "e10pro.emps.orgs", "viewer": "default", "order": 860000, "beforeSeparator": 1}
 						}
 					}
 				}

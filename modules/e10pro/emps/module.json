@@ -1,7 +1,7 @@
 {
   "id": "e10pro.emps",
   "name": "Zaměstnanci",
-  "tables": ["absencesKinds", "absences", "workingHours", "workingHoursRows", "workingHoursKinds"],
+  "tables": ["absencesKinds", "absences", "workingHours", "workingHoursRows", "workingHoursKinds", "orgs", "orgsPersons"],
   "modules": ["e10/base"],
   "config": [
     {"id": "+appSkeleton", "file": "appSkeleton.json"},

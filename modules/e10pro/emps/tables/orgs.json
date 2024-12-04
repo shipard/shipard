@@ -1,0 +1,35 @@
+{
+	"id": "e10pro.emps.orgs", "sql": "e10pro_emps_orgs", "name": "Organizační struktura",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+    {"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
+
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+    {"id": "parentItem", "name": "Nadřazená položka", "type": "int", "reference": "e10pro.emps.orgs"},
+
+    {"id": "treeLevel", "name": "Úroveň vnoření", "type": "int"},
+    {"id": "treeId", "name": "ID stromu", "type": "string", "len": 40},
+
+    {"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"lists": [
+		{"id": "persons", "class": "e10.base.ListRows", "name": "Osoby", "table": "e10pro.emps.orgsPersons", "queryColumn": "orgs", "orderColumn": "rowOrder"}
+  ],
+	"views": {
+    "default": {
+      "id": "default", "class": "e10pro.emps.ViewOrgs",
+      "details": {
+        "detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.emps.ViewDetailOrgs"}
+      }
+    }
+  },
+	"forms": [
+		{"id": "default", "class": "e10pro.emps.FormOrgs"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}
