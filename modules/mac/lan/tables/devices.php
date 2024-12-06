@@ -224,6 +224,20 @@ class TableDevices extends DbTable
 
 	public function tableIcon ($recData, $options = NULL)
 	{
+		if ($recData['deviceKind'] === 14)
+		{
+			if ($recData['adWifiMode'] !== 0)
+				return 'deviceTypes/wifiAccessPoints';
+			if ($recData['adLanMode'] === 0)
+				return 'deviceTypes/switch';
+			elseif ($recData['adLanMode'] === 1)
+				return 'deviceTypes/wifiAccessPoints';
+			elseif ($recData['adLanMode'] === 2)
+				return 'deviceTypes/switch';
+			elseif ($recData['adLanMode'] === 3)
+				return 'deviceTypes/router';
+		}
+
 		return $this->app()->cfgItem ('mac.lan.devices.kinds.'.$recData['deviceKind'].'.icon', 'tables/mac.lan.devices');
 	}
 
