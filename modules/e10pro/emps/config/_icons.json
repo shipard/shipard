@@ -10,5 +10,17 @@
         "fa6pro": "fa-user-slash",
         "bsi": "bi-person-slash",
         "mdi": ""
+    },
+    "tables/e10pro.emps.workingHours":{
+        "fa5": "fa-user-clock",
+        "fa6pro": "fa-user-clock",
+        "bsi": "bi-clock",
+        "mdi": ""
+    },
+    "tables/e10pro.emps.orgs":{
+        "fa5": "fa-sitemap",
+        "fa6pro": "fa-sitemap",
+        "bsi": "bi-diagram-3",
+        "mdi": ""
     }
 }
