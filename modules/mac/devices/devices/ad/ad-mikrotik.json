@@ -50,7 +50,16 @@
 				"mkt-rb3011-uias": {"title": "RB3011UiAS-RM"},
 				"mkt-rb4011-igs": {"title": "RB4011iGS+RM"},
 				"mkt-rb5009-upr-s-in": {"title": "RB5009UPr+S+IN"},
-				"mkt-rb5009-ug-s-in": {"title": "RB5009UG+S+IN"}
+				"mkt-rb5009-ug-s-in": {"title": "RB5009UG+S+IN"},
+				"mkt-rb951-ui-2hnd": {
+					"title": "RB951Ui-2HnD",
+					"wirelessMode": "wireless",
+					"ports": [
+						{"kind": 5, "count": 5, "maskId": "ether"},
+						{"kind": 1, "count": 1, "maskId": "wlan"},
+						{"kind": 10, "count": 1, "maskId": "mng"}
+					]
+				}
 			}
 		},
 		"mkt-rb-xap": {
@@ -101,7 +110,15 @@
 				},
 				"mkt-xap_hap-ax3": {"title": "hAP ax³"},
 				"mkt-xap_hap-mini": {"title": "hAP mini"},
-				"mkt-xap_hap-lite": {"title": "hAP lite / hAP lite TC"},
+				"mkt-xap_hap-lite": {
+					"title": "hAP lite / hAP lite TC",
+					"wirelessMode": "wireless",
+					"ports": [
+						{"kind": 5, "count": 4, "maskId": "ether"},
+						{"kind": 1, "count": 1, "maskId": "wlan"},
+						{"kind": 10, "count": 1, "maskId": "mng"}
+					]
+				},
 				"mkt-xap_hap-ac2": {
 					"title": "hAP ac²",
 					"wirelessMode": "wifi",
@@ -113,8 +130,15 @@
 				},
 				"mkt-xap_hap-ac3": {"title": "hAP ac³"},
 				"mkt-xap_hap-ac-lite": {"title": "hAP ac lite / hAP ac lite TC"},
-
-				"mkt-xap_map-lite": {"title": "mAP lite"},
+				"mkt-xap_map-lite": {
+					"title": "mAP lite",
+					"wirelessMode": "wireless",
+					"ports": [
+						{"kind": 5, "count": 1, "maskId": "ether"},
+						{"kind": 1, "count": 1, "maskId": "wlan"},
+						{"kind": 10, "count": 1, "maskId": "mng"}
+					]
+				},
 				"mkt-xap_map": {"title": "mAP"},
 
 				"mkt-xap_wap-d2": {
@@ -156,11 +180,24 @@
 		"mkt-rb-hex": {
 			"title": "hEX",
 			"types": {
-				"mkt-hex": {"title": "hEX"},
+				"mkt-hex": {
+					"title": "hEX",
+					"ports": [
+						{"kind": 5, "count": 5, "maskId": "ether"},
+						{"kind": 10, "count": 1, "maskId": "mng"}
+					]
+				},
 				"mkt-hex-lite": {"title": "hEX lite"},
 				"mkt-hex-poe": {"title": "hEX PoE"},
 				"mkt-hex-poe-lite": {"title": "hEX PoE lite"},
-				"mkt-hex-s": {"title": "hEX S"}
+				"mkt-hex-s": {
+					"title": "hEX S",
+					"ports": [
+						{"kind": 5, "count": 5, "maskId": "ether"},
+						{"kind": 6, "count": 1, "maskId": "sfp"},
+						{"kind": 10, "count": 1, "maskId": "mng"}
+					]
+				}
 			}
 		},
 		"mkt-rb-ccr": {
