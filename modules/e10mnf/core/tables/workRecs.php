@@ -366,7 +366,7 @@ class TableWorkRecs extends DbTable
 
 	public function tableIcon ($recData, $options = NULL)
 	{
-		$dk = $this->app()->cfgItem ('e10mnf.workRecs.wrKinds.'.$recData['docKind'], FALSE);
+		$dk = $this->app()->cfgItem ('e10mnf.workRecs.wrKinds.'.($recData['docKind'] ?? '-'), FALSE);
 		if ($dk)
 		{
 			if ($dk['icon'] !== '')
