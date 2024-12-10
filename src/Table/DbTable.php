@@ -802,7 +802,11 @@ class DbTable
 		if (!$vd)
 			$vd = $this->viewDefinition ('default');
 
-		$recData = $this->loadItem ($pk);
+		$recData = NULL;
+		if (isset($vd['ignorePK']))
+			$recData = ['pk' => $pk];
+		else
+			$recData = $this->loadItem ($pk);
 		$disabledDetails = $this->disabledDetails($viewId, $detailId, $recData);
 		if ($disabledDetails !== NULL)
 		{
