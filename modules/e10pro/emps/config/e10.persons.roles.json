@@ -2,6 +2,15 @@
 	"emps": {
 		"name": "Zaměstnanci",
 		"roles": ["user"],
+		"___viewers": {
+			"e10pro.emps.absences": {"default": 2},
+			"e10pro.emps.workingHours": {"default": 2},
+			"e10pro.emps.orgs": {"default": 2}
+		}
+	},
+	"empsAdm": {
+		"name": "Správci docházky",
+		"roles": ["user"],
 		"viewers": {
 			"e10pro.emps.absences": {"default": 2},
 			"e10pro.emps.workingHours": {"default": 2},

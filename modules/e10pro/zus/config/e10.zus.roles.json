@@ -100,5 +100,10 @@
 		"viewers": {
 			"e10mnf.core.workRecs": {"grid-zus": 2}
 		}
+	},
+	"empsAdm": {
+		"viewers": {
+			"e10mnf.core.workRecs": {"grid-zus": 2}
+		}
 	}
 }

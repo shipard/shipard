@@ -18,11 +18,15 @@ class ViewWorkRecs extends TableViewGrid
 
   var $workRecsItems = [];
 
+	var $enabledPersons = NULL;
+
 	public function init ()
 	{
 		$this->now = new \DateTime();
 		if ($this->table->app()->cfgItem ('options.e10doc-commerce.useWorkOrders', 0))
 			$this->useWorkOrders = TRUE;
+
+		$this->enabledPersons = $this->loadEnabledPersons();
 
 		parent::init();
 		$this->gridEditable = TRUE;
@@ -78,6 +82,45 @@ class ViewWorkRecs extends TableViewGrid
 		}
 	}
 
+	protected function loadEnabledPersons()
+	{
+		if ($this->app()->hasRole('empsAdm'))
+			return NULL;
+
+		$orgs = [];
+		$q = [];
+		array_push($q, ' SELECT orgsPersons.*');
+		array_push($q, ' FROM [e10pro_emps_orgsPersons] AS [orgsPersons]');
+		array_push($q, ' WHERE [person] = %i', $this->app()->userNdx());
+		array_push($q, ' AND [superior] = %i', 1);
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			if (!in_array($r['orgs'], $orgs))
+				$orgs[] = $r['orgs'];
+		}
+
+		if (!count($orgs))
+			return [-1];
+
+		$persons = [];
+		$q = [];
+		array_push($q, ' SELECT orgsPersons.*');
+		array_push($q, ' FROM [e10pro_emps_orgsPersons] AS [orgsPersons]');
+		array_push($q, ' WHERE [orgs] IN %in', $orgs);
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			if (!in_array($r['person'], $persons))
+				$persons[] = $r['person'];
+		}
+
+		if (!count($persons))
+			return [-1];
+
+		return $persons;
+	}
+
 	public function selectRows ()
 	{
 		$mainQuery = $this->mainQueryId ();
@@ -89,8 +132,8 @@ class ViewWorkRecs extends TableViewGrid
 		array_push ($q, ' LEFT JOIN [e10_persons_persons] AS persons ON workrecs.person = persons.ndx');
 		array_push ($q, ' WHERE 1');
 
-//		if ($this->personNdx)
-//			array_push ($q, ' AND workrecs.person = %i', $this->personNdx);
+		if ($this->enabledPersons)
+			array_push ($q, ' AND workrecs.person IN %in', $this->enabledPersons);
 
 		// -- bottom tabs
 		if ($bottomTabId != 0)
