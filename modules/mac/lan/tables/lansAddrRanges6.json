@@ -1,0 +1,38 @@
+{
+	"id": "mac.lan.lansAddrRanges6", "sql": "mac_lan_lansAddrRanges6", "name": "Rozsahy adres ipv6",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "prefix", "name": "Prefix", "type": "string", "len": 64},
+		{"id": "prefixLen", "name": "Délka", "type": "enumInt",
+			"enumValues": {"48": "/48", "56": "/56", "64": "/64"}},
+		{"id": "fullAddress", "name": "Adresa", "type": "string", "len": 44},
+
+		{"id": "rangeType", "name": "Druh", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "Podrozsah", "1": "Hlavní rozsah / konektivita"}},
+
+		{"id": "parentRange", "name": "Nadřazený rozsah", "type": "int", "reference": "mac.lan.lansAddrRanges6"},
+		{"id": "lan", "name": "Síť", "type": "int", "reference": "mac.lan.lans"},
+		{"id": "vlan", "name": "VLAN", "type": "int", "reference": "mac.lan.vlans"},
+		{"id": "note", "name": "Poznámka", "type": "string", "len": 100},
+
+		{"id": "wanIP", "name": "WAN adresa", "type": "string", "len": 44},
+		{"id": "defaultGW", "name": "Výchozí brána", "type": "string", "len": 44},
+		{"id": "network", "name": "Spojovací síť", "type": "string", "len": 44},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{"id": "default", "class": "mac.lan.ViewLansAddrRanges6",
+			"details": {
+				"preview": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.lan.ViewDetailLansAddrRange6"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "mac.lan.FormLanAddrRange6"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "prefix"},
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}

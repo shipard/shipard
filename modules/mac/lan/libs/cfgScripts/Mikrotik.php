@@ -11,6 +11,8 @@ use e10\Utility;
  */
 class Mikrotik extends \mac\lan\libs\cfgScripts\CoreCfgScript
 {
+	var $csActiveRoot = '';
+	var $rootsInfo = [];
 
 	var $userLogin = 'admin';
 

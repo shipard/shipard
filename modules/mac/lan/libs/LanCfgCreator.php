@@ -54,6 +54,7 @@ class LanCfgCreator extends Utility
 		$this->loadDHCP();
 
 		$this->loadAddresses();
+		$this->loadAddrRanges6();
 
 		$this->applyLoadedWiFi();
 
@@ -496,6 +497,36 @@ class LanCfgCreator extends Utility
 			{ // dhcp client with ip address
 				$this->cfg['dhcp']['servers'][$dhcpServerId]['staticLeases'][] = $addressItem;
 			}
+		}
+	}
+
+	function loadAddrRanges6()
+	{
+		$q [] = 'SELECT ranges.*, vlans.num AS vlanNumber ';
+		array_push($q, ' FROM [mac_lan_lansAddrRanges6] AS [ranges]');
+		array_push($q, ' LEFT JOIN [mac_lan_vlans] AS [vlans] ON ranges.vlan = vlans.ndx');
+		array_push($q, ' WHERE 1');
+		array_push($q, ' AND ranges.[lan] = %i', $this->lanNdx);
+		array_push($q, ' AND ranges.[docState] = %i', 4000);
+		array_push($q, ' ORDER BY vlans.num, ranges.fullAddress');
+
+		$rows = $this->db()->query ($q);
+		foreach ($rows as $r)
+		{
+			$vlanNumber = intval($r['vlanNumber']);
+
+			if (!isset($this->cfg['addrRanges6']))
+			$this->cfg['addrRanges6'] = [];
+
+			// -- add pool
+			$this->cfg['addrRanges6'][] = [
+				'rangeType' => $r['rangeType'],
+				'prefix' => $r['prefix'],
+				'prefixLen' => intval($r['prefixLen']),
+				'vlan' => $vlanNumber,
+
+				'desc' => $this->description($r['note']),
+			];
 		}
 	}
 

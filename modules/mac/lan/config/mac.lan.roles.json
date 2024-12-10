@@ -21,6 +21,7 @@
 			"mac.lan.wallSockets": {"default": 2},
 			"mac.lan.vlans": {"default": 2, "comboVlans":  2, "comboGroups":  2},
 			"mac.lan.lansAddrRanges": {"default": 2},
+			"mac.lan.lansAddrRanges6": {"default": 2},
 			"mac.lan.wlans": {"default": 2},
 			"mac.lan.ipAddress": {"default": 2},
 			"mac.lan.ipAddressLists": {"default": 2},

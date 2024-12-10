@@ -2,7 +2,7 @@
 
 namespace mac\lan\libs\cfgScripts;
 
-use e10\Utility;
+use \Shipard\Utils\Utils;
 
 
 /**
@@ -77,6 +77,27 @@ class Mikrotik_router extends \mac\lan\libs\cfgScripts\Mikrotik
 			'updateColumns' => ['address', 'comment'],
 			'caseInsensitiveColumns' => ['mac-address'],
 		];
+
+		if ($this->ipv6Enabled)
+		{
+			$this->rootsInfo ['/interface list'] = [
+				'mandatoryColumns' => ['name'], 'updateColumns' => ['comment'],
+			];
+			$this->rootsInfo ['/interface list member'] = [
+				'mandatoryColumns' => ['member', 'list'],
+			];
+			$this->rootsInfo ['/ipv6 address'] = [
+				'mandatoryColumns' => ['address', 'interface']
+			];
+			$this->rootsInfo ['/ipv6 firewall address-list'] = [
+				'mandatoryColumns' => ['address', 'list'],
+				'updateColumns' => ['comment'],
+			];
+			$this->rootsInfo ['/ipv6 firewall filter'] = [
+				'ignoredColumns' => ['comment'],
+				'updateColumns' => ['comment']
+			];
+		}
 	}
 
 	public function setDevice($deviceRecData, $lanCfg)
@@ -107,6 +128,14 @@ class Mikrotik_router extends \mac\lan\libs\cfgScripts\Mikrotik
 		$this->createData_Gateways();
 		$this->createData_DHCP();
 		$this->createData_DHCP_Leases();
+
+		if ($this->ipv6Enabled)
+		{
+			$this->createData_Interfaces_Addresses6();
+			$this->createData_Firewall6_InterfaceList();
+			$this->createData_Firewall6_AddrLists();
+			$this->createData_Firewall6_Filter();
+		}
 	}
 
 	function createData_Interfaces_SW_Vlans()
@@ -570,15 +599,145 @@ class Mikrotik_router extends \mac\lan\libs\cfgScripts\Mikrotik
 		}
 	}
 
+	function createData_Interfaces_Addresses6()
+	{
+		$usedAddresses = [];
+		$root = '/ipv6 address';
+
+		foreach ($this->lanCfg['addrRanges6'] as $ar)
+		{
+			if ($ar['rangeType'] !== 0)
+				continue;
+			$interface = (isset($ar['vlan'])) ? 'IFB_VLAN'.$ar['vlan'] : 'XXXX';
+			$item = ['type' => 'add',
+				'params' => [
+					'address' => $ar['prefix'].'1',
+					'interface' => $interface,
+				]
+			];
+
+			if (in_array($item['params']['address'], $usedAddresses))
+				continue;
+
+			$this->cfgData[$root][] = $item;
+		}
+	}
+
+	function createData_Firewall6_AddrLists()
+	{
+		$root = '/ipv6 firewall address-list';
+
+		$address_list = [
+			['a' => '::/128', 						'c' => 'shp-dc: unspecified address'],
+			['a' => '::1/128', 						'c' => 'shp-dc: lo'],
+			['a' => 'fec0::/10', 					'c' => 'shp-dc: site-local'],
+			['a' => '::ffff:0.0.0.0/96', 	'c' => 'shp-dc: ipv4-mapped'],
+			['a' => '::/96', 							'c' => 'shp-dc: ipv4 compat'],
+			['a' => '100::/64', 					'c' => 'shp-dc: discard only'],
+			['a' => '2001:db8::/32', 			'c' => 'shp-dc: documentation'],
+			['a' => '2001:10::/28',				'c' => 'shp-dc: ORCHID'],
+			['a' => '3ffe::/16', 					'c' => 'shp-dc: 6bone'],
+		];
+
+		foreach ($address_list as $al)
+		{
+			$item = ['type' => 'add',
+				'params' => [
+					'address' => $al['a'], 'comment' => $al['c'], 'list' => 'bad_ipv6',
+				]
+			];
+			$this->cfgData[$root][] = $item;
+		}
+	}
+
+	function createData_Firewall6_Filter()
+	{
+		$root = '/ipv6 firewall filter';
+
+		$stdRules = [
+			['action' => 'accept', 'chain' => 'input', 'connection-state' => 'established,related,untracked', 'comment' => 'shp-dc: accept established,related,untracked',],
+			['action' => 'drop', 'chain' => 'input', 'connection-state' => 'invalid', 'comment' => 'shp-dc: drop invalid',],
+			['action' => 'accept', 'chain' => 'input', 'protocol' => 'icmpv6', 'comment' => 'shp-dc: accept ICMPv6',],
+			['action' => 'accept', 'chain' => 'input', 'protocol' => 'udp', 'port' => '33434-33534', 'comment' => 'shp-dc: accept UDP traceroute',],
+			['action' => 'accept', 'chain' => 'input', 'protocol' => 'udp', 'dst-port' => '546', 'src-address' => 'fe80::/10', 'comment' => 'shp-dc: accept DHCPv6-Client prefix delegation',],
+			['action' => 'accept', 'chain' => 'input', 'protocol' => 'udp', 'dst-port' => '500,4500', 'comment' => 'shp-dc: accept IKE',],
+			['action' => 'accept', 'chain' => 'input', 'protocol' => 'ipsec-ah', 'comment' => 'shp-dc: accept ipsec AH',],
+			['action' => 'accept', 'chain' => 'input', 'protocol' => 'ipsec-esp', 'comment' => 'shp-dc: accept ipsec ESP',],
+			['action' => 'accept', 'chain' => 'input', 'ipsec-policy' => 'in,ipsec', 'comment' => 'shp-dc: accept all that matches ipsec policy',],
+			['action' => 'drop', 'chain' => 'input', 'in-interface-list' => '!LAN6', 'comment' => 'shp-dc: drop everything else not coming from LAN',],
+			['action' => 'accept', 'chain' => 'forward', 'connection-state' => 'established,related,untracked', 'comment' => 'shp-dc: accept established,related,untracked',],
+			['action' => 'drop', 'chain' => 'forward', 'connection-state' => 'invalid', 'comment' => 'shp-dc: drop invalid',],
+			['action' => 'drop', 'chain' => 'forward', 'src-address-list' => 'bad_ipv6', 'comment' => 'shp-dc: drop packets with bad src ipv6',],
+			['action' => 'drop', 'chain' => 'forward', 'dst-address-list' => 'bad_ipv6', 'comment' => 'shp-dc: drop packets with bad dst ipv6',],
+			['action' => 'drop', 'chain' => 'forward', 'protocol' => 'icmpv6', 'hop-limit' => 'equal:1', 'comment' => 'shp-dc: rfc4890 drop hop-limit=1',],
+			['action' => 'accept', 'chain' => 'forward', 'protocol' => 'icmpv6', 'comment' => 'shp-dc: accept ICMPv6',],
+			['action' => 'accept', 'chain' => 'forward', 'protocol' => '139', 'comment' => 'shp-dc: accept HIP',],
+			['action' => 'accept', 'chain' => 'forward', 'protocol' => 'udp', 'dst-port' => '500,4500', 'comment' => 'shp-dc: accept IKE',],
+			['action' => 'accept', 'chain' => 'forward', 'protocol' => 'ipsec-ah', 'comment' => 'shp-dc: accept ipsec AH',],
+			['action' => 'accept', 'chain' => 'forward', 'protocol' => 'ipsec-esp', 'comment' => 'shp-dc: accept ipsec ESP',],
+			['action' => 'accept', 'chain' => 'forward', 'ipsec-policy' => 'in,ipsec', 'comment' => 'shp-dc: accept all that matches ipsec policy',],
+		];
+		foreach ($stdRules as $rule)
+		{
+			$item = ['type' => 'add',
+				'params' => $rule,
+			];
+			$this->cfgData[$root][] = $item;
+		}
+
+		// -- SERVERS
+		// todo
+
+		// -- DROP OTHERS
+		$item = ['type' => 'add',
+			'params' => ['action' => 'drop', 'chain' => 'forward', 'in-interface-list' => '!LAN6', 'comment' => 'shp-dc: drop everything else not coming from LAN',],
+		];
+		$this->cfgData[$root][] = $item;
+	}
+
+	function createData_Firewall6_InterfaceList()
+	{
+		$root = '/interface list';
+
+		$item = ['type' => 'add',
+			'params' => [
+				'name' => 'LAN6', 'comment' => 'VLAN intefaces with enabled ipv6',
+			]
+		];
+		$this->cfgData[$root][] = $item;
+
+		$root = '/interface list member';
+
+		$usedIfaces = [];
+		foreach ($this->lanCfg['addrRanges6'] as $ar)
+		{
+			if ($ar['rangeType'] !== 0)
+				continue;
+			$interface = (isset($ar['vlan'])) ? 'IFB_VLAN'.$ar['vlan'] : 'XXXX';
+			if (in_array($interface, $usedIfaces))
+				continue;
+			$item = ['type' => 'add',
+				'params' => [
+					'list' => 'LAN6',
+					'interface' => $interface,
+				]
+			];
+			$this->cfgData[$root][] = $item;
+		}
+	}
+
 	public function createScript($initMode = FALSE)
 	{
 		parent::createScript($initMode);
 
 		$this->createData();
 
-		//$this->script .= '### vlanFiltering: '.$this->vlanFiltering."\n\n";
-
-		$this->createScript_Init_User();
+		if ($this->initMode)
+		{
+			$this->script .= "### macGen: {$this->macGen}; script mode: router (old); class: ".Utils::getClassNameShort($this::class)." ###\n";
+			$this->script .= "### ipv6: ".($this->ipv6Enabled ? 'ENABLED' : 'unsupported')." ###\n";
+			$this->script .= "\n";
+		}
 
 		$this->createScript_Init_Identity();
 		$this->createScript_Init_Services();
@@ -597,12 +756,42 @@ class Mikrotik_router extends \mac\lan\libs\cfgScripts\Mikrotik
 		$this->createScript_Gateways();
 		$this->createScript_DHCP();
 		$this->createScript_DHCP_Leases();
+
+		if ($this->ipv6Enabled)
+		{
+			$this->createScript_Firewall6();
+			$this->createScript_Interfaces_Addresses6();
+		}
+
+		$this->createScript_Init_User();
 	}
 
 	function createScript_Interfaces_Addresses()
 	{
 		$this->csActiveRoot = '/ip address';
 		$this->createScriptForRoot();
+	}
+
+	function createScript_Interfaces_Addresses6()
+	{
+		$this->csActiveRoot = '/ipv6 address';
+		$this->createScriptForRoot();
+	}
+
+	function createScript_Firewall6()
+	{
+		$this->csActiveRoot = '/interface list';
+		$this->createScriptForRoot();
+		$this->csActiveRoot = '/interface list member';
+		$this->createScriptForRoot();
+
+		$this->csActiveRoot = '/ipv6 firewall address-list';
+		$this->createScriptForRoot();
+
+		$this->csActiveRoot = '/ipv6 firewall filter';
+		$cnt = $this->createScriptForRoot();
+		//if ($cnt)
+			//$this->script .= "/ip firewall filter move [/ip firewall filter find action=accept] [/ip firewall filter find comment=\"DROP ALL\"]\n\n";
 	}
 
 	function createScript_Interfaces_SW_Vlans()

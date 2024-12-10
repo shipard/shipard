@@ -1837,4 +1837,11 @@ class Utils
 		}
 		return $out;
 	}
+
+	static function getClassNameShort($className)
+	{
+    if ($pos = strrpos($className, '\\'))
+			return substr($className, $pos + 1);
+    return $pos;
+	}
 }

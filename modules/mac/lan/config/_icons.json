@@ -17,7 +17,13 @@
 		"bsi": "bi-diagram-2",
 		"mdi": "device_hub"
 	},
-    "tables/mac.lan.lansAddrRanges": {
+	"tables/mac.lan.lansAddrRanges": {
+		"fa5": "fa-arrows-alt-h",
+		"fa6pro": "fa-arrows-alt-h",
+		"bsi": "bi-arrows-angle-expand",
+		"mdi": "open_in_full"
+	},
+	"tables/mac.lan.lansAddrRanges6": {
 		"fa5": "fa-arrows-alt-h",
 		"fa6pro": "fa-arrows-alt-h",
 		"bsi": "bi-arrows-angle-expand",
@@ -150,7 +156,7 @@
 		"bsi": "bi-list-task",
 		"mdi": ""
 	},
-	
+
 	"e10.widgetDashboard/lanDashboard": {
 		"fa5": "fa-sitemap",
 		"fa6pro": "fa-sitemap",

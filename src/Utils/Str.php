@@ -136,5 +136,11 @@ class Str
 		$kv = strtr($s, $transDiacritic);
 		return $kv;
 	}
+
+	static function expandIPv6(string $ip): string
+	{
+			$hex = bin2hex(inet_pton($ip));
+			return implode(':', str_split($hex, 4));
+	}
 }
 

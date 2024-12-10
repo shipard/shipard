@@ -227,6 +227,7 @@ class FormLan extends TableForm
 		//$this->setFlag ('maximize', 1);
 
 		$useDocumentation = 	intval($this->app()->cfgItem ('options.macLAN.useDocumentation', 0));
+		$macGen = intval($this->app()->cfgItem('mac.gen.generation', 2));
 
 		$this->openForm ();
 
@@ -255,7 +256,9 @@ class FormLan extends TableForm
 				$this->addColumnInput ('vlanManagement');
 				$this->addColumnInput ('vlanAdmins');
 				$this->addList ('doclinks', '', TableForm::loAddToFormLayout);
-				$this->addColumnInput ('ipv6Enabled');
+
+				if ($macGen >= 3)
+					$this->addColumnInput ('ipv6Enabled');
 
 				$this->addSeparator(self::coH2);
 				$this->addColumnInput ('defaultMacDataSource');

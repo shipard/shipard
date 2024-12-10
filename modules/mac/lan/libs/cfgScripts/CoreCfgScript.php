@@ -26,6 +26,9 @@ class CoreCfgScript extends Utility
 	var $cfgData = [];
 	var $cfgRunningConfig = NULL;
 
+	var $macGen = 2;
+	var $ipv6Enabled = 0;
+
 	/** @var \mac\lan\TableDevices */
 	var $tableLanDevices;
 	var $adCfg = NULL;
@@ -34,6 +37,7 @@ class CoreCfgScript extends Utility
 
 	public function setDevice($deviceRecData, $lanCfg)
 	{
+		$this->macGen = intval($this->app()->cfgItem('mac.gen.generation', 2));
 		$this->tableLanDevices = $this->app()->table('mac.lan.devices');
 		$this->adCfg = $this->tableLanDevices->activeDeviceCfg($deviceRecData);
 
@@ -56,6 +60,9 @@ class CoreCfgScript extends Utility
 			$this->deviceCfg = json_decode($deviceRecData['macDeviceCfg'], TRUE);
 			if (!$this->deviceCfg)
 				$this->deviceCfg = [];
+
+			if ($this->macGen >= 3)
+				$this->ipv6Enabled = intval($this->lanCfg['lanRecData']['ipv6Enabled'] ?? 0);
 		}
 	}
 

@@ -178,7 +178,7 @@ class MikrotikAD extends \mac\lan\libs\cfgScripts\CoreCfgScript
 		$wirelessModes = [0 => "none", 1 => 'wireless', 2 => 'wifiwave2', 3 => 'wifi ROS >= 7.16'];
 		$wifiChipset = [0 => "none", 1 => 'ac', 2 => 'ax'];
 
-		$this->script .= "### script mode: {$this->scriptModeSignature} / ".get_class($this)." ###\n";
+		$this->script .= "### macGen: {$this->macGen}; script mode: {$this->scriptModeSignature}; class: ".Utils::getClassNameShort($this::class)." ###\n";
 		$this->script .= "### device mode: ".($deviceModes[$this->deviceMode] ?? 'UNKNOWN')."\n";
 		$this->script .= "### wifi SSIDs: ".($wifiModes[$this->wifiMode] ?? 'UNKNOWN')."\n";
 		$this->script .= "### wireless-mode: ".($wirelessModes[$this->wirelessMode] ?? 'UNKNOWN')."\n";

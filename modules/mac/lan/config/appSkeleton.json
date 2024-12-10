@@ -15,7 +15,8 @@
 					"subMenu": {
 						"items": {
 							"vlans": {"t1": "VLANy", "object": "viewer", "table": "mac.lan.vlans", "viewer": "default", "order": 31000},
-							"ranges": {"t1": "Rozsahy adres", "object": "viewer", "table": "mac.lan.lansAddrRanges", "viewer": "default", "order": 32000},
+							"ranges": {"t1": "Rozsahy IPV4", "object": "viewer", "table": "mac.lan.lansAddrRanges", "viewer": "default", "order": 32000},
+							"ranges6": {"t1": "Rozsahy IPV6", "object": "viewer", "table": "mac.lan.lansAddrRanges6", "viewer": "default", "order": 32200, "enabledCfgItem": "mac.gen.mg3"},
 							"wlans": {"t1": "WiFi sítě", "object": "viewer", "table": "mac.lan.wlans", "viewer": "default", "order": 33000},
 
 							"wallSockets": {"t1": "Zásuvky", "object": "viewer", "table": "mac.lan.wallSockets", "viewer": "default", "order": 34100, "beforeSeparator":  1},
@@ -108,6 +109,7 @@
 					"subMenu": {
 						"items": {
 							"domains": {"t1": "Domény", "object": "viewer", "table": "mac.inet.domains", "viewer": "default", "order": 10100},
+							"domainsRecords": {"t1": "DNS", "object": "viewer", "table": "mac.inet.domainsRecords", "viewer": "all", "order": 10110},
 							"certs": {"t1": "Certifikáty", "object": "viewer", "table": "mac.inet.certs", "viewer": "default", "order": 10200},
 							"domainsAccounts": {"t1": "Doménové účty", "object": "viewer", "table": "mac.inet.domainsAccounts", "viewer": "default", "order": 20100, "beforeSeparator":  1}
 						}

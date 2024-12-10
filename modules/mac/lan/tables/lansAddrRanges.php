@@ -219,7 +219,6 @@ class FormLanAddrRange extends TableForm
 					$this->addColumnInput ('lan');
 					$this->addColumnInput ('vlan');
 					$this->addColumnInput ('serverMonitoring');
-					$this->addColumnInput ('dhcpServerId');
 					$this->addColumnInput ('dhcpPoolBegin');
 					$this->addColumnInput ('dhcpPoolEnd');
 					$this->addColumnInput ('nextPool');
