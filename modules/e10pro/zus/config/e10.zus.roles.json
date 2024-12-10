@@ -95,5 +95,10 @@
 			"e10pro.zus.roky": {"default": 2},
 			"e10pro.zus.svp": {"default": 2}
 		}
+	},
+	"emps": {
+		"viewers": {
+			"e10mnf.core.workRecs": {"grid-zus": 2}
+		}
 	}
 }

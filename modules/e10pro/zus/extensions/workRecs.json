@@ -1,0 +1,13 @@
+[
+  {
+    "table": "e10mnf.core.workRecs",
+    "views": {
+      "grid-zus": {
+        "id": "grid-zus", "class": "e10pro.zus.libs.ViewWorkRecs", "title": "Docházka", "ignorePK": 1,
+        "details": {
+          "overview": {"title": "Detail", "type": "detail", "class": "e10pro.zus.libs.ViewDetailWorkRec", "order": 10}
+        }
+			}
+		}
+  }
+]

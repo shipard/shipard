@@ -29,6 +29,17 @@
 				{"t1": "Přihlášky", "enabledCfgItem": "options.e10-pro-zus.pouzivatPrihlasky", "object": "viewer", "table": "e10pro.zus.prihlasky", "viewer": "default", "order": 100000},
 				{"t1": "Omluvenky", "object": "viewer", "table": "e10pro.zus.omluvenky", "viewer": "default", "order": 600000}
 			]
+		},
+		"others": {
+			"items": {
+				"workRecs": {
+					"subMenu": {
+						"items": {
+							"workRecsGridZus": {"t1": "Docházka ZUŠ", "object": "viewer", "table": "e10mnf.core.workRecs", "viewer": "grid-zus", "order": 30000}
+						}
+					}
+				}
+			}
 		}
 	},
 	"mobileui": {
