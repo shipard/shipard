@@ -8,7 +8,7 @@
 		"vyuky", "vyukystudenti", "vyukyrozvrh", "hodiny", "hodinydochazka", "hodnoceni", "omluvenky", "omluvenkyHodiny"
 	],
 	"modules": ["e10/persons", "wkf/bboard", "wkf/events"],
-	"extensions": ["persons", "wkf", "ezk"],
+	"extensions": ["persons", "wkf", "ezk", "workRecs"],
   "config": [
 		{"id": "+apps", "file": "apps.json"},
     {"id": "+appSkeleton", "name": "Rozšíření menu aplikace", "file": "zus.appSkeleton.json"},
