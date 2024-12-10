@@ -13,5 +13,10 @@ class ViewDetailWorkRec extends TableViewDetail
 	{
 		$this->addDocumentCard('e10pro.zus.libs.dc.DCWorkRec');
 	}
+
+	public function createToolbar ()
+	{
+		return [];
+	}
 }
 
