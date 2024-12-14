@@ -50,6 +50,8 @@
 		{"id": "amounts", "columns": ["amount", "request", "payment"]},
 		{"id": "ptfy", "columns": ["person", "type", "fiscalYear"]},
 		{"id": "symbols", "columns": ["symbol1", "symbol2"]},
-		{"id": "docHead", "columns": ["docHead"]}
+		{"id": "docHead", "columns": ["docHead"]},
+
+		{"id": "docHead", "columns": ["pairId", "type", "fiscalYear", "amountHc", "requestHc", "paymentHc", "payment", "request"]}
 	]
 }

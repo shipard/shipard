@@ -454,22 +454,37 @@ class reportBalance extends \e10doc\core\libs\reports\GlobalReport
 
 	function addParamPerson ()
 	{
-		$personsSwitch = array ('0' => 'Vše');
-		$q = "SELECT b.[person] as person, p.[fullName] as fullName FROM e10doc_balance_journal as b LEFT JOIN e10_persons_persons as p ON b.person = p.ndx WHERE type=%i GROUP BY person, fullName ORDER BY fullName";
-		$persons = $this->app->db()->query($q, $this->balance);
+		$params = $this->params->getParams();
+		$fy = $this->getFiscalYear($params);
+
+		$personsSwitch = ['0' => 'Vše'];
+
+		$q = [];
+		array_push($q, 'SELECT p.ndx, p.fullName');
+		array_push($q, ' FROM e10_persons_persons AS p');
+		array_push($q, ' WHERE 1');
+		array_push($q, ' AND EXISTS (');
+			array_push($q, ' SELECT pairId, sum(request) as request, sum(payment) as payment');
+			array_push($q, ' FROM e10doc_balance_journal as j  WHERE j.[type] = %i', $this->balance,
+												' AND j.[fiscalYear] = %i', /*$this->fiscalYear*/$fy, ' AND j.person = p.ndx GROUP BY j.pairId');
+			array_push($q, ' HAVING  [request] != [payment]');
+			array_push($q, ')');
+		array_push($q, ' ORDER BY fullName');
+
+		$persons = $this->app->db()->query($q);
 		forEach ($persons as $p)
 		{
-			if ($p['person'] != 0)
+			if ($p['ndx'] != 0)
 			{
 				if ($p['fullName'] != '')
 				{
 					if (mb_strlen ($p['fullName']) > 28)
-						$personsSwitch [$p['person']] = mb_substr($p['fullName'], 0, 25).'...';
+						$personsSwitch [$p['ndx']] = mb_substr($p['fullName'], 0, 25).'...';
 					else
-						$personsSwitch [$p['person']] = $p['fullName'];
+						$personsSwitch [$p['ndx']] = $p['fullName'];
 				}
 				else
-					$personsSwitch [$p['person']] = '#'.$p['person'];
+					$personsSwitch [$p['ndx']] = '#'.$p['ndx'];
 			}
 		}
 		$this->addParam  ('switch', 'person', ['title' => 'Osoba', 'place' => 'panel', 'switch' => $personsSwitch]);
@@ -1272,7 +1287,7 @@ class reportBalanceObligations extends reportBalance
 		array_push($q, ' AND heads.docType = %s', 'bankorder');
 		array_push($q, ' AND heads.docStateMain <= %i', 2);
 
-		array_push($q, ' ORDER BY heads.dateAccounting DESC, [rows].ndx');
+		array_push($q, ' ORDER BY heads.docType, heads.docStateMain, heads.docNumber');
 		array_push($q, ' LIMIT 1000');
 
 		$rows = $this->app->db()->query ($q);
