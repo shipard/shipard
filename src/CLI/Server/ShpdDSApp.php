@@ -781,12 +781,13 @@ class ShpdDSApp extends \Shipard\Application\ApplicationCore
 			return;
 
 		$run = $this->arg ('run', FALSE);
+		$table = $this->arg ('table', '');
 
 		$database = new \lib\database\DbMysql();
 		$database->setDb($db, $this->manager->cfgItem ('db.database'));
 		$database->loadStructure();
 		$database->setModel($this->manager->tables);
-		$database->repairModel($run);
+		$database->repairModel($run, $table);
 	}
 
 	public function dbBackup ()

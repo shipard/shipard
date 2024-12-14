@@ -35,7 +35,7 @@ class Database
 		$this->model = $model;
 	}
 
-	public function repairModel($run = FALSE)
+	public function repairModel($run = FALSE, $tableSqlName = '')
 	{
 		if (!$this->model)
 			return;
@@ -44,6 +44,9 @@ class Database
 
 		foreach ($this->model as $table)
 		{
+			if ($tableSqlName !== '' && $table ['sql'] !== $tableSqlName)
+				continue;
+
 			$this->checkTable($table ['sql']);
 
 			forEach ($table ['columns'] as $col)
