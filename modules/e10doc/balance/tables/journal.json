@@ -52,6 +52,6 @@
 		{"id": "symbols", "columns": ["symbol1", "symbol2"]},
 		{"id": "docHead", "columns": ["docHead"]},
 
-		{"id": "docHead", "columns": ["pairId", "type", "fiscalYear", "amountHc", "requestHc", "paymentHc", "payment", "request"]}
+		{"id": "s1", "columns": ["pairId", "type", "fiscalYear", "amountHc", "requestHc", "paymentHc", "payment", "request"]}
 	]
 }
