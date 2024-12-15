@@ -65,7 +65,7 @@ class ViewServers extends TableView
 		$fts = $this->fullTextSearch ();
 
 		$q[] = 'SELECT [servers].*, [owners].[fullName] AS [ownerFullName],';
-		array_push($q, ' CONCAT(COALESCE([hwServers].name, [servers].name), [servers].name) AS serverOrder');
+		array_push($q, ' CONCAT(COALESCE([hwServers].name, [servers].name), ', "'-', ", '[servers].[hwServer], ', "'-', ", '[servers].name) AS serverOrder');
 		array_push($q, ' FROM [hosting_core_servers] AS [servers]');
 		array_push($q, ' LEFT JOIN [e10_persons_persons] AS [owners] ON [servers].[owner] = [owners].[ndx]');
 		array_push($q, ' LEFT JOIN [hosting_core_servers] AS [hwServers] ON [servers].[hwServer] = [hwServers].[ndx]');
@@ -80,7 +80,7 @@ class ViewServers extends TableView
 		{
 			$this->queryMain ($q, '[servers].', ['serverOrder', '[servers].[ndx]']);
 		}
-		
+
 		$this->runQuery ($q);
 	}
 
@@ -95,9 +95,10 @@ class ViewServers extends TableView
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['icon'] = $this->table->tableIcon($item);
 		$listItem ['t1'] = [['text' => $item['name'], 'class' => ''], ];
-		$listItem ['t2'] = [
-				['text' => $item['id'], 'class' => 'label label-default'],
-		];
+		$listItem ['t2'] = [];
+
+		if ($item['name'] !== $item['id'])
+			$listItem ['t2'][] = ['text' => $item['id'], 'class' => 'label label-default'];
 
 		$fts = $this->fullTextSearch ();
 
@@ -114,15 +115,13 @@ class ViewServers extends TableView
 		if ($item['dsCreateDemo'] != 0)
 		{
 			$cds = $this->serverCreateDSTypes[$item['dsCreateDemo']];
-			$listItem ['t2'][] = ['text' => 'DEMO: '.$cds['fn'], 'icon' => 'system/iconDatabase', 'class' => 'label label-info'];	
+			$listItem ['t2'][] = ['text' => 'DEMO: '.$cds['fn'], 'icon' => 'system/iconDatabase', 'class' => 'label label-info'];
 		}
 		if ($item['dsCreateProduction'] != 0)
 		{
 			$cds = $this->serverCreateDSTypes[$item['dsCreateProduction']];
-			$listItem ['t2'][] = ['text' => 'PROD: '.$cds['fn'], 'icon' => 'system/iconDatabase', 'class' => 'label label-info'];	
+			$listItem ['t2'][] = ['text' => 'PROD: '.$cds['fn'], 'icon' => 'system/iconDatabase', 'class' => 'label label-info'];
 		}
-
-		//$listItem ['t2'][] = ['text' => $item['fqdn'], 'class' => '', 'suffix' => $item['ipv4']];
 
 		$listItem ['i1'] = ['text' => '#'.$item['gid'], 'class' => 'id', 'suffix' => $item['ndx']];
 
@@ -133,11 +132,10 @@ class ViewServers extends TableView
 		if (count($props3))
 			$listItem ['t3'] = $props3;
 
-		return $listItem;
-	}
+		if (!count($listItem ['t2']))
+			$listItem ['t2'] = ' ';
 
-	function decorateRow (&$item)
-	{
+		return $listItem;
 	}
 }
 
@@ -208,6 +206,7 @@ class FormServer extends TableForm
 			$this->addColumnInput ('serverRole');
 			$this->addColumnInput ('id');
 			$this->addColumnInput ('gid');
+			$this->addColumnInput ('fqdn');
 
 			$this->addSeparator(self::coH3);
 			$this->addColumnInput ('dsCreateDemo');
@@ -223,7 +222,7 @@ class FormServer extends TableForm
 			{
 				$this->addColumnInput ('hwServer');
 				$this->addColumnInput ('vmId');
-			}	
+			}
 
 			$this->addSeparator(self::coH3);
 			$this->addColumnInput ('updownIOId');
