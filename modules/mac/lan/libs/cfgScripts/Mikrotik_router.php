@@ -84,7 +84,7 @@ class Mikrotik_router extends \mac\lan\libs\cfgScripts\Mikrotik
 				'mandatoryColumns' => ['name'], 'updateColumns' => ['comment'],
 			];
 			$this->rootsInfo ['/interface list member'] = [
-				'mandatoryColumns' => ['member', 'list'],
+				'mandatoryColumns' => ['interface', 'list'],
 			];
 			$this->rootsInfo ['/ipv6 address'] = [
 				'mandatoryColumns' => ['address', 'interface']
