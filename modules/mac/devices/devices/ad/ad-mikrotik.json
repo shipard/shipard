@@ -43,6 +43,7 @@
 	"families": {
 		"mkt-rb-rb": {
 			"title": "RB xxxx",
+			"sgClassId": "mac.lan.libs.cfgScripts.MikrotikAD_SwitchChip",
 			"types": {
 				"mkt-rb1100-ahx4": {"title": "RB1100AHx4 / RB1100AHx4 Dude Edition"},
 				"mkt-rb2011-il": {"title": "RB2011iL-IN / RB2011iL-RM"},
