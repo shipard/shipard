@@ -47,6 +47,9 @@ propertyId=switchElement[0].getAttribute('data-shp-iot-state-id');if(propertyId=
 valueOn=switchElement[0].getAttribute('data-shp-value-on');if(!valueOn)valueOn='ON';switchElement[0].checked=payload[propertyId]===valueOn;}}if(payload['brightness']!==undefined){let
 brElement=mqttItem.getElementsByClassName('shp-iot-br-range');if(brElement.length>0){if(brElement[0].disabled)brElement[0].disabled=false;brElement[0].value=payload['brightness'].toString();}}if(payload['color_temp']!==undefined){let
 ctElement=mqttItem.getElementsByClassName('shp-iot-ct-range');if(ctElement.length>0){if(ctElement[0].disabled)ctElement[0].disabled=false;ctElement[0].value=payload['color_temp'].toString();}}setTimeout(function(){shc.mqtt.checkGroups()},100);}else
+if(family==='iot-level'){let
+levelElement=mqttItem.getElementsByClassName('shp-iot-primary-level');if(levelElement.length>0){let
+propertyId=levelElement[0].getAttribute('data-shp-iot-state-id');if(levelElement[0].disabled)levelElement[0].disabled=false;if(payload[propertyId]!==undefined)levelElement[0].value=payload[propertyId].toString();}}else
 if(family==='iot-setup-scene'){if(payload['scene']!==undefined){let
 scElement=mqttItem.querySelectorAll("[data-shp-scene-id='"+payload['scene']+"']");if(scElement.length>0)scElement[0].checked=true;}}}}checkGroups(){if(uiData['iotElementsGroups']===undefined)return;for(const
 groupId
@@ -400,6 +403,8 @@ setTopic=uiData['iotSubjects'][attrSetupSID]['topic']+'/set';shc.mqtt.publish(ui
 propertyId=element.getAttribute('data-shp-iot-state-id');if(propertyId===null)propertyId='state';let
 valueOn=element.getAttribute('data-shp-value-on');if(!valueOn)valueOn='ON';let
 valueOff=element.getAttribute('data-shp-value-off');if(!valueOff)valueOff='OFF';payload[propertyId]=element.checked?valueOn:valueOff;}else
+if(element.classList.contains('shp-iot-primary-level')){let
+propertyId=element.getAttribute('data-shp-iot-state-id');if(propertyId===null)propertyId='state';payload[propertyId]=''+(parseInt(parseInt(element.value)/8.5));}else
 if(element.classList.contains('shp-iot-br-range'))payload['brightness']=element.value;else
 if(element.classList.contains('shp-iot-ct-range'))payload['color_temp']=element.value;if(Object.keys(payload).length===0&&payload.constructor===Object)return;let
 attrDeviceSID=element.getAttribute('data-shp-iot-device');if(attrDeviceSID===undefined){console.log("unknown iot device");return;}let
