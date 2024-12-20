@@ -441,7 +441,11 @@ class UIControl extends \Shipard\UI\ng\TemplateUIControl
         //continue;
       }
 
-      $c .= $this->renderIoTBoxControl_OnOff($deviceNdx, $deviceRecData, $ioPortId, $deviceCfgData['dataModel']['properties'][$ioPortId], $disabledOptions, $params);
+      $portInfo = $deviceCfgData['dataModel']['properties'][$ioPortId];
+      if ($portInfo['ioPortType'] === 'control/bist-relay' || $portInfo['ioPortType'] === 'control/binary')
+        $c .= $this->renderIoTBoxControl_OnOff($deviceNdx, $deviceRecData, $ioPortId, $deviceCfgData['dataModel']['properties'][$ioPortId], $disabledOptions, $params);
+      elseif ($portInfo['ioPortType'] === 'control/level')
+        $c .= $this->renderIoTBoxControl_Level($deviceNdx, $deviceRecData, $ioPortId, $deviceCfgData['dataModel']['properties'][$ioPortId], $disabledOptions, $params);
     }
 
     return $c;
@@ -485,6 +489,52 @@ class UIControl extends \Shipard\UI\ng\TemplateUIControl
     return $c;
   }
 
+  public function renderIoTBoxControl_Level($deviceNdx, $deviceRecData, $dmItemId, $dmItem, array $disabledOptions, $params)
+  {
+    $deviceRegData = $this->registerIotDevice($deviceRecData);
+    $deviceSID = $deviceRegData['sid'];
+
+    $id = $this->registerTopicMainElement($deviceRecData['deviceTopic']);
+
+    $icon = $this->iotDevicesTable->tableIcon($deviceRecData);
+    $title = $deviceRecData['uiName'] === '' ? $deviceRecData['fullName'] : $deviceRecData['uiName'];
+    if (isset($params['title']))
+      $title = $params['title'];
+
+    $c = "<div class='d-flex align-items-center mt-1 mb-1 flex-grow-1'";
+    $c .= " id='$id' data-shp-family='iot-level' data-shp-iot-device='$deviceSID'";
+    $c .= ">";
+      $c .= "<div class='p-2 _align-self-start'>";
+        $c .= "<label class='fs-2' for='{$id}_onoff'>";
+        $c .= $this->app()->ui()->icon($icon);
+        $c .= "</label>";
+      $c .= "</div>";
+      $c .= "<div class='flex-grow-0 pe-2'>";
+        $c .= "<label class='pb-1 fw-semibold' for='{$id}_onoff'>".Utils::es($title)."</label>";
+      $c .= "</div>";
+
+      if (isset($params['sensorLeft']))
+      {
+        $sensorNdx = intval($params['sensorLeft']);
+        $c .= $this->renderIoTSensor(['ndx' => $sensorNdx]);
+      }
+
+      $c .= "<div class='ps-2 fs-3 flex-grow-1'>";
+        $c .= "<input class='w-100 shp-iot-primary-level mac-shp-triggger'".
+              " data-shp-iot-device='$deviceSID' data-shp-iot-state-id='$dmItemId'".
+              " min='0' max='255'".
+              " type='range' id='{$id}_level' disabled>";
+      $c .= "</div>";
+
+      if (isset($params['sensorRight']))
+      {
+        $sensorNdx = intval($params['sensorRight']);
+        $c .= $this->renderIoTSensor(['ndx' => $sensorNdx]);
+      }
+    $c .= "</div>";
+
+    return $c;
+  }
 
   public function renderIoTSensor(array $params)
   {

@@ -54,6 +54,13 @@ class ShipardClientIoT {
 
       payload[propertyId] = element.checked ? valueOn : valueOff;
     }
+    else if (element.classList.contains('shp-iot-primary-level'))
+    {
+      let propertyId = element.getAttribute('data-shp-iot-state-id');
+      if (propertyId === null)
+        propertyId = 'state';
+      payload[propertyId] = '' + (parseInt(parseInt(element.value) / 8.5));
+    }
     else if (element.classList.contains('shp-iot-br-range'))
       payload['brightness'] = element.value;
     else if (element.classList.contains('shp-iot-ct-range'))

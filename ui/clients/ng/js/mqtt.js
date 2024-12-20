@@ -181,6 +181,18 @@ class ShipardMqtt {
 
         setTimeout(function (){shc.mqtt.checkGroups()}, 100);
       }
+      else if (family === 'iot-level')
+      {
+        let levelElement = mqttItem.getElementsByClassName('shp-iot-primary-level');
+        if (levelElement.length > 0)
+        {
+          let propertyId = levelElement[0].getAttribute('data-shp-iot-state-id');
+          if (levelElement[0].disabled)
+              levelElement[0].disabled = false;
+          if (payload[propertyId] !== undefined)
+            levelElement[0].value = payload[propertyId].toString();
+        }
+      }
       else if (family === 'iot-setup-scene')
       {
         //console.log ('### SETUP SCENE ###', data.destinationName, payload);
