@@ -64,6 +64,7 @@
 		{"id": "fiscalMonth", "columns": ["fiscalMonth"]},
 		{"id": "accountId", "columns": ["accountId"]},
 		{"id": "document", "columns": ["document"]},
-		{"id": "summaries", "columns": ["fiscalYear", "fiscalMonth", "fiscalType", "money", "moneyDr", "moneyCr", "accountId"]}
+		{"id": "summaries", "columns": ["fiscalYear", "fiscalMonth", "fiscalType", "money", "moneyDr", "moneyCr", "accountId"]},
+		{"id": "s2", "columns": ["balance", "fiscalYear", "person", "symbol1"]}
 	]
 }
