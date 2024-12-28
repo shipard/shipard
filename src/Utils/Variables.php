@@ -15,7 +15,7 @@ use Shipard\Base\Utility;
  *
  *
  * <[docHead.dateBegin:dateFormat;Y-m-d]>
- * <[wo.text:substr;1-9]>
+ * <[wo.text:substr;firstPos;length]>
  * <[wo.text:between;textBegin;textEnd]>
  */
 
@@ -87,6 +87,12 @@ class Variables extends Utility
           $endStr = array_shift($formatParams);
           $result = trim($this->getStrBetween($result, $startStr, $endStr));
         }
+        elseif ($cmd === 'substr')
+        {
+          $startStr = intval(array_shift($formatParams));
+          $lenStr = intval(array_shift($formatParams));
+          $result = trim($this->getStrSubstr($result, $startStr, $lenStr));
+        }
       }
       return $result;
     }
@@ -133,6 +139,16 @@ class Variables extends Utility
 
   function getStrBetween ($string, $start, $end = '')
   {
+    if ($start === '')
+    {
+      $startCharCount = 0;
+      $endCharCount = strpos($string, $end);
+      if ($endCharCount == 0)
+      {
+        $endCharCount = strlen($string);
+      }
+      return substr($string, 0, $endCharCount);
+    }
     if (strpos($string, $start) !== FALSE)
     {
       $startCharCount = strpos($string, $start) + strlen($start);
@@ -140,7 +156,7 @@ class Variables extends Utility
       $endCharCount = strpos($firstSubStr, $end);
       if ($endCharCount == 0)
       {
-          $endCharCount = strlen($firstSubStr);
+        $endCharCount = strlen($firstSubStr);
       }
       return substr($firstSubStr, 0, $endCharCount);
     }
@@ -148,5 +164,10 @@ class Variables extends Utility
     {
       return '';
     }
+  }
+
+  function getStrSubstr ($string, $start, $len = null)
+  {
+    return Str::substr($string, $start, $len);
   }
 }
