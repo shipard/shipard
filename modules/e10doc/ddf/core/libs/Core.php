@@ -280,6 +280,16 @@ class Core extends \lib\docDataFiles\DocDataFile
 	{
 		$importSettings = new \e10doc\helpers\libs\DocsImportSettings($this->app());
 		$importSettings->run ($row, $this->docHead);
+
+		// --- post processing
+		if (($row['workOrder'] ?? 0) && !($row['centre'] ?? 0))
+		{ // centre from workOrder
+			$workOrder = $this->app()->loadItem($row['workOrder'], 'e10mnf.core.workOrders');
+			if ($workOrder)
+			{
+				$row['centre'] = $workOrder['centre'];
+			}
+		}
 	}
 
 	protected function addRowsFromSettings()
@@ -576,7 +586,7 @@ class Core extends \lib\docDataFiles\DocDataFile
 		$c .= '<br/>';
 		$tr = [];
 		$th = [
-			'#' => '#', 'itemId' => 'Položka', 'itemInfo' => 'Obsah řádku2', 'vatp' => ' %DPH',
+			'#' => '#', 'itemId' => 'Položka', 'itemInfo' => 'Obsah řádku', 'vatp' => ' %DPH',
 			'quantity' => ' Mn.', 'priceItem' => ' Cena/pol.', 'priceAll' => '+Cena celk.'
 		];
 

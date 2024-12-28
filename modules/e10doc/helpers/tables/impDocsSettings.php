@@ -2,7 +2,7 @@
 
 namespace e10doc\helpers;
 
-use \Shipard\Utils\Utils, \Shipard\Viewer\TableView, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
+use \Shipard\Viewer\TableView, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
 
 
 /**
@@ -57,7 +57,11 @@ class ViewImpDocsSettings extends TableView
 	{
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['t1'] = $item['name'];
-		$listItem ['t2'] = ['text' => $item['personFullName'], 'icon' => 'tables/e10.persons.persons', 'class' => ''];
+		if ($item['qryHeadPerson'])
+			$listItem ['t2'] = ['text' => $item['personFullName'], 'icon' => 'tables/e10.persons.persons', 'class' => ''];
+		else
+			$listItem ['t2'] = 'Všechny osoby';
+
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
 		return $listItem;
@@ -74,7 +78,7 @@ class ViewImpDocsSettings extends TableView
 		array_push ($q, ' WHERE 1');
 
     if ($this->personNdx)
-      array_push ($q, ' AND [imps].[qryHeadPerson] = %i', $this->personNdx);
+      array_push ($q, ' AND ([imps].[qryHeadPerson] = %i', $this->personNdx, ' OR [imps].[qryHeadPerson] = %i', 0, ')');
 
 		// -- fulltext
 		if ($fts != '')
@@ -153,7 +157,10 @@ class FormImpDocsSetting extends TableForm
 				$this->openRow ();
 					$this->addStatic('Zakázka', TableForm::coColW3|TableForm::coRight);
 					$this->addColumnInput ('valRowWorkOrderType', TableForm::coColW2);
-					$this->addColumnInput ('valRowWorkOrderValue', TableForm::coColW7);
+					if ($this->recData['valRowWorkOrderType'] === 2)
+						$this->addColumnInput ('valRowWorkOrderScript', TableForm::coColW7);
+					elseif ($this->recData['valRowWorkOrderType'] === 1)
+						$this->addColumnInput ('valRowWorkOrderValue', TableForm::coColW7);
 					$this->closeRow ();
 				$this->openRow ();
 					$this->addStatic('Text řádku', TableForm::coColW3|TableForm::coRight);

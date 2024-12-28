@@ -38,8 +38,9 @@
 		{"id": "valRowCentreValue", "name": "Středisko", "type": "int", "reference": "e10doc.base.centres"},
 
 		{"id": "valRowWorkOrderType", "name": "Nastavit Zakázku na", "type": "enumInt", "options": ["saveOnChange"],
-			"enumCfg": {"cfgItem": "e10doc.helpers.setValueTypes.reference", "cfgValue": "", "cfgText": "name"}},
+			"enumCfg": {"cfgItem": "e10doc.helpers.setValueTypes.referenceScript", "cfgValue": "", "cfgText": "name"}},
 		{"id": "valRowWorkOrderValue", "name": "Zakázka", "type": "int", "reference": "e10mnf.core.workOrders"},
+		{"id": "valRowWorkOrderScript", "name": "Skript", "type": "string", "len": 200},
 
 		{"id": "valHeadTitleType", "name": "Nastavit Text dokladu na", "type": "enumInt", "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "e10doc.helpers.setValueTypes.string", "cfgValue": "", "cfgText": "name"}},

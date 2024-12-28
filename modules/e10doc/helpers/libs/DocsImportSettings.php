@@ -52,7 +52,7 @@ class DocsImportSettings extends Utility
 
 		$q[] = 'SELECT * FROM [e10doc_helpers_impDocsSettings]';
 		array_push ($q, ' WHERE 1');
-		array_push ($q, ' AND [qryHeadPerson] = %i', $docHead['person']);
+		array_push ($q, ' AND ([qryHeadPerson] = %i', $docHead['person'], ' OR [qryHeadPerson] = %i', 0, ')');
 		array_push ($q, ' AND [docStateMain] = %i', 2);
 		array_push ($q, ' AND [settingType] = %i', 0);
 
@@ -82,7 +82,10 @@ class DocsImportSettings extends Utility
 			$docRow['centre'] = $rs['valRowCentreValue'];
 
 		if ($rs['valRowWorkOrderType'] === 1)
-			$docRow['centre'] = $rs['valRowWorkOrderValue'];
+			$docRow['workOrder'] = $rs['valRowWorkOrderValue'];
+		elseif ($rs['valRowWorkOrderType'] === 2)
+			$this->applyReferenceScript($rs['valRowWorkOrderType'], $rs['valRowWorkOrderScript'], 'workOrder', $docRow,
+																	'e10mnf.core.workOrders', ['docNumber', 'title']);
 
 		$this->applyStringValue($rs['valRowTextType'], $rs['valRowTextValue'], 'text', $docRow);
 		$this->applyStringValue($rs['valHeadTitleType'], $rs['valHeadTitleValue'], 'title', $docHead);
@@ -95,6 +98,37 @@ class DocsImportSettings extends Utility
 
 		$dstItem[$dstItemColumnId] = trim($this->variables->resolve($settingsValue));
 		return TRUE;
+	}
+
+	function applyReferenceScript($setValueType, $settingsValue, $dstItemColumnId, &$dstItem, $refTableId, $refColumns)
+	{
+		if ($setValueType !== 2)
+			return FALSE;
+
+		$refValue = trim($this->variables->resolve($settingsValue));
+
+		/** @var \Shipard\Table\DbTable */
+		$refTable = $this->app()->table($refTableId);
+		if (!$refTable)
+			return FALSE;
+
+		foreach ($refColumns as $col)
+		{
+			$q = [];
+			array_push($q, 'SELECT * FROM ['.$refTable->sqlName().']');
+			array_push($q, ' WHERE 1');
+			array_push($q, ' AND ['.$col.'] = %s',  $refValue);
+			array_push($q, ' AND [docState] IN %in', [4000, 8000, 1200]);
+
+			$exist = $this->db()->query($q)->fetch();
+			if ($exist)
+			{
+				$dstItem[$dstItemColumnId] = $exist['ndx'];
+				return TRUE;
+			}
+		}
+
+		return FALSE;
 	}
 
 	function applyMoneyValue($setValueType, $settingsValue, $dstItemColumnId, &$dstItem)

@@ -3,6 +3,11 @@
 		"0": {"name" : "Nenastavovat"},
 		"1": {"name" : "Nastavit"}
 	},
+	"referenceScript": {
+		"0": {"name" : "Nenastavovat"},
+		"1": {"name" : "Nastavit"},
+		"2": {"name" : "Použít skript"}
+	},
 	"enum": {
 		"0": {"name" : "Nenastavovat"},
 		"1": {"name" : "Nastavit"}
