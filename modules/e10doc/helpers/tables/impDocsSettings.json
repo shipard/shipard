@@ -13,6 +13,11 @@
 			"enumCfg": {"cfgItem": "e10doc.helpers.queryTypes.string", "cfgValue": "", "cfgText": "name"}},
     {"id": "qryRowTextValue", "name": "Text řádku", "type": "string", "len": 120},
 
+		{"id": "qryRowPriceAllType", "name": "Cena celkem řádku", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "e10doc.helpers.queryTypes.number", "cfgValue": "", "cfgText": "name"}},
+		{"id": "qryRowPriceAllValueFrom", "name": "Od", "type": "money"},
+		{"id": "qryRowPriceAllValueTo", "name": "Do", "type": "money"},
+
 		{"id": "qryRowSupplierCodeType", "name": "Kód dodavatele", "type": "enumInt", "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "e10doc.helpers.queryTypes.string", "cfgValue": "", "cfgText": "name"}},
     {"id": "qryRowSupplierCodeValue", "name": "Kód dodavatele", "type": "string", "len": 120},

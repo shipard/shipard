@@ -133,6 +133,13 @@ class FormImpDocsSetting extends TableForm
           $this->addColumnInput ('qryHeadTextType', TableForm::coColW2);
           $this->addColumnInput ('qryHeadTextValue',TableForm::coColW7);
         $this->closeRow ();
+
+        $this->openRow ();
+          $this->addStatic('Cena celkem řádku', TableForm::coColW3|TableForm::coRight);
+          $this->addColumnInput ('qryRowPriceAllType', TableForm::coColW2);
+          $this->addColumnInput ('qryRowPriceAllValueFrom',TableForm::coColW3);
+          $this->addColumnInput ('qryRowPriceAllValueTo',TableForm::coColW4);
+        $this->closeRow ();
 			$this->layoutClose ();
 
 			$this->addSeparator(self::coH2);

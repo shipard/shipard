@@ -21,6 +21,9 @@ class DocsImportSettings extends Utility
 
 			if (!$this->testStringValue($rs['qryRowTextType'], $rs['qryRowTextValue'], $docRow['text']))
 				return FALSE;
+
+			if (!$this->testNumberValue($rs['qryRowPriceAllType'], $rs['qryRowPriceAllValueFrom'], $rs['qryRowPriceAllValueTo'], $docRow['priceAll']))
+				return FALSE;
 		}
 
 		if (!$this->testStringValue($rs['qryHeadTextType'], $rs['qryHeadTextValue'], $docHead['title'] ?? ''))
@@ -39,6 +42,23 @@ class DocsImportSettings extends Utility
 			return TRUE;
 		elseif ($qryType == 3 && Str::strstr($docValue, $settingsValue) !== FALSE)
 			return TRUE;
+
+		return FALSE;
+	}
+
+	function testNumberValue ($qryType, $settingsValueFrom, $settingsValueTo, $docValue)
+	{
+		if ($qryType == 0)
+			return TRUE;
+		elseif ($qryType == 1)
+		{
+			if ($docValue < $settingsValueFrom)
+				return FALSE;
+			if ($docValue > $settingsValueTo)
+				return FALSE;
+
+			return TRUE;
+		}
 
 		return FALSE;
 	}
