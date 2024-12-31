@@ -42,6 +42,9 @@ class ImportJsonBalanceEngine extends \Shipard\Base\Utility
 
   public function import()
   {
+    /** @var \e10doc\accBal\TableBalancesAccounts */
+    $tableBalancesAccounts = $this->app()->table('e10doc.accBal.balancesAccounts');
+
     $balanceNdx = 0;
     $existHead = $this->db()->query('SELECT * FROM [e10doc_accBal_balances] WHERE [globalId] = %s', $this->cfgData['globalId'])->fetch();
     if ($existHead)
@@ -79,17 +82,7 @@ class ImportJsonBalanceEngine extends \Shipard\Base\Utility
       $newItem['docState'] = 4000;
       $newItem['docStateMain'] = 2;
 
-      $this->db()->query('INSERT INTO [e10doc_accBal_balancesAccounts] ', $newItem);
+      $tableBalancesAccounts->dbInsertRec($newItem);
     }
-
-    /** @var \e10doc\ddm\TableDDM */
-    /*
-		$tableDDM = $this->app()->table('e10doc.ddm.ddm');
-		$recData = $tableDDM->loadItem($ddmNdx);
-		$configuration = $tableDDM->createConfiguration($recData);
-    $update = ['configuration' => Json::lint($configuration)];
-    $this->db()->query('UPDATE [e10doc_ddm_ddm] SET ', $update, ' WHERE ndx = %i', $ddmNdx);
-    $tableDDM->docsLog($ddmNdx);
-    */
   }
 }
