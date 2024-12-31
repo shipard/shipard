@@ -7,7 +7,7 @@ use \Shipard\Utils\Utils;
 class WidgetPane extends \Shipard\UI\Core\Widget
 {
 	/** @var \E10\Params */
-	var $params;
+	var $params = NULL;
 	var $reportParams;
 	var $widgetAction = '';
 	var $widgetMainClass = 'e10-widget-pane';

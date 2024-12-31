@@ -26,7 +26,7 @@ class WidgetBoard extends \Shipard\UI\Core\WidgetPane
 		if ($this->toolbar)
 		{
 			if ($this->activeTopTab === '')
-				$this->activeTopTab = key($this->toolbar['tabs']);
+				$this->activeTopTab = key($this->toolbar['tabs'] ?? ['']);
 
 			$this->initRightTabs();
 
@@ -92,7 +92,7 @@ class WidgetBoard extends \Shipard\UI\Core\WidgetPane
 		$c = '';
 
 		$tabsClass = 'e10-wf-tabs';
-		if (!count ($this->toolbar['tabs']))
+		if (!count ($this->toolbar['tabs'] ?? []) && !isset($this->toolbar['params']))
 			$tabsClass .= ' e10-wf-tabs-inside-viewer';
 
 		$c .= "<div class='$tabsClass'>";
@@ -181,6 +181,20 @@ class WidgetBoard extends \Shipard\UI\Core\WidgetPane
 					}
 				}
 				$c .= "</ul>";
+			}
+
+			if ($key === 'params')
+			{
+				$c .= "<ul class='e10-wf-tabs left'>";
+				forEach ($this->params->getParams() as $paramId => $paramContent)
+				{
+					if (isset ($paramContent['options']['place']))
+						continue;
+					$c .= "<li>";
+					$c .= $this->params->createParamCode ($paramId);
+					$c .= "</li>";
+				}
+				$c .= '</ul>';
 			}
 		}
 		$c .= '</div>';
