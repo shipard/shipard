@@ -39,6 +39,9 @@ class TableViewGrid extends \Shipard\Viewer\TableView
 			$tableClass .= ' editable';
 		else
 			$tableClass .= ' static';
+
+		$c .= $this->createLeftPanelCode();
+
 		if ($this->fullWidthToolbar)
 			$c .= $this->createFullWidthToolbarCode();
 

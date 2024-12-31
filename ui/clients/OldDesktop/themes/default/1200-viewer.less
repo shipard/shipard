@@ -157,11 +157,19 @@ div.e10-sv-right.floating {
 	>div.params {
 		>div.btn-group {display: block;}
 	}
+	>div.detail {
+		display: block;
+	}
 }
 
-div.e10-sv-right.floating.close {
+div.e10-sv-right.w30em {
+	width: 30em;
+}
+
+div.e10-sv-right.floating.close, div.e10-sv-right.floating.close.w30em {
 	width: 2em;
 	>div.params {display: none;}
+	>div.detail {display: none;}
 }
 
 /* fullText */
@@ -218,8 +226,9 @@ div.e10-sv-search input.fulltext {
 	width: 100%;
 }
 div.e10-sv-search td.fulltext.main {
+	position: relative;
   input {font-size: 100%; padding: 3px 2ex 3px 1ex;}
-  span.df2-fulltext-clear {right: 4.3ex;}
+  span.df2-fulltext-clear {right: 1.3ex;}
 }
 
 div.e10-sv-search td.fulltext.params {

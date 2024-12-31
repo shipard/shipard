@@ -3,48 +3,48 @@
     "id":"md-default",
     "name":"Pink Material Design",
     "integrity":{
-      "sha384":"3637f3df78dd5e18d73e0aeb526e0181c66ace4aae1a5a22cdfad6d8ced9c7ca5e8c994bb4abb398caf0781be2600de7",
-      "md5":"51f80d36cd225efd8bb9f7bcbe530d58"
+      "sha384":"40f7c89559c0254d112dcb48dbf0e7576dd0a2228207fa91062b0ad9d3df1cc3cee87f8d649e89e58bcc35a40cc4c103",
+      "md5":"02bb16127aff9ea55865b708aca4b22d"
     }
   },
   "md-bluegray":{
     "id":"md-bluegray",
     "name":"Modro \u0161ed\u00e1",
     "integrity":{
-      "sha384":"e49557d747801a4a87fc68662a33bdfb67769ff0f4cd68aeba8fbf6677339d5ba7c84bc4fffe3d2c172230d6dc348fab",
-      "md5":"3335a8308eb36026744e52e6899504b7"
+      "sha384":"fd161279d0a59c1c4c2ea604d49e04fb31d9135fcc28f028ac7d1748d7fea0d7d55a97968c6737df52c5b32c825cced2",
+      "md5":"65e8d328982910c2d5f2f61164298b32"
     }
   },
   "md-indigo":{
     "id":"md-indigo",
     "name":"Indigo Material Design",
     "integrity":{
-      "sha384":"82ad55eb8db3ebb9eba1251240d3d0bd26d4839c93df60ba866d875359df974d113491d991f9f3b60d315e7ffaaa5333",
-      "md5":"2a4eff272c2941e545fb7858fc7fc584"
+      "sha384":"e71bc650edd56a45531351d5f8100d9d45cdceeca6307169533a6a0597123891608dcb49219c208f731b7a81708e989f",
+      "md5":"6bea72f0e87a58711924c1ecdd6d3af1"
     }
   },
   "md-lime":{
     "id":"md-lime",
     "name":"Lime Material Design",
     "integrity":{
-      "sha384":"e427b79b3f4628475738610a281a8b6f02f66f264c58a79b67b11e2419e3ab1f6d8c5dc2404e6f5bd11165b5cfc02eaf",
-      "md5":"b2b5bf6f506afbc983e1d1fb5fcd7a3c"
+      "sha384":"557d4cd7c3ac4ae225e20db48ceabe0e8e781d155959ba9399b5738d2721ffd824c69e1eb3c1afabad96b36d8e11f10c",
+      "md5":"9f004f2f91e747175e643d989c1db38a"
     }
   },
   "md-shipard":{
     "id":"md-shipard",
     "name":"Shipard Material Design",
     "integrity":{
-      "sha384":"e206d53d96c87ac962bdfcd810d54101d6d6cf6303b75dc4065d167f23ee861b1a33f5e48a093c708713f1163035d9ac",
-      "md5":"55443b169bb178c8eb9021790c6d0d5e"
+      "sha384":"63979f2275b7b29e7474d707e93281d6bc486fa132995fa7a0c5296baeffb340e6f4864fbe0eb416820571bca87cbc09",
+      "md5":"56318388fd14702eb4cd549fa853635f"
     }
   },
   "md-teal":{
     "id":"md-teal",
     "name":"Teal Material Design",
     "integrity":{
-      "sha384":"4d150bac01937fdbcfe114f674786fc9a81a5962f56062abdaa23d932108b310a7e94097c8aea3f7968ceb5558e81c86",
-      "md5":"d667bf766aa9abd727c419b9810c24a8"
+      "sha384":"cf3119da3b91ed2b9f9de863d221eeaf0582c931b5d23efbb99ef5b4bc2c3e242b1c1783029cb66c7006f99629773f6f",
+      "md5":"f2e7647bc0d59eebd351db385e717a61"
     }
   }
 }

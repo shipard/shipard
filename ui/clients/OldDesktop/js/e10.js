@@ -2251,8 +2251,19 @@ function e10viewerSetDetail (viewerId, listItem, toolbarOnly)
   var tableName = searchParentAttr (listItem, 'data-table');
 
   var detail = $('#' + viewerId + 'Details');
-	var detailHeader = detail.find ('div.e10-mv-ld-header');
-	var detailContent = detail.find ('div.e10-mv-ld-content');
+	var detailContent = null;
+	var detailHeader = null;
+
+	var detailInPanelRight = parseInt(viewer.attr('data-detail-in-panel-right'));//$('#' + viewerId + 'PanelRight');
+	if (detailInPanelRight)
+	{
+		detailContent = $('#' + viewerId + 'PanelRight > div.detail');
+	}
+	else
+	{
+		detailHeader = detail.find ('div.e10-mv-ld-header');
+		detailContent = detail.find ('div.e10-mv-ld-content');
+	}
 
 	var detailToolbar = null;
 	var detailToolbarId = viewer.attr ('data-toolbar');
@@ -2277,9 +2288,10 @@ function e10viewerSetDetail (viewerId, listItem, toolbarOnly)
 			//alert (data.object.htmlContent);
 			detail.attr ('data-addparams', '');
 
-			if (toolbarOnly)
+			if (toolbarOnly && !detailInPanelRight)
 			{
-				detailHeader.html (data.object.htmlHeader);
+				if (detailHeader !== null)
+					detailHeader.html (data.object.htmlHeader);
 				if (detailToolbar !== null)
 					detailToolbar.html (data.object.htmlButtons);
 			}
@@ -2303,7 +2315,8 @@ function e10viewerSetDetail (viewerId, listItem, toolbarOnly)
 					}
 				}
 
-				detailHeader.html (data.object.htmlHeader);
+				if (detailHeader !== null)
+					detailHeader.html (data.object.htmlHeader);
 				detailContent.html (data.object.htmlContent);
 				if (detailToolbar !== null)
 					detailToolbar.html (data.object.htmlButtons);

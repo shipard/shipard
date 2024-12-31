@@ -59,6 +59,8 @@ class TableView extends \Shipard\Base\BaseObject
 
 	var $usePanelLeft = FALSE;
 	var $usePanelRight = 0;
+	var $panelRightClass = '';
+	var $detailInPanelRight = 0;
 	var $panelLeft = NULL;
 	var $panelRight = NULL;
 
@@ -409,6 +411,9 @@ class TableView extends \Shipard\Base\BaseObject
 					"data-addparams='{$this->addParams ()}' data-queryparams='{$this->queryParams()}' data-lineswidth='{$this->linesWidth}' ".
 					"data-toolbar='{$this->toolbarElementId}' data-mode='{$this->mode}' data-type='{$this->type}'";
 
+		if ($this->detailInPanelRight)
+			$c .= " data-detail-in-panel-right='".intval($this->detailInPanelRight)."'";
+
 		if ($this->inlineSourceElement)
 		{
 			foreach ($this->inlineSourceElement as $key => $value)
@@ -605,15 +610,29 @@ class TableView extends \Shipard\Base\BaseObject
 		if ($this->usePanelRight === 3)
 			$panelClass .= ' floating close';
 
+		if ($this->panelRightClass !== '')
+			$panelClass .= ' '.$this->panelRightClass;
+
 		$c .= "<div class='$panelClass' id='{$this->vid}PanelRight'>";
 
 		if ($this->usePanelRight === 3)
-			$c .= "<div class='tlbr e10-reportPanel-toggle'><i class='fa fa-bars'></i></div><div class='params'>";
+		{
+			$c .= "<div class='tlbr e10-reportPanel-toggle'><i class='fa fa-bars'></i></div>";
+			$c .= "<div class='params'>";
+		}
 
 		$c .= $this->panelRight->createCode();
 
 		if ($this->usePanelRight === 3)
 			$c .= '</div>';
+
+		if ($this->detailInPanelRight)
+		{
+			if ($this->usePanelRight === 3)
+				$c .= "<div class='detail'></div>";
+			else
+				$c .= "<div class='detail' style='position: absolute; top: 0;'></div>";
+		}
 
 		$c .= '</div>';
 
@@ -1037,12 +1056,13 @@ class TableView extends \Shipard\Base\BaseObject
 				{
 					$placeholder = ($this->disableIncrementalSearch) ? 'hledat ⏎' : 'hledat';
 
-					$h .= "<td class='fulltext $fulltextClass' style='$style'>" .
-							"<span class='df2-background-button df2-action-trigger df2-fulltext-clear' data-action='fulltextsearchclear' id='{$this->vid}Progress' data-run='0'>".$this->app()->ui()->icon('system/actionInputClear')."</span>";
+					$h .= "<td class='fulltext $fulltextClass' style='$style'>";
 					$h .= "<input name='fullTextSearch' type='text' class='fulltext e10-viewer-search' autocomplete='off' placeholder='".utils::es($placeholder)."' value=''";
 					if ($this->disableIncrementalSearch)
 						$h .= " data-onenter='1'";
-					$h .= '/></td>';
+					$h .= '/>';
+					$h .= "<span class='df2-background-button df2-action-trigger df2-fulltext-clear' data-action='fulltextsearchclear' id='{$this->vid}Progress' data-run='0'>".$this->app()->ui()->icon('system/actionInputClear')."</span>";
+					$h .= '</td>';
 				}
 				if (isset ($this->topParams))
 				{
