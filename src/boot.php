@@ -84,6 +84,12 @@ function __autoload_shipard__ ($class_name)
 				return;
 			}
 		}
+		$fn3 = __SHPD_MODULES_DIR__.implode ('/', $elements).'/tables/' . substr ($ccn, 5) . '.php';
+		if (is_file ($fn3))
+		{
+			include_once($fn3);
+			return;
+		}
 
 		error_log ('file not found: ' . $fn1 . ' (required for table ' . $class_name . ')');
 	}
