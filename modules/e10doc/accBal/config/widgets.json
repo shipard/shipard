@@ -1,0 +1,6 @@
+[
+	{
+		"name": "Saldo2", "class": "e10doc.accBal.libs.AccBalanceDashboard",
+		"dashboard": "accBalance", "panel": "balance", "order": 1001, "row": "main", "width": 12, "type": "wkfWall"
+	}
+]

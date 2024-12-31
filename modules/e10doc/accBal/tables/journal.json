@@ -1,0 +1,54 @@
+{
+  "id": "e10doc.accBal.journal", "sql": "e10doc_accBal_journal", "name": "Saldokonto",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "balSide", "name": "Strana", "type": "enumInt",
+			"enumValues": {"0": "Předpis", "1": "Úhrada"}},
+		{"id": "balance", "name": "Saldokonto", "type": "int"},
+		{"id": "fiscalYear", "name": "Rok", "type": "int", "reference": "e10doc.base.fiscalyears"},
+		{"id": "person", "name": "Osoba", "type": "int"},
+		{"id": "symbol1", "name": "Variabilní symbol", "type": "string", "len": 20},
+		{"id": "symbol2", "name": "Specifický symbol", "type": "string", "len": 20},
+		{"id": "symbol3", "name": "Konstantní symbol", "type": "string", "len": 10},
+
+    {"id": "doc", "name": "Doklad", "type": "int", "reference": "e10doc.core.heads"},
+    {"id": "docRequest", "name": "Doklad předpisu", "type": "int", "reference": "e10doc.core.heads"},
+    {"id": "docPayment", "name": "Doklad úhrady", "type": "int", "reference": "e10doc.core.heads"},
+    {"id": "journalRequest", "name": "Řádek předpisu", "type": "int", "reference": "e10doc.accBal.journal"},
+
+		{"id": "currency", "name": "Měna", "type": "int", "reference": "e10.world.currencies"},
+		{"id": "homeCurrency", "name": "Měna domácí", "type": "int", "reference": "e10.world.currencies"},
+
+		{"id": "amount", "name": "Částka", "type": "money"},
+		{"id": "amountHc", "name": "Částka v domácí měně", "type": "money"},
+
+		{"id": "quantity", "name": "Množství", "type": "number", "dec": 3},
+		{"id": "unit", "name": "Jednotka", "type": "enumString", "len": 8,
+			"enumCfg": {"cfgItem": "e10.witems.units", "cfgValue": "", "cfgText": "shortcut"}},
+
+		{"id": "request", "name": "Předpis", "type": "money"},
+		{"id": "requestHc", "name": "Předpis v domácí měně", "type": "money"},
+		{"id": "requestQ", "name": "Předpis množství", "type": "number", "dec": 3},
+
+		{"id": "payment", "name": "Úhrada", "type": "money"},
+		{"id": "paymentHc", "name": "Úhrada v domácí měně", "type": "money"},
+		{"id": "paymentQ", "name": "Úhrada množství", "type": "number", "dec": 3},
+
+		{"id": "resAmount", "name": "Výsledek", "type": "money"},
+		{"id": "resAmountHc", "name": "Výsledek v domácí měně", "type": "money"},
+
+		{"id": "bankAccount", "name": "Bankovní účet", "label": "Č. účtu", "type": "string", "len": 40},
+
+		{"id": "dateDue", "name": "Datum splatnosti", "type": "date"},
+
+		{"id": "accountId", "name": "Účet", "type": "string", "len": 12}
+  ],
+	"options": ["systemTable"],
+	"views": {
+		"default": {"id": "default", "class": "e10doc.accBal.libs.AccBalanceViewer", "detail": "e10doc.accBal.libs.AccBalanceViewerDetail"}
+	},
+	"indexes": [
+		{"id": "s1", "columns": ["balance", "balSide", "fiscalYear", "person"]}
+	]
+}

@@ -1,0 +1,16 @@
+{
+	"accBalance": {
+		"disableTopToolbar": 1,
+		"panels": {
+			"balance": {
+				"name": "Saldo",
+				"icon": "system/rightSubmenuToDo",
+				"order": 1201,
+				"fullsize": 1,
+				"rows": {
+					"main": {"order": 10000, "class": "full"}
+				}
+			}
+		}
+	}
+}

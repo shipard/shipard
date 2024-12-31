@@ -1,0 +1,32 @@
+{
+	"id": "e10doc.accBal.balances", "sql": "e10doc_accBal_balances", "name": "Saldokonta",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+    {"id": "fullName", "name": "Jméno", "type": "string", "len": 140},
+    {"id": "shortName", "name": "Zkrácené jméno", "type": "string", "len": 80},
+		{"id": "globalId", "name": "ID", "type": "string", "len": 25},
+
+    {"id": "order", "name": "Pořadí", "type": "int"},
+
+    {"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{
+			"id": "default", "class": "e10doc.accBal.ViewBalances",
+      "details": {
+        "default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.accBal.ViewDetailBalance"}
+      },
+			"addWizard": {"class": "e10doc.accBal.libs.ImportJsonBalanceWizard", "text": "Načíst JSON"}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.accBal.FormBalance"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

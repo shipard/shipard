@@ -1,0 +1,8 @@
+{
+  "acc": {
+		"viewers": {
+			"e10doc.accBal.balances": {"default": 2},
+			"e10doc.accBal.balancesAccounts": {"default": 2}
+		}
+	}
+}

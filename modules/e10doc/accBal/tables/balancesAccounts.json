@@ -1,0 +1,42 @@
+{
+	"id": "e10doc.accBal.balancesAccounts", "sql": "e10doc_accBal_balancesAccounts", "name": "Účty saldokont",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+    {"id": "balance", "name": "Saldokonto", "type": "int", "reference": "e10doc.accBal.balances"},
+
+		{"id": "accountId", "name": "Účet", "type": "string", "len": 12,
+			"comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+		{"id": "accSide", "name": "Strana účtu", "type": "enumInt",
+			"enumValues": {"0": "MD", "1": "DAL"}},
+		{"id": "accAmountsSign", "name": "Částky", "type": "enumInt",
+			"enumValues": {"0": "Všechny", "1": "Kladné", "2": "Záporné"}},
+		{"id": "balSide", "name": "Strana saldokonta", "type": "enumInt",
+			"enumValues": {"0": "Předpis", "1": "Úhrada"}},
+		{"id": "balModifySign", "name": "Změna znaménka částky", "type": "enumInt",
+			"enumValues": {"0": "Ne", "1": "Ano, obrátit"}},
+
+    {"id": "note", "name": "Poznámka", "type": "string", "len": 80},
+
+		{"id": "systemOrder", "name": "Systémové pořadí", "type": "int"},
+
+    {"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{
+			"id": "default", "class": "e10doc.accBal.ViewBalancesAccounts",
+      "details": {
+        "default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.accBal.ViewDetailBalanceAccount"}
+      }
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.accBal.FormBalanceAccount"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}
+

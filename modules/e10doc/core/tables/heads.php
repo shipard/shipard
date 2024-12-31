@@ -360,6 +360,9 @@ class TableHeads extends DbTable
 		if ($this->app()->model()->table ('e10doc.debs.journal') !== FALSE)
 			$this->doAccounting ($recData);
 
+		if ($this->app()->model()->table ('e10doc.accBal.journal') !== FALSE)
+			$this->doAccBalance ($recData);
+
 		if ($this->app()->model()->table ('e10pro.reports.waste_cz.returnRows') !== FALSE)
 			$this->doWaste ($recData);
 
@@ -1223,6 +1226,13 @@ class TableHeads extends DbTable
 
 		$tableBalanceJournal = new \E10Doc\Balance\TableJournal($this->app());
 		$tableBalanceJournal->doIt ($recData);
+	}
+
+	public function doAccBalance (&$recData)
+	{
+		$accBalCreator = new \e10doc\accBal\libs\AccBalanceCreator($this->app());
+		$accBalCreator->setDocument($recData['ndx']);
+		$accBalCreator->run();
 	}
 
 	public function doInbox (&$recData)

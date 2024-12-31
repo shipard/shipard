@@ -1,0 +1,12 @@
+{
+  "id": "e10doc.accBal",
+  "name": "Saldo2",
+	"tables": ["balances", "balancesAccounts", "journal"],
+  "config": [
+    {"id": "+appSkeleton", "file": "appSkeleton.json"},
+    {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+    {"id": "+dashboards", "file": "dashboards.json"},
+    {"id": "+widgets", "file": "widgets.json"}
+  ],
+  "modules": ["e10pro/install/docs-core"]
+}

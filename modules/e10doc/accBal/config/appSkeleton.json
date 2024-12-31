@@ -1,0 +1,28 @@
+{
+	"panels": {
+		"accounting": {
+			"items": {
+				"balanceAcc": {
+					"t1": "Saldo²",
+					"object": "widget", "class": "e10.widgetDashboard", "subclass": "accBalance",
+					"icon": "system/iconBalance", "order": 100010
+				},
+				"settings": {
+					"subMenu": {
+						"items": {
+							"balances": {
+								"t1": "Saldokonta", "object": "viewer", "table": "e10doc.accBal.balances",
+								"viewer": "default", "order": 960000,
+								"beforeSeparator": {"text": "Saldokonto", "class": "block pl05 pt1", "icon":  "iconSquare"}
+							},
+							"balancesAccounts": {
+								"t1": "Účty", "object": "viewer", "table": "e10doc.accBal.balancesAccounts",
+								"viewer": "default", "order": 961000
+							}
+						}
+					}
+				}
+			}
+  	}
+	}
+}
