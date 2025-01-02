@@ -336,6 +336,71 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		}
 	}
 
+	public function geoCodeRepair ($fromCli = 0)
+	{
+		$debug = 0;
+		$limit = 0;
+
+		if ($fromCli)
+		{
+			$debug = intval($this->app()->arg('debug'));
+			$limit = intval($this->app()->arg('limit'));
+		}
+
+		if (!$limit)
+			$limit = 20;
+
+		if ($fromCli)
+			echo ":: debug is `{$debug}`, limit is `{$limit}`\n\n";
+
+		$testNewPersons = intval($this->app()->cfgItem ('options.persons.testNewPersons', 0));
+
+		if (!$testNewPersons)
+			return;
+
+		$personRecData = NULL;
+		/** @var \e10\persons\TablePersonsContacts */
+		$tableContacts = $this->app->table('e10.persons.personsContacts');
+		/** @var \e10\persons\TablePersons */
+		$tablePersons = $this->app->table('e10.persons.persons');
+
+		$q = [];
+		array_push ($q, 'SELECT * FROM [e10_persons_personsContacts] AS [contacts]');
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND [flagAddress] = %i', 1);
+		array_push ($q, ' AND docState = %i', 4000);
+		if ($fromCli)
+			array_push ($q, ' ORDER BY ndx ASC');
+		else
+		array_push ($q, ' ORDER BY ndx DESC');
+
+		$cnt = 1;
+		$rows = $this->app->db()->query ($q);
+		forEach ($rows as $r)
+		{
+			$newLocHash = $tableContacts->geoCodeLocHash ($r);
+			if ($newLocHash === $r['adrLocHash'])
+				continue;
+
+			if ($debug)
+			{
+				$personRecData = $tablePersons->loadItem($r['person']);
+				echo "* #".$r['person'].' / '.$personRecData['fullName'];
+			}
+
+			$this->db()->query('UPDATE [e10_persons_personsContacts] SET adrLocState = %i, ', 0, 'adrLocHash = %s', $newLocHash, ' WHERE ndx = %i', $r['ndx']);
+
+			if ($debug)
+				echo "\n";
+			if ($debug > 1)
+				echo "\n";
+
+			$cnt++;
+			if ($cnt > $limit)
+				break;
+		}
+	}
+
 	public function personValidator()
 	{
 		$testNewPersons = intval($this->app->cfgItem ('options.persons.testNewPersons', 0));
@@ -454,6 +519,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		switch ($actionId)
 		{
 			case 'geo-code': return $this->geoCode(1);
+			case 'geo-code-repair': return $this->geoCodeRepair(1);
 			case 'last-persons-use-create': return $this->lastPersonsUseCreate();
 			case 'person-validator': return $this->personValidator();
 			case 'persons-revalidate': return $this->personsRevalidate();
