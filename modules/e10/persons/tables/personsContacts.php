@@ -31,6 +31,16 @@ class TablePersonsContacts extends DbTable
 
 		if (($recData['onTop'] ?? 0) == 0)
 			$recData['onTop'] = 99;
+
+		if ($recData['flagAddress'] ?? 0)
+		{
+			$newLocHash = $this->geoCodeLocHash ($recData);
+			if ($newLocHash !== $recData['adrLocHash'])
+			{
+				$recData['adrLocHash'] = $newLocHash;
+				$recData['adrLocState'] = 0;
+			}
+		}
 	}
 
 	public function checkNewRec (&$recData)
