@@ -104,8 +104,9 @@ class FormItemCode extends TableForm
         {
           $this->openRow();
             $this->addColumnInput ('codeDir', self::coColW2);
+            $this->addColumnInput ('wasteOrigin', self::coColW2);
             $this->addColumnInput ('personType', self::coColW2);
-            $this->addColumnInput ('person', self::coColW8);
+            $this->addColumnInput ('person', self::coColW6);
           $this->closeRow();
           $this->openRow();
             $this->addColumnInput ('addressLabel', self::coColW6);

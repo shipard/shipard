@@ -7,7 +7,7 @@
 		"exchangeRatesLists", "exchangeRatesValues",
 		"statsPersonDocType", "statsItemDocType", "statsPersonItemDocType",
 		"transports", "additionsTypes", "additions", "reportsTexts",
-	  "whPlaces", "docRowsVDSCfg", "sendReportsQueue"
+	  "whPlaces", "docRowsVDSCfg", "sendReportsQueue", "wasteOrigins"
   ],
   "config": [
 		{"id": "+appOptions", "name": "Nastavení položek", "file": "e10.appOptions.json"},

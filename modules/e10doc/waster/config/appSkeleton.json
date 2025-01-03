@@ -1,9 +1,28 @@
 {
 	"panels": {
-		"buy": {
+		"others": {
 			"items": {
-          "wastelps": {"t1": "Odpadové protokoly", "object": "viewer", "table": "e10doc.core.heads", "viewer": "wastelps", "icon": "system/actionRecycle", "order": 700000}
+				"waster": {
+					"t1": "Odpady", "object": "subMenu", "icon": "system/actionRecycle",
+					"order": 9800000,
+					"subMenu": {
+						"items": {
+							"reports": {"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-waster", "icon": "system/iconReports", "order": 200000},
+							"itemCodes": {"t1": "Kódy položek", "object": "viewer", "table": "e10.witems.itemCodes", "viewer": "default", "order": 900000},
+							"wasteOrigins": {"t1": "Původ odpadů", "object": "viewer", "table": "e10doc.base.wasteOrigins", "viewer": "default", "order": 800000, "beforeSeparator":  {"text": "Nastavení", "class": "block pl05 pt1", "icon": "submenu/management"}},
+							"witems": {"t1": "Položky", "object": "viewer", "table": "e10.witems.items",
+										"viewer": "default", "order": 910000, "disabledCfgItem": "options.experimental.witemsNewViewer"},
+							"witems2": {"t1": "Položky", "object": "viewer", "table": "e10.witems.items",
+										"viewer": "byCategories", "order": 910000, "enabledCfgItem": "options.experimental.witemsNewViewer"}
+						}
+					}
+				}
 			}
-  	}
+		}
+	},
+	"buy": {
+		"items": {
+				"wastelps": {"t1": "Odpadové protokoly", "object": "viewer", "table": "e10doc.core.heads", "viewer": "wastelps", "icon": "system/actionRecycle", "order": 700000}
+		}
 	}
 }

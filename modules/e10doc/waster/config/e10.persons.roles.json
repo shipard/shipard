@@ -1,7 +1,8 @@
 {
   "admin": {
 		"viewers": {
-			"e10doc.waster.wasteSettings": {"default": 2}
+			"e10doc.waster.wasteSettings": {"default": 2},
+			"e10doc.base.wasteOrigins": {"default": 2}
 		}
 	}
 }

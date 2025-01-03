@@ -2,6 +2,10 @@
 	"docsWasterSettings": {
 		"name": "Nastavení odpadů", "order": 29300, "group": "waster",
 		"type": "viewer", "table": "e10doc.waster.wasteSettings", "viewer": "default"
+	},
+	"wasterOrigins": {
+		"name": "Původy odpadů", "order": 29600, "group": "waster",
+		"type": "viewer", "table": "e10doc.base.wasteOrigins", "viewer": "default"
 	}
 }
 
