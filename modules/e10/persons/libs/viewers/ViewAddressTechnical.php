@@ -49,6 +49,7 @@ class ViewAddressTechnical extends TableView
 			array_push ($q, ' [contacts].adrCity LIKE %s', '%'.$fts.'%');
 			array_push ($q, ' OR [contacts].adrStreet LIKE %s', '%'.$fts.'%');
 			array_push ($q, ' OR [contacts].adrSpecification LIKE %s', '%'.$fts.'%');
+			array_push ($q, ' OR [contacts].adrZipCode LIKE %s', '%'.$fts.'%');
 			array_push ($q, ')');
 		}
 
@@ -65,6 +66,23 @@ class ViewAddressTechnical extends TableView
 		if (isset ($qv['geoLocation']['geoLocError']))
 			array_push ($q, ' AND [adrLocState] = %i', 2);
 
+		// -- errors
+		if (isset ($qv['errors']['withoutZip']))
+			array_push ($q, ' AND [adrZipCode] = %s', '');
+		if (isset ($qv['errors']['withoutCity']))
+			array_push ($q, ' AND [adrCity] = %s', '');
+		if (isset ($qv['errors']['blankAddress']))
+			array_push ($q, ' AND (', '[adrCity] = %s', '', ' AND [adrStreet] = %s', '', ' AND [adrZipCode] = %s', '', ')');
+		if (isset ($qv['errors']['badCity']))
+		{
+			array_push($q,
+				' AND (',
+				' adrCountry = %i', 60,
+				' AND adrCity != %s', '',
+				' AND NOT EXISTS (SELECT ndx FROM e10_base_nomencItems WHERE contacts.adrCity = shortName AND id LIKE %s', 'cz-orp%', ')',
+				')'
+			);
+		}
 		// -- countries
 		if (isset ($qv['personCountries']))
 			array_push ($q, ' AND [contacts].[adrCountry] IN %in', array_keys($qv['personCountries']));
@@ -208,6 +226,17 @@ class ViewAddressTechnical extends TableView
 		$paramsGeoLocation->addParam ('checkboxes', 'query.geoLocation', ['items' => $chbxGeoLocation]);
 		$qry[] = ['id' => 'itemTypes', 'style' => 'params', 'title' => 'GEO lokace', 'params' => $paramsGeoLocation];
 
+
+		// -- errors
+		$chbxErrors = [
+			'withoutCity' => ['title' => 'Bez obce', 'id' => 'withoutCity'],
+			'withoutZip' => ['title' => 'Bez PSČ', 'id' => 'withoutZip'],
+			'blankAddress' => ['title' => 'Prázdná adresa', 'id' => 'blankAddress'],
+			'badCity' => ['title' => 'Vadný název obce', 'id' => 'badCity'],
+		];
+		$paramsErrors = new \E10\Params ($this->app());
+		$paramsErrors->addParam ('checkboxes', 'query.errors', ['items' => $chbxErrors]);
+		$qry[] = ['id' => 'errors', 'style' => 'params', 'title' => 'Chyby', 'params' => $paramsErrors];
 
 		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}
