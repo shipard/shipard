@@ -1153,8 +1153,11 @@ class CfgManager
 				else
 				{
 					$colNdx = 0;
-					forEach ($i['columns'] as $c)
+					forEach ($i['columns'] as $cn)
 					{
+						$c = $cn;
+						if (str_ends_with($c, ' DESC'))
+							$c = substr($c, 0, -5);
 						if ($c !== $existedIndexes[$sqlIndexName]['columns'][$colNdx])
 						{
 							$reCreate = TRUE;
@@ -1418,7 +1421,21 @@ class CfgManager
 		if (isset($index['fullText']))
 			$c .= 'FULLTEXT ';
 		$c .= "INDEX [{$index['id']}] ON [{$table['sql']}] ";
-		$c .= '(['.implode ('], [', $index['columns']) . '])';
+		$c .= '(';
+
+		$ci = 0;
+		foreach ($index['columns'] as $col)
+		{
+			if ($ci != 0)
+				$c .= ', ';
+			if (str_ends_with($col, ' DESC'))
+				$c .= '[' . substr($col, 0, -5) . '] DESC';
+			else
+				$c .= '[' . $col . ']';
+			$ci++;
+		}
+
+		$c .= ')';
 		return $c;
 	}
 
