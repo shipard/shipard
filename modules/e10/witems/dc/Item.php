@@ -1,7 +1,7 @@
 <?php
 
 namespace e10\witems\dc;
-use E10\utils;
+use \Shipard\Utils\Utils;
 
 
 /**
@@ -84,79 +84,94 @@ class Item extends \e10\DocumentCard
 		/** @var \e10\witems\TableItemCodes */
 		$tableItemCodes = $this->app()->table('e10.witems.itemCodes');
 		$personTypes = $tableItemCodes->columnInfoEnum ('personType', 'cfgText');
+		$wasteOrigins = $this->app()->cfgItem('e10doc.base.wasteOrigins');
+		$today = Utils::today();
 
-		$lastCodeKind = -1;
-		$rowIndex = 0;
-
-		$q[] = 'SELECT itemCodes.*,';
-		array_push($q, ' persons.fullName AS personName, personsGroups.name AS groupName,');
-		array_push($q, ' nomenc.fullName AS nomencName');
-		array_push($q, ' FROM [e10_witems_itemCodes] AS itemCodes');
-		array_push($q, ' LEFT JOIN [e10_persons_persons] AS persons ON itemCodes.person = persons.ndx');
-		array_push($q, ' LEFT JOIN [e10_persons_groups] AS personsGroups ON itemCodes.personsGroup = personsGroups.ndx');
-		array_push($q, ' LEFT JOIN [e10_base_nomencItems] AS nomenc ON itemCodes.itemCodeNomenc = nomenc.ndx');
-		array_push($q, ' WHERE itemCodes.[item] = %i', $this->recData['ndx']);
-		array_push($q, ' ORDER BY itemCodes.codeKind, itemCodes.systemOrder, itemCodes.ndx');
-
-		$rows = $this->db()->query($q);
-		foreach ($rows as $r)
+		foreach ([1, 0] as $validity)
 		{
-			$codeKind = $this->app()->cfgItem('e10.witems.codesKinds.'.$r['codeKind']);
-			$codeDir = $this->app()->cfgItem('e10.witems.codeDirs.'.$r['codeDir']);
-			$refType = $codeKind['refType'] ?? 0;
-			$askDir = $codeKind['askDir'] ?? 0;
-			$askPerson = $codeKind['askPerson'] ?? 0;
-			$askPersonType = $codeKind['askPersonType'] ?? 0;
+			$this->dataCodes = [];
+			$lastCodeKind = -1;
+			$rowIndex = 0;
 
-			$item = [
-				'code' => [
-					['text' => $r['itemCodeText'], 'class' => 'e10-bold block'],
-					['text' => $codeKind['sn'] ?? '-- chybný kód položky --', 'class' => 'e10-small'],
-				],
-				'info' => [],
-			];
-			if ($r['person'])
-				$item['application'][] = ['text' => $r['personName'], 'class' => 'block', 'icon' => 'system/personCompany'];
-			if ($r['personsGroup'])
-				$item['application'][] = ['text' => $r['groupName'], 'class' => 'block', 'icon' => 'tables/e10.persons.groups'];
-			if ($askPersonType)
-				$item['application'][] = ['text' => $personTypes[$r['personType']] ?? '!!!', 'class' => 'block', 'icon' => 'tables/e10.persons.persons'];
-			if ($r['addressLabel'])
+			$q = [];
+			array_push($q, 'SELECT itemCodes.*,');
+			array_push($q, ' persons.fullName AS personName, personsGroups.name AS groupName,');
+			array_push($q, ' nomenc.fullName AS nomencName');
+			array_push($q, ' FROM [e10_witems_itemCodes] AS itemCodes');
+			array_push($q, ' LEFT JOIN [e10_persons_persons] AS persons ON itemCodes.person = persons.ndx');
+			array_push($q, ' LEFT JOIN [e10_persons_groups] AS personsGroups ON itemCodes.personsGroup = personsGroups.ndx');
+			array_push($q, ' LEFT JOIN [e10_base_nomencItems] AS nomenc ON itemCodes.itemCodeNomenc = nomenc.ndx');
+			array_push($q, ' WHERE itemCodes.[item] = %i', $this->recData['ndx']);
+			array_push($q, ' ORDER BY itemCodes.codeKind, itemCodes.systemOrder, itemCodes.ndx');
+
+			$rows = $this->db()->query($q);
+			foreach ($rows as $r)
 			{
-				$label = $this->app()->cfgItem('e10.base.clsf.addressTags.'.$r['addressLabel'], NULL);
-				if ($label)
-					$item['application'][] = ['text' => $label['name'], 'class' => 'label', 'icon' => 'tables/e10.base.clsfgroups', 'css' => $label['css']];
+				$valid = 1;
+				if (!Utils::dateIsBlank($r['validTo']) && $r['validTo'] < $today)
+					$valid = 0;
+				if ($valid !== $validity)
+					continue;
+
+				$codeKind = $this->app()->cfgItem('e10.witems.codesKinds.'.$r['codeKind']);
+				$codeDir = $this->app()->cfgItem('e10.witems.codeDirs.'.$r['codeDir']);
+				$refType = $codeKind['refType'] ?? 0;
+				$askDir = $codeKind['askDir'] ?? 0;
+				$askPerson = $codeKind['askPerson'] ?? 0;
+				$askPersonType = $codeKind['askPersonType'] ?? 0;
+
+				$item = [
+					'code' => [
+						['text' => $r['itemCodeText'], 'class' => 'e10-bold block'],
+						['text' => $codeKind['sn'] ?? '-- chybný kód položky --', 'class' => 'e10-small'],
+					],
+					'info' => [],
+				];
+				if (!Utils::dateIsBlank($r['validFrom']) || !Utils::dateIsBlank($r['validTo']))
+					$item['application'][] = ['text' => Utils::dateFromTo($r['validFrom'], $r['validTo'], NULL), 'class' => 'label label-info', 'icon' => 'system/iconCalendar'];
+				if ($r['wasteOrigin'])
+					$item['application'][] = ['text' => $wasteOrigins[$r['wasteOrigin']]['sn'], 'class' => 'label label-default', 'icon' => 'tables/e10doc.base.wasteOrigins'];
+				if ($r['person'])
+					$item['application'][] = ['text' => $r['personName'], 'class' => 'block', 'icon' => 'system/personCompany'];
+				if ($r['personsGroup'])
+					$item['application'][] = ['text' => $r['groupName'], 'class' => 'block', 'icon' => 'tables/e10.persons.groups'];
+				if ($askPersonType)
+					$item['application'][] = ['text' => $personTypes[$r['personType']] ?? '!!!', 'class' => 'block', 'icon' => 'tables/e10.persons.persons'];
+				if ($r['addressLabel'])
+				{
+					$label = $this->app()->cfgItem('e10.base.clsf.addressTags.'.$r['addressLabel'], NULL);
+					if ($label)
+						$item['application'][] = ['text' => $label['name'], 'class' => 'label', 'icon' => 'tables/e10.base.clsfgroups', 'css' => $label['css']];
+				}
+
+				if($askDir)
+					$item['info'][] = ['text' => $codeDir['sn'] ?? '!!!', 'class' => 'block'];
+				if($refType === 1)
+					$item['info'][] = ['text' => $r['nomencName'] ?? '!!!', 'class' => 'block e10-small'];
+
+				if ($lastCodeKind != $r['codeKind'] && $rowIndex)
+				{
+					$item['_options'] = ['beforeSeparator' => 'separator'];
+				}
+
+				if (!$valid)
+					$item['_options'] = ['class' => 'e10-off'];
+
+				$lastCodeKind = $r['codeKind'];
+				$rowIndex++;
+				$this->dataCodes[] = $item;
 			}
 
-			if (!Utils::dateIsBlank($r['validFrom']) || !Utils::dateIsBlank($r['validTo']))
+			if (count($this->dataCodes))
 			{
-				$item['application'][] = ['text' => Utils::dateFromTo($r['validFrom'], $r['validTo'], NULL), 'class' => 'label label-info', 'icon' => 'system/iconCalendar'];
+				$h = ['code' => 'Kód', 'info' => 'Informace', 'application' => 'Uplatňuje se'];
+
+				$title = [['text' => ($validity ? 'Kódy položek' : 'Neplatné kódy položek'), 'class' => 'h1']];
+				$this->addContent ('body', [
+					'pane' => 'e10-pane e10-pane-table', 'paneTitle' => $title,
+					'type' => 'table', 'table' => $this->dataCodes, 'header' => $h
+				]);
 			}
-
-			if($askDir)
-				$item['info'][] = ['text' => $codeDir['sn'] ?? '!!!', 'class' => 'block'];
-			if($refType === 1)
-				$item['info'][] = ['text' => $r['nomencName'] ?? '!!!', 'class' => 'block e10-small'];
-
-			if ($lastCodeKind != $r['codeKind'] && $rowIndex)
-			{
-				$item['_options'] = ['beforeSeparator' => 'separator'];
-			}
-
-			$lastCodeKind = $r['codeKind'];
-			$rowIndex++;
-			$this->dataCodes[] = $item;
-		}
-
-		if (count($this->dataCodes))
-		{
-			$h = ['code' => 'Kód', 'info' => 'Informace', 'application' => 'Uplatňuje se'];
-
-			$title = [['text' => 'Kódy položek', 'class' => 'h1']];
-			$this->addContent ('body', [
-				'pane' => 'e10-pane e10-pane-table', 'paneTitle' => $title,
-				'type' => 'table', 'table' => $this->dataCodes, 'header' => $h
-			]);
 		}
 	}
 
@@ -198,7 +213,7 @@ class Item extends \e10\DocumentCard
 
 		$errors = [];
 
-		$today = utils::today();
+		$today = Utils::today();
 
 		$q = [];
 		array_push ($q, 'SELECT [setRows].*,');
@@ -233,24 +248,24 @@ class Item extends \e10\DocumentCard
 				$rowIsValid = 0;
 			}
 
-			if (!utils::dateIsBlank($r['validTo']) /*&& $r['validTo'] < $today*/)
+			if (!Utils::dateIsBlank($r['validTo']) /*&& $r['validTo'] < $today*/)
 			{
-				$itm['title'][] = ['text' => 'Platné do '.utils::datef($r['validTo']), 'class' => 'label label-default'];
+				$itm['title'][] = ['text' => 'Platné do '.Utils::datef($r['validTo']), 'class' => 'label label-default'];
 
 			}
 
-			if (!utils::dateIsBlank($r['dstItemValidTo']) && $r['dstItemValidTo'] < $today && $rowIsValid)
+			if (!Utils::dateIsBlank($r['dstItemValidTo']) && $r['dstItemValidTo'] < $today && $rowIsValid)
 			{
-				if (utils::dateIsBlank($r['validTo']) || (!utils::dateIsBlank($r['validTo']) && $r['validTo'] > $r['dstItemValidTo']))
+				if (Utils::dateIsBlank($r['validTo']) || (!Utils::dateIsBlank($r['validTo']) && $r['validTo'] > $r['dstItemValidTo']))
 				{
-					$itm['title'][] = ['text' => 'Položka je neplatná k ' . utils::datef($r['dstItemValidTo']), 'class' => 'e10-error block'];
+					$itm['title'][] = ['text' => 'Položka je neplatná k ' . Utils::datef($r['dstItemValidTo']), 'class' => 'e10-error block'];
 					$rowIsValid = 0;
 				}
 			}
 
-			if (!utils::dateIsBlank($r['validFrom']))
+			if (!Utils::dateIsBlank($r['validFrom']))
 			{
-				$itm['title'][] = ['text' => 'Platné od ' . utils::datef($r['validFrom']), 'class' => 'label label-default'];
+				$itm['title'][] = ['text' => 'Platné od ' . Utils::datef($r['validFrom']), 'class' => 'label label-default'];
 			}
 
 			if ($rowIsValid)
@@ -296,7 +311,7 @@ class Item extends \e10\DocumentCard
 
 	public function createContentTitle ()
 	{
-		$title = ['icon' => $this->table->icon ($this->recData), 'text' => $this->recData ['fullName']];
+		$title = ['icon' => $this->table->tableIcon ($this->recData), 'text' => $this->recData ['fullName']];
 		$this->addContent('title', ['type' => 'line', 'line' => $title]);
 
 		$itemsTypes = $this->app->cfgItem ('e10.witems.types');
