@@ -194,7 +194,7 @@
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10doc.core.heads.docStates.default"},
 	"ndx": 1078,
 	"indexes": [
-		{"id": "docType", "columns": ["docType", "docStateMain", "docNumber"]},
+		{"id": "docTypeD", "columns": ["docType", "docStateMain", "docNumber DESC"]},
 		{"id": "docType2", "columns": ["docType", "dbCounter", "docStateMain", "docNumber"]},
 		{"id": "s3", "columns": ["person"]}
 	]
