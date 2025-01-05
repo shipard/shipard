@@ -1848,6 +1848,8 @@ class TableHeads extends DbTable
 		if (!$personGroups)
 			$personGroups = E10Utils::personGroups($this->app(), $headRecData['person']);
 
+		$docWasteOrigin = $headRecData['wasteOrigin'] ?? 0;
+
 		$addressColumn = 'otherAddress1';
 		$addressNdx = intval($headRecData[$addressColumn] ?? 0);
 		$addressLabels = [];
@@ -1885,6 +1887,9 @@ class TableHeads extends DbTable
 			array_push ($q, ' AND ([codes].[personType] = %i', 2, ' OR [codes].[personType] = %i)', 0);
 		elseif ($personType == 2) // company
 			array_push ($q, ' AND ([codes].[personType] = %i', 1, ' OR [codes].[personType] = %i)', 0);
+
+		// -- waste origin
+		array_push ($q, ' AND ([codes].[wasteOrigin] = %i', $docWasteOrigin, ' OR [codes].[wasteOrigin] = %i)', 0);
 
 		// -- date valid
 		array_push ($q, ' AND ([codes].[validFrom] IS NULL', ' OR [codes].[validFrom] <= %d)', $headRecData['dateAccounting']);
