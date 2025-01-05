@@ -64,5 +64,14 @@ class PurchaseReport extends \e10doc\core\libs\reports\DocReport
 			$this->data ['flags']['useAddressPersonOffice'] = 0;
 			$this->data ['flags']['usePersonsAddress'] = 1;
 		}
+
+		if ($this->recData['wasteOrigin'])
+		{
+			$wasteOrigin = $this->app()->cfgItem('e10doc.base.wasteOrigins.'.$this->recData['wasteOrigin'], NULL);
+			if ($wasteOrigin)
+			{
+				$this->data['flags']['wasteOrigin']['text'] = ($wasteOrigin['tfr'] !== '') ? $wasteOrigin['tfr'] : $wasteOrigin['fn'];
+			}
+		}
 	}
 }

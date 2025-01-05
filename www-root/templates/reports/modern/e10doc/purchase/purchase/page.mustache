@@ -261,6 +261,9 @@
 
 {{#data.additionsExists}}
 	<h4>Poznámky</h4>
+	{{#data.flags.wasteOrigin.text}}
+		Původ odpadu: {{data.flags.wasteOrigin.text}}<br>
+	{{/data.flags.wasteOrigin.text}}
   {{#data.additions}}
 		{{#mark}}{{mark}}: {{/mark}}{{labelPrefix}} {{identifier}}<br>
   {{/data.additions}}
@@ -291,7 +294,7 @@
 						{{#rowDataHtmlCode}}<div>{{{rowDataHtmlCode}}}</div>{{/rowDataHtmlCode}}
 					</td>
 					<td class='number' style="width: 15%;">{{quantity}}</td>
-					<td style="width: 10%;">{{@dict;dataItem:print.unit}}</td>					
+					<td style="width: 10%;">{{@dict;dataItem:print.unit}}</td>
 				</tr>
 			{{/itemIsLoypPresent}}
 		{{/data.rows}}
