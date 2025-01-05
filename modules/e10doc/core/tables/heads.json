@@ -84,6 +84,8 @@
     {"id": "correctiveDoc", "name": "Opravný doklad", "type": "logical"},
     {"id": "collectingDoc", "name": "Sběrný doklad", "type": "logical", "options": ["saveOnChange"]},
 
+		{"id": "wasteOrigin", "name": "Původ odpadu", "type": "enumInt",
+      "enumCfg": {"cfgItem": "e10doc.base.wasteOrigins", "cfgValue": "", "cfgText": "sn"}},
     {"id": "addToWasteReport", "name": "Zařadit do Hlášení o odpadech", "type": "logical"},
 
     {"id": "dateIssue", "name": "Datum vystavení", "type": "date"},
