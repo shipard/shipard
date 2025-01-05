@@ -40,5 +40,13 @@
 				{"table": "e10.persons.groups"}
 			]
 		}
+	},
+	"e10doc.base.wasteOrigins": {
+		"e10-wasteOrigins-pg": {
+			"linkid": "e10-wasteOrigins-pg", "name": "Skupiny osob pro tento původ odpadu", "icon": "tables/e10doc.base.wasteOrigins",
+			"sources": [
+				{"table": "e10.persons.groups"}
+			]
+		}
 	}
 }

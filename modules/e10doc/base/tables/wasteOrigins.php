@@ -3,6 +3,7 @@
 namespace e10doc\base;
 use \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
 use \Shipard\Utils\Json;
+use \e10\base\libs\UtilsBase;
 
 
 /**
@@ -29,23 +30,52 @@ class TableWasteOrigins extends DbTable
 	public function saveConfig ()
 	{
 		$list = [];
-		$list [0] = ['ndx' => 0, 'fn' => '', 'dn' => ''];
+		$list [0] = ['ndx' => 0, 'fn' => '', 'dn' => '', 'tfr' => '', 'useForCompanies' => 1, 'useForCitizens' => 1];
 
-		$rows = $this->app()->db->query ('SELECT * FROM [e10doc_base_wasteOrigins] WHERE [docState] != 9800 ORDER BY [fullName]');
+		$rows = $this->app()->db->query ('SELECT * FROM [e10doc_base_wasteOrigins] WHERE [docState] != 9800 ORDER BY [order], [fullName]');
 
 		foreach ($rows as $r)
 		{
 			$item = [
 				'ndx' => $r ['ndx'],
 				'fn' => $r ['fullName'],
-				'sn' => $r ['shortName']
+				'sn' => $r ['shortName'],
+				'tfr' => $r ['textForReport'],
+				'useForCompanies' => intval($r ['useForCompanies']),
+				'useForCitizens' => intval($r ['useForCitizens']),
 			];
+
+			$this->saveConfigList ($item, 'personsGroups', 'e10.persons.groups', 'e10-wasteOrigins-pg', $r ['ndx']);
+
 			$list [$r['ndx']] = $item;
 		}
 
 		// save to file
 		$cfg ['e10doc']['base']['wasteOrigins'] = $list;
 		file_put_contents(__APP_DIR__ . '/config/_e10doc.base.wasteOrigins.json', Json::lint ($cfg));
+	}
+
+	function saveConfigList (&$item, $key, $dstTableId, $listId, $activityTypeNdx)
+	{
+		$list = [];
+
+		$rows = $this->app()->db->query (
+			'SELECT doclinks.dstRecId FROM [e10_base_doclinks] AS doclinks',
+			' WHERE doclinks.linkId = %s', $listId, ' AND dstTableId = %s', $dstTableId,
+			' AND doclinks.srcRecId = %i', $activityTypeNdx
+		);
+		foreach ($rows as $r)
+		{
+			$list[] = $r['dstRecId'];
+		}
+
+		if (count($list))
+		{
+			$item[$key] = $list;
+			return count($list);
+		}
+
+		return 0;
 	}
 }
 
@@ -54,11 +84,10 @@ class TableWasteOrigins extends DbTable
  */
 class ViewWasteOrigins extends TableView
 {
+	var $linkedPersons = NULL;
+
 	public function init ()
 	{
-		$this->objectSubType = TableView::vsDetail;
-		$this->enableDetailSearch = TRUE;
-
 		$this->setMainQueries ();
 
 		parent::init();
@@ -68,7 +97,21 @@ class ViewWasteOrigins extends TableView
 	{
 		$listItem ['pk'] = $item['ndx'];
 		$listItem ['t1'] = $item['fullName'];
-		$listItem ['i1'] = $item['shortName'];
+		$listItem ['i1'] = ['text' => $item['shortName'], 'class' => 'e10-small'];
+
+		$listItem['t2'] = [];
+
+		if ($item['order'])
+			$listItem['i2'] = ['text' => $item['order'], 'icon' => 'system/iconOrder', 'class' => 'label label-default'];
+
+		if ($item['useForCompanies'])
+			$listItem['t2'][] = ['text' => 'Firmy', 'icon' => 'system/personCompany', 'class' => 'label label-default'];
+		if ($item['useForCitizens'])
+			$listItem['t2'][] = ['text' => 'Občané', 'icon' => 'system/personHuman', 'class' => 'label label-default'];
+
+		if ($item['textForReport'] !== '')
+			$listItem['t3'][] = ['text' => $item['textForReport'], 'icon' => 'system/actionPrint', 'class' => ''];
+
 
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
@@ -83,7 +126,6 @@ class ViewWasteOrigins extends TableView
     array_push ($q, ' SELECT origins.*');
     array_push ($q, ' FROM e10doc_base_wasteOrigins AS origins');
 		array_push ($q, ' WHERE 1');
-    array_push ($q, '');
 
 		// -- fulltext
 		if ($fts != '')
@@ -93,16 +135,32 @@ class ViewWasteOrigins extends TableView
 			  array_push ($q, ' OR origins.[fullName] LIKE %s', '%'.$fts.'%');
       array_push ($q, ')');
     }
-		$this->queryMain ($q, 'origins.', ['origins.[fullName]', 'origins.[ndx]']);
+		$this->queryMain ($q, 'origins.', ['origins.[order]', 'origins.[fullName]', 'origins.[ndx]']);
 		$this->runQuery ($q);
+	}
+
+	public function selectRows2 ()
+	{
+		if (!count ($this->pks))
+			return;
+
+		$this->linkedPersons = UtilsBase::linkedPersons ($this->table->app(), $this->table, $this->pks, 'label label-info');
+	}
+
+	function decorateRow (&$item)
+	{
+		if (isset ($this->linkedPersons [$item ['pk']]))
+		{
+			$item ['t2'] = array_merge($item ['t2'], $this->linkedPersons [$item ['pk']]);
+		}
 	}
 }
 
 
 /**
- * Class ViewDetailWateOrigin
+ * Class ViewDetailWasteOrigin
  */
-class ViewDetailWateOrigin extends TableViewDetail
+class ViewDetailWasteOrigin extends TableViewDetail
 {
 	public function createDetailContent ()
 	{
@@ -127,6 +185,13 @@ class FormWasteOrigin extends TableForm
 				$this->openTab ();
 					$this->addColumnInput ('fullName');
 					$this->addColumnInput ('shortName');
+					$this->addColumnInput ('textForReport');
+					$this->addSeparator(self::coH4);
+					$this->addColumnInput ('useForCompanies');
+					$this->addColumnInput ('useForCitizens');
+					$this->addList ('doclinks', '', TableForm::loAddToFormLayout);
+					$this->addSeparator(self::coH4);
+					$this->addColumnInput ('order');
 				$this->closeTab();
 				$this->openTab (TableForm::ltNone);
 					$this->addAttachmentsViewer();
