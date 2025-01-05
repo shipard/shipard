@@ -2023,6 +2023,10 @@ class TableForm
 		}
 	}
 
+	public function checkChangedInput ($changedInput, &$saveData)
+	{
+	}
+
 	public function listAppend ()
 	{
 		$listId = $this->table->app()->requestPath (4);

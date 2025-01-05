@@ -1050,7 +1050,10 @@ class DbTable
 		$this->applySubColumnsData ($saveData);
 
 		if (isset ($saveData['changedInput']))
+		{
 			$this->checkChangedInput ($saveData['changedInput'], $saveData);
+			$formData->checkChangedInput ($saveData['changedInput'], $saveData);
+		}
 
 		// prepare document state
 		if ($setDocState)
