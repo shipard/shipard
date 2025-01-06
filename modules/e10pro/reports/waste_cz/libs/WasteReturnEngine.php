@@ -76,7 +76,7 @@ class WasteReturnEngine extends Utility
 		array_push ($q, ' [rows].item AS item, [rows].unit AS unit, [rows].quantity, [rows].itemType, [rows].taxBase, [rows].document,');
 		array_push ($q, ' heads.docNumber as docNumber, heads.dateAccounting as dateAccounting, heads.warehouse as warehouse,');
     array_push ($q, ' heads.docType AS docType, heads.cashBoxDir AS cashBoxDir, heads.personType, heads.person,');
-    array_push ($q, ' heads.otherAddress1,  heads.otherAddress1Mode, heads.deliveryAddress, heads.personNomencCity');
+    array_push ($q, ' heads.otherAddress1,  heads.otherAddress1Mode, heads.deliveryAddress, heads.personNomencCity, heads.wasteOrigin');
 		array_push ($q, ' FROM e10doc_core_rows AS [rows]');
 		array_push ($q, ' LEFT JOIN e10doc_core_heads AS heads ON [rows].document = heads.ndx');
 		array_push ($q, ' LEFT JOIN e10_persons_persons AS persons ON heads.person = persons.ndx');
