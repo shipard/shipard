@@ -223,7 +223,7 @@ class MailMessage extends \Shipard\Base\Utility
 					$cmd .= ' -tls';
 					$cmd .= ' --auth-user '.$this->fromEmail;
 					$cmd .= ' --auth-password "'.$emailFromCfg['password'].'"';
-					$cmd .= ' -d '.$ffn;
+					$cmd .= ' -d @'.$ffn;
 					$cmd .= ' > '.$ffn.'.log'.' 2>&1';
 
 					exec ($cmd);
