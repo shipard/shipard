@@ -4338,6 +4338,46 @@ class FormHeads extends TableForm
 
 		return $wasteSettings['docModes'][$docType];
 	}
+
+	public function resetWasteOrigin (&$saveData)
+	{
+		$saveData['recData']['wasteOrigin'] = 0;
+
+		$personRecData = $this->app()->loadItem($saveData['recData']['person'], 'e10.persons.persons');
+		if ($personRecData)
+		{
+			$wasteOrigins = $this->app()->cfgItem ('e10doc.base.wasteOrigins');
+			unset($wasteOrigins[0]);
+			if ($personRecData['personType'] == 1)
+			{ // human
+				$wo = Utils::searchArray($wasteOrigins, 'useForCitizens', 1);
+				if ($wo)
+					$saveData['recData']['wasteOrigin'] = $wo['ndx'];
+			}
+			elseif ($personRecData['personType'] == 2)
+			{ // company
+				$defaultWONdx = 0;
+				$personGroups = E10Utils::personGroups($this->app(), $saveData['recData']['person']);
+				foreach ($wasteOrigins as $wo)
+				{
+					if (!$wo['useForCompanies'])
+						continue;
+					if (!$defaultWONdx)
+						$defaultWONdx = $wo['ndx'];
+					if (!isset($wo['personsGroups']) || !count($personGroups))
+						continue;
+
+					if (count(array_intersect($personGroups, $wo['personsGroups'])) !== 0)
+					{
+						$saveData['recData']['wasteOrigin'] = $wo['ndx'];
+						break;
+					}
+				}
+				if (!$saveData['recData']['wasteOrigin'])
+					$saveData['recData']['wasteOrigin'] = $defaultWONdx;
+			}
+		}
+	}
 } // class FormHeads
 
 

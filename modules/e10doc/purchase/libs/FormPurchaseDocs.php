@@ -95,6 +95,7 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 						$this->addSeparator(self::coH2);
 						$this->layoutOpen(self::ltVertical);
 							$this->addColumnInput ('wasteOrigin', self::coHeader|self::coColW12);
+							//$this->addColumnInput ('wasteOriginCity', self::coHeader|self::coColW12);
 						$this->layoutClose();
 
 						if ($this->recData['personType'] == 2)
@@ -620,45 +621,6 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 		parent::checkChangedInput ($changedInput, $saveData);
 
 		if ($changedInput === 'person')
-		{
-			$saveData['recData']['wasteOrigin'] = 0;
-
-			$personRecData = $this->app()->loadItem($saveData['recData']['person'], 'e10.persons.persons');
-			if ($personRecData)
-			{
-				$wasteOrigins = $this->app()->cfgItem ('e10doc.base.wasteOrigins');
-				unset($wasteOrigins[0]);
-				if ($personRecData['personType'] == 1)
-				{ // human
-					$wo = Utils::searchArray($wasteOrigins, 'useForCitizens', 1);
-					if ($wo)
-						$saveData['recData']['wasteOrigin'] = $wo['ndx'];
-				}
-				elseif ($personRecData['personType'] == 2)
-				{ // company
-					$defaultWONdx = 0;
-					$personGroups = E10Utils::personGroups($this->app(), $saveData['recData']['person']);
-					foreach ($wasteOrigins as $wo)
-					{
-						if (!$wo['useForCompanies'])
-							continue;
-						if (!$defaultWONdx)
-							$defaultWONdx = $wo['ndx'];
-						if (!isset($wo['personsGroups']) || !count($personGroups))
-							continue;
-
-						if (count(array_intersect($personGroups, $wo['personsGroups'])) !== 0)
-						{
-							$saveData['recData']['wasteOrigin'] = $wo['ndx'];
-							break;
-						}
-					}
-					if (!$saveData['recData']['wasteOrigin'])
-						$saveData['recData']['wasteOrigin'] = $defaultWONdx;
-				}
-			}
-
-			return;
-		}
+			$this->resetWasteOrigin($saveData);
 	}
 }

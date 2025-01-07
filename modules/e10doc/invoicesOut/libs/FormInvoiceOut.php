@@ -87,6 +87,8 @@ class FormInvoiceOut extends \E10Doc\Core\FormHeads
 							if ($useDocKinds === 2)
 								$this->addColumnInput ("docKind");
 
+							if ($this->table->app()->cfgItem ('options.waster.useWaster', 0))
+								$this->addColumnInput ('wasteOrigin', self::coHeader|self::coColW12);
 						$this->layoutClose ();
 
 					$this->layoutClose ();
@@ -202,4 +204,12 @@ class FormInvoiceOut extends \E10Doc\Core\FormHeads
     }
     return parent::columnLabel ($colDef, $options);
   }
+
+	public function checkChangedInput ($changedInput, &$saveData)
+	{
+		parent::checkChangedInput ($changedInput, $saveData);
+
+		if ($changedInput === 'person')
+			$this->resetWasteOrigin($saveData);
+	}
 }

@@ -52,6 +52,9 @@ class FormStockOut extends \e10doc\core\FormHeads
 							$this->addColumnInput ('addToWasteReport');
 						}
 						$this->addSeparator(self::coH4);
+
+						if ($this->table->app()->cfgItem ('options.waster.useWaster', 0))
+							$this->addColumnInput ('wasteOrigin', self::coHeader|self::coColW12);
 					}
 				$this->addRecapitulation ();
 			$this->closeTab ();
@@ -82,4 +85,12 @@ class FormStockOut extends \e10doc\core\FormHeads
     }
     return parent::columnLabel ($colDef, $options);
   }
+
+	public function checkChangedInput ($changedInput, &$saveData)
+	{
+		parent::checkChangedInput ($changedInput, $saveData);
+
+		if ($changedInput === 'person')
+			$this->resetWasteOrigin($saveData);
+	}
 }
